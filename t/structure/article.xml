@@ -15,7 +15,7 @@
   <abstract name="Abstract">
     <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
   </abstract>
-  <section xml:id="S1">
+  <section inlist="toc" xml:id="S1">
     <tags>
       <tag>1</tag>
       <tag role="refnum">1</tag>
@@ -69,7 +69,7 @@
         </Math>
       </equation>
     </para>
-    <figure xml:id="S1.F1">
+    <figure inlist="lof" xml:id="S1.F1">
       <tags>
         <tag>Figure 1</tag>
         <tag role="refnum">1</tag>
@@ -79,7 +79,7 @@
       <toccaption><tag close=" ">1</tag>A Figure</toccaption>
       <caption><tag close=": ">Figure 1</tag>A Figure</caption>
     </figure>
-    <table xml:id="S1.T1">
+    <table inlist="lot" xml:id="S1.T1">
       <tags>
         <tag>Table 1</tag>
         <tag role="refnum">1</tag>
@@ -254,7 +254,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </item>
       </description>
     </para>
-    <subsection xml:id="S1.SS1">
+    <subsection inlist="toc" xml:id="S1.SS1">
       <tags>
         <tag>1.1</tag>
         <tag role="refnum">1.1</tag>
@@ -267,7 +267,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       <para xml:id="S1.SS1.p2">
         <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
       </para>
-      <subsubsection xml:id="S1.SS1.SSS1">
+      <subsubsection inlist="toc" xml:id="S1.SS1.SSS1">
         <tags>
           <tag>1.1.1</tag>
           <tag role="refnum">1.1.1</tag>
@@ -280,7 +280,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         <para xml:id="S1.SS1.SSS1.p2">
           <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
         </para>
-        <paragraph xml:id="S1.SS1.SSS1.Px1">
+        <paragraph inlist="toc" xml:id="S1.SS1.SSS1.Px1">
           <title>A Paragraph</title>
           <para xml:id="S1.SS1.SSS1.Px1.p1">
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
@@ -288,7 +288,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           <para xml:id="S1.SS1.SSS1.Px1.p2">
             <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
           </para>
-          <subparagraph xml:id="S1.SS1.SSS1.Px1.SPx1">
+          <subparagraph inlist="toc" xml:id="S1.SS1.SSS1.Px1.SPx1">
             <title>A Subparagraph</title>
             <para xml:id="S1.SS1.SSS1.Px1.SPx1.p1">
               <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
@@ -301,7 +301,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </subsubsection>
     </subsection>
   </section>
-  <section xml:id="S2">
+  <section inlist="toc" xml:id="S2">
     <tags>
       <tag>2</tag>
       <tag role="refnum">2</tag>
@@ -355,7 +355,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </Math>
       </equation>
     </para>
-    <figure xml:id="S2.F2">
+    <figure inlist="lof" xml:id="S2.F2">
       <tags>
         <tag>Figure 2</tag>
         <tag role="refnum">2</tag>
@@ -365,7 +365,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       <toccaption><tag close=" ">2</tag>Another Figure</toccaption>
       <caption><tag close=": ">Figure 2</tag>Another Figure</caption>
     </figure>
-    <table xml:id="S2.T2">
+    <table inlist="lot" xml:id="S2.T2">
       <tags>
         <tag>Table 2</tag>
         <tag role="refnum">2</tag>

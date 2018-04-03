@@ -206,31 +206,28 @@ sub fill_in_tocs {
   foreach my $toc ($doc->findnodes('descendant::ltx:TOC[not(ltx:toclist)]')) {
     $n++;
     my $selector = $toc->getAttribute('select');
-    # my $types    = ($selector
-    #   ? { map { ($_ => 1) } split(/\s*\|\s*/, $selector) }
-    #   : $normaltoctypes);
-    my $types = {};
+    my $types;
     if ($selector) {
-      foreach my $type (split(/\s*\|\s*/, $selector)) {
-        if ($type =~ s/\?$//) {
-          $$types{$type} = 'optional'; }
-        else {
-          $$types{$type} = 1; } } }
-    else {
-      $types = $normaltoctypes; }
+      $types = { map { ($_ => 1) } split(/\s*\|\s*/, $selector) }; }
     # global vs children of THIS or Document node?
     my $id     = $doc->getDocumentElement->getAttribute('xml:id');
     my $scope  = $toc->getAttribute('scope') || 'current';
     my $format = $toc->getAttribute('format') || 'normal';
+    my $lists;
+    if (my $listname = $toc->getAttribute('lists')) {
+      $lists = { map { $_ => 1 } split(/\s/, $listname) }; }
+    else {
+      $lists = { toc => 1 }; }
     if ($scope eq 'global') {
       if (my $entry = $$self{db}->lookup("ID:" . $id)) {
         if (my $root = $self->getRootPage($entry)) {
           $id = $root->getValue('pageid'); } } }
     my @list = ();
     if (!$format || ($format =~ /^normal/)) {
-      @list = $self->gentoc($doc, $id, $types, 1); }
+      @list = $self->gentoc($doc, $id, $lists, $types); }
     elsif ($format eq 'context') {
-      @list = $self->gentoc_context($doc, $id, $types); }
+      $lists = { toc => 1 };
+      @list = $self->gentoc_context($doc, $id, $lists, $types); }
     $doc->addNodes($toc, ['ltx:toclist', {}, @list]) if @list; }
   NoteProgressDetailed(" [Filled in $n TOCs]");
   return; }
@@ -240,30 +237,27 @@ sub fill_in_tocs {
 # Returns a list of 0 or more ltx:tocentry's (possibly containing ltx:toclist's)
 # Note that parent/child relationships stored in ObjectDB can also reflect less
 # `interesting' objects like para or p style paragraphs, and such.
-#   $location: if defined (as a pathname), only include children that are on that page
-#   $depth   : only to the specific depth
-#
 sub gentoc {
-  my ($self, $doc, $id, $types, $strict, $localto, $selfid) = @_;
+  my ($self, $doc, $id, $lists, $types, $localto, $selfid) = @_;
   my $show = $$self{toc_show};
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     my @kids = ();
     if ((!defined $localto) || (($entry->getValue('location') || '') eq $localto)) {
-      @kids = map { $self->gentoc($doc, $_, $types, $strict, $localto, $selfid) }
+      @kids = map { $self->gentoc($doc, $_, $lists, $types, $localto, $selfid) }
         @{ $entry->getValue('children') || [] }; }
     my $type = $entry->getValue('type');
     my $role = $entry->getValue('role');
-    if (my $code = $$types{$type} || ($role && $$types{ 'role:' . $role })) {
-      if ($strict && !defined $entry->getValue('refnum')) { # Traditional TOC/LOT/LOF shows only numbered!
-        return (); }
-      elsif (($code eq 'optional') && !@kids) {             # Optionally prune nodes w/ NO children
-        return (); }
-      else {
-        return $self->gentocentry($doc, $entry, $selfid, $show, @kids); } }
+    if (($types ? ($type = $entry->getValue('type')) && $$types{$type} : 1)
+      && inlist_match($lists, $entry->getValue('inlist'))) {
+      return $self->gentocentry($doc, $entry, $selfid, $show, @kids); }
     else {
       return @kids; } }
   else {
     return (); } }
+
+sub inlist_match {
+  my ($listsa, $listsb) = @_;
+  return ($listsa && $listsb && grep { $$listsb{$_} } keys %$listsa); }
 
 sub gentocentry {
   my ($self, $doc, $entry, $selfid, $show, @children) = @_;
@@ -283,11 +277,11 @@ sub gentocentry {
 # but also shows the page in the context of it's siblings & ancestors.
 # This is useful for putting in a navigation bar.
 sub gentoc_context {
-  my ($self, $doc, $id, $types) = @_;
+  my ($self, $doc, $id, $lists, $types) = @_;
   my $show = $$self{toc_show};
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     # Generate Downward TOC covering items WITHIN the current page.
-    my @navtoc = $self->gentoc($doc, $id, $types, 0, $entry->getValue('location') || '', $id);
+    my @navtoc = $self->gentoc($doc, $id, $lists, $types, $entry->getValue('location') || '', $id);
     # Then enclose it upwards along with siblings & ancestors
     my $p_id;
     while (($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))) {
@@ -295,7 +289,7 @@ sub gentoc_context {
         map { ($_->getValue('id') eq $id
           ? @navtoc
           : $self->gentocentry($doc, $_, undef, $show)) }
-        grep { $$normaltoctypes{ $_->getValue('type') } }
+        grep { $$normaltoctypes{ $_->getValue('type') } }    # or should we use @inlist???
         map  { $$self{db}->lookup("ID:$_") }
         @{ $entry->getValue('children') || [] };
       if ($$types{ $entry->getValue('type') }) {

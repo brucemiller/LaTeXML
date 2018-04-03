@@ -186,7 +186,10 @@ sub truncateNode {
 
 sub addCommon {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
-  my $id    = $node->getAttribute('xml:id');
+  my $id = $node->getAttribute('xml:id');
+  my $inlist;
+  if (my $listnames = $node->getAttribute('inlist')) {
+    $inlist = { map { ($_ => 1) } split(/\s/, $listnames) }; }
   my %props = (
     id       => orNull($id),
     type     => orNull($tag),
@@ -195,6 +198,7 @@ sub addCommon {
     location => orNull($doc->siteRelativeDestination),
     pageid   => orNull($self->pageID($doc)),
     fragid   => orNull($self->inPageID($doc, $id)),
+    inlist   => $inlist,
   );
   # Figure out sane, safe naming?
   foreach my $tagnode ($doc->findnodes('ltx:tags/ltx:tag', $node)) {

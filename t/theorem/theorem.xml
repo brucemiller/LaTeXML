@@ -5,7 +5,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <theorem class="ltx_theorem_Cor" xml:id="ThmCor1">
+  <theorem class="ltx_theorem_Cor" inlist="thm theorem:Cor" xml:id="ThmCor1">
     <tags>
       <tag>Corollary 1</tag>
       <tag role="refnum">1</tag>
@@ -16,7 +16,7 @@
       <p><text font="slanted">This is a sentence typeset in the theorem environment <text font="typewriter">Cor</text>.</text></p>
     </para>
   </theorem>
-  <theorem class="ltx_theorem_Exa" xml:id="S0.ThmExa1">
+  <theorem class="ltx_theorem_Exa" inlist="thm theorem:Exa" xml:id="S0.ThmExa1">
     <tags>
       <tag>Example 0.1</tag>
       <tag role="refnum">0.1</tag>
@@ -27,7 +27,7 @@
       <p><text font="italic">This is a sentence typeset in the theorem environment <text font="typewriter">Exa</text>.</text></p>
     </para>
   </theorem>
-  <theorem class="ltx_theorem_Rem" xml:id="ThmRem1">
+  <theorem class="ltx_theorem_Rem" inlist="thm theorem:Rem" xml:id="ThmRem1">
     <tags>
       <tag>Remark 1</tag>
       <tag role="refnum">1</tag>
@@ -38,7 +38,7 @@
       <p>This is a sentence typeset in the theorem environment <text font="typewriter">Rem</text>.</p>
     </para>
   </theorem>
-  <theorem class="ltx_theorem_Lem" xml:id="ThmCor2">
+  <theorem class="ltx_theorem_Lem" inlist="thm theorem:Lem" xml:id="ThmCor2">
     <tags>
       <tag>2 Lemma</tag>
       <tag role="refnum">2</tag>
@@ -49,7 +49,7 @@
       <p><text font="slanted">This is a sentence typeset in the theorem environment <text font="typewriter">Lem</text>.</text></p>
     </para>
   </theorem>
-  <theorem class="ltx_theorem_Def" xml:id="ThmCor3">
+  <theorem class="ltx_theorem_Def" inlist="thm theorem:Def" xml:id="ThmCor3">
     <tags>
       <tag>3 Definition</tag>
       <tag role="refnum">3</tag>

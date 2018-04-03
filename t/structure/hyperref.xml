@@ -5,7 +5,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section labels="LABEL:sec:intro" xml:id="S1">
+  <section inlist="toc" labels="LABEL:sec:intro" xml:id="S1">
     <tags>
       <tag>1</tag>
       <tag role="autoref">section 1</tag>
@@ -14,7 +14,7 @@
     </tags>
     <title><tag close=" ">1</tag>Introduction</title>
   </section>
-  <section labels="LABEL:sec:motivation" xml:id="S2">
+  <section inlist="toc" labels="LABEL:sec:motivation" xml:id="S2">
     <tags>
       <tag>2</tag>
       <tag role="autoref">section 2</tag>
@@ -23,7 +23,7 @@
     </tags>
     <title><tag close=" ">2</tag>Motivation</title>
   </section>
-  <section labels="LABEL:sec:conclusion" xml:id="S3">
+  <section inlist="toc" labels="LABEL:sec:conclusion" xml:id="S3">
     <tags>
       <tag>3</tag>
       <tag role="autoref">section 3</tag>
@@ -31,7 +31,7 @@
       <tag role="typerefnum">§3</tag>
     </tags>
     <title><tag close=" ">3</tag>Conclusion</title>
-    <subsection labels="LABEL:subsec:nameref" xml:id="S3.SS1">
+    <subsection inlist="toc" labels="LABEL:subsec:nameref" xml:id="S3.SS1">
       <tags>
         <tag>3.1</tag>
         <tag role="autoref">subsection 3.1</tag>
@@ -46,7 +46,7 @@
         <p>And subsections <ref class="ltx_refmacro_nameref" labelref="LABEL:subsec:nameref" show="title"/> and <ref class="ltx_refmacro_nameref" labelref="LABEL:subsec:autoref" show="title"/>.</p>
       </para>
     </subsection>
-    <subsection labels="LABEL:subsec:autoref" xml:id="S3.SS2">
+    <subsection inlist="toc" labels="LABEL:subsec:autoref" xml:id="S3.SS2">
       <tags>
         <tag>3.2</tag>
         <tag role="autoref">subsection 3.2</tag>

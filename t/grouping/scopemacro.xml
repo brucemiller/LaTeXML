@@ -4,7 +4,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section xml:id="S1">
+  <section inlist="toc" xml:id="S1">
     <tags>
       <tag>1</tag>
       <tag role="refnum">1</tag>
@@ -15,7 +15,7 @@
       <p>Expect Section 1:Section 1.</p>
     </para>
   </section>
-  <section xml:id="S2">
+  <section inlist="toc" xml:id="S2">
     <tags>
       <tag>2</tag>
       <tag role="refnum">2</tag>
@@ -41,7 +41,7 @@
       </equation>
       <p>Expect Unknown: Unknown.</p>
     </para>
-    <subsection xml:id="S2.SS1">
+    <subsection inlist="toc" xml:id="S2.SS1">
       <tags>
         <tag>2.1</tag>
         <tag role="refnum">2.1</tag>
@@ -52,7 +52,7 @@
         <p>Expect Subsection 2.1: Subsection 2.1</p>
       </para>
     </subsection>
-    <subsection xml:id="S2.SS2">
+    <subsection inlist="toc" xml:id="S2.SS2">
       <tags>
         <tag>2.2</tag>
         <tag role="refnum">2.2</tag>
@@ -63,7 +63,7 @@
         <p>Expect Unknown: Unknown.</p>
       </para>
     </subsection>
-    <subsection labels="LABEL:labelled" xml:id="S2.SS3">
+    <subsection inlist="toc" labels="LABEL:labelled" xml:id="S2.SS3">
       <tags>
         <tag>2.3</tag>
         <tag role="refnum">2.3</tag>
@@ -74,7 +74,7 @@
         <p>Expect Labelled subsection: Labelled subsection</p>
       </para>
     </subsection>
-    <subsection xml:id="S2.SS4">
+    <subsection inlist="toc" xml:id="S2.SS4">
       <tags>
         <tag>2.4</tag>
         <tag role="refnum">2.4</tag>
@@ -86,7 +86,7 @@
       </para>
     </subsection>
   </section>
-  <section xml:id="S3">
+  <section inlist="toc" xml:id="S3">
     <tags>
       <tag>3</tag>
       <tag role="refnum">3</tag>
@@ -96,7 +96,7 @@
     <para xml:id="S3.p1">
       <p>Expect Section 3:Section 3.</p>
     </para>
-    <subsection xml:id="S3.SS1">
+    <subsection inlist="toc" xml:id="S3.SS1">
       <tags>
         <tag>3.1</tag>
         <tag role="refnum">3.1</tag>
@@ -108,7 +108,7 @@
       </para>
     </subsection>
   </section>
-  <section xml:id="S4">
+  <section inlist="toc" xml:id="S4">
     <tags>
       <tag>4</tag>
       <tag role="refnum">4</tag>

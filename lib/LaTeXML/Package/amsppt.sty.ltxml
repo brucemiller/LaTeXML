@@ -110,22 +110,30 @@ map { Tag("ltx:$_", autoClose => 1) }
 
 # Should also add any missing: \endroster, \enddefinition, \enddemo, \endexample,\endproclaim !!
 DefConstructor('\specialhead Until:\endspecialhead',
-  "<ltx:chapter refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
+  "<ltx:chapter inlist='toc' xml:id='#id'>"
+    . "#tags"
+    . "<ltx:title>#1</ltx:title>",
   bounded => 1,
   properties => sub { RefStepID('chapter') });
 Let('\endspecialhead', '\relax');
 DefConstructor('\head Until:\endhead',
-  "<ltx:section refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
+  "<ltx:section inlist='toc' xml:id='#id'>"
+    . "#tags"
+    . "<ltx:title>#1</ltx:title>",
   bounded => 1,
   properties => sub { RefStepID('section') });
 DefMacro('\heading Until:\endheading', '\head#1\endhead');
 DefConstructor('\subhead Until:\endsubhead',
-  "<ltx:subsection refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
+  "<ltx:subsection inlist='toc' xml:id='#id'>"
+    . "#tags"
+    . "<ltx:title>#1</ltx:title>",
   bounded => 1,
   properties => sub { RefStepID('subsection') });
 DefMacro('\subheading Until:\endsubheading', '\subhead#1\endsubhead');
 DefConstructor('\subsubhead Until:\endsubsubhead',
-  "<ltx:subsubsection refnum='#refnum' xml:id='#id'><ltx:title>#1</ltx:title>",
+  "<ltx:subsubsection inlist='toc' xml:id='#id'>"
+    . "#tags"
+    . "<ltx:title>#1</ltx:title>",
   bounded => 1,
   properties => sub { RefStepID('subsubsection') });
 
@@ -147,7 +155,8 @@ Let('\endtoc', '\relax');
 NewCounter('theorem', 'document', idprefix => "Thm");
 
 DefConstructor('\proclaim{} Until:\endproclaim',
-  "<ltx:theorem class='ltx_theorem_proclaim' xml:id='#id' refnum='#refnum'>"
+  "<ltx:theorem class='ltx_theorem_proclaim' xml:id='#id'>"
+    . "#tags"
     . "<ltx:title>#1</ltx:title>"
     . "#2"
     . "</ltx:theorem>",
@@ -168,7 +177,8 @@ DefMacro('\definitionfont', '\rm');
 # Is there nothing about \definitionname (& \remarkname, \examplename, etc?)
 DefMacroI('\definitionname', undef, 'Definition');
 DefConstructor('\definition Undigested DigestUntil:\enddefinition',
-  "<ltx:theorem class='ltx_theorem_definition' xml:id='#id' refnum='#refnum'>"
+  "<ltx:theorem class='ltx_theorem_definition' xml:id='#id'>"
+    . "#tags"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#2"
     . "</ltx:theorem>",
@@ -182,7 +192,8 @@ Let('\enddefinition', '\relax');
 DefMacro('\remarkfont', '\rm');
 DefMacroI('\remarkname', undef, 'Remark');
 DefConstructor('\remark Undigested DigestUntil:\endremark',
-  "<ltx:theorem class='ltx_theorem_remark' xml:id='#id' refnum='#refnum'>"
+  "<ltx:theorem class='ltx_theorem_remark' xml:id='#id'>"
+    . "#tags"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#2"
     . "</ltx:theorem>",
@@ -193,7 +204,8 @@ DefConstructor('\remark Undigested DigestUntil:\endremark',
 Let('\endremark', '\relax');
 
 DefConstructor('\example Undigested DigestUntil:\endexample',
-  "<ltx:theorem class='ltx_theorem_example' xml:id='#id' refnum='#refnum'>"
+  "<ltx:theorem class='ltx_theorem_example' xml:id='#id'>"
+    . "#tags"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#2"
     . "</ltx:theorem>",
@@ -206,7 +218,8 @@ Let('\endexample', '\relax');
 
 DefMacroI('\demonstrationname', undef, 'Demonstration');
 DefConstructor('\demo Undigested DigestUntil:\enddemo',
-  "<ltx:theorem class='ltx_theorem_demonstration' xml:id='#id' refnum='#refnum'>"
+  "<ltx:theorem class='ltx_theorem_demonstration' xml:id='#id'>"
+    . "#tags"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#2"
     . "</ltx:theorem>",
@@ -228,7 +241,7 @@ DefConstructor('\roster DigestUntil:\endroster',
   properties   => sub { RefStepID('roster') },
   beforeDigest => sub { Let('\item', '\roster@item'); });
 DefConstructor('\roster@item',
-  "<ltx:item xml:id='#id' refnum='#refnum'>?#1(<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>)",
+  "<ltx:item xml:id='#id'>?#1(<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>)",
   properties => sub { RefStepID('rosteritem') });
 Let('\endroster', '\relax');
 
@@ -248,20 +261,34 @@ DefMacro('\thefootnote', sub { ExplodeText(ToString(LookupValue('\c@footnote')->
 
 # same as LaTeX (but LaTeX.pool NOT included for amsppt!!!)
 DefConstructor('\footnote[]{}',
-  "<ltx:note role='footnote' mark='#refnum'>#2</ltx:note>",
-  mode       => 'text',
+  "<ltx:note role='footnote' mark='#mark' xml:id='#id'>"
+    . "#tags"
+    . "#2"
+    . "</ltx:note>",
+  mode => 'text', bounded => 1,
+  beforeDigest => sub { reenterTextMode(1); Digest('\normalfont'); },
   properties => sub {
-    ($_[1] ? (refnum => $_[1]) : RefStepCounter('footnote')) });
+    ($_[1]
+      ? (mark => $_[1])
+      : (RefStepCounter('footnote'),
+        mark => DigestText(T_CS('\thefootnote')))) });
 DefConstructor('\footnotemark[]',
-  "<ltx:note role='footnotemark' mark='#refnum'></ltx:note>",
+  "<ltx:note role='footnotemark' mark='#mark' xml:id='#id'>"
+    . "#tags"
+    . "</ltx:note>",
   mode       => 'text',
   properties => sub {
-    ($_[1] ? (refnum => $_[1]) : RefStepCounter('footnote')) });
+    ($_[1]
+      ? (mark => $_[1])
+      : (RefStepCounter('footnote'),
+        mark => DigestText(T_CS('\thefootnote')))) });
 DefConstructor('\footnotetext[]{}',
-  "<ltx:note role='footnotetext' mark='#refnum'>#2</ltx:note>",
+  "<ltx:note role='footnotetext' mark='#mark' xml:id='#id'>#2</ltx:note>",
   mode       => 'text',
   properties => sub {
-    ($_[1] ? (refnum => $_[1]) : (refnum => Expand(T_CS("\\thefootnote")))); });
+    ($_[1]
+      ? (mark => $_[1])
+      : (mark => Digest(T_CS("\\thefootnote")))); });
 
 Tag('ltx:note', afterClose => \&relocateFootnote);
 

@@ -55,8 +55,9 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
 
     DefMacro('\format@title@' . $type . '{}',
       '\format@title@@' . $style . '{\fnum@' . $type . '}{#1}');
+    DefMacro('\ext@' . $type, $auxext);
     DefEnvironment("{$type}[]",
-      "<ltx:float xml:id='#id' ?#1(placement='#1') class='ltx_float_$type'>"
+      "<ltx:float xml:id='#id' ?#1(placement='#1') inlist='#inlist' class='ltx_float_$type'>"
         . "#tags"
         . "#body"
         . "</ltx:float>",
@@ -64,7 +65,7 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
       afterDigest => sub { RescueCaptionCounters($type, $_[1]); },
       afterConstruct => sub { addFloatFrames($_[0], $style); });
     DefEnvironment("{$type*}[]",
-      "<ltx:float xml:id='#id' ?#1(placement='#1') class='ltx_float_$type'>"
+      "<ltx:float xml:id='#id' ?#1(placement='#1') inlist='#inlist' class='ltx_float_$type'>"
         . "#tags"
         . "#body"
         . "</ltx:float>",

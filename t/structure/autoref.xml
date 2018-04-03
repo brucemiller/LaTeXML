@@ -6,7 +6,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-book.css" type="text/css"/>
-  <chapter labels="LABEL:chapterlabel" xml:id="Ch1">
+  <chapter inlist="toc" labels="LABEL:chapterlabel" xml:id="Ch1">
     <tags>
       <tag>Chapter 1</tag>
       <tag role="autoref">chapter 1</tag>
@@ -15,7 +15,7 @@
     </tags>
     <title><tag close=" ">Chapter 1</tag>Chapter Name</title>
     <toctitle><tag close=" ">1</tag>Chapter Name</toctitle>
-    <section labels="LABEL:sectionlabel" xml:id="Ch1.S1">
+    <section inlist="toc" labels="LABEL:sectionlabel" xml:id="Ch1.S1">
       <tags>
         <tag>1.1</tag>
         <tag role="autoref">section 1.1</tag>
@@ -23,7 +23,7 @@
         <tag role="typerefnum">§1.1</tag>
       </tags>
       <title><tag close=" ">1.1</tag>Section Name</title>
-      <subsection labels="LABEL:subsectionlabel" xml:id="Ch1.S1.SS1">
+      <subsection inlist="toc" labels="LABEL:subsectionlabel" xml:id="Ch1.S1.SS1">
         <tags>
           <tag>1.1.1</tag>
           <tag role="autoref">subsection 1.1.1</tag>
@@ -31,14 +31,14 @@
           <tag role="typerefnum">§1.1.1</tag>
         </tags>
         <title><tag close=" ">1.1.1</tag>Subsection Name</title>
-        <subsubsection labels="LABEL:subsubsectionlabel" xml:id="Ch1.S1.SS1.SSSx1">
+        <subsubsection inlist="toc" labels="LABEL:subsubsectionlabel" xml:id="Ch1.S1.SS1.SSSx1">
           <title>Subsubsection Name</title>
         </subsubsection>
       </subsection>
     </section>
     <section labels="LABEL:otherlabel" xml:id="Ch1.Sx1">
       <title>Other Section Name</title>
-      <figure labels="LABEL:figurelabel" placement="h" xml:id="Ch1.F1">
+      <figure inlist="lof" labels="LABEL:figurelabel" placement="h" xml:id="Ch1.F1">
         <tags>
           <tag>Figure 1.1</tag>
           <tag role="autoref">Figure 1.1</tag>
@@ -49,7 +49,7 @@
         <caption><tag close=": ">Figure 1.1</tag>Figure caption</caption>
         <p>The Figure</p>
       </figure>
-      <table labels="LABEL:tablelabel" placement="h" xml:id="Ch1.T1">
+      <table inlist="lot" labels="LABEL:tablelabel" placement="h" xml:id="Ch1.T1">
         <tags>
           <tag>Table 1.1</tag>
           <tag role="autoref">Table 1.1</tag>
@@ -61,7 +61,7 @@
         <p>The Table</p>
       </table>
       <para xml:id="Ch1.Sx1.p1"/>
-      <figure labels="LABEL:captionoffigurelabel" xml:id="Ch1.F2">
+      <figure inlist="lof" labels="LABEL:captionoffigurelabel" xml:id="Ch1.F2">
         <tags>
           <tag>Figure 1.2</tag>
           <tag role="autoref">Figure 1.2</tag>
@@ -120,7 +120,7 @@
           </item>
         </enumerate>
       </para>
-      <theorem class="ltx_theorem_theorem" labels="LABEL:theoremlabel" xml:id="Thmtheorem1">
+      <theorem class="ltx_theorem_theorem" inlist="thm theorem:theorem" labels="LABEL:theoremlabel" xml:id="Thmtheorem1">
         <tags>
           <tag>Theorem 1</tag>
           <tag role="autoref">Theorem 1</tag>
@@ -132,7 +132,7 @@
           <p><text font="italic">Another Theorem</text></p>
         </para>
       </theorem>
-      <theorem class="ltx_theorem_thm" labels="LABEL:thmlabel" xml:id="Ch1.Sx1.Thmthm1">
+      <theorem class="ltx_theorem_thm" inlist="thm theorem:thm" labels="LABEL:thmlabel" xml:id="Ch1.Sx1.Thmthm1">
         <tags>
           <tag>Theorem 1.1.1</tag>
           <tag role="autoref">1.1.1</tag>
@@ -144,7 +144,7 @@
           <p><text font="italic">Short Theorem</text></p>
         </para>
       </theorem>
-      <theorem class="ltx_theorem_cor" labels="LABEL:corlabel" xml:id="Ch1.Sx1.Thmthm2">
+      <theorem class="ltx_theorem_cor" inlist="thm theorem:cor" labels="LABEL:corlabel" xml:id="Ch1.Sx1.Thmthm2">
         <tags>
           <tag>Corollary 1.1.2</tag>
           <tag role="autoref">1.1.2</tag>
@@ -156,7 +156,7 @@
           <p><text font="italic">Short Corollary</text></p>
         </para>
       </theorem>
-      <theorem class="ltx_theorem_lem" labels="LABEL:lemlabel" xml:id="Ch1.Sx1.Thmthm3">
+      <theorem class="ltx_theorem_lem" inlist="thm theorem:lem" labels="LABEL:lemlabel" xml:id="Ch1.Sx1.Thmthm3">
         <tags>
           <tag>Lemma 1.1.3</tag>
           <tag role="autoref">1.1.3</tag>
@@ -168,7 +168,7 @@
           <p><text font="italic">Short Lemma</text></p>
         </para>
       </theorem>
-      <theorem class="ltx_theorem_thm" labels="LABEL:thm2label" xml:id="Ch1.Sx1.Thmthm4">
+      <theorem class="ltx_theorem_thm" inlist="thm theorem:thm" labels="LABEL:thm2label" xml:id="Ch1.Sx1.Thmthm4">
         <tags>
           <tag>Theorem 1.1.4</tag>
           <tag role="autoref">1.1.4</tag>
@@ -181,7 +181,7 @@
         </para>
       </theorem>
     </section>
-    <section xml:id="Ch1.S2">
+    <section inlist="toc" xml:id="Ch1.S2">
       <tags>
         <tag>1.2</tag>
         <tag role="autoref">section 1.2</tag>

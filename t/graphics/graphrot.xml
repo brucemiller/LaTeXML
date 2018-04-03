@@ -9,7 +9,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section xml:id="S1">
+  <section inlist="toc" xml:id="S1">
     <tags>
       <tag>1</tag>
       <tag role="autoref">section 1</tag>
@@ -17,7 +17,7 @@
       <tag role="typerefnum">§1</tag>
     </tags>
     <title><tag close=" ">1</tag>Scalings, Rotations using <text font="typewriter">graphics</text></title>
-    <table labels="LABEL:tb:tab1" placement="htb" xml:id="S1.T1">
+    <table inlist="lot" labels="LABEL:tb:tab1" placement="htb" xml:id="S1.T1">
       <tags>
         <tag>Table 1</tag>
         <tag role="autoref">Table 1</tag>
@@ -62,7 +62,7 @@
       <toccaption class="ltx_centering"><tag close=" ">1</tag>Normal: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
       <caption class="ltx_centering"><tag close=": ">Table 1</tag>Normal: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
-    <table labels="LABEL:tb:tab2" placement="htb" xml:id="S1.T2">
+    <table inlist="lot" labels="LABEL:tb:tab2" placement="htb" xml:id="S1.T2">
       <tags>
         <tag>Table 2</tag>
         <tag role="autoref">Table 2</tag>
@@ -109,7 +109,7 @@
       <toccaption><tag close=" ">2</tag>Squinched: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
       <caption><tag close=": ">Table 2</tag>Squinched: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
-    <table labels="LABEL:tb:tab3" placement="htb" xml:id="S1.T3">
+    <table inlist="lot" labels="LABEL:tb:tab3" placement="htb" xml:id="S1.T3">
       <tags>
         <tag>Table 3</tag>
         <tag role="autoref">Table 3</tag>
@@ -156,7 +156,7 @@
       <toccaption><tag close=" ">3</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
       <caption><tag close=": ">Table 3</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
-    <table labels="LABEL:tb:tab3" placement="htb" xml:id="S1.T4">
+    <table inlist="lot" labels="LABEL:tb:tab3" placement="htb" xml:id="S1.T4">
       <tags>
         <tag>Table 4</tag>
         <tag role="autoref">Table 4</tag>
@@ -204,7 +204,7 @@
       <caption><tag close=": ">Table 4</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
   </section>
-  <section xml:id="S2">
+  <section inlist="toc" xml:id="S2">
     <tags>
       <tag>2</tag>
       <tag role="autoref">section 2</tag>
@@ -231,7 +231,7 @@ End here</p>
         </inline-block>
 End here</p>
     </para>
-    <figure labels="LABEL:angles1" xml:id="S2.F1">
+    <figure inlist="lof" labels="LABEL:angles1" xml:id="S2.F1">
       <tags>
         <tag>Figure 1</tag>
         <tag role="autoref">Figure 1</tag>

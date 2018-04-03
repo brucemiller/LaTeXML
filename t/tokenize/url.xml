@@ -5,7 +5,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section xml:id="S1">
+  <section inlist="toc" xml:id="S1">
     <tags>
       <tag>1</tag>
       <tag role="refnum">1</tag>
@@ -19,7 +19,7 @@
       <p>Path url: <ref class="ltx_path" font="typewriter" href="/foo/bar/baz">/foo/bar/baz</ref> or <ref class="ltx_path" font="typewriter" href="/foo/bar/baz">/foo/bar/baz</ref></p>
     </para>
   </section>
-  <section xml:id="S2">
+  <section inlist="toc" xml:id="S2">
     <tags>
       <tag>2</tag>
       <tag role="refnum">2</tag>
@@ -40,7 +40,7 @@
       <p>OTOH, you get this: <ref class="ltx_url" font="typewriter" href="http://example.com/~user">http://example.com/\~{}user</ref></p>
     </para>
   </section>
-  <section xml:id="S3">
+  <section inlist="toc" xml:id="S3">
     <tags>
       <tag>3</tag>
       <tag role="refnum">3</tag>
@@ -51,7 +51,7 @@
       <p>Email: <ref class="ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref> or <ref class="ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref>.</p>
     </para>
   </section>
-  <section xml:id="S4">
+  <section inlist="toc" xml:id="S4">
     <tags>
       <tag>4</tag>
       <tag role="refnum">4</tag>
@@ -62,7 +62,7 @@
       <p>Myself: <ref class="ltx_url" font="typewriter" href="myself%node@gateway.net">myself%node@gateway.net</ref> or <ref class="ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref>.</p>
     </para>
   </section>
-  <section xml:id="S5">
+  <section inlist="toc" xml:id="S5">
     <tags>
       <tag>5</tag>
       <tag role="refnum">5</tag>

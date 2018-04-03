@@ -4,7 +4,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section xml:id="S1">
+  <section inlist="toc" xml:id="S1">
     <tags>
       <tag>1</tag>
       <tag role="refnum">1</tag>
@@ -30,7 +30,7 @@
       <p>Before inside After BAR</p>
     </para>
   </section>
-  <section xml:id="S2">
+  <section inlist="toc" xml:id="S2">
     <tags>
       <tag>2</tag>
       <tag role="refnum">2</tag>
@@ -46,7 +46,7 @@
     <para xml:id="S2.p3">
       <p>not <text font="italic">emphasized</text> not</p>
     </para>
-    <subsection xml:id="S2.SS1">
+    <subsection inlist="toc" xml:id="S2.SS1">
       <tags>
         <tag>2.1</tag>
         <tag role="refnum">2.1</tag>
@@ -66,7 +66,7 @@
       </para>
     </subsection>
   </section>
-  <section xml:id="S3">
+  <section inlist="toc" xml:id="S3">
     <tags>
       <tag>3</tag>
       <tag role="refnum">3</tag>

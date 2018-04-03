@@ -702,7 +702,8 @@ sub deactivateCounterScope {
 
 # For UN-numbered units
 sub RefStepID {
-  my ($ctr) = @_;
+  my ($type) = @_;
+  my $ctr = LookupMapping('counter_for_type', $type) || $type;
   my $unctr = "UN$ctr";
   StepCounter($unctr);
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef,

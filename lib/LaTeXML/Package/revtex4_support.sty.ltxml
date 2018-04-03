@@ -118,20 +118,34 @@ DefMacro('\pagesofar', '');
 
 # endnotes handled like footnotes
 DefConstructor('\endnote[]{}',
-  "<ltx:note role='endnote' mark='#refnum'>#2</ltx:note>",
-  mode       => 'text',
+  "<ltx:note role='endnote' mark='#mark' xml:id='#id'>"
+    . "#tags"
+    . "#2"
+    . "</ltx:note>",
+  mode => 'text', bounded => 1,
+  beforeDigest => sub { reenterTextMode(1); Digest('\normalfont'); },
   properties => sub {
-    ($_[1] ? (refnum => $_[1]) : RefStepCounter('footnote')) });
+    ($_[1]
+      ? (mark => $_[1])
+      : (RefStepCounter('endnote'),
+        mark => DigestText(T_CS('\theendnote')))) });
 DefConstructor('\endnotemark[]',
-  "<ltx:note role='endnotemark' mark='#refnum'></ltx:note>",
+  "<ltx:note role='endnotemark' mark='#mark' xml:id='#id'>"
+    . "#tags"
+    . "</ltx:note>",
   mode       => 'text',
   properties => sub {
-    ($_[1] ? (refnum => $_[1]) : RefStepCounter('footnote')) });
+    ($_[1]
+      ? (mark => $_[1])
+      : (RefStepCounter('endnote'),
+        mark => DigestText(T_CS('\theendnote')))) });
 DefConstructor('\endnotetext[]{}',
-  "<ltx:note role='endnotetext' mark='#refnum'>#2</ltx:note>",
+  "<ltx:note role='endnotetext' mark='#mark' xml:id='#id'>#2</ltx:note>",
   mode       => 'text',
   properties => sub {
-    ($_[1] ? (refnum => $_[1]) : (refnum => Digest(T_CS("\\thefootnote")))); });
+    ($_[1]
+      ? (mark => $_[1])
+      : (mark => Digest(T_CS("\\theendnote")))); });
 
 #======================================================================
 # 6. Math and Equations

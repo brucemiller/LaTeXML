@@ -937,14 +937,8 @@ and filled in by postprocessing.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="FrontMatter.attributes"/>
     <optional>
-      <attribute name="role">
-        <a:documentation>indicates the kind of list</a:documentation>
-        <choice>
-          <value>contents</value>
-          <value>figures</value>
-          <value>tables</value>
-          <text/>
-        </choice>
+      <attribute name="lists">
+        <a:documentation>indicates the kind of lists; space separated names of lists like "toc","lof", etc.</a:documentation>
       </attribute>
     </optional>
     <optional>
@@ -981,6 +975,9 @@ otherwise an xml:id</a:documentation>
   </define>
   <define name="TOC_model">
     <a:documentation>Content model for \elementref{TOC}.</a:documentation>
+    <optional>
+      <ref name="title"/>
+    </optional>
     <optional>
       <ref name="toclist"/>
     </optional>

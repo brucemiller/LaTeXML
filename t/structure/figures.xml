@@ -5,12 +5,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <paragraph xml:id="S0.SS0.SSS0.Px1">
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px1">
     <title>Figures</title>
     <para xml:id="S0.SS0.SSS0.Px1.p1">
       <p>Two figures, <ref labelref="LABEL:fig:A-one"/> and <ref labelref="LABEL:fig:A-two"/>.</p>
     </para>
-    <figure labels="LABEL:fig:A-one" placement="ht" xml:id="S0.F1">
+    <figure inlist="lof" labels="LABEL:fig:A-one" placement="ht" xml:id="S0.F1">
       <tags>
         <tag>Figure 1</tag>
         <tag role="refnum">1</tag>
@@ -20,7 +20,7 @@
       <toccaption class="ltx_centering"><tag close=" ">1</tag>This is a figure</toccaption>
       <caption class="ltx_centering"><tag close=": ">Figure 1</tag>This is a figure</caption>
     </figure>
-    <figure labels="LABEL:fig:A-two" placement="ht" xml:id="S0.F2">
+    <figure inlist="lof" labels="LABEL:fig:A-two" placement="ht" xml:id="S0.F2">
       <tags>
         <tag>Figure 2</tag>
         <tag role="refnum">2</tag>
@@ -31,7 +31,7 @@
       <caption class="ltx_centering"><tag close=": ">Figure 2</tag>This is another figure</caption>
     </figure>
   </paragraph>
-  <paragraph xml:id="S0.SS0.SSS0.Px2">
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px2">
     <title>Sub-Figures with captions</title>
     <para xml:id="S0.SS0.SSS0.Px2.p1">
       <p>Two figures, <ref labelref="LABEL:fig:B-one"/> and <ref labelref="LABEL:fig:B-two"/>.</p>
@@ -57,12 +57,12 @@
       </figure>
     </figure>
   </paragraph>
-  <paragraph xml:id="S0.SS0.SSS0.Px3">
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px3">
     <title>Sub-Figures, collective caption</title>
     <para xml:id="S0.SS0.SSS0.Px3.p1">
       <p>Two figures, <ref labelref="LABEL:fig:C"/></p>
     </para>
-    <figure labels="LABEL:fig:C" placement="ht" xml:id="S0.F3">
+    <figure inlist="lof" labels="LABEL:fig:C" placement="ht" xml:id="S0.F3">
       <tags>
         <tag>Figure 3</tag>
         <tag role="refnum">3</tag>
@@ -78,13 +78,13 @@
       <caption><tag close=": ">Figure 3</tag>Collectively two figures</caption>
     </figure>
   </paragraph>
-  <paragraph xml:id="S0.SS0.SSS0.Px4">
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px4">
     <title>Sub-Figures with all captions</title>
     <para xml:id="S0.SS0.SSS0.Px4.p1">
       <p>Two figures, <ref labelref="LABEL:fig:D-one"/> and <ref labelref="LABEL:fig:D-two"/>,
 and collectively as <ref labelref="LABEL:fig:D"/>.</p>
     </para>
-    <figure labels="LABEL:fig:D" placement="ht" xml:id="S0.F4">
+    <figure inlist="lof" labels="LABEL:fig:D" placement="ht" xml:id="S0.F4">
       <tags>
         <tag>Figure 4</tag>
         <tag role="refnum">4</tag>
@@ -112,7 +112,7 @@ and collectively as <ref labelref="LABEL:fig:D"/>.</p>
       <caption class="ltx_centering"><tag close=": ">Figure 4</tag>Collectively two figures</caption>
     </figure>
   </paragraph>
-  <paragraph xml:id="S0.SS0.SSS0.Px5">
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px5">
     <title>Sub-Tables with captions</title>
     <para xml:id="S0.SS0.SSS0.Px5.p1">
       <p>Two tables, <ref labelref="LABEL:tab:B-one"/> and <ref labelref="LABEL:tab:B-two"/>.</p>
@@ -138,12 +138,12 @@ and collectively as <ref labelref="LABEL:fig:D"/>.</p>
       </table>
     </table>
   </paragraph>
-  <paragraph xml:id="S0.SS0.SSS0.Px6">
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px6">
     <title>Sub-Tables, collective caption</title>
     <para xml:id="S0.SS0.SSS0.Px6.p1">
       <p>Two tables, <ref labelref="LABEL:tab:C"/></p>
     </para>
-    <table labels="LABEL:tab:C" placement="ht" xml:id="S0.T1">
+    <table inlist="lot" labels="LABEL:tab:C" placement="ht" xml:id="S0.T1">
       <tags>
         <tag>Table 1</tag>
         <tag role="refnum">1</tag>
@@ -159,13 +159,13 @@ and collectively as <ref labelref="LABEL:fig:D"/>.</p>
       </table>
     </table>
   </paragraph>
-  <paragraph xml:id="S0.SS0.SSS0.Px7">
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px7">
     <title>Sub-Tables with all captions</title>
     <para xml:id="S0.SS0.SSS0.Px7.p1">
       <p>Two tables, <ref labelref="LABEL:tab:D-one"/> and <ref labelref="LABEL:tab:D-two"/>,
 and collectively as <ref labelref="LABEL:tab:D"/>.</p>
     </para>
-    <table labels="LABEL:tab:D" placement="ht" xml:id="S0.T2">
+    <table inlist="lot" labels="LABEL:tab:D" placement="ht" xml:id="S0.T2">
       <tags>
         <tag>Table 2</tag>
         <tag role="refnum">2</tag>

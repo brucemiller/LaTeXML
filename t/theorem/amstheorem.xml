@@ -10,7 +10,7 @@
     <personname>Michael Downes<break/>updated by Barbara Beeton</personname>
   </creator>
   <date role="creation">none</date>
-  <section xml:id="S1">
+  <section inlist="toc" xml:id="S1">
     <tags>
       <tag>1</tag>
       <tag role="refnum">1</tag>
@@ -21,7 +21,7 @@
       <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
-    <theorem class="ltx_theorem_Ahlfors" xml:id="ThmAhlforsx1">
+    <theorem class="ltx_theorem_Ahlfors" inlist="thm theorem:Ahlfors" xml:id="ThmAhlforsx1">
       <tags>
         <tag>Ahlfors’ Lemma</tag>
         <tag role="typerefnum">Ahlfors’ Lemma</tag>
@@ -204,7 +204,7 @@ then <Math mode="inline" tex="\omega\leq\omega_{r}" text="omega less= omega _ r"
             </Math>).</text></p>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_lem" xml:id="S1.Thmthm1">
+    <theorem class="ltx_theorem_lem" inlist="thm theorem:lem" xml:id="S1.Thmthm1">
       <tags>
         <tag>Lemma 1.1</tag>
         <tag role="refnum">1.1</tag>
@@ -308,7 +308,7 @@ Then <Math mode="inline" tex="\omega^{i}\leq\omega_{r}" text="omega ^ i less= om
     <para xml:id="S1.p2">
       <p>Then our main theorem:</p>
     </para>
-    <theorem class="ltx_theorem_thm" labels="LABEL:pigspan" xml:id="S1.Thmthm2">
+    <theorem class="ltx_theorem_thm" inlist="thm theorem:thm" labels="LABEL:pigspan" xml:id="S1.Thmthm2">
       <tags>
         <tag>Theorem 1.2</tag>
         <tag role="refnum">1.2</tag>
@@ -402,7 +402,7 @@ Then <Math mode="inline" tex="P" text="P" xml:id="S1.Thmthm2.p1.m6">
         </equation>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_cor" xml:id="S1.Thmthm3">
+    <theorem class="ltx_theorem_cor" inlist="thm theorem:cor" xml:id="S1.Thmthm3">
       <tags>
         <tag>Corollary 1.3</tag>
         <tag role="refnum">1.3</tag>
@@ -422,7 +422,7 @@ standing on the corners of a triangle <Math mode="inline" tex="T" text="T" xml:i
             </Math> iff (<ref labelref="LABEL:sdq"/>) holds.</text></p>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_rmk" xml:id="Thmrmkx1">
+    <theorem class="ltx_theorem_rmk" inlist="thm theorem:rmk" xml:id="Thmrmkx1">
       <tags>
         <tag>Remark</tag>
         <tag role="typerefnum">Remark</tag>
@@ -438,14 +438,14 @@ standing on the corners of a triangle <Math mode="inline" tex="T" text="T" xml:i
       </para>
     </theorem>
   </section>
-  <section xml:id="S2">
+  <section inlist="toc" xml:id="S2">
     <tags>
       <tag>2</tag>
       <tag role="refnum">2</tag>
       <tag role="typerefnum">§2</tag>
     </tags>
     <title><tag close=" ">2</tag>Custom theorem styles</title>
-    <theorem class="ltx_theorem_exer" xml:id="Thmexer1">
+    <theorem class="ltx_theorem_exer" inlist="thm theorem:exer" xml:id="Thmexer1">
       <tags>
         <tag>Exercise 1</tag>
         <tag role="refnum">1</tag>
@@ -456,7 +456,7 @@ standing on the corners of a triangle <Math mode="inline" tex="T" text="T" xml:i
         <p><text font="italic">Generalize Theorem <ref labelref="LABEL:pigspan"/> to three and four dimensions.</text></p>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_note" xml:id="Thmnote1">
+    <theorem class="ltx_theorem_note" inlist="thm theorem:note" xml:id="Thmnote1">
       <tags>
         <tag>Note 1</tag>
         <tag role="refnum">1</tag>
@@ -468,7 +468,7 @@ standing on the corners of a triangle <Math mode="inline" tex="T" text="T" xml:i
 variant fonts and other differences.</p>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_bthm" xml:id="Thmbthm1">
+    <theorem class="ltx_theorem_bthm" inlist="thm theorem:bthm" xml:id="Thmbthm1">
       <tags>
         <tag>B-Theorem 1</tag>
         <tag role="refnum">1</tag>
@@ -482,7 +482,7 @@ variant fonts and other differences.</p>
     <para xml:id="S2.p1">
       <p>This is a test of a citing theorem to cite a theorem from some other source.</p>
     </para>
-    <theorem class="ltx_theorem_varthm" xml:id="Thmvarthmx1">
+    <theorem class="ltx_theorem_varthm" inlist="thm theorem:varthm" xml:id="Thmvarthmx1">
       <title class="ltx_runin" font="bold">Theorem 3.6 in <cite class="ltx_citemacro_cite">[<bibref bibrefs="thatone" separator="," yyseparator=","/>]</cite>.</title>
       <para xml:id="Thmvarthmx1.p1">
         <p><text font="italic">No hyperlinking available here yet … but that’s not a
@@ -490,7 +490,7 @@ bad idea for the future.</text></p>
       </para>
     </theorem>
   </section>
-  <section xml:id="S3">
+  <section inlist="toc" xml:id="S3">
     <tags>
       <tag>3</tag>
       <tag role="refnum">3</tag>
@@ -547,7 +547,7 @@ bad idea for the future.</text></p>
       </para>
     </proof>
   </section>
-  <section xml:id="S4">
+  <section inlist="toc" xml:id="S4">
     <tags>
       <tag>4</tag>
       <tag role="refnum">4</tag>
@@ -562,7 +562,7 @@ swapped to the left.</p>
       <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
-    <theorem class="ltx_theorem_Ahlfors" xml:id="ThmAhlforsx2">
+    <theorem class="ltx_theorem_Ahlfors" inlist="thm theorem:Ahlfors" xml:id="ThmAhlforsx2">
       <tags>
         <tag>Ahlfors’ Lemma</tag>
         <tag role="typerefnum">Ahlfors’ Lemma</tag>
@@ -745,7 +745,7 @@ then <Math mode="inline" tex="\omega\leq\omega_{r}" text="omega less= omega _ r"
             </Math>).</text></p>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_lemsw" xml:id="S4.Thmthmsw1">
+    <theorem class="ltx_theorem_lemsw" inlist="thm theorem:lemsw" xml:id="S4.Thmthmsw1">
       <tags>
         <tag>4.1 Lemma</tag>
         <tag role="refnum">4.1</tag>
@@ -849,7 +849,7 @@ Then <Math mode="inline" tex="\omega^{i}\leq\omega_{r}" text="omega ^ i less= om
     <para xml:id="S4.p3">
       <p>Then our main theorem:</p>
     </para>
-    <theorem class="ltx_theorem_thmsw" xml:id="S4.Thmthmsw2">
+    <theorem class="ltx_theorem_thmsw" inlist="thm theorem:thmsw" xml:id="S4.Thmthmsw2">
       <tags>
         <tag>4.2 Theorem</tag>
         <tag role="refnum">4.2</tag>
@@ -943,7 +943,7 @@ Then <Math mode="inline" tex="P" text="P" xml:id="S4.Thmthmsw2.p1.m6">
         </equation>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_corsw" xml:id="S4.Thmthmsw3">
+    <theorem class="ltx_theorem_corsw" inlist="thm theorem:corsw" xml:id="S4.Thmthmsw3">
       <tags>
         <tag>4.3 Corollary</tag>
         <tag role="refnum">4.3</tag>

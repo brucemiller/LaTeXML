@@ -131,6 +131,12 @@ Spaces in a label are replaced by underscore.
 Other mechanisms (like acro?) might use other prefixes (but \texttt{ID:} is reserved!)</a:documentation>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="inlist">
+        <a:documentation>Records which lists, such as toc=table of contents,..., this object could be listed in.
+Space separated set of toc, lof, lot, etc.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="Refable.attributes">
     <a:documentation>Attributes for elements that can be referred to from within LaTeX.

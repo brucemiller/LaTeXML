@@ -470,47 +470,56 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
     my ($gullet, $type, $level, $ignore3, $ignore4, $ignore5, $ignore6, $flag) = @_;
     my $ctr = LookupValue('counter_for_' . ToString($type)) || ToString($type);
     $level = ToString($level);
-    if ($flag || (($level ne '') && ($level > CounterValue('secnumdepth')->valueOf))
+    if ($flag) {    # No number, not in TOC
+      (T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
+        T_BEGIN, $type->unlist, T_END,
+        T_BEGIN, T_END); }
+    elsif ((($level ne '') && ($level > CounterValue('secnumdepth')->valueOf))
       || LookupValue('no_number_sections')) {
-      (T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'), T_BEGIN, $type->unlist, T_END); }
-    else {
-      (T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'), T_BEGIN, $type->unlist, T_END); } });
+      # No number, but in TOC
+      (T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
+        T_BEGIN, $type->unlist, T_END,
+        T_BEGIN, T_OTHER('toc'), T_END); }
+    else {          # Number and in TOC
+      (T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'),
+        T_BEGIN, $type->unlist, T_END,
+        T_BEGIN, T_OTHER('toc'), T_END); } });
 
 # Not sure if this is best, but if no explicit \section'ing...
 #### Tag('ltx:section',autoOpen=>1);
 
-DefConstructor('\@@numbered@section{} OptionalUndigested Undigested', sub {
-    my ($document, $type, $toctitle, $title, %props) = @_;
+DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested', sub {
+    my ($document, $type, $inlist, $toctitle, $title, %props) = @_;
     my $id     = $props{id};
     my $refnum = $props{refnum};
-    $document->openElement("ltx:" . ToString($type), 'xml:id' => CleanID($id));
+    $document->openElement("ltx:" . ToString($type),
+      'xml:id' => CleanID($id),
+      inlist   => ToString($inlist));
     if (my $tags = $props{tags}) {
       $document->absorb($tags); }
     $document->insertElement('ltx:title', $props{title});
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
   properties => sub {
-    my ($stomach, $type, $toctitle, $title) = @_;
-    my %props  = RefStepCounter(ToString($type));
-    my $xtitle = Digest(T_CS('\@hidden@bgroup'),
-      Invocation(T_CS('\lx@@format@title@'), $type, $title),
-      T_CS('\@hidden@egroup'));
-    my $xtoctitle = Digest(T_CS('\@hidden@bgroup'),
-      Invocation(T_CS('\lx@@format@toctitle@'), $type, $toctitle || $title),
-      T_CS('\@hidden@egroup'));
+    my ($stomach, $type, $inlist, $toctitle, $title) = @_;
+    my %props     = RefStepCounter(ToString($type));
+    my $xtitle    = Digest(Invocation(T_CS('\lx@@format@title@'), $type, $title));
+    my $xtoctitle = Digest(Invocation(T_CS('\lx@@format@toctitle@'), $type, $toctitle || $title));
     $props{title}    = $xtitle;
     $props{toctitle} = $xtoctitle
       if $xtoctitle && $xtoctitle->unlist && (ToString($xtoctitle) ne ToString($xtitle));
     return %props; });
 
 # No tags, at all? Consider...
-DefConstructor('\@@unnumbered@section{} OptionalUndigested Undigested', sub {
-    my ($document, $type, $toctitle, $title, %props) = @_;
+DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested', sub {
+    my ($document, $type, $inlist, $toctitle, $title, %props) = @_;
     my $id = $props{id};
-    $document->openElement("ltx:" . ToString($type), 'xml:id' => CleanID($id));
+    $document->openElement("ltx:" . ToString($type),
+      'xml:id' => CleanID($id),
+      inlist   => ToString($inlist));
     $document->insertElement('ltx:title', $props{title});
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
   properties => sub {
-    my ($stomach, $type, $toctitle, $title) = @_;
+    my ($stomach, $type, $inlist, $toctitle, $title) = @_;
     my %props = RefStepID(ToString($type));
     $props{title} = Digest(T_CS('\@hidden@bgroup'), $title, T_CS('\@hidden@egroup'));
     $props{toctitle} = $toctitle
@@ -541,7 +550,7 @@ DefMacroI('\\@@appendix', undef, '\@startsection{appendix}{0}{}{}{}{}');
 # Insert stubs that will be filled in during post processing.
 DefMacroI('\contentsname', undef, 'Contents');
 DefConstructorI('\tableofcontents', undef,
-  "<ltx:TOC role='contents' select='#select' name='#name'/>",
+  "<ltx:TOC lists='toc' select='#select'><ltx:title>#name</ltx:title></ltx:TOC>",
   properties => sub {
     my $td = CounterValue('tocdepth')->valueOf + 1;
     my @s  = (qw(ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
@@ -554,17 +563,26 @@ DefConstructorI('\tableofcontents', undef,
 
 DefMacroI('\listfigurename', undef, 'List of Figures');
 DefConstructorI('\listoffigures', undef,
-  "<ltx:TOC role='figures' select='ltx:figure' name='#name' scope='global'/>",
+  "<ltx:TOC lists='lof' scope='global'><ltx:title>#name</ltx:title></ltx:TOC>",
   properties => sub { (name => Digest(T_CS('\listfigurename'))); });
 
 DefMacroI('\listtablename', undef, 'List of Tables');
 DefConstructorI('\listoftables', undef,
-  "<ltx:TOC role='tables' select='ltx:table' name='#name' scope='global'/>",
+  "<ltx:TOC lists='lot' scope='global'><ltx:title>#name</ltx:title></ltx:TOC>",
   properties => sub { (name => Digest(T_CS('\listtablename'))); });
 
-DefPrimitive('\addcontentsline{}{}{}', undef);
-DefPrimitive('\numberline{}{}',        undef);
-DefPrimitive('\addtocontents{}{}',     undef);
+DefPrimitive('\numberline{}{}',    undef);
+DefPrimitive('\addtocontents{}{}', undef);
+
+DefConstructor('\addcontentsline{}{}{}', sub {
+    my ($document, $inlist, $type, $title) = @_;
+    # Note that the node can be inlist $inlist.
+    # Could conceivably want to add $title as toctitle???
+    if (my $savenode = $document->floatToLabel) {
+      my $node  = $document->getNode;
+      my $lists = $node->getAttribute('inlist');
+      $document->setAttribute($node, inlist => ($lists ? $lists . ' ' . $inlist : $inlist));
+      $document->setNode($savenode); } });
 
 #======================================================================
 # C.4.4 Style registers
@@ -2298,7 +2316,7 @@ sub defineNewTheorem {
         . ($type ? '\ifx.#1.\else\space(#1)\fi' : '#1') . '\the\thm@headpunct'),
     scope => 'global');
   DefEnvironment("{$thmset} OptionalUndigested",
-    "<ltx:theorem xml:id='#id' class='#class'>"
+    "<ltx:theorem xml:id='#id' inlist='thm theorem:$thmset' class='#class'>"
       . "#tags"
       . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
       . "#body"
@@ -2434,6 +2452,9 @@ DefMacroI('\fnum@table',  undef, '\tablename\nobreakspace\thetable');
 DefMacro('\format@title@figure{}', '\lx@tag[][: ]{\fnum@figure}#1');
 DefMacro('\format@title@table{}',  '\lx@tag[][: ]{\fnum@table}#1');
 
+DefMacro('\ext@figure', 'lof');
+DefMacro('\ext@table',  'lot');
+
 DefConditional('\iflx@donecaption');
 DefMacro('\caption',
 '\lx@donecaptiontrue\@ifundefined{@captype}{\@@generic@caption}{\expandafter\@caption\expandafter{\@captype}}');
@@ -2451,8 +2472,10 @@ DefMacro('\@caption@{}{}{}',
 DefPrimitive('\@@add@caption@counters', sub {
     my $captype = ToString(Digest(T_CS('\@captype')));
     my %props   = RefStepCounter($captype);
-    AssignValue($captype . "_tags" => $props{tags}, 'global');
-    AssignValue($captype . "_id"   => $props{id},   'global'); });
+    my $inlist  = ToString(Digest(T_CS('\ext@' . $captype)));
+    AssignValue($captype . "_tags"   => $props{tags}, 'global');
+    AssignValue($captype . "_id"     => $props{id},   'global');
+    AssignValue($captype . "_inlist" => $inlist,      'global'); });
 
 sub RescueCaptionCounters {
   my ($captype, $whatsit) = @_;
@@ -2462,6 +2485,9 @@ sub RescueCaptionCounters {
   if (my $id = LookupValue($captype . "_id")) {
     AssignValue($captype . "_id" => undef, 'global');
     $whatsit->setProperty(id => $id); }
+  if (my $inlist = LookupValue($captype . "_inlist")) {
+    AssignValue($captype . "_inlist" => undef, 'global');
+    $whatsit->setProperty(inlist => $inlist); }
   return; }
 
 DefConstructor('\@@generic@caption[]{}', "<ltx:text class='ltx_caption'>#2</ltx:text>",
@@ -2481,7 +2507,7 @@ DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
   sizer => '0');
 
 DefEnvironment('{figure}[]',
-  "<ltx:figure xml:id='#id' ?#1(placement='#1')>"
+  "<ltx:figure xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:figure>",
@@ -2489,7 +2515,7 @@ DefEnvironment('{figure}[]',
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
   afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
 DefEnvironment('{figure*}[]',
-  "<ltx:figure xml:id='#id' ?#1(placement='#1')>"
+  "<ltx:figure xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:figure>",
@@ -2497,7 +2523,7 @@ DefEnvironment('{figure*}[]',
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
   afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
 DefEnvironment('{table}[]',
-  "<ltx:table xml:id='#id' ?#1(placement='#1')>"
+  "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:table>",
@@ -2505,7 +2531,7 @@ DefEnvironment('{table}[]',
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
   afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
 DefEnvironment('{table*}[]',
-  "<ltx:table xml:id='#id' ?#1(placement='#1')>"
+  "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:table>",

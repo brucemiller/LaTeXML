@@ -104,8 +104,12 @@ Labelled.attributes =
   ## The \cs{label} macro provides the label prefixed by \texttt{LABEL:};
   ## Spaces in a label are replaced by underscore.
   ## Other mechanisms (like acro?) might use other prefixes (but \texttt{ID:} is reserved!)
-  attribute labels { text }?
+  attribute labels { text }?,
 
+  ## Records which lists, such as toc=table of contents,..., this object could be listed in.
+  ## Space separated set of toc, lof, lot, etc.
+  attribute inlist { text }?
+  
 ## Attributes for elements that can be referred to from within LaTeX.
 ## Such elements may serve as the starting point of a hypertext link.
 ## The reference can be made using \attr{label}, \attr{xml:id} or \attr{href};

@@ -4,7 +4,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section xml:id="S1">
+  <section inlist="toc" xml:id="S1">
     <tags>
       <tag>1</tag>
       <tag role="refnum">1</tag>
@@ -26,7 +26,7 @@
     <para xml:id="S1.p5">
       <p>Double Foo [24] = 24.</p>
     </para>
-    <subsection xml:id="S1.SS1">
+    <subsection inlist="toc" xml:id="S1.SS1">
       <tags>
         <tag>1.1</tag>
         <tag role="refnum">1.1</tag>
@@ -47,7 +47,7 @@ Now (Foo,Bar)[24,1] is (24,1)</p>
 Now (Foo,Bar)[25,0] is (25,0)</p>
       </para>
     </subsection>
-    <subsection xml:id="S1.SS2">
+    <subsection inlist="toc" xml:id="S1.SS2">
       <tags>
         <tag>1.2</tag>
         <tag role="refnum">1.2</tag>
@@ -84,7 +84,7 @@ Fubar is mmmmmmmmmcmxcix</p>
       </para>
     </subsection>
   </section>
-  <section xml:id="S2">
+  <section inlist="toc" xml:id="S2">
     <tags>
       <tag>2</tag>
       <tag role="refnum">2</tag>
@@ -106,7 +106,7 @@ Fubar is mmmmmmmmmcmxcix</p>
     <para xml:id="S2.p5">
       <p>Double Foo [24] = 24.</p>
     </para>
-    <subsection xml:id="S2.SS1">
+    <subsection inlist="toc" xml:id="S2.SS1">
       <tags>
         <tag>2.1</tag>
         <tag role="refnum">2.1</tag>
@@ -127,7 +127,7 @@ Now (Foo,Bar)[24,1] is (24,1)</p>
 Now (Foo,Bar)[25,0] is (25,0)</p>
       </para>
     </subsection>
-    <subsection xml:id="S2.SS2">
+    <subsection inlist="toc" xml:id="S2.SS2">
       <tags>
         <tag>2.2</tag>
         <tag role="refnum">2.2</tag>
@@ -158,14 +158,14 @@ Now (Foo,Bar)[25,0] is (25,0)</p>
       </para>
     </subsection>
   </section>
-  <section xml:id="S3">
+  <section inlist="toc" xml:id="S3">
     <tags>
       <tag>3</tag>
       <tag role="refnum">3</tag>
       <tag role="typerefnum">§3</tag>
     </tags>
     <title><tag close=" ">3</tag>TeX Counters</title>
-    <subsection xml:id="S3.SS1">
+    <subsection inlist="toc" xml:id="S3.SS1">
       <tags>
         <tag>3.1</tag>
         <tag role="refnum">3.1</tag>
@@ -179,7 +179,7 @@ Now (Foo,Bar)[25,0] is (25,0)</p>
         <p>7 = 7.</p>
       </para>
     </subsection>
-    <subsection xml:id="S3.SS2">
+    <subsection inlist="toc" xml:id="S3.SS2">
       <tags>
         <tag>3.2</tag>
         <tag role="refnum">3.2</tag>
@@ -236,7 +236,7 @@ Now HFuzz is 2.0pt.</p>
 15.0 POINTS = 15.0 POINTS</p>
       </para>
     </subsection>
-    <subsection xml:id="S3.SS3">
+    <subsection inlist="toc" xml:id="S3.SS3">
       <tags>
         <tag>3.3</tag>
         <tag role="refnum">3.3</tag>
@@ -264,7 +264,7 @@ Now HFuzz is 2.0pt.</p>
 1.0 POINTS PLUS 3.0 POINTS = 1.0 POINTS   PLUS  3.0 POINTS</p>
       </para>
     </subsection>
-    <subsection xml:id="S3.SS4">
+    <subsection inlist="toc" xml:id="S3.SS4">
       <tags>
         <tag>3.4</tag>
         <tag role="refnum">3.4</tag>
@@ -281,7 +281,7 @@ Now HFuzz is 2.0pt.</p>
         <p>Unknown skip: 0pt = 0.0pt</p>
       </para>
     </subsection>
-    <subsection xml:id="S3.SS5">
+    <subsection inlist="toc" xml:id="S3.SS5">
       <tags>
         <tag>3.5</tag>
         <tag role="refnum">3.5</tag>
@@ -304,7 +304,7 @@ Now HFuzz is 2.0pt.</p>
         <p>Catcode: 12 = 12</p>
       </para>
     </subsection>
-    <subsection xml:id="S3.SS6">
+    <subsection inlist="toc" xml:id="S3.SS6">
       <tags>
         <tag>3.6</tag>
         <tag role="refnum">3.6</tag>
@@ -315,7 +315,7 @@ Now HFuzz is 2.0pt.</p>
         <p>3 = 3</p>
       </para>
     </subsection>
-    <subsection xml:id="S3.SS7">
+    <subsection inlist="toc" xml:id="S3.SS7">
       <tags>
         <tag>3.7</tag>
         <tag role="refnum">3.7</tag>
@@ -327,7 +327,7 @@ Now HFuzz is 2.0pt.</p>
 3em = 30.0pt</p>
       </para>
     </subsection>
-    <subsection xml:id="S3.SS8">
+    <subsection inlist="toc" xml:id="S3.SS8">
       <tags>
         <tag>3.8</tag>
         <tag role="refnum">3.8</tag>

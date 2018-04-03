@@ -121,8 +121,10 @@ NewCounter('subfigure', 'figure', idprefix => 'sf', idwithin => 'figure');
 NewCounter('subtable',  'table',  idprefix => 'st', idwithin => 'table');
 DefMacro('\thesubfigure', '(\alph{subfigure})');
 DefMacro('\thesubtable',  '(\alph{subtable})');
-Let('\p@subfigure', '\thefigure');
-Let('\p@subtable',  '\thetable');
+Let('\p@subfigure',   '\thefigure');
+Let('\p@subtable',    '\thetable');
+Let('\ext@subfigure', '\ext@figure');
+Let('\ext@subtable',  '\ext@table');
 
 DefMacro('\format@title@subfigure{}',
   '\lx@tag[][ ]{\subcapsize\subcaplabelfont\thesubfigure}\subcapsize\subcapfont #1');
