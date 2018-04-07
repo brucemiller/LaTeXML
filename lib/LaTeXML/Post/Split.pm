@@ -132,7 +132,7 @@ sub processPages {
     # Finally, add the toc to reflect the consecutive, removed nodes, and add back the remainder
     my $type = $parent->localname;
     $doc->addNodes($parent, ['ltx:TOC', {}, ['ltx:toclist', { class => 'ltx_toclist_' . $type }, @toc]])
-      if @toc && !$doc->findnodes("descendant::ltx:TOC[\@role='contents']", $parent);
+      if @toc && !$doc->findnodes("descendant::ltx:TOC[\@lists='toc']", $parent);
     map { $parent->addChild($_) } @removed; }
   return @docs; }
 

@@ -9,9 +9,21 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="autoref">section 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Scalings, Rotations using <text font="typewriter">graphics</text></title>
-    <table frefnum="Table 1" labels="LABEL:tb:tab1" placement="htb" refnum="1" xml:id="S1.T1">
+    <table inlist="lot" labels="LABEL:tb:tab1" placement="htb" xml:id="S1.T1">
+      <tags>
+        <tag>Table 1</tag>
+        <tag role="autoref">Table 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Table 1</tag>
+      </tags>
       <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
         <tbody>
           <tr>
@@ -50,7 +62,13 @@
       <toccaption class="ltx_centering"><tag close=" ">1</tag>Normal: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
       <caption class="ltx_centering"><tag close=": ">Table 1</tag>Normal: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
-    <table frefnum="Table 2" labels="LABEL:tb:tab2" placement="htb" refnum="2" xml:id="S1.T2">
+    <table inlist="lot" labels="LABEL:tb:tab2" placement="htb" xml:id="S1.T2">
+      <tags>
+        <tag>Table 2</tag>
+        <tag role="autoref">Table 2</tag>
+        <tag role="refnum">2</tag>
+        <tag role="typerefnum">Table 2</tag>
+      </tags>
       <inline-block depth="1.5pt" height="67.5pt" width="283.5pt" xscale="1.5" xtranslate="47.2pt" yscale="0.75" ytranslate="-11.5pt">
         <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
           <tbody>
@@ -91,7 +109,13 @@
       <toccaption><tag close=" ">2</tag>Squinched: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
       <caption><tag close=": ">Table 2</tag>Squinched: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
-    <table frefnum="Table 3" labels="LABEL:tb:tab3" placement="htb" refnum="3" xml:id="S1.T3">
+    <table inlist="lot" labels="LABEL:tb:tab3" placement="htb" xml:id="S1.T3">
+      <tags>
+        <tag>Table 3</tag>
+        <tag role="autoref">Table 3</tag>
+        <tag role="refnum">3</tag>
+        <tag role="typerefnum">Table 3</tag>
+      </tags>
       <inline-block depth="2.0pt" height="90.0pt" width="189.0pt" xscale="-1" yscale="1">
         <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
           <tbody>
@@ -132,7 +156,13 @@
       <toccaption><tag close=" ">3</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
       <caption><tag close=": ">Table 3</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
-    <table frefnum="Table 4" labels="LABEL:tb:tab3" placement="htb" refnum="4" xml:id="S1.T4">
+    <table inlist="lot" labels="LABEL:tb:tab3" placement="htb" xml:id="S1.T4">
+      <tags>
+        <tag>Table 4</tag>
+        <tag role="autoref">Table 4</tag>
+        <tag role="refnum">4</tag>
+        <tag role="typerefnum">Table 4</tag>
+      </tags>
       <inline-block angle="45" depth="0.0pt" height="198.7pt" innerdepth="2.0pt" innerheight="90.0pt" innerwidth="189.0pt" width="198.7pt" xtranslate="4.85pt" ytranslate="-50.93pt">
         <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
           <tbody>
@@ -174,7 +204,13 @@
       <caption><tag close=": ">Table 4</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="autoref">section 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Scalings, Rotations using <text font="typewriter">rotating</text></title>
     <para xml:id="S2.p1">
       <p>Start here
@@ -195,7 +231,13 @@ End here</p>
         </inline-block>
 End here</p>
     </para>
-    <figure frefnum="Figure 1" labels="LABEL:angles1" refnum="1" xml:id="S2.F1">
+    <figure inlist="lof" labels="LABEL:angles1" xml:id="S2.F1">
+      <tags>
+        <tag>Figure 1</tag>
+        <tag role="autoref">Figure 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Figure 1</tag>
+      </tags>
       <tabular vattach="middle">
         <tbody>
           <tr>
@@ -400,7 +442,13 @@ the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.
         </tabular>
       </quote>
     </para>
-    <table angle="90" depth="0.0pt" frefnum="Table 5" height="622.5pt" innerdepth="45.0pt" innerheight="254.6pt" innerwidth="622.5pt" labels="LABEL:rotfloat2" refnum="5" width="299.6pt" xml:id="S2.T5" xtranslate="-161.45pt" ytranslate="-138.95pt">
+    <table angle="90" depth="0.0pt" height="622.5pt" innerdepth="45.0pt" innerheight="254.6pt" innerwidth="622.5pt" labels="LABEL:rotfloat2" width="299.6pt" xml:id="S2.T5" xtranslate="-161.45pt" ytranslate="-138.95pt">
+      <tags>
+        <tag>Table 5</tag>
+        <tag role="autoref">Table 5</tag>
+        <tag role="refnum">5</tag>
+        <tag role="typerefnum">Table 5</tag>
+      </tags>
       <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
         <thead>
           <tr>

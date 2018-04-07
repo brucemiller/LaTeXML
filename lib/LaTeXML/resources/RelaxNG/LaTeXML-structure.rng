@@ -651,11 +651,11 @@ basically Inline.model with tag included (normally, but not necessarily, tag wou
     <a:documentation>Content model for \elementref{toctitle}.</a:documentation>
     <zeroOrMore>
       <choice>
+        <ref name="tag"/>
         <text/>
         <ref name="Inline.class"/>
         <ref name="Misc.class"/>
         <ref name="Meta.class"/>
-        <ref name="tag"/>
       </choice>
     </zeroOrMore>
   </define>
@@ -937,14 +937,8 @@ and filled in by postprocessing.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="FrontMatter.attributes"/>
     <optional>
-      <attribute name="role">
-        <a:documentation>indicates the kind of list</a:documentation>
-        <choice>
-          <value>contents</value>
-          <value>figures</value>
-          <value>tables</value>
-          <text/>
-        </choice>
+      <attribute name="lists">
+        <a:documentation>indicates the kind of lists; space separated names of lists like "toc","lof", etc.</a:documentation>
       </attribute>
     </optional>
     <optional>
@@ -981,6 +975,9 @@ otherwise an xml:id</a:documentation>
   </define>
   <define name="TOC_model">
     <a:documentation>Content model for \elementref{TOC}.</a:documentation>
+    <optional>
+      <ref name="title"/>
+    </optional>
     <optional>
       <ref name="toclist"/>
     </optional>
@@ -1049,6 +1046,9 @@ presentation.  The value of this attribute is often set by language localization
     <a:documentation>The content allowed for the front matter of each sectional unit,
 and the document.</a:documentation>
     <choice>
+      <optional>
+        <ref name="tags"/>
+      </optional>
       <ref name="title"/>
       <ref name="toctitle"/>
       <ref name="creator"/>

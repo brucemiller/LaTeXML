@@ -29,14 +29,23 @@
   <classification name="2000 Mathematics Subject Classification" scheme="2000 Mathematics Subject Classification">Primary </classification>
   <classification name="2000 Mathematics Subject Classification" scheme="2000 Mathematics Subject Classification">Other stuff </classification>
   <acknowledgements>My Mommy.</acknowledgements>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=". ">1</tag>Introduction</title>
     <toctitle><tag close=" ">1</tag>Introduction</toctitle>
     <para xml:id="S1.p1">
       <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </para>
     <para xml:id="S1.p2">
-      <equation frefnum="(1.1)" refnum="1.1" xml:id="S1.E1">
+      <equation xml:id="S1.E1">
+        <tags>
+          <tag>(1.1)</tag>
+          <tag role="refnum">1.1</tag>
+        </tags>
         <Math mode="display" tex="a+b," text="a + b" xml:id="S1.E1.m1">
           <XMath>
             <XMDual>
@@ -55,7 +64,11 @@
       </equation>
     </para>
     <para xml:id="S1.p3">
-      <equation frefnum="(1.2)" refnum="1.2" xml:id="S1.E2">
+      <equation xml:id="S1.E2">
+        <tags>
+          <tag>(1.2)</tag>
+          <tag role="refnum">1.2</tag>
+        </tags>
         <Math mode="display" tex="c+d," text="c + d" xml:id="S1.E2.m1">
           <XMath>
             <XMDual>
@@ -73,12 +86,24 @@
         </Math>
       </equation>
     </para>
-    <figure frefnum="Figure 1" refnum="1" xml:id="S1.F1">
+    <figure inlist="lof" xml:id="S1.F1">
+      <tags>
+        <tag>Figure 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Figure 1</tag>
+      </tags>
       <p align="center">A Figure<break/></p>
       <toccaption><tag close=" ">1</tag>A Figure</toccaption>
       <caption><tag close=". ">Figure 1</tag>A Figure</caption>
     </figure>
-    <table frefnum="Table 1" refnum="1" xml:id="S1.T1">
+    <table inlist="lot" xml:id="S1.T1">
+      <tags>
+        <tag>Table 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Table 1</tag>
+      </tags>
+      <toccaption class="ltx_centering"><tag close=" ">1</tag>A Table</toccaption>
+      <caption class="ltx_centering"><tag close=". ">Table 1</tag>A Table</caption>
       <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
         <thead>
           <tr>
@@ -125,31 +150,41 @@
         </tbody>
       </tabular>
       <break class="ltx_centering"/>
-      <toccaption><tag close=" ">1</tag>A Table</toccaption>
-      <caption><tag close=". ">Table 1</tag>A Table</caption>
     </table>
     <para xml:id="S1.p4">
-      <itemize xml:id="I1">
-        <item xml:id="I1.i1">
-          <tag>•</tag>
-          <para xml:id="I1.i1.p1">
+      <itemize xml:id="S1.I1">
+        <item xml:id="S1.I1.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S1.I1.i1.p1">
             <p>one</p>
           </para>
         </item>
-        <item xml:id="I1.i2">
-          <tag>•</tag>
-          <para xml:id="I1.i2.p1">
+        <item xml:id="S1.I1.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S1.I1.i2.p1">
             <p>two</p>
-            <itemize xml:id="I1.I1">
-              <item xml:id="I1.I1.i1">
-                <tag><text font="bold">–</text></tag>
-                <para xml:id="I1.I1.i1.p1">
+            <itemize xml:id="S1.I1.I1">
+              <item xml:id="S1.I1.i2.i1">
+                <tags>
+                  <tag><text font="bold">–</text></tag>
+                  <tag role="typerefnum">1st item</tag>
+                </tags>
+                <para xml:id="S1.I1.i2.i1.p1">
                   <p>one</p>
                 </para>
               </item>
-              <item xml:id="I1.I1.i2">
-                <tag><text font="bold">–</text></tag>
-                <para xml:id="I1.I1.i2.p1">
+              <item xml:id="S1.I1.i2.i2">
+                <tags>
+                  <tag><text font="bold">–</text></tag>
+                  <tag role="typerefnum">2nd item</tag>
+                </tags>
+                <para xml:id="S1.I1.i2.i2.p1">
                   <p>two</p>
                 </para>
               </item>
@@ -159,27 +194,43 @@
       </itemize>
     </para>
     <para xml:id="S1.p5">
-      <enumerate xml:id="I2">
-        <item frefnum="(1)" refnum="1" xml:id="I2.i1">
-          <tag>(1)</tag>
-          <para xml:id="I2.i1.p1">
+      <enumerate xml:id="S1.I2">
+        <item xml:id="S1.I2.i1">
+          <tags>
+            <tag>(1)</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">item 1</tag>
+          </tags>
+          <para xml:id="S1.I2.i1.p1">
             <p>one</p>
           </para>
         </item>
-        <item frefnum="(2)" refnum="2" xml:id="I2.i2">
-          <tag>(2)</tag>
-          <para xml:id="I2.i2.p1">
+        <item xml:id="S1.I2.i2">
+          <tags>
+            <tag>(2)</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">item 2</tag>
+          </tags>
+          <para xml:id="S1.I2.i2.p1">
             <p>two</p>
-            <enumerate xml:id="I2.I1">
-              <item frefnum="(a)" refnum="a" xml:id="I2.I1.i1">
-                <tag>(a)</tag>
-                <para xml:id="I2.I1.i1.p1">
+            <enumerate xml:id="S1.I2.I1">
+              <item xml:id="S1.I2.i2.i1">
+                <tags>
+                  <tag>(a)</tag>
+                  <tag role="refnum">2a</tag>
+                  <tag role="typerefnum">item 2a</tag>
+                </tags>
+                <para xml:id="S1.I2.i2.i1.p1">
                   <p>one</p>
                 </para>
               </item>
-              <item frefnum="(b)" refnum="b" xml:id="I2.I1.i2">
-                <tag>(b)</tag>
-                <para xml:id="I2.I1.i2.p1">
+              <item xml:id="S1.I2.i2.i2">
+                <tags>
+                  <tag>(b)</tag>
+                  <tag role="refnum">2b</tag>
+                  <tag role="typerefnum">item 2b</tag>
+                </tags>
+                <para xml:id="S1.I2.i2.i2.p1">
                   <p>two</p>
                 </para>
               </item>
@@ -189,22 +240,31 @@
       </enumerate>
     </para>
     <para xml:id="S1.p6">
-      <description xml:id="I3">
-        <item frefnum="A thing: " refnum="A thing" xml:id="I3.ix1">
-          <tag><text font="bold">A thing: </text></tag>
-          <para xml:id="I3.ix1.p1">
+      <description xml:id="S1.I3">
+        <item xml:id="S1.I3.ix1">
+          <tags>
+            <tag><text font="bold">A thing: </text></tag>
+            <tag role="typerefnum">item A thing</tag>
+          </tags>
+          <para xml:id="S1.I3.ix1.p1">
             <p>with some descriptive text.</p>
           </para>
         </item>
-        <item frefnum="Another: " refnum="Another" xml:id="I3.ix2">
-          <tag><text font="bold">Another: </text></tag>
-          <para xml:id="I3.ix2.p1">
+        <item xml:id="S1.I3.ix2">
+          <tags>
+            <tag><text font="bold">Another: </text></tag>
+            <tag role="typerefnum">item Another</tag>
+          </tags>
+          <para xml:id="S1.I3.ix2.p1">
             <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           </para>
         </item>
-        <item frefnum="And yet: " refnum="And yet" xml:id="I3.ix3">
-          <tag><text font="bold">And yet: </text></tag>
-          <para xml:id="I3.ix3.p1">
+        <item xml:id="S1.I3.ix3">
+          <tags>
+            <tag><text font="bold">And yet: </text></tag>
+            <tag role="typerefnum">item And yet</tag>
+          </tags>
+          <para xml:id="S1.I3.ix3.p1">
             <p>blah, blah. Moreover
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           </para>
@@ -212,7 +272,12 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </description>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=". ">2</tag>A Math Section</title>
     <toctitle><tag close=" ">2</tag>A Math Section</toctitle>
     <para xml:id="S2.p1">
@@ -235,7 +300,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </equation>
     </para>
     <para xml:id="S2.p4">
-      <equation frefnum="(2.1)" refnum="2.1" xml:id="S2.E1">
+      <equation xml:id="S2.E1">
+        <tags>
+          <tag>(2.1)</tag>
+          <tag role="refnum">2.1</tag>
+        </tags>
         <Math mode="display" tex="a=b" text="a = b" xml:id="S2.E1.m1">
           <XMath>
             <XMApp>
@@ -248,7 +317,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </equation>
     </para>
     <para xml:id="S2.p5">
-      <equation frefnum="(2.2)" refnum="2.2" xml:id="S2.E2">
+      <equation xml:id="S2.E2">
+        <tags>
+          <tag>(2.2)</tag>
+          <tag role="refnum">2.2</tag>
+        </tags>
         <Math mode="display" tex="\begin{split}\displaystyle a&amp;\displaystyle=b+c-d\\&#10;&amp;\displaystyle\quad+e-f\\&#10;&amp;\displaystyle=g+h\\&#10;&amp;\displaystyle=i\end{split}" text="a = (((b + c) - d) + e) - f = g + h = i" xml:id="S2.E2.m1">
           <XMath>
             <XMDual>
@@ -347,7 +420,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </equation>
     </para>
     <para xml:id="S2.p6">
-      <equation frefnum="(2.3)" refnum="2.3" xml:id="S2.E3">
+      <equation xml:id="S2.E3">
+        <tags>
+          <tag>(2.3)</tag>
+          <tag role="refnum">2.3</tag>
+        </tags>
         <Math mode="display" tex="\displaystyle a+b+c+d+e+f\\&#10;\displaystyle+i+j+k+l+m+n" text="a + b + c + d + e + f + i + j + k + l + m + n" xml:id="S2.E3.m1">
           <XMath>
             <XMDual>
@@ -404,7 +481,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
     </para>
     <para xml:id="S2.p7">
       <equationgroup class="ltx_eqn_gather" xml:id="S3.EGx1">
-        <equation frefnum="(2.4)" refnum="2.4" xml:id="S2.E4">
+        <equation xml:id="S2.E4">
+          <tags>
+            <tag>(2.4)</tag>
+            <tag role="refnum">2.4</tag>
+          </tags>
           <Math mode="display" tex="\displaystyle a_{1}=b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1" xml:id="S2.E4.m1">
             <XMath>
               <XMApp>
@@ -431,7 +512,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
             </XMath>
           </Math>
         </equation>
-        <equation frefnum="(2.5)" refnum="2.5" xml:id="S2.E5">
+        <equation xml:id="S2.E5">
+          <tags>
+            <tag>(2.5)</tag>
+            <tag role="refnum">2.5</tag>
+          </tags>
           <Math mode="display" tex="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2" xml:id="S2.E5.m1">
             <XMath>
               <XMApp>
@@ -478,7 +563,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
     </para>
     <para xml:id="S2.p8">
       <equationgroup class="ltx_eqn_align" xml:id="S3.EGx2">
-        <equation frefnum="(2.6)" refnum="2.6" xml:id="S2.E6">
+        <equation xml:id="S2.E6">
+          <tags>
+            <tag>(2.6)</tag>
+            <tag role="refnum">2.6</tag>
+          </tags>
           <MathFork>
             <Math tex="\displaystyle a_{1}=b_{1}+c_{1}" text="a _ 1 = b _ 1 + c _ 1" xml:id="S2.E6.m3">
               <XMath>
@@ -539,7 +628,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
             </MathBranch>
           </MathFork>
         </equation>
-        <equation frefnum="(2.7)" refnum="2.7" xml:id="S2.E7">
+        <equation xml:id="S2.E7">
+          <tags>
+            <tag>(2.7)</tag>
+            <tag role="refnum">2.7</tag>
+          </tags>
           <MathFork>
             <Math tex="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" text="a _ 2 = ((b _ 2 + c _ 2) - d _ 2) + e _ 2" xml:id="S2.E7.m3">
               <XMath>
@@ -636,7 +729,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
     </para>
     <para xml:id="S2.p9">
       <equationgroup class="ltx_eqn_align" xml:id="S3.EGx3">
-        <equation frefnum="(2.8)" refnum="2.8" xml:id="S2.E8">
+        <equation xml:id="S2.E8">
+          <tags>
+            <tag>(2.8)</tag>
+            <tag role="refnum">2.8</tag>
+          </tags>
           <MathFork>
             <Math tex="\displaystyle a_{11}=b_{11}" text="a _ 11 = b _ 11" xml:id="S2.E8.m5">
               <XMath>
@@ -724,7 +821,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
             </MathBranch>
           </MathFork>
         </equation>
-        <equation frefnum="(2.9)" refnum="2.9" xml:id="S2.E9">
+        <equation xml:id="S2.E9">
+          <tags>
+            <tag>(2.9)</tag>
+            <tag role="refnum">2.9</tag>
+          </tags>
           <MathFork>
             <Math tex="\displaystyle a_{21}=b_{21}" text="a _ 21 = b _ 21" xml:id="S2.E9.m5">
               <XMath>
@@ -832,7 +933,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
     </para>
     <para xml:id="S2.p10">
       <p>Some text</p>
-      <equation frefnum="(2.10)" refnum="2.10" xml:id="S2.E10">
+      <equation xml:id="S2.E10">
+        <tags>
+          <tag>(2.10)</tag>
+          <tag role="refnum">2.10</tag>
+        </tags>
         <Math mode="display" tex="a=\text{something}" text="a = [something]" xml:id="S2.E10.m1">
           <XMath>
             <XMApp>
@@ -844,13 +949,22 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </Math>
       </equation>
     </para>
-    <theorem class="ltx_theorem_corollary" frefnum="Corollary 1" refnum="1" xml:id="Thmcorollary1">
+    <theorem class="ltx_theorem_corollary" inlist="thm theorem:corollary" xml:id="Thmcorollary1">
+      <tags>
+        <tag>Corollary 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Corollary 1</tag>
+      </tags>
       <title class="ltx_runin" font="italic"><tag>Corollary 1</tag>.</title>
       <para xml:id="Thmcorollary1.p1">
         <p>Whatever!</p>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_corollary" frefnum="Corollary" xml:id="Thmcorollaryx1">
+    <theorem class="ltx_theorem_corollary" inlist="thm theorem:corollary*" xml:id="Thmcorollaryx1">
+      <tags>
+        <tag>Corollary</tag>
+        <tag role="typerefnum">Corollary</tag>
+      </tags>
       <title class="ltx_runin" font="italic"><tag>Corollary</tag>.</title>
       <para xml:id="Thmcorollaryx1.p1">
         <p>And whatever.</p>
@@ -1052,19 +1166,29 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </equation>
       </equationgroup>
     </para>
-    <subsection refnum="2.1" xml:id="S2.SS1">
+    <subsection inlist="toc" xml:id="S2.SS1">
+      <tags>
+        <tag>2.1</tag>
+        <tag role="refnum">2.1</tag>
+        <tag role="typerefnum">§2.1</tag>
+      </tags>
       <title><tag close=". ">2.1</tag>A subsection</title>
       <toctitle><tag close=" ">2.1</tag>A subsection</toctitle>
       <para xml:id="S2.SS1.p1">
         <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
       </para>
-      <subsubsection refnum="2.1.1" xml:id="S2.SS1.SSS1">
+      <subsubsection inlist="toc" xml:id="S2.SS1.SSS1">
+        <tags>
+          <tag>2.1.1</tag>
+          <tag role="refnum">2.1.1</tag>
+          <tag role="typerefnum">§2.1.1</tag>
+        </tags>
         <title><tag close=". ">2.1.1</tag>A subsubsection</title>
         <toctitle><tag close=" ">2.1.1</tag>A subsubsection</toctitle>
         <para xml:id="S2.SS1.SSS1.p1">
           <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
         </para>
-        <paragraph xml:id="S2.SS1.SSS1.Px1">
+        <paragraph inlist="toc" xml:id="S2.SS1.SSS1.Px1">
           <title>A Paragraph</title>
           <para xml:id="S2.SS1.SSS1.Px1.p1">
             <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
@@ -1073,7 +1197,12 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </subsubsection>
     </subsection>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=". ">3</tag><text font="italic">Section with explicit font</text></title>
     <toctitle><tag close=" ">3</tag><text font="italic">Section with explicit font</text></toctitle>
     <para xml:id="S3.p1">

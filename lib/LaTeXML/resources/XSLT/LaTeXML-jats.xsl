@@ -389,21 +389,31 @@
 
   <xsl:template match="ltx:bibitem" mode="back">
     <ref>
-      <xsl:if test="./@xml:id">
-	<xsl:attribute name="id"><xsl:value-of select="./@xml:id"/></xsl:attribute>
+      <xsl:if test="@xml:id">
+	<xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
       </xsl:if>
       <mixed-citation>
 	<!-- Getting the reference type into the reference, if possible --> 
-	<xsl:if test="./ltx:bibtag[@class='ltx_bib_type']">
-	  <xsl:attribute name="publication-type"> <xsl:value-of select="./ltx:bibtag[@class='ltx_bib_type']/text()"/></xsl:attribute>
+	<xsl:if test="./ltx:tags/ltx:tag[@class='ltx_bib_type']">
+	  <xsl:attribute name="publication-type"> <xsl:value-of select="./ltx:tag[@class='ltx_bib_type']/text()"/></xsl:attribute>
 	</xsl:if>
-	<xsl:apply-templates select="node()" mode="back"/>
+<!-- Isn't this better?
+	<xsl:if test="@type">
+	  <xsl:attribute name="publication-type"> <xsl:value-of select="@type"/></xsl:attribute>
+	</xsl:if>
+-->
+<!--	<xsl:apply-templates select="node()" mode="back"/>-->
+	<xsl:apply-templates mode="back"/>
       </mixed-citation>
     </ref>
   </xsl:template>
 
-  <xsl:template match="ltx:bibtag[@class='ltx_bib_type']" mode="back"/>
-  <xsl:template match="ltx:bibtag[@role='key']" mode="back"/>
+  <xsl:template match="ltx:tags" mode="back">
+    <xsl:apply-templates mode="back"/>
+  </xsl:template>
+
+  <xsl:template match="ltx:tag[@class='ltx_bib_type']" mode="back"/>
+  <xsl:template match="ltx:tag[@role='key']" mode="back"/>
 
   <xsl:template match="ltx:bibblock//ltx:bib-part[@role='publisher']" mode="back">
     <xsl:apply-templates mode="back"/>
@@ -424,7 +434,7 @@
     <xsl:apply-templates mode="back"/>
   </xsl:template>
 
-  <xsl:template match="ltx:bibtag[@role='year']" mode="back">
+  <xsl:template match="ltx:bibitem/ltx:tags/ltx:tag[@role='year']" mode="back">
     <year>
       <xsl:apply-templates mode="back"/>
     </year>
@@ -446,7 +456,7 @@
     <xsl:apply-templates mode="back"/>
   </xsl:template>
 
-  <xsl:template match="ltx:bibtag[@role='title']" mode="back">
+  <xsl:template match="ltx:bibitem/ltx:tags/ltx:tag[@role='title']" mode="back">
     <article-title>
       <xsl:apply-templates mode="back"/> 
     </article-title> 
@@ -513,7 +523,7 @@
     <hr/>
   </xsl:template>
 
-  <xsl:template match="ltx:bibtag[@role='authors']" mode="back">
+  <xsl:template match="ltx:bibitem/ltx:tags/ltx:tag[@role='authors']" mode="back">
     <person-group person-group-type="author">
       <name>
 	<!-- I will not do sophisticated handling trying to split this into several authors etc. -->
@@ -538,14 +548,14 @@
     </person-group>
   </xsl:template>
 
-  <xsl:template match="ltx:bibtag[@role='fullauthors']" mode="back"/>
-  <xsl:template match="ltx:text[@font='bold']" mode="back">
+  <xsl:template match="ltx:tag[@role='fullauthors']" mode="back"/>
+  <xsl:template match="ltx:bibitem/ltx:tags/ltx:text[@font='bold']" mode="back">
     <bold>
       <xsl:apply-templates mode="back" select="@*|node()"/>
     </bold>
   </xsl:template>
-  <xsl:template match="ltx:bibtag[@role='refnum']" mode="back"/>
-  <xsl:template match="ltx:bibtag[@role='number']" mode="back"/>
+  <xsl:template match="ltx:tag[@role='refnum']" mode="back"/>
+  <xsl:template match="ltx:tag[@role='number']" mode="back"/>
 
   <xsl:template match="ltx:table" mode="back"/>
   <xsl:template match="ltx:acknowledgements//ltx:table">
@@ -968,7 +978,8 @@
   <xsl:template match="ltx:bibliography"/>
   <xsl:template match="ltx:bibliography" mode="front"/>
   <xsl:template match="ltx:date[@role='creation']"/>
-  <xsl:template match="ltx:tag"/> 
+  <xsl:template match="ltx:tags"/>
+  <xsl:template match="ltx:tag"/>
   <xsl:template match="ltx:break"/> <!-- Break isn't really supposed to be used --> 
   <xsl:template match="ltx:resource[@type='text/css']" mode="back"/>
   <xsl:template match="ltx:creator[@role='author']" mode="back"/>

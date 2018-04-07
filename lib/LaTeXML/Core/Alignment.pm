@@ -234,8 +234,7 @@ sub beAbsorbed {
   # but (ATM) we've only got sensible boxes for the cells.
   &{ $$self{openContainer} }($document, ($attr ? %$attr : ()));
   foreach my $row (@{ $$self{rows} }) {
-    &{ $$self{openRow} }($document, 'xml:id' => $$row{id},
-      refnum => $$row{refnum}, frefnum => $$row{frefnum}, rrefnum => $$row{rrefnum});
+    &{ $$self{openRow} }($document, 'xml:id' => $$row{id}, tags => $$row{tags});
     if (my $before = $$row{before}) {
       map { $document->absorb($_) } @$before; }
     foreach my $cell (@{ $$row{columns} }) {

@@ -5,31 +5,56 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <theorem class="ltx_theorem_Cor" frefnum="Corollary 1" refnum="1" xml:id="ThmCor1">
+  <theorem class="ltx_theorem_Cor" inlist="thm theorem:Cor" xml:id="ThmCor1">
+    <tags>
+      <tag>Corollary 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Corollary 1</tag>
+    </tags>
     <title font="smallcaps"><tag>Corollary 1</tag></title>
     <para xml:id="ThmCor1.p1">
       <p><text font="slanted">This is a sentence typeset in the theorem environment <text font="typewriter">Cor</text>.</text></p>
     </para>
   </theorem>
-  <theorem class="ltx_theorem_Exa" frefnum="Example 0.1" refnum="0.1" xml:id="S0.ThmExa1">
+  <theorem class="ltx_theorem_Exa" inlist="thm theorem:Exa" xml:id="S0.ThmExa1">
+    <tags>
+      <tag>Example 0.1</tag>
+      <tag role="refnum">0.1</tag>
+      <tag role="typerefnum">Example 0.1</tag>
+    </tags>
     <title class="ltx_runin" font="smallcaps"><tag>Example 0.1</tag></title>
     <para xml:id="S0.ThmExa1.p1">
       <p><text font="italic">This is a sentence typeset in the theorem environment <text font="typewriter">Exa</text>.</text></p>
     </para>
   </theorem>
-  <theorem class="ltx_theorem_Rem" frefnum="Remark 1" refnum="1" xml:id="ThmRem1">
+  <theorem class="ltx_theorem_Rem" inlist="thm theorem:Rem" xml:id="ThmRem1">
+    <tags>
+      <tag>Remark 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Remark 1</tag>
+    </tags>
     <title class="ltx_runin" font="smallcaps"><tag>Remark 1</tag></title>
     <para xml:id="ThmRem1.p1">
       <p>This is a sentence typeset in the theorem environment <text font="typewriter">Rem</text>.</p>
     </para>
   </theorem>
-  <theorem class="ltx_theorem_Lem" frefnum="2 Lemma" refnum="2" xml:id="ThmCor2">
+  <theorem class="ltx_theorem_Lem" inlist="thm theorem:Lem" xml:id="ThmCor2">
+    <tags>
+      <tag>2 Lemma</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">Lemma 2</tag>
+    </tags>
     <title class="ltx_outdent" font="smallcaps"><tag>2 Lemma</tag> (Ben User)</title>
     <para xml:id="ThmCor2.p1">
       <p><text font="slanted">This is a sentence typeset in the theorem environment <text font="typewriter">Lem</text>.</text></p>
     </para>
   </theorem>
-  <theorem class="ltx_theorem_Def" frefnum="3 Definition" refnum="3" xml:id="ThmCor3">
+  <theorem class="ltx_theorem_Def" inlist="thm theorem:Def" xml:id="ThmCor3">
+    <tags>
+      <tag>3 Definition</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">Definition 3</tag>
+    </tags>
     <title class="ltx_runin" font="smallcaps"><tag>3 Definition</tag> (Very impressive Definition)</title>
     <para xml:id="ThmCor3.p1">
       <p><text font="italic">This is a sentence typeset in the theorem environment <text font="typewriter">Def</text>.</text></p>

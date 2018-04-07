@@ -159,7 +159,8 @@ DefMacroI('\dashddot',   undef, '{\protect\mbox{--- $\cdot$ $\cdot$ ---}}');
 DefMacroI('\full',       undef, '{\protect\mbox{------}}');
 
 DefEnvironment('{numparts}',
-  "<ltx:equationgroup refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
+  "<ltx:equationgroup xml:id='#id'>"
+    . "#tags"
     . "#body"
     . "</ltx:equationgroup>",
   afterDigestBegin => sub {

@@ -98,6 +98,7 @@ DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
     return lstProcessDisplay($file, $text); });
 
 NewCounter('lstlisting', 'document', idprefix => 'LST');
+DefMacro('\ext@lstlisting', 'lol');
 AssignValue(LISTINGS_DATA_COUNTER => 0);
 
 # Defining new listing environments
@@ -174,10 +175,10 @@ sub lstProcessDisplay {
 DefMacro('\lstlisting@makecaption[]{}',
   '\def\@captype{lstlisting}'
     . '\@@add@caption@counters'
-    . '\@@toccaption{\format@toctitle@{lstlisting}{\ifx.#1.#2\else#1\fi}}'
-    . '\@@caption{\format@title@{lstlisting}{#2}}');
+    . '\@@toccaption{\lx@@format@toctitle@{lstlisting}{\ifx.#1.#2\else#1\fi}}'
+    . '\@@caption{\lx@@format@title@{lstlisting}{#2}}');
 DefMacroI('\fnum@lstlisting', undef, '\lstlistingname\nobreakspace\thelstlisting');
-DefMacro('\format@title@lstlisting{}', '\@tag[][: ]{\fnum@lstlisting}#1');
+DefMacro('\format@title@lstlisting{}', '\lx@tag[][: ]{\fnum@lstlisting}#1');
 
 DefMacro('\lstlisting@maketitle{}',
   '\@@toccaption{#1}'
@@ -189,7 +190,10 @@ DefMacro('\lstlisting@maketoctitle{}',
 # Numbered form,  with caption
 # \@listings <classes> <formatted>
 DefConstructor('\@listings {}',
-  "<ltx:float role='listing' xml:id='#id' refnum='#refnum' class='ltx_lstlisting'>#1</ltx:float>",
+  "<ltx:float inlist='lol' xml:id='#id' class='ltx_lstlisting'>"
+    . "#tags"
+    . "#1"
+    . "</ltx:float>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
@@ -198,7 +202,10 @@ DefConstructor('\@listings {}',
 # Unnumbered form, but with caption
 # \@listings <classes> <formatted>
 DefConstructor('\@@listings {}',
-  "<ltx:float role='listing' xml:id='#id' class='ltx_lstlisting'>#1</ltx:float>",
+  "<ltx:float xml:id='#id' class='ltx_lstlisting'>"
+    . "#tags"
+    . "#1"
+    . "</ltx:float>",
   properties => sub { RefStepID('lstlisting'); },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
   afterDigest => sub {
@@ -795,7 +802,7 @@ DefKeyVal('LST', 'nolol',   '', 'true');       # Ignorable
 
 DefMacroI('\lstlistlistingname', undef, 'Listings');
 DefConstructorI('\lstlistoflistings', undef,
-  "<ltx:TOC role='listings' select='role:listing' name='#name'/>",
+  "<ltx:TOC lists='lol' scope='global'><ltx:title>#name</ltx:title></ltx:TOC>",
   properties => sub { (
       name => DigestIf('\lstlistlistingname')); });
 
@@ -1391,7 +1398,7 @@ sub lstClassProperty {
 
 DefConstructor('\@lst@startline{}',  "<ltx:listingline>#1");
 DefConstructor('\@lst@endline',      "</ltx:listingline>");
-DefConstructor('\@lst@linenumber{}', "<ltx:tag>#1</ltx:tag>");
+DefConstructor('\@lst@linenumber{}', "<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>");
 
 DefConstructor('\@lst@visible@space', "\x{2423}");
 

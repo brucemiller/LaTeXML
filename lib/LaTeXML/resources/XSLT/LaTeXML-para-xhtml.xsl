@@ -76,6 +76,9 @@
        can be better managed -->
   <xsl:strip-space elements="ltx:theorem ltx:proof"/>
 
+  <!-- Don't display tags; they're in the title -->
+  <xsl:template match="ltx:theorem/ltx:tags | ltx:proof/ltx:tags"/>
+
   <xsl:template match="ltx:theorem | ltx:proof">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
@@ -100,6 +103,9 @@
        ====================================================================== -->
 
   <xsl:strip-space elements="ltx:figure ltx:table ltx:float"/>
+
+  <!-- Don't display tags; they're in the caption -->
+  <xsl:template match="ltx:figure/ltx:tags | ltx:table/ltx:tags | ltx:float/ltx:tags"/>
 
   <xsl:template match="ltx:figure | ltx:table | ltx:float">
     <xsl:param name="context"/>
@@ -145,6 +151,12 @@
     <xsl:choose>
       <xsl:when test="count(ltx:figure | ltx:table | ltx:float | ltx:graphics) > 1">
         <xsl:text>&#x0A;</xsl:text>
+        <xsl:apply-templates select="ltx:caption[following-sibling::ltx:figure
+                                     | following-sibling::ltx:table
+                                     | following-sibling::ltx:float
+                                     | following-sibling::ltx:graphics]">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
         <xsl:element name="table" namespace="{$html_ns}">
           <!-- maybe even more, like display:table ? or some class ? -->
           <xsl:attribute name="style">width:100%;</xsl:attribute>
@@ -164,7 +176,10 @@
           </xsl:element>
           <xsl:text>&#x0A;</xsl:text>
         </xsl:element>
-        <xsl:apply-templates select="ltx:caption">
+        <xsl:apply-templates select="ltx:caption[preceding-sibling::ltx:figure
+                                     | preceding-sibling::ltx:table
+                                     | preceding-sibling::ltx:float
+                                     | preceding-sibling::ltx:graphics]">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
       </xsl:when>

@@ -6,272 +6,381 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <inline-enumerate xml:id="I1">
-      <inline-item frefnum="a)" refnum="a" xml:id="I1.i1">
-        <tag><text font="italic">a)</text></tag>
+    <inline-enumerate xml:id="S0.I1">
+      <inline-item xml:id="S0.I1.i1">
+        <tags>
+          <tag><text font="italic">a)</text></tag>
+          <tag role="refnum">a</tag>
+          <tag role="typerefnum">item a</tag>
+        </tags>
         <text>first thing and
 </text>
       </inline-item>
-      <inline-item frefnum="b)" refnum="b" xml:id="I1.i2">
-        <tag><text font="italic">b)</text></tag>
+      <inline-item xml:id="S0.I1.i2">
+        <tags>
+          <tag><text font="italic">b)</text></tag>
+          <tag role="refnum">b</tag>
+          <tag role="typerefnum">item b</tag>
+        </tags>
         <text>second thing.
 </text>
       </inline-item>
     </inline-enumerate>
   </para>
   <para xml:id="p2">
-    <inline-enumerate xml:id="I2">
-      <inline-item frefnum="1." refnum="1" xml:id="I2.i1">
-        <tag>1.</tag>
+    <inline-enumerate xml:id="S0.I2">
+      <inline-item xml:id="S0.I2.i1">
+        <tags>
+          <tag>1.</tag>
+          <tag role="refnum">1</tag>
+          <tag role="typerefnum">item 1</tag>
+        </tags>
         <text>first thing and
 </text>
       </inline-item>
-      <inline-item frefnum="2." refnum="2" xml:id="I2.i2">
-        <tag>2.</tag>
+      <inline-item xml:id="S0.I2.i2">
+        <tags>
+          <tag>2.</tag>
+          <tag role="refnum">2</tag>
+          <tag role="typerefnum">item 2</tag>
+        </tags>
         <text>second thing.
 </text>
       </inline-item>
     </inline-enumerate>
   </para>
   <para xml:id="p3">
-    <inline-enumerate xml:id="I3">
-      <inline-item refnum="1" xml:id="I3.i1">
-        <tag>1</tag>
+    <inline-enumerate xml:id="S0.I3">
+      <inline-item xml:id="S0.I3.i1">
+        <tags>
+          <tag>1</tag>
+          <tag role="refnum">1</tag>
+          <tag role="typerefnum">item 1</tag>
+        </tags>
         <text>first thing and
 </text>
       </inline-item>
-      <inline-item refnum="2" xml:id="I3.i2">
-        <tag>2</tag>
+      <inline-item xml:id="S0.I3.i2">
+        <tags>
+          <tag>2</tag>
+          <tag role="refnum">2</tag>
+          <tag role="typerefnum">item 2</tag>
+        </tags>
         <text>second thing.
 </text>
       </inline-item>
     </inline-enumerate>
   </para>
   <para xml:id="p4">
-    <itemize xml:id="I4">
-      <item xml:id="I4.i1">
-        <tag>•</tag>
-        <para xml:id="I4.i1.p1">
+    <itemize xml:id="S0.I4">
+      <item xml:id="S0.I4.i1">
+        <tags>
+          <tag>•</tag>
+          <tag role="typerefnum">1st item</tag>
+        </tags>
+        <para xml:id="S0.I4.i1.p1">
           <p>one</p>
         </para>
       </item>
-      <item xml:id="I4.i2">
-        <tag>•</tag>
-        <para xml:id="I4.i2.p1">
+      <item xml:id="S0.I4.i2">
+        <tags>
+          <tag>•</tag>
+          <tag role="typerefnum">2nd item</tag>
+        </tags>
+        <para xml:id="S0.I4.i2.p1">
           <p>two</p>
         </para>
       </item>
-      <item xml:id="I4.i3">
-        <tag>•</tag>
-        <para xml:id="I4.i3.p1">
+      <item xml:id="S0.I4.i3">
+        <tags>
+          <tag>•</tag>
+          <tag role="typerefnum">3rd item</tag>
+        </tags>
+        <para xml:id="S0.I4.i3.p1">
           <p>three</p>
         </para>
       </item>
     </itemize>
   </para>
   <para xml:id="p5">
-    <enumerate xml:id="I5">
-      <item refnum="1" xml:id="I5.i1">
-        <tag>1</tag>
-        <para xml:id="I5.i1.p1">
+    <enumerate xml:id="S0.I5">
+      <item xml:id="S0.I5.i1">
+        <tags>
+          <tag>1</tag>
+          <tag role="refnum">1</tag>
+          <tag role="typerefnum">item 1</tag>
+        </tags>
+        <para xml:id="S0.I5.i1.p1">
           <p>one</p>
         </para>
       </item>
-      <item refnum="2" xml:id="I5.i2">
-        <tag>2</tag>
-        <para xml:id="I5.i2.p1">
+      <item xml:id="S0.I5.i2">
+        <tags>
+          <tag>2</tag>
+          <tag role="refnum">2</tag>
+          <tag role="typerefnum">item 2</tag>
+        </tags>
+        <para xml:id="S0.I5.i2.p1">
           <p>two</p>
         </para>
       </item>
-      <item refnum="3" xml:id="I5.i3">
-        <tag>3</tag>
-        <para xml:id="I5.i3.p1">
+      <item xml:id="S0.I5.i3">
+        <tags>
+          <tag>3</tag>
+          <tag role="refnum">3</tag>
+          <tag role="typerefnum">item 3</tag>
+        </tags>
+        <para xml:id="S0.I5.i3.p1">
           <p>three</p>
         </para>
       </item>
     </enumerate>
   </para>
   <para xml:id="p6">
-    <itemize xml:id="I6">
-      <item xml:id="I6.i1">
-        <tag><Math mode="inline" tex="\star" text="star" xml:id="I6.i1.m1">
-            <XMath>
-              <XMTok name="star" role="MULOP">⋆</XMTok>
-            </XMath>
-          </Math></tag>
-        <para xml:id="I6.i1.p1">
+    <itemize xml:id="S0.I6">
+      <item xml:id="S0.I6.i1">
+        <tags>
+          <tag><Math mode="inline" tex="\star" text="star" xml:id="S0.I6.i1.m1">
+              <XMath>
+                <XMTok name="star" role="MULOP">⋆</XMTok>
+              </XMath>
+            </Math></tag>
+          <tag role="typerefnum">1st item</tag>
+        </tags>
+        <para xml:id="S0.I6.i1.p1">
           <p>one</p>
         </para>
       </item>
-      <item xml:id="I6.i2">
-        <tag><Math mode="inline" tex="\star" text="star" xml:id="I6.i2.m1">
-            <XMath>
-              <XMTok name="star" role="MULOP">⋆</XMTok>
-            </XMath>
-          </Math></tag>
-        <para xml:id="I6.i2.p1">
+      <item xml:id="S0.I6.i2">
+        <tags>
+          <tag><Math mode="inline" tex="\star" text="star" xml:id="S0.I6.i2.m1">
+              <XMath>
+                <XMTok name="star" role="MULOP">⋆</XMTok>
+              </XMath>
+            </Math></tag>
+          <tag role="typerefnum">2nd item</tag>
+        </tags>
+        <para xml:id="S0.I6.i2.p1">
           <p>two</p>
-          <itemize xml:id="I6.I1">
-            <item xml:id="I6.I1.i1">
-              <tag><text font="bold">–</text></tag>
-              <para xml:id="I6.I1.i1.p1">
+          <itemize xml:id="S0.I6.I1">
+            <item xml:id="S0.I6.i2.i1">
+              <tags>
+                <tag><text font="bold">–</text></tag>
+                <tag role="typerefnum">1st item</tag>
+              </tags>
+              <para xml:id="S0.I6.i2.i1.p1">
                 <p>one</p>
               </para>
             </item>
-            <item xml:id="I6.I1.i2">
-              <tag><text font="bold">–</text></tag>
-              <para xml:id="I6.I1.i2.p1">
+            <item xml:id="S0.I6.i2.i2">
+              <tags>
+                <tag><text font="bold">–</text></tag>
+                <tag role="typerefnum">2nd item</tag>
+              </tags>
+              <para xml:id="S0.I6.i2.i2.p1">
                 <p>two</p>
               </para>
             </item>
           </itemize>
         </para>
       </item>
-      <item xml:id="I6.i3">
-        <tag><Math mode="inline" tex="\star" text="star" xml:id="I6.i3.m1">
-            <XMath>
-              <XMTok name="star" role="MULOP">⋆</XMTok>
-            </XMath>
-          </Math></tag>
-        <para xml:id="I6.i3.p1">
+      <item xml:id="S0.I6.i3">
+        <tags>
+          <tag><Math mode="inline" tex="\star" text="star" xml:id="S0.I6.i3.m1">
+              <XMath>
+                <XMTok name="star" role="MULOP">⋆</XMTok>
+              </XMath>
+            </Math></tag>
+          <tag role="typerefnum">3rd item</tag>
+        </tags>
+        <para xml:id="S0.I6.i3.p1">
           <p>three</p>
         </para>
       </item>
     </itemize>
   </para>
   <para xml:id="p7">
-    <enumerate xml:id="I7">
-      <item frefnum="-a-" refnum="a" xml:id="I7.i1">
-        <tag><text font="bold">-a-</text></tag>
-        <para xml:id="I7.i1.p1">
+    <enumerate xml:id="S0.I7">
+      <item xml:id="S0.I7.i1">
+        <tags>
+          <tag><text font="bold">-a-</text></tag>
+          <tag role="refnum">a</tag>
+          <tag role="typerefnum">item a</tag>
+        </tags>
+        <para xml:id="S0.I7.i1.p1">
           <p>one</p>
         </para>
       </item>
-      <item frefnum="-b-" refnum="b" xml:id="I7.i2">
-        <tag><text font="bold">-b-</text></tag>
-        <para xml:id="I7.i2.p1">
+      <item xml:id="S0.I7.i2">
+        <tags>
+          <tag><text font="bold">-b-</text></tag>
+          <tag role="refnum">b</tag>
+          <tag role="typerefnum">item b</tag>
+        </tags>
+        <para xml:id="S0.I7.i2.p1">
           <p>two</p>
-          <enumerate xml:id="I7.I1">
-            <item refnum="b.1" xml:id="I7.I1.i1">
-              <tag>b.1</tag>
-              <para xml:id="I7.I1.i1.p1">
+          <enumerate xml:id="S0.I7.I1">
+            <item xml:id="S0.I7.i2.i1">
+              <tags>
+                <tag>b.1</tag>
+                <tag role="refnum">b.1</tag>
+                <tag role="typerefnum">item b.1</tag>
+              </tags>
+              <para xml:id="S0.I7.i2.i1.p1">
                 <p>one</p>
               </para>
             </item>
-            <item refnum="b.2" xml:id="I7.I1.i2">
-              <tag>b.2</tag>
-              <para xml:id="I7.I1.i2.p1">
+            <item xml:id="S0.I7.i2.i2">
+              <tags>
+                <tag>b.2</tag>
+                <tag role="refnum">b.2</tag>
+                <tag role="typerefnum">item b.2</tag>
+              </tags>
+              <para xml:id="S0.I7.i2.i2.p1">
                 <p>two</p>
               </para>
             </item>
           </enumerate>
         </para>
       </item>
-      <item frefnum="-c-" refnum="c" xml:id="I7.i3">
-        <tag><text font="bold">-c-</text></tag>
-        <para xml:id="I7.i3.p1">
+      <item xml:id="S0.I7.i3">
+        <tags>
+          <tag><text font="bold">-c-</text></tag>
+          <tag role="refnum">c</tag>
+          <tag role="typerefnum">item c</tag>
+        </tags>
+        <para xml:id="S0.I7.i3.p1">
           <p>three</p>
         </para>
       </item>
     </enumerate>
   </para>
   <para xml:id="p8">
-    <description xml:id="I8">
-      <item refnum="do" xml:id="I8.ix1">
-        <tag>do</tag>
-        <para xml:id="I8.ix1.p1">
+    <description xml:id="S0.I8">
+      <item xml:id="S0.I8.ix1">
+        <tags>
+          <tag><text font="bold">do</text></tag>
+          <tag role="typerefnum">item do</tag>
+        </tags>
+        <para xml:id="S0.I8.ix1.p1">
           <p>a deer, a female deer</p>
         </para>
       </item>
-      <item refnum="re" xml:id="I8.ix2">
-        <tag>re</tag>
-        <para xml:id="I8.ix2.p1">
+      <item xml:id="S0.I8.ix2">
+        <tags>
+          <tag><text font="bold">re</text></tag>
+          <tag role="typerefnum">item re</tag>
+        </tags>
+        <para xml:id="S0.I8.ix2.p1">
           <p>a pocket full of sun</p>
         </para>
       </item>
     </description>
   </para>
   <para xml:id="p9">
-    <description xml:id="I9">
-      <item frefnum="$\{$do$\}$ " refnum="do" xml:id="I9.ix1">
-        <tag><Math mode="inline" tex="\{" text="{" xml:id="I9.ix1.m1">
-            <XMath>
-              <XMTok role="OPEN" stretchy="false">{</XMTok>
-            </XMath>
-          </Math><text font="italic">do<Math mode="inline" tex="\}" text="}" xml:id="I9.ix1.m2">
+    <description xml:id="S0.I9">
+      <item xml:id="S0.I9.ix3">
+        <tags>
+          <tag><Math mode="inline" tex="\{" text="{" xml:id="S0.I9.ix3.m1">
               <XMath>
-                <XMTok font="upright" role="CLOSE" stretchy="false">}</XMTok>
+                <XMTok role="OPEN" stretchy="false">{</XMTok>
               </XMath>
-            </Math> </text></tag>
-        <para xml:id="I9.ix1.p1">
+            </Math><text font="italic">do<Math mode="inline" tex="\}" text="}" xml:id="S0.I9.ix3.m2">
+                <XMath>
+                  <XMTok font="upright" role="CLOSE" stretchy="false">}</XMTok>
+                </XMath>
+              </Math> </text></tag>
+          <tag role="typerefnum">item do</tag>
+        </tags>
+        <para xml:id="S0.I9.ix3.p1">
           <p>a deer, a female deer</p>
         </para>
       </item>
-      <item frefnum="$\{$re$\}$ " refnum="re" xml:id="I9.ix2">
-        <tag><Math mode="inline" tex="\{" text="{" xml:id="I9.ix2.m1">
-            <XMath>
-              <XMTok role="OPEN" stretchy="false">{</XMTok>
-            </XMath>
-          </Math><text font="italic">re<Math mode="inline" tex="\}" text="}" xml:id="I9.ix2.m2">
+      <item xml:id="S0.I9.ix4">
+        <tags>
+          <tag><Math mode="inline" tex="\{" text="{" xml:id="S0.I9.ix4.m1">
               <XMath>
-                <XMTok font="upright" role="CLOSE" stretchy="false">}</XMTok>
+                <XMTok role="OPEN" stretchy="false">{</XMTok>
               </XMath>
-            </Math> </text></tag>
-        <para xml:id="I9.ix2.p1">
+            </Math><text font="italic">re<Math mode="inline" tex="\}" text="}" xml:id="S0.I9.ix4.m2">
+                <XMath>
+                  <XMTok font="upright" role="CLOSE" stretchy="false">}</XMTok>
+                </XMath>
+              </Math> </text></tag>
+          <tag role="typerefnum">item re</tag>
+        </tags>
+        <para xml:id="S0.I9.ix4.p1">
           <p>a pocket full of sun</p>
         </para>
       </item>
     </description>
   </para>
   <para xml:id="p10">
-    <description xml:id="I10">
-      <item frefnum="$\{$$\}$ " refnum="1" xml:id="I10.i1">
-        <tag><Math mode="inline" tex="\{" text="{" xml:id="I10.i1.m1">
-            <XMath>
-              <XMTok role="OPEN" stretchy="false">{</XMTok>
-            </XMath>
-          </Math><Math mode="inline" tex="\}" text="}" xml:id="I10.i1.m2">
-            <XMath>
-              <XMTok role="CLOSE" stretchy="false">}</XMTok>
-            </XMath>
-          </Math><text font="italic"> </text></tag>
-        <para xml:id="I10.i1.p1">
+    <description xml:id="S0.I10">
+      <item xml:id="S0.I10.i1">
+        <tags>
+          <tag><Math mode="inline" tex="\{" text="{" xml:id="S0.I10.i1.m1">
+              <XMath>
+                <XMTok role="OPEN" stretchy="false">{</XMTok>
+              </XMath>
+            </Math><Math mode="inline" tex="\}" text="}" xml:id="S0.I10.i1.m2">
+              <XMath>
+                <XMTok role="CLOSE" stretchy="false">}</XMTok>
+              </XMath>
+            </Math><text font="italic"> </text></tag>
+          <tag role="typerefnum">item</tag>
+        </tags>
+        <para xml:id="S0.I10.i1.p1">
           <p>a deer, a female deer</p>
         </para>
       </item>
-      <item frefnum="$\{$$\}$ " refnum="2" xml:id="I10.i2">
-        <tag><Math mode="inline" tex="\{" text="{" xml:id="I10.i2.m1">
-            <XMath>
-              <XMTok role="OPEN" stretchy="false">{</XMTok>
-            </XMath>
-          </Math><Math mode="inline" tex="\}" text="}" xml:id="I10.i2.m2">
-            <XMath>
-              <XMTok role="CLOSE" stretchy="false">}</XMTok>
-            </XMath>
-          </Math><text font="italic"> </text></tag>
-        <para xml:id="I10.i2.p1">
+      <item xml:id="S0.I10.i2">
+        <tags>
+          <tag><Math mode="inline" tex="\{" text="{" xml:id="S0.I10.i2.m1">
+              <XMath>
+                <XMTok role="OPEN" stretchy="false">{</XMTok>
+              </XMath>
+            </Math><Math mode="inline" tex="\}" text="}" xml:id="S0.I10.i2.m2">
+              <XMath>
+                <XMTok role="CLOSE" stretchy="false">}</XMTok>
+              </XMath>
+            </Math><text font="italic"> </text></tag>
+          <tag role="typerefnum">item</tag>
+        </tags>
+        <para xml:id="S0.I10.i2.p1">
           <p>a pocket full of sun</p>
         </para>
       </item>
     </description>
   </para>
   <para xml:id="p11">
-    <enumerate xml:id="I11">
-      <item frefnum="-a-" refnum="a" xml:id="I11.i1">
-        <tag><text font="bold">-a-</text></tag>
-        <para xml:id="I11.i1.p1">
+    <enumerate xml:id="S0.I11">
+      <item xml:id="S0.I11.i1">
+        <tags>
+          <tag><text font="bold">-a-</text></tag>
+          <tag role="refnum">a</tag>
+          <tag role="typerefnum">item a</tag>
+        </tags>
+        <para xml:id="S0.I11.i1.p1">
           <p>one</p>
         </para>
       </item>
-      <item refnum="whoop" xml:id="I11.ix1">
-        <tag>whoop</tag>
-        <para xml:id="I11.ix1.p1">
+      <item xml:id="S0.I11.ix1">
+        <tags>
+          <tag>whoop</tag>
+          <tag role="typerefnum">item whoop</tag>
+        </tags>
+        <para xml:id="S0.I11.ix1.p1">
           <p>two</p>
         </para>
       </item>
-      <item frefnum="-b-" refnum="b" xml:id="I11.i2">
-        <tag><text font="bold">-b-</text></tag>
-        <para xml:id="I11.i2.p1">
+      <item xml:id="S0.I11.i2">
+        <tags>
+          <tag><text font="bold">-b-</text></tag>
+          <tag role="refnum">b</tag>
+          <tag role="typerefnum">item b</tag>
+        </tags>
+        <para xml:id="S0.I11.i2.p1">
           <p>three</p>
         </para>
       </item>

@@ -65,6 +65,9 @@
   <text>
     <body>
       <div>
+        <!-- The element tags
+            is currently not supported for the main body.
+        -->
         <head>Introduction</head>
         <p xml:id="S1.p1">As discussed in <ref type="bibr" target="bib.bib1">[AS64]</ref>,
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
@@ -98,9 +101,15 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </p>
         <figure>
           <head>A Figure</head>
+          <!-- The element tags
+            is currently not supported for the main body.
+        -->
           <p>A Figure</p>
         </figure>
         <table>
+          <!-- The element tags
+            is currently not supported for the main body.
+        -->
           <head>A Table</head>
           <row>
             <cell>Heading</cell>
@@ -151,17 +160,29 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         <p>
           <list rend="bulleted">
             <item>
-              <p xml:id="I1.i1.p1">one</p>
+              <!-- The element tags
+            is currently not supported for the main body.
+        -->
+              <p xml:id="S1.I1.i1.p1">one</p>
             </item>
             <item>
-              <p xml:id="I1.i2.p1">two</p>
+              <!-- The element tags
+            is currently not supported for the main body.
+        -->
+              <p xml:id="S1.I1.i2.p1">two</p>
               <p>
                 <list rend="bulleted">
                   <item>
-                    <p xml:id="I1.I1.i1.p1">one</p>
+                    <!-- The element tags
+            is currently not supported for the main body.
+        -->
+                    <p xml:id="S1.I1.i2.i1.p1">one</p>
                   </item>
                   <item>
-                    <p xml:id="I1.I1.i2.p1">two</p>
+                    <!-- The element tags
+            is currently not supported for the main body.
+        -->
+                    <p xml:id="S1.I1.i2.i2.p1">two</p>
                   </item>
                 </list>
               </p>
@@ -171,17 +192,29 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         <p>
           <list rend="numbered">
             <item>
-              <p xml:id="I2.i1.p1">one</p>
+              <!-- The element tags
+            is currently not supported for the main body.
+        -->
+              <p xml:id="S1.I2.i1.p1">one</p>
             </item>
             <item>
-              <p xml:id="I2.i2.p1">two</p>
+              <!-- The element tags
+            is currently not supported for the main body.
+        -->
+              <p xml:id="S1.I2.i2.p1">two</p>
               <p>
                 <list rend="numbered">
                   <item>
-                    <p xml:id="I2.I1.i1.p1">one</p>
+                    <!-- The element tags
+            is currently not supported for the main body.
+        -->
+                    <p xml:id="S1.I2.i2.i1.p1">one</p>
                   </item>
                   <item>
-                    <p xml:id="I2.I1.i2.p1">two</p>
+                    <!-- The element tags
+            is currently not supported for the main body.
+        -->
+                    <p xml:id="S1.I2.i2.i2.p1">two</p>
                   </item>
                 </list>
               </p>
@@ -190,18 +223,30 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </p>
         <list>
           <item>
-            <p xml:id="I3.ix1.p1">with some descriptive text.</p>
+            <!-- The element tags
+            is currently not supported for the main body.
+        -->
+            <p xml:id="S1.I3.ix1.p1">with some descriptive text.</p>
           </item>
           <item>
-            <p xml:id="I3.ix2.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            <!-- The element tags
+            is currently not supported for the main body.
+        -->
+            <p xml:id="S1.I3.ix2.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           </item>
           <item>
-            <p xml:id="I3.ix3.p1">blah, blah. Moreover
+            <!-- The element tags
+            is currently not supported for the main body.
+        -->
+            <p xml:id="S1.I3.ix3.p1">blah, blah. Moreover
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           </item>
         </list>
       </div>
       <div>
+        <!-- The element tags
+            is currently not supported for the main body.
+        -->
         <head>A Math Section</head>
         <p xml:id="S2.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
         <p xml:id="S2.p2">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
@@ -666,10 +711,16 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </formula>
         </p>
         <note>
+          <!-- The element tags
+            is currently not supported for the main body.
+        -->
           <title>.</title>
           <p xml:id="Thmcorollary1.p1">Whatever!</p>
         </note>
         <note>
+          <!-- The element tags
+            is currently not supported for the main body.
+        -->
           <title>.</title>
           <p xml:id="Thmcorollaryx1.p1">And whatever.</p>
         </note>
@@ -810,9 +861,15 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </formula>
         </p>
         <div>
+          <!-- The element tags
+            is currently not supported for the main body.
+        -->
           <head>A subsection</head>
           <p xml:id="S2.SS1.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           <div>
+            <!-- The element tags
+            is currently not supported for the main body.
+        -->
             <head>A subsubsection</head>
             <p xml:id="S2.SS1.SSS1.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
             <boxed-text>
@@ -825,6 +882,9 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </div>
       </div>
       <div>
+        <!-- The element tags
+            is currently not supported for the main body.
+        -->
         <head>
           <hi rend="italic">Section with explicit font</hi>
         </head>
@@ -840,7 +900,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           <head>References</head>
           <bibl xml:id="bib.bib1"><person-group person-group-type="author"><name><surname>Stegun</surname><given-names>Abramowitz 
                             and 
-                            </given-names></name></person-group><year>1964</year><article-title>Handbook of mathematical functions with formulas, graphs, and mathematical tables</article-title>M. Abramowitz and I. A. Stegun (<date><year>1964</year></date>)Handbook of mathematical functions with formulas, graphs, and mathematical tables.ninth Dover printing, tenth GPO printing edition,  Dover, New York.Cited by: 1.</bibl>
+                            </given-names></name></person-group><year>1964</year><article-title>Handbook of mathematical functions with formulas, graphs, and mathematical tables</article-title>M. Abramowitz and I. A. Stegun (<date><year>1964</year></date>)Handbook of mathematical functions with formulas, graphs, and mathematical tables.ninth Dover printing, tenth GPO printing edition,  Dover, New York.Cited by: §1.</bibl>
         </listBibl>
       </div>
     </back>

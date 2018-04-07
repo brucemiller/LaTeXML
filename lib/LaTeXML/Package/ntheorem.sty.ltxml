@@ -55,7 +55,7 @@ DeclareOption('thref', sub {
     # \thref{}  should also output the type from the above.
     # We'll use latexml's show attribute to mimic the effect
     DefConstructor('\thref OptionalMatch:* Semiverbatim',
-      "<ltx:ref labelref='#label' show='type refnum' _force_font='true'/>",
+      "<ltx:ref labelref='#label' show='typerefnum' _force_font='true'/>",
       properties => sub { (label => CleanLabel($_[2])); });
 });
 
@@ -302,9 +302,14 @@ DefMacro('\renewtheoremlisttype{}{}{}{}', '');
 # This is Wrong!
 # It should list only specific subsets
 # TOC needs to be generalized to allow more flexiblity, maybe XPath?
+# Should accept comma separated list of theorem classes, including 'all'
+# (theorem class being the 1st arg to \newtheorem)
 DefConstructor('\listtheorems{}',
-  "<ltx:TOC role='theorems' select='ltx:theorem' name='#name'/>",
-  properties => sub { (name => "Theorems"); });
+  "<ltx:TOC lists='#lists' name='#name'/>",
+  properties => sub {
+    my @types = split(/\s*,\s*/, ToString($_[1]));
+    (lists => join(' ', map { ($_ eq 'all' ? 'thm' : 'theorem:' . $_) } @types));
+  });
 
 # \theoremlistdo,
 

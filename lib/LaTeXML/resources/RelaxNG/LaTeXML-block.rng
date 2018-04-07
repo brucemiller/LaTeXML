@@ -101,11 +101,9 @@ the processor will lift such elements out of math, when possible</a:documentatio
   </define>
   <define name="equation_model">
     <a:documentation>Content model for \elementref{equation}.</a:documentation>
-    <optional>
-      <ref name="tag"/>
-    </optional>
     <zeroOrMore>
       <choice>
+        <ref name="tags"/>
         <ref name="Math"/>
         <ref name="MathFork"/>
         <ref name="text"/>
@@ -139,6 +137,7 @@ the processor will lift such elements out of math, when possible</a:documentatio
     <a:documentation>Content model for \elementref{equationgroup}.</a:documentation>
     <zeroOrMore>
       <choice>
+        <ref name="tags"/>
         <ref name="equationgroup"/>
         <ref name="equation"/>
         <ref name="p"/>
@@ -283,7 +282,7 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
   <define name="listingline_model">
     <a:documentation>Content model for \elementref{listingline}</a:documentation>
     <optional>
-      <ref name="tag"/>
+      <ref name="tags"/>
     </optional>
     <ref name="Inline.model"/>
   </define>
@@ -371,7 +370,7 @@ which represents the term being described in each \elementref{item}.</a:document
   <define name="item_model">
     <a:documentation>Content model for \elementref{item}.</a:documentation>
     <optional>
-      <ref name="tag"/>
+      <ref name="tags"/>
     </optional>
     <ref name="Para.model"/>
   </define>
@@ -419,7 +418,7 @@ which represents the term being described in each \elementref{item}.</a:document
   <define name="inline-description">
     <element name="inline-description">
       <a:documentation>An inline form of description list.
-The \elementref{inline-item}s within are expected to have a \elementref{tag}
+The \elementref{inline-item}s within are expected to have a \elementref{tags}
 which represents the term being described in each \elementref{inline-item}.</a:documentation>
       <ref name="inline-description_attributes"/>
       <ref name="inline-description_model"/>
@@ -455,7 +454,7 @@ or \elementref{inline-description}).</a:documentation>
   <define name="inline-item_model">
     <a:documentation>Content model for \elementref{inline-item}.</a:documentation>
     <optional>
-      <ref name="tag"/>
+      <ref name="tags"/>
     </optional>
     <zeroOrMore>
       <choice>
@@ -466,6 +465,20 @@ or \elementref{inline-description}).</a:documentation>
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
+  <define name="tags">
+    <element name="tags">
+      <a:documentation>A container for one or more \elementref{tag}s.
+At most one will have no \attr{role}, which would be the default display.
+Other \elementref{tag} will have the role attribute for use in
+special forms of referencing.</a:documentation>
+      <ref name="tags_model"/>
+    </element>
+  </define>
+  <define name="tags_model">
+    <oneOrMore>
+      <ref name="tag"/>
+    </oneOrMore>
+  </define>
   <define name="tag">
     <element name="tag">
       <a:documentation>A tag within an item indicating the term or bullet for a given item.</a:documentation>
@@ -477,6 +490,11 @@ or \elementref{inline-description}).</a:documentation>
     <a:documentation>Attributes for \elementref{tag}.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="Backgroundable.attributes"/>
+    <optional>
+      <attribute name="role">
+        <a:documentation>specifies the purpose this tag is used for: no value is default display</a:documentation>
+      </attribute>
+    </optional>
     <optional>
       <attribute name="open">
         <a:documentation>specifies an open delimiters used to display the tag.</a:documentation>

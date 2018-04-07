@@ -227,7 +227,8 @@ DefMacro('\thealgorithm',  '\arabic{algorithm}');
 DefMacro('\algorithmname', 'Algorithm');
 
 DefEnvironment('{algorithm}',
-"<ltx:theorem refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' class='ltx_theorem_algorithm'>"
+  "<ltx:theorem xml:id='#id' class='ltx_theorem_algorithm'>"
+    . "#tags"
     . "#body"
     . "</ltx:theorem>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'algorithm'); },

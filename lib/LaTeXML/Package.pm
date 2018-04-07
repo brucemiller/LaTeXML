@@ -598,6 +598,8 @@ sub NewCounter {
   DefMacroI(T_CS("\\the$ctr"), undef, sub {
       ExplodeText(CounterValue($ctr)->valueOf); },
     scope => 'global');
+  if (!LookupDefinition(T_CS("\\p\@$ctr"))) {
+    DefMacroI(T_CS("\\p\@$ctr"), undef, Tokens(), scope => 'global'); }
   my $prefix = $options{idprefix};
   AssignValue('@ID@prefix@' . $ctr => $prefix, 'global') if $prefix;
   $prefix = LookupValue('@ID@prefix@' . $ctr) || CleanID($ctr) unless $prefix;
@@ -664,7 +666,8 @@ sub StepCounter {
 
 # HOW can we retract this?
 sub RefStepCounter {
-  my ($ctr, $noreset) = @_;
+  my ($type, $noreset) = @_;
+  my $ctr = LookupMapping('counter_for_type', $type) || $type;
   StepCounter($ctr, $noreset);
   my $iddef = $STATE->lookupDefinition(T_CS("\\the$ctr\@ID"));
   my $has_id = $iddef && ((!defined $iddef->getParameters) || ($iddef->getParameters->getNumArgs == 0));
@@ -672,32 +675,21 @@ sub RefStepCounter {
   DefMacroI(T_CS('\@currentlabel'), undef, T_CS("\\the$ctr"), scope => 'global');
   DefMacroI(T_CS('\@currentID'), undef, T_CS("\\the$ctr\@ID"), scope => 'global') if $has_id;
 
-###  my $id      = $has_id && ToString(Digest($idtokens));
-  #  my $id      = $has_id && ToString(DigestLiteral($idtokens));
   my $id = $has_id && ToString(DigestLiteral(T_CS("\\the$ctr\@ID")));
 
-  #  my $refnum  = ToString(Digest(T_CS("\\the$ctr")));
-  #  my $frefnum = ToString(Digest(Invocation(T_CS('\lx@fnum@@'),$ctr)));
-  #  my $rrefnum  = ToString(Digest(Invocation(T_CS('\lx@refnum@@'),$ctr)));
-
-  my $refnum    = DigestText(T_CS("\\the$ctr"));
-  my $frefnum   = DigestText(Invocation(T_CS('\lx@fnum@@'), $ctr));
-  my $rrefnum   = DigestText(Invocation(T_CS('\lx@refnum@@'), $ctr));
-  my $s_refnum  = ToString($refnum);
-  my $s_frefnum = ToString($frefnum);
-  my $s_rrefnum = ToString($rrefnum);
+  my $refnum = DigestText(T_CS("\\the$ctr"));
+  my $tags = Digest(Invocation(T_CS('\lx@make@tags'), $type));
   # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
   # This may also include scopes activated for \label
   deactivateCounterScope($ctr);
   # And install the scope (if any) for this reference number.
   AssignValue(current_counter => $ctr, 'local');
-  AssignValue('scopes_for_counter:' . $ctr => [$ctr . ':' . $s_refnum], 'local');
-  $STATE->activateScope($ctr . ':' . $s_refnum);
-  return (refnum => $refnum,
-    ($frefnum && (!$refnum || ($s_frefnum ne $s_refnum)) ? (frefnum => $frefnum) : ()),
-    ($rrefnum && ($frefnum ? ($s_rrefnum ne $s_frefnum) : (!$refnum || ($s_rrefnum ne $s_refnum)))
-      ? (rrefnum => $rrefnum) : ()),
-    ($has_id ? (id => $id) : ())); }
+  my $scope = $ctr . ':' . ToString($refnum);
+  AssignValue('scopes_for_counter:' . $ctr => [$scope], 'local');
+  $STATE->activateScope($scope);
+  return (
+    ($tags   ? (tags => $tags) : ()),
+    ($has_id ? (id   => $id)   : ())); }
 
 sub deactivateCounterScope {
   my ($ctr) = @_;
@@ -710,7 +702,8 @@ sub deactivateCounterScope {
 
 # For UN-numbered units
 sub RefStepID {
-  my ($ctr) = @_;
+  my ($type) = @_;
+  my $ctr = LookupMapping('counter_for_type', $type) || $type;
   my $unctr = "UN$ctr";
   StepCounter($unctr);
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef,

@@ -5,7 +5,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <table frefnum="Table 1" refnum="1" xml:id="S0.T1">
+  <table inlist="lot" xml:id="S0.T1">
+    <tags>
+      <tag>Table 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Table 1</tag>
+    </tags>
     <toccaption><tag close=" ">1</tag>The ISOGRK3 entity set</toccaption>
     <caption><tag close=": ">Table 1</tag>The ISOGRK3 entity set</caption>
     <tabular>
@@ -56,7 +61,12 @@ alpha</td>
       </tbody>
     </tabular>
   </table>
-  <table frefnum="Table 2" refnum="2" xml:id="S0.T2">
+  <table inlist="lot" xml:id="S0.T2">
+    <tags>
+      <tag>Table 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">Table 2</tag>
+    </tags>
     <toccaption><tag close=" ">2</tag>The ISOGRK3 entity set, wider</toccaption>
     <caption><tag close=": ">Table 2</tag>The ISOGRK3 entity set, wider</caption>
     <tabular colsep="20.0pt" width="433.6pt">
@@ -156,7 +166,12 @@ alpha</td>
       </tbody>
     </tabular>
   </table>
-  <table frefnum="Table 3" refnum="3" xml:id="S0.T3">
+  <table inlist="lot" xml:id="S0.T3">
+    <tags>
+      <tag>Table 3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">Table 3</tag>
+    </tags>
     <toccaption><tag close=" ">3</tag>Another table in a minipage</toccaption>
     <caption><tag close=": ">Table 3</tag>Another table in a minipage</caption>
     <tabular colsep="20.0pt" width="433.6pt">

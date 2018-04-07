@@ -8,7 +8,12 @@
   <para xml:id="p1">
     <p>Text mode, then math mode.</p>
   </para>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Unit</title>
     <para xml:id="S1.p1">
       <p>Normal: <Math mode="inline" tex="m" text="m" xml:id="S1.p1.m1">
@@ -52,7 +57,12 @@
         </Math></p>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Unitfrac</title>
     <para xml:id="S2.p1">
       <p>Normal: <Math mode="inline" tex="\nicefrac{{m}}{{s}}" text="m / s" xml:id="S2.p1.m1">
@@ -145,7 +155,12 @@
         </Math></p>
     </para>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>Nicefrac</title>
     <para xml:id="S3.p1">
       <p>Normal: <Math mode="inline" tex="\nicefrac{{1}}{{2}}" text="1 / 2" xml:id="S3.p1.m1">

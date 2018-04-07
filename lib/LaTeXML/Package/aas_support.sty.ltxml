@@ -145,15 +145,18 @@ DefMacro('\placeplate{}',  '');
 NewCounter('plate');
 DefMacroI('\platename', undef, 'Plate');
 
+# Is there any kind of "list of plates" ? Then we'd need @inlists
 DefEnvironment('{plate}[]',
-"<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_plate'>"
+  "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_plate'>"
+    . "#tags"
     . "#body"
     . "</ltx:float>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'plate'); },
   afterDigest => sub { RescueCaptionCounters('plate', $_[1]); });
 
 DefEnvironment('{plate*}[]',
-"<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_plate'>"
+  "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_plate'>"
+    . "#tags"
     . "#body"
     . "</ltx:float>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'plate'); },
@@ -182,16 +185,9 @@ DefConstructor('\facility{}', "<ltx:text class='ltx_ast_facility'>#1</ltx:text>"
 # almost normal LaTeX
 DefMacro('\appendix', '\@appendix');
 DefPrimitive('\@appendix', sub {
-    NewCounter('section', 'document', idprefix => 'A', nested => ['subsection']);
+    startAppendices('section');
     NewCounter('equation', 'section', idprefix => 'E');
-    DefMacro('\thesection', '\Alph{section}', scope => 'global');
-    DefMacro('\theequation', '\thesection\arabic{equation}', scope => 'global');
-    DefMacroI('\theappendix', undef, '\thesection', scope => 'global');
-    Let('\section',   '\appendix@section', 'global');
-    Let('\@appendix', '\relax',            'global');
-    if (IsDefined('\appendixname')) {
-      Let('\sectionname', '\appendixname', 'global'); }
-});
+    DefMacro('\theequation', '\thesection\arabic{equation}', scope => 'global'); });
 
 #======================================================================
 # 2.12 Equations

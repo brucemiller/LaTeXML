@@ -5,7 +5,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Counters</title>
     <para xml:id="S1.p1">
       <p>Count 7/2 = 3.</p>
@@ -26,7 +31,12 @@
       <p>Count 3*(4+5) = 27.</p>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Lengths</title>
     <para xml:id="S2.p1">
       <p>Length 200pt = 200.0pt.</p>
@@ -47,7 +57,12 @@
       <p>Length lenc * (lenb/lenc) = 300.0pt.</p>
     </para>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>Min &amp; Max</title>
     <para xml:id="S3.p1">
       <p>Count min(2,4) = 2</p>
@@ -62,7 +77,12 @@
       <p>Length minof(3pt)(lenb)*1.5*maxof(2*1.6)(2-1) = 13.5pt.</p>
     </para>
   </section>
-  <section refnum="4" xml:id="S4">
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
     <title><tag close=" ">4</tag>Widths, Heights of Boxes</title>
     <para xml:id="S4.p1">
       <p>Length of “Some text” = 67.49897pt.</p>
@@ -77,7 +97,12 @@
       <p>Length (3pt plus 3pt)*1.5 = = 4.5pt plus 4.5pt.</p>
     </para>
   </section>
-  <section refnum="5" xml:id="S5">
+  <section inlist="toc" xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
     <title><tag close=" ">5</tag>Macros?</title>
     <para xml:id="S5.p1">
       <p>Length of “Other text= 74.998856pt.</p>

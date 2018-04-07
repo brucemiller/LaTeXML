@@ -2081,6 +2081,16 @@ DefPrimitive('\showthe Token',  undef);
 # DefPrimitive('\shipout ??
 DefPrimitive('\ignorespaces SkipSpaces', undef);
 
+DefPrimitiveI('\lx@ignorehardspaces', undef, sub {
+    my ($stomach) = @_;
+    my $gullet = $stomach->getGullet;
+    my ($token, @boxes);
+    while (($token = $gullet->readXToken) && (@boxes = $stomach->invokeToken($token))) {
+      while (@boxes && $boxes[0]->getProperty('isSpace')) {
+        pop(@boxes); }
+      last if @boxes; }
+    return @boxes; });
+
 # \afterassignment saves ONE token (globally!) to execute after the next assignment
 DefPrimitive('\afterassignment Token', sub { AssignValue(afterAssignment => $_[1], 'global'); });
 # \aftergroup saves ALL tokens (from repeated calls) to be executed IN ORDER after the next egroup or }
@@ -3273,7 +3283,7 @@ sub cleanup_XMText {
 ##                                 .' | ltx:tabular/ltx:tr/ltx:td[not(ltx:Math)]'
 ##                                 .' | ltx:tabular/ltx:tbody/ltx:tr/ltx:td[not(ltx:Math)]',
 ##                                 $textnode)
-  ) {
+    ) {
     # First step is remove any ltx:tbody from the tabular!
     foreach my $tb ($document->findnodes('ltx:tabular/ltx:tbody', $textnode)) {
       $document->unwrapNodes($tb); }
@@ -3288,7 +3298,7 @@ sub cleanup_XMText {
             $document->replaceNode($m, map { $_->childNodes } $m->childNodes); }
           else {                                           # Otherwise, wrap whatever it is in an XMText
             $document->wrapNodes('ltx:XMText', $m); }
-    } } }
+        } } }
     # And now we don't need the XMText any more.
     foreach my $attr ($textnode->attributes) {    # Copy the child's attributes (should Merge!!)
       $table->setAttribute($attr->nodeName => $attr->getValue); }
@@ -3471,23 +3481,19 @@ sub equationgroupJoinRows {
   my $equation = $document->openElementAt($equationgroup, 'ltx:equation');
   $equationgroup->insertBefore($equation, $equations[0]);    # Move to correct position.
                                                              # move labels, id, refnum to new equation
-  my ($labels, $id, $refnum, $frefnum, $rrefnum, $idctr);
+  my ($labels, $id, $idctr, $tags);
   foreach my $eq (@equations) {
     if (my $l = $eq->getAttribute('labels')) {
       $labels = ($labels ? "$labels $l" : $l); }
     $id = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
     $eq->removeAttribute('xml:id') if $id;
-    $refnum  = $eq->getAttribute('refnum')         if $eq->hasAttribute('refnum');
-    $frefnum = $eq->getAttribute('frefnum')        if $eq->hasAttribute('frefnum');
-    $rrefnum = $eq->getAttribute('rrefnum')        if $eq->hasAttribute('rrefnum');
-    $idctr   = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_'); }
+    $tags = $document->findnode('ltx:tags', $eq);
+    $idctr = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_'); }
   $document->unRecordID($id) if $id;
-  $document->setAttribute($equation, labels           => $labels)  if $labels;
-  $document->setAttribute($equation, 'xml:id'         => $id)      if $id;
-  $document->setAttribute($equation, refnum           => $refnum)  if $refnum;
-  $document->setAttribute($equation, frefnum          => $frefnum) if $frefnum;
-  $document->setAttribute($equation, rrefnum          => $rrefnum) if $rrefnum;
-  $document->setAttribute($equation, '_ID_counter_m_' => $idctr)   if $idctr;
+  $document->setAttribute($equation, labels           => $labels) if $labels;
+  $document->setAttribute($equation, 'xml:id'         => $id)     if $id;
+  $document->setAttribute($equation, '_ID_counter_m_' => $idctr)  if $idctr;
+  $equation->appendChild($tags) if $tags;
 
   # Scan equations to see which ones likely are continuations of previous
   my ($main, $branch) = openMathFork($document, $equation);
@@ -3545,7 +3551,7 @@ DefMacroI('\eqno', undef, sub {
         || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
                                                      # This seems needed within AmSTeX environs
         || Equals($t, T_CS('\@@close@inner@column'))
-      ) {
+        ) {
         #       || Equals($t,T_CS('\end{equation}'))|| Equals($t,T_CS('\end{equation*}'))){
         return (Invocation(T_CS('\@@eqno'), Tokens(@stuff)), $t); }
       else {
@@ -3553,14 +3559,9 @@ DefMacroI('\eqno', undef, sub {
 
 Let('\leqno', '\eqno');
 # Revert to nothing, since it really doesn't belong in the TeX string(?)
-DefConstructor('\@@eqno{}', "^ refnum='#eqnum'",
-  reversion => '',
-  afterDigest => sub { my $num = ToString($_[1]->getArg(1));
-    # special purpose cleanup!?!?!
-    $num =~ s/^\\hbox\{(.*)\}$/$1/;
-    $num =~ s/^\{(.*)\}$/$1/;
-    $num =~ s/^\((.*)\)$/$1/;
-    $_[1]->setProperties(eqnum => $num); });
+DefConstructor('\@@eqno{}',
+  "^ <ltx:tags><ltx:tag><ltx:Math><ltx:XMath>#1</ltx:XMath></ltx:Math></ltx:tag></ltx:tags>",
+  reversion => '');
 
 #======================================================================
 # Scripts are a bit of a strange beast, with respect to when the arguments
@@ -3699,7 +3700,7 @@ sub scriptHandler {
     my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
     Error('unexpected', $c, $stomach, "Script $c can only appear in math mode");
     return Box($c, undef, undef, (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
-} }
+  } }
 
 DefPrimitiveI(T_SUPER, undef, sub { scriptHandler($_[0], 'SUPERSCRIPT'); });
 DefPrimitiveI(T_SUB,   undef, sub { scriptHandler($_[0], 'SUBSCRIPT'); });
@@ -4244,6 +4245,20 @@ RawTeX(<<'EoTeX');
   \dimendef\dimen@=0
   \dimendef\dimen@i=1
   \dimendef\dimen@ii=2
+\count10=22 % allocates \count registers 23, 24, ...
+\count11=9 % allocates \dimen registers 10, 11, ...
+\count12=9 % allocates \skip registers 10, 11, ...
+\count13=9 % allocates \muskip registers 10, 11, ...
+\count14=9 % allocates \box registers 10, 11, ...
+\count15=9 % allocates \toks registers 10, 11, ...
+\count16=-1 % allocates input streams 0, 1, ...
+\count17=-1 % allocates output streams 0, 1, ...
+\count18=3 % allocates math families 4, 5, ...
+\count19=0 % allocates \language codes 1, 2, ...
+\count20=255 % allocates insertions 254, 253, ...
+\countdef\insc@unt=20
+\countdef\allocationnumber=21
+\countdef\m@ne=22 \m@ne=-1
 EoTeX
 # Various \count's are set; should we?
 
@@ -4681,12 +4696,17 @@ Tag('ltx:document', 'afterOpen:late' => sub {
     if (my $classes = join(' ', LookupMappingKeys('DOCUMENT_CLASSES'))) {
       $document->addClass($root, $classes); } });
 
-DefConstructor('\beginsection Until:\par',
+# If folks start using plain TeX macros, and never load LaTeX.pool,
+# they might benefit from a ltx-plain.css?
+DefMacro('\beginsection Until:\par', '\@beginsection{{\bf #1}}');
+DefConstructor('\@beginsection {}',
   "<ltx:section><ltx:title>#1</ltx:title>");
 
 # POSSIBLY #1 is a name or reference number and  #2 is the theoremm TITLE
 #  If so, how do know when the theorem ends?
-DefConstructorI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\par')),
+DefMacroI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\par')),
+  '\@proclaim{{\bf #1}}{{\sl #2}}');
+DefConstructor('\@proclaim{}{}',
   "<ltx:theorem>"
     . "<ltx:title font='#titlefont' _force_font='true' >#title</ltx:title>"
     . "#2"
@@ -4696,46 +4716,141 @@ DefConstructorI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\pa
     (title => $title, titlefont => $title->getFont); });
 
 #======================================================================
-# Support for reference numbers, references to reference numbers, etc.
+# Tags & Titles
+# The reference numbers, titles, captions etc, for various objects have
+# different styling conventions, and the styling various depending on context.
+# We'll use ltx:tags as a container for the various forms of ltx:tag with different @role's.
+# The role=refnum form is simply formatted by \the<counter> and used by \ref;
+# An ltx:tag w/o @role are for the numbers, often formatted differently, which
+# appear alongside the object; Such a tag also may be embedded within the title or caption.
+# Cross-references automatically generated by LaTeXML benefit from a bit more context:
+# these are the role=typerefnum forms.
+# Additional forms are needed for bibliographies, hyperref's autoref, etc.
+# An additional complication is that while the "type" determines the formatting
+# of the various forms, some types (eg. theorems) share the same counter.
+# LaTeX defines this handling on an adhoc basis; defines \fnum@table, \fnum@figure for some types
+# but \labelenumi, etc for others.
+
+# This section synthesizes a more uniform support for reference numbers,
+# references to reference numbers, title formatting etc.
+# It allows you to customize each of the forms for each type encountered.
 # The design reflects LaTeX needs, more than TeX, but support starts here!
 
-# The lowest level reference number for an object is typically \the<counter>
-# for whatever counter is keeping track of the object.
-# This will typically go into the refnum attribute.
-# However, the way that number is displayed as part of the object,
-# as well as the way that number is shown when the object is referenced,
-# can be different from that plain refnum.
+# This collects up the various declared ltx:tag's into an ltx:tags
+DefMacro('\lx@make@tags {}', sub {
+    my ($gullet, $type) = @_;
+    my @tags       = ();
+    my $formatters = LookupValue('type_tag_formatter');
+    foreach my $role (sort keys %{$formatters}) {
+      my $formatter = $$formatters{$role};
+      push(@tags, Invocation(T_CS('\lx@tag@intags'), T_OTHER($role),
+          Invocation($formatter, $type))); }
+    return (T_CS('\lx@tags'), T_BEGIN, @tags, T_END); });
 
-# \lx@fnum@@{type}  Gets the formatted form of the refnum
-# LaTeX defines \fnum@table, \fnum@figure for some types
-# but \labelenumi, etc for others; we'll bind the latter to \fnum@enumi for simplicity.
-# Otherwise, we'll construct a formatted number using a name prefix and the number.
-# This allows for localization by defining eg. \tablename
+# Remove the last closed node, if it's empty.
+sub removeEmptyElement {
+  my ($document, $whatsit) = @_;
+  my $node = $document->getNode->lastChild;    # This should be the wrapper just added.
+  if (!$node->childNodes) {
+    $document->removeNode($node); }
+  return; }
+
+# \lx@tag[open][close]{stuff}
+DefConstructor('\lx@tag[][][]{}',
+  "<ltx:tag open='#1' close='#2'>#4</ltx:tag>",
+  bounded => 1, mode => 'text',
+  afterConstruct => \&removeEmptyElement);
+
+# \lx@tag@intags{role}{stuff}
+DefConstructor('\lx@tag@intags[]{}',
+  "<ltx:tag role='#1'>#2</ltx:tag>",
+  bounded => 1, mode => 'text',
+  afterConstruct => \&removeEmptyElement);
+
+DefConstructor('\lx@tags{}',
+  "<ltx:tags>#1</ltx:tags>",
+  afterConstruct => \&removeEmptyElement);
+
+#----------------------------------------------------------------------
+# "refnum" is the lowest level reference number for an object is typically \the<counter>
+# but be sure to use the right counter!  This is how \ref will show the number.
+# You'll typically customize this by defining \the<counter> (and \p@<counter) as in LaTeX.
+DefMacro('\lx@counterfor{}', sub {
+    my ($gullet, $type) = @_;
+    my $ctr = LookupMapping('counter_for_type', ToString($type));
+    return ($ctr ? T_OTHER($ctr) : $type); });
+DefMacro('\lx@the@@{}',  '\expandafter\lx@@the@@\expandafter{\lx@counterfor{#1}}');
+DefMacro('\lx@@the@@{}', '\csname the#1\endcsname');
+
+DefMacro('\lx@therefnum@@{}', '\expandafter\lx@@therefnum@@\expandafter{\lx@counterfor{#1}}');
+DefMacro('\lx@@therefnum@@{}',
+  '{\normalfont\csname p@#1\endcsname\csname the#1\endcsname}');
+
+AssignMapping('type_tag_formatter', 'refnum' => '\lx@therefnum@@');
+
+#----------------------------------------------------------------------
+# \lx@fnum@@{type}  Gets the formatted form of the refnum, as part of the object, (no @role).
+# Customize by defining \fnum@<type>.
+# Default uses \<type>name prefix + space (if any) and \the<counter>.
+
+DefMacro('\lx@refnum@compose{}{}',  '\expandafter\lx@refnum@compose@\expandafter{#2}{#1}');
+DefMacro('\lx@refnum@compose@{}{}', '\if.#1.#2\else#2\space#1\fi');
 
 DefMacro('\lx@fnum@@{}',
-  '\@ifundefined{fnum@#1}{\lx@@fnum@@{#1}}{\csname fnum@#1\endcsname}');
+  '{\normalfont\@ifundefined{fnum@#1}{\lx@@fnum@@{#1}}{\csname fnum@#1\endcsname}}');
 
-# \lx@fnum@toc@{type} calls \fnum@toc@<type>, if defined, else composes using \lx@@fnum@@{type}
+DefMacro('\lx@@fnum@@ {}',
+  #  '\@ifundefined{#1name}{\lx@the@@{#1}}{\csname #1name\endcsname~\lx@the@@{#1}}');
+'\@ifundefined{#1name}{\lx@the@@{#1}}{\lx@refnum@compose{\csname #1name\endcsname}{\lx@the@@{#1}}}');
+
+AssignMapping('type_tag_formatter', '' => '\lx@fnum@@');    # Default!
+
+#----------------------------------------------------------------------
+# \lx@fnum@toc@{type} is similar, but formats the number for use within \toctitle
+# Customize by defining \fnum@toc@<type>.
+# Default uses just \the<counter>, else composes using \lx@@fnum@@{type}
 DefMacro('\lx@fnum@toc@@{}',
-  '\@ifundefined{fnum@toc@#1}{\csname the#1\endcsname}{\csname fnum@toc@#1\endcsname}');
+  '{\normalfont\@ifundefined{fnum@toc@#1}{\lx@the@@{#1}}{\csname fnum@toc@#1\endcsname}}');
 
-#[An abbreviated form seems potentially useful... (ie. \chapter@abbr)]
+#----------------------------------------------------------------------
+# "typerefnum" form is used by automatic cross-references, typically "type number" or similar.
+# Customize by defining \typerefnum@<type>.
+# Default uses either \<type>typerefname or \<type>name (if any, followed by space, then \the<counter>
+DefMacro('\lx@typerefnum@@{}',
+'{\normalfont\@ifundefined{typerefnum@#1}{\lx@@typerefnum@@{#1}}{\csname typerefnum@#1\endcsname}}');
 
-DefPrimitive('\lx@@fnum@@ {}', sub {
-    my ($gullet, $type) = @_;
-    my $cs     = T_CS('\\' . ToString($type) . 'name');
-    my @name   = (LookupDefinition($cs) ? Digest($cs)->unlist : ());
-    my @num    = Digest(T_CS('\the' . ToString($type)))->unlist;
-    my $letter = @name && $name[-1]->can('getString') && $name[-1]->getString;
-    (@name,
-      (scalar(@name) && scalar(@num) && ($letter =~ /\w/)
-        ? (Digest(T_CS('\text@nobreakspace'))) : ()),
-      @num); });
+DefMacro('\lx@@typerefnum@@{}',
+  '\@ifundefined{#1typerefname}{'
+    . '\@ifundefined{#1name}{}{\lx@refnum@compose{\csname #1name\endcsname}{\lx@the@@{#1}}}'
+    . '}{'
+    . '\lx@refnum@compose{\csname #1typerefname\endcsname}{\lx@the@@{#1}}'
+    . '}');
 
-# \lx@refnum@@{type} Gets the referencing form of the refnum.
-# Look for a \refnum@type and use it, else just \thetype
-DefMacro('\lx@refnum@@{}',
-  '\@ifundefined{refnum@#1}{\lx@fnum@@{#1}}{\csname refnum@#1\endcsname}');
+AssignMapping('type_tag_formatter', 'typerefnum' => '\lx@typerefnum@@');
+
+#----------------------------------------------------------------------
+# The following macros provide similar customization for titles & toctitles
+# in particular for supporting localization for different languages.
+# Redefine these if you want to assemble the name (eg. \chaptername), refnum and titles differently
+#----------------------------------------------------------------------
+# \lx@@format@title@{type}{title}
+# Format a title (or caption) appropriately for type.
+# Customize by defining \format@title@type{title}
+# Default composes \lx@fnum@@{type} space title.
+DefMacro('\lx@@format@title@{}{}',
+'{\@ifundefined{format@title@#1}{\lx@@compose@title{\lx@fnum@@{#1}}{#2}}{\csname format@title@#1\endcsname{#2}}}');
+
+# \lx@@format@toctitle@{type}{toctitle}
+# Similar for toctitle, typically briefer
+# Customize by defining \format@toctitle@type{title}
+# Default composes \lx@fnum@toc@@{type} space title.
+DefMacro('\lx@@format@toctitle@{}{}',
+'{\@ifundefined{format@toctitle@#1}{\lx@@compose@title{\lx@fnum@toc@@{#1}}{#2}}{\csname format@toctitle@#1\endcsname{#2}}}');
+
+DefMacro('\lx@@compose@title{}{}', '\lx@tag[][ ]{#1}#2');
+
+## NOTE that a 3rd form seems desirable: an concise form that cannot rely on context for the type.
+## This would be useful for the titles in links; thus can be plain (unicode) text.
 
 #======================================================================
 # TeX Book, Appendix B. p. 356
@@ -5359,7 +5474,7 @@ DefConstructor('\@@joinrel{}{}', sub {
         my $role = (scalar(keys %roles) == 1 ? [keys %roles]->[0] : ($roles{ARROW} ? 'ARROW' : 'RELOP'));
         map { $node->removeChild($_) } @rels;
         $document->insertElement('ltx:XMTok', [map { $_->textContent } @rels], role => $role);
-  } } },
+      } } },
   reversion => '#1\joinrel #2');
 
 #----------------------------------------------------------------------
@@ -6036,7 +6151,7 @@ DefPrimitive('\normalbottom', undef);
 # if the mark is not simple, we add it to the content of the note
 # otherwise, to the attribute.
 DefConstructor('\footnote{}{}',
-  "<ltx:note role='foot' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
+  "<ltx:note role='footnote' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $mark   = $whatsit->getArg(1);
@@ -6476,7 +6591,8 @@ sub setAlignOrClass {
   my ($document, $node, $align, $class) = @_;
   my $model = $document->getModel;
   my $qname = $model->getNodeQName($node);
-  if ($align && $document->canHaveAttribute($qname, 'align')) {
+  if ($qname eq 'ltx:tag') { }    # HACK
+  elsif ($align && $document->canHaveAttribute($qname, 'align')) {
     $node->setAttribute(align => $align); }
   elsif ($class && $document->canHaveAttribute($qname, 'class')) {
     $document->addClass($node, $class); }

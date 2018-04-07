@@ -5,7 +5,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>existence check</title>
     <para xml:id="S1.p1">
       <p>‘foo’ exists in familya. 
@@ -14,31 +19,56 @@
 ‘world’ does not exist.</p>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>disabling keys</title>
     <para xml:id="S2.p1">
       <p>Key ‘C’.</p>
     </para>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>keys in only one of multiple families</title>
     <para xml:id="S3.p1">
       <p>Set ‘foo’ in ‘d’. Set ‘bar’ in ‘e’. Set ‘foobar’ in ‘d’.</p>
     </para>
   </section>
-  <section refnum="4" xml:id="S4">
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
     <title><tag close=" ">4</tag>keys in all families</title>
     <para xml:id="S4.p1">
       <p>Found ‘foo’ key in ‘f’. Found ‘foo’ key in ‘g’.</p>
     </para>
   </section>
-  <section refnum="5" xml:id="S5">
+  <section inlist="toc" xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
     <title><tag close=" ">5</tag>Skip keys</title>
     <para xml:id="S5.p1">
       <p>Found ‘foo’ key in ‘h’. Found ‘bar’ key in ‘h’.</p>
     </para>
   </section>
-  <section refnum="6" xml:id="S6">
+  <section inlist="toc" xml:id="S6">
+    <tags>
+      <tag>6</tag>
+      <tag role="refnum">6</tag>
+      <tag role="typerefnum">§6</tag>
+    </tags>
     <title><tag close=" ">6</tag>Store missing keys</title>
     <para xml:id="S6.p1">
       <p>Found ‘foo’ key in ‘i’. Found ‘bar’ key in ‘i’.</p>
@@ -59,7 +89,12 @@
       <p>Leftover keys are .</p>
     </para>
   </section>
-  <section refnum="7" xml:id="S7">
+  <section inlist="toc" xml:id="S7">
+    <tags>
+      <tag>7</tag>
+      <tag role="refnum">7</tag>
+      <tag role="typerefnum">§7</tag>
+    </tags>
     <title><tag close=" ">7</tag>Available Internals</title>
     <para xml:id="S7.p1">
       <p>Prefix=my@, Fams=familyl,familym, TFam=familyl, Header=my@familyl@, Key=foo, Na=. Found ‘foo’ key in ‘l’. Prefix=my@, Fams=familyl,familym, TFam=familyl, Header=my@familyl@, Key=bar, Na=. Found ‘bar’ key in ‘l’. Prefix=my@, Fams=familyl,familym, TFam=familym, Header=my@familym@, Key=foobar, Na=. Found ‘foobar’ key in ‘m’.</p>

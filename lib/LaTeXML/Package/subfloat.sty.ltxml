@@ -35,7 +35,8 @@ DefMacroI('\subfloattablename',  undef, 'Table');
 DefMacro('\fnum@subfigure', '(\thesubfigure)');
 
 DefEnvironment('{subfigures}',
-  "<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
+  "<ltx:figure xml:id='#id'>"
+    . "#tags"
     . "#body"
     . "</ltx:figure>",
   properties => sub { RefStepCounter('figure'); },    # No caption (?)
@@ -44,14 +45,16 @@ DefEnvironment('{subfigures}',
     DefMacroI('\@captype', undef, 'figure');
     # redefine figure!
     DefEnvironment('{figure}[]',
-"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
+      "<ltx:figure xml:id='#id' ?#1(placement='#1')>"
+        . "#tags"
         . "#body"
         . "</ltx:figure>",
       properties => { layout => 'vertical' },
       beforeDigest => sub { DefMacroI('\@captype', undef, 'subfloatfigure'); },
       afterDigest => sub { RescueCaptionCounters('subfloatfigure', $_[1]); });
     DefEnvironment('{figure*}[]',
-"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
+      "<ltx:figure xml:id='#id' ?#1(placement='#1')>"
+        . "#tags"
         . "#body"
         . "</ltx:figure>",
       properties => { layout => 'vertical' },
@@ -64,7 +67,8 @@ DefEnvironment('{subfigures}',
 
 DefMacro('\fnum@subtable', '(\thesubtable)');
 DefEnvironment('{subtables}',
-  "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
+  "<ltx:table xml:id='#id'>"
+    . "#tags"
     . "#body"
     . "</ltx:table>",
   properties => sub { RefStepCounter('table'); },    # No caption (?)
@@ -73,14 +77,16 @@ DefEnvironment('{subtables}',
     DefMacroI('\@captype', undef, 'table');
     # redefine table!
     DefEnvironment('{table}[]',
-"<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
+      "<ltx:table xml:id='#id' ?#1(placement='#1')>"
+        . "#tags"
         . "#body"
         . "</ltx:table>",
       properties => { layout => 'vertical' },
       beforeDigest => sub { DefMacroI('\@captype', undef, 'subfloattable'); },
       afterDigest => sub { RescueCaptionCounters('subfloattable', $_[1]); });
     DefEnvironment('{table*}[]',
-"<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')>"
+      "<ltx:table xml:id='#id' ?#1(placement='#1')>"
+        . "#tags"
         . "#body"
         . "</ltx:table>",
       properties => { layout => 'vertical' },

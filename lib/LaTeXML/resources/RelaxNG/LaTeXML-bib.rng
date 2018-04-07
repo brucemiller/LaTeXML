@@ -69,55 +69,12 @@ present in the BibTeX data.</a:documentation>
   </define>
   <define name="bibitem_model">
     <a:documentation>Content model for \elementref{bibitem}.</a:documentation>
-    <zeroOrMore>
-      <ref name="bibtag"/>
-    </zeroOrMore>
+    <optional>
+      <ref name="tags"/>
+    </optional>
     <zeroOrMore>
       <ref name="bibblock"/>
     </zeroOrMore>
-  </define>
-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-  <define name="bibtag">
-    <element name="bibtag">
-      <a:documentation>Various formatted tags for bibliographic items.
-Typically @role refnum is shown in the displayed bibliography,
-as the beginning of the item.  Other roles 
-(eg. number, authors, fullauthors, year, title) record formatted
-info to be used for filling in citations (\elementref{bibref}).</a:documentation>
-      <ref name="bibtag_attributes"/>
-      <ref name="bibtag_model"/>
-    </element>
-  </define>
-  <define name="bibtag_attributes">
-    <a:documentation>Attributes for \elementref{bibtag}.</a:documentation>
-    <optional>
-      <attribute name="role">
-        <choice>
-          <value>number</value>
-          <value>authors</value>
-          <value>fullauthors</value>
-          <value>key</value>
-          <value>year</value>
-          <value>bibtype</value>
-          <value>title</value>
-          <text/>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="open">
-        <a:documentation>A delimiter for formatting the refnum in the bibliography</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="close">
-        <a:documentation>A delimiter for formatting the refnum in the bibliography</a:documentation>
-      </attribute>
-    </optional>
-  </define>
-  <define name="bibtag_model">
-    <a:documentation>Content model for \elementref{bibtag}.</a:documentation>
-    <ref name="Inline.model"/>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="bibblock">

@@ -63,10 +63,10 @@ DefMacro('\dlap{}', '\hbox{#1}');
 
 Let('\tabcaption', '\caption');
 
-DefMacro('\format@title@section{}',    '\@tag[][.\space]{\thesection}#1');
-DefMacro('\format@title@subsection{}', '\@tag[][.\space]{\thesubsection}#1');
-DefMacro('\format@title@figure{}',     '\@tag[][.\@@emdash\space]{\fnum@figure}#1');
-DefMacro('\format@title@table{}',      '    \@tag{\fnum@table}#1');
+DefMacro('\format@title@section{}',    '\lx@tag[][.\space]{\thesection}#1');
+DefMacro('\format@title@subsection{}', '\lx@tag[][.\space]{\thesubsection}#1');
+DefMacro('\format@title@figure{}',     '\lx@tag[][.\@@emdash\space]{\fnum@figure}#1');
+DefMacro('\format@title@table{}',      '\lx@tag{\fnum@table}#1');
 
 # #======================================================================
 1;

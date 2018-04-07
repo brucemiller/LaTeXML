@@ -132,26 +132,9 @@ Other mechanisms (like acro?) might use other prefixes (but \texttt{ID:} is rese
       </attribute>
     </optional>
     <optional>
-      <attribute name="refnum">
-        <a:documentation>the reference number (ie. section number, equation number, etc) of the object.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="frefnum">
-        <a:documentation>the formatted reference number of the object as it would appear when labelling the object,
-typically this is the refnum with the object type prepended, such as "Chapter 2".
-This is what eg, \cs{labelenumi} or \cs{fnum@table} would produce.  
-This attribute is only needed when different from \attr{refnum}.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="rrefnum">
-        <a:documentation>the referencing reference number of the object as it might appear
-when referencing the object, such as an equation number with parentheses.
-This is useful for generated references to clarify the type of object,
- but is not used with LaTeX's usual \cs{ref}.
-And, note that \cs{eqnref} puts its own parentheses.
-This attribute is only needed when different from both \attr{frefnum} and  \attr{refnum}.</a:documentation>
+      <attribute name="inlist">
+        <a:documentation>Records which lists, such as toc=table of contents,..., this object could be listed in.
+Space separated set of toc, lof, lot, etc.</a:documentation>
       </attribute>
     </optional>
   </define>

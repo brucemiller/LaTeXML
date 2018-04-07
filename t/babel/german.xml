@@ -9,13 +9,23 @@
   <creator role="author">
     <personname>Frau Blücher</personname>
   </creator>
-  <chapter frefnum="Kapitel 1" refnum="1" xml:id="Ch1">
-    <title><tag close=" ">Kapitel 1</tag>Some stuff</title>
+  <chapter inlist="toc" xml:id="Ch1">
+    <tags>
+      <tag>Kapitel 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Kapitel 1</tag>
+    </tags>
+    <title><tag close=" ">Kapitel 1</tag>Some stuff</title>
     <toctitle><tag close=" ">1</tag>Some stuff</toctitle>
     <para xml:id="Ch1.p1">
       <p>Umläüte.</p>
     </para>
-    <table frefnum="Tabelle 1.1" refnum="1.1" xml:id="Ch1.T1">
+    <table inlist="lot" xml:id="Ch1.T1">
+      <tags>
+        <tag>Tabelle 1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">Tabelle 1.1</tag>
+      </tags>
       <p>Eine Tabelle</p>
       <toccaption><tag close=" ">1.1</tag>Um ein Tabelle.</toccaption>
       <caption><tag close=": ">Tabelle 1.1</tag>Um ein Tabelle.</caption>

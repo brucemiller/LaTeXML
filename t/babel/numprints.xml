@@ -7,15 +7,20 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Basics</title>
-    <paragraph xml:id="S1.SS0.SSS0.Px1">
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px1">
       <title>Basics</title>
       <para xml:id="S1.SS0.SSS0.Px1.p1">
         <p><text class="ltx_number">-123,456</text>; <text class="ltx_number">±123,456</text>; <text class="ltx_number">±3.141,592,7×10<sup>-3.1</sup></text></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.Px2">
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px2">
       <title>Text vs Math</title>
       <para xml:id="S1.SS0.SSS0.Px2.p1">
         <p><text class="ltx_number">123,456.134×10<sup>123</sup></text> and <Math mode="inline" tex="\numprint{123456.134e123}" text="123456.134e123" xml:id="S1.SS0.SSS0.Px2.p1.m1">
@@ -41,19 +46,19 @@
           </Math></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.Px3">
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px3">
       <title>Exponents</title>
       <para xml:id="S1.SS0.SSS0.Px3.p1">
         <p>Pure exponents: <text class="ltx_number">10<sup>43,242</sup></text>; <text class="ltx_number">-10<sup>43,242</sup></text>; <text class="ltx_number">±10<sup>43,242</sup></text>.</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.Px4">
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px4">
       <title>Expansion</title>
       <para xml:id="S1.SS0.SSS0.Px4.p1">
         <p><text class="ltx_number">1,234.567,8</text></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.Px5">
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px5">
       <title>Units</title>
       <para xml:id="S1.SS0.SSS0.Px5.p1">
         <p><text class="ltx_number">-123,456<Math mode="inline" tex="{\,}" text="absent" xml:id="S1.SS0.SSS0.Px5.p1.m1">
@@ -76,7 +81,7 @@
 <text class="ltx_number">360</text></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.Px6">
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px6">
       <title>Counters and Lengths</title>
       <para xml:id="S1.SS0.SSS0.Px6.p1">
         <p>Page: <text class="ltx_number">0</text></p>
@@ -206,30 +211,35 @@
       </para>
     </paragraph>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Customization</title>
-    <paragraph xml:id="S2.SS0.SSS0.Px1">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px1">
       <title>Four-digit case</title>
       <para xml:id="S2.SS0.SSS0.Px1.p1">
         <p><text class="ltx_number">1,234</text> vs.  <text class="ltx_number">1234</text>;
 But : <text class="ltx_number">12,345</text> vs.  <text class="ltx_number">12,345</text>.</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px2">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px2">
       <title>Missing zero</title>
       <para xml:id="S2.SS0.SSS0.Px2.p1">
         <p><text class="ltx_number">.123,4</text> vs.  <text class="ltx_number">0.123,4</text>;
 But : <text class="ltx_number">1,234</text> vs.  <text class="ltx_number">1,234</text>;</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px3">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px3">
       <title>Adding pluses</title>
       <para xml:id="S2.SS0.SSS0.Px3.p1">
         <p><text class="ltx_number">1,234</text> vs.  <text class="ltx_number">+1,234</text>;
 And : <text class="ltx_number">1,234×10<sup>4</sup></text> vs.  <text class="ltx_number">1,234×10<sup>+4</sup></text>;</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px4">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px4">
       <title>Padding</title>
       <para xml:id="S2.SS0.SSS0.Px4.p1">
         <p><Math mode="inline" tex="\numprint{1234}" text="1234" xml:id="S2.SS0.SSS0.Px4.p1.m1">
@@ -357,14 +367,14 @@ And : <text class="ltx_number">1,234×10<sup>4</sup></text> vs.  <text class="l
           </Math></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px5">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px5">
       <title>Replacing zeros</title>
       <para xml:id="S2.SS0.SSS0.Px5.p1">
         <p><text class="ltx_number">123.000,00</text>
 vs.  <text class="ltx_number">123.—</text></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px6">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px6">
       <title>Units format</title>
       <para xml:id="S2.SS0.SSS0.Px6.p1">
         <p><text class="ltx_number">300<Math mode="inline" tex="{\,}" text="absent" xml:id="S2.SS0.SSS0.Px6.p1.m1">
@@ -404,7 +414,7 @@ vs.
             </Math></text></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px7">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px7">
       <title>New units</title>
       <para xml:id="S2.SS0.SSS0.Px7.p1">
         <p><Math mode="inline" tex="\numprint[in]{6}" text="6 * i * n" xml:id="S2.SS0.SSS0.Px7.p1.m1">
@@ -447,7 +457,7 @@ vs.
           </Math></p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px8">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px8">
       <title>Fancier</title>
       <para xml:id="S2.SS0.SSS0.Px8.p1">
         <p><text class="ltx_number">-123,456</text>; <text class="ltx_number">3.141,592,7×10<sup>-32</sup></text></p>
@@ -465,7 +475,12 @@ vs.
       </para>
     </paragraph>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>Tabulars</title>
     <para xml:id="S3.p1">
       <tabular vattach="middle">

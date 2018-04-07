@@ -119,7 +119,8 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
 
 # Swap causes you to get the odd (to me) order "4.1 Lemma", which breaks our new localization methods!!!
     DefEnvironment("{$thmset} OptionalUndigested",
-      "<ltx:theorem xml:id='#id' refnum='#refnum' class='#class'>"
+      "<ltx:theorem xml:id='#id' class='#class'>"
+        . "#tags"
         . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
         . "#body"
         . "</ltx:theorem>",
@@ -133,7 +134,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
       properties => sub {
         my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ());
         my $title = Digest(Tokens(T_BEGIN, $capfont->unlist,
-            T_CS('\@tag'), T_BEGIN,
+            T_CS('\lx@tag'), T_BEGIN,
             ($swap
               ? (($flag ? () : (T_CS('\the' . $counter))),
                 (!$flag && $type ? (T_SPACE) : ()),
