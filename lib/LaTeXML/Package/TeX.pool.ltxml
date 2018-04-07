@@ -3559,14 +3559,9 @@ DefMacroI('\eqno', undef, sub {
 
 Let('\leqno', '\eqno');
 # Revert to nothing, since it really doesn't belong in the TeX string(?)
-DefConstructor('\@@eqno{}', "^ refnum='#eqnum'",
-  reversion => '',
-  afterDigest => sub { my $num = ToString($_[1]->getArg(1));
-    # special purpose cleanup!?!?!
-    $num =~ s/^\\hbox\{(.*)\}$/$1/;
-    $num =~ s/^\{(.*)\}$/$1/;
-    $num =~ s/^\((.*)\)$/$1/;
-    $_[1]->setProperties(eqnum => $num); });
+DefConstructor('\@@eqno{}',
+  "^ <ltx:tags><ltx:tag><ltx:Math><ltx:XMath>#1</ltx:XMath></ltx:Math></ltx:tag></ltx:tags>",
+  reversion => '');
 
 #======================================================================
 # Scripts are a bit of a strange beast, with respect to when the arguments
@@ -4701,12 +4696,17 @@ Tag('ltx:document', 'afterOpen:late' => sub {
     if (my $classes = join(' ', LookupMappingKeys('DOCUMENT_CLASSES'))) {
       $document->addClass($root, $classes); } });
 
-DefConstructor('\beginsection Until:\par',
+# If folks start using plain TeX macros, and never load LaTeX.pool,
+# they might benefit from a ltx-plain.css?
+DefMacro('\beginsection Until:\par', '\@beginsection{{\bf #1}}');
+DefConstructor('\@beginsection {}',
   "<ltx:section><ltx:title>#1</ltx:title>");
 
 # POSSIBLY #1 is a name or reference number and  #2 is the theoremm TITLE
 #  If so, how do know when the theorem ends?
-DefConstructorI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\par')),
+DefMacroI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\par')),
+  '\@proclaim{{\bf #1}}{{\sl #2}}');
+DefConstructor('\@proclaim{}{}',
   "<ltx:theorem>"
     . "<ltx:title font='#titlefont' _force_font='true' >#title</ltx:title>"
     . "#2"
@@ -6151,7 +6151,7 @@ DefPrimitive('\normalbottom', undef);
 # if the mark is not simple, we add it to the content of the note
 # otherwise, to the attribute.
 DefConstructor('\footnote{}{}',
-  "<ltx:note role='foot' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
+  "<ltx:note role='footnote' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $mark   = $whatsit->getArg(1);
