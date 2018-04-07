@@ -490,8 +490,7 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
 
 DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested', sub {
     my ($document, $type, $inlist, $toctitle, $title, %props) = @_;
-    my $id     = $props{id};
-    my $refnum = $props{refnum};
+    my $id = $props{id};
     $document->openElement("ltx:" . ToString($type),
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist));
@@ -1106,7 +1105,7 @@ NewCounter('@itemizeiv',  '@itemizeiii', idprefix => 'I');
 NewCounter('@itemizev',   '@itemizeiv',  idprefix => 'I');
 NewCounter('@itemizevi',  '@itemizev',   idprefix => 'I');
 
-# Create id, and refnum attributes for an itemize type \item
+# Create id, and tags for an itemize type \item
 sub RefStepItemCounter {
   my ($tag)   = @_;
   my $counter = LookupValue('itemcounter');
@@ -1121,10 +1120,9 @@ sub RefStepItemCounter {
     if ((ref $tag) && !scalar($tag->unlist)) {    # empty tag?
       return (@props); }
     else {
-      my $ttag = (ref $tag ? $tag : T_OTHER($tag));
-      my $refnum = Digest(Tokens(T_BEGIN, $ttag->unlist, T_END));
+      my $ttag      = (ref $tag              ? $tag                      : T_OTHER($tag));
       my $formatter = ($counter =~ /^\@desc/ ? T_CS('\descriptionlabel') : T_CS('\makelabel'));
-      my $tags = Digest(T_BEGIN,
+      my $tags      = Digest(T_BEGIN,
         T_CS('\let'), T_CS('\the' . $counter), T_CS('\@empty'),
         T_CS('\def'), T_CS('\fnum@' . $counter), T_BEGIN, $formatter, T_BEGIN, Revert($tag), T_END, T_END,
         T_CS('\def'), T_CS('\typerefnum@' . $counter),
@@ -1133,7 +1131,6 @@ sub RefStepItemCounter {
         T_END);
 
       return (@props,
-####              refnum => $refnum,
         ($tags ? (tags => $tags) : ()),
         %attr); } }
   else {
@@ -1343,21 +1340,8 @@ DefMacroI('\fnum@@desci',   undef, '{\descriptionlabel{}}');
 DefMacroI('\fnum@@descii',  undef, '{\descriptionlabel{}}');
 DefMacroI('\fnum@@desciii', undef, '{\descriptionlabel{}}');
 DefMacroI('\fnum@@desciv',  undef, '{\descriptionlabel{}}');
-# Try this...
-#DefMacroI('\fnum@@desci',   undef, '{\descriptionlabel{\label@desci}}');
-#DefMacroI('\fnum@@descii',  undef, '{\descriptionlabel{\label@descii}}');
-#DefMacroI('\fnum@@desciii', undef, '{\descriptionlabel{\label@desciii}}');
-#DefMacroI('\fnum@@desciv',  undef, '{\descriptionlabel{\label@descvi}}');
 
 DefMacroI('\desctyperefname', undef, 'item');
-# DefMacroI('\label@desci',         undef, '');
-# DefMacroI('\label@descii',        undef, '');
-# DefMacroI('\label@desciii',       undef, '');
-# DefMacroI('\label@descvi',        undef, '');
-# DefMacroI('\typerefnum@@desci',   undef, '\lx@refnum@compose{\desctyperefname}{\label@desci}');
-# DefMacroI('\typerefnum@@descii',  undef, '\lx@refnum@compose{\desctyperefname}{\label@descii}');
-# DefMacroI('\typerefnum@@desciii', undef, '\lx@refnum@compose{\desctyperefname}{\label@desciii}');
-# DefMacroI('\typerefnum@@descvi',  undef, '\lx@refnum@compose{\desctyperefname}{\label@descvi}');
 
 # Blech
 map { DefMacroI(T_CS('\\' . $_ . 'name'), undef, '\itemtyperefname'); }
@@ -1406,8 +1390,8 @@ DefEnvironment('{trivlist}',
 
 DefConstructor('\trivlist@item OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>"
-    . "<ltx:tags><ltx:tag>#refnum</ltx:tag></ltx:tags>",    # At least an empty tag! ?
-  properties => sub { ($_[1] ? (refnum => Digest(Expand($_[1]))) : ()); });
+    . "<ltx:tags><ltx:tag>#tag</ltx:tag></ltx:tags>",    # At least an empty tag! ?
+  properties => sub { ($_[1] ? (tag => Digest(Expand($_[1]))) : ()); });
 
 DefRegister('\topsep'             => Glue(0));
 DefRegister('\partopsep'          => Glue(0));
@@ -3084,8 +3068,17 @@ DefConstructor('\bibitem[] Semiverbatim',
   afterDigest => sub {
     my $tag = $_[1]->getArg(1);
     my $key = CleanBibKey($_[1]->getArg(2));
-    $_[1]->setProperties(key => $key,
-      ($tag ? (RefStepID('@bibitem'), refnum => $tag) : RefStepCounter('@bibitem'))); });
+    if ($tag) {
+      $_[1]->setProperties(key => $key,
+        RefStepID('@bibitem'),
+        tags => Digest(T_BEGIN,
+          T_CS('\def'), T_CS('\the@bibitem'), T_BEGIN, Revert($tag), T_END,
+          Invocation(T_CS('\lx@make@tags'), T_OTHER('@bibitem')),
+          T_END)); }
+    else {
+      $_[1]->setProperties(key => $key, RefStepCounter('@bibitem')); }
+  });
+
 DefConstructorI('\newblock', undef, "<ltx:bibblock>");
 Tag('ltx:bibitem',  autoClose => 1);
 Tag('ltx:bibblock', autoClose => 1);
