@@ -962,6 +962,11 @@ otherwise an xml:id</a:documentation>
       </attribute>
     </optional>
     <optional>
+      <attribute name="show">
+        <a:documentation>indicates what things to show in each entry</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="format">
         <a:documentation>indicates how to format the listing</a:documentation>
         <choice>

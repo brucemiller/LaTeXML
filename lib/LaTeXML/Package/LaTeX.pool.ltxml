@@ -357,35 +357,56 @@ NewCounter('mpfootnote');
 DefMacroI('\thempfn',             undef, '\thefootnote');
 DefMacroI('\thempfootnote',       undef, '\arabic{mpfootnote}');
 DefMacroI('\footnotetyperefname', undef, 'footnote');
-DefConstructor('\footnote[]{}',
-  "<ltx:note role='footnote' mark='#mark' xml:id='#id'>"
+
+sub makeNoteTags {
+  my ($counter, $tag) = @_;
+  if ($tag) {
+    return (
+      RefStepID($counter),
+      mark => $tag,
+      tags => Digest(T_BEGIN,
+        T_CS('\def'), T_CS('\the' . $counter), T_BEGIN, Revert($tag), T_END,
+        T_CS('\def'), T_CS('\typerefnum@' . $counter),
+        T_BEGIN, T_CS('\\' . $counter . 'typerefname'), T_SPACE, Revert($tag), T_END,
+        Invocation(T_CS('\lx@make@tags'), T_OTHER($counter)),
+        T_END)); }
+  else {
+    return (RefStepCounter($counter),
+      mark => DigestText(T_CS('\the' . $counter))); } }
+
+DefMacroI('\ext@footnote', undef, undef);
+DefConstructor('\lx@note{}[]{}',
+  "<ltx:note role='#role' mark='#mark' xml:id='#id' inlist='#list'>"
     . "#tags"
-    . "#2"
+    . "#3"
     . "</ltx:note>",
   mode => 'text', bounded => 1,
   beforeDigest => sub { reenterTextMode(1); Digest('\normalfont'); },
   properties => sub {
-    ($_[1]
-      ? (mark => $_[1])
-      : (RefStepCounter('footnote'),
-        mark => DigestText(T_CS('\thefootnote')))) });
-DefConstructor('\footnotemark[]',
-  "<ltx:note role='footnotemark' mark='#mark' xml:id='#id'>"
+    my $type = ToString($_[1]);
+    (role => $type,
+      list => DigestText(T_CS('\ext@' . $type)),
+      makeNoteTags($type, $_[2])); });
+DefConstructor('\lx@notemark{}[]',
+  "<ltx:note role='#role' mark='#mark' xml:id='#id' inlist='#list'>"
     . "#tags"
     . "</ltx:note>",
   mode       => 'text',
   properties => sub {
-    ($_[1]
-      ? (mark => $_[1])
-      : (RefStepCounter('footnote'),
-        mark => DigestText(T_CS('\thefootnote')))) });
-DefConstructor('\footnotetext[]{}',
-  "<ltx:note role='footnotetext' mark='#mark' xml:id='#id'>#2</ltx:note>",
+    my $type = ToString($_[1]);
+    (role => $type . 'mark',
+      list => DigestText(T_CS('\ext@' . $type)),
+      makeNoteTags($type, $_[2])); });
+DefConstructor('\lx@notetext{}[]{}',
+  "<ltx:note role='#role' mark='#mark' xml:id='#id'>#3</ltx:note>",
   mode       => 'text',
   properties => sub {
-    ($_[1]
-      ? (mark => $_[1])
-      : (mark => Digest(T_CS("\\thefootnote")))); });
+    my $type = ToString($_[1]);
+    (role => $type . 'text', makeNoteTags($type, $_[2] || Digest(T_CS('\the' . $type)))); });
+
+DefMacro('\footnote',     '\lx@note{footnote}');
+DefMacro('\footnotemark', '\lx@notemark{footnote}');
+DefMacro('\footnotetext', '\lx@notetext{footnote}');
 
 Tag('ltx:note', afterClose => \&relocateFootnote);
 

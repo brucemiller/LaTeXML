@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="endnotes"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Basic endnotes</title>
+    <para xml:id="S1.p1">
+      <p>A test<note inlist="ent" labels="LABEL:end:one" mark="1" role="endnote" xml:id="endnote1"><tags>
+            <tag><sup>1</sup></tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">endnote 1</tag>
+          </tags>An Endnote!</note>.</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Another test<note inlist="ent" labels="LABEL:end:two" mark="2" role="endnote" xml:id="endnote2"><tags>
+            <tag><sup>2</sup></tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">endnote 2</tag>
+          </tags>Another Endnote!</note>.</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>A special test<note inlist="ent" labels="LABEL:end:three" mark="77" role="endnote" xml:id="endnotex1"><tags>
+            <tag><sup>77</sup></tag>
+            <tag role="refnum">77</tag>
+            <tag role="typerefnum">endnote 77</tag>
+          </tags>A special Endnote!</note>.</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>A final test<note inlist="ent" labels="LABEL:end:four" mark="3" role="endnote" xml:id="endnote3"><tags>
+            <tag><sup>3</sup></tag>
+            <tag role="refnum">3</tag>
+            <tag role="typerefnum">endnote 3</tag>
+          </tags>A final Endnote!</note>.</p>
+    </para>
+    <para xml:id="S1.p5">
+      <p>A long endnote<note inlist="ent" labels="LABEL:end:five" mark="4" role="endnote" xml:id="endnote4"><tags>
+            <tag><sup>4</sup></tag>
+            <tag role="refnum">4</tag>
+            <tag role="typerefnum">endnote 4</tag>
+          </tags>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</note>.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Separated endnotes</title>
+    <para xml:id="S2.p1">
+      <p>An endnote mark<note inlist="ent" labels="LABEL:end:six" mark="5" role="endnote" xml:id="endnote5"><tags>
+            <tag><sup>5</sup></tag>
+            <tag role="refnum">5</tag>
+            <tag role="typerefnum">endnote 5</tag>
+          </tags>A separated endnote</note>.
+Later, the endnote’s text appears
+.
+Another endnote mark<note inlist="ent" labels="LABEL:end:seven" mark="6" role="endnote" xml:id="endnote6"><tags>
+            <tag><sup>6</sup></tag>
+            <tag role="refnum">6</tag>
+            <tag role="typerefnum">endnote 6</tag>
+          </tags>Another separated endnote</note>.
+Later, the endnote’s text appears
+.</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>Suppose the text appears first,
+and then the endnote mark using a given mark<note inlist="ent" labels="LABEL:end:eight" mark="999" role="endnote" xml:id="endnotex5"><tags>
+            <tag><sup>999</sup></tag>
+            <tag role="refnum">999</tag>
+            <tag role="typerefnum">endnote 999</tag>
+          </tags>A separated endnote</note>?</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>We have presented several endnotes <ref labelref="LABEL:end:one"/>, <ref labelref="LABEL:end:two"/>, <ref labelref="LABEL:end:three"/>,
+<ref labelref="LABEL:end:four"/>, <ref labelref="LABEL:end:five"/>, <ref labelref="LABEL:end:six"/>, <ref labelref="LABEL:end:seven"/> and <ref labelref="LABEL:end:eight"/>.</p>
+    </para>
+    <TOC lists="ent" scope="global" show="frefnum &gt; note">
+      <title>Notes</title>
+    </TOC>
+  </section>
+</document>

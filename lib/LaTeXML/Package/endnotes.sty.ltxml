@@ -1,0 +1,49 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  endnotes                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+NewCounter('endnote');
+DefMacroI('\theendnote',         undef, '\arabic{endnote}');
+DefMacroI('\endnotetyperefname', undef, 'endnote');
+
+# \theenmark  Should be assigned to the mark, by \endnote,\endnotemark !
+
+# \enotesize
+# \@makeentext to format the text of the endnote; not used (yet)!!!
+
+# This is NOT correct; it should be edef'd after the counter is stepped...
+DefMacro('\theenmark',    '\theendnote');
+DefMacro('\makeenmark',   '\hbox{\textsuperscript{\normalfont\theenmark}}');
+DefMacro('\fnum@endnote', '\makeenmark');
+
+DefMacroI('\ext@endnote', undef, 'ent');
+
+DefMacro('\endnote',     '\lx@note{endnote}');
+DefMacro('\endnotemark', '\lx@notemark{endnote}');
+DefMacro('\endnotetext', '\lx@notetext{endnote}');
+
+# \addtoendnotes{text}
+DefMacro('\addtoendnotes{}', '');
+
+DefMacro('\notesname', 'Notes');
+
+DefConstructorI('\printendnotes', undef,
+  "<ltx:TOC lists='ent' scope='global' show='frefnum > note'><ltx:title>#name</ltx:title></ltx:TOC>",
+  properties => sub { (name => Digest(T_CS('\notesname'))); });
+
+#======================================================================
+1;

@@ -555,6 +555,9 @@ TOC_attributes =
    ## otherwise an xml:id
    attribute scope { ("current" | "global" | text) }?,
 
+   ## indicates what things to show in each entry
+   attribute show { text }?,
+   
    ## indicates how to format the listing
    attribute format { ("normal" | "short" | "veryshort" | text) }?
 

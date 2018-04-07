@@ -273,9 +273,12 @@ sub note_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
+    my $note = $self->cleanNode($doc, $node);
+    map { $note->removeChild($_) } $doc->findnodes('.//ltx:tags', $note);
     $$self{db}->register("ID:$id",
       $self->addCommon($doc, $node, $tag, $parent_id),
       role => orNull($node->getAttribute('role')),
+      note => $note,
     );
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);

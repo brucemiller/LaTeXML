@@ -222,12 +222,13 @@ sub fill_in_tocs {
       if (my $entry = $$self{db}->lookup("ID:" . $id)) {
         if (my $root = $self->getRootPage($entry)) {
           $id = $root->getValue('pageid'); } } }
+    my $show = $toc->getAttribute('show') || $$self{toc_show};
     my @list = ();
     if (!$format || ($format =~ /^normal/)) {
-      @list = $self->gentoc($doc, $id, $lists, $types); }
+      @list = $self->gentoc($doc, $id, $show, $lists, $types); }
     elsif ($format eq 'context') {
       $lists = { toc => 1 };
-      @list = $self->gentoc_context($doc, $id, $lists, $types); }
+      @list = $self->gentoc_context($doc, $id, $show, $lists, $types); }
     $doc->addNodes($toc, ['ltx:toclist', {}, @list]) if @list; }
   NoteProgressDetailed(" [Filled in $n TOCs]");
   return; }
@@ -238,12 +239,11 @@ sub fill_in_tocs {
 # Note that parent/child relationships stored in ObjectDB can also reflect less
 # `interesting' objects like para or p style paragraphs, and such.
 sub gentoc {
-  my ($self, $doc, $id, $lists, $types, $localto, $selfid) = @_;
-  my $show = $$self{toc_show};
+  my ($self, $doc, $id, $show, $lists, $types, $localto, $selfid) = @_;
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     my @kids = ();
     if ((!defined $localto) || (($entry->getValue('location') || '') eq $localto)) {
-      @kids = map { $self->gentoc($doc, $_, $lists, $types, $localto, $selfid) }
+      @kids = map { $self->gentoc($doc, $_, $show, $lists, $types, $localto, $selfid) }
         @{ $entry->getValue('children') || [] }; }
     my $type = $entry->getValue('type');
     my $role = $entry->getValue('role');
@@ -259,29 +259,32 @@ sub inlist_match {
   my ($listsa, $listsb) = @_;
   return ($listsa && $listsb && grep { $$listsb{$_} } keys %$listsa); }
 
+# Experimental show pattern:  before < filling > after
 sub gentocentry {
   my ($self, $doc, $entry, $selfid, $show, @children) = @_;
-  my $id        = $entry->getValue('id');
-  my $type      = $entry->getValue('type');
-  my $typename  = $type; $typename =~ s/^ltx://;
-  my $thumbnail = $entry->getValue('thumbnail');
+  my $id       = $entry->getValue('id');
+  my $type     = $entry->getValue('type');
+  my $typename = $type; $typename =~ s/^ltx://;
+  my ($before, $after);
+  if ($show =~ /^(.*?)\<(.*?)$/) { $before = $1; $show  = $2; }
+  if ($show =~ /^(.*?)\>(.*?)$/) { $show   = $1; $after = $2; }
+  # Good candidate for before = thumbnail
   return (['ltx:tocentry',
       { class => "ltx_tocentry_$typename"
           . (defined $selfid && ($selfid eq $id) ? ' ltx_ref_self' : "") },
-      ($thumbnail ? (['ltx:block', { class => 'ltx_thumbnail' },
-            $self->prepRefText($doc, $thumbnail)]) : ()),
+      ($before ? $self->generateRef($doc, $id, $before) : ()),
       ['ltx:ref', { show => $show, idref => $id }],
+      ($after ? $self->generateRef($doc, $id, $after) : ()),
       (@children ? (['ltx:toclist', { class => "ltx_toclist_$typename" }, @children]) : ())]); }
 
 # Generate a "context" TOC, that shows what's on the current page,
 # but also shows the page in the context of it's siblings & ancestors.
 # This is useful for putting in a navigation bar.
 sub gentoc_context {
-  my ($self, $doc, $id, $lists, $types) = @_;
-  my $show = $$self{toc_show};
+  my ($self, $doc, $id, $show, $lists, $types) = @_;
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     # Generate Downward TOC covering items WITHIN the current page.
-    my @navtoc = $self->gentoc($doc, $id, $lists, $types, $entry->getValue('location') || '', $id);
+    my @navtoc = $self->gentoc($doc, $id, $show, $lists, $types, $entry->getValue('location') || '', $id);
     # Then enclose it upwards along with siblings & ancestors
     my $p_id;
     while (($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))) {
@@ -660,7 +663,7 @@ sub generateRef_aux {
     # The beginnings of extensibility!
     elsif ($show =~ s/^(\w+)//) {
       my $role = $1;
-      if (my $tag = $entry->getValue('tag:' . $role)) {
+      if (my $tag = $entry->getValue($role) || $entry->getValue('tag:' . $role)) {
         $OK = 1;
         push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
             $self->prepRefText($doc, $tag)]); }
