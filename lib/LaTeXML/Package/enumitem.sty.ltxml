@@ -1,0 +1,41 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  enumitem                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# TODO  Deal with Scads of options!
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
+
+# But first, a stub that ignores the new optional arg to itemize, etal.
+DefEnvironment('{itemize} OptionalKeyVals',
+  "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+  properties => sub { beginItemize('itemize', '@item'); },
+  locked => 1, mode => 'text');
+DefEnvironment('{enumerate} OptionalKeyVals',
+  "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
+  properties => sub { beginItemize('enumerate', 'enum'); },
+  locked => 1, mode => 'text');
+DefEnvironment('{description} OptionalKeyVals',
+  "<ltx:description  xml:id='#id'>#body</ltx:description>",
+  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
+  properties => sub { beginItemize('description', '@desc'); },
+  locked => 1, mode => 'text');
+
+DefMacro('\setlist OptionalKeyVals {}', '');
+
+#======================================================================
+1;

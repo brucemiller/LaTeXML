@@ -1,0 +1,76 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  titling                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Since (currently) our \maketitle doesn't do anything,
+# (the \title, etc commands have already created front matter),
+# and we're not yet trying to format the title page as requested....
+# We'll just punt here.
+
+DefMacro('\pretitle{}',   '\def\@bspretitle{#1}');
+DefMacro('\posttitle{}',  '\def\@bsposttitle{#1}');
+DefMacro('\preauthor{}',  '\def\@bspreauthor{#1}');
+DefMacro('\postauthor{}', '\def\@bspostauthor{#1}');
+DefMacro('\predate{}',    '\def\@bspredate{#1}');
+DefMacro('\postdate{}',   '\def\@bspostdate{#1}');
+
+DefMacroI('\maketitlehooka', undef, '');
+DefMacroI('\maketitlehookb', undef, '');
+DefMacroI('\maketitlehookc', undef, '');
+DefMacroI('\maketitlehookd', undef, '');
+
+RawTeX(<<'EoTeX');
+\pretitle{\begin{center}\LARGE}
+\posttitle{\par\end{center}\vskip 0.5em}
+\preauthor{\begin{center}\large\lineskip 0.5em\begin{tabular}[t]{c}}
+\postauthor{\end{tabular}\end{center}}
+\predate{\begin{center}\large}
+\postdate{\par\end{center}}
+EoTeX
+
+# The resulting title ought to look something like:
+# \renewcommand{\maketitle}{%
+# \vspace*{\droptitle}
+# \maketitlehooka
+# {\pretitle \title \posttitle}
+# \maketitlehookb
+# {\preauthor \author \postauthor}
+# \maketitlehookc
+# {\predate \date \postdate}
+# \maketitlehookd
+# But here, we just want to save the title, authors, etc.
+Let('\lx@titling@maketitle', '\maketitle');
+DefMacroI('\maketitle', undef,
+  '\global\let\theauthor\@author'
+    . '\global\let\thedate\@date'
+    . '\global\let\thetitle\@title'
+    . '\lx@titling@maketitle');
+
+DefEnvironment('{titlingpage}', '');    # ?
+
+DefMacroI('\killtitle',    undef, '');
+DefMacroI('\keepthetitle', undef, '');
+DefMacroI('\emptythanks',  undef, '');
+
+# UNFINISHED!!!
+# There's a whole bunch of stuff dealing with \thanks.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

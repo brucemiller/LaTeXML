@@ -1,0 +1,52 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  secsty                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# The mechanism to use custom fonts in numbers & titles is already in place.
+# Just use it...
+DefMacro('\partfont{}',    '\gdef\format@title@font@part{#1}\gdef\fnum@font@part{#1}');
+DefMacro('\chapterfont{}', '\gdef\format@title@font@chapter{#1}\gdef\fnum@font@chapter{#1}');
+DefMacro('\sectionfont{}', '\gdef\format@title@font@section{#1}\gdef\fnum@font@section{#1}');
+DefMacro('\subsectionfont{}', '\gdef\format@title@font@subsection{#1}\gdef\fnum@font@subsection{#1}');
+DefMacro('\subsubsectionfont{}', '\gdef\format@title@font@subsubsection{#1}\gdef\fnum@font@subsubsection{#1}');
+DefMacro('\paragraphfont{}', '\gdef\format@title@font@paragraph{#1}\gdef\fnum@font@paragraph{#1}');
+DefMacro('\subparagraphfont{}', '\gdef\format@title@font@subparagraph{#1}\gdef\fnum@font@subparagraph{#1}');
+DefMacro('\minisecfont{}', '\gdef\format@title@font@minisec{#1}\gdef\fnum@font@minisec{#1}');    # ?
+
+DefMacro('\partnumberfont{}',    '\gdef\fnum@font@part{#1}');
+DefMacro('\parttitlefont{}',     '\gdef\format@title@font@part{#1}');
+DefMacro('\chapternumberfont{}', '\gdef\fnum@font@part{#1}');
+DefMacro('\chaptertitlefont{}',  '\gdef\format@title@font@part{#1}');
+
+DefMacro('\nohang', '');
+
+DefMacro('\allsectionsfont{}',
+  '\partfont{#1}'
+    . '\chapterfont{#1}'
+    . '\sectionfont{#1}'
+    . '\subsectionfont{#1}'
+    . '\subsubsectionfont{#1}'
+    . '\paragraphfont{#1}'
+    . '\subparagraphfont{#1}'
+    . '\minisecfont{#1}');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

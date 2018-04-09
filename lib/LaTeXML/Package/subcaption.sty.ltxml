@@ -1,0 +1,101 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  subcaption.sty                                                     | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# TODO: Work out how caption/caption3 actually set the styling...
+# pass options, and sub, to caption
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+RequirePackage('caption');
+
+NewCounter('subfigure', 'figure', idprefix => 'sf', idwithin => 'figure');
+NewCounter('subtable',  'table',  idprefix => 'st', idwithin => 'table');
+DefMacro('\thesubfigure', '(\alph{subfigure})');
+DefMacro('\thesubtable',  '(\alph{subtable})');
+Let('\p@subfigure',   '\thefigure');
+Let('\p@subtable',    '\thetable');
+Let('\ext@subfigure', '\ext@figure');
+Let('\ext@subtable',  '\ext@table');
+
+DefMacro('\fnum@font@float',         '\small');
+DefMacro('\format@title@font@float', '\small');
+
+DefMacro('\fnum@font@subfigure',         '\fnum@font@figure');
+DefMacro('\fnum@font@subtable',          '\fnum@font@table');
+DefMacro('\format@title@font@subfigure', '\format@title@font@figure');
+DefMacro('\format@title@font@subtable',  '\format@title@font@table');
+
+#======================================================================
+# TODO: This should appear within a minipage (suggested!) within some kind of float.
+# So it should become a sub<float>, inheriting whatever style from outer float;
+# But, ltx:caption will float up outside the minipage (not allowed there)!
+# Probably should convert the minipage to a float, or wrap it, if we could?
+DefMacro('\subcaption OptionalMatch:* []{}',
+  '{\edef\@captype{sub\@captype}\caption[#2]{#3}}');
+
+#======================================================================
+DefEnvironment('{subfigure}[]{Dimension}',
+  "<ltx:figure xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
+    . "#tags"
+    . "#body"
+    . "</ltx:figure>",
+  properties => { layout => 'vertical' },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'subfigure'); },
+  afterDigest => sub { RescueCaptionCounters('subfigure', $_[1]); });
+DefEnvironment('{subfigure*}[]{Dimension}',
+  "<ltx:figure xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
+    . "#tags"
+    . "#body"
+    . "</ltx:figure>",
+  properties => { layout => 'vertical' },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'subfigure'); },
+  afterDigest => sub { RescueCaptionCounters('subfigure', $_[1]); });
+DefEnvironment('{subtable}[]{Dimension}',
+  "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
+    . "#tags"
+    . "#body"
+    . "</ltx:table>",
+  properties => { layout => 'vertical' },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'subtable'); },
+  afterDigest => sub { RescueCaptionCounters('subtable', $_[1]); });
+DefEnvironment('{subtable*}[]{Dimension}',
+  "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
+    . "#tags"
+    . "#body"
+    . "</ltx:table>",
+  properties => { layout => 'vertical' },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'subtable'); },
+  afterDigest => sub { RescueCaptionCounters('subtable', $_[1]); });
+
+#======================================================================
+# \subcaptionbox[list]{caption}[width][innerpos]{contents}
+DefMacro('\subcaptionbox', '\expandafter\@@subcaptionbox\expandafter{\@captype}');
+DefMacro('\@@subcaptionbox{} []{} Optional:0pt []{}',
+  '\begingroup\csname sub#1\endcsname{#4}'
+    . '#6'
+    . '\caption{#3}'
+    . '\ifx.#2.\else\lx@subcaption@addinlist{#2}\fi'
+    . '\csname endsub#1\endcsname\endgroup');
+
+DefConstructor('\lx@subcaption@addinlist{}',
+  "^ inlist='#1'");
+#======================================================================
+# should be in caption? or caption3 ?
+DefMacro('\DeclareCaptionSubType OptionalMatch:* [alph]{}', '');
+
+#======================================================================
+1;
