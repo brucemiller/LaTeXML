@@ -20,6 +20,45 @@ use LaTeXML::Package;
 #RequirePackage('ragged2e');
 #RequirePackage('keyval');
 
+# Should learn how to use the new KeyVals code to get these to make appropriate assignments!
+# Most caption keyvals are ignorable, though.
+DefKeyVal('caption', 'format',      '',          '');      # plain, hang,...
+DefKeyVal('caption', 'indentation', 'Dimension', '0pt');
+DefKeyVal('caption', 'labelformat', '', 'default'); # default, empty, simple, brace, parens; Use this!
+DefKeyVal('caption', 'labelsep',      '', '');    # none, colon, period, space, quad, newline,endash
+DefKeyVal('caption', 'textformat',    '', '');    # empty, simple, period
+DefKeyVal('caption', 'justification', '', '');    # justified, centering, centerlast, centerfirst,
+# raggedright, RaggedRight, raggedleft
+DefKeyVal('caption', 'singlelinecheck', '', '');
+# These font values are, in effect, keyvals lists!
+DefKeyVal('caption', 'font',       '',          '');
+DefKeyVal('caption', 'labelfont',  '',          '');
+DefKeyVal('caption', 'textfont',   '',          '');
+DefKeyVal('caption', 'font+',      '',          '');      # These add to the font
+DefKeyVal('caption', 'labelfont+', '',          '');
+DefKeyVal('caption', 'textfont+',  '',          '');
+DefKeyVal('caption', 'margin',     'Dimension', '0pt');
+DefKeyVal('caption', 'margin*',    'Dimension', '0pt');
+DefKeyVal('caption', 'minmargin',  'Dimension', '0pt');
+DefKeyVal('caption', 'maxmargin',  'Dimension', '0pt');
+DefKeyVal('caption', 'parskip',    'Dimension', '0pt');
+DefKeyVal('caption', 'width',      'Dimension', '0pt');
+DefKeyVal('caption', 'oneside',    '',          '');
+DefKeyVal('caption', 'twoside',    '',          '');
+DefKeyVal('caption', 'hangindent', 'Dimension', '0pt');
+
+DefKeyVal('caption', 'style', '', '');    # base, ...
+
+DefKeyVal('caption', 'skip',           'Dimension', '0pt');
+DefKeyVal('caption', 'position',       '',          '');      #  top, above, bottom, below
+DefKeyVal('caption', 'figureposition', '',          '');
+DefKeyVal('caption', 'tableposition',  '',          '');
+
+DefKeyVal('caption', 'list',       '', '');                   # boolean (no)
+DefKeyVal('caption', 'listformat', '', '');                   # name of list
+DefKeyVal('caption', 'name',       '', '');                   # \<float>name ?
+DefKeyVal('caption', 'type',       '', '');                   # table or figure
+
 DefMacro('\captionsetup[]{}', Tokens());
 
 DefMacro('\DeclareCaptionStyle{}[]{}',        Tokens());

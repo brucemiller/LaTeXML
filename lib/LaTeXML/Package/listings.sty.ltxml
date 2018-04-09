@@ -175,8 +175,8 @@ sub lstProcessDisplay {
 DefMacro('\lstlisting@makecaption[]{}',
   '\def\@captype{lstlisting}'
     . '\@@add@caption@counters'
-    . '\@@toccaption{\lx@@format@toctitle@{lstlisting}{\ifx.#1.#2\else#1\fi}}'
-    . '\@@caption{\lx@@format@title@{lstlisting}{#2}}');
+    . '\@@toccaption{\lx@format@toctitle@@{lstlisting}{\ifx.#1.#2\else#1\fi}}'
+    . '\@@caption{\lx@format@title@@{lstlisting}{#2}}');
 DefMacroI('\fnum@lstlisting', undef, '\lstlistingname\nobreakspace\thelstlisting');
 DefMacro('\format@title@lstlisting{}', '\lx@tag[][: ]{\fnum@lstlisting}#1');
 

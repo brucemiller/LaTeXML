@@ -125,8 +125,8 @@ DefConstructor('\@longtable@kill@marker', '', reversion => '\kill',
 # Caption gets redefined.  We'll need to grab it and make it part
 # of the table, rather than the tabular.
 DefMacro('\@longtable@caption[]{}',
-  '\@longtable@@toccaption{\lx@@format@toctitle@{table}{\ifx.#1.#2\else#1\fi}}'
-    . '\@longtable@@caption{\lx@@format@title@{table}{#2}}');
+  '\@longtable@@toccaption{\lx@format@toctitle@@{table}{\ifx.#1.#2\else#1\fi}}'
+    . '\@longtable@@caption{\lx@format@title@@{table}{#2}}');
 DefPrimitive('\@longtable@label Semiverbatim', sub {
     AssignValue(LONGTABLE_LABEL => CleanLabel(ToString($_[1])), 'global');
     return; });

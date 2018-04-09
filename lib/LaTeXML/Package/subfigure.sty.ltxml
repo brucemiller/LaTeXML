@@ -126,11 +126,15 @@ Let('\p@subtable',    '\thetable');
 Let('\ext@subfigure', '\ext@figure');
 Let('\ext@subtable',  '\ext@table');
 
-DefMacro('\format@title@subfigure{}',
-  '\lx@tag[][ ]{\subcapsize\subcaplabelfont\thesubfigure}\subcapsize\subcapfont #1');
-DefMacro('\format@title@subtable{}',
-  '\lx@tag[][ ]{\subcapsize\subcaplabelfont\thesubtable}\subcapsize\subcapfont #1');
+# DefMacro('\format@title@subfigure{}',
+#   '\lx@tag[][ ]{\subcapsize\subcaplabelfont\thesubfigure}\subcapsize\subcapfont #1');
+# DefMacro('\format@title@subtable{}',
+#   '\lx@tag[][ ]{\subcapsize\subcaplabelfont\thesubtable}\subcapsize\subcapfont #1');
 
+DefMacro('\fnum@font@subfigure',         '\subcapsize\subcaplabelfont');
+DefMacro('\fnum@font@subtable',          '\subcapsize\subcaplabelfont');
+DefMacro('\format@title@font@subfigure', '\subcapsize\subcapfont');
+DefMacro('\format@title@font@subtable',  '\subcapsize\subcapfont');
 DefMacro('\subfigure[][]{}',
   '\begin{@subfigure}'
     . '\iffiguretopcap\else\addtocounter{figure}{1}\fi'

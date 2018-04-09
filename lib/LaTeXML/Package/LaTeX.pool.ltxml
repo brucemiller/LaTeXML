@@ -522,8 +522,8 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
     my %props     = RefStepCounter(ToString($type));
-    my $xtitle    = Digest(Invocation(T_CS('\lx@@format@title@'), $type, $title));
-    my $xtoctitle = Digest(Invocation(T_CS('\lx@@format@toctitle@'), $type, $toctitle || $title));
+    my $xtitle    = Digest(Invocation(T_CS('\lx@format@title@@'), $type, $title));
+    my $xtoctitle = Digest(Invocation(T_CS('\lx@format@toctitle@@'), $type, $toctitle || $title));
     $props{title}    = $xtitle;
     $props{toctitle} = $xtoctitle
       if $xtoctitle && $xtoctitle->unlist && (ToString($xtoctitle) ne ToString($xtitle));
@@ -2451,11 +2451,18 @@ DefMacro('\fnsymbol{}', sub {
 # refnums, ids, get passed on to the figure, table when needed.
 # AND, as soon as possible, since other items may base their id's on the id of the table!
 
-## I'd rather not define these, since the \fnum@@ defn is better....
-DefMacroI('\fnum@figure', undef, '\figurename\nobreakspace\thefigure');
-DefMacroI('\fnum@table',  undef, '\tablename\nobreakspace\thetable');
-DefMacro('\format@title@figure{}', '\lx@tag[][: ]{\fnum@figure}#1');
-DefMacro('\format@title@table{}',  '\lx@tag[][: ]{\fnum@table}#1');
+# Let the fonts for float be the default for all floats, figures, tables, etc.
+DefMacro('\fnum@font@float',         '\@empty');
+DefMacro('\format@title@font@float', '\@empty');
+
+DefMacro('\fnum@font@figure',         '\fnum@font@float');
+DefMacro('\fnum@font@table',          '\fnum@font@float');
+DefMacro('\format@title@font@figure', '\format@title@font@float');
+DefMacro('\format@title@font@table',  '\format@title@font@float');
+
+# Could perhaps parameterize further with a separator?
+DefMacro('\format@title@figure{}', '\lx@tag[][: ]{\lx@fnum@@{figure}}#1');
+DefMacro('\format@title@table{}',  '\lx@tag[][: ]{\lx@fnum@@{table}}#1');
 
 DefMacro('\ext@figure', 'lof');
 DefMacro('\ext@table',  'lot');
@@ -2470,8 +2477,8 @@ DefMacro('\@caption@postlabel{}{}{} SkipMatch:\label Semiverbatim',
   '\@caption@{#1}{#2}{#3\label{#4}}');
 DefMacro('\@caption@{}{}{}',
   '\@@add@caption@counters'
-    . '\@@toccaption{\lx@@format@toctitle@{#1}{\ifx.#2.#3\else#2\fi}}'
-    . '\@@caption{\lx@@format@title@{#1}{#3}}');
+    . '\@@toccaption{\lx@format@toctitle@@{#1}{\ifx.#2.#3\else#2\fi}}'
+    . '\@@caption{\lx@format@title@@{#1}{#3}}');
 
 # Note that the counters only get incremented by \caption, NOT by \table, \figure, etc.
 DefPrimitive('\@@add@caption@counters', sub {

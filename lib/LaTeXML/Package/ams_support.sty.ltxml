@@ -195,8 +195,8 @@ if (LookupValue('2.09_COMPATIBILITY')) {
   RawTeX('\newenvironment{pf*}[1]{\begin{@proof}[#1]}{\end{@proof}');
 }
 
-DefMacro('\format@title@figure{}', '\lx@tag[][. ]{\fnum@figure}#1');
-DefMacro('\format@title@table{}',  '\lx@tag[][. ]{\fnum@table}#1');
+DefMacro('\format@title@figure{}', '\lx@tag[][. ]{\lx@fnum@@{figure}}#1');
+DefMacro('\format@title@table{}',  '\lx@tag[][. ]{\lx@fnum@@{table}}#1');
 
 # Excersise environments ??:
 # xca "must be defined with \theoremstyle{definition} and \newtheorem ???

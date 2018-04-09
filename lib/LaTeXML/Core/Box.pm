@@ -118,6 +118,7 @@ sub beAbsorbed {
 sub getProperty {
   my ($self, $key) = @_;
   if ($key eq 'isSpace') {
+    return $$self{properties}{$key} if defined $$self{properties}{$key};
     my $tex = LaTeXML::Core::Token::UnTeX($$self{tokens});    # !
     return (defined $tex) && ($tex =~ /^\s*$/); }    # Check the TeX code, not (just) the string!
   else {
