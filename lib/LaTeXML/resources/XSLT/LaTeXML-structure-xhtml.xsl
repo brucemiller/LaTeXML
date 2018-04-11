@@ -567,7 +567,7 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="ltx:contact[@role='email' or @role='mobile']">
+  <xsl:template match="ltx:contact[@role='email']">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">
@@ -591,7 +591,7 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="ltx:contact[@role='dedicatory']">
+  <xsl:template match="ltx:contact[@role='dedicatory' or @role='mobile']">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">
