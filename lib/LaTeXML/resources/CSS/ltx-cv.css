@@ -1,126 +1,49 @@
+/* This is a simplistic stylesheet trying to capture a moderncv-like style for CVs.
+   It is based around flexbox, and was derived from a Bootstrap grid approach.
 
-.ltx_title_document      { font-size:170%; text-align:center; margin:0.5em 0 0.5em 0; }
-.ltx_authors,
-.ltx_role_author         { text-align:center; margin:0.5em 0 0.5em 0; }
-.ltx_role_author .ltx_personname  { font-size: 120%; }
-.ltx_date        { text-align:center; font-size: 120%; margin:0.5em 0 0.5em 0; }
-.ltx_subtitle    { text-align:center; font-size: 120%; padding-left:0.2em; margin-left:-0.5em; }
+   The current rules are definitely rough around the edges and contributions + polish
+   are most welcome!
+*/
 
-.ltx_title_abstract      { text-align:center; font-size: 100%; font-weight:bold; }
-.ltx_abstract { margin-left:4em; margin-right:4em; }
-.ltx_title_acknowledgements,
-.ltx_title_keywords,
-.ltx_title_classification {
-   text-align:left; font-size: 100%; font-weight:bold; margin:0.5 0 0 0; }
-
-.ltx_appendix,
-.ltx_section,   
-.ltx_subsection,
-.ltx_subsubsection { margin-top:1.5em; }
-.ltx_paragraph,
-.ltx_subparagraph   { margin-top:1.0em; }
-
-.ltx_title_appendix,
-.ltx_title_section  { 
-  font-size:140%; font-weight:bold; margin-bottom:1em; 
-  border-bottom: none;
-  padding-bottom: 0px;
+/* A basic flexbox grid can be realized as follows. 
+   We use these rules for the heading, which is a one-off styling pass */
+.flex-grid {
+  display: flex;
 }
-h2.ltx_title_section {
-  color: #6699CC;
+.col-25 {
+  flex: 25;
 }
-.ltx_title_subsection    { font-size:120%; font-weight:bold; margin-bottom:1em; }
-.ltx_title_subsubsection { font-size:100%; font-weight:bold; margin-bottom:1em; }
-
-/* Paragraph & Subparagraph titles should be runin! */
-.ltx_title_paragraph   { font-size:100%; font-weight:bold; display:inline; 
-                         margin-right:1em; }
-.ltx_paragraph .ltx_title,
-.ltx_paragraph .ltx_title + .ltx_para,
-.ltx_paragraph .ltx_title + .ltx_para > .ltx_p { display:inline; }
-
-.ltx_title_subparagraph  { font-size:100%; font-weight:bold; display:inline; 
-                           margin-left:2em; margin-right:1em; }
-.ltx_subparagraph .ltx_title,
-.ltx_subparagraph .ltx_title + .ltx_para,
-.ltx_subparagraph .ltx_title + .ltx_para > .ltx_p { display:inline; }
-
-.ltx_figure  { text-align:center; margin:auto; margin:0.5em; }
-.ltx_table   { text-align:center; margin:auto; margin:0.5em; }
-
-/* first p in para gets indented */
-.ltx_para > .ltx_p:first-child { text-indent:2em; }
-/* except the initial in a section */
-section > .ltx_title +.ltx_para > .ltx_p,
-section > .ltx_title +.ltx_date +.ltx_para > .ltx_p {text-indent:0em; }
-
-.ltx_title_abstract + .ltx_p {text-indent:2em; }
-
-.ltx_itemize { margin-left:1em; }
-
-.ltx_theorem { margin-top:0.5em; margin-bottom:0.5em; }
-.ltx_theorem .ltx_title { margin-bottom:0.1em; }
-.ltx_theorem .ltx_title + .ltx_para,
-.ltx_theorem .ltx_title + .ltx_para .ltx_p,
-.ltx_theorem .ltx_title + .ltx_p  { margin-top:0em; }
-
-.ltx_note_content {
-  padding: 1em;
-  background: none repeat scroll 0% 0% #ffffff; 
-}
-.ltx_note:focus .ltx_note_content 
-   { display:block; position:absolute; z-index:10; }
-.ltx_note:active .ltx_note_content 
-   { display:block; position:absolute; z-index:10; }
-
-/*New for CV:*/
-.ltx_section_mark::before{
-  content: "mark";
-  visibility: hidden;
-}
-.ltx_section_mark {
-  border-bottom:thin solid #6699CC;
-}
-.ltx_para {
-  padding: 3px;}
-
-.ltx_cventry {
-  margin-top: 10px;
-  margin-bottom: 10px;
+.col-50 {
+  flex: 50;
 }
 
+/* A responsive CV works nicely centered with a reasonable max-width */
+div.ltx_page_main {
+  margin-right: auto;
+  margin-left: auto;
+}
 
-@media screen and (min-width: 48em){
-  .ltx_cventry_date {
-    text-align: right;
-  }
-  .ltx_cventry_institution {
-    text-align: right;
-  }
-  .ltx_cvitem_label {
-    text-align: right;
+@media (min-width: 768px) {
+  div.ltx_page_main {
+    max-width: 750px;
   }
 }
-@media screen and (max-width: 48em){
-  .ltx_cventry_date {
-    margin-top: 5px;
-    text-align: center;
+@media (min-width: 992px) {
+  div.ltx_page_main {
+    max-width: 970px;
   }
-  .ltx_cventry_institution {
-    margin-top: 5px;
-    text-align: center;
-  }
-  .ltx_cvitem_label {
-    margin-top: 5px;
-    text-align: center;
+}
+@media (min-width: 1200px) {
+  div.ltx_page_main {
+    max-width: 1170px;
   }
 }
 
+/* CV frontmatter styling */
 .author-name {
   font-family: 'Chantelli-Antiqua', 'Georgia', serif;
 }
 .author-title {
-  text-align: center;
   font-style: italic;
   font-weight: normal;
 }
@@ -130,4 +53,69 @@ section > .ltx_title +.ltx_date +.ltx_para > .ltx_p {text-indent:0em; }
   font-style: italic;
   font-weight: normal; 
   color: #6699CC;
+}
+.ltx_contact {
+  line-height: 2;
+}
+
+/* A logical section of a CV, heading styling */
+h2.ltx_cv.ltx_title_section {
+  color: #6699CC;
+}
+.ltx_section_mark::before{
+  content: "mark";
+  visibility: hidden;
+}
+.ltx_section_mark {
+  border-bottom:thin solid #6699CC;
+}
+
+/* Section grid setup */
+
+h2.ltx_cv.ltx_title_section, .ltx_cv_entry, .ltx_cv_item {
+  display: flex;
+  align-items: baseline;
+}
+
+.ltx_section_mark, .ltx_cv_entry_date, .ltx_cv_item_label {
+  flex: 16.66;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.ltx_cv_heading, .ltx_cv_entry_content, .ltx_cv_item_content {
+  flex: 83.33;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Sections contain multiple "entries" and "items", 
+a distinction we are not really styling right now 
+(should we? or is this relevant only to the latex macro language) */
+
+.ltx_cv_entry_content, .ltx_cv_item_content {
+  line-height: 1.4;
+}
+
+@media screen and (min-width: 48em){
+  .ltx_cv_entry_date {
+    text-align: right;
+  }
+  .ltx_cv_item_label {
+    text-align: right;
+  }
+}
+@media screen and (max-width: 48em){
+  .ltx_cv_entry_date {
+    margin-top: 5px;
+    text-align: center;
+  }
+  .ltx_cv_item_label {
+    margin-top: 5px;
+    text-align: center;
+  }
+}
+
+a.ltx_ref.ltx_url {
+  color: #337ab7;
+  text-decoration: none;
 }

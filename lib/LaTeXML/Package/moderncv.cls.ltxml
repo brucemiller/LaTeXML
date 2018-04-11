@@ -32,6 +32,7 @@ RequirePackage('hyperref');
 
 RequireResource('ltx-cv.css');
 
+RawTeX('\@add@frontmatter{ltx:creator}[role=cv]{}');
 DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
 DefMacro('\address{}{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#1\newline #2}}');
 
@@ -43,50 +44,59 @@ DefMacro('\cvcolumn',     Tokens());
 DefMacro('\cvcolumncell', Tokens());
 DefMacro('\cvdoubleitem', Tokens());
 DefConstructor('\cventry{}{}{}{}{}{}',
-  "<ltx:para class='ltx_cventry row'>" .
-    "<ltx:block class='col-md-2 col-xs-12 ltx_cventry_date'>#1</ltx:block>" .
-"<ltx:block class='col-md-10 col-xs-12'><ltx:inline-block class='bold'>#2,</ltx:inline-block><ltx:inline-block> #4, #5</ltx:inline-block></ltx:block>" .
+  "<ltx:para class='ltx_cv_entry'>" .
+    "<ltx:block class='ltx_cv_entry_date'>#1</ltx:block>" .
+"<ltx:block class='ltx_cv_entry_content'><ltx:inline-block class='ltx_font_bold'>#2,</ltx:inline-block><ltx:inline-block> #4, #5</ltx:inline-block></ltx:block>" .
     "</ltx:para>");
 DefConstructor('\cvitem{}{}',
-  "<ltx:para class='ltx_cvitem row'>" .
-    "<ltx:block class='ltx_cvitem_label col-md-2 col-xs-12'>#1</ltx:block>" .
-    "<ltx:block class='col-md-10 col-xs-12'>#2</ltx:block>" .
+  "<ltx:para class='ltx_cv_item'>" .
+    "<ltx:block class='ltx_cv_item_label'>#1</ltx:block>" .
+    "<ltx:block class='ltx_cv_item_content'>#2</ltx:block>" .
     "</ltx:para>");
 
 DefConstructor('\@@@homepage{}', "^ <ltx:contact role='homepage'>#1</ltx:contact>");
 DefMacro('\homepage{}',     '\@add@to@frontmatter{ltx:creator}{\@@@homepage{\url{#1}}}');
 DefMacro('\homepagesymbol', Tokens());
 
-Let(T_CS('\maketitle'), T_CS('\relax'));
-
 DefConstructor('\@@@mobile{}', "^ <ltx:contact role='mobile'>#1</ltx:contact>");
 DefMacro('\mobile{}',          '\@add@to@frontmatter{ltx:creator}{\@@@mobile{#1}}');
-DefMacro('\mobilephonesymbol', Tokens());
+DefMacro('\mobilephonesymbol', '📱');
 DefMacro('\moderncvtheme[]{}', Tokens());
 DefMacro('\moderncvcolor',     Tokens());
 DefMacro('\moderncvicons',     Tokens());
 DefMacro('\moderncvstyle',     Tokens());
 
-Let(T_CS('\\@@numbered@section'), T_CS('\\@@unnumbered@section'));
-DefConstructor('\\@@section{}{}{}{}{}{}', sub {
-    my ($document, $type, $id, $refnum, $frefnum, $toctitle, $title, %props) = @_;
-    $frefnum = undef if $frefnum && $refnum && (ToString($frefnum) eq ToString($refnum));
-    $document->openElement("ltx:" . ToString($type), 'xml:id' => CleanID($id), refnum => $refnum, frefnum => $frefnum);
-    $document->openElement('ltx:title', class => "row");
-    $document->insertElement('ltx:text', '',     class => 'ltx_section_mark col-md-2 col-xs-1');
-    $document->insertElement('ltx:text', $title, class => 'col-md-10 col-xs-11');
+DefConstructor('\@@cv@section{} Undigested OptionalUndigested Undigested', sub {
+    my ($document, $type, $inlist, $toctitle, $title, %props) = @_;
+    my $id = $props{id};
+    $document->openElement("ltx:" . ToString($type),
+      'xml:id' => CleanID($id),
+      inlist   => ToString($inlist));
+    $document->openElement('ltx:title',        class=>"ltx_cv");
+    $document->insertElement('ltx:text','',    class=>"ltx_section_mark");
+    $document->insertElement('ltx:text',$props{title},class=>"ltx_cv_heading");
     $document->closeElement('ltx:title');
+    $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
+  properties => sub {
+    my ($stomach, $type, $inlist, $toctitle, $title) = @_;
+    my %props = RefStepID(ToString($type));
+    $props{title} = Digest(T_CS('\@hidden@bgroup'), $title, T_CS('\@hidden@egroup'));
+    $props{toctitle} = $toctitle
+      && Digest(T_CS('\@hidden@bgroup'), $toctitle, T_CS('\@hidden@egroup'));
+    return %props; },
+    locked => 1);
+Let(T_CS('\\@@numbered@section'), T_CS('\\@@cv@section'));
+Let(T_CS('\\@@unnumbered@section'), T_CS('\\@@cv@section'));
 
-    $document->insertElement('ltx:toctitle', $toctitle)
-      if $toctitle && $toctitle->unlist && (ToString($toctitle) ne ToString($title)); },
-  bounded => 1, locked => 1);
 DefMacro('\closesection{}', Tokens(), locked => 1);
 
+DefMacro('\title Semiverbatim',      '\@add@to@frontmatter{ltx:creator}{\@@@position{#1}}');
 DefMacro('\email Semiverbatim',      '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 DefMacro('\firstname Semiverbatim',  '\@add@to@frontmatter{ltx:creator}{\@@@firstname{#1}}');
 DefMacro('\familyname Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@familyname{#1}}');
 DefMacro('\photo[]{}',               Tokens());
 
+DefConstructor('\@@@position{}',   "^ <ltx:contact role='position'>#1</ltx:contact>");
 DefConstructor('\@@@email{}',      "^ <ltx:contact role='email'>#1</ltx:contact>");
 DefConstructor('\@@@firstname{}',  "^ <ltx:contact role='firstname'>#1</ltx:contact>");
 DefConstructor('\@@@familyname{}', "^ <ltx:contact role='familyname'>#1</ltx:contact>");
