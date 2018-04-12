@@ -12,15 +12,6 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-# Example use with Bootstrap headers included:
-#
-# latexmlc t/moderncv/cs_cv.tex --dest=t/moderncv/cs_cv.html \
-#   --stylesheet=LaTeXML-CV.xsl \
-#   --css="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css" \
-#   --css="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css" \
-#   --javascript="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js"
-#   --timestamp=0
-
 LoadClass('article');
 
 RequirePackage('calc');
@@ -60,11 +51,6 @@ DefMacro('\homepagesymbol', Tokens());
 
 DefConstructor('\@@@mobile{}', "^ <ltx:contact role='mobile'>#1</ltx:contact>");
 DefMacro('\mobile{}',          '\@add@to@frontmatter{ltx:creator}{\@@@mobile{#1}}');
-DefMacro('\mobilephonesymbol', '📱');
-DefMacro('\moderncvtheme[]{}', Tokens());
-DefMacro('\moderncvcolor',     Tokens());
-DefMacro('\moderncvicons',     Tokens());
-DefMacro('\moderncvstyle',     Tokens());
 
 DefConstructor('\@@cv@section{} Undigested OptionalUndigested Undigested', sub {
     my ($document, $type, $inlist, $toctitle, $title, %props) = @_;
@@ -94,11 +80,33 @@ DefMacro('\title Semiverbatim',      '\@add@to@frontmatter{ltx:creator}{\@@@posi
 DefMacro('\email Semiverbatim',      '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 DefMacro('\firstname Semiverbatim',  '\@add@to@frontmatter{ltx:creator}{\@@@firstname{#1}}');
 DefMacro('\familyname Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@familyname{#1}}');
-DefMacro('\photo[]{}',               Tokens());
+DefMacro('\photo[]{}',               Tokens()); # TODO
 
 DefConstructor('\@@@position{}',   "^ <ltx:contact role='position'>#1</ltx:contact>");
 DefConstructor('\@@@email{}',      "^ <ltx:contact role='email'>#1</ltx:contact>");
 DefConstructor('\@@@firstname{}',  "^ <ltx:contact role='firstname'>#1</ltx:contact>");
 DefConstructor('\@@@familyname{}', "^ <ltx:contact role='familyname'>#1</ltx:contact>");
+
+# Style-dependent, among others (TODO to flesh out the full styling framework)
+DefMacro('\moderncvtheme[]{}', Tokens());
+DefMacro('\moderncvcolor',     Tokens());
+DefMacro('\moderncvicons',     Tokens());
+DefMacro('\moderncvstyle',     Tokens());
+
+# Classic theme depends on packages for fonts & icons, only theme supported for now:
+# (partial) moderncviconsmarvosym.sty contents here:
+# 
+# TODO: should we use them in the final HTML style? Feedback from professionals welcome.
+#       for now just adding the macro support, but omitting them from the final output
+DefMacro('\marvosymbol {}','');
+DefMacro('\addresssymbol', '');
+DefMacro('\mobilephonesymbol', '📱');
+DefMacro('\fixedphonesymbol', '☎');
+DefMacro('\faxphonesymbol', '📠');
+DefMacro('\emailsymbol', '✉');
+DefMacro('\homepagesymbol', '🖰');
+DefMacro('\linkedinsocialsymbol', ''); # Tikz image, needs a smart workaround (font awesome maybe?)
+DefMacro('\twittersocialsymbol', ''); # Tikz image, needs a smart workaround (font awesome maybe?)
+DefMacro('\githubsocialsymbol', ''); # Tikz image, needs a smart workaround (font awesome maybe?)
 
 1;
