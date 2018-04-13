@@ -346,11 +346,10 @@ sub generateMessage {
   # finally, join the result into a block of lines, indenting all but the 1st line.
   return "\n" . join("\n\t", @lines) . "\n"; }
 
-use Data::Dumper;
 sub MergeStatus {
   my ($external_state) = @_;
   my $state = $STATE;
-  # return unless $state && $external_state;
+  return unless $state && $external_state;
   my $status = $$state{status};
   my $external_status = $$external_state{status};
   # Should this be a state method? I suspect XS-ive conflicts later on...
