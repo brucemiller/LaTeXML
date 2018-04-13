@@ -357,11 +357,9 @@ sub MergeStatus {
     if ($type eq 'undefined' or $type eq 'missing') {
       my $table = $$external_status{$type};
       foreach my $subtype(keys %$table) {
-        $$status{$type}{$subtype} ||= 0;
         $$status{$type}{$subtype} += $$table{$subtype};
       }
     } else {
-      $$status{$type} ||= 0;
       $$status{$type} += $$external_status{$type};
     }
   }
