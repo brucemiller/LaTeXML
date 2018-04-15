@@ -410,7 +410,6 @@ sub make_bibcite {
   if ($show && ($show eq 'none') && !@preformatted) {
     $show = 'refnum'; }
   if (!$show) {
-    map { $self->note_missing('info', "bibref 'show' parameter", $_) } @keys;
     $show = 'refnum'; }
   if ($show eq 'nothing') {    # Ad Hoc support for \nocite!t
     return (); }
