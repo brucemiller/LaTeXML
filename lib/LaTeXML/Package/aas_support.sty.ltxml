@@ -194,26 +194,12 @@ DefPrimitive('\@appendix', sub {
 # mostly normal LaTeX
 
 # Basically, {mathletters} is a copy of AMSMath's {subequations}... Isn't it?
-DefEnvironment('{mathletters}',
-  "<ltx:equationgroup xml:id='#id'>#body</ltx:equationgroup>",
-  afterDigestBegin => sub {
-    my ($stomach, $whatsit) = @_;
-    my %eqn = RefStepCounter('equation');
-    AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
-    ResetCounter('equation');
-    DefMacro('\theequation',    UnTeX($eqn{refnum}) . '\alph{equation}');
-    DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID');
-  },
-  properties => sub { RefStepID('@equationgroup'); },
-  afterDigest => sub {
-    AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
+DefMacro('\mathletters',    '\lx@equationgroup@subnumbering@begin');
+DefMacro('\endmathletters', '\lx@equationgroup@subnumbering@end');
 
 # \eqnum{text}  specifies equation number inside an equation
 # Basically, AMSMath's \tag ?
-DefConstructor('\eqnum {}', '',
-  afterDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => ToString($_[1]), 'global'); },
-  mode => 'text');
+DefMacro('\eqnum {}', '\lx@equation@settag{\edef\theequation{#2}\lx@make@tags{equation}}');
 
 #======================================================================
 # 2.13 Citations and Bibliography

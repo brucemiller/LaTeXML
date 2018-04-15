@@ -1,0 +1,95 @@
+\documentclass{article}
+\usepackage{amsmath}
+\title{The perverse timing of stepping the equation counter}
+\begin{document}
+\maketitle
+\section{Equations}
+Note how equations increment the equation counter at the \emph{beginning},
+even if later on, the equation tag is removed or set explicitly!
+
+Normal (w/eq=\theequation)
+\begin{equation}
+N=\mbox{\theequation}
+\end{equation}
+Nonumber before (w/eq=\theequation)
+\begin{equation}
+\nonumber
+N=\mbox{\theequation}
+\end{equation}
+Nonumber after (w/eq=\theequation)
+\begin{equation}
+N=\mbox{\theequation}
+\nonumber
+\end{equation}
+Numbered, Tag before (w/eq=\theequation)
+\begin{equation}
+\tag{\theequation$'$}
+N=\mbox{\theequation}
+\end{equation}
+Numbered, Tag after (w/eq=\theequation)
+\begin{equation}
+N=\mbox{\theequation}
+\tag{\theequation$''$}
+\end{equation}
+
+UnNumbered (w/eq=\theequation)
+\begin{equation*}
+N=\mbox{\theequation}
+\end{equation*}
+UnNumbered, Tag before (w/eq=\theequation)
+\begin{equation*}
+\tag{\theequation$'''$}
+N=\mbox{\theequation}
+\end{equation*}
+UnNumbered, Tag after (w/eq=\theequation)
+\begin{equation*}
+N=\mbox{\theequation}
+\tag{\theequation$''''$}
+\end{equation*}
+Now (w/eq=\theequation).
+
+\section{Eqnarrays}
+Note how eqnarrays \emph{also} increment at the beginning!
+\emph{Even} eqnarray*!
+
+Mostly numbered, unnumbered before and after (w/eq=\theequation)
+\begin{eqnarray}
+N&=&\mbox{\theequation} \\
+N&=&\mbox{\theequation} \\
+\nonumber N&=&\mbox{\theequation} \\
+N&=&\mbox{\theequation} \nonumber\\
+N&=&\mbox{\theequation}
+\end{eqnarray}
+
+Unnumbered (w/eq=\theequation)
+\begin{eqnarray*}
+N&=&\mbox{\theequation} \\
+N&=&\mbox{\theequation}
+\end{eqnarray*}
+Now  (w/eq=\theequation).
+
+\section{AMS alignments}
+However, note how AMS alignments \emph{defer} incrementing the equation counter
+until the end of line mark!
+
+Align numbered, some unnumbered before, after, some tagged before, after (w/eq=\theequation)
+\begin{align}
+N&=\mbox{\theequation} \\
+N&=\mbox{\theequation} \\
+\nonumber N&=\mbox{\theequation} \\
+N&=\mbox{\theequation} \nonumber\\
+N&=\mbox{\theequation} \\
+\tag{\theequation$'$} N&=\mbox{\theequation} \\
+N&=\mbox{\theequation} \tag{\theequation$''$}
+\end{align}
+
+Align numbered, some tagged before, after (w/eq=\theequation)
+\begin{align*}
+N&=\mbox{\theequation} \\
+\tag{\theequation$'''$} N&=\mbox{\theequation} \\
+N&=\mbox{\theequation} \tag{\theequation$''''$}\\
+N&=\mbox{\theequation} \\
+\end{align*}
+Now (w/eq=\theequation).
+
+\end{document}

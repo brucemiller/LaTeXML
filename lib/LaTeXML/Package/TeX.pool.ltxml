@@ -3420,7 +3420,7 @@ sub addColumnToMathFork {
         $box = $document->getNodeBox($node)->getBody; } }
     # The next two cases are unusual (slightly unexpected?),
     # typically coming from abused eqnarrays?  May need more analysis preceding the MathFork'ing!
-    elsif ($type eq 'ltx:text') {
+    elsif (($type eq 'ltx:text') || ($type eq 'ltx:p')) {
       next if $node->textContent eq '';
       my $txt = $document->openElementAt($document->getFirstChildElement($main), 'ltx:XMText');
       $document->appendClone($txt, $node);

@@ -39,4 +39,21 @@ a_{11}& =b_{11}&
 a_{21}& =b_{21}&
   a_{22}& =b_{22}+c_{22}\\
 \end{flalign}
+
+Sub-numbered equations
+\begin{subequations}
+\begin{equation}N = \theequation\end{equation}
+\begin{equation}N = \theequation\end{equation}
+\end{subequations}
+
+Subnumbered, but some unnumbered (before/after) or  tagged explicitly (before/after)
+\begin{subequations}
+\begin{equation}N = \theequation\end{equation}
+\begin{equation}\nonumber N = \theequation\end{equation}
+\begin{equation} N = \theequation\nonumber\end{equation}
+\begin{equation}\tag{\theequation$'$}N = \theequation\end{equation}
+\begin{equation}N = \theequation\tag{\theequation$''$}\end{equation}
+\begin{equation}N = \theequation\end{equation}
+\end{subequations}
+
 \end{document}

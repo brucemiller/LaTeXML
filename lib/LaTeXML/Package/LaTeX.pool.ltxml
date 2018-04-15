@@ -776,6 +776,9 @@ DefMacro('\@ptionlist {}', '\@ifundefined{opt@#1}\@empty{\csname opt@#1\endcsnam
 DefMacro('\g@addto@macro DefToken {}', sub { AddToMacro($_[1], $_[2]); });
 DefMacro('\addto@hook DefToken {}', '#1\expandafter{\the#1#2}');
 
+# Alas, we're not tracking versions, so we'll assume it's "later" & cross fingers....
+DefMacro('\@ifpackagelater{}{}{}{}', '#3');
+DefMacro('\@ifclasslater{}{}{}{}',   '#3');
 Let('\AtEndOfClass', '\AtEndOfPackage');
 
 DefMacro('\AtBeginDvi {}', Tokens());
@@ -1578,8 +1581,102 @@ DefEnvironment('{math}',
     . "</ltx:Math>",
   mode => 'inline_math',
 );
-# My first inclination is to Lock {math}, but it is surprisingly common to redefine it in silly ways... So...?
 
+# Equation Numbering turns out to be rather convoluted!
+# numbered equations & friends want to IMMEDIATELY increment the equation counter
+# (you can see by \theequation)
+# However, \nonumber, \tag, set a different number and RETRACT stepping the counter!
+NewCounter('subequation', 'equation', idprefix => 'E', idwithin => 'equation');
+DefMacro('\thesubequation',   '\theequation\alph{subequation}');
+DefMacro('\fnum@subequation', '(\thesubequation)');
+
+# This provides {equation} with the capabilities for tags, nonumber, etc
+# even though stock LaTeX provides no means to override them.
+#   preset => boolean
+#   postset => boolean
+#   deferretract=>boolean
+sub prepareEquationCounter {
+  my (%options) = @_;
+  AssignValue(EQUATION_NUMBERING => {%options}, 'global');
+  return; }
+
+sub beforeEquation {
+  my $numbering = LookupValue('EQUATION_NUMBERING');
+  my $numbered  = $$numbering{numbered};
+  my $ctr       = $$numbering{counter} || 'equation';
+  if ($$numbering{preset}) {
+    AssignValue(EQUATIONROW_TAGS => {
+        preset => 1,
+        ($numbered ? RefStepCounter($ctr) : RefStepID($ctr)) }, 'global'); }
+  else {
+    AssignValue(EQUATIONROW_TAGS => {}, 'global'); }
+  return; }
+
+sub retractEquation {
+  my $numbering = LookupValue('EQUATION_NUMBERING');
+  # What about scopes? Is that handled automagically?
+  # What about \@currentID....
+  my $tags = LookupValue('EQUATIONROW_TAGS');
+  my $ctr = $$tags{counter} || $$numbering{counter} || 'equation';
+  if ($$tags{preset}) {    # ONLY if the number was preset!
+                           # counter (or ID counter) was stepped, so decrement it.
+    AddToCounter(($$numbering{numbered} ? $ctr : 'UN' . $ctr), Number(-1)); }
+  AssignValue(EQUATIONROW_TAGS => { RefStepID($ctr), reset => 1 }, 'global');
+  return; }
+
+# Disable this equation's number
+# Ahhhh, but in eqnarray, this isn't effected until \\ !!!!!
+DefMacroI('\nonumber', undef, '\lx@equation@nonumber');
+DefPrimitiveI('\lx@equation@nonumber', undef, sub {
+    my $numbering = LookupValue('EQUATION_NUMBERING');
+    if ($$numbering{deferretract}) {
+      my $tags = LookupValue('EQUATIONROW_TAGS');
+      $$tags{retract} = 1; }
+    else {
+      retractEquation(); }
+    return; });
+Let('\@LTX@nonumber', '\lx@equation@nonumber');
+
+# Set this equation's number explicitly (eg ams's \tag)
+DefMacroI('\lx@equation@settag', undef, '\lx@equation@retract\lx@equation@settag@');
+DefPrimitiveI('\lx@equation@retract', undef, sub { retractEquation(); });
+DefPrimitive('\lx@equation@settag@ Digested', sub {
+    my $tags = LookupValue('EQUATIONROW_TAGS');
+    $$tags{tags} = $_[1];
+    return; },
+  mode => 'text');
+
+sub afterEquation {
+  my ($whatsit) = @_;
+  my $numbering = LookupValue('EQUATION_NUMBERING');
+  my $tags      = LookupValue('EQUATIONROW_TAGS');
+  my $ctr = $$tags{counter} || $$numbering{counter} || 'equation';
+  if (!$$tags{noretract}
+    && ($$tags{retract} || ($$numbering{retract} && $$numbering{preset} && $$tags{preset}))) {
+    retractEquation(); }
+  elsif ($$numbering{postset} && !$$tags{reset}) {
+    # my %props = ();
+    # if ($$numbering{numbered}) {
+    #   %props = RefStepCounter($ctr); }
+    # else {
+    #   %props = RefStepID($ctr); }
+    # AssignValue(EQUATIONROW_TAGS => {%props}, 'global'); }
+    AssignValue(EQUATIONROW_TAGS => {
+        ($$numbering{numbered} ? RefStepCounter($ctr) : RefStepID($ctr)) }, 'global'); }
+  elsif (!$$tags{reset} && $$numbering{numbered}) {
+    $$tags{tags} = Digest(Invocation(T_CS('\lx@make@tags'), $ctr)); }
+
+  # Now install the tags in $whatsit or current Row, as appropriate.
+  my $props = LookupValue('EQUATIONROW_TAGS');
+  if ($$numbering{aligned}) {
+    my $row = LookupValue('Alignment')->currentRow;
+    $$row{id}   = $$props{id};
+    $$row{tags} = $$props{tags}; }
+  elsif ($whatsit) {
+    $whatsit->setProperties(%{ LookupValue('EQUATIONROW_TAGS') }); }
+  return; }
+
+# My first inclination is to Lock {math}, but it is surprisingly common to redefine it in silly ways... So...?
 DefEnvironment('{equation}',
   "<ltx:equation xml:id='#id'>"
     . "#tags"
@@ -1589,20 +1686,31 @@ DefEnvironment('{equation}',
     . "</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  mode       => 'display_math',
-  properties => sub { RefStepCounter('equation') },
-  locked     => 1);
+  mode         => 'display_math',
+  beforeDigest => sub {
+    prepareEquationCounter(numbered => 1, preset => 1);
+    beforeEquation(); },
+  afterDigestBody => sub {
+    afterEquation($_[1]); },
+  locked => 1);
+
+# Note: In ams, this DOES get a number if \tag is used!
 DefEnvironment('{equation*}',
   "<ltx:equation xml:id='#id'>"
+    . "#tags"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>"
     . "#body"
     . "</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  mode       => 'display_math',
-  properties => sub { RefStepID('equation') },
-  locked     => 1);
+  mode         => 'display_math',
+  beforeDigest => sub {
+    prepareEquationCounter(numbered => undef, preset => 1);
+    beforeEquation(); },
+  afterDigestBody => sub {
+    afterEquation($_[1]); },
+  locked => 1);
 
 # Define \( ..\) and \[ ... \] to act like environments.
 # I would have thought these should be locked, but it seems relatively common to
@@ -1666,6 +1774,29 @@ DefMacro('\ensuremathpreceeds', sub {
 # Since the arXMLiv folks keep wanting ids on all math, let's try this!
 Tag('ltx:Math', afterOpen => sub { GenerateID(@_, 'm'); });
 
+#======================================================================
+# Sub-numbered equations
+# Although LaTeX itself doesn't provide such an environment,
+# many other packages & classes do, and they seem essentially equivalent.
+# They provide an environment to wrap around equations,
+# which highjack the equation counter to sub-number within the group.
+DefConstructor('\lx@equationgroup@subnumbering@begin',
+  "<ltx:equationgroup xml:id='#id'>#tags",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my %eqn   = RefStepCounter('equation');
+    my $eqnum = Expand(T_CS('\theequation'));
+    AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
+    $whatsit->setProperties(%eqn);
+    ResetCounter('equation');
+    DefMacro('\theequation',    UnTeX($eqnum) . '\alph{equation}');
+    DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID'); });
+DefConstructor('\lx@equationgroup@subnumbering@end',
+  "</ltx:equationgroup>",
+  afterDigest => sub {
+    AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
+
+#======================================================================
 # ========================================
 # eqnarray, etal
 # Tricky! There's a conflict between a math-level alignment (which
@@ -1708,9 +1839,10 @@ Tag('ltx:Math', afterOpen => sub { GenerateID(@_, 'm'); });
 # The following set deal with numbering the equations (rows) that make up an equationgroup.
 # Note EQUATIONGROUP_NUMBER controls the numbering of the equations contained within the equationgroup,
 # not the numbering of the equationgroup itself.
-DefPrimitiveI('\@equationgroup@number', undef, sub { AssignValue(EQUATIONGROUP_NUMBER => '_AUTO_'); });
-DefPrimitiveI('\@equationgroup@nonumber', undef, sub { AssignValue(EQUATIONGROUP_NUMBER => 0); });
-DefPrimitiveI('\nonumber', undef, sub { AssignValue(EQUATIONROW_NUMBER => 0, 'global'); });
+
+DefPrimitive('\@equationgroup@numbering RequiredKeyVals', sub {
+    my $kv = GetKeyVals($_[1]);
+    prepareEquationCounter(map { ($_ => ToString($$kv{$_})) } keys %$kv); });
 
 # Alternate versions of alignment open/close@row that deal with numbering.
 # Depending on how an eqnarray ends, we might end up with an empty equation, which will be deleted.
@@ -1721,8 +1853,7 @@ DefConstructor('\@equationgroup@open@row SkipSpaces DigestedBody',
   reversion => '#1',
   beforeDigest => sub { $_[0]->bgroup;
     LookupValue('Alignment')->newRow;
-    AssignValue(EQUATIONROW_NUMBER
-        => LookupValue('EQUATIONGROUP_NUMBER'), 'global');
+    beforeEquation();
     return; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
@@ -1732,21 +1863,9 @@ DefConstructor('\@equationgroup@open@row SkipSpaces DigestedBody',
     # Others, it ignores the empty line (\\ optional/ignorable before ams' \intertext)
     # So, I suspect we should unconditionally do this branch, but work harder at avoiding
     # empty rows in the first place.
-    if (1) {
-      my $num   = LookupValue('EQUATIONROW_NUMBER');
-      my %props = ();
-      if    (!$num)            { %props = RefStepID('equation'); }
-      elsif ($num eq '_AUTO_') { %props = RefStepCounter('equation'); }
-      else {
-        %props = RefStepID('equation');
-        $props{tags} = $num; }
-      # GACK: Store the refnum & id in the alignment's row structure!
-      # [wouldn't it be nicer to be using Whatsits inside the alignment?]
-      my $row = LookupValue('Alignment')->currentRow;
-      $$row{id}   = $props{id};
-      $$row{tags} = $props{tags};
-    }
+    afterEquation();
     return; });
+# Evolve the above to be a reusuable equationgroup numbering assistant!
 
 # ========================================
 # Some special kinds of rows...
@@ -1765,13 +1884,16 @@ DefMacro('\lefteqn{}',
 # eqnarray
 DefMacroI('\eqnarray', undef,
   '\@eqnarray@bindings\@@eqnarray'
-    . '\@equationgroup@number\@start@alignment',
+    . '\@equationgroup@numbering{numbered=1,preset=1,deferretract=1,grouped=1,aligned=1}'
+    . '\@start@alignment',
   locked => 1);
 DefMacroI('\endeqnarray', undef,
   '\@finish@alignment\end@eqnarray',
   locked => 1);
 DefMacro('\csname eqnarray*\endcsname',
-  '\@eqnarray@bindings\@@eqnarray\@equationgroup@nonumber\@start@alignment',
+  '\@eqnarray@bindings\@@eqnarray'
+    . '\@equationgroup@numbering{numbered=1,preset=1,retract=1,grouped=1,aligned=1}'
+    . '\@start@alignment',
   locked => 1);
 DefMacro('\csname endeqnarray*\endcsname',
   '\@finish@alignment\end@eqnarray',
@@ -4282,6 +4404,7 @@ RawTeX(<<'EoTeX');
 \def\@car#1#2\@nil{#1}
 \def\@cdr#1#2\@nil{#2}
 \def\@carcube#1#2#3#4\@nil{#1#2#3}
+\def\nfss@text#1{{\mbox{#1}}}
 EoTeX
 
 DefMacro('\@ifdefinable DefToken {}', sub {

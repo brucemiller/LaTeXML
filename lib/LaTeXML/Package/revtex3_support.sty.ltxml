@@ -37,21 +37,11 @@ DefMacro('\eqsecnum',     '');    # ?
 DefMacro('\tightenlines', '');
 DefMacro('\wideabs',      '');    # wide abstract? takes an arg, but avoid reading it
 
+# RevTeX's subequation numbering environment.
 # Hmm, this seems to allow random chunks of text within;
 # it really only specifies the numbering, not alignment or ...
-DefEnvironment('{mathletters}',
-  "<ltx:equationgroup xml:id='#id'>#body</ltx:equationgroup>",
-  afterDigestBegin => sub {
-    my ($stomach, $whatsit) = @_;
-    my %eqn = RefStepCounter('equation');
-    $whatsit->setProperties(%eqn);
-    AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
-    ResetCounter('equation');
-    DefMacro('\theequation',    UnTeX($eqn{refnum}) . '\alph{equation}');
-    DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID');
-  },
-  afterDigest => sub {
-    AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
+DefMacro('\mathletters',    '\lx@equationgroup@subnumbering@begin');
+DefMacro('\endmathletters', '\lx@equationgroup@subnumbering@end');
 
 #======================================================================
 # Apparently, you can use single $ within equations to switch back to text

@@ -158,22 +158,9 @@ DefMacroI('\chain',      undef, '{\protect\mbox{--- $\cdot$ ---}}');
 DefMacroI('\dashddot',   undef, '{\protect\mbox{--- $\cdot$ $\cdot$ ---}}');
 DefMacroI('\full',       undef, '{\protect\mbox{------}}');
 
-DefEnvironment('{numparts}',
-  "<ltx:equationgroup xml:id='#id'>"
-    . "#tags"
-    . "#body"
-    . "</ltx:equationgroup>",
-  afterDigestBegin => sub {
-    my ($stomach, $whatsit) = @_;
-    my %eqn = RefStepCounter('equation');
-    AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
-    $whatsit->setProperties(%eqn);
-    ResetCounter('equation');
-    DefMacro('\theequation',    UnTeX($eqn{refnum}) . '\alph{equation}');
-    DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID');
-  },
-  afterDigest => sub {
-    AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
+# Basically, {numparts} is a copy of AMSMath's {subequations}... Isn't it?
+DefMacro('\numparts',    '\lx@equationgroup@subnumbering@begin');
+DefMacro('\endnumparts', '\lx@equationgroup@subnumbering@end');
 
 Let('\pcal', '\cal');
 Let('\pmit', '\mathnormal');
@@ -183,12 +170,14 @@ Let('\pmit', '\mathnormal');
 # Let's see if this works at all...
 DefMacro('\eqnalign{}',
   '\@eqnarray@bindings\@@eqnarray'
-    . '\@equationgroup@number\@start@alignment'
+    . '\@equationgroup@numbering{numbered=1,stepped=post,grouped=1,aligned=1}'
+    . '\@start@alignment'
     . '#1'
     . '\@finish@alignment\end@eqnarray');
 DefMacro('\eqnalignno{}',
   '\@eqnarray@bindings\@@eqnarray'
-    . '\@equationgroup@number\@start@alignment'
+    . '\@equationgroup@numbering{numbered=1,stepped=post,grouped=1,aligned=1}'
+    . '\@start@alignment'
     . '#1'
     . '\@finish@alignment\end@eqnarray');
 

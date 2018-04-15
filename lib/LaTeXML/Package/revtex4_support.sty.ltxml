@@ -165,10 +165,7 @@ DefConstructor('\bbox{}', '#1', bounded => 1, requireMath => 1, font => { forceb
 DefConstructor('\pmb{}', '#1', bounded => 1, requireMath => 1,
   font => { forcebold => 1, family => 'blackboard',
     series => 'medium', shape => 'upright' });
-DefConstructor('\eqnum {}', '',
-  afterDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => ToString($_[1]), 'global'); },
-  mode => 'text');
+DefMacro('\eqnum {}', '\lx@equation@settag{\edef\theequation{#2}\lx@make@tags{equation}}');
 
 # Redefined in revtex3_support
 DefMacro('\mathletters',    '');
