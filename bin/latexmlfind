@@ -24,12 +24,13 @@ use LaTeXML;    # Currently, just for version information.
 # Parse command line
 my ($verbosity) = (0);
 my ($help, $showversion, $SKELETON) = (0, 0, 0);
-my (@symbols, @unknowns, @posfuncs, @labels, @refnums);
+my (@symbols, @unknowns, @posfuncs, @labels, @refnums, @xpaths);
 GetOptions("symbol=s" => \@symbols,,
   "unknown=s"          => \@unknowns,
   "possiblefunction=s" => \@posfuncs,
   "label=s"            => \@labels,
   "refnum=s"           => \@refnums,
+  "xpath=s"            => \@xpaths,
   "skeleton"           => \$SKELETON,
   "quiet"              => sub { $verbosity--; },
   "verbose"            => sub { $verbosity++; },
@@ -87,6 +88,17 @@ foreach my $symbol (@posfuncs) {
       . "[\@name='$symbol' or text()='$symbol']"
       . "]"); }
 
+foreach my $refnum (@refnums) {
+  collect_matches("Refnum \"$refnum\"",
+    "//ltx:*[ltx:tags/ltx:tag[\@role='refnum' and text()='$refnum']]"); }
+
+foreach my $label (@labels) {
+  collect_matches("Label \"$label\"",
+    "//ltx:*[contains(\@labels,'LABEL:$label')]"); }
+
+foreach my $xpath (@xpaths) {
+  collect_matches("XPath \"$xpath\"", $xpath); }
+
 show_matches($ROOT_OBJECT);
 
 #**********************************************************************
@@ -112,7 +124,7 @@ sub match_font {
 sub collect_matches {
   my ($description, $xpath) = @_;
   my @nodes = $XPATH->findnodes($xpath, $DOC);
-  print "Query $description appears in " . scalar(@nodes) . " places\n";
+  print "Query $description appears in " . scalar(@nodes) . " places\n" if $verbosity > -1;
   print "  [XPath = \"$xpath\"]\n" if $verbosity > 0;
   foreach my $node (@nodes) {
     my $object = id_object($node);
@@ -132,8 +144,8 @@ sub id_object {
     my $parent_object = id_object($node);
     my $type          = $node->localname;
     my $labels        = $node->getAttribute('labels');
-    my $refnum        = $node->getAttribute('refnum');
-    my ($title) = $XPATH->findnodes("child::ltx:toctitle | child::ltx:title", $node);
+    my ($refnum) = $XPATH->findnodes("child::ltx:tags/ltx:tag[\@refnum]/text()", $node);
+    my ($title)  = $XPATH->findnodes("child::ltx:toctitle | child::ltx:title",   $node);
     my $desc = ($refnum ? ($title ? "$refnum. " . $title->textContent : $refnum)
       : ($title ? $title->textContent : ''));
     $desc =~ s/\s+/ /g;
@@ -148,8 +160,10 @@ sub show_matches {
   print $indent. "$$object{type}:"
     . ($$object{id}          ? " ID=$$object{id}"           : '')
     . ($$object{labels}      ? " Labels=$$object{labels}"   : '')
-    . ($$object{description} ? " \"$$object{description}\"" : "") . "\n";
+    . ($$object{description} ? " \"$$object{description}\"" : "") . "\n"
+    if $verbosity > -1;
   if (!$SKELETON) {
+
     foreach my $item (@{ $$object{items} }) {
       show_node($item, $indent . ' | '); } }
   foreach my $child (@{ $$object{children} }) {
@@ -158,7 +172,9 @@ sub show_matches {
 
 sub show_node {
   my ($node, $indent) = @_;
-  if ($node->localname eq 'Math') {
+  if ($verbosity < 0) {
+    print $node->toString . "\n"; }
+  elsif (($node->localname || '') eq 'Math') {
     my $ptex = $node->getAttribute('tex');
     my $ctex = $node->getAttribute('content-tex');
     if ($verbosity > 1) {
