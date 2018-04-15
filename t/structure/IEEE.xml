@@ -1,0 +1,1013 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="IEEEtran"?>
+<?latexml package="amsmath"?>
+<?latexml package="amsthm"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <title>IEEE Trans</title>
+  <abstract name="Abstract">
+    <p>Uncertainty from blah, blah</p>
+  </abstract>
+  <keywords>
+Stuff, More Stuff
+</keywords>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>I</tag>
+      <tag role="refnum">I</tag>
+      <tag role="typerefnum">§I</tag>
+    </tags>
+    <title><tag close=" ">I</tag><text font="smallcaps">A Theorem</text></title>
+    <theorem class="ltx_theorem_theorem" inlist="thm theorem:theorem" labels="LABEL:th1" xml:id="Thmtheorem1">
+      <tags>
+        <tag>Theorem 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Theorem 1</tag>
+      </tags>
+      <title class="ltx_runin" font="bold"><tag>Theorem 1</tag>.</title>
+      <para xml:id="Thmtheorem1.p1">
+        <p><text font="italic">Whenever this, then that.</text></p>
+      </para>
+    </theorem>
+    <proof>
+      <title class="ltx_runin" font="bold italic">Proof:</title>
+      <para xml:id="S1.p1">
+        <p>Because I say so.</p>
+      </para>
+      <para xml:id="S1.p2">
+        <p>This completes the proof.
+∎</p>
+      </para>
+    </proof>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>II</tag>
+      <tag role="refnum">II</tag>
+      <tag role="typerefnum">§II</tag>
+    </tags>
+    <title><tag close=" ">II</tag><text font="smallcaps">IEEE style eqnarray</text></title>
+    <para xml:id="S2.p1">
+      <p>Normal numbering.</p>
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S2.EGx1">
+        <equation xml:id="S2.E1">
+          <tags>
+            <tag>(1)</tag>
+            <tag role="refnum">1</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=1" text="N = 1" xml:id="S2.E1.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E1.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E1.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 1" text="1" xml:id="S2.E1.m3">
+                    <XMath>
+                      <XMTok meaning="1" role="NUMBER">1</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E2">
+          <tags>
+            <tag>(2)</tag>
+            <tag role="refnum">2</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=2" text="N = 2" xml:id="S2.E2.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E2.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E2.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 2" text="2" xml:id="S2.E2.m3">
+                    <XMath>
+                      <XMTok meaning="2" role="NUMBER">2</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+    </para>
+    <para xml:id="S2.p2">
+      <p>No numbering.</p>
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S2.EGx2">
+        <equation xml:id="S2.Ex1">
+          <MathFork>
+            <Math tex="\displaystyle N=3" text="N = 3" xml:id="S2.Ex1.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.Ex1.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.Ex1.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 3" text="3" xml:id="S2.Ex1.m3">
+                    <XMath>
+                      <XMTok meaning="3" role="NUMBER">3</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.Ex2">
+          <MathFork>
+            <Math tex="\displaystyle N=3" text="N = 3" xml:id="S2.Ex2.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.Ex2.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.Ex2.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 3" text="3" xml:id="S2.Ex2.m3">
+                    <XMath>
+                      <XMTok meaning="3" role="NUMBER">3</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+    </para>
+    <para xml:id="S2.p3">
+      <p>Only number first</p>
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S2.EGx3">
+        <equation xml:id="S2.E3">
+          <tags>
+            <tag>(3)</tag>
+            <tag role="refnum">3</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=3" text="N = 3" xml:id="S2.E3.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E3.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E3.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 3" text="3" xml:id="S2.E3.m3">
+                    <XMath>
+                      <XMTok meaning="3" role="NUMBER">3</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.Ex3">
+          <MathFork>
+            <Math tex="\displaystyle N=4" text="N = 4" xml:id="S2.Ex3.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="4" role="NUMBER">4</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.Ex3.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.Ex3.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 4" text="4" xml:id="S2.Ex3.m3">
+                    <XMath>
+                      <XMTok meaning="4" role="NUMBER">4</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+    </para>
+    <para xml:id="S2.p4">
+      <p>Normal numbering, done differently</p>
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S2.EGx4">
+        <equation xml:id="S2.E4">
+          <tags>
+            <tag>(4)</tag>
+            <tag role="refnum">4</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=4" text="N = 4" xml:id="S2.E4.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="4" role="NUMBER">4</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E4.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E4.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 4" text="4" xml:id="S2.E4.m3">
+                    <XMath>
+                      <XMTok meaning="4" role="NUMBER">4</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E5">
+          <tags>
+            <tag>(5)</tag>
+            <tag role="refnum">5</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=5" text="N = 5" xml:id="S2.E5.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="5" role="NUMBER">5</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E5.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E5.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 5" text="5" xml:id="S2.E5.m3">
+                    <XMath>
+                      <XMTok meaning="5" role="NUMBER">5</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+    </para>
+    <para xml:id="S2.p5">
+      <p>Only number last.</p>
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S2.EGx5">
+        <equation xml:id="S2.Ex4">
+          <MathFork>
+            <Math tex="\displaystyle N=6" text="N = 6" xml:id="S2.Ex4.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="6" role="NUMBER">6</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.Ex4.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.Ex4.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 6" text="6" xml:id="S2.Ex4.m3">
+                    <XMath>
+                      <XMTok meaning="6" role="NUMBER">6</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E6">
+          <tags>
+            <tag>(6)</tag>
+            <tag role="refnum">6</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=6" text="N = 6" xml:id="S2.E6.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="6" role="NUMBER">6</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E6.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E6.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 6" text="6" xml:id="S2.E6.m3">
+                    <XMath>
+                      <XMTok meaning="6" role="NUMBER">6</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+      <p>Same done differently</p>
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S2.EGx6">
+        <equation xml:id="S2.Ex5">
+          <MathFork>
+            <Math tex="\displaystyle N=7" text="N = 7" xml:id="S2.Ex5.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="7" role="NUMBER">7</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.Ex5.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.Ex5.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 7" text="7" xml:id="S2.Ex5.m3">
+                    <XMath>
+                      <XMTok meaning="7" role="NUMBER">7</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E7">
+          <tags>
+            <tag>(7)</tag>
+            <tag role="refnum">7</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=7" text="N = 7" xml:id="S2.E7.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="7" role="NUMBER">7</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E7.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E7.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 7" text="7" xml:id="S2.E7.m3">
+                    <XMath>
+                      <XMTok meaning="7" role="NUMBER">7</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+    </para>
+    <para xml:id="S2.p6">
+      <p>Number all</p>
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S2.EGx7">
+        <equation xml:id="S2.E8">
+          <tags>
+            <tag>(8)</tag>
+            <tag role="refnum">8</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=8" text="N = 8" xml:id="S2.E8.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="8" role="NUMBER">8</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E8.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E8.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 8" text="8" xml:id="S2.E8.m3">
+                    <XMath>
+                      <XMTok meaning="8" role="NUMBER">8</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E9">
+          <tags>
+            <tag>(9)</tag>
+            <tag role="refnum">9</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=9" text="N = 9" xml:id="S2.E9.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="9" role="NUMBER">9</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E9.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E9.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 9" text="9" xml:id="S2.E9.m3">
+                    <XMath>
+                      <XMTok meaning="9" role="NUMBER">9</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+    </para>
+    <para xml:id="S2.p7">
+      <p>Sub-number first</p>
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S2.EGx8">
+        <equation xml:id="S2.E10">
+          <tags>
+            <tag>(10a)</tag>
+            <tag role="refnum">10a</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=10" text="N = 10" xml:id="S2.E10.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="10" role="NUMBER">10</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E10.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E10.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 10" text="10" xml:id="S2.E10.m3">
+                    <XMath>
+                      <XMTok meaning="10" role="NUMBER">10</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E11">
+          <tags>
+            <tag>(11)</tag>
+            <tag role="refnum">11</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=11" text="N = 11" xml:id="S2.E11.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="11" role="NUMBER">11</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E11.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E11.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 11" text="11" xml:id="S2.E11.m3">
+                    <XMath>
+                      <XMTok meaning="11" role="NUMBER">11</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+    </para>
+    <para xml:id="S2.p8">
+      <p>Sub-number persistently</p>
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S2.EGx9">
+        <equation xml:id="S2.E12">
+          <tags>
+            <tag>(12a)</tag>
+            <tag role="refnum">12a</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=12" text="N = 12" xml:id="S2.E12.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="12" role="NUMBER">12</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E12.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E12.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 12" text="12" xml:id="S2.E12.m3">
+                    <XMath>
+                      <XMTok meaning="12" role="NUMBER">12</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E12.E2">
+          <tags>
+            <tag>(12b)</tag>
+            <tag role="refnum">12b</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=12" text="N = 12" xml:id="S2.E12.E2.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="12" role="NUMBER">12</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E12.E2.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E12.E2.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 12" text="12" xml:id="S2.E12.E2.m3">
+                    <XMath>
+                      <XMTok meaning="12" role="NUMBER">12</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+    </para>
+    <para xml:id="S2.p9">
+      <p>Resume normal numbering</p>
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S2.EGx10">
+        <equation xml:id="S2.E13">
+          <tags>
+            <tag>(13)</tag>
+            <tag role="refnum">13</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=13" text="N = 13" xml:id="S2.E13.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="13" role="NUMBER">13</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E13.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E13.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 13" text="13" xml:id="S2.E13.m3">
+                    <XMath>
+                      <XMTok meaning="13" role="NUMBER">13</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E14">
+          <tags>
+            <tag>(14)</tag>
+            <tag role="refnum">14</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle N=14" text="N = 14" xml:id="S2.E14.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok meaning="14" role="NUMBER">14</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <tr>
+                <td align="right"><Math mode="inline" tex="\displaystyle N" text="N" xml:id="S2.E14.m1">
+                    <XMath>
+                      <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S2.E14.m2">
+                    <XMath>
+                      <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    </XMath>
+                  </Math></td>
+                <td align="left"><Math mode="inline" tex="\displaystyle 14" text="14" xml:id="S2.E14.m3">
+                    <XMath>
+                      <XMTok meaning="14" role="NUMBER">14</XMTok>
+                    </XMath>
+                  </Math></td>
+              </tr>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+    </para>
+    <para xml:id="S2.p10">
+      <p>And boxed?
+<Math mode="inline" tex="\begin{array}[]{rCl}N&amp;=&amp;14\\&#10;N&amp;=&amp;14\end{array}" text="Array[[N, =, 14], [N, =, 14]]" xml:id="S2.p10.m1">
+          <XMath>
+            <XMArray role="ARRAY" vattach="middle">
+              <XMRow>
+                <XMCell align="right">
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                </XMCell>
+                <XMCell align="left">
+                  <XMTok meaning="14" role="NUMBER">14</XMTok>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="right">
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                </XMCell>
+                <XMCell align="left">
+                  <XMTok meaning="14" role="NUMBER">14</XMTok>
+                </XMCell>
+              </XMRow>
+            </XMArray>
+          </XMath>
+        </Math></p>
+    </para>
+    <para xml:id="S2.p11">
+      <p>Mixed case, single column</p>
+      <equationgroup class="ltx_eqn_eqnarray" xml:id="S2.EGx11">
+        <equation xml:id="S2.E15">
+          <tags>
+            <tag>(15a)</tag>
+            <tag role="refnum">15a</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle x_{1}" text="x _ 1" xml:id="S2.E15.m2">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <td align="right"><Math mode="inline" tex="\displaystyle x_{1}" text="x _ 1" xml:id="S2.E15.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                      <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                      <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math></td>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E15.E2">
+          <tags>
+            <tag>(15b)</tag>
+            <tag role="refnum">15b</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle x_{2}" text="x _ 2" xml:id="S2.E15.E2.m2">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <td align="right"><Math mode="inline" tex="\displaystyle x_{2}" text="x _ 2" xml:id="S2.E15.E2.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                      <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                      <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math></td>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation labels="LABEL:eqn:expl" xml:id="S2.E15.E3">
+          <tags>
+            <tag>(16a)</tag>
+            <tag role="refnum">16a</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle x_{3}" text="x _ 3" xml:id="S2.E15.E3.m2">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <td align="right"><Math mode="inline" tex="\displaystyle x_{3}" text="x _ 3" xml:id="S2.E15.E3.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                      <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                      <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math></td>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E16.E2">
+          <tags>
+            <tag>(16b)</tag>
+            <tag role="refnum">16b</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle x_{4}" text="x _ 4" xml:id="S2.E16.E2.m2">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok fontsize="70%" meaning="4" role="NUMBER">4</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <td align="right"><Math mode="inline" tex="\displaystyle x_{4}" text="x _ 4" xml:id="S2.E16.E2.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                      <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                      <XMTok fontsize="70%" meaning="4" role="NUMBER">4</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math></td>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E16.E3">
+          <tags>
+            <tag>(17)</tag>
+            <tag role="refnum">17</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle x_{5}" text="x _ 5" xml:id="S2.E16.E3.m2">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok fontsize="70%" meaning="5" role="NUMBER">5</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <td align="right"><Math mode="inline" tex="\displaystyle x_{5}" text="x _ 5" xml:id="S2.E16.E3.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                      <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                      <XMTok fontsize="70%" meaning="5" role="NUMBER">5</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math></td>
+            </MathBranch>
+          </MathFork>
+        </equation>
+        <equation xml:id="S2.E18">
+          <tags>
+            <tag>(18)</tag>
+            <tag role="refnum">18</tag>
+          </tags>
+          <MathFork>
+            <Math tex="\displaystyle x_{6}" text="x _ 6" xml:id="S2.E18.m2">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok fontsize="70%" meaning="6" role="NUMBER">6</XMTok>
+                </XMApp>
+              </XMath>
+            </Math>
+            <MathBranch>
+              <td align="right"><Math mode="inline" tex="\displaystyle x_{6}" text="x _ 6" xml:id="S2.E18.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post8"/>
+                      <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                      <XMTok fontsize="70%" meaning="6" role="NUMBER">6</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math></td>
+            </MathBranch>
+          </MathFork>
+        </equation>
+      </equationgroup>
+    </para>
+    <float class="biography" xml:id="S2.tab1">
+      <tabular>
+        <tr>
+          <td>Picture of Me</td>
+          <td><p><text font="bold">ME</text> is a really great guy.</p></td>
+        </tr>
+      </tabular>
+    </float>
+  </section>
+</document>

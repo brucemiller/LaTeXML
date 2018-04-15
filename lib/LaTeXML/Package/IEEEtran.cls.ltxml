@@ -1,0 +1,338 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  IEEEtran.cls                                                       | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+RawTeX(<<'EoTeX');
+\newif\ifCLASSOPTIONonecolumn       \CLASSOPTIONonecolumnfalse
+\newif\ifCLASSOPTIONtwocolumn       \CLASSOPTIONtwocolumntrue
+\newif\ifCLASSOPTIONoneside         \CLASSOPTIONonesidetrue
+\newif\ifCLASSOPTIONtwoside         \CLASSOPTIONtwosidefalse
+\newif\ifCLASSOPTIONfinal           \CLASSOPTIONfinaltrue
+\newif\ifCLASSOPTIONdraft           \CLASSOPTIONdraftfalse
+\newif\ifCLASSOPTIONdraftcls        \CLASSOPTIONdraftclsfalse
+\newif\ifCLASSOPTIONdraftclsnofoot  \CLASSOPTIONdraftclsnofootfalse
+\newif\ifCLASSOPTIONpeerreview      \CLASSOPTIONpeerreviewfalse
+\newif\ifCLASSOPTIONpeerreviewca    \CLASSOPTIONpeerreviewcafalse
+\newif\ifCLASSOPTIONjournal         \CLASSOPTIONjournaltrue
+\newif\ifCLASSOPTIONconference      \CLASSOPTIONconferencefalse
+\newif\ifCLASSOPTIONtechnote        \CLASSOPTIONtechnotefalse
+\newif\ifCLASSOPTIONnofonttune      \CLASSOPTIONnofonttunefalse
+\newif\ifCLASSOPTIONcaptionsoff     \CLASSOPTIONcaptionsofffalse
+\newif\ifCLASSOPTIONcomsoc          \CLASSOPTIONcomsocfalse
+\newif\ifCLASSOPTIONcompsoc         \CLASSOPTIONcompsocfalse
+\newif\ifCLASSOPTIONtransmag        \CLASSOPTIONtransmagfalse
+\newif\ifCLASSOPTIONromanappendices \CLASSOPTIONromanappendicesfalse
+\newif\ifCLASSINFOpdf               \CLASSINFOpdffalse
+\DeclareOption{9pt}{\def\CLASSOPTIONpt{9}\def\@ptsize{0}}
+\DeclareOption{10pt}{\def\CLASSOPTIONpt{10}\def\@ptsize{0}}
+\DeclareOption{11pt}{\def\CLASSOPTIONpt{11}\def\@ptsize{1}}
+\DeclareOption{12pt}{\def\CLASSOPTIONpt{12}\def\@ptsize{2}}
+\DeclareOption{letterpaper}{\setlength{\paperwidth}{8.5in}%
+                            \setlength{\paperheight}{11in}%
+                            \@IEEEusingAfourpaperfalse
+                            \@IEEEusingcspaperfalse
+                            \def\CLASSOPTIONpaper{letter}%
+                            \def\CLASSINFOpaperwidth{8.5in}%
+                            \def\CLASSINFOpaperheight{11in}}
+\DeclareOption{a4paper}{\setlength{\paperwidth}{210mm}%
+                        \setlength{\paperheight}{297mm}%
+                        \@IEEEusingAfourpapertrue
+                        \@IEEEusingcspaperfalse
+                        \def\CLASSOPTIONpaper{a4}%
+                        \def\CLASSINFOpaperwidth{210mm}%
+                        \def\CLASSINFOpaperheight{297mm}}
+% special paper option for compsoc journals
+\DeclareOption{cspaper}{\setlength{\paperwidth}{7.875in}%
+                        \setlength{\paperheight}{10.75in}%
+                        \@IEEEusingcspapertrue
+                        \@IEEEusingAfourpaperfalse
+                        \def\CLASSOPTIONpaper{ieeecs}%
+                        \def\CLASSINFOpaperwidth{7.875in}%
+                        \def\CLASSINFOpaperheight{10.75in}}
+\DeclareOption{oneside}{\@twosidefalse\@mparswitchfalse
+                        \CLASSOPTIONonesidetrue\CLASSOPTIONtwosidefalse}
+\DeclareOption{twoside}{\@twosidetrue\@mparswitchtrue
+                        \CLASSOPTIONtwosidetrue\CLASSOPTIONonesidefalse}
+\DeclareOption{onecolumn}{\CLASSOPTIONonecolumntrue\CLASSOPTIONtwocolumnfalse}
+\DeclareOption{twocolumn}{\CLASSOPTIONtwocolumntrue\CLASSOPTIONonecolumnfalse}
+\DeclareOption{draft}{\CLASSOPTIONdrafttrue\CLASSOPTIONdraftclstrue
+                      \CLASSOPTIONdraftclsnofootfalse} 
+% draftcls is for a draft mode which will not affect any packages
+% used by the document.
+\DeclareOption{draftcls}{\CLASSOPTIONdraftfalse\CLASSOPTIONdraftclstrue
+                         \CLASSOPTIONdraftclsnofootfalse} 
+% draftclsnofoot is like draftcls, but without the footer.
+\DeclareOption{draftclsnofoot}{\CLASSOPTIONdraftfalse\CLASSOPTIONdraftclstrue
+                               \CLASSOPTIONdraftclsnofoottrue} 
+\DeclareOption{final}{\CLASSOPTIONdraftfalse\CLASSOPTIONdraftclsfalse
+                      \CLASSOPTIONdraftclsnofootfalse}
+
+\DeclareOption{journal}{\CLASSOPTIONpeerreviewfalse\CLASSOPTIONpeerreviewcafalse
+                        \CLASSOPTIONjournaltrue\CLASSOPTIONconferencefalse\CLASSOPTIONtechnotefalse}
+
+\DeclareOption{conference}{\CLASSOPTIONpeerreviewfalse\CLASSOPTIONpeerreviewcafalse
+                           \CLASSOPTIONjournalfalse\CLASSOPTIONconferencetrue\CLASSOPTIONtechnotefalse}
+
+\DeclareOption{technote}{\CLASSOPTIONpeerreviewfalse\CLASSOPTIONpeerreviewcafalse
+                         \CLASSOPTIONjournalfalse\CLASSOPTIONconferencefalse\CLASSOPTIONtechnotetrue}
+
+\DeclareOption{peerreview}{\CLASSOPTIONpeerreviewtrue\CLASSOPTIONpeerreviewcafalse
+                           \CLASSOPTIONjournalfalse\CLASSOPTIONconferencefalse\CLASSOPTIONtechnotefalse}
+
+\DeclareOption{peerreviewca}{\CLASSOPTIONpeerreviewtrue\CLASSOPTIONpeerreviewcatrue
+                             \CLASSOPTIONjournalfalse\CLASSOPTIONconferencefalse\CLASSOPTIONtechnotefalse}
+
+\DeclareOption{nofonttune}{\CLASSOPTIONnofonttunetrue}
+\DeclareOption{captionsoff}{\CLASSOPTIONcaptionsofftrue}
+\DeclareOption{comsoc}{\CLASSOPTIONcomsoctrue\CLASSOPTIONcompsocfalse\CLASSOPTIONtransmagfalse}
+\DeclareOption{compsoc}{\CLASSOPTIONcomsocfalse\CLASSOPTIONcompsoctrue\CLASSOPTIONtransmagfalse}
+\DeclareOption{transmag}{\CLASSOPTIONtransmagtrue\CLASSOPTIONcomsocfalse\CLASSOPTIONcompsocfalse}
+\DeclareOption{romanappendices}{\CLASSOPTIONromanappendicestrue}
+EoTeX
+
+# #  9pt 10pt 11pt 12pt
+# foreach my $option (qw(
+#   draft draftcls draftclsnofoot final
+#   conference journal technote peerreview peerreviewca
+#   comsoc compsoc transmag
+#   letterpaper a4paper cspaper
+#   oneside twoside
+#   oncolumn twocolumn
+#   romanappendices
+#   captionsoff
+#   nofonttune)) {
+#   DeclareOption($option, undef); }
+
+# Anything else gets passed to article.
+DeclareOption(undef, sub {
+    PassOptions('article', 'cls', ToString(Digest(T_CS('\CurrentOption')))); });
+
+ProcessOptions();
+LoadClass('article');
+
+#RequirePackage('multicol');
+#RequirePackage('inst_support');
+
+# This seems to be just to save stuff so that \maketitle can format it?
+DefMacro('\IEEEtitleabstractindextext{}',                '#1');
+DefMacro('\IEEEdisplaynontitleabstractindextext',        '');
+DefMacro('\IEEEdisplaynotcompsoctitleabstractindextext', '');
+DefMacro('\IEEEcompsoctitleabstractindextext',           '');
+Let('\IEEEpeerreviewmaketitle', '\maketitle');
+DefMacro('\IEEEoverridecommandlockouts', '');
+DefMacro('\overrideIEEEmargins',         '');
+
+DefMacro('\IEEEaftertitletext{}',     '');    # ?
+DefMacro('\IEEEspecialpapernotice{}', '');    # ?
+
+DefMacro('\IEEEmembership{}',   '');          # nothing for now.
+DefMacro('\IEEEauthorblockN{}', '#1');        # author
+
+DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\IEEEauthorblockA{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+
+DefMacro(T_CS('\begin{IEEEkeywords}'),              '\@IEEEkeywords');
+DefMacro(T_CS('\end{IEEEkeywords}'),                '\@endIEEEkeywords');
+DefMacro('\@IEEEkeywords XUntil:\@endIEEEkeywords', '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\IEEEraisesectionheading{}',              '#1');
+DefMacro('\IEEEPARstart{}{}', '#1#2');        # Eventually, dropcap?
+
+DefMacro('\IEEEcompsocitemizethanks{}', '\thanks{#1}');
+DefMacro('\IEEEcompsocthanksitem[]',    '');
+DefMacro('\IEEEauthorrefmark',          '');
+DefMacro('\IEEEtriggeratref{}',         '');
+
+DefMacro('\IEEEpubid{}',     '\@add@frontmatter{ltx:note}[role=publicationid]{pubid: #1}');
+DefMacro('\IEEEpubidadjcol', '');
+
+RawTeX(<<'EoTeX');
+\ifCLASSOPTIONcompsoc
+% compsoc is all arabic
+\def\thesection{\arabic{section}}
+\def\thesubsection{\thesection.\arabic{subsection}}
+\def\thesubsubsection{\thesubsection.\arabic{subsubsection}}
+\def\theparagraph{\thesubsubsection.\arabic{paragraph}}
+\else
+\def\thesection{\Roman{section}}                             % I
+% V1.7, \mbox prevents breaks around - 
+\def\thesubsection{\mbox{\thesection-\Alph{subsection}}}     % I-A
+% V1.7 use I-A1 format used by the IEEE rather than I-A.1
+\def\thesubsubsection{\thesubsection\arabic{subsubsection}}  % I-A1
+\def\theparagraph{\thesubsubsection\alph{paragraph}}         % I-A1a
+\fi
+EoTeX
+DefMacro('\format@title@font@section',    '\sc');
+DefMacro('\format@title@font@subsection', '\it');
+DefMacro('\figurename',                   'Fig.');
+DefMacro('\tablename',                    'TABLE');
+DefMacro('\thetable',                     '\Roman{table}');
+
+DefConstructor('\IEEEQEDclosed',
+  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+Let('\IEEEQEDopen', '\IEEEQEDclosed');
+Let('\IEEEQED',     '\IEEEQEDclosed');
+
+DefMacro('\IEEEQEDhere', sub {
+    my $t = PopValue('QED@stack');
+    PushValue('QED@stack', Tokens());
+    $t || (); });
+
+# Apparently no title...
+DefEnvironment('{IEEEproof} OptionalUndigested',
+  "<ltx:proof class='#class'>"
+    . "<ltx:title font='#titlefont' _force_font='true' class='#titleclass'>#title</ltx:title>"
+    . "#body"
+    . "</ltx:proof>",
+  #  beforeDigest => sub {
+  #    Digest(T_CS('\th@proof')); },
+  afterDigestBegin => sub {
+    my ($stomach, $whatsit) = @_;
+    PushValue('QED@stack', T_CS('\qed'));
+    #    Digest(Tokens(T_CS('\the'), T_CS('\thm@bodyfont')));
+  },
+  properties => sub {
+    my $title     = Digest(TokenizeInternal('\textbf{\textit{Proof:}}'));
+    my $titlefont = [$title->unlist]->[1]->getFont;
+    (title => $title,
+      titlefont  => $titlefont,
+      class      => undef,
+      titleclass => 'ltx_runin'); },
+  beforeDigestEnd => sub {
+    my $qed = PopValue('QED@stack');
+    ($qed ? Digest($qed) : ()); }
+);
+
+RawTeX(<<'EoTeX');
+\newlength\abovecaptionskip
+\newlength\belowcaptionskip
+\setlength\abovecaptionskip{0.5\baselineskip}
+\setlength\belowcaptionskip{0pt}
+EoTeX
+
+DefEnvironment('{IEEEbiography}[]',
+  "<ltx:float class='biography'><ltx:tabular>"
+    . "<ltx:tr><ltx:td>#1</ltx:td><ltx:td><ltx:p>#body</ltx:p></ltx:td></ltx:tr>"
+    . "</ltx:tabular></ltx:float>");
+DefEnvironment('{IEEEbiographynophoto}[]',
+  "<ltx:float class='biography'><ltx:tabular>"
+    . "<ltx:tr><ltx:td><ltx:p>#body</ltx:p></ltx:td></ltx:tr>"
+    . "</ltx:tabular></ltx:float>");
+
+# IEEEeqnarray is similar to eqnarray, but supports subequation numbering.
+# These turn on/off (sub)numbering, much like \nonumber  TODO Sort this out!
+# Starred forms?
+DefPrimitive('\IEEEnonumber OptionalMatch:*', sub {
+    my $numbering = LookupValue('EQUATION_NUMBERING');
+    my $tags      = LookupValue('EQUATIONROW_TAGS');
+    if ($_[1]) {
+      $$numbering{retract} = 1;
+      $$numbering{counter} = undef; }
+    else {
+      $$tags{retract} = 1;
+      $$tags{counter} = undef; }
+    return; });
+
+DefPrimitive('\IEEEyesnumber OptionalMatch:*', sub {
+    my $numbering = LookupValue('EQUATION_NUMBERING');
+    my $tags      = LookupValue('EQUATIONROW_TAGS');
+    if (($$numbering{counter} || 'equation') eq 'subequation') {    # Reset any subnumbering
+      RefStepCounter('equation'); }
+    if ($_[1]) {
+      $$numbering{retract} = 0;
+      $$numbering{counter} = undef; }
+    else {
+      $$tags{noretract} = 1;
+      $$tags{counter}   = undef; }
+    return; });
+
+DefPrimitive('\IEEEyessubnumber OptionalMatch:*', sub {
+    my $numbering = LookupValue('EQUATION_NUMBERING');
+    my $tags      = LookupValue('EQUATIONROW_TAGS');
+    if ($_[1]) {
+      $$numbering{counter} = 'subequation'; }
+    else {
+      $$tags{counter} = 'subequation'; }
+    if ($$tags{preset} || $$numbering{preset}) {
+      RefStepCounter('subequation'); }
+    return; });
+
+DefPrimitive('\IEEEnosubnumber OptionalMatch:*', sub {
+    my $numbering = LookupValue('EQUATION_NUMBERING');
+    my $tags      = LookupValue('EQUATIONROW_TAGS');
+    if ($_[1]) {
+      $$numbering{counter} = 'equation'; }
+    else {
+      $$tags{counter} = 'equation'; }
+    return; });
+
+# TODO: The argument is a column specification, like rCl
+# We really should parse that and set up the column spec apppropriately,
+# but it's different from the standard set of specs!
+DefMacroI(T_CS('\IEEEeqnarray'), '{}', '\eqnarray');
+Let(T_CS('\endIEEEeqnarray'), T_CS('\endeqnarray'));
+DefMacroI(T_CS('\IEEEeqnarray*'), '{}', T_CS('\eqnarray*'));
+Let(T_CS('\endIEEEeqnarray*'), T_CS('\endeqnarray*'));
+
+# Let's try to treat \IEEEeqnarraybox as a variant of \array
+# Note that the documentation suggests that IEEEeqnarraybox can be used INSIDE math for
+# things like cases statements! Argh!!!
+
+DefColumnType('L', sub {
+    $LaTeXML::BUILD_TEMPLATE->addColumn(after => Tokens(T_CS('\hfil'))); return; });
+DefColumnType('C', sub {
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\hfil')),
+      after => Tokens(T_CS('\hfil'))); return; });
+DefColumnType('R', sub {
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\hfil'))); return; });
+
+DefMacro('\IEEEeqnarraybox',
+  '\ifmmode\def\@tempa{\let\endIEEEeqnarraybox\endIEEEeqnarrayboxm\IEEEeqnarrayboxm}'
+    . '\else\def\@tempa{\let\endIEEEeqnarraybox\endIEEEeqnarrayboxt\IEEEeqnarrayboxt}\fi'
+    . '\@tempa');
+DefMacro('\IEEEeqnarrayboxm OptionalMatch:* {}',
+  '\@array@bindings{#2}\@@array{#2}\@start@alignment');
+DefMacroI('\endIEEEeqnarrayboxm', undef,
+  '\@finish@alignment\@end@array');
+DefMacro('\IEEEeqnarrayboxt OptionalMatch:* {}',
+  '\@@BEGININLINEMATH\@array@bindings{#2}\@@array{#2}\@start@alignment');
+DefMacroI('\endIEEEeqnarrayboxt', undef,
+  '\@finish@alignment\@end@array\@@ENDINLINEMATH');
+
+Let(T_CS('\appendices'), T_CS('\appendix'));
+
+$$LaTeXML::Package::Pool::BIBSTYLES{IEEEtran} = { citestyle => 'numbers', sort => 'true' };
+
+DefMacro('\IEEEsetlabelwidth{}', '\settowidth{\labelwidth}{#1}');
+DefMacro('\IEEEusemathlabelsep', '');
+DefMacro('\IEEEtriggercmd{}',    '');
+
+DefEnvironment('{IEEEitemize}',
+  "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+  properties => sub { beginItemize('itemize', '@item'); },
+  locked => 1, mode => 'text');
+DefEnvironment('{IEEEenumerate}',
+  "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
+  properties => sub { beginItemize('enumerate', 'enum'); },
+  locked => 1, mode => 'text');
+DefEnvironment('{IEEEdescription}',
+  "<ltx:description  xml:id='#id'>#body</ltx:description>",
+  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
+  properties => sub { beginItemize('description', '@desc'); },
+  locked => 1, mode => 'text');
+
+#======================================================================
+
+1;
