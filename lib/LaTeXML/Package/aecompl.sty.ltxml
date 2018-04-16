@@ -1,0 +1,30 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  aecompl                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Basically, this style file just redefines the fonts to use an
+# `Almost European Computer Modern'
+
+DefPrimitiveI('\guilsinglleft',  undef, "\x{2039}");
+DefPrimitiveI('\guilsinglright', undef, "\x{203A}");
+DefPrimitiveI('\guillemotleft',  undef, UTF(0xAB));
+DefPrimitiveI('\guillemotright', undef, UTF(0xBB));
+DefPrimitiveI('\textperthousand', undef, "\x{2030}",
+  bounded => 1, font => { encoding => 'TS1' });
+DefPrimitiveI('\textpertenthousand', undef, "\x{2031}",
+  bounded => 1, font => { encoding => 'TS1' });
+
+1;
