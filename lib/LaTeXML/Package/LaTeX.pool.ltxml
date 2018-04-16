@@ -273,31 +273,69 @@ DefMacro('\AtEndDocument{}', sub {
     AssignValue('@at@end@document', []) unless LookupValue('@at@end@document');
     PushValue('@at@end@document', $_[1]->unlist); });
 
-DefEnvironment('{document}', sub {
-    #       "<ltx:document xml:id='#id'>#body</ltx:document>",
+# Like  "<ltx:document xml:id='#id'>#body</ltx:document>",
+# But more complicated due to id, at begin/end document and so forth.
+# AND, lower-level so that we can cope with common errors at document end.
+DefConstructorI(T_CS('\begin{document}'), undef, sub {
     my ($document, %props) = @_;
-    my $id   = ToString($props{id});
-    my $body = $props{body};
+    my $id = ToString($props{id});
     if (my $docel = $document->findnode('/ltx:document')) {    # Already (auto) created?
-      $document->setAttribute($docel, 'xml:id' => $id) if $id;
-      $document->absorb($body); }
+      $document->setAttribute($docel, 'xml:id' => $id) if $id; }
     else {
-      $document->insertElement('ltx:document', $body, 'xml:id' => $id); } },
-  afterDigestBegin => sub {
+      $document->openElement('ltx:document', 'xml:id' => $id); } },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    $stomach->beginMode('text');
+    DefMacro('\@currenvir', 'document');
+    AssignValue(current_environment => 'document');
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
     my @boxes = ();
     if (my $ops = LookupValue('@at@begin@document')) {
       push(@boxes, Digest(Tokens(@$ops)));
-      $_[1]->setFont(LookupValue('font')); }                   # Start w/ whatever font was selected.
-    AssignValue(inPreamble => 0);                              # atbegin is still (sorta) preamble
-    return @boxes; },
-  beforeDigestEnd => sub {
-    $_[0]->getGullet->flush;
+      $_[1]->setFont(LookupValue('font')); }    # Start w/ whatever font was selected.
+    AssignValue(inPreamble => 0);               # atbegin is still (sorta) preamble
+    return @boxes; });
+
+DefConstructorI(T_CS('\end{document}'), undef, sub {
+    my ($document) = @_;
+    $document->closeElement('ltx:document'); },
+  beforeDigest => sub {
+    my ($stomach) = @_;
+    $stomach->getGullet->flush;
+    my @boxes = ();
     if (my $ops = LookupValue('@at@end@document')) {
-      Digest(Tokens(@$ops)); }
+      push(@boxes, Digest(Tokens(@$ops))); }
+    # Now we check whether we're down to the last stack frame.
+    # It is common for unclosed { or even environments
+    # and we want to at least compress & avoid unnecessary errors & warnings.
+    my $nframes = $STATE->getFrameDepth;
+    # Expect 0 frames, top with environment document.
+    if (($nframes == 0)
+      && (($STATE->valueInFrame('current_environment', 0) || '<none>') eq 'document')) { }    # OK!
     else {
-      return; } },
-  mode => 'text');
+      my $error = 0;
+      my @lines = ();
+      while ($STATE->getFrameDepth > 0) {
+        # my $nonbox = $STATE->valueInFrame('groupNonBoxing',0) || 0;
+        my $tok = $STATE->valueInFrame('groupInitiator',        0) || '<unknown>';
+        my $loc = $STATE->valueInFrame('groupInitiatorLocator', 0) || '<unknown>';
+        my $env = $STATE->isValueBound('current_environment', 0)
+          && $STATE->valueInFrame('current_environment', 0);
+        if ($env) {    # Consider it an error if unclosed environments
+          $error = 1;
+          push(@lines, "Environment $env opened by " . ToString($tok) . ' ' . $loc); }
+        else {         # but unclosed { is so common and latex itself doesn't Error!
+          push(@lines, "Group opened by " . ToString($tok) . ' ' . $loc); }
+        $STATE->popFrame; }
+      if ($error) {
+        Error('unexpected', '\end{document}', $stomach,
+          "Attempt to end document with open environments", @lines); }
+      else {
+        Warn('unexpected', '\end{document}', $stomach,
+          "Attempt to end document with open groups", @lines); }
+    }
+    $stomach->endMode('text');
+    return @boxes; });
 
 #**********************************************************************
 # C.3. Sentences and Paragraphs
@@ -1082,8 +1120,8 @@ DefEnvironment('{verse}',
 #======================================================================
 # C.6.2 List-Making environments
 #======================================================================
-Tag('ltx:item',        autoClose => 1);
-Tag('ltx:inline-item', autoClose => 1);
+Tag('ltx:item',        autoClose => 1, autoOpen => 1);
+Tag('ltx:inline-item', autoClose => 1, autoOpen => 1);
 
 # These are for the (not quite legit) case where \item appears outside
 # of an itemize, enumerate, etc, environment.

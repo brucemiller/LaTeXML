@@ -1573,11 +1573,15 @@ sub DefEnvironmentI {
       beforeDigest => flatten($options{beforeDigestEnd}),
       afterDigest  => flatten($options{afterDigest},
         sub { my $env = LookupValue('current_environment');
-          Error('unexpected', "\\end{$name}", $_[0],
-            "Can't close environment $name",
-            "Current are "
-              . join(', ', $STATE->lookupStackedValues('current_environment')))
-            unless $env && $name eq $env;
+          if (!$env || ($name ne $env)) {
+            my @lines = ();
+            my $nf    = $STATE->getFrameDepth;
+            for (my $f = 0 ; $f <= $nf ; $f++) {    # Get currently open environments & locators
+              if (my $e = $STATE->isValueBound('current_environment', $f)
+                && $STATE->valueInFrame('current_environment', $f)) {
+                push(@lines, $e . ' ' . $STATE->valueInFrame('groupInitiatorLocator', $f) || ''); } }
+            Error('unexpected', "\\end{$name}", $_[0],
+              "Can't close environment $name;", "Current are:", @lines); }
           return; },
         ($mode ? (sub { $_[0]->endMode($mode); })
           : (sub { $_[0]->egroup; }))),

@@ -241,7 +241,7 @@ sub valueInFrame {
   $frame = 0 unless defined $frame;
   my $p = 0;
   for (my $f = 0 ; $f < $frame ; $f++) {
-    $p += $$self{undo}[$f]{value}{$key}; }
+    $p += $$self{undo}[$f]{value}{$key} || 0; }
   return $$self{value}{$key}[$p]; }
 
 #======================================================================
