@@ -210,6 +210,7 @@ sub convert {
   my $latexml = $$self{latexml};
   $latexml->withState(sub {
       my ($state) = @_;    # Sandbox state
+      $$state{status} = {};
       $state->pushDaemonFrame;
       $state->assignValue('_authlist', $$opts{authlist}, 'global');
       $state->assignValue('REMOTE_REQUEST', (!$$opts{local}), 'global');
@@ -255,7 +256,6 @@ sub convert {
       my ($state) = @_;    # Remove current state frame
       $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS'); # save the searchpaths for post-processing
       $state->popDaemonFrame;
-      $$state{status} = {};
   });
   if ($LaTeXML::UNSAFE_FATAL) {
     # If the conversion hit an unsafe fatal, we need to reinitialize

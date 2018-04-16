@@ -169,13 +169,32 @@ sub convertBibliography {
     format         => 'dom',
     whatsin        => 'document',
     whatsout       => 'document',
-    verbosity      => -5,
     bibliographies => [],
     (@preload ? (preload => [@preload]) : ()));
   my $bib_converter = LaTeXML->get_converter($bib_config);
+  # Tricky and HACKY, we need to release the log to capture the inner workings separately.
+  # ->bind_log analog:
+  my $biblog = '';
+  my $biblog_handle;
+  open($biblog_handle, ">>", \$biblog) or Error("Can't redirect STDERR to log for inner bibliography converter!");
+  *BIB_STDERR_SAVED = *STDERR;
+  *STDERR       = *$biblog_handle;
+  # end ->bind_log
+  
   $bib_converter->prepare_session($bib_config);
   my $response = $bib_converter->convert($bib);
-  print STDERR $$response{log};
+
+  # ->flush_log analog:
+  close $biblog_handle;
+  *STDERR = *BIB_STDERR_SAVED;
+  # end ->flush_log
+
+  # Trim log to look internal and report.
+  $biblog =~ s/^.+?\(Digesting/\n\(Digesting/s;
+  $biblog =~ s/Conversion complete:.+$//s;
+  print STDERR $biblog;
+  MergeStatus($$bib_converter{latexml}{state});
+
   # TODO: We need to handle the logging properly, it's a bit of a mess for nested ->convert() calls
   if (my $bibdoc = $$response{result}) {
     NoteProgress("... converted!]");
