@@ -1,0 +1,85 @@
+\documentclass[11pt,a4paper,final]{moderncv}
+\moderncvtheme[blue]{classic}
+\usepackage{latexml}
+\usepackage{url}
+\usepackage[utf8]{inputenc}   % replace by the encoding you are using
+% adjust the page margins
+\usepackage[scale=0.83]{geometry}
+\iflatexml\else
+\setlength{\hintscolumnwidth}{0.18\textwidth}
+\fi
+\firstname{Jane}
+\familyname{Doe}
+\title{\vbox{Computer Science,\newline\vspace{1mm} Ph.D. Candidate}}
+\address{777 Slevin Street}{New York, NY, 10010, USA}  % for classic style
+\mobile{+1 555 555 5555}
+\email{email@example.com}
+\homepage{https://www.example.com}
+\photo[84pt]{../../doc/graphics/mascot.png} % also optional, and the optional argument is the height the picture must be resized to
+% to show numerical labels in the bibliography; only useful if you make citations in your resume
+
+%\nopagenumbers{}                             % uncomment to suppress automatic page numbering for CVs longer than one page
+
+% command and color used in this document, independently from moderncv 
+\definecolor{see}{rgb}{0.5,0.5,0.5}% for web links
+\newcommand{\up}[1]{\ensuremath{^\textrm{\scriptsize#1}}}% for text subscripts
+\def\todate{-- to date}
+
+%----------------------------------------------------------------------------------
+%            content
+%-----------------------------------------------------------------------  -----------
+
+\begin{document}
+\maketitle
+\section{\textsc{Education}}
+\cventry{09/2017 \todate}{Pursuing a Ph.D. in Computer Science}{}{University of Science}{Somewhere}{}
+\cvitem{thesis}{\emph{Lorem ipsum dolor - sit, amet, consectetur, adipiscing}}
+\cvitem{supervisors}{Prof. Dr. Main Supervisor, Prof. Dr. Internal Colleague, Prof. Dr. External Colleague}
+\cvitem{description}{Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore.~et dolore magna aliqua Ut enim ad minim veniam quis nostrud exercitation.
+                     Ullamco laboris-nisi ut aliquip ex ea commodo-consequat Duis aute irure  dolor, in reprehenderit in voluptate velit esse-cillum dolore eu fugiat nulla pariatur Excepteur sint occaecat cupidatat.}
+\cventry{09/2015 -- 08/2017}{M.Sc. in Computer Science}{}{Masterful University}{Somewhere}{}
+\cvitem{thesis}{\emph{Lorem Ipsum Dolor}}
+\cvitem{supervisors}{Prof. Dr. One, Dr. Two}
+\cvitem{description}{Lorem ipsum dolor sit amet consectetur
+                     adipiscing elit sed do, eiusmod tempor incididunt ut
+                     labore et (dolore) magna. aliqua Ut enim ad minim veniam quis
+                     nostrud exercitation ullamco laboris (nisi ut aliquip).}
+\cventry{09/2012 -- 06/2015}{B.Sc. in Computer Science}{}{College of Science}{Somewhere Else}{}
+
+\closesection{}
+\section{\textsc{Employment}} 
+\cvitem{10/2014 -- 11/2017}{Maker and Doer at Company Inc, Place \newline Homepage: \url{https://www.example.com/}}
+\cvitem{06/2007 -- 09/2014}{Research assistant at the Assisted research group, Some University. Projects included A, B, C, D and E. \newline Homepage: \url{http://www.example.com/} }
+\cvitem{01/2013 -- 12/2013\newline 01/2012 -- 05/2012}{Guest Researcher at the Research Group, \textit{Institute of Research}, Place.\newline Homepage: \url{http://www.example.com}}
+\cvitem{07/2009 -- 09/2009}{Researcher at the Dept. of Foo Bar, Baz University. \newline Homepage: \url{http://www.example.com/}}
+\cvitem{06/2008 -- 08/2008}{Summer intern at the Great group, ABRV City. \newline Homepage: \url{http://www.example.com}}
+\closesection{}
+\pagebreak{}
+
+\section{\textsc{Professional Appointments}}
+\cvitem{02/2015 \todate}{Co-Founder of Something Good, promoting lorem ipsum on the dolor sit amet. Homepage: { \url{http://example.com/}}}
+\cvitem{07/2013, 07/2014}{Programme Committee member for the ``Lorem and Ipsum'' track of the Conferences on Dolor Sit Amet.\newline Homepage: {\url{http://example.com/}}}
+\cvitem{02/2014 -- 05/2014}{Lecturer -- Course Names, Course Type, University Name}
+
+\section{\textsc{Selected Projects}}
+\cvitem{Name A}{Co-developer and maintainer of lorem ipsum dolor sit amet censctetur.\newline Homepage: \url{http://example.com/}}
+\cvitem{Another Name}{Main developer. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do
+\newline Homepage: \url{http://example.com/}}
+\cvitem{Name C}{Main developer and maintainer. Lorem ipsum dolor sit amet consectetur adipiscing, elit.sed, do eiusmod tempor incididunt.\newline Homepage: \url{http://example.com/}}
+\cvitem{Name Name}{Team captain and developer. Lorem ipsum dolor sit amet consectetur adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore. 
+                   magna aliqua Ut enim ad minim veniam quis nostrud, exercitation, ullamco laboris nisi ut aliquip ex \textit{ea commodo}. consequat Duis }
+\closesection{}
+
+\section{\textsc{Selected Extracurricular Activities}}
+\cvitem{01/2014}{Participant in the second Lorem Ipsum hackathon -- Lorem ipsum. dolor: sit amet consectetur adipiscing (elit sed, do eiusmod tempor, incididunt ut labore).\newline
+ \url{http://example.com/}}
+\cvitem{10/2010 -- 06/2011}{Graduate student representative -- Lorem ipsum, dolor sit amet consectetur adipiscing elit sed}
+\cvitem{07/2007}{Competed in the Lorem ipsum dolor sit (amet), consectetur adipiscing, elit}
+\cvitem{\textbf{Interests}}{chicken, chicken, chicken, chicken}
+\closesection{}
+
+\section{\textsc{Publications}}
+\cvitem{Publications page}{\url{http://example.com}} % 
+\cvitem{Google Scholar}{\url{https://scholar.google.com/citations?user=example}}%
+\closesection{}
+\end{document}
