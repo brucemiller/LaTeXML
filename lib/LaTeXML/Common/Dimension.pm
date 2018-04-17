@@ -14,6 +14,7 @@ use strict;
 use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
+use LaTeXML::Common::Error; 
 use base qw(LaTeXML::Common::Number);
 use base qw(Exporter);
 our @EXPORT = (qw(&Dimension));
@@ -64,6 +65,28 @@ sub pointformat {
 sub attributeformat {
   my ($sp) = @_;
   return sprintf('%.1fpt', LaTeXML::Common::Number::roundto($sp / 65536, 1)); }
+
+sub getDepth { # ??? 
+  #  sometimes Dimension(0) is used as a default value
+  #  and errors in the flow invoke getDepth on that dimension
+  #
+  #  probably safe to assume asking for the depth of a dimension 
+  #  was caused by a bug in execution, and recover by returning the dimension itself?
+  my ($self) = @_;
+  Error('expected','Box', undef, 'getDepth invoked on a Dimension, returning self');
+  return $self;
+}
+# Might as well add the defaults for width and height while we're at it.
+sub getWidth {
+  my ($self) = @_;
+  Error('expected','Box', undef, 'getWidth invoked on a Dimension, returning self');
+  return $self;
+}
+sub getHeight {
+  my ($self) = @_;
+  Error('expected','Box', undef, 'getHeight invoked on a Dimension, returning self');
+  return $self;
+}
 
 #======================================================================
 1;
