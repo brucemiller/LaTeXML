@@ -265,7 +265,7 @@ sub DecodeColor {
   my $pct_re         = qr/(?:\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
   my $pct_capture_re = qr/(\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
   # <mix_expr>     : !<pct1>!<name1>!...<pctn>!(<namen>)?
-  my $mix_expr_re = qr/!$pct_re(?:!$name_re!$pct_re)*(?:!$name_re)?/;
+  my $mix_expr_re = qr/!\s*$pct_re(?:!$name_re!$pct_re)*(?:!\s*$name_re)?/;
   # <postfix>  -> |!!<plus>|!![<num>]
   my $postfix_re = qr/!!(?:\++|\[\d+\])/;
   # <expr>         : <prefix><ne_name><mix_expr><postfix>
