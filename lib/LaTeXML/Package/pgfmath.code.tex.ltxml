@@ -407,6 +407,30 @@ sub pgfmath_setunitsdeclared {
   SetCondition(T_CS('\ifpgfmathunitsdeclared'), 1, 'global');
   return; }
 
+sub pgfmath_getwidth {
+  my ($cs) = @_;
+  # Or could be an explicit Number?
+  my $reg   = $cs  && LookupRegister($cs);
+  my $box   = $reg && 'box' . $reg->valueOf;
+  my $stuff = $box && LookupValue($box);
+  return ($stuff ? $stuff->getWidth->valueOf / 65536 : Dimension(0)); }
+
+sub pgfmath_getheight {
+  my ($cs) = @_;
+  # Or could be an explicit Number?
+  my $reg   = $cs  && LookupRegister($cs);
+  my $box   = $reg && 'box' . $reg->valueOf;
+  my $stuff = $box && LookupValue($box);
+  return ($stuff ? $stuff->getHeight->valueOf / 65536 : Dimension(0)); }
+
+sub pgfmath_getdepth {
+  my ($cs) = @_;
+  # Or could be an explicit Number?
+  my $reg   = $cs  && LookupRegister($cs);
+  my $box   = $reg && 'box' . $reg->valueOf;
+  my $stuff = $box && LookupValue($box);
+  return ($stuff ? $stuff->getDepth->valueOf / 65536 : Dimension(0)); }
+
 BEGIN {
   $PGFMathFunctions = {
     '=='       => sub { $_[0] == $_[1]; },
@@ -532,11 +556,11 @@ expr :
 
     REGISTER :  # these need to set dimension flag!!!
       /\\wd/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::LookupRegister($item[1])->getWidth->valueOf/65536; }
+                             LaTeXML::Package::Pool::pgfmath_getwidth($item[2]); }
     | /\\ht/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::LookupRegister($item[1])->getHeight->valueOf/65536; }
+                             LaTeXML::Package::Pool::pgfmath_getheight($item[2]); }
     | /\\dp/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::LookupRegister($item[1])->getDepth->valueOf/65536; }
+                             LaTeXML::Package::Pool::pgfmath_getdepth($item[2]); }
     | CS                   { LaTeXML::Package::Pool::pgfmath_register($item[1]); }
 
     CS : /\\[a-zA-Z@]*/

@@ -1408,32 +1408,32 @@ DefRegister('\lastkern' => Dimension(0), readonly => 1);
 DefRegister('\ht Number', Dimension(0),
   getter => sub {
     my ($n) = @_;
-    my $stuff = LookupValue('box' . $n->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     return ($stuff ? $stuff->getHeight : Dimension(0)); },
   setter => sub {
     my ($value, $n) = @_;
-    my $stuff = LookupValue('box' . $n->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     $stuff->setHeight($value) if $stuff;
     return; });
 DefRegister('\wd Number', Dimension(0),
   getter => sub {
     my ($n) = @_;
-    my $stuff = LookupValue('box' . $n->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     return ($stuff ? $stuff->getWidth : Dimension(0)); },
   setter => sub {
     my ($value, $n) = @_;
-    my $stuff = LookupValue('box' . $n->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     $stuff->setWidth($value) if $stuff;
     return; });
 
 DefRegister('\dp Number', Dimension(0),
   getter => sub {
     my ($n) = @_;
-    my $stuff = LookupValue('box' . $_[0]->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     return ($stuff ? $stuff->getDepth : Dimension(0)); },
   setter => sub {
     my ($value, $n) = @_;
-    my $stuff = LookupValue('box' . $n->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     $stuff->setDepth($value) if $stuff;
     return; });
 
