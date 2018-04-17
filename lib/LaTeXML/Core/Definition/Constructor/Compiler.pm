@@ -83,7 +83,7 @@ sub compileConstructor {
   if (!defined $result) {
     # We can use die in the following code, which will get caught & wrapped "informatively"
     my $msg = $@;
-    Error('midefined', $cs, $LaTeXML::Core::Definition::Constructor::CONSTRUCTOR,
+    Error('misdefined', $cs, $LaTeXML::Core::Definition::Constructor::CONSTRUCTOR,
       "Complilation of constructor '" . ToString($cs) . "' failed     ",
       $replacement, $msg);
     my $stuff = slashify($replacement);
