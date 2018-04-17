@@ -1429,11 +1429,11 @@ DefRegister('\wd Number', Dimension(0),
 DefRegister('\dp Number', Dimension(0),
   getter => sub {
     my ($n) = @_;
-    my $stuff = LookupValue('box' . $_[0]->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     return ($stuff ? $stuff->getDepth : Dimension(0)); },
   setter => sub {
     my ($value, $n) = @_;
-    my $stuff = LookupValue('box' . $n->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     $stuff->setDepth($value) if $stuff;
     return; });
 
