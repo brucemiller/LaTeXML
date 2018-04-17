@@ -309,13 +309,22 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
     # It is common for unclosed { or even environments
     # and we want to at least compress & avoid unnecessary errors & warnings.
     my $nframes = $STATE->getFrameDepth;
-    # Expect 0 frames, top with environment document.
-    if (($nframes == 0)
-      && (($STATE->valueInFrame('current_environment', 0) || '<none>') eq 'document')) { }    # OK!
+# Expect 0 frames, top with environment document.
+# print STDERR "\n\nEND DOCUMENT; $nframes frames\n";
+# for(my $i=0; $i <= $nframes; $i++){
+#   my $nonbox = $STATE->valueInFrame('groupNonBoxing',$i) || 0;
+#   my $tok = $STATE->valueInFrame('groupInitiator',        $i) || '<unknown>';
+#   my $loc = $STATE->valueInFrame('groupInitiatorLocator', $i) || '<unknown>';
+#   my $env = $STATE->isValueBound('current_environment', $i)
+#       && $STATE->valueInFrame('current_environment', $i);
+#   print STDERR "Frame $i: nonboxing=$nonbox; tok=".ToString($tok).' '.$loc." env=".($env||'none')."\n"; }
+    if (($STATE->isValueBound('current_environment', 0)
+        && ($STATE->valueInFrame('current_environment', 0) eq 'document'))) { }    # OK!
     else {
       my $error = 0;
       my @lines = ();
-      while ($STATE->getFrameDepth > 0) {
+      while (!$STATE->isValueBound('current_environment', 0)
+        || ($STATE->valueInFrame('current_environment', 0) ne 'document')) {
         # my $nonbox = $STATE->valueInFrame('groupNonBoxing',0) || 0;
         my $tok = $STATE->valueInFrame('groupInitiator',        0) || '<unknown>';
         my $loc = $STATE->valueInFrame('groupInitiatorLocator', 0) || '<unknown>';
@@ -335,6 +344,8 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
           "Attempt to end document with open groups", @lines); }
     }
     $stomach->endMode('text');
+    # NOTE: Don't flush gullet (tempting);
+    # Babel's expecting \bbl@pop@language
     return @boxes; });
 
 #**********************************************************************
@@ -1707,9 +1718,10 @@ sub afterEquation {
   # Now install the tags in $whatsit or current Row, as appropriate.
   my $props = LookupValue('EQUATIONROW_TAGS');
   if ($$numbering{aligned}) {
-    my $row = LookupValue('Alignment')->currentRow;
-    $$row{id}   = $$props{id};
-    $$row{tags} = $$props{tags}; }
+    if (my $alignment = LookupValue('Alignment')) {
+      my $row = $alignment->currentRow;
+      $$row{id}   = $$props{id};
+      $$row{tags} = $$props{tags}; } }
   elsif ($whatsit) {
     $whatsit->setProperties(%{ LookupValue('EQUATIONROW_TAGS') }); }
   return; }
@@ -2480,8 +2492,9 @@ sub defineNewTheorem {
       : '\lx@tag{\csname fnum@' . $thmset . '\endcsname}'
         . ($type ? '\ifx.#1.\else\space(#1)\fi' : '#1') . '\the\thm@headpunct'),
     scope => 'global');
+  my $sanitized = $thmset; $sanitized =~ s/['"]//g;
   DefEnvironment("{$thmset} OptionalUndigested",
-    "<ltx:theorem xml:id='#id' inlist='thm theorem:$thmset' class='#class'>"
+    "<ltx:theorem xml:id='#id' inlist='thm theorem:$sanitized' class='#class'>"
       . "#tags"
       . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
       . "#body"
