@@ -1,0 +1,57 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  titlesec                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# TODO: No styling has been implemented,
+# this is just a stub to avoid errors
+
+# This should probably define \fnum@<section>,...
+DefMacro('\titlelabel{}',                    '');
+DefMacro('\titleformat',                     '\@ifstar{\lx@titleformat@star}{\lx@title@format}');
+DefMacro('\lx@titleformat@star {}{}',        '');
+DefMacro('\lx@titleformat {} [] {}{}{}{}{}', '');
+DefMacro('\chaptertitlename',                '\chaptername');
+DefMacro('\titlespacing OptionalMatch:* {}{}{}{}[]', '');
+
+DefMacro('\filright',  '');
+DefMacro('\filcenter', '');
+DefMacro('\filleft',   '');
+DefMacro('\fillast',   '');
+DefMacro('\filinner',  '');
+DefMacro('\filouter',  '');
+DefRegister('\wordsep', Dimension(0));
+
+DefMacro('\titleline[]{}',          '');
+DefMacro('\titlerule',              '\@ifstar{\lx@titlerule@star}{\lx@titlerule}');
+DefMacro('\lx@titlerule@star []{}', '');
+DefMacro('\lx@titlerule []',        '');
+
+DefConditional('\iftitlemeasuring');
+DefMacro('\assignpagestyle{}{}', '');
+DefMacro('\sectionbreak',        '');
+DefMacro('\subsectionbreak',     '');
+DefMacro('\subsubsectionbreak',  '');
+DefMacro('\paragraphbreak',      '');
+DefMacro('\subparagraphbreak',   '');
+
+DefMacro('\titleclass{}[]{}[]', '');
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
