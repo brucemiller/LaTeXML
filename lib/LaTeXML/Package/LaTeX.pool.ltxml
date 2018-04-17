@@ -3238,6 +3238,8 @@ sub setupPseudoBibitem {
   Let('\par',          '\par@in@bibliography');
   # Moreover, some people use \item instead of \bibitem
   Let('\item', '\item@in@bibliography');
+  # And protect from redefinitions.
+  Let('\newblock', '\lx@bibnewblock');
   return; }
 
 DefMacroI('\par@in@bibliography', undef, sub {
@@ -3280,7 +3282,8 @@ DefConstructor('\bibitem[] Semiverbatim',
       $_[1]->setProperties(key => $key, RefStepCounter('@bibitem')); }
   });
 
-DefConstructorI('\newblock', undef, "<ltx:bibblock>");
+DefConstructorI('\lx@bibnewblock', undef, "<ltx:bibblock>");
+Let('\newblock', '\lx@bibnewblock');
 Tag('ltx:bibitem',  autoClose => 1);
 Tag('ltx:bibblock', autoClose => 1);
 
@@ -4908,6 +4911,17 @@ DefMacro('\@ifnextchar DefToken {}{}', sub {
       (defined $next ? ($next) : ())); });
 Let('\kernel@ifnextchar', '\@ifnextchar');
 Let('\@ifnext',           '\@ifnextchar');    # ????
+
+# Hacky version matches multiple chars! but does NOT expand
+DefMacro('\@ifnext@n {} {}{}', sub {
+    my ($gullet, $tokens, $if, $else) = @_;
+    my @toks = $tokens->unlist;
+    my @read = ();
+    while (my $t = $gullet->readToken) {
+      push(@read, $t);
+      if ($t->equals($toks[0])) { shift(@toks); }
+      else { last; } }
+    return Tokens((@toks ? $else->unlist : $if->unlist), @read); });
 
 DefMacro('\@ifstar {}{}', sub {
     my ($gullet, $if, $else) = @_;

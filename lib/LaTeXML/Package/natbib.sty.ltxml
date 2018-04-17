@@ -506,12 +506,13 @@ DefMacro('\NAT@wrout{}{}{}{} Semiverbatim', sub {
         $key)->unlist; } });
 
 DefConstructor('\NAT@@wrout{}{}{}{}{} Semiverbatim',
-  "?#1(<ltx:tags>"
-    . "<ltx:tag role='number'>#1</ltx:tag>)"
+  "<ltx:tags>"
+    . "?#1(<ltx:tag role='number'>#1</ltx:tag>)"
     . "?#2(<ltx:tag role='year'>#2</ltx:tag>)"
     . "?#3(<ltx:tag role='authors'>#3</ltx:tag>)"
     . "?#4(<ltx:tag role='fullauthors'>#4</ltx:tag>)"
     . "?#5(<ltx:tag role='refnum'>#5</ltx:tag>)"
+    . "?#6(<ltx:tag role='key'>#6</ltx:tag>)"
     . "</ltx:tags>",
   # Allow plain & in here ???
   bounded => 1, beforeDigest => sub { Let(T_ALIGN, '\&'); }
