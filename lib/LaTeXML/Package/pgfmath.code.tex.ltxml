@@ -17,6 +17,7 @@ use LaTeXML::Package;
 use LaTeXML::Util::Geometry;
 use Math::Trig;
 use List::Util qw(min max);
+use POSIX;
 #======================================================================
 # Load pgf's TeX code for math, first
 InputDefinitions('pgfmath.code', type => 'tex', noltxml => 1)
@@ -262,7 +263,7 @@ sub pgfmathparse {
   my ($gullet, $tokens) = @_;
   SetCondition(T_CS('\ifpgfmathunitsdeclared'),     0, 'global');
   SetCondition(T_CS('\ifpgfmathmathunitsdeclared'), 0, 'global');
-  my $string = (ref $tokens ? ToString(Expand($tokens)) : $tokens);
+  my $string = (ref $tokens ? ToString(stripBraces(Expand($tokens))) : $tokens);
   $string =~ s/^\s+//; $string =~ s/\s+$//;
   my $input = $string;
 ###    if ($string =~/^+/){        # Don't parse as expression, just as glue. ???
@@ -284,6 +285,34 @@ sub pgfmathparse {
     $result = sprintf("%f", $result); }
 ####  print STDERR "PGFPARSE: '$input' => '$result'\n";
   return $result; }
+
+# Should be a general utility?
+sub stripBraces {
+  my ($tokens) = @_;
+  my @tokens = ($tokens ? $tokens->unlist : ());
+  my @t = ();
+  while (@tokens && ($tokens[0]->getCatcode == CC_SPACE)) {    # Skip leading whitespace
+    shift(@tokens); }
+  # Balanced tokens until $delim
+  my $ntopbraces = 0;
+  while (@tokens) {
+    if (Equals($tokens[0], T_BEGIN)) {                         # If top-level brace
+      $ntopbraces++;
+      my ($level, $t) = (0, undef);
+      while (defined($t = shift(@tokens))) {                   # Read balanced
+        my $cc = $t->getCatcode;
+        $level++ if $cc == CC_BEGIN;
+        $level-- if $cc == CC_END;
+        push(@t, $t);
+        last unless $level; } }
+    else {
+      push(@t, shift(@tokens)); } }
+  while (@t && ($t[-1]->getCatcode == CC_SPACE)) {             # pop off trailing spaces
+    pop(@t); }
+  # Strip outer braces if a single set encloses entire value and not just {}
+  if ($ntopbraces == 1) {
+    shift(@t); pop(@t); }
+  return Tokens(@t); }
 
 DefMacro('\lx@pgfmath@parseX{}', sub {
     my ($gullet, $tokens) = @_;
@@ -423,6 +452,7 @@ BEGIN {
     cot   => sub { cot(pgfmathargradians($_[0])); },
     deg   => sub { rad2deg($_[0]); },
     #    depth => sub { },
+    exp => sub { exp($_[0]); },
     #    factorial  => sub { },
     false => sub { 0; },
     floor => sub { floor($_[0]); },
@@ -490,9 +520,9 @@ expr :
   factor :
       /\(/ formula /\)/     { $item[2]; }
     | PREFIX factor           { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
-    | FUNCTION0                   { LaTeXML::Package::Pool::pgfmath_apply($item[1]); }
     | FUNCTION /\(/ formula (/,/ formula { $item[2]; })(s?) /\)/
            { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[3], @{$item[4]}); }
+    | FUNCTION0                   { LaTeXML::Package::Pool::pgfmath_apply($item[1]); }
     | NUMBER UNIT          { LaTeXML::Package::Pool::pgfmath_convert($item[1],$item[2]); }
     | NUMBER REGISTER      { LaTeXML::Package::Pool::pgfmath_apply('*', $item[1], $item[2]); }
       # really count_register dimension_register!
@@ -522,7 +552,7 @@ expr :
       /(?:ex|em|pt|pc|in|bp|cm|mm|dd|cc|sp)/
 
     FUNCTION0 : /(?:e|pi|false|rand|rnd|true)/
-    FUNCTION : /(?:abs|acos|asin|atan|bin|ceil|cos|cosec|cosh|cot|factorial|floor|frac|hex|Hex|
+    FUNCTION : /(?:abs|acos|asin|atan|bin|ceil|cos|cosec|cosh|cot|exp|factorial|floor|frac|hex|Hex|
 int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|real|round|sec|sign|sin|sinh|sqrt|tan|tanh|add|and|atan2|divide|div|equal|gcd|greater|less|max|min|mod|Mod|multiply|notequal|notgreater|notless|or|pow|random|subtract|ifthenelse)/
 
 # ? array|veclen | scalar
