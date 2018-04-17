@@ -95,7 +95,7 @@ DefConstructor('\lx@subcaption@addinlist{}',
   "^ inlist='#1'");
 #======================================================================
 # should be in caption? or caption3 ?
-DefMacro('\DeclareCaptionSubType OptionalMatch:* [alph]{}', '');
+DefMacro('\DeclareCaptionSubType OptionalMatch:* [] {}', '');
 
 #======================================================================
 1;
