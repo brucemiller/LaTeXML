@@ -320,7 +320,7 @@ sub readTokens {
   return Tokens(@tokens); }
 
 #**********************************************************************
-# Read a raw lines; there are so many variants of how it should end,
+# Read a raw line; there are so many variants of how it should end,
 # that the Mouth API is left as simple as possible.
 # Alas: $noread true means NOT to read a new line, but only return
 # the remainder of the current line, if any. This is useful when combining
