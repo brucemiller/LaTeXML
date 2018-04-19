@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>main before</p>
+  </para>
+  <para xml:id="p2">
+    <p>inner-before inner-after</p>
+  </para>
+  <para xml:id="p3">
+    <p>main after</p>
+  </para>
+  <para xml:id="p4">
+    <p>inner-2-before</p>
+  </para>
+  <para xml:id="p5">
+    <p>main after 2</p>
+  </para>
+</document>
