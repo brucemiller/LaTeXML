@@ -347,6 +347,10 @@ sub readRawLine {
   $line =~ s/\s*$//s if defined $line;    # Is this right?
   return $line; }
 
+sub isEOL {
+  my ($self) = @_;
+  return $$self{colno} >= $$self{nchars};
+}
 #======================================================================
 1;
 

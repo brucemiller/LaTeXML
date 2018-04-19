@@ -892,9 +892,13 @@ DefMacro('\input TeXFileName', sub { Input($_[1]); });
 # it just flushes it so that it will close the next time it's read!
 DefMacroI('\endinput', undef, sub { 
   my ($gullet) = @_;
-  my $line = $gullet->readRawLine;
+  my $mouth = $gullet->getMouth;
+  my $line;
+  if (! $mouth->isEOL) {
+   $line = $gullet->readRawLine;  }
   $gullet->flushMouth; 
-  $gullet->unread(Tokenize($line));
+  if ($line) {
+    $gullet->unread(Tokenize($line));  }
   return; 
 });
 
