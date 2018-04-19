@@ -2221,6 +2221,8 @@ DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [Number][]{}', sub 
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
+DefMacro('\MakeRobust{}', '');
+
 # There are a bunch of ways in LaTeX to assign a command to
 # a particular point within a font (which has one of many encodings)
 # Since we have no practical way of knowing what that point is,
@@ -2335,8 +2337,15 @@ DefPrimitive('\DeclareFontShape{}{}{}{}{}{}', undef);
 DefPrimitive('\DeclareFontFamily{}{}{}',      undef);
 DefPrimitive('\DeclareSizeFunction{}{}',      undef);
 
-DefPrimitive('\DeclareMathSymbol{}{}{}{}',
-  sub { ignoredDefinition('DeclareMathSymbol', $_[1]); });
+my $symboltype_roles = {
+  '\mathord' => 'ID', '\mathop' => 'BIGOP', '\mathbin' => 'BINOP', '\mathrel' => 'RELOP',
+  '\mathopen' => 'OPEN', '\mathclose' => 'CLOSE', '\mathpunct' => 'PUNCT' };
+DefPrimitive('\DeclareMathSymbol DefToken SkipSpaces DefToken {}{Number}', sub {
+    my ($stomach, $cs, $type, $font, $code) = @_;
+    my $glyph = FontDecode($code->valueOf, ToString($font));
+    my $role = $$symboltype_roles{ ToString($type) };
+    DefMathI($cs, undef, $glyph, role => $role);
+    return; });
 
 DefPrimitive('\DeclareFixedFont{}{}{}{}{}{}', undef);
 DefPrimitive('\DeclareErrorFont{}{}{}{}{}',   undef);
