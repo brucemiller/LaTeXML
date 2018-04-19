@@ -161,8 +161,8 @@ DefEnvironment('{margintable}[]',
   afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
 
 DefMacroI('\sidebarname',  undef, 'Sidebar');
-DefMacroI('\fnum@sidebar', undef, '\sidebarname\nobreakspace\thesidebar'),
-  DefMacro('\format@title@sidebar{}', '\lx@tag{\fnum@sidebar: }#1');
+DefMacroI('\fnum@sidebar', undef, '\sidebarname\nobreakspace\thesidebar');
+DefMacro('\format@title@sidebar{}', '\lx@tag{\fnum@sidebar: }#1');
 
 DefEnvironment('{sidebar}{} Undigested [] {}',
   "<ltx:sidebar labels='#label' xml:id='#id'>"
