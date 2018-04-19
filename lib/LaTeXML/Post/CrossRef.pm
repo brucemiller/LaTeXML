@@ -668,6 +668,8 @@ sub generateRef_aux {
             $self->prepRefText($doc, $tag)]); }
       else {
         push(@stuff, $role); } }
+    elsif ($show =~ s/^(~)//) {
+      push(@stuff, ' '); }
     elsif ($show =~ s/^(.)//) {
       push(@stuff, $1); } }
   return ($OK ? @stuff : ()); }
