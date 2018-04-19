@@ -42,23 +42,23 @@ RawTeX(<<'EoTeX');
 \DeclareOption{12pt}{\def\CLASSOPTIONpt{12}\def\@ptsize{2}}
 \DeclareOption{letterpaper}{\setlength{\paperwidth}{8.5in}%
                             \setlength{\paperheight}{11in}%
-##                            \@IEEEusingAfourpaperfalse
-##                            \@IEEEusingcspaperfalse
+%%                            \@IEEEusingAfourpaperfalse
+%%                            \@IEEEusingcspaperfalse
                             \def\CLASSOPTIONpaper{letter}%
                             \def\CLASSINFOpaperwidth{8.5in}%
                             \def\CLASSINFOpaperheight{11in}}
 \DeclareOption{a4paper}{\setlength{\paperwidth}{210mm}%
                         \setlength{\paperheight}{297mm}%
-##                        \@IEEEusingAfourpapertrue
-##                        \@IEEEusingcspaperfalse
+%%                        \@IEEEusingAfourpapertrue
+%%                        \@IEEEusingcspaperfalse
                         \def\CLASSOPTIONpaper{a4}%
                         \def\CLASSINFOpaperwidth{210mm}%
                         \def\CLASSINFOpaperheight{297mm}}
 % special paper option for compsoc journals
 \DeclareOption{cspaper}{\setlength{\paperwidth}{7.875in}%
                         \setlength{\paperheight}{10.75in}%
-##                        \@IEEEusingcspapertrue
-##                        \@IEEEusingAfourpaperfalse
+%%                        \@IEEEusingcspapertrue
+%%                        \@IEEEusingAfourpaperfalse
                         \def\CLASSOPTIONpaper{ieeecs}%
                         \def\CLASSINFOpaperwidth{7.875in}%
                         \def\CLASSINFOpaperheight{10.75in}}
