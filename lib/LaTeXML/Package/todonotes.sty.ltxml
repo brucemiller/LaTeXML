@@ -31,7 +31,7 @@ RequirePackage('calc');
 
 DefMacroI('\ext@todo', undef, 'todo');
 NewCounter('todo');
-DefMacroI('\todotyperefname', 'ToDo');
+DefMacro('\todotyperefname', 'ToDo');
 DefMacro('\todo',            '\lx@note{todo}');
 DefMacro('\missingfigure{}', '[Missing Figure: #1]');
 DefMacro('todototoc',        '');
