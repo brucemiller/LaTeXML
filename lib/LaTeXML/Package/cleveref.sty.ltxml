@@ -1,0 +1,139 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  cleveref                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Should just work? Nope.
+# But we do need to read it in to get access to all the language dependent stuff!
+# We won't yet support the optional arg to the redefined \label...
+Let(T_CS('\lx@cleverref@save@label'), T_CS('\label'));
+DefMacro('\lx@cleverref@label[]', '\lx@cleverref@save@label');
+InputDefinitions('cleveref', type => 'sty', noltxml => 1);
+
+# Now define it back.
+RawTeX('\AtBeginDocument{\let\label\lx@cleverref@label}');
+
+# And now we just need to make sure we use the right conjunctions and type names!
+
+# There are 4 ways that a type can be printed:
+#  (singular|plural) & (regular|captialized)
+# show pattern is creftype(|plural)(|cap)
+# In principle, when dealing with multiple refs,
+# the types could be different.
+# TODO: We're going to pretend that doesn't happen ...
+
+# First attemp
+sub splitLabels {
+  my ($labels) = @_;
+##  return map { CleanLabel($_); } split(/\s*,\s*/, ToString($labels)); }
+  return split(/\s*,\s*/, ToString($labels)); }
+
+sub crefMulti {
+  my ($labels, $showtype, $capitalized) = @_;
+  my @labels = splitLabels($labels);
+  if (scalar(@labels) < 2) {
+    return Invocation(T_CS('\lx@cref'),
+      T_OTHER($showtype
+        ? ($capitalized
+          ? "creftypecap~refnum"
+          : "creftype~refnum")
+        : "refnum"),
+      $labels[0]); }
+  else {
+    my @tokens = (Invocation(T_CS('\lx@cref'),
+        T_OTHER($showtype
+          ? ($capitalized
+            ? "creftypepluralcap~refnum"
+            : "creftypeplural~refnum")
+          : "refnum"),
+        pop(@labels)));
+    if (scalar(@labels == 1)) {
+      push(@tokens, T_CS('\crefpairconjunction'),
+        Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), $labels[0])); }
+    else {
+      while (scalar(@labels) > 1) {
+        push(@tokens, T_CS('\crefmiddleconjunction'),
+          Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), pop(@labels))); }
+      push(@tokens, T_CS('\creflastconjunction'),
+        Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), pop(@labels))); }
+    return @tokens; } }
+# Since we're not grouping by type, we're ignoring \crefpairgroupconjunction, etc
+
+DefConstructor('\lx@cref {} Semiverbatim',
+  "<ltx:ref labelref='#label' show='#1' _force_font='true'/>",
+  properties => sub { (label => CleanLabel($_[2])); });
+
+DefMacro('\cref OptionalMatch:* Semiverbatim', sub { crefMulti($_[2], 1, 0); });
+DefMacro('\Cref OptionalMatch:* Semiverbatim', sub { crefMulti($_[2], 1, 1); });
+
+DefMacro('\crefrange OptionalMatch:* Semiverbatim Semiverbatim',
+  '\lx@cref{creftypeplural~refnum}{#2}\crefrangeconjunction\ref{#3}');
+DefMacro('\Crefrange OptionalMatch:* Semiverbatim Semiverbatim',
+  '\lx@cref{creftypepluralcap~refnum}{#2}\crefrangeconjunction\ref{#3}');
+
+# Make page refs same as regular?
+DefMacro('\cpageref OptionalMatch:* Semiverbatim', sub { crefMulti($_[2], 1, 0); });
+DefMacro('\Cpageref OptionalMatch:* Semiverbatim', sub { crefMulti($_[2], 1, 1); });
+
+# More likely with page ranges that the types are different?
+DefMacro('\cpagerefrange OptionalMatch:* Semiverbatim Semiverbatim',
+  '\lx@cref{creftype~refnum}{#2}\crefrangeconjunction\lx@cref{creftype~refnum}{#3}');
+DefMacro('\Cpagerefrange OptionalMatch:* Semiverbatim Semiverbatim',
+  '\lx@cref{creftypecap~refnum}{#2}\crefrangeconjunction\lx@ref{creftype~refnum{#3}');
+
+DefMacro('\namecref Semiverbatim',    '\lx@cref{creftype}{#2}');
+DefMacro('\nameCref Semiverbatim',    '\lx@cref{creftypecap}{#2}');
+DefMacro('\namecrefs Semiverbatim',   '\lx@cref{creftypeplural}{#2}');
+DefMacro('\nameCrefs Semiverbatim',   '\lx@cref{creftypepluralcap}{#2}');
+DefMacro('\lcnamecref Semiverbatim',  '\lx@cref{creftype}{#2}');
+DefMacro('\lcnamecrefs Semiverbatim', '\lx@cref{creftypeplural}{#2}');
+
+DefMacro('\labelcref Semiverbatim',     sub { crefMulti($_[2], 0, 0); });
+DefMacro('\labelcpageref Semiverbatim', sub { crefMulti($_[2], 0, 0); });
+
+# No, this isn't quite the same thing...
+DefPrimitive('\crefalias {}{}', sub {
+    my ($stomach, $counter, $type) = @_;
+###    AssignMapping('counter_for_type', ToString($counter) => ToString($type));
+    return; });
+
+#======================================================================
+#  So for each role=creftype(|plural)(|cap) the macro producing the name should be
+# \(cref|Cref)@<type>@name(|@plural)
+sub crefType {
+  my $type = ToString($_[0]);
+  my $acs  = T_CS('\cref@' . $type . '@alias');
+  return (LookupDefinition($acs) ? ToString(Expand($acs)) : $type); }
+
+DefMacro('\lx@cleverrefnum@@{}', sub {
+    my $cs = T_CS('\cref@' . crefType($_[1]) . '@name');
+    return Tokens((LookupDefinition($cs) ? $cs : ())); });
+DefMacro('\lx@cleverrefnumplural@@{}', sub {
+    my $cs = T_CS('\cref@' . crefType($_[1]) . '@name@plural');
+    return Tokens((LookupDefinition($cs) ? $cs : ())); });
+DefMacro('\lx@cleverrefnumcap@@{}', sub {
+    my $cs = T_CS('\Cref@' . crefType($_[1]) . '@name');
+    return Tokens((LookupDefinition($cs) ? $cs : ())); });
+DefMacro('\lx@cleverrefnumpluralcap@@{}', sub {
+    my $cs = T_CS('\Cref@' . crefType($_[1]) . '@name@plural');
+    return Tokens((LookupDefinition($cs) ? $cs : ())); });
+
+AssignMapping('type_tag_formatter', 'creftype'          => '\lx@cleverrefnum@@');
+AssignMapping('type_tag_formatter', 'creftypeplural'    => '\lx@cleverrefnumplural@@');
+AssignMapping('type_tag_formatter', 'creftypecap'       => '\lx@cleverrefnumcap@@');
+AssignMapping('type_tag_formatter', 'creftypepluralcap' => '\lx@cleverrefnumpluralcap@@');
+
+#======================================================================
+1;

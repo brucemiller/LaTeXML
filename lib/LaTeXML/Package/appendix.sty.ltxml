@@ -1,0 +1,90 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | appendix.sty                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+#  /--------------------------------------------------------------------\
+# | INCOMPLETE IMPLEMENTATION                                            |
+# | remove this comment, when done.                                      |
+# | Drafted by texscan --stub appendix.sty                               |
+#  \--------------------------------------------------------------------/
+# options:
+#  toc, page, title, titletoc, header
+
+# Something like a \part*{Appendices}
+# DefMacro('\appendixpage',Tokens());
+# And add it to the toc
+# DefMacro('\addappheadtotoc',Tokens());
+
+DefMacro('\appendixname',     "Appendix");
+DefMacro('\appendixtocname',  "Appendices");
+DefMacro('\appendixpagename', "Appendices");
+
+# Whether the entry in toc gets page number; Ignorable
+DefMacro('\appendicestocpagenum',   Tokens());
+DefMacro('\noappendicestocpagenum', Tokens());
+
+# Switches, mostly ignorable(?)
+DefConditional('\if@dotoc@pp');
+DefConditional('\if@dotitle@pp');
+DefConditional('\if@dotitletoc@pp');
+DefConditional('\if@dohead@pp');
+DefConditional('\if@dopage@pp');
+
+DefMacro('\appendixtocon',       '\@dotoc@pptrue');
+DefMacro('\appendixtocoff',      '\@dotoc@ppfalse');
+DefMacro('\appendixpageon',      '\@dopage@pptrue');
+DefMacro('\appendixpageoff',     '\@dopage@ppfalse');
+DefMacro('\appendixtitleon',     '\@dotitle@pptrue');
+DefMacro('\appendixtitleoff',    '\@dotitle@ppfalse');
+DefMacro('\appendixtitletocon',  '\@dotitletoc@pptrue');
+DefMacro('\appendixtitletocoff', '\@dotitletoc@ppfalse');
+DefMacro('\appendixheaderon',    '\@dohead@pptrue');
+DefMacro('\appendixheaderoff',   '\@dohead@ppfalse');
+
+# DefMacro('\phantomsection',Tokens());
+
+# DefMacro('\restoreapp',Tokens());
+
+# DefMacro('\sectionname',Tokens());
+# DefMacro('\subsectionname',Tokens());
+
+DefMacro('\setthesection',    '\Alph{section}');
+DefMacro('\setthesubsection', '\thesection.\Alph{subsection}');
+
+DefMacro('\lx@pp@appendix@start', sub {
+    if (LookupDefinition(T_CS('\c@chapter'))) {
+      startAppendices('chapter'); }
+    else {
+      startAppendices('section'); } });
+
+#DefEnvironment('{appendices}','#body');
+DefMacro(T_CS('\appendices'),
+  '\lx@pp@appendix@start'
+    . '\if@dotoc@pp\addappheadtotoc\fi'
+    . '\if@dopage@pp\appendixpage\fi'
+    . '\if@dotitle@pp\def\fnum@appendix{\lx@refnum@compose{\appendixname}{\lx@the@@{appendix}}\fi'
+    . '\if@dotitle@pp\def\fnum@toc@appendix{\lx@refnum@compose{\appendixname}{\lx@the@@{appendix}}\fi'
+);
+
+DefMacro(T_CS('\endappendices'), '\endgroup');
+
+# DefEnvironment('{subappendices}','#body');
+DefMacro(T_CS('\subappendices'),    '\lx@pp@appendix@start');
+DefMacro(T_CS('\endsubappendices'), '');
+
+#======================================================================
+1;
