@@ -94,11 +94,11 @@ my %font_family = (
   # some ams fonts
   cmmib => { family => 'italic', series   => 'bold' },
   cmbsy => { family => 'symbol', series   => 'bold' },
-  msa   => { family => 'symbol', encoding => 'AMSA' },
-  msb   => { family => 'symbol', encoding => 'AMSB' },
+  msa   => { family => 'symbol', encoding => 'AMSa' },
+  msb   => { family => 'symbol', encoding => 'AMSb' },
   # Are these really the same?
-  msx => { family => 'symbol', encoding => 'AMSA' },
-  msy => { family => 'symbol', encoding => 'AMSB' },
+  msx => { family => 'symbol', encoding => 'AMSa' },
+  msy => { family => 'symbol', encoding => 'AMSb' },
 );
 
 # Maps the "series code" to an abstract font series name
