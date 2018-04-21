@@ -198,6 +198,8 @@ DefConstructor('\hypertarget Semiverbatim {}',
 # Should leverage
 DefMacroI('\phantomsection', undef, '');
 
+Let('\footref', '\ref');    # ?
+
 # This only approximates the "contextual label" that should precede the number,
 # and ignores the user-definable macros.
 # But, we normally defer such bookkeeping until postprocessing....sigh
