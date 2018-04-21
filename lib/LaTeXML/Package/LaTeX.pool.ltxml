@@ -318,10 +318,11 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
 #   my $env = $STATE->isValueBound('current_environment', $i)
 #       && $STATE->valueInFrame('current_environment', $i);
 #   print STDERR "Frame $i: nonboxing=$nonbox; tok=".ToString($tok).' '.$loc." env=".($env||'none')."\n"; }
-    if (($STATE->isValueBound('current_environment', 0)
-        && ($STATE->valueInFrame('current_environment', 0) eq 'document'))) { }    # OK!
+    my $ifstack;
+    if ($STATE->isValueBound('current_environment', 0)
+      && ($STATE->valueInFrame('current_environment', 0) eq 'document')
+      && (!($ifstack = $STATE->lookupValue('if_stack')) || !$$ifstack[0])) { }    # OK!
     else {
-      my $error = 0;
       my @lines = ();
       while (!$STATE->isValueBound('current_environment', 0)
         || ($STATE->valueInFrame('current_environment', 0) ne 'document')) {
@@ -330,18 +331,17 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
         my $loc = $STATE->valueInFrame('groupInitiatorLocator', 0) || '<unknown>';
         my $env = $STATE->isValueBound('current_environment', 0)
           && $STATE->valueInFrame('current_environment', 0);
-        if ($env) {    # Consider it an error if unclosed environments
-          $error = 1;
+        if ($env) {
           push(@lines, "Environment $env opened by " . ToString($tok) . ' ' . $loc); }
-        else {         # but unclosed { is so common and latex itself doesn't Error!
+        else {    # but unclosed { is so common and latex itself doesn't Error!
           push(@lines, "Group opened by " . ToString($tok) . ' ' . $loc); }
         $STATE->popFrame; }
-      if ($error) {
-        Error('unexpected', '\end{document}', $stomach,
-          "Attempt to end document with open environments", @lines); }
-      else {
-        Warn('unexpected', '\end{document}', $stomach,
-          "Attempt to end document with open groups", @lines); }
+      while (($ifstack = $STATE->lookupValue('if_stack')) && $$ifstack[0]) {
+        my $frame = $STATE->shiftValue('if_stack');
+        push(@lines, "Conditional " . ToString($$frame{token})
+            . "started " . ToString($$frame{start})); }
+      Warn('unexpected', '\end{document}', $stomach,
+        "Attempt to end document with open groups, environments or conditionals", @lines);
     }
     $stomach->endMode('text');
     # NOTE: Don't flush gullet (tempting);
@@ -3204,7 +3204,7 @@ DefConstructor('\bibstyle{}', sub {
       Info('unexpected', $style, $_[0], "Unknown bibstyle '$style', it will be ignored"); }
     return; });
 
-DefMacro('\bibliographystyle{}', '\bibstyle{#1}');
+DefMacro('\bibliographystyle Semiverbatim', '\bibstyle{#1}');
 
 # Should be an environment, but people seem to want to misuse it.
 DefConstructorI('\thebibliography', undef,
