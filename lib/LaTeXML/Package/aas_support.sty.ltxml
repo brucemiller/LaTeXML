@@ -82,8 +82,8 @@ DefMacro('\author{}',
   '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
 
 DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affil{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-
+DefMacro('\affil{}',       '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
 DefConstructor('\@@@authoraddr{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
 DefMacro('\authoraddr{}', '\@add@to@frontmatter{ltx:creator}{\@@@authoraddr{#1}}');
 
@@ -104,6 +104,8 @@ DefConstructor('\@altaffilmark{}',
   "<ltx:note role='affiliationmark' mark='#1'/> ");
 DefConstructor('\altaffiltext{}{}',
   "<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>");
+
+DefMacro('\submitjournal{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
 
 #======================================================================
 # 2.4 Abstract
@@ -164,6 +166,15 @@ DefEnvironment('{plate*}[]',
 
 DefMacro('\platewidth{Dimension}', '');                    # Ignorable?
 DefMacro('\platenum{}',            '\def\theplate{#1}');
+
+DefMacro('\gridline{}', '');
+DefMacro('\fig Semiverbatim {Dimension}{}',
+  '\begin{figure}\caption{#3}\includegraphics[width=#2]{#1}\end{figure}');
+Let('\leftfig',  '\fig');
+Let('\rightfig', '\fig');
+Let('\boxedfig', '\fig');
+DefMacro('\rotatefig {Number} Semiverbatim {Dimension}{}',
+  '\begin{figure}\caption{#4}\includegraphics[width=#3,angle=#1]{#2}\end{figure}');
 
 #======================================================================
 # 2.9 Acknowledgements
@@ -425,10 +436,6 @@ RequirePackage('url');
 
 DefConstructor('\anchor Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#2</ltx:ref>",
-  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
-# \url{text}
-DefConstructor('\url Semiverbatim',
-  "<ltx:ref href='#href'>#1</ltx:ref>",
   properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
 
 # This should be in effect only after frontmatter
