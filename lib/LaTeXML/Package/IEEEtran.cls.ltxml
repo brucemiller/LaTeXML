@@ -36,6 +36,9 @@ RawTeX(<<'EoTeX');
 \newif\ifCLASSOPTIONtransmag        \CLASSOPTIONtransmagfalse
 \newif\ifCLASSOPTIONromanappendices \CLASSOPTIONromanappendicesfalse
 \newif\ifCLASSINFOpdf               \CLASSINFOpdffalse
+% Probably need to pretend pdf?
+\CLASSINFOpdftrue
+%
 \DeclareOption{9pt}{\def\CLASSOPTIONpt{9}\def\@ptsize{0}}
 \DeclareOption{10pt}{\def\CLASSOPTIONpt{10}\def\@ptsize{0}}
 \DeclareOption{11pt}{\def\CLASSOPTIONpt{11}\def\@ptsize{1}}
@@ -101,6 +104,7 @@ RawTeX(<<'EoTeX');
 \DeclareOption{compsoc}{\CLASSOPTIONcomsocfalse\CLASSOPTIONcompsoctrue\CLASSOPTIONtransmagfalse}
 \DeclareOption{transmag}{\CLASSOPTIONtransmagtrue\CLASSOPTIONcomsocfalse\CLASSOPTIONcompsocfalse}
 \DeclareOption{romanappendices}{\CLASSOPTIONromanappendicestrue}
+
 EoTeX
 
 # #  9pt 10pt 11pt 12pt
