@@ -50,6 +50,7 @@ DefConstructor('\corauth[]{}', "^ <ltx:contact role='corresondent'>#2</ltx:conta
   mode => 'text');
 DefMacro('\corref{}',     Tokens());
 DefMacro('\corauthref{}', Tokens());
+DefMacro('\cortext[]{}',  Tokens());
 
 # Is this significantly different?
 DefMacro('\collab OptionalMatch:* {}', '\author{#1}');
