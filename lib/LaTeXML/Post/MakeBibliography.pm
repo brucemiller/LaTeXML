@@ -125,10 +125,11 @@ sub getBibliographies {
       # NOTE: When better integrated with Core, should also check for cached bib documents.
       if (my $xmlpath = pathname_find($bib, paths => [@paths], types => ['xml'])) {
         $bibdoc = $doc->newFromFile($xmlpath); }    # doc will do the searching...
-      elsif (my $bibpath = pathname_find($bib, paths => [@paths], types => ['bib'])) {
+      elsif (my $bibpath = pathname_find($bib, paths => [@paths], types => ['bib'])
+        || pathname_kpsewhich($bib)) {
         $bibdoc = $self->convertBibliography($doc, $bibpath); }
       else {
-        Error('expected', $bib, $self,
+        Error('missing_file', $bib, $self,
           "Couldn't find Bibliography '$bib'",
           "Searchpaths were " . join(',', @paths)); } }
     if ($bibdoc) {
@@ -178,9 +179,9 @@ sub convertBibliography {
   my $biblog_handle;
   open($biblog_handle, ">>", \$biblog) or Error("Can't redirect STDERR to log for inner bibliography converter!");
   *BIB_STDERR_SAVED = *STDERR;
-  *STDERR       = *$biblog_handle;
+  *STDERR           = *$biblog_handle;
   # end ->bind_log
-  
+
   $bib_converter->prepare_session($bib_config);
   my $response = $bib_converter->convert($bib);
 
