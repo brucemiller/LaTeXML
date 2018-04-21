@@ -28,7 +28,7 @@ foreach my $option (qw(nospthms vecphys vecarrow norunningheads referee oribibl 
 # Other options could load sv<option>.clo !
 # Anything else gets passed to book.
 DeclareOption(undef, sub {
-    PassOptions('book', 'cls', ToString(Digest(T_CS('\CurrentOption')))); });
+    PassOptions('book', 'cls', ToString(Expand(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
 LoadClass('book', withoptions => 1);

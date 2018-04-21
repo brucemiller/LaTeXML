@@ -84,8 +84,8 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
     return; });
 
 DefPrimitiveI('\compat@loadpackages', undef, sub {
-    my $name       = ToString(Digest(T_CS('\@currname')));
-    my $type       = ToString(Digest(T_CS('\@currext')));
+    my $name       = ToString(Expand(T_CS('\@currname')));
+    my $type       = ToString(Expand(T_CS('\@currext')));
     my $hadmissing = 0;
     foreach my $option (@{ LookupValue('@unusedoptionlist') }) {
       if (FindFile($option, type => 'sty')) {
@@ -746,11 +746,11 @@ DefPrimitive('\DeclareOption{}{}', sub {
 
 DefPrimitive('\PassOptionsToPackage{}{}', sub {
     my ($stomach, $name, $options) = @_;
-    PassOptions($name, 'pkg', split(/,\s*/, ToString(Digest($options)))); });
+    PassOptions($name, 'pkg', split(/,\s*/, ToString(Expand($options)))); });
 
 DefPrimitive('\PassOptionsToClass{}{}', sub {
     my ($stomach, $name, $options) = @_;
-    PassOptions($name, 'cls', split(/,\s*/, ToString(Digest($options)))); });
+    PassOptions($name, 'cls', split(/,\s*/, ToString(Expand($options)))); });
 
 DefConstructor('\RequirePackageWithOptions Semiverbatim []',
   "<?latexml package='#1'?>",
@@ -771,22 +771,22 @@ DefConstructor('\LoadClassWithOptions Semiverbatim []',
 DefMacroI('\CurrentOption', undef, Tokens());
 
 DefPrimitiveI('\OptionNotUsed', undef, sub {
-    if (my $option = ToString(Digest(T_CS('\CurrentOption')))) {
-      my $type = ToString(Digest(T_CS('\@currext')));
+    if (my $option = ToString(Expand(T_CS('\CurrentOption')))) {
+      my $type = ToString(Expand(T_CS('\@currext')));
       if ($type eq 'cls') {
         PushValue('@unusedoptionlist', $option); } }
     return; });
 
 DefPrimitiveI('\@unknownoptionerror', undef, sub {
-    if (my $option = ToString(Digest(T_CS('\CurrentOption')))) {
-      my $name = ToString(Digest(T_CS('\@currname')));
-      my $type = ToString(Digest(T_CS('\@currext')));
+    if (my $option = ToString(Expand(T_CS('\CurrentOption')))) {
+      my $name = ToString(Expand(T_CS('\@currname')));
+      my $type = ToString(Expand(T_CS('\@currext')));
       Info('unexpected', $option, $_[0], "Unexpected option '$option' passed to $name.$type"); }
     return; });
 
 DefPrimitive('\ExecuteOptions{}', sub {
     my ($gullet, $options) = @_;
-    ExecuteOptions(split(/,\s*/, ToString(Digest($options)))); });
+    ExecuteOptions(split(/,\s*/, ToString(Expand($options)))); });
 
 DefPrimitive('\ProcessOptions OptionalMatch:*', sub {
     my ($stomach, $star) = @_;
@@ -794,8 +794,8 @@ DefPrimitive('\ProcessOptions OptionalMatch:*', sub {
 
 DefMacro('\AtEndOfPackage{}', sub {
     my ($gullet, $code) = @_;
-    my $name = ToString(Digest(T_CS('\@currname')));
-    my $type = ToString(Digest(T_CS('\@currext')));
+    my $name = ToString(Expand(T_CS('\@currname')));
+    my $type = ToString(Expand(T_CS('\@currext')));
     AddToMacro(T_CS('\\' . $name . '.' . $type . '-h@@k'), $code); });
 
 DefMacro('\@ifpackageloaded', '\@ifl@aded\@pkgextension');

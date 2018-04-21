@@ -1970,8 +1970,8 @@ my $processoptions_options = {    # [CONSTANT]
 sub ProcessOptions {
   my (%options) = @_;
   CheckOptions("ProcessOptions", $processoptions_options, %options);
-  my $name = $STATE->lookupDefinition(T_CS('\@currname')) && ToString(Digest(T_CS('\@currname')));
-  my $ext  = $STATE->lookupDefinition(T_CS('\@currext'))  && ToString(Digest(T_CS('\@currext')));
+  my $name = $STATE->lookupDefinition(T_CS('\@currname')) && ToString(Expand(T_CS('\@currname')));
+  my $ext  = $STATE->lookupDefinition(T_CS('\@currext'))  && ToString(Expand(T_CS('\@currext')));
   my @declaredoptions = @{ LookupValue('@declaredoptions') };
   my @curroptions = @{ (defined($name) && defined($ext)
         && LookupValue('opt@' . $name . '.' . $ext)) || [] };
@@ -2041,7 +2041,7 @@ sub ExecuteOptions {
 sub resetOptions {
   AssignValue('@declaredoptions', []);
   Let('\default@ds',
-    (ToString(Digest(T_CS('\@currext'))) eq 'cls'
+    (ToString(Expand(T_CS('\@currext'))) eq 'cls'
       ? '\OptionNotUsed' : '\@unknownoptionerror'));
   return; }
 
@@ -2074,8 +2074,8 @@ sub InputDefinitions {
   $name =~ s/^\s*//; $name =~ s/\s*$//;
   CheckOptions("InputDefinitions ($name)", $inputdefinitions_options, %options);
 
-  my $prevname = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currname')) && ToString(Digest(T_CS('\@currname')));
-  my $prevext = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currext')) && ToString(Digest(T_CS('\@currext')));
+  my $prevname = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currname')) && ToString(Expand(T_CS('\@currname')));
+  my $prevext = $options{handleoptions} && $STATE->lookupDefinition(T_CS('\@currext')) && ToString(Expand(T_CS('\@currext')));
 
   # This file will be treated somewhat as if it were a class
   # IF as_class is true
