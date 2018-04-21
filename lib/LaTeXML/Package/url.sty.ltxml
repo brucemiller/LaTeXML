@@ -81,7 +81,7 @@ DefConstructor('\@@Url Undigested {}{} Semiverbatim {}',
 
 # These are the expansions of \DeclareUrlCommand
 DefMacro('\path', '\begingroup\urlstyle{tt}\@Url\path');
-DefMacro('\url',  '\begingroup\@Url\url');
+DefMacro('\url', '\begingroup\@Url\url', locked => 1);
 
 # \urldef{newcmd}\cmd{arg}
 # Kinda tricky, since we need to get the expansion of \cmd as the value of \newcmd
