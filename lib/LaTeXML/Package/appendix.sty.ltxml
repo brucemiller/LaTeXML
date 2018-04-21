@@ -72,7 +72,7 @@ DefMacro('\lx@pp@appendix@start', sub {
       startAppendices('section'); } });
 
 #DefEnvironment('{appendices}','#body');
-DefMacro(T_CS('\appendices'),
+DefMacro('\appendices',
   '\lx@pp@appendix@start'
     . '\if@dotoc@pp\addappheadtotoc\fi'
     . '\if@dopage@pp\appendixpage\fi'
@@ -80,7 +80,7 @@ DefMacro(T_CS('\appendices'),
     . '\if@dotitle@pp\def\fnum@toc@appendix{\lx@refnum@compose{\appendixname}{\lx@the@@{appendix}}\fi'
 );
 
-DefMacro(T_CS('\endappendices'), '\endgroup');
+DefMacro(T_CS('\endappendices'), '');
 
 # DefEnvironment('{subappendices}','#body');
 DefMacro(T_CS('\subappendices'),    '\lx@pp@appendix@start');
