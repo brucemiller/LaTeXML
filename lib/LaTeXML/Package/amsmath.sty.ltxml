@@ -22,6 +22,9 @@ use LaTeXML::Package;
 # Eventually, go through the doc and implement it all.
 #**********************************************************************
 
+Let('\@xp', '\expandafter');
+Let('\@nx', '\noexpand');
+
 # TODO:
 #   Interesting options for limits placement
 #   And TESTING!!!!!

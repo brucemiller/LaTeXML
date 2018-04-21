@@ -21,6 +21,8 @@ use warnings;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Let('\@xp', '\expandafter');
+Let('\@nx', '\noexpand');
 
 # Core is defined in LaTeX.ltxml
 

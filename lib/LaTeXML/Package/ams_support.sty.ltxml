@@ -22,6 +22,9 @@ use LaTeXML::Package;
 #**********************************************************************
 # Document structure.
 
+Let('\@xp', '\expandafter');
+Let('\@nx', '\noexpand');
+
 # None of the options are vital, I think; deferred.
 # [though loading an unwanted amsfonts (noamsfonts) could be an issue]
 
@@ -190,9 +193,9 @@ DefMacro('\descriptionlabel{}',         '\normalfont\bfseries #1:\space');
 if (LookupValue('2.09_COMPATIBILITY')) {
   DefMacroI('\defaultfont', undef, '\normalfont');
   DefMacroI('\rom',         undef, '\textup');
-  #  RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
-  RawTeX('\newenvironment{pf}{\begin{@proof}}{\end{@proof}');
-  RawTeX('\newenvironment{pf*}[1]{\begin{@proof}[#1]}{\end{@proof}');
+  #  RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}}');
+  RawTeX('\newenvironment{pf}{\begin{@proof}}{\end{@proof}}');
+  RawTeX('\newenvironment{pf*}[1]{\begin{@proof}[#1]}{\end{@proof}}');
 }
 
 DefMacro('\format@title@figure{}', '\lx@tag[][. ]{\lx@fnum@@{figure}}#1');
