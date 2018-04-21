@@ -259,6 +259,12 @@ our $PGFMathFunctions;
 
 # NOTE: haven't done \pgfmathpostparse
 # NOTE: need to handle \ifpgfmathunitsdeclared
+# Version issue?
+RawTeX(<<'EoTeX');
+\@ifundefined{pgfmathunitsdeclaredtrue}{\newif\ifpgfmathunitsdeclared}{}
+\@ifundefined{pgfmathmathunitsdeclaredtrue}{\newif\ifpgfmathmathunitsdeclared}{}
+EoTeX
+
 sub pgfmathparse {
   my ($gullet, $tokens) = @_;
   SetCondition(T_CS('\ifpgfmathunitsdeclared'),     0, 'global');
