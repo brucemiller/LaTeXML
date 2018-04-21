@@ -2170,10 +2170,11 @@ sub RequirePackage {
   # We'll usually disallow raw TeX, unless the option explicitly given, or globally set.
   $options{notex} = 1
     if !defined $options{notex} && !LookupValue('INCLUDE_STYLES') && !$options{noltxml};
-  InputDefinitions($package, type => $options{type} || 'sty', handleoptions => 1,
+  my $success = InputDefinitions($package, type => $options{type} || 'sty', handleoptions => 1,
     # Pass classes options if we have NONE!
     withoptions => !($options{options} && @{ $options{options} }),
     %options);
+  maybeRequireDependencies($package, $options{type} || 'sty') unless $success;
   return; }
 
 my $loadclass_options = {    # [CONSTANT]
@@ -2212,6 +2213,7 @@ sub LoadClass {
       "Anticipate undefined macros or environments",
       maybeReportSearchPaths());
     if (my $success = InputDefinitions($alternate, type => 'cls', noerror => 1, handleoptions => 1, %options)) {
+      maybeRequireDependencies($class, 'cls');
       return $success; }
     else {
       Fatal('missing_file', $alternate . '.cls.ltxml', $STATE->getStomach->getGullet,
@@ -2228,6 +2230,42 @@ sub LoadPool {
       "Can't find binding for pool $pool (installation error)",
       maybeReportSearchPaths());
     return; } }
+
+# Somewhat an act of desperation in contexts like arXiv
+# where we may have a bunch of random styles & classes that load other packages
+# whose macros are then expected to be present.
+# We scan the source for \RequirePackage & \usepackage and load the ones that have bindings.
+# This is almost safe: the packages may only be loaded unconditionally, and we don't notice that!
+sub maybeRequireDependencies {
+  my ($file, $type) = @_;
+  if (my $path = FindFile($file, type => $type, noltxml => 1)) {
+    local $/ = undef;
+    my $IN;
+    if (open($IN, '<', $path)) {
+      my $code = <$IN>;
+      close($IN);
+      my @packages = ();
+      my %dups     = ();
+      my $collect  = sub {
+        my ($packages, $options) = @_;
+        foreach my $p (split(/\s*,\s*/, $packages)) {
+          if (!$dups{$p} && !LookupValue($p . '.sty.ltxml_loaded')) {
+            push(@packages, [$p, $options]); $dups{$p} = 1; } } };
+      # Yes, Regexps on TeX code! Ugh!!! Well, this is an act of desperation anyway :>
+      $code =~ s/%[^\n]*\n//gs;    # strip comments
+      $code =~ s/\\RequirePackage\s*(?:\[([^\]]*)\])?\s*\{([^\}]*)\}/ &$collect($2,$1); /xegs;
+      # Ugh. \usepackage, too
+      $code =~ s/\\usepackage\s*(?:\[([^\]]*)\])?\s*\{([^\}]*)\}/ &$collect($2,$1); /xegs;
+
+      Info('dependencies', 'dependencies', undef,
+        "Loading dependencies for $path: " . join(',', map { $$_[0]; } @packages)) if @packages;
+      foreach my $pair (@packages) {
+        my ($package, $options) = @$pair;
+        if (FindFile($package, type => 'sty', notex => 1)) {
+          RequirePackage($package, ($options ? (options => [split(/\s*,\s*/, $options)]) : ())); } } }
+    else {
+      Warn('I/O', 'read', undef, "Couldn't open $path to scan dependencies", $!); } }
+  return; }
 
 sub AtBeginDocument {
   my (@operations) = @_;
