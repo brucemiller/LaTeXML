@@ -347,6 +347,7 @@ sub readBalanced {
   my ($self) = @_;
   my @tokens = ();
   my ($token, $level) = (undef, 1);
+  my $startloc = $self->getLocator;
   # Inlined readToken (we'll keep comments in the result)
   while ($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken()) {
     my $cc = $$token[1];
@@ -362,9 +363,10 @@ sub readBalanced {
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
   if ($level > 0) {
-    # TODO: The current implementation has a limitation where if the balancing end is in a different mouth,
-    #       it will not be recognized.
-    Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.");
+ # TODO: The current implementation has a limitation where if the balancing end is in a different mouth,
+ #       it will not be recognized.
+    Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.",
+      "started at $startloc");
   }
   return Tokens(@tokens); }
 
