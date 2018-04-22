@@ -890,16 +890,16 @@ DefMacro('\input TeXFileName', sub { Input($_[1]); });
 
 # Note that TeX doesn't actually close the mouth;
 # it just flushes it so that it will close the next time it's read!
-DefMacroI('\endinput', undef, sub { 
-  my ($gullet) = @_;
-  my $mouth = $gullet->getMouth;
-  my $line;
-  if (! $mouth->isEOL) {
-   $line = $gullet->readRawLine;  }
-  $gullet->flushMouth; 
-  if ($line) {
-    $gullet->unread(Tokenize($line));  }
-  return; 
+DefMacroI('\endinput', undef, sub {
+    my ($gullet) = @_;
+    my $mouth = $gullet->getMouth;
+    my $line;
+    if (!$mouth->isEOL) {
+      $line = $gullet->readRawLine; }
+    $gullet->flushMouth;
+    if ($line) {
+      $gullet->unread(Tokenize($line)); }
+    return;
 });
 
 # \the<internal quantity>
@@ -3160,10 +3160,11 @@ DefConstructorI('\@@BEGINDISPLAYMATH', undef,
     . "</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  alias        => '$$',
+  reversion => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->beginMode('display_math'); },
-  captureBody  => 1);
-DefConstructorI('\@@ENDDISPLAYMATH', undef, "", alias => '$$',
+  captureBody => 1);
+DefConstructorI('\@@ENDDISPLAYMATH', undef, "",
+  reversion => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->endMode('display_math'); });
 
 DefConstructorI('\@@BEGININLINEMATH', undef,
@@ -3172,8 +3173,10 @@ DefConstructorI('\@@BEGININLINEMATH', undef,
     . "#body"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  alias => '$', beforeDigest => sub { $_[0]->beginMode('inline_math'); }, captureBody => 1);
-DefConstructorI('\@@ENDINLINEMATH', undef, "", alias => '$',
+  reversion => Tokens(T_MATH),
+  beforeDigest => sub { $_[0]->beginMode('inline_math'); }, captureBody => 1);
+DefConstructorI('\@@ENDINLINEMATH', undef, "",
+  reversion => Tokens(T_MATH),
   beforeDigest => sub { $_[0]->endMode('inline_math'); });
 
 # Add the TeX code from the object that created this node,
@@ -3550,11 +3553,12 @@ Let('\vcenter', '\vbox');
 # Even a \begin{array} ends up expanding into a $ !!!
 DefMacroI('\eqno', undef, sub {
     my ($gullet) = @_;
-    my @stuff = ();
+    my $locator  = $gullet->getLocator;
+    my @stuff    = ();
     # This is risky!!!
     while (my $t = $gullet->readXToken(0)) {
-      if (!defined $t) {
-        Fatal('unexpected', '\eqno', $gullet, "Fell of the end reading tag for \\eqno!"); }
+      if (Equals($t, T_BEGIN)) {
+        push(@stuff, $t, $gullet->readBalanced->unlist, T_END); }
       # What do I need to explicitly list here!?!?!? UGGH!
       elsif (Equals($t, T_MATH) || Equals($t, T_CS('\]'))
         || Equals($t, T_CS('\begingroup'))    # Totally wrong, but to catch expanded environments
@@ -3565,7 +3569,10 @@ DefMacroI('\eqno', undef, sub {
         #       || Equals($t,T_CS('\end{equation}'))|| Equals($t,T_CS('\end{equation*}'))){
         return (Invocation(T_CS('\@@eqno'), Tokens(@stuff)), $t); }
       else {
-        push(@stuff, $t); } } });
+        push(@stuff, $t); } }
+    Error('unexpected', '\eqno', $gullet, "Fell of the end reading tag for \\eqno!",
+      "started $locator");
+    return Tokens(@stuff); });
 
 Let('\leqno', '\eqno');
 # Revert to nothing, since it really doesn't belong in the TeX string(?)
@@ -4903,12 +4910,14 @@ DefPrimitiveI('\l',  undef, "\x{0142}");    # LATIN SMALL LETTER L WITH STROKE
 DefPrimitiveI('\ss', undef, UTF(0xDF));     # LATIN SMALL LETTER SHARP S
 
 # apparently the rest can appear in math.
-DefPrimitiveI('\dag',       undef, "\x{2020}");    # DAGGER
-DefPrimitiveI('\ddag',      undef, "\x{2021}");    # DOUBLE DAGGER
-DefPrimitiveI('\S',         undef, UTF(0xa7));     # SECTION SIGN
-DefPrimitiveI('\P',         undef, UTF(0xB6));     # PILCROW SIGN
-DefPrimitiveI('\copyright', undef, UTF(0xA9));     # COPYRIGHT SIGN
-DefPrimitiveI('\pounds',    undef, UTF(0xA3));     # POUND SIGN
+DefPrimitiveI('\lx@sectionsign',   undef, UTF(0xa7));    # SECTION SIGN
+DefPrimitiveI('\lx@paragraphsign', undef, UTF(0xB6));    # PILCROW SIGN
+DefMacroI('\S', undef, '\lx@sectionsign');
+DefMacroI('\P', undef, '\lx@paragraphsign');
+DefPrimitiveI('\dag',       undef, "\x{2020}");          # DAGGER
+DefPrimitiveI('\ddag',      undef, "\x{2021}");          # DOUBLE DAGGER
+DefPrimitiveI('\copyright', undef, UTF(0xA9));           # COPYRIGHT SIGN
+DefPrimitiveI('\pounds',    undef, UTF(0xA3));           # POUND SIGN
 
 #----------------------------------------------------------------------
 # Accents.  LaTeX Table 3.1, p.38
@@ -6264,14 +6273,15 @@ DefMathI('\*', undef, "\x{2062}", role => 'MULOP', name => '', meaning => 'times
 # NOTE that \mathord and \mathbin aren't really right here.
 # We need a finer granularity than TeX does: an ORD could be several things,
 # a BIN could be a MULOP or ADDOP.
-DefConstructor('\mathord{}', "<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>", bounded => 1);
-DefConstructor('\mathop{}', "<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>",
+# AND, rarely, they're empty.... Is it wrong to drop them?
+DefConstructor('\mathord{}', "?#1(<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathop{}', "?#1(<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>)()",
   bounded => 1, properties => { scriptpos => \&doScriptpos });
-DefConstructor('\mathbin{}',   "<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>", bounded => 1);
-DefConstructor('\mathrel{}',   "<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>", bounded => 1);
-DefConstructor('\mathopen{}',  "<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>", bounded => 1);
-DefConstructor('\mathclose{}', "<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>", bounded => 1);
-DefConstructor('\mathpunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>", bounded => 1);
+DefConstructor('\mathbin{}',   "?#1(<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathrel{}',   "?#1(<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathopen{}',  "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathclose{}', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathpunct{}', "?#1(<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>)()", bounded => 1);
 
 # If an XMWrap (presumably from \mathop, \mathbin, etc)
 # has multiple children, ALL are XMTok, within a restricted set of roles,
