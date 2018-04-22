@@ -2631,9 +2631,10 @@ DefConstructor('\@open@alignment SkipSpaces DigestedBody',
   beforeDigest => sub { $_[0]->bgroup; },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
-    my $alignment = LookupValue('Alignment');
-    $whatsit->setProperty(alignment => $alignment);
-    $alignment->setBody($whatsit); });
+    if (my $alignment = LookupValue('Alignment')) {
+      $whatsit->setProperty(alignment => $alignment);
+      $alignment->setBody($whatsit); }
+    return; });
 
 #----------------------------------------------------------------------
 # Row; The content is stuffed into the Alignment, so we don't construct anything here.
