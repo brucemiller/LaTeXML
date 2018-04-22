@@ -399,7 +399,7 @@ DefMacro(T_CS('\XKV@na'),     '');
 DefMacro('\savevalue {}', sub {
     my ($gullet, $key) = @_;
     Warn('unexpected', T_CS('\savevalue'), undef, "The xkeyval pointer system is currently not supported. ");
-    return $a; });
+    return; });
 
 DefMacro('\gsavevalue {}', sub {
     my ($gullet, $key) = @_;
@@ -451,31 +451,31 @@ DefMacro('\usevalue {}', sub {
 DefMacro('\presetkeys []{}{}{}', sub {
     my ($gullet, $prefix, $keyset, $headKeys, $tailKeys) = @_;
     Warn('unexpected', T_CS('\presetkeys'), undef, "Presetting keys is currently not supported. ");
-    return $a; });
+    return; });
 
 DefMacro('\gpresetkeys []{}{}{}', sub {
     my ($gullet, $prefix, $keyset, $headKeys, $tailKeys) = @_;
     Warn('unexpected', T_CS('\gpresetkeys'), undef, "Presetting keys is currently not supported. ");
-    return $a; });
+    return; });
 
 DefMacro('\delpresetkeys []{}{}{}', sub {
     my ($gullet, $prefix, $keyset, $headKeys, $tailKeys) = @_;
     Warn('unexpected', T_CS('\delpresetkeys'), undef, "Presetting keys is currently not supported. ");
-    return $a; });
+    return; });
 
 DefMacro('\gdelpresetkeys []{}{}{}', sub {
     my ($gullet, $prefix, $keyset, $headKeys, $tailKeys) = @_;
     Warn('unexpected', T_CS('\gdelpresetkeys'), undef, "Presetting keys is currently not supported. ");
-    return $a; });
+    return; });
 
 DefMacro('\unpresetkeys []{}', sub {
     my ($gullet, $prefix, $keyset) = @_;
     Warn('unexpected', T_CS('\unpresetkeys'), undef, "Presetting keys is currently not supported. ");
-    return $a; });
+    return; });
 DefMacro('\gunpresetkeys []{}', sub {
     my ($gullet, $prefix, $keyset) = @_;
     Warn('unexpected', T_CS('\gunpresetkeys'), undef, "Presetting keys is currently not supported. ");
-    return $a; });
+    return; });
 
 #======================================================================
 1;
