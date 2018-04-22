@@ -15,9 +15,19 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Geometry;
-use Math::Trig;
 use List::Util qw(min max);
-use POSIX;
+##use Math::Trig;
+##use POSIX;
+# Math functions needed here
+# Native: sin cos atan2 log exp sqrt rand abs
+use Math::Trig qw(
+  deg2rad rad2deg
+  tan atan asin acos
+  cot sec cosec
+  cosh sinh tanh);
+use POSIX qw(
+  round floor ceil);
+
 #======================================================================
 # Load pgf's TeX code for math, first
 InputDefinitions('pgfmath.code', type => 'tex', noltxml => 1)
@@ -44,6 +54,12 @@ sub pgfmathargradians {
     return deg2rad($arg); }
   else {
     return deg2rad($arg); } }
+
+sub pgfmathfactorial {
+  my ($arg) = @_;
+  my $f = 1;
+  while ($arg > 0) { $f *= $arg; $arg--; }
+  return $f; }
 
 # I'll bet the deired precision is a parameter somewhere?
 # Actually, the library uses exponents, but I generate them, for some reason I'm getting
@@ -228,7 +244,8 @@ DefMacro('\pgfmathrnd@', sub {
     pgfmathresult(rand()); return });
 DefMacro('\pgfmathrand@', sub {
     pgfmathresult(1 + rand(2)); return });
-# factorial
+DefMacro('\pgfmathfactorial@', sub {
+    pgfmathresult(pgfmathfactorial($_[1])); return });
 DefMacro('\pgfmathreciprocal@ pgfNumber', sub {
     pgfmathresult(1 / $_[1]); return });
 
@@ -464,8 +481,8 @@ BEGIN {
     '/'        => sub { $_[0] / $_[1]; },
     div        => sub { int($_[0] / $_[1]); },
     divide     => sub { $_[0] / $_[1]; },
-    '!'        => sub { factorial($_[0]); },
-    'r'        => sub { radial($_[0]); },
+    '!'        => sub { pgfmathfactorial($_[0]); },
+    'r'        => sub { deg2rad($_[0]); },
     e          => sub { $E; },
     pi         => sub { $PI; },
     abs        => sub { abs($_[0]); },
@@ -482,10 +499,10 @@ BEGIN {
     cot   => sub { cot(pgfmathargradians($_[0])); },
     deg   => sub { rad2deg($_[0]); },
     #    depth => sub { },
-    exp => sub { exp($_[0]); },
-    #    factorial  => sub { },
-    false => sub { 0; },
-    floor => sub { floor($_[0]); },
+    exp       => sub { exp($_[0]); },
+    factorial => sub { pgfmathfactorial($_[0]); },
+    false     => sub { 0; },
+    floor     => sub { floor($_[0]); },
     #    frac       => sub { },
     #    gcd        => sub { },
     #    height     => sub { },
@@ -514,7 +531,7 @@ BEGIN {
     round    => sub { round($_[0]); },
     scalar   => sub { SetCondition(T_CS('\ifpgfmathunitsdeclared'), 0, 'global'); $_[0]; },
     sec      => sub { sec(pgfmathargradians($_[0])); },
-    sign     => sub { sign($_[0]); },
+    sign     => sub { ($_[0] > 0 ? 1 : ($_[0] < 0 ? -1 : 0)); },
     sin      => sub { sin(pgfmathargradians($_[0])); },
     sinh     => sub { sinh($_[0]); },
     sqrt     => sub { sqrt($_[0]); },
