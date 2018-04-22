@@ -375,7 +375,12 @@ DefMacroI('\fmtversion', undef, 'XXXX/XX/XX');
 
 DefMacroI('\today', undef, sub { ExplodeText(today()); });
 
-DefConstructor('\emph{}', "<ltx:emph _force_font='1'>#1</ltx:emph>",
+# Previously, we used ltx:emph, to preserve the semantic intent,
+# but some folks wrap it around arbitrary blocks of material,
+# more like a font switch.
+# We'll just use an open-ended ltx:text, here, trusting font changes to close the ltx:text
+# However, it would be nice if the Font object itself carried the notion of "emphasized".
+DefConstructor('\emph{}', "<ltx:text _force_font='1' class='ltx_emph'>#1",
   mode => 'text', bounded => 1, font => { emph => 1 });
 
 #======================================================================
@@ -1517,7 +1522,7 @@ DefConstructorI(T_CS('\begin{verbatim}'), undef,
   "<ltx:verbatim font='#font'>#body</ltx:verbatim>",
   beforeDigest => [sub { $_[0]->bgroup;
       AssignValue(current_environment => 'verbatim');
-      DefMacroI('\@currenv', undef, 'verbatim');
+      DefMacroI('\@currenvir', undef, 'verbatim');
       MergeFont(family => 'typewriter');
       # Digest(T_CS('\par')); # NO! See beforeConstruct!
       }],
@@ -2319,8 +2324,9 @@ DefPrimitive('\DeclareSymbolFont{}{}{}{}{}', sub {
     my ($stomach, $name, $enc, $family, $series, $shape) = @_;
     AssignValue('fontdeclaration@' . ToString($name),
       { family => ToString($family),
-        series => ToString($series),
-        shape  => ToString($shape) }); });
+        series   => ToString($series),
+        shape    => ToString($shape),
+        encoding => ToString($enc) }); });
 DefPrimitive('\DeclareSymbolFontAlphabet{}{}', sub {
     my ($stomach, $cs, $name) = @_;
     my $font = LookupValue('fontdeclarations@' . ToString($name)) || {};
@@ -2342,6 +2348,9 @@ my $symboltype_roles = {
   '\mathopen' => 'OPEN', '\mathclose' => 'CLOSE', '\mathpunct' => 'PUNCT' };
 DefPrimitive('\DeclareMathSymbol DefToken SkipSpaces DefToken {}{Number}', sub {
     my ($stomach, $cs, $type, $font, $code) = @_;
+    my $encoding = $font;                        # Or maybe just a font name or class?
+    if (my $decl = LookupValue('fontdeclaration@' . $encoding)) {
+      $encoding = $$decl{encoding} if $$decl{encoding}; }
     my $glyph = FontDecode($code->valueOf, ToString($font));
     my $role = $$symboltype_roles{ ToString($type) };
     DefMathI($cs, undef, $glyph, role => $role);
@@ -2783,19 +2792,21 @@ DefMacroI('\floatpagefraction', undef, "0.25");
 NewCounter('dbltopnumber');
 DefMacroI('\dbltopfraction',       undef, "0.7");
 DefMacroI('\dblfloatpagefraction', undef, "0.25");
-DefRegister('\floatsep'        => Glue(0));
-DefRegister('\textfloatsep'    => Glue(0));
-DefRegister('\intextsep'       => Glue(0));
-DefRegister('\dblfloatsep'     => Glue(0));
-DefRegister('\dbltextfloatsep' => Glue(0));
-DefRegister('\@maxsep'         => Dimension(0));
-DefRegister('\@dblmaxsep'      => Dimension(0));
-DefRegister('\@fptop'          => Glue(0));
-DefRegister('\@fpsep'          => Glue(0));
-DefRegister('\@fpbot'          => Glue(0));
-DefRegister('\@dblfptop'       => Glue(0));
-DefRegister('\@dblfpsep'       => Glue(0));
-DefRegister('\@dblfpbot'       => Glue(0));
+DefRegister('\floatsep'         => Glue(0));
+DefRegister('\textfloatsep'     => Glue(0));
+DefRegister('\intextsep'        => Glue(0));
+DefRegister('\dblfloatsep'      => Glue(0));
+DefRegister('\dbltextfloatsep'  => Glue(0));
+DefRegister('\@maxsep'          => Dimension(0));
+DefRegister('\@dblmaxsep'       => Dimension(0));
+DefRegister('\@fptop'           => Glue(0));
+DefRegister('\@fpsep'           => Glue(0));
+DefRegister('\@fpbot'           => Glue(0));
+DefRegister('\@dblfptop'        => Glue(0));
+DefRegister('\@dblfpsep'        => Glue(0));
+DefRegister('\@dblfpbot'        => Glue(0));
+DefRegister('\abovecaptionskip' => Glue(0));
+DefRegister('\belowcaptionskip' => Glue(0));
 Let('\topfigrule', '\relax');
 Let('\botfigrule', '\relax');
 Let('\dblfigrule', '\relax');
@@ -3206,12 +3217,13 @@ DefConstructor('\bibstyle{}', sub {
 
 DefMacro('\bibliographystyle Semiverbatim', '\bibstyle{#1}');
 
+DefConditional('\if@lx@inbibliography');
 # Should be an environment, but people seem to want to misuse it.
 DefConstructorI('\thebibliography', undef,
   "<ltx:bibliography xml:id='#id'>"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "<ltx:biblist>",
-  beforeDigest => sub { AssignValue(inPreamble => 0); },
+  beforeDigest => sub { AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue'); },
   afterDigest => sub {
     my ($stomach) = @_;
     # NOTE that in some perverse situations (revtex?)
@@ -3273,7 +3285,11 @@ NewCounter('@bibitem', 'bibliography', idprefix => 'bib');
 DefMacroI('\the@bibitem', undef, '\arabic{@bibitem}');
 DefMacro('\@biblabel{}', '[#1]');
 DefMacroI('\fnum@@bibitem', undef, '{\@biblabel{\the@bibitem}}');
-DefConstructor('\bibitem[] Semiverbatim',
+# Hack for abused bibliographies; see below
+DefMacro('\bibitem',
+  '\if@lx@inbibliography\else\expandafter\lx@mung@bibliography\expandafter{\@currenvir}\fi'
+    . '\lx@bibitem');
+DefConstructor('\lx@bibitem[] Semiverbatim',
   "<ltx:bibitem key='#key' xml:id='#id'>"
     . "#tags"
     . "<ltx:bibblock>",
@@ -3290,6 +3306,24 @@ DefConstructor('\bibitem[] Semiverbatim',
     else {
       $_[1]->setProperties(key => $key, RefStepCounter('@bibitem')); }
   });
+
+# This attempts to handle the case where folks put \bibitem's within an enumerate or such.
+# We try to close the list and open the bibliography
+DefMacro('\lx@mung@bibliography{}', sub {
+    my ($gullet, $env) = @_;
+    my $tag    = ToString($env);
+    my @tokens = ();
+    # If we're in some sort of list environment, maybe we can recover
+    if (($tag eq 'enumerate') || ($tag eq 'itemize') || ($tag eq 'description')) {
+      print STDERR "\nDamn! We're in a list {$tag}; try to close it!\n";
+      push(@tokens, Invocation('\end', $env),
+        T_CS('\let'), T_CS('\end' . $tag), T_CS('\endthebibliography'),
+        T_CS('\let'), T_CS('\end{' . $tag . '}'), T_CS('\end{thebibliography}')); }
+    # else ? it probably isn't going to work??
+    print STDERR "Now, try to open {thebibliography}\n";
+    push(@tokens, Invocation('\begin', Tokenize('thebibliography'), Tokens()));
+    print STDERR "PATCHING with " . ToString(Tokens(@tokens)) . "\n";
+    return Tokens(@tokens); });
 
 DefConstructorI('\lx@bibnewblock', undef, "<ltx:bibblock>");
 Let('\newblock', '\lx@bibnewblock');
@@ -3374,7 +3408,7 @@ DefConstructor('\nocite Semiverbatim',
 # C.11.4 Splitting the input
 #======================================================================
 Let('\@@input', '\input');    # Save TeX's version.
-# LaTeX's \input is a bit different...
+                              # LaTeX's \input is a bit different...
 DefMacroI('\input', undef, '\@ifnextchar\bgroup\@iinput\@@input');
 DefPrimitive('\@iinput {}', sub { Input(Expand($_[1])); });
 
@@ -3453,8 +3487,9 @@ DefPrimitive('\listfiles', undef);
 # How should this get interpreted??
 our %index_style = (textbf => 'bold', bf => 'bold', textrm => '', rm => '',
   textit => 'italic', it => 'italic', emph => 'italic');    # What else?
-# A bit screwy, but....
-# Expand \index{a!b!...} into \@index{\@indexphrase{a}\@indexphrase{b}...}
+    # A bit screwy, but....
+    # Expand \index{a!b!...} into \@index{\@indexphrase{a}\@indexphrase{b}...}
+
 sub process_index_phrases {
   my ($gullet, $phrases) = @_;
   my @expansion = ();
@@ -3644,7 +3679,7 @@ DefPrimitive('\nolinebreak[]', undef);
 # \\ already defined
 DefMacroI('\newline', undef, "\\\\\\relax");
 DefPrimitiveI('\-', undef, undef);    # We don't do hyphenation.
-# \hyphenation in TeX.pool
+                                      # \hyphenation in TeX.pool
 
 DefPrimitiveI('\sloppy', undef, undef);
 DefPrimitiveI('\fussy',  undef, undef);
@@ -3652,9 +3687,9 @@ DefEnvironment('{sloppypar}', '#body');
 DefMacroI('\nobreakdashes', undef, T_OTHER('-'));
 
 DefMacro('\showhyphens{}', '#1');     # ?
-#======================================================================
-# C.12.2 Page Breaking
-#======================================================================
+     #======================================================================
+     # C.12.2 Page Breaking
+     #======================================================================
 DefMacro('\pagebreak[]', '\vadjust{\clearpage}');
 DefPrimitive('\nopagebreak[]', undef);
 DefPrimitiveI('\columnbreak', undef, undef);    # latex? or multicol?
@@ -5007,11 +5042,11 @@ DefMacroI('\partname',    undef, 'Part');
 DefMacroI('\appendixname', undef, 'Appendix');
 # These aren't defined in LaTeX,
 # these definitions will give us more meaningful typerefnum's
-DefMacroI('\sectiontyperefname',       undef, '\S\lx@ignorehardspaces');
-DefMacroI('\subsectiontyperefname',    undef, '\S\lx@ignorehardspaces');
-DefMacroI('\subsubsectiontyperefname', undef, '\S\lx@ignorehardspaces');
-DefMacroI('\paragraphtyperefname',     undef, '\P\lx@ignorehardspaces');
-DefMacroI('\subparagraphtyperefname',  undef, '\P\lx@ignorehardspaces');
+DefMacroI('\sectiontyperefname',       undef, '\lx@sectionsign\lx@ignorehardspaces');
+DefMacroI('\subsectiontyperefname',    undef, '\lx@sectionsign\lx@ignorehardspaces');
+DefMacroI('\subsubsectiontyperefname', undef, '\lx@sectionsign\lx@ignorehardspaces');
+DefMacroI('\paragraphtyperefname',     undef, '\lx@paragraphsign\lx@ignorehardspaces');
+DefMacroI('\subparagraphtyperefname',  undef, '\lx@paragraphsign\lx@ignorehardspaces');
 
 #**********************************************************************
 # Stuff that would appear in the aux file... maybe somebody uses it?
