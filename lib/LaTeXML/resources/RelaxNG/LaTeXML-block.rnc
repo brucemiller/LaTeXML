@@ -185,10 +185,9 @@ listingline_attributes =
   Common.attributes,
   Labelled.attributes
 
-## Content model for \elementref{listingline}
-listingline_model =
-  tags?, Inline.model
-  
+## Content model for \elementref{listingline}; Inline.model plus equations
+listingline_model = tags?, (text | Inline.class | Misc.class | Meta.class | equation | equationgroup  )*
+
 #======================================================================
 
 itemize =

@@ -280,11 +280,20 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
     <ref name="Labelled.attributes"/>
   </define>
   <define name="listingline_model">
-    <a:documentation>Content model for \elementref{listingline}</a:documentation>
+    <a:documentation>Content model for \elementref{listingline}; Inline.model plus equations</a:documentation>
     <optional>
       <ref name="tags"/>
     </optional>
-    <ref name="Inline.model"/>
+    <zeroOrMore>
+      <choice>
+        <text/>
+        <ref name="Inline.class"/>
+        <ref name="Misc.class"/>
+        <ref name="Meta.class"/>
+        <ref name="equation"/>
+        <ref name="equationgroup"/>
+      </choice>
+    </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
   <define name="itemize">
