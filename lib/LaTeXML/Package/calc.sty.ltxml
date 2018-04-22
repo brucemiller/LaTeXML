@@ -30,11 +30,13 @@ DefPrimitive('\addtocounter{}{}', sub {
 DefPrimitive('\setlength{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
+    return unless $defn && ($defn ne 'missing');
     $defn->setValue(readExpression($stomach->getGullet, 'Glue', $arg), @args); });
 
 DefPrimitive('\addtolength{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
+    return unless $defn && ($defn ne 'missing');
     $defn->setValue($defn->valueOf(@args)->add(readExpression($stomach->getGullet, 'Glue', $arg)),
       @args); });
 
@@ -42,23 +44,27 @@ DefPrimitive('\settowidth{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
     my $box = Digest($arg);
+    return unless $defn && ($defn ne 'missing');
     $defn->setValue($box->getWidth, @args); });
 
 DefPrimitive('\settoheight{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
+    return unless $defn && ($defn ne 'missing');
     my $box = Digest($arg);
     $defn->setValue($box->getHeight, @args); });
 
 DefPrimitive('\settodepth{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
+    return unless $defn && ($defn ne 'missing');
     my $box = Digest($arg);
     $defn->setValue($box->getDepth, @args); });
 
 DefPrimitive('\settototalheight{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
+    return unless $defn && ($defn ne 'missing');
     my $box = Digest($arg);
     $defn->setValue($box->getHeight + $box->getDepth, @args); });
 
