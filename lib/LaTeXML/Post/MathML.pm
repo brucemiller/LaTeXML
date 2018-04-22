@@ -647,7 +647,7 @@ sub pmml_infix {
     my $arg1 = realize(shift(@args));
     if (($role eq 'ADDOP')
       && (getQName($arg1) eq 'ltx:XMApp')
-      && (getOperatorRole((element_nodes($arg1))[0]) eq $role)) {
+      && ((getOperatorRole((element_nodes($arg1))[0]) || 'none') eq $role)) {
       push(@items, pmml_unrow(pmml($arg1))); }
     else {
       push(@items, pmml($arg1)); }
@@ -1243,7 +1243,13 @@ sub cmml_shared {
 # Given an XMath node, convert to cmml share form
 sub cmml_share {
   my ($node) = @_;
-  return ['m:share', { href => '#' . $node->getAttribute('fragid') . $LaTeXML::Post::MATHPROCESSOR->IDSuffix }]; }
+  my $fragid = $node->getAttribute('fragid');
+  if ($fragid) {
+    return ['m:share', { href => '#' . $fragid . $LaTeXML::Post::MATHPROCESSOR->IDSuffix }]; }
+  else {    # No fragid should be error/warning or something???
+    Warn('expected', 'fragid', $node,
+      "Shared node is missing fragid");
+    return ['m:share']; } }
 
 sub cmml_or_compose {
   my ($operators, @args) = @_;
