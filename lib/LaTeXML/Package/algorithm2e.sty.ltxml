@@ -206,7 +206,9 @@ DefConstructor('\algocf@printnl{}', sub {
     my $line       = $doc->getNode;
     my @oldcontent = $line->childNodes;
     map { $line->removeChild($_) } @oldcontent;    # Remove old content
+    $doc->openElement('ltx:tags');                 # prepend tags
     $doc->insertElement('ltx:tag', $number);       # prepend tag
+    $doc->closeElement('ltx:tags');
     map { $line->appendChild($_) } @oldcontent;    # put old content back.
 });
 #DefConstructor('\algocf@printnl{}', "<ltx:listingline><ltx:tag>#1</ltx:tag>");
