@@ -2993,8 +2993,9 @@ DefConstructor('\@@tabular[] Undigested DigestedBody',
   sizer        => '#3',
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
-    my $attr = LookupValue('Alignment')->getProperty('attributes');
-    $$attr{vattach} = translateAttachment($whatsit->getArg(1));
+    if (my $alignment = LookupValue('Alignment')) {
+      my $attr = $alignment->getProperty('attributes');
+      $$attr{vattach} = translateAttachment($whatsit->getArg(1)); }
     return; },
   mode => 'text');
 
@@ -3891,6 +3892,7 @@ DefPrimitive('\@begin@lrbox Token', sub {
 
 DefPrimitive('\usebox {Register}', sub {
     my ($defn) = @{ $_[1] };
+    return Box() unless $defn && ($defn ne 'missing');
     my $value = $defn->valueOf()->valueOf;
     LookupValue('box' . $value) || Box(); });
 

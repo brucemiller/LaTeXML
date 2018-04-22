@@ -907,7 +907,7 @@ DefMacro('\the Register', sub {
     my ($gullet, $variable) = @_;
     return () unless $variable;
     my ($defn, @args) = @$variable;
-    if (!$defn) {
+    if (!$defn || $defn eq 'missing') {
       Error('expected', "<register>", $gullet, "a register was expected to be here"); return (); }
     my $type = $defn->isRegister;
     if (!$type) {
@@ -2631,9 +2631,10 @@ DefConstructor('\@open@alignment SkipSpaces DigestedBody',
   beforeDigest => sub { $_[0]->bgroup; },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
-    my $alignment = LookupValue('Alignment');
-    $whatsit->setProperty(alignment => $alignment);
-    $alignment->setBody($whatsit); });
+    if (my $alignment = LookupValue('Alignment')) {
+      $whatsit->setProperty(alignment => $alignment);
+      $alignment->setBody($whatsit); }
+    return; });
 
 #----------------------------------------------------------------------
 # Row; The content is stuffed into the Alignment, so we don't construct anything here.
