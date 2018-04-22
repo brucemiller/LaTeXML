@@ -50,7 +50,8 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
     $options .= ',clip=true' if $starred;
     (path => $path,
       candidates => join(',', @candidates),
-      options => $options); });
+      options => $options); },
+  mode => 'text');    # Hopefully only to affect reading of arguments
 
 #**********************************************************************
 1;
