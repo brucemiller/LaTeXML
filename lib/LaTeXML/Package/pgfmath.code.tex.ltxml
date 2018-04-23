@@ -16,8 +16,7 @@ use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Geometry;
 use List::Util qw(min max);
-##use Math::Trig;
-##use POSIX;
+
 # Math functions needed here
 # Native: sin cos atan2 log exp sqrt rand abs
 use Math::Trig qw(
@@ -25,8 +24,8 @@ use Math::Trig qw(
   tan atan asin acos
   cot sec cosec
   cosh sinh tanh);
-use POSIX qw(
-  round floor ceil);
+use POSIX qw(floor ceil);
+# Defined below: floor, factorial
 
 #======================================================================
 # Load pgf's TeX code for math, first
@@ -60,6 +59,10 @@ sub pgfmathfactorial {
   my $f = 1;
   while ($arg > 0) { $f *= $arg; $arg--; }
   return $f; }
+
+# round is available in later (but not early) versions of POSIX;
+# let's just define them locally:
+sub round { return int($_[0] + 0.5 * ($_[0] <=> 0)); }
 
 # I'll bet the deired precision is a parameter somewhere?
 # Actually, the library uses exponents, but I generate them, for some reason I'm getting
@@ -528,13 +531,13 @@ BEGIN {
     #    random   => sub { },
     real => sub { $_[0] + 0.0; },
     #    rnd      => sub { },
-    round    => sub { round($_[0]); },
-    scalar   => sub { SetCondition(T_CS('\ifpgfmathunitsdeclared'), 0, 'global'); $_[0]; },
-    sec      => sub { sec(pgfmathargradians($_[0])); },
-    sign     => sub { ($_[0] > 0 ? 1 : ($_[0] < 0 ? -1 : 0)); },
-    sin      => sub { sin(pgfmathargradians($_[0])); },
-    sinh     => sub { sinh($_[0]); },
-    sqrt     => sub { sqrt($_[0]); },
+    round => sub { round($_[0]); },
+    scalar => sub { SetCondition(T_CS('\ifpgfmathunitsdeclared'), 0, 'global'); $_[0]; },
+    sec => sub { sec(pgfmathargradians($_[0])); },
+    sign => sub { ($_[0] > 0 ? 1 : ($_[0] < 0 ? -1 : 0)); },
+    sin  => sub { sin(pgfmathargradians($_[0])); },
+    sinh => sub { sinh($_[0]); },
+    sqrt => sub { sqrt($_[0]); },
     subtract => sub { $_[0] - $_[1]; },
     tan      => sub { tan(pgfmathargradians($_[0])); },
     tanh     => sub { tanh($_[0]); },
