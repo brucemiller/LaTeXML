@@ -550,8 +550,7 @@ sub amsAlignedBindings {
       T_CS('\displaystyle')) };
   my $col2 = { before => Tokens(T_CS('\displaystyle')),
     after => Tokens(T_CS('\hfil')) };
-  my $col3 = { before => Tokenize('\hskip 1em\relax') };
-  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2, $col3]);
+  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]);
   amsAlignmentBindings($template, (name => 'aligned', colsep => '0pt'));
   return; }
 
