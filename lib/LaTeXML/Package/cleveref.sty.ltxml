@@ -93,15 +93,15 @@ DefMacro('\cpagerefrange OptionalMatch:* Semiverbatim Semiverbatim',
 DefMacro('\Cpagerefrange OptionalMatch:* Semiverbatim Semiverbatim',
   '\lx@cref{creftypecap~refnum}{#2}\crefrangeconjunction\lx@ref{creftype~refnum{#3}');
 
-DefMacro('\namecref Semiverbatim',    '\lx@cref{creftype}{#2}');
-DefMacro('\nameCref Semiverbatim',    '\lx@cref{creftypecap}{#2}');
-DefMacro('\namecrefs Semiverbatim',   '\lx@cref{creftypeplural}{#2}');
-DefMacro('\nameCrefs Semiverbatim',   '\lx@cref{creftypepluralcap}{#2}');
-DefMacro('\lcnamecref Semiverbatim',  '\lx@cref{creftype}{#2}');
-DefMacro('\lcnamecrefs Semiverbatim', '\lx@cref{creftypeplural}{#2}');
+DefMacro('\namecref Semiverbatim',    '\lx@cref{creftype}{#1}');
+DefMacro('\nameCref Semiverbatim',    '\lx@cref{creftypecap}{#1}');
+DefMacro('\namecrefs Semiverbatim',   '\lx@cref{creftypeplural}{#1}');
+DefMacro('\nameCrefs Semiverbatim',   '\lx@cref{creftypepluralcap}{#1}');
+DefMacro('\lcnamecref Semiverbatim',  '\lx@cref{creftype}{#1}');
+DefMacro('\lcnamecrefs Semiverbatim', '\lx@cref{creftypeplural}{#1}');
 
-DefMacro('\labelcref Semiverbatim',     sub { crefMulti($_[2], 0, 0); });
-DefMacro('\labelcpageref Semiverbatim', sub { crefMulti($_[2], 0, 0); });
+DefMacro('\labelcref Semiverbatim',     sub { crefMulti($_[1], 0, 0); });
+DefMacro('\labelcpageref Semiverbatim', sub { crefMulti($_[1], 0, 0); });
 
 # No, this isn't quite the same thing...
 DefPrimitive('\crefalias {}{}', sub {

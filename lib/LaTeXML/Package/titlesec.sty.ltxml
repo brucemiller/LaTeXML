@@ -24,11 +24,11 @@ use LaTeXML::Package;
 # this is just a stub to avoid errors
 
 # This should probably define \fnum@<section>,...
-DefMacro('\titlelabel{}',                    '');
-DefMacro('\titleformat',                     '\@ifstar{\lx@titleformat@star}{\lx@title@format}');
-DefMacro('\lx@titleformat@star {}{}',        '');
-DefMacro('\lx@titleformat {} [] {}{}{}{}{}', '');
-DefMacro('\chaptertitlename',                '\chaptername');
+DefMacro('\titlelabel{}',                  '');
+DefMacro('\titleformat',                   '\@ifstar{\lx@titleformat@star}{\lx@titleformat}');
+DefMacro('\lx@titleformat@star {}{}',      '');
+DefMacro('\lx@titleformat {} [] {}{}{}{}', '');
+DefMacro('\chaptertitlename',              '\chaptername');
 DefMacro('\titlespacing OptionalMatch:* {}{}{}{}[]', '');
 
 DefMacro('\filright',  '');
