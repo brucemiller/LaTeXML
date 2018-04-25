@@ -20,55 +20,38 @@ use LaTeXML::Package;
 # This is close enough to amsthm to just use it.
 RequirePackage('amsthm');
 # However, theorem.sty's styles do NOT record the headfont!
-AssignValue(THEOREM_PARAMETERS => ['\thm@bodyfont', '\thm@headpunct',
-    '\thm@styling', '\thm@headstyling',
-    'thm@swap']);
+if (my $p = LookupValue('THEOREM_PARAMETERS')) {
+  delete $$p{'\thm@headfont'}; }    # amsthm added this!
+
 # And headpunct defaults to none.
 DefRegister('\thm@headpunct' => Tokens());
 
 DefMacro('\FMithmInfo', '');
 
-#AssignValue('\thm@headfont' => T_CS('\bfseries'));
-#AssignValue('\thm@bodyfont' => T_CS('\slshape'));
 DefMacro('\theoremheaderfont{}', sub {
-    AssignValue('\thm@headfont' => $_[1]); });
+    AssignValue('\thm@headfont' => $_[1]);
+    AssignValue('\thm@notefont' => $_[1]); });
 
 # \th@plain defined in LaTeX.pool, but amsthm redefines to add .
-
-DefPrimitive('\th@plain', sub {
-    AssignValue('\thm@bodyfont'    => T_CS('\itshape'));
-    AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
+DefPrimitive('\lx@theorem@newtheoremstyle{}{}{}{}', sub {
+    my ($stomach, $name, $bodyfont, $headstyle, $swap) = @_;
+    $name = ToString($name);
+    saveTheoremStyle($name,
+      '\thm@bodyfont'    => $bodyfont,
+      '\thm@headstyling' => $headstyle,
+      'thm@swap'         => ToString($swap) eq 'S',
+    );
+    DefMacroI(T_CS('\th@' . $name), undef, sub { useTheoremStyle($name); });
     return; });
 
-DefPrimitive('\th@break', sub {
-    AssignValue('\thm@bodyfont'    => T_CS('\slshape'));
-    AssignValue('\thm@headstyling' => Tokens());           # NOT runin!
-    return; });
-
-DefPrimitive('\th@change', sub {
-    AssignValue('thm@swap'         => 'S');
-    AssignValue('\thm@bodyfont'    => T_CS('\slshape'));
-    AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
-    return; });
-
-DefPrimitive('\th@margin', sub {
-    AssignValue('thm@swap'      => 'S');                # The number is in margin, so we must also swap
-    AssignValue('\thm@bodyfont' => T_CS('\slshape'));
-    AssignValue('\thm@headstyling' => Tokens(T_CS('\lx@makerunin'), T_CS('\lx@makeoutdent')));
-    return; });
-
-DefPrimitive('\th@marginbreak', sub {
-    AssignValue('thm@swap'      => 'S');                # The number is in margin, so we must also swap
-    AssignValue('\thm@bodyfont' => T_CS('\slshape'));
-    AssignValue('\thm@headstyling' => T_CS('\lx@makeoutdent'));    # NOT runin!
-    return; });
-
-DefPrimitive('\th@changebreak', sub {
-    AssignValue('thm@swap'         => 'S');
-    AssignValue('\thm@bodyfont'    => T_CS('\slshape'));
-    AssignValue('\thm@headstyling' => Tokens());                   # NOT runin!
-    return; });
-
-RawTeX('\th@plain');
+RawTeX(<<'EoTeX');
+\lx@theorem@newtheoremstyle{plain}{\itshape}{\lx@makerunin}{N}
+\lx@theorem@newtheoremstyle{break}{\slshape}{}{N}
+\lx@theorem@newtheoremstyle{change}{\slshape}{\lx@makerunin}{S}
+\lx@theorem@newtheoremstyle{margin}{\slshape}{\lx@makerunin\lx@makeoutdent}{S}
+\lx@theorem@newtheoremstyle{marginbreak}{\slshape}{\lx@makeoutdent}{S}
+\lx@theorem@newtheoremstyle{changebreak}{\slshape}{}{S}
+\th@plain
+EoTeX
 #**********************************************************************
 1;

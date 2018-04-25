@@ -119,8 +119,8 @@ DefMacro('\tableheadseprule', '\hrule');
 DefMacro('\floatlegendstyle', '\bfseries');
 DefMacro('\leftlegendglue',   Tokens());
 
-DefPrimitive('\normalthmheadings',  sub { AssignValue('thm@swap' => 'N'); });
-DefPrimitive('\reversethmheadings', sub { AssignValue('thm@swap' => 'S'); });
+DefPrimitive('\normalthmheadings',  sub { AssignValue('thm@swap' => 0); });
+DefPrimitive('\reversethmheadings', sub { AssignValue('thm@swap' => 1); });
 DefRegister('\spthmsep' => Dimension('5pt'));
 
 # \spnewtheorem*{env}[numberedlike]{caption}[within]{capfont}{bodyfont}
@@ -134,7 +134,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
     $reset       = $reset ? ToString($reset) : undef;
 
     my $counter = $otherthmset || $thmset;
-    my $swap    = LookupValue('thm@swap') eq 'S';
+    my $swap    = LookupValue('thm@swap');
     my $style   = ToString(LookupValue('\thm@style'));
 
     if (!$otherthmset) {

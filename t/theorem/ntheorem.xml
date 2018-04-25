@@ -25,7 +25,7 @@ of “Theorem” is used.</p>
         <tag role="refnum">1</tag>
         <tag role="typerefnum">Example 1</tag>
       </tags>
-      <title class="ltx_runin" font="bold"><tag>1 Example</tag> (Simple one)</title>
+      <title class="ltx_runin"><tag><text font="bold">1 Example</text></tag><text font="bold"> (Simple one)</text></title>
       <para xml:id="ThmExample1.p1">
         <p>The first example is just a text.</p>
       </para>
@@ -45,7 +45,7 @@ displaymath, a single equation and both types of eqnarrays.
         <tag role="refnum">1</tag>
         <tag role="typerefnum">Theorem 1</tag>
       </tags>
-      <title class="ltx_outdent" font="bold"><tag>1 Theorem</tag> (Long Theorem):</title>
+      <title class="ltx_outdent"><tag><text font="bold">1 Theorem</text></tag><text font="bold"> (Long Theorem)</text>:</title>
       <para xml:id="ThmTheorem1.p1">
         <p><text font="slanted">The examples are put into this theorem environment.</text></p>
       </para>
@@ -58,7 +58,7 @@ displaymath, a single equation and both types of eqnarrays.
           <tag role="refnum">2</tag>
           <tag role="typerefnum">Example 2</tag>
         </tags>
-        <title class="ltx_runin" font="bold"><tag>2 Example</tag> (Ending with a displayed formula)</title>
+        <title class="ltx_runin"><tag><text font="bold">2 Example</text></tag><text font="bold"> (Ending with a displayed formula)</text></title>
         <para xml:id="ThmExample2.p1">
           <p>Look, the endmark is really at the bottom of the line:</p>
           <equation xml:id="S1.Ex1">
@@ -174,7 +174,7 @@ displaymath, a single equation and both types of eqnarrays.
           <tag role="refnum">α</tag>
           <tag role="typerefnum">Lemma α</tag>
         </tags>
-        <title font="bold"><tag>α Lemma</tag> (Display with array):</title>
+        <title><tag><text font="bold">α Lemma</text></tag><text font="bold"> (Display with array)</text>:</title>
         <para xml:id="ThmLemma1.p1">
           <p><text font="slanted">Lemmata are indented and numbered with greek symbols.
 Also for displayed arrays of this form, it looks good:</text></p>
@@ -246,7 +246,7 @@ Also for displayed arrays of this form, it looks good:</text></p>
           <tag role="refnum">β</tag>
           <tag role="typerefnum">Lemma β</tag>
         </tags>
-        <title font="bold"><tag>β Lemma</tag> (Equation):</title>
+        <title><tag><text font="bold">β Lemma</text></tag><text font="bold"> (Equation)</text>:</title>
         <para xml:id="ThmLemma2.p1">
           <p><text font="slanted">For <verbatim font="typewriter">equation</verbatim>s, we decided to put the endmark after the equation
 number, which is vertically centered.
@@ -357,7 +357,7 @@ written as</text></p>
           <tag role="refnum">γ</tag>
           <tag role="typerefnum">Lemma γ</tag>
         </tags>
-        <title font="bold"><tag>γ Lemma</tag> (Breakstyle):</title>
+        <title><tag><text font="bold">γ Lemma</text></tag><text font="bold"> (Breakstyle)</text>:</title>
         <para xml:id="ThmLemma3.p1">
           <p><text font="slanted">From the predefined styles, this is exactly the case for the break-styles.
 That’s no bug, it’s LaTeX-immanent.</text></p>
@@ -690,7 +690,7 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
           <tag>Proof</tag>
           <tag role="typerefnum">Proof</tag>
         </tags>
-        <title class="ltx_runin" font="bold"><tag>Proof</tag> (of nothing)</title>
+        <title class="ltx_runin"><tag><text font="bold">Proof</text></tag><text font="bold"> (of nothing)</text></title>
         <para xml:id="ThmProofx1.p1">
           <equationgroup class="ltx_eqn_eqnarray" xml:id="S1.EGx2">
             <equation xml:id="S1.Ex4">
@@ -1011,7 +1011,7 @@ the last one gets the endmark:</p>
         <tag role="refnum">1</tag>
         <tag role="typerefnum">Definition 1</tag>
       </tags>
-      <title class="ltx_runin" font="bold"><tag>Definition 1</tag> (With a list).</title>
+      <title class="ltx_runin"><tag><text font="bold">Definition 1</text></tag><text font="bold"> (With a list)</text>.</title>
       <para xml:id="ThmDefinition1.p1">
         <equation xml:id="S1.E4">
           <tags>
@@ -1142,7 +1142,7 @@ the last one gets the endmark:</p>
         <tag role="refnum">2</tag>
         <tag role="typerefnum">Corollary 2</tag>
       </tags>
-      <title font="bold"><tag>2 Corollary</tag> (Q.E.D.):</title>
+      <title><tag><text font="bold">2 Corollary</text></tag><text font="bold"> (Q.E.D.)</text>:</title>
       <para xml:id="ThmTheorem2.p1">
         <p><text font="slanted">And here is a trivial corollary, which is ended by
 <text class="ltx_align_floatright">q.e.d</text><text class="ltx_align_floatright"><Math mode="inline" tex="\spadesuit" text="spadesuit" xml:id="ThmTheorem2.p1.m1">
@@ -1158,7 +1158,7 @@ the last one gets the endmark:</p>
         <tag role="refnum">3</tag>
         <tag role="typerefnum">Example 3</tag>
       </tags>
-      <title class="ltx_runin" font="bold"><tag>3 Example</tag></title>
+      <title class="ltx_runin"><tag><text font="bold">3 Example</text></tag></title>
       <para xml:id="ThmExample3.p1">
         <equation xml:id="S1.Ex5">
           <Math mode="display" tex="f^{(n)}(z)=\frac{n!}{2\pi i}\int\limits_{\partial D}\frac{f(\zeta)}{(\zeta-z)^%&#10;{n+1}}d\zeta" text="f ^ n * z = (nfactorial / (2 * pi * i)) * (integral _ (partial-differential@(D)))@(((f * zeta) / (zeta - z) ^ (n + 1)) * differential-d@(zeta))" xml:id="S1.Ex5.m1">
@@ -1275,7 +1275,7 @@ after the text.
         <tag role="refnum">4</tag>
         <tag role="typerefnum">Example 4</tag>
       </tags>
-      <title class="ltx_runin" font="bold"><tag>4 Example</tag> (Using —verbatim—)</title>
+      <title class="ltx_runin"><tag><text font="bold">4 Example</text></tag><text font="bold"> (Using —verbatim—)</text></title>
       <para xml:id="ThmExample4.p1">
         <verbatim font="typewriter">
 And, it also works for verbatim
@@ -1299,7 +1299,7 @@ same line as the text ends.
         <tag role="refnum">3</tag>
         <tag role="typerefnum">Theorem 3</tag>
       </tags>
-      <title class="ltx_outdent" font="bold"><tag>3 Theorem</tag>:</title>
+      <title class="ltx_outdent"><tag><text font="bold">3 Theorem</text></tag>:</title>
       <para xml:id="ThmTheorem3.p1">
         <p><text font="slanted">some text … but no end mark</text></p>
       </para>
@@ -1321,7 +1321,7 @@ name in the list of corollaries:</p>
         <tag role="refnum">4</tag>
         <tag role="typerefnum">Corollary 4</tag>
       </tags>
-      <title font="bold"><tag>4 Corollary</tag> (title in text):</title>
+      <title><tag><text font="bold">4 Corollary</text></tag><text font="bold"> (title in text)</text>:</title>
       <para xml:id="ThmTheorem4.p1">
         <p><text font="slanted">let’s do something weird:</text></p>
         <p align="center"><text font="slanted">It also works in the</text></p>
@@ -1340,7 +1340,7 @@ name in the list of corollaries:</p>
         <tag role="refnum">5</tag>
         <tag role="typerefnum">Theorem 5</tag>
       </tags>
-      <title class="ltx_outdent" font="bold"><tag>5 Theorem</tag> (Quote):</title>
+      <title class="ltx_outdent"><tag><text font="bold">5 Theorem</text></tag><text font="bold"> (Quote)</text>:</title>
       <para xml:id="ThmTheorem5.p1">
         <quote>
           <p><text font="slanted">In quote environments, the text is normally indented from left
@@ -1365,7 +1365,7 @@ manual handling:</p>
         <tag role="refnum">6</tag>
         <tag role="typerefnum">Theorem 6</tag>
       </tags>
-      <title class="ltx_outdent" font="bold"><tag>6 Theorem</tag> (Manual End Mark):</title>
+      <title class="ltx_outdent"><tag><text font="bold">6 Theorem</text></tag><text font="bold"> (Manual End Mark)</text>:</title>
       <para xml:id="ThmTheorem6.p1">
         <p><text font="slanted">a line of text with a manually set endmark  <text class="ltx_align_floatright"><Math mode="inline" tex="\diamondsuit" text="diamondsuit" xml:id="ThmTheorem6.p1.m1">
                 <XMath>
@@ -1384,7 +1384,7 @@ the endmark at the right margin.</p>
         <tag role="refnum">5</tag>
         <tag role="typerefnum">Example 5</tag>
       </tags>
-      <title class="ltx_runin" font="bold"><tag>5 Example</tag> (Quickie)</title>
+      <title class="ltx_runin"><tag><text font="bold">5 Example</text></tag><text font="bold"> (Quickie)</text></title>
       <para xml:id="ThmExample5.p1">
         <p>It also works for short one’s.</p>
       </para>
@@ -1399,7 +1399,7 @@ you can redefine it:</p>
         <tag role="refnum">4</tag>
         <tag role="typerefnum">Lemma 4</tag>
       </tags>
-      <title font="bold"><tag>4 Lemma</tag>:</title>
+      <title><tag><text font="bold">4 Lemma</text></tag>:</title>
       <para xml:id="ThmLemma4.p1">
         <p><text font="slanted">another lemma, with arabic numbering … note that the numbering
 continues.</text></p>
@@ -1415,7 +1415,7 @@ eg. <verbatim font="typewriter">\Theoremname</verbatim></p>
         <tag role="refnum">7</tag>
         <tag role="typerefnum">Theorem 7</tag>
       </tags>
-      <title class="ltx_outdent" font="bold"><tag>7 Theorem</tag> (somename):</title>
+      <title class="ltx_outdent"><tag><text font="bold">7 Theorem</text></tag><text font="bold"> (somename)</text>:</title>
       <para xml:id="ThmTheorem7.p1">
         <p><text font="slanted">Obviously, we are in Theorem Theorem.</text></p>
       </para>
@@ -1440,15 +1440,15 @@ Note that we define a complex header text and a complex end mark.</p>
             </XMath>
           </Math>-Theorem 8</tag>
       </tags>
-      <title font="bold"><tag>8 <Math mode="inline" tex="\kappa" text="kappa" xml:id="ThmTheorem8.m3">
+      <title><tag><text font="bold">8 </text><Math mode="inline" tex="\kappa" text="kappa" xml:id="ThmTheorem8.m3">
+            <XMath>
+              <XMTok font="italic" name="kappa" role="UNKNOWN">κ</XMTok>
+            </XMath>
+          </Math><text font="bold">-Theorem</text></tag><text font="bold"> (1st <Math mode="inline" tex="\kappa" text="kappa" xml:id="ThmTheorem8.m4">
             <XMath>
               <XMTok font="medium italic" name="kappa" role="UNKNOWN">κ</XMTok>
             </XMath>
-          </Math>-Theorem</tag> (1st <Math mode="inline" tex="\kappa" text="kappa" xml:id="ThmTheorem8.m4">
-          <XMath>
-            <XMTok font="medium italic" name="kappa" role="UNKNOWN">κ</XMTok>
-          </XMath>
-        </Math>-Theorem):</title>
+          </Math>-Theorem)</text>:</title>
       <para xml:id="ThmTheorem8.p1">
         <p><text font="slanted">That’s the first Kappa-Theorem.</text></p>
       </para>
@@ -1480,7 +1480,7 @@ The first Kappa-Theorem has been given in <ref labelref="LABEL:kappatheorem1" sh
           <tag role="refnum">9</tag>
           <tag role="typerefnum">Theorem 9</tag>
         </tags>
-        <title font="bold"><tag>Theorem 9</tag> (Important Theorem):</title>
+        <title><tag><text font="bold">Theorem 9</text></tag><text font="bold"> (Important Theorem)</text>:</title>
         <para xml:id="ThmTheorem9.p1">
           <p><text font="slanted">This is an important theorem.</text></p>
         </para>
@@ -1491,7 +1491,7 @@ The first Kappa-Theorem has been given in <ref labelref="LABEL:kappatheorem1" sh
           <tag role="refnum">10</tag>
           <tag role="typerefnum">Theorem 10</tag>
         </tags>
-        <title font="bold"><tag>Theorem 10</tag> (More Important Theorem):</title>
+        <title><tag><text font="bold">Theorem 10</text></tag><text font="bold"> (More Important Theorem)</text>:</title>
         <para xml:id="ThmTheorem10.p1">
           <p><text font="slanted">This is a more important theorem.</text></p>
         </para>
@@ -1502,7 +1502,7 @@ The first Kappa-Theorem has been given in <ref labelref="LABEL:kappatheorem1" sh
           <tag role="refnum">11</tag>
           <tag role="typerefnum">Theorem 11</tag>
         </tags>
-        <title font="bold"><tag>Theorem 11</tag> (Even More Important Theorem):</title>
+        <title><tag><text font="bold">Theorem 11</text></tag><text font="bold"> (Even More Important Theorem)</text>:</title>
         <para xml:id="ThmTheorem11.p1">
           <p><text font="slanted">This is an even more important theorem.</text></p>
         </para>

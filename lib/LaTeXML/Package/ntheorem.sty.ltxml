@@ -115,13 +115,21 @@ DefRegister('\shadecolor' => Tokens());
 
 # amsthm includes headfont!
 # [and probably some others!]
-AssignValue(THEOREM_PARAMETERS => ['\thm@headfont', '\thm@bodyfont', '\thm@headpunct',
-    '\thm@styling', '\thm@headstyling',
-    'thm@swap',     '\thm@numbering',
-    '\thm@prework', '\thm@postwork',
-    '\thm@symbol',]);
+#AssignValue(THEOREM_PARAMETERS => [
+# AssignValue(THEOREM_PARAMETERS => { map { $_ => 1; }
+#       '\thm@headfont', '\thm@bodyfont', '\thm@headpunct',
+#     '\thm@styling',    '\thm@headstyling',
+#     'thm@swap',        '\thm@numbering',
+#     '\thm@prework',    '\thm@postwork',
+#     '\thm@symbol' });
+snapshotTheoremParameters(qw(
+    \thm@headfont \thm@notefont \thm@bodyfont \thm@headpunct
+    \thm@styling \thm@headstyling
+    thm@swap \thm@numbering
+    \thm@prework \thm@postwork \thm@symbol));
 
 DefMacro('\theoremheaderfont{}', sub {
+    AssignValue('\thm@headfont' => $_[1]);
     AssignValue('\thm@headfont' => $_[1]); });
 
 DefMacro('\theoremseparator{}', sub {
@@ -135,7 +143,7 @@ DefMacro('\theoremprework{}', sub {
 DefMacro('\theorempostwork{}', sub {
     AssignValue('\thm@postwork' => $_[1]); });
 DefMacro('\theoremnumbering{}', sub {
-    AssignValue('\thm@numbering' => $_[1]); });
+    AssignValue('\thm@numbering' => T_CS('\\' . ToString($_[1]))); });
 
 # This should turn on the same parameters as the env,
 # much like \theoremstyle{style} does, givcen a theoremstyle
@@ -215,79 +223,33 @@ DefMacro('\newshadedtheorem{}[]{}[]',
     . '\endgroup');
 
 #======================================================================
-
-DefPrimitive('\th@plain', sub {
-    AssignValue('\thm@headfont'    => T_CS('\bfseries'));
-    AssignValue('\thm@bodyfont'    => T_CS('\itshape'));
-    AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
-    AssignValue('thm@swap'         => 'N');
-    AssignValue('\thm@numbering'   => Tokens(T_OTHER('arabic')));
+DefPrimitive('\lx@ntheorem@newtheoremstyle{}{}{}{}{}{}', sub {
+    my ($stomach, $name, $headfont, $bodyfont, $headstyle, $swap, $numbering) = @_;
+    $name = ToString($name);
+    saveTheoremStyle($name,
+      '\thm@bodyfont'    => $bodyfont,
+      '\thm@headfont'    => $headfont,
+      '\thm@notefont'    => $headfont,
+      '\thm@headstyling' => $headstyle,
+      'thm@swap'         => ToString($swap) eq 'S',
+      '\thm@numbering'   => $numbering,
+    );
+    DefMacroI(T_CS('\th@' . $name), undef, sub { useTheoremStyle($name); });
     return; });
 
-DefPrimitive('\th@break', sub {
-    AssignValue('\thm@headfont'    => T_CS('\bfseries'));
-    AssignValue('\thm@bodyfont'    => T_CS('\slshape'));
-    AssignValue('\thm@headstyling' => Tokens());                    # NOT runin!
-    AssignValue('thm@swap'         => 'N');
-    AssignValue('\thm@numbering'   => Tokens(T_OTHER('arabic')));
-    return; });
-
-DefPrimitive('\th@change', sub {
-    AssignValue('\thm@headfont'    => T_CS('\bfseries'));
-    AssignValue('\thm@bodyfont'    => T_CS('\slshape'));
-    AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
-    AssignValue('thm@swap'         => 'S');
-    AssignValue('\thm@numbering'   => Tokens(T_OTHER('arabic')));
-    return; });
-
-DefPrimitive('\th@margin', sub {
-    AssignValue('\thm@headfont'    => T_CS('\bfseries'));
-    AssignValue('\thm@bodyfont'    => T_CS('\slshape'));
-    AssignValue('\thm@headstyling' => Tokens(T_CS('\lx@makerunin'), T_CS('\lx@makeoutdent')));
-    AssignValue('thm@swap' => 'S');    # The number is in margin, so we must also swap
-    AssignValue('\thm@numbering' => Tokens(T_OTHER('arabic')));
-    return; });
-
-DefPrimitive('\th@marginbreak', sub {
-    AssignValue('\thm@headfont'    => T_CS('\bfseries'));
-    AssignValue('\thm@bodyfont'    => T_CS('\slshape'));
-    AssignValue('\thm@headstyling' => T_CS('\lx@makeoutdent'));    # NOT runin!
-    AssignValue('thm@swap' => 'S');    # The number is in margin, so we must also swap
-    AssignValue('\thm@numbering' => Tokens(T_OTHER('arabic')));
-    return; });
-
-DefPrimitive('\th@changebreak', sub {
-    AssignValue('\thm@headfont'    => T_CS('\bfseries'));
-    AssignValue('\thm@bodyfont'    => T_CS('\slshape'));
-    AssignValue('\thm@headstyling' => Tokens());                    # NOT runin!
-    AssignValue('thm@swap'         => 'S');
-    AssignValue('\thm@numbering'   => Tokens(T_OTHER('arabic')));
-    return; });
-
-DefPrimitive('\th@nonumberplain', sub {
-    AssignValue('\thm@headfont'    => T_CS('\bfseries'));
-    AssignValue('\thm@bodyfont'    => T_CS('\itshape'));
-    AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
-    AssignValue('thm@swap'         => 'N');
-    AssignValue('\thm@numbering'   => undef);
-    return; });
-
-DefPrimitive('\th@nonumberbreak', sub {
-    AssignValue('\thm@headfont'    => T_CS('\bfseries'));
-    AssignValue('\thm@bodyfont'    => T_CS('\slshape'));
-    AssignValue('\thm@headstyling' => Tokens());            # NOT runin!
-    AssignValue('thm@swap'         => 'N');
-    AssignValue('\thm@numbering'   => undef);
-    return; });
-
-DefPrimitive('\th@empty', sub {
-    AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
-    return; });
-
-DefPrimitive('\th@emptybreak', sub {
-    AssignValue('\thm@headstyling' => Tokens());            # NOT runin!
-    return; });
-
+RawTeX(<<'EoTeX');
+\lx@ntheorem@newtheoremstyle{plain}{\bfseries}{\itshape}{\lx@makerunin}{N}{\arabic}
+\lx@ntheorem@newtheoremstyle{break}{\bfseries}{\slshape}{}{N}{\arabic}
+\lx@ntheorem@newtheoremstyle{change}{\bfseries}{\slshape}{\lx@makerunin}{S}{\arabic}
+\lx@ntheorem@newtheoremstyle{margin}{\bfseries}{\slshape}{\lx@makerunin\lx@makeoutdent}{S}{\arabic}
+\lx@ntheorem@newtheoremstyle{marginbreak}{\bfseries}{\slshape}{\lx@makeoutdent}{S}{\arabic}
+\lx@ntheorem@newtheoremstyle{changebreak}{\bfseries}{\slshape}{}{S}{\arabic}
+\lx@ntheorem@newtheoremstyle{nonumberplain}{\bfseries}{\itshape}{\lx@makerunin}{N}{}
+\lx@ntheorem@newtheoremstyle{nonumberbreak}{\bfseries}{\slshape}{}{N}{}
+\lx@ntheorem@newtheoremstyle{empty}{}{}{\lx@makerunin}{N}{}
+\lx@ntheorem@newtheoremstyle{emptybreak}{}{}{}{N}{}
+EoTeX
+# Load the other styles from the ntheorem's standard defintions
 InputDefinitions('ntheorem.std');
 #======================================================================
 # Lists of Theorems.

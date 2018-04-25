@@ -1141,12 +1141,18 @@ Tag('ltx:inline-item', autoClose => 1, autoOpen => 1);
 
 # These are for the (not quite legit) case where \item appears outside
 # of an itemize, enumerate, etc, environment.
-DefConstructor('\item[]',
-  "<ltx:item>?&defined(#1)(<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>)");
-DefConstructor('\subitem[]',
-  "<ltx:item>?&defined(#1)(<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>)");
-DefConstructor('\subsubitem[]',
-  "<ltx:item>?&defined(#1)(<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>)");
+# DefConstructor('\item[]',
+#   "<ltx:item>?&defined(#1)(<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>)");
+# DefConstructor('\subitem[]',
+#   "<ltx:item>?&defined(#1)(<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>)");
+# DefConstructor('\subsubitem[]',
+#   "<ltx:item>?&defined(#1)(<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>)");
+
+# Or maybe best just to do \par ?
+DefMacro('\item[]',       '\par');
+DefMacro('\subitem[]',    '\par');
+DefMacro('\subsubitem[]', '\par');
+
 AssignValue('@itemlevel' => 0, 'global');
 AssignValue('enumlevel'  => 0, 'global');
 AssignValue('@desclevel' => 0, 'global');
@@ -2412,9 +2418,10 @@ DefPrimitive('\renewenvironment OptionalMatch:* {}[Number][]{}{}', sub {
 #======================================================================
 # The core non-customizable part is defined here.
 # For customizable theorems, see amsthm.
-AssignValue('thm@swap' => 'N');
+AssignValue('thm@swap' => 0);
 DefRegister('\thm@style'        => Tokenize('plain'));
 DefRegister('\thm@headfont'     => Tokens(T_CS('\bfseries')));
+DefRegister('\thm@notefont'     => Tokens());
 DefRegister('\thm@bodyfont'     => Tokens(T_CS('\itshape')));
 DefRegister('\thm@headpunct'    => Tokens());
 DefRegister('\thm@styling'      => Tokens());
@@ -2422,7 +2429,7 @@ DefRegister('\thm@headstyling'  => Tokens());
 DefRegister('\thm@prework'      => Tokens());
 DefRegister('\thm@postwork'     => Tokens());
 DefRegister('\thm@symbol'       => Tokens());
-DefRegister('\thm@numbering'    => Tokens(T_OTHER('arabic')));
+DefRegister('\thm@numbering'    => Tokens(T_CS('\arabic')));
 DefRegister('\thm@headformater' => undef);
 #  AssignValue('\thm@headfont' => T_CS('\bfseries'));
 #  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
@@ -2448,23 +2455,45 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
     DefRegister('\thm@postwork' => Tokens()); },
   locked => 1);
 
+AssignValue('THEOREM_PARAMETERS' => {});
+
+sub snapshotTheoremParameters {
+  my (@keys) = @_;
+  my $saved = LookupValue('THEOREM_PARAMETERS');
+  map { $$saved{$_} = 1; } @keys;    # Noe that these are saved for each theorem type.
+  return; }
+
+# Following amsthm's model, the various theorem customizations are stored in token registers
 # Some packages may want to add '\thm@headfont'
-AssignValue(THEOREM_PARAMETERS => ['\thm@bodyfont', '\thm@headpunct',
-    '\thm@styling', '\thm@headstyling',
-    'thm@swap']);
-###RawTeX('\AtBeginDocument{\th@plain}');           # Activate the default style.
+snapshotTheoremParameters(qw(
+    \thm@bodyfont \thm@headpunct \thm@styling \thm@headstyling thm@swap));
+
+sub useTheoremStyle {
+  my ($name) = @_;
+  if (my $params = LookupValue('THEOREM_' . ToString($name) . '_PARAMETERS')) {
+    foreach my $key (keys %$params) {
+      AssignValue($key => $$params{$key}); } }
+  return; }
+
+sub saveTheoremStyle {
+  my ($name, %parameters) = @_;
+  $name = ToString($name);
+  AssignValue('THEOREM_' . $name . '_PARAMETERS' => {%parameters}, 'global');
+  return; }
+
 RawTeX('\th@plain');    # Activate the default style.
 # [or just make it's values the defaults...]
 
 sub defineNewTheorem {
-  my ($stomach, $flag, $thmset, $otherthmset, $type, $reset) = @_;
+  my ($stomach, $flag, $thmset, $otherthmset, $type, $within) = @_;
   $thmset      = ToString($thmset);
   $otherthmset = $otherthmset && ToString($otherthmset);
-  $type        = undef unless $type->unlist;
-  $reset       = $reset ? ToString($reset) : undef;
+  $type        = undef unless $type && $type->unlist;
+  $within      = $within ? ToString($within) : undef;
 
   my $counter = $otherthmset || $thmset;
-  $counter =~ s/\*$//;    # Strip trailing * off theoremclass for ntheorem.sty
+  $counter =~ s/\*$//;     # Strip trailing * off theoremclass for ntheorem.sty
+  $counter =~ s/\s+/./;    # convert spaces to period?
   if ($counter ne $thmset) {
     AssignMapping('counter_for_type', $thmset => $counter);
     DefMacro(T_CS('\the' . $thmset), T_CS('\the' . $counter), scope => 'global');
@@ -2477,20 +2506,20 @@ sub defineNewTheorem {
     $idprefix =~ s/\*/./g;
 
     if (!LookupValue('\c@' . $counter)) {                     # if isn't already defined...
-      NewCounter($counter, $reset, idprefix => $idprefix); }
+      NewCounter($counter, $within, idprefix => $idprefix); }
     DefMacroI(T_CS("\\the$counter"), undef,
-      ($reset
-        ? "\\csname the" . $reset . "\\endcsname\\\@thmcountersep\\" . $numbering . "{" . $counter . "}"
-        : "\\" . $numbering . "{" . $counter . "}"),
+      ($within
+        ? "\\csname the" . $within . "\\endcsname\\\@thmcountersep" . $numbering . "{" . $counter . "}"
+        : $numbering . "{" . $counter . "}"),
       scope => 'global') if $numbering; }
 
-  my @parameters = @{ LookupValue('THEOREM_PARAMETERS') };
+  my %parameters = %{ LookupValue('THEOREM_PARAMETERS') };
   AssignValue('THEOREM_' . $thmset . '_PARAMETERS'
-      => { map { ($_ => LookupValue($_)) } @parameters }, 'global');
+      => { map { ($_ => LookupValue($_)) } keys %parameters }, 'global');
 
   my $thmname = '\\' . $thmset . 'name';
   DefMacroI($thmname, undef, $type, scope => 'global');
-  my $swap = LookupValue('thm@swap') eq 'S';
+  my $swap = LookupValue('thm@swap');
 
   DefMacroI('\fnum@' . $thmset, undef,
     Tokens($flag || !$counter
@@ -2504,11 +2533,14 @@ sub defineNewTheorem {
   my $headformatter = LookupValue('\thm@headformatter');
   DefMacroI('\format@title@' . $thmset, convertLaTeXArgs(1, 0),
     ($headformatter
-      ? Tokens($headformatter->unlist, T_BEGIN, ($type ? $type->unlist : ()), T_END,
+      ? Tokens($headformatter->unlist,
+        T_BEGIN, ($type ? $type->unlist : ()), T_END,
         T_CS('\the' . $counter), T_BEGIN, Tokens(T_PARAM, T_OTHER('1')), T_END,
         T_CS('\the'), T_CS('\thm@headpunct'))
-      : '\lx@tag{\csname fnum@' . $thmset . '\endcsname}'
-        . ($type ? '\ifx.#1.\else\space(#1)\fi' : '#1') . '\the\thm@headpunct'),
+      : '{\the\thm@headfont\lx@tag{\csname fnum@' . $thmset . '\endcsname}}'
+        . '{\the\thm@notefont' . ($type ? '\ifx.#1.\else\space(#1)\fi' : '#1') . '}'
+        . '\the\thm@headpunct'),
+
     scope => 'global');
   my $sanitized = $thmset; $sanitized =~ s/['"]//g;
   DefEnvironment("{$thmset} OptionalUndigested",
@@ -2539,10 +2571,14 @@ sub defineNewTheorem {
           } }
         else {
           %ctr = RefStepCounter($thmset); } }
+      # my $title = Digest(Tokens(T_BEGIN,
+      #     T_CS('\the'), T_CS('\thm@headstyling'),
+      #     T_BEGIN, T_CS('\the'), T_CS('\thm@headfont'), T_CS('\format@title@' . $thmset), T_END,
+      #     T_BEGIN, ($_[1] ? (T_CS('\the'), T_CS('\thm@notefont'), $_[1]->unlist) : ()), T_END,
+      #     T_END));
       my $title = Digest(Tokens(T_BEGIN,
-          T_CS('\the'), T_CS('\thm@headfont'),
           T_CS('\the'), T_CS('\thm@headstyling'),
-          T_CS('\format@title@' . $thmset),
+          T_CS('\format@title@' . $thmset),    #T_END,
           T_BEGIN, ($_[1] ? $_[1]->unlist : ()), T_END,
           T_END));
       (%ctr,

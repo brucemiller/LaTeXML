@@ -1,0 +1,111 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | thmtools.sty                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Style options:
+#   Handled:
+#     headfont
+#     headpunct
+#     notefont
+#     bodyfont
+#   Semi-done:
+#     headformat :  margin, swapnumber  OR code containing \NUMBER, \NAME and \NOTE
+#   Ignored (should it be ?):
+#     spaceabove, spacebelow, postheadspace
+#   Not done yet
+#     notebraces
+#     headindent
+# Theorem options:
+#   Handled:
+#     title=name=heading
+#     numbered : yes, no, unless unique
+#     style : name of \newtheoremstyle or \declaretheoremstyle
+#     sibling=numberlike=sharenumber
+#     parent=numberwithin=within
+#     refname, Refname => name used for autoref, cref
+#   Ignored (should it be?):
+#     postheadspace
+#     preheadhook, postheadhook
+#     prefoothook, postfoothook
+#     thmbox : L,M,S
+#   Not done yet:
+#     shaded : kv of textwiddth, bgcolor, rulecolor, rulewidth, margin
+# See ntheorem for an idea how to deal with framing, colors, etc?
+snapshotTheoremParameters(qw(
+    \thm@headfont \thm@notefont \thm@bodyfont \thm@headpunct \thm@styling \thm@headstyling));
+
+# should nu
+sub thmtools_style {
+  my ($name, $kv) = @_;
+  my %parameters = ();
+  if (my $headfont = $kv && $kv->getValue('headfont')) {
+    $parameters{'\thm@headfont'} = $headfont; }
+  if (my $headpunct = $kv && $kv->getValue('headpunct')) {
+    $parameters{'\thm@headpunct'} = $headpunct; }
+  if (my $notefont = $kv && $kv->getValue('notefont')) {
+    $parameters{'\thm@notefont'} = $notefont; }
+  if (my $bodyfont = $kv && $kv->getValue('bodyfont')) {
+    $parameters{'\thm@bodyfont'} = $bodyfont; }
+  if (my $headformat = ToString(($kv && $kv->getValue('headformat')) || '')) {
+    $parameters{'\thm@swap'} = $headformat eq 'swapnumber'; }
+
+  saveTheoremStyle($name, %parameters);
+  return; }
+
+DefPrimitive('\declaretheorem OptionalKeyVals {}', sub {
+    my ($stomach, $kv, $thmset) = @_;
+    # Activate any requested style
+    my $name = ToString($thmset);
+    if (my $style = ToString($kv && $kv->getValue('style')) || 'plain') {
+      useTheoremStyle($style); }
+    thmtools_style($name, $kv);
+    useTheoremStyle($name);
+    my $type = ($kv
+        && ($kv->getValue('title') || $kv->getValue('name') || $kv->getValue('heading')))
+      || Tokens(T_CS('\MakeUppercase'), $thmset);
+
+    my $numbered = $kv && $kv->getValue('numbered');
+    my $flag     = ToString($numbered) eq 'no';
+    my $other    = $kv
+      && ($kv->getValue('sibling') || $kv->getValue('numberlike') || $kv->getValue('sharenumber'));
+    my $within = $kv
+      && ($kv->getValue('parent') || $kv->getValue('numberwithin') || $kv->getValue('within'));
+
+    if (my $refname = $kv && $kv->getValue('refname')) {
+      my ($s, $p) = map { Tokens(@$_); } SplitTokens(stripBraces($refname), T_OTHER(','));
+      DefMacroI('\\' . $name . 'autorefname',       undef, $s);
+      DefMacroI('\\cref@' . $name . '@name',        undef, $s);
+      DefMacroI('\\cref@' . $name . '@name@plural', undef, $p); }
+    if (my $refname = $kv && $kv->getValue('Refname')) {
+      my ($s, $p) = map { Tokens(@$_); } SplitTokens(stripBraces($refname), T_OTHER(','));
+      DefMacroI('\\Cref@' . $name . '@name',        undef, $s);
+      DefMacroI('\\Cref@' . $name . '@name@plural', undef, $p); }
+
+    defineNewTheorem($stomach, $flag, $thmset, $other, $type, $within);
+    return; });
+
+DefPrimitive('\declaretheoremstyle OptionalKeyVals {}', sub {
+    thmtools_style($_[2], $_[1]); });
+
+#DefMacro('\enc@theorem
+DefMacroI('\listtheoremname', undef, 'List of Theorems');
+DefConstructor('\listoftheorems OptionalKeyVals',
+  "<ltx:TOC lists='lot' scope='global'><ltx:title>#name</ltx:title></ltx:TOC>",
+  properties => sub { (name => Digest(T_CS('\listtheoremname'))); });
+
+#======================================================================
+1;
