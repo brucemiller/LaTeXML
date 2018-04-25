@@ -25,7 +25,8 @@ use Math::Trig qw(
   cot sec cosec
   cosh sinh tanh);
 use POSIX qw(floor ceil);
-# Defined below: floor, factorial
+# round from Geometry
+# Defined below: factorial
 
 #======================================================================
 # Load pgf's TeX code for math, first
@@ -59,10 +60,6 @@ sub pgfmathfactorial {
   my $f = 1;
   while ($arg > 0) { $f *= $arg; $arg--; }
   return $f; }
-
-# round is available in later (but not early) versions of POSIX;
-# let's just define them locally:
-sub round { return int($_[0] + 0.5 * ($_[0] <=> 0)); }
 
 # I'll bet the deired precision is a parameter somewhere?
 # Actually, the library uses exponents, but I generate them, for some reason I'm getting
@@ -312,34 +309,6 @@ sub pgfmathparse {
 ####  print STDERR "PGFPARSE: '$input' => '$result'\n";
   return $result; }
 
-# Should be a general utility?
-sub stripBraces {
-  my ($tokens) = @_;
-  my @tokens = ($tokens ? $tokens->unlist : ());
-  my @t = ();
-  while (@tokens && ($tokens[0]->getCatcode == CC_SPACE)) {    # Skip leading whitespace
-    shift(@tokens); }
-  # Balanced tokens until $delim
-  my $ntopbraces = 0;
-  while (@tokens) {
-    if (Equals($tokens[0], T_BEGIN)) {                         # If top-level brace
-      $ntopbraces++;
-      my ($level, $t) = (0, undef);
-      while (defined($t = shift(@tokens))) {                   # Read balanced
-        my $cc = $t->getCatcode;
-        $level++ if $cc == CC_BEGIN;
-        $level-- if $cc == CC_END;
-        push(@t, $t);
-        last unless $level; } }
-    else {
-      push(@t, shift(@tokens)); } }
-  while (@t && ($t[-1]->getCatcode == CC_SPACE)) {             # pop off trailing spaces
-    pop(@t); }
-  # Strip outer braces if a single set encloses entire value and not just {}
-  if ($ntopbraces == 1) {
-    shift(@t); pop(@t); }
-  return Tokens(@t); }
-
 DefMacro('\lx@pgfmath@parseX{}', sub {
     my ($gullet, $tokens) = @_;
     DefMacroI('\lx@pgfmathresult', undef, Tokens(Explode(pgfmathparse($gullet, $tokens))));
@@ -531,13 +500,13 @@ BEGIN {
     #    random   => sub { },
     real => sub { $_[0] + 0.0; },
     #    rnd      => sub { },
-    round => sub { round($_[0]); },
-    scalar => sub { SetCondition(T_CS('\ifpgfmathunitsdeclared'), 0, 'global'); $_[0]; },
-    sec => sub { sec(pgfmathargradians($_[0])); },
-    sign => sub { ($_[0] > 0 ? 1 : ($_[0] < 0 ? -1 : 0)); },
-    sin  => sub { sin(pgfmathargradians($_[0])); },
-    sinh => sub { sinh($_[0]); },
-    sqrt => sub { sqrt($_[0]); },
+    round    => sub { round($_[0]); },
+    scalar   => sub { SetCondition(T_CS('\ifpgfmathunitsdeclared'), 0, 'global'); $_[0]; },
+    sec      => sub { sec(pgfmathargradians($_[0])); },
+    sign     => sub { ($_[0] > 0 ? 1 : ($_[0] < 0 ? -1 : 0)); },
+    sin      => sub { sin(pgfmathargradians($_[0])); },
+    sinh     => sub { sinh($_[0]); },
+    sqrt     => sub { sqrt($_[0]); },
     subtract => sub { $_[0] - $_[1]; },
     tan      => sub { tan(pgfmathargradians($_[0])); },
     tanh     => sub { tanh($_[0]); },

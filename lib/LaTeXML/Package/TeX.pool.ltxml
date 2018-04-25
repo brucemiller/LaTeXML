@@ -6676,6 +6676,34 @@ sub andSplit {
 sub orNull {
   return (grep { defined } @_) ? @_ : undef; }
 
+# Should be a general utility?
+sub stripBraces {
+  my ($tokens) = @_;
+  my @tokens = ($tokens ? $tokens->unlist : ());
+  my @t = ();
+  while (@tokens && ($tokens[0]->getCatcode == CC_SPACE)) {    # Skip leading whitespace
+    shift(@tokens); }
+  # Balanced tokens until $delim
+  my $ntopbraces = 0;
+  while (@tokens) {
+    if (Equals($tokens[0], T_BEGIN)) {                         # If top-level brace
+      $ntopbraces++;
+      my ($level, $t) = (0, undef);
+      while (defined($t = shift(@tokens))) {                   # Read balanced
+        my $cc = $t->getCatcode;
+        $level++ if $cc == CC_BEGIN;
+        $level-- if $cc == CC_END;
+        push(@t, $t);
+        last unless $level; } }
+    else {
+      push(@t, shift(@tokens)); } }
+  while (@t && ($t[-1]->getCatcode == CC_SPACE)) {             # pop off trailing spaces
+    pop(@t); }
+  # Strip outer braces if a single set encloses entire value and not just {}
+  if ($ntopbraces == 1) {
+    shift(@t); pop(@t); }
+  return Tokens(@t); }
+
 #**********************************************************************
 LoadPool('eTeX');      # unless.... ?
 LoadPool('pdfTeX');    # unless.... ?
