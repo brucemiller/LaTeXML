@@ -185,5 +185,8 @@ RawTeX(<<'EOTeX');
   \fi % \tabularnewline
   \nprt@next
 }
+% ALSO, Robust \npmakebox doesn't seem to work for us?
+\expandafter\let\expandafter\npmakebox\csname npmakebox \endcsname
 EOTeX
+
 1;

@@ -2227,12 +2227,21 @@ DefPrimitive('\providecommand OptionalMatch:* DefToken [Number][]{}', sub {
     return unless isDefinable($cs);
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
-# Need to figure out exactly what `robust' means to LaTeXML...
+# Crazy; define \cs in terms of \cs[space] !!!
 DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-    DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
+    my $mungedcs = T_CS($cs->getString . ' ');
+    DefMacroI($mungedcs, convertLaTeXArgs($nargs, $opt), $body);
+    DefMacroI($cs, undef, Tokens(T_CS('\protect'), $mungedcs)); });
 
-DefMacro('\MakeRobust{}', '');
+DefPrimitive('\MakeRobust DefToken', sub {
+    my ($stomach, $cs) = @_;
+    my $mungedcs = T_CS($cs->getString . ' ');
+    if    (!LookupDefinition($cs))      { }    # Not defined
+    elsif (LookupDefinition($mungedcs)) { }    # Already robust
+    else {
+      Let($mungedcs, $cs);
+      DefMacroI($cs, undef, Tokens(T_CS('\protect'), $mungedcs)); } });
 
 # There are a bunch of ways in LaTeX to assign a command to
 # a particular point within a font (which has one of many encodings)
@@ -2354,10 +2363,10 @@ my $symboltype_roles = {
   '\mathopen' => 'OPEN', '\mathclose' => 'CLOSE', '\mathpunct' => 'PUNCT' };
 DefPrimitive('\DeclareMathSymbol DefToken SkipSpaces DefToken {}{Number}', sub {
     my ($stomach, $cs, $type, $font, $code) = @_;
-    my $encoding = $font;                        # Or maybe just a font name or class?
+    my $encoding = ToString($font);              # Or maybe just a font name or class?
     if (my $decl = LookupValue('fontdeclaration@' . $encoding)) {
       $encoding = $$decl{encoding} if $$decl{encoding}; }
-    my $glyph = FontDecode($code->valueOf, ToString($font));
+    my $glyph = FontDecode($code->valueOf, $encoding);
     my $role = $$symboltype_roles{ ToString($type) };
     DefMathI($cs, undef, $glyph, role => $role);
     return; });
@@ -2388,6 +2397,13 @@ DefPrimitive('\SetSymbolFont{}{}{}{}{}{}',   undef);
 DefPrimitive('\SetMathAlphabet{}{}{}{}{}{}', undef);
 DefPrimitive('\addtoversion{}{}',            undef);
 DefPrimitive('\TextSymbolUnavailable{}',     undef);
+
+RawTeX(<<'EoTeX');
+\DeclareSymbolFont{operators}   {OT1}{cmr} {m}{n}
+\DeclareSymbolFont{letters}     {OML}{cmm} {m}{it}
+\DeclareSymbolFont{symbols}     {OMS}{cmsy}{m}{n}
+\DeclareSymbolFont{largesymbols}{OMX}{cmex}{m}{n}
+EoTeX
 
 #======================================================================
 # C.8.2 Defining Environments
