@@ -53,7 +53,7 @@ sub colorizeString {
 sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
 
-  # Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
+# Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
   if ((($category eq 'internal') && ($object eq '<recursion>')) ||
     ($category eq 'too_many_errors')) {
     $LaTeXML::UNSAFE_FATAL = 1; }
@@ -106,9 +106,6 @@ sub checkRecursiveError {
       return 1; } }
   return; }
 
-# Note that "100" is hardwired into TeX, The Program!!!
-my $MAXERRORS = 100;    # [CONSTANT]
-
 # Should be fatal if strict is set, else warn.
 sub Error {
   my ($category, $object, $where, $message, @details) = @_;
@@ -121,8 +118,10 @@ sub Error {
     print STDERR generateMessage(colorizeString("Error:" . $category . ":" . ToString($object), 'error'),
       $where, $message, 1, @details)
       if $verbosity >= -2; }
-  if ($state && ($state->getStatus('error') || 0) > $MAXERRORS) {
-    Fatal('too_many_errors', $MAXERRORS, $where, "Too many errors (> $MAXERRORS)!"); }
+  # Note that "100" is hardwired into TeX, The Program!!!
+  my $maxerrors = ($state ? $state->lookupValue('MAX_ERRORS') : 100);
+  if ($state && (defined $maxerrors) && (($state->getStatus('error') || 0) > $maxerrors)) {
+    Fatal('too_many_errors', $maxerrors, $where, "Too many errors (> $maxerrors)!"); }
   return; }
 
 # Warning message; results may be OK, but somewhat unlikely
@@ -255,21 +254,21 @@ sub perl_warn_handler {
 sub perl_interrupt_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
-  $LaTeXML::UNSAFE_FATAL = 1;
+  $LaTeXML::UNSAFE_FATAL  = 1;
   Fatal('interrupt', 'interrupted', undef, "LaTeXML was interrupted", @_);
   return; }
 
 sub perl_timeout_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
-  $LaTeXML::UNSAFE_FATAL = 1;
+  $LaTeXML::UNSAFE_FATAL  = 1;
   Fatal('timeout', 'timedout', undef, "Conversion timed out", @_);
   return; }
 
 sub perl_terminate_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
-  $LaTeXML::UNSAFE_FATAL = 1;
+  $LaTeXML::UNSAFE_FATAL  = 1;
   Fatal('terminate', 'terminated', undef, "Conversion was terminated", @_);
   return; }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -350,13 +349,13 @@ sub MergeStatus {
   my ($external_state) = @_;
   my $state = $STATE;
   return unless $state && $external_state;
-  my $status = $$state{status};
+  my $status          = $$state{status};
   my $external_status = $$external_state{status};
   # Should this be a state method? I suspect XS-ive conflicts later on...
-  foreach my $type(keys %$external_status) {
+  foreach my $type (keys %$external_status) {
     if ($type eq 'undefined' or $type eq 'missing') {
       my $table = $$external_status{$type};
-      foreach my $subtype(keys %$table) {
+      foreach my $subtype (keys %$table) {
         $$status{$type}{$subtype} += $$table{$subtype};
       }
     } else {
