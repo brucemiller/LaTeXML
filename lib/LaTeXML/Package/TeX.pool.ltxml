@@ -2117,13 +2117,16 @@ sub lcToken {
   my $code = $STATE->lookupLCcode($token->getString);
   return ((defined $code) && ($code != 0) ? Token(chr($code), $token->getCatcode) : $token); }
 
-DefMacro('\uppercase GeneralText', sub {
-    my ($gullet, $tokens) = @_;
-    return map { ucToken($_) } $tokens->unlist; });
+# Note that these are NOT expandable, even though the "return" tokens!
+DefPrimitive('\uppercase GeneralText', sub {
+    my ($stomach, $tokens) = @_;
+    $stomach->getGullet->unread(map { ucToken($_) } $tokens->unlist);
+    return; });
 
-DefMacro('\lowercase GeneralText', sub {
-    my ($gullet, $tokens) = @_;
-    return map { lcToken($_) } $tokens->unlist; });
+DefPrimitive('\lowercase GeneralText', sub {
+    my ($stomach, $tokens) = @_;
+    $stomach->getGullet->unread(map { lcToken($_) } $tokens->unlist);
+    return; });
 
 DefPrimitive('\message{}', sub {
     my ($stomach, $stuff) = @_;
