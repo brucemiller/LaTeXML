@@ -31,7 +31,7 @@ foreach my $option (qw(dvips xdvi oztex dvipsnames)) {
 # change this to something like ConvertColor... Oh, already have that?
 sub ParseColor {
   my ($model, $spec) = @_;
-  $model = ToString($model) if ref $model; $model = lc($model);
+  $model = ToString($model) if ref $model; $model = lc($model) if $model;
   $spec = ToString($spec) if ref $spec;
   $spec =~ s/^\s+//;
   $spec =~ s/\s+$//;
