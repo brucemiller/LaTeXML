@@ -1,0 +1,55 @@
+\documentclass{article}
+\usepackage{textcase}
+\usepackage{cite}
+\begin{document}
+\section{\MakeTextUppercase{Uppercase}}\label{intro}
+
+\subsection{Text and math interleaved}
+
+\MakeTextUppercase{abc\ae\ \( a = b \) and $\alpha \neq a$
+or even \ensuremath{x=y} and $\ensuremath{x=y}$}
+
+\subsection{Refs and cites}
+
+\MakeTextUppercase{%
+Text in section~\ref{intro}, about \cite[pp 2--4]{bbb}}
+
+\MakeTextUppercase{%
+Text \cite{bbb} and \cite{ccc}}
+
+{\renewcommand\citeform{\MakeUppercase}\MakeTextUppercase{%
+Text \cite{bbb} and \cite{ccc}}}
+
+\subsection{Nested with NoCaseChange}
+
+\MakeTextUppercase{%
+Text \NoCaseChange{More Text} yet more text}
+
+\subsection{NoCaseChange and tabular}
+
+\MakeTextUppercase{%
+Text \NoCaseChange{\begin{tabular}{ll}}%
+table&stuff\\goes&here
+\NoCaseChange{\end{tabular}}
+More text}
+
+\subsection{Nested brace groups}
+
+\MakeTextUppercase{a b {c $d$} $e$}
+
+\subsection{Environment protection}
+
+\MakeTextUppercase{...\NoCaseChange{\begin{center}} ...inner...\NoCaseChange{\end{center}}...}
+
+% ----
+\section{\MakeTextLowercase{Lowercase}}
+
+\MakeTextLowercase{THIS WAS WRITTEN UPPER, SHOULD APPEAR LOW}
+
+\begin{thebibliography}{9}
+
+\bibitem{bbb} Something numeric
+\bibitem[David Carlisle 1997]{ccc} Something textual
+\end{thebibliography}
+
+\end{document}
