@@ -36,7 +36,7 @@ sub new {
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
     trivial_expansion => $trivexpansion,
     locator           => "from " . $source->getLocator(-1),
-    isProtected       => $STATE->getPrefix('protected'),
+    isProtected       => $traits{protected} || $STATE->getPrefix('protected'),
     isExpandable      => 1,
     %traits }, $class; }
 
@@ -46,6 +46,11 @@ sub isExpandable {
 sub isProtected {
   my ($self) = @_;
   return $$self{isProtected}; }
+
+sub setIsProtected {
+  my ($self) = @_;
+  $$self{isProtected} = 1;
+  return; }
 
 sub getExpansion {
   my ($self) = @_;

@@ -897,7 +897,7 @@ sub DefExpandable {
 # Define a Macro: Essentially an alias for DefExpandable
 # For convenience, the $expansion can be a string which will be tokenized.
 my $macro_options = {    # [CONSTANT]
-  scope => 1, locked => 1, mathactive => 1 };
+  scope => 1, locked => 1, mathactive => 1, protected => 1 };
 
 sub DefMacro {
   my ($proto, $expansion, %options) = @_;
