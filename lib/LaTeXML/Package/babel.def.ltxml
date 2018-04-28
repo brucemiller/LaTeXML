@@ -27,8 +27,6 @@ InputDefinitions('babel', type => 'def', noltxml => 1);
 
 # We want to use unicode wherever possible and
 # avoid the contrived positioning of glyphs to synthesize funny chars.
-DefPrimitiveI('\dj', undef, "\x{0111}");
-DefPrimitiveI('\DJ', undef, "\x{0110}");
 DefPrimitiveI('\ij', undef, "ij");
 DefPrimitiveI('\IJ', undef, "IJ");
 

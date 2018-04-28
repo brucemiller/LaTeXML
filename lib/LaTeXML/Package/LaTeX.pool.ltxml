@@ -2405,6 +2405,49 @@ RawTeX(<<'EoTeX');
 \DeclareSymbolFont{largesymbols}{OMX}{cmex}{m}{n}
 EoTeX
 
+# At least all things on uclclist need to be macros
+DefPrimitiveI('\lx@utf@OE', undef, "\x{0152}");    # LATIN CAPITAL LIGATURE OE
+DefPrimitiveI('\lx@utf@oe', undef, "\x{0153}");    # LATIN SMALL LIGATURE OE
+DefPrimitiveI('\lx@utf@AE', undef, UTF(0xC6));     # LATIN CAPITAL LETTER AE
+DefPrimitiveI('\lx@utf@ae', undef, UTF(0xE6));     # LATIN SMALL LETTER AE
+DefPrimitiveI('\lx@utf@ae', undef, UTF(0xE6));     # LATIN SMALL LETTER AE
+DefPrimitiveI('\lx@utf@AA', undef, UTF(0xC5));     # LATIN CAPITAL LETTER A WITH RING ABOVE
+DefPrimitiveI('\lx@utf@aa', undef, UTF(0xE5));     # LATIN SMALL LETTER A WITH RING ABOVE
+DefPrimitiveI('\lx@utf@O',  undef, UTF(0xD8));     # LATIN CAPITAL LETTER O WITH STROKE
+DefPrimitiveI('\lx@utf@o',  undef, UTF(0xF8));     # LATIN SMALL LETTER O WITH STROKE
+DefPrimitiveI('\lx@utf@L',  undef, "\x{0141}");    # LATIN CAPITAL LETTER L WITH STROKE
+DefPrimitiveI('\lx@utf@l',  undef, "\x{0142}");    # LATIN SMALL LETTER L WITH STROKE
+DefPrimitiveI('\lx@utf@ss', undef, UTF(0xDF));     # LATIN SMALL LETTER SHARP S
+DefPrimitiveI('\lx@utf@dh', undef, UTF(0xf0));     # eth
+DefPrimitiveI('\lx@utf@DH', undef, UTF(0xd0));     # Eth (looks same as \DJ!)
+DefPrimitiveI('\lx@utf@dj', undef, "\x{0111}");    # d with stroke
+DefPrimitiveI('\lx@utf@DJ', undef, "\x{0110}");    # D with stroke (looks sames as \DH!)
+DefPrimitiveI('\lx@utf@ng', undef, "\x{014B}");
+DefPrimitiveI('\lx@utf@NG', undef, "\x{014A}");
+DefPrimitiveI('\lx@utf@th', undef, UTF(0xFE));
+DefPrimitiveI('\lx@utf@TH', undef, UTF(0xDE));
+
+DefMacroI('\OE', undef, '\lx@utf@OE');
+DefMacroI('\oe', undef, '\lx@utf@oe');
+DefMacroI('\AE', undef, '\lx@utf@AE');
+DefMacroI('\ae', undef, '\lx@utf@ae');
+DefMacroI('\ae', undef, '\lx@utf@ae');
+DefMacroI('\AA', undef, '\lx@utf@AA');
+DefMacroI('\aa', undef, '\lx@utf@aa');
+DefMacroI('\O',  undef, '\lx@utf@O');
+DefMacroI('\o',  undef, '\lx@utf@o');
+DefMacroI('\L',  undef, '\lx@utf@L');
+DefMacroI('\l',  undef, '\lx@utf@l');
+DefMacroI('\ss', undef, '\lx@utf@ss');
+DefMacroI('\dh', undef, '\lx@utf@dh');    # in latex?
+DefMacroI('\DH', undef, '\lx@utf@DH');
+DefMacroI('\dj', undef, '\lx@utf@dj');
+DefMacroI('\DJ', undef, '\lx@utf@DJ');
+DefMacroI('\ng', undef, '\lx@utf@ng');
+DefMacroI('\NG', undef, '\lx@utf@NG');
+DefMacroI('\th', undef, '\lx@utf@th');
+DefMacroI('\TH', undef, '\lx@utf@TH');
+
 #======================================================================
 # C.8.2 Defining Environments
 #======================================================================
