@@ -2249,7 +2249,7 @@ DefPrimitiveI('\operator@font', undef, undef,
 #======================================================================
 
 DefMacro('\@tabacckludge {}', '\csname\string#1\endcsname');
-
+DefMacro('\@argdef', '\newcommand'); # stopgap?
 DefPrimitive('\newcommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (!isDefinable($cs)) {
@@ -4765,12 +4765,13 @@ DefMacroI('\nfss@catcodes', undef, <<'EOMacro');
    \@makeother\'%
    \@makeother\"%
 EOMacro
-
+DefMacroI('\ltx@hard@MessageBreak',undef, '^^J');
 sub make_message {
   my ($cmd, @args) = @_;
   my $stomach = $STATE->getStomach;
   $stomach->bgroup;
   Let('\protect', '\string');
+  Let('\MessageBreak','\ltx@hard@MessageBreak'); # tricky, we need Expand() to execute it
   my $message = join("\n", map { ToString(Expand($_)) } @args);
   $stomach->egroup;
   return ('latex', $cmd, $stomach, $message); }
