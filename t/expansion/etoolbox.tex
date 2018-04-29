@@ -1,0 +1,23 @@
+\documentclass{article}
+  \tracingmacros
+  \tracingcommands
+\usepackage{etoolbox}
+
+\csdef{path-PB}{path of PB}
+\csdef{path-UF}{path of UF}
+% more definitions
+
+\newcommand\whoami{PB}
+
+\newcommand\mypath{\csuse{path-\whoami}}
+
+\begin{document}
+
+\mypath
+
+\renewcommand\whoami{UF}
+
+\mypath
+
+
+\end{document}
