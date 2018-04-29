@@ -169,9 +169,11 @@ sub getSourceMouth {
 # Handy message generator when we didn't get something expected.
 sub showUnexpected {
   my ($self) = @_;
-  my $token = $self->readToken;
-  my $message = ($token ? "Next token is " . Stringify($token) : "Input is empty");
-  unshift(@{ $$self{pushback} }, $token);    # Unread
+  my $message = "Input is empty";
+  if (my $token = $self->readToken) {
+    $message = "Next token is " . Stringify($token);
+    unshift(@{ $$self{pushback} }, $token);
+  }
   return $message; }
 
 sub show_pushback {
