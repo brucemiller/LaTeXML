@@ -4772,7 +4772,7 @@ sub make_message {
   $stomach->bgroup;
   Let('\protect', '\string');
   Let('\MessageBreak','\ltx@hard@MessageBreak'); # tricky, we need Expand() to execute it
-  my $message = join("\n", map { ToString(Expand($_)) } @args);
+  my $message = join("", map { ToString(Expand($_,T_CS('\MessageBreak'))) } @args);
   $stomach->egroup;
   return ('latex', $cmd, $stomach, $message); }
 
