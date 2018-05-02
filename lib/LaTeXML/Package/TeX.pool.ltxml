@@ -1561,7 +1561,7 @@ DeclareFontMap('OT1',
     "\x{03A6}", "\x{03A8}", "\x{03A9}", "\x{2191}", "\x{2193}", "'", UTF(0xA1), UTF(0xBF),
     "\x{0131}", "\x{0237}", UTF(0x60), UTF(0xB4), "\x{02C7}", "\x{02D8}", UTF(0xAF), "\x{02DA}",
     UTF(0xB8), UTF(0xDF), UTF(0xE6), "\x{0153}", UTF(0xF8), UTF(0xC6), "\x{152}", UTF(0xD8),
-    "\x{2423}", '!', "\"", '#', '$',  '%', '&', "'",
+    "\x{2423}", '!', "\"", '#', '$',  '%', '&', "\x{2019}",
     '(',        ')', '*',  '+', ',',  '-', '.', '/',
     '0',        '1', '2',  '3', '4',  '5', '6', '7',
     '8',        '9', ':',  ';', "<",  '=', ">", '?',
@@ -1569,7 +1569,7 @@ DeclareFontMap('OT1',
     'H',        'I', 'J',  'K', 'L',  'M', 'N', 'O',
     'P',        'Q', 'R',  'S', 'T',  'U', 'V', 'W',
     'X',        'Y', 'Z',  '[', "\\", ']', "^", "_",
-    "`",        'a', 'b',  'c', 'd',  'e', 'f', 'g',
+    "\x{2018}", 'a', 'b',  'c', 'd',  'e', 'f', 'g',
     'h',        'i', 'j',  'k', 'l',  'm', 'n', 'o',
     'p',        'q', 'r',  's', 't',  'u', 'v', 'w',
     'x',        'y', 'z',  "{", "|",  "}", "~", UTF(0xA8)],
@@ -2214,7 +2214,7 @@ DefPrimitive('\write Number {}', sub {
       my $contents = LookupValue($handle);
       AssignValue($handle => $contents . UnTeX($tokens) . "\n", 'global'); }
     else {
-      print STDERR UnTeX($tokens) . "\n"; }
+      print STDERR UnTeX(Expand($tokens)) . "\n"; }
     return; });
 
 # Since we don't paginate, we're effectively always "shipping out",

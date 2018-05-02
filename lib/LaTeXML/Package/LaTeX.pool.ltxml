@@ -1541,7 +1541,9 @@ DefConstructorI(T_CS('\begin{verbatim}'), undef,
       my @lines  = ();
       my $gullet = $stomach->getGullet;
       while (defined(my $line = $gullet->readRawLine)) {
-
+        # The raw chars will still have to be decoded (but not space!!)
+        $line = join('', map { ($_ eq ' ' ? ' ' : FontDecodeString($_, 'OT1_typewriter')) }
+            split(//, $line));
         if ($line =~ /^(.*?)\\end\{verbatim\}(.*?)$/) {
           push(@lines, $1 . "\n"); $gullet->unread(Tokenize($2), T_CR);
           last; }
