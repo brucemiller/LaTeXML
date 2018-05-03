@@ -378,10 +378,10 @@ DefMacroI('\today', undef, sub { ExplodeText(today()); });
 # Previously, we used ltx:emph, to preserve the semantic intent,
 # but some folks wrap it around arbitrary blocks of material,
 # more like a font switch.
-# We'll just use an open-ended ltx:text, here, trusting font changes to close the ltx:text
-# However, it would be nice if the Font object itself carried the notion of "emphasized".
-DefConstructor('\emph{}', "<ltx:text _force_font='1' class='ltx_emph'>#1",
-  mode => 'text', bounded => 1, font => { emph => 1 });
+DefConstructor('\emph{}', "#1", mode => 'text',
+  bounded => 1, font => { emph =>1 }, alias => '\emph',
+  beforeDigest => sub { DefMacro('\f@shape', 'i'); },
+  afterConstruct => sub { $_[0]->addClass($_[0]->getElement,'ltx_emph'); });
 
 #======================================================================
 # C.3.2 Making Paragraphs
