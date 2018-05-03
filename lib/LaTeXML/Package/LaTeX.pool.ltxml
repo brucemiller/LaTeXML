@@ -889,10 +889,13 @@ DefRegister('\baselinestretch' => Dimension(0));
 #======================================================================
 
 # See frontmatter support in TeX.ltxml
+Let('\@title','\@empty');
 DefMacro('\title{}', '\def\@title{#1}\@add@frontmatter{ltx:title}{#1}');
 
+DefMacro('\@date','\@empty');
 DefMacro('\date{}',
-  '\@add@frontmatter{ltx:date}[role=creation,'
+  '\def\@date{#1}'
+   . '\@add@frontmatter{ltx:date}[role=creation,'
     . 'name={\@ifundefined{datename}{}{\datename}}]{#1}');
 
 DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact>",
@@ -906,7 +909,7 @@ DefConstructorI('\and', undef, " and ");
 AssignValue(NUMBER_OF_AUTHORS => 0);
 DefPrimitive('\lx@count@author', sub {
     AssignValue(NUMBER_OF_AUTHORS => LookupValue('NUMBER_OF_AUTHORS') + 1, 'global') });
-DefMacro('\@author{}',
+DefMacro('\lx@author{}',
   '\lx@count@author'
     . '\@add@frontmatter{ltx:creator}[role=author]{\lx@author@prefix\@personname{#1}}');
 DefMacro('\lx@author@sep',  '\qquad');
@@ -923,8 +926,9 @@ DefConstructor('\lx@author@prefix', sub {
       $document->setAttribute($node, before => ToString(Digest(T_CS('\lx@author@sep')))); }
 });
 
-DefMacro('\author{}', sub { andSplit(T_CS('\@author'), $_[1]); });
-
+DefMacro('\@author','\@empty');
+DefMacro('\author{}', '\def\@author{#1}\lx@make@authors@anded{#1}');
+DefMacro('\lx@make@authors@anded{}', sub { andSplit(T_CS('\lx@author'), $_[1]); });
 DefPrimitive('\ltx@authors@oneline', sub {
     AssignMapping('DOCUMENT_CLASSES', ltx_authors_1line => 1);
     return; });
@@ -950,7 +954,9 @@ DefMacroI('\maketitle', undef,
     . '\global\let\date\relax'
     . '\global\let\and\relax');
 
-DefConstructor('\thanks{}', "<ltx:note role='thanks'>#1</ltx:note>");
+DefMacro('\@thanks','\@empty');
+DefMacro('\thanks{}', '\def\@thanks{#1}\lx@make@thanks{#1}');
+DefConstructor('\lx@make@thanks{}', "<ltx:note role='thanks'>#1</ltx:note>");
 
 # Abstract SHOULD have been so simple, but seems to be a magnet for abuse.
 # For one thing, we'd like to just write

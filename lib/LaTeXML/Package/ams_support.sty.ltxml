@@ -93,7 +93,7 @@ DefMacro('\lx@author@conj', '\ and\ ');                               # \@@and
 
 DefMacro('\author[]{}',
   '\if.#1.\else\def\shortauthor{#1}\fi'
-    . '\@author{#2}');
+    . '\def\@author{#2}\lx@author{#2}');
 
 DefMacroI('\datename', undef, '\textit{Date}:');
 

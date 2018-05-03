@@ -29,14 +29,14 @@ DefConditional('\ifnewaffil');
 NewCounter('@affil');
 DefMacro('\the@affil', 'affil\arabic{@affil}');
 DefMacro('\author[]{}', sub {
-    return map { Invocation(T_CS('\@author'), $_[1], Tokens(@$_)) }
+    return map { Invocation(T_CS('\lx@ab@author'), $_[1], Tokens(@$_)) }
       SplitTokens($_[2], T_CS('\and'), T_OTHER(',')); });
 
-DefMacro('\@author[]{}',
+DefMacro('\lx@ab@author[]{}',
   '\@add@frontmatter{ltx:creator}[role=author]'
-    . '{\@personname{#2}\@authormark{\if.#1.\the@affil\else#1\fi}}');
+    . '{\@personname{#2}\lx@authormark{\if.#1.\the@affil\else#1\fi}}');
 
-DefConstructor('\@authormark{}',
+DefConstructor('\lx@authormark{}',
   "^<ltx:contact role='affiliationmark' _mark='#mark'></ltx:contact>",
   properties => sub { (mark => ToString($_[1])); });
 
