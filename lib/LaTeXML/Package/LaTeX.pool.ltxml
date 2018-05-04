@@ -2249,7 +2249,7 @@ DefPrimitiveI('\operator@font', undef, undef,
 #======================================================================
 
 DefMacro('\@tabacckludge {}', '\csname\string#1\endcsname');
-DefMacro('\@argdef', '\newcommand'); # stopgap?
+
 DefPrimitive('\newcommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (!isDefinable($cs)) {
@@ -2262,6 +2262,13 @@ DefPrimitive('\newcommand OptionalMatch:* DefToken [Number][]{}', sub {
 DefPrimitive('\CheckCommand OptionalMatch:* DefToken [Number][]{}', undef);
 
 DefPrimitive('\renewcommand OptionalMatch:* DefToken [Number][]{}', sub {
+    my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
+    DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
+
+# low-level implementation of both \newcommand and \renewcommand depends on \@argdef
+# -- but since we are not adding the entirety of the machinery underneath, 
+#    I am just defining it as a direct alias to a DefMacro (needed for e.g. etoolbox)
+DefMacro('\@argdef OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
@@ -4663,13 +4670,20 @@ RawTeX(<<'EoTeX');
 EoTeX
 
 DefMacro('\@ifdefinable DefToken {}', sub {
-    my ($gullet, $token, $if) = @_;
-    if (isDefinable($token)) {
-      return $if->unlist }
-    else {
-      my ($slash, @s) = ExplodeText($token->toString);
-      DefMacroI('\reserved@a', undef, Tokens(@s));
-      return (T_CS('\@notdefinable')); } });
+  my ($gullet, $token, $if) = @_;
+  if (isDefinable($token)) {
+    return $if->unlist }
+  else {
+    my ($slash, @s) = ExplodeText($token->toString);
+    DefMacroI('\reserved@a', undef, Tokens(@s));
+    return (T_CS('\@notdefinable')); } });
+
+Let('\@@ifdefinable','\@ifdefinable');
+
+DefMacro('\@rc@ifdefinable DefToken {}', sub {
+  my ($gullet, $token, $if) = @_;
+  Let('\@ifdefinable','\@@ifdefinable');
+  return $if->unlist; });
 
 DefMacroI('\@notdefinable', undef,
   '\@latex@error{%
