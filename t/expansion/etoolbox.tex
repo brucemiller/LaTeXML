@@ -1,10 +1,9 @@
 \documentclass{article}
 \usepackage{etoolbox}
-
+% --- overload test
 \csdef{path-PB}{path of PB}
 \csdef{path-UF}{path of UF}
 
-% overload test
 \newrobustcmd\whoami{PB}
 \newrobustcmd\mypath{\csuse{path-\whoami}}
 
@@ -19,5 +18,15 @@
 \providerobustcmd\whoami{noop}
 
 \mypath
+% --- end overload test
+
+% --- basic macros
+\newcommand\basic{basic}
+\robustify{\basic}
+\protecting{\textit{\basic}}
+
+\newcounter{countfour}
+\defcounter{countfour}{2+2}
+\the\value{countfour}
 
 \end{document}
