@@ -2741,7 +2741,7 @@ DefPrimitive('\@addtoreset{}{}', sub {
     return; });
 
 DefMacro('\value{}', sub {
-    ExplodeText(CounterValue(ToString(Expand($_[1])))->valueOf); });
+    T_CS("\\c@".ToString(Expand($_[1]))) });
 DefMacro('\@arabic{Number}', sub {
     ExplodeText(ToString($_[1]->valueOf)); });
 DefMacro('\arabic{}', sub {
