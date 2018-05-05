@@ -20,7 +20,7 @@
 \mypath
 % --- end overload test
 
-% --- basic macros
+% --- counters
 \newcommand\basic{basic}
 \robustify{\basic}
 \protecting{\textit{\basic}}
@@ -28,5 +28,30 @@
 \newcounter{countfour}
 \defcounter{countfour}{2+2}
 \the\value{countfour}
+
+% --- lengths
+%     source: https://tex.stackexchange.com/a/286171/78008
+\newcommand{\etminof}[2]{%
+  \ifdimgreater{#1}{#2}{%
+    #2%
+  }{%
+    #1% Is smaller or equal
+  }%
+}
+\newcommand{\etmaxof}[2]{%
+  \ifdimgreater{#1}{#2}{%
+    #1%
+  }{%
+    #2% Is greater or equal
+  }%
+}
+\newlength{\foo}
+\newlength{\foobar}
+\deflength{\foo}{\etminof{1in}{2in}}
+\deflength{\foobar}{\etmaxof{5in}{10in}}
+
+\the\foo 
+
+\the\foobar
 
 \end{document}
