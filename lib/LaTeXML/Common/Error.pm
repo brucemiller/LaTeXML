@@ -15,7 +15,7 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use Time::HiRes;
-use Term::ANSIColor qw(:constants);
+use Term::ANSIColor;
 use base qw(Exporter);
 our @EXPORT = (
   # Error Reporting
@@ -34,18 +34,19 @@ $Term::ANSIColor::AUTORESET = 1;
 our $COLORIZED_LOGGING = -t STDERR;
 
 our %color_scheme = (
-  details => \&BOLD,
-  success => \&GREEN,
-  info    => (defined &BRIGHT_BLUE ? \&BRIGHT_BLUE : \&BLUE),    # bright only recently defined
-  warning => \&YELLOW,
-  error => sub { BOLD RED shift; },
-  fatal => sub { BOLD RED UNDERLINE shift; }
+  details => 'bold',
+  success => 'green',
+  info    => 'bright_blue',          # bright only recently defined
+  warning => 'yellow',
+  error   => 'bold red',
+  fatal   => 'bold red underline',
 );
 
 sub colorizeString {
   my ($string, $alias) = @_;
-  return $COLORIZED_LOGGING ? &{ $color_scheme{$alias} }($string) : $string; }
-
+  return ($COLORIZED_LOGGING && $color_scheme{$alias}
+    ? colored($string, $color_scheme{$alias})
+    : $string); }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Error reporting
 # Public API
