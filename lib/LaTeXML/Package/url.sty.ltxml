@@ -73,7 +73,8 @@ DefMacro('\Url', sub {
 
 # \@@Url cmd {open}{close}{url}{formattedurl}
 DefConstructor('\@@Url Undigested {}{} Semiverbatim {}',
-  "<ltx:ref href='#href' class='#class'>#5</ltx:ref>",
+  "?#isMath(<ltx:XMWrap href='#href'>#5</ltx:XMWrap>)"    # Allow this to work in Math!
+    . " (<ltx:ref href='#href' class='#class'>#5</ltx:ref>)",
   properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[4])),
       class => sub { my $c = ToString($_[1]); $c =~ s/^\\//; 'ltx_' . $c; }); },
   sizer     => '#5',

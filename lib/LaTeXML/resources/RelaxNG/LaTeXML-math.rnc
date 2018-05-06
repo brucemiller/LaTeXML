@@ -76,7 +76,10 @@ XMath.attributes =
   attribute rpadding { text }?,
 
   ## an annotation placed by the parser when it suspects this token may be used as a function.
-  attribute possibleFunction { text }?
+  attribute possibleFunction { text }?,
+
+  ## reference to an arbitrary url.
+  attribute href { text }?
 
 #======================================================================
 
@@ -264,7 +267,6 @@ XMWrap_attributes =
   ## to handle aligned and nested scripts, both pre and post.
   ## (See \elementref{XMTok} for details)
   attribute scriptpos { text }?
-
 
 ## Content model for \elementref{XMWrap}.
 XMWrap_model = XMath.class*

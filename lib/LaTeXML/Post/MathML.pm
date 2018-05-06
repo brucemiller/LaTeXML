@@ -459,6 +459,9 @@ sub pmml_internal {
       my %styleattr = %{ ($style && ($needsmathstyle
             ? $stylemap{$ostyle}{$style}
             : $stylemap2{$ostyle}{$style})) || {} };
+      # And also check for stray attributes that maybe aren't really style, like href?
+      if (my $href = $node->getAttribute('href')) {
+        $styleattr{href} = $href; }
       $result = ['m:mstyle', {%styleattr}, $result] if keys %styleattr;
       return $result; } }
   elsif ($tag eq 'ltx:XMTok') {
@@ -813,6 +816,8 @@ sub stylizeContent {
     if (!grep { !defined $_ } @c) {    # Only if ALL chars in the token could be mapped... ?????
       $text = join('', @c);
       $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef); } }
+  # Other attributes that should be copied?
+  my $href = ($iselement ? $item->getAttribute('href') : $attr{href});
   return ($text,
     ($variant ? (mathvariant => $variant) : ()),
     ($size ? ($stretchyhack
@@ -823,7 +828,8 @@ sub stylizeContent {
     ($bgcolor  ? (mathbackground => $bgcolor)           : ()),
     ($opacity  ? (style          => "opacity:$opacity") : ()),    # ???
     ($stretchy ? (stretchy       => $stretchy)          : ()),
-    ($class    ? (class          => $class)             : ())
+    ($class    ? (class          => $class)             : ()),
+    ($href     ? (href           => $href)              : ()),
     ); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
