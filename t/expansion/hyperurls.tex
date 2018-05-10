@@ -1,0 +1,57 @@
+\documentclass{article}
+%\usepackage{url}
+\usepackage{hyperref}
+\def\macro{with_underscore}%
+
+\begin{document}
+\section{URLs in package hyperref}
+
+\paragraph{URLs}
+\begin{itemize}
+\item\url{  https://example.com/word word };
+\item\url{https://example.com/~User};
+\item\url{https://example.com/someplace#id};
+\item\url{https://example.com/withslash\#id};
+\item\url{https://example.com/user@password};
+\item\url{https://example.com/user&param};
+\item\url{https://example.com/withslash\&param};
+\item\url{https://example.com/with_underscore};
+\item\url{https://example.com/withslash\_underscore};
+\item\url{https://example.com/with^caret};
+\item\url{https://example.com/with$dollar};
+\item\url{https://example.com/expandedmacro.\macro};
+\item\url{https://example.com/encoded%code
+};
+\item\url{https://example.com/withslashpercent\%code}.
+\end{itemize}
+
+\paragraph{Probably unexpected URLs}
+\begin{itemize}
+\item\url{https://example.com/\~{}User};
+\item\url{https://example.com/with.{}braces};
+\item\url{https://example.com/withslash\^caret};
+% Can't even process this
+%\item\url{https://example.com/withslash\$dollar};
+\end{itemize}
+
+\paragraph{URLs in footnotes}
+\footnote{\url{https://example.com/~User}}
+\footnote{too late to fix \#, but can use backslash}
+%\footnote{\url{https://example.com/someplace#id}}
+\footnote{\url{https://example.com/withslash\#id}}
+\footnote{\url{https://example.com/user@password}}
+\footnote{\url{https://example.com/user&param}}
+\footnote{\url{https://example.com/withslash\&param}}
+\footnote{\url{https://example.com/with_underscore}}
+\footnote{\url{https://example.com/withslash\_underscore}}
+\footnote{\url{https://example.com/with^caret}}
+\footnote{\url{https://example.com/with$dollar}}
+\footnote{\url{https://example.com/expandedmacro.\macro}}
+\footnote{\url{https://example.com/percent\%code}}
+
+\paragraph{Probably unexpected URLs in footnotes}
+\footnote{\url{https://example.com/with.{}braces}}
+\footnote{\url{https://example.com/lostpercent%code
+}}
+
+\end{document}

@@ -131,7 +131,8 @@ RawTeX('\newif\ifHy@pdfstring\Hy@pdfstringfalse');
 # \href{url}{text}
 DefMacro('\href Verbatim {}', '\@@Url\href{}{}{#1}{#2}');
 
-# \url{url} from url.sty
+# \url{url} from url.sty... well sorta
+# It's slightly different in that it expands the argument
 # Redefine \@url to sanitize the argument less
 DefMacro('\@Url Token', sub {
     my ($gullet, $cmd) = @_;
@@ -139,16 +140,17 @@ DefMacro('\@Url Token', sub {
     my ($open, $close, $url);
     $open = $gullet->readToken;
     StartSemiverbatim('%');
+    Let('~', T_OTHER('~'));    # Needs special protection?
     if ($open->equals(T_BEGIN)) {
       $open = T_OTHER('{'); $close = T_OTHER('}');
-      $url = $gullet->readBalanced; }
+      $url = $gullet->readBalanced(1); }    # Expand as we go!
     else {
       $close = $open = T_OTHER($open->getString);
       $url = $mouth->readTokens($close); }
     EndSemiverbatim();
-    # Identical with url's \@Url except that it sanitizes the arg less
-    my $cc;
-    my @toks = map { (((($cc = $_->getCatcode) == CC_CS) || ($cc == CC_SUB)) ? $_ : T_OTHER(ToString($_))) } $url->unlist;
+    my @toks = grep { $_->getCatcode != CC_SPACE; } $url->unlist;
+    # Identical with url's \@Url except, let CS's through!
+    @toks = map { (($_->getCatcode == CC_CS) ? $_ : T_OTHER(ToString($_))) } @toks;
     (Invocation(T_CS('\@@Url'),
         T_OTHER(ToString($cmd)), Tokens($open), Tokens($close),
         Tokens(@toks),

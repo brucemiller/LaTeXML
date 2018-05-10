@@ -58,7 +58,8 @@ DefMacro('\@Url Token', sub {
       $url = $mouth->readTokens($close); }
     EndSemiverbatim();
 
-    my @toks = map { T_OTHER(ToString($_)) } $url->unlist;
+    my @toks = grep { $_->getCatcode != CC_SPACE; } $url->unlist;
+    @toks = map { T_OTHER(ToString($_)) } @toks;
     (Invocation(T_CS('\@@Url'),
         T_OTHER(ToString($cmd)), Tokens($open), Tokens($close),
         Tokens(@toks),
