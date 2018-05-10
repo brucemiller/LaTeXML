@@ -379,9 +379,9 @@ DefMacroI('\today', undef, sub { ExplodeText(today()); });
 # but some folks wrap it around arbitrary blocks of material,
 # more like a font switch.
 DefConstructor('\emph{}', "#1", mode => 'text',
-  bounded => 1, font => { emph =>1 }, alias => '\emph',
+  bounded => 1, font => { emph => 1 }, alias => '\emph',
   beforeDigest => sub { DefMacro('\f@shape', 'i'); },
-  afterConstruct => sub { $_[0]->addClass($_[0]->getElement,'ltx_emph'); });
+  afterConstruct => sub { $_[0]->addClass($_[0]->getElement, 'ltx_emph'); });
 
 #======================================================================
 # C.3.2 Making Paragraphs
@@ -889,13 +889,13 @@ DefRegister('\baselinestretch' => Dimension(0));
 #======================================================================
 
 # See frontmatter support in TeX.ltxml
-Let('\@title','\@empty');
+Let('\@title', '\@empty');
 DefMacro('\title{}', '\def\@title{#1}\@add@frontmatter{ltx:title}{#1}');
 
-DefMacro('\@date','\@empty');
+DefMacro('\@date', '\@empty');
 DefMacro('\date{}',
   '\def\@date{#1}'
-   . '\@add@frontmatter{ltx:date}[role=creation,'
+    . '\@add@frontmatter{ltx:date}[role=creation,'
     . 'name={\@ifundefined{datename}{}{\datename}}]{#1}');
 
 DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact>",
@@ -926,8 +926,8 @@ DefConstructor('\lx@author@prefix', sub {
       $document->setAttribute($node, before => ToString(Digest(T_CS('\lx@author@sep')))); }
 });
 
-DefMacro('\@author','\@empty');
-DefMacro('\author{}', '\def\@author{#1}\lx@make@authors@anded{#1}');
+DefMacro('\@author',                 '\@empty');
+DefMacro('\author{}',                '\def\@author{#1}\lx@make@authors@anded{#1}');
 DefMacro('\lx@make@authors@anded{}', sub { andSplit(T_CS('\lx@author'), $_[1]); });
 DefPrimitive('\ltx@authors@oneline', sub {
     AssignMapping('DOCUMENT_CLASSES', ltx_authors_1line => 1);
@@ -954,7 +954,7 @@ DefMacroI('\maketitle', undef,
     . '\global\let\date\relax'
     . '\global\let\and\relax');
 
-DefMacro('\@thanks','\@empty');
+DefMacro('\@thanks',  '\@empty');
 DefMacro('\thanks{}', '\def\@thanks{#1}\lx@make@thanks{#1}');
 DefConstructor('\lx@make@thanks{}', "<ltx:note role='thanks'>#1</ltx:note>");
 
@@ -1281,21 +1281,24 @@ sub setEnumerationStyle {
 # id, but NO refnum (et.al) attributes on itemize \item ...
 # unless the optional tag argument was given!
 # We'll make the <ltx:tag> from either the optional arg, or from \labelitemi..
-DefConstructor('\itemize@item OptionalUndigested',
+DefMacro('\itemize@item', '\par\itemize@item@');
+DefConstructor('\itemize@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>#tags",
   properties => sub { RefStepItemCounter($_[1]); });
 DefConstructor('\inline@itemize@item OptionalUndigested',
   "<ltx:inline-item xml:id='#id'>#tags",
   properties => sub { RefStepItemCounter($_[1]); });
 
-DefConstructor('\enumerate@item OptionalUndigested',
+DefMacro('\enumerate@item', '\par\enumerate@item@');
+DefConstructor('\enumerate@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>#tags",
   properties => sub { RefStepItemCounter($_[1]); });
 DefConstructor('\inline@enumerate@item OptionalUndigested',
   "<ltx:inline-item xml:id='#id'>#tags",
   properties => sub { RefStepItemCounter($_[1]); });
 
-DefConstructor('\description@item OptionalUndigested',
+DefMacro('\description@item', '\par\description@item@');
+DefConstructor('\description@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>#tags",
   properties => sub { RefStepItemCounter($_[1]); });
 DefConstructor('\inline@description@item OptionalUndigested',
@@ -1305,15 +1308,18 @@ DefConstructor('\inline@description@item OptionalUndigested',
 DefEnvironment('{itemize}',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
   properties => sub { beginItemize('itemize', '@item'); },
+  beforeDigestEnd => sub { Digest('\par'); },
   locked => 1, mode => 'text');
 DefEnvironment('{enumerate}',
   "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
   properties => sub { beginItemize('enumerate', 'enum'); },
+  beforeDigestEnd => sub { Digest('\par'); },
   locked => 1, mode => 'text');
 DefEnvironment('{description}',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
   beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
   properties => sub { beginItemize('description', '@desc'); },
+  beforeDigestEnd => sub { Digest('\par'); },
   locked => 1, mode => 'text');
 
 DefMacro('\makelabel{}', '#1');
@@ -1476,9 +1482,11 @@ DefConstructor('\list@item OptionalUndigested',
 
 DefEnvironment('{trivlist}',
   "<ltx:itemize>#body</ltx:itemize>",
-  properties => sub { beginItemize('trivlist'); });
+  properties      => sub { beginItemize('trivlist'); },
+  beforeDigestEnd => sub { Digest('\par'); });
 
-DefConstructor('\trivlist@item OptionalUndigested',
+DefMacro('\trivlist@item', '\par\trivlist@item@');
+DefConstructor('\trivlist@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>"
     . "<ltx:tags><ltx:tag>#tag</ltx:tag></ltx:tags>",    # At least an empty tag! ?
   properties => sub { ($_[1] ? (tag => Digest(Expand($_[1]))) : ()); });
@@ -5097,7 +5105,7 @@ RawTeX(<<'EoTeX');
   \fi}
 EoTeX
 
-Let('\l@ngrel@x', '\relax');                # Never actually used anywhere, but...
+Let('\l@ngrel@x', '\relax');    # Never actually used anywhere, but...
 DefMacro('\@star@or@long{}', '\@ifstar{\let\l@ngrel@x\relax#1}{\let\l@ngrel@x\long#1}');
 
 # maybe this is easiest just to punt.

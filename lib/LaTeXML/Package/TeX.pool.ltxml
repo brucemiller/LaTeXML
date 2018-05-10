@@ -6460,6 +6460,7 @@ DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
 DefMathI('\@APPLYFUNCTION', undef, "\x{2061}", reversion => '', name => '', role => 'APPLYOP');
 DefMathI('\@INVISIBLETIMES', undef, "\x{2062}", reversion => '', name => '', meaning => 'times', role => 'MULOP');
 DefMathI('\@INVISIBLECOMMA', undef, "\x{2063}", reversion => '', name => '', role => 'PUNCT');
+DefMathI('\@INVISIBLEPLUS', undef, "\x{2064}", reversion => '', name => '', meaning => 'plus', role => 'ADDOP');
 
 # We OUGHT to be able to do this using \llap,\rlap,\hss...
 DefMacro('\lx@tweaked{}{}', '\ifmmode\lx@math@tweaked{#1}{#2}\else\lx@text@tweaked{#1}{#2}\fi');
