@@ -61,6 +61,7 @@ NewCounter('subsection',    'section',       idprefix => 'SS',  nested => ['subs
 NewCounter('subsubsection', 'subsection',    idprefix => 'SSS', nested => ['paragraph']);
 NewCounter('paragraph',     'subsubsection', idprefix => 'P',   nested => ['subparagraph']);
 NewCounter('subparagraph', 'paragraph', idprefix => 'SP', nested => ['equation', 'figure', 'table']);
+NewCounter('footnote', 'chapter');
 
 DefMacro('\thepart',          '\Roman{part}');
 DefMacro('\thechapter',       '\arabic{chapter}');
