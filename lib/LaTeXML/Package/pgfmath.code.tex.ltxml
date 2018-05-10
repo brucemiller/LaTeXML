@@ -454,7 +454,7 @@ BEGIN {
     div        => sub { int($_[0] / $_[1]); },
     divide     => sub { $_[0] / $_[1]; },
     '!'        => sub { pgfmathfactorial($_[0]); },
-    'r'        => sub { deg2rad($_[0]); },
+    'r'        => sub { rad2deg($_[0]); },
     e          => sub { $E; },
     pi         => sub { $PI; },
     abs        => sub { abs($_[0]); },
@@ -536,9 +536,16 @@ expr :
      factor (MULOP factor { [$item[1],$item[2]]; })(s?)
           { LaTeXML::Package::Pool::pgfmath_leftrecapply($item[1],map(@$_,@{$item[2]})); }
 
-  factor :
+   # addPostfix[$base] ; adds any following sub/super scripts to $base.
+   addPostfix :
+          /^\Z/ { $arg[0];}   # short circuit!
+        | POSTFIX          addPostfix[LaTeXML::Package::Pool::pgfmath_apply($item[1],$arg[0])]
+        | { $arg[0]; }
+  factor : simplefactor addPostfix[$item[1]]
+
+  simplefactor :
       /\(/ formula /\)/     { $item[2]; }
-    | PREFIX factor           { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
+    | PREFIX simplefactor   { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
     | FUNCTION /\(/ formula (/,/ formula { $item[2]; })(s?) /\)/
            { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[3], @{$item[4]}); }
     | FUNCTION0                   { LaTeXML::Package::Pool::pgfmath_apply($item[1]); }
