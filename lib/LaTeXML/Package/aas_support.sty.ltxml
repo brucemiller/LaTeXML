@@ -82,8 +82,8 @@ DefMacro('\author{}',
   '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
 
 DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affil{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-
+DefMacro('\affil{}',       '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
 DefConstructor('\@@@authoraddr{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
 DefMacro('\authoraddr{}', '\@add@to@frontmatter{ltx:creator}{\@@@authoraddr{#1}}');
 
@@ -104,6 +104,8 @@ DefConstructor('\@altaffilmark{}',
   "<ltx:note role='affiliationmark' mark='#1'/> ");
 DefConstructor('\altaffiltext{}{}',
   "<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>");
+
+DefMacro('\submitjournal{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
 
 #======================================================================
 # 2.4 Abstract
@@ -145,15 +147,18 @@ DefMacro('\placeplate{}',  '');
 NewCounter('plate');
 DefMacroI('\platename', undef, 'Plate');
 
+# Is there any kind of "list of plates" ? Then we'd need @inlists
 DefEnvironment('{plate}[]',
-"<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_plate'>"
+  "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_plate'>"
+    . "#tags"
     . "#body"
     . "</ltx:float>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'plate'); },
   afterDigest => sub { RescueCaptionCounters('plate', $_[1]); });
 
 DefEnvironment('{plate*}[]',
-"<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_plate'>"
+  "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_plate'>"
+    . "#tags"
     . "#body"
     . "</ltx:float>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'plate'); },
@@ -161,6 +166,15 @@ DefEnvironment('{plate*}[]',
 
 DefMacro('\platewidth{Dimension}', '');                    # Ignorable?
 DefMacro('\platenum{}',            '\def\theplate{#1}');
+
+DefMacro('\gridline{}', '');
+DefMacro('\fig Semiverbatim {Dimension}{}',
+  '\begin{figure}\caption{#3}\includegraphics[width=#2]{#1}\end{figure}');
+Let('\leftfig',  '\fig');
+Let('\rightfig', '\fig');
+Let('\boxedfig', '\fig');
+DefMacro('\rotatefig {Number} Semiverbatim {Dimension}{}',
+  '\begin{figure}\caption{#4}\includegraphics[width=#3,angle=#1]{#2}\end{figure}');
 
 #======================================================================
 # 2.9 Acknowledgements
@@ -182,42 +196,21 @@ DefConstructor('\facility{}', "<ltx:text class='ltx_ast_facility'>#1</ltx:text>"
 # almost normal LaTeX
 DefMacro('\appendix', '\@appendix');
 DefPrimitive('\@appendix', sub {
-    NewCounter('section', 'document', idprefix => 'A', nested => ['subsection']);
+    startAppendices('section');
     NewCounter('equation', 'section', idprefix => 'E');
-    DefMacro('\thesection', '\Alph{section}', scope => 'global');
-    DefMacro('\theequation', '\thesection\arabic{equation}', scope => 'global');
-    DefMacroI('\theappendix', undef, '\thesection', scope => 'global');
-    Let('\section',   '\appendix@section', 'global');
-    Let('\@appendix', '\relax',            'global');
-    if (IsDefined('\appendixname')) {
-      Let('\sectionname', '\appendixname', 'global'); }
-});
+    DefMacro('\theequation', '\thesection\arabic{equation}', scope => 'global'); });
 
 #======================================================================
 # 2.12 Equations
 # mostly normal LaTeX
 
 # Basically, {mathletters} is a copy of AMSMath's {subequations}... Isn't it?
-DefEnvironment('{mathletters}',
-  "<ltx:equationgroup xml:id='#id'>#body</ltx:equationgroup>",
-  afterDigestBegin => sub {
-    my ($stomach, $whatsit) = @_;
-    my %eqn = RefStepCounter('equation');
-    AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
-    ResetCounter('equation');
-    DefMacro('\theequation',    UnTeX($eqn{refnum}) . '\alph{equation}');
-    DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID');
-  },
-  properties => sub { RefStepID('@equationgroup'); },
-  afterDigest => sub {
-    AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
+DefMacro('\mathletters',    '\lx@equationgroup@subnumbering@begin');
+DefMacro('\endmathletters', '\lx@equationgroup@subnumbering@end');
 
 # \eqnum{text}  specifies equation number inside an equation
 # Basically, AMSMath's \tag ?
-DefConstructor('\eqnum {}', '',
-  afterDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => ToString($_[1]), 'global'); },
-  mode => 'text');
+DefMacro('\eqnum {}', '\lx@equation@settag{\edef\theequation{#2}\lx@make@tags{equation}}');
 
 #======================================================================
 # 2.13 Citations and Bibliography
@@ -443,10 +436,6 @@ RequirePackage('url');
 
 DefConstructor('\anchor Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#2</ltx:ref>",
-  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
-# \url{text}
-DefConstructor('\url Semiverbatim',
-  "<ltx:ref href='#href'>#1</ltx:ref>",
   properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
 
 # This should be in effect only after frontmatter

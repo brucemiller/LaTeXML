@@ -313,16 +313,18 @@ DefMacro('\citetalias Semiverbatim', sub {
         $key,
         Invocation(T_CS('\@@citephrase'), T_CS('\al@' . ToString($key))))); });
 
-DefMacro('\citepalias Semiverbatim', sub {
-    my ($gullet, $key) = @_;
-    my ($open, $close) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE);
+DefMacro('\citepalias [][] Semiverbatim', sub {
+    my ($gullet, $pre, $post, $key) = @_;
+    my ($open, $close, $ns) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR);
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citepalias')),
       Tokens($open,
+        ($pre ? ($pre, T_SPACE) : ()),
         Invocation(T_CS('\@@bibref'),
           Tokens(Explode("Phrase1")),
           $key,
           Invocation(T_CS('\@@citephrase'), T_CS('\al@' . ToString($key)))),
+        ($post ? ($ns, T_SPACE, $post) : ()),
         $close)); });
 
 #======================================================================
@@ -504,11 +506,14 @@ DefMacro('\NAT@wrout{}{}{}{} Semiverbatim', sub {
         $key)->unlist; } });
 
 DefConstructor('\NAT@@wrout{}{}{}{}{} Semiverbatim',
-  "?#1(<ltx:bibtag role='number'>#1</ltx:bibtag>)"
-    . "?#2(<ltx:bibtag role='year'>#2</ltx:bibtag>)"
-    . "?#3(<ltx:bibtag role='authors'>#3</ltx:bibtag>)"
-    . "?#4(<ltx:bibtag role='fullauthors'>#4</ltx:bibtag>)"
-    . "?#5(<ltx:bibtag role='refnum'>#5</ltx:bibtag>)",
+  "<ltx:tags>"
+    . "?#1(<ltx:tag role='number'>#1</ltx:tag>)"
+    . "?#2(<ltx:tag role='year'>#2</ltx:tag>)"
+    . "?#3(<ltx:tag role='authors'>#3</ltx:tag>)"
+    . "?#4(<ltx:tag role='fullauthors'>#4</ltx:tag>)"
+    . "?#5(<ltx:tag role='refnum'>#5</ltx:tag>)"
+    . "?#6(<ltx:tag role='key'>#6</ltx:tag>)"
+    . "</ltx:tags>",
   # Allow plain & in here ???
   bounded => 1, beforeDigest => sub { Let(T_ALIGN, '\&'); }
 );

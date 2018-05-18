@@ -123,42 +123,20 @@
     <xsl:element name="title" namespace="{$html_ns}">
       <xsl:value-of select="$HEAD_TITLE_PREFIX"/>
       <xsl:choose>
-<!--        <xsl:when test="*/ltx:title | */ltx:caption">-->
         <xsl:when test="descendant::ltx:title | descendant::ltx:caption">
           <xsl:if test="$HEAD_TITLE_PREFIX">
             <xsl:text>: </xsl:text>
           </xsl:if>
-<!--
           <xsl:choose>
-            <xsl:when test="*/ltx:toctitle">
-              <xsl:apply-templates select="*/ltx:toctitle[1]" mode="visible-text"/>
-            </xsl:when>
-            <xsl:when test="*/ltx:title">
-              <xsl:apply-templates select="*/ltx:title[1]" mode="visible-text"/>
-            </xsl:when>
-            <xsl:when test="*/ltx:toccaption">
-              <xsl:apply-templates select="*/ltx:toccaption[1]" mode="visible-text"/>
-            </xsl:when>
-            <xsl:when test="*/ltx:caption">
-              <xsl:apply-templates select="*/ltx:caption[1]" mode="visible-text"/>
-            </xsl:when>
-          </xsl:choose>
--->
-          <xsl:choose>
-            <xsl:when test="descendant::ltx:toctitle">
-              <xsl:apply-templates select="descendant::ltx:toctitle[position()=1]" mode="visible-text"/>
-            </xsl:when>
             <xsl:when test="descendant::ltx:title">
-              <xsl:apply-templates select="descendant::ltx:title[position()=1]" mode="visible-text"/>
-            </xsl:when>
-            <xsl:when test="descendant::ltx:toccaption">
-              <xsl:apply-templates select="descendant::ltx:toccaption[position()=1]" mode="visible-text"/>
+              <xsl:apply-templates select="descendant::ltx:title[position()=1]"
+                                   mode="head-toctitle"/>
             </xsl:when>
             <xsl:when test="descendant::ltx:caption">
-              <xsl:apply-templates select="descendant::ltx:caption[position()=1]" mode="visible-text"/>
+              <xsl:apply-templates select="descendant::ltx:caption[position()=1]"
+                                   mode="head-toctitle"/>
             </xsl:when>
           </xsl:choose>
-<!--          <xsl:apply-templates select="*/ltx:title" mode="visible-text"/>-->
           <xsl:if test="$HEAD_TITLE_SHOW_CONTEXT">
             <xsl:for-each select="//ltx:navigation/ltx:ref[@rel='up']">
               <xsl:text>&#x2023; </xsl:text>
@@ -172,6 +150,23 @@
         </xsl:when>
       </xsl:choose>
     </xsl:element>
+  </xsl:template>
+
+  <!-- Use the sibling toctitle|toccaption instead of title|caption, if any -->
+  <xsl:template match="*" mode="head-toctitle">
+    <xsl:choose>
+      <xsl:when test="following-sibling::ltx:toctitle | following-sibling::ltx:toccaption
+                      | preceding-sibling::ltx:toctitle | preceding-sibling::ltx:toccaption">
+        <xsl:apply-templates select="following-sibling::ltx:toctitle
+                                     | following-sibling::ltx:toccaption
+                                     | preceding-sibling::ltx:toctitle
+                                     | preceding-sibling::ltx:toccaption"
+                             mode="visible-text"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:apply-templates select="." mode="visible-text"/>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="text()" mode="visible-text">
@@ -775,12 +770,15 @@
        ====================================================================== -->
 
   <xsl:strip-space elements="ltx:TOC ltx:toclist ltx:tocentry"/>
+  <xsl:template match="ltx:TOC/ltx:title"/>
 
   <!-- explicitly requested TOC -->
   <xsl:template match="ltx:TOC[@format='short']">
     <xsl:param name="context"/>
     <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name='add_attributes'/>
+      <xsl:call-template name='add_attributes'>
+        <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
+      </xsl:call-template>
       <xsl:apply-templates mode="short">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
@@ -790,7 +788,9 @@
   <xsl:template match="ltx:TOC[@format='veryshort']">
     <xsl:param name="context"/>
     <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name='add_attributes'/>
+      <xsl:call-template name='add_attributes'>
+        <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
+      </xsl:call-template>
       <xsl:apply-templates mode="veryshort">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
@@ -800,7 +800,9 @@
   <xsl:template match="ltx:TOC[@format='normal2']">
     <xsl:param name="context"/>
     <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name='add_attributes'/>
+      <xsl:call-template name='add_attributes'>
+        <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
+      </xsl:call-template>
       <xsl:apply-templates mode="normal2">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
@@ -812,14 +814,15 @@
     <xsl:if test="ltx:toclist/descendant::ltx:tocentry">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="div" namespace="{$html_ns}">
-        <xsl:call-template name='add_attributes'/>
-        <xsl:if test="@name">
+        <xsl:call-template name='add_attributes'>
+          <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
+        </xsl:call-template>
+        <xsl:if test="ltx:title">
           <xsl:element name="h6" namespace="{$html_ns}">
             <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
-            <xsl:apply-templates select="@name">
+            <xsl:apply-templates select="ltx:title/node()">
               <xsl:with-param name="context" select="$innercontext"/>
             </xsl:apply-templates>
-            <xsl:text>:</xsl:text>
           </xsl:element>
         </xsl:if>
         <xsl:apply-templates>

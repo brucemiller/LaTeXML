@@ -35,6 +35,7 @@ DefPrimitive('\newsubfloat[]{}', sub {
         : 'ltx:float'));
     NewCounter('sub' . $name, $name, idprefix => 'sf', idwithin => $name);
     NewCounter('sub' . $name . '@save');
+    Let('\ext@sub' . $name, '\ext@' . $name);
     DefMacro('\thesub' . $name,   '\alph{sub' . $name . '}');
     DefMacro('\fnum@sub' . $name, '(\thesub' . $name . ')');
     DefMacro('\p@sub' . $name,    '(\thesub' . $name . ')');
@@ -48,7 +49,8 @@ DefPrimitive('\newsubfloat[]{}', sub {
         . '\iflx@donecaption\else\addtocounter{\@captype}{\m@ne}\fi');
     # \ext@sub<name>, \l@sub<name>, \c@lofdepth,
     DefEnvironment('{lx@subfloat@@' . $name . '}',
-      "<$type refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
+      "<$type xml:id='#id'>"
+        . "#tags"
         . "#body"
         . "</$type>",
       beforeDigest => sub { DefMacroI('\@captype', undef, 'sub' . $name); },

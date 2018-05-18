@@ -19,7 +19,10 @@ use LaTeXML::Package;
 # Package Options
 DeclareOption('labels', sub {
   Let(T_CS('\lxRDF@original@label'),T_CS('\label'));
+  Let(T_CS('\lxRDF@original@longtable@label'),T_CS('\@longtable@label'));
   DefMacro('\label Semiverbatim','\lxRDF@original@label{#1}\lxRDFa{property=dcterms:alternative,content=#1}');
+  DefMacro('\@longtable@label Semiverbatim',
+           '\lxRDF@original@longtable@label{#1}\lxRDFa{property=dcterms:alternative,content=#1}');
 });
 
 ProcessOptions();

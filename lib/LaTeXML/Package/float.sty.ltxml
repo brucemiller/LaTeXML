@@ -20,11 +20,10 @@ use warnings;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-# Choose the current float style (plain, plaintop, boxed, ruled) Ignorable
-DefMacro('\float@style',  '');
+# Choose the current float style (plain, plaintop, boxed, ruled)
+DefMacro('\float@style',  'plain');
 DefMacro('\floatstyle{}', '\def\float@style{#1}');
-# \restylefloat{style}  Ignorable
+# \restylefloat{style}  Ignore for now...
 DefMacro('\restylefloat OptionalMatch:* {}', undef);
 # \floatplacement{style}{placement}  Ignorable
 DefMacro('\floatplacement{}{}', undef);
@@ -32,8 +31,8 @@ DefMacro('\floatplacement{}{}', undef);
 # \listof{type}{title}   Ignorable
 DefMacro('\listof{}{}', undef);
 
-# \floatname{type}{name}  Ignorable, but tempting
-DefMacro('\floatname{}{}', '\@namedef{fname@#1}{#2}');
+# \floatname{type}{name}
+DefMacro('\floatname{}{}', '\@namedef{#1name}{#2}');
 
 our %float_outerframe = (ruled => 'top');
 our %float_innerframe = (ruled => 'topbottom', boxed => 'rectangle');
@@ -44,18 +43,26 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
     my $style = ToString(Digest(T_CS('\float@style')));
     NewCounter($type, $within);
     DefMacroI('\the' . $type, undef, '\the' . $within . '.\arabic{' . $type . '}') if $within;
-    DefMacroI('\fnum@' . $type, undef, '\fname@' . $type . '\nobreakspace\the' . $type);
-    if (!LookupDefinition(T_CS('\fname@' . ToString($type)))) {
-      DefMacroI('\fname@' . $type, undef, $type); }
+    if (!LookupDefinition(T_CS('\\' . $type . 'name'))) {
+      DefMacroI('\\' . $type . 'name', undef, $type); }
+    my $isplain = $style =~ /^plain/;
+    DefMacro('\fnum@font@' . $type, ($isplain ? '\rmfamily' : '\bfseries'));
+    DefMacro('\format@title@' . $type . '{}',
+      ($isplain
+        ? '\lx@tag[][: ]{\lx@fnum@@{' . $type . '}} #2'
+        : '\lx@tag[][ ]{\lx@fnum@@{' . $type . '}} #1'));
+    DefMacro('\ext@' . $type, $auxext);
     DefEnvironment("{$type}[]",
-"<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_$type'>"
+      "<ltx:float xml:id='#id' ?#1(placement='#1') inlist='#inlist' class='ltx_float_$type'>"
+        . "#tags"
         . "#body"
         . "</ltx:float>",
       beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
       afterDigest => sub { RescueCaptionCounters($type, $_[1]); },
       afterConstruct => sub { addFloatFrames($_[0], $style); });
     DefEnvironment("{$type*}[]",
-"<ltx:float refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1') class='ltx_float_$type'>"
+      "<ltx:float xml:id='#id' ?#1(placement='#1') inlist='#inlist' class='ltx_float_$type'>"
+        . "#tags"
         . "#body"
         . "</ltx:float>",
       beforeDigest => sub { DefMacroI('\@captype', undef, $type); },

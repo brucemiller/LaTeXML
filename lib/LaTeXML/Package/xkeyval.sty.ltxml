@@ -1,0 +1,481 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  xkeyval                                                            | #
+# | Implementation of xkeyval for LaTeXML                               | #
+# |=====================================================================| #
+# | Thanks to Tom Wiesing <tom.wiesing@gmail.com>                       | #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use LaTeXML::Util::Pathname qw(pathname_split);
+
+###
+### Basic \setkeys
+###
+
+# \setkeys[prefix]{keyset}[na]{keyvals}
+DefMacro('\setkeys OptionalMatch:* OptionalMatch:+ []{}[]', sub {
+    my ($gullet, $star, $plus, $prefix, $keysets, $skip) = @_;
+
+    $skip = defined($skip) ? ToString($skip) : undef;
+    $star = defined($star) ? T_CS('\XKV@rm') : undef;
+
+    my $keyvals = LaTeXML::Core::KeyVals->new(
+      $prefix, $keysets,
+      setAll => defined($plus), setInternals => 1,
+      skip => $skip, skipMissing => $star);
+    $keyvals->readFrom($gullet, T_END);
+    $keyvals->setKeysExpansion; });
+
+# \setrmkeys[prefix]{keyset}[na]
+DefMacro('\setrmkeys OptionalMatch:* []{}[]', sub {
+    my ($gullet, $star, $prefix, $keysets, $na) = @_;
+
+    # expand and delete the list of token we need to work on
+    my @keyvals = Expand(T_CS('\XKV@rm'))->unlist;
+    DefMacro(T_CS('\XKV@rm'), '');
+
+    my @tokens = ();
+    push(@tokens, T_CS('\setkeys'));
+    push(@tokens, $star) if defined($star);
+    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN, $keysets, T_END);
+    push(@tokens, T_OTHER('['), $na, T_OTHER(']')) if defined($na);
+    push(@tokens, T_BEGIN, @keyvals, T_END);
+    @tokens; });
+
+## ------------
+## regular keys
+## ------------
+
+# \define@key[prefix]{keyset}{key}[default]{code}
+DefPrimitive('\define@key[]{}{}[]{}', sub {
+    my ($stomach, $prefix, $keyset, $key, $default, $code) = @_;
+
+    $prefix  = defined($prefix)  ? ToString($prefix)  : undef;
+    $default = defined($default) ? ToString($default) : undef;
+    $keyset  = ToString($keyset);
+    $key     = ToString($key);
+
+    DefKeyVal($keyset, $key, '', $default, prefix => $prefix, code => $code);
+
+    return; });
+
+## ------------
+## command keys
+## ------------
+
+# \define@cmdkey[prefix]{keyset}[macroprefix]{key}[default]{code}
+DefPrimitive('\define@cmdkey[]{}[]{}[]{}', sub {
+    my ($stomach, $prefix, $keyset, $macroprefix, $key, $default, $code) = @_;
+
+    $prefix      = defined($prefix)      ? ToString($prefix)      : undef;
+    $macroprefix = defined($macroprefix) ? ToString($macroprefix) : undef;
+
+    DefKeyVal(ToString($keyset), ToString($key), '', ToString($default), prefix => $prefix,
+      kind => 'command', macroprefix => $macroprefix,
+      code => $code);
+
+    return; });
+
+# \define@cmdkeys[prefix]{keyset}[macroprefix]{keys}[default]
+DefPrimitive('\define@cmdkeys[]{}[]{}[]', sub {
+    my ($stomach, $prefix, $keyset, $macroprefix, $keys, $default) = @_;
+
+    $prefix      = defined($prefix) ? ToString($prefix) : undef;
+    $keyset      = ToString($keyset);
+    $macroprefix = defined($macroprefix) ? ToString($macroprefix) : undef;
+    $default     = defined($default) ? ToString($default) : undef;
+
+    foreach my $key (split(',', ToString($keys))) {
+      DefKeyVal($keyset, $key, '', $default, prefix => $prefix,
+        kind => 'command', macroprefix => $macroprefix, code => Tokens()); }
+
+    return; });
+
+## ------------
+## choice keys
+## ------------
+
+# \define@choicekey*+[prefix]{keyset}{key}[bin]{choices}[default]{code}{mismatch}
+DefMacro('\define@choicekey OptionalMatch:* OptionalMatch:+ []{}{}[]{}[]{}', sub {
+    my ($gullet, $star, $plus, $prefix, $keyset, $key, $bin, $choices, $default, $code) = @_;
+
+    my @tokens = ();
+    push(@tokens, T_CS('\\ltx@define@choicekey@int'));
+    push(@tokens, $star) if defined($star);
+    push(@tokens, $plus) if defined($plus);
+    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN, $keyset, T_END);
+    push(@tokens, T_BEGIN, $key,    T_END);
+    push(@tokens, T_OTHER('['), $bin, T_OTHER(']')) if defined($bin);
+    push(@tokens, T_BEGIN, $choices, T_END);
+    push(@tokens, T_OTHER('['), $default, T_OTHER(']')) if defined($default);
+    push(@tokens, T_BEGIN, $code, T_END);
+    # handle the optional mismatch (for the not-plus case)
+    push(@tokens, T_BEGIN, T_END) unless defined($plus);
+    @tokens; });
+
+DefPrimitive('\ltx@define@choicekey@int OptionalMatch:* OptionalMatch:+ []{}{}[]{}[]{}{}', sub {
+    my ($stomach, $star, $plus, $prefix, $keyset, $key, $bin, $choices, $default, $code, $mismatch) = @_;
+
+    $prefix  = defined($prefix)  ? ToString($prefix)  : undef;
+    $default = defined($default) ? ToString($default) : undef;
+    my @thechoices = split(',', ToString($choices));
+
+    DefKeyVal(ToString($keyset), ToString($key), '', $default, prefix => $prefix,
+      kind => 'choice', normalize => defined($star), choices => [@thechoices],
+      bin => $bin, code => $code, mismatch => $mismatch);
+
+    return; });
+
+## ------------
+## bool keys
+## ------------
+
+# \define@choicekey*+[prefix]{keyset}[macroprefix]{key}[default]{code}{mismatch}
+DefMacro('\define@boolkey OptionalMatch:+ []{}[]{}[]{}', sub {
+    my ($gullet, $plus, $prefix, $keyset, $macroprefix, $key, $default, $code) = @_;
+
+    my @tokens = ();
+    push(@tokens, T_CS('\\define@boolkey@int'));
+    push(@tokens, $plus) if defined($plus);
+    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN, $keyset, T_END);
+    push(@tokens, T_OTHER('['), $macroprefix, T_OTHER(']')) if defined($macroprefix);
+    push(@tokens, T_BEGIN,      $key,         T_END);
+    push(@tokens, T_OTHER('['), $default,     T_OTHER(']')) if defined($default);
+    push(@tokens, T_BEGIN,      $code,        T_END);
+    # handle the optional mismatch (for the not-plus case)
+    push(@tokens, T_BEGIN, T_END) unless defined($plus);
+    @tokens; });
+
+DefPrimitive('\define@boolkey@int OptionalMatch:+ []{}[]{}[]{}{}', sub {
+    my ($stomach, $plus, $prefix, $keyset, $macroprefix, $key, $default, $code, $mismatch) = @_;
+
+    $prefix      = defined($prefix)      ? ToString($prefix)      : undef;
+    $macroprefix = defined($macroprefix) ? ToString($macroprefix) : undef;
+    $default     = defined($default)     ? ToString($default)     : undef;
+
+    DefKeyVal(ToString($keyset), ToString($key), '', $default, prefix => $prefix,
+      kind => 'boolean', macroprefix => $macroprefix,
+      code => $code, mismatch => $mismatch);
+
+    return; });
+
+# \define@boolkeys[prefix]{keyset}[macroprefix]{keys}[default]
+DefPrimitive('\define@boolkeys[]{}[]{}[]', sub {
+    my ($stomach, $prefix, $keyset, $macroprefix, $keys, $default) = @_;
+
+    $prefix      = defined($prefix) ? ToString($prefix) : undef;
+    $keyset      = ToString($keyset);
+    $macroprefix = defined($macroprefix) ? ToString($macroprefix) : undef;
+    $default     = defined($default) ? ToString($default) : undef;
+
+    foreach my $key (split(',', ToString($keys))) {
+      DefKeyVal($keyset, $key, '', $default, prefix => $prefix,
+        kind => 'boolean', macroprefix => $macroprefix, code => Tokens()); }
+
+    return; });
+
+## ------------
+## check for a defined key
+## ------------
+DefMacro('\key@ifundefined[]{}{}{}{}', sub {
+    my ($gullet, $prefix, $keysets, $key, $undefined, $defined) = @_;
+
+    my $sprefix = defined($prefix) ? ToString($prefix) : undef;
+    my @skeysets = split(',', ToString($keysets));
+    my $skey = ToString($key);
+
+    # if one of the keys exists, we return
+    foreach my $skeyset (@skeysets) {
+      if (HasKeyVal($sprefix, $skeyset, $skey)) {
+        DefMacro('\XKV@tfam', sub { Explode($skeyset); });
+        return $defined; } }
+
+    $undefined; });
+
+## ------------
+## disabling keys
+## ------------
+DefMacro('\disable@keys[]{}{}', sub {
+    my ($gullet, $prefix, $keyset, $keys) = @_;
+
+    my $sprefix = defined($prefix) ? ToString($prefix) : undef;
+    my $skeyset = ToString($keyset);
+    my @skeys   = split(',', ToString($keys));
+
+    # if one of the keys exists, we return
+    foreach my $skey (@skeys) { DisableKeyVal($sprefix, $skeyset, $skey); }
+
+    return; });
+
+##
+## Option processing
+##
+
+# Base-bones parameter type to define an optional argument encased in angle
+# brackets <>. Bare-bones implementation, WITHUOUT support for things like
+# <Dimension>, ...
+# This is used by \DeclareOptionX and friends.
+DefParameterType('OptionalAngle', sub {
+    my ($gullet) = @_;
+    if ($gullet->ifNext(T_OTHER('<'))) {
+      $gullet->readToken;    # skip <
+      return $gullet->readUntil(T_OTHER('>')); }
+    else { return (undef); } },
+  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('<'), Revert($_[0]), T_OTHER('>')) : ()); });
+
+# Utility function to get the current filename
+sub xkeyval_getFileName {
+  my $name = ToString(Expand(T_CS('\@currname')));
+  my $ext  = ToString(Expand(T_CS('\@currext')));
+  return $name . '.' . $ext; }
+
+# Get and set the XKV@documentclass and XKV@classoptionslist macros
+# This helper function should only be run once
+sub xkeyval_setupDocumentClass {
+  my $fileslst      = ToString(Expand(T_CS('\@filelist')));
+  my @files         = split(',', $fileslst);
+  my $clsext        = ToString(Expand(T_CS('\@clsextension')));
+  my $documentClass = undef;
+  foreach my $file (@files) {
+    my ($area, $base, $ext) = pathname_split($file);
+    if ($ext eq $clsext) {
+      if (defined $STATE->lookupMeaning(T_CS('\opt@' . $file))) {
+        DefMacro('\XKV@documentclass', Tokens(Explode($file)));
+        Let('\XKV@classoptionslist', '\@classoptionslist');
+        return; } } }
+  # oops, we did not have a documentclass
+  Error('undefined', 'xkeyval', 'Package xkeyval loaded before \documentclass');
+  DefMacro('\XKV@documentclass',    Tokens());
+  DefMacro('\XKV@classoptionslist', Tokens());
+  return; }
+xkeyval_setupDocumentClass();
+
+# checks if we are inside a class file
+# by checking if the documentclass is equal to the current file name
+sub xkeyval_isInClassFile {
+  my $documentClass = ToString(Expand(T_CS('\XKV@documentclass')));
+  my $filename      = xkeyval_getFileName();
+  return $documentClass eq $filename; }
+
+## ------------
+## DeclareOptionX
+## ------------
+
+# \DeclareOptionX[*]
+DefMacro('\DeclareOptionX OptionalMatch:*', sub {
+    my ($gullet, $star) = @_;
+    if (defined($star)) { return Tokens(T_CS('\DeclareOptionX@int@star')); }
+    else { return Tokens(T_CS('\DeclareOptionX@int@normal')); } });
+
+# \DeclareOptionX*{code}
+DefMacro('\DeclareOptionX@int@star {}', sub {
+    my ($gullet, $code) = @_;
+    DefMacro('\XKV@doxs@int', $code);
+    DefMacro('\XKV@doxs{}',   '\edef\CurrentOption{#1}\XKV@doxs@int');
+    return; });
+
+# \DeclareOptionX [prefix]<keyset>{key}[default]{function}
+DefMacro('\DeclareOptionX@int@normal [] OptionalAngle {}[]{}', sub {
+    my ($gullet, $prefix, $keyset, $key, $default, $code) = @_;
+
+    # defaults may be passed with an empty argument
+    my @defaults = defined($default) ? ($default) : ();
+
+    my @tokens = ();
+    push(@tokens, T_CS('\\define@key'));
+    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN, Tokens(Explode(xkeyval_getFileName)), T_END) unless defined($keyset);
+    push(@tokens, T_BEGIN, $keyset, T_END) if defined($keyset);
+    push(@tokens, T_BEGIN,      $key,      T_END);
+    push(@tokens, T_OTHER('['), @defaults, T_OTHER(']'));
+    push(@tokens, T_BEGIN,      $code,     T_END);
+    @tokens; });
+
+## ------------
+## ExecuteOptionsX
+## ------------
+
+# \ExecuteOptionsX [prefix]<keyset>[na]
+DefMacro('\ExecuteOptionsX [] OptionalAngle []', sub {
+    my ($gullet, $prefix, $keyset, $na) = @_;
+
+    my @tokens = ();
+    push(@tokens, T_CS('\\setkeys'));
+    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN, Tokens(Explode(xkeyval_getFileName)), T_END) unless defined($keyset);
+    push(@tokens, T_BEGIN, $keyset, T_END) if defined($keyset);
+    push(@tokens, T_OTHER('['), $na, T_OTHER(']')) if defined($na);
+    return @tokens; });
+
+## ------------
+## ProcessOptions
+## ------------
+DefMacro('\ProcessOptionsX OptionalMatch:* [] OptionalAngle []', sub {
+    my ($gullet, $star, $prefix, $keysets, $skip) = @_;
+
+    # find the current file name, options and keysets
+    my $fileName = xkeyval_getFileName();
+    $keysets = defined($keysets) ? $keysets : Tokens(Explode($fileName));
+    my @options = Expand(T_CS('\opt@' . $fileName))->unlist;
+
+    # check if we are inside a class file
+    # and fall back to the basics (if applicable)
+    $star = undef if (defined($star) && xkeyval_isInClassFile());
+
+    # and build the call to the internal macro
+    my @tokens = ();
+    push(@tokens, T_CS('\\ProcessOptionsX@int'));
+    push(@tokens, $star) if defined($star);
+    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN, $keysets, T_END) if defined($keysets);
+    push(@tokens, T_OTHER('['), $skip, T_OTHER(']')) if defined($skip);
+    push(@tokens, T_BEGIN, Expand(T_CS('\XKV@classoptionslist'))->unlist, T_END) if defined($star);
+    push(@tokens, T_BEGIN, @options, T_END);
+    return @tokens; });
+
+# \ExecuteOptionsX[*] [prefix]{}[na]{classoptions}{packageoptions}
+DefMacro('\ProcessOptionsX@int OptionalMatch:* [] {} []', sub {
+    my ($gullet, $star, $prefix, $keysets, $skip) = @_;
+
+    # store the missing macros if defined
+    my $hookMissing = undef;
+    $hookMissing = T_CS('\XKV@doxs')
+      if ((defined $star) && (defined $STATE->lookupMeaning(T_CS('\XKV@doxs'))));
+
+    # skip processing class options if we are inside a class file.
+    $star = undef if (defined($star) && xkeyval_isInClassFile());
+
+    # we want to read keyvals options
+    my $keyvals = LaTeXML::Core::KeyVals->new(
+      $prefix, $keysets,
+      setAll => 0, setInternals => 1,
+      skip => $skip, skipMissing => defined($hookMissing),
+      hookMissing => $hookMissing
+    );
+
+    # read the class options
+    $keyvals->readFrom($gullet, T_END, silenceMissing => 1) if defined($star);
+    # read the package options and overwrite the existing ones
+    $keyvals->readFrom($gullet, T_END);
+
+    # read the keys and unset them at the end of the package
+    my @tokens = ();
+    push(@tokens, $keyvals->setKeysExpansion);
+
+    return @tokens; });
+
+## ------------
+## internals
+## ------------
+
+# internals that are empty by defaulf
+DefMacro(T_CS('\XKV@rm'),     '');
+DefMacro(T_CS('\XKV@prefix'), '');
+DefMacro(T_CS('\XKV@tfam'),   '');
+DefMacro(T_CS('\XKV@header'), '');
+DefMacro(T_CS('\XKV@tkey'),   '');
+DefMacro(T_CS('\XKV@fams'),   '');
+DefMacro(T_CS('\XKV@na'),     '');
+
+## ------------
+## Pointer System (Unsupported)
+## ------------
+
+# TODO: The XKeyVal pointer system is currently not supported.
+# We throw a warning, when we can try to recover, else we throw an error
+
+DefMacro('\savevalue {}', sub {
+    my ($gullet, $key) = @_;
+    Warn('unexpected', T_CS('\savevalue'), undef, "The xkeyval pointer system is currently not supported. ");
+    return; });
+
+DefMacro('\gsavevalue {}', sub {
+    my ($gullet, $key) = @_;
+    Warn('unexpected', T_CS('\gsavevalue'), undef, "The xkeyval pointer system is currently not supported. ");
+    return $key; });
+
+DefMacro('\savekeys []{}{}', sub {
+    my ($gullet, $prefix, $keyset, $keys) = @_;
+    Error('unexpected', T_CS('\savekeys'), undef, "The xkeyval pointer system is currently not supported. ");
+    return; });
+
+DefMacro('\gsavekeys []{}{}', sub {
+    my ($gullet, $prefix, $keyset, $keys) = @_;
+    Error('unexpected', T_CS('\gsavekeys'), undef, "The xkeyval pointer system is currently not supported. ");
+    return; });
+
+DefMacro('\delsavekeys []{}{}', sub {
+    my ($gullet, $prefix, $keyset, $keys) = @_;
+    Error('unexpected', T_CS('\savekeys'), undef, "The xkeyval pointer system is currently not supported. ");
+    return; });
+
+DefMacro('\gdelsavekeys []{}{}', sub {
+    my ($gullet, $prefix, $keyset, $keys) = @_;
+    Error('unexpected', T_CS('\gdelsavekeys'), undef, "The xkeyval pointer system is currently not supported. ");
+    return; });
+
+DefMacro('\unsavekeys []{}', sub {
+    my ($gullet, $prefix, $keyset) = @_;
+    Error('unexpected', T_CS('\unsavekeys'), undef, "The xkeyval pointer system is currently not supported. ");
+    return; });
+
+DefMacro('\gunsavekeys []{}', sub {
+    my ($gullet, $prefix, $keyset) = @_;
+    Error('unexpected', T_CS('\gunsavekeys'), undef, "The xkeyval pointer system is currently not supported. ");
+    return; });
+
+DefMacro('\usevalue {}', sub {
+    my ($gullet, $key) = @_;
+    Error('unexpected', T_CS('\usevalue'), undef, "The xkeyval pointer system is currently not supported. ");
+    return; });
+
+## ------------
+## Presetting keys (Unsupported)
+## ------------
+
+# TODO: Presetting keys is currently not supported.
+# We throw a warning for all of these, as we can always try to recover
+
+DefMacro('\presetkeys []{}{}{}', sub {
+    my ($gullet, $prefix, $keyset, $headKeys, $tailKeys) = @_;
+    Warn('unexpected', T_CS('\presetkeys'), undef, "Presetting keys is currently not supported. ");
+    return; });
+
+DefMacro('\gpresetkeys []{}{}{}', sub {
+    my ($gullet, $prefix, $keyset, $headKeys, $tailKeys) = @_;
+    Warn('unexpected', T_CS('\gpresetkeys'), undef, "Presetting keys is currently not supported. ");
+    return; });
+
+DefMacro('\delpresetkeys []{}{}{}', sub {
+    my ($gullet, $prefix, $keyset, $headKeys, $tailKeys) = @_;
+    Warn('unexpected', T_CS('\delpresetkeys'), undef, "Presetting keys is currently not supported. ");
+    return; });
+
+DefMacro('\gdelpresetkeys []{}{}{}', sub {
+    my ($gullet, $prefix, $keyset, $headKeys, $tailKeys) = @_;
+    Warn('unexpected', T_CS('\gdelpresetkeys'), undef, "Presetting keys is currently not supported. ");
+    return; });
+
+DefMacro('\unpresetkeys []{}', sub {
+    my ($gullet, $prefix, $keyset) = @_;
+    Warn('unexpected', T_CS('\unpresetkeys'), undef, "Presetting keys is currently not supported. ");
+    return; });
+DefMacro('\gunpresetkeys []{}', sub {
+    my ($gullet, $prefix, $keyset) = @_;
+    Warn('unexpected', T_CS('\gunpresetkeys'), undef, "Presetting keys is currently not supported. ");
+    return; });
+
+#======================================================================
+1;

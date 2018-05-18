@@ -431,7 +431,7 @@
       <xsl:with-param name="name" select="'class'"/>
       <xsl:with-param name="value">
         <xsl:apply-templates select="." mode="classes"/>
-        <xsl:if test="$extra_classes">
+        <xsl:if test="$extra_classes and ($extra_classes != '')">
           <xsl:text> </xsl:text>
           <xsl:value-of select="$extra_classes"/>
         </xsl:if>

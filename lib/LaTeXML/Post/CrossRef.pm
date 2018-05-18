@@ -206,31 +206,29 @@ sub fill_in_tocs {
   foreach my $toc ($doc->findnodes('descendant::ltx:TOC[not(ltx:toclist)]')) {
     $n++;
     my $selector = $toc->getAttribute('select');
-    # my $types    = ($selector
-    #   ? { map { ($_ => 1) } split(/\s*\|\s*/, $selector) }
-    #   : $normaltoctypes);
-    my $types = {};
+    my $types;
     if ($selector) {
-      foreach my $type (split(/\s*\|\s*/, $selector)) {
-        if ($type =~ s/\?$//) {
-          $$types{$type} = 'optional'; }
-        else {
-          $$types{$type} = 1; } } }
-    else {
-      $types = $normaltoctypes; }
+      $types = { map { ($_ => 1) } split(/\s*\|\s*/, $selector) }; }
     # global vs children of THIS or Document node?
     my $id     = $doc->getDocumentElement->getAttribute('xml:id');
     my $scope  = $toc->getAttribute('scope') || 'current';
     my $format = $toc->getAttribute('format') || 'normal';
+    my $lists;
+    if (my $listname = $toc->getAttribute('lists')) {
+      $lists = { map { $_ => 1 } split(/\s/, $listname) }; }
+    else {
+      $lists = { toc => 1 }; }
     if ($scope eq 'global') {
       if (my $entry = $$self{db}->lookup("ID:" . $id)) {
         if (my $root = $self->getRootPage($entry)) {
           $id = $root->getValue('pageid'); } } }
+    my $show = $toc->getAttribute('show') || $$self{toc_show};
     my @list = ();
     if (!$format || ($format =~ /^normal/)) {
-      @list = $self->gentoc($doc, $id, $types, 1); }
+      @list = $self->gentoc($doc, $id, $show, $lists, $types); }
     elsif ($format eq 'context') {
-      @list = $self->gentoc_context($doc, $id, $types); }
+      $lists = { toc => 1 };
+      @list = $self->gentoc_context($doc, $id, $show, $lists, $types); }
     $doc->addNodes($toc, ['ltx:toclist', {}, @list]) if @list; }
   NoteProgressDetailed(" [Filled in $n TOCs]");
   return; }
@@ -240,54 +238,53 @@ sub fill_in_tocs {
 # Returns a list of 0 or more ltx:tocentry's (possibly containing ltx:toclist's)
 # Note that parent/child relationships stored in ObjectDB can also reflect less
 # `interesting' objects like para or p style paragraphs, and such.
-#   $location: if defined (as a pathname), only include children that are on that page
-#   $depth   : only to the specific depth
-#
 sub gentoc {
-  my ($self, $doc, $id, $types, $strict, $localto, $selfid) = @_;
-  my $show = $$self{toc_show};
+  my ($self, $doc, $id, $show, $lists, $types, $localto, $selfid) = @_;
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     my @kids = ();
     if ((!defined $localto) || (($entry->getValue('location') || '') eq $localto)) {
-      @kids = map { $self->gentoc($doc, $_, $types, $strict, $localto, $selfid) }
+      @kids = map { $self->gentoc($doc, $_, $show, $lists, $types, $localto, $selfid) }
         @{ $entry->getValue('children') || [] }; }
     my $type = $entry->getValue('type');
     my $role = $entry->getValue('role');
-    if (my $code = $$types{$type} || ($role && $$types{ 'role:' . $role })) {
-      if ($strict && !$entry->getValue('refnum')) {    # Traditional TOC/LOT/LOF shows only numbered!
-        return (); }
-      elsif (($code eq 'optional') && !@kids) {        # Optionally prune nodes w/ NO children
-        return (); }
-      else {
-        return $self->gentocentry($doc, $entry, $selfid, $show, @kids); } }
+    if (($types ? ($type = $entry->getValue('type')) && $$types{$type} : 1)
+      && inlist_match($lists, $entry->getValue('inlist'))) {
+      return $self->gentocentry($doc, $entry, $selfid, $show, @kids); }
     else {
       return @kids; } }
   else {
     return (); } }
 
+sub inlist_match {
+  my ($listsa, $listsb) = @_;
+  return ($listsa && $listsb && grep { $$listsb{$_} } keys %$listsa); }
+
+# Experimental show pattern:  before < filling > after
 sub gentocentry {
   my ($self, $doc, $entry, $selfid, $show, @children) = @_;
-  my $id        = $entry->getValue('id');
-  my $type      = $entry->getValue('type');
-  my $typename  = $type; $typename =~ s/^ltx://;
-  my $thumbnail = $entry->getValue('thumbnail');
+  my $id       = $entry->getValue('id');
+  my $type     = $entry->getValue('type');
+  my $typename = $type; $typename =~ s/^ltx://;
+  my ($before, $after);
+  if ($show =~ /^(.*?)\<(.*?)$/) { $before = $1; $show  = $2; }
+  if ($show =~ /^(.*?)\>(.*?)$/) { $show   = $1; $after = $2; }
+  # Good candidate for before = thumbnail
   return (['ltx:tocentry',
       { class => "ltx_tocentry_$typename"
           . (defined $selfid && ($selfid eq $id) ? ' ltx_ref_self' : "") },
-      ($thumbnail ? (['ltx:block', { class => 'ltx_thumbnail' },
-            $self->prepRefText($doc, $thumbnail)]) : ()),
+      ($before ? $self->generateRef($doc, $id, $before) : ()),
       ['ltx:ref', { show => $show, idref => $id }],
+      ($after ? $self->generateRef($doc, $id, $after) : ()),
       (@children ? (['ltx:toclist', { class => "ltx_toclist_$typename" }, @children]) : ())]); }
 
 # Generate a "context" TOC, that shows what's on the current page,
 # but also shows the page in the context of it's siblings & ancestors.
 # This is useful for putting in a navigation bar.
 sub gentoc_context {
-  my ($self, $doc, $id, $types) = @_;
-  my $show = $$self{toc_show};
+  my ($self, $doc, $id, $show, $lists, $types) = @_;
   if (my $entry = $$self{db}->lookup("ID:$id")) {
     # Generate Downward TOC covering items WITHIN the current page.
-    my @navtoc = $self->gentoc($doc, $id, $types, 0, $entry->getValue('location') || '', $id);
+    my @navtoc = $self->gentoc($doc, $id, $show, $lists, $types, $entry->getValue('location') || '', $id);
     # Then enclose it upwards along with siblings & ancestors
     my $p_id;
     while (($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))) {
@@ -295,7 +292,7 @@ sub gentoc_context {
         map { ($_->getValue('id') eq $id
           ? @navtoc
           : $self->gentocentry($doc, $_, undef, $show)) }
-        grep { $$normaltoctypes{ $_->getValue('type') } }
+        grep { $$normaltoctypes{ $_->getValue('type') } }    # or should we use @inlist???
         map  { $$self{db}->lookup("ID:$_") }
         @{ $entry->getValue('children') || [] };
       if ($$types{ $entry->getValue('type') }) {
@@ -407,13 +404,12 @@ sub fill_in_bibrefs {
 sub make_bibcite {
   my ($self, $doc, $bibref) = @_;
 
-  my @keys         = grep { $_ } split(/,/, $bibref->getAttribute('bibrefs'));
+  my @keys         = grep { $_ } split(/,/, $bibref->getAttribute('bibrefs') || '');
   my $show         = $bibref->getAttribute('show');
   my @preformatted = $bibref->childNodes();
   if ($show && ($show eq 'none') && !@preformatted) {
     $show = 'refnum'; }
   if (!$show) {
-    map { $self->note_missing('info', "bibref 'show' parameter", $_) } @keys;
     $show = 'refnum'; }
   if ($show eq 'nothing') {    # Ad Hoc support for \nocite!t
     return (); }
@@ -623,18 +619,20 @@ sub generateRef_aux {
   my @stuff = ();
   my $OK    = 0;
   while ($show) {
-    if ($show =~ s/^type(\.?\s*)refnum(\.?\s*)//) {
-      if (my $frefnum = $entry->getValue('refnum')) {
-        $frefnum = $entry->getValue('frefnum') || $frefnum;
+    if ($show =~ s/^typerefnum(\.?\s*)//) {
+      if (my $frefnum = $entry->getValue('typerefnum')
+        || $entry->getValue('refnum')) {
         $OK = 1;
         push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
             $self->prepRefText($doc, $frefnum)]); } }
-    elsif ($show =~ s/^rrefnum(\.?\s*)//) {
-      if (my $refnum = $entry->getValue('rrefnum') || $entry->getValue('refnum')) {
+    elsif ($show =~ s/^rrefnum(\.?\s*)//) {    # to be obsolete?
+###      if (my $refnum = $entry->getValue('rrefnum') || $entry->getValue('frefnum')  || $entry->getValue('refnum')) {
+      if (my $refnum = $entry->getValue('typerefnum') || $entry->getValue('frefnum') || $entry->getValue('refnum')) {
         $OK = 1;
         push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
             $self->prepRefText($doc, $refnum)]); } }
     elsif ($show =~ s/^refnum(\.?\s*)//) {
+###      if (my $refnum = $entry->getValue('refnum') || $entry->getValue('frefnum')) {
       if (my $refnum = $entry->getValue('refnum')) {
         $OK = 1;
         push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
@@ -661,6 +659,17 @@ sub generateRef_aux {
         $OK = 1;
         push(@stuff, ['ltx:text', { class => 'ltx_ref_title' },
             $self->prepRawRefText($doc, $title)]); } }
+    # The beginnings of extensibility!
+    elsif ($show =~ s/^(\w+)//) {
+      my $role = $1;
+      if (my $tag = $entry->getValue($role) || $entry->getValue('tag:' . $role)) {
+        $OK = 1;
+        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
+            $self->prepRefText($doc, $tag)]); }
+      else {
+        push(@stuff, $role); } }
+    elsif ($show =~ s/^(~)//) {
+      push(@stuff, ' '); }
     elsif ($show =~ s/^(.)//) {
       push(@stuff, $1); } }
   return ($OK ? @stuff : ()); }
@@ -686,7 +695,8 @@ sub generateTitle {
   my $altstring = "";
   while (my $entry = $id && $$self{db}->lookup("ID:$id")) {
     my $title = $self->fillInTitle($doc,
-      $entry->getValue('title') || $entry->getValue('rrefnum')
+###      $entry->getValue('title') || $entry->getValue('rrefnum')
+      $entry->getValue('title') || $entry->getValue('typerefnum')
         || $entry->getValue('frefnum') || $entry->getValue('refnum'));
     #    $title = $title->textContent if $title && ref $title;
     $title = getTextContent($doc, $title) if $title && ref $title;

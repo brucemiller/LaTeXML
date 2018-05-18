@@ -6,7 +6,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Basics</title>
     <para xml:id="S1.p1">
       <p cssstyle="padding-top:12pt;padding-bottom:12pt" framecolor="#000000" framed="rectangle">This is stuff that’s framed.</p>
@@ -25,14 +30,19 @@
     <para xml:id="S1.p4">
       <p cssstyle="padding-top:12pt;padding-bottom:12pt" framecolor="#000000" framed="rectangle">And even stuff in multiple Paragraphs.</p>
     </para>
-    <paragraph xml:id="S1.SS0.SSS0.Px1">
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px1">
       <title>Does this work?</title>
       <para xml:id="S1.SS0.SSS0.Px1.p1">
         <p>But not in LaTeXML!</p>
       </para>
     </paragraph>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Variants</title>
     <para xml:id="S2.p1">
       <p cssstyle="padding-top:12pt;padding-bottom:12pt" framecolor="#000000" framed="rectangle">This is stuff that’s framed, but would stay open at page breaks.

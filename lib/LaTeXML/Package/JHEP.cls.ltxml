@@ -28,7 +28,7 @@ foreach my $option (qw(proceedings published hyper nohyper notoc)) {
 
 # Anything else gets passed to article.
 DeclareOption(undef, sub {
-    PassOptions('article', 'cls', ToString(Digest(T_CS('\CurrentOption')))); });
+    PassOptions('article', 'cls', ToString(Expand(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
 
@@ -88,7 +88,8 @@ DefMacro('\DOUBLEFIGURE[]{}{}{}{}',
     . '\begin{@half@doublefigure}\epsfig{file=#3}\caption{#5}\end{@half@doublefigure}'
     . '\end{figure}');
 DefEnvironment('{@half@doublefigure}',
-"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' width='0.45%'>#body</ltx:figure>",
+  "<ltx:figure xml:id='#id' width='0.45%'>#body</ltx:figure>"
+    . "#tags",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
   afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
 
@@ -98,14 +99,16 @@ DefMacro('\DOUBLETABLE[]{}{}{}{}',
     . '\begin{@half@doubletable}#3\caption{#5}\end{@half@doubletable}'
     . '\end{table}');
 DefEnvironment('{@half@doubletable}',
-"<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' width='0.45%'>#body</ltx:table>",
+  "<ltx:table xml:id='#id' width='0.45%'>#body</ltx:table>"
+    . "#tags",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
   afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
 
 # Redefine since JHEP has no width argument
 # (what width should be used?)
 DefEnvironment('{floatingfigure}[]',
-"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#width'>"
+  "<ltx:figure xml:id='#id' float='#float' width='#width'>"
+    . "#tags"
     . "#body"
     . "</ltx:figure>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
@@ -114,7 +117,8 @@ DefEnvironment('{floatingfigure}[]',
     (float => (ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left')); });
 
 DefEnvironment('{floatingtable}[]',
-"<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' float='#float' width='#width'>"
+  "<ltx:table xml:id='#id' float='#float' width='#width'>"
+    . "#tags"
     . "#body"
     . "</ltx:table>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },

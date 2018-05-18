@@ -112,6 +112,8 @@ consult \ref{prerequisites} before deciding.
   you may fetch the source from \htmlref{GitHub}{install.github}.
   Again you will need to pre-install prerequisites (including optional ones)
    using \htmlref{CPAN}{install.cpan.prereq} or a platform-specific approach.
+  If you are lacking root rights on the machine you want to install on, this can
+   also be achieved conveniently using \htmlref{CPANM}{install.cpanm}. 
 \end{itemize}
 
 \par\noindent
@@ -136,7 +138,7 @@ Other
 Note that there is \emph{no} implied endorsement of any of these systems.
 
 \paragraph{Prerequisites}\label{prerequisites}
-\LaTeXML\ requires several Perl modules to do it's job.  Most
+\LaTeXML\ requires several Perl modules to do its job.  Most
 are automatically installed by the platform-specific installation or CPAN.
 However, CPAN will \emph{not} install the required C libraries needed for
 \texttt{XML::LibXML}, and \texttt{XML::LibXSLT}.
@@ -181,6 +183,12 @@ is less widely available.
 
 \item[UUID::Tiny] generates unique identifiers that can be used to make better ePub documents
   (it can be installed using \htmlref{CPAN}{install.cpan.prereq}).
+
+\item[perl-doc]\label{perl-doc}
+ On \emph{some} compact distributions the perl documentation modules
+ are not installed by default (eg.~debian minimal). These modules help generate
+ readable command-line documentation for the \LaTeXML\ tools. Thus you \emph{may}
+ want to install an extra package (\texttt{perl-doc} on debian minimal) to enable this feature. 
 
 \end{description}
 \emph{Note to packagers:} If you are preparing a compiled installation package (such as rpm or deb) for
@@ -253,9 +261,12 @@ Continue by installing \LaTeXML\ from
 \htmlref{tarball}{install.tarball}, \htmlref{CPAN}{install.cpan}
 or \htmlref{GitHub}{install.github}, as desired.
 
+See note \ref{perl-doc} about optional installation of \texttt{perl-doc}.
+
 \subsection{Archlinux \& friends}\label{install.arch}\index{Arch}
-For Archlinux and derivatives, there is a package in the \href{https://aur.archlinux.org/}{Archlinux User Repository}. 
-Furthermore, most dependencies can be found in the official repositories. 
+For Archlinux and derivatives, it is most convenient to install from sources via \htmlref{CPANM}{install.cpanm}. 
+Nonetheless, a package can be found in the \href{https://aur.archlinux.org/}{Archlinux User Repository}.
+Furthermore, most dependencies can be found in the official repositories.
 
 \paragraph{Installing from AUR}
 To install latexml from the user repositories, install the \href{https://aur.archlinux.org/packages/perl-latexml/}{perl-latexml} package. 
@@ -263,10 +274,11 @@ To install latexml from the user repositories, install the \href{https://aur.arc
 \paragraph{Installing dependencies}
 To install the dependencies, use the following pacman command:
 \begin{lstlisting}[style=shell]
-sudo pacman -S db imagemagick perl perl-archive-zip \
-   perl-file-which perl-image-size perl-io-string \
-   perl-libwww perl-json-xs perl-parse-recdescent \
-   perl-xml-libxml perl-xml-libxslt texlive-core
+sudo pacman -S db imagemagick perl perl-algorithm-diff \
+   perl-archive-zip perl-file-which perl-image-size \
+   perl-io-string perl-libwww perl-json-xs \
+   perl-parse-recdescent perl-xml-libxml perl-xml-libxslt \
+   texlive-core
 \end{lstlisting}
 
 Additionally, install the \href{https://aur.archlinux.org/packages/perl-text-unidecode/}{perl-text-unidecode}
@@ -393,6 +405,30 @@ cpan Archive::Zip DB_File File::Which Getopt::Long Image::Size \
 You may still want to install \TeX\ and \texttt{Image::Magick}
 using other means.
 
+\subsection{CPANM Installation}\label{install.cpanm}
+On certain linux machines, you may not want to install \LaTeXML\ (or its dependencies)
+system-wide, or you may simply lack the required root rights to do so. 
+In such a case, it is convenient to install the development version and 
+dependencies into the home directory using a tool called 
+\href{ https://github.com/miyagawa/cpanminus}{cpanminus}.
+
+\paragraph{Bootstrapping cpanminus} Configuring and setting up \texttt{cpanminus} can be achieved using the following commands
+\begin{lstlisting}[style=shell]
+    # Download and install cpanminus
+    curl -L http://cpanmin.us | perl - App::cpanminus
+    
+    # Setup a directory in ~/perl5 to contain all perl dependencies
+    ~/perl5/bin/cpanm --local-lib=~/perl5 local::lib && eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
+\end{lstlisting}
+
+\paragraph{Installing} Afterwards installing \LaTeXML\ and dependencies can be achieved with the 
+simple command:
+\begin{lstlisting}[style=shell]
+    cpanm git://github.com/brucemiller/LaTeXML.git
+\end{lstlisting}
+This automatically fetches the latest version from GitHub and installs 
+missing dependencies. 
+
 \subsection{Installing tarball}\label{install.tarball}
 \paragraph{Source tarball}\label{source.tarball}
 To download the tar file containing the source:
@@ -505,8 +541,7 @@ If you're not so lucky, or want to get fancy, well \ldots dig deeper:
 
 \paragraph{Mailing List}\label{contact.list}
 There is a low-volume mailing list for questions, support and comments.
-See \href{http://lists.kwarc.info/mailman/listinfo/project-latexml}{\texttt{latexml-project}} for subscription information.
-
+See \href{http://lists.informatik.uni-erlangen.de/mailman/listinfo/latexml}{\texttt{latexml-project}} for subscription information.
 
 \paragraph{Bug-Tracker}\label{contact.git}
 We are using the git repository hosted at

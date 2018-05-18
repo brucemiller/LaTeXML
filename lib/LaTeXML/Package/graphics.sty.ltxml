@@ -26,9 +26,10 @@ DefParameterType('GraphixDimension', sub {
     my ($gullet) = @_;
     if ($gullet->ifNext(T_OTHER('!'))) {
       $gullet->readToken();
-      Dimension(0); }
+      undef; }    # essentially: let other dimensions determine size.
     else {
-      $gullet->readDimension; } });
+      $gullet->readDimension; } },
+  optional => 1);
 
 DefConstructor('\scalebox{}[] Digested',
   "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"

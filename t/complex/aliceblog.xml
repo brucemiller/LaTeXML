@@ -14,38 +14,57 @@
   </creator>
   <rdf aboutlabelref="LABEL:blog:photos" property="cc:license" resourcelabelref="LABEL:license"/>
   <rdf about="" property="foaf:neighbor" resourceidref="fredblog"/>
-  <section labels="LABEL:sidebar" refnum="1" resourceidref="me" typeof="foaf:Person" xml:id="S1">
+  <section inlist="toc" labels="LABEL:sidebar" resourceidref="me" typeof="foaf:Person" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Sidebar</title>
     <para xml:id="S1.p1">
       <p><text property="foaf:name">Alice Birpemswick</text>,<break/>Email: <ref href="mailto:alice@example.com" property="foaf:mbox">alice@example.com</ref>,<break/>Phone: <ref href="tel:+1-617-555-7332" property="foaf:phone">+1 617.555.7332</ref>.</p>
     </para>
     <para xml:id="S1.p2">
       <p>My Buddies:</p>
-      <itemize xml:id="I1">
-        <item property="foaf:knows" typeof="foaf:Person" xml:id="I1.i1">
-          <tag>•</tag>
-          <para xml:id="I1.i1.p1">
+      <itemize xml:id="S1.I1">
+        <item property="foaf:knows" typeof="foaf:Person" xml:id="S1.I1.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S1.I1.i1.p1">
             <p><ref href="http://example.com/bob/" property="foaf:name">Bob</ref></p>
           </para>
         </item>
-        <item property="foaf:knows" typeof="foaf:Person" xml:id="I1.i2">
-          <tag>•</tag>
-          <para xml:id="I1.i2.p1">
+        <item property="foaf:knows" typeof="foaf:Person" xml:id="S1.I1.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S1.I1.i2.p1">
             <p><ref href="http://example.com/eve/" property="foaf:name">Eve</ref></p>
           </para>
         </item>
-        <item property="foaf:knows" typeof="foaf:Person" xml:id="I1.i3">
-          <tag>•</tag>
-          <para xml:id="I1.i3.p1">
+        <item property="foaf:knows" typeof="foaf:Person" xml:id="S1.I1.i3">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">3rd item</tag>
+          </tags>
+          <para xml:id="S1.I1.i3.p1">
             <p><ref href="http://example.com/manu/" property="foaf:name">Manu</ref></p>
           </para>
         </item>
       </itemize>
     </para>
   </section>
-  <section labels="LABEL:blog" refnum="2" xml:id="S2">
+  <section inlist="toc" labels="LABEL:blog" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Blog Content</title>
-    <paragraph labels="LABEL:blog:trouble" resource="/alice/posts/trouble_with_bob" typeof="schema:BlogPosting" xml:id="S2.SS0.SSS0.Px1">
+    <paragraph inlist="toc" labels="LABEL:blog:trouble" resource="/alice/posts/trouble_with_bob" typeof="schema:BlogPosting" xml:id="S2.SS0.SSS0.Px1">
       <title property="dcterms:title">The Trouble with Bob</title>
       <para xml:id="S2.SS0.SSS0.Px1.p1">
         <p>Date: <text content="2011-09-10" datatype="xsd:date" property="dcterms:created">10<Math mode="inline" tex="{}^{th}" text="^t * h" xml:id="S2.SS0.SSS0.Px1.p1.m1">
@@ -70,7 +89,7 @@ by
 <text property="dcterms:creator">Bob</text>.</p>
       </para>
     </paragraph>
-    <paragraph labels="LABEL:blog:josbbq" resource="/alice/posts/jos_barbeque" typeof="schema:BlogPosting" xml:id="S2.SS0.SSS0.Px2">
+    <paragraph inlist="toc" labels="LABEL:blog:josbbq" resource="/alice/posts/jos_barbeque" typeof="schema:BlogPosting" xml:id="S2.SS0.SSS0.Px2">
       <title property="dcterms:title">Jo’s Barbeque</title>
       <para xml:id="S2.SS0.SSS0.Px2.p1">
         <p>Date: <text content="2011-09-14" datatype="xsd:date" property="dcterms:created">14<Math mode="inline" tex="{}^{th}" text="^t * h" xml:id="S2.SS0.SSS0.Px2.p1.m1">
@@ -92,7 +111,7 @@ by
         <p property="schema:articleBody">…</p>
       </para>
     </paragraph>
-    <paragraph labels="LABEL:blog:photos" resource="/alice/posts/my_photos" typeof="schema:BlogPosting" xml:id="S2.SS0.SSS0.Px3">
+    <paragraph inlist="toc" labels="LABEL:blog:photos" resource="/alice/posts/my_photos" typeof="schema:BlogPosting" xml:id="S2.SS0.SSS0.Px3">
       <title property="dcterms:title">I will post my photos nevertheless…</title>
       <para xml:id="S2.SS0.SSS0.Px3.p1">
         <p>Date: <text content="2011-09-15" datatype="xsd:date" property="dcterms:created">15<Math mode="inline" tex="{}^{th}" text="^t * h" xml:id="S2.SS0.SSS0.Px3.p1.m1">
@@ -115,7 +134,12 @@ by
       </para>
     </paragraph>
   </section>
-  <section labels="LABEL:license" refnum="3" xml:id="S3">
+  <section inlist="toc" labels="LABEL:license" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>License</title>
     <para xml:id="S3.p1">
       <p>All content on this site is licensed under

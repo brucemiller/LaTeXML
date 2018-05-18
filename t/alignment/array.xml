@@ -5,7 +5,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>New Column types</title>
     <para xml:id="S1.p1">
       <tabular vattach="middle">
@@ -35,7 +40,12 @@
       </tabular>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Math columns</title>
     <para xml:id="S2.p1">
       <tabular class="ltx_guessed_headers" vattach="middle">
@@ -68,7 +78,11 @@
       </tabular>
     </para>
     <para xml:id="S2.p2">
-      <equation frefnum="(1)" refnum="1" xml:id="S2.E1">
+      <equation xml:id="S2.E1">
+        <tags>
+          <tag>(1)</tag>
+          <tag role="refnum">1</tag>
+        </tags>
         <Math mode="display" tex="z=\begin{array}[]{Cc}$word$&amp;a+b\\&#10;$word$&amp;a+b\\&#10;$$\end{array}" text="z = Array[[[word], a + b], [[word], a + b]]" xml:id="S2.E1.m1">
           <XMath>
             <XMApp>
@@ -106,7 +120,12 @@
       </equation>
     </para>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>Special variations of hline</title>
     <para xml:id="S3.p1">
       <p>Tables

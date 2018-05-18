@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 # /=====================================================================\ #
 # |  latexmlc                                                           | #
 # | client/server conversion program                                    | #
@@ -155,18 +155,19 @@ if ($log) {
 }
 
 if ($result) {
+  # NOTE that we are serializing the XML::LibXML::Document whose toString
+  # has ALREADY encoded (in this case to utf8), so NO encode is needed!
   if ($opts->get('destination')) {
     my $output_handle;
     if (!open($output_handle, ">", $opts->get('destination'))) {
       print STDERR "Fatal:I/O:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
       exit 1; }
-    if (!$is_archive) { # If we're not outputing binary data, encode to UTF-8
-      binmode($output_handle, ":encoding(UTF-8)"); }
+    if ($whatsout eq 'archive') {
+      binmode($output_handle, ':raw');
+    }
     print $output_handle $result;
     close $output_handle;
   } else {
-    if (!$is_archive) { # If we're not outputing binary data, encode to UTF-8
-      binmode(STDOUT, ":encoding(UTF-8)"); }
     print STDOUT $result, "\n"; }    #Output to STDOUT
 }
 

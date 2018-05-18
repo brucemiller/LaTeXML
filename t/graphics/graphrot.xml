@@ -9,9 +9,21 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="autoref">section 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Scalings, Rotations using <text font="typewriter">graphics</text></title>
-    <table frefnum="Table 1" labels="LABEL:tb:tab1" placement="htb" refnum="1" xml:id="S1.T1">
+    <table inlist="lot" labels="LABEL:tb:tab1" placement="htb" xml:id="S1.T1">
+      <tags>
+        <tag>Table 1</tag>
+        <tag role="autoref">Table 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Table 1</tag>
+      </tags>
       <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
         <tbody>
           <tr>
@@ -48,9 +60,15 @@
         </tbody>
       </tabular>
       <toccaption class="ltx_centering"><tag close=" ">1</tag>Normal: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
-      <caption class="ltx_centering"><tag close=": ">Table 1</tag>Normal: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
+      <caption class="ltx_centering"><tag close=": ">Table 1</tag>Normal: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
-    <table frefnum="Table 2" labels="LABEL:tb:tab2" placement="htb" refnum="2" xml:id="S1.T2">
+    <table inlist="lot" labels="LABEL:tb:tab2" placement="htb" xml:id="S1.T2">
+      <tags>
+        <tag>Table 2</tag>
+        <tag role="autoref">Table 2</tag>
+        <tag role="refnum">2</tag>
+        <tag role="typerefnum">Table 2</tag>
+      </tags>
       <inline-block depth="1.5pt" height="67.5pt" width="283.5pt" xscale="1.5" xtranslate="47.2pt" yscale="0.75" ytranslate="-11.5pt">
         <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
           <tbody>
@@ -89,9 +107,15 @@
         </tabular>
       </inline-block>
       <toccaption><tag close=" ">2</tag>Squinched: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
-      <caption><tag close=": ">Table 2</tag>Squinched: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
+      <caption><tag close=": ">Table 2</tag>Squinched: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
-    <table frefnum="Table 3" labels="LABEL:tb:tab3" placement="htb" refnum="3" xml:id="S1.T3">
+    <table inlist="lot" labels="LABEL:tb:tab3" placement="htb" xml:id="S1.T3">
+      <tags>
+        <tag>Table 3</tag>
+        <tag role="autoref">Table 3</tag>
+        <tag role="refnum">3</tag>
+        <tag role="typerefnum">Table 3</tag>
+      </tags>
       <inline-block depth="2.0pt" height="90.0pt" width="189.0pt" xscale="-1" yscale="1">
         <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
           <tbody>
@@ -130,9 +154,15 @@
         </tabular>
       </inline-block>
       <toccaption><tag close=" ">3</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
-      <caption><tag close=": ">Table 3</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
+      <caption><tag close=": ">Table 3</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
-    <table frefnum="Table 4" labels="LABEL:tb:tab3" placement="htb" refnum="4" xml:id="S1.T4">
+    <table inlist="lot" labels="LABEL:tb:tab3" placement="htb" xml:id="S1.T4">
+      <tags>
+        <tag>Table 4</tag>
+        <tag role="autoref">Table 4</tag>
+        <tag role="refnum">4</tag>
+        <tag role="typerefnum">Table 4</tag>
+      </tags>
       <inline-block angle="45" depth="0.0pt" height="198.7pt" innerdepth="2.0pt" innerheight="90.0pt" innerwidth="189.0pt" width="198.7pt" xtranslate="4.85pt" ytranslate="-50.93pt">
         <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
           <tbody>
@@ -171,10 +201,16 @@
         </tabular>
       </inline-block>
       <toccaption><tag close=" ">4</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</toccaption>
-      <caption><tag close=": ">Table 4</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
+      <caption><tag close=": ">Table 4</tag>Flipped: Distribution of monothematic pairs with respect to original Y/N pairs</caption>
     </table>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="autoref">section 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Scalings, Rotations using <text font="typewriter">rotating</text></title>
     <para xml:id="S2.p1">
       <p>Start here
@@ -195,23 +231,29 @@ End here</p>
         </inline-block>
 End here</p>
     </para>
-    <figure frefnum="Figure 1" labels="LABEL:angles1" refnum="1" xml:id="S2.F1">
+    <figure inlist="lof" labels="LABEL:angles1" xml:id="S2.F1">
+      <tags>
+        <tag>Figure 1</tag>
+        <tag role="autoref">Figure 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Figure 1</tag>
+      </tags>
       <tabular vattach="middle">
         <tbody>
           <tr>
-            <td align="center" border="l r t"><text framecolor="black" framed="rectangle">—<inline-block angle="0" depth="0.0pt" height="81.0pt" innerdepth="37.0pt" innerheight="44.0pt" innerwidth="72.3pt" width="72.3pt" xtranslate="0pt" ytranslate="55.5pt">
+            <td align="center" border="l r t"><text framecolor="black" framed="rectangle">—<inline-block angle="0" depth="0.0pt" height="64.0pt" innerdepth="28.5pt" innerheight="35.5pt" innerwidth="72.3pt" width="72.3pt" xtranslate="0pt" ytranslate="42.75pt">
                   <p><inline-block class="ltx_parbox" framed="rectangle" vattach="middle" width="72.3pt">
                       <p>Save
 the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p>
                     </inline-block></p>
                 </inline-block>—</text></td>
-            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-40" depth="0.0pt" height="108.5pt" innerdepth="37.0pt" innerheight="44.0pt" innerwidth="72.3pt" width="107.4pt" xtranslate="17.58pt" ytranslate="79.55pt">
+            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-40" depth="0.0pt" height="95.5pt" innerdepth="28.5pt" innerheight="35.5pt" innerwidth="72.3pt" width="96.5pt" xtranslate="12.11pt" ytranslate="66.8pt">
                   <p><inline-block class="ltx_parbox" framed="rectangle" vattach="middle" width="72.3pt">
                       <p>Save
 the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p>
                     </inline-block></p>
                 </inline-block>—</text></td>
-            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-80" depth="0.0pt" height="85.2pt" innerdepth="37.0pt" innerheight="44.0pt" innerwidth="72.3pt" width="92.3pt" xtranslate="10.02pt" ytranslate="93.98pt">
+            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-80" depth="0.0pt" height="82.3pt" innerdepth="28.5pt" innerheight="35.5pt" innerwidth="72.3pt" width="75.6pt" xtranslate="1.65pt" ytranslate="81.23pt">
                   <p><inline-block class="ltx_parbox" framed="rectangle" vattach="middle" width="72.3pt">
                       <p>Save
 the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p>
@@ -242,19 +284,19 @@ the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.
               </Math></td>
           </tr>
           <tr>
-            <td align="center" border="l r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-120" depth="0.0pt" height="103.1pt" innerdepth="37.0pt" innerheight="44.0pt" innerwidth="72.3pt" width="106.3pt" xtranslate="17.01pt" ytranslate="92.04pt">
+            <td align="center" border="l r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-120" depth="0.0pt" height="94.6pt" innerdepth="28.5pt" innerheight="35.5pt" innerwidth="72.3pt" width="91.6pt" xtranslate="9.64pt" ytranslate="79.29pt">
                   <p><inline-block class="ltx_parbox" framed="rectangle" vattach="middle" width="72.3pt">
                       <p>Save
 the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p>
                     </inline-block></p>
                 </inline-block>—</text></td>
-            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-160" depth="0.0pt" height="100.8pt" innerdepth="37.0pt" innerheight="44.0pt" innerwidth="72.3pt" width="95.6pt" xtranslate="11.67pt" ytranslate="74.65pt">
+            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-160" depth="0.0pt" height="84.9pt" innerdepth="28.5pt" innerheight="35.5pt" innerwidth="72.3pt" width="89.8pt" xtranslate="8.77pt" ytranslate="61.9pt">
                   <p><inline-block class="ltx_parbox" framed="rectangle" vattach="middle" width="72.3pt">
                       <p>Save
 the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p>
                     </inline-block></p>
                 </inline-block>—</text></td>
-            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-200" depth="0.0pt" height="100.8pt" innerdepth="37.0pt" innerheight="44.0pt" innerwidth="72.3pt" width="95.6pt" xtranslate="11.67pt" ytranslate="49.93pt">
+            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-200" depth="0.0pt" height="84.9pt" innerdepth="28.5pt" innerheight="35.5pt" innerwidth="72.3pt" width="89.8pt" xtranslate="8.77pt" ytranslate="37.18pt">
                   <p><inline-block class="ltx_parbox" framed="rectangle" vattach="middle" width="72.3pt">
                       <p>Save
 the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p>
@@ -285,19 +327,19 @@ the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.
               </Math></td>
           </tr>
           <tr>
-            <td align="center" border="l r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-240" depth="0.0pt" height="103.1pt" innerdepth="37.0pt" innerheight="44.0pt" innerwidth="72.3pt" width="106.3pt" xtranslate="17.01pt" ytranslate="29.46pt">
+            <td align="center" border="l r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-240" depth="0.0pt" height="94.6pt" innerdepth="28.5pt" innerheight="35.5pt" innerwidth="72.3pt" width="91.6pt" xtranslate="9.64pt" ytranslate="16.71pt">
                   <p><inline-block class="ltx_parbox" framed="rectangle" vattach="middle" width="72.3pt">
                       <p>Save
 the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p>
                     </inline-block></p>
                 </inline-block>—</text></td>
-            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-280" depth="0.0pt" height="85.2pt" innerdepth="37.0pt" innerheight="44.0pt" innerwidth="72.3pt" width="92.3pt" xtranslate="10.02pt" ytranslate="22.81pt">
+            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-280" depth="0.0pt" height="82.3pt" innerdepth="28.5pt" innerheight="35.5pt" innerwidth="72.3pt" width="75.6pt" xtranslate="1.65pt" ytranslate="10.06pt">
                   <p><inline-block class="ltx_parbox" framed="rectangle" vattach="middle" width="72.3pt">
                       <p>Save
 the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p>
                     </inline-block></p>
                 </inline-block>—</text></td>
-            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-320" depth="0.0pt" height="108.5pt" innerdepth="37.0pt" innerheight="44.0pt" innerwidth="72.3pt" width="107.4pt" xtranslate="17.58pt" ytranslate="33.09pt">
+            <td align="center" border="r t"><text framecolor="black" framed="rectangle">—<inline-block angle="-320" depth="0.0pt" height="95.5pt" innerdepth="28.5pt" innerheight="35.5pt" innerwidth="72.3pt" width="96.5pt" xtranslate="12.11pt" ytranslate="20.34pt">
                   <p><inline-block class="ltx_parbox" framed="rectangle" vattach="middle" width="72.3pt">
                       <p>Save
 the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.gov/LaTeXML/">Kitty!</ref> Save the whale</p>
@@ -330,7 +372,7 @@ the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.
         </tbody>
       </tabular>
       <toccaption><tag close=" ">1</tag>Rotation of paragraphs between 0 and -320 degrees </toccaption>
-      <caption><tag close=": ">Figure 1</tag>Rotation of paragraphs between 0 and -320 degrees </caption>
+      <caption><tag close=": ">Figure 1</tag>Rotation of paragraphs between 0 and -320 degrees </caption>
     </figure>
     <para xml:id="S2.p4">
       <quote>
@@ -400,7 +442,13 @@ the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.
         </tabular>
       </quote>
     </para>
-    <table angle="90" depth="0.0pt" frefnum="Table 5" height="622.5pt" innerdepth="45.0pt" innerheight="254.6pt" innerwidth="622.5pt" labels="LABEL:rotfloat2" refnum="5" width="299.6pt" xml:id="S2.T5" xtranslate="-161.45pt" ytranslate="-138.95pt">
+    <table angle="90" depth="0.0pt" height="622.5pt" innerdepth="45.0pt" innerheight="254.6pt" innerwidth="622.5pt" labels="LABEL:rotfloat2" width="299.6pt" xml:id="S2.T5" xtranslate="-161.45pt" ytranslate="-138.95pt">
+      <tags>
+        <tag>Table 5</tag>
+        <tag role="autoref">Table 5</tag>
+        <tag role="refnum">5</tag>
+        <tag role="typerefnum">Table 5</tag>
+      </tags>
       <tabular class="ltx_centering ltx_guessed_headers" vattach="middle">
         <thead>
           <tr>
@@ -590,7 +638,7 @@ the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.
       </tabular>
       <toccaption class="ltx_centering"><tag close=" ">5</tag>Grooved Ware and Beaker Features, their Finds and
 Radiocarbon Dates</toccaption>
-      <caption class="ltx_centering"><tag close=": ">Table 5</tag>Grooved Ware and Beaker Features, their
+      <caption class="ltx_centering"><tag close=": ">Table 5</tag>Grooved Ware and Beaker Features, their
 Finds and Radiocarbon Dates; For a breakdown of the Pottery
 Assemblages see Tables I and III; for
 the Flints see Tables II and IV; for the

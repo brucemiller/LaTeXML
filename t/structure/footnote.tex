@@ -1,0 +1,27 @@
+\documentclass{article}
+\begin{document}
+\section{Basic footnotes}
+A test\footnote{A Footnote!\label{foot:one}}.
+
+Another test\footnote{Another Footnote!\label{foot:two}}.
+
+A special test\footnote[77]{A special Footnote!\label{foot:three}}.
+
+A final test\footnote{A final Footnote!\label{foot:four}}.
+
+A long footnote\footnote{Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\label{foot:five}}.
+
+\section{Separated footnotes}
+A footnote mark\footnotemark.
+Later, the footnote's text appears
+\footnotetext{A separated footnote\label{foot:six}}.
+Another footnote mark\footnotemark.
+Later, the footnote's text appears
+\footnotetext{Another separated footnote\label{foot:seven}}.
+
+Suppose the text appears first\footnotetext[999]{A separated footnote\label{foot:eight}},
+and then the footnote mark using a given mark\footnotemark[999]?
+
+We have presented several footnotes \ref{foot:one}, \ref{foot:two}, \ref{foot:three},
+ \ref{foot:four}, \ref{foot:five}, \ref{foot:six}, \ref{foot:seven} and \ref{foot:eight}.
+\end{document}

@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="xkeyval"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>keyval prefixes</title>
+    <para xml:id="S1.p1">
+      <p>Setting no arguments for ‘my’.</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Setting ‘key=value’ for ‘my’.
+My Key has been set to <text font="typewriter">value</text>.</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>Setting ‘keyword’ for ‘my’.
+My Keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>Setting ‘keyword=true’ for ‘my’.
+My Keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p5">
+      <p>Setting ‘keyword=false’ for ‘my’.
+My Keyword has been set to <text font="typewriter">false</text>.</p>
+    </para>
+    <para xml:id="S1.p6">
+      <p>Setting ‘key=value,keyword’ for ‘my’.
+My Key has been set to <text font="typewriter">value</text>. My Keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p7">
+      <p>Setting ‘key=value,keyword=true’ for ‘my’.
+My Key has been set to <text font="typewriter">value</text>. My Keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p8">
+      <p>Setting ‘keyword=true,key=value’ for ‘my’.
+My Keyword has been set to <text font="typewriter">true</text>. My Key has been set to <text font="typewriter">value</text>.</p>
+    </para>
+    <para xml:id="S1.p9">
+      <p>Setting ‘key=value,keyword=false’ for ‘my’.
+My Key has been set to <text font="typewriter">value</text>. My Keyword has been set to <text font="typewriter">false</text>.</p>
+    </para>
+    <para xml:id="S1.p10">
+      <p>Setting ‘stuff’ for ‘my’.
+My Stuff has been set to default.</p>
+    </para>
+    <para xml:id="S1.p11">
+      <p>Setting ‘stuff=things’ for ‘my’.
+My Stuff has been set to <text font="typewriter">things</text>.</p>
+    </para>
+    <para xml:id="S1.p12">
+      <p>Setting no arguments for ‘their’.</p>
+    </para>
+    <para xml:id="S1.p13">
+      <p>Setting ‘key=value’ for ‘their’.
+Their key has been set to <text font="typewriter">value</text>.</p>
+    </para>
+    <para xml:id="S1.p14">
+      <p>Setting ‘keyword’ for ‘their’.
+Their keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p15">
+      <p>Setting ‘keyword=true’ for ‘their’.
+Their keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p16">
+      <p>Setting ‘keyword=false’ for ‘their’.
+Their keyword has been set to <text font="typewriter">false</text>.</p>
+    </para>
+    <para xml:id="S1.p17">
+      <p>Setting ‘key=value,keyword’ for ‘their’.
+Their key has been set to <text font="typewriter">value</text>. Their keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p18">
+      <p>Setting ‘key=value,keyword=true’ for ‘their’.
+Their key has been set to <text font="typewriter">value</text>. Their keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p19">
+      <p>Setting ‘keyword=true,key=value’ for ‘their’.
+Their keyword has been set to <text font="typewriter">true</text>. Their key has been set to <text font="typewriter">value</text>.</p>
+    </para>
+    <para xml:id="S1.p20">
+      <p>Setting ‘key=value,keyword=false’ for ‘their’.
+Their key has been set to <text font="typewriter">value</text>. Their keyword has been set to <text font="typewriter">false</text>.</p>
+    </para>
+    <para xml:id="S1.p21">
+      <p>Setting ‘stuff’ for ‘their’.
+Their Stuff has been set to default.</p>
+    </para>
+    <para xml:id="S1.p22">
+      <p>Setting ‘stuff=things’ for ‘their’.
+Their Stuff has been set to <text font="typewriter">things</text>.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>command keys</title>
+    <para xml:id="S2.p1">
+      <p>My Key has been set to value. My word has been set to thing. 
+a was set to 1.
+b was set to 2.
+c was set to 3.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>choice keys</title>
+    <para xml:id="S3.p1">
+      <p>The color is <text font="typewriter">red</text>. The color is <text font="typewriter">green</text>. The color is <text font="typewriter">blue</text>.</p>
+    </para>
+    <para xml:id="S3.p2">
+      <p>The color is <text font="typewriter">red</text> and has number 0. The color is <text font="typewriter">green</text> and has number 1. The color is <text font="typewriter">blue</text> and has number 2.</p>
+    </para>
+    <para xml:id="S3.p3">
+      <p>The color is <text font="typewriter">red</text>. The color is <text font="typewriter">RED</text>. The color is <text font="typewriter">green</text>. The color is <text font="typewriter">blue</text>.</p>
+    </para>
+    <para xml:id="S3.p4">
+      <p>Valid selection <text font="typewriter">red</text>.Valid selection <text font="typewriter">green</text>.Valid selection <text font="typewriter">blue</text>.Invalid selection, you may not choose <text font="typewriter">yellow</text>.</p>
+    </para>
+    <para xml:id="S3.p5">
+      <p>Valid selection <text font="typewriter">red</text>.Valid selection <text font="typewriter">RED</text>.Valid selection <text font="typewriter">green</text>.Valid selection <text font="typewriter">blue</text>.Invalid selection, you may not choose <text font="typewriter">yellow</text>.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
+    <title><tag close=" ">4</tag>boolean keys</title>
+    <para xml:id="S4.p1">
+      <p>A has been set to true. B has been set to false. C is true——false. D is true——false. E is invalid.</p>
+    </para>
+    <para xml:id="S4.p2">
+      <p>A = true</p>
+    </para>
+    <para xml:id="S4.p3">
+      <p>B = false</p>
+    </para>
+    <para xml:id="S4.p4">
+      <p>C = true</p>
+    </para>
+    <para xml:id="S4.p5">
+      <p>D = false</p>
+    </para>
+    <para xml:id="S4.p6">
+      <p>E = false</p>
+    </para>
+    <para xml:id="S4.p7">
+      <p>F = true</p>
+    </para>
+    <para xml:id="S4.p8">
+      <p>G = false</p>
+    </para>
+    <para xml:id="S4.p9">
+      <p>H = true</p>
+    </para>
+  </section>
+</document>

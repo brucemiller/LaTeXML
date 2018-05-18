@@ -344,11 +344,12 @@ our @balanced_interesting_cc = (
   0, 0, 1);
 
 sub readBalanced {
-  my ($self) = @_;
+  my ($self, $expanded) = @_;
   my @tokens = ();
   my ($token, $level) = (undef, 1);
+  my $startloc = $self->getLocator;
   # Inlined readToken (we'll keep comments in the result)
-  while ($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken()) {
+  while ($token = ($expanded ? $self->readXToken(0, 1) : $self->readToken())) {
     my $cc = $$token[1];
     if (!$balanced_interesting_cc[$cc]) {
       push(@tokens, $token); }
@@ -361,6 +362,12 @@ sub readBalanced {
       push(@tokens, $token); }
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
+  if ($level > 0) {
+ # TODO: The current implementation has a limitation where if the balancing end is in a different mouth,
+ #       it will not be recognized.
+    Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.",
+      "started at $startloc");
+  }
   return Tokens(@tokens); }
 
 sub ifNext {
@@ -819,7 +826,7 @@ sub readInternalMuGlue {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -963,7 +970,7 @@ and return the value.  Returns undef if the next token isn't such a register.
 =item C<< $number = $gullet->readNumber; >>
 
 Read a L<LaTeXML::Common::Number> according to TeX's rules of the various things that
-can be used as a numerical value. 
+can be used as a numerical value.
 
 =item C<< $dimension = $gullet->readDimension; >>
 

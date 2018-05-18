@@ -15,8 +15,19 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Geometry;
-use Math::Trig;
 use List::Util qw(min max);
+
+# Math functions needed here
+# Native: sin cos atan2 log exp sqrt rand abs
+use Math::Trig qw(
+  deg2rad rad2deg
+  tan atan asin acos
+  cot sec cosec
+  cosh sinh tanh);
+use POSIX qw(floor ceil);
+# round from Geometry
+# Defined below: factorial
+
 #======================================================================
 # Load pgf's TeX code for math, first
 InputDefinitions('pgfmath.code', type => 'tex', noltxml => 1)
@@ -43,6 +54,12 @@ sub pgfmathargradians {
     return deg2rad($arg); }
   else {
     return deg2rad($arg); } }
+
+sub pgfmathfactorial {
+  my ($arg) = @_;
+  my $f = 1;
+  while ($arg > 0) { $f *= $arg; $arg--; }
+  return $f; }
 
 # I'll bet the deired precision is a parameter somewhere?
 # Actually, the library uses exponents, but I generate them, for some reason I'm getting
@@ -227,7 +244,8 @@ DefMacro('\pgfmathrnd@', sub {
     pgfmathresult(rand()); return });
 DefMacro('\pgfmathrand@', sub {
     pgfmathresult(1 + rand(2)); return });
-# factorial
+DefMacro('\pgfmathfactorial@', sub {
+    pgfmathresult(pgfmathfactorial($_[1])); return });
 DefMacro('\pgfmathreciprocal@ pgfNumber', sub {
     pgfmathresult(1 / $_[1]); return });
 
@@ -258,17 +276,23 @@ our $PGFMathFunctions;
 
 # NOTE: haven't done \pgfmathpostparse
 # NOTE: need to handle \ifpgfmathunitsdeclared
+# Version issue?
+RawTeX(<<'EoTeX');
+\@ifundefined{pgfmathunitsdeclaredtrue}{\newif\ifpgfmathunitsdeclared}{}
+\@ifundefined{pgfmathmathunitsdeclaredtrue}{\newif\ifpgfmathmathunitsdeclared}{}
+EoTeX
+
 sub pgfmathparse {
   my ($gullet, $tokens) = @_;
   SetCondition(T_CS('\ifpgfmathunitsdeclared'),     0, 'global');
   SetCondition(T_CS('\ifpgfmathmathunitsdeclared'), 0, 'global');
-  my $string = (ref $tokens ? ToString(Expand($tokens)) : $tokens);
+  my $string = (ref $tokens ? ToString(stripBraces(Expand($tokens))) : $tokens);
   $string =~ s/^\s+//; $string =~ s/\s+$//;
   my $input = $string;
 ###    if ($string =~/^+/){        # Don't parse as expression, just as glue. ???
   #    print STDERR "\nPGF Math Parse: $string\n";
   $PGFMATHGrammar = Parse::RecDescent->new($PGFMATHGrammarSpec) unless $PGFMATHGrammar;
-  my $result = $PGFMATHGrammar->expr(\$string);
+  my $result = $PGFMATHGrammar->expr(\$string) || 0.0;
   #  $result = "0.0" if $result eq "0";
   #    print STDERR "  GOT " . (defined $result ? $result : '<fail>') . "\n";
   if ($string) {
@@ -370,11 +394,37 @@ sub pgfmath_register {
   my ($cs) = @_;
   my $reg = LookupRegister($cs);
   SetCondition(T_CS('\ifpgfmathunitsdeclared'), 1, 'global');
+  if (!$reg) {
+    return 0.0; }
   return (ref $reg eq 'LaTeXML::Common::Number' ? $reg->valueOf : $reg->valueOf / 65536); }
 
 sub pgfmath_setunitsdeclared {
   SetCondition(T_CS('\ifpgfmathunitsdeclared'), 1, 'global');
   return; }
+
+sub pgfmath_getwidth {
+  my ($cs) = @_;
+  # Or could be an explicit Number?
+  my $reg   = $cs  && LookupRegister($cs);
+  my $box   = $reg && 'box' . $reg->valueOf;
+  my $stuff = $box && LookupValue($box);
+  return ($stuff ? $stuff->getWidth->valueOf / 65536 : Dimension(0)); }
+
+sub pgfmath_getheight {
+  my ($cs) = @_;
+  # Or could be an explicit Number?
+  my $reg   = $cs  && LookupRegister($cs);
+  my $box   = $reg && 'box' . $reg->valueOf;
+  my $stuff = $box && LookupValue($box);
+  return ($stuff ? $stuff->getHeight->valueOf / 65536 : Dimension(0)); }
+
+sub pgfmath_getdepth {
+  my ($cs) = @_;
+  # Or could be an explicit Number?
+  my $reg   = $cs  && LookupRegister($cs);
+  my $box   = $reg && 'box' . $reg->valueOf;
+  my $stuff = $box && LookupValue($box);
+  return ($stuff ? $stuff->getDepth->valueOf / 65536 : Dimension(0)); }
 
 BEGIN {
   $PGFMathFunctions = {
@@ -403,8 +453,8 @@ BEGIN {
     '/'        => sub { $_[0] / $_[1]; },
     div        => sub { int($_[0] / $_[1]); },
     divide     => sub { $_[0] / $_[1]; },
-    '!'        => sub { factorial($_[0]); },
-    'r'        => sub { radial($_[0]); },
+    '!'        => sub { pgfmathfactorial($_[0]); },
+    'r'        => sub { rad2deg($_[0]); },
     e          => sub { $E; },
     pi         => sub { $PI; },
     abs        => sub { abs($_[0]); },
@@ -421,9 +471,10 @@ BEGIN {
     cot   => sub { cot(pgfmathargradians($_[0])); },
     deg   => sub { rad2deg($_[0]); },
     #    depth => sub { },
-    #    factorial  => sub { },
-    false => sub { 0; },
-    floor => sub { floor($_[0]); },
+    exp       => sub { exp($_[0]); },
+    factorial => sub { pgfmathfactorial($_[0]); },
+    false     => sub { 0; },
+    floor     => sub { floor($_[0]); },
     #    frac       => sub { },
     #    gcd        => sub { },
     #    height     => sub { },
@@ -452,7 +503,7 @@ BEGIN {
     round    => sub { round($_[0]); },
     scalar   => sub { SetCondition(T_CS('\ifpgfmathunitsdeclared'), 0, 'global'); $_[0]; },
     sec      => sub { sec(pgfmathargradians($_[0])); },
-    sign     => sub { sign($_[0]); },
+    sign     => sub { ($_[0] > 0 ? 1 : ($_[0] < 0 ? -1 : 0)); },
     sin      => sub { sin(pgfmathargradians($_[0])); },
     sinh     => sub { sinh($_[0]); },
     sqrt     => sub { sqrt($_[0]); },
@@ -485,12 +536,19 @@ expr :
      factor (MULOP factor { [$item[1],$item[2]]; })(s?)
           { LaTeXML::Package::Pool::pgfmath_leftrecapply($item[1],map(@$_,@{$item[2]})); }
 
-  factor :
+   # addPostfix[$base] ; adds any following sub/super scripts to $base.
+   addPostfix :
+          /^\Z/ { $arg[0];}   # short circuit!
+        | POSTFIX          addPostfix[LaTeXML::Package::Pool::pgfmath_apply($item[1],$arg[0])]
+        | { $arg[0]; }
+  factor : simplefactor addPostfix[$item[1]]
+
+  simplefactor :
       /\(/ formula /\)/     { $item[2]; }
-    | PREFIX factor           { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
-    | FUNCTION0                   { LaTeXML::Package::Pool::pgfmath_apply($item[1]); }
+    | PREFIX simplefactor   { LaTeXML::Package::Pool::pgfmath_apply($item[1],$item[2]); }
     | FUNCTION /\(/ formula (/,/ formula { $item[2]; })(s?) /\)/
            { LaTeXML::Package::Pool::pgfmath_apply($item[1], $item[3], @{$item[4]}); }
+    | FUNCTION0                   { LaTeXML::Package::Pool::pgfmath_apply($item[1]); }
     | NUMBER UNIT          { LaTeXML::Package::Pool::pgfmath_convert($item[1],$item[2]); }
     | NUMBER REGISTER      { LaTeXML::Package::Pool::pgfmath_apply('*', $item[1], $item[2]); }
       # really count_register dimension_register!
@@ -500,11 +558,11 @@ expr :
 
     REGISTER :  # these need to set dimension flag!!!
       /\\wd/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::LookupRegister($item[1])->getWidth->valueOf/65536; }
+                             LaTeXML::Package::Pool::pgfmath_getwidth($item[2]); }
     | /\\ht/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::LookupRegister($item[1])->getHeight->valueOf/65536; }
+                             LaTeXML::Package::Pool::pgfmath_getheight($item[2]); }
     | /\\dp/ CS            { LaTeXML::Package::Pool::pgfmath_setunitsdeclared();
-                             LaTeXML::Package::LookupRegister($item[1])->getDepth->valueOf/65536; }
+                             LaTeXML::Package::Pool::pgfmath_getdepth($item[2]); }
     | CS                   { LaTeXML::Package::Pool::pgfmath_register($item[1]); }
 
     CS : /\\[a-zA-Z@]*/
@@ -520,7 +578,7 @@ expr :
       /(?:ex|em|pt|pc|in|bp|cm|mm|dd|cc|sp)/
 
     FUNCTION0 : /(?:e|pi|false|rand|rnd|true)/
-    FUNCTION : /(?:abs|acos|asin|atan|bin|ceil|cos|cosec|cosh|cot|factorial|floor|frac|hex|Hex|
+    FUNCTION : /(?:abs|acos|asin|atan|bin|ceil|cos|cosec|cosh|cot|exp|factorial|floor|frac|hex|Hex|
 int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|real|round|sec|sign|sin|sinh|sqrt|tan|tanh|add|and|atan2|divide|div|equal|gcd|greater|less|max|min|mod|Mod|multiply|notequal|notgreater|notless|or|pow|random|subtract|ifthenelse)/
 
 # ? array|veclen | scalar

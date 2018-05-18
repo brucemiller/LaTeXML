@@ -7,9 +7,14 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>TeX style input</title>
-    <paragraph xml:id="S1.SS0.SSS0.Px1">
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px1">
       <title>Given</title>
       <para xml:id="S1.SS0.SSS0.Px1.p1">
         <p>whichfrag1, whichfrag1.tex and whichfrag1.tex.tex:</p>
@@ -21,7 +26,7 @@
         <p><verbatim font="typewriter">\input whichfrag1.tex</verbatim> →[read whichfrag1.tex]</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.Px2">
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px2">
       <title>Given</title>
       <para xml:id="S1.SS0.SSS0.Px2.p1">
         <p>whichfrag2 and whichfrag2.tex:</p>
@@ -33,7 +38,7 @@
         <p><verbatim font="typewriter">\input whichfrag2.tex</verbatim> →[read whichfrag2.tex]</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S1.SS0.SSS0.Px3">
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px3">
       <title>Given</title>
       <para xml:id="S1.SS0.SSS0.Px3.p1">
         <p>whichfrag3:</p>
@@ -43,9 +48,14 @@
       </para>
     </paragraph>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>LaTeX style input</title>
-    <paragraph xml:id="S2.SS0.SSS0.Px1">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px1">
       <title>Given</title>
       <para xml:id="S2.SS0.SSS0.Px1.p1">
         <p>whichfrag1, whichfrag1.tex and whichfrag1.tex.tex:</p>
@@ -57,7 +67,7 @@
         <p><verbatim font="typewriter">\input{whichfrag1.tex}</verbatim> [read whichfrag1.tex]</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px2">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px2">
       <title>Given</title>
       <para xml:id="S2.SS0.SSS0.Px2.p1">
         <p>whichfrag2 and whichfrag2.tex:</p>
@@ -69,7 +79,7 @@
         <p><verbatim font="typewriter">\input{whichfrag2.tex}</verbatim> →[read whichfrag2.tex]</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px3">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px3">
       <title>Given</title>
       <para xml:id="S2.SS0.SSS0.Px3.p1">
         <p>whichfrag3:</p>
@@ -79,9 +89,14 @@
       </para>
     </paragraph>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>usepackage</title>
-    <paragraph xml:id="S3.SS0.SSS0.Px1">
+    <paragraph inlist="toc" xml:id="S3.SS0.SSS0.Px1">
       <title>Given</title>
       <para xml:id="S3.SS0.SSS0.Px1.p1">
         <p>whichpkga and whichpkga.sty:</p>
@@ -90,7 +105,7 @@
         <p><verbatim font="typewriter">\usepackage{whichpkga}</verbatim> →[loaded whichpkga.sty]</p>
       </para>
     </paragraph>
-    <paragraph xml:id="S3.SS0.SSS0.Px2">
+    <paragraph inlist="toc" xml:id="S3.SS0.SSS0.Px2">
       <title>Given</title>
       <para xml:id="S3.SS0.SSS0.Px2.p1">
         <p>whichpkgb, whichpkgb.sty and whichpkgb.sty.sty:</p>

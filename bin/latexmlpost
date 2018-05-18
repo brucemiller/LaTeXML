@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 # /=====================================================================\ #
 # |  latexmlpost                                                        | #
 # | post processing conversion program                                  | #
@@ -157,6 +157,9 @@ if ($xmlfile ne '-') {
   $xmlfile .= '.xml' unless -f $xmlfile;
   xError("The input file \"$xmlfile\" was not found") unless -f $xmlfile; }
 
+if (@ARGV) {
+  xError("Extra unrecognized arguments " . join(' ', @ARGV)); }
+
 if (defined $defaultcss) {    # must have been unset
   warn "--defaultcss & --nodefaultcss are obsolete;"
     . " use --defaultresources or --nodefaultresources intead";
@@ -255,6 +258,15 @@ elsif ($format eq 'jats') {
   $picimages  = 1 unless defined $picimages;
   $is_html    = 0;
   $stylesheet = "LaTeXML-jats.xsl" if !defined $stylesheet; }
+elsif ($format eq 'tei') {
+  $extension = 'xml' unless defined $extension;
+  # Add pMML FIRST, unless already there, or was disabled.
+  # note that MathImages can supply altimg attributes
+  maybeAddMathFormat('pmml');
+  $dographics = 1 unless defined $dographics;
+  $picimages  = 1 unless defined $picimages;
+  $is_html    = 0;
+  $stylesheet = "LaTeXML-tei.xsl" if !defined $stylesheet; }
 elsif ($format eq 'xml') {
   $extension = 'xml' unless defined $extension; }
 else {
@@ -927,7 +939,16 @@ repeated to provide several mappings, with the earlier formats preferred.
 If the I<desttype> is omitted, it specifies copying files of type I<sourcetype>, unchanged.
 
 The default settings is equivalent to having supplied the options:
-  svg png gif jpg jpeg eps.png ps.png ai.png pdf.png
+
+  --graphicsmap=svg
+  --graphicsmap=png
+  --graphicsmap=gif
+  --graphicsmap=jpg
+  --graphicsmap=jpeg
+  --graphicsmap=eps.png
+  --graphicsmap=ps.png
+  --graphicsmap=ai.png
+  --graphicsmap=pdf.png
 
 The first formats are preferred and used unchanged, while the latter
 ones are converted to png.

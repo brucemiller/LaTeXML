@@ -1,0 +1,37 @@
+\documentclass{article}
+
+\usepackage{xkvview}
+\makeatletter
+
+\define@key[my]{sample}{key}{My Key has been set to {\tt\string#1\relax}. }
+\define@key[my]{sample}{keyword}[true]{My Keyword has been set to {\tt\string#1\relax}.}
+
+\define@key[their]{sample}{key}{Their key has been set to {\tt\string#1\relax}. }
+\define@key[their]{sample}{keyword}[true]{Their keyword has been set to {\tt\string#1\relax}.}
+
+\define@cmdkey[prefix]{sample}[macro@]{key}{My Key has been set to \macro@key. }
+\define@cmdkey[prefix]{sample}{word}{My word has been set to \cmdprefix@sample@word. }
+
+\define@cmdkeys[prefix]{sample}{a,b,c}
+
+\define@choicekey[prefix]{choices}{color}{red,green,blue}{The color is {\tt\string#1\relax}. }
+\define@choicekey[prefix]{choices}{mcolor}[\var\nr]{red,green,blue}{The color is {\tt\var\relax} and has number \nr. }
+\define@choicekey*[prefix]{choices}{scolor}{RED,green,blue}{The color is {\tt\string#1\relax}. }
+\define@choicekey+[prefix]{choices}{pcolor}{red,green,blue}{Valid selection {\tt\string#1\relax}.}{Invalid selection, you may not choose {\tt\string#1\relax}. }
+\define@choicekey*+[prefix]{choices}{spcolor}{RED,green,blue}{Valid selection {\tt\string#1\relax}.}{Invalid selection, you may not choose {\tt\string#1\relax}. }
+
+\define@boolkey[prefix]{bool}{a}{A has been set to #1. }
+\define@boolkey[prefix]{bool}{b}{B has been set to #1. }
+
+\define@boolkey+[prefix]{bool}{c}{C is true||false. }{C is invalid. }
+\define@boolkey+[prefix]{bool}{d}{D is true||false. }{D is invalid. }
+\define@boolkey+[prefix]{bool}{e}{E is true||false. }{E is invalid. }
+
+\define@boolkeys[prefix]{bool}{f,g,h}
+\makeatother
+
+\begin{document}
+  
+  \xkvview{}
+
+\end{document}

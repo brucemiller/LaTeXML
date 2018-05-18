@@ -7,8 +7,13 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <table frefnum="Table 1" refnum="1" xml:id="S0.T1">
-    <caption><tag close=": ">Table 1</tag>The ISOGRK3 entity set</caption>
+  <table xml:id="S0.T1">
+    <tags>
+      <tag>Table 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Table 1</tag>
+    </tags>
+    <caption><tag close=": ">Table 1</tag>The ISOGRK3 entity set</caption>
     <toccaption><tag close=" ">1</tag>The ISOGRK3 entity set</toccaption>
     <tabular>
       <thead>

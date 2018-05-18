@@ -167,7 +167,8 @@ sub pack_collection {
     elsif ($whatsout eq 'math') {
       # Math output - least common ancestor of all math in the document
       print STDERR "REQUESTING MATH\n";
-      push @packed_docs, get_math($doc); }
+      push @packed_docs, get_math($doc);
+      unlink('LaTeXML.cache'); }
     else { push @packed_docs, $doc; } }
   return @packed_docs; }
 
@@ -226,6 +227,11 @@ sub get_math {
   return unless defined $doc;
   my @mnodes     = $doc->findnodes($math_xpath);
   my $math_count = scalar(@mnodes);
+  if (!$math_count) { # If no real math nodes, look for math image nodes
+    my $math_img_xpath = '//*[local-name()="img" and @class="ltx_Math"]';
+    @mnodes         = $doc->findnodes($math_img_xpath);
+    $math_count = scalar(@mnodes);
+  }
   if (!$math_count) {
     return get_embeddable($doc); }
   my $math = $mnodes[0];
@@ -238,6 +244,12 @@ sub get_math {
     }
     $math = $math->parentNode while ($math->nodeName =~ '^t[rd]$'); }
   if ($math) {
+    my $imagesrc = $math->getAttribute('imagesrc') || $math->getAttribute('src');
+    if ($imagesrc && $imagesrc =~ /[.]svg$/) {
+      # Return the SVG directly
+      $math = LaTeXML::Common::XML::Parser->new()->parseFile($imagesrc);
+      $math = $math && $math->getDocumentElement;
+    }
     # Copy over document namespace declarations:
     # NOTE: This copies ALL the namespaces, not just the needed ones!
     foreach ($doc->getDocumentElement->getNamespaces) {

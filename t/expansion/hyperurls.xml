@@ -1,0 +1,291 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="hyperref"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="autoref">section 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>URLs in package hyperref</title>
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px1">
+      <title>URLs</title>
+      <para xml:id="S1.SS0.SSS0.Px1.p1">
+        <itemize xml:id="S1.I1">
+          <item xml:id="S1.I1.i1">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">1st item</tag>
+            </tags>
+            <para xml:id="S1.I1.i1.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/wordword">https://example.com/wordword</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i2">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">2nd item</tag>
+            </tags>
+            <para xml:id="S1.I1.i2.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/~User">https://example.com/~User</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i3">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">3rd item</tag>
+            </tags>
+            <para xml:id="S1.I1.i3.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/someplace#id">https://example.com/someplace#id</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i4">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">4th item</tag>
+            </tags>
+            <para xml:id="S1.I1.i4.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/withslash#id">https://example.com/withslash#id</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i5">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">5th item</tag>
+            </tags>
+            <para xml:id="S1.I1.i5.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/user@password">https://example.com/user@password</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i6">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">6th item</tag>
+            </tags>
+            <para xml:id="S1.I1.i6.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/user&amp;param">https://example.com/user&amp;param</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i7">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">7th item</tag>
+            </tags>
+            <para xml:id="S1.I1.i7.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/withslash&amp;param">https://example.com/withslash&amp;param</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i8">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">8th item</tag>
+            </tags>
+            <para xml:id="S1.I1.i8.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/with_underscore">https://example.com/with_underscore</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i9">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">9th item</tag>
+            </tags>
+            <para xml:id="S1.I1.i9.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/withslash_underscore">https://example.com/withslash_underscore</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i10">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">10th item</tag>
+            </tags>
+            <para xml:id="S1.I1.i10.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/with^caret">https://example.com/with^caret</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i11">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">11st item</tag>
+            </tags>
+            <para xml:id="S1.I1.i11.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/with$dollar">https://example.com/with$dollar</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i12">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">12nd item</tag>
+            </tags>
+            <para xml:id="S1.I1.i12.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/expandedmacro.with_underscore">https://example.com/expandedmacro.with_underscore</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i13">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">13rd item</tag>
+            </tags>
+            <para xml:id="S1.I1.i13.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/encoded%code">https://example.com/encoded%code</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I1.i14">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">14th item</tag>
+            </tags>
+            <para xml:id="S1.I1.i14.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/withslashpercent%code">https://example.com/withslashpercent%code</ref>.</p>
+            </para>
+          </item>
+        </itemize>
+      </para>
+    </paragraph>
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px2">
+      <title>Probably unexpected URLs</title>
+      <para xml:id="S1.SS0.SSS0.Px2.p1">
+        <itemize xml:id="S1.I2">
+          <item xml:id="S1.I2.i1">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">1st item</tag>
+            </tags>
+            <para xml:id="S1.I2.i1.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/{̃}User">https://example.com/{̃}User</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I2.i2">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">2nd item</tag>
+            </tags>
+            <para xml:id="S1.I2.i2.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/with.{}braces">https://example.com/with.{}braces</ref>;</p>
+            </para>
+          </item>
+          <item xml:id="S1.I2.i3">
+            <tags>
+              <tag>•</tag>
+              <tag role="autoref">item </tag>
+              <tag role="typerefnum">3rd item</tag>
+            </tags>
+            <para xml:id="S1.I2.i3.p1">
+              <p><ref class="ltx_url" font="typewriter" href="https://example.com/withslashĉaret">https://example.com/withslashĉaret</ref>;</p>
+            </para>
+          </item>
+        </itemize>
+      </para>
+    </paragraph>
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px3">
+      <title>URLs in footnotes</title>
+      <note mark="1" role="footnote" xml:id="footnote1"><tags>
+          <tag>1</tag>
+          <tag role="autoref">footnote 1</tag>
+          <tag role="refnum">1</tag>
+          <tag role="typerefnum">footnote 1</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/~User">https://example.com/~User</ref></note>
+      <note mark="2" role="footnote" xml:id="footnote2"><tags>
+          <tag>2</tag>
+          <tag role="autoref">footnote 2</tag>
+          <tag role="refnum">2</tag>
+          <tag role="typerefnum">footnote 2</tag>
+        </tags>too late to fix #, but can use backslash</note>
+      <note mark="3" role="footnote" xml:id="footnote3"><tags>
+          <tag>3</tag>
+          <tag role="autoref">footnote 3</tag>
+          <tag role="refnum">3</tag>
+          <tag role="typerefnum">footnote 3</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/withslash#id">https://example.com/withslash#id</ref></note>
+      <note mark="4" role="footnote" xml:id="footnote4"><tags>
+          <tag>4</tag>
+          <tag role="autoref">footnote 4</tag>
+          <tag role="refnum">4</tag>
+          <tag role="typerefnum">footnote 4</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/user@password">https://example.com/user@password</ref></note>
+      <note mark="5" role="footnote" xml:id="footnote5"><tags>
+          <tag>5</tag>
+          <tag role="autoref">footnote 5</tag>
+          <tag role="refnum">5</tag>
+          <tag role="typerefnum">footnote 5</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/user&amp;param">https://example.com/user&amp;param</ref></note>
+      <note mark="6" role="footnote" xml:id="footnote6"><tags>
+          <tag>6</tag>
+          <tag role="autoref">footnote 6</tag>
+          <tag role="refnum">6</tag>
+          <tag role="typerefnum">footnote 6</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/withslash&amp;param">https://example.com/withslash&amp;param</ref></note>
+      <note mark="7" role="footnote" xml:id="footnote7"><tags>
+          <tag>7</tag>
+          <tag role="autoref">footnote 7</tag>
+          <tag role="refnum">7</tag>
+          <tag role="typerefnum">footnote 7</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/with_underscore">https://example.com/with_underscore</ref></note>
+      <note mark="8" role="footnote" xml:id="footnote8"><tags>
+          <tag>8</tag>
+          <tag role="autoref">footnote 8</tag>
+          <tag role="refnum">8</tag>
+          <tag role="typerefnum">footnote 8</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/withslash_underscore">https://example.com/withslash_underscore</ref></note>
+      <note mark="9" role="footnote" xml:id="footnote9"><tags>
+          <tag>9</tag>
+          <tag role="autoref">footnote 9</tag>
+          <tag role="refnum">9</tag>
+          <tag role="typerefnum">footnote 9</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/with^caret">https://example.com/with^caret</ref></note>
+      <note mark="10" role="footnote" xml:id="footnote10"><tags>
+          <tag>10</tag>
+          <tag role="autoref">footnote 10</tag>
+          <tag role="refnum">10</tag>
+          <tag role="typerefnum">footnote 10</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/with$dollar">https://example.com/with$dollar</ref></note>
+      <note mark="11" role="footnote" xml:id="footnote11"><tags>
+          <tag>11</tag>
+          <tag role="autoref">footnote 11</tag>
+          <tag role="refnum">11</tag>
+          <tag role="typerefnum">footnote 11</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/expandedmacro.with_underscore">https://example.com/expandedmacro.with_underscore</ref></note>
+      <note mark="12" role="footnote" xml:id="footnote12"><tags>
+          <tag>12</tag>
+          <tag role="autoref">footnote 12</tag>
+          <tag role="refnum">12</tag>
+          <tag role="typerefnum">footnote 12</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/percent%code">https://example.com/percent%code</ref></note>
+    </paragraph>
+    <paragraph inlist="toc" xml:id="S1.SS0.SSS0.Px4">
+      <title>Probably unexpected URLs in footnotes</title>
+      <note mark="13" role="footnote" xml:id="footnote13"><tags>
+          <tag>13</tag>
+          <tag role="autoref">footnote 13</tag>
+          <tag role="refnum">13</tag>
+          <tag role="typerefnum">footnote 13</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/with.{}braces">https://example.com/with.{}braces</ref></note>
+      <note mark="14" role="footnote" xml:id="footnote14"><tags>
+          <tag>14</tag>
+          <tag role="autoref">footnote 14</tag>
+          <tag role="refnum">14</tag>
+          <tag role="typerefnum">footnote 14</tag>
+        </tags><ref class="ltx_url" font="typewriter" href="https://example.com/lostpercent">https://example.com/lostpercent</ref></note>
+    </paragraph>
+  </section>
+</document>

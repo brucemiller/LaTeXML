@@ -45,17 +45,17 @@ DefMacro('\lx@algorithmic@item OptionalUndigested',
 
 # This imitates \item; just opens the ltx:listingline, but somebody's got to close it.
 DefConstructor('\lx@algorithmic@item@@ OptionalUndigested',
-  "<ltx:listingline xml:id='#id' refnum='#refnum' itemsep='#itemsep'>"
-    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
+  "<ltx:listingline xml:id='#id' itemsep='#itemsep'>"
+    . "#tags",
   properties => sub {
-    my $frefnum = Digest(T_CS('\ALC@lno'));
-    my $refnum  = Digest(T_CS('\theALC@line'));
-    my $id      = Digest(T_CS('\theALC@line@ID'));
-    (id => $id, refnum => $refnum, frefnum => $frefnum); },
+    my $id = Digest(T_CS('\theALC@line@ID'));
+    my $tags = Digest(Invocation(T_CS('\lx@make@tags'), T_OTHER('ALC@line')));
+    (id => $id, tags => $tags); },
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
 
 NewCounter('algorithm', undef,       idprefix => 'alg');
 NewCounter('ALC@line',  'algorithm', idprefix => 'l');     # Assuming we're inside an {algorithm}!
+DefMacro('\fnum@ALC@line', '\ALC@lno');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

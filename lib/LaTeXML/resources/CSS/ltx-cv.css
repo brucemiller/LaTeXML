@@ -1,0 +1,121 @@
+/* This is a simplistic stylesheet trying to capture a moderncv-like style for CVs.
+   It is based around flexbox, and was derived from a Bootstrap grid approach.
+
+   The current rules are definitely rough around the edges and contributions + polish
+   are most welcome!
+*/
+
+/* A basic flexbox grid can be realized as follows. 
+   We use these rules for the heading, which is a one-off styling pass */
+.flex-grid {
+  display: flex;
+}
+.col-25 {
+  flex: 25;
+}
+.col-50 {
+  flex: 50;
+}
+
+/* A responsive CV works nicely centered with a reasonable max-width */
+div.ltx_page_main {
+  margin-right: auto;
+  margin-left: auto;
+}
+
+@media (min-width: 768px) {
+  div.ltx_page_main {
+    max-width: 750px;
+  }
+}
+@media (min-width: 992px) {
+  div.ltx_page_main {
+    max-width: 970px;
+  }
+}
+@media (min-width: 1200px) {
+  div.ltx_page_main {
+    max-width: 1170px;
+  }
+}
+
+/* CV frontmatter styling */
+.author-name {
+  font-family: 'Chantelli-Antiqua', 'Georgia', serif;
+}
+.author-title {
+  font-style: italic;
+  font-weight: normal;
+}
+
+.author-contact {
+  text-align: right;
+  font-style: italic;
+  font-weight: normal; 
+  color: #6699CC;
+}
+.ltx_contact {
+  line-height: 2;
+}
+
+/* A logical section of a CV, heading styling */
+h2.ltx_cv.ltx_title_section {
+  color: #6699CC;
+}
+.ltx_section_mark::before{
+  content: "mark";
+  visibility: hidden;
+}
+.ltx_section_mark {
+  border-bottom:thin solid #6699CC;
+}
+
+/* Section grid setup */
+
+h2.ltx_cv.ltx_title_section, .ltx_cv_entry, .ltx_cv_item {
+  display: flex;
+  align-items: baseline;
+}
+
+.ltx_section_mark, .ltx_cv_entry_date, .ltx_cv_item_label {
+  flex: 16.66;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+.ltx_cv_heading, .ltx_cv_entry_content, .ltx_cv_item_content {
+  flex: 83.33;
+  padding-left: 15px;
+  padding-right: 15px;
+}
+
+/* Sections contain multiple "entries" and "items", 
+a distinction we are not really styling right now 
+(should we? or is this relevant only to the latex macro language) */
+
+.ltx_cv_entry_content, .ltx_cv_item_content {
+  line-height: 1.4;
+}
+
+@media screen and (min-width: 48em){
+  .ltx_cv_entry_date {
+    text-align: right;
+  }
+  .ltx_cv_item_label {
+    text-align: right;
+  }
+}
+@media screen and (max-width: 48em){
+  .ltx_cv_entry_date {
+    margin-top: 5px;
+    text-align: center;
+  }
+  .ltx_cv_item_label {
+    margin-top: 5px;
+    text-align: center;
+  }
+}
+
+a.ltx_ref.ltx_url {
+  color: #337ab7;
+  text-decoration: none;
+}

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="keyval"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Package keyval test</title>
+    <para xml:id="S1.p1">
+      <p>Setting no arguments.</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Setting ‘key=value’.
+Key has been set to <text font="typewriter">value</text>.</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>Setting ‘keyword’.
+Keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>Setting ‘keyword=true’.
+Keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p5">
+      <p>Setting ‘keyword=false’.
+Keyword has been set to <text font="typewriter">false</text>.</p>
+    </para>
+    <para xml:id="S1.p6">
+      <p>Setting ‘key=value,keyword’.
+Key has been set to <text font="typewriter">value</text>. Keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p7">
+      <p>Setting ‘key=value,keyword=true’.
+Key has been set to <text font="typewriter">value</text>. Keyword has been set to <text font="typewriter">true</text>.</p>
+    </para>
+    <para xml:id="S1.p8">
+      <p>Setting ‘keyword=true,key=value’.
+Keyword has been set to <text font="typewriter">true</text>. Key has been set to <text font="typewriter">value</text>.</p>
+    </para>
+    <para xml:id="S1.p9">
+      <p>Setting ‘key=value,keyword=false’.
+Key has been set to <text font="typewriter">value</text>. Keyword has been set to <text font="typewriter">false</text>.</p>
+    </para>
+    <para xml:id="S1.p10">
+      <p>Setting ‘stuff’.
+Stuff has been set to default.</p>
+    </para>
+    <para xml:id="S1.p11">
+      <p>Setting ‘stuff=things’.
+Stuff has been set to <text font="typewriter">things</text>.</p>
+    </para>
+  </section>
+</document>

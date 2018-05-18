@@ -211,6 +211,8 @@ DefRegister('\dimexpr DimExpr',   Dimension(0), getter => sub { $_[0]; });
 DefRegister('\glueexpr GlueExpr', Glue(0),      getter => sub { $_[0]; });
 DefRegister('\muexpr MuExpr',     MuGlue(0),    getter => sub { $_[0]; });
 
+# Not really sure where this comes from; pdftex?
+DefRegister('\synctex', Number(0));
 #======================================================================
 1;
 

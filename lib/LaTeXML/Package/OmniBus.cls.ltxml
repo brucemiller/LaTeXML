@@ -48,7 +48,12 @@ RequirePackage('graphicx');
 foreach my $trigger (qw(citet citep citealt citealp citenum citeauthor citefullauthor
   citeyear citeyearpar citeauthoryear setcitestyle bibpunct)) {
   DefAutoload($trigger, 'natbib.sty.ltxml'); }
-
+Let('\lx@OmniBus@saved@bibitem', '\bibitem');
+# Another hacky autoload: Recognize \bibitem[\protect\citeauthoryear...
+# when it would otherwise be too late to fix.
+DefPrimitive('\lx@late@usepackage Semiverbatim', sub { RequirePackage(ToString($_[1])); });
+DefMacro('\bibitem',
+'\@ifnext@n{[\protect\citeauthoryear}{\lx@late@usepackage{natbib}\bibitem}{\lx@OmniBus@saved@bibitem}');
 DefEnvironment('{frontmatter}', '#body');
 DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\shortauthor{}', '');

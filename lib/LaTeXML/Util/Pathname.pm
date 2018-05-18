@@ -199,17 +199,23 @@ sub pathname_timestamp {
   my ($pathname) = @_;
   return -f $pathname ? (stat($pathname))[9] : 0; }
 
+our $CWD = undef;
+# DO NOT use pathname_cwd, unless you also use pathname_chdir to change dirs!!!
 sub pathname_cwd {
-  if (my $cwd = cwd()) {
-    return pathname_canonical($cwd); }
-  else {
-    # Fatal not imported
-    die "INTERNAL: Could not determine current working directory (cwd)"
-      . "Perhaps a problem with Perl's locale settings?"; } }
+  if (!defined $CWD) {
+    if (my $cwd = cwd()) {
+      $CWD = pathname_canonical($cwd); }
+    else {
+      # Fatal not imported
+      die "INTERNAL: Could not determine current working directory (cwd)"
+        . "Perhaps a problem with Perl's locale settings?"; } }
+  return $CWD; }
 
 sub pathname_chdir {
   my ($directory) = @_;
-  return chdir($directory); }
+  chdir($directory);
+  pathname_cwd();    # RE-cache $CWD!
+  return; }
 
 sub pathname_mkdir {
   my ($directory) = @_;
@@ -376,7 +382,8 @@ sub build_kpse_cache {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
     push(@filters, $path) if -d $path; }
   $texmf =~ s/^["']//; $texmf =~ s/["']$//;
-  $texmf =~ s/^\s*\\\{(.+?)}\s*/$1/s;
+  $texmf =~ s/^\s*\\\{(.+?)}\s*$/$1/s;
+  $texmf =~ s/\{\}//g;
   my @dirs = split(/,/, $texmf);
   foreach my $dir (@dirs) {
     $dir =~ s/^!!//;

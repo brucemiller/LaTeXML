@@ -37,7 +37,7 @@ foreach my $option (qw(10pt 11pt 12pt twoside onecolumn twocolumn
 
 # Anything else gets passed to article.
 DeclareOption(undef, sub {
-    PassOptions('article', 'cls', ToString(Digest(T_CS('\CurrentOption')))); });
+    PassOptions('article', 'cls', ToString(Expand(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
 

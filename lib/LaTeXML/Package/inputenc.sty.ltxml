@@ -35,9 +35,9 @@ DefMacroI('\@inpenc@undefined', undef, sub {
     Error('unexpected', '<char>', $_[0],
       "Keyboard character used is undefined in inputencoding " . LookupValue('INPUT_ENCODING')); });
 
-DefPrimitive('\inputencoding{}', sub { SetInputEncoding(ToString(Digest($_[1]))); });
+DefPrimitive('\inputencoding{}', sub { SetInputEncoding(ToString(Expand($_[1]))); });
 
-DeclareOption(undef, sub { SetInputEncoding(ToString(Digest(T_CS('\CurrentOption')))); });
+DeclareOption(undef, sub { SetInputEncoding(ToString(Expand(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
 

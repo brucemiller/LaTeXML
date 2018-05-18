@@ -41,7 +41,10 @@ sub Box {
 
 sub new {
   my ($class, $string, $font, $locator, $tokens, %properties) = @_;
-  return bless [$string, $font, $locator, $tokens, {%properties}], $class; }
+  return bless { string => $string,
+    tokens => $tokens,
+    properties => { font => $font, locator => $locator, %properties }
+    }, $class; }
 
 # Accessors
 sub isaBox {
@@ -49,27 +52,28 @@ sub isaBox {
 
 sub getString {
   my ($self) = @_;
-  return $$self[0]; }    # Return the string contents of the box
+  return $$self{string}; }    # Return the string contents of the box
 
 sub getFont {
   my ($self) = @_;
-  return $$self[1]; }    # Return the font this box uses.
+  return $$self{properties}{font}; }    # and if undef ????
 
 sub setFont {
   my ($self, $font) = @_;
-  return $$self[1] = $font; }
+  $$self{properties}{font} = $font;
+  return; }
 
 sub isMath {
   my ($self) = @_;
-  return ($$self[4]{mode} || 'text') eq 'math'; }
+  return ($$self{properties}{mode} || 'text') eq 'math'; }
 
 sub getLocator {
   my ($self) = @_;
-  return $$self[2]; }
+  return $$self{properties}{locator}; }
 
 sub getSource {
   my ($self) = @_;
-  return $$self[2]; }
+  return $$self{properties}{locator}; }
 
 # So a Box can stand in for a List
 sub unlist {
@@ -78,58 +82,59 @@ sub unlist {
 
 sub revert {
   my ($self) = @_;
-  return ($$self[3] ? $$self[3]->unlist : ()); }
+  return ($$self{tokens} ? $$self{tokens}->unlist : ()); }
 
 sub toString {
   my ($self) = @_;
-  return $$self[0] // ''; }
+  return $$self{string} // ''; }
 
 # Methods for overloaded operators
 sub stringify {
   my ($self) = @_;
   my $type = ref $self;
   $type =~ s/^LaTeXML::Core:://;
-  my $font = (defined $$self[1]) && $$self[1]->stringify;    # show font, too, if interesting
+  my $font = (defined $$self{properties}{font}) && $$self{properties}{font}->stringify; # show font, too, if interesting
   return $type . '['
-    . (defined $$self[0] ? $$self[0]
-    : (defined $$self[3] ? '[' . ToString($$self[3]) . ']' : ''))
+    . (defined $$self{string} ? $$self{string}
+    : (defined $$self{tokens} ? '[' . ToString($$self{tokens}) . ']' : ''))
     . ($font && ($font ne 'Font[]') ? ' ' . $font : '')
     . ']'; }
 
 # Should this compare fonts too?
 sub equals {
   my ($a, $b) = @_;
-  return (defined $b) && ((ref $a) eq (ref $b)) && ($$a[0] eq $$b[0]) && ($$a[1]->equals($$b[1])); }
+  return (defined $b) && ((ref $a) eq (ref $b)) && ($$a{string} eq $$b{string}) && ($$a{properties}{font}->equals($$b{properties}{font})); }
 
 sub beAbsorbed {
   my ($self, $document) = @_;
-  my $string = $$self[0];
-  my $mode = $$self[4]{mode} || 'text';
+  my $string = $$self{string};
+  my $mode = $$self{properties}{mode} || 'text';
   return ((defined $string) && ($string ne '')
     ? ($mode eq 'math'
-      ? $document->insertMathToken($string, font => $$self[1], %{ $$self[4] })
-      : $document->openText($string, $$self[1]))
+      ? $document->insertMathToken($string, %{ $$self{properties} })
+      : $document->openText($string, $$self{properties}{font}))
     : undef); }
 
 sub getProperty {
   my ($self, $key) = @_;
   if ($key eq 'isSpace') {
-    my $tex = LaTeXML::Core::Token::UnTeX($$self[3]);    # !
-    return (defined $tex) && ($tex =~ /^\s*$/); }        # Check the TeX code, not (just) the string!
+    return $$self{properties}{$key} if defined $$self{properties}{$key};
+    my $tex = LaTeXML::Core::Token::UnTeX($$self{tokens});    # !
+    return (defined $tex) && ($tex =~ /^\s*$/); }    # Check the TeX code, not (just) the string!
   else {
-    return $$self[4]{$key}; } }
+    return $$self{properties}{$key}; } }
 
 sub getProperties {
   my ($self) = @_;
-  return %{ $$self[4] }; }
+  return %{ $$self{properties} }; }
 
 sub getPropertiesRef {
   my ($self) = @_;
-  return $$self[4]; }
+  return $$self{properties}; }
 
 sub setProperty {
   my ($self, $key, $value) = @_;
-  $$self[4]{$key} = $value;
+  $$self{properties}{$key} = $value;
   return; }
 
 sub setProperties {
@@ -217,8 +222,8 @@ sub computeSize {
   $options{width}  = $$props{width}  if $$props{width};
   $options{height} = $$props{height} if $$props{height};
   $options{depth}  = $$props{depth}  if $$props{depth};
-  my ($w, $h, $d) = ($$self[1]
-      || LaTeXML::Common::Font->textDefault)->computeStringSize($$self[0], %options);
+  my ($w, $h, $d) = ($$props{font}
+      || LaTeXML::Common::Font->textDefault)->computeStringSize($$self{string}, %options);
   $$props{cwidth}  = $w unless defined $$props{width};
   $$props{cheight} = $h unless defined $$props{height};
   $$props{cdepth}  = $d unless defined $$props{depth};

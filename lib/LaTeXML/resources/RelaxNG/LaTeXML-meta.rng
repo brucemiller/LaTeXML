@@ -56,6 +56,9 @@ It's content allows both inline and block-level content.</a:documentation>
   </define>
   <define name="note_model">
     <a:documentation>Content model for \elementref{note}.</a:documentation>
+    <optional>
+      <ref name="tags"/>
+    </optional>
     <ref name="Flow.model"/>
   </define>
   <!-- should mark be more like label/refnum ? -->

@@ -1,0 +1,14 @@
+\RequirePackage{xkeyval}
+
+\def\@hello{Missing `hello' parameter. }
+\DeclareOptionX{hello}{\edef\@hello{Defined `hello' to #1. }}
+
+\def\@warn{}
+\DeclareOptionX*{\edef\@warn{`\CurrentOption' ignored.\@warn}}
+
+\ProcessOptionsX*
+
+\providecommand{\scenario}{%
+  \@hello%
+  \@warn%
+}

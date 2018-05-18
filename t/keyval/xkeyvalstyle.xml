@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="myxkeyval"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para class="scenario" xml:id="p1">
+    <p><text class="role">true</text><text class="country">United States</text><text class="color">red</text><text class="cross">true</text></p>
+  </para>
+  <para class="scenario" xml:id="p2">
+    <p><text class="role">false</text><text class="country">Canada</text><text class="color">green</text><text class="cross">false</text></p>
+  </para>
+  <para class="scenario" xml:id="p3">
+    <p><text class="role">false</text><text class="country">Germany</text><text class="color">blue</text><text class="cross">false</text></p>
+  </para>
+</document>

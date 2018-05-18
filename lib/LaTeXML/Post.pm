@@ -203,6 +203,28 @@ sub generateResourcePathname {
   $doc->cacheStore($counter, $n);
   return pathname_make(dir => $subdir, name => $name, type => $type); }
 
+# Get a list [class,classoptions, oldstyle],[package,packageoptions],...]
+# The options are strings
+sub find_documentclass_and_packages {
+  my ($self, $doc) = @_;
+  my ($class, $classoptions, $oldstyle, @packages);
+  foreach my $pi ($doc->findnodes(".//processing-instruction('latexml')")) {
+    my $data  = $pi->textContent;
+    my $entry = {};
+    while ($data =~ s/\s*([\w\-\_]*)=([\"\'])(.*?)\2//) {
+      $$entry{$1} = $3; }
+    if ($$entry{class}) {
+      $class        = $$entry{class};
+      $classoptions = $$entry{options} || 'onecolumn';
+      $oldstyle     = $$entry{oldstyle}; }
+    elsif ($$entry{package}) {
+      push(@packages, [$$entry{package}, $$entry{options} || '']); }
+  }
+  if (!$class) {
+    Warn('expected', 'class', undef, "No document class found; using article");
+    $class = 'article'; }
+  return ([$class, $classoptions, $oldstyle], @packages); }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Post::MathProcessor;
 use strict;

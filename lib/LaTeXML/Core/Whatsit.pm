@@ -50,41 +50,9 @@ sub isMath {
   my ($self) = @_;
   return $$self{properties}{isMath}; }
 
-sub getFont {
-  my ($self) = @_;
-  return $$self{properties}{font}; }    # and if undef ????
-
-sub setFont {
-  my ($self, $font) = @_;
-  $$self{properties}{font} = $font;
-  return; }
-
-sub getLocator {
-  my ($self) = @_;
-  return $$self{properties}{locator}; }
-
 sub getProperty {
   my ($self, $key) = @_;
   return $$self{properties}{$key}; }
-
-sub getProperties {
-  my ($self) = @_;
-  return %{ $$self{properties} }; }
-
-sub getPropertiesRef {
-  my ($self) = @_;
-  return $$self{properties}; }
-
-sub setProperty {
-  my ($self, $key, $value) = @_;
-  $$self{properties}{$key} = $value;
-  return; }
-
-sub setProperties {
-  my ($self, %props) = @_;
-  while (my ($key, $value) = each %props) {
-    $$self{properties}{$key} = $value if defined $value; }
-  return; }
 
 sub getArg {
   my ($self, $n) = @_;

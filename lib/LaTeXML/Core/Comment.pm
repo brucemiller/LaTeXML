@@ -22,7 +22,7 @@ sub toString { return ''; }
 
 sub beAbsorbed {
   my ($self, $document) = @_;
-  return $document->insertComment($$self[0]); }
+  return $document->insertComment($$self{string}); }
 
 sub getWidth       { return Dimension(0); }
 sub getHeight      { return Dimension(0); }

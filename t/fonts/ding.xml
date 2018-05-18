@@ -1,0 +1,553 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="pifont"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Usage</title>
+    <para xml:id="S1.p1">
+      <p>For example ✆.</p>
+      <itemize>
+        <item xml:id="S1.I1.i1">
+          <tags>
+            <tag>➤</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S1.I1.i1.p1">
+            <p>The first item.</p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i2">
+          <tags>
+            <tag>➤</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S1.I1.i2.p1">
+            <p>The second item in the list.</p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i3">
+          <tags>
+            <tag>➤</tag>
+            <tag role="typerefnum">3rd item</tag>
+          </tags>
+          <para xml:id="S1.I1.i3.p1">
+            <p>A final item.</p>
+          </para>
+        </item>
+      </itemize>
+    </para>
+    <para xml:id="S1.p2">
+      <enumerate xml:id="S1.I2">
+        <item labels="LABEL:lst:a" xml:id="S1.I2.i1">
+          <tags>
+            <tag>➀</tag>
+            <tag role="refnum">➀</tag>
+            <tag role="typerefnum">item ➀</tag>
+          </tags>
+          <para xml:id="S1.I2.i1.p1">
+            <p>The first item in the list.</p>
+          </para>
+        </item>
+        <item labels="LABEL:lst:b" xml:id="S1.I2.i2">
+          <tags>
+            <tag>➁</tag>
+            <tag role="refnum">➁</tag>
+            <tag role="typerefnum">item ➁</tag>
+          </tags>
+          <para xml:id="S1.I2.i2.p1">
+            <p>The second item in the list.</p>
+          </para>
+        </item>
+        <item labels="LABEL:lst:c" xml:id="S1.I2.i3">
+          <tags>
+            <tag>➂</tag>
+            <tag role="refnum">➂</tag>
+            <tag role="typerefnum">item ➂</tag>
+          </tags>
+          <para xml:id="S1.I2.i3.p1">
+            <p>The third item in the list.</p>
+          </para>
+        </item>
+      </enumerate>
+    </para>
+    <para xml:id="S1.p3">
+      <enumerate xml:id="S1.I3">
+        <item xml:id="S1.I3.i1">
+          <tags>
+            <tag>1.</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">item 1</tag>
+          </tags>
+          <para xml:id="S1.I3.i1.p1">
+            <enumerate xml:id="S1.I3.I1">
+              <item labels="LABEL:lst:1a" xml:id="S1.I3.i1.i1">
+                <tags>
+                  <tag>➀</tag>
+                  <tag role="refnum">➀</tag>
+                  <tag role="typerefnum">item ➀</tag>
+                </tags>
+                <para xml:id="S1.I3.i1.i1.p1">
+                  <p>first</p>
+                </para>
+              </item>
+              <item labels="LABEL:lst:1b" xml:id="S1.I3.i1.i2">
+                <tags>
+                  <tag>➁</tag>
+                  <tag role="refnum">➁</tag>
+                  <tag role="typerefnum">item ➁</tag>
+                </tags>
+                <para xml:id="S1.I3.i1.i2.p1">
+                  <p>second</p>
+                </para>
+              </item>
+              <item labels="LABEL:lst:1c" xml:id="S1.I3.i1.i3">
+                <tags>
+                  <tag>➂</tag>
+                  <tag role="refnum">➂</tag>
+                  <tag role="typerefnum">item ➂</tag>
+                </tags>
+                <para xml:id="S1.I3.i1.i3.p1">
+                  <p>third</p>
+                </para>
+              </item>
+            </enumerate>
+          </para>
+        </item>
+        <item xml:id="S1.I3.i2">
+          <tags>
+            <tag>2.</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">item 2</tag>
+          </tags>
+          <para xml:id="S1.I3.i2.p1">
+            <enumerate xml:id="S1.I3.I2">
+              <item labels="LABEL:lst:2a" xml:id="S1.I3.i2.i1">
+                <tags>
+                  <tag>❶</tag>
+                  <tag role="refnum">❶</tag>
+                  <tag role="typerefnum">item ❶</tag>
+                </tags>
+                <para xml:id="S1.I3.i2.i1.p1">
+                  <p>first</p>
+                </para>
+              </item>
+              <item labels="LABEL:lst:2b" xml:id="S1.I3.i2.i2">
+                <tags>
+                  <tag>❷</tag>
+                  <tag role="refnum">❷</tag>
+                  <tag role="typerefnum">item ❷</tag>
+                </tags>
+                <para xml:id="S1.I3.i2.i2.p1">
+                  <p>second</p>
+                </para>
+              </item>
+              <item labels="LABEL:lst:2c" xml:id="S1.I3.i2.i3">
+                <tags>
+                  <tag>❸</tag>
+                  <tag role="refnum">❸</tag>
+                  <tag role="typerefnum">item ❸</tag>
+                </tags>
+                <para xml:id="S1.I3.i2.i3.p1">
+                  <p>third</p>
+                </para>
+              </item>
+            </enumerate>
+          </para>
+        </item>
+      </enumerate>
+    </para>
+    <para xml:id="S1.p4">
+      <p>References to list items work as expected: <ref labelref="LABEL:lst:a"/>,
+<ref labelref="LABEL:lst:b"/>, <ref labelref="LABEL:lst:c"/>.
+As well as <ref labelref="LABEL:lst:1a"/>,<ref labelref="LABEL:lst:1b"/>,<ref labelref="LABEL:lst:1c"/>,
+and <ref labelref="LABEL:lst:2a"/>,<ref labelref="LABEL:lst:2b"/>,<ref labelref="LABEL:lst:2c"/>.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Dingbats</title>
+    <para xml:id="S2.p1">
+      <tabular class="ltx_guessed_headers" vattach="middle">
+        <thead>
+          <tr>
+            <td border="r" thead="column"/>
+            <td align="center" thead="column">´0</td>
+            <td align="center" thead="column">´1</td>
+            <td align="center" thead="column">´2</td>
+            <td align="center" thead="column">´3</td>
+            <td align="center" thead="column">´4</td>
+            <td align="center" thead="column">´5</td>
+            <td align="center" thead="column">´6</td>
+            <td align="center" thead="column">´7</td>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td align="right" border="r t">´0x</td>
+            <td align="center" border="t"/>
+            <td align="center" border="t"/>
+            <td align="center" border="t"/>
+            <td align="center" border="t"/>
+            <td align="center" border="t"/>
+            <td align="center" border="t"/>
+            <td align="center" border="t"/>
+            <td align="center" border="t"/>
+          </tr>
+          <tr>
+            <td align="right" border="r">´1x</td>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+          </tr>
+          <tr>
+            <td align="right" border="r">´2x</td>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+          </tr>
+          <tr>
+            <td align="right" border="r">´3x</td>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+          </tr>
+          <tr>
+            <td align="right" border="r">´4x</td>
+            <td align="center"/>
+            <td align="center">✁</td>
+            <td align="center">✂</td>
+            <td align="center">✃</td>
+            <td align="center">✄</td>
+            <td align="center">☎</td>
+            <td align="center">✆</td>
+            <td align="center">✇</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´5x</td>
+            <td align="center">✈</td>
+            <td align="center">✉</td>
+            <td align="center">☛</td>
+            <td align="center">☞</td>
+            <td align="center">✌</td>
+            <td align="center">✍</td>
+            <td align="center">✎</td>
+            <td align="center">✏</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´6x</td>
+            <td align="center">✐</td>
+            <td align="center">✑</td>
+            <td align="center">✒</td>
+            <td align="center">✓</td>
+            <td align="center">✔</td>
+            <td align="center">✕</td>
+            <td align="center">✖</td>
+            <td align="center">✗</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´7x</td>
+            <td align="center">✘</td>
+            <td align="center">✙</td>
+            <td align="center">✚</td>
+            <td align="center">✛</td>
+            <td align="center">✜</td>
+            <td align="center">✝</td>
+            <td align="center">✞</td>
+            <td align="center">✟</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´10x</td>
+            <td align="center">✠</td>
+            <td align="center">✡</td>
+            <td align="center">✢</td>
+            <td align="center">✣</td>
+            <td align="center">✤</td>
+            <td align="center">✥</td>
+            <td align="center">✦</td>
+            <td align="center">✧</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´11x</td>
+            <td align="center">★</td>
+            <td align="center">✩</td>
+            <td align="center">✪</td>
+            <td align="center">✫</td>
+            <td align="center">✬</td>
+            <td align="center">✭</td>
+            <td align="center">✮</td>
+            <td align="center">✯</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´12x</td>
+            <td align="center">✰</td>
+            <td align="center">✱</td>
+            <td align="center">✲</td>
+            <td align="center">✳</td>
+            <td align="center">✴</td>
+            <td align="center">✵</td>
+            <td align="center">✶</td>
+            <td align="center">✷</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´13x</td>
+            <td align="center">✸</td>
+            <td align="center">✹</td>
+            <td align="center">✺</td>
+            <td align="center">✻</td>
+            <td align="center">✼</td>
+            <td align="center">✽</td>
+            <td align="center">✾</td>
+            <td align="center">✿</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´14x</td>
+            <td align="center">❀</td>
+            <td align="center">❁</td>
+            <td align="center">❂</td>
+            <td align="center">❃</td>
+            <td align="center">❄</td>
+            <td align="center">❅</td>
+            <td align="center">❆</td>
+            <td align="center">❇</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´15x</td>
+            <td align="center">❈</td>
+            <td align="center">❉</td>
+            <td align="center">❊</td>
+            <td align="center">❋</td>
+            <td align="center">⚫</td>
+            <td align="center">❍</td>
+            <td align="center">◼</td>
+            <td align="center">❏</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´16x</td>
+            <td align="center">❐</td>
+            <td align="center">❑</td>
+            <td align="center">❒</td>
+            <td align="center">▲</td>
+            <td align="center">▼</td>
+            <td align="center">◆</td>
+            <td align="center">❖</td>
+            <td align="center">◗</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´17x</td>
+            <td align="center">❘</td>
+            <td align="center">❙</td>
+            <td align="center">❚</td>
+            <td align="center">❛</td>
+            <td align="center">❜</td>
+            <td align="center">❝</td>
+            <td align="center">❞</td>
+            <td align="center"/>
+          </tr>
+          <tr>
+            <td align="right" border="r">´20x</td>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+          </tr>
+          <tr>
+            <td align="right" border="r">´21x</td>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+          </tr>
+          <tr>
+            <td align="right" border="r">´22x</td>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+          </tr>
+          <tr>
+            <td align="right" border="r">´23x</td>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+            <td align="center"/>
+          </tr>
+          <tr>
+            <td align="right" border="r">´24x</td>
+            <td align="center"/>
+            <td align="center">❡</td>
+            <td align="center">❢</td>
+            <td align="center">❣</td>
+            <td align="center">❤</td>
+            <td align="center">❥</td>
+            <td align="center">❦</td>
+            <td align="center">❧</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´25x</td>
+            <td align="center">♣</td>
+            <td align="center">♠</td>
+            <td align="center">♥</td>
+            <td align="center">♠</td>
+            <td align="center">①</td>
+            <td align="center">②</td>
+            <td align="center">③</td>
+            <td align="center">④</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´26x</td>
+            <td align="center">⑤</td>
+            <td align="center">⑥</td>
+            <td align="center">⑦</td>
+            <td align="center">⑧</td>
+            <td align="center">⑨</td>
+            <td align="center">⑩</td>
+            <td align="center">❶</td>
+            <td align="center">❷</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´27x</td>
+            <td align="center">❸</td>
+            <td align="center">❹</td>
+            <td align="center">❺</td>
+            <td align="center">❻</td>
+            <td align="center">❼</td>
+            <td align="center">❽</td>
+            <td align="center">❾</td>
+            <td align="center">❿</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´30x</td>
+            <td align="center">➀</td>
+            <td align="center">➁</td>
+            <td align="center">➂</td>
+            <td align="center">➃</td>
+            <td align="center">➄</td>
+            <td align="center">➅</td>
+            <td align="center">➆</td>
+            <td align="center">➇</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´31x</td>
+            <td align="center">➈</td>
+            <td align="center">➉</td>
+            <td align="center">➊</td>
+            <td align="center">➋</td>
+            <td align="center">➌</td>
+            <td align="center">➍</td>
+            <td align="center">➎</td>
+            <td align="center">➏</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´32x</td>
+            <td align="center">➐</td>
+            <td align="center">➑</td>
+            <td align="center">➒</td>
+            <td align="center">➓</td>
+            <td align="center">➔</td>
+            <td align="center">→</td>
+            <td align="center">↔</td>
+            <td align="center">↕</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´33x</td>
+            <td align="center">➘</td>
+            <td align="center">➙</td>
+            <td align="center">➚</td>
+            <td align="center">➛</td>
+            <td align="center">➜</td>
+            <td align="center">➝</td>
+            <td align="center">➞</td>
+            <td align="center">➟</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´34x</td>
+            <td align="center">➠</td>
+            <td align="center">➡</td>
+            <td align="center">➢</td>
+            <td align="center">➣</td>
+            <td align="center">➤</td>
+            <td align="center">➥</td>
+            <td align="center">➦</td>
+            <td align="center">➧</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´35x</td>
+            <td align="center">➨</td>
+            <td align="center">➩</td>
+            <td align="center">➪</td>
+            <td align="center">➫</td>
+            <td align="center">➬</td>
+            <td align="center">➭</td>
+            <td align="center">➮</td>
+            <td align="center">➯</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´36x</td>
+            <td align="center"/>
+            <td align="center">➱</td>
+            <td align="center">➲</td>
+            <td align="center">➳</td>
+            <td align="center">➴</td>
+            <td align="center">➵</td>
+            <td align="center">➶</td>
+            <td align="center">➷</td>
+          </tr>
+          <tr>
+            <td align="right" border="r">´37x</td>
+            <td align="center">➸</td>
+            <td align="center">➹</td>
+            <td align="center">➺</td>
+            <td align="center">➻</td>
+            <td align="center">➼</td>
+            <td align="center">➽</td>
+            <td align="center">➾</td>
+            <td align="center"/>
+          </tr>
+        </tbody>
+      </tabular>
+    </para>
+  </section>
+</document>

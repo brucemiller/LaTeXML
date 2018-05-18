@@ -15,7 +15,7 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use Time::HiRes;
-use Term::ANSIColor qw(:constants);
+use Term::ANSIColor;
 use base qw(Exporter);
 our @EXPORT = (
   # Error Reporting
@@ -23,7 +23,9 @@ our @EXPORT = (
   # Progress reporting
   qw(&NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
   # Colored-logging related functions
-  qw(&colorizeString)
+  qw(&colorizeString),
+  # Status management
+  qw(&MergeStatus),
 );
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -32,18 +34,19 @@ $Term::ANSIColor::AUTORESET = 1;
 our $COLORIZED_LOGGING = -t STDERR;
 
 our %color_scheme = (
-  details => \&BOLD,
-  success => \&GREEN,
-  info    => (defined &BRIGHT_BLUE ? \&BRIGHT_BLUE : \&BLUE),    # bright only recently defined
-  warning => \&YELLOW,
-  error => sub { BOLD RED shift; },
-  fatal => sub { BOLD RED UNDERLINE shift; }
+  details => 'bold',
+  success => 'green',
+  info    => 'bright_blue',          # bright only recently defined
+  warning => 'yellow',
+  error   => 'bold red',
+  fatal   => 'bold red underline',
 );
 
 sub colorizeString {
   my ($string, $alias) = @_;
-  return $COLORIZED_LOGGING ? &{ $color_scheme{$alias} }($string) : $string; }
-
+  return ($COLORIZED_LOGGING && $color_scheme{$alias}
+    ? colored($string, $color_scheme{$alias})
+    : $string); }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Error reporting
 # Public API
@@ -51,7 +54,7 @@ sub colorizeString {
 sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
 
-  # Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
+# Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
   if ((($category eq 'internal') && ($object eq '<recursion>')) ||
     ($category eq 'too_many_errors')) {
     $LaTeXML::UNSAFE_FATAL = 1; }
@@ -104,9 +107,6 @@ sub checkRecursiveError {
       return 1; } }
   return; }
 
-# Note that "100" is hardwired into TeX, The Program!!!
-my $MAXERRORS = 100;    # [CONSTANT]
-
 # Should be fatal if strict is set, else warn.
 sub Error {
   my ($category, $object, $where, $message, @details) = @_;
@@ -119,8 +119,10 @@ sub Error {
     print STDERR generateMessage(colorizeString("Error:" . $category . ":" . ToString($object), 'error'),
       $where, $message, 1, @details)
       if $verbosity >= -2; }
-  if ($state && ($state->getStatus('error') || 0) > $MAXERRORS) {
-    Fatal('too_many_errors', $MAXERRORS, $where, "Too many errors (> $MAXERRORS)!"); }
+  # Note that "100" is hardwired into TeX, The Program!!!
+  my $maxerrors = ($state ? $state->lookupValue('MAX_ERRORS') : 100);
+  if ($state && (defined $maxerrors) && (($state->getStatus('error') || 0) > $maxerrors)) {
+    Fatal('too_many_errors', $maxerrors, $where, "Too many errors (> $maxerrors)!"); }
   return; }
 
 # Warning message; results may be OK, but somewhat unlikely
@@ -253,21 +255,21 @@ sub perl_warn_handler {
 sub perl_interrupt_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
-  $LaTeXML::UNSAFE_FATAL = 1;
+  $LaTeXML::UNSAFE_FATAL  = 1;
   Fatal('interrupt', 'interrupted', undef, "LaTeXML was interrupted", @_);
   return; }
 
 sub perl_timeout_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
-  $LaTeXML::UNSAFE_FATAL = 1;
+  $LaTeXML::UNSAFE_FATAL  = 1;
   Fatal('timeout', 'timedout', undef, "Conversion timed out", @_);
   return; }
 
 sub perl_terminate_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
-  $LaTeXML::UNSAFE_FATAL = 1;
+  $LaTeXML::UNSAFE_FATAL  = 1;
   Fatal('terminate', 'terminated', undef, "Conversion was terminated", @_);
   return; }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -343,6 +345,25 @@ sub generateMessage {
 
   # finally, join the result into a block of lines, indenting all but the 1st line.
   return "\n" . join("\n\t", @lines) . "\n"; }
+
+sub MergeStatus {
+  my ($external_state) = @_;
+  my $state = $STATE;
+  return unless $state && $external_state;
+  my $status          = $$state{status};
+  my $external_status = $$external_state{status};
+  # Should this be a state method? I suspect XS-ive conflicts later on...
+  foreach my $type (keys %$external_status) {
+    if ($type eq 'undefined' or $type eq 'missing') {
+      my $table = $$external_status{$type};
+      foreach my $subtype (keys %$table) {
+        $$status{$type}{$subtype} += $$table{$subtype};
+      }
+    } else {
+      $$status{$type} += $$external_status{$type};
+    }
+  }
+}
 
 sub Locator {
   my ($object) = @_;

@@ -30,7 +30,7 @@ is(eval { Stringify($ts3); }, 'Tokens[x,x,x]', "Got correct tokens");
 ok(eval { $ts3x = Tokens($t,$t,$t); },"Make Tokens from Tokens (x,x,x)");
 ok(eval { $t = T_LETTER('z'); },"Make Token (z)");
 is(eval { Stringify($ts3x); }, 'Tokens[x,x,x]', "Got correct deref (x,x,x)");
-ok(eval { $ts3z = Tokens($t,$t,$t); }),"Make Tokens from Token's (z,z,z)";
+ok(eval { $ts3z = Tokens($t,$t,$t); },"Make Tokens from Token's (z,z,z)");
 is(eval { Stringify($ts3z); }, 'Tokens[z,z,z]', "Got correct tokens (z,z,z)");
 ok(eval { $tss = Tokens($ts3); },"Make Tokens from Tokens (x,x,x)");
 is(eval { Stringify($tss); }, 'Tokens[x,x,x]', "Got correct tokens (x,x,x)");

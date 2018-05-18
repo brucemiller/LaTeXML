@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Basic footnotes</title>
+    <para xml:id="S1.p1">
+      <p>A test<note labels="LABEL:foot:one" mark="1" role="footnote" xml:id="footnote1"><tags>
+            <tag>1</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">footnote 1</tag>
+          </tags>A Footnote!</note>.</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>Another test<note labels="LABEL:foot:two" mark="2" role="footnote" xml:id="footnote2"><tags>
+            <tag>2</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">footnote 2</tag>
+          </tags>Another Footnote!</note>.</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>A special test<note labels="LABEL:foot:three" mark="77" role="footnote" xml:id="footnotex1"><tags>
+            <tag>77</tag>
+            <tag role="refnum">77</tag>
+            <tag role="typerefnum">footnote 77</tag>
+          </tags>A special Footnote!</note>.</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>A final test<note labels="LABEL:foot:four" mark="3" role="footnote" xml:id="footnote3"><tags>
+            <tag>3</tag>
+            <tag role="refnum">3</tag>
+            <tag role="typerefnum">footnote 3</tag>
+          </tags>A final Footnote!</note>.</p>
+    </para>
+    <para xml:id="S1.p5">
+      <p>A long footnote<note labels="LABEL:foot:five" mark="4" role="footnote" xml:id="footnote4"><tags>
+            <tag>4</tag>
+            <tag role="refnum">4</tag>
+            <tag role="typerefnum">footnote 4</tag>
+          </tags>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</note>.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Separated footnotes</title>
+    <para xml:id="S2.p1">
+      <p>A footnote mark<note labels="LABEL:foot:six" mark="5" role="footnote" xml:id="footnote5"><tags>
+            <tag>5</tag>
+            <tag role="refnum">5</tag>
+            <tag role="typerefnum">footnote 5</tag>
+          </tags>A separated footnote</note>.
+Later, the footnote’s text appears
+.
+Another footnote mark<note labels="LABEL:foot:seven" mark="6" role="footnote" xml:id="footnote6"><tags>
+            <tag>6</tag>
+            <tag role="refnum">6</tag>
+            <tag role="typerefnum">footnote 6</tag>
+          </tags>Another separated footnote</note>.
+Later, the footnote’s text appears
+.</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>Suppose the text appears first,
+and then the footnote mark using a given mark<note labels="LABEL:foot:eight" mark="999" role="footnote" xml:id="footnotex5"><tags>
+            <tag>999</tag>
+            <tag role="refnum">999</tag>
+            <tag role="typerefnum">footnote 999</tag>
+          </tags>A separated footnote</note>?</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>We have presented several footnotes <ref labelref="LABEL:foot:one"/>, <ref labelref="LABEL:foot:two"/>, <ref labelref="LABEL:foot:three"/>,
+<ref labelref="LABEL:foot:four"/>, <ref labelref="LABEL:foot:five"/>, <ref labelref="LABEL:foot:six"/>, <ref labelref="LABEL:foot:seven"/> and <ref labelref="LABEL:foot:eight"/>.</p>
+    </para>
+  </section>
+</document>

@@ -118,9 +118,12 @@ sub getGraphicsSourceTypes {
 # Return the pathname to an appropriate image.
 sub findGraphicFile {
   my ($self, $doc, $node) = @_;
-  if (my $name = $node->getAttribute('graphic')) {
+  if (my $source = $node->getAttribute('graphic')) {
     # Find all acceptable image files, in order of search paths
-    my @paths = pathname_findall($name, paths => $LaTeXML::Post::Graphics::SEARCHPATHS,
+    my ($dir, $name, $reqtype) = pathname_split($source);
+    # Ignore the requested type? Or should it increase desirability?
+    my $file = pathname_concat($dir, $name);
+    my @paths = pathname_findall($file, paths => $LaTeXML::Post::Graphics::SEARCHPATHS,
       # accept empty type, incase bad type name, but actual file's content is known type.
       types => ['', $self->getGraphicsSourceTypes]);
     my ($best, $bestpath) = (-1, undef);
@@ -149,7 +152,7 @@ sub getTransform {
 sub getTypeProperties {
   my ($self, $source, $options) = @_;
   my ($dir,  $name,   $ext)     = pathname_split($source);
-  my $props = $$self{type_properties}{$ext};
+  my $props = $$self{type_properties}{ lc($ext) };
   if (!$props) {
     # If we don't have a known file type, try a bit harder (maybe less efficient)
     if (my $type = image_type($source)) {
@@ -169,7 +172,10 @@ sub processGraphic {
   my ($self, $doc, $node) = @_;
   my $source = $self->findGraphicFile($doc, $node);
   if (!$source) {
-    Warn('expected', 'source', $node, "No graphic source specified; skipping"); return; }
+    Warn('expected', 'source', $node, "No graphic source found; skipping",
+      "source was " . ($node->getAttribute('graphic') || 'none'));
+    $node->setAttribute('imagesrc', $node->getAttribute('graphic'));
+    return; }
   my $transform = $self->getTransform($node);
   my ($image, $width, $height) = $self->transformGraphic($doc, $node, $source, $transform);
   # $image should probably be relative already, except corner applications?
@@ -186,14 +192,14 @@ sub transformGraphic {
   ($sourcedir) = $doc->getSearchPaths unless $sourcedir;    # Fishing...
   my ($reldir, $name, $srctype)
     = pathname_split(pathname_relative($source, $sourcedir));
-  my $key = (ref $self) . ':' . join('|', "$reldir$name.$srctype",
-    map { join(' ', @$_) } @$transform);
-  NoteProgressDetailed("\n[Processing $source as key=$key]");
-
   my %properties = $self->getTypeProperties($source, $transform);
   return Warn('unexpected', 'graphics_format', undef,
     "Don't know what to do with graphics file format '$source'") unless %properties;
   my $type = $properties{destination_type} || $srctype;
+  my $key = (ref $self) . ':' . join('|', "$reldir$name.$srctype.$type",
+    map { join(' ', @$_) } @$transform);
+  NoteProgressDetailed("\n[Processing $source as key=$key]");
+
   my $dest = $self->desiredResourcePathname($doc, $node, $source, $type);
   if (my $prev = $doc->cacheLookup($key)) {                 # Image was processed on previous run?
     if ($prev =~ /^(.*?)\|(\d*)\|(\d*)$/) {

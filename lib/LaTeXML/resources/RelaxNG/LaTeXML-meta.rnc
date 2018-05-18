@@ -35,7 +35,7 @@ note_attributes =
   attribute role { "footnote" | text }?
 
 ## Content model for \elementref{note}.
-note_model = Flow.model
+note_model = tags?, Flow.model
 
 # should mark be more like label/refnum ?
 

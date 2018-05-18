@@ -234,8 +234,7 @@ sub beAbsorbed {
   # but (ATM) we've only got sensible boxes for the cells.
   &{ $$self{openContainer} }($document, ($attr ? %$attr : ()));
   foreach my $row (@{ $$self{rows} }) {
-    &{ $$self{openRow} }($document, 'xml:id' => $$row{id},
-      refnum => $$row{refnum}, frefnum => $$row{frefnum}, rrefnum => $$row{rrefnum});
+    &{ $$self{openRow} }($document, 'xml:id' => $$row{id}, tags => $$row{tags});
     if (my $before = $$row{before}) {
       map { $document->absorb($_) } @$before; }
     foreach my $cell (@{ $$row{columns} }) {
@@ -551,8 +550,8 @@ sub alignment_regroup_rows {
     my @cells = $document->findnodes('ltx:td', $rows[0]);
     # Non header cells, done.
     last if scalar(grep { (!$_->getAttribute('thead')) } @cells);
-    push(@heads, shift(@rows));
     my $line = scalar(@heads);
+    push(@heads, shift(@rows));
     $maxreach = max($maxreach, map { ($_->getAttribute('rowspan') || 0) + $line } @cells); }
   if ($maxreach > scalar(@heads)) {    # rowspan crossed over thead boundary!
     unshift(@rows, @heads); @heads = (); }
@@ -907,7 +906,7 @@ sub alignment_max_content_length {
   foreach my $j (($from .. $to)) {
     my $l = 0;
     foreach my $cell (@{ $::TABLINES[$j] }) {
-      $l += $$cell{content_length}; }
+      $l += $$cell{content_length} || 0; }
     $length = $l if $l > $length; }
   return $length; }
 
@@ -947,6 +946,9 @@ sub alignment_compare {
   while (@cells1 && @cells2) {
     my $cell1 = shift(@cells1);
     my $cell2 = shift(@cells2);
+    # Annoying test avoids warnings if cells inconsistent; likely due to incorrect row/col spans
+    next if grep { !defined $$cell1{$_} } qw(content_class r l t b);
+    next if grep { !defined $$cell2{$_} } qw(content_class r l t b);
     #    $diff += 0.5 if (($$cell1{align}||'') ne ($$cell2{align}||''))
     $diff += 0.75 if (($$cell1{align} || '') ne ($$cell2{align} || ''))
       && ($$cell1{content_class} ne '_') && ($$cell2{content_class} ne '_');

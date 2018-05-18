@@ -23,16 +23,9 @@ use LaTeXML::Package;
 # Font Encoding
 # We ALSO need to read in or set the char=>unicode mapping.
 
-# Some encodings require us to define Cyrillic macros
-foreach my $option (qw(T2A T2B T2C X2 LCY OT2)) {
-  DeclareOption($option, sub {
-      setupCyrillic();
-      loadFontEncoding();
-      return; }); }
-
-# Anything else doesn't really matter....
+my @fontencodings = ();
 DeclareOption(undef, sub {
-    loadFontEncoding();
+    push(@fontencodings, ToString(Expand(T_CS('\CurrentOption'))));
     return; });
 
 # WELL... Actually, some "encodings" map the normal 7bit (or 8)
@@ -97,14 +90,15 @@ EoTeX
 
 ProcessOptions();
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-sub loadFontEncoding {
-  my $encoding = ToString(Digest(T_CS('\CurrentOption')));
-  DefMacroI('\encodingdefault', undef, Tokens(Explode($encoding)), scope => 'global');
-  my $encfile = lc($encoding) . "enc";
-  InputDefinitions($encfile, type => 'def');
-  if (LoadFontMap($encoding)) {
-    MergeFont(encoding => $encoding); }
-  return; }
+if (@fontencodings) {
+  setupCyrillic();
+  foreach my $encoding (@fontencodings) {
+    DefMacroI('\encodingdefault', undef, Tokens(Explode($encoding)), scope => 'global');
+    my $encfile = lc($encoding) . "enc";
+    InputDefinitions($encfile, type => 'def');
+    if (LoadFontMap($encoding)) {
+      MergeFont(encoding => $encoding); } } }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 1;

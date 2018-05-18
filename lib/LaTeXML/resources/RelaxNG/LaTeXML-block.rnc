@@ -72,7 +72,7 @@ equation_attributes =
 
 ## Content model for \elementref{equation}.
 equation_model =
-  tag?, (Math | MathFork  | \text | Misc.class | Meta.class | EquationMeta.class)* 
+  (tags | Math | MathFork  | \text | Misc.class | Meta.class | EquationMeta.class)* 
 
 #======================================================================
 
@@ -89,7 +89,7 @@ equationgroup_attributes =
   attribute rowsep { Length.type}?
 
 ## Content model for \elementref{equationgroup}.
-equationgroup_model = (equationgroup | equation | p | Meta.class | EquationMeta.class)*
+equationgroup_model = (tags | equationgroup | equation | p | Meta.class | EquationMeta.class)*
 
 #======================================================================
 
@@ -156,7 +156,7 @@ block_attributes =
   Backgroundable.attributes
 
 ## Content model for \elementref{block}.
-block_model = Inline.model
+block_model = Block.model
 
 #======================================================================
 
@@ -185,10 +185,9 @@ listingline_attributes =
   Common.attributes,
   Labelled.attributes
 
-## Content model for \elementref{listingline}
-listingline_model =
-  tag?, Inline.model
-  
+## Content model for \elementref{listingline}; Inline.model plus equations
+listingline_model = tags?, (text | Inline.class | Misc.class | Meta.class | equation | equationgroup  )*
+
 #======================================================================
 
 itemize =
@@ -251,7 +250,7 @@ item_attributes =
   attribute itemsep { Length.type}?
 
 ## Content model for \elementref{item}.
-item_model =   tag?, Para.model
+item_model =   tags?, Para.model
 
 #======================================================================
 
@@ -287,7 +286,7 @@ inline-enumerate_model = inline-item*
 
 inline-description =
 ## An inline form of description list.
-## The \elementref{inline-item}s within are expected to have a \elementref{tag}
+## The \elementref{inline-item}s within are expected to have a \elementref{tags}
 ## which represents the term being described in each \elementref{inline-item}.
 element inline-description { inline-description_attributes, inline-description_model }
 
@@ -314,9 +313,18 @@ inline-item_attributes =
   Backgroundable.attributes
 
 ## Content model for \elementref{inline-item}.
-inline-item_model =   tag?, (Inline.class | Misc.class | Meta.class)*
+inline-item_model =   tags?, (Inline.class | Misc.class | Meta.class)*
 
 #======================================================================
+
+tags =
+## A container for one or more \elementref{tag}s.
+## At most one will have no \attr{role}, which would be the default display.
+## Other \elementref{tag} will have the role attribute for use in
+## special forms of referencing.
+element tags { tags_model }
+
+tags_model = tag+
 
 tag =
 ## A tag within an item indicating the term or bullet for a given item.
@@ -327,6 +335,9 @@ tag_attributes =
   Common.attributes,
   Backgroundable.attributes,
 
+  ## specifies the purpose this tag is used for: no value is default display
+  attribute role { text}?,
+  
   ## specifies an open delimiters used to display the tag.
   attribute open { text }?,
 

@@ -1,0 +1,47 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  enumitem                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# TODO  Deal with Scads of options!
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
+
+# But first, a stub that ignores the new optional arg to itemize, etal.
+# Since the keyvals contain Registers, Dimensions, macros, etc,
+# we'll use OptionalUndigested for what will eventually be OptionalKeywords
+DefEnvironment('{itemize} OptionalUndigested',
+  "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+  properties => sub { beginItemize('itemize', '@item'); },
+  beforeDigestEnd => sub { Digest('\par'); },
+  locked => 1, mode => 'text');
+
+DefEnvironment('{enumerate} OptionalUndigested',
+  "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
+  properties => sub { beginItemize('enumerate', 'enum'); },
+  beforeDigestEnd => sub { Digest('\par'); },
+  locked => 1, mode => 'text');
+DefEnvironment('{description} OptionalUndigested',
+  "<ltx:description  xml:id='#id'>#body</ltx:description>",
+  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
+  properties => sub { beginItemize('description', '@desc'); },
+  beforeDigestEnd => sub { Digest('\par'); },
+  locked => 1, mode => 'text');
+
+DefMacro('\setlist OptionalUndigested {}', '');
+
+#======================================================================
+1;

@@ -1,0 +1,21 @@
+\RequirePackage{xkeyval}
+
+\define@boolkey{family}{a4paper}{}
+
+\def\@hello{Missing `hello' parameter. }
+\DeclareOptionX<family>{hello}{\edef\@hello{Defined `hello' to #1. }}
+
+\def\@world{Missing `world' parameter. }
+\DeclareOptionX<family>{world}[default]{\edef\@world{Defined `world' to #1. }}
+
+\ProcessOptionsX<family>
+
+\providecommand{\scenario}{%
+  \csname ifKV@family@a4paper\endcsname
+    Should not have read a4paper option. 
+  \else
+    Did not read a4paper option as expected. 
+  \fi
+  \@hello%
+  \@world%
+}

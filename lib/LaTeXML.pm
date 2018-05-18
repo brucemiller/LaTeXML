@@ -210,6 +210,7 @@ sub convert {
   my $latexml = $$self{latexml};
   $latexml->withState(sub {
       my ($state) = @_;    # Sandbox state
+      $$state{status} = {};
       $state->pushDaemonFrame;
       $state->assignValue('_authlist', $$opts{authlist}, 'global');
       $state->assignValue('REMOTE_REQUEST', (!$$opts{local}), 'global');
@@ -237,7 +238,7 @@ sub convert {
           } else {    # Default is XML
             $dom = $latexml->convertDocument($digested);
           }
-          }); }
+      }); }
     alarm(0);
     1;
   };
@@ -255,7 +256,6 @@ sub convert {
       my ($state) = @_;    # Remove current state frame
       $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS'); # save the searchpaths for post-processing
       $state->popDaemonFrame;
-      $$state{status} = {};
   });
   if ($LaTeXML::UNSAFE_FATAL) {
     # If the conversion hit an unsafe fatal, we need to reinitialize
@@ -277,6 +277,8 @@ sub convert {
     my $log = $self->flush_log;
     $serialized = $dom if ($$opts{format} eq 'dom');
     $serialized = $dom->toString if ($dom && (!defined $serialized));
+    # Using the Core::Document::serialize_aux, so need an explicit encode into bytes
+    $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
 
     return { result => $serialized, log => $log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
   else {
@@ -296,7 +298,12 @@ sub convert {
 
   # 3 If desired, post-process
   my $result = $dom;
-  if ($$opts{post} && $dom && $dom->documentElement) {
+  if ($$opts{post} && $dom) {
+    if (!$dom->documentElement) {
+      # Make a completely empty document have at least one element for post-processing
+      # important for utility features such as packing .zip archives for output
+      $$dom{document}->setDocumentElement($$dom{document}->createElement("document"));
+    }
     $result = $self->convert_post($dom);
   }
   # 4 Clean-up: undo everything we sandboxed
@@ -314,16 +321,21 @@ sub convert {
   # 5.1 Serialize the XML/HTML result (or just return the Perl object, if requested)
   undef $serialized;
   if ((defined $result) && ref($result) && (ref($result) =~ /^(:?LaTe)?XML/)) {
-    if (($$opts{format} =~ 'x(ht)?ml') || ($$opts{format} eq 'jats')) {
-      $serialized = $result->toString(1); }
+    if (($$opts{format} =~ /x(ht)?ml/) || ($$opts{format} eq 'jats')) {
+      $serialized = $result->toString(1);
+      if (ref($result) eq 'LaTeXML::Core::Document') {
+        # NOTE that we are serializing here via LaTeXML's Document::serialize_aux
+        # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
+        $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
+    } }
     elsif ($$opts{format} =~ /^html/) {
-      if (ref($result) =~ '^LaTeXML::(Post::)?Document$') {    # Special for documents
+      if (ref($result) =~ /^LaTeXML::(Post::)?Document$/) {    # Special for documents
         $serialized = $result->getDocument->toStringHTML; }
       else {                                                   # Regular for fragments
         do {
           local $XML::LibXML::setTagCompression = 1;
           $serialized = $result->toString(1);
-          } } }
+        } } }
     elsif ($$opts{format} eq 'dom') {
       $serialized = $result; } }
   else { $serialized = $result; }                              # Compressed case
@@ -539,7 +551,7 @@ sub convert_post {
   # If our format requires a manifest, create one
   if (($$opts{whatsout} =~ /^archive/) && ($format !~ /^x?html|xml/)) {
     require LaTeXML::Post::Manifest;
-    my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, %PostOPS);
+    my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, log=>$$opts{log}, %PostOPS);
     $manifest_maker->process(@postdocs); }
   # Archives: when a relative --log is requested, write to sandbox prior packing
   if ($$opts{log} && ($$opts{whatsout} =~ /^archive/) && (!pathname_is_absolute($$opts{log}))) {
@@ -597,9 +609,9 @@ sub new_latexml {
   my $latexml = LaTeXML::Core->new(preload => [@pre], searchpaths => [@{ $$opts{paths} }],
     graphicspaths   => ['.'],
     verbosity       => $$opts{verbosity}, strict => $$opts{strict},
-    includeComments => $$opts{comments},
+    includecomments => $$opts{comments},
     inputencoding   => $$opts{inputencoding},
-    includeStyles   => $$opts{includestyles},
+    includestyles   => $$opts{includestyles},
     documentid      => $$opts{documentid},
     nomathparse     => $$opts{nomathparse},                           # Backwards compatibility
     mathparse       => $$opts{mathparse});

@@ -40,7 +40,7 @@ use LaTeXML::Package;
 # as an ltx:contact(with @role='institute').
 
 DefMacro('\author{}', sub {
-    map { (T_CS('\@author'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_CS('\and'), T_OTHER(',')); });
+    map { (T_CS('\lx@author'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_CS('\and'), T_OTHER(',')); });
 
 DefConstructor('\@institutemark{}', "<ltx:contact role='institutemark' _mark='#1'/>");
 

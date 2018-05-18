@@ -253,11 +253,17 @@ moreFactors :
         # Given an explicit COMPOSEOP, we'll assume the preceding is
         # an implicit lambda of some sort(?)
         | COMPOSEOP makeComposition[$arg[0],$item[1]]
-        | { ($forbidEvalAt ? undef : 1); }
+        | Factor moreFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])] ##before |
+        | { ($forbidEvalAt || $forbidVertBar ? undef : 1); }
           evalAtOp maybeEvalAt[$arg[0],$item[2]]
+        | { ($forbidEvalAt || $forbidVertBar ? undef : 1); } ## conditional probability?
+          evalAtOp ExpressionsNoBars
+          { ApplyNary(Annotate($item[2],role=>'MODIFIEROP', meaning=>'conditional'),$arg[0],$item[3]); }
         | Factor moreFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
         | { $arg[0]; }
 
+ExpressionsNoBars : <rulevar: local $forbidVertBar = 1>
+ExpressionsNoBars : Expressions
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Factors: function applications, postfix on atoms, etc.
@@ -318,7 +324,7 @@ aBarearg :
         | preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
         | preScripted['UNKNOWN'] doubtArgs[$item[1]]
         | NUMBER   addScripts[$item[1]]
-        | VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
+        | VERTBAR absExpression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
 
 # moreBareargs[$argpart]
 moreBareargs :
@@ -335,7 +341,7 @@ aTrigBarearg :
         | preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
         | preScripted['UNKNOWN'] doubtArgs[$item[1]]
         | NUMBER   addScripts[$item[1]]
-        | VERTBAR Expression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
+        | VERTBAR absExpression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
 
 # moreTrigBareargs[$argpart]
 moreTrigBareargs :
@@ -360,6 +366,7 @@ moreEvalAt :
 # After < a | we might be done, or get <a|b> or <a|H|b>
 
 # <$expr |   maybeBra[$langle,$expr,$bar]
+maybeBra : <rulevar: local $forbidVertBar = 1>
 maybeBra :
           ketExpression maybeBraket[$arg[0],$arg[1],$arg[2],$item[1]]
         | { SawNotation('QM'); }
@@ -473,11 +480,14 @@ factorOpenExpr :
 # A conditionalized set
 # scriptFactorOpen[$open]
 scriptFactorOpen :
-          Formula suchThatOp Formulae balancedClose[$arg[0]]
+          FormulaNOBar suchThatOp Formulae balancedClose[$arg[0]]
           addScripts[InterpretDelimited(New('conditional-set'),
                                     $arg[0], $item[1],$item[2], $item[3],$item[4])]
         # Else fall through to normal factorOpen
         | factorOpen[$arg[0]]
+
+FormulaNOBar : <rulevar: local $forbidVertBar = 1>
+FormulaNOBar : Formula
 
 # The "such that" that can appear in a sets like {a "such that" predicate(a)}
 # accept vertical bars, and colon

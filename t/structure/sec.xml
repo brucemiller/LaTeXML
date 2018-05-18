@@ -6,28 +6,47 @@
   <resource src="ltx-article.css" type="text/css"/>
   <title>Testing Sections</title>
   <date role="creation">Today!</date>
-  <section labels="LABEL:sec:one" refnum="1" xml:id="S1">
+  <section inlist="toc" labels="LABEL:sec:one" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>One</title>
     <para xml:id="S1.p1">
       <p>Section One. As we will see in §<ref labelref="LABEL:fig_three"/>.</p>
     </para>
   </section>
-  <section labels="LABEL:sec:two" refnum="2" xml:id="S2">
+  <section inlist="toc" labels="LABEL:sec:two" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Two</title>
     <para xml:id="S2.p1">
       <p>As seen in §<ref labelref="LABEL:sec:one"/>; Section Two.</p>
     </para>
   </section>
-  <section labels="LABEL:sec:three" refnum="3" xml:id="S3">
+  <section inlist="toc" labels="LABEL:sec:three" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>Three</title>
     <para xml:id="S3.p1">
       <p>Previously, in §<ref labelref="LABEL:sec:two"/>.</p>
     </para>
-    <figure frefnum="Figure 1" labels="LABEL:fig_three" refnum="1" xml:id="S3.F1">
+    <figure inlist="lof" labels="LABEL:fig_three" xml:id="S3.F1">
+      <tags>
+        <tag>Figure 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Figure 1</tag>
+      </tags>
       <p>Hi!</p>
       <toccaption><tag close=" ">1</tag>A Figure</toccaption>
-      <caption><tag close=": ">Figure 1</tag>A Figure</caption>
-      <p>.</p>
+      <caption><tag close=": ">Figure 1</tag>A Figure</caption>
     </figure>
   </section>
 </document>

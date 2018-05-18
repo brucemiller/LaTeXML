@@ -80,12 +80,6 @@ sub toString {
   return ($$self{parameters}
     ? ToString($$self{cs}) . ' ' . ToString($$self{parameters}) : ToString($$self{cs})); }
 
-# Return the Tokens that would invoke the given definition with arguments.
-sub invocation {
-  my ($self, @args) = @_;
-  my $params = $self->getParameters;
-  return ($$self{cs}, ($params ? $params->revertArguments(@args) : ())); }
-
 #======================================================================
 # Tracing support
 sub tracingCSName {

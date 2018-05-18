@@ -41,6 +41,15 @@
                              ltx:bibliography ltx:appendix ltx:index ltx:glossary
                              ltx:slide ltx:sidebar"/>
 
+  <xsl:template match="ltx:tag[@role]"/>
+
+  <!-- Don't display tags; they're in the title -->
+  <xsl:template match="ltx:document/ltx:tags  | ltx:part/ltx:tags | ltx:chapter/ltx:tags
+                       | ltx:section/ltx:tags | ltx:subsection/ltx:tags | ltx:subsubsection/ltx:tags
+                       | ltx:paragraph/ltx:tags | ltx:subparagraph/ltx:tags
+                       | ltx:bibliography/ltx:tags | ltx:appendix/ltx:tags | ltx:index/ltx:tags | ltx:glossary/ltx:tags
+                       | ltx:sidebar/ltx:tags | ltx:slide/ltx:tags"/>
+
   <xsl:template match="ltx:document  | ltx:part | ltx:chapter
                        | ltx:section | ltx:subsection | ltx:subsubsection
                        | ltx:paragraph | ltx:subparagraph
@@ -294,7 +303,7 @@
   <xsl:preserve-space elements="ltx:title"/>
   <xsl:template match="ltx:title">
     <xsl:param name="context"/>
-    <!-- Skip title, if the parent has a titlepage! -->
+    <!-- Skip title, if the parent has a titlepage, or if writing a cv! -->
     <xsl:if test="not(parent::*/child::ltx:titlepage)">    
       <xsl:text>&#x0A;</xsl:text>
       <!-- In html5, could have wrapped in hgroup, but that was deprecated -->
@@ -429,6 +438,34 @@
 
   <xsl:strip-space elements="ltx:creator ltx:contact"/>
 
+  <xsl:template match="ltx:creator[@role='cv']">
+      <div class="flex-grid">
+      <div class="col-25">
+        <h1 class="author-name">
+          <xsl:value-of select="ltx:contact[@role='firstname']" />
+          <xsl:text> </xsl:text>
+          <xsl:value-of select="ltx:contact[@role='familyname']" />
+        </h1>
+        <h3 class="author-title">
+          <xsl:apply-templates select="ltx:contact[@role='position']/ltx:inline-block" />
+        </h3>
+      </div>
+      <div class="col-25">
+      </div>
+      <div class="col-50">
+        <h4 class="author-contact">
+          <xsl:apply-templates select="ltx:contact[@role='address']" />
+          <br class="ltx_break"/>
+          <xsl:apply-templates select="ltx:contact[@role='mobile']" />
+          <br class="ltx_break"/>
+          <xsl:apply-templates select="ltx:contact[@role='email']" />
+          <br class="ltx_break"/>
+          <xsl:apply-templates select="ltx:contact[@role='homepage']" />
+       </h4>
+      </div>
+    </div>
+  </xsl:template>
+
   <xsl:template match="ltx:creator"/>
 
   <!-- Format an author 'inline' as part of an author block -->
@@ -554,7 +591,7 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="ltx:contact[@role='dedicatory']">
+  <xsl:template match="ltx:contact[@role='dedicatory' or @role='mobile']">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">

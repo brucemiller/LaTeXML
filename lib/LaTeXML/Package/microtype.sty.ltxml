@@ -1,0 +1,51 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  microtype                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Microtypography in a Web Browser!
+# Wouldn't it be nice!!
+# We'll just ignore this all for now...
+
+DefMacro('\microtypesetup{}',                            '');
+DefMacro('\DeclareMicrotypeSet OptionalMatch:* []{}{}',  '');
+DefMacro('\UseMicrotypeSet[]{}',                         '');
+DefMacro('\DeclareMicrotypeSetDefault[]{}',              '');
+DefMacro('\SetProtrusion[]{}{}',                         '');
+DefMacro('\SetExpansion[]{}{}',                          '');
+DefMacro('\SetTracking[]{}{}',                           '');
+DefMacro('\SetExtraKerning[]{}{}',                       '');
+DefMacro('\SetExtraSpacing[]{}{}',                       '');
+DefMacro('\DeclareCharacterInheritance[]{}{}',           '');
+DefMacro('\DeclareMicrotypeVariants OptionalMatch:* {}', '');
+DefMacro('\DeclareMicrotypeAlias {}{}',                  '');
+DefMacro('\LoadMicrotypeFile{}',                         '');
+DefMacro('\microtypecontext{}',                          '');
+DefEnvironment('{microtypecontext}', "#body");
+DefMacro('\textmicrotypecontext{}{}',        '#2');
+DefMacro('\DeclareMicrotypeBabelHook {} {}', '');
+# These should letterspace, and there might be minimal support out there?
+DefMacro('\textls OptionalMatch:* []{}', '#3');
+DefMacro('\lsstyle',                     '');
+DefMacro('\lslig{}',                     '#1');
+DefMacro('\DisableLigatures[]{}',        '');
+
+#======================================================================
+1;

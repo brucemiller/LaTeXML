@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 # /=====================================================================\ #
 # |  latexmlmath                                                        | #
 # | math conversion program                                             | #
@@ -128,7 +128,7 @@ if (my @baddirs = grep { !-d $_ } @paths) {
 
 my $latexml = LaTeXML::Core->new(preload => ['LaTeX.pool', @preload], searchpaths => [@paths],
   verbosity => $verbosity, strict => $strict,
-  includeComments => 0, includeStyles => $includestyles,
+  includecomments => 0, includestyles => $includestyles,
   documentid      => $documentid,
   nomathparse     => $noparse);
 
@@ -253,6 +253,8 @@ sub outputXML {
   if (my $oldprefix = $defaulturi && $xml->lookupNamespacePrefix($defaulturi)) {
     $xml->setNamespaceDeclPrefix($oldprefix, undef); }
   my $serialized = $newdoc->toString(1);
+  # NOTE that we are serializing the XML::LibXML::Document whose toString
+  # has ALREADY encoded (in this case to utf8), so NO encode is needed!
   if ($xmldestination eq '-') {
     print $serialized; }
   else {

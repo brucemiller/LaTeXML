@@ -4,7 +4,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Text Ligatures</title>
     <para xml:id="S1.p1">
       <p>LDots…, versus dots …</p>
@@ -17,7 +22,12 @@ In interjection — like this — gets em-dash.</p>
       <p>A “quote” like this.</p>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Typewriter non-Ligatures</title>
     <para xml:id="S2.p1">
       <p><text font="typewriter">LDots…, versus dots ...</text></p>
@@ -27,7 +37,7 @@ In interjection — like this — gets em-dash.</p>
 <text font="typewriter">In interjection --- like this --- gets em-dash.</text></p>
     </para>
     <para xml:id="S2.p3">
-      <p><text font="typewriter">A ``quote'' like this.</text></p>
+      <p><text font="typewriter">A ‘‘quote’’ like this.</text></p>
     </para>
   </section>
 </document>

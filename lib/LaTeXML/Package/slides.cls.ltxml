@@ -147,21 +147,24 @@ DefPrimitiveI('\onlyslides', undef, sub {
     AssignValue(DOSLIDES => 1, 'global'); });
 
 DefEnvironment('{slide}',
-  "<ltx:slide xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+  "<ltx:slide xml:id='#id'>"
+    . "#tags"
     . "#body"
     . "</ltx:slide>",
   properties => sub { (doslide => sub { LookupValue('DOSLIDES'); },
       RefStepCounter('slide')) });
 
 DefEnvironment('{overlay}',
-  "<ltx:slide xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+  "<ltx:slide xml:id='#id'>"
+    . "#tags"
     . "#body"
     . "</ltx:slide>",
   properties => sub { (doslide => sub { LookupValue('DOSLIDES'); },
       RefStepCounter('overlay')) });
 
 DefEnvironment('{note}',
-  "<ltx:note xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
+  "<ltx:note xml:id='#id'>"
+    . "#tags"
     . "#body"
     . "</ltx:note>",
   properties => sub { (doslide => sub { LookupValue('DONOTES'); },

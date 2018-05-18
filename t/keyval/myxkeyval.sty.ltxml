@@ -1,0 +1,27 @@
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Technically, we need this one, but for efficeny sake
+RequirePackage('xkeyval');
+
+# declare the various xkeyval types
+DefKeyVal('scenario', 'role', '', undef, prefix=>'myxkeyval');
+DefKeyVal('scenario', 'country', '', undef, prefix=>'myxkeyval', kind=>'command');
+DefKeyVal('scenario', 'color', '', undef, prefix=>'myxkeyval', kind=>'choice', 
+  choices=>[('red', 'yellow', 'green')], mismatch=> sub { Warn('invalid', 'Invalid color choice!'); });
+ DefKeyVal('scenario', 'cross', '', undef, prefix=>'myxkeyval', kind=>'boolean');
+
+DefConstructor('\scenario RequiredKeyVals:myxkeyval|scenario', 
+  '<ltx:para class="scenario">' .
+    '<ltx:text class="role">&GetKeyVal(#1, "cross")</ltx:text>' .
+    '<ltx:text class="country">&GetKeyVal(#1, "country")</ltx:text>' .
+    '<ltx:text class="color">&GetKeyVal(#1, "color")</ltx:text>' .
+    '<ltx:text class="cross">&GetKeyVal(#1, "cross")</ltx:text>' .
+  '</ltx:para>');
+
+
+
+#======================================================================
+1;

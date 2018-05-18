@@ -8,128 +8,169 @@
   <resource src="ltx-book.css" type="text/css"/>
   <para xml:id="p1">
     <listing>
-      <listingline refnum="1" xml:id="algx1.l1"><tag><text fontsize="80%">1:</text></tag><text font="bold" fontsize="80%">procedure<text font="medium"> <text font="smallcaps">Proc</text>(<Math mode="inline" tex="a,b" text="list@(a, b)" xml:id="algx1.l1.m1">
-              <XMath>
-                <XMDual>
-                  <XMApp>
-                    <XMTok meaning="list"/>
-                    <XMRef idref="algx1.l1.m1.1"/>
-                    <XMRef idref="algx1.l1.m1.2"/>
-                  </XMApp>
-                  <XMWrap>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="algx1.l1.m1.1">a</XMTok>
-                    <XMTok role="PUNCT">,</XMTok>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="algx1.l1.m1.2">b</XMTok>
-                  </XMWrap>
-                </XMDual>
-              </XMath>
-            </Math>)
-</text></text></listingline>
-      <listingline refnum="2" xml:id="algx1.l2"><tag><text fontsize="80%">2:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">return</text><text fontsize="80%"> 7
-</text></listingline>
-      <listingline refnum="3" xml:id="algx1.l3"><tag><text fontsize="80%">3:</text></tag><text font="bold" fontsize="80%">end</text><text fontsize="80%"> </text><text font="bold" fontsize="80%">procedure</text></listingline>
+      <listingline xml:id="algx1.l1"><tags>
+          <tag><text fontsize="80%">1:</text></tag>
+          <tag role="refnum">1</tag>
+        </tags><text font="bold">procedure</text> <text font="smallcaps">Proc</text>(<Math mode="inline" tex="a,b" text="list@(a, b)" xml:id="algx1.l1.m1">
+          <XMath>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="algx1.l1.m1.1"/>
+                <XMRef idref="algx1.l1.m1.2"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok font="italic" role="UNKNOWN" xml:id="algx1.l1.m1.1">a</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="algx1.l1.m1.2">b</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMath>
+        </Math>)
+</listingline>
+      <listingline xml:id="algx1.l2"><tags>
+          <tag><text fontsize="80%">2:</text></tag>
+          <tag role="refnum">2</tag>
+        </tags>     <text font="bold">return</text> 7
+</listingline>
+      <listingline xml:id="algx1.l3"><tags>
+          <tag><text fontsize="80%">3:</text></tag>
+          <tag role="refnum">3</tag>
+        </tags><text font="bold">end</text> <text font="bold">procedure</text></listingline>
     </listing>
   </para>
-  <float class="ltx_float_algorithm" framed="top" frefnum="Algorithm 1" labels="LABEL:euclid" refnum="1" xml:id="alg1">
+  <float class="ltx_float_algorithm" framed="top" inlist="loa" labels="LABEL:euclid" xml:id="alg1">
+    <tags>
+      <tag><text font="bold">Algorithm 1</text></tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Algorithm 1</tag>
+    </tags>
     <toccaption><tag close=" ">1</tag>Euclid’s algorithm</toccaption>
-    <caption><tag close=" ">Algorithm 1</tag>Euclid’s algorithm</caption>
-    <listing framed="topbottom">
-      <listingline refnum="1" xml:id="alg1.l1"><tag><text fontsize="80%">1:</text></tag><text font="bold" fontsize="80%">procedure<text font="medium"> <text font="smallcaps">Euclid</text>(<Math mode="inline" tex="a,b" text="list@(a, b)" xml:id="alg1.l1.m1">
-              <XMath>
-                <XMDual>
-                  <XMApp>
-                    <XMTok meaning="list"/>
-                    <XMRef idref="alg1.l1.m1.1"/>
-                    <XMRef idref="alg1.l1.m1.2"/>
-                  </XMApp>
-                  <XMWrap>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="alg1.l1.m1.1">a</XMTok>
-                    <XMTok role="PUNCT">,</XMTok>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="alg1.l1.m1.2">b</XMTok>
-                  </XMWrap>
-                </XMDual>
-              </XMath>
-            </Math>)<text cssstyle="float:right"><Math mode="inline" tex="\triangleright" text="triangleright" xml:id="alg1.l1.m2">
-                <XMath>
-                  <XMTok name="triangleright" role="ADDOP">▷</XMTok>
-                </XMath>
-              </Math> The g.c.d. of a and b
-</text></text></text></listingline>
-      <listingline refnum="2" xml:id="alg1.l2"><tag><text fontsize="80%">2:</text></tag><text fontsize="80%">      </text><Math mode="inline" tex="r\leftarrow a\bmod b" text="r leftarrow modulo@(a, b)" xml:id="alg1.l2.m1">
+    <caption><tag close=" "><text font="bold">Algorithm 1</text></tag> Euclid’s algorithm</caption>
+    <listing>
+      <listingline xml:id="alg1.l1"><tags>
+          <tag><text fontsize="80%">1:</text></tag>
+          <tag role="refnum">1</tag>
+        </tags><text font="bold">procedure</text> <text font="smallcaps">Euclid</text>(<Math mode="inline" tex="a,b" text="list@(a, b)" xml:id="alg1.l1.m1">
+          <XMath>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="alg1.l1.m1.1"/>
+                <XMRef idref="alg1.l1.m1.2"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok font="italic" role="UNKNOWN" xml:id="alg1.l1.m1.1">a</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="alg1.l1.m1.2">b</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMath>
+        </Math>)<text cssstyle="float:right"><Math mode="inline" tex="\triangleright" text="triangleright" xml:id="alg1.l1.m2">
+            <XMath>
+              <XMTok name="triangleright" role="ADDOP">▷</XMTok>
+            </XMath>
+          </Math> The g.c.d. of a and b
+</text></listingline>
+      <listingline xml:id="alg1.l2"><tags>
+          <tag><text fontsize="80%">2:</text></tag>
+          <tag role="refnum">2</tag>
+        </tags>     <Math mode="inline" tex="r\leftarrow a\bmod b" text="r leftarrow modulo@(a, b)" xml:id="alg1.l2.m1">
           <XMath>
             <XMApp>
-              <XMTok fontsize="80%" name="leftarrow" role="ARROW">←</XMTok>
-              <XMTok font="italic" fontsize="80%" role="UNKNOWN">r</XMTok>
+              <XMTok name="leftarrow" role="ARROW">←</XMTok>
+              <XMTok font="italic" role="UNKNOWN">r</XMTok>
               <XMApp>
-                <XMTok fontsize="80%" meaning="modulo" name="bmod" role="MODIFIEROP">mod</XMTok>
-                <XMTok font="italic" fontsize="80%" role="UNKNOWN">a</XMTok>
-                <XMTok font="italic" fontsize="80%" role="UNKNOWN">b</XMTok>
+                <XMTok meaning="modulo" name="bmod" role="MODIFIEROP">mod</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
-        </Math><text fontsize="80%">
-</text></listingline>
-      <listingline refnum="3" xml:id="alg1.l3"><tag><text fontsize="80%">3:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">while</text><text fontsize="80%"> </text><Math mode="inline" tex="r\not=0" text="r not-equals 0" xml:id="alg1.l3.m1">
+        </Math>
+</listingline>
+      <listingline xml:id="alg1.l3"><tags>
+          <tag><text fontsize="80%">3:</text></tag>
+          <tag role="refnum">3</tag>
+        </tags>     <text font="bold">while</text> <Math mode="inline" tex="r\not=0" text="r not-equals 0" xml:id="alg1.l3.m1">
           <XMath>
             <XMApp>
-              <XMTok fontsize="80%" meaning="not-equals" name="not-=" role="RELOP">≠</XMTok>
-              <XMTok font="italic" fontsize="80%" role="UNKNOWN">r</XMTok>
-              <XMTok fontsize="80%" meaning="0" role="NUMBER">0</XMTok>
+              <XMTok meaning="not-equals" name="not-=" role="RELOP">≠</XMTok>
+              <XMTok font="italic" role="UNKNOWN">r</XMTok>
+              <XMTok meaning="0" role="NUMBER">0</XMTok>
             </XMApp>
           </XMath>
-        </Math><text fontsize="80%"> </text><text font="bold" fontsize="80%">do<text cssstyle="float:right" font="medium"><Math mode="inline" tex="\triangleright" text="triangleright" xml:id="alg1.l3.m2">
+        </Math> <text font="bold">do<text cssstyle="float:right" font="medium"><Math mode="inline" tex="\triangleright" text="triangleright" xml:id="alg1.l3.m2">
               <XMath>
                 <XMTok name="triangleright" role="ADDOP">▷</XMTok>
               </XMath>
             </Math> We have the answer if r is 0
 </text></text></listingline>
-      <listingline refnum="4" xml:id="alg1.l4"><tag><text fontsize="80%">4:</text></tag><text fontsize="80%">            </text><Math mode="inline" tex="a\leftarrow b" text="a leftarrow b" xml:id="alg1.l4.m1">
+      <listingline xml:id="alg1.l4"><tags>
+          <tag><text fontsize="80%">4:</text></tag>
+          <tag role="refnum">4</tag>
+        </tags>         <Math mode="inline" tex="a\leftarrow b" text="a leftarrow b" xml:id="alg1.l4.m1">
           <XMath>
             <XMApp>
-              <XMTok fontsize="80%" name="leftarrow" role="ARROW">←</XMTok>
-              <XMTok font="italic" fontsize="80%" role="UNKNOWN">a</XMTok>
-              <XMTok font="italic" fontsize="80%" role="UNKNOWN">b</XMTok>
+              <XMTok name="leftarrow" role="ARROW">←</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
             </XMApp>
           </XMath>
-        </Math><text fontsize="80%">
-</text></listingline>
-      <listingline refnum="5" xml:id="alg1.l5"><tag><text fontsize="80%">5:</text></tag><text fontsize="80%">            </text><Math mode="inline" tex="b\leftarrow r" text="b leftarrow r" xml:id="alg1.l5.m1">
+        </Math>
+</listingline>
+      <listingline xml:id="alg1.l5"><tags>
+          <tag><text fontsize="80%">5:</text></tag>
+          <tag role="refnum">5</tag>
+        </tags>         <Math mode="inline" tex="b\leftarrow r" text="b leftarrow r" xml:id="alg1.l5.m1">
           <XMath>
             <XMApp>
-              <XMTok fontsize="80%" name="leftarrow" role="ARROW">←</XMTok>
-              <XMTok font="italic" fontsize="80%" role="UNKNOWN">b</XMTok>
-              <XMTok font="italic" fontsize="80%" role="UNKNOWN">r</XMTok>
+              <XMTok name="leftarrow" role="ARROW">←</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMTok font="italic" role="UNKNOWN">r</XMTok>
             </XMApp>
           </XMath>
-        </Math><text fontsize="80%">
-</text></listingline>
-      <listingline refnum="6" xml:id="alg1.l6"><tag><text fontsize="80%">6:</text></tag><text fontsize="80%">            </text><Math mode="inline" tex="r\leftarrow a\bmod b" text="r leftarrow modulo@(a, b)" xml:id="alg1.l6.m1">
+        </Math>
+</listingline>
+      <listingline xml:id="alg1.l6"><tags>
+          <tag><text fontsize="80%">6:</text></tag>
+          <tag role="refnum">6</tag>
+        </tags>         <Math mode="inline" tex="r\leftarrow a\bmod b" text="r leftarrow modulo@(a, b)" xml:id="alg1.l6.m1">
           <XMath>
             <XMApp>
-              <XMTok fontsize="80%" name="leftarrow" role="ARROW">←</XMTok>
-              <XMTok font="italic" fontsize="80%" role="UNKNOWN">r</XMTok>
+              <XMTok name="leftarrow" role="ARROW">←</XMTok>
+              <XMTok font="italic" role="UNKNOWN">r</XMTok>
               <XMApp>
-                <XMTok fontsize="80%" meaning="modulo" name="bmod" role="MODIFIEROP">mod</XMTok>
-                <XMTok font="italic" fontsize="80%" role="UNKNOWN">a</XMTok>
-                <XMTok font="italic" fontsize="80%" role="UNKNOWN">b</XMTok>
+                <XMTok meaning="modulo" name="bmod" role="MODIFIEROP">mod</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
               </XMApp>
             </XMApp>
           </XMath>
-        </Math><text fontsize="80%">
-</text></listingline>
-      <listingline labels="LABEL:euclidendwhile" refnum="7" xml:id="alg1.l7"><tag><text fontsize="80%">7:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">end</text><text fontsize="80%"> </text><text font="bold" fontsize="80%">while</text><text fontsize="80%">
-</text></listingline>
-      <listingline refnum="8" xml:id="alg1.l8"><tag><text fontsize="80%">8:</text></tag><text fontsize="80%">      </text><text font="bold" fontsize="80%">return</text><text fontsize="80%"> </text><Math mode="inline" tex="b" text="b" xml:id="alg1.l8.m1">
+        </Math>
+</listingline>
+      <listingline labels="LABEL:euclidendwhile" xml:id="alg1.l7"><tags>
+          <tag><text fontsize="80%">7:</text></tag>
+          <tag role="refnum">7</tag>
+        </tags>     <text font="bold">end</text> <text font="bold">while</text>
+</listingline>
+      <listingline xml:id="alg1.l8"><tags>
+          <tag><text fontsize="80%">8:</text></tag>
+          <tag role="refnum">8</tag>
+        </tags>     <text font="bold">return</text> <Math mode="inline" tex="b" text="b" xml:id="alg1.l8.m1">
           <XMath>
-            <XMTok font="italic" fontsize="80%" role="UNKNOWN">b</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
           </XMath>
-        </Math><text cssstyle="float:right" fontsize="80%"><Math mode="inline" tex="\triangleright" text="triangleright" xml:id="alg1.l8.m2">
+        </Math><text cssstyle="float:right"><Math mode="inline" tex="\triangleright" text="triangleright" xml:id="alg1.l8.m2">
             <XMath>
               <XMTok name="triangleright" role="ADDOP">▷</XMTok>
             </XMath>
           </Math> The gcd is b
 </text></listingline>
-      <listingline refnum="9" xml:id="alg1.l9"><tag><text fontsize="80%">9:</text></tag><text font="bold" fontsize="80%">end</text><text fontsize="80%"> </text><text font="bold" fontsize="80%">procedure</text></listingline>
+      <listingline xml:id="alg1.l9"><tags>
+          <tag><text fontsize="80%">9:</text></tag>
+          <tag role="refnum">9</tag>
+        </tags><text font="bold">end</text> <text font="bold">procedure</text></listingline>
     </listing>
   </float>
 </document>

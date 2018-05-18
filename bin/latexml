@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 # /=====================================================================\ #
 # |  latexml                                                            | #
 # | main conversion program                                             | #
@@ -19,6 +19,7 @@ use Pod::Usage;
 use LaTeXML::Core;
 use LaTeXML;    # Currently, just for version information.
 use LaTeXML::Util::Pathname;
+use Encode;
 
 #**********************************************************************
 # Parse command line
@@ -74,8 +75,8 @@ my $latexml = LaTeXML::Core->new(
   searchpaths     => [grep { -d $_ } reverse(@paths)],
   graphicspaths   => ['.'],
   verbosity       => $verbosity, strict => $strict,
-  includeComments => $comments, inputencoding => $inputencoding,
-  includeStyles   => $includestyles,
+  includecomments => $comments, inputencoding => $inputencoding,
+  includestyles   => $includestyles,
   documentid      => $documentid,
   nomathparse     => $noparse);
 # Check that destination is valid before wasting any time...
@@ -103,7 +104,7 @@ eval {
     preamble => $preamble, postamble => $postamble);
 
   # ========================================
-  # Now, convert to DOM and output, if desired.
+  # Now, convert to DOM, encode and output, if desired.
 
   if ($digested) {
     $latexml->withState(sub {
@@ -114,7 +115,11 @@ eval {
         else {
           my $dom = $latexml->convertDocument($digested);
           $serialized = $dom->toString(1);
-        } }); }
+        }
+        # NOTE that we are serializing via LaTeXML's Document::serialize_aux
+        # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
+        $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
+        }); }
 };
 if ($@) {    # Fatal error?
   print STDERR $@; }
@@ -127,7 +132,6 @@ if (!$serialized) { }
 elsif ($destination) {
   my $OUTPUT;
   open($OUTPUT, ">", $destination) or die "Couldn't open output file $destination: $!";
-  binmode($OUTPUT, ":encoding(UTF-8)");
   print $OUTPUT $serialized;
   close($OUTPUT); }
 else {
@@ -162,7 +166,7 @@ latexml [options] I<texfile>
  --includestyles    allows latexml to load raw *.sty file;
                     by default it avoids this.
  --path=dir         adds to the paths searched for files,
-                    modules, etc; 
+                    modules, etc;
  --documentid=id    assign an id to the document root.
  --quiet            suppress messages (can repeat)
  --verbose          more informative output (can repeat)

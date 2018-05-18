@@ -1,4 +1,4 @@
-#!/usr/bin/perl -w
+#!/usr/bin/env perl
 # /=====================================================================\ #
 # |  maketests                                                          | #
 # | Test Maintenance tool                                               | #
@@ -22,6 +22,7 @@ use File::Copy;
 use File::Which;
 use File::Spec::Functions;
 use Algorithm::Diff;
+use Term::ANSIColor;
 
 #======================================================================
 # NOTE: Don't forget you can use
@@ -121,7 +122,7 @@ sub maketest_daemon {
     $invocation .= "--" . $$opt[0] . (length($$opt[1]) ? ('="' . $$opt[1] . '" ') : (' '));
   }
   $invocation .= " 2>$name.test.status ";
-  chdir($dir);
+  pathname_chdir($dir);
   if (system($invocation) != 0) {
     unlink "$name.test.xml"    if -e "$name.test.xml";
     unlink "$name.test.status" if -e "$name.test.status";
@@ -134,12 +135,13 @@ sub maketest_daemon {
     $ndiffs += compareLines(readText("$name.status"), readText("$name.test.status"));
     unlink "$name.test.xml"    if -e "$name.test.xml";
     unlink "$name.test.status" if -e "$name.test.status";
+    print "" . ("=" x 40) . "\n\n";
     ($ndiffs ? push(@FAIL, $name) : push(@PASS, $name)); }
   elsif ($doxml) {
     print "\n" . ("=" x 40) . "\nReplacing $dir/$name.xml and status.\n";
     move("$name.test.xml",    "$name.xml")    if -e "$name.test.xml";
     move("$name.test.status", "$name.status") if -e "$name.test.status"; }
-  chdir($cwd);
+  pathname_chdir($cwd);
   return; }
 
 #======================================================================
@@ -161,27 +163,12 @@ sub maketest_daemon {
 # (else, we're ignoring whitespace changes in test)
 sub compare_xml {
   my ($dir, $name) = @_;
-  #========================================
-  # Generate the XML from the current latexml
-  local ($^W) = 0;    # NASTY way to turn off redefinitions!
-  my $latexml = LaTeXML::Core->new(preload => [], searchpath => [], includeComments => 0, verbosity => $verbosity);
-  my $file = pathname_concat($dir, $name);
-  my $newdom = $latexml->convertFile(pathname_concat($dir, $name))
-    or die "Failed to convert $file.tex: $!";
-
-  #========================================
-  # Do the comparison
-  print "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
-  return compareLines(readXML("$file.xml"), stringifyDom($newdom)); }
-
-sub compare_xml {
-  my ($dir, $name) = @_;
   my $source = pathname_make(dir => $dir, name => $name, type => 'tex');
   my $xml    = pathname_make(dir => $dir, name => $name, type => 'xml');
   my $test   = pathname_make(dir => $dir, name => $name, type => 'test.xml');
   #========================================
   # Generate the XML from the current latexml
-  system('latexml', $source,
+  system("$FindBin::RealBin/../blib/script/latexml", $source,
     "--destination=" . $test,
     "--nocomments", (map { "--verbose" } 1 .. $verbosity)) == 0
     or die "Failed to convert $source: $!";
@@ -190,6 +177,7 @@ sub compare_xml {
   # Do the comparison
   print "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
   my $result = compareLines(readXML($xml), readXML($test));
+  print "" . ("=" x 40) . "\n\n";
   unlink $test if -e $test;
   return $result; }
 
@@ -212,7 +200,10 @@ sub compareLines {
     print $sep;
     print "> $_\n" for $diff->Items(2);
   }
-  print "OK!\n" unless $ndiffs;
+  if ($ndiffs) {
+    print color('red') . "Failed!" . color('reset') . "\n"; }
+  else {
+    print color('green') . "OK!" . color('reset') . "\n"; }
   return $ndiffs; }
 
 sub readXML {
@@ -242,32 +233,22 @@ sub stringifyDom {
 
 sub gen_xml {
   my ($dir, $name) = @_;
-  local ($^W) = 0;    # NASTY way to turn off redefinitions!
-  my $file = pathname_concat($dir, $name);
-  my $latexml = LaTeXML::Core->new(preload => [], searchpath => [],
-    includeComments => 0, verbosity => $verbosity);
-  if (-f "$file.xml") {
-    rename("$file.xml", "$file.xml.bak"); }
-  $latexml->convertAndWriteFile($file)
-    or die "Failed to create $file.xml: $!";
-  return; }
-
-sub gen_xml {
-  my ($dir, $name) = @_;
   my $source = pathname_make(dir => $dir, name => $name, type => 'tex');
   my $xml    = pathname_make(dir => $dir, name => $name, type => 'xml');
-  if (-f $xml) {
-    rename($xml, $xml . '.bak'); }
-  system('latexml', $source,
+  if (-f "$xml") {
+    rename("$xml", "$xml.bak"); }
+  #========================================
+  # Generate the XML from the current latexml
+  system("$FindBin::RealBin/../blib/script/latexml", $source,
     "--destination=" . $xml,
     "--nocomments", (map { "--verbose" } 1 .. $verbosity)) == 0
-    or die "Failed to create $xml: $!";
+    or die "Failed to convert $source: $!";
   return; }
 
 sub gen_pdf {
   my ($dir, $name) = @_;
   my $cwd = pathname_cwd();
-  chdir($dir) if $dir;
+  pathname_chdir($dir) if $dir;
   # Get list of files currently in directory.
   my $DIR;
   opendir($DIR, ".") or die "Cannot read directory $dir: $!";
@@ -291,7 +272,7 @@ sub gen_pdf {
   foreach my $f (@files_now) {
     if (($f ne "$name.pdf") && !grep { $f eq $_ } @files_before) {
       unlink($f); } }
-  chdir($cwd) if $dir;
+  pathname_chdir($cwd) if $dir;
   return; }
 
 sub read_options {

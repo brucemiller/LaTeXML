@@ -1,0 +1,35 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  pdfpages                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#================================================================================
+# Includes a pdf into the output, possibly a subset of pages from the pdf.
+# Two options here
+#  (1) convert the page(s) to image(s)
+#      This might make sense for a single page, smallish image?
+#  (2) copy the pdf as a resource and link to it.
+#      We'll take this approach for now
+DefConstructor('\includepdf OptionalKeyVals{}',
+  "<ltx:resource src='#src' type='application/pdf'/>"
+    . "See #pages<ltx:ref href='#src'>#src</ltx:ref>",
+  properties => sub {
+    my $pages = GetKeyVal($_[1], 'pages');
+    (src => $_[2],
+      pages => ($pages ? "pages " . ToString($pages) . " of " : undef)); });
+
+#================================================================================
+
+1;

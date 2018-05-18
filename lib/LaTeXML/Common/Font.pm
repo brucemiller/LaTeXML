@@ -94,11 +94,11 @@ my %font_family = (
   # some ams fonts
   cmmib => { family => 'italic', series   => 'bold' },
   cmbsy => { family => 'symbol', series   => 'bold' },
-  msa   => { family => 'symbol', encoding => 'AMSA' },
-  msb   => { family => 'symbol', encoding => 'AMSB' },
+  msa   => { family => 'symbol', encoding => 'AMSa' },
+  msb   => { family => 'symbol', encoding => 'AMSb' },
   # Are these really the same?
-  msx => { family => 'symbol', encoding => 'AMSA' },
-  msy => { family => 'symbol', encoding => 'AMSB' },
+  msx => { family => 'symbol', encoding => 'AMSa' },
+  msy => { family => 'symbol', encoding => 'AMSb' },
 );
 
 # Maps the "series code" to an abstract font series name
@@ -160,7 +160,7 @@ sub decodeFontname {
     if (my $ffam = lookupFontFamily($fam)) { map { $props{$_} = $$ffam{$_} } keys %$ffam; }
     if (my $fser = lookupFontSeries($ser)) { map { $props{$_} = $$fser{$_} } keys %$fser; }
     if (my $fsh  = lookupFontShape($shp))  { map { $props{$_} = $$fsh{$_} } keys %$fsh; }
-    $size = 1 unless defined $size;
+    $size = 1 unless $size;    # Yes, also if 0, "" (from regexp)
     $size = $at if defined $at;
     $size *= $scaled if defined $scaled;
     $props{size} = $size;
@@ -593,6 +593,9 @@ sub merge {
     $mathstyle = $fracstylemap{ $mathstyle            || 'display' };
     $size      = $stylescale * $stylesize{ $mathstyle || 'display' }; }
 
+  if ($options{emph}) {
+    $shape = ($shape eq 'italic' ? 'upright' : 'italic'); }
+
   my $newfont = (ref $self)->new_internal($family, $series, $shape, $size,
     $color, $bg, $opacity,
     $encoding,  $language,
@@ -660,13 +663,17 @@ our %stepmathstyle = (
 
 sub purestyleChanges {
   my ($self, $other) = @_;
-  my $mathstyle = $other->getMathstyle;
+  my $mathstyle      = $self->getMathstyle;
+  my $othermathstyle = $other->getMathstyle;
   return (
     scale      => $other->getSize / $self->getSize,
     color      => $other->getColor,
     background => $other->getBackground,
     opacity    => $other->getOpacity,                 # should multiply or replace?
-    mathstylestep => $mathstylestep{ $self->getMathstyle }{ $other->getMathstyle }); }
+    ($mathstyle && $othermathstyle
+      ? (mathstylestep => $mathstylestep{$mathstyle}{$othermathstyle})
+      : ()),
+    ); }
 
 sub mergePurestyle {
   my ($self, %stylechanges) = @_;

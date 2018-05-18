@@ -65,11 +65,14 @@ Let('\journalopt', '\@empty');
 # for when people need and actually use \begin[abstract}...)
 
 Let('\@orig@abstract', '\abstract');
-DefMacro('\abstract', sub {
-    if ($_[0]->ifNext(T_BEGIN)) { T_CS('\@abstract@with@arg'); }
+DefMacro('\abstract OptionalMatch:*', sub {
+    if ($_[1]) { T_CS('\lx@ignore@sv@abstract'); }
+    elsif ($_[0]->ifNext(T_BEGIN)) { T_CS('\@abstract@with@arg'); }
     else { T_CS('\@orig@abstract'); } });
 
-DefMacro('\@abstract@with@arg{}', '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{#1}');
+# Just ignore \abstract* (what's it for?)
+DefMacro('\lx@ignore@sv@abstract{}', '');
+DefMacro('\@abstract@with@arg{}',    '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{#1}');
 
 DefMacro('\makereferee', Tokens());
 
@@ -116,8 +119,8 @@ DefMacro('\tableheadseprule', '\hrule');
 DefMacro('\floatlegendstyle', '\bfseries');
 DefMacro('\leftlegendglue',   Tokens());
 
-DefPrimitive('\normalthmheadings',  sub { AssignValue('thm@swap' => 'N'); });
-DefPrimitive('\reversethmheadings', sub { AssignValue('thm@swap' => 'S'); });
+DefPrimitive('\normalthmheadings',  sub { AssignValue('thm@swap' => 0); });
+DefPrimitive('\reversethmheadings', sub { AssignValue('thm@swap' => 1); });
 DefRegister('\spthmsep' => Dimension('5pt'));
 
 # \spnewtheorem*{env}[numberedlike]{caption}[within]{capfont}{bodyfont}
@@ -131,7 +134,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
     $reset       = $reset ? ToString($reset) : undef;
 
     my $counter = $otherthmset || $thmset;
-    my $swap    = LookupValue('thm@swap') eq 'S';
+    my $swap    = LookupValue('thm@swap');
     my $style   = ToString(LookupValue('\thm@style'));
 
     if (!$otherthmset) {
@@ -144,7 +147,8 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
 
 # Swap causes you to get the odd (to me) order "4.1 Lemma", which breaks our new localization methods!!!
     DefEnvironment("{$thmset} OptionalUndigested",
-      "<ltx:theorem xml:id='#id' refnum='#refnum' class='#class'>"
+      "<ltx:theorem xml:id='#id' class='#class'>"
+        . "#tags"
         . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
         . "#body"
         . "</ltx:theorem>",
@@ -158,7 +162,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
       properties => sub {
         my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ());
         my $title = Digest(Tokens(T_BEGIN, $capfont->unlist,
-            T_CS('\@tag'), T_BEGIN,
+            T_CS('\lx@tag'), T_BEGIN,
             ($swap
               ? (($flag ? () : (T_CS('\the' . $counter))),
                 (!$flag && $type ? (T_SPACE) : ()),

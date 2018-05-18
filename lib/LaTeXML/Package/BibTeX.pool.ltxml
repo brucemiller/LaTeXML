@@ -340,11 +340,11 @@ DefMacro('\bib@@booktitle{}{}', '\bib@@field{#1}{#2}');
 # Default field handlers
 
 # This ignores the field.
-DefMacro('\bib@field@@ignore Semiverbatim Semiverbatim', '');
+DefMacro('\bib@field@@ignore Verbatim Verbatim', '');
 
 # By default, we'll copy unrecognized fields to bib-data,
-DefMacro('\bib@field@default@default {}{}', '\bib@field@unknownasdata{#1}'); # IGNORE the tokenized data.
-DefConstructor('\bib@field@unknownasdata Semiverbatim',
+DefMacro('\bib@field@default@default Verbatim Verbatim', '\bib@field@unknownasdata{#1}'); # IGNORE the tokenized data.
+DefConstructor('\bib@field@unknownasdata Verbatim',
   "<ltx:bib-data role='#1'>#rawdata</ltx:bib-data>",
   afterDigest => sub {
     my $field = ToString($_[1]->getArg(1));

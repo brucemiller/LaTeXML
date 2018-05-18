@@ -39,8 +39,9 @@ sub process {
   # Note that this will NOT RE-format a document read in from xml,
   # (providing no_blanks is false; which it should be, since it is dangerous.
   #  it can also remove significant spaces between elements!)
-  my $string = ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1));
-
+  my $serialized = ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1));
+  # NOTE that we are serializing the XML::LibXML::Document whose toString
+  # has ALREADY encoded (in this case to utf8), so NO encode is needed!
   if (my $destination = $doc->getDestination) {
     my $destdir = $doc->getDestinationDirectory;
     pathname_mkdir($destdir)
@@ -49,10 +50,10 @@ sub process {
     my $OUT;
     open($OUT, '>', $destination)
       or return Fatal('I/O', $destdir, undef, "Couldn't write '$destination'", "Response was: $!");
-    print $OUT $string;
+    print $OUT $serialized;
     close($OUT); }
   else {
-    print $string; }
+    print $serialized; }
   return $doc; }
 
 # ================================================================================

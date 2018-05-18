@@ -22,6 +22,9 @@ use LaTeXML::Package;
 # Eventually, go through the doc and implement it all.
 #**********************************************************************
 
+Let('\@xp', '\expandafter');
+Let('\@nx', '\noexpand');
+
 # TODO:
 #   Interesting options for limits placement
 #   And TESTING!!!!!
@@ -61,16 +64,12 @@ DefMacroI('\AmS',     undef, "AmS");
 # that indicate the requested alignment points or linebreaks.
 #  Currently hints are discarded before parsing.
 
+DefConditional('\iftagsleft@');    # but we won't use it?
 Let('\notag', '\nonumber');
 
-## Seemingly wants digested arg? (ie. expanded before seeing arg)
 DefMacro('\tag OptionalMatch:* {}',
-  '\ifx#1*\lx@tag{#2}\else{\def\theequation{#2}\lx@tag{\fnum@equation}}\fi');
-DefConstructor('\lx@tag Digested', '',
-  afterDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => $_[1]->getArg(1), 'global'); },
-  reversion => '',        # normally should disappear?
-  mode      => 'text');
+  # expand \theequation, but in text mode! undo formatting if *
+'\lx@equation@settag{\ifx#1*\let\fnum@equation\relax\fi\edef\theequation{#2}\lx@make@tags{equation}}');
 
 # Note that \intertext may or may not be preceded by an explicit \\, with no apparent difference in TeX.
 # latexml, however, can end up with 2, which end up incrementing coutners twice!
@@ -107,10 +106,15 @@ sub amsalignBindings {
         $attr{'xml:id'} = $attr{id}; delete $attr{id};
         $_[0]->openElement('ltx:equationgroup', %attr, @_[1 .. $#_]); },
       closeContainer => sub { $_[0]->closeElement('ltx:equationgroup'); },
-      openRow        => sub { $_[0]->openElement('ltx:equation', @_[1 .. $#_]); },
-      closeRow       => sub { $_[0]->closeElement('ltx:equation'); },
-      openColumn     => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
-      closeColumn    => sub { $_[0]->closeElement('ltx:_Capture_'); },
+      openRow => sub {
+        my ($doc, %props) = @_;    # props are attributes, except for tag!
+        my $tags = $props{tags}; delete($props{tags});
+        $props{_tags} = $tags;     # HACK!!! for dlmf
+        $doc->openElement('ltx:equation', %props);
+        $doc->absorb($tags) if $tags; },
+      closeRow    => sub { $_[0]->closeElement('ltx:equation'); },
+      openColumn  => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
+      closeColumn => sub { $_[0]->closeElement('ltx:_Capture_'); },
       properties => {%properties}));
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@ams@newline');
@@ -125,65 +129,9 @@ sub amsalignBindings {
 
 #======================================================================
 # Section 3.2 Single equations
-
 #  equation, equation*
-
-# Note that amsmath respects \nonumber !!!!
-# So, we've got to delay the properties
-DefEnvironment('{equation}',
-  "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
-    #    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)"
-    . "<ltx:Math mode='display'>"
-    . "<ltx:XMath>"
-    . "#body"
-    . "</ltx:XMath>"
-    . "</ltx:Math>"
-    . "</ltx:equation>",
-  mode => 'display_math',
-  # NOT this
-  #  properties => sub { RefStepCounter('equation') },
-  # BUT this:
-  beforeDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => '_AUTO_', 'global');
-    return; },
-  afterDigestBody => sub {
-    my ($stomach, $whatsit) = @_;
-    my $num   = LookupValue('EQUATIONROW_NUMBER');
-    my %props = ();
-    if    (!$num)            { %props = RefStepID('equation'); }
-    elsif ($num eq '_AUTO_') { %props = RefStepCounter('equation'); }
-    else {
-      %props = RefStepID('equation');
-      $props{refnum} = $num; }
-    $whatsit->setProperties(%props);
-    return; },
-  locked => 1);
-
-# Note: This DOES get a number if \tag is used!
-DefEnvironment('{equation*}',
-  "<ltx:equation xml:id='#id' refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum'>"
-    #    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)"
-    . "<ltx:Math mode='display'>"
-    . "<ltx:XMath>"
-    . "#body"
-    . "</ltx:XMath>"
-    . "</ltx:Math>"
-    . "</ltx:equation>",
-  mode         => 'display_math',
-  beforeDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => undef, 'global');
-    return; },
-  afterDigestBody => sub {
-    my ($stomach, $whatsit) = @_;
-    my $num   = LookupValue('EQUATIONROW_NUMBER');
-    my %props = ();
-    %props = RefStepID('equation');
-    if ($num) {
-      $props{refnum}  = $num;
-      $props{frefnum} = $num; }
-    $whatsit->setProperties(%props);
-    return; },
-  locked => 1);
+# LaTeX's equation & equation* work, given that we're also defining
+# \nonumber, \tag,...
 
 #======================================================================
 # A utiltity for extracting the contents of an XMArray
@@ -253,7 +201,8 @@ DefMacro('\csname endmultline*\endcsname', '\@finish@alignment\@end@multline\@hi
 DefPrimitive('\@end@multline', sub { $_[0]->egroup; });
 
 DefConstructor('\@@multline DigestedBody',
-  "<ltx:equation refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
+  "<ltx:equation xml:id='#id'>"
+    . "#tags"
     . "<ltx:Math mode='display'>"
     . "<ltx:XMath>#body</ltx:XMath>"
     . "</ltx:Math>"
@@ -429,12 +378,16 @@ sub rearrangeAMSGather {
 # So, we'll treat align as aligned in such cases.
 DefMacro('\gather',
   '\ifmmode\let\endgather\endgathered\gathered\else'
-    . '\@hidden@bgroup\@amsgather@bindings\@@amsgather\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsgather@bindings\@@amsgather'
+    . '\@equationgroup@numbering{numbered=1,postset=1,grouped=1,aligned=1}'
+    . '\@start@alignment\fi');
 DefMacro('\endgather',
   '\@finish@alignment\end@amsgather\@hidden@egroup');
 DefMacro('\csname gather*\endcsname',
   '\ifmmode\expandafter\let\csname endgather*\endcsname\endgathered\gathered\else'
-    . '\@hidden@bgroup\@amsgather@bindings\@@amsgather\@equationgroup@nonumber\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsgather@bindings\@@amsgather'
+    . '\@equationgroup@numbering{numbered=0,postset=1,grouped=1,aligned=1}'
+    . '\@start@alignment\fi');
 DefMacro('\csname endgather*\endcsname',
   '\@finish@alignment\end@amsgather\@hidden@egroup');
 
@@ -485,12 +438,16 @@ sub rearrangeAMSAlign {
 # So, we'll treat align as aligned in such cases.
 DefMacro('\align',
   '\ifmmode\let\endalign\endaligned\aligned\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@equationgroup@numbering{numbered=1,postset=1,grouped=1,aligned=1}'
+    . '\@start@alignment\fi');
 DefMacro('\endalign',
   '\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname align*\endcsname',
   '\ifmmode\expandafter\let\csname endalign*\endcsname\endaligned\aligned\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@equationgroup@numbering{numbered=0,postset=1,grouped=1,aligned=1}'
+    . '\@start@alignment\fi');
 DefMacro('\csname endalign*\endcsname',
   '\@finish@alignment\end@amsalign\@hidden@egroup');
 
@@ -498,12 +455,16 @@ DefMacro('\csname endalign*\endcsname',
 # So, for the time being, it's treated exactly like align.
 DefMacro('\flalign',
   '\ifmmode\let\endfalign\endaligned\aligned\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@equationgroup@numbering{numbered=1,postset=1,grouped=1,aligned=1}'
+    . '\@start@alignment\fi');
 DefMacro('\endflalign',
   '\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname flalign*\endcsname',
   '\ifmmode\expandafter\let\csname endfalign*\endcsname\endaligned\aligned\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@equationgroup@numbering{numbered=0,postset=1,grouped=1,aligned=1}'
+    . '\@start@alignment\fi');
 DefMacro('\csname endflalign*\endcsname',
   '\@finish@alignment\end@amsalign\@hidden@egroup');
 
@@ -512,29 +473,39 @@ DefMacro('\csname endflalign*\endcsname',
 # We'll ignore these distinctions for now.
 DefMacro('\alignat{}',
   '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@equationgroup@numbering{numbered=1,postset=1,grouped=1,aligned=1}'
+    . '\@start@alignment\fi');
 DefMacro('\endalignat',
   '\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname alignat*\endcsname{}',
   '\ifmmode\expandafter\let\csname endalignat*\endcsname\endalignedat\alignedat{#1}\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@equationgroup@numbering{numbered=0,postset=1,grouped=1,aligned=1}'
+    . '\@start@alignment\fi');
 DefMacro('\csname endalignat*\endcsname',
   '\@finish@alignment\end@amsalign\@hidden@egroup');
 
 DefMacro('\xalignat{}',
   '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@equationgroup@numbering{numbered=1,postset=1,grouped=1,aligned=1}'
+    . '\@start@alignment\fi');
 DefMacro('\endxalignat',
   '\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname xalignat*\endcsname{}',
   '\ifmmode\expandafter\let\csname endalignat*\endcsname\endalignedat\alignedat{#1}\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@nonumber\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@equationgroup@numbering{numbered=0,postset=1,grouped=1,aligned=1}'
+    . '\@start@alignment\fi');
 DefMacro('\csname endxalignat*\endcsname',
   '\@finish@alignment\end@amsalign\@hidden@egroup');
 
 DefMacro('\xxalignat{}',
   '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign\@equationgroup@number\@start@alignment\fi');
+    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@equationgroup@numbering{numbered=1,post=1,grouped=1,aligned=1}'
+    . '\@start@alignment\fi');
 DefMacro('\endxxalignat',
   '\@finish@alignment\end@amsalign\@hidden@egroup');
 
@@ -579,8 +550,7 @@ sub amsAlignedBindings {
       T_CS('\displaystyle')) };
   my $col2 = { before => Tokens(T_CS('\displaystyle')),
     after => Tokens(T_CS('\hfil')) };
-  my $col3 = { before => Tokenize('\hskip 1em\relax') };
-  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2, $col3]);
+  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]);
   amsAlignmentBindings($template, (name => 'aligned', colsep => '0pt'));
   return; }
 
@@ -711,21 +681,8 @@ DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label' _force_font='
 DefMacro('\thetag{}', '{\rm #1}');
 
 # Section 3.11.3 Subordinate numbering sequences.
-DefEnvironment('{subequations}',
-  "<ltx:equationgroup refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id'>"
-    . "#body"
-    . "</ltx:equationgroup>",
-  afterDigestBegin => sub {
-    my ($stomach, $whatsit) = @_;
-    my %eqn = RefStepCounter('equation');
-    AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
-    $whatsit->setProperties(%eqn);
-    ResetCounter('equation');
-    DefMacro('\theequation',    UnTeX($eqn{refnum}) . '\alph{equation}');
-    DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID');
-  },
-  afterDigest => sub {
-    AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
+DefMacro('\subequations',    '\lx@equationgroup@subnumbering@begin');
+DefMacro('\endsubequations', '\lx@equationgroup@subnumbering@end');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 4: Miscellaneous mathematical features

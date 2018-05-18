@@ -1,14 +1,30 @@
 language: perl
-perl:
-  - "5.20"
-  - "5.18"
-  - "5.14"
-  - "5.10"
+sudo: required
+dist: trusty
 
-sudo: false
 addons:
   apt:
     packages:
      - libdb-dev
      - libxml2-dev
      - libxslt1-dev
+
+perl:
+  - "5.20"
+  - "5.18"
+  - "5.14"
+  - "5.10"
+
+env:
+  - TEX=none
+  - TEX=texlive
+
+before_install:
+  - if [[ "$TEX" != "none" ]]; then sudo apt-get update -q; fi
+  - if [[ "$TEX" == "texlive" ]]; then sudo apt-get install -y texlive-full -q; fi
+
+install:
+  - cpanm -v --installdeps --notest .
+
+script:
+  - perl Makefile.PL && make test
