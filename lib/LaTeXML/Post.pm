@@ -491,7 +491,7 @@ sub associateNode {
     # But ONLY if that XMDual is the "direct" parent, or is parent of XRef that points to $current
     if (my $container = $document->findnode('parent::ltx:XMDual[1]', $sourcenode)
       || ($sid &&
-        $document->findnode("ancestor-or-self::ltx:XMDual[ltx:XMRef[\@idref='$sid']][1]",
+        $document->findnode('ancestor-or-self::ltx:XMDual[ltx:XMRef[@idref="'.$sid.'"]][1]',
           $sourcenode))) {
       $sourcenode = $container; } }
   # If the current node is appropriately visible, use it.
