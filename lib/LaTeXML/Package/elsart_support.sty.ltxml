@@ -56,6 +56,16 @@ DefMacro('\cortext[]{}',  Tokens());
 DefMacro('\collab OptionalMatch:* {}', '\author{#1}');
 Let('\collaboration', '\collab');
 
+DefMacro('\tnotetext[]{}', '\lx@notetext[#1]{footnote}{#2}');
+DefMacro('\fntext[]{}',    '\lx@notetext[#1]{footnote}{#2}');
+DefMacro('\lx@elsart@noteref{}', sub {
+    return map { (T_CS('\lx@notemark'),
+        T_OTHER('['), T_OTHER($_), T_OTHER(']'),
+        T_BEGIN, T_OTHER('footnote'), T_END); } split(/,/, ToString($_[1])); });
+
+DefMacro('\tnoteref{}', '\lx@elsart@noteref{#1}');
+DefMacro('\fnref{}',    '\lx@elsart@noteref{#1}');
+
 DefMacro('\runauthor{}', Tokens());
 DefMacro('\runtitle{}',  Tokens());
 
