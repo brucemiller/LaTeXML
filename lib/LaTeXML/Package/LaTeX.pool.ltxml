@@ -890,7 +890,7 @@ DefRegister('\baselinestretch' => Dimension(0));
 
 # See frontmatter support in TeX.ltxml
 Let('\@title', '\@empty');
-DefMacro('\title{}', '\def\@title{#1}\@add@frontmatter{ltx:title}{#1}');
+DefMacro('\title{}', '\def\@title{#1}\@add@frontmatter{ltx:title}{#1}', locked => 1);
 
 DefMacro('\@date', '\@empty');
 DefMacro('\date{}',
@@ -927,7 +927,7 @@ DefConstructor('\lx@author@prefix', sub {
 });
 
 DefMacro('\@author',                 '\@empty');
-DefMacro('\author{}',                '\def\@author{#1}\lx@make@authors@anded{#1}');
+DefMacro('\author{}',                '\def\@author{#1}\lx@make@authors@anded{#1}', locked => 1);
 DefMacro('\lx@make@authors@anded{}', sub { andSplit(T_CS('\lx@author'), $_[1]); });
 DefPrimitive('\ltx@authors@oneline', sub {
     AssignMapping('DOCUMENT_CLASSES', ltx_authors_1line => 1);
