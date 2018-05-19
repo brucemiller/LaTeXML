@@ -602,7 +602,8 @@ sub NewCounter {
     DefMacroI(T_CS("\\p\@$ctr"), undef, Tokens(), scope => 'global'); }
   my $prefix = $options{idprefix};
   AssignValue('@ID@prefix@' . $ctr => $prefix, 'global') if $prefix;
-  $prefix = LookupValue('@ID@prefix@' . $ctr) || CleanID($ctr) unless $prefix;
+  $prefix = LookupValue('@ID@prefix@' . $ctr) || $ctr unless $prefix;
+  $prefix = CleanID($prefix);
   if (defined $prefix) {
     if (my $idwithin = $options{idwithin} || $within) {
       DefMacroI(T_CS("\\the$ctr\@ID"), undef,
