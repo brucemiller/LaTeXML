@@ -2053,8 +2053,8 @@ sub AddToMacro {
   # Needs error checking!
   my $defn = $STATE->lookupDefinition($cs);
   if (!defined $defn || !$defn->isExpandable) {
-    Error('unexpected', $cs, $STATE->getStomach->getGullet,
-      ToString($cs) . " is not an expandable control sequence"); }
+    Warn('unexpected', $cs, $STATE->getStomach->getGullet,
+      ToString($cs) . " is not an expandable control sequence", "Ignoring addition"); }
   else {
     DefMacroI($cs, undef, Tokens($defn->getExpansion->unlist,
         map { $_->unlist } map { (ref $_ ? $_ : TokenizeInternal($_)) } @tokens),
