@@ -2339,8 +2339,14 @@ DefPrimitive('\UndeclareTextCommand{}{}', undef);
 DefMacro('\UseTextSymbol{}{}', '{\fontencoding{#1}#2}');
 DefMacro('\UseTextAccent{}{}', '{\fontencoding{#1}#2{#3}}');
 
-DefPrimitive('\DeclareMathAccent{}{}{}{}',
-  sub { ignoredDefinition('DeclareMathAccent', $_[1]); });
+DefPrimitive('\DeclareMathAccent DefToken {}{} {Number}', sub {
+    my ($stomach, $cs, $kind, $class, $code) = @_;
+    $class = ToString($class);
+    my $info = LookupValue('fontdeclaration@' . $class);
+    my $glyph = FontDecode($code->valueOf, ($info ? $$info{encoding} : $class));
+    DefMathI($cs, 'Digested', $glyph, operator_role => 'OVERACCENT');
+    return; });
+
 DefPrimitive('\DeclareMathDelimiter{}{}{}{}',
   sub { ignoredDefinition('DeclareMathAccent', $_[1]); });
 DefPrimitive('\DeclareMathRadical{}{}{}{}{}',
@@ -4468,16 +4474,16 @@ DefConstructor('\textnormal@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>",
     DefMacro('\f@series', 'm');
     DefMacro('\f@shape',  'n'); });
 # These really should be robust! which is a source of expand timing issues!
-DefMacro('\textmd{}',     '\protect\ifmmode\textmd@math{#1}\else{\mdseries #1}\fi');
-DefMacro('\textbf{}',     '\protect\ifmmode\textbf@math{#1}\else{\bfseries #1}\fi');
-DefMacro('\textrm{}',     '\protect\ifmmode\textrm@math{#1}\else{\rmfamily #1}\fi');
-DefMacro('\textsf{}',     '\protect\ifmmode\textsf@math{#1}\else{\sffamily #1}\fi');
-DefMacro('\texttt{}',     '\protect\ifmmode\texttt@math{#1}\else{\ttfamily #1}\fi');
-DefMacro('\textup{}',     '\protect\ifmmode\textup@math{#1}\else{\upshape #1}\fi');
-DefMacro('\textit{}',     '\protect\ifmmode\textit@math{#1}\else{\itshape #1}\fi');
-DefMacro('\textsl{}',     '\protect\ifmmode\textsl@math{#1}\else{\slshape #1}\fi');
-DefMacro('\textsc{}',     '\protect\ifmmode\textsc@math{#1}\else{\scshape #1}\fi');
-DefMacro('\textnormal{}', '\protect\ifmmode\textnormal@math{#1}\else{\normalfont #1}\fi');
+DefMacro('\textmd{}',     '\ifmmode\textmd@math{#1}\else{\mdseries #1}\fi',       protected => 1);
+DefMacro('\textbf{}',     '\ifmmode\textbf@math{#1}\else{\bfseries #1}\fi',       protected => 1);
+DefMacro('\textrm{}',     '\ifmmode\textrm@math{#1}\else{\rmfamily #1}\fi',       protected => 1);
+DefMacro('\textsf{}',     '\ifmmode\textsf@math{#1}\else{\sffamily #1}\fi',       protected => 1);
+DefMacro('\texttt{}',     '\ifmmode\texttt@math{#1}\else{\ttfamily #1}\fi',       protected => 1);
+DefMacro('\textup{}',     '\ifmmode\textup@math{#1}\else{\upshape #1}\fi',        protected => 1);
+DefMacro('\textit{}',     '\ifmmode\textit@math{#1}\else{\itshape #1}\fi',        protected => 1);
+DefMacro('\textsl{}',     '\ifmmode\textsl@math{#1}\else{\slshape #1}\fi',        protected => 1);
+DefMacro('\textsc{}',     '\ifmmode\textsc@math{#1}\else{\scshape #1}\fi',        protected => 1);
+DefMacro('\textnormal{}', '\ifmmode\textnormal@math{#1}\else{\normalfont #1}\fi', protected => 1);
 
 DefPrimitive('\DeclareTextFontCommand{}{}', sub {
     my ($stomach, $cmd, $font) = @_;
