@@ -1,0 +1,75 @@
+\documentclass{book}
+
+\usepackage{hyperref}
+\usepackage{caption}
+
+\newtheorem{theorem}{Theorem}
+\newtheorem{thm}{Theorem}[section]
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{prop}{Proposition}
+\newtheorem{lem}[thm]{Lemma}
+
+\newcommand*{\refs}[1]{#1 & \autoref{#1label} & \ref{#1label}}
+
+\begin{document}
+
+%\part{Part Name}\label{partlabel}
+
+\chapter{Chapter Name}\label{chapterlabel}
+
+\section{Section Name}\label{sectionlabel}
+
+\subsection{Subsection Name}\label{subsectionlabel}
+
+\subsubsection{Subsubsection Name}\label{subsubsectionlabel}
+
+\section*{Other Section Name}\label{otherlabel}
+
+\begin{figure}[h]\caption{Figure caption}\label{figurelabel}
+The Figure
+\end{figure}
+
+\begin{table}[h]\caption{Table caption}\label{tablelabel}
+The Table
+\end{table}
+
+\begin{minipage}{\linewidth}
+\captionof{figure}{Captionoffigure caption}\label{captionoffigurelabel}
+\end{minipage}
+
+\begin{equation}\label{equationlabel}a+b\end{equation}
+
+\begin{enumerate}
+\item\label{itemlabel} First
+\item Second\footnote{\label{footnotelabel}footnote text}
+\end{enumerate}
+
+\begin{theorem}\label{theoremlabel} Another Theorem\end{theorem}
+
+\begin{thm}\label{thmlabel} Short Theorem\end{thm}
+\begin{cor}\label{corlabel} Short Corollary\end{cor}
+\begin{lem}\label{lemlabel} Short Lemma\end{lem}
+\begin{thm}\label{thm2label} Another Short Theorem\end{thm}
+
+\section{And thus}
+\begin{tabular}{lll}
+Thing & Autoref(Thing) & Ref(Thing) \\
+%\refs{part} \\
+\refs{chapter} \\
+\refs{section} \\
+\refs{subsection} \\
+\refs{subsubsection} \\
+\refs{figure} \\
+\refs{table} \\
+\refs{captionoffigure} \\
+\refs{equation} \\
+\refs{item} \\
+\refs{footnote} \\
+\refs{theorem}\\
+\refs{thm}\\
+\refs{cor}\\
+\refs{lem}\\
+\refs{thm2}\\
+\end{tabular}
+
+\end{document}

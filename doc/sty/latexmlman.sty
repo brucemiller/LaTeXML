@@ -167,19 +167,20 @@
 
 % \elementdef{name}{doc}{body}
 \newcommand{\elementdef}[3]{
-  \item[\textit{Element }%
-        \hypertarget{\cleanhypername{schema.element.#1}}{{\bfseries\schemafont #1}}%
+  \item[\textit{Element }{\bfseries\schemafont #1}]
+        \hspace{1em}
+        \hypertarget{\cleanhypername{schema.element.#1}}{}%
         \index{#1@{\schemafont #1}!element}%
-       ] \hspace{1em} #2
+        #2
     \ifx.#3.\else\begin{elementdescription}#3\end{elementdescription}\fi
 }
 
 % \attrdef{name}{doc}{content}
 \newcommand{\attrdef}[3]{
-  \item[\textit{Attribute }%
-        {\bfseries\schemafont #1}%
+  \item[\textit{Attribute }{\bfseries\schemafont #1}]
+         =\
         \index{#1@{\schemafont #1}!attribute}%
-        ] =\ #3\par\noindent #2
+        #3\par\noindent #2
 }
 
 \newif\if@elpattern\@elpatternfalse
@@ -192,11 +193,12 @@
 
 % \patterndef{name}{doc}{body}
 \newcommand{\patterndef}[3]{
-   \item[\textit{Pattern }%
-         \hypertarget{\cleanhypername{schema.pattern.#1}}{{\bfseries\patternfont #1}}%
-         \test@elpattern{#1}\if@elpattern\else
-             \index{#1@{\patternfont #1}!schema pattern}\fi
-        ] \hspace{1em} #2
+   \item[\textit{Pattern }{\bfseries\patternfont #1}]
+      \hspace{1em} 
+      \hypertarget{\cleanhypername{schema.pattern.#1}}{}%
+      \test@elpattern{#1}\if@elpattern\else
+         \index{#1@{\patternfont #1}!schema pattern}\fi
+      #2
     \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
 }
 
@@ -210,10 +212,11 @@
 }
 
 \newcommand{\patterndefadd}[3]{
-  \item[\textit{Add to }%
-       \hypertarget{\cleanhypername{schema.pattern.#1}}{{\bfseries\patternfont #1}}%
-       ] \hspace{1em} #2
-    \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
+  \item[\textit{Add to }{\bfseries\patternfont #1}]
+     \hspace{1em}
+     \hypertarget{\cleanhypername{schema.pattern.#1}}{}%
+      #2
+     \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
 }
 
 \newcommand{\moduleref}[1]{\htmlref{{\perlfont #1}}{\cleanhypername{schema.module.#1}}}

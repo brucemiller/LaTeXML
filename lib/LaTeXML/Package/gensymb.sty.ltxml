@@ -1,0 +1,39 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  gensymb                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#================================================================================
+DefMacroI('\degree',      undef, '\ifmmode\lx@math@degree\else\lx@text@degree\fi');
+DefMacroI('\celcius',     undef, '\ifmmode\lx@math@celcius\else\lx@text@celcius\fi');
+DefMacroI('\perthousand', undef, '\ifmmode\lx@math@perthou\else\lx@text@perthou\fi');
+DefMacroI('\ohm',         undef, '\ifmmode\lx@math@ohm\else\lx@text@ohm\fi');
+DefMacroI('\micro',       undef, '\ifmmode\lx@math@micro\else\lx@text@micro\fi');
+
+DefPrimitiveI('\lx@text@degree',  undef, UTF(0xB0),  bounded => 1, font => { encoding => 'TS1' });
+DefPrimitiveI('\lx@text@celcius', undef, "\x{2103}", bounded => 1, font => { encoding => 'TS1' });
+DefPrimitiveI('\lx@text@perthou', undef, "\x{2030}", bounded => 1, font => { encoding => 'TS1' });
+DefPrimitiveI('\lx@text@ohm',     undef, "\x{2126}", bounded => 1, font => { encoding => 'TS1' });
+DefPrimitiveI('\lx@text@micro',   undef, UTF(0xB5),  bounded => 1, font => { encoding => 'TS1' });
+
+DefMathI('\lx@math@degree',  undef, UTF(0xB0),  bounded => 1, font => { encoding => 'TS1' });
+DefMathI('\lx@math@celcius', undef, "\x{2103}", bounded => 1, font => { encoding => 'TS1' });
+DefMathI('\lx@math@perthou', undef, "\x{2030}", bounded => 1, font => { encoding => 'TS1' });
+DefMathI('\lx@math@ohm',     undef, "\x{2126}", bounded => 1, font => { encoding => 'TS1' });
+DefMathI('\lx@math@micro',   undef, UTF(0xB5),  bounded => 1, font => { encoding => 'TS1' });
+
+#================================================================================
+
+1;

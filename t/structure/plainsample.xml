@@ -1,0 +1,170 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <para>
+    <p class="ltx_align_center"><text fontsize="140%">An elementary proof of the reconstruction conjecture</text></p>
+  </para>
+  <para>
+    <break/>
+  </para>
+  <para>
+    <p class="ltx_align_center">D. Remifa<note mark="*" role="footnote">Thanks to
+the editors of this wonderful journal!</note></p>
+    <p class="ltx_align_center">Department of Inconsequential Studies</p>
+    <p class="ltx_align_center">Solatido College, North Kentucky, USA</p>
+    <p class="ltx_align_center"><text font="typewriter">remifa@dis.solatido.edu</text></p>
+  </para>
+  <para>
+    <break/>
+  </para>
+  <para>
+    <p class="ltx_align_center">Submitted: Jan 1, 2009; Accepted: Jan 2, 2009; Published: Jan 3, 2009</p>
+    <p class="ltx_align_center">Mathematics Subject Classifications: 05C88, 05C89</p>
+  </para>
+  <para>
+    <break/>
+  </para>
+  <para class="ltx_noindent">
+    <p class="ltx_align_center"><text font="bold">Abstract</text></p>
+    <p>The reconstruction conjecture states that the multiset of unlabeled
+vertex-deleted subgraphs of a graph determines the graph, provided it
+has at least 3 vertices. A version of the problem was first stated
+by Stanisław Ulam. In this paper, we show that the conjecture can
+be proved by elementary methods. It is only necessary to integrate
+the Lenkle potential of the Broglington manifold over the quantum
+supervacillatory measure in order to reduce the set of possible
+counterexamples to a small number (less than a trillion). A simple
+computer program that implements Pipletti’s classification theorem
+for torsion-free Aramaic groups with simplectic socles can then
+finish the remaining cases.</p>
+  </para>
+  <para>
+    <break/>
+  </para>
+  <section>
+    <title font="bold">1. Introduction.
+</title>
+    <para>
+      <p>This is the start of the introduction.</p>
+    </para>
+  </section>
+  <section>
+    <title font="bold">2. Equations
+</title>
+    <para>
+      <equation>
+        <Math mode="display" tex="a=b+c" text="a = b + c">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMTok font="italic" role="UNKNOWN">c</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+        <tags>
+          <tag><Math text="1 * [Draft]">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMDual>
+                    <XMRef idref="id1"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMTok meaning="1" role="NUMBER" xml:id="id1">1</XMTok>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                  <XMText width="0.0pt">Draft</XMText>
+                </XMApp>
+              </XMath>
+            </Math></tag>
+        </tags>
+      </equation>
+    </para>
+    <para>
+      <equation>
+        <Math mode="display" tex="a=b+c" text="a = b + c">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMTok font="italic" role="UNKNOWN">c</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+        <tags>
+          <tag><Math text="1">
+              <XMath>
+                <XMDual>
+                  <XMRef idref="id2"/>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok meaning="1" role="NUMBER" xml:id="id2">1</XMTok>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+              </XMath>
+            </Math></tag>
+        </tags>
+      </equation>
+    </para>
+    <para>
+      <equation>
+        <Math mode="display" tex="a=b+c" text="a = b + c">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMTok font="italic" role="UNKNOWN">c</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+        <tags>
+          <tag><Math text="1 ^ 2">
+              <XMath>
+                <XMDual>
+                  <XMRef idref="id3"/>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMApp xml:id="id3">
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                      <XMTok meaning="1" role="NUMBER">1</XMTok>
+                      <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+              </XMath>
+            </Math></tag>
+        </tags>
+      </equation>
+    </para>
+  </section>
+  <section>
+    <title font="bold">3. Theorems
+</title>
+    <theorem>
+      <title font="bold">1.2.3 A Theorem description</title>
+      <para>
+        <p><text font="slanted">The body, perhaps proof or whatever.</text></p>
+      </para>
+    </theorem>
+    <para>
+      <p>Now comes new material following the theorem, I would guess.</p>
+    </para>
+  </section>
+</document>

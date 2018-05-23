@@ -92,7 +92,9 @@ sub new {
     catcode => {}, mathcode => {}, sfcode => {}, lccode => {}, uccode => {}, delcode => {},
     undo => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
     stomach => $options{stomach}, model => $options{model} }, $class;
-  $$self{value}{VERBOSITY} = [0];
+  # Note that "100" is hardwired into TeX, The Program!!!
+  $$self{value}{MAX_ERRORS} = [100];
+  $$self{value}{VERBOSITY}  = [0];
   $options{catcodes} = 'standard' unless defined $options{catcodes};
   if ($options{catcodes} =~ /^(standard|style)/) {
     # Setup default catcodes.
@@ -241,7 +243,7 @@ sub valueInFrame {
   $frame = 0 unless defined $frame;
   my $p = 0;
   for (my $f = 0 ; $f < $frame ; $f++) {
-    $p += $$self{undo}[$f]{value}{$key}; }
+    $p += $$self{undo}[$f]{value}{$key} || 0; }
   return $$self{value}{$key}[$p]; }
 
 #======================================================================

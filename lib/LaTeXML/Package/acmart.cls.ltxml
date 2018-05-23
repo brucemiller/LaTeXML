@@ -1,0 +1,221 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | acmart.cls                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+LoadClass('amsart', withoptions => 1);
+RequirePackage('fancyhdr');
+RequirePackage('geometry');
+RequirePackage('comment');
+RequirePackage('natbib');
+RequirePackage('textcomp');
+RequirePackage('graphicx');
+RequirePackage('xcolor');
+#RequirePackage('totpages');
+RequirePackage('microtype');
+RequirePackage('hyperref');
+RequirePackage('caption');
+RequirePackage('float');
+#RequirePackage('environ');
+#RequirePackage('zi4');
+RequirePackage('setspace');
+RequirePackage('newtxmath');
+#RequirePackage('manyfoot');
+# RequirePackage('libertine');
+
+#======================================================================
+# Various bits of frontmatter
+DefMacro('\copyrightyear{}',       '\@add@frontmatter{ltx:date}[role=copyright]{#1}');
+DefMacro('\setcopyright{}',        '\@add@frontmatter{ltx:note}[role=copyright]{#1}');
+DefMacro('\received[]{}',          '\@add@frontmatter{ltx:date}[role=received]{#2}');
+DefMacro('\acmJournal{}',          '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\acmConference[]{}{}{}', '\@add@frontmatter{ltx:note}[role=conference]{#2; #3; #4}');
+DefMacro('\acmBooktitle{}',        '\@add@frontmatter{ltx:note}[role=booktitle]{#1}');
+DefMacro('\acmArticle{}',          '\@add@frontmatter{ltx:note}[role=article]{#1}');
+DefMacro('\acmArticleSeq{}',       '\@add@frontmatter{ltx:note}[role=articleseq]{#1}');
+DefMacro('\acmDOI{}',              '\@add@frontmatter{ltx:note}[role=doi]{#1}');
+DefMacro('\acmISBN{}',             '\@add@frontmatter{ltx:note}[role=isbn]{#1}');
+DefMacro('\acmMonth{}',            '\@add@frontmatter{ltx:note}[role=publicationmonth]{#1}');
+DefMacro('\acmNumber{}',           '\@add@frontmatter{ltx:note}[role=journalnumber]{#1}');
+DefMacro('\acmPrice{}',            '\@add@frontmatter{ltx:note}[role=price]{#1}');
+DefMacro('\acmVolume{}',           '\@add@frontmatter{ltx:note}[role=journalvolume]{#1}');
+DefMacro('\acmYear{}',             '\@add@frontmatter{ltx:note}[role=journalyear]{#1}');
+DefMacro('\editor{}',              '\@add@frontmatter{ltx:creator}[role=editor]{\@personname{#1}}');
+DefMacro('\subtitle{}',            '\@add@frontmatter{ltx:subtitle}{#1}');
+DefMacro('\keywords{}',            '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\terms{}',               '\@add@frontmatter{ltx:keywords}{#1}');
+
+# Use multiple style, repeating \author, \orcid, \affiliation, \email as needed.
+DefConstructor('\@@@orcid{}', "^ <ltx:contact role='orcid'>#1</ltx:contact>");
+DefMacro('\orcid{}', '\@add@to@frontmatter{ltx:creator}{\@@@orcid{#1}}');
+DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='additional_affiliation'>#1</ltx:contact>");
+DefMacro('\additionalaffiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@addaffiliation{#1}}');
+DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
+DefMacro('\email [] Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#2}}');
+
+# Internal structure to affiliation
+DefConstructor('\position{}',
+  "<ltx:text class='ltx_affiliation_position' _noautoclose='1'>#1</ltx:text>");
+DefConstructor('\institution{}',
+  "<ltx:text class='ltx_affiliation_institution' _noautoclose='1'>#1</ltx:text>");
+DefConstructor('\department{}',
+  "<ltx:text class='ltx_affiliation_department' _noautoclose='1'>#1</ltx:text>");
+DefConstructor('\streetaddress{}',
+  "<ltx:text class='ltx_affiliation_streetaddress' _noautoclose='1'>#1</ltx:text>");
+DefConstructor('\city{}',
+  "<ltx:text class='ltx_affiliation_city' _noautoclose='1'>#1</ltx:text>");
+DefConstructor('\state{}',
+  "<ltx:text class='ltx_affiliation_state' _noautoclose='1'>#1</ltx:text>");
+DefConstructor('\postcode{}',
+  "<ltx:text class='ltx_affiliation_postcode' _noautoclose='1'>#1</ltx:text>");
+DefConstructor('\country{}',
+  "<ltx:text class='ltx_affiliation_country' _noautoclose='1'>#1</ltx:text>");
+
+# Ignorable stuff ?
+DefMacro('\shortauthors{}',                  '');
+DefMacro('\titlenote{}',                     '');
+DefMacro('\subtitlenote{}',                  '');
+DefMacro('\authornote{}',                    '');
+DefMacro('\authornotemark[]',                '');
+DefMacro('\authorsaddresses{}',              '');
+DefMacro('\startPage',                       '');
+DefMacro('\settopmatter{}',                  '');
+DefMacro('\copyrightpermissionfootnoterule', '');
+
+DefMacro('\acmBadgeL', Tokens());
+# DefMacro('\acmBadgeR',Tokens());
+
+# basically use natbib
+Let('\citeN',      '\cite');
+Let('\cite',       '\citep');
+Let('\citeANP',    '\citeauthor');
+Let('\citeNN',     '\citeyearpar');
+Let('\citeyearNP', '\citeyear');
+Let('\citeyear',   '\citeyearpar');
+Let('\citeNP',     '\citealt');
+DefMacro('\shortcite{}', '\citeyear{#1}');
+
+# ??
+Let('\citeA', '\citeauthor');
+
+DefRegister('\fulltextwidth', Dimension(0));
+
+DefEnvironment('{printonly}',    '');
+DefEnvironment('{screenonly}',   '#body');
+DefEnvironment('{anonsuppress}', '');
+
+DefMacro('\ccsdesc[]{}', '\@add@frontmatter{ltx:note}[role=ccs]{#2}');
+# Could embed this as XML in some namespace, or....
+# For now, just skip it.
+# DefEnvironment('{CCSXML}','#body');
+RequirePackage('comment');
+defineExcluded(undef, 'CCSXML');
+
+DefMacro('\acknowledgmentsname', 'Acknowledgements');
+DefConstructor('\acks', "<ltx:acknowledgements name='#name'>",
+  properties => sub { (name => Digest(T_CS('\acknowledgmentsname'))); });
+DefConstructor('\endacks', "</ltx:acknowledgements>");
+DefMacro('\grantsponsor Semiverbatim {} Semiverbatim',     "Sponsor #2 \url{#3}");
+DefMacro('\grantnum OptionalSemiverbatim Semiverbatim {}', "Grant \##3");
+
+DefEnvironment('{teaserfigure}[]',
+  "<ltx:figure xml:id='#id' inlist='#inlist' class='ltx_teaserfigure' ?#1(placement='#1')>"
+    . "#tags"
+    . "#body"
+    . "</ltx:figure>",
+  properties => { layout => 'vertical' },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
+  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
+
+DefEnvironment('{marginfigure}[]',
+  "<ltx:figure xml:id='#id' inlist='#inlist' class='ltx_marginfigure' ?#1(placement='#1')>"
+    . "#tags"
+    . "#body"
+    . "</ltx:figure>",
+  properties => { layout => 'vertical' },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
+  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
+
+DefEnvironment('{margintable}[]',
+  "<ltx:table xml:id='#id' inlist='#inlist' class='ltx_margintable' ?#1(placement='#1')>"
+    . "#tags"
+    . "#body"
+    . "</ltx:table>",
+  properties => { layout => 'vertical' },
+  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
+  afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
+
+DefMacroI('\sidebarname',  undef, 'Sidebar');
+DefMacroI('\fnum@sidebar', undef, '\sidebarname\nobreakspace\thesidebar');
+DefMacro('\format@title@sidebar{}', '\lx@tag{\fnum@sidebar: }#1');
+
+DefEnvironment('{sidebar}{} Undigested [] {}',
+  "<ltx:sidebar labels='#label' xml:id='#id'>"
+    #    . "#tags"
+    #    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
+    #    . "<ltx:creator role='author'><ltx:personname href='#bio'>#4</ltx:personname></ltx:creator>"
+    . "#body"
+    . "</ltx:sidebar>");
+
+RawTeX(<<'EoTeX');
+\def\@acmplainbodyfont{\itshape}
+\def\@acmplainindent{\parindent}
+\def\@acmplainheadfont{\scshape}
+\def\@acmplainnotefont{\@empty}
+\newtheoremstyle{acmplain}%
+  {.5\baselineskip\@plus.2\baselineskip
+    \@minus.2\baselineskip}% space above
+  {.5\baselineskip\@plus.2\baselineskip
+    \@minus.2\baselineskip}% space below
+  {\@acmplainbodyfont}% body font
+  {\@acmplainindent}% indent amount
+  {\@acmplainheadfont}% head font
+  {.}% punctuation after head
+  {.5em}% spacing after head
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ {\@acmplainnotefont(#3)}}}% head spec
+\def\@acmdefinitionbodyfont{\normalfont}
+\def\@acmdefinitionindent{\parindent}
+\def\@acmdefinitionheadfont{\itshape}
+\def\@acmdefinitionnotefont{\@empty}
+\newtheoremstyle{acmdefinition}%
+  {.5\baselineskip\@plus.2\baselineskip
+    \@minus.2\baselineskip}% space above
+  {.5\baselineskip\@plus.2\baselineskip
+    \@minus.2\baselineskip}% space below
+  {\@acmdefinitionbodyfont}% body font
+  {\@acmdefinitionindent}% indent amount
+  {\@acmdefinitionheadfont}% head font
+  {.}% punctuation after head
+  {.5em}% spacing after head
+  {\thmname{#1}\thmnumber{ #2}\thmnote{ {\@acmdefinitionnotefont(#3)}}}% head spec
+\theoremstyle{acmplain}
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\theoremstyle{acmdefinition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{definition}[theorem]{Definition}
+\theoremstyle{acmplain}
+EoTeX
+Let('\proof',    '\@proof');
+Let('\endproof', '\end@proof');
+
+#======================================================================
+1;

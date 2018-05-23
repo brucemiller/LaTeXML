@@ -4,7 +4,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Font Encoding OT1/Roman Family</title>
     <para xml:id="S1.p1">
       <tabular class="ltx_guessed_headers" vattach="middle">
@@ -200,7 +205,12 @@
       </tabular>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Font Encoding OT1/Typewriter Family</title>
     <para xml:id="S2.p1">
       <tabular class="ltx_guessed_headers" vattach="middle">
@@ -269,7 +279,7 @@
             <td align="center"><text font="typewriter">$</text></td>
             <td align="center"><text font="typewriter">%</text></td>
             <td align="center"><text font="typewriter">&amp;</text></td>
-            <td align="center"><text font="typewriter">'</text></td>
+            <td align="center"><text font="typewriter">’</text></td>
           </tr>
           <tr>
             <td align="right" border="r" thead="row">´5x</td>
@@ -350,7 +360,7 @@
           </tr>
           <tr>
             <td align="right" border="r" thead="row">´14x</td>
-            <td align="center"><text font="typewriter">`</text></td>
+            <td align="center"><text font="typewriter">‘</text></td>
             <td align="center"><text font="typewriter">a</text></td>
             <td align="center"><text font="typewriter">b</text></td>
             <td align="center"><text font="typewriter">c</text></td>

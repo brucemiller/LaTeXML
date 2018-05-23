@@ -175,15 +175,18 @@ DefParameterType('Arrows', \&ReadArrows,
     $number = Float(0) unless $number;
     my $starred = ($pre =~ /\*/); my $value;
     if (ref $number) {
-      $number = $number->multiply(360 / LookupValue('\degrees')->valueOf);
+      my $degrees = LookupValue('\degrees');
+      my $degrees_value = $degrees ? $degrees->valueOf : 1;
+      $number = $number->multiply(360 / $degrees_value);
       $value  = $number; }
     else {
       $starred = ($number =~ /N|W|S|E/) || $starred;
       $value   = $angleVals{$number}    || 0;
       $value   = Float($value); }
     if ($starred) {
-      $value = $value->subtract(Float(LookupValue('_psActiveSRotation')));
-      LaTeXML::Package::Pool::t_undoSRotation(); }
+      if (my $active_rotation = LookupValue('_psActiveSRotation')) {
+        $value = $value->subtract(Float($active_rotation));
+        LaTeXML::Package::Pool::t_undoSRotation(); } }
     return bless [$value, $number, $pre], $class; }
 
   sub starred {

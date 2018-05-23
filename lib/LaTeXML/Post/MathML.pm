@@ -459,6 +459,9 @@ sub pmml_internal {
       my %styleattr = %{ ($style && ($needsmathstyle
             ? $stylemap{$ostyle}{$style}
             : $stylemap2{$ostyle}{$style})) || {} };
+      # And also check for stray attributes that maybe aren't really style, like href?
+      if (my $href = $node->getAttribute('href')) {
+        $styleattr{href} = $href; }
       $result = ['m:mstyle', {%styleattr}, $result] if keys %styleattr;
       return $result; } }
   elsif ($tag eq 'ltx:XMTok') {
@@ -647,7 +650,7 @@ sub pmml_infix {
     my $arg1 = realize(shift(@args));
     if (($role eq 'ADDOP')
       && (getQName($arg1) eq 'ltx:XMApp')
-      && (getOperatorRole((element_nodes($arg1))[0]) eq $role)) {
+      && ((getOperatorRole((element_nodes($arg1))[0]) || 'none') eq $role)) {
       push(@items, pmml_unrow(pmml($arg1))); }
     else {
       push(@items, pmml($arg1)); }
@@ -813,6 +816,8 @@ sub stylizeContent {
     if (!grep { !defined $_ } @c) {    # Only if ALL chars in the token could be mapped... ?????
       $text = join('', @c);
       $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef); } }
+  # Other attributes that should be copied?
+  my $href = ($iselement ? $item->getAttribute('href') : $attr{href});
   return ($text,
     ($variant ? (mathvariant => $variant) : ()),
     ($size ? ($stretchyhack
@@ -823,7 +828,8 @@ sub stylizeContent {
     ($bgcolor  ? (mathbackground => $bgcolor)           : ()),
     ($opacity  ? (style          => "opacity:$opacity") : ()),    # ???
     ($stretchy ? (stretchy       => $stretchy)          : ()),
-    ($class    ? (class          => $class)             : ())
+    ($class    ? (class          => $class)             : ()),
+    ($href     ? (href           => $href)              : ()),
     ); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
@@ -1243,7 +1249,13 @@ sub cmml_shared {
 # Given an XMath node, convert to cmml share form
 sub cmml_share {
   my ($node) = @_;
-  return ['m:share', { href => '#' . $node->getAttribute('fragid') . $LaTeXML::Post::MATHPROCESSOR->IDSuffix }]; }
+  my $fragid = $node->getAttribute('fragid');
+  if ($fragid) {
+    return ['m:share', { href => '#' . $fragid . $LaTeXML::Post::MATHPROCESSOR->IDSuffix }]; }
+  else {    # No fragid should be error/warning or something???
+    Warn('expected', 'fragid', $node,
+      "Shared node is missing fragid");
+    return ['m:share']; } }
 
 sub cmml_or_compose {
   my ($operators, @args) = @_;
@@ -1341,7 +1353,7 @@ DefMathML('Apply:?:?', sub {
     my ($op, @args) = @_;
     return ['m:apply', {}, cmml($op), map { cmml($_) } @args]; });
 DefMathML('Apply:COMPOSEOP:?', \&pmml_infix, undef);
-DefMathML("Token:DIFFOP:?",    \&pmml_mo,    undef);
+DefMathML("Token:DIFFOP:?", sub { pmml_mo($_[0], rpadding => '-2.5pt'); }, undef);
 DefMathML("Apply:DIFFOP:?", sub {
     my ($op, @args) = @_;
     return ['m:mrow', {}, map { pmml($_) } $op, @args]; },

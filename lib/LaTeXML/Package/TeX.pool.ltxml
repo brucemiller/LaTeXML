@@ -361,13 +361,16 @@ DefParameterType('TeXFileName', sub {
 # A LaTeX style directory List
 DefParameterType('DirectoryList', sub {
     my ($gullet) = @_;
+    $gullet->skipSpaces;
     if ($gullet->ifNext(T_BEGIN)) {
       $gullet->readToken;
       my @dirs = ();
+      $gullet->skipSpaces;
       while ($gullet->ifNext(T_BEGIN)) {
         # Should these be Semiverbatim ??
         push(@dirs, $gullet->readArg);
         $gullet->readMatch(T_OTHER(',')); }
+      $gullet->skipSpaces;
       if ($gullet->ifNext(T_END)) {
         $gullet->readToken; }
       else {
@@ -887,13 +890,25 @@ DefMacro('\input TeXFileName', sub { Input($_[1]); });
 
 # Note that TeX doesn't actually close the mouth;
 # it just flushes it so that it will close the next time it's read!
-DefMacroI('\endinput', undef, sub { $_[0]->flushMouth; return; });
+DefMacroI('\endinput', undef, sub {
+    my ($gullet) = @_;
+    my $mouth = $gullet->getMouth;
+    my $line;
+    if (!$mouth->isEOL) {
+      $line = $gullet->readRawLine; }
+    $gullet->flushMouth;
+    if ($line) {
+      $gullet->unread(Tokenize($line)); }
+    return;
+});
 
 # \the<internal quantity>
 DefMacro('\the Register', sub {
     my ($gullet, $variable) = @_;
     return () unless $variable;
     my ($defn, @args) = @$variable;
+    if (!$defn || $defn eq 'missing') {
+      Error('expected', "<register>", $gullet, "a register was expected to be here"); return (); }
     my $type = $defn->isRegister;
     if (!$type) {
       my $cs = ToString($defn->getCS);
@@ -1403,32 +1418,32 @@ DefRegister('\lastkern' => Dimension(0), readonly => 1);
 DefRegister('\ht Number', Dimension(0),
   getter => sub {
     my ($n) = @_;
-    my $stuff = LookupValue('box' . $n->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     return ($stuff ? $stuff->getHeight : Dimension(0)); },
   setter => sub {
     my ($value, $n) = @_;
-    my $stuff = LookupValue('box' . $n->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     $stuff->setHeight($value) if $stuff;
     return; });
 DefRegister('\wd Number', Dimension(0),
   getter => sub {
     my ($n) = @_;
-    my $stuff = LookupValue('box' . $n->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     return ($stuff ? $stuff->getWidth : Dimension(0)); },
   setter => sub {
     my ($value, $n) = @_;
-    my $stuff = LookupValue('box' . $n->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     $stuff->setWidth($value) if $stuff;
     return; });
 
 DefRegister('\dp Number', Dimension(0),
   getter => sub {
     my ($n) = @_;
-    my $stuff = LookupValue('box' . $_[0]->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     return ($stuff ? $stuff->getDepth : Dimension(0)); },
   setter => sub {
     my ($value, $n) = @_;
-    my $stuff = LookupValue('box' . $n->valueOf);
+    my $stuff = $n && LookupValue('box' . $n->valueOf);
     $stuff->setDepth($value) if $stuff;
     return; });
 
@@ -1546,7 +1561,7 @@ DeclareFontMap('OT1',
     "\x{03A6}", "\x{03A8}", "\x{03A9}", "\x{2191}", "\x{2193}", "'", UTF(0xA1), UTF(0xBF),
     "\x{0131}", "\x{0237}", UTF(0x60), UTF(0xB4), "\x{02C7}", "\x{02D8}", UTF(0xAF), "\x{02DA}",
     UTF(0xB8), UTF(0xDF), UTF(0xE6), "\x{0153}", UTF(0xF8), UTF(0xC6), "\x{152}", UTF(0xD8),
-    "\x{2423}", '!', "\"", '#', '$',  '%', '&', "'",
+    "\x{2423}", '!', "\"", '#', '$',  '%', '&', "\x{2019}",
     '(',        ')', '*',  '+', ',',  '-', '.', '/',
     '0',        '1', '2',  '3', '4',  '5', '6', '7',
     '8',        '9', ':',  ';', "<",  '=', ">", '?',
@@ -1554,7 +1569,7 @@ DeclareFontMap('OT1',
     'H',        'I', 'J',  'K', 'L',  'M', 'N', 'O',
     'P',        'Q', 'R',  'S', 'T',  'U', 'V', 'W',
     'X',        'Y', 'Z',  '[', "\\", ']', "^", "_",
-    "`",        'a', 'b',  'c', 'd',  'e', 'f', 'g',
+    "\x{2018}", 'a', 'b',  'c', 'd',  'e', 'f', 'g',
     'h',        'i', 'j',  'k', 'l',  'm', 'n', 'o',
     'p',        'q', 'r',  's', 't',  'u', 'v', 'w',
     'x',        'y', 'z',  "{", "|",  "}", "~", UTF(0xA8)],
@@ -2076,6 +2091,16 @@ DefPrimitive('\showthe Token',  undef);
 # DefPrimitive('\shipout ??
 DefPrimitive('\ignorespaces SkipSpaces', undef);
 
+DefPrimitiveI('\lx@ignorehardspaces', undef, sub {
+    my ($stomach) = @_;
+    my $gullet = $stomach->getGullet;
+    my ($token, @boxes);
+    while (($token = $gullet->readXToken) && (@boxes = $stomach->invokeToken($token))) {
+      while (@boxes && $boxes[0]->getProperty('isSpace')) {
+        pop(@boxes); }
+      last if @boxes; }
+    return @boxes; });
+
 # \afterassignment saves ONE token (globally!) to execute after the next assignment
 DefPrimitive('\afterassignment Token', sub { AssignValue(afterAssignment => $_[1], 'global'); });
 # \aftergroup saves ALL tokens (from repeated calls) to be executed IN ORDER after the next egroup or }
@@ -2092,13 +2117,16 @@ sub lcToken {
   my $code = $STATE->lookupLCcode($token->getString);
   return ((defined $code) && ($code != 0) ? Token(chr($code), $token->getCatcode) : $token); }
 
-DefMacro('\uppercase GeneralText', sub {
-    my ($gullet, $tokens) = @_;
-    return map { ucToken($_) } $tokens->unlist; });
+# Note that these are NOT expandable, even though the "return" tokens!
+DefPrimitive('\uppercase GeneralText', sub {
+    my ($stomach, $tokens) = @_;
+    $stomach->getGullet->unread(map { ucToken($_) } $tokens->unlist);
+    return; });
 
-DefMacro('\lowercase GeneralText', sub {
-    my ($gullet, $tokens) = @_;
-    return map { lcToken($_) } $tokens->unlist; });
+DefPrimitive('\lowercase GeneralText', sub {
+    my ($stomach, $tokens) = @_;
+    $stomach->getGullet->unread(map { lcToken($_) } $tokens->unlist);
+    return; });
 
 DefPrimitive('\message{}', sub {
     my ($stomach, $stuff) = @_;
@@ -2186,7 +2214,7 @@ DefPrimitive('\write Number {}', sub {
       my $contents = LookupValue($handle);
       AssignValue($handle => $contents . UnTeX($tokens) . "\n", 'global'); }
     else {
-      print STDERR UnTeX($tokens) . "\n"; }
+      print STDERR UnTeX(Expand($tokens)) . "\n"; }
     return; });
 
 # Since we don't paginate, we're effectively always "shipping out",
@@ -2606,9 +2634,10 @@ DefConstructor('\@open@alignment SkipSpaces DigestedBody',
   beforeDigest => sub { $_[0]->bgroup; },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
-    my $alignment = LookupValue('Alignment');
-    $whatsit->setProperty(alignment => $alignment);
-    $alignment->setBody($whatsit); });
+    if (my $alignment = LookupValue('Alignment')) {
+      $whatsit->setProperty(alignment => $alignment);
+      $alignment->setBody($whatsit); }
+    return; });
 
 #----------------------------------------------------------------------
 # Row; The content is stuffed into the Alignment, so we don't construct anything here.
@@ -3135,10 +3164,11 @@ DefConstructorI('\@@BEGINDISPLAYMATH', undef,
     . "</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  alias        => '$$',
+  reversion => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->beginMode('display_math'); },
-  captureBody  => 1);
-DefConstructorI('\@@ENDDISPLAYMATH', undef, "", alias => '$$',
+  captureBody => 1);
+DefConstructorI('\@@ENDDISPLAYMATH', undef, "",
+  reversion => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->endMode('display_math'); });
 
 DefConstructorI('\@@BEGININLINEMATH', undef,
@@ -3147,8 +3177,10 @@ DefConstructorI('\@@BEGININLINEMATH', undef,
     . "#body"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  alias => '$', beforeDigest => sub { $_[0]->beginMode('inline_math'); }, captureBody => 1);
-DefConstructorI('\@@ENDINLINEMATH', undef, "", alias => '$',
+  reversion => Tokens(T_MATH),
+  beforeDigest => sub { $_[0]->beginMode('inline_math'); }, captureBody => 1);
+DefConstructorI('\@@ENDINLINEMATH', undef, "",
+  reversion => Tokens(T_MATH),
   beforeDigest => sub { $_[0]->endMode('inline_math'); });
 
 # Add the TeX code from the object that created this node,
@@ -3405,7 +3437,7 @@ sub addColumnToMathFork {
         $box = $document->getNodeBox($node)->getBody; } }
     # The next two cases are unusual (slightly unexpected?),
     # typically coming from abused eqnarrays?  May need more analysis preceding the MathFork'ing!
-    elsif ($type eq 'ltx:text') {
+    elsif (($type eq 'ltx:text') || ($type eq 'ltx:p')) {
       next if $node->textContent eq '';
       my $txt = $document->openElementAt($document->getFirstChildElement($main), 'ltx:XMText');
       $document->appendClone($txt, $node);
@@ -3466,23 +3498,19 @@ sub equationgroupJoinRows {
   my $equation = $document->openElementAt($equationgroup, 'ltx:equation');
   $equationgroup->insertBefore($equation, $equations[0]);    # Move to correct position.
                                                              # move labels, id, refnum to new equation
-  my ($labels, $id, $refnum, $frefnum, $rrefnum, $idctr);
+  my ($labels, $id, $idctr, $tags);
   foreach my $eq (@equations) {
     if (my $l = $eq->getAttribute('labels')) {
       $labels = ($labels ? "$labels $l" : $l); }
     $id = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
     $eq->removeAttribute('xml:id') if $id;
-    $refnum  = $eq->getAttribute('refnum')         if $eq->hasAttribute('refnum');
-    $frefnum = $eq->getAttribute('frefnum')        if $eq->hasAttribute('frefnum');
-    $rrefnum = $eq->getAttribute('rrefnum')        if $eq->hasAttribute('rrefnum');
-    $idctr   = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_'); }
+    $tags = $document->findnode('ltx:tags', $eq);
+    $idctr = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_'); }
   $document->unRecordID($id) if $id;
-  $document->setAttribute($equation, labels           => $labels)  if $labels;
-  $document->setAttribute($equation, 'xml:id'         => $id)      if $id;
-  $document->setAttribute($equation, refnum           => $refnum)  if $refnum;
-  $document->setAttribute($equation, frefnum          => $frefnum) if $frefnum;
-  $document->setAttribute($equation, rrefnum          => $rrefnum) if $rrefnum;
-  $document->setAttribute($equation, '_ID_counter_m_' => $idctr)   if $idctr;
+  $document->setAttribute($equation, labels           => $labels) if $labels;
+  $document->setAttribute($equation, 'xml:id'         => $id)     if $id;
+  $document->setAttribute($equation, '_ID_counter_m_' => $idctr)  if $idctr;
+  $equation->appendChild($tags) if $tags;
 
   # Scan equations to see which ones likely are continuations of previous
   my ($main, $branch) = openMathFork($document, $equation);
@@ -3529,11 +3557,12 @@ Let('\vcenter', '\vbox');
 # Even a \begin{array} ends up expanding into a $ !!!
 DefMacroI('\eqno', undef, sub {
     my ($gullet) = @_;
-    my @stuff = ();
+    my $locator  = $gullet->getLocator;
+    my @stuff    = ();
     # This is risky!!!
     while (my $t = $gullet->readXToken(0)) {
-      if (!defined $t) {
-        Fatal('unexpected', '\eqno', $gullet, "Fell of the end reading tag for \\eqno!"); }
+      if (Equals($t, T_BEGIN)) {
+        push(@stuff, $t, $gullet->readBalanced->unlist, T_END); }
       # What do I need to explicitly list here!?!?!? UGGH!
       elsif (Equals($t, T_MATH) || Equals($t, T_CS('\]'))
         || Equals($t, T_CS('\begingroup'))    # Totally wrong, but to catch expanded environments
@@ -3544,18 +3573,16 @@ DefMacroI('\eqno', undef, sub {
         #       || Equals($t,T_CS('\end{equation}'))|| Equals($t,T_CS('\end{equation*}'))){
         return (Invocation(T_CS('\@@eqno'), Tokens(@stuff)), $t); }
       else {
-        push(@stuff, $t); } } });
+        push(@stuff, $t); } }
+    Error('unexpected', '\eqno', $gullet, "Fell of the end reading tag for \\eqno!",
+      "started $locator");
+    return Tokens(@stuff); });
 
 Let('\leqno', '\eqno');
 # Revert to nothing, since it really doesn't belong in the TeX string(?)
-DefConstructor('\@@eqno{}', "^ refnum='#eqnum'",
-  reversion => '',
-  afterDigest => sub { my $num = ToString($_[1]->getArg(1));
-    # special purpose cleanup!?!?!
-    $num =~ s/^\\hbox\{(.*)\}$/$1/;
-    $num =~ s/^\{(.*)\}$/$1/;
-    $num =~ s/^\((.*)\)$/$1/;
-    $_[1]->setProperties(eqnum => $num); });
+DefConstructor('\@@eqno{}',
+  "^ <ltx:tags><ltx:tag><ltx:Math><ltx:XMath>#1</ltx:XMath></ltx:Math></ltx:tag></ltx:tags>",
+  reversion => '');
 
 #======================================================================
 # Scripts are a bit of a strange beast, with respect to when the arguments
@@ -4239,6 +4266,20 @@ RawTeX(<<'EoTeX');
   \dimendef\dimen@=0
   \dimendef\dimen@i=1
   \dimendef\dimen@ii=2
+\count10=22 % allocates \count registers 23, 24, ...
+\count11=9 % allocates \dimen registers 10, 11, ...
+\count12=9 % allocates \skip registers 10, 11, ...
+\count13=9 % allocates \muskip registers 10, 11, ...
+\count14=9 % allocates \box registers 10, 11, ...
+\count15=9 % allocates \toks registers 10, 11, ...
+\count16=-1 % allocates input streams 0, 1, ...
+\count17=-1 % allocates output streams 0, 1, ...
+\count18=3 % allocates math families 4, 5, ...
+\count19=0 % allocates \language codes 1, 2, ...
+\count20=255 % allocates insertions 254, 253, ...
+\countdef\insc@unt=20
+\countdef\allocationnumber=21
+\countdef\m@ne=22 \m@ne=-1
 EoTeX
 # Various \count's are set; should we?
 
@@ -4498,7 +4539,9 @@ DefPrimitiveI('\nobreak',    undef, undef);
 DefPrimitiveI('\allowbreak', undef, undef);
 DefMacroI('\nobreakspace', undef, '\ifmmode\math@nobreakspace\else\text@nobreakspace\fi');
 
-DefPrimitiveI('\text@nobreakspace', undef, UTF(0xA0), alias => '~');
+DefPrimitiveI('\text@nobreakspace', undef, sub {
+    return Box(UTF(0xA0), undef, undef, T_CS('~'), isSpace => 1); });
+
 DefConstructorI('\math@nobreakspace', undef,
   "<ltx:XMHint name='nobreakspace' width='#width'/>",
   properties => { isSpace => 1, width => sub { Dimension('0.333em'); } },
@@ -4676,12 +4719,17 @@ Tag('ltx:document', 'afterOpen:late' => sub {
     if (my $classes = join(' ', LookupMappingKeys('DOCUMENT_CLASSES'))) {
       $document->addClass($root, $classes); } });
 
-DefConstructor('\beginsection Until:\par',
+# If folks start using plain TeX macros, and never load LaTeX.pool,
+# they might benefit from a ltx-plain.css?
+DefMacro('\beginsection Until:\par', '\@beginsection{{\bf #1}}');
+DefConstructor('\@beginsection {}',
   "<ltx:section><ltx:title>#1</ltx:title>");
 
 # POSSIBLY #1 is a name or reference number and  #2 is the theoremm TITLE
 #  If so, how do know when the theorem ends?
-DefConstructorI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\par')),
+DefMacroI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\par')),
+  '\@proclaim{{\bf #1}}{{\sl #2}}');
+DefConstructor('\@proclaim{}{}',
   "<ltx:theorem>"
     . "<ltx:title font='#titlefont' _force_font='true' >#title</ltx:title>"
     . "#2"
@@ -4691,46 +4739,155 @@ DefConstructorI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\pa
     (title => $title, titlefont => $title->getFont); });
 
 #======================================================================
-# Support for reference numbers, references to reference numbers, etc.
+# Tags & Titles
+# The reference numbers, titles, captions etc, for various objects have
+# different styling conventions, and the styling various depending on context.
+# We'll use ltx:tags as a container for the various forms of ltx:tag with different @role's.
+# The role=refnum form is simply formatted by \the<counter> and used by \ref;
+# An ltx:tag w/o @role are for the numbers, often formatted differently, which
+# appear alongside the object; Such a tag also may be embedded within the title or caption.
+# Cross-references automatically generated by LaTeXML benefit from a bit more context:
+# these are the role=typerefnum forms.
+# Additional forms are needed for bibliographies, hyperref's autoref, etc.
+# An additional complication is that while the "type" determines the formatting
+# of the various forms, some types (eg. theorems) share the same counter.
+# LaTeX defines this handling on an adhoc basis; defines \fnum@table, \fnum@figure for some types
+# but \labelenumi, etc for others.
+
+# This section synthesizes a more uniform support for reference numbers,
+# references to reference numbers, title formatting etc.
+# It allows you to customize each of the forms for each type encountered.
 # The design reflects LaTeX needs, more than TeX, but support starts here!
 
-# The lowest level reference number for an object is typically \the<counter>
-# for whatever counter is keeping track of the object.
-# This will typically go into the refnum attribute.
-# However, the way that number is displayed as part of the object,
-# as well as the way that number is shown when the object is referenced,
-# can be different from that plain refnum.
+# This collects up the various declared ltx:tag's into an ltx:tags
+DefMacro('\lx@make@tags {}', sub {
+    my ($gullet, $type) = @_;
+    my @tags       = ();
+    my $formatters = LookupValue('type_tag_formatter');
+    foreach my $role (sort keys %{$formatters}) {
+      my $formatter = $$formatters{$role};
+      push(@tags, Invocation(T_CS('\lx@tag@intags'), T_OTHER($role),
+          Invocation($formatter, $type))); }
+    return (T_CS('\lx@tags'), T_BEGIN, @tags, T_END); });
 
-# \lx@fnum@@{type}  Gets the formatted form of the refnum
-# LaTeX defines \fnum@table, \fnum@figure for some types
-# but \labelenumi, etc for others; we'll bind the latter to \fnum@enumi for simplicity.
-# Otherwise, we'll construct a formatted number using a name prefix and the number.
-# This allows for localization by defining eg. \tablename
+# Remove the last closed node, if it's empty.
+sub removeEmptyElement {
+  my ($document, $whatsit) = @_;
+  my $node = $document->getNode->lastChild;    # This should be the wrapper just added.
+  if (!$node->childNodes) {
+    $document->removeNode($node); }
+  return; }
+
+# \lx@tag[open][close]{stuff}
+DefConstructor('\lx@tag[][][]{}',
+  "<ltx:tag open='#1' close='#2'>#4</ltx:tag>",
+  bounded => 1, mode => 'text',
+  afterConstruct => \&removeEmptyElement);
+
+# \lx@tag@intags{role}{stuff}
+DefConstructor('\lx@tag@intags[]{}',
+  "<ltx:tag role='#1'>#2</ltx:tag>",
+  bounded => 1, mode => 'text',
+  afterConstruct => \&removeEmptyElement);
+
+DefConstructor('\lx@tags{}',
+  "<ltx:tags>#1</ltx:tags>",
+  afterConstruct => \&removeEmptyElement);
+
+#----------------------------------------------------------------------
+# "refnum" is the lowest level reference number for an object is typically \the<counter>
+# but be sure to use the right counter!  This is how \ref will show the number.
+# You'll typically customize this by defining \the<counter> (and \p@<counter) as in LaTeX.
+DefMacro('\lx@counterfor{}', sub {
+    my ($gullet, $type) = @_;
+    my $ctr = LookupMapping('counter_for_type', ToString($type));
+    return ($ctr ? T_OTHER($ctr) : $type); });
+DefMacro('\lx@the@@{}',  '\expandafter\lx@@the@@\expandafter{\lx@counterfor{#1}}');
+DefMacro('\lx@@the@@{}', '\csname the#1\endcsname');
+
+DefMacro('\lx@therefnum@@{}', '\expandafter\lx@@therefnum@@\expandafter{\lx@counterfor{#1}}');
+DefMacro('\lx@@therefnum@@{}',
+  '{\normalfont\csname p@#1\endcsname\csname the#1\endcsname}');
+
+AssignMapping('type_tag_formatter', 'refnum' => '\lx@therefnum@@');
+
+#----------------------------------------------------------------------
+# \lx@fnum@@{type}  Gets the formatted form of the refnum, as part of the object, (no @role).
+# Customize by defining \fnum@<type> or \<type>name and \fnum@font@<type>
+# Default uses \fnum@font@<type> \<type>name prefix + space (if any) and \the<counter>.
+
+DefMacro('\lx@refnum@compose{}{}',  '\expandafter\lx@refnum@compose@\expandafter{#2}{#1}');
+DefMacro('\lx@refnum@compose@{}{}', '\if.#1.#2\else#2\space#1\fi');
+####DefMacro('\lx@refnum@compose@{}{}', '\if.#1.#2\else#2~#1\fi');
 
 DefMacro('\lx@fnum@@{}',
-  '\@ifundefined{fnum@#1}{\lx@@fnum@@{#1}}{\csname fnum@#1\endcsname}');
+  '{\normalfont\@ifundefined{fnum@font@#1}{}{\csname fnum@font@#1\endcsname}'
+    . '\@ifundefined{fnum@#1}{\lx@@fnum@@{#1}}{\csname fnum@#1\endcsname}}');
 
-# \lx@fnum@toc@{type} calls \fnum@toc@<type>, if defined, else composes using \lx@@fnum@@{type}
+DefMacro('\lx@@fnum@@ {}',
+'\@ifundefined{#1name}{\lx@the@@{#1}}{\lx@refnum@compose{\csname #1name\endcsname}{\lx@the@@{#1}}}');
+
+AssignMapping('type_tag_formatter', '' => '\lx@fnum@@');    # Default!
+
+#----------------------------------------------------------------------
+# \lx@fnum@toc@{type} is similar, but formats the number for use within \toctitle
+# Customize by defining \fnum@toc@<type> or \fnum@tocfont@<type>
+# Default uses just \the<counter>, else composes using \lx@@fnum@@{type}
 DefMacro('\lx@fnum@toc@@{}',
-  '\@ifundefined{fnum@toc@#1}{\csname the#1\endcsname}{\csname fnum@toc@#1\endcsname}');
+  '{\normalfont\@ifundefined{fnum@tocfont@#1}{}{\csname fnum@tocfont@#1\endcsname}'
+    . '\@ifundefined{fnum@toc@#1}{\lx@the@@{#1}}{\csname fnum@toc@#1\endcsname}}');
 
-#[An abbreviated form seems potentially useful... (ie. \chapter@abbr)]
+#----------------------------------------------------------------------
+# "typerefnum" form is used by automatic cross-references, typically "type number" or similar.
+# Customize by defining \typerefnum@<type> or \typerefnum@font@<type>
+# Default uses either \<type>typerefname or \<type>name (if any, followed by space, then \the<counter>
+DefMacro('\lx@typerefnum@@{}',
+  '{\normalfont\@ifundefined{typerefnum@font@#1}{}{\csname typerefnum@font@#1\endcsname}'
+    . '\@ifundefined{typerefnum@#1}{\lx@@typerefnum@@{#1}}{\csname typerefnum@#1\endcsname}}');
 
-DefPrimitive('\lx@@fnum@@ {}', sub {
-    my ($gullet, $type) = @_;
-    my $cs     = T_CS('\\' . ToString($type) . 'name');
-    my @name   = (LookupDefinition($cs) ? Digest($cs)->unlist : ());
-    my @num    = Digest(T_CS('\the' . ToString($type)))->unlist;
-    my $letter = @name && $name[-1]->can('getString') && $name[-1]->getString;
-    (@name,
-      (scalar(@name) && scalar(@num) && ($letter =~ /\w/)
-        ? (Digest(T_CS('\text@nobreakspace'))) : ()),
-      @num); });
+DefMacro('\lx@@typerefnum@@{}',
+  '\@ifundefined{#1typerefname}{'
+    . '\@ifundefined{#1name}{}{\lx@refnum@compose{\csname #1name\endcsname}{\lx@the@@{#1}}}'
+    . '}{'
+    . '\lx@refnum@compose{\csname #1typerefname\endcsname}{\lx@the@@{#1}}'
+    . '}');
 
-# \lx@refnum@@{type} Gets the referencing form of the refnum.
-# Look for a \refnum@type and use it, else just \thetype
-DefMacro('\lx@refnum@@{}',
-  '\@ifundefined{refnum@#1}{\lx@fnum@@{#1}}{\csname refnum@#1\endcsname}');
+AssignMapping('type_tag_formatter', 'typerefnum' => '\lx@typerefnum@@');
+
+#----------------------------------------------------------------------
+# The following macros provide similar customization for titles & toctitles
+# in particular for supporting localization for different languages.
+# Redefine these if you want to assemble the name (eg. \chaptername), refnum and titles differently
+#----------------------------------------------------------------------
+# \lx@format@title@@{type}{title}
+# Format a title (or caption) appropriately for type.
+# Customize by defining \format@title@type{title}
+# Default composes \lx@fnum@@{type} space title.
+DefMacro('\lx@format@title@@{}{}',
+  '\lx@@format@title@@{#1}'
+    . '{{\@ifundefined{format@title@font@#1}{}{\csname format@title@font@#1\endcsname}#2}}');
+DefMacro('\lx@@format@title@@{}{}',
+  '{\@ifundefined{format@title@#1}'
+    . '{\lx@@compose@title{\lx@fnum@@{#1}}{#2}}'
+    . '{\csname format@title@#1\endcsname{#2}}}');
+
+# \lx@format@toctitle@@{type}{toctitle}
+# Similar for toctitle, typically briefer
+# Customize by defining \format@toctitle@type{title}
+# Default composes \lx@fnum@toc@@{type} space title.
+DefMacro('\lx@format@toctitle@@{}{}',
+  '\lx@@format@toctitle@@{#1}'
+    . '{{\@ifundefined{format@toctitle@font@#1}{}{\csname format@toctitle@font@#1\endcsname}#2}}');
+
+DefMacro('\lx@@format@toctitle@@{}{}',
+  '{\@ifundefined{format@toctitle@#1}'
+    . '{\lx@@compose@title{\lx@fnum@toc@@{#1}}{#2}}'
+    . '{\csname format@toctitle@#1\endcsname{#2}}}');
+
+DefMacro('\lx@@compose@title{}{}', '\lx@tag[][ ]{#1}#2');
+
+## NOTE that a 3rd form seems desirable: an concise form that cannot rely on context for the type.
+## This would be useful for the titles in links; thus can be plain (unicode) text.
 
 #======================================================================
 # TeX Book, Appendix B. p. 356
@@ -4757,12 +4914,14 @@ DefPrimitiveI('\l',  undef, "\x{0142}");    # LATIN SMALL LETTER L WITH STROKE
 DefPrimitiveI('\ss', undef, UTF(0xDF));     # LATIN SMALL LETTER SHARP S
 
 # apparently the rest can appear in math.
-DefPrimitiveI('\dag',       undef, "\x{2020}");    # DAGGER
-DefPrimitiveI('\ddag',      undef, "\x{2021}");    # DOUBLE DAGGER
-DefPrimitiveI('\S',         undef, UTF(0xa7));     # SECTION SIGN
-DefPrimitiveI('\P',         undef, UTF(0xB6));     # PILCROW SIGN
-DefPrimitiveI('\copyright', undef, UTF(0xA9));     # COPYRIGHT SIGN
-DefPrimitiveI('\pounds',    undef, UTF(0xA3));     # POUND SIGN
+DefPrimitiveI('\lx@sectionsign',   undef, UTF(0xa7));    # SECTION SIGN
+DefPrimitiveI('\lx@paragraphsign', undef, UTF(0xB6));    # PILCROW SIGN
+DefMacroI('\S', undef, '\lx@sectionsign');
+DefMacroI('\P', undef, '\lx@paragraphsign');
+DefPrimitiveI('\dag',       undef, "\x{2020}");          # DAGGER
+DefPrimitiveI('\ddag',      undef, "\x{2021}");          # DOUBLE DAGGER
+DefPrimitiveI('\copyright', undef, UTF(0xA9));           # COPYRIGHT SIGN
+DefPrimitiveI('\pounds',    undef, UTF(0xA3));           # POUND SIGN
 
 #----------------------------------------------------------------------
 # Accents.  LaTeX Table 3.1, p.38
@@ -6031,7 +6190,7 @@ DefPrimitive('\normalbottom', undef);
 # if the mark is not simple, we add it to the content of the note
 # otherwise, to the attribute.
 DefConstructor('\footnote{}{}',
-  "<ltx:note role='foot' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
+  "<ltx:note role='footnote' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $mark   = $whatsit->getArg(1);
@@ -6118,14 +6277,16 @@ DefMathI('\*', undef, "\x{2062}", role => 'MULOP', name => '', meaning => 'times
 # NOTE that \mathord and \mathbin aren't really right here.
 # We need a finer granularity than TeX does: an ORD could be several things,
 # a BIN could be a MULOP or ADDOP.
-DefConstructor('\mathord{}', "<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>", bounded => 1);
-DefConstructor('\mathop{}', "<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>",
+# AND, rarely, they're empty.... Is it wrong to drop them?
+DefConstructor('\mathord{}', "?#1(<ltx:XMWrap role='ID'   >#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathop{}', "?#1(<ltx:XMWrap role='BIGOP' scriptpos='#scriptpos'>#1</ltx:XMWrap>)()",
   bounded => 1, properties => { scriptpos => \&doScriptpos });
-DefConstructor('\mathbin{}',   "<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>", bounded => 1);
-DefConstructor('\mathrel{}',   "<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>", bounded => 1);
-DefConstructor('\mathopen{}',  "<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>", bounded => 1);
-DefConstructor('\mathclose{}', "<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>", bounded => 1);
-DefConstructor('\mathpunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>", bounded => 1);
+DefConstructor('\mathbin{}',   "?#1(<ltx:XMWrap role='BINOP'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathrel{}',   "?#1(<ltx:XMWrap role='RELOP'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathopen{}',  "?#1(<ltx:XMWrap role='OPEN' >#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathclose{}', "?#1(<ltx:XMWrap role='CLOSE'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathpunct{}', "?#1(<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>)()", bounded => 1);
+DefConstructor('\mathinner{}', "?#1(<ltx:XMWrap role='ATOM'>#1</ltx:XMWrap>)()",  bounded => 1);
 
 # If an XMWrap (presumably from \mathop, \mathbin, etc)
 # has multiple children, ALL are XMTok, within a restricted set of roles,
@@ -6299,6 +6460,7 @@ DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
 DefMathI('\@APPLYFUNCTION', undef, "\x{2061}", reversion => '', name => '', role => 'APPLYOP');
 DefMathI('\@INVISIBLETIMES', undef, "\x{2062}", reversion => '', name => '', meaning => 'times', role => 'MULOP');
 DefMathI('\@INVISIBLECOMMA', undef, "\x{2063}", reversion => '', name => '', role => 'PUNCT');
+DefMathI('\@INVISIBLEPLUS', undef, "\x{2064}", reversion => '', name => '', meaning => 'plus', role => 'ADDOP');
 
 # We OUGHT to be able to do this using \llap,\rlap,\hss...
 DefMacro('\lx@tweaked{}{}', '\ifmmode\lx@math@tweaked{#1}{#2}\else\lx@text@tweaked{#1}{#2}\fi');
@@ -6471,7 +6633,8 @@ sub setAlignOrClass {
   my ($document, $node, $align, $class) = @_;
   my $model = $document->getModel;
   my $qname = $model->getNodeQName($node);
-  if ($align && $document->canHaveAttribute($qname, 'align')) {
+  if ($qname eq 'ltx:tag') { }    # HACK
+  elsif ($align && $document->canHaveAttribute($qname, 'align')) {
     $node->setAttribute(align => $align); }
   elsif ($class && $document->canHaveAttribute($qname, 'class')) {
     $document->addClass($node, $class); }
@@ -6516,6 +6679,34 @@ sub andSplit {
 
 sub orNull {
   return (grep { defined } @_) ? @_ : undef; }
+
+# Should be a general utility?
+sub stripBraces {
+  my ($tokens) = @_;
+  my @tokens = ($tokens ? $tokens->unlist : ());
+  my @t = ();
+  while (@tokens && ($tokens[0]->getCatcode == CC_SPACE)) {    # Skip leading whitespace
+    shift(@tokens); }
+  # Balanced tokens until $delim
+  my $ntopbraces = 0;
+  while (@tokens) {
+    if (Equals($tokens[0], T_BEGIN)) {                         # If top-level brace
+      $ntopbraces++;
+      my ($level, $t) = (0, undef);
+      while (defined($t = shift(@tokens))) {                   # Read balanced
+        my $cc = $t->getCatcode;
+        $level++ if $cc == CC_BEGIN;
+        $level-- if $cc == CC_END;
+        push(@t, $t);
+        last unless $level; } }
+    else {
+      push(@t, shift(@tokens)); } }
+  while (@t && ($t[-1]->getCatcode == CC_SPACE)) {             # pop off trailing spaces
+    pop(@t); }
+  # Strip outer braces if a single set encloses entire value and not just {}
+  if ($ntopbraces == 1) {
+    shift(@t); pop(@t); }
+  return Tokens(@t); }
 
 #**********************************************************************
 LoadPool('eTeX');      # unless.... ?

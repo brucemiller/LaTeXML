@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{url}
+\def\macro{with_underscore}%
+
+\begin{document}
+\section{URLs in package url}
+\paragraph{URLs}
+\begin{itemize}
+\item\url{  https://example.com/word word };
+\item\url{https://example.com/~User};
+\item\url{https://example.com/someplace#id};
+\item\url{https://example.com/user@password};
+\item\url{https://example.com/user&param};
+\item\url{https://example.com/with_underscore};
+\item\url{https://example.com/with^caret};
+\item\url{https://example.com/with$dollar};
+\item\url{https://example.com/encoded%code
+}.
+\end{itemize}
+\paragraph{Probably unexpected URLs}
+\begin{itemize}
+\item\url{https://example.com/someplace\#id};
+\item\url{https://example.com/with.{}braces};
+\item\url{https://example.com/withslash\&ampersand};
+\item\url{https://example.com/withslash\_underscore};
+\item\url{https://example.com/withslash\^caret};
+\item\url{https://example.com/withslash\$dollar};
+\item\url{https://example.com/withslash\%percent};
+\item\url{https://example.com/unexpandedmacro.\macro}.
+\end{itemize}
+
+\paragraph{URLs in footnotes}
+\footnote{\url{  https://example.com/word word }}
+\footnote{\url{https://example.com/~User}}
+\footnote{\url{https://example.com/someplace#id}}% Works w/url, not hyperref
+\footnote{\url{https://example.com/user@password}}
+\footnote{\url{https://example.com/user&param}}
+\footnote{\url{https://example.com/with_underscore}}
+\footnote{\url{https://example.com/with^caret}}
+\footnote{\url{https://example.com/with$dollar}}
+
+\paragraph{Probably unexpected URLs in footnotes}
+\footnote{\url{https://example.com/lostpercent%code
+}}
+\footnote{\url{https://example.com/slash\%percent}}
+\end{document}

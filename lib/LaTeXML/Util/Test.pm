@@ -229,9 +229,9 @@ sub daemon_ok {
   }
   $invocation .= " 2>$localname.test.status ";
   if (!$generate) {
-    chdir($dir);
+    pathname_chdir($dir);
     is(system($invocation), 0, "latexmlc invocation for test $localname");
-    chdir($current_dir);
+    pathname_chdir($current_dir);
     # Compare the just generated $base.test.xml to the previous $base.xml
     if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {
       if (my $xmlstrings = process_xmlfile("$base.xml", $base)) {
@@ -247,9 +247,9 @@ sub daemon_ok {
   else {
     #TODO: Skip 3 tests
     print STDERR "$invocation\n";
-    chdir($dir);
+    pathname_chdir($dir);
     system($invocation);
-    chdir($current_dir);
+    pathname_chdir($current_dir);
     move("$base.test.xml",    "$base.xml")    if -e "$base.test.xml";
     move("$base.test.status", "$base.status") if -e "$base.test.status";
   }

@@ -117,6 +117,11 @@ with legitimate values being those of MathML's menclose notations;</a:documentat
         <a:documentation>an annotation placed by the parser when it suspects this token may be used as a function.</a:documentation>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="href">
+        <a:documentation>reference to an arbitrary url.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <!-- ====================================================================== -->
   <define name="XMath">

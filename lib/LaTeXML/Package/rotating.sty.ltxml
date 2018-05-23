@@ -89,11 +89,12 @@ DefConstructor('\turnbox{Float} Digested',
 # Next best thing: at least make the contained elements have normal wrap
 
 DefEnvironment('{sidewaysfigure}[]',
-"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')"
+  "<ltx:figure xml:id='#id' ?#1(placement='#1')"
     . " angle='#angle' width='#width' height='#height' depth='#depth'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
     . " xscale='#xscale' yscale='#yscale'"
     . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#tags"
     . "#body"
     . "</ltx:figure>",
   properties => { layout => 'vertical' },
@@ -107,11 +108,12 @@ DefEnvironment('{sidewaysfigure}[]',
     $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
 
 DefEnvironment('{sidewaysfigure*}[]',
-"<ltx:figure refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')"
+  "<ltx:figure xml:id='#id' ?#1(placement='#1')"
     . " angle='#angle' width='#width' height='#height' depth='#depth'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
     . " xscale='#xscale' yscale='#yscale'"
     . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#tags"
     . "#body"
     . "</ltx:figure>",
   properties => { layout => 'vertical' },
@@ -122,11 +124,12 @@ DefEnvironment('{sidewaysfigure*}[]',
     $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
 
 DefEnvironment('{sidewaystable}[]',
-  "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')"
+  "<ltx:table xml:id='#id' ?#1(placement='#1')"
     . " angle='#angle' width='#width' height='#height' depth='#depth'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
     . " xscale='#xscale' yscale='#yscale'"
     . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#tags"
     . "#body"
     . "</ltx:table>",
   properties => { layout => 'vertical' },
@@ -137,11 +140,12 @@ DefEnvironment('{sidewaystable}[]',
     $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
 
 DefEnvironment('{sidewaystable*}[]',
-  "<ltx:table refnum='#refnum' frefnum='#frefnum' rrefnum='#rrefnum' xml:id='#id' ?#1(placement='#1')"
+  "<ltx:table xml:id='#id' ?#1(placement='#1')"
     . " angle='#angle' width='#width' height='#height' depth='#depth'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
     . " xscale='#xscale' yscale='#yscale'"
     . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
+    . "#tags"
     . "#body"
     . "</ltx:table>",
   properties => { layout => 'vertical' },

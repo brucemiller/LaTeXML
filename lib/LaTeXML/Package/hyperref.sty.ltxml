@@ -18,6 +18,10 @@ use LaTeXML::Package;
 RequirePackage('url');
 RequirePackage('nameref');
 
+# Can we load hyperref, to get all it's random sundry definitions?
+# No, too many weird extra packages loaded.
+## InputDefinitions('hyperref', type => 'sty', noltxml => 1);
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Follow hyperref's manual.pdf
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -127,7 +131,8 @@ RawTeX('\newif\ifHy@pdfstring\Hy@pdfstringfalse');
 # \href{url}{text}
 DefMacro('\href Verbatim {}', '\@@Url\href{}{}{#1}{#2}');
 
-# \url{url} from url.sty
+# \url{url} from url.sty... well sorta
+# It's slightly different in that it expands the argument
 # Redefine \@url to sanitize the argument less
 DefMacro('\@Url Token', sub {
     my ($gullet, $cmd) = @_;
@@ -135,16 +140,17 @@ DefMacro('\@Url Token', sub {
     my ($open, $close, $url);
     $open = $gullet->readToken;
     StartSemiverbatim('%');
+    Let('~', T_OTHER('~'));    # Needs special protection?
     if ($open->equals(T_BEGIN)) {
       $open = T_OTHER('{'); $close = T_OTHER('}');
-      $url = $gullet->readBalanced; }
+      $url = $gullet->readBalanced(1); }    # Expand as we go!
     else {
       $close = $open = T_OTHER($open->getString);
       $url = $mouth->readTokens($close); }
     EndSemiverbatim();
-    # Identical with url's \@Url except that it sanitizes the arg less
-    my $cc;
-    my @toks = map { (((($cc = $_->getCatcode) == CC_CS) || ($cc == CC_SUB)) ? $_ : T_OTHER(ToString($_))) } $url->unlist;
+    my @toks = grep { $_->getCatcode != CC_SPACE; } $url->unlist;
+    # Identical with url's \@Url except, let CS's through!
+    @toks = map { (($_->getCatcode == CC_CS) ? $_ : T_OTHER(ToString($_))) } @toks;
     (Invocation(T_CS('\@@Url'),
         T_OTHER(ToString($cmd)), Tokens($open), Tokens($close),
         Tokens(@toks),
@@ -194,12 +200,32 @@ DefConstructor('\hypertarget Semiverbatim {}',
 # Should leverage
 DefMacroI('\phantomsection', undef, '');
 
+Let('\footref', '\ref');    # ?
+
 # This only approximates the "contextual label" that should precede the number,
 # and ignores the user-definable macros.
 # But, we normally defer such bookkeeping until postprocessing....sigh
 DefConstructor('\autoref Semiverbatim',
-  "<ltx:ref class='ltx_refmacro_autoref' show='type refnum' labelref='#label' _force_font='true'/>",
+  "<ltx:ref class='ltx_refmacro_autoref' show='autoref' labelref='#label' _force_font='true'/>",
   properties => sub { (label => CleanLabel($_[1])); });
+
+DefMacro('\lx@autorefnum@@{}', sub {
+    my ($gullet, $type) = @_;
+    my $type_s = ToString($type);
+    my $counter = LookupMapping('counter_for_type', $type_s) || $type_s;
+    return Tokens(
+      (LookupDefinition(T_CS('\\' . $type_s . 'autorefname'))
+        ? (Tokens(T_CS('\\' . $type_s . 'autorefname'), T_CS('\text@nobreakspace')))
+        : ()),
+      T_CS('\the' . $counter)); });
+
+AssignMapping('type_tag_formatter', 'autoref' => '\lx@autorefnum@@');
+
+# Blech...
+map { DefMacroI(T_CS('\\' . $_ . 'autorefname'), undef, '\itemautorefname'); }
+  qw(@itemi @itemii @itemiii @itemiv @itemv @itemvi
+  enumi enumii enumiii enumiv
+  @desci @descii @desciii @desciv @descv @descvi);
 
 # Covered in LaTeX.pool, but non-ref character is ignored.
 # \ref*{label}
@@ -276,5 +302,210 @@ if (my $options = LookupValue('opt@hyperref.sty')) {
     if (my ($key, $value) = $option =~ /^(.*?)\s*=\s*(.*?)$/) {
       hyperref_setoption($key, $value); } } }
 
+RawTeX(<<'EoTeX');
+\def\HyLang@afrikaans{%
+  \def\equationautorefname{Vergelyking}%
+  \def\footnoteautorefname{Voetnota}%
+  \def\itemautorefname{Item}%
+  \def\figureautorefname{Figuur}%
+  \def\tableautorefname{Tabel}%
+  \def\partautorefname{Deel}%
+  \def\appendixautorefname{Bylae}%
+  \def\chapterautorefname{Hoofstuk}%
+  \def\sectionautorefname{Afdeling}%
+  \def\subsectionautorefname{Subafdeling}%
+  \def\subsubsectionautorefname{Subsubafdeling}%
+  \def\paragraphautorefname{Paragraaf}%
+  \def\subparagraphautorefname{Subparagraaf}%
+  \def\FancyVerbLineautorefname{Lyn}%
+  \def\theoremautorefname{Teorema}%
+  \def\pageautorefname{Bladsy}%
+}
+\def\HyLang@english{%
+  \def\equationautorefname{Equation}%
+  \def\footnoteautorefname{footnote}%
+  \def\itemautorefname{item}%
+  \def\figureautorefname{Figure}%
+  \def\tableautorefname{Table}%
+  \def\partautorefname{Part}%
+  \def\appendixautorefname{Appendix}%
+  \def\chapterautorefname{chapter}%
+  \def\sectionautorefname{section}%
+  \def\subsectionautorefname{subsection}%
+  \def\subsubsectionautorefname{subsubsection}%
+  \def\paragraphautorefname{paragraph}%
+  \def\subparagraphautorefname{subparagraph}%
+  \def\FancyVerbLineautorefname{line}%
+  \def\theoremautorefname{Theorem}%
+  \def\pageautorefname{page}%
+}
+\def\HyLang@french{%
+  \def\equationautorefname{\'Equation}%
+  \def\footnoteautorefname{note}%
+  \def\itemautorefname{item}%
+  \def\figureautorefname{Figure}%
+  \def\tableautorefname{Tableau}%
+  \def\partautorefname{Partie}%
+  \def\appendixautorefname{Appendice}%
+  \def\chapterautorefname{chapitre}%
+  \def\sectionautorefname{section}%
+  \def\subsectionautorefname{sous-section}%
+  \def\subsubsectionautorefname{sous-sous-section}%
+  \def\paragraphautorefname{paragraphe}%
+  \def\subparagraphautorefname{sous-paragraphe}%
+  \def\FancyVerbLineautorefname{ligne}%
+  \def\theoremautorefname{Th\'eor\`eme}%
+  \def\pageautorefname{page}%
+}
+\def\HyLang@german{%
+  \def\equationautorefname{Gleichung}%
+  \def\footnoteautorefname{Fu\ss note}%
+  \def\itemautorefname{Punkt}%
+  \def\figureautorefname{Abbildung}%
+  \def\tableautorefname{Tabelle}%
+  \def\partautorefname{Teil}%
+  \def\appendixautorefname{Anhang}%
+  \def\chapterautorefname{Kapitel}%
+  \def\sectionautorefname{Abschnitt}%
+  \def\subsectionautorefname{Unterabschnitt}%
+  \def\subsubsectionautorefname{Unterunterabschnitt}%
+  \def\paragraphautorefname{Absatz}%
+  \def\subparagraphautorefname{Unterabsatz}%
+  \def\FancyVerbLineautorefname{Zeile}%
+  \def\theoremautorefname{Theorem}%
+  \def\pageautorefname{Seite}%
+}
+\def\HyLang@italian{%
+  \def\equationautorefname{Equazione}%
+  \def\footnoteautorefname{nota}%
+  \def\itemautorefname{punto}%
+  \def\figureautorefname{Figura}%
+  \def\tableautorefname{Tabella}%
+  \def\partautorefname{Parte}%
+  \def\appendixautorefname{Appendice}%
+  \def\chapterautorefname{Capitolo}%
+  \def\sectionautorefname{sezione}%
+  \def\subsectionautorefname{sottosezione}%
+  \def\subsubsectionautorefname{sottosottosezione}%
+  \def\paragraphautorefname{paragrafo}%
+  \def\subparagraphautorefname{sottoparagrafo}%
+  \def\FancyVerbLineautorefname{linea}%
+  \def\theoremautorefname{Teorema}%
+  \def\pageautorefname{Pag.\@}%
+}
+\def\HyLang@magyar{%
+  \def\equationautorefname{Egyenlet}%
+  \def\footnoteautorefname{l\'abjegyzet}%
+  \def\itemautorefname{Elem}%
+  \def\figureautorefname{\'Abra}%
+  \def\tableautorefname{T\'abl\'azat}%
+  \def\partautorefname{R\'esz}%
+  \def\appendixautorefname{F\"uggel\'ek}%
+  \def\chapterautorefname{fejezet}%
+  \def\sectionautorefname{szakasz}%
+  \def\subsectionautorefname{alszakasz}%
+  \def\subsubsectionautorefname{alalszakasz}%
+  \def\paragraphautorefname{bekezd\'es}%
+  \def\subparagraphautorefname{albekezd\'es}%
+  \def\FancyVerbLineautorefname{sor}%
+  \def\theoremautorefname{T\'etel}%
+  \def\pageautorefname{oldal}%
+}
+\def\HyLang@portuges{%
+  \def\equationautorefname{Equa\c c\~ao}%
+  \def\footnoteautorefname{Nota de rodap\'e}%
+  \def\itemautorefname{Item}%
+  \def\figureautorefname{Figura}%
+  \def\tableautorefname{Tabela}%
+  \def\partautorefname{Parte}%
+  \def\appendixautorefname{Ap\^endice}%
+  \def\chapterautorefname{Cap\'itulo}%
+  \def\sectionautorefname{Se\c c\~ao}%
+  \def\subsectionautorefname{Subse\c c\~ao}%
+  \def\subsubsectionautorefname{Subsubse\c c\~ao}%
+  \def\paragraphautorefname{par\'agrafo}%
+  \def\subparagraphautorefname{subpar\'agrafo}%
+  \def\FancyVerbLineautorefname{linha}%
+  \def\theoremautorefname{Teorema}%
+  \def\pageautorefname{P\'agina}%
+}
+\def\HyLang@russian{%
+  \def\equationautorefname{\cyr\cyrv\cyrery\cyrr.}%
+  \def\footnoteautorefname{%
+    \cyr\cyrp\cyro\cyrd\cyrs\cyrt\cyrr.\ \cyrp\cyrr\cyri\cyrm.%
+  }%
+  \def\itemautorefname{\cyr\cyrp.}%
+  \def\figureautorefname{\cyr\cyrr\cyri\cyrs.}%
+  \def\tableautorefname{\cyr\cyrt\cyra\cyrb\cyrl.}%
+  \def\partautorefname{\cyr\cyrch.}%
+  \def\chapterautorefname{\cyr\cyrg\cyrl.}%
+  \def\sectionautorefname{\cyr\cyrr\cyra\cyrz\cyrd.}%
+  \def\appendixautorefname{\cyr\cyrp\cyrr\cyri\cyrl.}%
+  \def\subsectionautorefname{\cyr\cyrr\cyra\cyrz\cyrd.}%
+  \def\subsubsectionautorefname{\cyr\cyrr\cyra\cyrz\cyrd.}%
+  \def\paragraphautorefname{\cyr\cyrp.}%
+  \def\subparagraphautorefname{\cyr\cyrp.}%
+  \def\FancyVerbLineautorefname{\cyr\cyrs\cyrt\cyrr.}%
+  \def\theoremautorefname{\cyr\cyrt\cyre\cyro\cyrr.}%
+  \def\pageautorefname{\cyr\cyrs.}%
+}
+\def\HyLang@spanish{%
+  \def\equationautorefname{Ecuaci\'on}%
+  \def\footnoteautorefname{Nota a pie de p\'agina}%
+  \def\itemautorefname{Elemento}%
+  \def\figureautorefname{Figura}%
+  \def\tableautorefname{Tabla}%
+  \def\partautorefname{Parte}%
+  \def\appendixautorefname{Ap\'endice}%
+  \def\chapterautorefname{Cap\'itulo}%
+  \def\sectionautorefname{Secci\'on}%
+  \def\subsectionautorefname{Subsecci\'on}%
+  \def\subsubsectionautorefname{Subsubsecci\'on}%
+  \def\paragraphautorefname{P\'arrafo}%
+  \def\subparagraphautorefname{Subp\'arrafo}%
+  \def\FancyVerbLineautorefname{L\'inea}%
+  \def\theoremautorefname{Teorema}%
+  \def\pageautorefname{P\'agina}%
+}
+\def\HyLang@catalan{%
+\def\equationautorefname{Equaci\'o}%
+\def\footnoteautorefname{Nota al peu de p\`agina}%
+\def\itemautorefname{Element}%
+\def\figureautorefname{Figura}%
+\def\tableautorefname{Taula}%
+\def\partautorefname{Part}%
+\def\appendixautorefname{Ap\`endix}%
+\def\chapterautorefname{Cap\'itol}%
+\def\sectionautorefname{Secci\'o}%
+\def\subsectionautorefname{Subsecci\'o}%
+\def\subsubsectionautorefname{Subsubsecci\'o}%
+\def\paragraphautorefname{Par\`agraf}%
+\def\subparagraphautorefname{Subpar\`agraf}%
+\def\FancyVerbLineautorefname{L\'inia}%
+\def\theoremautorefname{Teorema}%
+\def\pageautorefname{P\`agina}%
+}
+\def\HyLang@vietnamese{%
+  \def\equationautorefname{Ph\uhorn{}\ohorn{}ng tr\`inh}%
+  \def\footnoteautorefname{Ch\'u th\'ich}%
+  \def\itemautorefname{m\d{u}c}%
+  \def\figureautorefname{H\`inh}%
+  \def\tableautorefname{B\h{a}ng}%
+  \def\partautorefname{Ph\`\acircumflex{}n}%
+  \def\appendixautorefname{Ph\d{u} l\d{u}c}%
+  \def\chapterautorefname{ch\uhorn{}\ohorn{}ng}%
+  \def\sectionautorefname{m\d{u}c}%
+  \def\subsectionautorefname{m\d{u}c}%
+  \def\subsubsectionautorefname{m\d{u}c}%
+  \def\paragraphautorefname{\dj{}o\d{a}n}%
+  \def\subparagraphautorefname{\dj{}o\d{a}n}%
+  \def\FancyVerbLineautorefname{d\`ong}%
+  \def\theoremautorefname{\DJ{}\d{i}nh l\'y}%
+  \def\pageautorefname{Trang}%
+}
+
+% For now...
+\HyLang@english
+EoTeX
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

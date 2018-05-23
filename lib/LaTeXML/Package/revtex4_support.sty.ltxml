@@ -118,20 +118,34 @@ DefMacro('\pagesofar', '');
 
 # endnotes handled like footnotes
 DefConstructor('\endnote[]{}',
-  "<ltx:note role='endnote' mark='#refnum'>#2</ltx:note>",
-  mode       => 'text',
+  "<ltx:note role='endnote' mark='#mark' xml:id='#id'>"
+    . "#tags"
+    . "#2"
+    . "</ltx:note>",
+  mode => 'text', bounded => 1,
+  beforeDigest => sub { reenterTextMode(1); Digest('\normalfont'); },
   properties => sub {
-    ($_[1] ? (refnum => $_[1]) : RefStepCounter('footnote')) });
+    ($_[1]
+      ? (mark => $_[1])
+      : (RefStepCounter('endnote'),
+        mark => DigestText(T_CS('\theendnote')))) });
 DefConstructor('\endnotemark[]',
-  "<ltx:note role='endnotemark' mark='#refnum'></ltx:note>",
+  "<ltx:note role='endnotemark' mark='#mark' xml:id='#id'>"
+    . "#tags"
+    . "</ltx:note>",
   mode       => 'text',
   properties => sub {
-    ($_[1] ? (refnum => $_[1]) : RefStepCounter('footnote')) });
+    ($_[1]
+      ? (mark => $_[1])
+      : (RefStepCounter('endnote'),
+        mark => DigestText(T_CS('\theendnote')))) });
 DefConstructor('\endnotetext[]{}',
-  "<ltx:note role='endnotetext' mark='#refnum'>#2</ltx:note>",
+  "<ltx:note role='endnotetext' mark='#mark' xml:id='#id'>#2</ltx:note>",
   mode       => 'text',
   properties => sub {
-    ($_[1] ? (refnum => $_[1]) : (refnum => Digest(T_CS("\\thefootnote")))); });
+    ($_[1]
+      ? (mark => $_[1])
+      : (mark => Digest(T_CS("\\theendnote")))); });
 
 #======================================================================
 # 6. Math and Equations
@@ -151,10 +165,7 @@ DefConstructor('\bbox{}', '#1', bounded => 1, requireMath => 1, font => { forceb
 DefConstructor('\pmb{}', '#1', bounded => 1, requireMath => 1,
   font => { forcebold => 1, family => 'blackboard',
     series => 'medium', shape => 'upright' });
-DefConstructor('\eqnum {}', '',
-  afterDigest => sub {
-    AssignValue(EQUATIONROW_NUMBER => ToString($_[1]), 'global'); },
-  mode => 'text');
+DefMacro('\eqnum {}', '\lx@equation@settag{\edef\theequation{#2}\lx@make@tags{equation}}');
 
 # Redefined in revtex3_support
 DefMacro('\mathletters',    '');

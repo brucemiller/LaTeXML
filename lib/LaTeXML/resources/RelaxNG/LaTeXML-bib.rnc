@@ -50,28 +50,7 @@ bibitem_attributes =
   attribute key { text }?
 
 ## Content model for \elementref{bibitem}.
-bibitem_model = bibtag*, bibblock*
-
-#----------------------------------------------------------------------
-
-bibtag =
-## Various formatted tags for bibliographic items.
-## Typically @role refnum is shown in the displayed bibliography,
-## as the beginning of the item.  Other roles 
-## (eg. number, authors, fullauthors, year, title) record formatted
-## info to be used for filling in citations (\elementref{bibref}).
-element bibtag { bibtag_attributes, bibtag_model }
-
-## Attributes for \elementref{bibtag}.
-bibtag_attributes = 
-  attribute role { ("number"|"authors"|"fullauthors"|"key"|"year"|"bibtype"|"title"|text) }?,
-  ## A delimiter for formatting the refnum in the bibliography
-  attribute open { text }?,
-  ## A delimiter for formatting the refnum in the bibliography
-  attribute close { text }?
-
-## Content model for \elementref{bibtag}.
-bibtag_model = Inline.model
+bibitem_model = tags?, bibblock*
 
 #----------------------------------------------------------------------
 

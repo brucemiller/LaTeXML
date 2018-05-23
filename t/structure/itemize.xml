@@ -4,157 +4,255 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Itemize</title>
     <para xml:id="S1.p1">
-      <itemize xml:id="I1">
-        <item labels="LABEL:it:one" xml:id="I1.i1">
-          <tag>•</tag>
-          <para xml:id="I1.i1.p1">
+      <itemize xml:id="S1.I1">
+        <item labels="LABEL:it:one" xml:id="S1.I1.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S1.I1.i1.p1">
             <p>One, but not <ref labelref="LABEL:en:one"/></p>
           </para>
         </item>
-        <item labels="LABEL:it:two" xml:id="I1.i2">
-          <tag>•</tag>
-          <para xml:id="I1.i2.p1">
+        <item labels="LABEL:it:two" xml:id="S1.I1.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S1.I1.i2.p1">
             <p>Two, but not <ref labelref="LABEL:en:two"/></p>
           </para>
         </item>
-        <item labels="LABEL:it:three" xml:id="I1.i3">
-          <tag>•</tag>
-          <para xml:id="I1.i3.p1">
+        <item labels="LABEL:it:three" xml:id="S1.I1.i3">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">3rd item</tag>
+          </tags>
+          <para xml:id="S1.I1.i3.p1">
             <p>Three, but not <ref labelref="LABEL:en:three"/></p>
           </para>
         </item>
       </itemize>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Enumerate</title>
     <para xml:id="S2.p1">
-      <enumerate xml:id="I2">
-        <item frefnum="1." labels="LABEL:en:one" refnum="1" xml:id="I2.i1">
-          <tag>1.</tag>
-          <para xml:id="I2.i1.p1">
+      <enumerate xml:id="S2.I1">
+        <item labels="LABEL:en:one" xml:id="S2.I1.i1">
+          <tags>
+            <tag>1.</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">item 1</tag>
+          </tags>
+          <para xml:id="S2.I1.i1.p1">
             <p>One , but not <ref labelref="LABEL:de:one"/></p>
           </para>
         </item>
-        <item frefnum="2." labels="LABEL:en:two" refnum="2" xml:id="I2.i2">
-          <tag>2.</tag>
-          <para xml:id="I2.i2.p1">
+        <item labels="LABEL:en:two" xml:id="S2.I1.i2">
+          <tags>
+            <tag>2.</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">item 2</tag>
+          </tags>
+          <para xml:id="S2.I1.i2.p1">
             <p>Two , but not <ref labelref="LABEL:de:two"/></p>
           </para>
         </item>
-        <item frefnum="3." labels="LABEL:en:three" refnum="3" xml:id="I2.i3">
-          <tag>3.</tag>
-          <para xml:id="I2.i3.p1">
+        <item labels="LABEL:en:three" xml:id="S2.I1.i3">
+          <tags>
+            <tag>3.</tag>
+            <tag role="refnum">3</tag>
+            <tag role="typerefnum">item 3</tag>
+          </tags>
+          <para xml:id="S2.I1.i3.p1">
             <p>Three , but not <ref labelref="LABEL:de:three"/></p>
           </para>
         </item>
       </enumerate>
     </para>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>Description</title>
     <para xml:id="S3.p1">
-      <description xml:id="I3">
-        <item labels="LABEL:de:one" refnum="One" xml:id="I3.ix1">
-          <tag>One</tag>
-          <para xml:id="I3.ix1.p1">
+      <description xml:id="S3.I1">
+        <item labels="LABEL:de:one" xml:id="S3.I1.ix1">
+          <tags>
+            <tag><text font="bold">One</text></tag>
+            <tag role="typerefnum">item One</tag>
+          </tags>
+          <para xml:id="S3.I1.ix1.p1">
             <p>, but not <ref labelref="LABEL:it:one"/></p>
           </para>
         </item>
-        <item labels="LABEL:de:two" refnum="Two" xml:id="I3.ix2">
-          <tag>Two</tag>
-          <para xml:id="I3.ix2.p1">
+        <item labels="LABEL:de:two" xml:id="S3.I1.ix2">
+          <tags>
+            <tag><text font="bold">Two</text></tag>
+            <tag role="typerefnum">item Two</tag>
+          </tags>
+          <para xml:id="S3.I1.ix2.p1">
             <p>, but not <ref labelref="LABEL:it:two"/></p>
           </para>
         </item>
-        <item labels="LABEL:de:three" refnum="Three" xml:id="I3.ix3">
-          <tag>Three</tag>
-          <para xml:id="I3.ix3.p1">
+        <item labels="LABEL:de:three" xml:id="S3.I1.ix3">
+          <tags>
+            <tag><text font="bold">Three</text></tag>
+            <tag role="typerefnum">item Three</tag>
+          </tags>
+          <para xml:id="S3.I1.ix3.p1">
             <p>, but not <ref labelref="LABEL:it:three"/></p>
           </para>
         </item>
       </description>
     </para>
   </section>
-  <section refnum="4" xml:id="S4">
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
     <title><tag close=" ">4</tag>Nested Enumerate</title>
     <para xml:id="S4.p1">
-      <enumerate xml:id="I4">
-        <item frefnum="1." refnum="1" xml:id="I4.i1">
-          <tag>1.</tag>
-          <para xml:id="I4.i1.p1">
+      <enumerate xml:id="S4.I1">
+        <item xml:id="S4.I1.i1">
+          <tags>
+            <tag>1.</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">item 1</tag>
+          </tags>
+          <para xml:id="S4.I1.i1.p1">
             <p>One</p>
-            <enumerate xml:id="I4.I1">
-              <item frefnum="(a)" refnum="a" xml:id="I4.I1.i1">
-                <tag>(a)</tag>
-                <para xml:id="I4.I1.i1.p1">
+            <enumerate xml:id="S4.I1.I1">
+              <item xml:id="S4.I1.i1.i1">
+                <tags>
+                  <tag>(a)</tag>
+                  <tag role="refnum">1a</tag>
+                  <tag role="typerefnum">item 1a</tag>
+                </tags>
+                <para xml:id="S4.I1.i1.i1.p1">
                   <p>One</p>
                 </para>
               </item>
-              <item frefnum="(b)" refnum="b" xml:id="I4.I1.i2">
-                <tag>(b)</tag>
-                <para xml:id="I4.I1.i2.p1">
+              <item xml:id="S4.I1.i1.i2">
+                <tags>
+                  <tag>(b)</tag>
+                  <tag role="refnum">1b</tag>
+                  <tag role="typerefnum">item 1b</tag>
+                </tags>
+                <para xml:id="S4.I1.i1.i2.p1">
                   <p>Two</p>
                 </para>
               </item>
-              <item frefnum="(c)" refnum="c" xml:id="I4.I1.i3">
-                <tag>(c)</tag>
-                <para xml:id="I4.I1.i3.p1">
+              <item xml:id="S4.I1.i1.i3">
+                <tags>
+                  <tag>(c)</tag>
+                  <tag role="refnum">1c</tag>
+                  <tag role="typerefnum">item 1c</tag>
+                </tags>
+                <para xml:id="S4.I1.i1.i3.p1">
                   <p>Three</p>
                 </para>
               </item>
             </enumerate>
           </para>
         </item>
-        <item frefnum="2." refnum="2" xml:id="I4.i2">
-          <tag>2.</tag>
-          <para xml:id="I4.i2.p1">
+        <item xml:id="S4.I1.i2">
+          <tags>
+            <tag>2.</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">item 2</tag>
+          </tags>
+          <para xml:id="S4.I1.i2.p1">
             <p>Two</p>
-            <enumerate xml:id="I4.I2">
-              <item frefnum="(a)" refnum="a" xml:id="I4.I2.i1">
-                <tag>(a)</tag>
-                <para xml:id="I4.I2.i1.p1">
+            <enumerate xml:id="S4.I1.I2">
+              <item xml:id="S4.I1.i2.i1">
+                <tags>
+                  <tag>(a)</tag>
+                  <tag role="refnum">2a</tag>
+                  <tag role="typerefnum">item 2a</tag>
+                </tags>
+                <para xml:id="S4.I1.i2.i1.p1">
                   <p>One</p>
                 </para>
               </item>
-              <item frefnum="(b)" refnum="b" xml:id="I4.I2.i2">
-                <tag>(b)</tag>
-                <para xml:id="I4.I2.i2.p1">
+              <item xml:id="S4.I1.i2.i2">
+                <tags>
+                  <tag>(b)</tag>
+                  <tag role="refnum">2b</tag>
+                  <tag role="typerefnum">item 2b</tag>
+                </tags>
+                <para xml:id="S4.I1.i2.i2.p1">
                   <p>Two</p>
                 </para>
               </item>
-              <item frefnum="(c)" refnum="c" xml:id="I4.I2.i3">
-                <tag>(c)</tag>
-                <para xml:id="I4.I2.i3.p1">
+              <item xml:id="S4.I1.i2.i3">
+                <tags>
+                  <tag>(c)</tag>
+                  <tag role="refnum">2c</tag>
+                  <tag role="typerefnum">item 2c</tag>
+                </tags>
+                <para xml:id="S4.I1.i2.i3.p1">
                   <p>Three</p>
                 </para>
               </item>
             </enumerate>
           </para>
         </item>
-        <item frefnum="3." refnum="3" xml:id="I4.i3">
-          <tag>3.</tag>
-          <para xml:id="I4.i3.p1">
+        <item xml:id="S4.I1.i3">
+          <tags>
+            <tag>3.</tag>
+            <tag role="refnum">3</tag>
+            <tag role="typerefnum">item 3</tag>
+          </tags>
+          <para xml:id="S4.I1.i3.p1">
             <p>Three</p>
-            <enumerate xml:id="I4.I3">
-              <item frefnum="(a)" refnum="a" xml:id="I4.I3.i1">
-                <tag>(a)</tag>
-                <para xml:id="I4.I3.i1.p1">
+            <enumerate xml:id="S4.I1.I3">
+              <item xml:id="S4.I1.i3.i1">
+                <tags>
+                  <tag>(a)</tag>
+                  <tag role="refnum">3a</tag>
+                  <tag role="typerefnum">item 3a</tag>
+                </tags>
+                <para xml:id="S4.I1.i3.i1.p1">
                   <p>One</p>
                 </para>
               </item>
-              <item frefnum="(b)" refnum="b" xml:id="I4.I3.i2">
-                <tag>(b)</tag>
-                <para xml:id="I4.I3.i2.p1">
+              <item xml:id="S4.I1.i3.i2">
+                <tags>
+                  <tag>(b)</tag>
+                  <tag role="refnum">3b</tag>
+                  <tag role="typerefnum">item 3b</tag>
+                </tags>
+                <para xml:id="S4.I1.i3.i2.p1">
                   <p>Two</p>
                 </para>
               </item>
-              <item frefnum="(c)" refnum="c" xml:id="I4.I3.i3">
-                <tag>(c)</tag>
-                <para xml:id="I4.I3.i3.p1">
+              <item xml:id="S4.I1.i3.i3">
+                <tags>
+                  <tag>(c)</tag>
+                  <tag role="refnum">3c</tag>
+                  <tag role="typerefnum">item 3c</tag>
+                </tags>
+                <para xml:id="S4.I1.i3.i3.p1">
                   <p>Three</p>
                 </para>
               </item>
@@ -164,26 +262,40 @@
       </enumerate>
     </para>
   </section>
-  <section refnum="5" xml:id="S5">
+  <section inlist="toc" xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
     <title><tag close=" ">5</tag>Spacing</title>
     <para xml:id="S5.p1">
       <p>Taller:</p>
-      <itemize xml:id="I5">
-        <item xml:id="I5.i1">
-          <tag>•</tag>
-          <para xml:id="I5.i1.p1">
+      <itemize xml:id="S5.I1">
+        <item xml:id="S5.I1.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S5.I1.i1.p1">
             <p>a</p>
           </para>
         </item>
-        <item itemsep="20.0pt" xml:id="I5.i2">
-          <tag>•</tag>
-          <para xml:id="I5.i2.p1">
+        <item itemsep="20.0pt" xml:id="S5.I1.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S5.I1.i2.p1">
             <p>b</p>
           </para>
         </item>
-        <item itemsep="20.0pt" xml:id="I5.i3">
-          <tag>•</tag>
-          <para xml:id="I5.i3.p1">
+        <item itemsep="20.0pt" xml:id="S5.I1.i3">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">3rd item</tag>
+          </tags>
+          <para xml:id="S5.I1.i3.p1">
             <p>c</p>
           </para>
         </item>
@@ -191,22 +303,31 @@
     </para>
     <para xml:id="S5.p2">
       <p>Taller &amp; Taller:</p>
-      <itemize xml:id="I6">
-        <item xml:id="I6.i1">
-          <tag>•</tag>
-          <para xml:id="I6.i1.p1">
+      <itemize xml:id="S5.I2">
+        <item xml:id="S5.I2.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S5.I2.i1.p1">
             <p>a</p>
           </para>
         </item>
-        <item itemsep="20.0pt" xml:id="I6.i2">
-          <tag>•</tag>
-          <para xml:id="I6.i2.p1">
+        <item itemsep="20.0pt" xml:id="S5.I2.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S5.I2.i2.p1">
             <p>b</p>
           </para>
         </item>
-        <item itemsep="30.0pt" xml:id="I6.i3">
-          <tag>•</tag>
-          <para xml:id="I6.i3.p1">
+        <item itemsep="30.0pt" xml:id="S5.I2.i3">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">3rd item</tag>
+          </tags>
+          <para xml:id="S5.I2.i3.p1">
             <p>c</p>
           </para>
         </item>
@@ -214,124 +335,182 @@
     </para>
     <para xml:id="S5.p3">
       <p>Itemsep outside has no effect:</p>
-      <itemize xml:id="I7">
-        <item xml:id="I7.i1">
-          <tag>•</tag>
-          <para xml:id="I7.i1.p1">
+      <itemize xml:id="S5.I3">
+        <item xml:id="S5.I3.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S5.I3.i1.p1">
             <p>a</p>
           </para>
         </item>
-        <item xml:id="I7.i2">
-          <tag>•</tag>
-          <para xml:id="I7.i2.p1">
+        <item xml:id="S5.I3.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S5.I3.i2.p1">
             <p>b</p>
           </para>
         </item>
-        <item xml:id="I7.i3">
-          <tag>•</tag>
-          <para xml:id="I7.i3.p1">
+        <item xml:id="S5.I3.i3">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">3rd item</tag>
+          </tags>
+          <para xml:id="S5.I3.i3.p1">
             <p>c</p>
           </para>
         </item>
       </itemize>
     </para>
   </section>
-  <section refnum="6" xml:id="S6">
+  <section inlist="toc" xml:id="S6">
+    <tags>
+      <tag>6</tag>
+      <tag role="refnum">6</tag>
+      <tag role="typerefnum">§6</tag>
+    </tags>
     <title><tag close=" ">6</tag>Mixed tags</title>
     <para xml:id="S6.p1">
-      <itemize xml:id="I8">
-        <item xml:id="I8.i1">
-          <tag>•</tag>
-          <para xml:id="I8.i1.p1">
+      <itemize xml:id="S6.I1">
+        <item xml:id="S6.I1.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S6.I1.i1.p1">
             <p>a</p>
           </para>
         </item>
-        <item xml:id="I8.i2">
-          <tag>•</tag>
-          <para xml:id="I8.i2.p1">
+        <item xml:id="S6.I1.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S6.I1.i2.p1">
             <p>b</p>
           </para>
         </item>
-        <item refnum="foo" xml:id="I8.ix1">
-          <tag>foo</tag>
-          <para xml:id="I8.ix1.p1">
+        <item xml:id="S6.I1.ix1">
+          <tags>
+            <tag>foo</tag>
+            <tag role="typerefnum">item foo</tag>
+          </tags>
+          <para xml:id="S6.I1.ix1.p1">
             <p>bar</p>
           </para>
         </item>
-        <item xml:id="I8.i3">
-          <tag>•</tag>
-          <para xml:id="I8.i3.p1">
+        <item xml:id="S6.I1.i3">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">3rd item</tag>
+          </tags>
+          <para xml:id="S6.I1.i3.p1">
             <p>c</p>
           </para>
         </item>
       </itemize>
     </para>
     <para xml:id="S6.p2">
-      <enumerate xml:id="I9">
-        <item frefnum="1." refnum="1" xml:id="I9.i1">
-          <tag>1.</tag>
-          <para xml:id="I9.i1.p1">
+      <enumerate xml:id="S6.I2">
+        <item xml:id="S6.I2.i1">
+          <tags>
+            <tag>1.</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">item 1</tag>
+          </tags>
+          <para xml:id="S6.I2.i1.p1">
             <p>a</p>
           </para>
         </item>
-        <item frefnum="2." refnum="2" xml:id="I9.i2">
-          <tag>2.</tag>
-          <para xml:id="I9.i2.p1">
+        <item xml:id="S6.I2.i2">
+          <tags>
+            <tag>2.</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">item 2</tag>
+          </tags>
+          <para xml:id="S6.I2.i2.p1">
             <p>b</p>
           </para>
         </item>
-        <item refnum="foo" xml:id="I9.ix1">
-          <tag>foo</tag>
-          <para xml:id="I9.ix1.p1">
+        <item xml:id="S6.I2.ix1">
+          <tags>
+            <tag>foo</tag>
+            <tag role="typerefnum">item foo</tag>
+          </tags>
+          <para xml:id="S6.I2.ix1.p1">
             <p>bar</p>
           </para>
         </item>
-        <item frefnum="3." refnum="3" xml:id="I9.i3">
-          <tag>3.</tag>
-          <para xml:id="I9.i3.p1">
+        <item xml:id="S6.I2.i3">
+          <tags>
+            <tag>3.</tag>
+            <tag role="refnum">3</tag>
+            <tag role="typerefnum">item 3</tag>
+          </tags>
+          <para xml:id="S6.I2.i3.p1">
             <p>c</p>
           </para>
         </item>
       </enumerate>
     </para>
   </section>
-  <section refnum="7" xml:id="S7">
+  <section inlist="toc" xml:id="S7">
+    <tags>
+      <tag>7</tag>
+      <tag role="refnum">7</tag>
+      <tag role="typerefnum">§7</tag>
+    </tags>
     <title><tag close=" ">7</tag>Generalized Lists</title>
     <para xml:id="S7.p1">
       <itemize>
-        <item frefnum="$\star$" refnum="1" xml:id="I10.i1">
-          <tag><Math mode="inline" tex="\star" text="star" xml:id="I10.i1.m1">
-              <XMath>
-                <XMTok name="star" role="MULOP">⋆</XMTok>
-              </XMath>
-            </Math></tag>
-          <para xml:id="I10.i1.p1">
+        <item xml:id="S7.I1.i1">
+          <tags>
+            <tag><Math mode="inline" tex="\star" text="star" xml:id="S7.I1.i1.m1">
+                <XMath>
+                  <XMTok name="star" role="MULOP">⋆</XMTok>
+                </XMath>
+              </Math></tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S7.I1.i1.p1">
             <p>First item.</p>
           </para>
         </item>
-        <item frefnum="$\star$" refnum="2" xml:id="I10.i2">
-          <tag><Math mode="inline" tex="\star" text="star" xml:id="I10.i2.m1">
-              <XMath>
-                <XMTok name="star" role="MULOP">⋆</XMTok>
-              </XMath>
-            </Math></tag>
-          <para xml:id="I10.i2.p1">
+        <item xml:id="S7.I1.i2">
+          <tags>
+            <tag><Math mode="inline" tex="\star" text="star" xml:id="S7.I1.i2.m1">
+                <XMath>
+                  <XMTok name="star" role="MULOP">⋆</XMTok>
+                </XMath>
+              </Math></tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S7.I1.i2.p1">
             <p>Second.</p>
           </para>
         </item>
-        <item refnum="foo" xml:id="I10.ix1">
-          <tag>foo</tag>
-          <para xml:id="I10.ix1.p1">
+        <item xml:id="S7.I1.ix2">
+          <tags>
+            <tag>foo</tag>
+            <tag role="typerefnum">item foo</tag>
+          </tags>
+          <para xml:id="S7.I1.ix2.p1">
             <p>bar</p>
           </para>
         </item>
-        <item frefnum="$\star$" refnum="3" xml:id="I10.i3">
-          <tag><Math mode="inline" tex="\star" text="star" xml:id="I10.i3.m1">
-              <XMath>
-                <XMTok name="star" role="MULOP">⋆</XMTok>
-              </XMath>
-            </Math></tag>
-          <para xml:id="I10.i3.p1">
+        <item xml:id="S7.I1.i3">
+          <tags>
+            <tag><Math mode="inline" tex="\star" text="star" xml:id="S7.I1.i3.m1">
+                <XMath>
+                  <XMTok name="star" role="MULOP">⋆</XMTok>
+                </XMath>
+              </Math></tag>
+            <tag role="typerefnum">3rd item</tag>
+          </tags>
+          <para xml:id="S7.I1.i3.p1">
             <p>And the third.</p>
           </para>
         </item>
@@ -339,26 +518,38 @@
     </para>
     <para xml:id="S7.p2">
       <itemize>
-        <item frefnum="7 - 1" refnum="1" xml:id="exer1">
-          <tag><text font="bold">7 - 1</text></tag>
+        <item xml:id="exer1">
+          <tags>
+            <tag><text font="bold">7 - 1</text></tag>
+            <tag role="refnum">1</tag>
+          </tags>
           <para xml:id="exer1.p1">
             <p>First item.</p>
           </para>
         </item>
-        <item frefnum="7 - 2" refnum="2" xml:id="exer2">
-          <tag><text font="bold">7 - 2</text></tag>
+        <item xml:id="exer2">
+          <tags>
+            <tag><text font="bold">7 - 2</text></tag>
+            <tag role="refnum">2</tag>
+          </tags>
           <para xml:id="exer2.p1">
             <p>Second.</p>
           </para>
         </item>
-        <item refnum="foo" xml:id="exerx1">
-          <tag>foo</tag>
+        <item xml:id="exerx1">
+          <tags>
+            <tag>foo</tag>
+            <tag role="typerefnum">item foo</tag>
+          </tags>
           <para xml:id="exerx1.p1">
             <p>bar</p>
           </para>
         </item>
-        <item frefnum="7 - 3" refnum="3" xml:id="exer3">
-          <tag><text font="bold">7 - 3</text></tag>
+        <item xml:id="exer3">
+          <tags>
+            <tag><text font="bold">7 - 3</text></tag>
+            <tag role="refnum">3</tag>
+          </tags>
           <para xml:id="exer3.p1">
             <p>And the third.</p>
           </para>

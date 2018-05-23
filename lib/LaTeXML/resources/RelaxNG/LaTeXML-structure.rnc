@@ -361,7 +361,7 @@ element toctitle { toctitle_attributes, toctitle_model }
 toctitle_attributes = Common.attributes
 
 ## Content model for \elementref{toctitle}.
-toctitle_model = (text | Inline.class | Misc.class | Meta.class | tag)*
+toctitle_model = (tag | text | Inline.class | Misc.class | Meta.class)*
 
 #----------------------------------------------------------------------
 
@@ -541,8 +541,8 @@ TOC_attributes =
    Common.attributes,
    FrontMatter.attributes,
 
-   ## indicates the kind of list
-   attribute role { ("contents" | "figures" | "tables" | text) }?,
+   ## indicates the kind of lists; space separated names of lists like "toc","lof", etc.
+   attribute lists { text }?,
 
    ## indicates what kind of document elements to list, in the form of
    ## one or more tags such as \texttt{ltx:chapter} separated by \texttt{|}
@@ -555,11 +555,14 @@ TOC_attributes =
    ## otherwise an xml:id
    attribute scope { ("current" | "global" | text) }?,
 
+   ## indicates what things to show in each entry
+   attribute show { text }?,
+   
    ## indicates how to format the listing
    attribute format { ("normal" | "short" | "veryshort" | text) }?
 
 ## Content model for \elementref{TOC}.
-TOC_model = toclist?
+TOC_model = title?, toclist?
 
 toclist =
 ## The actual table of contents list, filled in.
@@ -602,7 +605,7 @@ FrontMatter.attributes =
 
 ## The content allowed for the front matter of each sectional unit,
 ## and the document.
-SectionalFrontMatter.class = title | toctitle | creator
+SectionalFrontMatter.class = tags? | title | toctitle | creator
 
 ## The content allowed (in addition to \patternref{SectionalFrontMatter.class})
 ## for the front matter of a document.

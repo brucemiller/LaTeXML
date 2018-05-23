@@ -20,6 +20,45 @@ use LaTeXML::Package;
 #RequirePackage('ragged2e');
 #RequirePackage('keyval');
 
+# Should learn how to use the new KeyVals code to get these to make appropriate assignments!
+# Most caption keyvals are ignorable, though.
+DefKeyVal('caption', 'format',      '',          '');      # plain, hang,...
+DefKeyVal('caption', 'indentation', 'Dimension', '0pt');
+DefKeyVal('caption', 'labelformat', '', 'default'); # default, empty, simple, brace, parens; Use this!
+DefKeyVal('caption', 'labelsep',      '', '');    # none, colon, period, space, quad, newline,endash
+DefKeyVal('caption', 'textformat',    '', '');    # empty, simple, period
+DefKeyVal('caption', 'justification', '', '');    # justified, centering, centerlast, centerfirst,
+# raggedright, RaggedRight, raggedleft
+DefKeyVal('caption', 'singlelinecheck', '', '');
+# These font values are, in effect, keyvals lists!
+DefKeyVal('caption', 'font',       '',          '');
+DefKeyVal('caption', 'labelfont',  '',          '');
+DefKeyVal('caption', 'textfont',   '',          '');
+DefKeyVal('caption', 'font+',      '',          '');      # These add to the font
+DefKeyVal('caption', 'labelfont+', '',          '');
+DefKeyVal('caption', 'textfont+',  '',          '');
+DefKeyVal('caption', 'margin',     'Dimension', '0pt');
+DefKeyVal('caption', 'margin*',    'Dimension', '0pt');
+DefKeyVal('caption', 'minmargin',  'Dimension', '0pt');
+DefKeyVal('caption', 'maxmargin',  'Dimension', '0pt');
+DefKeyVal('caption', 'parskip',    'Dimension', '0pt');
+DefKeyVal('caption', 'width',      'Dimension', '0pt');
+DefKeyVal('caption', 'oneside',    '',          '');
+DefKeyVal('caption', 'twoside',    '',          '');
+DefKeyVal('caption', 'hangindent', 'Dimension', '0pt');
+
+DefKeyVal('caption', 'style', '', '');    # base, ...
+
+DefKeyVal('caption', 'skip',           'Dimension', '0pt');
+DefKeyVal('caption', 'position',       '',          '');      #  top, above, bottom, below
+DefKeyVal('caption', 'figureposition', '',          '');
+DefKeyVal('caption', 'tableposition',  '',          '');
+
+DefKeyVal('caption', 'list',       '', '');                   # boolean (no)
+DefKeyVal('caption', 'listformat', '', '');                   # name of list
+DefKeyVal('caption', 'name',       '', '');                   # \<float>name ?
+DefKeyVal('caption', 'type',       '', '');                   # table or figure
+
 DefMacro('\captionsetup[]{}', Tokens());
 
 DefMacro('\DeclareCaptionStyle{}[]{}',        Tokens());
@@ -62,19 +101,18 @@ DefMacro('\caption',
 DefMacro('\@scaption {}', '\@@caption{#1}');
 
 # This is a horrible thing that fakes a caption anywhere.
-# It isn't necessarily in a figure or any float, so it can't really match our schema
+# It isn't necessarily IN a figure or any float, so we'll wrap it in an otherwise empty one!
 DefMacro('\captionof', '\@ifstar{\@scaptionof}{\@captionof}');
-DefMacro('\@captionof {}[]{}',
-  '\GenericInfo{\string\captionof}{\space will not generate proper caption or list of #1s}'
-    . '{\let\@@toccaption\@gobble\let\@@caption\@fake@@caption\let\@tag\@fake@tag'
-    . '\def\@captype{#1}\@caption{#1}[#2]{#3}}');
+DefMacro('\@captionof{}[]{}',
+  '\@ifnext\label{\@captionof@postlabel{#1}{#2}{#3}}{\@captionof@{#1}{#2}{#3}}');
+# Check for trailing \label!
+DefMacro('\@captionof@postlabel{}{}{} SkipMatch:\label Semiverbatim',
+  '\@captionof@{#1}{#2}{#3\label{#4}}');
+DefMacro('\@captionof@ {}{}{}',
+  '\begin{#1}\@caption@{#1}{#2}{#3}\end{#1}');
+
 DefMacro('\@scaptionof {}{}',
-  '\GenericInfo{\string\captionof}{\space will not generate proper caption or list of #1s}'
-    . '{\let\@@caption\@fake@@caption'
-    . '\def\@captype{#1}\@scaption{#2}}');
-DefConstructor('\@fake@tag[][]{}',
-  "?#3(<ltx:text class='ltx_tag'>#1#3#2</ltx:text>)()");
-DefConstructor('\@fake@@caption{}', "<ltx:block class='ltx_caption'>#1</ltx:block>");
+  '\begin{#1*}\@scaption{#2}\end{#1*}');
 
 DefMacro('\clearcaptionsetup',    Tokens());
 DefMacro('\rotcaption',           Tokens());

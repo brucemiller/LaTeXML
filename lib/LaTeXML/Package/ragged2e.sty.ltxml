@@ -1,0 +1,49 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  ragged2e                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Just copy the basic defns from LaTeX
+Let('\Centering',   '\centering');
+Let('\RaggedRight', '\raggedright');
+Let('\RaggedLeft',  '\raggedleft');
+Let('\Center',      '\center');
+Let('\endCenter',   '\endcenter');
+Let('\FlushLeft',   '\flushleft');
+Let('\FlushRight',  '\flushright');
+DefMacro('\justifying', '');
+
+DefRegister('\CenteringLeftskip',      Dimension(0));
+DefRegister('\RaggedLeftLeftskip',     Dimension(0));
+DefRegister('\RaggedRightLeftskip',    Dimension(0));
+DefRegister('\CenteringRightskip',     Dimension(0));
+DefRegister('\RaggedLeftRightskip',    Dimension(0));
+DefRegister('\RaggedRightRightskip',   Dimension(0));
+DefRegister('\CenteringParfillskip',   Dimension(0));
+DefRegister('\RaggedLeftParfillskip',  Dimension(0));
+DefRegister('\RaggedRightParfillskip', Dimension(0));
+DefRegister('\JustifyingParfillskip',  Dimension(0));
+DefRegister('\CenteringParindent',     Dimension(0));
+DefRegister('\RaggedLeftParindent',    Dimension(0));
+DefRegister('\RaggedRightParindent',   Dimension(0));
+DefRegister('\JustifyingParindent',    Dimension(0));
+
+#======================================================================
+1;

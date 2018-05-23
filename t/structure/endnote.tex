@@ -1,0 +1,30 @@
+\documentclass{article}
+\usepackage{endnotes}
+\begin{document}
+\section{Basic endnotes}
+A test\endnote{An Endnote!\label{end:one}}.
+
+Another test\endnote{Another Endnote!\label{end:two}}.
+
+A special test\endnote[77]{A special Endnote!\label{end:three}}.
+
+A final test\endnote{A final Endnote!\label{end:four}}.
+
+A long endnote\endnote{Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.\label{end:five}}.
+
+\section{Separated endnotes}
+An endnote mark\endnotemark.
+Later, the endnote's text appears
+\endnotetext{A separated endnote\label{end:six}}.
+Another endnote mark\endnotemark.
+Later, the endnote's text appears
+\endnotetext{Another separated endnote\label{end:seven}}.
+
+Suppose the text appears first\endnotetext[999]{A separated endnote\label{end:eight}},
+and then the endnote mark using a given mark\endnotemark[999]?
+
+We have presented several endnotes \ref{end:one}, \ref{end:two}, \ref{end:three},
+ \ref{end:four}, \ref{end:five}, \ref{end:six}, \ref{end:seven} and \ref{end:eight}.
+
+\printendnotes
+\end{document}

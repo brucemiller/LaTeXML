@@ -113,35 +113,35 @@ DefMacro('\setdefaultitem{}{}{}{}', sub {
 
 DefEnvironment('{inparaitem} OptionalUndigested',
   "<ltx:inline-itemize xml:id='#id'>#body</ltx:inline-itemize>",
-  properties => sub { beginItemize('inline@itemize', '@@item'); },
+  properties => sub { beginItemize('inline@itemize', '@item'); },
   afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); });
 DefEnvironment('{compactitem} OptionalUndigested',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  properties => sub { beginItemize('itemize', '@@item'); },
+  properties => sub { beginItemize('itemize', '@item'); },
   afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); });
 DefEnvironment('{asparaitem} OptionalUndigested',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  properties => sub { beginItemize('itemize', '@@item'); },
+  properties => sub { beginItemize('itemize', '@item'); },
   afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); });
 
 if (IfCondition(T_CS('\if@plnewitem'))) {
   DefEnvironment('{itemize} OptionalUndigested',
     "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-    properties => sub { beginItemize('itemize', '@@item'); },
+    properties => sub { beginItemize('itemize', '@item'); },
     afterDigestBegin => sub { setItemizationStyle($_[1]->getArg(1)); }); }
 
 #======================================================================
 # Descriptions
 DefEnvironment('{inparadesc}',
   "<ltx:inline-description xml:id='#id'>#body</ltx:inline-description>",
-  properties => sub { beginItemize('inline@description', '@@desc'); });
+  properties => sub { beginItemize('inline@description', '@desc'); });
 
 DefEnvironment('{compactdesc}',
   "<ltx:description xml:id='#id'>#body</ltx:description>",
-  properties => sub { beginItemize('description', '@@desc'); });
+  properties => sub { beginItemize('description', '@desc'); });
 DefEnvironment('{asparadesc}',
   "<ltx:description xml:id='#id'>#body</ltx:description>",
-  properties => sub { beginItemize('description', '@@desc'); });
+  properties => sub { beginItemize('description', '@desc'); });
 # \paradescriptionlabel{}
 
 #======================================================================

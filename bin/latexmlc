@@ -162,6 +162,9 @@ if ($result) {
     if (!open($output_handle, ">", $opts->get('destination'))) {
       print STDERR "Fatal:I/O:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
       exit 1; }
+    if ($whatsout eq 'archive') {
+      binmode($output_handle, ':raw');
+    }
     print $output_handle $result;
     close $output_handle;
   } else {

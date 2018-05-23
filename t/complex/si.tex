@@ -1,0 +1,1566 @@
+\documentclass{article}
+\usepackage{xcolor}
+\usepackage{cancel}
+\usepackage{siunitx}
+\usepackage{float}
+\usepackage{multirow}
+\usepackage{booktabs}
+
+\DeclareSIQualifier\polymer{pol}
+\DeclareSIQualifier\catalyst{cat}
+\DeclareSIQualifier\isotropic{i} %?
+
+\DeclareSIUnit\abbra{ a }
+\DeclareSIUnit\abbrb{ \abbra }  % abbreviation
+\DeclareSIUnit\abbrc{ \abbrb }  % abbreviation twice
+\DeclareSIUnit\abbrd{ \abbre }  % before defined
+\DeclareSIUnit\abbre{ e }
+
+\def\mabbra{a}
+\DeclareSIUnit\mabbrb{\mabbra}
+
+\DeclareSIPrefix\killer{\kilo}{3}
+
+\usepackage{amsmath}
+\begin{document}
+{
+\color{red}
+Some text \\
+\SI{4}{\metre\per\sievert} \\
+More text \\
+\SI[color = blue]{4}{\metre\per\sievert} \\
+Still red here!
+\numlist[color = blue]{1;2;3;4}\\
+Still red here!\\
+}
+
+\si{m^2.s}\\
+\si{\mu m^2}\\
+
+\SI{0.094}{\pi . \milli\meter . \milli\radian}\\
+
+\SI{0.094}{\frac{1}{3} . \milli\meter . \milli\radian}\\
+
+\SI{0.094}{\pi \per \milli\meter . \milli\radian\tothe{3}}\\
+\section{Numbers}
+\subsection{General}
+%\num{\sqrt{2}}\\
+%\num{{a word}}\\
+\num{12345,67890}\\
+\num{1+-2i}\\
+\num{.3e45}\\
+\num{1.654 x 2.34 x 3.430}\\
+\num{\pi}\\
+\num{2\pi}\\
+\num{\pi/3}\\
+
+\num{123}\\
+\num{1234}\\
+\num{12345}\\
+\num{0.123}\\
+\num{0,1234}\\
+\num{.12345}\\
+\num{3.45d-4}\\
+\num{-e10}\\
+
+\num{123e4}\\
+%\num{123e4(3)}\\
+\num{123(3)e4}\\
+
+\num{123\pm2}\\
+\num{123\pm2i}\\
+\num{123+234i}\\
+%\num{123+234}\\
+%\num{123e2+234e3i}\\
+\num{123+234ie3}\\
+\num{123(1)+234(1)ie3}\\
+%\num{123e2(1)+234e3i(1)}\\
+%\num{+234(1)ie3}\\              %comes out weird?
+\num{+3i}\\
+\num{+3ie4}\\
+
+Pretty nonsensical stuff?
+\num{1.\pi e+3}\\
+\def\dig{1234}\\
+\num{\dig.\dig}\\
+\def\odd{\xi}\\
+\def\odder{\odd}\\
+\num[input-symbols=\xi]{3\xi}\\
+\num[input-symbols=\xi]{3\odd}\\
+%\num[input-symbols=\odd]{3\odd}\\
+\num[input-symbols=\odd, input-protect-tokens=\odd]{3\odd}\\
+\num[input-symbols=\odd, input-protect-tokens=\odd]{3\odder}\\
+\num[input-symbols=\odder, input-protect-tokens=\odder]{3\odder}\\
+%\num[input-symbols=\odder, input-protect-tokens=\odd]{3\odder}\\
+%\num[input-symbols=\odd, input-protect-tokens=\odder]{3\odder}\\
+
+\num{1.23(1)}\\
+%\num{1.23(0.01)}
+\num{1.23\pm0.01}\\
+%\num{1.23(1.0)}\\
+%\num{1.23(\pm1)}\\
+\num{1.23(\pi)}\\
+
+\subsection{Parsing numbers}
+
+\subsubsection{input-digits, input-decimal-markers, input-signs, input-exponent-markers}
+
+\subsubsection{input-symbols, input-ignore}
+\subsubsection{input-comparators}
+
+\num{< 10} \\
+%\SI{>> 5}{\metre} \\
+\num{\le 0.12}\\
+
+\subsubsection{input-open-uncertainty, input-close-uncertainty, input-uncertainty-signs}
+\num{9.99(9)}\\
+\num{9.99 +- 0.09}\\
+\num{9.99 \pm 0.09}\\
+\num{123 +- 4.5}\\
+\num{12.3 +- 6}\\
+
+\subsubsection{input-complex-roots}
+\num{9.99 + 88.8i} \\
+\num{9.99 + i88.8}\\
+
+\subsubsection{input-protect-tokens}
+
+\subsubsection{parse-numbers}
+\num[parse-numbers = false]{\sqrt{2}}\\
+
+\subsection{Post-processing numbers}
+\subsubsection{round-mode, round-precision}
+{
+\num{1.23456} \\
+\num{14.23} \\
+\num{0.12345(9)} \\
+\sisetup{
+  round-mode = places,
+  round-precision = 3
+}%
+\num{1.23456} \\
+\num{14.23} \\
+\num{0.12345(9)} \\
+\sisetup{
+  round-mode = figures,
+  round-precision = 3
+}%
+\num{1.23456} \\
+\num{14.23} \\
+\num{0.12345(9)}\\
+}
+\subsubsection{round-integer-to-decimal}
+{
+\num[round-mode = figures]{1} \\
+\num[round-mode = places]{1} \\
+\sisetup{round-integer-to-decimal}
+\num[round-mode = figures]{1} \\
+\num[round-mode = places]{1}\\
+}
+
+\subsubsection{round-minimum}
+{
+\sisetup{round-mode = places}%
+\num{0.0055} \\
+\num{0.0045} \\
+\sisetup{round-minimum = 0.01}%
+\num{0.0055} \\
+\num{0.0045}\\
+}
+
+\subsubsection{round-half}
+{
+\sisetup{round-mode = places, round-half = up}%
+\num{0.055} \\
+\num{0.045} \\
+\sisetup{round-half = even}%
+\num{0.055} \\
+\num{0.045}
+}
+
+\subsubsection{add-decimal-zero, add-integer-zero}
+{
+\num{123.} \\
+\num{456} \\
+\num{.789} \\
+\sisetup{
+  add-decimal-zero = false,
+  add-integer-zero = false,
+}%
+\num{123.} \\
+\num{456} \\
+\num{.789}\\
+}
+
+\subsubsection{minimum-integer-digits}
+\num{123} \\
+\num[minimum-integer-digits = 1]{123} \\
+\num[minimum-integer-digits = 2]{123} \\
+\num[minimum-integer-digits = 3]{123} \\
+\num[minimum-integer-digits = 4]{123}\\
+
+\subsubsection{explicit-sign, retain-explicit-sign}
+\num{+345} \\
+\num[retain-explicit-plus]{+345} \\
+\num[explicit-sign = -]{345}\\
+\num[explicit-sign = -]{+345}\\
+
+\subsubsection{retain-unity-mantissa, retain-zero-exponent}
+\num{1e4} \\
+\num[retain-unity-mantissa = false]{1e4} \\
+\num{444e0} \\
+\num[retain-zero-exponent = true]{444e0}\\
+
+\subsubsection{scientific-notation, fixed-exponent}
+{
+\num{0.001}\\
+\num{0.0100} \\
+\num{1200}\\
+\sisetup{scientific-notation = true}%
+\num{0.001}\\
+\num{0.0100} \\
+\num{1200}\\
+\sisetup{scientific-notation = engineering}%
+\num{0.001}\\
+\num{0.0100} \\
+\num{1200}\\
+\sisetup{
+fixed-exponent = 2,
+scientific-notation = fixed,
+}%
+\num{0.001}\\
+\num{0.0100} \\
+\num{1200}\\
+}
+
+\subsubsection{omit-uncertainty}
+\num{0.01(2)} \\
+\num[omit-uncertainty]{0.01(2)}\\
+
+\subsection{Printing numbers}
+\subsubsection{group-digits, group-four-digits,group-seperator}
+\num{12345.67890}\\
+\num[group-digits= false]{12345.67890}\\
+\num[group-digits= decimal]{12345.67890} \\
+\num[group-digits= integer]{12345.67890}\\
+
+\num[group-digits= false]{12345.67890}\\
+\num[group-digits= decimal]{12345.67890} \\
+\num[group-digits= integer]{12345.67890}\\
+
+\num{1234567890.1234567890}\\
+\num[group-four-digits]{1234567890.1234567890}\\
+
+\num{12345} \\
+\num[group-separator = {,}]{12345} \\
+\num[group-separator = \text{~}]{12345}\\
+
+\subsubsection{group-minimum-digits}
+\num{1234} \\
+\num[group-minimum-digits = 4]{1234} \\
+\num{1234.5678} \\
+\num[group-minimum-digits = 4]{1234.5678}\\
+
+\subsubsection{output-complex-root,output-decimal-marker,copy-complex-root,copy-decimal-marker}
+\num{1.23} \\
+\num[output-decimal-marker = {,}]{1.23} \\
+\num{1+2i} \\
+\num[output-complex-root = \text{\ensuremath{i}}]{1+2i} \\
+\num[output-complex-root = j]{1+2i} \\
+\num[copy-complex-root]{1+2j} \\
+\num[copy-decimal-marker]{555,555}\\
+
+\subsubsection{complex-root-position}
+\num{67-0.9i} \\
+\num[complex-root-position = before-number]{67-0.9i} \\
+\num[complex-root-position = after-number]{67-0.9i}\\
+
+\subsubsection{exponent-base, exponent-product}
+\num[exponent-product = \times]{1e2} \\
+\num[exponent-product = \cdot]{1e2} \\
+\num[exponent-base = 2]{1e2}\\
+
+\subsubsection{output-exponent-marker}
+\num[output-exponent-marker = \text{e}]{1e2} \\
+\num[output-exponent-marker = \ensuremath{\mathrm{E}}]{1e2}\\
+
+\subsubsection{separate-uncertainty,uncertainty-separator,output-open-uncertainty,output-close-uncertain
+ty}
+{
+\num{1.234(5)} \\
+\num{1.234\pm 0.005} \\
+\num[separate-uncertainty = true]{1.234(5)} \\
+\num[separate-uncertainty = true]{1.234\pm 0.005} \\
+\sisetup{
+  output-open-uncertainty = [,
+  output-close-uncertainty = ],
+  uncertainty-separator= {\,}
+}
+\num{1.234(5)}\\
+}
+\num{8.2(13)} \\
+\num{8.2\pm1.3} \\
+\num[separate-uncertainty]{8.2(13)}\\
+\num[separate-uncertainty]{8.2\pm1.3} \\
+
+\num{1.234(5) x \pi} \\
+\num[separate-uncertainty = true]{1.234(5) x \pi} \\
+
+\num{1.2 +- 0.001}\\
+\num[separate-uncertainty]{1.2 +- 0.001}\\
+
+\subsubsection{bracket-numbers, open-bracket, close-bracket}
+{
+\num{1 e10} \\
+\num{2i e10} \\
+\num{1+2i e10} \\
+\num[bracket-numbers = false]{1+2i e10} \\
+\sisetup{
+  open-bracket = \{,
+  close-bracket = \},
+}
+\num{1+2i e10}\\
+}
+
+\subsubsection{negative-color}
+\num{-15673} \\
+\num[negative-color = red]{-15673}
+
+\subsubsection{bracket-negative-numbers}
+\num{-15673} \\
+\num[bracket-negative-numbers]{-15673} \\
+%\SI{-10}{\metre} \\
+%\SI[bracket-negative-numbers]{-10}{\metre}
+
+\subsection{Multi-part Numbers}
+
+\subsubsection{input-product,input-quotient}
+\num{1 x 2 x 3} \\
+\num{1e4 x 2(3) x 3/4} \\
+\num[input-product=*]{4 * 5 * 6} \\
+\num{ 1 / 2e4 } \\
+\num{ 1e2 / 3e4 }\\
+
+\subsubsection{output-product, output-quotient}
+\num[output-product = \cdot]{4.87 x 5.321 x 6.90545} \\
+\num[output-quotient = \text{ div }]{1 / 2}\\
+
+\subsubsection{quotient-mode}
+\num{1 / 2e4} \\
+\num[quotient-mode = fraction]{1 / 2e4}\\
+
+\subsubsection{fraction-function}
+{
+\sisetup{quotient-mode= fraction}
+\num{1 / 1}\\
+\num[fraction-function= \dfrac]{1 / 2}\\
+%\num[fraction-function= \sfrac]{1 / 3}\\
+\num[fraction-function= \tfrac]{1 / 4}\\
+}
+
+\subsection{Lists and ranges of numbers}
+\subsubsection{list-final-separator,list-pair-separator,list-separator}
+\numlist{0.1;0.2;0.3}\\
+\numlist[list-separator = {; }]{0.1;0.2;0.3}\\
+\numlist[list-final-separator = {, }]{0.1;0.2;0.3} \\
+\numlist[
+list-separator
+= { and },
+list-final-separator = { and finally }
+]{0.1;0.2;0.3} \\
+\numlist{0.1;0.2} \\
+\numlist[list-pair-separator = {, and }]{0.1;0.2}\\
+
+\subsection{range-phrase}
+
+\numrange{5}{100} \\
+\numrange[range-phrase = --]{5}{100}\\
+
+\subsection{Angles}
+\subsubsection{number-angle-product}
+\ang{2.67} \\
+\ang[number-angle-product = \,]{2.67}
+\subsubsection{arc-separator}
+\ang{6;7;6.5} \\
+\ang[arc-separator = \,]{6;7;6.5}
+\subsubsection{add-arc-degree-zero,add-arc-minute-zero,add-arc-second-zero}
+\ang{-1;;} \\
+\ang{;-2;} \\
+\ang{;;-3} \\
+{
+\sisetup{add-arc-degree-zero}
+\ang{-1;;} \\
+\ang{;-2;} \\
+\ang{;;-3} \\
+}
+{
+\sisetup{add-arc-minute-zero}
+\ang{-1;;} \\
+\ang{;-2;} \\
+\ang{;;-3} \\
+}
+{
+\sisetup{add-arc-second-zero}
+\ang{-1;;} \\
+\ang{;-2;} \\
+\ang{;;-3}\\
+}
+\ang[add-arc-minute-zero,add-arc-second-zero]{45.697}\\
+
+\subsubsection{angle-symbol-over-decimal}
+\ang{45.697} \\
+\ang{6;7;6.5} \\
+\ang[angle-symbol-over-decimal]{45.697} \\
+\ang[angle-symbol-over-decimal]{6;7;6.5}
+
+% \ang{10}\\
+% \ang{12.3}\\
+% \ang{4,5}\\
+% \ang{1;2;3}\\
+% \ang{;;1}\\
+% \ang{+10;;}\\
+% \ang{-0;1;}\\
+
+
+\section{Units}
+\def\showunit#1{#1 & \texttt{$\backslash$#1} & \si{\csname#1\endcsname}}
+\begin{table}
+\caption{SI base units}
+\centering
+\begin{tabular}{lll}\hline\hline
+Unit & Macro & Symbol \\\hline
+\showunit{ampere}\\
+\showunit{candela}\\
+\showunit{kelvin}\\
+\showunit{kilogram}\\
+\showunit{metre}\\
+\showunit{mole}\\
+\showunit{second}\\
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Coherent derived units}
+\centering
+\begin{tabular}{llllll}\hline\hline
+Unit & Macro & Symbol &
+Unit & Macro & Symbol \\\hline
+\showunit{becquerel}     & \showunit{newton} \\
+\showunit{degreeCelsius} & \showunit{ohm} \\
+\showunit{coulomb}       & \showunit{pascal} \\
+\showunit{farad}         & \showunit{radian} \\
+\showunit{gray}          & \showunit{siemens} \\
+\showunit{hertz}         & \showunit{sievert} \\
+\showunit{henry}         & \showunit{steradian} \\
+\showunit{joule}         & \showunit{tesla} \\
+\showunit{katal}         & \showunit{volt} \\
+\showunit{lumen}         & \showunit{watt} \\
+\showunit{lux}           & \showunit{weber} \\
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Non-SI units}
+\centering
+\begin{tabular}{lll}\hline\hline
+Unit & Macro & Symbol \\\hline
+\showunit{day}\\
+\showunit{degree}\\
+\showunit{hectare}\\
+\showunit{hour} \\
+\showunit{litre}\\
+\showunit{liter}\\
+\showunit{arcminute}\\
+\showunit{minute}\\
+\showunit{arcsecond}\\
+\showunit{tonne}\\
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Expermental Non-SI units}
+\centering
+\begin{tabular}{lll}\hline\hline
+Unit & Macro & Symbol \\\hline
+\showunit{astronomicalunit}\\
+\showunit{atomicmassunit}\\
+\showunit{bohr}\\
+\showunit{clight}\\
+\showunit{dalton}\\
+\showunit{electronmass}\\
+\showunit{electronvolt}\\
+\showunit{elementarycharge}\\
+\showunit{hartree}\\
+\showunit{planckbar}\\
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Other non-SI units}
+\centering
+\begin{tabular}{lll}\hline\hline
+Unit & Macro & Symbol \\\hline
+\showunit{angstrom}\\
+\showunit{bar}\\
+\showunit{barn}\\
+\showunit{bel}\\
+\showunit{decibel}\\
+\showunit{knot}\\
+\showunit{mmHg}\\
+\showunit{nauticalmile}\\
+\showunit{neper}\\
+\end{tabular}
+\end{table}
+
+\def\showprefix#1{#1 & \texttt{$\backslash$#1} & \si{\csname#1\endcsname} & \si[prefixes-as-symbols=false]{\csname#1\endcsname}}
+\begin{table}
+\caption{Other non-SI units}
+\centering
+\begin{tabular}{llllllll}\hline\hline
+Unit & Macro & Symbol & Power
+Unit & Macro & Symbol & Power \\\hline
+\showprefix{yocto} & \showprefix{deca}\\
+\showprefix{zepto} & \showprefix{hecto}\\
+\showprefix{atto}  & \showprefix{kilo}\\
+\showprefix{femto} & \showprefix{mega}\\
+\showprefix{pico}  & \showprefix{giga}\\
+\showprefix{nano}  & \showprefix{tera}\\
+\showprefix{micro} & \showprefix{peta}\\
+\showprefix{milli} & \showprefix{exa}\\
+\showprefix{centi} & \showprefix{zetta}\\
+\showprefix{deci}  & \showprefix{yotta}\\
+\end{tabular}
+\end{table}
+
+
+\begin{table}
+\caption{Abbreviated units}
+\centering
+\begin{tabular}{lll}\hline\hline
+Unit & Macro & Symbol \\\hline
+\showunit{fg}\\
+\showunit{pg}\\
+\showunit{ng}\\
+\showunit{ug}\\
+\showunit{mg}\\
+\showunit{g}\\
+\showunit{kg}\\
+\showunit{amu}\\\hline
+\showunit{pm}\\
+\showunit{nm}\\
+\showunit{um}\\
+\showunit{mm}\\
+\showunit{cm}\\
+\showunit{dm}\\
+\showunit{m}\\
+\showunit{km}\\\hline
+\showunit{as}\\
+\showunit{fs}\\
+\showunit{ps}\\
+\showunit{ns}\\
+\showunit{us}\\
+\showunit{ms}\\
+\showunit{s}\\\hline
+\showunit{fmol}\\
+\showunit{pmol}\\
+\showunit{nmol}\\
+\showunit{umol}\\
+\showunit{mmol}\\
+\showunit{mol}\\
+\showunit{kmol}\\\hline
+\showunit{pA}\\
+\showunit{nA}\\
+\showunit{uA}\\
+\showunit{mA}\\
+\showunit{A}\\
+\showunit{kA}\\\hline
+\showunit{ul}\\
+\showunit{ml}\\
+\showunit{l}\\
+\showunit{hl}\\
+\showunit{uL}\\
+\showunit{mL}\\
+\showunit{L}\\
+\showunit{hL}\\\hline
+\showunit{mHz}\\
+\showunit{Hz}\\
+\showunit{kHz}\\
+\showunit{MHz}\\
+\showunit{GHz}\\
+\showunit{THz}\\\hline
+\showunit{mN}\\
+\showunit{N}\\
+\showunit{kN}\\
+\showunit{MN}\\\hline
+\showunit{Pa}\\
+\showunit{kPa}\\
+\showunit{MPa}\\
+\showunit{GPa}\\\hline
+\showunit{mohm}\\
+\showunit{kohm}\\
+\showunit{Mohm}\\\hline
+\showunit{pV}\\
+\showunit{nV}\\
+\showunit{uV}\\
+\showunit{mV}\\
+\showunit{V}\\
+\showunit{kV}\\\hline
+\showunit{W}\\
+\showunit{uW}\\
+\showunit{mW}\\
+\showunit{kW}\\
+\showunit{MW}\\
+\showunit{GW}\\\hline
+\showunit{J}\\
+\showunit{kJ}\\\hline
+\showunit{eV}\\
+\showunit{meV}\\
+\showunit{keV}\\
+\showunit{MeV}\\
+\showunit{GeV}\\
+\showunit{TeV}\\\hline
+\showunit{kWh}\\\hline
+\showunit{F}\\
+\showunit{fF}\\
+\showunit{pF}\\\hline
+\showunit{K}\\\hline
+\showunit{dB}\\\hline
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Binary prefixes}
+\centering
+\begin{tabular}{llllllll}\hline\hline
+Unit & Macro & Symbol & Power \\\hline
+\showprefix{kibi} \\
+\showprefix{mebi} \\
+\showprefix{gibi} \\
+\showprefix{tebi} \\
+\showprefix{pebi} \\
+\showprefix{exbi} \\
+\showprefix{zebi} \\
+\showprefix{yobi} \\
+\end{tabular}
+\end{table}
+
+%\subsection{Creating Units}
+%\subsection{Loading additional units}
+
+\subsection{Using units}
+% Note that \kilogram is defined as \kilo\gram, and acts sorta like a macro
+\si{\kilogram}
+\si{\kilo\gram}
+% Not allowed.
+%\si{\kilo\kilogram}
+%\si{\kilo\kilo\gram}
+{
+% and note that regular macros ARE expanded!
+\def\killermeater{\kilo\meter}
+\si{\killermeater}
+}
+{
+% BUT, it prefers its OWN definitions!
+\def\gram{Grr}
+\si{\kilo\gram}
+}
+
+% However, it's happy with various indirect definitions.
+% Ie. units, prefixes (at least) act like regular macros within \si.
+\si{\abbra}\\
+\si{\abbrb}\\
+\si{\abbrc}\\
+\si{\abbrd}\\
+\si{\abbre}\\
+
+\si{\mabbra}\\
+\si{\mabbrb}\\
+
+\si{\killer\meter}\\
+
+% Where can highlight go?
+\si{\highlight{red}\kilo\gram\metre\per\second} \\
+\si{\kilo\highlight{red}\gram\metre\per\second} \\
+\si{\kilo\gram\highlight{red}\metre\per\second} \\
+\si{\kilo\gram\metre\highlight{red}\per\second} \\
+\si{\kilo\gram\metre\per\highlight{red}\second} \\
+
+\si{\cancel\kilo\gram\metre\per\second} \\
+\si{\kilo\cancel\gram\metre\per\second} \\
+\si{\kilo\gram\cancel\metre\per\second} \\
+\si{\kilo\gram\metre\cancel\per\second} \\
+\si{\kilo\gram\metre\per\cancel\second} \\
+
+\subsubsection{forbid-literal-units, inter-unit-product}
+\si{\farad\squared\lumen\candela} \\
+\si[inter-unit-product = \ensuremath{{}\cdot{}}]
+{\farad\squared\lumen\candela}\\
+
+\subsubsection{per-mode, per-symbol, bracket-unit-denominator}
+\si{\joule\per\mole\per\kelvin} \\
+\si{\metre\per\second\squared} \\
+\si[per-mode=fraction]{\joule\per\mole\per\kelvin} \\
+\si[per-mode=fraction]{\joule\raiseto{-1}\mole\per\kelvin} \\
+\si[per-mode=fraction]{\metre\per\second\squared}\\
+\si{\ampere\per\mole\second} \\
+\si[per-mode = reciprocal-positive-first]{\ampere\per\mole\second}
+
+{
+\sisetup{per-mode = symbol}%
+\si{\joule\per\mole\per\kelvin} \\
+\si{\metre\per\second\squared} \\
+\si[per-symbol = \text{~div~}]{\joule\per\mole\per\kelvin} \\
+\si[bracket-unit-denominator = false]{\joule\per\mole\per\kelvin}\\
+}
+\si[per-mode=repeated-symbol]{\joule\per\mole\per\kelvin}\\
+{
+\sisetup{per-mode = symbol-or-fraction}%
+\( \si{\joule\per\mole\per\kelvin} \)
+\[ \si{\joule\per\mole\per\kelvin} \]
+\si{\joule\per\mole\per\kelvin} \\
+\(
+\displaystyle
+\si{\joule\per\mole\per\kelvin}
+\)
+\[
+\textstyle
+\si{\joule\per\mole\per\kelvin}
+\]
+}
+
+\subsubsection{sticky-per}
+\si{\pascal\per\gray\henry} \\
+\si[sticky-per]{\pascal\per\gray\henry}\\
+
+\subsubsection{power-font}
+\si{\metre\per\second\squared} \\
+\si[power-font = unit]{\metre\per\second\squared}\\
+
+\subsubsection{literal-superscript-as-power}
+\si{m.s^{2}} \\
+\si[literal-superscript-as-power = false]{m.s^{2}}\\
+
+\subsubsection{qualifier-mode, qualifier-phrase}
+\si{\kilogram\polymer\squared\per\mole\catalyst\per\hour} \\
+\si[qualifier-mode = brackets]
+{\kilogram\polymer\squared\per\mole\catalyst\per\hour} \\
+\si[qualifier-mode = subscript]
+{\kilogram\polymer\squared\per\mole\catalyst\per\hour} \\
+\si[qualifier-mode = space]
+{\kilogram\polymer\squared\per\mole\catalyst\per\hour} \\
+\si[qualifier-mode = text]
+{\deci\bel\isotropic}\\
+
+\si[qualifier-mode = phrase]
+{\kilogram\polymer\squared\per\mole\catalyst\per\hour} \\
+\si[qualifier-mode = phrase, qualifier-phrase = { by }]
+{\kilogram\polymer\squared\per\mole\catalyst\per\hour} \\
+
+\subsubsection{prefixes-as-symbols}
+\si{\milli\litre\per\mole\deci\ampere} \\
+%%\SI{10}{\kilo\gram\squared\deci\second} \\
+\si[prefixes-as-symbols=false]{\milli\litre\per\mole\deci\ampere}\\
+\si[prefixes-as-symbols=false]{\kilo\gram\squared\deci\second}\\
+\si{\mega\gram\squared\deci\second}\\
+\si[prefixes-as-symbols=false]{\mega\gram\squared\deci\second}\\
+\si{\micro\gram\squared\deci\second}\\
+\si[prefixes-as-symbols=false]{\micro\gram\squared\deci\second}\\
+\si{\per\mega\gram\squared\deci\second}\\
+\si[prefixes-as-symbols=false]{\per\mega\gram\squared\deci\second}\\
+\si{\per\micro\gram\squared\deci\second}\\
+\si[prefixes-as-symbols=false]{\per\micro\gram\squared\deci\second}\\
+%%\SI[prefixes-as-symbols=false]{10}{\kilo\gram\squared\deci\second}\\
+
+\subsubsection{parse-units}
+%%\SI{300}{\MHz} \\
+%%\SI[parse-units = false]{300}{\MHz}\\
+
+\subsection{Numbers with units}
+\subsubsection{allow-number-unit-breaks}
+\subsubsection{number-unit-product}
+\SI{2.67}{\farad} \\
+\SI[number-unit-product = \ ]{2.67}{\farad} \\
+\SI[number-unit-product = ]{2.67}{\farad}\\
+
+\subsubsection{multi-part-units}
+{
+\sisetup{separate-uncertainty}%
+\SI{12.3(4)}{\kilo\gram} \\
+\SI[multi-part-units = brackets]{12.3(4)}{\kilo\gram} \\
+\SI[multi-part-units = repeat]{12.3(4)}{\kilo\gram}\\
+\SI[multi-part-units = single]{12.3(4)}{\kilo\gram}\\
+}
+
+{
+\sisetup{separate-uncertainty,bracket-numbers = false}%
+\num{1.234(5)e-4} \\
+\SI{1.234(5)e-4}{\metre}\\
+}
+\subsubsection{product-units}
+\SI{2 x 3 x 4}{\metre} \\
+\SI[product-units = brackets]{2 x 3 x 4}{\metre}\\
+\SI[product-units = brackets-power]{2 x 3 x 4}{\metre}\\
+\SI[product-units = power]{2 x 3 x 4}{\metre}\\
+\SI[product-units = repeat]{2 x 3 x 4}{\metre}\\
+\SI[product-units = single]{2 x 3 x 4}{\metre}\\
+
+\subsubsection{list-units,range-units}
+\SIlist{2;4;6;8}{\tesla} \\
+\SIlist[list-units = brackets]{2;4;6;8}{\tesla} \\
+\SIlist[list-units = repeat]{2;4;6;8}{\tesla} \\
+\SIlist[list-units = single]{2;4;6;8}{\tesla} \\
+\SIrange{2}{4}{\degreeCelsius} \\
+\SIrange[range-units = brackets]{2}{4}{\degreeCelsius} \\
+\SIrange[range-units = repeat]{2}{4}{\degreeCelsius} \\
+\SIrange[range-units = single]{2}{4}{\degreeCelsius}\\
+
+\subsubsection{exponent-to-prefix}
+\SI{1700}{\g} \\
+\SI{1.7e3}{\g} \\
+{
+\sisetup{exponent-to-prefix}%
+\SI{1700}{\g} \\
+\SI{1.7e3}{\g} \\
+}
+{
+\sisetup{fixed-exponent = 3, scientific-notation = fixed}%
+\SI{1700}{\g} \\
+\SI{1.7e3}{\g}\\
+}
+
+
+\section{Tabular material}
+% \begin{tabular}{S}
+% 2.3456 \\
+% \end{tabular}
+% \end{document}
+
+
+\begin{table}[H]
+\caption{Standard behaviour of the \texttt{S} column type.}
+\label{tab:S:standard}
+\centering
+\begin{tabular}{S}
+\toprule
+{Some Values} \\
+\midrule
+2.3456 \\
+34.2345 \\
+-6.7835 \\
+90.473 \\
+5642.5 \\
+1.2e3 \\
+e4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+%\end{document}
+
+
+
+\begin{table}[H]
+\caption{Detection of surrounding material in an \texttt{S} column.}
+\label{tab:S:extras}
+\centering
+\begin{tabular}{S[color=orange]}
+\toprule
+{Some Values} \\
+\midrule
+12.34 \\
+\color{purple} 975,31 \\
+44.268 \textsuperscript{\emph{a}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\caption{Controlling complex alignment with the tablenum macro.}
+\label{tab:tablenum}
+\centering
+\begin{tabular}{lr}
+\toprule
+Heading & Heading \\
+\midrule
+Info & More info \\
+Info & More info \\
+\multicolumn{2}{c}{\tablenum[table-format = 4.4]{12,34}} \\
+\multicolumn{2}{c}{\tablenum[table-format = 4.4]{333.5567}} \\
+\multicolumn{2}{c}{\tablenum[table-format = 4.4]{4563.21}} \\
+\bottomrule
+\end{tabular}
+\hfil
+\begin{tabular}{lr}
+\toprule
+Heading & Heading \\
+\midrule
+\multirow{2}*{\tablenum{88,999}} & aaa \\
+& bbb \\
+\multirow{2}*{\tablenum{33,435}} & ccc \\
+& ddd \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{Units in tables.}
+\label{tab:s:demo}
+\begin{tabular}{s}
+\toprule
+\multicolumn{1}{c}{Unit} \\
+\midrule
+\metre\squared\per\second \\
+\pascal \\
+m.s^{-1} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{The \texttt{s} column processes everything.}
+\label{tab:s:processing}
+\sisetup{color = orange}
+\begin{tabular}{ss}
+\toprule
+{Unit}
+& \multicolumn{1}{c}{Unit}\\
+\midrule
+{\si{m^3}} & \multicolumn{1}{c}{\si{m^3}} \\
+\kilogram
+& \kilogram \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{table-parse-only}
+\begin{table}[H]
+\centering
+\caption{Parsing without aligning in an \texttt{S} column.}
+\label{tab:S:parse}
+\begin{tabular}{SS[table-parse-only]}
+\toprule
+{Decimal-centred} &
+{Simple centring} \\
+\midrule
+12.345 & 12.345 \\
+6,78   & 6,78   \\
+-88.8(9) & -88.8(9) \\
+4.5e3    & 4.5e3 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{table-number-alignment}
+\begin{table}[H]
+\caption{Aligning the \texttt{S} column.}
+\label{tab:S:align}
+\centering
+\sisetup{
+table-figures-integer = 2,
+table-figures-decimal = 4
+}
+\begin{tabular}{
+S
+S[table-number-alignment = center]
+S[table-number-alignment = left]
+S[table-number-alignment = right]
+}
+\toprule
+{Some Values} & {Some Values} & {Some Values} & {Some Values} \\
+\midrule
+2.3456 & 2.3456 & 2.3456 & 2.3456\\
+34.2345 & 34.2345 & 34.2345 & 34.2345\\
+56.7835 & 56.7835& 56.7835 & 56.7835\\
+90.473 & 90.473 & 90.473 & 90.473\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{table-figures-decimal, table-figures-exponent,table-figures-integer,table-figures-
+uncertainty}
+
+\begin{table}[H]
+\caption{Reserving space in \texttt{S} columns.}
+\label{tab:S:space}
+\sisetup{
+table-number-alignment = center,
+table-figures-integer = 2
+}
+\centering
+\begin{tabular}{
+S
+S[table-number-alignment = right]
+S[table-figures-uncertainty = 1]
+S[separate-uncertainty, table-figures-uncertainty = 1]
+S[table-sign-mantissa]
+S[table-figures-exponent = 1]
+}
+\toprule
+{Values}
+& {Values}
+& {Values}
+& {Values}
+& {Values}
+& {Values} \\
+\midrule
+2.3 & 2.3 & 2.3(5) & 2.3(5) & 2.3 & 2.3e8\\
+34.23 & 34.23 & 34.23(4) & 34.23(4) & 34.23 & 34.23\\
+56.78 & 56.78 & 56.78(3) & 56.78(3) & -56.78 & 56.78e3\\
+3,76 & 3,76 & 3,76(2) & 3.76(2) & +-3.76 & e6\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{table-comparator}
+\begin{table}[H]
+\caption{Reserving space for comparators in \texttt{S} columns.}
+\label{tab:S:comparators}
+\sisetup{
+table-number-alignment = center,
+table-figures-integer = 2,
+table-figures-decimal = 2,
+table-figures-exponent = 2,
+}
+\centering
+\begin{tabular}{
+S
+S[table-comparator = true]}
+\toprule
+{Values}
+& {Values} \\
+\midrule
+2 .3  & < 2.3e8\\
+34.23 & = 34.23 \\
+56.78 & >= 56.78e3\\
+3,76  & \gg e6 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{table-format}
+\begin{table}[H]
+\caption{Using the \texttt{table-format} option.}
+\label{tab:S:format}
+\centering
+\begin{tabular}{
+S
+S[table-format = 2.2]
+S[table-format = 2.2(1)]
+S[table-format = +2.2]
+S[table-format = 2.2e1]
+}
+\toprule
+{Values}
+& {Values}
+& {Values}
+& {Values}
+& {Values} \\
+\midrule
+2.3 & 2.3 & 2.3(5) & 2.3 & 2.3e8 \\
+34.23 & 34.23 & 34.23(4) & 34.23 & 34.23 \\
+56.78 & 56.78 & 56.78(3) & -56.78 & 56.78e3 \\
+3,76 & 3,76 & 3.76(2) & +-3.76 & e6 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\subsubsection{table-space-text-pre, table-space-text-post}
+\begin{table}[H]
+\caption{Text before and after numbers.}
+\label{tab:S:ends}
+\centering
+\sisetup{
+table-number-alignment = center,
+table-figures-integer = 2,
+table-figures-decimal = 4,
+table-space-text-pre
+= now~,
+table-space-text-post =
+\textsuperscript{\emph{a}}
+}
+\begin{tabular}{S}
+\toprule
+{Values} \\
+\midrule
+2.3456 \\
+34.2345 \textsuperscript{\emph{a}}\\
+56.7835 \\
+now~ 90.473 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{table-align-comparator, table-align-exponent, table-align-uncertainty}
+\begin{table}[H]
+\centering
+\caption{The \texttt{table-align-exponent} option}
+\label{tab:align:exp}
+\sisetup{table-format = 1.3e2, table-number-alignment = center}
+\begin{tabular}{SS[table-align-exponent = false]}
+\toprule
+{Header} & {Header} \\
+\midrule
+1.2e3 & 1.2e3 \\
+1.234e56 & 1.234e56 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{The \texttt{table-align-uncertainty} option}
+\label{tab:align:uncert}
+\sisetup{
+separate-uncertainty,
+table-format = 1.3(1),
+}
+\begin{tabular}{SS[table-align-uncertainty = false]}
+\toprule
+{Header} & {Header} \\
+\midrule
+1.2(1) & 1.2(3) \\
+1.234(5) & 1.234(5) \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}[H]
+\centering
+\caption{The \texttt{table-align-comparator} option}
+\label{tab:align:comp}
+\sisetup{table-format = >2.2}
+\begin{tabular}{SS[table-align-comparator = false]}
+\toprule
+{Header} & {Header} \\
+\midrule
+> 1.2 & > 1.2 \\
+< 12.34 & < 12.34 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{table-omit-exponent}
+\begin{table}[H]
+\centering
+\caption{The \texttt{table-omit-exponent} option}
+\label{tab:exp:omit}
+\begin{tabular}{
+S[table-format = 1.1e1]
+S[fixed-exponent = 3, table-format = 2.1, table-omit-exponent]
+}
+\toprule
+{Header} & {Header / \num{e3}} \\
+\midrule
+1.2e3 & 1.2e3 \\
+3e2 & 3e2 \\
+1.0e4 & 1.0e4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{table-align-text-pre,table-align-text-post}
+% \begin{table}[H]
+% \caption{Closing notes up to text.}
+% \label{tab:S:notes}
+% \newrobustcmd\NoteMark[1]{%
+% \textsuperscript{\emph{#1}}%
+% }
+% \centering
+% \sisetup{
+% table-number-alignment = center,
+% table-figures-integer = 2,
+% table-figures-decimal = 4,
+% table-space-text-pre
+% = \NoteMark{a}
+% }
+% \begin{tabular}{
+% S
+% S[table-align-text-pre = false]
+% }
+% \toprule
+% {Values}
+% & {Values} \\
+% \midrule
+% 2.3456 &
+% 2.3456 \\
+% \NoteMark{a} 4.234 & \NoteMark{a} 4.234 \\
+% \NoteMark{b}
+% .78
+% & \NoteMark{b}
+% .78 \\
+% \NoteMark{d} 88
+% & \NoteMark{d} 88
+% \\
+% \bottomrule
+% \end{tabular}
+% \hfil
+% \sisetup{table-space-text-post = \NoteMark{a}}
+% \begin{tabular}{
+% S
+% S[table-align-text-post = false]
+% }
+% \toprule
+% {Values}
+% & {Values} \\
+% \midrule
+% 2.3456
+% & 2.3456 \\
+% 34.234 \NoteMark{a} & 34.234 \NoteMark{a} \\
+% 56.78
+% \NoteMark{b} & 56.78 \NoteMark{b} \\
+% 90.4
+% \NoteMark{c} & 90.4
+% \NoteMark{c} \\
+% 88
+% \NoteMark{d} & 88
+% \NoteMark{d} \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+
+\subsubsection{table-auto-round}
+\begin{table}[H]
+\centering
+\caption{The \texttt{table-auto-round} option.}
+\label{tab:S:auto}
+\sisetup{
+table-number-alignment = center,
+table-figures-integer = 1,
+table-figures-decimal = 3
+}
+% Notice the overfull hbox which results with
+% the first column
+\begin{tabular}{
+S
+S[table-auto-round]
+}
+\toprule
+{Header} & {Header} \\
+\midrule
+1.2 & 1.2 \\
+1.2345 & 1.2345 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{parse-numbers}
+\begin{table}[H]
+\caption{Aligning without parsing.}
+\label{tab:S:nonparsed}
+\sisetup{
+parse-numbers = false,
+table-figures-integer = 2,
+table-figures-decimal = 3
+}
+\centering
+\begin{tabular}{
+S
+S[table-number-alignment = center]
+S[table-number-alignment = right]
+S[table-number-alignment = left]
+}
+\toprule
+{Some values}
+& {Some values}
+& {Some values}
+& {Some values} \\
+\midrule
+2.35 &
+2.35 &
+2.35 &
+2.35 \\
+34.234 &
+34.234 &
+34.234 & 34.234 \\
+56.783 &
+56.783 &
+56.783 & 56.783 \\
+3,762 &
+3,762 &
+3,762 &
+3.762 \\
+\sqrt{2} & \sqrt{2} & \sqrt{2} & \sqrt{2} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{table-text-alignment}
+\begin{table}[H]
+\caption{Aligning text in \texttt{S} columns.}
+\label{tab:S:text}
+\sisetup{
+table-number-alignment = center,
+table-figures-integer = 4,
+table-figures-decimal = 4
+}
+\centering
+\begin{tabular}{
+S
+S[table-text-alignment = left]
+S[table-text-alignment = right]
+}
+\toprule
+{Values}
+& {Values}
+& {Values} \\
+\midrule
+992.435 & 992.435 & 992.435 \\
+7734.2344 & 7734.2344 & 7734.2344 \\
+56.7834 &
+56.7834 &
+56.7834 \\
+3,7462 &
+3,7462 &
+3,7462 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{table-unit-alignment}
+\begin{table}[H]
+\centering
+\caption{Alignment options in \texttt{s} columns.}
+\label{tab:s:align}
+\begin{tabular}
+{
+s[table-unit-alignment = right]
+s
+s[table-unit-alignment = left]
+}
+\toprule
+{Right-aligned} &
+{Centred text} &
+{Left-aligned} \\
+\midrule
+\metre\per\second & \metre\per\second & \metre\per\second \\
+\kilogram
+& \kilogram
+& \kilogram
+\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsubsection{table-alignment}
+
+\subsubsection{table-column-width}
+\begin{table}[H]
+\centering
+\caption{Fixed-width columns.}
+\label{tab:width:fixed}
+\begin{tabular}
+{
+s
+s[table-column-width = 2 cm]
+S
+S[table-column-width = 2 cm]
+}
+\toprule
+{Flexible} &
+{Fixed}
+&
+{Flexible} &
+{Fixed}
+\\
+\midrule
+\metre\per\second & \metre\per\second & 1.23 & 1.23 \\
+\kilogram\candela & \kilogram\candela & 45.6 & 45.6 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+% \begin{table}[H]
+% \centering
+% \caption{Right-aligning under a heading.}
+% \label{tab:width:special}
+% \settowidth\mylength{Long header}
+% \sisetup{
+% table-format
+% = 4
+% ,
+% table-number-alignment = center
+% ,
+% table-column-width
+% = \mylength ,
+% input-decimal-markers =
+% ,
+% input-symbols
+% = .
+% ,
+% }
+% \begin{tabular}{S}
+% \toprule
+% {Long header} \\
+% \midrule
+% 12.33 \\
+% 2
+% \\
+% 1234
+% \\
+% \bottomrule
+% \end{tabular}
+% \end{table}
+
+\end{document}
+
+
+
+
+
+
+
+
+
+
+
+
+
+\si{kg.m.s^{-1}}\\
+\si{\kilogram\metre\per\second} \\
+\si[per-mode=symbol]{\kilogram\metre\per\second} \\
+\si[per-mode=symbol]{\kilogram\metre\per\ampere\per\second}
+
+\numlist{10;20;30}\\
+\SIlist{0.13;0.67;0.80}{\milli\metre} \\
+\numrange{10}{20}\\
+\SIrange{0.13}{0.67}{\milli\metre}\\
+
+
+\numlist{10;30;50;70}
+
+\numrange{10}{30}
+
+
+\si{kg.m/s^2} \\
+\si{g_{polymer}~mol_{cat}.s^{-1}}
+
+\si{\kilo\gram\metre\per\square\second}
+\si{\gram\per\cubic\centi\metre}
+\si{\square\volt\cubic\lumen\per\farad}
+\si{\metre\squared\per\gray\cubic\lux}
+\si{\henry\second}
+
+\SI[mode=text]{1.23}{J.mol^{-1}.K^{-1}}\\
+\SI{.23e7}{\candela}\\
+\SI[per-mode=symbol]{1.99}[\$]{\per\kilogram}\\
+\SI[per-mode=fraction]{1,345}{\coulomb\per\mole}\\
+
+\SIlist{10;30;45}{\metre}
+
+\si{\square\becquerel} \\
+\si{\joule\squared\per\lumen} \\
+\si{\cubic\lux\volt\tesla\cubed}
+
+\si{\henry\tothe{5}} \\
+\si{\raiseto{4.5}\radian}
+
+\si{\joule\per\mole\per\kelvin} \\
+\si{\joule\per\mole\kelvin} \\
+\si{\per\henry\tothe{5}} \\
+\si{\per\square\becquerel}
+
+\si{\kilogram\of{metal}} \\
+\SI[qualifier-mode = brackets]
+{0.1}{\milli\mole\of{cat}\per\kilogram\of{prod}}
+
+\si[per-mode = fraction]
+{\cancel\kilogram\metre\per\cancel\kilogram\per\second} \\
+\si{\highlight{red}\kilogram\metre\per\second} \\
+\si[unit-color = purple]
+{\highlight{red}\kilogram\metre\per\second}
+
+
+\si{\kilo} \\
+\si{\micro} \\
+\si[prefixes-as-symbols = false]{\kilo}
+
+\si{\kilo\gram\micro} \\
+\SI{10}{\micro}
+
+
+\begin{table}
+\caption{Standard behaviour of the \texttt{S} column type.}
+\label{tab:S:standard}
+\centering
+\begin{tabular}{S}
+\toprule
+{Some Values} \\
+\midrule
+2.3456 \\
+34.2345 \\
+-6.7835 \\
+90.473 \\
+5642.5
+\\
+1.2e3 \\
+e4 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Detection of surrounding material in an \texttt{S}
+column.}
+\label{tab:S:extras}
+\centering
+\begin{tabular}{S[color=orange]}
+\toprule
+{Some Values} \\
+\midrule
+12.34 \\
+\color{purple} 975,31 \\
+44.268 \textsuperscript{\emph{a}} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}
+\caption{Controlling complex alignment with the tablenum macro.}
+\label{tab:tablenum}
+\centering
+\begin{tabular}{lr}
+\toprule
+Heading & Heading \\
+\midrule
+Info & More info \\
+Info & More info \\
+\multicolumn{2}{c}{\tablenum[table-format = 4.4]{12,34}}
+\\
+\multicolumn{2}{c}{\tablenum[table-format = 4.4]{333.5567}} \\
+\multicolumn{2}{c}{\tablenum[table-format = 4.4]{4563.21}}
+\bottomrule
+\end{tabular}
+\hfil
+\begin{tabular}{lr}
+\toprule
+Heading & Heading \\
+\midrule
+\multirow{2}*{\tablenum{88,999}} & aaa \\
+& bbb \\
+\multirow{2}*{\tablenum{33,435}} & ccc \\
+& ddd \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{table}
+\centering
+\caption{Units in tables.}
+\label{tab:s:demo}
+\begin{tabular}{s}
+\toprule
+\multicolumn{1}{c}{Unit} \\
+\midrule
+\metre\squared\per\second \\
+\pascal \\
+m.s^{-1} \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+
+\end{document}

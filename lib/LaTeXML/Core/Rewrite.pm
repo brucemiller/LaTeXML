@@ -199,8 +199,9 @@ sub compileClause {
       $pattern = ["descendant-or-self::*[\@xml:id='" . $self->getLabelID($1) . "']", 1]; }
     elsif ($pattern =~ /^id:(.*)$/) {
       $pattern = ["descendant-or-self::*[\@xml:id='$1']", 1]; }
-    elsif ($pattern =~ /^(.*):(.*)$/) {
-      $pattern = ["descendant-or-self::*[local-name()='$1' and \@refnum='$2']", 1]; }
+### Is this pattern ever used? <elementname>:<refnum> expects attribute!!!
+###    elsif ($pattern =~ /^(.*):(.*)$/) {
+###      $pattern = ["descendant-or-self::*[local-name()='$1' and \@refnum='$2']", 1]; }
     else {
       Error('misdefined', '<rewrite>', undef,
         "Unrecognized scope pattern in Rewrite clause: \"$pattern\"; Ignoring it.");

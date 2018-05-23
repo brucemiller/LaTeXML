@@ -89,8 +89,7 @@ sub read {
   $self->revertCatcodes;
   if ((!defined $value) && !$$self{optional}) {
     Error('expected', $self, $gullet,
-      "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
-      $gullet->showUnexpected);
+      "Missing argument " . Stringify($self) . " for " . Stringify($fordefn));
     $value = T_OTHER('missing'); }
   return $value; }
 

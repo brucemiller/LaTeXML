@@ -10,14 +10,23 @@
     <personname>Michael Downes<break/>updated by Barbara Beeton</personname>
   </creator>
   <date role="creation">none</date>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Test of standard theorem styles</title>
     <para xml:id="S1.p1">
       <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
-    <theorem class="ltx_theorem_Ahlfors" frefnum="Ahlfors’ Lemma" xml:id="ThmAhlforsx1">
-      <title class="ltx_runin" font="bold"><tag>Ahlfors’ Lemma</tag>.</title>
+    <theorem class="ltx_theorem_Ahlfors" inlist="thm theorem:Ahlfors" xml:id="ThmAhlforsx1">
+      <tags>
+        <tag>Ahlfors’ Lemma</tag>
+        <tag role="typerefnum">Ahlfors’ Lemma</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">Ahlfors’ Lemma</text></tag>.</title>
       <para xml:id="ThmAhlforsx1.p1">
         <p><text font="italic">Let <Math mode="inline" tex="ds^{2}=h(z)|dz|^{2}" text="d * s ^ 2 = h * z * (absolute-value@(d * z)) ^ 2" xml:id="ThmAhlforsx1.p1.m1">
               <XMath>
@@ -195,8 +204,13 @@ then <Math mode="inline" tex="\omega\leq\omega_{r}" text="omega less= omega _ r"
             </Math>).</text></p>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_lem" frefnum="Lemma 1.1" refnum="1.1" xml:id="S1.Thmthm1">
-      <title class="ltx_runin" font="bold"><tag>Lemma 1.1</tag> (negatively curved families).</title>
+    <theorem class="ltx_theorem_lem" inlist="thm theorem:lem" xml:id="S1.Thmthm1">
+      <tags>
+        <tag>Lemma 1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">Lemma 1.1</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">Lemma 1.1</text></tag> (negatively curved families).</title>
       <para xml:id="S1.Thmthm1.p1">
         <p><text font="italic">Let <Math mode="inline" tex="\{ds_{1}^{2},\dots,ds_{k}^{2}\}" text="set@(d * (s _ 1) ^ 2, dots, d * (s _ k) ^ 2)" xml:id="S1.Thmthm1.p1.m1">
               <XMath>
@@ -294,8 +308,13 @@ Then <Math mode="inline" tex="\omega^{i}\leq\omega_{r}" text="omega ^ i less= om
     <para xml:id="S1.p2">
       <p>Then our main theorem:</p>
     </para>
-    <theorem class="ltx_theorem_thm" frefnum="Theorem 1.2" labels="LABEL:pigspan" refnum="1.2" xml:id="S1.Thmthm2">
-      <title class="ltx_runin" font="bold"><tag>Theorem 1.2</tag>.</title>
+    <theorem class="ltx_theorem_thm" inlist="thm theorem:thm" labels="LABEL:pigspan" xml:id="S1.Thmthm2">
+      <tags>
+        <tag>Theorem 1.2</tag>
+        <tag role="refnum">1.2</tag>
+        <tag role="typerefnum">Theorem 1.2</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">Theorem 1.2</text></tag>.</title>
       <para xml:id="S1.Thmthm2.p1">
         <p><text font="italic">Let <Math mode="inline" tex="d_{\max}" text="d _ maximum" xml:id="S1.Thmthm2.p1.m1">
               <XMath>
@@ -337,7 +356,11 @@ Then <Math mode="inline" tex="P" text="P" xml:id="S1.Thmthm2.p1.m6">
                 <XMTok role="UNKNOWN">Q</XMTok>
               </XMath>
             </Math> iff</text></p>
-        <equation frefnum="(1)" labels="LABEL:sdq" refnum="1" xml:id="S1.E1">
+        <equation labels="LABEL:sdq" xml:id="S1.E1">
+          <tags>
+            <tag>(1)</tag>
+            <tag role="refnum">1</tag>
+          </tags>
           <Math mode="display" tex="\sigma\geq\sqrt{d_{\max}^{2}+d_{\min}^{2}}." text="sigma &gt;= square-root@((d _ maximum) ^ 2 + (d _ minimum) ^ 2)" xml:id="S1.E1.m1">
             <XMath>
               <XMDual>
@@ -379,8 +402,13 @@ Then <Math mode="inline" tex="P" text="P" xml:id="S1.Thmthm2.p1.m6">
         </equation>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_cor" frefnum="Corollary 1.3" refnum="1.3" xml:id="S1.Thmthm3">
-      <title class="ltx_runin" font="bold"><tag>Corollary 1.3</tag>.</title>
+    <theorem class="ltx_theorem_cor" inlist="thm theorem:cor" xml:id="S1.Thmthm3">
+      <tags>
+        <tag>Corollary 1.3</tag>
+        <tag role="refnum">1.3</tag>
+        <tag role="typerefnum">Corollary 1.3</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">Corollary 1.3</text></tag>.</title>
       <para xml:id="S1.Thmthm3.p1">
         <p><text font="italic">Admitting reflection and rotation, a three-legged pig <Math mode="inline" tex="P" text="P" xml:id="S1.Thmthm3.p1.m1">
               <XMath>
@@ -394,8 +422,12 @@ standing on the corners of a triangle <Math mode="inline" tex="T" text="T" xml:i
             </Math> iff (<ref labelref="LABEL:sdq"/>) holds.</text></p>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_rmk" frefnum="Remark" xml:id="Thmrmkx1">
-      <title class="ltx_runin" font="italic"><tag>Remark</tag>.</title>
+    <theorem class="ltx_theorem_rmk" inlist="thm theorem:rmk" xml:id="Thmrmkx1">
+      <tags>
+        <tag>Remark</tag>
+        <tag role="typerefnum">Remark</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="italic">Remark</text></tag>.</title>
       <para xml:id="Thmrmkx1.p1">
         <p>As two-legged pigs generally fall over, the case of a polygon of order
 <Math mode="inline" tex="2" text="2" xml:id="Thmrmkx1.p1.m1">
@@ -406,23 +438,43 @@ standing on the corners of a triangle <Math mode="inline" tex="T" text="T" xml:i
       </para>
     </theorem>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Custom theorem styles</title>
-    <theorem class="ltx_theorem_exer" frefnum="Exercise 1" refnum="1" xml:id="Thmexer1">
-      <title font="bold"><tag>Exercise 1</tag>.</title>
+    <theorem class="ltx_theorem_exer" inlist="thm theorem:exer" xml:id="Thmexer1">
+      <tags>
+        <tag>Exercise 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Exercise 1</tag>
+      </tags>
+      <title><tag><text font="bold">Exercise 1</text></tag>.</title>
       <para xml:id="Thmexer1.p1">
         <p><text font="italic">Generalize Theorem <ref labelref="LABEL:pigspan"/> to three and four dimensions.</text></p>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_note" frefnum="Note 1" refnum="1" xml:id="Thmnote1">
-      <title class="ltx_runin" font="italic"><tag>Note 1</tag>:</title>
+    <theorem class="ltx_theorem_note" inlist="thm theorem:note" xml:id="Thmnote1">
+      <tags>
+        <tag>Note 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Note 1</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="italic">Note 1</text></tag>:</title>
       <para xml:id="Thmnote1.p1">
         <p>This is a test of the custom theorem style ‘note’. It is supposed to have
 variant fonts and other differences.</p>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_bthm" frefnum="B-Theorem 1" refnum="1" xml:id="Thmbthm1">
-      <title font="bold"><tag>B-Theorem 1</tag>.</title>
+    <theorem class="ltx_theorem_bthm" inlist="thm theorem:bthm" xml:id="Thmbthm1">
+      <tags>
+        <tag>B-Theorem 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">B-Theorem 1</tag>
+      </tags>
+      <title><tag><text font="bold">B-Theorem 1</text></tag>.</title>
       <para xml:id="Thmbthm1.p1">
         <p><text font="italic">Test of the ‘linebreak’ style of theorem heading.</text></p>
       </para>
@@ -430,15 +482,20 @@ variant fonts and other differences.</p>
     <para xml:id="S2.p1">
       <p>This is a test of a citing theorem to cite a theorem from some other source.</p>
     </para>
-    <theorem class="ltx_theorem_varthm" xml:id="Thmvarthmx1">
-      <title class="ltx_runin" font="bold">Theorem 3.6 in <cite class="ltx_citemacro_cite">[<bibref bibrefs="thatone" separator="," show="Refnum" yyseparator=","/>]</cite>.</title>
+    <theorem class="ltx_theorem_varthm" inlist="thm theorem:varthm" xml:id="Thmvarthmx1">
+      <title class="ltx_runin">Theorem 3.6 in <cite class="ltx_citemacro_cite">[<bibref bibrefs="thatone" separator="," yyseparator=","/>]</cite>.</title>
       <para xml:id="Thmvarthmx1.p1">
         <p><text font="italic">No hyperlinking available here yet … but that’s not a
 bad idea for the future.</text></p>
       </para>
     </theorem>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>The proof environment</title>
     <proof>
       <title class="ltx_runin" font="italic">Proof.</title>
@@ -490,7 +547,12 @@ bad idea for the future.</text></p>
       </para>
     </proof>
   </section>
-  <section refnum="4" xml:id="S4">
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
     <title><tag close=" ">4</tag>Test of number-swapping</title>
     <para xml:id="S4.p1">
       <p>This is a repeat of the first section but with numbers in theorem heads
@@ -500,8 +562,12 @@ swapped to the left.</p>
       <p>Ahlfors’ Lemma gives the principal criterion for obtaining lower bounds
 on the Kobayashi metric.</p>
     </para>
-    <theorem class="ltx_theorem_Ahlfors" frefnum="Ahlfors’ Lemma" xml:id="ThmAhlforsx2">
-      <title class="ltx_runin" font="bold"><tag>Ahlfors’ Lemma</tag>.</title>
+    <theorem class="ltx_theorem_Ahlfors" inlist="thm theorem:Ahlfors" xml:id="ThmAhlforsx2">
+      <tags>
+        <tag>Ahlfors’ Lemma</tag>
+        <tag role="typerefnum">Ahlfors’ Lemma</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">Ahlfors’ Lemma</text></tag>.</title>
       <para xml:id="ThmAhlforsx2.p1">
         <p><text font="italic">Let <Math mode="inline" tex="ds^{2}=h(z)|dz|^{2}" text="d * s ^ 2 = h * z * (absolute-value@(d * z)) ^ 2" xml:id="ThmAhlforsx2.p1.m1">
               <XMath>
@@ -679,8 +745,13 @@ then <Math mode="inline" tex="\omega\leq\omega_{r}" text="omega less= omega _ r"
             </Math>).</text></p>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_lemsw" frefnum="4.1 Lemma" refnum="4.1" xml:id="S4.Thmthmsw1">
-      <title class="ltx_runin" font="bold"><tag>4.1 Lemma</tag> (negatively curved families).</title>
+    <theorem class="ltx_theorem_lemsw" inlist="thm theorem:lemsw" xml:id="S4.Thmthmsw1">
+      <tags>
+        <tag>4.1 Lemma</tag>
+        <tag role="refnum">4.1</tag>
+        <tag role="typerefnum">Lemma 4.1</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">4.1 Lemma</text></tag> (negatively curved families).</title>
       <para xml:id="S4.Thmthmsw1.p1">
         <p><text font="italic">Let <Math mode="inline" tex="\{ds_{1}^{2},\dots,ds_{k}^{2}\}" text="set@(d * (s _ 1) ^ 2, dots, d * (s _ k) ^ 2)" xml:id="S4.Thmthmsw1.p1.m1">
               <XMath>
@@ -778,8 +849,13 @@ Then <Math mode="inline" tex="\omega^{i}\leq\omega_{r}" text="omega ^ i less= om
     <para xml:id="S4.p3">
       <p>Then our main theorem:</p>
     </para>
-    <theorem class="ltx_theorem_thmsw" frefnum="4.2 Theorem" refnum="4.2" xml:id="S4.Thmthmsw2">
-      <title class="ltx_runin" font="bold"><tag>4.2 Theorem</tag>.</title>
+    <theorem class="ltx_theorem_thmsw" inlist="thm theorem:thmsw" xml:id="S4.Thmthmsw2">
+      <tags>
+        <tag>4.2 Theorem</tag>
+        <tag role="refnum">4.2</tag>
+        <tag role="typerefnum">Theorem 4.2</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">4.2 Theorem</text></tag>.</title>
       <para xml:id="S4.Thmthmsw2.p1">
         <p><text font="italic">Let <Math mode="inline" tex="d_{\max}" text="d _ maximum" xml:id="S4.Thmthmsw2.p1.m1">
               <XMath>
@@ -821,7 +897,11 @@ Then <Math mode="inline" tex="P" text="P" xml:id="S4.Thmthmsw2.p1.m6">
                 <XMTok role="UNKNOWN">Q</XMTok>
               </XMath>
             </Math> iff</text></p>
-        <equation frefnum="(2)" labels="LABEL:sdqsw" refnum="2" xml:id="S4.E2">
+        <equation labels="LABEL:sdqsw" xml:id="S4.E2">
+          <tags>
+            <tag>(2)</tag>
+            <tag role="refnum">2</tag>
+          </tags>
           <Math mode="display" tex="\sigma\geq\sqrt{d_{\max}^{2}+d_{\min}^{2}}." text="sigma &gt;= square-root@((d _ maximum) ^ 2 + (d _ minimum) ^ 2)" xml:id="S4.E2.m1">
             <XMath>
               <XMDual>
@@ -863,8 +943,13 @@ Then <Math mode="inline" tex="P" text="P" xml:id="S4.Thmthmsw2.p1.m6">
         </equation>
       </para>
     </theorem>
-    <theorem class="ltx_theorem_corsw" frefnum="4.3 Corollary" refnum="4.3" xml:id="S4.Thmthmsw3">
-      <title class="ltx_runin" font="bold"><tag>4.3 Corollary</tag>.</title>
+    <theorem class="ltx_theorem_corsw" inlist="thm theorem:corsw" xml:id="S4.Thmthmsw3">
+      <tags>
+        <tag>4.3 Corollary</tag>
+        <tag role="refnum">4.3</tag>
+        <tag role="typerefnum">Corollary 4.3</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">4.3 Corollary</text></tag>.</title>
       <para xml:id="S4.Thmthmsw3.p1">
         <p><text font="italic">Admitting reflection and rotation, a three-legged pig <Math mode="inline" tex="P" text="P" xml:id="S4.Thmthmsw3.p1.m1">
               <XMath>
@@ -883,7 +968,10 @@ standing on the corners of a triangle <Math mode="inline" tex="T" text="T" xml:i
     <title>References</title>
     <biblist>
       <bibitem key="thatone" xml:id="bib.bib1">
-        <bibtag role="refnum">[1]</bibtag>
+        <tags>
+          <tag>[1]</tag>
+          <tag role="refnum">1</tag>
+        </tags>
         <bibblock> Dummy entry.
 </bibblock>
       </bibitem>

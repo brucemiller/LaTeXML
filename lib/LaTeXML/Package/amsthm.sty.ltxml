@@ -21,6 +21,8 @@ use warnings;
 use LaTeXML::Package;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+Let('\@xp', '\expandafter');
+Let('\@nx', '\noexpand');
 
 # Core is defined in LaTeX.ltxml
 
@@ -31,9 +33,9 @@ DefMacroI('\nopunct', undef, Tokens());
 # Theorem Styles.
 
 # amsthm includes headfont!
-AssignValue(THEOREM_PARAMETERS => ['\thm@headfont', '\thm@bodyfont', '\thm@headpunct',
-    '\thm@styling', '\thm@headstyling',
-    'thm@swap']);
+snapshotTheoremParameters(qw(
+    \thm@headfont \thm@bodyfont \thm@headpunct
+    \thm@styling \thm@headstyling thm@swap));
 
 # activate a certain theorem style
 DefPrimitive('\theoremstyle{}', sub {
@@ -43,32 +45,7 @@ DefPrimitive('\theoremstyle{}', sub {
     return; });
 
 DefMacro('\swapnumbers', sub {
-    AssignValue('thm@swap' => (LookupValue('thm@swap') eq 'N' ? 'S' : 'N')); });
-
-# The default theorem styles.
-# plain is defined in LaTeX, but we need to add headpunct (.)
-DefPrimitive('\th@plain', sub {
-    AssignValue('\thm@headfont'    => T_CS('\bfseries'));
-    AssignValue('\thm@bodyfont'    => T_CS('\itshape'));
-    AssignValue('\thm@headpunct'   => T_OTHER('.'));
-    AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
-    return; });
-
-DefPrimitive('\th@definition', sub {
-    AssignValue('\thm@headfont'    => T_CS('\bfseries'));
-    AssignValue('\thm@bodyfont'    => T_CS('\normalfont'));
-    AssignValue('\thm@headpunct'   => T_OTHER('.'));
-    AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
-    return; });
-
-DefPrimitive('\th@remark', sub {
-    AssignValue('\thm@headfont'    => T_CS('\itshape'));
-    AssignValue('\thm@bodyfont'    => T_CS('\normalfont'));
-    AssignValue('\thm@headpunct'   => T_OTHER('.'));
-    AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
-    return; });
-
-RawTeX('\theoremstyle{plain}');    # Activate the default style.
+    AssignValue('thm@swap' => !LookupValue('thm@swap')); });    # toggle!
 
 #\newtheoremstyle{note}% name
 #  {3pt}%      Space above
@@ -89,15 +66,25 @@ DefPrimitive('\newtheoremstyle{}{}{}{}{}{}{}{}{}', sub {
       $headformatter = T_CS('\format@title@theoremstyle@' . ToString($name));
       DefMacroI($headformatter, convertLaTeXArgs(3, 0), $headspec); }
 
-    DefMacroI(T_CS('\th@' . ToString($name)), undef, sub {
-        AssignValue('\thm@bodyfont'  => $bodyfont);
-        AssignValue('\thm@headfont'  => $headfont);
-        AssignValue('\thm@headpunct' => $headpunct);
-        AssignValue('\thm@headstyling' => (Equals($spaceafter, Tokens(T_CS('\newline')))
-            ? Tokens() : T_CS('\lx@makerunin')));
-        AssignValue('\thm@headformatter' => $headformatter);
-        return; });
-});
+    $name = ToString($name);
+    saveTheoremStyle($name,
+      '\thm@bodyfont'    => $bodyfont,
+      '\thm@headfont'    => $headfont,
+      '\thm@headpunct'   => $headpunct,
+      '\thm@headstyling' => (Equals($spaceafter, Tokens(T_CS('\newline')))
+        ? Tokens() : T_CS('\lx@makerunin')),
+      '\thm@headformatter' => $headformatter);
+    DefMacroI(T_CS('\th@' . $name), undef, sub { useTheoremStyle($name); });
+    return; });
+
+# The default theorem styles.
+# plain is defined in LaTeX, but we need to add headpunct (.)
+RawTeX(<<'EoTeX');
+\newtheoremstyle{plain}{}{}{\itshape}{}{\bfseries}{.}{}{}
+\newtheoremstyle{definition}{}{}{\normalfont}{}{\bfseries}{.}{}{}
+\newtheoremstyle{remark}{}{}{\normalfont}{}{\itshape}{.}{}{}
+\theoremstyle{plain} % Activate the default style.
+EoTeX
 
 DefMacro('\thmname{}',   '#1');
 DefMacro('\thmnumber{}', '#1');

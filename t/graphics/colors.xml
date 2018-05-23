@@ -5,7 +5,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Predefined colors</title>
     <para xml:id="S1.p1">
       <p><text color="#000000">Black</text> vs. <text color="#000000">Black</text>.</p>
@@ -32,7 +37,12 @@
       <p><text color="#FFFF00">Yellow</text> vs. <text color="#FFFF00">Yellow</text>.</p>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>RGB colors</title>
     <para xml:id="S2.p1">
       <p><text color="#FF0000">Red</text>
@@ -40,7 +50,12 @@ vs. <text color="#FF0000">Red</text>
 vs. <text color="#FF0000">Red</text>.</p>
     </para>
   </section>
-  <section refnum="3" xml:id="S3">
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
     <title><tag close=" ">3</tag>CMYK colors</title>
     <para xml:id="S3.p1">
       <p><text color="#00FFFF">Cyan</text>
@@ -53,7 +68,12 @@ vs.<text color="#000000">Black</text>
 vs.<text color="#000000">Black</text></p>
     </para>
   </section>
-  <section refnum="4" xml:id="S4">
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
     <title><tag close=" ">4</tag>Gray colors</title>
     <para xml:id="S4.p1">
       <p><text color="#000000">Black</text>
@@ -71,7 +91,12 @@ vs. <text color="#E6E6E6">Light</text>
 vs. <text color="#E6E6E6">Light</text></p>
     </para>
   </section>
-  <section refnum="5" xml:id="S5">
+  <section inlist="toc" xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
     <title><tag close=" ">5</tag>Boxes</title>
     <para xml:id="S5.p1">
       <p><text backgroundcolor="#808080" color="#E6E6E6">Light within Gray</text></p>
@@ -86,7 +111,12 @@ vs. <text color="#E6E6E6">Light</text></p>
       <p><text backgroundcolor="#00FFFF" color="#FFFF00" framecolor="#FF00FF" framed="rectangle">Yellow in Cyan surrounded by Magenta</text></p>
     </para>
   </section>
-  <section refnum="6" xml:id="S6">
+  <section inlist="toc" xml:id="S6">
+    <tags>
+      <tag>6</tag>
+      <tag role="refnum">6</tag>
+      <tag role="typerefnum">§6</tag>
+    </tags>
     <title><tag close=" ">6</tag>Math</title>
     <para xml:id="S6.p1">
       <equation xml:id="S6.Ex1">
@@ -131,7 +161,12 @@ vs. <text color="#E6E6E6">Light</text></p>
       </equation>
     </para>
   </section>
-  <section refnum="7" xml:id="S7">
+  <section inlist="toc" xml:id="S7">
+    <tags>
+      <tag>7</tag>
+      <tag role="refnum">7</tag>
+      <tag role="typerefnum">§7</tag>
+    </tags>
     <title><tag close=" ">7</tag>Named colors (DVIPS)</title>
     <para xml:id="S7.p1">
       <p><text color="#03FF7A">JungleGreen</text>

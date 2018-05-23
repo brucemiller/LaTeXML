@@ -28,7 +28,7 @@ if (LookupValue('@usegraphicx')) {
 DefMacro('\title[]{}',
   '\ifx.#1.\else\@add@frontmatter{ltx:toctitle}{#1}\fi'
     . '\@add@frontmatter{ltx:title}{#2}');
-DefMacro('\author[]{}', sub { andSplit(T_CS('\@author'), $_[2]); });
+DefMacro('\author[]{}', sub { andSplit(T_CS('\lx@author'), $_[2]); });
 
 DefMacro('\newauthor', Tokens());    # ????
 

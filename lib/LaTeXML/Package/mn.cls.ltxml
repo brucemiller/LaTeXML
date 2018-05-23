@@ -25,7 +25,7 @@ DeclareOption("usegraphicx", sub { AssignValue('@usegraphicx' => 1); });
 
 # Anything else is for article.
 DeclareOption(undef, sub {
-    PassOptions('article', 'cls', ToString(Digest(T_CS('\CurrentOption')))); });
+    PassOptions('article', 'cls', ToString(Expand(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
 LoadClass('article');

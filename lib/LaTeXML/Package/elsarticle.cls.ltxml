@@ -33,7 +33,7 @@ DeclareOption("amsthm", sub { AssignValue('@amsthm' => 1); });
 
 # Anything else is for article.
 DeclareOption(undef, sub {
-    PassOptions('article', 'cls', ToString(Digest(T_CS('\CurrentOption')))); });
+    PassOptions('article', 'cls', ToString(Expand(T_CS('\CurrentOption')))); });
 
 ProcessOptions();
 LoadClass('article');
@@ -41,16 +41,18 @@ RequirePackage('elsart_support');    # Hopefully, this covers elsart & elsarticl
 RequirePackage('graphicx');
 RequirePackage('pifont');
 RequirePackage('natbib');
-
+RequirePackage('fixltx2e');          # ?
 # Redefine these, since in elsarticle, they two get optional arguments
 # (not even sure what the intended effect is)
 DefEnvironment('{enumerate}[]',
   "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
   properties => sub { beginItemize('enumerate', 'enum'); },
+  beforeDigestEnd => sub { Digest('\par'); },
   locked => 1, mode => 'text');
 DefEnvironment('{itemize}[]',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
   properties => sub { beginItemize('itemize', 'enum'); },
+  beforeDigestEnd => sub { Digest('\par'); },
   locked => 1, mode => 'text');
 
 1;

@@ -125,10 +125,11 @@ sub getBibliographies {
       # NOTE: When better integrated with Core, should also check for cached bib documents.
       if (my $xmlpath = pathname_find($bib, paths => [@paths], types => ['xml'])) {
         $bibdoc = $doc->newFromFile($xmlpath); }    # doc will do the searching...
-      elsif (my $bibpath = pathname_find($bib, paths => [@paths], types => ['bib'])) {
+      elsif (my $bibpath = pathname_find($bib, paths => [@paths], types => ['bib'])
+        || pathname_kpsewhich($bib)) {
         $bibdoc = $self->convertBibliography($doc, $bibpath); }
       else {
-        Error('expected', $bib, $self,
+        Error('missing_file', $bib, $self,
           "Couldn't find Bibliography '$bib'",
           "Searchpaths were " . join(',', @paths)); } }
     if ($bibdoc) {
@@ -169,13 +170,32 @@ sub convertBibliography {
     format         => 'dom',
     whatsin        => 'document',
     whatsout       => 'document',
-    verbosity      => -5,
     bibliographies => [],
     (@preload ? (preload => [@preload]) : ()));
   my $bib_converter = LaTeXML->get_converter($bib_config);
+  # Tricky and HACKY, we need to release the log to capture the inner workings separately.
+  # ->bind_log analog:
+  my $biblog = '';
+  my $biblog_handle;
+  open($biblog_handle, ">>", \$biblog) or Error("Can't redirect STDERR to log for inner bibliography converter!");
+  *BIB_STDERR_SAVED = *STDERR;
+  *STDERR           = *$biblog_handle;
+  # end ->bind_log
+
   $bib_converter->prepare_session($bib_config);
   my $response = $bib_converter->convert($bib);
-  print STDERR $$response{log};
+
+  # ->flush_log analog:
+  close $biblog_handle;
+  *STDERR = *BIB_STDERR_SAVED;
+  # end ->flush_log
+
+  # Trim log to look internal and report.
+  $biblog =~ s/^.+?\(Digesting/\n\(Digesting/s;
+  $biblog =~ s/Conversion complete:.+$//s;
+  print STDERR $biblog;
+  MergeStatus($$bib_converter{latexml}{state});
+
   # TODO: We need to handle the logging properly, it's a bit of a mess for nested ->convert() calls
   if (my $bibdoc = $$response{result}) {
     NoteProgress("... converted!]");
@@ -345,33 +365,33 @@ sub formatBibEntry {
   #------------------------------
   # Format the bibtag's
   my @tags = ();
-  push(@tags, ['ltx:bibtag', { role => 'number', class => 'ltx_bib_number' }, $number]);  # number tag
+  push(@tags, ['ltx:tag', { role => 'number', class => 'ltx_bib_number' }, $number]);    # number tag
 
   # Set up authors and fullauthors tags
   my @names = $doc->findnodes('ltx:bib-name[@role="author"]/ltx:surname', $bibentry);
   @names = $doc->findnodes('ltx:bib-name[@role="editor"]/ltx:surname', $bibentry) unless @names;
   if (@names > 2) {
-    push(@tags, ['ltx:bibtag', { role => 'authors', class => 'ltx_bib_author' },
+    push(@tags, ['ltx:tag', { role => 'authors', class => 'ltx_bib_author' },
         $doc->cloneNodes($names[0]->childNodes),
         ['ltx:text', { class => 'ltx_bib_etal' }, ' et al.']]);
     my @fnames = ();
     foreach my $n (@names[0 .. $#names - 1]) {
       push(@fnames, $n->childNodes, ', '); }
-    push(@tags, ['ltx:bibtag', { role => 'fullauthors', class => 'ltx_bib_author' },
+    push(@tags, ['ltx:tag', { role => 'fullauthors', class => 'ltx_bib_author' },
         $doc->cloneNodes(@fnames),
         ' and ', $doc->cloneNodes($names[-1]->childNodes)]); }
   elsif (@names > 1) {
-    push(@tags, ['ltx:bibtag', { role => 'authors', class => 'ltx_bib_author' },
+    push(@tags, ['ltx:tag', { role => 'authors', class => 'ltx_bib_author' },
         $doc->cloneNodes($names[0]->childNodes),
         ' and ', $doc->cloneNodes($names[1]->childNodes)]); }
   elsif (@names) {
-    push(@tags, ['ltx:bibtag', { role => 'authors', class => 'ltx_bib_author' },
+    push(@tags, ['ltx:tag', { role => 'authors', class => 'ltx_bib_author' },
         $doc->cloneNodes($names[0]->childNodes)]); }
 
   # Put a key tag, to use in place of authors if needed (esp for software, websites, etc)
   my $keytag;
   if ($keytag = $doc->findnode('ltx:bib-key', $bibentry)) {
-    push(@tags, ['ltx:bibtag', { role => 'key', class => 'ltx_bib_key' },
+    push(@tags, ['ltx:tag', { role => 'key', class => 'ltx_bib_key' },
         $doc->cloneNodes($keytag->childNodes)]); }
 
   my @year = ();
@@ -380,18 +400,18 @@ sub formatBibEntry {
     if (my $datetext = $date->textContent) {
       if ($datetext =~ /^(\d\d\d\d)/) {    # Extract 4 digit year, if any
         @year = ($1); } }
-    push(@tags, ['ltx:bibtag', { role => 'year', class => 'ltx_bib_year' },
+    push(@tags, ['ltx:tag', { role => 'year', class => 'ltx_bib_year' },
         $doc->cloneNodes(@year), ($$entry{suffix} || '')]); }
 
   # Store a type tag, to use in place of year, if needed (esp for software, ...)
   my $typetag;
   if ($typetag = $doc->findnode('ltx:bib-type', $bibentry)) {
-    push(@tags, ['ltx:bibtag', { role => 'bibtype', class => 'ltx_bib_type' },
+    push(@tags, ['ltx:tag', { role => 'bibtype', class => 'ltx_bib_type' },
         $doc->cloneNodes($typetag->childNodes)]); }
 
   # put in the title
   if (my $title = $doc->findnode('ltx:bib-title', $bibentry)) {
-    push(@tags, ['ltx:bibtag', { role => 'title', class => 'ltx_bib_title' },
+    push(@tags, ['ltx:tag', { role => 'title', class => 'ltx_bib_title' },
         $doc->cloneNodes($title->childNodes)]); }
 
   # And finally, the refnum; we need to know the desired citation style!
@@ -400,7 +420,7 @@ sub formatBibEntry {
   my $style = $LaTeXML::Post::MakeBibliography::STYLE{citestyle} || 'numbers';
   $style = 'numbers' unless (@names || $keytag) && (@year || $typetag);
   if ($style eq 'numbers') {
-    push(@tags, ['ltx:bibtag', { role => 'refnum', class => 'ltx_bib_key', open => '[', close => ']' }, $number]); }
+    push(@tags, ['ltx:tag', { role => 'refnum', class => 'ltx_bib_key', open => '[', close => ']' }, $number]); }
   elsif ($style eq 'AY') {
     my @rfnames;
     if (my @authors = $doc->findnodes('ltx:bib-name[@role="author"]/ltx:surname', $bibentry)) {
@@ -418,7 +438,7 @@ sub formatBibEntry {
       $aa = uc(substr($rfnames[0]->textContent, 0, 3)); }
     my $yrtext = (@year ? join('', map { (ref $_ ? $_->textContent : $_); } @year) : '');
     my $yy = (length($yrtext) >= 2 ? substr($yrtext, 2, 2) : $yrtext);
-    push(@tags, ['ltx:bibtag', { role => 'refnum', class => 'ltx_bib_abbrv', open => '[', close => ']' },
+    push(@tags, ['ltx:tag', { role => 'refnum', class => 'ltx_bib_abbrv', open => '[', close => ']' },
         $aa . $yy . ($$entry{suffix} || '')]); }
 
   else {
@@ -432,7 +452,7 @@ sub formatBibEntry {
       @rfnames = $keytag->childNodes; }
     my @rfyear = (@year ? (@year, ($$entry{suffix} || ''))
       : ($typetag ? $typetag->childNodes : ()));
-    push(@tags, ['ltx:bibtag', { role => 'refnum', class => 'ltx_bib_author-year' },
+    push(@tags, ['ltx:tag', { role => 'refnum', class => 'ltx_bib_author-year' },
         $doc->cloneNodes(@rfnames), ' (', $doc->cloneNodes(@rfyear), ')']); }
 
   #------------------------------
@@ -461,7 +481,7 @@ sub formatBibEntry {
       "Cited by: ", $doc->conjoin(",\n", @citedby), '.']) if @citedby;
 
   return ['ltx:bibitem', { 'xml:id' => $id, key => $key, type => $type, class => "ltx_bib_$type" },
-    @tags,
+    (@tags ? (['ltx:tags', {}, @tags]) : ()),
     @blocks]; }
 
 # ================================================================================

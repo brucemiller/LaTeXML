@@ -1,5 +1,5 @@
 \documentclass{article}
-\usepackage{subfigure}
+\usepackage[IT,bf,TABTOPCAP]{subfigure}
 \begin{document}
 \paragraph{Figures}
 Two figures, \ref{fig:A-one} and \ref{fig:A-two}.
@@ -50,5 +50,38 @@ and collectively as \ref{fig:D}.
 \caption{Collectively two figures\label{fig:D}}
 \end{center}
 \end{figure}
+
+\paragraph{Sub-Tables with captions}
+Two tables, \ref{tab:B-one} and \ref{tab:B-two}.
+
+\begin{table}[ht]
+\begin{center}
+\subtable[This is a table\label{tab:B-one}]{[Tabular One]}
+\subtable[This is another table\label{tab:B-two}]{[Tabular Two]}\\
+\end{center}
+\end{table}
+
+\paragraph{Sub-Tables, collective caption}
+Two tables, \ref{tab:C}
+
+\begin{table}[ht]
+\caption{Collectively two tables\label{tab:C}}
+\begin{center}
+\subtable{[Tabular One]}
+\subtable{[Tabular Two]}\\
+\end{center}
+\end{table}
+
+\paragraph{Sub-Tables with all captions}
+Two tables, \ref{tab:D-one} and \ref{tab:D-two},
+and collectively as \ref{tab:D}.
+
+\begin{table}[ht]
+\caption{Collectively two tables\label{tab:D}}
+\begin{center}
+\subtable[This is a table\label{tab:D-one}]{[Tabular One]}
+\subtable[This is another table\label{tab:D-two}]{[Tabular Two]}\\
+\end{center}
+\end{table}
 
 \end{document}

@@ -22,6 +22,9 @@ use LaTeXML::Package;
 #**********************************************************************
 # Document structure.
 
+Let('\@xp', '\expandafter');
+Let('\@nx', '\noexpand');
+
 # None of the options are vital, I think; deferred.
 # [though loading an unwanted amsfonts (noamsfonts) could be an issue]
 
@@ -90,7 +93,7 @@ DefMacro('\lx@author@conj', '\ and\ ');                               # \@@and
 
 DefMacro('\author[]{}',
   '\if.#1.\else\def\shortauthor{#1}\fi'
-    . '\@author{#2}');
+    . '\def\@author{#2}\lx@author{#2}');
 
 DefMacroI('\datename', undef, '\textit{Date}:');
 
@@ -175,11 +178,11 @@ DefMacroI('\abstractname', undef, '\textsc{Abstract}');
 # \Printindex{name of index}{title of index} ...
 
 DefMacro('\format@title@abstract{}',      '#1. ');
-DefMacro('\format@title@section{}',       '\@tag[][.\space]{\thesection}#1');
-DefMacro('\format@title@subsection{}',    '\@tag[][.\space]{\thesubsection}#1');
-DefMacro('\format@title@subsubsection{}', '\@tag[][.\space]{\thesubsubsection}#1');
+DefMacro('\format@title@section{}',       '\lx@tag[][.\space]{\thesection}#1');
+DefMacro('\format@title@subsection{}',    '\lx@tag[][.\space]{\thesubsection}#1');
+DefMacro('\format@title@subsubsection{}', '\lx@tag[][.\space]{\thesubsubsection}#1');
 
-DefMacro('\format@title@description{}', '\@tag[][:\space]{#1}');
+DefMacro('\format@title@description{}', '\lx@tag[][:\space]{#1}');
 DefMacro('\descriptionlabel{}',         '\normalfont\bfseries #1:\space');
 
 #======================================================================
@@ -190,13 +193,13 @@ DefMacro('\descriptionlabel{}',         '\normalfont\bfseries #1:\space');
 if (LookupValue('2.09_COMPATIBILITY')) {
   DefMacroI('\defaultfont', undef, '\normalfont');
   DefMacroI('\rom',         undef, '\textup');
-  #  RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}');
-  RawTeX('\newenvironment{pf}{\begin{@proof}}{\end{@proof}');
-  RawTeX('\newenvironment{pf*}[1]{\begin{@proof}[#1]}{\end{@proof}');
+  #  RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}}');
+  RawTeX('\newenvironment{pf}{\begin{@proof}}{\end{@proof}}');
+  RawTeX('\newenvironment{pf*}[1]{\begin{@proof}[#1]}{\end{@proof}}');
 }
 
-DefMacro('\format@title@figure{}', '\@tag[][. ]{\fnum@figure}#1');
-DefMacro('\format@title@table{}',  '\@tag[][. ]{\fnum@table}#1');
+DefMacro('\format@title@figure{}', '\lx@tag[][. ]{\lx@fnum@@{figure}}#1');
+DefMacro('\format@title@table{}',  '\lx@tag[][. ]{\lx@fnum@@{table}}#1');
 
 # Excersise environments ??:
 # xca "must be defined with \theoremstyle{definition} and \newtheorem ???

@@ -6,7 +6,11 @@
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
     <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx1">
-      <equation frefnum="(1)" labels="LABEL:e1" refnum="1" xml:id="S0.E1">
+      <equation labels="LABEL:e1" xml:id="S0.E1">
+        <tags>
+          <tag>(1)</tag>
+          <tag role="refnum">1</tag>
+        </tags>
         <MathFork>
           <Math tex="\displaystyle x=17y" text="x = 17 * y" xml:id="S0.E1.m4">
             <XMath>
@@ -46,7 +50,11 @@
           </MathBranch>
         </MathFork>
       </equation>
-      <equation frefnum="(2)" labels="LABEL:e2" refnum="2" xml:id="S0.E2">
+      <equation labels="LABEL:e2" xml:id="S0.E2">
+        <tags>
+          <tag>(2)</tag>
+          <tag role="refnum">2</tag>
+        </tags>
         <MathFork>
           <Math tex="\displaystyle y&gt;a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p" text="y &gt; a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p" xml:id="S0.E2.m4">
             <XMath>
@@ -133,7 +141,11 @@
   </para>
   <para xml:id="p2">
     <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx2">
-      <equation frefnum="(4)" labels="LABEL:e3" refnum="4" xml:id="S0.E4">
+      <equation labels="LABEL:e3" xml:id="S0.E4">
+        <tags>
+          <tag>(4)</tag>
+          <tag role="refnum">4</tag>
+        </tags>
         <MathFork>
           <Math tex="\displaystyle x=17y" text="x = 17 * y" xml:id="S0.E4.m4">
             <XMath>
@@ -173,7 +185,11 @@
           </MathBranch>
         </MathFork>
       </equation>
-      <equation frefnum="(5)" labels="LABEL:e4" refnum="5" xml:id="S0.E5">
+      <equation labels="LABEL:e4" xml:id="S0.E5">
+        <tags>
+          <tag>(5)</tag>
+          <tag role="refnum">5</tag>
+        </tags>
         <MathFork>
           <Math tex="\displaystyle y&gt;a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p" text="y &gt; a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p" xml:id="S0.E5.m4">
             <XMath>

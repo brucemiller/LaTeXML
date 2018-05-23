@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="textcase"?>
+<?latexml package="cite"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" labels="LABEL:intro" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>UPPERCASE</title>
+    <subsection inlist="toc" xml:id="S1.SS1">
+      <tags>
+        <tag>1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">§1.1</tag>
+      </tags>
+      <title><tag close=" ">1.1</tag>Text and math interleaved</title>
+      <para xml:id="S1.SS1.p1">
+        <p>ABCÆ <Math mode="inline" tex="a=b" text="a = b" xml:id="S1.SS1.p1.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              </XMApp>
+            </XMath>
+          </Math> AND <Math mode="inline" tex="\alpha\neq a" text="alpha not-equals a" xml:id="S1.SS1.p1.m2">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="not-equals" name="neq" role="RELOP">≠</XMTok>
+                <XMTok font="italic" name="alpha" role="UNKNOWN">α</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+OR EVEN <Math mode="inline" tex="x=y" text="x = y" xml:id="S1.SS1.p1.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMTok font="italic" role="UNKNOWN">y</XMTok>
+              </XMApp>
+            </XMath>
+          </Math> AND <Math mode="inline" tex="x=y" text="x = y" xml:id="S1.SS1.p1.m4">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMTok font="italic" role="UNKNOWN">y</XMTok>
+              </XMApp>
+            </XMath>
+          </Math></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS2">
+      <tags>
+        <tag>1.2</tag>
+        <tag role="refnum">1.2</tag>
+        <tag role="typerefnum">§1.2</tag>
+      </tags>
+      <title><tag close=" ">1.2</tag>Refs and cites</title>
+      <para xml:id="S1.SS2.p1">
+        <p>TEXT IN SECTION <ref labelref="LABEL:intro"/>, ABOUT <cite class="ltx_citemacro_cite">[<bibref bibrefs="bbb" separator="," yyseparator=","/>, PP 2–4]</cite></p>
+      </para>
+      <para xml:id="S1.SS2.p2">
+        <p>TEXT <cite class="ltx_citemacro_cite">[<bibref bibrefs="bbb" separator="," yyseparator=","/>]</cite> AND <cite class="ltx_citemacro_cite">[<bibref bibrefs="ccc" separator="," yyseparator=","/>]</cite></p>
+      </para>
+      <para xml:id="S1.SS2.p3">
+        <p>TEXT <cite class="ltx_citemacro_cite">[<bibref bibrefs="bbb" separator="," yyseparator=","/>]</cite> AND <cite class="ltx_citemacro_cite">[<bibref bibrefs="ccc" separator="," yyseparator=","/>]</cite></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS3">
+      <tags>
+        <tag>1.3</tag>
+        <tag role="refnum">1.3</tag>
+        <tag role="typerefnum">§1.3</tag>
+      </tags>
+      <title><tag close=" ">1.3</tag>Nested with NoCaseChange</title>
+      <para xml:id="S1.SS3.p1">
+        <p>TEXT More Text YET MORE TEXT</p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS4">
+      <tags>
+        <tag>1.4</tag>
+        <tag role="refnum">1.4</tag>
+        <tag role="typerefnum">§1.4</tag>
+      </tags>
+      <title><tag close=" ">1.4</tag>NoCaseChange and tabular</title>
+      <para xml:id="S1.SS4.p1">
+        <p>TEXT <tabular vattach="middle">
+            <tbody>
+              <tr>
+                <td align="left">TABLE</td>
+                <td align="left">STUFF</td>
+              </tr>
+              <tr>
+                <td align="left">GOES</td>
+                <td align="left">HERE</td>
+              </tr>
+            </tbody>
+          </tabular>
+MORE TEXT</p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS5">
+      <tags>
+        <tag>1.5</tag>
+        <tag role="refnum">1.5</tag>
+        <tag role="typerefnum">§1.5</tag>
+      </tags>
+      <title><tag close=" ">1.5</tag>Nested brace groups</title>
+      <para xml:id="S1.SS5.p1">
+        <p>A B C <Math mode="inline" tex="D" text="D" xml:id="S1.SS5.p1.m1">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">D</XMTok>
+            </XMath>
+          </Math> <Math mode="inline" tex="e" text="e" xml:id="S1.SS5.p1.m2">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">e</XMTok>
+            </XMath>
+          </Math></p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS6">
+      <tags>
+        <tag>1.6</tag>
+        <tag role="refnum">1.6</tag>
+        <tag role="typerefnum">§1.6</tag>
+      </tags>
+      <title><tag close=" ">1.6</tag>Environment protection</title>
+      <para xml:id="S1.SS6.p1">
+        <p>…</p>
+        <p align="center">…INNER…</p>
+        <p>…</p>
+      </para>
+    </subsection>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>lowercase</title>
+    <para xml:id="S2.p1">
+      <p>this was written upper, should appear low</p>
+    </para>
+  </section>
+  <bibliography xml:id="bib">
+    <title>References</title>
+    <biblist>
+      <bibitem key="bbb" xml:id="bib.bib1">
+        <tags>
+          <tag>[1]</tag>
+          <tag role="refnum">1</tag>
+        </tags>
+        <bibblock> Something numeric
+</bibblock>
+      </bibitem>
+      <bibitem key="ccc" xml:id="bib.bibx1">
+        <tags>
+          <tag>[David Carlisle 1997]</tag>
+          <tag role="refnum">David Carlisle 1997</tag>
+        </tags>
+        <bibblock> Something textual
+</bibblock>
+      </bibitem>
+    </biblist>
+  </bibliography>
+</document>

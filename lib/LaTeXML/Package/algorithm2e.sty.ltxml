@@ -1,0 +1,228 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  algorithm2e                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use LaTeXML::Util::Pathname;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# NOTE: This package would actually be relatively easy to implement
+# via loading algorithm2e.sty and overriding a few critical macros
+# (in particular {algorithm} and \par), but that LaTeXML doesn't
+# currently implement \par correctly; it should do nothing in vertical mode,
+# but LaTeXML doesn't yet know anything about modes other than math!
+# This package heavily (and redunantly) scatters \par about,
+# not entirely consistently, on the one hand, they produce the individual
+# algorithm lines AND add line numbers, but on the other hand, it
+# relies on the fact that adjacent \par's effectively collapse.
+# The naive (and clever attempts) to reproduce the behaviour w/o true modes,
+# always results in blank (but numbered!) lines.
+#
+# The alternative, to implement the package completely from scratch,
+# is undesirable since we'd have to duplicate all the command definitions,
+# languages, etc.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+RequirePackage('float');
+
+#DefMacro('\algocf@new@command DefToken', '\renewcommand{#1}', locked => 1);
+
+# To start, load algorithm2e...
+# BUT! the stock algorithm2e is in latin1 encoding!
+# We probably don't handle encodings entirely correctly,
+# but (eg using turkish along with \usepackage[utf8]{inputenc})
+# this can cause problems even for regular latex!
+my $saved_encoding = LookupValue('PERL_INPUT_ENCODING');
+AssignValue(PERL_INPUT_ENCODING => 'latin1');
+InputDefinitions('algorithm2e', type => 'sty', noltxml => 1);
+AssignValue(PERL_INPUT_ENCODING => $saved_encoding);
+
+Let('\@mathsemicolon', '\;');
+NewCounter('algorithm');
+DefMacro('\fnum@algorithm',      '\algorithmcfname\nobreakspace\thealgorithm');
+DefMacro('\fnum@font@algorithm', '\bf');
+DefMacro('\ext@algorithm',       'loa');
+
+DefEnvironment('{algorithm}[]',
+  "<ltx:float xml:id='#id'>"
+    . "#tags"
+    . "<ltx:listing class='ltx_lst_numbers_left'>"
+    . "<ltx:listingline>"
+    . "#body"
+    . "</ltx:listingline>"
+    . "</ltx:listing></ltx:float>",
+  beforeDigest => sub {
+    Digest(T_CS('\@ResetCounterIfNeeded'));
+    Digest(T_CS('\algocf@linesnumbered'));
+    Let('\par',    '\lx@algo@par');
+    Let('\parbox', '\lx@algo@parbox');
+    Let("\\\\",    '\lx@algo@par');
+    Let('\strut',  '\lx@algo@strut');
+    AssignCatcode("\r" => CC_SPACE);    # NOT CC_EOL, so newlines don't turn to \par!
+                                        #    AssignCatcode("\r" => 13);
+         #    Let(T_ACTIVE("\r"), '\relax');    # More appropriate than \par, I think?
+
+    #    Let('\vtop','\relax');      # ?
+    DefMacro('\;', '\ifmmode\@mathsemicolon\else\@endalgoln\fi');
+    DefMacroI('\@captype', undef, 'algorithm');
+  },
+  afterDigest => sub {
+    if (ToString(Digest(T_CS('\algocf@style'))) =~ /box/) {
+      $_[1]->setProperty(frame => 'boxed'); }
+    RescueCaptionCounters('algorithm', $_[1]); },
+  afterConstruct => sub { addFloatFrames($_[0], $_[1]->getProperty('frame')); }
+);
+
+DefMacro('\lx@algo@parbox[]{}{}', '#3');
+# NEUTRALIZE most \par's that are built into agorythmic2e
+DefMacro('\lx@algo@strut SkipMatch:\par', '');
+
+#####DefMacro('\@marker{}',' \textit{#1} ');
+DefMacro('\@marker{}', '');    # Debugging!
+
+DefMacro('\lx@algo@par', '\@marker{PREPAR}\lx@algo@endline\lx@algo@startline\@marker{PAR}');
+#DefMacro('\lx@algo@pars', '\@marker{PREPARs}\lx@algo@endline\lx@algo@startline \@marker{PARs}');
+DefMacro('\lx@algo@parx', '\@marker{PREPARx}\lx@algo@endline\lx@algo@startline \@marker{PARx}');
+DefMacro('\lx@algo@parb', '\@marker{PREPARb}\lx@algo@endline\lx@algo@startline \@marker{PARb}');
+####\let\par\relax
+
+DefConditional('\if@lx@algo@par SkipSpaces', sub { $STATE->getPrefix('didpar'); });
+DefPrimitiveI('\lx@algo@setpar', undef, sub { $STATE->setPrefix('didpar'); return; }, isPrefix => 1);
+DefMacro('\lx@algo@newpar{}{}', '\if@lx@algo@par\@marker{SKIP#1}\else\@marker{pre#1 }#2\@marker{post#1}\fi\lx@algo@setpar');
+
+DefMacro('\lx@algo@par', '\lx@algo@newpar{PAR}{\lx@algo@endline\lx@algo@startline}');
+#DefMacro('\lx@algo@pars', '\lx@algo@newpar{PARs}{\lx@algo@endline\lx@algo@startline}');
+DefMacro('\lx@algo@parx', '\lx@algo@newpar{PARx}{\lx@algo@endline\lx@algo@startline}');
+DefMacro('\lx@algo@parb', '\lx@algo@newpar{PARb}{\lx@algo@endline\lx@algo@startline}');
+
+DefMacro('\algocf@Vline{}', '\lx@algo@endline\lx@algo@startline \@marker{V.L}\lx@algo@advline \lx@strippar{#1}\lx@algo@pop@indentation \@marker{ENDVLINE}');
+DefMacro('\algocf@Vsline{}', '\lx@algo@endline\lx@algo@startline \@marker{VsL}\lx@algo@advline \lx@strippar{#1}\lx@algo@pop@indentation \@marker{ENDVsLINE}');
+DefMacro('\algocf@Noline{}', '\lx@algo@endline\lx@algo@startline \@marker{NoL}\lx@algo@advlevel \lx@strippar{#1} \@marker{ENDNoLINE}');
+
+#DefMacro('\@endalgocfline',  'EOL');
+#DefMacro('\lx@algo@lastpar', 'PRELASTPAR\the\everypar\lx@algo@@endline');
+#DefMacro('\@endalgoln',  '\@endalgocfline\lx@algo@par');
+DefMacro('\@endalgoln', '\@endalgocfline');
+#DefMacro('\@endalgocfline',  '\algocf@endline\@marker{EOL}\lx@algo@par\let\lx@algo@parx\relax');
+DefMacro('\@endalgocfline', '\algocf@endline\@marker{EOL}\lx@algo@par');
+# Annoying: sometimes these are ended by authors \; (which ends the line)
+# sometimes the author omits that.
+# And sometimes the enclosing caller appends a \par afterwards!
+# So, how to we assure that we end the line ONLY ONCE!
+DefMacro('\lx@strippar{}', sub {
+    my ($gullet, $tokens) = @_;
+###print STDERR "\nCHECK PAR: ".ToString($tokens)."\n";
+    my @tokens = $tokens->unlist;
+    #      return (@tokens,T_CS('\lx@algo@parx'));
+    return (@tokens, T_CS('\lx@algo@parx'), T_CS('\lx@algo@parx'), T_CS('\lx@algo@parx'));
+##    pop(@tokens) if T_SPACE->equals($tokens[-1]);
+##    if    (T_CS('\;')->equals($tokens[-1]))   { }
+##    elsif (T_CS('\par')->equals($tokens[-1])) { }
+##    else {
+##      #        print STDERR "\nMissing par? " . join(' ', map { Stringify($_) } @tokens) . "\n";
+##      push(@tokens, T_CS('\lx@algo@parx')); }
+##    #   print STDERR "\nSTRIP FOUND NO PAR!\n"; }
+##    @tokens;
+});
+#DefMacro('\algocf@@@block{}{}','#1\bgroup\lx@algo@startline#2\lx@algo@endline\egroup');
+#DefMacro('\algocf@@@block{}{}','BLOCK:#1ENDBLOCK END#2');
+#DefMacro('\algocf@group{}','#1\bgroup\typeout{Block:#1}\egroup');
+DefMacro('\algocf@group{}', '\@marker{GRP} #1 \@marker{ENDGRP}');
+#DefMacro('\algocf@group{}', '\lx@prepend@indentation GRP #1 ENDGRP');
+#DefMacro('\algocf@@@block{}{}','BLK #1 ENDBLOCK END#2 ENDEND\par');
+#DefMacro('\algocf@@@block{}{}', '\@marker{BLK} #1 \@marker{ENDBLOCK}\lx@algo@parb\@marker{END}#2\@marker{ENDEND}\lx@algo@parb');
+DefMacro('\algocf@@@block{}{}', '\@marker{BLK} #1 \@marker{ENDBLOCK}\@marker{END}#2\@marker{ENDEND}\lx@algo@parb');
+#DefMacro('\algocf@@@block{}{}', '\lx@prepend@indentation BLK #1 ENDBLOCK END#2 ENDEND\par');
+
+DefRegister('\lx@algo@indentation' => Tokens());
+DefMacro('\lx@algo@push@indentation{}',
+  '\expandafter\lx@algo@indentation\expandafter{\the\lx@algo@indentation#1}');
+DefMacro('\lx@algo@pop@indentation', sub {
+    my @toks = LookupRegister('\lx@algo@indentation')->unlist;
+    pop(@toks);
+    AssignRegister('\lx@algo@indentation', Tokens(@toks));
+    return; });
+
+DefMacro('\lx@algo@advlevel', '\lx@algo@push@indentation{\lx@algo@indent}');
+DefMacro('\lx@algo@advline',  '\lx@algo@push@indentation{\lx@algo@indentline}');
+
+#DefMacro('\lx@algo@startline', '\lx@algo@@startline\the\lx@algo@indentation');
+
+DefMacro('\lx@algo@startline', '\lx@algo@@startline');
+DefMacro('\lx@algo@endline',   '\lx@prepend@indentation\the\everypar\lx@algo@@endline');
+
+#DefMacro('\lx@algo@startline', '\bgroup\lx@algo@@startline');
+#DefMacro('\lx@algo@endline',   '\lx@prepend@indentation\the\everypar\lx@algo@@endline\egroup');
+
+DefMacro('\lx@algo@indent',     '\hskip\skiprule\hskip\skiptext');
+DefMacro('\lx@algo@indentline', '\hskip\skiprule\lx@algo@rule\hskip\skiptext');
+DefConstructor('\lx@algo@rule', "<ltx:rule width='1px' height='100%'/>");
+
+DefConstructor('\lx@algo@@startline', "<ltx:listingline xml:id='#id' refnum='#refnum'>"
+    . "?&defined(#refnum)(<ltx:tags><ltx:tag>#refnum</ltx:tag></ltx:tags>)()",
+  properties => sub {
+    #    RefStepCounter('AlgoLine');    # ?
+    my $refnum = Digest(T_CS('\theAlgoLine'));
+    my $id     = Digest(T_CS('\theAlgoLine@ID'));
+    #    (id => $id, refnum => $refnum); }
+    (); }
+);
+
+DefConstructor('\lx@algo@@endline', "</ltx:listingline>");
+
+# DefConstructor('\lx@algo@@startline Digested',
+#                "<ltx:listingline xml:id='#id' refnum='#refnum'>#body</ltx:listingline>");
+
+DefConstructor('\algocf@printnl{}', "<ltx:tags>ltx:tag>#1</ltx:tag></ltx:tags>");
+
+DefMacro('\lx@prepend@indentation',
+  '\lx@prepend@indentation@{\the\lx@algo@indentation}');
+DefConstructor('\lx@prepend@indentation@{}', sub {
+    my ($doc, $indentation) = @_;
+    # PREPEND an <ltx:tag> to the current ltx:listingline
+    my $savenode   = $doc->floatToElement('ltx:tags');
+    my $line       = $doc->getNode;
+    my @oldcontent = $line->childNodes;
+    map { $line->removeChild($_) } @oldcontent;    # Remove old content
+    $doc->absorb($indentation);
+    map { $line->appendChild($_) } @oldcontent;    # put old content back.
+});
+
+DefConstructor('\algocf@printnl{}', sub {
+    my ($doc, $number) = @_;
+    # PREPEND an <ltx:tag> to the current ltx:listingline
+    my $savenode   = $doc->floatToElement('ltx:tags');
+    my $line       = $doc->getNode;
+    my @oldcontent = $line->childNodes;
+    map { $line->removeChild($_) } @oldcontent;    # Remove old content
+    $doc->openElement('ltx:tags');                 # prepend tags
+    $doc->insertElement('ltx:tag', $number);       # prepend tag
+    $doc->closeElement('ltx:tags');
+    map { $line->appendChild($_) } @oldcontent;    # put old content back.
+});
+#DefConstructor('\algocf@printnl{}', "<ltx:listingline><ltx:tag>#1</ltx:tag>");
+#DefConstructor('\algocf@printnl{}',"");
+
+#Tag('ltx:listingline', autoOpen => 1, autoClose => 1);    # ?
+
+#  \algocf@@block
+#  \algocf@group
+#  \Hlne
+# or
+#  \algocf@@@block
+#  \algocf@{No|Vs}line
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
+

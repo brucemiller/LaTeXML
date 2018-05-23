@@ -62,7 +62,7 @@ sub image_type {
     ($t) = image_getvalue($image, 'format'); }
   # Note that Image::Magick (sometimes) returns "descriptive" types
   # (but I can't find a list anywhere!)
-  $t = 'eps' if $t =~ /postscript/i;
+  $t = 'eps' if $t && $t =~ /postscript/i;
   return (defined $t ? lc($t) : undef); }
 
 sub image_size {

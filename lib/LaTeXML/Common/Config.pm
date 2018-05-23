@@ -107,7 +107,7 @@ sub getopt_specification {
     "nokeepXMath|noxmath"         => sub { _removeMathFormat($opts, 'xmath'); },
     "mathtex"                     => sub { _addMathFormat($opts, 'mathtex'); },
     "nomathtex"                   => sub { _removeMathFormat($opts, 'mathtex'); },
-    "parallelmath!"                => \$$opts{parallelmath},
+    "parallelmath!"               => \$$opts{parallelmath},
     # Some general XSLT/CSS/JavaScript options.
     "stylesheet=s"      => \$$opts{stylesheet},
     "xsltparameter=s"   => \@{ $$opts{xsltparameters} },
@@ -369,13 +369,13 @@ sub _prepare_options {
       else {
         ${ 'LaTeXML::' . $ltx_class . '::DEBUG' } = 1; } } }
 
-  $$opts{input_limit} = 100 unless defined $$opts{input_limit}; # 100 jobs until restart
-  $$opts{timeout} = 600 unless defined $$opts{timeout}; # 10 minute timeout default
-  $$opts{expire} = 600 unless defined $$opts{expire}; # 10 minute timeout default
-  $$opts{mathparse} = 'RecDescent' unless defined $$opts{mathparse};
+  $$opts{input_limit} = 100          unless defined $$opts{input_limit};   # 100 jobs until restart
+  $$opts{timeout}     = 600          unless defined $$opts{timeout};       # 10 minute timeout default
+  $$opts{expire}      = 600          unless defined $$opts{expire};        # 10 minute timeout default
+  $$opts{mathparse}   = 'RecDescent' unless defined $$opts{mathparse};
   if ($$opts{mathparse} eq 'no') {
     $$opts{mathparse}   = 0;
-    $$opts{nomathparse} = 1; }    #Backwards compatible
+    $$opts{nomathparse} = 1; }                                             #Backwards compatible
   $$opts{verbosity} = 0     unless defined $$opts{verbosity};
   $$opts{preload}   = []    unless defined $$opts{preload};
   $$opts{paths}     = ['.'] unless defined $$opts{paths};
@@ -390,7 +390,7 @@ sub _prepare_options {
       $$opts{whatsin} = 'fragment'; }
     else {    # Default input chunk is a document
       $$opts{whatsin} = 'document'; } }
-  $$opts{type}     = 'auto'     unless defined $$opts{type};
+  $$opts{type} = 'auto' unless defined $$opts{type};
   unshift(@{ $$opts{preload} }, ('TeX.pool', 'LaTeX.pool', 'BibTeX.pool')) if ($$opts{type} eq 'BibTeX');
 
   # Destination extension might indicate the format:
@@ -398,7 +398,7 @@ sub _prepare_options {
     if ($$opts{destination} =~ /\.([^.]+)$/) {
       $$opts{extension} = $1; } }
   if ((!defined $$opts{format}) && (defined $$opts{extension})) {
-      $$opts{format} = $$opts{extension}; }
+    $$opts{format} = $$opts{extension}; }
   if ((!defined $$opts{extension}) && (defined $$opts{format})) {
     if ($$opts{format} =~ /^html/) {
       $$opts{extension} = 'html'; }
@@ -425,7 +425,7 @@ sub _prepare_options {
     $$opts{is_xhtml} = ($$opts{format} =~ /^(xhtml5?|epub|mobi)$/);
     $$opts{whatsout} = 'archive' if (($$opts{format} eq 'epub') || ($$opts{format} eq 'mobi'));
   } else {
-    $$opts{format} = 'xml' # We failed to guess format in any-which-way, so XML is default
+    $$opts{format} = 'xml'    # We failed to guess format in any-which-way, so XML is default
   }
   #======================================================================
   # II. Sanity check and Completion of Post options.
@@ -434,11 +434,11 @@ sub _prepare_options {
   $$opts{math_formats} = [] unless defined $$opts{math_formats};
   $$opts{post} = 1 if ((!defined $$opts{post}) &&
     (scalar(@{ $$opts{math_formats} })
-    || ($$opts{stylesheet})
-    || $$opts{is_html}
-    || $$opts{is_xhtml}
-    || (($$opts{format}||'') eq 'jats')
-    || ($$opts{whatsout} && ($$opts{whatsout} ne 'document'))
+      || ($$opts{stylesheet})
+      || $$opts{is_html}
+      || $$opts{is_xhtml}
+      || (($$opts{format} || '') eq 'jats')
+      || ($$opts{whatsout} && ($$opts{whatsout} ne 'document'))
     )
   );
 # || ... || ... || ...
@@ -476,8 +476,8 @@ sub _prepare_options {
     if ((defined $$opts{destination}) || ($$opts{whatsout} =~ /^archive/)) {
       # We want the graphics enabled by default, but only when we have a destination
       $$opts{dographics} = 1 unless defined $$opts{dographics};
-      $$opts{picimages} = 1 if (($$opts{format} eq "html4")||($$opts{format} eq "jats"))
-	  && !defined $$opts{picimages};
+      $$opts{picimages} = 1 if (($$opts{format} eq "html4") || ($$opts{format} eq "jats"))
+        && !defined $$opts{picimages};
     }
     # Split sanity:
     if ($$opts{split}) {
@@ -524,8 +524,8 @@ sub _prepare_options {
     # Format:
     #Default is XHTML, XML otherwise (TODO: Expand)
     if (!defined $$opts{format}) {
-      if ($$opts{stylesheet}) { $$opts{format} = "xml"; }
-      else { $$opts{format} = "xhtml"; }
+      if   ($$opts{stylesheet}) { $$opts{format} = "xml"; }
+      else                      { $$opts{format} = "xhtml"; }
     }
 
     if (!$$opts{stylesheet}) {
@@ -533,7 +533,7 @@ sub _prepare_options {
       elsif ($$opts{format} eq "html4")       { $$opts{stylesheet} = "LaTeXML-html4.xsl"; }
       elsif ($$opts{format} =~ /^epub|mobi$/) { $$opts{stylesheet} = "LaTeXML-epub3.xsl"; }
       elsif ($$opts{format} eq "html5")       { $$opts{stylesheet} = "LaTeXML-html5.xsl"; }
-      elsif ($$opts{format} eq "jats")       { $$opts{stylesheet} = "LaTeXML-jats.xsl"; }
+      elsif ($$opts{format} eq "jats")        { $$opts{stylesheet} = "LaTeXML-jats.xsl"; }
       elsif ($$opts{format} eq "xml")         { delete $$opts{stylesheet}; }
       else                                    { croak("Unrecognized target format: " . $$opts{format}); }
     }
@@ -1448,8 +1448,6 @@ only through the latexmlc client (you need to set --expire to a positive value,
 in order to request auto-spawning of a dedicated conversion server).
 
 =over 4
-
-=back
 
 =item C<--autoflush>=I<count>
 

@@ -4,7 +4,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <section refnum="1" xml:id="S1">
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
     <title><tag close=" ">1</tag>Basic</title>
     <para xml:id="S1.p1">
       <p>Math: <Math mode="inline" tex="a=b" text="a = b" xml:id="S1.p1.m1">
@@ -23,9 +28,14 @@
         </picture></p>
     </para>
   </section>
-  <section refnum="2" xml:id="S2">
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
     <title><tag close=" ">2</tag>Pictures</title>
-    <paragraph xml:id="S2.SS0.SSS0.Px1">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px1">
       <title>Lines:</title>
       <para xml:id="S2.SS0.SSS0.Px1.p1">
         <p>using integers, scaling with floats, LaTeXcounters, TeX counters.
@@ -80,7 +90,7 @@ All should be the same.</p>
         </picture>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px2">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px2">
       <title>Vectors:</title>
       <para xml:id="S2.SS0.SSS0.Px2.p1">
         <picture fill="black" height="100.0pt" stroke="black" tex="\begin{picture}(100.0,100.0)(-100.0,-100.0)\put(0.0,0.0){\vector(-1,0){100.0}}&#10;\put(0.0,0.0){\vector(-1,-1){100.0}}&#10;\put(0.0,0.0){\vector(0,-1){100.0}}&#10;\end{picture}" unitlength="1.0pt" width="100.0pt" xml:id="S2.SS0.SSS0.Px2.p1.pic1">
@@ -98,7 +108,7 @@ All should be the same.</p>
         </picture>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px3">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px3">
       <title>Boxes;</title>
       <para xml:id="S2.SS0.SSS0.Px3.p1">
         <picture fill="black" height="100.0pt" stroke="black" tex="\begin{picture}(100.0,100.0)\put(0.0,0.0){\bf A}&#10;\put(15.0,15.0){\framebox(15.0,15.0){A}}&#10;\put(30.0,30.0){\framebox(15.0,15.0){\bf A}}&#10;\put(45.0,45.0){\framebox(15.0,15.0){A}}&#10;\put(60.0,20.0){\frame{\shortstack{A\\&#10;B\\&#10;\bf C\\&#10;D}}}&#10;\put(75.0,20.0){\framebox(15.0,80.0){\shortstack{A\\&#10;\bf B\\&#10;C\\&#10;D}}}&#10;\end{picture}" unitlength="1.0pt" width="100.0pt" xml:id="S2.SS0.SSS0.Px3.p1.pic1">
@@ -147,7 +157,7 @@ All should be the same.</p>
         </picture>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px4">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px4">
       <title>Circles:</title>
       <para xml:id="S2.SS0.SSS0.Px4.p1">
         <picture fill="black" height="100.0pt" stroke="black" tex="\begin{picture}(100.0,100.0)\put(30.0,30.0){\circle{30.0}\vector(0,1){15.0}%&#10;\circle*{5.0}}&#10;\put(70.0,70.0){\oval(60.0,30.0)}&#10;\end{picture}" unitlength="1.0pt" width="100.0pt" xml:id="S2.SS0.SSS0.Px4.p1.pic1">
@@ -162,7 +172,7 @@ All should be the same.</p>
         </picture>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px5">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px5">
       <title>Curves:</title>
       <para xml:id="S2.SS0.SSS0.Px5.p1">
         <picture fill="black" height="100.0pt" stroke="black" tex="\begin{picture}(100.0,100.0)\qbezier(40.0,80.0)(80.0,120.0)(100.0,80.0)%&#10;\qbezier[50](40.0,89.0)(80.0,129.0)(100.0,89.0)\end{picture}" unitlength="1.0pt" width="100.0pt" xml:id="S2.SS0.SSS0.Px5.p1.pic1">
@@ -171,7 +181,7 @@ All should be the same.</p>
         </picture>
       </para>
     </paragraph>
-    <paragraph xml:id="S2.SS0.SSS0.Px6">
+    <paragraph inlist="toc" xml:id="S2.SS0.SSS0.Px6">
       <title>Repeats:</title>
       <para xml:id="S2.SS0.SSS0.Px6.p1">
         <picture fill="black" height="100.0pt" stroke="black" tex="\begin{picture}(100.0,100.0)\put(0.0,0.0){a}\put(10.0,10.0){a}\put(20.0,20.0){%&#10;a}\put(30.0,30.0){a}\put(40.0,40.0){a}\put(50.0,50.0){a}\put(60.0,60.0){a}\put%&#10;(70.0,70.0){a}\put(80.0,80.0){a}\put(90.0,90.0){a}\put(100.0,100.0){a}&#10;\end{picture}" unitlength="1.0pt" width="100.0pt" xml:id="S2.SS0.SSS0.Px6.p1.pic1">

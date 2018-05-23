@@ -46,13 +46,17 @@ DefMacro('\lx@algorithmicx@item []',
 
 # This imitates \item; just opens the ltx:listingline, but somebody's got to close it.
 DefConstructor('\lx@algorithmicx@@item',
-  "<ltx:listingline xml:id='#id' refnum='#refnum' itemsep='#itemsep'>"
-    . "?&defined(#frefnum)(<ltx:tag>#frefnum</ltx:tag>)(?&defined(#refnum)(<ltx:tag>#refnum</ltx:tag>))",
+  "<ltx:listingline xml:id='#id' itemsep='#itemsep'>"
+    . "#tags",
   properties => sub {
-    my $frefnum = Digest(T_CS('\ALG@step'));
-    my $refnum  = Digest(T_CS('\theALG@line'));
-    my $id      = Digest(T_CS('\theALG@line@ID'));
-    (id => $id, refnum => $refnum, frefnum => $frefnum); },
+    my $step = Digest(T_BEGIN, T_CS('\ALG@step'), T_END);    # returns formatted line number
+    my $id   = Digest(T_CS('\theALG@line@ID'));
+    my $tags = Digest(T_BEGIN,
+      T_CS('\def'), T_CS('\fnum@ALG@line'), T_BEGIN, Tokens(Revert($step)), T_END,
+      Invocation(T_CS('\lx@make@tags'), T_OTHER('ALG@line')),
+      T_END);
+
+    (id => $id, tags => $tags); },
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
 
 # Ideally, these appear within an algorithm environment, and we'd like to number lines within it.

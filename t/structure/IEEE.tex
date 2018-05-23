@@ -1,0 +1,113 @@
+\documentclass{IEEEtran}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\newtheorem{theorem}{Theorem}
+\title{IEEE Trans}
+\begin{document}
+
+\IEEEtitleabstractindextext{%
+\begin{abstract}
+Uncertainty from blah, blah
+\end{abstract}
+\begin{IEEEkeywords}
+Stuff, More Stuff
+\end{IEEEkeywords}
+}
+\section{A Theorem}
+\begin{theorem}\label{th1}
+Whenever this, then that.
+\end{theorem}
+\begin{IEEEproof}[Proof of Theorem~\ref{th1}]
+Because I say so.
+
+This completes the proof.
+\end{IEEEproof}
+
+\section{IEEE style eqnarray}
+
+Normal numbering.
+\begin{IEEEeqnarray}{rCl}
+N &=& \theequation\\
+N &=& \theequation
+\end{IEEEeqnarray}
+
+No numbering.
+\begin{IEEEeqnarray*}{rCl}
+N &=& \theequation\\
+N &=& \theequation
+\end{IEEEeqnarray*}
+
+Only number first
+\begin{IEEEeqnarray*}{rCl}
+\IEEEyesnumber
+N &=& \theequation\\
+N &=& \theequation
+\end{IEEEeqnarray*}
+
+Normal numbering, done differently
+\begin{IEEEeqnarray*}{rCl}
+\IEEEyesnumber*
+N &=& \theequation\\
+N &=& \theequation
+\end{IEEEeqnarray*}
+
+Only number last.
+\begin{IEEEeqnarray}{rCl}
+\IEEEnonumber
+N &=& \theequation\\
+N &=& \theequation
+\end{IEEEeqnarray}
+Same done differently
+\begin{IEEEeqnarray*}{rCl}
+N &=& \theequation\\
+\IEEEyesnumber
+N &=& \theequation
+\end{IEEEeqnarray*}
+
+Number all
+\begin{IEEEeqnarray}{rCl}
+\IEEEyesnumber
+N &=& \theequation\\
+N &=& \theequation
+\end{IEEEeqnarray}
+
+Sub-number first
+\begin{IEEEeqnarray}{rCl}
+\IEEEyesnumber\IEEEyessubnumber
+N &=& \theequation\\
+N &=& \theequation
+\end{IEEEeqnarray}
+
+Sub-number persistently
+\begin{IEEEeqnarray}{rCl}
+\IEEEyesnumber\IEEEyessubnumber*
+N &=& \theequation\\
+N &=& \theequation
+\end{IEEEeqnarray}
+
+Resume normal numbering
+\begin{IEEEeqnarray}{rCl}
+N &=& \theequation\\
+N &=& \theequation
+\end{IEEEeqnarray}
+
+And boxed?
+\begin{IEEEeqnarraybox}{rCl}
+N &=& \theequation\\
+N &=& \theequation
+\end{IEEEeqnarraybox}
+
+Mixed case, single column
+\begin{IEEEeqnarray}{c}
+x_1\IEEEyesnumber\IEEEyessubnumber*\\
+x_2\\
+x_3\IEEEyesnumber\IEEEyessubnumber\label{eqn:expl}\\
+x_4\\
+x_5\IEEEyesnumber*\\
+x_6
+\end{IEEEeqnarray}
+
+\begin{IEEEbiography}[{Picture of Me}]{\textbf{ME}  is a really great guy.}
+\end{IEEEbiography}
+
+\end{document}

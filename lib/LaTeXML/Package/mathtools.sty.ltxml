@@ -33,7 +33,7 @@ foreach my $option (qw(fixamsmath donotfixamsmathbugs allowspaces disallowspaces
 
 # pass all other options to amsmath
 DeclareOption(undef, sub {
-    PassOptions('amsmath', 'sty', ToString(Digest(T_CS('\CurrentOption')))); });
+    PassOptions('amsmath', 'sty', ToString(Expand(T_CS('\CurrentOption')))); });
 ProcessOptions();
 RequirePackage('amsmath', withoptions => 1);
 

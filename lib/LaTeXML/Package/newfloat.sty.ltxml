@@ -1,0 +1,88 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  newfloat                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Package options (keywords)
+#  within=<counter> or none [resets figure & table]
+#  chapterlistsgap=value
+
+# \DeclareFloatingEnvironment[options]{type}
+# \SetupFloatingEnvironment[options]{type}
+# options:
+#  fileext=ext  [default=lo<type>]
+#  listname=    [default="List of <type>s]
+#  placement= [htbp] [default=tbp]
+#  within = counter  [default=chapter, if any]
+# chapterlistsgap=on/off
+#
+DefPrimitive('\SetupFloatingEnvironment OptionalKeyVals {}', sub {
+    my ($stomach, $options, $type) = @_;
+    $type = ToString($type);
+    my $within = $options && ToString($options->getValue('within'));
+    NewCounter($type, $within);
+    my $inlist = $options && $options->getValue('fileext');
+    DefMacroI('\ext@' . $type, undef, $inlist || 'lo' . $type);
+    my $name = $options && ToString($options->getValue('listname'));
+    DefMacroI('\\' . $type . 'name', undef, $name || 'List of ' . $type . 's');
+    # Ignore placement, chapterlistgap
+});
+DefPrimitive('\DeclareFloatingEnvironment OptionalKeyVals {}', sub {
+    my ($stomach, $options, $type) = @_;
+    $type = ToString($type);
+    my $within = $options && ToString($options->getValue('within'));
+    NewCounter($type, $within);
+    my $inlist = $options && $options->getValue('fileext');
+    DefMacroI('\ext@' . $type, undef, $inlist || 'lo' . $type);
+    my $name = $options && ToString($options->getValue('listname'));
+    # Presumably should get the default float fonts?
+    DefMacroI('\fnum@font@' . $type,         undef, '\fnum@font@float');
+    DefMacroI('\format@title@font@' . $type, undef, '\format@title@font@float');
+
+    DefMacroI('\\' . $type . 'name', undef, $name || 'List of ' . $type . 's');
+    # Ignore placement, chapterlistgap
+
+    # Do we need any \the, \fnum@, \format@title, etc?
+
+    DefEnvironment("{$type}[]",
+      "<ltx:float xml:id='#id' ?#1(placement='#1') inlist='#inlist' class='ltx_float_$type'>"
+        . "#tags"
+        . "#body"
+        . "</ltx:float>",
+      beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
+      afterDigest => sub { RescueCaptionCounters($type, $_[1]); });
+    DefEnvironment("{$type*}[]",
+      "<ltx:float xml:id='#id' ?#1(placement='#1') inlist='#inlist' class='ltx_float_$type'>"
+        . "#tags"
+        . "#body"
+        . "</ltx:float>",
+      beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
+      afterDigest => sub { RescueCaptionCounters($type, $_[1]); });
+});
+
+# \ForEachFloatingEnvironment{code{#1}}
+# \PrepareListOf{type}{code}
+
+# Ignore (for now)
+DefMacro('\ForEachFloatingEnvironment{}', '');
+DefMacro('\PrepareListOf{}{}',            '');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

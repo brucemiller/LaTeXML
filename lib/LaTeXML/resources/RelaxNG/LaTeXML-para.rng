@@ -87,6 +87,9 @@ different kinds of theorem.</a:documentation>
   <define name="theorem_model">
     <a:documentation>Content model for \elementref{theorem}.</a:documentation>
     <optional>
+      <ref name="tags"/>
+    </optional>
+    <optional>
       <ref name="title"/>
     </optional>
     <ref name="Para.model"/>
@@ -109,6 +112,9 @@ different kinds of proof.</a:documentation>
   </define>
   <define name="proof_model">
     <a:documentation>Content model for \elementref{proof}.</a:documentation>
+    <optional>
+      <ref name="tags"/>
+    </optional>
     <optional>
       <ref name="title"/>
     </optional>
@@ -151,6 +157,9 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <a:documentation>Content model for \elementref{figure}; allow nested figures, etc for "sub" floats.</a:documentation>
     <zeroOrMore>
       <choice>
+        <optional>
+          <ref name="tags"/>
+        </optional>
         <ref name="figure"/>
         <ref name="table"/>
         <ref name="float"/>
@@ -185,6 +194,9 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <a:documentation>Content model for \elementref{table}.</a:documentation>
     <zeroOrMore>
       <choice>
+        <optional>
+          <ref name="tags"/>
+        </optional>
         <ref name="table"/>
         <ref name="figure"/>
         <ref name="float"/>
@@ -224,6 +236,9 @@ Or, should caption be used for theorem and proof?</a:documentation>
     <a:documentation>Content model for \elementref{float}.</a:documentation>
     <zeroOrMore>
       <choice>
+        <optional>
+          <ref name="tags"/>
+        </optional>
         <ref name="float"/>
         <ref name="figure"/>
         <ref name="table"/>
@@ -277,11 +292,11 @@ used for lists of figures or similar.</a:documentation>
     <a:documentation>Content model for \elementref{toccaption}.</a:documentation>
     <zeroOrMore>
       <choice>
+        <ref name="tag"/>
         <text/>
         <ref name="Inline.class"/>
         <ref name="Misc.class"/>
         <ref name="Meta.class"/>
-        <ref name="tag"/>
       </choice>
     </zeroOrMore>
   </define>

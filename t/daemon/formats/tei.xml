@@ -1,0 +1,908 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TEI xmlns="http://www.tei-c.org/ns/1.0">
+  <teiHeader>
+    <fileDesc>
+      <titleStmt>
+        <title level="a" type="main">Sample amsart</title>
+      </titleStmt>
+      <publicationStmt>
+        <publisher/>
+      </publicationStmt>
+      <sourceDesc>
+        <biblStruct>
+          <analytic>
+            <author>
+              <persName>
+                <surname>Blow</surname>
+                <forename>Joe</forename>
+              </persName>
+              <address>
+                <addrLine>Somewhere, USA</addrLine>
+              </address>
+              <!-- The element contact with attributes
+            role=current_address
+            is currently not supported for the front matter.
+        -->
+              <email>joe@blow</email>
+            </author>
+            <author>
+              <persName>
+                <surname>Zappa</surname>
+                <forename>Frank</forename>
+              </persName>
+              <address>
+                <addrLine>Baltimore</addrLine>
+              </address>
+            </author>
+            <author>
+              <persName>
+                <surname>Else</surname>
+                <forename>Someone</forename>
+              </persName>
+              <address>
+                <addrLine>Somewhere Else</addrLine>
+              </address>
+            </author>
+            <title level="a" type="main">Sample amsart</title>
+          </analytic>
+          <monogr>
+            <imprint/>
+          </monogr>
+        </biblStruct>
+      </sourceDesc>
+    </fileDesc>
+    <profileDesc>
+      <abstract>
+        <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      </abstract>
+      <kwd-group>
+        <kwd>ams</kwd>
+        <kwd>article</kwd>
+        <kwd>markup</kwd>
+      </kwd-group>
+    </profileDesc>
+  </teiHeader>
+  <text>
+    <body>
+      <div>
+        <!-- The element tags
+            is currently not supported for the main body.
+        -->
+        <head>Introduction</head>
+        <p xml:id="S1.p1">As discussed in <ref type="bibr" target="bib.bib1">[AS64]</ref>,
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="a+b," display="block">
+              <m:mrow>
+                <m:mrow>
+                  <m:mi>a</m:mi>
+                  <m:mo>+</m:mo>
+                  <m:mi>b</m:mi>
+                </m:mrow>
+                <m:mo>,</m:mo>
+              </m:mrow>
+            </m:math>
+          </formula>
+        </p>
+        <p>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="c+d," display="block">
+              <m:mrow>
+                <m:mrow>
+                  <m:mi>c</m:mi>
+                  <m:mo>+</m:mo>
+                  <m:mi>d</m:mi>
+                </m:mrow>
+                <m:mo>,</m:mo>
+              </m:mrow>
+            </m:math>
+          </formula>
+        </p>
+        <figure>
+          <head>A Figure</head>
+          <!-- The element tags
+            is currently not supported for the main body.
+        -->
+          <p>A Figure</p>
+        </figure>
+        <table>
+          <!-- The element tags
+            is currently not supported for the main body.
+        -->
+          <head>A Table</head>
+          <row>
+            <cell>Heading</cell>
+            <cell>Foo</cell>
+            <cell>Bar</cell>
+          </row>
+          <row>
+            <cell>a</cell>
+            <cell>
+              <formula>
+                <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="x" display="inline">
+                  <m:mi>x</m:mi>
+                </m:math>
+              </formula>
+            </cell>
+            <cell>
+              <formula>
+                <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="x^{2}" display="inline">
+                  <m:msup>
+                    <m:mi>x</m:mi>
+                    <m:mn>2</m:mn>
+                  </m:msup>
+                </m:math>
+              </formula>
+            </cell>
+          </row>
+          <row>
+            <cell>b</cell>
+            <cell>
+              <formula>
+                <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="y^{2}" display="inline">
+                  <m:msup>
+                    <m:mi>y</m:mi>
+                    <m:mn>2</m:mn>
+                  </m:msup>
+                </m:math>
+              </formula>
+            </cell>
+            <cell>
+              <formula>
+                <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="y" display="inline">
+                  <m:mi>y</m:mi>
+                </m:math>
+              </formula>
+            </cell>
+          </row>
+        </table>
+        <p>
+          <list rend="bulleted">
+            <item>
+              <!-- The element tags
+            is currently not supported for the main body.
+        -->
+              <p xml:id="S1.I1.i1.p1">one</p>
+            </item>
+            <item>
+              <!-- The element tags
+            is currently not supported for the main body.
+        -->
+              <p xml:id="S1.I1.i2.p1">two</p>
+              <p>
+                <list rend="bulleted">
+                  <item>
+                    <!-- The element tags
+            is currently not supported for the main body.
+        -->
+                    <p xml:id="S1.I1.i2.i1.p1">one</p>
+                  </item>
+                  <item>
+                    <!-- The element tags
+            is currently not supported for the main body.
+        -->
+                    <p xml:id="S1.I1.i2.i2.p1">two</p>
+                  </item>
+                </list>
+              </p>
+            </item>
+          </list>
+        </p>
+        <p>
+          <list rend="numbered">
+            <item>
+              <!-- The element tags
+            is currently not supported for the main body.
+        -->
+              <p xml:id="S1.I2.i1.p1">one</p>
+            </item>
+            <item>
+              <!-- The element tags
+            is currently not supported for the main body.
+        -->
+              <p xml:id="S1.I2.i2.p1">two</p>
+              <p>
+                <list rend="numbered">
+                  <item>
+                    <!-- The element tags
+            is currently not supported for the main body.
+        -->
+                    <p xml:id="S1.I2.i2.i1.p1">one</p>
+                  </item>
+                  <item>
+                    <!-- The element tags
+            is currently not supported for the main body.
+        -->
+                    <p xml:id="S1.I2.i2.i2.p1">two</p>
+                  </item>
+                </list>
+              </p>
+            </item>
+          </list>
+        </p>
+        <list>
+          <item>
+            <!-- The element tags
+            is currently not supported for the main body.
+        -->
+            <p xml:id="S1.I3.ix1.p1">with some descriptive text.</p>
+          </item>
+          <item>
+            <!-- The element tags
+            is currently not supported for the main body.
+        -->
+            <p xml:id="S1.I3.ix2.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+          </item>
+          <item>
+            <!-- The element tags
+            is currently not supported for the main body.
+        -->
+            <p xml:id="S1.I3.ix3.p1">blah, blah. Moreover
+Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+          </item>
+        </list>
+      </div>
+      <div>
+        <!-- The element tags
+            is currently not supported for the main body.
+        -->
+        <head>A Math Section</head>
+        <p xml:id="S2.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+        <p xml:id="S2.p2">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+        <p>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="a=b" display="block">
+              <m:mrow>
+                <m:mi>a</m:mi>
+                <m:mo>=</m:mo>
+                <m:mi>b</m:mi>
+              </m:mrow>
+            </m:math>
+          </formula>
+        </p>
+        <p>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="a=b" display="block">
+              <m:mrow>
+                <m:mi>a</m:mi>
+                <m:mo>=</m:mo>
+                <m:mi>b</m:mi>
+              </m:mrow>
+            </m:math>
+          </formula>
+        </p>
+        <p>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\begin{split}\displaystyle a&amp;\displaystyle=b+c-d\\&#10;&amp;\displaystyle\quad+e-f\\&#10;&amp;\displaystyle=g+h\\&#10;&amp;\displaystyle=i\end{split}" display="block">
+              <m:mtable columnspacing="0pt" displaystyle="true" rowspacing="0pt">
+                <m:mtr>
+                  <m:mtd columnalign="right">
+                    <m:mi>a</m:mi>
+                  </m:mtd>
+                  <m:mtd columnalign="left">
+                    <m:mrow>
+                      <m:mi/>
+                      <m:mo>=</m:mo>
+                      <m:mrow>
+                        <m:mrow>
+                          <m:mi>b</m:mi>
+                          <m:mo>+</m:mo>
+                          <m:mi>c</m:mi>
+                        </m:mrow>
+                        <m:mo>-</m:mo>
+                        <m:mi>d</m:mi>
+                      </m:mrow>
+                    </m:mrow>
+                  </m:mtd>
+                </m:mtr>
+                <m:mtr>
+                  <m:mtd/>
+                  <m:mtd columnalign="left">
+                    <m:mrow>
+                      <m:mrow>
+                        <m:mo lspace="12.5pt">+</m:mo>
+                        <m:mi>e</m:mi>
+                      </m:mrow>
+                      <m:mo>-</m:mo>
+                      <m:mi>f</m:mi>
+                    </m:mrow>
+                  </m:mtd>
+                </m:mtr>
+                <m:mtr>
+                  <m:mtd/>
+                  <m:mtd columnalign="left">
+                    <m:mrow>
+                      <m:mi/>
+                      <m:mo>=</m:mo>
+                      <m:mrow>
+                        <m:mi>g</m:mi>
+                        <m:mo>+</m:mo>
+                        <m:mi>h</m:mi>
+                      </m:mrow>
+                    </m:mrow>
+                  </m:mtd>
+                </m:mtr>
+                <m:mtr>
+                  <m:mtd/>
+                  <m:mtd columnalign="left">
+                    <m:mrow>
+                      <m:mi/>
+                      <m:mo>=</m:mo>
+                      <m:mi>i</m:mi>
+                    </m:mrow>
+                  </m:mtd>
+                </m:mtr>
+              </m:mtable>
+            </m:math>
+          </formula>
+        </p>
+        <p>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a+b+c+d+e+f\\&#10;\displaystyle+i+j+k+l+m+n" display="block">
+              <m:mtable displaystyle="true" rowspacing="0pt">
+                <m:mtr>
+                  <m:mtd columnalign="left">
+                    <m:mrow>
+                      <m:mi>a</m:mi>
+                      <m:mo>+</m:mo>
+                      <m:mi>b</m:mi>
+                      <m:mo>+</m:mo>
+                      <m:mi>c</m:mi>
+                      <m:mo>+</m:mo>
+                      <m:mi>d</m:mi>
+                      <m:mo>+</m:mo>
+                      <m:mi>e</m:mi>
+                      <m:mo>+</m:mo>
+                      <m:mi>f</m:mi>
+                    </m:mrow>
+                  </m:mtd>
+                </m:mtr>
+                <m:mtr>
+                  <m:mtd columnalign="right">
+                    <m:mrow>
+                      <m:mrow>
+                        <m:mo>+</m:mo>
+                        <m:mi>i</m:mi>
+                      </m:mrow>
+                      <m:mo>+</m:mo>
+                      <m:mi>j</m:mi>
+                      <m:mo>+</m:mo>
+                      <m:mi>k</m:mi>
+                      <m:mo>+</m:mo>
+                      <m:mi>l</m:mi>
+                      <m:mo>+</m:mo>
+                      <m:mi>m</m:mi>
+                      <m:mo>+</m:mo>
+                      <m:mi>n</m:mi>
+                    </m:mrow>
+                  </m:mtd>
+                </m:mtr>
+              </m:mtable>
+            </m:math>
+          </formula>
+        </p>
+        <p>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{1}=b_{1}+c_{1}" display="block">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>1</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:mrow>
+                  <m:msub>
+                    <m:mi>b</m:mi>
+                    <m:mn>1</m:mn>
+                  </m:msub>
+                  <m:mo>+</m:mo>
+                  <m:msub>
+                    <m:mi>c</m:mi>
+                    <m:mn>1</m:mn>
+                  </m:msub>
+                </m:mrow>
+              </m:mrow>
+            </m:math>
+          </formula>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" display="block">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>2</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:mrow>
+                  <m:mrow>
+                    <m:mrow>
+                      <m:msub>
+                        <m:mi>b</m:mi>
+                        <m:mn>2</m:mn>
+                      </m:msub>
+                      <m:mo>+</m:mo>
+                      <m:msub>
+                        <m:mi>c</m:mi>
+                        <m:mn>2</m:mn>
+                      </m:msub>
+                    </m:mrow>
+                    <m:mo>-</m:mo>
+                    <m:msub>
+                      <m:mi>d</m:mi>
+                      <m:mn>2</m:mn>
+                    </m:msub>
+                  </m:mrow>
+                  <m:mo>+</m:mo>
+                  <m:msub>
+                    <m:mi>e</m:mi>
+                    <m:mn>2</m:mn>
+                  </m:msub>
+                </m:mrow>
+              </m:mrow>
+            </m:math>
+          </formula>
+        </p>
+        <p>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{1}=b_{1}+c_{1}" display="inline">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>1</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:mrow>
+                  <m:msub>
+                    <m:mi>b</m:mi>
+                    <m:mn>1</m:mn>
+                  </m:msub>
+                  <m:mo>+</m:mo>
+                  <m:msub>
+                    <m:mi>c</m:mi>
+                    <m:mn>1</m:mn>
+                  </m:msub>
+                </m:mrow>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{1}" display="inline">
+              <m:msub>
+                <m:mi>a</m:mi>
+                <m:mn>1</m:mn>
+              </m:msub>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{1}+c_{1}" display="inline">
+              <m:mrow>
+                <m:mi/>
+                <m:mo>=</m:mo>
+                <m:mrow>
+                  <m:msub>
+                    <m:mi>b</m:mi>
+                    <m:mn>1</m:mn>
+                  </m:msub>
+                  <m:mo>+</m:mo>
+                  <m:msub>
+                    <m:mi>c</m:mi>
+                    <m:mn>1</m:mn>
+                  </m:msub>
+                </m:mrow>
+              </m:mrow>
+            </m:math>
+          </formula>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" display="inline">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>2</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:mrow>
+                  <m:mrow>
+                    <m:mrow>
+                      <m:msub>
+                        <m:mi>b</m:mi>
+                        <m:mn>2</m:mn>
+                      </m:msub>
+                      <m:mo>+</m:mo>
+                      <m:msub>
+                        <m:mi>c</m:mi>
+                        <m:mn>2</m:mn>
+                      </m:msub>
+                    </m:mrow>
+                    <m:mo>-</m:mo>
+                    <m:msub>
+                      <m:mi>d</m:mi>
+                      <m:mn>2</m:mn>
+                    </m:msub>
+                  </m:mrow>
+                  <m:mo>+</m:mo>
+                  <m:msub>
+                    <m:mi>e</m:mi>
+                    <m:mn>2</m:mn>
+                  </m:msub>
+                </m:mrow>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{2}" display="inline">
+              <m:msub>
+                <m:mi>a</m:mi>
+                <m:mn>2</m:mn>
+              </m:msub>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{2}+c_{2}-d_{2}+e_{2}" display="inline">
+              <m:mrow>
+                <m:mi/>
+                <m:mo>=</m:mo>
+                <m:mrow>
+                  <m:mrow>
+                    <m:mrow>
+                      <m:msub>
+                        <m:mi>b</m:mi>
+                        <m:mn>2</m:mn>
+                      </m:msub>
+                      <m:mo>+</m:mo>
+                      <m:msub>
+                        <m:mi>c</m:mi>
+                        <m:mn>2</m:mn>
+                      </m:msub>
+                    </m:mrow>
+                    <m:mo>-</m:mo>
+                    <m:msub>
+                      <m:mi>d</m:mi>
+                      <m:mn>2</m:mn>
+                    </m:msub>
+                  </m:mrow>
+                  <m:mo>+</m:mo>
+                  <m:msub>
+                    <m:mi>e</m:mi>
+                    <m:mn>2</m:mn>
+                  </m:msub>
+                </m:mrow>
+              </m:mrow>
+            </m:math>
+          </formula>
+        </p>
+        <p>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{11}=b_{11}" display="inline">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>11</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>11</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{11}" display="inline">
+              <m:msub>
+                <m:mi>a</m:mi>
+                <m:mn>11</m:mn>
+              </m:msub>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{11}" display="inline">
+              <m:mrow>
+                <m:mi/>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>11</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{12}=b_{12}" display="inline">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>12</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>12</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{12}" display="inline">
+              <m:msub>
+                <m:mi>a</m:mi>
+                <m:mn>12</m:mn>
+              </m:msub>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{12}" display="inline">
+              <m:mrow>
+                <m:mi/>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>12</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+          </formula>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{21}=b_{21}" display="inline">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>21</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>21</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{21}" display="inline">
+              <m:msub>
+                <m:mi>a</m:mi>
+                <m:mn>21</m:mn>
+              </m:msub>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{21}" display="inline">
+              <m:mrow>
+                <m:mi/>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>21</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{22}=b_{22}+c_{22}" display="inline">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>22</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:mrow>
+                  <m:msub>
+                    <m:mi>b</m:mi>
+                    <m:mn>22</m:mn>
+                  </m:msub>
+                  <m:mo>+</m:mo>
+                  <m:msub>
+                    <m:mi>c</m:mi>
+                    <m:mn>22</m:mn>
+                  </m:msub>
+                </m:mrow>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{22}" display="inline">
+              <m:msub>
+                <m:mi>a</m:mi>
+                <m:mn>22</m:mn>
+              </m:msub>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{22}+c_{22}" display="inline">
+              <m:mrow>
+                <m:mi/>
+                <m:mo>=</m:mo>
+                <m:mrow>
+                  <m:msub>
+                    <m:mi>b</m:mi>
+                    <m:mn>22</m:mn>
+                  </m:msub>
+                  <m:mo>+</m:mo>
+                  <m:msub>
+                    <m:mi>c</m:mi>
+                    <m:mn>22</m:mn>
+                  </m:msub>
+                </m:mrow>
+              </m:mrow>
+            </m:math>
+          </formula>
+        </p>
+        <p xml:id="S2.p10">Some text</p>
+        <p>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="a=\text{something}" display="block">
+              <m:mrow>
+                <m:mi>a</m:mi>
+                <m:mo>=</m:mo>
+                <m:mtext>something</m:mtext>
+              </m:mrow>
+            </m:math>
+          </formula>
+        </p>
+        <note>
+          <!-- The element tags
+            is currently not supported for the main body.
+        -->
+          <title>.</title>
+          <p xml:id="Thmcorollary1.p1">Whatever!</p>
+        </note>
+        <note>
+          <!-- The element tags
+            is currently not supported for the main body.
+        -->
+          <title>.</title>
+          <p xml:id="Thmcorollaryx1.p1">And whatever.</p>
+        </note>
+        <p>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{11}=b_{11}" display="inline">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>11</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>11</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{11}" display="inline">
+              <m:msub>
+                <m:mi>a</m:mi>
+                <m:mn>11</m:mn>
+              </m:msub>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{11}" display="inline">
+              <m:mrow>
+                <m:mi/>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>11</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{12}=b_{12}" display="inline">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>12</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>12</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{12}" display="inline">
+              <m:msub>
+                <m:mi>a</m:mi>
+                <m:mn>12</m:mn>
+              </m:msub>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{12}" display="inline">
+              <m:mrow>
+                <m:mi/>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>12</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+          </formula>
+          <formula>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{21}=b_{21}" display="inline">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>21</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>21</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{21}" display="inline">
+              <m:msub>
+                <m:mi>a</m:mi>
+                <m:mn>21</m:mn>
+              </m:msub>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{21}" display="inline">
+              <m:mrow>
+                <m:mi/>
+                <m:mo>=</m:mo>
+                <m:msub>
+                  <m:mi>b</m:mi>
+                  <m:mn>21</m:mn>
+                </m:msub>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{22}=b_{22}+c_{22}" display="inline">
+              <m:mrow>
+                <m:msub>
+                  <m:mi>a</m:mi>
+                  <m:mn>22</m:mn>
+                </m:msub>
+                <m:mo>=</m:mo>
+                <m:mrow>
+                  <m:msub>
+                    <m:mi>b</m:mi>
+                    <m:mn>22</m:mn>
+                  </m:msub>
+                  <m:mo>+</m:mo>
+                  <m:msub>
+                    <m:mi>c</m:mi>
+                    <m:mn>22</m:mn>
+                  </m:msub>
+                </m:mrow>
+              </m:mrow>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{22}" display="inline">
+              <m:msub>
+                <m:mi>a</m:mi>
+                <m:mn>22</m:mn>
+              </m:msub>
+            </m:math>
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{22}+c_{22}" display="inline">
+              <m:mrow>
+                <m:mi/>
+                <m:mo>=</m:mo>
+                <m:mrow>
+                  <m:msub>
+                    <m:mi>b</m:mi>
+                    <m:mn>22</m:mn>
+                  </m:msub>
+                  <m:mo>+</m:mo>
+                  <m:msub>
+                    <m:mi>c</m:mi>
+                    <m:mn>22</m:mn>
+                  </m:msub>
+                </m:mrow>
+              </m:mrow>
+            </m:math>
+          </formula>
+        </p>
+        <div>
+          <!-- The element tags
+            is currently not supported for the main body.
+        -->
+          <head>A subsection</head>
+          <p xml:id="S2.SS1.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+          <div>
+            <!-- The element tags
+            is currently not supported for the main body.
+        -->
+            <head>A subsubsection</head>
+            <p xml:id="S2.SS1.SSS1.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
+            <boxed-text>
+              <head>
+                <p>A Paragraph</p>
+              </head>
+              <p xml:id="S2.SS1.SSS1.Px1.p1">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+            </boxed-text>
+          </div>
+        </div>
+      </div>
+      <div>
+        <!-- The element tags
+            is currently not supported for the main body.
+        -->
+        <head>
+          <hi rend="italic">Section with explicit font</hi>
+        </head>
+        <p xml:id="S3.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      </div>
+    </body>
+    <back>
+      <div type="acknowledgements">
+        <p>My Mommy.</p>
+      </div>
+      <div type="references">
+        <listBibl>
+          <head>References</head>
+          <bibl xml:id="bib.bib1"><person-group person-group-type="author"><name><surname>Stegun</surname><given-names>Abramowitz 
+                            and 
+                            </given-names></name></person-group><year>1964</year><article-title>Handbook of mathematical functions with formulas, graphs, and mathematical tables</article-title>M. Abramowitz and I. A. Stegun (<date><year>1964</year></date>)Handbook of mathematical functions with formulas, graphs, and mathematical tables.ninth Dover printing, tenth GPO printing edition,  Dover, New York.Cited by: §1.</bibl>
+        </listBibl>
+      </div>
+    </back>
+  </text>
+</TEI>

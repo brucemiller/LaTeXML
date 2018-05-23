@@ -106,23 +106,10 @@ Labelled.attributes =
   ## Other mechanisms (like acro?) might use other prefixes (but \texttt{ID:} is reserved!)
   attribute labels { text }?,
 
-  ## the reference number (ie. section number, equation number, etc) of the object.
-  attribute refnum { text }?,
-
-  ## the formatted reference number of the object as it would appear when labelling the object,
-  ## typically this is the refnum with the object type prepended, such as "Chapter 2".
-  ## This is what eg, \cs{labelenumi} or \cs{fnum@table} would produce.  
-  ## This attribute is only needed when different from \attr{refnum}.
-  attribute frefnum { text }?,
-
-  ## the referencing reference number of the object as it might appear
-  ## when referencing the object, such as an equation number with parentheses.
-  ## This is useful for generated references to clarify the type of object,
-  ##  but is not used with LaTeX's usual \cs{ref}.
-  ## And, note that \cs{eqnref} puts its own parentheses.
-  ## This attribute is only needed when different from both \attr{frefnum} and  \attr{refnum}.
-  attribute rrefnum { text }?
-
+  ## Records which lists, such as toc=table of contents,..., this object could be listed in.
+  ## Space separated set of toc, lof, lot, etc.
+  attribute inlist { text }?
+  
 ## Attributes for elements that can be referred to from within LaTeX.
 ## Such elements may serve as the starting point of a hypertext link.
 ## The reference can be made using \attr{label}, \attr{xml:id} or \attr{href};

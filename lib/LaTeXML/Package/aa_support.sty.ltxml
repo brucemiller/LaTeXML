@@ -39,7 +39,7 @@ DeclareOption('cm',            sub { RequirePackage('textcomp'); });
 DeclareOption('bibnumber',     sub { RequirePackage('natbib'); });
 DeclareOption('bibauthoryear', sub { RequirePackage('natbib'); });
 #DeclareOption(undef,sub {
-#  PassOptions('article','cls',ToString(Digest(T_CS('\CurrentOption')))); });
+#  PassOptions('article','cls',ToString(Expand(T_CS('\CurrentOption')))); });
 
 ExecuteOptions(qw(a4paper twocolumn utf8 hideoverfull bibauthoryear));
 ProcessOptions();
