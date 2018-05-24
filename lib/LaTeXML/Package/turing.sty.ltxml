@@ -1,0 +1,219 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  turing.sty                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Deyan Ginev <deyan.ginev@nist.gov>                          #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use LaTeXML::Package;
+
+my $pre = <<'EOL';
+\NeedsTeXFormat{LaTeX2e}[1995/12/01]
+\ProvidesPackage{turing}[2006/02/17]
+\message{This is Turing-Tex.}
+
+\def\turingrules#1{
+  \xdef\rules{#1,(,,,,),}
+}
+
+\newif\ifnorulegiven
+\newif\ifnorulefound
+\newif\iftmfull
+\newif\ifnextvalue
+
+EOL
+RawTeX($pre);
+
+DefMacroI('\newworld',undef,'=');
+DefMacroI('\blank',undef,'-');
+DefMacro('\newtm SkipMatch:< Until:, Until:> SkipMatch:( Until:)','\xdef\tm{(=,)(#1)(#3,=,)}
+\xdef\stopstate{#2}
+\xdef\stopreached{no}');
+DefMacro('\findstate SkipMatch:( Until:, Until:) SkipMatch:( Until:) SkipMatch:( Until:, Until:, Until:) SkipMatch:;','\xdef\farleft{#2}
+\xdef\left{#1}
+\xdef\state{#3}
+\xdef\value{#4}
+\xdef\right{#5}
+\xdef\farright{#6}');
+
+DefMacro('\findrule',
+'\norulegivenfalse
+ \norulefoundtrue
+  \xdef\remrules{\rules}
+  \loop
+    \expandafter\findr\remrules;
+  \ifnorulefound
+  \repeat');
+
+DefMacro('\findr SkipMatch:( Until:, Until:, Until:, Until:, Until:) SkipMatch:, Until:;',
+'\edef\stpe{#1}
+  \edef\stpv{#2}
+  \ifx\state\stpe
+    \ifx\value\stpv
+      \norulefoundfalse
+      \xdef\newstate{#3}
+      \xdef\newvalue{#4}
+      \xdef\direction{#5}
+    \fi
+  \fi
+
+  \xdef\remrules{#6}
+  \ifx\empty\remrules
+    \norulefoundfalse
+    \norulegiventrue
+  \fi');
+
+DefMacro('\nextstep','
+  \expandafter\findstate\tm;
+  \findrule
+
+  \ifx\newstate\stopstate\xdef\stopreached{yes}\fi
+
+  \ifnorulegiven
+    \ifx\state\stopstate
+      \message{Turing machine reached stop state.}    
+    \else
+      \message{Rule not found for (state,value) (\state,\value)}
+    \fi
+  \else
+    \def\leftm{L}
+    \def\rightm{R}
+    \def\middlem{H}
+
+    \if\direction\leftm
+      \if\left\newworld
+        \xdef\tm{(=,\farleft)(\newstate)(-,\newvalue,\right,\farright)}
+      \else
+        \xdef\tm{(\farleft)(\newstate)(\left,\newvalue,\right,\farright)}
+      \fi
+    \else\if\direction\rightm
+      \if\right\newworld
+        \xdef\tm{(\newvalue,\left,\farleft)(\newstate)(-,=,\farright)}
+      \else
+        \xdef\tm{(\newvalue,\left,\farleft)(\newstate)(\right,\farright)}
+      \fi
+    \else\if\direction\middlem
+        \xdef\tm{(\left,\farleft)(\newstate)(\newvalue,\right,\farright)}
+    \fi\fi\fi
+
+  \fi
+');
+
+DefConstructor('\spec {}',"<ltx:text framed='underline'>#1</ltx:text>",
+	       afterDigest=>sub{
+		 my ($stomach,$whatsit) = @_;
+		 my $arg = $whatsit->getArg(1);
+		 $whatsit->setArgs(Digest('\hbox{ }')) unless (length(ToString($arg))>0);
+		 return;
+	       });
+DefConstructor('\speca {}',"<ltx:text framed='rectangle'>#1 </ltx:text>",
+	       afterDigest=>sub{
+		 my ($stomach,$whatsit) = @_;
+		 my $arg = $whatsit->getArg(1);
+		 $whatsit->setArgs(Digest('\hbox{ }')) unless (length(ToString($arg))>0);
+		 return;
+	       });
+
+my $post = <<'EOL';
+\def\showtm{
+  \xdef\result{}
+
+  \expandafter\findstate\tm;
+
+  \tmfulltrue
+  \edef\remtm{\left,\farleft}
+  \loop
+    \expandafter\mkleft\remtm;
+  \iftmfull
+  \repeat
+
+  \if\value\blank
+    \xdef\result{\result\speca{}\ }
+  \else
+    \xdef\result{\result\speca{\value}\ }
+  \fi
+
+  \tmfulltrue
+  \edef\remtm{\right,\farright}
+  \loop
+    \expandafter\mkright\remtm;
+  \iftmfull
+  \repeat
+
+  \mbox{}\result\hskip3em(\state)
+}
+
+\def\mkleft#1,#2;{
+  \edef\next{#1}
+  \if\next\newworld
+    \xdef\result{\spec{}\ \result}
+  \else\if\next\blank
+    \xdef\result{\result\spec{}\ }
+  \else
+    \xdef\result{\spec{#1}\ \result}
+  \fi\fi
+  \edef\remtm{#2}
+  \ifx\empty\remtm
+    \tmfullfalse
+  \fi
+}
+
+\def\mkright#1,#2;{
+  \edef\next{#1}
+  \if\next\newworld
+    \xdef\result{\result\spec{}\ }
+  \else\if\next\blank
+    \xdef\result{\result\spec{}\ }
+  \else
+    \xdef\result{\result\spec{#1}\ }
+  \fi\fi
+  \edef\remtm{#2}
+  \ifx\empty\remtm
+    \tmfullfalse
+  \fi
+}
+
+
+
+\def\stepandshow#1{%
+\newcount\tmit
+\tmit=#1
+\loop
+   {\nextstep\showtm}
+   \advance\tmit by -1
+   \ifnum\tmit>0
+\repeat
+}
+
+
+\def\runtm{%
+\loop
+   {\nextstep\showtm}
+   \def\next{no}
+   \ifx\next\stopreached
+\repeat
+}
+
+
+
+\def\loopstep#1{%
+\newcount\tmit
+\tmit=#1
+\loop
+   {\nextstep}
+   \advance\tmit by -1
+   \ifnum\tmit>0
+\repeat
+}
+EOL
+
+RawTeX($post);
+
+1;
