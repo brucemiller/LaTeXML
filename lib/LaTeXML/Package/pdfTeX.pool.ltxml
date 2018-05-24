@@ -20,17 +20,18 @@ use LaTeXML::Package;
 # See the pdfTeX User's Manual
 
 # Integer Registers
-DefRegister('\pdfoutput'           => Number(0));
-DefRegister('\pdfminorversion'     => Number(4));
-DefRegister('\pdfcompresslevel'    => Number(9));
-DefRegister('\pdfobjcompresslevel' => Number(0));
-DefRegister('\pdfdecimaldigits'    => Number(4));
-DefRegister('\pdfimageresolution'  => Number(72));
-DefRegister('\pdfpkresolution'     => Number(0));
-DefRegister('\pdftracingfonts'     => Number(0));
-DefRegister('\pdfuniqueresname'    => Number(0));
-DefRegister('\pdfadjustspacing'    => Number(0));
-DefRegister('\pdfprotrudechars'    => Number(0));
+DefRegister('\pdfoutput'                => Number(0));
+DefRegister('\pdfminorversion'          => Number(4));
+DefRegister('\pdfoptionpdfminorversion' => Number(4));    # obsolete name
+DefRegister('\pdfcompresslevel'         => Number(9));
+DefRegister('\pdfobjcompresslevel'      => Number(0));
+DefRegister('\pdfdecimaldigits'         => Number(4));
+DefRegister('\pdfimageresolution'       => Number(72));
+DefRegister('\pdfpkresolution'          => Number(0));
+DefRegister('\pdftracingfonts'          => Number(0));
+DefRegister('\pdfuniqueresname'         => Number(0));
+DefRegister('\pdfadjustspacing'         => Number(0));
+DefRegister('\pdfprotrudechars'         => Number(0));
 # \efcode <font> <8bitnumber>  => <integer>
 # \lpfcode <font> <8bitnumber> => <integer>
 # \rpfcode <font> <8bitnumber> => <integer>

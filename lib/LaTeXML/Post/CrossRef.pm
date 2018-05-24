@@ -272,9 +272,9 @@ sub gentocentry {
   return (['ltx:tocentry',
       { class => "ltx_tocentry_$typename"
           . (defined $selfid && ($selfid eq $id) ? ' ltx_ref_self' : "") },
-      ($before ? $self->generateRef($doc, $id, $before) : ()),
+      ($before ? $self->generateRef_simple($doc, $id, $before) : ()),
       ['ltx:ref', { show => $show, idref => $id }],
-      ($after ? $self->generateRef($doc, $id, $after) : ()),
+      ($after ? $self->generateRef_simple($doc, $id, $after) : ()),
       (@children ? (['ltx:toclist', { class => "ltx_toclist_$typename" }, @children]) : ())]); }
 
 # Generate a "context" TOC, that shows what's on the current page,
@@ -571,7 +571,7 @@ sub generateRef {
       if (my @s = $self->generateRef_aux($doc, $entry, $show)) {
         push(@stuff, $pending) if $pending;
         push(@stuff, @s);
-        return @stuff if $self->checkRefContent(@stuff);
+        return @stuff if $self->checkRefContent($doc, @stuff);
         $pending = $$self{ref_join}; } # inside/outside this brace determines if text can START with the join.
       $id = $entry->getValue('parent'); } }
   if (@stuff) {
@@ -580,10 +580,19 @@ sub generateRef {
     $self->note_missing('info', 'Usable title for ID', $reqid);
     return ($reqid); } }               # id is crummy, but better than "?"... or?
 
+# Just return the reqshow value for $reqid, or nothing
+sub generateRef_simple {
+  my ($self, $doc, $reqid, $reqshow) = @_;
+  my $pending = '';
+  my @stuff;
+  if (my $entry = $reqshow && $reqid && $$self{db}->lookup("ID:$reqid")) {
+    return $self->generateRef_aux($doc, $entry, $reqshow); }
+  return (); }
+
 # Check if the proposed content of a <ltx:ref> is "Good Enough"
 # (long enough, unique enough to give reader feedback,...)
 sub checkRefContent {
-  my ($self, @stuff) = @_;
+  my ($self, $doc, @stuff) = @_;
   # Length? having _some_ actual text ?
   my $s = text_content(@stuff);
   # Could compare a minum length

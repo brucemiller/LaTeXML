@@ -31,6 +31,15 @@ Numbered, Tag after (w/eq=\theequation)
 N=\mbox{\theequation}
 \tag{\theequation$''$}
 \end{equation}
+Other variations:
+\begin{equation}
+N=\mbox{\theequation}
+\tag{\theequation\texttt{ primed}}
+\end{equation}
+\begin{equation}
+N=\mbox{\theequation}
+\tag{\theequation\ifmmode~in math\else~in text\fi}
+\end{equation}
 
 UnNumbered (w/eq=\theequation)
 \begin{equation*}
