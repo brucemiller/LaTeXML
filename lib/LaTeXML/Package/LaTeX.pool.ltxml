@@ -3922,7 +3922,7 @@ DefRegister('\fboxsep',  Dimension('3pt'));
 
 DefMacro('\fbox{}',   '\@framebox{#1}');
 DefMacro('\framebox', '\@ifnextchar(\pic@framebox\@framebox');
-DefConstructor('\@framebox[][]{}',
+DefConstructor('\@framebox[Dimension][]{}',
   "?#mathframe(<ltx:XMArg enclose='box'>#inner</ltx:XMArg>)"
     . "(<ltx:text ?#width(width='#width') ?#align(align='#align')"
     . " framed='rectangle' framecolor='#framecolor'"
