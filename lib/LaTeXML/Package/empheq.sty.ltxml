@@ -1,0 +1,46 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  empheq                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# TODO: Styling.
+# This is an initial binding that will allow the package to function,
+# but does not apply any of the styling to emphasized equations.
+RequirePackage('amsmath');
+RequirePackage('mathtools');
+
+# Styling Options:
+#  left, right: stuff placed on left or right of the equations
+#     Omitting these has a big impact on the expected display
+#     but I'm not sure how to achieve it, at this point.
+#  box,innerbox : places a box around the whole set, or just the equations
+#     this is probably doable...
+
+DefMacro('\empheqset{}', '');
+
+# Just pass on to the ams environment
+DefMacro('\empheq[]{}',
+  # Usually \begin{empheq}{amsenv} ==> \begin{amsenv}
+  # but note specialcase: \begin{empheq}{alignat=2} ==> \begin{alignat}{2} !!!
+  '\empheqset{#1}\lx@empheq#2==\end');
+
+RawTeX('\def\lx@empheq #1=#2=#3\end'
+    . '{\expandafter\let\expandafter\endempheq\csname end#1\endcsname'
+    . '\if.#2.\csname#1\endcsname'
+    . '\else\csname#1\endcsname{#2}\fi}');
+#======================================================================
+
+1;
