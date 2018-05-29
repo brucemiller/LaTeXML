@@ -287,6 +287,12 @@ sub currentFrameMessage {
 #======================================================================
 # Grouping pushes a new stack frame for binding definitions, etc.
 #======================================================================
+# Originally, we only treated math vs text "modes", which are correlated
+# to grouping (somehow). But we'll gradually need to incorporate all
+# the horizontal/vertical modes, which are NOT correlated to grouping,
+# although they do operate on a stack.
+# So, we should NOT generate errors when the grouping clashes with modes
+# (until we can get it properly sorted).
 
 # if $nobox is true, inhibit incrementing the boxingLevel
 sub bgroup {
@@ -296,11 +302,11 @@ sub bgroup {
 
 sub egroup {
   my ($self) = @_;
-  if ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
-    || $STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \begingroup
+  if (    ##$STATE->isValueBound('MODE', 0) ||    # Last stack frame was a mode switch!?!?!
+    $STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \begingroup
     Error('unexpected', $LaTeXML::CURRENT_TOKEN, $self, "Attempt to close boxing group",
       $self->currentFrameMessage); }
-  else {    # Don't pop if there's an error; maybe we'll recover?
+  else {                                        # Don't pop if there's an error; maybe we'll recover?
     popStackFrame($self, 0); }
   return; }
 
@@ -311,11 +317,11 @@ sub begingroup {
 
 sub endgroup {
   my ($self) = @_;
-  if ($STATE->isValueBound('MODE', 0)    # Last stack frame was a mode switch!?!?!
-    || !$STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \bgroup
+  if (    ##$STATE->isValueBound('MODE', 0) ||    # Last stack frame was a mode switch!?!?!
+    !$STATE->lookupValue('groupNonBoxing')) {    # or group was opened with \bgroup
     Error('unexpected', $LaTeXML::CURRENT_TOKEN, $self, "Attempt to close non-boxing group",
       $self->currentFrameMessage); }
-  else {    # Don't pop if there's an error; maybe we'll recover?
+  else {                                         # Don't pop if there's an error; maybe we'll recover?
     popStackFrame($self, 1); }
   return; }
 
@@ -323,9 +329,11 @@ sub endgroup {
 # Mode (minimal so far; math vs text)
 # Could (should?) be taken up by Stomach by building horizontal, vertical or math lists ?
 
-sub beginMode {
+# This sets the mode without doing any grouping (NOR does it stack the modes!!)
+# Useful for environments, where the group has already been established.
+# (presumably, in the long run, modes & groups should be much less coupled)
+sub setMode {
   my ($self, $mode) = @_;
-  $self->pushStackFrame;    # Effectively bgroup
   my $prevmode = $STATE->lookupValue('MODE');
   my $ismath   = $mode =~ /math$/;
   $STATE->assignValue(MODE    => $mode,   'local');
@@ -346,6 +354,12 @@ sub beginMode {
     $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
         color => $curfont->getColor, background => $curfont->getBackground,
         size => $curfont->getSize), 'local'); }
+  return; }
+
+sub beginMode {
+  my ($self, $mode) = @_;
+  $self->pushStackFrame;    # Effectively bgroup
+  $self->setMode($mode);
   return; }
 
 sub endMode {
