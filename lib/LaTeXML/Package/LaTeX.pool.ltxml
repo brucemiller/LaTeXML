@@ -140,9 +140,12 @@ Let('\@currenvline', '\@empty');
 
 DefMacro('\begin{}', sub {
     my ($gullet, $env) = @_;
-    my $name = $env && ToString($env);
+    my $name   = $env && ToString($env);
+    my $before = LookupValue('@environment@' . ToString($_[1]) . '@beforebegin');
+    my $after  = LookupValue('@environment@' . ToString($_[1]) . '@atbegin');
     if (IsDefined("\\begin{$name}")) {
-      T_CS("\\begin{$name}"); }    # Magic cs!
+      (($before ? @$before : ()),
+        T_CS("\\begin{$name}")); }    # Magic cs!
     else {
       my $token = T_CS("\\$name");
       if (!IsDefined($token)) {
@@ -151,15 +154,28 @@ DefMacro('\begin{}', sub {
         Error('undefined', $undef, $gullet, "The environment " . $undef . " is not defined.");
         $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, undef,
             sub { LaTeXML::Core::Stomach::makeError($_[0], 'undefined', $undef); })); }
-      (T_CS('\begingroup'), Invocation(T_CS('\lx@setcurrenvir'), $env), $token); } });
+      (($before ? @$before : ()),
+        T_CS('\begingroup'),
+        ($after ? @$after : ()),
+        Invocation(T_CS('\lx@setcurrenvir'), $env),
+        $token,); } });
 
 DefMacro('\end{}', sub {
     my ($gullet, $env) = @_;
-    my $name = $env && ToString($env);
+    my $name   = $env && ToString($env);
+    my $before = LookupValue('@environment@' . ToString($_[1]) . '@atend');
+    my $after  = LookupValue('@environment@' . ToString($_[1]) . '@afterend');
     my $t;
-    if (IsDefined($t = T_CS("\\end{$name}"))) { $t; }                         # Magic CS!
-    elsif (IsDefined($t = T_CS("\\end$name"))) { ($t, T_CS('\endgroup')); }
-    else { (T_CS('\endgroup')); } });
+
+    if (IsDefined($t = T_CS("\\end{$name}"))) {
+      ($t,
+        ($after ? @$after : ())); }    # Magic CS!
+    else {
+      $t = T_CS("\\end$name");
+      (($before ? @$before : ()),
+        (IsDefined($t) ? $t : ()),
+        T_CS('\endgroup'),
+        ($after ? @$after : ())); } });
 
 #======================================================================
 # C.1.3 Fragile Commands
@@ -267,10 +283,8 @@ DefMacro('\@icentercr[]', '\vskip #1\ignorespaces');
 #   \end{document}
 
 DefMacro('\AtBeginDocument{}', sub {
-    AssignValue('@at@begin@document', []) unless LookupValue('@at@begin@document');
     PushValue('@at@begin@document', $_[1]->unlist); });
 DefMacro('\AtEndDocument{}', sub {
-    AssignValue('@at@end@document', []) unless LookupValue('@at@end@document');
     PushValue('@at@end@document', $_[1]->unlist); });
 
 # Like  "<ltx:document xml:id='#id'>#body</ltx:document>",
@@ -290,10 +304,14 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     AssignValue(current_environment => 'document');
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
     my @boxes = ();
+    if (my $ops = LookupValue('@document@preamble@atend')) {
+      push(@boxes, Digest(Tokens(@$ops))); }
     if (my $ops = LookupValue('@at@begin@document')) {
-      push(@boxes, Digest(Tokens(@$ops)));
-      $_[1]->setFont(LookupValue('font')); }    # Start w/ whatever font was selected.
-    AssignValue(inPreamble => 0);               # atbegin is still (sorta) preamble
+      push(@boxes, Digest(Tokens(@$ops))); }
+    AssignValue(inPreamble => 0);    # atbegin is still (sorta) preamble
+    if (my $ops = LookupValue('@document@preamble@afterend')) {
+      push(@boxes, Digest(Tokens(@$ops))); }
+    $_[1]->setFont(LookupValue('font'));    # Start w/ whatever font was last selected.
     return @boxes; });
 
 DefConstructorI(T_CS('\end{document}'), undef, sub {
@@ -344,6 +362,9 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
         "Attempt to end document with open groups, environments or conditionals", @lines);
     }
     $stomach->endMode('text');
+    # ???? don't push? or what
+    #    if (my $ops = LookupValue('@after@end@document')) {
+    #      push(@boxes, Digest(Tokens(@$ops))); }
     # NOTE: Don't flush gullet (tempting);
     # Babel's expecting \bbl@pop@language
     return @boxes; });
@@ -1541,14 +1562,17 @@ Let('\@verbatim', '\verbatim');    # Close enough?
 DefConstructorI(T_CS('\begin{verbatim}'), undef,
   "<ltx:verbatim font='#font'>#body</ltx:verbatim>",
   beforeDigest => [sub { $_[0]->bgroup;
+      my @stuff = ();
+      if (my $b = LookupValue('@environment@verbatim@atbegin')) {
+        push(@stuff, Digest(@$b)); }
       AssignValue(current_environment => 'verbatim');
       DefMacroI('\@currenvir', undef, 'verbatim');
       MergeFont(family => 'typewriter');
       # Digest(T_CS('\par')); # NO! See beforeConstruct!
-      }],
+      @stuff; }],
   afterDigest => [sub {
       my ($stomach, $whatsit) = @_;
-      $stomach->egroup;
+      #      $stomach->egroup;
       my $font   = $whatsit->getFont;
       my $loc    = $whatsit->getLocator;
       my $end    = "\\end{verbatim}";
@@ -1564,6 +1588,9 @@ DefConstructorI(T_CS('\begin{verbatim}'), undef,
         push(@lines, $line . "\n"); }
       pop(@lines) if $lines[-1] eq "\n";
       # Note last line ends up as Whatsit's "trailer"
+      if (my $b = LookupValue('@environment@verbatim@atend')) {
+        push(@lines, ToString(Digest(@$b))); }
+      $stomach->egroup;
       $whatsit->setBody(map { Box($_, $font, $loc, T_OTHER($_)) } @lines, $end);
       return; }],
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:p'); });

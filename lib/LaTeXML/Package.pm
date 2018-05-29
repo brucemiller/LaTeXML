@@ -1552,8 +1552,10 @@ sub DefEnvironmentI {
       ->new(T_CS("\\begin{$name}"), $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($name); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($name); }) : ()),
-        ($mode ? (sub { $_[0]->beginMode($mode); })
-          : (sub { $_[0]->bgroup; })),
+        sub { $_[0]->bgroup; },
+        sub { my $b = LookupValue('@environment@' . $name . '@atbegin');
+          ($b ? Digest(@$b) : ()); },
+        ($mode ? (sub { $_[0]->setMode($mode); }) : ()),
         sub { AssignValue(current_environment => $name);
           DefMacroI('\@currenvir', undef, $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1571,8 +1573,11 @@ sub DefEnvironmentI {
       ), $options{scope});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end{$name}"), "", "",
-      beforeDigest => flatten($options{beforeDigestEnd}),
-      afterDigest  => flatten($options{afterDigest},
+      beforeDigest => flatten($options{beforeDigestEnd},
+        sub { my $e = LookupValue('@environment@' . $name . '@atend');
+          ($e ? Digest(@$e) : ()); },
+      ),
+      afterDigest => flatten($options{afterDigest},
         sub { my $env = LookupValue('current_environment');
           if (!$env || ($name ne $env)) {
             my @lines = ();
@@ -1584,8 +1589,8 @@ sub DefEnvironmentI {
             Error('unexpected', "\\end{$name}", $_[0],
               "Can't close environment $name;", "Current are:", @lines); }
           return; },
-        ($mode ? (sub { $_[0]->endMode($mode); })
-          : (sub { $_[0]->egroup; }))),
+        sub { $_[0]->egroup; },
+      ),
       ), $options{scope});
   # For the uncommon case opened by \csname env\endcsname
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
