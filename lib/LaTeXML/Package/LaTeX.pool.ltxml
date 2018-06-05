@@ -4041,6 +4041,12 @@ DefPrimitive('\usebox {Register}', sub {
     my $value = $defn->valueOf()->valueOf;
     LookupValue('box' . $value) || Box(); });
 
+# A soft sorta \par that only closes an ltx:p, but not ltx:para
+DefConstructor('\lx@parboxnewline[]', sub {
+    my ($document, $ignore, %props) = @_;
+    $document->maybeCloseElement('ltx:p');
+    return; });
+
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring them, for now, though.
 DefConstructor('\parbox[][Dimension][]{Dimension}{}', sub {
@@ -4058,7 +4064,7 @@ DefConstructor('\parbox[][Dimension][]{Dimension}{}', sub {
   mode => 'text', bounded => 1,
   beforeDigest => sub {
     AssignValue('\hsize' => $_[4]);
-    Let('\\\\', '\par'); });
+    Let('\\\\', '\lx@parboxnewline'); });
 DefMacroI('\@parboxrestore', undef, Tokens());
 
 DefConditional('\if@minipage');
@@ -4066,6 +4072,7 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
     my ($document, $attachment, $b, $c, $width, %props) = @_;
     my $vattach = translateAttachment($attachment);
     insertBlock($document, $props{body},
+      para    => 1,
       width   => $width,
       vattach => $vattach,
       class   => 'ltx_minipage');
@@ -4078,7 +4085,7 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
     Digest(T_CS('\@minipagetrue'));
     AssignValue('\hsize' => $_[4]);
     # this conflicts (& not needed?) with insertBlock
-    Let('\\\\', '\par'); });
+    Let('\\\\', '\lx@parboxnewline'); });
 
 DefConstructor('\rule[Dimension]{Dimension}{Dimension}',
   "<ltx:rule ?#offset(yoffset='#offset') width='#width' height='#height'/>",
