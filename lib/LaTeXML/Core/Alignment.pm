@@ -561,7 +561,7 @@ sub alignment_regroup_rows {
     my @cells = $document->findnodes('ltx:td', $rows[-1]);
     # Non header cells, done.
     last if scalar(grep { (!$_->getAttribute('thead')) } @cells);
-    push(@foots, pop(@rows)); }
+    unshift(@foots, pop(@rows)); }
   $document->wrapNodes('ltx:thead', @heads) if @heads;
   $document->wrapNodes('ltx:tbody', @rows)  if @rows;
   $document->wrapNodes('ltx:tfoot', @foots) if @foots;

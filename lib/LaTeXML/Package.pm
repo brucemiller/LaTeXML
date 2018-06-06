@@ -602,7 +602,8 @@ sub NewCounter {
     DefMacroI(T_CS("\\p\@$ctr"), undef, Tokens(), scope => 'global'); }
   my $prefix = $options{idprefix};
   AssignValue('@ID@prefix@' . $ctr => $prefix, 'global') if $prefix;
-  $prefix = LookupValue('@ID@prefix@' . $ctr) || CleanID($ctr) unless $prefix;
+  $prefix = LookupValue('@ID@prefix@' . $ctr) || $ctr unless $prefix;
+  $prefix = CleanID($prefix);
   if (defined $prefix) {
     if (my $idwithin = $options{idwithin} || $within) {
       DefMacroI(T_CS("\\the$ctr\@ID"), undef,
@@ -1551,8 +1552,10 @@ sub DefEnvironmentI {
       ->new(T_CS("\\begin{$name}"), $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($name); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($name); }) : ()),
-        ($mode ? (sub { $_[0]->beginMode($mode); })
-          : (sub { $_[0]->bgroup; })),
+        sub { $_[0]->bgroup; },
+        sub { my $b = LookupValue('@environment@' . $name . '@atbegin');
+          ($b ? Digest(@$b) : ()); },
+        ($mode ? (sub { $_[0]->setMode($mode); }) : ()),
         sub { AssignValue(current_environment => $name);
           DefMacroI('\@currenvir', undef, $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1570,8 +1573,11 @@ sub DefEnvironmentI {
       ), $options{scope});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end{$name}"), "", "",
-      beforeDigest => flatten($options{beforeDigestEnd}),
-      afterDigest  => flatten($options{afterDigest},
+      beforeDigest => flatten($options{beforeDigestEnd},
+        sub { my $e = LookupValue('@environment@' . $name . '@atend');
+          ($e ? Digest(@$e) : ()); },
+      ),
+      afterDigest => flatten($options{afterDigest},
         sub { my $env = LookupValue('current_environment');
           if (!$env || ($name ne $env)) {
             my @lines = ();
@@ -1583,8 +1589,8 @@ sub DefEnvironmentI {
             Error('unexpected', "\\end{$name}", $_[0],
               "Can't close environment $name;", "Current are:", @lines); }
           return; },
-        ($mode ? (sub { $_[0]->endMode($mode); })
-          : (sub { $_[0]->egroup; }))),
+        sub { $_[0]->egroup; },
+      ),
       ), $options{scope});
   # For the uncommon case opened by \csname env\endcsname
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
@@ -2052,8 +2058,8 @@ sub AddToMacro {
   # Needs error checking!
   my $defn = $STATE->lookupDefinition($cs);
   if (!defined $defn || !$defn->isExpandable) {
-    Error('unexpected', $cs, $STATE->getStomach->getGullet,
-      ToString($cs) . " is not an expandable control sequence"); }
+    Warn('unexpected', $cs, $STATE->getStomach->getGullet,
+      ToString($cs) . " is not an expandable control sequence", "Ignoring addition"); }
   else {
     DefMacroI($cs, undef, Tokens($defn->getExpansion->unlist,
         map { $_->unlist } map { (ref $_ ? $_ : TokenizeInternal($_)) } @tokens),

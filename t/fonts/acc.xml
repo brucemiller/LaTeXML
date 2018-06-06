@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="accents"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" tex="\ring{x},\qquad\lx@overaccentset{{\scriptstyle\star}}{d},\qquad%&#10;\lx@overaccentset{{\scriptstyle\diamond}}{h},\qquad\tilde{\lx@overaccentset{{%&#10;\scriptstyle\circ}}{\phi}}" text="list@(ring@(x), star@(d), diamond@(h), tilde@(compose@(phi)))" xml:id="S0.Ex1.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="S0.Ex1.m1.1"/>
+              <XMRef idref="S0.Ex1.m1.2"/>
+              <XMRef idref="S0.Ex1.m1.3"/>
+              <XMRef idref="S0.Ex1.m1.4"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="S0.Ex1.m1.1">
+                <XMTok name="ring" role="OVERACCENT">̊</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMApp xml:id="S0.Ex1.m1.2">
+                <XMTok fontsize="70%" name="star" role="OVERACCENT">⋆</XMTok>
+                <XMTok font="italic" role="UNKNOWN">d</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMApp xml:id="S0.Ex1.m1.3">
+                <XMTok fontsize="70%" name="diamond" role="OVERACCENT">⋄</XMTok>
+                <XMTok font="italic" role="UNKNOWN">h</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMApp xml:id="S0.Ex1.m1.4">
+                <XMTok name="tilde" role="OVERACCENT" stretchy="false">~</XMTok>
+                <XMApp>
+                  <XMTok fontsize="70%" meaning="compose" name="circ" role="OVERACCENT">∘</XMTok>
+                  <XMTok font="italic" name="phi" role="UNKNOWN">ϕ</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p2">
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" tex="\dddot{f},\qquad\ddddot{f}" text="list@(dddot@(f), ddddot@(f))" xml:id="S0.Ex2.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="S0.Ex2.m1.1"/>
+              <XMRef idref="S0.Ex2.m1.2"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="S0.Ex2.m1.1">
+                <XMTok name="dddot" role="OVERACCENT">˙˙˙</XMTok>
+                <XMTok font="italic" role="UNKNOWN">f</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMApp xml:id="S0.Ex2.m1.2">
+                <XMTok name="ddddot" role="OVERACCENT">˙˙˙˙</XMTok>
+                <XMTok font="italic" role="UNKNOWN">f</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p3">
+    <equation xml:id="S0.Ex3">
+      <Math mode="display" tex="\lx@converttounder{\hat{x}},\qquad\lx@converttounder{\bar{\gamma}},\qquad%&#10;\lx@underaccentset{{\scriptstyle\triangleright}}{q},\qquad\lx@converttounder{%&#10;\tilde{\mathcal{A}}}" text="list@(hat@(x), bar@(gamma), triangleright@(q), tilde@(A))" xml:id="S0.Ex3.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="S0.Ex3.m1.1"/>
+              <XMRef idref="S0.Ex3.m1.2"/>
+              <XMRef idref="S0.Ex3.m1.3"/>
+              <XMRef idref="S0.Ex3.m1.4"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="S0.Ex3.m1.1">
+                <XMTok name="hat" role="UNDERACCENT" stretchy="false">^</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMApp xml:id="S0.Ex3.m1.2">
+                <XMTok name="bar" role="UNDERACCENT" stretchy="false">¯</XMTok>
+                <XMTok font="italic" name="gamma" role="UNKNOWN">γ</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMApp xml:id="S0.Ex3.m1.3">
+                <XMTok fontsize="70%" name="triangleright" role="UNDERACCENT">▷</XMTok>
+                <XMTok font="italic" role="UNKNOWN">q</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMApp xml:id="S0.Ex3.m1.4">
+                <XMTok name="tilde" role="UNDERACCENT" stretchy="false">~</XMTok>
+                <XMTok font="caligraphic" role="UNKNOWN">A</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p4">
+    <equation xml:id="S0.Ex4">
+      <Math mode="display" tex="\lx@converttounder{\wtilde{V}}" text="wtilde@(V)" xml:id="S0.Ex4.m1">
+        <XMath>
+          <XMApp>
+            <XMTok name="wtilde" role="UNDERACCENT">~</XMTok>
+            <XMTok font="italic" role="UNKNOWN">V</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p5">
+    <equation xml:id="S0.Ex5">
+      <Math mode="display" tex="\undertilde{CV}" text="undertilde@(C * V)" xml:id="S0.Ex5.m1">
+        <XMath>
+          <XMApp>
+            <XMTok name="undertilde" role="UNDERACCENT">~</XMTok>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">C</XMTok>
+              <XMTok font="italic" role="UNKNOWN">V</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p6">
+    <equation xml:id="S0.Ex6">
+      <Math mode="display" tex="\hat{\hat{\mathcal{A}}}" text="hat@(hat@(A))" xml:id="S0.Ex6.m1">
+        <XMath>
+          <XMApp>
+            <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
+            <XMApp>
+              <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
+              <XMTok font="caligraphic" role="UNKNOWN">A</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p7">
+    <p><Math mode="inline" tex="\mathbf{\hat{\hat{h}}}" text="hat@(hat@(h))" xml:id="p7.m1">
+        <XMath>
+          <XMApp>
+            <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
+            <XMApp>
+              <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
+              <XMTok font="bold" role="UNKNOWN">h</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math> gets the bold accent;
+<Math mode="inline" tex="\hat{\hat{\mathbf{h}}}" text="hat@(hat@(h))" xml:id="p7.m2">
+        <XMath>
+          <XMApp>
+            <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
+            <XMApp>
+              <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
+              <XMTok font="bold" role="UNKNOWN">h</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math> not.</p>
+  </para>
+</document>

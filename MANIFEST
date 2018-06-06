@@ -333,6 +333,8 @@ lib/LaTeXML/Package/aaspp.sty.ltxml
 lib/LaTeXML/Package/aastex.cls.ltxml
 lib/LaTeXML/Package/aastex.sty.ltxml
 lib/LaTeXML/Package/aastex6.cls.ltxml
+lib/LaTeXML/Package/aastex61.cls.ltxml
+lib/LaTeXML/Package/accents.sty.ltxml
 lib/LaTeXML/Package/acmart.cls.ltxml
 lib/LaTeXML/Package/acronym.sty.ltxml
 lib/LaTeXML/Package/ae.sty.ltxml
@@ -392,6 +394,7 @@ lib/LaTeXML/Package/breakurl.sty.ltxml
 lib/LaTeXML/Package/calc.sty.ltxml
 lib/LaTeXML/Package/cancel.sty.ltxml
 lib/LaTeXML/Package/caption.sty.ltxml
+lib/LaTeXML/Package/cases.sty.ltxml
 lib/LaTeXML/Package/ccfonts.sty.ltxml
 lib/LaTeXML/Package/chancery.sty.ltxml
 lib/LaTeXML/Package/charter.sty.ltxml
@@ -413,6 +416,7 @@ lib/LaTeXML/Package/dcolumn.sty.ltxml
 lib/LaTeXML/Package/deluxetable.sty.ltxml
 lib/LaTeXML/Package/doublespace.sty.ltxml
 lib/LaTeXML/Package/dsfont.sty.ltxml
+lib/LaTeXML/Package/empheq.sty.ltxml
 lib/LaTeXML/Package/endnotes.sty.ltxml
 lib/LaTeXML/Package/eTeX.pool.ltxml
 lib/LaTeXML/Package/ellipsis.sty.ltxml
@@ -575,10 +579,12 @@ lib/LaTeXML/Package/scalefnt.sty.ltxml
 lib/LaTeXML/Package/sectsty.sty.ltxml
 lib/LaTeXML/Package/setspace.sty.ltxml
 lib/LaTeXML/Package/showkeys.sty.ltxml
+lib/LaTeXML/Package/siunitx.sty.ltxml
 lib/LaTeXML/Package/slashed.sty.ltxml
 lib/LaTeXML/Package/slides.cls.ltxml
 lib/LaTeXML/Package/soul.sty.ltxml
 lib/LaTeXML/Package/srcltx.sty.ltxml
+lib/LaTeXML/Package/stfloats.sty.ltxml
 lib/LaTeXML/Package/stmaryrd.sty.ltxml
 lib/LaTeXML/Package/subcaption.sty.ltxml
 lib/LaTeXML/Package/subfig.sty.ltxml
@@ -615,6 +621,7 @@ lib/LaTeXML/Package/todonotes.sty.ltxml
 lib/LaTeXML/Package/tracefnt.sty.ltxml
 lib/LaTeXML/Package/transparent.sty.ltxml
 lib/LaTeXML/Package/ts1.fontmap.ltxml
+lib/LaTeXML/Package/turing.sty.ltxml
 lib/LaTeXML/Package/txfonts.sty.ltxml
 lib/LaTeXML/Package/type1cm.sty.ltxml
 lib/LaTeXML/Package/ulem.sty.ltxml
@@ -627,6 +634,7 @@ lib/LaTeXML/Package/utf8x.def.ltxml
 lib/LaTeXML/Package/utopia.sty.ltxml
 lib/LaTeXML/Package/verbatim.sty.ltxml
 lib/LaTeXML/Package/wasysym.sty.ltxml
+lib/LaTeXML/Package/wiki.sty.ltxml
 lib/LaTeXML/Package/wrapfig.sty.ltxml
 lib/LaTeXML/Package/xargs.sty.ltxml
 lib/LaTeXML/Package/xcolor.sty.ltxml
@@ -682,6 +690,9 @@ t/alignment/array.xml
 t/alignment/badeqnarray.pdf
 t/alignment/badeqnarray.tex
 t/alignment/badeqnarray.xml
+t/alignment/ncases.pdf
+t/alignment/ncases.tex
+t/alignment/ncases.xml
 t/alignment/colortbls.pdf
 t/alignment/colortbls.tex
 t/alignment/colortbls.xml
@@ -764,6 +775,9 @@ t/complex/aliceblog.xml
 t/complex/hypertest.pdf
 t/complex/hypertest.tex
 t/complex/hypertest.xml
+t/complex/si.pdf
+t/complex/si.tex
+t/complex/si.xml
 t/complex/sunset.jpg
 t/complex/xii.dtd
 t/complex/xii.latexml
@@ -1032,6 +1046,9 @@ t/expansion/whichpkgb
 t/expansion/whichpkgb.sty
 t/expansion/whichpkgb.sty.sty
 t/expansion/whichpkgc.sty
+t/fonts/acc.pdf
+t/fonts/acc.tex
+t/fonts/acc.xml
 t/fonts/accents.pdf
 t/fonts/accents.tex
 t/fonts/accents.xml

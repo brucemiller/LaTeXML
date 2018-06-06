@@ -60,7 +60,7 @@ sub readArguments {
   my ($self, $gullet, $fordefn) = @_;
   my @args = ();
   foreach my $parameter (@$self) {
-    my $value = $parameter->read($gullet);
+    my $value = $parameter->read($gullet, $fordefn);
     push(@args, $value) unless $$parameter{novalue}; }
   return @args; }
 

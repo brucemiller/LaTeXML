@@ -1,0 +1,70 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  accents                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+DefMath('\ring{}', "\x{030A}", operator_role => 'OVERACCENT');
+
+DefMacro('\lx@acc@size', '\scriptstyle');    # should be \scriptscriptstyle??
+
+# \accentset{acc}{base}
+DefMacro('\accentset{}{}', '\lx@overaccentset{{\lx@acc@size #1}}{#2}');
+DefConstructor('\lx@overaccentset Digested Digested',
+  "<ltx:XMApp><ltx:XMWrap role='OVERACCENT'>#1</ltx:XMWrap><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
+  sizer => '#1');                            # Close enough?
+
+DefMath('\dddot{}', "\x{02D9}\x{02D9}\x{02D9}",
+  operator_role => 'OVERACCENT');            # DOT ABOVE
+DefMath('\ddddot{}', "\x{02D9}\x{02D9}\x{02D9}\x{02D9}",
+  operator_role => 'OVERACCENT');            # DOT ABOV
+
+# \underaccent{acc}{base}
+# Needs to apply the accent as an under, instead of over!!!!
+# But acc can be either an accenting command (like \hat)
+# or an arbitrary item to place as an accent!!!  How to detect that?
+# We'll ASS.U.ME that accent commands take a single arg.
+DefMacro('\lx@if@isaccent{}{}{}', sub {
+    my ($gullet, $thing, $true, $false) = @_;
+    my ($defn, $params);
+    my ($token, @rest) = $thing->unlist;
+    return ((!@rest)
+        && ($defn   = LookupDefinition($token))
+        && ($params = $defn->getParameters)
+        && ($params->getNumArgs == 1)
+      ? $true : $false); });
+
+DefMacro('\underaccent{}{}',
+  '\lx@if@isaccent{#1}{\lx@converttounder{#1{#2}}}{\lx@underaccentset{{\lx@acc@size #1}}{#2}}');
+
+DefConstructor('\lx@underaccentset Digested Digested',
+  "<ltx:XMApp><ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
+  sizer => '#1');    # Close enough?
+
+DefConstructor('\lx@converttounder{}', sub {
+    my ($document, $thing) = @_;
+    $document->absorb($thing);
+    # replace role=OVERACCENT with UNDERACCENT
+    my $node = $document->getNode->lastChild;
+    if (my $acc = $document->findnode("ltx:XMTok[\@role='OVERACCENT']", $node)) {
+      $acc->setAttribute(role => 'UNDERACCENT'); }
+});
+
+# \undertilde{base}
+DefMath('\undertilde Digested', UTF(0x7E),
+  operator_role => 'UNDERACCENT');    # TILDE [plain? also amsfonts]
+
+#======================================================================
+1;

@@ -1,0 +1,138 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  cases                                                              | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# cases provides a top-level equationgroup environment representing an
+# ams-like cases statement, but with each case numbered.
+# TODO: get the display right!
+#   Currently, we're simply reproducing the LHS as individual equations, but aligned;
+# this is probably an understandable display, but not the author's intent.
+#   We SHOULD have a single LHS with a large \{ enclosing the RHS's & conditions.
+# I think this will be fixable with a little work & support from the XSLT.
+# Basically, we need
+#  * 1st LHS column needs rowspan= the number of equations
+#  * remaining LHS columns should be empty (and omitted from html!)
+#  * do NOT wrap (& ID) each equation in tbody (it breaks the rowspan!)
+#    (but since each equation is single row, we can put the ID on the tr)
+# A couple of other notes:
+#  * since the LHS is currently repeated, it's easy to move into the semantic side
+#    of the MathFork; but will need to be cloned.
+#  * the \{ probably will need a size or strut of the total height of the RHS's
+#======================================================================
+
+DefMacro('\numcases{}',
+  '\@numcases@bindings{#1}\@@numcases'
+    . '\@equationgroup@numbering{numbered=1,preset=1,deferretract=1,grouped=1,aligned=1}'
+    . '\@start@alignment\@numcases@LHS',
+  locked => 1);
+DefMacroI('\endnumcases', undef,
+  '\@finish@alignment\end@numcases',
+  locked => 1);
+
+# Needs sub-numbering turned on!
+DefMacro('\subnumcases{}',
+  '\@numcases@bindings{#1}\lx@numcases@subnumbering@begin\@@numcases'
+    . '\@equationgroup@numbering{numbered=1,preset=1,deferretract=1,grouped=1,aligned=1}'
+    . '\@start@alignment\@numcases@LHS',
+  locked => 1);
+DefMacroI('\endsubnumcases', undef,
+  '\@finish@alignment\end@numcases\lx@numcases@subnumbering@end',
+  locked => 1);
+
+# Somehow, I haven't generalized equation numbering setup enough???
+DefPrimitive('\lx@numcases@subnumbering@begin', sub {
+    my %eqn   = RefStepCounter('equation');
+    my $eqnum = Expand(T_CS('\theequation'));
+    AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
+    ResetCounter('equation');
+    DefMacro('\theequation',    UnTeX($eqnum) . '\alph{equation}');
+    DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID'); });
+DefPrimitive('\lx@numcases@subnumbering@end', sub {
+    AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
+
+DefPrimitive('\@numcases@bindings{}', sub {
+    numcasesBindings($_[1]); });
+
+sub numcasesBindings {
+  my ($lhs) = @_;
+  # 3 columns: math right, math left, text left
+  my $col1 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
+    after => Tokens(T_CS('\@hidden@egroup'), T_MATH) };
+  my $col2 = { before => Tokens(T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
+    after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
+  my $col3 = { before => Tokens(T_CS('\@hidden@bgroup')),
+    after => Tokens(T_CS('\@hidden@egroup'), T_CS('\hfil')) };
+
+  my %attributes = (
+    'class'  => 'ltx_eqn_numcases',
+    'colsep' => LookupDimension('\arraycolsep')->multiply(2));
+  my $cur_jot = LookupDimension('\jot');
+  if ($cur_jot && ($cur_jot->valueOf != LookupDimension('\lx@default@jot')->valueOf)) {
+    $attributes{rowsep} = $cur_jot; }
+
+  AssignValue(Alignment => LaTeXML::Core::Alignment->new(
+      template      => LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2, $col3]),
+      openContainer => sub { my %attr = RefStepID('@equationgroup');
+        $attr{'xml:id'} = $attr{id}; delete $attr{id};
+        $attr{class} = 'ltx_eqn_eqnarray';
+        $_[0]->openElement('ltx:equationgroup', %attr, @_[1 .. $#_]); },
+      closeContainer => sub { $_[0]->closeElement('ltx:equationgroup'); },
+      openRow => sub {
+        my ($doc, %props) = @_;
+        my $tags = $props{tags}; delete($props{tags});
+        $doc->openElement('ltx:equation', %props);
+        $doc->absorb($tags) if $tags; },
+      closeRow    => sub { $_[0]->closeElement('ltx:equation'); },
+      openColumn  => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
+      closeColumn => sub { $_[0]->closeElement('ltx:_Capture_'); },
+      properties => { preserve_structure => 1, attributes => {%attributes} }));
+
+  DefMacroI('\@numcases@LHS', undef, Tokens($lhs, T_ALIGN));
+  Let(T_ALIGN,       '\@alignment@align');
+  Let("\\\\",        '\@numcases@newline');
+  Let('\cr',         '\@numcasest@cr');
+  Let('\@open@row',  '\@equationgroup@open@row');
+  Let('\@close@row', '\@equationgroup@close@row');
+  return; }
+
+DefMacro('\@numcases@newline[]',
+  '\ifx.#1.\@alignment@newline\else\@alignment@newline[#1]\fi\@numcases@LHS');
+DefMacro('\@numcases@cr', '\@alignment@cr\@numcases@LHS');
+
+DefConstructor('\@@numcases SkipSpaces DigestedBody',
+  '#1',
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterConstruct => sub { rearrangeNumcases($_[0], $_[0]->getNode->lastChild); });
+DefPrimitiveI('\end@numcases', undef, sub { $_[0]->egroup; });
+
+sub rearrangeNumcases {
+  my ($document, $equationgroup) = @_;
+  foreach my $equation ($document->findnodes('ltx:equation', $equationgroup)) {
+    if (my @cells = $document->findnodes('ltx:_Capture_', $equation)) {
+      my @cell1cont = $document->getChildElements($cells[0]);
+      # Check if this equation is really an intertext
+      if ((scalar(@cells) == 1) && (scalar(@cell1cont) == 1)
+        && (($cell1cont[0]->getAttribute('class') || '') =~ /\b(ltx_intertext)\b/)) {
+        $equation->replaceNode($cell1cont[0]); }    # Replace equation with the block.
+      elsif ((scalar(@cells) == 1) && (scalar(@cell1cont) == 0)) {    # Empty row? Remove it!
+        $equationgroup->removeChild($equation); }
+      else {
+        equationgroupJoinCols($document, 3, $equation); } } }
+  return; }
+
+#======================================================================
+1;

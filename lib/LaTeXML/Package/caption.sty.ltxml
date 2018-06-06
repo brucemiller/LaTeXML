@@ -60,6 +60,13 @@ DefKeyVal('caption', 'name',       '', '');                   # \<float>name ?
 DefKeyVal('caption', 'type',       '', '');                   # table or figure
 
 DefMacro('\captionsetup[]{}', Tokens());
+DefPrimitive('\captionsetup[] RequiredKeyVals:caption', sub {
+    my ($stomach, $ignore, $kv) = @_;
+    my $hash = $kv->getKeyVals;
+    foreach my $key (keys %$hash) {
+      my $value = $kv->getValue($key);
+      AssignValue('CAPTION_' . $key => $value); }
+    return; });
 
 DefMacro('\DeclareCaptionStyle{}[]{}',        Tokens());
 DefMacro('\DeclareCaptionLabelFormat{}{}',    Tokens());
@@ -96,10 +103,16 @@ DefRegister('\captionwidth'      => Dimension(0));
 DefMacro('\caption',
   '\lx@donecaptiontrue
  \@ifundefined{@captype}
-    {\@@generic@caption}
+    {\maybe@@generic@caption}
     {\@ifstar{\@scaption}{\expandafter\@caption\expandafter{\@captype}}}');
 DefMacro('\@scaption {}', '\@@caption{#1}');
 
+# Check if caption type set by \captionsetup
+DefMacro('\maybe@@generic@caption', sub {
+    if (my $type = LookupValue('CAPTION_type')) {
+      return Tokens(T_CS('\@captionof'), T_BEGIN, $type, T_END); }
+    else {
+      return T_CS('\@@generic@caption'); } });
 # This is a horrible thing that fakes a caption anywhere.
 # It isn't necessarily IN a figure or any float, so we'll wrap it in an otherwise empty one!
 DefMacro('\captionof', '\@ifstar{\@scaptionof}{\@captionof}');

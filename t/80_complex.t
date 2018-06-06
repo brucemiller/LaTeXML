@@ -4,5 +4,6 @@
 #**********************************************************************
 use LaTeXML::Util::Test;
 
-latexml_tests("t/complex");
+latexml_tests("t/complex",
+  requires => { si => 'siunitx.sty' });
 
