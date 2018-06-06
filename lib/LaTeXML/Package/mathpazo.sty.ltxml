@@ -28,4 +28,8 @@ Let('\upSigma',   '\Sigma');
 Let('\upTheta',   '\Theta');
 Let('\upUpsilon', '\Upsilon');
 Let('\upXi',      '\Xi');
+
+DefConstructor('\mathbb{}', '#1', bounded => 1, requireMath => 1,
+  font => { family => 'blackboard', series => 'medium', shape => 'upright' });
+
 1;
