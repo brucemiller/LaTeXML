@@ -462,7 +462,7 @@ BEGIN {
     array      => sub { },
     asin       => sub { asin($_[0]); },
     atan       => sub { atan($_[0]); },
-    atan2 => sub { atan2($_[0], $_[1]); },
+    atan2      => sub { atan2($_[0], $_[1]); },
     #    bin   => sub { },
     ceil  => sub { ceil($_[0]); },
     cos   => sub { cos(pgfmathargradians($_[0])); },
@@ -541,7 +541,8 @@ expr :
           /^\Z/ { $arg[0];}   # short circuit!
         | POSTFIX          addPostfix[LaTeXML::Package::Pool::pgfmath_apply($item[1],$arg[0])]
         | { $arg[0]; }
-  factor : simplefactor addPostfix[$item[1]]
+  factor : simplefactor /\^/ simplefactor { $item[1] ** $item[3]; }
+    | simplefactor addPostfix[$item[1]]
 
   simplefactor :
       /\(/ formula /\)/     { $item[2]; }
@@ -578,12 +579,11 @@ expr :
       /(?:ex|em|pt|pc|in|bp|cm|mm|dd|cc|sp)/
 
     FUNCTION0 : /(?:e|pi|false|rand|rnd|true)/
-    FUNCTION : /(?:abs|acos|asin|atan|bin|ceil|cos|cosec|cosh|cot|exp|factorial|floor|frac|hex|Hex|
-int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|real|round|sec|sign|sin|sinh|sqrt|tan|tanh|add|and|atan2|divide|div|equal|gcd|greater|less|max|min|mod|Mod|multiply|notequal|notgreater|notless|or|pow|random|subtract|ifthenelse)/
+    FUNCTION : /(?:abs|acos|asin|atan|bin|ceil|cos|cosec|cosh|cot|deg|exp|factorial|floor|frac|hex|Hex|
+int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|rad|real|round|sec|sign|sin|sinh|sqrt|tan|tanh|add|and|atan2|divide|div|equal|gcd|greater|less|max|min|mod|Mod|multiply|notequal|notgreater|notless|or|pow|random|subtract|ifthenelse)/
 
 # ? array|veclen | scalar
 # These take boxes!  depth|height|width
-# ? deg|rad
 
     CMP     : /==/ | /\>/ | /\</ | /!=/ | /\>=/ | /\<=/ | /&&/ | /||/
     PREFIX  : /\-/ | /!/ | /\+/
