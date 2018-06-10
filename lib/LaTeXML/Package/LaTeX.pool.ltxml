@@ -2266,11 +2266,13 @@ DefPrimitive('\renewcommand OptionalMatch:* DefToken [Number][]{}', sub {
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
 # low-level implementation of both \newcommand and \renewcommand depends on \@argdef
-# -- but since we are not adding the entirety of the machinery underneath, 
-#    I am just defining it as a direct alias to a DefMacro (needed for e.g. etoolbox)
-DefMacro('\@argdef OptionalMatch:* DefToken [Number][]{}', sub {
-    my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-    DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
+# and robustness upgrades are often realized via redefining \l@ngrel@x
+#
+# Experiment: use \l@ngrel@x to carry over \protected information from outside, etoolbox-style.
+# DefMacro('\@argdef','\l@ngrel@x\renewcommand');
+# 
+# The etoolbox binding now defines \newrobustcmd & friends directly, so \@argdef is not directly needed
+# However, we would need to add support for other packages that may leverage that machinery.
 
 DefPrimitive('\providecommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
