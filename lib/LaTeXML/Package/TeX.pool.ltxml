@@ -831,7 +831,12 @@ DefMacro('\meaning Token', sub {
         my $spec = join("", @specparts);
         $spec =~ s/\{\}//g;
         $spec =~ s/Token//g;
-        $meaning = "macro:" . ToString($spec) . "->" . ToString($expansion); }
+        my $prefixes = join('',
+          ($definition->isProtected ? '\protected' : ()),
+          ($definition->isLong      ? '\long'      : ()),
+          ($definition->isOuter     ? '\outer'     : ()),
+        );
+        $meaning = ($prefixes ? $prefixes . ' ' : '') . "macro:" . ToString($spec) . "->" . ToString($expansion); }
       Explode($meaning); }
     else {
       Explode('undefined'); } });
