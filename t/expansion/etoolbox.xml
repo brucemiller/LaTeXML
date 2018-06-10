@@ -26,4 +26,219 @@
   <para xml:id="p7">
     <p>722.7pt</p>
   </para>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>User commands</title>
+    <para xml:id="S1.p1">
+      <p><text font="italic">basic</text></p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>4</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>72.27pt</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>722.7pt</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Hooks</title>
+    <para xml:id="S2.p1">
+      <p>Before Begin stuff(outside).At Begin stuff(inside).Begin stuff.
+This is Stuff!
+At End stuff(inside).End stuff.After End stuff(outside).</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>Before Begin equation(outside).At Begin equation(inside).</p>
+      <equation xml:id="S2.E1">
+        <tags>
+          <tag>(1)</tag>
+          <tag role="refnum">1</tag>
+        </tags>
+        <Math mode="display" tex="a=b\textrm{ At End equation(inside).}" text="a = b * [ At End equation(inside).]" xml:id="S2.E1.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMText> At End equation(inside).</XMText>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <p>After End equation(outside).</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>Before Begin verbatim(outside).Begin verbatim(inside):Some Code.</p>
+      <verbatim font="typewriter">
+\some \code
+End verbatim(inside): Some Code.</verbatim>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Author commands</title>
+    <subsection inlist="toc" xml:id="S3.SS1">
+      <tags>
+        <tag>3.1</tag>
+        <tag role="refnum">3.1</tag>
+        <tag role="typerefnum">§3.1</tag>
+      </tags>
+      <title><tag close=" ">3.1</tag>Definitions</title>
+      <subsubsection inlist="toc" xml:id="S3.SS1.SSS1">
+        <tags>
+          <tag>3.1.1</tag>
+          <tag role="refnum">3.1.1</tag>
+          <tag role="typerefnum">§3.1.1</tag>
+        </tags>
+        <title><tag close=" ">3.1.1</tag>Macro definitions</title>
+        <para xml:id="S3.SS1.SSS1.p1">
+          <p>path of PB</p>
+        </para>
+        <para xml:id="S3.SS1.SSS1.p2">
+          <p>path of UF</p>
+        </para>
+        <para xml:id="S3.SS1.SSS1.p3">
+          <p>path of UF</p>
+        </para>
+        <para xml:id="S3.SS1.SSS1.p4">
+          <p>orange= orange= orange= orange</p>
+        </para>
+        <para xml:id="S3.SS1.SSS1.p5">
+          <p>deftestone is defined . After undef, deftestone is undefined.</p>
+        </para>
+        <para xml:id="S3.SS1.SSS1.p6">
+          <p>deftesttwo is defined . After csundef, 
+deftesttwo is undefined.</p>
+        </para>
+        <para xml:id="S3.SS1.SSS1.p7">
+          <p>deftesttwo is undefined. After csgundef, 
+deftesttwo is undefined.</p>
+        </para>
+        <para xml:id="S3.SS1.SSS1.p8">
+          <p>macro:-¿orange</p>
+        </para>
+      </subsubsection>
+      <subsubsection inlist="toc" xml:id="S3.SS1.SSS2">
+        <tags>
+          <tag>3.1.2</tag>
+          <tag role="refnum">3.1.2</tag>
+          <tag role="typerefnum">§3.1.2</tag>
+        </tags>
+        <title><tag close=" ">3.1.2</tag>Arithmetic definitions</title>
+      </subsubsection>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS2">
+      <tags>
+        <tag>3.2</tag>
+        <tag role="refnum">3.2</tag>
+        <tag role="typerefnum">§3.2</tag>
+      </tags>
+      <title><tag close=" ">3.2</tag>Expansion control</title>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS3">
+      <tags>
+        <tag>3.3</tag>
+        <tag role="refnum">3.3</tag>
+        <tag role="typerefnum">§3.3</tag>
+      </tags>
+      <title><tag close=" ">3.3</tag>Hook management</title>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS4">
+      <tags>
+        <tag>3.4</tag>
+        <tag role="refnum">3.4</tag>
+        <tag role="typerefnum">§3.4</tag>
+      </tags>
+      <title><tag close=" ">3.4</tag>Patching</title>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS5">
+      <tags>
+        <tag>3.5</tag>
+        <tag role="refnum">3.5</tag>
+        <tag role="typerefnum">§3.5</tag>
+      </tags>
+      <title><tag close=" ">3.5</tag>Boolean Flags</title>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS6">
+      <tags>
+        <tag>3.6</tag>
+        <tag role="refnum">3.6</tag>
+        <tag role="typerefnum">§3.6</tag>
+      </tags>
+      <title><tag close=" ">3.6</tag>General Tests</title>
+      <para xml:id="S3.SS6.p1">
+        <p>nosuchmacro is not a macro</p>
+      </para>
+      <para xml:id="S3.SS6.p2">
+        <p>relax is not a macro</p>
+      </para>
+      <para xml:id="S3.SS6.p3">
+        <p>begin is a macro</p>
+      </para>
+      <para xml:id="S3.SS6.p4">
+        <p>nobeginning is un defined.</p>
+      </para>
+      <para xml:id="S3.SS6.p5">
+        <p>begin is  defined.</p>
+      </para>
+      <para xml:id="S3.SS6.p6">
+        <p>relax is not defparam</p>
+      </para>
+      <para xml:id="S3.SS6.p7">
+        <p>begin is  defparam</p>
+      </para>
+      <para xml:id="S3.SS6.p8">
+        <p>relax is not patchable</p>
+      </para>
+      <para xml:id="S3.SS6.p9">
+        <p>begin is  patchable</p>
+      </para>
+      <para xml:id="S3.SS6.p10">
+        <p>apptocmd is  defprotected</p>
+      </para>
+      <para xml:id="S3.SS6.p11">
+        <p>ifdefprotected is  defprotected</p>
+      </para>
+      <para xml:id="S3.SS6.p12">
+        <p>relax is not defprotected</p>
+      </para>
+      <para xml:id="S3.SS6.p13">
+        <p>begin is not defprotected</p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS7">
+      <tags>
+        <tag>3.7</tag>
+        <tag role="refnum">3.7</tag>
+        <tag role="typerefnum">§3.7</tag>
+      </tags>
+      <title><tag close=" ">3.7</tag>List Processing</title>
+    </subsection>
+    <subsection inlist="toc" xml:id="S3.SS8">
+      <tags>
+        <tag>3.8</tag>
+        <tag role="refnum">3.8</tag>
+        <tag role="typerefnum">§3.8</tag>
+      </tags>
+      <title><tag close=" ">3.8</tag>Miscellaneous Tools</title>
+    </subsection>
+  </section>
 </document>

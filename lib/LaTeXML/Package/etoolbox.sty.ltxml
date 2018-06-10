@@ -1715,10 +1715,6 @@ RawTeX(<<'EoTeX');
 EoTeX
 # #======================================================================
 # # 2.6 Environment Hooks
-# # \AtBeginEnvironment
-# # \AtEndEnvironment
-# # \BeforeBeginEnvironment
-# # \AfterEndEnvironment
 
 DefMacro('\AtBeginEnvironment{}{}', sub {
     PushValue('@environment@' . ToString($_[1]) . '@atbegin', $_[2]->unlist); });

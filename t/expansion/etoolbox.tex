@@ -54,4 +54,99 @@
 
 \the\foobar
 
+% --- 
+\section{Hooks}
+
+\begin{stuff}
+	This is Stuff!
+\end{stuff}
+
+\begin{equation}
+	a = b
+\end{equation}
+
+\def\some{Some~}
+\def\code{Code}
+\begin{verbatim}
+\some \code
+\end{verbatim}
+
+
+% --- 
+\section{Author commands}
+\subsection{Definitions}
+\subsubsection{Macro definitions}
+% --- overload test
+\csdef{path-PB}{path of PB}
+\csdef{path-UF}{path of UF}
+
+\newrobustcmd\whoami{PB}
+\newrobustcmd\mypath{\csuse{path-\whoami}}
+
+\mypath
+
+\renewrobustcmd\whoami{UF}
+
+\mypath
+
+\providerobustcmd\whoami{noop}
+
+\mypath
+
+% --- other shorthand utilities
+\def\orange{orange}
+\cslet{apple}\orange
+\letcs\kiwi{apple}
+\csletcs{fruit}{orange}
+\apple = \kiwi = \fruit = orange
+
+\def\deftestone{1}
+\def\deftesttwo{1}
+deftestone is \ifdefined\deftestone defined \else undefined\fi. After undef, \undef\deftestone
+deftestone is \ifdefined\deftestone defined \else undefined\fi.
+
+deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi. After csundef, \csundef{deftesttwo}
+deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi.
+
+deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi. After csgundef, \csgundef{deftesttwo}
+deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi.
+
+\csmeaning{orange}
+
+\subsubsection{Arithmetic definitions}
+\subsection{Expansion control}
+\subsection{Hook management}
+\subsection{Patching}
+\subsection{Boolean Flags}
+\subsection{General Tests}
+
+nosuchmacro is \ifdefmacro{\nosuchmacro}{a macro}{not a macro}
+
+relax is \ifdefmacro{\relax}{a macro}{not a macro}
+
+begin is \ifdefmacro{\begin}{a macro}{not a macro}
+
+nobeginning is \ifundef{\nobeginning}{un}{} defined.
+
+begin is \ifundef{\begin}{un}{} defined.
+
+relax is \ifdefparam{\relax}{}{not} defparam
+
+begin is \ifdefparam{\begin}{}{not} defparam
+
+relax is \ifpatchable*{\relax}{}{not} patchable
+
+begin is \ifpatchable*{\begin}{}{not} patchable
+
+apptocmd is \ifdefprotected{\apptocmd}{}{not} defprotected
+
+ifdefprotected is \ifdefprotected{\ifdefprotected}{}{not} defprotected
+
+relax is \ifdefprotected{\relax}{}{not} defprotected
+
+begin is \ifdefprotected{\begin}{}{not} defprotected
+
+\subsection{List Processing}
+\subsection{Miscellaneous Tools}
+
 \end{document}
