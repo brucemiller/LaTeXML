@@ -31,25 +31,24 @@ RequirePackage('inst_support');
 # \author[]{}
 DefMacro('\author[]{}',
   '\ifx.#1.\else\@institutemark{#1}\fi'
-  .'\def\@author{#2}\lx@author{#2}', locked => 1);
+    . '\def\@author{#2}\lx@author{#2}', locked => 1);
 
 DefConstructor('\affiliation[]{}',
   "<ltx:note role='institutetext' mark='#1'>#2</ltx:note>",
   bounded => 1, beforeDigest => sub { AssignValue(inPreamble => 0); });
 
 # \note{} appears inside author?
-Let('\note','\footnote');
+Let('\note', '\footnote');
 
 DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\emailAdd Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 
-DefMacro('\keywordname',  '\textbf{Keywords}');
-DefMacro('\keywords{}',   '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
+DefMacro('\keywordname', '\textbf{Keywords}');
+DefMacro('\keywords{}',  '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
 
-DefMacro('\artxivnumber{}',          '\@add@frontmatter{ltx:note}[role=arxiv]{#1}');
+DefMacro('\artxivnumber{}', '\@add@frontmatter{ltx:note}[role=arxiv]{#1}');
 
-DefMacro('\toccontinuoustrue','');
-
+DefMacro('\toccontinuoustrue', '');
 
 # #======================================================================
 1;
