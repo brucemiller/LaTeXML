@@ -191,10 +191,48 @@ relax is \ifpatchable*{\relax}{}{not} patchable
 
 begin is \ifpatchable*{\begin}{}{not} patchable
 
+\def\paramacro#1#2{#1 and #2}
+\paramacro{first}{second}
+
+appending to paramacro: \apptocmd\paramacro{. Post}{ok}{fail}\newline
+\paramacro{first}{second}
+
+prepending to paramacro: \pretocmd\paramacro{Pre. }{ok}{fail}\newline
+\paramacro{first}{second}
 
 \subsection{Boolean Flags}
- % TODO
-\subsection{General Tests}
+
+\newbool{boolvar}
+boolvar is \ifbool{boolvar}{true}{false}.
+
+\setbool{boolvar}{true}
+set to true. boolvar is \ifbool{boolvar}{true}{false}.
+
+\setbool{boolvar}{false}
+set to false. boolvar is \ifbool{boolvar}{true}{false}.
+
+\booltrue{boolvar}
+set to true. boolvar is \notbool{boolvar}{false}{true}.
+
+\boolfalse{boolvar}
+set to false. boolvar is \notbool{boolvar}{false}{true}.
+
+\newtoggle{ltxbool}
+ltxbool is \iftoggle{ltxbool}{true}{false}
+
+\settoggle{ltxbool}{true}
+set to true. ltxbool is \iftoggle{ltxbool}{true}{false}
+
+\settoggle{ltxbool}{false}
+set to false. ltxbool is \iftoggle{ltxbool}{true}{false}
+
+\toggletrue{ltxbool}
+set to true. ltxbool is \nottoggle{ltxbool}{false}{true}
+
+\togglefalse{ltxbool}
+set to false. ltxbool is \nottoggle{ltxbool}{false}{true}
+
+\subsection{Generic Tests}
 
 nosuchmacro is \ifdefmacro{\nosuchmacro}{a macro}{not a macro}
 

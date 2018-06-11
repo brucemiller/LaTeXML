@@ -230,6 +230,15 @@ xABYZ.</p>
       <para xml:id="S3.SS4.p4">
         <p>begin is  patchable</p>
       </para>
+      <para xml:id="S3.SS4.p5">
+        <p>first and second</p>
+      </para>
+      <para xml:id="S3.SS4.p6">
+        <p>appending to paramacro: ok<break/>first and second. Post</p>
+      </para>
+      <para xml:id="S3.SS4.p7">
+        <p>prepending to paramacro: ok<break/>Pre. first and second. Post</p>
+      </para>
     </subsection>
     <subsection inlist="toc" xml:id="S3.SS5">
       <tags>
@@ -238,6 +247,36 @@ xABYZ.</p>
         <tag role="typerefnum">§3.5</tag>
       </tags>
       <title><tag close=" ">3.5</tag>Boolean Flags</title>
+      <para xml:id="S3.SS5.p1">
+        <p>boolvar is false.</p>
+      </para>
+      <para xml:id="S3.SS5.p2">
+        <p>set to true. boolvar is true.</p>
+      </para>
+      <para xml:id="S3.SS5.p3">
+        <p>set to false. boolvar is false.</p>
+      </para>
+      <para xml:id="S3.SS5.p4">
+        <p>set to true. boolvar is true.</p>
+      </para>
+      <para xml:id="S3.SS5.p5">
+        <p>set to false. boolvar is false.</p>
+      </para>
+      <para xml:id="S3.SS5.p6">
+        <p>ltxbool is false</p>
+      </para>
+      <para xml:id="S3.SS5.p7">
+        <p>set to true. ltxbool is true</p>
+      </para>
+      <para xml:id="S3.SS5.p8">
+        <p>set to false. ltxbool is false</p>
+      </para>
+      <para xml:id="S3.SS5.p9">
+        <p>set to true. ltxbool is true</p>
+      </para>
+      <para xml:id="S3.SS5.p10">
+        <p>set to false. ltxbool is false</p>
+      </para>
     </subsection>
     <subsection inlist="toc" xml:id="S3.SS6">
       <tags>
@@ -245,7 +284,7 @@ xABYZ.</p>
         <tag role="refnum">3.6</tag>
         <tag role="typerefnum">§3.6</tag>
       </tags>
-      <title><tag close=" ">3.6</tag>General Tests</title>
+      <title><tag close=" ">3.6</tag>Generic Tests</title>
       <para xml:id="S3.SS6.p1">
         <p>nosuchmacro is not a macro</p>
       </para>
