@@ -1,0 +1,216 @@
+\documentclass{article}
+\usepackage{tabularx}
+\usepackage{rotating}
+\usepackage{multirow}
+%\usepackage{slashbox}
+\usepackage{makecell}
+\usepackage{xcolor}
+\renewcommand\theadfont{\color{red}\bfseries}
+\begin{document}
+
+\section{makecell}
+\begin{tabular}{|c|c|}
+\hline
+Cell text & 28--31\\
+\hline
+\makecell{Multilined \\ cell text} & 28--31\\
+\hline
+\makecell[l]{Left aligned \\ cell text} & 37--43\\
+\hline
+\makecell*[r]{Right aligned \\ cell text} & 37--43\\
+\hline
+\makecell[b]{Bottom aligned \\ cell text} & 52--58\\
+\hline
+\makecell*[{{p{3cm}}}]{Cell long text with predefined width} & 52--58\\
+\hline
+\makecell[{{>{\parindent1em}p{3cm}}}]{Cell long...} & 52--58\\
+\hline
+\end{tabular}
+
+\section{thead}
+\renewcommand\theadset{\def\arraystretch{.85}}%
+\begin{tabular}{|l|c|}
+  \hline
+  \thead{First column head}&
+\thead{Second \\multlined \\ column head}\\
+\hline
+Left column text & 28--31\\
+\hline
+\end{tabular}
+
+\section{rothead}
+\settowidth\rotheadsize{\theadfont Second multilined}
+\begin{tabular}{|l|c|}
+\hline
+\thead{First column head}&
+\rothead{Second multilined \\ column head}\\
+\hline
+Left column text & 28--31\\
+\hline
+\end{tabular}
+
+\section{Cell settings: cellset, cellalign, cellgape, cellrotangle}
+\section{Head settings:theadfont,theadset, theadalign, theadgape, rotheadgape}
+\section{Height/Depth settings: gape, Gape, bottopstrut,topstrut,botstrut}
+\section{Vertical space: setcellgapes, makegapedcells, nomakegapedcells}
+\section{Multirow: multirowcell, multirowthead}
+\renewcommand\theadset{\def\arraystretch{.85}}%
+\begin{tabular}{|l|c|c|}
+  \hline
+\multirowthead{4}{First ...}&
+%\multirowthead{2}{First ...}&
+\multicolumn{2}{c|}{\thead{Multicolumn head}}\\  \cline{2-3}
+& \thead{Second ...} & \thead{Third ...}\\       \hline
+Cell text & A &\multirowcell{3}{28--31}\\        \cline{1-2}
+\makecell{Multilined\\Cell text} & B& \\         \hline
+\makecell[l]{Left ...} & C & \multirowcell{4}[1ex][l]{37--43}\\ \cline{1-2}
+\makecell[r]{Right ...} & D & \\                  \hline
+\makecell[b]{Bottom ...} & E & \multirowcell{5}[1ex][r]{37--43\\52--58}\\ \cline{1-2}
+\makecell[{{p{5cm}}}]{Cell ...} & F & \\          \cline{1-2}
+\makecell[{{>{\parindent1em}p{5cm}}}]{Cell ...} & G & \\  \hline
+\end{tabular}
+
+%\end{document}
+
+
+% \makegapedcells
+% \renewcommand\theadset{\def\arraystretch{.85}}%
+% \renewcommand\theadgape{}
+
+% \makegapedcells
+% \renewcommand\theadset{\def\arraystretch{.85}}%
+% \renewcommand\theadgape{}
+% \begin{tabularx}\hsize{|X|c|c|}
+% %...
+% \cline{1-2}
+% \makecell[{{p{\hsize}}}]{Cell ...} & F & \\
+% \cline{1-2}
+% \makecell[{{>{\parindent1em}p{\hsize}}}]{Cell ...} & G & \\
+% \hline
+% \end{tabularx}
+
+\section{Numbered Lines}
+\begin{tabular}{|*{12}{c|}}
+\hline
+\eline{6}  \\ \hline
+\nline{6}  \\ \hline
+\eline{3} & \nline[1][4]{3}  \\ \hline
+\nline[(a)]{6}  \\ \hline
+\nline[column I]{6}  \\ \hline
+\end{tabular}
+
+% \begin{tabular}{|*{4}{c|}}
+% \hline
+% \thead{No}&\thead{First Data}&\thead{Second Data}&\thead{Third Data} \\
+% \hline
+% \erows{4}{8}
+% \end{tabular}\quad
+% \begin{tabular}{||c||c||c||c||}
+% \hhline{|t:=:t:=:t:=:t:=:t|}
+% \thead{No}&\thead{First Data}&\thead{Second Data}&\thead{Third Data} \\
+% \hhline{|:=::=::=::=:|}
+% \erows[\\ \hhline{|:=::=::=::=:|}]{4}{8}
+% \eline{4}\\ \hhline{|b:=:b:=:b:=:b:=:b|}
+% \end{tabular}\quad
+% \begin{tabular}{|*{4}{c|}}
+% \hline
+%   \thead{No}&\thead{First Data}&\thead{Second Data}&\thead{Third Data} \\
+%   \hline
+% \Xrows{\refstepcounter{enumi}\arabic{enumi}.\eline{3}\\ \hline}{8}
+% \end{tabular}
+
+\section{Diagonally divided}
+% \makegapedcells
+% \begin{tabular}{|l|c|c|}\hline
+% \diaghead{\theadfont Diag ColumnmnHead II}%
+% {Diag Column \\Head I}{Diag\\Column Head II}&
+% \thead{Second\\column}&\thead{Third\\column}\\
+% \hline...
+% \end{tabular}\medskip
+% \begin{tabularx}{.62\hsize}{|X|c|c|}\hline
+% \diaghead(-4,1){\hskip\hsize}%
+% {Diag \\Column Head I}{Diag Column \\Head II}&
+% \thead{Second\\column}&\thead{Third\\column}\\
+% \hline...
+% \end{tabularx}\medskip
+
+\nomakegapedcells
+\begin{tabular}{|l|c|c|}\hline
+\diaghead(4,1){\hskip4.2cm}%
+{Diag \\Column Head I}{Diag Column \\Head II}&
+\thead{Second\\column}&\thead{Third\\column}\\
+  \hline
+  one & two & three \\\hline
+\end{tabular}
+
+\end{document}
+
+\section{slashbox}
+\begin{tabular}{|l||*{5}{c|}}\hline
+\backslashbox{Room}{Date}
+&\makebox[3em]{5/31}&\makebox[3em]{6/1}&\makebox[3em]{6/2}
+&\makebox[3em]{6/3}&\makebox[3em]{6/4}\\\hline\hline
+Meeting Room &&&&&\\\hline
+Auditorium &&&&&\\\hline
+Seminar Room &&&&&\\\hline
+  \end{tabular}
+
+\begin{tabular}{|l||*{4}{c|}}\hline
+\backslashbox[48mm]{Room}{Date}
+&\makebox[3em]{5/31}&\makebox[3em]{6/1}&\makebox[3em]{6/2}
+&\makebox[3em]{6/3}\\\hline\hline
+Room With a Long Name &&&&\\\hline
+Auditorium &&&&\\\hline
+Seminar Room &&&&\\\hline
+\end{tabular}
+
+\begin{tabular}{|@{\ $\bullet$\hspace*{3mm}}l||*{5}{c|}}\hline
+\multicolumn{1}{|@{}l||}{\backslashbox[0pt][l]{Room}{Date}}
+&\makebox[3em]{5/31}&\makebox[4em]{6/1}&\makebox[3em]{6/2}
+&\makebox[3em]{6/3}&\makebox[3em]{6/4}\\\hline\hline
+Meeting Room &&&&&\\\hline
+Auditorium &&&&&\\\hline
+Seminar Room &&&&&\\\hline
+\end{tabular}
+
+\begin{tabular}{|l||*{5}{c|}}\hline
+\theadset\theadfont\backslashbox{Room}{Date}
+&\makebox[3em]{\thead{5/31}}&\makebox[3em]{\thead{6/1}}&\makebox[3em]{\thead{6/2}}
+&\makebox[3em]{6/3}&\makebox[3em]{\thead{6/4}}\\\hline\hline
+Meeting Room &&&&&\\\hline
+Auditorium &&&&&\\\hline
+Seminar Room &&&&&\\\hline
+\end{tabular}
+
+\begin{tabular}{|l||*{4}{c|}}\hline
+\theadset\backslashbox[48mm]{Room}{Date}
+&\makebox[3em]{\thead{5/31}}&\makebox[3em]{\thead{6/1}}&\makebox[3em]{\thead{6/2}}
+&\makebox[3em]{\thead{6/3}}\\\hline\hline
+Room With a Long Name &&&&\\\hline
+Auditorium &&&&\\\hline
+Seminar Room &&&&\\\hline
+\end{tabular}
+
+\begin{table}
+\renewcommand\theadset{\def\arraystretch{.85}}%
+\renewcommand\theadgape{}
+\ttabbox
+{\caption{...}\label{...}}%
+{\begin{tabular}{!{\vrule width1.2pt}c
+!{\vrule width1.2pt}c|c
+!{\vrule width1.2pt}}
+\Xhline{1.2pt}
+\multirowthead{4}{First Column head}&
+\multicolumn{2}{c!{\vrule width1.2pt}}{\thead{Multicolumn head}}\\
+\Xcline{2-3}{1.2pt}
+& \thead{Second \\multlined \\ column head} &
+\thead{Third \\ column head}\\
+\Xhline{1.2pt}
+Cell text & A &\multirowcell{4}{28--31}\\
+...
+\Xhline{1.2pt}
+\end{tabular}}
+\end{table}
+
+
+\end{document}
