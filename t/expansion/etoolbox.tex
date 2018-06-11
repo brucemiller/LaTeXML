@@ -141,9 +141,46 @@ deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi.
 5mu = \muone
 % ---
 \subsection{Expansion control}
+\def\lvlone{first}
+\def\lvltwo{\lvlone}
+\def\lvlthree{\lvltwo}
+\edef\elvl{\lvlthree}
+\edef\lvltest{\expandonce{\lvlthree}}
+\edef\lvltesttwo{\csexpandonce{lvltwo}}
+full expansion: \meaning\elvl 
+
+expand once: \meaning\lvltest
+
+csexpandonce: \meaning\lvltesttwo
 
 \subsection{Hook management}
- % TODO
+% Source: https://www.dickimaw-books.com/latex/admin/html/hooks.shtml
+
+\newcommand{\mymacro}{x}%
+\mymacro;
+\appto\mymacro{AB}%
+\mymacro;
+\appto\mymacro{YZ}%
+\mymacro.
+
+\renewcommand{\mymacro}{x}%
+\newcommand{\myothermacro}{AB}%
+\epreto\mymacro{\myothermacro}%
+\renewcommand{\myothermacro}{YZ}%
+\eappto\mymacro{\myothermacro}
+\mymacro.
+
+\renewcommand{\mymacro}{x}%
+\newcommand{\mymacroB}{\mymacroC}%
+\newcommand{\mymacroC}{\mymacroD}%
+\newcommand{\mymacroD}{Z}%
+\eappto\mymacro{\mymacroB}
+\mymacro.
+
+\newcommand{\premacro}{x}
+\bgroup\csgpreto{premacro}{pre-}\egroup
+\premacro. 
+
 \subsection{Patching}
  % TODO
 \subsection{Boolean Flags}

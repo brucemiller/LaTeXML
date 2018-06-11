@@ -179,6 +179,15 @@ deftesttwo is undefined.</p>
         <tag role="typerefnum">§3.2</tag>
       </tags>
       <title><tag close=" ">3.2</tag>Expansion control</title>
+      <para xml:id="S3.SS2.p1">
+        <p>full expansion: macro:-¿first</p>
+      </para>
+      <para xml:id="S3.SS2.p2">
+        <p>expand once: macro:-¿“lvltwo</p>
+      </para>
+      <para xml:id="S3.SS2.p3">
+        <p>csexpandonce: macro:-¿“lvlone</p>
+      </para>
     </subsection>
     <subsection inlist="toc" xml:id="S3.SS3">
       <tags>
@@ -187,6 +196,20 @@ deftesttwo is undefined.</p>
         <tag role="typerefnum">§3.3</tag>
       </tags>
       <title><tag close=" ">3.3</tag>Hook management</title>
+      <para xml:id="S3.SS3.p1">
+        <p>x;
+xAB;
+xABYZ.</p>
+      </para>
+      <para xml:id="S3.SS3.p2">
+        <p>ABxYZ.</p>
+      </para>
+      <para xml:id="S3.SS3.p3">
+        <p>xZ.</p>
+      </para>
+      <para xml:id="S3.SS3.p4">
+        <p>pre-x.</p>
+      </para>
     </subsection>
     <subsection inlist="toc" xml:id="S3.SS4">
       <tags>
