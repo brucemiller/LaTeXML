@@ -71,7 +71,6 @@
 \some \code
 \end{verbatim}
 
-
 % --- 
 \section{Author commands}
 \subsection{Definitions}
@@ -114,10 +113,41 @@ deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi.
 \csmeaning{orange}
 
 \subsubsection{Arithmetic definitions}
+\numdef\arithone{2 + 4 * 8}
+2 + 4 * 8 = \arithone
+
+\bgroup\numgdef\arithtwo{3 + 5 * 7}\egroup
+3 + 5 * 7 = \arithtwo
+
+\bgroup\csnumgdef{ariththree}{4 + 6 * 8}\egroup
+4 + 6 * 8 = \ariththree
+
+\dimdef\dimone{1pt + 2em}
+1pt + 2em = \dimone
+
+\bgroup\dimgdef\dimtwo{3pt + 1em}\egroup
+3pt + 1em = \dimtwo
+
+\bgroup\csdimgdef{dimthree}{4pt + 0.5em}\egroup
+4pt + 0.5em = \dimthree
+
+\gluedef\glueone{10pt plus 2pt minus 3pt}
+10pt plus 2pt minus 3pt = \glueone
+
+\bgroup\csgluegdef{gluetwo}{4pt minus 1pt}\egroup
+4pt minus 1pt = \gluetwo
+
+\bgroup\csmugdef{muone}{5mu}\egroup
+5mu = \muone
+% ---
 \subsection{Expansion control}
+
 \subsection{Hook management}
+ % TODO
 \subsection{Patching}
+ % TODO
 \subsection{Boolean Flags}
+ % TODO
 \subsection{General Tests}
 
 nosuchmacro is \ifdefmacro{\nosuchmacro}{a macro}{not a macro}
@@ -147,6 +177,8 @@ relax is \ifdefprotected{\relax}{}{not} defprotected
 begin is \ifdefprotected{\begin}{}{not} defprotected
 
 \subsection{List Processing}
+ % TODO
 \subsection{Miscellaneous Tools}
+ % TODO
 
 \end{document}
