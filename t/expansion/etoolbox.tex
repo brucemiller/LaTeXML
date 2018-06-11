@@ -182,7 +182,16 @@ csexpandonce: \meaning\lvltesttwo
 \premacro. 
 
 \subsection{Patching}
- % TODO
+\def\patchme{example -- here}
+patching: \patchcmd\patchme{--}{patched}{ok}{fail}
+
+\patchme 
+
+relax is \ifpatchable*{\relax}{}{not} patchable
+
+begin is \ifpatchable*{\begin}{}{not} patchable
+
+
 \subsection{Boolean Flags}
  % TODO
 \subsection{General Tests}
@@ -200,10 +209,6 @@ begin is \ifundef{\begin}{un}{} defined.
 relax is \ifdefparam{\relax}{}{not} defparam
 
 begin is \ifdefparam{\begin}{}{not} defparam
-
-relax is \ifpatchable*{\relax}{}{not} patchable
-
-begin is \ifpatchable*{\begin}{}{not} patchable
 
 apptocmd is \ifdefprotected{\apptocmd}{}{not} defprotected
 
