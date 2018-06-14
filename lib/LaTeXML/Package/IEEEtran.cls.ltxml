@@ -315,6 +315,8 @@ DefMacro('\IEEEeqnarrayboxt OptionalMatch:* {}',
 DefMacroI('\endIEEEeqnarrayboxt', undef,
   '\@finish@alignment\@end@array\@@ENDINLINEMATH');
 
+DefMacro('\IEEEeqnarraynumspace', '');
+
 Let(T_CS('\appendices'), T_CS('\appendix'));
 
 $$LaTeXML::Package::Pool::BIBSTYLES{IEEEtran} = { citestyle => 'numbers', sort => 'true' };

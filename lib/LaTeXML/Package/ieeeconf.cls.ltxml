@@ -1,11 +1,15 @@
 # -*- mode: Perl -*-
 # /=====================================================================\ #
-# |  mathpazo                                                           | #
+# |  ieeeconf                                                           | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -15,21 +19,8 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-# Nothing to do here.
-# Is this the right approach?
-Let('\upDelta',   '\Delta');
-Let('\upGamma',   '\Gamma');
-Let('\upLambda',  '\Lambda');
-Let('\upOmega',   '\Omega');
-Let('\upPhi',     '\Phi');
-Let('\upPi',      '\Pi');
-Let('\upPsi',     '\Psi');
-Let('\upSigma',   '\Sigma');
-Let('\upTheta',   '\Theta');
-Let('\upUpsilon', '\Upsilon');
-Let('\upXi',      '\Xi');
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+LoadClass('IEEEtran');
 
-DefConstructor('\mathbb{}', '#1', bounded => 1, requireMath => 1,
-  font => { family => 'blackboard', series => 'medium', shape => 'upright' });
-
+# #======================================================================
 1;

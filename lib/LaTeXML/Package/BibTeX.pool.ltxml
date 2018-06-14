@@ -222,7 +222,7 @@ sub copyCrossrefFields {
         if (!defined $entry->getRawField($field)) {
           if (my $value = $xentry->getRawField($field)) {
             $entry->addRawField($field, $value); } }
-      } } }
+  } } }
   return; }
 #======================================================================
 # Supporters
@@ -917,9 +917,10 @@ sub processBibNameList {
 sub splitWords {
   my ($string) = @_;
   $string =~ s/\\~/####/g;    # Protect \~ so we can split on hard spaces (~) as well as regular ones.
+  $string =~ s/^[\s~]+//gs;
+  $string =~ s/%\n//gs;       # Cleanup linebreaks
   my @words = ();
-  $string =~ s/^[\s~]+//;
-  my $word = '';
+  my $word  = '';
   while ($string) {
     if ($string =~ s/^(,?)[\s~]+//s) {
       push(@words, $word) if $word;

@@ -260,7 +260,7 @@ DefParameterType('Semiverbatim', sub { $_[0]->readArg; }, semiverbatim => 1,
 # Read a LaTeX-style optional argument (ie. in []), but the contents read as Semiverbatim.
 DefParameterType('OptionalSemiverbatim', sub { $_[0]->readOptional; },
   semiverbatim => 1, optional => 1,
-  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  reversion    => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Be careful here: if % appears before the initial {, it's still a comment!
 # Also, note that non-typewriter fonts will mess up some chars on digestion!
@@ -285,7 +285,7 @@ DefParameterType('Undigested', sub { $_[0]->readArg; }, undigested => 1,
 # Read a LaTeX-style optional argument (ie. in []), but it will not be digested.
 DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
   undigested => 1, optional => 1,
-  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  reversion  => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
@@ -831,7 +831,12 @@ DefMacro('\meaning Token', sub {
         my $spec = join("", @specparts);
         $spec =~ s/\{\}//g;
         $spec =~ s/Token//g;
-        $meaning = "macro:" . ToString($spec) . "->" . ToString($expansion); }
+        my $prefixes = join('',
+          ($definition->isProtected ? '\protected' : ()),
+          ($definition->isLong      ? '\long'      : ()),
+          ($definition->isOuter     ? '\outer'     : ()),
+        );
+        $meaning = ($prefixes ? $prefixes . ' ' : '') . "macro:" . ToString($spec) . "->" . ToString($expansion); }
       Explode($meaning); }
     else {
       Explode('undefined'); } });
@@ -946,10 +951,10 @@ DefRegister('\tracingcommands', Number(0),
 
 {
   my %iparms = (
-    pretolerance => 100, tolerance => 200, hbadness => 1000, vbadness => 1000,
-    linepenalty => 10, hyphenpenalty => 50, exhyphenpenalty => 50,
-    binoppenalty         => 700,   relpenalty          => 500,
-    clubpenalty          => 150,   widowpenalty        => 150, displaywidowpenalty => 50,
+    pretolerance => 100, tolerance     => 200, hbadness            => 1000, vbadness => 1000,
+    linepenalty  => 10,  hyphenpenalty => 50,  exhyphenpenalty     => 50,
+    binoppenalty => 700, relpenalty    => 500,
+    clubpenalty  => 150, widowpenalty  => 150, displaywidowpenalty => 50,
     brokenpenalty        => 100,   predisplaypenalty   => 10000,
     postdisplaypenalty   => 0,     interlinepenalty    => 0,
     floatingpenalty      => 0,     outputpenalty       => 0,
@@ -1011,7 +1016,7 @@ sub today {
 # Dimen registers; TeXBook p. 274
 {
   my %dparms = (
-    hfuzz => '0.1pt', vfuzz => '0.1pt', overfullrule => '5pt',
+    hfuzz              => '0.1pt', vfuzz => '0.1pt', overfullrule => '5pt',
     emergencystretch   => 0,
     hsize              => '6.5in', vsize => '8.9in',
     maxdepth           => '4pt', splitmaxdepth => '16383.99999pt', boxmaxdepth => '16383.99999pt',
@@ -1019,7 +1024,7 @@ sub today {
     delimitershortfall => '5pt', nulldelimiterspace => '1.2pt', scriptspace => '0.5pt',
     mathsurround       => 0,
     predisplaysize     => 0, displaywidth => 0, displayindent => 0, parindent => '20pt',
-    hangindent => 0, hoffset => 0, voffset => 0,);
+    hangindent         => 0, hoffset => 0, voffset => 0,);
 
   foreach my $p (keys %dparms) {
     DefRegister("\\$p", Dimension($dparms{$p})); }
@@ -1044,8 +1049,8 @@ sub today {
 # Glue registers; TeXBook p.274
 {
   my %gparms = (
-    baselineskip => '12pt', lineskip => '1pt',
-    parskip => '0pt plus 1pt',
+    baselineskip          => '12pt', lineskip => '1pt',
+    parskip               => '0pt plus 1pt',
     abovedisplayskip      => '12pt plus 3pt minus 9pt',
     abovedisplayshortskip => '0pt plus 3pt',
     belowdisplayskip      => '12pt plus 3pt minus 9pt',
@@ -1888,6 +1893,12 @@ sub insertBlock {
   my $model   = $document->getModel;
   my $context = $document->getElement;    # Where we originally start inserting.
 
+  my $blocktag  = 'ltx:block';
+  my $iblocktag = 'ltx:inline-block';
+  if ($blockattr{para}) {
+    $blocktag  = 'ltx:para';
+    $iblocktag = 'ltx:inline-para';
+    delete $blockattr{para}; }
   # Generally, we're going to need some sort of container to hold the contents of the block.
   # Particularly if we're: setting various size & positioning attributes;
   # or can't currently open an ltx:p; or if the current point accepts plain text (#PCDATA).
@@ -1898,15 +1909,15 @@ sub insertBlock {
   map { ($blockattr{$_} || delete $blockattr{$_}) } keys %blockattr;
   my $hasattr = scalar(keys %blockattr);
   if ($hasattr || !$document->canContainSomehow($context, 'ltx:p') || $document->canContain($context, '#PCDATA')) {
-    my $tag = ($document->canContain($context, 'ltx:block')
-      ? 'ltx:block'
-      : 'ltx:inline-block');
+    my $tag = ($document->canContain($context, $blocktag)
+      ? $blocktag
+      : $iblocktag);
     $newblock = $document->openElement($tag, '_autoclose' => 1, %blockattr); }
   ## I think this option isn't really needed.... try to simplify
   ## elsif ($document->canContainSomehow($context, 'ltx:para')) {
   ## $newblock = $document->openElement('ltx:para', '_autoclose' => 1, %blockattr); }
-
   # Insert the content for the block, and reduce
+
   $document->setAttribute($document->getElement, '_vertical_mode_' => 1);    # HACK!!!! (see \hbox)
   my @nodes = $document->filterChildren($document->filterDeletions($document->absorb($contents)));
 
@@ -2582,15 +2593,15 @@ sub alignmentBindings {
   my $rowtype   = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
   my $coltype   = ($ismath ? 'ltx:XMCell' : 'ltx:td');
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
-      template => $template,
-      openContainer => sub { $_[0]->openElement($container, @_[1 .. $#_]); },
+      template       => $template,
+      openContainer  => sub { $_[0]->openElement($container, @_[1 .. $#_]); },
       closeContainer => sub { $_[0]->closeElement($container); },
       openRow        => sub { $_[0]->openElement($rowtype, @_[1 .. $#_]); },
       closeRow       => sub { $_[0]->closeElement($rowtype); },
       openColumn     => sub { $_[0]->openElement($coltype, @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement($coltype); },
-      isMath     => $ismath,
-      properties => {%properties}));
+      isMath         => $ismath,
+      properties     => {%properties}));
   Let(T_ALIGN,           '\@alignment@align');
   Let("\\\\",            '\@alignment@newline');
   Let('\tabularnewline', '\@alignment@newline');
@@ -2938,7 +2949,7 @@ DefMacro('\oalign{}',
   '\@@oalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@oalign{}',
   '#1',
-  reversion => '\oalign{#1}', bounded => 1, mode => 'text',
+  reversion    => '\oalign{#1}', bounded => 1, mode => 'text',
   beforeDigest => sub { alignmentBindings('l'); });
 
 # This is actually different; the lines should lie ontop of each other.
@@ -2947,7 +2958,7 @@ DefMacro('\ooalign{}',
   '\@@ooalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@ooalign{}',
   '#1',
-  reversion => '\ooalign{#1}', bounded => 1, mode => 'text',
+  reversion    => '\ooalign{#1}', bounded => 1, mode => 'text',
   beforeDigest => sub { alignmentBindings('l'); });
 
 #----------------------------------------------------------------------
@@ -3164,11 +3175,11 @@ DefConstructorI('\@@BEGINDISPLAYMATH', undef,
     . "</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  reversion => Tokens(T_MATH, T_MATH),
+  reversion    => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->beginMode('display_math'); },
-  captureBody => 1);
+  captureBody  => 1);
 DefConstructorI('\@@ENDDISPLAYMATH', undef, "",
-  reversion => Tokens(T_MATH, T_MATH),
+  reversion    => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->endMode('display_math'); });
 
 DefConstructorI('\@@BEGININLINEMATH', undef,
@@ -3300,7 +3311,7 @@ sub cleanup_XMText {
 ##                                 .' | ltx:tabular/ltx:tr/ltx:td[not(ltx:Math)]'
 ##                                 .' | ltx:tabular/ltx:tbody/ltx:tr/ltx:td[not(ltx:Math)]',
 ##                                 $textnode)
-    ) {
+  ) {
     # First step is remove any ltx:tbody from the tabular!
     foreach my $tb ($document->findnodes('ltx:tabular/ltx:tbody', $textnode)) {
       $document->unwrapNodes($tb); }
@@ -3315,7 +3326,7 @@ sub cleanup_XMText {
             $document->replaceNode($m, map { $_->childNodes } $m->childNodes); }
           else {                                           # Otherwise, wrap whatever it is in an XMText
             $document->wrapNodes('ltx:XMText', $m); }
-        } } }
+    } } }
     # And now we don't need the XMText any more.
     foreach my $attr ($textnode->attributes) {    # Copy the child's attributes (should Merge!!)
       $table->setAttribute($attr->nodeName => $attr->getValue); }
@@ -3374,6 +3385,10 @@ sub closeMathFork {
   # More defensive? Sometimes we end up with a DocumentFragment as parent of $main????!?!?!?!
   my @mfs = $document->findnodes('ltx:MathFork', $equation);
   $document->closeElementAt($mfs[-1]);
+  my $fork     = $branch->parentNode;
+  my @branches = $fork->childNodes;
+  if (scalar(@branches) == 1) {    # Whoops, came up empty!
+    $fork->unbindNode; }
   return; }
 
 # Create an inline math Whatsit from a list of math Boxes, Lists or Whatsits.
@@ -3421,6 +3436,7 @@ sub addColumnToMathFork {
   # Remove the _Capture_ from the document; parts will get cloned &/or reinserted
   $cell->unbindNode;
   # Usually, we will have captured a single ltx:Math node, but occasionally text?
+  # But in perverse cases, might have NOTHING!
   foreach my $node ($cell->childNodes) {
     # Add a Clone of the cell's contents to the main branch (This will get modified id's)
     local $LaTeXML::Core::Document::ID_SUFFIX = '.mf';
@@ -3569,7 +3585,7 @@ DefMacroI('\eqno', undef, sub {
         || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
                                                      # This seems needed within AmSTeX environs
         || Equals($t, T_CS('\@@close@inner@column'))
-        ) {
+      ) {
         #       || Equals($t,T_CS('\end{equation}'))|| Equals($t,T_CS('\end{equation*}'))){
         return (Invocation(T_CS('\@@eqno'), Tokens(@stuff)), $t); }
       else {
@@ -3721,7 +3737,7 @@ sub scriptHandler {
     my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
     Error('unexpected', $c, $stomach, "Script $c can only appear in math mode");
     return Box($c, undef, undef, (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
-  } }
+} }
 
 DefPrimitiveI(T_SUPER, undef, sub { scriptHandler($_[0], 'SUPERSCRIPT'); });
 DefPrimitiveI(T_SUB,   undef, sub { scriptHandler($_[0], 'SUBSCRIPT'); });
@@ -5513,7 +5529,7 @@ DefConstructor('\@@joinrel{}{}', sub {
         my $role = (scalar(keys %roles) == 1 ? [keys %roles]->[0] : ($roles{ARROW} ? 'ARROW' : 'RELOP'));
         map { $node->removeChild($_) } @rels;
         $document->insertElement('ltx:XMTok', [map { $_->textContent } @rels], role => $role);
-      } } },
+  } } },
   reversion => '#1\joinrel #2');
 
 #----------------------------------------------------------------------
@@ -5716,11 +5732,11 @@ our %DELIMITER_MAP =
   '<'       => { char => "\x{27E8}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'langle' },
   '>'       => { char => "\x{27E9}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rangle' },
   '/'       => { char => "/",        lrole => 'MULOP', rrole => 'MULOP' },
-  '\backslash' => { char => UTF(0x5C), lrole => 'MULOP', rrole => 'MULOP', name => 'backslash' },
-  '|'        => { char => "|",        lrole => 'VERTBAR', rrole => 'VERTBAR' },
-  '\|'       => { char => "\x{2225}", lrole => 'VERTBAR', rrole => 'VERTBAR' },
-  '\uparrow' => { char => "\x{2191}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'uparrow' },  # ??
-  '\Uparrow' => { char => "\x{21D1}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'Uparrow' },  # ??
+  '\backslash' => { char => UTF(0x5C),  lrole => 'MULOP',   rrole => 'MULOP', name => 'backslash' },
+  '|'          => { char => "|",        lrole => 'VERTBAR', rrole => 'VERTBAR' },
+  '\|'         => { char => "\x{2225}", lrole => 'VERTBAR', rrole => 'VERTBAR' },
+  '\uparrow'   => { char => "\x{2191}", lrole => 'OPEN', rrole => 'CLOSE', name => 'uparrow' },   # ??
+  '\Uparrow'   => { char => "\x{21D1}", lrole => 'OPEN', rrole => 'CLOSE', name => 'Uparrow' },   # ??
   '\downarrow' => { char => "\x{2193}", lrole => 'OPEN', rrole => 'CLOSE', name => 'downarrow' }, # ??
   '\Downarrow' => { char => "\x{21D3}", lrole => 'OPEN', rrole => 'CLOSE', name => 'Downarrow' }, # ??
   '\updownarrow' => { char => "\x{2195}", lrole => 'OPEN', rrole => 'CLOSE', name => 'updownarrow' }, # ??
@@ -6153,7 +6169,7 @@ DefMacro('\eqalign{}',
   '\@@eqalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalign{}',
   '#1',
-  reversion => '\eqalign{#1}', bounded => 1,
+  reversion    => '\eqalign{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rl', 'math',
       attributes => { vattach => 'baseline' }); });
 
@@ -6161,7 +6177,7 @@ DefMacro('\eqalignno{}',
   '\@@eqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalignno{}',
   '#1',
-  reversion => '\eqalignno{#1}', bounded => 1,
+  reversion    => '\eqalignno{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rll', 'math',
       attributes => { vattach => 'baseline' }); });
 
@@ -6169,7 +6185,7 @@ DefMacro('\leqalignno{}',
   '\@@leqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@leqalignno{}',
   '#1',
-  reversion => '\leqalignno{#1}', bounded => 1,
+  reversion    => '\leqalignno{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rll', 'math',
       attributes => { vattach => 'baseline' }); });
 

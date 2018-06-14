@@ -1,0 +1,35 @@
+\documentclass{article}
+\usepackage{cases}
+\begin{document}
+% \begin{numcases}{left_side}
+% case_1 & explanation_1 \\
+% case_2 & explanation_2 \\
+% ...
+% case_n & explanation_n
+% \end{numcases}
+
+\begin{numcases}{|x|=}
+x, & for $x \geq 0$\\
+-x, & for $x < 0$
+\end{numcases}
+
+Another example is calculating the square root of $c+id$. First compute
+\begin{subnumcases}{\label{w} w\equiv}
+0
+& $c = d = 0$\label{wzero}\\
+\sqrt{|c|}\,\sqrt{\frac{1 + \sqrt{1+(d/c)^2}}{2}}
+& $|c| \geq |d|$ \\
+\sqrt{|d|}\,\sqrt{\frac{|c/d| + \sqrt{1+(c/d)^2}}{2}}
+& $|c| < |d|$
+\end{subnumcases}
+Then, using $w$ from eq.~(\ref{w}), the square root is
+\begin{subnumcases}{\sqrt{c+id}=}
+0
+& $w=0$ (case \ref{wzero})\\
+w+i\frac{d}{2w}
+& $w \neq 0$, $c \geq 0$ \\
+\frac{|d|}{2w} + iw & $w \neq 0$, $c < 0$, $d \geq 0$ \\
+\frac{|d|}{2w} - iw & $w \neq 0$, $c < 0$, $d < 0$
+\end{subnumcases}
+
+\end{document}

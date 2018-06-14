@@ -15,6 +15,8 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+DefRegister('\extrarowheight' => Dimension('0pt'));
+
 # Not sure how to effect these
 DefMacroI('\firsthline', undef, '\hline');
 DefMacroI('\lasthline',  undef, '\hline');

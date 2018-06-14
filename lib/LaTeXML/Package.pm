@@ -529,7 +529,7 @@ sub CleanURL {
 #======================================================================
 
 my $parameter_options = {    # [CONSTANT]
-  nargs => 1, reversion => 1, optional => 1, novalue => 1,
+  nargs        => 1, reversion   => 1, optional => 1, novalue => 1,
   beforeDigest => 1, afterDigest => 1,
   semiverbatim => 1, undigested  => 1 };
 
@@ -898,7 +898,8 @@ sub DefExpandable {
 # Define a Macro: Essentially an alias for DefExpandable
 # For convenience, the $expansion can be a string which will be tokenized.
 my $macro_options = {    # [CONSTANT]
-  scope => 1, locked => 1, mathactive => 1, protected => 1 };
+  scope     => 1, locked => 1, mathactive => 1,
+  protected => 1, outer  => 1, long       => 1 };
 
 sub DefMacro {
   my ($proto, $expansion, %options) = @_;
@@ -1021,7 +1022,8 @@ my $primitive_options = {    # [CONSTANT]
   isPrefix => 1, scope => 1, mode => 1, font => 1,
   requireMath  => 1, forbidMath  => 1,
   beforeDigest => 1, afterDigest => 1,
-  bounded => 1, locked => 1, alias => 1 };
+  bounded => 1, locked => 1, alias => 1,
+  outer => 1, long => 1 };
 
 sub DefPrimitive {
   my ($proto, $replacement, %options) = @_;
@@ -1050,7 +1052,8 @@ sub DefPrimitiveI {
       afterDigest => flatten($options{afterDigest},
         ($mode ? (sub { $_[0]->endMode($mode) })
           : ($bounded ? (sub { $_[0]->egroup; }) : ()))),
-
+      outer    => $options{outer},
+      long     => $options{long},
       isPrefix => $options{isPrefix}),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
@@ -1164,7 +1167,8 @@ my $constructor_options = {    # [CONSTANT]
   alias        => 1, reversion   => 1, sizer           => 1, properties     => 1,
   nargs        => 1,
   beforeDigest => 1, afterDigest => 1, beforeConstruct => 1, afterConstruct => 1,
-  captureBody  => 1, scope       => 1, bounded         => 1, locked         => 1 };
+  captureBody  => 1, scope       => 1, bounded         => 1, locked         => 1,
+  outer => 1, long => 1 };
 
 sub inferSizer {
   my ($sizer, $reversion) = @_;
@@ -1202,7 +1206,9 @@ sub DefConstructorI {
       reversion       => $options{reversion},
       sizer           => inferSizer($options{sizer}, $options{reversion}),
       captureBody     => $options{captureBody},
-      properties      => $options{properties} || {}),
+      properties      => $options{properties} || {},
+      outer           => $options{outer},
+      long            => $options{long}),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
@@ -1552,8 +1558,10 @@ sub DefEnvironmentI {
       ->new(T_CS("\\begin{$name}"), $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($name); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($name); }) : ()),
-        ($mode ? (sub { $_[0]->beginMode($mode); })
-          : (sub { $_[0]->bgroup; })),
+        sub { $_[0]->bgroup; },
+        sub { my $b = LookupValue('@environment@' . $name . '@atbegin');
+          ($b ? Digest(@$b) : ()); },
+        ($mode ? (sub { $_[0]->setMode($mode); }) : ()),
         sub { AssignValue(current_environment => $name);
           DefMacroI('\@currenvir', undef, $name); },
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
@@ -1565,14 +1573,17 @@ sub DefEnvironmentI {
       afterConstruct => flatten($options{afterConstruct}, sub { $STATE->popFrame; }),
       nargs          => $options{nargs},
       captureBody    => 1,
-      properties => $options{properties} || {},
+      properties     => $options{properties} || {},
       (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
       (defined $sizer ? (sizer => $sizer) : ()),
       ), $options{scope});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end{$name}"), "", "",
-      beforeDigest => flatten($options{beforeDigestEnd}),
-      afterDigest  => flatten($options{afterDigest},
+      beforeDigest => flatten($options{beforeDigestEnd},
+        sub { my $e = LookupValue('@environment@' . $name . '@atend');
+          ($e ? Digest(@$e) : ()); },
+      ),
+      afterDigest => flatten($options{afterDigest},
         sub { my $env = LookupValue('current_environment');
           if (!$env || ($name ne $env)) {
             my @lines = ();
@@ -1584,8 +1595,8 @@ sub DefEnvironmentI {
             Error('unexpected', "\\end{$name}", $_[0],
               "Can't close environment $name;", "Current are:", @lines); }
           return; },
-        ($mode ? (sub { $_[0]->endMode($mode); })
-          : (sub { $_[0]->egroup; }))),
+        sub { $_[0]->egroup; },
+      ),
       ), $options{scope});
   # For the uncommon case opened by \csname env\endcsname
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
@@ -1625,7 +1636,7 @@ sub DefEnvironmentI {
 
 # Specify the properties of a Node tag.
 my $tag_options = {    # [CONSTANT]
-  autoOpen => 1, autoClose => 1, afterOpen => 1, afterClose => 1,
+  autoOpen          => 1, autoClose          => 1, afterOpen => 1, afterClose => 1,
   'afterOpen:early' => 1, 'afterClose:early' => 1,
   'afterOpen:late'  => 1, 'afterClose:late'  => 1 };
 my $tag_prepend_options = {    # [CONSTANT]
@@ -1688,8 +1699,8 @@ sub RegisterDocumentNamespace {
 # should we assume a raw type can be processed if being read from within a raw type????
 # yeah, that sounds about right...
 my %definition_name = (    # [CONSTANT]
-  sty => 'package', cls => 'class', clo => 'class options',
-  'cnf' => 'configuration', 'cfg' => 'configuration',
+  sty   => 'package',              cls   => 'class', clo => 'class options',
+  'cnf' => 'configuration',        'cfg' => 'configuration',
   'ldf' => 'language definitions', 'def' => 'definitions', 'dfu' => 'definitions');
 
 sub pathname_is_raw {
