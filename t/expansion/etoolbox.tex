@@ -234,6 +234,16 @@ set to false. ltxbool is \nottoggle{ltxbool}{false}{true}
 
 \subsection{Generic Tests}
 
+noise is \ifcsdef{noise}{}{not} defined.
+
+begin is \ifcsdef{begin}{}{not} defined.
+
+relax is \ifcsdef{relax}{}{not} defined.
+
+relax is ifundef: \ifundef{\relax}{true}{false}
+
+relax is ifcsundef: \ifcsundef{relax}{true}{false}
+
 nosuchmacro is \ifdefmacro{\nosuchmacro}{a macro}{not a macro}
 
 relax is \ifdefmacro{\relax}{a macro}{not a macro}
@@ -255,6 +265,14 @@ ifdefprotected is \ifdefprotected{\ifdefprotected}{}{not} defprotected
 relax is \ifdefprotected{\relax}{}{not} defprotected
 
 begin is \ifdefprotected{\begin}{}{not} defprotected
+
+prefix test begin: \ifcsprefix{begin}{true}{false}
+
+prefix test noise: \ifcsprefix{noise}{true}{false}
+
+prefix test newrobustcmd: \ifcsprefix{newrobustcmd}{true}{false}
+
+prefix test newrobustcmd: \ifcsprefix{newrobustcmd}{true}{false}
 
 \subsection{List Processing}
  % TODO

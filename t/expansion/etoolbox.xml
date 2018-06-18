@@ -286,37 +286,64 @@ xABYZ.</p>
       </tags>
       <title><tag close=" ">3.6</tag>Generic Tests</title>
       <para xml:id="S3.SS6.p1">
-        <p>nosuchmacro is not a macro</p>
+        <p>noise is not defined.</p>
       </para>
       <para xml:id="S3.SS6.p2">
-        <p>relax is not a macro</p>
-      </para>
-      <para xml:id="S3.SS6.p3">
-        <p>begin is a macro</p>
-      </para>
-      <para xml:id="S3.SS6.p4">
-        <p>nobeginning is un defined.</p>
-      </para>
-      <para xml:id="S3.SS6.p5">
         <p>begin is  defined.</p>
       </para>
+      <para xml:id="S3.SS6.p3">
+        <p>relax is  defined.</p>
+      </para>
+      <para xml:id="S3.SS6.p4">
+        <p>relax is ifundef: true</p>
+      </para>
+      <para xml:id="S3.SS6.p5">
+        <p>relax is ifcsundef: true</p>
+      </para>
       <para xml:id="S3.SS6.p6">
-        <p>relax is not defparam</p>
+        <p>nosuchmacro is not a macro</p>
       </para>
       <para xml:id="S3.SS6.p7">
-        <p>begin is  defparam</p>
+        <p>relax is not a macro</p>
       </para>
       <para xml:id="S3.SS6.p8">
-        <p>apptocmd is  defprotected</p>
+        <p>begin is a macro</p>
       </para>
       <para xml:id="S3.SS6.p9">
-        <p>ifdefprotected is  defprotected</p>
+        <p>nobeginning is un defined.</p>
       </para>
       <para xml:id="S3.SS6.p10">
-        <p>relax is not defprotected</p>
+        <p>begin is  defined.</p>
       </para>
       <para xml:id="S3.SS6.p11">
+        <p>relax is not defparam</p>
+      </para>
+      <para xml:id="S3.SS6.p12">
+        <p>begin is  defparam</p>
+      </para>
+      <para xml:id="S3.SS6.p13">
+        <p>apptocmd is  defprotected</p>
+      </para>
+      <para xml:id="S3.SS6.p14">
+        <p>ifdefprotected is  defprotected</p>
+      </para>
+      <para xml:id="S3.SS6.p15">
+        <p>relax is not defprotected</p>
+      </para>
+      <para xml:id="S3.SS6.p16">
         <p>begin is not defprotected</p>
+      </para>
+      <para xml:id="S3.SS6.p17">
+        <p>prefix test begin: false</p>
+      </para>
+      <para xml:id="S3.SS6.p18">
+        <p>prefix test noise: false</p>
+      </para>
+      <para xml:id="S3.SS6.p19">
+        <p>prefix test newrobustcmd: false</p>
+      </para>
+      <para xml:id="S3.SS6.p20">
+        <p>prefix test newrobustcmd: false</p>
       </para>
     </subsection>
     <subsection inlist="toc" xml:id="S3.SS7">
