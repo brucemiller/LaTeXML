@@ -124,7 +124,7 @@ sub fill_in_relations {
           $doc->addNavigation($child_rel => $child_id); }
         else {                                # Else, consider it as some sort of sidebar.
           $doc->addNavigation('sidebar' => $child_id); } }
-    } }
+  } }
   return; }
 
 sub findPreviousPage {
@@ -289,13 +289,15 @@ sub gentoc_context {
     my $p_id;
     while (($p_id = $entry->getValue('parent')) && ($entry = $$self{db}->lookup("ID:$p_id"))) {
       @navtoc =
-        map { ($_->getValue('id') eq $id
+        map {
+        ($_->getValue('id') eq $id
           ? @navtoc
           : $self->gentocentry($doc, $_, undef, $show)) }
         grep { $$normaltoctypes{ $_->getValue('type') } }    # or should we use @inlist???
         map  { $$self{db}->lookup("ID:$_") }
         @{ $entry->getValue('children') || [] };
-      if ($$types{ $entry->getValue('type') }) {
+      if (($types ? $$types{ $entry->getValue('type') } : 1)
+        && $entry->getValue('parent')) {
         @navtoc = ($self->gentocentry($doc, $entry, undef, $show, @navtoc)); }
       $id = $p_id; }
     return @navtoc; }
@@ -339,7 +341,7 @@ sub fill_in_refs {
           if (!$ref->textContent) {
             $doc->addNodes($ref, $label);    # Just to reassure (?) readers.
             $ref->setAttribute(broken => 1); }
-        } } }
+    } } }
 
     if ($id) {
       $n++;
@@ -354,7 +356,7 @@ sub fill_in_refs {
         $doc->addNodes($ref, $self->generateRef($doc, $id, $show)); }
       if (my $entry = $$self{db}->lookup("ID:$id")) {
         $ref->setAttribute(stub => 1) if $entry->getValue('stub'); }
-    } }
+  } }
   NoteProgressDetailed(" [Filled in $n refs]");
   return; }
 
@@ -373,7 +375,7 @@ sub fill_in_RDFa_refs {
             $ref->setAttribute($key . 'idref' => $id); }
           else {
             $self->note_missing('warn', "Target for $key Label", $label);
-          } } }
+      } } }
       if ($id) {
         $n++;
         if (!$ref->getAttribute($key)) {
@@ -382,7 +384,7 @@ sub fill_in_RDFa_refs {
               $ref->setAttribute($key => $url); } }
           else {
             $ref->setAttribute($key => '#' . $id); } }
-      } } }
+  } } }
   set_RDFa_prefixes($doc->getDocument, {});    # what prefixes??
   NoteProgressDetailed(" [Filled in $n RDFa refs]");
   return; }
@@ -449,20 +451,20 @@ sub make_bibcite {
           authors     => [$doc->trimChildNodes($authors || $fauthors || $keytag)],
           fullauthors => [$doc->trimChildNodes($fauthors || $authors || $keytag)],
           authortext  => ($authors || $fauthors ? ($authors || $fauthors)->textContent : ''),
-          year => [$doc->trimChildNodes($year || $typetag)],
-          rawyear => $rawyear,
-          suffix  => $suffix,
-          number  => [$doc->trimChildNodes($number)],
-          refnum  => [$doc->trimChildNodes($refnum)],
-          title   => [$doc->trimChildNodes($title || $keytag)],
-          attr    => { idref => $id,
+          year        => [$doc->trimChildNodes($year || $typetag)],
+          rawyear     => $rawyear,
+          suffix      => $suffix,
+          number      => [$doc->trimChildNodes($number)],
+          refnum      => [$doc->trimChildNodes($refnum)],
+          title       => [$doc->trimChildNodes($title || $keytag)],
+          attr        => { idref => $id,
             href => orNull($self->generateURL($doc, $id)),
             ($titlestring ? (title => $titlestring) : ()) } }); }
     else {
       $self->note_missing('warn', 'Entry for citation', $key);
       push(@data, { key => $key, refnum => [$key], title => [$key], year => [],
           attr => { idref => $key, title => $key, class => "ltx_missing_citation" } });
-    } }
+  } }
   my $checkdups = ($show =~ /author/i) && ($show =~ /(year|number)/i);
   my @refs      = ();
   my $saveshow  = $show;
@@ -827,7 +829,7 @@ sub copy_resources {
       if (my $src = pathname_find($url, paths => $paths)) {    # AND if file exists there.
         my $dst = $doc->checkDestination($url);
         pathname_copy($src, $dst);
-      } } }
+  } } }
   return; }
 
 # ================================================================================

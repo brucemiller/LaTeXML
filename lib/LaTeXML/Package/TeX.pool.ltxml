@@ -831,7 +831,12 @@ DefMacro('\meaning Token', sub {
         my $spec = join("", @specparts);
         $spec =~ s/\{\}//g;
         $spec =~ s/Token//g;
-        $meaning = "macro:" . ToString($spec) . "->" . ToString($expansion); }
+        my $prefixes = join('',
+          ($definition->isProtected ? '\protected' : ()),
+          ($definition->isLong      ? '\long'      : ()),
+          ($definition->isOuter     ? '\outer'     : ()),
+        );
+        $meaning = ($prefixes ? $prefixes . ' ' : '') . "macro:" . ToString($spec) . "->" . ToString($expansion); }
       Explode($meaning); }
     else {
       Explode('undefined'); } });
@@ -3380,6 +3385,10 @@ sub closeMathFork {
   # More defensive? Sometimes we end up with a DocumentFragment as parent of $main????!?!?!?!
   my @mfs = $document->findnodes('ltx:MathFork', $equation);
   $document->closeElementAt($mfs[-1]);
+  my $fork     = $branch->parentNode;
+  my @branches = $fork->childNodes;
+  if (scalar(@branches) == 1) {    # Whoops, came up empty!
+    $fork->unbindNode; }
   return; }
 
 # Create an inline math Whatsit from a list of math Boxes, Lists or Whatsits.
@@ -3427,6 +3436,7 @@ sub addColumnToMathFork {
   # Remove the _Capture_ from the document; parts will get cloned &/or reinserted
   $cell->unbindNode;
   # Usually, we will have captured a single ltx:Math node, but occasionally text?
+  # But in perverse cases, might have NOTHING!
   foreach my $node ($cell->childNodes) {
     # Add a Clone of the cell's contents to the main branch (This will get modified id's)
     local $LaTeXML::Core::Document::ID_SUFFIX = '.mf';

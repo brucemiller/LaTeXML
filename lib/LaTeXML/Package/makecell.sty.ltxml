@@ -1,0 +1,40 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  makecell                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+InputDefinitions('makecell', type => 'sty', noltxml => 1);
+
+#  * The diagonally divided heading uses the {picture} environment,
+#    but currently the sizing is messed up (delayed too late) so that doesn't lay out correctly.
+
+# Mark \thead et.al as headers (row, column?)
+DefMacroI('\lx@makecell@head', undef, sub {
+    if (my $alignment = LookupValue('Alignment')) {
+      my $col = $alignment->currentColumn;
+      $col->{thead}{column} = 1;     # Which???
+      $col->{thead}{row}    = 1; }
+    return; });
+
+# Hopefully, \theadfont is used in the right places to effect this?
+# And hopefully, redefining \theadfont at begin document keeps from being redefined by user?
+AtBeginDocument('\let\lx@orig@theadfont\theadfont'
+    . '\def\theadfont{\lx@orig@theadfont\lx@makecell@head}');
+
+# And since folks SHOULD use \thead, we'll not bother guessing.
+AssignValue(GUESS_TABULAR_HEADERS => 0);
+
+#======================================================================
+1;

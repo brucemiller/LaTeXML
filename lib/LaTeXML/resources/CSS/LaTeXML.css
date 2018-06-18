@@ -118,8 +118,10 @@ td.ltx_subfloat { width:50%; }
 .ltx_td.ltx_align_center, .ltx_th.ltx_align_center { white-space:nowrap; }
 .ltx_td.ltx_align_left.ltx_wrap,   .ltx_th.ltx_align_left.ltx_wrap,
 .ltx_td.ltx_align_right.ltx_wrap,  .ltx_th.ltx_align_right.ltx_wrap,
-.ltx_td.ltx_align_center.ltx_wrap, .ltx_th.ltx_align_center.ltx_wrap { white-space:normal; }
+.ltx_td.ltx_align_center.ltx_wrap, .ltx_th.ltx_align_center.ltx_wrap,
+.ltx_td.ltx_align_justify,  .ltx_th.ltx_align_justify { white-space:normal; }
 
+.ltx_tabular .ltx_tabular { width:100%; }
 .ltx_inline-block { display:inline-block; }
 
 /* equations in non-aligned mode (not normally used) */

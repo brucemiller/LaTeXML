@@ -48,6 +48,35 @@ sub isRegister {
 sub isPrefix {
   return 0; }
 
+# The following come from flags, but probably(?) only make sense for Expandable (macros)
+# and furthermore, only isProtected is used for anything significant.
+sub isProtected {
+  my ($self) = @_;
+  return $$self{isProtected}; }
+
+sub setIsProtected {
+  my ($self) = @_;
+  $$self{isProtected} = 1;
+  return; }
+
+sub isOuter {
+  my ($self) = @_;
+  return $$self{isOuter}; }
+
+sub setIsOuter {
+  my ($self) = @_;
+  $$self{isOuter} = 1;
+  return; }
+
+sub isLong {
+  my ($self) = @_;
+  return $$self{isLong}; }
+
+sub setIsLong {
+  my ($self) = @_;
+  $$self{isLong} = 1;
+  return; }
+
 sub getLocator {
   my ($self) = @_;
   return $$self{locator}; }

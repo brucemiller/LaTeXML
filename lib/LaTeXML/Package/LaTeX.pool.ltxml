@@ -3087,9 +3087,12 @@ DefRegister('\lx@default@tabcolsep', Dimension('6pt'));
 DefRegister('\tabcolsep',            Dimension('6pt'));
 DefMacroI('\arraystretch', undef, "1");
 
+AssignValue(GUESS_TABULAR_HEADERS => 1);    # Defaults to yes
+
 sub tabularBindings {
   my ($template, %properties) = @_;
-  $properties{guess_headers} = 1 unless defined $properties{guess_headers};    # Defaults to yes
+  $properties{guess_headers} = LookupValue('GUESS_TABULAR_HEADERS')
+    unless defined $properties{guess_headers};
   if (!defined $properties{attributes}{colsep}) {
     my $sep = LookupDimension('\tabcolsep');
     if ($sep && ($sep->valueOf != LookupDimension('\lx@default@tabcolsep')->valueOf)) {
