@@ -107,9 +107,6 @@ deftestone is \ifdefined\deftestone defined \else undefined\fi.
 deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi. After csundef, \csundef{deftesttwo}
 deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi.
 
-deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi. After csgundef, \csgundef{deftesttwo}
-deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi.
-
 \csmeaning{orange}
 
 \subsubsection{Arithmetic definitions}
@@ -273,6 +270,11 @@ prefix test noise: \ifcsprefix{noise}{true}{false}
 prefix test newrobustcmd: \ifcsprefix{newrobustcmd}{true}{false}
 
 prefix test newrobustcmd: \ifcsprefix{newrobustcmd}{true}{false}
+
+ifcsltxprotect relax: \ifcsltxprotect{relax}{true}{false}
+
+\DeclareRobustCommand{\myltxrobust}{test}
+ifcsltxprotect myltxrobust: \ifcsltxprotect{myltxrobust}{true}{false}
 
 \subsection{List Processing}
  % TODO
