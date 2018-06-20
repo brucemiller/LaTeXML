@@ -280,7 +280,45 @@ ifcsltxprotect myltxrobust: \ifcsltxprotect{myltxrobust}{true}{false}
 ifdefempty myempty: \ifdefempty\myempty{true}{false}
 
 \def\myrelax{\relax}
+\let\letrelax\relax
 ifdefempty myrelax: \ifdefempty\myrelax{true}{false}
+
+ifcsvoid myempty: \ifcsvoid{myempty}{true}{false}
+
+ifcsvoid myrelax: \ifcsvoid{myrelax}{true}{false}
+
+ifcsvoid letrelax: \ifcsvoid{letrelax}{true}{false}
+
+ifcsvoid begin: \ifcsvoid{begin}{true}{false}
+
+ifdefequal myempty-myrelax: \ifdefequal\myempty\myrelax{true}{false}
+
+ifdefequal letrelax-myrelax: \ifdefequal\letrelax\myrelax{true}{false}
+
+ifdefequal begin-begin: \ifdefequal\begin\begin{true}{false}
+
+ifdefequal myempty-myempty: \ifdefequal\myempty\myempty{true}{false}
+
+\long\edef\mymacro#1#2{\string&}
+ifdefstring mymacro-ampersand: \ifdefstring{\mymacro}{&}{true}{false}
+
+ifdefstring myrelax-relax: \ifdefstring{\myrelax}{\relax}{true}{false}
+
+ifdefstring myempty-{}: \ifdefstring{\myempty}{}{true}{false}
+
+ifdefstring basic-basic: \ifdefstring{\basic}{basic}{true}{false}
+
+ifcsstrequal basic-basic \ifcsstrequal{basic}{basic}{true}{false}
+
+ifcsstrequal relax-relax \ifcsstrequal{relax}{relax}{true}{false}
+
+ifcsstrequal myempty-relax \ifcsstrequal{myempty}{relax}{true}{false}
+
+\def\anotherempty{}
+ifcsstrequal myempty-anotherempty \ifcsstrequal{myempty}{anotherempty}{true}{false}
+
+% -- end of macro tests.
+% -- start of counter and length tests:
 
 \subsection{List Processing}
  % TODO

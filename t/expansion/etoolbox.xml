@@ -353,6 +353,54 @@ xABYZ.</p>
       <para xml:id="S3.SS6.p24">
         <p>ifdefempty myrelax: false</p>
       </para>
+      <para xml:id="S3.SS6.p25">
+        <p>ifcsvoid myempty: true</p>
+      </para>
+      <para xml:id="S3.SS6.p26">
+        <p>ifcsvoid myrelax: false</p>
+      </para>
+      <para xml:id="S3.SS6.p27">
+        <p>ifcsvoid letrelax: true</p>
+      </para>
+      <para xml:id="S3.SS6.p28">
+        <p>ifcsvoid begin: false</p>
+      </para>
+      <para xml:id="S3.SS6.p29">
+        <p>ifdefequal myempty-myrelax: false</p>
+      </para>
+      <para xml:id="S3.SS6.p30">
+        <p>ifdefequal letrelax-myrelax: false</p>
+      </para>
+      <para xml:id="S3.SS6.p31">
+        <p>ifdefequal begin-begin: true</p>
+      </para>
+      <para xml:id="S3.SS6.p32">
+        <p>ifdefequal myempty-myempty: true</p>
+      </para>
+      <para xml:id="S3.SS6.p33">
+        <p>ifdefstring mymacro-ampersand: true</p>
+      </para>
+      <para xml:id="S3.SS6.p34">
+        <p>ifdefstring myrelax-relax: true</p>
+      </para>
+      <para xml:id="S3.SS6.p35">
+        <p>ifdefstring myempty-: true</p>
+      </para>
+      <para xml:id="S3.SS6.p36">
+        <p>ifdefstring basic-basic: true</p>
+      </para>
+      <para xml:id="S3.SS6.p37">
+        <p>ifcsstrequal basic-basic true</p>
+      </para>
+      <para xml:id="S3.SS6.p38">
+        <p>ifcsstrequal relax-relax false</p>
+      </para>
+      <para xml:id="S3.SS6.p39">
+        <p>ifcsstrequal myempty-relax false</p>
+      </para>
+      <para xml:id="S3.SS6.p40">
+        <p>ifcsstrequal myempty-anotherempty true</p>
+      </para>
     </subsection>
     <subsection inlist="toc" xml:id="S3.SS7">
       <tags>
