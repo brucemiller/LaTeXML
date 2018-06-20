@@ -276,6 +276,12 @@ ifcsltxprotect relax: \ifcsltxprotect{relax}{true}{false}
 \DeclareRobustCommand{\myltxrobust}{test}
 ifcsltxprotect myltxrobust: \ifcsltxprotect{myltxrobust}{true}{false}
 
+\def\myempty{}
+ifdefempty myempty: \ifdefempty\myempty{true}{false}
+
+\def\myrelax{\relax}
+ifdefempty myrelax: \ifdefempty\myrelax{true}{false}
+
 \subsection{List Processing}
  % TODO
 \subsection{Miscellaneous Tools}
