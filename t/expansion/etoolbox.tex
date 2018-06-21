@@ -320,6 +320,20 @@ ifcsstrequal myempty-anotherempty \ifcsstrequal{myempty}{anotherempty}{true}{fal
 % -- end of macro tests.
 % -- start of counter and length tests:
 
+ifdefcounter relax: \ifdefcounter{\relax}{true}{false}
+
+\newcount\mycount
+ifdefcounter mycount: \ifdefcounter{\mycount}{true}{false}
+
+\mycount 4\relax
+ifdefcounter mycount, after set: \ifdefcounter{\mycount}{true}{false}
+
+\newcounter{latexcounter}
+ifdefcounter latexcounter: \ifdefcounter{\latexcounter}{true}{false}
+
+\stepcounter{latexcounter}
+ifdefcounter latexcounter, after step: \ifdefcounter{\latexcounter}{true}{false}
+
 \subsection{List Processing}
  % TODO
 \subsection{Miscellaneous Tools}

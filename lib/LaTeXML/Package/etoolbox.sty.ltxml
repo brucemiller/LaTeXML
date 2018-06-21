@@ -218,10 +218,11 @@ RawTeX(<<'EoTeX');
   \def\etb@resrvdb{#1}%
   \edef\etb@resrvdb{\expandafter\strip@prefix\meaning\etb@resrvdb}%
   \edef\etb@resrvda{%
-    \ifx\etb@resrvda\etb@resrvdb
-      \noexpand\x@protect
-      \noexpand#1%
-    \fi
+    % latexml does not implement x@protect for DeclareRobustCommand, skip
+    %\ifx\etb@resrvda\etb@resrvdb
+    %  \noexpand\x@protect
+    %  \noexpand#1%
+    %\fi
     \noexpand\protect\expandafter\noexpand
     \csname\expandafter\@gobble\string#1 \endcsname}%
   \expandafter\endgroup\ifx#1\etb@resrvda
