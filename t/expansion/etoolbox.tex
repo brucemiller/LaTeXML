@@ -409,6 +409,21 @@ notblank test 4 (false): \notblank{   }{true}{false}
 % -- end of string tests
 % -- arithmetic tests
 
+ifnumcomp (false): \ifnumcomp{3}{>}{6}{true}{false}
+
+ifnumcomp (true): \ifnumcomp{(7 + 5) / 2}{=}{6}{true}{false}
+
+ifnumcomp (false): \ifnumcomp{(7+5) / 4}{>}{3*(12-10)}{true}{false}
+
+\newcounter{countA}
+\setcounter{countA}{6}
+\newcounter{countB}
+\setcounter{countB}{5}
+
+ifnumcomp (true): \ifnumcomp{\value{countA} * \value{countB}/2}{=}{15}{true}{false}
+
+ifnumcomp (true): \ifnumcomp{6/2}{=}{5/2}{true}{false}
+
 \subsection{List Processing}
  % TODO
 \subsection{Miscellaneous Tools}
