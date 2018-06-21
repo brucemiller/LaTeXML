@@ -334,6 +334,44 @@ ifdefcounter latexcounter: \ifdefcounter{\latexcounter}{true}{false}
 \stepcounter{latexcounter}
 ifdefcounter latexcounter, after step: \ifdefcounter{\latexcounter}{true}{false}
 
+\newskip\myskip
+ifdefcounter myskip: \ifdefcounter{\myskip}{true}{false}
+
+\newlength\mylen
+ifdefcounter mylen: \ifdefcounter{\mylen}{true}{false}
+
+\newdimen\mydimen
+ifdefcounter mydimen: \ifdefcounter{\mydimen}{true}{false}
+
+ifltxcounter relax: \ifltxcounter{relax}{true}{false}
+
+ifltxcounter mycount: \ifltxcounter{mycount}{true}{false}
+
+ifltxcounter latexcounter: \ifltxcounter{latexcounter}{true}{false}
+
+ifdeflength relax: \ifdeflength{\relax}{true}{false}
+
+ifdeflength mycount: \ifdeflength{\mycount}{true}{false}
+
+ifdeflength myskip: \ifdeflength{\myskip}{true}{false}
+
+ifdeflength mylen: \ifdeflength{\mylen}{true}{false}
+
+ifdeflength mydimen: \ifdeflength{\mydimen}{true}{false}
+
+ifdefdimen relax: \ifdefdimen{\relax}{true}{false}
+
+ifdefdimen mycount: \ifdefdimen{\mycount}{true}{false}
+
+ifdefdimen myskip: \ifdefdimen{\myskip}{true}{false}
+
+ifdefdimen mylen: \ifdefdimen{\mylen}{true}{false}
+
+ifdefdimen mydimen: \ifdefdimen{\mydimen}{true}{false}
+
+% -- end of counter tests
+% -- string tests
+
 \subsection{List Processing}
  % TODO
 \subsection{Miscellaneous Tools}

@@ -3887,7 +3887,7 @@ DefPrimitive('\@check@length DefToken', sub {
 
 DefPrimitive('\newlength DefToken', sub {
     my ($stomach, $cs) = @_;
-    DefRegisterI($cs, undef, Dimension(0)); });
+    DefRegisterI($cs, undef, Glue(0)); });
 DefMacro('\setlength{}{}',   '\@check@length{#1}#1#2\relax');
 DefMacro('\addtolength{}{}', '\@check@length{#1}\advance#1 #2\relax');
 
