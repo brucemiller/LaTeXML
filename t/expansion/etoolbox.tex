@@ -425,7 +425,37 @@ ifnumcomp (true): \ifnumcomp{\value{countA} * \value{countB}/2}{=}{15}{true}{fal
 ifnumcomp (true): \ifnumcomp{6/2}{=}{5/2}{true}{false}
 
 \subsection{List Processing}
- % TODO
+ 
+\noindent Itemize list:
+\begin{itemize}
+\renewcommand*{\do}[1]{\item #1}
+\docsvlist{item1, item2, {item3a, item3b}, item4}
+\end{itemize}
+
+\renewcommand*{\do}[1]{\indent * #1\newline}
+\noindent Poor man's list:\newline
+\docsvlist{item1, item2, {item3a, item3b}, item4}
+
+\forcsvlist{\listadd\mylist}{itemA, itemB, itemC}
+Dolistloop itemize:
+\begin{itemize}
+\renewcommand*{\do}[1]{\item #1}
+\dolistloop{\mylist}
+\end{itemize}
+
+\newcounter{itemcount}
+Forlistloop itemize:
+\begin{itemize}
+\forlistloop{\stepcounter{itemcount}\item}{\mylist}
+\item Total: \number\value{itemcount} items
+\end{itemize}
+
+\renewcommand*{\do}[1]{%
+\ifstrequal{#1}{itemB}
+{item found!\listbreak}
+{}}
+dolistloop search: \dolistloop{\mylist}
+
 \subsection{Miscellaneous Tools}
  % TODO
 

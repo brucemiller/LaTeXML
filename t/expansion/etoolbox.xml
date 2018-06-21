@@ -538,6 +538,126 @@ xABYZ.</p>
         <tag role="typerefnum">§3.7</tag>
       </tags>
       <title><tag close=" ">3.7</tag>List Processing</title>
+      <para class="ltx_noindent" xml:id="S3.SS7.p1">
+        <p>Itemize list:</p>
+        <itemize xml:id="S3.I1">
+          <item xml:id="S3.I1.i1">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">1st item</tag>
+            </tags>
+            <para xml:id="S3.I1.i1.p1">
+              <p>item1</p>
+            </para>
+          </item>
+          <item xml:id="S3.I1.i2">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">2nd item</tag>
+            </tags>
+            <para xml:id="S3.I1.i2.p1">
+              <p>item2</p>
+            </para>
+          </item>
+          <item xml:id="S3.I1.i3">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">3rd item</tag>
+            </tags>
+            <para xml:id="S3.I1.i3.p1">
+              <p>item3a, item3b</p>
+            </para>
+          </item>
+          <item xml:id="S3.I1.i4">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">4th item</tag>
+            </tags>
+            <para xml:id="S3.I1.i4.p1">
+              <p>item4</p>
+            </para>
+          </item>
+        </itemize>
+      </para>
+      <para class="ltx_indent" xml:id="S3.SS7.p2">
+        <p>Poor man’s list:<break/>* item1<break/>* item2<break/>* item3a, item3b<break/>* item4<break/></p>
+      </para>
+      <para xml:id="S3.SS7.p3">
+        <p>Dolistloop itemize:</p>
+        <itemize xml:id="S3.I2">
+          <item xml:id="S3.I2.i1">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">1st item</tag>
+            </tags>
+            <para xml:id="S3.I2.i1.p1">
+              <p>itemA</p>
+            </para>
+          </item>
+          <item xml:id="S3.I2.i2">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">2nd item</tag>
+            </tags>
+            <para xml:id="S3.I2.i2.p1">
+              <p>itemB</p>
+            </para>
+          </item>
+          <item xml:id="S3.I2.i3">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">3rd item</tag>
+            </tags>
+            <para xml:id="S3.I2.i3.p1">
+              <p>itemC</p>
+            </para>
+          </item>
+        </itemize>
+      </para>
+      <para xml:id="S3.SS7.p4">
+        <p>Forlistloop itemize:</p>
+        <itemize xml:id="S3.I3">
+          <item xml:id="S3.I3.i1">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">1st item</tag>
+            </tags>
+            <para xml:id="S3.I3.i1.p1">
+              <p>itemA</p>
+            </para>
+          </item>
+          <item xml:id="S3.I3.i2">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">2nd item</tag>
+            </tags>
+            <para xml:id="S3.I3.i2.p1">
+              <p>itemB</p>
+            </para>
+          </item>
+          <item xml:id="S3.I3.i3">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">3rd item</tag>
+            </tags>
+            <para xml:id="S3.I3.i3.p1">
+              <p>itemC</p>
+            </para>
+          </item>
+          <item xml:id="S3.I3.i4">
+            <tags>
+              <tag>•</tag>
+              <tag role="typerefnum">4th item</tag>
+            </tags>
+            <para xml:id="S3.I3.i4.p1">
+              <p>Total: 3 items</p>
+            </para>
+          </item>
+        </itemize>
+      </para>
+      <para xml:id="S3.SS7.p5">
+        <p>dolistloop search: item found!</p>
+      </para>
     </subsection>
     <subsection inlist="toc" xml:id="S3.SS8">
       <tags>
