@@ -372,6 +372,43 @@ ifdefdimen mydimen: \ifdefdimen{\mydimen}{true}{false}
 % -- end of counter tests
 % -- string tests
 
+ifstrequal test 1 (false): \ifstrequal{my\relaxing}{\myrelaxing}{true}{false}
+
+ifstrequal test 2 (true): \ifstrequal{my\relaxing}{my\relaxing}{true}{false}
+
+ifstrequal test 3 (true): \ifstrequal{\myrelaxing}{\myrelaxing}{true}{false}
+
+ifstrequal test 4 (true): \ifstrequal{simple}{simple}{true}{false}
+
+ifstrequal test 5 (false): \ifstrequal{simple}{simpler}{true}{false}
+
+ifstrempty test 1 (true): \ifstrempty{}{true}{false}
+
+ifstrempty test 2 (false): \ifstrempty{\myempty}{true}{false}
+
+ifstrempty test 3 (false): \ifstrempty{""}{true}{false}
+
+ifstrempty test 4 (false): \ifstrempty{   }{true}{false}
+
+ifblank test 1 (true): \ifblank{}{true}{false}
+
+ifblank test 2 (false): \ifblank{\myempty}{true}{false}
+
+ifblank test 3 (false): \ifblank{""}{true}{false}
+
+ifblank test 4 (true): \ifblank{   }{true}{false}
+
+notblank test 1 (false): \notblank{}{true}{false}
+
+notblank test 2 (true): \notblank{\myempty}{true}{false}
+
+notblank test 3 (true): \notblank{""}{true}{false}
+
+notblank test 4 (false): \notblank{   }{true}{false}
+
+% -- end of string tests
+% -- arithmetic tests
+
 \subsection{List Processing}
  % TODO
 \subsection{Miscellaneous Tools}
