@@ -713,9 +713,9 @@ sub compare {
       "Expected a relational token for comparision", "Got " . Stringify($rel));
     return; } }
 
-DefConditional('\ifnum Number Token Number',       sub { compare($_[1], $_[2], $_[3]); });
-DefConditional('\ifdim Dimension Token Dimension', sub { compare($_[1], $_[2], $_[3]); });
-DefConditional('\ifodd Number',                    sub { $_[1]->valueOf % 2; });
+DefConditional('\ifnum Number Token Number SkipSpaces',       sub { compare($_[1], $_[2], $_[3]); });
+DefConditional('\ifdim Dimension Token Dimension SkipSpaces', sub { compare($_[1], $_[2], $_[3]); });
+DefConditional('\ifodd Number SkipSpaces',                    sub { $_[1]->valueOf % 2; });
 
 # NOTE: We don't KNOW if we're in vertical, horizontal or inner mode!!!!!!!
 DefConditionalI('\ifvmode', undef, sub { 0; });

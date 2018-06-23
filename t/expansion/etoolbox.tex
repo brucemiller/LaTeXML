@@ -457,6 +457,13 @@ Forlistloop itemize:
 dolistloop search: \dolistloop{\mylist}
 
 \subsection{Miscellaneous Tools}
- % TODO
+ 
+1995 = \rmntonum{mcmxcv}
+
+\newcounter{rmcounter}
+\setcounter{rmcounter}{\rmntonum{CXVI}}
+116 = \the\value{rmcounter}
+
+ifnumless (true): \ifnumless{\rmntonum{mcmxcviii}}{2000}{true}{false}
 
 \end{document}
