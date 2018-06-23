@@ -17,6 +17,16 @@
 #
 # > docker build -t latexml -f release/Dockerfile .
 
+# Optionally, this Dockerfile includes a full TeXLive installation. 
+# By default, this is disabled, however it can be enabled by providing a
+# build argument like so:
+#
+# > docker build -t latexml --build-arg WITH_TEXLIVE=yes -f release/Dockerfile .
+#
+# Please be aware that including a full TeXLive installation can take a
+# significant amount of time (depending on network connection) and will
+# increase the image size to several Gigabytes. 
+
 # We start from alpine linux 3.7
 FROM alpine:3.7
 
@@ -38,6 +48,17 @@ RUN apk add --no-cache \
     wget \
     zlib \
     zlib-dev
+
+# Configure TeXLive Support
+# Set to "no" to disable, "yes" to enable
+ARG WITH_TEXLIVE="no"
+
+# Install TeXLive if not disabled
+RUN [ "$WITH_TEXLIVE" == "no" ] || (\
+           apk add --no-cache -U --repository http://dl-3.alpinelinux.org/alpine/edge/main      poppler harfbuzz-icu \
+        && apk add --no-cache -U --repository http://dl-3.alpinelinux.org/alpine/edge/community zziplib texlive-full \
+        && ln -s /usr/bin/mktexlsr /usr/bin/mktexlsr.pl \
+    )
 
 # Install cpanminus from edge
 RUN apk add --no-cache -U --repository http://dl-3.alpinelinux.org/alpine/edge/community perl-app-cpanminus
