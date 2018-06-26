@@ -17,11 +17,11 @@
 #
 # > docker build -t latexml -f release/Dockerfile .
 
-# Optionally, this Dockerfile includes a full TeXLive installation. 
-# By default, this is disabled, however it can be enabled by providing a
+# This Dockerfile can include a full TeXLive installation. 
+# This is enabled by default however it can be disabled by providing a
 # build argument like so:
 #
-# > docker build -t latexml --build-arg WITH_TEXLIVE=yes -f release/Dockerfile .
+# > docker build -t latexml --build-arg WITH_TEXLIVE=no -f release/Dockerfile .
 #
 # Please be aware that including a full TeXLive installation can take a
 # significant amount of time (depending on network connection) and will
@@ -51,7 +51,7 @@ RUN apk add --no-cache \
 
 # Configure TeXLive Support
 # Set to "no" to disable, "yes" to enable
-ARG WITH_TEXLIVE="no"
+ARG WITH_TEXLIVE="yes"
 
 # Install TeXLive if not disabled
 RUN [ "$WITH_TEXLIVE" == "no" ] || (\
