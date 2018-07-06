@@ -25,7 +25,7 @@ sub new {
   return bless { cs => $cs, parameters => undef,
     value => $value, internalcs => $internalcs,
     registerType => 'Number', readonly => 1,
-    locator => "from " . $STATE->getStomach->getGullet->getMouth->getLocator(-1),
+    locator => $STATE->getStomach->getGullet->getMouth->getLocator,
     %traits }, $class; }
 
 sub valueOf {

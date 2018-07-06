@@ -13,6 +13,7 @@ package LaTeXML::Core::Mouth::Binding;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Locator;
 use LaTeXML::Common::Error;
 use LaTeXML::Util::Pathname;
 
@@ -38,12 +39,11 @@ sub finish {
 sub getLocator {
   my ($self, $length) = @_;
   my $path  = $$self{source};
-  my $loc   = ($length && $length < 0 ? $$self{shortsource} : $$self{source});
   my $frame = 2;
   my ($pkg, $file, $line);
   while (($pkg, $file, $line) = caller($frame++)) {
     last if $file eq $path; }
-  return $loc . ($line ? " line $line" : ''); }
+  return LaTeXML::Common::Locator->new($$self{source}, $line ? $line : undef); }
 
 sub getSource {
   my ($self) = @_;

@@ -3604,7 +3604,7 @@ DefMacroI('\eqno', undef, sub {
       else {
         push(@stuff, $t); } }
     Error('unexpected', '\eqno', $gullet, "Fell of the end reading tag for \\eqno!",
-      "started $locator");
+      "started ". ToString($locator));
     return Tokens(@stuff); });
 
 Let('\leqno', '\eqno');

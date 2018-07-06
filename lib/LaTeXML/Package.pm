@@ -1591,7 +1591,8 @@ sub DefEnvironmentI {
             for (my $f = 0 ; $f <= $nf ; $f++) {    # Get currently open environments & locators
               if (my $e = $STATE->isValueBound('current_environment', $f)
                 && $STATE->valueInFrame('current_environment', $f)) {
-                push(@lines, $e . ' ' . $STATE->valueInFrame('groupInitiatorLocator', $f) || ''); } }
+                my $locator = ToString($STATE->valueInFrame('groupInitiatorLocator', $f));
+                push(@lines, $e . ' ' . $locator); } }
             Error('unexpected', "\\end{$name}", $_[0],
               "Can't close environment $name;", "Current are:", @lines); }
           return; },

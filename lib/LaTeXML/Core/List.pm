@@ -55,7 +55,7 @@ sub new {
     $font = $bx->getFont unless defined $font; }
   #return bless [[@boxes], $font, $locator || '', undef, {}], $class; }
   return bless { boxes => [@boxes],
-    properties => { font => $font, locator => $locator || '', }
+    properties => { font => $font, locator => $locator || undef, }
     }, $class; }
 
 sub unlist {

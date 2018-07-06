@@ -24,7 +24,7 @@ use base qw(LaTeXML::Core::Definition::Primitive);
 sub new {
   my ($class, $cs, $parameters, %traits) = @_;
   return bless { cs => $cs, parameters => $parameters,
-    locator => "from " . $STATE->getStomach->getGullet->getMouth->getLocator(-1),
+    locator => $STATE->getStomach->getGullet->getMouth->getLocator,
     %traits }, $class; }
 
 sub isPrefix {

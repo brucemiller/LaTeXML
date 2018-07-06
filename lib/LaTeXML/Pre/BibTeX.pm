@@ -124,7 +124,9 @@ sub toTeX {
 # This lets Bib support formatted error messages.
 sub getLocator {
   my ($self) = @_;
-  return "at $$self{source}; line $$self{lineno}\n  $$self{line}"; }
+  # TODO: The content of $$self{line} is not used here anymore
+  # do we really need it?
+  return LaTeXML::Common::Locator->new($$self{source}, $$self{lineno}); }
 
 #======================================================================
 #  Greg Ward has a pretty good description of the BibTeX data format

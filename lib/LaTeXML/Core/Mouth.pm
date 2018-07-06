@@ -14,6 +14,7 @@ use strict;
 use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
+use LaTeXML::Common::Locator;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
@@ -159,12 +160,8 @@ sub stringify {
 
 #**********************************************************************
 sub getLocator {
-  my ($self, $length) = @_;
-  my ($l, $c) = ($$self{lineno}, $$self{colno});
-  if ($length) {
-    return "at $$self{shortsource}; line $l col $c"; }
-  else {
-    return "at $$self{source}; line $l col $c"; } }
+  my ($self) = @_;
+  return LaTeXML::Common::Locator->new($$self{source}, $$self{lineno}, $$self{colno}); }
 
 sub getSource {
   my ($self) = @_;

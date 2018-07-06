@@ -130,17 +130,17 @@ sub readingFromMouth {
 
 # User feedback for where something (error?) occurred.
 sub getLocator {
-  my ($self, $long) = @_;
+  my ($self) = @_;
   my $mouth = $$self{mouth};
   my $i     = 0;
   while ((defined $mouth) && (($$mouth{source} || '') eq 'Anonymous String')
     && ($i < scalar(@{ $$self{mouthstack} }))) {
     $mouth = $$self{mouthstack}[$i++][0]; }
-  my $loc = (defined $mouth ? $mouth->getLocator : '');
-  return $loc if $loc;
+  my $loc = (defined $mouth ? $mouth->getLocator : undef);
+  return $loc if defined $loc;
   foreach my $frame (@{ $$self{mouthstack} }) {
     my $ml = $$frame[0]->getLocator;
-    return ' ' . $ml if $ml; } }
+    return $ml if defined $ml; } }
 
 sub getSource {
   my ($self) = @_;
@@ -870,7 +870,7 @@ Is this public? Clears all inputs.
 
 =item C<< $gullet->getLocator; >>
 
-Returns a string describing the current location in the input stream.
+Returns an object describing the current location in the input stream.
 
 =back
 

@@ -27,7 +27,7 @@ sub new {
     "Replacement is $replacement")
     unless ref $replacement eq 'CODE';
   return bless { cs => $cs, parameters => $parameters, replacement => $replacement,
-    locator => "from " . $source->getLocator(-1),
+    locator => $source->getLocator,
     %traits }, $class; }
 
 sub isPrefix {
