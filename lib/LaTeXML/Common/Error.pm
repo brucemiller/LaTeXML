@@ -393,7 +393,7 @@ sub getLocation {
     # NOTE: Problems here.
     # (1) With obsoleting Tokens as a Mouth, we can get pointless "Anonymous String" locators!
     # (2) If gullet is the source, we probably want to include next token, etc or
-    return $gullet->getLocator(); }
+    return $gullet->getLocator; }
   # # If in postprocessing
   # if($LaTeXML::Post::PROCESSOR && $LaTeXML::Post::DOCUMENT){
   #   return 'in '. $LaTeXML::Post::PROCESSOR->getName

@@ -161,20 +161,8 @@ sub stringify {
 sub getLocator {
   my ($self, $length) = @_;
   my ($l, $c) = ($$self{lineno}, $$self{colno});
-  if ($length && ($length < 0)) {
+  if ($length) {
     return "at $$self{shortsource}; line $l col $c"; }
-  elsif ($length && (defined $l || defined $c)) {
-    my $msg   = "at $$self{source}; line $l col $c";
-    my $chars = $$self{chars};
-    if (my $n = $$self{nchars}) {
-      $c = $n - 1 if $c >= $n;
-      my $c0 = ($c > 50      ? $c - 40 : 0);
-      my $cm = ($c < 1       ? 0       : $c - 1);
-      my $cn = ($n - $c > 50 ? $c + 40 : $n - 1);
-      my $p1 = ($c0 <= $cm ? join('', @$chars[$c0 .. $cm]) : ''); chomp($p1);
-      my $p2 = ($c <= $cn  ? join('', @$chars[$c .. $cn])  : ''); chomp($p2);
-      $msg .= "\n  " . $p1 . "\n  " . (' ' x ($c - $c0)) . '^' . ' ' . $p2; }
-    return $msg; }
   else {
     return "at $$self{source}; line $l col $c"; } }
 
@@ -396,7 +384,7 @@ Returns the next L<LaTeXML::Core::Token> from the source.
 
 Returns whether there is more data to read.
 
-=item C<< $string = $mouth->getLocator($long); >>
+=item C<< $string = $mouth->getLocator; >>
 
 Return a description of current position in the source, for reporting errors.
 

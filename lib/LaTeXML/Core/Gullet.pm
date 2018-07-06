@@ -136,15 +136,11 @@ sub getLocator {
   while ((defined $mouth) && (($$mouth{source} || '') eq 'Anonymous String')
     && ($i < scalar(@{ $$self{mouthstack} }))) {
     $mouth = $$self{mouthstack}[$i++][0]; }
-  my $loc = (defined $mouth ? $mouth->getLocator($long) : '');
-  if (!$loc || $long) {
-    $loc .= show_pushback($$self{pushback}) if $long;
-    foreach my $frame (@{ $$self{mouthstack} }) {
-      my $ml = $$frame[0]->getLocator($long);
-      $loc .= ' ' . $ml if $ml;
-      last if $loc && !$long;
-      $loc .= show_pushback($$frame[1]) if $long; } }
-  return $loc; }
+  my $loc = (defined $mouth ? $mouth->getLocator : '');
+  return $loc if $loc;
+  foreach my $frame (@{ $$self{mouthstack} }) {
+    my $ml = $$frame[0]->getLocator;
+    return ' ' . $ml if $ml; } }
 
 sub getSource {
   my ($self) = @_;

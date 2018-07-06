@@ -287,7 +287,7 @@ sub readFrom {
     $$self{hookMissing} = undef; }
 
   # read the opening token and figure out where we are
-  my $startloc = $gullet->getLocator();
+  my $startloc = $gullet->getLocator;
 
   # set and read tokens
   my $open   = $gullet->readToken;
