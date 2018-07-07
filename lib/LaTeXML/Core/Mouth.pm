@@ -35,7 +35,8 @@ sub create {
     $options{shortsource} = "$name.$ext";
     return $class->new($options{content}, %options); }
   elsif ($source =~ s/^literal://) {    # we've supplied literal data
-    $options{source} = "Literal String " . substr($source, 0, 10) unless defined $options{source};
+    # TODO: Consider what we want to do with this string
+    # $options{source} = "Literal String " . substr($source, 0, 10) unless defined $options{source};
     return $class->new($source, %options); }
   elsif (!defined $source) {
     return $class->new('', %options); }
@@ -49,8 +50,8 @@ sub create {
 sub new {
   my ($class, $string, %options) = @_;
   $string               = q{}                unless defined $string;
-  $options{source}      = "Anonymous String" unless defined $options{source};
-  $options{shortsource} = "String"           unless defined $options{shortsource};
+  #$options{source}      = "Anonymous String" unless defined $options{source};
+  #$options{shortsource} = "String"           unless defined $options{shortsource};
   my $self = bless { source => $options{source},
     shortsource    => $options{shortsource},
     fordefinitions => ($options{fordefinitions} ? 1 : 0),
@@ -73,8 +74,9 @@ sub initialize {
   $$self{chars}  = [];
   $$self{nchars} = 0;
   if ($$self{notes}) {
+    my $source = $$self{source} || 'Anonymous String';
     $$self{note_message} = "Processing " . ($$self{fordefinitions} ? "definitions" : "content")
-      . " " . $$self{source};
+      . " " . ($$self{source} || 'Anonymous String');
     NoteBegin($$self{note_message}); }
   if ($$self{fordefinitions}) {
     $$self{saved_at_cc}            = $STATE->lookupCatcode('@');
@@ -279,7 +281,7 @@ sub readToken {
 
       # Sneak a comment out, every so often.
       if ((($$self{lineno} % 25) == 0) && $STATE->lookupValue('INCLUDE_COMMENTS')) {
-        return T_COMMENT("**** $$self{shortsource} Line $$self{lineno} ****"); }
+        return T_COMMENT("**** " . ($$self{shortsource} || 'String') . " Line $$self{lineno} ****"); }
     }
     # ==== Extract next token from line.
     my ($ch, $cc) = getNextChar($self);

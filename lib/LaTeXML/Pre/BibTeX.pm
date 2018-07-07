@@ -76,7 +76,7 @@ sub newFromFile {
 
 sub newFromString {
   my ($class, $string) = @_;
-  my $self = { source => "<Unknown>", preamble => [], entries => [], macros => {%default_macros} };
+  my $self = { source => undef, preamble => [], entries => [], macros => {%default_macros} };
   bless $self, $class;
 
   $$self{file}   = "<anonymous>";
@@ -105,7 +105,7 @@ sub newFromGullet {
 
 sub toString {
   my ($self) = @_;
-  return "Bibliography[$$self{source}]"; }
+  return 'Bibliography[' . ($$self{source} || '<Unknown>') . ']'; }
 
 sub toTeX {
   my ($self) = @_;
@@ -137,7 +137,8 @@ sub getLocator {
 # and parse the body according to the type.
 sub parseTopLevel {
   my ($self) = @_;
-  NoteBegin("Preparsing Bibliography $$self{source}");
+  my $note = "Preparsing Bibliography " . ($$self{source} || "<Unknown>");
+  NoteBegin($note);
   while ($self->skipJunk) {
     my $type = $self->parseEntryType;
     if    ($type eq 'preamble') { $self->parsePreamble; }
@@ -145,7 +146,7 @@ sub parseTopLevel {
     elsif ($type eq 'comment')  { $self->parseComment; }
     else                        { $self->parseEntry($type); }
   }
-  NoteEnd("Preparsing Bibliography $$self{source}");
+  NoteEnd($note);
   $$self{parsed} = 1;
   return; }
 

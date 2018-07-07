@@ -133,7 +133,7 @@ sub getLocator {
   my ($self) = @_;
   my $mouth = $$self{mouth};
   my $i     = 0;
-  while ((defined $mouth) && (($$mouth{source} || '') eq 'Anonymous String')
+  while ((defined $mouth) && (!defined $$mouth{source})
     && ($i < scalar(@{ $$self{mouthstack} }))) {
     $mouth = $$self{mouthstack}[$i++][0]; }
   my $loc = (defined $mouth ? $mouth->getLocator : undef);
@@ -155,11 +155,11 @@ sub getSourceMouth {
   my ($self) = @_;
   my $mouth = $$self{mouth};
   my $source = defined $mouth && $mouth->getSource;
-  if (!$source || ($source eq "Anonymous String")) {
+  if (!$source || !defined($source)) {
     foreach my $frame (@{ $$self{mouthstack} }) {
       $mouth  = $$frame[0];
       $source = $mouth->getSource;
-      last if $source && $source ne "Anonymous String"; } }
+      last if $source; } }
   return $mouth; }
 
 # Handy message generator when we didn't get something expected.
