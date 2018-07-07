@@ -163,7 +163,19 @@ sub stringify {
 #**********************************************************************
 sub getLocator {
   my ($self) = @_;
-  return LaTeXML::Common::Locator->new($$self{source}, $$self{lineno}, $$self{colno}); }
+  my ($l, $c, $lstart, $cstart) = ($$self{lineno}, $$self{colno});
+  #Deyan: Upgrade message to XPointer style
+  my $nc = $$self{nchars} - 1;    #There is always a weird (end of line?) char that gets counted
+  if ((defined $c) && ($c >= $nc)) {
+    $lstart = $l;
+    $cstart = $c - $nc; }
+  else {
+    #Very rough and dirty approximation, not to be relied on.
+    #One would need to keep all line lengths to properly establish the start and end
+    # or just remember the initial char of the token's position
+    $lstart = $l - 1;
+    $cstart = $nc - $c; }
+  return LaTeXML::Common::Locator->new($$self{source}, $lstart, $cstart, $l, $c); }
 
 sub getSource {
   my ($self) = @_;
