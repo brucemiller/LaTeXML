@@ -6,25 +6,7 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p>path of PB</p>
-  </para>
-  <para xml:id="p2">
-    <p>path of UF</p>
-  </para>
-  <para xml:id="p3">
-    <p>path of UF</p>
-  </para>
-  <para xml:id="p4">
-    <p><text font="italic">basic</text></p>
-  </para>
-  <para xml:id="p5">
-    <p>4</p>
-  </para>
-  <para xml:id="p6">
-    <p>72.27pt</p>
-  </para>
-  <para xml:id="p7">
-    <p>722.7pt</p>
+    <p>hello.world.</p>
   </para>
   <section inlist="toc" xml:id="S1">
     <tags>
@@ -82,10 +64,10 @@ At End stuff(inside).End stuff.After End stuff(outside).</p>
       <p>After End equation(outside).</p>
     </para>
     <para xml:id="S2.p3">
-      <p>Before Begin verbatim(outside).Begin verbatim(inside):Some Code.</p>
+      <p>Before Begin verbatim(outside).Begin verbatim(inside):Some Code.</p>
       <verbatim font="typewriter">
 \some \code
-End verbatim(inside): Some Code.</verbatim>
+End verbatim(inside): Some Code.</verbatim>
     </para>
   </section>
   <section inlist="toc" xml:id="S3">
@@ -529,6 +511,12 @@ xABYZ.</p>
       </para>
       <para xml:id="S3.SS6.p83">
         <p>ifnumcomp (true): true</p>
+      </para>
+      <para xml:id="S3.SS6.p84">
+        <p>ifboolexpr (false): false</p>
+      </para>
+      <para xml:id="S3.SS6.p85">
+        <p>ifboolexpr (true): true</p>
       </para>
     </subsection>
     <subsection inlist="toc" xml:id="S3.SS7">

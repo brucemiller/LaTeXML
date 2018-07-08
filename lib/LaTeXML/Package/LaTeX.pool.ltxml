@@ -53,7 +53,7 @@ DefConstructor('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []',
     my $options = $whatsit->getArg(1);
     LoadClass(ToString($whatsit->getArg(2)),
       options => [($options ? split(/,\s*/, ToString($options)) : ())],
-      after   => Tokens(T_CS('\AtBeginDocument'), T_CS('\warn@unusedclassoptions')));
+      after => Tokens(T_CS('\AtBeginDocument'), T_CS('\warn@unusedclassoptions')));
     return; });
 
 AssignValue('@unusedoptionlist', []);
@@ -400,8 +400,8 @@ DefMacroI('\today', undef, sub { ExplodeText(today()); });
 # but some folks wrap it around arbitrary blocks of material,
 # more like a font switch.
 DefConstructor('\emph{}', "#1", mode => 'text',
-  bounded        => 1, font => { emph => 1 }, alias => '\emph',
-  beforeDigest   => sub { DefMacro('\f@shape', 'i'); },
+  bounded => 1, font => { emph => 1 }, alias => '\emph',
+  beforeDigest => sub { DefMacro('\f@shape', 'i'); },
   afterConstruct => sub { $_[0]->addClass($_[0]->getElement, 'ltx_emph'); });
 
 #======================================================================
@@ -455,9 +455,9 @@ DefConstructor('\lx@note[]{}[]{}',
     . "#tags"
     . "#4"
     . "</ltx:note>",
-  mode         => 'text', bounded => 1,
+  mode => 'text', bounded => 1,
   beforeDigest => sub { reenterTextMode(1); Digest('\normalfont'); },
-  properties   => sub {
+  properties => sub {
     my $type = ToString($_[2]);
     (role => $type,
       list => DigestText(T_CS('\ext@' . $type)),
@@ -923,7 +923,7 @@ DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact
   alias => '\thanks', mode => 'text');
 DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
   beforeDigest => sub { Let('\thanks', '\person@thanks'); },
-  bounded      => 1, mode => 'text');
+  bounded => 1, mode => 'text');
 
 DefConstructorI('\and', undef, " and ");
 
@@ -1059,7 +1059,7 @@ DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
       "When using titlepage, Frontmatter will not be well-structured");
     return; },
   beforeDigestEnd => sub { Digest(T_CS('\maybe@end@title')); },
-  locked          => 1, mode => 'text');
+  locked => 1, mode => 'text');
 
 DefConstructorI('\maybe@end@title', undef, sub {
     my ($document) = @_;
@@ -1621,7 +1621,7 @@ DefMacroI('\verb', undef, sub {
 
 DefConstructor('\@text@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>",
   beforeDigest => [sub { $_[0]->bgroup; MergeFont(family => 'typewriter'); }],
-  afterDigest  => sub { $_[0]->egroup; },
+  afterDigest => sub { $_[0]->egroup; },
   # Since ltx:verbatim is both inline & block, we have to fudge inline mode
   beforeConstruct => sub {
     $_[0]->canContain($_[0]->getElement, '#PCDATA')
@@ -1629,8 +1629,8 @@ DefConstructor('\@text@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>"
   reversion => '\verb#1#2#1');
 DefConstructor('\@math@verb{}{}', "#2",    # Will already end up wrapped as XMTok!
   beforeDigest => [sub { $_[0]->bgroup; MergeFont(family => 'typewriter'); }],
-  afterDigest  => sub { $_[0]->egroup; },
-  reversion    => '\verb#1#2#1');
+  afterDigest => sub { $_[0]->egroup; },
+  reversion => '\verb#1#2#1');
 
 # This is defined by the alltt package.
 # Environment('alltt', ?);
@@ -2022,7 +2022,7 @@ sub eqnarrayBindings {
     $attributes{rowsep} = $cur_jot; }
 
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
-      template      => LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2, $col3]),
+      template => LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2, $col3]),
       openContainer => sub { my %attr = RefStepID('@equationgroup');
         $attr{'xml:id'} = $attr{id}; delete $attr{id};
         $attr{class} = 'ltx_eqn_eqnarray';
@@ -2167,7 +2167,7 @@ DefConstructor('\frac InFractionStyle InFractionStyle',
     . "<ltx:XMTok meaning='divide' role='FRACOP' mathstyle='#mathstyle'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
-  sizer      => sub { fracSizer($_[0]->getArg(1), $_[0]->getArg(2)); },
+  sizer => sub { fracSizer($_[0]->getArg(1), $_[0]->getArg(2)); },
   properties => { mathstyle => sub { LookupValue('font')->getMathstyle; } });
 
 # Ellipsis: See TeX.pool
@@ -2270,7 +2270,7 @@ DefPrimitive('\renewcommand OptionalMatch:* DefToken [Number][]{}', sub {
 #
 # Experiment: use \l@ngrel@x to carry over \protected information from outside, etoolbox-style.
 # DefMacro('\@argdef','\l@ngrel@x\renewcommand');
-# 
+#
 # The etoolbox binding now defines \newrobustcmd & friends directly, so \@argdef is not directly needed
 # However, we would need to add support for other packages that may leverage that machinery.
 
@@ -2743,7 +2743,7 @@ DefPrimitive('\@addtoreset{}{}', sub {
     return; });
 
 DefMacro('\value{}', sub {
-    T_CS("\\c@".ToString(Expand($_[1]))) });
+    T_CS("\\c@" . ToString(Expand($_[1]))) });
 DefMacro('\@arabic{Number}', sub {
     ExplodeText(ToString($_[1]->valueOf)); });
 DefMacro('\arabic{}', sub {
@@ -2867,33 +2867,33 @@ DefEnvironment('{figure}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  properties => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest  => sub { RescueCaptionCounters('figure', $_[1]); });
+  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
 DefEnvironment('{figure*}[]',
   "<ltx:figure xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  properties => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest  => sub { RescueCaptionCounters('figure', $_[1]); });
+  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
 DefEnvironment('{table}[]',
   "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
+  properties => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest  => sub { RescueCaptionCounters('table', $_[1]); });
+  afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
 DefEnvironment('{table*}[]',
   "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
+  properties => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest  => sub { RescueCaptionCounters('table', $_[1]); });
+  afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
 
 # There are some floating figure/table packages that define environments
 # to allow the figure to float left or right.  It APPEARS that they allow
@@ -3047,7 +3047,7 @@ sub tabbingBindings {
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
       template => LaTeXML::Core::Alignment::Template->new(
         repeated => [{ after => Tokens(T_CS('\hfil')) }]),
-      openContainer  => sub { $_[0]->openElement('ltx:tabular', @_[1 .. $#_]); },
+      openContainer => sub { $_[0]->openElement('ltx:tabular', @_[1 .. $#_]); },
       closeContainer => sub { $_[0]->closeElement('ltx:tabular'); },
       openRow        => sub { $_[0]->openElement('ltx:tr', @_[1 .. $#_]); },
       closeRow       => sub { $_[0]->closeElement('ltx:tr'); },
@@ -3936,9 +3936,9 @@ our %makebox_alignment = (l => 'left', r => 'right', s => 'justified');
 DefMacro('\makebox', '\@ifnextchar(\pic@makebox\@makebox');
 DefConstructor('\@makebox[Dimension][]{}',
   "<ltx:text ?#width(width='#width') ?#align(align='#align') _noautoclose='1'>#3</ltx:text>",
-  mode         => 'text', bounded => 1, alias => '\makebox', sizer => '#3',
+  mode => 'text', bounded => 1, alias => '\makebox', sizer => '#3',
   beforeDigest => sub { reenterTextMode(); },
-  properties   => sub {
+  properties => sub {
     (($_[2] ? (align => $makebox_alignment{ ToString($_[2]) }) : ()),
       ($_[1] ? (width => $_[1]) : ())) });
 
@@ -4104,9 +4104,9 @@ DefConstructor('\rule[Dimension]{Dimension}{Dimension}',
   properties => sub { (offset => $_[1], width => $_[2], height => $_[3]) });
 DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
   "<ltx:text yoffset='#1' _noautoclose='1'>#4</ltx:text>",
-  mode         => 'text', bounded => 1,
+  mode => 'text', bounded => 1,
   beforeDigest => sub { reenterTextMode(); },
-  sizer        => sub { raisedSizer($_[0]->getArg(4), $_[0]->getArg(1)); });
+  sizer => sub { raisedSizer($_[0]->getArg(4), $_[0]->getArg(1)); });
 
 sub raisedSizer {
   my ($box, $y) = @_;
@@ -4369,7 +4369,7 @@ our %alignments = (l => 'left', c => 'center', r => 'right');
 # Not sure that ltx:p is the best to use here, but ... (see also \vbox, \vtop)
 DefConstructor('\@shortstack@cr',
   "</ltx:p><ltx:p>",
-  reversion    => Tokens(T_CS("\\\\"), T_CR),
+  reversion => Tokens(T_CS("\\\\"), T_CR),
   beforeDigest => sub { $_[0]->egroup; },
   afterDigest  => sub { $_[0]->bgroup; });
 
@@ -4381,8 +4381,8 @@ DefConstructor('\shortstack[]{}  OptionalMatch:* [Dimension]',
     Let("\\\\", '\@shortstack@cr');
     $_[0]->bgroup; },
   afterDigest => sub { $_[0]->egroup; },
-  properties  => { align => sub { ($_[1] ? $alignments{ ToString($_[0]) } : undef); } },
-  mode        => 'text');
+  properties => { align => sub { ($_[1] ? $alignments{ ToString($_[0]) } : undef); } },
+  mode => 'text');
 
 DefMacro('\multiput Pair Pair {}{}', sub {
     my ($gullet, $pos, $d, $nt, $body) = @_;
@@ -4488,32 +4488,32 @@ DefMacro('\usefont{}{}{}{}',
 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
 DefConstructor('\textmd@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { series => 'medium' }, alias => '\textmd',
+  bounded => 1, font => { series => 'medium' }, alias => '\textmd',
   beforeDigest => sub { DefMacro('\f@series', 'm'); });
 DefConstructor('\textbf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { series => 'bold' }, alias => '\textbf',
+  bounded => 1, font => { series => 'bold' }, alias => '\textbf',
   beforeDigest => sub { DefMacro('\f@series', 'b'); });
 DefConstructor('\textrm@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { family => 'serif' }, alias => '\textrm',
+  bounded => 1, font => { family => 'serif' }, alias => '\textrm',
   beforeDigest => sub { DefMacro('\f@family', 'cm'); });
 DefConstructor('\textsf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { family => 'sansserif' }, alias => '\textsf',
+  bounded => 1, font => { family => 'sansserif' }, alias => '\textsf',
   beforeDigest => sub { DefMacro('\f@family', 'cmss'); });
 DefConstructor('\texttt@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { family => 'typewriter' }, alias => '\texttt',
+  bounded => 1, font => { family => 'typewriter' }, alias => '\texttt',
   beforeDigest => sub { DefMacro('\f@family', 'cmtt'); });
 
 DefConstructor('\textup@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'upright' }, alias => '\textup',
+  bounded => 1, font => { shape => 'upright' }, alias => '\textup',
   beforeDigest => sub { DefMacro('\f@shape', ''); });
 DefConstructor('\textit@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'italic' }, alias => '\textit',
+  bounded => 1, font => { shape => 'italic' }, alias => '\textit',
   beforeDigest => sub { DefMacro('\f@shape', 'i'); });
 DefConstructor('\textsl@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'slanted' }, alias => '\textsl',
+  bounded => 1, font => { shape => 'slanted' }, alias => '\textsl',
   beforeDigest => sub { DefMacro('\f@shape', 'sl'); });
 DefConstructor('\textsc@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'smallcaps' }, alias => '\textsc',
+  bounded => 1, font => { shape => 'smallcaps' }, alias => '\textsc',
   beforeDigest => sub { DefMacro('\f@shape', 'sc'); });
 DefConstructor('\textnormal@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
   bounded => 1, font => { family => 'serif', series => 'medium', shape => 'upright' }, alias => '\textnormal',
@@ -4536,7 +4536,7 @@ DefPrimitive('\DeclareTextFontCommand{}{}', sub {
     my ($stomach, $cmd, $font) = @_;
     DefConstructorI($cmd, "{}",
       "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)",
-      mode         => 'text', bounded => 1,
+      mode => 'text', bounded => 1,
       beforeDigest => sub { Digest($font); (); });
     return; });
 
@@ -4672,20 +4672,20 @@ RawTeX(<<'EoTeX');
 EoTeX
 
 DefMacro('\@ifdefinable DefToken {}', sub {
-  my ($gullet, $token, $if) = @_;
-  if (isDefinable($token)) {
-    return $if->unlist }
-  else {
-    my ($slash, @s) = ExplodeText($token->toString);
-    DefMacroI('\reserved@a', undef, Tokens(@s));
-    return (T_CS('\@notdefinable')); } });
+    my ($gullet, $token, $if) = @_;
+    if (isDefinable($token)) {
+      return $if->unlist }
+    else {
+      my ($slash, @s) = ExplodeText($token->toString);
+      DefMacroI('\reserved@a', undef, Tokens(@s));
+      return (T_CS('\@notdefinable')); } });
 
-Let('\@@ifdefinable','\@ifdefinable');
+Let('\@@ifdefinable', '\@ifdefinable');
 
 DefMacro('\@rc@ifdefinable DefToken {}', sub {
-  my ($gullet, $token, $if) = @_;
-  Let('\@ifdefinable','\@@ifdefinable');
-  return $if->unlist; });
+    my ($gullet, $token, $if) = @_;
+    Let('\@ifdefinable', '\@@ifdefinable');
+    return $if->unlist; });
 
 DefMacroI('\@notdefinable', undef,
   '\@latex@error{%
@@ -4730,6 +4730,7 @@ DefMacro('\@secondoftwo{}{}',    sub { $_[2]; });
 DefMacro('\@thirdofthree{}{}{}', sub { $_[3]; });
 DefMacro('\@expandtwoargs{}{}{}', sub {
     ($_[1]->unlist, T_BEGIN, Expand($_[2])->unlist, T_END, T_BEGIN, Expand($_[3])->unlist, T_END); });
+DefMacro('\@makeother{}', sub { AssignCatcode($_[1] => CC_OTHER, 'local'); });
 
 RawTeX(<<'EoTeX');
 {\catcode`\^^M=13 \gdef\obeycr{\catcode`\^^M13 \def^^M{\\\relax}%
@@ -4747,7 +4748,6 @@ RawTeX(<<'EoTeX');
   \expandafter\endgroup\x
 \def\strip@pt{\expandafter\rem@pt\the}
 \def\strip@prefix#1>{}
-\def\@makeother#1{\catcode`#1=12\relax}
 \def\@sanitize{\@makeother\ \@makeother\\\@makeother\$\@makeother\&%
 \@makeother\#\@makeother\^\@makeother\_\@makeother\%\@makeother\~}
 \def \@onelevel@sanitize #1{%
@@ -4781,14 +4781,15 @@ DefMacroI('\nfss@catcodes', undef, <<'EOMacro');
    \@makeother\'%
    \@makeother\"%
 EOMacro
-DefMacroI('\ltx@hard@MessageBreak',undef, '^^J');
+DefMacroI('\ltx@hard@MessageBreak', undef, '^^J');
+
 sub make_message {
   my ($cmd, @args) = @_;
   my $stomach = $STATE->getStomach;
   $stomach->bgroup;
-  Let('\protect', '\string');
-  Let('\MessageBreak','\ltx@hard@MessageBreak'); # tricky, we need Expand() to execute it
-  my $message = join("", map { ToString(Expand($_,T_CS('\MessageBreak'))) } @args);
+  Let('\protect',      '\string');
+  Let('\MessageBreak', '\ltx@hard@MessageBreak');    # tricky, we need Expand() to execute it
+  my $message = join("", map { ToString(Expand($_, T_CS('\MessageBreak'))) } @args);
   $stomach->egroup;
   return ('latex', $cmd, $stomach, $message); }
 

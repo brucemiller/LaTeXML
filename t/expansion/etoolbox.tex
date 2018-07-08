@@ -1,24 +1,37 @@
 \documentclass{article}
-\usepackage{etoolbox}
-% --- overload test
-\csdef{path-PB}{path of PB}
-\csdef{path-UF}{path of UF}
-
-\newrobustcmd\whoami{PB}
-\newrobustcmd\mypath{\csuse{path-\whoami}}
-
+  \usepackage{etoolbox}
+  
+  % --- preamble/postamble document hooks
+  \AtEndPreamble{\typeout{atendpreamble}\def\secret{hello}}
+  \AfterPreamble{\typeout{afterpreamble}\secret.\renewcommand{\secret}{world}}
+  \AfterEndPreamble{\typeout{afterendpreamble}\secret.}
+  \AfterEndDocument{never printed}
+  
+  \def\where{(outside)}
+  \def\goinside{\def\where{(inside)}}
+  
+  \newenvironment{stuff}{Begin stuff.}{End stuff.}
+  \AtBeginEnvironment{stuff}{\goinside}
+  \AtBeginEnvironment{stuff}{At Begin stuff\where.}
+  \AtEndEnvironment{stuff}{At End stuff\where.}
+  \BeforeBeginEnvironment{stuff}{Before Begin stuff\where.}
+  \AfterEndEnvironment{stuff}{After End stuff\where.}
+  
+  \AtBeginEnvironment{equation}{\goinside}
+  \AtBeginEnvironment{equation}{At Begin equation\where.}
+  \AtEndEnvironment{equation}{\textrm{ At End equation\where.}}
+  \BeforeBeginEnvironment{equation}{Before Begin equation\where.}
+  \AfterEndEnvironment{equation}{After End equation\where.}
+  
+  \AtBeginEnvironment{verbatim}{\goinside}
+  \AtBeginEnvironment{verbatim}{Begin verbatim\where:\some \code.}
+  \AtEndEnvironment{verbatim}{End verbatim\where: \some \code.}
+  \BeforeBeginEnvironment{verbatim}{Before Begin verbatim\where.}
+  \AfterEndEnvironment{verbatim}{After End verbatim\where.}
+  
 \begin{document}
 
-\mypath
-
-\renewrobustcmd\whoami{UF}
-
-\mypath
-
-\providerobustcmd\whoami{noop}
-
-\mypath
-% --- end overload test
+\section{User commands}
 
 % --- counters
 \newcommand\basic{basic}
@@ -32,25 +45,25 @@
 % --- lengths
 %     source: https://tex.stackexchange.com/a/286171/78008
 \newcommand{\etminof}[2]{%
-  \ifdimgreater{#1}{#2}{%
-    #2%
-  }{%
-    #1% Is smaller or equal
-  }%
+	\ifdimgreater{#1}{#2}{%
+		#2%
+	}{%
+		#1% Is smaller or equal
+	}%
 }
 \newcommand{\etmaxof}[2]{%
-  \ifdimgreater{#1}{#2}{%
-    #1%
-  }{%
-    #2% Is greater or equal
-  }%
+	\ifdimgreater{#1}{#2}{%
+		#1%
+	}{%
+		#2% Is greater or equal
+	}%
 }
 \newlength{\foo}
 \newlength{\foobar}
 \deflength{\foo}{\etminof{1in}{2in}}
 \deflength{\foobar}{\etmaxof{5in}{10in}}
 
-\the\foo 
+\the\foo
 
 \the\foobar
 
@@ -65,7 +78,7 @@
 	a = b
 \end{equation}
 
-\def\some{Some~}
+\def\some{Some }
 \def\code{Code}
 \begin{verbatim}
 \some \code
@@ -144,7 +157,7 @@ deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi.
 \edef\elvl{\lvlthree}
 \edef\lvltest{\expandonce{\lvlthree}}
 \edef\lvltesttwo{\csexpandonce{lvltwo}}
-full expansion: \meaning\elvl 
+full expansion: \meaning\elvl
 
 expand once: \meaning\lvltest
 
@@ -176,13 +189,13 @@ csexpandonce: \meaning\lvltesttwo
 
 \newcommand{\premacro}{x}
 \bgroup\csgpreto{premacro}{pre-}\egroup
-\premacro. 
+\premacro.
 
 \subsection{Patching}
 \def\patchme{example -- here}
 patching: \patchcmd\patchme{--}{patched}{ok}{fail}
 
-\patchme 
+\patchme
 
 relax is \ifpatchable*{\relax}{}{not} patchable
 
@@ -424,12 +437,22 @@ ifnumcomp (true): \ifnumcomp{\value{countA} * \value{countB}/2}{=}{15}{true}{fal
 
 ifnumcomp (true): \ifnumcomp{6/2}{=}{5/2}{true}{false}
 
+% -- end arithemtic tests
+% -- boolean tests
+\newbool{boolA}
+\newbool{boolB}
+
+ifboolexpr (false): \ifboolexpr{bool {boolA}}{true}{false}
+
+ifboolexpr (true): \ifboolexpr{not ( test {\ifcsdef{undefd}} or bool {boolA} )}
+{true}{false}
+
 \subsection{List Processing}
- 
+
 \noindent Itemize list:
 \begin{itemize}
-\renewcommand*{\do}[1]{\item #1}
-\docsvlist{item1, item2, {item3a, item3b}, item4}
+	\renewcommand*{\do}[1]{\item #1}
+	      \docsvlist{item1, item2, {item3a, item3b}, item4}
 \end{itemize}
 
 \renewcommand*{\do}[1]{\indent * #1\newline}
@@ -439,25 +462,25 @@ ifnumcomp (true): \ifnumcomp{6/2}{=}{5/2}{true}{false}
 \forcsvlist{\listadd\mylist}{itemA, itemB, itemC}
 Dolistloop itemize:
 \begin{itemize}
-\renewcommand*{\do}[1]{\item #1}
-\dolistloop{\mylist}
+	\renewcommand*{\do}[1]{\item #1}
+	      \dolistloop{\mylist}
 \end{itemize}
 
 \newcounter{itemcount}
 Forlistloop itemize:
 \begin{itemize}
-\forlistloop{\stepcounter{itemcount}\item}{\mylist}
-\item Total: \number\value{itemcount} items
+	\forlistloop{\stepcounter{itemcount}\item}{\mylist}
+	\item Total: \number\value{itemcount} items
 \end{itemize}
 
 \renewcommand*{\do}[1]{%
-\ifstrequal{#1}{itemB}
-{item found!\listbreak}
-{}}
+	\ifstrequal{#1}{itemB}
+	{item found!\listbreak}
+	{}}
 dolistloop search: \dolistloop{\mylist}
 
 \subsection{Miscellaneous Tools}
- 
+
 1995 = \rmntonum{mcmxcv}
 
 \newcounter{rmcounter}
