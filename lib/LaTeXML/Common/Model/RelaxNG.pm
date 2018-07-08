@@ -266,19 +266,19 @@ sub scanPattern_element {
         $self->scanChildren($ns, @children)]); }
   else {
     my $namenode = shift(@children);
-    my @names = $self->scanNameClass($namenode, $ns);
+    my @names = $self->scanNameClass($namenode, 0, $ns);
     return map { ['element', $_, $self->scanChildren($ns, @children)] } @names; } }
 
 sub scanPattern_attribute {
   my ($self, $ns, $node) = @_;
-  $ns = $node->getAttribute('ns');    # ONLY explicit declaration!
+  my $xns      = $node->getAttribute('ns');    # explicit declaration!
   my @children = getElements($node);
   if (my $name = $node->getAttribute('name')) {
-    return (['attribute', $$self{model}->encodeQName($ns, $name),
+    return (['attribute', $$self{model}->encodeQName($xns, $name),
         $self->scanChildren($ns, @children)]); }
   else {
     my $namenode = shift(@children);
-    my @names = $self->scanNameClass($namenode, $ns);
+    my @names = $self->scanNameClass($namenode, 1, $ns);
     return map { ['attribute', $_, $self->scanChildren($ns, @children)] } @names; } }
 
 sub scanChildren {
@@ -332,30 +332,36 @@ sub scanGrammarItem {
     return (); } }
 
 sub scanNameClass {
-  my ($self, $node, $ns) = @_;
+  my ($self, $node, $forattr, $ns) = @_;
   my $relaxop = getRelaxOp($node);
   if ($relaxop eq 'rng:name') {
-    return ($$self{model}->encodeQName($ns, $node->textContent)); }
+    my ($decns, $name) = $$self{model}->decodeQName($node->textContent);
+    $ns = $decns if $decns;
+    return ($$self{model}->encodeQName(($forattr ? undef : $ns), $name)); }
   elsif ($relaxop eq 'rng:anyName') {
-    Info('unexpected', $relaxop, undef, "Can't handle RelaxNG operation '$relaxop'",
-      "Treating " . ToString($node) . " as ANY")
-      if $node->hasChildNodes;
-    return ('ANY'); }
+    my @exceptions = ();    # Check for exceptions!
+    if (my @children = getElements($node)) {
+      @exceptions = map { $self->scanNameClass($_, $forattr, $ns) } @children; }
+    return ('ANY', @exceptions); }
   elsif ($relaxop eq 'rng:nsName') {
-    Info('unexpected', $relaxop, undef, "Can't handle RelaxNG operation '$relaxop'",
-      "Treating " . ToString($node) . " as ANY");
-    # NOTE: We _could_ conceivably use a namespace predicate,
-    # but Model has to be extended to support it!
-    return ('ANY'); }
+    my @exceptions = ();    # Check for exceptions!
+    if (my @children = getElements($node)) {
+      @exceptions = map { $self->scanNameClass($_, $forattr, $ns) } @children; }
+    return ($$self{model}->encodeQName($node->getAttribute('ns') || $ns, '*'), @exceptions); }
   elsif ($relaxop eq 'rng:choice') {
     my %names = ();
     foreach my $choice ($node->childNodes) {
-      map { $names{$_} = 1 } $self->scanNameClass($choice, $ns); }
+      map { $names{$_} = 1 } $self->scanNameClass($choice, $forattr, $ns); }
     return ($names{ANY} ? ('ANY') : sort keys %names); }
+  elsif ($relaxop eq 'rng:except') {
+    my %names = ();
+    foreach my $choice (getElements($node)) {
+      map { $names{$_} = 1 } $self->scanNameClass($choice, $forattr, $ns); }
+    return map { "!$_" } ($names{ANY} ? ('ANY') : sort keys %names); }
   else {
     my $op = $node->nodeName;
     Fatal('misdefined', $op, undef,
-      "Expected a RelaxNG name element (rng:name|rng:anyName|rng:nsName|rng:choice), got '$op'");
+"Expected a RelaxNG name element (rng:name|rng:anyName|rng:nsName|rng:choice|rng:except), got '$op'");
     return; } }
 
 #======================================================================
@@ -383,7 +389,7 @@ sub extractStart {
       if    ($op eq 'start')   { push(@starts, @args); }
       elsif ($op eq 'module')  { push(@starts, $self->extractStart(@args)); }
       elsif ($op eq 'grammar') { push(@starts, $self->extractStart(@args)); }
-    } }
+  } }
   return @starts; }
 
 # NOTE: Reconsider this process.
