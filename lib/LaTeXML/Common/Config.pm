@@ -881,8 +881,9 @@ latexmlc [options]
                          representation (default is to remove)
  --mathtex               adds TeX annotation to parallel markup
  --nomathtex             disables the above (default)
- --mathlex               adds linguistic lexeme annotation to parallel markup
- --nomathlex             disables the above (default)
+ --mathlex               (EXPERIMENTAL) adds linguistic lexeme 
+                         annotation to parallel markup
+ --nomathlex             (EXPERIMENTAL) disables the above (default)
  --parallelmath          use parallel math annotations (default)
  --noparallelmath        disable parallel math annotations
  --plane1                use plane-1 unicode for symbols

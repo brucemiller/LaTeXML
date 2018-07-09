@@ -696,10 +696,24 @@ sub parse_single {
 
 sub node_to_lexeme {
   my ($self, $node) = @_;
-  my $role = $self->getGrammaticalRole($node);
-  my $text = getTokenMeaning($node);
-  $text = 'Unknown' unless defined $text;
-  my $lexeme = $role . ":" . $text;
+  my $lexeme = getTokenMeaning($node);
+  my $qname = getQName($node);
+  my $document = $LaTeXML::MathParser::DOCUMENT;
+  $lexeme = '' unless defined $lexeme;
+  if (my $font = $node->getAttribute('_font')) {
+    $font = $document->decodeFont($font);
+    if (my $font_spec = $font && $font->specialize($lexeme)) {
+      if (my %pending_declaration = $font_spec->relativeTo(LaTeXML::Common::Font->textDefault)) {
+        my $font_text = '';
+        foreach my $attr (keys %pending_declaration) {
+          if ($document->canHaveAttribute($qname, $attr)) {
+            $font_text .= $pending_declaration{$attr}{value}; } }
+        if ($font_text) {
+          $font_text = join("-",sort(split(/\s+/, $font_text)));
+          $lexeme = $font_text . ":" . $lexeme; } } } }
+  if (my $role = $self->getGrammaticalRole($node)) {
+    $lexeme = $role . ":" . $lexeme; }
+  
   $lexeme =~ s/\s//g;
   return $lexeme;
 }
