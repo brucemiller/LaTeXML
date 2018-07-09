@@ -710,9 +710,10 @@ sub node_to_lexeme {
             $font_text .= $pending_declaration{$attr}{value}; } }
         if ($font_text) {
           $font_text = join("-",sort(split(/\s+/, $font_text)));
-          $lexeme = $font_text . ":" . $lexeme; } } } }
+          $lexeme = $font_text . "-" . $lexeme; } } } }
   if (my $role = $self->getGrammaticalRole($node)) {
-    $lexeme = $role . ":" . $lexeme; }
+    if ($role ne 'UNKNOWN') {
+      $lexeme = $role . ":" . $lexeme; } }
   
   $lexeme =~ s/\s//g;
   return $lexeme;
