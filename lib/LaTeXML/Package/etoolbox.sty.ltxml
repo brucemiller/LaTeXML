@@ -37,25 +37,25 @@ RawTeX(<<'EoTeX');
 EoTeX
 
 DefMacro('\newrobustcmd OptionalMatch:* DefToken [Number][]{}', sub {
-  my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-  if (!isDefinable($cs)) {
-    Info('ignore', $cs, $stomach,
-      "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'")
-      unless LookupValue(ToString($cs) . ':locked'); }
-  else {
-    DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1); }
-  return Tokens(); });
+    my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
+    if (!isDefinable($cs)) {
+      Info('ignore', $cs, $stomach,
+        "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'")
+        unless LookupValue(ToString($cs) . ':locked'); }
+    else {
+      DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1); }
+    return Tokens(); });
 
 DefMacro('\renewrobustcmd OptionalMatch:* DefToken [Number][]{}', sub {
-  my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-  DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1);
-  return Tokens(); });
+    my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
+    DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1);
+    return Tokens(); });
 
 DefMacro('\providerobustcmd OptionalMatch:* DefToken [Number][]{}', sub {
-  my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-  if (isDefinable($cs)) {
-    DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1); }
-  return Tokens(); });
+    my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
+    if (isDefinable($cs)) {
+      DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1); }
+    return Tokens(); });
 
 RawTeX(<<'EoTeX');
 
@@ -184,23 +184,23 @@ EoTeX
 # Hence we need to lock them, to avoid the native redefinition.
 
 DefMacro('\ifdefprotected DefToken {} {}', sub {
-  my ($gullet, $cs, $true, $false) = @_;
-  my $definition = LookupMeaning($cs);
-  if (!$definition || !$definition->isExpandable) {
-    # Undefined, or not an expandable definition, therefore not protected
-    return $false;
-  }
-  my $expansion = ToString($definition->getExpansion);
-  # We are getting into hot water here - etoolbox considers macros with an expansion prefixde by
-  # "\protected" to be protected -- but latexml does not use that mechanism consistently.
-  # In fact, the opposite is true - the recommended approach is to add a "protected => 1" flag
-  # to the binding definition.
-  if (($definition && $definition->isProtected) || $expansion =~ /^\\protected/) {
-    return $true;
-  } else {
-    return $false;
-  }
-}, protected=>1);
+    my ($gullet, $cs, $true, $false) = @_;
+    my $definition = LookupMeaning($cs);
+    if (!$definition || !$definition->isExpandable) {
+      # Undefined, or not an expandable definition, therefore not protected
+      return $false;
+    }
+    my $expansion = ToString($definition->getExpansion);
+    # We are getting into hot water here - etoolbox considers macros with an expansion prefixde by
+    # "\protected" to be protected -- but latexml does not use that mechanism consistently.
+    # In fact, the opposite is true - the recommended approach is to add a "protected => 1" flag
+    # to the binding definition.
+    if (($definition && $definition->isProtected) || $expansion =~ /^\\protected/) {
+      return $true;
+    } else {
+      return $false;
+    }
+}, protected => 1);
 
 RawTeX(<<'EoTeX');
 % {<csname>}{<true>}{<false>}
@@ -1178,7 +1178,7 @@ EoTeX
 # An observation from studying etoolbox.sty is that this macro is both internal (not meant for authors),
 # and is only used as a error-handling guard for \patchcmd and similar, i.e. it returns the "true"
 # case in all intended correct uses. Hence:
-DefMacro('\etb@ifpattern DefToken {}', '\begingroup\@firstoftwo', protected=>1);
+DefMacro('\etb@ifpattern DefToken {}', '\begingroup\@firstoftwo', protected => 1);
 
 RawTeX(<<'EoTeX');
 % {<string>}{<true}{<false>}
@@ -1288,28 +1288,32 @@ EoTeX
 # Need to be able to examine a Macro's replacement for a match (and then replace)
 # we can only do this for token expansions, and should return failure for all else.
 DefMacro('\patchcmd [] DefToken {}{}{}{}', sub {
-  my ($gullet, $prefix, $cs, $search, $replace, $success, $failure) = @_;
-  my $definition = LookupMeaning($cs);
-  if ($definition && $definition->isExpandable) { 
-    my $expansion = $definition->getExpansion;
-    my $string = ToString($expansion);
-    my $search_string = ToString($search);
-    my $search_regex = qr/$search_string/;
-    if ($string =~ $search_regex) {
-      # Should the token substitution happen on the actual data structure? 
-      # string replacement is a quick&dirty way out...
-      my $replace_string = ToString($replace);
-      $string =~ s/$search_regex/$replace_string/;
-      # New definition in local scope
-      $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $definition->getParameters, $string));
-      return $success;
+    my ($gullet, $prefix, $cs, $search, $replace, $success, $failure) = @_;
+    my $definition = LookupMeaning($cs);
+    if ($definition && $definition->isExpandable) {
+      my $expansion = $definition->getExpansion;
+      if (ref $expansion eq 'CODE') {
+        Info('unexpected', 'patchcmd', $gullet, "Patchcmd is not supported on LaTeXML-native definitions, will not patch " . ToString($cs));
+        return $failure;
+      }
+      my $string        = ToString($expansion);
+      my $search_string = ToString($search);
+      my $search_regex  = qr/$search_string/;
+      if ($string =~ $search_regex) {
+        # Should the token substitution happen on the actual data structure?
+        # string replacement is a quick&dirty way out...
+        my $replace_string = ToString($replace);
+        $string =~ s/$search_regex/$replace_string/;
+        # New definition in local scope
+        $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $definition->getParameters, $string));
+        return $success;
+      } else {
+        return $failure;
+      }
     } else {
+      Info('unexpected', 'patchcmd', $gullet, "Patchcmd is not supported on non-expandable definitions, will not patch " . ToString($cs));
       return $failure;
-    }
-  } else {
-    Info('unexpected', 'patchcmd', $gullet, "Patchcmd is not supported on LaTeXML-native definitions, will not patch " . ToString($cs));
-    return $failure;
-  }}, protected=>1);
+} }, protected => 1);
 
 # DefMacro('\apptocmd DefToken {}{}{}{}', sub {
 #     my ($gullet, $cs, $code, $success, $failure) = @_;
@@ -1715,17 +1719,17 @@ EoTeX
 # # \AfterEndPreamble
 # # \AfterEndDocument
 DefMacro('\AfterPreamble{}', sub {
-  if(LookupValue('inPreamble')){
-    PushValue('@at@begin@document', $_[1]->unlist);
-    return; }
-  else {
-    return $_[1]; } });
+    if (LookupValue('inPreamble')) {
+      PushValue('@at@begin@document', $_[1]->unlist);
+      return; }
+    else {
+      return $_[1]; } });
 DefMacro('\AtEndPreamble{}', sub {
-  PushValue('@document@preamble@atend', $_[1]->unlist); });
+    PushValue('@document@preamble@atend', $_[1]->unlist); });
 DefMacro('\AfterEndPreamble{}', sub {
-  PushValue('@document@preamble@afterend', $_[1]->unlist); });
+    PushValue('@document@preamble@afterend', $_[1]->unlist); });
 DefMacro('\AfterEndDocument{}', sub {
-  PushValue('@after@end@document', $_[1]->unlist); });
+    PushValue('@after@end@document', $_[1]->unlist); });
 
 RawTeX(<<'EoTeX');
 \AtEndDocument{\let\AfterEndPreamble\@gobble}
@@ -1734,13 +1738,13 @@ EoTeX
 # # 2.6 Environment Hooks
 
 DefMacro('\AtBeginEnvironment{}{}', sub {
-  PushValue('@environment@' . ToString($_[1]) . '@atbegin', $_[2]->unlist); });
+    PushValue('@environment@' . ToString($_[1]) . '@atbegin', $_[2]->unlist); });
 DefMacro('\AtEndEnvironment{}{}', sub {
-  PushValue('@environment@' . ToString($_[1]) . '@atend', $_[2]->unlist); });
+    PushValue('@environment@' . ToString($_[1]) . '@atend', $_[2]->unlist); });
 DefMacro('\BeforeBeginEnvironment{}{}', sub {
-  PushValue('@environment@' . ToString($_[1]) . '@beforebegin', $_[2]->unlist); });
+    PushValue('@environment@' . ToString($_[1]) . '@beforebegin', $_[2]->unlist); });
 DefMacro('\AfterEndEnvironment{}{}', sub {
-  PushValue('@environment@' . ToString($_[1]) . '@afterend', $_[2]->unlist); });
+    PushValue('@environment@' . ToString($_[1]) . '@afterend', $_[2]->unlist); });
 
 #**********************************************************************
 1;
