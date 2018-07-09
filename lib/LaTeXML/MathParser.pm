@@ -667,12 +667,7 @@ sub parse_single {
       . "\n"; }
 
   if (scalar(@nodes) < 2) {    # Too few nodes? What's to parse?
-    if ($nodes[0]) {
-      $result = $nodes[0];
-    } else {
-      $result = Absent();
-    }
-  }
+    $result = $nodes[0] || Absent(); }
   else {
     # Now do the actual parse.
     ($result, $unparsed) = $self->parse_internal($rule, @nodes);
@@ -771,7 +766,14 @@ sub parse_internal {
   my $lexemes = '';
 
   foreach my $node (@nodes) {
-    my $lexeme = $self->node_to_lexeme($node) . ":" . ++$i;
+    # This is a parser-specific lexeme, but it is not (yet) identical to the serialized lexeme by
+    # ->node_to_lexeme, which is currently experimental
+    my $role = $self->getGrammaticalRole($node);
+    my $text = getTokenMeaning($node);
+    $text = 'Unknown' unless defined $text;
+    my $lexeme = $role . ":" . $text . ":" . ++$i;
+    $lexeme =~ s/\s//g;
+
     $$LaTeXML::MathParser::LEXEMES{$lexeme} = $node;
     $lexemes .= ' ' . $lexeme; }
 
