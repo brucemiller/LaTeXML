@@ -538,10 +538,11 @@ sub generateURL {
       my $extension = $$self{extension} || 'xml';
       my $urlstyle  = $$self{urlstyle}  || 'file';
       if ($urlstyle eq 'server') {
-        $url =~ s/(^|\/)index.\Q$extension\E$/$1/; }    # Remove trailing index.$extension
+        # Remove trailing index.$extension but be careful not to leave url empty! (then it's "self")
+        $url =~ s/(^|\/)index.\Q$extension\E$/($1 ? $1 : '.\/')/e; }
       elsif ($urlstyle eq 'negotiated') {
-        $url =~ s/\.\Q$extension\E$//;                  # Remove trailing $extension
-        $url =~ s/(^|\/)index$/$1/;                     # AND trailing index
+        $url =~ s/\.\Q$extension\E$//;    # Remove trailing $extension
+        $url =~ s/(^|\/)index$/$1/;       # AND trailing index
       }
       $url = '.' unless $url;
       if (my $fragid = $object->getValue('fragid')) {

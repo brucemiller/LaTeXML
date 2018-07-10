@@ -15,7 +15,6 @@
 # Convert & Compile LaTeXML's schema from the RelaxNG Compact Form
 # generating the rng forms;
 # the compiled model list
-# & dtd.
 #======================================================================
 
 # bash analog of FindBin::RealBin
@@ -27,7 +26,6 @@ LATEXMLDIR=$TOOLSDIR/..
 # We are pre-compiling schema that will be commited to the repository.
 RESOURCEDIR=$LATEXMLDIR/lib/LaTeXML/resources
 RELAXNGDIR=$RESOURCEDIR/RelaxNG
-DTDDIR=$RESOURCEDIR/DTD
 
 TRANG="trang -C $LATEXMLDIR/lib/LaTeXML/LaTeXML.catalog"
 
@@ -76,50 +74,11 @@ echo "Precompiling $SCHEMA.rng schema to $SCHEMA.model"
               my \$model = \$latexml->getModel;             \
               \$model->registerNamespace(ltx=>'http://dlmf.nist.gov/LaTeXML');\
               \$model->registerNamespace(svg=>'http://www.w3.org/2000/svg');  \
+              \$model->registerNamespace(xhtml => 'http://www.w3.org/1999/xhtml'); \
               \$model->setRelaxNGSchema('$SCHEMA');         \
               \$model->compileSchema;                       \
               print STDERR \$latexml->getStatusMessage.\"\n\";});" \
        > $RELAXNGDIR/$SCHEMA.model
-
-#======================================================================
-# Conversion to DTD
-# Really ought to just drop this....
-#======================================================================
-# Trang can't convert the schema to dtd mainly because we're gradually
-# combining the defines for models.
-# However, if we first simplify and flatten to a single rng, it can convert.
-#
-# The stylesheet simplification.xsl does the simplification.
-# It is by Eric van der Vlist, from
-#    http://downloads.xmlschemata.org/relax-ng/utilities/simplification.xsl
-# [linked from http://www.relaxng.org]
-#
-# However, this stylesheet looses the namespace declaration!!!!!
-#
-# Simplify the rng
-
-#export XML_CATALOG_FILES=$LATEXMLDIR/lib/LaTeXML/LaTeXML.catalog
-
-echo "Simplifying $SCHEMA.rng for dtd"
-xsltproc --stringparam out-name $TMP/$SCHEMA-simplified- \
-    $TOOLSDIR/dtd-simplification.xsl $RELAXNGDIR/$SCHEMA.rng > $TMP/dummy.log
-# The resulting simplified schema is now in /tmp/$SCHEMA-simplified-7-22.rng
-
-echo "Dumbing down the schema for DTD conversion"
-xsltproc $TOOLSDIR/dtd-dumbdown.xsl $TMP/$SCHEMA-simplified-7-22.rng > $TMP/$SCHEMA-dumbed.rng
-
-echo "Converting simplified $SCHEMA.rng to $SCHEMA.dtd"
-# Now, we can convert to dtd
-##trang /tmp/$SCHEMA-dumbed.rng /tmp/$SCHEMA.dtd
-$TRANG $TMP/$SCHEMA-dumbed.rng $TMP/$SCHEMA.dtd
-
-echo "Patching $SCHEMA.dtd"
-# However, as said, the namespace declaration got lost
-# so we'll fix it up...
-sed \
-   -e "s/xmlns CDATA #FIXED ''/xmlns CDATA #FIXED 'http:\/\/dlmf.nist.gov\/LaTeXML'/" \
-   -e 's/\bns1\b/ltx/g' \
-   $TMP/$SCHEMA.dtd  > $DTDDIR/$SCHEMA.dtd
 
 #======================================================================
 # If ok...

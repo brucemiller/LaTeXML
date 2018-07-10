@@ -4,6 +4,7 @@
 \newskip\myskip
 \newmuskip\mymuskip
 \let\origrelax\relax
+\def\aspace{ }
 \begin{document}
 % Simple
 \mynum=\numexpr 13/5\relax
@@ -22,11 +23,18 @@ Num=\the\mynum.
 \mynum=\numexpr 3 * 13 / 5 - 3 \relax
 Num=\the\mynum.
 
+\mynum=\numexpr \aspace 3 \aspace  * \aspace  13 \aspace /  \aspace 5  \aspace -  \aspace 3  \aspace\relax
+Num=\the\mynum.
+
 \mydim=\dimexpr (2pt-5pt)*\numexpr 3-3*13/5\relax + 34pt/2\relax
 Dim=\the\mydim.
 
 \mynum=\numexpr 3-3*13/5\relax
 \mydim=\dimexpr (2pt-5pt)*\mynum + 34pt/2\relax
+Num=\the\mynum;
+Dim=\the\mydim.
+
+\mydim=\dimexpr  \aspace (\aspace 2pt  \aspace -  \aspace 5pt \aspace )  \aspace *  \aspace \mynum  \aspace +  \aspace 34pt  \aspace /  \aspace 2  \aspace \relax
 Num=\the\mynum;
 Dim=\the\mydim.
 
@@ -75,6 +83,9 @@ Greater than\else Less than\fi.
 Glue=\the\myskip.
 
 \mymuskip=\muexpr (2mu-5mu)*\numexpr 3-3*13/5\relax + 34mu/2\relax
+MuGlue=\the\mymuskip.
+
+\mymuskip=\muexpr \aspace ( \aspace 2mu \aspace - \aspace 5mu \aspace ) \aspace * \aspace \numexpr \aspace 3 \aspace - \aspace 3 \aspace * \aspace 13 \aspace / \aspace 5 \aspace \relax \aspace + \aspace 34mu \aspace / \aspace 2 \aspace \relax
 MuGlue=\the\mymuskip.
 
 \end{document}

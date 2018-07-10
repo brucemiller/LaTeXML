@@ -32,7 +32,7 @@ sub new {
   my ($class) = @_;
   return bless {
     mouth => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => []
-    }, $class; }
+  }, $class; }
 
 #**********************************************************************
 # Start reading tokens from a new Mouth.
@@ -305,6 +305,13 @@ sub readNonSpace {
   my ($self) = @_;
   my $token;
   do { $token = $self->readToken();
+  } while (defined $token && $$token[1] == CC_SPACE);    # Inline ->getCatcode!
+  return $token; }
+
+sub readXNonSpace {
+  my ($self) = @_;
+  my $token;
+  do { $token = $self->readXToken(0);
   } while (defined $token && $$token[1] == CC_SPACE);    # Inline ->getCatcode!
   return $token; }
 

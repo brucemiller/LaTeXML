@@ -166,10 +166,9 @@ sub etex_readexpr {
 
 sub etex_readexpr_i {
   my ($gullet, $type, $prec) = @_;
-  $gullet->skipSpaces;
   # Read a first value
   my $value;
-  my $token = $gullet->readXToken;
+  my $token = $gullet->readXNonSpace;
   if (!$token) {
     return; }
   elsif ($token->equals(T_OTHER('('))) {
@@ -183,8 +182,7 @@ sub etex_readexpr_i {
     $value = $gullet->readValue($type); }
 
   # Now check for a following operator(s) & operand(s) (respecting precedence)
-  $gullet->skipSpaces;
-  while (my $next = $gullet->readXToken) {
+  while (my $next = $gullet->readXNonSpace) {
     if ($next->equals(T_CS('\relax'))) {
       $gullet->unread($next);           # leave the \relax for top-level to strip off.
       last; }
