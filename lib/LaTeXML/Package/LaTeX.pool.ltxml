@@ -2455,26 +2455,25 @@ RawTeX(<<'EoTeX');
 EoTeX
 
 # At least all things on uclclist need to be macros
-DefPrimitiveI('\lx@utf@OE', undef, "\x{0152}");    # LATIN CAPITAL LIGATURE OE
-DefPrimitiveI('\lx@utf@oe', undef, "\x{0153}");    # LATIN SMALL LIGATURE OE
-DefPrimitiveI('\lx@utf@AE', undef, UTF(0xC6));     # LATIN CAPITAL LETTER AE
-DefPrimitiveI('\lx@utf@ae', undef, UTF(0xE6));     # LATIN SMALL LETTER AE
-DefPrimitiveI('\lx@utf@ae', undef, UTF(0xE6));     # LATIN SMALL LETTER AE
-DefPrimitiveI('\lx@utf@AA', undef, UTF(0xC5));     # LATIN CAPITAL LETTER A WITH RING ABOVE
-DefPrimitiveI('\lx@utf@aa', undef, UTF(0xE5));     # LATIN SMALL LETTER A WITH RING ABOVE
-DefPrimitiveI('\lx@utf@O',  undef, UTF(0xD8));     # LATIN CAPITAL LETTER O WITH STROKE
-DefPrimitiveI('\lx@utf@o',  undef, UTF(0xF8));     # LATIN SMALL LETTER O WITH STROKE
-DefPrimitiveI('\lx@utf@L',  undef, "\x{0141}");    # LATIN CAPITAL LETTER L WITH STROKE
-DefPrimitiveI('\lx@utf@l',  undef, "\x{0142}");    # LATIN SMALL LETTER L WITH STROKE
-DefPrimitiveI('\lx@utf@ss', undef, UTF(0xDF));     # LATIN SMALL LETTER SHARP S
-DefPrimitiveI('\lx@utf@dh', undef, UTF(0xf0));     # eth
-DefPrimitiveI('\lx@utf@DH', undef, UTF(0xd0));     # Eth (looks same as \DJ!)
-DefPrimitiveI('\lx@utf@dj', undef, "\x{0111}");    # d with stroke
-DefPrimitiveI('\lx@utf@DJ', undef, "\x{0110}");    # D with stroke (looks sames as \DH!)
-DefPrimitiveI('\lx@utf@ng', undef, "\x{014B}");
-DefPrimitiveI('\lx@utf@NG', undef, "\x{014A}");
-DefPrimitiveI('\lx@utf@th', undef, UTF(0xFE));
-DefPrimitiveI('\lx@utf@TH', undef, UTF(0xDE));
+DefPrimitiveI('\lx@utf@OE', undef, "\x{0152}", alias => '\OE');    # LATIN CAPITAL LIGATURE OE
+DefPrimitiveI('\lx@utf@oe', undef, "\x{0153}", alias => '\oe');    # LATIN SMALL LIGATURE OE
+DefPrimitiveI('\lx@utf@AE', undef, UTF(0xC6),  alias => '\AE');    # LATIN CAPITAL LETTER AE
+DefPrimitiveI('\lx@utf@ae', undef, UTF(0xE6),  alias => '\ae');    # LATIN SMALL LETTER AE
+DefPrimitiveI('\lx@utf@AA', undef, UTF(0xC5), alias => '\AA'); # LATIN CAPITAL LETTER A WITH RING ABOVE
+DefPrimitiveI('\lx@utf@aa', undef, UTF(0xE5), alias => '\aa'); # LATIN SMALL LETTER A WITH RING ABOVE
+DefPrimitiveI('\lx@utf@O',  undef, UTF(0xD8),  alias => '\O');  # LATIN CAPITAL LETTER O WITH STROKE
+DefPrimitiveI('\lx@utf@o',  undef, UTF(0xF8),  alias => '\o');  # LATIN SMALL LETTER O WITH STROKE
+DefPrimitiveI('\lx@utf@L',  undef, "\x{0141}", alias => '\L');  # LATIN CAPITAL LETTER L WITH STROKE
+DefPrimitiveI('\lx@utf@l',  undef, "\x{0142}", alias => '\l');  # LATIN SMALL LETTER L WITH STROKE
+DefPrimitiveI('\lx@utf@ss', undef, UTF(0xDF),  alias => '\ss'); # LATIN SMALL LETTER SHARP S
+DefPrimitiveI('\lx@utf@dh', undef, UTF(0xf0),  alias => '\dh'); # eth
+DefPrimitiveI('\lx@utf@DH', undef, UTF(0xd0),  alias => '\DH'); # Eth (looks same as \DJ!)
+DefPrimitiveI('\lx@utf@dj', undef, "\x{0111}", alias => '\dj'); # d with stroke
+DefPrimitiveI('\lx@utf@DJ', undef, "\x{0110}", alias => '\DJ'); # D with stroke (looks sames as \DH!)
+DefPrimitiveI('\lx@utf@ng', undef, "\x{014B}", alias => '\ng');
+DefPrimitiveI('\lx@utf@NG', undef, "\x{014A}", alias => '\NG');
+DefPrimitiveI('\lx@utf@th', undef, UTF(0xFE),  alias => '\th');
+DefPrimitiveI('\lx@utf@TH', undef, UTF(0xDE),  alias => '\TH');
 
 DefMacroI('\OE', undef, '\lx@utf@OE');
 DefMacroI('\oe', undef, '\lx@utf@oe');
