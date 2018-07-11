@@ -145,21 +145,21 @@ sub getLocator {
 sub getSource {
   my ($self) = @_;
   my $source = defined $$self{mouth} && $$self{mouth}->getSource;
-  if (!$source) {
+  if (!defined($source)) {
     foreach my $frame (@{ $$self{mouthstack} }) {
       $source = $$frame[0]->getSource;
-      last if $source; } }
+      last if defined($source); } }
   return $source; }
 
 sub getSourceMouth {
   my ($self) = @_;
   my $mouth = $$self{mouth};
   my $source = defined $mouth && $mouth->getSource;
-  if (!$source || !defined($source)) {
+  if (!defined($source)) {
     foreach my $frame (@{ $$self{mouthstack} }) {
       $mouth  = $$frame[0];
       $source = $mouth->getSource;
-      last if $source; } }
+      last if defined($source); } }
   return $mouth; }
 
 # Handy message generator when we didn't get something expected.

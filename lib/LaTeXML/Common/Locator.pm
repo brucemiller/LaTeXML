@@ -70,8 +70,8 @@ sub toString {
 
 sub stringify {
   my ($self) = @_;
-  my $loc       = defined $$self{source} ? $$self{source} : 'Anonymous String';
-  my $rangeFrom = $self->isRange         ? ' from'        : '';
+  my $loc = defined $$self{source} ? ($$self{source} || 'Literal String') : 'Anonymous String';
+  my $rangeFrom = $self->isRange ? ' from' : '';
   $loc .= ";$rangeFrom line $$self{fromLine}" if defined($$self{fromLine});
   $loc .= " col $$self{fromCol}" if defined($$self{fromLine}) && defined($$self{fromCol});
   $loc .= " to line $$self{toLine}" if defined($$self{toLine});
@@ -141,11 +141,12 @@ It extends L<LaTeXML::Common::Object>.
 =item C<< $locator = LaTeXML::Common::Locator->new($source, $fromLine, $fromCol, $toLine, $toCol); >>
 
 Creates a new locator. C<$source> should be a string containing the full path
-of the source file, or undef in case of an anonymous string. C<$fromLine> and
-C<$fromCol> should be integers containing the line and column numbers of the
-start of the range in the source file, or undef if unknown. C<$toLine> and
-C<$toCol> should be the integers containing the line and column numbers of
-the end of the range, or undef if a point is being refered to. 
+of the source file, an empty string in case of a literal string, or undef in 
+case of an anonymous string. C<$fromLine> and C<$fromCol> should be integers
+containing the line and column numbers of the start of the range in the source
+file, or undef if unknown. C<$toLine> and C<$toCol> should be the integers
+containing the line and column numbers of the end of the range, or undef 
+if a point is being refered to. 
 
 =item C<< $locator = LaTeXML::Common::Locator->newRange($from, $to); >>
 

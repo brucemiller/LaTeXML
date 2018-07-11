@@ -35,8 +35,7 @@ sub create {
     $options{shortsource} = "$name.$ext";
     return $class->new($options{content}, %options); }
   elsif ($source =~ s/^literal://) {    # we've supplied literal data
-    # TODO: Consider what we want to do with this string
-    # $options{source} = "Literal String " . substr($source, 0, 10) unless defined $options{source};
+    $options{source} = ''; # the source does not have a corresponding file name
     return $class->new($source, %options); }
   elsif (!defined $source) {
     return $class->new('', %options); }
@@ -74,9 +73,9 @@ sub initialize {
   $$self{chars}  = [];
   $$self{nchars} = 0;
   if ($$self{notes}) {
-    my $source = $$self{source} || 'Anonymous String';
+    my $source = defined($$self{source}) ? ($$self{source} || 'Literal String') : 'Anonymous String';
     $$self{note_message} = "Processing " . ($$self{fordefinitions} ? "definitions" : "content")
-      . " " . ($$self{source} || 'Anonymous String');
+      . " " . $source;
     NoteBegin($$self{note_message}); }
   if ($$self{fordefinitions}) {
     $$self{saved_at_cc}            = $STATE->lookupCatcode('@');
