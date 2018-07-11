@@ -75,7 +75,24 @@ sub Equals {
   return 0 unless (defined $a) && (defined $b);  # else both must be defined
   my $refa = (ref $a) || '_notype_';
   my $refb = (ref $b) || '_notype_';
-  return 0 if $refa ne $refb;                    # same type?
+
+  if ($refa ne $refb) {    # same type required, beware CODE() of Perl subroutines passed in Tokens
+    if ($refa eq 'CODE') {
+      my $flatb = ToString($b);
+      if ($flatb =~ /^CODE/) {
+        $b    = $flatb;
+        $a    = "$a";
+        $refa = $refb = '_notype_'; }
+      else { return 0; } }
+    elsif ($refb eq 'CODE') {
+      my $flata = ToString($a);
+      if ($flata =~ /^CODE/) {
+        $a    = $flata;
+        $b    = "$b";
+        $refa = $refb = '_notype_'; }
+      else { return 0; } }
+    else { return 0; } }
+
   return $a eq $b if ($refa eq '_notype_') || $NOBLESS{$refa};    # Deep comparison of builtins?
         # Special cases? (should be methods, but that embeds State knowledge too low)
 

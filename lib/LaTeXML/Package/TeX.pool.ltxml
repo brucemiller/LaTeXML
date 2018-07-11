@@ -765,17 +765,19 @@ Let('\protect', '\relax');
 #======================================================================
 
 DefMacro('\romannumeral Number', sub { roman($_[1]->valueOf); });
-#DefMacro('\string Token',        sub { ExplodeText($_[1]->getString); });
 # Hmm... I wonder, should getString itself be dealing with escapechar?
 sub escapechar {
   my $code = LookupRegister('\escapechar')->valueOf;
   return (($code >= 0) && ($code <= 255) ? chr($code) : ''); }
 
+
+# 1) Knuth, The TeXBook, page 40, paragraph 1, Chapter 7: How TEX Reads What You Type.
+# suggests all characters except spaces are returned in category code Other, i.e. Explode()
 DefMacro('\string Token', sub {
     my $s = $_[1]->getString;
     if ($s =~ s/^\\//) {
       $s = escapechar() . $s; }
-    ExplodeText($s); });
+    Explode($s); });
 
 DefMacroI('\jobname', undef, Tokens());    # Set to the filename by initialization
 
@@ -799,20 +801,31 @@ DefMacro('\meaning Token', sub {
       my $type = ref $definition;
       $type =~ s/^LaTeXML:://;
       # I don't understand what this is about
-      if (lc($type) =~ /primitive/) {
+      if ($type =~ /primitive/i) {
         $definition = $definition->getCS;
         $type       = ref $definition;
         $type =~ s/^LaTeXML:://; }
-      if (lc($type) =~ /con(ditional|structor)/) {
+      if ($type =~ /con(ditional|structor)/i) {
         $definition = $definition->getCS;
         $type       = ref $definition;
         $type =~ s/^LaTeXML:://; }
 
-      if (lc($type) =~ /token/) {
+      if ($type =~ /token/i) {
         my $cc   = $definition->getCatcode;
         my $char = $definition->getString;
         $meaning = ($CATCODE_MEANING[$cc] || '') . ' ' . ($cc == CC_SPACE ? ' ' : $char); }
-      elsif (lc($type) =~ /expandable/) {
+      elsif ($type =~ /register/i) {   
+        my $value = $definition->valueOf;
+        my $register_type = lc(ref $value);
+        my $prefix = '\count';
+        if ($register_type && $register_type =~ /glue/) {
+            $prefix = '\skip'; }
+        elsif ($register_type && $register_type =~ /dimension/) {
+            $prefix = '\dimen'; }
+        my $literal_value = $value->valueOf if $register_type;
+        # Should we be more careful to distinguish between latex and tex counters?
+        $meaning = $prefix . $literal_value; }
+      elsif ($type =~ /expandable/i) {
         my $expansion = $definition->getExpansion;
         my $ltxps     = $definition->getParameters;
         my @params;
@@ -847,12 +860,12 @@ DefParameterType('CSName', sub {
     my $cs = escapechar();
     my $s;
     # keep newlines from having \n inside!
-    while (($token = $gullet->readXToken(0)) && (($s = $token->getString) ne '\endcsname')) {
+    while (($token = $gullet->readXToken(1)) && (($s = $token->getString) ne '\endcsname')) {
       my $cc = $token->getCatcode;
       if ($cc == CC_CS) {
         if (defined $STATE->lookupDefinition($token)) {
           Error('unexpected', $token, $gullet,
-            "The control sequence " . ToString($token) . " should not appear between \csname and \endcsname"); }
+            "The control sequence " . ToString($token) . " should not appear between \\csname and \\endcsname"); }
         else {
           Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
       # Keep newlines from having \n!

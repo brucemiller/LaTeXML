@@ -155,7 +155,7 @@ INVOKE:
   # but it isn't expanded in the gullet, but later when digesting, in math mode (? I think)
   elsif ($meaning->isExpandable) {
     my $gullet = $$self{gullet};
-    $gullet->unread(@{ $meaning->invoke($gullet) });
+    $gullet->unread(@{ $meaning->invoke($gullet) || [] });
     $token = $gullet->readXToken();    # replace the token by it's expansion!!!
     pop(@{ $$self{token_stack} });
     goto INVOKE; }
