@@ -169,9 +169,11 @@ sub getSourceMouth {
 # Handy message generator when we didn't get something expected.
 sub showUnexpected {
   my ($self) = @_;
-  my $token = $self->readToken;
-  my $message = ($token ? "Next token is " . Stringify($token) : "Input is empty");
-  unshift(@{ $$self{pushback} }, $token);    # Unread
+  my $message = "Input is empty";
+  if (my $token = $self->readToken) {
+    $message = "Next token is " . Stringify($token);
+    unshift(@{ $$self{pushback} }, $token);
+  }
   return $message; }
 
 sub show_pushback {
@@ -263,7 +265,7 @@ sub readXToken {
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
     # Note: special-purpose lookup in State, for efficiency
-    elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
+    elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
       if (my $r = $defn->invoke($self)) {
         unshift(@{ $$self{pushback} },
