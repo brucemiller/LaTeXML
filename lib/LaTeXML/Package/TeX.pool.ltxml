@@ -580,10 +580,14 @@ sub RequiredKeyVals {
 
   return (KeyVals_aux($gullet, $until, [$star, $plus, @keyspec])); }
 
-DefParameterType('RequiredKeyVals',   sub { RequiredKeyVals(0, 0, @_); });
-DefParameterType('RequiredKeyVals*',  sub { RequiredKeyVals(1, 0, @_); });
-DefParameterType('RequiredKeyVals+',  sub { RequiredKeyVals(0, 1, @_); });
-DefParameterType('RequiredKeyVals*+', sub { RequiredKeyVals(1, 1, @_); });
+DefParameterType('RequiredKeyVals', sub { RequiredKeyVals(0, 0, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('RequiredKeyVals*', sub { RequiredKeyVals(1, 0, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('RequiredKeyVals+', sub { RequiredKeyVals(0, 1, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('RequiredKeyVals*+', sub { RequiredKeyVals(1, 1, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 sub OptionalKeyVals {
   my ($star, $plus, $gullet, @keyspec) = @_;
