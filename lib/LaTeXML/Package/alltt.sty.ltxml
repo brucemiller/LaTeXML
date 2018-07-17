@@ -23,6 +23,8 @@ DefEnvironment('{alltt}', "<ltx:verbatim font='#font'>#body</ltx:verbatim>",
     map { AssignCatcode($_ => CC_OTHER) } '$', '&', '#', '^', '_', '%', '~';
     AssignCatcode(" " => 13);
     Let(T_ACTIVE(" "), '\space');
+    AssignCatcode("\r" => 13);    # Variant of \obeylines
+    Let(T_ACTIVE("\r"), Token("\n", CC_SPACE));    # More appropriate than \par, I think?
     AssignValue(PRESERVE_NEWLINES => 1);
     # \@noligs: This SHOULD inhibit ligature substitution! (eg quotes, dots, etc!!!)
     # \frenchspacing\@vobeyspaces
