@@ -1201,6 +1201,7 @@ sub beginItemize {
   my $postfix = ToString(Tokens(roman($level)));
   my $usecounter = ($nolevel ? $counter : $counter . $postfix);
   Let('\item' => "\\" . $type . '@item') if defined $type;
+  Let('\par','\normal@par');    # In case within odd environment.
   DefMacroI('\@listctr', undef, Tokens(Explode($usecounter)));
 ##  if(! LookupDefinition(T_CS('\@listcontext'))){
 ##    Let(T_CS('\@listcontext'), T_CS('\@currentlabel')); }

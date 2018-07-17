@@ -806,11 +806,11 @@ DefMacro('\meaning Token', sub {
       $type =~ s/^LaTeXML:://;
       # I don't understand what this is about
       if ($type =~ /primitive/i) {
-        $definition = $definition->getCS;
+        $definition = $definition->getCSorAlias;
         $type       = ref $definition;
         $type =~ s/^LaTeXML:://; }
       if ($type =~ /con(ditional|structor)/i) {
-        $definition = $definition->getCS;
+        $definition = $definition->getCSorAlias;
         $type       = ref $definition;
         $type =~ s/^LaTeXML:://; }
 
@@ -2992,7 +2992,7 @@ DefPrimitiveI('\noindent', undef, sub { AssignValue(next_para_class => 'ltx_noin
 # NOTE Also that the whole inPreamble bit is, I think, overused.
 # For example, \par should be a NOOP in vertical mode, and that would generally make it
 # ignored in the preamble.
-DefConstructorI('\par', undef, sub {
+DefConstructorI('\normal@par', undef, sub {
     my ($document, %props) = @_;
     if ($props{inPreamble}) { }
     else {
@@ -3012,7 +3012,9 @@ DefConstructorI('\par', undef, sub {
       Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
           T_CS('\LTX@clear@vadjust@afterpar'))); } },
   properties => { alignmentSkippable => 1 },
-  alias => "\\par\n");
+#  alias => "\\par\n");
+  alias => '\par');
+Let('\par','\normal@par');
 # OTOH, sometimes \par is just a minimalistic "start a new line"
 # This should be closer for those cases.
 DefConstructorI('\inner@par', undef, sub {
