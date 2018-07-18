@@ -688,6 +688,8 @@ sub parse_single {
       print STDERR "\n=>" . printNode($result) . "\n" . ('=' x 60) . "\n"; }
     return $result; } }
 
+use Data::Dumper;
+
 sub node_to_lexeme {
   my ($self, $node) = @_;
   my $lexeme   = getTokenMeaning($node);
@@ -695,16 +697,16 @@ sub node_to_lexeme {
   my $document = $LaTeXML::MathParser::DOCUMENT;
   $lexeme = '' unless defined $lexeme;
   if (my $font = $node->getAttribute('_font')) {
-    $font = $document->decodeFont($font);
-    if (my $font_spec = $font && $font->specialize($lexeme)) {
-      if (my %pending_declaration = $font_spec->relativeTo(LaTeXML::Common::Font->textDefault)) {
-        my $font_text = '';
-        foreach my $attr (keys %pending_declaration) {
-          if ($document->canHaveAttribute($qname, $attr)) {
-            $font_text .= $pending_declaration{$attr}{value}; } }
-        if ($font_text) {
-          $font_text = join("-", sort(split(/\s+/, $font_text)));
-          $lexeme = $font_text . "-" . $lexeme; } } } }
+    my $font_spec = $document->decodeFont($font);
+    if (my %declarations = $font_spec && $font_spec->relativeTo(LaTeXML::Common::Font->textDefault)) {
+      my @to_add             = ();
+      my $font_pending       = $declarations{font} || {};
+      my $properties_pending = $$font_pending{properties} || {};
+      foreach my $attr (qw(family series shape)) {
+        if (my $value = $$properties_pending{$attr}) {
+          push @to_add, $value; } }
+      if (@to_add) {
+        $lexeme = join("-", sort(@to_add)) . "-" . $lexeme; } } }
   if (my $role = $self->getGrammaticalRole($node)) {
     if ($role ne 'UNKNOWN') {
       $lexeme = $role . ":" . $lexeme; } }
