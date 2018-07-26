@@ -1,0 +1,65 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  icml_support.sty.ltxml                                             | #
+# | Support for various LCML styles/classes for LaTeXML                 | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RequirePackage('times');
+RequirePackage('fancyhdr');
+RequirePackage('color');
+RequirePackage('algorithm');
+RequirePackage('algorithmicx');
+RequirePackage('natbib');
+# RequirePackage('eso-pic');
+# RequirePackage('forloop');
+#======================================================================
+# Citations
+DefMacro('\yrcite Semiverbatim','\citeyearpar{#1}');
+DefMacro('\cite Semiverbatim','\citep{#1}');
+
+
+#======================================================================
+# Frontmatter
+Let('\icmltitle','\title');
+DefMacro('\icmltitlerunning{}','');
+
+DefMacro('\icmlsetsymbol{}{}','');
+
+DefEnvironment('{icmlauthorlist}','#body');
+
+# \icmlauthor{author}{labels}
+DefMacro('\icmlauthor{}{}','\author{#1}');
+# \icmlaffiliation{label}{address}
+DefMacro('\icmlaffiliation{}{}','');
+# \icmlcorrespondingauthor{author}{email}
+DefMacro('\icmlcorrespondingauthor{}{}','');
+
+DefMacro('\printAffiliationsAndNotice{}','');
+DefMacro('\icmlEqualContribution','Equal contribution');
+
+DefMacro('\icmlkeywords{}',  '\@add@frontmatter{ltx:keywords}{#1}');
+
+#======================================================================
+# Random extra bits
+
+DefMacro('\abovestrut{}','');
+DefMacro('\belowstrut{}','');
+DefMacro('\abovespace','');
+DefMacro('\aroundspace','');
+DefMacro('\belowspace','');
+DefMacro('\icmlruler{}','');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
