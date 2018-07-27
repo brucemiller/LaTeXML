@@ -3689,7 +3689,7 @@ sub process_index_phrases {
   @expansion = (T_CS('\@index'),
     ($style ? (T_OTHER('['), T_OTHER($style), T_OTHER(']')) : ()),
     T_BEGIN, @expansion, T_END);
-  return @expansion; }
+  return (T_BEGIN,T_CS('\normalfont'), @expansion, T_END); }
 
 DefMacro('\index{}', \&process_index_phrases);
 
@@ -3705,15 +3705,16 @@ sub addIndexPhraseKey {
 
 DefConstructor('\@index[]{}', "^<ltx:indexmark style='#1'>#2</ltx:indexmark>",
   mode => 'text', reversion => '', sizer => 0);
+
 DefConstructor('\@indexphrase[]{}',
-  "<ltx:indexphrase key='#key'>#2</ltx:indexphrase>",
+  "<ltx:indexphrase key='#key' _standalone_font='true'>#2</ltx:indexphrase>",
   properties => { key => sub { CleanIndexKey($_[1]); } });
 DefConstructor('\@indexsee{}',
-  "<ltx:indexsee key='#key' name='#name'>#1</ltx:indexsee>",
+  "<ltx:indexsee key='#key' name='#name' _standalone_font='true'>#1</ltx:indexsee>",
   properties => { name => sub { DigestIf('\seename') } });
 
 DefConstructor('\@indexseealso{}',
-  "<ltx:indexsee key='#key' name='#name'>#1</ltx:indexsee>",
+  "<ltx:indexsee key='#key' name='#name' _standalone_font='true'>#1</ltx:indexsee>",
   properties => { name => sub { DigestIf('\alsoname') } });
 
 DefConstructor('\glossary{}',

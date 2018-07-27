@@ -366,7 +366,9 @@ sub finalize_rec {
   my ($self, $node) = @_;
   my $model               = $$self{model};
   my $qname               = $model->getNodeQName($node);
-  my $declared_font       = $LaTeXML::FONT;
+  # _standalone_font is typically for metadata that gets extracted out of context
+  my $declared_font       = ($node->getAttribute('_standalone_font')
+			     ? LaTeXML::Common::Font->textDefault : $LaTeXML::FONT);
   my $desired_font        = $LaTeXML::FONT;
   my %pending_declaration = ();
   if (my $comment = $node->getAttribute('_pre_comment')) {
