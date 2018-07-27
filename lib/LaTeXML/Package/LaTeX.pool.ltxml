@@ -140,9 +140,9 @@ Let('\@currenvline', '\@empty');
 
 DefMacro('\begin{}', sub {
     my ($gullet, $env) = @_;
-    my $name   = $env && ToString($env);
-    my $before = LookupValue('@environment@' . ToString($_[1]) . '@beforebegin');
-    my $after  = LookupValue('@environment@' . ToString($_[1]) . '@atbegin');
+    my $name   = $env && ToString(Expand($env));
+    my $before = LookupValue('@environment@' . $name . '@beforebegin');
+    my $after  = LookupValue('@environment@' . $name . '@atbegin');
     if (IsDefined("\\begin{$name}")) {
       (($before ? @$before : ()),
         T_CS("\\begin{$name}")); }    # Magic cs!
@@ -162,9 +162,9 @@ DefMacro('\begin{}', sub {
 
 DefMacro('\end{}', sub {
     my ($gullet, $env) = @_;
-    my $name   = $env && ToString($env);
-    my $before = LookupValue('@environment@' . ToString($_[1]) . '@atend');
-    my $after  = LookupValue('@environment@' . ToString($_[1]) . '@afterend');
+    my $name   = $env && ToString(Expand($env));
+    my $before = LookupValue('@environment@' . $name . '@atend');
+    my $after  = LookupValue('@environment@' . $name . '@afterend');
     my $t;
 
     if (IsDefined($t = T_CS("\\end{$name}"))) {
