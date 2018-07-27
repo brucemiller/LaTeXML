@@ -218,7 +218,7 @@ sub convertDocument {
           $rule->rewrite($document, $document->getDocument->documentElement); }
         NoteEnd("Rewriting"); }
 
-      LaTeXML::MathParser->new()->parseMath($document) unless $$self{nomathparse};
+      LaTeXML::MathParser->new(lexematize=>$state->lookupValue('LEXEMATIZE_MATH'))->parseMath($document) unless $$self{nomathparse};
       NoteBegin("Finalizing");
       my $xmldoc = $document->finalize();
       NoteEnd("Finalizing");

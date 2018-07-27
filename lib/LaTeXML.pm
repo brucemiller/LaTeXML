@@ -476,6 +476,9 @@ sub convert_post {
         elsif ($fmt eq 'mathtex') {
           require LaTeXML::Post::TeXMath;
           push(@mprocs, LaTeXML::Post::TeXMath->new(%PostOPS)); }
+        elsif ($fmt eq 'mathlex') {
+          require LaTeXML::Post::LexMath;
+          push(@mprocs, LaTeXML::Post::LexMath->new(%PostOPS)); }
       }
       ###    $keepXMath  = 0 unless defined $keepXMath;
       ### OR is $parallelmath ALWAYS on whenever there's more than one math processor?
