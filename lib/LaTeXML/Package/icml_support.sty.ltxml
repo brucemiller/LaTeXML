@@ -26,40 +26,39 @@ RequirePackage('natbib');
 # RequirePackage('forloop');
 #======================================================================
 # Citations
-DefMacro('\yrcite Semiverbatim','\citeyearpar{#1}');
-DefMacro('\cite Semiverbatim','\citep{#1}');
-
+DefMacro('\yrcite Semiverbatim', '\citeyearpar{#1}');
+DefMacro('\cite Semiverbatim',   '\citep{#1}');
 
 #======================================================================
 # Frontmatter
-Let('\icmltitle','\title');
-DefMacro('\icmltitlerunning{}','');
+Let('\icmltitle', '\title');
+DefMacro('\icmltitlerunning{}', '');
 
-DefMacro('\icmlsetsymbol{}{}','');
+DefMacro('\icmlsetsymbol{}{}', '');
 
-DefEnvironment('{icmlauthorlist}','#body');
+DefEnvironment('{icmlauthorlist}', '#body');
 
 # \icmlauthor{author}{labels}
-DefMacro('\icmlauthor{}{}','\author{#1}');
+DefMacro('\icmlauthor{}{}', '\author{#1}');
 # \icmlaffiliation{label}{address}
-DefMacro('\icmlaffiliation{}{}','');
+DefMacro('\icmlaffiliation{}{}', '');
 # \icmlcorrespondingauthor{author}{email}
-DefMacro('\icmlcorrespondingauthor{}{}','');
+DefMacro('\icmlcorrespondingauthor{}{}', '');
 
-DefMacro('\printAffiliationsAndNotice{}','');
-DefMacro('\icmlEqualContribution','Equal contribution');
+DefMacro('\printAffiliationsAndNotice{}', '');
+DefMacro('\icmlEqualContribution',        'Equal contribution');
 
-DefMacro('\icmlkeywords{}',  '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\icmlkeywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
 
 #======================================================================
 # Random extra bits
 
-DefMacro('\abovestrut{}','');
-DefMacro('\belowstrut{}','');
-DefMacro('\abovespace','');
-DefMacro('\aroundspace','');
-DefMacro('\belowspace','');
-DefMacro('\icmlruler{}','');
+DefMacro('\abovestrut{}', '');
+DefMacro('\belowstrut{}', '');
+DefMacro('\abovespace',   '');
+DefMacro('\aroundspace',  '');
+DefMacro('\belowspace',   '');
+DefMacro('\icmlruler{}',  '');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
