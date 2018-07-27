@@ -230,18 +230,23 @@ DefParameterType('XUntil', sub {
 DefParameterType('Expanded', sub {
     my ($gullet) = @_;
     my $token    = $gullet->readXToken(0);
-    my @tokens   = ($token);
+    my @tokens   = ();
     if ($token->getCatcode == CC_BEGIN) {
       my $level = 1;
       while ($token = $gullet->readXToken(0)) {
-        push(@tokens, $token);
         my $cc = $$token[1];
         if ($cc == CC_END) {
           $level--;
           last unless $level; }
         elsif ($cc == CC_BEGIN) {
-          $level++; } } }
-    return Tokens(@tokens); });
+          $level++; }
+        push(@tokens, $token); }
+      return Tokens(@tokens); }
+    else {
+      return $token; } },
+  reversion => sub {
+    my ($arg) = @_;
+    (T_BEGIN,Revert($arg), T_END); });
 
 # Read a matching keyword, eg. Match:=
 DefParameterType('Match', sub { shift->readMatch(@_); });
