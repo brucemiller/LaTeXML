@@ -80,11 +80,11 @@ sub setNode {
   return; }
 
 sub getLocator {
-  my ($self, @args) = @_;
+  my ($self) = @_;
   if (my $box = $self->getNodeBox($$self{node})) {
-    return $box->getLocator(@args); }
+    return $box->getLocator; }
   else {
-    return 'EOF?'; } }    # well?
+    return; } }    # well?
 
 # Get the element at (or containing) the current insertion point.
 sub getElement {

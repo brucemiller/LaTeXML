@@ -661,7 +661,7 @@ sub parse_single {
     my $box = $document->getNodeBox($mathnode);
     print STDERR "\n" . ('=' x 60) .
       "\nParsing formula \"" . ToString($box) . "\""
-      . "\n from " . $box->getLocator
+      . "\n from " . ToString($box->getLocator)
       . "\n == \"" . join(' ', map { node_string($_, $document) } @nodes) . "\""
       . "\n == " . ToString($mathnode)
       . "\n"; }

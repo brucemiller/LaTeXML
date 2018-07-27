@@ -457,12 +457,12 @@ sub installDefinition {
   my $token = $definition->getCS;
   my $cs = ($LaTeXML::Core::Token::PRIMITIVE_NAME[$$token[1]] || $$token[0]);
   if ($self->lookupValue("$cs:locked") && !$LaTeXML::Core::State::UNLOCKED) {
-    if (my $s = $self->getStomach->getGullet->getSource) {
-      # report if the redefinition seems to come from document source
-      if ((($s eq "Anonymous String") || ($s =~ /\.(tex|bib)$/))
-        && ($s !~ /\.code\.tex$/)) {
-        Info('ignore', $cs, $self->getStomach, "Ignoring redefinition of $cs"); }
-      return; } }
+    my $s = $self->getStomach->getGullet->getSource;
+    # report if the redefinition seems to come from document source
+    if (((!defined($s)) || ($s =~ /\.(tex|bib)$/))
+      && ($s !~ /\.code\.tex$/)) {
+      Info('ignore', $cs, $self->getStomach, "Ignoring redefinition of $cs"); }
+    return; }
   assign_internal($self, 'meaning', $cs => $definition, $scope);
   return; }
 

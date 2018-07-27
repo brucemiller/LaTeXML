@@ -287,7 +287,7 @@ sub readFrom {
     $$self{hookMissing} = undef; }
 
   # read the opening token and figure out where we are
-  my $startloc = $gullet->getLocator();
+  my $startloc = $gullet->getLocator;
 
   # set and read tokens
   my $open   = $gullet->readToken;
@@ -311,7 +311,7 @@ sub readFrom {
     # if there was no delimiter at the end, we throw an error
     Error('expected', $until, $gullet,
       "Fell off end expecting " . Stringify($until) . " while reading KeyVal key",
-      "key started at $startloc")
+      "key started at " . ToString($startloc))
       unless $delim;
 
     # turn the key tokens into a string and normalize

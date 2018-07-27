@@ -346,7 +346,8 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
         || ($STATE->valueInFrame('current_environment', 0) ne 'document')) {
         # my $nonbox = $STATE->valueInFrame('groupNonBoxing',0) || 0;
         my $tok = $STATE->valueInFrame('groupInitiator',        0) || '<unknown>';
-        my $loc = $STATE->valueInFrame('groupInitiatorLocator', 0) || '<unknown>';
+        my $loc = $STATE->valueInFrame('groupInitiatorLocator', 0);
+        $loc = defined $loc ? ToString($loc) : '<unknown>';
         my $env = $STATE->isValueBound('current_environment', 0)
           && $STATE->valueInFrame('current_environment', 0);
         if ($env) {

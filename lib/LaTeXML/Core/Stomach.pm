@@ -58,8 +58,8 @@ sub getGullet {
   return $$self{gullet}; }
 
 sub getLocator {
-  my ($self, @args) = @_;
-  return $$self{gullet}->getLocator(@args); }
+  my ($self) = @_;
+  return $$self{gullet}->getLocator; }
 
 sub getBoxingLevel {
   my ($self) = @_;
