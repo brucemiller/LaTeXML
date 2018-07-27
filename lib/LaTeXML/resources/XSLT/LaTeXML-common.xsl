@@ -409,6 +409,9 @@
       <xsl:with-param name="extra_style" select="string($extra_style)"/>
     </xsl:call-template>
     <xsl:apply-templates select="." mode="add_RDFa"/>
+    <xsl:if test="@xml:lang">
+      <xsl:apply-templates select="@xml:lang" mode="copy-attribute"/>
+    </xsl:if>
   </xsl:template>
       
   <!-- Add a class attribute value to the current html element

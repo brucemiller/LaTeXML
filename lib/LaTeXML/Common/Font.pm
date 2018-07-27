@@ -34,7 +34,7 @@ my $DEFCOLOR      = 'black';      # [CONSTANT]
 my $DEFBACKGROUND = 'white';      # [CONSTANT]
 my $DEFOPACITY    = '1';          # [CONSTANT]
 my $DEFENCODING   = 'OT1';        # [CONSTANT]
-my $DEFLANGUAGE   = 'en';
+my $DEFLANGUAGE   = undef;
 
 sub DEFSIZE { return $STATE->lookupValue('NOMINAL_FONT_SIZE') || 10; }
 
