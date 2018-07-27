@@ -52,8 +52,7 @@ sub new {
   my $internalparser = LaTeXML::MathGrammar->new();
   Fatal("expected", "MathGrammar", undef,
     "Compilation of Math Parser grammar failed") unless $internalparser;
-
-  my $self = bless { internalparser => $internalparser }, $class;
+  my $self = bless { internalparser => $internalparser, lexematize => $options{lexematize} }, $class;
   return $self; }
 
 sub parseMath {
@@ -119,7 +118,7 @@ sub cleanupScripts {
         # Now, replace each ref to the script application by an application to a ref to the script.
         foreach my $ref (@refs) {
           $document->replaceTree(['ltx:XMApp', {%attr}, $scriptref], $ref); }
-      } } }
+  } } }
   return; }
 
 sub getQName {
@@ -253,6 +252,12 @@ sub parse {
   foreach my $n ($document->findnodes("descendant-or-self::*[\@xml:id]", $xnode)) {
     my $id = $n->getAttribute('xml:id');
     $LaTeXML::MathParser::IDREFS{$id} = $n; }
+  if ($$self{lexematize}) {
+    my $lexeme_form = $self->node_to_lexeme_full($xnode);
+    $lexeme_form =~ s/^\s+//;
+    $lexeme_form =~ s/\s+$//;
+    $xnode->parentNode->setAttribute('lexemes', $lexeme_form);
+  }
   if (my $result = $self->parse_rec($xnode, 'Anything,', $document)) {
     # Add text representation to the containing Math element.
     my $p = $xnode->parentNode;
@@ -282,7 +287,8 @@ sub parse {
       else {
         foreach my $n ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']", $p)) {
           $document->setAttribute($n, idref => $repid); } } }
-    $p->setAttribute('text', text_form($result)); }
+    $p->setAttribute('text', text_form($result));
+  }
   return; }
 
 my %TAG_FEEDBACK = ('ltx:XMArg' => 'a', 'ltx:XMWrap' => 'w');    # [CONSTANT]
@@ -291,6 +297,7 @@ my %TAG_FEEDBACK = ('ltx:XMArg' => 'a', 'ltx:XMWrap' => 'w');    # [CONSTANT]
 sub parse_rec {
   my ($self, $node, $rule, $document) = @_;
   $self->parse_children($node, $document);
+
   # This will only handle 1 layer nesting (successfully?)
   # Note that this would have been found by the top level xpath,
   # but we've got to worry about node identity: the parent is being rebuilt
@@ -663,7 +670,8 @@ sub parse_single {
     $result = $nodes[0] || Absent(); }
   else {
     # Now do the actual parse.
-    ($result, $unparsed) = $self->parse_internal($rule, @nodes); }
+    ($result, $unparsed) = $self->parse_internal($rule, @nodes);
+  }
 
   # Failure? No result or uparsed lexemes remain.
   # NOTE: Should do script hack??
@@ -680,6 +688,77 @@ sub parse_single {
       print STDERR "\n=>" . printNode($result) . "\n" . ('=' x 60) . "\n"; }
     return $result; } }
 
+use Data::Dumper;
+
+sub node_to_lexeme {
+  my ($self, $node) = @_;
+  my $lexeme   = getTokenMeaning($node);
+  my $qname    = getQName($node);
+  my $document = $LaTeXML::MathParser::DOCUMENT;
+  $lexeme = '' unless defined $lexeme;
+  if (my $font = $node->getAttribute('_font')) {
+    my $font_spec = $document->decodeFont($font);
+    if (my %declarations = $font_spec && $font_spec->relativeTo(LaTeXML::Common::Font->textDefault)) {
+      my @to_add             = ();
+      my $font_pending       = $declarations{font} || {};
+      my $properties_pending = $$font_pending{properties} || {};
+      foreach my $attr (qw(family series shape)) {
+        if (my $value = $$properties_pending{$attr}) {
+          push @to_add, $value; } }
+      if (@to_add) {
+        $lexeme = join("-", sort(@to_add)) . "-" . $lexeme; } } }
+  if (my $role = $self->getGrammaticalRole($node)) {
+    if ($role ne 'UNKNOWN') {
+      $lexeme = $role . ":" . $lexeme; } }
+
+  $lexeme =~ s/\s//g;
+  return $lexeme;
+}
+
+sub node_to_lexeme_full {
+  my ($self, $unrealized_node) = @_;
+  my $node = realizeXMNode($unrealized_node);
+  my $tag  = getQName($node);
+  if ($tag eq 'ltx:XMHint') { return ""; }    # just skip XMHints, they don't contain lexemes
+  my $role = p_getAttribute($node, 'role');
+  if (($tag =~ /^ltx:XM(Tok|Text)$/) || ($role && ($tag !~ 'ltx:XM(Dual|App|Arg|Wrap|ath)'))) {
+# Elements that directly represent a lexeme, or intended operation with a syntactic role (such as a postscript),
+# can proceed to building the lexeme from the leaf node.
+    return $self->node_to_lexeme($node);
+  } else {
+# Elements that do not have a role and are intermediate "may" need an argument wrapper, so that arguments
+# remain unambiguous. For instance a `\frac{a}{b}` has clear argument structure to be preserved.
+    my ($mark_start, $mark_end) = ('', '');
+    if ($tag ne 'ltx:XMath') {
+      if ($role) {
+        $mark_start = "$role:start ";
+        $mark_end   = "$role:end";
+      } else {
+        if ($tag eq 'ltx:XMArg') {
+          $mark_start = "ARG:start ";
+          $mark_end   = "ARG:end";
+        }
+      }
+    }
+    my $lexemes = $mark_start;
+    if ($tag eq 'ltx:XMDual') {
+      $lexemes .= $self->node_to_lexeme_full($LaTeXML::MathParser::DOCUMENT->getSecondChildElement($node));
+    } else {
+      my @child_nodes = element_nodes($node);
+      # skip through single child wrappers (don't serialize)
+      while (scalar(@child_nodes) == 1 && getQName($child_nodes[0]) =~ /^ltx:XM(Arg|Wrap)$/) {
+        @child_nodes = element_nodes($child_nodes[0])
+      }
+      foreach my $child (@child_nodes) {
+        my $child_lexeme = $self->node_to_lexeme_full($child);
+        $lexemes .= $child_lexeme . ' ' if $child_lexeme;
+      }
+    }
+    $lexemes .= $mark_end;
+    return $lexemes;
+  }
+}
+
 sub parse_internal {
   my ($self, $rule, @nodes) = @_;
   #------------
@@ -687,12 +766,16 @@ sub parse_internal {
   local $LaTeXML::MathParser::LEXEMES = {};
   my $i       = 0;
   my $lexemes = '';
+
   foreach my $node (@nodes) {
+    # This is a parser-specific lexeme, but it is not (yet) identical to the serialized lexeme by
+    # ->node_to_lexeme, which is currently experimental
     my $role = $self->getGrammaticalRole($node);
     my $text = getTokenMeaning($node);
     $text = 'Unknown' unless defined $text;
     my $lexeme = $role . ":" . $text . ":" . ++$i;
     $lexeme =~ s/\s//g;
+
     $$LaTeXML::MathParser::LEXEMES{$lexeme} = $node;
     $lexemes .= ' ' . $lexeme; }
 
@@ -1014,7 +1097,7 @@ sub CatSymbols {
       else {
         foreach my $r ($doc->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']")) {
           $doc->removeNode($r); } }    # ? Hopefully this is safe.
-    } }
+  } }
   return $new; }
 
 # Some handy shorthands.

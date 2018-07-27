@@ -58,6 +58,7 @@ sub SetInputEncoding {
   # or more likely, treating the bytes as (misinterpreted?) utf8?
   # In latter case, perhaps it doesn't matter as long as we end up with the same bytes in/out???
   AssignValue(INPUT_ENCODING => $encoding);
+  DefMacro('\inputencodingname', TokenizeInternal($encoding));
   return; }
 
 #**********************************************************************

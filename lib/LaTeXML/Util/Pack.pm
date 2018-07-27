@@ -166,7 +166,6 @@ sub pack_collection {
       push @packed_docs, get_embeddable($doc); }
     elsif ($whatsout eq 'math') {
       # Math output - least common ancestor of all math in the document
-      print STDERR "REQUESTING MATH\n";
       push @packed_docs, get_math($doc);
       unlink('LaTeXML.cache'); }
     else { push @packed_docs, $doc; } }
