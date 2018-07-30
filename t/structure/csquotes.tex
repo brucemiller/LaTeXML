@@ -1,0 +1,107 @@
+\documentclass[a4paper]{article}
+
+\usepackage[utf8]{inputenc}
+
+%% Some upstream versions of csquotes need this fix
+%% in order to work properly 
+%\makeatletter
+%\def\@inpenc@undefined{}
+%\makeatother
+
+\usepackage{csquotes}
+
+\MakeOuterQuote{"}
+\MakeAutoQuote{«}{»}
+\MakeBlockQuote{<}{|}{>}
+
+\begin{document}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Active Quotes}
+
+"Outer quote"
+
+«Outer «Inner» Outer»
+
+Some text before the quotation. 
+< A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+|Citation >
+Some text after the quotation. 
+
+% to check that the quote environment is not broken
+\begin{quote}
+A normal quote
+\end{quote}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{enquote macro}
+
+\enquote{Outer Quote}
+
+\enquote{Outer \enquote{Inner} Outer}
+
+\enquote{Outer \enquote*{Inner} Outer}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Textquote}
+
+\textquote[Citation]{This is a short quotation typeset with a text quotation
+command. It would be presented in inline style even if it were longer than
+three lines.}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Display Quote}
+
+Some text before the quotation. 
+\begin{displayquote}[Citation]
+A short quotation shown intended.
+\end{displayquote}
+Some text after the quotation. 
+
+Some text before the quotation. 
+\begin{displayquote}[Citation]
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+\end{displayquote}
+Some text after the quotation. 
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Block Quote}
+
+Some text before the quotation. 
+\blockquote[Citation]{A short quotation latex would embed. } 
+Some text after the quotation. 
+
+Some text before the quotation. 
+\blockquote[Citation]{A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. 
+A long quotation latex would show indented. }
+Some text after the quotation. 
+
+
+\end{document}

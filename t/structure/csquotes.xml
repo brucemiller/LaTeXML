@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article" options="a4paper"?>
+<?latexml package="inputenc" options="utf8"?>
+<?latexml package="csquotes"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Active Quotes</title>
+    <para xml:id="S1.p1">
+      <p><text class="ltx_quote ltx_outerquote">“Outer quote”</text></p>
+    </para>
+    <para xml:id="S1.p2">
+      <p><text class="ltx_quote ltx_outerquote">“Outer <text class="ltx_quote ltx_innerquote">‘Inner’</text> Outer”</text></p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>Some text before the quotation.</p>
+      <quote class="ltx_blockquote">
+        <p><text class="ltx_quote">A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+</text><text class="ltx_citation"> (Citation )</text></p>
+      </quote>
+      <p>Some text after the quotation.</p>
+    </para>
+    <para xml:id="S1.p4">
+      <quote>
+        <p>A normal quote</p>
+      </quote>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>enquote macro</title>
+    <para xml:id="S2.p1">
+      <p><text class="ltx_quote ltx_outerquote">“Outer Quote”</text></p>
+    </para>
+    <para xml:id="S2.p2">
+      <p><text class="ltx_quote ltx_outerquote">“Outer <text class="ltx_quote ltx_innerquote">‘Inner’</text> Outer”</text></p>
+    </para>
+    <para xml:id="S2.p3">
+      <p><text class="ltx_quote ltx_outerquote">“Outer <text class="ltx_quote ltx_innerquote">‘Inner’</text> Outer”</text></p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Textquote</title>
+    <para xml:id="S3.p1">
+      <p><text class="ltx_textquote"><text class="ltx_quote ltx_outerquote">“This is a short quotation typeset with a text quotation
+command. It would be presented in inline style even if it were longer than
+three lines.”</text><text class="ltx_citation"> (Citation)</text></text></p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
+    <title><tag close=" ">4</tag>Display Quote</title>
+    <para xml:id="S4.p1">
+      <p>Some text before the quotation.</p>
+      <quote class="ltx_displayquote">
+        <p><text class="ltx_quote">A short quotation shown intended.
+<text class="ltx_citation"> (Citation)</text></text></p>
+      </quote>
+      <p>Some text after the quotation.</p>
+    </para>
+    <para xml:id="S4.p2">
+      <p>Some text before the quotation.</p>
+      <quote class="ltx_displayquote">
+        <p><text class="ltx_quote">A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+<text class="ltx_citation"> (Citation)</text></text></p>
+      </quote>
+      <p>Some text after the quotation.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
+    <title><tag close=" ">5</tag>Block Quote</title>
+    <para xml:id="S5.p1">
+      <p>Some text before the quotation.</p>
+      <quote class="ltx_blockquote">
+        <p><text class="ltx_quote">A short quotation latex would embed. </text><text class="ltx_citation"> (Citation)</text></p>
+      </quote>
+      <p>Some text after the quotation.</p>
+    </para>
+    <para xml:id="S5.p2">
+      <p>Some text before the quotation.</p>
+      <quote class="ltx_blockquote">
+        <p><text class="ltx_quote">A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented.
+A long quotation latex would show indented. </text><text class="ltx_citation"> (Citation)</text></p>
+      </quote>
+      <p>Some text after the quotation.</p>
+    </para>
+  </section>
+</document>

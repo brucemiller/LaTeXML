@@ -4,4 +4,4 @@
 #**********************************************************************
 use LaTeXML::Util::Test;
 
-latexml_tests("t/structure");
+latexml_tests("t/structure", requires=>{csquotes=>'csquotes.sty'});
