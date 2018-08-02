@@ -1,30 +1,37 @@
-language: perl
+language: generic
 sudo: required
 dist: trusty
 
-addons:
-  apt:
-    packages:
-     - libdb-dev
-     - libxml2-dev
-     - libxslt1-dev
-
-perl:
-  - "5.26"
-  - "5.24"
-  - "5.20"
-  - "5.10"
+services:
+  - docker
 
 env:
-  - TEX=none
-  - TEX=texlive
+  ## Testing without texlive  -- perl 5.28, 5.26.2, 5.24.4
+  - PERL=5.28.0 TEX=none
+  - PERL=5.26.2 TEX=none
+  - PERL=5.24.4 TEX=none
+  - PERL=5.20.3 TEX=none
+  - PERL=5.10.1 TEX=none
+  ## Testing with texlive 2018 -- perl 5.28
+  - PERL=5.28.0 TEX=texlive-2018
+  ## Testing with texlive 2016 -- perl 5.26
+  - PERL=5.26.2 TEX=texlive-2016
+  ## Testing with texlive 2015 -- perl 5.22
+  - PERL=5.22.4 TEX=texlive-2015
 
+matrix:
+  # We allow failures for all the TeXLives excepts the 2016 ones
+  allow_failures:
+    - env: PERL=5.28.0 TEX=texlive-2018
+    - env: PERL=5.22.4 TEX=texlive-2015
+  # don't wait for the allow_failures to finish
+  # just mark the results as done. 
+  fast_finish: true
+
+# Pull the given docker image
 before_install:
-  - if [[ "$TEX" != "none" ]]; then sudo apt-get update -q; fi
-  - if [[ "$TEX" == "texlive" ]]; then sudo apt-get install -y texlive-full -q; fi
+  - docker pull latexml/latexml-test-runtime:${PERL}_$TEX
 
-install:
-  - cpanm -v --installdeps --notest .
-
+# Run the docker test image
 script:
-  - perl Makefile.PL && make test
+  - docker run --rm -v $(pwd):/root/latexml -t -i latexml/latexml-test-runtime:${PERL}_$TEX
