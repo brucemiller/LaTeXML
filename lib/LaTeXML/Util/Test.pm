@@ -12,6 +12,7 @@ use File::Spec::Functions;
 use LaTeXML::Post;
 use LaTeXML::Post::MathML::Presentation;
 use LaTeXML::Post::XMath;
+use Config;
 
 use base qw(Exporter);
 #  @Test::More::EXPORT);
@@ -221,7 +222,9 @@ sub daemon_ok {
 
   my $latexmlc = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc');
   $latexmlc =~ s/^\.\///;
-  my $invocation = "perl " . join(" ", map { ("-I", $_) } @INC) . " " . $latexmlc . ' ';
+  my $path_to_perl = $Config{perlpath};
+
+  my $invocation = $path_to_perl . " " . join(" ", map { ("-I", $_) } @INC) . " " . $latexmlc . ' ';
   my $timed = undef;
   foreach my $opt (@$opts) {
     if ($$opt[0] eq 'timeout') {    # Ensure .opt timeout takes precedence
