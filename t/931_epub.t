@@ -6,8 +6,9 @@ use strict;
 use warnings;
 
 use Test::More;
-
+use Config;
 use FindBin;
+
 use File::Temp qw(tempfile);
 use File::Spec::Functions qw(catfile);
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
@@ -17,9 +18,11 @@ my ($tmp_fh, $epub_filename) = tempfile('931_testXXXX', SUFFIX => '.epub');
 close $tmp_fh;
 
 my $log_filename = "931_test.log";
-
 my $latexmlc = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc');
-my $invocation = "$latexmlc --dest=$epub_filename --log=$log_filename literal:test";
+
+my $path_to_perl = $Config{perlpath};
+my $invocation = $path_to_perl . " " . join(" ", map { ("-I", $_) } @INC) . " ";
+$invocation .= $latexmlc . " --dest=$epub_filename --log=$log_filename literal:test ";
 
 my ($writer_discard, $reader_discard, $error_discard);
 my $pid = open3($writer_discard, $reader_discard, $error_discard, $invocation);
