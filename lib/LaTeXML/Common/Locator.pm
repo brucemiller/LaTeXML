@@ -153,6 +153,7 @@ if a point is being refered to.
 Creates a new locator, starting at the locator C<$from> and ending at the
 locator C<$to>. Either locator may be undef, in which case the other one is
 returned.
+
 =back
 
 =head2 Methods
