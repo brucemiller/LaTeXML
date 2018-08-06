@@ -591,7 +591,7 @@ sub addCrossrefs {
         if (my $node = $doc->findNodeByID($id)) {    # If we find a node,
           $self->addCrossref($node, $xref_id); } } }    # }    # add a crossref from it to $others's nod
     else {
-    } }
+  } }
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -657,6 +657,7 @@ sub new_internal {
 sub newFromFile {
   my ($class, $source, %options) = @_;
   $options{source} = $source;
+  $source = pathname_find($source, paths => $$class{searchpaths}) if ref $class;
   if (!$options{sourceDirectory}) {
     my ($dir, $name, $ext) = pathname_split($source);
     $options{sourceDirectory} = $dir || '.'; }

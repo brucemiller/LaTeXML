@@ -57,7 +57,7 @@ sub new {
   return bless { state => $state,
     nomathparse => $options{nomathparse} || 0,
     preload => $options{preload},
-    }, $class; }
+  }, $class; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # High-level API.
@@ -89,7 +89,7 @@ sub showProfile {
   return
     $self->withState(sub {
       LaTeXML::Core::Definition::showProfile();    # Show profile (if any)
-      }); }
+    }); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Mid-level API.
@@ -116,12 +116,15 @@ sub digestFile {
   }
   else {
     $request =~ s/\.\Q$MODE_EXTENSION{$mode}\E$//;
-    if (my $pathname = pathname_find($request, types => [$MODE_EXTENSION{$mode}, ''])) {
+    if (my $pathname = pathname_find($request, types => [$MODE_EXTENSION{$mode}, ''],
+        paths => $$self{state}->lookupValue('SEARCHPATHS'))) {
       $request = $pathname;
       ($dir, $name, $ext) = pathname_split($request); }
     else {
       $self->withState(sub {
-          Fatal('missing_file', $request, undef, "Can't find $mode file $request"); }); } }
+          Fatal('missing_file', $request, undef, "Can't find $mode file $request",
+            LaTeXML::Package::maybeReportSearchPaths()
+          ); }); } }
   return
     $self->withState(sub {
       my ($state) = @_;
@@ -218,7 +221,7 @@ sub convertDocument {
           $rule->rewrite($document, $document->getDocument->documentElement); }
         NoteEnd("Rewriting"); }
 
-      LaTeXML::MathParser->new(lexematize=>$state->lookupValue('LEXEMATIZE_MATH'))->parseMath($document) unless $$self{nomathparse};
+      LaTeXML::MathParser->new(lexematize => $state->lookupValue('LEXEMATIZE_MATH'))->parseMath($document) unless $$self{nomathparse};
       NoteBegin("Finalizing");
       my $xmldoc = $document->finalize();
       NoteEnd("Finalizing");
