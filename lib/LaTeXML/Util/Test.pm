@@ -232,7 +232,7 @@ sub daemon_ok {
   $invocation .= " 2>$localname.test.status ";
   if (!$generate) {
     pathname_chdir($dir);
-    is(system($invocation), 0, "latexmlc invocation for test $localname");
+    is(system($invocation), 0, "latexmlc invocation for test $localname: $invocation yeilded $!");
     pathname_chdir($current_dir);
     # Compare the just generated $base.test.xml to the previous $base.xml
     if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {
