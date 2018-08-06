@@ -219,7 +219,9 @@ sub daemon_ok {
     ['xsltparameter',      'LATEXML_VERSION:TEST'],
     ['nocomments',         '']);
 
-  my $invocation = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc') . ' ';
+  my $latexmlc = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc');
+  $latexmlc =~ s/^\.\///;
+  my $invocation = "perl " . join(" ", map { ("-I", $_) } @INC) . " " . $latexmlc . ' ';
   my $timed = undef;
   foreach my $opt (@$opts) {
     if ($$opt[0] eq 'timeout') {    # Ensure .opt timeout takes precedence
