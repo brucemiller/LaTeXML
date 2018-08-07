@@ -47,7 +47,7 @@ sub new {
   $state->assignValue(DOCUMENTID => (defined $options{documentid} ? $options{documentid} : ''),
     'global');
   $state->assignValue(SEARCHPATHS => [map { pathname_absolute(pathname_canonical($_)) }
-        @{ $options{searchpaths} || [] }],
+        '.', @{ $options{searchpaths} || [] }],
     'global');
   $state->assignValue(GRAPHICSPATHS => [map { pathname_absolute(pathname_canonical($_)) }
         @{ $options{graphicspaths} || [] }], 'global');
