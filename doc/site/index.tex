@@ -201,27 +201,23 @@ you probably should include them as dependencies of \LaTeXML.
 
 \subsection[RPM-based systems]{RPM-based systems}\label{install.rpm}
 \index{rpm}\index{Fedora}\index{Redhat}\index{Centos}
-For Fedora and Enterprise Linux based distributions
-(Redhat Enterprise Linux, CentOS, Scientific Linux\ldots) and similar,
-most software is obtained and installed via the yum repository.
+Current (or recent) releases of \LaTeXML\ should be available from
+the Fedora (and probably others including Redhat Enterprise Linux, CentOS, Scientific Linux\ldots)
+repositories (Thanks Mike Petullo).
 
 \paragraph{Installing prebuilt}\\
-The following commands will install \LaTeXML, including its required
-and optional prerequisites:
-\begin{itemize}
-\item Download \CurrentFedora\ or \CurrentRedHat\, % (but enable the elp repository),
-as appropriate.
-\item Install \LaTeXML, and its prerequisites, using the command:
+The following command will install \LaTeXML, including its required
+and optional prerequisites (use the appropriate command
+(\texttt{yum} or \texttt{dnf}, depending on system and version):
 \begin{lstlisting}[style=shell]
-yum --nogpgcheck localinstall LaTeXML-@\CurrentVersion@-*.noarch.rpm
+sudo yum LaTeXML
 \end{lstlisting}
-\end{itemize}
 
 \paragraph{Installing prerequisites}\label{install.rpm.prereq}
 The prerequisites (including the optional ones) can be installed
 by running this command as root: 
 \begin{lstlisting}[style=shell]
-yum install \
+sudo yum install \
   perl-Archive-Zip perl-DB_File perl-File-Which \
   perl-Getopt-Long perl-Image-Size perl-IO-String perl-JSON-XS \
   perl-libwww-perl perl-Parse-RecDescent perl-Pod-Parser \
