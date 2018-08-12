@@ -52,7 +52,7 @@ GetOptions("destination=s" => \$destination,
   "debug=s"         => sub { no strict 'refs'; ${ 'LaTeXML::' . $_[1] . '::DEBUG' } = 1; },
   "documentid=s"    => \$documentid,
   "help"            => \$help,
-  ) or pod2usage(-message => $LaTeXML::IDENTITY,
+) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
   if $help;
@@ -119,7 +119,7 @@ eval {
         # NOTE that we are serializing via LaTeXML's Document::serialize_aux
         # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
-        }); }
+    }); }
 };
 if ($@) {    # Fatal error?
   print STDERR $@; }
@@ -142,6 +142,10 @@ else {
 $latexml    = undef;
 $digested   = undef;
 $serialized = undef;
+
+if ($@) {    # non-zero exit code for fatal conversions
+  exit 1;
+}
 
 #**********************************************************************
 __END__
