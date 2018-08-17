@@ -818,7 +818,7 @@
           <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
         </xsl:call-template>
         <xsl:if test="ltx:title">
-          <xsl:element name="h6" namespace="{$html_ns}">
+          <xsl:element name="h2" namespace="{$html_ns}">
             <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
             <xsl:apply-templates select="ltx:title/node()">
               <xsl:with-param name="context" select="$innercontext"/>

@@ -107,7 +107,7 @@
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
       <xsl:if test="@name">
-        <xsl:element name="h6" namespace="{$html_ns}">  
+        <xsl:element name="h2" namespace="{$html_ns}">
           <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
           <xsl:attribute name="class">ltx_title ltx_title_abstract</xsl:attribute>
           <xsl:apply-templates select="@name">
@@ -136,7 +136,7 @@
       </xsl:apply-templates>
       <xsl:if test="@name">
         <xsl:text>&#x0A;</xsl:text>
-        <xsl:element name="h6" namespace="{$html_ns}">  
+        <xsl:element name="h2" namespace="{$html_ns}">
           <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
           <xsl:attribute name="class">ltx_title ltx_title_acknowledgements</xsl:attribute>
           <xsl:apply-templates select="@name">
@@ -167,7 +167,7 @@
       </xsl:apply-templates>
       <xsl:if test="@name">
         <xsl:text>&#x0A;</xsl:text>
-        <xsl:element name="h6" namespace="{$html_ns}">
+        <xsl:element name="h2" namespace="{$html_ns}">
           <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
           <xsl:attribute name="class">ltx_title ltx_title_keywords</xsl:attribute>
           <xsl:apply-templates select="@name">
@@ -196,7 +196,7 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
-      <xsl:element name="h6" namespace="{$html_ns}"> <!--should be italic ? -->
+      <xsl:element name="h2" namespace="{$html_ns}"> <!--should be italic ? -->
         <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
         <xsl:attribute name="class">ltx_title ltx_title_classification</xsl:attribute>
         <xsl:choose>
