@@ -1420,6 +1420,10 @@ DefMathML('Apply:ADDOP:?', \&pmml_infix, undef);
 DefMathML("Token:MULOP:?", \&pmml_mo,    undef);
 DefMathML('Apply:MULOP:?', \&pmml_infix, undef);
 
+# Unsatisfactory BINOP = ADDOP or MULOP ???
+DefMathML("Token:BINOP:?", \&pmml_mo, undef);
+DefMathML('Apply:BINOP:?', \&pmml_infix, undef);
+
 DefMathML('Apply:FRACOP:?', sub {
     my ($op, $num, $den, @more) = @_;
     my $thickness = $op->getAttribute('thickness');
