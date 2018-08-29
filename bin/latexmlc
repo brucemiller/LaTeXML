@@ -141,7 +141,7 @@ my $whatsout = $opts->get('whatsout');
 my $is_archive = $whatsout && ($whatsout =~ /^archive/);
 if ($log) {
   if ($opts->get('log')) {
-    if (!$is_archive) { # archives only have the archive file
+    if (!$is_archive) {    # archives only have the archive file
       my $clog = $opts->get('log');
       my $log_handle;
       if (!open($log_handle, ">", $clog)) {
@@ -175,6 +175,10 @@ if ($result) {
 if ($opts->get('destination')) {
   print STDERR $status;
   print STDERR summary($opts->get('destination'), $deststat);
+}
+
+if ($status =~ /fatal error/) {      # non-zero exit code for fatal conversions
+  exit 1;
 }
 
 # == Helpers ==
