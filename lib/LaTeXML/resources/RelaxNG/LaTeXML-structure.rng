@@ -576,7 +576,7 @@ but they are not displayed as part of the list.</a:documentation>
   <define name="glossaryentry">
     <element name="glossaryentry">
       <a:documentation>An entry in an \elementref{glossarylist} consisting of a phrase,
-possibly definitions (one or more, presumably in increasing detail?),
+(one or more, presumably in increasing detail?), possibly a definition,
 and references to points in the document where the phrase was found.</a:documentation>
       <ref name="glossaryentry_attributes"/>
       <ref name="glossaryentry_model"/>
@@ -599,10 +599,10 @@ and references to points in the document where the phrase was found.</a:document
   </define>
   <define name="glossaryentry_model">
     <a:documentation>Content model for \elementref{glossaryentry}.</a:documentation>
-    <ref name="glossaryphrase"/>
     <zeroOrMore>
-      <ref name="glossarydefinition"/>
+      <ref name="glossaryphrase"/>
     </zeroOrMore>
+    <ref name="glossarydefinition"/>
     <optional>
       <ref name="indexrefs"/>
     </optional>
