@@ -2130,7 +2130,7 @@ DefPrimitiveI('\lx@ignorehardspaces', undef, sub {
     my ($token, @boxes);
     while (($token = $gullet->readXToken) && (@boxes = $stomach->invokeToken($token))) {
       while (@boxes && $boxes[0]->getProperty('isSpace')) {
-        pop(@boxes); }
+        shift(@boxes); }
       last if @boxes; }
     return @boxes; });
 
