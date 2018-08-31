@@ -15,16 +15,8 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-# This package allows you to define the font used for
-# emphasis (\emph) within emphasis.
-# For latexml, that styling should be left to the ultimate output,
-# so we just define the command as a dummy.
-DefMacro('\eminnershape', "");
-
-# Undoubtedly not good enough
-DefMacro('\TextOrMath{}{}', '\ifmmode#2\else#1\fi');
-
-DefConstructor('\textsubscript{}', "<ltx:sub>#1</ltx:sub>",
-  mode => 'text');
+# LaTeX now includes fixltx2e by default.
+# https://www.latex-project.org/news/latex2e-news/ltnews22.pdf
+# See LaTeX.pool.ltxml
 
 1;
