@@ -2605,12 +2605,13 @@ RawTeX('\th@plain');    # Activate the default style.
 sub defineNewTheorem {
   my ($stomach, $flag, $thmset, $otherthmset, $type, $within) = @_;
   $thmset      = ToString($thmset);
+  my $classname = CleanClassName($thmset);
+  my $listname  = "theorem:$thmset"; $listname =~ s/\s//g;
   $otherthmset = $otherthmset && ToString($otherthmset);
   $type        = undef unless $type && $type->unlist;
   $within      = $within ? ToString($within) : undef;
 
   my $counter = $otherthmset || $thmset;
-  $counter =~ s/\*$//;     # Strip trailing * off theoremclass for ntheorem.sty
   $counter =~ s/\s+/./;    # convert spaces to period?
   if ($counter ne $thmset) {
     AssignMapping('counter_for_type', $thmset => $counter);
@@ -2620,7 +2621,7 @@ sub defineNewTheorem {
   my $numbering = ToString(LookupValue('\thm@numbering'));    # The number style macro
   $flag = 1 unless $numbering;
   if (!$otherthmset) {
-    my $idprefix = "Thm$counter";
+    my $idprefix = "Thm$classname";
     $idprefix =~ s/\*/./g;
 
     if (!LookupValue('\c@' . $counter)) {                     # if isn't already defined...
@@ -2660,9 +2661,9 @@ sub defineNewTheorem {
         . '\the\thm@headpunct'),
 
     scope => 'global');
-  my $sanitized = $thmset; $sanitized =~ s/['"]//g;
+
   DefEnvironment("{$thmset} OptionalUndigested",
-    "<ltx:theorem xml:id='#id' inlist='thm theorem:$sanitized' class='#class'>"
+    "<ltx:theorem xml:id='#id' inlist='thm $listname' class='ltx_theorem_$classname'>"
       . "#tags"
       . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
       . "#body"
@@ -2702,7 +2703,6 @@ sub defineNewTheorem {
       (%ctr,
         title     => $title,
         titlefont => $title->getFont,
-        class     => 'ltx_theorem_' . CleanClassName($thmset),
       ); },
     scope => 'global');
   return; }

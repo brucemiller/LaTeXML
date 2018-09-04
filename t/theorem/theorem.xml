@@ -11,7 +11,7 @@
       <tag role="refnum">1</tag>
       <tag role="typerefnum">Corollary 1</tag>
     </tags>
-    <title><tag><text font="smallcaps">Corollary 1</text></tag></title>
+    <title><tag><text font="bold">Corollary 1</text></tag></title>
     <para xml:id="ThmCor1.p1">
       <p><text font="slanted">This is a sentence typeset in the theorem environment <text font="typewriter">Cor</text>.</text></p>
     </para>
@@ -22,7 +22,7 @@
       <tag role="refnum">0.1</tag>
       <tag role="typerefnum">Example 0.1</tag>
     </tags>
-    <title class="ltx_runin"><tag><text font="smallcaps">Example 0.1</text></tag></title>
+    <title class="ltx_runin"><tag><text font="bold">Example 0.1</text></tag></title>
     <para xml:id="S0.ThmExa1.p1">
       <p><text font="italic">This is a sentence typeset in the theorem environment <text font="typewriter">Exa</text>.</text></p>
     </para>
@@ -33,7 +33,7 @@
       <tag role="refnum">1</tag>
       <tag role="typerefnum">Remark 1</tag>
     </tags>
-    <title class="ltx_runin"><tag><text font="smallcaps">Remark 1</text></tag></title>
+    <title class="ltx_runin"><tag><text font="bold">Remark 1</text></tag></title>
     <para xml:id="ThmRem1.p1">
       <p>This is a sentence typeset in the theorem environment <text font="typewriter">Rem</text>.</p>
     </para>
@@ -44,7 +44,7 @@
       <tag role="refnum">2</tag>
       <tag role="typerefnum">Lemma 2</tag>
     </tags>
-    <title class="ltx_outdent"><tag><text font="smallcaps">2 Lemma</text></tag><text font="smallcaps"> (Ben User)</text></title>
+    <title class="ltx_outdent"><tag><text font="bold">2 Lemma</text></tag><text font="smallcaps"> (Ben User)</text></title>
     <para xml:id="ThmCor2.p1">
       <p><text font="slanted">This is a sentence typeset in the theorem environment <text font="typewriter">Lem</text>.</text></p>
     </para>
@@ -55,9 +55,59 @@
       <tag role="refnum">3</tag>
       <tag role="typerefnum">Definition 3</tag>
     </tags>
-    <title class="ltx_runin"><tag><text font="smallcaps">3 Definition</text></tag><text font="smallcaps"> (Very impressive Definition)</text></title>
+    <title class="ltx_runin"><tag><text font="bold">3 Definition</text></tag><text font="smallcaps"> (Very impressive Definition)</text></title>
     <para xml:id="ThmCor3.p1">
       <p><text font="italic">This is a sentence typeset in the theorem environment <text font="typewriter">Def</text>.</text></p>
     </para>
   </theorem>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Checking Order</title>
+    <theorem class="ltx_theorem_theorem" inlist="thm theorem:theorem" xml:id="S1.Thmtheorem1">
+      <tags>
+        <tag>1.1 Theorem</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">Theorem 1.1</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">1.1 Theorem</text></tag></title>
+      <para xml:id="S1.Thmtheorem1.p1">
+        <p><text font="italic">A theorem</text></p>
+      </para>
+    </theorem>
+    <theorem class="ltx_theorem_theorem" inlist="thm theorem:theorem*" xml:id="Thmtheoremx1">
+      <tags>
+        <tag>Theorem</tag>
+        <tag role="typerefnum">Theorem</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">Theorem</text></tag></title>
+      <para xml:id="Thmtheoremx1.p1">
+        <p><text font="italic">A starred theorem</text></p>
+      </para>
+    </theorem>
+    <theorem class="ltx_theorem_definition" inlist="thm theorem:definition" xml:id="S1.Thmdefinition1">
+      <tags>
+        <tag>1.1 Definition</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">Definition 1.1</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">1.1 Definition</text></tag>.</title>
+      <para xml:id="S1.Thmdefinition1.p1">
+        <p>A definition</p>
+      </para>
+    </theorem>
+    <theorem class="ltx_theorem_definition" inlist="thm theorem:definition*" xml:id="Thmdefinitionx1">
+      <tags>
+        <tag>Definition</tag>
+        <tag role="typerefnum">Definition</tag>
+      </tags>
+      <title class="ltx_runin"><tag><text font="bold">Definition</text></tag>.</title>
+      <para xml:id="Thmdefinitionx1.p1">
+        <p>A starred definition</p>
+      </para>
+    </theorem>
+  </section>
 </document>

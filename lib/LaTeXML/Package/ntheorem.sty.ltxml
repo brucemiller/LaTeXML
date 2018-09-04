@@ -164,9 +164,11 @@ DefMacro('\qed', '\@qedbox{\the\qedsymbol}');
 #======================================================================
 
 Let('\orig@newtheorem', '\newtheorem');
+# This defines BOTH thm & thm* envs, but note that the *'d form of theorem uses same counter!
 DefMacro('\newtheorem OptionalMatch:* {}[]{}[]',
   '\orig@newtheorem#1{#2}[#3]{#4}[#5]'
-    . '\orig@newtheorem#1{#2*}[#3]{#4}[#5]'
+    . '\ifx.#3.\orig@newtheorem#1{#2*}[#2]{#4}[#5]'
+    . '\else\orig@newtheorem#1{#2*}[#3]{#4}[#5]\fi'
 );
 
 DefMacro('\Theoremname', '');
