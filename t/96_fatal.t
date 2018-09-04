@@ -21,7 +21,7 @@ my $latexmlc = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc');
 
 my $path_to_perl = $Config{perlpath};
 my $invocation = $path_to_perl . " " . join(" ", map { ("-I", $_) } @INC) . " ";
-$invocation .= $latexmlc . " --dest=$destination_broken --log=/dev/null $source_broken";
+$invocation .= $latexmlc . " --dest=$destination_broken --log=/dev/null $source_broken  2>/dev/null";
 
 my $exit_code = system($invocation);
 if ($exit_code != 0) {
