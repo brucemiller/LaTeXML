@@ -458,8 +458,8 @@ sub make_bibcite {
           refnum      => [$doc->trimChildNodes($refnum)],
           title       => [$doc->trimChildNodes($title || $keytag)],
           attr        => { idref => $id,
-            href => orNull($self->generateURL($doc, $id)),
-            ($titlestring ? (title => $titlestring) : ()) } }); }
+          href        => orNull($self->generateURL($doc, $id)),
+          ($titlestring ? (title => $titlestring) : ()) } }); }
     else {
       $self->note_missing('warn', 'Entry for citation', $key);
       push(@data, { key => $key, refnum => [$key], title => [$key], year => [],
@@ -492,9 +492,9 @@ sub make_bibcite {
         push(@stuff, $doc->cloneNodes(@{ $$datum{refnum} })); }
       elsif ($show =~ s/^phrase(\d)//i) {
         if (my $current_phrase = $phrases[$1 - 1]) {
-          if (($current_phrase->textContent eq ')') && (!@stuff || (ref $stuff[-1] && $stuff[-1]->textContent eq '('))) {
+          if ((text_content_aux($current_phrase) eq ')') && (!@stuff || (text_content_aux($stuff[-1]) eq '('))) {
             pop @stuff;
-            if (@stuff && $stuff[-1] eq ' ') { pop @stuff; }
+            if (@stuff && text_content_aux($stuff[-1]) eq ' ') { pop @stuff; }
           } else {
             push(@stuff, $phrases[$1 - 1]->childNodes); } } }
       elsif ($show =~ s/^year//i) {
