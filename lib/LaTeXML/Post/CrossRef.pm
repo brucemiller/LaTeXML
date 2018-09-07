@@ -491,12 +491,7 @@ sub make_bibcite {
       elsif ($show =~ s/^refnum//i) {
         push(@stuff, $doc->cloneNodes(@{ $$datum{refnum} })); }
       elsif ($show =~ s/^phrase(\d)//i) {
-        if (my $current_phrase = $phrases[$1 - 1]) {
-          if (($current_phrase->textContent eq ')') && (!@stuff || (ref $stuff[-1] && $stuff[-1]->textContent eq '('))) {
-            pop @stuff;
-            if (@stuff && $stuff[-1] eq ' ') { pop @stuff; }
-          } else {
-            push(@stuff, $phrases[$1 - 1]->childNodes); } } }
+        push(@stuff, $phrases[$1 - 1]->childNodes) if $phrases[$1 - 1]; }
       elsif ($show =~ s/^year//i) {
         if (!$$datum{year}) {
           $self->note_missing('warn', 'Date for citation', $$datum{key}); }
