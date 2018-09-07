@@ -40,6 +40,7 @@ DeclareOption(undef, sub {
 
 ProcessOptions();
 LoadClass('article');
+RequirePackage('natbib', options => ['numbers']);    # Preload w/numbers option!
 RequirePackage('revtex3_support');
 map { RequirePackage($_) } @revtex_toload;
 
