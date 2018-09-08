@@ -9,6 +9,12 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
+  <TOC lists="lot" scope="global">
+    <title>List of Tables</title>
+  </TOC>
+  <TOC lists="lof" scope="global">
+    <title>List of Figures</title>
+  </TOC>
   <section inlist="toc" xml:id="S1">
     <tags>
       <tag>1</tag>
@@ -442,7 +448,7 @@ the whales Save the whale Save the <ref class="ltx_href" href="http://dlmf.nist.
         </tabular>
       </quote>
     </para>
-    <table angle="90" depth="0.0pt" height="622.5pt" innerdepth="45.0pt" innerheight="254.6pt" innerwidth="622.5pt" labels="LABEL:rotfloat2" width="299.6pt" xml:id="S2.T5" xtranslate="-161.45pt" ytranslate="-138.95pt">
+    <table angle="90" depth="0.0pt" height="622.5pt" inlist="lot" innerdepth="45.0pt" innerheight="254.6pt" innerwidth="622.5pt" labels="LABEL:rotfloat2" width="299.6pt" xml:id="S2.T5" xtranslate="-161.45pt" ytranslate="-138.95pt">
       <tags>
         <tag>Table 5</tag>
         <tag role="autoref">Table 5</tag>

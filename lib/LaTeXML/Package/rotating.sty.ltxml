@@ -97,9 +97,9 @@ DefEnvironment('{sidewaysfigure}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties => { layout => 'vertical' },
+  properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest => sub {
+  afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
     RescueCaptionCounters('figure', $whatsit);
     return; },
@@ -116,15 +116,15 @@ DefEnvironment('{sidewaysfigure*}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties => { layout => 'vertical' },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); },
+  properties      => { layout => 'vertical' },
+  beforeDigest    => sub { DefMacroI('\@captype', undef, 'figure'); },
+  afterDigest     => sub { RescueCaptionCounters('figure', $_[1]); },
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
     $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
 
 DefEnvironment('{sidewaystable}[]',
-  "<ltx:table xml:id='#id' ?#1(placement='#1')"
+  "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')"
     . " angle='#angle' width='#width' height='#height' depth='#depth'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
     . " xscale='#xscale' yscale='#yscale'"
@@ -132,15 +132,15 @@ DefEnvironment('{sidewaystable}[]',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties => { layout => 'vertical' },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest => sub { RescueCaptionCounters('table', $_[1]); },
+  properties      => { layout => 'vertical' },
+  beforeDigest    => sub { DefMacroI('\@captype', undef, 'table'); },
+  afterDigest     => sub { RescueCaptionCounters('table', $_[1]); },
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
     $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
 
 DefEnvironment('{sidewaystable*}[]',
-  "<ltx:table xml:id='#id' ?#1(placement='#1')"
+  "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')"
     . " angle='#angle' width='#width' height='#height' depth='#depth'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
     . " xscale='#xscale' yscale='#yscale'"
@@ -148,9 +148,9 @@ DefEnvironment('{sidewaystable*}[]',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties => { layout => 'vertical' },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest => sub { RescueCaptionCounters('table', $_[1]); },
+  properties      => { layout => 'vertical' },
+  beforeDigest    => sub { DefMacroI('\@captype', undef, 'table'); },
+  afterDigest     => sub { RescueCaptionCounters('table', $_[1]); },
   afterDigestBody => sub {
     my ($stomach, $whatsit) = @_;
     $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });

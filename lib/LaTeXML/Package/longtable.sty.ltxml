@@ -30,7 +30,7 @@ DefMacro('\csname endlongtable*\endcsname',
   '\@finish@alignment\@end@tabular');
 
 DefConstructor('\@@longtable [] Undigested DigestedBody',
-  "<ltx:table xml:id='#id' labels='#label'>"
+  "<ltx:table xml:id='#id' inlist='lot' labels='#label'>"
     . "#tags"
     . "?#caption(<ltx:caption>#caption</ltx:caption>)"
     . "?#toccaption(<ltx:toccaption>#toccaption</ltx:toccaption>)"
