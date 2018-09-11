@@ -1234,33 +1234,108 @@ sub extract_separators {
 my %balanced = (    # [CONSTANT]
   '(' => ')', '[' => ']', '{' => '}',
   '|' => '|', '||' => '||',
+  '<' => '>',
   "\x{230A}" => "\x{230B}",    # lfloor, rfloor
   "\x{2308}" => "\x{2309}",    # lceil, rceil
   "\x{2329}" => "\x{232A}",    # angle brackets; NOT mathematical, but balance in case they show up.
   "\x{27E8}" => "\x{27E9}",    # angle brackets (preferred)
   "\x{2225}" => "\x{2225}",    # lVert, rVert
+  "\x{2191}" => "\x{2193}",    # uArrow, dArrow
+  "\x{21D1}" => "\x{21D3}",    # uDoubleArrow, dDoubleArrow
+  "\x{2195}" => "\x{21D5}", # Test weirdness, is this real world relevant? "Up Down Arrow" and "Up Down Double Arrow"
 );
+my %fences = ();
+for my $key (keys(%balanced)) {
+  $fences{$key} = 1;
+  $fences{ $balanced{$key} } = 1;
+}
+
+our %notations = ();
+
+sub Notation {
+  my ($pattern, $meaning) = @_;
+  $notations{$pattern} = $meaning;    # KISS for now, should eventually use a match-builder ?
+  return;
+}
+
 # For enclosing a single object
 # Note that the default here is just to put open/closed attributes on the single object
-my %enclose1 = (    # [CONSTANT]
-  '{@}'   => 'set',                                   # alternatively, just variant parentheses
-  '|@|'   => 'absolute-value',
-  '||@||' => 'norm', "\x{2225}@\x{2225}" => 'norm',
-  "\x{230A}@\x{230B}" => 'floor',
-  "\x{2308}@\x{2309}" => 'ceiling',
-  '<@>'               => 'expectation',               # or just average?
-  '<@|'               => 'bra', '|@>' => 'ket');
+Notation('()',                'unwrap-delimited');
+Notation('(@)',               'unwrap-delimited');
+Notation('{@}',               'set');                # alternatively, just variant parentheses
+Notation('|@|',               'absolute-value');
+Notation('||@||',             'norm');
+Notation("\x{2225}@\x{2225}", 'norm');
+Notation("\x{230A}@\x{230B}", 'floor');
+Notation("\x{2308}@\x{2309}", 'ceiling');
+Notation('<@>',               'expectation');        # or just average;
+Notation('<@|',               'bra');
+Notation('|@>',               'ket');
 # For enclosing more than 2 objects; the punctuation is significant too
-my %enclose2 = (                                      # [CONSTANT]
-  '(@,@)' => 'open-interval',                                           # alternatively, just a list
-  '[@,@]' => 'closed-interval',
-  '(@,@]' => 'open-closed-interval', '[@,@)' => 'closed-open-interval',
-  '{@,@}' => 'set',                                                     # alternatively, just a list ?
-);
+Notation('(@,@)', 'open-interval');                  # alternatively, just a list
+Notation('[@,@]', 'closed-interval');
+Notation('(@,@]', 'open-closed-interval');
+Notation('[@,@)', 'closed-open-interval');
+Notation('{@,@}', 'set');                            # alternatively, just a list ?
+
 # For enclosing more than 2 objects.
 # assume 1st punct? or should we check all are same?
-my %encloseN = (    # [CONSTANT]
-  '(@,@)' => 'vector', '{@,@}' => 'set',);
+Notation('(@,@,@)', 'vector');
+Notation('{@,@,@}', 'set');
+
+our %category_default = ('fence' => sub {
+    if (scalar(@_) < 4) {
+      return "delimited-" . resolve_lex($_[0]) . resolve_lex($_[-1]);
+    } else {
+      return "list";
+    }
+});
+our %delimiters = (',' => 1, ';' => 1);
+
+sub resolve_lex {
+ # for now, only non-word characters in leaf nodes are returned directly, everything else is a subtree
+  my $node = realizeXMNode($_[0]);
+  my $name = p_getQName($node);
+  my $lex;
+
+  if (($name ne 'ltx:XMTok') and ($name ne 'ltx:XMDual')) {
+    $lex = '@';
+  } else {
+    $lex = p_getValue($node);
+    if (!$fences{$lex} && !$delimiters{$lex}) {
+      $lex = '@'; # evolve this to map down to categories, and have @ handled in the matching logic instead
+    }
+  }
+  return $lex;
+}
+
+sub Interpret {
+  my ($category, @components) = @_;
+  # Peak at delimiters to guess what kind of construct this is.
+  my $nargs = scalar(@components);
+  if (!$nargs) {
+    Error("expected", "arguments", "No arguments provided to Interpret, should have at least one");
+    return;
+  }
+  if ($nargs == 1) {
+    # Trivial, just return
+    return New($components[0]);
+  } else {    # > 1
+    my $lexical = join("", map { resolve_lex($_) } @components);
+    my $op = $notations{$lexical};
+    if (!$op) {
+      # print STDERR "\n\nNOT MATCHED: \n$lexical\n\n";
+      if (my $default_handler = $category_default{$category}) {
+        $op = &$default_handler(@components);
+      }
+    }
+
+    if ($op eq 'unwrap-delimited') {    # Hopefully, can just ignore the parens?
+      return ['ltx:XMDual', {},
+        LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $components[1]),
+        ['ltx:XMWrap', {}, @components]]; }
+    else {
+      return InterpretDelimited(New($op), @components); } } }
 
 sub isMatchingClose {
   my ($open, $close) = @_;
@@ -1274,32 +1349,14 @@ sub isMatchingClose {
 # Convert it into the appropriate thing, depending on the specific open & close used.
 # Generate an XMDual to preserve any styling of delimiters and punctuation.
 sub Fence {
-  my (@stuff) = @_;
-  # Peak at delimiters to guess what kind of construct this is.
-  my $nargs = scalar(@stuff);
+  my (@components) = @_;
+  my $nargs = scalar(@components);
   Error("expected", "arguments", undef,
     "Even number of arguments to Fence(); should be of form open,expr,(punct,expr)*,close",
-    "got " . join(' ', map { ToString($_) } @stuff))
+    "got " . join(' ', map { ToString($_) } @components))
     if ($nargs != 2) && (($nargs % 2) == 0);    # either empty or odd number
-  my ($open, $close) = (realizeXMNode($stuff[0]), realizeXMNode($stuff[-1]));
-  my $o  = p_getValue($open);
-  my $c  = p_getValue($close);
-  my $n  = int(($nargs - 2 + 1) / 2);
-  my @p  = map { p_getValue(realizeXMNode(@stuff[2 * $_])) } 1 .. $n - 1;
-  my $op = ($n == 0
-    ? 'list'                                    # ?
-    : ($n == 1
-      ? $enclose1{ $o . '@' . $c }
-      : ($n == 2
-        ? ($enclose2{ $o . '@' . $p[0] . '@' . $c } || 'list')
-        : ($encloseN{ $o . '@' . $p[0] . '@' . $c } || 'list'))));
-  $op = 'delimited-' . $o . $c unless defined $op;
-  if (($n == 1) && ($op eq 'delimited-()')) {    # Hopefully, can just ignore the parens?
-    return ['ltx:XMDual', {},
-      LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $stuff[1]),
-      ['ltx:XMWrap', {}, @stuff]]; }
-  else {
-    return InterpretDelimited(New($op), @stuff); } }
+
+  return Interpret('fence', @components); }
 
 # NOTE: It might be best to separate the multiple Formulae into separate XMath's???
 # but only at the top level!
