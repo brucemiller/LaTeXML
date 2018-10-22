@@ -5277,6 +5277,7 @@ DefPrimitiveI('\@@end', undef, sub { $_[0]->getGullet->flush; return; });
 RawTeX(<<'EoTeX');
 \newlanguage\l@english
 \newlanguage\l@usenglishmax
+\newlanguage\l@USenglish
 \newlanguage\l@dumylang
 \newlanguage\l@nohyphenation
 \newlanguage\l@arabic
