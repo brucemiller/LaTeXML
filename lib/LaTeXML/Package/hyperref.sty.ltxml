@@ -58,7 +58,7 @@ foreach my $option (    # 3.1 General Options
   pdftoolbar pdfviewarea pdfviewclip pdfwindowui unicode),
   # PDF display and information options that provide interesting Metadata
   qw(pdftitle pdfauthor pdfsubject pdfcreator pdfproducer pdfkeywords pdflang)
-  ) {
+) {
   DeclareOption($option, undef); }
 
 # \hypersetup{keyvals} configures various parameters,
@@ -88,7 +88,7 @@ sub hyperref_setoption {
   my ($key, $value) = @_;
   AssignMapping('Hyperref_options', $key, $value);
   if ($key eq 'baseurl') {
-    AssignValue(BASE_URL => $value); }
+    AssignValue(BASE_URL => ToString($value)); }
   return; }
 
 # Digest & store the options;
@@ -179,8 +179,9 @@ DefConstructor('\hyperref@@ii OptionalSemiverbatim {}',
 # 4 argument form
 DefConstructor('\hyperref@@iv Semiverbatim Semiverbatim Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#4</ltx:ref>",
-  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1])
-          . '#' . CleanID(ToString($_[2]) . '.' . ToString($_[3])))); });
+  properties => sub {
+    (href => ComposeURL(LookupValue('BASE_URL'), $_[1],
+        CleanID(ToString($_[2]) . '.' . ToString($_[3])))); });
 
 DefConstructor('\htmlref Semiverbatim  Semiverbatim',
   "<ltx:ref labelref='#label'>#1</ltx:ref>",

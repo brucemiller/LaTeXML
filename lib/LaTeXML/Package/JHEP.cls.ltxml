@@ -132,7 +132,7 @@ DefEnvironment('{floatingtable}[]',
 # \href{url}{text}
 DefConstructor('\href Semiverbatim  Semiverbatim',
   "<ltx:ref href='#href'>#2</ltx:ref>",
-  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
+  properties => sub { (href => ComposeURL((LookupValue('BASE_URL') || ''), $_[1])); });
 
 DefMacro('\JHEPspecialurl Semiverbatim', '');    # ???
 DefMacro('\base Semiverbatim',           '');

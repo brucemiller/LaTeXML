@@ -105,6 +105,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
 
   # Random low-level token or string operations.
   qw(&CleanID &CleanLabel &CleanIndexKey  &CleanClassName &CleanBibKey &NormalizeBibKey &CleanURL
+    &ComposeURL
     &UTF
     &roman &Roman),
   # Math & font state.
@@ -523,6 +524,19 @@ sub CleanURL {
   $url =~ s/^\s+//s; $url =~ s/\s+$//s;    # Trim leading/trailing, in any case
   $url =~ s/\\~\{\}/~/g;
   return $url; }
+
+sub ComposeURL {
+  my ($base, $url, $fragid) = @_;
+  $base   = ToString($base);  $base =~ s/\/$// if $base; # remove trailing /
+  $url    = ToString($url);
+  $fragid = ToString($fragid);
+  return CleanURL(join('',
+      ($base ?
+          ($url =~ /^\w+:/ ? ''            # already has protocol, so is absolute url
+          : $base . ($url =~ /^\// ? '' : '/'))    # else start w/base, possibly /
+        : ''),
+      $url,
+      ($fragid ? '#' . CleanID($fragid) : ''))); }
 
 #======================================================================
 # Defining new Control-sequence Parameter types.
@@ -2271,11 +2285,11 @@ sub maybeRequireDependencies {
       # Ugh. \usepackage, too
       $code =~ s/\\usepackage\s*(?:\[([^\]]*)\])?\s*\{([^\}]*)\}/ &$collect($2,$1); /xegs;
       # Even more ugh; \LoadClass
-      if($type eq 'cls'){
+      if ($type eq 'cls') {
         $code =~ s/\\LoadClass\s*(?:\[([^\]]*)\])?\s*\{([^\}]*)\}/ push(@classes,[$2,$1]); /xegs; }
 
       Info('dependencies', 'dependencies', undef,
-        "Loading dependencies for $path: " . join(',', map { $$_[0]; } @classes,@packages)) if scalar(@classes) || scalar(@packages);
+"Loading dependencies for $path: " . join(',', map { $$_[0]; } @classes, @packages)) if scalar(@classes) || scalar(@packages);
       foreach my $pair (@classes) {
         my ($class, $options) = @$pair;
         if (FindFile($class, type => 'cls', notex => 1)) {
@@ -2348,7 +2362,7 @@ sub FontDecode {
   return if !defined $code || ($code < 0);
   my ($map, $font);
   if (!$encoding) {
-    $font     = LookupValue('font');
+    $font = LookupValue('font');
     $encoding = $font->getEncoding || 'OT1'; }
   if ($encoding && ($map = LoadFontMap($encoding))) {    # OK got some map.
     my ($family, $fmap);

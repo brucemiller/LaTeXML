@@ -384,7 +384,7 @@ DefConstructor('\aas@@fstack Undigested {}',
     . "<ltx:XMWrap>#2</ltx:XMWrap>"
     . "</ltx:XMApp>",
   properties => { scriptpos => sub { "mid" . $_[0]->getBoxingLevel; } },
-  mode => 'math', font => { shape => 'upright' }, bounded => 1, reversion => '#1');
+  mode       => 'math', font => { shape => 'upright' }, bounded => 1, reversion => '#1');
 DefMacro('\aas@fstack{}', '\ensuremath{\aas@@fstack{#1}}');
 
 DefMacro('\fd',    '\ensuremath{\@fd}');
@@ -436,7 +436,7 @@ RequirePackage('url');
 
 DefConstructor('\anchor Semiverbatim Semiverbatim',
   "<ltx:ref href='#href'>#2</ltx:ref>",
-  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
+  properties => sub { (href => ComposeURL(LookupValue('BASE_URL'), $_[1])); });
 
 # This should be in effect only after frontmatter
 # \email{address}

@@ -76,7 +76,7 @@ DefMacro('\Url', sub {
 DefConstructor('\@@Url Undigested {}{} Semiverbatim {}',
   "?#isMath(<ltx:XMWrap href='#href'>#5</ltx:XMWrap>)"    # Allow this to work in Math!
     . " (<ltx:ref href='#href' class='#class'>#5</ltx:ref>)",
-  properties => sub { (href => CleanURL(LookupValue('BASE_URL') . ToString($_[4])),
+  properties => sub { (href => ComposeURL(LookupValue('BASE_URL'), $_[4]),
       class => sub { my $c = ToString($_[1]); $c =~ s/^\\//; 'ltx_' . $c; }); },
   sizer     => '#5',
   reversion => '#1#2#4#3');
