@@ -3843,7 +3843,9 @@ DefPrimitiveI('\-', undef, undef);    # We don't do hyphenation.
 
 DefPrimitiveI('\sloppy', undef, undef);
 DefPrimitiveI('\fussy',  undef, undef);
-DefEnvironment('{sloppypar}', '#body');
+# sloppypar can be used as an environment, or by itself.
+DefMacro('\sloppypar','\par\sloppy');
+DefMacro('\endsloppypar','\par');
 DefMacroI('\nobreakdashes', undef, T_OTHER('-'));
 
 DefMacro('\showhyphens{}', '#1');     # ?
