@@ -1709,6 +1709,7 @@ sub beforeEquation {
   my $numbering = LookupValue('EQUATION_NUMBERING');
   my $numbered  = $$numbering{numbered};
   my $ctr       = $$numbering{counter} || 'equation';
+  $$numbering{in_equation} = 1;
   if ($$numbering{preset}) {
     AssignValue(EQUATIONROW_TAGS => {
         preset => 1,
@@ -1733,12 +1734,13 @@ sub retractEquation {
 # Ahhhh, but in eqnarray, this isn't effected until \\ !!!!!
 DefMacroI('\nonumber', undef, '\lx@equation@nonumber');
 DefPrimitiveI('\lx@equation@nonumber', undef, sub {
-    my $numbering = LookupValue('EQUATION_NUMBERING');
+  my $numbering = LookupValue('EQUATION_NUMBERING');
+  if($$numbering{in_equation}){
     if ($$numbering{deferretract}) {
       my $tags = LookupValue('EQUATIONROW_TAGS');
       $$tags{retract} = 1; }
     else {
-      retractEquation(); }
+      retractEquation(); } }
     return; });
 Let('\@LTX@nonumber', '\lx@equation@nonumber');
 
@@ -1780,6 +1782,7 @@ sub afterEquation {
       $$row{tags} = $$props{tags}; } }
   elsif ($whatsit) {
     $whatsit->setProperties(%{ LookupValue('EQUATIONROW_TAGS') }); }
+  $$numbering{in_equation} = 0;
   return; }
 
 # My first inclination is to Lock {math}, but it is surprisingly common to redefine it in silly ways... So...?
