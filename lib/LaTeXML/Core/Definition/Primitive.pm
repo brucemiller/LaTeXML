@@ -67,7 +67,10 @@ sub equals {
   my ($self, $other) = @_;
   return (defined $other
       && (ref $self) eq (ref $other)) && Equals($self->getParameters, $other->getParameters)
-    && Equals($$self{replacement}, $$other{replacement}); }
+    && Equals($$self{replacement},  $$other{replacement})
+    && Equals($$self{beforeDigest}, $$other{beforeDigest})
+    && Equals($$self{afterDigest},  $$other{afterDigest})
+    ; }
 
 #===============================================================================
 1;
