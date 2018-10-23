@@ -568,17 +568,17 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
     my $ctr = LookupValue('counter_for_' . ToString($type)) || ToString($type);
     $level = ToString($level);
     if ($flag) {    # No number, not in TOC
-      (T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
+      (T_CS('\par'),T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
         T_BEGIN, $type->unlist, T_END,
         T_BEGIN, T_END); }
     elsif ((($level ne '') && ($level > CounterValue('secnumdepth')->valueOf))
       || LookupValue('no_number_sections')) {
       # No number, but in TOC
-      (T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
+      (T_CS('\par'),T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
         T_BEGIN, $type->unlist, T_END,
         T_BEGIN, T_OTHER('toc'), T_END); }
     else {          # Number and in TOC
-      (T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'),
+      (T_CS('\par'),T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'),
         T_BEGIN, $type->unlist, T_END,
         T_BEGIN, T_OTHER('toc'), T_END); } });
 
