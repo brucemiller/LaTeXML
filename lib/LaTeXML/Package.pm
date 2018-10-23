@@ -730,6 +730,8 @@ sub RefStepID {
 sub ResetCounter {
   my ($ctr) = @_;
   AssignValue('\c@' . $ctr => Number(0), 'global');
+  DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(Explode(LookupValue('\c@' . $ctr)->valueOf)),
+    scope => 'global');
   # and reset any within counters!
   if (my $nested = LookupValue("\\cl\@$ctr")) {
     foreach my $c ($nested->unlist) {
