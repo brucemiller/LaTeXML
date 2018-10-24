@@ -59,9 +59,8 @@ sub new {
     ai => { destination_type => 'png',
       transparent => 1,
       prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
-    pdf => { destination_type => 'png',
-      transparent => 1,
-      prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
+    pdf => { destination_type => 'svg',
+      raster => 0, desirability => 11 },
     ps => { destination_type => 'png', transparent => 1,
       prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
     eps => { destination_type => 'png', transparent => 1,
@@ -212,6 +211,20 @@ sub transformGraphic {
         if (pathname_timestamp($source) <= pathname_timestamp($absdest)) {
           NoteProgressDetailed(" [Reuse $cached @ " . ($width || '?') . " x " . ($height || '?') . "]");
           return ($cached, $width, $height); } } } }
+  
+  # HACK: convert PDFs with dvisvgm
+  if ($srctype eq "pdf" && $type eq "svg") {
+    $dest = $self->generateResourcePathname($doc, $node, $source, $type);
+    my $absdest = $doc->checkDestination($dest);
+    my $dvicommand = "dvisvgm --stdout --pdf '$source' > '$absdest'";
+    my $dvierr     = system($dvicommand);
+    if ($dvierr != 0) {
+      Error('shell', 'dvisvgm', undef,
+        "Shell command '$dvicommand' (for dvi conversion) failed",
+        "Response was: $!");
+      return; }
+    return ($dest, undef, undef); }
+
   # Trivial scaling case: Use original image with (at most) different width & height.
   my $triv_scaling = $$self{trivial_scaling} && ($type eq $srctype)
     && image_graphicx_is_trivial($transform);
