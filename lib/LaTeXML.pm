@@ -227,6 +227,7 @@ sub convert {
     $digested = $latexml->digestFile($source, preamble => $current_preamble,
       postamble    => $current_postamble,
       mode         => $mode,
+      target_format => $$opts{format},
       noinitialize => 1);
     # 2.1 Now, convert to DOM and output, if desired.
     if ($digested) {

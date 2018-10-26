@@ -33,9 +33,9 @@ ok(!-z $epub_filename, 'epub file has content');
 
 my $zip_file = Archive::Zip->new();
 is($zip_file->read($epub_filename), AZ_OK, 'epub file successfully loads as Archive::Zip object');
-is($zip_file->numberOfMembers, 9, "correct number of files were present in final ePub");
+is($zip_file->numberOfMembers, 10, "correct number of files were present in final ePub");
 my $names = join(", ",sort($zip_file->memberNames));
-ok($names =~ /^META-INF\/, META-INF\/container\.xml, OPS\/, OPS\/931_test\.log, OPS\/931_test....\.xhtml, OPS\/LaTeXML\.css, OPS\/content\.opf, OPS\/nav\.xhtml, mimetype$/, "correct files were present in final ePub: $names");
+ok($names =~ /^META-INF\/, META-INF\/container\.xml, OPS\/, OPS\/931_test\.log, OPS\/931_test....\.xhtml, OPS\/LaTeXML-epub\.css, OPS\/LaTeXML\.css, OPS\/content\.opf, OPS\/nav\.xhtml, mimetype$/, "correct files were present in final ePub: $names");
 
 my $log_member = $zip_file->memberNamed("OPS/$log_filename");
 ok($log_member, "log file was written to epub");
