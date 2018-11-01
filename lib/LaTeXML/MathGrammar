@@ -286,7 +286,7 @@ Factor  :
         | SCRIPTOPEN scriptFactorOpen[$item[1]]
         | OPEN factorOpen[$item[1]]
         # handle INTOP seperately, since it recognizes d as diff
-        | preScripted['INTOP'] addIntOpArgs[$item[1]]
+        | preScripted['INTOP'] addIntOpArgs[$item[1]] {Integral($item[1], $item[2]);}
         | preScripted['bigop'] addOpArgs[$item[1]]
         | { ($forbidVertBar ? undef : 1); }
           SINGLEVERTBAR SINGLEVERTBAR absExpression SINGLEVERTBAR SINGLEVERTBAR # || exp || ==> norm

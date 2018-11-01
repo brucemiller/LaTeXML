@@ -33,7 +33,7 @@ our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbol
     &LeftRec
     &Arg &MaybeFunction
     &SawNotation &IsNotationAllowed
-    &isMatchingClose &Fence));
+    &isMatchingClose &Fence &Integral));
 our %EXPORT_TAGS = (constructors
     => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbols
       &Annotate &InvisibleTimes &InvisibleComma
@@ -42,7 +42,7 @@ our %EXPORT_TAGS = (constructors
       &LeftRec
       &Arg &MaybeFunction
       &SawNotation &IsNotationAllowed
-      &isMatchingClose &Fence)]);
+      &isMatchingClose &Fence &Integral)]);
 
 # ================================================================================
 sub new {
@@ -1283,22 +1283,33 @@ Notation('{@,@}', 'set');                            # alternatively, just a lis
 Notation('(@,@,@)', 'vector');
 Notation('{@,@,@}', 'set');
 
-our %category_default = ('fence' => sub {
+our %default_handlers = ('fence' => sub {
     if (scalar(@_) < 4) {
       return "delimited-" . resolve_lex($_[0]) . resolve_lex($_[-1]);
     } else {
       return "list";
     }
 });
+our %components_handlers = ('fence' => sub {
+    my @components = @_;
+    # Fence case, circumfix notation expected
+    my $open  = resolve_lex(shift @components, force_lex => 1);
+    my $close = resolve_lex(pop @components,   force_lex => 1);
+    my @args = map { resolve_lex($_) } @components;
+    return join("", ($open, @args, $close));
+});
 our %delimiters = (',' => 1, ';' => 1);
 
 sub resolve_lex {
+  my ($node, %props) = @_;
  # for now, only non-word characters in leaf nodes are returned directly, everything else is a subtree
-  my $node = realizeXMNode($_[0]);
+  $node = realizeXMNode($node);
   my $name = p_getQName($node);
   my $lex;
 
-  if (($name ne 'ltx:XMTok') and ($name ne 'ltx:XMDual')) {
+  if ($props{force_lex}) {
+    $lex = p_getValue($node);
+  } elsif (($name ne 'ltx:XMTok') and ($name ne 'ltx:XMDual')) {
     $lex = '@';
   } else {
     $lex = p_getValue($node);
@@ -1321,15 +1332,22 @@ sub Interpret {
     # Trivial, just return
     return New($components[0]);
   } else {    # > 1
-    my $lexical = join("", map { resolve_lex($_) } @components);
+              # Normalize to lexemes, potentially using custom categorical rules
+    my $lexical = "";
+    if (my $component_handler = $components_handlers{$category}) {
+      $lexical = &$component_handler(@components);
+    } else {
+      $lexical = join("", map { resolve_lex($_) } @components);
+    }
+    # Construct operator subtree
     my $op = $notations{$lexical};
     if (!$op) {
       # print STDERR "\n\nNOT MATCHED: \n$lexical\n\n";
-      if (my $default_handler = $category_default{$category}) {
+      if (my $default_handler = $default_handlers{$category}) {
         $op = &$default_handler(@components);
       }
     }
-
+    # print STDERR "ARG: $op\n\n";
     if ($op eq 'unwrap-delimited') {    # Hopefully, can just ignore the parens?
       return ['ltx:XMDual', {},
         LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $components[1]),
@@ -1611,6 +1629,136 @@ sub MaybeFunction {
     if $LaTeXML::MathParser::STRICT && !$$self{suspicious_tokens}{$token};
   $$self{suspicious_tokens}{$token} = 1;
   return; }
+
+# ================================================================================
+
+# Integral Sepcialization experiments
+
+sub bigop_parts {
+  my ($node) = @_;
+  my ($from, $to, $base);
+  if (getQName($node) eq 'ltx:XMApp') {
+    my ($first, @args) = p_element_nodes($node);
+    my $role = p_getAttribute($first, 'role') || "";
+    if ($role eq 'SUBSCRIPTOP') {
+      $from = $args[1];
+      my ($ifrom, $ito, $ibase) = bigop_parts($args[0]);
+      $to   = $ito;
+      $base = $ibase;
+    } elsif ($role eq 'SUPERSCRIPTOP') {
+      $to = $args[1];
+      my ($ifrom, $ito, $ibase) = bigop_parts($args[0]);
+      $from = $ifrom;
+      $base = $ibase;
+    } else {
+      $base = $node;
+    }
+  } else {
+    $base = $node;
+  }
+  return ($from, $to, $base);
+}
+
+sub Bind {
+  my ($vars, $expression) = @_;
+  return ['ltx:XMApp', { role => 'bind' },
+    ['ltx:XMTok', { omcd => "fns1" }, 'lambda'],
+    (map { ['ltx:XMWrap', { role => "bvar" }, $_] } @$vars),
+    $expression
+  ];
+}
+
+sub specialize_integrand {
+  my ($integrand) = @_;
+  my @bvars       = ();
+  my $specialized = $integrand;
+
+  if (getQName($integrand) eq 'ltx:XMApp') {
+    my ($op, @children) = p_element_nodes($integrand);
+    my @specialized_children = ($op);
+    if (p_getAttribute($op, 'meaning') eq 'differential-d') {
+      # leaf case, looking at a differential binder
+      @$integrand = ();
+      return ([$children[0]], undef);
+    } else {
+      # intermediate node, descend into arguments
+      for my $child (@children) {
+        my ($ibvars, $iexpr) = specialize_integrand($child);
+        print STDERR "inner bvars: ", ToString($ibvars), "\n";
+        print STDERR "inner expr: ",  ToString($iexpr),  "\n";
+        if (ref $ibvars) {
+          push @bvars, @$ibvars;
+        }
+        if (defined $iexpr) {
+          push @specialized_children, $iexpr;
+        }
+      }
+      if ((p_getAttribute($op, 'role') eq 'MULOP') && (scalar(@specialized_children) - 1 < scalar(@children))
+        && (scalar(@specialized_children) == 2)) {
+      # We now have a unary operator, due to deleting differentials, so if the operator is a MULOP, drop it.
+        shift @specialized_children;
+      }
+      if (scalar(@specialized_children) > 1) {
+        $specialized = ['ltx:XMApp', {}, @specialized_children];
+      } else {
+        $specialized = $specialized_children[0];
+      }
+    }
+  }
+
+  return (\@bvars, $specialized);
+}
+
+# Example via: latexmlc 'literal:$\int_a^b x\, dx$'
+# Strict Content MathML for a definite integral over "x", ranging from "a" to "b":
+# <apply>
+#   <csymbol cd="calculus1">defint</csymbol>
+#   <apply>
+#     <csymbol cd="interval1">interval</csymbol>
+#     <ci>a</ci>
+#     <ci>b</ci>
+#   </apply>
+#   <bind>
+#     <csymbol cd="fns1">lambda</csymbol>
+#     <bvar>
+#       <ci>x</ci>
+#     </bvar>
+#     <apply>
+#       <ci>f</ci>
+#       <ci>x</ci>
+#     </apply>
+#   </bind>
+#  </apply>
+sub Integral {
+  my ($operator, $full) = @_;
+  # Extract the integrand from $full
+  my ($bvars, $integrand);
+  if (getQName($full) eq 'ltx:XMApp') {
+    my @children = p_element_nodes($full);
+    $integrand = $children[1];
+    ($bvars, $integrand) = specialize_integrand($integrand);
+    # print STDERR "BVARS: ", Dumper($bvars),"\n\n";
+    # print STDERR "Integrand: ", Dumper($integrand), "\n\n";
+  }
+  # I. Scan integrand for bound variables
+  # TODO
+  # II. Scan operator for range
+  my ($from, $to, $base) = bigop_parts($operator);
+  # III. Reconstruct strict tree
+  if ($from || $to) {
+    # provided range means definite integral
+    # TODO: expand for non-Riemannian integration, with additional csymbols
+    # print STDERR "From: ", ToString($from), "\n";
+    # print STDERR "To: ", ToString($to), "\n";
+    # print STDERR "Base: ", ToString($base), "\n";
+    return Apply(
+      New('defint', undef, omcd => 'calculus1'),
+      Apply(New('interval', undef, omcd => 'interval1'), $from, $to),
+      Bind($bvars, $integrand));
+  } else {
+    return $full;
+  }
+}
 
 # ================================================================================
 1;
