@@ -1124,7 +1124,7 @@ sub Arg {
     # Tricky case: if $node is an XMRef, we'll want to reference the SUB node too
     # and not just use it directly; else that node will be duplicated in both branches of XMDual
     if ($nth && !$node->isSameNode($onode)) {
-      return LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $nth); }
+      return XMRefs($nth); }
     else {
       return $args[$n]; } } }    # will get cloned if/when needed.
 
@@ -1182,8 +1182,8 @@ sub ApplyDelimited {
   my $close = $stuff[-1];
   my ($seps, @args) = extract_separators(@stuff[1 .. $#stuff - 1]);
   return ['ltx:XMDual', {},
-    Apply(LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $op),
-      LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @args)),
+    Apply(XMRefs($op),
+      XMRefs(@args)),
     Apply($op, ['ltx:XMWrap', {}, @stuff])]; }
 
 # This is similar, but "interprets" a delimited list as being the
@@ -1194,7 +1194,7 @@ sub InterpretDelimited {
   my $close = $stuff[-1];
   my ($seps, @args) = extract_separators(@stuff[1 .. $#stuff - 1]);
   return ['ltx:XMDual', {},
-    Apply($op, LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @args)),
+    Apply($op, XMRefs(@args)),
     ['ltx:XMWrap', {}, @stuff]]; }
 
 # Given a sequence of operators, form the nested application op(op(...(arg)))
@@ -1350,7 +1350,7 @@ sub Interpret {
     # print STDERR "ARG: $op\n\n";
     if ($op eq 'unwrap-delimited') {    # Hopefully, can just ignore the parens?
       return ['ltx:XMDual', {},
-        LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $components[1]),
+        XMRefs($components[1]),
         ['ltx:XMWrap', {}, @components]]; }
     else {
       return InterpretDelimited(New($op), @components); } } }
@@ -1386,7 +1386,7 @@ sub NewFormulae {
     my ($seps, @formula) = extract_separators(@stuff);
     return ['ltx:XMDual', {},
       Apply(New('formulae'),
-        LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @formula)),
+        XMRefs(@formula)),
       ['ltx:XMWrap', {}, @stuff]]; } }
 
 # A Formula is an alternation of expr (relationalop expr)*
@@ -1410,7 +1410,7 @@ sub NewList {
     my ($seps, @items) = extract_separators(@stuff);
     return ['ltx:XMDual', {},
       Apply(New('list'),
-        LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @items)),
+        XMRefs(@items)),
       ['ltx:XMWrap', {}, @stuff]]; } }
 
 # Given alternation of expr (addop expr)*, compose the tree (left recursive),
@@ -1588,7 +1588,7 @@ sub NewEvalAt {
   return ['ltx:XMDual', {},
     ['ltx:XMApp', {},
       ['ltx:XMTok', { meaning => 'evaluated-at' }],
-      LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT,
+      XMRefs(
         $base,
         ($lower ? (Arg($lower, 0)) : ()),
         ($upper ? (Arg($upper, 0)) : ()))],
@@ -1668,18 +1668,23 @@ sub Bind {
   ];
 }
 
+sub XMRefs {
+  return LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $_[0]);
+}
+
 sub specialize_integrand {
-  my ($integrand) = @_;
-  my @bvars       = ();
-  my $specialized = $integrand;
+  my ($integrand)   = @_;
+  my @bvars         = ();
+  my ($specialized) = XMRefs($integrand);
 
   if (getQName($integrand) eq 'ltx:XMApp') {
     my ($op, @children) = p_element_nodes($integrand);
-    my @specialized_children = ($op);
+    my @specialized_children = XMRefs($op);
     if (p_getAttribute($op, 'meaning') eq 'differential-d') {
       # leaf case, looking at a differential binder
-      @$integrand = ();
-      return ([$children[0]], undef);
+      # If we were to be deleting in the original tree, this is how: @$integrand = ();
+      my ($bvar_ref) = XMRefs($children[0]);
+      return ([$bvar_ref], undef);
     } else {
       # intermediate node, descend into arguments
       for my $child (@children) {
@@ -1705,7 +1710,6 @@ sub specialize_integrand {
       }
     }
   }
-
   return (\@bvars, $specialized);
 }
 
@@ -1729,19 +1733,19 @@ sub specialize_integrand {
 #     </apply>
 #   </bind>
 #  </apply>
-sub Integral {
-  my ($operator, $full) = @_;
-  # Extract the integrand from $full
+sub specialize_integral {
+  my ($operator, $complete_integral) = @_;
+  # Extract the integrand from $complete_integral
   my ($bvars, $integrand);
-  if (getQName($full) eq 'ltx:XMApp') {
-    my @children = p_element_nodes($full);
+  if (getQName($complete_integral) eq 'ltx:XMApp') {
+    my @children = p_element_nodes($complete_integral);
     $integrand = $children[1];
+    # I. Scan integrand for bound variables
     ($bvars, $integrand) = specialize_integrand($integrand);
     # print STDERR "BVARS: ", Dumper($bvars),"\n\n";
     # print STDERR "Integrand: ", Dumper($integrand), "\n\n";
   }
-  # I. Scan integrand for bound variables
-  # TODO
+
   # II. Scan operator for range
   my ($from, $to, $base) = bigop_parts($operator);
   my $int_csymbol;
@@ -1763,7 +1767,7 @@ sub Integral {
     # print STDERR "To: ", ToString($to), "\n";
     # print STDERR "Base: ", ToString($base), "\n";
     return Apply($int_csymbol,
-      Apply(New('oriented_interval', undef, omcd => 'interval1'), $from, $to),
+      Apply(New('oriented_interval', undef, omcd => 'interval1'), XMRefs($from), XMRefs($to)),
       Bind($bvars, $integrand));
   } elsif ($from) {
     # only subscript, integrate over domain?
@@ -1781,6 +1785,14 @@ sub Integral {
     return Apply($int_csymbol,
       Bind($bvars, $integrand));
   }
+}
+
+sub Integral {
+  my ($operator, $complete_integral_presentation) = @_;
+  my $content_tree = specialize_integral($operator, $complete_integral_presentation);
+  return ['ltx:XMDual', {},
+    $content_tree,
+    $complete_integral_presentation];
 }
 
 # ================================================================================
