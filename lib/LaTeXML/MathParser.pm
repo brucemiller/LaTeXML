@@ -1684,8 +1684,8 @@ sub specialize_integrand {
       # intermediate node, descend into arguments
       for my $child (@children) {
         my ($ibvars, $iexpr) = specialize_integrand($child);
-        print STDERR "inner bvars: ", ToString($ibvars), "\n";
-        print STDERR "inner expr: ",  ToString($iexpr),  "\n";
+        # print STDERR "inner bvars: ", ToString($ibvars), "\n";
+        # print STDERR "inner expr: ",  ToString($iexpr),  "\n";
         if (ref $ibvars) {
           push @bvars, @$ibvars;
         }
@@ -1744,19 +1744,42 @@ sub Integral {
   # TODO
   # II. Scan operator for range
   my ($from, $to, $base) = bigop_parts($operator);
+  my $int_csymbol;
+  my $int_meaning = p_getAttribute($base, 'meaning');
+  if ($int_meaning eq 'contour-integral') {
+    $int_csymbol = New('contour-integral', undef, omcd => 'dlmf');
+  } elsif ($from || $to) {
+    # This can be done even smarter, based on the content of the scripts, for now just approx.
+    $int_csymbol = New('defint', undef, omcd => 'calculus1');
+  } else {
+    $int_csymbol = New('int', undef, omcd => 'calculus1');
+  }
+
   # III. Reconstruct strict tree
-  if ($from || $to) {
+  if ($from && $to) {
     # provided range means definite integral
     # TODO: expand for non-Riemannian integration, with additional csymbols
     # print STDERR "From: ", ToString($from), "\n";
     # print STDERR "To: ", ToString($to), "\n";
     # print STDERR "Base: ", ToString($base), "\n";
-    return Apply(
-      New('defint', undef, omcd => 'calculus1'),
+    return Apply($int_csymbol,
       Apply(New('oriented_interval', undef, omcd => 'interval1'), $from, $to),
       Bind($bvars, $integrand));
+  } elsif ($from) {
+    # only subscript, integrate over domain?
+    # is this always a countour integral?
+    return Apply($int_csymbol,
+      $from,
+      Bind($bvars, $integrand));
+  } elsif ($to) {
+    # only superscript, could be a contour integral encircling a point?
+    # http://mathworld.wolfram.com/ContourIntegral.html
+    return Apply($int_csymbol,
+      $to,
+      Bind($bvars, $integrand));
   } else {
-    return $full;
+    return Apply($int_csymbol,
+      Bind($bvars, $integrand));
   }
 }
 
