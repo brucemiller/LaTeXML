@@ -1753,7 +1753,7 @@ sub Integral {
     # print STDERR "Base: ", ToString($base), "\n";
     return Apply(
       New('defint', undef, omcd => 'calculus1'),
-      Apply(New('interval', undef, omcd => 'interval1'), $from, $to),
+      Apply(New('oriented_interval', undef, omcd => 'interval1'), $from, $to),
       Bind($bvars, $integrand));
   } else {
     return $full;
