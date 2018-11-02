@@ -1661,9 +1661,9 @@ sub bigop_parts {
 
 sub Bind {
   my ($vars, $expression) = @_;
-  return ['ltx:XMApp', { role => 'bind' },
-    ['ltx:XMTok', { omcd => "fns1" }, 'lambda'],
-    (map { ['ltx:XMWrap', { role => "bvar" }, $_] } @$vars),
+  return ['ltx:XMApp', { role => 'BIND' },
+    New('lambda', undef, omcd => 'fns1'),
+    (map { ['ltx:XMWrap', { role => "BVAR" }, $_] } @$vars),
     $expression
   ];
 }
