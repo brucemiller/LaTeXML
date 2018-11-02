@@ -1239,10 +1239,7 @@ my %balanced = (    # [CONSTANT]
   "\x{2308}" => "\x{2309}",    # lceil, rceil
   "\x{2329}" => "\x{232A}",    # angle brackets; NOT mathematical, but balance in case they show up.
   "\x{27E8}" => "\x{27E9}",    # angle brackets (preferred)
-  "\x{2225}" => "\x{2225}",    # lVert, rVert
-  "\x{2191}" => "\x{2193}",    # uArrow, dArrow
-  "\x{21D1}" => "\x{21D3}",    # uDoubleArrow, dDoubleArrow
-  "\x{2195}" => "\x{21D5}", # Test weirdness, is this real world relevant? "Up Down Arrow" and "Up Down Double Arrow"
+  "\x{2225}" => "\x{2225}"     # lVert, rVert
 );
 my %fences = ();
 for my $key (keys(%balanced)) {
@@ -1669,7 +1666,7 @@ sub Bind {
 }
 
 sub XMRefs {
-  return LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $_[0]);
+  return LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @_);
 }
 
 sub specialize_integrand {
