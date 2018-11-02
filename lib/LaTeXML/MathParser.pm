@@ -1657,14 +1657,26 @@ sub bigop_parts {
   return ($from, $to, $base);
 }
 
+# Convention we support 3 types of bound expressions in XMath
+# 1. lamba binder, via Bind($vars, $expression)
+# 2. universal binder, via Forall($vars, $expression)
+# 3. existential binder, via Exists($vars, $expression)
+#
+# Post-processing can recognize these three cases and provide binder and bound variable annotations,
+#  scoped to the application created by these routines
 sub Bind {
-  my ($vars, $expression) = @_;
-  return ['ltx:XMApp', { role => 'BIND' },
-    New('lambda', undef, omcd => 'fns1'),
-    (map { ['ltx:XMWrap', { role => "BVAR" }, $_] } @$vars),
+  my ($vars, $expression, $binder) = @_;
+  $binder = $binder || New('lambda', undef, omcd => 'fns1');
+  return ['ltx:XMApp', {}, $binder,
+    @$vars,
     $expression
-  ];
-}
+  ]; }
+
+sub Forall {
+  return Bind($_[0], $_[1], New('forall', undef, omcd => 'quant1')); }
+
+sub Exists {
+  return Bind($_[0], $_[1], New('exists', undef, omcd => 'quant1')); }
 
 # Takes a list of nodes (array or libxml) and returns a list of cross-references against the current $MathParser::DOCUMENT
 sub XMRefs {

@@ -1150,19 +1150,12 @@ sub cmml_internal {
     return cmml($content); }
   elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {
     # Usually only present if parsing failed
-    # but there is a special bound variable case...
-    my $role = $node->getAttribute('role') || '';
-    if ($role eq 'BVAR') {
-      return ['m:bvar', {}, map { cmml($_) } element_nodes($node)]; }
-    else {
-      return cmml_contents($node); } }
+    return cmml_contents($node); }
   elsif ($tag eq 'ltx:XMApp') {
     my $role = $node->getAttribute('role') || '';
     # Experiment: If XMApp has role ID, we treat it as a "Decorated Symbol"
     if ($role eq 'ID') {
       return cmml_decoratedSymbol($node); }
-    elsif ($role eq 'BIND') {
-      return ['m:bind', {}, map { cmml($_) } element_nodes($node)] }
     else {
       my ($op, @args) = element_nodes($node);
       if (!$op) {
@@ -1178,7 +1171,10 @@ sub cmml_internal {
     return &{ lookupContent('Array', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
   elsif ($tag eq 'ltx:XMText') {
     return cmml_decoratedSymbol($node); }
+  elsif ($tag =~ /^m:/) {
+    return $node; }                 # already processed (why was this routine invoked?)
   else {
+    print STDERR "fallback: \n\n$tag\n\n";
     return cmml_decoratedSymbol($node); } }
 
 # Convert the contents of a node, which normally should contain a single child.
@@ -1796,6 +1792,36 @@ DefMathML('Apply:?:hack-definite-integral', undef,
       ['m:lowlimit', {}, cmml($lower)],
       ['m:uplimit',  {}, cmml($upper)],
       cmml($integrand)]; });
+
+#================================================================================
+# Binder and Bound variable support
+
+DefMathML('Apply:?:lambda', undef,
+  sub {
+    my ($lambda, @vars) = @_;
+    my $body = pop @vars;
+    return ['m:bind', {},
+      ['m:csymbol', { cd => 'fn1' }, 'lambda'],
+      (map { ['m:bvar', {}, cmml($_)] } @vars),
+      cmml($body)]; });
+
+DefMathML('Apply:?:forall', undef,
+  sub {
+    my ($forall, @vars) = @_;
+    my $body = pop @vars;
+    return ['m:bind', {},
+      ['m:csymbol', { cd => 'quant1' }, 'forall'],
+      (map { ['m:bvar', {}, cmml($_)] } @vars),
+      cmml($body)]; });
+
+DefMathML('Apply:?:exists', undef,
+  sub {
+    my ($exists, @vars) = @_;
+    my $body = pop @vars;
+    return ['m:bind', {},
+      ['m:csymbol', { cd => 'quant1' }, 'exists'],
+      (map { ['m:bvar', {}, cmml($_)] } @vars),
+      cmml($body)]; });
 
 #================================================================================
 1;

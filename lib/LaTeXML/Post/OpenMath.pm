@@ -221,6 +221,33 @@ DefOpenMath('Token:SUBSCRIPTOP:?', sub {
 DefOpenMath("Token:?:\x{2062}", sub {
     return ['om:OMS', { name => 'times', cd => 'arith1' }]; });
 
+#================================================================================
+# Binder and Bound variable support
+
+DefOpenMath('Apply:?:lambda', sub {
+    my ($lambda, @vars) = @_;
+    my $body = pop @vars;
+    return ['om:OMBIND', {},
+      ['om:OMS', { cd => 'fn1', name => 'lambda' }],
+      ['om:OMBVAR', {}, map { om_expr($_) } @vars],    # Presumably, these yield OMV
+      om_expr($body)]; });
+
+DefOpenMath('Apply:?:forall', sub {
+    my ($forall, @vars) = @_;
+    my $body = pop @vars;
+    return ['om:OMBIND', {},
+      ['om:OMS', { cd => 'quant1', name => 'forall' }],
+      ['om:OMBVAR', {}, map { om_expr($_) } @vars],    # Presumably, these yield OMV
+      om_expr($body)]; });
+
+DefOpenMath('Apply:?:exists', sub {
+    my ($exists, @vars) = @_;
+    my $body = pop @vars;
+    return ['om:OMBIND', {},
+      ['om:OMS', { cd => 'quant1', name => 'exists' }],
+      ['om:OMBVAR', {}, map { om_expr($_) } @vars],    # Presumably, these yield OMV
+      om_expr($body)]; });
+
 # ================================================================================
 # Applications.
 
@@ -231,15 +258,6 @@ DefOpenMath('Apply:?:?', sub {
     return ['om:OMA', {}, map { om_expr($_) } $op, @args]; });
 
 # NOTE: No support for OMATTR here...
-
-# NOTE: Sketch of what OMBIND support might look like.
-# Currently, no such construct is created in LaTeXML...
-DefOpenMath('Apply:LambdaBinding:?', sub {
-    my ($op, $expr, @vars) = @_;
-    return ['om:OMBIND', {},
-      ['om:OMS', { name => "lambda", cd => 'fns1' },
-        ['om:OMBVAR', {}, map { om_expr($_) } @vars],    # Presumably, these yield OMV
-        om_expr($expr)]]; });
 
 # ================================================================================
 1;
