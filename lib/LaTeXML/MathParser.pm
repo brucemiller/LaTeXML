@@ -23,6 +23,7 @@ use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
 use LaTeXML::Common::Font;
 use LaTeXML::Common::XML;
+use LaTeXML::Common::Glue;
 use List::Util qw(min max);
 use base (qw(Exporter));
 
@@ -1282,7 +1283,7 @@ Notation('{@,@,@}', 'set');
 
 our %default_handlers = ('fence' => sub {
     if (scalar(@_) < 4) {
-      return "delimited-" . resolve_lex($_[0]) . resolve_lex($_[-1]);
+      return "delimited-" . resolve_lex($_[0], force_lex => 1) . resolve_lex($_[-1], force_lex => 1);
     } else {
       return "list";
     }
@@ -1665,8 +1666,10 @@ sub Bind {
   ];
 }
 
+# Takes a list of nodes (array or libxml) and returns a list of cross-references against the current $MathParser::DOCUMENT
 sub XMRefs {
-  return LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @_);
+  my @nodes = @_;
+  return LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @nodes);
 }
 
 sub specialize_integrand {
