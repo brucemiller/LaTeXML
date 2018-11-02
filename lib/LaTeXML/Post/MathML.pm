@@ -1171,8 +1171,6 @@ sub cmml_internal {
     return &{ lookupContent('Array', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
   elsif ($tag eq 'ltx:XMText') {
     return cmml_decoratedSymbol($node); }
-  elsif ($tag =~ /^m:/) {
-    return $node; }                 # already processed (why was this routine invoked?)
   else {
     print STDERR "fallback: \n\n$tag\n\n";
     return cmml_decoratedSymbol($node); } }
