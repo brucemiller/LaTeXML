@@ -1750,7 +1750,7 @@ sub specialize_integrand {
           $prev_bvar = 0;
         }
       }
-      if ((p_getAttribute($op, 'role') eq 'MULOP') && (scalar(@specialized_children) - 1 < scalar(@children))
+      if (($op_role eq 'MULOP') && (scalar(@specialized_children) - 1 < scalar(@children))
         && (scalar(@specialized_children) == 2)) {
       # We now have a unary operator, due to deleting differentials, so if the operator is a MULOP, drop it.
         shift @specialized_children;
