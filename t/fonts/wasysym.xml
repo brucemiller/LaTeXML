@@ -37,21 +37,66 @@
   </para>
   <para xml:id="p2">
     <equation xml:id="S0.Ex2">
-      <Math mode="display" tex="\int\iint\iiint\oint\oiint" text="integral@(double-integral@(triple-integral@(contour-integral@(surface-integral))))" xml:id="S0.Ex2.m1">
+      <Math mode="display" tex="\int\iint\iiint\oint\oiint" text="int@(lambda@(double-integral@(lambda@(triple-integral@(lambda@(contour-integral@(lambda@(surface-integral@(lambda@(missing-argument))))))))))" xml:id="S0.Ex2.m1">
         <XMath>
-          <XMApp>
-            <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+          <XMDual>
             <XMApp>
-              <XMTok mathstyle="display" meaning="double-integral" name="iint" role="INTOP">∬</XMTok>
+              <XMTok meaning="int" omcd="calculus1"/>
               <XMApp>
-                <XMTok mathstyle="display" meaning="triple-integral" name="iiint" role="INTOP">∭</XMTok>
-                <XMApp>
-                  <XMTok mathstyle="display" meaning="contour-integral" name="oint" role="INTOP">∮</XMTok>
-                  <XMTok mathstyle="display" meaning="surface-integral" name="oiint" role="INTOP">∯</XMTok>
-                </XMApp>
+                <XMTok meaning="lambda" omcd="fns1"/>
+                <XMRef idref="S0.Ex2.m1.1"/>
               </XMApp>
             </XMApp>
-          </XMApp>
+            <XMApp>
+              <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+              <XMDual xml:id="S0.Ex2.m1.1">
+                <XMApp>
+                  <XMTok meaning="double-integral" omcd="latexml"/>
+                  <XMApp>
+                    <XMTok meaning="lambda" omcd="fns1"/>
+                    <XMRef idref="S0.Ex2.m1.1.1"/>
+                  </XMApp>
+                </XMApp>
+                <XMApp>
+                  <XMTok mathstyle="display" meaning="double-integral" name="iint" role="INTOP">∬</XMTok>
+                  <XMDual xml:id="S0.Ex2.m1.1.1">
+                    <XMApp>
+                      <XMTok meaning="triple-integral" omcd="latexml"/>
+                      <XMApp>
+                        <XMTok meaning="lambda" omcd="fns1"/>
+                        <XMRef idref="S0.Ex2.m1.1.1.1"/>
+                      </XMApp>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok mathstyle="display" meaning="triple-integral" name="iiint" role="INTOP">∭</XMTok>
+                      <XMDual xml:id="S0.Ex2.m1.1.1.1">
+                        <XMApp>
+                          <XMTok meaning="contour-integral" omcd="latexml"/>
+                          <XMApp>
+                            <XMTok meaning="lambda" omcd="fns1"/>
+                            <XMRef idref="S0.Ex2.m1.1.1.1.1"/>
+                          </XMApp>
+                        </XMApp>
+                        <XMApp>
+                          <XMTok mathstyle="display" meaning="contour-integral" name="oint" role="INTOP">∮</XMTok>
+                          <XMDual xml:id="S0.Ex2.m1.1.1.1.1">
+                            <XMApp>
+                              <XMTok meaning="surface-integral" omcd="latexml"/>
+                              <XMApp>
+                                <XMTok meaning="lambda" omcd="fns1"/>
+                                <XMTok meaning="missing-argument" omcd="ambiguous"/>
+                              </XMApp>
+                            </XMApp>
+                            <XMTok mathstyle="display" meaning="surface-integral" name="oiint" role="INTOP">∯</XMTok>
+                          </XMDual>
+                        </XMApp>
+                      </XMDual>
+                    </XMApp>
+                  </XMDual>
+                </XMApp>
+              </XMDual>
+            </XMApp>
+          </XMDual>
         </XMath>
       </Math>
     </equation>

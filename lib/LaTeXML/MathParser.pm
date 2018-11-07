@@ -208,6 +208,9 @@ sub getTokenMeaning {
   my ($node) = @_;
   my $x;
   $node = realizeXMNode($node);
+  if (getQName($node) eq 'ltx:XMDual') {
+    $node = $LaTeXML::MathParser::DOCUMENT->getFirstChildElement($node);
+  }
   return (defined($x = p_getAttribute($node, 'meaning')) ? $x
     : (defined($x = p_getAttribute($node, 'name')) ? $x
       : (($x = (ref $node eq 'ARRAY' ? '' : $node->textContent)) ne '' ? $x
@@ -1032,7 +1035,10 @@ sub p_getTokenMeaning {
   $item = realizeXMNode($item);                     # needed or array XMRefs won't return meaning
   if (ref $item eq 'ARRAY') {
     my ($op, $attr, @args) = @$item;
-    return $$attr{meaning} || $$attr{name} || $args[0] || $$attr{role}; }
+    if ($op eq 'ltx:XMDual') {
+      return $$attr{meaning} || $$attr{name} || p_getTokenMeaning($args[0]); }
+    else {
+      return $$attr{meaning} || $$attr{name} || $args[0] || $$attr{role}; } }
   elsif (ref $item eq 'XML::LibXML::Element') {
     return getTokenMeaning($item); } }
 
@@ -1692,14 +1698,14 @@ sub specialize_integrand {
   my ($integrand, $in_fraction) = @_;
   my @bvars = ();
   my $specialized;
-  if (p_getTokenMeaning($integrand) ne 'integral') {
+  if ((p_getTokenMeaning($integrand) || '') ne 'integral') {
     ($specialized) = XMRefs($integrand);
   }
 
   if (getQName($integrand) eq 'ltx:XMApp') {
     my ($op, @children) = p_element_nodes($integrand);
     my $op_meaning = p_getTokenMeaning($op);
-    my $op_role = p_getAttribute($op, 'role');
+    my $op_role = p_getAttribute($op, 'role') || '';
     $in_fraction = $in_fraction || ($op_role eq 'FRACOP');
 
     my @specialized_children = XMRefs($op);
@@ -1716,7 +1722,7 @@ sub specialize_integrand {
         return ([$bvar_ref], ['ltx:XMTok', { meaning => 1, role => "NUMBER" }, 1]); } }
     # II. (d x ARG) case
     elsif (($op_role eq 'MULOP') && (scalar(@children) == 2) &&
-      (p_getAttribute($children[0], 'role') eq 'UNKNOWN') && (p_getValue($children[0]) eq 'd')) {
+      ((p_getAttribute($children[0], 'role') || '') eq 'UNKNOWN') && (p_getValue($children[0]) eq 'd')) {
       my ($bvar_ref) = XMRefs($children[1]);
       if (!$in_fraction) {
         return ([$bvar_ref], undef); }
@@ -1757,6 +1763,22 @@ sub specialize_integrand {
   } }
   return (\@bvars, $specialized); }
 
+# TODO: Should we just regex on /-integral$/ ?
+our %known_integral_meanings = (
+  'contour-integral'                  => 1,
+  'double-integral'                   => 1,
+  'triple-integral'                   => 1,
+  'quadruple-integral'                => 1,
+  'multiple-integral'                 => 1,
+  'quaternion-integral'               => 1,
+  'surface-integral'                  => 1,
+  'quaternion-double-integral'        => 1,
+  'counterclockwise-contour-integral' => 1,
+  'clockwise-contour-integral'        => 1,
+  'average-integral'                  => 1,
+  'contour-integral-around-above'     => 1,
+  'contour-integral-around-below'     => 1
+);
 # We call the "integration interval" a range to avoid word mixups
 sub specialize_range {
   my ($from, $to, $base) = @_;
@@ -1780,8 +1802,8 @@ sub specialize_range {
 
   # II. Determine integral csymbol
   my $int_meaning = p_getTokenMeaning($base);
-  if ($int_meaning eq 'contour-integral') {
-    $int_csymbol = New('contour-integral', undef, omcd => 'latexml');    # which CD ???
+  if ($known_integral_meanings{$int_meaning}) {
+    $int_csymbol = New($int_meaning, undef, omcd => 'latexml');    # which CD ???
   } elsif ($from || $to) {
     # This can be done even smarter, based on the content of the scripts, for now just approx.
     $int_csymbol = New('defint', undef, omcd => 'calculus1');

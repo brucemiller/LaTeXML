@@ -2473,7 +2473,7 @@ Then a switch of tag forms.</p>
     <title><tag close=" ">5</tag>Cases</title>
     <para xml:id="S5.p1">
       <equation xml:id="S5.Ex38">
-        <Math mode="display" tex="\begin{cases}E=mc^{2}&amp;\text{Nothing to see here}\\&#10;\int x-3\,dx&amp;\text{Integral is text style}\end{cases}" text="cases@(E = m * c ^ 2, [Nothing to see here], integral@(x) - 3 * d * x, [Integral is text style])" xml:id="S5.Ex38.m1">
+        <Math mode="display" tex="\begin{cases}E=mc^{2}&amp;\text{Nothing to see here}\\&#10;\int x-3\,dx&amp;\text{Integral is text style}\end{cases}" text="cases@(E = m * c ^ 2, [Nothing to see here], int@(lambda@(x)) - 3 * d * x, [Integral is text style])" xml:id="S5.Ex38.m1">
           <XMath>
             <XMDual>
               <XMApp>
@@ -2510,10 +2510,19 @@ Then a switch of tag forms.</p>
                     <XMCell align="left">
                       <XMApp xml:id="S5.Ex38.m1.3">
                         <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                        <XMApp>
-                          <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
-                          <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                        </XMApp>
+                        <XMDual>
+                          <XMApp>
+                            <XMTok meaning="int" omcd="calculus1"/>
+                            <XMApp>
+                              <XMTok meaning="lambda" omcd="fns1"/>
+                              <XMRef idref="S5.Ex38.m1.3.1"/>
+                            </XMApp>
+                          </XMApp>
+                          <XMApp>
+                            <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="S5.Ex38.m1.3.1">x</XMTok>
+                          </XMApp>
+                        </XMDual>
                         <XMApp>
                           <XMTok meaning="times" role="MULOP">⁢</XMTok>
                           <XMTok meaning="3" role="NUMBER" rpadding="1.7pt">3</XMTok>
@@ -2535,7 +2544,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p2">
       <equation xml:id="S5.Ex39">
-        <Math mode="display" tex="\begin{dcases}E=mc^{2}&amp;c\approx 3.00\times 10^{8}\,\mathrm{m}/\mathrm{s}\\&#10;\int x-3\,dx&amp;\text{Integral is display style}\end{dcases}" text="cases@(E = m * c ^ 2, c approximately-equals (3.00 * 10 ^ 8 * m) / s, integral@(x) - 3 * d * x, [Integral is display style])" xml:id="S5.Ex39.m1">
+        <Math mode="display" tex="\begin{dcases}E=mc^{2}&amp;c\approx 3.00\times 10^{8}\,\mathrm{m}/\mathrm{s}\\&#10;\int x-3\,dx&amp;\text{Integral is display style}\end{dcases}" text="cases@(E = m * c ^ 2, c approximately-equals (3.00 * 10 ^ 8 * m) / s, int@(lambda@(x)) - 3 * d * x, [Integral is display style])" xml:id="S5.Ex39.m1">
           <XMath>
             <XMDual>
               <XMApp>
@@ -2592,10 +2601,19 @@ Then a switch of tag forms.</p>
                     <XMCell align="left">
                       <XMApp xml:id="S5.Ex39.m1.3">
                         <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                        <XMApp>
-                          <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
-                          <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                        </XMApp>
+                        <XMDual>
+                          <XMApp>
+                            <XMTok meaning="int" omcd="calculus1"/>
+                            <XMApp>
+                              <XMTok meaning="lambda" omcd="fns1"/>
+                              <XMRef idref="S5.Ex39.m1.3.1"/>
+                            </XMApp>
+                          </XMApp>
+                          <XMApp>
+                            <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="S5.Ex39.m1.3.1">x</XMTok>
+                          </XMApp>
+                        </XMDual>
                         <XMApp>
                           <XMTok meaning="times" role="MULOP">⁢</XMTok>
                           <XMTok meaning="3" role="NUMBER" rpadding="1.7pt">3</XMTok>
@@ -2617,7 +2635,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p3">
       <equation xml:id="S5.Ex40">
-        <Math mode="display" tex="a=\begin{dcases}E=mc^{2}&amp;Nothing to see here (text in math)\\&#10;\int x-3\,dx&amp;Integral is display style (text in math)\end{dcases}" text="a = cases@(E = m * c ^ 2, [Nothing to see here (text in math)], integral@(x) - 3 * d * x, [Integral is display style (text in math)])" xml:id="S5.Ex40.m1">
+        <Math mode="display" tex="a=\begin{dcases}E=mc^{2}&amp;Nothing to see here (text in math)\\&#10;\int x-3\,dx&amp;Integral is display style (text in math)\end{dcases}" text="a = cases@(E = m * c ^ 2, [Nothing to see here (text in math)], int@(lambda@(x)) - 3 * d * x, [Integral is display style (text in math)])" xml:id="S5.Ex40.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -2657,10 +2675,19 @@ Then a switch of tag forms.</p>
                       <XMCell align="left">
                         <XMApp xml:id="S5.Ex40.m1.3">
                           <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                          <XMApp>
-                            <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
-                            <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                          </XMApp>
+                          <XMDual>
+                            <XMApp>
+                              <XMTok meaning="int" omcd="calculus1"/>
+                              <XMApp>
+                                <XMTok meaning="lambda" omcd="fns1"/>
+                                <XMRef idref="S5.Ex40.m1.3.1"/>
+                              </XMApp>
+                            </XMApp>
+                            <XMApp>
+                              <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="S5.Ex40.m1.3.1">x</XMTok>
+                            </XMApp>
+                          </XMDual>
                           <XMApp>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok meaning="3" role="NUMBER" rpadding="1.7pt">3</XMTok>
@@ -2683,7 +2710,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p4">
       <equation xml:id="S5.Ex41">
-        <Math mode="display" tex="\begin{rcases}E=mc^{2}&amp;5^{6}\quad andsoon\\&#10;\int x-3\,dx&amp;\int x\,dx\end{rcases}=b" text="cases@(E = m * c ^ 2, list@(5 ^ 6, a * n * d * s * o * o * n), integral@(x) - 3 * d * x, integral@(x * differential-d@(x))) = b" xml:id="S5.Ex41.m1">
+        <Math mode="display" tex="\begin{rcases}E=mc^{2}&amp;5^{6}\quad andsoon\\&#10;\int x-3\,dx&amp;\int x\,dx\end{rcases}=b" text="cases@(E = m * c ^ 2, list@(5 ^ 6, a * n * d * s * o * o * n), int@(lambda@(x)) - 3 * d * x, int@(lambda@(x, x))) = b" xml:id="S5.Ex41.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -2745,10 +2772,19 @@ Then a switch of tag forms.</p>
                       <XMCell align="left">
                         <XMApp xml:id="S5.Ex41.m1.3">
                           <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                          <XMApp>
-                            <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
-                            <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                          </XMApp>
+                          <XMDual>
+                            <XMApp>
+                              <XMTok meaning="int" omcd="calculus1"/>
+                              <XMApp>
+                                <XMTok meaning="lambda" omcd="fns1"/>
+                                <XMRef idref="S5.Ex41.m1.3.1"/>
+                              </XMApp>
+                            </XMApp>
+                            <XMApp>
+                              <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="S5.Ex41.m1.3.1">x</XMTok>
+                            </XMApp>
+                          </XMDual>
                           <XMApp>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok meaning="3" role="NUMBER" rpadding="1.7pt">3</XMTok>
@@ -2758,17 +2794,27 @@ Then a switch of tag forms.</p>
                         </XMApp>
                       </XMCell>
                       <XMCell align="left">
-                        <XMApp xml:id="S5.Ex41.m1.4">
-                          <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                        <XMDual xml:id="S5.Ex41.m1.4">
                           <XMApp>
-                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt">x</XMTok>
+                            <XMTok meaning="int" omcd="calculus1"/>
                             <XMApp>
-                              <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                              <XMTok meaning="lambda" omcd="fns1"/>
+                              <XMRef idref="S5.Ex41.m1.4.2"/>
+                              <XMRef idref="S5.Ex41.m1.4.1"/>
                             </XMApp>
                           </XMApp>
-                        </XMApp>
+                          <XMApp>
+                            <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                            <XMApp xml:id="S5.Ex41.m1.4.3">
+                              <XMTok meaning="times" role="MULOP" xml:id="S5.Ex41.m1.4.3.1">⁢</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt" xml:id="S5.Ex41.m1.4.1">x</XMTok>
+                              <XMApp xml:id="S5.Ex41.m1.4.3.2">
+                                <XMTok font="italic" meaning="differential-d" role="DIFFOP" xml:id="S5.Ex41.m1.4.3.2.1">d</XMTok>
+                                <XMTok font="italic" role="UNKNOWN" xml:id="S5.Ex41.m1.4.2">x</XMTok>
+                              </XMApp>
+                            </XMApp>
+                          </XMApp>
+                        </XMDual>
                       </XMCell>
                     </XMRow>
                   </XMArray>
@@ -2806,21 +2852,31 @@ Then a switch of tag forms.</p>
                         </XMApp>
                       </XMCell>
                       <XMCell align="left">
-                        <XMText xml:id="S5.Ex42.m1.2">for <Math mode="inline" tex="\int x\,dx&gt;0" text="integral@(x * differential-d@(x)) &gt; 0" xml:id="S5.Ex42.m1.m1">
+                        <XMText xml:id="S5.Ex42.m1.2">for <Math mode="inline" tex="\int x\,dx&gt;0" text="int@(lambda@(x, x)) &gt; 0" xml:id="S5.Ex42.m1.m1">
                             <XMath>
                               <XMApp>
                                 <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
-                                <XMApp>
-                                  <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                                <XMDual>
                                   <XMApp>
-                                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                    <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt">x</XMTok>
+                                    <XMTok meaning="int" omcd="calculus1"/>
                                     <XMApp>
-                                      <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
-                                      <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                                      <XMTok meaning="lambda" omcd="fns1"/>
+                                      <XMRef idref="S5.Ex42.m1.m1.2"/>
+                                      <XMRef idref="S5.Ex42.m1.m1.1"/>
                                     </XMApp>
                                   </XMApp>
-                                </XMApp>
+                                  <XMApp>
+                                    <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                                    <XMApp xml:id="S5.Ex42.m1.m1.3">
+                                      <XMTok meaning="times" role="MULOP" xml:id="S5.Ex42.m1.m1.3.1">⁢</XMTok>
+                                      <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt" xml:id="S5.Ex42.m1.m1.1">x</XMTok>
+                                      <XMApp xml:id="S5.Ex42.m1.m1.3.2">
+                                        <XMTok font="italic" meaning="differential-d" role="DIFFOP" xml:id="S5.Ex42.m1.m1.3.2.1">d</XMTok>
+                                        <XMTok font="italic" role="UNKNOWN" xml:id="S5.Ex42.m1.m1.2">x</XMTok>
+                                      </XMApp>
+                                    </XMApp>
+                                  </XMApp>
+                                </XMDual>
                                 <XMTok meaning="0" role="NUMBER">0</XMTok>
                               </XMApp>
                             </XMath>
@@ -2851,7 +2907,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p6">
       <equation xml:id="S5.Ex43">
-        <Math mode="display" tex="\begin{drcases}E=mc^{2}&amp;5^{6}\quad andsoon\\&#10;\int x-3\,dx&amp;\int x\,dx\end{drcases}=b" text="cases@(E = m * c ^ 2, list@(5 ^ 6, a * n * d * s * o * o * n), integral@(x) - 3 * d * x, integral@(x * differential-d@(x))) = b" xml:id="S5.Ex43.m1">
+        <Math mode="display" tex="\begin{drcases}E=mc^{2}&amp;5^{6}\quad andsoon\\&#10;\int x-3\,dx&amp;\int x\,dx\end{drcases}=b" text="cases@(E = m * c ^ 2, list@(5 ^ 6, a * n * d * s * o * o * n), int@(lambda@(x)) - 3 * d * x, int@(lambda@(x, x))) = b" xml:id="S5.Ex43.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -2913,10 +2969,19 @@ Then a switch of tag forms.</p>
                       <XMCell align="left">
                         <XMApp xml:id="S5.Ex43.m1.3">
                           <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                          <XMApp>
-                            <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
-                            <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                          </XMApp>
+                          <XMDual>
+                            <XMApp>
+                              <XMTok meaning="int" omcd="calculus1"/>
+                              <XMApp>
+                                <XMTok meaning="lambda" omcd="fns1"/>
+                                <XMRef idref="S5.Ex43.m1.3.1"/>
+                              </XMApp>
+                            </XMApp>
+                            <XMApp>
+                              <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="S5.Ex43.m1.3.1">x</XMTok>
+                            </XMApp>
+                          </XMDual>
                           <XMApp>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok meaning="3" role="NUMBER" rpadding="1.7pt">3</XMTok>
@@ -2926,17 +2991,27 @@ Then a switch of tag forms.</p>
                         </XMApp>
                       </XMCell>
                       <XMCell align="left">
-                        <XMApp xml:id="S5.Ex43.m1.4">
-                          <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                        <XMDual xml:id="S5.Ex43.m1.4">
                           <XMApp>
-                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt">x</XMTok>
+                            <XMTok meaning="int" omcd="calculus1"/>
                             <XMApp>
-                              <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                              <XMTok meaning="lambda" omcd="fns1"/>
+                              <XMRef idref="S5.Ex43.m1.4.2"/>
+                              <XMRef idref="S5.Ex43.m1.4.1"/>
                             </XMApp>
                           </XMApp>
-                        </XMApp>
+                          <XMApp>
+                            <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                            <XMApp xml:id="S5.Ex43.m1.4.3">
+                              <XMTok meaning="times" role="MULOP" xml:id="S5.Ex43.m1.4.3.1">⁢</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt" xml:id="S5.Ex43.m1.4.1">x</XMTok>
+                              <XMApp xml:id="S5.Ex43.m1.4.3.2">
+                                <XMTok font="italic" meaning="differential-d" role="DIFFOP" xml:id="S5.Ex43.m1.4.3.2.1">d</XMTok>
+                                <XMTok font="italic" role="UNKNOWN" xml:id="S5.Ex43.m1.4.2">x</XMTok>
+                              </XMApp>
+                            </XMApp>
+                          </XMApp>
+                        </XMDual>
                       </XMCell>
                     </XMRow>
                   </XMArray>
@@ -2951,7 +3026,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p7">
       <equation xml:id="S5.Ex44">
-        <Math mode="display" tex="\begin{drcases}x^{2}&amp;for $\int x\,dx&gt;0$\\&#10;\int x^{3}\,x&amp;else\end{drcases}\Rightarrow\cdots" text="cases@(x ^ 2, [for &gt;∫⁢xdx0], integral@(x ^ 3 * x), [else]) Rightarrow cdots" xml:id="S5.Ex44.m1">
+        <Math mode="display" tex="\begin{drcases}x^{2}&amp;for $\int x\,dx&gt;0$\\&#10;\int x^{3}\,x&amp;else\end{drcases}\Rightarrow\cdots" text="cases@(x ^ 2, [for &gt;∫⁢xdx0], int@(lambda@(x ^ 3 * x)), [else]) Rightarrow cdots" xml:id="S5.Ex44.m1">
           <XMath>
             <XMApp>
               <XMTok name="Rightarrow" role="ARROW">⇒</XMTok>
@@ -2974,21 +3049,31 @@ Then a switch of tag forms.</p>
                         </XMApp>
                       </XMCell>
                       <XMCell align="left">
-                        <XMText xml:id="S5.Ex44.m1.2">for <Math mode="inline" tex="\int x\,dx&gt;0" text="integral@(x * differential-d@(x)) &gt; 0" xml:id="S5.Ex44.m1.m1">
+                        <XMText xml:id="S5.Ex44.m1.2">for <Math mode="inline" tex="\int x\,dx&gt;0" text="int@(lambda@(x, x)) &gt; 0" xml:id="S5.Ex44.m1.m1">
                             <XMath>
                               <XMApp>
                                 <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
-                                <XMApp>
-                                  <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                                <XMDual>
                                   <XMApp>
-                                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                    <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt">x</XMTok>
+                                    <XMTok meaning="int" omcd="calculus1"/>
                                     <XMApp>
-                                      <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
-                                      <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                                      <XMTok meaning="lambda" omcd="fns1"/>
+                                      <XMRef idref="S5.Ex44.m1.m1.2"/>
+                                      <XMRef idref="S5.Ex44.m1.m1.1"/>
                                     </XMApp>
                                   </XMApp>
-                                </XMApp>
+                                  <XMApp>
+                                    <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                                    <XMApp xml:id="S5.Ex44.m1.m1.3">
+                                      <XMTok meaning="times" role="MULOP" xml:id="S5.Ex44.m1.m1.3.1">⁢</XMTok>
+                                      <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt" xml:id="S5.Ex44.m1.m1.1">x</XMTok>
+                                      <XMApp xml:id="S5.Ex44.m1.m1.3.2">
+                                        <XMTok font="italic" meaning="differential-d" role="DIFFOP" xml:id="S5.Ex44.m1.m1.3.2.1">d</XMTok>
+                                        <XMTok font="italic" role="UNKNOWN" xml:id="S5.Ex44.m1.m1.2">x</XMTok>
+                                      </XMApp>
+                                    </XMApp>
+                                  </XMApp>
+                                </XMDual>
                                 <XMTok meaning="0" role="NUMBER">0</XMTok>
                               </XMApp>
                             </XMath>
@@ -2997,18 +3082,35 @@ Then a switch of tag forms.</p>
                     </XMRow>
                     <XMRow>
                       <XMCell align="left">
-                        <XMApp xml:id="S5.Ex44.m1.3">
-                          <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                        <XMDual xml:id="S5.Ex44.m1.3">
                           <XMApp>
-                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                            <XMApp rpadding="1.7pt">
-                              <XMTok role="SUPERSCRIPTOP" scriptpos="post7"/>
-                              <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                              <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+                            <XMTok meaning="int" omcd="calculus1"/>
+                            <XMApp>
+                              <XMTok meaning="lambda" omcd="fns1"/>
+                              <XMApp>
+                                <XMRef idref="S5.Ex44.m1.3.4.1"/>
+                                <XMApp>
+                                  <XMRef idref="S5.Ex44.m1.3.4.2.1"/>
+                                  <XMRef idref="S5.Ex44.m1.3.1"/>
+                                  <XMRef idref="S5.Ex44.m1.3.2"/>
+                                </XMApp>
+                                <XMRef idref="S5.Ex44.m1.3.3"/>
+                              </XMApp>
                             </XMApp>
-                            <XMTok font="italic" role="UNKNOWN">x</XMTok>
                           </XMApp>
-                        </XMApp>
+                          <XMApp>
+                            <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                            <XMApp xml:id="S5.Ex44.m1.3.4">
+                              <XMTok meaning="times" role="MULOP" xml:id="S5.Ex44.m1.3.4.1">⁢</XMTok>
+                              <XMApp rpadding="1.7pt" xml:id="S5.Ex44.m1.3.4.2">
+                                <XMTok role="SUPERSCRIPTOP" scriptpos="post7" xml:id="S5.Ex44.m1.3.4.2.1"/>
+                                <XMTok font="italic" role="UNKNOWN" xml:id="S5.Ex44.m1.3.1">x</XMTok>
+                                <XMTok fontsize="70%" meaning="3" role="NUMBER" xml:id="S5.Ex44.m1.3.2">3</XMTok>
+                              </XMApp>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="S5.Ex44.m1.3.3">x</XMTok>
+                            </XMApp>
+                          </XMApp>
+                        </XMDual>
                       </XMCell>
                       <XMCell align="left">
                         <XMText xml:id="S5.Ex44.m1.4">else</XMText>
@@ -3026,7 +3128,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p8">
       <equation xml:id="S5.Ex45">
-        <Math mode="display" tex="\text{foo}=\begin{cases}\pi&amp;if something\\&#10;\int\Omega^{\Xi}\,\Omega&amp;otherwise\end{cases}" text="[foo] = cases@(pi, [if something], integral@(Omega ^ Xi * Omega), [otherwise])" xml:id="S5.Ex45.m1">
+        <Math mode="display" tex="\text{foo}=\begin{cases}\pi&amp;if something\\&#10;\int\Omega^{\Xi}\,\Omega&amp;otherwise\end{cases}" text="[foo] = cases@(pi, [if something], int@(lambda@(Omega ^ Xi * Omega)), [otherwise])" xml:id="S5.Ex45.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -3052,18 +3154,35 @@ Then a switch of tag forms.</p>
                     </XMRow>
                     <XMRow>
                       <XMCell align="left">
-                        <XMApp xml:id="S5.Ex45.m1.3">
-                          <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                        <XMDual xml:id="S5.Ex45.m1.3">
                           <XMApp>
-                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                            <XMApp rpadding="1.7pt">
-                              <XMTok role="SUPERSCRIPTOP" scriptpos="post7"/>
-                              <XMTok name="Omega" role="UNKNOWN">Ω</XMTok>
-                              <XMTok fontsize="70%" name="Xi" role="UNKNOWN">Ξ</XMTok>
+                            <XMTok meaning="int" omcd="calculus1"/>
+                            <XMApp>
+                              <XMTok meaning="lambda" omcd="fns1"/>
+                              <XMApp>
+                                <XMRef idref="S5.Ex45.m1.3.4.1"/>
+                                <XMApp>
+                                  <XMRef idref="S5.Ex45.m1.3.4.2.1"/>
+                                  <XMRef idref="S5.Ex45.m1.3.1"/>
+                                  <XMRef idref="S5.Ex45.m1.3.2"/>
+                                </XMApp>
+                                <XMRef idref="S5.Ex45.m1.3.3"/>
+                              </XMApp>
                             </XMApp>
-                            <XMTok name="Omega" role="UNKNOWN">Ω</XMTok>
                           </XMApp>
-                        </XMApp>
+                          <XMApp>
+                            <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                            <XMApp xml:id="S5.Ex45.m1.3.4">
+                              <XMTok meaning="times" role="MULOP" xml:id="S5.Ex45.m1.3.4.1">⁢</XMTok>
+                              <XMApp rpadding="1.7pt" xml:id="S5.Ex45.m1.3.4.2">
+                                <XMTok role="SUPERSCRIPTOP" scriptpos="post7" xml:id="S5.Ex45.m1.3.4.2.1"/>
+                                <XMTok name="Omega" role="UNKNOWN" xml:id="S5.Ex45.m1.3.1">Ω</XMTok>
+                                <XMTok fontsize="70%" name="Xi" role="UNKNOWN" xml:id="S5.Ex45.m1.3.2">Ξ</XMTok>
+                              </XMApp>
+                              <XMTok name="Omega" role="UNKNOWN" xml:id="S5.Ex45.m1.3.3">Ω</XMTok>
+                            </XMApp>
+                          </XMApp>
+                        </XMDual>
                       </XMCell>
                       <XMCell align="left">
                         <XMText xml:id="S5.Ex45.m1.4">otherwise</XMText>
@@ -3207,7 +3326,7 @@ Then a switch of tag forms.</p>
       <equationgroup class="ltx_eqn_align" xml:id="S12.EGx3">
         <equation xml:id="S6.Ex49">
           <MathFork>
-            <Math tex="\displaystyle f(x)=\int h(x)\,dx" text="f * x = integral@(h * x * differential-d@(x))" xml:id="S6.Ex49.m3">
+            <Math tex="\displaystyle f(x)=\int h(x)\,dx" text="f * x = int@(lambda@(x, h * x))" xml:id="S6.Ex49.m3">
               <XMath>
                 <XMApp>
                   <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -3223,25 +3342,39 @@ Then a switch of tag forms.</p>
                       </XMWrap>
                     </XMDual>
                   </XMApp>
-                  <XMApp>
-                    <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                  <XMDual>
                     <XMApp>
-                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMTok font="italic" role="UNKNOWN">h</XMTok>
-                      <XMDual>
-                        <XMRef idref="S6.Ex49.m3.2"/>
-                        <XMWrap>
-                          <XMTok role="OPEN" stretchy="false">(</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="S6.Ex49.m3.2">x</XMTok>
-                          <XMTok role="CLOSE" rpadding="1.7pt" stretchy="false">)</XMTok>
-                        </XMWrap>
-                      </XMDual>
+                      <XMTok meaning="int" omcd="calculus1"/>
                       <XMApp>
-                        <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
-                        <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                        <XMTok meaning="lambda" omcd="fns1"/>
+                        <XMRef idref="S6.Ex49.m3.4"/>
+                        <XMApp>
+                          <XMRef idref="S6.Ex49.m3.5.1"/>
+                          <XMRef idref="S6.Ex49.m3.3"/>
+                          <XMRef idref="S6.Ex49.m3.5.2"/>
+                        </XMApp>
                       </XMApp>
                     </XMApp>
-                  </XMApp>
+                    <XMApp>
+                      <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                      <XMApp xml:id="S6.Ex49.m3.5">
+                        <XMTok meaning="times" role="MULOP" xml:id="S6.Ex49.m3.5.1">⁢</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S6.Ex49.m3.3">h</XMTok>
+                        <XMDual xml:id="S6.Ex49.m3.5.2">
+                          <XMRef idref="S6.Ex49.m3.2"/>
+                          <XMWrap>
+                            <XMTok role="OPEN" stretchy="false">(</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="S6.Ex49.m3.2">x</XMTok>
+                            <XMTok role="CLOSE" rpadding="1.7pt" stretchy="false">)</XMTok>
+                          </XMWrap>
+                        </XMDual>
+                        <XMApp xml:id="S6.Ex49.m3.5.3">
+                          <XMTok font="italic" meaning="differential-d" role="DIFFOP" xml:id="S6.Ex49.m3.5.3.1">d</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="S6.Ex49.m3.4">x</XMTok>
+                        </XMApp>
+                      </XMApp>
+                    </XMApp>
+                  </XMDual>
                 </XMApp>
               </XMath>
             </Math>
@@ -3262,30 +3395,44 @@ Then a switch of tag forms.</p>
                     </XMApp>
                   </XMath>
                 </Math></td>
-              <td align="left"><Math mode="inline" tex="\displaystyle=\int h(x)\,dx" text="absent = integral@(h * x * differential-d@(x))" xml:id="S6.Ex49.m2">
+              <td align="left"><Math mode="inline" tex="\displaystyle=\int h(x)\,dx" text="absent = int@(lambda@(x, h * x))" xml:id="S6.Ex49.m2">
                   <XMath>
                     <XMApp>
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                       <XMTok meaning="absent"/>
-                      <XMApp>
-                        <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                      <XMDual>
                         <XMApp>
-                          <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                          <XMTok font="italic" role="UNKNOWN">h</XMTok>
-                          <XMDual>
-                            <XMRef idref="S6.Ex49.m2.1"/>
-                            <XMWrap>
-                              <XMTok role="OPEN" stretchy="false">(</XMTok>
-                              <XMTok font="italic" role="UNKNOWN" xml:id="S6.Ex49.m2.1">x</XMTok>
-                              <XMTok role="CLOSE" rpadding="1.7pt" stretchy="false">)</XMTok>
-                            </XMWrap>
-                          </XMDual>
+                          <XMTok meaning="int" omcd="calculus1"/>
                           <XMApp>
-                            <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
-                            <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                            <XMTok meaning="lambda" omcd="fns1"/>
+                            <XMRef idref="S6.Ex49.m2.3"/>
+                            <XMApp>
+                              <XMRef idref="S6.Ex49.m2.4.1"/>
+                              <XMRef idref="S6.Ex49.m2.2"/>
+                              <XMRef idref="S6.Ex49.m2.4.2"/>
+                            </XMApp>
                           </XMApp>
                         </XMApp>
-                      </XMApp>
+                        <XMApp>
+                          <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                          <XMApp xml:id="S6.Ex49.m2.4">
+                            <XMTok meaning="times" role="MULOP" xml:id="S6.Ex49.m2.4.1">⁢</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="S6.Ex49.m2.2">h</XMTok>
+                            <XMDual xml:id="S6.Ex49.m2.4.2">
+                              <XMRef idref="S6.Ex49.m2.1"/>
+                              <XMWrap>
+                                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                <XMTok font="italic" role="UNKNOWN" xml:id="S6.Ex49.m2.1">x</XMTok>
+                                <XMTok role="CLOSE" rpadding="1.7pt" stretchy="false">)</XMTok>
+                              </XMWrap>
+                            </XMDual>
+                            <XMApp xml:id="S6.Ex49.m2.4.3">
+                              <XMTok font="italic" meaning="differential-d" role="DIFFOP" xml:id="S6.Ex49.m2.4.3.1">d</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="S6.Ex49.m2.3">x</XMTok>
+                            </XMApp>
+                          </XMApp>
+                        </XMApp>
+                      </XMDual>
                     </XMApp>
                   </XMath>
                 </Math></td>
@@ -3849,7 +3996,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S7.p6">
       <equation xml:id="S7.Ex58">
-        <Math mode="display" tex="\left(\frac{\pi}{\omega}\right)\cdot\left[\int xdx\right]\ldots[\sqrt{\frac{%&#10;\sin x}{\cos z}}]\cdots\lparen\frac{\frac{foo}{bar}}{\frac{baz}{qux}}\rparen" text="((pi / omega) cdot delimited-[]@(integral@(x * differential-d@(x)))) * ldots * delimited-[]@(square-root@(sine@(x) / cosine@(z))) * cdots * ((f * o * o) / (b * a * r) / (b * a * z) / (q * u * x))" xml:id="S7.Ex58.m1">
+        <Math mode="display" tex="\left(\frac{\pi}{\omega}\right)\cdot\left[\int xdx\right]\ldots[\sqrt{\frac{%&#10;\sin x}{\cos z}}]\cdots\lparen\frac{\frac{foo}{bar}}{\frac{baz}{qux}}\rparen" text="((pi / omega) cdot delimited-[]@(int@(lambda@(x, x)))) * ldots * delimited-[]@(square-root@(sine@(x) / cosine@(z))) * cdots * ((f * o * o) / (b * a * r) / (b * a * z) / (q * u * x))" xml:id="S7.Ex58.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -3870,21 +4017,31 @@ Then a switch of tag forms.</p>
                 <XMDual>
                   <XMApp>
                     <XMTok meaning="delimited-[]"/>
-                    <XMRef idref="S7.Ex58.m1.4"/>
+                    <XMRef idref="S7.Ex58.m1.6"/>
                   </XMApp>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="true">[</XMTok>
-                    <XMApp xml:id="S7.Ex58.m1.4">
-                      <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                    <XMDual xml:id="S7.Ex58.m1.6">
                       <XMApp>
-                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                        <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                        <XMTok meaning="int" omcd="calculus1"/>
                         <XMApp>
-                          <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
-                          <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                          <XMTok meaning="lambda" omcd="fns1"/>
+                          <XMRef idref="S7.Ex58.m1.3"/>
+                          <XMRef idref="S7.Ex58.m1.2"/>
                         </XMApp>
                       </XMApp>
-                    </XMApp>
+                      <XMApp>
+                        <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                        <XMApp xml:id="S7.Ex58.m1.6.1">
+                          <XMTok meaning="times" role="MULOP" xml:id="S7.Ex58.m1.6.1.1">⁢</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="S7.Ex58.m1.2">x</XMTok>
+                          <XMApp xml:id="S7.Ex58.m1.6.1.2">
+                            <XMTok font="italic" meaning="differential-d" role="DIFFOP" xml:id="S7.Ex58.m1.6.1.2.1">d</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="S7.Ex58.m1.3">x</XMTok>
+                          </XMApp>
+                        </XMApp>
+                      </XMApp>
+                    </XMDual>
                     <XMTok role="CLOSE" stretchy="true">]</XMTok>
                   </XMWrap>
                 </XMDual>
@@ -3893,11 +4050,11 @@ Then a switch of tag forms.</p>
               <XMDual>
                 <XMApp>
                   <XMTok meaning="delimited-[]"/>
-                  <XMRef idref="S7.Ex58.m1.2"/>
+                  <XMRef idref="S7.Ex58.m1.4"/>
                 </XMApp>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">[</XMTok>
-                  <XMApp xml:id="S7.Ex58.m1.2">
+                  <XMApp xml:id="S7.Ex58.m1.4">
                     <XMTok meaning="square-root"/>
                     <XMApp>
                       <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
@@ -3916,10 +4073,10 @@ Then a switch of tag forms.</p>
               </XMDual>
               <XMTok name="cdots" role="ID">⋯</XMTok>
               <XMDual>
-                <XMRef idref="S7.Ex58.m1.3"/>
+                <XMRef idref="S7.Ex58.m1.5"/>
                 <XMWrap>
                   <XMTok name="lparen" role="OPEN" stretchy="false">(</XMTok>
-                  <XMApp xml:id="S7.Ex58.m1.3">
+                  <XMApp xml:id="S7.Ex58.m1.5">
                     <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
                     <XMApp>
                       <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
@@ -4261,7 +4418,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S8.p3">
       <equation xml:id="S8.Ex64">
-        <Math mode="display" tex="a=\frac{\begin{multlined}\displaystyle xy+xy+\int xy\,\text{dx}+xy+xy\\&#10;\displaystyle+xy+xy+xy+xy{multlined}\displaystyle xy+xy+\int xy\,\text{dx}+xy+%&#10;xy\\&#10;\displaystyle+xy+xy+xy+xy}{z}=\frac{\displaystyle\begin{multlined}%&#10;\displaystyle xy+xy+\int xy\,\text{dx}+xy+xy\\&#10;\displaystyle+xy+xy+xy+xy{multlined}\displaystyle xy+xy+\int xy\,\text{dx}+xy+%&#10;xy\\&#10;\displaystyle+xy+xy+xy+xy}{z}" text="a = (x * y + x * y + integral@(x * y * [dx]) + x * y + x * y + x * y + x * y + x * y + x * y) / z = (x * y + x * y + integral@(x * y * [dx]) + x * y + x * y + x * y + x * y + x * y + x * y) / z" xml:id="S8.Ex64.m1">
+        <Math mode="display" tex="a=\frac{\begin{multlined}\displaystyle xy+xy+\int xy\,\text{dx}+xy+xy\\&#10;\displaystyle+xy+xy+xy+xy{multlined}\displaystyle xy+xy+\int xy\,\text{dx}+xy+%&#10;xy\\&#10;\displaystyle+xy+xy+xy+xy}{z}=\frac{\displaystyle\begin{multlined}%&#10;\displaystyle xy+xy+\int xy\,\text{dx}+xy+xy\\&#10;\displaystyle+xy+xy+xy+xy{multlined}\displaystyle xy+xy+\int xy\,\text{dx}+xy+%&#10;xy\\&#10;\displaystyle+xy+xy+xy+xy}{z}" text="a = (x * y + x * y + int@(lambda@(x * y * [dx])) + x * y + x * y + x * y + x * y + x * y + x * y) / z = (x * y + x * y + int@(lambda@(x * y * [dx])) + x * y + x * y + x * y + x * y + x * y + x * y) / z" xml:id="S8.Ex64.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="multirelation"/>
@@ -4282,15 +4439,29 @@ Then a switch of tag forms.</p>
                       <XMRef idref="S8.Ex64.m1.4"/>
                       <XMRef idref="S8.Ex64.m1.5"/>
                     </XMApp>
-                    <XMApp>
-                      <XMRef idref="S8.Ex64.m1.7"/>
+                    <XMDual>
                       <XMApp>
-                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                        <XMRef idref="S8.Ex64.m1.8"/>
-                        <XMRef idref="S8.Ex64.m1.9" rpadding="1.7pt"/>
-                        <XMRef idref="S8.Ex64.m1.10"/>
+                        <XMTok meaning="int" omcd="calculus1"/>
+                        <XMApp>
+                          <XMTok meaning="lambda" omcd="fns1"/>
+                          <XMApp>
+                            <XMRef idref="S8.Ex64.m1.57.1"/>
+                            <XMRef idref="S8.Ex64.m1.8"/>
+                            <XMRef idref="S8.Ex64.m1.9"/>
+                            <XMRef idref="S8.Ex64.m1.10"/>
+                          </XMApp>
+                        </XMApp>
                       </XMApp>
-                    </XMApp>
+                      <XMApp>
+                        <XMRef idref="S8.Ex64.m1.7"/>
+                        <XMApp xml:id="S8.Ex64.m1.57">
+                          <XMTok meaning="times" role="MULOP" xml:id="S8.Ex64.m1.57.1">⁢</XMTok>
+                          <XMRef idref="S8.Ex64.m1.8"/>
+                          <XMRef idref="S8.Ex64.m1.9" rpadding="1.7pt"/>
+                          <XMRef idref="S8.Ex64.m1.10"/>
+                        </XMApp>
+                      </XMApp>
+                    </XMDual>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMRef idref="S8.Ex64.m1.12"/>
@@ -4339,8 +4510,8 @@ Then a switch of tag forms.</p>
                           </XMApp>
                           <XMApp>
                             <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" xml:id="S8.Ex64.m1.7">∫</XMTok>
-                            <XMApp>
-                              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                            <XMApp xml:id="S8.Ex64.m1.58">
+                              <XMTok meaning="times" role="MULOP" xml:id="S8.Ex64.m1.58.1">⁢</XMTok>
                               <XMTok font="italic" role="UNKNOWN" xml:id="S8.Ex64.m1.8">x</XMTok>
                               <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt" xml:id="S8.Ex64.m1.9">y</XMTok>
                               <XMText xml:id="S8.Ex64.m1.10">dx</XMText>
@@ -4409,15 +4580,29 @@ Then a switch of tag forms.</p>
                       <XMRef idref="S8.Ex64.m1.32"/>
                       <XMRef idref="S8.Ex64.m1.33"/>
                     </XMApp>
-                    <XMApp>
-                      <XMRef idref="S8.Ex64.m1.35"/>
+                    <XMDual>
                       <XMApp>
-                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                        <XMRef idref="S8.Ex64.m1.36"/>
-                        <XMRef idref="S8.Ex64.m1.37" rpadding="1.7pt"/>
-                        <XMRef idref="S8.Ex64.m1.38"/>
+                        <XMTok meaning="int" omcd="calculus1"/>
+                        <XMApp>
+                          <XMTok meaning="lambda" omcd="fns1"/>
+                          <XMApp>
+                            <XMRef idref="S8.Ex64.m1.59.1"/>
+                            <XMRef idref="S8.Ex64.m1.36"/>
+                            <XMRef idref="S8.Ex64.m1.37"/>
+                            <XMRef idref="S8.Ex64.m1.38"/>
+                          </XMApp>
+                        </XMApp>
                       </XMApp>
-                    </XMApp>
+                      <XMApp>
+                        <XMRef idref="S8.Ex64.m1.35"/>
+                        <XMApp xml:id="S8.Ex64.m1.59">
+                          <XMTok meaning="times" role="MULOP" xml:id="S8.Ex64.m1.59.1">⁢</XMTok>
+                          <XMRef idref="S8.Ex64.m1.36"/>
+                          <XMRef idref="S8.Ex64.m1.37" rpadding="1.7pt"/>
+                          <XMRef idref="S8.Ex64.m1.38"/>
+                        </XMApp>
+                      </XMApp>
+                    </XMDual>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMRef idref="S8.Ex64.m1.40"/>
@@ -4466,8 +4651,8 @@ Then a switch of tag forms.</p>
                           </XMApp>
                           <XMApp>
                             <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" xml:id="S8.Ex64.m1.35">∫</XMTok>
-                            <XMApp>
-                              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                            <XMApp xml:id="S8.Ex64.m1.60">
+                              <XMTok meaning="times" role="MULOP" xml:id="S8.Ex64.m1.60.1">⁢</XMTok>
                               <XMTok font="italic" role="UNKNOWN" xml:id="S8.Ex64.m1.36">x</XMTok>
                               <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt" xml:id="S8.Ex64.m1.37">y</XMTok>
                               <XMText xml:id="S8.Ex64.m1.38">dx</XMText>
