@@ -1784,9 +1784,14 @@ DefMathML('Apply:?:continued-fraction', sub {
 DefMathML('Apply:?:hack-definite-integral', undef,
   sub {
     my ($op, $lower, $upper, $integrand, $variable) = @_;
+    my $var_cmml = cmml($variable);
+    # Decorated variables get forced inside a ci, when inside bvars
+    if (getQName($var_cmml) ne 'm:ci') {
+      $var_cmml = ['m:ci', {}, $var_cmml];
+    }
     return ['m:apply', {},
       ['m:int'],
-      ['m:bvar',     {}, cmml($variable)],
+      ['m:bvar',     {},],
       ['m:lowlimit', {}, cmml($lower)],
       ['m:uplimit',  {}, cmml($upper)],
       cmml($integrand)]; });
@@ -1794,13 +1799,22 @@ DefMathML('Apply:?:hack-definite-integral', undef,
 #================================================================================
 # Binder and Bound variable support
 
+sub to_bvars {
+  my @vars = @_;
+  my @cmml_vars = map { cmml($_) } @vars;
+  return map { ['m:bvar', {}, $_] }
+    map {    # Decorated variables get forced inside a ci, when inside bvars
+    (getQName($_) eq 'm:ci') ? $_ : ['m:ci', {}, $_]
+    } @cmml_vars;
+}
+
 DefMathML('Apply:?:lambda', undef,
   sub {
     my ($lambda, @vars) = @_;
     my $body = pop @vars;
     return ['m:bind', {},
       ['m:csymbol', { cd => 'fn1' }, 'lambda'],
-      (map { ['m:bvar', {}, cmml($_)] } @vars),
+      to_bvars(@vars),
       cmml($body)]; });
 
 DefMathML('Apply:?:forall', undef,
@@ -1809,7 +1823,7 @@ DefMathML('Apply:?:forall', undef,
     my $body = pop @vars;
     return ['m:bind', {},
       ['m:csymbol', { cd => 'quant1' }, 'forall'],
-      (map { ['m:bvar', {}, cmml($_)] } @vars),
+      to_bvars(@vars),
       cmml($body)]; });
 
 DefMathML('Apply:?:exists', undef,
@@ -1818,7 +1832,7 @@ DefMathML('Apply:?:exists', undef,
     my $body = pop @vars;
     return ['m:bind', {},
       ['m:csymbol', { cd => 'quant1' }, 'exists'],
-      (map { ['m:bvar', {}, cmml($_)] } @vars),
+      to_bvars(@vars),
       cmml($body)]; });
 
 #================================================================================

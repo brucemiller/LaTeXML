@@ -1029,7 +1029,8 @@ sub p_getTokenMeaning {
   my ($item) = @_;
   if (!defined $item) {
     return; }
-  elsif (ref $item eq 'ARRAY') {
+  $item = realizeXMNode($item);                     # needed or array XMRefs won't return meaning
+  if (ref $item eq 'ARRAY') {
     my ($op, $attr, @args) = @$item;
     return $$attr{meaning} || $$attr{name} || $args[0] || $$attr{role}; }
   elsif (ref $item eq 'XML::LibXML::Element') {
@@ -1666,48 +1667,81 @@ sub bigop_parts {
 #  scoped to the application created by these routines
 sub Bind {
   my ($vars, $expression, $binder) = @_;
-  $binder = $binder || New('lambda', undef, omcd => 'fns1');
+  $vars       = $vars       || [];
+  $binder     = $binder     || New('lambda', undef, omcd => 'fns1');
+  $expression = $expression || New('missing-argument', undef, omcd => 'ambiguous');
   return ['ltx:XMApp', {}, $binder,
     @$vars,
     $expression
   ]; }
 
 sub Forall {
-  return Bind($_[0], $_[1], New('forall', undef, omcd => 'quant1')); }
+  my ($vars, $expression) = @_;
+  return Bind($vars, $expression, New('forall', undef, omcd => 'quant1')); }
 
 sub Exists {
-  return Bind($_[0], $_[1], New('exists', undef, omcd => 'quant1')); }
+  my ($vars, $expression) = @_;
+  return Bind($vars, $expression, New('exists', undef, omcd => 'quant1')); }
 
 # Takes a list of nodes (array or libxml) and returns a list of cross-references against the current $MathParser::DOCUMENT
 sub XMRefs {
   my @nodes = @_;
-  return LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @nodes);
-}
+  return LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, @nodes); }
 
 sub specialize_integrand {
-  my ($integrand)   = @_;
-  my @bvars         = ();
-  my ($specialized) = XMRefs($integrand);
+  my ($integrand, $in_fraction) = @_;
+  my @bvars = ();
+  my $specialized;
+  if (p_getTokenMeaning($integrand) ne 'integral') {
+    ($specialized) = XMRefs($integrand);
+  }
 
   if (getQName($integrand) eq 'ltx:XMApp') {
     my ($op, @children) = p_element_nodes($integrand);
+    my $op_meaning = p_getTokenMeaning($op);
+    my $op_role = p_getAttribute($op, 'role');
+    $in_fraction = $in_fraction || ($op_role eq 'FRACOP');
+
     my @specialized_children = XMRefs($op);
-    if (p_getAttribute($op, 'meaning') eq 'differential-d') {
+
+    # I. Grammar-recognized case
+    if ($op_meaning eq 'differential-d') {
       # leaf case, looking at a differential binder
       # If we were to be deleting in the original tree, this is how: @$integrand = ();
       my ($bvar_ref) = XMRefs($children[0]);
-      return ([$bvar_ref], undef);
-    } else {
+      if (!$in_fraction) {
+        return ([$bvar_ref], undef); }
+      else {
+        # are we in a fraction? differentials get substituted with "1" if so
+        return ([$bvar_ref], ['ltx:XMTok', { meaning => 1, role => "NUMBER" }, 1]); } }
+    # II. (d x ARG) case
+    elsif (($op_role eq 'MULOP') && (scalar(@children) == 2) &&
+      (p_getAttribute($children[0], 'role') eq 'UNKNOWN') && (p_getValue($children[0]) eq 'd')) {
+      my ($bvar_ref) = XMRefs($children[1]);
+      if (!$in_fraction) {
+        return ([$bvar_ref], undef); }
+      else {
+        # are we in a fraction? differentials get substituted with "1" if so
+        return ([$bvar_ref], ['ltx:XMTok', { meaning => 1, role => "NUMBER" }, 1]); } }
+    else {
       # intermediate node, descend into arguments
+      # fresh start, no bvars found yet on this level
+      my $prev_bvar = 0;
       for my $child (@children) {
-        my ($ibvars, $iexpr) = specialize_integrand($child);
-        # print STDERR "inner bvars: ", ToString($ibvars), "\n";
-        # print STDERR "inner expr: ",  ToString($iexpr),  "\n";
-        if (ref $ibvars) {
-          push @bvars, @$ibvars;
-        }
+        my ($ibvars, $iexpr) = specialize_integrand($child, $in_fraction);
         if (defined $iexpr) {
-          push @specialized_children, $iexpr;
+          # spot elipses in differentials
+          if ($prev_bvar && (p_getTokenMeaning($iexpr) || '') =~ /^[cl]dots$/) {
+            push @bvars, $iexpr;
+          } else {
+            push @specialized_children, $iexpr;
+          }
+        }
+        if (scalar(@$ibvars)) {
+          push @bvars, @$ibvars;
+          $prev_bvar = 1;
+        } else {
+          $prev_bvar = 0;
         }
       }
       if ((p_getAttribute($op, 'role') eq 'MULOP') && (scalar(@specialized_children) - 1 < scalar(@children))
@@ -1720,31 +1754,42 @@ sub specialize_integrand {
       } else {
         $specialized = $specialized_children[0];
       }
-    }
-  }
-  return (\@bvars, $specialized);
-}
+  } }
+  return (\@bvars, $specialized); }
 
-# Example via: latexmlc 'literal:$\int_a^b x\, dx$'
-# Strict Content MathML for a definite integral over "x", ranging from "a" to "b":
-# <apply>
-#   <csymbol cd="calculus1">defint</csymbol>
-#   <apply>
-#     <csymbol cd="interval1">interval</csymbol>
-#     <ci>a</ci>
-#     <ci>b</ci>
-#   </apply>
-#   <bind>
-#     <csymbol cd="fns1">lambda</csymbol>
-#     <bvar>
-#       <ci>x</ci>
-#     </bvar>
-#     <apply>
-#       <ci>f</ci>
-#       <ci>x</ci>
-#     </apply>
-#   </bind>
-#  </apply>
+# We call the "integration interval" a range to avoid word mixups
+sub specialize_range {
+  my ($from, $to, $base) = @_;
+  my ($range, $int_csymbol);
+
+  # I. Determine the mathematical object in the range (if any)
+  if ($from && $to) {
+    # both scripts, usually a definite line integral
+    # should check if this looks like a loop/Pochhammer’s integral
+    # if not, go with the obvious:
+    $range = Apply(New('oriented-interval', undef, omcd => 'interval1'), XMRefs($from), XMRefs($to));
+  } elsif ($from) {
+    # only subscript, integrate over domain?
+    # is this always a countour integral?
+    ($range) = XMRefs($from);
+  } elsif ($to) {
+    # only superscript, could be a contour integral encircling a point?
+    # http://mathworld.wolfram.com/ContourIntegral.html
+    ($range) = XMRefs($to);
+  }    # no range otherwise, indefinite integral
+
+  # II. Determine integral csymbol
+  my $int_meaning = p_getTokenMeaning($base);
+  if ($int_meaning eq 'contour-integral') {
+    $int_csymbol = New('contour-integral', undef, omcd => 'latexml');    # which CD ???
+  } elsif ($from || $to) {
+    # This can be done even smarter, based on the content of the scripts, for now just approx.
+    $int_csymbol = New('defint', undef, omcd => 'calculus1');
+  } else {
+    $int_csymbol = New('int', undef, omcd => 'calculus1');
+  }
+  return ($range, $int_csymbol); }
+
 sub specialize_integral {
   my ($operator, $complete_integral) = @_;
   # Extract the integrand from $complete_integral
@@ -1760,52 +1805,19 @@ sub specialize_integral {
 
   # II. Scan operator for range
   my ($from, $to, $base) = bigop_parts($operator);
-  my $int_csymbol;
-  my $int_meaning = p_getAttribute($base, 'meaning');
-  if ($int_meaning eq 'contour-integral') {
-    $int_csymbol = New('contour-integral', undef, omcd => 'dlmf');
-  } elsif ($from || $to) {
-    # This can be done even smarter, based on the content of the scripts, for now just approx.
-    $int_csymbol = New('defint', undef, omcd => 'calculus1');
-  } else {
-    $int_csymbol = New('int', undef, omcd => 'calculus1');
-  }
-
+  # III. Specialize integral symbol and range
+  my ($range, $int_csymbol) = specialize_range($from, $to, $base);
   # III. Reconstruct strict tree
-  if ($from && $to) {
-    # provided range means definite integral
-    # TODO: expand for non-Riemannian integration, with additional csymbols
-    # print STDERR "From: ", ToString($from), "\n";
-    # print STDERR "To: ", ToString($to), "\n";
-    # print STDERR "Base: ", ToString($base), "\n";
-    return Apply($int_csymbol,
-      Apply(New('oriented_interval', undef, omcd => 'interval1'), XMRefs($from), XMRefs($to)),
-      Bind($bvars, $integrand));
-  } elsif ($from) {
-    # only subscript, integrate over domain?
-    # is this always a countour integral?
-    return Apply($int_csymbol,
-      $from,
-      Bind($bvars, $integrand));
-  } elsif ($to) {
-    # only superscript, could be a contour integral encircling a point?
-    # http://mathworld.wolfram.com/ContourIntegral.html
-    return Apply($int_csymbol,
-      $to,
-      Bind($bvars, $integrand));
-  } else {
-    return Apply($int_csymbol,
-      Bind($bvars, $integrand));
-  }
-}
+  return Apply($int_csymbol,
+    ($range ? $range : ()),
+    Bind($bvars, $integrand)); }
 
 sub Integral {
   my ($operator, $complete_integral_presentation) = @_;
   my $content_tree = specialize_integral($operator, $complete_integral_presentation);
   return ['ltx:XMDual', {},
     $content_tree,
-    $complete_integral_presentation];
-}
+    $complete_integral_presentation]; }
 
 # ================================================================================
 1;
