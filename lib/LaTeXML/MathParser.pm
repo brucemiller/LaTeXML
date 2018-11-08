@@ -1711,9 +1711,9 @@ sub specialize_integrand {
     my @specialized_children = XMRefs($op);
 
     # I. Grammar-recognized case
-    if ($op_meaning eq 'differential-d') {
-      # leaf case, looking at a differential binder
-      # If we were to be deleting in the original tree, this is how: @$integrand = ();
+    if ($op_meaning =~ /^differential/) {    # differential, differential-d
+          # leaf case, looking at a differential binder
+          # If we were to be deleting in the original tree, this is how: @$integrand = ();
       my ($bvar_ref) = XMRefs($children[0]);
       if (!$in_fraction) {
         return ([$bvar_ref], undef); }
