@@ -16,6 +16,8 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use Time::HiRes;
 use Term::ANSIColor;
+use IO::Interactive qw(is_interactive);
+
 use base qw(Exporter);
 our @EXPORT = (
   # Error Reporting
@@ -31,7 +33,7 @@ our @EXPORT = (
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Color setup
 $Term::ANSIColor::AUTORESET = 1;
-our $COLORIZED_LOGGING = -t STDERR;
+our $COLORIZED_LOGGING = is_interactive(*STDERR);
 
 our %color_scheme = (
   details => 'bold',
@@ -74,7 +76,7 @@ sub Fatal {
 
   # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
   # It should be safe so long as the caller has bound it and rebinds it if necessary.
-  $SIG{__DIE__} = 'DEFAULT';    # Avoid recursion while preparing the message.
+  local $SIG{__DIE__} = 'DEFAULT';    # Avoid recursion while preparing the message.
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
 
@@ -256,21 +258,21 @@ sub perl_interrupt_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
   $LaTeXML::UNSAFE_FATAL  = 1;
-  Fatal('interrupt', 'interrupted', undef, "LaTeXML was interrupted", @_);
+  Fatal('interrupt', 'interrupted', undef, "LaTeXML was interrupted", @line);
   return; }
 
 sub perl_timeout_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
   $LaTeXML::UNSAFE_FATAL  = 1;
-  Fatal('timeout', 'timedout', undef, "Conversion timed out", @_);
+  Fatal('timeout', 'timedout', undef, "Conversion timed out", @line);
   return; }
 
 sub perl_terminate_handler {
   my (@line) = @_;
   $LaTeXML::IGNORE_ERRORS = 0;    # NOT ignored
   $LaTeXML::UNSAFE_FATAL  = 1;
-  Fatal('terminate', 'terminated', undef, "Conversion was terminated", @_);
+  Fatal('terminate', 'terminated', undef, "Conversion was terminated", @line);
   return; }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Internals
@@ -342,7 +344,7 @@ sub generateMessage {
       push(@lines, "In " . trim(Stringify($$top[0])) . ' ' . Stringify($$top[1]));
       push(@objects, ['...']) if @objects && defined $nstack;
       push(@lines, join('', (map { ' <= ' . trim(Stringify($$_[0])) } @objects))) if @objects;
-    } }
+  } }
 
   # finally, join the result into a block of lines, indenting all but the 1st line.
   return "\n" . join("\n\t", @lines) . "\n"; }
@@ -364,7 +366,7 @@ sub MergeStatus {
       $$status{$type} += $$external_status{$type};
     }
   }
-}
+  return; }
 
 # returns the locator of an object, or undef
 sub Locator {

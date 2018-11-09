@@ -19,6 +19,7 @@ use File::Temp;
 File::Temp->safe_level(File::Temp::HIGH);
 use File::Path qw(rmtree);
 use File::Spec;
+use IO::Interactive qw(is_interactive);
 use List::Util qw(max);
 use LaTeXML::Common::Config;
 use LaTeXML::Core;
@@ -545,7 +546,7 @@ sub convert_post {
     if ((!$post_eval_return) && (!$@));
   if ($@) {    #Fatal occured!
     $$runtime{status_code} = 3;
-    $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
+    local $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
     print STDERR $@;
     undef @postdocs;    # Empty document for fatals, for sanity's sake
   }
@@ -554,7 +555,7 @@ sub convert_post {
   # If our format requires a manifest, create one
   if (($$opts{whatsout} =~ /^archive/) && ($format !~ /^x?html|xml/)) {
     require LaTeXML::Post::Manifest;
-    my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, log=>$$opts{log}, %PostOPS);
+    my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, log => $$opts{log}, %PostOPS);
     $manifest_maker->process(@postdocs); }
   # Archives: when a relative --log is requested, write to sandbox prior packing
   if ($$opts{log} && ($$opts{whatsout} =~ /^archive/) && (!pathname_is_absolute($$opts{log}))) {
@@ -647,7 +648,7 @@ sub bind_log {
     *STDERR_SAVED = *STDERR;
     *STDERR       = *$log_handle;
     binmode(STDERR, ':encoding(UTF-8)');
-    $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR;
+    $LaTeXML::Common::Error::COLORIZED_LOGGING = is_interactive(*STDERR);
     $$self{log_handle} = $log_handle;
   }
   return; }
@@ -663,7 +664,7 @@ sub flush_log {
     close $$self{log_handle};
     delete $$self{log_handle};
     *STDERR                                    = *STDERR_SAVED;
-    $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR;
+    $LaTeXML::Common::Error::COLORIZED_LOGGING = is_interactive(*STDERR);
   }
   my $log = $$self{log};
   $$self{log} = q{};
