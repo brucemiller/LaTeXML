@@ -99,7 +99,6 @@ sub showProfile {
 #    noinitialize : if defined, it does not initialize State.
 #    preamble = names a tex file (or standard_preamble.tex)
 #    postamble = names a tex file (or standard_postamble.tex)
-#    target_format = format intended to be generated
 
 our %MODE_EXTENSION = (    # CONFIGURATION?
   TeX => 'tex', LaTeX => 'tex', AmSTeX => 'tex', BibTeX => 'bib');
@@ -133,10 +132,6 @@ sub digestFile {
       $self->initializeState($mode . ".pool", @{ $$self{preload} || [] }) unless $options{noinitialize};
       $state->assignValue(SOURCEFILE      => $request) if (!pathname_is_literaldata($request));
       $state->assignValue(SOURCEDIRECTORY => $dir)     if defined $dir;
-      if (($options{target_format} || '') eq 'epub') {
-        RequireResource('LaTeXML-epub.css');
-      }
-
       $state->unshiftValue(SEARCHPATHS => $dir)
         if defined $dir && !grep { $_ eq $dir } @{ $state->lookupValue('SEARCHPATHS') };
       $state->unshiftValue(GRAPHICSPATHS => $dir)

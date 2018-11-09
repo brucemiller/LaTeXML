@@ -1,3 +1,4 @@
-div.ltx_pagination.ltx_role_newpage {
+/* Enforce LaTeX \newpage breaks as epub breaks */
+.ltx_pagination.ltx_role_newpage {
   page-break-after:always;
 }

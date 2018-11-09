@@ -22,7 +22,7 @@ my $latexmlc = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc');
 
 my $path_to_perl = $Config{perlpath};
 my $invocation = $path_to_perl . " " . join(" ", map { ("-I", $_) } @INC) . " ";
-$invocation .= $latexmlc . " --dest=$epub_filename --log=$log_filename literal:test ";
+$invocation .= $latexmlc . " --css=LaTeXML-epub.css --dest=$epub_filename --log=$log_filename literal:test ";
 
 my ($writer_discard, $reader_discard, $error_discard);
 my $pid = open3($writer_discard, $reader_discard, $error_discard, $invocation);
