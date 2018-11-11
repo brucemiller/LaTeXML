@@ -61,6 +61,8 @@ Start   : Anything /^\Z/                        { $item[1]; }
 
 #======================================================================
 Anything : <rulevar: local $MaxAbsDepth = $LaTeXML::MathParser::MAX_ABS_DEPTH>
+Anything : <rulevar: local $domain>
+Anything : <rulevar: local $context>
 Anything : AnythingAny /^\Z/                    { $item[1]; }
 
 #======================================================================
@@ -280,13 +282,14 @@ Factor  :
         | preScripted['FUNCTION'] addArgs[$item[1]]
         | preScripted['OPFUNCTION'] addOpFunArgs[$item[1]]
         | preScripted['TRIGFUNCTION'] addTrigFunArgs[$item[1]]
+        | <reject: $context ne 'integral'> integrandFactor
         | preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
         | preScripted['UNKNOWN'] doubtArgs[$item[1]]
         | NUMBER   addScripts[$item[1]]
         | SCRIPTOPEN scriptFactorOpen[$item[1]]
         | OPEN factorOpen[$item[1]]
-        # handle INTOP seperately, since it recognizes d as diff
-        | preScripted['INTOP'] addIntOpArgs[$item[1]] {Integral($item[1], $item[2]);}
+        # handle INTOP seperately, since it recognizes d as diff, and sets domain+context
+        | termIntegral
         | preScripted['bigop'] addOpArgs[$item[1]]
         | { ($forbidVertBar ? undef : 1); }
           SINGLEVERTBAR SINGLEVERTBAR absExpression SINGLEVERTBAR SINGLEVERTBAR # || exp || ==> norm
@@ -611,37 +614,21 @@ moreOpArgFactors :
         | Factor moreOpArgFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
         | { $arg[0]; }
 
-# addIntOpArgs[$bigop]; Add following Term to a INTOP as integrand, if present.
-#   The main point here is to recognize a "d" as a diff operator.
-#   This is insufficient, in general, because the "d" may be contained within
-#   a subexpression, particularly a fraction; the top-level parsing needs to be able
-#   to parse subexpressions within a context, and yet, needs to parse the subexpressions
-#   beforehand to (potentially) determine the role of the subexpression!
-addIntOpArgs :
-          /^\Z/ { $arg[0];}   # short circuit!
-        # Is the APPLYOP getting "lost" here?
-        | APPLYOP(?) IntFactor moreIntOpArgFactors[$item[2]] { Apply($arg[0],$item[3]);}
-        | { $arg[0]; }
+# Integrals, requiring a calculus domain for semantic specialization
+termIntegral : <rulevar: local $domain = 'calculus'>
+        | <rulevar: local $context = 'integral'>
+        | preScripted['INTOP'] addOpArgs[$item[1]] {Integral($item[1], $item[2]);}
 
-# moreIntOpArgFactors[$factor1] : Similar to moreOpArgFactors, 
-#   but recognizing d as diff
-moreIntOpArgFactors :
-          /^\Z/ { $arg[0];}   # short circuit!
-        | MulOp IntFactor moreIntOpArgFactors[ApplyNary($item[1],$arg[0],$item[2])]
-        | IntFactor moreIntOpArgFactors[ApplyNary(InvisibleTimes(),$arg[0],$item[1])]
-        | { $arg[0]; }
 
-IntFactor :
+integrandFactor :
 ##          diffd ATOM_OR_ID { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[2]); }
 ##        | diffd UNKNOWN    { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[2]); }
           diffd ATOM_OR_ID addScripts[$item[2]]
            { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[3]); }
         | diffd UNKNOWN addScripts[$item[2]]
            { Apply(Annotate($item[1],role=>'DIFFOP',meaning=>'differential-d'),$item[3]); }
-        | Factor           { $item[1]; }
 
-diffd :
-          /UNKNOWN:d:\d+/           { Lookup($item[1]); }
+diffd :  /UNKNOWN:d:\d+/           { Lookup($item[1]); }
         | /ID:d:\d+/                { Lookup($item[1]); }
 
 # Punctuation separating function arguments; things marked MIDDLE could
