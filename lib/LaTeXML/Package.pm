@@ -1916,11 +1916,7 @@ sub loadTeXDefinitions {
     # It's probably even the ltxml version is asking for it!!
     # Of course, now it will be marked and wont get reloaded!
     return if LookupValue($request . '_loaded');
-    AssignValue($request . '_loaded' => 1, 'global');
-    # Raw class interpretations needs _some_ styling as baseline.
-    if ($type eq 'cls') {
-      RelaxNGSchema("LaTeXML");
-      RequireResource('ltx-article.css'); } }
+    AssignValue($request . '_loaded' => 1, 'global'); }
 
   my $stomach = $STATE->getStomach;
   # Note that we are reading definitions (and recursive input is assumed also definitions)
@@ -2165,6 +2161,11 @@ sub InputDefinitions {
     if ($ftype eq 'ltxml') {
       loadLTXML($filename, $file); }                                              # Perl module.
     else {
+      # Special case -- add a default resource if we're loading a raw .cls file as a first choice.
+          # Raw class interpretations needs _some_ styling as baseline.
+      if (!$options{noltxml} && ($file =~ /\.cls$/)) {
+        RelaxNGSchema("LaTeXML");
+        RequireResource('ltx-article.css'); }
       loadTeXDefinitions($filename, $file); }
     if ($options{handleoptions}) {
       Digest(T_CS('\\' . $name . '.' . $astype . '-h@@k'));
@@ -2580,8 +2581,11 @@ sub addResource {
 
 sub ProcessPendingResources {
   my ($document) = @_;
-  if (my $req = LookupValue('PENDING_RESOURCES')) {
-    map { addResource($document, @$_) } @$req;
+  if (my $resources = LookupValue('PENDING_RESOURCES')) {
+    my %seen = ();
+    my @unique_resources = grep {my $new = !$seen{$_}; $seen{$_}=1; $new;} @$resources;
+    for my $resource (@unique_resources) {
+      addResource($document, @$resource); }
     AssignValue(PENDING_RESOURCES => [], 'global'); }
   return; }
 
