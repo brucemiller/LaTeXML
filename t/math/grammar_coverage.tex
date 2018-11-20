@@ -1,0 +1,48 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\begin{document}
+
+All examples in this test should be successfully parsed by LaTeXML's grammar, and are meant as regression tests.
+
+% intended to cover all productions in MathGrammar
+\section{sanity check}
+\begin{enumerate}
+\item $1+1=2$
+\end{enumerate}
+
+\section{Single Factor}
+\subsubsection{Empty Balanced}
+\begin{enumerate}
+  \item $()$
+  \item $[]$
+  \item $\{\}$
+  \item $\langle\rangle$
+  \item $\lfloor\rfloor$
+  \item $\lceil\rceil$
+\end{enumerate}
+
+\subsubsection{Monomials}
+\begin{enumerate}
+  \item $xyz$
+  \item $\sqrt{x}\sqrt{y}$
+  \item $\times x$ % surprisingly parses as "times(absent, x)"
+  \item $\mathbin{|} x$ % surprisingly parses via the "MulOp Factor" rule.
+  \item 
+\end{enumerate}
+
+\subsubsection{Arrays}
+\begin{enumerate}
+  \item $\begin{cases} 
+    a & b \\
+    c & d 
+    \end{cases}$
+
+\end{enumerate}
+
+\section{Edge/Artefact Cases}
+\begin{enumerate}
+  \item $\,$  % empty formula 
+\end{enumerate}
+
+\end{document}
