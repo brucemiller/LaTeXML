@@ -527,13 +527,13 @@ sub CleanURL {
 
 sub ComposeURL {
   my ($base, $url, $fragid) = @_;
-  $base   = ToString($base);  $base =~ s/\/$// if $base; # remove trailing /
+  $base   = ToString($base); $base =~ s/\/$// if $base;    # remove trailing /
   $url    = ToString($url);
   $fragid = ToString($fragid);
   return CleanURL(join('',
       ($base ?
-          ($url =~ /^\w+:/ ? ''            # already has protocol, so is absolute url
-          : $base . ($url =~ /^\// ? '' : '/'))    # else start w/base, possibly /
+          ($url =~ /^\w+:/ ? ''                            # already has protocol, so is absolute url
+          : $base . ($url =~ /^\// ? '' : '/'))            # else start w/base, possibly /
         : ''),
       $url,
       ($fragid ? '#' . CleanID($fragid) : ''))); }
@@ -1916,7 +1916,11 @@ sub loadTeXDefinitions {
     # It's probably even the ltxml version is asking for it!!
     # Of course, now it will be marked and wont get reloaded!
     return if LookupValue($request . '_loaded');
-    AssignValue($request . '_loaded' => 1, 'global'); }
+    AssignValue($request . '_loaded' => 1, 'global');
+    # Raw class interpretations needs _some_ styling as baseline.
+    if ($type eq 'cls') {
+      RelaxNGSchema("LaTeXML");
+      RequireResource('ltx-article.css'); } }
 
   my $stomach = $STATE->getStomach;
   # Note that we are reading definitions (and recursive input is assumed also definitions)
