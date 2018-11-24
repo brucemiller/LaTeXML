@@ -19,7 +19,6 @@ use File::Temp;
 File::Temp->safe_level(File::Temp::HIGH);
 use File::Path qw(rmtree);
 use File::Spec;
-use IO::Interactive qw(is_interactive);
 use List::Util qw(max);
 use LaTeXML::Common::Config;
 use LaTeXML::Core;
@@ -648,7 +647,7 @@ sub bind_log {
     *STDERR_SAVED = *STDERR;
     *STDERR       = *$log_handle;
     binmode(STDERR, ':encoding(UTF-8)');
-    $LaTeXML::Common::Error::COLORIZED_LOGGING = is_interactive(*STDERR);
+    $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR ;
     $$self{log_handle} = $log_handle;
   }
   return; }
@@ -664,7 +663,7 @@ sub flush_log {
     close $$self{log_handle};
     delete $$self{log_handle};
     *STDERR                                    = *STDERR_SAVED;
-    $LaTeXML::Common::Error::COLORIZED_LOGGING = is_interactive(*STDERR);
+    $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR;
   }
   my $log = $$self{log};
   $$self{log} = q{};

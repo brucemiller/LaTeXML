@@ -16,7 +16,6 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use Time::HiRes;
 use Term::ANSIColor;
-use IO::Interactive qw(is_interactive);
 
 use base qw(Exporter);
 our @EXPORT = (
@@ -33,7 +32,7 @@ our @EXPORT = (
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Color setup
 $Term::ANSIColor::AUTORESET = 1;
-our $COLORIZED_LOGGING = is_interactive(*STDERR);
+our $COLORIZED_LOGGING = -t STDERR;
 
 our %color_scheme = (
   details => 'bold',
