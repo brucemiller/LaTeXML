@@ -32,8 +32,7 @@ our $TEXMF;
 my ($texmfspec) = grep { /^TEXMF/ } @ARGV;
 if ($texmfspec && $texmfspec =~ /^TEXMF\s*=(.*)$/) {
   $TEXMF = $1;
-  local @ARGV = grep { $_ ne $texmfspec } @ARGV;    # Remove so MakeMaker doesn't fret.
-}
+  @ARGV = grep { $_ ne $texmfspec } @ARGV; }    # Remove so MakeMaker doesn't fret.
 our @EXCLUSIONS     = ();
 our $MORE_MACROS    = {};
 our $MORE_MAKERULES = '';
