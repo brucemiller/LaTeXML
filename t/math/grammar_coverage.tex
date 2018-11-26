@@ -1,6 +1,17 @@
 \documentclass{article}
 \usepackage{amsmath}
 
+\def\mockarray{\begin{array}{cc} 
+  a & b \\
+  c & d 
+  \end{array}}
+\def\mockcases{\begin{cases}{cc} 
+    a & b \\
+    c & d 
+    \end{cases}}
+  
+
+
 \begin{document}
 
 All examples in this test should be successfully parsed by LaTeXML's grammar, and are meant as regression tests.
@@ -33,10 +44,17 @@ All examples in this test should be successfully parsed by LaTeXML's grammar, an
 
 \subsubsection{Arrays}
 \begin{enumerate}
-  \item $\begin{cases} 
-    a & b \\
-    c & d 
-    \end{cases}$
+  \item standalone cases 
+  $$\mockcases$$
+  
+  \item standalone array
+  $$\mockarray$$
+  
+  \item lbrace array 
+  $$\{ \mockarray$$
+  
+  \item rbrace array 
+  $$\mockarray \}$$
 
 \end{enumerate}
 
