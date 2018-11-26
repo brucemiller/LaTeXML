@@ -22,7 +22,7 @@ All examples in this test should be successfully parsed by LaTeXML's grammar, an
 \item $1+1=2$
 \end{enumerate}
 
-\section{Single Factor}
+\section{Factor}
 \subsubsection{Empty Balanced}
 \begin{enumerate}
   \item $()$
@@ -33,20 +33,43 @@ All examples in this test should be successfully parsed by LaTeXML's grammar, an
   \item $\lceil\rceil$
 \end{enumerate}
 
-\subsubsection{Monomials}
+\subsubsection{Single Factor production and Monomials}
 \begin{enumerate}
-  \item $xyz$
-  \item $\sqrt{x}\sqrt{y}$
+  % single productions
   \item $\times x$ % surprisingly parses as "times(absent, x)"
   \item $\mathbin{|} x$ % surprisingly parses via the "MulOp Factor" rule.
-  \item 
+  \item $\sin$ % TRIGFUNCTION
+  \item $\arcsin$ % OPFUNCTION 
+  \item $\neg$ % FUNCTION
+  \item $\frac{1}{2}x$ % ATOM
+  \item $_{a}$ % SCRIPTOPEN
+  \item $12^3$ % scripted number
+  \item $\int$  % single integral op
+  \item $\int x$ 
+  \item $\int x\, dx$
+  \item $\sum$
+  \item $\sum x$
+  \item $\{ x \mid x>0 \}$ % SCRIPTOPEN set constructor
+  \item $|| x || $ % norm
+  \item $|a|$ % absolute value
+  \item $\langle \phi |$ % bra
+  \item $| \psi \rangle$ % ket
+  \item $\langle \phi | \psi \rangle$ %bra-ket
+  % some monomials (?)
+  \item $xyz$
+  \item $\sqrt{x}\sqrt{y}$
+  \item $()[]\{\}[]()$ % stacked empty
+  \item $2|ab|$ % absolute value monomial
+  \item $|| x || a || y || $ % 2-norms monomial
 \end{enumerate}
+
+% todo: factoropen
 
 \subsubsection{Arrays}
 \begin{enumerate}
   \item standalone cases 
   $$\mockcases$$
-  
+
   \item standalone array
   $$\mockarray$$
   
@@ -56,6 +79,25 @@ All examples in this test should be successfully parsed by LaTeXML's grammar, an
   \item rbrace array 
   $$\mockarray \}$$
 
+\end{enumerate}
+
+\section{Advanced Scripted}
+\begin{enumerate}
+  \item $\int_0^\infty x^2 dx$
+  \item $\sum_{i=0}^{50} x^i$
+\end{enumerate}
+
+\section{Advanced Fenced}
+\begin{enumerate}
+  \item $\langle a,b \rangle $ % list
+  \item $\langle ab \rangle $ % unknown delimited
+  \item $\langle a \rangle$ % unknown delimited
+\end{enumerate}
+
+\section{Polynomial}
+\begin{enumerate}
+\item $ab + cd - ef + gh $
+\item $|A\rangle = |B\rangle + |C\rangle$
 \end{enumerate}
 
 \section{Edge/Artefact Cases}
