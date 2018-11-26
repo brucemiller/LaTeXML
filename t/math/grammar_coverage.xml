@@ -955,7 +955,43 @@
             <tag role="typerefnum">item 1</tag>
           </tags>
           <para xml:id="S3.I1.i1.p1">
-            <p><Math mode="inline" tex="\int_{0}^{\infty}x^{2}dx" text="((integral _ 0) ^ infinity)@(x ^ 2 * differential-d@(x))" xml:id="S3.I1.i1.p1.m1">
+            <p><Math mode="inline" tex="\mathrm{Na}^{+}" text="Na ^ +" xml:id="S3.I1.i1.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                    <XMTok role="UNKNOWN">Na</XMTok>
+                    <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S3.I1.i2">
+          <tags>
+            <tag>2.</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">item 2</tag>
+          </tags>
+          <para xml:id="S3.I1.i2.p1">
+            <p><Math mode="inline" tex="\psi^{\prime\prime}" text="psi ^ prime2" xml:id="S3.I1.i2.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                    <XMTok font="italic" name="psi" role="UNKNOWN">ψ</XMTok>
+                    <XMTok fontsize="70%" name="prime2" role="SUPOP">′′</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S3.I1.i3">
+          <tags>
+            <tag>3.</tag>
+            <tag role="refnum">3</tag>
+            <tag role="typerefnum">item 3</tag>
+          </tags>
+          <para xml:id="S3.I1.i3.p1">
+            <p><Math mode="inline" tex="\int_{0}^{\infty}x^{2}dx" text="((integral _ 0) ^ infinity)@(x ^ 2 * differential-d@(x))" xml:id="S3.I1.i3.p1.m1">
                 <XMath>
                   <XMApp>
                     <XMApp>
@@ -984,14 +1020,128 @@
               </Math></p>
           </para>
         </item>
-        <item xml:id="S3.I1.i2">
+        <item xml:id="S3.I1.i4">
           <tags>
-            <tag>2.</tag>
-            <tag role="refnum">2</tag>
-            <tag role="typerefnum">item 2</tag>
+            <tag>4.</tag>
+            <tag role="refnum">4</tag>
+            <tag role="typerefnum">item 4</tag>
           </tags>
-          <para xml:id="S3.I1.i2.p1">
-            <p><Math mode="inline" tex="\sum_{i=0}^{50}x^{i}" text="((sum _ (i = 0)) ^ 50)@(x ^ i)" xml:id="S3.I1.i2.p1.m1">
+          <para xml:id="S3.I1.i4.p1">
+            <p><Math mode="inline" tex="\int_{\infty}^{(0+)}t\,dt" text="((integral _ infinity) ^ (limit-from@(0, +)))@(t * differential-d@(t))" xml:id="S3.I1.i4.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                        <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                        <XMTok fontsize="70%" meaning="infinity" name="infty" role="ID">∞</XMTok>
+                      </XMApp>
+                      <XMDual>
+                        <XMRef idref="S3.I1.i4.p1.m1.1"/>
+                        <XMWrap>
+                          <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
+                          <XMApp xml:id="S3.I1.i4.p1.m1.1">
+                            <XMTok meaning="limit-from"/>
+                            <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
+                            <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                          </XMApp>
+                          <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+                        </XMWrap>
+                      </XMDual>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt">t</XMTok>
+                      <XMApp>
+                        <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">t</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S3.I1.i5">
+          <tags>
+            <tag>5.</tag>
+            <tag role="refnum">5</tag>
+            <tag role="typerefnum">item 5</tag>
+          </tags>
+          <para xml:id="S3.I1.i5.p1">
+            <p><Math mode="inline" tex="\int_{\infty}^{(1+,0+,1−,0−)}t\,dt" text="((integral _ infinity) ^ (vector@(limit-from@(1, +), limit-from@(0, +), 1 * â *  * , 0 * â *  * )))@(t * differential-d@(t))" xml:id="S3.I1.i5.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                        <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                        <XMTok fontsize="70%" meaning="infinity" name="infty" role="ID">∞</XMTok>
+                      </XMApp>
+                      <XMDual>
+                        <XMApp>
+                          <XMTok meaning="vector"/>
+                          <XMRef idref="S3.I1.i5.p1.m1.1"/>
+                          <XMRef idref="S3.I1.i5.p1.m1.2"/>
+                          <XMRef idref="S3.I1.i5.p1.m1.3"/>
+                          <XMRef idref="S3.I1.i5.p1.m1.4"/>
+                        </XMApp>
+                        <XMWrap>
+                          <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
+                          <XMApp xml:id="S3.I1.i5.p1.m1.1">
+                            <XMTok meaning="limit-from"/>
+                            <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                            <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                          </XMApp>
+                          <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                          <XMApp xml:id="S3.I1.i5.p1.m1.2">
+                            <XMTok meaning="limit-from"/>
+                            <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
+                            <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                          </XMApp>
+                          <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                          <XMApp xml:id="S3.I1.i5.p1.m1.3">
+                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                            <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                            <XMTok font="italic" fontsize="70%" role="UNKNOWN">â</XMTok>
+                            <XMTok fontsize="70%" role="UNKNOWN"></XMTok>
+                            <XMTok fontsize="70%" role="UNKNOWN"></XMTok>
+                          </XMApp>
+                          <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                          <XMApp xml:id="S3.I1.i5.p1.m1.4">
+                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                            <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
+                            <XMTok font="italic" fontsize="70%" role="UNKNOWN">â</XMTok>
+                            <XMTok fontsize="70%" role="UNKNOWN"></XMTok>
+                            <XMTok fontsize="70%" role="UNKNOWN"></XMTok>
+                          </XMApp>
+                          <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+                        </XMWrap>
+                      </XMDual>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt">t</XMTok>
+                      <XMApp>
+                        <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">t</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S3.I1.i6">
+          <tags>
+            <tag>6.</tag>
+            <tag role="refnum">6</tag>
+            <tag role="typerefnum">item 6</tag>
+          </tags>
+          <para xml:id="S3.I1.i6.p1">
+            <p><Math mode="inline" tex="\sum_{i=0}^{50}x^{i}" text="((sum _ (i = 0)) ^ 50)@(x ^ i)" xml:id="S3.I1.i6.p1.m1">
                 <XMath>
                   <XMApp>
                     <XMApp>
@@ -1117,7 +1267,7 @@
       <tag role="refnum">5</tag>
       <tag role="typerefnum">§5</tag>
     </tags>
-    <title><tag close=" ">5</tag>Polynomial</title>
+    <title><tag close=" ">5</tag>Polynomial and multi-relations</title>
     <para xml:id="S5.p1">
       <enumerate xml:id="S5.I1">
         <item xml:id="S5.I1.i1">
@@ -1214,6 +1364,115 @@
               </Math></p>
           </para>
         </item>
+        <item xml:id="S5.I1.i3">
+          <tags>
+            <tag>3.</tag>
+            <tag role="refnum">3</tag>
+            <tag role="typerefnum">item 3</tag>
+          </tags>
+          <para xml:id="S5.I1.i3.p1">
+            <p><Math mode="inline" tex="1\leq l&lt;j\leq n" text="1 less= l less j less= n" xml:id="S5.I1.i3.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="multirelation"/>
+                    <XMTok meaning="1" role="NUMBER">1</XMTok>
+                    <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">l</XMTok>
+                    <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">j</XMTok>
+                    <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S5.I1.i4">
+          <tags>
+            <tag>4.</tag>
+            <tag role="refnum">4</tag>
+            <tag role="typerefnum">item 4</tag>
+          </tags>
+          <para xml:id="S5.I1.i4.p1">
+            <p><Math mode="inline" tex="1&lt;x&lt;10,2&lt;y&lt;20,3&lt;z&lt;30" text="formulae@(1 less x less 10, 2 less y less 20, 3 less z less 30)" xml:id="S5.I1.i4.p1.m1">
+                <XMath>
+                  <XMDual>
+                    <XMApp>
+                      <XMTok meaning="formulae"/>
+                      <XMRef idref="S5.I1.i4.p1.m1.5"/>
+                      <XMRef idref="S5.I1.i4.p1.m1.6"/>
+                      <XMRef idref="S5.I1.i4.p1.m1.7"/>
+                    </XMApp>
+                    <XMWrap>
+                      <XMApp xml:id="S5.I1.i4.p1.m1.5">
+                        <XMTok meaning="multirelation"/>
+                        <XMTok meaning="1" role="NUMBER">1</XMTok>
+                        <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                        <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                        <XMTok meaning="10" role="NUMBER" xml:id="S5.I1.i4.p1.m1.3">10</XMTok>
+                      </XMApp>
+                      <XMTok role="PUNCT">,</XMTok>
+                      <XMApp xml:id="S5.I1.i4.p1.m1.6">
+                        <XMTok meaning="multirelation"/>
+                        <XMTok meaning="2" role="NUMBER" xml:id="S5.I1.i4.p1.m1.4">2</XMTok>
+                        <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                        <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                        <XMTok meaning="20" role="NUMBER" xml:id="S5.I1.i4.p1.m1.1">20</XMTok>
+                      </XMApp>
+                      <XMTok role="PUNCT">,</XMTok>
+                      <XMApp xml:id="S5.I1.i4.p1.m1.7">
+                        <XMTok meaning="multirelation"/>
+                        <XMTok meaning="3" role="NUMBER" xml:id="S5.I1.i4.p1.m1.2">3</XMTok>
+                        <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">z</XMTok>
+                        <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                        <XMTok meaning="30" role="NUMBER">30</XMTok>
+                      </XMApp>
+                    </XMWrap>
+                  </XMDual>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S5.I1.i5">
+          <tags>
+            <tag>5.</tag>
+            <tag role="refnum">5</tag>
+            <tag role="typerefnum">item 5</tag>
+          </tags>
+          <para xml:id="S5.I1.i5.p1">
+            <p><Math mode="inline" tex="a,b~{}\alpha+\frac{1}{\alpha}" text="list@(a, b * alpha + 1 / alpha)" xml:id="S5.I1.i5.p1.m1">
+                <XMath>
+                  <XMDual>
+                    <XMApp>
+                      <XMTok meaning="list"/>
+                      <XMRef idref="S5.I1.i5.p1.m1.1"/>
+                      <XMRef idref="S5.I1.i5.p1.m1.2"/>
+                    </XMApp>
+                    <XMWrap>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S5.I1.i5.p1.m1.1">a</XMTok>
+                      <XMTok role="PUNCT">,</XMTok>
+                      <XMApp xml:id="S5.I1.i5.p1.m1.2">
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMApp>
+                          <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" rpadding="3.3pt">b</XMTok>
+                          <XMTok font="italic" name="alpha" role="UNKNOWN">α</XMTok>
+                        </XMApp>
+                        <XMApp>
+                          <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+                          <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                          <XMTok font="italic" fontsize="70%" name="alpha" role="UNKNOWN">α</XMTok>
+                        </XMApp>
+                      </XMApp>
+                    </XMWrap>
+                  </XMDual>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
       </enumerate>
     </para>
   </section>
@@ -1223,7 +1482,7 @@
       <tag role="refnum">6</tag>
       <tag role="typerefnum">§6</tag>
     </tags>
-    <title><tag close=" ">6</tag>Edge/Artefact Cases</title>
+    <title><tag close=" ">6</tag>Modifier Expressions</title>
     <para xml:id="S6.p1">
       <enumerate xml:id="S6.I1">
         <item xml:id="S6.I1.i1">
@@ -1233,7 +1492,160 @@
             <tag role="typerefnum">item 1</tag>
           </tags>
           <para xml:id="S6.I1.i1.p1">
-            <p><Math mode="inline" tex="\," text="absent" xml:id="S6.I1.i1.p1.m1">
+            <p><Math mode="inline" tex="&gt;0" text="absent &gt; 0" xml:id="S6.I1.i1.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok meaning="0" role="NUMBER">0</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S6.I1.i2">
+          <tags>
+            <tag>2.</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">item 2</tag>
+          </tags>
+          <para xml:id="S6.I1.i2.p1">
+            <p><Math mode="inline" tex="(&gt;0)" text="absent &gt; 0" xml:id="S6.I1.i2.p1.m1">
+                <XMath>
+                  <XMDual>
+                    <XMRef idref="S6.I1.i2.p1.m1.1"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMApp xml:id="S6.I1.i2.p1.m1.1">
+                        <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                        <XMTok meaning="absent"/>
+                        <XMTok meaning="0" role="NUMBER">0</XMTok>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S6.I1.i3">
+          <tags>
+            <tag>3.</tag>
+            <tag role="refnum">3</tag>
+            <tag role="typerefnum">item 3</tag>
+          </tags>
+          <para xml:id="S6.I1.i3.p1">
+            <p><Math mode="inline" tex="x(&gt;0)" text="annotated@(x, absent &gt; 0)" xml:id="S6.I1.i3.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="annotated"/>
+                    <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                    <XMDual>
+                      <XMRef idref="S6.I1.i3.p1.m1.1"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMApp xml:id="S6.I1.i3.p1.m1.1">
+                          <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                          <XMTok meaning="absent"/>
+                          <XMTok meaning="0" role="NUMBER">0</XMTok>
+                        </XMApp>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S6.I1.i4">
+          <tags>
+            <tag>4.</tag>
+            <tag role="refnum">4</tag>
+            <tag role="typerefnum">item 4</tag>
+          </tags>
+          <para xml:id="S6.I1.i4.p1">
+            <p><Math mode="inline" tex="h(\in C)" text="annotated@(h, absent element-of C)" xml:id="S6.I1.i4.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="annotated"/>
+                    <XMTok font="italic" role="UNKNOWN">h</XMTok>
+                    <XMDual>
+                      <XMRef idref="S6.I1.i4.p1.m1.1"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMApp xml:id="S6.I1.i4.p1.m1.1">
+                          <XMTok meaning="element-of" name="in" role="RELOP">∈</XMTok>
+                          <XMTok meaning="absent"/>
+                          <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                        </XMApp>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S6.I1.i5">
+          <tags>
+            <tag>5.</tag>
+            <tag role="refnum">5</tag>
+            <tag role="typerefnum">item 5</tag>
+          </tags>
+          <para xml:id="S6.I1.i5.p1">
+            <p><Math mode="inline" tex="x:\mathrm{Integer}" text="x colon Integer" xml:id="S6.I1.i5.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok name="colon" role="METARELOP">:</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                    <XMTok role="UNKNOWN">Integer</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S6.I1.i6">
+          <tags>
+            <tag>6.</tag>
+            <tag role="refnum">6</tag>
+            <tag role="typerefnum">item 6</tag>
+          </tags>
+          <para xml:id="S6.I1.i6.p1">
+            <p><Math mode="inline" tex="f:\mathrm{Integer}\Rightarrow\mathrm{Real}" text="f colon Integer Rightarrow Real" xml:id="S6.I1.i6.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok name="colon" role="METARELOP">:</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">f</XMTok>
+                    <XMApp>
+                      <XMTok name="Rightarrow" role="ARROW">⇒</XMTok>
+                      <XMTok role="UNKNOWN">Integer</XMTok>
+                      <XMTok role="UNKNOWN">Real</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+      </enumerate>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S7">
+    <tags>
+      <tag>7</tag>
+      <tag role="refnum">7</tag>
+      <tag role="typerefnum">§7</tag>
+    </tags>
+    <title><tag close=" ">7</tag>Edge/Artefact Cases</title>
+    <para xml:id="S7.p1">
+      <enumerate xml:id="S7.I1">
+        <item xml:id="S7.I1.i1">
+          <tags>
+            <tag>1.</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">item 1</tag>
+          </tags>
+          <para xml:id="S7.I1.i1.p1">
+            <p><Math mode="inline" tex="\," text="absent" xml:id="S7.I1.i1.p1.m1">
                 <XMath>
                   <XMTok meaning="absent"/>
                 </XMath>

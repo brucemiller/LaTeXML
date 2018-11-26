@@ -1,16 +1,11 @@
 \documentclass{article}
 \usepackage{amsmath}
-
 \def\mockarray{\begin{array}{cc} 
   a & b \\
-  c & d 
-  \end{array}}
+  c & d \end{array}}
 \def\mockcases{\begin{cases}{cc} 
-    a & b \\
-    c & d 
-    \end{cases}}
-  
-
+  a & b \\
+  c & d \end{cases}}
 
 \begin{document}
 
@@ -83,7 +78,11 @@ All examples in this test should be successfully parsed by LaTeXML's grammar, an
 
 \section{Advanced Scripted}
 \begin{enumerate}
+  \item $\mathrm{Na}^+$ % chemistry op
+  \item $\psi^{\prime\prime}$
   \item $\int_0^\infty x^2 dx$
+  \item $\int_\infty^{(0+)} t\,dt$
+  \item $\int_\infty^{(1+,0+,1−,0−)} t\,dt$
   \item $\sum_{i=0}^{50} x^i$
 \end{enumerate}
 
@@ -94,10 +93,23 @@ All examples in this test should be successfully parsed by LaTeXML's grammar, an
   \item $\langle a \rangle$ % unknown delimited
 \end{enumerate}
 
-\section{Polynomial}
+\section{Polynomial and multi-relations}
 \begin{enumerate}
 \item $ab + cd - ef + gh $
 \item $|A\rangle = |B\rangle + |C\rangle$
+\item $1 \leq l < j \leq n $
+\item $1<x<10, 2<y<20, 3<z<30$
+\item $a,b ~ \alpha + \frac{1}{\alpha}$
+\end{enumerate}
+
+\section{Modifier Expressions}
+\begin{enumerate}
+  \item $>0$
+  \item $(>0)$
+  \item $x(>0)$
+  \item $h(\in C)$
+  \item $x : \mathrm{Integer}$
+  \item $f : \mathrm{Integer} \Rightarrow \mathrm{Real}$
 \end{enumerate}
 
 \section{Edge/Artefact Cases}
