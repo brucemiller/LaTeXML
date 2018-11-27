@@ -793,7 +793,6 @@ INTOP           : /INTOP:\S*:\d+/               { Lookup($item[1]); }
 LIMITOP         : /LIMITOP:\S*:\d+/             { Lookup($item[1]); }
 DIFFOP          : /DIFFOP:\S*:\d+/              { Lookup($item[1]); }
 OPERATOR        : /OPERATOR:\S*:\d+/            { Lookup($item[1]); }
-##DIFF          : /DIFF:\S*:\d+/                { Lookup($item[1]); }
 POSTSUBSCRIPT   : /POSTSUBSCRIPT:\S*:\d+/       { Lookup($item[1]); }
 POSTSUPERSCRIPT : /POSTSUPERSCRIPT:\S*:\d+/     { Lookup($item[1]); }
 FLOATSUPERSCRIPT : /FLOATSUPERSCRIPT:\S*:\d+/   { Lookup($item[1]); }

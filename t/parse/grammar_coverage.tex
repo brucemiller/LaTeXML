@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{latexml}
 \usepackage{amsmath}
 \def\mockarray{\begin{array}{cc} 
   a & b \\
@@ -34,7 +35,7 @@ All examples in this test should be successfully parsed by LaTeXML's grammar, an
   \item $\times x$ % surprisingly parses as "times(absent, x)"
   \item $\mathbin{|} x$ % surprisingly parses via the "MulOp Factor" rule.
   \item $\sin$ % TRIGFUNCTION
-  \item $\arcsin$ % OPFUNCTION 
+  \item $\arcsin$
   \item $\neg$ % FUNCTION
   \item $\frac{1}{2}x$ % ATOM
   \item $_{a}$ % SCRIPTOPEN
@@ -84,6 +85,8 @@ All examples in this test should be successfully parsed by LaTeXML's grammar, an
   \item $\int_\infty^{(0+)} t\,dt$
   \item $\int_\infty^{(1+,0+,1−,0−)} t\,dt$
   \item $\sum_{i=0}^{50} x^i$
+  \item $$\sum_{\scriptstyle0\le i\le m\atop\scriptstyle0<j<n}P(i,j)$$ % courtesy of TeXbook, p.145
+  \item $$\sum_{i=1}^p\sum_{j=1}^q\sum_{k=1}^r a_{ij}b_{jk}c_{ki}$$ % courtesy of TeXbook, p.145
 \end{enumerate}
 
 \section{Advanced Fenced}
@@ -115,6 +118,66 @@ All examples in this test should be successfully parsed by LaTeXML's grammar, an
 \section{Edge/Artefact Cases}
 \begin{enumerate}
   \item $\,$  % empty formula 
+\end{enumerate}
+
+\section{Token Expressions}
+
+% Provide examples for each grammar terminal, so that we can write out lexed expressions
+\def\ATOM{\frac{1}{2}}
+\def\UNKNOWN{x}
+\def\ID{\infty}
+\def\ARRAY{\mockarray}
+\def\NUMBER{\pi}
+\def\PUNCT{,}
+\def\PERIOD{.}
+\def\RELOP{<}
+\def\LANGLE{\langle}
+\def\RANGLE{\rangle}
+\def\MIDBAR{\bigm{|}}
+\def\LBRACE{\{}
+\def\RBRACE{\}}
+\def\METARELOP{=}
+\def\MODIFIEROP{\mod}
+\def\MODIFIER{\pod{3}}
+\def\ARROW{\uparrow}
+\def\ADDOP{+}
+\def\MULOP{\times}
+\def\FRACOP{/}
+\def\BINOP{\mathbin{@}}
+\def\POSTFIX{!}
+\def\FUNCTION{\neg}
+\def\OPFUNCTION{\arcsin}
+\def\TRIGFUNCTION{\sin}
+\def\APPLYOP{\@APPLYFUNCTION} % internal mechanism?
+\lxDeclare[role=COMPOSEOP,meaning=compose]{$*$} % no apriori known ?
+\def\COMPOSEOP{*}
+\def\SUPOP{\prime}
+\def\OPEN{(}
+\def\CLOSE{)}
+\def\SCRIPTOPEN{\{}
+\def\MIDDLE{\bigm{m}}
+\def\VERTBAR{||}
+\def\SINGLEVERTBAR{|}
+\def\BIGOP{\forall}
+\def\SUMOP{\sum}
+\def\INTOP{\int}
+\def\LIMITOP{\lim}
+\def\DIFFOP{d}
+\def\OPERATOR{\partial}
+\def\POSTSUBSCRIPT{_}
+\def\POSTSUPERSCRIPT{^}
+\def\FLOATSUBSCRIPT{_}
+\def\FLOATSUPERSCRIPT{^}
+
+These are examples using the currently employed terminals in MathGrammar, to enumerate expressions that should remain grammatical if the grammar is modified.
+
+\begin{enumerate}
+  \item $\OPEN \CLOSE$
+  \item $\UNKNOWN \RELOP \UNKNOWN \METARELOP \UNKNOWN \RELOP \UNKNOWN$
+  \item $\ATOM \ADDOP \ATOM \RELOP \ARRAY$
+  \item $\OPFUNCTION \NUMBER \ADDOP \FUNCTION \UNKNOWN \METARELOP \LBRACE \ARRAY$
+
+
 \end{enumerate}
 
 \end{document}
