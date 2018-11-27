@@ -527,13 +527,13 @@ sub CleanURL {
 
 sub ComposeURL {
   my ($base, $url, $fragid) = @_;
-  $base   = ToString($base);  $base =~ s/\/$// if $base; # remove trailing /
+  $base   = ToString($base); $base =~ s/\/$// if $base;    # remove trailing /
   $url    = ToString($url);
   $fragid = ToString($fragid);
   return CleanURL(join('',
       ($base ?
-          ($url =~ /^\w+:/ ? ''            # already has protocol, so is absolute url
-          : $base . ($url =~ /^\// ? '' : '/'))    # else start w/base, possibly /
+          ($url =~ /^\w+:/ ? ''                            # already has protocol, so is absolute url
+          : $base . ($url =~ /^\// ? '' : '/'))            # else start w/base, possibly /
         : ''),
       $url,
       ($fragid ? '#' . CleanID($fragid) : ''))); }
@@ -2161,6 +2161,11 @@ sub InputDefinitions {
     if ($ftype eq 'ltxml') {
       loadLTXML($filename, $file); }                                              # Perl module.
     else {
+      # Special case -- add a default resource if we're loading a raw .cls file as a first choice.
+          # Raw class interpretations needs _some_ styling as baseline.
+      if (!$options{noltxml} && ($file =~ /\.cls$/)) {
+        RelaxNGSchema("LaTeXML");
+        RequireResource('ltx-article.css'); }
       loadTeXDefinitions($filename, $file); }
     if ($options{handleoptions}) {
       Digest(T_CS('\\' . $name . '.' . $astype . '-h@@k'));
@@ -2576,8 +2581,11 @@ sub addResource {
 
 sub ProcessPendingResources {
   my ($document) = @_;
-  if (my $req = LookupValue('PENDING_RESOURCES')) {
-    map { addResource($document, @$_) } @$req;
+  if (my $resources = LookupValue('PENDING_RESOURCES')) {
+    my %seen = ();
+    my @unique_resources = grep {my $new = !$seen{$_}; $seen{$_}=1; $new;} @$resources;
+    for my $resource (@unique_resources) {
+      addResource($document, @$resource); }
     AssignValue(PENDING_RESOURCES => [], 'global'); }
   return; }
 
