@@ -39,7 +39,23 @@ if (my @modified_files =
       push(@failed_files, $modified_file);    # Note the original file name
       $exit_code = $code; } }
 
-  print STDERR "Some files had issues: " . join(',', @failed_files)
-    . "; To correct these, run:\n tools/latexmllint <files>.\n"
-    . colored("COMMIT ABORTED", 'red') . "\n" if @failed_files;
+  if (@failed_files) {
+    print STDERR "Some files had issues: " . join(',', @failed_files)
+      . "; To correct these, run:\n tools/latexmllint <files>.\n"
+      . colored("COMMIT ABORTED", 'red') . "\n"; }
+  else {
+    # Check if files are missing from the manifest
+    my %manifest = ();
+    open(my $fh, "<", "MANIFEST") or die "Missing MANIFEST file?\n";
+    while (<$fh>) {
+      next if /^[#]/;
+      chomp;
+      $manifest{$_} = 1; }
+    close($fh);
+    # Not in MANIFEST, (or in tools)
+    if (my @missing_files = grep { !($_ =~ /^tools/ || $manifest{$_}) } @modified_files) {
+      print STDERR "Some files are missing from MANIFEST, please add them: \n\t"
+        . join(',\n\t', @missing_files) . ";\n"
+        . colored("COMMIT ABORTED", 'red') . "\n";
+      exit 1; } }
   exit $exit_code; }
