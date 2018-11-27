@@ -5697,6 +5697,7 @@ Let('\underbar', '\underline');    # Will anyone notice?
 DefMacro('\overrightarrow{}', '\protect\ifmmode\math@overrightarrow{#1}\else$\math@overrightarrow{#1}$\fi');
 DefMacro('\overleftarrow{}', '\protect\ifmmode\math@overleftarrow{#1}\else$\math@overleftarrow{#1}$\fi');
 
+DefMacro('\skew{}{}{}', '{#2{#3\mkern#1mu}\mkern-#1mu}{}');    # ignore the subtle spacing for now?
 #----------------------------------------------------------------------
 # LaTeX; Table 3.10. Delimiters, p.47
 #----------------------------------------------------------------------
