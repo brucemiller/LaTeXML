@@ -32,6 +32,7 @@ All examples in this test should be successfully parsed by LaTeXML's grammar, an
 \subsubsection{Single Factor production and Monomials}
 \begin{enumerate}
   % single productions
+  % This is a Term, not a Factor. May be better as LeftIncompleteFactor
   \item $\times x$ % surprisingly parses as "times(absent, x)"
   \item $\mathbin{|} x$ % surprisingly parses via the "MulOp Factor" rule.
   \item $\sin$ % TRIGFUNCTION
@@ -179,5 +180,9 @@ These are examples using the currently employed terminals in MathGrammar, to enu
 
 
 \end{enumerate}
+
+  % anyOpIsolator
+  % (S,+)
+
 
 \end{document}
