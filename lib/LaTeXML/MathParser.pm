@@ -716,17 +716,21 @@ sub parse_single {
         push(@levels, [@level]); }
 
       print STDERR "\nParse rule tree: \n";
-      my $level_idx = 0;
-      my $level_str;
+      my $level_idx      = 0;
+      my $level_str      = '';
+      my $prev_level_str = '';
       for my $level (@levels) {
-        $level_idx++;
         $level_str = join(' ', @$level);
         $level_str =~ s/^\(//;
         $level_str =~ s/\)$//;
         $level_str =~ s/\(\s(?=\()/\(/g;
         $level_str =~ s/\)\s(?=\))/\)/g;
-        print STDERR "$level_idx $level_str \n"; }
+        if ($level_str ne $prev_level_str) {
+          $level_idx++;
+          $prev_level_str = $level_str;
+          print STDERR "$level_idx $level_str \n"; } }
       $level_str =~ s/(\s[a-z]\w+)+//g;
+      $level_str =~ s/\(\s*\)//g;
       $level_str =~ s/\(\s(?=\()/\(/g;
       $level_str =~ s/\)\s(?=\))/\)/g;
       print STDERR "lex $level_str\n";
