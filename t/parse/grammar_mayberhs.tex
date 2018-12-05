@@ -3,25 +3,18 @@
 \usepackage{amsmath}
 \begin{document}
 
-% Failed to attach: Expression:SignedTerm moreTerms addExpressionModifier
-% 	at ( ( ( ( Term ) moreTerms addExpressionModifier ) ( punctExpr maybeRHS ) ) moreFormulae )
-% Failed to attach: SignedTerm:Term
-% 	at ( ( ( ( ( Factor moreFactors ) ) moreTerms addExpressionModifier ) ( punctExpr maybeRHS ) ) moreFormulae )
-% Failed to attach: Term:Factor moreFactors
-% 	at ( ( ( ( ( ( NUMBER addScripts ) moreFactors ) ) moreTerms addExpressionModifier ) ( punctExpr maybeRHS ) ) moreFormulae )
-% Failed to attach: Factor:NUMBER addScripts
-% 	at ( ( ( ( ( ( NUMBER addScripts ) moreFactors ) ) moreTerms addExpressionModifier ) ( punctExpr maybeRHS ) ) moreFormulae )
-%
 % Parse rule tree: 
-% 1 Formulae 
-% 2  Formula moreFormulae  
-% 3  (Expression extendFormula) moreFormulae  
-% 4  (( SignedTerm moreTerms addExpressionModifier) (punctExpr maybeRHS) ) moreFormulae  
-% 5  (( (Term) moreTerms addExpressionModifier) (punctExpr maybeRHS) ) moreFormulae  
-% 6  (( (( Factor moreFactors) ) moreTerms addExpressionModifier) (punctExpr maybeRHS) ) moreFormulae  
-% 7  (( (( (NUMBER addScripts) moreFactors) ) moreTerms addExpressionModifier) (punctExpr maybeRHS) ) moreFormulae  
-% 8  (( (( (NUMBER addScripts) moreFactors) ) moreTerms addExpressionModifier) (punctExpr maybeRHS) ) moreFormulae  
-% lex  (( (( (NUMBER)) )) (punctExpr) ) 
+% 1 AnythingAny 
+% 2  Formulae  
+% 3  ( Formula moreFormulae )  
+% 4  (( Expression extendFormula ) moreFormulae )  
+% 5  ((( SignedTerm moreTerms addExpressionModifier ) ( punctExpr maybeRHS )) moreFormulae )  
+% 6  (((( Term ) moreTerms addExpressionModifier ) (( PUNCT Expression ) maybeRHS )) moreFormulae )  
+% 7  ((((( Factor moreFactors )) moreTerms addExpressionModifier ) (( PUNCT ( SignedTerm moreTerms addExpressionModifier )) maybeRHS )) moreFormulae )  
+% 8  (((((( NUMBER addScripts ) moreFactors )) moreTerms addExpressionModifier ) (( PUNCT (( Term ) moreTerms addExpressionModifier )) maybeRHS )) moreFormulae )  
+% 9  (((((( NUMBER addScripts ) moreFactors )) moreTerms addExpressionModifier ) (( PUNCT ((( Factor moreFactors )) moreTerms addExpressionModifier )) maybeRHS )) moreFormulae )  
+% 10  (((((( NUMBER addScripts ) moreFactors )) moreTerms addExpressionModifier ) (( PUNCT (((( NUMBER addScripts ) moreFactors )) moreTerms addExpressionModifier )) maybeRHS )) moreFormulae )  
+% lex  (((((( NUMBER )))) (( PUNCT (((( NUMBER )))))))) 
 
 $1,2$
 
