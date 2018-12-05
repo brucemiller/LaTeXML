@@ -1,0 +1,48 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{amsmath}
+\begin{document}
+
+% Parse rule tree: 
+% 1 AnythingAny 
+% 2  Formulae  
+% 3  ( Formula moreFormulae )  
+% 4  (( Expression extendFormula ) moreFormulae )  
+% 5  ((( SignedTerm moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 6  (((( Term ) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 7  ((((( Factor moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 8  (((((( OPEN factorOpen ) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 9  (((((( OPEN ( Expression factorOpenExpr )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 10  (((((( OPEN (( SignedTerm moreTerms addExpressionModifier ) ( balancedClose addScripts ))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 11  (((((( OPEN ((( Term ) moreTerms addExpressionModifier ) (( CLOSE ) addScripts ))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 12  (((((( OPEN (((( Factor moreFactors )) moreTerms addExpressionModifier ) (( CLOSE ) addScripts ))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 13  (((((( OPEN ((((( preScripted maybeArgs ) moreFactors )) moreTerms addExpressionModifier ) (( CLOSE ) addScripts ))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 14  (((((( OPEN (((((( <matchrule:$arg[0]> addScripts ) maybeArgs ) moreFactors )) moreTerms addExpressionModifier ) (( CLOSE ) addScripts ))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% lex  (((((( OPEN (((((( <matchrule:$arg[0]> ))))) (( CLOSE ))))))))) 
+
+$( \begin{cases} x & y \\ a & b \end{cases} )$
+
+% Parse rule tree: 
+% 1 AnythingAny 
+% 2  Formulae  
+% 3  ( Formula moreFormulae )  
+% 4  (( Expression extendFormula ) moreFormulae )  
+% 5  ((( SignedTerm moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 6  (((( Term ) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 7  ((((( Factor moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 8  (((((( SCRIPTOPEN scriptFactorOpen ) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 9  (((((( SCRIPTOPEN ( FormulaNOBar suchThatOp Formulae balancedClose addScripts )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 10  (((((( SCRIPTOPEN (( Formula ) ( VERTBAR ) ( Formula moreFormulae ) ( CLOSE ) addScripts )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 11  (((((( SCRIPTOPEN ((( Expression extendFormula )) ( VERTBAR ) (( Expression extendFormula ) moreFormulae ) ( CLOSE ) addScripts )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 12  (((((( SCRIPTOPEN (((( SignedTerm moreTerms addExpressionModifier ) ( relop Expression moreRHS ))) ( VERTBAR ) ((( SignedTerm moreTerms addExpressionModifier ) extendFormula ) moreFormulae ) ( CLOSE ) addScripts )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 13  (((((( SCRIPTOPEN ((((( Term ) moreTerms addExpressionModifier ) (( RELOP addOpDecoration ) ( SignedTerm moreTerms addExpressionModifier ) ( relopExpr )))) ( VERTBAR ) (((( Term ) moreTerms addExpressionModifier ) extendFormula ) moreFormulae ) ( CLOSE ) addScripts )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 14  (((((( SCRIPTOPEN (((((( Factor moreFactors )) moreTerms addExpressionModifier ) (( RELOP addOpDecoration ) (( Term ) moreTerms addExpressionModifier ) ( relopExpr )))) ( VERTBAR ) ((((( Factor moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae ) ( CLOSE ) addScripts )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 15  (((((( SCRIPTOPEN ((((((( preScripted doubtArgs ) moreFactors )) moreTerms addExpressionModifier ) (( RELOP addOpDecoration ) ((( Factor moreFactors )) moreTerms addExpressionModifier ) ( relopExpr )))) ( VERTBAR ) (((((( preScripted doubtArgs ) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae ) ( CLOSE ) addScripts )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 16  (((((( SCRIPTOPEN (((((((( <matchrule:$arg[0]> addScripts ) doubtArgs ) moreFactors )) moreTerms addExpressionModifier ) (( RELOP addOpDecoration ) (((( preScripted doubtArgs ) moreFactors )) moreTerms addExpressionModifier ) ( relopExpr )))) ( VERTBAR ) ((((((( <matchrule:$arg[0]> addScripts ) doubtArgs ) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae ) ( CLOSE ) addScripts )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae ) 
+% 17  (((((( SCRIPTOPEN (((((((( <matchrule:$arg[0]> addScripts ) doubtArgs ) moreFactors )) moreTerms addExpressionModifier ) (( RELOP addOpDecoration ) ((((( <matchrule:$arg[0]> addScripts ) doubtArgs ) moreFactors )) moreTerms addExpressionModifier ) ( relopExpr )))) ( VERTBAR ) ((((((( <matchrule:$arg[0]> addScripts ) doubtArgs ) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae ) ( CLOSE ) addScripts )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% lex  (((((( SCRIPTOPEN (((((((( <matchrule:$arg[0]> ))))) (( RELOP ) ((((( <matchrule:$arg[0]> )))))))) ( VERTBAR ) ((((((( <matchrule:$arg[0]> ))))))) ( CLOSE )))))))) 
+
+$\{ x | x > y \}$
+
+
+\end{document}

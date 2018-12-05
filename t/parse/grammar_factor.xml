@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><Math mode="inline" tex="(\begin{cases}x&amp;y\\&#10;a&amp;b\end{cases})" text="cases@(x, y, a, b)" xml:id="p1.m1">
+        <XMath>
+          <XMDual>
+            <XMRef idref="p1.m1.5"/>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="false">(</XMTok>
+              <XMDual xml:id="p1.m1.5">
+                <XMApp>
+                  <XMTok meaning="cases"/>
+                  <XMRef idref="p1.m1.1"/>
+                  <XMRef idref="p1.m1.2"/>
+                  <XMRef idref="p1.m1.3"/>
+                  <XMRef idref="p1.m1.4"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="true">{</XMTok>
+                  <XMArray>
+                    <XMRow>
+                      <XMCell align="left">
+                        <XMTok font="italic" role="UNKNOWN" xml:id="p1.m1.1">x</XMTok>
+                      </XMCell>
+                      <XMCell align="left">
+                        <XMTok font="italic" role="UNKNOWN" xml:id="p1.m1.2">y</XMTok>
+                      </XMCell>
+                    </XMRow>
+                    <XMRow>
+                      <XMCell align="left">
+                        <XMTok font="italic" role="UNKNOWN" xml:id="p1.m1.3">a</XMTok>
+                      </XMCell>
+                      <XMCell align="left">
+                        <XMTok font="italic" role="UNKNOWN" xml:id="p1.m1.4">b</XMTok>
+                      </XMCell>
+                    </XMRow>
+                  </XMArray>
+                </XMWrap>
+              </XMDual>
+              <XMTok role="CLOSE" stretchy="false">)</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p2">
+    <p><Math mode="inline" tex="\{x|x&gt;y\}" text="conditional-set@(x, x &gt; y)" xml:id="p2.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="conditional-set"/>
+              <XMRef idref="p2.m1.1"/>
+              <XMRef idref="p2.m1.2"/>
+            </XMApp>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="false">{</XMTok>
+              <XMTok font="italic" role="UNKNOWN" xml:id="p2.m1.1">x</XMTok>
+              <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+              <XMApp xml:id="p2.m1.2">
+                <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMTok font="italic" role="UNKNOWN">y</XMTok>
+              </XMApp>
+              <XMTok role="CLOSE" stretchy="false">}</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
+</document>
