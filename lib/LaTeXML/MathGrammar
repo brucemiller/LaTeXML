@@ -15,10 +15,36 @@
 #      perl -MParse::RecDescent - MathGrammar LaTeXML::MathGrammar
 # ================================================================================
 # Startup actions: import the constructors
-{ BEGIN{ use LaTeXML::MathParser qw(:constructors); 
+{ BEGIN{ use LaTeXML::MathParser qw(:constructors);
 #### $::RD_TRACE=1;
 }}
-  
+<autoaction: { # TODO: Can this entire subroutine be skipped if debug is off? $::RD_AUTOACTION didn't work as hoped...
+  if ($LaTeXML::MathParser::DEBUG) {
+    ### Note that, if a production already ends in an action, no autoaction is appended to it.
+    ### UNLESS! You modify your RecDescent.pm as:
+    ### FROM:  if ($parser->{_AUTOACTION} && defined($item) && !$item->isa("Parse::RecDescent::Action"))
+    ### TO:    if ($parser->{_AUTOACTION} && defined($item))
+    my $named_subrules = join(" ",grep {/^[^\/]/} split(/\s+/, $thisprod->describe()));
+    if ($named_subrules) { # only record non-terminals
+      my $this = [$tracelevel, $$thisrule{name}, $named_subrules, []];
+      my $rule_tree = $LaTeXML::MathParser::RuleTree;
+      my $last = pop(@$rule_tree);
+      my $sublevel = $tracelevel+1;
+      # All we have to do is look if we have subrules on the stack, and tuck them in the current case if so
+      while ($last && ($last->[0] >= $sublevel)) {
+        unshift(@{$$this[3]}, $last);
+        $last = pop(@$rule_tree); }
+      # if ended with a sibling, push it back on the rule stack
+      if ($last) {
+        push(@$rule_tree, $last); }
+      # After which we always append the current match to the rule tree stack
+      push(@$rule_tree, $this); 
+      # This is a no-op as far as the parse *result* is concerned, so return the last meaningful result
+    }
+  }
+  $item[-1];
+} >
+
 # Rules section
 # ========================================
 # Naming Conventions:

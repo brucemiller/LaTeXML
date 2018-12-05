@@ -1,0 +1,28 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{amsmath}
+\begin{document}
+
+% Failed to attach: Expression:SignedTerm moreTerms addExpressionModifier
+% 	at ( ( ( ( Term ) moreTerms addExpressionModifier ) ( punctExpr maybeRHS ) ) moreFormulae )
+% Failed to attach: SignedTerm:Term
+% 	at ( ( ( ( ( Factor moreFactors ) ) moreTerms addExpressionModifier ) ( punctExpr maybeRHS ) ) moreFormulae )
+% Failed to attach: Term:Factor moreFactors
+% 	at ( ( ( ( ( ( NUMBER addScripts ) moreFactors ) ) moreTerms addExpressionModifier ) ( punctExpr maybeRHS ) ) moreFormulae )
+% Failed to attach: Factor:NUMBER addScripts
+% 	at ( ( ( ( ( ( NUMBER addScripts ) moreFactors ) ) moreTerms addExpressionModifier ) ( punctExpr maybeRHS ) ) moreFormulae )
+%
+% Parse rule tree: 
+% 1 Formulae 
+% 2  Formula moreFormulae  
+% 3  (Expression extendFormula) moreFormulae  
+% 4  (( SignedTerm moreTerms addExpressionModifier) (punctExpr maybeRHS) ) moreFormulae  
+% 5  (( (Term) moreTerms addExpressionModifier) (punctExpr maybeRHS) ) moreFormulae  
+% 6  (( (( Factor moreFactors) ) moreTerms addExpressionModifier) (punctExpr maybeRHS) ) moreFormulae  
+% 7  (( (( (NUMBER addScripts) moreFactors) ) moreTerms addExpressionModifier) (punctExpr maybeRHS) ) moreFormulae  
+% 8  (( (( (NUMBER addScripts) moreFactors) ) moreTerms addExpressionModifier) (punctExpr maybeRHS) ) moreFormulae  
+% lex  (( (( (NUMBER)) )) (punctExpr) ) 
+
+$1,2$
+
+\end{document}
