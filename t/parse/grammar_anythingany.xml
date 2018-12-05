@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><Math mode="inline" tex="\mod-2y" text="modulo@(absent, - 2 * y)" xml:id="p1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="modulo" role="MODIFIEROP">mod</XMTok>
+            <XMTok meaning="absent"/>
+            <XMApp>
+              <XMTok meaning="minus" role="ADDOP">-</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="2" role="NUMBER">2</XMTok>
+                <XMTok font="italic" role="UNKNOWN">y</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p2">
+    <p><Math mode="inline" tex=":x&lt;2" text="absent colon x less 2" xml:id="p2.m1">
+        <XMath>
+          <XMApp>
+            <XMTok name="colon" role="METARELOP">:</XMTok>
+            <XMTok meaning="absent"/>
+            <XMApp>
+              <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              <XMTok meaning="2" role="NUMBER">2</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p3">
+    <p><Math mode="inline" tex="(&lt;0)" text="absent less 0" xml:id="p3.m1">
+        <XMath>
+          <XMDual>
+            <XMRef idref="p3.m1.1"/>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="false">(</XMTok>
+              <XMApp xml:id="p3.m1.1">
+                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                <XMTok meaning="absent"/>
+                <XMTok meaning="0" role="NUMBER">0</XMTok>
+              </XMApp>
+              <XMTok role="CLOSE" stretchy="false">)</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
+</document>
