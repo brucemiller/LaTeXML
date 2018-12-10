@@ -18,4 +18,30 @@
         </XMath>
       </Math></p>
   </para>
+  <para xml:id="p2">
+    <p><Math mode="inline" tex="\infty+\infty" text="infinity + infinity" xml:id="p2.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
+            <XMTok meaning="infinity" name="infty" role="ID">∞</XMTok>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p3">
+    <p><Math mode="inline" tex="2\frac{3}{4}" text="2 + 3 / 4" xml:id="p3.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">⁤</XMTok>
+            <XMTok meaning="2" role="NUMBER">2</XMTok>
+            <XMApp>
+              <XMTok mathstyle="text" meaning="divide" role="FRACOP"/>
+              <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+              <XMTok fontsize="70%" meaning="4" role="NUMBER">4</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
 </document>

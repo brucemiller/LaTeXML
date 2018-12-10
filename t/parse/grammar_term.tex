@@ -18,4 +18,38 @@
 
 $xyz$
 
+% Parse rule tree: 
+% 1 AnythingAny 
+% 2  Formulae  
+% 3  ( Formula moreFormulae )  
+% 4  (( Expression extendFormula ) moreFormulae )  
+% 5  ((( SignedTerm moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 6  (((( Term ) ( AddOp moreTerms2 ) addExpressionModifier ) extendFormula ) moreFormulae )  
+% 7  ((((( Factor moreFactors )) (( ADDOP addOpDecoration ) ( Term moreTerms )) addExpressionModifier ) extendFormula ) moreFormulae )  
+% 8  (((((( preScripted maybeArgs ) moreFactors )) (( ADDOP addOpDecoration ) (( Factor moreFactors ) moreTerms )) addExpressionModifier ) extendFormula ) moreFormulae )  
+% 9  ((((((( <matchrule:$arg[0]> addScripts ) maybeArgs ) moreFactors )) (( ADDOP addOpDecoration ) ((( preScripted maybeArgs ) moreFactors ) moreTerms )) addExpressionModifier ) extendFormula ) moreFormulae )  
+% 10  ((((((( <matchrule:$arg[0]> addScripts ) maybeArgs ) moreFactors )) (( ADDOP addOpDecoration ) (((( <matchrule:$arg[0]> addScripts ) maybeArgs ) moreFactors ) moreTerms )) addExpressionModifier ) extendFormula ) moreFormulae )  
+% lex  ((((((( <matchrule:$arg[0]> )))) (( ADDOP ) (((( <matchrule:$arg[0]> )))))))) 
+
+$\infty+\infty$
+
+% Parse rule tree: 
+% 1 AnythingAny 
+% 2  Formulae  
+% 3  ( Formula moreFormulae )  
+% 4  (( Expression extendFormula ) moreFormulae )  
+% 5  ((( SignedTerm moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 6  (((( Term ) ( AddOp moreTerms2 ) addExpressionModifier ) extendFormula ) moreFormulae )  
+% 7  ((((( Factor moreFactors )) (( ADDOP addOpDecoration ) ( Term moreTerms )) addExpressionModifier ) extendFormula ) moreFormulae )  
+% 8  (((((( preScripted maybeArgs ) moreFactors )) (( ADDOP addOpDecoration ) (( Factor moreFactors ) moreTerms )) addExpressionModifier ) extendFormula ) moreFormulae )  
+% Failed to attach: ATOM_OR_ID:ID
+% 	at ( ( ( ( ( ( ( ( <matchrule:$arg[0]> addScripts ) maybeArgs ) moreFactors ) ) ( ( ADDOP addOpDecoration ) ( ( ( preScripted maybeArgs ) moreFactors ) moreTerms ) ) addExpressionModifier ) extendFormula ) moreFormulae ) )
+% Failed to attach: ATOM_OR_ID:ID
+% 	at ( ( ( ( ( ( ( ( <matchrule:$arg[0]> addScripts ) maybeArgs ) moreFactors ) ) ( ( ADDOP addOpDecoration ) ( ( ( ( <matchrule:$arg[0]> addScripts ) maybeArgs ) moreFactors ) moreTerms ) ) addExpressionModifier ) extendFormula ) moreFormulae ) )
+% 9  ((((((( <matchrule:$arg[0]> addScripts ) maybeArgs ) moreFactors )) (( ADDOP addOpDecoration ) ((( preScripted maybeArgs ) moreFactors ) moreTerms )) addExpressionModifier ) extendFormula ) moreFormulae )  
+% 10  ((((((( <matchrule:$arg[0]> addScripts ) maybeArgs ) moreFactors )) (( ADDOP addOpDecoration ) (((( <matchrule:$arg[0]> addScripts ) maybeArgs ) moreFactors ) moreTerms )) addExpressionModifier ) extendFormula ) moreFormulae )  
+% lex  ((((((( <matchrule:$arg[0]> )))) (( ADDOP ) (((( <matchrule:$arg[0]> )))))))) 
+
+$2\frac{3}{4}$
+
 \end{document}
