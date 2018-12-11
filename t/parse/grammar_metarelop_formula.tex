@@ -1,0 +1,18 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{amsmath}
+\begin{document}
+
+% Parse rule tree: 
+% 1 AnythingAny 
+% 2  METARELOP Formula  
+% 3  METARELOP ( Expression extendFormula )  
+% 4  METARELOP (( SignedTerm moreTerms addExpressionModifier ) ( relop Expression moreRHS ))  
+% 5  METARELOP ((( Term ) moreTerms addExpressionModifier ) (( RELOP addOpDecoration ) ( SignedTerm moreTerms addExpressionModifier ) moreRHS ))  
+% 6  METARELOP (((( Factor moreFactors )) moreTerms addExpressionModifier ) (( RELOP addOpDecoration ) (( Term ) moreTerms addExpressionModifier ) moreRHS ))  
+% 7  METARELOP ((((( preScripted doubtArgs ) moreFactors )) moreTerms addExpressionModifier ) (( RELOP addOpDecoration ) ((( Factor moreFactors )) moreTerms addExpressionModifier ) moreRHS ))  
+% 8  METARELOP (((((( <matchrule:$arg[0]> addScripts ) doubtArgs ) moreFactors )) moreTerms addExpressionModifier ) (( RELOP addOpDecoration ) (((( NUMBER addScripts ) moreFactors )) moreTerms addExpressionModifier ) moreRHS ))  
+% lex  METARELOP (((((( <matchrule:$arg[0]> ))))) (( RELOP ) (((( NUMBER )))))) 
+
+$ \vdash x = 0$ 
+\end{document}
