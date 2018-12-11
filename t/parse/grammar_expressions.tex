@@ -1,0 +1,22 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{amsmath}
+\begin{document}
+% Parse rule tree: 
+% 1 AnythingAny 
+% 2  Formulae  
+% 3  ( Formula moreFormulae )  
+% 4  (( Expression extendFormula ) moreFormulae )  
+% 5  ((( SignedTerm moreTerms addExpressionModifier ) ( punctExpr maybeRHS )) moreFormulae )  
+% 6  (((( Term ) moreTerms addExpressionModifier ) (( PUNCT Expression ) maybeRHS )) moreFormulae )  
+% 7  ((((( Factor moreFactors )) moreTerms addExpressionModifier ) (( PUNCT ( SignedTerm moreTerms addExpressionModifier )) maybeRHS )) moreFormulae )  
+% 8  (((((( NUMBER addScripts ) ( Factor moreFactors ))) moreTerms addExpressionModifier ) (( PUNCT (( Term ) moreTerms addExpressionModifier )) maybeRHS )) moreFormulae )  
+% 9  (((((( NUMBER addScripts ) (( preScripted doubtArgs ) moreFactors ))) moreTerms addExpressionModifier ) (( PUNCT ((( Factor moreFactors )) moreTerms addExpressionModifier )) maybeRHS )) moreFormulae )  
+% 10  (((((( NUMBER addScripts ) ((( <matchrule:$arg[0]> addScripts ) doubtArgs ) (( NUMBER addScripts ) ( Factor moreFactors ))))) moreTerms addExpressionModifier ) (( PUNCT (((( NUMBER addScripts ) moreFactors )) moreTerms addExpressionModifier )) maybeRHS )) moreFormulae )  
+% 11  (((((( NUMBER addScripts ) ((( <matchrule:$arg[0]> addScripts ) doubtArgs ) (( NUMBER addScripts ) (( preScripted doubtArgs ) moreFactors ))))) moreTerms addExpressionModifier ) (( PUNCT (((( NUMBER addScripts ) moreFactors )) moreTerms addExpressionModifier )) maybeRHS )) moreFormulae )  
+% 12  (((((( NUMBER addScripts ) ((( <matchrule:$arg[0]> addScripts ) doubtArgs ) (( NUMBER addScripts ) ((( <matchrule:$arg[0]> addScripts ) doubtArgs ) moreFactors ))))) moreTerms addExpressionModifier ) (( PUNCT (((( NUMBER addScripts ) moreFactors )) moreTerms addExpressionModifier )) maybeRHS )) moreFormulae )  
+% lex  (((((( NUMBER ) ((( <matchrule:$arg[0]> )) (( NUMBER ) ((( <matchrule:$arg[0]> )))))))) (( PUNCT (((( NUMBER )))))))) 
+
+$2x, 4y, 6z$
+
+\end{document}

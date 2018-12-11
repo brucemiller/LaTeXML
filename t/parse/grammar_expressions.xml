@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><Math mode="inline" tex="2x,4y,6z" text="list@(2 * x, 4 * y, 6 * z)" xml:id="p1.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="p1.m1.1"/>
+              <XMRef idref="p1.m1.2"/>
+              <XMRef idref="p1.m1.3"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="p1.m1.1">
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="2" role="NUMBER">2</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="p1.m1.2">
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="4" role="NUMBER">4</XMTok>
+                <XMTok font="italic" role="UNKNOWN">y</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="p1.m1.3">
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="6" role="NUMBER">6</XMTok>
+                <XMTok font="italic" role="UNKNOWN">z</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
+</document>
