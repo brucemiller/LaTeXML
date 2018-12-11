@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><Math mode="inline" tex="y&lt;2&lt;" text="y less 2 less absent" xml:id="p1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="multirelation"/>
+            <XMTok font="italic" role="UNKNOWN">y</XMTok>
+            <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+            <XMTok meaning="2" role="NUMBER">2</XMTok>
+            <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+            <XMTok meaning="absent"/>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+</document>
