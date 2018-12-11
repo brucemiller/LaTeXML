@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{amsmath}
+\begin{document}
+
+% Parse rule tree: 
+% 1 AnythingAny 
+% 2  Formulae  
+% 3  ( Formula moreFormulae )  
+% 4  (( Expression extendFormula ) moreFormulae )  
+% 5  ((( SignedTerm moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 6  (((( Term ) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 7  ((((( Factor moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 8  (((((( preScripted doubtArgs ) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 9  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP requireArgs )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 10  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP ( barearg ))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 11  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (( aBarearg moreBareargs )))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 12  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP ((( preScripted doubtArgs ) moreBareargs )))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 13  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP requireArgs )) moreBareargs )))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 14  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP ( barearg ))) moreBareargs )))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 15  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (( aBarearg moreBareargs )))) moreBareargs )))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 16  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP ((( preScripted doubtArgs ) moreBareargs )))) moreBareargs )))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 17  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP requireArgs )) moreBareargs )))) moreBareargs )))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 18  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP ( barearg ))) moreBareargs )))) moreBareargs )))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 19  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (( aBarearg moreBareargs )))) moreBareargs )))) moreBareargs )))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 20  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP ((( preScripted doubtArgs ) moreBareargs )))) moreBareargs )))) moreBareargs )))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 21  ((((((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) ( APPLYOP (((( <matchrule:$arg[0]> addScripts ) doubtArgs ) moreBareargs )))) moreBareargs )))) moreBareargs )))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% lex  ((((((( <matchrule:$arg[0]> ) ( APPLYOP (((( <matchrule:$arg[0]> ) ( APPLYOP (((( <matchrule:$arg[0]> ) ( APPLYOP (((( <matchrule:$arg[0]> ))))))))))))))))))) 
+
+\makeatletter
+$f \@APPLYFUNCTION g \@APPLYFUNCTION h \@APPLYFUNCTION x$
+
+\end{document}
