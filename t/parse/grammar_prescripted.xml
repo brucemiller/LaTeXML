@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><Math mode="inline" tex="{}_{2}{}^{3}x" text="_ 2 ^ 3 x" xml:id="p1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUBSCRIPTOP" scriptpos="pre3"/>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+            </XMApp>
+            <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+</document>
