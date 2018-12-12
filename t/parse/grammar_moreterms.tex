@@ -2,5 +2,16 @@
 \usepackage{latexml}
 \usepackage{amsmath}
 \begin{document}
+% Parse rule tree: 
+% 1 Formulae 
+% 2  Formula moreFormulae  
+% 3  ( Expression extendFormula ) moreFormulae  
+% 4  (( SignedTerm moreTerms addExpressionModifier ) extendFormula ) moreFormulae  
+% 5  ((( Term ) ( AddOp moreTerms2 ) addExpressionModifier ) extendFormula ) moreFormulae  
+% 6  (((( Factor moreFactors )) (( ADDOP addOpDecoration ) moreTerms2 ) addExpressionModifier ) extendFormula ) moreFormulae  
+% 7  ((((( preScripted doubtArgs ) moreFactors )) (( ADDOP addOpDecoration ) moreTerms2 ) addExpressionModifier ) extendFormula ) moreFormulae  
+% 8  (((((( <matchrule:$arg[0]> addScripts ) doubtArgs ) moreFactors )) (( ADDOP addOpDecoration ) moreTerms2 ) addExpressionModifier ) extendFormula ) moreFormulae  
+% lex  (((((( <matchrule:$arg[0]> )))) (( ADDOP )))) 
+$a+$
 
 \end{document}
