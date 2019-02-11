@@ -201,7 +201,7 @@ DefConstructor('\@element[][][][]{}', sub {
     $node = wrapIsotope($document, $node, $nucleons, 'pre',  'SUPER', $level) if $nucleons;
     $node = wrapIsotope($document, $node, $protons,  'pre',  'SUB',   $level) if $protons;
     $node; },
-  properties => sub { (level => $_[0]->getBoxingLevel); });
+  properties => sub { (level => $_[0]->getScriptLevel); });
 
 sub wrapIsotope {
   my ($document, $node, $script, $x, $y, $l) = @_;
@@ -243,8 +243,8 @@ DefConstructor('\aas@@fstack{}',
     . "<ltx:XMTok>.</ltx:XMTok>"
     . "<ltx:XMWrap>#1</ltx:XMWrap>"
     . "</ltx:XMApp>",
-  properties => { scriptpos => sub { "mid" . $_[0]->getBoxingLevel; } },
-  mode => 'math', bounded => 1);
+  properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } },
+  mode       => 'math', bounded => 1);
 DefMacro('\aas@fstack{}', '\ensuremath{\aas@@fstack{#1}}');
 DefMacro('\fd',           '\aas@fstack{d}');
 DefMacro('\fh',           '\aas@fstack{h}');

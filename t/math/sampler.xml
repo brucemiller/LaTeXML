@@ -269,7 +269,7 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
             <XMWrap>
               <XMTok role="OPEN" stretchy="true">(</XMTok>
               <XMApp>
-                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                 <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
               </XMApp>
@@ -281,10 +281,10 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
             <XMWrap>
               <XMTok role="OPEN" stretchy="true">(</XMTok>
               <XMApp>
-                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                 <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 <XMApp>
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                   <XMTok font="italic" fontsize="50%" role="UNKNOWN">c</XMTok>
                 </XMApp>
@@ -297,13 +297,13 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
             <XMWrap>
               <XMTok role="OPEN" stretchy="true">(</XMTok>
               <XMApp>
-                <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                 <XMTok font="italic" role="UNKNOWN">a</XMTok>
                 <XMApp>
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                   <XMApp>
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post5"/>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
                     <XMTok font="italic" fontsize="50%" role="UNKNOWN">c</XMTok>
                     <XMTok font="italic" fontsize="50%" role="UNKNOWN">d</XMTok>
                   </XMApp>
@@ -557,12 +557,12 @@ and <text font="typewriter">m:mstyle</text>:</p>
                     <XMApp xml:id="S2.E11.m1.11">
                       <XMTok mathstyle="display" meaning="divide" role="FRACOP" xml:id="S2.E11.m1.4"/>
                       <XMApp xml:id="S2.E11.m1.5">
-                        <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                        <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                         <XMTok font="italic" role="UNKNOWN">a</XMTok>
                         <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
                       <XMApp xml:id="S2.E11.m1.6">
-                        <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                        <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                         <XMTok font="italic" role="UNKNOWN">b</XMTok>
                         <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
@@ -583,9 +583,9 @@ and <text font="typewriter">m:mstyle</text>:</p>
                       <XMTok mathstyle="display" meaning="divide" role="FRACOP" xml:id="S2.E11.m1.7"/>
                       <XMApp xml:id="S2.E11.m1.8">
                         <XMApp>
-                          <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                          <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                           <XMApp>
-                            <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                            <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
                             <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
                             <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                           </XMApp>
@@ -610,9 +610,9 @@ and <text font="typewriter">m:mstyle</text>:</p>
                       </XMApp>
                       <XMApp xml:id="S2.E11.m1.9">
                         <XMApp>
-                          <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                          <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                           <XMApp>
-                            <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                            <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
                             <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
                             <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                           </XMApp>
@@ -682,7 +682,7 @@ and <text font="typewriter">m:mstyle</text>:</p>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
                 <XMApp enclose="box" xml:id="S2.E12.m1.4">
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">x</XMTok>
                   <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                 </XMApp>
@@ -954,29 +954,29 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
               </XMApp>
               <XMWrap>
                 <XMApp xml:id="S3.E17.m1.1">
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
                 <XMApp xml:id="S3.E17.m1.2">
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                     <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                     <XMTok font="italic" fontsize="50%" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
                 <XMApp xml:id="S3.E17.m1.3">
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
                     <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                     <XMApp>
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
                       <XMTok font="italic" fontsize="50%" role="UNKNOWN">c</XMTok>
                       <XMTok font="italic" fontsize="50%" role="UNKNOWN">d</XMTok>
                     </XMApp>
@@ -984,29 +984,29 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
                 <XMApp xml:id="S3.E17.m1.4">
-                  <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
                 <XMApp xml:id="S3.E17.m1.5">
-                  <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
                     <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                     <XMTok font="italic" fontsize="50%" role="UNKNOWN">c</XMTok>
                   </XMApp>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
                 <XMApp xml:id="S3.E17.m1.6">
-                  <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
                     <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                     <XMApp>
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post4"/>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
                       <XMTok font="italic" fontsize="50%" role="UNKNOWN">c</XMTok>
                       <XMTok font="italic" fontsize="50%" role="UNKNOWN">d</XMTok>
                     </XMApp>
@@ -1014,9 +1014,9 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
                 <XMApp xml:id="S3.E17.m1.7">
-                  <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                   <XMApp>
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                     <XMTok font="italic" role="UNKNOWN">a</XMTok>
                     <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                   </XMApp>
@@ -1045,21 +1045,21 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
               </XMApp>
               <XMWrap>
                 <XMApp scriptpos="mid" xml:id="S3.E18.m1.1">
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
                 <XMApp scriptpos="mid" xml:id="S3.E18.m1.2">
-                  <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
                 <XMApp scriptpos="mid" xml:id="S3.E18.m1.3">
-                  <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                   <XMApp scriptpos="mid">
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
                     <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                     <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                   </XMApp>
@@ -1089,7 +1089,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                   <XMTok font="italic" role="UNKNOWN">X</XMTok>
                   <XMApp>
                     <XMApp scriptpos="mid">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                       <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                       <XMApp>
                         <XMTok meaning="multirelation"/>
@@ -1103,7 +1103,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                       </XMApp>
                     </XMApp>
                     <XMApp>
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                       <XMTok font="italic" role="UNKNOWN">X</XMTok>
                       <XMApp>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -1126,7 +1126,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                       <XMTok font="italic" role="UNKNOWN">X</XMTok>
                       <XMApp>
                         <XMApp scriptpos="mid">
-                          <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                           <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                           <XMApp width="0pt" xoffset="-18.4pt">
                             <XMTok meaning="multirelation"/>
@@ -1140,7 +1140,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                           </XMApp>
                         </XMApp>
                         <XMApp>
-                          <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                           <XMTok font="italic" role="UNKNOWN">X</XMTok>
                           <XMApp>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -1163,7 +1163,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                           <XMTok font="italic" role="UNKNOWN">X</XMTok>
                           <XMApp>
                             <XMApp lpadding="14.6pt" role="SUMOP" scriptpos="mid">
-                              <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
+                              <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                               <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                               <XMApp width="0.0pt" xoffset="-18.4pt">
                                 <XMTok meaning="multirelation"/>
@@ -1177,7 +1177,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                               </XMApp>
                             </XMApp>
                             <XMApp>
-                              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                              <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                               <XMTok font="italic" role="UNKNOWN">X</XMTok>
                               <XMApp>
                                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -1193,7 +1193,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                           <XMTok font="italic" role="UNKNOWN">X</XMTok>
                           <XMApp>
                             <XMApp role="SUMOP" rpadding="14.6pt" scriptpos="mid">
-                              <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
+                              <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                               <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                               <XMApp width="0.0pt" xoffset="-18.4pt">
                                 <XMTok meaning="multirelation"/>
@@ -1207,7 +1207,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                               </XMApp>
                             </XMApp>
                             <XMApp>
-                              <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                              <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                               <XMTok font="italic" role="UNKNOWN">X</XMTok>
                               <XMApp>
                                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -1305,9 +1305,9 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
               </XMApp>
               <XMWrap>
                 <XMApp xml:id="S3.E21.m1.2">
-                  <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="pre1"/>
                   <XMApp>
-                    <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                     <XMTok font="italic" role="UNKNOWN">F</XMTok>
                     <XMTok font="italic" fontsize="70%" role="UNKNOWN">q</XMTok>
                   </XMApp>

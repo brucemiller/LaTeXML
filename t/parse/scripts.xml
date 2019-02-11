@@ -7,7 +7,7 @@
   <para xml:id="p1">
     <p>A<Math mode="inline" tex="{}^{c}" text="^c" xml:id="p1.m1">
         <XMath>
-          <XMApp role="FLOATSUPERSCRIPT" scriptpos="2">
+          <XMApp role="FLOATSUPERSCRIPT" scriptpos="1">
             <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
           </XMApp>
         </XMath>
@@ -16,7 +16,7 @@
   <para xml:id="p2">
     <p>A<Math mode="inline" tex="{}_{d}" text="_d" xml:id="p2.m1">
         <XMath>
-          <XMApp role="FLOATSUBSCRIPT" scriptpos="2">
+          <XMApp role="FLOATSUBSCRIPT" scriptpos="1">
             <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
           </XMApp>
         </XMath>
@@ -26,9 +26,9 @@
     <p>A<Math mode="inline" tex="{}^{c}_{d}" text="^ c absent _ d" xml:id="p3.m1">
         <XMath>
           <XMApp>
-            <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+            <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
             <XMApp>
-              <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="pre1"/>
               <XMTok meaning="absent"/>
               <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
             </XMApp>
@@ -41,9 +41,9 @@
     <p>A<Math mode="inline" tex="{}_{d}^{c}" text="_ d absent ^ c" xml:id="p4.m1">
         <XMath>
           <XMApp>
-            <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+            <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
             <XMApp>
-              <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
+              <XMTok role="SUBSCRIPTOP" scriptpos="pre1"/>
               <XMTok meaning="absent"/>
               <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
             </XMApp>
@@ -56,7 +56,7 @@
     <p><Math mode="inline" tex="{}^{a}A" text="^ a A" xml:id="p5.m1">
         <XMath>
           <XMApp>
-            <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
+            <XMTok role="SUPERSCRIPTOP" scriptpos="pre1"/>
             <XMTok font="italic" role="UNKNOWN">A</XMTok>
             <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
           </XMApp>
@@ -67,7 +67,7 @@
     <p><Math mode="inline" tex="{}_{b}A" text="_ b A" xml:id="p6.m1">
         <XMath>
           <XMApp>
-            <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
+            <XMTok role="SUBSCRIPTOP" scriptpos="pre1"/>
             <XMTok font="italic" role="UNKNOWN">A</XMTok>
             <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
           </XMApp>
@@ -78,9 +78,9 @@
     <p><Math mode="inline" tex="{}^{a}_{b}A" text="^ a _ b A" xml:id="p7.m1">
         <XMath>
           <XMApp>
-            <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
+            <XMTok role="SUPERSCRIPTOP" scriptpos="pre1"/>
             <XMApp>
-              <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
+              <XMTok role="SUBSCRIPTOP" scriptpos="pre1"/>
               <XMTok font="italic" role="UNKNOWN">A</XMTok>
               <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
             </XMApp>
@@ -93,9 +93,9 @@
     <p><Math mode="inline" tex="{}_{b}^{a}A" text="_ b ^ a A" xml:id="p8.m1">
         <XMath>
           <XMApp>
-            <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
+            <XMTok role="SUBSCRIPTOP" scriptpos="pre1"/>
             <XMApp>
-              <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="pre1"/>
               <XMTok font="italic" role="UNKNOWN">A</XMTok>
               <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
             </XMApp>
@@ -108,13 +108,13 @@
     <p><Math mode="inline" tex="{}_{b}^{a}A^{c}_{d}" text="_ b ^ a (A ^ c) _ d" xml:id="p9.m1">
         <XMath>
           <XMApp>
-            <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
+            <XMTok role="SUBSCRIPTOP" scriptpos="pre1"/>
             <XMApp>
-              <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="pre1"/>
               <XMApp>
-                <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                 <XMApp>
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                   <XMTok font="italic" role="UNKNOWN">A</XMTok>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
                 </XMApp>

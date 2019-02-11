@@ -345,7 +345,7 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
       while (!$STATE->isValueBound('current_environment', 0)
         || ($STATE->valueInFrame('current_environment', 0) ne 'document')) {
         # my $nonbox = $STATE->valueInFrame('groupNonBoxing',0) || 0;
-        my $tok = $STATE->valueInFrame('groupInitiator',        0) || '<unknown>';
+        my $tok = $STATE->valueInFrame('groupInitiator', 0) || '<unknown>';
         my $loc = $STATE->valueInFrame('groupInitiatorLocator', 0);
         $loc = defined $loc ? ToString($loc) : '<unknown>';
         my $env = $STATE->isValueBound('current_environment', 0)
@@ -568,17 +568,17 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
     my $ctr = LookupValue('counter_for_' . ToString($type)) || ToString($type);
     $level = ToString($level);
     if ($flag) {    # No number, not in TOC
-      (T_CS('\par'),T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
+      (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
         T_BEGIN, $type->unlist, T_END,
         T_BEGIN, T_END); }
     elsif ((($level ne '') && ($level > CounterValue('secnumdepth')->valueOf))
       || LookupValue('no_number_sections')) {
       # No number, but in TOC
-      (T_CS('\par'),T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
+      (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
         T_BEGIN, $type->unlist, T_END,
         T_BEGIN, T_OTHER('toc'), T_END); }
     else {          # Number and in TOC
-      (T_CS('\par'),T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'),
+      (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'),
         T_BEGIN, $type->unlist, T_END,
         T_BEGIN, T_OTHER('toc'), T_END); } });
 
@@ -1734,13 +1734,13 @@ sub retractEquation {
 # Ahhhh, but in eqnarray, this isn't effected until \\ !!!!!
 DefMacroI('\nonumber', undef, '\lx@equation@nonumber');
 DefPrimitiveI('\lx@equation@nonumber', undef, sub {
-  my $numbering = LookupValue('EQUATION_NUMBERING');
-  if($$numbering{in_equation}){
-    if ($$numbering{deferretract}) {
-      my $tags = LookupValue('EQUATIONROW_TAGS');
-      $$tags{retract} = 1; }
-    else {
-      retractEquation(); } }
+    my $numbering = LookupValue('EQUATION_NUMBERING');
+    if ($$numbering{in_equation}) {
+      if ($$numbering{deferretract}) {
+        my $tags = LookupValue('EQUATIONROW_TAGS');
+        $$tags{retract} = 1; }
+      else {
+        retractEquation(); } }
     return; });
 Let('\@LTX@nonumber', '\lx@equation@nonumber');
 
@@ -2201,7 +2201,7 @@ DefConstructor('\lx@stackrel{}{}',
     . "<ltx:XMArg>#2</ltx:XMArg>"
     . "<ltx:XMArg>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
-  properties => { scriptpos => sub { "mid" . $_[0]->getBoxingLevel; } }
+  properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } }
 );
 #======================================================================-
 # C.7.6 Putting One Thing Above Another
@@ -2606,12 +2606,12 @@ RawTeX('\th@plain');    # Activate the default style.
 
 sub defineNewTheorem {
   my ($stomach, $flag, $thmset, $otherthmset, $type, $within) = @_;
-  $thmset      = ToString($thmset);
+  $thmset = ToString($thmset);
   my $classname = CleanClassName($thmset);
-  my $listname  = "theorem:$thmset"; $listname =~ s/\s//g;
+  my $listname = "theorem:$thmset"; $listname =~ s/\s//g;
   $otherthmset = $otherthmset && ToString($otherthmset);
-  $type        = undef unless $type && $type->unlist;
-  $within      = $within ? ToString($within) : undef;
+  $type = undef unless $type && $type->unlist;
+  $within = $within ? ToString($within) : undef;
 
   my $counter = $otherthmset || $thmset;
   $counter =~ s/\s+/./;    # convert spaces to period?
@@ -3691,7 +3691,7 @@ sub process_index_phrases {
   @expansion = (T_CS('\@index'),
     ($style ? (T_OTHER('['), T_OTHER($style), T_OTHER(']')) : ()),
     T_BEGIN, @expansion, T_END);
-  return (T_BEGIN,T_CS('\normalfont'), @expansion, T_END); }
+  return (T_BEGIN, T_CS('\normalfont'), @expansion, T_END); }
 
 DefMacro('\index{}', \&process_index_phrases);
 
@@ -3846,8 +3846,8 @@ DefPrimitiveI('\-', undef, undef);    # We don't do hyphenation.
 DefPrimitiveI('\sloppy', undef, undef);
 DefPrimitiveI('\fussy',  undef, undef);
 # sloppypar can be used as an environment, or by itself.
-DefMacro('\sloppypar','\par\sloppy');
-DefMacro('\endsloppypar','\par');
+DefMacro('\sloppypar',    '\par\sloppy');
+DefMacro('\endsloppypar', '\par');
 DefMacroI('\nobreakdashes', undef, T_OTHER('-'));
 
 DefMacro('\showhyphens{}', '#1');     # ?

@@ -246,7 +246,7 @@ DefParameterType('Expanded', sub {
       return $token; } },
   reversion => sub {
     my ($arg) = @_;
-    (T_BEGIN,Revert($arg), T_END); });
+    (T_BEGIN, Revert($arg), T_END); });
 
 # Read a matching keyword, eg. Match:=
 DefParameterType('Match', sub { shift->readMatch(@_); });
@@ -779,7 +779,6 @@ sub escapechar {
   my $code = LookupRegister('\escapechar')->valueOf;
   return (($code >= 0) && ($code <= 255) ? chr($code) : ''); }
 
-
 # 1) Knuth, The TeXBook, page 40, paragraph 1, Chapter 7: How TEX Reads What You Type.
 # suggests all characters except spaces are returned in category code Other, i.e. Explode()
 DefMacro('\string Token', sub {
@@ -823,14 +822,14 @@ DefMacro('\meaning Token', sub {
         my $cc   = $definition->getCatcode;
         my $char = $definition->getString;
         $meaning = ($CATCODE_MEANING[$cc] || '') . ' ' . ($cc == CC_SPACE ? ' ' : $char); }
-      elsif ($type =~ /register/i) {   
-        my $value = $definition->valueOf;
+      elsif ($type =~ /register/i) {
+        my $value         = $definition->valueOf;
         my $register_type = lc(ref $value);
-        my $prefix = '\count';
+        my $prefix        = '\count';
         if ($register_type && $register_type =~ /glue/) {
-            $prefix = '\skip'; }
+          $prefix = '\skip'; }
         elsif ($register_type && $register_type =~ /dimension/) {
-            $prefix = '\dimen'; }
+          $prefix = '\dimen'; }
         my $literal_value = $value->valueOf if $register_type;
         # Should we be more careful to distinguish between latex and tex counters?
         $meaning = $prefix . $literal_value; }
@@ -874,7 +873,7 @@ DefParameterType('CSName', sub {
       if ($cc == CC_CS) {
         if (defined $STATE->lookupDefinition($token)) {
           Error('unexpected', $token, $gullet,
-            "The control sequence " . ToString($token) . " should not appear between \\csname and \\endcsname"); }
+"The control sequence " . ToString($token) . " should not appear between \\csname and \\endcsname"); }
         else {
           Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
       # Keep newlines from having \n!
@@ -3017,9 +3016,9 @@ DefConstructorI('\normal@par', undef, sub {
       Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
           T_CS('\LTX@clear@vadjust@afterpar'))); } },
   properties => { alignmentSkippable => 1 },
-#  alias => "\\par\n");
+  #  alias => "\\par\n");
   alias => '\par');
-Let('\par','\normal@par');
+Let('\par', '\normal@par');
 # OTOH, sometimes \par is just a minimalistic "start a new line"
 # This should be closer for those cases.
 DefConstructorI('\inner@par', undef, sub {
@@ -3615,7 +3614,7 @@ DefMacroI('\eqno', undef, sub {
       else {
         push(@stuff, $t); } }
     Error('unexpected', '\eqno', $gullet, "Fell of the end reading tag for \\eqno!",
-      "started ". ToString($locator));
+      "started " . ToString($locator));
     return Tokens(@stuff); });
 
 Let('\leqno', '\eqno');
@@ -3746,7 +3745,7 @@ sub scriptHandler {
     Fatal('expected', '{', $stomach, "Missing { in sub/super-script argument", $gullet->showUnexpected)
       unless @stuff;
     my $script = shift(@stuff);              # ONLY the first box is the script!
-    my $level  = $stomach->getBoxingLevel;
+    my $level  = $stomach->getScriptLevel;
     unshift(@stuff,
       LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS($cs)), [$script],
         locator    => $gullet->getLocator,
@@ -3867,7 +3866,7 @@ DefConstructor('\@SUPERSCRIPT{} InScriptStyle',
       ? (T_BEGIN, Revert($base), T_END, T_SUPER, revertScript($sup))
       : Revert($base)); },
   properties => sub {
-    (scriptpos => "post" . $_[0]->getBoxingLevel); },
+    (scriptpos => "post" . $_[0]->getScriptLevel); },
   sizer => sub { scriptSizer($_[0]->getArg(2), $_[0]->getArg(1), undef, 'SUPERSCRIPT', 'post'); });
 
 DefConstructor('\@SUBSCRIPT{} InScriptStyle',
@@ -3883,7 +3882,7 @@ DefConstructor('\@SUBSCRIPT{} InScriptStyle',
       ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
       : Revert($base)); },
   properties => sub {
-    (scriptpos => "post" . $_[0]->getBoxingLevel); },
+    (scriptpos => "post" . $_[0]->getScriptLevel); },
   sizer => sub { scriptSizer($_[0]->getArg(2), $_[0]->getArg(1), undef, 'SUBSCRIPT', 'post'); });
 
 DefMacroI('\'', undef, sub {
@@ -6387,7 +6386,7 @@ DefConstructor('\buildrel Until:\over {}',
     . "<ltx:XMArg>#2</ltx:XMArg>"
     . "<ltx:XMArg>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
-  properties => { scriptpos => sub { "mid" . $_[0]->getBoxingLevel; } });
+  properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } });
 
 #**********************************************************************
 # LaTeX Hook

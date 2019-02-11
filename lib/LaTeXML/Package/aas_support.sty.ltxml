@@ -383,7 +383,7 @@ DefConstructor('\aas@@fstack Undigested {}',
     . "<ltx:XMTok>.</ltx:XMTok>"
     . "<ltx:XMWrap>#2</ltx:XMWrap>"
     . "</ltx:XMApp>",
-  properties => { scriptpos => sub { "mid" . $_[0]->getBoxingLevel; } },
+  properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } },
   mode       => 'math', font => { shape => 'upright' }, bounded => 1, reversion => '#1');
 DefMacro('\aas@fstack{}', '\ensuremath{\aas@@fstack{#1}}');
 
