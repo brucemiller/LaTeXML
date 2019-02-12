@@ -176,7 +176,7 @@ Tag('ltx:glossaryentry', afterClose => sub { GenerateID(@_, ''); });
 DefConstructor('\acrodef{}[]{}',
   "<ltx:glossaryphrase role='acronym' key='#1' show='short'>?#2(#2)(#1)</ltx:glossaryphrase>"
     . "<ltx:glossaryphrase role='acronym' key='#1' show='long'>#3</ltx:glossaryphrase>",
-bounded => 1, beforeDigest => sub { AssignValue(inPreamble => 0); });
+  bounded => 1, beforeDigest => sub { AssignValue(inPreamble => 0); });
 
 Let('\newacro', '\acrodef');
 Let('\acro',    '\acrodef');

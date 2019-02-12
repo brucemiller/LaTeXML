@@ -17,7 +17,7 @@ use List::Util qw(min max);
 sub new {
   my ($class, $type, $key, $fields, $rawfields) = @_;
   my $self = { type => $type, key => $key,
-    fieldlist => $fields, rawfieldlist => $rawfields,
+    fieldlist   => $fields, rawfieldlist => $rawfields,
     fieldmap    => { map { ($$_[0] => $$_[1]) } @$fields },
     rawfieldmap => { map { ($$_[0] => $$_[1]) } @$rawfields } };
   bless $self, $class;
@@ -61,7 +61,7 @@ sub prettyPrint {
     "@" . $$self{type} . "{" . $$self{key},
     (map { (" " x max(1, (10 - length($$_[0])))) . $$_[0] . " = {" . $$_[1] . "}" }
         @{ $$self{fieldlist} })
-    ) . "}\n"; }
+  ) . "}\n"; }
 
 #======================================================================
 1;

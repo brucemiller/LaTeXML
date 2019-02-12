@@ -67,7 +67,7 @@ DefConstructor('\@setrowcolor', sub {
     $_[1]->setProperty(background => $bg);
     AssignValue(tabular_row_color => $bg, 'global'); },
   properties => { alignmentSkippable => 1 },
-  alias => '');                           # Make it go away in math (?)
+  alias => '');    # Make it go away in math (?)
 
 # Set the cell's backgroundcolor from the current background color
 DefConstructor('\@setcellcolor', sub {
@@ -76,7 +76,7 @@ DefConstructor('\@setcellcolor', sub {
       if (my $bg = $props{font} && $props{font}->getBackground) {
         $document->setAttribute($node, backgroundcolor => $bg); } } },
   properties => { alignmentSkippable => 1 },
-  alias => '');                           # Make it go away in math (?)
+  alias => '');    # Make it go away in math (?)
 # \arrayrulecolor
 DefMacro('\arrayrulecolor[]{}', '');
 

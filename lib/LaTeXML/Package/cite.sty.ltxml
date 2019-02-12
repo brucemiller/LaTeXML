@@ -51,7 +51,7 @@ DefMacro('\citen OptionalMatch:* [][] Semiverbatim', sub {
               Tokens($open, ($pre ? ($pre, T_SPACE) : ()))),
             Invocation(T_CS('\@@citephrase'),
               Tokens(($post ? ($ns->unlist, T_SPACE, $post->unlist) : ()), $close->unlist))
-            )))->unlist; }
+          )))->unlist; }
     elsif ($style eq 'super') {
       Invocation(T_CS('\@@cite'),
         Tokens(Explode('citet')),

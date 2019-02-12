@@ -78,7 +78,10 @@ sub compileConstructor {
       . ($floats ? "\$document->setNode(\$savenode) if defined \$savenode;\n" : '')
       . "}\n"
       . "1;\n";
-    $result = eval $code; };
+    ## no critic
+    $result = eval $code;
+    ## use critic
+  };
 
   if (!defined $result) {
     # We can use die in the following code, which will get caught & wrapped "informatively"

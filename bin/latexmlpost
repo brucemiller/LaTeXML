@@ -147,7 +147,7 @@ GetOptions("quiet" => sub { $verbosity--; },
   "svg!"           => \$svg,
   "pictureimages!" => \$picimages,
 
-  ) or pod2usage(-message => $LaTeXML::IDENTITY,
+) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(1); }

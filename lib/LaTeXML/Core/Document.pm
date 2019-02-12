@@ -44,9 +44,9 @@ sub new {
   my $doc = XML::LibXML::Document->new("1.0", "UTF-8");
   # We'll set the DocType when the 1st Element gets added.
   return bless { document => $doc, node => $doc, model => $model,
-    idstore => {}, labelstore => {},
+    idstore    => {}, labelstore => {},
     node_fonts => {}, node_boxes => {}, node_properties => {},
-    pending => [], progress => 0 }, $class; }
+    pending    => [], progress   => 0 }, $class; }
 
 #**********************************************************************
 # Basic Accessors
@@ -123,7 +123,7 @@ sub getSecondChildElement {
   my $first_child = $self->getFirstChildElement($node);
   my $second_child = $first_child && $first_child->nextSibling;
   while ($second_child && $second_child->nodeType != XML_ELEMENT_NODE) {
-      $second_child = $second_child->nextSibling; }
+    $second_child = $second_child->nextSibling; }
   return $second_child; }
 
 # Find the nodes according to the given $xpath expression,
@@ -271,7 +271,7 @@ sub getTagActionList {
     (($v = $$taghash{$when1}) ? @$v : ()),
     (($v = $$nshash{$when1})  ? @$v : ()),
     (($v = $$allhash{$when1}) ? @$v : ()),
-    ); }
+  ); }
 
 #**********************************************************************
 # This is a diagnostic tool that MIGHT help locate XML::LibXML bugs;
@@ -364,11 +364,11 @@ sub finalize {
 
 sub finalize_rec {
   my ($self, $node) = @_;
-  my $model               = $$self{model};
-  my $qname               = $model->getNodeQName($node);
+  my $model = $$self{model};
+  my $qname = $model->getNodeQName($node);
   # _standalone_font is typically for metadata that gets extracted out of context
-  my $declared_font       = ($node->getAttribute('_standalone_font')
-			     ? LaTeXML::Common::Font->textDefault : $LaTeXML::FONT);
+  my $declared_font = ($node->getAttribute('_standalone_font')
+    ? LaTeXML::Common::Font->textDefault : $LaTeXML::FONT);
   my $desired_font        = $LaTeXML::FONT;
   my %pending_declaration = ();
   if (my $comment = $node->getAttribute('_pre_comment')) {
@@ -387,7 +387,7 @@ sub finalize_rec {
           # Merge to set the font currently in effect
           $declared_font = $declared_font->merge(%{ $pending_declaration{$attr}{properties} });
           delete $pending_declaration{$attr}; } }
-    } }
+  } }
   local $LaTeXML::FONT = $declared_font;
   foreach my $child ($node->childNodes) {
     my $type = $child->nodeType;
@@ -416,7 +416,7 @@ sub finalize_rec {
           $self->setAttribute($text, $attr => $pending_declaration{$attr}{value}); }
         $self->finalize_rec($text);    # Now have to clean up the new node!
       }
-    } }
+  } }
 
   # Attributes that begin with (the semi-legal) "_" are for Bookkeeping.
   # Remove them now.

@@ -122,9 +122,9 @@ DefConstructor('\endnote[]{}',
     . "#tags"
     . "#2"
     . "</ltx:note>",
-  mode => 'text', bounded => 1,
+  mode         => 'text', bounded => 1,
   beforeDigest => sub { reenterTextMode(1); Digest('\normalfont'); },
-  properties => sub {
+  properties   => sub {
     ($_[1]
       ? (mark => $_[1])
       : (RefStepCounter('endnote'),

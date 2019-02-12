@@ -4,7 +4,7 @@
 # \=========================================================ooo==U==ooo=/ #
 
 # ================================================================================
-# Trivial Math PostProcessor which supplies the lexemes string 
+# Trivial Math PostProcessor which supplies the lexemes string
 #   (if deposited in the lexemes attribute of the XMath)
 # currently required to --preload=llamapun.sty to achieve that
 # ================================================================================

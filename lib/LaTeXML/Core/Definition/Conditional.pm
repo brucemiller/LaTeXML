@@ -138,7 +138,7 @@ sub skipConditionalBody {
       $$stack[0]{elses} = 1;
       return $t; } }    # } #}
   Error('expected', '\fi', $gullet, "Missing \\fi or \\else, conditional fell off end",
-    "Conditional started at ". ToString($start));
+    "Conditional started at " . ToString($start));
   return; }
 
 sub invoke_else {

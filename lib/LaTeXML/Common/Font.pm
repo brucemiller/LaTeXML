@@ -335,7 +335,7 @@ sub relativeTo {
 ###    (isDiff($mstyle, $omstyle)
 ###      ? ('mathstyle' => { value => $mstyle, properties => { mathstyle => $mstyle } })
 ###      : ()),
-    ); }
+  ); }
 
 sub distance {
   my ($self, $other) = @_;
@@ -485,7 +485,7 @@ sub computeBoxesSize {
         "Depth of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($d)); }
     if ((($options{layout} || '') eq 'vertical')    # EVERY box is a row?
                                                     # || $box is a <ltx:break> (or similar)!!!!
-      ) {
+    ) {
       push(@lines, [$wd, $ht, $dp]); $wd = $ht = $dp = 0; }
     elsif ((defined $maxwidth) && ($wd >= $maxwidth)) {    # or we've reached the requested width
           # Compounding errors with wild abandon.
@@ -631,7 +631,7 @@ sub specialize {
       $family = $deffamily if !$family || ($family ne $DEFFAMILY);
       $shape  = 'italic'   if !$shape  || !($force & $FORCE_SHAPE);    # always ?
       if ($series && ($series ne $DEFSERIES)) { $series = $defseries; }
-    } }
+  } }
   elsif ($string =~ /^\p{N}$/) {                                       # Digit
     if (!$family || ($family eq 'math')) {
       $family = $deffamily;
@@ -673,7 +673,7 @@ sub purestyleChanges {
     ($mathstyle && $othermathstyle
       ? (mathstylestep => $mathstylestep{$mathstyle}{$othermathstyle})
       : ()),
-    ); }
+  ); }
 
 sub mergePurestyle {
   my ($self, %stylechanges) = @_;

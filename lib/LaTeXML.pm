@@ -647,7 +647,7 @@ sub bind_log {
     *STDERR_SAVED = *STDERR;
     *STDERR       = *$log_handle;
     binmode(STDERR, ':encoding(UTF-8)');
-    $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR ;
+    $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR;
     $$self{log_handle} = $log_handle;
   }
   return; }

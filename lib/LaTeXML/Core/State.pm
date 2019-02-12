@@ -574,7 +574,7 @@ sub popDaemonFrame {
       unless (exists $$pool_preloaded_hash{$subname}) {
         undef $LaTeXML::Package::Pool::{$subname};
         delete $LaTeXML::Package::Pool::{$subname};
-      } }
+    } }
     # Finally, pop the frame
     $self->popFrame; }
   else {

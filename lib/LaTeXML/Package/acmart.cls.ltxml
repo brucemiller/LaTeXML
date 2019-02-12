@@ -138,27 +138,27 @@ DefEnvironment('{teaserfigure}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties => { layout => 'vertical' },
+  properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('figure', $_[1]); });
 
 DefEnvironment('{marginfigure}[]',
   "<ltx:figure xml:id='#id' inlist='#inlist' class='ltx_marginfigure' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties => { layout => 'vertical' },
+  properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('figure', $_[1]); });
 
 DefEnvironment('{margintable}[]',
   "<ltx:table xml:id='#id' inlist='#inlist' class='ltx_margintable' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties => { layout => 'vertical' },
+  properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('table', $_[1]); });
 
 DefMacroI('\sidebarname',  undef, 'Sidebar');
 DefMacroI('\fnum@sidebar', undef, '\sidebarname\nobreakspace\thesidebar');

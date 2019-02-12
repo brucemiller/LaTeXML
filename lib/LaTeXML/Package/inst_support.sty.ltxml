@@ -101,7 +101,7 @@ sub relocateInstitute {
         foreach my $author (@authors) {
           $document->appendTree($author, ['ltx:contact', { role => 'institute' }, $instnode->childNodes]);
           $instnode->parentNode->removeChild($instnode); } }
-    } }
+  } }
   # Or relocate email
   if (($instnode->getAttribute('role') || '') eq 'email') {
     if (my $mark = $instnode->getAttribute('mark')) {
@@ -113,7 +113,7 @@ sub relocateInstitute {
           $author->setAttribute(role => 'email');
           $author->removeAttribute('_mark'); }
         $instnode->parentNode->removeChild($instnode); }
-    } }
+  } }
   return; }
 
 1;

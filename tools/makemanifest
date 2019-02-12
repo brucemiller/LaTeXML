@@ -12,21 +12,22 @@
 # \=========================================================ooo==U==ooo=/ #
 
 use strict;
+use warnings;
 use String::Util 'trim';
 use File::Path qw(make_path);
 use File::Copy qw(move);
 use File::Basename;
 use File::Find::Rule;
 use Getopt::Long qw(:config no_ignore_case);
-use Algorithm::Diff; 
+use Algorithm::Diff;
 use Pod::Usage;
 
 # read command line options
-my $identity  = 'makemanifest';
+my $identity = 'makemanifest';
 my ($diff, $quiet, $save, $help) = ();
-GetOptions("diff" => \$diff, 
-  "save" => \$save, 
-  "quiet" => \$quiet, 
+GetOptions("diff" => \$diff,
+  "save"  => \$save,
+  "quiet" => \$quiet,
   "help"  => \$help,
 ) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
@@ -47,15 +48,15 @@ chomp(my @gitignoreLines = <$gitignore>);
 close $gitignore;
 
 # add all lines from there to the ignored files
-foreach my $line (@gitignoreLines) { 
+foreach my $line (@gitignoreLines) {
   $line = trim($line);
-  $finder = $finder->not_name($line) unless((length($line) == 0) || (substr($line, 0, 1) eq '#')); }
+  $finder = $finder->not_name($line) unless ((length($line) == 0) || (substr($line, 0, 1) eq '#')); }
 
 # Build the new MANIFEST
 my $manifest = build_manifest();
 
 # show the diff if --diff was given
-if($diff) {
+if ($diff) {
   # get the old and new manifests
   open my $infile, '<', 'MANIFEST';
   chomp(my @oldmanifest = <$infile>);
@@ -64,7 +65,7 @@ if($diff) {
   # get the new manifest
   my @newmanifest = split("\n", $manifest);
   push(@newmanifest, '');
-  
+
   # and make a diff
   my $diff = Algorithm::Diff->new(\@oldmanifest, \@newmanifest);
   while ($diff->Next()) {
@@ -79,8 +80,8 @@ if($diff) {
       printf "%d,%dc%d,%d\n", $diff->Get(qw( Min1 Max1 Min2 Max2 )); }
     print "< $_\n" for $diff->Items(1);
     print $sep;
-    print "> $_\n" for $diff->Items(2); } 
-    print("\n"); }
+    print "> $_\n" for $diff->Items(2); }
+  print("\n"); }
 
 # unless --quiet is set, print the new manifest to STDOUT
 elsif (!$quiet) {
@@ -103,8 +104,8 @@ if ($save) {
 #======================================================================
 sub list_files {
   my ($dir) = @_;
-  my $str = '';
-  my @files = $finder->in($dir); 
+  my $str   = '';
+  my @files = $finder->in($dir);
   foreach my $file (sort @files) { $str .= "$file\n"; }
   return $str; }
 
@@ -113,7 +114,7 @@ sub list_files {
 # Returns the contents as a string
 #======================================================================
 sub build_manifest {
-  
+
   # build the string
   my $str = <<'HERE';
 #==================================================
@@ -219,7 +220,7 @@ HERE
 #==================================================
 HERE
   $str .= list_files("lib/LaTeXML/Util");
-  $str .=  <<'HERE';
+  $str .= <<'HERE';
 
 #==================================================
 # Document Model

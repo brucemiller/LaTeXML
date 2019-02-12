@@ -56,7 +56,7 @@ sub new {
   #return bless [[@boxes], $font, $locator || '', undef, {}], $class; }
   return bless { boxes => [@boxes],
     properties => { font => $font, locator => $locator || undef, }
-    }, $class; }
+  }, $class; }
 
 sub unlist {
   my ($self) = @_;

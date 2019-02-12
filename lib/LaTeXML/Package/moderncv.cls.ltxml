@@ -50,7 +50,7 @@ DefMacro('\homepage{}',     '\@add@to@frontmatter{ltx:creator}{\@@@homepage{\url
 DefMacro('\homepagesymbol', Tokens());
 
 DefConstructor('\@@@mobile{}', "^ <ltx:contact role='mobile'>#1</ltx:contact>");
-DefMacro('\mobile{}',          '\@add@to@frontmatter{ltx:creator}{\@@@mobile{#1}}');
+DefMacro('\mobile{}', '\@add@to@frontmatter{ltx:creator}{\@@@mobile{#1}}');
 
 DefConstructor('\@@cv@section{} Undigested OptionalUndigested Undigested', sub {
     my ($document, $type, $inlist, $toctitle, $title, %props) = @_;
@@ -58,9 +58,9 @@ DefConstructor('\@@cv@section{} Undigested OptionalUndigested Undigested', sub {
     $document->openElement("ltx:" . ToString($type),
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist));
-    $document->openElement('ltx:title',        class=>"ltx_cv");
-    $document->insertElement('ltx:text','',    class=>"ltx_section_mark");
-    $document->insertElement('ltx:text',$props{title},class=>"ltx_cv_heading");
+    $document->openElement('ltx:title', class => "ltx_cv");
+    $document->insertElement('ltx:text', '',            class => "ltx_section_mark");
+    $document->insertElement('ltx:text', $props{title}, class => "ltx_cv_heading");
     $document->closeElement('ltx:title');
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
   properties => sub {
@@ -70,8 +70,8 @@ DefConstructor('\@@cv@section{} Undigested OptionalUndigested Undigested', sub {
     $props{toctitle} = $toctitle
       && Digest(T_CS('\@hidden@bgroup'), $toctitle, T_CS('\@hidden@egroup'));
     return %props; },
-    locked => 1);
-Let(T_CS('\\@@numbered@section'), T_CS('\\@@cv@section'));
+  locked => 1);
+Let(T_CS('\\@@numbered@section'),   T_CS('\\@@cv@section'));
 Let(T_CS('\\@@unnumbered@section'), T_CS('\\@@cv@section'));
 
 DefMacro('\closesection{}', Tokens(), locked => 1);
@@ -80,7 +80,7 @@ DefMacro('\title Semiverbatim',      '\@add@to@frontmatter{ltx:creator}{\@@@posi
 DefMacro('\email Semiverbatim',      '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
 DefMacro('\firstname Semiverbatim',  '\@add@to@frontmatter{ltx:creator}{\@@@firstname{#1}}');
 DefMacro('\familyname Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@familyname{#1}}');
-DefMacro('\photo[]{}',               Tokens()); # TODO
+DefMacro('\photo[]{}',               Tokens());                                               # TODO
 
 DefConstructor('\@@@position{}',   "^ <ltx:contact role='position'>#1</ltx:contact>");
 DefConstructor('\@@@email{}',      "^ <ltx:contact role='email'>#1</ltx:contact>");
@@ -95,18 +95,18 @@ DefMacro('\moderncvstyle',     Tokens());
 
 # Classic theme depends on packages for fonts & icons, only theme supported for now:
 # (partial) moderncviconsmarvosym.sty contents here:
-# 
+#
 # TODO: should we use them in the final HTML style? Feedback from professionals welcome.
 #       for now just adding the macro support, but omitting them from the final output
-DefMacro('\marvosymbol {}','');
-DefMacro('\addresssymbol', '');
+DefMacro('\marvosymbol {}',    '');
+DefMacro('\addresssymbol',     '');
 DefMacro('\mobilephonesymbol', '📱');
-DefMacro('\fixedphonesymbol', '☎');
-DefMacro('\faxphonesymbol', '📠');
-DefMacro('\emailsymbol', '✉');
-DefMacro('\homepagesymbol', '🖰');
-DefMacro('\linkedinsocialsymbol', ''); # Tikz image, needs a smart workaround (font awesome maybe?)
-DefMacro('\twittersocialsymbol', ''); # Tikz image, needs a smart workaround (font awesome maybe?)
-DefMacro('\githubsocialsymbol', ''); # Tikz image, needs a smart workaround (font awesome maybe?)
+DefMacro('\fixedphonesymbol',  '☎');
+DefMacro('\faxphonesymbol',    '📠');
+DefMacro('\emailsymbol',       '✉');
+DefMacro('\homepagesymbol',    '🖰');
+DefMacro('\linkedinsocialsymbol', '');  # Tikz image, needs a smart workaround (font awesome maybe?)
+DefMacro('\twittersocialsymbol',  '');  # Tikz image, needs a smart workaround (font awesome maybe?)
+DefMacro('\githubsocialsymbol',   '');  # Tikz image, needs a smart workaround (font awesome maybe?)
 
 1;

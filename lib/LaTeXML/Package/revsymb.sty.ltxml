@@ -30,28 +30,28 @@ DefMacro('\Bbb{}', '\mathbb{#1}');
 # loses that font information, so that these tokens will appear as normal delimiters in the mathml.
 DefConstructor('\biglb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
-  font => { size => 'big', series => 'bold', forcebold => 1 }, bounded => 1);
+  font           => { size => 'big', series => 'bold', forcebold => 1 }, bounded => 1);
 DefConstructor('\bigrb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
-  font => { size => 'big', series => 'bold', forcebold => 1 }, bounded => 1);
+  font           => { size => 'big', series => 'bold', forcebold => 1 }, bounded => 1);
 DefConstructor('\Biglb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
-  font => { size => 'Big', series => 'bold', forcebold => 1 }, bounded => 1);
+  font           => { size => 'Big', series => 'bold', forcebold => 1 }, bounded => 1);
 DefConstructor('\Bigrb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
-  font => { size => 'Big', series => 'bold', forcebold => 1 }, bounded => 1);
+  font           => { size => 'Big', series => 'bold', forcebold => 1 }, bounded => 1);
 DefConstructor('\bigglb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
-  font => { size => 'bigg', series => 'bold', forcebold => 1 }, bounded => 1);
+  font           => { size => 'bigg', series => 'bold', forcebold => 1 }, bounded => 1);
 DefConstructor('\biggrb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
-  font => { size => 'bigg', series => 'bold', forcebold => 1 }, bounded => 1);
+  font           => { size => 'bigg', series => 'bold', forcebold => 1 }, bounded => 1);
 DefConstructor('\Bigglb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'OPEN'); },
-  font => { size => 'Bigg', series => 'bold', forcebold => 1 }, bounded => 1);
+  font           => { size => 'Bigg', series => 'bold', forcebold => 1 }, bounded => 1);
 DefConstructor('\Biggrb Token', '#1',
   afterConstruct => sub { addDelimiterRole($_[0], 'CLOSE'); },
-  font => { size => 'Bigg', series => 'bold', forcebold => 1 }, bounded => 1);
+  font           => { size => 'Bigg', series => 'bold', forcebold => 1 }, bounded => 1);
 
 DefMath('\gtrsim', "\x{2273}", role => 'RELOP',
   meaning => 'greater-than-or-equivalent-to');

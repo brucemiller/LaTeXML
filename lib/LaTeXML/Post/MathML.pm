@@ -830,7 +830,7 @@ sub stylizeContent {
     ($stretchy ? (stretchy       => $stretchy)          : ()),
     ($class    ? (class          => $class)             : ()),
     ($href     ? (href           => $href)              : ()),
-    ); }
+  ); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
 my %fences = (                                                    # CONSTANT
@@ -1421,7 +1421,7 @@ DefMathML("Token:MULOP:?", \&pmml_mo,    undef);
 DefMathML('Apply:MULOP:?', \&pmml_infix, undef);
 
 # Unsatisfactory BINOP = ADDOP or MULOP ???
-DefMathML("Token:BINOP:?", \&pmml_mo, undef);
+DefMathML("Token:BINOP:?", \&pmml_mo,    undef);
 DefMathML('Apply:BINOP:?', \&pmml_infix, undef);
 
 DefMathML('Apply:FRACOP:?', sub {

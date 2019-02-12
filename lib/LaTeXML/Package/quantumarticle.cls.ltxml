@@ -27,13 +27,13 @@ RequirePackage('xcolor');
 
 DefConstructor('\@@@email{}{}', "^ <ltx:contact role='#2'>#1</ltx:contact>");
 DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{email}}');
-DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
+DefConstructor('\@@@address{}',     "^ <ltx:contact role='address'>#1</ltx:contact>");
 DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefConstructor('\@@@homepage{}', "^ <ltx:contact role='homepage'>#1</ltx:contact>");
+DefConstructor('\@@@homepage{}',    "^ <ltx:contact role='homepage'>#1</ltx:contact>");
 DefMacro('\address[]{}',   '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
 DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-DefMacro('\homepage{}', '\@add@to@frontmatter{ltx:creator}{\@@@homepage{#1}}');
-DefMacro('\orcid{}', '');
+DefMacro('\homepage{}',    '\@add@to@frontmatter{ltx:creator}{\@@@homepage{#1}}');
+DefMacro('\orcid{}',       '');
 
 RawTeX(<<'EoTeX');
 \DeclareRobustCommand\openone{\mathbbm{1}}

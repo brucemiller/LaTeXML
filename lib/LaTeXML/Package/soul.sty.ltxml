@@ -30,7 +30,7 @@ DefPrimitive('\sodef DefToken {} {Dimension}{Dimension}{Dimension}', sub {
     DefConstructorI($cs, '{}',
       "<ltx:text cssstyle='letter-spacing:#spacing;' _noautoclose='1'>#1</ltx:text>",
       properties => { spacing => $letterspace->pxValue . 'px' },
-      bounded => 1, beforeDigest => sub { Digest($font); });
+      bounded    => 1, beforeDigest => sub { Digest($font); });
     return; });
 
 RawTeX(<<'EoTeX');

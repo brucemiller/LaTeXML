@@ -164,7 +164,7 @@ sub extractXMArrayCells {
                 eq ($next->getAttribute('role') || '<none>'))
               && (($prev->getAttribute('meaning') || '<none>') eq ($next->getAttribute('meaning') || '<none>'))
               && ($role =~ /^(?:ADDOP|MULOP|RELOP)$/)
-              ) {
+            ) {
               pop(@contents); } } }
         push(@contents, @nodes); }
       push(@contents, $intercolumn) if $intercolumn && @cells; }
@@ -601,7 +601,7 @@ sub rearrangeLoneAMSAligned {
           # and synthesize a box from the lhs & rhs.
           $document->setNodeBox($main, MathWhatsit(map { $document->getNodeBox($_) } @cells));
           closeMathFork($document, $eqn, $main, $branch);
-        } } } }
+  } } } }
   return; }
 
 #======================================================================
@@ -1105,7 +1105,7 @@ DefEnvironment('{subarray}{}',
   "<ltx:XMArray mathstyle='script' name='list' class='ltx_align_#1' rowsep='#rowsep'>"
     . "<ltx:XMRow><ltx:XMCell><ltx:XMArg>#body</ltx:XMArg></ltx:XMCell></ltx:XMRow>"
     . "</ltx:XMArray>",
-  properties => { rowsep => Dimension('0') },
+  properties   => { rowsep => Dimension('0') },
   beforeDigest => sub { DefConstructor("\\\\ OptionalMatch:* [Dimension]",
       "</ltx:XMArg></ltx:XMCell></ltx:XMRow><ltx:XMRow><ltx:XMCell><ltx:XMArg>",
       reversion => Tokens(T_CS("\\\\"), T_CR));
@@ -1144,7 +1144,7 @@ DefConstructor('\sideset{}{}{}', sub {
       if (my $scriptop = IsScript($script)) {
         $node = sidesetWrap($document, $node, 'pre', $$scriptop[1], $level, $script);
         $level++ if $$scriptop[0] eq 'FLOATING';                # After node is seen!
-      } }
+    } }
     my @after = ();
     foreach my $script ($post->unlist) {
       # If it's a script, handle it (non-scripts dealt with above & below)

@@ -830,7 +830,7 @@ DefMacro('\meaning Token', sub {
           $prefix = '\skip'; }
         elsif ($register_type && $register_type =~ /dimension/) {
           $prefix = '\dimen'; }
-        my $literal_value = $value->valueOf if $register_type;
+        my $literal_value = $register_type && $value->valueOf;
         # Should we be more careful to distinguish between latex and tex counters?
         $meaning = $prefix . $literal_value; }
       elsif ($type =~ /expandable/i) {

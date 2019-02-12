@@ -2162,7 +2162,7 @@ sub InputDefinitions {
       loadLTXML($filename, $file); }                                              # Perl module.
     else {
       # Special case -- add a default resource if we're loading a raw .cls file as a first choice.
-          # Raw class interpretations needs _some_ styling as baseline.
+      # Raw class interpretations needs _some_ styling as baseline.
       if (!$options{noltxml} && ($file =~ /\.cls$/)) {
         RelaxNGSchema("LaTeXML");
         RequireResource('ltx-article.css'); }
@@ -2583,7 +2583,7 @@ sub ProcessPendingResources {
   my ($document) = @_;
   if (my $resources = LookupValue('PENDING_RESOURCES')) {
     my %seen = ();
-    my @unique_resources = grep {my $new = !$seen{$_}; $seen{$_}=1; $new;} @$resources;
+    my @unique_resources = grep { my $new = !$seen{$_}; $seen{$_} = 1; $new; } @$resources;
     for my $resource (@unique_resources) {
       addResource($document, @$resource); }
     AssignValue(PENDING_RESOURCES => [], 'global'); }

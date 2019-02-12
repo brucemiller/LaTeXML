@@ -44,7 +44,7 @@ sub new {
   return bless { string => $string,
     tokens => $tokens,
     properties => { font => $font, locator => $locator, %properties }
-    }, $class; }
+  }, $class; }
 
 # Accessors
 sub isaBox {

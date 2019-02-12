@@ -231,7 +231,7 @@ sub getBibEntries {
           $bibdoc->findnodes('.//@bibrefs', $bibentry)];
       # Also, register the key with the DB, if the bibliography hasn't already been scanned.
       $$self{db}->register("BIBLABEL:$bibkey", id => $bibid);
-    } }
+  } }
   # Now, collect all bibkeys that were cited in other documents (NOT the bibliography)
   # And note any referrers to them (also only those outside the bib)
   my $citestar = $$self{db}->lookup('BIBLABEL:*');
@@ -245,9 +245,9 @@ sub getBibEntries {
           my ($rid, $e, $t) = ($refr, undef, undef);
           while ($rid && ($e = $$self{db}->lookup("ID:$rid")) && (($t = ($e->getValue('type') || '')) ne 'ltx:bibitem')) {
             $rid = $e->getValue('parent'); }
-          if(! $e){
-            Warn('expected','entry',undef,
-                 "Didn't find an entry for reference id=$rid"); }
+          if (!$e) {
+            Warn('expected', 'entry', undef,
+              "Didn't find an entry for reference id=$rid"); }
           elsif ($t ne 'ltx:bibitem') {
             $entries{$bibkey}{referrers}{$refr} = 1; } }
         push(@queue, $bibkey) if keys %{ $entries{$bibkey}{referrers} }; }

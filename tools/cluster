@@ -154,7 +154,7 @@ if ($dosimilar) {
         # NOTE: Would be nice to record the fact that the file is a subset!!
         foreach my $f (@{ $$cluster{files} }) {
           $super->adoptFile($f, $superdiff); }
-      } } }
+  } } }
   print "Combined $nsub subsets, resulting in " . scalar(keys %clusters) . " similar clusters\n";
 }
 #======================================================================
@@ -191,8 +191,8 @@ sub new {
   my $distribution = pathname_find("$name.ltxml", paths => [$::LTXMLDIR], installation_subdir => 'Package');
   my $self = bless { name => $name,
     declaredname => $declname,
-    signature => { map { ($_ => 1) } split(/,\s*/, $signature) },
-    usage => $usage || 0,
+    signature    => { map { ($_ => 1) } split(/,\s*/, $signature) },
+    usage        => $usage || 0,
     distribution => $distribution,
     implemented  => $distribution || pathname_find("$name.ltxml", paths => [$::ARXMLIVDIR]),
     cluster      => undef, clusterdiff => 0 }, $class;

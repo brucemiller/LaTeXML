@@ -747,7 +747,7 @@ sub node_to_lexeme_full {
       my @child_nodes = element_nodes($node);
       # skip through single child wrappers (don't serialize)
       while (scalar(@child_nodes) == 1 && getQName($child_nodes[0]) =~ /^ltx:XM(Arg|Wrap)$/) {
-        @child_nodes = element_nodes($child_nodes[0])
+        @child_nodes = element_nodes($child_nodes[0]);
       }
       foreach my $child (@child_nodes) {
         my $child_lexeme = $self->node_to_lexeme_full($child);

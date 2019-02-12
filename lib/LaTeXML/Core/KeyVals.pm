@@ -290,7 +290,7 @@ sub readFrom {
   my $startloc = $gullet->getLocator;
 
   # set and read tokens
-  my $open   = $gullet->readToken;
+  my $open = $gullet->readToken;
   $$self{assign} = T_OTHER('=');
   $$self{punct}  = T_OTHER(',');
   my ($punct, $assign) = ($$self{punct}, $$self{assign});
@@ -536,7 +536,7 @@ sub beDigested {
     setAll => $setAll, setInternals => $setInternals,
     skip => $skip, skipMissing => $skipMissing, hookMissing => $hookMissing,
     was_digested => 1,
-    punct        => $punct, assign => $assign);
+    punct => $punct, assign => $assign);
   $new->setTuples(@newtuples);
   return $new; }
 

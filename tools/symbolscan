@@ -165,9 +165,9 @@ sub extractSymbols {
       next if $pkg && !$CUMULATIVE && !$includes{$pkg};
       push(@symbols,
         { cs => $cs, nargs => $nargs,
-          role => $role, name => $name, meaning => $meaning,
+          role         => $role, name => $name, meaning => $meaning,
           presentation => $pres,
-          package => $pkg || 'unknown' }); } }
+          package      => $pkg || 'unknown' }); } }
   return [@symbols]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -517,12 +517,12 @@ BEGIN {
     divide   => 'div frac', product => 'times',
     rvert    => 'abs absolute-value norm', norm => 'abs absolute-value', abs => 'norm absolute-value',
     conj     => 'conjugate',
-    'less-than' => 'lt', 'greater-than' => 'gt',
+    'less-than'           => 'lt', 'greater-than' => 'gt',
     'less-than-or-equals' => 'le leq', 'greater-than-or-equals' => 'ge geq',
-    'cdot' => 'dot', 'cdots' => 'dot dots', 'vdots' => 'dot dots', 'ddots' => 'dot dots',
+    'cdot'                => 'dot', 'cdots' => 'dot dots', 'vdots' => 'dot dots', 'ddots' => 'dot dots',
     'overbrace' => 'brace', 'underbrace' => 'brace', hat => 'circumflex', bar => 'macron overline',
-    overline => 'bar',
-    ddot                     => 'dot diaresis double',
+    overline    => 'bar',
+    ddot        => 'dot diaresis double',
     'very-much-less-than'    => 'less-than',
     'very-much-greater-than' => 'greater-than',
     'square-root'            => 'sqrt',

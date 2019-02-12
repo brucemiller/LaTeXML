@@ -39,7 +39,7 @@ DefPrimitive('\use@@tikzlibrary{}', sub {
         AssignCatcode('|', CC_OTHER);
         InputDefinitions('tikzlibrary' . $lib . '.code.tex');
         AssignCatcode('|', $barcc);
-      } }
+    } }
     return; });
 
 1;

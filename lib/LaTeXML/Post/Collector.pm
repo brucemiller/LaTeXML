@@ -91,7 +91,7 @@ sub makeSubCollectionDocuments {
     if ($i > 0) {
 ####      $docs[$i  ]->addNavigation(previous=>$ids[$i-1][0]);
 ####      $docs[$i-1]->addNavigation(next    =>$ids[$i  ][0]);
-    } }
+  } }
   return @docs; }
 
 sub rescan {

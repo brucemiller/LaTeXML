@@ -68,7 +68,7 @@ sub new {
   return bless {
     prefix => defined($prefix) ? ToString($prefix) : 'KV',
     keyset => ToString($keyset), key => ToString($key)
-    }, $class; }
+  }, $class; }
 
 #======================================================================
 # Accessors

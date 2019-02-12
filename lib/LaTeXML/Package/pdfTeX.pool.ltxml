@@ -127,7 +127,7 @@ DefParameterType('OpenActionSpecification', sub {
     if (my $key = $gullet->readKeyword('openaction')) {
       if (my $action = $gullet->readKeyword('user', 'goto')) {
         # etc....
-      } } },
+  } } },
   optional => 1, undigested => 1);
 
 DefMacro('\pdfcatalog{} OpenActionSpecification', '');

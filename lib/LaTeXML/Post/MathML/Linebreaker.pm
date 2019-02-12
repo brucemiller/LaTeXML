@@ -631,7 +631,7 @@ sub asRow {
         $next_indentation = $normal_indentation;
         push(@breaks, [$i, $content, $demerits + $CONVERSION_FACTOR]) if $running > $pass_indent; }
       $running += $child_layouts[$i]->[-1]{width};
-    } }
+  } }
   my $indentation = $next_indentation;
   #
   # The Classic linebreaking algorithm simply accumulates rows of material
@@ -715,12 +715,12 @@ BREAKSET: while (1) {
           penalty     => $penalty,
           width       => $width, height => $height, depth => $depth,
           indentation => $indentation,
-          rowheight => ($hasfences ? 1.2 * $rowheight : $rowheight),
-          rowdepth  => ($hasfences ? 1.2 * $rowdepth  : $rowdepth),
-          lhs_pos   => $lhs_pos,
+          rowheight   => ($hasfences ? 1.2 * $rowheight : $rowheight),
+          rowdepth    => ($hasfences ? 1.2 * $rowdepth : $rowdepth),
+          lhs_pos     => $lhs_pos,
           (scalar(@$breakset) ? (breakset => $breakset) : ()),
-          hasbreak => scalar(@$breakset) || scalar(grep { $$_{hasbreak} } @$children_layout),
-          children => [@$children_layout],
+          hasbreak     => scalar(@$breakset) || scalar(grep { $$_{hasbreak} } @$children_layout),
+          children     => [@$children_layout],
           displaystyle => $LaTeXML::DISPLAYSTYLE });
       @layouts = prunesort($target, @layouts); }
     # }
@@ -824,7 +824,7 @@ sub simpleSize {
       #      width => 0.75 * $len * $size, height => 0.7 * $size, depth => 0.2 * $size
       width => $len * $size, height => 0.7 * $size, depth => 0.2 * $size
 
-    }]; }
+  }]; }
 
 sub layout_mi     { my (@args) = @_; return simpleSize(@args); }
 sub layout_mo     { my (@args) = @_; return simpleSize(@args); }
@@ -1008,7 +1008,7 @@ sub asScripts {
       $height = $$base{height} + 0.5 * $height;
       $depth  = $$base{depth} + 0.5 * $depth; }
     push(@layouts, { node => $node, type => nodeName($node),
-        penalty => $penalty, width => $width, height => $height, depth => $depth,
+        penalty  => $penalty, width => $width, height => $height, depth => $depth,
         hasbreak => scalar(grep { $$_{hasbreak} } @$layoutset),
         children => $layoutset }); }
   return [@layouts]; }

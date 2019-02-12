@@ -131,8 +131,8 @@ sub readingFromMouth {
 # User feedback for where something (error?) occurred.
 sub getLocator {
   my ($self) = @_;
-  my $mouth = $$self{mouth};
-  my $i     = 0;
+  my $mouth  = $$self{mouth};
+  my $i      = 0;
   while ((defined $mouth) && (!defined $$mouth{source})
     && ($i < scalar(@{ $$self{mouthstack} }))) {
     $mouth = $$self{mouthstack}[$i++][0]; }
@@ -140,7 +140,8 @@ sub getLocator {
   return $loc if defined $loc;
   foreach my $frame (@{ $$self{mouthstack} }) {
     my $ml = $$frame[0]->getLocator;
-    return $ml if defined $ml; } }
+    return $ml if defined $ml; }
+  return; }
 
 sub getSource {
   my ($self) = @_;

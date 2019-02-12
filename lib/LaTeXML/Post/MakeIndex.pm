@@ -343,7 +343,7 @@ sub lookupSeealsoPhrase {
     $ps,    lc($ps),
     $psnc,  lc($psnc),
     $pnlvl, lc($pnlvl),
-    ) {
+  ) {
     my $t = $contexttree;
     while ($t) {
       if (my $id = $$allphrases{ ($$t{fullphrasetext} ? $$t{fullphrasetext} . " " : '') . $trial }) {
@@ -414,7 +414,7 @@ sub seealsoPartition_aux {
         push(@result, map { [$$_[0], [$tag, $attr, cdr($_)]] } seealsoPartition_aux($doc, $ch)); }
       else {
         push(@result, [getIndexContentKey($ch), $ch]); }
-    } }
+  } }
   return @result; }
 
 # ================================================================================

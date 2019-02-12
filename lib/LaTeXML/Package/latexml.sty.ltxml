@@ -350,7 +350,7 @@ sub createDeclarationRewrite {
           ($name    ? (name    => $name)    : ()),
           ($meaning ? (meaning => $meaning) : ()),
           ($id      ? (dec_id  => $id)      : ()),
-          }),
+        }),
     ));
   return; }
 

@@ -47,7 +47,7 @@ sub new {
 ##    nargs => (defined $traits{nargs} ? $traits{nargs}
     ##  : ($parameters ? $parameters->getNumArgs : 0))
     nargs => $traits{nargs}
-    }, $class; }
+  }, $class; }
 
 sub getReversionSpec {
   my ($self) = @_;

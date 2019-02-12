@@ -58,7 +58,7 @@ sub convertNode {
   my ($item, @rest) = element_nodes($xmath);
   return { processor => $self,
     encoding => 'OpenMath', mimetype => $omMimeType,
-    xml => (!$item || @rest ? om_unparsed($item, @rest) : om_expr($item)) }; }
+    xml      => (!$item || @rest ? om_unparsed($item, @rest) : om_expr($item)) }; }
 
 sub combineParallel {
   my ($self, $doc, $xmath, $primary, @secondaries) = @_;

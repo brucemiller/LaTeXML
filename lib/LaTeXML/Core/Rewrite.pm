@@ -25,7 +25,7 @@ sub new {
     push(@clauses, ['uncompiled', $op, $pattern]); }
   return bless {
     mode => $mode, math => ($mode eq 'math'), clauses => [@clauses], labels => {}
-    }, $class; }
+  }, $class; }
 
 sub clauses {
   my ($self) = @_;
@@ -284,12 +284,14 @@ sub compile_replacement {
       $stomach->egroup;
       $box = $box->getBody if $$self{math};
       $_[0]->absorb($box); }
-  } }
+} }
 
 sub compile_regexp {
   my ($self, $pattern) = @_;
   my $code = "sub { \$_[0] =~ s${pattern}g; }";
-  my $fcn  = eval $code;
+  ## no critic
+  my $fcn = eval $code;
+  ## use critic
   Error('misdefined', '<rewrite>', undef,
     "Failed to compile regexp pattern \"$pattern\" into \"$code\": $!") if $@;
   return $fcn; }

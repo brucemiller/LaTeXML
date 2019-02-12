@@ -222,7 +222,7 @@ sub ReadPSAngle {
   foreach my $letter (qw(N W S E U L D R u d l r u d)) {
     if ($gullet->ifNext(T_LETTER($letter))) {
       $gullet->readToken; $gullet->skipSpaces; $angle .= $letter;
-    } }
+  } }
   if ($angle) {
     return LaTeXML::PSAngle->new($angle, $pre); }
   elsif ($angle = ReadFloat($gullet)) {

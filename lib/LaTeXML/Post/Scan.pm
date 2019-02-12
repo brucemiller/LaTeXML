@@ -245,17 +245,17 @@ sub captioned_handler {
   if ($id) {
     # We're actually trying to find the shallowest caption
     # Not one nested in another figure/table/float/whoknowswhat !
-    my ($caption)=($doc->findnode('child::ltx:caption', $node),
-                   $doc->findnode('descendant::ltx:caption', $node));
-    my ($toccaption)=($doc->findnode('child::ltx:toccaption', $node),
-                   $doc->findnode('descendant::ltx:toccaption', $node));
+    my ($caption) = ($doc->findnode('child::ltx:caption', $node),
+      $doc->findnode('descendant::ltx:caption', $node));
+    my ($toccaption) = ($doc->findnode('child::ltx:toccaption', $node),
+      $doc->findnode('descendant::ltx:toccaption', $node));
     $$self{db}->register("ID:$id",
       $self->addCommon($doc, $node, $tag, $parent_id),
-      role    => orNull($node->getAttribute('role')),
-      caption => orNull($self->cleanNode($doc,$caption)),
+      role => orNull($node->getAttribute('role')),
+      caption => orNull($self->cleanNode($doc, $caption)),
 ###      toccaption => orNull($self->cleanNode($doc,
 ###          $doc->findnode('descendant::ltx:toccaption', $node))));
-      toccaption => orNull($self->truncateNode($doc, $self->cleanNode($doc,$toccaption))));
+      toccaption => orNull($self->truncateNode($doc, $self->cleanNode($doc, $toccaption))));
     $self->addAsChild($id, $parent_id); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }

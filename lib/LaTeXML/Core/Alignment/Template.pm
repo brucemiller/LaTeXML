@@ -95,7 +95,7 @@ sub clone {
   foreach my $cell (@{ $$self{columns} }) {
     push(@dup, {%$cell}); }
   return bless { columns => [@dup],
-    repeated => $$self{repeated}, non_repeating => $$self{non_repeating},
+    repeated  => $$self{repeated}, non_repeating => $$self{non_repeating},
     repeating => $$self{repeating} }, ref $self; }
 
 sub show {
