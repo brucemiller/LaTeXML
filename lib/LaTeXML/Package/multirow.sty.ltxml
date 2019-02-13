@@ -16,8 +16,8 @@ use warnings;
 use LaTeXML::Package;
 
 DefPrimitive('\multirowsetup', undef);
-DefPrimitive('\multirow{Number}[Number]{}[Dimension]{}', sub {
-    my ($stomach, $nrows, $bigstruts, $width, $fixup, $content) = @_;
+DefPrimitive('\multirow[]{Number}[Number]{}[Dimension]{}', sub {
+    my ($stomach, $attachment, $nrows, $bigstruts, $width, $fixup, $content) = @_;
     if (my $alignment = LookupValue('Alignment')) {
       my $colspec = $alignment->currentColumn;
       $$colspec{rowspan} = $nrows->valueOf; }
