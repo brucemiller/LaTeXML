@@ -83,7 +83,7 @@ DefMacro('\acfa{}',              '\@acf{#1}');
 DefMacro('\@acf{}',
   '\ifAC@footnote\acsfont{\AC@acs{#1}}\footnote{\AC@placelabel{#1} \AC@acl{#1}}
   \else\acffont{\AC@placelabel{#1} \AC@acl{#1} \acfsfont{(\acsfont{\AC@acs{#1}})}}\fi
-  \ifAC@starred\else\AC@logged{#1}\fi');
+  \ifAC@starred\else\lx@AC@used{#1}\fi');
 
 # Italicized long (short)
 
