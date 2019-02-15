@@ -37,6 +37,33 @@ DefColumnType('b{Dimension}', sub {
       after => Tokens(T_END),
       align => 'justify', width => $_[1], vattach => 'bottom'); return; });
 
+# Like @{}, but should NOT suppress intercolumn space
+DefColumnType('!{}', sub {
+    my ($gullet, $filler) = @_;
+    $LaTeXML::BUILD_TEMPLATE->addBetweenColumn($filler->unlist); return; });
+
+# Tentative: The following two are (as yet) untested....
+# I don't have current array.sty
+# Apparently the width is being ignored when alignment is not 'justify'...
+# Check this out against expected behaviour in LaTeX.
+DefColumnType('w{}{Dimension}', sub {
+    my ($gullet, $align, $width) = @_;
+    $align = ToString($align);
+    my %alignments = (l => 'left', c => 'center', r => 'right');
+    my $alignment = $alignments{$align} || 'center';
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN),
+      after => Tokens(T_END),
+      align => $alignment, width => $width); return; });
+
+DefColumnType('W{}{Dimension}', sub {
+    my ($gullet, $align, $width) = @_;
+    $align = ToString($align);
+    my %alignments = (l => 'left', c => 'center', r => 'right');
+    my $alignment = $alignments{$align} || 'center';
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN),
+      after => Tokens(T_END),
+      align => $alignment, width => $width); return; });
+
 # NOTE:  Come back & check this; is the arglist right??
 DefPrimitive('\newcolumntype{}[Number][]{}', sub {
     my ($stomach, $char, $nargs, $opt, $replacement) = @_;
