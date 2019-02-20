@@ -2775,6 +2775,44 @@ DefMacro('\@fnsymbol{Number}', sub {
 DefMacro('\fnsymbol{}', sub {
     ExplodeText(radix_format(CounterValue(ToString(Expand($_[1])))->valueOf, @fnsymbols)); });
 
+# The following two macros were originally defined in chngcntr.sty,
+# but were moved to LaTeX core in 2018.
+DefPrimitive('\counterwithin OptionalMatch:* {}{}', sub {
+    my ($stomach, $starred, $ctr, $within) = @_;
+    $ctr    = ToString($ctr);
+    $within = ToString($within);
+    # Add $ctr to reset
+    my $prevwithin = LookupValue("\\cl\@$within");
+    AssignValue("\\cl\@$within" =>
+        Tokens(T_CS($ctr), ($prevwithin ? $prevwithin->unlist : ())),
+      'global');
+    my $prefix = CleanID(LookupValue('@ID@prefix@' . $ctr) || $ctr);
+    if (!$starred) {
+      DefMacroI(T_CS("\\the$ctr"), undef, "\\the$within.\\arabic{$ctr}",
+        scope => 'global');
+      DefMacroI(T_CS("\\the$ctr\@ID"), undef,
+        "\\expandafter\\ifx\\csname the$within\@ID\\endcsname\\\@empty"
+          . "\\else\\csname the$within\@ID\\endcsname.\\fi"
+          . " $prefix\\csname \@$ctr\@ID\\endcsname",
+        scope => 'global'); }
+    return; });
+
+DefPrimitive('\counterwithout OptionalMatch:* {}{}', sub {
+    my ($stomach, $starred, $ctr, $within) = @_;
+    $ctr    = ToString($ctr);
+    $within = ToString($within);
+    my $prevwithin = LookupValue("\\cl\@$within");
+    my $t          = T_CS($ctr);
+    AssignValue("\\cl\@$within" => Tokens(grep { !$t->equals($_) } $prevwithin->unlist),
+      'global');
+    my $prefix = CleanID(LookupValue('@ID@prefix@' . $ctr) || $ctr);
+    if (!$starred) {
+      DefMacroI(T_CS("\\the$ctr"), undef, "\\arabic{$ctr}",
+        scope => 'global');
+      DefMacroI(T_CS("\\the$ctr\@ID"), undef, "$prefix\\csname \@$ctr\@ID\\endcsname",
+        scope => 'global'); }
+    return; });
+
 #======================================================================
 # C.8.5 The ifthen Package.
 #======================================================================

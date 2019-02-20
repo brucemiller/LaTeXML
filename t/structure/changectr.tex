@@ -1,0 +1,25 @@
+\documentclass{article}
+\usepackage{chngcntr}
+\begin{document}
+\counterwithin{equation}{section}
+\section{One}
+\begin{equation} a=b+c\end{equation}
+
+\counterwithout{equation}{section}
+\section{Two}
+\begin{equation} a=b+c\end{equation}
+
+\counterwithin{equation}{section}
+\section{Three}
+\begin{equation} a=b+c\end{equation}
+
+
+\counterwithout*{equation}{section}
+\section{Four}
+\begin{equation} a=b+c\end{equation}
+
+\counterwithin*{equation}{section}
+\section{Five}
+\begin{equation} a=b+c\end{equation}
+
+\end{document}
