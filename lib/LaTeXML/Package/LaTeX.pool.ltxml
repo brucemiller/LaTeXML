@@ -2725,24 +2725,46 @@ DefPrimitive('\addtocounter{}{Number}', sub { AddToCounter(ToString(Expand($_[1]
 DefPrimitive('\stepcounter{}',    sub { StepCounter(ToString(Expand($_[1])));    return; });
 DefPrimitive('\refstepcounter{}', sub { RefStepCounter(ToString(Expand($_[1]))); return; });
 
-DefPrimitive('\@addtoreset{}{}', sub {
-    my ($stomach, $ctr, $within) = @_;
-    $ctr    = ToString(Expand($ctr));
-    $within = ToString(Expand($within));
-    my $unctr = "UN$ctr";    # UNctr is counter for generating ID's for UN-numbered items.
-    AssignValue("\\cl\@$within" =>
-        Tokens(T_CS($ctr), T_CS($unctr),
-        (LookupValue("\\cl\@$within") ? LookupValue("\\cl\@$within")->unlist : ())),
-      'global');
-    # This counter might be doing double duty generating ID's as well, so we may need to patch up.
-    my $prefix = LookupValue('@ID@prefix@' . $ctr);
-    if (defined $prefix) {
+sub addtoCounterReset {
+  my ($ctr, $within) = @_;
+  my $reg       = "\\cl\@$within";
+  my $t         = T_CS($ctr);
+  my $unt       = T_CS('UN' . $ctr);
+  my $prevreset = LookupValue($reg);
+  AssignValue($reg => Tokens($t, $unt, ($prevreset ? $prevreset->unlist : ())), 'global');
+  return; }
+
+sub remfromCounterReset {
+  my ($ctr, $within) = @_;
+  my $reg       = "\\cl\@$within";
+  my $t         = T_CS($ctr);
+  my $unt       = T_CS('UN' . $ctr);
+  my $prevreset = LookupValue($reg);
+  AssignValue($reg => Tokens(grep { !$t->equals($_) && !$unt->equals($_) } $prevreset->unlist),
+    'global') if $prevreset;
+  return; }
+
+sub defCounterID {
+  my ($ctr, $within) = @_;
+  my $prefix = LookupValue('@ID@prefix@' . $ctr);
+  if (defined $prefix) {
+    if ($within) {
       DefMacroI(T_CS("\\the$ctr\@ID"), undef,
         "\\expandafter\\ifx\\csname the$within\@ID\\endcsname\\\@empty"
           . "\\else\\csname the$within\@ID\\endcsname.\\fi"
           . " $prefix\\csname \@$ctr\@ID\\endcsname",
-        scope => 'global');
-      DefMacroI(T_CS("\\\@$ctr\@ID"), undef, "0", scope => 'global'); }
+        scope => 'global'); }
+    else {
+      DefMacroI(T_CS("\\the$ctr\@ID"), undef, "$prefix\\csname \@$ctr\@ID\\endcsname",
+        scope => 'global'); } }
+  return; }
+
+DefPrimitive('\@addtoreset{}{}', sub {
+    my ($stomach, $ctr, $within) = @_;
+    $ctr    = ToString(Expand($ctr));
+    $within = ToString(Expand($within));
+    addtoCounterReset($ctr, $within);
+    defCounterID($ctr, $within);
     return; });
 
 DefMacro('\value{}', sub {
@@ -2781,36 +2803,29 @@ DefPrimitive('\counterwithin OptionalMatch:* {}{}', sub {
     my ($stomach, $starred, $ctr, $within) = @_;
     $ctr    = ToString($ctr);
     $within = ToString($within);
-    # Add $ctr to reset
-    my $prevwithin = LookupValue("\\cl\@$within");
-    AssignValue("\\cl\@$within" =>
-        Tokens(T_CS($ctr), ($prevwithin ? $prevwithin->unlist : ())),
-      'global');
-    my $prefix = CleanID(LookupValue('@ID@prefix@' . $ctr) || $ctr);
+    addtoCounterReset($ctr, $within);
     if (!$starred) {
-      DefMacroI(T_CS("\\the$ctr"), undef, "\\the$within.\\arabic{$ctr}",
-        scope => 'global');
-      DefMacroI(T_CS("\\the$ctr\@ID"), undef,
-        "\\expandafter\\ifx\\csname the$within\@ID\\endcsname\\\@empty"
-          . "\\else\\csname the$within\@ID\\endcsname.\\fi"
-          . " $prefix\\csname \@$ctr\@ID\\endcsname",
-        scope => 'global'); }
+      DefMacroI(T_CS("\\the$ctr"), undef, "\\the$within.\\arabic{$ctr}", scope => 'global');
+      defCounterID($ctr, $within); }
     return; });
 
 DefPrimitive('\counterwithout OptionalMatch:* {}{}', sub {
     my ($stomach, $starred, $ctr, $within) = @_;
     $ctr    = ToString($ctr);
     $within = ToString($within);
-    my $prevwithin = LookupValue("\\cl\@$within");
-    my $t          = T_CS($ctr);
-    AssignValue("\\cl\@$within" => Tokens(grep { !$t->equals($_) } $prevwithin->unlist),
-      'global');
-    my $prefix = CleanID(LookupValue('@ID@prefix@' . $ctr) || $ctr);
+    remfromCounterReset($ctr, $within);
     if (!$starred) {
-      DefMacroI(T_CS("\\the$ctr"), undef, "\\arabic{$ctr}",
-        scope => 'global');
-      DefMacroI(T_CS("\\the$ctr\@ID"), undef, "$prefix\\csname \@$ctr\@ID\\endcsname",
-        scope => 'global'); }
+      DefMacroI(T_CS("\\the$ctr"), undef, "\\arabic{$ctr}", scope => 'global');
+      defCounterID($ctr); }
+    return; });
+
+DefPrimitive('\@removefromreset{}{}', sub {
+    my ($stomach, $ctr, $within) = @_;
+    $ctr    = ToString($ctr);
+    $within = ToString($within);
+    remfromCounterReset($ctr, $within);
+    # Should \the$ctr@ID be redefined?  It really should track changes to \the$ctr!
+    # defCounterID($ctr);
     return; });
 
 #======================================================================

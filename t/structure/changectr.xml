@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
+<?latexml package="remreset"?>
 <?latexml package="chngcntr"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
@@ -135,6 +136,35 @@
           <tag role="refnum">5.1</tag>
         </tags>
         <Math mode="display" tex="a=b+c" text="a = b + c" xml:id="S5.E1.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMTok font="italic" role="UNKNOWN">c</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S6">
+    <tags>
+      <tag>6</tag>
+      <tag role="refnum">6</tag>
+      <tag role="typerefnum">§6</tag>
+    </tags>
+    <title><tag close=" ">6</tag>Six</title>
+    <para xml:id="S6.p1">
+      <equation xml:id="S6.E2">
+        <tags>
+          <tag>(6.2)</tag>
+          <tag role="refnum">6.2</tag>
+        </tags>
+        <Math mode="display" tex="a=b+c" text="a = b + c" xml:id="S6.E2.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>

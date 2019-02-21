@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{remreset}
 \usepackage{chngcntr}
 \begin{document}
 \counterwithin{equation}{section}
@@ -20,6 +21,13 @@
 
 \counterwithin*{equation}{section}
 \section{Five}
+\begin{equation} a=b+c\end{equation}
+
+
+\makeatletter
+\@removefromreset{equation}{section}
+\makeatother
+\section{Six}
 \begin{equation} a=b+c\end{equation}
 
 \end{document}
