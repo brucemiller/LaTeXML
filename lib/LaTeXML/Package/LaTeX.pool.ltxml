@@ -885,8 +885,11 @@ DefPrimitive('\markboth{}{}',    undef);
 DefPrimitiveI('\leftmark',  undef, undef);
 DefPrimitiveI('\rightmark', undef, undef);
 DefPrimitive('\pagenumbering{}', undef);
-DefMacro('\twocolumn[]', '#1');
-DefPrimitiveI('\onecolumn', undef, undef);
+
+# In normal latex, these should \clearpage; at least we want new paragraph?
+# Optional arg is sortof a heading, but w/o any particular styling(?)
+DefMacro('\twocolumn[]', '\ifx.#1.\else\par\noindent#1\fi\par');
+DefMacro('\onecolumn',   '\par');
 
 # Style parameters from Fig. C.3, p.182
 DefRegister('\paperheight'     => Dimension(0));

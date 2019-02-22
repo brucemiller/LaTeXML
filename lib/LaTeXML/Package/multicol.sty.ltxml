@@ -17,8 +17,9 @@ use LaTeXML::Package;
 
 # Since this is basically styling, we can ignore the effects.
 
-DefEnvironment('{multicols}{}',  '#body');
-DefEnvironment('{multicols*}{}', '#body');
+# Optional arg is sortof a heading, but w/o any particular styling(?)
+DefEnvironment('{multicols}{}[]',  '?#2(<ltx:para><ltx:p>#2</ltx:p><ltx:para>)#body');
+DefEnvironment('{multicols*}{}[]', '?#2(<ltx:para><ltx:p>#2</ltx:p><ltx:para>)#body');
 
 DefMacro('\botmark', Tokens());
 DefMacro('\topmark', Tokens());
