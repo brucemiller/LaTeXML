@@ -2831,6 +2831,7 @@ DefPrimitive('\@removefromreset{}{}', sub {
     # defCounterID($ctr);
     return; });
 
+DefMacroI('\cl@@ckpt', undef, '\@elt{page}');
 #======================================================================
 # C.8.5 The ifthen Package.
 #======================================================================
