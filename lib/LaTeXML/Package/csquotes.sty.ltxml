@@ -52,7 +52,8 @@ RawTeX(<<'EoTeX');
 \let\blockquote@prehook\relax
 \newcommand*{\blockquote@prehook}{%
   \def\@elt##1{\global\value{##1}\the\value{##1}\relax}%
-  \edef\csq@tempa{\@elt{page}}% <-- work around it here
+%  \edef\csq@tempa{\@elt{page}}% <-- work around it here
+  \edef\csq@tempa{\@elt{page}\@elt{footnote}}% <-- work around it here
   \let\@elt\relax
   \@fileswfalse}
 EoTeX
