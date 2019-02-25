@@ -99,6 +99,9 @@ RawTeX(<<'EoTeX');
     \ltxml@iqmark@open\expandafter\csq@qopen
   \fi}
 
+% Simplify, so that we don't fall off end, when looking for next char for kerning.
+\def\csq@qclose@i{\csq@qclose@ii{}}%
+
 % closing mark
 \def\csq@qclose@ii#1{%
   \ifdim\lastkern=\csq@omitmarker
