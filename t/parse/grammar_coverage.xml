@@ -311,7 +311,7 @@
             <para xml:id="S2.I2.i7.p1">
               <p><Math mode="inline" tex="{}_{a}" text="_a" xml:id="S2.I2.i7.p1.m1">
                   <XMath>
-                    <XMApp role="FLOATSUBSCRIPT" scriptpos="3">
+                    <XMApp role="FLOATSUBSCRIPT" scriptpos="1">
                       <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
                     </XMApp>
                   </XMath>
@@ -328,7 +328,7 @@
               <p><Math mode="inline" tex="12^{3}" text="12 ^ 3" xml:id="S2.I2.i8.p1.m1">
                   <XMath>
                     <XMApp>
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                       <XMTok meaning="12" role="NUMBER">12</XMTok>
                       <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
                     </XMApp>
@@ -959,7 +959,7 @@
             <p><Math mode="inline" tex="\mathrm{Na}^{+}" text="Na ^ +" xml:id="S3.I1.i1.p1.m1">
                 <XMath>
                   <XMApp>
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                     <XMTok role="UNKNOWN">Na</XMTok>
                     <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
                   </XMApp>
@@ -977,7 +977,7 @@
             <p><Math mode="inline" tex="\psi^{\prime\prime}" text="psi ^ prime2" xml:id="S3.I1.i2.p1.m1">
                 <XMath>
                   <XMApp>
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                     <XMTok font="italic" name="psi" role="UNKNOWN">ψ</XMTok>
                     <XMTok fontsize="70%" name="prime2" role="SUPOP">′′</XMTok>
                   </XMApp>
@@ -996,9 +996,9 @@
                 <XMath>
                   <XMApp>
                     <XMApp>
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                       <XMApp>
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                         <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
                         <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
                       </XMApp>
@@ -1007,7 +1007,7 @@
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
                       <XMApp>
-                        <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                        <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                         <XMTok font="italic" role="UNKNOWN">x</XMTok>
                         <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
@@ -1032,9 +1032,9 @@
                 <XMath>
                   <XMApp>
                     <XMApp>
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                       <XMApp>
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                         <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
                         <XMTok fontsize="70%" meaning="infinity" name="infty" role="ID">∞</XMTok>
                       </XMApp>
@@ -1075,9 +1075,9 @@
                 <XMath>
                   <XMApp>
                     <XMApp>
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                       <XMApp>
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                         <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
                         <XMTok fontsize="70%" meaning="infinity" name="infty" role="ID">∞</XMTok>
                       </XMApp>
@@ -1146,9 +1146,9 @@
                 <XMath>
                   <XMApp>
                     <XMApp>
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                       <XMApp>
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                         <XMTok mathstyle="text" meaning="sum" role="SUMOP" scriptpos="post">∑</XMTok>
                         <XMApp>
                           <XMTok fontsize="70%" meaning="equals" role="RELOP">=</XMTok>
@@ -1159,7 +1159,7 @@
                       <XMTok fontsize="70%" meaning="50" role="NUMBER">50</XMTok>
                     </XMApp>
                     <XMApp>
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                       <XMTok font="italic" role="UNKNOWN">x</XMTok>
                       <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
                     </XMApp>
@@ -1180,7 +1180,7 @@
                 <XMath>
                   <XMApp>
                     <XMApp scriptpos="mid">
-                      <XMTok role="SUBSCRIPTOP" scriptpos="mid3"/>
+                      <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                       <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                       <XMApp>
                         <XMTok mathstyle="script" role="FRACOP" thickness="0pt"/>
@@ -1238,9 +1238,9 @@
                 <XMath>
                   <XMApp>
                     <XMApp scriptpos="mid">
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="mid3"/>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
                       <XMApp scriptpos="mid">
-                        <XMTok role="SUBSCRIPTOP" scriptpos="mid3"/>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                         <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                         <XMApp>
                           <XMTok fontsize="70%" meaning="equals" role="RELOP">=</XMTok>
@@ -1252,9 +1252,9 @@
                     </XMApp>
                     <XMApp>
                       <XMApp scriptpos="mid">
-                        <XMTok role="SUPERSCRIPTOP" scriptpos="mid3"/>
+                        <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
                         <XMApp scriptpos="mid">
-                          <XMTok role="SUBSCRIPTOP" scriptpos="mid3"/>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                           <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                           <XMApp>
                             <XMTok fontsize="70%" meaning="equals" role="RELOP">=</XMTok>
@@ -1266,9 +1266,9 @@
                       </XMApp>
                       <XMApp>
                         <XMApp scriptpos="mid">
-                          <XMTok role="SUPERSCRIPTOP" scriptpos="mid3"/>
+                          <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
                           <XMApp scriptpos="mid">
-                            <XMTok role="SUBSCRIPTOP" scriptpos="mid3"/>
+                            <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                             <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                             <XMApp>
                               <XMTok fontsize="70%" meaning="equals" role="RELOP">=</XMTok>
@@ -1281,7 +1281,7 @@
                         <XMApp>
                           <XMTok meaning="times" role="MULOP">⁢</XMTok>
                           <XMApp>
-                            <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                             <XMTok font="italic" role="UNKNOWN">a</XMTok>
                             <XMApp>
                               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -1290,7 +1290,7 @@
                             </XMApp>
                           </XMApp>
                           <XMApp>
-                            <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                             <XMTok font="italic" role="UNKNOWN">b</XMTok>
                             <XMApp>
                               <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -1299,7 +1299,7 @@
                             </XMApp>
                           </XMApp>
                           <XMApp>
-                            <XMTok role="SUBSCRIPTOP" scriptpos="post3"/>
+                            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                             <XMTok font="italic" role="UNKNOWN">c</XMTok>
                             <XMApp>
                               <XMTok meaning="times" role="MULOP">⁢</XMTok>
