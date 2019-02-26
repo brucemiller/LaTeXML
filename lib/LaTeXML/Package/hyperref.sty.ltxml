@@ -236,6 +236,7 @@ map { DefMacroI(T_CS('\\' . $_ . 'autorefname'), undef, '\itemautorefname'); }
 # \pdfstringdef{macroname}{texstring}
 DefMacro('\pdfstring{Token}{}', '\def#1{#2}');
 
+DefMacro('\pdfstringdefDisableCommands', '');    # Hopefully noop is sufficient?
 #======================================================================
 # 4.1 Replacement macros
 
