@@ -1,7 +1,23 @@
 cache:
   - C:\strawberry
+  - C:\miktex
+
+environment:
+  matrix:
+    - setup: "miktex"
+    - setup: "bare"
+
+matrix:
+  fast_finish: true
 
 install:
+  # Install miktex to get pdflatex, if we don't get it from the cache
+  - if "%setup%"=="miktex" choco install -y miktex
+  - cmd: refreshenv
+  # autoinstall latex packages (0=no, 1=autoinstall, 2=ask)
+  # this adds this to the registry!
+  - if "%setup%"=="miktex" initexmf --set-config-value "[MPM]AutoInstall=1" 
+  - cmd: refreshenv
   - if not exist "C:\strawberry" choco install strawberryperl -y
   - set PATH=C:\strawberry\c\bin;C:\strawberry\perl\site\bin;C:\strawberry\perl\bin;%PATH%
   - cd %APPVEYOR_BUILD_FOLDER%
