@@ -543,7 +543,7 @@ sub ComposeURL {
 #======================================================================
 
 my $parameter_options = {    # [CONSTANT]
-  nargs        => 1, reversion   => 1, optional => 1, novalue => 1,
+  nargs => 1, reversion => 1, optional => 1, novalue => 1,
   beforeDigest => 1, afterDigest => 1,
   semiverbatim => 1, undigested  => 1 };
 
@@ -1589,7 +1589,7 @@ sub DefEnvironmentI {
       afterConstruct => flatten($options{afterConstruct}, sub { $STATE->popFrame; }),
       nargs          => $options{nargs},
       captureBody    => 1,
-      properties     => $options{properties} || {},
+      properties => $options{properties} || {},
       (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
       (defined $sizer ? (sizer => $sizer) : ()),
       ), $options{scope});
@@ -1653,7 +1653,7 @@ sub DefEnvironmentI {
 
 # Specify the properties of a Node tag.
 my $tag_options = {    # [CONSTANT]
-  autoOpen          => 1, autoClose          => 1, afterOpen => 1, afterClose => 1,
+  autoOpen => 1, autoClose => 1, afterOpen => 1, afterClose => 1,
   'afterOpen:early' => 1, 'afterClose:early' => 1,
   'afterOpen:late'  => 1, 'afterClose:late'  => 1 };
 my $tag_prepend_options = {    # [CONSTANT]
@@ -1716,8 +1716,8 @@ sub RegisterDocumentNamespace {
 # should we assume a raw type can be processed if being read from within a raw type????
 # yeah, that sounds about right...
 my %definition_name = (    # [CONSTANT]
-  sty   => 'package',              cls   => 'class', clo => 'class options',
-  'cnf' => 'configuration',        'cfg' => 'configuration',
+  sty => 'package', cls => 'class', clo => 'class options',
+  'cnf' => 'configuration', 'cfg' => 'configuration',
   'ldf' => 'language definitions', 'def' => 'definitions', 'dfu' => 'definitions');
 
 sub pathname_is_raw {
@@ -1787,7 +1787,6 @@ sub FindFile_aux {
   # The main point, though, is to we make only ONE (more) call.
   return if grep { pathname_is_nasty($_) } @$paths;    # SECURITY! No nasty paths in cmdline
         # Do we need to sanitize these environment variables?
-  my $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');
   local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
     @$paths, $ENV{TEXINPUTS} || $Config::Config{'path_sep'});
   my @candidates = (((!$options{noltxml} && !$nopaths) ? ("$file.ltxml") : ()),

@@ -28,7 +28,8 @@ use FindBin;
 
 our $OLD_LIBXML = grep { /OLD_LIBXML/ } @ARGV;
 our $NOMKTEXLSR = grep { /NOMKTEXLSR/ } @ARGV;
-our $TEXMF;
+our $KPSE_TOOLCHAIN = "";
+our ($KPSEV, $TEXMF);
 my ($texmfspec) = grep { /^TEXMF/ } @ARGV;
 if ($texmfspec && $texmfspec =~ /^TEXMF\s*=(.*)$/) {
   $TEXMF = $1;
@@ -120,6 +121,7 @@ sub record_revision {
   ##  $$MORE_MACROS{REVISION} = '$(shell svnversion $(REVISION_BASE))';
   ## This command is appropriate for git (I think)
   if ((-d '.git') && (system("git --version") == 0)) {    # If a git checkout & can run git?
+    print STDERR "\n";                                    # space out messages
     $$MORE_MACROS{REVISION} = '$(shell git log --max-count=1 --abbrev-commit --pretty="%h")'; }
   # Extract the previously recorded revision from the revision file (awkward)
   $$MORE_MACROS{OLD_REVISION}
@@ -151,7 +153,7 @@ RecordRevision
 #======================================================================
 # We'll compile the RecDescent grammar during make; don't need to install grammar.
 sub compile_MathGrammar {
-  push(@EXCLUSIONS, 'blib/lib/LaTeXML/MathGrammar');
+  push(@EXCLUSIONS, 'README.pod', 'blib/lib/LaTeXML/MathGrammar');
   $MORE_MAKERULES .= <<'MakeGrammar';
 
 # Precompile the (Recursive Descent) MathGrammar
@@ -199,8 +201,10 @@ MakeGrammar
 #    embedded spaces.
 sub install_TeXStyles {
   if (!$TEXMF) {
-    if (system("kpsewhich --expand-var='\$TEXMFLOCAL'") == 0) {    # can run kpsewhich?
-      $TEXMF = `kpsewhich --expand-var='\$TEXMFLOCAL'`;
+    if ($ENV{"APPVEYOR"}) {    # assume miktex admin on windows CI
+      $KPSE_TOOLCHAIN = "--miktex-admin"; }
+    if (system("kpsewhich --version $KPSE_TOOLCHAIN") == 0) {    # can run kpsewhich?
+      $TEXMF = `kpsewhich --expand-var='\$TEXMFLOCAL' $KPSE_TOOLCHAIN`;
       # Strip the quotes (they appear in windows, when spaces in pathnames(?))
       # These quotes inhibit pasting pathnames togheter,
       # but we DO need to wrap quotes around all completed paths!!

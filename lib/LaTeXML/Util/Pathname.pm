@@ -351,8 +351,9 @@ sub candidate_pathnames {
   return @paths; }
 
 #======================================================================
-our $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');
-our $kpse_cache = undef;
+our $kpsewhich      = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');
+our $kpse_cache     = undef;
+our $kpse_toolchain = "";
 
 sub pathname_kpsewhich {
   my (@candidates) = @_;
@@ -364,7 +365,7 @@ sub pathname_kpsewhich {
   # If we've failed to read the cache, try directly calling kpsewhich
   # For multiple calls, this is slower in general. But MiKTeX, eg., doesn't use texmf ls-R files!
   my $files = join(' ', @candidates);
-  if ($kpsewhich && (my $result = `"$kpsewhich" $files`)) {
+  if ($kpsewhich && (my $result = `"$kpsewhich" $files $kpse_toolchain`)) {
     if ($result =~ /^\s*(.+?)\s*\n/s) {
       return $1; } }
   return; }
@@ -373,10 +374,13 @@ sub build_kpse_cache {
   $kpse_cache = {};    # At least we've tried.
   return unless $kpsewhich;
   # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
-  my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\'`; chomp($texmf);
+  if ($ENV{"APPVEYOR"}) {
+    $kpse_toolchain = "--miktex-admin";
+  }
+  my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\' $kpse_toolchain`; chomp($texmf);
   # These are directories which contain the tex related files we're interested in.
   # (but they're typically below where the ls-R indexes are!)
-  my $texpaths = `"$kpsewhich" --show-path tex`; chomp($texpaths);
+  my $texpaths = `"$kpsewhich" --show-path tex $kpse_toolchain`; chomp($texpaths);
   my @filters = ();
   foreach my $path (split(/$KPATHSEP/, $texpaths)) {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
