@@ -265,7 +265,7 @@ DefParameterType('Semiverbatim', sub { $_[0]->readArg; }, semiverbatim => 1,
 # Read a LaTeX-style optional argument (ie. in []), but the contents read as Semiverbatim.
 DefParameterType('OptionalSemiverbatim', sub { $_[0]->readOptional; },
   semiverbatim => 1, optional => 1,
-  reversion    => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Be careful here: if % appears before the initial {, it's still a comment!
 # Also, note that non-typewriter fonts will mess up some chars on digestion!
@@ -290,7 +290,7 @@ DefParameterType('Undigested', sub { $_[0]->readArg; }, undigested => 1,
 # Read a LaTeX-style optional argument (ie. in []), but it will not be digested.
 DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
   undigested => 1, optional => 1,
-  reversion  => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
@@ -972,10 +972,10 @@ DefRegister('\tracingcommands', Number(0),
 
 {
   my %iparms = (
-    pretolerance => 100, tolerance     => 200, hbadness            => 1000, vbadness => 1000,
-    linepenalty  => 10,  hyphenpenalty => 50,  exhyphenpenalty     => 50,
-    binoppenalty => 700, relpenalty    => 500,
-    clubpenalty  => 150, widowpenalty  => 150, displaywidowpenalty => 50,
+    pretolerance => 100, tolerance => 200, hbadness => 1000, vbadness => 1000,
+    linepenalty => 10, hyphenpenalty => 50, exhyphenpenalty => 50,
+    binoppenalty         => 700,   relpenalty          => 500,
+    clubpenalty          => 150,   widowpenalty        => 150, displaywidowpenalty => 50,
     brokenpenalty        => 100,   predisplaypenalty   => 10000,
     postdisplaypenalty   => 0,     interlinepenalty    => 0,
     floatingpenalty      => 0,     outputpenalty       => 0,
@@ -1037,7 +1037,7 @@ sub today {
 # Dimen registers; TeXBook p. 274
 {
   my %dparms = (
-    hfuzz              => '0.1pt', vfuzz => '0.1pt', overfullrule => '5pt',
+    hfuzz => '0.1pt', vfuzz => '0.1pt', overfullrule => '5pt',
     emergencystretch   => 0,
     hsize              => '6.5in', vsize => '8.9in',
     maxdepth           => '4pt', splitmaxdepth => '16383.99999pt', boxmaxdepth => '16383.99999pt',
@@ -1045,7 +1045,7 @@ sub today {
     delimitershortfall => '5pt', nulldelimiterspace => '1.2pt', scriptspace => '0.5pt',
     mathsurround       => 0,
     predisplaysize     => 0, displaywidth => 0, displayindent => 0, parindent => '20pt',
-    hangindent         => 0, hoffset => 0, voffset => 0,);
+    hangindent => 0, hoffset => 0, voffset => 0,);
 
   foreach my $p (keys %dparms) {
     DefRegister("\\$p", Dimension($dparms{$p})); }
@@ -1070,8 +1070,8 @@ sub today {
 # Glue registers; TeXBook p.274
 {
   my %gparms = (
-    baselineskip          => '12pt', lineskip => '1pt',
-    parskip               => '0pt plus 1pt',
+    baselineskip => '12pt', lineskip => '1pt',
+    parskip => '0pt plus 1pt',
     abovedisplayskip      => '12pt plus 3pt minus 9pt',
     abovedisplayshortskip => '0pt plus 3pt',
     belowdisplayskip      => '12pt plus 3pt minus 9pt',
@@ -2614,15 +2614,15 @@ sub alignmentBindings {
   my $rowtype   = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
   my $coltype   = ($ismath ? 'ltx:XMCell' : 'ltx:td');
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
-      template       => $template,
-      openContainer  => sub { $_[0]->openElement($container, @_[1 .. $#_]); },
+      template => $template,
+      openContainer => sub { $_[0]->openElement($container, @_[1 .. $#_]); },
       closeContainer => sub { $_[0]->closeElement($container); },
       openRow        => sub { $_[0]->openElement($rowtype, @_[1 .. $#_]); },
       closeRow       => sub { $_[0]->closeElement($rowtype); },
       openColumn     => sub { $_[0]->openElement($coltype, @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement($coltype); },
-      isMath         => $ismath,
-      properties     => {%properties}));
+      isMath     => $ismath,
+      properties => {%properties}));
   Let(T_ALIGN,           '\@alignment@align');
   Let("\\\\",            '\@alignment@newline');
   Let('\tabularnewline', '\@alignment@newline');
@@ -2970,7 +2970,7 @@ DefMacro('\oalign{}',
   '\@@oalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@oalign{}',
   '#1',
-  reversion    => '\oalign{#1}', bounded => 1, mode => 'text',
+  reversion => '\oalign{#1}', bounded => 1, mode => 'text',
   beforeDigest => sub { alignmentBindings('l'); });
 
 # This is actually different; the lines should lie ontop of each other.
@@ -2979,7 +2979,7 @@ DefMacro('\ooalign{}',
   '\@@ooalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@ooalign{}',
   '#1',
-  reversion    => '\ooalign{#1}', bounded => 1, mode => 'text',
+  reversion => '\ooalign{#1}', bounded => 1, mode => 'text',
   beforeDigest => sub { alignmentBindings('l'); });
 
 #----------------------------------------------------------------------
@@ -3198,11 +3198,11 @@ DefConstructorI('\@@BEGINDISPLAYMATH', undef,
     . "</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  reversion    => Tokens(T_MATH, T_MATH),
+  reversion => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->beginMode('display_math'); },
-  captureBody  => 1);
+  captureBody => 1);
 DefConstructorI('\@@ENDDISPLAYMATH', undef, "",
-  reversion    => Tokens(T_MATH, T_MATH),
+  reversion => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->endMode('display_math'); });
 
 DefConstructorI('\@@BEGININLINEMATH', undef,
@@ -4094,7 +4094,8 @@ DefConstructorI('&', undef, sub { Error('unexpected', '&', $_[0], "Stray alignme
 #======================================================================
 # TeX Book, Appendix B, p. 344
 #======================================================================
-# \dospecials ??
+RawTeX('\outer\def^^L{\par}');
+DefMacro('\dospecials', '\do\ \do\\\do\{\do\}\do\$\do\&\do\#\do\^\do\^^K\do\_\do\^^A\do\%\do\~');
 
 # Normally, the content branch contains the pure structure and meaning of a construct,
 # and the presentation is generated from lower level TeX macros that only concern
@@ -5756,11 +5757,11 @@ our %DELIMITER_MAP =
   '<'       => { char => "\x{27E8}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'langle' },
   '>'       => { char => "\x{27E9}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rangle' },
   '/'       => { char => "/",        lrole => 'MULOP', rrole => 'MULOP' },
-  '\backslash' => { char => UTF(0x5C),  lrole => 'MULOP',   rrole => 'MULOP', name => 'backslash' },
-  '|'          => { char => "|",        lrole => 'VERTBAR', rrole => 'VERTBAR' },
-  '\|'         => { char => "\x{2225}", lrole => 'VERTBAR', rrole => 'VERTBAR' },
-  '\uparrow'   => { char => "\x{2191}", lrole => 'OPEN', rrole => 'CLOSE', name => 'uparrow' },   # ??
-  '\Uparrow'   => { char => "\x{21D1}", lrole => 'OPEN', rrole => 'CLOSE', name => 'Uparrow' },   # ??
+  '\backslash' => { char => UTF(0x5C), lrole => 'MULOP', rrole => 'MULOP', name => 'backslash' },
+  '|'        => { char => "|",        lrole => 'VERTBAR', rrole => 'VERTBAR' },
+  '\|'       => { char => "\x{2225}", lrole => 'VERTBAR', rrole => 'VERTBAR' },
+  '\uparrow' => { char => "\x{2191}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'uparrow' },  # ??
+  '\Uparrow' => { char => "\x{21D1}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'Uparrow' },  # ??
   '\downarrow' => { char => "\x{2193}", lrole => 'OPEN', rrole => 'CLOSE', name => 'downarrow' }, # ??
   '\Downarrow' => { char => "\x{21D3}", lrole => 'OPEN', rrole => 'CLOSE', name => 'Downarrow' }, # ??
   '\updownarrow' => { char => "\x{2195}", lrole => 'OPEN', rrole => 'CLOSE', name => 'updownarrow' }, # ??
@@ -6193,7 +6194,7 @@ DefMacro('\eqalign{}',
   '\@@eqalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalign{}',
   '#1',
-  reversion    => '\eqalign{#1}', bounded => 1,
+  reversion => '\eqalign{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rl', 'math',
       attributes => { vattach => 'baseline' }); });
 
@@ -6201,7 +6202,7 @@ DefMacro('\eqalignno{}',
   '\@@eqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalignno{}',
   '#1',
-  reversion    => '\eqalignno{#1}', bounded => 1,
+  reversion => '\eqalignno{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rll', 'math',
       attributes => { vattach => 'baseline' }); });
 
@@ -6209,7 +6210,7 @@ DefMacro('\leqalignno{}',
   '\@@leqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@leqalignno{}',
   '#1',
-  reversion    => '\leqalignno{#1}', bounded => 1,
+  reversion => '\leqalignno{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rll', 'math',
       attributes => { vattach => 'baseline' }); });
 
