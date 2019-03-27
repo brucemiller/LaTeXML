@@ -370,6 +370,9 @@ sub formatBibEntry {
   # Set up authors and fullauthors tags
   my @names = $doc->findnodes('ltx:bib-name[@role="author"]/ltx:surname', $bibentry);
   @names = $doc->findnodes('ltx:bib-name[@role="editor"]/ltx:surname', $bibentry) unless @names;
+  my $etal = 0;
+  if(@names && ($names[-1]->toString eq 'others')){ # Magic!
+    $etal = 1; }
   if (@names > 2) {
     push(@tags, ['ltx:tag', { role => 'authors', class => 'ltx_bib_author' },
         $doc->cloneNodes($names[0]->childNodes),
@@ -507,9 +510,19 @@ sub do_name {
 sub do_names {
   my (@names) = @_;
   my @stuff = ();
+  my $sep = (scalar(@names) > 2 ? ', ' : ' ');
+  my $etal = 0;
+  if(@names && ($names[-1]->textContent eq 'others')){ # Magic!
+    pop(@names);
+    $etal = 1; }
+  my $n = scalar(@names);
   while (my $name = shift(@names)) {
-    push(@stuff, (@names ? ', ' : ' and ')) if @stuff;
+    if(@stuff){
+      push(@stuff, $sep);
+      push(@stuff, 'and ') if !$etal && !@names; }
     push(@stuff, do_name($name)); }
+  if($etal){
+    push(@stuff, $sep, ['ltx:text', { class => 'ltx_bib_etal' }, 'et al.']); }
   return @stuff; }
 
 sub do_names_short {

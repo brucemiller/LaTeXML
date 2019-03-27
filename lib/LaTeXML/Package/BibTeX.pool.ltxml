@@ -751,6 +751,8 @@ DefConstructor('\bib@field@default@doi Semiverbatim',
   "<ltx:bib-identifier scheme='doi' id='#1' href='#href'>Document</ltx:bib-identifier>",
   properties => sub {
     my $id = processIdentifier($_[1]);
+    # doi's can have all sorts of screwy characters which must be encoded in urls
+    $id =~ s/([^0-9a-zA-Z\.\/\-\+])/ sprintf('%%%02X',ord($1)) /ge;
     (id => $id, href => "http://dx.doi.org/$id"); });
 
 # ISBN : the International Standard Book Number
@@ -911,6 +913,8 @@ sub processBibNameList {
         ($given ? Invocation(T_CS('\bib@given'),   Tokenize($given)) : ()),
         ($jr    ? Invocation(T_CS('\bib@lineage'), Tokenize($jr))    : ())));
   }
+  if($etal){
+    push(@names, Invocation(T_CS('\bib@surname'),Tokenize('others'))); }
   return @names; }
 
 # Split into space separated words, but ignore spaces within {}
