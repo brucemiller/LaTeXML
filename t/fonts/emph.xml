@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>Default:cmr.m.n.10.</p>
+  </para>
+  <para xml:id="p2">
+    <p>n<emph font="italic">it<emph font="upright">n</emph>it</emph>n.</p>
+  </para>
+  <para xml:id="p3">
+    <p>n<text font="italic">it<emph font="upright">n</emph>it</text>n.</p>
+  </para>
+  <para xml:id="p4">
+    <p>n<emph font="italic">ititit</emph>n.</p>
+  </para>
+  <para xml:id="p5">
+    <p>nn<emph font="italic">it</emph>nn.</p>
+  </para>
+  <para xml:id="p6">
+    <p>n<emph font="italic">it<text font="upright">n</text>it</emph>n.</p>
+  </para>
+  <para xml:id="p7">
+    <p>nn<emph font="italic">it</emph>nn.</p>
+  </para>
+  <para xml:id="p8">
+    <p>n<emph font="italic">ititit</emph>n.</p>
+  </para>
+  <para xml:id="p9">
+    <p>Not <emph font="italic">Emphasized</emph> not.</p>
+  </para>
+  <para xml:id="p10">
+    <p>Not <emph font="italic">Emphasized with italic</emph> not.</p>
+  </para>
+  <para xml:id="p11">
+    <p>Not <emph font="italic">emphasized <emph font="upright">Doubly Emphasized</emph> still emphasized</emph> not emphasized.</p>
+  </para>
+  <para xml:id="p12">
+    <p>Not <emph font="italic">emphasized <emph font="upright">Doubly Emphasized with upright</emph> still emphasized</emph> not emphasized.</p>
+  </para>
+  <para xml:id="p13">
+    <p>Not <emph font="italic">emphasized <emph font="upright">Doubly Emphasized with roman</emph> still emphasized</emph> not emphasized.</p>
+  </para>
+  <para xml:id="p14">
+    <p><emph font="italic"><emph font="upright">Doubly Emphasized</emph> emphasized</emph> not emphasized.</p>
+  </para>
+  <para xml:id="p15">
+    <p>Not <emph font="italic">Emphasized</emph></p>
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" tex="a=b" text="a = b" xml:id="S0.Ex1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <p><emph font="italic">still emphasized</emph> not emphasized.</p>
+  </para>
+  <para xml:id="p16">
+    <p>Not <emph font="italic">Emphasized <emph font="upright">Doubly</emph></emph></p>
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" tex="a=b" text="a = b" xml:id="S0.Ex2.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+    <p><emph>still doubly emphasized</emph><emph font="italic"> still emphasized</emph> not emphasized.</p>
+  </para>
+</document>

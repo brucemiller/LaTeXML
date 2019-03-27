@@ -397,13 +397,14 @@ DefMacroI('\fmtversion', undef, 'XXXX/XX/XX');
 
 DefMacroI('\today', undef, sub { ExplodeText(today()); });
 
-# Previously, we used ltx:emph, to preserve the semantic intent,
-# but some folks wrap it around arbitrary blocks of material,
-# more like a font switch.
-DefConstructor('\emph{}', "#1", mode => 'text',
-  bounded        => 1, font => { emph => 1 }, alias => '\emph',
-  beforeDigest   => sub { DefMacro('\f@shape', 'i'); },
-  afterConstruct => sub { $_[0]->addClass($_[0]->getElement, 'ltx_emph'); });
+# Use fonts (w/ special flag) to propogate emphasis as a font change,
+# but preserve it's "emph"-ness.
+DefConstructor('\emph{}', "<ltx:emph _force_font='1'>#1</ltx:emph>", mode => 'text',
+  bounded => 1, font => { emph => 1 }, alias => '\emph',
+  beforeDigest => sub {
+    DefMacro('\f@shape', (ToString(Tokens(Expand(T_CS('\f@shape')))) eq 'it' ? 'n' : 'it')); },
+);
+Tag('ltx:emph', autoClose => 1);
 
 #======================================================================
 # C.3.2 Making Paragraphs
@@ -4497,10 +4498,10 @@ Let('\mediumseries', '\mdseries');
 Let('\normalshape',  '\upshape');
 
 # ? DefMacro('\f@encoding','cm');
-DefMacro('\f@family', 'cm');
-DefMacro('\f@series', '');
-DefMacro('\f@shape',  '');
-DefMacro('\f@size',   '');
+DefMacro('\f@family', 'cmr');
+DefMacro('\f@series', 'm');
+DefMacro('\f@shape',  'n');
+DefMacro('\f@size',   '10');
 
 # These do NOT immediately effect the font!
 DefMacro('\fontfamily{}', '\edef\f@family{#1}');

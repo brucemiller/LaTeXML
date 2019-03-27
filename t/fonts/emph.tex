@@ -1,0 +1,41 @@
+\documentclass{article}
+\begin{document}
+
+\makeatletter
+Default:\f@family.\f@series.\f@shape.\f@size.
+
+\f@shape\emph{\f@shape\emph{\f@shape}\f@shape}\f@shape.
+
+\f@shape\textit{\f@shape\emph{\f@shape}\f@shape}\f@shape.
+
+\f@shape\emph{\f@shape\textit{\f@shape}\f@shape}\f@shape.
+
+\f@shape\textup{\f@shape\emph{\f@shape}\f@shape}\f@shape.
+
+\f@shape\emph{\f@shape\textup{\f@shape}\f@shape}\f@shape.
+
+\f@shape\textrm{\f@shape\emph{\f@shape}\f@shape}\f@shape.
+
+\f@shape\emph{\f@shape\textrm{\f@shape}\f@shape}\f@shape.
+
+Not \emph{Emphasized} not.
+
+Not \emph{Emphasized \textit{with italic}} not.
+
+Not \emph{emphasized \emph{Doubly Emphasized} still emphasized} not emphasized.
+
+Not \emph{emphasized \emph{Doubly Emphasized \textrm{with upright}} still emphasized} not emphasized.
+
+Not \emph{emphasized \emph{Doubly Emphasized \textrm{with roman}} still emphasized} not emphasized.
+
+\emph{\emph{Doubly Emphasized} emphasized} not emphasized.
+
+
+Not \emph{Emphasized
+  \[ a=b\]
+  still emphasized} not emphasized.
+
+Not \emph{Emphasized \emph{Doubly
+  \[ a=b\]
+  still doubly emphasized} still emphasized} not emphasized.
+\end{document}
