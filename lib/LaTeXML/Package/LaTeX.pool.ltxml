@@ -3034,10 +3034,12 @@ DefMacroI('\tablesname',  undef, 'Tables');
 # C.9.2 Marginal Notes
 #======================================================================
 
+AssignValue(marginparclass=>undef);
 DefConstructor('\marginpar[]{}',
-  "<ltx:note role='margin'><ltx:inline-para>#2</ltx:inline-para></ltx:note>");
-DefPrimitiveI('\reversemarginpar', undef, undef);
-DefPrimitiveI('\normalmarginpar',  undef, undef);
+  "<ltx:note role='margin' class='#class'><ltx:inline-para>#2</ltx:inline-para></ltx:note>",
+  properties => sub { (class => LookupValue('marginparclass')); });
+DefPrimitiveI('\reversemarginpar', undef, sub { AssignValue(marginparclass=>'ltx_marginpar_reverse'); });
+DefPrimitiveI('\normalmarginpar',  undef, sub { AssignValue(marginparclass=>undef); });
 DefRegister('\marginparpush', Dimension(0));
 
 #**********************************************************************
