@@ -774,7 +774,7 @@ DefPrimitive('\DeclareOption{}{}', sub {
 
 DefPrimitive('\PassOptionsToPackage{}{}', sub {
     my ($stomach, $name, $options) = @_;
-    PassOptions($name, 'pkg', split(/,\s*/, ToString(Expand($options)))); });
+    PassOptions($name, 'sty', split(/,\s*/, ToString(Expand($options)))); });
 
 DefPrimitive('\PassOptionsToClass{}{}', sub {
     my ($stomach, $name, $options) = @_;
