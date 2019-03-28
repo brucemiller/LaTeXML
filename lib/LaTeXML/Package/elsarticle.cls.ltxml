@@ -41,6 +41,8 @@ RequirePackage('elsart_support');    # Hopefully, this covers elsart & elsarticl
 RequirePackage('graphicx');
 RequirePackage('pifont');
 RequirePackage('natbib');
+DefMacro('\biboptions{}','\setcitestyle{#1}');
+
 # Redefine these, since in elsarticle, they two get optional arguments
 # (not even sure what the intended effect is)
 DefEnvironment('{enumerate}[]',
