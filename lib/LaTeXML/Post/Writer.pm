@@ -27,19 +27,34 @@ sub new {
   $$self{is_html}      = 1 if $options{is_html};
   return $self; }
 
+# Writer should always write, even if there is no document element
+# (e.g. JSON masquerading as XML)
+sub toProcess {
+  my ($self, $doc) = @_;
+  return $doc->getDocumentElement || $doc; }
+
 sub process {
   my ($self, $doc, $root) = @_;
+  if (ref $root eq 'LaTeXML::Post::Document') {
+    undef $root;    # JSON case passes through here.
+  }
 
   my $xmldoc = $doc->getDocument;
   $doc->getDocument->removeInternalSubset if $$self{omit_doctype};
 
   $root->removeAttribute('xml:id')
-    if ($root->getAttribute('xml:id') || '') eq 'TEMPORARY_DOCUMENT_ID';
+    if $root && (($root->getAttribute('xml:id') || '') eq 'TEMPORARY_DOCUMENT_ID');
 
   # Note that this will NOT RE-format a document read in from xml,
   # (providing no_blanks is false; which it should be, since it is dangerous.
   #  it can also remove significant spaces between elements!)
   my $serialized = ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1));
+  if (!$root) {
+    # silly, but this is a serialized JSON string with an XML header, drop
+    $serialized =~ s/^\s*\<\?xml([^\n]+)\n//;
+    $serialized =~ s/^\s+//;
+    $serialized =~ s/\s+$//;
+  }
   # NOTE that we are serializing the XML::LibXML::Document whose toString
   # has ALREADY encoded (in this case to utf8), so NO encode is needed!
   if (my $destination = $doc->getDestination) {

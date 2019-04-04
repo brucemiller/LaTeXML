@@ -67,7 +67,7 @@ sub getopt_specification {
     "mode=s"      => \$$opts{profile},
     "source=s"    => \$$opts{source},
     # Output framing
-    "embed"      => sub { $$opts{whatsout} = 'fragment'; },
+    "embed" => sub { $$opts{whatsout} = 'fragment'; },
     "whatsin=s"  => \$$opts{whatsin},
     "whatsout=s" => \$$opts{whatsout},
     # Daemon options
@@ -186,12 +186,12 @@ sub read {
   my $getOptions_success = GetOptions(%{$spec});
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   if (!$silent && $$opts{help}) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', output => \*STDOUT);
   }
 
@@ -237,7 +237,7 @@ sub scan_to_keyvals {
   my $getOptions_success = GetOptions(%$spec);
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   CORE::push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];
@@ -440,7 +440,8 @@ sub _prepare_options {
       || ($$opts{stylesheet})
       || $$opts{is_html}
       || $$opts{is_xhtml}
-      || (($$opts{format} || '') eq 'jats')
+      || ($$opts{format} eq 'jats')
+      || ($$opts{format} eq 'pandoc')
       || ($$opts{whatsout} && ($$opts{whatsout} ne 'document'))
     )
   );
@@ -479,8 +480,7 @@ sub _prepare_options {
     if ((defined $$opts{destination}) || ($$opts{whatsout} =~ /^archive/)) {
       # We want the graphics enabled by default, but only when we have a destination
       $$opts{dographics} = 1 unless defined $$opts{dographics};
-      $$opts{picimages} = 1 if (($$opts{format} eq "html4") || ($$opts{format} eq "jats"))
-        && !defined $$opts{picimages};
+      $$opts{picimages} = 1 if !defined $$opts{picimages} && ($$opts{format} =~ /^html4|jats|pandoc/);
     }
     # Split sanity:
     if ($$opts{split}) {
@@ -537,6 +537,7 @@ sub _prepare_options {
       elsif ($$opts{format} =~ /^epub|mobi$/) { $$opts{stylesheet} = "LaTeXML-epub3.xsl"; }
       elsif ($$opts{format} eq "html5")       { $$opts{stylesheet} = "LaTeXML-html5.xsl"; }
       elsif ($$opts{format} eq "jats")        { $$opts{stylesheet} = "LaTeXML-jats.xsl"; }
+      elsif ($$opts{format} eq "pandoc")      { $$opts{stylesheet} = "LaTeXML-pandoc.xsl"; }
       elsif ($$opts{format} eq "xml")         { delete $$opts{stylesheet}; }
       else                                    { croak("Unrecognized target format: " . $$opts{format}); }
     }
@@ -882,7 +883,7 @@ latexmlc [options]
                          representation (default is to remove)
  --mathtex               adds TeX annotation to parallel markup
  --nomathtex             disables the above (default)
- --mathlex               (EXPERIMENTAL) adds linguistic lexeme 
+ --mathlex               (EXPERIMENTAL) adds linguistic lexeme
                          annotation to parallel markup
  --nomathlex             (EXPERIMENTAL) disables the above (default)
  --parallelmath          use parallel math annotations (default)

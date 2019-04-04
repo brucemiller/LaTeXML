@@ -338,10 +338,16 @@ sub convert {
   if ($$opts{format} eq 'dom') {    # No serialize needed in DOM output case
     $serialized = $result; }
   elsif ($ref_result =~ /^(:?LaTe)?XML/) {
-    if ($$opts{format} =~ /^jats|x(ht)?ml$/) {
+    if ($$opts{format} =~ /^pandoc|jats|x(ht)?ml$/) {
       if ($ref_result =~ /Document$/) {
         $serialized = $result->toString(1);
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
+        if ($$opts{format} eq 'pandoc') {
+          # silly, but this is a serialized JSON string with an XML header, drop
+          $serialized =~ s/^\s*\<\?xml([^\n]+)\n//;
+          $serialized =~ s/^\s+//;
+          $serialized =~ s/\s+$//;
+        }
       } else {                      # fragment case
         $serialized = $result->toString(1, 1);
     } }

@@ -731,17 +731,17 @@ sub setDocument_internal {
         "Have not yet implemented cloning for entire documents"); }
     # Just make a clone, and then insert that.
     $root = $self->cloneNode($root, $clone_suffix); }
-
   if ($roottype eq 'XML::LibXML::Document') {
     $$self{document} = $root;
     foreach my $node ($self->findnodes("//*[\@xml:id]")) {    # Now record all ID's
       $$self{idcache}{ $node->getAttribute('xml:id') } = $node; }
     # Fetch any additional namespaces from the root
-    foreach my $ns ($root->documentElement->getNamespaces) {
-      my ($prefix, $uri) = ($ns->getLocalName, $ns->getData);
-      if ($prefix) {
-        $$self{namespaces}{$prefix} = $uri    unless $$self{namespaces}{$prefix};
-        $$self{namespaceURIs}{$uri} = $prefix unless $$self{namespaceURIs}{$uri}; } }
+    if (my $root = $root->documentElement) {
+      foreach my $ns ($root->getNamespaces) {
+        my ($prefix, $uri) = ($ns->getLocalName, $ns->getData);
+        if ($prefix) {
+          $$self{namespaces}{$prefix} = $uri    unless $$self{namespaces}{$prefix};
+          $$self{namespaceURIs}{$uri} = $prefix unless $$self{namespaceURIs}{$uri}; } } }
 
     # Extract data from latexml's ProcessingInstructions
     # I'd like to provide structured access to the PI's for those modules that need them,
