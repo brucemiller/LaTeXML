@@ -2985,8 +2985,26 @@ DefConstructor('\@@ooalign{}',
 #----------------------------------------------------------------------
 # These determine whether the _next_ paragraph gets indented!
 # thus it needs \par to check whether such indentation has been set.
-DefPrimitiveI('\indent',   undef, sub { AssignValue(next_para_class => 'ltx_indent'); });
-DefPrimitiveI('\noindent', undef, sub { AssignValue(next_para_class => 'ltx_noindent'); });
+DefConstructorI('\indent', undef, sub {
+  my ($document) = @_;
+  my $node = $document->getElement;
+  if ($document->getNodeQName($node) eq 'ltx:para') {
+    $node->setAttribute(class => "ltx_indent"); }
+  elsif ($document->canContainSomehow($node, "ltx:para")) {
+    # Used in a position where a paragraph can be started, start
+    $document->openElement("ltx:para", class => "ltx_indent"); }
+  # Otherwise ignore.
+  return; });
+DefConstructorI('\noindent', undef, sub {
+  my ($document) = @_;
+  my $node = $document->getElement;
+  if ($document->getNodeQName($node) eq 'ltx:para') {
+    $node->setAttribute(class => "ltx_noindent"); }
+  elsif ($document->canContainSomehow($node, "ltx:para")) {
+    # Used in a position where a paragraph can be started, start
+    $document->openElement("ltx:para", class => "ltx_noindent"); }
+  # Otherwise ignore.
+  return; });
 
 # <ltx:para> represents a Logical Paragraph, whereas <ltx:p> is a `physical paragraph'.
 # A para can contain both p and displayed equations and such.
@@ -3003,22 +3021,26 @@ DefConstructorI('\normal@par', undef, sub {
       $document->maybeCloseElement('ltx:p');
       if (my $c = $props{class}) {
         my $node = $document->getElement;
-        if ($node && $document->getNodeQName($node) eq 'ltx:para') {  # Only set on the para about to close!
+        if ($node && $document->getNodeQName($node) eq 'ltx:para' && !$node->getAttribute("class")) {  # Only set on the para about to close, if unknown!
           $document->setAttribute($node, class => $c); } }
       $document->maybeCloseElement('ltx:para'); } },
   afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
     if (LookupValue('inPreamble')) {
-      $_[1]->setProperty(inPreamble => 1); }
+      $whatsit->setProperty(inPreamble => 1); }
     else {
-      if (my $c = LookupValue('next_para_class')) {
-        $_[1]->setProperty(class => $c);
+      # Check if flags were set by prior \par:
+      if (my $c = LookupValue("next_para_class")) {
+        $whatsit->setProperty(class => $c);
         AssignValue(next_para_class => undef); }
-      elsif (LookupRegister('\parindent')->valueOf == 0) {
-        $_[1]->setProperty(class => "ltx_noindent"); }
+      # Fish out flags for next ltx:para, to be used when the next \par closes:
+      if (!LookupRegister('\parindent')->valueOf) {
+        # respect \parindent if no overrides are given
+        AssignValue(next_para_class => "ltx_noindent"); }
+      # Vertical adjustments
       Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
-          T_CS('\LTX@clear@vadjust@afterpar'))); } },
+        T_CS('\LTX@clear@vadjust@afterpar'))); } },
   properties => { alignmentSkippable => 1 },
-  #  alias => "\\par\n");
   alias => '\par');
 Let('\par', '\normal@par');
 # OTOH, sometimes \par is just a minimalistic "start a new line"
@@ -3028,14 +3050,14 @@ DefConstructorI('\inner@par', undef, sub {
     elsif ($_[0]->canContain($_[0]->getNode, 'ltx:break')) {
       $_[0]->insertElement('ltx:break'); } });
 
-Tag('ltx:para', autoClose => 1, autoOpen => 1, afterClose=>\&respectParindent);
+Tag('ltx:para', autoClose => 1, autoOpen => 1, afterClose=>\&pruneEmpty);
 
-sub respectParindent {
+sub pruneEmpty {
   my ($document, $node) = @_;
-  if (!$node->getAttribute("class") && LookupRegister('\parindent')->valueOf == 0) {
-    $node->setAttribute(class => "ltx_noindent"); }
-  return;
-}
+  # In some cases we could have e.g. a \noindent followed by a {table}, 
+  # in which case we end up with an empty ltx:para which we can prune.
+  if (!scalar($node->childNodes)) {
+    $node->unlinkNode; } }
 
 sub trimNodeWhitespace {
   my ($document, $node) = @_;
@@ -4350,6 +4372,7 @@ DefPrimitive('\newtoks Token', sub { DefRegisterI($_[1], undef, Tokens()); });
 # the next 4 actually work by doing a \chardef instead of \countdef, etc.
 # which means they actually work quite differently
 DefRegister('\allocationnumber' => Number(0));
+
 DefMacro('\alloc@@ {}', sub {
     my ($gullet, $type) = @_;
     my $c = 'allocation @' . ToString($type);

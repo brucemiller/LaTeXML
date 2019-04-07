@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>Indented par.</p>
+  </para>
+  <para class="ltx_indent" xml:id="p2">
+    <p>Explicitly indented par.</p>
+  </para>
+  <para xml:id="p3">
+    <p>Indented par.</p>
+  </para>
+  <para xml:id="p4">
+    <p>Indented par.</p>
+  </para>
+  <para class="ltx_noindent" xml:id="p5">
+    <p>Unindented par.</p>
+  </para>
+  <para xml:id="p6">
+    <p>Indented par.</p>
+  </para>
+  <para class="ltx_noindent" xml:id="p7">
+    <p>Unindented parindent par.</p>
+  </para>
+  <para class="ltx_noindent" xml:id="p8">
+    <p>Unindented last par.</p>
+  </para>
+</document>
