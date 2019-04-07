@@ -317,28 +317,44 @@ sub convert {
     if (delete $$opts{placeholder_destination}) {
       delete $$opts{destination}; } }
 
-  # 5 Output
+  # 5 Output -- if not using Post::Writer, which never considers this serialization logic
   # 5.1 Serialize the XML/HTML result (or just return the Perl object, if requested)
+  # GOAL: $serialized must contain a utf8-encoded string at the return.
+  # NOTES: This is difficult, because we can be serializing different objects, with different serialization logic
+  # 1. Byte strings: LaTeXML's Document::serialize_aux, and XML::LibXML::Document's toString and toStringHTML
+  #    which have NOT been encoded into utf-8, so we need an explicit encode before printing/returning
+  # 2. Unreliable: the fragment case, which uses XML::LibXML::Element (and hence Node's) toString method,
+  #    is sometimes already encoded as UTF-8. In fact, the documentation claims it is by default:
+  # https://metacpan.org/pod/distribution/XML-LibXML/lib/XML/LibXML/Node.pod#toString
+  # Digging to the bottom of the code, we reach:
+  # https://metacpan.org/source/SHLOMIF/XML-LibXML-2.0200/LibXML.xs#L5212
+  # which *will* set the utf8 flag iff the "HAVE_UTF8" flag was set on the system which compiled libxml
+  # that's pretty terrifying in fact, since we can't rely that libxml returns the same encoding cross-platform for its default behavior!
+  # 3. Reliable: Always explicitly request the document encoding to be used in serializing a Node
+  #     by passing a second true flag into toString(1,1) to ensure that the encoding is handled explicitly at the libxml2 level
+  # 4. Other: returning a DOM object programmatically, or a non-XML representation (archives), has no serialization component, result is returned as-is
   undef $serialized;
-  if ((defined $result) && ref($result) && (ref($result) =~ /^(:?LaTe)?XML/)) {
-    if (($$opts{format} =~ /x(ht)?ml/) || ($$opts{format} eq 'jats')) {
-      $serialized = $result->toString(1);
-      if (ref($result) eq 'LaTeXML::Core::Document') {
-        # NOTE that we are serializing here via LaTeXML's Document::serialize_aux
-        # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
+  my $ref_result = ref($result) || '';
+  if ($$opts{format} eq 'dom') {    # No serialize needed in DOM output case
+    $serialized = $result; }
+  elsif ($ref_result =~ /^(:?LaTe)?XML/) {
+    if ($$opts{format} =~ /^jats|x(ht)?ml$/) {
+      if ($ref_result =~ /Document$/) {
+        $serialized = $result->toString(1);
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
+      } else {                      # fragment case
+        $serialized = $result->toString(1, 1);
     } }
     elsif ($$opts{format} =~ /^html/) {
-      if (ref($result) =~ /^LaTeXML::(Post::)?Document$/) {    # Special for documents
-        $serialized = $result->getDocument->toStringHTML; }
-      else {                                                   # Regular for fragments
-        do {
-          local $XML::LibXML::setTagCompression = 1;
-          $serialized = $result->toString(1);
-        } } }
-    elsif ($$opts{format} eq 'dom') {
-      $serialized = $result; } }
-  else { $serialized = $result; }                              # Compressed case
+      if (ref($result) =~ /^LaTeXML::(Post::)?Document$/) {
+        # Needs explicit encode call, toStringHTML returns Perl byte strings
+        $serialized = $result->getDocument->toStringHTML;
+        $serialized = Encode::encode('UTF-8', $serialized) if $serialized; }
+      else {                        # fragment case
+        local $XML::LibXML::setTagCompression = 1;
+        $serialized = $result->toString(1, 1); } } }
+  # Compressed/archive/other case, just pass on
+  else { $serialized = $result; }
 
   # 5.2 Finalize logging and return a response containing the document result, log and status
   print STDERR "Status:conversion:" . ($$runtime{status_code} || '0') . " \n";
