@@ -3013,6 +3013,8 @@ DefConstructorI('\normal@par', undef, sub {
       if (my $c = LookupValue('next_para_class')) {
         $_[1]->setProperty(class => $c);
         AssignValue(next_para_class => undef); }
+      elsif (LookupRegister('\parindent')->valueOf == 0) {
+        $_[1]->setProperty(class => "ltx_noindent"); }
       Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
           T_CS('\LTX@clear@vadjust@afterpar'))); } },
   properties => { alignmentSkippable => 1 },
@@ -3026,7 +3028,14 @@ DefConstructorI('\inner@par', undef, sub {
     elsif ($_[0]->canContain($_[0]->getNode, 'ltx:break')) {
       $_[0]->insertElement('ltx:break'); } });
 
-Tag('ltx:para', autoClose => 1, autoOpen => 1);
+Tag('ltx:para', autoClose => 1, autoOpen => 1, afterClose=>\&respectParindent);
+
+sub respectParindent {
+  my ($document, $node) = @_;
+  if (!$node->getAttribute("class") && LookupRegister('\parindent')->valueOf == 0) {
+    $node->setAttribute(class => "ltx_noindent"); }
+  return;
+}
 
 sub trimNodeWhitespace {
   my ($document, $node) = @_;
