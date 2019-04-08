@@ -23,6 +23,7 @@ use strict;
 use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
+use LaTeXML::Common::Locator;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
@@ -33,7 +34,7 @@ use base qw(LaTeXML::Core::Box);
 
 # Specially recognized (some required?) properties:
 #  font    : The font object
-#  locator : a locator string, where in the source this whatsit was created
+#  locator : a locator object, where in the source this whatsit was created
 #  isMath  : whether this is a math object
 #  id
 #  body
@@ -79,6 +80,7 @@ sub setBody {
   $$self{properties}{trailer} = $trailer;
   # And copy any otherwise undefined properties from the trailer
   if ($trailer) {
+    $$self{properties}{locator} = LaTeXML::Common::Locator->newRange($self->getLocator, $trailer->getLocator);
     my %trailerhash = $trailer->getProperties;
     foreach my $prop (keys %trailerhash) {
       $$self{properties}{$prop} = $trailer->getProperty($prop) unless defined $$self{properties}{$prop}; } }

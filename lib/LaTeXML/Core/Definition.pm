@@ -39,6 +39,12 @@ sub getCSName {
   my ($self) = @_;
   return (defined $$self{alias} ? $$self{alias} : $$self{cs}->getCSName); }
 
+# NOTE: Need to clean up alias; really should already be Token (or Tokens?)
+# and is not always a CS!
+sub getCSorAlias {
+  my ($self) = @_;
+  return (defined $$self{alias} ? T_CS($$self{alias}) : $$self{cs}); }
+
 sub isExpandable {
   return 0; }
 

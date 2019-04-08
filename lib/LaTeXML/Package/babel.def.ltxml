@@ -19,6 +19,9 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+# This inhibits some risky redefinitions in babel
+Let('\bbl@opt@safe', '\@empty');
+
 # I think we can best just read the current babel.def
 # and then proceed with some strategic redefinitions.
 # We should also be able to directly process the

@@ -96,7 +96,7 @@ sub loadSchema {
         if ($attr !~ /^xmlns/) {
           $model->addTagAttribute($model->recodeDocumentQName($tag),
             ($attr =~ /:/ ? $model->recodeDocumentQName($attr) : $attr));
-        } } }
+    } } }
   }
   NoteEnd("Analyzing DTD");    # Done analyzing
   NoteEnd("Loading DTD " . $$self{public_id} || $$self{system_id});

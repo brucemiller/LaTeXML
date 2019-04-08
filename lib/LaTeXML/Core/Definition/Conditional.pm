@@ -27,7 +27,7 @@ sub new {
   my ($class, $cs, $parameters, $test, %traits) = @_;
   my $source = $STATE->getStomach->getGullet->getMouth;
   return bless { cs => $cs, parameters => $parameters, test => $test,
-    locator      => "from " . $source->getLocator(-1),
+    locator      => $source->getLocator,
     isExpandable => 1,
     %traits }, $class; }
 
@@ -138,7 +138,7 @@ sub skipConditionalBody {
       $$stack[0]{elses} = 1;
       return $t; } }    # } #}
   Error('expected', '\fi', $gullet, "Missing \\fi or \\else, conditional fell off end",
-    "Conditional started at $start");
+    "Conditional started at " . ToString($start));
   return; }
 
 sub invoke_else {
@@ -154,7 +154,7 @@ sub invoke_else {
   elsif ($$stack[0]{elses}) {       # Already seen an \else's at this level?
     Error('unexpected', $LaTeXML::CURRENT_TOKEN, $gullet,
       "Extra " . Stringify($LaTeXML::CURRENT_TOKEN),
-"already saw \\else for " . Stringify($$stack[0]{token}) . " [" . $$stack[0]{ifid} . "] at " . $$stack[0]{start});
+"already saw \\else for " . Stringify($$stack[0]{token}) . " [" . $$stack[0]{ifid} . "] at " . ToString($$stack[0]{start}));
     return; }
   else {
     local $LaTeXML::IFFRAME = $$stack[0];

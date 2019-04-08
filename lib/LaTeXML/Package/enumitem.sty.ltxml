@@ -41,6 +41,10 @@ DefEnvironment('{description} OptionalUndigested',
   beforeDigestEnd => sub { Digest('\par'); },
   locked => 1, mode => 'text');
 
+# TODO: Manage and store the options and maximum depth
+DefMacro('\newlist{}{}{}',   '\newenvironment{#1}[1]{\begin{#2}##1}{\end{#2}}');
+DefMacro('\renewlist{}{}{}', '\renewenvironment{#1}[1]{\begin{#2}##1}{\end{#2}}');
+
 DefMacro('\setlist OptionalUndigested {}', '');
 
 #======================================================================

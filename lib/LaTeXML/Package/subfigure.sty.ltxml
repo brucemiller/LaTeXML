@@ -148,7 +148,7 @@ DefMacro('\subfigure[][]{}',
     . '\iffiguretopcap\else\addtocounter{figure}{-1}\fi'
     . '\end{@subfigure}');
 DefEnvironment('{@subfigure}',
-  "<ltx:figure xml:id='#id'>"
+  "<ltx:figure xml:id='#id'>"    # NO inlist for subfigures!
     . "#tags"
     . "#body"
     . "</ltx:figure>",
@@ -167,7 +167,7 @@ DefMacro('\subtable[][]{}',
     . '\iftabletopcap\else\addtocounter{table}{-1}\fi'
     . '\end{@subtable}');
 DefEnvironment('{@subtable}',
-  "<ltx:table xml:id='#id'>"
+  "<ltx:table xml:id='#id'>"    # NO inlist for subfigures!
     . "#tags"
     . "#body"
     . "</ltx:table>",

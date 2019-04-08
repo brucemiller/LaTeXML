@@ -1,0 +1,101 @@
+\documentclass{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+ 
+\usepackage[french,german,english]{babel}
+\usepackage[babel=true]{csquotes}
+
+%\MakeForeignQuote{german}{<}{>}
+
+\begin{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Quoting in Current Language}
+
+\selectlanguage{french}
+\subsection{\languagename}
+\enquote{Citation extérieure}
+\enquote{Extérieure \enquote{intérieur} extérieure}
+
+\selectlanguage{german}
+\subsection{\languagename}
+\enquote{Äußeres Zitat}
+\enquote{Äußeres \enquote{inneres} Äußeres}
+
+\selectlanguage{english}
+\subsection{\languagename}
+\enquote{Outer Quote}
+\enquote{Outer \enquote{Inner} Outer}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Quoting in Foreign Language}
+
+\subsection{french}
+\foreignquote{french}{Citation extérieure}
+\foreignquote{french}{Extérieure \foreignquote{french}{intérieur} extérieure}
+\foreignquote{french}{Extérieure \foreignquote*{french}{intérieur} extérieure}
+
+%\subsection{Auto Quote German}
+%< Äußeres Zitat >
+
+\subsection{german}
+\foreignquote{german}{Äußeres Zitat}
+\foreignquote{german}{Äußeres \foreignquote{german}{inneres} Äußeres}
+\foreignquote{german}{Äußeres \foreignquote*{german}{inneres} Äußeres}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{textquote in Current Language}
+
+\selectlanguage{french}
+\subsection{\languagename}
+\textquote[Citation]{du texte ici}
+
+\selectlanguage{german}
+\subsection{\languagename}
+\textquote[Zitat]{etwas Text hier}
+
+\selectlanguage{english}
+\subsection{\languagename}
+\textquote[Citation]{some text here}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{textquote in foreign Language}
+
+\foreigntextquote{french}[Citation]{du texte ici}
+\foreigntextquote{german}[Zitat]{etwas Text hier}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{displayquote in Current language}
+
+\selectlanguage{french}
+\subsection{\languagename}
+\begin{displayquote}[Citation]
+du texte ici
+\end{displayquote}
+
+\selectlanguage{german}
+\subsection{\languagename}
+\begin{displayquote}[Zitat]
+etwas Text hier
+\end{displayquote}
+
+\selectlanguage{english}
+\subsection{\languagename}
+\begin{displayquote}[Citation]
+some text here
+\end{displayquote}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{displayquote in foreign Language}
+
+\begin{foreigndisplayquote}{french}[Citation]
+du texte ici
+\end{foreigndisplayquote}
+
+\begin{foreigndisplayquote}{german}[Zitat]
+etwas Text hier
+\end{foreigndisplayquote}
+
+\end{document}

@@ -200,7 +200,7 @@ DefMacro('\itnuc{}{}', '\ensuremath{\@@nuc{\textit{#1}}{#2}}');
 DefMacro('\nuc{}{}',   '\ensuremath{\@@nuc{#1}{#2}}');
 DefConstructor('\@@nuc{}{}',
 "<ltx:XMArg><ltx:XMApp><ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#pos'/>#1#2</ltx:XMApp></ltx:XMArg>",
-  properties => sub { (pos => 'pre' . $_[0]->getBoxingLevel); });
+  properties => sub { (pos => 'pre' . $_[0]->getScriptLevel); });
 
 #======================================================================
 # Tables, Figures & Theorems

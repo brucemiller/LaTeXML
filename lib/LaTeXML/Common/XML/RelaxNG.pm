@@ -47,7 +47,7 @@ sub new {
       $schemadoc = $xmlparser->parseFile($path); }
     else {
       return;                                            # ???
-    } }
+  } }
   return bless { schemadoc => $schemadoc }, $class; }
 
 sub validate {

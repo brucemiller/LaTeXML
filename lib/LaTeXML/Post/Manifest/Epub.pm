@@ -182,40 +182,40 @@ sub finalize {
   my ($self) = @_;
   #Index all CSS files (written already)
   my $OPS_directory = $$self{OPS_directory};
-  my @styles=();
-  my @images=();
-  find({no_chdir=>1, wanted=>sub {
-    my $OPS_abspath = $_;
-    if (-f $OPS_abspath) {
-      my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
-      if ($OPS_pathname =~ /\.css$/) {
-        push(@styles, $OPS_pathname); }
-      elsif ($OPS_pathname =~ /\.png$/) {
-        push(@images, $OPS_pathname); }
-      else {} # skip any other resources
-    }
-  }}, $OPS_directory);
+  my @styles        = ();
+  my @images        = ();
+  find({ no_chdir => 1, wanted => sub {
+        my $OPS_abspath = $_;
+        if (-f $OPS_abspath) {
+          my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
+          if ($OPS_pathname =~ /\.css$/) {
+            push(@styles, $OPS_pathname); }
+          elsif ($OPS_pathname =~ /\.png$/) {
+            push(@images, $OPS_pathname); }
+          else { }    # skip any other resources
+        }
+  } }, $OPS_directory);
 
   my $manifest = $$self{opf_manifest};
   # TODO: Other externals are future work
   foreach my $style (@styles) {
     my $style_id = $style;
-    $style_id =~ s|/|-|g; # NCName required for id; no slashes
+    $style_id =~ s|/|-|g;    # NCName required for id; no slashes
     my $style_item = $manifest->addNewChild(undef, 'item');
     $style_item->setAttribute('id',         "$style_id");
     $style_item->setAttribute('href',       "$style");
     $style_item->setAttribute('media-type', 'text/css'); }
   foreach my $image (@images) {
     my $image_id = $image;
-    $image_id =~ s|/|-|g; # NCName required for id; no slashes
+    $image_id =~ s|/|-|g;    # NCName required for id; no slashes
     my $image_item = $manifest->addNewChild(undef, 'item');
     $image_item->setAttribute('id',         "$image_id");
     $image_item->setAttribute('href',       "$image");
     $image_item->setAttribute('media-type', 'image/png'); }
-  
+
   if ($$self{log}) {
     my $log_id = $$self{log};
-    $log_id =~ s|/|-|g; # NCName required for id; no slashes
+    $log_id =~ s|/|-|g;      # NCName required for id; no slashes
     my $log_item = $manifest->addNewChild(undef, 'item');
     $log_item->setAttribute('id',         "$log_id");
     $log_item->setAttribute('href',       $$self{log});

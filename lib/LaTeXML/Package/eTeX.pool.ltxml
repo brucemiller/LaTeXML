@@ -26,7 +26,7 @@ DefPrimitiveI('\protected', undef, sub {
     $STATE->setPrefix('protected'); return; }, isPrefix => 1);
 
 # \detokenize
-DefMacro('\detokenize{}', sub { Explode(UnTeX($_[1])); });
+DefMacro('\detokenize GeneralText', sub { Explode(UnTeX($_[1])); });
 
 # \unexpanded
 # This is like \noexpand, but acts on <general text>
@@ -45,7 +45,7 @@ DefMacro('\readline Number SkipKeyword:to SkipSpaces Token', sub {
       DefMacroI($token, undef, Tokens(Explode(($mouth->readRawLine || '') . "\r"))); }
     return; });
 
-DefMacro('\scantokens {}', sub {
+DefMacro('\scantokens GeneralText', sub {
     LaTeXML::Core::Mouth->new(UnTeX($_[1]))->readTokens; });
 
 #======================================================================
@@ -76,7 +76,7 @@ DefRegister('\lastnodetype', Number(0));
 # 3.4 Generalization of the \mark concept: a class of \marks
 # but since we don't manage Pages...
 
-DefPrimitive('\marks Number {}', undef);
+DefPrimitive('\marks Number GeneralText', undef);
 DefMacroI('\topmarks Number',        undef, Tokens());
 DefMacroI('\firstmarks Number',      undef, Tokens());
 DefMacroI('\botmarks Number',        undef, Tokens());
@@ -117,7 +117,7 @@ DefPrimitive('\showgroups', undef);
 
 # \showtokens <generaltext>
 # NOTE Debugging aids are currently IGNORED!
-DefPrimitive('\showtokens {}', undef);
+DefPrimitive('\showtokens GeneralText', undef);
 
 DefRegister('\tracingassigns'    => Number(0));    # ???
 DefRegister('\tracinggroups'     => Number(0));

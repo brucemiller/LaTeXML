@@ -28,13 +28,11 @@
 # Let's aim for passing level 3, by default
 # use 4 for pre-commit, 2 for code review
 severity=3
+# Exclude Bangs (which are annoyingly picky)
+exclude = Bangs
+#exclude = Bangs CodeLayout::RequireUseUTF8 Documentation::RequirePODUseEncodingUTF8
 
 [LaTeXML::RequireDoubleSigils]
-
-## [Miscellanea::ProhibitUnrestrictedNoCritic]
-## severity=2
-## # was 3; Really?
-## # What's the point of using "## no critic" if you just different complaints?
 
 #======================================================================
 # Downgrade some 4 & 5 level Policies that I either don't agree with
@@ -100,6 +98,10 @@ severity=1
 [CodeLayout::ProhibitHardTabs]
 severity=4
 # was 3; portability mess
+
+[CodeLayout::ProhibitHashBarewords]
+severity=1
+# was 3; oh c'mon!?!?
 
 [ControlStructures::ProhibitCascadingIfElse]
 severity=2
@@ -187,6 +189,32 @@ severity=4
 # [Documentation::RequirePodLinksIncludeText]
 # severity=1
 # # was 2; possibly useful, but not yet...
+
+#======================================================================
+# DISABLE some policies that we may want to revisit in the future
+
+# What's the point of using "## no critic" if you just get different complaints?
+[-Miscellanea::ProhibitUnrestrictedNoCritic]
+
+# Exclude (for now) the suggestion to "use utf8" (and also in POD)
+# [probably would prefer that the sources remain pure ASCII]
+[-CodeLayout::RequireUseUTF8]
+[-Documentation::RequirePODUseEncodingUTF8]
+
+# Does Perl even have a (decent) Exception system? (maybe it does now)
+[-ErrorHandling::RequireUseOfExceptions]
+
+# Why is -f so bad?
+[-ValuesAndExpressions::ProhibitFiletest_f]
+[-InputOutput::ProhibitInteractiveTest]
+
+# I really don't need compatibility with Perl 5.6 or 5.8!!!
+#[-Compatibility::ProhibitColonsInBarewordHashKeys]
+[-Compatibility::ProhibitThreeArgumentOpen]
+
+# I don't necessarily disagree with this policy,
+# but it seems to be itself buggy; it complains about $_->[0], eg.
+[-ValuesAndExpressions::ProhibitAccessOfPrivateData]
 
 #======================================================================
 

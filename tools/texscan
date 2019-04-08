@@ -99,7 +99,7 @@ foreach my $file (@files) {
         $idiff->cleanup($cumulative, $internal);
         $idiff->convertEnvironments;
         $idiff->show;
-      } } }
+  } } }
 
   elsif ($show eq 'signature') {
     if (my $pkg = StylePackage->new($file, searchpaths => [@searchpaths])) {
@@ -180,7 +180,7 @@ sub clone {
     declared_as   => $$self{declared_as},
     symbols       => { map { ($_ => 1) } keys %{ $$self{symbols} } },
     includes      => { map { ($_ => 1) } keys %{ $$self{includes} } },
-    searchpaths => [@{ $$self{searchpaths} }] }, ref $self; }
+    searchpaths   => [@{ $$self{searchpaths} }] }, ref $self; }
 
 sub show {
   my ($self) = @_;

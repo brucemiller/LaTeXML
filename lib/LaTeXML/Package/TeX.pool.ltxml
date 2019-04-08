@@ -230,18 +230,23 @@ DefParameterType('XUntil', sub {
 DefParameterType('Expanded', sub {
     my ($gullet) = @_;
     my $token    = $gullet->readXToken(0);
-    my @tokens   = ($token);
+    my @tokens   = ();
     if ($token->getCatcode == CC_BEGIN) {
       my $level = 1;
       while ($token = $gullet->readXToken(0)) {
-        push(@tokens, $token);
         my $cc = $$token[1];
         if ($cc == CC_END) {
           $level--;
           last unless $level; }
         elsif ($cc == CC_BEGIN) {
-          $level++; } } }
-    return Tokens(@tokens); });
+          $level++; }
+        push(@tokens, $token); }
+      return Tokens(@tokens); }
+    else {
+      return $token; } },
+  reversion => sub {
+    my ($arg) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
 
 # Read a matching keyword, eg. Match:=
 DefParameterType('Match', sub { shift->readMatch(@_); });
@@ -580,10 +585,14 @@ sub RequiredKeyVals {
 
   return (KeyVals_aux($gullet, $until, [$star, $plus, @keyspec])); }
 
-DefParameterType('RequiredKeyVals',   sub { RequiredKeyVals(0, 0, @_); });
-DefParameterType('RequiredKeyVals*',  sub { RequiredKeyVals(1, 0, @_); });
-DefParameterType('RequiredKeyVals+',  sub { RequiredKeyVals(0, 1, @_); });
-DefParameterType('RequiredKeyVals*+', sub { RequiredKeyVals(1, 1, @_); });
+DefParameterType('RequiredKeyVals', sub { RequiredKeyVals(0, 0, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('RequiredKeyVals*', sub { RequiredKeyVals(1, 0, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('RequiredKeyVals+', sub { RequiredKeyVals(0, 1, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+DefParameterType('RequiredKeyVals*+', sub { RequiredKeyVals(1, 1, @_); },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 sub OptionalKeyVals {
   my ($star, $plus, $gullet, @keyspec) = @_;
@@ -765,17 +774,18 @@ Let('\protect', '\relax');
 #======================================================================
 
 DefMacro('\romannumeral Number', sub { roman($_[1]->valueOf); });
-#DefMacro('\string Token',        sub { ExplodeText($_[1]->getString); });
 # Hmm... I wonder, should getString itself be dealing with escapechar?
 sub escapechar {
   my $code = LookupRegister('\escapechar')->valueOf;
   return (($code >= 0) && ($code <= 255) ? chr($code) : ''); }
 
+# 1) Knuth, The TeXBook, page 40, paragraph 1, Chapter 7: How TEX Reads What You Type.
+# suggests all characters except spaces are returned in category code Other, i.e. Explode()
 DefMacro('\string Token', sub {
     my $s = $_[1]->getString;
     if ($s =~ s/^\\//) {
       $s = escapechar() . $s; }
-    ExplodeText($s); });
+    Explode($s); });
 
 DefMacroI('\jobname', undef, Tokens());    # Set to the filename by initialization
 
@@ -799,20 +809,31 @@ DefMacro('\meaning Token', sub {
       my $type = ref $definition;
       $type =~ s/^LaTeXML:://;
       # I don't understand what this is about
-      if (lc($type) =~ /primitive/) {
-        $definition = $definition->getCS;
+      if ($type =~ /primitive/i) {
+        $definition = $definition->getCSorAlias;
         $type       = ref $definition;
         $type =~ s/^LaTeXML:://; }
-      if (lc($type) =~ /con(ditional|structor)/) {
-        $definition = $definition->getCS;
+      if ($type =~ /con(ditional|structor)/i) {
+        $definition = $definition->getCSorAlias;
         $type       = ref $definition;
         $type =~ s/^LaTeXML:://; }
 
-      if (lc($type) =~ /token/) {
+      if ($type =~ /token/i) {
         my $cc   = $definition->getCatcode;
         my $char = $definition->getString;
         $meaning = ($CATCODE_MEANING[$cc] || '') . ' ' . ($cc == CC_SPACE ? ' ' : $char); }
-      elsif (lc($type) =~ /expandable/) {
+      elsif ($type =~ /register/i) {
+        my $value         = $definition->valueOf;
+        my $register_type = lc(ref $value);
+        my $prefix        = '\count';
+        if ($register_type && $register_type =~ /glue/) {
+          $prefix = '\skip'; }
+        elsif ($register_type && $register_type =~ /dimension/) {
+          $prefix = '\dimen'; }
+        my $literal_value = $register_type && $value->valueOf;
+        # Should we be more careful to distinguish between latex and tex counters?
+        $meaning = $prefix . $literal_value; }
+      elsif ($type =~ /expandable/i) {
         my $expansion = $definition->getExpansion;
         my $ltxps     = $definition->getParameters;
         my @params;
@@ -847,12 +868,12 @@ DefParameterType('CSName', sub {
     my $cs = escapechar();
     my $s;
     # keep newlines from having \n inside!
-    while (($token = $gullet->readXToken(0)) && (($s = $token->getString) ne '\endcsname')) {
+    while (($token = $gullet->readXToken(1)) && (($s = $token->getString) ne '\endcsname')) {
       my $cc = $token->getCatcode;
       if ($cc == CC_CS) {
         if (defined $STATE->lookupDefinition($token)) {
           Error('unexpected', $token, $gullet,
-            "The control sequence " . ToString($token) . " should not appear between \csname and \endcsname"); }
+"The control sequence " . ToString($token) . " should not appear between \\csname and \\endcsname"); }
         else {
           Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
       # Keep newlines from having \n!
@@ -2108,7 +2129,7 @@ DefPrimitiveI('\lx@ignorehardspaces', undef, sub {
     my ($token, @boxes);
     while (($token = $gullet->readXToken) && (@boxes = $stomach->invokeToken($token))) {
       while (@boxes && $boxes[0]->getProperty('isSpace')) {
-        pop(@boxes); }
+        shift(@boxes); }
       last if @boxes; }
     return @boxes; });
 
@@ -2975,7 +2996,7 @@ DefPrimitiveI('\noindent', undef, sub { AssignValue(next_para_class => 'ltx_noin
 # NOTE Also that the whole inPreamble bit is, I think, overused.
 # For example, \par should be a NOOP in vertical mode, and that would generally make it
 # ignored in the preamble.
-DefConstructorI('\par', undef, sub {
+DefConstructorI('\normal@par', undef, sub {
     my ($document, %props) = @_;
     if ($props{inPreamble}) { }
     else {
@@ -2995,7 +3016,9 @@ DefConstructorI('\par', undef, sub {
       Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
           T_CS('\LTX@clear@vadjust@afterpar'))); } },
   properties => { alignmentSkippable => 1 },
-  alias => "\\par\n");
+  #  alias => "\\par\n");
+  alias => '\par');
+Let('\par', '\normal@par');
 # OTOH, sometimes \par is just a minimalistic "start a new line"
 # This should be closer for those cases.
 DefConstructorI('\inner@par', undef, sub {
@@ -3591,7 +3614,7 @@ DefMacroI('\eqno', undef, sub {
       else {
         push(@stuff, $t); } }
     Error('unexpected', '\eqno', $gullet, "Fell of the end reading tag for \\eqno!",
-      "started $locator");
+      "started " . ToString($locator));
     return Tokens(@stuff); });
 
 Let('\leqno', '\eqno');
@@ -3722,7 +3745,7 @@ sub scriptHandler {
     Fatal('expected', '{', $stomach, "Missing { in sub/super-script argument", $gullet->showUnexpected)
       unless @stuff;
     my $script = shift(@stuff);              # ONLY the first box is the script!
-    my $level  = $stomach->getBoxingLevel;
+    my $level  = $stomach->getScriptLevel;
     unshift(@stuff,
       LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS($cs)), [$script],
         locator    => $gullet->getLocator,
@@ -3843,7 +3866,7 @@ DefConstructor('\@SUPERSCRIPT{} InScriptStyle',
       ? (T_BEGIN, Revert($base), T_END, T_SUPER, revertScript($sup))
       : Revert($base)); },
   properties => sub {
-    (scriptpos => "post" . $_[0]->getBoxingLevel); },
+    (scriptpos => "post" . $_[0]->getScriptLevel); },
   sizer => sub { scriptSizer($_[0]->getArg(2), $_[0]->getArg(1), undef, 'SUPERSCRIPT', 'post'); });
 
 DefConstructor('\@SUBSCRIPT{} InScriptStyle',
@@ -3859,7 +3882,7 @@ DefConstructor('\@SUBSCRIPT{} InScriptStyle',
       ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
       : Revert($base)); },
   properties => sub {
-    (scriptpos => "post" . $_[0]->getBoxingLevel); },
+    (scriptpos => "post" . $_[0]->getScriptLevel); },
   sizer => sub { scriptSizer($_[0]->getArg(2), $_[0]->getArg(1), undef, 'SUBSCRIPT', 'post'); });
 
 DefMacroI('\'', undef, sub {
@@ -5673,6 +5696,7 @@ Let('\underbar', '\underline');    # Will anyone notice?
 DefMacro('\overrightarrow{}', '\protect\ifmmode\math@overrightarrow{#1}\else$\math@overrightarrow{#1}$\fi');
 DefMacro('\overleftarrow{}', '\protect\ifmmode\math@overleftarrow{#1}\else$\math@overleftarrow{#1}$\fi');
 
+DefMacro('\skew{}{}{}', '{#2{#3\mkern#1mu}\mkern-#1mu}{}');    # ignore the subtle spacing for now?
 #----------------------------------------------------------------------
 # LaTeX; Table 3.10. Delimiters, p.47
 #----------------------------------------------------------------------
@@ -6362,7 +6386,7 @@ DefConstructor('\buildrel Until:\over {}',
     . "<ltx:XMArg>#2</ltx:XMArg>"
     . "<ltx:XMArg>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
-  properties => { scriptpos => sub { "mid" . $_[0]->getBoxingLevel; } });
+  properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } });
 
 #**********************************************************************
 # LaTeX Hook

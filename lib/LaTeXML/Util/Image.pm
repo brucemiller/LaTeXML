@@ -217,7 +217,7 @@ sub image_graphicx_size {
         ($x0, $y0, $ww, $hh) = (floor($a1 * $dppt), floor($h - $a4 * $dppt),
           ceil(($a3 - $a1) * $dppt), ceil(($a4 - $a2) * $dppt)); }
       ($w, $h) = ($ww, $hh);
-    } }
+  } }
   return ($w, $h); }
 
 # Totally doesn't belong here, but want to share...
@@ -373,7 +373,7 @@ sub image_graphicx_complex {
       # $notes .= " compose to $ww x $hh at $x0,$y0";
       # $image = $nimage;
       # ($w, $h) = ($ww, $hh);
-    } }
+  } }
 
   if ($properties{transparent} && !$hasalpha) {
     $notes .= " transparent=$background";

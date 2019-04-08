@@ -29,7 +29,7 @@ use LaTeXML::Util::ObjectDB;
 use LaTeXML::Post::Scan;
 use vars qw($VERSION);
 # This is the main version of LaTeXML being claimed.
-use version; our $VERSION = version->declare("0.8.2");
+use version; our $VERSION = version->declare("0.8.3");
 use LaTeXML::Version;
 # Derived, more informative version numbers
 our $FULLVERSION = "LaTeXML version $LaTeXML::VERSION"
@@ -476,6 +476,9 @@ sub convert_post {
         elsif ($fmt eq 'mathtex') {
           require LaTeXML::Post::TeXMath;
           push(@mprocs, LaTeXML::Post::TeXMath->new(%PostOPS)); }
+        elsif ($fmt eq 'mathlex') {
+          require LaTeXML::Post::LexMath;
+          push(@mprocs, LaTeXML::Post::LexMath->new(%PostOPS)); }
       }
       ###    $keepXMath  = 0 unless defined $keepXMath;
       ### OR is $parallelmath ALWAYS on whenever there's more than one math processor?
@@ -542,7 +545,7 @@ sub convert_post {
     if ((!$post_eval_return) && (!$@));
   if ($@) {    #Fatal occured!
     $$runtime{status_code} = 3;
-    $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
+    local $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
     print STDERR $@;
     undef @postdocs;    # Empty document for fatals, for sanity's sake
   }
@@ -551,7 +554,7 @@ sub convert_post {
   # If our format requires a manifest, create one
   if (($$opts{whatsout} =~ /^archive/) && ($format !~ /^x?html|xml/)) {
     require LaTeXML::Post::Manifest;
-    my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, log=>$$opts{log}, %PostOPS);
+    my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, log => $$opts{log}, %PostOPS);
     $manifest_maker->process(@postdocs); }
   # Archives: when a relative --log is requested, write to sandbox prior packing
   if ($$opts{log} && ($$opts{whatsout} =~ /^archive/) && (!pathname_is_absolute($$opts{log}))) {

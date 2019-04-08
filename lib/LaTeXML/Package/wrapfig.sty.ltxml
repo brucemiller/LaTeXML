@@ -19,7 +19,7 @@ use LaTeXML::Package;
 # New environment from package wrapfigure:
 # \caption will handle refnums, etc.
 DefEnvironment('{wrapfigure} [Number] {} [Dimension] {Dimension}',
-  "<ltx:figure xml:id='#id' float='#float'>"
+  "<ltx:figure xml:id='#id' inlist='#inlist' float='#float'>"
     . "#tags"
     . "#body"
     . "</ltx:figure>",
@@ -32,7 +32,7 @@ DefEnvironment('{wrapfigure} [Number] {} [Dimension] {Dimension}',
   afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
 
 DefEnvironment('{wraptable} [Number] {} [Dimension] {Dimension}',
-  "<ltx:table xml:id='#id' float='#float'>"
+  "<ltx:table xml:id='#id' inlist='#inlist' float='#float'>"
     . "#tags"
     . "#body"
     . "</ltx:table>",

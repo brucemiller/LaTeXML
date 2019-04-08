@@ -24,8 +24,8 @@ InputDefinitions('makecell', type => 'sty', noltxml => 1);
 DefMacroI('\lx@makecell@head', undef, sub {
     if (my $alignment = LookupValue('Alignment')) {
       my $col = $alignment->currentColumn;
-      $col->{thead}{column} = 1;     # Which???
-      $col->{thead}{row}    = 1; }
+      $$col{thead}{column} = 1;     # Which???
+      $$col{thead}{row}    = 1; }
     return; });
 
 # Hopefully, \theadfont is used in the right places to effect this?

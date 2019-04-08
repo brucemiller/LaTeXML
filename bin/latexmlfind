@@ -36,7 +36,7 @@ GetOptions("symbol=s" => \@symbols,,
   "verbose"            => sub { $verbosity++; },
   "VERSION"            => \$showversion,
   "help"               => \$help,
-  ) or pod2usage(-message => $LaTeXML::IDENTITY,
+) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
   if $help;

@@ -54,7 +54,7 @@ sub new {
       if (!$mu) { }
       elsif ($fillcode{$mu}) { $minus = $m;                            $mfill = $mu; }
       else                   { $minus = $m * $STATE->convertUnit($mu); $mfill = 0; }
-    } }
+  } }
   return bless [$sp || "0", $plus || "0", $pfill || 0, $minus || "0", $mfill || 0], $class; }
 
 #sub getStretch { $_[0]->[1]; }

@@ -57,10 +57,10 @@ DefEnvironment('{equation}',
     . "</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  mode => 'display_math',
+  mode         => 'display_math',
   beforeDigest => sub { Let(T_MATH, '\@dollar@in@oldrevtex'); },
-  properties => sub { RefStepCounter('equation'); },
-  locked => 1);
+  properties   => sub { RefStepCounter('equation'); },
+  locked       => 1);
 DefEnvironment('{equation*}',
   "<ltx:equation xml:id='#id'>"
     . "<ltx:Math mode='display'>"
@@ -69,10 +69,10 @@ DefEnvironment('{equation*}',
     . "</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
-  mode => 'display_math',
+  mode         => 'display_math',
   beforeDigest => sub { Let(T_MATH, '\@dollar@in@oldrevtex'); },
-  properties => sub { RefStepID('equation') },
-  locked => 1);
+  properties   => sub { RefStepID('equation') },
+  locked       => 1);
 DefConstructorI('\[', undef,
   "<ltx:equation xml:id='#id'>"
     . "<ltx:Math mode='display'>"

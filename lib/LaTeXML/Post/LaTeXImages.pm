@@ -503,7 +503,7 @@ sub DESTROY {
       my @empty_magick = grep { -z $_ } map { "$tmpdir/$_" } readdir($tmpdir_fh);
       closedir($tmpdir_fh);
       unlink $_ foreach @empty_magick;
-    } }
+  } }
   return; }
 
 #======================================================================

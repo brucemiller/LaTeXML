@@ -24,7 +24,7 @@ DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}', sub {
     DefMathI($cs, undef, Invocation(T_CS('\operatorname'), $star, $text),
       scriptpos => ($star ? \&doScriptpos : 'post'),
       role => ($star ? 'OPERATOR' : 'OPFUNCTION'),    # or FUNCTION or TRIGFUNCTION or.. ?  but Something!
-      font => { family => 'serif', series => 'medium', shape => 'upright' },
+      font                   => { family => 'serif', series => 'medium', shape => 'upright' },
       hide_content_reversion => 1); });
 
 # See p.18
@@ -49,11 +49,11 @@ DefMath('\varprojlim', '\underleftarrow{\operatorname{lim}}',
 DefConstructor('\operatorname OptionalMatch:* {}',
   "<ltx:XMWrap role='?#1(OPERATOR)(OPFUNCTION)' scriptpos='?#1(mid)(post)'>#2</ltx:XMWrap>",
   bounded => 1, requireMath => 1,
-  font => { family => 'serif', series => 'medium', shape => 'upright' });
+  font    => { family => 'serif', series => 'medium', shape => 'upright' });
 DefConstructor('\operatornamewithlimits {}',
   "<ltx:XMWrap role='OPERATOR' scriptpos='mid'>#1</ltx:XMWrap>",
   bounded => 1, requireMath => 1,
-  font => { family => 'serif', series => 'medium', shape => 'upright' });
+  font    => { family => 'serif', series => 'medium', shape => 'upright' });
 
 DefMacro('\nolimits@',     '\nolimits');
 DefMacro('\nmlimits@',     '\displaylimits');

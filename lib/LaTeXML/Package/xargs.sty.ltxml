@@ -61,13 +61,13 @@ sub convertXArgsArgs {
             'XArgsOptional',
             "XArgsOptional:" . $val->toString() . "|" . ToString($usedef),
             extra => [$val, $usedef]
-            )); }
+        )); }
       else {
         push(@paramlist, LaTeXML::Core::Parameter->new(
             'Optional',
             "Optional:" . $val->toString(),
             extra => [$val, $usedef]
-            )); } }
+        )); } }
     else {
       push(@paramlist, LaTeXML::Core::Parameter->new('Plain', "{}")); } }
   return LaTeXML::Core::Parameters->new(@paramlist); }

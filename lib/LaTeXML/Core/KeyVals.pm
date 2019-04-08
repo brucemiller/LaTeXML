@@ -287,10 +287,10 @@ sub readFrom {
     $$self{hookMissing} = undef; }
 
   # read the opening token and figure out where we are
-  my $startloc = $gullet->getLocator();
+  my $startloc = $gullet->getLocator;
 
   # set and read tokens
-  my $open   = $gullet->readToken;
+  my $open = $gullet->readToken;
   $$self{assign} = T_OTHER('=');
   $$self{punct}  = T_OTHER(',');
   my ($punct, $assign) = ($$self{punct}, $$self{assign});
@@ -311,7 +311,7 @@ sub readFrom {
     # if there was no delimiter at the end, we throw an error
     Error('expected', $until, $gullet,
       "Fell off end expecting " . Stringify($until) . " while reading KeyVal key",
-      "key started at $startloc")
+      "key started at " . ToString($startloc))
       unless $delim;
 
     # turn the key tokens into a string and normalize
@@ -536,7 +536,7 @@ sub beDigested {
     setAll => $setAll, setInternals => $setInternals,
     skip => $skip, skipMissing => $skipMissing, hookMissing => $hookMissing,
     was_digested => 1,
-    punct        => $punct, assign => $assign);
+    punct => $punct, assign => $assign);
   $new->setTuples(@newtuples);
   return $new; }
 

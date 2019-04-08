@@ -89,6 +89,7 @@ lib/LaTeXML/Post/Collector.pm
 lib/LaTeXML/Post/CrossRef.pm
 lib/LaTeXML/Post/Graphics.pm
 lib/LaTeXML/Post/LaTeXImages.pm
+lib/LaTeXML/Post/LexMath.pm
 lib/LaTeXML/Post/MakeBibliography.pm
 lib/LaTeXML/Post/MakeIndex.pm
 lib/LaTeXML/Post/Manifest.pm
@@ -125,6 +126,7 @@ lib/LaTeXML/Common/Error.pm
 lib/LaTeXML/Common/Float.pm
 lib/LaTeXML/Common/Font.pm
 lib/LaTeXML/Common/Glue.pm
+lib/LaTeXML/Common/Locator.pm
 lib/LaTeXML/Common/Model.pm
 lib/LaTeXML/Common/Model/DTD.pm
 lib/LaTeXML/Common/Model/RelaxNG.pm
@@ -283,6 +285,7 @@ lib/LaTeXML/resources/XSLT/LaTeXML-webpage-xhtml.xsl
 lib/LaTeXML/resources/XSLT/LaTeXML-xhtml.xsl
 lib/LaTeXML/resources/XSLT/LaTeXML-tei.xsl
 lib/LaTeXML/resources/CSS/LaTeXML-blue.css
+lib/LaTeXML/resources/CSS/LaTeXML-epub.css
 lib/LaTeXML/resources/CSS/LaTeXML-marginpar.css
 lib/LaTeXML/resources/CSS/LaTeXML-navbar-left.css
 lib/LaTeXML/resources/CSS/LaTeXML-navbar-right.css
@@ -397,6 +400,7 @@ lib/LaTeXML/Package/cases.sty.ltxml
 lib/LaTeXML/Package/ccfonts.sty.ltxml
 lib/LaTeXML/Package/chancery.sty.ltxml
 lib/LaTeXML/Package/charter.sty.ltxml
+lib/LaTeXML/Package/chngcntr.sty.ltxml
 lib/LaTeXML/Package/circuitikz.sty.ltxml
 lib/LaTeXML/Package/cite.sty.ltxml
 lib/LaTeXML/Package/citesort.sty.ltxml
@@ -411,6 +415,8 @@ lib/LaTeXML/Package/courier.sty.ltxml
 lib/LaTeXML/Package/cp852.def.ltxml
 lib/LaTeXML/Package/crop.sty.ltxml
 lib/LaTeXML/Package/cropmark.sty.ltxml
+lib/LaTeXML/Package/csquotes.def.ltxml
+lib/LaTeXML/Package/csquotes.sty.ltxml
 lib/LaTeXML/Package/dcolumn.sty.ltxml
 lib/LaTeXML/Package/deluxetable.sty.ltxml
 lib/LaTeXML/Package/doublespace.sty.ltxml
@@ -434,6 +440,8 @@ lib/LaTeXML/Package/epsf.tex.ltxml
 lib/LaTeXML/Package/epsfig.sty.ltxml
 lib/LaTeXML/Package/epstopdf.sty.ltxml
 lib/LaTeXML/Package/esint.sty.ltxml
+lib/LaTeXML/Package/etex.sty.ltxml
+lib/LaTeXML/Package/etoolbox.sty.ltxml
 lib/LaTeXML/Package/eucal.sty.ltxml
 lib/LaTeXML/Package/eufrak.sty.ltxml
 lib/LaTeXML/Package/euler.sty.ltxml
@@ -475,6 +483,10 @@ lib/LaTeXML/Package/hhline.sty.ltxml
 lib/LaTeXML/Package/html.sty.ltxml
 lib/LaTeXML/Package/hyperref.sty.ltxml
 lib/LaTeXML/Package/hyperxmp.sty.ltxml
+lib/LaTeXML/Package/icml_support.sty.ltxml
+lib/LaTeXML/Package/icml2016.sty.ltxml
+lib/LaTeXML/Package/icml2017.sty.ltxml
+lib/LaTeXML/Package/icml2018.sty.ltxml
 lib/LaTeXML/Package/ieeeconf.cls.ltxml
 lib/LaTeXML/Package/IEEEtran.cls.ltxml
 lib/LaTeXML/Package/ifluatex.sty.ltxml
@@ -500,6 +512,7 @@ lib/LaTeXML/Package/lineno.sty.ltxml
 lib/LaTeXML/Package/lipsum.sty.ltxml
 lib/LaTeXML/Package/listings.sty.ltxml
 lib/LaTeXML/Package/listingsutf8.sty.ltxml
+lib/LaTeXML/Package/llamapun.sty.ltxml
 lib/LaTeXML/Package/llncs.cls.ltxml
 lib/LaTeXML/Package/lmodern.sty.ltxml
 lib/LaTeXML/Package/longtable.sty.ltxml
@@ -563,8 +576,10 @@ lib/LaTeXML/Package/pst-node.sty.ltxml
 lib/LaTeXML/Package/pstricks.sty.ltxml
 lib/LaTeXML/Package/pxfonts.sty.ltxml
 lib/LaTeXML/Package/pzd.fontmap.ltxml
+lib/LaTeXML/Package/quantumarticle.cls.ltxml
 lib/LaTeXML/Package/ragged2e.sty.ltxml
 lib/LaTeXML/Package/relsize.sty.ltxml
+lib/LaTeXML/Package/remreset.sty.ltxml
 lib/LaTeXML/Package/report.cls.ltxml
 lib/LaTeXML/Package/revsymb.sty.ltxml
 lib/LaTeXML/Package/revtex.cls.ltxml
@@ -979,6 +994,9 @@ t/expansion/environments.xml
 t/expansion/etex.pdf
 t/expansion/etex.tex
 t/expansion/etex.xml
+t/expansion/etoolbox.pdf
+t/expansion/etoolbox.tex
+t/expansion/etoolbox.xml
 t/expansion/for.pdf
 t/expansion/for.tex
 t/expansion/for.xml
@@ -1031,6 +1049,9 @@ t/expansion/toks.xml
 t/expansion/urls.pdf
 t/expansion/urls.tex
 t/expansion/urls.xml
+t/expansion/utflettercase.pdf
+t/expansion/utflettercase.tex
+t/expansion/utflettercase.xml
 t/expansion/whichcache.latexml
 t/expansion/whichcache.pdf
 t/expansion/whichcache.tex
@@ -1066,6 +1087,9 @@ t/fonts/cancels.xml
 t/fonts/ding.pdf
 t/fonts/ding.tex
 t/fonts/ding.xml
+t/fonts/emph.pdf
+t/fonts/emph.tex
+t/fonts/emph.xml
 t/fonts/esint.pdf
 t/fonts/esint.tex
 t/fonts/esint.xml
@@ -1307,6 +1331,9 @@ t/post/hyperref-post.xml
 t/post/hyperref.xml
 t/post/simplemath-post.xml
 t/post/simplemath.xml
+t/structure/acro.pdf
+t/structure/acro.tex
+t/structure/acro.xml
 t/structure/autoref.pdf
 t/structure/autoref.tex
 t/structure/autoref.xml
@@ -1330,9 +1357,18 @@ t/structure/badabstract.xml
 t/structure/beforeafter.pdf
 t/structure/beforeafter.tex
 t/structure/beforeafter.xml
+t/structure/csquotes.pdf
+t/structure/csquotes.tex
+t/structure/csquotes.xml
 t/structure/book.pdf
 t/structure/book.tex
 t/structure/book.xml
+t/structure/changectr.pdf
+t/structure/changectr.tex
+t/structure/changectr.xml
+t/structure/columns.pdf
+t/structure/columns.tex
+t/structure/columns.xml
 t/structure/endnote.pdf
 t/structure/endnote.tex
 t/structure/endnote.xml

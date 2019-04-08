@@ -8,7 +8,16 @@
 \theoremstyle{change}
 \theorembodyfont{\itshape} \newtheorem{Def}[Cor]{Definition}
 \theoremheaderfont{\scshape}
+
+% watch order of defns
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem*{theorem*}{Theorem}
+\theoremstyle{definition}
+\newtheorem*{definition*}{Definition}
+\newtheorem{definition}{Definition}[section]
+
 \begin{document}
+
 
 \begin{Cor}
 This is a sentence typeset in the theorem environment \texttt{Cor}.
@@ -29,5 +38,19 @@ This is a sentence typeset in the theorem environment \texttt{Lem}.
 \begin{Def}[Very impressive Definition]
 This is a sentence typeset in the theorem environment \texttt{Def}.
 \end{Def}
+
+\section{Checking Order}
+\begin{theorem}
+  A theorem
+\end{theorem}
+\begin{theorem*}
+  A starred theorem
+\end{theorem*}
+\begin{definition}
+  A definition
+\end{definition}
+\begin{definition*}
+  A starred definition
+\end{definition*}
 
 \end{document}

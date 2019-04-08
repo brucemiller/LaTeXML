@@ -140,9 +140,9 @@ Let('\@currenvline', '\@empty');
 
 DefMacro('\begin{}', sub {
     my ($gullet, $env) = @_;
-    my $name   = $env && ToString($env);
-    my $before = LookupValue('@environment@' . ToString($_[1]) . '@beforebegin');
-    my $after  = LookupValue('@environment@' . ToString($_[1]) . '@atbegin');
+    my $name   = $env && ToString(Expand($env));
+    my $before = LookupValue('@environment@' . $name . '@beforebegin');
+    my $after  = LookupValue('@environment@' . $name . '@atbegin');
     if (IsDefined("\\begin{$name}")) {
       (($before ? @$before : ()),
         T_CS("\\begin{$name}")); }    # Magic cs!
@@ -162,9 +162,9 @@ DefMacro('\begin{}', sub {
 
 DefMacro('\end{}', sub {
     my ($gullet, $env) = @_;
-    my $name   = $env && ToString($env);
-    my $before = LookupValue('@environment@' . ToString($_[1]) . '@atend');
-    my $after  = LookupValue('@environment@' . ToString($_[1]) . '@afterend');
+    my $name   = $env && ToString(Expand($env));
+    my $before = LookupValue('@environment@' . $name . '@atend');
+    my $after  = LookupValue('@environment@' . $name . '@afterend');
     my $t;
 
     if (IsDefined($t = T_CS("\\end{$name}"))) {
@@ -345,8 +345,9 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
       while (!$STATE->isValueBound('current_environment', 0)
         || ($STATE->valueInFrame('current_environment', 0) ne 'document')) {
         # my $nonbox = $STATE->valueInFrame('groupNonBoxing',0) || 0;
-        my $tok = $STATE->valueInFrame('groupInitiator',        0) || '<unknown>';
-        my $loc = $STATE->valueInFrame('groupInitiatorLocator', 0) || '<unknown>';
+        my $tok = $STATE->valueInFrame('groupInitiator', 0) || '<unknown>';
+        my $loc = $STATE->valueInFrame('groupInitiatorLocator', 0);
+        $loc = defined $loc ? ToString($loc) : '<unknown>';
         my $env = $STATE->isValueBound('current_environment', 0)
           && $STATE->valueInFrame('current_environment', 0);
         if ($env) {
@@ -396,13 +397,14 @@ DefMacroI('\fmtversion', undef, 'XXXX/XX/XX');
 
 DefMacroI('\today', undef, sub { ExplodeText(today()); });
 
-# Previously, we used ltx:emph, to preserve the semantic intent,
-# but some folks wrap it around arbitrary blocks of material,
-# more like a font switch.
-DefConstructor('\emph{}', "#1", mode => 'text',
-  bounded        => 1, font => { emph => 1 }, alias => '\emph',
-  beforeDigest   => sub { DefMacro('\f@shape', 'i'); },
-  afterConstruct => sub { $_[0]->addClass($_[0]->getElement, 'ltx_emph'); });
+# Use fonts (w/ special flag) to propogate emphasis as a font change,
+# but preserve it's "emph"-ness.
+DefConstructor('\emph{}', "<ltx:emph _force_font='1'>#1</ltx:emph>", mode => 'text',
+  bounded => 1, font => { emph => 1 }, alias => '\emph',
+  beforeDigest => sub {
+    DefMacro('\f@shape', (ToString(Tokens(Expand(T_CS('\f@shape')))) eq 'it' ? 'n' : 'it')); },
+);
+Tag('ltx:emph', autoClose => 1);
 
 #======================================================================
 # C.3.2 Making Paragraphs
@@ -567,17 +569,17 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
     my $ctr = LookupValue('counter_for_' . ToString($type)) || ToString($type);
     $level = ToString($level);
     if ($flag) {    # No number, not in TOC
-      (T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
+      (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
         T_BEGIN, $type->unlist, T_END,
         T_BEGIN, T_END); }
     elsif ((($level ne '') && ($level > CounterValue('secnumdepth')->valueOf))
       || LookupValue('no_number_sections')) {
       # No number, but in TOC
-      (T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
+      (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
         T_BEGIN, $type->unlist, T_END,
         T_BEGIN, T_OTHER('toc'), T_END); }
     else {          # Number and in TOC
-      (T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'),
+      (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'),
         T_BEGIN, $type->unlist, T_END,
         T_BEGIN, T_OTHER('toc'), T_END); } });
 
@@ -772,7 +774,7 @@ DefPrimitive('\DeclareOption{}{}', sub {
 
 DefPrimitive('\PassOptionsToPackage{}{}', sub {
     my ($stomach, $name, $options) = @_;
-    PassOptions($name, 'pkg', split(/,\s*/, ToString(Expand($options)))); });
+    PassOptions($name, 'sty', split(/,\s*/, ToString(Expand($options)))); });
 
 DefPrimitive('\PassOptionsToClass{}{}', sub {
     my ($stomach, $name, $options) = @_;
@@ -884,8 +886,11 @@ DefPrimitive('\markboth{}{}',    undef);
 DefPrimitiveI('\leftmark',  undef, undef);
 DefPrimitiveI('\rightmark', undef, undef);
 DefPrimitive('\pagenumbering{}', undef);
-DefPrimitive('\twocolumn[]',     undef);
-DefPrimitiveI('\onecolumn', undef, undef);
+
+# In normal latex, these should \clearpage; at least we want new paragraph?
+# Optional arg is sortof a heading, but w/o any particular styling(?)
+DefMacro('\twocolumn[]', '\ifx.#1.\else\par\noindent#1\fi\par');
+DefMacro('\onecolumn',   '\par');
 
 # Style parameters from Fig. C.3, p.182
 DefRegister('\paperheight'     => Dimension(0));
@@ -1201,6 +1206,7 @@ sub beginItemize {
   my $postfix = ToString(Tokens(roman($level)));
   my $usecounter = ($nolevel ? $counter : $counter . $postfix);
   Let('\item' => "\\" . $type . '@item') if defined $type;
+  Let('\par', '\normal@par');    # In case within odd environment.
   DefMacroI('\@listctr', undef, Tokens(Explode($usecounter)));
 ##  if(! LookupDefinition(T_CS('\@listcontext'))){
 ##    Let(T_CS('\@listcontext'), T_CS('\@currentlabel')); }
@@ -1707,6 +1713,7 @@ sub beforeEquation {
   my $numbering = LookupValue('EQUATION_NUMBERING');
   my $numbered  = $$numbering{numbered};
   my $ctr       = $$numbering{counter} || 'equation';
+  $$numbering{in_equation} = 1;
   if ($$numbering{preset}) {
     AssignValue(EQUATIONROW_TAGS => {
         preset => 1,
@@ -1732,11 +1739,12 @@ sub retractEquation {
 DefMacroI('\nonumber', undef, '\lx@equation@nonumber');
 DefPrimitiveI('\lx@equation@nonumber', undef, sub {
     my $numbering = LookupValue('EQUATION_NUMBERING');
-    if ($$numbering{deferretract}) {
-      my $tags = LookupValue('EQUATIONROW_TAGS');
-      $$tags{retract} = 1; }
-    else {
-      retractEquation(); }
+    if ($$numbering{in_equation}) {
+      if ($$numbering{deferretract}) {
+        my $tags = LookupValue('EQUATIONROW_TAGS');
+        $$tags{retract} = 1; }
+      else {
+        retractEquation(); } }
     return; });
 Let('\@LTX@nonumber', '\lx@equation@nonumber');
 
@@ -1778,6 +1786,7 @@ sub afterEquation {
       $$row{tags} = $$props{tags}; } }
   elsif ($whatsit) {
     $whatsit->setProperties(%{ LookupValue('EQUATIONROW_TAGS') }); }
+  $$numbering{in_equation} = 0;
   return; }
 
 # My first inclination is to Lock {math}, but it is surprisingly common to redefine it in silly ways... So...?
@@ -2196,14 +2205,13 @@ DefConstructor('\lx@stackrel{}{}',
     . "<ltx:XMArg>#2</ltx:XMArg>"
     . "<ltx:XMArg>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
-  properties => { scriptpos => sub { "mid" . $_[0]->getBoxingLevel; } }
+  properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } }
 );
 #======================================================================-
 # C.7.6 Putting One Thing Above Another
 #======================================================================-
 # All this is already in TeX.pool
 
-DefMacro('\skew{}{}{}', '');    # ? just some subtle spacing, right????
 #======================================================================-
 # C.7.7 Spacing
 #======================================================================-
@@ -2264,6 +2272,15 @@ DefPrimitive('\CheckCommand OptionalMatch:* DefToken [Number][]{}', undef);
 DefPrimitive('\renewcommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
+
+# low-level implementation of both \newcommand and \renewcommand depends on \@argdef
+# and robustness upgrades are often realized via redefining \l@ngrel@x
+#
+# Experiment: use \l@ngrel@x to carry over \protected information from outside, etoolbox-style.
+# DefMacro('\@argdef','\l@ngrel@x\renewcommand');
+#
+# The etoolbox binding now defines \newrobustcmd & friends directly, so \@argdef is not directly needed
+# However, we would need to add support for other packages that may leverage that machinery.
 
 DefPrimitive('\providecommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
@@ -2455,26 +2472,25 @@ RawTeX(<<'EoTeX');
 EoTeX
 
 # At least all things on uclclist need to be macros
-DefPrimitiveI('\lx@utf@OE', undef, "\x{0152}");    # LATIN CAPITAL LIGATURE OE
-DefPrimitiveI('\lx@utf@oe', undef, "\x{0153}");    # LATIN SMALL LIGATURE OE
-DefPrimitiveI('\lx@utf@AE', undef, UTF(0xC6));     # LATIN CAPITAL LETTER AE
-DefPrimitiveI('\lx@utf@ae', undef, UTF(0xE6));     # LATIN SMALL LETTER AE
-DefPrimitiveI('\lx@utf@ae', undef, UTF(0xE6));     # LATIN SMALL LETTER AE
-DefPrimitiveI('\lx@utf@AA', undef, UTF(0xC5));     # LATIN CAPITAL LETTER A WITH RING ABOVE
-DefPrimitiveI('\lx@utf@aa', undef, UTF(0xE5));     # LATIN SMALL LETTER A WITH RING ABOVE
-DefPrimitiveI('\lx@utf@O',  undef, UTF(0xD8));     # LATIN CAPITAL LETTER O WITH STROKE
-DefPrimitiveI('\lx@utf@o',  undef, UTF(0xF8));     # LATIN SMALL LETTER O WITH STROKE
-DefPrimitiveI('\lx@utf@L',  undef, "\x{0141}");    # LATIN CAPITAL LETTER L WITH STROKE
-DefPrimitiveI('\lx@utf@l',  undef, "\x{0142}");    # LATIN SMALL LETTER L WITH STROKE
-DefPrimitiveI('\lx@utf@ss', undef, UTF(0xDF));     # LATIN SMALL LETTER SHARP S
-DefPrimitiveI('\lx@utf@dh', undef, UTF(0xf0));     # eth
-DefPrimitiveI('\lx@utf@DH', undef, UTF(0xd0));     # Eth (looks same as \DJ!)
-DefPrimitiveI('\lx@utf@dj', undef, "\x{0111}");    # d with stroke
-DefPrimitiveI('\lx@utf@DJ', undef, "\x{0110}");    # D with stroke (looks sames as \DH!)
-DefPrimitiveI('\lx@utf@ng', undef, "\x{014B}");
-DefPrimitiveI('\lx@utf@NG', undef, "\x{014A}");
-DefPrimitiveI('\lx@utf@th', undef, UTF(0xFE));
-DefPrimitiveI('\lx@utf@TH', undef, UTF(0xDE));
+DefPrimitiveI('\lx@utf@OE', undef, "\x{0152}", alias => '\OE');    # LATIN CAPITAL LIGATURE OE
+DefPrimitiveI('\lx@utf@oe', undef, "\x{0153}", alias => '\oe');    # LATIN SMALL LIGATURE OE
+DefPrimitiveI('\lx@utf@AE', undef, UTF(0xC6),  alias => '\AE');    # LATIN CAPITAL LETTER AE
+DefPrimitiveI('\lx@utf@ae', undef, UTF(0xE6),  alias => '\ae');    # LATIN SMALL LETTER AE
+DefPrimitiveI('\lx@utf@AA', undef, UTF(0xC5), alias => '\AA'); # LATIN CAPITAL LETTER A WITH RING ABOVE
+DefPrimitiveI('\lx@utf@aa', undef, UTF(0xE5), alias => '\aa'); # LATIN SMALL LETTER A WITH RING ABOVE
+DefPrimitiveI('\lx@utf@O',  undef, UTF(0xD8),  alias => '\O');  # LATIN CAPITAL LETTER O WITH STROKE
+DefPrimitiveI('\lx@utf@o',  undef, UTF(0xF8),  alias => '\o');  # LATIN SMALL LETTER O WITH STROKE
+DefPrimitiveI('\lx@utf@L',  undef, "\x{0141}", alias => '\L');  # LATIN CAPITAL LETTER L WITH STROKE
+DefPrimitiveI('\lx@utf@l',  undef, "\x{0142}", alias => '\l');  # LATIN SMALL LETTER L WITH STROKE
+DefPrimitiveI('\lx@utf@ss', undef, UTF(0xDF),  alias => '\ss'); # LATIN SMALL LETTER SHARP S
+DefPrimitiveI('\lx@utf@dh', undef, UTF(0xf0),  alias => '\dh'); # eth
+DefPrimitiveI('\lx@utf@DH', undef, UTF(0xd0),  alias => '\DH'); # Eth (looks same as \DJ!)
+DefPrimitiveI('\lx@utf@dj', undef, "\x{0111}", alias => '\dj'); # d with stroke
+DefPrimitiveI('\lx@utf@DJ', undef, "\x{0110}", alias => '\DJ'); # D with stroke (looks sames as \DH!)
+DefPrimitiveI('\lx@utf@ng', undef, "\x{014B}", alias => '\ng');
+DefPrimitiveI('\lx@utf@NG', undef, "\x{014A}", alias => '\NG');
+DefPrimitiveI('\lx@utf@th', undef, UTF(0xFE),  alias => '\th');
+DefPrimitiveI('\lx@utf@TH', undef, UTF(0xDE),  alias => '\TH');
 
 DefMacroI('\OE', undef, '\lx@utf@OE');
 DefMacroI('\oe', undef, '\lx@utf@oe');
@@ -2594,13 +2610,14 @@ RawTeX('\th@plain');    # Activate the default style.
 
 sub defineNewTheorem {
   my ($stomach, $flag, $thmset, $otherthmset, $type, $within) = @_;
-  $thmset      = ToString($thmset);
+  $thmset = ToString($thmset);
+  my $classname = CleanClassName($thmset);
+  my $listname = "theorem:$thmset"; $listname =~ s/\s//g;
   $otherthmset = $otherthmset && ToString($otherthmset);
-  $type        = undef unless $type && $type->unlist;
-  $within      = $within ? ToString($within) : undef;
+  $type = undef unless $type && $type->unlist;
+  $within = $within ? ToString($within) : undef;
 
   my $counter = $otherthmset || $thmset;
-  $counter =~ s/\*$//;     # Strip trailing * off theoremclass for ntheorem.sty
   $counter =~ s/\s+/./;    # convert spaces to period?
   if ($counter ne $thmset) {
     AssignMapping('counter_for_type', $thmset => $counter);
@@ -2610,7 +2627,7 @@ sub defineNewTheorem {
   my $numbering = ToString(LookupValue('\thm@numbering'));    # The number style macro
   $flag = 1 unless $numbering;
   if (!$otherthmset) {
-    my $idprefix = "Thm$counter";
+    my $idprefix = "Thm$classname";
     $idprefix =~ s/\*/./g;
 
     if (!LookupValue('\c@' . $counter)) {                     # if isn't already defined...
@@ -2650,9 +2667,9 @@ sub defineNewTheorem {
         . '\the\thm@headpunct'),
 
     scope => 'global');
-  my $sanitized = $thmset; $sanitized =~ s/['"]//g;
+
   DefEnvironment("{$thmset} OptionalUndigested",
-    "<ltx:theorem xml:id='#id' inlist='thm theorem:$sanitized' class='#class'>"
+    "<ltx:theorem xml:id='#id' inlist='thm $listname' class='ltx_theorem_$classname'>"
       . "#tags"
       . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
       . "#body"
@@ -2692,7 +2709,6 @@ sub defineNewTheorem {
       (%ctr,
         title     => $title,
         titlefont => $title->getFont,
-        class     => 'ltx_theorem_' . CleanClassName($thmset),
       ); },
     scope => 'global');
   return; }
@@ -2713,28 +2729,50 @@ DefPrimitive('\addtocounter{}{Number}', sub { AddToCounter(ToString(Expand($_[1]
 DefPrimitive('\stepcounter{}',    sub { StepCounter(ToString(Expand($_[1])));    return; });
 DefPrimitive('\refstepcounter{}', sub { RefStepCounter(ToString(Expand($_[1]))); return; });
 
-DefPrimitive('\@addtoreset{}{}', sub {
-    my ($stomach, $ctr, $within) = @_;
-    $ctr    = ToString(Expand($ctr));
-    $within = ToString(Expand($within));
-    my $unctr = "UN$ctr";    # UNctr is counter for generating ID's for UN-numbered items.
-    AssignValue("\\cl\@$within" =>
-        Tokens(T_CS($ctr), T_CS($unctr),
-        (LookupValue("\\cl\@$within") ? LookupValue("\\cl\@$within")->unlist : ())),
-      'global');
-    # This counter might be doing double duty generating ID's as well, so we may need to patch up.
-    my $prefix = LookupValue('@ID@prefix@' . $ctr);
-    if (defined $prefix) {
+sub addtoCounterReset {
+  my ($ctr, $within) = @_;
+  my $reg       = "\\cl\@$within";
+  my $t         = T_CS($ctr);
+  my $unt       = T_CS('UN' . $ctr);
+  my $prevreset = LookupValue($reg);
+  AssignValue($reg => Tokens($t, $unt, ($prevreset ? $prevreset->unlist : ())), 'global');
+  return; }
+
+sub remfromCounterReset {
+  my ($ctr, $within) = @_;
+  my $reg       = "\\cl\@$within";
+  my $t         = T_CS($ctr);
+  my $unt       = T_CS('UN' . $ctr);
+  my $prevreset = LookupValue($reg);
+  AssignValue($reg => Tokens(grep { !$t->equals($_) && !$unt->equals($_) } $prevreset->unlist),
+    'global') if $prevreset;
+  return; }
+
+sub defCounterID {
+  my ($ctr, $within) = @_;
+  my $prefix = LookupValue('@ID@prefix@' . $ctr);
+  if (defined $prefix) {
+    if ($within) {
       DefMacroI(T_CS("\\the$ctr\@ID"), undef,
         "\\expandafter\\ifx\\csname the$within\@ID\\endcsname\\\@empty"
           . "\\else\\csname the$within\@ID\\endcsname.\\fi"
           . " $prefix\\csname \@$ctr\@ID\\endcsname",
-        scope => 'global');
-      DefMacroI(T_CS("\\\@$ctr\@ID"), undef, "0", scope => 'global'); }
+        scope => 'global'); }
+    else {
+      DefMacroI(T_CS("\\the$ctr\@ID"), undef, "$prefix\\csname \@$ctr\@ID\\endcsname",
+        scope => 'global'); } }
+  return; }
+
+DefPrimitive('\@addtoreset{}{}', sub {
+    my ($stomach, $ctr, $within) = @_;
+    $ctr    = ToString(Expand($ctr));
+    $within = ToString(Expand($within));
+    addtoCounterReset($ctr, $within);
+    defCounterID($ctr, $within);
     return; });
 
 DefMacro('\value{}', sub {
-    ExplodeText(CounterValue(ToString(Expand($_[1])))->valueOf); });
+    T_CS("\\c@" . ToString(Expand($_[1]))) });
 DefMacro('\@arabic{Number}', sub {
     ExplodeText(ToString($_[1]->valueOf)); });
 DefMacro('\arabic{}', sub {
@@ -2763,6 +2801,38 @@ DefMacro('\@fnsymbol{Number}', sub {
 DefMacro('\fnsymbol{}', sub {
     ExplodeText(radix_format(CounterValue(ToString(Expand($_[1])))->valueOf, @fnsymbols)); });
 
+# The following two macros were originally defined in chngcntr.sty,
+# but were moved to LaTeX core in 2018.
+DefPrimitive('\counterwithin OptionalMatch:* {}{}', sub {
+    my ($stomach, $starred, $ctr, $within) = @_;
+    $ctr    = ToString($ctr);
+    $within = ToString($within);
+    addtoCounterReset($ctr, $within);
+    if (!$starred) {
+      DefMacroI(T_CS("\\the$ctr"), undef, "\\the$within.\\arabic{$ctr}", scope => 'global');
+      defCounterID($ctr, $within); }
+    return; });
+
+DefPrimitive('\counterwithout OptionalMatch:* {}{}', sub {
+    my ($stomach, $starred, $ctr, $within) = @_;
+    $ctr    = ToString($ctr);
+    $within = ToString($within);
+    remfromCounterReset($ctr, $within);
+    if (!$starred) {
+      DefMacroI(T_CS("\\the$ctr"), undef, "\\arabic{$ctr}", scope => 'global');
+      defCounterID($ctr); }
+    return; });
+
+DefPrimitive('\@removefromreset{}{}', sub {
+    my ($stomach, $ctr, $within) = @_;
+    $ctr    = ToString($ctr);
+    $within = ToString($within);
+    remfromCounterReset($ctr, $within);
+    # Should \the$ctr@ID be redefined?  It really should track changes to \the$ctr!
+    # defCounterID($ctr);
+    return; });
+
+DefMacroI('\cl@@ckpt', undef, '\@elt{page}');
 #======================================================================
 # C.8.5 The ifthen Package.
 #======================================================================
@@ -2964,10 +3034,12 @@ DefMacroI('\tablesname',  undef, 'Tables');
 # C.9.2 Marginal Notes
 #======================================================================
 
+AssignValue(marginparclass=>undef);
 DefConstructor('\marginpar[]{}',
-  "<ltx:note role='margin'><ltx:inline-para>#2</ltx:inline-para></ltx:note>");
-DefPrimitiveI('\reversemarginpar', undef, undef);
-DefPrimitiveI('\normalmarginpar',  undef, undef);
+  "<ltx:note role='margin' class='#class'><ltx:inline-para>#2</ltx:inline-para></ltx:note>",
+  properties => sub { (class => LookupValue('marginparclass')); });
+DefPrimitiveI('\reversemarginpar', undef, sub { AssignValue(marginparclass=>'ltx_marginpar_reverse'); });
+DefPrimitiveI('\normalmarginpar',  undef, sub { AssignValue(marginparclass=>undef); });
 DefRegister('\marginparpush', Dimension(0));
 
 #**********************************************************************
@@ -3679,7 +3751,7 @@ sub process_index_phrases {
   @expansion = (T_CS('\@index'),
     ($style ? (T_OTHER('['), T_OTHER($style), T_OTHER(']')) : ()),
     T_BEGIN, @expansion, T_END);
-  return @expansion; }
+  return (T_BEGIN, T_CS('\normalfont'), @expansion, T_END); }
 
 DefMacro('\index{}', \&process_index_phrases);
 
@@ -3695,15 +3767,16 @@ sub addIndexPhraseKey {
 
 DefConstructor('\@index[]{}', "^<ltx:indexmark style='#1'>#2</ltx:indexmark>",
   mode => 'text', reversion => '', sizer => 0);
+
 DefConstructor('\@indexphrase[]{}',
-  "<ltx:indexphrase key='#key'>#2</ltx:indexphrase>",
+  "<ltx:indexphrase key='#key' _standalone_font='true'>#2</ltx:indexphrase>",
   properties => { key => sub { CleanIndexKey($_[1]); } });
 DefConstructor('\@indexsee{}',
-  "<ltx:indexsee key='#key' name='#name'>#1</ltx:indexsee>",
+  "<ltx:indexsee key='#key' name='#name' _standalone_font='true'>#1</ltx:indexsee>",
   properties => { name => sub { DigestIf('\seename') } });
 
 DefConstructor('\@indexseealso{}',
-  "<ltx:indexsee key='#key' name='#name'>#1</ltx:indexsee>",
+  "<ltx:indexsee key='#key' name='#name' _standalone_font='true'>#1</ltx:indexsee>",
   properties => { name => sub { DigestIf('\alsoname') } });
 
 DefConstructor('\glossary{}',
@@ -3832,7 +3905,9 @@ DefPrimitiveI('\-', undef, undef);    # We don't do hyphenation.
 
 DefPrimitiveI('\sloppy', undef, undef);
 DefPrimitiveI('\fussy',  undef, undef);
-DefEnvironment('{sloppypar}', '#body');
+# sloppypar can be used as an environment, or by itself.
+DefMacro('\sloppypar',    '\par\sloppy');
+DefMacro('\endsloppypar', '\par');
 DefMacroI('\nobreakdashes', undef, T_OTHER('-'));
 
 DefMacro('\showhyphens{}', '#1');     # ?
@@ -3878,7 +3953,7 @@ DefPrimitive('\@check@length DefToken', sub {
 
 DefPrimitive('\newlength DefToken', sub {
     my ($stomach, $cs) = @_;
-    DefRegisterI($cs, undef, Dimension(0)); });
+    DefRegisterI($cs, undef, Glue(0)); });
 DefMacro('\setlength{}{}',   '\@check@length{#1}#1#2\relax');
 DefMacro('\addtolength{}{}', '\@check@length{#1}\advance#1 #2\relax');
 
@@ -4425,10 +4500,10 @@ Let('\mediumseries', '\mdseries');
 Let('\normalshape',  '\upshape');
 
 # ? DefMacro('\f@encoding','cm');
-DefMacro('\f@family', 'cm');
-DefMacro('\f@series', '');
-DefMacro('\f@shape',  '');
-DefMacro('\f@size',   '');
+DefMacro('\f@family', 'cmr');
+DefMacro('\f@series', 'm');
+DefMacro('\f@shape',  'n');
+DefMacro('\f@size',   '10');
 
 # These do NOT immediately effect the font!
 DefMacro('\fontfamily{}', '\edef\f@family{#1}');
@@ -4671,6 +4746,13 @@ DefMacro('\@ifdefinable DefToken {}', sub {
       DefMacroI('\reserved@a', undef, Tokens(@s));
       return (T_CS('\@notdefinable')); } });
 
+Let('\@@ifdefinable', '\@ifdefinable');
+
+DefMacro('\@rc@ifdefinable DefToken {}', sub {
+    my ($gullet, $token, $if) = @_;
+    Let('\@ifdefinable', '\@@ifdefinable');
+    return $if->unlist; });
+
 DefMacroI('\@notdefinable', undef,
   '\@latex@error{%
    Command \@backslashchar\reserved@a\space
@@ -4714,6 +4796,7 @@ DefMacro('\@secondoftwo{}{}',    sub { $_[2]; });
 DefMacro('\@thirdofthree{}{}{}', sub { $_[3]; });
 DefMacro('\@expandtwoargs{}{}{}', sub {
     ($_[1]->unlist, T_BEGIN, Expand($_[2])->unlist, T_END, T_BEGIN, Expand($_[3])->unlist, T_END); });
+DefMacro('\@makeother{}', sub { AssignCatcode($_[1] => CC_OTHER, 'local'); });
 
 RawTeX(<<'EoTeX');
 {\catcode`\^^M=13 \gdef\obeycr{\catcode`\^^M13 \def^^M{\\\relax}%
@@ -4731,7 +4814,6 @@ RawTeX(<<'EoTeX');
   \expandafter\endgroup\x
 \def\strip@pt{\expandafter\rem@pt\the}
 \def\strip@prefix#1>{}
-\def\@makeother#1{\catcode`#1=12\relax}
 \def\@sanitize{\@makeother\ \@makeother\\\@makeother\$\@makeother\&%
 \@makeother\#\@makeother\^\@makeother\_\@makeother\%\@makeother\~}
 \def \@onelevel@sanitize #1{%
@@ -4765,13 +4847,15 @@ DefMacroI('\nfss@catcodes', undef, <<'EOMacro');
    \@makeother\'%
    \@makeother\"%
 EOMacro
+DefMacroI('\ltx@hard@MessageBreak', undef, '^^J');
 
 sub make_message {
   my ($cmd, @args) = @_;
   my $stomach = $STATE->getStomach;
   $stomach->bgroup;
-  Let('\protect', '\string');
-  my $message = join("\n", map { ToString(Expand($_)) } @args);
+  Let('\protect',      '\string');
+  Let('\MessageBreak', '\ltx@hard@MessageBreak');    # tricky, we need Expand() to execute it
+  my $message = join("", map { ToString(Expand($_, T_CS('\MessageBreak'))) } @args);
   $stomach->egroup;
   return ('latex', $cmd, $stomach, $message); }
 
@@ -5257,6 +5341,7 @@ DefPrimitiveI('\@@end', undef, sub { $_[0]->getGullet->flush; return; });
 RawTeX(<<'EoTeX');
 \newlanguage\l@english
 \newlanguage\l@usenglishmax
+\newlanguage\l@USenglish
 \newlanguage\l@dumylang
 \newlanguage\l@nohyphenation
 \newlanguage\l@arabic
@@ -5321,6 +5406,22 @@ DefPrimitive('\protected@write Number {}{}', sub {
       print STDERR UnTeX($tokens) . "\n"; }
     $stomach->egroup;
     return @stuff; });
+
+#**********************************************************************
+# LaTeX now includes fixltx2e by default.
+# https://www.latex-project.org/news/latex2e-news/ltnews22.pdf
+
+# This package allows you to define the font used for
+# emphasis (\emph) within emphasis.
+# For latexml, that styling should be left to the ultimate output,
+# so we just define the command as a dummy.
+DefMacro('\eminnershape', "");
+
+# Undoubtedly not good enough
+DefMacro('\TextOrMath{}{}', '\ifmmode#2\else#1\fi');
+
+DefConstructor('\textsubscript{}', "<ltx:sub>#1</ltx:sub>",
+  mode => 'text');
 
 #**********************************************************************
 1;

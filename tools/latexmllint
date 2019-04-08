@@ -39,8 +39,8 @@ GetOptions(
   "programs!"  => sub { if ($_[1]) { $include{program} = 1; } else { $exclude{program} = 1; } },
   "modules!"   => sub { if ($_[1]) { $include{module} = 1; } else { $exclude{module} = 1; } },
   "bindings!"  => sub { if ($_[1]) { $include{binding} = 1; } else { $exclude{binding} = 1; } },
-  "verbose" => sub { $VERBOSITY++; },
-  "quiet"   => sub { $VERBOSITY--; },
+  "verbose"    => sub { $VERBOSITY++; },
+  "quiet"      => sub { $VERBOSITY--; },
 ) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 
@@ -149,7 +149,7 @@ sub classify {
       close($TEST);
       if ($firstline =~ m|^\#\!\s*(.*?)/bin/perl\s+\-w\s*$|) {
         return { perl => 1, program => 1 }; }
-    } }
+  } }
   return {}; }
 
 #======================================================================
@@ -251,7 +251,7 @@ sub doPerlcritic {
   my $profile = catfile($TOOLDIR, 'latexml.perlcritic');
   my $themes = join(' and ', map { 'not non_' . $_ } keys %$classes);
 #  my $critique = `$PERLCRITIC  --profile=$profile --theme='$themes' --severity=$SEVERITY --quiet $file`;
-  my $critique = `$PERL -I $TOOLDIR $PERLCRITIC  --profile=$profile --theme='$themes' --severity=$SEVERITY --quiet $file`;
+  my $critique = `$PERL -I $TOOLDIR $PERLCRITIC  --profile=$profile --theme='$themes' --severity=$SEVERITY --quiet --verbose=8 $file`;
   if ($critique eq "") {    # No errors and no policy violations
     print " conformance is OK.\n" if $VERBOSITY > 0; }
   elsif ($critique) {       # Policy violations

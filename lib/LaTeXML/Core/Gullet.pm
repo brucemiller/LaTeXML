@@ -130,48 +130,47 @@ sub readingFromMouth {
 
 # User feedback for where something (error?) occurred.
 sub getLocator {
-  my ($self, $long) = @_;
-  my $mouth = $$self{mouth};
-  my $i     = 0;
-  while ((defined $mouth) && (($$mouth{source} || '') eq 'Anonymous String')
+  my ($self) = @_;
+  my $mouth  = $$self{mouth};
+  my $i      = 0;
+  while ((defined $mouth) && (!defined $$mouth{source})
     && ($i < scalar(@{ $$self{mouthstack} }))) {
     $mouth = $$self{mouthstack}[$i++][0]; }
-  my $loc = (defined $mouth ? $mouth->getLocator($long) : '');
-  if (!$loc || $long) {
-    $loc .= show_pushback($$self{pushback}) if $long;
-    foreach my $frame (@{ $$self{mouthstack} }) {
-      my $ml = $$frame[0]->getLocator($long);
-      $loc .= ' ' . $ml if $ml;
-      last if $loc && !$long;
-      $loc .= show_pushback($$frame[1]) if $long; } }
-  return $loc; }
+  my $loc = (defined $mouth ? $mouth->getLocator : undef);
+  return $loc if defined $loc;
+  foreach my $frame (@{ $$self{mouthstack} }) {
+    my $ml = $$frame[0]->getLocator;
+    return $ml if defined $ml; }
+  return; }
 
 sub getSource {
   my ($self) = @_;
   my $source = defined $$self{mouth} && $$self{mouth}->getSource;
-  if (!$source) {
+  if (!defined($source)) {
     foreach my $frame (@{ $$self{mouthstack} }) {
       $source = $$frame[0]->getSource;
-      last if $source; } }
+      last if defined($source); } }
   return $source; }
 
 sub getSourceMouth {
   my ($self) = @_;
   my $mouth = $$self{mouth};
   my $source = defined $mouth && $mouth->getSource;
-  if (!$source || ($source eq "Anonymous String")) {
+  if (!defined($source)) {
     foreach my $frame (@{ $$self{mouthstack} }) {
       $mouth  = $$frame[0];
       $source = $mouth->getSource;
-      last if $source && $source ne "Anonymous String"; } }
+      last if defined($source); } }
   return $mouth; }
 
 # Handy message generator when we didn't get something expected.
 sub showUnexpected {
   my ($self) = @_;
-  my $token = $self->readToken;
-  my $message = ($token ? "Next token is " . Stringify($token) : "Input is empty");
-  unshift(@{ $$self{pushback} }, $token);    # Unread
+  my $message = "Input is empty";
+  if (my $token = $self->readToken) {
+    $message = "Next token is " . Stringify($token);
+    unshift(@{ $$self{pushback} }, $token);
+  }
   return $message; }
 
 sub show_pushback {
@@ -263,7 +262,7 @@ sub readXToken {
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
     # Note: special-purpose lookup in State, for efficiency
-    elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token))) {
+    elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
       if (my $r = $defn->invoke($self)) {
         unshift(@{ $$self{pushback} },
@@ -872,7 +871,7 @@ Is this public? Clears all inputs.
 
 =item C<< $gullet->getLocator; >>
 
-Returns a string describing the current location in the input stream.
+Returns an object describing the current location in the input stream.
 
 =back
 

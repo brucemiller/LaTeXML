@@ -19,6 +19,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+RequirePackage('natbib',          options     => ['numbers']);    # Preload w/numbers option!
 RequirePackage('revtex3_support', withoptions => 1);
 
 1;

@@ -591,6 +591,30 @@
     </xsl:element>
   </xsl:template>
 
+  <xsl:template match="ltx:contact[@role='homepage']">
+    <xsl:param name="context"/>
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:element name="span" namespace="{$html_ns}">
+      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes">
+      </xsl:call-template>
+      <xsl:apply-templates select="." mode="begin">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:apply-templates>
+      <xsl:element name="a" namespace="{$html_ns}">      
+        <xsl:attribute name="href"><xsl:value-of select="text()"/></xsl:attribute>
+        <xsl:apply-templates>
+          <xsl:with-param name="context" select="$innercontext"/>
+        </xsl:apply-templates>
+      </xsl:element>
+      <xsl:apply-templates select="." mode="end">
+        <xsl:with-param name="context" select="$innercontext"/>
+      </xsl:apply-templates>
+      <xsl:text>&#x0A;</xsl:text>
+    </xsl:element>
+  </xsl:template>
+
   <xsl:template match="ltx:contact[@role='dedicatory' or @role='mobile']">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>

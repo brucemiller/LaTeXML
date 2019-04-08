@@ -12,6 +12,7 @@
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
+use warnings;
 use LaTeXML::Package;
 
 my $pre = <<'EOL';
@@ -31,12 +32,12 @@ my $pre = <<'EOL';
 EOL
 RawTeX($pre);
 
-DefMacroI('\newworld',undef,'=');
-DefMacroI('\blank',undef,'-');
-DefMacro('\newtm SkipMatch:< Until:, Until:> SkipMatch:( Until:)','\xdef\tm{(=,)(#1)(#3,=,)}
+DefMacroI('\newworld', undef, '=');
+DefMacroI('\blank',    undef, '-');
+DefMacro('\newtm SkipMatch:< Until:, Until:> SkipMatch:( Until:)', '\xdef\tm{(=,)(#1)(#3,=,)}
 \xdef\stopstate{#2}
 \xdef\stopreached{no}');
-DefMacro('\findstate SkipMatch:( Until:, Until:) SkipMatch:( Until:) SkipMatch:( Until:, Until:, Until:) SkipMatch:;','\xdef\farleft{#2}
+DefMacro('\findstate SkipMatch:( Until:, Until:) SkipMatch:( Until:) SkipMatch:( Until:, Until:, Until:) SkipMatch:;', '\xdef\farleft{#2}
 \xdef\left{#1}
 \xdef\state{#3}
 \xdef\value{#4}
@@ -44,7 +45,7 @@ DefMacro('\findstate SkipMatch:( Until:, Until:) SkipMatch:( Until:) SkipMatch:(
 \xdef\farright{#6}');
 
 DefMacro('\findrule',
-'\norulegivenfalse
+  '\norulegivenfalse
  \norulefoundtrue
   \xdef\remrules{\rules}
   \loop
@@ -53,7 +54,7 @@ DefMacro('\findrule',
   \repeat');
 
 DefMacro('\findr SkipMatch:( Until:, Until:, Until:, Until:, Until:) SkipMatch:, Until:;',
-'\edef\stpe{#1}
+  '\edef\stpe{#1}
   \edef\stpv{#2}
   \ifx\state\stpe
     \ifx\value\stpv
@@ -70,7 +71,7 @@ DefMacro('\findr SkipMatch:( Until:, Until:, Until:, Until:, Until:) SkipMatch:,
     \norulegiventrue
   \fi');
 
-DefMacro('\nextstep','
+DefMacro('\nextstep', '
   \expandafter\findstate\tm;
   \findrule
 
@@ -106,20 +107,20 @@ DefMacro('\nextstep','
   \fi
 ');
 
-DefConstructor('\spec {}',"<ltx:text framed='underline'>#1</ltx:text>",
-	       afterDigest=>sub{
-		 my ($stomach,$whatsit) = @_;
-		 my $arg = $whatsit->getArg(1);
-		 $whatsit->setArgs(Digest('\hbox{ }')) unless (length(ToString($arg))>0);
-		 return;
-	       });
-DefConstructor('\speca {}',"<ltx:text framed='rectangle'>#1 </ltx:text>",
-	       afterDigest=>sub{
-		 my ($stomach,$whatsit) = @_;
-		 my $arg = $whatsit->getArg(1);
-		 $whatsit->setArgs(Digest('\hbox{ }')) unless (length(ToString($arg))>0);
-		 return;
-	       });
+DefConstructor('\spec {}', "<ltx:text framed='underline'>#1</ltx:text>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $arg = $whatsit->getArg(1);
+    $whatsit->setArgs(Digest('\hbox{ }')) unless (length(ToString($arg)) > 0);
+    return;
+  });
+DefConstructor('\speca {}', "<ltx:text framed='rectangle'>#1 </ltx:text>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $arg = $whatsit->getArg(1);
+    $whatsit->setArgs(Digest('\hbox{ }')) unless (length(ToString($arg)) > 0);
+    return;
+  });
 
 my $post = <<'EOL';
 \def\showtm{

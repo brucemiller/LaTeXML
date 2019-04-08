@@ -88,7 +88,7 @@ DefMacro('\DOUBLEFIGURE[]{}{}{}{}',
     . '\begin{@half@doublefigure}\epsfig{file=#3}\caption{#5}\end{@half@doublefigure}'
     . '\end{figure}');
 DefEnvironment('{@half@doublefigure}',
-  "<ltx:figure xml:id='#id' width='0.45%'>#body</ltx:figure>"
+  "<ltx:figure xml:id='#id' inlist='#inlist' width='0.45%'>#body</ltx:figure>"
     . "#tags",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
   afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
@@ -99,7 +99,7 @@ DefMacro('\DOUBLETABLE[]{}{}{}{}',
     . '\begin{@half@doubletable}#3\caption{#5}\end{@half@doubletable}'
     . '\end{table}');
 DefEnvironment('{@half@doubletable}',
-  "<ltx:table xml:id='#id' width='0.45%'>#body</ltx:table>"
+  "<ltx:table xml:id='#id' inlist='#inlist' width='0.45%'>#body</ltx:table>"
     . "#tags",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
   afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
@@ -107,7 +107,7 @@ DefEnvironment('{@half@doubletable}',
 # Redefine since JHEP has no width argument
 # (what width should be used?)
 DefEnvironment('{floatingfigure}[]',
-  "<ltx:figure xml:id='#id' float='#float' width='#width'>"
+  "<ltx:figure xml:id='#id' inlist='#inlist' float='#float' width='#width'>"
     . "#tags"
     . "#body"
     . "</ltx:figure>",
@@ -117,7 +117,7 @@ DefEnvironment('{floatingfigure}[]',
     (float => (ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left')); });
 
 DefEnvironment('{floatingtable}[]',
-  "<ltx:table xml:id='#id' float='#float' width='#width'>"
+  "<ltx:table xml:id='#id' inlist='#inlist' float='#float' width='#width'>"
     . "#tags"
     . "#body"
     . "</ltx:table>",
@@ -132,7 +132,7 @@ DefEnvironment('{floatingtable}[]',
 # \href{url}{text}
 DefConstructor('\href Semiverbatim  Semiverbatim',
   "<ltx:ref href='#href'>#2</ltx:ref>",
-  properties => sub { (href => CleanURL((LookupValue('BASE_URL') || '') . ToString($_[1]))); });
+  properties => sub { (href => ComposeURL((LookupValue('BASE_URL') || ''), $_[1])); });
 
 DefMacro('\JHEPspecialurl Semiverbatim', '');    # ???
 DefMacro('\base Semiverbatim',           '');

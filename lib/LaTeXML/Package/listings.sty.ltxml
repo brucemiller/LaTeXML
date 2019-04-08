@@ -222,7 +222,7 @@ DefConstructor('\@@listings@block {} {}',
     if (is_utf8($listings_data)) {
       $listings_data = encode('UTF-8', $listings_data);
     }
-    my $data = encode_base64($listings_data);
+    my $data = encode_base64($listings_data, '');    # NO linebreaking!
     $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64'); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -285,10 +285,10 @@ our $lst_charmapping = { '#' => T_CS('\#'), '$' => T_CS('\textdollar'), '&' => T
   "'" => T_CS('\textquoteright'),
   '*' => T_CS('\textasteriskcentered'),
   # ??  '-'=>$-$ ??
-  '<' => T_CS('\textless'), '>' => T_CS('\textgreater'), '\\' => T_CS('\textbackslash'),
+  '<' => T_CS('\textless'),        '>' => T_CS('\textgreater'), '\\' => T_CS('\textbackslash'),
   '^' => T_CS('\textasciicircum'), '_' => T_CS('\textunderscore'),
   '`' => T_CS('\textquoteleft'),
-  '{' => T_CS('\textbraceleft'), '}' => T_CS('\textbraceright'), '%' => T_CS('\%'),
+  '{' => T_CS('\textbraceleft'),   '}' => T_CS('\textbraceright'), '%' => T_CS('\%'),
   '|' => T_CS('\textbar'),
   '~' => T_CS('\textasciitilde'),
 };
@@ -1439,7 +1439,7 @@ sub lstDoNumber {
 
 RawTeX(<<'EoTeX');
 \lstset{
- alsoletter={abcdefghiklmnopqrstuvwxyzABCDEFGHIKLMNOPQRSTUVWXYZ@$\_},
+ alsoletter={abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ@$\_},
  alsodigit={0123456789},
  alsoother={!"#\%&'()*+,-./:;<=>?[\\]^\{|\}~},
  float=tbp,floatplacement=tbp,aboveskip=\medskipamount,belowskip=\medskipamount,

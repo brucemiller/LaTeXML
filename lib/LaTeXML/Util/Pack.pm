@@ -20,7 +20,7 @@ use IO::String;
 use Archive::Zip qw(:CONSTANTS :ERROR_CODES);
 
 use base qw(Exporter);
-our @EXPORT = qw(&unpack_source &pack_collection);
+our @EXPORT                       = qw(&unpack_source &pack_collection);
 our $archive_file_exclusion_regex = qr/(?:^\.)|(?:\.(?:zip|gz|epub|tex|bib|mobi|cache)$)|(?:~$)/;
 
 sub unpack_source {
@@ -41,12 +41,13 @@ sub unpack_source {
     $zip_handle->extractMember($member, catfile($sandbox_directory, $member)); }
   # Set $source to point to the main TeX file in that directory
   my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.tex$');
-  if (!@TeX_file_members) { # No .tex file? Try files with no, or unusually long, extensions
-    @TeX_file_members = grep {!/\./ || /\.[^.]{4,}$/} map { $_->fileName() } $zip_handle->members();
+  if (!@TeX_file_members) {    # No .tex file? Try files with no, or unusually long, extensions
+    @TeX_file_members = grep { !/\./ || /\.[^.]{4,}$/ } map { $_->fileName() } $zip_handle->members();
   }
 
   # Heuristically determine the input (borrowed from arXiv::FileGuess)
   my %Main_TeX_likelihood;
+  my %Main_TeX_level;
   my @vetoed = ();
   foreach my $tex_file (@TeX_file_members) {
     # Read in the content
@@ -81,7 +82,7 @@ sub unpack_source {
         # (it could in very elaborate multi-target setups, but we DON'T support those)
         # so veto it.
         my $vetoed_file = $1;
-        if ($vetoed_file eq 'amstex') { # TeX Priority
+        if ($vetoed_file eq 'amstex') {    # TeX Priority
           $Main_TeX_likelihood{$tex_file} = 2; last TEX_FILE_TRAVERSAL; }
         if ($vetoed_file !~ /\./) {
           $vetoed_file .= '.tex';
@@ -95,17 +96,17 @@ sub unpack_source {
       if (/\\(?:end|bye)(?:\s|$)/) {
         $maybe_tex_priority2 = 1; }
       if (/\\input *(?:harv|lanl)mac/ || /\\input\s+phyzzx/) {
-        $Main_TeX_likelihood{$tex_file} = 1; last TEX_FILE_TRAVERSAL; }        # Mac TeX
+        $Main_TeX_likelihood{$tex_file} = 1; last TEX_FILE_TRAVERSAL; }    # Mac TeX
       if (/beginchar\(/) {
-        $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }        # MetaFont
+        $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }    # MetaFont
       if (/(?:^|\r)\@(?:book|article|inbook|unpublished)\{/i) {
-        $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }        # BibTeX
+        $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }    # BibTeX
       if (/^begin \d{1,4}\s+[^\s]+\r?$/) {
         if ($maybe_tex_priority) {
-          $Main_TeX_likelihood{$tex_file} = 2; last TEX_FILE_TRAVERSAL; }      # TeX Priority
+          $Main_TeX_likelihood{$tex_file} = 2; last TEX_FILE_TRAVERSAL; }    # TeX Priority
         if ($maybe_tex) {
-          $Main_TeX_likelihood{$tex_file} = 1; last TEX_FILE_TRAVERSAL; }      # TeX
-        $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }        # UUEncoded or PC
+          $Main_TeX_likelihood{$tex_file} = 1; last TEX_FILE_TRAVERSAL; }    # TeX
+        $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }      # UUEncoded or PC
       if (m/paper deliberately replaced by what little/) {
         $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }
     }
@@ -122,7 +123,7 @@ sub unpack_source {
     }
   }
   # Veto files that were e.g. arguments of \input macros
-  for my $filename(@vetoed) {
+  for my $filename (@vetoed) {
     delete $Main_TeX_likelihood{$filename};
   }
   # The highest likelihood (>0) file gets to be the main source.
@@ -130,7 +131,17 @@ sub unpack_source {
   if (@files_by_likelihood) {
    # If we have a tie for max score, grab the alphanumerically first file (to ensure deterministic runs)
     my $max_likelihood = $Main_TeX_likelihood{ $files_by_likelihood[0] };
-    @files_by_likelihood = sort { $a cmp $b } grep { $Main_TeX_likelihood{$_} == $max_likelihood } @files_by_likelihood;
+    @files_by_likelihood = grep { $Main_TeX_likelihood{$_} == $max_likelihood } @files_by_likelihood;
+    # only keep the high scorers closest to the root of the archive
+    my $min_count = 100;
+    foreach my $file (@files_by_likelihood) {
+      my $count = $file =~ tr/\///;
+      $Main_TeX_level{$file} = $count;
+      $min_count = $count if $min_count > $count; }
+    @files_by_likelihood = grep { $Main_TeX_level{$_} == $min_count } @files_by_likelihood;
+    # last tie-breaker is lexicographical order
+    @files_by_likelihood = sort { $a cmp $b } @files_by_likelihood;
+    # set the main source
     $main_source = shift @files_by_likelihood; }
 
   # If failed, clean up sandbox directory.
@@ -166,7 +177,6 @@ sub pack_collection {
       push @packed_docs, get_embeddable($doc); }
     elsif ($whatsout eq 'math') {
       # Math output - least common ancestor of all math in the document
-      print STDERR "REQUESTING MATH\n";
       push @packed_docs, get_math($doc);
       unlink('LaTeXML.cache'); }
     else { push @packed_docs, $doc; } }
@@ -227,9 +237,9 @@ sub get_math {
   return unless defined $doc;
   my @mnodes     = $doc->findnodes($math_xpath);
   my $math_count = scalar(@mnodes);
-  if (!$math_count) { # If no real math nodes, look for math image nodes
+  if (!$math_count) {    # If no real math nodes, look for math image nodes
     my $math_img_xpath = '//*[local-name()="img" and @class="ltx_Math"]';
-    @mnodes         = $doc->findnodes($math_img_xpath);
+    @mnodes     = $doc->findnodes($math_img_xpath);
     $math_count = scalar(@mnodes);
   }
   if (!$math_count) {

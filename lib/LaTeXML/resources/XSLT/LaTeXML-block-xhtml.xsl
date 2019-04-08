@@ -697,15 +697,19 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
         </xsl:element>
       </xsl:when>
       -->
-      <!-- Sloppy case, we at least need an empty row to put the id on; Ugh -->
+      <!-- Sloppy case, we at least need an empty row to put the id on; Ugh 
+           Probably should be able to do more cleanup,
+           At least, wrap it in tbody, so it'll validate. -->
       <xsl:otherwise>
-        <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+        <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
           <xsl:attribute name="class">ltx_eqn_row</xsl:attribute>
 
-          <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}"> <!--Empty, too
+          <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+            <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}"> <!--Empty, too
 -->
-            <xsl:attribute name="class">ltx_eqn_cell</xsl:attribute>
+              <xsl:attribute name="class">ltx_eqn_cell</xsl:attribute>
+            </xsl:element>
           </xsl:element>
         </xsl:element>
         <xsl:apply-templates select="." mode="ininalignment">

@@ -231,7 +231,7 @@ sub getBibEntries {
           $bibdoc->findnodes('.//@bibrefs', $bibentry)];
       # Also, register the key with the DB, if the bibliography hasn't already been scanned.
       $$self{db}->register("BIBLABEL:$bibkey", id => $bibid);
-    } }
+  } }
   # Now, collect all bibkeys that were cited in other documents (NOT the bibliography)
   # And note any referrers to them (also only those outside the bib)
   my $citestar = $$self{db}->lookup('BIBLABEL:*');
@@ -245,9 +245,9 @@ sub getBibEntries {
           my ($rid, $e, $t) = ($refr, undef, undef);
           while ($rid && ($e = $$self{db}->lookup("ID:$rid")) && (($t = ($e->getValue('type') || '')) ne 'ltx:bibitem')) {
             $rid = $e->getValue('parent'); }
-          if(! $e){
-            Warn('expected','entry',undef,
-                 "Didn't find an entry for reference id=$rid"); }
+          if (!$e) {
+            Warn('expected', 'entry', undef,
+              "Didn't find an entry for reference id=$rid"); }
           elsif ($t ne 'ltx:bibitem') {
             $entries{$bibkey}{referrers}{$refr} = 1; } }
         push(@queue, $bibkey) if keys %{ $entries{$bibkey}{referrers} }; }
@@ -370,6 +370,9 @@ sub formatBibEntry {
   # Set up authors and fullauthors tags
   my @names = $doc->findnodes('ltx:bib-name[@role="author"]/ltx:surname', $bibentry);
   @names = $doc->findnodes('ltx:bib-name[@role="editor"]/ltx:surname', $bibentry) unless @names;
+  my $etal = 0;
+  if(@names && ($names[-1]->toString eq 'others')){ # Magic!
+    $etal = 1; }
   if (@names > 2) {
     push(@tags, ['ltx:tag', { role => 'authors', class => 'ltx_bib_author' },
         $doc->cloneNodes($names[0]->childNodes),
@@ -507,9 +510,19 @@ sub do_name {
 sub do_names {
   my (@names) = @_;
   my @stuff = ();
+  my $sep = (scalar(@names) > 2 ? ', ' : ' ');
+  my $etal = 0;
+  if(@names && ($names[-1]->textContent eq 'others')){ # Magic!
+    pop(@names);
+    $etal = 1; }
+  my $n = scalar(@names);
   while (my $name = shift(@names)) {
-    push(@stuff, (@names ? ', ' : ' and ')) if @stuff;
+    if(@stuff){
+      push(@stuff, $sep);
+      push(@stuff, 'and ') if !$etal && !@names; }
     push(@stuff, do_name($name)); }
+  if($etal){
+    push(@stuff, $sep, ['ltx:text', { class => 'ltx_bib_etal' }, 'et al.']); }
   return @stuff; }
 
 sub do_names_short {

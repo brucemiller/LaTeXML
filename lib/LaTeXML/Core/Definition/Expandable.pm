@@ -35,7 +35,7 @@ sub new {
   }
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
     trivial_expansion => $trivexpansion,
-    locator           => "from " . $source->getLocator(-1),
+    locator           => $source->getLocator,
     isProtected       => $traits{protected} || $STATE->getPrefix('protected'),
     isOuter           => $traits{outer} || $STATE->getPrefix('outer'),
     isLong            => $traits{long} || $STATE->getPrefix('long'),

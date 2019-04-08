@@ -1068,7 +1068,7 @@ DefPrimitive('\DeclareSIPrePower OptionalKeyVals:SIX SkipSpaces DefToken {}', su
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
-        keyvals => $kv, type => 'prepower', power => $power,
+        keyvals      => $kv, type => 'prepower', power => $power,
         presentation => Tokens(T_SUPER, T_BEGIN, $power, T_END) });
     DefMacroI($newcs, undef, '\lx@six@unitobject{' . $name . '}');
     return; });
@@ -1082,7 +1082,7 @@ DefPrimitive('\DeclareSIPostPower OptionalKeyVals:SIX SkipSpaces DefToken {}', s
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
-        keyvals => $kv, type => 'postpower', power => $power,
+        keyvals      => $kv, type => 'postpower', power => $power,
         presentation => Tokens(T_SUPER, T_BEGIN, $power, T_END) });
     DefMacroI($newcs, undef, '\lx@six@unitobject{' . $name . '}');
     return; });

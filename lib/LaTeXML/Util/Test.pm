@@ -12,6 +12,7 @@ use File::Spec::Functions;
 use LaTeXML::Post;
 use LaTeXML::Post::MathML::Presentation;
 use LaTeXML::Post::XMath;
+use Config;
 
 use base qw(Exporter);
 #  @Test::More::EXPORT);
@@ -219,7 +220,11 @@ sub daemon_ok {
     ['xsltparameter',      'LATEXML_VERSION:TEST'],
     ['nocomments',         '']);
 
-  my $invocation = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc') . ' ';
+  my $latexmlc = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc');
+  $latexmlc =~ s/^\.\///;
+  my $path_to_perl = $Config{perlpath};
+
+  my $invocation = $path_to_perl . " " . join(" ", map { ("-I", $_) } @INC) . " " . $latexmlc . ' ';
   my $timed = undef;
   foreach my $opt (@$opts) {
     if ($$opt[0] eq 'timeout') {    # Ensure .opt timeout takes precedence
@@ -230,7 +235,11 @@ sub daemon_ok {
   $invocation .= " 2>$localname.test.status ";
   if (!$generate) {
     pathname_chdir($dir);
-    is(system($invocation), 0, "latexmlc invocation for test $localname");
+    my $exit_code = system($invocation);
+    if ($exit_code != 0) {
+      $exit_code = $exit_code >> 8;
+    }
+    is($exit_code, 0, "latexmlc invocation for test $localname: $invocation yeilded $!");
     pathname_chdir($current_dir);
     # Compare the just generated $base.test.xml to the previous $base.xml
     if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {

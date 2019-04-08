@@ -44,7 +44,7 @@ sub new {
   return bless { string => $string,
     tokens => $tokens,
     properties => { font => $font, locator => $locator, %properties }
-    }, $class; }
+  }, $class; }
 
 # Accessors
 sub isaBox {
@@ -290,7 +290,7 @@ created) it.
 
 =item C<< $string = $digested->getLocator; >>
 
-Get a string describing the location in the original source that gave rise
+Get an object describing the location in the original source that gave rise
 to C<$digested>.
 
 =item C<< $digested->beAbsorbed($document); >>

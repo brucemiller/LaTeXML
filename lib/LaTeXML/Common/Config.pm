@@ -67,7 +67,7 @@ sub getopt_specification {
     "mode=s"      => \$$opts{profile},
     "source=s"    => \$$opts{source},
     # Output framing
-    "embed" => sub { $$opts{whatsout} = 'fragment'; },
+    "embed"      => sub { $$opts{whatsout} = 'fragment'; },
     "whatsin=s"  => \$$opts{whatsin},
     "whatsout=s" => \$$opts{whatsout},
     # Daemon options
@@ -107,6 +107,8 @@ sub getopt_specification {
     "nokeepXMath|noxmath"         => sub { _removeMathFormat($opts, 'xmath'); },
     "mathtex"                     => sub { _addMathFormat($opts, 'mathtex'); },
     "nomathtex"                   => sub { _removeMathFormat($opts, 'mathtex'); },
+    "mathlex"                     => sub { _addMathFormat($opts, 'mathlex'); },
+    "nomathlex"                   => sub { _removeMathFormat($opts, 'mathlex'); },
     "parallelmath!"               => \$$opts{parallelmath},
     # Some general XSLT/CSS/JavaScript options.
     "stylesheet=s"      => \$$opts{stylesheet},
@@ -184,12 +186,12 @@ sub read {
   my $getOptions_success = GetOptions(%{$spec});
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   if (!$silent && $$opts{help}) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', output => \*STDOUT);
   }
 
@@ -235,7 +237,7 @@ sub scan_to_keyvals {
   my $getOptions_success = GetOptions(%$spec);
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   CORE::push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];
@@ -313,7 +315,7 @@ sub _obey_profile {
   my $profile_opts = {};
   if ($profile ne 'custom') {
     if (defined $$PROFILES_DB{$profile}) {
-      %$profile_opts = %{ $$PROFILES_DB{$profile} }
+      %$profile_opts = %{ $$PROFILES_DB{$profile} };
     } elsif (my $file = pathname_find($profile . '.opt', paths => $$opts{paths},
         types => [], installation_subdir => 'resources/Profiles')) {
       my $conf_tmp = LaTeXML::Common::Config->new;
@@ -411,7 +413,7 @@ sub _prepare_options {
       $$opts{whatsout} = 'archive';
     } else {
       $$opts{whatsout} = 'document';
-    } }
+  } }
   if ($$opts{format}) {
     # Lower-case for sanity's sake
     $$opts{format} = lc($$opts{format});
@@ -879,6 +881,9 @@ latexmlc [options]
                          representation (default is to remove)
  --mathtex               adds TeX annotation to parallel markup
  --nomathtex             disables the above (default)
+ --mathlex               (EXPERIMENTAL) adds linguistic lexeme 
+                         annotation to parallel markup
+ --nomathlex             (EXPERIMENTAL) disables the above (default)
  --parallelmath          use parallel math annotations (default)
  --noparallelmath        disable parallel math annotations
  --plane1                use plane-1 unicode for symbols

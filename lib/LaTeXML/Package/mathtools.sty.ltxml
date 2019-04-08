@@ -161,7 +161,7 @@ DefConstructor('\lx@@smashoperator{}{} InScriptStyle InScriptStyle',
       elsif ($align eq 'r') {
         $whatsit->setProperties(lpadding => $pad); } }
     $whatsit->setProperties(both => (scalar($sub->unlist) && scalar($sup->unlist)),
-      scriptpos => "mid" . $stomach->getBoxingLevel);
+      scriptpos => "mid" . $stomach->getScriptLevel);
     return; },
   reversion => '\smashoperator[#1]{#2_{#3}^{#4}}');    # not exactly, but...
 

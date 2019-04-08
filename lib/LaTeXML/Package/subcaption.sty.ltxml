@@ -53,33 +53,33 @@ DefEnvironment('{subfigure}[]{Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties => { layout => 'vertical' },
+  properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'subfigure'); },
-  afterDigest => sub { RescueCaptionCounters('subfigure', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('subfigure', $_[1]); });
 DefEnvironment('{subfigure*}[]{Dimension}',
   "<ltx:figure xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties => { layout => 'vertical' },
+  properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'subfigure'); },
-  afterDigest => sub { RescueCaptionCounters('subfigure', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('subfigure', $_[1]); });
 DefEnvironment('{subtable}[]{Dimension}',
   "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties => { layout => 'vertical' },
+  properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'subtable'); },
-  afterDigest => sub { RescueCaptionCounters('subtable', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('subtable', $_[1]); });
 DefEnvironment('{subtable*}[]{Dimension}',
   "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties => { layout => 'vertical' },
+  properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'subtable'); },
-  afterDigest => sub { RescueCaptionCounters('subtable', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('subtable', $_[1]); });
 
 #======================================================================
 # \subcaptionbox[list]{caption}[width][innerpos]{contents}

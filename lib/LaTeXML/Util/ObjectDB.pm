@@ -48,9 +48,9 @@ sub new {
     unlink($dbfile); }
 
   my $self = bless { dbfile => $dbfile,
-    objects => {}, externaldb => {},
+    objects   => {}, externaldb => {},
     verbosity => $options{verbosity} || 0,
-    readonly => $options{readonly},
+    readonly  => $options{readonly},
   }, $class;
   if ($dbfile) {
 ##    my $flags = ($options{read_write} ? O_RDWR|O_CREAT : O_RDONLY);

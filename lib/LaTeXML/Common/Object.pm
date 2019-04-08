@@ -70,20 +70,37 @@ sub ToString {
 
 # Just how deep of an equality test should this be?
 sub Equals {
-  my ($a, $b) = @_;
-  return 1 if !(defined $a) && !(defined $b);    # both undefined, equal, I guess
-  return 0 unless (defined $a) && (defined $b);  # else both must be defined
-  my $refa = (ref $a) || '_notype_';
-  my $refb = (ref $b) || '_notype_';
-  return 0 if $refa ne $refb;                    # same type?
-  return $a eq $b if ($refa eq '_notype_') || $NOBLESS{$refa};    # Deep comparison of builtins?
+  my ($x, $y) = @_;
+  return 1 if !(defined $x) && !(defined $y);    # both undefined, equal, I guess
+  return 0 unless (defined $x) && (defined $y);  # else both must be defined
+  my $refx = (ref $x) || '_notype_';
+  my $refy = (ref $y) || '_notype_';
+
+  if ($refx ne $refy) {    # same type required, beware CODE() of Perl subroutines passed in Tokens
+    if ($refx eq 'CODE') {
+      my $flaty = ToString($y);
+      if ($flaty =~ /^CODE/) {
+        $y    = $flaty;
+        $x    = "$x";
+        $refx = $refy = '_notype_'; }
+      else { return 0; } }
+    elsif ($refy eq 'CODE') {
+      my $flatx = ToString($x);
+      if ($flatx =~ /^CODE/) {
+        $x    = $flatx;
+        $y    = "$y";
+        $refx = $refy = '_notype_'; }
+      else { return 0; } }
+    else { return 0; } }
+
+  return $x eq $y if ($refx eq '_notype_') || $NOBLESS{$refx};    # Deep comparison of builtins?
         # Special cases? (should be methods, but that embeds State knowledge too low)
 
-  if ($refa eq 'LaTeXML::Core::Token') {    # Check if they've been \let to the same defn.
-    my $defa = $STATE->lookupMeaning($a) || $a;
-    my $defb = $STATE->lookupMeaning($b) || $b;
-    return $defa->equals($defb); }
-  return $a->equals($b); }                  # semi-shallow comparison?
+  if ($refx eq 'LaTeXML::Core::Token') {    # Check if they've been \let to the same defn.
+    my $defx = $STATE->lookupMeaning($x) || $x;
+    my $defy = $STATE->lookupMeaning($y) || $y;
+    return $defx->equals($defy); }
+  return $x->equals($y); }                  # semi-shallow comparison?
 
 # Reverts an object into TeX code, as a Tokens list, that would create it.
 # Note that this is not necessarily the original TeX.
@@ -121,12 +138,12 @@ sub toAttribute {
   return $self->toString; }
 
 sub equals {
-  my ($a, $b) = @_;
-  return "$a" eq "$b"; }    # overload::StrVal($a) eq overload::StrVal($b); }
+  my ($x, $y) = @_;
+  return "$x" eq "$y"; }    # overload::StrVal($x) eq overload::StrVal($y); }
 
 sub notequals {
-  my ($a, $b) = @_;
-  return !($a->equals($b)); }
+  my ($x, $y) = @_;
+  return !($x->equals($y)); }
 
 sub isaToken      { return 0; }
 sub isaBox        { return 0; }
@@ -188,7 +205,7 @@ without TeX markup.
 Works on any values and objects, but invokes
 the toString method on blessed objects.
 
-=item C<< $boolean = Equals($a,$b); >>
+=item C<< $boolean = Equals($x,$y); >>
 
 Compares the two objects for equality.  Works on any values and objects, 
 but invokes the equals method on blessed objects, which does a

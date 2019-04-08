@@ -105,6 +105,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
 
   # Random low-level token or string operations.
   qw(&CleanID &CleanLabel &CleanIndexKey  &CleanClassName &CleanBibKey &NormalizeBibKey &CleanURL
+    &ComposeURL
     &UTF
     &roman &Roman),
   # Math & font state.
@@ -524,6 +525,19 @@ sub CleanURL {
   $url =~ s/\\~\{\}/~/g;
   return $url; }
 
+sub ComposeURL {
+  my ($base, $url, $fragid) = @_;
+  $base   = ToString($base); $base =~ s/\/$// if $base;    # remove trailing /
+  $url    = ToString($url);
+  $fragid = ToString($fragid);
+  return CleanURL(join('',
+      ($base ?
+          ($url =~ /^\w+:/ ? ''                            # already has protocol, so is absolute url
+          : $base . ($url =~ /^\// ? '' : '/'))            # else start w/base, possibly /
+        : ''),
+      $url,
+      ($fragid ? '#' . CleanID($fragid) : ''))); }
+
 #======================================================================
 # Defining new Control-sequence Parameter types.
 #======================================================================
@@ -716,6 +730,8 @@ sub RefStepID {
 sub ResetCounter {
   my ($ctr) = @_;
   AssignValue('\c@' . $ctr => Number(0), 'global');
+  DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(Explode(LookupValue('\c@' . $ctr)->valueOf)),
+    scope => 'global');
   # and reset any within counters!
   if (my $nested = LookupValue("\\cl\@$ctr")) {
     foreach my $c ($nested->unlist) {
@@ -1591,7 +1607,8 @@ sub DefEnvironmentI {
             for (my $f = 0 ; $f <= $nf ; $f++) {    # Get currently open environments & locators
               if (my $e = $STATE->isValueBound('current_environment', $f)
                 && $STATE->valueInFrame('current_environment', $f)) {
-                push(@lines, $e . ' ' . $STATE->valueInFrame('groupInitiatorLocator', $f) || ''); } }
+                my $locator = ToString($STATE->valueInFrame('groupInitiatorLocator', $f));
+                push(@lines, $e . ' ' . $locator); } }
             Error('unexpected', "\\end{$name}", $_[0],
               "Can't close environment $name;", "Current are:", @lines); }
           return; },
@@ -2144,6 +2161,11 @@ sub InputDefinitions {
     if ($ftype eq 'ltxml') {
       loadLTXML($filename, $file); }                                              # Perl module.
     else {
+      # Special case -- add a default resource if we're loading a raw .cls file as a first choice.
+      # Raw class interpretations needs _some_ styling as baseline.
+      if (!$options{noltxml} && ($file =~ /\.cls$/)) {
+        RelaxNGSchema("LaTeXML");
+        RequireResource('ltx-article.css'); }
       loadTeXDefinitions($filename, $file); }
     if ($options{handleoptions}) {
       Digest(T_CS('\\' . $name . '.' . $astype . '-h@@k'));
@@ -2256,6 +2278,7 @@ sub maybeRequireDependencies {
     if (open($IN, '<', $path)) {
       my $code = <$IN>;
       close($IN);
+      my @classes  = ();
       my @packages = ();
       my %dups     = ();
       my $collect  = sub {
@@ -2268,9 +2291,16 @@ sub maybeRequireDependencies {
       $code =~ s/\\RequirePackage\s*(?:\[([^\]]*)\])?\s*\{([^\}]*)\}/ &$collect($2,$1); /xegs;
       # Ugh. \usepackage, too
       $code =~ s/\\usepackage\s*(?:\[([^\]]*)\])?\s*\{([^\}]*)\}/ &$collect($2,$1); /xegs;
+      # Even more ugh; \LoadClass
+      if ($type eq 'cls') {
+        $code =~ s/\\LoadClass\s*(?:\[([^\]]*)\])?\s*\{([^\}]*)\}/ push(@classes,[$2,$1]); /xegs; }
 
       Info('dependencies', 'dependencies', undef,
-        "Loading dependencies for $path: " . join(',', map { $$_[0]; } @packages)) if @packages;
+"Loading dependencies for $path: " . join(',', map { $$_[0]; } @classes, @packages)) if scalar(@classes) || scalar(@packages);
+      foreach my $pair (@classes) {
+        my ($class, $options) = @$pair;
+        if (FindFile($class, type => 'cls', notex => 1)) {
+          LoadClass($class, ($options ? (options => [split(/\s*,\s*/, $options)]) : ())); } }
       foreach my $pair (@packages) {
         my ($package, $options) = @$pair;
         if (FindFile($package, type => 'sty', notex => 1)) {
@@ -2339,8 +2369,8 @@ sub FontDecode {
   return if !defined $code || ($code < 0);
   my ($map, $font);
   if (!$encoding) {
-    $font     = LookupValue('font');
-    $encoding = $font->getEncoding; }
+    $font = LookupValue('font');
+    $encoding = $font->getEncoding || 'OT1'; }
   if ($encoding && ($map = LoadFontMap($encoding))) {    # OK got some map.
     my ($family, $fmap);
     if ($font && ($family = $font->getFamily) && ($fmap = LookupValue($encoding . '_' . $family . '_fontmap'))) {
@@ -2551,8 +2581,11 @@ sub addResource {
 
 sub ProcessPendingResources {
   my ($document) = @_;
-  if (my $req = LookupValue('PENDING_RESOURCES')) {
-    map { addResource($document, @$_) } @$req;
+  if (my $resources = LookupValue('PENDING_RESOURCES')) {
+    my %seen = ();
+    my @unique_resources = grep { my $new = !$seen{$_}; $seen{$_} = 1; $new; } @$resources;
+    for my $resource (@unique_resources) {
+      addResource($document, @$resource); }
     AssignValue(PENDING_RESOURCES => [], 'global'); }
   return; }
 

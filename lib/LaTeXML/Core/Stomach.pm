@@ -58,12 +58,23 @@ sub getGullet {
   return $$self{gullet}; }
 
 sub getLocator {
-  my ($self, @args) = @_;
-  return $$self{gullet}->getLocator(@args); }
+  my ($self) = @_;
+  return $$self{gullet}->getLocator; }
 
 sub getBoxingLevel {
   my ($self) = @_;
   return scalar(@{ $$self{boxing} }); }
+
+# ScriptLevel is similar to boxing level, but relative to current Math mode's level
+# This is used for the scriptpos attribute to recognize overlapping sccripts.
+# Making it relative to the math's level avoids unnecessary changes
+sub getScriptLevel {
+  my ($self) = @_;
+  my $boxlevel = scalar(@{ $$self{boxing} });
+  if (my $prevlevel = $STATE->lookupValue('script_base_level')) {
+    return $boxlevel - $prevlevel + 1; }
+  else {
+    return $boxlevel; } }
 
 #**********************************************************************
 # Digestion
@@ -115,7 +126,7 @@ sub digest {
         if $initdepth < $depth;
 
       List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text'));
-      }); }
+    }); }
 
 # Invoke a token;
 # If it is a primitive or constructor, the definition will be invoked,
@@ -155,7 +166,7 @@ INVOKE:
   # but it isn't expanded in the gullet, but later when digesting, in math mode (? I think)
   elsif ($meaning->isExpandable) {
     my $gullet = $$self{gullet};
-    $gullet->unread(@{ $meaning->invoke($gullet) });
+    $gullet->unread(@{ $meaning->invoke($gullet) || [] });
     $token = $gullet->readXToken();    # replace the token by it's expansion!!!
     pop(@{ $$self{token_stack} });
     goto INVOKE; }
@@ -221,7 +232,7 @@ sub invokeToken_simple {
     if ($STATE->lookupValue('IN_MATH')) {    # (but in Preamble, OK ?)
       return (); }
     else {
-      return Box($meaning->getString, $font, $$self{gullet}->getLocator, $meaning); } }
+      return Box($meaning->getString, $font, $self->getGullet->getLocator, $meaning); } }
   elsif ($cc == CC_COMMENT) {                # Note: Comments need char decoding as well!
     my $comment = LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1);
     # However, spaces normally would have be digested away as positioning...
@@ -344,16 +355,17 @@ sub setMode {
     # When entering math mode, we set the font to the default math font,
     # and save the text font for any embedded text.
     $STATE->assignValue(savedfont => $curfont, 'local');
+    $STATE->assignValue(script_base_level => scalar(@{ $$self{boxing} }));    # See getScriptLevel
     $STATE->assignValue(font => $STATE->lookupValue('mathfont')->merge(
-        color => $curfont->getColor, background => $curfont->getBackground,
-        size => $curfont->getSize,
+        color     => $curfont->getColor, background => $curfont->getBackground,
+        size      => $curfont->getSize,
         mathstyle => ($mode =~ /^display/ ? 'display' : 'text')), 'local'); }
   else {
     # When entering text mode, we should set the font to the text font in use before the math
     # but inherit color and size
     $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
         color => $curfont->getColor, background => $curfont->getBackground,
-        size => $curfont->getSize), 'local'); }
+        size  => $curfont->getSize), 'local'); }
   return; }
 
 sub beginMode {

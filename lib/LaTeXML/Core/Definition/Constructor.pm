@@ -43,11 +43,11 @@ sub new {
     "Replacement is $replacement")
     if !(defined $replacement) || ((ref $replacement) && !(ref $replacement eq 'CODE'));
   return bless { cs => $cs, parameters => $parameters, replacement => $replacement,
-    locator => "from " . $source->getLocator(-1), %traits,
+    locator => $source->getLocator, %traits,
 ##    nargs => (defined $traits{nargs} ? $traits{nargs}
     ##  : ($parameters ? $parameters->getNumArgs : 0))
     nargs => $traits{nargs}
-    }, $class; }
+  }, $class; }
 
 sub getReversionSpec {
   my ($self) = @_;

@@ -1,0 +1,492 @@
+\documentclass{article}
+  \usepackage{etoolbox}
+  
+  % --- preamble/postamble document hooks
+  \AtEndPreamble{\typeout{atendpreamble}\def\secret{hello}}
+  \AfterPreamble{\typeout{afterpreamble}\secret.\renewcommand{\secret}{world}}
+  \AfterEndPreamble{\typeout{afterendpreamble}\secret.}
+  \AfterEndDocument{never printed}
+  
+  \def\where{(outside)}
+  \def\goinside{\def\where{(inside)}}
+  
+  \newenvironment{stuff}{Begin stuff.}{End stuff.}
+  \AtBeginEnvironment{stuff}{\goinside}
+  \AtBeginEnvironment{stuff}{At Begin stuff\where.}
+  \AtEndEnvironment{stuff}{At End stuff\where.}
+  \BeforeBeginEnvironment{stuff}{Before Begin stuff\where.}
+  \AfterEndEnvironment{stuff}{After End stuff\where.}
+  
+  \AtBeginEnvironment{equation}{\goinside}
+  \AtBeginEnvironment{equation}{At Begin equation\where.}
+  \AtEndEnvironment{equation}{\textrm{ At End equation\where.}}
+  \BeforeBeginEnvironment{equation}{Before Begin equation\where.}
+  \AfterEndEnvironment{equation}{After End equation\where.}
+  
+  \AtBeginEnvironment{verbatim}{\goinside}
+  \AtBeginEnvironment{verbatim}{Begin verbatim\where:\some \code.}
+  \AtEndEnvironment{verbatim}{End verbatim\where: \some \code.}
+  \BeforeBeginEnvironment{verbatim}{Before Begin verbatim\where.}
+  \AfterEndEnvironment{verbatim}{After End verbatim\where.}
+  
+\begin{document}
+
+\section{User commands}
+
+% --- counters
+\newcommand\basic{basic}
+\robustify{\basic}
+\protecting{\textit{\basic}}
+
+\newcounter{countfour}
+\defcounter{countfour}{2+2}
+\the\value{countfour}
+
+% --- lengths
+%     source: https://tex.stackexchange.com/a/286171/78008
+\newcommand{\etminof}[2]{%
+	\ifdimgreater{#1}{#2}{%
+		#2%
+	}{%
+		#1% Is smaller or equal
+	}%
+}
+\newcommand{\etmaxof}[2]{%
+	\ifdimgreater{#1}{#2}{%
+		#1%
+	}{%
+		#2% Is greater or equal
+	}%
+}
+\newlength{\foo}
+\newlength{\foobar}
+\deflength{\foo}{\etminof{1in}{2in}}
+\deflength{\foobar}{\etmaxof{5in}{10in}}
+
+\the\foo
+
+\the\foobar
+
+% --- 
+\section{Hooks}
+
+\begin{stuff}
+	This is Stuff!
+\end{stuff}
+
+\begin{equation}
+	a = b
+\end{equation}
+
+\def\some{Some }
+\def\code{Code}
+\begin{verbatim}
+\some \code
+\end{verbatim}
+
+% --- 
+\section{Author commands}
+\subsection{Definitions}
+\subsubsection{Macro definitions}
+% --- overload test
+\csdef{path-PB}{path of PB}
+\csdef{path-UF}{path of UF}
+
+\newrobustcmd\whoami{PB}
+\newrobustcmd\mypath{\csuse{path-\whoami}}
+
+\mypath
+
+\renewrobustcmd\whoami{UF}
+
+\mypath
+
+\providerobustcmd\whoami{noop}
+
+\mypath
+
+% --- other shorthand utilities
+\def\orange{orange}
+\cslet{apple}\orange
+\letcs\kiwi{apple}
+\csletcs{fruit}{orange}
+\apple = \kiwi = \fruit = orange
+
+\def\deftestone{1}
+\def\deftesttwo{1}
+deftestone is \ifdefined\deftestone defined \else undefined\fi. After undef, \undef\deftestone
+deftestone is \ifdefined\deftestone defined \else undefined\fi.
+
+deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi. After csundef, \csundef{deftesttwo}
+deftesttwo is \ifdefined\deftesttwo defined \else undefined\fi.
+
+\csmeaning{orange}
+
+\subsubsection{Arithmetic definitions}
+\numdef\arithone{2 + 4 * 8}
+2 + 4 * 8 = \arithone
+
+\bgroup\numgdef\arithtwo{3 + 5 * 7}\egroup
+3 + 5 * 7 = \arithtwo
+
+\bgroup\csnumgdef{ariththree}{4 + 6 * 8}\egroup
+4 + 6 * 8 = \ariththree
+
+\dimdef\dimone{1pt + 2em}
+1pt + 2em = \dimone
+
+\bgroup\dimgdef\dimtwo{3pt + 1em}\egroup
+3pt + 1em = \dimtwo
+
+\bgroup\csdimgdef{dimthree}{4pt + 0.5em}\egroup
+4pt + 0.5em = \dimthree
+
+\gluedef\glueone{10pt plus 2pt minus 3pt}
+10pt plus 2pt minus 3pt = \glueone
+
+\bgroup\csgluegdef{gluetwo}{4pt minus 1pt}\egroup
+4pt minus 1pt = \gluetwo
+
+\bgroup\csmugdef{muone}{5mu}\egroup
+5mu = \muone
+% ---
+\subsection{Expansion control}
+\def\lvlone{first}
+\def\lvltwo{\lvlone}
+\def\lvlthree{\lvltwo}
+\edef\elvl{\lvlthree}
+\edef\lvltest{\expandonce{\lvlthree}}
+\edef\lvltesttwo{\csexpandonce{lvltwo}}
+full expansion: \meaning\elvl
+
+expand once: \meaning\lvltest
+
+csexpandonce: \meaning\lvltesttwo
+
+\subsection{Hook management}
+% Source: https://www.dickimaw-books.com/latex/admin/html/hooks.shtml
+
+\newcommand{\mymacro}{x}%
+\mymacro;
+\appto\mymacro{AB}%
+\mymacro;
+\appto\mymacro{YZ}%
+\mymacro.
+
+\renewcommand{\mymacro}{x}%
+\newcommand{\myothermacro}{AB}%
+\epreto\mymacro{\myothermacro}%
+\renewcommand{\myothermacro}{YZ}%
+\eappto\mymacro{\myothermacro}
+\mymacro.
+
+\renewcommand{\mymacro}{x}%
+\newcommand{\mymacroB}{\mymacroC}%
+\newcommand{\mymacroC}{\mymacroD}%
+\newcommand{\mymacroD}{Z}%
+\eappto\mymacro{\mymacroB}
+\mymacro.
+
+\newcommand{\premacro}{x}
+\bgroup\csgpreto{premacro}{pre-}\egroup
+\premacro.
+
+\subsection{Patching}
+\def\patchme{example -- here}
+patching: \patchcmd\patchme{--}{patched}{ok}{fail}
+
+\patchme
+
+relax is \ifpatchable*{\relax}{}{not} patchable
+
+begin is \ifpatchable*{\begin}{}{not} patchable
+
+\def\paramacro#1#2{#1 and #2}
+\paramacro{first}{second}
+
+appending to paramacro: \apptocmd\paramacro{. Post}{ok}{fail}\newline
+\paramacro{first}{second}
+
+prepending to paramacro: \pretocmd\paramacro{Pre. }{ok}{fail}\newline
+\paramacro{first}{second}
+
+\subsection{Boolean Flags}
+
+\newbool{boolvar}
+boolvar is \ifbool{boolvar}{true}{false}.
+
+\setbool{boolvar}{true}
+set to true. boolvar is \ifbool{boolvar}{true}{false}.
+
+\setbool{boolvar}{false}
+set to false. boolvar is \ifbool{boolvar}{true}{false}.
+
+\booltrue{boolvar}
+set to true. boolvar is \notbool{boolvar}{false}{true}.
+
+\boolfalse{boolvar}
+set to false. boolvar is \notbool{boolvar}{false}{true}.
+
+\newtoggle{ltxbool}
+ltxbool is \iftoggle{ltxbool}{true}{false}
+
+\settoggle{ltxbool}{true}
+set to true. ltxbool is \iftoggle{ltxbool}{true}{false}
+
+\settoggle{ltxbool}{false}
+set to false. ltxbool is \iftoggle{ltxbool}{true}{false}
+
+\toggletrue{ltxbool}
+set to true. ltxbool is \nottoggle{ltxbool}{false}{true}
+
+\togglefalse{ltxbool}
+set to false. ltxbool is \nottoggle{ltxbool}{false}{true}
+
+\subsection{Generic Tests}
+
+noise is \ifcsdef{noise}{}{not} defined.
+
+begin is \ifcsdef{begin}{}{not} defined.
+
+relax is \ifcsdef{relax}{}{not} defined.
+
+relax is ifundef: \ifundef{\relax}{true}{false}
+
+relax is ifcsundef: \ifcsundef{relax}{true}{false}
+
+nosuchmacro is \ifdefmacro{\nosuchmacro}{a macro}{not a macro}
+
+relax is \ifdefmacro{\relax}{a macro}{not a macro}
+
+begin is \ifdefmacro{\begin}{a macro}{not a macro}
+
+nobeginning is \ifundef{\nobeginning}{un}{} defined.
+
+begin is \ifundef{\begin}{un}{} defined.
+
+relax is \ifdefparam{\relax}{}{not} defparam
+
+begin is \ifdefparam{\begin}{}{not} defparam
+
+apptocmd is \ifdefprotected{\apptocmd}{}{not} defprotected
+
+ifdefprotected is \ifdefprotected{\ifdefprotected}{}{not} defprotected
+
+relax is \ifdefprotected{\relax}{}{not} defprotected
+
+begin is \ifdefprotected{\begin}{}{not} defprotected
+
+prefix test begin: \ifcsprefix{begin}{true}{false}
+
+prefix test noise: \ifcsprefix{noise}{true}{false}
+
+prefix test newrobustcmd: \ifcsprefix{newrobustcmd}{true}{false}
+
+prefix test newrobustcmd: \ifcsprefix{newrobustcmd}{true}{false}
+
+ifcsltxprotect relax: \ifcsltxprotect{relax}{true}{false}
+
+\DeclareRobustCommand{\myltxrobust}{test}
+ifcsltxprotect myltxrobust: \ifcsltxprotect{myltxrobust}{true}{false}
+
+\def\myempty{}
+ifdefempty myempty: \ifdefempty\myempty{true}{false}
+
+\def\myrelax{\relax}
+\let\letrelax\relax
+ifdefempty myrelax: \ifdefempty\myrelax{true}{false}
+
+ifcsvoid myempty: \ifcsvoid{myempty}{true}{false}
+
+ifcsvoid myrelax: \ifcsvoid{myrelax}{true}{false}
+
+ifcsvoid letrelax: \ifcsvoid{letrelax}{true}{false}
+
+ifcsvoid begin: \ifcsvoid{begin}{true}{false}
+
+ifdefequal myempty-myrelax: \ifdefequal\myempty\myrelax{true}{false}
+
+ifdefequal letrelax-myrelax: \ifdefequal\letrelax\myrelax{true}{false}
+
+ifdefequal begin-begin: \ifdefequal\begin\begin{true}{false}
+
+ifdefequal myempty-myempty: \ifdefequal\myempty\myempty{true}{false}
+
+\long\edef\mymacro#1#2{\string&}
+ifdefstring mymacro-ampersand: \ifdefstring{\mymacro}{&}{true}{false}
+
+ifdefstring myrelax-relax: \ifdefstring{\myrelax}{\relax}{true}{false}
+
+ifdefstring myempty-{}: \ifdefstring{\myempty}{}{true}{false}
+
+ifdefstring basic-basic: \ifdefstring{\basic}{basic}{true}{false}
+
+ifcsstrequal basic-basic \ifcsstrequal{basic}{basic}{true}{false}
+
+ifcsstrequal relax-relax \ifcsstrequal{relax}{relax}{true}{false}
+
+ifcsstrequal myempty-relax \ifcsstrequal{myempty}{relax}{true}{false}
+
+\def\anotherempty{}
+ifcsstrequal myempty-anotherempty \ifcsstrequal{myempty}{anotherempty}{true}{false}
+
+% -- end of macro tests.
+% -- start of counter and length tests:
+
+ifdefcounter relax: \ifdefcounter{\relax}{true}{false}
+
+\newcount\mycount
+ifdefcounter mycount: \ifdefcounter{\mycount}{true}{false}
+
+\mycount 4\relax
+ifdefcounter mycount, after set: \ifdefcounter{\mycount}{true}{false}
+
+\newcounter{latexcounter}
+ifdefcounter latexcounter: \ifdefcounter{\latexcounter}{true}{false}
+
+\stepcounter{latexcounter}
+ifdefcounter latexcounter, after step: \ifdefcounter{\latexcounter}{true}{false}
+
+\newskip\myskip
+ifdefcounter myskip: \ifdefcounter{\myskip}{true}{false}
+
+\newlength\mylen
+ifdefcounter mylen: \ifdefcounter{\mylen}{true}{false}
+
+\newdimen\mydimen
+ifdefcounter mydimen: \ifdefcounter{\mydimen}{true}{false}
+
+ifltxcounter relax: \ifltxcounter{relax}{true}{false}
+
+ifltxcounter mycount: \ifltxcounter{mycount}{true}{false}
+
+ifltxcounter latexcounter: \ifltxcounter{latexcounter}{true}{false}
+
+ifdeflength relax: \ifdeflength{\relax}{true}{false}
+
+ifdeflength mycount: \ifdeflength{\mycount}{true}{false}
+
+ifdeflength myskip: \ifdeflength{\myskip}{true}{false}
+
+ifdeflength mylen: \ifdeflength{\mylen}{true}{false}
+
+ifdeflength mydimen: \ifdeflength{\mydimen}{true}{false}
+
+ifdefdimen relax: \ifdefdimen{\relax}{true}{false}
+
+ifdefdimen mycount: \ifdefdimen{\mycount}{true}{false}
+
+ifdefdimen myskip: \ifdefdimen{\myskip}{true}{false}
+
+ifdefdimen mylen: \ifdefdimen{\mylen}{true}{false}
+
+ifdefdimen mydimen: \ifdefdimen{\mydimen}{true}{false}
+
+% -- end of counter tests
+% -- string tests
+
+ifstrequal test 1 (false): \ifstrequal{my\relaxing}{\myrelaxing}{true}{false}
+
+ifstrequal test 2 (true): \ifstrequal{my\relaxing}{my\relaxing}{true}{false}
+
+ifstrequal test 3 (true): \ifstrequal{\myrelaxing}{\myrelaxing}{true}{false}
+
+ifstrequal test 4 (true): \ifstrequal{simple}{simple}{true}{false}
+
+ifstrequal test 5 (false): \ifstrequal{simple}{simpler}{true}{false}
+
+ifstrempty test 1 (true): \ifstrempty{}{true}{false}
+
+ifstrempty test 2 (false): \ifstrempty{\myempty}{true}{false}
+
+ifstrempty test 3 (false): \ifstrempty{""}{true}{false}
+
+ifstrempty test 4 (false): \ifstrempty{   }{true}{false}
+
+ifblank test 1 (true): \ifblank{}{true}{false}
+
+ifblank test 2 (false): \ifblank{\myempty}{true}{false}
+
+ifblank test 3 (false): \ifblank{""}{true}{false}
+
+ifblank test 4 (true): \ifblank{   }{true}{false}
+
+notblank test 1 (false): \notblank{}{true}{false}
+
+notblank test 2 (true): \notblank{\myempty}{true}{false}
+
+notblank test 3 (true): \notblank{""}{true}{false}
+
+notblank test 4 (false): \notblank{   }{true}{false}
+
+% -- end of string tests
+% -- arithmetic tests
+
+ifnumcomp (false): \ifnumcomp{3}{>}{6}{true}{false}
+
+ifnumcomp (true): \ifnumcomp{(7 + 5) / 2}{=}{6}{true}{false}
+
+ifnumcomp (false): \ifnumcomp{(7+5) / 4}{>}{3*(12-10)}{true}{false}
+
+\newcounter{countA}
+\setcounter{countA}{6}
+\newcounter{countB}
+\setcounter{countB}{5}
+
+ifnumcomp (true): \ifnumcomp{\value{countA} * \value{countB}/2}{=}{15}{true}{false}
+
+ifnumcomp (true): \ifnumcomp{6/2}{=}{5/2}{true}{false}
+
+% -- end arithemtic tests
+% -- boolean tests
+\newbool{boolA}
+\newbool{boolB}
+
+ifboolexpr (false): \ifboolexpr{bool {boolA}}{true}{false}
+
+ifboolexpr (true): \ifboolexpr{not ( test {\ifcsdef{undefd}} or bool {boolA} )}
+{true}{false}
+
+\subsection{List Processing}
+
+\noindent Itemize list:
+\begin{itemize}
+	\renewcommand*{\do}[1]{\item #1}
+	      \docsvlist{item1, item2, {item3a, item3b}, item4}
+\end{itemize}
+
+\renewcommand*{\do}[1]{\indent * #1\newline}
+\noindent Poor man's list:\newline
+\docsvlist{item1, item2, {item3a, item3b}, item4}
+
+\forcsvlist{\listadd\mylist}{itemA, itemB, itemC}
+Dolistloop itemize:
+\begin{itemize}
+	\renewcommand*{\do}[1]{\item #1}
+	      \dolistloop{\mylist}
+\end{itemize}
+
+\newcounter{itemcount}
+Forlistloop itemize:
+\begin{itemize}
+	\forlistloop{\stepcounter{itemcount}\item}{\mylist}
+	\item Total: \number\value{itemcount} items
+\end{itemize}
+
+\renewcommand*{\do}[1]{%
+	\ifstrequal{#1}{itemB}
+	{item found!\listbreak}
+	{}}
+dolistloop search: \dolistloop{\mylist}
+
+\subsection{Miscellaneous Tools}
+
+1995 = \rmntonum{mcmxcv}
+
+\newcounter{rmcounter}
+\setcounter{rmcounter}{\rmntonum{CXVI}}
+116 = \the\value{rmcounter}
+
+ifnumless (true): \ifnumless{\rmntonum{mcmxcviii}}{2000}{true}{false}
+
+\end{document}

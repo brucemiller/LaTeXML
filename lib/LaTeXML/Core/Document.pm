@@ -44,9 +44,9 @@ sub new {
   my $doc = XML::LibXML::Document->new("1.0", "UTF-8");
   # We'll set the DocType when the 1st Element gets added.
   return bless { document => $doc, node => $doc, model => $model,
-    idstore => {}, labelstore => {},
+    idstore    => {}, labelstore => {},
     node_fonts => {}, node_boxes => {}, node_properties => {},
-    pending => [], progress => 0 }, $class; }
+    pending    => [], progress   => 0 }, $class; }
 
 #**********************************************************************
 # Basic Accessors
@@ -80,11 +80,11 @@ sub setNode {
   return; }
 
 sub getLocator {
-  my ($self, @args) = @_;
+  my ($self) = @_;
   if (my $box = $self->getNodeBox($$self{node})) {
-    return $box->getLocator(@args); }
+    return $box->getLocator; }
   else {
-    return 'EOF?'; } }    # well?
+    return; } }    # well?
 
 # Get the element at (or containing) the current insertion point.
 sub getElement {
@@ -116,6 +116,15 @@ sub getFirstChildElement {
       $n = $n->nextSibling; }
     return $n; }
   return; }
+
+# get the second element node (if any) in $node
+sub getSecondChildElement {
+  my ($self, $node) = @_;
+  my $first_child = $self->getFirstChildElement($node);
+  my $second_child = $first_child && $first_child->nextSibling;
+  while ($second_child && $second_child->nodeType != XML_ELEMENT_NODE) {
+    $second_child = $second_child->nextSibling; }
+  return $second_child; }
 
 # Find the nodes according to the given $xpath expression,
 # the xpath is relative to $node (if given), otherwise to the document node.
@@ -262,7 +271,7 @@ sub getTagActionList {
     (($v = $$taghash{$when1}) ? @$v : ()),
     (($v = $$nshash{$when1})  ? @$v : ()),
     (($v = $$allhash{$when1}) ? @$v : ()),
-    ); }
+  ); }
 
 #**********************************************************************
 # This is a diagnostic tool that MIGHT help locate XML::LibXML bugs;
@@ -355,9 +364,11 @@ sub finalize {
 
 sub finalize_rec {
   my ($self, $node) = @_;
-  my $model               = $$self{model};
-  my $qname               = $model->getNodeQName($node);
-  my $declared_font       = $LaTeXML::FONT;
+  my $model = $$self{model};
+  my $qname = $model->getNodeQName($node);
+  # _standalone_font is typically for metadata that gets extracted out of context
+  my $declared_font = ($node->getAttribute('_standalone_font')
+    ? LaTeXML::Common::Font->textDefault : $LaTeXML::FONT);
   my $desired_font        = $LaTeXML::FONT;
   my %pending_declaration = ();
   if (my $comment = $node->getAttribute('_pre_comment')) {
@@ -371,12 +382,19 @@ sub finalize_rec {
     if (($node->hasChildNodes || $node->getAttribute('_force_font'))
       && scalar(keys %pending_declaration)) {
       foreach my $attr (keys %pending_declaration) {
+        # Add (or combine, for @class) the attributes to the current node.
         if ($model->canHaveAttribute($qname, $attr)) {
-          $self->setAttribute($node, $attr => $pending_declaration{$attr}{value});
+          my $value = $pending_declaration{$attr}{value};
+          if ($attr eq 'class') {    # Generalize?
+            if (my $ovalue = $node->getAttribute('class')) {
+              $value .= ' ' . $ovalue; } }
+          $self->setAttribute($node, $attr => $value);
+
           # Merge to set the font currently in effect
           $declared_font = $declared_font->merge(%{ $pending_declaration{$attr}{properties} });
           delete $pending_declaration{$attr}; } }
-    } }
+  } }
+
   local $LaTeXML::FONT = $declared_font;
   foreach my $child ($node->childNodes) {
     my $type = $child->nodeType;
@@ -393,19 +411,26 @@ sub finalize_rec {
     }
     # On the other hand, if the font declaration has NOT been effected,
     # We'll need to put an extra wrapper around the text!
+    # This is usually ltx:text, but Font information can override this (eg. for \emph)
     elsif ($type == XML_TEXT_NODE) {
       # Remove any pending declarations that can't be on $FONT_ELEMENT_NAME
+      my $elementname = $pending_declaration{element}{value} || $FONT_ELEMENT_NAME;
       foreach my $key (keys %pending_declaration) {
-        delete $pending_declaration{$key} unless $self->canHaveAttribute($FONT_ELEMENT_NAME, $key); }
-      if ($self->canContain($qname, $FONT_ELEMENT_NAME)
+        delete $pending_declaration{$key} unless $self->canHaveAttribute($elementname, $key); }
+      if ($self->canContain($qname, $elementname)
         && scalar(keys %pending_declaration)) {
         # Too late to do wrapNodes?
-        my $text = $self->wrapNodes($FONT_ELEMENT_NAME, $child);
+        my $text = $self->wrapNodes($elementname, $child);
+        # Add (or combine) attributes
         foreach my $attr (keys %pending_declaration) {
-          $self->setAttribute($text, $attr => $pending_declaration{$attr}{value}); }
+          my $value = $pending_declaration{$attr}{value};
+          if ($attr eq 'class') {    # Generalize?
+            if (my $ovalue = $text->getAttribute('class')) {
+              $value .= ' ' . $ovalue; } }
+          $self->setAttribute($text, $attr => $value); }
         $self->finalize_rec($text);    # Now have to clean up the new node!
       }
-    } }
+  } }
 
   # Attributes that begin with (the semi-legal) "_" are for Bookkeeping.
   # Remove them now.
@@ -686,6 +711,11 @@ sub openText {
   print STDERR "Insert text \"$text\" /" . Stringify($font) . " at " . Stringify($node) . "\n"
     if $LaTeXML::Core::Document::DEBUG;
 
+  # Get the desired font attributes, particularly the desired element
+  # (usually ltx:text, but let Font override, eg for \emph)
+  my $declared_font       = $self->getNodeFont($node);
+  my %pending_declaration = $font->relativeTo($declared_font);
+  my $elementname         = $pending_declaration{element}{value} || $FONT_ELEMENT_NAME;
   if (($t != XML_DOCUMENT_NODE)    # If not at document begin
     && !(($t == XML_TEXT_NODE) &&    # And not appending text in same font.
       ($font->distance($self->getNodeFont($node->parentNode)) == 0))) {
@@ -695,16 +725,14 @@ sub openText {
     my $n = $node;
     while ($n->nodeType != XML_DOCUMENT_NODE) {
       my $d = $font->distance($self->getNodeFont($n));
-     #print STDERR "Font Compare: ".Stringify($n)." w/font=".Stringify($self->getNodeFont($n))." ==>$d\n";
-
       if ($d < $bestdiff) {
         $bestdiff = $d;
         $closeto  = $n;
         last if ($d == 0); }
-      last if ($$self{model}->getNodeQName($n) ne $FONT_ELEMENT_NAME) || $n->getAttribute('_noautoclose');
+      last if ($$self{model}->getNodeQName($n) ne $elementname) || $n->getAttribute('_noautoclose');
       $n = $n->parentNode; }
     $self->closeToNode($closeto) if $closeto ne $node;    # Move to best starting point for this text.
-    $self->openElement($FONT_ELEMENT_NAME, font => $font, _fontswitch => 1) if $bestdiff > 0; # Open if needed.
+    $self->openElement($elementname, font => $font, _fontswitch => 1) if $bestdiff > 0; # Open if needed.
   }
   # Finally, insert the darned text.
   my $tnode = $self->openText_internal($text);
@@ -1441,8 +1469,10 @@ sub mergeNodeFontRec {
 
 sub getNodeFont {
   my ($self, $node) = @_;
-  my $t = $node->nodeType;
-  return (($t == XML_ELEMENT_NODE) && $$self{node_fonts}{ $node->getAttribute('_font') })
+  my $t;
+  while ($node && (($t = $node->nodeType) != XML_ELEMENT_NODE)) {
+    $node = $node->parentNode; }
+  return ($node && ($t == XML_ELEMENT_NODE) && $$self{node_fonts}{ $node->getAttribute('_font') })
     || LaTeXML::Common::Font->textDefault(); }
 
 sub getNodeLanguage {

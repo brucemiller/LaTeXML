@@ -27,4 +27,48 @@ A Quote!</p>
 A Quote!</p>
     </quote>
   </para>
+  <para xml:id="p5">
+    <quote>
+<!--  %**** environments.tex Line 25 **** -->      <p>a + b</p>
+    </quote>
+  </para>
+  <para xml:id="p6">
+    <quote>
+      <p>a + b</p>
+    </quote>
+  </para>
+  <para xml:id="p7">
+    <equation xml:id="S0.E1">
+      <tags>
+        <tag>(1)</tag>
+        <tag role="refnum">1</tag>
+      </tags>
+      <Math mode="display" tex="a+b" text="a + b" xml:id="S0.E1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p8">
+    <equation xml:id="S0.E2">
+      <tags>
+        <tag>(2)</tag>
+        <tag role="refnum">2</tag>
+      </tags>
+      <Math mode="display" tex="a+b" text="a + b" xml:id="S0.E2.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
 </document>

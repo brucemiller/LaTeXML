@@ -31,7 +31,7 @@ DeclareOption('pflt', sub { AssignValue(floatfltpos => 'p'); });
 DeclareOption('vflt', sub { AssignValue(floatfltpos => 'v'); });
 
 DefEnvironment('{floatingfigure}[]{Dimension}',
-  "<ltx:figure xml:id='#id' float='#float' width='#pctwidth'>"
+  "<ltx:figure xml:id='#id' inlist='#inlist' float='#float' width='#pctwidth'>"
     . "#tags"
     . "#body"
     . "</ltx:figure>",
@@ -42,7 +42,7 @@ DefEnvironment('{floatingfigure}[]{Dimension}',
       pctwidth => toPercent($_[2])); });
 
 DefEnvironment('{floatingtable}[]{Dimension}',
-  "<ltx:table xml:id='#id' float='#float' width='#pctwidth'>"
+  "<ltx:table xml:id='#id' inlist='#inlist' float='#float' width='#pctwidth'>"
     . "#tags"
     . "#body"
     . "</ltx:table>",
