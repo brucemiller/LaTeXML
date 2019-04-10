@@ -67,7 +67,7 @@ sub getopt_specification {
     "mode=s"      => \$$opts{profile},
     "source=s"    => \$$opts{source},
     # Output framing
-    "embed"      => sub { $$opts{whatsout} = 'fragment'; },
+    "embed" => sub { $$opts{whatsout} = 'fragment'; },
     "whatsin=s"  => \$$opts{whatsin},
     "whatsout=s" => \$$opts{whatsout},
     # Daemon options
@@ -186,12 +186,12 @@ sub read {
   my $getOptions_success = GetOptions(%{$spec});
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   if (!$silent && $$opts{help}) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', output => \*STDOUT);
   }
 
@@ -237,7 +237,7 @@ sub scan_to_keyvals {
   my $getOptions_success = GetOptions(%$spec);
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   CORE::push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];
@@ -375,6 +375,7 @@ sub _prepare_options {
   $$opts{timeout}     = 600          unless defined $$opts{timeout};       # 10 minute timeout default
   $$opts{expire}      = 600          unless defined $$opts{expire};        # 10 minute timeout default
   $$opts{mathparse}   = 'RecDescent' unless defined $$opts{mathparse};
+  $$opts{inputencoding} = "utf-8" unless defined $$opts{inputencoding};
   if ($$opts{mathparse} eq 'no') {
     $$opts{mathparse}   = 0;
     $$opts{nomathparse} = 1; }                                             #Backwards compatible

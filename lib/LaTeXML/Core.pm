@@ -52,7 +52,10 @@ sub new {
   $state->assignValue(GRAPHICSPATHS => [map { pathname_absolute(pathname_canonical($_)) }
         @{ $options{graphicspaths} || [] }], 'global');
   $state->assignValue(INCLUDE_STYLES => $options{includestyles} || 0, 'global');
-  $state->assignValue(PERL_INPUT_ENCODING => $options{inputencoding}) if $options{inputencoding};
+  # Core has to ensure a default input encoding, and we default towards modern utf-8 documents
+  # This can be removed when all executables rely on LaTeXML::Common::Config
+  $options{inputencoding} = "utf-8" unless $options{inputencoding};
+  $state->assignValue(PERL_INPUT_ENCODING => $options{inputencoding});
   $state->assignValue(NOMATHPARSE => $options{nomathparse} || 0, 'global');
   return bless { state => $state,
     nomathparse => $options{nomathparse} || 0,
