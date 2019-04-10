@@ -2205,6 +2205,7 @@ DefConstructor('\lx@stackrel{}{}',
     . "<ltx:XMArg>#2</ltx:XMArg>"
     . "<ltx:XMArg>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
+  reversion => '\stackrel{#1}{#2}',
   properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } }
 );
 #======================================================================-
