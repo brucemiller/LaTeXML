@@ -19,6 +19,7 @@ use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use LaTeXML::Util::Pathname;
+use Encode qw(decode);
 use base qw(LaTeXML::Common::Object);
 
 # Factory method;
@@ -62,6 +63,14 @@ sub new {
 
 sub openString {
   my ($self, $string) = @_;
+  if (defined $string) {
+    if (my $encoding = $STATE->lookupValue('PERL_INPUT_ENCODING')) {
+     # Note that if chars in the input cannot be decoded, they are replaced by \x{FFFD}
+     # I _think_ that for TeX's behaviour we actually should turn such un-decodeable chars in to space(?).
+      $string = decode($encoding, $string, Encode::FB_DEFAULT);
+      if ($string =~ s/\x{FFFD}/ /g) {    # Just remove the replacement chars, and warn (or Info?)
+        Info('misdefined', $encoding, $self, "input isn't valid under encoding $encoding"); } } }
+
   $$self{string} = $string;
   $$self{buffer} = [(defined $string ? splitLines($string) : ())];
   return; }
