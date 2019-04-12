@@ -73,7 +73,7 @@ sub pathname_make {
       $pathname =~ s|\Q$SEP\E$||; $dir =~ s|^\Q$SEP\E||;
       $pathname .= $SEP . $dir; } }
   $pathname .= $SEP if $pathname && $pieces{name} && $pathname !~ m|\Q$SEP\E$|;
-  $pathname .= $pieces{name} if $pieces{name};
+  $pathname .= $pieces{name}       if $pieces{name};
   $pathname .= '.' . $pieces{type} if $pieces{type};
   return pathname_canonical($pathname); }
 
@@ -381,7 +381,7 @@ sub build_kpse_cache {
   # These are directories which contain the tex related files we're interested in.
   # (but they're typically below where the ls-R indexes are!)
   my $texpaths = `"$kpsewhich" --show-path tex $kpse_toolchain`; chomp($texpaths);
-  my @filters = ();
+  my @filters  = ();
   foreach my $path (split(/$KPATHSEP/, $texpaths)) {
     $path =~ s/^!!//; $path =~ s|//+$|/|;
     push(@filters, $path) if -d $path; }

@@ -33,7 +33,7 @@ our ($KPSEV, $TEXMF);
 my ($texmfspec) = grep { /^TEXMF/ } @ARGV;
 if ($texmfspec && $texmfspec =~ /^TEXMF\s*=(.*)$/) {
   $TEXMF = $1;
-  @ARGV = grep { $_ ne $texmfspec } @ARGV; }    # Remove so MakeMaker doesn't fret.
+  @ARGV  = grep { $_ ne $texmfspec } @ARGV; }    # Remove so MakeMaker doesn't fret.
 our @EXCLUSIONS     = ();
 our $MORE_MACROS    = {};
 our $MORE_MAKERULES = '';
@@ -87,7 +87,7 @@ WriteMakefile(NAME => 'LaTeXML',
   # link to  github location to newer MakeMaker
   (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (META_MERGE => {
         'meta-spec' => { version => 2 },
-        resources => {
+        resources   => {
           repository => {
             type => 'git',
             url  => 'https://github.com/brucemiller/LaTeXML.git',

@@ -130,7 +130,7 @@ sub postprocess_xmlfile {
   my $xmath = LaTeXML::Post::XMath->new();
   return do_fail($name, "Couldn't instanciate LaTeXML::Post::XMath") unless $xmath;
   $xmath->setParallel(LaTeXML::Post::MathML::Presentation->new());
-  my @procs = ($xmath);
+  my @procs       = ($xmath);
   my $latexmlpost = LaTeXML::Post->new(verbosity => -1);
   return do_fail($name, "Couldn't instanciate LaTeXML::Post:") unless $latexmlpost;
 
@@ -164,9 +164,9 @@ sub process_xmlfile {
 
 sub process_domstring {
   my ($domstring, $name, $compare_kind) = @_;
-  if ($compare_kind && $compare_kind eq 'words') { # words
+  if ($compare_kind && $compare_kind eq 'words') {    # words
     return [split(/\s+/, $domstring)]; }
-  else { # lines
+  else {                                              # lines
     return [split('\n', $domstring)]; } }
 
 # $strings1 is the currently generated material
@@ -174,7 +174,7 @@ sub process_domstring {
 sub is_strings {
   my ($strings1, $strings2, $name) = @_;
   my $max = $#$strings1 > $#$strings2 ? $#$strings1 : $#$strings2;
-  my $ok = 1;
+  my $ok  = 1;
   for (my $i = 0 ; $i <= $max ; $i++) {
     my $string1 = $$strings1[$i];
     my $string2 = $$strings2[$i];
@@ -213,7 +213,7 @@ sub daemon_ok {
   my $path_to_perl = $Config{perlpath};
 
   my $invocation = $path_to_perl . " " . join(" ", map { ("-I", $_) } @INC) . " " . $latexmlc . ' ';
-  my $timed = undef;
+  my $timed      = undef;
   foreach my $opt (@$opts) {
     if ($$opt[0] eq 'timeout') {    # Ensure .opt timeout takes precedence
       if ($timed) { next; } else { $timed = 1; }
