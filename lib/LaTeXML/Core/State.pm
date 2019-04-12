@@ -101,7 +101,7 @@ sub new {
     my %std = ("\\" => CC_ESCAPE, "{" => CC_BEGIN, "}" => CC_END, "\$" => CC_MATH,
       "\&" => CC_ALIGN, "\r" => CC_EOL,   "#"  => CC_PARAM, "^" => CC_SUPER,
       "_"  => CC_SUB,   " "  => CC_SPACE, "\t" => CC_SPACE, "%" => CC_COMMENT,
-      "~" => CC_ACTIVE, chr(0) => CC_IGNORE);
+      "~" => CC_ACTIVE, chr(0) => CC_IGNORE, "\f" => CC_ACTIVE);
     map { $$self{catcode}{$_} = [$std{$_}] } keys %std;
     for (my $c = ord('A') ; $c <= ord('Z') ; $c++) {
       $$self{catcode}{ chr($c) } = [CC_LETTER];
@@ -726,7 +726,7 @@ sub getStatusCode {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

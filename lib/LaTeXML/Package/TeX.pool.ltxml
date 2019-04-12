@@ -381,7 +381,7 @@ DefParameterType('DirectoryList', sub {
       else {
         Error('expected', '}', $gullet, "A closing } was supposed to be here"); }
       LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, itemopen => T_BEGIN, itemclose => T_END,
-        type => LaTeXML::Package::parseParameters(ToString("Semiverbatim"), "CommaList")->[0],
+        type   => LaTeXML::Package::parseParameters(ToString("Semiverbatim"), "CommaList")->[0],
         values => [@dirs]); }
     else {
       Error('expected', 'DirectoryList', $gullet, "A DirectoryList was supposed to be here"); } });
@@ -436,20 +436,20 @@ DefParameterType('Digested', sub {
     # In most (all?) cases, we're really looking for a single Whatsit here...
     @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
     List(@list, mode => ($ismath ? 'math' : 'text')); },
-  undigested => 1,                                          # since _already_ digested.
-  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+  undigested => 1,                                           # since _already_ digested.
+  reversion  => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 # A variation: Digest until we encounter a given token!
 DefParameterType('DigestUntil', sub {
     my ($gullet, $until) = @_;
-    ($until) = $until->unlist;                              # Make sure it's a single token!!!
+    ($until) = $until->unlist;                               # Make sure it's a single token!!!
     $gullet->skipSpaces;
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @list   = $STATE->getStomach->digestNextBody($until);
     @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
     List(@list, mode => ($ismath ? 'math' : 'text')); },
-  undigested => 1,                                          # since _already_ digested.
-  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+  undigested => 1,                                           # since _already_ digested.
+  reversion  => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 # Reads until the current group has ended.
 # This is useful for environment-like constructs,
@@ -483,7 +483,7 @@ DefParameterType('DigestedBody', sub {
 DefParameterType('CommaList', sub {
     my ($gullet, $type) = @_;
     my $typedef = $type && LaTeXML::Package::parseParameters(ToString($type), "CommaList")->[0];
-    my @items = ();
+    my @items   = ();
     if ($gullet->ifNext(T_BEGIN)) {
       $gullet->readToken;
       my @tokens = ();
@@ -662,7 +662,7 @@ DefParameterType('OptionalInScriptStyle', sub {
     MergeFont(scripted => 1); },
   afterDigest => sub {
     $_[0]->egroup; },
-  optional => 1,
+  optional  => 1,
   reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 DefParameterType('InFractionStyle', sub {
     $_[0]->readArg; },
@@ -689,7 +689,7 @@ sub isDefinable {
   my ($token) = @_;
   return unless $token;
   my $meaning = LookupMeaning($token);
-  my $name = $token->getString; $name =~ s/^\\//;
+  my $name    = $token->getString; $name =~ s/^\\//;
   return (((!defined $meaning) || ($meaning eq LookupMeaning(T_CS('\relax'))))
       && (($name ne 'relax') && ($name !~ /^end/))); }
 
@@ -844,7 +844,7 @@ DefMacro('\meaning Token', sub {
         }
         my $sp;
         my @specparts = map { (($sp = $_->{spec}) =~ s/^(\w+):// ? $sp : $sp) } @params;
-        my $arg = 1;
+        my $arg       = 1;
         foreach (@specparts) {
           last if ($arg > $argcount);
           $_ .= "#$arg";
@@ -1061,8 +1061,8 @@ sub today {
 #    | \pagefillstretch | \pagefilllstretch | pageshrink | \pagedepth
 {
   my %sp_dparms = (
-    prevdepth => 0, pagegoal => 0, pagetotal => 0, pagestretch => 0, pagefilstretch => 0,
-    pagefillstretch => 0, pagefilllstretch => 0, pageshrink => 0, pagedepth => 0);
+    prevdepth       => 0, pagegoal         => 0, pagetotal  => 0, pagestretch => 0, pagefilstretch => 0,
+    pagefillstretch => 0, pagefilllstretch => 0, pageshrink => 0, pagedepth   => 0);
   foreach my $p (keys %sp_dparms) {
     DefRegister("\\$p", Dimension($sp_dparms{$p})); }
 }
@@ -1748,7 +1748,7 @@ DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
     my ($role, $glyph) = decodeMathChar($value->valueOf);
     my $internalcs = $glyph && T_CS('\@mathchardef@' . $csname);
     DefConstructorI($internalcs, undef, "<ltx:XMTok role='#role'>#glyph</ltx:XMTok>",
-      sizer => '#1',
+      sizer      => '#1',
       properties => { role => $role, glyph => $glyph,
         font => sub { LookupValue('font')->specialize($glyph); } },
       #       reversion => '\mathchar' . $value->valueOf . '\relax',
@@ -1785,7 +1785,7 @@ DefPrimitive('\setbox Number SkipMatch:=', sub {
     # If there is any afterAssignment tokens, move them over so BoxContents parameter will use them
     if (my $token = LookupValue('afterAssignment')) {
       AssignValue('afterAssignment' => undef, 'global');
-      AssignValue('BeforeNextBox' => $token); }
+      AssignValue('BeforeNextBox'   => $token); }
     # Save global flag, since we're digesting to get the box content, which resets the flag!
     # Should afterDigest be responsible for resetting flags?
     my $scope = $STATE->getPrefix('global') && 'global';
@@ -1885,7 +1885,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     $document->absorb($contents);
     $document->closeNode($node); },
 
-  mode => 'text', bounded => 1,
+  mode  => 'text', bounded => 1,
   sizer => '#2',
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
@@ -2405,7 +2405,7 @@ DefMacroI('\span', undef,
     . '\@alignment@span@marker'
     . '\@open@inner@column');
 DefConstructorI('\@alignment@span@marker', undef, '', reversion => '\span',
-  sizer => 0,
+  sizer      => 0,
   properties => { alignmentSkippable => 1 });
 DefConstructorI('\omit', undef, '', properties => { alignmentSkippable => 1 });
 
@@ -2468,7 +2468,7 @@ DefConstructorI('\@alignment@hline', undef, '',
     if (my $alignment = LookupValue('Alignment')) {
       $alignment->addLine('t'); } },
   properties => { isHorizontalRule => 1 },
-  alias => '\hline');
+  alias      => '\hline');
 
 # Special forms for $ appearing within alignments.
 # Note that $ within a math alignment (eg array environment),
@@ -2795,7 +2795,7 @@ DefMacroI('\@close@inner@column', undef, '\@@eat@space\@inner@column@after\@@clo
 DefMacroI('\@inner@column@before', undef, '');
 DefMacroI('\@inner@column@after', undef, sub {
     my $alignment = LookupValue('Alignment');
-    my $column = $alignment && $alignment->currentColumn;
+    my $column    = $alignment && $alignment->currentColumn;
     ($column ? afterCellUnlist($$column{after}) : ()); });
 
 DefPrimitiveI('\@@close@inner@column', undef, sub { $_[0]->egroup; });
@@ -3097,7 +3097,7 @@ DefMacro('\mskip MuGlue', '\ifmmode\@math@mskip #1\relax\else\@text@mskip #1\rel
 
 DefConstructor('\@math@hskip Glue',
   "<ltx:XMHint width='#1'/>",
-  alias => '\hskip',
+  alias      => '\hskip',
   properties => sub { (width => $_[1], isSpace => 1); }
 );
 DefPrimitive('\@text@hskip Glue', sub {
@@ -3106,7 +3106,7 @@ DefPrimitive('\@text@hskip Glue', sub {
   alias => '\hskip');
 DefConstructor('\@math@mskip MuGlue',
   "<ltx:XMHint width='#1'/>",
-  alias => '\mskip',
+  alias      => '\mskip',
   properties => sub { (width => $_[1], isSpace => 1); }
 );
 DefPrimitive('\@text@mskip MuGlue', sub {
@@ -3211,10 +3211,10 @@ DefConstructorI('\@@BEGININLINEMATH', undef,
     . "#body"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  reversion => Tokens(T_MATH),
+  reversion    => Tokens(T_MATH),
   beforeDigest => sub { $_[0]->beginMode('inline_math'); }, captureBody => 1);
 DefConstructorI('\@@ENDINLINEMATH', undef, "",
-  reversion => Tokens(T_MATH),
+  reversion    => Tokens(T_MATH),
   beforeDigest => sub { $_[0]->endMode('inline_math'); });
 
 # Add the TeX code from the object that created this node,
@@ -3256,7 +3256,7 @@ sub cleanup_Math {
   if (!$document->findnodes('ltx:XMath/ltx:*[local-name() != "XMText"]', $mathnode)) {
     # So unwrap down to the contents of the XMText's.
     my @xmtexts = map { $_->childNodes } map { $_->childNodes } $mathnode->childNodes;
-    my @texts = ();
+    my @texts   = ();
     foreach my $text (@xmtexts) {
       if ($text->nodeType != XML_ELEMENT_NODE) {    # Make sure we've got an element
         $text = $document->wrapNodes('ltx:text', $text); }
@@ -3293,7 +3293,7 @@ sub cleanup_XMText {
   my $model = $document->getModel;
   # A single "simple" element, with a single child
   my %simple_element = ('ltx:text' => 1, 'ltx:p' => 1, 'ltx:inline-block' => 1);
-  my @preserved = (qw(yoffset xoffset));
+  my @preserved      = (qw(yoffset xoffset));
   my @children;
   while ((@children = $textnode->childNodes) && (scalar(@children) == 1)
     && $document->findnodes('ltx:text'
@@ -3432,7 +3432,7 @@ sub MathWhatsit {
   if (@styles) {
     @items = ($styles[0], grep { UnTeX($_) ne '\displaystyle' } @items); }
   return LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@BEGININLINEMATH')), [],
-    body => List(@items, mode => 'math'),
+    body    => List(@items, mode => 'math'),
     trailer => T_CS('\@@ENDINLINEMATH'),
     # locator=>$gullet->getLocator, font=>$script->getFont,level=>$level
     locator => $locator, isMath => 1); }
@@ -3556,7 +3556,7 @@ sub equationgroupJoinRows {
   foreach my $eq (@equations) {
     # remove equation; parts will be added in by adding to mathfork (hopefully taking care of ids)
     $eq->unbindNode;
-    my $tr = $document->openElementAt($branch, 'ltx:tr');
+    my $tr    = $document->openElementAt($branch, 'ltx:tr');
     my @cells = $document->findnodes('ltx:_Capture_', $eq);
     $document->setAttribute($tr, class => 'ltx_eqn_lefteqn')
       if ($cells[0]->getAttribute('class') || '') =~ /\blefteqn\b/;
@@ -3827,14 +3827,14 @@ DefConstructor('\@@POSTSUPERSCRIPT InScriptStyle',
     . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_SUPER, revertScript($_[1])); },
-  sizer => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
+  sizer     => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
       $_[0]->getProperty('prevscript'), 'SUPERSCRIPT', 'post'); });
 DefConstructor('\@@POSTSUBSCRIPT InScriptStyle',
   "<ltx:XMApp role='POSTSUBSCRIPT' scriptpos='#level'>"
     . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_SUB, revertScript($_[1])); },
-  sizer => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
+  sizer     => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
       $_[0]->getProperty('prevscript'),
       'SUBSCRIPT', 'post'); });
 DefConstructor('\@@FLOATINGSUPERSCRIPT InScriptStyle',
@@ -3842,13 +3842,13 @@ DefConstructor('\@@FLOATINGSUPERSCRIPT InScriptStyle',
     . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_BEGIN, T_END, T_SUPER, revertScript($_[1])); },
-  sizer => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUPERSCRIPT', 'post'); });
+  sizer     => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUPERSCRIPT', 'post'); });
 DefConstructor('\@@FLOATINGSUBSCRIPT InScriptStyle',
   "<ltx:XMApp role='FLOATSUBSCRIPT' scriptpos='#level'>"
     . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_BEGIN, T_END, T_SUB, revertScript($_[1])); },
-  sizer => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUBSCRIPT', 'post'); });
+  sizer     => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUBSCRIPT', 'post'); });
 
 ## NOTE: Strictly speaking, these two should examine the scriptpos
 # attribute of the base (it may have \limits,\nolimits)
@@ -3953,7 +3953,7 @@ sub adjustMathStyle_internal {
   $outerstyle = 'display' unless $outerstyle;
   if (my $font = $box->getFont) {
     my $origstyle = $font->getMathstyle || 'display';
-    my $newstyle = $mathstyle_adjust_map{$outerstyle}{$origstyle};
+    my $newstyle  = $mathstyle_adjust_map{$outerstyle}{$origstyle};
     $box->setFont($font->merge(mathstyle => $newstyle));
     if (my $recstyle = $box->getProperty('mathstyle')) {    # And adjust here, if recorded.
       $box->setProperty(mathstyle => $newstyle);
@@ -4027,7 +4027,7 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
         xmkey2 => LaTeXML::Package::getXMArgID()); }
     return $closing; },    # and leave the closing bit, whatever it is.
   properties => sub { %{ $_[2]->getKeyVals }; },
-  sizer => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
+  sizer      => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
   reversion => sub {
     my ($whatsit) = @_;
     (Revert($whatsit->getProperty('top')),
@@ -4094,7 +4094,8 @@ DefConstructorI('&', undef, sub { Error('unexpected', '&', $_[0], "Stray alignme
 #======================================================================
 # TeX Book, Appendix B, p. 344
 #======================================================================
-# \dospecials ??
+RawTeX('\outer\def^^L{\par}');
+DefMacro('\dospecials', '\do\ \do\\\do\{\do\}\do\$\do\&\do\#\do\^\do\^^K\do\_\do\^^A\do\%\do\~');
 
 # Normally, the content branch contains the pure structure and meaning of a construct,
 # and the presentation is generated from lower level TeX macros that only concern
@@ -4220,7 +4221,7 @@ DefMathLigature(matcher => sub { my ($document, $node) = @_;
     while ($node) {
       my $qn = $document->getModel->getNodeQName($node);
       if ($qn =~ /^(ltx:XMTok|ltx:XMWrap)$/) {
-        my $r = ($node->getAttribute('role') || '');
+        my $r    = ($node->getAttribute('role') || '');
         my $text = $node->textContent;
         if ($r eq 'NUMBER') {
           $string = $text . $string;
@@ -4519,21 +4520,21 @@ EoTeX
 DefMacroI('\enskip', undef, '\ifmmode\@math@enskip\else\@text@enskip\fi');
 DefConstructorI('\@math@enskip', undef,
   "<ltx:XMHint name='enskip' width='#width'/>",
-  alias => '\enskip',
+  alias      => '\enskip',
   properties => { isSpace => 1, width => sub { Dimension('0.5em'); } });
 DefPrimitiveI('\@text@enskip', undef, "\x{2002}", alias => '\enskip');
 
 DefMacroI('\enspace', undef, '\ifmmode\@math@enspace\else\@text@enspace\fi');
 DefConstructorI('\@math@enspace', undef,
   "<ltx:XMHint name='enskip' width='#width'/>",
-  alias => '\enspace',
+  alias      => '\enspace',
   properties => { isSpace => 1, width => sub { Dimension('0.5em'); } });
 DefPrimitiveI('\@text@enspace', undef, "\x{2002}", alias => '\enspace');
 
 DefMacroI('\quad', undef, '\ifmmode\@math@quad\else\@text@quad\fi');
 DefConstructorI('\@math@quad', undef,
   "<ltx:XMHint name='quad' width='#width'/>",
-  alias => '\quad',
+  alias      => '\quad',
   properties => { isSpace => 1, width => sub { Dimension('1em'); } });
 DefPrimitiveI('\@text@quad', undef, "\x{2003}", alias => '\quad');
 
@@ -4541,21 +4542,21 @@ DefPrimitiveI('\@text@quad', undef, "\x{2003}", alias => '\quad');
 DefMacroI('\qquad', undef, '\ifmmode\@math@qquad\else\@text@qquad\fi');
 DefConstructorI('\@math@qquad', undef,
   "<ltx:XMHint name='qquad' width='#width'/>",
-  alias => '\qquad',
+  alias      => '\qquad',
   properties => { isSpace => 1, width => sub { Dimension('2em'); } });
 DefPrimitiveI('\@text@qquad', undef, "\x{2003}\x{2003}", alias => '\qquad');
 
 DefMacroI('\thinspace', undef, '\ifmmode\@math@thinspace\else\@text@thinspace\fi');
 DefConstructorI('\@math@thinspace', undef,
   "<ltx:XMHint name='thinspace' width='#width'/>",
-  alias => '\thinspace',
+  alias      => '\thinspace',
   properties => { isSpace => 1, width => sub { Dimension('0.16667em'); } });
 DefPrimitiveI('\@text@thinspace', undef, "\x{2009}", alias => '\thinspace');
 
 DefMacroI('\negthinspace', undef, '\ifmmode\@math@negthinspace\else\@text@negthinspace\fi');
 DefConstructorI('\@math@negthinspace', undef,
   "<ltx:XMHint name='negthinspace' width='#width'/>",
-  alias => '\negthinspace',
+  alias      => '\negthinspace',
   properties => { isSpace => 1, width => sub { Dimension('-0.16667em'); } });
 DefPrimitiveI('\@text@negthinspace', undef, "", alias => '\negthinspace');
 
@@ -4584,7 +4585,7 @@ DefPrimitiveI('\text@nobreakspace', undef, sub {
 DefConstructorI('\math@nobreakspace', undef,
   "<ltx:XMHint name='nobreakspace' width='#width'/>",
   properties => { isSpace => 1, width => sub { Dimension('0.333em'); } },
-  alias => '~');
+  alias      => '~');
 DefMacro("~", '\nobreakspace{}');
 
 DefMacroI('\slash', undef, '/');
@@ -4704,7 +4705,7 @@ DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
 # \@add@to@frontmatter{tag}[label]{content}
 DefPrimitive('\@add@to@frontmatter {} [] {}', sub {
     my ($stomach, $tag, $label, $tokens) = @_;
-    $tag = ToString($tag);
+    $tag   = ToString($tag);
     $label = ToString($label) if $label;
     my $frontmatter = LookupValue('frontmatter');
 
@@ -4820,13 +4821,13 @@ sub removeEmptyElement {
 # \lx@tag[open][close]{stuff}
 DefConstructor('\lx@tag[][][]{}',
   "<ltx:tag open='#1' close='#2'>#4</ltx:tag>",
-  bounded => 1, mode => 'text',
+  bounded        => 1, mode => 'text',
   afterConstruct => \&removeEmptyElement);
 
 # \lx@tag@intags{role}{stuff}
 DefConstructor('\lx@tag@intags[]{}',
   "<ltx:tag role='#1'>#2</ltx:tag>",
-  bounded => 1, mode => 'text',
+  bounded        => 1, mode => 'text',
   afterConstruct => \&removeEmptyElement);
 
 DefConstructor('\lx@tags{}',
@@ -5059,7 +5060,7 @@ DefConstructor('\@math@daccent {}',
   "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>\x{22c5}</ltx:XMTok>"
     . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
     . "</ltx:XMApp>",
-  mode => 'text', alias => '\d',
+  mode        => 'text', alias => '\d',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);
@@ -5073,7 +5074,7 @@ DefConstructor('\@math@baccent {}',
   "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>" . UTF(0xAF) . "</ltx:XMTok>"
     . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
     . "</ltx:XMApp>",
-  mode => 'text', alias => '\b',
+  mode        => 'text', alias => '\b',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);
@@ -5098,14 +5099,14 @@ Let('\sb', T_SUB);
 DefMacroI('\,', undef, '\ifmmode\@math@thinmuskip\else\@text@thinmuskip\fi');
 DefConstructorI('\@math@thinmuskip', undef,
   "<ltx:XMHint name='thinspace' width='#width'/>",
-  alias => '\,',
+  alias      => '\,',
   properties => { isSpace => 1, width => sub { LookupValue('\thinmuskip'); } });
 DefPrimitiveI('\@text@thinmuskip', undef, "\x{2009}", alias => '\,');
 
 DefMacroI('\!', undef, '\ifmmode\@math@negthinmuskip\else\@text@negthinmuskip\fi');
 DefConstructorI('\@math@negthinmuskip', undef,
   "<ltx:XMHint name='negthinspace' width='#width'/>",
-  alias => '\!',
+  alias      => '\!',
   properties => { isSpace => 1,
     width => sub { LookupValue('\thinmuskip')->negate; } });
 DefPrimitiveI('\@text@negthinmuskip', undef, "", alias => '\!');
@@ -5113,7 +5114,7 @@ DefPrimitiveI('\@text@negthinmuskip', undef, "", alias => '\!');
 DefMacroI('\>', undef, '\ifmmode\@math@medmuskip\else\@text@medmuskip\fi');
 DefConstructorI('\@math@medmuskip', undef,
   "<ltx:XMHint name='medspace' width='#width'/>",
-  alias => '\>',
+  alias      => '\>',
   properties => { isSpace => 1,
     width => sub { LookupValue('\medmuskip'); } });
 DefPrimitiveI('\@text@medmuskip', undef, "", alias => '\>');
@@ -5121,7 +5122,7 @@ DefPrimitiveI('\@text@medmuskip', undef, "", alias => '\>');
 DefMacroI('\;', undef, '\ifmmode\@math@thickmuskip\else\@text@thickmuskip\fi');
 DefConstructorI('\@math@thickmuskip', undef,
   "<ltx:XMHint name='thickspace' width='#width'/>",
-  alias => '\;',
+  alias      => '\;',
   properties => { isSpace => 1,
     width => sub { LookupValue('\thickmuskip'); } });
 DefPrimitiveI('\@text@thickmuskip', undef, "\x{2004}", alias => '\;');
@@ -5130,7 +5131,7 @@ Let('\:', '\>');
 DefMacroI('\ ', undef, '\ifmmode\@math@nbspace\else\@text@nbspace\fi');
 DefConstructorI('\@math@nbspace', undef,
   "<ltx:XMHint name='medspace' width='#width'/>",
-  alias => '\ ',
+  alias      => '\ ',
   properties => { isSpace => 1,
     width => sub { Dimension('0.5em'); } });
 DefPrimitiveI('\@text@nbspace', undef, UTF(0xA0), alias => '\ ');
@@ -5138,7 +5139,7 @@ DefPrimitiveI('\@text@nbspace', undef, UTF(0xA0), alias => '\ ');
 DefMacroI("\\\t", undef, '\ifmmode\@math@tab\else\@text@tab\fi');
 DefConstructorI('\@math@tab', undef,    # Tab!!
   "<ltx:XMHint name='medspace' width='#width'/>",
-  alias => "\\\t",                      # TAB
+  alias      => "\\\t",                 # TAB
   properties => { isSpace => 1,
     width => sub { Dimension('1em'); } });
 DefPrimitiveI('\@text@tab', undef, UTF(0xA0), alias => "\\\t");    # TAB!!! What else?
@@ -5146,7 +5147,7 @@ DefPrimitiveI('\@text@tab', undef, UTF(0xA0), alias => "\\\t");    # TAB!!! What
 DefMacroI('\/', undef, '\ifmmode\@math@italiccorr\else\@text@italiccorr\fi');
 DefConstructorI('\@math@italiccorr', undef,
   "<ltx:XMHint name='italiccorr'/>",
-  alias => '\/',
+  alias      => '\/',
   properties => { isSpace => 1 });
 DefPrimitiveI('\@text@italiccorr', undef, "", alias => '\/');
 
@@ -5535,7 +5536,7 @@ DefPrimitiveI('\joinrel', undef, sub {
       (@stuff,
         LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@joinrel')), [$left, $right],
           locator => $gullet->getLocator,
-          font => $right->getFont, isMath => 1)); } });
+          font    => $right->getFont, isMath => 1)); } });
 
 DefConstructor('\@@joinrel{}{}', sub {
     my ($document, $left, $right) = @_;
@@ -5852,7 +5853,7 @@ DefConstructor('\Bigg {}', '#1', bounded => 1, font => { size => 'Bigg' });
 sub addDelimiterRole {
   my ($document, $role) = @_;
   my $current = $document->getNode;
-  my $delim = $document->getLastChildElement($current) || $current;
+  my $delim   = $document->getLastChildElement($current) || $current;
   my $delim_role = (($delim && ($delim->nodeType == XML_ELEMENT_NODE) && $delim->getAttribute('role')) || '<none>');
   # if there is some delimiter-like role on the "delimiter", switch it, otherwise, leave it alone!
   if ($delim && ($delim_role =~ /^(OPEN|MIDDLE|CLOSE|VERTBAR|<none>)$/)) {
@@ -5902,7 +5903,7 @@ Let('\Vert', '\|');
 # and the choice is made when absorbing!
 DefConstructor('\mathchoice Digested Digested Digested Digested', sub {
     my ($document, $d, $t, $s, $ss, %props) = @_;
-    my $style = $props{mathstyle};
+    my $style  = $props{mathstyle};
     my $choice = ($style eq 'display' ? $d
       : ($style eq 'text' ? $t
         : ($style eq 'script' ? $s
@@ -5917,7 +5918,7 @@ DefMacro('\mathpalette{}{}',
 DefConstructor('\phantom{}',
   "?#isMath(<ltx:XMHint width='#width' height='#height' depth='#depth' name='phantom'/>)"
     . "(<ltx:text class='ltx_phantom'>#1</ltx:text>)",    # !?!?!?!
-  properties => { isSpace => 1 },
+  properties  => { isSpace => 1 },
   afterDigest => sub {
     my $whatsit = $_[1];
     my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
@@ -5927,7 +5928,7 @@ DefConstructor('\phantom{}',
 DefConstructor('\hphantom{}',
   "?#isMath(<ltx:XMHint width='#width' name='hphantom'/>)"
     . "(<ltx:text class='ltx_phantom'>#1</ltx:text>)",    # !?!?!?!
-  properties => { isSpace => 1 },
+  properties  => { isSpace => 1 },
   afterDigest => sub {
     my $whatsit = $_[1];
     my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
@@ -5937,7 +5938,7 @@ DefConstructor('\hphantom{}',
 DefConstructor('\vphantom{}',
   "?#isMath(<ltx:XMHint height='#height' depth='#depth' name='vphantom'/>)"
     . "(<ltx:text class='ltx_phantom'>#1</ltx:text>)",    # !?!?!?!
-  properties => { isSpace => 1 },
+  properties  => { isSpace => 1 },
   afterDigest => sub {
     my $whatsit = $_[1];
     my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
@@ -6098,7 +6099,7 @@ DefConstructor('\lx@gen@plain@matrix@ RequiredKeyVals:lx@GEN {}',
     . "#2"
     . ")",
   properties => sub { %{ $_[1]->getKeyVals }; },
-  reversion => sub {
+  reversion  => sub {
     my ($whatsit, $kv, $body) = @_;
     my $name = ToString($kv->getValue('name'));
     (T_CS('\\' . $name), T_BEGIN, Revert($body), T_END); },
@@ -6139,7 +6140,7 @@ DefPrimitive('\lx@gen@cases@bindings RequiredKeyVals:lx@GEN', sub {
     my ($stomach, $kv) = @_;
     $stomach->bgroup;
     my $style = $kv->getValue('style') || T_CS('\textstyle');
-    my @mode = (ToString($kv->getValue('conditionmode')) eq 'text'
+    my @mode  = (ToString($kv->getValue('conditionmode')) eq 'text'
       ? (Invocation(T_CS('\@hidden'), T_MATH)) : ());
     my $condtext = ToString($kv->getValue('conditionmode')) eq 'text';
     alignmentBindings(LaTeXML::Core::Alignment::Template->new(
@@ -6161,7 +6162,7 @@ DefPrimitive('\lx@end@gen@cases', sub { $_[0]->egroup; });
 # to give alternating value,condition (an empty condition is replaced by "otherwise" !?!?!)
 DefConstructor('\lx@gen@plain@cases@ RequiredKeyVals:lx@GEN {}',
   '<ltx:XMWrap>#left#2#right</ltx:XMWrap>',
-  properties => sub { %{ $_[1]->getKeyVals }; },
+  properties     => sub { %{ $_[1]->getKeyVals }; },
   afterConstruct => sub {
     my ($document) = @_;
     my $point = $document->getElement->lastChild;
@@ -6724,7 +6725,7 @@ sub orNull {
 sub stripBraces {
   my ($tokens) = @_;
   my @tokens = ($tokens ? $tokens->unlist : ());
-  my @t = ();
+  my @t      = ();
   while (@tokens && ($tokens[0]->getCatcode == CC_SPACE)) {    # Skip leading whitespace
     shift(@tokens); }
   # Balanced tokens until $delim
