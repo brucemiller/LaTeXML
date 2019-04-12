@@ -341,7 +341,7 @@ sub readRawLine {
     $line = $self->getNextLine;
     if (!defined $line) {
       $$self{at_eof} = 1;
-      $$self{chars} = []; $$self{nchars} = 0; $$self{colno} = 0; }
+      $$self{chars}  = []; $$self{nchars} = 0; $$self{colno} = 0; }
     else {
       $$self{lineno}++;
       $$self{chars}  = splitChars($line);

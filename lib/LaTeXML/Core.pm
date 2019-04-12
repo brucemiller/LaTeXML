@@ -37,7 +37,7 @@ sub new {
   my ($class, %options) = @_;
   my $state = LaTeXML::Core::State->new(catcodes => 'standard',
     stomach => LaTeXML::Core::Stomach->new(),
-    model => $options{model} || LaTeXML::Common::Model->new());
+    model   => $options{model} || LaTeXML::Common::Model->new());
   $state->assignValue(VERBOSITY => (defined $options{verbosity} ? $options{verbosity} : 0),
     'global');
   $state->assignValue(STRICT => (defined $options{strict} ? $options{strict} : 0),
@@ -56,10 +56,10 @@ sub new {
   # This can be removed when all executables rely on LaTeXML::Common::Config
   $options{inputencoding} = "utf-8" unless $options{inputencoding};
   $state->assignValue(PERL_INPUT_ENCODING => $options{inputencoding});
-  $state->assignValue(NOMATHPARSE => $options{nomathparse} || 0, 'global');
+  $state->assignValue(NOMATHPARSE         => $options{nomathparse} || 0, 'global');
   return bless { state => $state,
     nomathparse => $options{nomathparse} || 0,
-    preload => $options{preload},
+    preload     => $options{preload},
   }, $class; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -111,10 +111,10 @@ sub digestFile {
   my ($dir, $name, $ext);
   my $mode = $options{mode} || 'TeX';
   if (pathname_is_literaldata($request)) {
-    $dir = undef; $ext = $MODE_EXTENSION{$mode};
+    $dir  = undef; $ext = $MODE_EXTENSION{$mode};
     $name = "Anonymous String"; }
   elsif (pathname_is_url($request)) {
-    $dir = undef; $ext = $MODE_EXTENSION{$mode};
+    $dir  = undef; $ext = $MODE_EXTENSION{$mode};
     $name = $request;
   }
   else {
