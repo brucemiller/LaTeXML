@@ -118,7 +118,7 @@ sub getopt_specification {
     "javascript=s"      => \@{ $$opts{javascript} },
     "icon=s"            => \$$opts{icon},
     # Options for broader document set processing
-    "split!" => \$$opts{split},
+    "split!"    => \$$opts{split},
     "splitat=s" => sub { $$opts{splitat} = $_[1];
       $$opts{split} = 1 unless defined $$opts{split}; },
     "splitpath=s" => sub { $$opts{splitpath} = $_[1];
@@ -158,15 +158,15 @@ sub getopt_specification {
   };
   return ($spec, $opts) unless ($options{type} && ($options{type} eq 'keyvals'));
   # Representation use case:
-  my $keyvals = $options{keyvals} || [];
-  my $rep_spec = {};    # Representation specification
+  my $keyvals  = $options{keyvals} || [];
+  my $rep_spec = {};                        # Representation specification
   foreach my $key (keys %$spec) {
     if ($key =~ /^(.+)=\w$/) {
       my $name = $1;
       $$rep_spec{$key} = sub { CORE::push @$keyvals, [$name, $_[1]] };
     } else {
       $$rep_spec{$key} = sub {
-        my $ctl = $_[0]->{ctl};
+        my $ctl  = $_[0]->{ctl};
         my $used = ($$ctl[0] ? 'no' : '') . $$ctl[1];
         CORE::push @$keyvals, [$used, undef] };
     }
@@ -182,7 +182,7 @@ sub read {
   my $opts = $$self{opts};
   local @ARGV = @$argref;
   my ($spec) = getopt_specification(options => $opts);
-  my $silent = %read_options && $read_options{silent};
+  my $silent             = %read_options && $read_options{silent};
   my $getOptions_success = GetOptions(%{$spec});
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
@@ -233,7 +233,7 @@ sub scan_to_keyvals {
   my ($self, $argref, %read_options) = @_;
   local @ARGV = @$argref;
   my ($spec, $keyvals) = getopt_specification(type => 'keyvals');
-  my $silent = %read_options && $read_options{silent};
+  my $silent             = %read_options && $read_options{silent};
   my $getOptions_success = GetOptions(%$spec);
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
@@ -308,7 +308,7 @@ sub check {
 sub _obey_profile {
   my ($self) = @_;
   $$self{dirty} = 1;
-  my $opts = $$self{opts};
+  my $opts    = $$self{opts};
   my $profile = lc($$opts{profile} || 'custom');
   $profile =~ s/\.opt$//;
   # Look at the PROFILES_DB or find a profiles file (otherwise fallback to custom)
@@ -375,6 +375,7 @@ sub _prepare_options {
   $$opts{timeout}     = 600          unless defined $$opts{timeout};       # 10 minute timeout default
   $$opts{expire}      = 600          unless defined $$opts{expire};        # 10 minute timeout default
   $$opts{mathparse}   = 'RecDescent' unless defined $$opts{mathparse};
+  $$opts{inputencoding} = "utf-8" unless defined $$opts{inputencoding};
   if ($$opts{mathparse} eq 'no') {
     $$opts{mathparse}   = 0;
     $$opts{nomathparse} = 1; }                                             #Backwards compatible
@@ -560,7 +561,7 @@ sub _prepare_options {
   }
   # If really nothing hints to define format, then default it to XML
   $$opts{format} = 'xml' unless defined $$opts{format};
-  $$self{dirty} = 0;
+  $$self{dirty}  = 0;
   return; }
 
 ## Utilities:
