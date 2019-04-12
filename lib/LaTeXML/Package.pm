@@ -319,7 +319,7 @@ sub XEquals {
 # Is defined in the LaTeX-y sense of also not being let to \relax.
 sub IsDefined {
   my ($name) = @_;
-  my $cs = (ref $name ? $name : T_CS($name));
+  my $cs      = (ref $name ? $name : T_CS($name));
   my $meaning = $STATE->lookupMeaning($cs);
   return $meaning
     && ($meaning->isa('LaTeXML::Core::Token') || ($meaning->getCSName ne '\relax'))
@@ -414,7 +414,7 @@ sub DigestIf {
 
 sub ReadParameters {
   my ($gullet, $spec) = @_;
-  my $for = T_OTHER("Anonymous");
+  my $for  = T_OTHER("Anonymous");
   my $parm = parseParameters($spec, $for);
   return ($parm ? $parm->readArguments($gullet, $for) : ()); }
 
@@ -485,7 +485,7 @@ sub CleanIndexKey {
   my ($key) = @_;
   $key = ToString($key);
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
-       # We don't want accented chars (do we?) but we need to decompose the accents!
+        # We don't want accented chars (do we?) but we need to decompose the accents!
 ## No, leave in the unicode at this point (strip them later)
 ##  $key = NFD($key);
 ##  $key =~ s/[^a-zA-Z0-9]//g;
@@ -499,7 +499,7 @@ sub CleanClassName {
   my ($key) = @_;
   $key = ToString($key);
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
-       # We don't want accented chars (do we?) but we need to decompose the accents!
+        # We don't want accented chars (do we?) but we need to decompose the accents!
   $key = NFD($key);
   $key =~ s/[^a-zA-Z0-9]//g;
   $key = NFC($key);    # just to be safe(?)
@@ -693,7 +693,7 @@ sub RefStepCounter {
   my $id = $has_id && ToString(DigestLiteral(T_CS("\\the$ctr\@ID")));
 
   my $refnum = DigestText(T_CS("\\the$ctr"));
-  my $tags = Digest(Invocation(T_CS('\lx@make@tags'), $type));
+  my $tags   = Digest(Invocation(T_CS('\lx@make@tags'), $type));
   # Any scopes activated for previous value of this counter (& any nested counters) must be removed.
   # This may also include scopes activated for \label
   deactivateCounterScope($ctr);
@@ -718,7 +718,7 @@ sub deactivateCounterScope {
 # For UN-numbered units
 sub RefStepID {
   my ($type) = @_;
-  my $ctr = LookupMapping('counter_for_type', $type) || $type;
+  my $ctr   = LookupMapping('counter_for_type', $type) || $type;
   my $unctr = "UN$ctr";
   StepCounter($unctr);
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef,
@@ -1039,7 +1039,7 @@ my $primitive_options = {    # [CONSTANT]
   requireMath  => 1, forbidMath  => 1,
   beforeDigest => 1, afterDigest => 1,
   bounded => 1, locked => 1, alias => 1,
-  outer => 1, long => 1 };
+  outer   => 1, long   => 1 };
 
 sub DefPrimitive {
   my ($proto, $replacement, %options) = @_;
@@ -1327,15 +1327,15 @@ sub createXMRefs {
 # When to make a dual ?
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
 my $math_options = {    # [CONSTANT]
-  name => 1, meaning => 1, omcd => 1, reversion => 1, sizer => 1, alias => 1,
-  role => 1, operator_role => 1, reorder => 1, dual => 1,
+  name => 1, meaning       => 1, omcd    => 1, reversion => 1, sizer => 1, alias => 1,
+  role => 1, operator_role => 1, reorder => 1, dual      => 1,
   mathstyle    => 1, font               => 1,
   scriptpos    => 1, operator_scriptpos => 1,
   stretchy     => 1, operator_stretchy  => 1,
   beforeDigest => 1, afterDigest        => 1, scope => 1, nogroup => 1, locked => 1,
   hide_content_reversion => 1 };
 my $simpletoken_options = {    # [CONSTANT]
-  name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1,
+  name => 1, meaning   => 1, omcd  => 1, role   => 1, mathstyle => 1,
   font => 1, scriptpos => 1, scope => 1, locked => 1 };
 
 sub DefMath {
@@ -1476,7 +1476,7 @@ sub defmath_dual {
   $presentation = TokenizeInternal($presentation) unless ref $presentation;
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, $paramlist, $presentation),
     $options{scope});
-  my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
+  my $nargs     = ($paramlist ? scalar($paramlist->getParameters) : 0);
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
 
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cont_cs, $paramlist,
@@ -1493,7 +1493,7 @@ sub defmath_dual {
 
 sub defmath_prim {
   my ($cs, $paramlist, $presentation, %options) = @_;
-  my $string = ToString($presentation);
+  my $string  = ToString($presentation);
   my $reqfont = $options{font} || {};
   delete $options{locked};
   delete $options{font};
@@ -1557,7 +1557,7 @@ sub DefEnvironment {
 ##  my $paramlist=parseParameters($proto,"Environment $name");
 ##  my $name = $1;
   my ($name, $paramlist) = Text::Balanced::extract_bracketed($proto, '{}');
-  $name =~ s/[\{\}]//g;
+  $name      =~ s/[\{\}]//g;
   $paramlist =~ s/^\s*//;
 ##  $paramlist = parseParameters($paramlist, "Environment $name");
   DefEnvironmentI($name, $paramlist, $replacement, %options);
@@ -1628,9 +1628,9 @@ sub DefEnvironmentI {
       beforeConstruct => flatten(sub { $STATE->pushFrame; }, $options{beforeConstruct}),
       # Curiously, it's the \begin whose afterConstruct gets called.
       afterConstruct => flatten($options{afterConstruct}, sub { $STATE->popFrame; }),
-      nargs => $options{nargs},
-      captureBody => T_CS("\\end$name"),          # Required to capture!!
-      properties => $options{properties} || {},
+      nargs          => $options{nargs},
+      captureBody => T_CS("\\end$name"),           # Required to capture!!
+      properties  => $options{properties} || {},
       (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
       (defined $sizer ? (sizer => $sizer) : ()),
       ), $options{scope});
@@ -1787,7 +1787,6 @@ sub FindFile_aux {
   # The main point, though, is to we make only ONE (more) call.
   return if grep { pathname_is_nasty($_) } @$paths;    # SECURITY! No nasty paths in cmdline
         # Do we need to sanitize these environment variables?
-  my $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');
   local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
     @$paths, $ENV{TEXINPUTS} || $Config::Config{'path_sep'});
   my @candidates = (((!$options{noltxml} && !$nopaths) ? ("$file.ltxml") : ()),
@@ -1936,7 +1935,7 @@ sub loadTeXDefinitions {
   $stomach->getGullet->readingFromMouth(
     LaTeXML::Core::Mouth->create($pathname,
       fordefinitions => 1, notes => 1,
-      content => LookupValue($pathname . '_contents')),
+      content        => LookupValue($pathname . '_contents')),
     sub {
       my ($gullet) = @_;
       my $token;
@@ -2002,7 +2001,7 @@ sub ProcessOptions {
   my $name = $STATE->lookupDefinition(T_CS('\@currname')) && ToString(Expand(T_CS('\@currname')));
   my $ext  = $STATE->lookupDefinition(T_CS('\@currext'))  && ToString(Expand(T_CS('\@currext')));
   my @declaredoptions = @{ LookupValue('@declaredoptions') };
-  my @curroptions = @{ (defined($name) && defined($ext)
+  my @curroptions     = @{ (defined($name) && defined($ext)
         && LookupValue('opt@' . $name . '.' . $ext)) || [] };
   my @classoptions = @{ LookupValue('class_options') || [] };
   # print STDERR "\nProcessOptions for $name.$ext\n"
@@ -2092,7 +2091,7 @@ sub AddToMacro {
 #======================================================================
 my $inputdefinitions_options = {    # [CONSTANT]
   options => 1, withoptions => 1, handleoptions => 1,
-  type => 1, as_class => 1, noltxml => 1, notex => 1, noerror => 1, after => 1 };
+  type    => 1, as_class    => 1, noltxml       => 1, notex => 1, noerror => 1, after => 1 };
 #   options=>[options...]
 #   withoptions=>boolean : pass options from calling class/package
 #   after=>code or tokens or string as $name.$type-h@@k macro. (executed after the package is loaded)
@@ -2369,7 +2368,7 @@ sub FontDecode {
   return if !defined $code || ($code < 0);
   my ($map, $font);
   if (!$encoding) {
-    $font = LookupValue('font');
+    $font     = LookupValue('font');
     $encoding = $font->getEncoding || 'OT1'; }
   if ($encoding && ($map = LoadFontMap($encoding))) {    # OK got some map.
     my ($family, $fmap);
@@ -2500,16 +2499,16 @@ sub DefLigature {
       %options });
   return; }
 
-my $old_math_ligature_options = {};                                                  # [CONSTANT]
-my $math_ligature_options = { matcher => 1, role => 1, name => 1, meaning => 1 };    # [CONSTANT]
+my $old_math_ligature_options = {};                                                     # [CONSTANT]
+my $math_ligature_options     = { matcher => 1, role => 1, name => 1, meaning => 1 };   # [CONSTANT]
 
 sub DefMathLigature {
-  if ((scalar(@_) % 2) == 1) {                                                       # Old style!
+  if ((scalar(@_) % 2) == 1) {                                                          # Old style!
     my ($matcher, %options) = @_;
     Info('deprecated', 'ligature', undef, "Old style arguments to DefMathLigature; please update");
     CheckOptions("DefMathLigature", $old_math_ligature_options, %options);
-    UnshiftValue('MATH_LIGATURES', { old_style => 1, matcher => $matcher }); }       # Install it...
-  else {                                                                             # new style!
+    UnshiftValue('MATH_LIGATURES', { old_style => 1, matcher => $matcher }); }          # Install it...
+  else {                                                                                # new style!
     my (%options) = @_;
     my $matcher = $options{matcher};
     delete $options{matcher};
@@ -2582,7 +2581,7 @@ sub addResource {
 sub ProcessPendingResources {
   my ($document) = @_;
   if (my $resources = LookupValue('PENDING_RESOURCES')) {
-    my %seen = ();
+    my %seen             = ();
     my @unique_resources = grep { my $new = !$seen{$_}; $seen{$_} = 1; $new; } @$resources;
     for my $resource (@unique_resources) {
       addResource($document, @$resource); }
