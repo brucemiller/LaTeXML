@@ -323,6 +323,8 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
     my @boxes = ();
     if (my $ops = LookupValue('@at@end@document')) {
       push(@boxes, Digest(Tokens(@$ops))); }
+    # Should we try to indent the last paragraph? If so, it goes like this:
+    push(@boxes, Digest(T_CS('\normal@par')));
     # Now we check whether we're down to the last stack frame.
     # It is common for unclosed { or even environments
     # and we want to at least compress & avoid unnecessary errors & warnings.
