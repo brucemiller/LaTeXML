@@ -88,13 +88,19 @@ use LaTeXML::Core::Token;    # To get CatCodes
 sub new {
   my ($class, %options) = @_;
   my $self = bless {    # table => {},
-    value => {}, meaning => {}, stash => {}, stash_active => {},
-    catcode => {}, mathcode => {}, sfcode => {}, lccode => {}, uccode => {}, delcode => {},
+    value   => {}, meaning  => {}, stash  => {}, stash_active => {},
+    catcode => {}, mathcode => {}, sfcode => {}, lccode       => {}, uccode => {}, delcode => {},
     undo => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
     stomach => $options{stomach}, model => $options{model} }, $class;
   # Note that "100" is hardwired into TeX, The Program!!!
   $$self{value}{MAX_ERRORS} = [100];
   $$self{value}{VERBOSITY}  = [0];
+  # Standard TeX units, in scaled points
+  $$self{value}{UNITS} = [{
+      pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
+      cm => 72.27 * 65536 / 2.54,     mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
+      cc => 12 * 1238 * 65536 / 1157, sp => 1 }];
+
   $options{catcodes} = 'standard' unless defined $options{catcodes};
   if ($options{catcodes} =~ /^(standard|style)/) {
     # Setup default catcodes.
@@ -455,7 +461,7 @@ sub installDefinition {
   # Ignore attempts to (re)define $cs from tex sources
   #  my $cs = $definition->getCS->getCSName;
   my $token = $definition->getCS;
-  my $cs = ($LaTeXML::Core::Token::PRIMITIVE_NAME[$$token[1]] || $$token[0]);
+  my $cs    = ($LaTeXML::Core::Token::PRIMITIVE_NAME[$$token[1]] || $$token[0]);
   if ($self->lookupValue("$cs:locked") && !$LaTeXML::Core::State::UNLOCKED) {
     my $s = $self->getStomach->getGullet->getSource;
     # report if the redefinition seems to come from document source
@@ -649,26 +655,21 @@ sub getActiveScopes {
 
 #======================================================================
 # Units.
-#   Put here since it could concievably evolve to depend on the current font.
-
-# Conversion to scaled points
-my %UNITS = (    # [CONSTANT]
-  pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
-  cm => 72.27 * 65536 / 2.54, mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
-  cc => 12 * 1238 * 65536 / 1157, sp => 1);
 
 sub convertUnit {
   my ($self, $unit) = @_;
   $unit = lc($unit);
+  # Put here since it could concievably evolve to depend on the current font.
   # Eventually try to track font size?
   if    ($unit eq 'em') { return 10.0 * 65536; }
   elsif ($unit eq 'ex') { return 4.3 * 65536; }
   elsif ($unit eq 'mu') { return 10.0 * 65536 / 18; }
   else {
-    my $sp = $UNITS{$unit};
+    my $units = $self->lookupValue('UNITS');
+    my $sp    = $$units{$unit};
     if (!$sp) {
       Warn('expected', '<unit>', undef, "Illegal unit of measure '$unit', assuming pt.");
-      $sp = $UNITS{'pt'}; }
+      $sp = $$units{'pt'}; }
     return $sp; } }
 
 #======================================================================

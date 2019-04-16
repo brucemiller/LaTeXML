@@ -282,7 +282,7 @@ sub readRawLine {
   my ($self) = @_;
   # If we've got unread tokens, they presumably should come before the Mouth's raw data
   # but we'll convert them back to string.
-  my @tokens = @{ $$self{pushback} };
+  my @tokens  = @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
   if (@markers) {    # Whoops, profiling markers!
     @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;    # Remove
@@ -619,7 +619,7 @@ sub readNormalInteger {
     return Number(hex($self->readDigits('0-9A-F', 1))); }
   elsif ($token->equals(T_OTHER("\`"))) {                                   # Read Charcode
     my $next = $self->readToken;
-    my $s = ($next && $next->getString) || '';
+    my $s    = ($next && $next->getString) || '';
     $s =~ s/^\\//;
     return Number(ord($s)); }    # Only a character token!!! NOT expanded!!!!
   else {
@@ -696,7 +696,8 @@ sub readUnit {
     return $u->valueOf; }
   else {
     $self->readKeyword('true');    # But ignore, we're not bothering with mag...
-    $u = $self->readKeyword('pt', 'pc', 'in', 'bp', 'cm', 'mm', 'dd', 'cc', 'sp');
+    my $units = $STATE->lookupValue('UNITS');
+    $u = $self->readKeyword(keys %$units);
     if ($u) {
       $self->skip1Space;
       return $STATE->convertUnit($u); }
