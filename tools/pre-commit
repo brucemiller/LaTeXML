@@ -8,6 +8,7 @@ use warnings;
 use strict;
 use File::Spec::Functions qw(catfile splitpath splitdir);
 use File::Temp qw(tempdir);
+use ExtUtils::Manifest qw(fullcheck);
 use Term::ANSIColor;
 
 my $changes = `git status --porcelain`;
@@ -34,7 +35,7 @@ if (my @modified_files =
     system("git show ':$modified_file' > $temp_file");
     # Finally run latexmllint on it.
     my $status = system(catfile('tools', 'latexmllint'), "--precommit", $temp_file);
-    my $code = $status >> 8;
+    my $code   = $status >> 8;
     if ($code) {
       push(@failed_files, $modified_file);    # Note the original file name
       $exit_code = $code; } }
@@ -43,15 +44,10 @@ if (my @modified_files =
       . "; To correct these, run:\n tools/latexmllint <files>.\n"; }
 
   # Also, Check if files are missing from the manifest
-  my %manifest = ();
-  open(my $fh, "<", "MANIFEST") or die "Missing MANIFEST file?\n";
-  while (<$fh>) {
-    next if /^[#]/;
-    chomp;
-    $manifest{$_} = 1; }
-  close($fh);
+  my ($manifest_missing, $manifest_extra) = fullcheck();
   # Not in MANIFEST, (or in tools)
-  my @missing_files = grep { !($_ =~ /^tools|MANIFEST/ || $manifest{$_}) } @modified_files;
+  my %manifest_missing = map  { $_ => 1 } @$manifest_missing;
+  my @missing_files    = grep { $manifest_missing{$_} } @modified_files;
   if (@missing_files) {
     print STDERR "Some files are missing from MANIFEST, please add them: \n\t"
       . join(',\n\t', @missing_files) . ";\n";

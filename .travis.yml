@@ -34,4 +34,4 @@ before_install:
 
 # Run the docker test image
 script:
-  - docker run --rm -v $(pwd):/root/latexml -t -i latexml/latexml-test-runtime:${PERL}_$TEX
+  - docker run --env "CI=true" --rm -v $(pwd):/root/latexml -t -i latexml/latexml-test-runtime:${PERL}_$TEX
