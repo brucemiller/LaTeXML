@@ -1071,7 +1071,7 @@
             <tag role="typerefnum">item 5</tag>
           </tags>
           <para xml:id="S3.I1.i5.p1">
-            <p><Math mode="inline" tex="\int_{\infty}^{(1+,0+,1−,0−)}t\,dt" text="((integral _ infinity) ^ (vector@(limit-from@(1, +), limit-from@(0, +), 1 * â *  * , 0 * â *  * )))@(t * differential-d@(t))" xml:id="S3.I1.i5.p1.m1">
+            <p><Math mode="inline" tex="\int_{\infty}^{(1+,0+,1−,0−)}t\,dt" text="((integral _ infinity) ^ (vector@(limit-from@(1, +), limit-from@(0, +), 1 * −, 0 * −)))@(t * differential-d@(t))" xml:id="S3.I1.i5.p1.m1">
                 <XMath>
                   <XMApp>
                     <XMApp>
@@ -1106,17 +1106,13 @@
                           <XMApp xml:id="S3.I1.i5.p1.m1.3">
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
-                            <XMTok font="italic" fontsize="70%" role="UNKNOWN">â</XMTok>
-                            <XMTok fontsize="70%" role="UNKNOWN"></XMTok>
-                            <XMTok fontsize="70%" role="UNKNOWN"></XMTok>
+                            <XMTok fontsize="70%" role="UNKNOWN">−</XMTok>
                           </XMApp>
                           <XMTok fontsize="70%" role="PUNCT">,</XMTok>
                           <XMApp xml:id="S3.I1.i5.p1.m1.4">
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
-                            <XMTok font="italic" fontsize="70%" role="UNKNOWN">â</XMTok>
-                            <XMTok fontsize="70%" role="UNKNOWN"></XMTok>
-                            <XMTok fontsize="70%" role="UNKNOWN"></XMTok>
+                            <XMTok fontsize="70%" role="UNKNOWN">−</XMTok>
                           </XMApp>
                           <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
                         </XMWrap>
