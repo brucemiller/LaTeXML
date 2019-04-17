@@ -1,0 +1,10 @@
+source = ../lexmath.tex
+preload = llamapun.sty
+preload = amsmath.sty
+preload = bm.sty
+whatsin = fragment
+whatsout = fragment
+pmml =
+mathlex =
+format = html5
+nodefaultresources =
