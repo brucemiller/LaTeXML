@@ -659,7 +659,7 @@ sub parse_single {
   }
 
   if ($LaTeXML::MathParser::DEBUG) {
-    $::RD_TRACE = 0;    # Turn on MathGrammar tracing
+    $::RD_TRACE = 1;    # Turn on MathGrammar tracing
                         #    my $box = $document->getNodeBox($LaTeXML::MathParser::XNODE);
     my $box = $document->getNodeBox($mathnode);
     print STDERR "\n" . ('=' x 60) .
