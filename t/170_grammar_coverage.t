@@ -32,7 +32,7 @@ for my $test (@core_tests) {
   my $response = $converter->convert($test);
   my @log_lines = split("\n", $response->{log});
   for my $line (@log_lines) {
-    if ($line =~ /(\w+)\s*\|\>\>Matched (?:subrule|production)\: \[(\w+)/) {
+    if ($line =~ /(\w+)\s*\|(?:(?:\>\>Matched (?:subrule|production))|(?:\(consumed))\:\s*\[\s*(\w+)/) {
       $tested_dependencies{$1}{$2} = 1;
     }
   }
