@@ -1,0 +1,11 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{amsmath}
+\begin{document}
+\section{Edge/Artefact Cases}
+\begin{enumerate}
+  \item $\,$  % empty formula 
+  \item $\times x$ % surprisingly parses as "times(absent, x)"
+  \item $\mathbin{|} x$ % surprisingly parses via the "MulOp Factor" rule.
+\end{enumerate}
+\end{document}

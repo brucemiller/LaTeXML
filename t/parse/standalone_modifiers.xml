@@ -57,4 +57,157 @@
         </XMath>
       </Math></p>
   </para>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Modifier Expressions</title>
+    <para xml:id="S1.p1">
+      <enumerate xml:id="S1.I1">
+        <item xml:id="S1.I1.i1">
+          <tags>
+            <tag>1.</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">item 1</tag>
+          </tags>
+          <para xml:id="S1.I1.i1.p1">
+            <p><Math mode="inline" tex="&gt;0" text="absent &gt; 0" xml:id="S1.I1.i1.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok meaning="0" role="NUMBER">0</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i2">
+          <tags>
+            <tag>2.</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">item 2</tag>
+          </tags>
+          <para xml:id="S1.I1.i2.p1">
+            <p><Math mode="inline" tex="(&gt;0)" text="absent &gt; 0" xml:id="S1.I1.i2.p1.m1">
+                <XMath>
+                  <XMDual>
+                    <XMRef idref="S1.I1.i2.p1.m1.1"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMApp xml:id="S1.I1.i2.p1.m1.1">
+                        <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                        <XMTok meaning="absent"/>
+                        <XMTok meaning="0" role="NUMBER">0</XMTok>
+                      </XMApp>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i3">
+          <tags>
+            <tag>3.</tag>
+            <tag role="refnum">3</tag>
+            <tag role="typerefnum">item 3</tag>
+          </tags>
+          <para xml:id="S1.I1.i3.p1">
+            <p><Math mode="inline" tex="x(&gt;0)" text="annotated@(x, absent &gt; 0)" xml:id="S1.I1.i3.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="annotated"/>
+                    <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                    <XMDual>
+                      <XMRef idref="S1.I1.i3.p1.m1.1"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMApp xml:id="S1.I1.i3.p1.m1.1">
+                          <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                          <XMTok meaning="absent"/>
+                          <XMTok meaning="0" role="NUMBER">0</XMTok>
+                        </XMApp>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i4">
+          <tags>
+            <tag>4.</tag>
+            <tag role="refnum">4</tag>
+            <tag role="typerefnum">item 4</tag>
+          </tags>
+          <para xml:id="S1.I1.i4.p1">
+            <p><Math mode="inline" tex="h(\in C)" text="annotated@(h, absent element-of C)" xml:id="S1.I1.i4.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="annotated"/>
+                    <XMTok font="italic" role="UNKNOWN">h</XMTok>
+                    <XMDual>
+                      <XMRef idref="S1.I1.i4.p1.m1.1"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMApp xml:id="S1.I1.i4.p1.m1.1">
+                          <XMTok meaning="element-of" name="in" role="RELOP">∈</XMTok>
+                          <XMTok meaning="absent"/>
+                          <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                        </XMApp>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i5">
+          <tags>
+            <tag>5.</tag>
+            <tag role="refnum">5</tag>
+            <tag role="typerefnum">item 5</tag>
+          </tags>
+          <para xml:id="S1.I1.i5.p1">
+            <p><Math mode="inline" tex="x:\mathrm{Integer}" text="x colon Integer" xml:id="S1.I1.i5.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok name="colon" role="METARELOP">:</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                    <XMTok role="UNKNOWN">Integer</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i6">
+          <tags>
+            <tag>6.</tag>
+            <tag role="refnum">6</tag>
+            <tag role="typerefnum">item 6</tag>
+          </tags>
+          <para xml:id="S1.I1.i6.p1">
+            <p><Math mode="inline" tex="f:\mathrm{Integer}\Rightarrow\mathrm{Real}" text="f colon Integer Rightarrow Real" xml:id="S1.I1.i6.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok name="colon" role="METARELOP">:</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">f</XMTok>
+                    <XMApp>
+                      <XMTok name="Rightarrow" role="ARROW">⇒</XMTok>
+                      <XMTok role="UNKNOWN">Integer</XMTok>
+                      <XMTok role="UNKNOWN">Real</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+      </enumerate>
+    </para>
+  </section>
 </document>

@@ -211,4 +211,95 @@
       </enumerate>
     </para>
   </subsubsection>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Advanced Fenced</title>
+    <para xml:id="S1.p1">
+      <enumerate xml:id="S1.I1">
+        <item xml:id="S1.I1.i1">
+          <tags>
+            <tag>1.</tag>
+            <tag role="refnum">1</tag>
+            <tag role="typerefnum">item 1</tag>
+          </tags>
+          <para xml:id="S1.I1.i1.p1">
+            <p><Math mode="inline" tex="\langle a,b\rangle" text="list@(a, b)" xml:id="S1.I1.i1.p1.m1">
+                <XMath>
+                  <XMDual>
+                    <XMApp>
+                      <XMTok meaning="list"/>
+                      <XMRef idref="S1.I1.i1.p1.m1.1"/>
+                      <XMRef idref="S1.I1.i1.p1.m1.2"/>
+                    </XMApp>
+                    <XMWrap>
+                      <XMTok name="langle" role="OPEN" stretchy="false">⟨</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S1.I1.i1.p1.m1.1">a</XMTok>
+                      <XMTok role="PUNCT">,</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S1.I1.i1.p1.m1.2">b</XMTok>
+                      <XMTok name="rangle" role="CLOSE" stretchy="false">⟩</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i2">
+          <tags>
+            <tag>2.</tag>
+            <tag role="refnum">2</tag>
+            <tag role="typerefnum">item 2</tag>
+          </tags>
+          <para xml:id="S1.I1.i2.p1">
+            <p><Math mode="inline" tex="\langle ab\rangle" text="delimited-⟨⟩@(a * b)" xml:id="S1.I1.i2.p1.m1">
+                <XMath>
+                  <XMDual>
+                    <XMApp>
+                      <XMTok meaning="delimited-⟨⟩"/>
+                      <XMRef idref="S1.I1.i2.p1.m1.1"/>
+                    </XMApp>
+                    <XMWrap>
+                      <XMTok name="langle" role="OPEN" stretchy="false">⟨</XMTok>
+                      <XMApp xml:id="S1.I1.i2.p1.m1.1">
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                      </XMApp>
+                      <XMTok name="rangle" role="CLOSE" stretchy="false">⟩</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i3">
+          <tags>
+            <tag>3.</tag>
+            <tag role="refnum">3</tag>
+            <tag role="typerefnum">item 3</tag>
+          </tags>
+          <para xml:id="S1.I1.i3.p1">
+            <p><Math mode="inline" tex="\langle a\rangle" text="delimited-⟨⟩@(a)" xml:id="S1.I1.i3.p1.m1">
+                <XMath>
+                  <XMDual>
+                    <XMApp>
+                      <XMTok meaning="delimited-⟨⟩"/>
+                      <XMRef idref="S1.I1.i3.p1.m1.1"/>
+                    </XMApp>
+                    <XMWrap>
+                      <XMTok name="langle" role="OPEN" stretchy="false">⟨</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S1.I1.i3.p1.m1.1">a</XMTok>
+                      <XMTok name="rangle" role="CLOSE" stretchy="false">⟩</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+      </enumerate>
+    </para>
+  </section>
 </document>

@@ -3,19 +3,10 @@
 \usepackage{amsmath}
 \begin{document}
 
-% Parse rule tree: 
-% 1 AnythingAny 
-% 2  Formulae  
-% 3  ( Formula moreFormulae )  
-% 4  (( Expression extendFormula ) moreFormulae )  
-% 5  ((( SignedTerm moreTerms addExpressionModifier ) ( relop Expression moreRHS )) moreFormulae )  
-% 6  (((( Term ) ( AddOp moreTerms2 ) addExpressionModifier ) (( RELOP addOpDecoration ) ( SignedTerm moreTerms addExpressionModifier ) moreRHS )) moreFormulae )  
-% 7  ((((( Factor moreFactors )) (( ADDOP addOpDecoration ) ( Term moreTerms )) addExpressionModifier ) (( RELOP addOpDecoration ) (( Term ) moreTerms addExpressionModifier ) moreRHS )) moreFormulae )  
-% 8  (((((( NUMBER addScripts ) moreFactors )) (( ADDOP addOpDecoration ) (( Factor moreFactors ) moreTerms )) addExpressionModifier ) (( RELOP addOpDecoration ) ((( Factor moreFactors )) moreTerms addExpressionModifier ) moreRHS )) moreFormulae )  
-% 9  (((((( NUMBER addScripts ) moreFactors )) (( ADDOP addOpDecoration ) ((( NUMBER addScripts ) moreFactors ) moreTerms )) addExpressionModifier ) (( RELOP addOpDecoration ) (((( NUMBER addScripts ) moreFactors )) moreTerms addExpressionModifier ) moreRHS )) moreFormulae )  
-% lex  (((((( NUMBER ))) (( ADDOP ) ((( NUMBER ))))) (( RELOP ) (((( NUMBER ))))))) 
-
+% simplest possible
 $1+2=3$
+
+
 
 
 \end{document}

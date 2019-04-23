@@ -211,4 +211,89 @@
       </Math>
     </equation>
   </para>
+  <para xml:id="p6">
+    <equation xml:id="S0.Ex6">
+      <Math mode="display" tex="a+b&lt;\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}" text="a + b less Array[[a, b], [c, d]]" xml:id="S0.Ex6.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            </XMApp>
+            <XMArray role="ARRAY" vattach="middle">
+              <XMRow>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                </XMCell>
+              </XMRow>
+            </XMArray>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p7">
+    <equation xml:id="S0.Ex7">
+      <Math mode="display" tex="\arcsin\pi+\neg a=\{\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}" text="inverse-sine@(pi) + not * a = cases@(Array[[a, b], [c, d]])" xml:id="S0.Ex7.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMApp>
+                <XMTok meaning="inverse-sine" role="OPFUNCTION">arcsin</XMTok>
+                <XMTok font="italic" name="pi" role="UNKNOWN">π</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="not" name="neg" role="FUNCTION">¬</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="cases"/>
+                <XMRef idref="S0.Ex7.m1.1"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">{</XMTok>
+                <XMArray role="ARRAY" vattach="middle" xml:id="S0.Ex7.m1.1">
+                  <XMRow>
+                    <XMCell align="center">
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    </XMCell>
+                    <XMCell align="center">
+                      <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    </XMCell>
+                  </XMRow>
+                  <XMRow>
+                    <XMCell align="center">
+                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                    </XMCell>
+                    <XMCell align="center">
+                      <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                    </XMCell>
+                  </XMRow>
+                </XMArray>
+                <XMTok meaning="absent"/>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
 </document>
