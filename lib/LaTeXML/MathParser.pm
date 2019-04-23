@@ -45,8 +45,6 @@ our %EXPORT_TAGS = (constructors
       &isMatchingClose &Fence)]);
 
 # ================================================================================
-$LaTeXML::MathParser::RuleTree = [];
-
 sub new {
   my ($class, %options) = @_;
   require LaTeXML::MathGrammar;
@@ -686,62 +684,9 @@ sub parse_single {
       $result = ['ltx:XMDual', {},
         LaTeXML::Package::createXMRefs($document, $result),
         ['ltx:XMWrap', {}, $result, @punct]]; }    # or perhaps: Apply, punctuated???
-    if ($LaTeXML::MathParser::DEBUG && @$LaTeXML::MathParser::RuleTree) {
-      my $rule_tree = $LaTeXML::MathParser::RuleTree;
-      # First rule is a single item, use for setup:
-      my $top    = shift @$rule_tree;
-      my @levels = ([named_rules_filter($$top[2])]);
-      my @rules  = @{ $$top[3] };
-      while (@rules) {
-        my @subrules = ();
-        # expand the last level
-        my @level = @{ $levels[-1] };
-        # with this level's productions
-        for my $rule (@rules) {
-          my $prev = $$rule[1];
-          my $next = $$rule[2];
-          push @subrules, @{ $$rule[3] };
-          my @level_swap     = ();
-          my $lvl_rule_count = scalar(@level);
-          while (my $lvl_rule = shift @level) {
-            if ($lvl_rule eq $prev) {
-              my @next = named_rules_filter($next);
-              push @level_swap, '(', @next, ')' if @next;
-              last; }
-            else {
-              push @level_swap, $lvl_rule; } }
-          if (scalar(@level_swap) + scalar(@level) == $lvl_rule_count) {
-            ### IMPORTANT: The auto-actions won't fire for "(s)" modified rules, such as "punctExpr(s)".
-            print STDERR "Failed to attach: $prev:$next\n\tat ", join(" ", @level_swap), "\n"; }
-          @level = (@level_swap, @level); }
-        @rules = @subrules;
-        push(@levels, [@level]); }
-
-      print STDERR "\nParse rule tree: \n";
-      my $level_idx      = 0;
-      my $level_str      = '';
-      my $prev_level_str = '';
-      for my $level (@levels) {
-        $level_str = join(' ', @$level);
-        $level_str =~ s/^\(//;
-        $level_str =~ s/\)$//;
-        $level_str =~ s/\(\s(?=\()/\(/g;
-        $level_str =~ s/\)\s(?=\))/\)/g;
-        if ($level_str ne $prev_level_str) {
-          $level_idx++;
-          $prev_level_str = $level_str;
-          print STDERR "$level_idx $level_str \n"; } }
-      $level_str =~ s/(\s[a-z]\w+)+//g;
-      $level_str =~ s/\(\s*\)//g;
-      $level_str =~ s/\(\s(?=\()/\(/g;
-      $level_str =~ s/\)\s(?=\))/\)/g;
-      print STDERR "lex $level_str\n";
+    if ($LaTeXML::MathParser::DEBUG) {
       print STDERR "\n=>" . printNode($result) . "\n" . ('=' x 60) . "\n"; }
     return $result; } }
-
-sub named_rules_filter {
-  return grep { /^[^\/]/ } split(/\s/, $_[0]);
-}
 
 sub node_to_lexeme {
   my ($self, $node) = @_;
@@ -859,8 +804,7 @@ sub parse_internal {
   else {
     $LaTeXML::MathParser::DISALLOWED_NOTATIONS{MaybeFunctions} = 1; }
   my $unparsed = $lexemes;
-  $LaTeXML::MathParser::RuleTree = [];
-  my $result = $$self{internalparser}->$rule(\$unparsed);
+  my $result   = $$self{internalparser}->$rule(\$unparsed);
   if (((!defined $result) || $unparsed)    # If parsing Failed
     && $LaTeXML::MathParser::SEEN_NOTATIONS{QM}) {    # & Saw some QM stuff.
     $LaTeXML::MathParser::DISALLOWED_NOTATIONS{QM} = 1;    # Retry w/o QM notations

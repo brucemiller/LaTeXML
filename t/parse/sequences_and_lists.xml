@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><Math mode="inline" tex="1,2" text="list@(1, 2)" xml:id="p1.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="p1.m1.1"/>
+              <XMRef idref="p1.m1.2"/>
+            </XMApp>
+            <XMWrap>
+              <XMTok meaning="1" role="NUMBER" xml:id="p1.m1.1">1</XMTok>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMTok meaning="2" role="NUMBER" xml:id="p1.m1.2">2</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p2">
+    <p><Math mode="inline" tex="2x,4y,6z" text="list@(2 * x, 4 * y, 6 * z)" xml:id="p2.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="p2.m1.1"/>
+              <XMRef idref="p2.m1.2"/>
+              <XMRef idref="p2.m1.3"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="p2.m1.1">
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="2" role="NUMBER">2</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="p2.m1.2">
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="4" role="NUMBER">4</XMTok>
+                <XMTok font="italic" role="UNKNOWN">y</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="p2.m1.3">
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="6" role="NUMBER">6</XMTok>
+                <XMTok font="italic" role="UNKNOWN">z</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p3">
+    <p><Math mode="inline" tex="a=b,c,d" text="a = list@(b, c, d)" xml:id="p3.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p3.m1.1"/>
+                <XMRef idref="p3.m1.2"/>
+                <XMRef idref="p3.m1.3"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok font="italic" role="UNKNOWN" xml:id="p3.m1.1">b</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="p3.m1.2">c</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="p3.m1.3">d</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p4">
+    <p><Math mode="inline" tex="1&lt;2,3" text="1 less list@(2, 3)" xml:id="p4.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+            <XMTok meaning="1" role="NUMBER">1</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p4.m1.1"/>
+                <XMRef idref="p4.m1.2"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok meaning="2" role="NUMBER" xml:id="p4.m1.1">2</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="3" role="NUMBER" xml:id="p4.m1.2">3</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p5">
+    <p><Math mode="inline" tex="1&lt;2,3,4" text="1 less list@(2, 3, 4)" xml:id="p5.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+            <XMTok meaning="1" role="NUMBER">1</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p5.m1.1"/>
+                <XMRef idref="p5.m1.2"/>
+                <XMRef idref="p5.m1.3"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok meaning="2" role="NUMBER" xml:id="p5.m1.1">2</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="3" role="NUMBER" xml:id="p5.m1.2">3</XMTok>
+                <XMTok role="PUNCT">,</XMTok>
+                <XMTok meaning="4" role="NUMBER" xml:id="p5.m1.3">4</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p6">
+    <p><Math mode="inline" tex="1+2=3,3+4=7" text="formulae@(1 + 2 = 3, 3 + 4 = 7)" xml:id="p6.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="formulae"/>
+              <XMRef idref="p6.m1.1"/>
+              <XMRef idref="p6.m1.2"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="p6.m1.1">
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+                <XMTok meaning="3" role="NUMBER">3</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="p6.m1.2">
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok meaning="3" role="NUMBER">3</XMTok>
+                  <XMTok meaning="4" role="NUMBER">4</XMTok>
+                </XMApp>
+                <XMTok meaning="7" role="NUMBER">7</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
+</document>

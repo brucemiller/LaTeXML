@@ -1,0 +1,28 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{amsmath}
+\def\mockarray{\begin{array}{cc} 
+  a & b \\
+  c & d \end{array}}
+\def\mockcases{\begin{cases}{cc} 
+  d & c \\
+  b & a \end{cases}}
+
+\begin{document}
+
+% standalone cases 
+\[\mockcases\]
+
+% standalone array
+\[\mockarray\]
+  
+% lbrace array 
+\[\{ \mockarray\]
+  
+% rbrace array 
+\[\mockarray \}\]
+
+% matrix multiplication
+\[ \mockarray \mockcases \]
+
+\end{document}

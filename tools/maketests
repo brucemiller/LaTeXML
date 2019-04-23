@@ -245,7 +245,6 @@ sub gen_xml {
   #========================================
   # Generate the XML from the current latexml
   system("$FindBin::RealBin/../blib/script/latexml", $source,
-    "--debug=MathParser",
     "--destination=" . $xml,
     "--nocomments", (map { "--verbose" } 1 .. $verbosity)) == 0
     or die "Failed to convert $source: $!";

@@ -106,4 +106,45 @@
       </Math>
     </equation>
   </para>
+  <para xml:id="p3">
+    <p><Math mode="inline" tex="\{x|x\not\in\{y|y&gt;0\}\}" text="conditional-set@(x, x not-element-of conditional-set@(y, y &gt; 0))" xml:id="p3.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="conditional-set"/>
+              <XMRef idref="p3.m1.2"/>
+              <XMRef idref="p3.m1.3"/>
+            </XMApp>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="false">{</XMTok>
+              <XMTok font="italic" role="UNKNOWN" xml:id="p3.m1.2">x</XMTok>
+              <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+              <XMApp xml:id="p3.m1.3">
+                <XMTok meaning="not-element-of" name="not-in" role="RELOP">∉</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMDual>
+                  <XMApp>
+                    <XMTok meaning="conditional-set"/>
+                    <XMRef idref="p3.m1.1"/>
+                    <XMRef idref="p3.m1.3.1"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">{</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="p3.m1.1">y</XMTok>
+                    <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+                    <XMApp xml:id="p3.m1.3.1">
+                      <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                      <XMTok meaning="0" role="NUMBER">0</XMTok>
+                    </XMApp>
+                    <XMTok role="CLOSE" stretchy="false">}</XMTok>
+                  </XMWrap>
+                </XMDual>
+              </XMApp>
+              <XMTok role="CLOSE" stretchy="false">}</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
 </document>
