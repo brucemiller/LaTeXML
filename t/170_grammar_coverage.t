@@ -21,7 +21,6 @@ my %grammar_dependencies = obtain_dependencies();
 
 my $opts = LaTeXML::Common::Config->new(input_limit => 100);
 
-
 my $converter = LaTeXML->get_converter($opts);
 $converter->prepare_session($opts);
 
@@ -43,6 +42,7 @@ my $missing_count = 0;
 my $extra_count = 0;
 my %missing = ();
 my %extra = ();
+delete $grammar_dependencies{'Start'}; # never reported in terse log
 
 for my $rule(grep {!/^_/} keys %tested_dependencies) {
   my $subrules = $tested_dependencies{$rule};
@@ -73,30 +73,6 @@ is($missing_count, 0, "MathGrammar dependencies (currently tested in $ok_count c
 # is($extra_count, 0, "Tests had rules which were matched, but not recorded in grammar metadata: \n".Dumper(\%extra));
 
 done_testing();
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 #**********************************************************************
 # Auxiliary functions, should these be in a utility module?
