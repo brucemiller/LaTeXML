@@ -705,7 +705,6 @@ relop   :
 # Check out whether diffop should be treated as bigop or operator
 # It depends on the binding 
 bigop   : BIGOP | SUMOP | INTOP | LIMITOP | DIFFOP
-operator: OPERATOR
 
 # SUPOP is really only \prime(s) (?)
 supops   : SUPOP(s)                             { New(undef,

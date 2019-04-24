@@ -383,4 +383,39 @@
       </equation>
     </para>
   </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Higher constructs</title>
+    <para xml:id="S3.p1">
+      <equation xml:id="S3.Ex11">
+        <Math mode="display" tex="|\nabla|^{\alpha}f" text="(absolute-value@(nabla)) ^ alpha * f" xml:id="S3.Ex11.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMDual>
+                  <XMApp>
+                    <XMTok meaning="absolute-value"/>
+                    <XMRef idref="S3.Ex11.m1.1"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+                    <XMTok name="nabla" role="OPERATOR" xml:id="S3.Ex11.m1.1">∇</XMTok>
+                    <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok font="italic" fontsize="70%" name="alpha" role="UNKNOWN">α</XMTok>
+              </XMApp>
+              <XMTok font="italic" role="FUNCTION">f</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
 </document>

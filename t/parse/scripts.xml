@@ -173,13 +173,26 @@
             <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
           </XMApp>
         </XMath>
-      </Math>
-<Math mode="inline" tex="\psi^{\prime\prime}" text="psi ^ prime2" xml:id="p12.m2">
+      </Math></p>
+  </para>
+  <para xml:id="p13">
+    <p><Math mode="inline" tex="\psi^{\prime\prime}" text="psi ^ prime2" xml:id="p13.m1">
         <XMath>
           <XMApp>
             <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
             <XMTok font="italic" name="psi" role="UNKNOWN">ψ</XMTok>
             <XMTok fontsize="70%" name="prime2" role="SUPOP">′′</XMTok>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p14">
+    <p><Math mode="inline" tex="{}_{\mathord{x}}\mathord{G}" text="_ x G" xml:id="p14.m1">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUBSCRIPTOP" scriptpos="pre1"/>
+            <XMTok font="italic" role="ID">G</XMTok>
+            <XMTok font="italic" fontsize="70%" role="ID">x</XMTok>
           </XMApp>
         </XMath>
       </Math></p>

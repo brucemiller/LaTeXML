@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
+<?latexml package="stmaryrd"?>
 <?latexml package="latexml"?>
 <?latexml package="amsmath"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
@@ -59,6 +60,106 @@
                   <XMApp>
                     <XMTok role="BINOP" stretchy="false">|</XMTok>
                     <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i4">
+          <tags>
+            <tag>4.</tag>
+            <tag role="refnum">4</tag>
+            <tag role="typerefnum">item 4</tag>
+          </tags>
+          <para xml:id="S1.I1.i4.p1">
+            <p><Math mode="inline" tex="\rightarrow." text="rightarrow" xml:id="S1.I1.i4.p1.m1">
+                <XMath>
+                  <XMDual>
+                    <XMRef idref="S1.I1.i4.p1.m1.1"/>
+                    <XMWrap>
+                      <XMTok name="rightarrow" role="ARROW" xml:id="S1.I1.i4.p1.m1.1">→</XMTok>
+                      <XMTok role="PERIOD">.</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i5">
+          <tags>
+            <tag>5.</tag>
+            <tag role="refnum">5</tag>
+            <tag role="typerefnum">item 5</tag>
+          </tags>
+          <para xml:id="S1.I1.i5.p1">
+            <p><Math mode="inline" tex="\rightarrow," text="rightarrow" xml:id="S1.I1.i5.p1.m1">
+                <XMath>
+                  <XMDual>
+                    <XMRef idref="S1.I1.i5.p1.m1.1"/>
+                    <XMWrap>
+                      <XMTok name="rightarrow" role="ARROW" xml:id="S1.I1.i5.p1.m1.1">→</XMTok>
+                      <XMTok role="PUNCT">,</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i6">
+          <tags>
+            <tag>6.</tag>
+            <tag role="refnum">6</tag>
+            <tag role="typerefnum">item 6</tag>
+          </tags>
+          <para xml:id="S1.I1.i6.p1">
+            <p><Math mode="inline" tex="\left.xyz\right|_{0}^{2}x" text="evaluated-at@(x * y * z, 0, 2) * x" xml:id="S1.I1.i6.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMDual>
+                      <XMApp>
+                        <XMTok meaning="evaluated-at"/>
+                        <XMRef idref="S1.I1.i6.p1.m1.3"/>
+                        <XMRef idref="S1.I1.i6.p1.m1.1"/>
+                        <XMRef idref="S1.I1.i6.p1.m1.2"/>
+                      </XMApp>
+                      <XMApp>
+                        <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                        <XMApp>
+                          <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                          <XMWrap>
+                            <XMApp xml:id="S1.I1.i6.p1.m1.3">
+                              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                              <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                              <XMTok font="italic" role="UNKNOWN">z</XMTok>
+                            </XMApp>
+                            <XMTok role="CLOSE" stretchy="true">|</XMTok>
+                          </XMWrap>
+                          <XMTok fontsize="70%" meaning="0" role="NUMBER" xml:id="S1.I1.i6.p1.m1.1">0</XMTok>
+                        </XMApp>
+                        <XMTok fontsize="70%" meaning="2" role="NUMBER" xml:id="S1.I1.i6.p1.m1.2">2</XMTok>
+                      </XMApp>
+                    </XMDual>
+                    <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i7">
+          <tags>
+            <tag>7.</tag>
+            <tag role="refnum">7</tag>
+            <tag role="typerefnum">item 7</tag>
+          </tags>
+          <para xml:id="S1.I1.i7.p1">
+            <p><Math mode="inline" tex="A\boxslash B" text="boxslash@(A, B)" xml:id="S1.I1.i7.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok name="boxslash" role="BINOP">⧄</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
                   </XMApp>
                 </XMath>
               </Math></p>

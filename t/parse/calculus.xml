@@ -37,7 +37,7 @@
   </para>
   <para xml:id="p2">
     <equation xml:id="S0.Ex2">
-      <Math mode="display" tex="\int_{\infty}^{(0+)}t\,dt" text="((integral _ infinity) ^ (limit-from@(0, +)))@(t * differential-d@(t))" xml:id="S0.Ex2.m1">
+      <Math mode="display" tex="\int_{0}^{\infty}x^{2}d\mathord{x}" text="((integral _ 0) ^ infinity)@(x ^ 2 * differential-d@(x))" xml:id="S0.Ex2.m1">
         <XMath>
           <XMApp>
             <XMApp>
@@ -45,27 +45,20 @@
               <XMApp>
                 <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                 <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
-                <XMTok fontsize="70%" meaning="infinity" name="infty" role="ID">∞</XMTok>
+                <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
               </XMApp>
-              <XMDual>
-                <XMRef idref="S0.Ex2.m1.1"/>
-                <XMWrap>
-                  <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
-                  <XMApp xml:id="S0.Ex2.m1.1">
-                    <XMTok meaning="limit-from"/>
-                    <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
-                    <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
-                  </XMApp>
-                  <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
-                </XMWrap>
-              </XMDual>
+              <XMTok fontsize="70%" meaning="infinity" name="infty" role="ID">∞</XMTok>
             </XMApp>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
-              <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt">t</XMTok>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+              </XMApp>
               <XMApp>
                 <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
-                <XMTok font="italic" role="UNKNOWN">t</XMTok>
+                <XMTok font="italic" role="ID">x</XMTok>
               </XMApp>
             </XMApp>
           </XMApp>
@@ -75,7 +68,7 @@
   </para>
   <para xml:id="p3">
     <equation xml:id="S0.Ex3">
-      <Math mode="display" tex="\int_{\infty}^{(1+,0+,1−,0−)}t\,dt" text="((integral _ infinity) ^ (vector@(limit-from@(1, +), limit-from@(0, +), 1 * −, 0 * −)))@(t * differential-d@(t))" xml:id="S0.Ex3.m1">
+      <Math mode="display" tex="\int_{\infty}^{(0+)}t\,dt" text="((integral _ infinity) ^ (limit-from@(0, +)))@(t * differential-d@(t))" xml:id="S0.Ex3.m1">
         <XMath>
           <XMApp>
             <XMApp>
@@ -86,37 +79,13 @@
                 <XMTok fontsize="70%" meaning="infinity" name="infty" role="ID">∞</XMTok>
               </XMApp>
               <XMDual>
-                <XMApp>
-                  <XMTok meaning="vector"/>
-                  <XMRef idref="S0.Ex3.m1.1"/>
-                  <XMRef idref="S0.Ex3.m1.2"/>
-                  <XMRef idref="S0.Ex3.m1.3"/>
-                  <XMRef idref="S0.Ex3.m1.4"/>
-                </XMApp>
+                <XMRef idref="S0.Ex3.m1.1"/>
                 <XMWrap>
                   <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
                   <XMApp xml:id="S0.Ex3.m1.1">
                     <XMTok meaning="limit-from"/>
-                    <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
-                    <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
-                  </XMApp>
-                  <XMTok fontsize="70%" role="PUNCT">,</XMTok>
-                  <XMApp xml:id="S0.Ex3.m1.2">
-                    <XMTok meaning="limit-from"/>
                     <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
                     <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
-                  </XMApp>
-                  <XMTok fontsize="70%" role="PUNCT">,</XMTok>
-                  <XMApp xml:id="S0.Ex3.m1.3">
-                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
-                    <XMTok fontsize="70%" role="UNKNOWN">−</XMTok>
-                  </XMApp>
-                  <XMTok fontsize="70%" role="PUNCT">,</XMTok>
-                  <XMApp xml:id="S0.Ex3.m1.4">
-                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                    <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
-                    <XMTok fontsize="70%" role="UNKNOWN">−</XMTok>
                   </XMApp>
                   <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
                 </XMWrap>
@@ -137,7 +106,69 @@
   </para>
   <para xml:id="p4">
     <equation xml:id="S0.Ex4">
-      <Math mode="display" tex="\sum_{i=0}^{50}x^{i}" text="((sum _ (i = 0)) ^ 50)@(x ^ i)" xml:id="S0.Ex4.m1">
+      <Math mode="display" tex="\int_{\infty}^{(1+,0+,1−,0−)}t\,dt" text="((integral _ infinity) ^ (vector@(limit-from@(1, +), limit-from@(0, +), 1 * −, 0 * −)))@(t * differential-d@(t))" xml:id="S0.Ex4.m1">
+        <XMath>
+          <XMApp>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+              <XMApp>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                <XMTok fontsize="70%" meaning="infinity" name="infty" role="ID">∞</XMTok>
+              </XMApp>
+              <XMDual>
+                <XMApp>
+                  <XMTok meaning="vector"/>
+                  <XMRef idref="S0.Ex4.m1.1"/>
+                  <XMRef idref="S0.Ex4.m1.2"/>
+                  <XMRef idref="S0.Ex4.m1.3"/>
+                  <XMRef idref="S0.Ex4.m1.4"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
+                  <XMApp xml:id="S0.Ex4.m1.1">
+                    <XMTok meaning="limit-from"/>
+                    <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                    <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                  </XMApp>
+                  <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                  <XMApp xml:id="S0.Ex4.m1.2">
+                    <XMTok meaning="limit-from"/>
+                    <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
+                    <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                  </XMApp>
+                  <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                  <XMApp xml:id="S0.Ex4.m1.3">
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                    <XMTok fontsize="70%" role="UNKNOWN">−</XMTok>
+                  </XMApp>
+                  <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                  <XMApp xml:id="S0.Ex4.m1.4">
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
+                    <XMTok fontsize="70%" role="UNKNOWN">−</XMTok>
+                  </XMApp>
+                  <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+            </XMApp>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN" rpadding="1.7pt">t</XMTok>
+              <XMApp>
+                <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
+                <XMTok font="italic" role="UNKNOWN">t</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p5">
+    <equation xml:id="S0.Ex5">
+      <Math mode="display" tex="\sum_{i=0}^{50}x^{i}" text="((sum _ (i = 0)) ^ 50)@(x ^ i)" xml:id="S0.Ex5.m1">
         <XMath>
           <XMApp>
             <XMApp scriptpos="mid">
@@ -163,30 +194,56 @@
       </Math>
     </equation>
   </para>
-  <para xml:id="p5">
-    <p><Math mode="inline" tex="\left.y\right|_{0}" text="evaluated-at@(y, 0)" xml:id="p5.m1">
+  <para xml:id="p6">
+    <p><Math mode="inline" tex="\left.y\right|_{0}" text="evaluated-at@(y, 0)" xml:id="p6.m1">
         <XMath>
           <XMDual>
             <XMApp>
               <XMTok meaning="evaluated-at"/>
-              <XMRef idref="p5.m1.1"/>
-              <XMRef idref="p5.m1.2"/>
+              <XMRef idref="p6.m1.1"/>
+              <XMRef idref="p6.m1.2"/>
             </XMApp>
             <XMApp>
               <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
               <XMWrap>
-                <XMTok font="italic" role="UNKNOWN" xml:id="p5.m1.1">y</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="p6.m1.1">y</XMTok>
                 <XMTok role="CLOSE" stretchy="true">|</XMTok>
               </XMWrap>
-              <XMTok fontsize="70%" meaning="0" role="NUMBER" xml:id="p5.m1.2">0</XMTok>
+              <XMTok fontsize="70%" meaning="0" role="NUMBER" xml:id="p6.m1.2">0</XMTok>
             </XMApp>
           </XMDual>
         </XMath>
       </Math></p>
   </para>
-  <para xml:id="p6">
-    <equation xml:id="S0.Ex5">
-      <Math mode="display" tex="\sum_{\scriptstyle 0\leq i\leq m\atop\scriptstyle 0&lt;j&lt;n}P(i,j)" text="(sum _ ((0 less= i less= m) FRACOP (0 less j less n)))@(P * open-interval@(i, j))" xml:id="S0.Ex5.m1">
+  <para xml:id="p7">
+    <p><Math mode="inline" tex="\left.xyz\right|_{0}" text="evaluated-at@(x * y * z, 0)" xml:id="p7.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="evaluated-at"/>
+              <XMRef idref="p7.m1.2"/>
+              <XMRef idref="p7.m1.1"/>
+            </XMApp>
+            <XMApp>
+              <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+              <XMWrap>
+                <XMApp xml:id="p7.m1.2">
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">z</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE" stretchy="true">|</XMTok>
+              </XMWrap>
+              <XMTok fontsize="70%" meaning="0" role="NUMBER" xml:id="p7.m1.1">0</XMTok>
+            </XMApp>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p8">
+    <equation xml:id="S0.Ex6">
+      <Math mode="display" tex="\sum_{\scriptstyle 0\leq i\leq m\atop\scriptstyle 0&lt;j&lt;n}P(i,j)" text="(sum _ ((0 less= i less= m) FRACOP (0 less j less n)))@(P * open-interval@(i, j))" xml:id="S0.Ex6.m1">
         <XMath>
           <XMApp>
             <XMApp scriptpos="mid">
@@ -218,14 +275,14 @@
               <XMDual>
                 <XMApp>
                   <XMTok meaning="open-interval"/>
-                  <XMRef idref="S0.Ex5.m1.1"/>
-                  <XMRef idref="S0.Ex5.m1.2"/>
+                  <XMRef idref="S0.Ex6.m1.1"/>
+                  <XMRef idref="S0.Ex6.m1.2"/>
                 </XMApp>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex5.m1.1">i</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex6.m1.1">i</XMTok>
                   <XMTok role="PUNCT">,</XMTok>
-                  <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex5.m1.2">j</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex6.m1.2">j</XMTok>
                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                 </XMWrap>
               </XMDual>
@@ -235,9 +292,9 @@
       </Math>
     </equation>
   </para>
-  <para xml:id="p7">
-    <equation xml:id="S0.Ex6">
-      <Math mode="display" tex="\sum_{i=1}^{p}\sum_{j=1}^{q}\sum_{k=1}^{r}a_{ij}b_{jk}c_{ki}" text="((sum _ (i = 1)) ^ p)@(((sum _ (j = 1)) ^ q)@(((sum _ (k = 1)) ^ r)@(a _ (i * j) * b _ (j * k) * c _ (k * i))))" xml:id="S0.Ex6.m1">
+  <para xml:id="p9">
+    <equation xml:id="S0.Ex7">
+      <Math mode="display" tex="\sum_{i=1}^{p}\sum_{j=1}^{q}\sum_{k=1}^{r}a_{ij}b_{jk}c_{ki}" text="((sum _ (i = 1)) ^ p)@(((sum _ (j = 1)) ^ q)@(((sum _ (k = 1)) ^ r)@(a _ (i * j) * b _ (j * k) * c _ (k * i))))" xml:id="S0.Ex7.m1">
         <XMath>
           <XMApp>
             <XMApp scriptpos="mid">

@@ -1,11 +1,17 @@
 \documentclass{article}
+\usepackage{stmaryrd}
 \usepackage{latexml}
 \usepackage{amsmath}
 \begin{document}
 \section{Edge/Artefact Cases}
+% What are good real formulas that demonstrate this grammar behaviour?
 \begin{enumerate}
   \item $\,$  % empty formula 
   \item $\times x$ % surprisingly parses as "times(absent, x)"
   \item $\mathbin{|} x$ % surprisingly parses via the "MulOp Factor" rule.
+  \item $\rightarrow.$
+  \item $\rightarrow,$
+  \item $\left. xyz \right|_0^2 x$
+  \item $ A \boxslash B $
 \end{enumerate}
 \end{document}
