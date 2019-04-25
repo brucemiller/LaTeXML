@@ -1775,9 +1775,14 @@ sub FindFile_aux {
   my $nopaths     = LookupValue('REMOTE_REQUEST');
   my $ltxml_paths = $nopaths ? [] : $paths;
   # If we're looking for ltxml, look within our paths & installation first (faster than kpse)
-  if (!$options{noltxml}
-    && ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package'))) {
-    return $path; }
+  if (!$options{noltxml}) {
+    if ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
+      return $path; }
+    elsif ($file =~ /^(.+[^\d])?(?:\d+).(sty|cls)$/) {
+      if ($path = pathname_find("$1.$2.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
+        Info('fallback', $file, $STATE->getStomach->getGullet,
+          "Interpreted as a versioned package/class name, falling back to generic $1.$2\n");
+        return FindFile("$1.$2", %options); } } }
   # If we're looking for TeX, look within our paths & installation first (faster than kpse)
   if (!$options{notex}
     && ($path = pathname_find($file, paths => $paths))) {
