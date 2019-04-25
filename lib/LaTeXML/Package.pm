@@ -1778,7 +1778,7 @@ sub FindFile_aux {
   if (!$options{noltxml}) {
     if ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
       return $path; }
-    elsif ($file =~ /^(.+[^\d])?(?:\d+).(sty|cls)$/) {
+    elsif ($file =~ /^(.+[^\d])?(?:\d+)\.(sty|cls)$/) {
       if ($path = pathname_find("$1.$2.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
         Info('fallback', $file, $STATE->getStomach->getGullet,
           "Interpreted as a versioned package/class name, falling back to generic $1.$2\n");
