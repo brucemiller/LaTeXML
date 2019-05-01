@@ -836,11 +836,11 @@ DefConstructor('\mspace{MuDimension}', "<ltx:XMHint name='mspace' width='#1'/>")
 # Section 4.3 Dots
 # Nice idea, but not sure what I really should do about it.
 # In principle, a processor has access to the context....
-DefMacroI('\dotsc', undef, '\ldots');    # Dots with commas
-DefMacroI('\dotsb', undef, '\cdots');    # Dots with binary operators/relations
-DefMacroI('\dotsm', undef, '\cdots');    # multiplication dots
-DefMacroI('\dotsi', undef, '\cdots');    # Dots with integrals
-DefMacroI('\dotso', undef, '\ldots');    # other dots (??)
+DefMathI('\dotsc', undef, "\x{2026}", role => 'ID', alias => '\dotsc');
+DefMathI('\dotsb', undef, "\x{22EF}", role => 'ID', alias => '\dotsb');
+DefMathI('\dotsm', undef, "\x{22EF}", role => 'ID', alias => '\dotsm');
+DefMathI('\dotsi', undef, "\x{22EF}", role => 'ID', alias => '\dotsi');
+DefMathI('\dotso', undef, "\x{2026}", role => 'ID', alias => '\dotso');
 
 # Not really clear when these get set to something other than \relax, in amsfonts.sty
 DefMacroI('\DOTSB', undef, Tokens());
@@ -850,6 +850,20 @@ Let('\hdots', '\ldots');
 
 DefMacro('\hdotsfor Number', sub {
     (map { T_CS('\hdots') } 1 .. $_[1]->valueOf); });
+
+# The basic idea is simple enough (in TeX world);
+# Peek to see what follows (\futurelet) and if mathbin or mathrel, use cdots.
+# That corresponds to the @role of the following token (once in XML),
+# but we're always too early to check it!
+# Using a Digested arg seems a little risky, especially "$", but usually can see @role
+# This currently doesn't see deeply enough into $after, eg. \boldsymbol{+}
+DefPrimitive('\dots Digested', sub {
+    my ($stomach, $after) = @_;
+    my $role = $after && $after->getProperty('role');
+    my %binops = (ADDOP => 1, BINOP => 1, MULOP => 1, RELOP => 1);
+    return (Box(($role && $binops{$role} ? "\x{22EF}" : "\x{2026}"),
+        undef, undef, T_CS('\dots'), mode => 'math', name => 'dots', role => 'ID'),
+      $after); });
 
 #======================================================================
 # Section 4.4 Nonbreaking dashes
