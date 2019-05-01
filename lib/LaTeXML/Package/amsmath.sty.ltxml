@@ -101,12 +101,12 @@ sub amsalignBindings {
     $properties{attributes}{rowsep} = $cur_jot; }
 
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
-      template => $template,
+      template      => $template,
       openContainer => sub { my %attr = RefStepID('@equationgroup');
         $attr{'xml:id'} = $attr{id}; delete $attr{id};
         $_[0]->openElement('ltx:equationgroup', %attr, @_[1 .. $#_]); },
       closeContainer => sub { $_[0]->closeElement('ltx:equationgroup'); },
-      openRow => sub {
+      openRow        => sub {
         my ($doc, %props) = @_;    # props are attributes, except for tag!
         my $tags = $props{tags}; delete($props{tags});
         $props{_tags} = $tags;     # HACK!!! for dlmf
@@ -307,20 +307,51 @@ sub amsMultirowBindings {
 # Section 3.4 Split equations with alignment
 
 # split is for SINGLE equations,
-# split is used WITHIN other math environments to provide line breaks and alignment.
-# We'll use an XMDual to represent both the whole equation,
+# Interestingly, {split} (which creates multiple lines, with 2 columns)
+# can be used not only within equation, but gather,
+# AND (curiously) within an align environment!
+# In the latter case, it fills the horizontal space of ONE of the align's column pairs,
+# BUT
+#  (1) it is horizontally aligned AS IF it were made up of its two columns within the align
+#  (2) it only occupies (part of) a SINGLE row (and is vertically centered in it).
+#     And in particular, it's own multiple rows REMAIN aligned w/respect to each other,
+#     as if it's still a block.
+# I've been unable to come up with a way of constructing this that is both (to some extent)
+# logically constructed, and that preserves all the above alignment characteristics,
+# that doesn't require at least some Magic width calculations to shift/reposition some element.
+# Consequently, I'm currently focussed on getting the logical structure right,
+# and occupying the "correct" rows/columns.
+# That means that the split is NOT NECESSARILY HORIZONTALLY aligned correctly!
+# Maybe we can come back & patch that some day?
+
+# In the simpler cases (equation, gather),
+# we'll use an XMDual to represent both the whole equation,
 # and the alignment structure.
 # (\intertext?)
 
-DefMacro('\split',    '\@hidden@bgroup\@@split\@start@alignment');
+DefConditional('\if@inamsalign', sub {
+    grep { /^align/ } $STATE->lookupStackedValues('current_environment'); });
+
+DefConstructor('\lx@ams@marksplitinalign', sub {
+    my $capture = $_[0]->getElement->parentNode->parentNode;
+    $capture->setAttribute(colspan => 2);
+    $capture->setAttribute(align   => 'center'); },
+  # Skip a column (for left/right alignment)
+  afterDigest => sub { LookupValue('Alignment')->nextColumn; return; },
+  reversion   => '', sizer => 0);
+
+DefMacro('\split',
+  '\if@inamsalign\lx@ams@marksplitinalign\fi'
+    . '\@hidden@bgroup\@@split\@start@alignment');
 DefMacro('\endsplit', '\@finish@alignment\@end@split\@hidden@egroup');
+
 DefPrimitive('\@end@split', sub { $_[0]->egroup; });
 DefConstructor('\@@split DigestedBody',
   '#1',
   beforeDigest => sub {
     $_[0]->bgroup;
     amsAlignedBindings(); },
-  reversion => '\begin{split}#1\end{split}',
+  reversion      => '\begin{split}#1\end{split}',
   afterConstruct => sub { rearrangeAMSSplit($_[0], $_[0]->getNode->lastChild); });
 
 sub rearrangeAMSSplit {
@@ -332,6 +363,7 @@ sub rearrangeAMSSplit {
       $array],
     $array);
   return; }
+
 #======================================================================
 # Section 3.5 Equation groups without alignment
 # gather is for several equations, one per line, separated by \\ (& is not used)
@@ -341,7 +373,7 @@ sub rearrangeAMSSplit {
 # NOTE: Does this need provision to deal with metadata?
 DefConstructor('\@@amsgather SkipSpaces DigestedBody',
   '#1',
-  beforeDigest => sub { $_[0]->bgroup; },
+  beforeDigest   => sub { $_[0]->bgroup; },
   afterConstruct => sub { rearrangeAMSGather($_[0], $_[0]->getNode->lastChild); });
 
 DefPrimitive('\end@amsgather', sub { $_[0]->egroup; });
@@ -360,7 +392,7 @@ DefPrimitive('\@amsgather@bindings', sub {
 sub rearrangeAMSGather {
   my ($document, $equationgroup) = @_;
   foreach my $equation ($document->findnodes('ltx:equation', $equationgroup)) {
-    my @cells = $document->findnodes('ltx:_Capture_', $equation);
+    my @cells     = $document->findnodes('ltx:_Capture_', $equation);
     my @cell1cont = $document->getChildElements($cells[0]);
     # Check if this equation is really an intertext
     if ((scalar(@cells) == 1) && (scalar(@cell1cont) == 1)
@@ -402,7 +434,7 @@ DefMacro('\csname endgather*\endcsname',
 # similar to eqnarray.
 DefConstructor('\@@amsalign SkipSpaces DigestedBody',
   '#1',
-  beforeDigest => sub { $_[0]->bgroup; },
+  beforeDigest   => sub { $_[0]->bgroup; },
   afterConstruct => sub { rearrangeAMSAlign($_[0], $_[0]->getNode->lastChild); });
 DefPrimitive('\end@amsalign', sub { $_[0]->egroup; });
 
@@ -527,8 +559,8 @@ DefPrimitive('\@end@gathered', sub { $_[0]->egroup; });
 DefConstructor('\@@gathered DigestedBody',
   '#1',
   beforeDigest => sub { $_[0]->bgroup; },
-  afterDigest => sub { $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'center' }); },
-  reversion => '\begin{gathered}#1\end{gathered}',
+  afterDigest  => sub { $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'center' }); },
+  reversion      => '\begin{gathered}#1\end{gathered}',
   afterConstruct => sub { rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); });
 
 DefMacro('\aligned[]',     '\@hidden@bgroup\@@amsaligned\@start@alignment');
@@ -622,7 +654,7 @@ DefMacro('\lx@end@ams@cases',
 # to give alternating value,condition (an empty condition is replaced by "otherwise" !?!?!)
 DefConstructor('\lx@ams@cases@ RequiredKeyVals:lx@GEN DigestedBody',
   '<ltx:XMWrap>#left#2#right</ltx:XMWrap>',
-  properties => sub { %{ $_[1]->getKeyVals }; },
+  properties     => sub { %{ $_[1]->getKeyVals }; },
   afterConstruct => sub {
     my ($document) = @_;
     my $point = $document->getElement->lastChild;
@@ -730,7 +762,7 @@ DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
     . ")("
     . "#2"
     . ")",
-  properties => sub { %{ $_[1]->getKeyVals }; },
+  properties  => sub { %{ $_[1]->getKeyVals }; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $kv = $whatsit->getArg(1);
@@ -987,7 +1019,7 @@ DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
       T_BEGIN, ($stylecode     ? Revert($stylecode)        : ()), T_END,
       T_BEGIN, Revert($whatsit->getProperty('top')),    T_END,
       T_BEGIN, Revert($whatsit->getProperty('bottom')), T_END); },
-  sizer => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
+  sizer       => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($open, $thickness, $close, $stylecode) = $whatsit->getArgs;
@@ -1005,7 +1037,7 @@ DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
     my $denom = Digest($stomach->getGullet->readArg);
     $stomach->egroup;
     my $meaning = ($thickness && ($thickness->valueOf == 0) ? undef : 'divide');
-    my $role = 'FRACOP';
+    my $role    = 'FRACOP';
     $whatsit->setProperties(
       open      => $open,
       close     => $close,
@@ -1135,7 +1167,7 @@ DefConstructor('\sideset{}{}{}', sub {
         $document->insertElement('ltx:XMWrap', $script); } }    # Stick any non-scripts FRONT!
 
     my $node = $document->insertElement('ltx:XMArg', $base);
-    my $ch = $document->getFirstChildElement($node);
+    my $ch   = $document->getFirstChildElement($node);
     my ($opx, $ignore)
       = ($ch && $ch->getAttribute('scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
     my $level = $props{level} || 0;

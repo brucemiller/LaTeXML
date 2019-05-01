@@ -1,0 +1,135 @@
+\documentclass[a4paper]{book}
+\usepackage{amsmath}
+\begin{document}
+
+Equation with split; Ampersand before relation
+\begin{equation}
+\begin{split}
+C &= D \\
+&{}+E
+\end{split}
+\end{equation}
+or after
+\begin{equation}
+\begin{split}
+C =& D \\
+&{}+E
+\end{split}
+\end{equation}
+
+Gather with split
+\begin{gather}
+A = B \\
+\begin{split}
+C &= D \\
+&{}+E
+\end{split}\\
+ F = G
+\end{gather}
+
+Align with split.
+Notice that the split acts like a column pair in the align.
+\begin{align}
+A &= B \\
+\begin{split}
+C &= D \\
+&{}+E
+\end{split}\\
+ F &= G\\
+H &= I
+\end{align}
+
+2-Column align, with missing columns
+\begin{align}
+  A &= B &
+ C &= D \\
+  E &= F \\
+  H &=  I &
+  J &= K
+\end{align}
+
+2-Column align with split;
+Note that you should omit double slash from last line of split!
+\begin{align}
+  A &= B &
+ C &= D \\
+\begin{split}
+  E &= F \\
+    &{} + G
+\end{split}\\
+  H &=  I &
+  J &= K
+\end{align}
+
+\begin{align}
+  A &= B &
+  C &= D \\
+  X &= Y &
+\begin{split}
+  E &= F \\
+    &{} + G
+\end{split}\\
+  H &=  I & J &= K \\
+  \begin{split}
+    L &= M\\
+    &{}+N
+  \end{split} &
+ O &= P\\
+  Q &= R &
+  S &= T
+\end{align}
+
+Multiple splits in multicolumn align.
+Note how each split block contributes to a single row, but it is
+horizontally aligned as if it were a column pair in the align.
+\begin{align}
+  A &= B+b+c+d &
+  C &= D \\
+\begin{split}
+  E+e+f+g &= F \\
+    &{} + G
+\end{split} &
+\begin{split}
+    L &= M\\
+    &{}+N \\
+    &{}+Z
+  \end{split} \\
+  Q &= R &
+  S &= T
+\end{align}
+
+\end{document}
+
+\begin{align}
+A =& B \\
+C =& D \\
+\end{align}
+
+\begin{equation}
+\begin{split}
+C =& D \\
+&{}+E
+\end{split}
+\end{equation}
+
+
+\begin{align}
+A =& B \\
+C =& D \\
+&+E \notag
+\end{align}
+
+%\end{document}
+
+
+
+
+\begin{align}
+A =&\ B \\
+B=& - C \\
+\begin{split}
+C =& -D + E + F + G + H\\
+&+I
+\end{split}
+\end{align}
+\end{document}
