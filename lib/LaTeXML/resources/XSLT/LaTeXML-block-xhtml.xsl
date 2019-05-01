@@ -411,15 +411,24 @@
        |     |             constraint |
        |_____|________________________|
 
+   The equation number is on the left if the document has class=ltx_leqno;
+   Otherwise the equation number will be on the right (w/ obvious change to above diagrams).
+
+   Also, there can be more than 2 columns (eg with AMS's align).
+   Moreover, there can be columns missing, esp. with AMS align.
+   So, the right padding column may use colspan to fill in the missing columns,
+   so that any rightmost columns (eg the equation number) are still correctly positioned.
   -->
 
   <func:function name="f:countcolumns">
     <xsl:param name="equation"/>
     <func:result>
-      <xsl:value-of select="count(ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td
-                            | ltx:MathFork/ltx:MathBranch[1]/ltx:td
-                            | ltx:MathFork/ltx:MathBranch[1][not(ltx:tr or ltx:td)]
-                            | ltx:Math)"/>
+      <xsl:value-of select="sum(ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td/@colspan)
+                            + count(ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td[not(@colspan)])
+                            + sum(ltx:MathFork/ltx:MathBranch[1]/ltx:td/@colspan)
+                            + count(ltx:MathFork/ltx:MathBranch[1]/ltx:td[not(@colspan)])
+                            + count(ltx:MathFork/ltx:MathBranch[1][not(ltx:tr or ltx:td)])
+                            + count(ltx:Math)"/>
     </func:result>
   </func:function>
 
@@ -587,6 +596,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
     </xsl:choose>
   </xsl:template>
 
+  <!-- Handle the equation left side, possibly including equation number -->
   <xsl:template name="eq-left">
     <xsl:param name="context"/>
     <xsl:param name="eqpos"
@@ -602,14 +612,22 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
     </xsl:element>
   </xsl:template>
 
+  <!-- Handle the equation right side, possibly including equation number,
+       and any extra padding "columns" needed to complete the row. -->
   <xsl:template name="eq-right">
     <xsl:param name="context"/>
     <xsl:param name="eqpos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
+    <xsl:param name="extrapad" select="0"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
       <xsl:attribute name="class">
       <xsl:value-of select="concat('ltx_eqn_cell ltx_eqn_',$eqpos,'_padright')"/></xsl:attribute>
+      <xsl:if test="$extrapad > 0">
+        <xsl:attribute name="colspan">
+          <xsl:value-of select="$extrapad+1"/>
+        </xsl:attribute>
+      </xsl:if>
     </xsl:element>
     <xsl:call-template name="eqnumtd">
       <xsl:with-param name="context" select="$context"/>
@@ -807,6 +825,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
           </xsl:apply-templates>
           <xsl:call-template name="eq-right">
             <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="extrapad" select="$ncolumns - f:countcolumns(ltx:MathFork/ltx:MathBranch[1]/tr[1])"/>
           </xsl:call-template>
         </xsl:element>
         <xsl:for-each select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[position() &gt; 1]">
@@ -821,6 +840,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
             </xsl:apply-templates>
             <xsl:call-template name="eq-right">
               <xsl:with-param name="context" select="$context"/>
+              <!-- count carefully, here -->
+              <xsl:with-param name="extrapad" select="$ncolumns - sum(ltx:td/@colspan) - count(ltx:td[not(@colspan)])"/>
             </xsl:call-template>
           </xsl:element>
         </xsl:for-each>
@@ -847,6 +868,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
           </xsl:apply-templates>
           <xsl:call-template name="eq-right">
             <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="extrapad" select="$ncolumns - f:countcolumns(ltx:MathFork/ltx:MathBranch[1])"/>
           </xsl:call-template>
         </xsl:element>
       </xsl:when>
@@ -886,6 +908,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
           </xsl:element>
           <xsl:call-template name="eq-right">
             <xsl:with-param name="context" select="$context"/>
+            <!-- no extra columns, since we've already made the equation span -->
           </xsl:call-template>
         </xsl:element>
       </xsl:otherwise>
