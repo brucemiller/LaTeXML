@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="amsmath"?>
+<?latexml package="subfiles"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" labels="LABEL:sec:intro" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Introduction</title>
+    <para xml:id="S1.p1">
+      <p>Blah.</p>
+    </para>
+  </section>
+  <section inlist="toc" labels="LABEL:sec:middle" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Middle</title>
+    <para xml:id="S2.p1">
+      <p>Given <ref labelref="LABEL:sec:intro"/>, we find the middle stuff.</p>
+    </para>
+  </section>
+  <section inlist="toc" labels="LABEL:sec:conclusion" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Conclusion</title>
+    <para xml:id="S3.p1">
+      <p>And so, given <ref labelref="LABEL:sec:intro"/> and <ref labelref="LABEL:sec:middle"/>,
+therefore.
+
+</p>
+    </para>
+  </section>
+</document>
