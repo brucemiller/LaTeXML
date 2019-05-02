@@ -41,7 +41,8 @@ DefMacro('\addtoendnotes{}', '');
 
 DefMacro('\notesname', 'Notes');
 
-DefConstructorI('\printendnotes', undef,
+# Note: NOT called \printendnotes!
+DefConstructorI('\theendnotes', undef,
   "<ltx:TOC lists='ent' scope='global' show='frefnum > note'><ltx:title>#name</ltx:title></ltx:TOC>",
   properties => sub { (name => Digest(T_CS('\notesname'))); });
 
