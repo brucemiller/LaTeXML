@@ -129,7 +129,7 @@ sub insertNavigation {
 Tag('ltx:document', 'afterClose' => \&insertNavigation);
 
 DefEnvironment('{lxNavbar}', sub { },
-  beforeDigest => sub { AssignValue(inPreamble => 0); },
+  beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
@@ -142,14 +142,14 @@ DefEnvironment('{lxNavbar}', sub { },
 # Repeated header/footers should give multiple header/footer lines ?
 # or do they just arrange the lines within it?
 DefEnvironment('{lxHeader}', sub { },
-  beforeDigest => sub { AssignValue(inPreamble => 0); },
+  beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
       ['ltx:inline-para', { class => 'ltx_page_header' }, $whatsit->getBody]);
     return; });
 DefEnvironment('{lxFooter}', sub { },
-  beforeDigest => sub { AssignValue(inPreamble => 0); },
+  beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
@@ -297,7 +297,7 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
     my $scope = $whatsit->getProperty('scope');
     createDeclarationRewrite($document, $scope, $whatsit); },
   properties => { alignmentSkippable => 1 },
-  reversion => '');
+  reversion  => '');
 
 DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
   afterDigest => sub { my ($stomach, $whatsit) = @_;
@@ -313,7 +313,9 @@ DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
         Warn('unexpected', $label, $document,
           "No Declaration with label=$label was found"); } } },
   properties => { alignmentSkippable => 1 },
-  reversion => '');
+  reversion  => '');
+
+NewCounter('@XMDECL', 'section', idprefix => 'XMD');
 
 sub next_declaration_id {
   StepCounter('@XMDECL');
