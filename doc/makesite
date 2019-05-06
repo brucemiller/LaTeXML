@@ -31,7 +31,7 @@ GetOptions("force!" => \$force,
   "site!"     => \$dosite,
   "examples!" => \$doexamples,
   "manual!"   => \$domanual,
-  "webdir=s"    => \$WEBDIR,
+  "webdir=s"  => \$WEBDIR,
 ) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 
@@ -55,12 +55,12 @@ getReleases();
 if ($dosite) {
   latexml("$DOCDIR/site/index.tex", "$WEBDIR/index.html",
     dependencies => ["$DOCDIR/sty/latexmldoc.sty.ltxml", $RELEASEDOC],
-    postoptions => [
+    postoptions  => [
       "--format=html5",
       "--split",
       "--css=latexmldoc.css",
       "--nonumbersections",
-      "--splitnaming=label",
+      "--splitnaming=labelrelative",
       "--icon=favicon.ico",
       "--javascript=LaTeXML-maybeMathjax.js",
     ],

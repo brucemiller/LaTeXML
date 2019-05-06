@@ -99,7 +99,8 @@
 %%%======================================================================
 \chapter{Introduction}\label{intro}
 \begin{advanced}
-\paragraph{Note:} Some of the more detailed portions of this manual have
+\paragraph{Note:}\label{intro.note}
+Some of the more detailed portions of this manual have
 not kept uptodate with the evolution of the code and style of \LaTeXML,
 but rather than delay release, we'll improve the documentation in a later update.
 \end{advanced}
@@ -120,7 +121,7 @@ Faced with the need to perform this conversion and the lack of suitable tools to
 the DLMF project proceeded to develop thier own tool, \LaTeXML, for this purpose.
 %This document describes a \emph{preview} release of \LaTeXML.
 
-\paragraph{Design Goals} The idealistic goals of \LaTeXML\ are:
+\paragraph{Design Goals}\label{intro.goals} The idealistic goals of \LaTeXML\ are:
 \begin{itemize}
 \item Faithful emulation of \TeX's behaviour;
 \item Easily extensible;
@@ -147,7 +148,7 @@ of means to customize the processing and declare the author's intent.
 At the same time, especially for new documents, we encourage a more logical, 
 content-oriented markup style, over a purely presentation-oriented style.
 
-\paragraph[Overview]{Overview of this Manual}
+\paragraph[Overview]{Overview of this Manual}\label{intro.overview}
 Chapter \ref{usage} describes the usage of \LaTeXML, along with
 common use cases and techniques.  Chapter \ref{architecture} describes
 the system architecture in some detail. Strategies for customization
@@ -162,8 +163,7 @@ Finally, the Appendices give detailed documentation the system components:
 Appendix \ref{commands} describes the command-line programs provided by the system;
 Appendix \ref{included.bindings} lists the \LaTeX\ style packages for which
 we've provided \LaTeXML-specific bindings.
-Appendices \ref{modules},  \ref{commonmodules}, \ref{coremodules}, \ref{utilitymodules},
-\ref{premodules} and \ref{postmodules}
+Appendix \ref{modules}
 describes the various Perl modules, in groups, that comprise the system.
 Appendix \ref{schema} describes the \XML\ schema used by \LaTeXML.
 Appendix \ref{errorcodes} gives an overview of the warning and
@@ -398,7 +398,7 @@ which overrides the extension used in the destination. The recognized formats ar
 Of course, all of these conversions can be controlled or overridden
 by explicit options described below.
 For more details about less common options, see the command
-documentation \ltxcmd{latexmlpost}, as well as Appendix \ref{postmodules}.
+documentation \ltxcmd{latexmlpost}, as well as Appendix \ref{modules.post}.
 
 \paragraph{Scanning}\label{usage.post.scanning}
 The scanning step collects information about all labels, ids,
@@ -650,7 +650,7 @@ double-up the backslashes.
 As has been said, \LaTeXML\ consists of two main programs:
 \ltxcmd{latexml} responsible for converting the \TeX\ source into \XML;
 and \ltxcmd{latexmlpost} responsible for converting to target formats.
-See Figure \ref{fig:dataflow} for illustration.
+See Figure \ref{architecture.dataflow} for illustration.
 
 The casual user needs only a superficial understanding of the architecture.
 The programmer who wants to extend or customize \LaTeXML\ will, however,
@@ -667,7 +667,7 @@ and representation questions, aw well.
 \begin{center}
 \includegraphics[width=\textwidth]{figures/digestion}
 \end{center}
-\caption{Flow of data through \LaTeXML's digestive tract.\label{fig:dataflow}}
+\caption{Flow of data through \LaTeXML's digestive tract.\label{architecture.dataflow}}
 \end{figure}
 
 The intention is that all semantics of the original document is
@@ -678,7 +678,7 @@ sufficient. Alternatively, you may want to enhance the document
 by applying third party programs before postprocessing.
 
 %%%----------------------------------------------------------------------
-\section{latexml architecture}\label{latexmlarchitecture}
+\section{latexml architecture}\label{architecture.latexml}
 \index{LaTeXML!architecture}%
 Like \TeX, \ltxcmd{latexml} is data-driven: the text and executable control
 sequences (ie.~macros and primitives)
@@ -704,7 +704,7 @@ The processing is broken into the following stages
 \end{description}
 
 %%%----------------------------------------------------------------------
-\subsection{Digestion}\label{architecture.digestion}
+\paragraph{Digestion}\label{architecture.latexml..digestion}
 \index{Mouth(LaTeXML::)@{\ttfamily  Mouth(LaTeXML::)}!architecture}%
 \index{Gullet(LaTeXML::)@{\ttfamily  Gullet(LaTeXML::)}!architecture}%
 \index{Stomach(LaTeXML::)@{\ttfamily  Stomach(LaTeXML::)}!architecture}%
@@ -748,7 +748,7 @@ and affect digestion.
 
 
 %%%----------------------------------------------------------------------
-\subsection{Construction}\label{architecture.construction}
+\paragraph{Construction}\label{architecture.latexml.construction}
 \index{Constructor (LaTeXML::)!architecture}%
 \index{Document (LaTeXML::)!architecture}%
 \index{Model (LaTeXML::)!architecture}%
@@ -777,7 +777,7 @@ specified by \code{Tag}).
 See \ref{customization.latexml.schema} for how to affect the schema.
 
 %%%----------------------------------------------------------------------
-\subsection{Rewriting}\label{architecture.rewriting}
+\paragraph{Rewriting}\label{architecture.latexml.rewriting}
 \index{Rewrite (LaTeXML::)!architecture}%
 Once the basic document is constructed, \ltxpod{Core::Rewrite} rules are applied which can
 perform various functions. Ligatures and combining mathematics digits and letters (in certain fonts)
@@ -786,7 +786,7 @@ of the type or grammatical role of math tokens can be applied here
 See \ref{customization.latexml.rewriting} for how to define rewrite rules.
 
 %%%----------------------------------------------------------------------
-\subsection{MathParsing}\label{architecture.mathparsing}
+\paragraph{MathParsing}\label{architecture.latexml.mathparsing}
 \index{MathParser (LaTeXML::)!architecture}%
 After rewriting, a grammar based parser is applied to the mathematical
 nodes in order to infer, at least, the structure of the expressions,
@@ -794,11 +794,11 @@ if not the meaning.
 Mathematics parsing, and how to control it, is covered in detail in Chapter \ref{math}.
 
 %%%----------------------------------------------------------------------
-\subsection{Serialization}\label{architecture.serialization}
+\paragraph{Serialization}\label{architecture.latexml.serialization}
 Here, we simple convert the DOM into string form, and output it.
 
 %%%----------------------------------------------------------------------
-\section{latexmlpost architecture}\label{latexmlpostarchitecture}
+\section{latexmlpost architecture}\label{architecture.latexmlpost}
 \index{Post (LaTeXML::)!architecture}%
 \LaTeXML's postprocessor is primarily for format conversion.
 It operates by applying a sequence of filters responsible for
@@ -1880,7 +1880,7 @@ In this chapter, we will describe some of the special complications
 presented by alignments and the strategies used to infer and
 represent the appropriate semantic structures, particularly for math.
 
-\section{\TeX\ Alignments}\label{texalignments}
+\section{\TeX\ Alignments}\label{alignments.tex}
 \textbf{NOTE} This section needs to be written.
 
 Many utilities for setting up and processing alignments are defined in \code{TeX.pool}
@@ -1898,11 +1898,11 @@ since row and column markers can be hidden in macros, but it also
 means that simple means, such as delimited parameter lists, to parse
 the structure won't work.
 
-\section{Tabular Header Heuristics}\label{tabular}
+\section{Tabular Header Heuristics}\label{alignments.tabular}
 
 \emph{To be written}
 
-\section{Math Forks}\label{mathfork}
+\section{Math Forks}\label{alignments.mathfork}
 There are several constructs for aligning mathematics in \LaTeX, and common
 packages. Here we are concerned with the large scale alignments where
 one or more equations are displayed in a grid,
@@ -1966,7 +1966,7 @@ branches to have a known relationship; in particular, those in the branch
 should have \code{.fork1} appended.
 
 
-\section{eqnarray}\label{eqnarray}
+\section{eqnarray}\label{alignments.eqnarray}
 The \code{eqnarray} environment seems intended to represent one or more
 equations, but each equation can be continued with additional right-hand-sides
 (by omitting the 1st column), or the RHS itself can be continued on multiple
@@ -1999,7 +1999,7 @@ the layout in the \elementref{MathBranch}.
 \textbf{NOTE} We need to deal better with the cases that have more
 rows numbered that we would like.
 
-\section{AMS Alignments}\label{amsalign}
+\section{AMS Alignments}\label{alignments.amsalign}
 The AMS math packages define a number of useful math alignment structures.
 These have been well thought out and designed with particular logical
 structures in mind, as well as the layout. Thus these environments are
@@ -2049,7 +2049,7 @@ is transformed into and treated equivalently to a top-level \code{align}.
 
 %%%======================================================================
 \chapter{Metadata}\label{metadata}
-\section{RDFa}\label{RDFa}
+\section{RDFa}\label{metadata.RDFa}
 \LaTeXML\ has support for representing and generating RDFa metadata in \LaTeXML\ documents.
 The core attributes \attr{property}, \attr{rel}, \attr{rev}, \attr{about}
 \attr{resource}, \attr{typeof} and \attr{content} are included.
@@ -2116,6 +2116,7 @@ Particular thanks go to Deyan Ginev as an enthusiastic supporter and
 developer.
 %%%======================================================================
 \appendix
+\setcounter{secnumdepth}{1}% Don't number (sub)sections, but include in tocs!
 \chapter[Commands]{Command Documentation}\label{commands}
 % \input the 1st, to avoid quasi-blank page; include the rest
 % Actually, \input them all, since there's too much blank space...
@@ -2135,14 +2136,13 @@ Bindings for the following classes and packages are supplied with the distributi
 \end{description}
 
 %%%======================================================================
-\chapter[Modules]{Top-level Module Documentation}\label{modules}
+\chapter[Modules]{Perl  Modules Documentation}\label{modules}
 \input{pods/LaTeXML}
 \input{pods/LaTeXML_Global}
 \input{pods/LaTeXML_Package}
 \input{pods/LaTeXML_MathParser}
 
-\chapter[Common Modules]{Common Module Documentation}\label{commonmodules}
-
+\section[Common Modules]{Common Modules Documentation}\label{modules.common}
 \input{pods/LaTeXML_Common_Config}
 \input{pods/LaTeXML_Common_Object}
 \input{pods/LaTeXML_Common_Color}
@@ -2163,8 +2163,7 @@ Bindings for the following classes and packages are supplied with the distributi
 \input{pods/LaTeXML_Common_XML}
 \input{pods/LaTeXML_Common_Error}
 
-\chapter[Core Modules]{Core Module Documentation}\label{coremodules}
-
+\section[Core Modules]{Core Modules Documentation}\label{modules.core}
 \input{pods/LaTeXML_Core_State}
 % Core digestion
 \input{pods/LaTeXML_Core_Mouth}
@@ -2198,18 +2197,18 @@ Bindings for the following classes and packages are supplied with the distributi
 \input{pods/LaTeXML_Core_Parameters}
 
 %%%======================================================================
-\chapter[Utility Modules]{Utility Module Documentation}\label{utilitymodules}
+\section[Utility Modules]{Utility Modules Documentation}\label{modules.util}
 \input{pods/LaTeXML_Util_Pathname}
 \input{pods/LaTeXML_Util_WWW}
 \input{pods/LaTeXML_Util_ObjectDB}
 \input{pods/LaTeXML_Util_Pack}
 
 %%%======================================================================
-\chapter[Preprocessing Modules]{Preprocessing Module Documentation}\label{premodules}
+\section[Preprocessing Modules]{Preprocessing Modules Documentation}\label{modules.pre}
 \input{pods/LaTeXML_Pre_BibTeX}
 
 %%%======================================================================
-\chapter[Postprocessing Modules]{Postprocessing Module Documentation}\label{postmodules}
+\section[Postprocessing Modules]{Postprocessing Modules Documentation}\label{modules.post}
 \input{pods/LaTeXML_Post}
 \input{pods/LaTeXML_Post_MathML}
 \input{pods/LaTeXML_Post_OpenMath}

@@ -100,7 +100,7 @@ if ($dohtml) {
       "$MANDIR/schema.tex", "$MANDIR/pods"],
     postoptions => [
       "--format=html5",
-      "--split", "--splitnaming=labelrelative",
+      "--split", "--splitnaming=labelrelative", "--splitat=subsection",
       "--sourcedir=$MANDIR",
       "--urlstyle=server",
       "--sitedirectory=$WEBDEST",
