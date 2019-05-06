@@ -69,7 +69,7 @@ GetOptions("quiet" => sub { $verbosity--; },
   "path=s"            => \@paths,
 
   # Basics
-  "format=s" => \$format,
+  "format=s"      => \$format,
   "destination=s" => sub { $destination = $_[1];
     if ((!defined $extension) && ($destination =~ /\.(\w)$/)) {
       $extension = $1; }
@@ -321,7 +321,10 @@ if ($split) {
   push(@procs, LaTeXML::Post::Split->new(split_xpath => $splitpath, splitnaming => $splitnaming,
       db => $DB, %OPTIONS)); }
 
-our $scanner = ($scan || $DB) && LaTeXML::Post::Scan->new(db => $DB, %OPTIONS);
+our $scanner = ($scan || $DB) && LaTeXML::Post::Scan->new(db => $DB,
+  labelids => $splitnaming && ($splitnaming =~ /^label/),
+  %OPTIONS);
+
 if ($scan) {
   push(@procs, $scanner); }
 
@@ -408,7 +411,7 @@ if (!$prescan) {
   if ($stylesheet) {
     require LaTeXML::Post::XSLT;
     # Copy various kinds of resources, css, javascript, icon (others?)
-    my $parameters = { LATEXML_VERSION => "'$LaTeXML::VERSION'" };
+    my $parameters  = { LATEXML_VERSION => "'$LaTeXML::VERSION'" };
     my @searchpaths = ('.',
       (grep { -d $_ } reverse(@paths)),
       $DOCUMENT->getSearchPaths);

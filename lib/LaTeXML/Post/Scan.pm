@@ -95,7 +95,7 @@ sub process {
 
 sub scan {
   my ($self, $doc, $node, $parent_id) = @_;
-  my $tag = $doc->getQName($node);
+  my $tag     = $doc->getQName($node);
   my $handler = $$self{handlers}{$tag} || \&default_handler;
   &$handler($self, $doc, $node, $tag, $parent_id);
   return; }
@@ -126,8 +126,19 @@ sub pageID {
 # but which is potentially shortened so that it need only be
 # unique within the given page.
 sub inPageID {
-  my ($self, $doc, $id) = @_;
+  my ($self, $doc, $node) = @_;
+  my $id     = $node->getAttribute('xml:id');
   my $baseid = $doc->getDocumentElement->getAttribute('xml:id') || '';
+  # And we're using label-based ids in the target document...
+  if ($$self{labelids}) {
+    if (my $labels = $node->getAttribute('labels')) {
+      my ($l) = split(' ', $labels);
+      $l =~ s/^LABEL://;
+      $id = $l;
+      if (my $baselabels = $doc->getDocumentElement->getAttribute('labels')) {
+        my ($bl) = split(' ', $baselabels);
+        $bl =~ s/^LABEL://;
+        $baseid = $bl; } } }
   if ($baseid eq $id) {
     return; }
   elsif ($baseid && ($id =~ /^\Q$baseid\E\.(.*)$/)) {
@@ -197,7 +208,7 @@ sub addCommon {
     labels   => orNull($self->noteLabels($node)),
     location => orNull($doc->siteRelativeDestination),
     pageid   => orNull($self->pageID($doc)),
-    fragid   => orNull($self->inPageID($doc, $id)),
+    fragid   => orNull($self->inPageID($doc, $node)),
     inlist   => $inlist,
   );
   # Figure out sane, safe naming?
@@ -251,7 +262,7 @@ sub captioned_handler {
       $doc->findnode('descendant::ltx:toccaption', $node));
     $$self{db}->register("ID:$id",
       $self->addCommon($doc, $node, $tag, $parent_id),
-      role => orNull($node->getAttribute('role')),
+      role    => orNull($node->getAttribute('role')),
       caption => orNull($self->cleanNode($doc, $caption)),
 ###      toccaption => orNull($self->cleanNode($doc,
 ###          $doc->findnode('descendant::ltx:toccaption', $node))));
@@ -338,7 +349,7 @@ sub indexmark_handler {
   # Do these need ->cleanNode ???
   my @phrases = $doc->findnodes('ltx:indexphrase', $node);
   my @seealso = $doc->findnodes('ltx:indexsee',    $node);
-  my $key = join(':', 'INDEX', map { $_->getAttribute('key') } @phrases);
+  my $key   = join(':', 'INDEX', map { $_->getAttribute('key') } @phrases);
   my $entry = $$self{db}->lookup($key)
     || $$self{db}->register($key, phrases => [@phrases], see_also => []);
   if (@seealso) {
@@ -355,10 +366,10 @@ sub glossaryentry_handler {
   my $key  = $node->getAttribute('key');
   # Get the actual phrases, and any see_also phrases (if any)
   # Do these need ->cleanNode ???
-  my @phrases = $doc->findnodes('ltx:glossaryphrase', $node);
+  my @phrases    = $doc->findnodes('ltx:glossaryphrase', $node);
   my $definition = $doc->findnode('ltx:glossarydefinition', $node);
-  my $gkey = join(':', 'GLOSSARY', $role, $key);
-  my $entry = $$self{db}->lookup($gkey)
+  my $gkey       = join(':', 'GLOSSARY', $role, $key);
+  my $entry      = $$self{db}->lookup($gkey)
     || $$self{db}->register($gkey, definition => orNull($definition));
   $entry->setValues(map { ('phrase:' . ($_->getAttribute('show') || 'label') => $_) } @phrases);
   $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal'));
@@ -370,7 +381,7 @@ sub glossaryentry_handler {
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
-      fragid   => orNull($self->inPageID($doc, $id))); }
+      fragid   => orNull($self->inPageID($doc, $node))); }
   # Scan content, since could contain other interesting stuff...
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -409,7 +420,7 @@ sub bibitem_handler {
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id), bibkey => orNull($key),
       location    => orNull($doc->siteRelativeDestination),
       pageid      => orNull($self->pageID($doc)),
-      fragid      => orNull($self->inPageID($doc, $id)),
+      fragid      => orNull($self->inPageID($doc, $node)),
       authors     => orNull($doc->findnode('ltx:tags/ltx:tag[@role="authors"]', $node)),
       fullauthors => orNull($doc->findnode('ltx:tags/ltx:tag[@role="fullauthors"]', $node)),
       year        => orNull($doc->findnode('ltx:tags/ltx:tag[@role="year"]', $node)),
@@ -448,7 +459,7 @@ sub rdf_handler {
   if (!($id && ($id =~ s/^#//))) {
     $id = $parent_id; }
   my $property = $node->getAttribute('property');
-  my $value = $node->getAttribute('resource') || $node->getAttribute('content');
+  my $value    = $node->getAttribute('resource') || $node->getAttribute('content');
   return unless ($property && $value);
   $$self{db}->register("ID:$id", $property => orNull($value));
   return; }
