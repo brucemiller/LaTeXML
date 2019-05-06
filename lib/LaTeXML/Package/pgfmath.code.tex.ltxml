@@ -95,14 +95,13 @@ DefMacro('\@@@show@pgfmatharg@{}', sub {
 # A variant on Expanded that omits the outer {}
 DefParameterType('pgfNumber', sub {
     my ($gullet) = @_;
-    #    my $token    = $gullet->readXToken(0);
     my $token;
     do { $token = $gullet->readXToken(0);
     } while (defined $token && $$token[1] == CC_SPACE);    # Inline ->getCatcode!
 
+    my $result = '';
     if ($token->getCatcode == CC_BEGIN) {
       my @tokens = ();
-      my $result = '';
       my $level  = 1;
       while ($token = $gullet->readXToken(0)) {
         my $cc = $$token[1];
@@ -111,14 +110,11 @@ DefParameterType('pgfNumber', sub {
           last unless $level; }
         elsif ($cc == CC_BEGIN) {
           $level++; }
-        #        push(@tokens, $token); }
-        #      return Tokens(@tokens); }
-        #        $result .= $token->getString; }
-        $result .= $$token[0]; }
-      return $result; }
+        $result .= $$token[0]; } }
     else {
-##      return Tokens($token); } });
-      return $token->getString; } });
+      $result = $token->getString; }
+    $result = "0" if $result eq '.';    # Apparently "." is a valid number!
+    return $result; });
 
 # This one expects {{number}{number}....} and returns an array of them
 DefParameterType('pgfNumbers', sub {
@@ -304,9 +300,12 @@ sub pgfmathparse {
   # There seem to be some pesky expectations for the results
   if ($result == 0.0) {
     $result = "0"; }
+  # NOT really correct, but would like to use an internal to distinguish 1.0 from int(1.0)!!!
+  elsif ($result == int($result)) {
+    $result = int($result); }
   else {    # We don't want scientific notation output!!!
     $result = sprintf("%f", $result); }
-####  print STDERR "PGFPARSE: '$input' => '$result'\n";
+###  print STDERR "PGFPARSE: '$input' => '$result'\n";
   return $result; }
 
 DefMacro('\lx@pgfmath@parseX{}', sub {
