@@ -29,7 +29,14 @@ my %tested_dependencies = ();
 my @core_tests = parser_test_filenames();
 for my $test (@core_tests) {
   my $response = $converter->convert($test);
-  my @log_lines = split("\n", $response->{log});
+  $regularized_log = $response->{log};
+  # Preprocess split lines back to single lines, e.g.
+  # 2|AnythingAn|>>Matched subrule:                    |
+  #  |          |[modifierFormulae]<< (return value:   |
+  # -- TO:
+  # 2|AnythingAn|>>Matched subrule: [modifierFormulae]<< (return value:   |
+  $regularized_log =~ s/\:\s+\|\n\s*\|\s+\|\[/\: \[/g;
+  my @log_lines = split("\n", $regularized_log);
   for my $line (@log_lines) {
     if ($line =~ /(\w+)\s*\|(?:(?:\>\>Matched (?:subrule|production))|(?:\(consumed))\:\s*\[\s*(\w+)/) {
       $tested_dependencies{$1}{$2} = 1;
@@ -43,6 +50,9 @@ my $extra_count = 0;
 my %missing = ();
 my %extra = ();
 delete $grammar_dependencies{'Start'}; # never reported in terse log
+# Single lexeme top-level rules never parse, BECAUSE the grammar is never run on 1-lexeme formulae
+delete $grammar_dependencies{'AnythingAn'}{"FLOATSUPERSCRIPT"};
+delete $grammar_dependencies{'AnythingAn'}{"MODIFIER"};
 
 for my $rule(grep {!/^_/} keys %tested_dependencies) {
   my $subrules = $tested_dependencies{$rule};
@@ -106,7 +116,7 @@ sub obtain_dependencies {
     }
     # Also! argcode are edges from their subrule (e.g. preScripted[bigop] is an edge preScripted -> bigop)
     my $prods = $$internalparser{rules}{$rule}{"prods"} || [];
-    for my $prod (@$prods) { 
+    for my $prod (@$prods) {
       my $items = $$prod{items} || [];
       for my $item (@$items) {
         if ($$item{argcode} && $$item{subrule}) {
@@ -122,7 +132,7 @@ sub obtain_dependencies {
 
 sub c14n {
   my $rule = shift;
-  # RD_TRACE only gives us upto 10 characters of the leading rule name, 
+  # RD_TRACE only gives us upto 10 characters of the leading rule name,
   # so we're forced to trim the top
   return substr($rule, 0,10);
 }
