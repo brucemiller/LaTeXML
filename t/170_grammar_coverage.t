@@ -2,6 +2,8 @@
 #**********************************************************************
 # Test cases for LaTeXML
 #**********************************************************************
+use strict;
+use warnings;
 use Test::More;
 use LaTeXML;
 use LaTeXML::MathParser;
@@ -28,14 +30,16 @@ my %tested_dependencies = ();
 
 my @core_tests = parser_test_filenames();
 for my $test (@core_tests) {
+  print STDERR "-- grammar coverage $test... ";
   my $response = $converter->convert($test);
-  $regularized_log = $response->{log};
+  my $regularized_log = $response->{log};
   # Preprocess split lines back to single lines, e.g.
   # 2|AnythingAn|>>Matched subrule:                    |
   #  |          |[modifierFormulae]<< (return value:   |
   # -- TO:
   # 2|AnythingAn|>>Matched subrule: [modifierFormulae]<< (return value:   |
   $regularized_log =~ s/\:\s+\|\n\s*\|\s+\|\[/\: \[/g;
+  print STDERR $response->{status},"\n";
   my @log_lines = split("\n", $regularized_log);
   for my $line (@log_lines) {
     if ($line =~ /(\w+)\s*\|(?:(?:\>\>Matched (?:subrule|production))|(?:\(consumed))\:\s*\[\s*(\w+)/) {
@@ -57,12 +61,14 @@ delete $grammar_dependencies{'AnythingAn'}{"MODIFIER"};
 for my $rule(grep {!/^_/} keys %tested_dependencies) {
   my $subrules = $tested_dependencies{$rule};
   for my $subrule(keys %$subrules) {
-    if ($grammar_dependencies{$rule}{$subrule}) {
-      delete $grammar_dependencies{$rule}{$subrule};
-      $ok_count += 1;
-    } else {
-      $extra_count += 1;
-      $extra{$rule}{$subrule} = 1;
+    if ($rule ne $subrule) {
+      if ($grammar_dependencies{$rule}{$subrule}) {
+        delete $grammar_dependencies{$rule}{$subrule};
+        $ok_count += 1;
+      } else {
+        $extra_count += 1;
+        $extra{$rule}{$subrule} = 1;
+      }
     }
   }
 }
@@ -70,12 +76,15 @@ for my $rule(grep {!/^_/} keys %tested_dependencies) {
 for my $rule(keys %grammar_dependencies) {
   my $subrules = $grammar_dependencies{$rule} || ();
   for my $subrule (keys %$subrules) {
-    $missing_count += 1;
-    $missing{$rule}{$subrule} = 1;
+    if ($rule ne $subrule) {
+      $missing_count += 1;
+      $missing{$rule}{$subrule} = 1;
+    }
   }
 }
 
 ok($ok_count > 100, "Tested a big subset of MathGrammar");
+# print STDERR "Extra: \n", Dumper(\%extra);
 is($missing_count, 0, "MathGrammar dependencies (currently tested in $ok_count cases), were not matched in the following cases: \n".Dumper(\%missing));
 
 # Allow these for now, until we figure out how to check for the (s) variant rules
@@ -89,14 +98,15 @@ done_testing();
 #**********************************************************************
 sub parser_test_filenames {
   my $directory = "t/parse";
-  if (!opendir($DIR, $directory)) {
+  my $dir;
+  if (!opendir($dir, $directory)) {
     # Can't read directory? Fail (assumed single) test.
     return do_fail($directory, "Couldn't read directory $directory:$!"); }
   else {
-    my @dir_contents = sort readdir($DIR);
+    my @dir_contents = sort readdir($dir);
     my $t;
     my @core_tests   = map { (($t = $_) =~ /\.tex$/      ? ("t/parse/$t") : ()); } @dir_contents;
-    closedir($DIR);
+    closedir($dir);
     @core_tests;
   }
 }
