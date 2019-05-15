@@ -14,6 +14,10 @@
 \lxDeclare[role=OPFUNCTION]{$F$}%
 \lxDeclare[role=OPFUNCTION]{$G$}%
 \lxDeclare[role=OPFUNCTION]{$H$}%
+
+\makeatletter
+\def\apply{\iflatexml\@APPLYFUNCTION\fi}
+\makeatother
 \begin{document}
 \section{Basic Functions}
 \[ g(a) = g(b) \]
@@ -26,10 +30,14 @@
 \[ \sin a \cos b \neq \sin(a\cos b)\]
 % Parses wrong ? but how to clarify?
 \[ \sin 2\pi \neq \log 2x^2 \]
+\[ \log \sin x \]
+\[ \sin \log x \]
+\[ \nabla \log x \]
 
 \section{Probability functions}
 \[ p (x,y|\Theta) \]
 \[ p (y |x,\Theta) \]
+\[ f \left( a \middle| b \right) \]
 
 \section{Missing arguments}
 % Presumably these are products
@@ -43,6 +51,17 @@
 \[ f'(a) = a^2 \]
 \[ f^2(a) = g^b(2) \]
 
+\[ f  \apply g x \]
+\[ f \apply (x) \]
+
 \section{Scripts}
 \[ \ln a = \log_e a = \ln_{+} b\]
+
+\section{Advanced argument patterns}
+\[ f ( a < b )  \]
+\[ f ( a : b )  \]
+\[ f ( a \leftrightarrow b )  \]
+\[ f( \rightarrow , \leftarrow) \]
+
+
 \end{document}

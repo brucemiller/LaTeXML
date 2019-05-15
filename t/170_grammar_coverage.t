@@ -42,7 +42,7 @@ for my $test (@core_tests) {
   print STDERR $response->{status},"\n";
   my @log_lines = split("\n", $regularized_log);
   for my $line (@log_lines) {
-    if ($line =~ /(\w+)\s*\|(?:(?:\>\>Matched (?:subrule|production))|(?:\(consumed))\:\s*\[\s*(\w+)/) {
+    if ($line =~ /(\w+)\s*\|(?:(?:\>\>(?:\.*)Matched(?:\(keep\))? (?:subrule|production))|(?:\(consumed))\:\s*\[\s*(\w+)/) {
       $tested_dependencies{$1}{$2} = 1;
     }
   }
@@ -57,6 +57,18 @@ delete $grammar_dependencies{'Start'}; # never reported in terse log
 # Single lexeme top-level rules never parse, BECAUSE the grammar is never run on 1-lexeme formulae
 delete $grammar_dependencies{'AnythingAn'}{"FLOATSUPERSCRIPT"};
 delete $grammar_dependencies{'AnythingAn'}{"MODIFIER"};
+# Reachable conceptually by an ambiguous grammar, but not in the RecDescent algorithm
+delete $grammar_dependencies{'AnyOp'}{"OPERATOR"};
+delete $grammar_dependencies{'AnyOp'}{"addScripts"};
+delete $grammar_dependencies{'argPunct'}{'VERTBAR'};
+delete $grammar_dependencies{'Expression'}{'punctExpr'}; # Unreachable, due to Formula -> punctExpr
+delete $grammar_dependencies{'aSuperscri'}{'AnyOp'};
+delete $grammar_dependencies{'aSuperscri'}{'Expression'};
+# forbid rules should never match, don't check them here.
+# TODO: We need tests for the always-failing productions!
+delete $grammar_dependencies{'doubtArgs'}{'forbidArgs'};
+delete $grammar_dependencies{'requireArg'};
+
 
 for my $rule(grep {!/^_/} keys %tested_dependencies) {
   my $subrules = $tested_dependencies{$rule};

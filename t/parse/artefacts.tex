@@ -2,6 +2,7 @@
 \usepackage{stmaryrd}
 \usepackage{latexml}
 \usepackage{amsmath}
+\lxDeclare[role=DIFFOP]{$\Delta$}%
 \begin{document}
 \section{Edge/Artefact Cases}
 % What are good real formulas that demonstrate this grammar behaviour?
@@ -20,6 +21,8 @@
   \item $| \times_i^2 \rangle$ % ket over mulop is allowed? why?
   \item $\sin \pi | x$ % aTrigBareArg with an absExpression child? why?
   \item $\partial \sin x\times_i^2 y $ %moreBarearg -> mulOp
-
+  \item $ ( \int ) $ % bigop -> INTOP
+  \item $ ( \Delta ) $ % bigop ->DIFFD
+  \item $ {}^x{}_y f$ % inprescripted -> FLOATSUBSCRIPT
 \end{enumerate}
 \end{document}
