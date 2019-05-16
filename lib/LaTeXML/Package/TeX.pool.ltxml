@@ -6141,14 +6141,53 @@ DefConstructor('\lx@gen@plain@matrix@ RequiredKeyVals:lx@GEN {}',
     if ($kv->getValue('left') || $kv->getValue('right')) {
       $whatsit->setProperties(
         needXMDual => 1,
-        xmkey      => LaTeXML::Package::getXMArgID()); }
+        xmkey      => LaTeXML::Package::getXMArgID());  }
+      $whatsit->setProperties(alignment  => LookupValue('Alignment'));
     return; });
 
 DefMacro('\matrix{}',
   '\lx@gen@plain@matrix{name=matrix,datameaning=matrix}{#1}');
-# TODO: This is wrong; I'm not even clear how this differs from \matrix
+
 DefMacro('\bordermatrix{}',
-  '\lx@gen@plain@matrix{name=bordermatrix,datameaning=matrix}{#1}');
+  '\lx@hack@bordermatrix{\lx@gen@plain@matrix{name=bordermatrix,datameaning=matrix}{#1}}');
+# HACK the newly created border matrix to add columns for the (spanned) parentheses!!!
+# Assume (for now) that there's no XMDual structure here.
+# What is the semantics, anyway?
+DefConstructor('\lx@hack@bordermatrix{}', sub {
+    my($document,$matrix)=@_;
+    $document->absorb($matrix);
+    my $marray = $document->getNode->lastChild;
+    my @rows = $document->findnodes('ltx:XMRow',$marray);
+    my ($heights,$widths)=$matrix->getProperty('alignment')->computeSize_internal();
+    my $h = $$heights[1];
+    my $d = 0;
+    foreach my $dd (@$heights[2..$#$heights]){
+	$d += $dd; }
+    my $md = Dimension(-$d);
+    $h = Dimension($h); $d = Dimension($d);
+
+    foreach my $row (@rows){	# Add empty cells for 2nd & last colum
+	$document->openElementAt($row,'ltx:XMCell');
+	$document->openElementAt($row,'ltx:XMCell');
+	$row->insertAfter($row->lastChild,$row->firstChild); # Move to 2nd pos!
+    }
+    my @cols = element_nodes($rows[1]);
+    my $col1 = $cols[1];
+    my $coln = $cols[-1];
+    my $n = scalar(@rows)-1;
+    $col1->setAttribute(rowspan=>$n);
+    $coln->setAttribute(rowspan=>$n);
+    $document->appendTree($col1,
+      ['ltx:XMWrap',{depth=>$d},
+       ['ltx:XMTok',{role=>'OPEN', height=>0, depth=>$d, yoffset=>$md},'('],
+       ['ltx:XMTok',{height=>$h, yoffset=>$md},' ']]); # Effectively, a strut
+    $document->appendTree($coln,
+      ['ltx:XMWrap',{},
+       ['ltx:XMTok',{role=>'CLOSE', height=>0, depth=>$d, yoffset=>$md},')'],
+       ['ltx:XMTok',{height=>$h, yoffset=>$md},' ']]);
+    return; },
+    reversion=>'#1');
+
 DefMacro('\pmatrix{}',
   '\lx@gen@plain@matrix{name=pmatrix,datameaning=matrix,left=\@left(,right=\@right)}{#1}');
 
