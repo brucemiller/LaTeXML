@@ -42,10 +42,6 @@ my %aimed_to_cover = (
                            'APPLYOP' => 1,
                            'requireArgs' => 1
                          },
-          'maybeEvalA' => {
-                            'POSTSUPERSCRIPT' => 1,
-                            'moreFactors' => 1
-                          },
           'moreIntOpA' => {
                             'MulOp' => 1
                           },
@@ -56,26 +52,32 @@ my %aimed_to_cover = (
                             'ATOM_OR_ID' => 1,
                             'bigop' => 1
                           },
-          'requireArg' => {
-                            'Argument' => 1,
-                            'OPEN' => 1,
-                            'balancedClose' => 1
-                          }
 );
 
 my %newly_covered       = ();
 my %tested_dependencies = ();
+
+my $prev_line = '';
 for my $line (@log_lines) {
-  if ($line =~ /(\w+)\s*\|(?:(?:\>\>(?:\.*)Matched(?:\(keep\))? (?:subrule|production))|(?:\(consumed))\:\s*\[\s*(\w+)/) {
-    if ($1 ne $2) {
-      if ($aimed_to_cover{$1}{$2}) {
-        $newly_covered{$1}{$2} = 1;
-      } else {
-        $tested_dependencies{$1}{$2} = 1;
+  if ($line =~ /(\w+)\s*\|(?:(?:\>\>(?:\.*)Matched(?:\(keep\))? (?:subrule|production))|(?:\(consumed))\:\s*\[\s*(\w+|\$arg\[\d+\])/) {
+    my $parent = $1;
+    my $child = $2;
+    if ($child =~ /^\$arg/) {
+      if ($prev_line =~ /^\s*\d+\|\s*(\w+)\s*\|/) {
+        $child = $1;
       }
     }
+    if ($parent ne $child) {
+      if ($aimed_to_cover{$parent}{$child}) {
+        $newly_covered{$parent}{$child} = 1;
+      } else {
+        $tested_dependencies{$parent}{$child} = 1;
+      }
+    }
+    $prev_line = $line;
   }
 }
+
 print STDERR "Known covered: \n", Dumper(\%tested_dependencies), "\n";
 print STDERR "Newly covered: \n", Dumper(\%newly_covered);
 print STDERR $response->{status}, "\n";

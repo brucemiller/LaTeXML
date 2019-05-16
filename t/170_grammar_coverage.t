@@ -38,13 +38,29 @@ for my $test (@core_tests) {
   #  |          |[modifierFormulae]<< (return value:   |
   # -- TO:
   # 2|AnythingAn|>>Matched subrule: [modifierFormulae]<< (return value:   |
+  # Also:
+  # 10|  bigop   |(consumed: [ SUMOP:sum:1])            |
+  # 9|preScripte|>>Matched subrule: [$arg[0]]<< (return|
+  #   |          |value: [<XMTok                        |
+
   $regularized_log =~ s/\:\s+\|\n\s*\|\s+\|\[/\: \[/g;
   print STDERR $response->{status},"\n";
   my @log_lines = split("\n", $regularized_log);
+  my $prev_line = '';
   for my $line (@log_lines) {
-    if ($line =~ /(\w+)\s*\|(?:(?:\>\>(?:\.*)Matched(?:\(keep\))? (?:subrule|production))|(?:\(consumed))\:\s*\[\s*(\w+)/) {
-      $tested_dependencies{$1}{$2} = 1;
+    if ($line =~ /(\w+)\s*\|(?:(?:\>\>(?:\.*)Matched(?:\(keep\))? (?:subrule|production))|(?:\(consumed))\:\s*\[\s*(\w+|\$arg\[\d+\])/) {
+      my $parent = $1;
+      my $child = $2;
+      if ($child =~ /^\$arg/) {
+        if ($prev_line =~ /^\s*\d+\|\s*(\w+)\s*\|/) {
+          $child = $1;
+        }
+      }
+      if ($parent ne $child) {
+        $tested_dependencies{$parent}{$child} = 1;
+      }
     }
+    $prev_line = $line;
   }
 }
 
@@ -69,6 +85,12 @@ delete $grammar_dependencies{'aSuperscri'}{'Expression'};
 delete $grammar_dependencies{'doubtArgs'}{'forbidArgs'};
 delete $grammar_dependencies{'requireArg'};
 
+# Needs regex enhancement
+
+# preScripted -> bigop
+# \sum ^2
+# preScripted -> ATOM_OR_ID
+# \frac12 _1$
 
 for my $rule(grep {!/^_/} keys %tested_dependencies) {
   my $subrules = $tested_dependencies{$rule};
