@@ -702,6 +702,11 @@ sub RefStepCounter {
   my $scope = $ctr . ':' . ToString($refnum);
   AssignValue('scopes_for_counter:' . $ctr => [$scope], 'local');
   $STATE->activateScope($scope);
+  # Demanding a *valid* NCNAME sanitation here. At the very minimum, leading dots are unexpected errors
+  # and need to be softened with a leading 0
+  if ($id =~ /^\./) {
+    $id = "0$id";
+  }
   return (
     ($tags   ? (tags => $tags) : ()),
     ($has_id ? (id   => $id)   : ())); }
@@ -725,7 +730,11 @@ sub RefStepID {
     Tokens(T_OTHER('x'), Explode(LookupValue('\c@' . $unctr)->valueOf)),
     scope => 'global');
   DefMacroI(T_CS('\@currentID'), undef, T_CS("\\the$ctr\@ID"));
-  return (id => ToString(DigestLiteral(T_CS("\\the$ctr\@ID")))); }
+  my $id = ToString(DigestLiteral(T_CS("\\the$ctr\@ID")));
+  if ($id =~ /^\./) {
+    $id = "0$id";
+  }
+  return (id => $id) }
 
 sub ResetCounter {
   my ($ctr) = @_;
