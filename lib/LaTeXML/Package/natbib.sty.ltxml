@@ -105,13 +105,14 @@ ProcessOptions();
 
 # Note that LaTeX's \cite command is treated almost equivalent to \citet in authoryear mode,
 # but like \citep in numbers mode.
-DefMacro('\cite[][] Semiverbatim', sub {
-    my ($gullet, $pre, $post, $keys) = @_;
+DefMacro('\cite OptionalMatch:* [][] Semiverbatim', sub {
+    my ($gullet, $star, $pre, $post, $keys) = @_;
     my ($style, $open, $close, $ns, $ay)
       = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR CITE_AY_SEPARATOR);
     if (!$post) { ($pre, $post) = (undef, $pre); }
     $pre  = undef unless $pre  && $pre->unlist;
     $post = undef unless $post && $post->unlist;
+    my $author = ($star ? "FullAuthors" : "Authors");
     if ($style eq 'numbers') {
       Invocation(T_CS('\@@cite'),
         Tokens(Explode('cite')),
@@ -133,7 +134,7 @@ DefMacro('\cite[][] Semiverbatim', sub {
           Tokens(Explode('cite')),
           Tokens($open->unlist, ($pre ? ($pre, T_SPACE) : ()),
             Invocation(T_CS('\@@bibref'),
-              Tokens(Explode("AuthorsPhrase1Year")),
+              Tokens(Explode($author . "Phrase1Year")),
               $keys,
               Invocation(T_CS('\@@citephrase'),
                 Tokens($ay->unlist, T_SPACE)), undef),
@@ -142,7 +143,7 @@ DefMacro('\cite[][] Semiverbatim', sub {
         Invocation(T_CS('\@@cite'),
           Tokens(Explode('cite')),
           Invocation(T_CS('\@@bibref'),
-            Tokens(Explode("Authors Phrase1YearPhrase2")),
+            Tokens(Explode($author . " Phrase1YearPhrase2")),
             $keys,
             Invocation(T_CS('\@@citephrase'), $open),
             Invocation(T_CS('\@@citephrase'), $close))); } }
@@ -241,42 +242,66 @@ DefMacro('\citealp OptionalMatch:* [][] Semiverbatim', sub {
       Invocation(T_CS('\citep'), $star, $pre, $post, $keys)->unlist,
       T_CS('\egroup')); });
 
-DefMacro('\citenum Semiverbatim', sub {
+DefMacro('\citenum Semiverbatim', sub {    # No optional ?
     my ($gullet, $keys) = @_;
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citenum')),
-      Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys, undef, undef)); });
+      Tokens(Invocation(T_CS('\@@bibref'), Tokens(Explode("Number")), $keys, undef, undef))); });
 
 # Sorta right, but would like to avoid the nested <ltx:cite>!
 # maybe can neutralize \@@cite?
 DefMacro('\citetext', '\@@cite');
 
-DefMacro('\citeauthor OptionalMatch:* Semiverbatim', sub {
-    my ($gullet, $star, $keys) = @_;
+DefMacro('\citeauthor OptionalMatch:* [][] Semiverbatim', sub {
+    my ($gullet, $star, $pre, $post, $keys) = @_;
     my $author = ($star ? "FullAuthors" : "Authors");
+    if (!$post) { ($pre, $post) = (undef, $pre); }
+    $pre  = undef unless $pre  && $pre->unlist;
+    $post = undef unless $post && $post->unlist;
+    my $ns = LookupValue('CITE_NOTE_SEPARATOR');
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citeauthor')),
-      Invocation(T_CS('\@@bibref'), Tokens(Explode($author)), $keys, undef, undef)); });
+      Tokens(    # ($pre ? ($pre, T_SPACE) : ()),
+        Invocation(T_CS('\@@bibref'), Tokens(Explode($author)), $keys, undef, undef),
+        ($post ? ($ns, T_SPACE, $post) : ()))); });
 
-DefMacro('\citefullauthor Semiverbatim', sub {
-    my ($gullet, $star, $keys) = @_;
+DefMacro('\citefullauthor [][] Semiverbatim', sub {
+    my ($gullet, $pre, $post, $keys) = @_;
+    if (!$post) { ($pre, $post) = (undef, $pre); }
+    $pre  = undef unless $pre  && $pre->unlist;
+    $post = undef unless $post && $post->unlist;
+    my $ns = LookupValue('CITE_NOTE_SEPARATOR');
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citefullauthor')),
-      Invocation(T_CS('\@@bibref'), Tokens(Explode("FullAuthors")), $keys, undef, undef)); });
+      Tokens(    # ($pre ? ($pre, T_SPACE) : ()),
+        Invocation(T_CS('\@@bibref'), Tokens(Explode("FullAuthors")), $keys, undef, undef),
+        ($post ? ($ns, T_SPACE, $post) : ()))); });
 
-DefMacro('\citeyear Semiverbatim', sub {
-    my ($gullet, $keys) = @_;
+DefMacro('\citeyear [][] Semiverbatim', sub {
+    my ($gullet, $pre, $post, $keys) = @_;
+    if (!$post) { ($pre, $post) = (undef, $pre); }
+    $pre  = undef unless $pre  && $pre->unlist;
+    $post = undef unless $post && $post->unlist;
+    my $ns = LookupValue('CITE_NOTE_SEPARATOR');
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citeyear')),
-      Invocation(T_CS('\@@bibref'), Tokens(Explode("Year")), $keys, undef, undef)); });
+      Tokens(    # ($pre ? ($pre, T_SPACE) : ()),
+        Invocation(T_CS('\@@bibref'), Tokens(Explode("Year")), $keys, undef, undef),
+        ($post ? ($ns, T_SPACE, $post) : ()))); });
 
-DefMacro('\citeyearpar Semiverbatim', sub {
-    my ($gullet, $keys) = @_;
+DefMacro('\citeyearpar [][] Semiverbatim', sub {
+    my ($gullet, $pre, $post, $keys) = @_;
     my ($open, $close) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE);
+    if (!$post) { ($pre, $post) = (undef, $pre); }
+    $pre  = undef unless $pre  && $pre->unlist;
+    $post = undef unless $post && $post->unlist;
+    my $ns = LookupValue('CITE_NOTE_SEPARATOR');
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citeyearpar')),
       Tokens($open,
+        ($pre ? ($pre, T_SPACE) : ()),
         Invocation(T_CS('\@@bibref'), Tokens(Explode("Year")), $keys, undef, undef),
+        ($post ? ($ns, T_SPACE, $post) : ()),
         $close)); });
 
 #======================================================================
@@ -303,15 +328,20 @@ DefPrimitive('\defcitealias Semiverbatim {}', sub {
 
 # These use the above defined text to fill in the bibref
 # (which will still be a link to the bibitem!)
-DefMacro('\citetalias Semiverbatim', sub {
-    my ($gullet, $key) = @_;
+DefMacro('\citetalias [][] Semiverbatim', sub {
+    my ($gullet, $pre, $post, $key) = @_;
     my ($open, $close) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE);
+    if (!$post) { ($pre, $post) = (undef, $pre); }
+    $pre  = undef unless $pre  && $pre->unlist;
+    $post = undef unless $post && $post->unlist;
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citealias')),
-      Invocation(T_CS('\@@bibref'),
-        Tokens(Explode("Phrase1")),
-        $key,
-        Invocation(T_CS('\@@citephrase'), T_CS('\al@' . ToString($key))))); });
+      Tokens(($pre ? ($pre, T_SPACE) : ()),
+        Invocation(T_CS('\@@bibref'),
+          Tokens(Explode("Phrase1")),
+          $key,
+          Invocation(T_CS('\@@citephrase'), T_CS('\al@' . ToString($key)))),
+        ($post ? (T_SPACE, $post) : ()))); });
 
 DefMacro('\citepalias [][] Semiverbatim', sub {
     my ($gullet, $pre, $post, $key) = @_;

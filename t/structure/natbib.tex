@@ -1,0 +1,55 @@
+\documentclass{article}
+\usepackage{natbib}
+\begin{document}
+\bibliographystyle{astron}
+\section{Test}
+
+cite: \cite{Car1999} vs.~\cite[A]{Car1999} vs.~\cite[A][B]{Car1999}.
+
+citep: \citep{Car1999} vs.~\citep[A]{Car1999} vs.~\citep[A][B]{Car1999}.
+
+citealt: \citealt{Car1999} vs.~\citealt[A]{Car1999} vs.~\citealt[A][B]{Car1999}.
+
+citealp: \citealp{Car1999} vs.~\citealp[A]{Car1999} vs.~\citealp[A][B]{Car1999}.
+
+%citenum: \citenum{Car1999} vs.~\citenum[A]{Car1999} vs.~\citenum[A][B]{Car1999}.
+
+citeauthor: \citeauthor{Car1999} vs.~\citeauthor[A]{Car1999} vs.~\citeauthor[A][B]{Car1999}.
+
+citefullauthor: \citefullauthor{Car1999} vs.~\citefullauthor[A]{Car1999} vs.~\citefullauthor[A][B]{Car1999}.
+
+citeyear: \citeyear{Car1999} vs.~\citeyear[A]{Car1999} vs.~\citeyear[A][B]{Car1999}.
+
+citeyearpar: \citeyearpar{Car1999} vs.~\citeyearpar[A]{Car1999} vs.~\citeyearpar[A][B]{Car1999}.
+
+cite: \cite{Beat1964}
+
+cite*: \cite*{Beat1964}
+
+citep: \citep{Beat1964}
+
+citep*: \citep*{Beat1964}
+
+citealt: \citealt{Beat1964}
+
+citealt*: \citealt*{Beat1964}
+
+citealp: \citealp{Beat1964}
+
+citealp*: \citealp*{Beat1964}
+
+citeauthor: \citeauthor{Beat1964}
+
+citefullauthor: \citefullauthor{Beat1964}
+
+\begin{thebibliography}{}
+\bibitem[\protect\astroncite{Carlin}{1999}]{Car1999}
+Carlin, G.: 1999,
+\newblock {\em The Nature of My Stuff},
+\newblock Some Publisher, Someplace
+\bibitem[\protect\citeauthoryear{John, Paul, George and Ringo}{Beatles}{1964}]{Beat1964}
+Beatles, The.: 1964,
+\newblock {\em Help},
+\newblock London, England
+\end{thebibliography}
+\end{document}

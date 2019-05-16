@@ -1,0 +1,156 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="natbib"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Test</title>
+    <para xml:id="S1.p1">
+      <p>cite: <cite class="ltx_citemacro_cite"><bibref bibrefs="Car1999" separator=";" show="Authors Phrase1YearPhrase2" yyseparator=",">
+            <bibrefphrase>(</bibrefphrase>
+            <bibrefphrase>)</bibrefphrase>
+          </bibref></cite> vs. <cite class="ltx_citemacro_cite">(<bibref bibrefs="Car1999" separator=";" show="AuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref>, A)</cite> vs. <cite class="ltx_citemacro_cite">(A <bibref bibrefs="Car1999" separator=";" show="AuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref>, B)</cite>.</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>citep: <cite class="ltx_citemacro_citep">(<bibref bibrefs="Car1999" separator=";" show="AuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref>)</cite> vs. <cite class="ltx_citemacro_citep">(<bibref bibrefs="Car1999" separator=";" show="AuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref>, A)</cite> vs. <cite class="ltx_citemacro_citep">(A <bibref bibrefs="Car1999" separator=";" show="AuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref>, B)</cite>.</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>citealt: <cite class="ltx_citemacro_citet"><bibref bibrefs="Car1999" separator=";" show="Authors Phrase1YearPhrase2" yyseparator=",">
+            <bibrefphrase/>
+            <bibrefphrase/>
+          </bibref></cite> vs. <cite class="ltx_citemacro_citet"><bibref bibrefs="Car1999" separator=";" show="Authors Phrase1YearPhrase2" yyseparator=",">
+            <bibrefphrase/>
+            <bibrefphrase>, A</bibrefphrase>
+          </bibref></cite> vs. <cite class="ltx_citemacro_citet"><bibref bibrefs="Car1999" separator=";" show="Authors Phrase1YearPhrase2" yyseparator=",">
+            <bibrefphrase>A </bibrefphrase>
+            <bibrefphrase>, B</bibrefphrase>
+          </bibref></cite>.</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>citealp: <cite class="ltx_citemacro_citep"><bibref bibrefs="Car1999" separator=";" show="AuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref></cite> vs. <cite class="ltx_citemacro_citep"><bibref bibrefs="Car1999" separator=";" show="AuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref>, A</cite> vs. <cite class="ltx_citemacro_citep">A <bibref bibrefs="Car1999" separator=";" show="AuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref>, B</cite>.</p>
+    </para>
+    <para xml:id="S1.p5">
+      <p>citeauthor: <cite class="ltx_citemacro_citeauthor"><bibref bibrefs="Car1999" separator=";" show="Authors" yyseparator=","/></cite> vs. <cite class="ltx_citemacro_citeauthor"><bibref bibrefs="Car1999" separator=";" show="Authors" yyseparator=","/>, A</cite> vs. <cite class="ltx_citemacro_citeauthor"><bibref bibrefs="Car1999" separator=";" show="Authors" yyseparator=","/>, B</cite>.</p>
+    </para>
+    <para xml:id="S1.p6">
+      <p>citefullauthor: <cite class="ltx_citemacro_citefullauthor"><bibref bibrefs="Car1999" separator=";" show="FullAuthors" yyseparator=","/></cite> vs. <cite class="ltx_citemacro_citefullauthor"><bibref bibrefs="Car1999" separator=";" show="FullAuthors" yyseparator=","/>, A</cite> vs. <cite class="ltx_citemacro_citefullauthor"><bibref bibrefs="Car1999" separator=";" show="FullAuthors" yyseparator=","/>, B</cite>.</p>
+    </para>
+    <para xml:id="S1.p7">
+      <p>citeyear: <cite class="ltx_citemacro_citeyear"><bibref bibrefs="Car1999" separator=";" show="Year" yyseparator=","/></cite> vs. <cite class="ltx_citemacro_citeyear"><bibref bibrefs="Car1999" separator=";" show="Year" yyseparator=","/>, A</cite> vs. <cite class="ltx_citemacro_citeyear"><bibref bibrefs="Car1999" separator=";" show="Year" yyseparator=","/>, B</cite>.</p>
+    </para>
+    <para xml:id="S1.p8">
+      <p>citeyearpar: <cite class="ltx_citemacro_citeyearpar">(<bibref bibrefs="Car1999" separator=";" show="Year" yyseparator=","/>)</cite> vs. <cite class="ltx_citemacro_citeyearpar">(<bibref bibrefs="Car1999" separator=";" show="Year" yyseparator=","/>, A)</cite> vs. <cite class="ltx_citemacro_citeyearpar">(A <bibref bibrefs="Car1999" separator=";" show="Year" yyseparator=","/>, B)</cite>.</p>
+    </para>
+    <para xml:id="S1.p9">
+      <p>cite: <cite class="ltx_citemacro_cite"><bibref bibrefs="Beat1964" separator=";" show="Authors Phrase1YearPhrase2" yyseparator=",">
+            <bibrefphrase>(</bibrefphrase>
+            <bibrefphrase>)</bibrefphrase>
+          </bibref></cite></p>
+    </para>
+    <para xml:id="S1.p10">
+      <p>cite*: <cite class="ltx_citemacro_cite"><bibref bibrefs="Beat1964" separator=";" show="FullAuthors Phrase1YearPhrase2" yyseparator=",">
+            <bibrefphrase>(</bibrefphrase>
+            <bibrefphrase>)</bibrefphrase>
+          </bibref></cite></p>
+    </para>
+    <para xml:id="S1.p11">
+      <p>citep: <cite class="ltx_citemacro_citep">(<bibref bibrefs="Beat1964" separator=";" show="AuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref>)</cite></p>
+    </para>
+    <para xml:id="S1.p12">
+      <p>citep*: <cite class="ltx_citemacro_citep">(<bibref bibrefs="Beat1964" separator=";" show="FullAuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref>)</cite></p>
+    </para>
+    <para xml:id="S1.p13">
+      <p>citealt: <cite class="ltx_citemacro_citet"><bibref bibrefs="Beat1964" separator=";" show="Authors Phrase1YearPhrase2" yyseparator=",">
+            <bibrefphrase/>
+            <bibrefphrase/>
+          </bibref></cite></p>
+    </para>
+    <para xml:id="S1.p14">
+      <p>citealt*: <cite class="ltx_citemacro_citet"><bibref bibrefs="Beat1964" separator=";" show="FullAuthors Phrase1YearPhrase2" yyseparator=",">
+            <bibrefphrase/>
+            <bibrefphrase/>
+          </bibref></cite></p>
+    </para>
+    <para xml:id="S1.p15">
+      <p>citealp: <cite class="ltx_citemacro_citep"><bibref bibrefs="Beat1964" separator=";" show="AuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref></cite></p>
+    </para>
+    <para xml:id="S1.p16">
+      <p>citealp*: <cite class="ltx_citemacro_citep"><bibref bibrefs="Beat1964" separator=";" show="FullAuthorsPhrase1Year" yyseparator=",">
+            <bibrefphrase>, </bibrefphrase>
+          </bibref></cite></p>
+    </para>
+    <para xml:id="S1.p17">
+      <p>citeauthor: <cite class="ltx_citemacro_citeauthor"><bibref bibrefs="Beat1964" separator=";" show="Authors" yyseparator=","/></cite></p>
+    </para>
+    <para xml:id="S1.p18">
+      <p>citefullauthor: <cite class="ltx_citemacro_citefullauthor"><bibref bibrefs="Beat1964" separator=";" show="FullAuthors" yyseparator=","/></cite></p>
+    </para>
+  </section>
+  <bibliography xml:id="bib">
+    <title>References</title>
+    <biblist>
+      <bibitem key="Car1999" xml:id="bib.bib1">
+        <tags>
+          <tag role="number">1</tag>
+          <tag role="year">1999</tag>
+          <tag role="authors">Carlin</tag>
+          <tag role="refnum">Carlin (1999)</tag>
+          <tag role="key">Car1999</tag>
+        </tags>
+        <bibblock>
+Carlin, G.: 1999,
+</bibblock>
+        <bibblock><text font="italic">The Nature of My Stuff</text>,
+</bibblock>
+        <bibblock>Some Publisher, Someplace
+</bibblock>
+      </bibitem>
+      <bibitem key="Beat1964" xml:id="bib.bib2">
+        <tags>
+          <tag role="number">2</tag>
+          <tag role="year">1964</tag>
+          <tag role="authors">Beatles</tag>
+          <tag role="fullauthors">John, Paul, George and Ringo</tag>
+          <tag role="refnum">Beatles (1964)</tag>
+          <tag role="key">Beat1964</tag>
+        </tags>
+        <bibblock>
+Beatles, The.: 1964,
+</bibblock>
+        <bibblock><text font="italic">Help</text>,
+</bibblock>
+        <bibblock>London, England
+</bibblock>
+      </bibitem>
+    </biblist>
+  </bibliography>
+</document>
