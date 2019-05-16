@@ -483,12 +483,15 @@ sub pmml_internal {
     my $nrows = 0;
     my $ncols = 0;
 
+    my @spanned=();		# record columns to be skipped
     foreach my $row (element_nodes($node)) {
       my @cols = ();
       my $nc   = 0;
       $nrows++;
       foreach my $col (element_nodes($row)) {
         $nc++;
+	$spanned[$nc-1]-- if $spanned[$nc-1];
+	next if $spanned[$nc-1]; # Omit this mtd, if spanned by another!
         my $a    = $col->getAttribute('align');
         my $b    = $col->getAttribute('border');
         my $bc   = ($b ? join(' ', map { 'ltx_border_' . $_ } split(/\s/, $b)) : $b);
@@ -499,6 +502,9 @@ sub pmml_internal {
         my $cs   = $col->getAttribute('colspan');
         my $rs   = $col->getAttribute('rowspan');
         my @cell = map { pmml($_) } element_nodes($col);
+	if($rs || $cs){		# Note following cells to be omitted from MathML
+	  for(my $i=0; $i< ($cs||1); $i++){
+	    $spanned[$nc-1+$i] = ($rs||1); } }
         push(@cols, ['m:mtd', { ($a ? (columnalign => $a) : ()),
               ($c || $cl ? (class => ($c && $cl ? "$c $cl" : $c || $cl)) : ()),
               ($cs ? (columnspan => $cs) : ()),
