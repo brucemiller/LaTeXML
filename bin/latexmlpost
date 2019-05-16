@@ -322,7 +322,7 @@ if ($split) {
       db => $DB, %OPTIONS)); }
 
 our $scanner = ($scan || $DB) && LaTeXML::Post::Scan->new(db => $DB,
-  labelids => $splitnaming && ($splitnaming =~ /^label/),
+  ($splitnaming && ($splitnaming =~ /^label/) ? (labelids => 1) : ()),
   %OPTIONS);
 
 if ($scan) {
