@@ -1807,12 +1807,12 @@ sub FindFile_fallback {
   if ($fallback_file =~ s/\.(sty|cls)$//) {
     my $ltxtype = $1;
     my $discard = "";
-    if ($fallback_file =~ s/([_-](?:arxiv|conference|workshop))$//) {
+    if ($fallback_file =~ s/([-_](?:arxiv|conference|workshop))$//) {
       # arxiv-specific suffixes, maybe move those out to an extension package?
       $discard = $1;
     }
     # TODO: If we want a Whitelist hash table -- add it here, before further regexing.
-    if ($fallback_file =~ s/(_?v?[-_\d]+)$//) {
+    if ($fallback_file =~ s/([-_]?v?[-_\d]+)$//) {
       $discard = "$1$discard";
     }
     if ($discard) {    # we had something to discard, so a new query is needed
