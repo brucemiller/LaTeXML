@@ -1801,13 +1801,27 @@ sub FindFile_aux {
 
 sub FindFile_fallback {
   my ($file, $ltxml_paths, %options) = @_;
-  if ($file =~ /^(.+[^\d])?(?:\d+)\.(sty|cls)$/) {
-    if (my $path = pathname_find("$1.$2.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
-      Info('fallback', $file, $STATE->getStomach->getGullet,
-        "Interpreted as a versioned package/class name, falling back to generic $1.$2\n");
-      return FindFile("$1.$2", %options); } }
-  return;
-}
+  # Supported:
+  # Numeric suffixes (version nums, dates) with optional separators
+  my $fallback_file = $file;
+  if ($fallback_file =~ s/\.(sty|cls)$//) {
+    my $ltxtype = $1;
+    my $discard = "";
+    if ($fallback_file =~ s/([_-](?:arxiv|conference|workshop))$//) {
+      # arxiv-specific suffixes, maybe move those out to an extension package?
+      $discard = $1;
+    }
+    # TODO: If we want a Whitelist hash table -- add it here, before further regexing.
+    if ($fallback_file =~ s/(_?v?[-_\d]+)$//) {
+      $discard = "$1$discard";
+    }
+    if ($discard) {    # we had something to discard, so a new query is needed
+      my $fallback_query = "$fallback_file.$ltxtype";
+      if (my $path = pathname_find("$fallback_query.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
+        Info('fallback', $file, $STATE->getStomach->getGullet,
+"Interpreted $discard as a versioned package/class name, falling back to generic $fallback_query\n");
+        return FindFile($fallback_query, %options); } } }
+  return; }
 
 sub pathname_is_nasty {
   my ($pathname) = @_;
