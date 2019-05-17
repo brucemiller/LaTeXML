@@ -1820,7 +1820,7 @@ sub FindFile_fallback {
       if (my $path = pathname_find("$fallback_query.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
         Info('fallback', $file, $STATE->getStomach->getGullet,
 "Interpreted $discard as a versioned package/class name, falling back to generic $fallback_query\n");
-        return FindFile($fallback_query, %options); } } }
+        return $path; } } }
   return; }
 
 sub pathname_is_nasty {
