@@ -30,7 +30,7 @@ my %tested_dependencies = ();
 
 my @core_tests = parser_test_filenames();
 for my $test (@core_tests) {
-  print STDERR "-- grammar coverage $test... ";
+  note("grammar coverage $test...");
   my $response = $converter->convert($test);
   my $regularized_log = $response->{log};
   # Preprocess split lines back to single lines, e.g.
@@ -44,7 +44,7 @@ for my $test (@core_tests) {
   #   |          |value: [<XMTok                        |
 
   $regularized_log =~ s/\:\s+\|\n\s*\|\s+\|\[/\: \[/g;
-  print STDERR $response->{status},"\n";
+  note($response->{status});
   my @log_lines = split("\n", $regularized_log);
   my $prev_line = '';
   for my $line (@log_lines) {
