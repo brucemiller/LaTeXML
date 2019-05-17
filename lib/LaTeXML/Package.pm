@@ -1778,11 +1778,8 @@ sub FindFile_aux {
   if (!$options{noltxml}) {
     if ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
       return $path; }
-    elsif ($file =~ /^(.+[^\d])?(?:\d+)\.(sty|cls)$/) {
-      if ($path = pathname_find("$1.$2.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
-        Info('fallback', $file, $STATE->getStomach->getGullet,
-          "Interpreted as a versioned package/class name, falling back to generic $1.$2\n");
-        return FindFile("$1.$2", %options); } } }
+    elsif ($path = FindFile_fallback($file, $ltxml_paths, %options)) {
+      return $path; } }
   # If we're looking for TeX, look within our paths & installation first (faster than kpse)
   if (!$options{notex}
     && ($path = pathname_find($file, paths => $paths))) {
@@ -1801,6 +1798,16 @@ sub FindFile_aux {
   if ($urlbase && ($path = url_find($file, urlbase => $urlbase))) {
     return $path; }
   return; }
+
+sub FindFile_fallback {
+  my ($file, $ltxml_paths, %options) = @_;
+  if ($file =~ /^(.+[^\d])?(?:\d+)\.(sty|cls)$/) {
+    if (my $path = pathname_find("$1.$2.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
+      Info('fallback', $file, $STATE->getStomach->getGullet,
+        "Interpreted as a versioned package/class name, falling back to generic $1.$2\n");
+      return FindFile("$1.$2", %options); } }
+  return;
+}
 
 sub pathname_is_nasty {
   my ($pathname) = @_;
