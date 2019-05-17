@@ -167,4 +167,32 @@
         </XMath>
       </Math></p>
   </para>
+  <para xml:id="p11">
+    <p><Math mode="inline" tex="5\equiv 8\pmod{3}" text="5 equivalent-to annotated@(8, pmod@(3))" xml:id="p11.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="equivalent-to" name="equiv" role="RELOP">≡</XMTok>
+            <XMTok meaning="5" role="NUMBER">5</XMTok>
+            <XMApp>
+              <XMTok meaning="annotated"/>
+              <XMTok meaning="8" role="NUMBER">8</XMTok>
+              <XMDual role="MODIFIER">
+                <XMApp role="MODIFIER">
+                  <XMTok name="pmod" role="UNKNOWN"/>
+                  <XMRef idref="p11.m1.1"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok lpadding="5.6pt" role="OPEN" stretchy="false">(</XMTok>
+                  <XMApp xml:id="p11.m1.2">
+                    <XMTok role="BIGOP" scriptpos="post">mod</XMTok>
+                    <XMTok meaning="3" role="NUMBER" xml:id="p11.m1.1">3</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
 </document>
