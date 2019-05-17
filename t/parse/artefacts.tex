@@ -2,7 +2,11 @@
 \usepackage{stmaryrd}
 \usepackage{latexml}
 \usepackage{amsmath}
+\usepackage{array}
+\makeatletter
 \lxDeclare[role=DIFFOP]{$\Delta$}%
+\def\apply{\iflatexml\@APPLYFUNCTION\fi}
+\makeatother
 \begin{document}
 \section{Edge/Artefact Cases}
 % What are good real formulas that demonstrate this grammar behaviour?
@@ -23,6 +27,7 @@
   \item $\partial \sin x\times_i^2 y $ %moreBarearg -> mulOp
   \item $ ( \int ) $ % bigop -> INTOP
   \item $ ( \Delta ) $ % bigop ->DIFFD
-  \item $ {}^x{}_y f$ % inprescripted -> FLOATSUBSCRIPT  
+  \item $ {}^x{}_y f$ % inprescripted -> FLOATSUBSCRIPT
+  \item $\begin{array}{cc}F & G \end{array} \apply \begin{array}{cc}x & y\end{array}$
 \end{enumerate}
 \end{document}

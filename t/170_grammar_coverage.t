@@ -74,8 +74,10 @@ delete $grammar_dependencies{'Start'}; # never reported in terse log
 delete $grammar_dependencies{'AnythingAn'}{"FLOATSUPERSCRIPT"};
 delete $grammar_dependencies{'AnythingAn'}{"MODIFIER"};
 # Reachable conceptually by an ambiguous grammar, but not in the RecDescent algorithm
+# AnyOp variants are not reached as Formula variants take precedents (such as Factor's preScripted variants)
 delete $grammar_dependencies{'AnyOp'}{"OPERATOR"};
 delete $grammar_dependencies{'AnyOp'}{"addScripts"};
+delete $grammar_dependencies{'AnyOp'}{"preScripted"};
 delete $grammar_dependencies{'argPunct'}{'VERTBAR'};
 delete $grammar_dependencies{'Expression'}{'punctExpr'}; # Unreachable, due to Formula -> punctExpr
 delete $grammar_dependencies{'aSuperscri'}{'AnyOp'};

@@ -3,6 +3,7 @@
 <?latexml package="stmaryrd"?>
 <?latexml package="latexml"?>
 <?latexml package="amsmath"?>
+<?latexml package="array"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
@@ -407,6 +408,41 @@
                       <XMTok font="italic" fontsize="70%" role="UNKNOWN">y</XMTok>
                     </XMApp>
                     <XMTok font="italic" fontsize="70%" role="UNKNOWN">x</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></p>
+          </para>
+        </item>
+        <item xml:id="S1.I1.i18">
+          <tags>
+            <tag>18.</tag>
+            <tag role="refnum">18</tag>
+            <tag role="typerefnum">item 18</tag>
+          </tags>
+          <para xml:id="S1.I1.i18.p1">
+            <p><Math mode="inline" tex="\begin{array}[]{cc}F&amp;G\end{array}\begin{array}[]{cc}x&amp;y\end{array}" text="Array[[F, G]]@(Array[[x, y]])" xml:id="S1.I1.i18.p1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMArray role="ARRAY" vattach="middle">
+                      <XMRow>
+                        <XMCell align="center">
+                          <XMTok font="italic" role="UNKNOWN">F</XMTok>
+                        </XMCell>
+                        <XMCell align="center">
+                          <XMTok font="italic" role="UNKNOWN">G</XMTok>
+                        </XMCell>
+                      </XMRow>
+                    </XMArray>
+                    <XMArray role="ARRAY" vattach="middle">
+                      <XMRow>
+                        <XMCell align="center">
+                          <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                        </XMCell>
+                        <XMCell align="center">
+                          <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                        </XMCell>
+                      </XMRow>
+                    </XMArray>
                   </XMApp>
                 </XMath>
               </Math></p>
