@@ -2,6 +2,7 @@ source = ../lexmath.tex
 preload = llamapun.sty
 preload = amsmath.sty
 preload = bm.sty
+preload = array.sty
 whatsin = fragment
 whatsout = fragment
 pmml =

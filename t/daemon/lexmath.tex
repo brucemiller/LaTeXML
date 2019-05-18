@@ -1,2 +1,9 @@
 For vector-valued variables, we would write the random variable as $\bm{\mathrm{x}}$ and one of its values as $\bm{x}$.
 % Source: Deep Learning, p.54, https://www.deeplearningbook.org/contents/prob.html
+
+
+We want array lexemes to be compositionally exposing their contents:
+\[ \begin{array}{cc} a+1 & b-2 \\ c+3 & d-4 \end{array} \]
+
+We also want atoms to be compositionally exposing their contents:
+\[ 1+\left( \text{$x$ if $x<0$ else $y$} \right) \]

@@ -256,6 +256,7 @@ sub parse {
     my $lexeme_form = $self->node_to_lexeme_full($xnode);
     $lexeme_form =~ s/^\s+//;
     $lexeme_form =~ s/\s+$//;
+    $lexeme_form =~ s/\s+/ /g;    # normalize internal whitespaces
     $xnode->parentNode->setAttribute('lexemes', $lexeme_form);
   }
   if (my $result = $self->parse_rec($xnode, 'Anything,', $document)) {
@@ -327,7 +328,7 @@ sub parse_rec {
       # add to result, even allowing modification of xml node, since we're committed.
       # [Annotate converts node to array which messes up clearing the id!]
       my $isarr = ref $result eq 'ARRAY';
-      my $rtag = ($isarr ? $$result[0] : $document->getNodeQName($result));
+      my $rtag  = ($isarr ? $$result[0] : $document->getNodeQName($result));
       # Make sure font is "Appropriate", if we're creating a new token (yuck)
       if ($isarr && $attr{_font} && ($rtag eq 'ltx:XMTok')) {
         my $content = join('', @$result[2 .. $#$result]);
@@ -432,7 +433,7 @@ sub filter_hints {
           if ($prev) {
             my $s = $prev->getAttribute('_space') || 0.0;
             my $p = $prev->getAttribute('_phantom');
-            $prev->setAttribute(_space => $s + $pts);
+            $prev->setAttribute(_space   => $s + $pts);
             $prev->setAttribute(_phantom => $p || $ph); }
           else {
             $pending_space += $pts;
@@ -721,42 +722,53 @@ sub node_to_lexeme_full {
   my $tag  = getQName($node);
   if ($tag eq 'ltx:XMHint') { return ""; }    # just skip XMHints, they don't contain lexemes
   my $role = p_getAttribute($node, 'role');
-  if (($tag =~ /^ltx:XM(Tok|Text)$/) || ($role && ($tag !~ 'ltx:XM(Dual|App|Arg|Wrap|ath)'))) {
+  if ($tag eq 'ltx:XMTok' || ($role && ($tag !~ 'ltx:XM(Dual|App|Arg|Array|Wrap|ath)'))) {
 # Elements that directly represent a lexeme, or intended operation with a syntactic role (such as a postscript),
 # can proceed to building the lexeme from the leaf node.
     return $self->node_to_lexeme($node);
-  } else {
+  }
 # Elements that do not have a role and are intermediate "may" need an argument wrapper, so that arguments
 # remain unambiguous. For instance a `\frac{a}{b}` has clear argument structure to be preserved.
-    my ($mark_start, $mark_end) = ('', '');
-    if ($tag ne 'ltx:XMath') {
-      if ($role) {
-        $mark_start = "$role:start ";
-        $mark_end   = "$role:end";
-      } else {
-        if ($tag eq 'ltx:XMArg') {
-          $mark_start = "ARG:start ";
-          $mark_end   = "ARG:end";
-        }
-      }
+  my ($mark_start, $mark_end) = ('', '');
+  if ($tag ne 'ltx:XMath') {
+    if ($role) {
+      $mark_start = "$role:start ";
+      $mark_end   = "$role:end";
+    } elsif ($tag =~ '^ltx:XM(Arg|Row|Cell)') {
+      my $tag_role = uc($1);
+      $mark_start = "$tag_role:start ";
+      $mark_end   = "$tag_role:end";
     }
-    my $lexemes = $mark_start;
-    if ($tag eq 'ltx:XMDual') {
-      $lexemes .= $self->node_to_lexeme_full($LaTeXML::MathParser::DOCUMENT->getSecondChildElement($node));
-    } else {
-      my @child_nodes = element_nodes($node);
-      # skip through single child wrappers (don't serialize)
-      while (scalar(@child_nodes) == 1 && getQName($child_nodes[0]) =~ /^ltx:XM(Arg|Wrap)$/) {
-        @child_nodes = element_nodes($child_nodes[0]);
-      }
-      foreach my $child (@child_nodes) {
-        my $child_lexeme = $self->node_to_lexeme_full($child);
-        $lexemes .= $child_lexeme . ' ' if $child_lexeme;
-      }
-    }
-    $lexemes .= $mark_end;
-    return $lexemes;
   }
+  my $lexemes = $mark_start;
+  if ($tag eq 'ltx:XMDual') {
+    $lexemes .= $self->node_to_lexeme_full($LaTeXML::MathParser::DOCUMENT->getSecondChildElement($node)); }
+  elsif ($tag eq 'ltx:XMText') {
+    # if a single node XMText, we're looking at a leaf text node
+    my @child_nodes = $node->childNodes;
+    if (scalar(@child_nodes) == 1 && ref($child_nodes[0]) eq 'XML::LibXML::Text') {
+      return $self->node_to_lexeme($node); }
+    else {
+      # \text{}-like construct, with multiple math formulas and interleaved text
+      foreach my $child (@child_nodes) {
+        if (ref($child) eq 'XML::LibXML::Text') {
+          $lexemes .= $child->textContent() . ' '; }
+        elsif (my $child_lexeme = $self->node_to_lexeme_full($child)) {
+          $lexemes .= $child_lexeme . ' '; } } } }
+  else {
+    my @child_elements = element_nodes($node);
+    # skip through single child wrappers (don't serialize)
+    while (scalar(@child_elements) == 1 && getQName($child_elements[0]) =~ /^ltx:XM(Arg|Wrap)$/) {
+      @child_elements = element_nodes($child_elements[0]);
+    }
+    foreach my $child (@child_elements) {
+      if (my $child_lexeme = $self->node_to_lexeme_full($child)) {
+        $lexemes .= $child_lexeme . ' ';
+      }
+    }
+  }
+  $lexemes .= $mark_end;
+  return $lexemes;
 }
 
 sub parse_internal {
@@ -843,9 +855,9 @@ sub failureReport {
       $loc = "In \"" . UnTeX($box) . "\""; }
     $unparsed =~ s/^\s*//;
     my @rest = split(/ /, $unparsed);
-    my $pos = scalar(@nodes) - scalar(@rest);
+    my $pos  = scalar(@nodes) - scalar(@rest);
     # Break up the input at the point where the parse failed.
-    my $max = 50;
+    my $max    = 50;
     my $parsed = join(' ', ($pos > $max ? ('...') : ()),
       (map { node_string($_, $document) } @nodes[max(0, $pos - 50) .. $pos - 1]));
     my $toparse = join(' ',
@@ -874,7 +886,7 @@ sub failureReport {
 sub node_string {
   my ($node, $document) = @_;
   my $role = $node->getAttribute('role') || 'UNKNOWN';
-  my $box = $document->getNodeBox($node);
+  my $box  = $document->getNodeBox($node);
   return ($box ? ToString($box) : text_form($node)) . "[[$role]]"; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1086,7 +1098,7 @@ sub CatSymbols {
   my $new = New($meaning, $content, %attributes);
   my $repl;
   my $symbols = [$symbol1, $symbol2];
-  my $doc = $LaTeXML::MathParser::DOCUMENT;
+  my $doc     = $LaTeXML::MathParser::DOCUMENT;
   foreach my $symbol (@$symbols) {
     if (my $id = p_getAttribute(realizeXMNode($symbol), 'xml:id')) {
       if (!$repl) {
@@ -1232,7 +1244,7 @@ sub extract_separators {
 # For example, whether (a,b) is an interval or list?
 #  (both could reasonably be preceded by \in )
 my %balanced = (    # [CONSTANT]
-  '(' => ')', '[' => ']', '{' => '}',
+  '(' => ')', '['  => ']', '{' => '}',
   '|' => '|', '||' => '||',
   "\x{230A}" => "\x{230B}",    # lfloor, rfloor
   "\x{2308}" => "\x{2309}",    # lceil, rceil
@@ -1673,4 +1685,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-
