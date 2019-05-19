@@ -903,7 +903,8 @@ DefConstructor('\boxed@text{}', sub {
 DefMath('\implies',   "\x{27F9}", role => 'ARROW', meaning => 'implies');
 DefMath('\impliedby', "\x{27F8}", role => 'ARROW', meaning => 'implied-by');
 
-DefMath('\And', '&', role => 'ADDOP', meaning => 'and');
+DefMacro('\And', '\ifmmode\ams@math@And\else\&\fi');
+DefMath('\ams@math@And', '&', role => 'ADDOP', meaning => 'and');
 
 #======================================================================
 # Section 4.8 Over and under arrows
@@ -1306,4 +1307,3 @@ DefMacro('\shoveright{}', '#1');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
-
