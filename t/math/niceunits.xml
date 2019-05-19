@@ -16,7 +16,11 @@
     </tags>
     <title><tag close=" ">1</tag>Unit</title>
     <para xml:id="S1.p1">
-      <p>Normal: <text class="ltx_markedasmath">m</text> <Math mode="inline" tex="\mathrm{m}" text="m" xml:id="S1.p1.m2">
+      <p>Normal: <Math mode="inline" tex="m" text="m" xml:id="S1.p1.m1">
+          <XMath>
+            <XMTok class="ltx_unit" role="ID">m</XMTok>
+          </XMath>
+        </Math> <Math mode="inline" tex="\mathrm{m}" text="m" xml:id="S1.p1.m2">
           <XMath>
             <XMTok class="ltx_unit" role="ID">m</XMTok>
           </XMath>
@@ -24,7 +28,11 @@
     </para>
     <para xml:id="S1.p2">
       <p>In bold sans-serif:
-<text class="ltx_markedasmath" font="sansserif bold">m</text><text font="sansserif bold"> </text>
+<Math mode="inline" tex="m" text="m" xml:id="S1.p2.m1">
+          <XMath>
+            <XMTok class="ltx_unit" font="sansserif bold" role="ID">m</XMTok>
+          </XMath>
+        </Math><text font="sansserif bold"> </text>
 <Math mode="inline" tex="\mathrm{m}" text="m" xml:id="S1.p2.m2">
           <XMath>
             <XMTok class="ltx_unit" role="ID">m</XMTok>
@@ -33,7 +41,11 @@
     </para>
     <para xml:id="S1.p3">
       <p>In bold sans-serif, with a unit:
-<text font="sansserif bold">1 <text class="ltx_markedasmath">m</text></text>
+<text font="sansserif bold">1 <Math mode="inline" tex="m" text="m" xml:id="S1.p3.m1">
+            <XMath>
+              <XMTok class="ltx_unit" role="ID">m</XMTok>
+            </XMath>
+          </Math></text>
 <Math mode="inline" tex="1\,\mathrm{m}" text="1 * m" xml:id="S1.p3.m2">
           <XMath>
             <XMApp>
@@ -228,13 +240,17 @@ Dose (10<Math mode="inline" tex="{}^{14}" text="^14" xml:id="S3.p5.m1">
               <XMTok fontsize="70%" meaning="14" role="NUMBER">14</XMTok>
             </XMApp>
           </XMath>
-        </Math> <text class="ltx_markedasmath">ions/cm<Math mode="inline" tex="{}^{2}" text="^2" xml:id="S3.p5.m2.m1">
-            <XMath>
-              <XMApp role="FLOATSUPERSCRIPT" scriptpos="1">
-                <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>)</text></p>
+        </Math> <Math mode="inline" tex="ions/cm${}^{2}$)" text="[ions/cm2)]" xml:id="S3.p5.m2">
+          <XMath>
+            <XMText>ions/cm<Math mode="inline" tex="{}^{2}" text="^2" xml:id="S3.p5.m2.m1">
+                <XMath>
+                  <XMApp role="FLOATSUPERSCRIPT" scriptpos="1">
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math>)</XMText>
+          </XMath>
+        </Math></p>
     </para>
   </section>
 </document>
