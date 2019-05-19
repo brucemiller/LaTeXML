@@ -79,8 +79,8 @@ sub mouthIsOpen {
 # Corresponds (I think) to TeX's \endinput
 sub flushMouth {
   my ($self) = @_;
-  $$self{mouth}->finish;;    # but not close!
-  $$self{pushback}  = [];    # And don't read anytyhing more from it.
+  $$self{mouth}->finish;    # but not close!
+  $$self{pushback}  = [];   # And don't read anytyhing more from it.
   $$self{autoclose} = 1;
   return; }
 
@@ -117,7 +117,7 @@ sub readingFromMouth {
       $self->closeMouth(1); last; }
     elsif (!@{ $$self{mouthstack} }) {
       Error('unexpected', '<closed>', $self, "Mouth is unexpectedly already closed",
-        "Reading from " . Stringify($mouth) . ", but it has already been closed."); }
+        "Reading from " . Stringify($mouth) . ", but it has already been closed."); last; }
     elsif (!$$self{autoclose} || @{ $$self{pushback} } || $$self{mouth}->hasMoreInput) {
       my $next = Stringify($self->readToken);
       Error('unexpected', $next, $self, "Unexpected input remaining: '$next'",
@@ -1011,4 +1011,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-
