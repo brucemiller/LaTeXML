@@ -32,6 +32,9 @@ foreach my $option (qw(10pt 11pt 12pt
 # Number equations within sections
 DeclareOption('eqsecnum', sub { Digest(Tokenize('\AtEndOfClass{\eqsecnum}')); });
 
+# revtex4 option from emulateapj.cls loads revtex4.cls
+DeclareOption('revtex4', sub { LoadClass('revtex4'); return; });
+
 DeclareOption(undef, sub {
     PassOptions('article', 'cls', ToString(Expand(T_CS('\CurrentOption')))); });
 
