@@ -1512,7 +1512,10 @@ sub defmath_prim {
           my $value = $properties{$key};
           if (ref $value eq 'CODE') {
             $properties{$key} = &$value(); } }
-        LaTeXML::Core::Box->new($string, $font, $locator, $cs, mode => 'math', %properties); }));
+        if ($STATE->lookupValue('IN_MATH')) {
+          LaTeXML::Core::Box->new($string, $font, $locator, $cs, mode => 'math', %properties); }
+        else {
+          LaTeXML::Core::Box->new($string, $font, $locator, $cs, mode => 'text', %properties); } }));
   return; }
 
 sub defmath_cons {
