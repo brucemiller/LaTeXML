@@ -44,5 +44,8 @@ ProcessOptions();
 LoadClass('article');
 RequirePackage('aa_support');
 
+# Allow error-free interleaving of inline math in display math.
+AssignValue("FLEQN_DISPLAY_MATH", 1, 'global');
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

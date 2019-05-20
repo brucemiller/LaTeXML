@@ -3206,9 +3206,11 @@ DefPrimitiveI(T_MATH, undef, sub {
         # Avoid a Fatal, but we're likely in trouble.
         # Should we switch to text mode? (LaTeX normally wouldn't)
         # Did we miss something and would should have already been in text mode? Possibly...
-        Error('expected', '$', $stomach,
-          "Missing \$ closing display math.",
-          "Ignoring; expect to be in wrong math/text mode.");
+        # OR, were we in a lenient package that allowed inline math mixed in with display?
+        if (!LookupValue("FLEQN_DISPLAY_MATH")) {
+          Error('expected', '$', $stomach,
+            "Missing \$ closing display math.",
+            "Ignoring; expect to be in wrong math/text mode."); }
         $op = undef; } }
     elsif ($mode eq 'inline_math') {
       $op = '\@@ENDINLINEMATH'; }
