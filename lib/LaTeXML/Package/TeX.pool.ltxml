@@ -3054,7 +3054,7 @@ Tag('ltx:para', autoClose => 1, autoOpen => 1, afterClose=>\&pruneEmpty);
 
 sub pruneEmpty {
   my ($document, $node) = @_;
-  # In some cases we could have e.g. a \noindent followed by a {table}, 
+  # In some cases we could have e.g. a \noindent followed by a {table},
   # in which case we end up with an empty ltx:para which we can prune.
   if (!scalar($node->childNodes)) {
     $node->unlinkNode; } }
@@ -3747,6 +3747,7 @@ sub scriptHandler {
         unshift(@putback, $prev);    # put back? assuming it will add rpadding to previous???
         next; }
       elsif (IsEmpty($prev)) {       # If empty, the script floats, can't conflict, but don't put back
+        unshift(@putback, $prev);
         last; }
       elsif (my $prevop = IsScript($prev)) {
         unshift(@putback, $prev);
@@ -3766,7 +3767,6 @@ sub scriptHandler {
         $cs = '\@@POST' . $op;
         last; } }
     push(@LaTeXML::LIST, @putback);
-
     MergeFont(scripted => 1);
     # Now, get following boxes (may have to process several tokens!)
     my @stuff = ();

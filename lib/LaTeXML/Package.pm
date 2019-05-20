@@ -1359,11 +1359,12 @@ sub DefMathI {
   my $csname  = $cs->getString;
   my $meaning = $options{meaning};
   my $name    = $options{alias} || $csname;
+  $presentation = '' unless $presentation;
   $name =~ s/^\\//;
   $name = $options{name} if defined $options{name};
   $name = undef          if (defined $name)
     && (($name eq $presentation) || ($name eq '')
-    || ((defined $meaning) && ($meaning eq $name)));
+    || ($meaning && ($meaning eq $name)));
   $options{name} = $name;
   $options{role} = 'UNKNOWN'
     if ($nargs == 0) && !defined $options{role};
