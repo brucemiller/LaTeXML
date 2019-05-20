@@ -3412,7 +3412,7 @@ DefMacro('\lx@ifusebbl{}{}{}', sub {
     my $bbl_path     = FindFile($jobname, type => 'bbl');
     my $missing_bibs = '';
     for my $bf (split(',', $bib_files)) {
-      my $bib_path = FindFile($bf, type => 'bib');
+      my $bib_path = FindFile($bf, type => 'bib', nokpsewhich => 1);
       if (not $bib_path) {
         $missing_bibs .= ',' unless length($missing_bibs) == 0;
         $missing_bibs .= $bf; } }

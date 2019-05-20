@@ -132,8 +132,10 @@ sub getBibliographies {
       # NOTE: When better integrated with Core, should also check for cached bib documents.
       if (my $xmlpath = pathname_find($bib, paths => [@paths], types => ['xml'])) {
         $bibdoc = $doc->newFromFile($xmlpath); }    # doc will do the searching...
-      elsif (my $bibpath = pathname_find($bib, paths => [@paths], types => ['bib'])
-        || pathname_kpsewhich($bib)) {
+      elsif (my $bibpath = pathname_find($bib, paths => [@paths], types => ['bib'])) {
+     # Note: this seems to create unexpected wrong bibliography loads for generic names such as "biblio.bib"
+     #       where the intent was for the bibliography to not be found, and the .bbl file to be loaded.
+     # || pathname_kpsewhich($bib))
         $bibdoc = $self->convertBibliography($doc, $bibpath); }
       else {
         Error('missing_file', $bib, $self,
@@ -782,4 +784,3 @@ $FMT_SPEC{techreport}            = $FMT_SPEC{report};
 
 # ================================================================================
 1;
-
