@@ -72,8 +72,9 @@ DeclareOption('compress',      sub { });
 
 DeclareOption('longnamesfirst', sub { });
 
-DeclareOption('openbib',     sub { });
-DeclareOption('sectionbib',  sub { });
+DeclareOption('openbib', sub { });
+DeclareOption('sectionbib', sub {
+    AssignMapping('BACKMATTER_ELEMENT', 'ltx:bibliography' => 'ltx:section'); });
 DeclareOption('nonamebreak', sub { });
 
 # They _say_ round & semicolon but ...

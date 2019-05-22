@@ -93,6 +93,8 @@ DefMacro('\theenumiv',  '\Alph{enumiv}');
 
 DefMacro('\bibname', 'Bibliography');
 
+AssignMapping('BACKMATTER_ELEMENT', 'ltx:bibliography' => 'ltx:chapter');
+
 Tag('ltx:appendix', autoClose => 1);
 DefMacro('\appendix', '\@appendix');
 DefPrimitive('\@appendix', sub { startAppendices('chapter'); });
