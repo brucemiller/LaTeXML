@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="bibunits"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>First section</title>
+    <para xml:id="S1.p1">
+      <p>some text <cite class="ltx_citemacro_cite">[<bibref bibrefs="Lamport:1994" inlist="bu1" separator="," yyseparator=","/>]</cite> more text more citations</p>
+    </para>
+    <bibliography bibstyle="alpha" citestyle="AY" files="lit" lists="bu1" sort="true" xml:id="bib">
+      <title>References</title>
+    </bibliography>
+    <para xml:id="S1.p2">
+      <p>some text between the units</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Second and last section</title>
+    <para xml:id="S2.p1">
+      <p>some text <cite class="ltx_citemacro_cite">[<bibref bibrefs="Knuth:1991" inlist="bibliography bu2" separator="," yyseparator=","/>]</cite> more text more citations</p>
+    </para>
+    <bibliography citestyle="numbers" files="lit" lists="bu2" xml:id="biba">
+      <title>References</title>
+    </bibliography>
+  </section>
+  <bibliography bibstyle="alpha" citestyle="AY" files="lit" xml:id="bibb">
+    <title>References</title>
+  </bibliography>
+</document>

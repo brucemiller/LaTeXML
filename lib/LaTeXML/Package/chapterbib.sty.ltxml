@@ -1,0 +1,61 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  chapterbib                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+DeclareOption('rootbib', sub {
+    AssignValue(CITE_UNIT_GLOBAL => 1); });
+DeclareOption('sectionbib', sub {
+    AssignMapping('BACKMATTER_ELEMENT', 'ltx:bibliography' => 'ltx:section'); });
+
+DeclareOption('gather',    sub { });    # ?
+DeclareOption('duplicate', sub { });    # ?
+
+ProcessOptions();
+
+DefMacro('\sectionbib{}{}', '');        # SHOULD adjust BACKMATTER_ELEMENT!
+
+DefPrimitive('\lx@cb@reset', sub {
+    AssignValue(CHAPTERBIB_UNIT => undef);
+    AssignValue(CITE_UNIT       => undef);
+    return; });
+
+DefPrimitive('\include{}', sub {
+    my ($stomach, $path) = @_;
+    $path = ToString($path);
+    my ($dir, $name, $ext) = pathname_split($path);
+    my $table = LookupValue('including@only');
+    if (!$table || $$table{$path}) {
+      AssignValue(CHAPTERBIB_UNIT => $name);
+      AssignValue(CITE_UNIT       => (LookupValue('CITE_UNIT_GLOBAL') ? 'bibliography ' . $name : $name));
+      $stomach->getGullet->unread(T_CS('\lx@cb@reset'));
+      Input($path); }
+    return; });
+
+DefMacro('\lx@cb@unitname', sub { Explode(LookupValue('CHAPTERBIB_UNIT')); });
+
+our $cbunits = 0;
+
+# Much like unitbib's bibunt environment
+DefEnvironment('{cbunit}', '#body',
+  afterDigestBegin => sub {
+    my $unit = 'chapbib' . ++$cbunits;
+    AssignValue(CHAPTERBIB_UNIT => $unit);
+    AssignValue(CITE_UNIT       => (LookupValue('CITE_UNIT_GLOBAL') ? 'bibliography ' . $unit : $unit));
+    return; });
+
+DefMacro('\bibliography Semiverbatim', '\lx@bibliography[\lx@cb@unitname]{#1}');
+
+1;

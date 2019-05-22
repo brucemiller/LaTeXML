@@ -5,50 +5,35 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <glossary class="ltx_acronym" role="acronym">
+  <glossary class="ltx_acronym" lists="acronym">
     <glossarylist>
-      <glossaryentry key="AA" role="acronym" xml:id="id1">
-        <glossaryphrase key="AA" show="label">AA</glossaryphrase>
-        <glossaryphrase key="AA" show="short">AA</glossaryphrase>
-        <glossaryphrase key="A A A A" show="long">A A A A</glossaryphrase>
-        <glossarydefinition>A A A A</glossarydefinition>
+      <glossaryentry key="Wd" xml:id="id1">
+        <glossaryphrase key="Wd" role="label"><text font="smallcaps">Wd</text></glossaryphrase>
+        <glossaryphrase key="Wd" role="short"><text font="smallcaps">Wd</text></glossaryphrase>
+        <glossaryphrase key="Word" role="long">Word</glossaryphrase>
+        <glossaryphrase key="Word in a  or" role="definition">Word in a <glossaryref inlist="acronym" key="Ph" show="long"/> or <glossaryref inlist="acronym" key="Snt" show="long"/></glossaryphrase>
       </glossaryentry>
-      <glossaryentry key="BB" role="acronym" xml:id="id2">
-        <glossaryphrase key="BB" show="label">BB</glossaryphrase>
-        <glossaryphrase key="BB" show="short">BB</glossaryphrase>
-        <glossaryphrase key="B B B B" show="long">B B B B</glossaryphrase>
-        <glossarydefinition>B B B B</glossarydefinition>
+      <glossaryentry key="Ph" xml:id="id2">
+        <glossaryphrase key="Ph" role="label"><text font="smallcaps">Ph</text></glossaryphrase>
+        <glossaryphrase key="Ph" role="short"><text font="smallcaps">Ph</text></glossaryphrase>
+        <glossaryphrase key="Phrase" role="long">Phrase</glossaryphrase>
+        <glossaryphrase key="Phrase being a sequence of" role="definition">Phrase being a sequence of <glossaryref inlist="acronym" key="Wd" show="long-plural"/></glossaryphrase>
       </glossaryentry>
-      <glossaryentry key="CC" role="acronym" xml:id="id3">
-        <glossaryphrase key="CC" show="label">CC</glossaryphrase>
-        <glossaryphrase key="CC" show="short">CC</glossaryphrase>
-        <glossaryphrase key="C C C C" show="long">C C C C</glossaryphrase>
-        <glossarydefinition>C C C C</glossarydefinition>
-      </glossaryentry>
-      <glossaryentry key="DD" role="acronym" xml:id="id4">
-        <glossaryphrase key="DD" show="label">DD</glossaryphrase>
-        <glossaryphrase key="DD" show="short">DD</glossaryphrase>
-        <glossaryphrase key="D D D D" show="long">D D D D</glossaryphrase>
-        <glossarydefinition>D D D D</glossarydefinition>
+      <glossaryentry key="Snt" xml:id="id3">
+        <glossaryphrase key="Snt" role="label"><text font="smallcaps">Snt</text></glossaryphrase>
+        <glossaryphrase key="Snt" role="short"><text font="smallcaps">Snt</text></glossaryphrase>
+        <glossaryphrase key="Sentence" role="long">Sentence</glossaryphrase>
+        <glossaryphrase key="Sentence being a grammatical sequence of" role="definition">Sentence being a grammatical sequence of <glossaryref inlist="acronym" key="Wd" show="long-plural"/></glossaryphrase>
       </glossaryentry>
     </glossarylist>
   </glossary>
   <para xml:id="p1">
-    <p><glossaryref key="AA" role="acronym" show="short"/></p>
+    <p><glossaryref inlist="acronym" key="Wd" show="long"/> (<glossaryref inlist="acronym" key="Wd" show="short"/>); <glossaryref inlist="acronym" key="Wd" show="short"/>; <glossaryref inlist="acronym" key="Wd" show="long"/>;  <glossaryref inlist="acronym" key="Wd" show="long"/> (<glossaryref inlist="acronym" key="Wd" show="short"/>).</p>
   </para>
   <para xml:id="p2">
-    <p><glossaryref key="AA" role="acronym" show="long"/> (<glossaryref key="AA" role="acronym" show="short"/>)</p>
+    <p><glossaryref inlist="acronym" key="Ph" show="long"/> (<glossaryref inlist="acronym" key="Ph" show="short"/>); <glossaryref inlist="acronym" key="Ph" show="short"/>; <glossaryref inlist="acronym" key="Ph" show="long"/>;  <glossaryref inlist="acronym" key="Ph" show="long"/> (<glossaryref inlist="acronym" key="Ph" show="short"/>).</p>
   </para>
   <para xml:id="p3">
-    <p><glossaryref key="BB" role="acronym" show="long"/></p>
-  </para>
-  <para xml:id="p4">
-    <p><glossaryref key="BB" role="acronym" show="long"/> (<glossaryref key="BB" role="acronym" show="short"/>)</p>
-  </para>
-  <para xml:id="p5">
-    <p><glossaryref key="CC" role="acronym" show="long"/> (<glossaryref key="CC" role="acronym" show="short"/>)</p>
-  </para>
-  <para xml:id="p6">
-    <p><glossaryref key="CC" role="acronym" show="short"/></p>
+    <p><glossaryref inlist="acronym" key="Snt" show="long"/> (<glossaryref inlist="acronym" key="Snt" show="short"/>); <glossaryref inlist="acronym" key="Snt" show="short"/>; <glossaryref inlist="acronym" key="Snt" show="long"/>;  <glossaryref inlist="acronym" key="Snt" show="long"/> (<glossaryref inlist="acronym" key="Snt" show="short"/>).</p>
   </para>
 </document>

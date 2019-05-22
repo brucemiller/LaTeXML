@@ -1,0 +1,20 @@
+\documentclass{article}
+%\usepackage[subsectionbib]{bibunits}
+\usepackage{bibunits}
+%\usepackage[globalcitecopy]{bibunits}
+\begin{document}
+\bibliographyunit[\section]
+\defaultbibliographystyle{plain}
+\section{First section}
+some text \cite{Lamport:1994} more text more citations
+\putbib[lit]
+
+some text between the units
+\defaultbibliographystyle{abbrv}
+\section{Second and last section}
+some text \cite*{Knuth:1991} more text more citations
+\putbib[lit]
+
+\bibliographystyle{alpha}
+\bibliography{lit}
+\end{document}

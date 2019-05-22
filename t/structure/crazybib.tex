@@ -1,0 +1,49 @@
+\documentclass{book}
+\usepackage[utf8]{inputenc}
+\usepackage[sectionbib,numbers]{natbib}
+
+\begin{document}
+
+\chapter{CHAP 1}
+
+\section{SEC 1.1}
+
+\def\bibsection{\subsection*{Section Bibliography}}
+\begin{thebibliography}{12}
+\bibitem{bib1} Bla
+\end{thebibliography}
+
+\section{SEC 1.2}
+
+\def\bibsection{\subsection*{Section Bibliography}}
+\begin{thebibliography}{12}
+\bibitem{bib1} Bla
+\end{thebibliography}
+
+\def\bibsection{\section*{Chapter Bibliography}}
+\begin{thebibliography}{12}
+\bibitem{bib1} Bla
+\end{thebibliography}
+
+\chapter{CHAP 2}
+
+\section{SEC 2.1}
+
+\def\bibsection{\subsection{Section Bibliography}}
+\begin{thebibliography}{12}
+\bibitem{bib1} Bla
+\end{thebibliography}
+
+\section{SEC 2.2}
+
+\def\bibsection{\subsection{Section Bibliography}}
+\begin{thebibliography}{12}
+\bibitem{bib1} Bla
+\end{thebibliography}
+
+\def\bibsection{\section{Chapter Bibliography}}
+\begin{thebibliography}{12}
+\bibitem{bib1} Bla
+\end{thebibliography}
+
+\end{document}
