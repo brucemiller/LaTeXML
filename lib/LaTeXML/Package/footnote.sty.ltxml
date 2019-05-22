@@ -1,0 +1,32 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  footnote                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Since we don't have problems with footnotes, there's not much to do here.
+DefMacro('\savenotes',    '');
+DefMacro('\endsavenotes', '');
+DefMacro('\spewnotes',    '');
+DefMacro('\csname minipage*\endcsname', '\minipage');
+DefMacro('\csname endminipage*\endcsname', '\endminipage');
+DefMacro('\makesavenoteenv[]{}',
+    '\if.#1.\else\newenvironment{#1}{\begin{#2}}{\end{#2}}\fi');
+
+# {footnote}, {footnotetext} *environments*!!!!
+# Which means redefining \footnote!  Ugh....
+# worry about it later?
+#======================================================================
+1;

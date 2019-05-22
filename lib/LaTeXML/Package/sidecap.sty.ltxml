@@ -1,0 +1,32 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  sidecap                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# First draft stub;
+# ignore sidecaption-ness and just make a regular table/figure
+DefMacro('\SCtable[][]', '\table[#2]');
+DefMacro('\endSCtable',  '\endtable');
+DefMacro('\csname SCtable*\endcsname[][]', '\csname table*\endcsname[#2]');
+DefMacro('\csname endSCtable*\endcsname',  '\csname endtable*\endcsname');
+DefMacro('\SCfigure[][]', '\figure[#2]');
+DefMacro('\endSCfigure',  '\endfigure');
+DefMacro('\csname SCfigure*\endcsname[][]', '\csname figure*\endcsname[#2]');
+DefMacro('\csname endSCfigure*\endcsname',  '\csname endfigure*\endcsname');
+
+DefEnvironment('{wide}', '#body');
+#======================================================================
+1;
