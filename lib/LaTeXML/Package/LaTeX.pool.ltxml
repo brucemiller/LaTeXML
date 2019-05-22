@@ -2054,6 +2054,7 @@ sub eqnarrayBindings {
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@alignment@newline');
   Let('\cr',         '\@alignment@cr');
+  Let('\crcr',       '\@alignment@cr');
   Let('\@open@row',  '\@equationgroup@open@row');
   Let('\@close@row', '\@equationgroup@close@row');
   return; }
