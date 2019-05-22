@@ -857,13 +857,14 @@ DefMacro('\hdotsfor Number', sub {
 # but we're always too early to check it!
 # Using a Digested arg seems a little risky, especially "$", but usually can see @role
 # This currently doesn't see deeply enough into $after, eg. \boldsymbol{+}
-DefPrimitive('\dots Digested', sub {
+DefPrimitive('\lx@math@dots Digested', sub {
     my ($stomach, $after) = @_;
     my $role = $after && $after->getProperty('role');
     my %binops = (ADDOP => 1, BINOP => 1, MULOP => 1, RELOP => 1);
     return (Box(($role && $binops{$role} ? "\x{22EF}" : "\x{2026}"),
         undef, undef, T_CS('\dots'), mode => 'math', name => 'dots', role => 'ID'),
       $after); });
+DefMacro('\dots', '\ifmmode\lx@math@dots\else\ldots\fi');
 
 #======================================================================
 # Section 4.4 Nonbreaking dashes
