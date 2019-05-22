@@ -141,7 +141,7 @@ sub findPreviousPage {
     # If there IS a preceding sibling, find it's rightmost descendant
     while (@sibs) {
       $pentry = $sibs[-1];
-      @sibs = grep { $_->getValue('primary') } $self->getChildPages($pentry); }
+      @sibs   = grep { $_->getValue('primary') } $self->getChildPages($pentry); }
     return $pentry; }                                                 # Return deepest page found
   return; }
 
@@ -228,7 +228,7 @@ sub fill_in_tocs {
       @list = $self->gentoc($doc, $id, $show, $lists, $types); }
     elsif ($format eq 'context') {
       $lists = { toc => 1 };
-      @list = $self->gentoc_context($doc, $id, $show, $lists, $types); }
+      @list  = $self->gentoc_context($doc, $id, $show, $lists, $types); }
     $doc->addNodes($toc, ['ltx:toclist', {}, @list]) if @list; }
   NoteProgressDetailed(" [Filled in $n TOCs]");
   return; }
@@ -769,10 +769,14 @@ sub fillInGlossaryRef {
   my $n = 0;
   foreach my $ref ($doc->findnodes('descendant::ltx:glossaryref')) {
     $n++;
-    my $role = $ref->getAttribute('role') || '';
-    my $key  = $ref->getAttribute('key');
-    my $show = $ref->getAttribute('show');
-    if (my $entry = $$self{db}->lookup(join(':', 'GLOSSARY', $role, $key))) {
+    my $key   = $ref->getAttribute('key');
+    my @lists = split(/\s*/, $ref->getAttribute('inlist') || 'glossary');
+    my $show  = $ref->getAttribute('show');
+    my ($list, $entry) = ('', undef);
+    foreach my $alist (@lists) {    # Find list with this key
+      if ($entry = $$self{db}->lookup(join(':', 'GLOSSARY', $alist, $key))) {
+        $list = $alist; last; } }
+    if ($entry) {
       my $title = $entry->getValue('definition');
       if (!$ref->getAttribute('title') && $title) {
         $ref->setAttribute(title => $title->textContent); }
@@ -783,11 +787,11 @@ sub fillInGlossaryRef {
         if (@stuff) {
           $doc->addNodes($ref, @stuff); }
         else {
-          $self->note_missing('warn', "Glossary ($role) contents ($show) for key", $key);
+          $self->note_missing('warn', "Glossary ($list) contents ($show) for key", $key);
           $doc->addNodes($ref, $key);
           $doc->addClass($ref, 'ltx_missing'); } } }
     else {
-      $self->note_missing('warn', "Glossary ($role) Entry for key", $key); }
+      $self->note_missing('warn', "Glossary ($list) Entry for key", $key); }
     if (!$ref->textContent && !element_nodes($ref)) {
       $doc->addNodes($ref, $key);
       $doc->addClass($ref, 'ltx_missing'); } }
@@ -809,7 +813,7 @@ sub generateGlossaryRefTitle {
   elsif ($show =~ /^(\w+)-indefinite$/) {
     my $sh = $1;
     if (my $phrase = $entry->getValue('phrase:' . $sh)) {
-      my $s = $phrase->textContent;
+      my $s   = $phrase->textContent;
       my $art = ($s =~ /^[aeiou]/i ? 'an ' : 'a ');
       push(@stuff, ['ltx:text', { class => 'ltx_glossary_' . $show },
           $art, $self->prepRefText($doc, $phrase)]); } }

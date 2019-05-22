@@ -192,7 +192,7 @@ sub convertPicture {
   #  my ($minx, $maxx, $miny, $maxy) = map { $_ || 0 } @{getSVGBounds($node)};
   #  my $h = $maxy-$miny;
 
-  my $h = $node->getAttribute('height') || '0'; $h =~ s/pt$//;
+  my $h      = $node->getAttribute('height') || '0'; $h =~ s/pt$//;
   my $mvNode = $parent->addNewChild($svgURI, 'g');
   $mvNode->setAttribute(transform => "translate(0,$h)");
 
@@ -310,7 +310,7 @@ sub convertBezier {
   my ($parent, $node) = @_;
   my @p = explodeCoord($node->getAttribute('points') || '');
   my $n = ($#p + 1) / 2; my $x0 = shift(@p); my $y0 = shift(@p);
-  my %cmd = (4 => 'C', 3 => 'Q');
+  my %cmd     = (4 => 'C', 3 => 'Q');
   my $newNode = $parent->addNewChild($svgURI, 'path');
   $newNode->setAttribute(d => "M $x0,$y0 " . ($cmd{$n} || 'T') . ' ' . coordList(@p));
   copy_some_attributes($newNode, $node,
@@ -451,7 +451,7 @@ sub setArrows {
 sub mergeTransform {
   my ($node, $new_t) = @_;
   my $old_t = $node->getAttribute('transform');
-  my $t = ($old_t && $new_t) ? Transform("$new_t $old_t")->toString :
+  my $t     = ($old_t && $new_t) ? Transform("$new_t $old_t")->toString :
     ($old_t ? $old_t : ($new_t ? $new_t : undef));
   $node->setAttribute(transform => $t) if $t;
   return; }

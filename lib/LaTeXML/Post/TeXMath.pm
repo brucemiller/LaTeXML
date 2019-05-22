@@ -30,7 +30,7 @@ our $lxMimeType = 'application/x-tex';
 sub convertNode {
   my ($self, $doc, $xmath, $style) = @_;
   my $math = $xmath->parentNode;
-  my $tex = $math && isElementNode($math) && $math->getAttribute('tex');
+  my $tex  = $math && isElementNode($math) && $math->getAttribute('tex');
   return { processor => $self, encoding => $lxMimeType, mimetype => $lxMimeType,
     string => $tex }; }
 

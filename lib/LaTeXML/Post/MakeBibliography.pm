@@ -40,38 +40,43 @@ sub new {
 
 sub toProcess {
   my ($self, $doc) = @_;
-  return $doc->findnode('//ltx:bibliography'); }
+  return $doc->findnodes('//ltx:bibliography'); }
 
+# Whooo, this is turning into a confusing API!
+# Potentially multiple biblist's in each document
+# potentially each one split into multiple output documents (need that option!)
+# Inevitably duplicates?
 sub process {
-  my ($self, $doc, $bib) = @_;
+  my ($self, $doc, @bibs) = @_;
+  my @docs = ($doc);
+  foreach my $bib (@bibs) {
+    next if $doc->findnodes('.//ltx:bibitem', $bib);    # Already populated?
 
-  my @bib = ($doc);
-  return $doc if $doc->findnodes('//ltx:bibitem', $bib);    # Already populated?
+    local $LaTeXML::Post::MakeBibliography::NUMBER = 0;
+    local %LaTeXML::Post::MakeBibliography::STYLE =
+      (map { ($_ => $bib->getAttribute($_)) } qw(bibstyle citestyle sort));
 
-  local $LaTeXML::Post::MakeBibliography::NUMBER = 0;
-  local %LaTeXML::Post::MakeBibliography::STYLE =
-    (map { ($_ => $bib->getAttribute($_)) } qw(bibstyle citestyle sort));
+    my $entries = $self->getBibEntries($doc, $bib);
+    # Remove any bibentry's (these should have been converted to bibitems)
+    $doc->removeNodes($doc->findnodes('//ltx:bibentry'));
+    foreach my $biblist ($doc->findnodes('//ltx:biblist')) {
+      $doc->removeNodes($biblist) unless element_nodes($biblist); }
 
-  my $entries = $self->getBibEntries($doc);
-  # Remove any bibentry's (these should have been converted to bibitems)
-  $doc->removeNodes($doc->findnodes('//ltx:bibentry'));
-  foreach my $biblist ($doc->findnodes('//ltx:biblist')) {
-    $doc->removeNodes($biblist) unless element_nodes($biblist); }
-
-  if ($$self{split}) {
-    # Separate by initial.
-    my $split = {};
-    foreach my $sortkey (keys %$entries) {
-      my $entry = $$entries{$sortkey};
-      $$split{ $$entry{initial} }{$sortkey} = $entry; }
-    @bib = map { $self->rescan($_) }
-      $self->makeSubCollectionDocuments($doc, $bib,
-      map { ($_ => $self->makeBibliographyList($doc, $_, $$split{$_})) }
-        sort keys %$split); }
-  else {
-    $doc->addNodes($bib, $self->makeBibliographyList($doc, undef, $entries));
-    @bib = ($self->rescan($doc)); }
-  return @bib; }
+    if ($$self{split}) {
+      # Separate by initial.
+      my $split = {};
+      foreach my $sortkey (keys %$entries) {
+        my $entry = $$entries{$sortkey};
+        $$split{ $$entry{initial} }{$sortkey} = $entry; }
+      @docs = map { $self->rescan($_) }
+        $self->makeSubCollectionDocuments($doc, $bib,
+        map { ($_ => $self->makeBibliographyList($doc, $bib, $_, $$split{$_})) }
+          sort keys %$split); }
+    else {
+      $doc->addNodes($bib, $self->makeBibliographyList($doc, $bib, undef, $entries));
+      #      @docs = ($self->rescan($doc)); }
+      $self->rescan($doc); } }
+  return @docs; }
 
 # Try to preserve the original form & case of the provided Bibkeys
 # HOWEVER, we downcase them before indexing & looking them up!!!!
@@ -99,7 +104,9 @@ sub getBibliographies {
     @bibnames = @{ $$self{bibliographies} }; }
   else {
     my $bibnode = $doc->findnode('//ltx:bibliography');
-    if (my $files = $bibnode->getAttribute('files')) {
+    if (my $files = $bibnode->getAttribute('files')
+      || $bibnode->parentNode->getAttribute('files')    # !!!!!
+    ) {
       @bibnames = map { $_ . '.bib' } split(',', $files); } }
   my @paths = $doc->getSearchPaths;
   my @bibs  = ();
@@ -215,8 +222,11 @@ sub convertBibliography {
 #  referrers : array of ID's of places that refer to this bibentry
 #  suffix    : a,b... if adjacent author/year are identical.
 
+# NOTE: biblist now have @lists to restrict to include ONLY
+# those bibitems which have been referenced by bibref's for that same list!
+# [Unfortunately, the logic is a bit screwy here]
 sub getBibEntries {
-  my ($self, $doc) = @_;
+  my ($self, $doc, $bib) = @_;
 
   # First, scan the bib files for all ltx:bibentry's, (hash key is bibkey)
   # Also, record the citations from each bibentry to others.
@@ -230,17 +240,23 @@ sub getBibEntries {
       $entries{$bibkey}{citations} = [map { normalizeBibKey($_) } grep { $_ } map { split(',', $_->value) }
           $bibdoc->findnodes('.//@bibrefs', $bibentry)];
       # Also, register the key with the DB, if the bibliography hasn't already been scanned.
+      # NOTE: This associates a SINGLE id with the bibkey
+      # which isn't ideal for multiple bibliographies (see formatBibEntry)
       $$self{db}->register("BIBLABEL:$bibkey", id => $bibid);
   } }
   # Now, collect all bibkeys that were cited in other documents (NOT the bibliography)
   # And note any referrers to them (also only those outside the bib)
   my $citestar = $$self{db}->lookup('BIBLABEL:*');
+  my @lists    = split(/\s+/, $bib->getAttribute('lists') || 'bibliography');
 
   my @queue = ();
   foreach my $dbkey ($$self{db}->getKeys) {
     if ($dbkey =~ /^BIBLABEL:(.*)$/) {
-      my $bibkey = $1;
-      if (my $referrers = $$self{db}->lookup($dbkey)->getValue('referrers')) {
+      my $bibkey     = $1;
+      my $bibdbentry = $$self{db}->lookup($dbkey);
+      my $inlists    = $bibdbentry->getValue('inlist');
+      next if $inlists && !grep { $$inlists{$_} } @lists;
+      if (my $referrers = $bibdbentry->getValue('referrers')) {
         foreach my $refr (keys %$referrers) {
           my ($rid, $e, $t) = ($refr, undef, undef);
           while ($rid && ($e = $$self{db}->lookup("ID:$rid")) && (($t = ($e->getValue('type') || '')) ne 'ltx:bibitem')) {
@@ -284,7 +300,7 @@ sub getBibEntries {
       my $title = $doc->findnode('ltx:bib-title', $bibentry);
       $date  = ($date  ? $date->textContent  : '');
       $title = ($title ? $title->textContent : '');
-      $$entry{ay} = "$names.$date";
+      $$entry{ay}      = "$names.$date";
       $$entry{initial} = $doc->initial($names, 1);
       # Include this entry keyed using a sortkey.
       $$included{ lc(join('.', $sortnames, $date, $title, $bibkey)) } = $entry;
@@ -340,21 +356,29 @@ sub getNameText {
 # Convert hash of bibentry(s) into biblist of bibitem(s)
 
 sub makeBibliographyList {
-  my ($self, $doc, $initial, $entries) = @_;
-  my $id = $doc->getDocumentElement->getAttribute('xml:id') || 'bib';
+  my ($self, $doc, $bib, $initial, $entries) = @_;
+  my $id = $bib->getAttribute('xml:id')
+    || $doc->getDocumentElement->getAttribute('xml:id') || 'bib';
   $id .= ".L1";
   $id .= ".$initial" if $initial;
   return ['ltx:biblist', { 'xml:id' => $id },
-    map { $self->formatBibEntry($doc, $$entries{$_}) } $doc->unisort(keys %$entries)]; }
+    map { $self->formatBibEntry($doc, $bib, $$entries{$_}) } $doc->unisort(keys %$entries)]; }
 
 # ================================================================================
+# NOTE: With multiple bibliographies, the ID of the bibentry isn't necessarily
+# the ID in the "local" bibliography! (ie. bibentry can be repeated in the document!)
 sub formatBibEntry {
-  my ($self, $doc, $entry) = @_;
+  my ($self, $doc, $bib, $entry) = @_;
   my $bibentry   = $$entry{bibentry};
   my $id         = $bibentry->getAttribute('xml:id');
   my $key        = $bibentry->getAttribute('key');
   my $type       = $bibentry->getAttribute('type');
   my @blockspecs = @{ $FMT_SPEC{$type} || [] };
+
+  # Patch the entry's id in case there are multiple bibs.
+  if (my $bibid = $bib->getAttribute('xml:id')
+    || $doc->getDocumentElement->getAttribute('xml:id') || 'bib') {
+    $id =~ s/^bib//; $id = $bibid . $id; }
 
   local $LaTeXML::Post::MakeBibliography::SUFFIX = $$entry{suffix};
   my $number = ++$LaTeXML::Post::MakeBibliography::NUMBER;
@@ -371,7 +395,7 @@ sub formatBibEntry {
   my @names = $doc->findnodes('ltx:bib-name[@role="author"]/ltx:surname', $bibentry);
   @names = $doc->findnodes('ltx:bib-name[@role="editor"]/ltx:surname', $bibentry) unless @names;
   my $etal = 0;
-  if(@names && ($names[-1]->toString eq 'others')){ # Magic!
+  if (@names && ($names[-1]->toString eq 'others')) {                                    # Magic!
     $etal = 1; }
   if (@names > 2) {
     push(@tags, ['ltx:tag', { role => 'authors', class => 'ltx_bib_author' },
@@ -466,7 +490,7 @@ sub formatBibEntry {
     foreach my $row (@$blockspec) {
       my ($xpath, $punct, $pre, $class, $op, $post) = @$row;
       my $negated = $xpath =~ s/^!\s*//;
-      my @nodes = ($xpath eq 'true' ? () : $doc->findnodes($xpath, $bibentry));
+      my @nodes   = ($xpath eq 'true' ? () : $doc->findnodes($xpath, $bibentry));
       next if ($xpath ne 'true') && ($negated ? @nodes : !@nodes);
       push(@x, $punct) if $punct && @x;
       push(@x, $pre) if $pre;
@@ -510,18 +534,18 @@ sub do_name {
 sub do_names {
   my (@names) = @_;
   my @stuff = ();
-  my $sep = (scalar(@names) > 2 ? ', ' : ' ');
+  my $sep  = (scalar(@names) > 2 ? ', ' : ' ');
   my $etal = 0;
-  if(@names && ($names[-1]->textContent eq 'others')){ # Magic!
+  if (@names && ($names[-1]->textContent eq 'others')) {    # Magic!
     pop(@names);
     $etal = 1; }
   my $n = scalar(@names);
   while (my $name = shift(@names)) {
-    if(@stuff){
+    if (@stuff) {
       push(@stuff, $sep);
       push(@stuff, 'and ') if !$etal && !@names; }
     push(@stuff, do_name($name)); }
-  if($etal){
+  if ($etal) {
     push(@stuff, $sep, ['ltx:text', { class => 'ltx_bib_etal' }, 'et al.']); }
   return @stuff; }
 

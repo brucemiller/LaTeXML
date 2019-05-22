@@ -49,13 +49,13 @@ sub new {
   $self->registerHandler('ltx:anchor'        => \&anchor_handler);
   $self->registerHandler('ltx:note'          => \&note_handler);
 
-  $self->registerHandler('ltx:bibitem'        => \&bibitem_handler);
-  $self->registerHandler('ltx:bibentry'       => \&bibentry_handler);
-  $self->registerHandler('ltx:indexmark'      => \&indexmark_handler);
-  $self->registerHandler('ltx:glossaryphrase' => \&glossaryphrase_handler);
-  $self->registerHandler('ltx:glossaryentry'  => \&glossaryentry_handler);
-  $self->registerHandler('ltx:ref'            => \&ref_handler);
-  $self->registerHandler('ltx:bibref'         => \&bibref_handler);
+  $self->registerHandler('ltx:bibitem'            => \&bibitem_handler);
+  $self->registerHandler('ltx:bibentry'           => \&bibentry_handler);
+  $self->registerHandler('ltx:indexmark'          => \&indexmark_handler);
+  $self->registerHandler('ltx:glossaryentry'      => \&glossaryentry_handler);
+  $self->registerHandler('ltx:glossarydefinition' => \&glossaryentry_handler);
+  $self->registerHandler('ltx:ref'                => \&ref_handler);
+  $self->registerHandler('ltx:bibref'             => \&bibref_handler);
 
   $self->registerHandler('ltx:navigation' => \&navigation_handler);
 
@@ -331,10 +331,12 @@ sub bibref_handler {
   if (!$doc->findnodes('ancestor::ltx:bibblock[contains(@class,"ltx_bib_cited")]', $node)) {
 #####  if( ($node->getAttribute('class')||'') !~ /\bcitedby\b/){
     if (my $keys = $node->getAttribute('bibrefs')) {
+      my @lists = split(/\s+/, $node->getAttribute('inlist') || 'bibliography');
       foreach my $bibkey (split(',', $keys)) {
         if ($bibkey) {
           $bibkey = lc($bibkey);    # NOW we downcase!
           my $entry = $$self{db}->register("BIBLABEL:$bibkey");
+          map { $entry->noteAssociation(inlist => $_); } @lists;
           $entry->noteAssociation(referrers => $parent_id); } } } }
   # Usually, a bibref will have, at most, some ltx:bibphrase's; should be scanned.
   $self->default_handler($doc, $node, $tag, $parent_id);
@@ -349,53 +351,43 @@ sub indexmark_handler {
   # Do these need ->cleanNode ???
   my @phrases = $doc->findnodes('ltx:indexphrase', $node);
   my @seealso = $doc->findnodes('ltx:indexsee',    $node);
-  my $key   = join(':', 'INDEX', map { $_->getAttribute('key') } @phrases);
+  my $key = join(':', 'INDEX', map { $_->getAttribute('key') } @phrases);
+  my $inlist;
+  if (my $listnames = $node->getAttribute('inlist')) {
+    $inlist = { map { ($_ => 1) } split(/\s/, $listnames) }; }
   my $entry = $$self{db}->lookup($key)
-    || $$self{db}->register($key, phrases => [@phrases], see_also => []);
+    || $$self{db}->register($key, phrases => [@phrases], see_also => [], inlist => $inlist);
   if (@seealso) {
     $entry->pushNew('see_also', @seealso); }
   else {
     $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal')); }
   return; }
 
-# This handles glossaryentry
+# This handles glossaryentry or glossarydefinition
 sub glossaryentry_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
-  my $id   = $node->getAttribute('xml:id');
-  my $role = $node->getAttribute('role') || 'glossary';
-  my $key  = $node->getAttribute('key');
+  my $id    = $node->getAttribute('xml:id');
+  my $lists = $node->getAttribute('inlist') || 'glossary';
+  my $key   = $node->getAttribute('key');
   # Get the actual phrases, and any see_also phrases (if any)
   # Do these need ->cleanNode ???
   my @phrases    = $doc->findnodes('ltx:glossaryphrase', $node);
   my $definition = $doc->findnode('ltx:glossarydefinition', $node);
-  my $gkey       = join(':', 'GLOSSARY', $role, $key);
-  my $entry      = $$self{db}->lookup($gkey)
-    || $$self{db}->register($gkey, definition => orNull($definition));
-  $entry->setValues(map { ('phrase:' . ($_->getAttribute('show') || 'label') => $_) } @phrases);
-  $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal'));
+  # Create an entry for EACH list (they could be distinct definitions)
+  foreach my $list (split(/\s*/, $lists)) {
+    my $gkey  = join(':', 'GLOSSARY', $list, $key);
+    my $entry = $$self{db}->lookup($gkey)
+      || $$self{db}->register($gkey, definition => orNull($definition));
+    $entry->setValues(map { ('phrase:' . ($_->getAttribute('role') || 'label') => $_) } @phrases);
+    $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal'));
+    $entry->setValues(id => $id) if $id; }
 
   if ($id) {
-    $entry->setValues(id => $id);
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
-      role     => orNull($role),
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
       fragid   => orNull($self->inPageID($doc, $node))); }
-  # Scan content, since could contain other interesting stuff...
-  $self->scanChildren($doc, $node, $id || $parent_id);
-  return; }
-
-sub glossaryphrase_handler {
-  my ($self, $doc, $node, $tag, $parent_id) = @_;
-  my $id = $node->getAttribute('xml:id');
-  # Only register if key given; otherwise assumed contained within glossaryentry
-  if (my $key = $node->getAttribute('key')) {
-    my $role = $node->getAttribute('role') || 'glossary';
-    my $show = $node->getAttribute('show') || '';
-    my $gkey = join(':', 'GLOSSARY', $role, $key);
-    my $entry = $$self{db}->lookup($gkey) || $$self{db}->register($gkey);
-    $entry->setValues('phrase:' . $show => $node); }
   # Scan content, since could contain other interesting stuff...
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }

@@ -519,12 +519,12 @@ sub layout {
       "Can't find layout handler for $name"); }
   print STDERR "", ('  ' x $level), "layout $name: ", $node, "...\n" if $DEBUG > 1;
   # Get the handler to compute the layouts
-  my $layouts = &$handler($node, $target, $level, $demerits || 1);
+  my $layouts  = &$handler($node, $target, $level, $demerits || 1);
   my $nlayouts = scalar(@$layouts);
 
   # Sort & prune the layouts
   my @layouts = prunesort($target, @$layouts);
-  my $pruned = scalar(@layouts);
+  my $pruned  = scalar(@layouts);
   print STDERR "", ('  ' x $level), "$name: $nlayouts layouts"
     . ($pruned < $nlayouts ? " pruned to $pruned" : "")
     . " " . layoutDescriptor($$layouts[0])
@@ -608,7 +608,7 @@ sub asRow {
     my $pass_indent = 2 * $normal_indentation;          # minimum width to pass next indentation
     my $running     = $child_layouts[0]->[-1]{width};
     for (my $i = 1 ; $i < $n - 1 ; $i++) {
-      my $child = $children[$i];
+      my $child   = $children[$i];
       my $content = (nodeName($child) eq 'm:mo') && textContent($child);
       if (!$content) { }
       elsif ($RELATIONOPS{$content}) {
@@ -688,7 +688,7 @@ BREAKSET: while (1) {
           next LAYOUT; }
         while (@line_children_layout) {    # For each line of nodes, compute sizes, possibly prune
           my $child_layout = shift(@line_children_layout);
-          $w += $$child_layout{width};
+          $w       += $$child_layout{width};
           $penalty += $$child_layout{penalty} || 0;
           # Skip to next breakset if we've gotten too wide, or worse than previous
           if ($last && (($w > 1.5 * $target)
@@ -704,7 +704,7 @@ BREAKSET: while (1) {
           $rowdepth  = max($rowdepth,  $$child_layout{rowdepth} || $$child_layout{depth});
         }
         # Then combine the lines
-        $width = max($width, $w + $indent);
+        $width  = max($width, $w + $indent);
         $indent = $indentation;
         if ($height == 0) {
           $height = $h;
@@ -845,7 +845,7 @@ sub layout_mfenced  { my (@args) = @_; return asRow(@args); }    # Close enough?
 sub layout_maction {
   my ($node, $target, $level, $demerits) = @_;
   my $selection = getAttribute($node, 'selection') || 0;
-  my @children = nodeChildren($node);
+  my @children  = nodeChildren($node);
   return layout($children[$selection], $target, $level, $demerits); }
 
 sub layout_mstyle {
@@ -935,7 +935,7 @@ sub layout_mtable {
   my $width = sum(@widths);
   my ($height, $depth);
   my $align = getAttribute($node, 'align') || 'axis';
-  my $n = scalar(@heights);
+  my $n     = scalar(@heights);
   if ($align =~ s/(\d+)//) {
     my $i = $1;
     ($height, $depth) = tableVAlignment($align, $heights[$i - 1], $depths[$i - 1]);
@@ -982,7 +982,7 @@ sub asScripts {
   my ($node, $target, $level, $demerits,
     $stacked, $basenode, @scriptnodes) = @_;
   # Scripts do not break, base is poor to break.
-  my @layouts = ();
+  my @layouts     = ();
   my $baselayouts = layout($basenode, $target, $level + 1, $demerits * $POORBREAK_FACTOR);
   my @scriptslayouts;
   { local $LaTeXML::DISPLAYSTYLE = 0;

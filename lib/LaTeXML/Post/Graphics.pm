@@ -58,10 +58,10 @@ sub new {
     || {
     ai => { destination_type => 'png',
       transparent => 1,
-      prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
+      prescale    => 1, ncolors => '400%', quality => 90, unit => 'point' },
     pdf => { destination_type => 'png',
       transparent => 1,
-      prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
+      prescale    => 1, ncolors => '400%', quality => 90, unit => 'point' },
     ps => { destination_type => 'png', transparent => 1,
       prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
     eps => { destination_type => 'png', transparent => 1,
@@ -196,7 +196,7 @@ sub transformGraphic {
   return Warn('unexpected', 'graphics_format', undef,
     "Don't know what to do with graphics file format '$source'") unless %properties;
   my $type = $properties{destination_type} || $srctype;
-  my $key = (ref $self) . ':' . join('|', "$reldir$name.$srctype.$type",
+  my $key  = (ref $self) . ':' . join('|', "$reldir$name.$srctype.$type",
     map { join(' ', @$_) } @$transform);
   NoteProgressDetailed("\n[Processing $source as key=$key]");
 
@@ -249,7 +249,7 @@ sub transformGraphic {
     # Now IFF that is a valid relative path WITHIN the site directory, we'll use it.
     # Otherwise, we'd better fall back to a generated name.
     if (!pathname_is_contained($absdest, $doc->getSiteDirectory)) {
-      $dest = $self->generateResourcePathname($doc, $node, $source, $type);
+      $dest    = $self->generateResourcePathname($doc, $node, $source, $type);
       $absdest = $doc->checkDestination($dest); }
 
     NoteProgressDetailed(" [Destination $absdest]");
