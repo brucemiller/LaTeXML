@@ -472,6 +472,11 @@ sub CleanID {
   $key =~ s/&/-amp-/g;
   $key = unidecode($key);
   $key =~ s/[^\w\_\-.]//g;                 # remove everything else.
+
+  if ($key =~ /^[^a-zA-Z\_]/) {
+    # in case we are missing a prefix and have a leading ., default to X
+    $key = "X$key";
+  }
   return $key; }
 
 sub CleanLabel {
@@ -690,7 +695,7 @@ sub RefStepCounter {
   DefMacroI(T_CS('\@currentlabel'), undef, T_CS("\\the$ctr"), scope => 'global');
   DefMacroI(T_CS('\@currentID'), undef, T_CS("\\the$ctr\@ID"), scope => 'global') if $has_id;
 
-  my $id = $has_id && ToString(DigestLiteral(T_CS("\\the$ctr\@ID")));
+  my $id = $has_id && CleanID(ToString(DigestLiteral(T_CS("\\the$ctr\@ID"))));
 
   my $refnum = DigestText(T_CS("\\the$ctr"));
   my $tags   = Digest(Invocation(T_CS('\lx@make@tags'), $type));
@@ -725,7 +730,8 @@ sub RefStepID {
     Tokens(T_OTHER('x'), Explode(LookupValue('\c@' . $unctr)->valueOf)),
     scope => 'global');
   DefMacroI(T_CS('\@currentID'), undef, T_CS("\\the$ctr\@ID"));
-  return (id => ToString(DigestLiteral(T_CS("\\the$ctr\@ID")))); }
+  my $id = CleanID(ToString(DigestLiteral(T_CS("\\the$ctr\@ID"))));
+  return (id => $id); }
 
 sub ResetCounter {
   my ($ctr) = @_;
