@@ -91,12 +91,25 @@ IDREF.attributes =
   ## the identifier of the referred-to element.
   attribute idref { xsd:IDREF }?
 
+## Attributes for items that can be put into lists, like index, table of contents.
+Listable.attributes =
+  ## Records which lists, such as toc=table of contents,..., this object could be listed in.
+  ## Space separated set of toc, lof, lot, etc.
+  attribute inlist { text }?
+
+## Attributes for items that create lists, like index, table of contents.
+Listing.attributes =
+  ## Records which lists, such as toc(=table of contents), this object should create a list of.
+  ## Space separated set of toc, lof, lot, etc.
+  attribute lists { text }?
+
 ## Attributes for elements that can be labelled from within LaTeX.
 ## These attributes deal with assigning a label  and generating cross references.
 ## The label migrates to an \attr{xml:id} and \attr{href} and the element
 ## can serve as a hypertext target.
 Labelled.attributes =
   ID.attributes,
+  Listable.attributes,
 
   ## Records the various labels that LaTeX uses for crossreferencing.
   ## (note that \cs{label} can associate more than one label with an object!)
@@ -104,11 +117,8 @@ Labelled.attributes =
   ## The \cs{label} macro provides the label prefixed by \texttt{LABEL:};
   ## Spaces in a label are replaced by underscore.
   ## Other mechanisms (like acro?) might use other prefixes (but \texttt{ID:} is reserved!)
-  attribute labels { text }?,
+  attribute labels { text }?
 
-  ## Records which lists, such as toc=table of contents,..., this object could be listed in.
-  ## Space separated set of toc, lof, lot, etc.
-  attribute inlist { text }?
   
 ## Attributes for elements that can be referred to from within LaTeX.
 ## Such elements may serve as the starting point of a hypertext link.
