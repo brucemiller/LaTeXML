@@ -22,7 +22,7 @@
 
   <!-- ======================================================================
        Various inline-level elements:
-       ltx:text, ltx:emph, ltx:del, ltx:sub, ltx:sup, ltx:acronym, ltx:rule,
+       ltx:text, ltx:emph, ltx:del, ltx:sub, ltx:sup, ltx:rule,
        ltx:anchor, ltx:ref, ltx:cite, ltx:bibref
        ====================================================================== -->
 
@@ -149,8 +149,10 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:preserve-space elements="ltx:glossaryref ltx:acronym"/>
-  <xsl:template match="ltx:glossaryref[@href] | ltx:acronym[@href]">
+  <xsl:template match="ltx:glossarydefinition"/>
+
+  <xsl:preserve-space elements="ltx:glossaryref"/>
+  <xsl:template match="ltx:glossaryref[@href]">
     <xsl:param name="context"/>
     <xsl:element name="a" namespace="{$html_ns}">
       <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
@@ -160,14 +162,14 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="ltx:glossaryref | ltx:acronym">
+  <xsl:template match="ltx:glossaryref">
     <xsl:param name="context"/>
     <xsl:apply-templates select="." mode="inner">
       <xsl:with-param name="context" select="context"/>
     </xsl:apply-templates>
   </xsl:template>
 
-  <xsl:template match="ltx:glossaryref | ltx:acronym" mode="inner">
+  <xsl:template match="ltx:glossaryref" mode="inner">
     <xsl:param name="context"/>
     <xsl:element name="{f:if(contains(@show,'short'),'abbr','span')}" namespace="{$html_ns}">
       <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
