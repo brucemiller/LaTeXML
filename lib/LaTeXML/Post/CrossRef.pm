@@ -770,7 +770,7 @@ sub fillInGlossaryRef {
   foreach my $ref ($doc->findnodes('descendant::ltx:glossaryref')) {
     $n++;
     my $key   = $ref->getAttribute('key');
-    my @lists = split(/\s*/, $ref->getAttribute('inlist') || 'glossary');
+    my @lists = split(/\s+/, $ref->getAttribute('inlist') || 'glossary');
     my $show  = $ref->getAttribute('show');
     my ($list, $entry) = ('', undef);
     foreach my $alist (@lists) {    # Find list with this key

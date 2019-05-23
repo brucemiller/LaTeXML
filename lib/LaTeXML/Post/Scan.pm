@@ -374,7 +374,7 @@ sub glossaryentry_handler {
   my @phrases    = $doc->findnodes('ltx:glossaryphrase', $node);
   my $definition = $doc->findnode('ltx:glossarydefinition', $node);
   # Create an entry for EACH list (they could be distinct definitions)
-  foreach my $list (split(/\s*/, $lists)) {
+  foreach my $list (split(/\s+/, $lists)) {
     my $gkey  = join(':', 'GLOSSARY', $list, $key);
     my $entry = $$self{db}->lookup($gkey)
       || $$self{db}->register($gkey, definition => orNull($definition));
