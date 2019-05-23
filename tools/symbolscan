@@ -18,8 +18,9 @@ use Pod::Usage;
 use FindBin;
 # Assume we're in the tools directory of a development version of latexml (next to lib, blib..)
 use lib "$FindBin::RealBin/../blib/lib";
-use LaTeXML;
+use LaTeXML::Core;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Global;
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # symbolscan : Scans for math symbol definitions in LaTeXML binding files.
@@ -59,7 +60,7 @@ $CUMULATIVE = 1 if $THESAURUS || $UNICODETHESAURUS;
 my $Packages = [($DO_ALL ? allPackages() : ()), @ARGV];
 
 # Load the packages, extract the symbols
-my $State = loadPackages($Packages);
+my $State   = loadPackages($Packages);
 my $Symbols = sortSymbols(extractSymbols($State, $Packages));
 
 # and format the result.
@@ -115,12 +116,12 @@ sub loadPackages {
     unshift(@pkgs, "TeX.pool"); }
 
   # Create and initialize the LaTeXML parser
-  my $latexml = LaTeXML->new(searchpaths => [@SEARCHPATHS]);
-  local $LaTeXML::STATE = $$latexml{state};
-  my $stomach = $LaTeXML::STATE->getStomach;    # The current Stomach;
+  my $latexml = LaTeXML::Core->new(searchpaths => [@SEARCHPATHS]);
+  local $STATE = $$latexml{state};
+  my $stomach = $STATE->getStomach;    # The current Stomach;
   my $gullet  = $stomach->getGullet;
   $stomach->initialize;
-  my $paths = $LaTeXML::STATE->lookupValue('SEARCHPATHS');
+  my $paths = $STATE->lookupValue('SEARCHPATHS');
 
   # Load all of the requested packages into LaTeXML
   foreach my $pkg (@pkgs) {
@@ -135,7 +136,7 @@ sub loadPackages {
   # And, digest in case there is any pending plain TeX.
   $stomach->digestNextBody;
 
-  return $LaTeXML::STATE; }
+  return $STATE; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Given the LaTeXML STATE, and the desired packages,
@@ -537,6 +538,9 @@ BEGIN {
 # Could use more of the data?
 sub readUnicodeNames {
   my $unicodefile = '/usr/share/perl5/unicore/UnicodeData.txt';
+  if (!-e $unicodefile) {
+    $unicodefile = pathname_kpsewhich("UnicodeData.txt");
+  }
   my $UC_FH;
   open($UC_FH, '<', $unicodefile) or die "Couldn't read $unicodefile: $!";
   my $names = {};
