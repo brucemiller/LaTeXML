@@ -416,7 +416,8 @@ DefMacro('\pgfkeysdefnargs@{}{}{}{}', sub {
                 # ugly patchy fishing, we found {\pgfkeyssetvalue} , texlive 2018 tikz case
                 $v_pgf_texlive_year = 2018; } } } } } }
     if ($v_pgf_texlive_year != 2018) {
-      # return whatever was fished for
+      # fishing expedition came back with an empty net, return whichever tokens we scanned over to
+      # the gullet, so that the correct (old?) behavior may take place.
       $gullet->unread(grep { defined } ($next1, $next2, $next3)); }
     $key   = ToString(Expand($key));
     $nargs = ToString($nargs);
