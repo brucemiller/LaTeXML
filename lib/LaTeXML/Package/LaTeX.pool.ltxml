@@ -591,6 +591,8 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
 DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested', sub {
     my ($document, $type, $inlist, $toctitle, $title, %props) = @_;
     my $id = $props{id};
+    if (my $asif = $props{backmatterelement}) {
+      $document->setNode($document->find_insertion_point($asif)); }
     $document->openElement("ltx:" . ToString($type),
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist));
@@ -600,9 +602,12 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
-    my %props     = RefStepCounter(ToString($type));
+    $type = ToString($type);
+    my %props     = RefStepCounter($type);
     my $xtitle    = Digest(Invocation(T_CS('\lx@format@title@@'), $type, $title));
     my $xtoctitle = Digest(Invocation(T_CS('\lx@format@toctitle@@'), $type, $toctitle || $title));
+    if ($type eq 'appendix') {
+      $props{backmatterelement} = LookupMapping('BACKMATTER_ELEMENT', 'ltx:' . $type); }
     $props{title}    = $xtitle;
     $props{toctitle} = $xtoctitle
       if $xtoctitle && $xtoctitle->unlist && (ToString($xtoctitle) ne ToString($xtitle));
@@ -612,6 +617,8 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
 DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested', sub {
     my ($document, $type, $inlist, $toctitle, $title, %props) = @_;
     my $id = $props{id};
+    if (my $asif = $props{backmatterelement}) {
+      $document->setNode($document->find_insertion_point($asif)); }
     $document->openElement("ltx:" . ToString($type),
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist));
@@ -619,7 +626,10 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
-    my %props = RefStepID(ToString($type));
+    $type = ToString($type);
+    my %props = RefStepID($type);
+    if ($type eq 'appendix') {
+      $props{backmatterelement} = LookupMapping('BACKMATTER_ELEMENT', 'ltx:' . $type); }
     $props{title}    = Digest(T_CS('\@hidden@bgroup'), $title, T_CS('\@hidden@egroup'));
     $props{toctitle} = $toctitle
       && Digest(T_CS('\@hidden@bgroup'), $toctitle, T_CS('\@hidden@egroup'));
@@ -634,15 +644,37 @@ DefMacroI('\appendixesname', undef, 'Appendixes');
 
 # Class files should define \@appendix to call this as startAppendices('section') or chapter...
 # counter is also the element name!
-sub startAppendices {
+
+sub startAppendices { beginAppendices(@_); return; }
+
+sub beginAppendices {
   my ($counter) = @_;
+  Let('\lx@save@theappendex',    '\the' . $counter,         'global');
+  Let('\lx@save@theappendex@ID', '\the' . $counter . '@ID', 'global');
+  Let('\lx@save@appendix',       T_CS('\\' . $counter),     'global');
+  Let('\lx@save@@appendix',      T_CS('\@appendix'),        'global');
   AssignMapping('BACKMATTER_ELEMENT', 'ltx:appendix' => 'ltx:' . $counter);
-  NewCounter($counter, 'document', idprefix => 'A');
-  DefMacroI('\the' . $counter, undef, '\Alph{' . $counter . '}', scope => 'global');
+  if (LookupDefinition(T_CS('\c@chapter'))    # Has \chapter defined
+    && ($counter ne 'chapter')) {             # And appendices are below the chapter level.
+    NewCounter($counter, 'chapter', idprefix => 'A');
+    DefMacroI('\the' . $counter, undef, '\thechapter.\Alph{' . $counter . '}', scope => 'global'); }
+  else {
+    NewCounter($counter, 'document', idprefix => 'A');
+    DefMacroI('\the' . $counter, undef, '\Alph{' . $counter . '}', scope => 'global'); }
   AssignMapping('counter_for_type', appendix => $counter);
   Let(T_CS('\\' . $counter), T_CS('\@@appendix'), 'global');
   Let(T_CS('\@appendix'),    T_CS('\relax'),      'global');
   return; }
+
+sub endAppendices {
+  if (my $counter = LookupMapping('BACKMATTER_ELEMENT', 'ltx:appendix')) {
+    $counter =~ s/^ltx://;
+    Let('\the' . $counter,         '\lx@save@theappendex',    'global');
+    Let('\the' . $counter . '@ID', '\lx@save@theappendex@ID', 'global');
+    Let(T_CS('\\' . $counter),     '\lx@save@appendix',       'global');
+    Let(T_CS('\@appendix'),        '\lx@save@@appendix',      'global'); }
+  return; }
+
 DefMacroI('\\@@appendix', undef, '\@startsection{appendix}{0}{}{}{}{}');
 
 #======================================================================

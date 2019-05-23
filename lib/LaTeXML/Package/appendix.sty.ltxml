@@ -65,26 +65,39 @@ DefMacro('\appendixheaderoff',   '\@dohead@ppfalse');
 DefMacro('\setthesection',    '\Alph{section}');
 DefMacro('\setthesubsection', '\thesection.\Alph{subsection}');
 
-DefMacro('\lx@pp@appendix@start', sub {
+DefPrimitive('\lx@pp@appendix@begin', sub {
     if (LookupDefinition(T_CS('\c@chapter'))) {
-      startAppendices('chapter'); }
+      beginAppendices('chapter'); }
     else {
-      startAppendices('section'); } });
+      beginAppendices('section'); } });
+
+DefConstructor('\lx@pp@appendix@end', sub {
+    $_[0]->maybeCloseElement('ltx:appendix'); },
+  beforeDigest => sub { endAppendices(); });
+
+# Adjust numbering!!!
+DefPrimitive('\lx@pp@subappendix@begin', sub {
+    if (LookupDefinition(T_CS('\c@chapter'))) {
+      beginAppendices('section'); }
+    else {
+      beginAppendices('subsection'); } });
 
 #DefEnvironment('{appendices}','#body');
 DefMacro('\appendices',
-  '\lx@pp@appendix@start'
+  '\lx@pp@appendix@begin'
     . '\if@dotoc@pp\addappheadtotoc\fi'
     . '\if@dopage@pp\appendixpage\fi'
     . '\if@dotitle@pp\def\fnum@appendix{\lx@refnum@compose{\appendixname}{\lx@the@@{appendix}}\fi'
     . '\if@dotitle@pp\def\fnum@toc@appendix{\lx@refnum@compose{\appendixname}{\lx@the@@{appendix}}\fi'
 );
 
-DefMacro(T_CS('\endappendices'), '');
+# These must END appendices!!!!
+# AND CLOSE an open appendix!
+DefMacro(T_CS('\endappendices'), '\lx@pp@appendix@end');
 
 # DefEnvironment('{subappendices}','#body');
-DefMacro(T_CS('\subappendices'),    '\lx@pp@appendix@start');
-DefMacro(T_CS('\endsubappendices'), '');
+DefMacro(T_CS('\subappendices'),    '\lx@pp@subappendix@begin');
+DefMacro(T_CS('\endsubappendices'), '\lx@pp@appendix@end');
 
 #======================================================================
 1;
