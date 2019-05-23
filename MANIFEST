@@ -489,9 +489,7 @@ lib/LaTeXML/Package/html.sty.ltxml
 lib/LaTeXML/Package/hyperref.sty.ltxml
 lib/LaTeXML/Package/hyperxmp.sty.ltxml
 lib/LaTeXML/Package/icml_support.sty.ltxml
-lib/LaTeXML/Package/icml2016.sty.ltxml
-lib/LaTeXML/Package/icml2017.sty.ltxml
-lib/LaTeXML/Package/icml2018.sty.ltxml
+lib/LaTeXML/Package/icml.sty.ltxml
 lib/LaTeXML/Package/ieeeconf.cls.ltxml
 lib/LaTeXML/Package/IEEEtran.cls.ltxml
 lib/LaTeXML/Package/ifluatex.sty.ltxml
@@ -686,6 +684,7 @@ lib/LaTeXML/texmf/lxRDFa.sty
 # Test Suite.
 #==================================================
 t/00_unittest.t
+t/002_unit_findfile.t
 t/05_tokenize.t
 t/10_expansion.t
 t/12_grouping.t
@@ -828,6 +827,9 @@ t/complex/sunset.jpg
 t/complex/tcilatex_minimal.pdf
 t/complex/tcilatex_minimal.tex
 t/complex/tcilatex_minimal.xml
+t/complex/versioned_fallback.pdf
+t/complex/versioned_fallback.tex
+t/complex/versioned_fallback.xml
 t/complex/xii.dtd
 t/complex/xii.latexml
 t/complex/xii.pdf

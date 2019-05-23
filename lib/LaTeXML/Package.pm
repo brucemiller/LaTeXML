@@ -1781,9 +1781,11 @@ sub FindFile_aux {
   my $nopaths     = LookupValue('REMOTE_REQUEST');
   my $ltxml_paths = $nopaths ? [] : $paths;
   # If we're looking for ltxml, look within our paths & installation first (faster than kpse)
-  if (!$options{noltxml}
-    && ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package'))) {
-    return $path; }
+  if (!$options{noltxml}) {
+    if ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
+      return $path; }
+    elsif ($path = FindFile_fallback($file, $ltxml_paths, %options)) {
+      return $path; } }
   # If we're looking for TeX, look within our paths & installation first (faster than kpse)
   if (!$options{notex}
     && ($path = pathname_find($file, paths => $paths))) {
@@ -1801,6 +1803,30 @@ sub FindFile_aux {
     return (-f $result ? $result : undef); }
   if ($urlbase && ($path = url_find($file, urlbase => $urlbase))) {
     return $path; }
+  return; }
+
+sub FindFile_fallback {
+  my ($file, $ltxml_paths, %options) = @_;
+  # Supported:
+  # Numeric suffixes (version nums, dates) with optional separators
+  my $fallback_file = $file;
+  if ($fallback_file =~ s/\.(sty|cls)$//) {
+    my $ltxtype = $1;
+    my $discard = "";
+    if ($fallback_file =~ s/([-_](?:arxiv|conference|workshop))$//) {
+      # arxiv-specific suffixes, maybe move those out to an extension package?
+      $discard = $1;
+    }
+    # TODO: If we want a Whitelist hash table -- add it here, before further regexing.
+    if ($fallback_file =~ s/([-_]?v?[-_\d]+)$//) {
+      $discard = "$1$discard";
+    }
+    if ($discard) {    # we had something to discard, so a new query is needed
+      my $fallback_query = "$fallback_file.$ltxtype";
+      if (my $path = pathname_find("$fallback_query.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
+        Info('fallback', $file, $STATE->getStomach->getGullet,
+"Interpreted $discard as a versioned package/class name, falling back to generic $fallback_query\n");
+        return $path; } } }
   return; }
 
 sub pathname_is_nasty {
