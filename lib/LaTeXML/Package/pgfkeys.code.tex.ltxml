@@ -125,7 +125,7 @@ DefPrimitive('\pgfkeys{}', sub {
 DefPrimitive('\pgfqkeys{}{}', sub {
     my ($stomach, $path, $keyvals) = @_;
     my $savedpath = Expand(T_CS('\pgfkeysdefaultpath'));
-    my $newpath = Tokens(Expand($path)->unlist, T_OTHER('/'));
+    my $newpath   = Tokens(Expand($path)->unlist, T_OTHER('/'));
     DefMacroI('\pgfkeysdefaultpath', undef, $newpath);
     my @results = parsePGFKeys($stomach, $keyvals);
     DefMacroI('\pgfkeysdefaultpath', undef, $savedpath);
@@ -404,6 +404,20 @@ DefMacro('\pgfkeysedefargs{}{}{}', sub {
 # called by \pgfkeysdefnargs and \pgfkeysedefnargs
 DefMacro('\pgfkeysdefnargs@{}{}{}{}', sub {
     my ($gullet, $key, $nargs, $body, $def) = @_;
+    # Latest tikz (in texlive 2018) has a fifth argument
+    my $v_pgf_texlive_year = 2015;
+    my ($next1, $next2, $next3);
+    if ($next1 = $gullet->readToken()) {
+      if ($next1->equals(T_BEGIN)) {
+        if ($next2 = $gullet->readToken()) {
+          if ($next2->equals(T_CS("\\pgfkeyssetvalue"))) {
+            if ($next3 = $gullet->readToken()) {
+              if ($next3->equals(T_END)) {
+                # ugly patchy fishing, we found {\pgfkeyssetvalue} , texlive 2018 tikz case
+                $v_pgf_texlive_year = 2018; } } } } } }
+    if ($v_pgf_texlive_year != 2018) {
+      # return whatever was fished for
+      $gullet->unread(grep { defined } ($next1, $next2, $next3)); }
     $key   = ToString(Expand($key));
     $nargs = ToString($nargs);
     $nargs =~ s/^#//;
@@ -417,7 +431,12 @@ DefMacro('\pgfkeysdefnargs@{}{}{}{}', sub {
     DefMacroI(pgfkeyCS($key . '/.@cmd'), $PGF_1ARG, sub {
         (pgfkeyCS($key . '/.@@body'), $_[1]->unlist); });
     # Store the body
-    DefMacroI(pgfkeyCS($key . '/.@body'), undef, $body); },
+    if ($v_pgf_texlive_year == 2018) {
+      # in texlive 2018, .@body needs to be expanded
+      DefMacroI(pgfkeyCS($key . '/.@body'), undef,
+        (ToString($def) eq '\edef' ? eExpand($body) : $body)); }
+    else {
+      DefMacroI(pgfkeyCS($key . '/.@body'), undef, $body); } },
   locked => 1);
 
 #DefMacro('\pgfkeys@error{}','PackageWarning{pgfkeys}{#1}{}',
@@ -480,7 +499,7 @@ DefPrimitive('\pgfqkeysfiltered{}{}', sub {
     my ($stomach, $path, $keyvals) = @_;
     pgfStartFiltering();
     my $savedpath = Expand(T_CS('\pgfkeysdefaultpath'));
-    my $newpath = Tokens(Expand($path)->unlist, T_OTHER('/'));
+    my $newpath   = Tokens(Expand($path)->unlist, T_OTHER('/'));
     DefMacroI('\pgfkeysdefaultpath', undef, $newpath);
     my @results = parsePGFKeys($stomach, $keyvals);
     DefMacroI('\pgfkeysdefaultpath', undef, $savedpath);
