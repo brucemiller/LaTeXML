@@ -2986,25 +2986,25 @@ DefConstructor('\@@ooalign{}',
 # These determine whether the _next_ paragraph gets indented!
 # thus it needs \par to check whether such indentation has been set.
 DefConstructorI('\indent', undef, sub {
-  my ($document) = @_;
-  my $node = $document->getElement;
-  if ($document->getNodeQName($node) eq 'ltx:para') {
-    $node->setAttribute(class => "ltx_indent"); }
-  elsif ($document->canContainSomehow($node, "ltx:para")) {
-    # Used in a position where a paragraph can be started, start
-    $document->openElement("ltx:para", class => "ltx_indent"); }
-  # Otherwise ignore.
-  return; });
+    my ($document) = @_;
+    my $node = $document->getElement;
+    if ($document->getNodeQName($node) eq 'ltx:para') {
+      $node->setAttribute(class => "ltx_indent"); }
+    elsif ($document->canContainSomehow($node, "ltx:para")) {
+      # Used in a position where a paragraph can be started, start
+      $document->openElement("ltx:para", class => "ltx_indent"); }
+    # Otherwise ignore.
+    return; });
 DefConstructorI('\noindent', undef, sub {
-  my ($document) = @_;
-  my $node = $document->getElement;
-  if ($document->getNodeQName($node) eq 'ltx:para') {
-    $node->setAttribute(class => "ltx_noindent"); }
-  elsif ($document->canContainSomehow($node, "ltx:para")) {
-    # Used in a position where a paragraph can be started, start
-    $document->openElement("ltx:para", class => "ltx_noindent"); }
-  # Otherwise ignore.
-  return; });
+    my ($document) = @_;
+    my $node = $document->getElement;
+    if ($document->getNodeQName($node) eq 'ltx:para') {
+      $node->setAttribute(class => "ltx_noindent"); }
+    elsif ($document->canContainSomehow($node, "ltx:para")) {
+      # Used in a position where a paragraph can be started, start
+      $document->openElement("ltx:para", class => "ltx_noindent"); }
+    # Otherwise ignore.
+    return; });
 
 # <ltx:para> represents a Logical Paragraph, whereas <ltx:p> is a `physical paragraph'.
 # A para can contain both p and displayed equations and such.
@@ -3021,7 +3021,7 @@ DefConstructorI('\normal@par', undef, sub {
       $document->maybeCloseElement('ltx:p');
       if (my $c = $props{class}) {
         my $node = $document->getElement;
-        if ($node && $document->getNodeQName($node) eq 'ltx:para' && !$node->getAttribute("class")) {  # Only set on the para about to close, if unknown!
+        if ($node && $document->getNodeQName($node) eq 'ltx:para' && !$node->getAttribute("class")) { # Only set on the para about to close, if unknown!
           $document->setAttribute($node, class => $c); } }
       $document->maybeCloseElement('ltx:para'); } },
   afterDigest => sub {
@@ -3039,9 +3039,9 @@ DefConstructorI('\normal@par', undef, sub {
         AssignValue(next_para_class => "ltx_noindent"); }
       # Vertical adjustments
       Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
-        T_CS('\LTX@clear@vadjust@afterpar'))); } },
+          T_CS('\LTX@clear@vadjust@afterpar'))); } },
   properties => { alignmentSkippable => 1 },
-  alias => '\par');
+  alias      => '\par');
 Let('\par', '\normal@par');
 # OTOH, sometimes \par is just a minimalistic "start a new line"
 # This should be closer for those cases.
@@ -3050,7 +3050,7 @@ DefConstructorI('\inner@par', undef, sub {
     elsif ($_[0]->canContain($_[0]->getNode, 'ltx:break')) {
       $_[0]->insertElement('ltx:break'); } });
 
-Tag('ltx:para', autoClose => 1, autoOpen => 1, afterClose=>\&pruneEmpty);
+Tag('ltx:para', autoClose => 1, autoOpen => 1, afterClose => \&pruneEmpty);
 
 sub pruneEmpty {
   my ($document, $node) = @_;
@@ -3759,9 +3759,7 @@ sub scriptHandler {
           $prevscript = $prev;               # we'll overlap the width of the previous.
           $cs         = '\@@POST' . $op; }
         # if we hit a FLOATING script, terminate, as the floating empty group avoids double scripts
-        if (my $prevcsname = $prev->getDefinition->getCSName) {
-          if ($prevcsname=~/^\\\@\@FLOATING/) {
-            last; } }
+        last if ($$prevop[0] eq 'FLOATING');
         last if ++$nscripts > 1; }
       else {
         # We found something "normal", so assume we'll attach to it, and we're done.
@@ -6145,8 +6143,8 @@ DefConstructor('\lx@gen@plain@matrix@ RequiredKeyVals:lx@GEN {}',
     if ($kv->getValue('left') || $kv->getValue('right')) {
       $whatsit->setProperties(
         needXMDual => 1,
-        xmkey      => LaTeXML::Package::getXMArgID());  }
-      $whatsit->setProperties(alignment  => LookupValue('Alignment'));
+        xmkey      => LaTeXML::Package::getXMArgID()); }
+    $whatsit->setProperties(alignment => LookupValue('Alignment'));
     return; });
 
 DefMacro('\matrix{}',
@@ -6158,39 +6156,39 @@ DefMacro('\bordermatrix{}',
 # Assume (for now) that there's no XMDual structure here.
 # What is the semantics, anyway?
 DefConstructor('\lx@hack@bordermatrix{}', sub {
-    my($document,$matrix)=@_;
+    my ($document, $matrix) = @_;
     $document->absorb($matrix);
     my $marray = $document->getNode->lastChild;
-    my @rows = $document->findnodes('ltx:XMRow',$marray);
-    my ($heights,$widths)=$matrix->getProperty('alignment')->computeSize_internal();
+    my @rows   = $document->findnodes('ltx:XMRow', $marray);
+    my ($heights, $widths) = $matrix->getProperty('alignment')->computeSize_internal();
     my $h = $$heights[1];
     my $d = 0;
-    foreach my $dd (@$heights[2..$#$heights]){
-	$d += $dd; }
+    foreach my $dd (@$heights[2 .. $#$heights]) {
+      $d += $dd; }
     my $md = Dimension(-$d);
     $h = Dimension($h); $d = Dimension($d);
 
-    foreach my $row (@rows){	# Add empty cells for 2nd & last colum
-	$document->openElementAt($row,'ltx:XMCell');
-	$document->openElementAt($row,'ltx:XMCell');
-	$row->insertAfter($row->lastChild,$row->firstChild); # Move to 2nd pos!
+    foreach my $row (@rows) {    # Add empty cells for 2nd & last colum
+      $document->openElementAt($row, 'ltx:XMCell');
+      $document->openElementAt($row, 'ltx:XMCell');
+      $row->insertAfter($row->lastChild, $row->firstChild);    # Move to 2nd pos!
     }
     my @cols = element_nodes($rows[1]);
     my $col1 = $cols[1];
     my $coln = $cols[-1];
-    my $n = scalar(@rows)-1;
-    $col1->setAttribute(rowspan=>$n);
-    $coln->setAttribute(rowspan=>$n);
+    my $n    = scalar(@rows) - 1;
+    $col1->setAttribute(rowspan => $n);
+    $coln->setAttribute(rowspan => $n);
     $document->appendTree($col1,
-      ['ltx:XMWrap',{depth=>$d},
-       ['ltx:XMTok',{role=>'OPEN', height=>0, depth=>$d, yoffset=>$md},'('],
-       ['ltx:XMTok',{height=>$h, yoffset=>$md},' ']]); # Effectively, a strut
+      ['ltx:XMWrap', { depth => $d },
+        ['ltx:XMTok', { role => 'OPEN', height => 0, depth => $d, yoffset => $md }, '('],
+        ['ltx:XMTok', { height => $h, yoffset => $md }, ' ']]);    # Effectively, a strut
     $document->appendTree($coln,
-      ['ltx:XMWrap',{},
-       ['ltx:XMTok',{role=>'CLOSE', height=>0, depth=>$d, yoffset=>$md},')'],
-       ['ltx:XMTok',{height=>$h, yoffset=>$md},' ']]);
+      ['ltx:XMWrap', {},
+        ['ltx:XMTok', { role => 'CLOSE', height => 0, depth => $d, yoffset => $md }, ')'],
+        ['ltx:XMTok', { height => $h, yoffset => $md }, ' ']]);
     return; },
-    reversion=>'#1');
+  reversion => '#1');
 
 DefMacro('\pmatrix{}',
   '\lx@gen@plain@matrix{name=pmatrix,datameaning=matrix,left=\@left(,right=\@right)}{#1}');
