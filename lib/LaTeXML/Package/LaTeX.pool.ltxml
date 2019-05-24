@@ -3985,9 +3985,9 @@ DefPrimitive('\typein[]{}', undef);
 DefPrimitive('\linebreak[]',   undef);
 DefPrimitive('\nolinebreak[]', undef);
 # \\ already defined
-DefMacroI('\newline', undef, "\\\\\\relax");
+DefMacroI('\newline', undef, Tokens(T_CS('\protect'), T_CS('\@normalcr'), T_CS('\relax')));
 DefPrimitiveI('\-', undef, undef);    # We don't do hyphenation.
-                                      # \hyphenation in TeX.pool
+                                       # \hyphenation in TeX.pool
 
 DefPrimitiveI('\sloppy', undef, undef);
 DefPrimitiveI('\fussy',  undef, undef);
@@ -3996,7 +3996,7 @@ DefMacro('\sloppypar',    '\par\sloppy');
 DefMacro('\endsloppypar', '\par');
 DefMacroI('\nobreakdashes', undef, T_OTHER('-'));
 
-DefMacro('\showhyphens{}', '#1');     # ?
+DefMacro('\showhyphens{}', '#1');      # ?
      #======================================================================
      # C.12.2 Page Breaking
      #======================================================================
