@@ -125,7 +125,7 @@ DefPrimitive('\pgfkeys{}', sub {
 DefPrimitive('\pgfqkeys{}{}', sub {
     my ($stomach, $path, $keyvals) = @_;
     my $savedpath = Expand(T_CS('\pgfkeysdefaultpath'));
-    my $newpath = Tokens(Expand($path)->unlist, T_OTHER('/'));
+    my $newpath   = Tokens(Expand($path)->unlist, T_OTHER('/'));
     DefMacroI('\pgfkeysdefaultpath', undef, $newpath);
     my @results = parsePGFKeys($stomach, $keyvals);
     DefMacroI('\pgfkeysdefaultpath', undef, $savedpath);
@@ -401,24 +401,50 @@ DefMacro('\pgfkeysedefargs{}{}{}', sub {
     DefMacroI(pgfkeyCS($key . '/.@body'), undef, $body); },
   locked => 1);
 
+my $pgf_version_year = 2015;    # default toolchain expected
+if (LookupDefinition(T_CS('\pgfversiondate'))) {
+  if (ToString(Digest('\pgfversiondate')) =~ /^(\d+)/) {
+    $pgf_version_year = int($1); } }
+
 # called by \pgfkeysdefnargs and \pgfkeysedefnargs
-DefMacro('\pgfkeysdefnargs@{}{}{}{}', sub {
-    my ($gullet, $key, $nargs, $body, $def) = @_;
-    $key   = ToString(Expand($key));
-    $nargs = ToString($nargs);
-    $nargs =~ s/^#//;
-    my $args = Tokens(map { (T_PARAM, T_OTHER($_)) } 1 .. $nargs);
-    # Define $key/.@args to pretty print the args (?)
-    DefMacroI(pgfkeyCS($key . '/.@args'), undef, $args);
-    # (e-)Define $key/.@@body as if it were the normal macro with $n args
-    DefMacroI(pgfkeyCS($key . '/.@@body'), parseDefParameters("PGF Key $key", $args),
-      (ToString($def) eq '\edef' ? eExpand($body) : $body));
-    # Define $key/.@cmd itself to indirectly call $key/.@@body
-    DefMacroI(pgfkeyCS($key . '/.@cmd'), $PGF_1ARG, sub {
-        (pgfkeyCS($key . '/.@@body'), $_[1]->unlist); });
-    # Store the body
-    DefMacroI(pgfkeyCS($key . '/.@body'), undef, $body); },
-  locked => 1);
+if ($pgf_version_year >= 2018) {    # Latest tikz (in texlive 2018) has a fifth argument
+  DefMacro('\pgfkeysdefnargs@{}{}{}{}{}', sub {
+      my ($gullet, $key, $nargs, $body, $def, $body_macro) = @_;
+      $key   = ToString(Expand($key));
+      $nargs = ToString($nargs);
+      $nargs =~ s/^#//;
+      my $args = Tokens(map { (T_PARAM, T_OTHER($_)) } 1 .. $nargs);
+      # Define $key/.@args to pretty print the args (?)
+      DefMacroI(pgfkeyCS($key . '/.@args'), undef, $args);
+      # (e-)Define $key/.@@body as if it were the normal macro with $n args
+      DefMacroI(pgfkeyCS($key . '/.@@body'), parseDefParameters("PGF Key $key", $args),
+        (ToString($def) eq '\edef' ? eExpand($body) : $body));
+      # Define $key/.@cmd itself to indirectly call $key/.@@body
+      DefMacroI(pgfkeyCS($key . '/.@cmd'), $PGF_1ARG, sub {
+          (pgfkeyCS($key . '/.@@body'), $_[1]->unlist); });
+      # Store the body
+      # in texlive 2018, .@body needs to be expanded
+      DefMacroI(pgfkeyCS($key . '/.@body'), undef,
+        (ToString($def) eq '\edef' ? eExpand($body) : $body)); },
+    locked => 1); }
+else {
+  DefMacro('\pgfkeysdefnargs@{}{}{}{}', sub {
+      my ($gullet, $key, $nargs, $body, $def) = @_;
+      $key   = ToString(Expand($key));
+      $nargs = ToString($nargs);
+      $nargs =~ s/^#//;
+      my $args = Tokens(map { (T_PARAM, T_OTHER($_)) } 1 .. $nargs);
+      # Define $key/.@args to pretty print the args (?)
+      DefMacroI(pgfkeyCS($key . '/.@args'), undef, $args);
+      # (e-)Define $key/.@@body as if it were the normal macro with $n args
+      DefMacroI(pgfkeyCS($key . '/.@@body'), parseDefParameters("PGF Key $key", $args),
+        (ToString($def) eq '\edef' ? eExpand($body) : $body));
+      # Define $key/.@cmd itself to indirectly call $key/.@@body
+      DefMacroI(pgfkeyCS($key . '/.@cmd'), $PGF_1ARG, sub {
+          (pgfkeyCS($key . '/.@@body'), $_[1]->unlist); });
+      # Store the body
+      DefMacroI(pgfkeyCS($key . '/.@body'), undef, $body); },
+    locked => 1); }
 
 #DefMacro('\pgfkeys@error{}','PackageWarning{pgfkeys}{#1}{}',
 
@@ -480,7 +506,7 @@ DefPrimitive('\pgfqkeysfiltered{}{}', sub {
     my ($stomach, $path, $keyvals) = @_;
     pgfStartFiltering();
     my $savedpath = Expand(T_CS('\pgfkeysdefaultpath'));
-    my $newpath = Tokens(Expand($path)->unlist, T_OTHER('/'));
+    my $newpath   = Tokens(Expand($path)->unlist, T_OTHER('/'));
     DefMacroI('\pgfkeysdefaultpath', undef, $newpath);
     my @results = parsePGFKeys($stomach, $keyvals);
     DefMacroI('\pgfkeysdefaultpath', undef, $savedpath);
