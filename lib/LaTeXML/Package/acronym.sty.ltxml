@@ -154,11 +154,6 @@ DefEnvironment('{acronym}[]',
 
 DefMacro('\acroextra{}', '#1');
 
-DefMacro('\lx@acro@phrase{}{}{}', '{\let\acroextra\@gobble\lx@@acro@phrase{#1}{#2}{#3}}');
-# Let this float up, since it can be used within a glossarylist, but shouldn't end up there.
-DefConstructor('\lx@@acro@phrase{}{}{}',
-  "^ <ltx:glossaryphrase inlist='acronym' role='#1' key='#2'>#3</ltx:glossaryphrase>");
-
 # \lx@acro@item{key}{short}{long}
 DefMacro('\lx@acro@item{}[]{}',
   '\lx@acro@@item{#1}{\ifx.#2.#1\else#2\fi}{#3}');
@@ -195,15 +190,22 @@ Let('\acro',    '\acrodef');
 # They should be recorded in the document & scanned in post-processing,
 # but need not appear within the acronym glossary.
 # Non-standard definite articles
+DefMacro('\lx@acro@phrase{}{}{}', '{\let\acroextra\@gobble\lx@@acro@phrase{#1}{#2}{#3}}');
+# Let this float up, since it can be used within a glossarylist, but shouldn't end up there.
+DefConstructor('\lx@@acro@phrase{}{}{}',
+  "^ <ltx:glossarydefinition inlist='acronym' key='#1'>"
+    . "<ltx:glossaryphrase role='#2'>#3</ltx:glossaryphrase>"
+    . "</ltx:glossarydefinition>");
+
 DefMacro('\acrodefindefinite{}{}{}',
-  '\lx@acro@phrase{short-indefinite}{#1}{#2}\lx@acro@phrase{long-indefinite}{#1}{#3}');
+  '\lx@acro@phrase{#1}{short-indefinite}{#2}\lx@acro@phrase{#1}{long-indefinite}{#3}');
 
 Let('\acroindefinite',    '\acrodefindefinite');
 Let('\newacroindefinite', '\acrodefindefinite');
 
 # Non-standard plural forms
 DefMacro('\acrodefplural{}[]{}',
-  '\lx@acro@phrase{short-plural}{#1}{\ifx.#2.#1\else#2\fi}\lx@acro@phrase{long-plural}{#1}{#3}');
+  '\lx@acro@phrase{#1}{short-plural}{\ifx.#2.#1\else#2\fi}\lx@acro@phrase{#1}{long-plural}{#3}');
 
 Let('\acroplural',    '\acrodefplural');
 Let('\newacroplural', '\acrodefplural');

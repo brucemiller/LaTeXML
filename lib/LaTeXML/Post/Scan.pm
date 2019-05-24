@@ -366,9 +366,13 @@ sub indexmark_handler {
 # This handles glossaryentry or glossarydefinition
 sub glossaryentry_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
-  my $id    = $node->getAttribute('xml:id');
-  my $lists = $node->getAttribute('inlist') || 'glossary';
-  my $key   = $node->getAttribute('key');
+  my $id = $node->getAttribute('xml:id');
+  my $p;
+  my $lists = $node->getAttribute('inlist') ||
+    (($p = $doc->findnode('ancestor::ltx:glossarylist[@lists] | ancestor::ltx:glossary[@lists]', $node))
+    && $p->getAttribute('lists'))
+    || 'glossary';
+  my $key = $node->getAttribute('key');
   # Get the actual phrases, and any see_also phrases (if any)
   # Do these need ->cleanNode ???
   my @phrases    = $doc->findnodes('ltx:glossaryphrase', $node);
