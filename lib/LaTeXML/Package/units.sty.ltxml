@@ -28,7 +28,7 @@ DefConstructor('\helper@ams@text {}',
   "<ltx:text _noautoclean='1' _noautoclose='1'>#1</ltx:text>", mode => 'text', reversion => "#1");
 DefMacro('\unit [] {}',
   '\ifx.#1.\else#1\ltx@units@spacing\fi'
-    . '\lx@units@assertunits{\ifmmode\mathrm{#2}\else$\nf@mathcopytextfont \helper@ams@text{#2}$\fi}');
+    . '\lx@units@assertunits{\ifmmode\mathrm{#2}\else #2\fi}');
 
 DefMacro('\unitfrac [] {}{}',
   '\ifx.#1.\else#1\ltx@units@spacing\fi'
@@ -47,12 +47,6 @@ sub units_assert_units {
   if (($qname eq 'ltx:XMTok') && (($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')) {
     $node->setAttribute(role => 'ID');
     $document->addClass($node, 'ltx_unit'); }
-  elsif ($qname eq 'ltx:text' && ($node->getAttribute("_noautoclean")) && !element_nodes($node)) {
-    # this logic would need ot change if we modify \helper@ams@text's markup
-    $node->setNodeName("ltx:XMTok");
-    $node->setAttribute(role => 'ID');
-    $document->addClass($node, 'ltx_unit');
-    $document->replaceNode($node->parentNode, $node); }
   elsif ($qname) {
     map { units_assert_units($document, $_) } element_nodes($node); }
   return; }

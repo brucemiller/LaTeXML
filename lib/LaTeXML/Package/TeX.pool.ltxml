@@ -3057,7 +3057,8 @@ sub pruneEmpty {
   # In some cases we could have e.g. a \noindent followed by a {table},
   # in which case we end up with an empty ltx:para which we can prune.
   if (!scalar($node->childNodes)) {
-    $node->unlinkNode; } }
+    $node->unlinkNode; }
+  return; }
 
 sub trimNodeWhitespace {
   my ($document, $node) = @_;
@@ -3286,10 +3287,8 @@ sub cleanup_Math {
   # If the Math ONLY contains XMath/XMText, it apparently isn't math at all!?!
   if (!$document->findnodes('ltx:XMath/ltx:*[local-name() != "XMText"]', $mathnode)) {
     # So unwrap down to the contents of the XMText's.
-    my @xmtexts    = map { $_->childNodes } map { $_->childNodes } $mathnode->childNodes;
-    my @texts      = ();
-    my $skip_clean = grep { $_ } map { $_->getAttribute('_noautoclean') } @xmtexts;
-    return if $skip_clean;
+    my @xmtexts = map { $_->childNodes } map { $_->childNodes } $mathnode->childNodes;
+    my @texts   = ();
     foreach my $text (@xmtexts) {
       if ($text->nodeType != XML_ELEMENT_NODE) {    # Make sure we've got an element
         $text = $document->wrapNodes('ltx:text', $text); }
