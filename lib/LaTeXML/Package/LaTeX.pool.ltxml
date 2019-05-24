@@ -4425,9 +4425,11 @@ DefEnvironment('{picture} Pair OptionalPair',
       picProperties(size => picScale($_[1]))); },
   afterDigest => \&after_picture);
 
-DefConstructor('\put Pair {}',
+DefMacro('\put Until:){}', '\lx@pic@put#1){#2\relax}');
+DefConstructor('\lx@pic@put Pair{}',
   "<ltx:g transform='#pos'>#2</ltx:g>",
   properties => sub { pos => 'translate(' . ptValue(picScale($_[1])) . ')'; },
+  alias      => '\put',
   mode       => 'text');
 
 #DefConstructor('\pic@line Pair:Number {Float}',
@@ -4476,7 +4478,8 @@ DefConstructor('\qbezier [Number] Pair Pair Pair',
   alias      => '\qbezier',
   properties => sub {
     picProperties(pt => PairList(picScale($_[2]), picScale($_[3]), picScale($_[4]))); });
-DefConstructor('\bezier Number Pair Pair Pair',
+DefMacro('\bezier Until:(', '\ifx.#1.\lx@pic@bezier{0}(\else\lx@pic@bezier{#1}(\fi');
+DefConstructor('\lx@pic@bezier {Number} Pair Pair Pair',
   "<ltx:bezier ?#1(displayedpoints='#1') points='&ptValue(#pt)' stroke-width='#thick' />",
   alias      => '\bezier',
   properties => sub {
@@ -4503,8 +4506,8 @@ DefConstructor('\pic@framebox Pair []{}',
   beforeDigest => sub { reenterTextMode(); },
   properties   => sub { picProperties(size => picScale($_[1])); });
 
-#DefConstructor('\pic@dashbox {Float} Pair [] {}',
-DefConstructor('\dashbox {Float} Pair [] {}',
+DefMacro('\dashbox Until:(', '\ifx.#1.\lx@pic@dashbox{0}(\else\lx@pic@dashbox{#1}(\fi');
+DefConstructor('\lx@pic@dashbox {Float} Pair [] {}',
   "<ltx:rect x='0' y='0' %&PairAttr(#size,width,height)"
     . " stroke-width='#thick' stroke-dasharray='&ptValue(#dash)' fill='none'/>" .
     "<ltx:g %&PairAttr(#size,width,height) pos='#3'>#4</ltx:g>",
