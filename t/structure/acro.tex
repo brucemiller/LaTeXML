@@ -1,17 +1,66 @@
+% From acronym on CTAN https://ctan.org/tex-archive/macros/latex/contrib/acronym
+% Licensed under LPPL 1.3 https://ctan.org/license/lppl1.3
 \documentclass{article}
-\usepackage{acronym}
-
+\usepackage[colorlinks]{hyperref}
+\usepackage[printonlyused,withpage]{acronym}
 \begin{document}
 
-\begin{acronym}[TEST]
-  \acro{Wd}[\textsc{Wd}]{Word\acroextra{ in a \acl{Ph} or \acl{Snt}}}
-  \acro{Ph}[\textsc{Ph}]{Phrase\acroextra{ being a sequence of \aclp{Wd}}}
-  \acro{Snt}[\textsc{Snt}]{Sentence\acroextra{ being a grammatical sequence of \aclp{Wd}}}
+\section{Intro}
+In the early nineties, \acs{GSM} was deployed in many European
+countries. \ac{GSM} offered for the first time international
+roaming for mobile subscribers. The \acs{GSM}'s use of \ac{TDMA} as
+its communication standard was debated at length. And every now
+and then there are big discussion whether \ac{CDMA} should have
+been chosen over \ac{TDMA}.
+
+\section{Furthermore}
+\acresetall
+The reader could have forgotten all the nice acronyms, so we repeat the
+meaning again.
+
+If you want to know more about \acf{GSM}, \acf{TDMA}, \acf{CDMA}
+and other acronyms, just read a book about mobile communication. Just
+to mention it: There is another \ac{UA}, just for testing purposes!
+
+\begin{figure}[h]
+Figure
+\caption{A float also admits references like \ac{GSM} or \acf{CDMA}.}
+\end{figure}
+
+\subsection{Some chemistry and physics}
+\label{Chem}
+\ac{NAD+} is a major electron acceptor in the oxidation
+of fuel molecules. The reactive part of \ac{NAD+} is its nictinamide
+ring, a pyridine derivate.
+
+One mol consists of \acs{NA} atoms or molecules. There is a relation
+between the constant of Boltzmann and the \acl{NA}:
+\begin{equation}
+  k = R/\acs{NA}
+\end{equation}
+
+\acl{lox}/\acl{lh2} (\acsu{lox}/\acsu{lh2})
+
+\subsection{Some testing fundamentals}
+When testing \acp{IC}, one typically wants to identify functional
+blocks to be tested separately. The latter are commonly indicated as
+\acp{BUT}. To test a \ac{BUT} requires defining a testing strategy\dots
+
+\section{Acronyms}
+\begin{acronym}[TDMA]
+ \acro{CDMA}{Code Division Multiple Access}
+ \acro{GSM}{Global System for Mobile communication}
+ \acro{NA}[\ensuremath{N_{\mathrm A}}]
+      {Number of Avogadro\acroextra{ (see \S\ref{Chem})}}
+ \acro{NAD+}[NAD\textsuperscript{+}]{Nicotinamide Adenine Dinucleotide}
+ \acro{NUA}{Not Used Acronym}
+ \acro{TDMA}{Time Division Multiple Access}
+ \acro{UA}{Used Acronym}
+ \acro{lox}[\ensuremath{LOX}]{Liquid Oxygen}%
+ \acro{lh2}[\ensuremath{LH_2}]{Liquid Hydrogen}%
+ \acro{IC}{Integrated Circuit}%
+ \acro{BUT}{Block Under Test}%
+ \acrodefplural{BUT}{Blocks Under Test}%
 \end{acronym}
 
-\ac{Wd}; \acs{Wd}; \acl{Wd}; \acf{Wd}.
-
-\ac{Ph}; \acs{Ph}; \acl{Ph}; \acf{Ph}.
-
-\ac{Snt}; \acs{Snt};  \acl{Snt}; \acf{Snt}.
 \end{document}
