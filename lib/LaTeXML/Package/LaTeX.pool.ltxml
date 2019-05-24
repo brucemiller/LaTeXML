@@ -4504,10 +4504,19 @@ DefConstructor('\pic@framebox Pair []{}',
   properties   => sub { picProperties(size => picScale($_[1])); });
 
 #DefConstructor('\pic@dashbox {Float} Pair [] {}',
-DefConstructor('\dashbox [Float] Pair [] []',
+DefMacro('\dashbox', sub {
+    my ($gullet) = @_;
+    if ($gullet->ifNext(T_OTHER("("))) {
+      return (T_CS('\ltx@dashbox'), T_BEGIN, T_OTHER('0'), T_END); }
+    if ($gullet->ifNext(T_BEGIN)) {
+      return T_CS('\ltx@dashbox'); }
+    else {
+      my $float_arg = $gullet->readUntil(T_OTHER("("));
+      return (T_CS('\ltx@dashbox'), T_BEGIN, $float_arg->unlist(), T_END, T_OTHER("(")); } });
+DefConstructor('\ltx@dashbox {Float} Pair [] OptionalPlain',
   "<ltx:rect x='0' y='0' %&PairAttr(#size,width,height)"
-    . " stroke-width='#thick' stroke-dasharray='&ptValue(#dash)' fill='none'/>" .
-    "<ltx:g %&PairAttr(#size,width,height) pos='#3'>#4</ltx:g>",
+    . " stroke-width='#thick' stroke-dasharray='&ptValue(#dash)' fill='none'/>"
+    . "<ltx:g %&PairAttr(#size,width,height) pos='#3'>#4</ltx:g>",
   alias      => '\dashbox',
   properties => sub { picProperties(dash => picScale($_[1]), size => picScale($_[2])); });
 
