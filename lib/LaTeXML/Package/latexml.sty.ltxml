@@ -44,6 +44,11 @@ DeclareOption('noprofiling', sub { AssignValue('PROFILING' => 0, 'global'); });
 DeclareOption('mathparserspeculate',   sub { AssignValue('MATHPARSER_SPECULATE' => 1, 'global'); });
 DeclareOption('nomathparserspeculate', sub { AssignValue('MATHPARSER_SPECULATE' => 0, 'global'); });
 
+# 'nobibtex' intended to be used for arXiv-like build harnesses, where there
+# is explicit instruction to only use ".bbl" and that bibtex will not be ran.
+DeclareOption('bibtex',   sub { AssignValue('NO_BIBTEX' => 0, 'global'); });
+DeclareOption('nobibtex', sub { AssignValue('NO_BIBTEX' => 1, 'global'); });
+
 ProcessOptions();
 #======================================================================
 # From latexml.sty

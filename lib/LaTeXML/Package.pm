@@ -1798,10 +1798,10 @@ sub FindFile_aux {
   # The main point, though, is to we make only ONE (more) call.
   return if grep { pathname_is_nasty($_) } @$paths;    # SECURITY! No nasty paths in cmdline
         # Do we need to sanitize these environment variables?
-  local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
-    @$paths, $ENV{TEXINPUTS} || $Config::Config{'path_sep'});
   my @candidates = (((!$options{noltxml} && !$nopaths) ? ("$file.ltxml") : ()),
     (!$options{notex} ? ($file) : ()));
+  local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
+    @$paths, $ENV{TEXINPUTS} || $Config::Config{'path_sep'});
   if (my $result = pathname_kpsewhich(@candidates)) {
     return (-f $result ? $result : undef); }
   if ($urlbase && ($path = url_find($file, urlbase => $urlbase))) {

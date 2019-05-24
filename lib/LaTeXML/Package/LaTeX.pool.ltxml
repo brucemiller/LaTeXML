@@ -3444,17 +3444,20 @@ DefMacro('\lx@ifusebbl{}{}{}', sub {
 
     my $bbl_path     = FindFile($jobname, type => 'bbl');
     my $missing_bibs = '';
-    for my $bf (split(',', $bib_files)) {
-      my $bib_path = FindFile($bf, type => 'bib');
-      if (not $bib_path) {
-        $missing_bibs .= ',' unless length($missing_bibs) == 0;
-        $missing_bibs .= $bf; } }
-
-    if (length($missing_bibs) == 0 or not $bbl_path) {
-      return $bib_clause->unlist; }
+    if (LookupValue("NO_BIBTEX")) {
+      Info('expected', "bbl", $_[0], "Couldn't find bbl file, bibliography may be empty.") if not $bbl_path;
+      return $bbl_clause->unlist; }
     else {
-      Info('expected', $missing_bibs, $_[0], "Couldn't find all bib files, using " . $jobname . ".bbl instead");
-      return $bbl_clause->unlist; } });
+      for my $bf (split(',', $bib_files)) {
+        my $bib_path = FindFile($bf, type => 'bib');
+        if (not $bib_path) {
+          $missing_bibs .= ',' unless length($missing_bibs) == 0;
+          $missing_bibs .= $bf; } }
+      if (length($missing_bibs) == 0 or not $bbl_path) {
+        return $bib_clause->unlist; }
+      else {
+        Info('expected', $missing_bibs, $_[0], "Couldn't find all bib files, using " . $jobname . ".bbl instead");
+        return $bbl_clause->unlist; } } });
 
 AssignMapping('BACKMATTER_ELEMENT', 'ltx:bibliography' => 'ltx:section');
 AssignMapping('BACKMATTER_ELEMENT', 'ltx:index'        => 'ltx:section');
