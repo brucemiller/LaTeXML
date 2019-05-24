@@ -4476,7 +4476,7 @@ DefConstructor('\qbezier [Number] Pair Pair Pair',
   alias      => '\qbezier',
   properties => sub {
     picProperties(pt => PairList(picScale($_[2]), picScale($_[3]), picScale($_[4]))); });
-DefConstructor('\bezier Number Pair Pair Pair',
+DefConstructor('\bezier {Number} Pair Pair Pair',
   "<ltx:bezier ?#1(displayedpoints='#1') points='&ptValue(#pt)' stroke-width='#thick' />",
   alias      => '\bezier',
   properties => sub {
@@ -4504,7 +4504,7 @@ DefConstructor('\pic@framebox Pair []{}',
   properties   => sub { picProperties(size => picScale($_[1])); });
 
 #DefConstructor('\pic@dashbox {Float} Pair [] {}',
-DefConstructor('\dashbox {Float} Pair [] {}',
+DefConstructor('\dashbox [Float] Pair [] []',
   "<ltx:rect x='0' y='0' %&PairAttr(#size,width,height)"
     . " stroke-width='#thick' stroke-dasharray='&ptValue(#dash)' fill='none'/>" .
     "<ltx:g %&PairAttr(#size,width,height) pos='#3'>#4</ltx:g>",
