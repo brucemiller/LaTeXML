@@ -1731,7 +1731,7 @@ sub pathname_is_raw {
   return ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
 
 my $findfile_options = {    # [CONSTANT]
-  type => 1, notex => 1, noltxml => 1, nokpsewhich => 1 };
+  type => 1, notex => 1, noltxml => 1 };
 
 sub FindFile {
   my ($file, %options) = @_;
@@ -1795,18 +1795,10 @@ sub FindFile_aux {
         # Do we need to sanitize these environment variables?
   my @candidates = (((!$options{noltxml} && !$nopaths) ? ("$file.ltxml") : ()),
     (!$options{notex} ? ($file) : ()));
-  if ($options{nokpsewhich}) {    # don't search into the installed TeX toolchain
-    my @custom_tex_paths = split($Config::Config{'path_sep'}, $ENV{TEXINPUTS} || '');
-    if ($options{type} eq 'bib') {
-      push @custom_tex_paths, split($Config::Config{'path_sep'}, $ENV{BIBINPUTS} || ''); }
-    if (@custom_tex_paths) {
-      if (my $result = pathname_find($candidates[0], paths => \@custom_tex_paths)) {
-        return (-f $result ? $result : undef); } } }
-  else {
-    local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
-      @$paths, $ENV{TEXINPUTS} || $Config::Config{'path_sep'});
-    if (my $result = pathname_kpsewhich(@candidates)) {
-      return (-f $result ? $result : undef); } }
+  local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
+    @$paths, $ENV{TEXINPUTS} || $Config::Config{'path_sep'});
+  if (my $result = pathname_kpsewhich(@candidates)) {
+    return (-f $result ? $result : undef); }
   if ($urlbase && ($path = url_find($file, urlbase => $urlbase))) {
     return $path; }
   return; }
