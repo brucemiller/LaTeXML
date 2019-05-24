@@ -18,10 +18,17 @@ use LaTeXML::Package;
 # RequirePackage('ifthen');
 RequirePackage('nicefrac');
 
-# in text mode, should be plain text, but let's be consistent putting it in math with text font.
+# in text mode, should be plain text,
+# we could try to be consistent putting it in math with text font,
+# but that runs into issues for cases where the author has already interleaved math inside the body
+# e.g. (\unit[10$^{14}$]{ions/cm$^2$)}
+# note: the closing paren is left inside the unit argument (typo from real arXiv doc)
+# Adding a text helper
+DefConstructor('\helper@ams@text {}',
+  "<ltx:text _noautoclean='1' _noautoclose='1'>#1</ltx:text>", mode => 'text', reversion => "#1");
 DefMacro('\unit [] {}',
   '\ifx.#1.\else#1\ltx@units@spacing\fi'
-    . '\lx@units@assertunits{\ifmmode\mathrm{#2}\else $\nf@mathcopytextfont #2$\fi}');
+    . '\lx@units@assertunits{\ifmmode\mathrm{#2}\else #2\fi}');
 
 DefMacro('\unitfrac [] {}{}',
   '\ifx.#1.\else#1\ltx@units@spacing\fi'
