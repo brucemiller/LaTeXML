@@ -65,7 +65,7 @@ DefMacro('\multido@@initvars@@{}', sub {
         $gullet->skipSpaces;
         while (my $var = $gullet->readToken) {
           if ($var->getCSName =~ /^\\(d|n|i|r)/i) {
-            my $type = $1;
+            my $type = lc($1);
             $gullet->readKeyword("=")
               or Error('expected', '=', $gullet, "Missing = in multido variables");
             my ($init, $step);
