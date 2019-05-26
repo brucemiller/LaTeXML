@@ -260,8 +260,8 @@ sub DecodeColor {
   $expression = ToString($expression);
   my $prefix_re = qr/-/;    #
                             # [ <name> = . ==> current color; <name> = '' ==> white]
-  my $name_re        = qr/|[-]*\.|[-]*[a-zA-Z0-9@\*]+|[a-zA-Z0-9@\*\-]+/;
-  my $ne_name_re     = qr/[-]*\.|[-]*[a-zA-Z0-9@\*]+|[a-zA-Z0-9@\*\-]+/;
+  my $name_re        = qr/|[-]*\.|[-]*[a-zA-Z0-9@\*_]+|[a-zA-Z0-9@\*\-_]+/;
+  my $ne_name_re     = qr/[-]*\.|[-]*[a-zA-Z0-9@\*_]+|[a-zA-Z0-9@\*\-_]+/;
   my $pct_re         = qr/(?:\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
   my $pct_capture_re = qr/(\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
   # <mix_expr>     : !<pct1>!<name1>!...<pctn>!(<namen>)?
@@ -711,7 +711,7 @@ DefPrimitive('\rowcolors OptionalMatch:* []{Number}{}{}', sub {
     ## Wishful thinking...?
     DefMacroI('\@xcolor@row@after', undef, $commands);
     AssignValue(tabular_row_color_first => $first->valueOf);
-    AssignValue(tabular_row_color_odd => ($oddcolor->unlist ? ParseXColor(undef, $oddcolor) : undef));
+    AssignValue(tabular_row_color_odd   => ($oddcolor->unlist ? ParseXColor(undef, $oddcolor) : undef));
     AssignValue(tabular_row_color_even => ($evencolor->unlist ? ParseXColor(undef, $evencolor) : undef)); });
 
 DefConditional('\if@rowcolors', undef);
