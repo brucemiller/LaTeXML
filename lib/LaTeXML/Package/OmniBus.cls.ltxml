@@ -93,12 +93,14 @@ DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1
 # Comes as both macro with arg, and environment! w/ or w/o "s"!
 DefMacro('\keyword{}',  '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\kword{}',    '\@add@frontmatter{ltx:keywords}{#1}');
 # {keyword}, {keywords}
 
 DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
 DefMacro('\pacs{}',           '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
 
 # \abstracts
+Let('\abst', '\abstract');
 # \editors
 
 # Seems to come in different spellings and often misused!
