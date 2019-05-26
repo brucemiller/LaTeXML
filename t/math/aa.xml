@@ -33,19 +33,30 @@
         <tag>(2)</tag>
         <tag role="refnum">2</tag>
       </tags>
-      <Math mode="display" tex="AB," text="A * B" xml:id="S0.E2.m1">
+      <Math mode="display" tex="A$ B,$" text="A * [ B,]" xml:id="S0.E2.m1">
         <XMath>
-          <XMDual>
-            <XMRef idref="S0.E2.m1.1"/>
-            <XMWrap>
-              <XMApp xml:id="S0.E2.m1.1">
-                <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                <XMTok font="italic" role="UNKNOWN">A</XMTok>
-                <XMTok font="italic" role="UNKNOWN">B</XMTok>
-              </XMApp>
-              <XMTok role="PUNCT">,</XMTok>
-            </XMWrap>
-          </XMDual>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMTok font="italic" role="UNKNOWN">A</XMTok>
+            <XMText> B,</XMText>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p3">
+    <equation labels="LABEL:eq3" xml:id="S0.E3">
+      <tags>
+        <tag>(3)</tag>
+        <tag role="refnum">3</tag>
+      </tags>
+      <Math mode="display" tex="A$$" text="A * []" xml:id="S0.E3.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMTok font="italic" role="UNKNOWN">A</XMTok>
+            <XMText/>
+          </XMApp>
         </XMath>
       </Math>
     </equation>
