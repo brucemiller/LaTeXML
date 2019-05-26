@@ -366,25 +366,10 @@ DefParameterType('TeXFileName', sub {
 # A LaTeX style directory List
 DefParameterType('DirectoryList', sub {
     my ($gullet) = @_;
-    $gullet->skipSpaces;
-    if ($gullet->ifNext(T_BEGIN)) {
-      $gullet->readToken;
-      my @dirs = ();
-      $gullet->skipSpaces;
-      while ($gullet->ifNext(T_BEGIN)) {
-        # Should these be Semiverbatim ??
-        push(@dirs, $gullet->readArg);
-        $gullet->readMatch(T_OTHER(',')); }
-      $gullet->skipSpaces;
-      if ($gullet->ifNext(T_END)) {
-        $gullet->readToken; }
-      else {
-        Error('expected', '}', $gullet, "A closing } was supposed to be here"); }
-      LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, itemopen => T_BEGIN, itemclose => T_END,
-        type   => LaTeXML::Package::parseParameters(ToString("Semiverbatim"), "CommaList")->[0],
-        values => [@dirs]); }
-    else {
-      Error('expected', 'DirectoryList', $gullet, "A DirectoryList was supposed to be here"); } });
+    my @dirs = map { (/^\{(.*)\}$/ ? $1 : $_); } split(/\s*(?:,|\n+)\s*/, ToString($gullet->readArg));
+    LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, itemopen => T_BEGIN, itemclose => T_END,
+      type   => LaTeXML::Package::parseParameters(ToString("Semiverbatim"), "CommaList")->[0],
+      values => [@dirs]); });
 
 # This reads a Box as needed by \raise, \lower, \moveleft, \moveright.
 # Hopefully there are no issues with the box being digested
