@@ -172,7 +172,7 @@ sub stringify {
 sub getLocator {
   my ($self) = @_;
   my ($toLine, $toCol, $fromLine, $fromCol) = ($$self{lineno}, $$self{colno});
-  my $maxCol = $$self{nchars} - 1;    #There is always a trailing EOL char
+  my $maxCol = ($$self{nchars} ? $$self{nchars} - 1 : 0);    #There is always a trailing EOL char
   if ((defined $toCol) && ($toCol >= $maxCol)) {
     $fromLine = $toLine;
     $fromCol  = 0; }
