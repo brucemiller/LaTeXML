@@ -1956,8 +1956,9 @@ DefConstructor('\lx@equationgroup@subnumbering@begin',
     ResetCounter('equation');
     DefMacro('\theequation',    UnTeX($eqnum) . '\alph{equation}');
     DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID'); });
-DefConstructor('\lx@equationgroup@subnumbering@end',
-  "</ltx:equationgroup>",
+Tag('ltx:equationgroup', autoClose => 1);
+DefConstructor('\lx@equationgroup@subnumbering@end', sub {
+    $_[0]->maybeCloseElement('ltx:equationgroup'); },
   afterDigest => sub {
     AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
 
@@ -3546,12 +3547,15 @@ DefConstructorI('\thebibliography', undef,
   "<ltx:bibliography xml:id='#id'>"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "<ltx:biblist>",
-  beforeDigest => sub { AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue'); },
-  afterDigest  => sub {
+  beforeDigest => sub {
+    AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
+    DefMacro('\bibliographystyle{}', '');
+    DefMacro('\bibliography {}',     ''); },
+  afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     # NOTE that in some perverse situations (revtex?)
     # it seems to be allowable to omit the argument
-    # It's ignorable for latexml anyway, so we'll just read it if its there.
+    # It's ignorable for latexml anyway, so we'll just read it if its there .
     my $gullet = $stomach->getGullet;
     $gullet->skipSpaces;
     $gullet->readArg if $gullet->ifNext(T_BEGIN);
