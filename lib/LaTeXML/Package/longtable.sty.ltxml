@@ -127,14 +127,15 @@ DefConstructor('\@longtable@kill@marker', '', reversion => '\kill',
 DefMacro('\@longtable@caption[]{}',
   '\@longtable@@toccaption{\lx@format@toctitle@@{table}{\ifx.#1.#2\else#1\fi}}'
     . '\@longtable@@caption{\lx@format@title@@{table}{#2}}');
+
 DefPrimitive('\@longtable@label Semiverbatim', sub {
     AssignValue(LONGTABLE_LABEL => CleanLabel(ToString($_[1])), 'global');
     return; });
 DefPrimitive('\@longtable@@caption{}', sub {
-    AssignValue(LONGTABLE_CAPTION => Digest($_[1]), 'global');
+    AssignValue(LONGTABLE_CAPTION => DigestText($_[1]), 'global');
     return; });
 DefPrimitive('\@longtable@@toccaption{}', sub {
-    AssignValue(LONGTABLE_TOCCAPTION => Digest($_[1]), 'global');
+    AssignValue(LONGTABLE_TOCCAPTION => DigestText($_[1]), 'global');
     return; });
 
 #======================================================================
