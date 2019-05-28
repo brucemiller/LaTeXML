@@ -1027,11 +1027,13 @@ DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
   reversion => sub {
     my ($whatsit) = @_;
     my ($open, $thickness, $close, $stylecode) = $whatsit->getArgs;
+    $open  = $open->getArg(1)  if ref $open eq 'LaTeXML::Core::Whatsit';
+    $close = $close->getArg(1) if ref $close eq 'LaTeXML::Core::Whatsit';
     (T_CS('\genfrac'),
-      T_BEGIN, ($open->unlist ? Revert($open->getArg(1)) : ()), T_END, # Assumes wrapped in \@left/\@right!
-      T_BEGIN, ($close->unlist ? Revert($close->getArg(1)) : ()), T_END,
-      T_BEGIN, ($thickness     ? Revert($thickness)        : ()), T_END,
-      T_BEGIN, ($stylecode     ? Revert($stylecode)        : ()), T_END,
+      T_BEGIN, Revert($open),  T_END,    # Assumes wrapped in \@left/\@right!
+      T_BEGIN, Revert($close), T_END,
+      T_BEGIN, ($thickness ? Revert($thickness) : ()), T_END,
+      T_BEGIN, ($stylecode ? Revert($stylecode) : ()), T_END,
       T_BEGIN, Revert($whatsit->getProperty('top')),    T_END,
       T_BEGIN, Revert($whatsit->getProperty('bottom')), T_END); },
   sizer       => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
