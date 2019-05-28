@@ -4776,8 +4776,8 @@ DefConstructor('\realsuperscript{}', "<ltx:sup>#1</ltx:sup>",
   mode => 'text');
 DefPrimitiveI('\textordfeminine',  undef, UTF(0xAA));    # FEMININE ORDINAL INDICATOR
 DefPrimitiveI('\textordmasculine', undef, UTF(0xBA));    # MASCULINE ORDINAL INDICATOR
-DefPrimitiveI('\SS',               undef, 'SS');         # ?
-
+DefPrimitiveI('\SS', undef, 'SS',                        # ?
+  locked => 1);                                          # cause it shows up in uclist!
 DefMacroI('\dag',  undef, '\ifmmode{\dagger}\else\textdagger\fi');
 DefMacroI('\ddag', undef, '\ifmmode{\ddagger}\else\textdaggerdbl\fi');
 
