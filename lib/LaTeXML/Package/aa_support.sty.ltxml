@@ -96,7 +96,7 @@ DefMacro('\rnotname',      '(RN)');
 
 # should add a note?
 DefMacro('\headnote{}',   '\@add@frontmatter{ltx:note}{#1}');
-DefMacro('\dedication{}', '\@add@frontmatter{ltx:contact}[role=dedicatory]{#1}');
+DefMacro('\dedication{}', '\@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
 DefConstructor('\@@@mail{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\mail Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
 DefMacro('\mailname',          '\it Correspondence to \/');

@@ -974,6 +974,11 @@ DefPrimitive('\lx@count@author', sub {
 DefMacro('\lx@author{}',
   '\lx@count@author'
     . '\@add@frontmatter{ltx:creator}[role=author]{\lx@author@prefix\@personname{#1}}');
+
+DefConstructor('\lx@@@contact{}{}', "^ <ltx:contact role='#1'>#2</ltx:contact>");
+DefMacro('\lx@contact{}{}',
+  '\@add@to@frontmatter{ltx:creator}{\lx@@@contact{#1}{#2}}');
+
 DefMacro('\lx@author@sep',  '\qquad');
 DefMacro('\lx@author@conj', '\qquad');
 DefConstructor('\lx@author@prefix', sub {
@@ -3990,7 +3995,7 @@ DefPrimitive('\nolinebreak[]', undef);
 # \\ already defined
 DefMacroI('\newline', undef, Tokens(T_CS('\protect'), T_CS('\@normalcr'), T_CS('\relax')));
 DefPrimitiveI('\-', undef, undef);    # We don't do hyphenation.
-                                       # \hyphenation in TeX.pool
+                                      # \hyphenation in TeX.pool
 
 DefPrimitiveI('\sloppy', undef, undef);
 DefPrimitiveI('\fussy',  undef, undef);
@@ -3999,7 +4004,7 @@ DefMacro('\sloppypar',    '\par\sloppy');
 DefMacro('\endsloppypar', '\par');
 DefMacroI('\nobreakdashes', undef, T_OTHER('-'));
 
-DefMacro('\showhyphens{}', '#1');      # ?
+DefMacro('\showhyphens{}', '#1');     # ?
      #======================================================================
      # C.12.2 Page Breaking
      #======================================================================

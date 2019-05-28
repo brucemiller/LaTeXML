@@ -37,17 +37,13 @@ DefEnvironment('{frontmatter}', '#body');
 DefMacro('\author[]{}',
   '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#2}}');
 
-DefMacro('\address[]{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
-DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
-
+DefMacro('\address[]{}', '\lx@contact{address}{#2}');
 # Redefine to account for the label, which we ignore for now!
 DefConstructor('\thanks[]{}', "<ltx:note role='thanks'>#2</ltx:note>");
 DefConstructor('\person@thanks[]{}', "^ <ltx:contact role='thanks'>#2</ltx:contact>",
   alias => '\thanks', mode => 'text');
-DefMacro('\thanksref{}', Tokens());
-
-DefConstructor('\corauth[]{}', "^ <ltx:contact role='corresondent'>#2</ltx:contact>",
-  mode => 'text');
+DefMacro('\thanksref{}',  Tokens());
+DefMacro('\corauth[]{}',  '\lx@contact{correspondent}{#2}');
 DefMacro('\corref{}',     Tokens());
 DefMacro('\corauthref{}', Tokens());
 DefMacro('\cortext[]{}',  Tokens());
@@ -243,7 +239,7 @@ DefEnvironment('{algorithm}',
     . "#body"
     . "</ltx:theorem>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'algorithm'); },
-  afterDigest => sub { RescueCaptionCounters('algorithm', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('algorithm', $_[1]); });
 
 RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}}');
 
