@@ -42,7 +42,7 @@ sub Box {
 sub new {
   my ($class, $string, $font, $locator, $tokens, %properties) = @_;
   return bless { string => $string,
-    tokens => $tokens,
+    tokens     => $tokens,
     properties => { font => $font, locator => $locator, %properties }
   }, $class; }
 
@@ -80,6 +80,10 @@ sub unlist {
   my ($self) = @_;
   return ($self); }    # Return list of the boxes
 
+sub getBody {
+  my ($self) = @_;
+  return $self; }
+
 sub revert {
   my ($self) = @_;
   return ($$self{tokens} ? $$self{tokens}->unlist : ()); }
@@ -108,7 +112,7 @@ sub equals {
 sub beAbsorbed {
   my ($self, $document) = @_;
   my $string = $$self{string};
-  my $mode = $$self{properties}{mode} || 'text';
+  my $mode   = $$self{properties}{mode} || 'text';
   return ((defined $string) && ($string ne '')
     ? ($mode eq 'math'
       ? $document->insertMathToken($string, %{ $$self{properties} })
