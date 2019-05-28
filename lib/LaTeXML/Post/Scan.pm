@@ -375,13 +375,11 @@ sub glossaryentry_handler {
   my $key = $node->getAttribute('key');
   # Get the actual phrases, and any see_also phrases (if any)
   # Do these need ->cleanNode ???
-  my @phrases    = $doc->findnodes('ltx:glossaryphrase', $node);
-  my $definition = $doc->findnode('ltx:glossarydefinition', $node);
+  my @phrases = $doc->findnodes('ltx:glossaryphrase', $node);
   # Create an entry for EACH list (they could be distinct definitions)
   foreach my $list (split(/\s+/, $lists)) {
-    my $gkey  = join(':', 'GLOSSARY', $list, $key);
-    my $entry = $$self{db}->lookup($gkey)
-      || $$self{db}->register($gkey, definition => orNull($definition));
+    my $gkey = join(':', 'GLOSSARY', $list, $key);
+    my $entry = $$self{db}->lookup($gkey) || $$self{db}->register($gkey);
     $entry->setValues(map { ('phrase:' . ($_->getAttribute('role') || 'label') => $_) } @phrases);
     $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal'));
     $entry->setValues(id => $id) if $id; }

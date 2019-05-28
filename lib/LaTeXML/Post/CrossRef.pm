@@ -777,7 +777,7 @@ sub fillInGlossaryRef {
       if ($entry = $$self{db}->lookup(join(':', 'GLOSSARY', $alist, $key))) {
         $list = $alist; last; } }
     if ($entry) {
-      my $title = $entry->getValue('definition');
+      my $title = $entry->getValue('phrase:definition');
       if (!$ref->getAttribute('title') && $title) {
         $ref->setAttribute(title => $title->textContent); }
       if (my $id = $entry->getValue('id')) {
