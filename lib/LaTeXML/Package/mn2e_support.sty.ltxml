@@ -206,6 +206,45 @@ Let('\@internalcite', '\cite');
 DefMacro('\cite',       '\def\citename##1{##1}\@internalcite');
 DefMacro('\shortcite',  '\def\citename##1{}\@internalcite');
 DefMacro('\citename{}', '#1');                                    # ?
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Redefine equations (bizarrely) to allow $ within
+DefEnvironment('{equation}',
+  "<ltx:equation xml:id='#id'>"
+    . "#tags"
+    . "<ltx:Math mode='display'>"
+    . "<ltx:XMath>"
+    . "#body"
+    . "</ltx:XMath>"
+    . "</ltx:Math>"
+    . "</ltx:equation>",
+  mode         => 'display_math',
+  beforeDigest => sub {
+    prepareEquationCounter(numbered => 1, preset => 1);
+    beforeEquation();
+    Let(T_MATH, T_CS('\@dollar@in@mathmode')); },
+  afterDigestBody => sub {
+    afterEquation($_[1]); },
+  locked => 1);
+
+# Note: In ams, this DOES get a number if \tag is used!
+DefEnvironment('{equation*}',
+  "<ltx:equation xml:id='#id'>"
+    . "#tags"
+    . "<ltx:Math mode='display'>"
+    . "<ltx:XMath>"
+    . "#body"
+    . "</ltx:XMath>"
+    . "</ltx:Math>"
+    . "</ltx:equation>",
+  mode         => 'display_math',
+  beforeDigest => sub {
+    prepareEquationCounter(numbered => undef, preset => 1);
+    beforeEquation();
+    Let(T_MATH, T_CS('\@dollar@in@mathmode')); },
+  afterDigestBody => sub {
+    afterEquation($_[1]); },
+  locked => 1);
+
 #======================================================================
 
 1;
