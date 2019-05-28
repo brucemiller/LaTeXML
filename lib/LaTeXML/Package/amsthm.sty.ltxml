@@ -169,7 +169,7 @@ else {
 # from older versions of amsthm.sty
 DefPrimitive('\theorembodyfont{}',   sub { AssignValue('\thm@bodyfont' => $_[1]); });
 DefPrimitive('\theoremheaderfont{}', sub { AssignValue('\thm@headfont' => $_[1]); });
-DefMacro('\theorempreskipamount',  '');
-DefMacro('\theorempostskipamount', '');
+DefRegister('\theorempreskipamount'  => Dimension('0em'));
+DefRegister('\theorempostskipamount' => Dimension('0em'));
 
 1;
