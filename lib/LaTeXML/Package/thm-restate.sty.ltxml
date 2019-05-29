@@ -25,7 +25,7 @@ RawTeX(<<'EoTeX');
 EoTeX
 
 # Let's not bother copying the whole thing, but just refer to it!
-DefMacro('\lx@thm@restate{}', 'See \ref{restatable:#3}');
+DefMacro('\lx@thm@restate{}', 'See \ref{restatable:#1}');
 
 #======================================================================
 1;
