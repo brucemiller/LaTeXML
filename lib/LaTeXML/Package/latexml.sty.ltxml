@@ -210,6 +210,18 @@ DefConstructor('\lxID{}', "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>",
 DefConstructor('\lxPunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>",
   requireMath => 1, reversion => '#1', alias => '');
 
+# More general form: eg. \lxTweakMath{role=POSTFIX}{@}
+# [same as \lx@math@tweak]
+DefConstructor('\lxMathTweak RequiredKeyVals {}',
+  "<ltx:XMWrap %&GetKeyVals(#1)>#2</ltx:XMWrap>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($kv,      $body)    = $whatsit->getArgs;
+    $whatsit->setProperties($kv->getPairs);
+    $whatsit->setFont($body->getFont);
+    return; },
+  reversion => '#2');
+
 #======================================================================
 # Define a mathematical object with both presentation & content information
 #   \lxDefMath{\name}[nargs][optional]{presentation body}[content keywords]

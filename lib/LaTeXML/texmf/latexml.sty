@@ -123,29 +123,30 @@
 \providecommand{\lxFcn}[1]{#1}
 \providecommand{\lxID}[1]{#1}
 \providecommand{\lxPunct}[1]{#1}
-
+\providecommand{\lxMathTweak}[2]{#2}
 %======================================================================
 % Math definining macro.
 % Define a math function such that the TeX output is what you might
 % expect, while providing the semantic hooks for generating useful xml.
 
 % \lxDefMath{\cs}[nargs][optargs]{presentation}[declarations]
-\providecommand{\lxDefMath}{\lx@defmath}
+\providecommand{\lxDefMath}{\lx@defmath}%
 \def\lx@defmath#1{%
-  \@ifnextchar[{\lx@defmath@a{#1}}{\lx@defmath@a{#1}[0]}}
+  \@ifnextchar[{\lx@defmath@a{#1}}{\lx@defmath@a{#1}[0]}}%
 \def\lx@defmath@a#1[#2]{%
-  \@ifnextchar[{\lx@defmath@opt{#1}[#2]}{\lx@defmath@noopt{#1}[#2]}}
+  \@ifnextchar[{\lx@defmath@opt{#1}[#2]}{\lx@defmath@noopt{#1}[#2]}}%
 \def\lx@defmath@opt#1[#2][#3]#4{%
   \providecommand{#1}[#2][#3]{#4}%
-  \@ifnextchar[{\lx@@skipopt}{}}
+  \@ifnextchar[{\lx@@skipopt}{}}%
 \def\lx@defmath@noopt#1[#2]#3{%
   \providecommand{#1}[#2]{#3}%
-  \@ifnextchar[{\lx@@skipopt}{}}
+  \@ifnextchar[{\lx@@skipopt}{}}%
+\def\lx@@skipopt[#1]{}%
 
 % \lxDeclare[declarations]{match}
-\newcommand{\lxDeclare}[2][]{}%
+\newcommand{\lxDeclare}[2][]{\@bsphack\@esphack}%
 % \lxDeclRef{label}
-\newcommand{\lxRefDeclaration}[1]{}%
+\newcommand{\lxRefDeclaration}[2][]{\@bsphack\@esphack}%
 
 % NOTE: It would be good to incorporate Scoping into this macro.
 % As defined, it obeys TeX's usual grouping scope.
