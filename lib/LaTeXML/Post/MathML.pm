@@ -1454,7 +1454,9 @@ DefMathML('Token:SUBSCRIPTOP:?', undef, sub {
 
 DefMathML('Apply:POSTFIX:?', sub {    # Reverse presentation, no @apply
     return ['m:mrow', {}, pmml($_[1]), pmml($_[0])]; });
-DefMathML("Token:POSTFIX:?", sub { pmml_mo($_[0], lpadding => '-4pt', rpadding => '1pt'); }, undef);
+# Apparently ends up too much spacing shift
+#DefMathML("Token:POSTFIX:?", sub { pmml_mo($_[0], lpadding => '-4pt', rpadding => '1pt'); }, undef)
+DefMathML("Token:POSTFIX:?", \&pmml_mo, undef);
 
 DefMathML('Apply:?:square-root',
   sub {
