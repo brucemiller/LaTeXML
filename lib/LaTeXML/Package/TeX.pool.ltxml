@@ -4850,7 +4850,7 @@ DefConstructor('\lx@tag[][][]{}',
 # \lx@tag@intags{role}{stuff}
 DefConstructor('\lx@tag@intags[]{}',
   "<ltx:tag role='#1'>#2</ltx:tag>",
-  bounded        => 1, mode => 'text',
+  bounded        => 1, mode => 'text', beforeDigest => sub { reenterTextMode(); },
   afterConstruct => \&removeEmptyElement);
 
 DefConstructor('\lx@tags{}',
