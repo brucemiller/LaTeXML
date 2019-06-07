@@ -699,25 +699,11 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
       </xsl:when>
-      <!-- Nested, but only 1 deep; introduce a tbody-->
-      <!-- not sure, reallly; can't nest tbody's 
-      <xsl:when test="not(parent::ltx:equationgroup[ancestor::ltx:equationgroup])">
-        <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
-          <xsl:attribute name="class">case1</xsl:attribute>
-          <xsl:call-template name="add_id"/>
-          <xsl:element name="tr" namespace="{$html_ns}">
-            <xsl:attribute name="class">case1</xsl:attribute>
-          </xsl:element>
-          <xsl:apply-templates select="." mode="ininalignment">
-            <xsl:with-param name="ncolumns" select="$ncolumns"/>
-            <xsl:with-param name="context" select="$context"/>
-          </xsl:apply-templates>
-        </xsl:element>
-      </xsl:when>
-      -->
-      <!-- Sloppy case, we at least need an empty row to put the id on; Ugh 
-           Probably should be able to do more cleanup,
-           At least, wrap it in tbody, so it'll validate. -->
+      <!-- Nested equationgroup, with id.  The alignment will be handled by the table
+           for the outer equationgroup (hopefully consistently).
+           But we need a place to part the id!  Unfortunately nested tbody  are not allowed,
+           so we add an empty tbody/tr to hold the id.
+           At least, it'll validate. -->
       <xsl:otherwise>
         <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
@@ -727,6 +713,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
             <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}"> <!--Empty, too
 -->
               <xsl:attribute name="class">ltx_eqn_cell</xsl:attribute>
+              <xsl:attribute name="colspan"><xsl:value-of select="$ncolumns+3"/></xsl:attribute>
             </xsl:element>
           </xsl:element>
         </xsl:element>
@@ -762,9 +749,13 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
   <xsl:template match="ltx:equation" mode="inalignment">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"/>
+    <!-- The main issue here is whether to wrap with a tbody (putting any id there),
+         and whether the id has already been placed on an outer table
+         else just transforming the content, leaving any id to the 1st row -->
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
-      <!-- no outer equationgroup, so id has already been handled. -->
+      <!-- no outer equationgroup, so id has already been handled and there are no other equations.
+           So no tbody necessary. -->
       <xsl:when test="not(parent::ltx:equationgroup)">
         <xsl:apply-templates select="." mode="ininalignment">
           <xsl:with-param name="ncolumns" select="$ncolumns"/>
@@ -772,8 +763,18 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
           <xsl:with-param name="need_id" select="false()"/>
         </xsl:apply-templates>
       </xsl:when>
-      <!-- have refnum, which may span, so need containing tbody to hold id -->
-      <xsl:when test="ltx:tags">
+      <!-- This equation has no tags, but outer equationgroup does.
+           No tbody, else it will interfere with the group's rowspanned equation number -->
+      <xsl:when test="not(ltx:tags) and parent::ltx:equationgroup/ltx:tags">
+        <xsl:apply-templates select="." mode="ininalignment">
+          <xsl:with-param name="ncolumns" select="$ncolumns"/>
+          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="need_id" select="true()"/>
+        </xsl:apply-templates>
+      </xsl:when>
+      <!-- Otherwise, ALWAYS wrap equation in a tbody (w/id, if any), in case
+           there's a number, id, or OTHER equations in group have tbodys (for validation). -->
+      <xsl:otherwise>
         <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
           <xsl:apply-templates select="." mode="ininalignment">
@@ -782,14 +783,6 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
             <xsl:with-param name="need_id" select="false()"/>
           </xsl:apply-templates>
         </xsl:element>
-      </xsl:when>
-      <!-- otherwise, we'll need to punt with id (if any) on 1st row -->
-      <xsl:otherwise>
-        <xsl:apply-templates select="." mode="ininalignment">
-          <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
-          <xsl:with-param name="need_id" select="true()"/>
-        </xsl:apply-templates>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
