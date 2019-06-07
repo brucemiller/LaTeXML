@@ -231,10 +231,11 @@ DefConstructor('\lxMathTweak RequiredKeyVals {}',
 # See DefMath in LaTeXML::Package for more information.
 DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
     my ($stomach, $cs, $nargs, $opt, $presentation, $params) = @_;
-    my ($name, $meaning, $cd, $role) =
-      $params && map { $_ && ToString($_) } map { $params->getValue($_) } qw(name meaning cd role);
+    my ($name, $meaning, $cd, $role, $alias) =
+      $params && map { $_ && ToString($_) } map { $params->getValue($_) }
+      qw(name meaning cd role alias);
     DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
-      name => $name, meaning => $meaning, omcd => $cd, role => $role);
+      name => $name, meaning => $meaning, omcd => $cd, role => $role, alias => $alias);
 });
 #DefKeyVal('XMath',name,string);
 
