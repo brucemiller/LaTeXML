@@ -491,7 +491,15 @@ sub make_bibcite {
       elsif ($show =~ s/^refnum//i) {
         push(@stuff, $doc->cloneNodes(@{ $$datum{refnum} })); }
       elsif ($show =~ s/^phrase(\d)//i) {
-        push(@stuff, $phrases[$1 - 1]->childNodes) if $phrases[$1 - 1]; }
+        # HACK! Avoid empty () from situations where we've set the show (CITE_STYLE) too early
+        # and don't actually have author-year information!
+        my $n = $1;
+        if (($n == 1) && ($show =~ /^\s*year\s*phrase2/i) && !scalar(@{ $$datum{year} })
+          && (!$phrases[0] || (length($phrases[0]->textContent) <= 1))
+          && (!$phrases[1] || (length($phrases[1]->textContent) <= 1))) {
+          $show =~ s/^\s*year\s*phrase2//i; }
+        else {
+          push(@stuff, $phrases[$n - 1]->childNodes) if $phrases[$n - 1]; } }
       elsif ($show =~ s/^year//i) {
         if (!$$datum{year}) {
           $self->note_missing('warn', 'Date for citation', $$datum{key}); }
