@@ -124,6 +124,10 @@ sub ReadPSCoord {
   my ($gullet) = @_;
   return ReadPair($gullet, 'PSDimension', LookupValue('\psxunit'), LookupValue('\psyunit')); }
 
+DefParameterType('PSCoord', \&ReadPSCoord);
+DefParameterType('OptionalPSCoord', \&ReadPSCoord,
+  optional => 1);
+
 sub ReadZeroPSCoord {
   my ($gullet) = @_;
   return ReadPSCoord($gullet) || ZeroPair(); }
@@ -166,7 +170,7 @@ DefParameterType('Arrows', \&ReadArrows,
   use base qw(LaTeXML::Common::Object);
 
   our %angleVals = (N => 0, W => 90, S => 180, E => 270, U => 0, L => 90, D => 180, R => 270,
-    r => 0, u => 90, l => 180, d => 270, ur => 45, ul => 135, dl => 225, dr => 315,
+    r  => 0,  u  => 90,  l  => 180, d  => 270, ur => 45, ul => 135, dl => 225, dr => 315,
     ru => 45, lu => 135, ld => 225, rd => 315);
 
   sub new {
@@ -175,7 +179,7 @@ DefParameterType('Arrows', \&ReadArrows,
     $number = Float(0) unless $number;
     my $starred = ($pre =~ /\*/); my $value;
     if (ref $number) {
-      my $degrees = LookupValue('\degrees');
+      my $degrees       = LookupValue('\degrees');
       my $degrees_value = $degrees ? $degrees->valueOf : 1;
       $number = $number->multiply(360 / $degrees_value);
       $value  = $number; }
@@ -342,7 +346,7 @@ sub setGraphParams {
   while (my ($_key, $value) = each %params) {
     if (((ref $value) || '') eq 'ARRAY') { $value = ${$value}[$#{$value}]; }
     my $strval = ToString($value);
-    my @keys = $KeyHasABVariants{$_key} ? ($_key, $_key . 'A', $_key . 'B') : ($_key);
+    my @keys   = $KeyHasABVariants{$_key} ? ($_key, $_key . 'A', $_key . 'B') : ($_key);
     foreach my $key (@keys) {
       if ($key eq 'unit') {
         AssignValue('\psunit',  $value);
@@ -392,7 +396,7 @@ sub psDefaultParameters {
   my $cmd = $whatsit->getDefinition->getCS->getCSName(); chop($cmd);
   AssignValue('_ps@LastPSCmd', $cmd, 'global');
   my @params = @{ $PSobjAttributes{$cmd} || [] };
-  my %used = ();
+  my %used   = ();
   foreach my $param (@params) {
     next if $used{$param};
     my $getter = 'psGet' . (ucfirst($param));
@@ -532,7 +536,7 @@ sub DefSimplePSConstructor {
 ## PS Tricks environment
 ####################################################################################
 
-DefEnvironment('{pspicture} [Float] PSCoord PSCoord',
+DefEnvironment('{pspicture} [Float] PSCoord OptionalPSCoord',
   "<ltx:picture baseline='#1' %&SimplePairAttr(#c1,width,height)>"
     . "?#need(<ltx:g transform='#transform'>)"
     . "#body"
@@ -541,9 +545,11 @@ DefEnvironment('{pspicture} [Float] PSCoord PSCoord',
   afterDigestBegin => sub {
     my ($stomach, $whatsit) = @_;
     my ($c0, $c1) = ($whatsit->getArg(2), $whatsit->getArg(3));
+    if (!$c1) {    # Note: the FIRST coord is optional! so if 2nd missing, swap.
+      $c1 = $c0; $c0 = ZeroPair(); }
     $whatsit->setProperty(c0 => $c0);
-    $whatsit->setProperty(c1 => $c1 ? Pair($c1->getX->subtract($c0->getX),
-        $c1->getY->subtract($c0->getY)) : $c0);
+    $whatsit->setProperty(c1 => ($c1 ? Pair($c1->getX->subtract($c0->getX),
+          $c1->getY->subtract($c0->getY)) : $c0));
 
     # Seems we need to account for the origin here.
     AssignValue('\psorigin', Pair($c0->getX->negate, $c0->getY->negate));
@@ -736,7 +742,7 @@ DefPSConstructor('\psarcn', 'Arrows ZeroPSCoord {PSDimension} {PSAngle} {PSAngle
   "<ltx:arc $PSLineAttr $PSArrow %&PairAttr(#3,x,y) r='&ptValue(#4)' angle1='&trunc2(#6)'"
     . " angle2='&trunc2(#5)' arcsepA='&ptValue(#arcsepB)' arcsepB='&ptValue(#arcsepA)'"
     . " fill='#fill' showpoints='#showpoints'/>",
-  attributes => [qw(fill linecolor linewidth dash showpoints arcsepA arcsepB)],
+  attributes  => [qw(fill linecolor linewidth dash showpoints arcsepA arcsepB)],
   afterDigest => sub { psTerminators($_[1], reverseArrow($_[1]->getArg(2))); });
 
 ##########################################################################################
@@ -747,7 +753,7 @@ DefPSConstructor('\psbezier', 'PSCoordList',
   "<ltx:bezier $PSLineAttr #!ARROWS showpoints='#showpoints' points='&ptValue(#pt)' />",
   attributes  => [qw(linecolor linewidth dash showpoints)],
   afterDigest => sub {
-    my $c = $_[1]->getArg(3);
+    my $c  = $_[1]->getArg(3);
     my $pt = ($c->getCount < 4) ? PairList(ZeroPair(), $c->getPairs()) : $c;
     $_[1]->setProperty(pt => $pt); });
 
@@ -857,7 +863,7 @@ DefConstructor('\rput@start OptionalMatch:* [] BracketedPSAngle PSCoord',
   "<ltx:g transform='&ptValue(#transform)' pos='#2'"
     . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
   afterDigest => sub { finishLabelPut($_[1], $_[1]->getArg(3), $_[1]->getArg(4)); },
-  alias => '\rput');
+  alias       => '\rput');
 
 DefConstructor('\put@end {}', "#1</ltx:g>",
   alias => '', mode => 'text');
