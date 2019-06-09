@@ -2396,7 +2396,7 @@ DefConstructorI('\omit', undef, '', properties => { alignmentSkippable => 1 });
 
 DefMacroI('\@alignment@cr', undef, sub {
     my ($gullet) = @_;
-    my $t = $gullet->readXToken;
+    my $t = $gullet->readXNonSpace;
     $gullet->unread($t);
     # SPECIAL CASE for endings of \halign (& friends).
     # We need the appropriate ending, to close the row/col/etc, but only see a }!!
@@ -2513,9 +2513,10 @@ DefPrimitiveI('\@LTX@nonumber', undef, sub { AssignValue(EQUATIONROW_NUMBER => 0
 # but aren't, so more punting is in order!
 # Note that \no align processes (at least expands) it's argument as it reads it;
 # See the peculiar construct in LaTeX for \hline and \@xhline
+# Since this is a non-LaTeXy sorta thing, better end with \cr, not \\
 DefMacro('\noalign Expanded',
   '\if@in@alignment'
-    . '\@multicolumn{\@alignment@ncolumns}{l}{\@@LTX@noalign{#1}}\@LTX@nonumber\@alignment@newline'
+    . '\@multicolumn{\@alignment@ncolumns}{l}{\@@LTX@noalign{#1}}\@LTX@nonumber\@alignment@cr'
     . '\else#1\fi');
 # This just processes the argument in text mode, but notices whether it is "empty" or not.
 # If so, tell the current row that it can safely be collapsed later on.
@@ -6476,7 +6477,7 @@ foreach my $ltxtrigger (qw(documentclass
   newcommand renewcommand newenvironment renewenvironment
   NeedsTeXFormat ProvidesPackage RequirePackage ProvidesFile
   makeatletter makeatother
-  typeout begin listfiles)) {
+  typeout begin listfiles nofiles)) {
   DefAutoload($ltxtrigger, 'LaTeX.pool.ltxml'); }
 
 # Seemingly good candidates to trigger AmSTeX ??
