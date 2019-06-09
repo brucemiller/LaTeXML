@@ -2049,8 +2049,7 @@ sub ProcessOptions {
 
   if ($options{inorder}) {    # Execute options in the order passed in (eg. \ProcessOptions*)
     foreach my $option (@classoptions) {    # process global options, but no error
-      if    (executeOption_internal($option))        { }
-      elsif (executeDefaultOption_internal($option)) { } }
+      if (executeOption_internal($option)) { } }
 
     foreach my $option (@curroptions) {
       if    (executeOption_internal($option))        { }
