@@ -486,19 +486,18 @@ sub _prepare_options {
     if ($$opts{split}) {
       $$opts{splitat}     = 'section' unless defined $$opts{splitat};
       $$opts{splitnaming} = 'id'      unless defined $$opts{splitnaming};
-      $$opts{splitback} = "//ltx:bibliography | //ltx:appendix | //ltx:index" unless defined $$opts{splitback};
-      $$opts{splitpaths} = {
-        part    => "//ltx:part | " . $$opts{splitback},
-        chapter => "//ltx:part | //ltx:chapter | " . $$opts{splitback},
-        section => "//ltx:part | //ltx:chapter | //ltx:section | " . $$opts{splitback},
-        subsection => "//ltx:part | //ltx:chapter | //ltx:section | //ltx:subsection | " . $$opts{splitback},
-        subsubsection => "//ltx:part | //ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | " . $$opts{splitback} }
-        unless defined $$opts{splitpaths};
+      $$opts{splitancestors} = {
+        part          => [qw()],
+        chapter       => [qw(part)],
+        section       => [qw(part chapter)],
+        subsection    => [qw(part chapter section)],
+        subsubsection => [qw(part chapter section subsection)] };
+      $$opts{splitback} = [qw(bibliography appendix index)];
 
       $$opts{splitnaming} = _checkOptionValue('--splitnaming', $$opts{splitnaming},
         qw(id idrelative label labelrelative));
-      $$opts{splitat} = _checkOptionValue('--splitat', $$opts{splitat}, CORE::keys %{ $$opts{splitpaths} });
-      $$opts{splitpath} = $$opts{splitpaths}->{ $$opts{splitat} } unless defined $$opts{splitpath}; }
+      $$opts{splitat} = _checkOptionValue('--splitat', $$opts{splitat}, CORE::keys %{ $$opts{splitancestors} });
+      $$opts{splitpath} = make_splitpaths($opts, $$opts{splitat}) unless defined $$opts{splitpath}; }
     # Check for appropriate combination of split, scan, prescan, dbfile, crossref
     if ($$opts{split} && (!defined $$opts{destination}) && ($$opts{whatsout} !~ /^archive/)) {
       croak("Must supply --destination when using --split"); }
@@ -595,6 +594,20 @@ sub _checkOptionValue {
     foreach my $choice (@choices) {
       return $choice if substr($choice, 0, length($value)) eq $value; } }
   croak("Value for $option, $value, doesn't match " . join(', ', @choices)); }
+
+# Contrived xpath, since backmatter can now be at any level!
+sub make_splitpaths {
+  my ($opts, $splitat) = @_;
+  my @paths = ();
+  my $anc   = $$opts{splitancestors}{$splitat};
+  foreach my $unit ($splitat, ($anc ? @$anc : ())) {
+    CORE::push(@paths, "//ltx:$unit");
+    foreach my $back (@{ $$opts{splitback} }) {
+      CORE::push(@paths, "//ltx:$back\["
+          . join(' or ', "preceding-sibling::ltx:$unit",
+          map { "parent::ltx:$_"; } @{ $$opts{splitancestors}{$unit} })
+          . "]"); } }
+  return join(' | ', @paths); }
 
 ### This is from t/lib/TestDaemon.pm and ideally belongs in Util::Pathname
 sub _read_options_file {
