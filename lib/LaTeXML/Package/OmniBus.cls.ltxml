@@ -55,6 +55,8 @@ DefPrimitive('\lx@late@usepackage Semiverbatim', sub { RequirePackage(ToString($
 DefMacro('\bibitem',
 '\@ifnext@n{[\protect\citeauthoryear}{\lx@late@usepackage{natbib}\bibitem}{\lx@OmniBus@saved@bibitem}');
 DefEnvironment('{frontmatter}', '#body');
+DefEnvironment('{mainmatter}',  '#body');
+DefEnvironment('{backmatter}',  '#body');
 DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\shortauthor{}', '');
 DefRegister('\titlerunning',  Tokens());
