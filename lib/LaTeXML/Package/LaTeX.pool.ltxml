@@ -1050,8 +1050,7 @@ DefConstructor('\lx@make@thanks{}', "<ltx:note role='thanks'>#1</ltx:note>");
 
 DefEnvironment('{abstract}', '',
   afterDigestBegin => sub {
-    AssignValue(inPreamble => 0);
-    AddToMacro(T_CS('\@startsection@hook'), T_CS('\maybe@end@abstract')); },
+    AssignValue(inPreamble => 0); },
   afterDigest => sub {
     my $frontmatter = LookupValue('frontmatter');
     push(@{ $$frontmatter{'ltx:abstract'} },
@@ -1066,9 +1065,12 @@ DefEnvironment('{abstract}', '',
 AssignValue('\abstract:locked' => 0);    # REDEFINE the above locked definition!
 DefMacro('\abstract', sub {
     my ($gullet) = @_;
-    ($gullet->ifNext(T_BEGIN) ? T_CS('\abstract@onearg') : T_CS('\begin{abstract}')); },
+    ($gullet->ifNext(T_BEGIN)
+      ? T_CS('\abstract@onearg')
+      : T_CS('\g@addto@macro'), T_CS('\@startsection@hook'), T_CS('\maybe@end@abstract'),
+      T_CS('\begin{abstract}')); },
   locked => 1);
-DefMacro('\abstract@onearg{}', '\begin{abstract}#1\end{abstract}');
+DefMacro('\abstract@onearg{}', '\begin{abstract}#1\end{abstract}\let\endabstract\relax');
 
 DefMacroI('\maybe@end@abstract', undef, '\endabstract');
 
