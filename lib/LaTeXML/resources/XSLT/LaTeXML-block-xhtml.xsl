@@ -654,31 +654,33 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
     <xsl:param name="eqpos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
-      <xsl:attribute name="class">ltx_eqn_row ltx_align_baseline</xsl:attribute>
-      <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
-        <xsl:attribute name="class">ltx_eqn_cell ltx_align_left</xsl:attribute>
-        <xsl:attribute name="style">white-space:normal;</xsl:attribute>
-        <xsl:attribute name="colspan">
-          <xsl:value-of select="3+$ncolumns"/>
-        </xsl:attribute>
-        <xsl:apply-templates select="." mode="begin">
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
-        <xsl:apply-templates select="." mode="inalignment-begin">
-          <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
-        <xsl:apply-templates>
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
-        <xsl:apply-templates select="." mode="inalignment-end">
-          <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
-        <xsl:apply-templates select="." mode="end">
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
+    <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+      <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_eqn_row ltx_align_baseline</xsl:attribute>
+        <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_eqn_cell ltx_align_left</xsl:attribute>
+          <xsl:attribute name="style">white-space:normal;</xsl:attribute>
+          <xsl:attribute name="colspan">
+            <xsl:value-of select="3+$ncolumns"/>
+          </xsl:attribute>
+          <xsl:apply-templates select="." mode="begin">
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates select="." mode="inalignment-begin">
+            <xsl:with-param name="ncolumns" select="$ncolumns"/>
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates>
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates select="." mode="inalignment-end">
+            <xsl:with-param name="ncolumns" select="$ncolumns"/>
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates select="." mode="end">
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+        </xsl:element>
       </xsl:element>
     </xsl:element>
   </xsl:template>
