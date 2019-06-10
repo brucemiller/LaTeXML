@@ -1763,7 +1763,16 @@ sub beforeEquation {
         ($numbered ? RefStepCounter($ctr) : RefStepID($ctr)) }, 'global'); }
   else {
     AssignValue(EQUATIONROW_TAGS => {}, 'global'); }
+  Let('\@@ENDDISPLAYMATH',   '\lx@begin@fake@intertext');
+  Let('\@@BEGINDISPLAYMATH', '\lx@end@fake@intertext');
+  Let('\]',                  '\lx@begin@fake@intertext');
+  Let('\[',                  '\lx@end@fake@intertext');
   return; }
+
+# Apparently folks use $$text$$ or even \]text\[ inside display math!
+# This SHOULD create a line break, not merely text!
+DefPrimitive('\lx@begin@fake@intertext', sub { $_[0]->beginMode('text'); });
+DefPrimitive('\lx@end@fake@intertext',   sub { $_[0]->endMode('text'); });
 
 sub retractEquation {
   my $numbering = LookupValue('EQUATION_NUMBERING');
@@ -2033,6 +2042,7 @@ DefConditionalI('\if@in@firstcolumn', undef, sub {
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
 '\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_eqn_lefteqn}\@@BEGININLINEMATH \displaystyle #1\@@ENDINLINEMATH\mbox{}}'
+    . '\@LTX@nonumber\@alignment@cr'
     . '\else\rlap{\@@BEGININLINEMATH\displaystyle #1\@@ENDINLINEMATH}\fi');
 # \intertext (in amsmath)
 
