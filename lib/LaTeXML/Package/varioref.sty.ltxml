@@ -1,0 +1,61 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | varioref.sty                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+#  /--------------------------------------------------------------------\
+# | INCOMPLETE IMPLEMENTATION                                            |
+# | remove this comment, when done.                                      |
+# | Drafted by texscan --stub varioref.sty                               |
+#  \--------------------------------------------------------------------/
+DefMacro('\vref OptionalMatch:* Semiverbatim',                       '\ref{#2}');
+DefMacro('\vpageref OptionalMatch:* Semiverbatim',                   '\ref{#2}');
+DefMacro('\vrefrange OptionalMatch:* Semiverbatim Semiverbatim',     '\vref{#2}--\vref{#3}');
+DefMacro('\vpagerefrange OptionalMatch:* Semiverbatim Semiverbatim', '\vref{#2}--\vref{#3}');
+
+DefMacro('\vrefpagenum DefToken Semiverbatim', '\def#1{\ref{#2}}');
+
+# Should use this, but....
+DefMacro('\labelformat{}{}', '');
+
+Let('\Ref',  '\ref');
+Let('\Vref', '\vref');
+
+# DefMacro('\aza',Tokens());
+
+DefMacro('\refpagename', Tokens());
+
+DefMacro('\thevpagerefnum', Tokens());
+
+# Ignorable?
+DefMacro('\reftextafter',      Tokens());
+DefMacro('\reftextbefore',     Tokens());
+DefMacro('\reftextcurrent',    Tokens());
+DefMacro('\reftextfaceafter',  Tokens());
+DefMacro('\reftextfacebefore', Tokens());
+DefMacro('\reftextfaraway',    Tokens());
+
+DefMacro('\reftextpagerange Semiverbatim Semiverbatim',  '\vref{#2}--\vref{#3}');
+DefMacro('\reftextlabelrange Semiverbatim Semiverbatim', '\vref{#2}--\vref{#3}');
+
+DefMacro('\reftextvario{}{}', Tokens());
+
+# Ignorable warnings stuff
+DefMacro('\fullref',        Tokens());
+DefMacro('\vrefshowerrors', Tokens());
+DefMacro('\vrefwarning',    Tokens());
+#======================================================================
+1;

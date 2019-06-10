@@ -1,0 +1,55 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  twoopt.ltxml                                                       | #
+# | Style file for latexml documents                                    | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#======================================================================
+sub convert2optArgs {
+  my ($nargs, $optional1, $optional2) = @_;
+  $nargs = $nargs->toString if ref $nargs;
+  $nargs = 0 unless $nargs;
+  my @params = ();
+  if ($optional1) {
+    push(@params, LaTeXML::Core::Parameter->new('Optional',
+        "[Default:" . UnTeX($optional1) . "]",
+        extra => [$optional1, undef]));
+    $nargs--; }
+  if ($optional2) {
+    push(@params, LaTeXML::Core::Parameter->new('Optional',
+        "[Default:" . UnTeX($optional2) . "]",
+        extra => [$optional2, undef]));
+    $nargs--; }
+  push(@params, map { LaTeXML::Core::Parameter->new('Plain', '{}') } 1 .. $nargs);
+  return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
+
+DefPrimitive('\newcommandtwoopt OptionalMatch:* DefToken [Number][][]{}', sub {
+    my ($stomach, $star, $cs, $nargs, $opt1, $opt2, $body) = @_;
+    if (!isDefinable($cs)) {
+      Info('ignore', $cs, $stomach,
+        "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'")
+        unless LookupValue(ToString($cs) . ':locked');
+      return; }
+    DefMacroI($cs, convert2optArgs($nargs, $opt1, $opt2), $body); });
+
+DefPrimitive('\renewcommandtwoopt OptionalMatch:* DefToken [Number][][]{}', sub {
+    my ($stomach, $star, $cs, $nargs, $opt1, $opt2, $body) = @_;
+    DefMacroI($cs, convert2optArgs($nargs, $opt1, $opt2), $body); });
+
+DefPrimitive('\providecommandtwoopt OptionalMatch:* DefToken [Number][][]{}', sub {
+    my ($stomach, $star, $cs, $nargs, $opt1, $opt2, $body) = @_;
+    return unless isDefinable($cs);
+    DefMacroI($cs, convert2optArgs($nargs, $opt1, $opt2), $body); });
+
+#======================================================================
+1;

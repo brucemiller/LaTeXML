@@ -1,0 +1,38 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  PoS.cls                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Proceedings of Science style.
+LoadClass("JHEP", withoptions => 1);
+RequirePackage('ifpdf');
+RequirePackage('times');
+RequirePackage('mathptmx');
+RequirePackage('graphicx');
+
+DefMacro('\ShortTitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\PoScopydate{}', '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
+DefMacro('\PACSname',      '\textbf{PACS}');
+DefMacro('\PACS{}', '\@add@frontmatter{ltx:classification}[scheme=pacs,name={\PACSname}]{#1}');
+DefMacro('\FullConference{}', '');    # Where to put this?
+
+DefMacro('\Jmath', 'J');
+
+#**********************************************************************
+1;
