@@ -1890,8 +1890,11 @@ DefConstructorI('\[', undef,
     . "</ltx:equation>",
   beforeDigest => sub { $_[0]->beginMode('display_math'); },
   captureBody  => 1,
-  properties   => sub { RefStepID('equation') });
-DefConstructorI('\]', undef, "", beforeDigest => sub { $_[0]->endMode('display_math'); });
+  properties   => sub { RefStepID('equation') },
+  locked       => 1);
+DefConstructorI('\]', undef, "",
+  beforeDigest => sub { $_[0]->endMode('display_math'); },
+  locked       => 1);
 DefConstructorI('\(', undef,
   "<ltx:Math mode='inline'>"
     . "<ltx:XMath>"
