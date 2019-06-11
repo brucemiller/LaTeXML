@@ -1109,10 +1109,10 @@ DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
   beforeDigestEnd => sub { Digest(T_CS('\maybe@end@title')); },
   locked          => 1, mode => 'text');
 
+Tag('ltx:titlepage', autoClose => 1);
 DefConstructorI('\maybe@end@title', undef, sub {
     my ($document) = @_;
-    if ($document->isCloseable('ltx:titlepage')) {
-      $document->closeElement('ltx:titlepage'); } });
+    $document->maybeCloseElement('ltx:titlepage'); });
 
 DefMacro('\sectionmark{}',       Tokens());
 DefMacro('\subsectionmark{}',    Tokens());
@@ -2667,6 +2667,9 @@ sub saveTheoremStyle {
 RawTeX('\th@plain');    # Activate the default style.
 # [or just make it's values the defaults...]
 
+Tag('ltx:theorem', autoClose => 1);
+Tag('ltx:proof',   autoClose => 1);
+
 sub defineNewTheorem {
   my ($stomach, $flag, $thmset, $otherthmset, $type, $within) = @_;
   $thmset = ToString($thmset);
@@ -2731,9 +2734,9 @@ sub defineNewTheorem {
     "<ltx:theorem xml:id='#id' inlist='thm $listname' class='ltx_theorem_$classname'>"
       . "#tags"
       . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
-      . "#body"
-      . "</ltx:theorem>",
-    beforeDigest => sub {
+      . "#body",
+    afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+    beforeDigest   => sub {
       my $params = LookupValue('THEOREM_' . $thmset . '_PARAMETERS');
       foreach my $v (keys %$params) {
         AssignValue($v => $$params{$v}); }

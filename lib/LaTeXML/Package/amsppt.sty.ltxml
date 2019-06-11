@@ -113,28 +113,28 @@ DefConstructor('\specialhead Until:\endspecialhead',
   "<ltx:chapter inlist='toc' xml:id='#id'>"
     . "#tags"
     . "<ltx:title>#1</ltx:title>",
-  bounded => 1,
+  bounded    => 1,
   properties => sub { RefStepID('chapter') });
 Let('\endspecialhead', '\relax');
 DefConstructor('\head Until:\endhead',
   "<ltx:section inlist='toc' xml:id='#id'>"
     . "#tags"
     . "<ltx:title>#1</ltx:title>",
-  bounded => 1,
+  bounded    => 1,
   properties => sub { RefStepID('section') });
 DefMacro('\heading Until:\endheading', '\head#1\endhead');
 DefConstructor('\subhead Until:\endsubhead',
   "<ltx:subsection inlist='toc' xml:id='#id'>"
     . "#tags"
     . "<ltx:title>#1</ltx:title>",
-  bounded => 1,
+  bounded    => 1,
   properties => sub { RefStepID('subsection') });
 DefMacro('\subheading Until:\endsubheading', '\subhead#1\endsubhead');
 DefConstructor('\subsubhead Until:\endsubsubhead',
   "<ltx:subsubsection inlist='toc' xml:id='#id'>"
     . "#tags"
     . "<ltx:title>#1</ltx:title>",
-  bounded => 1,
+  bounded    => 1,
   properties => sub { RefStepID('subsubsection') });
 
 DefMacro('\widestnumber Token {}', '');    # Eat the next thing (w/its args!) and ignore it!!
@@ -154,13 +154,16 @@ Let('\endtoc', '\relax');
 
 NewCounter('theorem', 'document', idprefix => "Thm");
 
+Tag('ltx:theorem', autoClose => 1);
+Tag('ltx:proof',   autoClose => 1);
+
 DefConstructor('\proclaim{} Until:\endproclaim',
   "<ltx:theorem class='ltx_theorem_proclaim' xml:id='#id'>"
     . "#tags"
     . "<ltx:title>#1</ltx:title>"
-    . "#2"
-    . "</ltx:theorem>",
-  properties => sub { RefStepID('theorem') });
+    . "#2",
+  afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+  properties     => sub { RefStepID('theorem') });
 Let('\endproclaim', '\relax');
 DefRegister('\preproclaimskip'  => Glue(0));
 DefRegister('\postproclaimskip' => Glue(0));
@@ -180,9 +183,9 @@ DefConstructor('\definition Undigested DigestUntil:\enddefinition',
   "<ltx:theorem class='ltx_theorem_definition' xml:id='#id'>"
     . "#tags"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
-    . "#2"
-    . "</ltx:theorem>",
-  properties => sub {
+    . "#2",
+  afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+  properties     => sub {
     my $title = Digest(Tokens(T_BEGIN, T_CS('\definitionname'), T_SPACE, $_[1], T_END));
     (RefStepID('theorem'),
       title => $title, titlefont => $title->getFont); });
@@ -195,9 +198,9 @@ DefConstructor('\remark Undigested DigestUntil:\endremark',
   "<ltx:theorem class='ltx_theorem_remark' xml:id='#id'>"
     . "#tags"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
-    . "#2"
-    . "</ltx:theorem>",
-  properties => sub {
+    . "#2",
+  afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+  properties     => sub {
     my $title = Digest(Tokens(T_BEGIN, T_CS('\remarkname'), T_SPACE, $_[1], T_END));
     (RefStepID('theorem'),
       title => $title, titlefont => $title->getFont); });
@@ -207,9 +210,9 @@ DefConstructor('\example Undigested DigestUntil:\endexample',
   "<ltx:theorem class='ltx_theorem_example' xml:id='#id'>"
     . "#tags"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
-    . "#2"
-    . "</ltx:theorem>",
-  properties => sub {
+    . "#2",
+  afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+  properties     => sub {
     my $title = Digest(Tokens(T_BEGIN, T_CS('\examplename'), T_SPACE, $_[1], T_END));
     (RefStepID('theorem'),
       title => $title, titlefont => $title->getFont); });
@@ -221,9 +224,9 @@ DefConstructor('\demo Undigested DigestUntil:\enddemo',
   "<ltx:theorem class='ltx_theorem_demonstration' xml:id='#id'>"
     . "#tags"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
-    . "#2"
-    . "</ltx:theorem>",
-  properties => sub {
+    . "#2",
+  afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+  properties     => sub {
     my $title = Digest(Tokens(T_BEGIN, T_CS('\demonstrationname'), T_SPACE, $_[1]->unlist, T_END));
     (RefStepID('theorem'),
       title => $title, titlefont => $title->getFont); });

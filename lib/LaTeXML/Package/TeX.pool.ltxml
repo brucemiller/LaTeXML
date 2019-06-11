@@ -4796,9 +4796,9 @@ DefMacroI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\par')),
 DefConstructor('\@proclaim{}{}',
   "<ltx:theorem>"
     . "<ltx:title font='#titlefont' _force_font='true' >#title</ltx:title>"
-    . "#2"
-    . "</ltx:theorem>",
-  properties => sub {
+    . "#2",
+  afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+  properties     => sub {
     my $title = $_[1];
     (title => $title, titlefont => $title->getFont); });
 

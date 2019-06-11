@@ -236,10 +236,10 @@ DefMacro('\algorithmname', 'Algorithm');
 DefEnvironment('{algorithm}',
   "<ltx:theorem xml:id='#id' class='ltx_theorem_algorithm'>"
     . "#tags"
-    . "#body"
-    . "</ltx:theorem>",
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'algorithm'); },
-  afterDigest  => sub { RescueCaptionCounters('algorithm', $_[1]); });
+    . "#body",
+  afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+  beforeDigest   => sub { DefMacroI('\@captype', undef, 'algorithm'); },
+  afterDigest    => sub { RescueCaptionCounters('algorithm', $_[1]); });
 
 RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}}');
 

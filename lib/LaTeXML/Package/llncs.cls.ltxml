@@ -122,17 +122,17 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
       "<ltx:theorem xml:id='#id' class='#class'>"
         . "#tags"
         . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
-        . "#body"
-        . "</ltx:theorem>",
-      beforeDigest => sub {
+        . "#body",
+      afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+      beforeDigest   => sub {
         my $stylecmd = T_CS('\th@' . $style);
         if (!LookupDefinition($stylecmd)) {
           Warn('unexpected', $style, $_[0], "Unknown theoremstyle '$style'");
           $stylecmd = T_CS('\th@plain'); }
         Digest(Tokens($stylecmd)); },
       afterDigestBegin => sub { Digest($bodyfont); },
-      properties => sub {
-        my %ctr = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ());
+      properties       => sub {
+        my %ctr   = ($counter ? ($flag ? RefStepID($counter) : RefStepCounter($counter)) : ());
         my $title = Digest(Tokens(T_BEGIN, $capfont->unlist,
             T_CS('\lx@tag'), T_BEGIN,
             ($swap
