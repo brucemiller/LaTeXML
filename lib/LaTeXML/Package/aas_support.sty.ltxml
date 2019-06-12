@@ -154,7 +154,7 @@ DefEnvironment('{plate}[]',
     . "#body"
     . "</ltx:float>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'plate'); },
-  afterDigest => sub { RescueCaptionCounters('plate', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('plate', $_[1]); });
 
 DefEnvironment('{plate*}[]',
   "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_plate'>"
@@ -162,7 +162,7 @@ DefEnvironment('{plate*}[]',
     . "#body"
     . "</ltx:float>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'plate'); },
-  afterDigest => sub { RescueCaptionCounters('plate', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('plate', $_[1]); });
 
 DefMacro('\platewidth{Dimension}', '');                    # Ignorable?
 DefMacro('\platenum{}',            '\def\theplate{#1}');
@@ -299,11 +299,11 @@ DefMacro('\phm{}', '\phantom{string}');
 # Ultimately, this would get some more explicit semantic markup, but..
 # \objectname[catalogid]{text}
 # \dataset[catalogid]{text}
-DefConstructor('\objectname OptionalSemiverbatim Semiverbatim',
-  "<ltx:text class='ltx_ast_objectname'>#1 (catalog #2)</ltx:text>");
+DefConstructor('\objectname OptionalSemiverbatim {}',
+  "<ltx:text class='ltx_ast_objectname'>#2 (catalog #1)</ltx:text>");
 Let('\object', '\objectname');    # ???
-DefConstructor('\dataset OptionalSemiverbatim Semiverbatim',
-  "<ltx:text class='ltx_ast_dataset'>#1 (catalog #2)</ltx:text>");
+DefConstructor('\dataset OptionalSemiverbatim {}  ',
+  "<ltx:text class='ltx_ast_dataset'>#2 (catalog #1)</ltx:text>");
 
 #======================================================================
 # 2.17.2 Ionic Species and Chemical Bonds

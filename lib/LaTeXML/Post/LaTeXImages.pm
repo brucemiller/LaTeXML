@@ -182,7 +182,7 @@ sub cleanTeX {
     $style = $1; }
   $tex =~ s/^(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*//; # Trim leading spacing (especially negative!)
   $tex =~ s/(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*$//; # and trailing spacing
-      # Strip comments, but watchout for \% (or more exactly, an ODD number of \)
+       # Strip comments, but watchout for \% (or more exactly, an ODD number of \)
   $tex =~ s/(?<!\\)((?:\\\\)*)\%[^\n]*\n/$1/gs;
   $tex = $style . ' ' . $tex if $style;    # Put back the style, if any
   return $tex; }
@@ -457,7 +457,7 @@ sub convert_image {
   my ($bg, $fg) = ($$self{background}, 'black');
 
   my $image = image_object(antialias => 'True', background => $bg, density => $$self{dpi});
-  my $err = $image->Read($$self{dvicmd_output_type} . ':' . $src);
+  my $err   = $image->Read($$self{dvicmd_output_type} . ':' . $src);
   if ($err) {
     Warn('imageprocessing', 'read', undef,
       "Image conversion failed to read '$src'",

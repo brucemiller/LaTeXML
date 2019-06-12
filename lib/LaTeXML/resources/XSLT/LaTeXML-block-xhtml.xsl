@@ -411,15 +411,24 @@
        |     |             constraint |
        |_____|________________________|
 
+   The equation number is on the left if the document has class=ltx_leqno;
+   Otherwise the equation number will be on the right (w/ obvious change to above diagrams).
+
+   Also, there can be more than 2 columns (eg with AMS's align).
+   Moreover, there can be columns missing, esp. with AMS align.
+   So, the right padding column may use colspan to fill in the missing columns,
+   so that any rightmost columns (eg the equation number) are still correctly positioned.
   -->
 
   <func:function name="f:countcolumns">
     <xsl:param name="equation"/>
     <func:result>
-      <xsl:value-of select="count(ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td
-                            | ltx:MathFork/ltx:MathBranch[1]/ltx:td
-                            | ltx:MathFork/ltx:MathBranch[1][not(ltx:tr or ltx:td)]
-                            | ltx:Math)"/>
+      <xsl:value-of select="sum(ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td/@colspan)
+                            + count(ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td[not(@colspan)])
+                            + sum(ltx:MathFork/ltx:MathBranch[1]/ltx:td/@colspan)
+                            + count(ltx:MathFork/ltx:MathBranch[1]/ltx:td[not(@colspan)])
+                            + count(ltx:MathFork/ltx:MathBranch[1][not(ltx:tr or ltx:td)])
+                            + count(ltx:Math)"/>
     </func:result>
   </func:function>
 
@@ -587,6 +596,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
     </xsl:choose>
   </xsl:template>
 
+  <!-- Handle the equation left side, possibly including equation number -->
   <xsl:template name="eq-left">
     <xsl:param name="context"/>
     <xsl:param name="eqpos"
@@ -602,14 +612,22 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
     </xsl:element>
   </xsl:template>
 
+  <!-- Handle the equation right side, possibly including equation number,
+       and any extra padding "columns" needed to complete the row. -->
   <xsl:template name="eq-right">
     <xsl:param name="context"/>
     <xsl:param name="eqpos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
+    <xsl:param name="extrapad" select="0"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
       <xsl:attribute name="class">
       <xsl:value-of select="concat('ltx_eqn_cell ltx_eqn_',$eqpos,'_padright')"/></xsl:attribute>
+      <xsl:if test="$extrapad > 0">
+        <xsl:attribute name="colspan">
+          <xsl:value-of select="$extrapad+1"/>
+        </xsl:attribute>
+      </xsl:if>
     </xsl:element>
     <xsl:call-template name="eqnumtd">
       <xsl:with-param name="context" select="$context"/>
@@ -636,31 +654,33 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
     <xsl:param name="eqpos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
-      <xsl:attribute name="class">ltx_eqn_row ltx_align_baseline</xsl:attribute>
-      <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
-        <xsl:attribute name="class">ltx_eqn_cell ltx_align_left</xsl:attribute>
-        <xsl:attribute name="style">white-space:normal;</xsl:attribute>
-        <xsl:attribute name="colspan">
-          <xsl:value-of select="3+$ncolumns"/>
-        </xsl:attribute>
-        <xsl:apply-templates select="." mode="begin">
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
-        <xsl:apply-templates select="." mode="inalignment-begin">
-          <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
-        <xsl:apply-templates>
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
-        <xsl:apply-templates select="." mode="inalignment-end">
-          <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
-        <xsl:apply-templates select="." mode="end">
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
+    <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+      <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_eqn_row ltx_align_baseline</xsl:attribute>
+        <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_eqn_cell ltx_align_left</xsl:attribute>
+          <xsl:attribute name="style">white-space:normal;</xsl:attribute>
+          <xsl:attribute name="colspan">
+            <xsl:value-of select="3+$ncolumns"/>
+          </xsl:attribute>
+          <xsl:apply-templates select="." mode="begin">
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates select="." mode="inalignment-begin">
+            <xsl:with-param name="ncolumns" select="$ncolumns"/>
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates>
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates select="." mode="inalignment-end">
+            <xsl:with-param name="ncolumns" select="$ncolumns"/>
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+          <xsl:apply-templates select="." mode="end">
+            <xsl:with-param name="context" select="$context"/>
+          </xsl:apply-templates>
+        </xsl:element>
       </xsl:element>
     </xsl:element>
   </xsl:template>
@@ -681,25 +701,11 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
       </xsl:when>
-      <!-- Nested, but only 1 deep; introduce a tbody-->
-      <!-- not sure, reallly; can't nest tbody's 
-      <xsl:when test="not(parent::ltx:equationgroup[ancestor::ltx:equationgroup])">
-        <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
-          <xsl:attribute name="class">case1</xsl:attribute>
-          <xsl:call-template name="add_id"/>
-          <xsl:element name="tr" namespace="{$html_ns}">
-            <xsl:attribute name="class">case1</xsl:attribute>
-          </xsl:element>
-          <xsl:apply-templates select="." mode="ininalignment">
-            <xsl:with-param name="ncolumns" select="$ncolumns"/>
-            <xsl:with-param name="context" select="$context"/>
-          </xsl:apply-templates>
-        </xsl:element>
-      </xsl:when>
-      -->
-      <!-- Sloppy case, we at least need an empty row to put the id on; Ugh 
-           Probably should be able to do more cleanup,
-           At least, wrap it in tbody, so it'll validate. -->
+      <!-- Nested equationgroup, with id.  The alignment will be handled by the table
+           for the outer equationgroup (hopefully consistently).
+           But we need a place to part the id!  Unfortunately nested tbody  are not allowed,
+           so we add an empty tbody/tr to hold the id.
+           At least, it'll validate. -->
       <xsl:otherwise>
         <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
@@ -709,6 +715,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
             <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}"> <!--Empty, too
 -->
               <xsl:attribute name="class">ltx_eqn_cell</xsl:attribute>
+              <xsl:attribute name="colspan"><xsl:value-of select="$ncolumns+3"/></xsl:attribute>
             </xsl:element>
           </xsl:element>
         </xsl:element>
@@ -744,9 +751,13 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
   <xsl:template match="ltx:equation" mode="inalignment">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"/>
+    <!-- The main issue here is whether to wrap with a tbody (putting any id there),
+         and whether the id has already been placed on an outer table
+         else just transforming the content, leaving any id to the 1st row -->
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
-      <!-- no outer equationgroup, so id has already been handled. -->
+      <!-- no outer equationgroup, so id has already been handled and there are no other equations.
+           So no tbody necessary. -->
       <xsl:when test="not(parent::ltx:equationgroup)">
         <xsl:apply-templates select="." mode="ininalignment">
           <xsl:with-param name="ncolumns" select="$ncolumns"/>
@@ -754,8 +765,18 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
           <xsl:with-param name="need_id" select="false()"/>
         </xsl:apply-templates>
       </xsl:when>
-      <!-- have refnum, which may span, so need containing tbody to hold id -->
-      <xsl:when test="ltx:tags">
+      <!-- This equation has no tags, but outer equationgroup does.
+           No tbody, else it will interfere with the group's rowspanned equation number -->
+      <xsl:when test="not(ltx:tags) and parent::ltx:equationgroup/ltx:tags">
+        <xsl:apply-templates select="." mode="ininalignment">
+          <xsl:with-param name="ncolumns" select="$ncolumns"/>
+          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="need_id" select="true()"/>
+        </xsl:apply-templates>
+      </xsl:when>
+      <!-- Otherwise, ALWAYS wrap equation in a tbody (w/id, if any), in case
+           there's a number, id, or OTHER equations in group have tbodys (for validation). -->
+      <xsl:otherwise>
         <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
           <xsl:apply-templates select="." mode="ininalignment">
@@ -764,14 +785,6 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
             <xsl:with-param name="need_id" select="false()"/>
           </xsl:apply-templates>
         </xsl:element>
-      </xsl:when>
-      <!-- otherwise, we'll need to punt with id (if any) on 1st row -->
-      <xsl:otherwise>
-        <xsl:apply-templates select="." mode="ininalignment">
-          <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
-          <xsl:with-param name="need_id" select="true()"/>
-        </xsl:apply-templates>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -807,6 +820,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
           </xsl:apply-templates>
           <xsl:call-template name="eq-right">
             <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="extrapad" select="$ncolumns - f:countcolumns(ltx:MathFork/ltx:MathBranch[1]/tr[1])"/>
           </xsl:call-template>
         </xsl:element>
         <xsl:for-each select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[position() &gt; 1]">
@@ -821,6 +835,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
             </xsl:apply-templates>
             <xsl:call-template name="eq-right">
               <xsl:with-param name="context" select="$context"/>
+              <!-- count carefully, here -->
+              <xsl:with-param name="extrapad" select="$ncolumns - sum(ltx:td/@colspan) - count(ltx:td[not(@colspan)])"/>
             </xsl:call-template>
           </xsl:element>
         </xsl:for-each>
@@ -847,6 +863,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
           </xsl:apply-templates>
           <xsl:call-template name="eq-right">
             <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="extrapad" select="$ncolumns - f:countcolumns(ltx:MathFork/ltx:MathBranch[1])"/>
           </xsl:call-template>
         </xsl:element>
       </xsl:when>
@@ -886,6 +903,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
           </xsl:element>
           <xsl:call-template name="eq-right">
             <xsl:with-param name="context" select="$context"/>
+            <!-- no extra columns, since we've already made the equation span -->
           </xsl:call-template>
         </xsl:element>
       </xsl:otherwise>

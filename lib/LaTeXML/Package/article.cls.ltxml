@@ -91,6 +91,8 @@ DefMacro('\theenumiv',  '\Alph{enumiv}');
 
 DefMacro('\refname', 'References');
 
+AssignMapping('BACKMATTER_ELEMENT', 'ltx:bibliography' => 'ltx:section');
+
 Tag('ltx:appendix', autoClose => 1);
 DefMacro('\appendix', '\@appendix');
 # Actually we should be using section counter

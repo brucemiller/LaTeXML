@@ -63,7 +63,7 @@ sub process {
       $doc->removeNodes(@resnodes); }
     else {
       foreach my $node (@resnodes) {
-        my $src = $node->getAttribute('src');
+        my $src  = $node->getAttribute('src');
         my $path = $self->copyResource($doc, $src, $node->getAttribute('type'));
         $node->setAttribute(src => $path) unless $path eq $src; } } }
   if (my $css = $params{CSS}) {

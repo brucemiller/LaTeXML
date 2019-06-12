@@ -1,0 +1,31 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  thm-restate.sty.ltxml                                              | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+RawTeX(<<'EoTeX');
+\newenvironment{restatable}[3][]{%
+  \begin{#2}[#1]%
+    \label{restatable:#3}
+    \expandafter\gdef\csname #3\endcsname{\lx@thm@restate{#3}\@ifstar{}{}}
+  }{%
+ \end{\@currenvir}%
+}
+EoTeX
+
+# Let's not bother copying the whole thing, but just refer to it!
+DefMacro('\lx@thm@restate{}', 'See \ref{restatable:#1}');
+
+#======================================================================
+1;

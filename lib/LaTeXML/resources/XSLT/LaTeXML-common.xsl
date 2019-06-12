@@ -457,6 +457,9 @@
     <xsl:if test="@role">
       <xsl:value-of select="concat(' ',f:class-pref('ltx_role_',@role))"/>
     </xsl:if>
+    <xsl:if test="@lists">
+      <xsl:value-of select="concat(' ',f:class-pref('ltx_list_',@lists))"/>
+    </xsl:if>
     <xsl:if test="@align">
       <xsl:value-of select="concat(' ',f:class-pref('ltx_align_',@align))"/>
     </xsl:if>

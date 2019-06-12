@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" tex="\begin{array}[]{cp{4.5cm}}4&amp;\tabularcell@hbox{$x_{1}$ \\&#10;$x_{2}$}\\&#10;\end{array}" text="Array[[4, [x1 x2]]]" xml:id="S0.Ex1.m1">
+        <XMath>
+          <XMArray role="ARRAY" vattach="middle">
+            <XMRow>
+              <XMCell align="center">
+                <XMTok meaning="4" role="NUMBER">4</XMTok>
+              </XMCell>
+              <XMCell align="justify" width="128.0pt">
+                <XMText class="ltx_wrap"><Math mode="inline" tex="x_{1}" text="x _ 1" xml:id="S0.Ex1.m1.m1">
+                    <XMath>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                        <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                        <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                      </XMApp>
+                    </XMath>
+                  </Math> <break/><Math mode="inline" tex="x_{2}" text="x _ 2" xml:id="S0.Ex1.m1.m2">
+                    <XMath>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                        <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                        <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                      </XMApp>
+                    </XMath>
+                  </Math></XMText>
+              </XMCell>
+            </XMRow>
+          </XMArray>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+</document>

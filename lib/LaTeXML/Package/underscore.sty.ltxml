@@ -1,7 +1,7 @@
 # -*- mode: Perl -*-
 # /=====================================================================\ #
-# |  lcml2016.sty.ltxml                                                 | #
-# | Support for various LCML styles/classes for LaTeXML                 | #
+# |  underscore                                                         | #
+# | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
@@ -15,8 +15,9 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-RequirePackage('icml_support');
-
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+#======================================================================
+# Don't really need to change \_, but do need to make _ work in text!
+DefMacroI(T_ACTIVE('_'),   undef, '\ifmmode\sb\lx@text@underscore\fi');
+AtBeginDocument('\catcode`_\active');
+#======================================================================
 1;

@@ -181,10 +181,9 @@ sub revert {
   my ($self) = @_;
   return $self->getBody->revert; }
 
-sub computeSize {
-  my ($self, %options) = @_;
+sub computeSize_internal {
+  my ($self) = @_;
   $self->normalizeAlignment;
-  my $props      = $self->getPropertiesRef;
   my @rowheights = ();
   my @colwidths  = ();
   # add \baselineskip between rows? Or max the row heights with it ...
@@ -211,10 +210,14 @@ sub computeSize {
       else { }    # Ditto spanned rows
     }
     push(@rowheights, $rowh + $rowd + 0.5 * $base); }    # somehow our heights are way too short????
-      # Should we check for space for spanned rows & columns ?
-      # sum
-  my $ww = Dimension(sum(@colwidths));
-  my $hh = Dimension(sum(@rowheights));
+  return ([@rowheights],[@colwidths]); }
+
+sub computeSize {
+  my ($self, %options) = @_;
+  my ($rowheights, $colwidths) = $self->computeSize_internal();
+  my $props      = $self->getPropertiesRef;
+  my $ww = Dimension(sum(@$colwidths));
+  my $hh = Dimension(sum(@$rowheights));
   my $dd = Dimension(0);
   $$props{width}  = $ww unless defined $$props{width};
   $$props{height} = $hh unless defined $$props{height};

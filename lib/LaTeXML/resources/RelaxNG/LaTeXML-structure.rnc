@@ -30,8 +30,7 @@ document_attributes = Sectional.attributes
 ## Content model for \elementref{document}.
 document_model =
  (FrontMatter.class | SectionalFrontMatter.class | Meta.class | titlepage)*,
-  document.body.class*,
-  BackMatter.class*
+  (document.body.class | BackMatter.class)*
 
 #======================================================================
 
@@ -46,7 +45,7 @@ part.body.class = Para.model | chapter  | slide | sidebar
 part_attributes = Sectional.attributes
 
 ## Content model for \elementref{part}.
-part_model = SectionalFrontMatter.class*, part.body.class*
+part_model = SectionalFrontMatter.class*, (part.body.class | BackMatter.class)*
 
 #----------------------------------------------------------------------
 
@@ -62,7 +61,7 @@ chapter.body.class = Para.model | subparagraph | paragraph
 chapter_attributes = Sectional.attributes
 
 ## Content model for \elementref{chapter}.
-chapter_model = SectionalFrontMatter.class*, chapter.body.class*
+chapter_model = SectionalFrontMatter.class*, (chapter.body.class | BackMatter.class)*
 
 #----------------------------------------------------------------------
 
@@ -78,7 +77,7 @@ section.body.class = Para.model | subparagraph | paragraph
 section_attributes = Sectional.attributes
 
 ## Content model for \elementref{section}.
-section_model = SectionalFrontMatter.class*, section.body.class*
+section_model = SectionalFrontMatter.class*, (section.body.class | BackMatter.class)*
 
 #----------------------------------------------------------------------
 
@@ -93,7 +92,7 @@ subsection.body.class = Para.model | subparagraph | paragraph | subsubsection | 
 subsection_attributes = Sectional.attributes
 
 ## Content model for \elementref{subsection}.
-subsection_model = SectionalFrontMatter.class*, subsection.body.class*
+subsection_model = SectionalFrontMatter.class*, (subsection.body.class | BackMatter.class)*
 
 #----------------------------------------------------------------------
 
@@ -108,7 +107,7 @@ subsubsection.body.class = Para.model | subparagraph | paragraph | slide | sideb
 subsubsection_attributes = Sectional.attributes
 
 ## Content model for \elementref{subsubsection}.
-subsubsection_model = SectionalFrontMatter.class*, subsubsection.body.class*
+subsubsection_model = SectionalFrontMatter.class*, (subsubsection.body.class | BackMatter.class)*
 
 #----------------------------------------------------------------------
 
@@ -124,7 +123,7 @@ paragraph.body.class = Para.model | subparagraph | slide | sidebar
 paragraph_attributes = Sectional.attributes
 
 ## Content model for \elementref{paragraph}.
-paragraph_model = SectionalFrontMatter.class*, paragraph.body.class*
+paragraph_model = SectionalFrontMatter.class*, (paragraph.body.class | BackMatter.class)*
 
 
 #----------------------------------------------------------------------
@@ -140,7 +139,7 @@ subparagraph.body.class = Para.model | slide | sidebar
 subparagraph_attributes = Sectional.attributes
 
 ## Content model for \elementref{subparagraph}.
-subparagraph_model = SectionalFrontMatter.class*, subparagraph.body.class*
+subparagraph_model = SectionalFrontMatter.class*, (subparagraph.body.class | BackMatter.class)*
 
 #======================================================================
 
@@ -158,7 +157,7 @@ slide.body.class = Para.model
 slide_attributes = Sectional.attributes
 
 ## Content model for \elementref{slide}.
-slide_model = SectionalFrontMatter.class*, slide.body.class*
+slide_model = SectionalFrontMatter.class*, (slide.body.class | BackMatter.class)*
 
 #======================================================================
 
@@ -173,7 +172,7 @@ sidebar.body.class = Para.model
 sidebar_attributes = Sectional.attributes
 
 ## Content model for \elementref{sidebar}.
-sidebar_model = (FrontMatter.class | SectionalFrontMatter.class)*, sidebar.body.class*
+sidebar_model = (FrontMatter.class | SectionalFrontMatter.class)*, (sidebar.body.class | BackMatter.class)*
 
 #======================================================================
 
@@ -203,6 +202,7 @@ bibliography.body.class = Para.model | biblist
 ## Attributes for \elementref{bibliography}.
 bibliography_attributes = 
   Sectional.attributes,
+  Listing.attributes,
 
   ## the list of bib files used to create the bibliography.
   attribute files { text }?,
@@ -232,8 +232,9 @@ index.body.class = Para.model | indexlist
 ## Attributes for \elementref{index}.
 index_attributes = 
   Sectional.attributes,
+  Listing.attributes,
 
-  ## The kind of index
+  ## The kind of index (obsolete?)
   attribute role { text }?
 
 ## Content model for \elementref{index}.
@@ -293,6 +294,7 @@ glossary.body.class = Para.model | glossarylist
 ## Attributes for \elementref{glossary}.
 glossary_attributes = 
   Sectional.attributes,
+  Listing.attributes,
 
   ## The kind of glossary
   attribute role { text }?
@@ -332,7 +334,7 @@ glossaryentry_attributes = Common.attributes, ID.attributes,
   attribute key { text }?
 
 ## Content model for \elementref{glossaryentry}.
-glossaryentry_model = glossaryphrase*, glossarydefinition, indexrefs?
+glossaryentry_model = glossaryphrase*, indexrefs?
 
 #======================================================================
 

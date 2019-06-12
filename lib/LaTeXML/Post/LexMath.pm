@@ -24,7 +24,7 @@ our $lxMimeType = 'application/x-llamapun';
 
 sub convertNode {
   my ($self, $doc, $xmath, $style) = @_;
-  my $math = $xmath->parentNode;
+  my $math    = $xmath->parentNode;
   my $lexemes = $math && isElementNode($math) && $math->getAttribute('lexemes');
   return { processor => $self, encoding => $lxMimeType, mimetype => $lxMimeType,
     string => $lexemes }; }

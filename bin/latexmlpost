@@ -47,13 +47,27 @@ my ($bibliography, $splitbibliography, @bibliographies) = (1, undef);
 my ($timestamp)          = (undef);
 my @math_formats         = ();
 my %removed_math_formats = ();
-my $splitback            = "//ltx:bibliography | //ltx:appendix | //ltx:index";
-my %splitpaths           = (
-  part       => "//ltx:part | $splitback",
-  chapter    => "//ltx:part | //ltx:chapter | $splitback",
-  section    => "//ltx:part | //ltx:chapter | //ltx:section | $splitback",
-  subsection => "//ltx:part | //ltx:chapter | //ltx:section | //ltx:subsection | $splitback",
-  subsubsection => "//ltx:part | //ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | $splitback");
+my $splitancestors       = {
+  part          => [qw()],
+  chapter       => [qw(part)],
+  section       => [qw(part chapter)],
+  subsection    => [qw(part chapter section)],
+  subsubsection => [qw(part chapter section subsection)] };
+my $splitback = [qw(bibliography appendix index)];
+
+# Contrived xpath, since backmatter can now be at any level!
+sub make_splitpaths {
+  my ($splitat) = @_;
+  my @paths     = ();
+  my $anc       = $$splitancestors{$splitat};
+  foreach my $unit ($splitat, ($anc ? @$anc : ())) {
+    push(@paths, "//ltx:$unit");
+    foreach my $back (@$splitback) {
+      push(@paths, "//ltx:$back\["
+          . join(' or ', "preceding-sibling::ltx:$unit",
+          map { "parent::ltx:$_"; } @{ $$splitancestors{$unit} })
+          . "]"); } }
+  return join(' | ', @paths); }
 
 # Obsolete...
 my $parallelmath;
@@ -69,7 +83,7 @@ GetOptions("quiet" => sub { $verbosity--; },
   "path=s"            => \@paths,
 
   # Basics
-  "format=s" => \$format,
+  "format=s"      => \$format,
   "destination=s" => sub { $destination = $_[1];
     if ((!defined $extension) && ($destination =~ /\.(\w)$/)) {
       $extension = $1; }
@@ -194,8 +208,8 @@ if ($split && !defined $destination) {
 if ($split) {
   $splitnaming = checkOptionValue('--splitnaming', $splitnaming,
     qw(id idrelative label labelrelative));
-  $splitat = checkOptionValue('--splitat', $splitat, keys %splitpaths);
-  $splitpath = $splitpaths{$splitat} unless defined $splitpath;
+  $splitat = checkOptionValue('--splitat', $splitat, keys %$splitancestors);
+  $splitpath = make_splitpaths($splitat) unless defined $splitpath;
 }
 if ($prescan && !$scan) {
   xError("Makes no sense to --prescan with scanning disabled (--noscan)"); }
@@ -321,7 +335,10 @@ if ($split) {
   push(@procs, LaTeXML::Post::Split->new(split_xpath => $splitpath, splitnaming => $splitnaming,
       db => $DB, %OPTIONS)); }
 
-our $scanner = ($scan || $DB) && LaTeXML::Post::Scan->new(db => $DB, %OPTIONS);
+our $scanner = ($scan || $DB) && LaTeXML::Post::Scan->new(db => $DB,
+  ($splitnaming && ($splitnaming =~ /^label/) ? (labelids => 1) : ()),
+  %OPTIONS);
+
 if ($scan) {
   push(@procs, $scanner); }
 
@@ -408,7 +425,7 @@ if (!$prescan) {
   if ($stylesheet) {
     require LaTeXML::Post::XSLT;
     # Copy various kinds of resources, css, javascript, icon (others?)
-    my $parameters = { LATEXML_VERSION => "'$LaTeXML::VERSION'" };
+    my $parameters  = { LATEXML_VERSION => "'$LaTeXML::VERSION'" };
     my @searchpaths = ('.',
       (grep { -d $_ } reverse(@paths)),
       $DOCUMENT->getSearchPaths);

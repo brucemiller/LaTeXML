@@ -36,7 +36,7 @@ sub toProcess {
 sub extractTeX {
   my ($self, $doc, $node) = @_;
   my $mode = uc($node->getAttribute('mode') || 'INLINE');
-  my $tex = $self->cleanTeX($node->getAttribute('tex'));
+  my $tex  = $self->cleanTeX($node->getAttribute('tex'));
   return unless defined $tex;
   $mode = 'DISPLAY' if $tex =~ s/^\s*\\displaystyle\s+//;    # Strip leading displaystyle
   return ($tex =~ /^\s*$/ ? undef : "\\begin$mode $tex\\end$mode"); }

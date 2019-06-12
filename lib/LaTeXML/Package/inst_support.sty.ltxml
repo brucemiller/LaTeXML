@@ -42,12 +42,13 @@ use LaTeXML::Package;
 DefMacro('\author{}', sub {
     map { (T_CS('\lx@author'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_CS('\and'), T_OTHER(',')); });
 
-DefConstructor('\@institutemark{}', "<ltx:contact role='institutemark' _mark='#1'/>");
+DefMacro('\@institutemark{}', '\lx@contact{institutemark}{#1}');
 
 # \inst typically appears INSIDE \author, so @add@to@frontmatter doesn't sync them
-DefConstructor('\@inst{}',
-  "^<ltx:contact role='institutemark' _mark='#1'/>"
-    . "<ltx:contact role='emailmark' _mark='#1'/>");
+DefConstructor('\@@@inst{}',
+  "^<ltx:contact role='institutemark' _mark='#1'>#1</ltx:contact>"
+    . "<ltx:contact role='emailmark' _mark='#1'>#1</ltx:contact>");
+DefMacro('\@inst{}', '\@add@to@frontmatter{ltx:creator}{\@@@inst{#1}}');
 DefMacro('\inst{}', sub {
     map { (T_CS('\@inst'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_OTHER(',')); });
 
@@ -66,8 +67,6 @@ DefMacro('\institute@and', '\@end@institute\stepcounter{inst}\@new@institute');
 DefMacro('\@new@institute XUntil:\@end@institute', '\if.#1.\else\@add@institute{#1}\fi');
 
 #should play similar game as with institute, relocate?
-##DefConstructor('\@in@inst@email{}', "^<ltx:note role='email' name='#name'>#1</ltx:note>",
-##  properties => sub { (name => Digest(T_CS('\emailname'))); });
 DefMacro('\emailname', 'E-mail');
 DefConstructor('\@in@inst@email{}',
   "<ltx:note role='email' name='#name' mark='#mark'>#1</ltx:note>",

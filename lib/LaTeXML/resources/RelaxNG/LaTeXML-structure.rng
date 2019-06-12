@@ -50,10 +50,10 @@
       </choice>
     </zeroOrMore>
     <zeroOrMore>
-      <ref name="document.body.class"/>
-    </zeroOrMore>
-    <zeroOrMore>
-      <ref name="BackMatter.class"/>
+      <choice>
+        <ref name="document.body.class"/>
+        <ref name="BackMatter.class"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
@@ -83,7 +83,10 @@
       <ref name="SectionalFrontMatter.class"/>
     </zeroOrMore>
     <zeroOrMore>
-      <ref name="part.body.class"/>
+      <choice>
+        <ref name="part.body.class"/>
+        <ref name="BackMatter.class"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
@@ -117,7 +120,10 @@
       <ref name="SectionalFrontMatter.class"/>
     </zeroOrMore>
     <zeroOrMore>
-      <ref name="chapter.body.class"/>
+      <choice>
+        <ref name="chapter.body.class"/>
+        <ref name="BackMatter.class"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
@@ -150,7 +156,10 @@
       <ref name="SectionalFrontMatter.class"/>
     </zeroOrMore>
     <zeroOrMore>
-      <ref name="section.body.class"/>
+      <choice>
+        <ref name="section.body.class"/>
+        <ref name="BackMatter.class"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
@@ -182,7 +191,10 @@
       <ref name="SectionalFrontMatter.class"/>
     </zeroOrMore>
     <zeroOrMore>
-      <ref name="subsection.body.class"/>
+      <choice>
+        <ref name="subsection.body.class"/>
+        <ref name="BackMatter.class"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
@@ -213,7 +225,10 @@
       <ref name="SectionalFrontMatter.class"/>
     </zeroOrMore>
     <zeroOrMore>
-      <ref name="subsubsection.body.class"/>
+      <choice>
+        <ref name="subsubsection.body.class"/>
+        <ref name="BackMatter.class"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
@@ -244,7 +259,10 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
       <ref name="SectionalFrontMatter.class"/>
     </zeroOrMore>
     <zeroOrMore>
-      <ref name="paragraph.body.class"/>
+      <choice>
+        <ref name="paragraph.body.class"/>
+        <ref name="BackMatter.class"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
@@ -273,7 +291,10 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
       <ref name="SectionalFrontMatter.class"/>
     </zeroOrMore>
     <zeroOrMore>
-      <ref name="subparagraph.body.class"/>
+      <choice>
+        <ref name="subparagraph.body.class"/>
+        <ref name="BackMatter.class"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
@@ -301,7 +322,10 @@ real content should be confined to slides.</a:documentation>
       <ref name="SectionalFrontMatter.class"/>
     </zeroOrMore>
     <zeroOrMore>
-      <ref name="slide.body.class"/>
+      <choice>
+        <ref name="slide.body.class"/>
+        <ref name="BackMatter.class"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
@@ -329,7 +353,10 @@ real content should be confined to slides.</a:documentation>
       </choice>
     </zeroOrMore>
     <zeroOrMore>
-      <ref name="sidebar.body.class"/>
+      <choice>
+        <ref name="sidebar.body.class"/>
+        <ref name="BackMatter.class"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
@@ -384,6 +411,7 @@ real content should be confined to slides.</a:documentation>
   <define name="bibliography_attributes">
     <a:documentation>Attributes for \elementref{bibliography}.</a:documentation>
     <ref name="Sectional.attributes"/>
+    <ref name="Listing.attributes"/>
     <optional>
       <attribute name="files">
         <a:documentation>the list of bib files used to create the bibliography.</a:documentation>
@@ -437,9 +465,10 @@ real content should be confined to slides.</a:documentation>
   <define name="index_attributes">
     <a:documentation>Attributes for \elementref{index}.</a:documentation>
     <ref name="Sectional.attributes"/>
+    <ref name="Listing.attributes"/>
     <optional>
       <attribute name="role">
-        <a:documentation>The kind of index</a:documentation>
+        <a:documentation>The kind of index (obsolete?)</a:documentation>
       </attribute>
     </optional>
   </define>
@@ -534,6 +563,7 @@ arbitrary text, in addition to the expected \elementref{ref}'s.</a:documentation
   <define name="glossary_attributes">
     <a:documentation>Attributes for \elementref{glossary}.</a:documentation>
     <ref name="Sectional.attributes"/>
+    <ref name="Listing.attributes"/>
     <optional>
       <attribute name="role">
         <a:documentation>The kind of glossary</a:documentation>
@@ -602,7 +632,6 @@ and references to points in the document where the phrase was found.</a:document
     <zeroOrMore>
       <ref name="glossaryphrase"/>
     </zeroOrMore>
-    <ref name="glossarydefinition"/>
     <optional>
       <ref name="indexrefs"/>
     </optional>

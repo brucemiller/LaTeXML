@@ -1,0 +1,25 @@
+<article class="ltx_document">
+<div id="p1" class="ltx_para">
+<p class="ltx_p">For vector-valued variables, we would write the random variable as <math id="p1.m1" class="ltx_Math" alttext="\bm{\mathrm{x}}" display="inline"><semantics><mi>𝐱</mi><annotation encoding="application/x-llamapun">bold-x</annotation></semantics></math> and one of its values as <math id="p1.m2" class="ltx_Math" alttext="\bm{x}" display="inline"><semantics><mi>𝒙</mi><annotation encoding="application/x-llamapun">bold-italic-x</annotation></semantics></math>.</p>
+</div>
+<div id="p2" class="ltx_para">
+<p class="ltx_p">We want array lexemes to be compositionally exposing their contents:</p>
+<table id="S0.Ex1" class="ltx_equation ltx_eqn_table">
+
+<tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
+<td class="ltx_eqn_cell ltx_align_center"><math id="S0.Ex1.m1" class="ltx_Math" alttext="\begin{array}[]{cc}a+1&amp;b-2\\&#10;c+3&amp;d-4\end{array}" display="block"><semantics><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd columnalign="center"><mrow><mi>a</mi><mo>+</mo><mn>1</mn></mrow></mtd><mtd columnalign="center"><mrow><mi>b</mi><mo>-</mo><mn>2</mn></mrow></mtd></mtr><mtr><mtd columnalign="center"><mrow><mi>c</mi><mo>+</mo><mn>3</mn></mrow></mtd><mtd columnalign="center"><mrow><mi>d</mi><mo>-</mo><mn>4</mn></mrow></mtd></mtr></mtable><annotation encoding="application/x-llamapun">ARRAY:start ROW:start CELL:start italic-a ADDOP:plus NUMBER:1 CELL:end CELL:start italic-b ADDOP:minus NUMBER:2 CELL:end ROW:end ROW:start CELL:start italic-c ADDOP:plus NUMBER:3 CELL:end CELL:start italic-d ADDOP:minus NUMBER:4 CELL:end ROW:end ARRAY:end</annotation></semantics></math></td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright"></td></tr>
+</table>
+</div>
+<div id="p3" class="ltx_para">
+<p class="ltx_p">We also want atoms to be compositionally exposing their contents:</p>
+<table id="S0.Ex2" class="ltx_equation ltx_eqn_table">
+
+<tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
+<td class="ltx_eqn_cell ltx_align_center"><math id="S0.Ex2.m1" class="ltx_Math" alttext="1+\left(\text{$x$ if $x&lt;0$ else $y$}\right)" display="block"><semantics><mrow><mn>1</mn><mo>+</mo><mrow><mo>(</mo><mrow><mi>x</mi><mtext> if </mtext><mrow><mi>x</mi><mo>&lt;</mo><mn>0</mn></mrow><mtext> else </mtext><mi>y</mi></mrow><mo>)</mo></mrow></mrow><annotation encoding="application/x-llamapun">NUMBER:1 ADDOP:plus OPEN:( italic-x if italic-x RELOP:less-than NUMBER:0 else italic-y CLOSE:)</annotation></semantics></math></td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright"></td></tr>
+</table>
+</div>
+</article>

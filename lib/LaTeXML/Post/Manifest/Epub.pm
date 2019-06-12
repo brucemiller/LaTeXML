@@ -66,7 +66,7 @@ sub initialize {
   # 3. Create OPS content container
   my $OPS_directory = catdir($directory, 'OPS');
   # 3.1 OPS/content.opf XML Spine
-  my $opf = XML::LibXML::Document->new('1.0', 'UTF-8');
+  my $opf     = XML::LibXML::Document->new('1.0', 'UTF-8');
   my $package = $opf->createElementNS("http://www.idpf.org/2007/opf", 'package');
   $opf->setDocumentElement($package);
   $package->setAttribute('unique-identifier', 'pub-id');
@@ -121,7 +121,7 @@ sub initialize {
   # Spine
   my $spine = $package->addNewChild(undef, 'spine');
   # 3.2 OPS/nav.xhtml
-  my $nav = XML::LibXML::Document->new('1.0', 'UTF-8');
+  my $nav      = XML::LibXML::Document->new('1.0', 'UTF-8');
   my $nav_html = $opf->createElementNS("http://www.w3.org/1999/xhtml", 'html');
   $nav->setDocumentElement($nav_html);
   $nav_html->setNamespace("http://www.idpf.org/2007/ops", "epub", 0);
@@ -149,12 +149,12 @@ sub process {
     # Add each document to the spine manifest
     if (my $destination = $doc->getDestination) {
       my (undef, $name, $ext) = pathname_split($destination);
-      my $file = "$name.$ext";
+      my $file                 = "$name.$ext";
       my $relative_destination = pathname_relative($destination, $$self{OPS_directory});
 
       # Add to manifest
       my $manifest = $$self{opf_manifest};
-      my $item = $manifest->addNewChild(undef, 'item');
+      my $item     = $manifest->addNewChild(undef, 'item');
       $item->setAttribute('id',         $file);
       $item->setAttribute('href',       $relative_destination);
       $item->setAttribute('media-type', "application/xhtml+xml");
@@ -165,7 +165,7 @@ sub process {
       $item->setAttribute('properties', $properties) if $properties;
 
       # Add to spine
-      my $spine = $$self{opf_spine};
+      my $spine   = $$self{opf_spine};
       my $itemref = $spine->addNewChild(undef, 'itemref');
       $itemref->setAttribute('idref', $file);
 

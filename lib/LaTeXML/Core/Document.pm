@@ -96,7 +96,7 @@ sub getElement {
 # Get the child elements of the given $node
 sub getChildElements {
   my ($self, $node) = @_;
-  return grep { $_->nodeType == XML_ELEMENT_NODE } $node->childNodes; }
+  return (!$node ? () : grep { $_->nodeType == XML_ELEMENT_NODE } $node->childNodes); }
 
 # Get the last element node (if any) in $node
 sub getLastChildElement {
@@ -120,7 +120,7 @@ sub getFirstChildElement {
 # get the second element node (if any) in $node
 sub getSecondChildElement {
   my ($self, $node) = @_;
-  my $first_child = $self->getFirstChildElement($node);
+  my $first_child  = $self->getFirstChildElement($node);
   my $second_child = $first_child && $first_child->nextSibling;
   while ($second_child && $second_child->nodeType != XML_ELEMENT_NODE) {
     $second_child = $second_child->nextSibling; }
@@ -144,7 +144,7 @@ sub findnode {
 # NOTE: Should Deprecate! (use model)
 sub getNodeQName {
   my ($self, $node) = @_;
-  return $$self{model}->getNodeQName($node); }
+  return $node && $$self{model}->getNodeQName($node); }
 
 #**********************************************************************
 # Extensions of Model.
@@ -471,7 +471,7 @@ sub serialize_aux {
     my $tag      = $model->getNodeDocumentQName($node);
     my @children = $node->childNodes;
     # since we're pretty-printing, we _could_ wrap attributes to nominal line length!
-    my @anodes = $node->attributes;
+    my @anodes  = $node->attributes;
     my %nsnodes = map { $model->getNodeDocumentQName($_) => serialize_attr($_->nodeValue) }
       grep { $_->nodeType == XML_NAMESPACE_DECL } @anodes;
     my %atnodes = map { $model->getNodeDocumentQName($_) => serialize_attr($_->nodeValue) }
@@ -677,7 +677,7 @@ sub insertPI {
   my @keys = ((map { ($attrib{$_} ? ($_) : ()) } qw(class package options)),
     (grep { $_ !~ /^(?:class|package|options)$/ } sort keys %attrib));
   my $data = join(' ', map { $_ . "=\"" . ToString($attrib{$_}) . "\"" } @keys);
-  my $pi = $$self{document}->createProcessingInstruction($op, $data);
+  my $pi   = $$self{document}->createProcessingInstruction($op, $data);
   $self->closeText_internal;    # Close any open text node
   if ($$self{node}->nodeType == XML_DOCUMENT_NODE) {
     push(@{ $$self{pending} }, $pi); }
@@ -955,15 +955,8 @@ sub getInsertionCandidates {
   my $isCapture = $first && ($first->localname || '') eq '_Capture_';
   push(@nodes, $first) if $first && $first->getType != XML_DOCUMENT_NODE && !$isCapture;
   # Collect previous siblings, if node is a text node.
-  if ($node->getType == XML_TEXT_NODE) {
-    my $n = $node;
-    while ($n) {
-      if (($n->localname || '') eq '_Capture_') {
-        push(@nodes, element_nodes($n)); }
-      else {
-        push(@nodes, $n); }
-      $n = $n->previousSibling; }
-    $node = $node->parentNode; }
+  # OR if it is a effectively a text node (ltx:para/ltx:p/text)!!!
+  my $do_sibs = $node->getType == XML_TEXT_NODE;
   # Now collect (element) node & ancestors
   while ($node && ($node->nodeType != XML_DOCUMENT_NODE)) {
     my $n = $node;
@@ -971,7 +964,14 @@ sub getInsertionCandidates {
       push(@nodes, element_nodes($node)); }
     else {
       push(@nodes, $node); }
-    $node = $node->parentNode; }
+    if ($do_sibs && ($n = $node->previousSibling)) {
+      $node = $n;
+    }
+    else {
+      $node = $node->parentNode;
+      my $t = $node->localname || '';
+      $do_sibs = 0 unless ($t eq 'p') || ($t eq 'para');
+  } }
   push(@nodes, $first) if $isCapture;
   return @nodes; }
 
@@ -1029,7 +1029,7 @@ sub floatToAttribute {
 sub floatToLabel {
   my ($self) = @_;
   my $key = 'labels';
-  my @ancestors = grep { $_->nodeType == XML_ELEMENT_NODE } getInsertionCandidates($$self{node});
+  my @ancestors  = grep { $_->nodeType == XML_ELEMENT_NODE } getInsertionCandidates($$self{node});
   my @candidates = @ancestors;
   # Should we only accept a node that already has an id, or should we create an id?
   while (@candidates
@@ -1095,7 +1095,7 @@ sub applyMathLigatures {
       foreach my $ligature (@ligatures) {
         if ($self->applyMathLigature($node, $ligature)) {
           @ligatures = grep { $_ ne $ligature } @ligatures;
-          $matched = 1;
+          $matched   = 1;
           last; } }
       return unless $matched; } }
   return; }
@@ -1543,7 +1543,7 @@ sub openElementAt {
   my ($ns, $tag) = $$self{model}->decodeQName($qname);
   my $newnode;
   my $font = $attributes{_font} || $attributes{font};
-  my $box = $attributes{_box};
+  my $box  = $attributes{_box};
   $box = $$self{node_boxes}{$box} if $box && !ref $box;    # may already be the string key
          # If this will be the document root node, things are slightly more involved.
   if ($point->nodeType == XML_DOCUMENT_NODE) {    # First node! (?)
@@ -1557,7 +1557,7 @@ sub openElementAt {
   # If there is a default namespace (no prefix), that will also be declared, and applied here.
   # However, if there is ALSO a prefix associated with that namespace, we have to declare it FIRST
   # due to the (apparently) buggy way that XML::LibXML works with namespaces in setAttributeNS.
-      my $prefix = $$self{model}->getDocumentNamespacePrefix($ns);
+      my $prefix    = $$self{model}->getDocumentNamespacePrefix($ns);
       my $attprefix = $$self{model}->getDocumentNamespacePrefix($ns, 1, 1);
       if (!$prefix && $attprefix) {
         $newnode->setNamespace($ns, $attprefix, 0); }
@@ -1726,7 +1726,7 @@ sub renameNode {
   my $model = $$self{model};
   my ($ns, $tag) = $model->decodeQName($newname);
   my $parent = $node->parentNode;
-  my $new = $self->openElement_internal($parent, $ns, $tag);
+  my $new    = $self->openElement_internal($parent, $ns, $tag);
   my $id;
   # Move to the position AFTER $node
   $parent->insertAfter($new, $node);
@@ -1783,7 +1783,7 @@ sub appendTree {
     elsif ((ref $child) =~ /^XML::LibXML::/) {
       my $type = $child->nodeType;
       if ($type == XML_ELEMENT_NODE) {
-        my $tag = $self->getNodeQName($child);
+        my $tag        = $self->getNodeQName($child);
         my %attributes = map { $_->nodeType == XML_ATTRIBUTE_NODE ? ($_->nodeName => $_->getValue) : () }
           $child->attributes;
         # DANGER: REMOVE the xml:id attribute from $child!!!!

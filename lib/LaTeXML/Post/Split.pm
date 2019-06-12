@@ -43,7 +43,7 @@ sub process {
     my @nav = $doc->findnodes("descendant::ltx:navigation");
     $doc->removeNodes(@nav) if @nav;
     my $tree = { node => $root, document => $doc,
-      id => $root->getAttribute('xml:id'), name => $doc->getDestination,
+      id       => $root->getAttribute('xml:id'), name => $doc->getDestination,
       children => [] };
     # Group the pages into a tree, in case they are nested.
     my $haschildren = {};
@@ -118,7 +118,7 @@ sub processPages {
       my $entry = shift(@entries);
       my $page  = $$entry{node};
       $doc->removeNodes(shift(@removed));
-      my $id = $page->getAttribute('xml:id');
+      my $id       = $page->getAttribute('xml:id');
       my $tocentry = ['ltx:tocentry', {},
         ['ltx:ref', { idref => $id, show => 'toctitle' }]];
       push(@toc, $tocentry);
@@ -155,7 +155,7 @@ sub getPageName {
   my ($self, $doc, $page, $parent, $parentpath, $recursive) = @_;
   my $asdir;
   my $naming = $$self{splitnaming};
-  my $attr = ($naming =~ /^id/ ? 'xml:id'
+  my $attr   = ($naming =~ /^id/ ? 'xml:id'
     : ($naming =~ /^label/ ? 'labels' : undef));
   my $name = $page->getAttribute($attr);
   $name =~ s/\s+.*//   if $name;    # Truncate in case multiple labels.
@@ -171,6 +171,8 @@ sub getPageName {
         "Expected attribute '$attr' to create page pathname", "using id=$name"); } }
   if ($naming =~ /relative$/) {
     my $pname = $parent->getAttribute($attr);
+    $pname =~ s/\s+.*//   if $pname;    # Truncate in case multiple labels.
+    $pname =~ s/^LABEL:// if $pname;
     if ($pname && $name =~ /^\Q$pname\E(\.|_|:)+(.*)$/) {
       $name = $2; }
     $asdir = $recursive; }

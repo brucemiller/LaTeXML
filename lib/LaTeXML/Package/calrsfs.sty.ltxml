@@ -1,7 +1,7 @@
 # -*- mode: Perl -*-
 # /=====================================================================\ #
-# |  lcml2018.sty.ltxml                                                 | #
-# | Support for various LCML styles/classes for LaTeXML                 | #
+# |  calrsfs                                                            | #
+# | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
@@ -15,8 +15,10 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-RequirePackage('icml_support');
+#**********************************************************************
+# Only defines \mathcal to use \mathscr (from LaTeX)
+Let('\mathrsfs', '\mathscr');
+Let('\mathcal',  '\mathscr');
+#**********************************************************************
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

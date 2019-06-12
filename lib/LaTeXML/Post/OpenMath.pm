@@ -86,7 +86,7 @@ sub combineParallel {
   }
   return { processor => $self,
     mimetype => $omMimeType,
-    xml => ['om:OMATTR', {}, @attr, $$primary{xml}] }; }
+    xml      => ['om:OMATTR', {}, @attr, $$primary{xml}] }; }
 
 sub getQName {
   my ($node) = @_;

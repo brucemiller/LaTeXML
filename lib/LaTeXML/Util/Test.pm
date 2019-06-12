@@ -19,7 +19,6 @@ use base qw(Exporter);
 our @EXPORT = (qw(&latexml_ok &latexml_tests),
   qw(&process_domstring &process_xmlfile &is_strings),
   @Test::More::EXPORT);
-my $kpsewhich = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');    # [CONFIGURATION]
 # Note that this is a singlet; the same Builder is shared.
 
 # Test the conversion of all *.tex files in the given directory (typically t/something)
@@ -53,7 +52,7 @@ sub latexml_tests {
         SKIP: {
             skip("No file $test.xml", 1) unless (-f "$test.xml");
             next unless check_requirements($test, 1, $$requires{'*'}, $$requires{$name});
-            latexml_ok("$test.tex", "$test.xml", $test); } }
+            latexml_ok("$test.tex", "$test.xml", $test, $options{compare}); } }
         # Carry out any post-processing tests
         foreach my $name (@post_tests) {
           my $test = "$directory/$name";
@@ -81,7 +80,7 @@ sub check_requirements {
   foreach my $reqmts (@reqmts) {
     next unless defined $reqmts;
     foreach my $reqmt (!$reqmts ? () : (ref $reqmts ? @$reqmts : $reqmts)) {
-      if (($kpsewhich && (`"$kpsewhich" $reqmt`)) || (pathname_find($reqmt))) { }
+      if (pathname_kpsewhich($reqmt) || pathname_find($reqmt)) { }
       else {
         my $message = "Missing requirement $reqmt for $test";
         diag("Skip: $message");
@@ -100,9 +99,9 @@ sub do_fail {
 
 # NOTE: This assumes you will have successfully loaded LaTeXML.
 sub latexml_ok {
-  my ($texpath, $xmlpath, $name) = @_;
-  if (my $texstrings = process_texfile($texpath, $name)) {
-    if (my $xmlstrings = process_xmlfile($xmlpath, $name)) {
+  my ($texpath, $xmlpath, $name, $compare_kind) = @_;
+  if (my $texstrings = process_texfile($texpath, $name, $compare_kind)) {
+    if (my $xmlstrings = process_xmlfile($xmlpath, $name, $compare_kind)) {
       return is_strings($texstrings, $xmlstrings, $name); } } }
 
 sub latexmlpost_ok {
@@ -114,7 +113,7 @@ sub latexmlpost_ok {
 # These return the list-of-strings form of whatever was requested, if successful,
 # otherwise undef; and they will have reported the failure
 sub process_texfile {
-  my ($texpath, $name) = @_;
+  my ($texpath, $name, $compare_kind) = @_;
   my $latexml = eval { LaTeXML::Core->new(preload => [], searchpaths => [], includecomments => 0,
       verbosity => -2); };
   if (!$latexml) {
@@ -124,14 +123,14 @@ sub process_texfile {
     if (!$dom) {
       do_fail($name, "Couldn't convert $texpath: " . @!); return; }
     else {
-      return process_dom($dom, $name); } } }
+      return process_dom($dom, $name, $compare_kind); } } }
 
 sub postprocess_xmlfile {
   my ($xmlpath, $name) = @_;
   my $xmath = LaTeXML::Post::XMath->new();
   return do_fail($name, "Couldn't instanciate LaTeXML::Post::XMath") unless $xmath;
   $xmath->setParallel(LaTeXML::Post::MathML::Presentation->new());
-  my @procs = ($xmath);
+  my @procs       = ($xmath);
   my $latexmlpost = LaTeXML::Post->new(verbosity => -1);
   return do_fail($name, "Couldn't instanciate LaTeXML::Post:") unless $latexmlpost;
 
@@ -142,7 +141,7 @@ sub postprocess_xmlfile {
   return process_dom($doc, $name); }
 
 sub process_dom {
-  my ($xmldom, $name) = @_;
+  my ($xmldom, $name, $compare_kind) = @_;
   # We want the DOM to be BOTH indented AND canonical!!
   my $domstring =
     eval { my $string = $xmldom->toString(1);
@@ -151,42 +150,31 @@ sub process_dom {
   if (!$domstring) {
     do_fail($name, "Couldn't convert dom to string: " . $@); return; }
   else {
-    return process_domstring($domstring, $name); } }
+    return process_domstring($domstring, $name, $compare_kind); } }
 
 sub process_xmlfile {
-  my ($xmlpath, $name) = @_;
+  my ($xmlpath, $name, $compare_kind) = @_;
   my $domstring =
     eval { my $parser = XML::LibXML->new(load_ext_dtd => 0, validation => 0, keep_blanks => 1);
     $parser->parse_file($xmlpath)->toStringC14N(0); };
   if (!$domstring) {
     do_fail($name, "Could not convert file $xmlpath to string: " . $@); return; }
   else {
-    return process_domstring($domstring, $name); } }
+    return process_domstring($domstring, $name, $compare_kind); } }
 
 sub process_domstring {
-  my ($domstring, $name) = @_;
-  return [split('\n', $domstring)]; }
-
-# This should be OBSOLETE, it has a convoluted, clunky interface
-sub is_filecontent {
-  my ($strings, $path, $name) = @_;
-  #  if(!open(IN,"<:utf8",$path)){
-  my $IN;
-  if (!open($IN, "<", $path)) {
-    return do_fail($name, "Could not open $path"); }
-  else {
-    my @lines;
-    { local $\ = undef;
-      @lines = <$IN>; }
-    close($IN);
-    return is_strings($strings, [@lines], $name); } }
+  my ($domstring, $name, $compare_kind) = @_;
+  if ($compare_kind && $compare_kind eq 'words') {    # words
+    return [split(/\s+/, $domstring)]; }
+  else {                                              # lines
+    return [split('\n', $domstring)]; } }
 
 # $strings1 is the currently generated material
 # $strings2 is the stored expected result.
 sub is_strings {
   my ($strings1, $strings2, $name) = @_;
   my $max = $#$strings1 > $#$strings2 ? $#$strings1 : $#$strings2;
-  my $ok = 1;
+  my $ok  = 1;
   for (my $i = 0 ; $i <= $max ; $i++) {
     my $string1 = $$strings1[$i];
     my $string2 = $$strings2[$i];
@@ -225,7 +213,7 @@ sub daemon_ok {
   my $path_to_perl = $Config{perlpath};
 
   my $invocation = $path_to_perl . " " . join(" ", map { ("-I", $_) } @INC) . " " . $latexmlc . ' ';
-  my $timed = undef;
+  my $timed      = undef;
   foreach my $opt (@$opts) {
     if ($$opt[0] eq 'timeout') {    # Ensure .opt timeout takes precedence
       if ($timed) { next; } else { $timed = 1; }

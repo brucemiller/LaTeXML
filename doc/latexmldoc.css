@@ -6,9 +6,13 @@ body { margin:0; background:#cfd2e6; color:#000000; }
    position:fixed; left:10px; top:10px; width:232px;
    margin:0; padding:0; 
    font-weight: bold; font-size: 75%;
-   overflow:hidden; z-index:10;
    color:#a82ee6;
+   overflow-x: hidden;
+   overflow-y: auto; max-height: 95vh;
+   z-index:10;
 }
+/*   overflow:hidden; z-index:10;*/
+
 .ltx_page_navbar a {
    color:#a82ee6;
 }
@@ -44,9 +48,12 @@ body { margin:0; background:#cfd2e6; color:#000000; }
    margin:30px 0px 0 0; padding:10px;
    background:#e6eaff;
    border: 2px solid #701f99;
-   min-height:500px;
    min-width:600px;
+   min-height:80vh;
+
 }
+/*   min-height:500px;*/
+
 .ltx_title {
    text-align:left;
    margin:0;
@@ -68,6 +75,9 @@ body { margin:0; background:#cfd2e6; color:#000000; }
    border: 1px solid #B0B0B0;
 }
 
+.ltx_tabular .ltx_lstlisting {
+    margin: 0.1ex 1em 0.1ex 0em;
+   width:100%; }
 .ltx_listing > .ltx_tabular {
    background:#f8fAff;
    margin:15px; padding:5px 10px;

@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="book"?>
+<?latexml package="appendix"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-book.css" type="text/css"/>
+  <chapter inlist="toc" xml:id="Ch1">
+    <tags>
+      <tag>Chapter 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Chapter 1</tag>
+    </tags>
+    <title><tag close=" ">Chapter 1</tag>One</title>
+    <toctitle><tag close=" ">1</tag>One</toctitle>
+    <para xml:id="Ch1.p1">
+      <p>In Chapter One.</p>
+    </para>
+    <section inlist="toc" xml:id="Ch1.S1">
+      <tags>
+        <tag>1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">§1.1</tag>
+      </tags>
+      <title><tag close=" ">1.1</tag>First</title>
+      <para xml:id="Ch1.S1.p1">
+        <p>In Section First.</p>
+      </para>
+    </section>
+    <appendix inlist="toc" xml:id="Ch1.A1">
+      <tags>
+        <tag>Appendix 1.A</tag>
+        <tag role="refnum">1.A</tag>
+        <tag role="typerefnum">Appendix 1.A</tag>
+      </tags>
+      <title><tag close=" ">Appendix 1.A</tag>alpha</title>
+      <toctitle><tag close=" ">1.A</tag>alpha</toctitle>
+      <para xml:id="Ch1.A1.p1">
+        <p>In Subappendix alpha</p>
+      </para>
+      <subsection inlist="toc" xml:id="Ch1.A1.SS1">
+        <tags>
+          <tag>1.A.1</tag>
+          <tag role="refnum">1.A.1</tag>
+          <tag role="typerefnum">§1.A.1</tag>
+        </tags>
+        <title><tag close=" ">1.A.1</tag>alpha-one</title>
+        <para xml:id="Ch1.A1.SS1.p1">
+          <p>In subsubappendix alpha-one</p>
+        </para>
+      </subsection>
+    </appendix>
+    <appendix inlist="toc" xml:id="Ch1.A2">
+      <tags>
+        <tag>Appendix 1.B</tag>
+        <tag role="refnum">1.B</tag>
+        <tag role="typerefnum">Appendix 1.B</tag>
+      </tags>
+      <title><tag close=" ">Appendix 1.B</tag>beta</title>
+      <toctitle><tag close=" ">1.B</tag>beta</toctitle>
+      <para xml:id="Ch1.A2.p1">
+        <p>In Subppendix beta</p>
+      </para>
+    </appendix>
+  </chapter>
+  <chapter inlist="toc" xml:id="Ch2">
+    <tags>
+      <tag>Chapter 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">Chapter 2</tag>
+    </tags>
+    <title><tag close=" ">Chapter 2</tag>Two</title>
+    <toctitle><tag close=" ">2</tag>Two</toctitle>
+    <para xml:id="Ch2.p1">
+      <p>In Chapter Two.</p>
+    </para>
+    <section inlist="toc" xml:id="Ch2.S1">
+      <tags>
+        <tag>2.1</tag>
+        <tag role="refnum">2.1</tag>
+        <tag role="typerefnum">§2.1</tag>
+      </tags>
+      <title><tag close=" ">2.1</tag>First</title>
+      <para xml:id="Ch2.S1.p1">
+        <p>In Section First.</p>
+      </para>
+    </section>
+    <section inlist="toc" xml:id="Ch2.S2">
+      <tags>
+        <tag>2.2</tag>
+        <tag role="refnum">2.2</tag>
+        <tag role="typerefnum">§2.2</tag>
+      </tags>
+      <title><tag close=" ">2.2</tag>Second</title>
+      <para xml:id="Ch2.S2.p1">
+        <p>In Section Second.</p>
+      </para>
+    </section>
+  </chapter>
+  <appendix inlist="toc" xml:id="A1">
+    <tags>
+      <tag>Appendix A</tag>
+      <tag role="refnum">A</tag>
+      <tag role="typerefnum">Appendix A</tag>
+    </tags>
+    <title><tag close=" ">Appendix A</tag>Alpha</title>
+    <toctitle><tag close=" ">A</tag>Alpha</toctitle>
+    <para xml:id="A1.p1">
+      <p>In Appendix Alpha</p>
+    </para>
+    <section inlist="toc" xml:id="A1.S1">
+      <tags>
+        <tag>A.1</tag>
+        <tag role="refnum">A.1</tag>
+        <tag role="typerefnum">§A.1</tag>
+      </tags>
+      <title><tag close=" ">A.1</tag>Alpha-One</title>
+      <para xml:id="A1.S1.p1">
+        <p>In subappendix Alpha-One</p>
+      </para>
+    </section>
+  </appendix>
+  <appendix inlist="toc" xml:id="A2">
+    <tags>
+      <tag>Appendix B</tag>
+      <tag role="refnum">B</tag>
+      <tag role="typerefnum">Appendix B</tag>
+    </tags>
+    <title><tag close=" ">Appendix B</tag>Beta</title>
+    <toctitle><tag close=" ">B</tag>Beta</toctitle>
+    <para xml:id="A2.p1">
+      <p>In Appendix Beta</p>
+    </para>
+  </appendix>
+</document>

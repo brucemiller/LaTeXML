@@ -44,6 +44,11 @@ DeclareOption('noprofiling', sub { AssignValue('PROFILING' => 0, 'global'); });
 DeclareOption('mathparserspeculate',   sub { AssignValue('MATHPARSER_SPECULATE' => 1, 'global'); });
 DeclareOption('nomathparserspeculate', sub { AssignValue('MATHPARSER_SPECULATE' => 0, 'global'); });
 
+# 'nobibtex' intended to be used for arXiv-like build harnesses, where there
+# is explicit instruction to only use ".bbl" and that bibtex will not be ran.
+DeclareOption('bibtex',   sub { AssignValue('NO_BIBTEX' => 0, 'global'); });
+DeclareOption('nobibtex', sub { AssignValue('NO_BIBTEX' => 1, 'global'); });
+
 ProcessOptions();
 #======================================================================
 # From latexml.sty
@@ -129,7 +134,7 @@ sub insertNavigation {
 Tag('ltx:document', 'afterClose' => \&insertNavigation);
 
 DefEnvironment('{lxNavbar}', sub { },
-  beforeDigest => sub { AssignValue(inPreamble => 0); },
+  beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
@@ -142,14 +147,14 @@ DefEnvironment('{lxNavbar}', sub { },
 # Repeated header/footers should give multiple header/footer lines ?
 # or do they just arrange the lines within it?
 DefEnvironment('{lxHeader}', sub { },
-  beforeDigest => sub { AssignValue(inPreamble => 0); },
+  beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
       ['ltx:inline-para', { class => 'ltx_page_header' }, $whatsit->getBody]);
     return; });
 DefEnvironment('{lxFooter}', sub { },
-  beforeDigest => sub { AssignValue(inPreamble => 0); },
+  beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
     my ($document, $whatsit) = @_;
     PushValue('navigation',
@@ -205,6 +210,18 @@ DefConstructor('\lxID{}', "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>",
 DefConstructor('\lxPunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>",
   requireMath => 1, reversion => '#1', alias => '');
 
+# More general form: eg. \lxTweakMath{role=POSTFIX}{@}
+# [same as \lx@math@tweak]
+DefConstructor('\lxMathTweak RequiredKeyVals {}',
+  "<ltx:XMWrap %&GetKeyVals(#1)>#2</ltx:XMWrap>",
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($kv,      $body)    = $whatsit->getArgs;
+    $whatsit->setProperties($kv->getPairs);
+    $whatsit->setFont($body->getFont);
+    return; },
+  reversion => '#2');
+
 #======================================================================
 # Define a mathematical object with both presentation & content information
 #   \lxDefMath{\name}[nargs][optional]{presentation body}[content keywords]
@@ -214,10 +231,11 @@ DefConstructor('\lxPunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>",
 # See DefMath in LaTeXML::Package for more information.
 DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
     my ($stomach, $cs, $nargs, $opt, $presentation, $params) = @_;
-    my ($name, $meaning, $cd, $role) =
-      $params && map { $_ && ToString($_) } map { $params->getValue($_) } qw(name meaning cd role);
+    my ($name, $meaning, $cd, $role, $alias) =
+      $params && map { $_ && ToString($_) } map { $params->getValue($_) }
+      qw(name meaning cd role alias);
     DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
-      name => $name, meaning => $meaning, omcd => $cd, role => $role);
+      name => $name, meaning => $meaning, omcd => $cd, role => $role, alias => $alias);
 });
 #DefKeyVal('XMath',name,string);
 
@@ -297,7 +315,7 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
     my $scope = $whatsit->getProperty('scope');
     createDeclarationRewrite($document, $scope, $whatsit); },
   properties => { alignmentSkippable => 1 },
-  reversion => '');
+  reversion  => '');
 
 DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
   afterDigest => sub { my ($stomach, $whatsit) = @_;
@@ -313,7 +331,9 @@ DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
         Warn('unexpected', $label, $document,
           "No Declaration with label=$label was found"); } } },
   properties => { alignmentSkippable => 1 },
-  reversion => '');
+  reversion  => '');
+
+NewCounter('@XMDECL', 'section', idprefix => 'XMD');
 
 sub next_declaration_id {
   StepCounter('@XMDECL');

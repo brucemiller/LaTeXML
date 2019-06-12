@@ -118,7 +118,7 @@ sub getopt_specification {
     "javascript=s"      => \@{ $$opts{javascript} },
     "icon=s"            => \$$opts{icon},
     # Options for broader document set processing
-    "split!" => \$$opts{split},
+    "split!"    => \$$opts{split},
     "splitat=s" => sub { $$opts{splitat} = $_[1];
       $$opts{split} = 1 unless defined $$opts{split}; },
     "splitpath=s" => sub { $$opts{splitpath} = $_[1];
@@ -158,15 +158,15 @@ sub getopt_specification {
   };
   return ($spec, $opts) unless ($options{type} && ($options{type} eq 'keyvals'));
   # Representation use case:
-  my $keyvals = $options{keyvals} || [];
-  my $rep_spec = {};    # Representation specification
+  my $keyvals  = $options{keyvals} || [];
+  my $rep_spec = {};                        # Representation specification
   foreach my $key (keys %$spec) {
     if ($key =~ /^(.+)=\w$/) {
       my $name = $1;
       $$rep_spec{$key} = sub { CORE::push @$keyvals, [$name, $_[1]] };
     } else {
       $$rep_spec{$key} = sub {
-        my $ctl = $_[0]->{ctl};
+        my $ctl  = $_[0]->{ctl};
         my $used = ($$ctl[0] ? 'no' : '') . $$ctl[1];
         CORE::push @$keyvals, [$used, undef] };
     }
@@ -182,7 +182,7 @@ sub read {
   my $opts = $$self{opts};
   local @ARGV = @$argref;
   my ($spec) = getopt_specification(options => $opts);
-  my $silent = %read_options && $read_options{silent};
+  my $silent             = %read_options && $read_options{silent};
   my $getOptions_success = GetOptions(%{$spec});
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
@@ -233,7 +233,7 @@ sub scan_to_keyvals {
   my ($self, $argref, %read_options) = @_;
   local @ARGV = @$argref;
   my ($spec, $keyvals) = getopt_specification(type => 'keyvals');
-  my $silent = %read_options && $read_options{silent};
+  my $silent             = %read_options && $read_options{silent};
   my $getOptions_success = GetOptions(%$spec);
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
@@ -308,7 +308,7 @@ sub check {
 sub _obey_profile {
   my ($self) = @_;
   $$self{dirty} = 1;
-  my $opts = $$self{opts};
+  my $opts    = $$self{opts};
   my $profile = lc($$opts{profile} || 'custom');
   $profile =~ s/\.opt$//;
   # Look at the PROFILES_DB or find a profiles file (otherwise fallback to custom)
@@ -375,6 +375,7 @@ sub _prepare_options {
   $$opts{timeout}     = 600          unless defined $$opts{timeout};       # 10 minute timeout default
   $$opts{expire}      = 600          unless defined $$opts{expire};        # 10 minute timeout default
   $$opts{mathparse}   = 'RecDescent' unless defined $$opts{mathparse};
+  $$opts{inputencoding} = "utf-8" unless defined $$opts{inputencoding};
   if ($$opts{mathparse} eq 'no') {
     $$opts{mathparse}   = 0;
     $$opts{nomathparse} = 1; }                                             #Backwards compatible
@@ -485,19 +486,18 @@ sub _prepare_options {
     if ($$opts{split}) {
       $$opts{splitat}     = 'section' unless defined $$opts{splitat};
       $$opts{splitnaming} = 'id'      unless defined $$opts{splitnaming};
-      $$opts{splitback} = "//ltx:bibliography | //ltx:appendix | //ltx:index" unless defined $$opts{splitback};
-      $$opts{splitpaths} = {
-        part    => "//ltx:part | " . $$opts{splitback},
-        chapter => "//ltx:part | //ltx:chapter | " . $$opts{splitback},
-        section => "//ltx:part | //ltx:chapter | //ltx:section | " . $$opts{splitback},
-        subsection => "//ltx:part | //ltx:chapter | //ltx:section | //ltx:subsection | " . $$opts{splitback},
-        subsubsection => "//ltx:part | //ltx:chapter | //ltx:section | //ltx:subsection | //ltx:subsubsection | " . $$opts{splitback} }
-        unless defined $$opts{splitpaths};
+      $$opts{splitancestors} = {
+        part          => [qw()],
+        chapter       => [qw(part)],
+        section       => [qw(part chapter)],
+        subsection    => [qw(part chapter section)],
+        subsubsection => [qw(part chapter section subsection)] };
+      $$opts{splitback} = [qw(bibliography appendix index)];
 
       $$opts{splitnaming} = _checkOptionValue('--splitnaming', $$opts{splitnaming},
         qw(id idrelative label labelrelative));
-      $$opts{splitat} = _checkOptionValue('--splitat', $$opts{splitat}, CORE::keys %{ $$opts{splitpaths} });
-      $$opts{splitpath} = $$opts{splitpaths}->{ $$opts{splitat} } unless defined $$opts{splitpath}; }
+      $$opts{splitat} = _checkOptionValue('--splitat', $$opts{splitat}, CORE::keys %{ $$opts{splitancestors} });
+      $$opts{splitpath} = make_splitpaths($opts, $$opts{splitat}) unless defined $$opts{splitpath}; }
     # Check for appropriate combination of split, scan, prescan, dbfile, crossref
     if ($$opts{split} && (!defined $$opts{destination}) && ($$opts{whatsout} !~ /^archive/)) {
       croak("Must supply --destination when using --split"); }
@@ -560,7 +560,7 @@ sub _prepare_options {
   }
   # If really nothing hints to define format, then default it to XML
   $$opts{format} = 'xml' unless defined $$opts{format};
-  $$self{dirty} = 0;
+  $$self{dirty}  = 0;
   return; }
 
 ## Utilities:
@@ -594,6 +594,20 @@ sub _checkOptionValue {
     foreach my $choice (@choices) {
       return $choice if substr($choice, 0, length($value)) eq $value; } }
   croak("Value for $option, $value, doesn't match " . join(', ', @choices)); }
+
+# Contrived xpath, since backmatter can now be at any level!
+sub make_splitpaths {
+  my ($opts, $splitat) = @_;
+  my @paths = ();
+  my $anc   = $$opts{splitancestors}{$splitat};
+  foreach my $unit ($splitat, ($anc ? @$anc : ())) {
+    CORE::push(@paths, "//ltx:$unit");
+    foreach my $back (@{ $$opts{splitback} }) {
+      CORE::push(@paths, "//ltx:$back\["
+          . join(' or ', "preceding-sibling::ltx:$unit",
+          map { "parent::ltx:$_"; } @{ $$opts{splitancestors}{$unit} })
+          . "]"); } }
+  return join(' | ', @paths); }
 
 ### This is from t/lib/TestDaemon.pm and ideally belongs in Util::Pathname
 sub _read_options_file {

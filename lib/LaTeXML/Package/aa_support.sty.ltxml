@@ -96,7 +96,7 @@ DefMacro('\rnotname',      '(RN)');
 
 # should add a note?
 DefMacro('\headnote{}',   '\@add@frontmatter{ltx:note}{#1}');
-DefMacro('\dedication{}', '\@add@frontmatter{ltx:contact}[role=dedicatory]{#1}');
+DefMacro('\dedication{}', '\@add@frontmatter{ltx:note}[role=dedicatory]{#1}');
 DefConstructor('\@@@mail{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\mail Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@mail{#1}}');
 DefMacro('\mailname',          '\it Correspondence to \/');
@@ -141,6 +141,45 @@ DefEnvironment('{noteadd}', "<ltx:note>#body</ltx:note>");
 
 # Undocumented, but something like:
 DefMacro('\thesaurus{}', '');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Redefine equations (bizarrely) to allow $ within
+DefEnvironment('{equation}',
+  "<ltx:equation xml:id='#id'>"
+    . "#tags"
+    . "<ltx:Math mode='display'>"
+    . "<ltx:XMath>"
+    . "#body"
+    . "</ltx:XMath>"
+    . "</ltx:Math>"
+    . "</ltx:equation>",
+  mode         => 'display_math',
+  beforeDigest => sub {
+    prepareEquationCounter(numbered => 1, preset => 1);
+    beforeEquation();
+    Let(T_MATH, T_CS('\@dollar@in@mathmode')); },
+  afterDigestBody => sub {
+    afterEquation($_[1]); },
+  locked => 1);
+
+# Note: In ams, this DOES get a number if \tag is used!
+DefEnvironment('{equation*}',
+  "<ltx:equation xml:id='#id'>"
+    . "#tags"
+    . "<ltx:Math mode='display'>"
+    . "<ltx:XMath>"
+    . "#body"
+    . "</ltx:XMath>"
+    . "</ltx:Math>"
+    . "</ltx:equation>",
+  mode         => 'display_math',
+  beforeDigest => sub {
+    prepareEquationCounter(numbered => undef, preset => 1);
+    beforeEquation();
+    Let(T_MATH, T_CS('\@dollar@in@mathmode')); },
+  afterDigestBody => sub {
+    afterEquation($_[1]); },
+  locked => 1);
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Figures
@@ -195,7 +234,7 @@ DefMacro('\element[][][][]{}', '\ensuremath{\@element[#1][#2][#3][#4]{\mathrm{#5
 DefConstructor('\@element[][][][]{}', sub {
     my ($document, $charge, $nucleons, $protons, $neutrons, $element, %props) = @_;
     my $level = $props{level};
-    my $node = $document->insertElement('ltx:XMArg', $element);
+    my $node  = $document->insertElement('ltx:XMArg', $element);
     $node = wrapIsotope($document, $node, $charge,   'post', 'SUPER', $level) if $charge;
     $node = wrapIsotope($document, $node, $neutrons, 'post', 'SUB',   $level) if $neutrons;
     $node = wrapIsotope($document, $node, $nucleons, 'pre',  'SUPER', $level) if $nucleons;

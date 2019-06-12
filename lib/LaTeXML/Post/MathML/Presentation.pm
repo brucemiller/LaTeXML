@@ -35,7 +35,7 @@ sub convertNode_linebreak {
     require LaTeXML::Post::MathML::Linebreaker;
     $breaker = $$self{linebreaker} = LaTeXML::Post::MathML::Linebreaker->new(); }
 
-  my $pmml = $self->convertNode_simple($doc, $xmath, $style);
+  my $pmml   = $self->convertNode_simple($doc, $xmath, $style);
   my $layout = $breaker->bestFitToWidth($xmath, $pmml, $$self{linelength}, 1);
   if ($$layout{hasbreak}) {    # YES it did linebreak!
     $pmml = $breaker->applyLayout($pmml, $layout); }
@@ -100,7 +100,7 @@ sub preprocess_linebreaking {
     next if $doc->findnodes('ancestor::ltx:MathFork', $math);    # SKIP if already in a branch?
           # Now let's do the layout & see if it actually needs line breaks!
           # next if $math isn't really so wide ..
-    my $id = $math->getAttribute('xml:id');
+    my $id    = $math->getAttribute('xml:id');
     my $xmath = $doc->findnode('ltx:XMath', $math);
     my ($pmml, $broke) = $self->convertNode_linebreak($doc, $xmath, $style);
     if ($broke) {    # YES it did linebreak!

@@ -4,7 +4,10 @@
 \usepackage{../sty/latexmldoc}
 \usepackage{listings}
 % Should the additional keywords be indexed?
-\lstdefinestyle{shell}{language=bash,escapechar=@,basicstyle=\ttfamily\small,%
+\lstdefinestyle{shell}{language=bash,escapechar=@,
+%  basicstyle=\ttfamily\small,%
+  frame=single,
+  basicstyle=\ttfamily,%
    morekeywords={latexml,latexmlpost,latexmlmath},
    moredelim=[is][\itshape]{\%}{\%}}
 
@@ -88,56 +91,157 @@ And, of course
 
 %============================================================
 \section{Get \LaTeXML}\label{get}\index{get}
-\paragraph{Current Release:}\label{download.current}
-The current release is \CurrentVersion. (see the \href{Changes}{Change Log}).
-\emph{Prebuilt packages will be updated shortly.}
+\def\GitHub{\href{https://github.com/}{GitHub}}
+\def\MacPorts{\href{http://www.macports.org}{MacPorts}}
+\def\MacTeX{\href{http://tug.org/mactex/}{MacTeX}}
+\def\Chocolatey{\href{http://chocolatey.org}{Chocolatey}}
+\def\MikTeX{\href{https://MiKTeX.org}{MikTeX}}
 
-There are several ways to install \LaTeXML, depending on your OS platform,
-whether you want a bleeding-edge version from GitHub.  Since \LaTeXML\ depends
-on, or can use if available, several other Perl Modules and external programs,
-consult \ref{prerequisites} before deciding.
-\begin{itemize}
-\item \emph{Normally}, it is preferable to install a platform-specific, prebuilt release,
-  if available,  which will install all prerequisites,  usually including the optional ones.
 
-\item You may install from \htmlref{CPAN}{install.cpan} which will install most prerequisites,
-  although you may prefer to pre-install prerequisites using the platform-specific approach
-   and should pre-install any optional prerequisites that you want.
+\subsection{Quick Start}\label{get.quick}
+\subsubsection{Current Release}\label{get.current}
+The current release is \textbf{\CurrentVersion}. (see the \href{Changes}{Change Log}).
+\emph{Prebuilt packages sometimes lag behind the latest release.}
 
-\item You may download and install the \htmlref{tarball}{install.tarball},
-   but you will need to pre-install prerequisites (including any optional ones)
-   using \htmlref{CPAN}{install.cpan.prereq} or a platform-specific approach.
-
-\item If you want to use the development version with the latest patches and improvements,
-  you may fetch the source from \htmlref{GitHub}{install.github}.
-  Again you will need to pre-install prerequisites (including optional ones)
-   using \htmlref{CPAN}{install.cpan.prereq} or a platform-specific approach.
-  If you are lacking root rights on the machine you want to install on, this can
-   also be achieved conveniently using \htmlref{CPANM}{install.cpanm}. 
-\end{itemize}
+Most people will want to install a prebuilt release,
+and some version of \TeX. Choose the appropriate
+Operating system, repository type and context from the table below.
+This will install all necessary prerequisites, unless otherwise noted.
 
 \par\noindent
-\begin{tabular}{l|l|l}
-Platform & To install prebuilt & To install prerequisites \\\hline
-RPM-based Linux
-   & see \htmlref{RPM prebuit}{install.rpm}
-   & see \htmlref{RPM prerequisites}{install.rpm.prereq} \\
-Debian-based Linux
-   & see \htmlref{Debian prebuilt}{install.deb}
-   & see \htmlref{Debian prerequisites}{install.deb.prereq}\\
-Macintosh OS w/\href{http://www.macports.org}{MacPorts}
-   & see \htmlref{MacPorts prebuilt}{install.mac}
-   & see \htmlref{MacPorts prerequisites}{install.mac.prereq}\\
-Windows w/\href{http://strawberryperl.com}{Strawberry Perl}
-   & see \htmlref{Windows CPAN}{install.windows}
-   & see \htmlref{Windows prerequisites}{install.windows.prereq}  \\
-Other
-   & see \htmlref{CPAN}{install.cpan} or \htmlref{GitHub}{install.github}
-   & see \htmlref{CPAN prerequisites}{install.cpan.prereq} \\
+\begin{centering}
+\begin{tabular}{lllll}
+  \multicolumn{2}{l}{\textit{Platform}}
+  & \textit{Command}
+  & \textit{Prerequisites?}
+  & \textit{Notes}\\\hline
+\multicolumn{2}{l}{\textit{Linux}} \\
+\hspace{4em}
+&RPM-based
+  & \begin{lstlisting}[style=shell]
+sudo yum install LaTeXML
+\end{lstlisting}
+  & %(includes texlive)
+  & \htmlref{Notes}{get.linux.rpm}\\
+\multicolumn{2}{r}{\textit{or}}
+  & \begin{lstlisting}[style=shell]
+sudo dnf install LaTeXML
+\end{lstlisting}
+    \\
+&Debian-based
+  &\begin{lstlisting}[style=shell]
+sudo apt-get install latexml
+\end{lstlisting}
+  &% (includes texlive)
+  & \htmlref{Notes}{get.linux.debian}\\
+% Arch linux?
+\hline
+\multicolumn{2}{l}{\textit{MacOS}}\\
+& \MacPorts+\MacTeX\
+  & \begin{lstlisting}[style=shell]
+sudo port install LaTeXML +mactex
+\end{lstlisting}
+  & \MacTeX
+  & \htmlref{Notes}{get.macos.macports}\\
+& \MacPorts+texlive
+%  & \begin{lstlisting}[style=shell]{sudo port install texlive-latex
+%sudo port install LaTeXML}
+  & \begin{lstlisting}[style=shell]
+sudo port install texlive-latex
+sudo port install LaTeXML
+\end{lstlisting}
+  &
+  & \htmlref{Notes}{get.macos.macports}\\
+& \MacPorts\ w/o \TeX
+  & \begin{lstlisting}[style=shell]
+sudo port install LaTeXML
+\end{lstlisting}
+  & 
+  & \htmlref{Notes}{get.macos.macports}\\
+\hline
+\multicolumn{2}{l}{\textit{Windows}}\\
+& \Chocolatey\
+  & \begin{lstlisting}[style=shell]
+choco install latexml
+\end{lstlisting}
+  & \TeX, if desired
+  & \htmlref{Notes}{get.windows.chocolatey}\\
+& \href{http://strawberryperl.com}{Strawberry Perl}
+  & \begin{lstlisting}[style=shell]
+cpan LaTeXML
+\end{lstlisting}
+  & ImageMagick, \TeX, if desired
+  & \htmlref{Notes}{get.windows.strawberry}\\
+\hline
+\multicolumn{2}{l}{\textit{Any}}\\
+ & CPAN
+  & \begin{lstlisting}[style=shell]
+cpan LaTeXML
+\end{lstlisting}
+   & binary prerequisites, \TeX, if desired
+   & \htmlref{Notes}{get.cpan}\\
+%%% NOTE: Development version!!!
+\hline
 \end{tabular}
+\end{centering}
 Note that there is \emph{no} implied endorsement of any of these systems.
 
-\paragraph{Prerequisites}\label{prerequisites}
+\subsubsection[Development version]{Development version or from Source}\label{get.development}
+If you want to use the `bleeding edge' development version with the latest patches and improvements,
+you may fetch the source from \GitHub.
+(The same installation instructions apply if you are using source from a release tarball.)
+
+\paragraph*{Prerequisites}
+will need to be \textbf{pre}-installed (including any optional ones);
+see \ref{get.prerequisites}.
+\paragraph*{Clone}
+the development source from github:
+\begin{lstlisting}[style=shell]
+git clone https://github.com/brucemiller/LaTeXML.git
+cd LaTeXML
+\end{lstlisting}
+(Keep up-to-date by occasionally running 
+\lstinline[style=shell]{git pull} and rebuilding.)
+
+\subparagraph*{Alternatively}
+download a zip of the development
+\href{https://github.com/brucemiller/LaTeXML/archive/master.zip}{LaTeXML-master.zip}
+from github, and unpack:
+\begin{lstlisting}[style=shell]
+unzip LaTeXML-master.zip
+cd LaTeXML-master
+\end{lstlisting}
+\emph{or} download the release \CurrentTarball, and unpack:
+\begin{lstlisting}[style=shell]
+tar zxvf LaTeXML-@\CurrentVersion@.tar.gz
+cd LaTeXML-@\CurrentVersion@
+\end{lstlisting}
+
+\paragraph*{Build}
+\LaTeXML\ in its source directory using the standard Perl procedure
+(On Windows, use \texttt{dmake} instead of \texttt{make}):
+\begin{lstlisting}[style=shell]
+perl Makefile.PL
+make
+make test
+\end{lstlisting}
+The tests should complete without error (some tests may be `skipped').
+
+Append the following options to the \texttt{perl Makefile.PL} command, if desired:
+\begin{description}
+\item[PREFIX=\textit{perldir}] specifies a nonstandard place to install LaTeXML
+\item[TEXMF=\textit{texdidr}] specifies a where to install \LaTeXML's \TeX\ style files.
+\end{description}
+(See \texttt{perl perlmodinstall} for more details and options.)
+
+\paragraph*{Install} \LaTeXML\ where the OS can find the files
+\begin{lstlisting}[style=shell]
+sudo make install
+\end{lstlisting}
+(Alternatively, you can run directly from the build directory, eg.
+\texttt{\textit{latexmldir}/blib/script/latexml}.)
+
+\subsection{Prerequisites}\label{get.prerequisites}
 \LaTeXML\ requires several Perl modules to do its job.  Most
 are automatically installed by the platform-specific installation or CPAN.
 However, CPAN will \emph{not} install the required C libraries needed for
@@ -148,8 +252,14 @@ download and install the most recent versions of \texttt{libxml2} and \texttt{li
 Note that Strawberry Perl, on Windows, already includes these libraries
 (but ActiveState does not).
 
+Note that to install prerequisites, it may be expedient
+when a prebuilt package is available to simply install the prebuilt
+package and then uninstall it (which generally leaves the prerequisites installed).
+Alternatively, we've provided commands below for most systems
+to install only the prerequisites.
+
 \paragraph{Optional Prerequisites}
-The following packages are optional because they are sometimes difficult
+The following packages are \emph{optional} because they are sometimes difficult
 to find or install, or in order to allow for minimal installs in unusual
 circumstances.  Most users should consider them as required and install
 them if at all possible.
@@ -162,6 +272,10 @@ Moreover, if \TeX\ is present when \LaTeXML\ is being installed,
 \LaTeXML\ will install a couple of its own style files that can be used
 with regular \TeX, or \LaTeX\ runs;
 So if you are going to install \TeX, install it first!
+See \href{https://www.tug.org}{\TeX\ Users Group} for more options.
+
+Note that \LaTeXML\ will use, for its own purposes, the style files from whatever
+\TeX\ system, if any, it finds at runtime.
 
 \item[Image::Magick] provides a handy library of image manipulation routines.
 When they are present \LaTeXML\ is able to carry out more image processing,
@@ -182,9 +296,9 @@ use if is found on the system; it may (or may not ) be easier to install, althou
 is less widely available.
 
 \item[UUID::Tiny] generates unique identifiers that can be used to make better ePub documents
-  (it can be installed using \htmlref{CPAN}{install.cpan.prereq}).
+  (it can be installed using \htmlref{CPAN}{get.cpan.prereq}).
 
-\item[perl-doc]\label{perl-doc}
+\item[perl-doc]\label{get.perl-doc}
  On \emph{some} compact distributions the perl documentation modules
  are not installed by default (eg.~debian minimal). These modules help generate
  readable command-line documentation for the \LaTeXML\ tools. Thus you \emph{may}
@@ -195,27 +309,24 @@ is less widely available.
 \LaTeXML, and the above packages are easily installable in your distribution,
 you probably should include them as dependencies of \LaTeXML.
 
-
-%\subsection[OS-Specific Notes]{Operating System Specific Notes}\label{install.osnotes}
-%With \emph{no} implied endorsement of any of these systems.
-
-\subsection[RPM-based systems]{RPM-based systems}\label{install.rpm}
+\subsection{Linux systems}\label{get.linux}
+\subsubsection[RPM-based systems]{RPM-based systems}\label{get.linux.rpm}
 \index{rpm}\index{Fedora}\index{Redhat}\index{Centos}
 Current (or recent) releases of \LaTeXML\ should be available from
 the Fedora (and probably others including Redhat Enterprise Linux, CentOS, Scientific Linux\ldots)
 repositories (Thanks Mike Petullo).
 
-\paragraph{Installing prebuilt}\\
+\paragraph*{Installing prebuilt}\\
 The following command will install \LaTeXML, including its required
-and optional prerequisites (use the appropriate command
-(\texttt{yum} or \texttt{dnf}, depending on system and version):
+and optional prerequisites, including texlive for \TeX\
+(use the appropriate command: \texttt{yum} or \texttt{dnf}, depending on system and version):
 \begin{lstlisting}[style=shell]
-sudo yum LaTeXML
+sudo yum install LaTeXML
 \end{lstlisting}
 
-\paragraph{Installing prerequisites}\label{install.rpm.prereq}
+\paragraph*{Installing \emph{only} prerequisites}\label{get.linux.rpm.prereq}
 The prerequisites (including the optional ones) can be installed
-by running this command as root: 
+by running this command: 
 \begin{lstlisting}[style=shell]
 sudo yum install \
   perl-Archive-Zip perl-DB_File perl-File-Which \
@@ -225,24 +336,22 @@ sudo yum install \
   perl-XML-LibXML perl-XML-LibXSLT \
   perl-UUID-Tiny texlive ImageMagick ImageMagick-perl
 \end{lstlisting}
-Continue by installing \LaTeXML\ from
-\htmlref{tarball}{install.tarball}, \htmlref{CPAN}{install.cpan}
-or \htmlref{GitHub}{install.github}, as desired.
 
-\subsection{Debian-based systems}\label{install.deb}\index{Debian}
+\subsubsection{Debian-based systems}\label{get.linux.debian}\index{Debian}
 For Debian-based systems (including Ubuntu), the deb repositories
 are generally used for software installation.
-Thanks to Peter Ralph and Atsuhito Kohda, \LaTeXML\ is available from Debian's
-\emph{unstable} repositories (the version in the stable repositories may be quite old).
+\LaTeXML\ is available from Debian's \emph{unstable} repositories
+(the version in the stable repositories may be quite old)
+(Thanks Peter Ralph and Atsuhito Kohda).
 
-\paragraph{Installing prebuilt}
+\paragraph*{Installing prebuilt}
 The following command will install \LaTeXML, including its required
-and optional prerequisites:
+and optional prerequisites, including \TeX:
 \begin{lstlisting}[style=shell]
 sudo apt-get install latexml
 \end{lstlisting}
 
-\paragraph{Installing prerequisites}\label{install.deb.prereq}
+\paragraph*{Installing \emph{only} prerequisites}\label{get.linux.debian.prereq}
 The prerequisites (including optional ones) can be installed
 by running this command: 
 \begin{lstlisting}[style=shell]
@@ -253,21 +362,17 @@ sudo apt-get install   \
   libxml2 libxml-libxml-perl libxslt1.1 libxml-libxslt-perl  \
   texlive-latex-base imagemagick libimage-magick-perl
 \end{lstlisting}
-Continue by installing \LaTeXML\ from
-\htmlref{tarball}{install.tarball}, \htmlref{CPAN}{install.cpan}
-or \htmlref{GitHub}{install.github}, as desired.
+See note \ref{get.perl-doc} about optional installation of \texttt{perl-doc}.
 
-See note \ref{perl-doc} about optional installation of \texttt{perl-doc}.
-
-\subsection{Archlinux \& friends}\label{install.arch}\index{Arch}
-For Archlinux and derivatives, it is most convenient to install from sources via \htmlref{CPANM}{install.cpanm}. 
+\subsubsection{Archlinux \& friends}\label{get.linux.arch}\index{Arch}
+For Archlinux and derivatives, it is most convenient to install from sources via \htmlref{CPANM}{get.cpanm}. 
 Nonetheless, a package can be found in the \href{https://aur.archlinux.org/}{Archlinux User Repository}.
 Furthermore, most dependencies can be found in the official repositories.
 
-\paragraph{Installing from AUR}
+\paragraph*{Installing from AUR}
 To install latexml from the user repositories, install the \href{https://aur.archlinux.org/packages/perl-latexml/}{perl-latexml} package. 
 
-\paragraph{Installing dependencies}
+\paragraph*{Installing \emph{only} prerequisites}
 To install the dependencies, use the following pacman command:
 \begin{lstlisting}[style=shell]
 sudo pacman -S db imagemagick perl perl-algorithm-diff \
@@ -276,43 +381,44 @@ sudo pacman -S db imagemagick perl perl-algorithm-diff \
    perl-parse-recdescent perl-xml-libxml perl-xml-libxslt \
    texlive-core
 \end{lstlisting}
-
 Additionally, install the \href{https://aur.archlinux.org/packages/perl-text-unidecode/}{perl-text-unidecode}
 AUR package. 
 
+\subsection{MacOS}\label{get.macos}\index{Apple Macintosh}
 
+\subsubsection{MacPorts}\label{get.macos.macports}
+For Apple Macintosh systems, the  \MacPorts\
+repository is perhaps the most convenient way to install \LaTeXML;
+(Thanks devens, Mojca, Sean and Andrew Fernandes).
+Download and install \MacPorts\ from that site.
 
-\subsection{MacOS}\label{install.mac}\index{Apple Macintosh}
-For Apple Macintosh systems, the  \href{http://www.macports.org}{MacPorts}
-repository is the most convenient way to install \LaTeXML;
-thanks to devens, Mojca, Sean and Andrew Fernandes.
-Download and install MacPorts from that site.
+Since some users prefer \MacTeX\ and don't want a duplicate (large) texlive installed; 
+the \emph{default} \LaTeXML\ installation does \emph{not} include texlive
+(but it installs \LaTeXML's own style files where \texttt{texlive} can find them).
 
-\paragraph{Installing prebuilt}
-Since some users prefer \href{http://tug.org/mactex/}{MacTeX} or another
-\TeX\ system over MacPort's \texttt{texlive}, and since \texttt{texlive} is quite large,
-the \emph{default} \LaTeXML\ installation does \emph{not} include a dependency
-on a \TeX-installation, although it installs \LaTeXML's own style files where \texttt{texlive}
-would expect them, if you do choose to install it.
-Note that \LaTeXML\ will use, for its own purposes, the style files from whatever
-\TeX\ system, if any, it finds at runtime.
-
-\subparagraph{TeXLive or Other:} To install \LaTeXML\ to work with MacPort's texlive,
-or without any installed \TeX, use the command:
-\begin{lstlisting}[style=shell]
-sudo port install LaTeXML
-\end{lstlisting}
-
-\subparagraph{MacTeX:}  To install \LaTeXML, along with its prerequisites,
-and installing style files where MacTeX (assumed already installed) will find them,
-use the command:
+\paragraph*{MacTeX}  When using \MacTeX\ (assumed already installed),
+the following command will install \LaTeXML, along with its prerequisites:
 \begin{lstlisting}[style=shell]
 sudo port install LaTeXML +mactex
 \end{lstlisting}
 
-\paragraph{Installing prerequisites}\label{install.mac.prereq}
-The prerequisites (including optional ones except \TeX) can be installed by running
-this command as root: 
+\paragraph*{TeXLive}
+The large texlive is broken down into separate
+packages in MacPorts.  If not using \MacTeX, you'll likely want to install at
+least \texttt{texlive-latex}
+\begin{lstlisting}[style=shell]
+sudo port install texlive-latex
+sudo port install LaTeXML
+\end{lstlisting}
+
+\paragraph*{No \TeX}
+Without any \TeX\ installed, use the command:
+\begin{lstlisting}[style=shell]
+sudo port install LaTeXML
+\end{lstlisting}
+
+\paragraph*{Installing \emph{only} prerequisites}\label{get.macos.macports.prereq}
+The prerequisites (including optional ones except \TeX) can be installed by running:
 \begin{lstlisting}[style=shell]
 sudo port install \
   p5-archive-zip p5-file-which p5-getopt-long p5-image-size \
@@ -320,23 +426,34 @@ sudo port install \
   p5-parse-recdescent p5-time-hires p5-uri p5-xml-libxml \
   p5-xml-libxslt p5-perlmagick
 \end{lstlisting}
-Additionally, either add \texttt{texlive} to the above list,
-or install \href{http://tug.org/mactex/}{MacTeX}.
-Continue by installing \LaTeXML\ from
-\htmlref{tarball}{install.tarball}, \htmlref{CPAN}{install.cpan}
-or \htmlref{GitHub}{install.github}, as desired.
 
-\subsection{Windows}\index{windows}
-These installation instructions assume you will use
+\subsection{Windows}\label{get.windows}\index{windows}
+As with MacOS, there is no single \TeX\ package that we can assume
+you'll want to use, so we include no dependency in the following.
+You'll probably want to preinstall a version of your choice;
+\MikTeX\ is popular.
+
+\subsubsection{Windows using Chocolatey}\label{get.windows.chocolatey}
+\paragraph*{Installing prebuilt}
+When using the \Chocolatey\ package manager,
+the following command will install \LaTeXML\ as well as all
+its prerequisites (including ImageMagick)
+(Thanks Ronald Tse):
+\begin{lstlisting}[style=shell]
+choco install latexml
+\end{lstlisting}
+
+\subsubsection{Windows using Strawberry Perl}\label{get.windows.strawberry}
 \href{http://strawberryperl.com}{Strawberry Perl},
-which comes with \emph{many} of our prerequisites pre-installed,
+comes with \emph{many} of our prerequisites pre-installed,
 and provides other needed commands (\texttt{perl}, \texttt{cpan}, \texttt{dmake}).
 
-\paragraph{Installing prebuilt}\label{install.windows}
+\paragraph*{Installing prebuilt}\label{get.windows.strawberry}
 There is currently no prebuilt \LaTeXML\ for Windows,
-but it should install cleanly under \href{http://strawberryperl.com}{Strawberry Perl}'s CPAN.
+but it should install cleanly using the CPAN tool that comes with
+\href{http://strawberryperl.com}{Strawberry Perl}.
 Install the \TeX-system of your choice (if desired),
-ImageMagick (see \ref{install.windows.imagemagick})
+ImageMagick (see \ref{get.windows.imagemagick})
 and then install LaTeXML using:
 \begin{lstlisting}[style=shell]
 cpan LaTeXML
@@ -347,20 +464,16 @@ so we have omitted it from these instructions.
 You may want to try \href{ImageMagick}, but
 you're on your own, there!  You may  have better luck with \texttt{Graphics::Magick}.
 
-\paragraph{Installing prerequisites}\label{install.windows.prereq}\\
+\paragraph*{Installing \emph{only} prerequisites  under Strawberry}\label{get.windows.strawberry.prereq}\\
 Install \href{http://strawberryperl.com}{Strawberry Perl}, and
 the \TeX-system of your choice (if desired), 
-ImageMagick (if you want to try; see \ref{install.windows.imagemagick}),
+ImageMagick (if you want to try; see \ref{get.windows.imagemagick}),
 and then install the additional prerequisites as
 \begin{lstlisting}[style=shell]
 cpan Image::Size Parse::RecDescent UUID::Tiny
 \end{lstlisting}
-Continue by installing \LaTeXML\ from
-\htmlref{tarball}{install.tarball}, \htmlref{CPAN}{install.cpan}
-or \htmlref{GitHub}{install.github}, as desired,
-but note that the \texttt{dmake} command should be used in place of \texttt{make}.
 
-\paragraph{Installing ImageMagick under Windows}\label{install.windows.imagemagick}
+\paragraph*{Installing ImageMagick under Windows}\label{get.windows.imagemagick}
 In principle, you should be able to install the binary from ImageMagick
 and then install the Perl binding using CPAN; unfortunately, it seems that the
 CPAN version seldom matches the binary or fails for other reasons.  What
@@ -381,17 +494,17 @@ dmake test
 dmake install
 \end{lstlisting}
 
-\subsection{CPAN installation}\label{install.cpan}
+\subsection{CPAN installation}\label{get.cpan}
 The following command will install \LaTeXML\ and its Perl prerequisites,
-but you may need to pre-install \texttt{libxml2} and  \texttt{libxslt} (See \ref{prerequisites}).
+but you may need to pre-install \texttt{libxml2} and  \texttt{libxslt} (See \ref{get.prerequisites}).
 Pre-install \TeX\ and any optional Perl modules, if desired.
 \begin{lstlisting}[style=shell]
 cpan LaTeXML
 \end{lstlisting}
 
-\paragraph{Installing prerequisites}\label{install.cpan.prereq}
+\paragraph*{Installing \emph{only}  prerequisites}\label{get.cpan.prereq}
 The following command will install the Perl prerequisites (including optional)
-for \LaTeXML, but you may need to pre-install \texttt{libxml2} and  \texttt{libxslt} (See \ref{prerequisites}).
+for \LaTeXML, but you may need to pre-install \texttt{libxml2} and  \texttt{libxslt} (See \ref{get.prerequisites}).
 \begin{lstlisting}[style=shell]
 cpan Archive::Zip DB_File File::Which Getopt::Long Image::Size \
   IO::String JSON::XS LWP MIME::Base64 Parse::RecDescent \
@@ -401,14 +514,14 @@ cpan Archive::Zip DB_File File::Which Getopt::Long Image::Size \
 You may still want to install \TeX\ and \texttt{Image::Magick}
 using other means.
 
-\subsection{CPANM Installation}\label{install.cpanm}
+\subsection{CPANM Installation}\label{get.cpanm}
 On certain linux machines, you may not want to install \LaTeXML\ (or its dependencies)
 system-wide, or you may simply lack the required root rights to do so. 
-In such a case, it is convenient to install the development version and 
+In such a case, it is convenient to install the \emph{development} version and 
 dependencies into the home directory using a tool called 
 \href{ https://github.com/miyagawa/cpanminus}{cpanminus}.
 
-\paragraph{Bootstrapping cpanminus} Configuring and setting up \texttt{cpanminus} can be achieved using the following commands
+\paragraph*{Bootstrapping cpanminus} Configuring and setting up \texttt{cpanminus} can be achieved using the following commands
 \begin{lstlisting}[style=shell]
     # Download and install cpanminus
     curl -L http://cpanmin.us | perl - App::cpanminus
@@ -417,7 +530,7 @@ dependencies into the home directory using a tool called
     ~/perl5/bin/cpanm --local-lib=~/perl5 local::lib && eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
 \end{lstlisting}
 
-\paragraph{Installing} Afterwards installing \LaTeXML\ and dependencies can be achieved with the 
+\paragraph*{Installing} Afterwards installing \LaTeXML\ and dependencies can be achieved with the 
 simple command:
 \begin{lstlisting}[style=shell]
     cpanm git://github.com/brucemiller/LaTeXML.git
@@ -425,83 +538,7 @@ simple command:
 This automatically fetches the latest version from GitHub and installs 
 missing dependencies. 
 
-\subsection{Installing tarball}\label{install.tarball}
-\paragraph{Source tarball}\label{source.tarball}
-To download the tar file containing the source:
-\begin{itemize}
-\item Download \CurrentTarball
-\item Unpack using
-\begin{lstlisting}[style=shell]
-tar zxvf LaTeXML-@\CurrentVersion@.tar.gz
-\end{lstlisting}
-\end{itemize}
-
-\paragraph{Building}\label{build.source}
-Whether you've downloaded using the tar file or from git,
-you build the system using the standard Perl procedure
-(On Windows systems, use \texttt{dmake} instead of \texttt{make}):
-\begin{lstlisting}[style=shell]
-cd LaTeXML  [@or@  LaTeXML-@\CurrentVersion@ @or@  LaTeXML-master]
-perl Makefile.PL
-make
-make test
-\end{lstlisting}
-The last step runs the system through some basic tests,
-which should complete without error (although some tests may be `skipped'
-under certain circumstances).
-
-
-\emph{Note:} You can specify nonstandard place to install files
---- possibly avoiding the need to install as root! ---
-by modifying the Makefile creating command above to
-\begin{lstlisting}[style=shell]
-perl Makefile.PL PREFIX=%perldir% TEXMF=%texdir%
-\end{lstlisting}
-where \emph{perldir} is where you want the perl related files to go and
-\emph{texdir} is where you want the \TeX\ style files to go.
-(See \texttt{perl perlmodinstall} for more details and options.)
-
-\paragraph{Installing}\label{install.source}
-After building, you will finally want to install \LaTeXML\ where the OS can find the files.  
-You'll typically need to be root:
-\begin{lstlisting}[style=shell]
-su
-make install
-\end{lstlisting}
-or perhaps
-\begin{lstlisting}[style=shell]
-sudo make install
-\end{lstlisting}
-(On Windows, use \texttt{dmake}).
-
-\subsection{Installing from GitHub}\label{install.github}
-The development version of \LaTeXML\ is available on  \href{https://github.com}{GitHub}.
-This will include the latest patches and enhancements between official releases,
-but may of course introduce new bugs or incompatibilities with little notice
-(you may wish to subscribe to the \LaTeXML\ \htmlref{mailing list}{contact.list}).
-You can also browse the current code at GitHub, as well as file bug reports and enhancement requests.
-
-Fetch the development version using the following command:
-\begin{lstlisting}[style=shell]
-git clone https://github.com/brucemiller/LaTeXML.git
-\end{lstlisting}
-Continue with building and installing as described in \ref{build.source}.
-
-Keep up-to-date by occasionally running the command:
-\begin{lstlisting}[style=shell]
-git pull
-\end{lstlisting}
-in the source directory, and then repeating the building and install commands.
-
-You can avoid directly using \texttt{git}, but still get the development sources
-by downloading
-\href{https://github.com/brucemiller/LaTeXML/archive/master.zip}{LaTeXML-master.zip}
-and running
-\begin{lstlisting}[style=shell]
-unzip LaTeXML-master.zip
-\end{lstlisting}
-
-\subsection{Archived Releases:}\label{archive}
+\subsection{Archived Releases:}\label{get.archive}
 \AllReleases.
 
 %============================================================

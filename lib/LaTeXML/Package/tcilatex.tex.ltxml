@@ -1,0 +1,717 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  wiki.sty                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Deyan Ginev <deyan.ginev@nist.gov>                          #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Needed for some (ancient) arXiv documents exported via Scientific Word
+#**********************************************************************
+
+RawTeX(<<'EOTCILATEX');
+% Macros for Scientific Word 2.5 documents saved with the LaTeX filter.
+%Copyright (C) 1994-95 TCI Software Research, Inc.
+\typeout{TCILATEX Macros for Scientific Word 2.5 <22 Dec 95>.}
+\typeout{NOTICE:  This macro file is NOT proprietary and may be 
+freely copied and distributed.}
+%
+\makeatletter
+%
+%%%%%%%%%%%%%%%%%%%%%%
+% macros for time
+\newcount\@hour\newcount\@minute\chardef\@x10\chardef\@xv60
+\def\tcitime{
+\def\@time{%
+  \@minute\time\@hour\@minute\divide\@hour\@xv
+  \ifnum\@hour<\@x 0\fi\the\@hour:%
+  \multiply\@hour\@xv\advance\@minute-\@hour
+  \ifnum\@minute<\@x 0\fi\the\@minute
+  }}%
+
+%%%%%%%%%%%%%%%%%%%%%%
+% macro for hyperref
+\@ifundefined{hyperref}{\def\hyperref#1#2#3#4{#2\ref{#4}#3}}{}
+
+% macro for external program call
+\@ifundefined{qExtProgCall}{\def\qExtProgCall#1#2#3#4#5#6{\relax}}{}
+%%%%%%%%%%%%%%%%%%%%%%
+%
+% macros for graphics
+%
+\def\FILENAME#1{#1}%
+%
+\def\QCTOpt[#1]#2{%
+  \def\QCTOptB{#1}
+  \def\QCTOptA{#2}
+}
+\def\QCTNOpt#1{%
+  \def\QCTOptA{#1}
+  \let\QCTOptB\empty
+}
+\def\Qct{%
+  \@ifnextchar[{%
+    \QCTOpt}{\QCTNOpt}
+}
+\def\QCBOpt[#1]#2{%
+  \def\QCBOptB{#1}
+  \def\QCBOptA{#2}
+}
+\def\QCBNOpt#1{%
+  \def\QCBOptA{#1}
+  \let\QCBOptB\empty
+}
+\def\Qcb{%
+  \@ifnextchar[{%
+    \QCBOpt}{\QCBNOpt}
+}
+\def\PrepCapArgs{%
+  \ifx\QCBOptA\empty
+    \ifx\QCTOptA\empty
+      {}%
+    \else
+      \ifx\QCTOptB\empty
+        {\QCTOptA}%
+      \else
+        [\QCTOptB]{\QCTOptA}%
+      \fi
+    \fi
+  \else
+    \ifx\QCBOptA\empty
+      {}%
+    \else
+      \ifx\QCBOptB\empty
+        {\QCBOptA}%
+      \else
+        [\QCBOptB]{\QCBOptA}%
+      \fi
+    \fi
+  \fi
+}
+\newcount\GRAPHICSTYPE
+%\GRAPHICSTYPE 0 is for TurboTeX
+%\GRAPHICSTYPE 1 is for DVIWindo (PostScript)
+%%%(removed)%\GRAPHICSTYPE 2 is for psfig (PostScript)
+\GRAPHICSTYPE=\z@
+\def\GRAPHICSPS#1{%
+ \ifcase\GRAPHICSTYPE%\GRAPHICSTYPE=0
+   \special{ps: #1}%
+ \or%\GRAPHICSTYPE=1
+   \special{language "PS", include "#1"}%
+%%%\or%\GRAPHICSTYPE=2
+%%%  #1%
+ \fi
+}%
+%
+\def\GRAPHICSHP#1{\special{include #1}}%
+%
+% \graffile{ body }                                  %#1
+%          { contentswidth (scalar)  }               %#2
+%          { contentsheight (scalar) }               %#3
+%          { vertical shift when in-line (scalar) }  %#4
+\def\graffile#1#2#3#4{%
+%%% \ifnum\GRAPHICSTYPE=\tw@
+%%%  %Following if using psfig
+%%%  \@ifundefined{psfig}{\input psfig.tex}{}%
+%%%  \psfig{file=#1, height=#3, width=#2}%
+%%% \else
+  %Following for all others
+  % JCS - added BOXTHEFRAME, see below
+    \leavevmode
+    \raise -#4 \BOXTHEFRAME{%
+        \hbox to #2{\raise #3\hbox to #2{\null #1\hfil}}}%
+}%
+%
+% A box for drafts
+\def\draftbox#1#2#3#4{%
+ \leavevmode\raise -#4 \hbox{%
+  \frame{\rlap{\protect\tiny #1}\hbox to #2%
+   {\vrule height#3 width\z@ depth\z@\hfil}%
+  }%
+ }%
+}%
+%
+\newcount\draft
+\draft=\z@
+\let\nographics=\draft
+\newif\ifwasdraft
+\wasdraftfalse
+
+%  \GRAPHIC{ body }                                  %#1
+%          { draft name }                            %#2
+%          { contentswidth (scalar)  }               %#3
+%          { contentsheight (scalar) }               %#4
+%          { vertical shift when in-line (scalar) }  %#5
+\def\GRAPHIC#1#2#3#4#5{%
+ \ifnum\draft=\@ne\draftbox{#2}{#3}{#4}{#5}%
+  \else\graffile{#1}{#3}{#4}{#5}%
+  \fi
+ }%
+%
+\def\addtoLaTeXparams#1{%
+    \edef\LaTeXparams{\LaTeXparams #1}}%
+%
+% JCS -  added a switch BoxFrame that can 
+% be set by including X in the frame params.
+% If set a box is drawn around the frame.
+
+\newif\ifBoxFrame \BoxFramefalse
+\newif\ifOverFrame \OverFramefalse
+\newif\ifUnderFrame \UnderFramefalse
+
+\def\BOXTHEFRAME#1{%
+   \hbox{%
+      \ifBoxFrame
+         \frame{#1}%
+      \else
+         {#1}%
+      \fi
+   }%
+}
+
+
+\def\doFRAMEparams#1{\BoxFramefalse\OverFramefalse\UnderFramefalse\readFRAMEparams#1\end}%
+\def\readFRAMEparams#1{%
+ \ifx#1\end%
+  \let\next=\relax
+  \else
+  \ifx#1i\dispkind=\z@\fi
+  \ifx#1d\dispkind=\@ne\fi
+  \ifx#1f\dispkind=\tw@\fi
+  \ifx#1t\addtoLaTeXparams{t}\fi
+  \ifx#1b\addtoLaTeXparams{b}\fi
+  \ifx#1p\addtoLaTeXparams{p}\fi
+  \ifx#1h\addtoLaTeXparams{h}\fi
+  \ifx#1X\BoxFrametrue\fi
+  \ifx#1O\OverFrametrue\fi
+  \ifx#1U\UnderFrametrue\fi
+  \ifx#1w
+    \ifnum\draft=1\wasdrafttrue\else\wasdraftfalse\fi
+    \draft=\@ne
+  \fi
+  \let\next=\readFRAMEparams
+  \fi
+ \next
+ }%
+%
+%Macro for In-line graphics object
+%   \IFRAME{ contentswidth (scalar)  }               %#1
+%          { contentsheight (scalar) }               %#2
+%          { vertical shift when in-line (scalar) }  %#3
+%          { draft name }                            %#4
+%          { body }                                  %#5
+%          { caption}                                %#6
+
+
+\def\IFRAME#1#2#3#4#5#6{%
+      \bgroup
+      \let\QCTOptA\empty
+      \let\QCTOptB\empty
+      \let\QCBOptA\empty
+      \let\QCBOptB\empty
+      #6%
+      \parindent=0pt%
+      \leftskip=0pt
+      \rightskip=0pt
+      \setbox0 = \hbox{\QCBOptA}%
+      \@tempdima = #1\relax
+      \ifOverFrame
+          % Do this later
+          \typeout{This is not implemented yet}%
+          \show\HELP
+      \else
+         \ifdim\wd0>\@tempdima
+            \advance\@tempdima by \@tempdima
+            \ifdim\wd0 >\@tempdima
+               \textwidth=\@tempdima
+               \setbox1 =\vbox{%
+                  \noindent\hbox to \@tempdima{\hfill\GRAPHIC{#5}{#4}{#1}{#2}{#3}\hfill}\\%
+                  \noindent\hbox to \@tempdima{\parbox[b]{\@tempdima}{\QCBOptA}}%
+               }%
+               \wd1=\@tempdima
+            \else
+               \textwidth=\wd0
+               \setbox1 =\vbox{%
+                 \noindent\hbox to \wd0{\hfill\GRAPHIC{#5}{#4}{#1}{#2}{#3}\hfill}\\%
+                 \noindent\hbox{\QCBOptA}%
+               }%
+               \wd1=\wd0
+            \fi
+         \else
+            %\show\BBB
+            \ifdim\wd0>0pt
+              \hsize=\@tempdima
+              \setbox1 =\vbox{%
+                \unskip\GRAPHIC{#5}{#4}{#1}{#2}{0pt}%
+                \break
+                \unskip\hbox to \@tempdima{\hfill \QCBOptA\hfill}%
+              }%
+              \wd1=\@tempdima
+           \else
+              \hsize=\@tempdima
+              \setbox1 =\vbox{%
+                \unskip\GRAPHIC{#5}{#4}{#1}{#2}{0pt}%
+              }%
+              \wd1=\@tempdima
+           \fi
+         \fi
+         \@tempdimb=\ht1
+         \advance\@tempdimb by \dp1
+         \advance\@tempdimb by -#2%
+         \advance\@tempdimb by #3%
+         \leavevmode
+         \raise -\@tempdimb \hbox{\box1}%
+      \fi
+      \egroup%
+}%
+%
+%Macro for Display graphics object
+%   \DFRAME{ contentswidth (scalar)  }               %#1
+%          { contentsheight (scalar) }               %#2
+%          { draft label }                           %#3
+%          { name }                                  %#4
+%          { caption}                                %#5
+\def\DFRAME#1#2#3#4#5{%
+ \begin{center}
+     \let\QCTOptA\empty
+     \let\QCTOptB\empty
+     \let\QCBOptA\empty
+     \let\QCBOptB\empty
+     \ifOverFrame 
+        #5\QCTOptA\par
+     \fi
+     \GRAPHIC{#4}{#3}{#1}{#2}{\z@}
+     \ifUnderFrame 
+        \nobreak\par #5\QCBOptA
+     \fi
+ \end{center}%
+ }%
+%
+%Macro for Floating graphic object
+%   \FFRAME{ framedata f|i tbph x F|T }              %#1
+%          { contentswidth (scalar)  }               %#2
+%          { contentsheight (scalar) }               %#3
+%          { caption }                               %#4
+%          { label }                                 %#5
+%          { draft name }                            %#6
+%          { body }                                  %#7
+\def\FFRAME#1#2#3#4#5#6#7{%
+ \begin{figure}[#1]%
+  \let\QCTOptA\empty
+  \let\QCTOptB\empty
+  \let\QCBOptA\empty
+  \let\QCBOptB\empty
+  \ifOverFrame
+    #4
+    \ifx\QCTOptA\empty
+    \else
+      \ifx\QCTOptB\empty
+        \caption{\QCTOptA}%
+      \else
+        \caption[\QCTOptB]{\QCTOptA}%
+      \fi
+    \fi
+    \ifUnderFrame\else
+      \label{#5}%
+    \fi
+  \else
+    \UnderFrametrue%
+  \fi
+  \begin{center}\GRAPHIC{#7}{#6}{#2}{#3}{\z@}\end{center}%
+  \ifUnderFrame
+    #4
+    \ifx\QCBOptA\empty
+      \caption{}%
+    \else
+      \ifx\QCBOptB\empty
+        \caption{\QCBOptA}%
+      \else
+        \caption[\QCBOptB]{\QCBOptA}%
+      \fi
+    \fi
+    \label{#5}%
+  \fi
+  \end{figure}%
+ }%
+%
+%
+%    \FRAME{ framedata f|i tbph x F|T }              %#1
+%          { contentswidth (scalar)  }               %#2
+%          { contentsheight (scalar) }               %#3
+%          { vertical shift when in-line (scalar) }  %#4
+%          { caption }                               %#5
+%          { label }                                 %#6
+%          { name }                                  %#7
+%          { body }                                  %#8
+%
+%    framedata is a string which can contain the following
+%    characters: idftbphxFT
+%    Their meaning is as follows:
+%             i, d or f : in-line, display, or floating
+%             t,b,p,h   : LaTeX floating placement options
+%             x         : fit contents box to contents
+%             F or T    : Figure or Table. 
+%                         Later this can expand
+%                         to a more general float class.
+%
+%
+\newcount\dispkind%
+
+\def\makeactives{
+  \catcode`\"=\active
+  \catcode`\;=\active
+  \catcode`\:=\active
+  \catcode`\'=\active
+  \catcode`\~=\active
+}
+\bgroup
+   \makeactives
+   \gdef\activesoff{%
+      \def"{\string"}
+      \def;{\string;}
+      \def:{\string:}
+      \def'{\string'}
+      \def~{\string~}
+      %\bbl@deactivate{"}%
+      %\bbl@deactivate{;}%
+      %\bbl@deactivate{:}%
+      %\bbl@deactivate{'}%
+    }
+\egroup
+
+\def\FRAME#1#2#3#4#5#6#7#8{%
+ \bgroup
+ \@ifundefined{bbl@deactivate}{}{\activesoff}
+ \ifnum\draft=\@ne
+   \wasdrafttrue
+ \else
+   \wasdraftfalse%
+ \fi
+ \def\LaTeXparams{}%
+ \dispkind=\z@
+ \def\LaTeXparams{}%
+ \doFRAMEparams{#1}%
+ \ifnum\dispkind=\z@\IFRAME{#2}{#3}{#4}{#7}{#8}{#5}\else
+  \ifnum\dispkind=\@ne\DFRAME{#2}{#3}{#7}{#8}{#5}\else
+   \ifnum\dispkind=\tw@
+    \edef\@tempa{\noexpand\FFRAME{\LaTeXparams}}%
+    \@tempa{#2}{#3}{#5}{#6}{#7}{#8}%
+    \fi
+   \fi
+  \fi
+  \ifwasdraft\draft=1\else\draft=0\fi{}%
+  \egroup
+ }%
+%
+% This macro added to let SW gobble a parameter that
+% should not be passed on and expanded. 
+
+\def\TEXUX#1{"texux"}
+
+%
+% Macros for text attributes:
+%
+\def\BF#1{{\bf {#1}}}%
+\def\NEG#1{\leavevmode\hbox{\rlap{\thinspace/}{$#1$}}}%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+% macros for user - defined functions
+\def\func#1{\mathop{\rm #1}}%
+\def\limfunc#1{\mathop{\rm #1}}%
+
+%
+% miscellaneous 
+%\long\def\QQQ#1#2{}%
+\long\def\QQQ#1#2{%
+     \long\expandafter\def\csname#1\endcsname{#2}}%
+%\def\QTP#1{}% JCS - this was changed becuase style editor will define QTP
+\@ifundefined{QTP}{\def\QTP#1{}}{}
+\@ifundefined{QEXCLUDE}{\def\QEXCLUDE#1{}}{}
+%\@ifundefined{Qcb}{\def\Qcb#1{#1}}{}
+%\@ifundefined{Qct}{\def\Qct#1{#1}}{}
+\@ifundefined{Qlb}{\def\Qlb#1{#1}}{}
+\@ifundefined{Qlt}{\def\Qlt#1{#1}}{}
+\def\QWE{}%
+\long\def\QQA#1#2{}%
+%\def\QTR#1#2{{\em #2}}% Always \em!!!
+%\def\QTR#1#2{\mbox{\begin{#1}#2\end{#1}}}%cb%%%
+\def\QTR#1#2{{\csname#1\endcsname #2}}%(gp) Is this the best?
+\long\def\TeXButton#1#2{#2}%
+\long\def\QSubDoc#1#2{#2}%
+\def\EXPAND#1[#2]#3{}%
+\def\NOEXPAND#1[#2]#3{}%
+\def\PROTECTED{}%
+\def\LaTeXparent#1{}%
+\def\ChildStyles#1{}%
+\def\ChildDefaults#1{}%
+\def\QTagDef#1#2#3{}%
+%
+% Macros for style editor docs
+\@ifundefined{StyleEditBeginDoc}{\def\StyleEditBeginDoc{\relax}}{}
+%
+% Macros for footnotes
+\def\QQfnmark#1{\footnotemark}
+\def\QQfntext#1#2{\addtocounter{footnote}{#1}\footnotetext{#2}}
+%
+% Macros for indexing.
+\def\MAKEINDEX{\makeatletter\input gnuindex.sty\makeatother\makeindex}%	
+\@ifundefined{INDEX}{\def\INDEX#1#2{}{}}{}%
+\@ifundefined{SUBINDEX}{\def\SUBINDEX#1#2#3{}{}{}}{}%
+\@ifundefined{initial}%  
+   {\def\initial#1{\bigbreak{\raggedright\large\bf #1}\kern 2\p@\penalty3000}}%
+   {}%
+\@ifundefined{entry}{\def\entry#1#2{\item {#1}, #2}}{}%
+\@ifundefined{primary}{\def\primary#1{\item {#1}}}{}%
+\@ifundefined{secondary}{\def\secondary#1#2{\subitem {#1}, #2}}{}%
+%
+%
+\@ifundefined{ZZZ}{}{\MAKEINDEX\makeatletter}%
+%
+% Attempts to avoid problems with other styles
+\@ifundefined{abstract}{%
+ \def\abstract{%
+  \if@twocolumn
+   \section*{Abstract (Not appropriate in this style!)}%
+   \else \small 
+   \begin{center}{\bf Abstract\vspace{-.5em}\vspace{\z@}}\end{center}%
+   \quotation 
+   \fi
+  }%
+ }{%
+ }%
+\@ifundefined{endabstract}{\def\endabstract
+  {\if@twocolumn\else\endquotation\fi}}{}%
+\@ifundefined{maketitle}{\def\maketitle#1{}}{}%
+\@ifundefined{affiliation}{\def\affiliation#1{}}{}%
+\@ifundefined{proof}{\def\proof{\noindent{\bfseries Proof. }}}{}%
+\@ifundefined{endproof}{\def\endproof{\mbox{\ \rule{.1in}{.1in}}}}{}%
+\@ifundefined{newfield}{\def\newfield#1#2{}}{}%
+\@ifundefined{chapter}{\def\chapter#1{\par(Chapter head:)#1\par }%
+ \newcount\c@chapter}{}%
+\@ifundefined{part}{\def\part#1{\par(Part head:)#1\par }}{}%
+\@ifundefined{section}{\def\section#1{\par(Section head:)#1\par }}{}%
+\@ifundefined{subsection}{\def\subsection#1%
+ {\par(Subsection head:)#1\par }}{}%
+\@ifundefined{subsubsection}{\def\subsubsection#1%
+ {\par(Subsubsection head:)#1\par }}{}%
+\@ifundefined{paragraph}{\def\paragraph#1%
+ {\par(Subsubsubsection head:)#1\par }}{}%
+\@ifundefined{subparagraph}{\def\subparagraph#1%
+ {\par(Subsubsubsubsection head:)#1\par }}{}%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% These symbols are not recognized by LaTeX
+\@ifundefined{therefore}{\def\therefore{}}{}%
+\@ifundefined{backepsilon}{\def\backepsilon{}}{}%
+\@ifundefined{yen}{\def\yen{\hbox{\rm\rlap=Y}}}{}%
+\@ifundefined{registered}{%
+   \def\registered{\relax\ifmmode{}\r@gistered
+                    \else$\m@th\r@gistered$\fi}%
+ \def\r@gistered{^{\ooalign
+  {\hfil\raise.07ex\hbox{$\scriptstyle\rm\text{R}$}\hfil\crcr
+  \mathhexbox20D}}}}{}%
+\@ifundefined{Eth}{\def\Eth{}}{}%
+\@ifundefined{eth}{\def\eth{}}{}%
+\@ifundefined{Thorn}{\def\Thorn{}}{}%
+\@ifundefined{thorn}{\def\thorn{}}{}%
+% A macro to allow any symbol that requires math to appear in text
+\def\TEXTsymbol#1{\mbox{$#1$}}%
+\@ifundefined{degree}{\def\degree{{}^{\circ}}}{}%
+%
+% macros for T3TeX files
+\newdimen\theight
+\def\Column{%
+ \vadjust{\setbox\z@=\hbox{\scriptsize\quad\quad tcol}%
+  \theight=\ht\z@\advance\theight by \dp\z@\advance\theight by \lineskip
+  \kern -\theight \vbox to \theight{%
+   \rightline{\rlap{\box\z@}}%
+   \vss
+   }%
+  }%
+ }%
+%
+\def\qed{%
+ \ifhmode\unskip\nobreak\fi\ifmmode\ifinner\else\hskip5\p@\fi\fi
+ \hbox{\hskip5\p@\vrule width4\p@ height6\p@ depth1.5\p@\hskip\p@}%
+ }%
+%
+\def\cents{\hbox{\rm\rlap/c}}%
+\def\miss{\hbox{\vrule height2\p@ width 2\p@ depth\z@}}%
+%\def\miss{\hbox{.}}%        %another possibility 
+%
+\def\vvert{\Vert}%           %always translated to \left| or \right|
+%
+\def\tcol#1{{\baselineskip=6\p@ \vcenter{#1}} \Column}  %
+%
+\def\dB{\hbox{{}}}%                 %dummy entry in column 
+\def\mB#1{\hbox{$#1$}}%             %column entry
+\def\nB#1{\hbox{#1}}%               %column entry (not math)
+%
+%\newcount\notenumber
+%\def\clearnotenumber{\notenumber=0}
+%\def\note{\global\advance\notenumber by 1
+% \footnote{$^{\the\notenumber}$}}
+%\def\note{\global\advance\notenumber by 1
+\def\note{$^{\dag}}%
+%
+%
+
+\def\newfmtname{LaTeX2e}
+\def\chkcompat{%
+   \if@compatibility
+   \else
+     \usepackage{latexsym}
+   \fi
+}
+
+\ifx\fmtname\newfmtname
+  \DeclareOldFontCommand{\rm}{\normalfont\rmfamily}{\mathrm}
+  \DeclareOldFontCommand{\sf}{\normalfont\sffamily}{\mathsf}
+  \DeclareOldFontCommand{\tt}{\normalfont\ttfamily}{\mathtt}
+  \DeclareOldFontCommand{\bf}{\normalfont\bfseries}{\mathbf}
+  \DeclareOldFontCommand{\it}{\normalfont\itshape}{\mathit}
+  \DeclareOldFontCommand{\sl}{\normalfont\slshape}{\@nomath\sl}
+  \DeclareOldFontCommand{\sc}{\normalfont\scshape}{\@nomath\sc}
+  \chkcompat
+\fi
+
+%
+% Greek bold macros
+% Redefine all of the math symbols 
+%%%% NO, do NOT redefine all math symbols!!!!!!
+
+\def\FindBoldGroup{%
+   {\setbox0=\hbox{$\mathbf{x\global\edef\theboldgroup{\the\mathgroup}}$}}%
+}
+
+\def\Greekmath#1#2#3#4{%
+    \if@compatibility
+        \ifnum\mathgroup=\symbold
+           \mathchoice{\mbox{\boldmath$\displaystyle\mathchar"#1#2#3#4$}}%
+                      {\mbox{\boldmath$\textstyle\mathchar"#1#2#3#4$}}%
+                      {\mbox{\boldmath$\scriptstyle\mathchar"#1#2#3#4$}}%
+                      {\mbox{\boldmath$\scriptscriptstyle\mathchar"#1#2#3#4$}}%
+        \else
+           \mathchar"#1#2#3#4% 
+        \fi 
+    \else 
+        \FindBoldGroup
+        \ifnum\mathgroup=\theboldgroup % For 2e
+           \mathchoice{\mbox{\boldmath$\displaystyle\mathchar"#1#2#3#4$}}%
+                      {\mbox{\boldmath$\textstyle\mathchar"#1#2#3#4$}}%
+                      {\mbox{\boldmath$\scriptstyle\mathchar"#1#2#3#4$}}%
+                      {\mbox{\boldmath$\scriptscriptstyle\mathchar"#1#2#3#4$}}%
+        \else
+           \mathchar"#1#2#3#4% 
+        \fi     	    
+	  \fi}
+
+\newif\ifGreekBold  \GreekBoldfalse
+\let\SAVEPBF=\pbf
+\def\pbf{\GreekBoldtrue\SAVEPBF}%
+%
+
+\@ifundefined{theorem}{\newtheorem{theorem}{Theorem}}{}
+\@ifundefined{lemma}{\newtheorem{lemma}[theorem]{Lemma}}{}
+\@ifundefined{corollary}{\newtheorem{corollary}[theorem]{Corollary}}{}
+\@ifundefined{conjecture}{\newtheorem{conjecture}[theorem]{Conjecture}}{}
+\@ifundefined{proposition}{\newtheorem{proposition}[theorem]{Proposition}}{}
+\@ifundefined{axiom}{\newtheorem{axiom}{Axiom}}{}
+\@ifundefined{remark}{\newtheorem{remark}{Remark}}{}
+\@ifundefined{example}{\newtheorem{example}{Example}}{}
+\@ifundefined{exercise}{\newtheorem{exercise}{Exercise}}{}
+\@ifundefined{definition}{\newtheorem{definition}{Definition}}{}
+
+
+\@ifundefined{mathletters}{%
+  %\def\theequation{\arabic{equation}}
+  \newcounter{equationnumber}  
+  \def\mathletters{%
+     \addtocounter{equation}{1}
+     \edef\@currentlabel{\theequation}%
+     \setcounter{equationnumber}{\c@equation}
+     \setcounter{equation}{0}%
+     \edef\theequation{\@currentlabel\noexpand\alph{equation}}%
+  }
+  \def\endmathletters{%
+     \setcounter{equation}{\value{equationnumber}}%
+  }
+}{}
+
+%Logos
+\@ifundefined{BibTeX}{%
+    \def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08em
+                 T\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}}{}%
+\@ifundefined{AmS}%
+    {\def\AmS{{\protect\usefont{OMS}{cmsy}{m}{n}%
+                A\kern-.1667em\lower.5ex\hbox{M}\kern-.125emS}}}{}%
+\@ifundefined{AmSTeX}{\def\AmSTeX{\protect\AmS-\protect\TeX\@}}{}%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% NOTE: The rest of this file is read only if amstex has not been
+% loaded.  This section is used to define amstex constructs in the
+% event they have not been defined.
+%
+%%%%%% NO, lets's not make a bunck of nonsensical redefinitions.
+%%% Let's just load amsmath
+\RequirePackage{amsmath}
+%%% And keep definitions for a few things missing from there.
+
+%JCS - added braces and \mathop around \displaystyle\int, etc.
+%
+\def\tint{\mathop{\textstyle \int}}%
+\def\tiint{\mathop{\textstyle \iint }}%
+\def\tiiint{\mathop{\textstyle \iiint }}%
+\def\tiiiint{\mathop{\textstyle \iiiint }}%
+\def\tidotsint{\mathop{\textstyle \idotsint }}%
+\def\toint{\mathop{\textstyle \oint}}%
+\def\tsum{\mathop{\textstyle \sum }}%
+\def\tprod{\mathop{\textstyle \prod }}%
+\def\tbigcap{\mathop{\textstyle \bigcap }}%
+\def\tbigwedge{\mathop{\textstyle \bigwedge }}%
+\def\tbigoplus{\mathop{\textstyle \bigoplus }}%
+\def\tbigodot{\mathop{\textstyle \bigodot }}%
+\def\tbigsqcup{\mathop{\textstyle \bigsqcup }}%
+\def\tcoprod{\mathop{\textstyle \coprod }}%
+\def\tbigcup{\mathop{\textstyle \bigcup }}%
+\def\tbigvee{\mathop{\textstyle \bigvee }}%
+\def\tbigotimes{\mathop{\textstyle \bigotimes }}%
+\def\tbiguplus{\mathop{\textstyle \biguplus }}%
+%
+%
+%Macros for display size operators:
+%
+
+\def\dint{\mathop{\displaystyle \int}}%
+\def\diint{\mathop{\displaystyle \iint }}%
+\def\diiint{\mathop{\displaystyle \iiint }}%
+\def\diiiint{\mathop{\displaystyle \iiiint }}%
+\def\didotsint{\mathop{\displaystyle \idotsint }}%
+\def\doint{\mathop{\displaystyle \oint}}%
+\def\dsum{\mathop{\displaystyle \sum }}%
+\def\dprod{\mathop{\displaystyle \prod }}%
+\def\dbigcap{\mathop{\displaystyle \bigcap }}%
+\def\dbigwedge{\mathop{\displaystyle \bigwedge }}%
+\def\dbigoplus{\mathop{\displaystyle \bigoplus }}%
+\def\dbigodot{\mathop{\displaystyle \bigodot }}%
+\def\dbigsqcup{\mathop{\displaystyle \bigsqcup }}%
+\def\dcoprod{\mathop{\displaystyle \coprod }}%
+\def\dbigcup{\mathop{\displaystyle \bigcup }}%
+\def\dbigvee{\mathop{\displaystyle \bigvee }}%
+\def\dbigotimes{\mathop{\displaystyle \bigotimes }}%
+\def\dbiguplus{\mathop{\displaystyle \biguplus }}%
+\makeatother
+EOTCILATEX
+
+1;
+

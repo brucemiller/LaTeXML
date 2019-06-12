@@ -60,16 +60,20 @@ sub process {
 # Extracting a tree of index entries from the database
 sub build_tree {
   my ($self, $doc, $index) = @_;
+  my $defaultlistname = 'idx';
+  my $listname        = 'idx';    # Eventually customizable for different indices?
   if (my @keys = grep { /^INDEX:/ } $$self{db}->getKeys) {
     NoteProgress(" [" . scalar(@keys) . " entries]");
 
     my $id = $index->getAttribute('xml:id');
-    my $allphrases = {};    # Keep a hash of all phrase textContent=>id encountered (for seealso)
+    my $allphrases = {};          # Keep a hash of all phrase textContent=>id encountered (for seealso)
     my $tree = { subtrees => {}, referrers => {}, id => $id, parent => undef };
     foreach my $key (@keys) {
       my $entry   = $$self{db}->lookup($key);
       my $phrases = $entry->getValue('phrases');
       my @phrases = @$phrases;
+      if (($entry->getValue('inlist') || $defaultlistname) ne $listname) {
+        next; }                   # Skip any not in this list
       if (!scalar(@phrases)) {
         Warn('expected', $key, undef, "Missing phrases in indexmark: '$key'");
         next; }
@@ -112,7 +116,7 @@ sub add_rec {
     my $keyid   = getIndexKeyID($key);
     my $subtree = $$tree{subtrees}{$key};
     if (!$subtree) {
-      my $id = $$tree{id} . '.' . $keyid;
+      my $id      = $$tree{id} . '.' . $keyid;
       my $fullkey = ($$tree{key} ? "$$tree{key}." : '') . $key;
       # phrasetext is for see & seealso lookup
       my $phrasetext = getIndexContentKey($phrase);
@@ -157,7 +161,7 @@ sub getIndexContentKey {
 sub getIndexKeyID {
   my ($key) = @_;
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
-       # We don't want accented chars (do we?) but we need to decompose the accents!
+        # We don't want accented chars (do we?) but we need to decompose the accents!
   $key = NFD($key);
   $key = unidecode($key);
   $key =~ s/[^a-zA-Z0-9]//g;

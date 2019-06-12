@@ -55,18 +55,17 @@ DefMacro('\lx@AC@if{}{}{}', sub {
 # NOTE: replacement of acronyms (short, long, whatever) should EXCLUDE \acroextra
 # BUT those should be present in an acronym list!
 # Acronym lists can (optionally) only include the acronyms actually used in the text!
-DefConstructor('\AC@acs{}',
-  "<ltx:glossaryref role='acronym' key='#1' show='short'/>");
-DefConstructor('\AC@acl{}',
-  "<ltx:glossaryref role='acronym' key='#1' show='long'/>");
-DefConstructor('\AC@acsp{}',
-  "<ltx:glossaryref role='acronym' key='#1' show='short-plural'/>");
-DefConstructor('\AC@aclp{}',
-  "<ltx:glossaryref role='acronym' key='#1' show='long-plural'/>");
-DefConstructor('\AC@acsi{}',
-  "<ltx:glossaryref role='acronym' key='#1' show='short-indefinite'/>");
-DefConstructor('\AC@aclI{}',
-  "<ltx:glossaryref role='acronym' key='#1' show='long-indefinite'/>");
+
+# \lx@acronym{acronym}{listname}{showform}
+DefConstructor('\lx@acronym{}{}{}',
+  "<ltx:glossaryref key='#1' inlist='#2' show='#3'/>");
+
+DefMacro('\AC@acs{}',  '\lx@acronym{#1}{acronym}{short}');
+DefMacro('\AC@acl{}',  '\lx@acronym{#1}{acronym}{long}');
+DefMacro('\AC@acsp{}', '\lx@acronym{#1}{acronym}{short-plural}');
+DefMacro('\AC@aclp{}', '\lx@acronym{#1}{acronym}{long-plural}');
+DefMacro('\AC@acsi{}', '\lx@acronym{#1}{acronym}{short-indefinite}');
+DefMacro('\AC@aclI{}', '\lx@acronym{#1}{acronym}{long-indefinite}');
 
 # Short form
 DefMacro('\acs OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\acsa');
@@ -143,20 +142,17 @@ DefMacro('\aclua{}',              '\ifAC@starred\acl*{#1}\else\acl{#1}\fi\acused
 #======================================================================
 # Defining Acronyms
 DefEnvironment('{acronym}[]',
-  "<ltx:glossary role='acronym' class='ltx_acronym'>"
+  "<ltx:glossary lists='acronym' class='ltx_acronym'>"
     . "<ltx:glossarylist>"
     . "#body"
     . "</ltx:glossarylist>"
     . "</ltx:glossary>",
   beforeDigest => sub { Let('\acro', '\lx@acro@item');
-    Let('\acrodef', '\lx@acro@item'); });
+    Let('\acrodef', '\lx@acro@item'); },
+  afterDigest     => sub { noteBackmatterElement($_[1], 'ltx:glossary'); },
+  beforeConstruct => sub { adjustBackmatterElement($_[0], $_[1]); });
 
 DefMacro('\acroextra{}', '#1');
-
-DefMacro('\lx@acro@phrase{}{}{}', '{\let\acroextra\@gobble\lx@@acro@phrase{#1}{#2}{#3}}');
-# Let this float up, since it can be used within a glossarylist, but shouldn't end up there.
-DefConstructor('\lx@@acro@phrase{}{}{}',
-  "^ <ltx:glossaryphrase role='acronym' show='#1' key='#2'>#3</ltx:glossaryphrase>");
 
 # \lx@acro@item{key}{short}{long}
 DefMacro('\lx@acro@item{}[]{}',
@@ -164,19 +160,28 @@ DefMacro('\lx@acro@item{}[]{}',
 DefMacro('\lx@acro@@item{}{}{}',
   '\lx@acro@@@item{#1}{#2}{#3}{{\let\acroextra\@gobble #2}}{{\let\acroextra\@gobble #3}}');
 DefConstructor('\lx@acro@@@item{}{}{}{}{}',
-  "<ltx:glossaryentry role='acronym' key='#1'>"
-    . "<ltx:glossaryphrase show='label'>#2</ltx:glossaryphrase>"
-    . "<ltx:glossaryphrase show='short'>#4</ltx:glossaryphrase>"
-    . "<ltx:glossaryphrase show='long'>#5</ltx:glossaryphrase>"
-    . "<ltx:glossarydefinition>#3</ltx:glossarydefinition>"
+  "<ltx:glossaryentry inlist='acronym' key='#1'>"
+    . "<ltx:glossaryphrase role='label'>#2</ltx:glossaryphrase>"
+    . "<ltx:glossaryphrase role='short'>#4</ltx:glossaryphrase>"
+    . "<ltx:glossaryphrase role='long'>#5</ltx:glossaryphrase>"
+    . "<ltx:glossaryphrase role='definition'>#3</ltx:glossaryphrase>"
     . "</ltx:glossaryentry>");
 Tag('ltx:glossaryentry', afterClose => sub { GenerateID(@_, ''); });
 
+DefMacro('\acrodef{}[]{}',
+  '\lx@acro@@def{#1}{\ifx.#2.#1\else#2\fi}{#3}');
+DefMacro('\lx@acro@@def{}{}{}',
+  '\lx@acro@@@def{#1}{#2}{#3}{{\let\acroextra\@gobble #2}}{{\let\acroextra\@gobble #3}}');
+DefConstructor('\lx@acro@@@def{}{}{}{}{}',
+  "<ltx:glossarydefinition inlist='acronym' key='#1'>"
+    . "<ltx:glossaryphrase role='label'>#2</ltx:glossaryphrase>"
+    . "<ltx:glossaryphrase role='short'>#4</ltx:glossaryphrase>"
+    . "<ltx:glossaryphrase role='long'>#5</ltx:glossaryphrase>"
+    . "<ltx:glossaryphrase role='definition'>#3</ltx:glossaryphrase>"
+    . "</ltx:glossarydefinition>");
+
+Tag('ltx:glossarydefinition', afterClose => sub { GenerateID(@_, ''); });
 # Should these be allowed inside ltx:glossarylist, or float outside it?
-DefConstructor('\acrodef{}[]{}',
-  "<ltx:glossaryphrase role='acronym' key='#1' show='short'>?#2(#2)(#1)</ltx:glossaryphrase>"
-    . "<ltx:glossaryphrase role='acronym' key='#1' show='long'>#3</ltx:glossaryphrase>",
-  bounded => 1, beforeDigest => sub { AssignValue(inPreamble => 0); });
 
 Let('\newacro', '\acrodef');
 Let('\acro',    '\acrodef');
@@ -185,15 +190,22 @@ Let('\acro',    '\acrodef');
 # They should be recorded in the document & scanned in post-processing,
 # but need not appear within the acronym glossary.
 # Non-standard definite articles
+DefMacro('\lx@acro@phrase{}{}{}', '{\let\acroextra\@gobble\lx@@acro@phrase{#1}{#2}{#3}}');
+# Let this float up, since it can be used within a glossarylist, but shouldn't end up there.
+DefConstructor('\lx@@acro@phrase{}{}{}',
+  "^ <ltx:glossarydefinition inlist='acronym' key='#1'>"
+    . "<ltx:glossaryphrase role='#2'>#3</ltx:glossaryphrase>"
+    . "</ltx:glossarydefinition>");
+
 DefMacro('\acrodefindefinite{}{}{}',
-  '\lx@acro@phrase{short-indefinite}{#1}{#2}\lx@acro@phrase{long-indefinite}{#1}{#3}');
+  '\lx@acro@phrase{#1}{short-indefinite}{#2}\lx@acro@phrase{#1}{long-indefinite}{#3}');
 
 Let('\acroindefinite',    '\acrodefindefinite');
 Let('\newacroindefinite', '\acrodefindefinite');
 
 # Non-standard plural forms
 DefMacro('\acrodefplural{}[]{}',
-  '\lx@acro@phrase{short-plural}{#1}{\ifx.#2.#1\else#2\fi}\lx@acro@phrase{long-plural}{#1}{#3}');
+  '\lx@acro@phrase{#1}{short-plural}{\ifx.#2.#1\else#2\fi}\lx@acro@phrase{#1}{long-plural}{#3}');
 
 Let('\acroplural',    '\acrodefplural');
 Let('\newacroplural', '\acrodefplural');

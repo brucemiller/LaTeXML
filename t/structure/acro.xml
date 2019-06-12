@@ -1,54 +1,253 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
-<?latexml package="acronym"?>
+<?latexml package="hyperref" options="colorlinks"?>
+<?latexml package="acronym" options="printonlyused,withpage"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <glossary class="ltx_acronym" role="acronym">
-    <glossarylist>
-      <glossaryentry key="AA" role="acronym" xml:id="id1">
-        <glossaryphrase key="AA" show="label">AA</glossaryphrase>
-        <glossaryphrase key="AA" show="short">AA</glossaryphrase>
-        <glossaryphrase key="A A A A" show="long">A A A A</glossaryphrase>
-        <glossarydefinition>A A A A</glossarydefinition>
-      </glossaryentry>
-      <glossaryentry key="BB" role="acronym" xml:id="id2">
-        <glossaryphrase key="BB" show="label">BB</glossaryphrase>
-        <glossaryphrase key="BB" show="short">BB</glossaryphrase>
-        <glossaryphrase key="B B B B" show="long">B B B B</glossaryphrase>
-        <glossarydefinition>B B B B</glossarydefinition>
-      </glossaryentry>
-      <glossaryentry key="CC" role="acronym" xml:id="id3">
-        <glossaryphrase key="CC" show="label">CC</glossaryphrase>
-        <glossaryphrase key="CC" show="short">CC</glossaryphrase>
-        <glossaryphrase key="C C C C" show="long">C C C C</glossaryphrase>
-        <glossarydefinition>C C C C</glossarydefinition>
-      </glossaryentry>
-      <glossaryentry key="DD" role="acronym" xml:id="id4">
-        <glossaryphrase key="DD" show="label">DD</glossaryphrase>
-        <glossaryphrase key="DD" show="short">DD</glossaryphrase>
-        <glossaryphrase key="D D D D" show="long">D D D D</glossaryphrase>
-        <glossarydefinition>D D D D</glossarydefinition>
-      </glossaryentry>
-    </glossarylist>
-  </glossary>
-  <para xml:id="p1">
-    <p><glossaryref key="AA" role="acronym" show="short"/></p>
-  </para>
-  <para xml:id="p2">
-    <p><glossaryref key="AA" role="acronym" show="long"/> (<glossaryref key="AA" role="acronym" show="short"/>)</p>
-  </para>
-  <para xml:id="p3">
-    <p><glossaryref key="BB" role="acronym" show="long"/></p>
-  </para>
-  <para xml:id="p4">
-    <p><glossaryref key="BB" role="acronym" show="long"/> (<glossaryref key="BB" role="acronym" show="short"/>)</p>
-  </para>
-  <para xml:id="p5">
-    <p><glossaryref key="CC" role="acronym" show="long"/> (<glossaryref key="CC" role="acronym" show="short"/>)</p>
-  </para>
-  <para xml:id="p6">
-    <p><glossaryref key="CC" role="acronym" show="short"/></p>
-  </para>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="autoref">section 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Intro</title>
+    <para xml:id="S1.p1">
+      <p>In the early nineties, <glossaryref inlist="acronym" key="GSM" show="short"/> was deployed in many European
+countries.  <glossaryref inlist="acronym" key="GSM" show="long"/> (<glossaryref inlist="acronym" key="GSM" show="short"/>) offered for the first time international
+roaming for mobile subscribers. The <glossaryref inlist="acronym" key="GSM" show="short"/>’s use of  <glossaryref inlist="acronym" key="TDMA" show="long"/> (<glossaryref inlist="acronym" key="TDMA" show="short"/>) as
+its communication standard was debated at length. And every now
+and then there are big discussion whether  <glossaryref inlist="acronym" key="CDMA" show="long"/> (<glossaryref inlist="acronym" key="CDMA" show="short"/>) should have
+been chosen over <glossaryref inlist="acronym" key="TDMA" show="short"/>.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="autoref">section 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Furthermore</title>
+    <para xml:id="S2.p1">
+      <p>The reader could have forgotten all the nice acronyms, so we repeat the
+meaning again.</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>If you want to know more about  <glossaryref inlist="acronym" key="GSM" show="long"/> (<glossaryref inlist="acronym" key="GSM" show="short"/>),  <glossaryref inlist="acronym" key="TDMA" show="long"/> (<glossaryref inlist="acronym" key="TDMA" show="short"/>),  <glossaryref inlist="acronym" key="CDMA" show="long"/> (<glossaryref inlist="acronym" key="CDMA" show="short"/>)
+and other acronyms, just read a book about mobile communication. Just
+to mention it: There is another  <glossaryref inlist="acronym" key="UA" show="long"/> (<glossaryref inlist="acronym" key="UA" show="short"/>), just for testing purposes!</p>
+    </para>
+    <figure inlist="lof" placement="h" xml:id="S2.F1">
+      <tags>
+        <tag>Figure 1</tag>
+        <tag role="autoref">Figure 1</tag>
+        <tag role="refnum">1</tag>
+        <tag role="typerefnum">Figure 1</tag>
+      </tags>
+      <p>Figure</p>
+      <toccaption><tag close=" ">1</tag>A float also admits references like <glossaryref inlist="acronym" key="GSM" show="short"/> or  <glossaryref inlist="acronym" key="CDMA" show="long"/> (<glossaryref inlist="acronym" key="CDMA" show="short"/>).</toccaption>
+      <caption><tag close=": ">Figure 1</tag>A float also admits references like <glossaryref inlist="acronym" key="GSM" show="short"/> or  <glossaryref inlist="acronym" key="CDMA" show="long"/> (<glossaryref inlist="acronym" key="CDMA" show="short"/>).</caption>
+    </figure>
+    <subsection inlist="toc" labels="LABEL:Chem" xml:id="S2.SS1">
+      <tags>
+        <tag>2.1</tag>
+        <tag role="autoref">subsection 2.1</tag>
+        <tag role="refnum">2.1</tag>
+        <tag role="typerefnum">§2.1</tag>
+      </tags>
+      <title><tag close=" ">2.1</tag>Some chemistry and physics</title>
+      <para xml:id="S2.SS1.p1">
+        <p><glossaryref inlist="acronym" key="NAD+" show="long"/> (<glossaryref inlist="acronym" key="NAD+" show="short"/>) is a major electron acceptor in the oxidation
+of fuel molecules. The reactive part of <glossaryref inlist="acronym" key="NAD+" show="short"/> is its nictinamide
+ring, a pyridine derivate.</p>
+      </para>
+      <para xml:id="S2.SS1.p2">
+        <p>One mol consists of <glossaryref inlist="acronym" key="NA" show="short"/> atoms or molecules. There is a relation
+between the constant of Boltzmann and the <glossaryref inlist="acronym" key="NA" show="long"/>:</p>
+        <equation xml:id="S2.E1">
+          <tags>
+            <tag>(1)</tag>
+            <tag role="autoref">Equation 1</tag>
+            <tag role="refnum">1</tag>
+          </tags>
+          <Math mode="display" tex="k=R/\lx@acronym{NA}{acronym}{short}" text="k = R / []" xml:id="S2.E1.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">k</XMTok>
+                <XMApp>
+                  <XMTok meaning="divide" role="MULOP">/</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">R</XMTok>
+                  <XMText><glossaryref inlist="acronym" key="NA" show="short"/></XMText>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+      </para>
+      <para xml:id="S2.SS1.p3">
+        <p><glossaryref inlist="acronym" key="lox" show="long"/>/<glossaryref inlist="acronym" key="lh2" show="long"/> (<glossaryref inlist="acronym" key="lox" show="short"/>/<glossaryref inlist="acronym" key="lh2" show="short"/>)</p>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S2.SS2">
+      <tags>
+        <tag>2.2</tag>
+        <tag role="autoref">subsection 2.2</tag>
+        <tag role="refnum">2.2</tag>
+        <tag role="typerefnum">§2.2</tag>
+      </tags>
+      <title><tag close=" ">2.2</tag>Some testing fundamentals</title>
+      <para xml:id="S2.SS2.p1">
+        <p>When testing <glossaryref inlist="acronym" key="IC" show="long-plural"/>, one typically wants to identify functional
+blocks to be tested separately. The latter are commonly indicated as
+<glossaryref inlist="acronym" key="BUT" show="long-plural"/>. To test a <glossaryref inlist="acronym" key="BUT" show="short"/> requires defining a testing strategy…</p>
+      </para>
+    </subsection>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="autoref">section 3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Acronyms</title>
+    <glossary class="ltx_acronym" lists="acronym">
+      <glossarylist>
+        <glossaryentry key="CDMA" xml:id="S3.1">
+          <glossaryphrase key="CDMA" role="label">CDMA</glossaryphrase>
+          <glossaryphrase key="CDMA" role="short">CDMA</glossaryphrase>
+          <glossaryphrase key="Code Division Multiple Access" role="long">Code Division Multiple Access</glossaryphrase>
+          <glossaryphrase key="Code Division Multiple Access" role="definition">Code Division Multiple Access</glossaryphrase>
+        </glossaryentry>
+        <glossaryentry key="GSM" xml:id="S3.2">
+          <glossaryphrase key="GSM" role="label">GSM</glossaryphrase>
+          <glossaryphrase key="GSM" role="short">GSM</glossaryphrase>
+          <glossaryphrase key="Global System for Mobile communication" role="long">Global System for Mobile communication</glossaryphrase>
+          <glossaryphrase key="Global System for Mobile communication" role="definition">Global System for Mobile communication</glossaryphrase>
+        </glossaryentry>
+        <glossaryentry key="NA" xml:id="S3.3">
+          <glossaryphrase key="NA" role="label"><Math mode="inline" tex="N_{\mathrm{A}}" text="N _ A" xml:id="S3.m1">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok fontsize="70%" role="UNKNOWN">A</XMTok>
+                </XMApp>
+              </XMath>
+            </Math></glossaryphrase>
+          <glossaryphrase key="NA" role="short"><Math mode="inline" tex="N_{\mathrm{A}}" text="N _ A" xml:id="S3.m2">
+              <XMath>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="UNKNOWN">N</XMTok>
+                  <XMTok fontsize="70%" role="UNKNOWN">A</XMTok>
+                </XMApp>
+              </XMath>
+            </Math></glossaryphrase>
+          <glossaryphrase key="Number of Avogadro" role="long">Number of Avogadro</glossaryphrase>
+          <glossaryphrase key="Number of Avogadro (see §)" role="definition">Number of Avogadro (see §<ref labelref="LABEL:Chem"/>)</glossaryphrase>
+        </glossaryentry>
+        <glossaryentry key="NAD+" xml:id="S3.4">
+          <glossaryphrase key="NAD+" role="label">NAD<sup>+</sup></glossaryphrase>
+          <glossaryphrase key="NAD+" role="short">NAD<sup>+</sup></glossaryphrase>
+          <glossaryphrase key="Nicotinamide Adenine Dinucleotide" role="long">Nicotinamide Adenine Dinucleotide</glossaryphrase>
+          <glossaryphrase key="Nicotinamide Adenine Dinucleotide" role="definition">Nicotinamide Adenine Dinucleotide</glossaryphrase>
+        </glossaryentry>
+        <glossaryentry key="NUA" xml:id="S3.5">
+          <glossaryphrase key="NUA" role="label">NUA</glossaryphrase>
+          <glossaryphrase key="NUA" role="short">NUA</glossaryphrase>
+          <glossaryphrase key="Not Used Acronym" role="long">Not Used Acronym</glossaryphrase>
+          <glossaryphrase key="Not Used Acronym" role="definition">Not Used Acronym</glossaryphrase>
+        </glossaryentry>
+        <glossaryentry key="TDMA" xml:id="S3.6">
+          <glossaryphrase key="TDMA" role="label">TDMA</glossaryphrase>
+          <glossaryphrase key="TDMA" role="short">TDMA</glossaryphrase>
+          <glossaryphrase key="Time Division Multiple Access" role="long">Time Division Multiple Access</glossaryphrase>
+          <glossaryphrase key="Time Division Multiple Access" role="definition">Time Division Multiple Access</glossaryphrase>
+        </glossaryentry>
+        <glossaryentry key="UA" xml:id="S3.7">
+          <glossaryphrase key="UA" role="label">UA</glossaryphrase>
+          <glossaryphrase key="UA" role="short">UA</glossaryphrase>
+          <glossaryphrase key="Used Acronym" role="long">Used Acronym</glossaryphrase>
+          <glossaryphrase key="Used Acronym" role="definition">Used Acronym</glossaryphrase>
+        </glossaryentry>
+        <glossaryentry key="lox" xml:id="S3.8">
+          <glossaryphrase key="LOX" role="label"><Math mode="inline" tex="LOX" text="L * O * X" xml:id="S3.m3">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">L</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">O</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">X</XMTok>
+                </XMApp>
+              </XMath>
+            </Math></glossaryphrase>
+          <glossaryphrase key="LOX" role="short"><Math mode="inline" tex="LOX" text="L * O * X" xml:id="S3.m4">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">L</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">O</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">X</XMTok>
+                </XMApp>
+              </XMath>
+            </Math></glossaryphrase>
+          <glossaryphrase key="Liquid Oxygen" role="long">Liquid Oxygen</glossaryphrase>
+          <glossaryphrase key="Liquid Oxygen" role="definition">Liquid Oxygen</glossaryphrase>
+        </glossaryentry>
+        <glossaryentry key="lh2" xml:id="S3.9">
+          <glossaryphrase key="LH2" role="label"><Math mode="inline" tex="LH_{2}" text="L * H _ 2" xml:id="S3.m5">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">L</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                    <XMTok font="italic" role="UNKNOWN">H</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math></glossaryphrase>
+          <glossaryphrase key="LH2" role="short"><Math mode="inline" tex="LH_{2}" text="L * H _ 2" xml:id="S3.m6">
+              <XMath>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">L</XMTok>
+                  <XMApp>
+                    <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                    <XMTok font="italic" role="UNKNOWN">H</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMath>
+            </Math></glossaryphrase>
+          <glossaryphrase key="Liquid Hydrogen" role="long">Liquid Hydrogen</glossaryphrase>
+          <glossaryphrase key="Liquid Hydrogen" role="definition">Liquid Hydrogen</glossaryphrase>
+        </glossaryentry>
+        <glossaryentry key="IC" xml:id="S3.10">
+          <glossaryphrase key="IC" role="label">IC</glossaryphrase>
+          <glossaryphrase key="IC" role="short">IC</glossaryphrase>
+          <glossaryphrase key="Integrated Circuit" role="long">Integrated Circuit</glossaryphrase>
+          <glossaryphrase key="Integrated Circuit" role="definition">Integrated Circuit</glossaryphrase>
+        </glossaryentry>
+        <glossaryentry key="BUT" xml:id="S3.11">
+          <glossaryphrase key="BUT" role="label">BUT</glossaryphrase>
+          <glossaryphrase key="BUT" role="short">BUT</glossaryphrase>
+          <glossaryphrase key="Block Under Test" role="long">Block Under Test</glossaryphrase>
+          <glossaryphrase key="Block Under Test" role="definition">Block Under Test</glossaryphrase>
+        </glossaryentry>
+      </glossarylist>
+      <glossarydefinition inlist="acronym" key="BUT">
+        <glossaryphrase key="BUT" role="short-plural">BUT</glossaryphrase>
+      </glossarydefinition>
+      <glossarydefinition inlist="acronym" key="BUT">
+        <glossaryphrase key="Blocks Under Test" role="long-plural">Blocks Under Test</glossaryphrase>
+      </glossarydefinition>
+    </glossary>
+  </section>
 </document>

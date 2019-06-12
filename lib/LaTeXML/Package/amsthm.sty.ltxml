@@ -123,14 +123,13 @@ DefPrimitive('\th@proof', sub {
     return; });
 
 # Note that you get EITHER \proofname OR [#1] but NOT both!!!
-DefEnvironment('{@proof} OptionalUndigested',
+DefConstructor('\@proof OptionalUndigested',
   "<ltx:proof class='#class'>"
     . "<ltx:title font='#titlefont' _force_font='true' class='#titleclass'>#title</ltx:title>"
-    . "#body"
-    . "</ltx:proof>",
+    . "#body",
   beforeDigest => sub {
     Digest(T_CS('\th@proof')); },
-  afterDigestBegin => sub {
+  afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     PushValue('QED@stack', T_CS('\qed'));
     Digest(Tokens(T_CS('\the'), T_CS('\thm@bodyfont'))); },
@@ -142,11 +141,13 @@ DefEnvironment('{@proof} OptionalUndigested',
     (title => $title,
       titlefont  => $titlefont,
       class      => undef,
-      titleclass => 'ltx_runin'); },
-  beforeDigestEnd => sub {
+      titleclass => 'ltx_runin'); });
+Tag('ltx:proof', autoClose => 1);
+DefConstructor('\end@proof', sub {
+    $_[0]->maybeCloseElement('ltx:proof'); },
+  beforeDigest => sub {
     my $qed = PopValue('QED@stack');
-    ($qed ? Digest($qed) : ()); }
-);
+    ($qed ? Digest($qed) : ()); });
 
 if (LookupValue('2.09_COMPATIBILITY')) {
   #  \def\tiny{\Tiny}
@@ -169,7 +170,7 @@ else {
 # from older versions of amsthm.sty
 DefPrimitive('\theorembodyfont{}',   sub { AssignValue('\thm@bodyfont' => $_[1]); });
 DefPrimitive('\theoremheaderfont{}', sub { AssignValue('\thm@headfont' => $_[1]); });
-DefMacro('\theorempreskipamount',  '');
-DefMacro('\theorempostskipamount', '');
+DefRegister('\theorempreskipamount'  => Glue(0));
+DefRegister('\theorempostskipamount' => Glue(0));
 
 1;

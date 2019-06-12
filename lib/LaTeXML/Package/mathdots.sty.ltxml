@@ -1,0 +1,46 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  mathdots                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Main purpose is to track the current sizing.
+# But don't we already?
+# \ddots, \vdots in TeX.pool
+DefMathI('\iddots', undef, "\x{22F0}", role => 'ID');
+
+# Copied from amsmath
+DefMath('\dddot{}',  "\x{02D9}\x{02D9}\x{02D9}",         operator_role => 'OVERACCENT');
+DefMath('\ddddot{}', "\x{02D9}\x{02D9}\x{02D9}\x{02D9}", operator_role => 'OVERACCENT');
+
+Let('\fixedddots',    '\ddots');
+Let('\fixedvdots',    '\vdots');
+Let('\fixediddots',   '\iddots');
+Let('originalddots',  '\ddots');
+Let('originalvdots',  '\vdots');
+Let('originaliddots', '\iddots');
+Let('originaldddot',  '\dddot');
+Let('originalddddot', '\ddddot');
+Let('MDoddots',       '\ddots');
+Let('MDovdots',       '\vdots');
+Let('MDoiddots',      '\iddots');
+Let('MDodddot',       '\dddot');
+Let('MDoddddot',      '\ddddot');
+
+DefRegister('\MDoprekern'  =>MuDimension('0mu'));
+DefRegister('\MDodotkern'  =>MuDimension('-1.3mu'));
+DefRegister('\MDopostkern' =>MuDimension('-1mu'));
+#======================================================================
+1;

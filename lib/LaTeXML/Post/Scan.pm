@@ -49,13 +49,13 @@ sub new {
   $self->registerHandler('ltx:anchor'        => \&anchor_handler);
   $self->registerHandler('ltx:note'          => \&note_handler);
 
-  $self->registerHandler('ltx:bibitem'        => \&bibitem_handler);
-  $self->registerHandler('ltx:bibentry'       => \&bibentry_handler);
-  $self->registerHandler('ltx:indexmark'      => \&indexmark_handler);
-  $self->registerHandler('ltx:glossaryphrase' => \&glossaryphrase_handler);
-  $self->registerHandler('ltx:glossaryentry'  => \&glossaryentry_handler);
-  $self->registerHandler('ltx:ref'            => \&ref_handler);
-  $self->registerHandler('ltx:bibref'         => \&bibref_handler);
+  $self->registerHandler('ltx:bibitem'            => \&bibitem_handler);
+  $self->registerHandler('ltx:bibentry'           => \&bibentry_handler);
+  $self->registerHandler('ltx:indexmark'          => \&indexmark_handler);
+  $self->registerHandler('ltx:glossaryentry'      => \&glossaryentry_handler);
+  $self->registerHandler('ltx:glossarydefinition' => \&glossaryentry_handler);
+  $self->registerHandler('ltx:ref'                => \&ref_handler);
+  $self->registerHandler('ltx:bibref'             => \&bibref_handler);
 
   $self->registerHandler('ltx:navigation' => \&navigation_handler);
 
@@ -95,7 +95,7 @@ sub process {
 
 sub scan {
   my ($self, $doc, $node, $parent_id) = @_;
-  my $tag = $doc->getQName($node);
+  my $tag     = $doc->getQName($node);
   my $handler = $$self{handlers}{$tag} || \&default_handler;
   &$handler($self, $doc, $node, $tag, $parent_id);
   return; }
@@ -126,8 +126,19 @@ sub pageID {
 # but which is potentially shortened so that it need only be
 # unique within the given page.
 sub inPageID {
-  my ($self, $doc, $id) = @_;
+  my ($self, $doc, $node) = @_;
+  my $id     = $node->getAttribute('xml:id');
   my $baseid = $doc->getDocumentElement->getAttribute('xml:id') || '';
+  # And we're using label-based ids in the target document...
+  if ($$self{labelids}) {
+    if (my $labels = $node->getAttribute('labels')) {
+      my ($l) = split(' ', $labels);
+      $l =~ s/^LABEL://;
+      $id = $l;
+      if (my $baselabels = $doc->getDocumentElement->getAttribute('labels')) {
+        my ($bl) = split(' ', $baselabels);
+        $bl =~ s/^LABEL://;
+        $baseid = $bl; } } }
   if ($baseid eq $id) {
     return; }
   elsif ($baseid && ($id =~ /^\Q$baseid\E\.(.*)$/)) {
@@ -197,7 +208,7 @@ sub addCommon {
     labels   => orNull($self->noteLabels($node)),
     location => orNull($doc->siteRelativeDestination),
     pageid   => orNull($self->pageID($doc)),
-    fragid   => orNull($self->inPageID($doc, $id)),
+    fragid   => orNull($self->inPageID($doc, $node)),
     inlist   => $inlist,
   );
   # Figure out sane, safe naming?
@@ -251,7 +262,7 @@ sub captioned_handler {
       $doc->findnode('descendant::ltx:toccaption', $node));
     $$self{db}->register("ID:$id",
       $self->addCommon($doc, $node, $tag, $parent_id),
-      role => orNull($node->getAttribute('role')),
+      role    => orNull($node->getAttribute('role')),
       caption => orNull($self->cleanNode($doc, $caption)),
 ###      toccaption => orNull($self->cleanNode($doc,
 ###          $doc->findnode('descendant::ltx:toccaption', $node))));
@@ -320,10 +331,12 @@ sub bibref_handler {
   if (!$doc->findnodes('ancestor::ltx:bibblock[contains(@class,"ltx_bib_cited")]', $node)) {
 #####  if( ($node->getAttribute('class')||'') !~ /\bcitedby\b/){
     if (my $keys = $node->getAttribute('bibrefs')) {
+      my @lists = split(/\s+/, $node->getAttribute('inlist') || 'bibliography');
       foreach my $bibkey (split(',', $keys)) {
         if ($bibkey) {
           $bibkey = lc($bibkey);    # NOW we downcase!
           my $entry = $$self{db}->register("BIBLABEL:$bibkey");
+          map { $entry->noteAssociation(inlist => $_); } @lists;
           $entry->noteAssociation(referrers => $parent_id); } } } }
   # Usually, a bibref will have, at most, some ltx:bibphrase's; should be scanned.
   $self->default_handler($doc, $node, $tag, $parent_id);
@@ -339,52 +352,44 @@ sub indexmark_handler {
   my @phrases = $doc->findnodes('ltx:indexphrase', $node);
   my @seealso = $doc->findnodes('ltx:indexsee',    $node);
   my $key = join(':', 'INDEX', map { $_->getAttribute('key') } @phrases);
+  my $inlist;
+  if (my $listnames = $node->getAttribute('inlist')) {
+    $inlist = { map { ($_ => 1) } split(/\s/, $listnames) }; }
   my $entry = $$self{db}->lookup($key)
-    || $$self{db}->register($key, phrases => [@phrases], see_also => []);
+    || $$self{db}->register($key, phrases => [@phrases], see_also => [], inlist => $inlist);
   if (@seealso) {
     $entry->pushNew('see_also', @seealso); }
   else {
     $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal')); }
   return; }
 
-# This handles glossaryentry
+# This handles glossaryentry or glossarydefinition
 sub glossaryentry_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
-  my $id   = $node->getAttribute('xml:id');
-  my $role = $node->getAttribute('role') || 'glossary';
-  my $key  = $node->getAttribute('key');
+  my $id = $node->getAttribute('xml:id');
+  my $p;
+  my $lists = $node->getAttribute('inlist') ||
+    (($p = $doc->findnode('ancestor::ltx:glossarylist[@lists] | ancestor::ltx:glossary[@lists]', $node))
+    && $p->getAttribute('lists'))
+    || 'glossary';
+  my $key = $node->getAttribute('key');
   # Get the actual phrases, and any see_also phrases (if any)
   # Do these need ->cleanNode ???
   my @phrases = $doc->findnodes('ltx:glossaryphrase', $node);
-  my $definition = $doc->findnode('ltx:glossarydefinition', $node);
-  my $gkey = join(':', 'GLOSSARY', $role, $key);
-  my $entry = $$self{db}->lookup($gkey)
-    || $$self{db}->register($gkey, definition => orNull($definition));
-  $entry->setValues(map { ('phrase:' . ($_->getAttribute('show') || 'label') => $_) } @phrases);
-  $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal'));
+  # Create an entry for EACH list (they could be distinct definitions)
+  foreach my $list (split(/\s+/, $lists)) {
+    my $gkey = join(':', 'GLOSSARY', $list, $key);
+    my $entry = $$self{db}->lookup($gkey) || $$self{db}->register($gkey);
+    $entry->setValues(map { ('phrase:' . ($_->getAttribute('role') || 'label') => $_) } @phrases);
+    $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal'));
+    $entry->setValues(id => $id) if $id; }
 
   if ($id) {
-    $entry->setValues(id => $id);
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
-      role     => orNull($role),
       labels   => orNull($self->noteLabels($node)),
       location => orNull($doc->siteRelativeDestination),
       pageid   => orNull($self->pageID($doc)),
-      fragid   => orNull($self->inPageID($doc, $id))); }
-  # Scan content, since could contain other interesting stuff...
-  $self->scanChildren($doc, $node, $id || $parent_id);
-  return; }
-
-sub glossaryphrase_handler {
-  my ($self, $doc, $node, $tag, $parent_id) = @_;
-  my $id = $node->getAttribute('xml:id');
-  # Only register if key given; otherwise assumed contained within glossaryentry
-  if (my $key = $node->getAttribute('key')) {
-    my $role = $node->getAttribute('role') || 'glossary';
-    my $show = $node->getAttribute('show') || '';
-    my $gkey = join(':', 'GLOSSARY', $role, $key);
-    my $entry = $$self{db}->lookup($gkey) || $$self{db}->register($gkey);
-    $entry->setValues('phrase:' . $show => $node); }
+      fragid   => orNull($self->inPageID($doc, $node))); }
   # Scan content, since could contain other interesting stuff...
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
@@ -409,7 +414,7 @@ sub bibitem_handler {
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id), bibkey => orNull($key),
       location    => orNull($doc->siteRelativeDestination),
       pageid      => orNull($self->pageID($doc)),
-      fragid      => orNull($self->inPageID($doc, $id)),
+      fragid      => orNull($self->inPageID($doc, $node)),
       authors     => orNull($doc->findnode('ltx:tags/ltx:tag[@role="authors"]', $node)),
       fullauthors => orNull($doc->findnode('ltx:tags/ltx:tag[@role="fullauthors"]', $node)),
       year        => orNull($doc->findnode('ltx:tags/ltx:tag[@role="year"]', $node)),
@@ -448,7 +453,7 @@ sub rdf_handler {
   if (!($id && ($id =~ s/^#//))) {
     $id = $parent_id; }
   my $property = $node->getAttribute('property');
-  my $value = $node->getAttribute('resource') || $node->getAttribute('content');
+  my $value    = $node->getAttribute('resource') || $node->getAttribute('content');
   return unless ($property && $value);
   $$self{db}->register("ID:$id", $property => orNull($value));
   return; }

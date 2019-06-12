@@ -19,7 +19,7 @@ they can appear in both inline and block contexts.</a:documentation>
     <choice>
       <ref name="note"/>
       <ref name="indexmark"/>
-      <ref name="glossaryphrase"/>
+      <ref name="glossarydefinition"/>
       <ref name="rdf"/>
       <ref name="ERROR"/>
       <ref name="resource"/>
@@ -75,6 +75,7 @@ a multilevel indexing entry.</a:documentation>
   <define name="indexmark_attributes">
     <a:documentation>Attributes for \elementref{indexmark}.</a:documentation>
     <ref name="Common.attributes"/>
+    <ref name="Listable.attributes"/>
     <optional>
       <attribute name="see_also">
         <a:documentation>a flattened form (like \attr{key}) of another \elementref{indexmark},
@@ -143,6 +144,30 @@ used to crossreference.</a:documentation>
     <a:documentation>Content model for \elementref{indexsee}.</a:documentation>
     <ref name="Inline.model"/>
   </define>
+  <!-- ====================================================================== -->
+  <define name="glossarydefinition">
+    <element name="glossarydefinition">
+      <a:documentation>A definition within an \elementref{glossaryentry}</a:documentation>
+      <ref name="glossarydefinition_attributes"/>
+      <ref name="glossarydefinition_model"/>
+    </element>
+  </define>
+  <define name="glossarydefinition_attributes">
+    <a:documentation>Attributes for \elementref{glossarydefinition}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="Listable.attributes"/>
+    <optional>
+      <attribute name="key">
+        <a:documentation>a flattened form of the definition for generating an \attr{ID}.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="glossarydefinition_model">
+    <a:documentation>Content model for \elementref{glossarydefinition}.</a:documentation>
+    <zeroOrMore>
+      <ref name="glossaryphrase"/>
+    </zeroOrMore>
+  </define>
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="glossaryphrase">
     <element name="glossaryphrase">
@@ -156,44 +181,18 @@ used to crossreference.</a:documentation>
     <ref name="Common.attributes"/>
     <ref name="IDREF.attributes"/>
     <optional>
-      <attribute name="role">
-        <a:documentation>The kind of \elementref{glossary} this mark belongs to.</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
       <attribute name="key">
         <a:documentation>a flattened form of the phrase for generating an \attr{ID}.</a:documentation>
       </attribute>
     </optional>
     <optional>
-      <attribute name="show">
+      <attribute name="role">
         <a:documentation>a keyword naming the format of this phrase (to match \attr{show} in \elementref{glossaryref}).</a:documentation>
       </attribute>
     </optional>
   </define>
   <define name="glossaryphrase_model">
     <a:documentation>Content model for \elementref{glossaryphrase}.</a:documentation>
-    <ref name="Inline.model"/>
-  </define>
-  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
-  <define name="glossarydefinition">
-    <element name="glossarydefinition">
-      <a:documentation>A definition within an \elementref{glossaryentry}</a:documentation>
-      <ref name="glossarydefinition_attributes"/>
-      <ref name="glossarydefinition_model"/>
-    </element>
-  </define>
-  <define name="glossarydefinition_attributes">
-    <a:documentation>Attributes for \elementref{glossarydefinition}.</a:documentation>
-    <ref name="Common.attributes"/>
-    <optional>
-      <attribute name="key">
-        <a:documentation>a flattened form of the definition for generating an \attr{ID}.</a:documentation>
-      </attribute>
-    </optional>
-  </define>
-  <define name="glossarydefinition_model">
-    <a:documentation>Content model for \elementref{glossarydefinition}.</a:documentation>
     <ref name="Inline.model"/>
   </define>
   <!-- ====================================================================== -->

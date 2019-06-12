@@ -5,13 +5,16 @@ dist: trusty
 services:
   - docker
 
+## NOTE: Since we're using a docker image for testing,
+## we can ONLY use those PERL & TEX combinations which are pre-built!
+## [And use env PERL=5.xx, NOT perl:5.xx ]
 env:
   ## Testing without texlive  -- perl 5.28, 5.26.2, 5.24.4
   - PERL=5.28.0 TEX=none
   - PERL=5.26.2 TEX=none
   - PERL=5.24.4 TEX=none
   - PERL=5.20.3 TEX=none
-  - PERL=5.10.1 TEX=none
+##  - PERL=5.12.5 TEX=none
   ## Testing with texlive 2018 -- perl 5.28
   - PERL=5.28.0 TEX=texlive-2018
   ## Testing with texlive 2016 -- perl 5.26
@@ -34,4 +37,4 @@ before_install:
 
 # Run the docker test image
 script:
-  - docker run --rm -v $(pwd):/root/latexml -t -i latexml/latexml-test-runtime:${PERL}_$TEX
+  - docker run --env "CI=true" --rm -v $(pwd):/root/latexml -t -i latexml/latexml-test-runtime:${PERL}_$TEX

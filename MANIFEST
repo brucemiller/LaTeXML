@@ -321,6 +321,7 @@ lib/LaTeXML/Package/JHEP2.cls.ltxml
 lib/LaTeXML/Package/JHEP3.cls.ltxml
 lib/LaTeXML/Package/LaTeX.pool.ltxml
 lib/LaTeXML/Package/OmniBus.cls.ltxml
+lib/LaTeXML/Package/PoS.cls.ltxml
 lib/LaTeXML/Package/TeX.pool.ltxml
 lib/LaTeXML/Package/a0poster.cls.ltxml
 lib/LaTeXML/Package/a0size.sty.ltxml
@@ -344,6 +345,8 @@ lib/LaTeXML/Package/aecompl.sty.ltxml
 lib/LaTeXML/Package/afterpage.sty.ltxml
 lib/LaTeXML/Package/algc.sty.ltxml
 lib/LaTeXML/Package/algcompatible.sty.ltxml
+lib/LaTeXML/Package/aipcheck.tex.ltxml
+lib/LaTeXML/Package/aipproc.cls.ltxml
 lib/LaTeXML/Package/algmatlab.sty.ltxml
 lib/LaTeXML/Package/algorithm.sty.ltxml
 lib/LaTeXML/Package/algorithm2e.sty.ltxml
@@ -387,6 +390,7 @@ lib/LaTeXML/Package/balance.sty.ltxml
 lib/LaTeXML/Package/bbm.sty.ltxml
 lib/LaTeXML/Package/bbold.sty.ltxml
 lib/LaTeXML/Package/beton.sty.ltxml
+lib/LaTeXML/Package/bibunits.sty.ltxml
 lib/LaTeXML/Package/bm.sty.ltxml
 lib/LaTeXML/Package/book.cls.ltxml
 lib/LaTeXML/Package/bookman.sty.ltxml
@@ -394,11 +398,13 @@ lib/LaTeXML/Package/booktabs.sty.ltxml
 lib/LaTeXML/Package/braket.sty.ltxml
 lib/LaTeXML/Package/breakurl.sty.ltxml
 lib/LaTeXML/Package/calc.sty.ltxml
+lib/LaTeXML/Package/calrsfs.sty.ltxml
 lib/LaTeXML/Package/cancel.sty.ltxml
 lib/LaTeXML/Package/caption.sty.ltxml
 lib/LaTeXML/Package/cases.sty.ltxml
 lib/LaTeXML/Package/ccfonts.sty.ltxml
 lib/LaTeXML/Package/chancery.sty.ltxml
+lib/LaTeXML/Package/chapterbib.sty.ltxml
 lib/LaTeXML/Package/charter.sty.ltxml
 lib/LaTeXML/Package/chngcntr.sty.ltxml
 lib/LaTeXML/Package/circuitikz.sty.ltxml
@@ -450,6 +456,7 @@ lib/LaTeXML/Package/eurosym.sty.ltxml
 lib/LaTeXML/Package/euscript.sty.ltxml
 lib/LaTeXML/Package/exscale.sty.ltxml
 lib/LaTeXML/Package/fancyhdr.sty.ltxml
+lib/LaTeXML/Package/fancyheadings.sty.ltxml
 lib/LaTeXML/Package/fix-cm.sty.ltxml
 lib/LaTeXML/Package/fixltx2e.sty.ltxml
 lib/LaTeXML/Package/flafter.sty.ltxml
@@ -463,6 +470,7 @@ lib/LaTeXML/Package/flushend.sty.ltxml
 lib/LaTeXML/Package/fontenc.sty.ltxml
 lib/LaTeXML/Package/fontspec.sty.ltxml
 lib/LaTeXML/Package/footmisc.sty.ltxml
+lib/LaTeXML/Package/footnote.sty.ltxml
 lib/LaTeXML/Package/fourier.sty.ltxml
 lib/LaTeXML/Package/framed.sty.ltxml
 lib/LaTeXML/Package/french.ldf.ltxml
@@ -484,9 +492,7 @@ lib/LaTeXML/Package/html.sty.ltxml
 lib/LaTeXML/Package/hyperref.sty.ltxml
 lib/LaTeXML/Package/hyperxmp.sty.ltxml
 lib/LaTeXML/Package/icml_support.sty.ltxml
-lib/LaTeXML/Package/icml2016.sty.ltxml
-lib/LaTeXML/Package/icml2017.sty.ltxml
-lib/LaTeXML/Package/icml2018.sty.ltxml
+lib/LaTeXML/Package/icml.sty.ltxml
 lib/LaTeXML/Package/ieeeconf.cls.ltxml
 lib/LaTeXML/Package/IEEEtran.cls.ltxml
 lib/LaTeXML/Package/ifluatex.sty.ltxml
@@ -524,6 +530,7 @@ lib/LaTeXML/Package/makecell.sty.ltxml
 lib/LaTeXML/Package/makeidx.sty.ltxml
 lib/LaTeXML/Package/marvosym.sty.ltxml
 lib/LaTeXML/Package/mathbbol.sty.ltxml
+lib/LaTeXML/Package/mathdots.sty.ltxml
 lib/LaTeXML/Package/mathpazo.sty.ltxml
 lib/LaTeXML/Package/mathpple.sty.ltxml
 lib/LaTeXML/Package/mathptm.sty.ltxml
@@ -549,6 +556,7 @@ lib/LaTeXML/Package/newtxmath.sty.ltxml
 lib/LaTeXML/Package/newtxtext.sty.ltxml
 lib/LaTeXML/Package/ngerman.sty.ltxml
 lib/LaTeXML/Package/nicefrac.sty.ltxml
+lib/LaTeXML/Package/nopageno.sty.ltxml
 lib/LaTeXML/Package/ntheorem.sty.ltxml
 lib/LaTeXML/Package/numprint.sty.ltxml
 lib/LaTeXML/Package/ot4.fontmap.ltxml
@@ -596,6 +604,7 @@ lib/LaTeXML/Package/scalefnt.sty.ltxml
 lib/LaTeXML/Package/sectsty.sty.ltxml
 lib/LaTeXML/Package/setspace.sty.ltxml
 lib/LaTeXML/Package/showkeys.sty.ltxml
+lib/LaTeXML/Package/sidecap.sty.ltxml
 lib/LaTeXML/Package/siunitx.sty.ltxml
 lib/LaTeXML/Package/slashed.sty.ltxml
 lib/LaTeXML/Package/slides.cls.ltxml
@@ -607,6 +616,8 @@ lib/LaTeXML/Package/subcaption.sty.ltxml
 lib/LaTeXML/Package/subfig.sty.ltxml
 lib/LaTeXML/Package/subfigure.sty.ltxml
 lib/LaTeXML/Package/subfloat.sty.ltxml
+lib/LaTeXML/Package/subfiles.cls.ltxml
+lib/LaTeXML/Package/subfiles.sty.ltxml
 lib/LaTeXML/Package/supertabular.sty.ltxml
 lib/LaTeXML/Package/sv_support.sty.ltxml
 lib/LaTeXML/Package/svg.sty.ltxml
@@ -622,11 +633,13 @@ lib/LaTeXML/Package/t2c.fontmap.ltxml
 lib/LaTeXML/Package/tablefootnote.sty.ltxml
 lib/LaTeXML/Package/tabularx.sty.ltxml
 lib/LaTeXML/Package/tabulary.sty.ltxml
+lib/LaTeXML/Package/tcilatex.tex.ltxml
 lib/LaTeXML/Package/textcase.sty.ltxml
 lib/LaTeXML/Package/textcomp.sty.ltxml
 lib/LaTeXML/Package/texvc.sty.ltxml
 lib/LaTeXML/Package/theorem.sty.ltxml
 lib/LaTeXML/Package/thmtools.sty.ltxml
+lib/LaTeXML/Package/thm-restate.sty.ltxml
 lib/LaTeXML/Package/threeparttable.sty.ltxml
 lib/LaTeXML/Package/titlesec.sty.ltxml
 lib/LaTeXML/Package/titling.sty.ltxml
@@ -640,8 +653,11 @@ lib/LaTeXML/Package/transparent.sty.ltxml
 lib/LaTeXML/Package/ts1.fontmap.ltxml
 lib/LaTeXML/Package/turing.sty.ltxml
 lib/LaTeXML/Package/txfonts.sty.ltxml
+lib/LaTeXML/Package/twoopt.sty.ltxml
 lib/LaTeXML/Package/type1cm.sty.ltxml
 lib/LaTeXML/Package/ulem.sty.ltxml
+lib/LaTeXML/Package/underscore.sty.ltxml
+lib/LaTeXML/Package/undertilde.sty.ltxml
 lib/LaTeXML/Package/units.sty.ltxml
 lib/LaTeXML/Package/upgreek.sty.ltxml
 lib/LaTeXML/Package/upref.sty.ltxml
@@ -649,7 +665,10 @@ lib/LaTeXML/Package/url.sty.ltxml
 lib/LaTeXML/Package/utf8.def.ltxml
 lib/LaTeXML/Package/utf8x.def.ltxml
 lib/LaTeXML/Package/utopia.sty.ltxml
+lib/LaTeXML/Package/varioref.sty.ltxml
+lib/LaTeXML/Package/varwidth.sty.ltxml
 lib/LaTeXML/Package/verbatim.sty.ltxml
+lib/LaTeXML/Package/vmargin.sty.ltxml
 lib/LaTeXML/Package/wasysym.sty.ltxml
 lib/LaTeXML/Package/wiki.sty.ltxml
 lib/LaTeXML/Package/wrapfig.sty.ltxml
@@ -671,6 +690,7 @@ lib/LaTeXML/texmf/lxRDFa.sty
 # Test Suite.
 #==================================================
 t/00_unittest.t
+t/002_unit_findfile.t
 t/05_tokenize.t
 t/10_expansion.t
 t/12_grouping.t
@@ -697,6 +717,8 @@ t/93_formats.t
 t/931_epub.t
 t/94_runtimes.t
 t/95_complex_config.t
+t/96_fatal.t
+t/97_manifest.t
 t/alignment/algx.pdf
 t/alignment/algx.tex
 t/alignment/algx.xml
@@ -741,6 +763,9 @@ t/alignment/ncases.xml
 t/alignment/plainmath.pdf
 t/alignment/plainmath.tex
 t/alignment/plainmath.xml
+t/alignment/split.pdf
+t/alignment/split.tex
+t/alignment/split.xml
 t/alignment/supertabular.pdf
 t/alignment/supertabular.tex
 t/alignment/supertabular.xml
@@ -762,6 +787,9 @@ t/ams/amsdisplay.xml
 t/ams/cd.pdf
 t/ams/cd.tex
 t/ams/cd.xml
+t/ams/dots.pdf
+t/ams/dots.tex
+t/ams/dots.xml
 t/ams/genfracs.pdf
 t/ams/genfracs.tex
 t/ams/genfracs.xml
@@ -774,6 +802,9 @@ t/ams/matrix.xml
 t/ams/sideset.pdf
 t/ams/sideset.tex
 t/ams/sideset.xml
+t/babel/csquotes.pdf
+t/babel/csquotes.tex
+t/babel/csquotes.xml
 t/babel/french.pdf
 t/babel/french.tex
 t/babel/french.xml
@@ -789,6 +820,9 @@ t/babel/numprints.xml
 t/babel/page545.pdf
 t/babel/page545.tex
 t/babel/page545.xml
+t/complex/aastex_test.pdf
+t/complex/aastex_test.tex
+t/complex/aastex_test.xml
 t/complex/aliceblog.pdf
 t/complex/aliceblog.tex
 t/complex/aliceblog.xml
@@ -799,12 +833,19 @@ t/complex/si.pdf
 t/complex/si.tex
 t/complex/si.xml
 t/complex/sunset.jpg
+t/complex/tcilatex_minimal.pdf
+t/complex/tcilatex_minimal.tex
+t/complex/tcilatex_minimal.xml
+t/complex/versioned_fallback.pdf
+t/complex/versioned_fallback.tex
+t/complex/versioned_fallback.xml
 t/complex/xii.dtd
 t/complex/xii.latexml
 t/complex/xii.pdf
 t/complex/xii.tex
 t/complex/xii.xml
 t/daemon/amsarticle.tex
+t/daemon/broken.tex
 t/daemon/api/port.spec
 t/daemon/api/port.status
 t/daemon/api/port.xml
@@ -822,6 +863,9 @@ t/daemon/formats/citationraw.xml
 t/daemon/formats/jats.spec
 t/daemon/formats/jats.status
 t/daemon/formats/jats.xml
+t/daemon/formats/lexmath.spec
+t/daemon/formats/lexmath.status
+t/daemon/formats/lexmath.xml
 t/daemon/formats/makebib.spec
 t/daemon/formats/makebib.status
 t/daemon/formats/makebib.xml
@@ -846,6 +890,7 @@ t/daemon/formats/parallel-math-xmath.xml
 t/daemon/formats/tei.spec
 t/daemon/formats/tei.status
 t/daemon/formats/tei.xml
+t/daemon/lexmath.tex
 t/daemon/fragment.tex
 t/daemon/mixedmath.latexml
 t/daemon/mixedmath.tex
@@ -1023,6 +1068,9 @@ t/expansion/noexpand.xml
 t/expansion/numexpr.pdf
 t/expansion/numexpr.tex
 t/expansion/numexpr.xml
+t/expansion/parindent.pdf
+t/expansion/parindent.tex
+t/expansion/parindent.xml
 t/expansion/subdir/whichpkga.sty
 t/expansion/testchar.pdf
 t/expansion/testchar.tex
@@ -1228,9 +1276,15 @@ t/keyval_options/xkvdop6a.xml
 t/keyval_options/xkvdop6b.pdf
 t/keyval_options/xkvdop6b.tex
 t/keyval_options/xkvdop6b.xml
+t/math/aa.pdf
+t/math/aa.tex
+t/math/aa.xml
 t/math/array.pdf
 t/math/array.tex
 t/math/array.xml
+t/math/array_newline_math.pdf
+t/math/array_newline_math.tex
+t/math/array_newline_math.xml
 t/math/arrows.pdf
 t/math/arrows.tex
 t/math/arrows.xml
@@ -1345,6 +1399,12 @@ t/structure/amsarticle.tex
 t/structure/amsarticle.xml
 t/structure/apackage.sty
 t/structure/apackage.sty.ltxml
+t/structure/app.pdf
+t/structure/app.tex
+t/structure/app.xml
+t/structure/apps.pdf
+t/structure/apps.tex
+t/structure/apps.xml
 t/structure/article.pdf
 t/structure/article.tex
 t/structure/article.xml
@@ -1357,6 +1417,12 @@ t/structure/badabstract.xml
 t/structure/beforeafter.pdf
 t/structure/beforeafter.tex
 t/structure/beforeafter.xml
+t/structure/bibsect.pdf
+t/structure/bibsect.tex
+t/structure/bibsect.xml
+t/structure/crazybib.pdf
+t/structure/crazybib.tex
+t/structure/crazybib.xml
 t/structure/csquotes.pdf
 t/structure/csquotes.tex
 t/structure/csquotes.xml
@@ -1401,8 +1467,15 @@ t/structure/IEEE.xml
 t/structure/itemize.pdf
 t/structure/itemize.tex
 t/structure/itemize.xml
+t/structure/mainfile.pdf
+t/structure/mainfile.tex
+t/structure/asubfile.tex
+t/structure/mainfile.xml
 t/structure/myclass.cls
 t/structure/myclass.cls.ltxml
+t/structure/natbib.pdf
+t/structure/natbib.tex
+t/structure/natbib.xml
 t/structure/options.pdf
 t/structure/options.tex
 t/structure/options.xml
@@ -1463,4 +1536,3 @@ t/tokenize/verb.xml
 t/tokenize/verbata.pdf
 t/tokenize/verbata.tex
 t/tokenize/verbata.xml
-

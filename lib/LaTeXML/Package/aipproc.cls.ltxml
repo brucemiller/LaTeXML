@@ -1,0 +1,103 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  aipproc                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# aipproc.cls
+#  American Institute of Physics Conference Proceedings.
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Class Options
+# Ignorable options
+foreach my $option (qw(10pt 11pt 12pt twoside onecolumn twocolumn
+  draft final referee
+  letter)) {
+  DeclareOption($option, undef); }
+
+my @aipproc_to_load = ();
+# Anything else gets passed to article.
+DeclareOption(undef, sub {
+    PassOptions('article', 'cls', ToString(Expand(T_CS('\CurrentOption')))); });
+
+my $aipproc_font = 'mathptmx';
+DeclareOption('mathptmx', sub { $aipproc_font = 'mathptmx'; });
+DeclareOption('mathptm',  sub { $aipproc_font = 'mathptm'; });
+DeclareOption('mathtime', sub { $aipproc_font = 'mathptmx'; });
+DeclareOption('mtpro',    sub { $aipproc_font = 'mathptmx'; });
+
+DeclareOption('varioref',    sub { });    # Need varioref
+DeclareOption('nonvarioref', sub { });    # Need varioref
+
+DeclareOption('tnotealph',   sub { });    # redefine \thefootnote
+DeclareOption('tnotesymbol', sub { });    # redefine \thefootnote
+
+DeclareOption('numberedheadings',   sub { });
+DeclareOption('unnumberedheadings', sub { });
+ProcessOptions();
+
+LoadClass('article');
+#RequirePackage('aa_support');
+RequirePackage($aipproc_font) if $aipproc_font;
+foreach my $pkg (@aipproc_to_load) {
+  RequirePackage($pkg); }
+RequirePackage('fixltx2e');
+RequirePackage('fontenc');
+RequirePackage('calc');
+RequirePackage('varioref');
+RequirePackage('times');
+RequirePackage('graphicx');
+RequirePackage('textcomp');
+RequirePackage('url');
+RequirePackage('textcase');
+RequirePackage('natbib');
+#======================================================================
+# Frontmatter
+DefMacro('\layoutstyle{}', '');
+
+# keywords: address, altaddress, email
+DefMacro('\author{} RequiredKeyVals', sub {
+    my ($gullet, $author, $kvx) = @_;
+    my $kv    = GetKeyVals($kvx);
+    my @stuff = (Invocation(T_CS('\lx@author'), $author));
+    if (my $addr = $$kv{address}) {
+      push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('address'), $addr))); }
+    if (my $altaddr = $$kv{altaddress}) {
+      push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('altaddress'), $altaddr))); }
+    if (my $email = $$kv{email}) {
+      push(@stuff, Invocation(T_CS('\lx@contact', T_OTHER('email'), $email))); }
+    return Tokens(@stuff); });
+
+DefMacroI('\keywordsname', undef, 'Keywords');
+DefMacro('\keywords{}',       '\@add@frontmatter{ltx:keywords}[name={\keywordsname}]{#1}');
+DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
+
+DefEnvironment('{theacknowledgments}', "<ltx:acknowledgements>#body</ltx:acknowledgements>");
+#======================================================================
+DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label' _force_font='true'/>)",
+  properties => sub { (label => CleanLabel($_[1])); });
+
+#======================================================================
+DefMacro('\source{}',           '\lx@note{source}{#1}');
+DefMacro('\spaceforfigure{}{}', '');
+
+DefMacro('\tablehead {}{}{}{}',           '\multicolumn{#1}{#2}{\parbox{#3}{#4}}');
+DefMacro('\tablenote OptionalMatch:* {}', '\footnote{#1}');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

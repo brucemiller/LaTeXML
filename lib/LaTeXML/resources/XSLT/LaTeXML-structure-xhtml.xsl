@@ -836,19 +836,13 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
-      <xsl:apply-templates select="ltx:glossaryphrase[@show='label']">
+      <xsl:apply-templates select="ltx:glossaryphrase[@role='label']">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
     </xsl:element>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="dd" namespace="{$html_ns}">
-      <xsl:apply-templates select="ltx:glossaryexpansion">
-        <xsl:with-param name="context" select="$context"/>
-      </xsl:apply-templates>
-      <xsl:if test="ltx:glossaryexpansion and ltx:glossarydefinition">
-        <xsl:text> </xsl:text>
-      </xsl:if>
-      <xsl:apply-templates select="ltx:glossarydefinition">
+      <xsl:apply-templates select="ltx:glossaryphrase[@role='definition']">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="ltx:indexrefs">

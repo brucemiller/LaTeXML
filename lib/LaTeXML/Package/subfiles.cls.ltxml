@@ -1,0 +1,29 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  subfiles.cls                                                       | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Basically we can't actually implement the subfiles class
+# without reading the aux file and/or scanning a previous full run.
+# So....
+
+Error('unexpected', 'subfiles', undef,
+  "LaTeXML does not implement the subfiles class;",
+  "Please process the full main document.",
+  "We will punt by using the OmniBus generic class");
+LoadClass('OmniBus');
+#======================================================================
+1;

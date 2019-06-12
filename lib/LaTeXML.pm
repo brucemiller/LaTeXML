@@ -193,7 +193,7 @@ sub convert {
     $$opts{archive_destination}   = $$opts{destination};
     my $destination_name = $$opts{destination} ? pathname_name($$opts{destination}) : 'document';
     my $sandbox_directory = File::Temp->newdir(TMPDIR => 1);
-    my $extension = $$opts{format};
+    my $extension         = $$opts{format};
     $extension =~ s/\d+$//;
     $extension =~ s/^epub|mobi$/xhtml/;
     my $sandbox_destination = "$destination_name.$extension";
@@ -317,28 +317,44 @@ sub convert {
     if (delete $$opts{placeholder_destination}) {
       delete $$opts{destination}; } }
 
-  # 5 Output
-  # 5.1 Serialize the XML/HTML result (or just return the Perl object, if requested)
+# 5 Output -- if not using Post::Writer, which never considers this serialization logic
+# 5.1 Serialize the XML/HTML result (or just return the Perl object, if requested)
+# GOAL: $serialized must contain a utf8-encoded string at the return.
+# NOTES: This is difficult, because we can be serializing different objects, with different serialization logic
+# 1. Byte strings: LaTeXML's Document::serialize_aux, and XML::LibXML::Document's toString and toStringHTML
+#    which have NOT been encoded into utf-8, so we need an explicit encode before printing/returning
+# 2. Unreliable: the fragment case, which uses XML::LibXML::Element (and hence Node's) toString method,
+#    is sometimes already encoded as UTF-8. In fact, the documentation claims it is by default:
+# https://metacpan.org/pod/distribution/XML-LibXML/lib/XML/LibXML/Node.pod#toString
+# Digging to the bottom of the code, we reach:
+# https://metacpan.org/source/SHLOMIF/XML-LibXML-2.0200/LibXML.xs#L5212
+# which *will* set the utf8 flag iff the "HAVE_UTF8" flag was set on the system which compiled libxml
+# that's pretty terrifying in fact, since we can't rely that libxml returns the same encoding cross-platform for its default behavior!
+# 3. Reliable: Always explicitly request the document encoding to be used in serializing a Node
+#     by passing a second true flag into toString(1,1) to ensure that the encoding is handled explicitly at the libxml2 level
+# 4. Other: returning a DOM object programmatically, or a non-XML representation (archives), has no serialization component, result is returned as-is
   undef $serialized;
-  if ((defined $result) && ref($result) && (ref($result) =~ /^(:?LaTe)?XML/)) {
-    if (($$opts{format} =~ /x(ht)?ml/) || ($$opts{format} eq 'jats')) {
-      $serialized = $result->toString(1);
-      if (ref($result) eq 'LaTeXML::Core::Document') {
-        # NOTE that we are serializing here via LaTeXML's Document::serialize_aux
-        # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
+  my $ref_result = ref($result) || '';
+  if ($$opts{format} eq 'dom') {    # No serialize needed in DOM output case
+    $serialized = $result; }
+  elsif ($ref_result =~ /^(:?LaTe)?XML/) {
+    if ($$opts{format} =~ /^jats|x(ht)?ml$/) {
+      if ($ref_result =~ /Document$/) {
+        $serialized = $result->toString(1);
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
+      } else {                      # fragment case
+        $serialized = $result->toString(1, 1);
     } }
     elsif ($$opts{format} =~ /^html/) {
-      if (ref($result) =~ /^LaTeXML::(Post::)?Document$/) {    # Special for documents
-        $serialized = $result->getDocument->toStringHTML; }
-      else {                                                   # Regular for fragments
-        do {
-          local $XML::LibXML::setTagCompression = 1;
-          $serialized = $result->toString(1);
-        } } }
-    elsif ($$opts{format} eq 'dom') {
-      $serialized = $result; } }
-  else { $serialized = $result; }                              # Compressed case
+      if (ref($result) =~ /^LaTeXML::(Post::)?Document$/) {
+        # Needs explicit encode call, toStringHTML returns Perl byte strings
+        $serialized = $result->getDocument->toStringHTML;
+        $serialized = Encode::encode('UTF-8', $serialized) if $serialized; }
+      else {                        # fragment case
+        local $XML::LibXML::setTagCompression = 1;
+        $serialized = $result->toString(1, 1); } } }
+  # Compressed/archive/other case, just pass on
+  else { $serialized = $result; }
 
   # 5.2 Finalize logging and return a response containing the document result, log and status
   print STDERR "Status:conversion:" . ($$runtime{status_code} || '0') . " \n";
@@ -353,7 +369,7 @@ sub get_converter {
   my ($self, $config) = @_;
   # TODO: Make this more flexible via an admin interface later
   my $key = $config->get('cache_key') || $config->get('profile') || 'custom';
-  my $d = $DAEMON_DB{$key};
+  my $d   = $DAEMON_DB{$key};
   if (!defined $d) {
     $d = LaTeXML->new($config->clone);
     $DAEMON_DB{$key} = $d; }
@@ -389,7 +405,7 @@ sub convert_post {
   $parallel = $parallel || 0;
 
   my $DOCUMENT = LaTeXML::Post::Document->new($dom, %PostOPS);
-  my @procs = ();
+  my @procs    = ();
   #TODO: Add support for the following:
   my $dbfile = $$opts{dbfile};
   if (defined $dbfile && !-f $dbfile) {
@@ -401,7 +417,10 @@ sub convert_post {
     require LaTeXML::Post::Split;
     push(@procs, LaTeXML::Post::Split->new(split_xpath => $$opts{splitpath}, splitnaming => $$opts{splitnaming},
         db => $DB, %PostOPS)); }
-  my $scanner = ($$opts{scan} || $DB) && (LaTeXML::Post::Scan->new(db => $DB, %PostOPS));
+  my $scanner = ($$opts{scan} || $DB) && (LaTeXML::Post::Scan->new(
+      db       => $DB,
+      labelids => $$opts{splitnaming} && ($$opts{splitnaming} =~ /^label/),
+      %PostOPS));
   push(@procs, $scanner) if $$opts{scan};
   if (!($$opts{prescan})) {
     if ($$opts{index}) {
@@ -416,7 +435,7 @@ sub convert_post {
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
       push(@procs, LaTeXML::Post::CrossRef->new(
-          db => $DB, urlstyle => $$opts{urlstyle},
+          db        => $DB, urlstyle => $$opts{urlstyle},
           extension => $$opts{extension},
           ($$opts{numbersections} ? (number_sections => 1) : ()),
           ($$opts{navtoc} ? (navigation_toc => $$opts{navtoc}) : ()),
@@ -491,7 +510,7 @@ sub convert_post {
     }
     if ($xslt) {
       require LaTeXML::Post::XSLT;
-      my $parameters = { LATEXML_VERSION => "'$LaTeXML::VERSION'" };
+      my $parameters  = { LATEXML_VERSION => "'$LaTeXML::VERSION'" };
       my @searchpaths = ('.', $DOCUMENT->getSearchPaths);
       # store these for the XSLT; XSLT Processor will copy resources where needed.
       foreach my $css (@{ $$opts{css} }) {
@@ -532,7 +551,7 @@ sub convert_post {
 
   # Do the actual post-processing:
   my @postdocs;
-  my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
+  my $latexmlpost      = LaTeXML::Post->new(verbosity => $verbosity || 0);
   my $post_eval_return = eval {
     local $SIG{'ALRM'} = sub { die "Fatal:conversion:post-processing timed out.\n" };
     alarm($$opts{timeout});
@@ -561,7 +580,7 @@ sub convert_post {
     ### We can't rely on the ->getDestinationDirectory method, as Fatal post-processing jobs have UNDEF @postdocs !!!
     ### my $destination_directory = $postdocs[0]->getDestinationDirectory();
     my $destination_directory = $PostOPS{destinationDirectory};
-    my $log_file = pathname_absolute($$opts{log}, $destination_directory);
+    my $log_file              = pathname_absolute($$opts{log}, $destination_directory);
     if (pathname_is_contained($log_file, $destination_directory)) {
       print STDERR "\nPost-processing complete: " . $latexmlpost->getStatusMessage . "\n";
       print STDERR "processing finished " . localtime() . "\n" if $verbosity >= 0;

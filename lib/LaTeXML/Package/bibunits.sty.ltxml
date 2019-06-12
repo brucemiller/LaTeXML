@@ -1,0 +1,87 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  bibunits                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+DefRegister('\@bibunitauxcnt' => Number(0));
+DefMacro('\bu@unitname', 'bu\the\@bibunitauxcnt');
+DefMacro('\bu@bibdata',  '');
+DefMacro('\bu@bibstyle', '');
+
+DeclareOption('globalcitecopy', sub {
+    AssignValue(CITE_UNIT_GLOBAL => 1); });
+DeclareOption('labelstoglobalaux', sub { });
+DeclareOption('sectionbib', sub {
+    AssignMapping('BACKMATTER_ELEMENT', 'ltx:bibliography' => 'ltx:section'); });
+DeclareOption('subsectionbib', sub {
+    AssignMapping('BACKMATTER_ELEMENT', 'ltx:bibliography' => 'ltx:subsection'); });
+ProcessOptions();
+
+Let('\std@cite', '\cite');
+DefMacro('\cite', '\@ifstar{\lx@bibunits@setglobal\std@cite}{\lx@bibunits@resetglobal\std@cite}');
+
+DefPrimitive('\lx@bibunits@setglobal', sub {
+    if (!LookupValue('CITE_UNIT_GLOBAL')) {
+      AssignValue(CITE_UNIT => join('', 'bibliography ', ToString(Digest('\bu@unitname')))); }
+    return; });
+DefPrimitive('\lx@bibunits@resetglobal', sub {
+    if (!LookupValue('CITE_UNIT_GLOBAL')) {
+      AssignValue(CITE_UNIT => ToString(Digest('\bu@unitname'))); }
+    return; });
+
+DefMacro('\defaultbibliography Semiverbatim', '\gdef\bu@bibdata{#1}');
+DefMacro('\defaultbibliographystyle{}',       '\gdef\bu@bibstyle{#1}');
+
+our %bibunitmap = ('\\part' => 'ltx:chapter', '\\chapter' => 'ltx:section',
+  '\\section'       => 'ltx:subsection', '\\subsection' => 'ltx : subsubsection ',
+  '\\subsubsection' => 'ltx:paragraph',  '\\paragraph'  => 'ltx:subparagraph');
+
+DefPrimitive('\bibliographyunit [DefToken]', sub {
+    my ($stomach, $unit) = @_;
+    if ($unit) {
+      Let('\old@bibunit', $unit);
+      Let($unit,          '\@bibunit');
+      AssignMapping('BACKMATTER_ELEMENT', 'ltx:bibliography' => $bibunitmap{ ToString($unit) });
+    }
+    else {
+      AssignValue(CITE_UNIT => undef); } }
+);
+
+DefMacro('\@bibunit', '\lx@startbibunit\old@bibunit');
+
+sub startBibunit {
+  Digest('\global\advance\@bibunitauxcnt1');
+  my $unit = ToString(Digest('\bu@unitname'));
+  AssignValue(CITE_UNIT => (LookupValue('CITE_UNIT_GLOBAL') ? 'bibliography ' . $unit : $unit));
+  return; }
+
+DefPrimitive('\lx@startbibunit', sub { startBibunit(); });
+
+DefEnvironment('{bibunit}[]', '#body',
+  afterDigestBegin => sub {
+    if (my $style = $_[1]->getArg(0) || Expand(T_CS('\bu@bibstyle'))) {
+      setBibstyle($style); }
+    startBibunit(); });
+
+DefMacro('\putbib[]', '\lx@bibliography[\bu@unitname]{\if.#1.\bu@bibdata\else#1\fi}');
+
+# AND, make bibliography do the
+Let('\bu@orig@bibliography', '\bibliography');
+AssignValue(ORIG_BIBUNIT => LookupMapping('BACKMATTER_ELEMENT', 'ltx:bibliography'));
+DefMacro('\bibliography', '\lx@reset@bibunit\bu@orig@bibliography');
+DefPrimitive('\lx@reset@bibunit', sub {
+    AssignMapping('BACKMATTER_ELEMENT', 'ltx:bibliography' => LookupValue('ORIG_BIBUNIT')); });
+
+1;

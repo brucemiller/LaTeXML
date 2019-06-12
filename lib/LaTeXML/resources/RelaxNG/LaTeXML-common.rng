@@ -115,12 +115,31 @@ This is used internally and may go away some day.</a:documentation>
       </attribute>
     </optional>
   </define>
+  <define name="Listable.attributes">
+    <a:documentation>Attributes for items that can be put into lists, like index, table of contents.</a:documentation>
+    <optional>
+      <attribute name="inlist">
+        <a:documentation>Records which lists, such as toc=table of contents,..., this object could be listed in.
+Space separated set of toc, lof, lot, etc.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="Listing.attributes">
+    <a:documentation>Attributes for items that create lists, like index, table of contents.</a:documentation>
+    <optional>
+      <attribute name="lists">
+        <a:documentation>Records which lists, such as toc(=table of contents), this object should create a list of.
+Space separated set of toc, lof, lot, etc.</a:documentation>
+      </attribute>
+    </optional>
+  </define>
   <define name="Labelled.attributes">
     <a:documentation>Attributes for elements that can be labelled from within LaTeX.
 These attributes deal with assigning a label  and generating cross references.
 The label migrates to an \attr{xml:id} and \attr{href} and the element
 can serve as a hypertext target.</a:documentation>
     <ref name="ID.attributes"/>
+    <ref name="Listable.attributes"/>
     <optional>
       <attribute name="labels">
         <a:documentation>Records the various labels that LaTeX uses for crossreferencing.
@@ -129,12 +148,6 @@ It consists of space separated labels for the element.
 The \cs{label} macro provides the label prefixed by \texttt{LABEL:};
 Spaces in a label are replaced by underscore.
 Other mechanisms (like acro?) might use other prefixes (but \texttt{ID:} is reserved!)</a:documentation>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="inlist">
-        <a:documentation>Records which lists, such as toc=table of contents,..., this object could be listed in.
-Space separated set of toc, lof, lot, etc.</a:documentation>
       </attribute>
     </optional>
   </define>

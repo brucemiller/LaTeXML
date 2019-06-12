@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="book"?>
+<?latexml package="inputenc" options="utf8"?>
+<?latexml package="natbib" options="sectionbib,numbers"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-book.css" type="text/css"/>
+  <chapter inlist="toc" xml:id="Ch1">
+    <tags>
+      <tag>Chapter 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Chapter 1</tag>
+    </tags>
+    <title><tag close=" ">Chapter 1</tag>CHAP 1</title>
+    <toctitle><tag close=" ">1</tag>CHAP 1</toctitle>
+    <section inlist="toc" xml:id="Ch1.S1">
+      <tags>
+        <tag>1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">§1.1</tag>
+      </tags>
+      <title><tag close=" ">1.1</tag>SEC 1.1</title>
+      <bibliography xml:id="bib">
+        <title>Section Bibliography</title>
+        <biblist>
+          <bibitem key="bib1" xml:id="bib.bib1">
+            <tags>
+              <tag role="number">1</tag>
+              <tag role="refnum">[1]</tag>
+              <tag role="key">bib1</tag>
+            </tags>
+            <bibblock> Bla
+</bibblock>
+          </bibitem>
+        </biblist>
+      </bibliography>
+    </section>
+    <section inlist="toc" xml:id="Ch1.S2">
+      <tags>
+        <tag>1.2</tag>
+        <tag role="refnum">1.2</tag>
+        <tag role="typerefnum">§1.2</tag>
+      </tags>
+      <title><tag close=" ">1.2</tag>SEC 1.2</title>
+      <bibliography xml:id="biba">
+        <title>Section Bibliography</title>
+        <biblist>
+          <bibitem key="bib1" xml:id="biba.bib2">
+            <tags>
+              <tag role="number">2</tag>
+              <tag role="refnum">[2]</tag>
+              <tag role="key">bib1</tag>
+            </tags>
+            <bibblock> Bla
+</bibblock>
+          </bibitem>
+        </biblist>
+      </bibliography>
+    </section>
+    <bibliography xml:id="bibb">
+      <title>Chapter Bibliography</title>
+      <biblist>
+        <bibitem key="bib1" xml:id="bibb.bib3">
+          <tags>
+            <tag role="number">3</tag>
+            <tag role="refnum">[3]</tag>
+            <tag role="key">bib1</tag>
+          </tags>
+          <bibblock> Bla
+</bibblock>
+        </bibitem>
+      </biblist>
+    </bibliography>
+  </chapter>
+  <chapter inlist="toc" xml:id="Ch2">
+    <tags>
+      <tag>Chapter 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">Chapter 2</tag>
+    </tags>
+    <title><tag close=" ">Chapter 2</tag>CHAP 2</title>
+    <toctitle><tag close=" ">2</tag>CHAP 2</toctitle>
+    <section inlist="toc" xml:id="Ch2.S1">
+      <tags>
+        <tag>2.1</tag>
+        <tag role="refnum">2.1</tag>
+        <tag role="typerefnum">§2.1</tag>
+      </tags>
+      <title><tag close=" ">2.1</tag>SEC 2.1</title>
+      <bibliography xml:id="bibc">
+        <title>Section Bibliography</title>
+        <biblist>
+          <bibitem key="bib1" xml:id="bibc.bib4">
+            <tags>
+              <tag role="number">4</tag>
+              <tag role="refnum">[4]</tag>
+              <tag role="key">bib1</tag>
+            </tags>
+            <bibblock> Bla
+</bibblock>
+          </bibitem>
+        </biblist>
+      </bibliography>
+    </section>
+    <section inlist="toc" xml:id="Ch2.S2">
+      <tags>
+        <tag>2.2</tag>
+        <tag role="refnum">2.2</tag>
+        <tag role="typerefnum">§2.2</tag>
+      </tags>
+      <title><tag close=" ">2.2</tag>SEC 2.2</title>
+      <bibliography xml:id="bibd">
+        <title>Section Bibliography</title>
+        <biblist>
+          <bibitem key="bib1" xml:id="bibd.bib5">
+            <tags>
+              <tag role="number">5</tag>
+              <tag role="refnum">[5]</tag>
+              <tag role="key">bib1</tag>
+            </tags>
+            <bibblock> Bla
+</bibblock>
+          </bibitem>
+        </biblist>
+      </bibliography>
+    </section>
+    <bibliography xml:id="bibe">
+      <title>Chapter Bibliography</title>
+      <biblist>
+        <bibitem key="bib1" xml:id="bibe.bib6">
+          <tags>
+            <tag role="number">6</tag>
+            <tag role="refnum">[6]</tag>
+            <tag role="key">bib1</tag>
+          </tags>
+          <bibblock> Bla
+</bibblock>
+        </bibitem>
+      </biblist>
+    </bibliography>
+  </chapter>
+</document>

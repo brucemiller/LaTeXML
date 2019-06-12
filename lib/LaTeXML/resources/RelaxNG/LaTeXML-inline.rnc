@@ -14,7 +14,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## The inline module defines basic inline elements used throughout.
 Inline.class |= 
-    \text | emph | del | sub | sup | glossaryref | acronym | rule
+    \text | emph | del | sub | sup | glossaryref | rule
   | anchor | ref | cite | bibref
 
 #======================================================================
@@ -108,6 +108,7 @@ element glossaryref { glossaryref_attributes, glossaryref_model }
 glossaryref_attributes =
   Common.attributes,
   Refable.attributes,
+  Listable.attributes,
   Fontable.attributes,
   Colorable.attributes,
   Backgroundable.attributes,
@@ -115,10 +116,7 @@ glossaryref_attributes =
   ## should be used to identifier used for the glossaryref.
   attribute key { text }?,
 
-  ## The kind of \elementref{glossary} this mark belongs to.
-  attribute role { text }?,
-
-  ## gives a expanded form of the glossaryref,
+  ## gives a expanded form of the glossaryref (unused?),
   attribute title { text }?,
 
   ## a pattern encoding how the text content should be filled in during
@@ -132,24 +130,6 @@ glossaryref_attributes =
 
 ## Content model for \elementref{glossaryref}.
 glossaryref_model = Inline.model
-
-#======================================================================
-
-acronym =
-## Represents an acronym (OBSOLETE; see \elementref{glossaryref}).
-element acronym { acronym_attributes, acronym_model }
-
-## Attributes for \elementref{acronym}.
-acronym_attributes =
-  Common.attributes,
-  ID.attributes,
-  ## should be used to identifier used for the acronym.
-  attribute name { text }?,
-  ## gives a expanded form of the acronym,
-  attribute title { text }?
-
-## Content model for \elementref{acronym}.
-acronym_model = Inline.model
 
 #======================================================================
 
@@ -223,7 +203,9 @@ cite =
 element cite { cite_attributes, cite_model }
 
 ## Attributes for \elementref{cite}.
-cite_attributes = Common.attributes
+cite_attributes =
+  Common.attributes,
+  Listable.attributes
 
 ## Content model for \elementref{cite}.
 cite_model = Inline.model
@@ -239,6 +221,7 @@ element bibref { bibref_attributes, bibref_model }
 bibref_attributes =
   Common.attributes,
   IDREF.attributes,
+  Listable.attributes,
 
   ## a comma separated list of bibliographic keys.
   ## (See the \attr{key} attribute of \elementref{bibitem} and \elementref{bibentry})
