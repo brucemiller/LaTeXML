@@ -77,7 +77,7 @@ sub invoke {
   my ($self, $stomach) = @_;
   # Call any `Before' code.
   my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
-  my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
+  my $tracing  = $STATE->lookupValue('TRACINGCOMMANDS');
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
   my @pre = $self->executeBeforeDigest($stomach);
@@ -88,23 +88,23 @@ sub invoke {
   my $ismath = $STATE->lookupValue('IN_MATH');
   # Parse AND digest the arguments to the Constructor
   my $params = $self->getParameters;
-  my @args = ($params ? $params->readArgumentsAndDigest($stomach, $self) : ());
+  my @args   = ($params ? $params->readArgumentsAndDigest($stomach, $self) : ());
   print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
   my $nargs = $self->getNumArgs;
   @args = @args[0 .. $nargs - 1];
 
   # Compute any extra Whatsit properties (many end up as element attributes)
   my $properties = $$self{properties};
-  my %props = (!defined $properties ? ()
+  my %props      = (!defined $properties ? ()
     : (ref $properties eq 'CODE' ? &$properties($stomach, @args)
       : %$properties));
   foreach my $key (keys %props) {
     my $value = $props{$key};
     if (ref $value eq 'CODE') {
       $props{$key} = &$value($stomach, @args); } }
-  $props{font}    = $font                                     unless defined $props{font};
-  $props{locator} = $stomach->getGullet->getMouth->getLocator unless defined $props{locator};
-  $props{isMath}  = $ismath                                   unless defined $props{isMath};
+  $props{font}    = $font                           unless defined $props{font};
+  $props{locator} = $stomach->getGullet->getLocator unless defined $props{locator};
+  $props{isMath}  = $ismath                         unless defined $props{isMath};
   $props{level}   = $stomach->getBoxingLevel;
 
   # Now create the Whatsit, itself.
