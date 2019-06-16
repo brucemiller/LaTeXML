@@ -48,16 +48,18 @@ sub SVGNextObject {
 #= 0. Environment specific stuff ====================================#
 #====================================================================#
 
-DefPrimitive('\lxSVG@installcommands', sub {
-    # Local definitions.
-    Let(T_CS('\hbox'),   T_CS('\lxSVG@hbox'));
-    Let(T_CS('\vbox'),   T_CS('\lxSVG@vbox'));
-    Let(T_CS('\lower'),  T_CS('\lxSVG@lower'));
-    Let(T_CS('\raise'),  T_CS('\lxSVG@raise'));
-    Let(T_CS('\hskip'),  T_CS('\lxSVG@hskip'));
-    Let(T_CS('\halign'), T_CS('\lxSVG@halign'));
-    AssignValue(TEXT_MODE_BINDINGS => []);
-    return; });
+sub installPGFCommands {
+  # Local definitions.
+  Let(T_CS('\hbox'),   T_CS('\lxSVG@hbox'));
+  Let(T_CS('\vbox'),   T_CS('\lxSVG@vbox'));
+  Let(T_CS('\lower'),  T_CS('\lxSVG@lower'));
+  Let(T_CS('\raise'),  T_CS('\lxSVG@raise'));
+  Let(T_CS('\hskip'),  T_CS('\lxSVG@hskip'));
+  Let(T_CS('\halign'), T_CS('\lxSVG@halign'));
+  AssignValue(TEXT_MODE_BINDINGS => []);
+  return; }
+
+DefPrimitive('\lxSVG@installcommands', sub { installPGFCommands(); });
 
 # Redefine to disappear from UnTeX, since it appears a zillion times...
 # (but is this needed ???)
@@ -123,6 +125,17 @@ DefParameterType('SVGMoveableBox', sub {
       unless $box && $box->isa('LaTeXML::Core::Whatsit')
       && ($box->getDefinition->getCSName =~ /^(\\lxSVG\@hbox||)$/);
     $box; });
+
+# Try to avoid errors inserting random boxes (esp. ltx:text)(Is this safe?)
+Tag('svg:switch', autoOpen => 1, autoClose => 1);    # ?
+Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
+  afterClose => sub {
+    my ($document, $node, $whatsit) = @_;
+    # Make sure we get a size, in case autoOpen'd
+    if ($whatsit) {
+      my ($w, $h, $d) = $whatsit->getSize;
+      $node->setAttribute(width  => $w->toAttribute)          unless $node->hasAttribute('width');
+      $node->setAttribute(height => $h->add($d)->toAttribute) unless $node->hasAttribute('height'); } });
 
 # Check whether a svg:foreignObject is open,
 # but don't check beyond an svg:svg node, in case we're nested.
@@ -396,7 +409,7 @@ DefConstructor('\lxSVG@drawpath@clipped{}{}',
     . '</svg:clipPath>'
     . '<svg:use xlink:href="##pgfpath#obj" style="#2" />'
     . '<svg:g clip-path="url(##pgfcp#obj)">',
-  reversion => '',
+  reversion  => '',
   properties => { obj => sub { SVGNextObject(); } });
 
 # #======================================================================
@@ -595,7 +608,7 @@ DefConstructor('\lxSVG@setpatternuncolored@{}{}{}{}',
     . '</svg:pattern></svg:defs>'
     . '<svg:g fill="url(##pgfupat#obj)">',
   properties => {
-    obj => sub { SVGNextObject(); },
+    obj   => sub { SVGNextObject(); },
     color => sub { Color('rgb', $_[2], $_[3], $_[4]); } });
 
 #====================================================================#
@@ -616,7 +629,7 @@ DefConstructor('\lxSVG@beginscope', '',
   afterDigest => sub {
     my ($stomach) = @_;
     AssignValue(pgf_scopecount_save => LookupValue('pgf_scopecount') || 0);
-    AssignValue(pgf_scopecount => 0, 'global');
+    AssignValue(pgf_scopecount      => 0, 'global');
     $stomach->begingroup; },
   alias => '\pgfsys@beginscope', sizer => 0);
 
@@ -666,7 +679,7 @@ DefConstructor('\lxSVG@includegraphics{}{} Semiverbatim',
       @candidates = map { pathname_relative($_, $base) } @candidates; }
     (graphic => $graphic,
       candidates => join(',', @candidates),
-      options => $options); },
+      options    => $options); },
   alias => '\includegraphics');
 
 #=====================================================================#
