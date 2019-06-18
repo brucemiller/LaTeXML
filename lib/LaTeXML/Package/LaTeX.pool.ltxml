@@ -2707,7 +2707,12 @@ sub defineNewTheorem {
       => { map { ($_ => LookupValue($_)) } keys %parameters }, 'global');
 
   my $thmname = '\\' . $thmset . 'name';
-  DefMacroI($thmname, undef, $type, scope => 'global');
+  # Avoid weird infinite loops, when the $type is already containing a $thmname macro
+  # TODO: What is a better way to stay TeX-near and avoid these issues?
+  my $type_str = ToString($type);
+  if ($type_str !~ /\Q$thmname\E\b/) {
+    DefMacroI($thmname, undef, $type, scope => 'global');
+  }
   my $swap = LookupValue('thm@swap');
 
   DefMacroI('\fnum@' . $thmset, undef,
