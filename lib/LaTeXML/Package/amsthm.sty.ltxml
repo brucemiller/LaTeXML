@@ -142,7 +142,7 @@ DefConstructor('\@proof OptionalUndigested',
       titlefont  => $titlefont,
       class      => undef,
       titleclass => 'ltx_runin'); });
-Tag('ltx:proof', autoClose => 1);
+
 DefConstructor('\end@proof', sub {
     $_[0]->maybeCloseElement('ltx:proof'); },
   beforeDigest => sub {

@@ -63,8 +63,10 @@ sub new {
 
 sub openString {
   my ($self, $string) = @_;
+  #  if (0){
   if (defined $string) {
-    if (my $encoding = $STATE->lookupValue('PERL_INPUT_ENCODING')) {
+    if (utf8::is_utf8($string)) { }    # If already utf7
+    elsif (my $encoding = $STATE->lookupValue('PERL_INPUT_ENCODING')) {
      # Note that if chars in the input cannot be decoded, they are replaced by \x{FFFD}
      # I _think_ that for TeX's behaviour we actually should turn such un-decodeable chars in to space(?).
       $string = decode($encoding, $string, Encode::FB_DEFAULT);

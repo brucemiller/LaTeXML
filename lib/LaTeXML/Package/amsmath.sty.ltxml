@@ -890,12 +890,14 @@ DefMacro('\boxed{}', '\ifmmode\boxed@math{#1}\else\boxed@text{#1}\fi');
 DefConstructor('\boxed@math{}',
   "<ltx:XMArg enclose='box'>#1</ltx:XMArg>",
   alias => '\boxed');
-DefConstructor('\boxed@text{}', sub {
-    my ($document, $body, %props) = @_;
-    my @new = insertBlock($document, $body);
-    foreach my $node (@new) {
-      $document->setAttribute($node, framed => 'rectangle'); } },    # if allowed??
-  bounded      => 1,
+
+DefConstructor('\boxed@text{}',
+  "<ltx:Math mode='display' framed='rectangle'>"
+    . "<ltx:XMath>"
+    . "#1"
+    . "</ltx:XMath>"
+    . "</ltx:Math>",
+  mode         => 'math', bounded => 1,
   beforeDigest => sub {
     Let("\\\\", '\@block@cr'); },
   alias => '\boxed');

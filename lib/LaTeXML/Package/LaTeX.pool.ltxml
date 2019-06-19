@@ -401,9 +401,11 @@ DefMacroI('\today', undef, sub { ExplodeText(today()); });
 
 # Use fonts (w/ special flag) to propogate emphasis as a font change,
 # but preserve it's "emph"-ness.
-DefConstructor('\emph{}', "<ltx:emph _force_font='1'>#1</ltx:emph>", mode => 'text',
-  bounded      => 1, font => { emph => 1 }, alias => '\emph',
-  beforeDigest => sub {
+DefConstructor('\emph{}',
+  "<ltx:emph _force_font='1'>#1",
+  mode           => 'text', bounded => 1, font => { emph => 1 }, alias => '\emph',
+  afterConstruct => sub { $_[0]->maybeCloseElement('ltx:emph'); },
+  beforeDigest   => sub {
     DefMacro('\f@shape', (ToString(Tokens(Expand(T_CS('\f@shape')))) eq 'it' ? 'n' : 'it')); },
 );
 Tag('ltx:emph', autoClose => 1);
@@ -1109,10 +1111,10 @@ DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
   beforeDigestEnd => sub { Digest(T_CS('\maybe@end@title')); },
   locked          => 1, mode => 'text');
 
+Tag('ltx:titlepage', autoClose => 1);
 DefConstructorI('\maybe@end@title', undef, sub {
     my ($document) = @_;
-    if ($document->isCloseable('ltx:titlepage')) {
-      $document->closeElement('ltx:titlepage'); } });
+    $document->maybeCloseElement('ltx:titlepage'); });
 
 DefMacro('\sectionmark{}',       Tokens());
 DefMacro('\subsectionmark{}',    Tokens());
@@ -2667,6 +2669,9 @@ sub saveTheoremStyle {
 RawTeX('\th@plain');    # Activate the default style.
 # [or just make it's values the defaults...]
 
+Tag('ltx:theorem', autoClose => 1);
+Tag('ltx:proof',   autoClose => 1);
+
 sub defineNewTheorem {
   my ($stomach, $flag, $thmset, $otherthmset, $type, $within) = @_;
   $thmset = ToString($thmset);
@@ -2731,9 +2736,9 @@ sub defineNewTheorem {
     "<ltx:theorem xml:id='#id' inlist='thm $listname' class='ltx_theorem_$classname'>"
       . "#tags"
       . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
-      . "#body"
-      . "</ltx:theorem>",
-    beforeDigest => sub {
+      . "#body",
+    afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+    beforeDigest   => sub {
       my $params = LookupValue('THEOREM_' . $thmset . '_PARAMETERS');
       foreach my $v (keys %$params) {
         AssignValue($v => $$params{$v}); }
@@ -3585,6 +3590,7 @@ sub setupPseudoBibitem {
   Let('\save@par',     '\par');
   Let('\bibitem',      '\restoring@bibitem');
   Let('\par',          '\par@in@bibliography');
+  Let('\vskip',        '\vskip@in@bibliography');
   # Moreover, some people use \item instead of \bibitem
   Let('\item', '\item@in@bibliography');
   # And protect from redefinitions.
@@ -3601,6 +3607,8 @@ DefMacroI('\par@in@bibliography', undef, sub {
     else {         # Else, put it back, and start a bibitem.
       $gullet->unread($tok);
       (T_CS('\save@bibitem'), T_BEGIN, T_END); } });
+
+DefMacro('\vskip@in@bibliography Glue', undef);
 
 DefMacroI('\item@in@bibliography', undef, '\save@bibitem{}');
 

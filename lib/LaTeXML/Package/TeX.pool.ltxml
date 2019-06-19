@@ -1863,8 +1863,9 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
 
     # What is the CORRECT (& general) way to ask whether we're in "vertical mode"??
     #  my $vmode = $tag eq 'ltx:inline-block'; # ie, explicitly \vbox !?!?!?!
+    my $issvg = $current && $document->getNodeQName($current) =~ /^svg:/;
     my $vmode = $current && $current->getAttribute('_vertical_mode_');
-    my $newtag = ($vmode ? 'ltx:p' : 'ltx:text');
+    my $newtag = ($issvg ? 'svg:g' : ($vmode ? 'ltx:p' : 'ltx:text'));
     my $node = $document->openElement($newtag, _noautoclose => 1,
       width => $props{width});
     $document->absorb($contents);
@@ -4796,9 +4797,9 @@ DefMacroI('\proclaim', parseDefParameters('\proclaim', Tokenize('#1. #2\par')),
 DefConstructor('\@proclaim{}{}',
   "<ltx:theorem>"
     . "<ltx:title font='#titlefont' _force_font='true' >#title</ltx:title>"
-    . "#2"
-    . "</ltx:theorem>",
-  properties => sub {
+    . "#2",
+  afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
+  properties     => sub {
     my $title = $_[1];
     (title => $title, titlefont => $title->getFont); });
 

@@ -1511,11 +1511,12 @@ sub defmath_prim {
         my $locator    = $stomach->getGullet->getLocator;
         my %properties = %options;
         my $font       = LookupValue('font')->merge(%$reqfont)->specialize($string);
+        my $mode = (LookupValue('IN_MATH') ? 'math' : 'text');
         foreach my $key (keys %properties) {
           my $value = $properties{$key};
           if (ref $value eq 'CODE') {
             $properties{$key} = &$value(); } }
-        LaTeXML::Core::Box->new($string, $font, $locator, $cs, mode => 'math', %properties); }));
+        LaTeXML::Core::Box->new($string, $font, $locator, $cs, mode => $mode, %properties); }));
   return; }
 
 sub defmath_cons {

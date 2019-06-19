@@ -48,13 +48,14 @@ DefPrimitive('\newsubfloat[]{}', sub {
         . '\begin{lx@subfloat@@' . $name . '}#3\caption{#1}\end{lx@subfloat@@' . $name . '}'
         . '\iflx@donecaption\else\addtocounter{\@captype}{\m@ne}\fi');
     # \ext@sub<name>, \l@sub<name>, \c@lofdepth,
+    # Let these float, since subfigures tend to get wrapped with weird positioning.
     DefEnvironment('{lx@subfloat@@' . $name . '}',
-      "<$type xml:id='#id'>"
+      "^<$type xml:id='#id'>"
         . "#tags"
         . "#body"
         . "</$type>",
       beforeDigest => sub { DefMacroI('\@captype', undef, 'sub' . $name); },
-      afterDigest => sub {
+      afterDigest  => sub {
         RescueCaptionCounters('sub' . $name, $_[1]);
         SetCounter('sub' . $name . '@save', CounterValue('sub' . $name));
       });
