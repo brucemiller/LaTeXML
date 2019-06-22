@@ -1068,9 +1068,9 @@ AssignValue('\abstract:locked' => 0);    # REDEFINE the above locked definition!
 DefMacro('\abstract', sub {
     my ($gullet) = @_;
     ($gullet->ifNext(T_BEGIN)
-      ? T_CS('\abstract@onearg')
-      : T_CS('\g@addto@macro'), T_CS('\@startsection@hook'), T_CS('\maybe@end@abstract'),
-      T_CS('\begin{abstract}')); },
+      ? (T_CS('\abstract@onearg'))
+      : (T_CS('\g@addto@macro'), T_CS('\@startsection@hook'), T_CS('\maybe@end@abstract'),
+        T_CS('\begin{abstract}'))); },
   locked => 1);
 DefMacro('\abstract@onearg{}', '\begin{abstract}#1\end{abstract}\let\endabstract\relax');
 
@@ -4189,10 +4189,9 @@ DefConstructor('\@framebox[Dimension][]{}',
           $document->setAttribute($c[0], $k => $v); } } } }
 );
 
-AssignValue(SAVEBOX => 100);
 DefPrimitive('\newsavebox DefToken', sub {
-    my $n = LookupValue('SAVEBOX') + 1;
-    AssignValue(SAVEBOX => $n, 'global');
+    my $n = LookupValue('allocated_boxes') + 1;
+    AssignValue(allocated_boxes => $n, 'global');
     DefRegisterI($_[1], undef, Number($n));
     AssignValue('box' . $n, List()); });
 
