@@ -75,15 +75,32 @@ DefMacro('\lxSVG@picture', sub {
 DefMacro('\endlxSVG@picture', '\endgroup');
 
 # use overflow visible since we haven't got a good estimate of the TRUE size of the thing!
+# And, if we're already in a picture?
 DefConstructor('\lxSVG@insertpicture{}',
-  '<ltx:picture>' .
-    '<svg:svg version="1.1" width="#pxwidth" height="#pxheight" '
-    . 'viewBox="#minx #miny #pxwidth #pxheight" overflow="visible">'
-    . '<svg:g transform="matrix(1 0 0 -1 0 #flipnmove)">'
-    . '#1'
-    . '</svg:g>'
-    . '</svg:svg>'
-    . '</ltx:picture>',
+  # '<ltx:picture>' .
+  #   '<svg:svg version="1.1" width="#pxwidth" height="#pxheight" '
+  #   . 'viewBox="#minx #miny #pxwidth #pxheight" overflow="visible">'
+  #   . '<svg:g transform="matrix(1 0 0 -1 0 #flipnmove)">'
+  #   . '#1'
+  #   . '</svg:g>'
+  #   . '</svg:svg>'
+  #   . '</ltx:picture>',
+  sub {
+    my ($document, $content, %props) = @_;
+    $document->openElement('ltx:picture');
+    $document->openElement('svg:svg',
+      version  => "1.1",
+      width    => $props{pxwidth}, height => $props{pxheight},
+      viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
+      overflow => "visible");
+    $document->openElement('svg:g',
+      transform => "matrix(1 0 0 -1 0 $props{flipnmove})");
+    $document->absorb($content);
+    while ($document->maybeCloseElement('svg:g')) { }
+    #                 $document->closeElement('svg:g');
+    $document->closeElement('svg:svg');
+    $document->closeElement('ltx:picture');
+    return; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $margin  = Dimension('2pt');
@@ -224,7 +241,7 @@ DefMacro('\pgfsys@typesetpicturebox{}', <<'EoTeX');
    \wd#1=\pgf@picmaxx%
    \dp#1=0pt%
    \leavevmode%\message{width: \the\pgf@picmaxx, height:\the\pgf@picmaxy}%%
-   \lxSVG@insertpicture{\box#1}%
+   \lxSVG@insertpicture{\box#1\lxSVG@endgroups}%
 EoTeX
 
 DefMacro('\pgfsys@beginpicture', '');
@@ -462,7 +479,8 @@ DefConstructor('\lxSVG@begingroup@ RequiredKeyVals',
   reversion => '', sizer => 0);
 
 DefConstructor('\lxSVG@endgroup@',
-  '</svg:g>',
+###  '</svg:g>',
+  sub { $_[0]->maybeCloseElement('svg:g'); },
   reversion => '', sizer => 0);
 
 #=====================================================================
@@ -621,8 +639,7 @@ DefConstructor('\lxSVG@setpatternuncolored@{}{}{}{}',
 # the old values will be restored after endscope is used.
 
 # Do we really need an <svg:g> w/no attributes???
-#DefMacro('\pgfsys@beginscope', '\lxSVG@beginscope\lxSVG@begingroup{}');
-DefMacro('\pgfsys@beginscope', '\lxSVG@beginscope');
+DefMacro('\pgfsys@beginscope', '\lxSVG@beginscope\lxSVG@begingroup{}');
 DefMacro('\pgfsys@endscope',   '\lxSVG@endgroups\lxSVG@endscope');
 
 DefConstructor('\lxSVG@beginscope', '',
@@ -874,9 +891,9 @@ DefMacro('\pgfsys@definemask',
 # For reversion
 DefConstructor('\lxSVG@stroke@opacity{}',        '', alias => '\pgfsys@stroke@opacity', sizer => 0);
 DefConstructor('\lxSVG@fill@opacity{}',          '', alias => '\pgfsys@fill@opacity',   sizer => 0);
-DefConstructor('\lxSVG@fadingfrombox{}{}',       '', alias => '\pgfsys@fadingfrombox',  sizer => 0);
+DefConstructor('\lxSVG@fadingfrombox{}{Number}', '', alias => '\pgfsys@fadingfrombox',  sizer => 0);
 DefConstructor('\lxSVG@usefading{}{}{}{}{}{}{}', '', alias => '\pgfsys@usefading',      sizer => 0);
-DefConstructor('\lxSVG@transparencygroupfrombox{}', '', alias => '\pgfsys@transparencygroupfrombox{}', sizer => 0);
+DefConstructor('\lxSVG@transparencygroupfrombox{Number}', '', alias => '\pgfsys@transparencygroupfrombox{}', sizer => 0);
 DefConstructor('\lxSVG@definemask', '', alias => '\pgfsys@definemask', sizer => 0);
 
 #=====================================================================#
