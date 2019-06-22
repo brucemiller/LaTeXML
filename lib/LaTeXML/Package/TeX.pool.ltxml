@@ -1868,6 +1868,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $newtag = ($issvg ? 'svg:g' : ($vmode ? 'ltx:p' : 'ltx:text'));
     my $node = $document->openElement($newtag, _noautoclose => 1,
       width => $props{width});
+
     $document->absorb($contents);
     $document->closeNode($node); },
 
@@ -4360,7 +4361,7 @@ DefPrimitive('\newbox    Token', sub {
     my $n = LookupValue('allocated_boxes');
     AssignValue(allocated_boxes => $n + 1, 'global');
     AssignValue("box$n", List());
-    DefRegisterI($_[1], undef, Number($n)); });
+    DefRegisterI($_[1], undef, Number($n), readonly => 1); });
 DefPrimitive('\newhelp Token {}', sub { AssignValue(ToString($_[1]) => $_[2]); });
 DefPrimitive('\newtoks Token', sub { DefRegisterI($_[1], undef, Tokens()); });
 # the next 4 actually work by doing a \chardef instead of \countdef, etc.
