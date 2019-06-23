@@ -26,6 +26,15 @@ use LaTeXML::Package;
 # but I don't see it ever made explicit.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 RequirePackage('aas_macros');
+
+### New as of august 2015:
+RequirePackage('url');
+RequirePackage('longtable');
+RequirePackage('xcolor');
+RequirePackage('hyperref');
+RequirePackage('array');
+RequirePackage('lineno');
+RequirePackage('ulem');
 #======================================================================
 # 2.1.3 Editorial Information
 
@@ -65,6 +74,9 @@ DefMacro('\slugcomment{}', '\@add@frontmatter{ltx:note}[role=slugcomment]{#1}');
 
 DefMacro('\shorttitle{}',   '\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\shortauthors{}', '');                                      # not useful?
+# Meant to be used redundantly with an \author macro, so no metadata to deposit in this call.
+DefMacro('\correspondingauthor{}', '\footnote{Corresponding author: #1}');
+
 # I had thought that \lefthead,\righthead were obsolete forms of \shorttitle,\shortauthors,
 # but who knows which goes on which side.... anyway, they get misused too.
 # better have them just disappear.
@@ -468,4 +480,18 @@ DefMacroI('\refpar',         undef, '');
 DefMacroI('\traceoutput',    undef, '');
 DefMacroI('\tracingplain',   undef, '');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+### These commands requested AAS
+DefMacro('\noprint {}',        '');
+DefMacro('\figsetstart',       '{\bf Fig. Set}');
+DefMacro('\figsetend',         '');
+DefMacro('\figsetgrpstart',    '');
+DefMacro('\figsetgrpend',      '');
+DefMacro('\figsetnum {}',      '{\bf #1.}');
+DefMacro('\figsettitle {}',    '{\bf #1}');
+DefMacro('\figsetgrpnum {}',   '');
+DefMacro('\figsetgrptitle {}', '');
+DefMacro('\figsetplot {}',     '');
+DefMacro('\figsetgrpnote {}',  '');
+
 1;
