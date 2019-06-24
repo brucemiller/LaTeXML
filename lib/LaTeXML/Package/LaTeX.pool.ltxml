@@ -2706,7 +2706,7 @@ sub defineNewTheorem {
   AssignValue('THEOREM_' . $thmset . '_PARAMETERS'
       => { map { ($_ => LookupValue($_)) } keys %parameters }, 'global');
 
-  my $thmname = '\\' . $thmset . 'name';
+  my $thmname = '\\lx@name@' . $thmset;
   DefMacroI($thmname, undef, $type, scope => 'global');
   my $swap = LookupValue('thm@swap');
 
@@ -2743,10 +2743,13 @@ sub defineNewTheorem {
       foreach my $v (keys %$params) {
         AssignValue($v => $$params{$v}); }
       Digest('\normalfont\the\thm@prework'); },
-    afterDigestBegin => sub { Digest('\the\thm@bodyfont\the\thm@styling'); },
-    beforeDigestEnd  => sub { Digest('\thm@doendmark'); },
-    afterDigest      => sub { Digest('\the\thm@postwork'); },
-    properties       => sub {
+    afterDigestBegin => sub {
+      my $name = $_[1]->getArg(1);
+      Digest('\the\thm@bodyfont\the\thm@styling'
+          . '\def\lx@thistheorem{' . ($name ? UnTeX($name) : '') . '}'); },
+    beforeDigestEnd => sub { Digest('\thm@doendmark'); },
+    afterDigest     => sub { Digest('\the\thm@postwork'); },
+    properties      => sub {
       my %ctr = ();
       if ($counter) {
         if ($flag) {
