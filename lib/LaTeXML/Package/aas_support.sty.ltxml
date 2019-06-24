@@ -74,8 +74,8 @@ DefMacro('\slugcomment{}', '\@add@frontmatter{ltx:note}[role=slugcomment]{#1}');
 
 DefMacro('\shorttitle{}',   '\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\shortauthors{}', '');                                      # not useful?
-# Meant to be used redundantly with an \author macro, so no metadata to deposit in this call.
-DefMacro('\correspondingauthor{}', '\footnote{Corresponding author: #1}');
+# Meant to be used redundantly with an \author macro, so just register the correspondence here
+DefMacro('\correspondingauthor{}', '\lx@contact{correspondent}{#1}');
 
 # I had thought that \lefthead,\righthead were obsolete forms of \shorttitle,\shortauthors,
 # but who knows which goes on which side.... anyway, they get misused too.
