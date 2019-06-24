@@ -32,8 +32,8 @@ DefMacro('\floatplacement{}{}', undef);
 DefMacro('\listof{}{}', undef);
 
 # \floatname{type}{name}
-DefMacro('\floatname{}{}', '\@namedef{#1name}{#2}');
-
+#DefMacro('\floatname{}{}', '\@namedef{#1name}{#2}');
+DefMacro('\floatname{}{}', '\@namedef{lx@name@#1}{#2}');
 our %float_outerframe = (ruled => 'top');
 our %float_innerframe = (ruled => 'topbottom', boxed => 'rectangle');
 DefPrimitive('\newfloat{}{}{}[]', sub {
@@ -43,8 +43,8 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
     my $style = ToString(Digest(T_CS('\float@style')));
     NewCounter($type, $within);
     DefMacroI('\the' . $type, undef, '\the' . $within . '.\arabic{' . $type . '}') if $within;
-    if (!LookupDefinition(T_CS('\\' . $type . 'name'))) {
-      DefMacroI('\\' . $type . 'name', undef, $type); }
+    if (!LookupDefinition(T_CS('\\lx@name@' . $type))) {
+      DefMacroI('\\lx@name@' . $type, undef, $type); }
     my $isplain = $style =~ /^plain/;
     DefMacro('\fnum@font@' . $type, ($isplain ? '\rmfamily' : '\bfseries'));
     DefMacro('\format@title@' . $type . '{}',
@@ -57,16 +57,16 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
         . "#tags"
         . "#body"
         . "</ltx:float>",
-      beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
-      afterDigest => sub { RescueCaptionCounters($type, $_[1]); },
+      beforeDigest   => sub { DefMacroI('\@captype', undef, $type); },
+      afterDigest    => sub { RescueCaptionCounters($type, $_[1]); },
       afterConstruct => sub { addFloatFrames($_[0], $style); });
     DefEnvironment("{$type*}[]",
       "<ltx:float xml:id='#id' ?#1(placement='#1') inlist='#inlist' class='ltx_float_$type'>"
         . "#tags"
         . "#body"
         . "</ltx:float>",
-      beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
-      afterDigest => sub { RescueCaptionCounters($type, $_[1]); },
+      beforeDigest   => sub { DefMacroI('\@captype', undef, $type); },
+      afterDigest    => sub { RescueCaptionCounters($type, $_[1]); },
       afterConstruct => sub { addFloatFrames($_[0], $style); });
 });
 ## ??? DefMacro('\plain','');

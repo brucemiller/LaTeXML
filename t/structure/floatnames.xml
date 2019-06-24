@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="amsmath"?>
+<?latexml package="amsthm"?>
+<?latexml package="float"?>
+<?latexml package="newfloat"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <theorem class="ltx_theorem_example" inlist="thm theorem:example" xml:id="Thmthm1">
+    <tags>
+      <tag>Example 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Example 1</tag>
+    </tags>
+    <title class="ltx_runin"><tag><text font="bold">Example 1</text></tag>.</title>
+    <para xml:id="Thmthm1.p1">
+      <p><text font="italic">test</text></p>
+    </para>
+  </theorem>
+  <float class="ltx_float_algorithm" framed="top" inlist="lop" xml:id="algorithm1">
+    <tags>
+      <tag><text font="bold">Algorithm 1</text></tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Algorithm 1</tag>
+    </tags>
+    <p>test</p>
+    <toccaption><tag close=" ">1</tag>A test algorithm</toccaption>
+    <caption><tag close=" "><text font="bold">Algorithm 1</text></tag> A test algorithm</caption>
+  </float>
+  <float class="ltx_float_flippy" framed="top" inlist="lop" labels="LABEL:flp" xml:id="flippy1">
+    <tags>
+      <tag><text font="bold">flippy 1</text></tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">flippy 1</tag>
+    </tags>
+    <p>A Flippy!</p>
+    <toccaption><tag close=" ">1</tag>Something that turns</toccaption>
+    <caption><tag close=" "><text font="bold">flippy 1</text></tag> Something that turns</caption>
+  </float>
+  <para xml:id="p1">
+    <p>See the <ref labelref="LABEL:flp"/>.
+Check: Macro flippyname is NOT defined.</p>
+  </para>
+  <float class="ltx_float_floppy" inlist="lofloppy" labels="LABEL:flp2" xml:id="floppy1">
+    <tags>
+      <tag>List of floppys 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">List of floppys 1</tag>
+    </tags>
+    <p>A Floppy!</p>
+    <toccaption><tag close=" ">1</tag>Something that flops</toccaption>
+    <caption><tag close=" ">List of floppys 1</tag>Something that flops</caption>
+  </float>
+  <para xml:id="p2">
+    <p>See the <ref labelref="LABEL:flp2"/>.
+Check: Macro floppyname IS defined.</p>
+  </para>
+</document>
