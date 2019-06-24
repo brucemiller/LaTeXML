@@ -57,6 +57,11 @@ sub invoke {
   my ($self, $gullet) = @_;
   # shortcut for "trivial" macros; but only if not tracing & profiling!!!!
   if (my $triv = (!$STATE->lookupValue('TRACINGMACROS')) && $$self{trivial_expansion}) {
+    if (recursion_check($$self{cs}, $triv->unlist)) {
+      Error('recursion', $$self{cs}, $gullet,
+        "Token " . Stringify($$self{cs}) . " expands into itself!",
+        "defining as empty");
+      $triv = Tokens(); }
     return $triv; }
   else {
     return $self->doInvocation($gullet, $self->readArguments($gullet)); } }
@@ -106,9 +111,22 @@ sub doInvocation {
               ? Tokens($_)
               : Tokens(Revert($_)))) }
           @args)->unlist; } }
+  # Avoid simplest case of infinite-loop expansion.
+  if ((ref $expansion ne 'CODE') && !scalar(@args) && recursion_check($$self{cs}, @result)) {
+    Error('recursion', $$self{cs}, $gullet,
+      "Token " . Stringify($$self{cs}) . " expands into itself!",
+      "defining as empty");
+    @result = (); }
   # Getting exclusive requires dubious Gullet support!
   push(@result, T_MARKER($profiled)) if $profiled;
   return [@result]; }
+
+sub recursion_check {
+  my ($cs, @tokens) = @_;
+  # expect $expansion as Token, Tokens or [Token...] ! Argh !
+  return $cs &&
+    (($tokens[0] && $tokens[0]->equals($cs))
+    || ($tokens[1] && $tokens[1]->equals($cs) && $tokens[0]->equals(T_CS('\protect')))); }
 
 # print a string of tokens like TeX would when tracing.
 sub tracetoString {
