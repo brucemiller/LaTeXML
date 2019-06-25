@@ -2231,7 +2231,7 @@ DefPrimitive('\write Number {}', sub {
     if (my $filename = LookupValue('output_file:' . $port)) {
       my $handle   = $filename . '_contents';
       my $contents = LookupValue($handle);
-      AssignValue($handle => $contents . UnTeX($tokens) . "\n", 'global'); }
+      AssignValue($handle => $contents . UnTeX(Expand($tokens)) . "\n", 'global'); }
     else {
       print STDERR UnTeX(Expand($tokens)) . "\n"; }
     return; });
