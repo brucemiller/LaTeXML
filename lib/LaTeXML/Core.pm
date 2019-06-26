@@ -207,7 +207,7 @@ sub convertDocument {
         my $preload = $preload_by_reference; # copy preload value, as we want to preserve the hash as-is, for (potential) future daemon calls
         next if $preload =~ /\.pool$/;
         my $options = undef;                 # Stupid perlcritic policy
-        if ($preload =~ s/^\[([^\]]*)\]//) { $options = $1; }
+        if ($preload =~ s/\[([^\]]*)\]//) { $options = $1; }
         if ($preload =~ s/\.cls$//) {
           $document->insertPI('latexml', class => $preload, ($options ? (options => $options) : ())); }
         else {
@@ -254,7 +254,7 @@ sub initializeState {
   $state->assignValue('InitialPreloads' => 1, 'global');
   foreach my $preload (@files) {
     my ($options, $type);
-    $options = $1 if $preload =~ s/^\[([^\]]*)\]//;
+    $options = $1 if $preload =~ s/\[([^\]]*)\]//;
     $type = ($preload =~ s/\.(\w+)$// ? $1 : 'sty');
     my $handleoptions = ($type eq 'sty') || ($type eq 'cls');
     if ($options) {
