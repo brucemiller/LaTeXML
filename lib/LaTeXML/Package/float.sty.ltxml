@@ -49,7 +49,7 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
     DefMacro('\fnum@font@' . $type, ($isplain ? '\rmfamily' : '\bfseries'));
     DefMacro('\format@title@' . $type . '{}',
       ($isplain
-        ? '\lx@tag[][: ]{\lx@fnum@@{' . $type . '}} #2'
+        ? '\lx@tag[][: ]{\lx@fnum@@{' . $type . '}} #1'
         : '\lx@tag[][ ]{\lx@fnum@@{' . $type . '}} #1'));
     DefMacro('\ext@' . $type, $auxext);
     DefEnvironment("{$type}[]",
