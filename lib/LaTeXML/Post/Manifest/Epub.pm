@@ -185,15 +185,13 @@ sub finalize {
   my @styles        = ();
   my @images        = ();
   find({ no_chdir => 1, wanted => sub {
-        my $OPS_abspath = $_;
-        if (-f $OPS_abspath) {
-          my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
-          if ($OPS_pathname =~ /\.css$/) {
-            push(@styles, $OPS_pathname); }
-          elsif ($OPS_pathname =~ /\.png$/) {
-            push(@images, $OPS_pathname); }
-          else { }    # skip any other resources
-        }
+        my $OPS_abspath  = $_;
+        my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
+        if ($OPS_pathname =~ /\.css$/) {
+          push(@styles, $OPS_pathname); }
+        elsif ($OPS_pathname =~ /\.png$/) {
+          push(@images, $OPS_pathname); }
+        else { }    # skip any other resources
   } }, $OPS_directory);
 
   my $manifest = $$self{opf_manifest};
