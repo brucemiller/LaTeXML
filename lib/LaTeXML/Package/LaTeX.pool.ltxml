@@ -3561,7 +3561,8 @@ DefConstructorI('\thebibliography', undef,
   beforeDigest => sub {
     AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
     DefMacro('\bibliographystyle{}', '');
-    DefMacro('\bibliography {}',     ''); },
+    DefMacro('\bibliography {}',     '');
+    ResetCounter('@bibitem'); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     # NOTE that in some perverse situations (revtex?)
