@@ -3,39 +3,19 @@ Steps for making a new release
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 * get happy with the code
 * choose new version
-* make test release(s) to CPAN
 * update "Changes"
+* make test release(s) to CPAN
 * update manual.pdf
 * make & upload tarball to CPAN
-* make rpm
-* make deb
-* make portfile
-* update links in install
+???* update links in install
 * rebuild site
-* release
-
-#======================================================================
-About Version Numbers
-#======================================================================
-There's loads of contradictory advice for Perl version numbers out there!
-I insist on "dotted-decimal" version numbers ie. 1.2.3
-So then, the seemingly recommended form to use is:
-  use version; our $VERSION = version->declare("v1.2.3");
-However, then "make dist" leads to the UGLY
-  module-v1.2.3-tar.gz
-So, hopefully, I can get away with:
-  use version; our $VERSION = version->declare("1.2.3");
+* release email
+* Notify package maintainers (MacPorts, rpm, deb, Chocalatey,...)
 
 #======================================================================
 Get Happy
 #======================================================================
 obviously make, make test, re-run dlmf, check, etc.
-
-#======================================================================
-# update Changes
-#======================================================================
-# using the date of the last release:
-git log --no-merges --name-status --since=<date>
 
 #======================================================================
 Choose new version
@@ -59,6 +39,17 @@ doc/makesite
 # to regenerate site w/current versions
 
 #======================================================================
+# update Changes
+#======================================================================
+# using the date of the last release:
+git log --no-merges --name-status --since=<date>
+
+grep log for lines starting "A" for new bindings
+
+Hopefully have all issues labeled under the Milestone for the release
+Scan closed issues under that Milestone
+
+#======================================================================
 Make Test relese to CPAN
 #======================================================================
 * See http://www.cpan.org/modules/04pause.html
@@ -78,6 +69,69 @@ make dist
 
 # We now have LaTeXML-x.x.x.tar.gz
 # Copy to <site>/releases
+
+#======================================================================
+# Contact Maintainers
+#======================================================================
+
+MacPorts: Me!
+RedHat/etc rpms: W. Mikail Petullo <mike@flyn.org> (?)
+debian:  Norbert Preining <preining@logic.at>
+  Thanks: Peter Ralph <petrel.harp@gmail.com>,
+          Atsuhito Kohda <kohda@pm.tokushima-u.ac.jp>
+Chocolatey: Ronald Tse <tse@ribose.com>
+
+
+#======================================================================
+# Make MacPorts Portfile for MacOS
+#======================================================================
+# Maintainer: adfernandes@?  but appears to have quit?
+# Latest was checked in by mojca@...
+
+ * Modify ~/Macports/tex/LaTeXML/Portfile
+  - Change version number
+  - recompute checksums
+    (use port -v install and it suggests checksums for you to cut'n'paste!)
+    (Be careful of cached tarballs: use port clean --all)
+  - Test Portfile; PR requirements:
+    sudo port lint LaTeXML
+    sudo port test LaTeXML
+    sudo port -vst install LaTeXML
+    test basic functionality
+
+ * copy resulting Portfile as <site>/releases/Portfile-<version>
+ 
+ * Create PR
+   - Use my fork of brucemiller/macports-ports
+   - sync it to macports/macports-ports
+     git checkout master
+     git fetch upstream master
+     git rebase upstream/master
+     git push
+   - create branch, 
+     git branch LaTeXML-X.Y.Z
+     git checkout LaTeXML-X.Y.Z  
+     cp ~/Macports/tex/LaTeXML/Portfile ~/macports-ports/tex/LaTeXML
+     git status/git diff/etc
+     git commit -m "LaTeXML: update to upstream version X.Y.Z" tex/LaTeXML/Portfile
+     git push origin latexml-X.Y.Z
+     (sometimes using --force, if you've mangled a previous try :> )
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Random Extra Details
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+About Version Numbers
+#======================================================================
+There's loads of contradictory advice for Perl version numbers out there!
+I insist on "dotted-decimal" version numbers ie. 1.2.3
+So then, the seemingly recommended form to use is:
+  use version; our $VERSION = version->declare("v1.2.3");
+However, then "make dist" leads to the UGLY
+  module-v1.2.3-tar.gz
+So, hopefully, I can get away with:
+  use version; our $VERSION = version->declare("1.2.3");
 
 #======================================================================
 # Make RPM's
@@ -102,126 +156,4 @@ mock --rebuild ~/rpmbuild/SRPMS/LaTeXML-X.X.X-1.fcXX.src.rpm
 # Scan tarballs, rpms, etc using ClamAV
 clamscan  --tempdir=/dev/shm --recursive  --max-recursion=128 --cross-fs=no  --infected  --block-encrypted=yes --max-files=123456789  --max-filesize=4000M  --max-scansize=4000M sometarball
 
-#======================================================================
-# Make MacPorts Portfile for MacOS
-#======================================================================
-# Maintainer: adfernandes@?  but appears to have quit?
-# Latest was checked in by mojca@...
-
- * Change version number
- * recompute checksums
- * copy resulting Portfile as <site>/releases/Portfile-<version>
-
-#======================================================================
-# Make Debian port
-#======================================================================
-# Debian Developer: Atsuhito Kohda <kohda@pm.tokushima-u.ac.jp>
-
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-OLD NOTES
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-#----------------------------------------------------------------------
-# Make an rpm specfile: LaTeXML.spec
-
-cpanspec --noprefix --packager="Bruce Miller <bruce.miller@nist.gov>" LaTeXML-X.X.X..tar.gz
-# * Edit LaTeXML.spec to fix
-
-Version:        X.X.X
-Group:          Applications/Publishing
-URL:            http://dlmf.nist.gov/LaTeXML/
-
-# We will want to make the optional dependencies required, so add the following.
-# Note that UUID::Tiny is apparently only available in Fedora 18 and beyond;
-# Not yet in Centos, so we conditionalize.
-%if 0%{?fedora} >= 18
-Requires:       perl(UUID::Tiny)
-%endif
-Requires:       perl(Image::Magick)
-BuildRequires:  tex(tex), tex(latex)
-Requires:       tex(tex), tex(latex)
-Requires(post): tex(tex)
-Requires(postun): tex(tex)
-   
-
-
-  *  rpm provides a variable %{_texmf_main} but it is the MAIN texmf directory
-     (NOT where we actually installed our module), so we need this at the top of the spec:
-
-%define texmf_local %(kpsewhich --expand-var='\$TEXMFLOCAL')
-
-  * Since we're dealing with some non-module files, we'll need to add to the %files section:
-
-%{_bindir}/*
-%{_mandir}/man1/*
-%{texmf_local}/tex/latex/latexml/*
-
-  * And add %post and %postun sections:
-
-%post
-mktexlsr >/dev/null 2>&1 || :
-
-%postun
-mktexlsr >/dev/null 2>&1 || :
-
-  * Check that the %install section uses DESTDIR, _NOT_ PERL_INSTALL_ROOT 
-
-#======================================================================
-# To test an installation, try:
-
-which latexml
-kpsewhich latexml.sty
-
-# to see if the "right" files turn up.
-# Same to check uninstall....
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% To set up a temporary port on a Mac:
-mkdir -p ~/ports/tex/LaTeXML
-cp Portfile ~/ports/tex/LaTeXML
-sudo emacs /opt/local/etc/macports/sources.conf
-# to prepend file:///Users/miller/ports
-cd ~/ports
-portindex
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-% Other attempts...
-
-#======================================================================
-# Attempts to make a ppm/ppd:
-# this hasn't realy worked yet....
-need module: PPM::Make
-apparently have to run as root, since it wants to write to /root/.cpan !?!?!?
-
-make_ppm --skip --ppd=/home/bruce/tmp/ppm/ --ar=/home/bruce/tmp/ppm/ /home/bruce/latexml/LaTeXML-0.6.0.tar.gz
-
-# **************
-# Try again....
-cpan PPM::Make
-..
-
-go to a tmp dir
-tar zxvf /wherever/LaTeXML-x.x.x.tar.gz
-cd LaTeXML-x.x.x
-make_ppm
-
-why is it trying to go to CPAN ?
-Ends up with:
-Use of uninitialized value $mod:: in string at /usr/local/lib/perl5/site_perl/5.10.0/PPM/Make/Search.pm line 187, <STDIN> line 24.
-Not all query terms returned a result at /usr/local/lib/perl5/site_perl/5.10.0/PPM/Make/Search.pm line 568, <STDIN> line 24.
-Cannot obtain the modules that 'LaTeXML' provides at /usr/local/lib/perl5/site_perl/5.10.0/PPM/Make.pm line 564, <STDIN> line 24.
-
-
-* Some other clues:
-  The LaTeXML.ppm includes mention of OS and ARCHITECTURE
-  Linux, of course, but I want windows.... or none, since this is pure perl?
-
-  Maybe the command line options 
-     --os='' --arch=''
-  would make it more portable?
-
-Hmm... it isn't clear that it actually failed, in spite of the warnings.
-
-make_ppm -vs --os='' --arch=''
 #======================================================================
