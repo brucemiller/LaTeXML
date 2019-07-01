@@ -1068,9 +1068,9 @@ AssignValue('\abstract:locked' => 0);    # REDEFINE the above locked definition!
 DefMacro('\abstract', sub {
     my ($gullet) = @_;
     ($gullet->ifNext(T_BEGIN)
-      ? T_CS('\abstract@onearg')
-      : T_CS('\g@addto@macro'), T_CS('\@startsection@hook'), T_CS('\maybe@end@abstract'),
-      T_CS('\begin{abstract}')); },
+      ? (T_CS('\abstract@onearg'))
+      : (T_CS('\g@addto@macro'), T_CS('\@startsection@hook'), T_CS('\maybe@end@abstract'),
+        T_CS('\begin{abstract}'))); },
   locked => 1);
 DefMacro('\abstract@onearg{}', '\begin{abstract}#1\end{abstract}\let\endabstract\relax');
 
@@ -2706,7 +2706,7 @@ sub defineNewTheorem {
   AssignValue('THEOREM_' . $thmset . '_PARAMETERS'
       => { map { ($_ => LookupValue($_)) } keys %parameters }, 'global');
 
-  my $thmname = '\\' . $thmset . 'name';
+  my $thmname = '\\lx@name@' . $thmset;
   DefMacroI($thmname, undef, $type, scope => 'global');
   my $swap = LookupValue('thm@swap');
 
@@ -2743,10 +2743,13 @@ sub defineNewTheorem {
       foreach my $v (keys %$params) {
         AssignValue($v => $$params{$v}); }
       Digest('\normalfont\the\thm@prework'); },
-    afterDigestBegin => sub { Digest('\the\thm@bodyfont\the\thm@styling'); },
-    beforeDigestEnd  => sub { Digest('\thm@doendmark'); },
-    afterDigest      => sub { Digest('\the\thm@postwork'); },
-    properties       => sub {
+    afterDigestBegin => sub {
+      my $name = $_[1]->getArg(1);
+      Digest('\the\thm@bodyfont\the\thm@styling'
+          . '\def\lx@thistheorem{' . ($name ? UnTeX($name) : '') . '}'); },
+    beforeDigestEnd => sub { Digest('\thm@doendmark'); },
+    afterDigest     => sub { Digest('\the\thm@postwork'); },
+    properties      => sub {
       my %ctr = ();
       if ($counter) {
         if ($flag) {
@@ -3558,7 +3561,8 @@ DefConstructorI('\thebibliography', undef,
   beforeDigest => sub {
     AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
     DefMacro('\bibliographystyle{}', '');
-    DefMacro('\bibliography {}',     ''); },
+    DefMacro('\bibliography {}',     '');
+    ResetCounter('@bibitem'); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     # NOTE that in some perverse situations (revtex?)
@@ -4189,10 +4193,9 @@ DefConstructor('\@framebox[Dimension][]{}',
           $document->setAttribute($c[0], $k => $v); } } } }
 );
 
-AssignValue(SAVEBOX => 100);
 DefPrimitive('\newsavebox DefToken', sub {
-    my $n = LookupValue('SAVEBOX') + 1;
-    AssignValue(SAVEBOX => $n, 'global');
+    my $n = LookupValue('allocated_boxes') + 1;
+    AssignValue(allocated_boxes => $n, 'global');
     DefRegisterI($_[1], undef, Number($n));
     AssignValue('box' . $n, List()); });
 

@@ -1868,6 +1868,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $newtag = ($issvg ? 'svg:g' : ($vmode ? 'ltx:p' : 'ltx:text'));
     my $node = $document->openElement($newtag, _noautoclose => 1,
       width => $props{width});
+
     $document->absorb($contents);
     $document->closeNode($node); },
 
@@ -2230,7 +2231,7 @@ DefPrimitive('\write Number {}', sub {
     if (my $filename = LookupValue('output_file:' . $port)) {
       my $handle   = $filename . '_contents';
       my $contents = LookupValue($handle);
-      AssignValue($handle => $contents . UnTeX($tokens) . "\n", 'global'); }
+      AssignValue($handle => $contents . UnTeX(Expand($tokens)) . "\n", 'global'); }
     else {
       print STDERR UnTeX(Expand($tokens)) . "\n"; }
     return; });
@@ -4360,7 +4361,7 @@ DefPrimitive('\newbox    Token', sub {
     my $n = LookupValue('allocated_boxes');
     AssignValue(allocated_boxes => $n + 1, 'global');
     AssignValue("box$n", List());
-    DefRegisterI($_[1], undef, Number($n)); });
+    DefRegisterI($_[1], undef, Number($n), readonly => 1); });
 DefPrimitive('\newhelp Token {}', sub { AssignValue(ToString($_[1]) => $_[2]); });
 DefPrimitive('\newtoks Token', sub { DefRegisterI($_[1], undef, Tokens()); });
 # the next 4 actually work by doing a \chardef instead of \countdef, etc.
@@ -4880,7 +4881,7 @@ AssignMapping('type_tag_formatter', 'refnum' => '\lx@therefnum@@');
 # \lx@fnum@@{type}  Gets the formatted form of the refnum, as part of the object, (no @role).
 # Customize by defining \fnum@<type> or \<type>name and \fnum@font@<type>
 # Default uses \fnum@font@<type> \<type>name prefix + space (if any) and \the<counter>.
-
+# When using the "name", uses \<type>name in preference to fallback \lx@name@<type>
 DefMacro('\lx@refnum@compose{}{}',  '\expandafter\lx@refnum@compose@\expandafter{#2}{#1}');
 DefMacro('\lx@refnum@compose@{}{}', '\if.#1.#2\else#2\space#1\fi');
 ####DefMacro('\lx@refnum@compose@{}{}', '\if.#1.#2\else#2~#1\fi');
@@ -4889,8 +4890,18 @@ DefMacro('\lx@fnum@@{}',
   '{\normalfont\@ifundefined{fnum@font@#1}{}{\csname fnum@font@#1\endcsname}'
     . '\@ifundefined{fnum@#1}{\lx@@fnum@@{#1}}{\csname fnum@#1\endcsname}}');
 
+# Really seems like <type>name should take precedence over \lx@name@<type>,
+# since users might define it.
+# BUT amsthm defines \thmname{}!
 DefMacro('\lx@@fnum@@ {}',
-'\@ifundefined{#1name}{\lx@the@@{#1}}{\lx@refnum@compose{\csname #1name\endcsname}{\lx@the@@{#1}}}');
+  '\@ifundefined{lx@name@#1}{'
+    . '\@ifundefined{#1name}{'
+    . '\lx@the@@{#1}'
+    . '}{'
+    . '\lx@refnum@compose{\csname #1name\endcsname}{\lx@the@@{#1}}'
+    . '}}{'
+    . '\lx@refnum@compose{\csname lx@name@#1\endcsname}{\lx@the@@{#1}}'
+    . '}');
 
 AssignMapping('type_tag_formatter', '' => '\lx@fnum@@');    # Default!
 
@@ -4912,8 +4923,13 @@ DefMacro('\lx@typerefnum@@{}',
 
 DefMacro('\lx@@typerefnum@@{}',
   '\@ifundefined{#1typerefname}{'
-    . '\@ifundefined{#1name}{}{\lx@refnum@compose{\csname #1name\endcsname}{\lx@the@@{#1}}}'
+    . '\@ifundefined{lx@name@#1}{'
+    . '\@ifundefined{#1name}{'
     . '}{'
+    . '\lx@refnum@compose{\csname #1name\endcsname}{\lx@the@@{#1}}'
+    . '}}{'
+    . '\lx@refnum@compose{\csname lx@name@#1\endcsname}{\lx@the@@{#1}}'
+    . '}}{'
     . '\lx@refnum@compose{\csname #1typerefname\endcsname}{\lx@the@@{#1}}'
     . '}');
 

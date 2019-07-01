@@ -1,15 +1,11 @@
 # -*- mode: Perl -*-
 # /=====================================================================\ #
-# |  aastex6                                                            | #
+# | blindtext.sty                                                       | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
-# |---------------------------------------------------------------------| #
-# | Thanks to the arXMLiv group for initial implementation              | #
-# |    http://arxmliv.kwarc.info/                                       | #
-# | Released to the Public Domain                                       | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -19,8 +15,11 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-LoadClass('aastex');
+#======================================================================
+# Note: \languagename is assumed as defined by blindtext, and it so happens that
+#       pdflatex has parts of babel defined by default. For now, just request babel loaded
+RequirePackage('babel', options => ['english']);
 
-# #======================================================================
+InputDefinitions('blindtext', type => 'sty', noltxml => 1);
+
 1;

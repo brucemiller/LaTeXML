@@ -71,12 +71,14 @@
 
 \paragraph{Writing a file}
 \findfile{generated.data}
-
+\def\timing{Before}
 \immediate\openout\file = generated.data
 \immediate\write\file {First line}
 \immediate\write\file {Second line}
+\immediate\write\file {Timing \timing.}
 \immediate\write\file {Last line}
 \immediate\closeout\file
+\def\timing{After}
 
 \findfile{generated.data}
 \readfile{generated.data}

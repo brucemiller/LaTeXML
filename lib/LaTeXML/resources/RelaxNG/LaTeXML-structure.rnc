@@ -39,7 +39,8 @@ part =
 element part { part_attributes, part_model }
 
 ## The content allowable as the main body of a part.
-part.body.class = Para.model | chapter  | slide | sidebar
+part.body.class = Para.model |  subparagraph | paragraph
+   | subsubsection | subsection | section | chapter  | slide | sidebar
 
 ## Attributes for \elementref{part}.
 part_attributes = Sectional.attributes

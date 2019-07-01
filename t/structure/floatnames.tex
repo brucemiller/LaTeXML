@@ -1,0 +1,46 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{float}
+\usepackage{newfloat}
+
+\newtheorem{thm}{\theoremname}
+\newtheorem{example}[thm]{\protect\examplename}
+\providecommand{\examplename}{Example}
+
+\DeclareFloatingEnvironment{floppy}
+\begin{document}
+\begin{example}
+	test
+\end{example}
+
+\providecommand{\algorithmname}{Algorithm}
+\floatstyle{ruled}
+\newfloat{algorithm}{thp}{lop}
+\floatname{algorithm}{\protect\algorithmname}
+
+\begin{algorithm}
+ test
+\caption{A test algorithm}
+\end{algorithm}
+
+\newfloat{flippy}{thp}{lop}
+\begin{flippy}
+A Flippy!
+\caption{Something that turns\label{flp}}
+\end{flippy}
+See the \ref{flp}.
+\makeatletter
+  Check: Macro flippyname \@ifundefined{flippyname}{is NOT}{IS} defined.
+\makeatother  
+
+\begin{floppy}
+A Floppy!
+\caption{Something that flops\label{flp2}}
+\end{floppy}
+See the \ref{flp2}.
+\makeatletter
+  Check: Macro floppyname \@ifundefined{floppyname}{is NOT}{IS} defined.
+\makeatother  
+
+\end{document}

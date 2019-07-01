@@ -1110,7 +1110,7 @@ sub DefRegisterI {
     || ($options{readonly}
     ? sub { my ($v, @args) = @_;
       Warn('unexpected', $name, $STATE->getStomach,
-        "Can't assign to register $name"); return; }
+        "Can't assign readonly register $name to " . ToString($v)); return; }
     : sub { my ($v, @args) = @_;
       AssignValue(join('', $name, map { ToString($_) } @args) => $v); });
   # Not really right to set the value!

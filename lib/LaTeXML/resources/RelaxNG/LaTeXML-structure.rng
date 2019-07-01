@@ -68,6 +68,11 @@
     <a:documentation>The content allowable as the main body of a part.</a:documentation>
     <choice>
       <ref name="Para.model"/>
+      <ref name="subparagraph"/>
+      <ref name="paragraph"/>
+      <ref name="subsubsection"/>
+      <ref name="subsection"/>
+      <ref name="section"/>
       <ref name="chapter"/>
       <ref name="slide"/>
       <ref name="sidebar"/>
