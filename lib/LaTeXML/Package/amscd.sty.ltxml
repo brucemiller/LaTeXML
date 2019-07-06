@@ -48,27 +48,27 @@ DefMacro('\cd@ Token', sub {
     (T_CS('@' . ToString($token))); });
 
 DefMacroI(T_CS('@>'), 'Until:> Until:>',
-  '&\cd@stack{>}{\rightarrowfill@}{#1}{#2}&');
+  '\hidden@align\cd@stack{>}{\rightarrowfill@}{#1}{#2}\hidden@align');
 DefMacroI(T_CS('@)'), 'Until:) Until:)',
-  '&\cd@stack{)}{\rightarrowfill@}{#1}{#2}&');
+  '\hidden@align\cd@stack{)}{\rightarrowfill@}{#1}{#2}\hidden@align');
 DefMacroI(T_CS('@<'), 'Until:< Until:<',
-  '&\cd@stack{<}{\leftarrowfill@}{#1}{#2}&');
+  '\hidden@align\cd@stack{<}{\leftarrowfill@}{#1}{#2}\hidden@align');
 DefMacroI(T_CS('@('), 'Until:( Until:(',
-  '&\cd@stack{(}{\leftarrowfill@}{#1}{#2}&');
+  '\hidden@align\cd@stack{(}{\leftarrowfill@}{#1}{#2}\hidden@align');
 
 DefMacroI(T_CS('@A'), 'Until:A Until:A',
-  '\cd@adjacent{A}{\Big\uparrow}{#1}{#2}&&');
+  '\cd@adjacent{A}{\Big\uparrow}{#1}{#2}\hidden@align\hidden@align');
 DefMacroI(T_CS('@V'), 'Until:V Until:V',
-  '\cd@adjacent{V}{\Big\downarrow}{#1}{#2}&&');
+  '\cd@adjacent{V}{\Big\downarrow}{#1}{#2}\hidden@align\hidden@align');
 
 DefMacroI(T_CS('@='), undef,
-  '&\@cd@equals@&');
+  '\hidden@align\@cd@equals@\hidden@align');
 DefMacroI(T_CS('@|'), undef,
-  '\Big\Vert&&');
+  '\Big\Vert\hidden@align\hidden@align');
 DefMacroI(T_CS('@\vert'), undef,
-  '\Big\Vert&&');
+  '\Big\Vert\hidden@align\hidden@align');
 DefMacroI(T_CS('@.'), undef,
-  '&&');
+  '\hidden@align\hidden@align');
 
 # Horizontal
 DefMath('\@cd@equals@', "=", role => 'ARROW', stretchy => 'true', reversion => '@=');

@@ -147,7 +147,7 @@ DefColumnType('n Optional:-1 Optional:-1 {}{}', sub {
 # until it encouters &,\tabularnewline or \endtabular
 # and that completely screws up LaTeXML's approach.
 RawTeX(<<'EOTeX');
-\def\nprt@getnexttok#1{%
+\def\XXXXXnprt@getnexttok#1{%
   \ifx\tabularnewline#1%
     \let\nprt@next\tabularnewline
   \else

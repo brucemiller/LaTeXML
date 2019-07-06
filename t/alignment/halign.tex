@@ -1,12 +1,150 @@
 \documentclass{article}
 \begin{document}
-\tabskip=1em
-\halign{\hfil [u1]#[v1]\hfil&\hfil [u2]#[v2]\hfil&\hfil [u3]#[v3]\hfil\cr
-a1& a2& a3\cr
-\omit a1& a2& a3\cr
-\omit a1\span a2& a3\cr
-\omit a1\span a2\span\omit a3\cr
-\omit\span\omit a2 \span\omit a3\cr
-\omit\span\omit\span\omit a3\cr
+\tabskip=1em\relax
+\section{Templates}
+\par\noindent
+\halign{[#]&(#)&\{#\}\cr
+a&b&c\cr
 }
+\par\noindent
+\halign{[#]&(#)&\{#\}\cr
+a&b&c\crcr
+}
+\subsection{Ex-Span-d}
+\par\noindent
+\def\bracketA{&(}
+\def\bracketB{)&}
+\halign{[#]\span\bracketA#\span\bracketB\{#\}\cr
+a&b&c\cr
+}
+
+\subsection{Tabskip}
+\par\noindent
+\def\twoem{2em}
+\halign{\tabskip=1em[#]&\tabskip=\twoem(#)&\tabskip=3em\{#\}\cr
+a&b&c\cr
+}
+
+\par\noindent
+\def\twoem{2em}
+\halign{[#]&\tabskip=10em(#)&\{#\}&[#]\cr
+a&b&c&d\cr
+}
+\par\noindent
+\def\twoem{2em}
+\halign{[#]&(#)\tabskip=10em&\{#\}&[#]\cr
+a&b&c&d\cr
+}
+
+\subsection{Repeated Columns}
+\par\noindent
+\halign{[#]&(#)&&\{#\}\cr
+a&b&c\cr
+a&b&c& a&b&c\cr
+a&b&c& a&b&c& a&b&c&b&c\cr
+}
+
+\par\noindent
+\halign{&[#]&(#)&\{#\}\cr
+a&b&c\cr
+a&b&c& a&b&c\cr
+a&b&c& a&b&c& a&b&c&b&c\cr
+}
+
+%\end{document}
+
+\section{Body}
+% &, \omit, \noalign,, \cr
+% \span
+
+\subsection{Empty cells}
+\par\noindent
+\halign{[#]&[#]&[#]\cr
+a&b&c\cr
+d&e&f\cr
+\cr
+a\cr
+a&\cr
+a&b\cr
+a&b&\cr
+a&b&c\cr
+&\cr
+&&\cr
+a&b&c\cr
+\cr
+a&b&c\cr
+\crcr
+e&f&g\cr}
+
+\subsection{Omit}
+\par\noindent
+\halign{[#]&(#)&\{#\}\cr
+a&b&c\cr
+\omit a&b&c\cr
+\omit a&\omit b&c\cr
+ a&\omit b& \omit c\cr
+a&b&c\cr
+ }
+\subsection{Span}
+\par\noindent
+\halign{[#]&(#)&\{#\}\cr
+a&b&c\cr
+a\span b&c\cr
+a&b\span c\cr
+a\span b\span c\cr
+a&b&c\cr
+ }
+
+\subsection{Multispan}
+\par\noindent
+\halign{[#]&(#)&\{#\}\cr
+a&b&c\cr
+a&\omit\span\omit c\cr
+a&\multispan2 c\cr
+a&b&c\cr
+ }
+ 
+\subsection{Noalign}
+\par\noindent
+ \halign{[#]&[#]\cr
+a&b\cr
+\noalign{X} a&b \cr
+\noalign{Y}\noalign{Z} a&b \cr
+%a &\noalign{X} b \cr
+}
+
+\par\noindent
+ \halign{[#]&[#]\cr
+a&b\cr
+\noalign{\hrule}
+c&d\cr
+}
+
+\par\noindent
+ \halign{[#]&[#]\cr
+a&b\cr
+\noalign{\vskip 10ex}
+c&d\cr
+}
+
+\section{Nested}
+
+\section{Complex}
+
+
+\end{document}
+
+
+% Note: \\ is not defined as \cr with \halign!9
+\halign{[#]&[#]&[#]\cr
+a&b&c\\
+d&e&f\\
+}
+
+\documentclass{article}
+\begin{document}
+
+
+
+
 \end{document}

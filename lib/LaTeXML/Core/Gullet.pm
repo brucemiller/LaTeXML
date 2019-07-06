@@ -202,7 +202,7 @@ our @CATCODE_HOLD = (
   0, 0, 1, 0,
   0, 1, 0, 0);
 
-sub readToken {
+sub ZZreadToken {
   my ($self) = @_;
   my $token;
   my $cc;
@@ -224,10 +224,119 @@ sub readToken {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
   return $token; }
 
+sub handleMarker {
+  my ($self, $markertoken) = @_;
+  my $arg = $$markertoken[0];
+  #print STDERR "GULLET detected marker: ".Stringify($arg)."\n";
+  if (ref $arg) {
+    LaTeXML::Core::Definition::stopProfiling($markertoken, 'expand'); }
+  elsif ($arg eq 'before-column') {                     # Were in before-column template
+    my $alignment = $STATE->lookupValue('Alignment');
+    print STDERR "COLUMN STATE $$alignment{in_column} => in-column\n" if $LaTeXML::Package::Pool::DEBUG_COLUMN;
+    $$alignment{align_state} = 0;
+    $$alignment{in_column}   = 'in-column'; }           # switch to column proper!
+  elsif ($arg eq 'after-column') {                      # Were in before-column template
+    my $alignment = $STATE->lookupValue('Alignment');
+    print STDERR "COLUMN STATE $$alignment{in_column} => 0\n" if $LaTeXML::Package::Pool::DEBUG_COLUMN;
+    $$alignment{in_column} = 0; }                       # switch to column proper!
+  else { }
+  return; }
+
+sub readToken {
+  my ($self, $toexpand) = @_;
+  #  my $token = shift(@{$$self{pushback}});
+  my $token;
+  my $cc;
+  my ($alignment, $column);
+  while (1) {
+    # Check in pushback first....
+    while (($token = shift(@{ $$self{pushback} })) && $hold_token[$cc = $$token[1]]) {
+      if ($cc == CC_COMMENT) {
+        push(@{ $$self{pending_comments} }, $token); }
+      elsif ($cc == CC_MARKER) {
+        $self->handleMarker($token); }
+    }
+    if (!defined $token) {
+      while (($token = $$self{mouth}->readToken()) && $hold_token[$cc = $$token[1]]) {
+        if ($cc == CC_COMMENT) {
+          push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
+        elsif ($cc == CC_MARKER) {
+          $self->handleMarker($token); }
+    } }
+
+    # Wow!!!!!
+    if ((defined $token)
+###         && $toexpand
+      && ($alignment = $STATE->lookupValue('Alignment'))
+      && ($column    = $alignment->currentColumn)
+      && !$$alignment{align_state}
+      && (Equals($token, T_ALIGN)
+        || Equals($token, T_CS('\hidden@align'))
+        || (($cc == CC_CS) && (Equals($token, T_CS('\cr'))
+            || Equals($token, T_CS('\crcr'))
+            || Equals($token, T_CS('\hidden@cr'))
+            || Equals($token, T_CS('\hidden@crcr'))
+            || Equals($token, T_CS('\span'))
+        )))) {
+
+      print STDERR "ALIGNMENT Column ended at " . Stringify($token)
+        . "[" . Stringify($STATE->lookupMeaning($token)) . "]"
+        . "@ " . ToString($self->getLocator)
+        if $LaTeXML::Package::Pool::DEBUG_COLUMN;
+      #  Append expansion to end!?!?!?!
+      local $LaTeXML::CURRENT_TOKEN = $token;
+      my $repl = [$token];
+      my $post = $alignment->getColumnAfter;
+      $$alignment{in_column}   = 0;
+      $$alignment{align_state} = 1000000;
+      my $arg;
+      if (Equals($token, T_CS('\hidden@cr'))) {
+        $arg = $self->readArg(); }
+      print STDERR " => " . ToString($post) . "\n" if $LaTeXML::Package::Pool::DEBUG_COLUMN;
+      if (($cc != CC_ALIGN)
+        && !$alignment->currentRow->{pseudorow}
+        && !Equals($token, T_CS('\hidden@align'))) {
+        unshift(@{ $$self{pushback} }, T_CS('\@row@after')); }
+###        unshift(@{$$self{pushback}}, T_CS('\@row@after'),T_CS('\endgroup')); }
+      if ($arg) {
+        unshift(@{ $$self{pushback} }, T_BEGIN, $arg->unlist, T_END); }
+      unshift(@{ $$self{pushback} }, $token);
+##      if($cc != CC_ALIGN){      # SHORT CUT, until we end up with \hidden@align
+##        unshift(@{$$self{pushback}}, T_CS('\@row@after')); }
+      unshift(@{ $$self{pushback} }, $post->unlist);
+    }
+    else {
+      last; }
+  }
+####print STDERR "GULLET yielded ".Stringify($token).($column?" in column":" outside column")."\n";
+###  print STDERR "GULLET yielded ".Stringify($token).($column?" in column":" outside column")
+###    .(Equals($token,T_CS('\cr')) ? " is CR":" is NOT cr")
+###." == ".ToString($STATE->lookupDefinition($token))
+###."\n"
+###    if $column && $LaTeXML::Package::Pool::DEBUG_COLUMN;
+  #    if $ DEBUG_COLUMN;
+##  if($column && $STATE->lookupExpandable($token)){
+##    Fatal("What?","What?",$self,"Expandable???"); }
+  return $token; }
+
+sub afterCellUnlist {
+  my ($tokens) = @_;
+  return () unless $tokens;
+  my @toks = $tokens->unlist;
+  my @new  = ();
+  while (my $t = pop(@toks)) {
+##    if($t->equals(T_MATH) && @toks && $toks[-1]->equals(T_CS('\hfil'))){
+    if (Equals($t, T_MATH) && @toks && Equals($toks[-1], T_CS('\hfil'))) {
+      unshift(@new, pop(@toks)); push(@toks, $t); }
+    else {
+      unshift(@new, $t); } }
+  return @new; }
+
 # Unread tokens are assumed to be not-yet expanded.
 sub unread {
   my ($self, @tokens) = @_;
   my $r;
+###print STDERR "GULLET PUSHBACK ".join(',',map { Stringify($_); } @tokens)."\n" if  $LaTeXML::Package::Pool::DEBUG_COLUMN;
   unshift(@{ $$self{pushback} },
     map { (!defined $_ ? ()
         : (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
@@ -245,9 +354,10 @@ sub readXToken {
   my ($self, $toplevel, $commentsok) = @_;
   $toplevel = 1 unless defined $toplevel;
   return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
-  my ($token, $cc, $defn);
+  my ($token, $cc, $defn, $alignment, $column);
   while (1) {
-    $token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken();
+#######    $token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken();
+    $token = $self->readToken(1);
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
@@ -258,34 +368,49 @@ sub readXToken {
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
+###    elsif ($cc == CC_MARKER) {
+###      $self->handleMarker($token); }
+
     elsif (my $unexpanded = $$token[2]) {               # Inline get_dont_expand
       return $token; }                                  # Defer expansion (recursion?)
         # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
-      my $invoked   = $defn->invoke($self) || [];
-      my @expansion = ();
-      for my $exp_t (@$invoked) {
-        my $r = ref $exp_t;
-        if ($r eq 'LaTeXML::Core::Token') {
-          push @expansion, $exp_t; }
-        elsif ($r eq 'LaTeXML::Core::Tokens') {
-          push @expansion, @$exp_t; }
-        else {
-          Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)); } }
-      next unless @expansion;
-      if ($$LaTeXML::Core::Token::SMUGGLE_THE_COMMANDS{ $$defn{cs}[0] }) {
-        # magic THE_TOKS handling, add to pushback with a single-use noexpand flag only valid
-        #    at the exact time
-        # the token leaves the pushback.
-        # This is *required to be different* from the noexpand flag, as per the B Book
-        @expansion = map { T_SMUGGLE_THE($_); } @expansion;
-        # PERFORMANCE:
-        #   explicitly flag that we've seen this case, so that higher levels know to
-        #   unset the flag from the entire {pushback}
-        $$self{pushback_has_smuggled_the} = 1; }
-      # add the newly expanded tokens back into the gullet stream, in the ordinary case.
-      unshift(@{ $$self{pushback} }, @expansion); }
+# <<<<<<< HEAD
+#       my $invoked   = $defn->invoke($self) || [];
+#       my @expansion = ();
+#       for my $exp_t (@$invoked) {
+#         my $r = ref $exp_t;
+#         if ($r eq 'LaTeXML::Core::Token') {
+#           push @expansion, $exp_t; }
+#         elsif ($r eq 'LaTeXML::Core::Tokens') {
+#           push @expansion, @$exp_t; }
+#         else {
+#           Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)); } }
+#       next unless @expansion;
+#       if ($$LaTeXML::Core::Token::SMUGGLE_THE_COMMANDS{ $$defn{cs}[0] }) {
+#         # magic THE_TOKS handling, add to pushback with a single-use noexpand flag only valid
+#         #    at the exact time
+#         # the token leaves the pushback.
+#         # This is *required to be different* from the noexpand flag, as per the B Book
+#         @expansion = map { T_SMUGGLE_THE($_); } @expansion;
+#         # PERFORMANCE:
+#         #   explicitly flag that we've seen this case, so that higher levels know to
+#         #   unset the flag from the entire {pushback}
+#         $$self{pushback_has_smuggled_the} = 1; }
+#       # add the newly expanded tokens back into the gullet stream, in the ordinary case.
+#       unshift(@{ $$self{pushback} }, @expansion); }
+# =======
+      if (my $r = $defn->invoke($self)) {
+        print STDERR "GULLET EXPAND (level " . $STATE->getFrameDepth . ")" . Stringify($token) . " => " . ToString(Tokens(@$r)) . "\n"
+          if $STATE->lookupValue('Alignment') && $LaTeXML::Package::Pool::DEBUG_COLUMN;
+        unshift(@{ $$self{pushback} },
+          map { (!defined $_ ? ()
+              : (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
+                : ($r eq 'LaTeXML::Core::Tokens' ? @$_
+                  : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))))) }
+            @{$r}); } }
+#>>>>>>> bedfe431... Tentative changes to support TeX's \halign;
     elsif ($cc == CC_CS && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
       $STATE->generateErrorStub($self, $token);
       return $token; }
@@ -454,7 +579,15 @@ sub readUntil {
   my ($n, $found, @tokens) = (0);
   while (!defined($found = $self->readMatch(@delims))) {
     my $token = $self->readToken();    # Copy next token to args
-    return unless defined $token;
+###    return unless defined $token;
+    if (!defined $token) {             # Ran out!
+      print STDERR "UNTIL failed!\n";
+      print STDERR "Seeking one of " .
+        join(' or ', map { join(' ', map { Stringify($_) } $_->unlist); } @delims) . "\n";
+      print STDERR "Read so far: " . join(' ', map { Stringify($_); } @tokens) . "\n";
+      # Not more correct, but maybe less confusing if we put the read tokens BACK????
+      $self->unread(@tokens);
+      return; }
     push(@tokens, $token);
     $n++;
     if ($$token[1] == CC_BEGIN) {      # And if it's a BEGIN, copy till balanced END

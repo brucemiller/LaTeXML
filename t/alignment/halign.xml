@@ -4,31 +4,415 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <para xml:id="p1">
-    <tabular>
-      <tr>
-        <td align="center">[u1]a1[v1]</td>
-        <td align="center">[u2]a2[v2]</td>
-        <td align="center">[u3]a3[v3]</td>
-      </tr>
-      <tr>
-        <td align="left">a1</td>
-        <td align="center">[u2]a2[v2]</td>
-        <td align="center">[u3]a3[v3]</td>
-      </tr>
-      <tr>
-        <td align="left" colspan="2">a1 [u2]a2[v2]</td>
-        <td align="center">[u3]a3[v3]</td>
-      </tr>
-      <tr>
-        <td align="left" colspan="3">a1 [u2]a2[v2] a3</td>
-      </tr>
-      <tr>
-        <td align="left" colspan="3">a2a3</td>
-      </tr>
-      <tr>
-        <td align="left" colspan="3">a3</td>
-      </tr>
-    </tabular>
-  </para>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Templates</title>
+    <para class="ltx_noindent" xml:id="S1.p1">
+      <tabular>
+        <tr>
+          <td align="left">[a]</td>
+          <td align="left">(b)</td>
+          <td align="left">{c}</td>
+        </tr>
+      </tabular>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p2">
+      <tabular>
+        <tr>
+          <td align="left">[a]</td>
+          <td align="left">(b)</td>
+          <td align="left">{c}</td>
+        </tr>
+      </tabular>
+    </para>
+    <subsection inlist="toc" xml:id="S1.SS1">
+      <tags>
+        <tag>1.1</tag>
+        <tag role="refnum">1.1</tag>
+        <tag role="typerefnum">§1.1</tag>
+      </tags>
+      <title><tag close=" ">1.1</tag>Ex-Span-d</title>
+      <para class="ltx_noindent" xml:id="S1.SS1.p1">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+        </tabular>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS2">
+      <tags>
+        <tag>1.2</tag>
+        <tag role="refnum">1.2</tag>
+        <tag role="typerefnum">§1.2</tag>
+      </tags>
+      <title><tag close=" ">1.2</tag>Tabskip</title>
+      <para class="ltx_noindent" xml:id="S1.SS2.p1">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+        </tabular>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS2.p2">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+            <td align="left">[d]</td>
+          </tr>
+        </tabular>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS2.p3">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+            <td align="left">[d]</td>
+          </tr>
+        </tabular>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S1.SS3">
+      <tags>
+        <tag>1.3</tag>
+        <tag role="refnum">1.3</tag>
+        <tag role="typerefnum">§1.3</tag>
+      </tags>
+      <title><tag close=" ">1.3</tag>Repeated Columns</title>
+      <para class="ltx_noindent" xml:id="S1.SS3.p1">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+            <td align="left">{a}</td>
+            <td align="left">{b}</td>
+            <td align="left">{c}</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+            <td align="left">{a}</td>
+            <td align="left">{b}</td>
+            <td align="left">{c}</td>
+            <td align="left">{a}</td>
+            <td align="left">{b}</td>
+            <td align="left">{c}</td>
+            <td align="left">{b}</td>
+            <td align="left">{c}</td>
+          </tr>
+        </tabular>
+      </para>
+      <para class="ltx_noindent" xml:id="S1.SS3.p2">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+            <td align="left">[b]</td>
+            <td align="left">(c)</td>
+          </tr>
+        </tabular>
+      </para>
+    </subsection>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Body</title>
+    <subsection inlist="toc" xml:id="S2.SS1">
+      <tags>
+        <tag>2.1</tag>
+        <tag role="refnum">2.1</tag>
+        <tag role="typerefnum">§2.1</tag>
+      </tags>
+      <title><tag close=" ">2.1</tag>Empty cells</title>
+      <para class="ltx_noindent" xml:id="S2.SS1.p1">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[b]</td>
+            <td align="left">[c]</td>
+          </tr>
+          <tr>
+            <td align="left">[d]</td>
+            <td align="left">[e]</td>
+            <td align="left">[f]</td>
+          </tr>
+          <tr>
+            <td align="left">[]</td>
+            <td/>
+            <td/>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td/>
+            <td/>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[]</td>
+            <td/>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[b]</td>
+            <td/>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[b]</td>
+            <td align="left">[]</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[b]</td>
+            <td align="left">[c]</td>
+          </tr>
+          <tr>
+            <td align="left">[]</td>
+            <td align="left">[]</td>
+            <td/>
+          </tr>
+          <tr>
+            <td align="left">[]</td>
+            <td align="left">[]</td>
+            <td align="left">[]</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[b]</td>
+            <td align="left">[c]</td>
+          </tr>
+          <tr>
+            <td align="left">[]</td>
+            <td/>
+            <td/>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[b]</td>
+            <td align="left">[c]</td>
+          </tr>
+          <tr>
+            <td align="left">[e]</td>
+            <td align="left">[f]</td>
+            <td align="left">[g]</td>
+          </tr>
+        </tabular>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S2.SS2">
+      <tags>
+        <tag>2.2</tag>
+        <tag role="refnum">2.2</tag>
+        <tag role="typerefnum">§2.2</tag>
+      </tags>
+      <title><tag close=" ">2.2</tag>Omit</title>
+      <para class="ltx_noindent" xml:id="S2.SS2.p1">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+          <tr>
+            <td align="left">a</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+          <tr>
+            <td align="left">a</td>
+            <td align="left">b</td>
+            <td align="left">{c}</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">b</td>
+            <td align="left">c</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+        </tabular>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S2.SS3">
+      <tags>
+        <tag>2.3</tag>
+        <tag role="refnum">2.3</tag>
+        <tag role="typerefnum">§2.3</tag>
+      </tags>
+      <title><tag close=" ">2.3</tag>Span</title>
+      <para class="ltx_noindent" xml:id="S2.SS3.p1">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="2">[a](b)</td>
+            <td align="left">{c}</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left" colspan="2">(b){c}</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="3">[a](b){c}</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+        </tabular>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S2.SS4">
+      <tags>
+        <tag>2.4</tag>
+        <tag role="refnum">2.4</tag>
+        <tag role="typerefnum">§2.4</tag>
+      </tags>
+      <title><tag close=" ">2.4</tag>Multispan</title>
+      <para class="ltx_noindent" xml:id="S2.SS4.p1">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left" colspan="2">c</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left" colspan="2">c</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">(b)</td>
+            <td align="left">{c}</td>
+          </tr>
+        </tabular>
+      </para>
+    </subsection>
+    <subsection inlist="toc" xml:id="S2.SS5">
+      <tags>
+        <tag>2.5</tag>
+        <tag role="refnum">2.5</tag>
+        <tag role="typerefnum">§2.5</tag>
+      </tags>
+      <title><tag close=" ">2.5</tag>Noalign</title>
+      <para class="ltx_noindent" xml:id="S2.SS5.p1">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[b]</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="2">X</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[b ]</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="2">Y</td>
+          </tr>
+          <tr>
+            <td align="left" colspan="2">Z</td>
+          </tr>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[b ]</td>
+          </tr>
+        </tabular>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS5.p2">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[b]</td>
+          </tr>
+          <tr>
+            <td align="left" border="t">[c]</td>
+            <td align="left" border="t">[d]</td>
+          </tr>
+        </tabular>
+      </para>
+      <para class="ltx_noindent" xml:id="S2.SS5.p3">
+        <tabular>
+          <tr>
+            <td align="left">[a]</td>
+            <td align="left">[b]</td>
+          </tr>
+          <tr>
+            <td align="left">[c]</td>
+            <td align="left">[d]</td>
+          </tr>
+        </tabular>
+      </para>
+    </subsection>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Nested</title>
+  </section>
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
+    <title><tag close=" ">4</tag>Complex</title>
+  </section>
 </document>

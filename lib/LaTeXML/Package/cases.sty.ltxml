@@ -88,10 +88,10 @@ sub numcasesBindings {
       template      => LaTeXML::Core::Alignment::Template->new(columns => [$col1, $col2, $col3]),
       openContainer => sub { my %attr = RefStepID('@equationgroup');
         $attr{'xml:id'} = $attr{id}; delete $attr{id};
-        $attr{class} = 'ltx_eqn_eqnarray';
+        $attr{class}    = 'ltx_eqn_eqnarray';
         $_[0]->openElement('ltx:equationgroup', %attr, @_[1 .. $#_]); },
       closeContainer => sub { $_[0]->closeElement('ltx:equationgroup'); },
-      openRow => sub {
+      openRow        => sub {
         my ($doc, %props) = @_;
         my $tags = $props{tags}; delete($props{tags});
         $doc->openElement('ltx:equation', %props);
@@ -102,11 +102,10 @@ sub numcasesBindings {
       properties => { preserve_structure => 1, attributes => {%attributes} }));
 
   DefMacroI('\@numcases@LHS', undef, Tokens($lhs, T_ALIGN));
-  Let(T_ALIGN,       '\@alignment@align');
-  Let("\\\\",        '\@numcases@newline');
-  Let('\cr',         '\@numcasest@cr');
-  Let('\@open@row',  '\@equationgroup@open@row');
-  Let('\@close@row', '\@equationgroup@close@row');
+  #  Let(T_ALIGN,        '\@alignment@align');
+  Let("\\\\",         '\@numcases@newline');
+  Let('\@row@before', '\eqnarray@row@before');
+  Let('\@row@after',  '\eqnarray@row@after');
   return; }
 
 DefMacro('\@numcases@newline[]',
@@ -115,7 +114,7 @@ DefMacro('\@numcases@cr', '\@alignment@cr\@numcases@LHS');
 
 DefConstructor('\@@numcases SkipSpaces DigestedBody',
   '#1',
-  beforeDigest => sub { $_[0]->bgroup; },
+  beforeDigest   => sub { $_[0]->bgroup; },
   afterConstruct => sub { rearrangeNumcases($_[0], $_[0]->getNode->lastChild); });
 DefPrimitiveI('\end@numcases', undef, sub { $_[0]->egroup; });
 

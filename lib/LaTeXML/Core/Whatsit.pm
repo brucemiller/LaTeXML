@@ -100,12 +100,19 @@ sub revert {
   my ($self) = @_;
   # WARNING: Forbidden knowledge?
   # (2) caching the reversion (which is a big performance boost)
+  my $defn = $self->getDefinition;
+  my $alignment;
   if (my $saved = ($LaTeXML::DUAL_BRANCH
       ? $$self{dual_reversion}{$LaTeXML::DUAL_BRANCH}
       : $$self{reversion})) {
     return $saved->unlist; }
+##  elsif($alignment = $$self{properties}{alignment}) {
+  elsif ((!$defn->getReversionSpec)
+    && ($alignment = $$self{properties}{alignment})) {
+    print STDERR "REVERT ALIGNMENT for " . Stringify($defn)
+      . "(" . $defn->getReversionSpec . "): $alignment\n";
+    return $alignment->revert; }
   else {
-    my $defn  = $self->getDefinition;
     my $props = $$self{properties};
     # Find the appropriate reversion spec;
     # content_reversion or presntation_reversion if on dual branch
@@ -127,6 +134,7 @@ sub revert {
         if (my $parameters = $defn->getParameters) {
           push(@tokens, $parameters->revertArguments($self->getArgs)); } }
       if (defined(my $body = $self->getBody)) {
+###      if (defined(my $body = $self->getBody || $self->getProperty('alignment'))) {
         push(@tokens, Revert($body));
         if (defined(my $trailer = $self->getTrailer)) {
           push(@tokens, Revert($trailer)); } } }

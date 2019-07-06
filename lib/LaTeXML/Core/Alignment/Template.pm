@@ -15,6 +15,7 @@ use warnings;
 use base qw(LaTeXML::Common::Object);
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
+use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 
 sub new {
@@ -52,9 +53,12 @@ sub addBeforeColumn {
   unshift(@{ $$self{save_before} }, @tokens);    # NOTE: goes all the way to front!
   return; }
 
+# NOTE: \@@eat@space should ONLY be added to LaTeX tabular style templates!!!!
+# NOT \halign style templates!
 sub addAfterColumn {
   my ($self, @tokens) = @_;
-  $$self{current_column}{after} = Tokens(@tokens, @{ $$self{current_column}{after} });
+  $$self{current_column}{after} = Tokens(T_CS('\@@eat@space'),
+    @tokens, @{ $$self{current_column}{after} });
   return; }
 
 # Or between this column & next...
@@ -74,13 +78,18 @@ sub addColumn {
   push(@before, @{ $$self{save_between} })   if $$self{save_between};
   push(@before, $properties{before}->unlist) if $properties{before};
   push(@before, @{ $$self{save_before} })    if $$self{save_before};
-  $$col{before}          = Tokens(@before);
-  $$col{after}           = Tokens() unless $properties{after};
+  $$col{before} = Tokens(@before);
+  my @after = ();
+  push(@after, T_CS('\@@eat@space'));
+  push(@after, $properties{after}->unlist) if $properties{after};
+  $$col{after} = Tokens(@after);
+###  $$col{after}           = Tokens() unless $properties{after};
   $$col{thead}           = $properties{thead};
   $$col{empty}           = 1;
   $$self{save_between}   = [];
   $$self{save_before}    = [];
   $$self{current_column} = $col;
+
   if ($$self{repeating}) {
     $$self{non_repeating} = scalar(@{ $$self{columns} });
     push(@{ $$self{repeated} }, $col); }
@@ -119,7 +128,7 @@ sub column {
       for (my $i = $N ; $i < $n ; $i++) {
         my %dup = %{ $rep[($i - $$self{non_repeating}) % $m] };
         push(@{ $$self{columns} }, {%dup}); } } }
-  return $$self{columns}->[$n - 1]; }
+  return ($n > 0 ? $$self{columns}->[$n - 1] : undef); }
 
 sub columns {
   my ($self) = @_;

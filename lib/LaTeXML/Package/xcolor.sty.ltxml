@@ -705,20 +705,25 @@ sub indexColorSeries {
 # \rowcolors[<commands>]{<row>}{<color/odd>}{<color/even>}
 # \rowcolors*[<commands>]{<row>}{<color/odd>}{<color/even>}
 AddToMacro('\@tabular@row@after', '\@xcolor@row@after');
-DefMacroI('\@xcolor@row@after', undef, '');
+AddToMacro('\@tabular@before',    '\@xcolor@tabular@before');
+DefMacroI('\@xcolor@tabular@before', undef, '');
+DefMacroI('\@xcolor@row@after',      undef, '');
 DefPrimitive('\rowcolors OptionalMatch:* []{Number}{}{}', sub {
     my ($stomach, $star, $commands, $first, $oddcolor, $evencolor) = @_;
     ($oddcolor, $evencolor) = map { $_ && Expand($_) } $oddcolor, $evencolor;
     ## Wishful thinking...?
-    DefMacroI('\@xcolor@row@after', undef, $commands);
+    DefMacroI('\@xcolor@row@after',      undef, $commands);
+    DefMacroI('\@xcolor@tabular@before', undef, $commands);
     AssignValue(tabular_row_color_first => $first->valueOf);
     AssignValue(tabular_row_color_odd   => ($oddcolor->unlist ? ParseXColor(undef, $oddcolor) : undef));
     AssignValue(tabular_row_color_even => ($evencolor->unlist ? ParseXColor(undef, $evencolor) : undef)); });
 
 DefConditional('\if@rowcolors', undef);
 RawTeX('\@rowcolorstrue');
-DefMacroI('\showrowcolors', undef, '\global\@rowcolorstrue');
-DefMacroI('\hiderowcolors', undef, '\global\@rowcolorsfalse');
+#DefMacroI('\showrowcolors', undef, '\global\@rowcolorstrue');
+#DefMacroI('\hiderowcolors', undef, '\global\@rowcolorsfalse');
+DefMacroI('\showrowcolors', undef, '\hidden@noalign{\global\@rowcolorstrue}');
+DefMacroI('\hiderowcolors', undef, '\hidden@noalign{\global\@rowcolorsfalse}');
 
 DefMacro('\rownum', sub { Explode(LookupValue('Alignment')->currentRowNumber); });
 
@@ -748,7 +753,9 @@ DefConstructor('\@tabular@row@before@xcolor', sub {
           MergeFont(background => $bg);
           $whatsit->setFont(LookupValue('font'));
           $whatsit->setProperty(background => $bg); } } }
-    return; });
+    return; },
+  properties => { alignmentSkippable => 1 }
+);
 
 #======================================================================
 # Color Specs
