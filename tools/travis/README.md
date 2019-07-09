@@ -35,11 +35,11 @@ The travis tests not using any TeX take around 5 minutes to run, whereas the tes
 Usually, a Dockerfile is built using a `Dockerfile` and an appropriate `build context` (i.e. a set of files that might be included into the docker image). 
 Since the travis tests need a set of docker images (one for each combination of perl and tex to be tested), these `Dockerfile`s are created using an automated script. 
 
-The `src/build-test-image.sh` takes two arguments (the `TEX` and `PERL` versions to be used), generates a `Dockerfile` into the `dist/$PERL_$TEX` directory, and then builds the docker image. 
+The `scripts/build-test-image.sh` takes two arguments (the `TEX` and `PERL` versions to be used), generates a `Dockerfile` into the `dist/$PERL_$TEX` directory, and then builds the docker image. 
 
 For example, to generate a test image for perl `5.22.4` and `texlive-2015` it can be invoked like so:
 
-    src/build-test-image.sh 5.22.4 texlive-2015
+    bash scripts/build-test-image.sh 5.22.4 texlive-2015
 
 This will build the image `latexml/latexml-test-runtime:5.22.4_texlive-2015`. 
 
