@@ -27,8 +27,8 @@
 # significant amount of time (depending on network connection) and will
 # increase the image size to several Gigabytes. 
 
-# We start from alpine linux 3.7
-FROM alpine:3.7
+# We start from alpine linux 3.10
+FROM alpine:3.10
 
 # Install the dependencies
 RUN apk add --no-cache \
@@ -55,13 +55,12 @@ ARG WITH_TEXLIVE="yes"
 
 # Install TeXLive if not disabled
 RUN [ "$WITH_TEXLIVE" == "no" ] || (\
-           apk add --no-cache -U --repository http://dl-3.alpinelinux.org/alpine/edge/main      poppler harfbuzz-icu \
-        && apk add --no-cache -U --repository http://dl-3.alpinelinux.org/alpine/edge/community zziplib texlive-full \
+           apk add --no-cache -U poppler harfbuzz-icu zziplib texlive-full \
         && ln -s /usr/bin/mktexlsr /usr/bin/mktexlsr.pl \
     )
 
-# Install cpanminus from edge
-RUN apk add --no-cache -U --repository http://dl-3.alpinelinux.org/alpine/edge/community perl-app-cpanminus
+# Install cpanminus
+RUN apk add --no-cache -U perl-app-cpanminus
 
 # Make a directory for latexml
 RUN mkdir -p /opt/latexml
