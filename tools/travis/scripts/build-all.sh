@@ -19,7 +19,7 @@ build_image 5.28.0 none
 build_image 5.26.2 none
 build_image 5.24.4 none
 build_image 5.20.3 none
-build_image 5.10.1 none
+build_image 5.14.4 none
 build_image 5.28.0 texlive-2018
 build_image 5.26.2 texlive-2016
 build_image 5.22.4 texlive-2015
