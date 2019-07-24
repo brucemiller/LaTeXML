@@ -46,16 +46,15 @@ DefMacro('\DeclareUrlCommand{}{}', '\def#1{\begingroup #2\@Url#1}');
 # In any case, we read the verbatim arg, and build a Whatsit for @@Url
 DefMacro('\@Url Token', sub {
     my ($gullet, $cmd) = @_;
-    my $mouth = $gullet->getMouth;
     my ($open, $close, $url);
     StartSemiverbatim('%');
     $open = $gullet->readToken;
     if ($open->equals(T_BEGIN)) {
       $open = T_OTHER('{'); $close = T_OTHER('}');
-      $url = $gullet->readBalanced; }
+      $url  = $gullet->readBalanced; }
     else {
       $close = $open = T_OTHER($open->getString);
-      $url = $mouth->readTokens($close); }
+      $url   = $gullet->readUntil($close); }
     EndSemiverbatim();
 
     my @toks = grep { $_->getCatcode != CC_SPACE; } $url->unlist;
