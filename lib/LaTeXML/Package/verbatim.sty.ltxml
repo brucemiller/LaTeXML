@@ -51,7 +51,7 @@ DefMacro('\@verbatim',
 
 DefConstructor('\lx@verbatim@',
   "<ltx:verbatim font='#font'>",
-  beforeDigest => sub { Let('\par', T_CR); },
+  beforeDigest    => sub { Let('\par', T_CR); },
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:p'); });
 
 # We HAVE to get this guy in, to close the <ltx:verbatim>"
@@ -84,8 +84,7 @@ DefMacro('\verbatim@start', '\lx@verbatim@\verbatim@');
 # NOTE: the part AFTER the \end{whatever}, should be lost (and message about it!)
 DefMacro('\verbatim@', sub {
     my ($gullet) = @_;
-    my $mouth    = $gullet->getMouth;
-    my $env      = LookupValue('current_environment');
+    my $env = LookupValue('current_environment');
     # Note: This should allow a regexp, since there can be spaces between \end and { !!!
     my @lines = ();
     while (defined(my $line = $gullet->readRawLine)) {
@@ -112,7 +111,7 @@ DefMacro('\verbatiminput {}', sub {
     $gullet->readingFromMouth(LaTeXML::Core::Mouth->create(ToString($path)), sub {
         my ($igullet) = @_;
         my @tokens;
-        while (defined(my $line = $igullet->getMouth->readRawLine)) {
+        while (defined(my $line = $igullet->readRawLine)) {
           push(@tokens,
             T_CS('\verbatim@startline'),
             Invocation(T_CS('\verbatim@addtoline'), Tokens(ExplodeText($line))),
@@ -124,21 +123,21 @@ DefMacro('\verbatiminput {}', sub {
 # Getting verbatim text into arguments
 DefPrimitive('\newverbtext DefToken', sub {
     my ($stomach, $cs) = @_;
-    my $mouth = $stomach->getGullet->getMouth;
+    my $gullet = $stomach->getGullet;
     my ($init, $body);
     StartSemiverbatim();
     AssignCatcode('\\', CC_OTHER);
     AssignCatcode('{',  CC_OTHER);
     AssignCatcode('}',  CC_OTHER);
-    $init = $mouth->readToken;
-    $init = $mouth->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
+    $init = $gullet->readToken;
+    $init = $gullet->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
 
     if (!$init) {    # typically read too far, got \verb and the content is somewhere else..?
       Error('expected', 'delimiter', $stomach,
         "Verbatim argument lost", "Bindings for preceding code is probably broken");
       EndSemiverbatim();
       return (); }
-    $body = $mouth->readTokens($init);
+    $body = $gullet->readUntil($init);
 
     EndSemiverbatim();
     DefMacroI($cs, undef, $body);

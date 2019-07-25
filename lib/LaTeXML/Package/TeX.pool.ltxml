@@ -1368,7 +1368,7 @@ DefPrimitive('\parshape SkipMatch:= Number', sub {
 
 #DefRegister('\inputlineno',Number(0),
 #            readonly=>1,
-#            getter=>{ Number($stomach->getGullet->getMouth????? ->lineno); });
+#            getter=>{ Number($stomach->getGullet->????? ->lineno); });
 
 DefRegister('\badness', Number(0), readonly => 1);
 
