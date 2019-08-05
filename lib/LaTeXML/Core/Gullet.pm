@@ -182,14 +182,15 @@ sub show_pushback {
 #**********************************************************************
 # Not really 100% sure how this is supposed to work
 # See TeX Ch 20, p216 regarding noexpand, \edef with token list registers, etc.
-# Solution: Duplicate param tokens, stick NOTEXPANDED infront of expandable tokens.
+# Solution: Duplicate param tokens, stick NOTEXPANDED infront of expandable+undefined tokens.
 sub neutralizeTokens {
   my ($self, @tokens) = @_;
   my @result = ();
   foreach my $token (@tokens) {
     if ($$token[1] == CC_PARAM) {    # Inline ->getCatcode!
       push(@result, $token); }
-    elsif (defined(my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token))) {
+    elsif (!defined(my $meaning = LaTeXML::Core::State::lookupMeaning($STATE, $token)) ||
+      defined(my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token))) {
       push(@result, Token('\noexpand', CC_NOTEXPANDED)); }
     push(@result, $token); }
   return @result; }
@@ -271,6 +272,9 @@ sub readXToken {
                 : ($r eq 'LaTeXML::Core::Tokens' ? @$_
                   : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))))) }
             @{$r}); } }
+    elsif ($cc == CC_CS && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
+      Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined during expansion. Consuming it and proceeding, expect trouble...");
+      return; }
     else {
       return $token; }    # just return it
   }
