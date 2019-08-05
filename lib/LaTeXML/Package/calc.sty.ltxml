@@ -252,5 +252,8 @@ sub readReal {
     $gullet->unread($peek);
     return; } }
 
+Let('\real',  '\relax');
+Let('\ratio', '\relax');
+
 #**********************************************************************
 1;
