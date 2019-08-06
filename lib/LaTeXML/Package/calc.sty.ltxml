@@ -15,6 +15,16 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+## TODO: Refactor goals.
+## There is a choice made in this binding, where the core macros of calc.sty are left undefined
+## (e.g. \ratio, \minOf, etc)
+## and are instead consumed incrementally. However, for that to succeed with the correct implementation
+## of readXToken, we would need to define them explicitly, or we get "undefined cs was expanded" errors.
+##
+## Hence, for now I am  leaving the reads as shallow readToken calls. If there is a need to extend this binding
+## to expand its arguments, we could define each macro to expand into its name, and have chekcs on
+## "ToString($op) eq 'ratio' ", etc.
+
 # \setcounter{<ctr>}{<integer expression>}
 DefPrimitive('\setcounter{}{}', sub {
     my ($stomach, $ctr, $arg) = @_;
@@ -137,7 +147,7 @@ sub readTerm {
 sub readValue {
   my ($gullet, $type) = @_;
   $gullet->skipSpaces;
-  my $peek = $gullet->readXToken();
+  my $peek = $gullet->readToken();
   # Evaluate <Text Dimen Factors>
   if (Equals($peek, T_CS('\widthof'))) {
     my $box = Digest($gullet->readArg);
@@ -193,7 +203,7 @@ sub readValue {
 sub readMinMax {
   my ($gullet, $type) = @_;
   $gullet->skipSpaces;
-  my $peek = $gullet->readXToken();
+  my $peek = $gullet->readToken();
   if (Equals($peek, T_CS('\minof'))) {
     my $x = readExpression($gullet, $type, $gullet->readArg);
     my $y = readExpression($gullet, $type, $gullet->readArg);
@@ -209,7 +219,7 @@ sub readMinMax {
 sub readTextDimenFactor {
   my ($gullet) = @_;
   $gullet->skipSpaces;
-  my $peek = $gullet->readXToken();
+  my $peek = $gullet->readToken();
   if (Equals($peek, T_CS('\widthof'))) {
     my $box = Digest($gullet->readArg);
     return Dimension(0); }
@@ -237,7 +247,7 @@ sub readParenthesized {
 sub readReal {
   my ($gullet) = @_;
   $gullet->skipSpaces;
-  my $peek = $gullet->readXToken();
+  my $peek = $gullet->readToken();
   if (Equals($peek, T_CS('\real'))) {
     my $arg = $gullet->readArg;
     return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
@@ -251,9 +261,6 @@ sub readReal {
   else {
     $gullet->unread($peek);
     return; } }
-
-Let('\real',  '\relax');
-Let('\ratio', '\relax');
 
 #**********************************************************************
 1;
