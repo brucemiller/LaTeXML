@@ -3168,8 +3168,9 @@ DefPrimitive('\unhcopy Number', sub {
     my $stuff = LookupValue($box);
     (defined $stuff ? $stuff->unlist : ()); });
 
-# \vrule
-# \valign ???
+# Implement ???
+# DefMacro('\vrule','\relax');
+DefMacro('\valign', '');
 
 DefMacro('\vspace{}', '\vskip#1\relax');
 # \indent, \noindent, \par; see above.

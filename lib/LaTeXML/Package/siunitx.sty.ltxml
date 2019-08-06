@@ -89,7 +89,7 @@ DefPrimitive('\sisetup RequiredKeyVals:SIX', sub { six_setup($_[1]); });
 DefMacro('\ProvidesExplFile{}{}{}{}', '');
 DefPrimitiveI('\lx@six@initialize', undef, sub {
     my $pkgoptions = LookupValue('opt@siunitx.sty');
-    my $setup = $pkgoptions && Tokenize('\sisetup{' . join(',', map { $_ } @$pkgoptions) . '}');
+    my $setup      = $pkgoptions && Tokenize('\sisetup{' . join(',', map { $_ } @$pkgoptions) . '}');
     Digest($setup) if $setup;
     if (six_getBool('version-1-compatibility') || six_get('alsoload')) {
       # At present time (siunitx 2.6q) compatibility file is deeply expl3-ish.
@@ -102,8 +102,8 @@ DefPrimitiveI('\lx@six@initialize', undef, sub {
       InputDefinitions('siunitx-abbreviations', type => 'cfg', noltxml => 1); }
     if (six_getBool('binary-units')) {
       InputDefinitions('siunitx-binary', type => 'cfg', noltxml => 1); }
-    if (six_getBool('free-standing-units')) {
-      six_enableUnitMacros(six_getBool('overwrite-functions')); }
+    # if (six_getBool('free-standing-units')) { # ??
+    six_enableUnitMacros(six_getBool('overwrite-functions'));    # }
     return; });
 
 AtBeginDocument('\lx@six@initialize');
@@ -222,7 +222,7 @@ sub six_parse_cenumber {
   my ($expmark, $expsign, $exp);
   if ($expmark = six_match($tokens, 'input-exponent-markers')) {
     $expsign = six_match($tokens, 'input-signs');
-    $exp = six_match($tokens, 'input-digits', 'input-symbols');
+    $exp     = six_match($tokens, 'input-digits', 'input-symbols');
     $number = { operator => 'exponent', arg1 => $number,
       arg2 => { sign => $expsign, integer => $exp } }; }
   return $number; }
@@ -295,14 +295,14 @@ sub six_adjust_uncertainty {
       for (my $i = $n ; $i < $ndigits ; $i++) {
         unshift(@dig, T_OTHER('0')); }
       $$number{uncertainty} = { sign => T_CS('\pm'),
-        integer => T_OTHER('0'), decimal => six_get('output-decimal-marker'),
+        integer  => T_OTHER('0'), decimal => six_get('output-decimal-marker'),
         fraction => Tokens(@dig) }; }
     else {
       my @man = ();
       for (my $i = $n ; $i > $ndigits ; $i--) {
         push(@man, shift(@dig)); }
       $$number{uncertainty} = { sign => T_CS('\pm'),
-        integer => Tokens(@man), decimal => six_get('output-decimal-marker'),
+        integer  => Tokens(@man), decimal => six_get('output-decimal-marker'),
         fraction => Tokens(@dig) }; } }
   else {    # Need bracketted, but have separate uncertainty.
     my @dig = ();
@@ -318,7 +318,7 @@ sub six_adjust_uncertainty {
       for (my $i = $ndigits ; $i < $nuf ; $i++) {
         push(@frac, T_OTHER('0')); }
       $$number{fraction} = Tokens(@frac);
-      $$number{decimal} = six_get('output-decimal-marker') unless $$number{decimal}; }
+      $$number{decimal}  = six_get('output-decimal-marker') unless $$number{decimal}; }
     $$number{uncertainty} = { integer => Tokens(@dig) }; }
   return; }
 
@@ -503,7 +503,7 @@ sub six_parse_begin {
   my $stomach = $STATE->getStomach;
   $stomach->bgroup;
   six_setup($kv) if $kv;
-  map { Let($_, T_CS('\nothing')); } six_get('input-protect-tokens')->unlist;
+  map { Let($_, T_CS('\relax')); } six_get('input-protect-tokens')->unlist;
   return; }
 
 sub six_parse_end {
@@ -1037,7 +1037,7 @@ DefMacro('\lx@six@unitobject@collapsible{}{}', sub {
 #   \__siunitx_declare_prefix : Nnnn    #1 {#2} { 2 } {#3} }
 DefPrimitive('\DeclareBinaryPrefix OptionalKeyVals:SIX SkipSpaces DefToken {}{}', sub {
     my ($stomach, $kv, $cs, $presentation, $power) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs, keyvals => $kv, type => 'prefix',
@@ -1051,7 +1051,7 @@ DefPrimitive('\DeclareBinaryPrefix OptionalKeyVals:SIX SkipSpaces DefToken {}{}'
 # Prefix operator, applies a power
 DefPrimitive('\DeclareSIPrefix OptionalKeyVals:SIX SkipSpaces DefToken {}{}', sub {
     my ($stomach, $kv, $cs, $presentation, $power) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs, keyvals => $kv, type => 'prefix',
@@ -1064,7 +1064,7 @@ DefPrimitive('\DeclareSIPrefix OptionalKeyVals:SIX SkipSpaces DefToken {}{}', su
 # Prefix operator, applies a power
 DefPrimitive('\DeclareSIPrePower OptionalKeyVals:SIX SkipSpaces DefToken {}', sub {
     my ($stomach, $kv, $cs, $power) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
@@ -1078,7 +1078,7 @@ DefPrimitive('\DeclareSIPrePower OptionalKeyVals:SIX SkipSpaces DefToken {}', su
 # Postfix operator, applies a power
 DefPrimitive('\DeclareSIPostPower OptionalKeyVals:SIX SkipSpaces DefToken {}', sub {
     my ($stomach, $kv, $cs, $power) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
@@ -1103,7 +1103,7 @@ DefMacro('\lx@six@raiseto{}', '\lx@six@unitobject@arg{raiseto}{#1}');
 # Postfix operator, qualifies the meaning, applies a subscript
 DefPrimitive('\DeclareSIQualifier OptionalKeyVals:SIX SkipSpaces DefToken {}', sub {
     my ($stomach, $kv, $cs, $qualifier) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
@@ -1124,7 +1124,7 @@ DefMacro('\lx@six@of{}', '\lx@six@unitobject@arg{of}{#1}');
 # Or a macro (or Unit) that expands into... (and it may not even be defined yet)
 DefPrimitive('\DeclareSIUnit OptionalKeyVals:SIX SkipSpaces DefToken {}', sub {
     my ($stomach, $kv, $cs, $presentation) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
@@ -1585,5 +1585,6 @@ sub six_load_compat1 {
 \DeclareSIUnit \yb        { \yocto \barn }
 EoTeX
   return; }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
