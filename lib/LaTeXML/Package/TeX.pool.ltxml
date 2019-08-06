@@ -885,6 +885,11 @@ DefMacro('\expandafter Token Token', sub {
       local $LaTeXML::NOEXPAND_THE = undef;
       my $x = $defn->invoke($gullet);
       ($tok, ($x ? @{$x} : ())); }    # Expand $xtok ONCE ONLY!
+    elsif (!defined($STATE->lookupMeaning($xtok))) {
+      # Undefined token is an error, as expansion is expected. The unknown token is consumed.
+      # see TeX B book, item 367.
+      Error('undefined', $xtok, $gullet, "The token " . Stringify($xtok) . " is not defined");
+      ($tok); }
     else {
       ($tok, $xtok); } });
 
