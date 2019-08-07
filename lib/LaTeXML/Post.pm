@@ -218,12 +218,10 @@ sub find_documentclass_and_packages {
       $classoptions = $$entry{options} || 'onecolumn';
       $oldstyle     = $$entry{oldstyle}; }
     elsif ($$entry{package}) {
-      push(@packages, [$$entry{package} . ".sty", $$entry{options} || '']); } }
+      push(@packages, [$$entry{package}, $$entry{options} || '']); } }
   if (!$class) {
     Warn('expected', 'class', undef, "No document class found; using article");
     $class = 'article'; }
-  if ($class !~ /\.cls$/) {
-    $class = $class . ".cls"; }
   return ([$class, $classoptions, $oldstyle], @packages); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -164,12 +164,20 @@ sub convertBibliography {
   require LaTeXML::Common::Config;
   my @preload = ();    # custom macros often used in e.g. howpublished field
                        # need to preload all packages used by the main article
-  foreach my $po ($self->find_documentclass_and_packages($doc)) {
+  my ($classdata, @packages)     = $self->find_documentclass_and_packages($doc);
+  my ($class,     $classoptions) = @$classdata;
+  if ($class) {
+
+    if ($classoptions) {
+      push(@preload, "[$classoptions]$class.cls"); }
+    else {
+      push(@preload, "$class.cls"); } }
+  foreach my $po (@packages) {
     my ($pkg, $options) = @$po;
     if ($options) {
-      push(@preload, "[$options]$pkg"); }
+      push(@preload, "[$options]$pkg.sty"); }
     else {
-      push(@preload, "$pkg"); } }
+      push(@preload, "$pkg.sty"); } }
   NoteProgress(" [Converting bibliography $bib ...");
   my $bib_config = LaTeXML::Common::Config->new(
     cache_key      => 'BibTeX',
