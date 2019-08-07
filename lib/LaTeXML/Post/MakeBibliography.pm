@@ -149,11 +149,11 @@ sub getBibliographies {
   # Lastly, If we found any raw .bib files/literaldata, convert and include them.
   if (@rawbibs) {
     my $raw;
-    if (scalar(@rawbibs) == 1) {    # Multiple, arrange into a single conversion payload
+    if (scalar(@rawbibs) == 1) {    # Single, just convert as-is
       $raw = $rawbibs[0]; }
     else {
       $raw = 'literal:';
-      for my $rawbib (@rawbibs) {
+      for my $rawbib (@rawbibs) { # Multiple, arrange into a single conversion payload
         if ($rawbib =~ s/literal\://) {
           $raw .= $rawbib; }
         else {
