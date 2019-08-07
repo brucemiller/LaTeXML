@@ -112,7 +112,7 @@ DefConstructor('\@add@PDF@RDFa@triples', sub {
         if (my $entry = ($pdfkey_property{$key})) {
           my ($property, $object, $datatype) = @$entry;
           my $value = LookupMapping('Hyperref_options', $key);
-          my $node = $document->openElementAt($root, 'ltx:rdf',
+          my $node  = $document->openElementAt($root, 'ltx:rdf',
             property => $property, $object => $value,
             ($datatype ? (datatype => $datatype) : ()));
           # Must do directly; $document->setAttribute omits empty attributes
@@ -136,17 +136,16 @@ DefMacro('\href Verbatim {}', '\@@Url\href{}{}{#1}{#2}');
 # Redefine \@url to sanitize the argument less
 DefMacro('\@Url Token', sub {
     my ($gullet, $cmd) = @_;
-    my $mouth = $gullet->getMouth;
     my ($open, $close, $url);
     $open = $gullet->readToken;
     StartSemiverbatim('%');
     Let('~', T_OTHER('~'));    # Needs special protection?
     if ($open->equals(T_BEGIN)) {
       $open = T_OTHER('{'); $close = T_OTHER('}');
-      $url = $gullet->readBalanced(1); }    # Expand as we go!
+      $url  = $gullet->readBalanced(1); }            # Expand as we go!
     else {
       $close = $open = T_OTHER($open->getString);
-      $url = $mouth->readTokens($close); }
+      $url   = $gullet->readUntil($close); }
     EndSemiverbatim();
     my @toks = grep { $_->getCatcode != CC_SPACE; } $url->unlist;
     # Identical with url's \@Url except, let CS's through!
@@ -212,7 +211,7 @@ DefConstructor('\autoref Semiverbatim',
 
 DefMacro('\lx@autorefnum@@{}', sub {
     my ($gullet, $type) = @_;
-    my $type_s = ToString($type);
+    my $type_s  = ToString($type);
     my $counter = LookupMapping('counter_for_type', $type_s) || $type_s;
     return Tokens(
       (LookupDefinition(T_CS('\\' . $type_s . 'autorefname'))
