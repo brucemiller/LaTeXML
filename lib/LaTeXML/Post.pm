@@ -203,8 +203,13 @@ sub generateResourcePathname {
   $doc->cacheStore($counter, $n);
   return pathname_make(dir => $subdir, name => $name, type => $type); }
 
-# Get a list [class,classoptions, oldstyle],[package,packageoptions],...]
-# The options are strings
+# Returns a two-part list of the form:
+#
+# [class, classoptions, oldstyle], [package1,package1options], [package2,package2options], ...
+#
+# Where there first element is always the *class* (if none, "article" returned as a default)
+# And all following elements are *packages*
+#
 sub find_documentclass_and_packages {
   my ($self, $doc) = @_;
   my ($class, $classoptions, $oldstyle, @packages);
