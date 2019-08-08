@@ -152,7 +152,7 @@ sub revert {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
