@@ -834,6 +834,11 @@ DefConstructor('\LoadClassWithOptions Semiverbatim []',
     LoadClass(ToString($class), withoptions => 1);
     return; });
 
+DefPrimitive('\@onefilewithoptions {} [][] {}', sub {
+    my ($stomach, $name, $option1, $option2, $ext) = @_;
+    InputDefinitions(ToString(Expand($name)), type => ToString(Expand($ext)), options => $option1);
+    return; });
+
 DefMacroI('\CurrentOption', undef, Tokens());
 
 DefPrimitiveI('\OptionNotUsed', undef, sub {

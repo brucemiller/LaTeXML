@@ -141,6 +141,9 @@ my @absorbable_cc = (    # [CONSTANT]
 
 sub invokeToken {
   my ($self, $token) = @_;
+##my $PROBLEM = $token && $$token[0] eq '\__kernel_deprecation_code:nn';
+##print STDERR "BEFORE Problem? $$token[0]\n" if $PROBLEM;
+
   no warnings 'recursion';
 INVOKE:
   push(@{ $$self{token_stack} }, $token);
@@ -151,8 +154,11 @@ INVOKE:
   local $LaTeXML::CURRENT_TOKEN = $token;
   my @result  = ();
   my $meaning = $STATE->lookupDigestableDefinition($token);
+##print STDERR "AFTER Problem? $$token[0] == ".Stringify($meaning)."\n" if $PROBLEM;
 
-  if ($meaning->isaToken) {    # Common case
+  if (!$meaning) {
+    @result = $self->invokeToken_undefined($token); }
+  elsif ($meaning->isaToken) {    # Common case
     my $cc = $meaning->getCatcode;
     if ($cc == CC_CS) {
       @result = $self->invokeToken_undefined($token); }
@@ -169,7 +175,7 @@ INVOKE:
     $gullet->unread(@{ $meaning->invoke($gullet) || [] });
     $token = $gullet->readXToken();    # replace the token by it's expansion!!!
     pop(@{ $$self{token_stack} });
-    goto INVOKE; }
+    goto INVOKE if $token; }
   elsif ($meaning->isaDefinition) {    # Otherwise, a normal primitive or constructor
     @result = $meaning->invoke($self);
     $STATE->clearPrefixes unless $meaning->isPrefix; }    # Clear prefixes unless we just set one.
@@ -354,7 +360,7 @@ sub setMode {
   elsif ($ismath) {
     # When entering math mode, we set the font to the default math font,
     # and save the text font for any embedded text.
-    $STATE->assignValue(savedfont => $curfont, 'local');
+    $STATE->assignValue(savedfont         => $curfont, 'local');
     $STATE->assignValue(script_base_level => scalar(@{ $$self{boxing} }));    # See getScriptLevel
     $STATE->assignValue(font => $STATE->lookupValue('mathfont')->merge(
         color     => $curfont->getColor, background => $curfont->getBackground,

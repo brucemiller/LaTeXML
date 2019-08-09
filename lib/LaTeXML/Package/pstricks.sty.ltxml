@@ -81,7 +81,7 @@ sub ReadOptionalBracketed {
   $gullet->skipSpaces;
   if ($gullet->ifNext(T_BEGIN)) {
     my $itemreader;
-    if (!$itemtype) { $itemreader = sub { $gullet->readBalanced; }; }
+    if (!$itemtype) { $itemreader = sub { scalar($gullet->readBalanced); }; }
     else            { $itemreader = ResolveReader($itemtype); }
     if (!$itemreader) {
       Error('misdefined', $itemtype, $gullet,

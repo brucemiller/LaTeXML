@@ -92,7 +92,7 @@ DefMacro('\pdffilemoddate {}',              '');
 # DefMacro('\pdfcolorstackinit {}','');
 
 # Read-only registers
-DefRegister('\pdftexversion'      => Number(0));
+DefRegister('\pdftexversion'      => Number(140));
 DefRegister('\pdflastobj'         => Number(0));
 DefRegister('\pdflastxform'       => Number(0));
 DefRegister('\pdflastximage'      => Number(0));
@@ -198,4 +198,9 @@ DefMacro('\pdfrestore',   '');
 # pdfspecial modifier → direct:
 # stack action → set | push | pop | current
 
+DefMacro('\pdfstrcmp Expanded Expanded', sub {
+    my $cmp = (ToString($_[1]) cmp ToString($_[2]));
+    return ($cmp == 1 ? T_OTHER('1')
+      : ($cmp == 0 ? T_OTHER('0')
+        : Tokens(T_OTHER('-'), T_OTHER('1')))); });
 1;

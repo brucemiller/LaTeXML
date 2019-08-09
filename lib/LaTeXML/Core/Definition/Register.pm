@@ -13,6 +13,7 @@ package LaTeXML::Core::Definition::Register;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
 use base qw(LaTeXML::Core::Definition::Primitive);
 
 # Known Traits:
@@ -73,6 +74,16 @@ sub invoke {
   LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;
   return; }
 
+sub xxxxxxxxxxxequals {
+  my ($self, $other) = @_;
+  return (defined $other
+      && (ref $self) eq (ref $other)) && Equals($self->getParameters, $other->getParameters)
+###    && Equals($$self{replacement},  $$other{replacement})
+    && ($self->isRegister eq $other->isRegister)
+    && Equals($$self{getter}, $$other{getter})
+##    && Equals($$self{beforeDigest}, $$other{beforeDigest})
+##    && Equals($$self{afterDigest},  $$other{afterDigest})
+    ; }
 #===============================================================================
 1;
 

@@ -982,7 +982,11 @@ sub DefConditionalI {
     $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new(
         $cs, undef, undef, conditional_type => 'or', %options),
       $options{scope}); }
-  elsif ($csname =~ /^\\(?:if(.*)|unless)$/) {
+  elsif ($csname eq '\unless') {
+    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
+        conditional_type => 'unless', %options),
+      $options{scope}); }
+  elsif ($csname =~ /^\\if(.*)$/) {
     my $name = $1;
     if ((defined $name) && ($name ne 'case')
       && (!defined $test)) {    # user-defined conditional, like with \newif
