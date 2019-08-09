@@ -741,11 +741,13 @@ sub setDocument_internal {
     foreach my $node ($self->findnodes("//*[\@xml:id]")) {    # Now record all ID's
       $$self{idcache}{ $node->getAttribute('xml:id') } = $node; }
     # Fetch any additional namespaces from the root
-    foreach my $ns ($root->documentElement->getNamespaces) {
-      my ($prefix, $uri) = ($ns->getLocalName, $ns->getData);
-      if ($prefix) {
-        $$self{namespaces}{$prefix} = $uri    unless $$self{namespaces}{$prefix};
-        $$self{namespaceURIs}{$uri} = $prefix unless $$self{namespaceURIs}{$uri}; } }
+
+    if(my $docroot = $root->documentElement){
+      foreach my $ns ($docroot->getNamespaces) {
+        my ($prefix, $uri) = ($ns->getLocalName, $ns->getData);
+        if ($prefix) {
+          $$self{namespaces}{$prefix} = $uri    unless $$self{namespaces}{$prefix};
+          $$self{namespaceURIs}{$uri} = $prefix unless $$self{namespaceURIs}{$uri}; } } }
 
     # Extract data from latexml's ProcessingInstructions
     # I'd like to provide structured access to the PI's for those modules that need them,
