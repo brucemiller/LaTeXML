@@ -806,21 +806,18 @@ DefMacro('\meaning Token', sub {
     if (my $definition = (Equals($tok, T_ALIGN) ? $tok : LookupMeaning($tok))) {
       my $type = ref $definition;
       $type =~ s/^LaTeXML:://;
-      # I don't understand what this is about
-      if ($type =~ /primitive/i) {
+      # Pre-step: We can't extract the bodies of definitions which are defined via Perl subroutines.
+      # So do the next best thing -- represent them as their tokens.
+      if ($type =~ /(primitive|conditional|constructor)$/i) {
         $definition = $definition->getCSorAlias;
         $type       = ref $definition;
         $type =~ s/^LaTeXML:://; }
-      if ($type =~ /con(ditional|structor)/i) {
-        $definition = $definition->getCSorAlias;
-        $type       = ref $definition;
-        $type =~ s/^LaTeXML:://; }
-
-      if ($type =~ /token/i) {
+      # The actual tests start here
+      if ($type =~ /token$/i) {
         my $cc   = $definition->getCatcode;
         my $char = $definition->getString;
         $meaning = ($CATCODE_MEANING[$cc] || '') . ' ' . ($cc == CC_SPACE ? ' ' : $char); }
-      elsif ($type =~ /register/i) {
+      elsif ($type =~ /register$/i) {
         my $value         = $definition->valueOf;
         my $register_type = lc(ref $value);
         my $prefix        = '\count';
@@ -831,7 +828,7 @@ DefMacro('\meaning Token', sub {
         my $literal_value = $register_type && $value->valueOf;
         # Should we be more careful to distinguish between latex and tex counters?
         $meaning = $prefix . $literal_value; }
-      elsif ($type =~ /expandable/i) {
+      elsif ($type =~ /expandable$/i) {
         my $expansion = $definition->getExpansion;
         my $ltxps     = $definition->getParameters;
         my @params;
@@ -856,6 +853,11 @@ DefMacro('\meaning Token', sub {
           ($definition->isOuter     ? '\outer'     : ()),
         );
         $meaning = ($prefixes ? $prefixes . ' ' : '') . "macro:" . ToString($spec) . "->" . ToString($expansion); }
+      elsif ($type =~ /chardef$/i) {    # from \mathchardef and the like.
+        my $prefix = '\char';
+        if ($$definition{internalcs} && $$definition{internalcs}->getCSName =~ /^\\\@mathchardef/) {
+          $prefix = '\mathchar'; }
+        $meaning = $prefix . '"' . $definition->valueOf->valueOf; }
       Explode($meaning); }
     else {
       Explode('undefined'); } });

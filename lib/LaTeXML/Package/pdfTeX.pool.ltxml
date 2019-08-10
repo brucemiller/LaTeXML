@@ -66,7 +66,8 @@ DefRegister('\pdfpageresources' => Tokens());
 DefRegister('\pdfpkmode'        => Tokens());
 
 # Expandable Commands
-DefMacro('\pdftexrevision',           '');
+DefRegister('\pdftexrevision', '19');
+
 DefMacro('\pdftexbanner',             '');
 DefMacro('\pdfcreationdate',          '');
 DefMacro('\pdfpageref Number',        '');

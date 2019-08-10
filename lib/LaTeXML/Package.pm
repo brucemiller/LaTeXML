@@ -430,7 +430,11 @@ my @rmletters = ('i', 'v', 'x', 'l', 'c', 'd', 'm');    # [CONSTANT]
 
 sub roman_aux {
   my ($n) = @_;
-  return '' unless $n;
+  # We used to have a expl3-code.tex bug here with
+  # input: -1
+  # output: cmxcix
+  # TeX proper returns empty on negative integers
+  return '' unless $n && ($n > 0);
   my $div = 1000;
   my $s   = ($n > $div ? ('m' x int($n / $div)) : '');
   my $p   = 4;
