@@ -430,9 +430,10 @@ my @rmletters = ('i', 'v', 'x', 'l', 'c', 'd', 'm');    # [CONSTANT]
 
 sub roman_aux {
   my ($n) = @_;
+  return '' unless $n;
   my $div = 1000;
-  my $s = ($n > $div ? ('m' x int($n / $div)) : '');
-  my $p = 4;
+  my $s   = ($n > $div ? ('m' x int($n / $div)) : '');
+  my $p   = 4;
   while ($n %= $div) {
     $div /= 10;
     my $d = int($n / $div);
@@ -2164,6 +2165,7 @@ sub InputDefinitions {
   if (my $file = FindFile($filename, type => $options{type},
       notex => $options{notex}, noltxml => $options{noltxml})) {
     if ($options{handleoptions}) {
+      Digest(T_CS('\@pushfilename'));
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
       if (my $passoptions = $options{withoptions} && $prevname
         && LookupValue('opt@' . $prevname . "." . $prevext)) {
@@ -2209,6 +2211,7 @@ sub InputDefinitions {
       Digest(T_CS('\\' . $name . '.' . $astype . '-h@@k'));
       DefMacroI('\@currname', undef, Tokens(Explode($prevname))) if $prevname;
       DefMacroI('\@currext',  undef, Tokens(Explode($prevext)))  if $prevext;
+      Digest(T_CS('\@popfilename'));
       resetOptions(); }    # And reset options afterwards, too.
     return $file; }
   elsif (!$options{noerror}) {

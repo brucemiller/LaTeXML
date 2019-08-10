@@ -145,6 +145,8 @@ DefMacro('\quitvmode', '');
 # \pdfsetrandomseed number
 # \pdfnoligatures font
 # \pdfprimitive control sequence
+# TODO: https://tex.stackexchange.com/questions/13771/let-a-control-sequence-to-a-redefined-primitive
+DefMacro('\pdfprimitive {}', '#1');    # we can just ignore the advanced effects for now.
 # \pdfcolorstack stack number stack action general text
 DefMacro('\pdfsetmatrix', '');
 DefMacro('\pdfsave',      '');

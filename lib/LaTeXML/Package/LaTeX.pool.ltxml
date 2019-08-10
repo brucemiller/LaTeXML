@@ -917,6 +917,7 @@ DefMacroI('\@filelist', undef, Tokens());
 DefMacro('\@addtofilelist{}', sub {
     DefMacroI('\@filelist', undef,
       Expand(T_CS('\@filelist'), T_OTHER(','), $_[1]->unlist)); });
+
 #======================================================================
 # C.5.3 Page Styles
 #======================================================================
