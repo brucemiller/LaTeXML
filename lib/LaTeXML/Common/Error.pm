@@ -243,6 +243,8 @@ sub perl_warn_handler {
   if ($line[0] =~ /^Use of uninitialized value (.*?)(\s?+in .*?)\s+(at\s+.*?\s+line\s+\d+)\.$/) {
     my ($what, $how, $where) = ($1 || 'value', $2, $3);
     Warn('uninitialized', $what, $where, "Use of uninitialized value $what $how", @line[1 .. $#line]); }
+  elsif ($line[0] =~ /^Deep recursion on/) {
+    Fatal('perl', 'deep_recursion', undef, $line[0]); }
   elsif ($line[0] =~ /^(.*?)\s+(at\s+.*?\s+line\s+\d+)\.$/) {
     my ($warning, $where) = ($1, $2);
     Warn('perl', 'warn', undef, $warning, $where, @line[1 .. $#line]); }
@@ -629,4 +631,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

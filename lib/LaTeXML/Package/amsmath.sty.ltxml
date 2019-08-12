@@ -799,6 +799,10 @@ DefMacro('\endVmatrix', '\lx@end@ams@matrix');
 DefMacro('\smallmatrix',    '\lx@ams@matrix{name=smallmatrix,atameaning=matrix,style=\scriptsize}');
 DefMacro('\endsmallmatrix', '\lx@end@ams@matrix');
 
+# Some author code defines new matrix environments and uses this check guard.
+# For now just gobble its argument, assuming the check passes (was handled in pdflatex)
+DefMacro('\matrix@check{}', Tokens());
+
 #======================================================================
 # Section 4.2 Math spacing commands
 # \, == \thinspace
@@ -1310,4 +1314,3 @@ DefMacro('\shoveright{}', '#1');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
-
