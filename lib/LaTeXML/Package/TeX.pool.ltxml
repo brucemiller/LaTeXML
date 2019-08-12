@@ -899,10 +899,15 @@ DefMacro('\expandafter Token Token', sub {
     if (defined($defn = $STATE->lookupExpandable($xtok))) {
       # Note that IF expandafter ends up expanding a \the in an \edef,
       # that it Overrides the implicit noexpand that \edef would normally use for\the!!
-      local $LaTeXML::NOEXPAND_THE = undef;
-      my $x = $defn->invoke($gullet);
-      ($tok, ($x ? @{$x} : ())); }    # Expand $xtok ONCE ONLY!
-    elsif (!defined($STATE->lookupMeaning($xtok))) {
+      my @x = ();
+      {
+        local $LaTeXML::CURRENT_TOKEN = $xtok;
+        local $LaTeXML::NOEXPAND_THE  = undef;
+        my $x = $defn->invoke($gullet);
+        @x = @$x if $x;    # Expand $xtok ONCE ONLY!
+      }
+      ($tok, @x); }
+    elsif (!$STATE->lookupMeaning($xtok)) {
       # Undefined token is an error, as expansion is expected. The unknown token is consumed.
       # see TeX B book, item 367.
       Error('undefined', $xtok, $gullet, "The token " . Stringify($xtok) . " is not defined");
@@ -2175,7 +2180,10 @@ DefPrimitive('\lowercase GeneralText', sub {
 
 DefPrimitive('\message{}', sub {
     my ($stomach, $stuff) = @_;
-    print STDERR ToString(Expand($stuff)) . "\n" if LookupValue('VERBOSITY') > -1;
+    return unless LookupValue('VERBOSITY') > -1;
+    # Expand, and insert spaces after CS tokens
+    my @tokens = map { $_->getCatcode == CC_CS ? ($_, T_SPACE) : $_ } Expand($stuff)->unlist;
+    print STDERR ToString(Tokens(@tokens)) . "\n";
     return; });
 
 DefRegister('\errhelp' => Tokens());
