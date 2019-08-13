@@ -20,12 +20,12 @@ use LaTeXML::Package;
 ## (e.g. \ratio, \minOf, etc)
 ## and are instead consumed incrementally. However, for that to succeed with the correct implementation
 ## of readXToken, we would need to define them explicitly, or we get "undefined cs was expanded" errors.
-DefMacro('\minof',    '\noexpand\minof');
-DefMacro('\maxof',    '\noexpand\maxof');
-DefMacro('\widthof',  '\noexpand\widthof');
-DefMacro('\heightof', '\noexpand\heightof');
-DefMacro('\ratio',    '\noexpand\ratio');
-DefMacro('\real',     '\noexpand\real');
+DefPrimitive('\minof',    '');
+DefPrimitive('\maxof',    '');
+DefPrimitive('\widthof',  '');
+DefPrimitive('\heightof', '');
+DefPrimitive('\ratio',    '');
+DefPrimitive('\real',     '');
 
 # \setcounter{<ctr>}{<integer expression>}
 DefPrimitive('\setcounter{}{}', sub {
