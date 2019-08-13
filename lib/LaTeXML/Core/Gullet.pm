@@ -561,8 +561,7 @@ sub readOptionalSigns {
   my ($self) = @_;
   my ($sign, $t, $meaning) = ("+1", '');
   while (defined($t = $self->readXToken(0))
-    && (($t->getString eq '+') || ($t->getString eq '-') ||
-      (defined($meaning = $STATE->lookupMeaning($t)) && $meaning->equals(T_SPACE)))) {
+    && (($t->getString eq '+') || ($t->getString eq '-') || Equals($t, T_SPACE))) {
     $sign = -$sign if ($t->getString eq '-'); }
   unshift(@{ $$self{pushback} }, $t) if $t;    # Unread
   return $sign; }
