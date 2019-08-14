@@ -708,6 +708,7 @@ sub node_to_lexeme {
           push @to_add, $value; } }
       if (@to_add) {
         $lexeme = join("-", sort(@to_add)) . "-" . $lexeme; } } }
+  local $LaTeXML::MathParser::STRICT = 0;
   if (my $role = $self->getGrammaticalRole($node)) {
     if ($role ne 'UNKNOWN') {
       $lexeme = $role . ":" . $lexeme; } }
