@@ -141,9 +141,6 @@ my @absorbable_cc = (    # [CONSTANT]
 
 sub invokeToken {
   my ($self, $token) = @_;
-##my $PROBLEM = $token && $$token[0] eq '\__kernel_deprecation_code:nn';
-##print STDERR "BEFORE Problem? $$token[0]\n" if $PROBLEM;
-
   no warnings 'recursion';
 INVOKE:
   push(@{ $$self{token_stack} }, $token);
@@ -154,7 +151,6 @@ INVOKE:
   local $LaTeXML::CURRENT_TOKEN = $token;
   my @result  = ();
   my $meaning = $STATE->lookupDigestableDefinition($token);
-##print STDERR "AFTER Problem? $$token[0] == ".Stringify($meaning)."\n" if $PROBLEM;
 
   if (!$meaning) {
     @result = $self->invokeToken_undefined($token); }
@@ -395,7 +391,7 @@ sub endMode {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -430,7 +426,7 @@ are collected into a L<LaTeXML::Core::List>.
 
 =item Constructors
 
-A special class of control sequence, called a L<LaTeXML::Core::Definition::Constructor> produces a 
+A special class of control sequence, called a L<LaTeXML::Core::Definition::Constructor> produces a
 L<LaTeXML::Core::Whatsit> which remembers the control sequence and arguments that
 created it, and defines its own translation into C<XML> elements, attributes and data.
 Arguments to a constructor are read from the gullet and also digested.
@@ -445,7 +441,7 @@ Arguments to a constructor are read from the gullet and also digested.
 
 Return the digested L<LaTeXML::Core::List> after reading and digesting a `body'
 from the its Gullet.  The body extends until the current
-level of boxing or environment is closed.  
+level of boxing or environment is closed.
 
 =item C<< $list = $stomach->digest($tokens); >>
 
@@ -463,7 +459,7 @@ A List of Box's, Lists, Whatsit's is returned.
 
 =item C<< @boxes = $stomach->regurgitate; >>
 
-Removes and returns a list of the boxes already digested 
+Removes and returns a list of the boxes already digested
 at the current level.  This peculiar beast is used
 by things like \choose (which is a Primitive in TeX, but
 a Constructor in LaTeXML).

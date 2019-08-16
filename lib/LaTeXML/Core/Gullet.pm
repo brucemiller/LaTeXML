@@ -750,7 +750,6 @@ sub readMuDimension {
 sub readMuUnit {
   my ($self) = @_;
   if (my $m = $self->readKeyword('mu')) {
-###    $self->skip1Space;
     $self->skip1Space(1);
     return $STATE->convertUnit($m); }
   elsif ($m = $self->readInternalMuGlue) {

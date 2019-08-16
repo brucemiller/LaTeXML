@@ -126,10 +126,7 @@ sub skipConditionalBody {
       elsif (!--$level) {           # If no more nesting, we're done.
         shift(@$stack);             # Done with this frame
         return $t; } }              # AND Return the finishing token.
-##    elsif ($cond_type eq 'unless') {    #  ignore \unless
-##    }
-    elsif ($level > 1) {            # Ignore \else,\or nested in the body.
-    }
+    elsif ($level > 1) { }          # Ignore \else,\or nested in the body.
     elsif (($cond_type eq 'or') && (++$n_ors == $nskips)) {
       return $t; }
     elsif (($cond_type eq 'else') && $nskips
@@ -190,7 +187,7 @@ sub invoke_fi {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

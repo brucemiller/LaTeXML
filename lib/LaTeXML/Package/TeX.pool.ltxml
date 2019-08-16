@@ -868,7 +868,6 @@ DefParameterType('CSName', sub {
     my $cs = escapechar();
     my $s;
     # keep newlines from having \n inside!
-##    while (($token = $gullet->readXToken(1)) && (($s = $token->getString) ne '\endcsname')) {
     while (($token = $gullet->readXToken(1)) && (!Equals($token, T_CS('\endcsname')))) {
       my $cc = $token->getCatcode;
       if ($cc == CC_CS) {
@@ -878,7 +877,6 @@ DefParameterType('CSName', sub {
         else {
           Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
       # Keep newlines from having \n!
-##      $cs .= ($cc == CC_SPACE ? ' ' : $s); }
       $cs .= ($cc == CC_SPACE ? ' ' : $token->getString); }
     T_CS($cs); });
 
@@ -1190,11 +1188,8 @@ sub do_def {
   AfterAssignment();
   return; }
 
-DefPrimitive('\def  SkipSpaces Token UntilBrace {}', sub { do_def(0, 0, @_); }, locked => 1);
-DefPrimitive('\gdef SkipSpaces Token UntilBrace {}', sub { do_def(1, 0, @_); }, locked => 1);
-##DefPrimitive('\edef SkipSpaces Token UntilBrace {}', sub { do_def(0, 1, @_); }, locked => 1);
-##DefPrimitive('\xdef SkipSpaces Token UntilBrace {}', sub { do_def(1, 1, @_); }, locked => 1);
-
+DefPrimitive('\def  SkipSpaces Token UntilBrace {}',        sub { do_def(0, 0, @_); }, locked => 1);
+DefPrimitive('\gdef SkipSpaces Token UntilBrace {}',        sub { do_def(1, 0, @_); }, locked => 1);
 DefPrimitive('\edef SkipSpaces Token UntilBrace EExpanded', sub { do_def(0, 0, @_); }, locked => 1);
 DefPrimitive('\xdef SkipSpaces Token UntilBrace EExpanded', sub { do_def(1, 0, @_); }, locked => 1);
 
@@ -1296,7 +1291,6 @@ DefPrimitive('\divide Variable SkipKeyword:by Number', sub {
 #   | \let<control sequence><equals><one optional space><token>
 DefPrimitive('\let Token SkipMatch:= Skip1Space Token', sub {
     my ($stomach, $token1, $token2) = @_;
-##    print STDERR "LET ".Stringify($token1)."=".Stringify($token2)."\n";
     Let($token1, $token2);
     return; });
 
@@ -4406,8 +4400,6 @@ DefPrimitive('\newtoks Token', sub { DefRegisterI($_[1], undef, Tokens()); });
 # which means they actually work quite differently
 DefRegister('\allocationnumber' => Number(0));
 
-#DefMacro('\alloc@@ {}', sub {
-#    my ($gullet, $type) = @_;
 DefPrimitive('\alloc@@ {}', sub {
     my ($stomach, $type) = @_;
     my $c = 'allocation @' . ToString($type);
