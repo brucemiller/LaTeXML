@@ -2827,11 +2827,8 @@ DefPrimitiveI('\@@open@inner@column', undef, sub {
     my @savedtokens = ();
     $$colspec{empty} = 0;           # Assume the column isn't empty
                                     # Scan for leading \omit, skipping over (& saving) \hline.
-         # TODO: This loop of expansions actually allows for undefined command sequences to be present
-      #      as its timing is a little artificial. E.g. it would read locally scoped macros before they are
-      #      activated by the before=> templates of columns.
 
-    while (my $tok = $gullet->readXToken(0, 0, 1)) {
+    while (my $tok = $gullet->readXToken(0, 0)) {
       if ($tok->equals(T_SPACE)) { }    # Skip leading space
       elsif (grep { $tok->equals($_) } @line_tokens) {    # Save line commands
         push(@lines, $stomach->invokeToken($tok)); }

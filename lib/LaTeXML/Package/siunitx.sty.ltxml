@@ -28,7 +28,8 @@ use LaTeXML::Package;
 # in order to pick up all the unit definitions!
 
 RequirePackage('xcolor');
-
+RequirePackage('amstext');
+RequirePackage('array');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Dealing with the Options
 
@@ -415,7 +416,6 @@ sub six_format_number {
   return $number unless ref $number eq 'HASH';
   $bracket = 0 unless $bracket && six_getBool('bracket-numbers');
   # Not ONLY format the number, but arrange for a fork representing the semantics!
-  return unless $number;
   my @tokens = ();
   if (my $op = $$number{operator}) {
     if ($op eq 'comparator') {
@@ -569,7 +569,6 @@ sub six_wrap {
     (grep { $_; } @stuff),
     T_CS('\@@ENDINLINEMATH'),
     ($color ? (T_END) : ())); }
-
 # \num[options]{number}
 DefMacro('\num OptionalKeyVals:SIX {}', sub {
     my ($gullet, $kv, $number) = @_;
@@ -1133,7 +1132,7 @@ DefPrimitive('\DeclareSIUnit OptionalKeyVals:SIX SkipSpaces DefToken {}', sub {
         keyvals => $kv, type => 'unit', presentation => $presentation });
     DefMacroI($newcs, undef,
       '\lx@six@unitobject@collapsible{' . $name . '}{' . ToString($presentation) . '}');
-
+    Let($cs, T_CS('\relax')) unless LookupMeaning($cs);
     return; });
 
 # \NewDocumentCommand \DeclareSIUnitWithOptions { m m m }{

@@ -244,7 +244,7 @@ sub unread {
 #  will step to the next input stream (Mouth) if one is available,
 # If $commentsok is true, will also pass comments.
 sub readXToken {
-  my ($self, $toplevel, $commentsok, $undefined_allowed) = @_;
+  my ($self, $toplevel, $commentsok) = @_;
   $toplevel = 1 unless defined $toplevel;
   return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
   my ($token, $cc, $defn);
@@ -272,7 +272,7 @@ sub readXToken {
                 : ($r eq 'LaTeXML::Core::Tokens' ? @$_
                   : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))))) }
             @{$r}); } }
-    elsif ($cc == CC_CS && !$undefined_allowed && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
+    elsif ($cc == CC_CS && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
       Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined during expansion. Consuming it and proceeding, expect trouble...");
       return; }
     else {
