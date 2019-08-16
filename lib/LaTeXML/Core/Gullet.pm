@@ -559,7 +559,7 @@ sub readTokensValue {
 # return +1 or -1
 sub readOptionalSigns {
   my ($self) = @_;
-  my ($sign, $t, $meaning) = ("+1", '');
+  my ($sign, $t) = ("+1", '');
   while (defined($t = $self->readXToken(0))
     && (($t->getString eq '+') || ($t->getString eq '-') || Equals($t, T_SPACE))) {
     $sign = -$sign if ($t->getString eq '-'); }
