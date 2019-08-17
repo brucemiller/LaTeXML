@@ -734,7 +734,28 @@ DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
 DefConditional('\if XToken XToken',    sub { $_[1]->getCharcode == $_[2]->getCharcode; });
 DefConditional('\ifcat XToken XToken', sub { $_[1]->getCatcode == $_[2]->getCatcode; });
 
-DefConditional('\ifx Token Token', sub { XEquals($_[1], $_[2]); });
+DefConditional('\ifx', sub {
+    my ($gullet) = @_;
+    my ($noexpand_flag_1, $noexpand_flag_2) = (0, 0);
+    my $token1 = $gullet->readToken;
+    if ($$token1[1] == CC_NOTEXPANDED) {
+      $token1 = $gullet->readToken;
+      # flag successful \noexpand use on expandable token
+      $noexpand_flag_1 = 1 if $STATE->lookupExpandable($token1); }
+    my $token2 = $gullet->readToken;
+    if ($$token2[1] == CC_NOTEXPANDED) {
+      $token2 = $gullet->readToken;
+      # flag successful \noexpand use on expandable token
+      $noexpand_flag_2 = 1 if $STATE->lookupExpandable($token2); }
+    if ($noexpand_flag_1 != $noexpand_flag_2) {
+      # if the flags are not identical, ifx is false
+      return 0; }
+    elsif ($noexpand_flag_1 && $noexpand_flag_2) {
+      # if both flags are on, ifx is true
+      return 1; }
+    else {
+      # otherwise noexpand flags are not triggered, perform core comparison
+      return XEquals($token1, $token2); } });
 
 # Kinda rough: We don't really keep track of modes as carefully as TeX does.
 # We'll assume that a box is horizontal if there's anything at all,

@@ -206,4 +206,7 @@ DefMacro('\pdfstrcmp Expanded Expanded', sub {
     return ($cmp == 1 ? T_OTHER('1')
       : ($cmp == 0 ? T_OTHER('0')
         : Tokens(T_OTHER('-'), T_OTHER('1')))); });
+
+DefMacro('\expanded Expanded', '#1');
+
 1;
