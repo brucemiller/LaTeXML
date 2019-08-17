@@ -13,6 +13,7 @@ package LaTeXML::Core::Definition::CharDef;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use base qw(LaTeXML::Core::Definition::Register);
 
@@ -43,6 +44,11 @@ sub invoke {
   # Tracing ?
   return (defined $cs ? $stomach->invokeToken($cs) : undef); }
 
+sub equals {
+  my ($self, $other) = @_;
+  return (defined $other)
+    && ((ref $self) eq (ref $other))
+    && ($$self{value}->valueOf == $$other{value}->valueOf); }
 #===============================================================================
 1;
 

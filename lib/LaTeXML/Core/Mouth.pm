@@ -158,7 +158,7 @@ sub getNextChar {
       else {    # OR ^^ followed by a SINGLE Control char type code???
         my $c  = $$self{chars}[$$self{colno} + 1];
         my $cn = ord($c);
-        $ch = chr($cn + ($cn > 64 ? -64 : 64));
+        $ch = chr($cn + ($cn >= 64 ? -64 : 64));
         splice(@{ $$self{chars} }, $$self{colno} - 1, 3, $ch);
         $$self{nchars} -= 2; }
       $cc = $STATE->lookupCatcode($ch) // CC_OTHER; }
@@ -289,7 +289,14 @@ sub readToken {
         $$self{nchars} = 0;
         return; }
       # Remove trailing space, but NOT a control space!  End with CR (not \n) since this gets tokenized!
-      $line =~ s/((\\ )*)\s*$/$1\r/s;
+      $line =~ s/((\\ )*)\s*$/$1/s;
+      # Then append the appropriaate \endlinechar, or "\r"
+      if (my $eol = $STATE->lookupDefinition(T_CS('\endlinechar'))) {
+        # \endlinechar=-1 means what?
+        $eol = $eol->valueOf()->valueOf;
+        $line .= chr($eol) if $eol > 0; }
+      else {
+        $line .= "\r"; }
       $$self{chars}  = splitChars($line);
       $$self{nchars} = scalar(@{ $$self{chars} });
       while (($$self{colno} < $$self{nchars})

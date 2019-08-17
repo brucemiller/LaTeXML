@@ -72,14 +72,14 @@ RawTeX(<<'EoTeX');
 \DeclareOption{onecolumn}{\CLASSOPTIONonecolumntrue\CLASSOPTIONtwocolumnfalse}
 \DeclareOption{twocolumn}{\CLASSOPTIONtwocolumntrue\CLASSOPTIONonecolumnfalse}
 \DeclareOption{draft}{\CLASSOPTIONdrafttrue\CLASSOPTIONdraftclstrue
-                      \CLASSOPTIONdraftclsnofootfalse} 
+                      \CLASSOPTIONdraftclsnofootfalse}
 % draftcls is for a draft mode which will not affect any packages
 % used by the document.
 \DeclareOption{draftcls}{\CLASSOPTIONdraftfalse\CLASSOPTIONdraftclstrue
-                         \CLASSOPTIONdraftclsnofootfalse} 
+                         \CLASSOPTIONdraftclsnofootfalse}
 % draftclsnofoot is like draftcls, but without the footer.
 \DeclareOption{draftclsnofoot}{\CLASSOPTIONdraftfalse\CLASSOPTIONdraftclstrue
-                               \CLASSOPTIONdraftclsnofoottrue} 
+                               \CLASSOPTIONdraftclsnofoottrue}
 \DeclareOption{final}{\CLASSOPTIONdraftfalse\CLASSOPTIONdraftclsfalse
                       \CLASSOPTIONdraftclsnofootfalse}
 
@@ -148,8 +148,9 @@ DefMacro('\IEEEauthorblockN{}', '#1');        # author
 DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
 DefMacro('\IEEEauthorblockA{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
 
-DefMacro(T_CS('\begin{IEEEkeywords}'),              '\@IEEEkeywords');
-DefMacro(T_CS('\end{IEEEkeywords}'),                '\@endIEEEkeywords');
+DefMacro(T_CS('\begin{IEEEkeywords}'), '\@IEEEkeywords');
+DefMacro(T_CS('\end{IEEEkeywords}'),   '\@endIEEEkeywords');
+Let('\@endIEEEkeywords', '\relax');           # stub
 DefMacro('\@IEEEkeywords XUntil:\@endIEEEkeywords', '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\IEEEraisesectionheading{}',              '#1');
 DefMacro('\IEEEPARstart{}{}', '#1#2');        # Eventually, dropcap?
@@ -171,7 +172,7 @@ RawTeX(<<'EoTeX');
 \def\theparagraph{\thesubsubsection.\arabic{paragraph}}
 \else
 \def\thesection{\Roman{section}}                             % I
-% V1.7, \mbox prevents breaks around - 
+% V1.7, \mbox prevents breaks around -
 \def\thesubsection{\mbox{\thesection-\Alph{subsection}}}     % I-A
 % V1.7 use I-A1 format used by the IEEE rather than I-A.1
 \def\thesubsubsection{\thesubsection\arabic{subsubsection}}  % I-A1

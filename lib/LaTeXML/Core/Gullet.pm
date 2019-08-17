@@ -182,14 +182,15 @@ sub show_pushback {
 #**********************************************************************
 # Not really 100% sure how this is supposed to work
 # See TeX Ch 20, p216 regarding noexpand, \edef with token list registers, etc.
-# Solution: Duplicate param tokens, stick NOTEXPANDED infront of expandable tokens.
+# Solution: Duplicate param tokens, stick NOTEXPANDED infront of expandable+undefined tokens.
 sub neutralizeTokens {
   my ($self, @tokens) = @_;
   my @result = ();
   foreach my $token (@tokens) {
     if ($$token[1] == CC_PARAM) {    # Inline ->getCatcode!
       push(@result, $token); }
-    elsif (defined(my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token))) {
+    elsif (!defined(my $meaning = LaTeXML::Core::State::lookupMeaning($STATE, $token)) ||
+      defined(my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token))) {
       push(@result, Token('\noexpand', CC_NOTEXPANDED)); }
     push(@result, $token); }
   return @result; }
@@ -271,6 +272,9 @@ sub readXToken {
                 : ($r eq 'LaTeXML::Core::Tokens' ? @$_
                   : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))))) }
             @{$r}); } }
+    elsif ($cc == CC_CS && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
+      Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined during expansion. Consuming it and proceeding, expect trouble...");
+      return; }
     else {
       return $token; }    # just return it
   }
@@ -299,6 +303,9 @@ sub readRawLine {
 #**********************************************************************
 # Mid-level readers: checking and matching tokens, strings etc.
 #**********************************************************************
+# General note: TeX uses different tests for Space tokens in different places
+# (possibilities: catcode equality, ->equals, Equals and XEquals)
+
 # The following higher-level parsing methods are built upon readToken & unread.
 sub readNonSpace {
   my ($self) = @_;
@@ -320,10 +327,12 @@ sub skipSpaces {
   unshift(@{ $$self{pushback} }, $tok) if defined $tok;    # Unread
   return; }
 
+# Skip one space
+# if $expanded is true, it acts like <one optional space>, expanding the next token.
 sub skip1Space {
-  my ($self) = @_;
-  my $token = $self->readToken();
-  unshift(@{ $$self{pushback} }, $token) if $token && ($$token[1] != CC_SPACE); # Inline ->getCatcode, unread
+  my ($self, $expanded) = @_;
+  my $token = ($expanded ? $self->readXToken : $self->readToken);
+  unshift(@{ $$self{pushback} }, $token) if $token && !Equals($token, T_SPACE);
   return; }
 
 # <filler> = <optional spaces> | <filler>\relax<optional spaces>
@@ -333,8 +342,8 @@ sub skipFiller {
     my $tok = $self->readNonSpace;
     return unless defined $tok;
     # Should \foo work too (where \let\foo\relax) ??
-    if ($tok->getString ne '\relax') {
-      unshift(@{ $$self{pushback} }, $tok);                                     # Unread
+    if (!$tok->equals(T_CS('\relax'))) {
+      unshift(@{ $$self{pushback} }, $tok);    # Unread
       return; }
   }
   return; }
@@ -372,9 +381,9 @@ sub readBalanced {
  # TODO: The current implementation has a limitation where if the balancing end is in a different mouth,
  #       it will not be recognized.
     Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.",
-      "started at $startloc");
+      "started at " . ToString($startloc));
   }
-  return Tokens(@tokens); }
+  return (wantarray ? (Tokens(@tokens), $token) : Tokens(@tokens)); }
 
 sub ifNext {
   my ($self, $token) = @_;
@@ -433,7 +442,7 @@ sub readUntil {
     push(@tokens, $token);
     $n++;
     if ($$token[1] == CC_BEGIN) {      # And if it's a BEGIN, copy till balanced END
-      push(@tokens, $self->readBalanced->unlist, T_END); } }
+      push(@tokens, $self->readBalanced); } }
   # Notice that IFF the arg looks like {balanced}, the outer braces are stripped
   # so that delimited arguments behave more similarly to simple, undelimited arguments.
   if (($n == 1) && ($tokens[0][1] == CC_BEGIN)) {
@@ -473,7 +482,7 @@ sub readArg {
   if (!defined $token) {
     return; }
   elsif ($$token[1] == CC_BEGIN) {    # Inline ->getCatcode!
-    return $self->readBalanced; }
+    return scalar($self->readBalanced); }
   else {
     return Tokens($token); } }
 
@@ -527,7 +536,7 @@ sub readTokensValue {
   if (!defined $token) {
     return; }
   elsif ($$token[1] == CC_BEGIN) {             # Inline ->getCatcode!
-    return $self->readBalanced; }
+    return scalar($self->readBalanced); }
   elsif (my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token)) {
     if ($defn->isRegister eq 'Tokens') {
       return $defn->valueOf($defn->readArguments($self)); }
@@ -542,6 +551,9 @@ sub readTokensValue {
 
 #======================================================================
 # some helpers...
+# Note that <one optional space> is kinda special:
+# The following Token(s) are expanded until an unexpandable token is found;
+# it is discarded if it is a space, but with an Equals() equality test!
 
 # <optional signs> = <optional spaces> | <optional signs><plus or minus><optional spaces>
 # return +1 or -1
@@ -549,18 +561,19 @@ sub readOptionalSigns {
   my ($self) = @_;
   my ($sign, $t) = ("+1", '');
   while (defined($t = $self->readXToken(0))
-    && (($t->getString eq '+') || ($t->getString eq '-') || ($t->equals(T_SPACE)))) {
+    && (($t->getString eq '+') || ($t->getString eq '-') || Equals($t, T_SPACE))) {
     $sign = -$sign if ($t->getString eq '-'); }
   unshift(@{ $$self{pushback} }, $t) if $t;    # Unread
   return $sign; }
 
+# Read digits (within $range), while expanding and if $skip, skip <one optional space> (expanded!)
 sub readDigits {
   my ($self, $range, $skip) = @_;
   my $string = '';
   my ($token, $digit);
   while (($token = $self->readXToken(0)) && (($digit = $token->getString) =~ /^[$range]$/)) {
     $string .= $digit; }
-  unshift(@{ $$self{pushback} }, $token) if $token && !($skip && $$token[1] == CC_SPACE); # Inline ->getCatcode, unread
+  unshift(@{ $$self{pushback} }, $token) if $token && !($skip && Equals($token, T_SPACE));    #Inline
   return $string; }
 
 # <factor> = <normal integer> | <decimal constant>
@@ -599,7 +612,8 @@ sub readNumber {
     unshift(@{ $$self{pushback} }, $next);    # Unread
     Warn('expected', '<number>', $self, "Missing number, treated as zero",
       "while processing " . ToString($LaTeXML::CURRENT_TOKEN),
-      "next token is " . ToString($next));
+      "next token is " . ToString($next)
+      , " == " . Stringify($STATE->lookupMeaning($next)));
     return Number(0); } }
 
 # <normal integer> = <internal integer> | <integer constant>
@@ -608,7 +622,7 @@ sub readNumber {
 # Return a Number or undef
 sub readNormalInteger {
   my ($self) = @_;
-  my $token = $self->readXToken(0);
+  my $token = $self->readXToken(1);    # expand more
   if (!defined $token) {
     return; }
   elsif (($$token[1] == CC_OTHER) && ($token->getString =~ /^[0-9]$/)) {    # Read decimal literal
@@ -621,6 +635,7 @@ sub readNormalInteger {
     my $next = $self->readToken;
     my $s    = ($next && $next->getString) || '';
     $s =~ s/^\\//;
+    $self->skip1Space(1);
     return Number(ord($s)); }    # Only a character token!!! NOT expanded!!!!
   else {
     unshift(@{ $$self{pushback} }, $token);    # Unread
@@ -686,7 +701,7 @@ sub readDimension {
 sub readUnit {
   my ($self) = @_;
   if (defined(my $u = $self->readKeyword('ex', 'em'))) {
-    $self->skip1Space;
+    $self->skip1Space(1);
     return $STATE->convertUnit($u); }
   elsif (defined($u = $self->readInternalInteger)) {
     return $u->valueOf; }    # These are coerced to number=>sp
@@ -699,7 +714,7 @@ sub readUnit {
     my $units = $STATE->lookupValue('UNITS');
     $u = $self->readKeyword(keys %$units);
     if ($u) {
-      $self->skip1Space;
+      $self->skip1Space(1);
       return $STATE->convertUnit($u); }
     else {
       return; } } }
@@ -735,7 +750,7 @@ sub readMuDimension {
 sub readMuUnit {
   my ($self) = @_;
   if (my $m = $self->readKeyword('mu')) {
-    $self->skip1Space;
+    $self->skip1Space(1);
     return $STATE->convertUnit($m); }
   elsif ($m = $self->readInternalMuGlue) {
     return $m->valueOf; }
@@ -919,14 +934,16 @@ Read and return the next non-space token from the input after discarding any spa
 
 Skip the next spaces from the input.
 
-=item C<< $gullet->skip1Space; >>
+=item C<< $gullet->skip1Space($expanded); >>
 
 Skip the next token from the input if it is a space.
+If C($expanded> is true, expands ( like C< <one optional space> > ).
 
 =item C<< $tokens = $gullet->readBalanced; >>
 
 Read a sequence of tokens from the input until the balancing '}' (assuming the '{' has
-already been read). Returns a L<LaTeXML::Core::Tokens>.
+already been read). Returns a L<LaTeXML::Core::Tokens>,
+except in an array context, returns the collected tokens and the closing token.
 
 =item C<< $boole = $gullet->ifNext($token); >>
 

@@ -58,7 +58,7 @@ DefRegister('\eTeXversion' => Number($ETEX_VERSION[0]));
 # \currentgrouplevel
 DefRegister('\currentgrouplevel', Number(0),
   readonly => 1,
-  getter => sub { $STATE->getFrameDepth; });
+  getter   => sub { $STATE->getFrameDepth; });
 
 # \currentgrouptype returns group types from 0..16 ; but what IS a "group type"?
 DefRegister('\currentgrouptype', Number(0), readonly => 1);
@@ -161,7 +161,7 @@ sub etex_readexpr {
   my ($gullet, $type) = @_;
   my $value = etex_readexpr_i($gullet, $type, 0);
   if (my $token = $gullet->readToken) {    # Skip \relax
-    $gullet->unread($token) unless $token->equals(T_CS('\relax')); }
+    $gullet->unread($token) unless Equals($token, T_CS('\relax')); }
   return $value; }
 
 sub etex_readexpr_i {
@@ -213,4 +213,3 @@ DefRegister('\muexpr MuExpr',     MuGlue(0),    getter => sub { $_[0]; });
 DefRegister('\synctex', Number(0));
 #======================================================================
 1;
-

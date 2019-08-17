@@ -148,7 +148,7 @@ DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
     my $open = $gullet->readXToken;
     if ($open->equals(T_BEGIN)) {
-      return $gullet->readBalanced; }
+      return scalar($gullet->readBalanced); }
     else {
       Error('expected', '{', $gullet,
         "Expected <general text> here");
@@ -217,7 +217,7 @@ DefParameterType('XUntil', sub {
       if ($token->equals($until)) {
         last; }
       elsif ($token->getCatcode == CC_BEGIN) {
-        push(@tokens, $token, $gullet->readBalanced->unlist, T_END); }
+        push(@tokens, $token, $gullet->readBalanced); }
       elsif (my $defn = LookupDefinition($token)) {
         push(@tokens, Invocation($token, $defn->readArguments($gullet))); }
       else {
@@ -248,6 +248,19 @@ DefParameterType('Expanded', sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
 
+DefParameterType('EExpanded', sub {
+    my ($gullet) = @_;
+    local $LaTeXML::NOEXPAND_THE = 1;
+    my $token  = $gullet->readXToken(0);
+    my @tokens = ();
+    if ($token->getCatcode == CC_BEGIN) {
+      return scalar($gullet->readBalanced(1)); }
+    else {
+      return $token; } },
+  reversion => sub {
+    my ($arg) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
+
 # Read a matching keyword, eg. Match:=
 DefParameterType('Match', sub { shift->readMatch(@_); });
 
@@ -256,7 +269,7 @@ DefParameterType('Match', sub { shift->readMatch(@_); });
 DefParameterType('Keyword', sub { shift->readKeyword(@_); });
 
 # Read balanced material (?)
-DefParameterType('Balanced', sub { $_[0]->readBalanced; });
+DefParameterType('Balanced', sub { scalar($_[0]->readBalanced); });
 
 # Read a Semiverbatim argument; ie w/ most catcodes neutralized.
 DefParameterType('Semiverbatim', sub { $_[0]->readArg; }, semiverbatim => 1,
@@ -480,7 +493,7 @@ DefParameterType('CommaList', sub {
         elsif ($token->equals($comma)) {
           push(@items, Tokens(@tokens)); @tokens = (); }
         elsif ($token->equals(T_BEGIN)) {
-          push(@tokens, $token, $gullet->readBalanced->unlist, T_END); }
+          push(@tokens, $token, $gullet->readBalanced); }
         else {
           push(@tokens, $token); } }
       if ($typedef) {
@@ -793,21 +806,18 @@ DefMacro('\meaning Token', sub {
     if (my $definition = (Equals($tok, T_ALIGN) ? $tok : LookupMeaning($tok))) {
       my $type = ref $definition;
       $type =~ s/^LaTeXML:://;
-      # I don't understand what this is about
-      if ($type =~ /primitive/i) {
+      # Pre-step: We can't extract the bodies of definitions which are defined via Perl subroutines.
+      # So do the next best thing -- represent them as their tokens.
+      if ($type =~ /(primitive|conditional|constructor)$/i) {
         $definition = $definition->getCSorAlias;
         $type       = ref $definition;
         $type =~ s/^LaTeXML:://; }
-      if ($type =~ /con(ditional|structor)/i) {
-        $definition = $definition->getCSorAlias;
-        $type       = ref $definition;
-        $type =~ s/^LaTeXML:://; }
-
-      if ($type =~ /token/i) {
+      # The actual tests start here
+      if ($type =~ /token$/i) {
         my $cc   = $definition->getCatcode;
         my $char = $definition->getString;
         $meaning = ($CATCODE_MEANING[$cc] || '') . ' ' . ($cc == CC_SPACE ? ' ' : $char); }
-      elsif ($type =~ /register/i) {
+      elsif ($type =~ /register$/i) {
         my $value         = $definition->valueOf;
         my $register_type = lc(ref $value);
         my $prefix        = '\count';
@@ -818,7 +828,7 @@ DefMacro('\meaning Token', sub {
         my $literal_value = $register_type && $value->valueOf;
         # Should we be more careful to distinguish between latex and tex counters?
         $meaning = $prefix . $literal_value; }
-      elsif ($type =~ /expandable/i) {
+      elsif ($type =~ /expandable$/i) {
         my $expansion = $definition->getExpansion;
         my $ltxps     = $definition->getParameters;
         my @params;
@@ -843,6 +853,11 @@ DefMacro('\meaning Token', sub {
           ($definition->isOuter     ? '\outer'     : ()),
         );
         $meaning = ($prefixes ? $prefixes . ' ' : '') . "macro:" . ToString($spec) . "->" . ToString($expansion); }
+      elsif ($type =~ /chardef$/i) {    # from \mathchardef and the like.
+        my $prefix = '\char';
+        if ($$definition{internalcs} && $$definition{internalcs}->getCSName =~ /^\\\@mathchardef/) {
+          $prefix = '\mathchar'; }
+        $meaning = $prefix . '"' . $definition->valueOf->valueOf; }
       Explode($meaning); }
     else {
       Explode('undefined'); } });
@@ -853,7 +868,7 @@ DefParameterType('CSName', sub {
     my $cs = escapechar();
     my $s;
     # keep newlines from having \n inside!
-    while (($token = $gullet->readXToken(1)) && (($s = $token->getString) ne '\endcsname')) {
+    while (($token = $gullet->readXToken(1)) && (!Equals($token, T_CS('\endcsname')))) {
       my $cc = $token->getCatcode;
       if ($cc == CC_CS) {
         if (defined $STATE->lookupDefinition($token)) {
@@ -862,7 +877,7 @@ DefParameterType('CSName', sub {
         else {
           Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
       # Keep newlines from having \n!
-      $cs .= ($cc == CC_SPACE ? ' ' : $s); }
+      $cs .= ($cc == CC_SPACE ? ' ' : $token->getString); }
     T_CS($cs); });
 
 DefMacro('\csname CSName', sub {
@@ -882,9 +897,19 @@ DefMacro('\expandafter Token Token', sub {
     if (defined($defn = $STATE->lookupExpandable($xtok))) {
       # Note that IF expandafter ends up expanding a \the in an \edef,
       # that it Overrides the implicit noexpand that \edef would normally use for\the!!
-      local $LaTeXML::NOEXPAND_THE = undef;
-      my $x = $defn->invoke($gullet);
-      ($tok, ($x ? @{$x} : ())); }    # Expand $xtok ONCE ONLY!
+      my @x = ();
+      {
+        local $LaTeXML::CURRENT_TOKEN = $xtok;
+        local $LaTeXML::NOEXPAND_THE  = undef;
+        my $x = $defn->invoke($gullet);
+        @x = @$x if $x;    # Expand $xtok ONCE ONLY!
+      }
+      ($tok, @x); }
+    elsif (!$STATE->lookupMeaning($xtok)) {
+      # Undefined token is an error, as expansion is expected. The unknown token is consumed.
+      # see TeX B book, item 367.
+      Error('undefined', $xtok, $gullet, "The token " . Stringify($xtok) . " is not defined");
+      ($tok); }
     else {
       ($tok, $xtok); } });
 
@@ -971,7 +996,7 @@ DefRegister('\tracingcommands', Number(0),
     tracinglostchars => 1,
     tracingrestores  => 0, language => 0, uchyph => 1, lefthyphenmin => 0,
     righthyphenmin   => 0, globaldefs => 0, defaulthyphenchar => ord('-'), defaultskewchar => -1,
-    escapechar => ord('\\'), endlinechar => 0, newlinechar => -1, maxdeadcycles => 0, hangafter => 0,
+    escapechar => ord('\\'), endlinechar => ord("\r"), newlinechar => -1, maxdeadcycles => 0, hangafter => 0,
     fam  => -1, mag => 1000, magnification => 1000, delimiterfactor => 0,
     time => 0,  day => 0,    month         => 0,    year            => 0,
     showboxbreadth => 5, showboxdepth => 3, errorcontextlines => 5);
@@ -1163,10 +1188,10 @@ sub do_def {
   AfterAssignment();
   return; }
 
-DefPrimitive('\def  SkipSpaces Token UntilBrace {}', sub { do_def(0, 0, @_); }, locked => 1);
-DefPrimitive('\gdef SkipSpaces Token UntilBrace {}', sub { do_def(1, 0, @_); }, locked => 1);
-DefPrimitive('\edef SkipSpaces Token UntilBrace {}', sub { do_def(0, 1, @_); }, locked => 1);
-DefPrimitive('\xdef SkipSpaces Token UntilBrace {}', sub { do_def(1, 1, @_); }, locked => 1);
+DefPrimitive('\def  SkipSpaces Token UntilBrace {}',        sub { do_def(0, 0, @_); }, locked => 1);
+DefPrimitive('\gdef SkipSpaces Token UntilBrace {}',        sub { do_def(1, 0, @_); }, locked => 1);
+DefPrimitive('\edef SkipSpaces Token UntilBrace EExpanded', sub { do_def(0, 0, @_); }, locked => 1);
+DefPrimitive('\xdef SkipSpaces Token UntilBrace EExpanded', sub { do_def(1, 0, @_); }, locked => 1);
 
 # <prefix> = \global | \long | \outer
 # See Stomach.pm & Stomach.pm
@@ -2149,7 +2174,10 @@ DefPrimitive('\lowercase GeneralText', sub {
 
 DefPrimitive('\message{}', sub {
     my ($stomach, $stuff) = @_;
-    print STDERR ToString(Expand($stuff)) . "\n" if LookupValue('VERBOSITY') > -1;
+    return unless LookupValue('VERBOSITY') > -1;
+    # Expand, and insert spaces after CS tokens
+    my @tokens = map { $_->getCatcode == CC_CS ? ($_, T_SPACE) : $_ } Expand($stuff)->unlist;
+    print STDERR ToString(Tokens(@tokens)) . "\n";
     return; });
 
 DefRegister('\errhelp' => Tokens());
@@ -2800,7 +2828,7 @@ DefPrimitiveI('\@@open@inner@column', undef, sub {
     $$colspec{empty} = 0;           # Assume the column isn't empty
                                     # Scan for leading \omit, skipping over (& saving) \hline.
 
-    while (my $tok = $gullet->readXToken(0)) {
+    while (my $tok = $gullet->readXToken(0, 0)) {
       if ($tok->equals(T_SPACE)) { }    # Skip leading space
       elsif (grep { $tok->equals($_) } @line_tokens) {    # Save line commands
         push(@lines, $stomach->invokeToken($tok)); }
@@ -3168,8 +3196,9 @@ DefPrimitive('\unhcopy Number', sub {
     my $stuff = LookupValue($box);
     (defined $stuff ? $stuff->unlist : ()); });
 
-# \vrule
-# \valign ???
+# Implement ???
+# DefMacro('\vrule','\relax');
+DefMacro('\valign', '');
 
 DefMacro('\vspace{}', '\vskip#1\relax');
 # \indent, \noindent, \par; see above.
@@ -3624,7 +3653,7 @@ DefMacroI('\eqno', undef, sub {
     # This is risky!!!
     while (my $t = $gullet->readXToken(0)) {
       if (Equals($t, T_BEGIN)) {
-        push(@stuff, $t, $gullet->readBalanced->unlist, T_END); }
+        push(@stuff, $t, $gullet->readBalanced); }
       # What do I need to explicitly list here!?!?!? UGGH!
       elsif (Equals($t, T_MATH) || Equals($t, T_CS('\]'))
         || Equals($t, T_CS('\begingroup'))    # Totally wrong, but to catch expanded environments
@@ -4368,8 +4397,8 @@ DefPrimitive('\newtoks Token', sub { DefRegisterI($_[1], undef, Tokens()); });
 # which means they actually work quite differently
 DefRegister('\allocationnumber' => Number(0));
 
-DefMacro('\alloc@@ {}', sub {
-    my ($gullet, $type) = @_;
+DefPrimitive('\alloc@@ {}', sub {
+    my ($stomach, $type) = @_;
     my $c = 'allocation @' . ToString($type);
     my $n = LookupValue($c) || '0';
     $n = $n->valueOf if ref $n;
@@ -4379,6 +4408,24 @@ DefMacro('\newread Token',     '\alloc@@{read}\global\chardef#1=\allocationnumbe
 DefMacro('\newwrite Token',    '\alloc@@{write}\global\chardef#1=\allocationnumber');
 DefMacro('\newfam Token',      '\alloc@@{fam}\global\chardef#1=\allocationnumber');
 DefMacro('\newlanguage Token', '\alloc@@{language}\global\chardef#1=\allocationnumber');
+
+DefMacro('\e@alloc{}{}{}{}{}{}',
+  '\global\advance#3\@ne
+%  \e@ch@ck{#3}{#4}{#5}#1%
+  \allocationnumber#3\relax
+  \global#2#6\allocationnumber
+%  \wlog{\string#6=\string#1\the\allocationnumber}
+');
+DefMacro('\newread', '\e@alloc\read \chardef{\count16}\m@ne\sixt@@n');
+DefMacro('\newwrite', '\e@alloc\write
+                   {\ifnum\allocationnumber=18
+                     \advance\count17\@ne
+                     \allocationnumber\count17 %
+                    \fi
+                    \global\chardef}%
+                   {\count17}%
+                   \m@ne
+                   {128}');
 
 # This implementation is quite wrong
 DefPrimitive('\newinsert Token', sub { DefRegisterI($_[1], undef, Number(0)); });
@@ -6513,6 +6560,19 @@ DefMacro('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim', sub {
     (T_CS('\\documentstyle'),
       ($options ? (T_OTHER('['), $options->unlist, T_OTHER(']')) : ()),
       T_BEGIN, $class->unlist, T_END); });
+
+# Technically should be in LaTeX.pool, but we try to maintain the bookkeeping from the very start,
+# in order to avoid partially defined behavior when --preload directives are mixed with \usepackage{} loads
+DefMacro('\@pushfilename', '\xdef\@currnamestack{{\@currname}{\@currext}{\the\catcode`\@}\@currnamestack}');
+DefMacro('\@popfilename', '\expandafter\@p@pfilename\@currnamestack\@nil');
+DefMacro('\@p@pfilename {}{}{} Until:\@nil',
+  '\gdef\@currname{#1}%
+    \gdef\@currext{#2}%
+    \catcode`\@#3\relax
+    \gdef\@currnamestack{#4}');
+DefMacroI(T_CS('\@currnamestack'), undef, Tokens());
+Let('\@currname', '\@empty');
+Let('\@currext',  '\@empty');
 
 #**********************************************************************
 # LaTeXML Specific.

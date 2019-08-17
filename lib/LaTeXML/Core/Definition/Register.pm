@@ -78,7 +78,7 @@ sub invoke {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
