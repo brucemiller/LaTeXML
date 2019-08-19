@@ -306,6 +306,10 @@ sub InstallDefinition {
 
 sub XEquals {
   my ($token1, $token2) = @_;
+  my $unexpanded1 = $token1->is_notexpanded && $STATE->lookupExpandable($token1);
+  my $unexpanded2 = $token2->is_notexpanded && $STATE->lookupExpandable($token2);
+  return 1 if $unexpanded1 && $unexpanded2;
+  return if $unexpanded1 || $unexpanded2;
   my $def1 = LookupMeaning($token1);    # token, definition object or undef
   my $def2 = LookupMeaning($token2);    # ditto
   if (defined $def1 != defined $def2) { # False, if only one has 'meaning'

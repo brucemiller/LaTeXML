@@ -191,8 +191,9 @@ sub neutralizeTokens {
       push(@result, $token); }
     elsif (!defined(my $meaning = LaTeXML::Core::State::lookupMeaning($STATE, $token)) ||
       defined(my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token))) {
-      push(@result, Token('\noexpand', CC_NOTEXPANDED)); }
-    push(@result, $token); }
+      push(@result, $token->noexpand); }
+    else {
+      push(@result, $token); } }
   return @result; }
 
 #**********************************************************************
@@ -253,11 +254,11 @@ sub readXToken {
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
-    elsif (($cc = $$token[1]) == CC_NOTEXPANDED) {    # NOTE: Inlined ->getCatcode
-          # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
-          # so this token should never leak out through an EXTERNAL call to readToken.
-      return $self->readToken; }    # Just return the next token.
-    elsif ($cc == CC_COMMENT) {
+    elsif (my $unexpanded = $token->is_notexpanded) {
+      # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
+      # so this token should never leak out through an EXTERNAL call to readToken.
+      return $unexpanded; }    # Just return the next token.
+    elsif (($cc = $$token[1]) == CC_COMMENT) {    # NOTE: Inlined ->getCatcode
       return $token if $commentsok;
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
     elsif ($cc == CC_MARKER) {
