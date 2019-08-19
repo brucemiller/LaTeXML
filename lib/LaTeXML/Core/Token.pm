@@ -28,7 +28,7 @@ our @EXPORT = (
     CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
     CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
     CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
-    CC_CS      CC_NOTEXPANDED CC_MARKER),
+    CC_CS      CC_MARKER),
   # Token constructors
   qw( T_BEGIN T_END T_MATH T_ALIGN T_PARAM T_SUB T_SUPER T_SPACE
     &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
@@ -58,9 +58,8 @@ use constant CC_ACTIVE  => 13;
 use constant CC_COMMENT => 14;
 use constant CC_INVALID => 15;
 # Extended Catcodes for expanded output.
-use constant CC_CS          => 16;
-use constant CC_NOTEXPANDED => 17;
-use constant CC_MARKER      => 18;    # non TeX extension!
+use constant CC_CS     => 16;
+use constant CC_MARKER => 17;    # non TeX extension!
 
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
@@ -80,7 +79,7 @@ sub T_ACTIVE { my ($c) = @_; return bless [$c, 13], 'LaTeXML::Core::Token'; }
 sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), 14], 'LaTeXML::Core::Token'; }
 sub T_CS { my ($c) = @_; return bless [$c, 16], 'LaTeXML::Core::Token'; }
 # Illegal: don't use unless you know...
-sub T_MARKER { my ($t) = @_; return bless [$t, 18], 'LaTeXML::Core::Token'; }
+sub T_MARKER { my ($t) = @_; return bless [$t, 17], 'LaTeXML::Core::Token'; }
 
 sub Token {
   my ($string, $cc) = @_;
@@ -157,13 +156,13 @@ our @primitive_catcode = (    # [CONSTANT]
   1, 1, 1, 1,
   1, 0, 1, 0,
   0, 0, 0, 0,
-  0, 1);
+  0);
 our @executable_catcode = (    # [CONSTANT]
   0, 1, 1, 1,
   1, 0, 0, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  1, 0);
+  1);
 
 our @standardchar = (          # [CONSTANT]
   "\\",  '{',   '}',   q{$},
@@ -176,19 +175,19 @@ our @CC_NAME =                 #[CONSTANT]
   Align EOL Parameter Superscript
   Subscript Ignore Space Letter
   Other Active Comment Invalid
-  ControlSequence NotExpanded);
+  ControlSequence);
 our @PRIMITIVE_NAME = (        # [CONSTANT]
   'Escape',    'Begin', 'End',       'Math',
   'Align',     'EOL',   'Parameter', 'Superscript',
   'Subscript', undef,   'Space',     undef,
   undef,       undef,   undef,       undef,
-  undef,       'NotExpanded');
+  undef);
 our @CC_SHORT_NAME =           #[CONSTANT]
   qw(T_ESCAPE T_BEGIN T_END T_MATH
   T_ALIGN T_EOL T_PARAM T_SUPER
   T_SUB T_IGNORE T_SPACE T_LETTER
   T_OTHER T_ACTIVE T_COMMENT T_INVALID
-  T_CS T_NOTEXPANDED
+  T_CS
 );
 
 #======================================================================
@@ -237,7 +236,7 @@ my @NEUTRALIZABLE = (    # [CONSTANT]
   1, 0, 1, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  0, 0);
+  0);
 
 # neutralize really should only retroactively imitate what Semiverbatim would have done.
 # So, it needs to neutralize those in SPECIALS
@@ -249,6 +248,18 @@ sub neutralize {
   my ($ch,   $cc)            = @$self;
   return ($NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') }, @extraspecials)
     ? T_OTHER($ch) : $self); }
+
+# Mark a token as not to be expanded (\noexpand) by hiding itself as the 3rd element of a new token.
+# Wonder if this should only have effect on expandable tokens?
+sub noexpand {
+  my ($self) = @_;
+  return bless [$$self[0], $$self[1], $self], 'LaTeXML::Core::Token'; }
+
+# Return the original token of a not-expanded token,
+# or undef if it isn't marked as such.
+sub is_notexpanded {
+  my ($self) = @_;
+  return $$self[2]; }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
@@ -324,7 +335,7 @@ Constants for the category codes:
   CC_BEGIN, CC_END, CC_MATH, CC_ALIGN, CC_EOL,
   CC_PARAM, CC_SUPER, CC_SUB, CC_IGNORE,
   CC_SPACE, CC_LETTER, CC_OTHER, CC_ACTIVE,
-  CC_COMMENT, CC_INVALID, CC_CS, CC_NOTEXPANDED.
+  CC_COMMENT, CC_INVALID, CC_CS.
 
 [The last 2 are (apparent) extensions,
 with catcodes 16 and 17, respectively].
