@@ -306,19 +306,20 @@ sub InstallDefinition {
 
 sub XEquals {
   my ($token1, $token2) = @_;
-  my $unexpanded1 = $token1->is_notexpanded && $STATE->lookupExpandable($token1);
-  my $unexpanded2 = $token2->is_notexpanded && $STATE->lookupExpandable($token2);
-  return 1 if $unexpanded1 && $unexpanded2;
-  return if $unexpanded1 || $unexpanded2;
-  my $def1 = LookupMeaning($token1);    # token, definition object or undef
-  my $def2 = LookupMeaning($token2);    # ditto
-  if (defined $def1 != defined $def2) { # False, if only one has 'meaning'
-    return; }
-  elsif (!defined $def1 && !defined $def2) {    # true if both undefined
-    return 1; }
-  elsif ($def1->equals($def2)) {                # If both have defns, must be same defn!
-    return 1; }
-  return; }
+  my $dont_expand_1 = $token1->is_dont_expand && $STATE->lookupExpandable($token1) ? 1 : 0;
+  my $dont_expand_2 = $token2->is_dont_expand && $STATE->lookupExpandable($token2) ? 1 : 0;
+  if ($dont_expand_1 != $dont_expand_2) { return 0; }
+  elsif ($dont_expand_1 && $dont_expand_2) { return 1; }    # both unexpanded, identical
+  else {
+    my $def1 = LookupMeaning($token1);                      # token, definition object or undef
+    my $def2 = LookupMeaning($token2);                      # ditto
+    if (defined $def1 != defined $def2) {                   # False, if only one has 'meaning'
+      return 0; }
+    elsif (!defined $def1 && !defined $def2) {              # true if both undefined
+      return 1; }
+    elsif ($def1->equals($def2)) {                          # If both have defns, must be same defn!
+      return 1; }
+    return 0; } }
 
 # Is defined in the LaTeX-y sense of also not being let to \relax.
 sub IsDefined {
