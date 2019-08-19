@@ -201,6 +201,8 @@ DefMacro('\pdfrestore',   '');
 # pdfspecial modifier → direct:
 # stack action → set | push | pop | current
 
+DefMacro('\expanded Expanded', '#1');
+
 DefMacro('\pdfstrcmp Expanded Expanded', sub {
     my $cmp = (ToString($_[1]) cmp ToString($_[2]));
     return ($cmp == 1 ? T_OTHER('1')
