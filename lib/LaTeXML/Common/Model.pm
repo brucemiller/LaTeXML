@@ -186,7 +186,7 @@ sub getNamespace {
       $ns = "http://example.com/namespace" . (++$$self{namespace_errors}));
     Error('malformed', $codeprefix, undef,
       "No namespace has been registered for prefix '$codeprefix' (in code)",
-      "Using '$ns' isntead"); }
+      "Using '$ns' instead"); }
   return $ns; }
 
 sub registerDocumentNamespace {
