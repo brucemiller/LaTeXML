@@ -259,7 +259,7 @@ sub with_dont_expand {
 # or undef if it isn't marked as such.
 sub is_dont_expand {
   my ($self) = @_;
-  $$self[2] ? 1 : 0; }
+  return $$self[2] ? 1 : 0; }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
@@ -294,10 +294,9 @@ sub equals {
     (defined $b
       && (ref $a) eq (ref $b))
     && ($$a[1] == $$b[1])
-    && (($$a[2] || $$b[2]) ? (($$a[2] || 0) == ($$b[2] || 0)) : 1) # if either is flagged as noexpand, both should match
     && (($$a[1] == CC_SPACE) || ($$a[0] eq $$b[0])); }
 
-my @CONTROLNAME = (                                                #[CONSTANT]
+my @CONTROLNAME = (    #[CONSTANT]
   qw( NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI
     DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US));
 # Primarily for error reporting.
