@@ -249,10 +249,14 @@ sub neutralize {
   return ($NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') }, @extraspecials)
     ? T_OTHER($ch) : $self); }
 
+# Mark a token as not to be expanded (\noexpand) by hiding itself as the 3rd element of a new token.
+# Wonder if this should only have effect on expandable tokens?
 sub with_dont_expand {
   my ($self) = @_;
   return bless [$$self[0], $$self[1], $self], 'LaTeXML::Core::Token'; }
 
+# Return the original token of a not-expanded token,
+# or undef if it isn't marked as such.
 sub is_dont_expand {
   my ($self) = @_;
   $$self[2] ? 1 : 0; }
