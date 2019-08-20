@@ -1,45 +1,55 @@
+\def\test#1{result: #1 ; evaluated: \detokenize{#1}\par}
+{\bf ifx tests}
+
 % ifx test with noexpand
 \def\foo{foo}%
 \def\bar{bar}%
-\expandafter\expandafter%
-    \expandafter\ifx%
-        \expandafter\noexpand\expandafter\foo\noexpand\bar yes%
-    \else no%
-    \fi%
+\test{\expandafter\expandafter\expandafter\ifx%
+        \expandafter\noexpand\expandafter\foo\noexpand\bar true \else false \fi}
 
-\def\foo{foo}%
-\expandafter\ifx\noexpand\foo\relax yes\else no\fi%
-
-% ifcat tests
-\catcode`[=13 \catcode`]=13 \def[{*}
-ifcat 1: \ifcat\noexpand[\noexpand] true \else false\fi
-
-ifcat 2: \ifcat[* true \else false \fi
-
-ifcat 3: \ifcat\noexpand[* true \else false\fi
-
-% if tests
-if 1: \if\noexpand[\noexpand] true \else false\fi
-
-if 2: \if[* true \else false \fi
-
-if 3: \if\noexpand[* true \else false\fi
-
-
+\test{\expandafter\ifx\noexpand\foo\relax true\else false\fi}%
 % Advanced from xparse.sty: \ifx on "\noexpand\count" and "\count" is true, as counts are not expandable
 \def\itoii#1#2#3{#1#2}
 \chardef\eend=0\relax
 \newcount\index
 \index=4
 
-\expandafter\ifx\noexpand\index\index\else\expandafter\itoii\fi
-\expandafter\eend\the\index
+\test{\expandafter\ifx\noexpand\index\index\else\expandafter\itoii\fi\expandafter\eend\the\index}
 
-\def\reusefoo{\foo}
-\edef\reusefoonp{\noexpand\foo}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+{\bf ifcat tests}
 
-reuse macros if: \if\reusefoo\reusefoonp match \else don't match\fi.
+\catcode`[=13 \catcode`]=13 \def[{*}\def]{_}
+\test{\ifcat[] true \else false\fi}
+\test{\ifcat[\noexpand] true \else false\fi}
+\test{\ifcat\noexpand[] true \else false\fi}
+\test{\ifcat\noexpand[\noexpand] true \else false\fi}
+\test{\ifcat[[ true \else false\fi}
+\test{\ifcat]] true \else false\fi}
+\test{\ifcat\noexpand[[ true \else false\fi}
+\test{\ifcat\noexpand[\noexpand[ true \else false\fi}
+\test{\ifcat[* true \else false \fi}
+\test{\ifcat\noexpand[* true \else false\fi}
+\test{\ifcat_] true \else false \fi}
+\test{\ifcat_\noexpand] true \else false \fi}
+\test{\ifcat^^ true\else false\fi}
+\test{\ifcat\noexpand^\noexpand^ true\else false\fi}
+\test{\ifcat^\noexpand^ true\else false\fi}
+\test{\ifcat_^ true\else false\fi}
+\test{\ifcat\noexpand_\noexpand^ true\else false\fi}
 
-reuse macros ifx: \ifx\reusefoo\reusefoonp match \else don't match\fi.
-
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+{\bf if tests}
+\test{\if\noexpand[\noexpand] true \else false\fi}
+\test{\if[] true \else false\fi}
+\test{\if[\noexpand] true \else false\fi}
+\test{\if[* true \else false \fi}
+\test{\if\noexpand[* true \else false\fi}
+\test{\if\noexpand^\noexpand^ true\else false\fi}
+\test{\if^\noexpand^ true\else false\fi}
+\test{\if^^ true\else false\fi}
+\def\foo{foo}%
+\def\reusefoo{\foo}%
+\edef\reusefoonp{\noexpand\foo}%
+\test{\if\reusefoo\reusefoonp true \else false \fi}
 \bye

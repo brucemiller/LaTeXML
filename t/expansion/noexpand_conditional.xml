@@ -3,36 +3,97 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <para>
-    <p>yes</p>
+    <p>i<text font="bold">fx tests</text></p>
   </para>
   <para>
-    <p>no</p>
+    <p>result: true  ; evaluated: “expandafter“expandafter“expandafter“ifx“expandafter“noexpand“expandafter“foo%Ω“noexpand“bar true “else false “fi</p>
   </para>
   <para>
-    <p>ifcat 1:  true</p>
+    <p>result: false ; evaluated: “expandafter“ifx“noexpand“foo“relax true“else false“fi</p>
   </para>
   <para>
-    <p>ifcat 2:  true</p>
+    <p>result: Γ4 ; evaluated: “expandafter“ifx“noexpand“index“index“else“expandafter“itoii“fi“expandafter%Ω“eend“the“index</p>
   </para>
   <para>
-    <p>ifcat 3: false</p>
+    <p><text font="bold">ifcat tests</text></p>
   </para>
   <para>
-    <p>if 1: false</p>
+    <p>result: false ; evaluated: “ifcat[] true “else false“fi</p>
   </para>
   <para>
-    <p>if 2:  true</p>
+    <p>result: false ; evaluated: “ifcat[“noexpand] true “else false“fi</p>
   </para>
   <para>
-    <p>if 3: false</p>
+    <p>result: false ; evaluated: “ifcat“noexpand[] true “else false“fi</p>
   </para>
   <para>
-    <p>Γ4</p>
+    <p>result:  true  ; evaluated: “ifcat“noexpand[“noexpand] true “else false“fi</p>
   </para>
   <para>
-    <p>reuse macros if: don’t match.</p>
+    <p>result:  true  ; evaluated: “ifcat[[ true “else false“fi</p>
   </para>
   <para>
-    <p>reuse macros ifx: match .</p>
+    <p>result:  true  ; evaluated: “ifcat]] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat“noexpand[[ true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true  ; evaluated: “ifcat“noexpand[“noexpand[ true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true  ; evaluated: “ifcat[* true “else false “fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat“noexpand[* true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true  ; evaluated: “ifcat˙] true “else false “fi</p>
+  </para>
+  <para>
+    <p>result: false  ; evaluated: “ifcat˙“noexpand] true “else false “fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat‘true“else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true ; evaluated: “ifcat“noexpand^“noexpand^ true“else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true ; evaluated: “ifcat^“noexpand^ true“else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat˙^ true“else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat“noexpand˙“noexpand^ true“else false“fi</p>
+  </para>
+  <para>
+    <p><text font="bold">if tests</text>
+result: false ; evaluated: “if“noexpand[“noexpand] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “if[] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “if[“noexpand] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true  ; evaluated: “if[* true “else false “fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “if“noexpand[* true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true ; evaluated: “if“noexpand^“noexpand^ true“else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true ; evaluated: “if^“noexpand^ true“else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “if‘true“else false“fi</p>
+  </para>
+  <para>
+    <p>result: false  ; evaluated: “if“reusefoo“reusefoonp true “else false “fi</p>
   </para>
 </document>
