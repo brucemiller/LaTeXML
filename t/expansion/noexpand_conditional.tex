@@ -35,4 +35,11 @@ if 3: \if\noexpand[* true \else false\fi
 \expandafter\ifx\noexpand\index\index\else\expandafter\itoii\fi
 \expandafter\eend\the\index
 
+\def\reusefoo{\foo}
+\edef\reusefoonp{\noexpand\foo}
+
+reuse macros if: \if\reusefoo\reusefoonp match \else don't match\fi.
+
+reuse macros ifx: \ifx\reusefoo\reusefoonp match \else don't match\fi.
+
 \bye
