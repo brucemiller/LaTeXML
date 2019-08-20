@@ -188,7 +188,7 @@ sub neutralizeTokens {
   my @result = ();
   foreach my $token (@tokens) {
     if ($$token[1] == CC_PARAM) {    # Inline ->getCatcode!
-      push(@result, $token); }
+      push(@result, $token, $token); }
     elsif (!defined(my $meaning = LaTeXML::Core::State::lookupMeaning($STATE, $token)) ||
       defined(my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token))) {
       push(@result, $token->noexpand); }

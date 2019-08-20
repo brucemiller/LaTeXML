@@ -2167,12 +2167,20 @@ DefPrimitive('\lowercase GeneralText', sub {
     $stomach->getGullet->unread(map { lcToken($_) } $tokens->unlist);
     return; });
 
+# Converts $tokens to a string in the fashion of \message and others:
+# doubles #, converts to string; optionally adds spaces after control sequences
+sub writableTokens {
+  my ($tokens, $addspaces) = @_;
+  my @tokens = $tokens->unlist;
+  if ($addspaces) {
+    @tokens = map { $_->getCatcode == CC_CS ? ($_, T_SPACE) : $_ } @tokens; }
+  @tokens = map { $_->getCatcode == CC_PARAM ? ($_, $_) : $_ } @tokens;
+  return UnTeX(Tokens(@tokens)); }
+
 DefPrimitive('\message{}', sub {
     my ($stomach, $stuff) = @_;
     return unless LookupValue('VERBOSITY') > -1;
-    # Expand, and insert spaces after CS tokens
-    my @tokens = map { $_->getCatcode == CC_CS ? ($_, T_SPACE) : $_ } Expand($stuff)->unlist;
-    print STDERR ToString(Tokens(@tokens)) . "\n";
+    print STDERR writableTokens(Expand($stuff), 1);
     return; });
 
 DefRegister('\errhelp' => Tokens());
