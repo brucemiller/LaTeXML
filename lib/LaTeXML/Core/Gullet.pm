@@ -189,9 +189,9 @@ sub neutralizeTokens {
   foreach my $token (@tokens) {
     if ($$token[1] == CC_PARAM) {    # Inline ->getCatcode!
       push(@result, $token, $token); }
-    elsif (!defined(my $meaning = LaTeXML::Core::State::lookupMeaning($STATE, $token)) ||
-      defined(my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token))) {
-      push(@result, $token->noexpand); }
+    elsif (!defined($STATE->lookupMeaning($token)) ||
+      defined($STATE->lookupDefinition($token))) {
+      push(@result, $token->with_dont_expand); }
     else {
       push(@result, $token); } }
   return @result; }
@@ -220,6 +220,7 @@ sub readToken {
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
   return $token if defined $token;
+  # Not in pushback, use the current mouth
   while (($token = $$self{mouth}->readToken()) && $hold_token[$cc = $$token[1]]) {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
@@ -254,15 +255,13 @@ sub readXToken {
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
-    elsif (my $unexpanded = $token->is_notexpanded) {
-      # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
-      # so this token should never leak out through an EXTERNAL call to readToken.
-      return $unexpanded; }    # Just return the next token.
     elsif (($cc = $$token[1]) == CC_COMMENT) {    # NOTE: Inlined ->getCatcode
       return $token if $commentsok;
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
+    elsif (my $unexpanded = $$token[2]) {               # Inline get_dont_expand
+      return $unexpanded; }
     # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;

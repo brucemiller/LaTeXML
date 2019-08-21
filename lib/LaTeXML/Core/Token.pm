@@ -251,13 +251,13 @@ sub neutralize {
 
 # Mark a token as not to be expanded (\noexpand) by hiding itself as the 3rd element of a new token.
 # Wonder if this should only have effect on expandable tokens?
-sub noexpand {
+sub with_dont_expand {
   my ($self) = @_;
   return bless [$$self[0], $$self[1], $self], 'LaTeXML::Core::Token'; }
 
 # Return the original token of a not-expanded token,
 # or undef if it isn't marked as such.
-sub is_notexpanded {
+sub get_dont_expand {
   my ($self) = @_;
   return $$self[2]; }
 
@@ -308,7 +308,8 @@ sub stringify {
     my $c = ord($string);
     if ($c < 0x020) {
       $string = 'U+' . sprintf("%04x", $c) . '/' . $CONTROLNAME[$c]; } }
-  return $CC_SHORT_NAME[$$self[1]] . '[' . $string . ']'; }
+  my $noexpand = $$self[2] ? " (dont expand)" : '';
+  return $CC_SHORT_NAME[$$self[1]] . '[' . $string . ']' . $noexpand; }
 
 #======================================================================
 
@@ -316,7 +317,7 @@ sub stringify {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -411,4 +412,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-
