@@ -895,7 +895,7 @@ latexmlc [options]
                          representation (default is to remove)
  --mathtex               adds TeX annotation to parallel markup
  --nomathtex             disables the above (default)
- --mathlex               (EXPERIMENTAL) adds linguistic lexeme 
+ --mathlex               (EXPERIMENTAL) adds linguistic lexeme
                          annotation to parallel markup
  --nomathlex             (EXPERIMENTAL) disables the above (default)
  --parallelmath          use parallel math annotations (default)
@@ -1135,7 +1135,7 @@ Variety of shorthand profiles.
     You can examine any of them in their C<resources/Profiles/name.opt>
     file.
 
-Example: C<latexmlc --profile=math '1+2=3'>
+Example: C<latexmlc --profile=math 'literal:1+2=3'>
 
 =item C<--omitdoctype>, C<--noomitdoctype>
 
