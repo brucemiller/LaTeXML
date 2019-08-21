@@ -1,0 +1,55 @@
+\def\test#1{result: #1 ; evaluated: \detokenize{#1}\par}
+{\bf ifx tests}
+
+% ifx test with noexpand
+\def\foo{foo}%
+\def\bar{bar}%
+\test{\expandafter\expandafter\expandafter\ifx%
+        \expandafter\noexpand\expandafter\foo\noexpand\bar true \else false \fi}
+
+\test{\expandafter\ifx\noexpand\foo\relax true\else false\fi}%
+% Advanced from xparse.sty: \ifx on "\noexpand\count" and "\count" is true, as counts are not expandable
+\def\itoii#1#2#3{#1#2}
+\chardef\eend=0\relax
+\newcount\index
+\index=4
+
+\test{\expandafter\ifx\noexpand\index\index\else\expandafter\itoii\fi\expandafter\eend\the\index}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+{\bf ifcat tests}
+
+\catcode`[=13 \catcode`]=13 \def[{*}\def]{_}
+\test{\ifcat[] true \else false\fi}
+\test{\ifcat[\noexpand] true \else false\fi}
+\test{\ifcat\noexpand[] true \else false\fi}
+\test{\ifcat\noexpand[\noexpand] true \else false\fi}
+\test{\ifcat[[ true \else false\fi}
+\test{\ifcat]] true \else false\fi}
+\test{\ifcat\noexpand[[ true \else false\fi}
+\test{\ifcat\noexpand[\noexpand[ true \else false\fi}
+\test{\ifcat[* true \else false \fi}
+\test{\ifcat\noexpand[* true \else false\fi}
+\test{\ifcat_] true \else false \fi}
+\test{\ifcat_\noexpand] true \else false \fi}
+\test{\ifcat^^ true\else false\fi}
+\test{\ifcat\noexpand^\noexpand^ true\else false\fi}
+\test{\ifcat^\noexpand^ true\else false\fi}
+\test{\ifcat_^ true\else false\fi}
+\test{\ifcat\noexpand_\noexpand^ true\else false\fi}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+{\bf if tests}
+\test{\if\noexpand[\noexpand] true \else false\fi}
+\test{\if[] true \else false\fi}
+\test{\if[\noexpand] true \else false\fi}
+\test{\if[* true \else false \fi}
+\test{\if\noexpand[* true \else false\fi}
+\test{\if\noexpand^\noexpand^ true\else false\fi}
+\test{\if^\noexpand^ true\else false\fi}
+\test{\if^^ true\else false\fi}
+\def\foo{foo}%
+\def\reusefoo{\foo}%
+\edef\reusefoonp{\noexpand\foo}%
+\test{\if\reusefoo\reusefoonp true \else false \fi}
+\bye

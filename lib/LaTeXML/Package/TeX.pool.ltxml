@@ -731,7 +731,7 @@ DefConditionalI('\ifinner', undef, sub { 0; });
 
 DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
 
-DefConditional('\if XToken XToken',    sub { $_[1]->getCharcode == $_[2]->getCharcode; });
+DefConditional('\if XToken XToken', sub { $_[1]->getCharcode == $_[2]->getCharcode; });
 DefConditional('\ifcat XToken XToken', sub { $_[1]->getCatcode == $_[2]->getCatcode; });
 
 DefConditional('\ifx Token Token', sub { XEquals($_[1], $_[2]); });
@@ -914,7 +914,7 @@ DefMacro('\expandafter Token Token', sub {
       ($tok, $xtok); } });
 
 # Replace the next token with it's not-expanded variant
-DefMacro('\noexpand Token', sub { $_[1]->noexpand; });
+DefMacro('\noexpand Token', sub { $_[1]->with_dont_expand; });
 
 DefMacroI('\topmark',        undef, Tokens());
 DefMacroI('\firstmark',      undef, Tokens());

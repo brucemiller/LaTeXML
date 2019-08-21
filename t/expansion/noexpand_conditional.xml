@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <para>
+    <p>i<text font="bold">fx tests</text></p>
+  </para>
+  <para>
+    <p>result: true  ; evaluated: “expandafter“expandafter“expandafter“ifx“expandafter“noexpand“expandafter“foo%Ω“noexpand“bar true “else false “fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “expandafter“ifx“noexpand“foo“relax true“else false“fi</p>
+  </para>
+  <para>
+    <p>result: Γ4 ; evaluated: “expandafter“ifx“noexpand“index“index“else“expandafter“itoii“fi“expandafter%Ω“eend“the“index</p>
+  </para>
+  <para>
+    <p><text font="bold">ifcat tests</text></p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat[] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat[“noexpand] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat“noexpand[] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true  ; evaluated: “ifcat“noexpand[“noexpand] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true  ; evaluated: “ifcat[[ true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true  ; evaluated: “ifcat]] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat“noexpand[[ true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true  ; evaluated: “ifcat“noexpand[“noexpand[ true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true  ; evaluated: “ifcat[* true “else false “fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat“noexpand[* true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true  ; evaluated: “ifcat˙] true “else false “fi</p>
+  </para>
+  <para>
+    <p>result: false  ; evaluated: “ifcat˙“noexpand] true “else false “fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat‘true“else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true ; evaluated: “ifcat“noexpand^“noexpand^ true“else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true ; evaluated: “ifcat^“noexpand^ true“else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat˙^ true“else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “ifcat“noexpand˙“noexpand^ true“else false“fi</p>
+  </para>
+  <para>
+    <p><text font="bold">if tests</text>
+result: false ; evaluated: “if“noexpand[“noexpand] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “if[] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “if[“noexpand] true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true  ; evaluated: “if[* true “else false “fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “if“noexpand[* true “else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true ; evaluated: “if“noexpand^“noexpand^ true“else false“fi</p>
+  </para>
+  <para>
+    <p>result:  true ; evaluated: “if^“noexpand^ true“else false“fi</p>
+  </para>
+  <para>
+    <p>result: false ; evaluated: “if‘true“else false“fi</p>
+  </para>
+  <para>
+    <p>result: false  ; evaluated: “if“reusefoo“reusefoonp true “else false “fi</p>
+  </para>
+</document>
