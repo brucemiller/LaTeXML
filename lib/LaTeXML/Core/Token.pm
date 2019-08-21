@@ -257,9 +257,9 @@ sub with_dont_expand {
 
 # Return the original token of a not-expanded token,
 # or undef if it isn't marked as such.
-sub is_dont_expand {
+sub get_dont_expand {
   my ($self) = @_;
-  return $$self[2] ? 1 : 0; }
+  return $$self[2]; }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.

@@ -306,8 +306,8 @@ sub InstallDefinition {
 
 sub XEquals {
   my ($token1, $token2) = @_;
-  my $dont_expand_1 = $token1->is_dont_expand && $STATE->lookupExpandable($token1) ? 1 : 0;
-  my $dont_expand_2 = $token2->is_dont_expand && $STATE->lookupExpandable($token2) ? 1 : 0;
+  my $dont_expand_1 = $token1->get_dont_expand && $STATE->lookupExpandable($token1) ? 1 : 0;
+  my $dont_expand_2 = $token2->get_dont_expand && $STATE->lookupExpandable($token2) ? 1 : 0;
   if ($dont_expand_1 != $dont_expand_2) { return 0; }
   elsif ($dont_expand_1 && $dont_expand_2) { return 1; }    # both unexpanded, identical
   else {

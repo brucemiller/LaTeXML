@@ -260,8 +260,8 @@ sub readXToken {
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
-    elsif ($$token[2]) {                                # Inline is_dont_expand
-      return $$token[2]; }
+    elsif (my $unexpanded = $$token[2]) {               # Inline get_dont_expand
+      return $unexpanded; }
     # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
