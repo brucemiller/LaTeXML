@@ -49,6 +49,9 @@ DeclareOption('nomathparserspeculate', sub { AssignValue('MATHPARSER_SPECULATE' 
 DeclareOption('bibtex',   sub { AssignValue('NO_BIBTEX' => 0, 'global'); });
 DeclareOption('nobibtex', sub { AssignValue('NO_BIBTEX' => 1, 'global'); });
 
+# Lexeme serialization for math formulas
+DeclareOption('mathlexemes', sub { AssignValue('LEXEMATIZE_MATH' => 1, 'global'); });
+
 ProcessOptions();
 #======================================================================
 # From latexml.sty

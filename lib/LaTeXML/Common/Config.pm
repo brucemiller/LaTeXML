@@ -107,8 +107,6 @@ sub getopt_specification {
     "nokeepXMath|noxmath"         => sub { _removeMathFormat($opts, 'xmath'); },
     "mathtex"                     => sub { _addMathFormat($opts, 'mathtex'); },
     "nomathtex"                   => sub { _removeMathFormat($opts, 'mathtex'); },
-    "mathlex"                     => sub { _addMathFormat($opts, 'mathlex'); },
-    "nomathlex"                   => sub { _removeMathFormat($opts, 'mathlex'); },
     "parallelmath!"               => \$$opts{parallelmath},
     # Some general XSLT/CSS/JavaScript options.
     "stylesheet=s"      => \$$opts{stylesheet},
@@ -895,9 +893,6 @@ latexmlc [options]
                          representation (default is to remove)
  --mathtex               adds TeX annotation to parallel markup
  --nomathtex             disables the above (default)
- --mathlex               (EXPERIMENTAL) adds linguistic lexeme
-                         annotation to parallel markup
- --nomathlex             (EXPERIMENTAL) disables the above (default)
  --parallelmath          use parallel math annotations (default)
  --noparallelmath        disable parallel math annotations
  --plane1                use plane-1 unicode for symbols

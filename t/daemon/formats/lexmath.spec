@@ -1,11 +1,10 @@
 source = ../lexmath.tex
-preload = llamapun.sty
+preload = [mathlexemes]latexml.sty
 preload = amsmath.sty
 preload = bm.sty
 preload = array.sty
 whatsin = fragment
 whatsout = fragment
 pmml =
-mathlex =
 format = html5
 nodefaultresources =
