@@ -440,7 +440,7 @@ DefMacro('\@bibfield{} XUntil:\@end@bibfield', sub {
     if (@tokens) {
       AssignValue('amsbibitem@' . ToString($field) => Tokens(@tokens)); }
     return; });
-
+Let('\@end@bibfield', '\relax');
 # open bibblock until we sort out these macros.
 Tag('ltx:bibblock', autoOpen => 1, autoClose => 1);
 DefRegister('\holdoverbox' => Tokens());
