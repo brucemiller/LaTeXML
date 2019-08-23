@@ -2261,7 +2261,7 @@ DefPrimitive('\write Number {}', sub {
       my $handle   = $filename . '_contents';
       my $contents = LookupValue($handle);
       AssignValue($handle => $contents . UnTeX(Expand($tokens)) . "\n", 'global'); }
-    else {
+    elsif (LookupValue('VERBOSITY') > -1) {
       print STDERR UnTeX(Expand($tokens)) . "\n"; }
     return; });
 
