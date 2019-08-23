@@ -273,8 +273,8 @@ sub readXToken {
                   : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))))) }
             @{$r}); } }
     elsif ($cc == CC_CS && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
-      Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined during expansion. Consuming it and proceeding, expect trouble...");
-      return; }
+      $STATE->generateErrorStub($self, $token);
+      return $token; }
     else {
       return $token; }    # just return it
   }

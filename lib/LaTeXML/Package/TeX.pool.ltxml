@@ -906,10 +906,11 @@ DefMacro('\expandafter Token Token', sub {
       }
       ($tok, @x); }
     elsif (!$STATE->lookupMeaning($xtok)) {
-      # Undefined token is an error, as expansion is expected. The unknown token is consumed.
-      # see TeX B book, item 367.
-      Error('undefined', $xtok, $gullet, "The token " . Stringify($xtok) . " is not defined");
-      ($tok); }
+      # Undefined token is an error, as expansion is expected.
+      # BUT The unknown token is NOT consumed, (see TeX B book, item 367)
+      # since probably in a real TeX run it would have been defined.
+      $STATE->generateErrorStub($gullet, $xtok);
+      ($tok, $xtok); }
     else {
       ($tok, $xtok); } });
 

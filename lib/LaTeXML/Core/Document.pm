@@ -1221,6 +1221,19 @@ sub autoCollapseChildren {
   }
   return; }
 
+#======================================================================
+# Make an ltx:ERROR node.
+sub makeError {
+  my ($self, $type, $content) = @_;
+  my $savenode = undef;
+  $savenode = $self->floatToElement('ltx:ERROR')
+    unless $self->isOpenable('ltx:ERROR');
+  $self->openElement('ltx:ERROR', class => ToString($type));
+  $self->openText_internal(ToString($content));
+  $self->closeElement('ltx:ERROR');
+  $self->setNode($savenode) if $savenode;
+  return; }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Document surgery (?)
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

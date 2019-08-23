@@ -189,47 +189,17 @@ INVOKE:
   pop(@{ $$self{token_stack} });
   return @result; }
 
-sub makeError {
-  my ($document, $type, $content) = @_;
-  my $savenode = undef;
-  $savenode = $document->floatToElement('ltx:ERROR')
-    unless $document->isOpenable('ltx:ERROR');
-  $document->openElement('ltx:ERROR', class => ToString($type));
-  $document->openText_internal(ToString($content));
-  $document->closeElement('ltx:ERROR');
-  $document->setNode($savenode) if $savenode;
-  return; }
-
 sub invokeToken_undefined {
   my ($self, $token) = @_;
-  my $cs = $token->getCSName;
-  $STATE->noteStatus(undefined => $cs);
-  # To minimize chatter, go ahead and define it...
-  if ($cs =~ /^\\if(.*)$/) {    # Apparently an \ifsomething ???
-    my $name = $1;
-    Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.",
-      "Defining it now as with \\newif");
-    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        T_CS('\\' . $name . 'true'), undef, '\let' . $cs . '\iftrue'));
-    $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new(
-        T_CS('\\' . $name . 'false'), undef, '\let' . $cs . '\iffalse'));
-    LaTeXML::Package::Let($token, T_CS('\iffalse'));
-    $self->getGullet->unread($token);    # Retry
-    return; }
-  else {
-    Error('undefined', $token, $self, "The token " . Stringify($token) . " is not defined.",
-      "Defining it now as <ltx:ERROR/>");
-    $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, undef,
-        sub { makeError($_[0], 'undefined', $cs); }),
-      'global');
-    # and then invoke it.
-    return $self->invokeToken($token); } }
+  $STATE->generateErrorStub($self, $token);
+  $self->getGullet->unread($token);    # Retry
+  return; }
 
 sub invokeToken_simple {
   my ($self, $token, $meaning) = @_;
   my $cc   = $meaning->getCatcode;
   my $font = $STATE->lookupValue('font');
-  $STATE->clearPrefixes;    # prefixes shouldn't apply here.
+  $STATE->clearPrefixes;               # prefixes shouldn't apply here.
   if ($cc == CC_SPACE) {
     if ($STATE->lookupValue('IN_MATH')) {    # (but in Preamble, OK ?)
       return (); }

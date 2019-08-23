@@ -90,8 +90,7 @@ sub compileConstructor {
       "Complilation of constructor '" . ToString($cs) . "' failed     ",
       $replacement, $msg);
     my $stuff = slashify($replacement);
-    $result = sub {
-      LaTeXML::Core::Stomach::makeError($_[0], 'constructor_fail', $stuff); };
+    $result = sub { $_[0]->makeError('constructor_fail', $stuff); };
     return $result; }
   return \&$name; }
 

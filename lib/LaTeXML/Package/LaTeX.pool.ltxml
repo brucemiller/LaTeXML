@@ -153,7 +153,7 @@ DefMacro('\begin{}', sub {
         $STATE->noteStatus(undefined => $undef);
         Error('undefined', $undef, $gullet, "The environment " . $undef . " is not defined.");
         $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, undef,
-            sub { LaTeXML::Core::Stomach::makeError($_[0], 'undefined', $undef); })); }
+            sub { $_[0]->makeError('undefined', $undef); })); }
       (($before ? @$before : ()),
         T_CS('\begingroup'),
         ($after ? @$after : ()),

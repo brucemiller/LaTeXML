@@ -483,6 +483,32 @@ sub installDefinition {
 
 #======================================================================
 
+# Generate a stub definition for an undefined control-sequence,
+# along with appropriate error messge.
+sub generateErrorStub {
+  my ($self, $caller, $token, $params) = @_;
+  my $cs = $token->getCSName;
+  $self->noteStatus(undefined => $cs);
+  # To minimize chatter, go ahead and define it...
+  if ($cs =~ /^\\if(.*)$/) {    # Apparently an \ifsomething ???
+    my $name = $1;
+    Error('undefined', $token, $caller, "The token " . $token->stringify . " is not defined.",
+      "Defining it now as with \\newif");
+    $self->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        T_CS('\\' . $name . 'true'), undef, '\let' . $cs . '\iftrue'));
+    $self->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        T_CS('\\' . $name . 'false'), undef, '\let' . $cs . '\iffalse'));
+    LaTeXML::Package::Let($token, T_CS('\iffalse')); }
+  else {
+    Error('undefined', $token, $caller, "The token " . $token->stringify . " is not defined.",
+      "Defining it now as <ltx:ERROR/>");
+    $self->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, $params,
+        sub { $_[0]->makeError('undefined', $cs); }),
+      'global'); }
+  return $token; }
+
+#======================================================================
+
 sub pushFrame {
   my ($self, $nobox) = @_;
   # Easy: just push a new undo hash.

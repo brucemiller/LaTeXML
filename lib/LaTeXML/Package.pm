@@ -805,10 +805,7 @@ sub Invocation {
     my $params = $defn->getParameters;
     return Tokens($token, ($params ? $params->revertArguments(@args) : ())); }
   else {
-    Error('undefined', $token, undef,
-      "Can't invoke " . Stringify($token) . "; it is undefined");
-    DefConstructorI($token, convertLaTeXArgs(scalar(@args), 0),
-      sub { LaTeXML::Core::Stomach::makeError($_[0], 'undefined', $token); });
+    $STATE->generateErrorStub(undef, $token, convertLaTeXArgs(scalar(@args), 0));
     return Tokens($token, map { (T_BEGIN, $_->unlist, T_END) } @args); } }
 
 sub RawTeX {
