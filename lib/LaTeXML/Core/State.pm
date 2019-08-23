@@ -99,7 +99,9 @@ sub new {
   $$self{value}{UNITS} = [{
       pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
       cm => 72.27 * 65536 / 2.54,     mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
-      cc => 12 * 1238 * 65536 / 1157, sp => 1 }];
+      cc => 12 * 1238 * 65536 / 1157, sp => 1,
+      px => 72.27 * 65536 / 72,    # Assume px=bp ?
+  }];
 
   $options{catcodes} = 'standard' unless defined $options{catcodes};
   if ($options{catcodes} =~ /^(standard|style)/) {
