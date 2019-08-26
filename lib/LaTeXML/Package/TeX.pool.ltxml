@@ -1305,47 +1305,36 @@ DefMacro('\futurelet Token Token Token', sub {
 #    | <registerdef><control sequence><equals><8bit>
 # <registerdef> = \countdef | \dimendef | \skipdef | \muskipdef | toksdef
 
+# Note that before \countdef, \dimendef, \skipdef, \muskipdef, \chardef, \mathchardef, \toksdef
+# read the <number>, they let the token to \relax in case the def is immediately followed
+# by a use or assignment;  See TeX Program \s 1224
 # See below for \chardef & \mathchardef
 
-DefPrimitive('\countdef Token SkipMatch:= Number', sub {
-    my ($stomach, $cs, $num) = @_;
-    my $count = '\count' . $num->valueOf;
-    DefRegisterI($cs, undef, Number(0),
-      getter => sub { LookupValue($count) || Number(0); },
-      setter => sub { AssignValue($count => $_[0]); });
-    AfterAssignment(); });
+sub shorthandDef {
+  my ($stomach, $cs, $type, $init) = @_;
+  Let($cs, '\relax');
+  my $num = $stomach->getGullet->readNumber();
+  my $reg = $type . $num->valueOf;
+  DefRegisterI($cs, undef, $init,
+    getter => sub { LookupValue($reg) || $init; },
+    setter => sub { AssignValue($reg => $_[0]); });
+  AfterAssignment();
+  return; }
 
-DefPrimitive('\dimendef Token SkipMatch:= Number', sub {
-    my ($stomach, $cs, $num) = @_;
-    my $dimen = '\dimen' . $num->valueOf;
-    DefRegisterI($cs, undef, Dimension(0),
-      getter => sub { LookupValue($dimen) || Dimension(0); },
-      setter => sub { AssignValue($dimen => $_[0]); });
-    AfterAssignment(); });
+DefPrimitive('\countdef Token SkipMatch:=', sub {
+    shorthandDef($_[0], $_[1], '\count', Number(0)); });
 
-DefPrimitive('\skipdef Token SkipMatch:= Number', sub {
-    my ($stomach, $cs, $num) = @_;
-    my $glue = '\skip' . $num->valueOf;
-    DefRegisterI($cs, undef, Glue(0),
-      getter => sub { LookupValue($glue) || Glue(0); },
-      setter => sub { AssignValue($glue => $_[0]); });
-    AfterAssignment(); });
+DefPrimitive('\dimendef Token SkipMatch:=', sub {
+    shorthandDef($_[0], $_[1], '\dimen', Dimension(0)); });
 
-DefPrimitive('\muskipdef Token SkipMatch:= Number', sub {
-    my ($stomach, $cs, $num) = @_;
-    my $muglue = '\muskip' . $num->valueOf;
-    DefRegisterI($cs, undef, MuGlue(0),
-      getter => sub { LookupValue($muglue) || MuGlue(0); },
-      setter => sub { AssignValue($muglue => $_[0]); });
-    AfterAssignment(); });
+DefPrimitive('\skipdef Token SkipMatch:=', sub {
+    shorthandDef($_[0], $_[1], '\skip', Glue(0)); });
 
-DefPrimitive('\toksdef Token SkipMatch:= Number', sub {
-    my ($stomach, $cs, $num) = @_;
-    my $toks = '\toks' . $num->valueOf;
-    DefRegisterI($cs, undef, Tokens(),
-      getter => sub { LookupValue($toks) || Tokens(); },
-      setter => sub { AssignValue($toks => $_[0]); });
-    AfterAssignment(); });
+DefPrimitive('\muskipdef Token SkipMatch:=', sub {
+    shorthandDef($_[0], $_[1], '\muskip', MuGlue(0)); });
+
+DefPrimitive('\toksdef Token SkipMatch:=', sub {
+    shorthandDef($_[0], $_[1], '\toks', Tokens()); });
 
 # NOTE: Get all these handled as registers
 # <internal integer> = <integer parameter> | <special integer> | \lastpenalty
@@ -1710,9 +1699,12 @@ DeclareFontMap('OMX',
 DefPrimitive('\char Number', sub {
     Box(FontDecode($_[1]->valueOf), undef, undef, Invocation(T_CS('\char'), $_[1])); });
 
-# Almost like a register, but different...
-DefPrimitive('\chardef Token SkipMatch:= Number', sub {
-    my ($stomach, $newcs, $value) = @_;
+# Almost like a register (and \countdef), but different...
+# (including the preassignment to \relax!)
+DefPrimitive('\chardef Token SkipMatch:=', sub {
+    my ($stomach, $newcs) = @_;
+    Let($newcs, '\relax');
+    my $value      = $stomach->getGullet->readNumber();
     my $csname     = $newcs->getCSName;
     my $internalcs = T_CS('\@chardef@' . $csname);
     DefPrimitiveI($internalcs, undef, sub {
@@ -1753,8 +1745,10 @@ DefConstructor('\mathchar Number',
     return; });
 
 # Almost like a register, but different...
-DefPrimitive('\mathchardef Token SkipMatch:= Number', sub {
-    my ($stomach, $newcs, $value) = @_;
+DefPrimitive('\mathchardef Token SkipMatch:=', sub {
+    my ($stomach, $newcs) = @_;
+    Let($newcs, '\relax');
+    my $value  = $stomach->getGullet->readNumber();
     my $csname = $newcs->getCSName;
     my ($role, $glyph) = decodeMathChar($value->valueOf);
     my $internalcs = $glyph && T_CS('\@mathchardef@' . $csname);

@@ -351,5 +351,40 @@ Now HFuzz is 2.0pt.</p>
 [$a$ = $a$]</p>
       </para>
     </subsection>
+    <subsection inlist="toc" xml:id="S3.SS9">
+      <tags>
+        <tag>3.9</tag>
+        <tag role="refnum">3.9</tag>
+        <tag role="typerefnum">§3.9</tag>
+      </tags>
+      <title><tag close=" ">3.9</tag>Quirks</title>
+      <para xml:id="S3.SS9.p1">
+        <p>Note that for toksdef and otheres, TeX binds the token to relax
+before reading the number, in case the definition is immediagely
+followed by a usage or assignment (See TeX Program §1224)</p>
+      </para>
+      <para xml:id="S3.SS9.p2">
+        <p>Tooks:abc</p>
+      </para>
+      <para xml:id="S3.SS9.p3">
+        <p>dima:1.0pt</p>
+      </para>
+      <para xml:id="S3.SS9.p4">
+        <p>skipa:1.0pt plus 1.0pt</p>
+      </para>
+      <para xml:id="S3.SS9.p5">
+        <p>muskipa:1.0mu</p>
+      </para>
+      <para xml:id="S3.SS9.p6">
+        <p>@</p>
+      </para>
+      <para xml:id="S3.SS9.p7">
+        <p><Math mode="inline" tex="\mathchar 4944\relax" text="∑" xml:id="S3.SS9.p7.m1">
+            <XMath>
+              <XMTok role="BIGOP">∑</XMTok>
+            </XMath>
+          </Math></p>
+      </para>
+    </subsection>
   </section>
 </document>
