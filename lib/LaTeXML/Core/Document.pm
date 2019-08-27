@@ -416,7 +416,9 @@ sub finalize_rec {
       # Remove any pending declarations that can't be on $FONT_ELEMENT_NAME
       my $elementname = $pending_declaration{element}{value} || $FONT_ELEMENT_NAME;
       foreach my $key (keys %pending_declaration) {
-        delete $pending_declaration{$key} unless $self->canHaveAttribute($elementname, $key); }
+        # make sure we also delete the element key we just used, or one can infinitely recurse on ltx:text
+        if (($key eq 'element') || !$self->canHaveAttribute($elementname, $key)) {
+          delete $pending_declaration{$key}; } }
       if ($self->canContain($qname, $elementname)
         && scalar(keys %pending_declaration)) {
         # Too late to do wrapNodes?
@@ -2275,4 +2277,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-
