@@ -380,7 +380,10 @@ sub Let {
   # If strings are given, assume CS tokens (most common case)
   $token1 = T_CS($token1) unless ref $token1;
   $token2 = T_CS($token2) unless ref $token2;
-  $STATE->assignMeaning($token1, $STATE->lookupMeaning($token2), $scope);
+  if ($$token2[2]) { # Special case - if we are dont_expand flagged, use exactly this token, not the definition
+    $STATE->assignMeaning($token1, $token2, $scope); }
+  else {             # normal case, lookup the meaning of token2
+    $STATE->assignMeaning($token1, $STATE->lookupMeaning($token2), $scope); }
   AfterAssignment();
   return; }
 

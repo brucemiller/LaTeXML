@@ -6,94 +6,141 @@
     <p>i<text font="bold">fx tests</text></p>
   </para>
   <para>
-    <p>result: true  ; evaluated: “expandafter“expandafter“expandafter“ifx“expandafter“noexpand“expandafter“foo%Ω“noexpand“bar true “else false “fi</p>
+    <p>1: true  ; evaluated: “expandafter“expandafter“expandafter“ifx“expandafter“noexpand“expandafter“foo%Ω“noexpand“bar true “else false “fi</p>
   </para>
   <para>
-    <p>result: false ; evaluated: “expandafter“ifx“noexpand“foo“relax true“else false“fi</p>
+    <p>2: false ; evaluated: “expandafter“ifx“noexpand“foo“relax true“else false“fi</p>
   </para>
   <para>
-    <p>result: Γ4 ; evaluated: “expandafter“ifx“noexpand“index“index“else“expandafter“itoii“fi“expandafter%Ω“eend“the“index</p>
+    <p>3: Γ4 ; evaluated: “expandafter“ifx“noexpand“index“index“else“expandafter“itoii“fi“expandafter%Ω“eend“the“index</p>
   </para>
   <para>
     <p><text font="bold">ifcat tests</text></p>
   </para>
   <para>
-    <p>result: false ; evaluated: “ifcat[] true “else false“fi</p>
+    <p>4: false ; evaluated: “ifcat[] true “else false“fi</p>
   </para>
   <para>
-    <p>result: false ; evaluated: “ifcat[“noexpand] true “else false“fi</p>
+    <p>5: false ; evaluated: “ifcat[“noexpand] true “else false“fi</p>
   </para>
   <para>
-    <p>result: false ; evaluated: “ifcat“noexpand[] true “else false“fi</p>
+    <p>6: false ; evaluated: “ifcat“noexpand[] true “else false“fi</p>
   </para>
   <para>
-    <p>result:  true  ; evaluated: “ifcat“noexpand[“noexpand] true “else false“fi</p>
+    <p>7:  true  ; evaluated: “ifcat“noexpand[“noexpand] true “else false“fi</p>
   </para>
   <para>
-    <p>result:  true  ; evaluated: “ifcat[[ true “else false“fi</p>
+    <p>8:  true  ; evaluated: “ifcat[[ true “else false“fi</p>
   </para>
   <para>
-    <p>result:  true  ; evaluated: “ifcat]] true “else false“fi</p>
+    <p>9:  true  ; evaluated: “ifcat]] true “else false“fi</p>
   </para>
   <para>
-    <p>result: false ; evaluated: “ifcat“noexpand[[ true “else false“fi</p>
+    <p>10: false ; evaluated: “ifcat“noexpand[[ true “else false“fi</p>
   </para>
   <para>
-    <p>result:  true  ; evaluated: “ifcat“noexpand[“noexpand[ true “else false“fi</p>
+    <p>11:  true  ; evaluated: “ifcat“noexpand[“noexpand[ true “else false“fi</p>
   </para>
   <para>
-    <p>result:  true  ; evaluated: “ifcat[* true “else false “fi</p>
+    <p>12:  true  ; evaluated: “ifcat[* true “else false “fi</p>
   </para>
   <para>
-    <p>result: false ; evaluated: “ifcat“noexpand[* true “else false“fi</p>
+    <p>13: false ; evaluated: “ifcat“noexpand[* true “else false“fi</p>
   </para>
   <para>
-    <p>result:  true  ; evaluated: “ifcat˙] true “else false “fi</p>
+    <p>14:  true  ; evaluated: “ifcat˙] true “else false “fi</p>
   </para>
   <para>
-    <p>result: false  ; evaluated: “ifcat˙“noexpand] true “else false “fi</p>
+    <p>15: false  ; evaluated: “ifcat˙“noexpand] true “else false “fi</p>
   </para>
   <para>
-    <p>result: false ; evaluated: “ifcat‘true“else false“fi</p>
+    <p>16: false ; evaluated: “ifcat‘true“else false“fi</p>
   </para>
   <para>
-    <p>result:  true ; evaluated: “ifcat“noexpand^“noexpand^ true“else false“fi</p>
+    <p>17:  true ; evaluated: “ifcat“noexpand^“noexpand^ true“else false“fi</p>
   </para>
   <para>
-    <p>result:  true ; evaluated: “ifcat^“noexpand^ true“else false“fi</p>
+    <p>18:  true ; evaluated: “ifcat^“noexpand^ true“else false“fi</p>
   </para>
   <para>
-    <p>result: false ; evaluated: “ifcat˙^ true“else false“fi</p>
+    <p>19: false ; evaluated: “ifcat˙^ true“else false“fi</p>
   </para>
   <para>
-    <p>result: false ; evaluated: “ifcat“noexpand˙“noexpand^ true“else false“fi</p>
+    <p>20: false ; evaluated: “ifcat“noexpand˙“noexpand^ true“else false“fi</p>
   </para>
   <para>
-    <p><text font="bold">if tests</text>
-result: false ; evaluated: “if“noexpand[“noexpand] true “else false“fi</p>
+    <p><text font="bold">if tests</text></p>
   </para>
   <para>
-    <p>result: false ; evaluated: “if[] true “else false“fi</p>
+    <p>21: false ; evaluated: “if“noexpand[“noexpand] true “else false“fi</p>
   </para>
   <para>
-    <p>result: false ; evaluated: “if[“noexpand] true “else false“fi</p>
+    <p>22: false ; evaluated: “if[] true “else false“fi</p>
   </para>
   <para>
-    <p>result:  true  ; evaluated: “if[* true “else false “fi</p>
+    <p>23: false ; evaluated: “if[“noexpand] true “else false“fi</p>
   </para>
   <para>
-    <p>result: false ; evaluated: “if“noexpand[* true “else false“fi</p>
+    <p>24:  true  ; evaluated: “if[* true “else false “fi</p>
   </para>
   <para>
-    <p>result:  true ; evaluated: “if“noexpand^“noexpand^ true“else false“fi</p>
+    <p>25: false ; evaluated: “if“noexpand[* true “else false“fi</p>
   </para>
   <para>
-    <p>result:  true ; evaluated: “if^“noexpand^ true“else false“fi</p>
+    <p>26:  true ; evaluated: “if“noexpand^“noexpand^ true“else false“fi</p>
   </para>
   <para>
-    <p>result: false ; evaluated: “if‘true“else false“fi</p>
+    <p>27:  true ; evaluated: “if^“noexpand^ true“else false“fi</p>
   </para>
   <para>
-    <p>result: false  ; evaluated: “if“reusefoo“reusefoonp true “else false “fi</p>
+    <p>28: false ; evaluated: “if‘true“else false“fi</p>
+  </para>
+  <para>
+    <p>29: false  ; evaluated: “if“reusefoo“reusefoonp true “else false “fi</p>
+  </para>
+  <para>
+    <p><text font="bold">torture tests</text></p>
+  </para>
+  <para>
+    <p>30: ifx no ; evaluated: “ifx“lefoo“relax–ifx yes˝“else–ifx no˝“fi</p>
+  </para>
+  <para>
+    <p>31: if yes  ; evaluated: “if“lefoo“relax–if yes ˝“else–if no˝“fi</p>
+  </para>
+  <para>
+    <p>32: ifx yes  ; evaluated: “ifx“lefoo“lefoo–ifx yes ˝“else–ifx no˝“fi</p>
+  </para>
+  <para>
+    <p>33: if yes  ; evaluated: “if“lefoo“lefoo–if yes ˝“else–if no˝“fi</p>
+  </para>
+  <para>
+    <p>34: ifx no ; evaluated: “ifx“eafoo“relax–ifx yes ˝“else–ifx no˝“fi</p>
+  </para>
+  <para>
+    <p>35: if no ; evaluated: “if“eafoo“relax–if yes ˝“else–if no˝“fi</p>
+  </para>
+  <para>
+    <p>36: ifx no ; evaluated: “ifx“lefoo“eafoo–ifx yes ˝“else–ifx no˝“fi</p>
+  </para>
+  <para>
+    <p>37: if no ; evaluated: “if“lefoo“eafoo–if yes ˝“else–if no˝“fi</p>
+  </para>
+  <para>
+    <p>38: ifx no ; evaluated: “ifx“baz“eafoo–ifx yes ˝“else–ifx no˝“fi</p>
+  </para>
+  <para>
+    <p>39: if no ; evaluated: “if“baz“eafoo–if yes ˝“else–if no˝“fi</p>
+  </para>
+  <para>
+    <p>40: ifx no ; evaluated: “ifx“baz“lefoo–ifx yes ˝“else–ifx no˝“fi</p>
+  </para>
+  <para>
+    <p>41: if no ; evaluated: “if“baz“lefoo–if yes ˝“else–if no˝“fi</p>
+  </para>
+  <para>
+    <p>42: noexpand:  ; evaluated: noexpand: “noexpand*</p>
+  </para>
+  <para>
+    <p>43: unexpanded: STAR ; evaluated: unexpanded: “unexpanded–*˝</p>
   </para>
 </document>

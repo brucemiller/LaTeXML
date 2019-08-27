@@ -1,4 +1,6 @@
-\def\test#1{result: #1 ; evaluated: \detokenize{#1}\par}
+\newcount\result
+\def\theresult{\advance\result 1\relax\the\result}
+\gdef\test#1{\theresult: #1 ; evaluated: \detokenize{#1}\par}
 {\bf ifx tests}
 
 % ifx test with noexpand
@@ -40,6 +42,7 @@
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 {\bf if tests}
+
 \test{\if\noexpand[\noexpand] true \else false\fi}
 \test{\if[] true \else false\fi}
 \test{\if[\noexpand] true \else false\fi}
@@ -52,4 +55,27 @@
 \def\reusefoo{\foo}%
 \edef\reusefoonp{\noexpand\foo}%
 \test{\if\reusefoo\reusefoonp true \else false \fi}
+
+{\bf torture tests}
+
+\def\baz{BAZ}
+\expandafter\let\expandafter\lefoo\noexpand\baz
+\expandafter\def\expandafter\eafoo\expandafter{\noexpand\baz}
+\test{\ifx\lefoo\relax{ifx yes}\else{ifx no}\fi}
+\test{\if\lefoo\relax {if yes }\else{if no}\fi}
+\test{\ifx\lefoo\lefoo{ifx yes }\else{ifx no}\fi}
+\test{\if\lefoo\lefoo{if yes }\else{if no}\fi}
+\test{\ifx\eafoo\relax {ifx yes }\else{ifx no}\fi}
+\test{\if\eafoo\relax {if yes }\else{if no}\fi}
+\test{\ifx\lefoo\eafoo {ifx yes }\else{ifx no}\fi}
+\test{\if\lefoo\eafoo {if yes }\else{if no}\fi}
+\test{\ifx\baz\eafoo {ifx yes }\else{ifx no}\fi}
+\test{\if\baz\eafoo {if yes }\else{if no}\fi}
+\test{\ifx\baz\lefoo{ifx yes }\else{ifx no}\fi}
+\test{\if\baz\lefoo{if yes }\else{if no}\fi}
+\catcode`*=\active
+\def*{STAR}
+\test{noexpand: \noexpand*}
+\test{unexpanded: \unexpanded{*}}
+
 \bye

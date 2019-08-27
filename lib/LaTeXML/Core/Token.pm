@@ -253,7 +253,10 @@ sub neutralize {
 # Wonder if this should only have effect on expandable tokens?
 sub with_dont_expand {
   my ($self) = @_;
-  return bless [$$self[0], $$self[1], $self], 'LaTeXML::Core::Token'; }
+  if ($$self[1] == CC_CS || $$self[1] == CC_ACTIVE) {
+    return bless [$$self[0], $$self[1], $self], 'LaTeXML::Core::Token'; }
+  else {
+    return $self; } }
 
 # Return the original token of a not-expanded token,
 # or undef if it isn't marked as such.

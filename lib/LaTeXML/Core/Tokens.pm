@@ -118,7 +118,7 @@ sub substituteParameters {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -157,4 +157,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

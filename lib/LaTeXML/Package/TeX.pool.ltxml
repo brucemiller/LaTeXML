@@ -172,6 +172,19 @@ DefParameterType('Token', sub { $_[0]->readToken; });
 # Read the next token, after expanding any expandable ones.
 DefParameterType('XToken', sub { $_[0]->readXToken; });
 
+# As per the TeX B book, 506.
+# Read the next token while expanding, but guard against dont_expand flags
+DefParameterType('XChrToken', sub {
+    my ($gullet) = @_;
+    my $token = $gullet->readXToken(1);
+    if ($$token[2]) {    # marked dont_expand
+      if ($$token[2][1] == CC_ACTIVE) {    # treat as active character, if originally such
+        return $$token[2]; }
+      else {                               # otherwise, treat as relax for comparisons
+        return T_CS('\relax'); } }
+    else {                                 # normal case, treat token as-is
+      return $token; } });
+
 # Read a number
 DefParameterType('Number', sub { $_[0]->readNumber; });
 
@@ -731,8 +744,10 @@ DefConditionalI('\ifinner', undef, sub { 0; });
 
 DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
 
-DefConditional('\if XToken XToken', sub { $_[1]->getCharcode == $_[2]->getCharcode; });
-DefConditional('\ifcat XToken XToken', sub { $_[1]->getCatcode == $_[2]->getCatcode; });
+DefConditional('\if XChrToken XChrToken', sub {
+    $_[1]->getCharcode == $_[2]->getCharcode; });
+DefConditional('\ifcat XChrToken XChrToken', sub {
+    $_[1]->getCatcode == $_[2]->getCatcode; });
 
 DefConditional('\ifx Token Token', sub { XEquals($_[1], $_[2]); });
 
@@ -1184,6 +1199,8 @@ sub do_def {
   if ($expanded) {
     local $LaTeXML::NOEXPAND_THE = 1;
     $body = Expand($body); }
+  if (ref $body eq 'LaTeXML::Core::Tokens') {   # purge dont_expand flags in definition bodies, if any
+    $body = Tokens(map { undef $$_[2]; $_; } $body->unlist); }
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body),
     ($globally ? 'global' : undef));
   AfterAssignment();

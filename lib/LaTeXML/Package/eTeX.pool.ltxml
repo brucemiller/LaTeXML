@@ -33,7 +33,15 @@ DefMacro('\detokenize GeneralText', sub { Explode(writableTokens($_[1])); });
 # with the peculiarity of how <filler> is expanded beforehand!
 DefMacro('\unexpanded GeneralText', sub {
     my ($gullet, $tokens) = @_;
-    return $gullet->neutralizeTokens($tokens->unlist); });
+    my @neutralized        = $gullet->neutralizeTokens($tokens->unlist);
+    my @guard_active_chars = ();
+    for my $t (@neutralized) {
+      if ($$t[2] && $$t[1] == CC_ACTIVE) {
+        push(@guard_active_chars, $$t[2]);
+      } else {
+        push(@guard_active_chars, $t);
+    } }
+    return @guard_active_chars; });
 #======================================================================
 # 3.2. Provision for re-scanning already read text
 

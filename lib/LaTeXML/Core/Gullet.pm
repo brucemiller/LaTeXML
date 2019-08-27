@@ -261,7 +261,10 @@ sub readXToken {
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
     elsif (my $unexpanded = $$token[2]) {               # Inline get_dont_expand
-      return $unexpanded; }
+      if ($toplevel) {
+        return bless ['\relax', 16, $unexpanded], 'LaTeXML::Core::Token'; }
+      else {
+        return $unexpanded; } }
     # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
