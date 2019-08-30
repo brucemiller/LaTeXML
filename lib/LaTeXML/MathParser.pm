@@ -733,8 +733,12 @@ sub node_to_lexeme_full {
   my ($mark_start, $mark_end) = ('', '');
   if ($tag ne 'ltx:XMath') {
     if ($role) {
-      $mark_start = "$role:start ";
-      $mark_end   = "$role:end";
+      # the dual marks are redundant with the marks on their inner XMWrap or other contents
+      # so just ignore the XMDual role attributes
+      if ($tag ne 'ltx:XMDual') {
+        $mark_start = "$role:start ";
+        $mark_end   = "$role:end";
+      }
     } elsif ($tag =~ '^ltx:XM(Arg|Row|Cell)') {
       my $tag_role = uc($1);
       $mark_start = "$tag_role:start ";
@@ -768,7 +772,7 @@ sub node_to_lexeme_full {
       }
     }
   }
-  $lexemes .= $mark_end;
+  $lexemes .= ' ' . $mark_end;
   return $lexemes;
 }
 
