@@ -737,12 +737,12 @@ sub node_to_lexeme_full {
       # so just ignore the XMDual role attributes
       if ($tag ne 'ltx:XMDual') {
         $mark_start = "$role:start ";
-        $mark_end   = "$role:end";
+        $mark_end   = " $role:end";
       }
     } elsif ($tag =~ '^ltx:XM(Arg|Row|Cell)') {
       my $tag_role = uc($1);
       $mark_start = "$tag_role:start ";
-      $mark_end   = "$tag_role:end";
+      $mark_end   = " $tag_role:end";
     }
   }
   my $lexemes = $mark_start;
@@ -772,7 +772,7 @@ sub node_to_lexeme_full {
       }
     }
   }
-  $lexemes .= ' ' . $mark_end;
+  $lexemes .= $mark_end;
   return $lexemes;
 }
 
