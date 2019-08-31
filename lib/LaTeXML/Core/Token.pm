@@ -253,13 +253,23 @@ sub neutralize {
 # Wonder if this should only have effect on expandable tokens?
 sub with_dont_expand {
   my ($self) = @_;
-  return bless [$$self[0], $$self[1], $self], 'LaTeXML::Core::Token'; }
+  my $cc = $$self[1];
+  return ((($cc == CC_CS) || ($cc == CC_ACTIVE))
+    # AND it is either undefined, or is expandable!
+      && (!defined($STATE->lookupDefinition($self))
+      || defined($STATE->lookupExpandable($self)))
+    ? bless ['\relax', CC_CS, $self], 'LaTeXML::Core::Token'
+    : $self); }
 
 # Return the original token of a not-expanded token,
 # or undef if it isn't marked as such.
 sub get_dont_expand {
   my ($self) = @_;
   return $$self[2]; }
+
+sub without_dont_expand {
+  my ($self) = @_;
+  return ($$self[2] || $self); }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.

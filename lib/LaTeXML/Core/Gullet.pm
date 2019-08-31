@@ -182,16 +182,21 @@ sub show_pushback {
 #**********************************************************************
 # Not really 100% sure how this is supposed to work
 # See TeX Ch 20, p216 regarding noexpand, \edef with token list registers, etc.
-# Solution: Duplicate param tokens, stick NOTEXPANDED infront of expandable+undefined tokens.
+# Solution: Duplicate param tokens, mark  expandable+undefined tokens as dont-expand
+# Curious that we do NOT make the cs's \relax, but still defer expansion by marking as dont-expand
+# BUT the CS+CC are unchanged, rather than \relax!!!
 sub neutralizeTokens {
   my ($self, @tokens) = @_;
   my @result = ();
   foreach my $token (@tokens) {
-    if ($$token[1] == CC_PARAM) {    # Inline ->getCatcode!
+    my $cc = $$token[1];
+    if ($cc == CC_PARAM) {    # Inline ->getCatcode!
       push(@result, $token, $token); }
-    elsif (!defined($STATE->lookupMeaning($token)) ||
-      defined($STATE->lookupDefinition($token))) {
-      push(@result, $token->with_dont_expand); }
+    elsif ((($cc == CC_CS) || ($cc == CC_ACTIVE))
+      # AND it is either undefined, or is expandable!
+      && (!defined($STATE->lookupDefinition($token))
+        || defined($STATE->lookupExpandable($token)))) {
+      push(@result, bless [$$token[0], $cc, $token], 'LaTeXML::Core::Token'); }
     else {
       push(@result, $token); } }
   return @result; }
@@ -261,8 +266,8 @@ sub readXToken {
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
     elsif (my $unexpanded = $$token[2]) {               # Inline get_dont_expand
-      return $unexpanded; }
-    # Note: special-purpose lookup in State, for efficiency
+      return $token; }                                  # Defer expansion (recursion?)
+        # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
       if (my $r = $defn->invoke($self)) {

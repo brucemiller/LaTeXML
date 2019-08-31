@@ -4,16 +4,168 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <para xml:id="p1">
-    <p>Expect: NOW a LATER b MUCHLATER c.<break/>Got: NOW a LATER b MUCHLATER c.</p>
-  </para>
-  <para xml:id="p2">
-    <p>Expect: NOW a MUCHLATER b.<break/>Got: NOW a MUCHLATER b.</p>
-  </para>
-  <para xml:id="p3">
-    <p>Expect: NOW a BETWEEN LATER b.<break/>Got: NOW a BETWEEN LATER b.</p>
-  </para>
-  <para xml:id="p4">
-    <p>Expect: NOW a MUCHLATER b.<break/>Got: NOW a MUCHLATER b.</p>
-  </para>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Basic noexpand</title>
+    <para xml:id="S1.p1">
+      <p>X: X</p>
+    </para>
+    <para xml:id="S1.p2">
+      <p>noexpand X: X</p>
+    </para>
+    <para xml:id="S1.p3">
+      <p>foo:FOO</p>
+    </para>
+    <para xml:id="S1.p4">
+      <p>noexpand foo:</p>
+    </para>
+    <para xml:id="S1.p5">
+      <p>STAR:STAR</p>
+    </para>
+    <para xml:id="S1.p6">
+      <p>noexpand STAR:</p>
+    </para>
+    <para xml:id="S1.p7">
+      <p>square: <Math mode="inline" tex="{}^{2}" text="^2" xml:id="S1.p7.m1">
+          <XMath>
+            <XMApp role="FLOATSUPERSCRIPT" scriptpos="1">
+              <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+            </XMApp>
+          </XMath>
+        </Math></p>
+    </para>
+    <para xml:id="S1.p8">
+      <p>noexpand square: <Math mode="inline" tex="{}^{2}" text="^2" xml:id="S1.p8.m1">
+          <XMath>
+            <XMApp role="FLOATSUPERSCRIPT" scriptpos="1">
+              <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+            </XMApp>
+          </XMath>
+        </Math></p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Basic unexpanded</title>
+    <para xml:id="S2.p1">
+      <p>X: X</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>unexpanded X: X</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>foo:FOO</p>
+    </para>
+    <para xml:id="S2.p4">
+      <p>unexpanded foo: FOO</p>
+    </para>
+    <para xml:id="S2.p5">
+      <p>STAR:STAR</p>
+    </para>
+    <para xml:id="S2.p6">
+      <p>unexpanded STAR: STAR</p>
+    </para>
+    <para xml:id="S2.p7">
+      <p>square: <Math mode="inline" tex="{}^{2}" text="^2" xml:id="S2.p7.m1">
+          <XMath>
+            <XMApp role="FLOATSUPERSCRIPT" scriptpos="1">
+              <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+            </XMApp>
+          </XMath>
+        </Math></p>
+    </para>
+    <para xml:id="S2.p8">
+      <p>unexpanded square: <Math mode="inline" tex="{}^{2}" text="^2" xml:id="S2.p8.m1">
+          <XMath>
+            <XMApp role="FLOATSUPERSCRIPT" scriptpos="1">
+              <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+            </XMApp>
+          </XMath>
+        </Math></p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Noexpand in defs</title>
+    <para xml:id="S3.p1">
+      <p>def noexpand foo:</p>
+    </para>
+    <para xml:id="S3.p2">
+      <p>edef noexpand foo: FOO</p>
+    </para>
+    <para xml:id="S3.p3">
+      <p>expandafter def noexpand foo: FOO</p>
+    </para>
+    <para xml:id="S3.p4">
+      <p>letfoo: FOO</p>
+    </para>
+    <para xml:id="S3.p5">
+      <p>letnxfoo:</p>
+    </para>
+    <para xml:id="S3.p6">
+      <p>[Change foo]
+
+edef noexpand foo: foo?</p>
+    </para>
+    <para xml:id="S3.p7">
+      <p>expandafter def noexpand foo: foo?</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
+    <title><tag close=" ">4</tag>Unexpanded in defs</title>
+    <para xml:id="S4.p1">
+      <p>def unexpanded foo: FOO</p>
+    </para>
+    <para xml:id="S4.p2">
+      <p>edef unexpanded foo: FOO</p>
+    </para>
+    <para xml:id="S4.p3">
+      <p>expandafter def unexpanded foo: FOO</p>
+    </para>
+    <para xml:id="S4.p4">
+      <p>[Change foo]
+
+edef unexpanded foo: foo?</p>
+    </para>
+    <para xml:id="S4.p5">
+      <p>expandafter def unexpanded foo: foo?</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
+    <title><tag close=" ">5</tag>Random</title>
+    <para xml:id="S5.p1">
+      <p>Expect: NOW a LATER b MUCHLATER c.<break/>Got: NOW a LATER b MUCHLATER c.</p>
+    </para>
+    <para xml:id="S5.p2">
+      <p>Expect: NOW a MUCHLATER b.<break/>Got: NOW a MUCHLATER b.</p>
+    </para>
+    <para xml:id="S5.p3">
+      <p>Expect: NOW a BETWEEN LATER b.<break/>Got: NOW a BETWEEN LATER b.</p>
+    </para>
+    <para xml:id="S5.p4">
+      <p>Expect: NOW a MUCHLATER b.<break/>Got: NOW a MUCHLATER b.</p>
+    </para>
+  </section>
 </document>

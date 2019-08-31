@@ -1,6 +1,62 @@
 \documentclass{article}
 \begin{document}
+\def\foo{FOO}
+\catcode`*=\active
+\def*{STAR}
 
+\section{Basic noexpand}
+X: X\relax\par
+noexpand X: \noexpand X \relax\par
+foo:\foo\relax\par
+noexpand foo: \noexpand\foo\relax\par
+*:*\relax\par
+noexpand *: \noexpand*\relax\par
+square: ${}^2\relax$\par
+noexpand square: ${}\noexpand^2\relax$\par
+
+\section{Basic unexpanded}
+X: X\relax\par
+unexpanded X: \unexpanded{X} \relax\par
+foo:\foo\relax\par
+unexpanded foo: \unexpanded{\foo}\relax\par
+*:*\relax\par
+unexpanded *: \unexpanded{*}\relax\par
+square: ${}^2\relax$\par
+unexpanded square: ${}\unexpanded{^2}\relax$\par
+
+
+\section{Noexpand in defs}
+\def\nfoo{\noexpand\foo}
+\edef\enfoo{\noexpand\foo}
+\expandafter\def\expandafter\eafoo\expandafter{\noexpand\foo}
+\let\letfoo\foo
+\expandafter\let\expandafter\letnxfoo\noexpand\foo
+
+def noexpand foo: \nfoo\relax\par
+edef noexpand foo: \enfoo\relax\par
+expandafter def noexpand foo: \eafoo\relax\par
+letfoo: \letfoo\relax\par
+letnxfoo: \letnxfoo\relax\par
+{[Change foo]
+\def\foo{foo?}
+edef noexpand foo: \enfoo\relax\par
+expandafter def noexpand foo: \eafoo\relax\par
+}
+\section{Unexpanded in defs}
+\def\nfoo{\unexpanded{\foo}}
+\edef\enfoo{\unexpanded{\foo}}
+\expandafter\def\expandafter\eafoo\expandafter{\unexpanded{\foo}}
+
+def unexpanded foo: \nfoo\relax\par
+edef unexpanded foo: \enfoo\relax\par
+expandafter def unexpanded foo: \eafoo\relax\par
+{[Change foo]
+\def\foo{foo?}
+edef unexpanded foo: \enfoo\relax\par
+expandafter def unexpanded foo: \eafoo\relax\par
+}
+
+\section{Random}
 
 \def\now#1{NOW #1}
 

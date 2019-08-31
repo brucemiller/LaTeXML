@@ -1,55 +1,99 @@
-\def\test#1{result: #1 ; evaluated: \detokenize{#1}\par}
-{\bf ifx tests}
+\documentclass{article}
+\newcounter{result}[section]%
+\def\theresult{\thesection.\arabic{result}}%
 
-% ifx test with noexpand
-\def\foo{foo}%
-\def\bar{bar}%
-\test{\expandafter\expandafter\expandafter\ifx%
-        \expandafter\noexpand\expandafter\foo\noexpand\bar true \else false \fi}
+\gdef\testif#1{\par\noindent\refstepcounter{result}\theresult: #1true\else false\fi ; evaluated: \detokenize{#1}\par}%
 
-\test{\expandafter\ifx\noexpand\foo\relax true\else false\fi}%
-% Advanced from xparse.sty: \ifx on "\noexpand\count" and "\count" is true, as counts are not expandable
-\def\itoii#1#2#3{#1#2}
-\chardef\eend=0\relax
-\newcount\index
-\index=4
+\def\testerx#1#2{%
+  \refstepcounter{result}%
+  \par\noindent\theresult
+  \detokenize{ #1 vs #2}
+  (ifx)\space
+  \ifx#1#2T\else F\fi\space
+  \expandafter\ifx\noexpand#1#2T\else F\fi\space
+  \expandafter\ifx\expandafter#1\noexpand#2T\else F\fi\space
+  \expandafter\expandafter\expandafter\ifx\expandafter\noexpand\expandafter#1\noexpand#2T\else F\fi
+  .
+}
 
-\test{\expandafter\ifx\noexpand\index\index\else\expandafter\itoii\fi\expandafter\eend\the\index}
-
+\def\tester#1#2{%
+  \refstepcounter{result}%
+  \par\noindent\theresult
+  \detokenize{ #1 vs #2}
+  (ifx)\space
+  \ifx#1#2T\else F\fi\space
+  \expandafter\ifx\noexpand#1#2T\else F\fi\space
+  \expandafter\ifx\expandafter#1\noexpand#2T\else F\fi\space
+  \expandafter\expandafter\expandafter\ifx\expandafter\noexpand\expandafter#1\noexpand#2T\else F\fi
+  ; 
+  (if)\space
+  \if#1#2T\else F\fi\space
+  \if\noexpand#1#2T\else F\fi\space
+  \if#1\noexpand#2T\else F\fi\space
+  \if\noexpand#1\noexpand#2T\else F\fi
+  ; 
+  (ifcat)\space
+  \ifcat#1#2T\else F\fi\space
+  \ifcat\noexpand#1#2T\else F\fi\space
+  \ifcat#1\noexpand#2T\else F\fi\space
+  \ifcat\noexpand#1\noexpand#2T\else F\fi
+  .
+}
+\begin{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-{\bf ifcat tests}
+\def\foo{FOO}
+\def\footoo{FOO}
+\let\letfoo=\foo
+\def\usefoo{\foo}%
+\expandafter\let\expandafter\letnxfoo\noexpand\foo
+\expandafter\def\expandafter\eafoo\expandafter{\noexpand\foo}
 
-\catcode`[=13 \catcode`]=13 \def[{*}\def]{_}
-\test{\ifcat[] true \else false\fi}
-\test{\ifcat[\noexpand] true \else false\fi}
-\test{\ifcat\noexpand[] true \else false\fi}
-\test{\ifcat\noexpand[\noexpand] true \else false\fi}
-\test{\ifcat[[ true \else false\fi}
-\test{\ifcat]] true \else false\fi}
-\test{\ifcat\noexpand[[ true \else false\fi}
-\test{\ifcat\noexpand[\noexpand[ true \else false\fi}
-\test{\ifcat[* true \else false \fi}
-\test{\ifcat\noexpand[* true \else false\fi}
-\test{\ifcat_] true \else false \fi}
-\test{\ifcat_\noexpand] true \else false \fi}
-\test{\ifcat^^ true\else false\fi}
-\test{\ifcat\noexpand^\noexpand^ true\else false\fi}
-\test{\ifcat^\noexpand^ true\else false\fi}
-\test{\ifcat_^ true\else false\fi}
-\test{\ifcat\noexpand_\noexpand^ true\else false\fi}
+\newcount\ctr
+\newcount\four\four=4
+\newcount\fourtoo\fourtoo=4
+\countdef\ctrx=99\relax
+\countdef\ctry=99\relax
 
+Tests are: direct comparison, noexpand first, noexpand second, noexpand both.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-{\bf if tests}
-\test{\if\noexpand[\noexpand] true \else false\fi}
-\test{\if[] true \else false\fi}
-\test{\if[\noexpand] true \else false\fi}
-\test{\if[* true \else false \fi}
-\test{\if\noexpand[* true \else false\fi}
-\test{\if\noexpand^\noexpand^ true\else false\fi}
-\test{\if^\noexpand^ true\else false\fi}
-\test{\if^^ true\else false\fi}
-\def\foo{foo}%
-\def\reusefoo{\foo}%
-\edef\reusefoonp{\noexpand\foo}%
-\test{\if\reusefoo\reusefoonp true \else false \fi}
-\bye
+{\catcode`*=\active
+\def*{STAR}
+
+\section{Definitions}
+\tester{\foo}{\foo}
+\tester{\foo}{\footoo}
+\tester{\foo}{\letfoo}
+\tester{\foo}{\usefoo}
+\tester{\foo}{\letnxfoo}
+\tracingmacros=0\relax
+\tracingcommands=0\relax
+\tester{\foo}{\eafoo}
+\tester{\relax}{\letnxfoo}
+\tester{\relax}{\eafoo}
+{
+\testerx{\isnotdefined}{\isnotdefined}
+\testerx{\isnotdefinedA}{\isnotdefinedB}
+\testerx{\foo}{\isnotdefinedC}
+}
+\section{Counters}
+\tester{\ctr}{\ctr}
+\tester{\ctr}{\four}
+\tester{\four}{\fourtoo}
+\tester{\ctr}{\ctrx}
+\tester{\ctrx}{\ctry}
+}
+\section{Active Chars}
+{\catcode`[=\active \catcode`]=\active
+\def[{@}\def]{_}
+\tester{x}{x}
+\tester{\foo}{x}
+\tester{x}{*}
+\tester{\foo}{*}
+\tester{*}{*}
+\tester{[}{]}
+\tester{[}{[}
+\tester{]}{]}
+\tester{[}{@}
+\tester{^}{@}
+}
+\end{document}
