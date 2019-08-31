@@ -912,7 +912,7 @@ DefMacro('\expandafter Token Token', sub {
       {
         local $LaTeXML::CURRENT_TOKEN = $xtok;
         local $LaTeXML::NOEXPAND_THE  = undef;
-        my $x = $defn->invoke($gullet);
+        my $x = $defn->invoke($gullet, 1);
         @x = @$x if $x;    # Expand $xtok ONCE ONLY!
       }
       ($tok, @x); }
