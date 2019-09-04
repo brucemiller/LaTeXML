@@ -300,9 +300,12 @@ sub texlive_version {
   if ($ENV{"APPVEYOR"}) {
     # disabled under windows for now
     return 0; }
-  my $texlive_version = `tex --version`;
-  if ($texlive_version =~ /TeX Live (\d+)/) {
-    $texlive_version = int($1); }
+  if (my $tex = which("tex")) {
+    my $version_string = `$tex --version`;
+    if ($version_string =~ /TeX Live (\d+)/) {
+      $texlive_version = int($1); }
+    else {
+      $texlive_version = 0; } }
   else {
     $texlive_version = 0; }
   return $texlive_version; }
