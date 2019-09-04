@@ -182,17 +182,23 @@ sub show_pushback {
 #**********************************************************************
 # Not really 100% sure how this is supposed to work
 # See TeX Ch 20, p216 regarding noexpand, \edef with token list registers, etc.
-# Solution: Duplicate param tokens, stick NOTEXPANDED infront of expandable+undefined tokens.
+# Solution: Duplicate param tokens, mark  expandable+undefined tokens as dont-expand
+# Curious that we do NOT make the cs's \relax, but still defer expansion by marking as dont-expand
+# BUT the CS+CC are unchanged, rather than \relax!!!
 sub neutralizeTokens {
   my ($self, @tokens) = @_;
   my @result = ();
   foreach my $token (@tokens) {
-    if ($$token[1] == CC_PARAM) {    # Inline ->getCatcode!
-      push(@result, $token); }
-    elsif (!defined(my $meaning = LaTeXML::Core::State::lookupMeaning($STATE, $token)) ||
-      defined(my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token))) {
-      push(@result, Token('\noexpand', CC_NOTEXPANDED)); }
-    push(@result, $token); }
+    my $cc = $$token[1];
+    if ($cc == CC_PARAM) {    # Inline ->getCatcode!
+      push(@result, $token, $token); }
+    elsif ((($cc == CC_CS) || ($cc == CC_ACTIVE))
+      # AND it is either undefined, or is expandable!
+      && (!defined($STATE->lookupDefinition($token))
+        || defined($STATE->lookupExpandable($token)))) {
+      push(@result, bless [$$token[0], $cc, $token], 'LaTeXML::Core::Token'); }
+    else {
+      push(@result, $token); } }
   return @result; }
 
 #**********************************************************************
@@ -219,6 +225,7 @@ sub readToken {
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
   return $token if defined $token;
+  # Not in pushback, use the current mouth
   while (($token = $$self{mouth}->readToken()) && $hold_token[$cc = $$token[1]]) {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
@@ -253,16 +260,14 @@ sub readXToken {
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
-    elsif (($cc = $$token[1]) == CC_NOTEXPANDED) {    # NOTE: Inlined ->getCatcode
-          # Should only occur IMMEDIATELY after expanding \noexpand (by readXToken),
-          # so this token should never leak out through an EXTERNAL call to readToken.
-      return $self->readToken; }    # Just return the next token.
-    elsif ($cc == CC_COMMENT) {
+    elsif (($cc = $$token[1]) == CC_COMMENT) {    # NOTE: Inlined ->getCatcode
       return $token if $commentsok;
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
-    # Note: special-purpose lookup in State, for efficiency
+    elsif (my $unexpanded = $$token[2]) {               # Inline get_dont_expand
+      return $token; }                                  # Defer expansion (recursion?)
+        # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
       if (my $r = $defn->invoke($self)) {

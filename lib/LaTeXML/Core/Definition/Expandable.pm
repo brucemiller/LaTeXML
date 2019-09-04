@@ -29,6 +29,7 @@ sub new {
   if (ref $expansion eq 'LaTeXML::Core::Tokens') {
     Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
       "Expansion is " . ToString($expansion)) unless $expansion->isBalanced;
+    $expansion = Tokens(map { $_->without_dont_expand; } $expansion->unlist);
     # If expansion is Tokens, and no arguments, we're a "trivial macro"
     if (!$parameters) {
       $trivexpansion = $expansion->substituteParameters(); }
@@ -54,10 +55,10 @@ sub getExpansion {
 
 # Expand the expandable control sequence. This should be carried out by the Gullet.
 sub invoke {
-  my ($self, $gullet) = @_;
+  my ($self, $gullet, $onceonly) = @_;
   # shortcut for "trivial" macros; but only if not tracing & profiling!!!!
   if (my $triv = (!$STATE->lookupValue('TRACINGMACROS')) && $$self{trivial_expansion}) {
-    if (recursion_check($$self{cs}, $triv->unlist)) {
+    if (!$onceonly && recursion_check($$self{cs}, $triv->unlist)) {
       Error('recursion', $$self{cs}, $gullet,
         "Token " . Stringify($$self{cs}) . " expands into itself!",
         "defining as empty");

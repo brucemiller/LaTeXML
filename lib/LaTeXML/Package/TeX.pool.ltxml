@@ -731,8 +731,19 @@ DefConditionalI('\ifinner', undef, sub { 0; });
 
 DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
 
-DefConditional('\if XToken XToken',    sub { $_[1]->getCharcode == $_[2]->getCharcode; });
-DefConditional('\ifcat XToken XToken', sub { $_[1]->getCatcode == $_[2]->getCatcode; });
+DefParameterType('ExpandedIfToken', sub {
+    my ($gullet) = @_;
+    my $token = $gullet->readXToken(0);
+    if ($$token[2]) {    # marked dont_expand
+      if ($$token[2][1] == CC_ACTIVE) {    # treat as active character, if originally such
+        return $$token[2]; }
+      else {                               # otherwise, treat as relax for comparisons
+        return T_CS('\relax'); } }
+    else {                                 # normal case, treat token as-is
+      return $token; } });
+
+DefConditional('\if ExpandedIfToken ExpandedIfToken', sub { $_[1]->getCharcode == $_[2]->getCharcode; });
+DefConditional('\ifcat ExpandedIfToken ExpandedIfToken', sub { $_[1]->getCatcode == $_[2]->getCatcode; });
 
 DefConditional('\ifx Token Token', sub { XEquals($_[1], $_[2]); });
 
@@ -901,7 +912,7 @@ DefMacro('\expandafter Token Token', sub {
       {
         local $LaTeXML::CURRENT_TOKEN = $xtok;
         local $LaTeXML::NOEXPAND_THE  = undef;
-        my $x = $defn->invoke($gullet);
+        my $x = $defn->invoke($gullet, 1);
         @x = @$x if $x;    # Expand $xtok ONCE ONLY!
       }
       ($tok, @x); }
@@ -914,8 +925,8 @@ DefMacro('\expandafter Token Token', sub {
     else {
       ($tok, $xtok); } });
 
-# Insert magic token that Gullet knows not to expand the next one.
-DefMacroI('\noexpand', undef, Token('', CC_NOTEXPANDED));
+# Replace the next token with it's not-expanded variant
+DefMacro('\noexpand Token', sub { $_[1]->with_dont_expand; });
 
 DefMacroI('\topmark',        undef, Tokens());
 DefMacroI('\firstmark',      undef, Tokens());
@@ -1316,6 +1327,7 @@ sub shorthandDef {
   my $num = $stomach->getGullet->readNumber();
   my $reg = $type . $num->valueOf;
   DefRegisterI($cs, undef, $init,
+    name   => $reg,
     getter => sub { LookupValue($reg) || $init; },
     setter => sub { AssignValue($reg => $_[0]); });
   AfterAssignment();
@@ -2167,12 +2179,20 @@ DefPrimitive('\lowercase GeneralText', sub {
     $stomach->getGullet->unread(map { lcToken($_) } $tokens->unlist);
     return; });
 
+# Converts $tokens to a string in the fashion of \message and others:
+# doubles #, converts to string; optionally adds spaces after control sequences
+sub writableTokens {
+  my ($tokens, $addspaces) = @_;
+  my @tokens = $tokens->unlist;
+  if ($addspaces) {
+    @tokens = map { $_->getCatcode == CC_CS ? ($_, T_SPACE) : $_ } @tokens; }
+  @tokens = map { $_->getCatcode == CC_PARAM ? ($_, $_) : $_ } @tokens;
+  return UnTeX(Tokens(@tokens)); }
+
 DefPrimitive('\message{}', sub {
     my ($stomach, $stuff) = @_;
     return unless LookupValue('VERBOSITY') > -1;
-    # Expand, and insert spaces after CS tokens
-    my @tokens = map { $_->getCatcode == CC_CS ? ($_, T_SPACE) : $_ } Expand($stuff)->unlist;
-    print STDERR ToString(Tokens(@tokens)) . "\n";
+    print STDERR writableTokens(Expand($stuff), 1);
     return; });
 
 DefRegister('\errhelp' => Tokens());

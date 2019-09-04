@@ -341,6 +341,7 @@ sub lookupMeaning {
   my $e;
   if (my $cs = $token
     && $active_or_cs[$$token[1]]
+    && !$$token[2]    # return token itself, if \noexpand
     && $$token[0]) {
     my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
   else { return $token; } }
@@ -450,8 +451,9 @@ sub lookupDigestableDefinition {
     && ($defn = $$entry[0])) {
     # If a cs has been let to an executable token, lookup ITS defn.
     if (((ref $defn) eq 'LaTeXML::Core::Token')
-      && ($lookupname = $executable_primitive_name[$$defn[1]])
-      && ($entry      = $$self{meaning}{$lookupname})) {
+      # If we're digesting an unexpanded, act like \relax
+      && ($lookupname = ($$defn[2] ? '\relax' : $executable_primitive_name[$$defn[1]]))
+      && ($entry = $$self{meaning}{$lookupname})) {
       $defn = $$entry[0]; }
     return $defn; }
   return $token; }

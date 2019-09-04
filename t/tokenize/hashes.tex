@@ -1,0 +1,30 @@
+\documentclass{article}
+\makeatletter
+\def\a{[expanded a]}
+% Broken version: hash not in horiz mode.
+\def\allowhashBROKEN#1{
+  {\toks@{#1}\the\toks@}
+}
+
+% stack exchange query: Duplicated by \scantokens
+\def\allowhashBAD#1{
+  {\toks@{#1}\catcode`\#11\relax\scantokens\expandafter{\the\toks@}}%
+}
+% David Carlisle's version: Never actually creates T_PARAM!
+\def\allowhashDC{%%%%
+    \bgroup\catcode35=11\relax\afterassignment\egroup\gdef\foo}%
+
+\makeatother
+\begin{document}
+\section{Testing duplication of \#}
+\message{message: Two hashes: #, not one; \a.}
+
+\detokenize{detokenize: Two hashes: #, not one; \a.}
+
+\allowhashBAD{scantokens: two hashes: #, not one; \a.}
+%\end{document}
+
+%\documentclass{article}
+%\begin{document}
+\allowhashDC{Deferred tokenize: One hash: #, not two; \a.}\foo
+\end{document}

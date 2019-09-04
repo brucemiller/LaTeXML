@@ -309,12 +309,12 @@ sub XEquals {
   my $def1 = LookupMeaning($token1);    # token, definition object or undef
   my $def2 = LookupMeaning($token2);    # ditto
   if (defined $def1 != defined $def2) { # False, if only one has 'meaning'
-    return; }
+    return 0; }
   elsif (!defined $def1 && !defined $def2) {    # true if both undefined
     return 1; }
   elsif ($def1->equals($def2)) {                # If both have defns, must be same defn!
     return 1; }
-  return; }
+  return 0; }
 
 # Is defined in the LaTeX-y sense of also not being let to \relax.
 sub IsDefined {
@@ -375,7 +375,8 @@ sub Let {
   # If strings are given, assume CS tokens (most common case)
   $token1 = T_CS($token1) unless ref $token1;
   $token2 = T_CS($token2) unless ref $token2;
-  $STATE->assignMeaning($token1, $STATE->lookupMeaning($token2), $scope);
+  $STATE->assignMeaning($token1,
+    ($token2->get_dont_expand ? $token2 : $STATE->lookupMeaning($token2)), $scope);
   AfterAssignment();
   return; }
 
@@ -1088,7 +1089,7 @@ sub DefPrimitiveI {
   return; }
 
 my $register_options = {    # [CONSTANT]
-  readonly => 1, getter => 1, setter => 1 };
+  readonly => 1, getter => 1, setter => 1, name => 1 };
 my %register_types = (      # [CONSTANT]
   'LaTeXML::Common::Number'    => 'Number',
   'LaTeXML::Common::Dimension' => 'Dimension',
@@ -1109,7 +1110,7 @@ sub DefRegisterI {
   $cs = coerceCS($cs);
 ###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $type   = $register_types{ ref $value };
-  my $name   = ToString($cs);
+  my $name   = ToString($options{name} || $cs);
   my $getter = $options{getter}
     || sub { LookupValue(join('', $name, map { ToString($_) } @_)) || $value; };
   my $setter = $options{setter}
@@ -1122,6 +1123,7 @@ sub DefRegisterI {
   # Not really right to set the value!
   AssignValue(ToString($cs) => $value) if defined $value;
   $STATE->installDefinition(LaTeXML::Core::Definition::Register->new($cs, $paramlist,
+      replacement  => $name,
       registerType => $type,
       getter       => $getter, setter => $setter,
       readonly     => $options{readonly}),
