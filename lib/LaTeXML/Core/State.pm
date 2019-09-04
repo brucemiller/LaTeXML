@@ -341,6 +341,7 @@ sub lookupMeaning {
   my $e;
   if (my $cs = $token
     && $active_or_cs[$$token[1]]
+    && !$$token[2]    # return token itself, if \noexpand
     && $$token[0]) {
     my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
   else { return $token; } }

@@ -306,40 +306,15 @@ sub InstallDefinition {
 
 sub XEquals {
   my ($token1, $token2) = @_;
-  ### THIS IS A MESS!
-  ### Behaviour seems right, but Sort out what the logic should actually be!!!!!!
-###  my $dont_expand_1 = $token1->get_dont_expand && $STATE->lookupExpandable($token1) ? 1 : 0;
-###  my $dont_expand_2 = $token2->get_dont_expand && $STATE->lookupExpandable($token2) ? 1 : 0;
-  #  my $dont_expand_1 = $token1->get_dont_expand ? 1 : 0;
-  #  my $dont_expand_2 = $token2->get_dont_expand ? 1 : 0;
-  # If a token is \let to another token, redirect that first!
-  my $x;
-  if (!$token1->get_dont_expand && ($x = LookupMeaning($token1)) && $x->isaToken) {
-    $token1 = $x; }
-  if (!$token2->get_dont_expand && ($x = LookupMeaning($token2)) && $x->isaToken) {
-    $token2 = $x; }
-
-  my $dont_expand_1 = 0;
-  my $dont_expand_2 = 0;
-  if (my $t1 = $token1->get_dont_expand) {
-    $token1 = $t1; $dont_expand_1 = 1; }
-  if (my $t2 = $token2->get_dont_expand) {
-    $token2 = $t2; $dont_expand_2 = 1; }
-
-##  print STDERR "XEQUALS1: [".join(',',map { Stringify($_); } @$token1)."\n";
-##  print STDERR "XEQUALS2: [".join(',',map { Stringify($_); } @$token2)."\n";
-  if ($dont_expand_1 != $dont_expand_2) { return 0; }
-  elsif ($dont_expand_1 && $dont_expand_2) { return 1; }    # both unexpanded, identical
-  else {
-    my $def1 = LookupMeaning($token1);                      # token, definition object or undef
-    my $def2 = LookupMeaning($token2);                      # ditto
-    if (defined $def1 != defined $def2) {                   # False, if only one has 'meaning'
-      return 0; }
-    elsif (!defined $def1 && !defined $def2) {              # true if both undefined
-      return 1; }
-    elsif ($def1->equals($def2)) {                          # If both have defns, must be same defn!
-      return 1; }
-    return 0; } }
+  my $def1 = LookupMeaning($token1);    # token, definition object or undef
+  my $def2 = LookupMeaning($token2);    # ditto
+  if (defined $def1 != defined $def2) { # False, if only one has 'meaning'
+    return 0; }
+  elsif (!defined $def1 && !defined $def2) {    # true if both undefined
+    return 1; }
+  elsif ($def1->equals($def2)) {                # If both have defns, must be same defn!
+    return 1; }
+  return 0; }
 
 # Is defined in the LaTeX-y sense of also not being let to \relax.
 sub IsDefined {
