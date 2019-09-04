@@ -26,6 +26,8 @@ our @EXPORT = (qw(&latexml_ok &latexml_tests),
 sub latexml_tests {
   my ($directory, %options) = @_;
   my $DIR;
+  if ($options{texlive_min} && (texlive_version() < $options{texlive_min})) {
+    return done_testing(); }
   if (!opendir($DIR, $directory)) {
     # Can't read directory? Fail (assumed single) test.
     return do_fail($directory, "Couldn't read directory $directory:$!"); }
@@ -288,6 +290,22 @@ sub get_filecontent {
     push @lines, '';
   }
   return \@lines; }
+
+our $texlive_version;
+
+sub texlive_version {
+  if (defined $texlive_version) {
+    return $texlive_version; }
+  my $extra_flag = '';
+  if ($ENV{"APPVEYOR"}) {
+    # disabled under windows for now
+    return 0; }
+  my $texlive_version = `tex --version`;
+  if ($texlive_version =~ /TeX Live (\d+)/) {
+    $texlive_version = int($1); }
+  else {
+    $texlive_version = 0; }
+  return $texlive_version; }
 
 # TODO: Reconsider what else we need to test, ideas below:
 
