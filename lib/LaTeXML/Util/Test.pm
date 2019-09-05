@@ -81,14 +81,29 @@ sub latexml_tests {
 sub check_requirements {
   my ($test, $ntests, @reqmts) = @_;
   foreach my $reqmts (@reqmts) {
-    next unless defined $reqmts;
-    foreach my $reqmt (!$reqmts ? () : (ref $reqmts ? @$reqmts : $reqmts)) {
+    next unless $reqmts;
+    my @required_packages = ();
+    my $texlive_min       = 0;
+    if (!(ref $reqmts)) {
+      @required_packages = ($reqmts); }
+    elsif (ref $reqmts eq 'ARRAY') {
+      @required_packages = @$reqmts; }
+    elsif (ref $reqmts eq 'HASH') {
+      @required_packages = $$reqmts{packages};
+      $texlive_min       = $$reqmts{texlive_min} || 0; }
+    foreach my $reqmt (@required_packages) {
       if (pathname_kpsewhich($reqmt) || pathname_find($reqmt)) { }
       else {
         my $message = "Missing requirement $reqmt for $test";
         diag("Skip: $message");
         skip($message, $ntests);
-        return 0; } } }
+        return 0; } }
+    # Check if specific texlive versions are required for this test
+    if ($texlive_min && (texlive_version() < $texlive_min)) {
+      my $message = "Minimal texlive $texlive_min requirement not met for $test";
+      diag("Skip: $message");
+      skip($message, $ntests);
+      return 0; } }
   return 1; }
 
 sub do_fail {
