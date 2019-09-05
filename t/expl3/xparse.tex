@@ -1,9 +1,11 @@
 \documentclass{article}
 \usepackage{xparse}
-\begin{document}
 % example from documentation at: https://mirror.las.iastate.edu/tex-archive/macros/latex/contrib/l3packages/xparse.pdf
 \NewDocumentCommand {\conjugate} { m O{#1ed} O{#2} } {(#1,#2,#3)}
+\begin{document}
 \conjugate {walk}            % => (walk,walked,walked)
+
 \conjugate {find} [found]    % => (find,found,found)
+
 \conjugate {do} [did] [done] % => (do,did,done)
 \end{document}

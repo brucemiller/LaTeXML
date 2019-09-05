@@ -26,6 +26,9 @@ our @EXPORT = (qw(&latexml_ok &latexml_tests),
 sub latexml_tests {
   my ($directory, %options) = @_;
   my $DIR;
+  if ($options{texlive_min} && (texlive_version() < $options{texlive_min})) {
+    plan skip_all => "Requirement minimal texlive $options{texlive_min} not met.";
+    return done_testing(); }
   if (!opendir($DIR, $directory)) {
     # Can't read directory? Fail (assumed single) test.
     return do_fail($directory, "Couldn't read directory $directory:$!"); }
@@ -78,14 +81,29 @@ sub latexml_tests {
 sub check_requirements {
   my ($test, $ntests, @reqmts) = @_;
   foreach my $reqmts (@reqmts) {
-    next unless defined $reqmts;
-    foreach my $reqmt (!$reqmts ? () : (ref $reqmts ? @$reqmts : $reqmts)) {
+    next unless $reqmts;
+    my @required_packages = ();
+    my $texlive_min       = 0;
+    if (!(ref $reqmts)) {
+      @required_packages = ($reqmts); }
+    elsif (ref $reqmts eq 'ARRAY') {
+      @required_packages = @$reqmts; }
+    elsif (ref $reqmts eq 'HASH') {
+      @required_packages = $$reqmts{packages};
+      $texlive_min       = $$reqmts{texlive_min} || 0; }
+    foreach my $reqmt (@required_packages) {
       if (pathname_kpsewhich($reqmt) || pathname_find($reqmt)) { }
       else {
         my $message = "Missing requirement $reqmt for $test";
         diag("Skip: $message");
         skip($message, $ntests);
-        return 0; } } }
+        return 0; } }
+    # Check if specific texlive versions are required for this test
+    if ($texlive_min && (texlive_version() < $texlive_min)) {
+      my $message = "Minimal texlive $texlive_min requirement not met for $test";
+      diag("Skip: $message");
+      skip($message, $ntests);
+      return 0; } }
   return 1; }
 
 sub do_fail {
@@ -288,6 +306,25 @@ sub get_filecontent {
     push @lines, '';
   }
   return \@lines; }
+
+our $texlive_version;
+
+sub texlive_version {
+  if (defined $texlive_version) {
+    return $texlive_version; }
+  my $extra_flag = '';
+  if ($ENV{"APPVEYOR"}) {
+    # disabled under windows for now
+    return 0; }
+  if (my $tex = which("tex")) {
+    my $version_string = `$tex --version`;
+    if ($version_string =~ /TeX Live (\d+)/) {
+      $texlive_version = int($1); }
+    else {
+      $texlive_version = 0; } }
+  else {
+    $texlive_version = 0; }
+  return $texlive_version; }
 
 # TODO: Reconsider what else we need to test, ideas below:
 
