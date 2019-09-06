@@ -254,7 +254,17 @@ sub convert {
   # End daemon run, by popping frame:
   $latexml->withState(sub {
       my ($state) = @_;    # Remove current state frame
+      ## TODO: This section of option preparations can be factored out as a subroutine if it grows further
+      ##       the general idea is that right before the "pop" of the daemon frame, we have access to all meaningful
+      ##       global state values, and we can preserve the relevant ones for the post-processing stage
+      ## BEGIN POST-PROCESSING-PREP
       $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS'); # save the searchpaths for post-processing
+      if ($state->lookupValue('LEXEMATIZE_MATH')) {  # save potential request for serializing math lexemes
+        $$opts{math_formats} ||= [];
+        push @{ $$opts{math_formats} }, 'lexemes';
+        # recheck need for parallel
+        $$opts{parallelmath} = 1 if (@{ $$opts{math_formats} } > 1); }
+      ## END POST-PROCESSING-PREP
       $state->popDaemonFrame;
   });
   if ($LaTeXML::UNSAFE_FATAL) {
@@ -495,7 +505,7 @@ sub convert_post {
         elsif ($fmt eq 'mathtex') {
           require LaTeXML::Post::TeXMath;
           push(@mprocs, LaTeXML::Post::TeXMath->new(%PostOPS)); }
-        elsif ($fmt eq 'mathlex') {
+        elsif ($fmt eq 'lexemes') {
           require LaTeXML::Post::LexMath;
           push(@mprocs, LaTeXML::Post::LexMath->new(%PostOPS)); }
       }
