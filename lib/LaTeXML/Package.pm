@@ -1532,7 +1532,9 @@ sub defmath_wrapped {
       "<ltx:XMWrap $cons_attr role='#role' scriptpos='#scriptpos' stretchy='#stretchy'>"
         . "#1"
         . "</ltx:XMWrap>",
-      defmath_common_constructor_options($cs, $presentation, %options)), $options{scope});
+      defmath_common_constructor_options($cs, $presentation, %options),
+      reversion => sub { (($LaTeXML::DUAL_BRANCH || '') eq 'content' ? $cs : Revert($_[1])); }),
+    $options{scope});
   return; }
 
 sub defmath_prim {

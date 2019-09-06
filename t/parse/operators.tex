@@ -1,4 +1,6 @@
 \documentclass{article}
+\usepackage{amsmath}
+\usepackage{amsopn}
 \usepackage{latexml}
 \lxDeclare[role=ID]{$a$}%
 \lxDeclare[role=ID]{$b$}%
@@ -11,12 +13,18 @@
 \lxDeclare[role=OPERATOR]{$D$}%
 \lxDeclare[role=OPERATOR]{$G$}%
 \lxDeclare[role=OPERATOR]{$H$}%
+
+\DeclareMathOperator{\diffd}{\operatorname{d}\!}
 \begin{document}
 
 \section{Integration and Summation}
 \[ \sum_{a=0}^\infty f_a(c^a) \]
 \[ \sum_{a=0}^\infty \sum_{b=-a}^a f_a(c^a) g_b(c^b) \]
 \[ \sum_{a=0}^\infty \sum_{b=-a}^a \lim_{c\rightarrow 0} f_a(c^a) g_b(c^b) \]
+
+\[ \int_a^b f(x) dx \]
+\[ \int_a^b f(x) \diffd x \]
+\[ \diffd u = \diffd x + \diffd y \]
 
 \section{Operators}
 \[  D a \]
