@@ -89,8 +89,8 @@ sub check_requirements {
     elsif (ref $reqmts eq 'ARRAY') {
       @required_packages = @$reqmts; }
     elsif (ref $reqmts eq 'HASH') {
-      @required_packages = $$reqmts{packages};
-      $texlive_min       = $$reqmts{texlive_min} || 0; }
+      @required_packages = (ref $$reqmts{packages} eq 'ARRAY' ? @{ $$reqmts{packages} } : $$reqmts{packages});
+      $texlive_min = $$reqmts{texlive_min} || 0; }
     foreach my $reqmt (@required_packages) {
       if (pathname_kpsewhich($reqmt) || pathname_find($reqmt)) { }
       else {
