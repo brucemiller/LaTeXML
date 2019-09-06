@@ -1387,19 +1387,22 @@ sub DefMathI {
   if (length($csname) == 1) {
     defmath_rewrite($cs, %options); }
 
-  # If the presentation is complex, and involves arguments,
-  # we will create an XMDual to separate content & presentation.
+  # If the macro involves arguments,
+  # we will create an XMDual to separate simple content application
+  # from the (likely) convoluted presentation.
   elsif ((ref $presentation eq 'CODE')
     || ((ref $presentation) && grep { $_->equals(T_PARAM) } $presentation->unlist)
-    || (!(ref $presentation) && ($presentation =~ /\#\d|\\./))
-    || ((ref $presentation) && (grep { $_->isExecutable } $presentation->unlist))) {
+    || (!(ref $presentation) && ($presentation =~ /\#\d|\\./))) {
     defmath_dual($cs, $paramlist, $presentation, %options); }
+  # If no arguments, but the presentation involves macros, presumably with internal structure,
+  # we'll wrap the presentation in ordet to capture the various semantic attributes
+  elsif ((ref $presentation) && (grep { $_->isExecutable } $presentation->unlist)) {
+    defmath_wrapped($cs, $presentation, %options); }
 
   # EXPERIMENT: Introduce an intermediate case for simple symbols
   # Define a primitive that will create a Box with the appropriate set of XMTok attributes.
   elsif (($nargs == 0) && !grep { !$$simpletoken_options{$_} } keys %options) {
     defmath_prim($cs, $paramlist, $presentation, %options); }
-
   else {
     defmath_cons($cs, $paramlist, $presentation, %options); }
   AssignValue($csname . ":locked" => 1) if $options{locked};
@@ -1505,6 +1508,30 @@ sub defmath_dual {
           . join('', map { "#$_" }
             ($options{reorder} ? @{ $options{reorder} } : (1 .. $nargs)))
           . "</ltx:XMApp>"),
+      defmath_common_constructor_options($cs, $presentation, %options)), $options{scope});
+  return; }
+
+# The case where there are NO arguments, but the presentation is (potentially) complex.
+sub defmath_wrapped {
+  my ($cs, $presentation, %options) = @_;
+  my $csname  = $cs->getString;
+  my $wrap_cs = T_CS($csname . "\@wrapper");
+  my $pres_cs = T_CS($csname . "\@presentation");
+  # Make the original CS expand into a wrapper constructor invoking a presentation
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, undef,
+      Tokens($wrap_cs, T_BEGIN, $pres_cs, T_END)),
+    $options{scope});
+  # Make the presentation macro.
+  $presentation = TokenizeInternal($presentation) unless ref $presentation;
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, undef, $presentation),
+    $options{scope});
+  # Make the wrapper constructor
+  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
+  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($wrap_cs,
+      parseParameters('{}', $csname),
+      "<ltx:XMWrap $cons_attr role='#role' scriptpos='#scriptpos' stretchy='#stretchy'>"
+        . "#1"
+        . "</ltx:XMWrap>",
       defmath_common_constructor_options($cs, $presentation, %options)), $options{scope});
   return; }
 
