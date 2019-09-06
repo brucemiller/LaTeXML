@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml" options="mathparserspeculate"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Function speculations</title>
+    <para xml:id="S1.p1">
+      <equation xml:id="S1.Ex1">
+        <Math mode="display" tex="f(x)" text="f * x" xml:id="S1.Ex1.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" possibleFunction="yes" role="UNKNOWN">f</XMTok>
+              <XMDual>
+                <XMRef idref="S1.Ex1.m1.1"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S1.Ex1.m1.1">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+</document>

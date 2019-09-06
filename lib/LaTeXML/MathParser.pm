@@ -191,7 +191,7 @@ sub printNode {
     my ($tag, $attr, @children) = @$node;
     my @keys = sort keys %$attr;
     return "<$tag"
-      . (@keys ? ' ' . join(' ', map { "$_='$$attr{$_}'" } @keys) : '')
+      . (@keys ? ' ' . join(' ', map { "$_='" . ($$attr{$_} || '') . "'" } @keys) : '')
       . (@children
       ? ">\n" . join('', map { printNode($_) } @children) . "</$tag>"
       : '/>')
@@ -673,7 +673,6 @@ sub parse_single {
     # Now do the actual parse.
     ($result, $unparsed) = $self->parse_internal($rule, @nodes);
   }
-
   # Failure? No result or uparsed lexemes remain.
   # NOTE: Should do script hack??
   if ((!defined $result) || $unparsed) {
@@ -688,8 +687,6 @@ sub parse_single {
     if ($LaTeXML::MathParser::DEBUG) {
       print STDERR "\n=>" . printNode($result) . "\n" . ('=' x 60) . "\n"; }
     return $result; } }
-
-use Data::Dumper;
 
 sub node_to_lexeme {
   my ($self, $node) = @_;

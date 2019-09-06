@@ -1,0 +1,23 @@
+\documentclass{article}
+\usepackage{latexml}
+\usepackage{amsmath}
+\begin{document}
+
+% Parse rule tree: 
+% 1 AnythingAny 
+% 2  Formulae  
+% 3  ( Formula moreFormulae )  
+% 4  (( Expression extendFormula ) moreFormulae )  
+% 5  ((( SignedTerm moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 6  (((( Term ) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 7  ((((( Factor moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 8  (((((( OPERATOR addScripts nestOperators addOpFunArgs ) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 9  (((((( OPERATOR addScripts ( OPERATOR addScripts nestOperators ) ( APPLYOP barearg )) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 10  (((((( OPERATOR addScripts ( OPERATOR addScripts ( TRIGFUNCTION addScripts )) ( APPLYOP ( aBarearg moreBareargs ))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 11  (((((( OPERATOR addScripts ( OPERATOR addScripts ( TRIGFUNCTION addScripts )) ( APPLYOP (( preScripted doubtArgs ) moreBareargs ))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% 12  (((((( OPERATOR addScripts ( OPERATOR addScripts ( TRIGFUNCTION addScripts )) ( APPLYOP ((( <matchrule:$arg[0]> addScripts ) doubtArgs ) moreBareargs ))) moreFactors )) moreTerms addExpressionModifier ) extendFormula ) moreFormulae )  
+% lex  (((((( OPERATOR ( OPERATOR ( TRIGFUNCTION )) ( APPLYOP ((( <matchrule:$arg[0]> )))))))))) 
+
+$\partial \partial \sin x$ 
+
+\end{document}
