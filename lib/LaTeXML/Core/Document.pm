@@ -415,10 +415,9 @@ sub finalize_rec {
     elsif ($type == XML_TEXT_NODE) {
       # Remove any pending declarations that can't be on $FONT_ELEMENT_NAME
       my $elementname = $pending_declaration{element}{value} || $FONT_ELEMENT_NAME;
+      delete $pending_declaration{element};    # If any...
       foreach my $key (keys %pending_declaration) {
-        # make sure we also delete the element key we just used, or one can infinitely recurse on ltx:text
-        if (($key eq 'element') || !$self->canHaveAttribute($elementname, $key)) {
-          delete $pending_declaration{$key}; } }
+        delete $pending_declaration{$key} unless $self->canHaveAttribute($elementname, $key); }
       if ($self->canContain($qname, $elementname)
         && scalar(keys %pending_declaration)) {
         # Too late to do wrapNodes?
@@ -426,11 +425,11 @@ sub finalize_rec {
         # Add (or combine) attributes
         foreach my $attr (keys %pending_declaration) {
           my $value = $pending_declaration{$attr}{value};
-          if ($attr eq 'class') {    # Generalize?
+          if ($attr eq 'class') {              # Generalize?
             if (my $ovalue = $text->getAttribute('class')) {
               $value .= ' ' . $ovalue; } }
           $self->setAttribute($text, $attr => $value); }
-        $self->finalize_rec($text);    # Now have to clean up the new node!
+        $self->finalize_rec($text);            # Now have to clean up the new node!
       }
   } }
 
