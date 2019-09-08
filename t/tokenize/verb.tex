@@ -32,4 +32,8 @@ Some inline \verb|\verb| verbatim.
 % and this:
 x\hbox to 2in  {\bf x\verb|\verb|y.}y
 
+% Also, make sure \verb is using the Gullet API to obtain any \expandafter tokens
+\def\hello{Hello to all the verbatim text one could want}
+\expandafter\verb\expandafter|\hello .|
+
 \end{document}
