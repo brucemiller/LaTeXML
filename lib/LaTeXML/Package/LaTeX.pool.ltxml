@@ -3352,6 +3352,7 @@ DefPrimitive('\@array@bindings [] AlignmentTemplate', sub {
     if ($str != 1) {
       $$attr{rowsep} = Dimension(($str - 1) . 'em'); }
     alignmentBindings($template, 'math', attributes => $attr);
+    MergeFont(mathstyle => 'text');
     return; });
 
 DefMacro('\array[]{}',
