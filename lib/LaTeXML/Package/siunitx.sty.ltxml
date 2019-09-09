@@ -69,20 +69,12 @@ sub six_getChoice {
   $v =~ s/^\s*//; $v =~ s/\s*$//;
   return $v; }
 
-sub trim_spaces {    # Haven't I written this code several times?
-  my ($tokens) = @_;
-  return unless $tokens;
-  my @tokens = $tokens->unlist;
-  while (@tokens && $tokens[0]->equals(T_SPACE))  { shift(@tokens); }
-  while (@tokens && $tokens[-1]->equals(T_SPACE)) { pop(@tokens); }
-  return Tokens(@tokens); }
-
 sub six_setup {
   my ($kv) = @_;
   my $hash = $kv->getKeyVals;
   foreach my $key (keys %$hash) {
     my $value = $kv->getValue($key);
-    AssignValue('SIX_' . $key => trim_spaces($value)); }
+    AssignValue('SIX_' . $key => $value); }
   return; }
 
 DefPrimitive('\sisetup RequiredKeyVals:SIX', sub { six_setup($_[1]); });

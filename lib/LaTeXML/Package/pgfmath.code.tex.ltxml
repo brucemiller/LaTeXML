@@ -282,7 +282,7 @@ sub pgfmathparse {
   my ($gullet, $tokens) = @_;
   SetCondition(T_CS('\ifpgfmathunitsdeclared'),     0, 'global');
   SetCondition(T_CS('\ifpgfmathmathunitsdeclared'), 0, 'global');
-  my $string = (ref $tokens ? ToString(stripBraces(Expand($tokens))) : $tokens);
+  my $string = (ref $tokens ? ToString(Expand($tokens)->stripBraces) : $tokens);
   $string =~ s/^\s+//; $string =~ s/\s+$//;
   my $input = $string;
 ###    if ($string =~/^+/){        # Don't parse as expression, just as glue. ???

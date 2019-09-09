@@ -231,6 +231,10 @@ sub unlist {
   my ($self) = @_;
   return ($self); }
 
+sub stripBraces {
+  my ($self) = @_;
+  return ($self); }
+
 my @NEUTRALIZABLE = (    # [CONSTANT]
   0, 0, 0, 1,
   1, 0, 1, 1,

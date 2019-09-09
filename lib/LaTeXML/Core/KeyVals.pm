@@ -339,7 +339,7 @@ sub readFrom {
           push(@toks, $tok,
             ($tok->getCatcode == CC_BEGIN ? $gullet->readBalanced : ())); }
         # reparse (and expand) the tokens representing the value
-        $value = Tokens(@toks);
+        $value = Tokens(@toks)->stripBraces;
         $value = $keydef->reparse($gullet, $value) if $keydef && $value;
 
         # and cleanup
