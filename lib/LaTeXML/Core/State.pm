@@ -115,7 +115,7 @@ sub new {
       $$self{catcode}{ chr($c) } = [CC_LETTER];
       $$self{catcode}{ chr($c + ord('a') - ord('A')) } = [CC_LETTER]; }
   }
-  $$self{value}{SPECIALS} = [['^', '_', '@', '~', '&', '$', '#', "'"]];
+  $$self{value}{SPECIALS} = [['^', '_', '~', '&', '$', '#', "'"]];
   if ($options{catcodes} eq 'style') {
     $$self{catcode}{'@'} = [CC_LETTER]; }
   $$self{mathcode}            = {};
