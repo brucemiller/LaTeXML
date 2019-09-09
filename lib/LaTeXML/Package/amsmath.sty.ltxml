@@ -64,7 +64,8 @@ DefMacroI('\AmS',     undef, "AmS");
 # that indicate the requested alignment points or linebreaks.
 #  Currently hints are discarded before parsing.
 
-DefConditional('\iftagsleft@');    # but we won't use it?
+DefConditional('\ifmeasuring@');    # but we won't use it?
+DefConditional('\iftagsleft@');     # but we won't use it?
 Let('\notag', '\nonumber');
 
 DefMacro('\tag OptionalMatch:* {}',
