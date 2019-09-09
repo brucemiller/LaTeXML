@@ -4,4 +4,7 @@
 #**********************************************************************
 use LaTeXML::Util::Test;
 
-latexml_tests("t/structure", requires=>{csquotes=>'csquotes.sty'});
+latexml_tests("t/structure",
+  requires => {
+    csquotes => 'csquotes.sty',
+    glossary => 'glossaries.sty' });
