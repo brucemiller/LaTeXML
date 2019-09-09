@@ -751,6 +751,10 @@ DefMacroI('\@pkgextension', undef, 'sty');
 Let('\@currext',          '\@empty');
 Let('\@currname',         '\@empty');
 Let('\@classoptionslist', '\relax');
+# Note that there are variables used in Package.pmfor these,
+# but they are NOT tied to these macros. Do they need to be?
+DefMacroI('\@declaredoptions', undef, undef);
+DefMacroI('\@curroptions',     undef, undef);
 
 DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
   "<?latexml package='#2' ?#1(options='#1')?>",
