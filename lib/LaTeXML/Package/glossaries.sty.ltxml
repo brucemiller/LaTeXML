@@ -1,0 +1,108 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  glossaries                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+InputDefinitions('glossaries', type => 'sty', noltxml => 1);
+RequirePackage('xspace');
+
+DefMacro('\glsnoidxstripaccents', '');    # Silence pointless warnings
+
+#======================================================================
+# The various \gls{label},... macros eventually call \@gls@link to typeset the term
+# We'll override it to wrap the results in ltx:glossaryref
+Let('\lx@orig@glossaries@gls@link', '\@gls@link');
+DefMacro('\@gls@link[]{}{}',
+  '\lx@glossaries@gls@link{#2}{\lx@orig@glossaries@gls@link[#1]{#2}{#3}}');
+DefConstructor('\lx@glossaries@gls@link{}{}',
+  "<ltx:glossaryref key='#1'>#2</ltx:glossaryref>");
+
+# This seems necessary, although it ought to be built in???
+DefMacro('\glspostlinkhook', '\xspace');
+
+#======================================================================
+# The various glossary and acronym defining macros
+#   \newglossaryentry { label }{ kv }
+#   \longnewglossaryentry { label }{ kv }
+#   \newacronym { short }{ long }
+# ultimately call \gls@defglossaryentry, # which normalizes and completes the various bits
+#of data and then calls \@newglossaryentryposthook
+# We'll use that hook to record the data in the Document.
+# Note that there's some redundancy of keywords,
+# in particular w.r.t acronym vs glossary use cases....
+#DefMacro('\@newglossaryentryprehook', '\let\SS\relax');
+DefMacro('\@newglossaryentryposthook', <<'EoTeX');
+\lx@glossaries@newentry{\@glo@type}{\glslabel}{
+%label=\glslabel,
+name=\@glo@name,
+description=\@glo@desc,
+%descriptionpl=\@glo@descplural,
+%type=\@glo@type,
+symbol=\@glo@symbol,
+symbolplural=\@glo@symbolplural,
+text=\@glo@text,
+plural=\@glo@plural,
+first=\@glo@first,
+firstplural=\@glo@firstplural,
+soft=\@glo@sort,
+counter=\@glo@counter,
+see=\@glo@see,
+parent=\@glo@parent,
+prefix=\@glo@prefix,
+%\@gls@initnonumberlist,
+%\@glo@useri,
+%\@glo@userii,
+%\@glo@useriii,
+%\@glo@useriv,,
+%\@glo@userv,
+%\@glo@uservi,
+short=\@glo@short,
+shortplural=\@glo@shortpl,
+long=\@glo@long,
+longplural=\@glo@longpl
+}
+EoTeX
+
+DefConstructor('\lx@glossaries@newentry{}{} RequiredKeyVals', sub {
+    my ($document, $list, $key, $kv) = @_;
+    $key = ToString($key);
+    $document->openElement('ltx:glossarydefinition', key => $key, inlist => $list);
+    my $hash = GetKeyVals($kv);
+    foreach my $role (sort keys %$hash) {
+      if (my $value = $kv->getValue($role)) {
+        $document->insertElement('ltx:glossaryphrase', $value,
+          key => $key, role => $role)
+          if ToString($value); } }
+    $document->closeElement('ltx:glossarydefinition'); },
+  #             properties=>sub { %{ GetKeyVals($_[2]) }; }
+);
+
+#======================================================================
+# Redefine \printglossary and friends to produce ltx:glossary
+DefMacro('\printglossary', '\global\let\warn@noprintglossary\relax\lx@printglossary{main}');
+DefMacro('\printglossaries', '\global\let\warn@noprintglossary\relax\lx@printglossary{\@glo@types}');
+DefMacro('\printnoidxglossary', '\global\let\warn@noprintglossary\relax\lx@printglossary{main}');
+DefMacro('\printnoidxglossaries', '\global\let\warn@noprintglossary\relax\lx@printglossary{\@glo@types}');
+
+DefConstructor('\lx@printglossary{}',
+  "<ltx:glossary lists='#lists'/>",
+  properties => sub {
+    my $lists = ToString($_[1]);
+    $lists =~ s/^\s*,?//;
+    $lists =~ s/,?\s*$//;
+    (lists => $lists); });
+
+#======================================================================
+1;
