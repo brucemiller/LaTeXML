@@ -322,10 +322,9 @@ sub readToken {
 # Returns an empty Tokens list, if there is no input
 
 sub readTokens {
-  my ($self, $until) = @_;
+  my ($self) = @_;
   my @tokens = ();
   while (defined(my $token = $self->readToken())) {
-    last if $until and $token->getString eq $until->getString;
     push(@tokens, $token); }
   while (@tokens && $tokens[-1]->getCatcode == CC_SPACE) {    # Remove trailing space
     pop(@tokens); }
@@ -368,7 +367,7 @@ sub isEOL {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -412,10 +411,9 @@ Returns whether there is more data to read.
 
 Return a description of current position in the source, for reporting errors.
 
-=item C<< $tokens = $mouth->readTokens($until); >>
+=item C<< $tokens = $mouth->readTokens; >>
 
-Reads tokens until one matches C<$until> (comparing the character, but not catcode).
-This is useful for the C<\verb> command.
+Reads all remaining tokens in the mouth, removing any trailing space catcode tokens
 
 =item C<< $lines = $mouth->readRawLine; >>
 
