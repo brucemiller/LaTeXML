@@ -1027,10 +1027,15 @@ sub floatToAttribute {
 # find a node that can accept a label.
 # A bit more than just whether the element can have the attribute, but
 # whether it has an id (and ideally either a refnum or title)
+# Moreover, can commonly occur after an already-closed (probably empty) element like bibliography
 sub floatToLabel {
   my ($self) = @_;
-  my $key = 'labels';
-  my @ancestors  = grep { $_->nodeType == XML_ELEMENT_NODE } getInsertionCandidates($$self{node});
+  my $key    = 'labels';
+  my $start  = $$self{node};
+  if ($start && ($start->nodeType == XML_ELEMENT_NODE)) {
+    if (my $last = $start->lastChild) {
+      $start = $last; } }
+  my @ancestors  = grep { $_->nodeType == XML_ELEMENT_NODE } getInsertionCandidates($start);
   my @candidates = @ancestors;
   # Should we only accept a node that already has an id, or should we create an id?
   while (@candidates
