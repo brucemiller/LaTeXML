@@ -40,6 +40,14 @@ DefPrimitive('\lstset RequiredKeyVals:LST', sub { lstActivate($_[1]); return; })
 AssignValue(LISTINGS_PREAMBLE        => []);
 AssignValue(LISTINGS_PREAMBLE_BEFORE => []);
 AssignValue(LISTINGS_POSTAMBLE       => []);
+
+# Like PushValue, but local, not global
+sub lstPushValueLocally {
+  my ($list, @values) = @_;
+  my $prev = LookupValue($list);
+  AssignValue($list => [($prev ? @$prev : ()), @values]);
+  return; }
+
 our $EMPTY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'none');
 
 DefMacro('\lstinline OptionalKeyVals:LST', sub {
@@ -108,7 +116,7 @@ DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
     DefMacroI(T_CS("\\begin{$name}"), LaTeXML::Package::convertLaTeXArgs($n, $opt), sub {
         my ($gullet, @args) = @_;
         $STATE->getStomach->bgroup;
-        PushValue(LISTINGS_POSTAMBLE => $end->substituteParameters(@args));
+        lstPushValueLocally(LISTINGS_POSTAMBLE => $end->substituteParameters(@args));
         # This will typically have \lstset, equivalent of lstActivate
         Digest($start->substituteParameters(@args));
         my $text = listingsReadRawLines($gullet, $name);
@@ -142,7 +150,7 @@ sub lstProcessDisplay {
     if (Equals($t[0], T_OTHER('['))) {
       while (!Equals($t[0], T_OTHER(']'))) { push(@tc, shift(@t)); } }
     $numbered = 1;
-    $caption = Invocation(T_CS('\lstlisting@makecaption'), (@tc ? Tokens(@tc) : undef), Tokens(@t)); }
+    $caption  = Invocation(T_CS('\lstlisting@makecaption'), (@tc ? Tokens(@tc) : undef), Tokens(@t)); }
   elsif (($x = lstGetTokens('title')) && scalar($x->unlist)) {
     $caption = Invocation(T_CS('\lstlisting@maketitle'), $x); }
   elsif (($x = lstGetTokens('toctitle')) && scalar($x->unlist)) {
@@ -195,7 +203,7 @@ DefConstructor('\@listings {}',
     . "#1"
     . "</ltx:float>",
   beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
-  afterDigest => sub {
+  afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
     RescueCaptionCounters('lstlisting', $whatsit); });
 
@@ -206,7 +214,7 @@ DefConstructor('\@@listings {}',
     . "#tags"
     . "#1"
     . "</ltx:float>",
-  properties => sub { RefStepID('lstlisting'); },
+  properties   => sub { RefStepID('lstlisting'); },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
@@ -474,6 +482,14 @@ sub lstDeleteClassWords {
     delete $$wordslist{$word}{class} if $$wordslist{$word}{class} eq $class; }
   return; }
 
+sub lstDeleteClass {
+  my ($class) = @_;
+  my $wordslist = LookupValue('LST_WORDS');
+  foreach my $word (keys %$wordslist) {
+    delete $$wordslist{$word}{class}
+      if $$wordslist{$word}{class} && ($$wordslist{$word}{class} eq $class); }
+  return; }
+
 # This probably needs a different way of decoding $type.
 #   General: b,d,l,s,n  (+ i)
 #   String: b,d,m,bd  (backslash, doubled, matlab-like(?) or backslash or doubled)
@@ -491,17 +507,17 @@ sub lstAddDelimiter {
   my $quoted;
   my ($open, $close, $openre, $closere, $cssclass);
   if ($type eq 'b') {    # Balanced; same delim open & close; but not when slashed
-    $open = $close = $delims;
+    $open    = $close = $delims;
     $openre  = lstRegexp($open);
     $closere = "(?<!\\\\)$openre";
     $quoted  = "\\\\\\$openre"; }
   elsif ($type eq 'd') {    # Doubled: same delim open & close; but not when doubled.
-    $open = $close = $delims;
+    $open    = $close = $delims;
     $openre  = lstRegexp($open);
     $closere = "(?<!$openre)$openre(?!$openre)";
     $quoted  = $openre . $openre; }
   elsif ($type eq 'bd') {    # Doubled: same delim open & close; not when doubled OR slashed
-    $open = $close = $delims;
+    $open    = $close = $delims;
     $openre  = lstRegexp($open);
     $closere = "(?<!\\\\|$openre)$openre(?!$openre)";
     $quoted  = "\\\\\\$openre|$openre$openre"; }
@@ -552,6 +568,13 @@ sub lstAddDelimiter {
       quoted => $quoted, %keys }; }
   return; }
 
+sub lstDeleteDelimiterKind {
+  my ($kind) = @_;
+  my $delimlist = LookupValue('LST_DELIMITERS');
+  foreach my $openstring (keys %$delimlist) {
+    delete $$delimlist{$openstring} if $$delimlist{$openstring}{class} =~ /^\Q$kind\E/; }
+  return; }
+
 # Helper for lstAddDelimiter:
 # Here's the goofy thing: there may or may be {} in delimiters;
 # And, when there's 2 delimiters, it could even be is: open}{close
@@ -559,14 +582,14 @@ sub lstAddDelimiter {
 # If type eq 'n', comments are allowed to nest!!!
 sub lst_splitDelimiters {
   my ($delims) = @_;
-  my @t = grep { !Equals($_, T_BEGIN) } $delims->unlist;    # Remove any T_BEGIN
+  my @t  = grep { !Equals($_, T_BEGIN) } $delims->unlist;    # Remove any T_BEGIN
   my @t1 = ();
   if (scalar(@t) == 2) {
     @t1 = ($t[0]); @t = ($t[1]); }
   else {
     while (@t && !Equals($t[0], T_END)) { push(@t1, shift(@t)); }
-    @t = grep { !Equals($_, T_END) } @t; }                  # Remove any remaining T_END
-  return (Tokens(@t1), Tokens(@t)); }                       # return open & close
+    @t = grep { !Equals($_, T_END) } @t; }                   # Remove any remaining T_END
+  return (Tokens(@t1), Tokens(@t)); }                        # return open & close
 
 # Set character classes
 sub lstSetCharacterClass {
@@ -654,10 +677,23 @@ sub lstActivateLanguage {
       Warn('unexpected', $name, $STATE->getStomach, "No listings language '$language' found"); } }
   return; }
 
+# Apparently when we activate a langage, we should clear out (some) previous definitions!
+sub lstClearLanguage {
+  # Reverse engineer the commands that add keywords, comments, string
+  lstDeleteClass('keywords');
+  lstDeleteClass('otherkeywords');
+  lstDeleteClass('endkeywords');
+  lstDeleteClass('directives');
+  lstDeleteClass('textcs');
+  lstDeleteDelimiterKind('comment');
+  lstDeleteDelimiterKind('string');
+  return; }
+
 DefKeyVal('LST', 'language', '');
 DefMacro('\lst@@language [] Until:\end', sub {
+    lstClearLanguage();
     lstActivateLanguage($_[2], $_[1]);
-    PushValue(LISTINGS_PREAMBLE => T_CS('\lst@@@set@language'));
+    lstPushValueLocally(LISTINGS_PREAMBLE => T_CS('\lst@@@set@language'));
     return; });
 DefConstructor('\lst@@@set@language', sub {
     my ($document, %props) = @_;
@@ -752,7 +788,7 @@ DefMacro('\lst@@moredelim OptionalMatch:* OptionalMatch:* [] [] Until:\end', sub
 #======================================================================
 DefKeyVal('LST', 'extendedchars', '', 'true');
 DefMacro('\lst@@extendedchars Until:\end', sub {
-    my @chars = map { UTF($_) } 128 .. 255;
+    my @chars     = map { UTF($_) } 128 .. 255;
     my $charslist = LookupValue('LST_CHARACTERS');
     if (ToString($_[1]) eq 'true') {
       foreach my $char (@chars) {
@@ -776,7 +812,7 @@ DefKeyVal('LST', 'formfeed',         '');
 # Done...
 DefKeyVal('LST', 'numbers', '');    # none | left | right
 DefPrimitive('\lst@@numbers Until:\end', sub {
-    PushValue(LISTINGS_PREAMBLE => T_CS('\lst@@@set@numbers')); });
+    lstPushValueLocally(LISTINGS_PREAMBLE => T_CS('\lst@@@set@numbers')); });
 
 DefConstructor('\lst@@@set@numbers', sub {
     my ($document, %props) = @_;
@@ -841,7 +877,8 @@ our %frames = (none => undef, leftline => 'left', topline => 'top', bottomline =
 DefPrimitive('\lst@@frame Until:\end', sub {
     my $name = ToString(Digest($_[1]));
     AssignValue(LISTINGS_FRAME => $frames{$name});
-    PushValue(LISTINGS_PREAMBLE => T_CS('\lst@@@set@frame')); });
+    lstPushValueLocally(LISTINGS_PREAMBLE => T_CS('\lst@@@set@frame'));
+});
 DefConstructor('\lst@@@set@frame', "^framed='#frame'",
   properties => { frame => sub { LookupValue('LISTINGS_FRAME'); } });
 
@@ -868,7 +905,7 @@ sub lstExtractColor {
 DefPrimitive('\lst@@backgroundcolor Until:\end', sub {
     my ($stomach, $cmd) = @_;
     AssignValue(LISTINGS_BACKGROUND => lstExtractColor($stomach, $cmd));
-    PushValue(LISTINGS_PREAMBLE_BEFORE => T_CS('\lst@@@set@background')); });
+    lstPushValueLocally(LISTINGS_PREAMBLE_BEFORE => T_CS('\lst@@@set@background')); });
 
 DefPrimitive('\lst@@@set@background', sub {
     MergeFont(background => LookupValue('LISTINGS_BACKGROUND')); });
@@ -877,7 +914,7 @@ DefKeyVal('LST', 'rulecolor', '');
 DefPrimitive('\lst@@rulecolor Until:\end', sub {
     my ($stomach, $cmd) = @_;
     AssignValue(LISTINGS_RULECOLOR => lstExtractColor($stomach, $cmd));
-    PushValue(LISTINGS_PREAMBLE => T_CS('\lst@@@set@rulecolor')); });
+    lstPushValueLocally(LISTINGS_PREAMBLE => T_CS('\lst@@@set@rulecolor')); });
 
 DefConstructor('\lst@@@set@rulecolor', "^framecolor='#color'",
   properties => { color => sub { LookupValue('LISTINGS_RULECOLOR'); } });
@@ -1185,7 +1222,7 @@ sub lstProcess {
   my $letter_re = join('', sort keys %{ $$characters{letter} });
   my $digit_re  = join('', sort keys %{ $$characters{digit} });
   local $LaTeXML::ID_RE = (LookupValue('LST@TEXCS') ? "\\\\?" : '') . "[$letter_re][$letter_re$digit_re]*";
-  local $LaTeXML::DELIM_RE = join('|', map { $$delimiters{$_}{open} } sort keys %$delimiters);
+  local $LaTeXML::DELIM_RE  = join('|', map { $$delimiters{$_}{open} } sort keys %$delimiters);
   local $LaTeXML::ESCAPE_RE = join('|', map { $$delimiters{$_}{open} }
       grep { $$delimiters{$_}{escape} } sort keys %$delimiters);
   local $LaTeXML::QUOTED_RE = "\\\\\\\\";    # start w/ backslashed backslash?
@@ -1283,7 +1320,7 @@ sub lstProcess_internal {
         local $LaTeXML::DELIM_RE = ($$delim{recursive}
           ? $LaTeXML::DELIM_RE
           : join('|', grep { $_ } $LaTeXML::ESCAPE_RE, $$delim{nested} && $$delim{open}));
-        local $LaTeXML::ID_RE = ($$delim{recursive} ? $LaTeXML::ID_RE : undef);
+        local $LaTeXML::ID_RE     = ($$delim{recursive} ? $LaTeXML::ID_RE : undef);
         local $LaTeXML::QUOTED_RE = join('|', grep { $_ } $LaTeXML::QUOTED_RE, $$delim{quoted});
         local $LaTeXML::SPACE = ($classname && ($classname =~ /^string/) && lstGetBoolean('showstringspaces')
           ? T_CS('\@lst@visible@space') : $LaTeXML::SPACE);
