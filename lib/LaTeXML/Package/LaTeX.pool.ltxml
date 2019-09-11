@@ -1664,18 +1664,21 @@ DefPrimitiveI('\@vobeyspaces', undef, sub {
 # WARNING: Need to be careful about what catcodes are active here
 DefMacroI('\verb', undef, sub {
     my ($gullet) = @_;
-    my $mouth = $gullet->getMouth;
     my ($init, $body);
     StartSemiverbatim('%', '\\', '{', '}');
-    $init = $mouth->readToken;
-    $init = $mouth->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
+    $init = $gullet->readToken;
+    $init = $gullet->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
 
     if (!$init) {    # typically something read too far got \verb and the content is somewhere else..?
       Error('expected', 'delimiter', $gullet,
         "Verbatim argument lost", "Bindings for preceding code is probably broken");
       EndSemiverbatim();
       return (); }
-    $body = $mouth->readTokens($init);
+    my $old_cc   = $$init[1];
+    my $init_str = $init->getString();
+    AssignCatcode($init_str => CC_ACTIVE);
+    $body = $gullet->readUntil(T_ACTIVE($init_str));
+    AssignCatcode($init_str => $old_cc);
     EndSemiverbatim();
     Invocation((LookupValue('IN_MATH') ? T_CS('\@math@verb') : T_CS('\@text@verb')),
       Tokens($init), $body)->unlist; });

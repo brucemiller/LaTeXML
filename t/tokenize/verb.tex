@@ -32,4 +32,9 @@ Some inline \verb|\verb| verbatim.
 % and this:
 x\hbox to 2in  {\bf x\verb|\verb|y.}y
 
+% Also, make sure \verb is using the Gullet API to obtain any \expandafter tokens
+% AND it is using the correct delimiter activation sequence
+\def\nested{Nested | is allowed}
+\expandafter\verb\expandafter|\nested .|
+
 \end{document}
