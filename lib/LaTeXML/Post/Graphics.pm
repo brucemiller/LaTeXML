@@ -196,12 +196,13 @@ sub transformGraphic {
   return Warn('unexpected', 'graphics_format', undef,
     "Don't know what to do with graphics file format '$source'") unless %properties;
   my $type = $properties{destination_type} || $srctype;
-  my $key  = (ref $self) . ':' . join('|', "$reldir$name.$srctype.$type",
+  $properties{source_type} = $srctype;
+  my $key = (ref $self) . ':' . join('|', "$reldir$name.$srctype.$type",
     map { join(' ', @$_) } @$transform);
   NoteProgressDetailed("\n[Processing $source as key=$key]");
 
   my $dest = $self->desiredResourcePathname($doc, $node, $source, $type);
-  if (my $prev = $doc->cacheLookup($key)) {                 # Image was processed on previous run?
+  if (my $prev = $doc->cacheLookup($key)) {    # Image was processed on previous run?
     if ($prev =~ /^(.*?)\|(\d*)\|(\d*)$/) {
       my ($cached, $width, $height) = ($1, $2, $3);
       $width  = undef unless $width;
@@ -216,12 +217,12 @@ sub transformGraphic {
   my $triv_scaling = $$self{trivial_scaling} && ($type eq $srctype)
     && image_graphicx_is_trivial($transform);
   # But first check if we have the capabilities to do complex scaling!
-  if (!$triv_scaling && (defined $properties{raster}) && !$properties{raster}) {
-    Warn("limitation", $source, undef,
-      "Cannot (yet) apply complex transforms to non-raster images",
-      join(',', map { join(' ', @$_) } grep { !($_->[0] =~ /^scale/) } @$transform));
-    $triv_scaling = 1;
-    $transform    = image_graphicx_trivialize($transform); }
+  # if (!$triv_scaling && (defined $properties{raster}) && !$properties{raster}) {
+  #   Warn("limitation", $source, undef,
+  #     "Cannot (yet) apply complex transforms to non-raster images",
+  #     join(',', map { join(' ', @$_) } grep { !($_->[0] =~ /^scale/) } @$transform));
+  #   $triv_scaling = 1;
+  #   $transform    = image_graphicx_trivialize($transform); }
   if (!image_can_image()) {
     if ($type ne $srctype) {
       Error('imageprocessing', 'imageclass', undef,
@@ -271,14 +272,13 @@ sub transformGraphic {
     $dest = $self->generateResourcePathname($doc, $node, $source, $type) unless $dest;
     my $absdest = $doc->checkDestination($dest);
     NoteProgressDetailed(" [Destination $absdest]");
-    ($image, $width, $height) = image_graphicx_complex($source, $transform,
+    ($image, $width, $height) = image_graphicx_complex($source, $transform, $absdest,
       ddpt => $$self{ddpt}, background => $$self{background}, %properties);
     if (!($image && $width && $height)) {
       Warn('expected', 'image', undef,
         "Couldn't get usable image for $source");
       return; }
-    NoteProgressDetailed(" [Writing to $absdest]");
-    image_write($image, $absdest) or return; }
+    NoteProgressDetailed(" [Writing to $absdest]"); }
 
   $doc->cacheStore($key, "$dest|" . ($width || '') . '|' . ($height || ''));
   NoteProgressDetailed(" [done with $key]");

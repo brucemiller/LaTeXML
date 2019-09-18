@@ -19,6 +19,7 @@ use LaTeXML::Util::Pathname;
 use List::Util qw(min max);
 use Image::Size;
 use POSIX;
+use Math::Trig;
 use base qw(Exporter);
 our @EXPORT = (
   qw( &image_type &image_size ),
@@ -271,7 +272,25 @@ sub image_graphicx_trivial {
 # Transform the image, returning (image,width,height);
 # sub complex_transform {
 sub image_graphicx_complex {
-  my ($source, $transform, %properties) = @_;
+  my ($source, $transform, $destination, %properties) = @_;
+  if ($properties{destination_type} eq 'svg') {
+    # Use dvisvgm or inkscape ????
+    my $tmpfile = "/tmp/graphic.svg";
+    if ($properties{source_type} eq 'svg') {    # Input already svg format.
+      $tmpfile = $source; }                     # Just read & transform the source
+        # Else if pdf and INKSCAPE requested, use INKSCAPE to convert to svg.
+        # [other acceptible types?]
+    elsif ($ENV{LATEXML_INKSCAPE} && ($properties{source_type} eq 'pdf')) {
+      image_graphicx_svg_inkscape($source, $tmpfile, %properties); }
+    # Otherwise, fallback to dvisvgm (presumably available?)
+    else {
+      image_graphicx_svg_dvisvgm($source, $tmpfile, %properties); }
+    return image_transform_svg($tmpfile, $transform, $destination); }
+  else {
+    return image_graphicx_complex_raster($source, $transform, $destination, %properties); } }
+
+sub image_graphicx_complex_raster {
+  my ($source, $transform, $destination, %properties) = @_;
   my $dppt       = $properties{dppt}       || $DOTS_PER_POINT;
   my $background = $properties{background} || $BACKGROUND;
   my $image = image_read($source, antialias => 1) or return;
@@ -391,7 +410,143 @@ sub image_graphicx_complex {
     image_setvalue($image, quality => $properties{quality}) or return; }
 
   NoteProgressDetailed(" [Transformed : $notes]") if $notes;
+  image_write($image, $destination) or return;
+
   return ($image, $w, $h); }
+
+# Convert $source to SVG in $destination using dvisvgm
+sub image_graphicx_svg_dvisvgm {
+  my ($source, $destination, %properties) = @_;
+  my @options = ('--page=1',
+    '--output=' . $destination);
+  if (my $srctype = $properties{source_type}) {
+    push(@options, "--eps") if $srctype eq 'eps';
+    push(@options, "--pdf") if $srctype eq 'pdf'; }
+  my $dvisvgm = $ENV{LATEXML_DVISVGM} || 'dvisvgm';
+  my $command = join(' ', $dvisvgm, @options, "'$source'");
+  if (system($command) != 0) {
+    Error('imageprocessing', 'svg', undef,
+      "dvisvgm conversion of $source to $destination failed: $!");
+    return; }
+  return $destination; }
+
+# Convert $source to SVG in $destination using inkscape
+sub image_graphicx_svg_inkscape {
+  my ($source, $destination, %properties) = @_;
+  # Turn transform into an inkscape shell script
+  my @options = ('--without-gui',
+    "--file='$source'",
+    "--export-plain-svg='$destination'");
+  # Ignore warnings!?!?!
+  my $inkscape = $ENV{LATEXML_INKSCAPE} || 'inkscape';
+  my $command  = join(' ', $inkscape, @options);
+  if (system($command) != 0) {
+    Error('imageprocessing', 'svg', undef,
+      "inkscape conversion of $source to $destination failed: $!");
+    return; }
+  return $destination; }
+
+# Apply transforms to an svg file.
+my $DPIPT = 96 / 72;    # 96, not 90 ???
+our %svg_units = (em => 10, ex => 5, pt => 1, pc => 12, cm => 72 / 2.54, mm => 72 / 25.4, in => 72,
+  px => 1 / $DPIPT);
+
+sub image_transform_svg {
+  my ($source, $transform, $destination) = @_;
+  my $XMLParser = XML::LibXML->new();
+  $XMLParser->validation(0);
+  my $svgdoc = $XMLParser->parse_file($source);
+  my $svg    = $svgdoc->documentElement;
+  my $SVGNS  = $svg->namespaceURI;
+
+  # Extract image size & origin; normalize to origin 0,0 & unitless scale.
+  my ($w, $h);
+  if (my $ww = $svg->getAttribute('width')) {
+    $w = ($ww =~ /^([\d\.]+)([a-zA-Z][a-zA-Z])$/ ? $1 * $svg_units{$2} * $DPIPT : $ww); }
+  if (my $hh = $svg->getAttribute('height')) {
+    $h = ($hh =~ /^([\d\.]+)([a-zA-Z][a-zA-Z])$/ ? $1 * $svg_units{$2} * $DPIPT : $hh); }
+  if (my $bb = $svg->getAttribute('viewBox')) {
+    my ($x, $y, $ww, $hh) = split('\s', $bb);
+    if ($w || $h) {    # if width, height AND viewBox
+      my $sx = $w / $ww;
+      my $sy = $h / $hh;
+      $x *= $sx;
+      $y *= $sy;
+      # RESET origin to 0,0
+      # [assuming that it's due to the CONVERSION to svg, which will throw off clip & trim]
+      svg_transform_wrap($svg, 'scale(' . $sx . ',' . $sy . ')'); }
+    else {
+      $w = $ww; $h = $hh; }
+    svg_transform_wrap($svg, 'translate(' . -$x . ',' . -$y . ')');
+  }
+
+  # Apply graphicx style transformations by wrapping svg:g, and adjusting size
+  foreach my $trans (@$transform) {
+    my ($op, $a1, $a2, $a3, $a4) = map { $_ || 0; } @$trans;
+    if ($op eq 'scale') {
+      $a2 = $a1 unless $a2;
+      $w  = $w * $a1;
+      $h  = $h * $a2;
+      svg_transform_wrap($svg, "scale($a1,$a2)"); }
+    elsif ($op eq 'scale-to') {
+      if ($a3) {    # If keeping aspect ratio, ignore the most extreme request
+        if ($a1 / $w < $a2 / $h) { $a2 = $h * $a1 / $w; }
+        else { $a1 = $w * $a2 / $h; } }
+      my $sx = $a1 * $DPIPT / $w;
+      my $sy = $a2 * $DPIPT / $h;
+      $w = $w * $sx;
+      $h = $h * $sy;
+      svg_transform_wrap($svg, "scale($sx,$sy)"); }
+    elsif ($op eq 'rotate') {
+      my $rad = -$a1 * Math::Trig::pi / 180;
+      my ($c, $s) = (cos($rad), sin($rad));
+      my ($cw, $ch, $sw, $sh) = ($c * $w, $c * $h, $s * $w, $s * $h);
+      my $x0 = min(0, $cw, $cw - $sh, -$sh);
+      my $y0 = min(0, $sw, $sw + $ch, $ch);
+      $w = max(0, $cw, $cw - $sh, -$sh) - $x0;
+      $h = max(0, $sw, $sw + $ch, $ch) - $y0;
+      svg_transform_wrap($svg, 'translate(' . -$x0 . ',' . -$y0 . ') rotate(' . -$a1 . ')'); }
+    elsif ($op eq 'reflect') {
+      svg_transform_wrap($svg, 'scale(-1,1) translate(' . -$w . ',0)'); }
+    elsif ($op eq 'trim') {    # left, bottom, right, top;
+      $w -= ($a1 + $a3) * $DPIPT;
+      $h -= ($a2 + $a4) * $DPIPT;
+      svg_transform_wrap($svg, 'translate(' . -$a1 * $DPIPT . ',' . -$a2 * $DPIPT . ')'); }
+    elsif ($op eq 'clip') {
+      $w = ($a3 - $a1) * $DPIPT;
+      $h = ($a4 - $a2) * $DPIPT;
+      svg_transform_wrap($svg, 'translate(' . -$a1 * $DPIPT . ',' . -$a2 * $DPIPT . ')'); }
+  }
+
+  #======================================================================
+  # Save resulting SVG.
+  $w = int($w + 0.5);
+  $h = int($h + 0.5);
+  $svg->setAttribute(viewBox => join(' ', 0, 0, $w, $h));
+  $svg->setAttribute(width   => $w);
+  $svg->setAttribute(height  => $h);
+  #$svg->setAttribute(preserveAspectRatio => 'none');
+  #print $svgdoc->toString(1);
+  if ($destination) {
+    my $FH;
+    open($FH, '>', $destination) or
+      Error('imageprocessing', 'svg-transform', undef,
+      "Couldn't open $destination for writing: $!");
+    print $FH $svgdoc->toString(1);
+    close($FH); }
+  return ($destination, $w, $h); }
+
+sub svg_transform_wrap {
+  my ($svg, $transform) = @_;
+  my @nodes = $svg->childNodes;
+  # Possibly we need to keep some nodes at top level? (eg. defs, metadata,...?)
+  #  my $wrapper = $svg->addNewChild($SVGNS, 'g');
+  my $wrapper = $svg->addNewChild($svg->namespaceURI, 'g');
+  foreach my $node (@nodes) {    # Move previous children to wrapper
+    $wrapper->appendChild($node); }
+  $wrapper->setAttribute(transform => $transform);
+  return; }
+#======================================================================
 
 # Wrap up ImageMagick's methods to give more useful & consistent error handling.
 # These all return non-zero on success!
