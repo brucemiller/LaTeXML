@@ -14,6 +14,7 @@ use strict;
 use warnings;
 use LaTeXML::Util::Pathname;
 use DB_File;
+use Fcntl qw(:flock SEEK_END);
 use Storable qw(nfreeze thaw);
 use strict;
 use Encode;
@@ -67,9 +68,41 @@ sub DESTROY {
 
 sub status {
   my ($self) = @_;
+  $self->lock_me;
   my $status = scalar(keys %{ $$self{objects} }) . "/" . scalar(keys %{ $$self{externaldb} }) . " objects";
+  $self->unlock_me;
   #  if($$self{dbfile}){ ...
   return $status; }
+
+sub lock_me {
+  my ($self) = @_;
+  return if $$self{locked_fh};    # avoid self-deadlocks
+  $$self{locked_fh} = LaTeXML::Util::ObjectDB::lock($$self{dbfile}, $$self{readonly});
+  return; }
+
+sub unlock_me {
+  my ($self) = @_;
+  LaTeXML::Util::ObjectDB::unlock($$self{locked_fh});
+  delete $$self{locked_fh};
+  return; }
+
+sub lock {
+  my ($dbfile, $readonly) = @_;
+  return unless $dbfile;
+  my $lock_filename = $dbfile . ".lock";
+  # print STDERR "\n\n\n LOCKING $lock_filename...\n";
+  open(my $fh, ">>", $lock_filename) or die "Cannot open $lock_filename for ObjectDB";
+  flock($fh, $readonly ? LOCK_SH : LOCK_EX) or die "Cannot lock $lock_filename - $!\n";
+  # print STDERR "  LOCKED $lock_filename HERE \n";
+  return $fh; }
+
+sub unlock {
+  my ($fh) = @_;
+  if ($fh) {
+    # print STDERR "\n UNLOCKING HERE \n";
+    flock($fh, LOCK_UN);
+    close $fh; }
+  return; }
 
 #======================================================================
 # This saves the db
@@ -79,6 +112,7 @@ sub finish {
   if ($$self{externaldb} && $$self{dbfile} && !$$self{readonly}) {
     my $n     = 0;
     my %types = ();
+    $self->lock_me;
     foreach my $key (keys %{ $$self{objects} }) {
       my $row = $$self{objects}{$key};
       # Skip saving, unless there's some difference between stored value
@@ -90,8 +124,8 @@ sub finish {
 
     print STDERR "ObjectDB Stored $n objects (" . scalar(keys %{ $$self{externaldb} }) . " total)\n"
       if $$self{verbosity} > 0;
-    untie %{ $$self{externaldb} }; }
-
+    untie %{ $$self{externaldb} };
+    $self->unlock_me; }
   $$self{externaldb} = undef;
   $$self{objects}    = undef;
   return }
@@ -138,9 +172,11 @@ sub compare_array {
 sub getKeys {
   my ($self) = @_;
   # Get union of all keys in externaldb & local objects.
+  $self->lock_me;
   my %keys = ();
   map { $keys{$_} = 1 } keys %{ $$self{objects} };
   map { $keys{ Encode::decode('utf8', $_) } = 1 } keys %{ $$self{externaldb} };
+  $self->unlock_me;
   return (sort keys %keys); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -155,12 +191,14 @@ sub lookup {
   return unless defined $key;
   my $entry = $$self{objects}{$key};    # Get the local copy.
   return $entry if $entry;
+  $self->lock_me;
   $entry = $$self{externaldb}{ Encode::encode('utf8', $key) };    # Get the external object
   if ($entry) {
     $entry = thaw($entry);
     $$entry{key} = $key;
     bless $entry, 'LaTeXML::Util::ObjectDB::Entry';
     $$self{objects}{$key} = $entry; }
+  $self->unlock_me;
   return $entry; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -177,14 +215,16 @@ sub register {
     bless $entry, 'LaTeXML::Util::ObjectDB::Entry';
     $$self{objects}{$key} = $entry; }
   $entry->setValues(%props);
-
   return $entry; }
 
 sub unregister {
   my ($self, $key) = @_;
   delete $$self{objects}{$key};
   # Must remove external entry (if any) as well, else it'll get pulled back in!
-  delete $$self{externaldb}{ Encode::encode('utf8', $key) } if $$self{externaldb};
+  if ($$self{externaldb}) {
+    $self->lock_me;
+    delete $$self{externaldb}{ Encode::encode('utf8', $key) };
+    $self->unlock_me; }
   return; }
 
 #======================================================================

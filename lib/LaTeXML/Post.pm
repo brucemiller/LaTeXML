@@ -21,6 +21,7 @@ use base qw(LaTeXML::Common::Object);
 use LaTeXML::Global;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::State;
+use LaTeXML::Util::ObjectDB;
 our @EXPORT = (@LaTeXML::Common::Error::EXPORT);
 
 sub new {
@@ -742,7 +743,7 @@ sub setDocument_internal {
       $$self{idcache}{ $node->getAttribute('xml:id') } = $node; }
     # Fetch any additional namespaces from the root
 
-    if(my $docroot = $root->documentElement){
+    if (my $docroot = $root->documentElement) {
       foreach my $ns ($docroot->getNamespaces) {
         my ($prefix, $uri) = ($ns->getLocalName, $ns->getData);
         if ($prefix) {
@@ -1451,18 +1452,23 @@ sub adjust_latexml_doctype {
 
 sub cacheLookup {
   my ($self, $key) = @_;
+  $self->lockCache;
   $self->openCache;
   $key = Encode::encode_utf8($key) if $key;
-  return $$self{cache}{$key}; }
+  my $value = $$self{cache}{$key};
+  $self->unlockCache;
+  return $value; }
 
 sub cacheStore {
   my ($self, $key, $value) = @_;
+  $self->lockCache;
   $self->openCache;
   $key = Encode::encode_utf8($key) if $key;
   if (defined $value) {
     $$self{cache}{$key} = $value; }
   else {
     delete $$self{cache}{$key}; }
+  $self->unlockCache;
   return; }
 
 sub openCache {
@@ -1470,7 +1476,7 @@ sub openCache {
   if (!$$self{cache}) {
     $$self{cache} = {};
     my $dbfile = $self->checkDestination("LaTeXML.cache");
-    tie %{ $$self{cache} }, 'DB_File', $dbfile, O_RDWR | O_CREAT
+    tie(%{ $$self{cache} }, 'DB_File', $dbfile, O_RDWR | O_CREAT)
       or return Fatal('internal', 'db', undef,
       "Couldn't create DB cache for " . $self->getDestination,
       "Message was: " . $!,
@@ -1482,7 +1488,22 @@ sub closeCache {
   my ($self) = @_;
   if ($$self{cache}) {
     untie %{ $$self{cache} };
-    $$self{cache} = undef; }
+    $$self{cache} = undef;
+    $self->unlockCache; }
+  return; }
+
+sub lockCache {
+  my ($self) = @_;
+  return if $$self{locked_fh};    # avoid self-deadlocks
+  my $dbfile = $self->checkDestination("LaTeXML.cache");
+  $$self{locked_fh} = LaTeXML::Util::ObjectDB::lock($dbfile);
+  return; }
+
+sub unlockCache {
+  my ($self) = @_;
+  return unless $$self{locked_fh};
+  LaTeXML::Util::ObjectDB::unlock($$self{locked_fh});
+  delete $$self{locked_fh};
   return; }
 
 1;
