@@ -69,9 +69,9 @@ GetOptions(
   "help"            => \$help,
 ) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
-pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
+pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 2, -output => \*STDOUT)
   if $help;
-if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(1); }
+if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(0); }
 pod2usage(-message => "$LaTeXML::IDENTITY\nMissing input TeX file",
   -exitval => 1, -verbose => 0, -output => \*STDERR) unless @ARGV;
 
@@ -129,7 +129,7 @@ if (my @baddirs = grep { !-d $_ } @paths) {
   warn "$LaTeXML::IDENTITY: these path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
 my $latexml = LaTeXML::Core->new(preload => ['LaTeX.pool', @preload], searchpaths => [@paths],
-  verbosity => $verbosity, strict => $strict,
+  verbosity       => $verbosity, strict => $strict,
   includecomments => 0,
   includestyles   => $includestyles,
   inputencoding   => $inputencoding,
@@ -149,7 +149,7 @@ $$model{tagprop}{'ltx:Math'}{afterClose}
     @{ $$model{tagprop}{'ltx:Math'}{afterClose} }];
 
 my $converted = $digested && $latexml->convertDocument($digested);
-my $document = $digested && LaTeXML::Post::Document->new($converted, nocache => 1);
+my $document  = $digested && LaTeXML::Post::Document->new($converted, nocache => 1);
 
 #======================================================================
 # Postprocess to convert the math to whatever desired forms.
@@ -168,7 +168,7 @@ our %OPTIONS = ();
 
 # I wonder if this stuff even will be needed,
 # once fragid is sorted out?
-my $DB = LaTeXML::Util::ObjectDB->new(%OPTIONS);
+my $DB   = LaTeXML::Util::ObjectDB->new(%OPTIONS);
 my $post = LaTeXML::Post->new(verbosity => $verbosity || 0);
 ($document) = $post->ProcessChain($document,
   LaTeXML::Post::Scan->new(db => $DB, %OPTIONS),
