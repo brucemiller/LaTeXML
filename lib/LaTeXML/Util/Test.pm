@@ -55,7 +55,7 @@ sub latexml_tests {
         SKIP: {
             skip("No file $test.xml", 1) unless (-f "$test.xml");
             next unless check_requirements($test, 1, $$requires{'*'}, $$requires{$name});
-            latexml_ok("$test.tex", "$test.xml", $test, $options{core_generator}, $options{compare}); } }
+            latexml_ok("$test.tex", "$test.xml", $test, $options{compare}, $options{core_generator}); } }
         # Carry out any post-processing tests
         foreach my $name (@post_tests) {
           my $test = "$directory/$name";
@@ -117,7 +117,7 @@ sub do_fail {
 
 # NOTE: This assumes you will have successfully loaded LaTeXML.
 sub latexml_ok {
-  my ($texpath, $xmlpath, $name, $core_generator, $compare_kind) = @_;
+  my ($texpath, $xmlpath, $name, $compare_kind, $core_generator) = @_;
   if (my $texstrings = process_texfile(texpath => $texpath, name => $name, core_generator => $core_generator, compare_kind => $compare_kind)) {
     if (my $xmlstrings = process_xmlfile($xmlpath, $name, $compare_kind)) {
       return is_strings($texstrings, $xmlstrings, $name); } } }
