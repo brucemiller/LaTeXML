@@ -55,7 +55,7 @@ sub latexml_tests {
         SKIP: {
             skip("No file $test.xml", 1) unless (-f "$test.xml");
             next unless check_requirements($test, 1, $$requires{'*'}, $$requires{$name});
-            latexml_ok("$test.tex", "$test.xml", $test, $options{ltxmlhook}, $options{compare}); } }
+            latexml_ok("$test.tex", "$test.xml", $test, $options{core_generator}, $options{compare}); } }
         # Carry out any post-processing tests
         foreach my $name (@post_tests) {
           my $test = "$directory/$name";
@@ -117,8 +117,8 @@ sub do_fail {
 
 # NOTE: This assumes you will have successfully loaded LaTeXML.
 sub latexml_ok {
-  my ($texpath, $xmlpath, $name, $ltxmlhook, $compare_kind) = @_;
-  if (my $texstrings = process_texfile($texpath, $name, $ltxmlhook, $compare_kind)) {
+  my ($texpath, $xmlpath, $name, $core_generator, $compare_kind) = @_;
+  if (my $texstrings = process_texfile($texpath, $name, $core_generator, $compare_kind)) {
     if (my $xmlstrings = process_xmlfile($xmlpath, $name, $compare_kind)) {
       return is_strings($texstrings, $xmlstrings, $name); } } }
 
@@ -131,11 +131,11 @@ sub latexmlpost_ok {
 # These return the list-of-strings form of whatever was requested, if successful,
 # otherwise undef; and they will have reported the failure
 sub process_texfile {
-  my ($texpath, $name, $ltxmlhook, $compare_kind) = @_;
+  my ($texpath, $name, $core_generator, $compare_kind) = @_;
   my $latexml =
-    !$ltxmlhook ?
+    !$core_generator ?
     eval { LaTeXML::Core->new(preload => [], searchpaths => [], includecomments => 0, verbosity => -2) } :
-    eval { &$ltxmlhook() };
+    eval { &$core_generator() };
   if (!$latexml) {
     do_fail($name, "Couldn't instanciate LaTeXML: " . @!); return; }
   else {
