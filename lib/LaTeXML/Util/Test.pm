@@ -118,7 +118,7 @@ sub do_fail {
 # NOTE: This assumes you will have successfully loaded LaTeXML.
 sub latexml_ok {
   my ($texpath, $xmlpath, $name, $core_generator, $compare_kind) = @_;
-  if (my $texstrings = process_texfile($texpath, $name, $core_generator, $compare_kind)) {
+  if (my $texstrings = process_texfile(texpath => $texpath, name => $name, core_generator => $core_generator, compare_kind => $compare_kind)) {
     if (my $xmlstrings = process_xmlfile($xmlpath, $name, $compare_kind)) {
       return is_strings($texstrings, $xmlstrings, $name); } } }
 
@@ -131,7 +131,11 @@ sub latexmlpost_ok {
 # These return the list-of-strings form of whatever was requested, if successful,
 # otherwise undef; and they will have reported the failure
 sub process_texfile {
-  my ($texpath, $name, $core_generator, $compare_kind) = @_;
+  my (%options) = @_;
+  my $texpath = $options{texpath};
+  my $name = $options{name};
+  my $core_generator = $options{core_generator};
+  my $compare_kind = $options{compare_kind};
   my $latexml =
     !$core_generator ?
     eval { LaTeXML::Core->new(preload => [], searchpaths => [], includecomments => 0, verbosity => -2) } :
