@@ -55,7 +55,7 @@ sub latexml_tests {
         SKIP: {
             skip("No file $test.xml", 1) unless (-f "$test.xml");
             next unless check_requirements($test, 1, $$requires{'*'}, $$requires{$name});
-            latexml_ok("$test.tex", "$test.xml", $test, $options{compare}); } }
+            latexml_ok("$test.tex", "$test.xml", $test, $options{compare}, $options{core_options}); } }
         # Carry out any post-processing tests
         foreach my $name (@post_tests) {
           my $test = "$directory/$name";
@@ -117,8 +117,8 @@ sub do_fail {
 
 # NOTE: This assumes you will have successfully loaded LaTeXML.
 sub latexml_ok {
-  my ($texpath, $xmlpath, $name, $compare_kind) = @_;
-  if (my $texstrings = process_texfile($texpath, $name, $compare_kind)) {
+  my ($texpath, $xmlpath, $name, $compare_kind, $core_options) = @_;
+  if (my $texstrings = process_texfile(texpath => $texpath, name => $name, core_options => $core_options, compare_kind => $compare_kind)) {
     if (my $xmlstrings = process_xmlfile($xmlpath, $name, $compare_kind)) {
       return is_strings($texstrings, $xmlstrings, $name); } } }
 
@@ -131,9 +131,14 @@ sub latexmlpost_ok {
 # These return the list-of-strings form of whatever was requested, if successful,
 # otherwise undef; and they will have reported the failure
 sub process_texfile {
-  my ($texpath, $name, $compare_kind) = @_;
-  my $latexml = eval { LaTeXML::Core->new(preload => [], searchpaths => [], includecomments => 0,
-      verbosity => -2); };
+  my (%options)    = @_;
+  my $texpath      = $options{texpath};
+  my $name         = $options{name};
+  my $compare_kind = $options{compare_kind};
+  my %core_options = $options{core_options} ? %{ $options{core_options} } : (
+    preload => [], searchpaths => [], includecomments => 0, verbosity => -2
+  );
+  my $latexml = eval { LaTeXML::Core->new(%core_options) };
   if (!$latexml) {
     do_fail($name, "Couldn't instanciate LaTeXML: " . @!); return; }
   else {
