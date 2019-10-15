@@ -188,7 +188,7 @@ sub read {
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   if (!$silent && $$opts{help}) {
-    pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
+    pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 99,
       -input    => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', output => \*STDOUT);
   }
@@ -202,7 +202,7 @@ sub read {
   # Removed math formats are irrelevant for conversion:
   delete $$opts{removed_math_formats};
 
-  if ($$opts{showversion}) { print STDERR "$LaTeXML::IDENTITY\n"; exit(1); }
+  if ($$opts{showversion}) { print STDERR "$LaTeXML::IDENTITY\n"; exit(0); }
 
   $$opts{source} = $ARGV[0] unless $$opts{source};
   # Special source-based guessing needs to happen here,

@@ -38,9 +38,9 @@ GetOptions("symbol=s" => \@symbols,,
   "help"               => \$help,
 ) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
-pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT)
+pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 2, -output => \*STDOUT)
   if $help;
-if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(1); }
+if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(0); }
 pod2usage(-message => "$LaTeXML::IDENTITY\nMissing input TeX file",
   -exitval => 1, -verbose => 0, -output => \*STDERR) unless @ARGV;
 my $source = $ARGV[0];
@@ -50,12 +50,12 @@ my $source = $ARGV[0];
 print STDERR "$LaTeXML::IDENTITY\n" if $verbosity > -1;
 binmode(STDOUT, ":encoding(UTF-8)");    # Make sure output can handle UTF8
 
-my $DOC = LaTeXML::Common::XML::Parser->new()->parseFile($source);
+my $DOC   = LaTeXML::Common::XML::Parser->new()->parseFile($source);
 my $XPATH = LaTeXML::Common::XML::XPath->new(ltx => "http://dlmf.nist.gov/LaTeXML");
 $XPATH->registerFunction('match-font', \&LaTeXML::Common::Font::match_font);
 
 # Objects being labelled sections, equations, etc.
-our %OBJECTS = ();
+our %OBJECTS     = ();
 our $ROOT_OBJECT = { type => 'Document',
   subobjects => [], items => [] };
 
