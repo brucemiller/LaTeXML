@@ -149,13 +149,20 @@ sub RDFTriple {
 # You are responsible for how the attributes relate to those
 # in both parent and children nodes, such as establishing
 # of default subject or objects, chaining and so forth.
-DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa', sub {
+DefConstructor('\lxRDFa [] RequiredKeyVals:RDFa', sub {
     my ($document, $xpath, $kv) = @_;
     my ($save, $node);
     if ($xpath) {
-      $save = $document->getNode;
-      $node = $document->findnode(ToString($xpath), $save); }
-    else {
+      $xpath = ToString($xpath);
+      $save  = $document->getNode;
+      # Try searching up the ancestry,
+      # whenever the node is not local to the current Documnent insertion point
+      my $parent = $save;
+      while (!$node && $parent) {
+        $node   = $document->findnode($xpath, $parent);
+        $parent = $parent->parentNode; }
+      Warn('expected', 'node', $xpath, "Expected to find a node for RDFa attributes at the xpath: $xpath") if !$node; }
+    if (!$node) {
       $save = $document->floatToAttribute('property');    # pic arbitrary rdf attribute
       $node = $document->getElement; }
     my $attr = RDFAttributes($kv);
