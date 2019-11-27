@@ -143,25 +143,31 @@ sub RDFTriple {
 # Adding RDF Attributes to arbitrary LaTeXML Markup.
 
 # \lxRDFa[xpath]{keywordpairs} "RDF attributes"
-#    Add any RDF attributes to a node.
-# If xpath is given, the RDF attributes are added to the node
-# indicated by the xpath expression, otherwise to the current node.
+#    Add RDF attributes to a node.
+# If xpath is given, the RDF attributes are added to the nodes
+# indicated by the xpath expression. If no xpath is given, the
+# attributes are added to the first node which can accept them,
+# determined by ascending the tree starting from the current node.
 # You are responsible for how the attributes relate to those
 # in both parent and children nodes, such as establishing
 # of default subject or objects, chaining and so forth.
-DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa', sub {
+DefConstructor('\lxRDFa [] RequiredKeyVals:RDFa', sub {
     my ($document, $xpath, $kv) = @_;
-    my ($save, $node);
+    my ($save, @nodes);
     if ($xpath) {
       $save = $document->getNode;
-      $node = $document->findnode(ToString($xpath), $save); }
+      @nodes = $document->findnodes(ToString($xpath), $save);
+      Warn('expected', 'node', $xpath, "Expected to find a node for RDFa attributes at the xpath: " . ToString($xpath)) if !@nodes; }
     else {
-      $save = $document->floatToAttribute('property');    # pic arbitrary rdf attribute
-      $node = $document->getElement; }
+      # RDF.attributes is used by Common.attributes, which are shared by all elements.
+      # This means that we can choose any one to find a node accepting RDF attributes.
+      $save = $document->floatToAttribute('property');
+      push(@nodes, $document->getElement); }
     my $attr = RDFAttributes($kv);
     foreach my $k (sort keys %$attr) {
-      # use direct method ($doc method doesn't skips about="", which we need!)
-      $node->setAttribute($k => ToString($$attr{$k})); }
+        foreach my $node (@nodes) {
+          # use direct method ($doc method doesn't skips about="", which we need!)
+          $node->setAttribute($k => ToString($$attr{$k})); }}
     $document->setNode($save); });
 
 #======================================================================
