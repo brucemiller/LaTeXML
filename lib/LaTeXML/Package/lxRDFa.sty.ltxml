@@ -149,7 +149,7 @@ sub RDFTriple {
 # You are responsible for how the attributes relate to those
 # in both parent and children nodes, such as establishing
 # of default subject or objects, chaining and so forth.
-DefConstructor('\lxRDFa [] RequiredKeyVals:RDFa', sub {
+DefConstructor('\lxRDFa OptionalSemiverbatim RequiredKeyVals:RDFa', sub {
     my ($document, $xpath, $kv) = @_;
     my ($save, $node);
     if ($xpath) {
