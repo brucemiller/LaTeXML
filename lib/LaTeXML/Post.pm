@@ -742,7 +742,7 @@ sub setDocument_internal {
       $$self{idcache}{ $node->getAttribute('xml:id') } = $node; }
     # Fetch any additional namespaces from the root
 
-    if(my $docroot = $root->documentElement){
+    if (my $docroot = $root->documentElement) {
       foreach my $ns ($docroot->getNamespaces) {
         my ($prefix, $uri) = ($ns->getLocalName, $ns->getData);
         if ($prefix) {
@@ -1371,7 +1371,7 @@ sub realizeXMNode {
         if (my $realnode = $self->findNodeByID($id)) {
           $node = $realnode; }
         else {
-          Fatal('expected', 'id', undef, "Cannot find a node with xml:id='$id'");
+          Error('expected', 'id', undef, "Cannot find a node with xml:id='$id'");
           return; } }
       elsif ($qname eq 'ltx:XMDual') {
         my ($content, $presentation) = element_nodes($node);
@@ -1383,7 +1383,7 @@ sub realizeXMNode {
     if (my $realnode = $self->findNodeByID($id)) {
       return $realnode; }
     else {
-      Fatal('expected', 'id', undef, "Cannot find a node with xml:id='$id'");
+      Error('expected', 'id', undef, "Cannot find a node with xml:id='$id'");
       return; } }
   return $node; }
 
