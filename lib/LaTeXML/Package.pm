@@ -67,7 +67,8 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
 
   # Counter support
   qw(&NewCounter &CounterValue &SetCounter &AddToCounter &StepCounter &RefStepCounter &RefStepID &ResetCounter
-    &GenerateID &AfterAssignment),
+    &GenerateID &AfterAssignment
+    &MaybePeekLabel &MaybeNoteLabel),
 
   # Document Model
   qw(&Tag &DocType &RelaxNGSchema &RegisterNamespace &RegisterDocumentNamespace),
@@ -490,7 +491,7 @@ sub CleanLabel {
   my $key = ToString($label);
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
   $key =~ s/\s+/_/sg;
-  return ($prefix || "LABEL") . ":" . $key; }
+  return (defined $prefix ? ($prefix ? $prefix . ':' . $key : $key) : 'LABEL:' . $key); }
 
 sub CleanIndexKey {
   my ($key) = @_;
@@ -695,6 +696,7 @@ sub RefStepCounter {
   my ($type, $noreset) = @_;
   my $ctr = LookupMapping('counter_for_type', $type) || $type;
   StepCounter($ctr, $noreset);
+  maybePreemptRefnum($ctr);
   my $iddef = $STATE->lookupDefinition(T_CS("\\the$ctr\@ID"));
   my $has_id = $iddef && ((!defined $iddef->getParameters) || ($iddef->getParameters->getNumArgs == 0));
 
@@ -717,6 +719,70 @@ sub RefStepCounter {
     ($tags   ? (tags => $tags) : ()),
     ($has_id ? (id   => $id)   : ())); }
 
+# Internal: Use a label-derived reference number and/or ID
+# instead of the traditional counter based ones.
+# Since the \label{} determins the reference number and ID,
+# we MUST sniff out the label BEFORE we call RefStepCounter/RefStepID !!!!!
+# (see MaybePeekLabel below; and also MaybeNoteLabel for use within
+# captions & certain equation environments)
+# Assign a sub to LABEL_MAPPING_HOOK: &sub($label,$counter,$norefnum)
+# to return the desired refnum and id for a given object.
+sub maybePreemptRefnum {
+  my ($ctr, $norefnum) = @_;
+  if (my $mapper = LookupValue('LABEL_MAPPING_HOOK')) {
+    my $hj_refnum = T_CS('\_PREEMPTED_REFNUM_' . $ctr);
+    my $hj_id     = T_CS('\_PREEMPTED_ID_' . $ctr);
+    # First, restore the \the<ctr> and \the<ctr>@ID macros to defaults
+    if (!$norefnum && LookupMeaning($hj_refnum)) {
+      Let(T_CS('\the' . $ctr), $hj_refnum, 'global'); }
+    if (LookupMeaning($hj_id)) {
+      Let(T_CS('\the' . $ctr . '@ID'), $hj_id, 'global'); }
+    my $label = LookupValue('PEEKED_LABEL');
+    my ($fixedrefnum, $fixedid) = &$mapper($label, $ctr, $norefnum);
+    if (!$norefnum && $fixedrefnum) {
+      if (!LookupMeaning($hj_refnum)) {    # Save for later
+        Let($hj_refnum, T_CS('\the' . $ctr), 'global'); }
+      DefMacroI('\the' . $ctr, undef, $fixedrefnum, scope => 'global'); }
+    if ($fixedid) {
+      if (!LookupMeaning($hj_id)) {        # Save for later
+        Let($hj_id, T_CS('\the' . $ctr . '@ID'), 'global'); }
+      DefMacroI('\the' . $ctr . '@ID', undef, $fixedid, scope => 'global'); }
+    AssignValue(PEEKED_LABEL    => undef,  'global');    # CONSUME the label
+    AssignValue(PROCESSED_LABEL => $label, 'global');    # Note that we've consumed the label
+  }
+  return; }
+
+# Use to peek for FOLLOWING \label{...} to support label-derived refererence numbers
+sub MaybePeekLabel {
+  if (LookupValue('LABEL_MAPPING_HOOK')) {
+    my $gullet = $STATE->getStomach->getGullet;
+    my $peek   = $gullet->readNonSpace;
+    if (Equals($peek, T_CS('\label'))) {
+      StartSemiverbatim();
+      my $arg = $gullet->readArg();
+      EndSemiverbatim();
+      my $label = CleanLabel($arg, '');
+      AssignValue(PEEKED_LABEL => $label, 'global');
+      $gullet->unread(T_BEGIN, $arg, T_END); }
+    else {
+      AssignValue(PROCESSED_LABEL => undef, 'global');
+      AssignValue(PEEKED_LABEL    => undef, 'global'); }
+    $gullet->unread($peek); }
+  return; }
+
+# Use to note a discovered label to support label-derived refererence numbers
+# Can by used by \label, among others. Note we only record the label
+# if it hasn't already been peeked, and consumed.
+sub MaybeNoteLabel {
+  my ($label) = @_;
+  if (LookupValue('LABEL_MAPPING_HOOK')) {
+    $label = CleanLabel($label, '');
+    my $processed = LookupValue('PROCESSED_LABEL');
+    if (!$processed || ($processed ne $label)) {    # Only if not already processed
+      AssignValue(PROCESSED_LABEL => undef,  'global');
+      AssignValue(PEEKED_LABEL    => $label, 'global'); } }
+  return; }
+
 sub deactivateCounterScope {
   my ($ctr) = @_;
   #  print STDERR "Unusing scopes for $ctr\n";
@@ -732,6 +798,7 @@ sub RefStepID {
   my $ctr   = LookupMapping('counter_for_type', $type) || $type;
   my $unctr = "UN$ctr";
   StepCounter($unctr);
+  maybePreemptRefnum($ctr, 1);
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef,
     Tokens(T_OTHER('x'), Explode(LookupValue('\c@' . $unctr)->valueOf)),
     scope => 'global');

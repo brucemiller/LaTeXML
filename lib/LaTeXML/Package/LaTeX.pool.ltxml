@@ -604,6 +604,7 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
+    MaybePeekLabel();
     $type = ToString($type);
     my %props     = RefStepCounter($type);
     my $xtitle    = Digest(Invocation(T_CS('\lx@format@title@@'), $type, $title));
@@ -628,6 +629,7 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
+    MaybePeekLabel();
     $type = ToString($type);
     my %props = RefStepID($type);
     if ($type eq 'appendix') {
@@ -1787,6 +1789,7 @@ sub beforeEquation {
   my $numbering = LookupValue('EQUATION_NUMBERING');
   my $numbered  = $$numbering{numbered};
   my $ctr       = $$numbering{counter} || 'equation';
+  MaybePeekLabel();
   $$numbering{in_equation} = 1;
   if ($$numbering{preset}) {
     AssignValue(EQUATIONROW_TAGS => {
@@ -1970,7 +1973,7 @@ Tag('ltx:Math', afterOpen => sub { GenerateID(@_, 'm'); });
 # Although LaTeX itself doesn't provide such an environment,
 # many other packages & classes do, and they seem essentially equivalent.
 # They provide an environment to wrap around equations,
-# which highjack the equation counter to sub-number within the group.
+# which hijack the equation counter to sub-number within the group.
 DefConstructor('\lx@equationgroup@subnumbering@begin',
   "<ltx:equationgroup xml:id='#id'>#tags",
   afterDigest => sub {
@@ -2963,12 +2966,24 @@ DefMacro('\ext@table',  'lot');
 DefConditional('\iflx@donecaption');
 DefMacro('\caption',
 '\lx@donecaptiontrue\@ifundefined{@captype}{\@@generic@caption}{\expandafter\@caption\expandafter{\@captype}}');
+# First, check for trailing \label, move it into the caption as a standard position
 DefMacro('\@caption{}[]{}',
   '\@ifnext\label{\@caption@postlabel{#1}{#2}{#3}}{\@caption@{#1}{#2}{#3}}');
-# Check for trailing \label, move it into the caption
 DefMacro('\@caption@postlabel{}{}{} SkipMatch:\label Semiverbatim',
   '\@caption@{#1}{#2}{#3\label{#4}}');
-DefMacro('\@caption@{}{}{}',
+
+# Now, check for label inside to (potentially) record it.
+DefMacro('\@caption@{}{}{}', '\@hack@caption@{#1}{#2}#3\label\endcaption');
+DefMacro('\@hack@caption@{}{} Until:\label Until:\endcaption',
+  '\ifx.#4.\@caption@@@{#1}{#2}{#3}'    # No label
+    . '\else\@@@hack@caption@{#1}{#2}{#3}#4\fi');
+DefMacro('\@@@hack@caption@{}{}{}{} Until:\label',
+  '\lx@note@caption@label{#4}' .
+    '\@caption@@@{#1}{#2}{#3\label{#4}#5}');
+
+DefPrimitive('\lx@note@caption@label{}', sub { MaybeNoteLabel($_[1]); });
+
+DefMacro('\@caption@@@{}{}{}',
   '\@@add@caption@counters'
     . '\@@toccaption{\lx@format@toctitle@@{#1}{\ifx.#2.#3\else#2\fi}}'
     . '\@@caption{\lx@format@title@@{#1}{#3}}');
@@ -3403,6 +3418,7 @@ DefConstructor('\label Semiverbatim', sub {
   reversion   => '',
   properties  => { alignmentSkippable => 1, alignmentPreserve => 1 },
   afterDigest => sub {
+    MaybeNoteLabel($_[1]->getArg(1));
     my $label = CleanLabel(ToString($_[1]->getArg(1)));
     $_[1]->setProperty(label => $label);
     my $scope = $label; $scope =~ s/^LABEL:/label:/;
