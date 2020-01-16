@@ -1,0 +1,21 @@
+#!/usr/bin/env perl
+# /=====================================================================\ #
+# |  makebibtest                                                           | #
+# | Tool to generate an integration test                                | #
+# |=====================================================================| #
+# | Part of LaTeXML                                                     | #
+# |---------------------------------------------------------------------| #
+# | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
+# \=====================================================================/ #
+
+use strict;
+use warnings;
+
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+
+use LaTeXML::Post::BiBTeX::Cmd::makebibtest;
+my $exitcode = LaTeXML::Post::BiBTeX::Cmd::makebibtest->main(@ARGV);
+exit $exitcode;
+
+1;
