@@ -11,9 +11,10 @@ use LaTeXML::Util::Test;
 
 latexml_tests('t/daemon/formats',
   requires => {
-    tei  => 'amsart.cls',
-    jats => 'amsart.cls',
-  });
+      citation => 'mode no longer supported',
+      tei => 'alpha.bst',
+      jats => 'alpha.bst',
+      citationraw => 'alpha.bst' } );
 
 #**********************************************************************
 1;

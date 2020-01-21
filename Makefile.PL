@@ -97,7 +97,6 @@ WriteMakefile(NAME => 'LaTeXML',
           bugtracker => {
             web => 'https://github.com/brucemiller/LaTeXML/issues' } } })
     : ()),
-  test => {TESTS => 't/*.t t/bibtex/*.t'}
 );
 
 print STDERR ('=' x 55), "\n",

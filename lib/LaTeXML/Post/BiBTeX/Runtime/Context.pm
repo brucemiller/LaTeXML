@@ -478,6 +478,17 @@ sub sortEntries {
 sub setEntry {
     my ( $self, $entry ) = @_;
     $$self{entry} = $entry;
+    return $entry;
+}
+
+# 'findEntry' finds and activates the entry with the given key and returns it. 
+# If no such entry exists, returns undef. 
+sub findEntry {
+    my ($self, $key) = @_;
+    foreach my $entry (@{$self->getEntries}) {
+        return $self->setEntry($entry) if $entry->getKey eq $key;
+    }
+    return undef;
 }
 
 # gets the current entry (if any)

@@ -16,6 +16,7 @@ use Getopt::Long qw(GetOptionsFromArray);
 
 use LaTeXML::Post::BiBTeX::Runner;
 use LaTeXML::Post::BiBTeX::Common::Utils qw(slurp);
+use LaTeXML::Post::BiBTeX::Runtime::Utils qw(fmtLogMessage);
 
 sub main {
     shift(@_);    # remove the first argument
@@ -77,14 +78,15 @@ sub main {
         [@citations],
         $macro,
         sub {
-            print STDERR @_;
+            print STDERR fmtLogMessage(@_) . "\n";
         },
         $ofh,
         $wrap,
     );
 
     # and run the code
-    return &{$runcode}();
+    my ($rstatus) = &{$runcode}();
+    return $rstatus;
 }
 
 # helper function to print usage information and exit

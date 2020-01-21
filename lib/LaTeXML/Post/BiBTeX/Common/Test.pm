@@ -14,7 +14,8 @@ use warnings;
 use Test::More;
 use File::Temp qw(tempfile);
 use LaTeXML::Post::BiBTeX::Runner;
-use LaTeXML::Post::BiBTeX::Common::Utils qw(slurp);
+use LaTeXML::Post::BiBTeX::Common::Utils qw(slurp puts);
+use LaTeXML::Post::BiBTeX::Runtime::Utils qw(fmtLogMessage);
 
 use LaTeXML::Util::Pathname qw(pathname_kpsewhich);
 
@@ -26,7 +27,6 @@ use Time::HiRes qw(time);
 use File::Basename qw(dirname);
 use File::Spec;
 
-use LaTeXML::Post::BiBTeX::Common::Utils qw(slurp puts);
 
 use base qw(Exporter);
 our @EXPORT = qw(
@@ -144,10 +144,14 @@ sub integrationTest {
         open( my $handle, ">", $output );
         
         # and create the run
-        my $runcode =  createRun( $compiled, [$bib], $citesIn, $macroIn, \&note, $handle, 1 );
+        my $runcode =  createRun( $compiled, [$bib], $citesIn, $macroIn, sub {
+            use Data::Dumper;
+            print STDERR Dumper(@_) . "\n";
+            note(fmtLogMessage(@_) . "\n");
+        }, $handle, 1 );
 
         # run the run
-        my $status = &{$runcode}();
+        my ($status) = &{$runcode}();
         is( $status, 0, 'running went ok' );
 
         # check that we compiled the expected output

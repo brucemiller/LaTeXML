@@ -47,6 +47,17 @@ sub newFromFile {
     return $reader;
 }
 
+# 'newFromLTXML' creates a new StreamReader from a latexml path. 
+# Roughly equivalent to:
+# my $reader = LaTeXML::Post::BiBTeX::Common::StreamReader->new();
+# $reader->openLTXML(@_);
+sub newFromLTXML {
+    my ($class, $name, $path) = @_;
+    my $reader = $class->new();
+    return undef unless $reader->openLTXML($name, $path);
+    return $reader;
+}
+
 # ===================================================================== #
 # Open / Close
 # ===================================================================== #
@@ -89,7 +100,25 @@ sub openString {
     $$self{line}     = '';
     $$self{nchars}   = 0;
 
-    return;
+    return 1;
+}
+
+# openLTXML opens a file using a latexml path that could either be a file or a 'literal:' path
+sub openLTXML {
+    my ($self, $name, $path) = @_;
+
+    # if it is a file, open it
+    if (-e $path) {
+        $self->openFile($path);
+    } elsif ($path =~ /^literal:(.*)$/) {
+        my ($literal) = ($path =~ m/^literal:(.*)$/);
+        $self->openString($literal);
+    } else {
+        return 0;
+    }
+
+    $$self{filename} = $name if defined($name);
+    return 1;
 }
 
 # 'finalize' closes whatever is still left open by this reader and resets the state.

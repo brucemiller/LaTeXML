@@ -47,31 +47,29 @@ sub createCompile {
 
     # parse the file
     my ( $parsed, $parseError ) = eval { readFile($reader) } or do {
-        $logger->("Unable to parse $name. \n");
-        $logger->($@);
+        my ($error) = $@;
+        $logger->("Unable to parse $name: $error");
         return 4;
     };
     $reader->finalize;
 
     # throw an error, or a message how long it took
     if ( defined($parseError) ) {
-        $logger->("Unable to parse $name. \n");
-        $logger->($parseError);
+        $logger->("Unable to parse $name: $parseError");
         return 4, undef;
     }
 
     # compile the file
     my ( $compile, $compileError ) =
       eval { compileProgram( "LaTeXML::Post::BiBTeX::Compiler::Target", $parsed, $name ) } or do {
-        $logger->("Unable to compile $name. \n");
-        $logger->($@);
+        my ($error) = $@;
+        $logger->("Unable to compile $name: $error\n");
         return 5, undef;
       };
 
     # throw an error, or a message how long it took
     if ( defined($compileError) ) {
-        $logger->("Unable to compile $name. \n");
-        $logger->($compileError);
+        $logger->("Unable to compile $name: $compileError\n");
         return 5, undef;
     }
 
@@ -80,15 +78,22 @@ sub createCompile {
 }
 
 # 'createRun' prepares to run a compiled bst-file with a specific set of parameters. Returns a single value $callable
-# which can be called parameter-less. This callable returns either 0 (everything ok) or 6 (something went wrong). 
+# which can be called parameter-less. This callable returns a pair ($status, $config) with statuseither 0 (everything ok) or 6 (something went wrong). 
 # Takes the following parameters:
 # - $code: A sub (or callable) representing the compiled code as e.g. returned by 'createCompile'
 # - $bibfiles: A reference to a list of LaTeXML::Post::BiBTeX::Common::StreamReader representing the loaded '.bib' files. 
 # - $cites: A reference to an array of cited keys. This may contain the special key '*' which indicates all keys should be cited. 
 # - $macro: A macro to wrap all source references in, or undef if no such macro should be used. 
-# - $logger: A sub (or callable) taking a single string parameter used to output info and warning messages
+# - $logger: A sub (or callable) taking three parameters $level, $message, $location. 
 # - $output: A writeable file handle to print output into. 
 # - $wrapEnabled: When set to 1, enable emulating BiBTeXs output wrapping. 
+# In the $logger, the following arguments are passed:
+# - $level: One of 'INFO', 'WARNING', 'ERROR'.
+# - $message: The string containing the message itself
+# - $location is going to be one of:
+#   - undef (no location information available)
+#   - 5-tuple (filename, sr, sc, er, ec) indicating a location within a file name
+#   - 3-tuple (filename, key, value) inidicating the location within a bib file
 sub createRun {
     my ( $code, $bibfiles, $cites, $macro, $logger, $output, $wrapEnabled ) = @_;
 
@@ -100,19 +105,16 @@ sub createRun {
 
     # Create a configuration that optionally wraps things inside a macro
     my $config = LaTeXML::Post::BiBTeX::Runtime::Config->new(
-        undef, $buffer,
-        sub {
-            $logger->( fmtLogMessage(@_) . "\n" );
-        },
+        undef, $buffer, $logger,
         [@$bibfiles],
         [@$cites]
     );
 
     return 0, sub {
         my ( $ok, $msg ) = $config->run($code);
-        $logger->($msg) if defined($msg);
+        $logger->('ERROR', $msg, undef) if defined($msg) && $msg;
         $buffer->finalize;
-        return 6 unless $ok;
-        return 0;
+        return 6, undef unless $ok;
+        return 0, $config;
     }
 }

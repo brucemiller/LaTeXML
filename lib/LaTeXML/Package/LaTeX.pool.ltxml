@@ -3720,6 +3720,8 @@ DefConstructor('\lx@bibliography [] Semiverbatim',
   beforeConstruct => sub { adjustBackmatterElement($_[0], $_[1]); });
 
 # NOTE: This totally needs to be made extensible (parsing *.bst!?!? OMG!)
+# TODO: Now that we can parse bst's these values may no longer be needed. 
+# But they might be still used by 'natbib' (to be investigated)
 our $BIBSTYLES = {
   plain    => { citestyle => 'numbers', sort => 'true' },
   unsrt    => { citestyle => 'numbers', sort => 'false' },
@@ -3753,8 +3755,8 @@ DefConstructor('\bibstyle{}', sub {
     AssignValue(BIBSTYLE => $style, 'global');
     if (my $parms = $$BIBSTYLES{$style}) {
       AssignValue(CITE_STYLE => $$parms{citestyle}); }
-    else {
-      Info('unexpected', $style, $_[0], "Unknown bibstyle '$style', it will be ignored"); }
+    #else {
+    # Info('unexpected', $style, $_[0], "Unknown bibstyle '$style', it will be ignored"); }
     return; });
 
 DefMacro('\bibliographystyle Semiverbatim', '\bibstyle{#1}');
@@ -3867,6 +3869,11 @@ DefMacro('\lx@mung@bibliography{}', sub {
     # Now, try to open {thebibliography}
     push(@tokens, Invocation('\begin', Tokenize('thebibliography'), Tokens()));
     return Tokens(@tokens); });
+  
+# used for source refences by the BiBTeX emulator
+# \lxBibitemFrom{file}{entry}{field}{content}
+DefConstructor('\lxBibitemFrom Semiverbatim Semiverbatim Semiverbatim {}',
+  "<ltx:text class='ltx_bib_#3' locator='#1:#2:#3'>#4</ltx:text>");
 
 DefConstructorI('\lx@bibnewblock', undef, "<ltx:bibblock>");
 Let('\newblock', '\lx@bibnewblock');
