@@ -31,5 +31,5 @@ cpanm -v --installdeps --notest .
 
 echo "###################################################################"
 
-echo " => perl Makefile.PL && make test"
-perl Makefile.PL && make test
+echo " => perl Makefile.PL && make fulltest"
+perl Makefile.PL && make fulltest

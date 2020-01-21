@@ -12,12 +12,6 @@ use LaTeXML::Common::Config;
 use Data::Dumper;
 local $Data::Dumper::Sortkeys = 1;
 
-if (!$ENV{"CI"}) {
-  plan skip_all => "Only checked in continuous integration.";
-  done_testing();
-  exit;
-}
-
 # Obtain the rule pairs from MathGrammar, which we want to exhaustively test:
 my %grammar_dependencies = obtain_dependencies();
 

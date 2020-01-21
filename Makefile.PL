@@ -43,6 +43,12 @@ compile_MathGrammar();
 install_TeXStyles();
 extra_Tests();
 
+# finds and alphabetically sorts files according to pattern
+# this is used for the tests
+sub find_and_sort {
+  my ($pattern) = @_;
+  return join(' ', sort glob $pattern); }
+
 WriteMakefile(NAME => 'LaTeXML',
   AUTHOR           => 'Bruce Miller <bruce.miller@nist.gov>',
   ABSTRACT         => "transforms TeX and LaTeX into XML/HTML/MathML",
@@ -93,6 +99,7 @@ WriteMakefile(NAME => 'LaTeXML',
             url  => 'https://github.com/brucemiller/LaTeXML.git',
             web  => 'https://github.com/brucemiller/LaTeXML' } } })
     : ()),
+  test => {TESTS => find_and_sort('t/*.t t/*/*.t')}
 );
 
 print STDERR ('=' x 55), "\n",
@@ -253,9 +260,12 @@ InstallTeXStyles
 #======================================================================
 # Extra tests for Tikz; too slow for everyday tests.
 sub extra_Tests {
-  $MORE_MAKERULES .= <<'ExtraTests';
+  my $extratests = find_and_sort('t/*.tt t/*/*.tt');
+  $MORE_MAKERULES .= <<"ExtraTests";
 
-EXTRA_TEST_FILES = t/*.tt
+EXTRA_TEST_FILES = $extratests
+ExtraTests
+  $MORE_MAKERULES .= <<'ExtraTests';
 
 fulltest : test extratest
 
