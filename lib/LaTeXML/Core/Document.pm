@@ -991,6 +991,8 @@ sub floatToElement {
   my ($self, $qname, $closeifpossible) = @_;
   my @candidates = getInsertionCandidates($$self{node});
   my $closeable  = 1;
+  if (@candidates && $self->canContain($candidates[0], $qname)) {
+    return $candidates[0]; }    # Fine right here.
   while (@candidates && !$self->canContain($candidates[0], $qname)) {
     $closeable &&= $self->canAutoClose($candidates[0]);
     shift(@candidates); }
