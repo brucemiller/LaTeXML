@@ -457,7 +457,7 @@ sub makeNoteTags {
 
 DefMacroI('\ext@footnote', undef, undef);
 DefConstructor('\lx@note[]{}[]{}',
-  "<ltx:note role='#role' mark='#mark' xml:id='#id' inlist='#list'>"
+  "^<ltx:note role='#role' mark='#mark' xml:id='#id' inlist='#list'>"
     . "#tags"
     . "#4"
     . "</ltx:note>",
@@ -1794,16 +1794,31 @@ sub beforeEquation {
         ($numbered ? RefStepCounter($ctr) : RefStepID($ctr)) }, 'global'); }
   else {
     AssignValue(EQUATIONROW_TAGS => {}, 'global'); }
-  Let('\@@ENDDISPLAYMATH',   '\lx@begin@fake@intertext');
-  Let('\@@BEGINDISPLAYMATH', '\lx@end@fake@intertext');
-  Let('\]',                  '\lx@begin@fake@intertext');
-  Let('\[',                  '\lx@end@fake@intertext');
+  Let('\lx@saved@BEGINDISPLAYMATH', '\@@BEGINDISPLAYMATH');
+  Let('\lx@saved@ENDDISPLAYMATH',   '\@@ENDDISPLAYMATH');
+  Let('\@@ENDDISPLAYMATH',          '\lx@eDM@in@equation');
+  Let('\@@BEGINDISPLAYMATH',        '\lx@bDM@in@equation');
   return; }
 
-# Apparently folks use $$text$$ or even \]text\[ inside display math!
-# This SHOULD create a line break, not merely text!
-DefPrimitive('\lx@begin@fake@intertext', sub { $_[0]->beginMode('text'); });
-DefPrimitive('\lx@end@fake@intertext',   sub { $_[0]->endMode('text'); });
+# Note peculiar usages of \[,\],$$ WITHIN displayed math, like {equation}.
+# Authors sometimes use \begin{equation} math \] some text \[ more math \end{equation}
+# to create a cheap intertext. And, the refnum appears on the SECOND equation!
+# But in redefining these, note that a "valid" \[ math \] might be used within some
+# sort of text insertion (eg \footnote)!
+# So, we've got to dance around with redefinitions!!
+# SIDE NOTE: \[,\] are really just $$ w/ appropriate error checking!
+DefMacro('\lx@bDM@in@equation', '\lx@saved@BEGINDISPLAYMATH\let\@@ENDDISPLAYMATH\lx@saved@ENDDISPLAYMATH');
+DefMacro('\lx@eDM@in@equation',
+  '\lx@retract@eqnno\lx@begin@fake@intertext'
+    . '\let\lx@saved@BEGINDISPLAYMATH\@@BEGINDISPLAYMATH\let\lx@saved@bdm\['
+    . '\let\@@BEGINDISPLAYMATH\lx@end@fake@intertext'
+    . '\let\[\lx@end@fake@intertext');
+
+DefMacro('\lx@begin@fake@intertext', '\end{equation}');
+DefMacro('\lx@end@fake@intertext',
+  '\let\@@BEGINDISPLAYMATH\lx@saved@BEGINDISPLAYMATH\let\[\lx@saved@bdm' .
+    '\begin{equation}');
+DefPrimitive('\lx@retract@eqnno', sub { retractEquation(); });
 
 sub retractEquation {
   my $numbering = LookupValue('EQUATION_NUMBERING');
@@ -1908,33 +1923,10 @@ DefEnvironment('{equation*}',
     afterEquation($_[1]); },
   locked => 1);
 
-# Define \( ..\) and \[ ... \] to act like environments.
-# I would have thought these should be locked, but it seems relatively common to
-# redefine them as \left[ \right] and \left( \right) !
-DefConstructorI('\[', undef,
-  "<ltx:equation xml:id='#id'>"
-    . "<ltx:Math mode='display'>"
-    . "<ltx:XMath>"
-    . "#body"
-    . "</ltx:XMath>"
-    . "</ltx:Math>"
-    . "</ltx:equation>",
-  beforeDigest => sub { $_[0]->beginMode('display_math'); },
-  captureBody  => 1,
-  properties   => sub { RefStepID('equation') },
-  locked       => 1);
-DefConstructorI('\]', undef, "",
-  beforeDigest => sub { $_[0]->endMode('display_math'); },
-  locked       => 1);
-DefConstructorI('\(', undef,
-  "<ltx:Math mode='inline'>"
-    . "<ltx:XMath>"
-    . "#body"
-    . "</ltx:XMath>"
-    . "</ltx:Math>",
-  beforeDigest => sub { $_[0]->beginMode('inline_math'); },
-  captureBody  => 1);
-DefConstructorI('\)', undef, "", beforeDigest => sub { $_[0]->endMode('inline_math'); });
+DefMacro('\[', '\@@BEGINDISPLAYMATH');
+DefMacro('\]', '\@@ENDDISPLAYMATH');
+DefMacro('\(', '\@@BEGININLINEMATH');
+DefMacro('\)', '\@@ENDINLINEMATH');
 
 # Keep from expanding too early, if in alignments, or such.
 DefMacroI('\ensuremath', undef,
