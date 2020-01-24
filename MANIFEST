@@ -774,6 +774,7 @@ t/94_runtimes.t
 t/95_complex_config.t
 t/96_fatal.t
 t/97_manifest.t
+t/98_bibtex.t
 t/170_grammar_coverage.t
 t/alignment/algx.pdf
 t/alignment/algx.tex
@@ -1023,6 +1024,10 @@ t/daemon/amsarticle.tex
 t/daemon/broken.tex
 t/daemon/api/port.spec
 t/daemon/api/port.xml
+
+t/daemon/bibtex/statement.spec
+t/daemon/bibtex/statement.status
+t/daemon/bibtex/statement.xml
 t/daemon/citations.tex
 t/daemon/complex/exhaustive.spec
 t/daemon/complex/exhaustive.xml
@@ -1065,7 +1070,10 @@ t/daemon/profiles/math.spec
 t/daemon/profiles/math.xml
 t/daemon/profiles/standard.spec
 t/daemon/profiles/standard.xml
+t/daemon/projects.bib
 t/daemon/runtimes/timeout.spec
+t/daemon/runtimes/timeout.status
+t/daemon/statement.tex
 # t/daemon/runtimes/timeout.xml [intentionally omitted]
 t/daemon/tiny.bib
 t/digestion/box.pdf
