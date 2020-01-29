@@ -228,6 +228,7 @@ sub compileBst {
   return $compiled; }
 
 # given an appropriate context, emulate what BiBTeX does and produce a bbl string
+# pre
 # returns a pair ($buffer, $runconfig)
 sub emulateBiBTeX {
   my ($self, $doc, $compiled, $files, $cites) = @_;
@@ -275,7 +276,22 @@ sub emulateBiBTeX {
   NoteEnd("Running BiBTeX");
   # return the result, or if it failed
   return undef, undef unless $res == 0;
+  # prepend the bbl preamble
+  my $bblPreamble = $self->buildBBLPreamble($runconfig);
+  $buffer = $bblPreamble . $buffer if defined($bblPreamble);
   return $buffer, $runconfig; }
+
+# build the preamble
+# TODO: Actually write this piece of TeX
+sub buildBBLPreamble {
+  my ($self, $config) = @_;
+  my $buffer = <<'END_BUFFER';
+\makeatletter
+\makeatother
+END_BUFFER
+  my $entries = $config->getContext->getEntries;
+  foreach my $entry (@$entries) {}
+  return $buffer; }
 
 # given a document and the bbl output
 sub convertBBL2Biblist {
