@@ -38,6 +38,7 @@ sub new {
 
         ### - a list of read entries, and the current entry (if any)
         entries => undef,
+        entryHash => undef,
         entry   => undef,
 
         ### - an output buffer (split into an array of string, and an array of references)
@@ -347,10 +348,11 @@ sub readEntries {
         }
         $entryHash{$key} = $entry;
     }
+    $$self{entryHash} = \%entryHash;
 
     # build the entry list and keep track of warnings and locations of warnings
     ( $$self{entries}, $warning, $location ) =
-      $self->buildEntryList( [@entries], \%entryHash, $citations, 2 )
+      $self->buildEntryList( [@entries], $citations, 2 )
       ;    # TODO: Allow numcrossref customization
     push( @warnings,  @$warning )  if defined($warning);
     push( @locations, @$location ) if defined($location);
@@ -360,7 +362,7 @@ sub readEntries {
 
 # build a list of entries that should be cited.
 sub buildEntryList {
-    my ( $self, $entryList, $entryHash, $citeList, $numCrossRefs ) = @_;
+    my ( $self, $entryList, $citeList, $numCrossRefs ) = @_;
 
     sub locationOf {
         my ($entry) = @_;
@@ -378,7 +380,8 @@ sub buildEntryList {
     my %refmap  = ();      # [xrefed] => referencing entries
 
     # hash for resolving entries
-    my %entryMap = %{$entryHash};
+    my $entryHash = $$self{entryHash};
+    my %entryMap = %$entryHash;
 
     my ( $entry, $error );
     while ( defined( $citeKey = shift(@$citeList) ) ) {
@@ -485,11 +488,21 @@ sub setEntry {
 # If no such entry exists, returns undef. 
 sub findEntry {
     my ($self, $key) = @_;
-    foreach my $entry (@{$self->getEntries}) {
-        return $self->setEntry($entry) if $entry->getKey eq $key;
-    }
-    return undef;
-}
+    my $theEntry;
+    # if we have a hash for entries (i.e. we were initialized)
+    # we should just lookup the key
+    my $entryHash = $$self{entryHash};
+    if(defined($entryHash)) {
+        my %hash = %{$entryHash};
+        $theEntry = $hash{$key}; }
+    # if we weren't initalized, we need to iterate
+    else {
+        foreach my $entry (@{$self->getEntries}) {
+            if($entry->getKey eq $key) {
+                $theEntry = $entry;
+                last; } } }
+    # set the active entry and return it
+    return $self->setEntry($theEntry) if defined($theEntry); }
 
 # gets the current entry (if any)
 sub getEntry {
