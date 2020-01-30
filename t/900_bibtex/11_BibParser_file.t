@@ -5,7 +5,7 @@ subtest "requirements" => sub {
   plan tests => 2;
 
   use_ok("LaTeXML::Post::BiBTeX::Common::StreamReader");
-  use_ok("LaTeXML::Post::BiBTeX::Bibliography");
+  use_ok("LaTeXML::Post::BiBTeX::Bibliography::BibParser");
 };
 
 doesParseFile("complicated.bib", 6);

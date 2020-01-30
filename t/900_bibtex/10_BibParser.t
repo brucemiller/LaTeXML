@@ -2,11 +2,18 @@ use LaTeXML::Post::BiBTeX::Common::Test;
 use Test::More tests => 6;
 
 subtest "requirements" => sub {
-  plan tests => 2;
+  plan tests => 4;
 
   use_ok("LaTeXML::Post::BiBTeX::Common::StreamReader");
-  use_ok("LaTeXML::Post::BiBTeX::Bibliography");
+  use_ok("LaTeXML::Post::BiBTeX::Bibliography::BibEntry");
+  use_ok("LaTeXML::Post::BiBTeX::Bibliography::BibField");
+  use_ok("LaTeXML::Post::BiBTeX::Bibliography::BibString");
 };
+
+# convenience functions
+sub BibEntry  { LaTeXML::Post::BiBTeX::Bibliography::BibEntry->new(@_); }
+sub BibField    { LaTeXML::Post::BiBTeX::Bibliography::BibField->new(@_); }
+sub BibString { LaTeXML::Post::BiBTeX::Bibliography::BibString->new(@_); }
 
 subtest 'readLiteral' => sub {
   plan tests => 5;

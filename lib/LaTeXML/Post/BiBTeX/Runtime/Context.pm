@@ -10,7 +10,7 @@ package LaTeXML::Post::BiBTeX::Runtime::Context;
 use strict;
 use warnings;
 
-use LaTeXML::Post::BiBTeX::Bibliography qw(readFile);
+use LaTeXML::Post::BiBTeX::Bibliography::BibParser qw(readFile);
 use LaTeXML::Post::BiBTeX::Common::Utils;
 
 use LaTeXML::Post::BiBTeX::Runtime::Entry;
