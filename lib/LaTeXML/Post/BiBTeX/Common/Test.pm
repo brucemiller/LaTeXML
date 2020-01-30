@@ -146,8 +146,6 @@ sub integrationTest {
         
         # and create the run
         my $runcode =  createRun( $compiled, [$bib], $citesIn, $macroIn, sub {
-            use Data::Dumper;
-            print STDERR Dumper(@_) . "\n";
             note(fmtLogMessage(@_) . "\n");
         }, $handle, 1 );
 
