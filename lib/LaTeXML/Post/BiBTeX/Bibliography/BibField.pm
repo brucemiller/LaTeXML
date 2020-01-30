@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Post::BiBTeX::Bibliography::BibTag                        | #
+# |  LaTeXML::Post::BiBTeX::Bibliography::BibField                        | #
 # | Representation for tags inside .bib entries                         | #
 # |=====================================================================| #
 # | Part of LaTeXML                                                     | #
@@ -7,7 +7,7 @@
 # | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
 # \=====================================================================/ #
 
-package LaTeXML::Post::BiBTeX::Bibliography::BibTag;
+package LaTeXML::Post::BiBTeX::Bibliography::BibField;
 use strict;
 use warnings;
 
@@ -31,14 +31,14 @@ sub getName {
     return $$self{name};
 }
 
-# gets the content of this BiBTag, i.e. either a list of values
+# gets the content of this BibField, i.e. either a list of values
 # or a single value.
 sub getContent {
     my ($self) = @_;
     return $$self{content};
 }
 
-# evaluates the content of this BiBTag
+# evaluates the content of this BibField
 # FAILS if this Tag is already evaluated
 # returns a list of items which have failed to evaluate
 sub evaluate {
@@ -70,7 +70,7 @@ sub evaluate {
     return @failed;
 }
 
-# turns this BibTag into a string representing code to create this object
+# turns this BibField into a string representing code to create this object
 sub stringify {
     my ($self) = @_;
     my ($name) = $self->getName;
@@ -86,7 +86,7 @@ sub stringify {
     }
 
     my $ss = $self->getSourceString;
-    return 'BibTag(' . $name . ', ' . $content . ", $ss)";
+    return 'BibField(' . $name . ', ' . $content . ", $ss)";
 }
 
 1;

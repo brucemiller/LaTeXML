@@ -85,6 +85,7 @@ sub measureEnd {
 sub isResult {
     my ( $results, $path, $message ) = @_;
     Test::More::is( joinStrs( @{$results} ), slurp("$path.txt"), $message );
+    # puts("$path.txt.got", joinStrs( @{$results} ));
 }
 
 sub integrationTestPaths {

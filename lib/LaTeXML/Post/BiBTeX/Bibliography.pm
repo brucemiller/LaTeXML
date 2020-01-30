@@ -12,19 +12,19 @@ use strict;
 use warnings;
 
 use LaTeXML::Post::BiBTeX::Bibliography::BibEntry;
-use LaTeXML::Post::BiBTeX::Bibliography::BibTag;
+use LaTeXML::Post::BiBTeX::Bibliography::BibField;
 use LaTeXML::Post::BiBTeX::Bibliography::BibString;
 use LaTeXML::Post::BiBTeX::Bibliography::BibParser;
 
 use base qw(Exporter);
 our @EXPORT = qw(
-  &BibEntry &BibTag &BibString
+  &BibEntry &BibField &BibString
   &readFile &readEntry
   &readLiteral &readBrace &readQuote
 );
 
 sub BibEntry  { LaTeXML::Post::BiBTeX::Bibliography::BibEntry->new(@_); }
-sub BibTag    { LaTeXML::Post::BiBTeX::Bibliography::BibTag->new(@_); }
+sub BibField    { LaTeXML::Post::BiBTeX::Bibliography::BibField->new(@_); }
 sub BibString { LaTeXML::Post::BiBTeX::Bibliography::BibString->new(@_); }
 
 1;

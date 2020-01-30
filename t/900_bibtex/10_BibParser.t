@@ -71,27 +71,27 @@ subtest 'readQuote' => sub {
   }
 };
 
-subtest 'readTag' => sub {
+subtest 'readField' => sub {
   plan tests => 9;
 
   # value only
-  doesReadTag('empty tag', '', undef);
-  doesReadTag('literal value', 'value', BibTag(undef, [(BibString('LITERAL', 'value', [(undef, 1, 1, 1, 6)]))], [(undef, 1, 1, 1, 6)]));
-  doesReadTag('quoted value', '"value"', BibTag(undef, [(BibString('QUOTE', 'value', [(undef, 1, 1, 1, 8)]))], [(undef, 1, 1, 1, 8)]));
-  doesReadTag('braced value', '{value}', BibTag(undef, [(BibString('BRACKET', 'value', [(undef, 1, 1, 1, 8)]))], [(undef, 1, 1, 1, 8)]));
-  doesReadTag('concated literals', 'value1 # value2', BibTag(undef, [(BibString('LITERAL', 'value1', [(undef, 1, 1, 1, 7)]), BibString('LITERAL', 'value2', [(undef, 1, 10, 1, 16)]))], [(undef, 1, 1, 1, 16)]));
-  doesReadTag('concated quote and literal', '"value1" # value2', BibTag(undef, [(BibString('QUOTE', 'value1', [(undef, 1, 1, 1, 9)]), BibString('LITERAL', 'value2', [(undef, 1, 12, 1, 18)]))], [(undef, 1, 1, 1, 18)]));
+  doesReadField('empty tag', '', undef);
+  doesReadField('literal value', 'value', BibField(undef, [(BibString('LITERAL', 'value', [(undef, 1, 1, 1, 6)]))], [(undef, 1, 1, 1, 6)]));
+  doesReadField('quoted value', '"value"', BibField(undef, [(BibString('QUOTE', 'value', [(undef, 1, 1, 1, 8)]))], [(undef, 1, 1, 1, 8)]));
+  doesReadField('braced value', '{value}', BibField(undef, [(BibString('BRACKET', 'value', [(undef, 1, 1, 1, 8)]))], [(undef, 1, 1, 1, 8)]));
+  doesReadField('concated literals', 'value1 # value2', BibField(undef, [(BibString('LITERAL', 'value1', [(undef, 1, 1, 1, 7)]), BibString('LITERAL', 'value2', [(undef, 1, 10, 1, 16)]))], [(undef, 1, 1, 1, 16)]));
+  doesReadField('concated quote and literal', '"value1" # value2', BibField(undef, [(BibString('QUOTE', 'value1', [(undef, 1, 1, 1, 9)]), BibString('LITERAL', 'value2', [(undef, 1, 12, 1, 18)]))], [(undef, 1, 1, 1, 18)]));
 
   # name = value
-  doesReadTag('simple name', 'name = value', BibTag(BibString('LITERAL', 'name', [(undef, 1, 1, 1, 5)]), [(BibString('LITERAL', 'value', [(undef, 1, 8, 1, 13)]))], [(undef, 1, 1, 1, 13)]));
-  doesReadTag('simple name (compact)', 'name=value', BibTag(BibString('LITERAL', 'name', [(undef, 1, 1, 1, 5)]), [(BibString('LITERAL', 'value', [(undef, 1, 6, 1, 11)]))], [(undef, 1, 1, 1, 11)]));
-  doesReadTag('name + concat value', 'name=a#"b"', BibTag(BibString('LITERAL', 'name', [(undef, 1, 1, 1, 5)]), [(BibString('LITERAL', 'a', [(undef, 1, 6, 1, 7)]), BibString('QUOTE', 'b', [(undef, 1, 8, 1, 11)]))], [(undef, 1, 1, 1, 11)]));
+  doesReadField('simple name', 'name = value', BibField(BibString('LITERAL', 'name', [(undef, 1, 1, 1, 5)]), [(BibString('LITERAL', 'value', [(undef, 1, 8, 1, 13)]))], [(undef, 1, 1, 1, 13)]));
+  doesReadField('simple name (compact)', 'name=value', BibField(BibString('LITERAL', 'name', [(undef, 1, 1, 1, 5)]), [(BibString('LITERAL', 'value', [(undef, 1, 6, 1, 11)]))], [(undef, 1, 1, 1, 11)]));
+  doesReadField('name + concat value', 'name=a#"b"', BibField(BibString('LITERAL', 'name', [(undef, 1, 1, 1, 5)]), [(BibString('LITERAL', 'a', [(undef, 1, 6, 1, 7)]), BibString('QUOTE', 'b', [(undef, 1, 8, 1, 11)]))], [(undef, 1, 1, 1, 11)]));
 
-  sub doesReadTag {
+  sub doesReadField {
     my ($name, $input, $expected) = @_;
 
     my $reader = makeStringReader($input, 1, ', ');
-    my ($result) = LaTeXML::Post::BiBTeX::Bibliography::BibParser::readTag($reader);
+    my ($result) = LaTeXML::Post::BiBTeX::Bibliography::BibParser::readField($reader);
 
     if (defined($expected)) {
       is_deeply($result, $expected, $name);

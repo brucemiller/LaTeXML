@@ -15,10 +15,10 @@ use base qw(LaTeXML::Post::BiBTeX::Common::Object);
 use LaTeXML::Post::BiBTeX::Common::Utils;
 
 sub new {
-    my ( $class, $type, $tags, $source ) = @_;
+    my ( $class, $type, $fields, $source ) = @_;
     return bless {
         type   => $type,     # the type of entry we have (see getType)
-        tags   => $tags,     # a list of tags in this BiBFile
+        fields   => $fields,     # a list of fields in this BiBFile
         source => $source    # a source reference
     }, $class;
 }
@@ -30,22 +30,22 @@ sub getType {
     return $$self{type};
 }
 
-# a list of BibTag s contained in this entry
-sub getTags {
+# a list of BiBFields s contained in this entry
+sub getFields {
     my ($self) = @_;
-    return $$self{tags};
+    return $$self{fields};
 }
 
 # evaluates this entry, i.e. normalizes the type
-# and evaluates all tags
+# and evaluates all fields
 sub evaluate {
     my ( $self, %context ) = @_;
 
     $$self{type}->normalizeValue;
 
-    my @tags = @{ $$self{tags} };
-    foreach my $tag (@tags) {
-        $tag->evaluate(%context);
+    my @fields = @{ $$self{fields} };
+    foreach my $field (@fields) {
+        $field->evaluate(%context);
     }
 }
 
@@ -53,11 +53,11 @@ sub evaluate {
 sub stringify {
     my ($self) = @_;
     my ($type) = $self->getType->stringify;
-    my @tags = map { $_->stringify; } @{ $self->getTags };
-    my $tagStr = '[(' . join( ',', @tags ) . ')]';
+    my @fields = map { $_->stringify; } @{ $self->getFields };
+    my $fieldStr = '[(' . join( ',', @fields ) . ')]';
 
     my $ss = $self->getSourceString;
-    return 'BibTag(' . $type . ', ' . $tagStr . ", $ss)";
+    return 'BibEntry(' . $type . ', ' . $fieldStr . ", $ss)";
 }
 
 1;

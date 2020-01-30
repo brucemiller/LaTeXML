@@ -32,25 +32,25 @@ sub new {
     my $type = lc $entry->getType->getValue;
     return undef, undef if $type eq 'string' or $type eq 'comment';
 
-    # read the tags
-    my @tags = @{ $entry->getTags };
+    # read the fields
+    my @fields = @{ $entry->getFields };
 
     # if we have a preamble, return the conent of the preamble
     if ( $type eq 'preamble' ) {
         return undef, ['Missing content for preamble'],
           [ locationOf( $name, $entry ) ]
-          unless scalar(@tags) eq 1;
-        my $preamble = shift(@tags);
+          unless scalar(@fields) eq 1;
+        my $preamble = shift(@fields);
         my $text     = $preamble->getContent->getValue =~ s/\s+/ /gr;
         return $text, [ ( $name, '', 'preamble' ) ];
     }
 
     # Make sure that we have something
     return undef, [ 'Missing key for entry', [ locationOf( $name, $entry ) ] ]
-      unless scalar(@tags) > 0;
+      unless scalar(@fields) > 0;
 
     # make sure that we have a key
-    my $key = shift(@tags)->getContent->getValue;
+    my $key = shift(@fields)->getContent->getValue;
     return undef, [ 'Expected non-empty key', [ locationOf( $name, $entry ) ] ]
       unless $key;
 
@@ -59,14 +59,14 @@ sub new {
     my (@warnings)  = ();
     my (@locations) = ();
 
-    foreach my $tag (@tags) {
-        $valueKey = $tag->getName;
-        $value    = $tag->getContent->getValue;
+    foreach my $field (@fields) {
+        $valueKey = $field->getName;
+        $value    = $field->getContent->getValue;
 
-        # we need a key=value in this tag
+        # we need a key=value in this field
         unless ( defined($valueKey) ) {
             push( @warnings, 'Missing key for value' );
-            push( @locations, locationOf( $name, $tag->getContent ) );
+            push( @locations, locationOf( $name, $field->getContent ) );
             next;
         }
 
@@ -77,10 +77,10 @@ sub new {
             push( @warnings,
                     'Duplicate value in entry '
                   . $key
-                  . ': Tag '
+                  . ': Field '
                   . $valueKey
                   . ' already defined. ' );
-            push( @locations, locationOf( $name, $tag->getContent ) );
+            push( @locations, locationOf( $name, $field->getContent ) );
             next;
         }
 

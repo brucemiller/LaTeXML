@@ -12,7 +12,7 @@ use strict;
 use warnings;
 
 use LaTeXML::Post::BiBTeX::Bibliography::BibString;
-use LaTeXML::Post::BiBTeX::Bibliography::BibTag;
+use LaTeXML::Post::BiBTeX::Bibliography::BibField;
 use LaTeXML::Post::BiBTeX::Bibliography::BibEntry;
 
 use base qw(Exporter);
@@ -73,7 +73,7 @@ sub readFile {
             if ($evaluate) {
                 $entry->evaluate(%context);
                 if ( $entry->getType->getValue eq 'string' ) {
-                    ($content) = @{ $entry->getTags };
+                    ($content) = @{ $entry->getFields };
                     $context{ $content->getName->getValue } =
                       $content->getContent;
                 }
@@ -130,14 +130,14 @@ sub readEntry {
     return undef, 'expected a non-empty name ', $reader->getPosition
       unless $type->getValue;
 
-    # read opening brace (for tags)
+    # read opening brace (for fields)
     my ($obrace) = $reader->readChar;
     return undef, 'expected an "{"', $reader->getPosition
       unless defined($obrace) && $obrace eq '{';
 
-    my @tags = ();
+    my @fields = ();
 
-    my ( $char, $tag, $tagError, $tagLocation );
+    my ( $char, $field, $fieldError, $fieldLocation );
 
     while (1) {
         $reader->eatSpaces;
@@ -146,7 +146,7 @@ sub readEntry {
           $reader->getPosition
           unless defined($char);
 
-        # if we have a comma, we just need the next tag
+        # if we have a comma, we just need the next field
         # TODO: Ignores multiple following commas
         # TODO: What happens if we have a comma in the first position?
         if ( $char eq ',' ) {
@@ -158,32 +158,32 @@ sub readEntry {
             $reader->eatChar;
             last;
 
-            # else push a tag (if we have one)
+            # else push a field (if we have one)
         }
         else {
-            ( $tag, $tagError, $tagLocation ) = readTag($reader);
-            return $tag, $tagError, $tagLocation if defined($tagError);
-            push( @tags, $tag ) if defined($tag);
+            ( $field, $fieldError, $fieldLocation ) = readField($reader);
+            return $field, $fieldError, $fieldLocation if defined($fieldError);
+            push( @fields, $field ) if defined($field);
         }
     }
 
     my ( $er, $ec ) = $reader->getPosition;
 
     my $fn = $reader->getFilename;
-    return LaTeXML::Post::BiBTeX::Bibliography::BibEntry->new( $type, [@tags],
+    return LaTeXML::Post::BiBTeX::Bibliography::BibEntry->new( $type, [@fields],
         [ $fn, $sr, $sc, $er, $ec ] );
 }
 
 # ======================================================================= #
-# Parsing a Tag
+# Parsing a Field
 # ======================================================================= #
 
-# reads a single tag from the input
+# reads a single field from the input
 # with an optional name and content
-sub readTag {
+sub readField {
     my ($reader) = @_;
 
-    # skip spaces and start reading a tag
+    # skip spaces and start reading a field
     $reader->eatSpaces;
     my ( $sr, $sc ) = $reader->getPosition;
     my ( $er, $ec ) = ( $sr, $sc );
@@ -192,7 +192,7 @@ sub readTag {
     # we may have tried to read a closing brace
     # so return undef and also no error.
     my ($char) = $reader->peekChar;
-    return undef, 'unexpected end of input while reading tag',
+    return undef, 'unexpected end of input while reading field',
       $reader->getLocation
       unless defined($char);
 
@@ -284,7 +284,7 @@ sub readTag {
         $reader->eatSpaces;
 
         ($char) = $reader->peekChar;
-        return undef, 'unexpected end of input while reading tag',
+        return undef, 'unexpected end of input while reading field',
           $reader->getPosition
           unless defined($char);
     }
@@ -294,7 +294,7 @@ sub readTag {
     $name = shift(@content) if ($hadEqualSign);
 
     my $fn = $reader->getFilename;
-    return LaTeXML::Post::BiBTeX::Bibliography::BibTag->new( $name, [@content],
+    return LaTeXML::Post::BiBTeX::Bibliography::BibField->new( $name, [@content],
         [ ( $fn, $sr, $sc, $er, $ec ) ] );
 }
 

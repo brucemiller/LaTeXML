@@ -8,9 +8,9 @@ sub doesCompileFile {
 
   subtest $name => sub {
 
-    my ($file, $error) = findFileVersion($name, $sha256);
+    my ($file, $ferror) = findFileVersion($name, $sha256);
     unless (defined($file)) {
-      plan skip_all => $error;
+      plan skip_all => $ferror;
       return;
     }
 
