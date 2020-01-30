@@ -282,15 +282,33 @@ sub emulateBiBTeX {
   return $buffer, $runconfig; }
 
 # build the preamble
-# TODO: Actually write this piece of TeX
 sub buildBBLPreamble {
   my ($self, $config) = @_;
-  my $buffer = <<'END_BUFFER';
-\makeatletter
-\makeatother
-END_BUFFER
+  my $buffer = '\makeatletter';
   my $entries = $config->getContext->getEntries;
-  foreach my $entry (@$entries) {}
+  my ($field);
+  foreach my $entry (@$entries) {
+    # begin the hook
+    $buffer .= '\expandafter\def\csname lx@bibentry@taghook@' . $entry->getKey . '\endcsname{';
+    # key, bibtype
+    $buffer .= '\lx@tag@intags[key]{' . $entry->getKey . '}';
+    $buffer .= '\lx@tag@intags[bibtype]{' . $entry->getType . '}';
+    # author
+    $field = $entry->getPlainField('author');
+    $buffer .= '\lx@tag@intags[authors]{' . $field . '}' if defined($field);
+    # editor
+    $field = $entry->getPlainField('editor');
+    $buffer .= '\lx@tag@intags[editors]{' . $field . '}' if defined($field);
+    # title
+    $field = $entry->getPlainField('title');
+    $buffer .= '\lx@tag@intags[title]{' . $field . '}' if defined($field);
+    # year
+    $field = $entry->getPlainField('year');
+    $buffer .= '\lx@tag@intags[year]{' . $field . '}' if defined($field);
+    # close the hook
+    $buffer .= '}';
+  }
+  $buffer .= '\makeatother';
   return $buffer; }
 
 # given a document and the bbl output

@@ -206,6 +206,18 @@ sub getVariable {
     return ( $t, $v, $s );
 }
 
+# 'getPlainField' gets a string valued field from this entry or fails
+sub getPlainField {
+    my ($self, $name) = @_;
+    
+    # if it's not an entry field, bail out
+    my $type = $$self{context}{variableTypes}{$name};
+        return undef unless defined($type) && $type eq 'ENTRY_FIELD';
+
+    # else return the value
+    return $$self{values}{ lc $name };
+}
+
 # set a variable (type, value, source)
 # returns 0 if ok, 1 if it doesn't exist,  2 if an invalid context, 3 if read-only
 sub setVariable {

@@ -3834,7 +3834,17 @@ DefMacroI('\fnum@@bibitem', undef, '{\@biblabel{\the@bibitem}}');
 # Hack for abused bibliographies; see below
 DefMacro('\bibitem',
   '\if@lx@inbibliography\else\expandafter\lx@mung@bibliography\expandafter{\@currenvir}\fi'
-    . '\lx@bibitem', locked => 1);
+    . '\lx@bibitem@withhook');
+# Call the hook for tags iff it is defined
+DefMacro('\lx@bibitem@taghook Semiverbatim', '\expandafter\ifdefined\csname lx@bibentry@taghook@#1\endcsname\csname lx@bibentry@taghook@#1\endcsname\else\fi');
+# add the hooked tag content into the lx@tags
+DefMacro('\lx@bibitem@withhook[] Semiverbatim', 
+  '\let\save@lx@tags\lx@tags' .
+  '\def\lx@tags ##1{\save@lx@tags{##1\lx@bibitem@taghook{#2}}}' .
+  '\lx@bibitem #1{#2}' .
+  '\let\lx@tags\save@lx@tags' .
+  '\let\save@lx@tags\relax');
+
 DefConstructor('\lx@bibitem[] Semiverbatim',
   "<ltx:bibitem key='#key' xml:id='#id'>"
     . "#tags"
@@ -4259,7 +4269,7 @@ DefPrimitive('\nopagebreak[]', undef);
 DefPrimitiveI('\columnbreak', undef, undef);    # latex? or multicol?
 DefPrimitive('\enlargethispage OptionalMatch:* {}', undef);
 
-DefMacroI('\clearpage',       undef, '\LTX@newpage');
+DefMacroI('\clearpage',       undef, '\newpage');
 DefMacroI('\cleardoublepage', undef, '\LTX@newpage');
 DefPrimitiveI('\samepage', undef, undef);
 
