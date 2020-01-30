@@ -261,10 +261,15 @@ sub extra_Tests {
 
 EXTRA_TEST_FILES = t/*.tt
 
-fulltest : test extratest
+fulltest : test extratest bibtest
 
 extratest ::
 	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-MExtUtils::Command::MM" "-e" "test_harness($(TEST_VERBOSE), '$(INST_LIB)', '$(INST_ARCHLIB)')" $(EXTRA_TEST_FILES)
+
+BIB_TEST_FILES = t/900_bibtex/*.t
+
+bibtest ::
+	PERL_DL_NONLAZY=1 $(FULLPERLRUN) "-MExtUtils::Command::MM" "-e" "test_harness($(TEST_VERBOSE), '$(INST_LIB)', '$(INST_ARCHLIB)')" $(BIB_TEST_FILES)
 
 ExtraTests
   return; }
