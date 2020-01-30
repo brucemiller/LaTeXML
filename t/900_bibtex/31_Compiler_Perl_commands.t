@@ -17,7 +17,7 @@ subtest "requirements" => sub {
   plan tests => 3;
 
   use_ok("LaTeXML::Post::BiBTeX::BibStyle");
-  use_ok("LaTeXML::Post::BiBTeX::Compiler");
+  use_ok("LaTeXML::Post::BiBTeX::Compiler::Block");
   use_ok("$target");
 };
 

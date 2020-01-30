@@ -13,13 +13,13 @@ use warnings;
 use Encode;
 
 use LaTeXML::Post::BiBTeX::BibStyle;
-use LaTeXML::Post::BiBTeX::Compiler;
+use LaTeXML::Post::BiBTeX::Common::StreamReader;
+use LaTeXML::Post::BiBTeX::Compiler::Program qw(compileProgram);
+use LaTeXML::Post::BiBTeX::Compiler::Target;
+use LaTeXML::Post::BiBTeX::Runtime::Buffer;
 use LaTeXML::Post::BiBTeX::Runtime::Config;
 use LaTeXML::Post::BiBTeX::Runtime::Utils;
-use LaTeXML::Post::BiBTeX::Common::StreamReader;
-use LaTeXML::Post::BiBTeX::Runtime::Buffer;
 
-use LaTeXML::Post::BiBTeX::Compiler::Target;
 
 use Time::HiRes qw(time);
 

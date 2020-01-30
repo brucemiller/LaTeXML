@@ -41,7 +41,7 @@ subtest "requirements" => sub {
 
   use_ok("LaTeXML::Post::BiBTeX::Common::StreamReader");
   use_ok("LaTeXML::Post::BiBTeX::BibStyle");
-  use_ok("LaTeXML::Post::BiBTeX::Compiler");
+  use_ok("LaTeXML::Post::BiBTeX::Compiler::Program");
   use_ok("LaTeXML::Post::BiBTeX::Compiler::Target");
 };
 
