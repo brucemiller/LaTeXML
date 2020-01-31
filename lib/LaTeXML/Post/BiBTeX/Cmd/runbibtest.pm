@@ -6,6 +6,7 @@
 # |---------------------------------------------------------------------| #
 # | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
 # \=====================================================================/ #
+## no critic (Subroutines::RequireArgUnpacking);
 
 package LaTeXML::Post::BiBTeX::Cmd::runbibtest;
 use strict;
@@ -16,18 +17,14 @@ use Getopt::Long qw(GetOptionsFromArray);
 use Module::Load;
 
 sub main {
-
-    # remove the first argument, and display help with a testname is missing
-    shift(@_);
-    return usageAndExit(1) if scalar(@_) ne 1;
-
-    # declare a test 'manually'
-    use LaTeXML::Post::BiBTeX::Common::Test;
-    use Test::More tests => 1;
-    integrationTest( "runtest", shift(@_), );
-
-    # and return with code 0 by default
-    return 0;
-}
+  # remove the first argument, and display help with a testname is missing
+  shift(@_);
+  return usageAndExit(1) if scalar(@_) != 1;
+  # declare a test 'manually'
+  use LaTeXML::Post::BiBTeX::Common::Test;
+  use Test::More tests => 1;
+  integrationTest("runtest", shift(@_),);
+  # and return with code 0 by default
+  return 0; }
 
 1;
