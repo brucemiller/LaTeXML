@@ -25,7 +25,7 @@ sub doesParseFile {
 
     # parse file and measure the time it takes
     my $begin = measureBegin;
-    my ($results, $errors) = readFile($reader, 0);
+    my ($results, $errors) = LaTeXML::Post::BiBTeX::Bibliography::BibParser::readFile($reader, 0);
     measureEnd($begin, $name);
 
     # check that we did not make any errors

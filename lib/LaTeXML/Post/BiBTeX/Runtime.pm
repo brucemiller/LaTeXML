@@ -14,7 +14,11 @@ use warnings;
 use LaTeXML::Post::BiBTeX::Runtime::Functions;
 use LaTeXML::Post::BiBTeX::Runtime::Builtins;
 
-use LaTeXML::Post::BiBTeX::BibStyle;
+use LaTeXML::Post::BiBTeX::BibStyle::StyCommand;
+use LaTeXML::Post::BiBTeX::BibStyle::StyString;
+
+sub StyCommand { LaTeXML::Post::BiBTeX::BibStyle::StyCommand->new(@_); }
+sub StyString  { LaTeXML::Post::BiBTeX::BibStyle::StyString->new(@_); }
 
 use base qw(Exporter);
 our @EXPORT = qw(

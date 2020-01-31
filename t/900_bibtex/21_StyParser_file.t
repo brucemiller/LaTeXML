@@ -5,7 +5,7 @@ subtest "requirements" => sub {
   plan tests => 2;
 
   use_ok("LaTeXML::Post::BiBTeX::Common::StreamReader");
-  use_ok("LaTeXML::Post::BiBTeX::BibStyle");
+  use_ok("LaTeXML::Post::BiBTeX::BibStyle::StyParser");
 };
 
 doesParseFile("plain.bst", "19f2cf88686b86aaa8e65d5f0313a92499815761e04b42e84ea2c3dc3685ada9");

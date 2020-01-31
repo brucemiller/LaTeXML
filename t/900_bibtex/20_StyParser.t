@@ -5,7 +5,7 @@ subtest "requirements" => sub {
   plan tests => 2;
 
   use_ok("LaTeXML::Post::BiBTeX::Common::StreamReader");
-  use_ok("LaTeXML::Post::BiBTeX::BibStyle");
+  use_ok("LaTeXML::Post::BiBTeX::Runtime");
 };
 
 subtest 'readLiteral' => sub {

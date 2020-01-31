@@ -12,7 +12,7 @@ use warnings;
 
 use Encode;
 
-use LaTeXML::Post::BiBTeX::BibStyle;
+use LaTeXML::Post::BiBTeX::BibStyle::StyParser qw(readFile);
 use LaTeXML::Post::BiBTeX::Common::StreamReader;
 use LaTeXML::Post::BiBTeX::Compiler::Program qw(compileProgram);
 use LaTeXML::Post::BiBTeX::Compiler::Target;
@@ -55,7 +55,8 @@ sub createCompile {
 
     # throw an error, or a message how long it took
     if ( defined($parseError) ) {
-        $logger->("Unable to parse $name: $parseError");
+        use Data::Dumper;
+        $logger->("Unable to parse $name: " . Dumper($parseError));
         return 4, undef;
     }
 

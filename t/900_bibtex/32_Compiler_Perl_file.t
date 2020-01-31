@@ -40,7 +40,7 @@ subtest "requirements" => sub {
   plan tests => 4;
 
   use_ok("LaTeXML::Post::BiBTeX::Common::StreamReader");
-  use_ok("LaTeXML::Post::BiBTeX::BibStyle");
+  use_ok("LaTeXML::Post::BiBTeX::BibStyle::StyParser");
   use_ok("LaTeXML::Post::BiBTeX::Compiler::Program");
   use_ok("LaTeXML::Post::BiBTeX::Compiler::Target");
 };
