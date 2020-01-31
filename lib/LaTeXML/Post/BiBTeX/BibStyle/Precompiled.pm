@@ -22,7 +22,7 @@ our $DEFAULT_BST_COMPILED;
 sub getDefault {
   return $DEFAULT_BST_COMPILED; }
 
-# below is the pre-compiled file. 
+# below is the pre-compiled file.
 # this was generated using './tools/bibtexmlc plain.bst'
 $DEFAULT_BST_COMPILED = <<'__END_COMPILED__';
 sub { 
