@@ -13,6 +13,7 @@ use warnings;
 
 use Test::More;
 use File::Temp qw(tempfile);
+use LaTeXML::Post::BiBTeX::Common::StreamReader;
 use LaTeXML::Post::BiBTeX::Runner;
 use LaTeXML::Post::BiBTeX::Common::Utils qw(slurp puts);
 use LaTeXML::Post::BiBTeX::Runtime::Utils qw(fmtLogMessage);

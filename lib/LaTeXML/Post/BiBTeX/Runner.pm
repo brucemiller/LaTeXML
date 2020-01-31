@@ -13,7 +13,6 @@ use warnings;
 use Encode;
 
 use LaTeXML::Post::BiBTeX::BibStyle::StyParser qw(readFile);
-use LaTeXML::Post::BiBTeX::Common::StreamReader;
 use LaTeXML::Post::BiBTeX::Compiler::Program qw(compileProgram);
 use LaTeXML::Post::BiBTeX::Compiler::Target;
 use LaTeXML::Post::BiBTeX::Runtime::Buffer;
