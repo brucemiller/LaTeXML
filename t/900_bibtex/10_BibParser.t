@@ -2,9 +2,10 @@ use LaTeXML::Post::BiBTeX::Common::Test;
 use Test::More tests => 6;
 
 subtest "requirements" => sub {
-  plan tests => 4;
+  plan tests => 5;
 
   use_ok("LaTeXML::Post::BiBTeX::Common::StreamReader");
+  use_ok("LaTeXML::Post::BiBTeX::Common::Utils");
   use_ok("LaTeXML::Post::BiBTeX::Bibliography::BibEntry");
   use_ok("LaTeXML::Post::BiBTeX::Bibliography::BibField");
   use_ok("LaTeXML::Post::BiBTeX::Bibliography::BibString");

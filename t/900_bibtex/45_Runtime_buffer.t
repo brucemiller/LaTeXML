@@ -3,9 +3,10 @@ use Test::More tests => 4;
 use File::Spec;
 
 subtest "requirements" => sub {
-    plan tests => 1;
+    plan tests => 2;
 
     use_ok("LaTeXML::Post::BiBTeX::Runtime::Buffer");
+    use_ok("LaTeXML::Post::BiBTeX::Common::Utils");
 };
 
 sub makeBuffer {

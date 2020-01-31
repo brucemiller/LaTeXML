@@ -14,10 +14,11 @@ sub doesCompileBlock {
 }
 
 subtest "requirements" => sub {
-  plan tests => 3;
+  plan tests => 4;
 
-  use_ok("LaTeXML::Post::BiBTeX::Runtime");
+  use_ok("LaTeXML::Post::BiBTeX::Common::Utils");
   use_ok("LaTeXML::Post::BiBTeX::Compiler::Block");
+  use_ok("LaTeXML::Post::BiBTeX::Runtime");
   use_ok("$target");
 };
 
