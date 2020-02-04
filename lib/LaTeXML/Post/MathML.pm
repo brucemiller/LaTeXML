@@ -527,7 +527,7 @@ sub pmml_internal {
           ? $stylemap{$ostyle}{$style}
           : $stylemap2{$ostyle}{$style})) || {} };
     $result = ['m:mstyle', {%styleattr}, $result] if keys %styleattr;
-
+    $result = pmml_mayberesize($node, $result);
     return $result; }
   elsif ($tag eq 'ltx:XMText') {
     my @c = $node->childNodes;
@@ -720,7 +720,7 @@ my %normally_stretchy = map { $_ => 1 }
   "\x{2953}", "\x{2196}", "\x{2197}", "\x{2225}", "\x{2016}", "\x{21CC}", "\x{21CB}", "\x{2223}",
   "\x{2294}", "\x{22C3}", "\x{228E}", "\x{22C2}", "\x{2293}", "\x{22C1}", "\x{2211}", "\x{22C3}",
   "\x{228E}", "\x{2A04}", "\x{2A06}", "\x{2232}", "\x{222E}", "\x{2233}", "\x{222F}", "\x{222B}",
-  "\x{22C0}", "\x{2210}", "\x{220F}", "\x{22C2}", "\x{2216}", "\x{002F}", "\x{221A}", "\x{21D3}",
+  "\x{22C0}", "\x{2210}", "\x{220F}", "\x{22C2}", "\x{2216}", "\x{221A}", "\x{21D3}",
   "\x{27F8}", "\x{27FA}", "\x{27F9}", "\x{21D1}", "\x{21D5}", "\x{2193}", "\x{2913}", "\x{21F5}",
   "\x{21A7}", "\x{2961}", "\x{21C3}", "\x{2959}", "\x{2951}", "\x{2960}", "\x{21BF}", "\x{2958}",
   "\x{27F5}", "\x{27F7}", "\x{27F6}", "\x{296F}", "\x{295D}", "\x{21C2}", "\x{2955}", "\x{294F}",
@@ -1435,8 +1435,10 @@ DefMathML('Apply:FRACOP:?', sub {
     my ($op, $num, $den, @more) = @_;
     my $thickness = $op->getAttribute('thickness');
     my $color     = $op->getAttribute('color') || $LaTeXML::MathML::COLOR;
+    my $bevelled  = grep { $_ eq 'ltx_bevelled' } split(/\s+/, $op->getAttribute('class') || '');
     return ['m:mfrac', { (defined $thickness ? (linethickness => $thickness) : ()),
-        ($color ? (mathcolor => $color) : ()) },
+        ($color    ? (mathcolor => $color) : ()),
+        ($bevelled ? (bevelled  => 'true') : ()) },
       pmml_smaller($num), pmml_smaller($den)]; });
 
 DefMathML('Apply:MODIFIEROP:?', \&pmml_infix, undef);

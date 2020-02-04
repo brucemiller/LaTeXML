@@ -26,16 +26,34 @@ DefPrimitiveI('\nf@mathcopytextfont', undef, sub {
         shape  => $textfont->getShape); }
     return; });
 
-DefMacro('\@UnitsNiceFrac Optional:\nf@mathcopytextfont{}{}',
-  '\ensuremath{\ltx@nicefrac@ifrac{#1{#2}}{#1{#3}}}');
-# copy of \ifrac from amsmath
-DefConstructor('\ltx@nicefrac@ifrac{}{}',
+# This version generates inline /, with up-shifted numerator
+# The shift is an approximation of em - script(em)
+# Given current browser implementations of mfrac @bevelled,
+# it more accurately captures the appearance of \nicefrac
+DefConstructor('\ltx@nicefrac@inline InFractionStyle InFractionStyle',
   "<ltx:XMApp>"
-    . "<ltx:XMTok stretchy='true' meaning='divide' role='MULOP' _font='#slashfont'>/</ltx:XMTok>"
+    # Note: / should be kerned with -2mu, -1mu on left & right
+    # Note that we're using width negative as an ADJUSTMENT of width, not total width!!!
+    . "<ltx:XMTok stretchy='true' meaning='divide' role='MULOP' _font='#slashfont'"
+    . " xoffset='-0.1em' width='-0.15em'>/</ltx:XMTok>"
+    . "<ltx:XMArg yoffset='0.3em' rpadding='-0.5em'>#1</ltx:XMArg>"
+    . "<ltx:XMArg>#2</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  alias      => '\nicefrac',
+  properties => { slashfont => sub { LookupValue('font')->specialize('/'); } });
+
+# This version generates a MathML mfrac with bevelled='true'
+DefConstructor('\ltx@nicefrac@bevelled InFractionStyle InFractionStyle',
+  "<ltx:XMApp>"
+    . "<ltx:XMTok meaning='divide' role='FRACOP' mathstyle='#mathstyle' class='ltx_bevelled'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
-  alias => '\nicefrac',
-  properties => { slashfont => sub { LookupValue('font')->specialize('/'); } });
+  alias      => '\nicefrac',                                                    #);
+  sizer      => sub { fracSizer($_[0]->getArg(1), $_[0]->getArg(2)); },
+  properties => { mathstyle => sub { LookupValue('font')->getMathstyle; } });
+
+DefMacro('\@UnitsNiceFrac Optional:\nf@mathcopytextfont{}{}',
+  '\ensuremath{\ltx@nicefrac@inline{#1{#2}}{#1{#3}}}');
 
 DefMacro('\@UnitsUglyFrac Optional:\nf@mathcopytextfont {}{}',
   '\ifmmode\frac{#1{#2}}{#1{#2}}\else#1{#2}/#1{#2}\fi');
