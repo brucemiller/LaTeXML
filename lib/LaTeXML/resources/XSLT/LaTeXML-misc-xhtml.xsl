@@ -167,9 +167,9 @@
             <xsl:value-of select="@description"/>
           </xsl:attribute>
         </xsl:when>
-        <xsl:when test="../ltx:figure/ltx:caption">
+        <xsl:when test="ancestor::ltx:figure/ltx:caption">
           <xsl:attribute name='alt'>
-            <xsl:value-of select="../ltx:figure/ltx:caption/text()"/>
+            <xsl:value-of select="ancestor::ltx:figure/ltx:caption/text()"/>
           </xsl:attribute>
         </xsl:when>
         <xsl:otherwise>
@@ -216,9 +216,9 @@
             <xsl:value-of select="@description"/>
           </xsl:attribute>
         </xsl:when>
-        <xsl:when test="../ltx:figure/ltx:caption">
+        <xsl:when test="ancestor::ltx:figure/ltx:caption">
           <xsl:attribute name='alt'>
-            <xsl:value-of select="../ltx:figure/ltx:caption/text()"/>
+            <xsl:value-of select="ancestor::ltx:figure/ltx:caption/text()"/>
           </xsl:attribute>
         </xsl:when>
         <xsl:otherwise>
