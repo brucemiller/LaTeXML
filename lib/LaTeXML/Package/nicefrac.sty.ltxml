@@ -52,14 +52,25 @@ DefConstructor('\ltx@nicefrac@bevelled InFractionStyle InFractionStyle',
   sizer      => sub { fracSizer($_[0]->getArg(1), $_[0]->getArg(2)); },
   properties => { mathstyle => sub { LookupValue('font')->getMathstyle; } });
 
-DefMacro('\@UnitsNiceFrac Optional:\nf@mathcopytextfont{}{}',
-  '\ensuremath{\ltx@nicefrac@inline{#1{#2}}{#1{#3}}}');
+# Note that we want to typeset all \nicefrac as math
+# However, when \nicefrac is in text mode, it inherits the text font; NOT in math!
+# OTOH, when the optional font is given, it can't be \mathtt (eg) when in text mode.
+# Can we make \texttt act like \mathtt when in math? (ie. avoid wrapping in mtext!)
+DefMacro('\@UnitsNiceFrac Optional {}{}',
+  '\ifmmode\ltx@nicefrac@inline{#1{#2}}{#1{#3}}'
+    . '\else\if.#1.$\ltx@nicefrac@inline{\nf@mathcopytextfont{#2}}{\nf@mathcopytextfont{#3}}$'
+    . '\else$\ltx@nicefrac@inline{#1{#2}}{#1{#3}}$\fi\fi');
+DefMacro('\@UnitsNiceFrac@bevelled Optional {}{}',
+  '\ifmmode\ltx@nicefrac@bevelled{#1{#2}}{#1{#3}}'
+    . '\else\if.#1.$\ltx@nicefrac@bevelled{\nf@mathcopytextfont{#2}}{\nf@mathcopytextfont{#3}}$'
+    . '\else$\ltx@nicefrac@bevelled{#1{#2}}{#1{#3}}$\fi\fi');
 
-DefMacro('\@UnitsUglyFrac Optional:\nf@mathcopytextfont {}{}',
-  '\ifmmode\frac{#1{#2}}{#1{#2}}\else#1{#2}/#1{#2}\fi');
+Let('\@UnitsUglyFrac', '\@UnitsNiceFrac');
 
 DeclareOption('nice', sub { Let('\nicefrac', '\@UnitsNiceFrac'); });
 DeclareOption('ugly', sub { Let('\nicefrac', '\@UnitsUglyFrac'); });
+# NON-STANDARD option; generate MathML mfrac with bevelled='true'
+DeclareOption('bevelled', sub { Let('\nicefrac', '\@UnitsNiceFrac@bevelled'); });
 
 ExecuteOptions('nice');
 ProcessOptions();

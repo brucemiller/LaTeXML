@@ -434,7 +434,7 @@ sub pmml_internal {
     my ($content, $presentation) = element_nodes($node);
     return pmml($presentation); }
   elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {      # Only present if parsing failed!
-    return pmml_row(map { pmml($_) } element_nodes($node)); }
+    return pmml_mayberesize($node, pmml_row(map { pmml($_) } element_nodes($node))); }
   elsif ($tag eq 'ltx:XMApp') {
     my ($op, @args) = element_nodes($node);
     if (!$op) {
@@ -562,11 +562,16 @@ sub needsMathstyle {
 sub pmml_mayberesize {
   my ($node, $result) = @_;
   return $result unless ref $node;
-  my $width  = $node->getAttribute('width');
-  my $height = $node->getAttribute('height');
-  my $depth  = $node->getAttribute('depth');
-  my $xoff   = $node->getAttribute('xoffset');
-  my $yoff   = $node->getAttribute('yoffset');
+  my $parent;
+  # There MAY be relevant attributes on a containing XMDual (if any)!!!
+  if ((ref $node) && ($node->nodeType == XML_ELEMENT_NODE)
+    && ($parent = $node->parentNode) && (getQName($parent) eq 'ltx:XMDual')) { }
+  else { $parent = undef; }
+  my $width  = $node->getAttribute('width')   || ($parent && $parent->getAttribute('width'));
+  my $height = $node->getAttribute('height')  || ($parent && $parent->getAttribute('height'));
+  my $depth  = $node->getAttribute('depth')   || ($parent && $parent->getAttribute('depth'));
+  my $xoff   = $node->getAttribute('xoffset') || ($parent && $parent->getAttribute('xoffset'));
+  my $yoff   = $node->getAttribute('yoffset') || ($parent && $parent->getAttribute('yoffset'));
   if ($width || $height || $depth || $xoff || $yoff) {
     if ($$result[0] eq 'm:mpadded') { }
     elsif ($$result[0] eq 'm:mrow') {

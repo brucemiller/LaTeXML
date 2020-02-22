@@ -203,8 +203,8 @@
           <XMath>
             <XMApp>
               <XMTok meaning="divide" role="MULOP" stretchy="true" width="-0.15em" xoffset="-0.1em">/</XMTok>
-              <XMTok font="bold italic" fontsize="70%" meaning="1" role="NUMBER" rpadding="-0.5em" yoffset="0.3em">1</XMTok>
-              <XMTok font="bold italic" fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+              <XMTok fontsize="70%" meaning="1" role="NUMBER" rpadding="-0.5em" yoffset="0.3em">1</XMTok>
+              <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
             </XMApp>
           </XMath>
         </Math></p>
@@ -235,6 +235,72 @@ Dose (10<Math mode="inline" tex="{}^{14}" text="^14" xml:id="S3.p5.m1">
             </XMApp>
           </XMath>
         </Math>)</p>
+    </para>
+    <para xml:id="S3.p6">
+      <p>And also handles mathematics
+<Math mode="inline" tex="\nicefrac{{x+y+z}}{{3}}" text="(x + y + z) / 3" xml:id="S3.p6.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="divide" role="MULOP" stretchy="true" width="-0.15em" xoffset="-0.1em">/</XMTok>
+              <XMApp rpadding="-0.5em" yoffset="0.3em">
+                <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok fontsize="70%" role="UNKNOWN">x</XMTok>
+                <XMTok fontsize="70%" role="UNKNOWN">y</XMTok>
+                <XMTok fontsize="70%" role="UNKNOWN">z</XMTok>
+              </XMApp>
+              <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>; <Math mode="inline" tex="\nicefrac{{x+y+z}}{{3}}" text="(x + y + z) / 3" xml:id="S3.p6.m2">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="divide" role="MULOP" stretchy="true" width="-0.15em" xoffset="-0.1em">/</XMTok>
+              <XMApp rpadding="-0.5em" yoffset="0.3em">
+                <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">x</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">y</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">z</XMTok>
+              </XMApp>
+              <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
+            </XMApp>
+          </XMath>
+        </Math></p>
+    </para>
+    <para xml:id="S3.p7">
+      <p>Some, only in math mode
+<Math mode="inline" tex="\nicefrac{{x^{2}+y^{2}}}{{x^{2}-y^{2}}}" text="(x ^ 2 + y ^ 2) / (x ^ 2 - y ^ 2)" xml:id="S3.p7.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="divide" role="MULOP" stretchy="true" width="-0.15em" xoffset="-0.1em">/</XMTok>
+              <XMApp rpadding="-0.5em" yoffset="0.3em">
+                <XMTok fontsize="70%" meaning="plus" role="ADDOP">+</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">x</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">y</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+              <XMApp>
+                <XMTok fontsize="70%" meaning="minus" role="ADDOP">-</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">x</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">y</XMTok>
+                  <XMTok fontsize="50%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math></p>
     </para>
   </section>
 </document>
