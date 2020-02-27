@@ -407,6 +407,8 @@ sub formatBibEntry {
   my $type       = $bibentry->getAttribute('type');
   my @blockspecs = @{ $FMT_SPEC{$type} || [] };
 
+  # save copy of original id
+  my $origid = $id;
   # Patch the entry's id in case there are multiple bibs.
   if (my $bibid = $bib->getAttribute('xml:id')
     || $doc->getDocumentElement->getAttribute('xml:id') || 'bib') {
@@ -539,7 +541,8 @@ sub formatBibEntry {
   push(@blocks, ['ltx:bibblock', { class => 'ltx_bib_cited' },
       "Cited by: ", $doc->conjoin(",\n", @citedby), '.']) if @citedby;
 
-  return ['ltx:bibitem', { 'xml:id' => $id, key => $key, type => $type, class => "ltx_bib_$type" },
+  # return original id
+  return ['ltx:bibitem', { 'xml:id' => $origid, key => $key, type => $type, class => "ltx_bib_$type" },
     (@tags ? (['ltx:tags', {}, @tags]) : ()),
     @blocks]; }
 

@@ -409,7 +409,13 @@ sub bibitem_handler {
     # BUT, we're going to index it in the ObjectDB by the downcased name!!!
     my $key = $node->getAttribute('key');
     $key = lc($key) if $key;
-    $$self{db}->register("BIBLABEL:$key", id => orNull($id)) if $key;
+    # rewrite prefix to always start with 'bib.' even for multiple bibliographies
+    # where prefixes are 'bib.', 'biba.', 'bibb.' etc.
+    if( substr($id, 0, 4) ne "bib." ) {
+        $id = "bib" . substr($id, index($id, "."), length($id)) ;
+    }
+    # do not overwrite "BIBLABEL:$key" with different id's!
+#    $$self{db}->register("BIBLABEL:$key", id => orNull($id)) if $key;
     # Do these need ->cleanNode ???
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id), bibkey => orNull($key),
       location    => orNull($doc->siteRelativeDestination),
