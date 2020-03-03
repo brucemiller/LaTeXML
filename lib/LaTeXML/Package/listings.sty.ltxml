@@ -1292,7 +1292,7 @@ sub lstProcess_internal {
   my $words      = LookupValue('LST_WORDS');
   my $delimiters = LookupValue('LST_DELIMITERS');
   my $classes    = LookupValue('LST_CLASSES');
-  while ($LaTeXML::listing) {
+  while ($LaTeXML::listing ne '') {
     # Matched the ending regular expression? (typically a close delimiter)
     if ($end_re && $LaTeXML::listing =~ s/^($end_re)//s) {
       $LaTeXML::colnum += length($1);
@@ -1352,7 +1352,7 @@ sub lstProcess_internal {
         $LaTeXML::colnum = 0;                      # Reset column number
           # NOTE: should ignore blank lines at end of listing, even if they aren't the last line of the code!
           # NOTE: should handle showlines, emptylines keywords
-        while ($LaTeXML::listing && !&$LaTeXML::linetest($LaTeXML::linenum)) {    # Ignore next line?
+        while (($LaTeXML::listing ne '') && !&$LaTeXML::linetest($LaTeXML::linenum)) {    # Ignore next line?
           $LaTeXML::listing =~ s/^.*?(\n|$)//s;
           lstProcessPush(Invocation(T_CS('\stepcounter'), T_OTHER('lstnumber')));
           $LaTeXML::linenum++; }
