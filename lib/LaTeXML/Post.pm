@@ -510,7 +510,9 @@ sub associateNode {
       $q = $document->getQName($op) || 'unknown'; }    # get "real" operator
     if ($q eq 'ltx:XMRef') {
       $op = $document->realizeXMNode($op); }
-    if ($op && !$op->getAttribute('_pvis')) {
+    # Be a bit fuzzy about whether something is "visible"
+    if ($op && !($op->getAttribute('_pvis')
+                   && (($op->getAttribute('thickness')||'<anything>') ne '0pt'))) {
       $sourcenode = $op; }
     else {
       $sourcenode = $container; } }
