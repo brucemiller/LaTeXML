@@ -236,12 +236,21 @@ sub computeSize {
 #**********************************************************************
 # What about Kern, Glue, Penalty ...
 
+# stubs to avoid "shallow" Fatal errors on broken documents
+sub multiply { my ($self) = @_; return $self; }
+sub subtract { my ($self) = @_; return $self; }
+sub add      { my ($self) = @_; return $self; }
+sub negate   { my ($self) = @_; return $self; }
+sub divide   { my ($self) = @_; return $self; }
+sub getX     { my ($self) = @_; return $self; }
+sub getY     { my ($self) = @_; return $self; }
+sub ptValue  { return; }
 #======================================================================
 1;
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
