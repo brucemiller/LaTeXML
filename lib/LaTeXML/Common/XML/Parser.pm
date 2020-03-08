@@ -45,7 +45,7 @@ sub parseChunk {
   # In 1.58, the prefix for the XML_NS, which should be DEFINED to be "xml"
   # is sometimes unbound, leading to mysterious segfaults!!!
 ###  if (($xml_libxml_version < 1.59) && $hasxmlns) {
-  if (($LaTeXML::Common::XML::xml_libxml_version < 1.59) && $hasxmlns) {
+  if ($hasxmlns) {
     #print STDERR "Patchup...\n";
     # Re-create all xml:id entrys, hopefully with correct NS!
     # We assume all id are, in fact, xml:id,
