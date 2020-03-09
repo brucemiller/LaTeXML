@@ -34,7 +34,13 @@ sub parseChunk {
   my ($self, $string) = @_;
   my $hasxmlns = $string =~ /\Wxml:id\W/;
   # print STDERR "\nFISHY!!\n" if $hasxmlns;
-  my $xml = $$self{parser}->parse_xml_chunk($string);
+  my $xml;
+  if ($hasxmlns) {
+    local $XML::LibXML::skipXMLDeclaration = 1;
+    $xml = $$self{parser}->parse_string($string);
+  } else {
+    $xml = $$self{parser}->parse_xml_chunk($string);
+  }
   # Simplify, if we get a single node Document Fragment.
   #[which we, apparently, always do]
   if ($xml && (ref $xml eq 'XML::LibXML::DocumentFragment')) {
