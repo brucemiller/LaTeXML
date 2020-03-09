@@ -355,6 +355,7 @@ sub LookupXColor {
 # \selectcolormodel{model}
 # Sets the target model to model
 DefMacro('\selectcolormodel{}', '');
+DefMacro('\XC@tgt@mod {}',      '#1');
 
 # \substitutecolormodel{sourcemodel}{targetmodellist}
 # makes xcolor use (one of) target model whenever source model was specified
