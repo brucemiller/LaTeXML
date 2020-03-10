@@ -512,7 +512,7 @@ sub associateNode {
       $op = $document->realizeXMNode($op); }
     # Be a bit fuzzy about whether something is "visible"
     if ($op && !($op->getAttribute('_pvis')
-                   && (($op->getAttribute('thickness')||'<anything>') ne '0pt'))) {
+        && (($op->getAttribute('thickness') || '<anything>') ne '0pt'))) {
       $sourcenode = $op; }
     else {
       $sourcenode = $container; } }
@@ -909,7 +909,9 @@ sub validate {
       $rng->validate($$self{document}); };
     LaTeXML::Post::Error("malformed", 'document', undef,
       "Document fails RelaxNG validation (" . $schema . ")",
-      "Validation reports: " . $@) if $@ || !defined $v; }
+      "Validation reports: " . $@,
+      "(Jing may provide a more precise report; https://relaxng.org/jclark/jing.html)")
+      if $@ || !defined $v; }
   elsif (my $decldtd = $$self{document}->internalSubset) {    # Else look for DTD Declaration
     my $dtd = XML::LibXML::Dtd->new($decldtd->publicId, $decldtd->systemId);
     if (!$dtd) {
