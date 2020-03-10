@@ -13,6 +13,7 @@ package LaTeXML::Core::Box;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Dimension qw(Dimension);
 use LaTeXML::Common::Object;
 use base qw(LaTeXML::Common::Object);
 use base qw(Exporter);
@@ -237,13 +238,13 @@ sub computeSize {
 # What about Kern, Glue, Penalty ...
 
 # stubs to avoid "shallow" Fatal errors on broken documents
-sub multiply { my ($self) = @_; return $self; }
-sub subtract { my ($self) = @_; return $self; }
-sub add      { my ($self) = @_; return $self; }
-sub negate   { my ($self) = @_; return $self; }
-sub divide   { my ($self) = @_; return $self; }
-sub getX     { my ($self) = @_; return $self; }
-sub getY     { my ($self) = @_; return $self; }
+sub multiply { return Dimension(0); }
+sub subtract { return Dimension(0); }
+sub add      { return Dimension(0); }
+sub negate   { return Dimension(0); }
+sub divide   { return Dimension(0); }
+sub getX     { return Dimension(0); }
+sub getY     { return Dimension(0); }
 sub ptValue  { return; }
 #======================================================================
 1;
