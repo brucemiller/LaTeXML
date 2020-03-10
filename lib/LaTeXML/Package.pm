@@ -14,6 +14,7 @@ package LaTeXML::Package;
 use strict;
 use warnings;
 use Exporter;
+use Scalar::Util qw(blessed);
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
@@ -2222,8 +2223,8 @@ sub AddToMacro {
     Warn('unexpected', $cs, $STATE->getStomach->getGullet,
       ToString($cs) . " is not an expandable control sequence", "Ignoring addition"); }
   else {
-    DefMacroI($cs, undef, Tokens($defn->getExpansion->unlist,
-        map { $_->unlist } map { (ref $_ ? $_ : TokenizeInternal($_)) } @tokens),
+    DefMacroI($cs, undef, Tokens(map { $_->unlist }
+          map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
       scope => 'global'); }
   return; }
 
