@@ -2251,7 +2251,12 @@ sub InputDefinitions {
     && grep { $prevname eq $_ } @{ LookupValue('@masquerading@as@class') || [] };
 
   $options{raw} = 1 if $options{noltxml};    # so it will be read as raw by Gullet.!L!
-  my $astype = ($options{as_class} ? 'cls' : $options{type});
+  my $astype = ($options{as_class} ? 'cls' : $options{type} || 'sty');
+
+  if ($astype eq 'cls' and $options{options}) {
+    PushValue(class_options => @{ $options{options} });
+    # ? Expand {\zap@space#2 \@empty}%
+    DefMacroI('\@classoptionslist', undef, join(',', @{ $options{options} })); }
 
   my $filename = $name;
   $filename .= '.' . $options{type} if $options{type};
@@ -2361,11 +2366,6 @@ sub LoadClass {
 
   $class = ToString($class) if ref $class;
   CheckOptions("LoadClass ($class)", $loadclass_options, %options);
-  #  AssignValue(class_options => [$options{options} ? @{ $options{options} } : ()]);
-  PushValue(class_options => ($options{options} ? @{ $options{options} } : ()));
-  if (my $op = $options{options}) {
-    # ? Expand {\zap@space#2 \@empty}%
-    DefMacroI('\@classoptionslist', undef, join(',', @$op)); }
   # Note that we'll handle errors specifically for this case.
   if (my $success = InputDefinitions($class, type => 'cls', notex => $options{notex}, handleoptions => 1, noerror => 1,
       %options)) {
