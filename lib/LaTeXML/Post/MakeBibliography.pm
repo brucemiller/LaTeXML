@@ -153,7 +153,7 @@ sub getBibliographies {
       $raw = $rawbibs[0]; }
     else {
       $raw = 'literal:';
-      for my $rawbib (@rawbibs) { # Multiple, arrange into a single conversion payload
+      for my $rawbib (@rawbibs) {    # Multiple, arrange into a single conversion payload
         if ($rawbib =~ s/literal\://) {
           $raw .= $rawbib; }
         else {
@@ -209,6 +209,7 @@ sub convertBibliography {
     format         => 'dom',
     whatsin        => 'document',
     whatsout       => 'document',
+    includestyles  => 1,
     bibliographies => [],
     (@preload ? (preload => [@preload]) : ()));
   my $bib_converter = LaTeXML->get_converter($bib_config);
