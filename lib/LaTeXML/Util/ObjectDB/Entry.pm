@@ -118,6 +118,11 @@ sub encodeValue {
     return $value; }
   # The node is cloned so as to copy any inherited namespace nodes.
   elsif ($ref =~ /^XML::/) {
+    if ($ref eq 'XML::LibXML::DocumentFragment') {
+      my @c = $value->childNodes;
+      if (scalar(@c) > 1) {
+        warn "Encoding XML Document fragment; dropping all except 1st node!"; }
+      $value = $c[0]; }
     return "XML::" . $value->cloneNode(1)->toString; }
   elsif ($ref eq 'ARRAY') {
     return [map { encodeValue($_) } @$value]; }
