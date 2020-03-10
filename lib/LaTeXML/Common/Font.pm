@@ -492,17 +492,17 @@ sub computeBoxesSize {
       $wd += $w->valueOf; }
     else {
       Warn('expected', 'Dimension', undef,
-        "Width of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($w)); }
+        "Width of " . Stringify($box) . " yielded a non-dimension: " . Stringify($w)); }
     if (ref $h) {
       $ht = max($ht, $h->valueOf); }
     else {
       Warn('expected', 'Dimension', undef,
-        "Height of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($h)); }
+        "Height of " . Stringify($box) . " yielded a non-dimension: " . Stringify($h)); }
     if (ref $d) {
       $dp = max($dp, $d->valueOf); }
     else {
       Warn('expected', 'Dimension', undef,
-        "Depth of " . Stringify($box) . " yeilded a non-dimension: " . Stringify($d)); }
+        "Depth of " . Stringify($box) . " yielded a non-dimension: " . Stringify($d)); }
     if ((($options{layout} || '') eq 'vertical')    # EVERY box is a row?
                                                     # || $box is a <ltx:break> (or similar)!!!!
     ) {

@@ -250,7 +250,7 @@ sub daemon_ok {
     if ($exit_code != 0) {
       $exit_code = $exit_code >> 8;
     }
-    is($exit_code, 0, "latexmlc invocation for test $localname: $invocation yeilded $!");
+    is($exit_code, 0, "latexmlc invocation for test $localname: $invocation yielded $!");
     pathname_chdir($current_dir);
     # Compare the just generated $base.test.xml to the previous $base.xml
     if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {
