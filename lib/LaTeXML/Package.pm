@@ -828,26 +828,38 @@ sub ResetCounter {
 # <number> for <prefix> amongst its descendents.
 sub GenerateID {
   my ($document, $node, $whatsit, $prefix) = @_;
-  # If node doesn't already have an id, and can
-  if (!$node->hasAttribute('xml:id') && $document->canHaveAttribute($node, 'xml:id')
-    # but isn't a _Capture_ node (which ultimately should disappear)
-    && ($document->getNodeQName($node) ne 'ltx:_Capture_')) {
-    my $ancestor = $document->findnode('ancestor::*[@xml:id][1]', $node)
-      || $document->getDocument->documentElement;
-    ## Old versions don't like $ancestor->getAttribute('xml:id');
-    my $ancestor_id = $ancestor && $ancestor->getAttributeNS($LaTeXML::Common::XML::XML_NS, 'id');
-    # If we've got no $ancestor_id, then we've got no $ancestor (no document yet!),
-    # or $ancestor IS the root element (but without an id);
-    # If we also have no $prefix, we'll end up with an illegal id (just digits)!!!
-    # We'll use "id" for an id prefix; this will work whether or not we have an $ancestor.
-    $prefix = 'id' unless $prefix || $ancestor_id;
+  # Nothing to do if xml:id already set, or not allowable by schema
+  if ($node->hasAttribute('xml:id') || !$document->canHaveAttribute($node, 'xml:id')) {
+    return; }
+  # Also, we want to be avoid adding ids to otherwise valid elements, which are not inherently content
+  # e.g. ltx:document which only gets an id from an EXPLICIT \thedocument@id.
+  # e.g. isn't a _Capture_ node, or XMWrap (which ultimately should disappear)
+  my $name = $node->nodeName || '';
+  if ($name =~ /^(?:_Capture_|document|XM(?:Wrap|Arg))$/) {
+    return; }
+  ## Old versions don't like ->getAttribute('xml:id');
+  # This is hot code when [ids]latexml.sty is active, optimized for performance
+  my $at_node = $node->parentNode;
+  my ($ancestor, $ancestor_id);
+  while ($at_node && !$ancestor_id && ($at_node->nodeType == XML_ELEMENT_NODE)) {
+    $ancestor_id = $at_node->getAttributeNS($LaTeXML::Common::XML::XML_NS, 'id');
+    $ancestor    = $at_node;
+    $at_node     = $at_node->parentNode;
+  }
+  # If we've got no $ancestor_id, then we've got no $ancestor (no document yet!),
+  # or $ancestor IS the root element (but without an id);
+  # If we also have no $prefix, we'll end up with an illegal id (just digits)!!!
+  # We'll use "id" for an id prefix; this will work whether or not we have an $ancestor.
+  $prefix = 'id' unless $prefix || $ancestor_id;
 
+  my $ctr = 1;
+  if ($ancestor) {
     my $ctrkey = '_ID_counter_' . (defined $prefix ? $prefix . '_' : '');
-    my $ctr = ($ancestor && $ancestor->getAttribute($ctrkey)) || 0;
+    $ctr += ($ancestor->getAttribute($ctrkey) || 0);
+    $ancestor->setAttribute($ctrkey => $ctr); }
 
-    my $id = ($ancestor_id ? $ancestor_id . "." : '') . (defined $prefix ? $prefix : '') . (++$ctr);
-    $ancestor->setAttribute($ctrkey => $ctr) if $ancestor;
-    $document->setAttribute($node, 'xml:id' => $id); }
+  my $id = ($ancestor_id ? $ancestor_id . "." : '') . (defined $prefix ? $prefix : '') . $ctr;
+  $document->setAttribute($node, 'xml:id' => $id);
   return; }
 
 #======================================================================

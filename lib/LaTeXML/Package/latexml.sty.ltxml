@@ -32,8 +32,11 @@ DefPrimitive('\latexmlfalse', sub {
 
 #======================================================================
 # Package Options
-DeclareOption('ids',   sub { AssignValue('GENERATE_IDS' => 1, 'global'); });
-DeclareOption('noids', sub { AssignValue('GENERATE_IDS' => 0, 'global'); });
+# Set to 1 (or \usepackage[ids]{latexml}) to enable.
+# Set to 0 (or \usepackage[noids]{latexml}) to disable.
+DeclareOption('ids', sub { Tag('ltx:*', afterOpen => \&LaTeXML::Package::Pool::GenerateID); });
+# Currently disabling is a no-op, may be useful if we switch defaults some day
+DeclareOption('noids', sub { return; });
 
 DeclareOption('comments',   sub { AssignValue('INCLUDE_COMMENTS' => 1, 'global'); });
 DeclareOption('nocomments', sub { AssignValue('INCLUDE_COMMENTS' => 0, 'global'); });

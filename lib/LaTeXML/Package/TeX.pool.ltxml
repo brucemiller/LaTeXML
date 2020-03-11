@@ -39,20 +39,6 @@ else {
   Let('\thedocument@ID', '\@empty'); }
 NewCounter('@XMARG', 'document', idprefix => 'XM');
 
-# Optionally, add ID's to ALL nodes.
-# By default, this is OFF;
-# Set to 1 (or \usepackage[ids]{latexml}) to enable.
-# Set to 0 (or \usepackage[noids]{latexml}) to disable.
-#### AssignValue(GENERATE_IDS=>1,'global');
-Tag('ltx:*', afterOpen => sub {
-    # If GENERATE_IDS is true, we'll assign an ID to EVERY element,
-    # EXCEPT ltx:document which only gets an id from an EXPLICIT \thedocument@id.
-    my $tag = $_[0]->getNodeQName($_[1]);
-    if (($tag ne 'ltx:document')
-      && ($tag ne 'ltx:XMWrap')    # No auto-generated id on wrap???
-      && LookupValue('GENERATE_IDS')) {
-      GenerateID(@_); } });
-
 #======================================================================
 
 Tag('ltx:document', afterOpen => \&ProcessPendingResources);
