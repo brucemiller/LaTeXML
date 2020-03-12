@@ -829,13 +829,8 @@ sub ResetCounter {
 sub GenerateID {
   my ($document, $node, $whatsit, $prefix) = @_;
   # Nothing to do if xml:id already set, or not allowable by schema
-  if ($node->hasAttribute('xml:id') || !$document->canHaveAttribute($node, 'xml:id')) {
-    return; }
   # Also, we want to be avoid adding ids to otherwise valid elements, which are not inherently content
-  # e.g. ltx:document which only gets an id from an EXPLICIT \thedocument@id.
-  # e.g. isn't a _Capture_ node, or XMWrap (which ultimately should disappear)
-  my $name = $node->nodeName || '';
-  if ($name =~ /^(?:_Capture_|document|XM(?:Wrap|Arg))$/) {
+  if ($node->hasAttribute('xml:id') || ($node->nodeName =~ /^_/) || !$document->canHaveAttribute($node, 'xml:id')) {
     return; }
   ## Old versions don't like ->getAttribute('xml:id');
   # This is hot code when [ids]latexml.sty is active, optimized for performance

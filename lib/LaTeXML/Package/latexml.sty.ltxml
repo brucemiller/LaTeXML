@@ -34,7 +34,14 @@ DefPrimitive('\latexmlfalse', sub {
 # Package Options
 # Set to 1 (or \usepackage[ids]{latexml}) to enable.
 # Set to 0 (or \usepackage[noids]{latexml}) to disable.
-DeclareOption('ids', sub { Tag('ltx:*', afterOpen => \&LaTeXML::Package::Pool::GenerateID); });
+DeclareOption('ids', sub { Tag('ltx:*', afterOpen => sub {
+        # Almost all, but some exceptions
+        # e.g. ltx:document which only gets an id from an EXPLICIT \thedocument@id.
+        # e.g. isn't a _Capture_ node, or XMWrap (which ultimately should disappear)
+        my $tag = $_[0]->getNodeQName($_[1]);
+        return if $tag =~ /^ltx:(?:document|XMWrap|XMArg)$/;
+        GenerateID(@_);
+        return; }) });
 # Currently disabling is a no-op, may be useful if we switch defaults some day
 DeclareOption('noids', sub { return; });
 
