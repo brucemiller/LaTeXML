@@ -129,7 +129,10 @@ DefConstructor('\references',
     . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "<ltx:biblist>",
-  afterDigest => sub { beginBibliography($_[1]); });
+  afterDigest => sub {
+    $_[0]->begingroup;    # wrapped so redefns don't take effect!
+    beginBibliography($_[1]);
+    $_[0]->endgroup; });
 
 DefConstructor('\endreferences',
   "</ltx:biblist></ltx:bibliography>");
