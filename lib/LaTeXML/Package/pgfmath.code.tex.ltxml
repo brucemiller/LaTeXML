@@ -297,8 +297,18 @@ sub pgfmathparse {
   my $input = $string;
 ###    if ($string =~/^+/){        # Don't parse as expression, just as glue. ???
   #    print STDERR "\nPGF Math Parse: $string\n";
-  $PGFMATHGrammar = Parse::RecDescent->new($PGFMATHGrammarSpec) unless $PGFMATHGrammar;
-  my $result = $PGFMATHGrammar->expr(\$string) || 0.0;
+  my $result;
+  {
+    local $@;
+    $result = eval $string;
+    if (!$@) {
+      # need to erase string when perl eval works, to keep it consistent with recdescent
+      $string = ''; }
+    else {    # failed to eval, use tikz grammar
+      $PGFMATHGrammar = Parse::RecDescent->new($PGFMATHGrammarSpec) unless $PGFMATHGrammar;
+      $result         = $PGFMATHGrammar->expr(\$string); }
+  }
+  $result = $result || 0.0;
   #  $result = "0.0" if $result eq "0";
   #    print STDERR "  GOT " . (defined $result ? $result : '<fail>') . "\n";
   if ($string) {
