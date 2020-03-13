@@ -300,6 +300,7 @@ sub pgfmathparse {
   my $result;
   {
     local $@;
+    no warnings;
     $result = eval $string;
     if (!$@) {
       # need to erase string when perl eval works, to keep it consistent with recdescent
