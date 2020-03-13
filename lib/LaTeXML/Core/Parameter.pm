@@ -82,7 +82,6 @@ sub read {
   # (eg. \caption(...\label{badchars}}) where you really need to
   # cleanup after the fact!
   # Hmmm, seem to still need it...
-  my $startloc = $gullet->getLocator;
   $self->setupCatcodes;
   my $value = &{ $$self{reader} }($gullet, @{ $$self{extra} || [] });
   $value = $value->neutralize(@{ $$self{semiverbatim} }) if $$self{semiverbatim} && (ref $value)
@@ -91,7 +90,7 @@ sub read {
   if ((!defined $value) && !$$self{optional}) {
     Error('expected', $self, $gullet,
       "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
-      "Started at " . ToString($startloc));
+      "Ended at " . ToString($gullet->getLocator));
     $value = T_OTHER('missing'); }
   return $value; }
 

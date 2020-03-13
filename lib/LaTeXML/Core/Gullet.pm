@@ -367,7 +367,6 @@ sub readBalanced {
   my ($self, $expanded) = @_;
   my @tokens = ();
   my ($token, $level) = (undef, 1);
-  my $startloc = $self->getLocator;
   # Inlined readToken (we'll keep comments in the result)
   while ($token = ($expanded ? $self->readXToken(0, 1) : $self->readToken())) {
     my $cc = $$token[1];
@@ -386,7 +385,7 @@ sub readBalanced {
  # TODO: The current implementation has a limitation where if the balancing end is in a different mouth,
  #       it will not be recognized.
     Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.",
-      "started at " . ToString($startloc));
+      "Ended at " . ToString($self->getLocator));
   }
   return (wantarray ? (Tokens(@tokens), $token) : Tokens(@tokens)); }
 
