@@ -550,7 +550,7 @@ DefPrimitive('\color[]{}', sub {
     (Box(undef, undef, undef,
         Invocation(T_CS('\color'), T_OTHER('rgb'),    # Revert to ACTUAL color, not user's name
           T_OTHER(join(',', $color->rgb->components)))),
-      Digest(T_CS('\XC@mcolor'))); });
+      $stomach->digest(T_CS('\XC@mcolor'))); });
 
 DefPrimitive('\set@color', sub {
     my $color = LookupValue('color_.');
