@@ -266,7 +266,7 @@ sub pgfAssignKey {
   DefMacroI(T_CS('\pgfkeyscurrentvalue'), undef,
     ($value ? Tokens(map { ($_->getCatcode == CC_PARAM ? ($_, $_) : $_) } @value_toks)
       : ()));    # (or \pgfkeysnovalue ????
-  if (defined $value) { }    # Got value? ok.
+  if (defined $value) { }                              # Got value? ok.
   elsif (my $def = pgfkeyLookup($key . '/.@def')) {    # else if a default, let to it
     Let(T_CS('\pgfkeyscurrentvalue'), pgfkeyCS($key . '/.@def')); }
 
@@ -361,14 +361,14 @@ sub pgfReSplitPath {
   if ($key =~ m|^(.*?)/([^/]*)/([^/]*)$|) {
     ($path, $sub, $name) = ($1, $2, $3);
     if ($path) { $name = $sub . '/' . $name; }
-    else { $path = $path . '/' . $sub; } }
+    else       { $path = $path . '/' . $sub; } }
   DefMacroI(T_CS('\pgfkeyscurrentpath'), undef, TokenizeInternal($path));
   DefMacroI(T_CS('\pgfkeyscurrentname'), undef, TokenizeInternal($name));
   return ($path, $name); }
 
 sub pgfHandleValue {
   my ($stomach, $key) = @_;
-  Let(T_CS('\pgfkeys@code'), pgfkeyCS(ToString($key)));
+  Let(T_CS('\pgfkeys@code'), pgfkeyCS($key));
   return $stomach->digest(Tokens(T_CS('\expandafter'), T_CS('\pgfkeys@code'),
       T_CS('\pgfkeyscurrentvalue'), T_CS('\pgfeov'))); }
 
