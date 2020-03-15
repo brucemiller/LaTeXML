@@ -80,7 +80,13 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
     # So, we'll just try for a .cls, punting to OmniBus if needed.
     # If we start wanting to read style files by default, we'll still need to handle this
     # specially, since class (or sty files pretending to be) cover so much more.
-    LoadClass($class, options => $options, after => Tokens(T_CS('\compat@loadpackages')));
+    if (FindFile($class, type => 'cls', notex => !LookupValue('INCLUDE_STYLES'))) {
+      LoadClass($class, options => $options,
+        after => Tokens(T_CS('\compat@loadpackages'))); }
+    else {
+      InputDefinitions('OmniBus', type => 'cls', noerror => 1, handleoptions => 1);
+      RequirePackage($class, options => $options,
+        after => Tokens(T_CS('\compat@loadpackages'))); }
     return; });
 
 DefPrimitiveI('\compat@loadpackages', undef, sub {
@@ -868,6 +874,7 @@ DefPrimitive('\ExecuteOptions{}', sub {
 DefPrimitive('\ProcessOptions OptionalMatch:*', sub {
     my ($stomach, $star) = @_;
     ProcessOptions(($star ? (inorder => 1) : ())); });
+DefMacro('\@options', '\ProcessOptions*');
 
 DefMacro('\AtEndOfPackage{}', sub {
     my ($gullet, $code) = @_;
