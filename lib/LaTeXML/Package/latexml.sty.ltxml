@@ -52,6 +52,11 @@ DeclareOption('nobibtex', sub { AssignValue('NO_BIBTEX' => 1, 'global'); });
 # Lexeme serialization for math formulas
 DeclareOption('mathlexemes', sub { AssignValue('LEXEMATIZE_MATH' => 1, 'global'); });
 
+# Include raw .sty/.cls sources in the source directory of the conversion
+DeclareOption('rawsources', sub {
+    AssignValue('INCLUDE_STYLES'              => 1, 'global');
+    AssignValue('INCLUDE_STYLES_NO_KPSEWHICH' => 1, 'global'); });
+
 ProcessOptions();
 #======================================================================
 # From latexml.sty
