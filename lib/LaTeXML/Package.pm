@@ -828,27 +828,43 @@ sub ResetCounter {
 # <number> for <prefix> amongst its descendents.
 sub GenerateID {
   my ($document, $node, $whatsit, $prefix) = @_;
-  # If node doesn't already have an id, and can
+  # If node doesn't already have an id, and can have one
+  # make a "sensible" id for it. Avoid adding unneeded/unwanted ids until as late as possible,
+  # since it causes lots of book-keeping when rearranging XML (you have to monitor id references!)
   if (!$node->hasAttribute('xml:id') && $document->canHaveAttribute($node, 'xml:id')
     # but isn't a _Capture_ node (which ultimately should disappear)
     && ($document->getNodeQName($node) ne 'ltx:_Capture_')) {
-    my $ancestor = $document->findnode('ancestor::*[@xml:id][1]', $node)
-      || $document->getDocument->documentElement;
-    ## Old versions don't like $ancestor->getAttribute('xml:id');
-    my $ancestor_id = $ancestor && $ancestor->getAttributeNS($LaTeXML::Common::XML::XML_NS, 'id');
-    # If we've got no $ancestor_id, then we've got no $ancestor (no document yet!),
-    # or $ancestor IS the root element (but without an id);
-    # If we also have no $prefix, we'll end up with an illegal id (just digits)!!!
-    # We'll use "id" for an id prefix; this will work whether or not we have an $ancestor.
-    $prefix = 'id' unless $prefix || $ancestor_id;
-
-    my $ctrkey = '_ID_counter_' . (defined $prefix ? $prefix . '_' : '');
-    my $ctr = ($ancestor && $ancestor->getAttribute($ctrkey)) || 0;
-
-    my $id = ($ancestor_id ? $ancestor_id . "." : '') . (defined $prefix ? $prefix : '') . (++$ctr);
-    $ancestor->setAttribute($ctrkey => $ctr) if $ancestor;
+    my $id = '';
+    if (my $prelim_id = $node->getAttribute('_pregenerated_id_')) {
+      $id = $prelim_id; }    # Or an id generated while id'ing a child
+    else {
+      my @p = ();
+      my $p = $node->parentNode;
+      # Walk up to root or an id'd node...
+      while ($p && ($p->nodeType == XML_ELEMENT_NODE)) {
+        if ($document->getNodeQName($p) ne 'ltx:_Capture_') {
+          push(@p, $p);
+          last if $id = $p->getAttribute('xml:id'); }
+        $p = $p->parentNode; }
+      $prefix = 'id' unless $prefix || $id;
+      if (LookupValue('GENERATE_IDS')) {
+        # If generating ALL ids, prepare a chain of ids back down to the current node
+        while ($p = pop(@p)) {
+          $id = generateID_nextid($p, (@p ? '' : $prefix), $id);
+          $p[-1]->setAttribute('_pregenerated_id_', $id) if @p; } }
+      else {
+        # Or base the id on the id'd ancestor's id.
+        $id = generateID_nextid($p[-1] || $document->documentElement, $prefix, $id); } }
     $document->setAttribute($node, 'xml:id' => $id); }
   return; }
+
+sub generateID_nextid {
+  my ($parent, $prefix, $id_sofar) = @_;
+  my $ctrkey = '_ID_counter_' . ($prefix ? $prefix . '_' : '');
+  my $ctr = $parent->getAttribute($ctrkey) || 0;
+  $id_sofar = ($id_sofar ? $id_sofar . '.' : '') . ($prefix ? $prefix : '') . (++$ctr);
+  $parent->setAttribute($ctrkey => $ctr);
+  return $id_sofar; }
 
 #======================================================================
 #
