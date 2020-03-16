@@ -38,15 +38,18 @@ DefMacro('\DC@{}{}{}', sub {
       $STATE->assignMathcode($delim => 0x8000);
       DefMacroI(T_CS($delim), undef, '\@hidden@bgroup\lx@unactivate{' . $delim . '}\ROLE{PERIOD}{' . UnTeX($todelim) . '}\@hidden@egroup');
     }
-    if (LookupValue('IN_MATH') || $gullet->ifNext(T_MATH)) {    # Not really good enough, but...
-      (); }
-    else {
-      Let('\DC@end', T_MATH);
-      (T_MATH); } });
+    # We need to temporarily deactivate '$'
+    Let(T_CS('\DC@saved@dollar'), T_MATH);
+    Let(T_MATH,                   T_CS('\relax'));
+    return Tokens(LookupValue('IN_MATH') ? () : T_CS('\@@BEGININLINEMATH'));
+});
 # NOTE: We should be making arrangements for this funny thing to still
 # be considered a number!
 
-DefMacro('\DC@end', '');
+DefMacro('\DC@end', sub {
+    Let(T_MATH, T_CS('\DC@saved@dollar'));
+    return (T_CS('\@@ENDINLINEMATH'));
+});
 
 DefColumnType('D{}{}{}', sub {
     my ($gullet, $delim, $todelim, $ndec) = @_;
