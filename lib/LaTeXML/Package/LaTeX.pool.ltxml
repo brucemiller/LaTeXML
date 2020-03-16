@@ -85,7 +85,7 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
         after => Tokens(T_CS('\compat@loadpackages'))); }
     else {
       InputDefinitions('OmniBus', type => 'cls', noerror => 1, handleoptions => 1);
-      RequirePackage($class, options => $options,
+      RequirePackage($class, options => $options, as_class => 1,
         after => Tokens(T_CS('\compat@loadpackages'))); }
     return; });
 
