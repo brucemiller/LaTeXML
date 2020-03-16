@@ -841,7 +841,7 @@ DefConstructor('\bib@@zbl {}{}',
   properties => sub {
     my $id       = ToString($_[1]);
     my $reviewer = $_[2];
-    my $href     = "http://www.zentralblatt-math.org/zmath/en/search/?q=an:$id";
+    my $href     = "http://zbmath.org/$id";
     (id => $id, href => $href, reviewer => $reviewer); });
 
 #======================================================================
