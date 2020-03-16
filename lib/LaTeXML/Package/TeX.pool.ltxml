@@ -39,20 +39,6 @@ else {
   Let('\thedocument@ID', '\@empty'); }
 NewCounter('@XMARG', 'document', idprefix => 'XM');
 
-# Optionally, add ID's to ALL nodes.
-# By default, this is OFF;
-# Set to 1 (or \usepackage[ids]{latexml}) to enable.
-# Set to 0 (or \usepackage[noids]{latexml}) to disable.
-#### AssignValue(GENERATE_IDS=>1,'global');
-Tag('ltx:*', afterOpen => sub {
-    # If GENERATE_IDS is true, we'll assign an ID to EVERY element,
-    # EXCEPT ltx:document which only gets an id from an EXPLICIT \thedocument@id.
-    my $tag = $_[0]->getNodeQName($_[1]);
-    if (($tag ne 'ltx:document')
-      && ($tag ne 'ltx:XMWrap')    # No auto-generated id on wrap???
-      && LookupValue('GENERATE_IDS')) {
-      GenerateID(@_); } });
-
 #======================================================================
 
 Tag('ltx:document', afterOpen => \&ProcessPendingResources);
@@ -3604,18 +3590,21 @@ sub equationgroupJoinRows {
   my $equation = $document->openElementAt($equationgroup, 'ltx:equation');
   $equationgroup->insertBefore($equation, $equations[0]);    # Move to correct position.
                                                              # move labels, id, refnum to new equation
-  my ($labels, $id, $idctr, $tags);
+  my ($labels, $id, $idctr, $idctrm, $tags);
   foreach my $eq (@equations) {
     if (my $l = $eq->getAttribute('labels')) {
       $labels = ($labels ? "$labels $l" : $l); }
     $id = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
     $eq->removeAttribute('xml:id') if $id;
     $tags = $document->findnode('ltx:tags', $eq);
-    $idctr = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_'); }
+    # Annoying bookkeeping (should be more built in?)
+    $idctr  = $eq->getAttribute('_ID_counter_')   if $eq->hasAttribute('_ID_counter_');
+    $idctrm = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_'); }
   $document->unRecordID($id) if $id;
   $document->setAttribute($equation, labels           => $labels) if $labels;
   $document->setAttribute($equation, 'xml:id'         => $id)     if $id;
-  $document->setAttribute($equation, '_ID_counter_m_' => $idctr)  if $idctr;
+  $document->setAttribute($equation, '_ID_counter_'   => $idctr)  if $idctr;
+  $document->setAttribute($equation, '_ID_counter_m_' => $idctrm) if $idctrm;
   $equation->appendChild($tags) if $tags;
 
   # Scan equations to see which ones likely are continuations of previous

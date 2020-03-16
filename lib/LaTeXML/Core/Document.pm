@@ -394,6 +394,12 @@ sub finalize_rec {
           $declared_font = $declared_font->merge(%{ $pending_declaration{$attr}{properties} });
           delete $pending_declaration{$attr}; } }
   } }
+  # Optionally add ids to all nodes (AFTER all parsing, rearrangement, etc)
+  if ($STATE && $STATE->lookupValue('GENERATE_IDS')
+    && !$node->hasAttribute('xml:id')
+    && $self->canHaveAttribute($qname, 'xml:id')
+    && ($qname ne 'ltx:document')) {
+    LaTeXML::Package::GenerateID($self, $node); }
 
   local $LaTeXML::FONT = $declared_font;
   foreach my $child ($node->childNodes) {
