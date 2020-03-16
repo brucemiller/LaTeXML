@@ -1,5 +1,5 @@
 language: generic
-sudo: required
+os: linux
 dist: trusty
 
 services:
@@ -22,7 +22,7 @@ env:
   ## Testing with texlive 2015 -- perl 5.22
   - PERL=5.22.4 TEX=texlive-2015
 
-matrix:
+jobs:
   # We allow failures for all the TeXLives excepts the 2016 ones
   allow_failures:
     - env: PERL=5.28.0 TEX=texlive-2018
@@ -31,10 +31,25 @@ matrix:
   # just mark the results as done. 
   fast_finish: true
 
-# Pull the given docker image
 before_install:
+# create a docker container to run the tests and name it 'sam'
   - docker pull latexml/latexml-test-runtime:${PERL}_$TEX
+  - docker run -d --env "CI=true" --rm --name sam --entrypoint="" -v $(pwd):/root/latexml -t -i latexml/latexml-test-runtime:${PERL}_$TEX sleep infinity
+# setup a convenience function 'sam' to run things inside the container
+  - function sam() { eval docker exec -ti sam /bin/bash -c "\"source /usr/local/perlbrew/etc/bashrc; $@\"" ; }
 
-# Run the docker test image
+install:
+  - sam perl --version
+  - sam cpanm --version
+  - sam tex --version || true
+  - sam cpanm -v --installdeps --notest .
+
+before_script:
+  - sam perl Makefile.PL
+  - sam make
+
 script:
-  - docker run --env "CI=true" --rm -v $(pwd):/root/latexml -t -i latexml/latexml-test-runtime:${PERL}_$TEX
+  - sam make test
+
+after_script:
+  - docker stop sam
