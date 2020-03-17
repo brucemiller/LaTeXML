@@ -305,6 +305,9 @@ DefParameterType('DefToken', sub {
     $token; },
   undigested => 1);
 
+# Stub register for misdefinitions, to avoid a cascade of Errors.
+DefRegisterI('\lx@DUMMY@REGISTER', undef, Tokens());
+
 # Read a variable, ie. a token (after expansion) that is a writable register.
 DefParameterType('Variable', sub {
     my ($gullet) = @_;
@@ -313,9 +316,18 @@ DefParameterType('Variable', sub {
     if ((defined $defn) && $defn->isRegister && !$defn->isReadonly) {
       [$defn, $defn->readArguments($gullet)]; }
     else {
-      Error('expected', '<variable>', $gullet,
-        "A <variable> was supposed to be here", "Got " . Stringify($token));
-      undef; } },
+      DefRegisterI($token, undef, Dimension(0));    # Don't really know what KIND of variable!
+      if ($token && ($token->getCatcode == CC_CS)) {
+        Error('expected', '<variable>', $gullet,
+          "A <variable> was supposed to be here", "Got " . Stringify($token),
+          "Defining it now.");
+        DefRegisterI($token, undef, Dimension(0)); # Dimension, or what?
+        return [LookupDefinition($token)]; }
+      else {
+        Error('expected', '<variable>', $gullet,
+          "A <variable> was supposed to be here", "Got " . Stringify($token),
+          "But it is not even definable.");
+        return [LookupDefinition(T_CS('\lx@DUMMY@REGISTER'))]; } } },
   reversion => sub {
     my ($var) = @_;
     my ($defn, @args) = @$var;
@@ -330,13 +342,17 @@ DefParameterType('Register', sub {
     if ((defined $defn) && $defn->isRegister) {
       [$defn, $defn->readArguments($gullet)]; }
     else {
-      Error('expected', '<register>', $gullet,
-        "A <register> was supposed to be here", "Got " . Stringify($token));
-      if (isDefinable($token)) {
-        DefRegisterI($token, undef, Tokens());
-        return [$defn]; }
+      if ($token && ($token->getCatcode == CC_CS)) {
+        Error('expected', '<register>', $gullet,
+          "A <register> was supposed to be here", "Got " . Stringify($token),
+          "Defining it now.");
+        DefRegisterI($token, undef, Dimension(0)); # Dimension, or what?
+        return [LookupDefinition($token)]; }
       else {
-        return; } } },
+        Error('expected', '<register>', $gullet,
+          "A <register> was supposed to be here", "Got " . Stringify($token),
+          "But it is not even definable.");
+        return [LookupDefinition(T_CS('\lx@DUMMY@REGISTER'))]; } } },
   reversion => sub {
     my ($var) = @_;
     my ($defn, @args) = @$var;
@@ -6377,7 +6393,7 @@ DefConstructor('\footnote{}{}',
     $whatsit->setProperty(($change ? 'prenote' : 'mark') => $mark);
     return; });
 DefPrimitiveI('\footstrut', undef, undef);
-DefRegister('\footins' => Dimension(0));
+DefRegister('\footins' => Number(0));
 
 DefPrimitiveI('\topinsert',  undef, undef);
 DefPrimitiveI('\midinsert',  undef, undef);
