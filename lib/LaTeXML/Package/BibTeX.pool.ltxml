@@ -179,7 +179,7 @@ DefEnvironment('{bibtex@bibliography}',
     . "<ltx:biblist>#body</ltx:biblist>"
     . "</ltx:bibliography>",
   beforeDigest => sub {
-    AssignValue(inPreamble => 0); },
+    beforeDigestBibliography(); },
   afterDigestBegin => sub { beginBibliography($_[1]); });
 
 DefEnvironment('{bib@entry} Semiverbatim Semiverbatim',
