@@ -96,7 +96,7 @@ DefConstructor('\lxSVG@insertpicture{}',
     $document->openElement('svg:g',
       transform => "matrix(1 0 0 -1 0 $props{flipnmove})");
     $document->absorb($content);
-    while ($document->maybeCloseElement('svg:g')) { }
+    while (maybeCloseG($document)) { }
     #                 $document->closeElement('svg:g');
     $document->closeElement('svg:svg');
     $document->closeElement('ltx:picture');
@@ -144,7 +144,15 @@ DefParameterType('SVGMoveableBox', sub {
     $box; });
 
 # Try to avoid errors inserting random boxes (esp. ltx:text)(Is this safe?)
-Tag('svg:switch', autoOpen => 1, autoClose => 1);    # ?
+Tag('svg:switch', autoOpen => 1, autoClose => 1, afterClose => sub {
+    my ($document, $sw) = @_;
+    my @swc = element_nodes($sw);
+    if (!scalar(@swc)) {    # empty? remove.
+      $document->removeNode($sw); }
+    elsif (scalar(@swc) == 1) {    # single child? unwrap
+      $document->replaceNode($sw, $swc[0]); }
+    # otherwise: keep as-is.
+    return; });
 Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
   afterClose => sub {
     my ($document, $node, $whatsit) = @_;
@@ -285,7 +293,7 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
       if ($n->isSameNode($fo)) {
         $doc->closeElement('svg:foreignObject');
         $doc->closeElement('svg:switch');
-        $doc->closeElement('svg:g');
+        maybeCloseG($doc);
         # Check the children of the inserted ltx:p
         # We should at least try to denest svg ?
         # If svg:switch/svg:foreignObject/ltx:p/ltx:picture/svg:svg/svg:g
@@ -298,6 +306,16 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
             $doc->replaceNode($sw, $g);
     } } } }
     # Could conceivably be simplifying ltx:text ???
+
+# What follow are a series of crutch measures that combat inappropriately generated markup.
+#      they are sanitzers that mostly work, but we ought to also work on improving the entire svg:switch-related
+#      machinery.
+# Empty p? Remove, and unwind up the parent hierarchy
+    if (!element_nodes($p)) {
+      my $node_to_remove = $p;
+      while (scalar(element_nodes($node_to_remove->parentNode)) == 1) {
+        $node_to_remove = $node_to_remove->parentNode; }
+      $doc->removeNode($node_to_remove); }
   },
   reversion => sub {
     my $box = $_[0]->getProperty('thebox');
@@ -480,8 +498,21 @@ DefConstructor('\lxSVG@begingroup@ RequiredKeyVals',
 
 DefConstructor('\lxSVG@endgroup@',
 ###  '</svg:g>',
-  sub { $_[0]->maybeCloseElement('svg:g'); },
+  sub { maybeCloseG($_[0]); },
   reversion => '', sizer => 0);
+
+sub maybeCloseG {
+  my ($document) = @_;
+  my $el = $document->getNode;
+  if ($document->getNodeQName($el) eq 'svg:g') {
+    if (!$el->attributes) {    # empty g, unwrap
+      my @el_children = element_nodes($el);
+      if (scalar(@el_children) == 1) {
+        $document->replaceNode($el, $el_children[0]);
+        # return true, since we handled an svg:g
+        return 1; } } }
+  #else: multiple child nodes would be trickier to unwrap, just close in that case (for now)
+  return $document->maybeCloseElement('svg:g'); }
 
 #=====================================================================
 # Implementation
