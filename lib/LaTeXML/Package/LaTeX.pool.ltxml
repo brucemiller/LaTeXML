@@ -2367,12 +2367,18 @@ DefPrimitive('\renewcommand OptionalMatch:* DefToken [Number][]{}', sub {
 
 # low-level implementation of both \newcommand and \renewcommand depends on \@argdef
 # and robustness upgrades are often realized via redefining \l@ngrel@x
-#
-# Experiment: use \l@ngrel@x to carry over \protected information from outside, etoolbox-style.
-# DefMacro('\@argdef','\l@ngrel@x\renewcommand');
-#
-# The etoolbox binding now defines \newrobustcmd & friends directly, so \@argdef is not directly needed
-# However, we would need to add support for other packages that may leverage that machinery.
+DefPrimitive('\@argdef DefToken []{}', sub {
+    DefMacroI($_[1], convertLaTeXArgs($_[2]), $_[3]); });
+DefPrimitive('\@xargdef DefToken [][]{}', sub {
+    DefMacroI($_[1], convertLaTeXArgs($_[2], $_[3]), $_[4]); });
+DefPrimitive('\@yargdef DefToken DefToken {}{}', sub {
+    DefMacroI($_[1],
+      (T_CS('\tw@')->equals($_[2])
+        ? convertLaTeXArgs($_[3], Tokens())
+        : convertLaTeXArgs($_[3])),
+      $_[4]); });
+DefPrimitive('\@reargdef DefToken []{}', sub {
+    DefMacroI($_[1], convertLaTeXArgs($_[2]), $_[3]); });
 
 DefPrimitive('\providecommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
@@ -4115,28 +4121,29 @@ DefPrimitiveI('\samepage', undef, undef);
 # \fill
 DefMacro('\stretch{}', '0pt plus #1fill\relax');
 
-DefPrimitive('\@check@length DefToken', sub {
-    my ($stomach, $cs) = @_;
-    my $defn = LookupDefinition($cs);
-    if (!$defn) {
-      Warn('undefined', $cs, $stomach, "'" . ToString($cs) . "' is not a length; defining it now");
-      DefRegisterI($cs, undef, Dimension(0)); }
-    elsif (!$defn->isRegister) {
-      Error('misdefined', $cs, $stomach, "'" . ToString($cs) . "' length was expected, got " . ref($defn) . " instead of register.");
-    }
-    return; });
-
 DefPrimitive('\newlength DefToken', sub {
     my ($stomach, $cs) = @_;
     DefRegisterI($cs, undef, Glue(0)); });
-DefMacro('\setlength{}{}',   '\@check@length{#1}#1#2\relax');
-DefMacro('\addtolength{}{}', '\@check@length{#1}\advance#1 #2\relax');
+DefPrimitive('\setlength {Variable}{Dimension}', sub {
+    my ($stomach, $variable, $length) = @_;
+    my ($defn, @params) = @$variable;
+    if ($defn) {
+      $defn->setValue($length, @params); }
+    return; });
+DefPrimitive('\addtolength {Variable}{Dimension}', sub {
+    my ($stomach, $variable, $length) = @_;
+    my ($defn, @params) = @$variable;
+    if ($defn) {
+      my $oldlength = $defn->valueOf(@params);
+      $defn->setValue($defn->valueOf(@params)->add($length), @params); }
+    return; });
 
 DefMacro('\@settodim{}{}{}',
   '\setbox\@tempboxa\hbox{{#3}}#2#1\@tempboxa\setbox\@tempboxa\box\voidb@x');
 DefMacroI('\settoheight', undef, '\@settodim\ht');
 DefMacroI('\settodepth',  undef, '\@settodim\dp');
 DefMacroI('\settowidth',  undef, '\@settodim\wd');
+DefMacro('\@settopoint{}', '\divide#1\p@\multiply#1\p@');
 
 # Assuming noone tries to get clever with figuring out the allocation of
 # numbers, these become simple DefRegister's
@@ -5247,6 +5254,7 @@ RawTeX(<<'EOTeX');
 \newif\if@twoside       \@twosidefalse
 \newif\if@reversemargin \@reversemarginfalse
 \newif\if@mparswitch    \@mparswitchfalse
+\newif\if@firstamp      \@firstampfalse
 \newcount\col@number    \@ne
 \newread\@inputcheck
 \newwrite\@unused
@@ -5344,7 +5352,7 @@ DefMacroI('\@charrb',        undef, T_LETTER('}'));
 DefMacroI('\check@mathfonts', undef, Tokens());
 DefMacro('\fontsize{}{}', Tokens());
 # https://tex.stackexchange.com/questions/112492/setfontsize-vs-fontsize#112501
-DefMacro('\@setfontsize{}{}{}', Tokens());
+DefMacro('\@setfontsize{}{}{}', '\let\@currsize#1');
 
 DefMacroI('\defaultscriptratio',       undef, '.7');
 DefMacroI('\defaultscriptscriptratio', undef, '.5');

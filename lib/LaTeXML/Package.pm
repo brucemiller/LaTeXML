@@ -1073,8 +1073,11 @@ sub DefConditionalI {
     $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
         conditional_type => 'unless', %options),
       $options{scope}); }
-  elsif ($csname =~ /^\\if(.*)$/) {
-    my $name = $1;
+  elsif ($csname =~ /^\\(..)(.*)$/) {
+    my($prefix, $name) = ($1,$2);
+    if($prefix ne 'if'){
+      Warn('misdefined', $cs, $STATE->getStomach,
+      "The conditional " . Stringify($cs) . " is being defined but doesn't start with \\if"); }
     if ((defined $name) && ($name ne 'case')
       && (!defined $test)) {    # user-defined conditional, like with \newif
       DefMacroI(T_CS('\\' . $name . 'true'),  undef, Tokens(T_CS('\let'), $cs, T_CS('\iftrue')));
