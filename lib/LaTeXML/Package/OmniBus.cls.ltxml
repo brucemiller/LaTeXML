@@ -129,9 +129,13 @@ DefConstructor('\references',
     . "bibstyle='#bibstyle' citestyle='#citestyle' sort='#sort'>"
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "<ltx:biblist>",
-  afterDigest => sub { beginBibliography($_[1]); });
+  beforeDigest => sub { beforeDigestBibliography(); },
+  afterDigest => sub { beginBibliography($_[1]); }
+);
 
 DefConstructor('\endreferences',
   "</ltx:biblist></ltx:bibliography>");
+
+Let('\reference', '\bibitem');
 
 1;

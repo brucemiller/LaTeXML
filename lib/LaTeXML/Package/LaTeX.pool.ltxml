@@ -3459,6 +3459,14 @@ DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#lab
 
 DefMacroI('\thebibliography@ID', undef, Tokens());
 
+# Do this before digesting the body of a bibliography
+sub beforeDigestBibliography {
+  AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
+  DefMacro('\bibliographystyle{}', '');
+  DefMacro('\bibliography {}',     '');
+  ResetCounter('@bibitem');
+  return; }
+
 # This sub does things that would commonly be needed when starting a bibliography
 # setting the ID, etc...
 sub beginBibliography {
@@ -3604,10 +3612,7 @@ DefConstructorI('\thebibliography', undef,
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "<ltx:biblist>",
   beforeDigest => sub {
-    AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
-    DefMacro('\bibliographystyle{}', '');
-    DefMacro('\bibliography {}',     '');
-    ResetCounter('@bibitem'); },
+    beforeDigestBibliography(); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     # NOTE that in some perverse situations (revtex?)
