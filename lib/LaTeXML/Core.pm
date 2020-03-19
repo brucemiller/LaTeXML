@@ -51,7 +51,9 @@ sub new {
     'global');
   $state->assignValue(GRAPHICSPATHS => [map { pathname_absolute(pathname_canonical($_)) }
         @{ $options{graphicspaths} || [] }], 'global');
-  $state->assignValue(INCLUDE_STYLES => $options{includestyles} || 0, 'global');
+ # For now the "includestyles" option passed from --includestyles will accept both classes and styles?
+  $state->assignValue(INCLUDE_STYLES  => $options{includestyles} || 0, 'global');
+  $state->assignValue(INCLUDE_CLASSES => $options{includestyles} || 0, 'global');
   # Core has to ensure a default input encoding, and we default towards modern utf-8 documents
   # This can be removed when all executables rely on LaTeXML::Common::Config
   $options{inputencoding} = "utf-8" unless $options{inputencoding};

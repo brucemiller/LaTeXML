@@ -1859,7 +1859,7 @@ sub pathname_is_raw {
   return ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
 
 my $findfile_options = {    # [CONSTANT]
-  type => 1, notex => 1, noltxml => 1, no_kpsewhich => 1 };
+  type => 1, notex => 1, noltxml => 1, searchpaths_only => 1 };
 
 sub FindFile {
   my ($file, %options) = @_;
@@ -1927,7 +1927,7 @@ sub FindFile_aux {
     (!$options{notex} ? ($file) : ()));
   local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
     @$paths, $ENV{TEXINPUTS} || $Config::Config{'path_sep'});
-  if (my $result = (!$options{no_kpsewhich}) && pathname_kpsewhich(@candidates)) {
+  if (my $result = (!$options{searchpaths_only}) && pathname_kpsewhich(@candidates)) {
     return (-f $result ? $result : undef); }
   if ($urlbase && ($path = url_find($file, urlbase => $urlbase))) {
     return $path; }
@@ -2251,7 +2251,7 @@ sub AddToMacro {
 my $inputdefinitions_options = {    # [CONSTANT]
   options => 1, withoptions => 1, handleoptions => 1,
   type    => 1, as_class    => 1, noltxml       => 1, notex => 1, noerror => 1, after => 1,
-  no_kpsewhich => 1 };
+  searchpaths_only => 1 };
 #   options=>[options...]
 #   withoptions=>boolean : pass options from calling class/package
 #   after=>code or tokens or string as $name.$type-h@@k macro. (executed after the package is loaded)
@@ -2288,7 +2288,7 @@ sub InputDefinitions {
         "Option clash for file $filename with options '$curroptions'",
         "previously loaded with '$prevoptions'") unless $curroptions eq $prevoptions; } }
   if (my $file = FindFile($filename, type => $options{type},
-      notex => $options{notex}, noltxml => $options{noltxml}, no_kpsewhich => $options{no_kpsewhich})) {
+      notex => $options{notex}, noltxml => $options{noltxml}, searchpaths_only => $options{searchpaths_only})) {
     if ($options{handleoptions}) {
       Digest(T_CS('\@pushfilename'));
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
@@ -2354,7 +2354,7 @@ sub InputDefinitions {
 
 my $require_options = {    # [CONSTANT]
   options => 1, withoptions => 1, type => 1, as_class => 1,
-  noltxml => 1, notex       => 1, raw  => 1, after    => 1, no_kpsewhich => 1 };
+  noltxml => 1, notex       => 1, raw  => 1, after    => 1, searchpaths_only => 1 };
 # This (& FindFile) needs to evolve a bit to support reading raw .sty (.def, etc) files from
 # the standard texmf directories.  Maybe even use kpsewhich itself (INSTEAD of pathname_find ???)
 # Another potentially useful option might be that if we are reading a raw file,
@@ -2370,8 +2370,8 @@ sub RequirePackage {
   # We'll usually disallow raw TeX, unless the option explicitly given, or globally set.
   $options{notex} = 1
     if !defined $options{notex} && !LookupValue('INCLUDE_STYLES') && !$options{noltxml};
-  # Top-level requires can be no_kpsewhich to local sources
-  $options{no_kpsewhich} //= (!$options{notex}) && LookupValue('INCLUDE_STYLES_NO_KPSEWHICH');
+  # Top-level requires can be limited to local sources via searchpaths_only => 1
+  $options{searchpaths_only} //= (!$options{notex}) && ((LookupValue('INCLUDE_STYLES') || '') eq 'searchpaths');
   my $success = InputDefinitions($package, type => $options{type} || 'sty', handleoptions => 1,
     # Pass classes options if we have NONE!
     withoptions => !($options{options} && @{ $options{options} }),
@@ -2380,14 +2380,14 @@ sub RequirePackage {
   return; }
 
 my $loadclass_options = {    # [CONSTANT]
-  options => 1, withoptions => 1, after => 1, notex => 1, no_kpsewhich => 1 };
+  options => 1, withoptions => 1, after => 1, notex => 1, searchpaths_only => 1 };
 
 sub LoadClass {
   my ($class, %options) = @_;
   $options{notex} = 1
-    if !defined $options{notex} && !LookupValue('INCLUDE_STYLES') && !$options{noltxml};
-  # Top-level requires can be no_kpsewhich to local sources
-  $options{no_kpsewhich} //= (!$options{notex}) && LookupValue('INCLUDE_STYLES_NO_KPSEWHICH');
+    if !defined $options{notex} && !LookupValue('INCLUDE_CLASSES') && !$options{noltxml};
+  # Top-level requires can be limited to local sources via searchpaths_only => 1
+  $options{searchpaths_only} //= (!$options{notex}) && ((LookupValue('INCLUDE_CLASSES') || '') eq 'searchpaths');
 
   $class = ToString($class) if ref $class;
   CheckOptions("LoadClass ($class)", $loadclass_options, %options);
