@@ -3770,6 +3770,7 @@ AssignValue(CITE_YY_SEPARATOR   => T_OTHER(','));
 AssignValue(CITE_NOTE_SEPARATOR => T_OTHER(','));
 AssignValue(CITE_UNIT           => undef);
 
+DefMacro('\@cite{}{}', '[{#1\if@tempswa , #2\fi}]');
 DefConstructor('\@@cite []{}', "<ltx:cite ?#1(class='ltx_citemacro_#1')>#2</ltx:cite>",
   mode => 'text');
 
