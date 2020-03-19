@@ -855,6 +855,8 @@ sub GenerateID {
       else {
         # Or base the id on the id'd ancestor's id.
         $id = generateID_nextid($p[-1] || $document->documentElement, $prefix, $id); } }
+    # We may still be in a case where we got a raw numeric id. If so, guard with a prefix:
+    $id = "id$id" if $id =~ /^\d/;
     $document->setAttribute($node, 'xml:id' => $id); }
   return; }
 
@@ -1074,10 +1076,10 @@ sub DefConditionalI {
         conditional_type => 'unless', %options),
       $options{scope}); }
   elsif ($csname =~ /^\\(..)(.*)$/) {
-    my($prefix, $name) = ($1,$2);
-    if($prefix ne 'if'){
+    my ($prefix, $name) = ($1, $2);
+    if ($prefix ne 'if') {
       Warn('misdefined', $cs, $STATE->getStomach,
-      "The conditional " . Stringify($cs) . " is being defined but doesn't start with \\if"); }
+        "The conditional " . Stringify($cs) . " is being defined but doesn't start with \\if"); }
     if ((defined $name) && ($name ne 'case')
       && (!defined $test)) {    # user-defined conditional, like with \newif
       DefMacroI(T_CS('\\' . $name . 'true'),  undef, Tokens(T_CS('\let'), $cs, T_CS('\iftrue')));
