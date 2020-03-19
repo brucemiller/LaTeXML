@@ -52,6 +52,14 @@ DeclareOption('nobibtex', sub { AssignValue('NO_BIBTEX' => 1, 'global'); });
 # Lexeme serialization for math formulas
 DeclareOption('mathlexemes', sub { AssignValue('LEXEMATIZE_MATH' => 1, 'global'); });
 
+# Finer control over which (if any) raw .sty/.cls files to include
+DeclareOption('rawstyles',      sub { AssignValue('INCLUDE_STYLES'  => 1,             'global'); });
+DeclareOption('localrawstyles', sub { AssignValue('INCLUDE_STYLES'  => 'searchpaths', 'global'); });
+DeclareOption('norawstyles',    sub { AssignValue('INCLUDE_STYLES'  => 0,             'global'); });
+DeclareOption('rawclasses',     sub { AssignValue('INCLUDE_CLASSES' => 1,             'global'); });
+DeclareOption('localrawclasses', sub { AssignValue('INCLUDE_CLASSES' => 'searchpaths', 'global'); });
+DeclareOption('norawclasses', sub { AssignValue('INCLUDE_CLASSES' => 0, 'global'); });
+
 ProcessOptions();
 #======================================================================
 # From latexml.sty

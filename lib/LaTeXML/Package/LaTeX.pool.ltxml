@@ -80,7 +80,7 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
     # So, we'll just try for a .cls, punting to OmniBus if needed.
     # If we start wanting to read style files by default, we'll still need to handle this
     # specially, since class (or sty files pretending to be) cover so much more.
-    if (FindFile($class, type => 'cls', notex => !LookupValue('INCLUDE_STYLES'))) {
+    if (FindFile($class, type => 'cls', notex => !LookupValue('INCLUDE_CLASSES'))) {
       LoadClass($class, options => $options,
         after => Tokens(T_CS('\compat@loadpackages'))); }
     else {
