@@ -847,7 +847,7 @@ sub GenerateID {
           last if $id = $p->getAttribute('xml:id'); }
         $p = $p->parentNode; }
       $prefix = 'id' unless $prefix || $id;
-      if (LookupValue('GENERATE_IDS')) {
+      if (LookupValue('GENERATE_IDS') && @p) {
         # If generating ALL ids, prepare a chain of ids back down to the current node
         while ($p = pop(@p)) {
           $id = generateID_nextid($p, (@p ? '' : $prefix), $id);
@@ -1649,7 +1649,7 @@ sub defmath_cons {
   my ($cs, $paramlist, $presentation, %options) = @_;
   # do we need to do anything about digesting the presentation?
   my $qpresentation = $presentation && ToString($presentation);    # Quote any constructor specials
-  $qpresentation =~ s/(\#|\&|\?|\\)/\\$1/g if $presentation;
+  $qpresentation =~ s/(\#|\&|\?|\\|<|>)/\\$1/g if $presentation;
   my $end_tok   = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
   my $nargs     = ($paramlist ? scalar($paramlist->getParameters) : 0);
