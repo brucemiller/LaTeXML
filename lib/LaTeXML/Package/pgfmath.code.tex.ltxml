@@ -40,10 +40,11 @@ InputDefinitions('pgfmath.code', type => 'tex', noltxml => 1)
 # Note that these macros typically get a CS passed as argument whose expansion is the number
 # and that they assign the result, as a token list to \pgfmathresult.
 # Hopefully the savings in doing the math in Perl isn't overwhelmed by string conversion?
-our $PI    = Math::Trig::pi;
-our $LOG2  = log(2);
-our $LOG10 = log(10);
-our $E     = exp(1);
+our $PI      = Math::Trig::pi;
+our $LOG2    = log(2);
+our $LOG10   = log(10);
+our $E       = exp(1);
+our $epsilon = 0.00001;
 
 # Note: We need to lookup /pgf/trig format/deg/ or /rad/ !!!  (default is deg?)
 sub pgfmathargradians {
@@ -243,7 +244,8 @@ DefMacro('\pgfmathrand@', sub {
 DefMacro('\pgfmathfactorial@', sub {
     pgfmathresult(pgfmathfactorial($_[1])); return });
 DefMacro('\pgfmathreciprocal@ pgfNumber', sub {
-    pgfmathresult(1 / $_[1]); return });
+    my $divisor = (0.0 + $_[1]) || $epsilon;
+    pgfmathresult(1 / $divisor); return });
 
 #======================================================================
 DefMacro('\@@@test@mathresult{}{}{}', sub {
@@ -468,23 +470,23 @@ BEGIN {
     or         => sub { $_[0] || $_[1]; },
     '+'        => sub { (defined $_[1] ? $_[0] + $_[1] : $_[0]); },
     'add'      => sub { (defined $_[1] ? $_[0] + $_[1] : $_[0]); },
-    '-'        => sub { (defined $_[1] ? $_[0] - $_[1] : -$_[0]); },    # prefix or infix
+    '-'        => sub { (defined $_[1] ? $_[0] - $_[1] : -$_[0]); },                   # prefix or infix
     neg        => sub { -$_[0]; },
     '*'        => sub { $_[0] * $_[1]; },
     multiply   => sub { $_[0] * $_[1]; },
-    '/'        => sub { $_[0] / $_[1]; },
-    div        => sub { int($_[0] / $_[1]); },
-    divide     => sub { $_[0] / $_[1]; },
-    '!'        => sub { pgfmathfactorial($_[0]); },
-    'r'        => sub { rad2deg($_[0]); },
-    e          => sub { $E; },
-    pi         => sub { $PI; },
-    abs        => sub { abs($_[0]); },
-    acos       => sub { acos($_[0]); },
-    array      => sub { },
-    asin       => sub { rad2deg(asin($_[0])); },
-    atan       => sub { rad2deg(atan($_[0])); },
-    atan2      => sub { rad2deg(atan2($_[0], $_[1])); },
+    '/'        => sub { my $divisor = (0.0 + $_[1]) || $epsilon; $_[0] / $divisor; },
+    divide     => sub { my $divisor = (0.0 + $_[1]) || $epsilon; $_[0] / $divisor; },
+    div   => sub { my $divisor = (0.0 + $_[1]) || $epsilon; int($_[0] / $divisor); },
+    '!'   => sub { pgfmathfactorial($_[0]); },
+    'r'   => sub { rad2deg($_[0]); },
+    e     => sub { $E; },
+    pi    => sub { $PI; },
+    abs   => sub { abs($_[0]); },
+    acos  => sub { acos($_[0]); },
+    array => sub { },
+    asin  => sub { rad2deg(asin($_[0])); },
+    atan  => sub { rad2deg(atan($_[0])); },
+    atan2 => sub { rad2deg(atan2($_[0], $_[1])); },
     #    bin   => sub { },
     ceil  => sub { ceil($_[0]); },
     cos   => sub { cos(pgfmathargradians($_[0])); },
