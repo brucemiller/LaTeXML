@@ -234,18 +234,6 @@ sub computeSize {
   $$props{cdepth}  = $d unless defined $$props{depth};
   return; }
 
-#**********************************************************************
-# What about Kern, Glue, Penalty ...
-
-# stubs to avoid "shallow" Fatal errors on broken documents
-sub multiply { return Dimension(0); }
-sub subtract { return Dimension(0); }
-sub add      { return Dimension(0); }
-sub negate   { return Dimension(0); }
-sub divide   { return Dimension(0); }
-sub getX     { return Dimension(0); }
-sub getY     { return Dimension(0); }
-sub ptValue  { return; }
 #======================================================================
 1;
 
