@@ -321,7 +321,7 @@ DefParameterType('Variable', sub {
         Error('expected', '<variable>', $gullet,
           "A <variable> was supposed to be here", "Got " . Stringify($token),
           "Defining it now.");
-        DefRegisterI($token, undef, Dimension(0)); # Dimension, or what?
+        DefRegisterI($token, undef, Dimension(0));    # Dimension, or what?
         return [LookupDefinition($token)]; }
       else {
         Error('expected', '<variable>', $gullet,
@@ -346,7 +346,7 @@ DefParameterType('Register', sub {
         Error('expected', '<register>', $gullet,
           "A <register> was supposed to be here", "Got " . Stringify($token),
           "Defining it now.");
-        DefRegisterI($token, undef, Dimension(0)); # Dimension, or what?
+        DefRegisterI($token, undef, Dimension(0));    # Dimension, or what?
         return [LookupDefinition($token)]; }
       else {
         Error('expected', '<register>', $gullet,
@@ -736,6 +736,9 @@ DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
 DefParameterType('ExpandedIfToken', sub {
     my ($gullet) = @_;
     my $token = $gullet->readXToken(0);
+    if (!$token) {
+      Error('expected', 'ExpandedIfToken', $gullet, "conditional expected a token argument, readXToken came back empty. Falling back to \\\@empty");
+      $token = T_CS('\@empty'); }
     if ($$token[2]) {    # marked dont_expand
       if ($$token[2][1] == CC_ACTIVE) {    # treat as active character, if originally such
         return $$token[2]; }
@@ -5091,7 +5094,7 @@ DefPrimitiveI('\pounds',    undef, UTF(0xA3));           # POUND SIGN
 # Then we can apply combining accents to it.
 sub applyAccent {
   my ($stomach, $letter, $combiningchar, $standalonechar, $reversion) = @_;
-  my $box     = Digest($letter);
+  my $box     = $stomach->digest($letter);
   my $locator = $box->getLocator;
   my $font    = $box->getFont;
   my $string  = $box->toString;
@@ -5143,7 +5146,7 @@ DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
 # We're given a number pointing into the font, from which we can derive the standalone char.
 # From that, we want to figure out the combining character, but there could be one for
 # both the above & below cases!  We'll prefer the above case.
-DefPrimitive('\accent Number {}', sub {
+DefPrimitive('\accent Number Expanded', sub {
     my ($stomach, $num, $letter) = @_;
     my $n        = $num->valueOf;
     my $fam      = 0;                                            # ?
