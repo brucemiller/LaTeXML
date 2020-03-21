@@ -19,8 +19,13 @@ use LaTeXML::Package;
 RequirePackage('times');
 RequirePackage('fancyhdr');
 RequirePackage('color');
-RequirePackage('algorithm');
-RequirePackage('algorithmic');
+DefPrimitive('\icml@fallback@algorithm', sub {
+    # Load algorithmic, but only if not a version of it has been explicitly loaded already.
+    if (!IsDefined(T_CS('\algorithmic'))) {
+      RequirePackage('algorithm');
+      RequirePackage('algorithmic'); }
+    return; });
+PushValue('@at@begin@document', T_CS('\icml@fallback@algorithm'));
 RequirePackage('natbib');
 # RequirePackage('eso-pic');
 # RequirePackage('forloop');
