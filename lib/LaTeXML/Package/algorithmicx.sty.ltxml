@@ -15,6 +15,10 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+# Was algorithmic.sty loaded? If so: BAIL immediately.
+# (deeply incompatible)
+return 1 if IsDefined(T_CS('\algorithmic'));
+
 # Load core, make a few redefinitions
 InputDefinitions('algorithmicx', type => 'sty', noltxml => 1);
 
@@ -71,4 +75,3 @@ DefConstructor('\lx@algorithmicx@hfill',
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
-

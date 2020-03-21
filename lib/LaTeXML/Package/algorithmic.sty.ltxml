@@ -15,6 +15,10 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+# Was algorithmicx.sty loaded? If so: BAIL immediately.
+# (deeply incompatible)
+return 1 if IsDefined(T_CS('\algorithmic'));
+
 # Read in the LaTeX definitions and redefine a few things strategically.
 InputDefinitions('algorithmic', type => 'sty', noltxml => 1);
 
@@ -48,7 +52,7 @@ DefConstructor('\lx@algorithmic@item@@ OptionalUndigested',
   "<ltx:listingline xml:id='#id' itemsep='#itemsep'>"
     . "#tags",
   properties => sub {
-    my $id = Digest(T_CS('\theALC@line@ID'));
+    my $id   = Digest(T_CS('\theALC@line@ID'));
     my $tags = Digest(Invocation(T_CS('\lx@make@tags'), T_OTHER('ALC@line')));
     (id => $id, tags => $tags); },
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:listingline'); });
@@ -59,4 +63,3 @@ DefMacro('\fnum@ALC@line', '\ALC@lno');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
-
