@@ -1639,7 +1639,11 @@ DefRegister('\@itemdepth' => Number(0));
 # NOTE: how's the best way to get verbatim material through?
 DefEnvironment('{verbatim}',  '<ltx:verbatim>#body</ltx:verbatim>');
 DefEnvironment('{verbatim*}', '<ltx:verbatim>#body</ltx:verbatim>');
-Let('\@verbatim', '\verbatim');    # Close enough?
+# Let('\@verbatim', '\verbatim');    # Close enough?
+DefMacro('\@verbatim', <<'EOL');
+\let\do\@makeother \dospecials
+\obeylines \verbatim@font \@noligs
+EOL
 # verbatim is a bit of special case;
 # It looks like an environment, but it only ends with an explicit "\end{verbatim}" on it's own line.
 # So, we'll end up doing things more manually.
@@ -4981,7 +4985,9 @@ DefMacro('\@secondoftwo{}{}',    sub { $_[2]; });
 DefMacro('\@thirdofthree{}{}{}', sub { $_[3]; });
 DefMacro('\@expandtwoargs{}{}{}', sub {
     ($_[1]->unlist, T_BEGIN, Expand($_[2])->unlist, T_END, T_BEGIN, Expand($_[3])->unlist, T_END); });
-DefMacro('\@makeother{}', sub { AssignCatcode($_[1] => CC_OTHER, 'local'); });
+# The perl approach to \@makeother failed to capture the nuance needed when doing \@makeother\^
+# DefMacro('\@makeother{}', sub { AssignCatcode($_[1] => CC_OTHER, 'local');});
+DefMacro('\@makeother{}', '\catcode`#1=12\relax');
 
 RawTeX(<<'EoTeX');
 {\catcode`\^^M=13 \gdef\obeycr{\catcode`\^^M13 \def^^M{\\\relax}%
