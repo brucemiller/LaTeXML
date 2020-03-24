@@ -2239,7 +2239,7 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
         push(@tokens, $t);
         $level++ if $cc == CC_BEGIN;
         $level-- if $cc == CC_END;
-        last if $mouth->isEOL && !$level; }
+        last if !$level && $mouth->isEOL; }
       $stomach->egroup;
       @tokens = (T_CS('\par')) unless @tokens;    # trailing blank line
       DefMacroI($token, undef, Tokens(@tokens)); }

@@ -1709,8 +1709,11 @@ DefMacroI('\verb', undef, sub {
     MergeFont(family => 'typewriter', series => 'medium', shape => 'upright');
     $STATE->assignCatcode(' ', CC_ACTIVE);    # Do NOT (necessarily) skip spaces after \verb!!!
     Let(T_ACTIVE(' '), T_SPACE);
-    my $init = $gullet->readToken;
+    my $init    = $gullet->readToken;
+    my $starred = 0;
+
     if (T_OTHER('*')->equals($init)) {
+      $starred = 1;
       Let(T_ACTIVE(' '), T_OTHER("\x{2423}"));    # Visible space
       $init = $gullet->readToken; }
     if (!$init) {    # typically something read too far got \verb and the content is somewhere else..?
@@ -1723,18 +1726,19 @@ DefMacroI('\verb', undef, sub {
     my $delim = T_ACTIVE($init_str);
     my $body  = $gullet->readUntil($delim);
     Invocation(($inmath ? T_CS('\@math@verb') : T_CS('\@text@verb')),
+      ($starred ? T_OTHER('*') : Tokens()),
       Tokens($init), $body)->unlist; });
 
-DefConstructor('\@text@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>",
+DefConstructor('\@text@verb{}{}{}', "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
   afterDigest => sub { EndSemiverbatim(); },
   # Since ltx:verbatim is both inline & block, we have to fudge inline mode
   beforeConstruct => sub {
     $_[0]->canContain($_[0]->getElement, '#PCDATA')
       || $_[0]->openElement('ltx:p'); },
-  reversion => '\verb#1#2#1');
-DefConstructor('\@math@verb{}{}', "<ltx:XMTok font='#font'>#2</ltx:XMTok>",
+  reversion => '\verb#1#2#3#2');
+DefConstructor('\@math@verb{}{}{}', "<ltx:XMTok font='#font'>#3</ltx:XMTok>",
   afterDigest => sub { EndSemiverbatim(); },
-  reversion   => '\verb#1#2#1');
+  reversion   => '\verb#1#2#3#2');
 
 # This is defined by the alltt package.
 # Environment('alltt', ?);
