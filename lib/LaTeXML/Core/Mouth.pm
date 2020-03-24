@@ -135,7 +135,7 @@ sub getNextLine {
 
 sub hasMoreInput {
   my ($self) = @_;
-  return ($$self{colno} < $$self{nchars}) || scalar(@{ $$self{buffer} }); }
+  return !$self->isEOL || scalar(@{ $$self{buffer} }); }
 
 # Get the next character & it's catcode from the input,
 # handling TeX's "^^" encoding.
@@ -201,16 +201,9 @@ sub handle_escape {    # Read control sequence
   if ((defined $cc) && ($cc == CC_LETTER)) {    # For letter, read more letters for csname.
     while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_LETTER)) {
       $cs .= $ch; }
+    # We WILL skip spaces, but not till next token is read (in case catcode changes!!!!)
+    $$self{skipping_spaces} = 1;
     $$self{colno}--; }
-  if ((defined $cc) && ($cc == CC_SPACE)) {     # We'll skip whitespace here.
-    while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_SPACE)) { }
-    $$self{colno}-- if ($$self{colno} < $$self{nchars}); }
-  if ((defined $cc) && ($cc == CC_EOL)) {       # If we've got an EOL
-        # if in \read mode, leave the EOL to be turned into a T_SPACE
-    if (($STATE->lookupValue('PRESERVE_NEWLINES') || 0) > 1) { }
-    else {    # else skip it.
-      getNextChar($self);
-      $$self{colno}-- if ($$self{colno} < $$self{nchars}); } }
   return T_CS($cs); }
 
 sub handle_EOL {
@@ -308,6 +301,18 @@ sub readToken {
       if ((($$self{lineno} % 25) == 0) && $STATE->lookupValue('INCLUDE_COMMENTS')) {
         return T_COMMENT("**** " . ($$self{shortsource} || 'String') . " Line $$self{lineno} ****"); }
     }
+    if ($$self{skipping_spaces}) {    # Skip spaces now
+      my ($ch, $cc);
+      while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_SPACE)) { }
+      $$self{colno}-- if ($$self{colno} < $$self{nchars});
+      if ((defined $cc) && ($cc == CC_EOL)) {    # If we've got an EOL
+            # if in \read mode, leave the EOL to be turned into a T_SPACE
+        if (($STATE->lookupValue('PRESERVE_NEWLINES') || 0) > 1) { }
+        else {    # else skip it.
+          getNextChar($self);
+          $$self{colno}-- if ($$self{colno} < $$self{nchars}); } }
+      $$self{skipping_spaces} = 0; }
+
     # ==== Extract next token from line.
     my ($ch, $cc) = getNextChar($self);
     my $token = (defined $cc ? $DISPATCH[$cc] : undef);
@@ -360,7 +365,22 @@ sub readRawLine {
 
 sub isEOL {
   my ($self) = @_;
-  return $$self{colno} >= $$self{nchars};
+  my $savecolno = $$self{colno};
+  # We have to peek past any to-be-skipped spaces!!!!
+  if ($$self{skipping_spaces}) {
+    my ($ch, $cc);
+    while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_SPACE)) { }
+    $$self{colno}-- if ($$self{colno} < $$self{nchars});
+    if ((defined $cc) && ($cc == CC_EOL)) {    # If we've got an EOL
+          # if in \read mode, leave the EOL to be turned into a T_SPACE
+      if (($STATE->lookupValue('PRESERVE_NEWLINES') || 0) > 1) { }
+      else {    # else skip it.
+        getNextChar($self);
+        $$self{colno}-- if ($$self{colno} < $$self{nchars}); } }
+  }
+  my $eol = $$self{colno} >= $$self{nchars};
+  $$self{colno} = $savecolno;
+  return $eol;
 }
 #======================================================================
 1;
