@@ -165,11 +165,25 @@ sub unlist {
   return $self; }
 
 #**********************************************************************
+# What about Kern, Glue, Penalty ...
+
+# stubs to avoid "shallow" Fatal errors on broken documents
+sub multiply { return Dimension(0); }
+sub subtract { return Dimension(0); }
+sub add      { return Dimension(0); }
+sub negate   { return Dimension(0); }
+sub divide   { return Dimension(0); }
+sub getX     { return Dimension(0); }
+sub getY     { return Dimension(0); }
+sub ptValue  { return 0.0; }
+sub valueOf  { return 0.0; }
+#**********************************************************************
+
 1;
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -189,7 +203,7 @@ to beautify error reporting.
 =item C<< $string = Stringify($object); >>
 
 Returns a string identifying C<$object>, for debugging.
-Works on any values and objects, but invokes the stringify method on 
+Works on any values and objects, but invokes the stringify method on
 blessed objects.
 More informative than the default perl conversion to a string.
 
@@ -207,7 +221,7 @@ the toString method on blessed objects.
 
 =item C<< $boolean = Equals($x,$y); >>
 
-Compares the two objects for equality.  Works on any values and objects, 
+Compares the two objects for equality.  Works on any values and objects,
 but invokes the equals method on blessed objects, which does a
 deep comparison of the two objects.
 
@@ -279,4 +293,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-
