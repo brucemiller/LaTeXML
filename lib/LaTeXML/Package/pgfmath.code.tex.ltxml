@@ -40,10 +40,11 @@ InputDefinitions('pgfmath.code', type => 'tex', noltxml => 1)
 # Note that these macros typically get a CS passed as argument whose expansion is the number
 # and that they assign the result, as a token list to \pgfmathresult.
 # Hopefully the savings in doing the math in Perl isn't overwhelmed by string conversion?
-our $PI    = Math::Trig::pi;
-our $LOG2  = log(2);
-our $LOG10 = log(10);
-our $E     = exp(1);
+our $PI      = Math::Trig::pi;
+our $LOG2    = log(2);
+our $LOG10   = log(10);
+our $E       = exp(1);
+our $epsilon = 0.00001;
 
 # Note: We need to lookup /pgf/trig format/deg/ or /rad/ !!!  (default is deg?)
 sub pgfmathargradians {
@@ -243,8 +244,17 @@ DefMacro('\pgfmathrand@', sub {
 DefMacro('\pgfmathfactorial@', sub {
     pgfmathresult(pgfmathfactorial($_[1])); return });
 DefMacro('\pgfmathreciprocal@ pgfNumber', sub {
-    pgfmathresult(1 / $_[1]); return });
+    pgfmathresult(1 / pgfmath_divisor($_[1])); return });
 
+sub pgfmath_divisor {
+  my $divisor = 0.0 + $_[0];
+  if (!$divisor) {
+# TODO: Once we are rock-solid certain latexml will not encounter interpretation bugs when dealing with pgf
+#       this warning can be elevated to an Error.
+    Warn("unexpected", "<number>", "pgfmath: divisor should never be zero!");
+    return $epsilon; }
+  else {
+    return $divisor; } }
 #======================================================================
 DefMacro('\@@@test@mathresult{}{}{}', sub {
     my ($gullet, $input, $pgfresult, $lxresult) = @_;
@@ -472,9 +482,9 @@ BEGIN {
     neg        => sub { -$_[0]; },
     '*'        => sub { $_[0] * $_[1]; },
     multiply   => sub { $_[0] * $_[1]; },
-    '/'        => sub { $_[0] / $_[1]; },
-    div        => sub { int($_[0] / $_[1]); },
-    divide     => sub { $_[0] / $_[1]; },
+    '/'        => sub { $_[0] / pgfmath_divisor($_[1]); },
+    divide     => sub { $_[0] / pgfmath_divisor($_[1]); },
+    div        => sub { int($_[0] / pgfmath_divisor($_[1])); },
     '!'        => sub { pgfmathfactorial($_[0]); },
     'r'        => sub { rad2deg($_[0]); },
     e          => sub { $E; },
