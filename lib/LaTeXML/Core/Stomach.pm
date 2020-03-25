@@ -32,7 +32,7 @@ use base qw(LaTeXML::Common::Object);
 #**********************************************************************
 sub new {
   my ($class, %options) = @_;
-  return bless { gullet => LaTeXML::Core::Gullet->new(),
+  return bless { gullet => LaTeXML::Core::Gullet->new(%options),
     boxing => [], token_stack => [] }, $class; }
 
 #**********************************************************************
