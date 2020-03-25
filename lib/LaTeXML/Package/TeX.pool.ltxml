@@ -1311,10 +1311,11 @@ DefPrimitive('\let Token SkipMatch:= Skip1Space Token', sub {
     Let($token1, $token2);
     return; });
 
-DefMacro('\futurelet Token Token Token', sub {
+DefPrimitive('\futurelet Token Token Token', sub {
     my ($stomach, $cs, $token1, $token2) = @_;
     Let($cs, $token2);
-    ($token1, $token2); });
+    $stomach->getGullet->unread($token1, $token2);    # NOT expandable, but puts tokens back
+    return; });
 
 # <shorthand definition> = \chardef<control sequence><equals><8bit>
 #    | \mathchardef <control sequence><equals><15bit>
@@ -2241,9 +2242,7 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
         push(@tokens, $t);
         $level++ if $cc == CC_BEGIN;
         $level-- if $cc == CC_END;
-        last if ((($cc == CC_SPACE) && ($t->getString eq "\n"))
-          || ($cc == CC_COMMENT)
-          || ($t->equals(T_CS('\par')))) && !$level; }
+        last if !$level && $mouth->isEOL; }
       $stomach->egroup;
       @tokens = (T_CS('\par')) unless @tokens;    # trailing blank line
       DefMacroI($token, undef, Tokens(@tokens)); }

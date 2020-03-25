@@ -1639,7 +1639,22 @@ DefRegister('\@itemdepth' => Number(0));
 # NOTE: how's the best way to get verbatim material through?
 DefEnvironment('{verbatim}',  '<ltx:verbatim>#body</ltx:verbatim>');
 DefEnvironment('{verbatim*}', '<ltx:verbatim>#body</ltx:verbatim>');
-Let('\@verbatim', '\verbatim');    # Close enough?
+
+DefMacroI('\@verbatim', undef,
+  '\par\aftergroup\lx@end@verbatim\lx@@verbatim');    # Close enough?
+DefConstructorI('\lx@@verbatim', undef,
+  "<ltx:verbatim font='#font'>",
+  beforeDigest => sub {
+    my ($stomach) = @_;
+    StartSemiverbatim('%', '\\', '{', '}');
+    MergeFont(family => 'typewriter', series => 'medium', shape => 'upright');
+    $STATE->assignCatcode(' ', CC_ACTIVE);            # Do NOT (necessarily) skip spaces after \verb!!!
+    Let(T_ACTIVE(' '), T_SPACE); });
+DefConstructorI('\lx@end@verbatim', undef,
+  "</ltx:verbatim>",
+  beforeDigest => sub {
+    EndSemiverbatim(); });
+
 # verbatim is a bit of special case;
 # It looks like an environment, but it only ends with an explicit "\end{verbatim}" on it's own line.
 # So, we'll end up doing things more manually.
@@ -1689,37 +1704,41 @@ DefPrimitiveI('\@vobeyspaces', undef, sub {
 # WARNING: Need to be careful about what catcodes are active here
 DefMacroI('\verb', undef, sub {
     my ($gullet) = @_;
-    my ($init, $body);
+    my $inmath = LookupValue('IN_MATH');
     StartSemiverbatim('%', '\\', '{', '}');
-    $init = $gullet->readToken;
-    $init = $gullet->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
+    MergeFont(family => 'typewriter', series => 'medium', shape => 'upright');
+    $STATE->assignCatcode(' ', CC_ACTIVE);    # Do NOT (necessarily) skip spaces after \verb!!!
+    Let(T_ACTIVE(' '), T_SPACE);
+    my $init    = $gullet->readToken;
+    my $starred = 0;
 
+    if (T_OTHER('*')->equals($init)) {
+      $starred = 1;
+      Let(T_ACTIVE(' '), T_OTHER("\x{2423}"));    # Visible space
+      $init = $gullet->readToken; }
     if (!$init) {    # typically something read too far got \verb and the content is somewhere else..?
       Error('expected', 'delimiter', $gullet,
         "Verbatim argument lost", "Bindings for preceding code is probably broken");
       EndSemiverbatim();
       return (); }
-    my $old_cc   = $$init[1];
     my $init_str = $init->getString();
     AssignCatcode($init_str => CC_ACTIVE);
-    $body = $gullet->readUntil(T_ACTIVE($init_str));
-    AssignCatcode($init_str => $old_cc);
-    EndSemiverbatim();
-    Invocation((LookupValue('IN_MATH') ? T_CS('\@math@verb') : T_CS('\@text@verb')),
+    my $delim = T_ACTIVE($init_str);
+    my $body  = $gullet->readUntil($delim);
+    Invocation(($inmath ? T_CS('\@math@verb') : T_CS('\@text@verb')),
+      ($starred ? T_OTHER('*') : Tokens()),
       Tokens($init), $body)->unlist; });
 
-DefConstructor('\@text@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>",
-  beforeDigest => [sub { $_[0]->bgroup; MergeFont(family => 'typewriter'); }],
-  afterDigest  => sub { $_[0]->egroup; },
+DefConstructor('\@text@verb{}{}{}', "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
+  afterDigest => sub { EndSemiverbatim(); },
   # Since ltx:verbatim is both inline & block, we have to fudge inline mode
   beforeConstruct => sub {
     $_[0]->canContain($_[0]->getElement, '#PCDATA')
       || $_[0]->openElement('ltx:p'); },
-  reversion => '\verb#1#2#1');
-DefConstructor('\@math@verb{}{}', "#2",    # Will already end up wrapped as XMTok!
-  beforeDigest => [sub { $_[0]->bgroup; MergeFont(family => 'typewriter'); }],
-  afterDigest  => sub { $_[0]->egroup; },
-  reversion    => '\verb#1#2#1');
+  reversion => '\verb#1#2#3#2');
+DefConstructor('\@math@verb{}{}{}', "<ltx:XMTok font='#font'>#3</ltx:XMTok>",
+  afterDigest => sub { EndSemiverbatim(); },
+  reversion   => '\verb#1#2#3#2');
 
 # This is defined by the alltt package.
 # Environment('alltt', ?);
@@ -4981,7 +5000,10 @@ DefMacro('\@secondoftwo{}{}',    sub { $_[2]; });
 DefMacro('\@thirdofthree{}{}{}', sub { $_[3]; });
 DefMacro('\@expandtwoargs{}{}{}', sub {
     ($_[1]->unlist, T_BEGIN, Expand($_[2])->unlist, T_END, T_BEGIN, Expand($_[3])->unlist, T_END); });
-DefMacro('\@makeother{}', sub { AssignCatcode($_[1] => CC_OTHER, 'local'); });
+DefMacro('\@makeother{}', sub {
+    my ($gullet, $char) = @_;
+    $char = ToString($char); $char =~ s/\\//;
+    AssignCatcode($char => CC_OTHER, 'local'); });
 
 RawTeX(<<'EoTeX');
 {\catcode`\^^M=13 \gdef\obeycr{\catcode`\^^M13 \def^^M{\\\relax}%
