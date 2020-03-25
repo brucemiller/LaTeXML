@@ -17,7 +17,10 @@ use LaTeXML::Package;
 
 # Was algorithmicx.sty loaded? If so: BAIL immediately.
 # (deeply incompatible)
-return 1 if IsDefined(T_CS('\algorithmic'));
+if (IsDefined(T_CS('\algorithmic'))) {
+  Warn("unexpected", "\\algorithmic",
+    "Another package has already defined \\algorithmic, will not load algorithmic.sty");
+  return 1; }
 
 # Read in the LaTeX definitions and redefine a few things strategically.
 InputDefinitions('algorithmic', type => 'sty', noltxml => 1);
