@@ -244,9 +244,17 @@ DefMacro('\pgfmathrand@', sub {
 DefMacro('\pgfmathfactorial@', sub {
     pgfmathresult(pgfmathfactorial($_[1])); return });
 DefMacro('\pgfmathreciprocal@ pgfNumber', sub {
-    my $divisor = (0.0 + $_[1]) || $epsilon;
-    pgfmathresult(1 / $divisor); return });
+    pgfmathresult(1 / pgfmath_divisor($_[1])); return });
 
+sub pgfmath_divisor {
+  my $divisor = 0.0 + $_[0];
+  if (!$divisor) {
+# TODO: Once we are rock-solid certain latexml will not encounter interpretation bugs when dealing with pgf
+#       this warning can be elevated to an Error.
+    Warn("unexpected", "<number>", "pgfmath: divisor should never be zero!");
+    return $epsilon; }
+  else {
+    return $divisor; } }
 #======================================================================
 DefMacro('\@@@test@mathresult{}{}{}', sub {
     my ($gullet, $input, $pgfresult, $lxresult) = @_;
@@ -470,23 +478,23 @@ BEGIN {
     or         => sub { $_[0] || $_[1]; },
     '+'        => sub { (defined $_[1] ? $_[0] + $_[1] : $_[0]); },
     'add'      => sub { (defined $_[1] ? $_[0] + $_[1] : $_[0]); },
-    '-'        => sub { (defined $_[1] ? $_[0] - $_[1] : -$_[0]); },                   # prefix or infix
+    '-'        => sub { (defined $_[1] ? $_[0] - $_[1] : -$_[0]); },    # prefix or infix
     neg        => sub { -$_[0]; },
     '*'        => sub { $_[0] * $_[1]; },
     multiply   => sub { $_[0] * $_[1]; },
-    '/'        => sub { my $divisor = (0.0 + $_[1]) || $epsilon; $_[0] / $divisor; },
-    divide     => sub { my $divisor = (0.0 + $_[1]) || $epsilon; $_[0] / $divisor; },
-    div   => sub { my $divisor = (0.0 + $_[1]) || $epsilon; int($_[0] / $divisor); },
-    '!'   => sub { pgfmathfactorial($_[0]); },
-    'r'   => sub { rad2deg($_[0]); },
-    e     => sub { $E; },
-    pi    => sub { $PI; },
-    abs   => sub { abs($_[0]); },
-    acos  => sub { acos($_[0]); },
-    array => sub { },
-    asin  => sub { rad2deg(asin($_[0])); },
-    atan  => sub { rad2deg(atan($_[0])); },
-    atan2 => sub { rad2deg(atan2($_[0], $_[1])); },
+    '/'        => sub { $_[0] / pgfmath_divisor($_[1]); },
+    divide     => sub { $_[0] / pgfmath_divisor($_[1]); },
+    div        => sub { int($_[0] / pgfmath_divisor($_[1])); },
+    '!'        => sub { pgfmathfactorial($_[0]); },
+    'r'        => sub { rad2deg($_[0]); },
+    e          => sub { $E; },
+    pi         => sub { $PI; },
+    abs        => sub { abs($_[0]); },
+    acos       => sub { acos($_[0]); },
+    array      => sub { },
+    asin       => sub { rad2deg(asin($_[0])); },
+    atan       => sub { rad2deg(atan($_[0])); },
+    atan2      => sub { rad2deg(atan2($_[0], $_[1])); },
     #    bin   => sub { },
     ceil  => sub { ceil($_[0]); },
     cos   => sub { cos(pgfmathargradians($_[0])); },
