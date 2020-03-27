@@ -682,7 +682,7 @@ DefMacro('\@ifundefined{}{}{}', sub {
     if (IsDefined($cs)) {
       return $else->unlist; }
     else {
-      Let($cs, '\relax');    # Yuck, but traditional!
+      $STATE->assignMeaning($cs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssign
       return $if->unlist; } });
 
 sub isDefinable {
@@ -898,7 +898,7 @@ DefParameterType('CSName', sub {
 
 DefMacro('\csname CSName', sub {
     my ($gullet, $token) = @_;
-    Let($token, '\relax') unless defined LookupMeaning($token);
+    $STATE->assignMeaning($token, $STATE->lookupMeaning(T_CS('\relax'))) unless defined LookupMeaning($token);
     $token; });
 
 DefPrimitive('\endcsname', sub {
@@ -1313,8 +1313,8 @@ DefPrimitive('\let Token SkipMatch:= Skip1Space Token', sub {
 
 DefPrimitive('\futurelet Token Token Token', sub {
     my ($stomach, $cs, $token1, $token2) = @_;
-    Let($cs, $token2);
     $stomach->getGullet->unread($token1, $token2);    # NOT expandable, but puts tokens back
+    Let($cs, $token2);
     return; });
 
 # <shorthand definition> = \chardef<control sequence><equals><8bit>
@@ -1329,7 +1329,7 @@ DefPrimitive('\futurelet Token Token Token', sub {
 
 sub shorthandDef {
   my ($stomach, $cs, $type, $init) = @_;
-  Let($cs, '\relax');
+  $STATE->assignMeaning($cs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssign
   my $num = $stomach->getGullet->readNumber();
   my $reg = $type . $num->valueOf;
   DefRegisterI($cs, undef, $init,
@@ -1721,7 +1721,7 @@ DefPrimitive('\char Number', sub {
 # (including the preassignment to \relax!)
 DefPrimitive('\chardef Token SkipMatch:=', sub {
     my ($stomach, $newcs) = @_;
-    Let($newcs, '\relax');
+    $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
     my $value      = $stomach->getGullet->readNumber();
     my $csname     = $newcs->getCSName;
     my $internalcs = T_CS('\@chardef@' . $csname);
@@ -1765,7 +1765,7 @@ DefConstructor('\mathchar Number',
 # Almost like a register, but different...
 DefPrimitive('\mathchardef Token SkipMatch:=', sub {
     my ($stomach, $newcs) = @_;
-    Let($newcs, '\relax');
+    $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
     my $value  = $stomach->getGullet->readNumber();
     my $csname = $newcs->getCSName;
     my ($role, $glyph) = decodeMathChar($value->valueOf);
@@ -2307,15 +2307,9 @@ DefPrimitiveI('\unskip', undef, sub {
 DefPrimitive('\mark{}', undef);
 # \insert<8bit><filler>{<vertical mode material>}
 DefPrimitive('\insert Number', undef);    # Just let the insertion get processed(?)
-                                          # \vadjust<filler>{<vertical mode material>}
-                                          # Note: \vadjust ignores in vertical mode...
-     # is it sufficient to just clear the macro to avoid recursion?
-     # (we don't track horizontal/vertical mode)
-DefMacroI('\LTX@vadjust@afterpar', undef, '\def\LTX@vadjust@afterpar{}');
-DefMacroI('\LTX@clear@vadjust@afterpar', undef, '\def\LTX@vadjust@afterpar{\def\LTX@vadjust@afterpar{}}');
-DefPrimitive('\vadjust {}', sub {
-    AddToMacro('\LTX@vadjust@afterpar', $_[1]->unlist);
-    return; });
+# \vadjust<filler>{<vertical mode material>}
+# Note: \vadjust ignores in vertical mode...
+DefPrimitive('\vadjust {}', sub { PushValue('vAdjust', $_[1]->unlist); });
 
 #======================================================================
 # Remaining Vertical Mode primitives in Ch.24, pp.281--283
@@ -3075,8 +3069,11 @@ DefConstructorI('\normal@par', undef, sub {
         # respect \parindent if no overrides are given
         AssignValue(next_para_class => "ltx_noindent"); }
       # Vertical adjustments
-      Digest(Tokens(T_CS('\LTX@vadjust@afterpar'),
-          T_CS('\LTX@clear@vadjust@afterpar'))); } },
+      if (my $vadj = LookupValue('vAdjust')) {
+        AssignValue(vAdjust => [], 'global');
+        Digest(Tokens(@$vadj)); }
+      else {
+        return; } } },
   properties => { alignmentSkippable => 1 },
   alias      => '\par');
 Let('\par', '\normal@par');

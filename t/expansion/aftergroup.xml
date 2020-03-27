@@ -12,22 +12,44 @@
     </tags>
     <title><tag close=" ">1</tag>AfterAssignment</title>
     <para xml:id="S1.p1">
-      <p>FOO 12</p>
+      <p>def:[Assigned!]</p>
     </para>
     <para xml:id="S1.p2">
-      <p>FOO 34</p>
+      <p>let:[Assigned!]</p>
     </para>
     <para xml:id="S1.p3">
-      <p>BAR 56</p>
+      <p>futurelet:[Assigned!][One][Two][Three][Two]</p>
     </para>
     <para xml:id="S1.p4">
-      <p>setbox Before  FOO insideAfter</p>
+      <p>chardef:[Assigned!]</p>
     </para>
     <para xml:id="S1.p5">
-      <p>Again setbox Before insideAfter</p>
+      <p>mathchardef:[Assigned!]</p>
     </para>
     <para xml:id="S1.p6">
-      <p>Before inside After BAR</p>
+      <p>@ifundefined:
+No quirks</p>
+    </para>
+    <para xml:id="S1.p7">
+      <p>csname:</p>
+    </para>
+    <para xml:id="S1.p8">
+      <p>counter:[Assigned!]1counter:2</p>
+    </para>
+    <para xml:id="S1.p9">
+      <p>counter:[Assigned!]3counter:4</p>
+    </para>
+    <para xml:id="S1.p10">
+      <p>counter:[Also Assigned!]5counter:6</p>
+    </para>
+    <para xml:id="S1.p11">
+      <p>setbox Before [Assigned!]insideAfter</p>
+    </para>
+    <para xml:id="S1.p12">
+      <p>Again setbox Before insideAfter</p>
+    </para>
+    <para xml:id="S1.p13">
+      <p>Before inside After[Also Assigned!]</p>
     </para>
   </section>
   <section inlist="toc" xml:id="S2">
@@ -41,7 +63,7 @@
       <p>before  middle  after</p>
     </para>
     <para xml:id="S2.p2">
-      <p>before  middle  FOO  after</p>
+      <p>before  middle [Grouped!] after</p>
     </para>
     <para xml:id="S2.p3">
       <p>not <text font="italic">emphasized</text> not</p>
@@ -62,7 +84,7 @@
         <quote>
           <p>before after</p>
         </quote>
-        <p>FOO</p>
+        <p>[Grouped!]</p>
       </para>
     </subsection>
   </section>
@@ -72,14 +94,28 @@
       <tag role="refnum">3</tag>
       <tag role="typerefnum">§3</tag>
     </tags>
-    <title><tag close=" ">3</tag>Every Box</title>
+    <title><tag close=" ">3</tag>vadjust</title>
     <para xml:id="S3.p1">
+      <p>Paragraph, More.</p>
+    </para>
+    <para xml:id="S3.p2">
+      <p>XAnother paragraph.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
+    <title><tag close=" ">4</tag>Every Box</title>
+    <para xml:id="S4.p1">
       <inline-block vattach="bottom">
         <p>An Hbox</p>
         <p>Another Hbox</p>
       </inline-block>
     </para>
-    <para xml:id="S3.p2">
+    <para xml:id="S4.p2">
       <p vattach="bottom">VBOX  HBOX An Hbox HBOX Another Hbox</p>
     </para>
   </section>
