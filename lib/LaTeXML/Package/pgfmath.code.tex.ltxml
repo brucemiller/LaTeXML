@@ -288,6 +288,8 @@ RawTeX(<<'EoTeX');
 \@ifundefined{pgfmathmathunitsdeclaredtrue}{\newif\ifpgfmathmathunitsdeclared}{}
 EoTeX
 
+our $PGMATH_UNITS_REGEXP = undef;
+
 sub pgfmathparse {
   my ($gullet, $tokens) = @_;
   SetCondition(T_CS('\ifpgfmathunitsdeclared'),     0, 'global');
@@ -295,20 +297,29 @@ sub pgfmathparse {
   my $string = (ref $tokens ? ToString(Expand($tokens)->stripBraces) : $tokens);
   $string =~ s/^\s+//; $string =~ s/\s+$//;
   my $input = $string;
-###    if ($string =~/^+/){        # Don't parse as expression, just as glue. ???
-  #    print STDERR "\nPGF Math Parse: $string\n";
   my $result;
-  {
-    local $@;
-    no warnings;
-    $result = eval $string;
-    if (!$@) {
-      # need to erase string when perl eval works, to keep it consistent with recdescent
-      $string = ''; }
-    else {    # failed to eval, use tikz grammar
-      $PGFMATHGrammar = Parse::RecDescent->new($PGFMATHGrammarSpec) unless $PGFMATHGrammar;
-      $result         = $PGFMATHGrammar->expr(\$string); }
-  }
+  $PGMATH_UNITS_REGEXP
+    = join('|', qw(em ex mu), keys %{ $STATE->lookupValue('UNITS') })
+
+    unless $PGMATH_UNITS_REGEXP;
+  # Also common would be unit=\pgflinewidth (height?)
+  if ($string =~ /^([+-]?[\d\.]+)($PGMATH_UNITS_REGEXP)$/) {
+    $result = pgfmath_convert($1, $2);
+    $string = ''; }
+  if ($string && !$result
+    && ($string !~ /\W(?:sin|cos|tan|cot|sec|cosec)\W/)) { {
+      local $LaTeXML::IGNORE_ERRORS = 1;
+      local $@;
+      no warnings;
+      $result = eval $string;
+      if (!$@) {
+        # need to erase string when perl eval works, to keep it consistent with recdescent
+        $string = ''; }
+    } }
+  if ($string && !$result) {
+    $PGFMATHGrammar = Parse::RecDescent->new($PGFMATHGrammarSpec) unless $PGFMATHGrammar;
+    $result         = $PGFMATHGrammar->expr(\$string); }
+
   $result = $result || 0.0;
   #  $result = "0.0" if $result eq "0";
   #    print STDERR "  GOT " . (defined $result ? $result : '<fail>') . "\n";
