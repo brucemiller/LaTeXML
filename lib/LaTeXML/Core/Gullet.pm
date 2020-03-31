@@ -29,9 +29,10 @@ use LaTeXML::Core::MuGlue;
 use base qw(LaTeXML::Common::Object);
 #**********************************************************************
 sub new {
-  my ($class) = @_;
+  my ($class, %options) = @_;
   return bless {
-    mouth => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => []
+    mouth     => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
+    verbosity => $options{verbosity} || 0
   }, $class; }
 
 #**********************************************************************
@@ -367,7 +368,7 @@ sub readBalanced {
   my ($self, $expanded) = @_;
   my @tokens = ();
   my ($token, $level) = (undef, 1);
-  my $startloc = $self->getLocator;
+  my $startloc = ($$self{verbosity} > 0) && $self->getLocator;
   # Inlined readToken (we'll keep comments in the result)
   while ($token = ($expanded ? $self->readXToken(0, 1) : $self->readToken())) {
     my $cc = $$token[1];
@@ -385,9 +386,9 @@ sub readBalanced {
   if ($level > 0) {
  # TODO: The current implementation has a limitation where if the balancing end is in a different mouth,
  #       it will not be recognized.
+    my $loc_message = $startloc ? ("Started at " . ToString($startloc)) : ("Ended at " . ToString($self->getLocator));
     Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.",
-      "started at " . ToString($startloc));
-  }
+      $loc_message); }
   return (wantarray ? (Tokens(@tokens), $token) : Tokens(@tokens)); }
 
 sub ifNext {

@@ -39,7 +39,7 @@ sub Stringify {
     elsif ($object->isa('XML::LibXML::Node')) {
       if ($object->nodeType == XML_ELEMENT_NODE) {
         my $model = $STATE && $STATE->getModel;
-        my $tag = ($model ? $model->getNodeQName($object)
+        my $tag   = ($model ? $model->getNodeQName($object)
           : $object->nodeName);
         my $attributes = '';
         foreach my $attr ($object->attributes) {
@@ -71,8 +71,8 @@ sub ToString {
 # Just how deep of an equality test should this be?
 sub Equals {
   my ($x, $y) = @_;
-  return 1 if !(defined $x) && !(defined $y);    # both undefined, equal, I guess
-  return 0 unless (defined $x) && (defined $y);  # else both must be defined
+  return 1 if !(defined $x)    && !(defined $y);    # both undefined, equal, I guess
+  return 0 unless (defined $x) && (defined $y);     # else both must be defined
   my $refx = (ref $x) || '_notype_';
   my $refy = (ref $y) || '_notype_';
 
@@ -94,12 +94,12 @@ sub Equals {
     else { return 0; } }
 
   return $x eq $y if ($refx eq '_notype_') || $NOBLESS{$refx};    # Deep comparison of builtins?
-        # Special cases? (should be methods, but that embeds State knowledge too low)
+      # Special cases? (should be methods, but that embeds State knowledge too low)
 
   if ($refx eq 'LaTeXML::Core::Token') {    # Check if they've been \let to the same defn.
-    my $defx = $STATE->lookupMeaning($x) || $x;
-    my $defy = $STATE->lookupMeaning($y) || $y;
-    return $defx->equals($defy); }
+    $x = $STATE->lookupMeaning($x) || $x;
+    $y = $STATE->lookupMeaning($y) || $y;
+  }
   return $x->equals($y); }                  # semi-shallow comparison?
 
 # Reverts an object into TeX code, as a Tokens list, that would create it.

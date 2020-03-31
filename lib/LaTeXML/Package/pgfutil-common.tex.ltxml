@@ -1,0 +1,39 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  pgfutils latexml driver                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+
+#======================================================================
+# Load pgf's TeX code for util-common, first
+InputDefinitions('pgfutil-common', type => 'tex', noltxml => 1)
+  || Warn(":missing:pgfutil-common.tex Couldn't find pgfutil-common.tex");
+
+# Overwrite macros of interest
+
+DefMacro('\pgfutil@in@{}{}', sub {
+    AssignValue('pgfutilin_args', [ToString($_[1]), ToString($_[2])]);
+    return; });
+
+DefConditional('\ifpgfutil@in@', sub {
+    my $args    = LookupValue('pgfutilin_args') || ['', ''];
+    my $element = $$args[0];
+    my $list    = $$args[1];
+    my $test    = (index($list, $element) != -1);
+    # print STDERR "-- Is $element in $list ? Answer: $test\n";
+    return $test; });
+
+1;

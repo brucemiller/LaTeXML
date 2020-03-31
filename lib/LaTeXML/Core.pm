@@ -35,10 +35,11 @@ use base qw(LaTeXML::Common::Object);
 
 sub new {
   my ($class, %options) = @_;
+  my $verbosity = defined $options{verbosity} ? $options{verbosity} : 0;
   my $state = LaTeXML::Core::State->new(catcodes => 'standard',
-    stomach => LaTeXML::Core::Stomach->new(),
+    stomach => LaTeXML::Core::Stomach->new(verbosity => $verbosity),
     model   => $options{model} || LaTeXML::Common::Model->new());
-  $state->assignValue(VERBOSITY => (defined $options{verbosity} ? $options{verbosity} : 0),
+  $state->assignValue(VERBOSITY => $verbosity,
     'global');
   $state->assignValue(STRICT => (defined $options{strict} ? $options{strict} : 0),
     'global');
