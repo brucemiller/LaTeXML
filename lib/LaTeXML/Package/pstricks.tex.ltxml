@@ -1,0 +1,18 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | pstricks.tex                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML                                                     | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use LaTeXML::Package;
+use strict;
+
+InputDefinitions('pstricks', type=>'sty');
+1;

@@ -477,5 +477,27 @@ DefMacro('\gunpresetkeys []{}', sub {
     Warn('unexpected', T_CS('\gunpresetkeys'), undef, "Presetting keys is currently not supported. ");
     return; });
 
+RawTeX(<<'EoTeX');
+\newtoks\XKV@tempa@toks
+\long\def\XKV@for@n#1#2#3{%
+  \XKV@tempa@toks{#1}\edef#2{\the\XKV@tempa@toks}%
+  \ifx#2\@empty
+    \XKV@for@break
+  \else
+    \expandafter\XKV@f@r
+  \fi
+  #2{#3}#1,\@nil,%
+}
+\long\def\XKV@f@r#1#2#3,{%
+  \XKV@tempa@toks{#3}\edef#1{\the\XKV@tempa@toks}%
+  \ifx#1\@nnil
+    \expandafter\@gobbletwo
+  \else
+    #2\expandafter\XKV@f@r
+  \fi
+  #1{#2}%
+}
+\long\def\XKV@for@break #1\@nil,{\fi}
+EoTeX
 #======================================================================
 1;

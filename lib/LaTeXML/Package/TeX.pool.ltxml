@@ -683,7 +683,8 @@ DefMacro('\@ifundefined{}{}{}', sub {
       return $else->unlist; }
     else {
       $STATE->assignMeaning($cs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssign
-      return $if->unlist; } });
+      return $if->unlist; } },
+  locked => 1);
 
 sub isDefinable {
   my ($token) = @_;
@@ -3675,7 +3676,7 @@ DefMacroI('\eqno', undef, sub {
       if (Equals($t, T_BEGIN)) {
         push(@stuff, $t, $gullet->readBalanced); }
       # What do I need to explicitly list here!?!?!? UGGH!
-      elsif (Equals($t, T_MATH) || Equals($t, T_CS('\]'))
+      elsif (Equals($t, T_MATH) || Equals($t, T_CS('\]')) || Equals($t, T_CS('\@@ENDDISPLAYMATH'))
         || Equals($t, T_CS('\begingroup'))    # Totally wrong, but to catch expanded environments
         || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
                                                      # This seems needed within AmSTeX environs
@@ -4465,7 +4466,7 @@ RawTeX('\newbox\voidb@x');
 #======================================================================
 # TeX Book, Appendix B, p. 348
 
-DefMacro('\newif DefToken', sub {
+DefPrimitive('\newif DefToken', sub {
     my ($ignore, $cs) = @_;
     DefConditionalI($cs, undef);
     return; });
