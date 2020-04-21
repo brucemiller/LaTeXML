@@ -998,7 +998,10 @@ sub floatToElement {
   my @candidates = getInsertionCandidates($$self{node});
   my $closeable  = 1;
   if (@candidates && $self->canContain($candidates[0], $qname)) {
-    return $candidates[0]; }    # Fine right here.
+    # Fine right here, just return
+    # -- special case, if current is a text node, float to its parent element and return
+    $self->setNode($candidates[0]) if $$self{node}->getType == XML_TEXT_NODE;
+    return $candidates[0]; }
   while (@candidates && !$self->canContain($candidates[0], $qname)) {
     $closeable &&= $self->canAutoClose($candidates[0]);
     shift(@candidates); }
