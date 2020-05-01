@@ -826,14 +826,14 @@ sub parse_internal {
 sub getGrammaticalRole {
   my ($self, $node) = @_;
   $node = realizeXMNode($node);
-  #  my $role = $node->getAttribute('role');
   my $role = p_getAttribute($node, 'role');
   if (!defined $role) {
     my $tag = getQName($node);
     if ($tag eq 'ltx:XMTok') {
       $role = 'UNKNOWN'; }
     elsif ($tag eq 'ltx:XMDual') {
-      $role = $LaTeXML::MathParser::DOCUMENT->getFirstChildElement($node)->getAttribute('role'); }
+      my ($content, $presentation) = element_nodes($node);
+      $role = p_getAttribute($content,'role') || p_getAttribute($presentation,'role'); }
     $role = 'ATOM' unless defined $role; }
   $self->note_unknown($node) if ($role eq 'UNKNOWN') && $LaTeXML::MathParser::STRICT;
   return $role; }
@@ -922,6 +922,8 @@ sub textrec {
   $outer_bp   = 0  unless defined $outer_bp;
   $outer_name = '' unless defined $outer_name;
   if ($tag eq 'ltx:XMApp') {
+    if (my $meaning  = p_getAttribute($node, 'meaning') || p_getAttribute($node, 'name')) {
+      return $meaning; }
     my $app_role = $node->getAttribute('role');
     my ($op, @args) = element_nodes($node);
     $op = realizeXMNode($op);
@@ -933,8 +935,12 @@ sub textrec {
       return (($bp < $outer_bp) || (($bp == $outer_bp) && ($name ne $outer_name))
         ? '(' . $string . ')' : $string); } }
   elsif ($tag eq 'ltx:XMDual') {
+    if (my $meaning  = p_getAttribute($node, 'meaning') || p_getAttribute($node, 'name')) {
+      return $meaning; }
     my ($content, $presentation) = element_nodes($node);
-    return textrec($content, $outer_bp, $outer_name); }    # Just send out the semantic form.
+    my $text = textrec($content, $outer_bp, $outer_name);   # Just send out the semantic form.
+    # Fall back to presentation, if content has poor semantics (eg. from replacement patterns)
+    return ($text =~ /^\(*Unknown/ ? textrec($presentation, $outer_bp, $outer_name) : $text); }
   elsif ($tag eq 'ltx:XMTok') {
     my $name = getTokenMeaning($node);
     $name = 'Unknown' unless defined $name;
@@ -1304,12 +1310,13 @@ sub Fence {
         ? ($enclose2{ $o . '@' . $p[0] . '@' . $c } || 'list')
         : ($encloseN{ $o . '@' . $p[0] . '@' . $c } || 'list'))));
   $op = 'delimited-' . $o . $c unless defined $op;
+  my $decl_id = p_getAttribute($open,'decl_id');
   if (($n == 1) && ($op eq 'delimited-()')) {    # Hopefully, can just ignore the parens?
     return ['ltx:XMDual', {},
       LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $stuff[1]),
       ['ltx:XMWrap', {}, @stuff]]; }
   else {
-    return InterpretDelimited(New($op), @stuff); } }
+    return InterpretDelimited(New($op, undef, ($decl_id ? (decl_id=>$decl_id):())), @stuff); } }
 
 # NOTE: It might be best to separate the multiple Formulae into separate XMath's???
 # but only at the top level!
@@ -1514,8 +1521,7 @@ sub DecorateOperator {
   my $decop   = NewScript($op, $script);
   my $rop     = realizeXMNode($op);
   my $role    = p_getAttribute($rop, 'role');
-  my $meaning = p_getAttribute($rop, 'meaning');
-  return Annotate($decop, role => $role, meaning => $meaning); }
+  return Annotate($decop, role => $role); }
 
 sub NewEvalAt {
   my ($base, $vertbar, $lower, $upper) = @_;
