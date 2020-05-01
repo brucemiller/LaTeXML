@@ -95,6 +95,10 @@ XMath.attributes =
   ## an annotation placed by the parser when it suspects this token may be used as a function.
   attribute possibleFunction { text }?,
 
+  ## an id to where the declaration of this object is given,
+  ## preferably the xml:id of an ltx:declare
+  attribute decl_id { text }?,
+
   ## reference to an arbitrary url.
   attribute href { text }?
 
