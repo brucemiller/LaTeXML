@@ -57,14 +57,13 @@
   </para>
   <para xml:id="p3">
     <equation xml:id="S0.Ex3">
-      <Math mode="display" tex="f_{D}f(a+b)" text="f _ D * f@(a + b)" xml:id="S0.Ex3.m1">
+      <Math mode="display" tex="f_{D}f(a+b)" text="(f _ D)@(f@(a + b))" xml:id="S0.Ex3.m1">
         <XMath>
           <XMApp>
-            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp>
+            <XMApp role="DIFFOP">
               <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
-              <XMTok font="italic" role="ID">f</XMTok>
-              <XMTok font="italic" fontsize="70%" role="ID">D</XMTok>
+              <XMTok font="italic" role="UNKNOWN">f</XMTok>
+              <XMTok font="italic" fontsize="70%" role="UNKNOWN">D</XMTok>
             </XMApp>
             <XMDual>
               <XMApp>
@@ -93,11 +92,17 @@
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
-            <XMApp>
-              <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
-              <XMTok font="italic" role="ID">f</XMTok>
-              <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
-            </XMApp>
+            <XMDual role="ID">
+              <XMApp>
+                <XMTok/>
+                <XMRef idref="XM1"/>
+              </XMApp>
+              <XMApp>
+                <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                <XMTok font="italic" role="UNKNOWN">f</XMTok>
+                <XMTok fontsize="70%" meaning="1" role="NUMBER" xml:id="XM1">1</XMTok>
+              </XMApp>
+            </XMDual>
             <XMDual>
               <XMRef idref="S0.Ex4.m1.1"/>
               <XMWrap>
@@ -121,7 +126,7 @@
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
             <XMApp role="ID">
               <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
-              <XMTok font="italic" role="FUNCTION">f</XMTok>
+              <XMTok font="italic" role="UNKNOWN">f</XMTok>
             </XMApp>
             <XMTok font="italic" role="ID">a</XMTok>
           </XMApp>
