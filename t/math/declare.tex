@@ -53,4 +53,14 @@
   \mathcal{T}_{\varepsilon_1},
   \mathcal{T}_{\varepsilon_1, \varepsilon_2, \varepsilon_3} \]
 
+\section{Notations?}
+\lxDefMath{\baz}{\mathbf{baz}}[meaning=foo,tag={Baz}]
+\lxDefMath{\plus}{+}[role=ADDOP,tag={Plus}]
+\lxDefMath{\foo}[1]{\mathbf{foo}}[meaning=foo,tag={Foo}]
+\lxDefMath{\oddball}[2]{\left|\left(#1\right)_{#2}\right|}[tag={Oddball}]
+\[ a\plus b; \baz, \foo{x}, \foo{j} \]
+\[ \oddball{a}{j}; \oddball{abc}{j} \]
+\end{document}
+
+
 \end{document}

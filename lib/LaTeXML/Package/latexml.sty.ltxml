@@ -242,12 +242,42 @@ DefConstructor('\lxMathTweak RequiredKeyVals {}',
 # See DefMath in LaTeXML::Package for more information.
 DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
     my ($stomach, $cs, $nargs, $opt, $presentation, $params) = @_;
-    my ($name, $meaning, $cd, $role, $alias) =
+    my ($name, $meaning, $cd, $role, $alias, $scope) =
       $params && map { $_ && ToString($_) } map { $params->getValue($_) }
-      qw(name meaning cd role alias);
+      qw(name meaning cd role alias scope);
+    my $tag = $params->getValue('tag');
+    my $id  = ($tag ? next_declaration_id() : undef);
     DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
-      name => $name, meaning => $meaning, omcd => $cd, role => $role, alias => $alias);
+      name  => $name,  meaning => $meaning, omcd => $cd, role => $role, alias => $alias,
+      scope => $scope, decl_id => $id,
+      hide_content_reversion => 1);
+    if ($tag) {    # Also provide for decl_id hook for definition links.
+      return Digest(Invocation('\@lxDefMathDeclare', $id, $tag)); }
+    else {
+      return; }
 });
+
+DefConstructor('\@lxDefMathDeclare{}{}',
+  sub { my ($document, $id, $tag, %props) = @_;
+    my $save = $document->floatToElement('ltx:declare');
+    $document->openElement('ltx:declare', 'xml:id' => $id);
+    if (my $tag = $props{tag}) {
+      $document->insertElement('ltx:tag', $tag); }
+    if (my $text = $props{text}) {
+      $document->insertElement('ltx:text', $text); }
+    $document->closeElement('ltx:declare');
+    $document->setNode($save); },
+  mode        => 'text',
+  afterDigest => sub { my ($stomach, $whatsit) = @_;
+    my ($id,     $tag)  = $whatsit->getArgs;
+    my ($newtag, $text) = splitDeclareTag($tag);
+    if ($text) {
+      $whatsit->setProperties(tag => $newtag, text => $text); }
+    else {
+      $whatsit->setProperties(tag => $tag); } },
+  properties => { alignmentSkippable => 1 },
+  reversion  => '');
+
 #DefKeyVal('XMath',name,string);
 
 #======================================================================
