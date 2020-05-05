@@ -997,9 +997,9 @@ sub floatToElement {
   my ($self, $qname, $closeifpossible) = @_;
   my @candidates = getInsertionCandidates($$self{node});
   my $closeable  = 1;
+  # If the current node can contain already, we're fine right here - just return
   if (@candidates && $self->canContain($candidates[0], $qname)) {
-    # Fine right here, just return
-    # -- special case, if current is a text node, float to its parent element and return
+# Edge case: Don't resume at a text node, if it is current. Don't append more to it after other insertions.
     $self->setNode($candidates[0]) if $$self{node}->getType == XML_TEXT_NODE;
     return $candidates[0]; }
   while (@candidates && !$self->canContain($candidates[0], $qname)) {
