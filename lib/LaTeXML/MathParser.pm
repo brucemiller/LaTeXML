@@ -28,7 +28,7 @@ use base (qw(Exporter));
 
 our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbols
     &Annotate &InvisibleTimes &InvisibleComma
-    &NewFormulae &NewFormula &NewList
+    &TwoPartRelop &NewFormulae &NewFormula &NewList
     &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited &NewEvalAt
     &LeftRec
     &Arg &MaybeFunction
@@ -37,7 +37,7 @@ our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbol
 our %EXPORT_TAGS = (constructors
     => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbols
       &Annotate &InvisibleTimes &InvisibleComma
-      &NewFormulae &NewFormula &NewList
+      &TwoPartRelop &NewFormulae &NewFormula &NewList
       &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited &NewEvalAt
       &LeftRec
       &Arg &MaybeFunction
@@ -1311,6 +1311,17 @@ sub Fence {
   else {
     return InterpretDelimited(New($op), @stuff); } }
 
+# Compose a complex relational operator from two tokens, such as >=
+sub TwoPartRelop {
+  my ($op1, $op2) = @_;
+  $op1 = Lookup($op1);
+  $op2 = Lookup($op2);
+  my $m1      = p_getTokenMeaning($op1);
+  my $m2      = p_getTokenMeaning($op2);
+  my $meaning = "$m1-or-$m2";
+  my $content = $op1->textContent . $op2->textContent;
+  return ['ltx:XMTok', { role => "RELOP", meaning => $meaning }, $content]; }
+
 # NOTE: It might be best to separate the multiple Formulae into separate XMath's???
 # but only at the top level!
 sub NewFormulae {
@@ -1477,9 +1488,9 @@ sub NewScript {
   # Get "inner" (content) base, if the base is a dual it may be more relevant
   if (p_getQName($rbase) eq 'ltx:XMDual') {
     ($ibase) = p_element_nodes($rbase); }
-  my ($bx, $bl) = (p_getAttribute($base,   'scriptpos')
-                     || p_getAttribute($ibase,   'scriptpos')
-                     || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
+  my ($bx, $bl) = (p_getAttribute($base, 'scriptpos')
+      || p_getAttribute($ibase, 'scriptpos')
+      || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($sx, $sl) = (p_getAttribute($rscript, 'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($mode, $y) = p_getAttribute($rscript, 'role') =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
   my $x = ($pos ? $pos : ($mode eq 'FLOAT' ? 'pre' : $bx || 'post'));
