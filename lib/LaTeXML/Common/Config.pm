@@ -576,10 +576,11 @@ sub _removeMathFormat {
   $$opts{removed_math_formats}->{$fmt} = 1;
   return; }
 
+# Add a default math format, when no math formatter is requested, unless specifically forbidden
 sub _maybeAddMathFormat {
   my ($opts, $fmt) = @_;
   unshift(@{ $$opts{math_formats} }, $fmt)
-    unless (grep { $_ eq $fmt } @{ $$opts{math_formats} }) || $$opts{removed_math_formats}{$fmt};
+    unless @{ $$opts{math_formats} } || $$opts{removed_math_formats}{$fmt};
   return; }
 
 sub _checkMathFormat {
