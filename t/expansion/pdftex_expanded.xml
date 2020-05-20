@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <para>
+    <p>START
+EXPANDED TEST 1
+macro:EExpanded#1-¿#1</p>
+  </para>
+  <para>
+    <p>EXPANDED TEST 2
+
+
+
+macro:-¿xx,x</p>
+  </para>
+  <para>
+    <p>EXPANDED TEST 3: the
+xx,123</p>
+  </para>
+  <para>
+    <p>EXPANDED TEST 4: macro param
+
+macro:#1-¿#1</p>
+  </para>
+  <para>
+    <p>EXPANDED TEST 5: torture</p>
+  </para>
+  <para>
+    <p>T5.1:
+##,“aaa,“aaa</p>
+  </para>
+  <para>
+    <p>T5.2:
+##,##</p>
+  </para>
+  <para>
+    <p>T5.3:
+“aaa</p>
+  </para>
+  <para>
+    <p>T5.4:
+x</p>
+  </para>
+  <para>
+    <p>T5.5:
+x“aaa“noexpand“aaa</p>
+  </para>
+  <para>
+    <p>T5.6:
+xx“aaa</p>
+  </para>
+  <para>
+    <p>T5.7:
+
+“aaa</p>
+  </para>
+  <para>
+    <p>T5.8:
+end-group character ˝</p>
+  </para>
+  <para>
+    <p>T5.9:
+
+macro:-¿##</p>
+  </para>
+  <para>
+    <p>END
+</p>
+  </para>
+</document>

@@ -3,52 +3,62 @@
 % Originally written 2018 by David Carlisle, Bruno Le Floch.
 
 \catcode`\{=1 \catcode`\}=2 \catcode`\#=6
-\def\typ#1{\immediate\write-1 {#1}}
 \def\space{ }
 \let\bgroup{ \let\egroup}
 
-\typ{START}
-\typ{EXPANDED TEST 1}
+START
+EXPANDED TEST 1
 % Check the primitive exists
-\show\expanded
+\meaning\expanded
 
-\typ{EXPANDED TEST 2}
+EXPANDED TEST 2
 % Simple expansion test
 \def\aaa{x}
 \def\bbb{\aaa\aaa}
 \expandafter\def\expandafter\ccc\expandafter{\expanded{\bbb,\aaa}}
-\show\ccc
+\meaning\ccc
 
-\typ{EXPANDED TEST 3: the}
+EXPANDED TEST 3: the
 % Expanding \the
-\typ{\expanded{\bbb,\the\numexpr100+20+3\relax}}
+\expanded{\bbb,\the\numexpr100+20+3\relax}
 
-\typ{EXPANDED TEST 4: macro param}
+EXPANDED TEST 4: macro param
 % Constructed #1 is still #1
 \expandafter\def\expandafter\ddd\expandafter#\expanded{1{#\number--1}}
-\show\ddd
+\meaning\ddd
 
-\typ{EXPANDED TEST 5: torture}
+EXPANDED TEST 5: torture
 % Torture test from Bruno Le Floch testing various tricky interactions
 % \expanded\relax\space\ifincsname \BOOM\fi{\ifincsname \BOOM\fi}
-\message{T1}
-\showtokens\expandafter{\expanded{#,\noexpand\aaa,\unexpanded{\aaa}}}
-\message{T2}
-\showtokens\expandafter{\expanded{#,\unexpanded{#}}}
-\message{T3}
-\showtokens\expandafter{\expanded\expandafter{\noexpand\aaa}}
-\message{T4}
-\showtokens\expandafter{\expanded\expandafter{\unexpanded{\aaa}}}
-\message{T5}
-\showtokens\expanded{{\aaa\noexpand\aaa\noexpand\noexpand\noexpand\aaa}}
-\message{T6}
-\showtokens\expanded{{\expanded{\aaa\noexpand\aaa\noexpand\noexpand\noexpand\aaa}}}
-\message{T7}
-\toks0{\aaa}
-\showtokens\expanded{{\the\toks0}}
-\expanded\bgroup\show\egroup}
-\edef\foo{\expanded{##}}
-\show\foo
 
-\typ{END}
+T5.1:
+\detokenize\expandafter{\expanded{#,\noexpand\aaa,\unexpanded{\aaa}}}
+
+T5.2:
+\detokenize\expandafter{\expanded{#,\unexpanded{#}}}
+
+T5.3:
+\detokenize\expandafter{\expanded\expandafter{\noexpand\aaa}}
+
+T5.4:
+\detokenize\expandafter{\expanded\expandafter{\unexpanded{\aaa}}}
+
+T5.5:
+\detokenize\expanded{{\aaa\noexpand\aaa\noexpand\noexpand\noexpand\aaa}}
+
+T5.6:
+\detokenize\expanded{{\expanded{\aaa\noexpand\aaa\noexpand\noexpand\noexpand\aaa}}}
+
+T5.7:
+\toks0{\aaa}
+\detokenize\expanded{{\the\toks0}}
+
+T5.8:
+\expanded\bgroup\meaning\egroup}
+
+T5.9:
+\edef\foo{\expanded{##}}
+\meaning\foo
+
+END
 \end
