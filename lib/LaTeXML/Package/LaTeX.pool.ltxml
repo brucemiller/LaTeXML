@@ -2891,7 +2891,7 @@ DefPrimitive('\@addtoreset{}{}', sub {
     $ctr    = ToString(Expand($ctr));
     $within = ToString(Expand($within));
     addtoCounterReset($ctr, $within);
-    defCounterID($ctr, $within);
+    defCounterID($ctr, $within) unless LookupDefinition(T_CS("\\the$ctr\@ID"));
     return; });
 
 DefMacro('\value{}', sub {
