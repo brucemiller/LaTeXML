@@ -1,8 +1,6 @@
 \def\use#1#2{#1#2}
 \def\torture#1#2#3{\expanded{\noexpand#1{\unexpanded{#2}}{\unexpanded\expandafter{#3}}}}
 \xdef\tconst{ : \string : }
-\tracingmacros=1
-\tracingcommands=1
 \torture \use
   { \long\gdef\tlrescantry #1#2#3 }
   \tconst
@@ -10,8 +8,6 @@
     \endgroup
     #1 #2 {#3}
   }
-\tracingmacros=0
-\tracingcommands=0
 
 \meaning\tlrescantry
 

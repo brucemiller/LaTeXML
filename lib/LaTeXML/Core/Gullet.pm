@@ -192,7 +192,7 @@ sub neutralizeTokens {
   foreach my $token (@tokens) {
     my $cc = $$token[1];
     if ($cc == CC_PARAM || ((($cc == CC_CS) || ($cc == CC_ACTIVE))
-        # AND it is either undefined, or is expandable!
+        # AND CS/CC is either undefined, or is expandable!
         && (!defined($STATE->lookupDefinition($token))
           || defined($STATE->lookupExpandable($token))))) {
       push(@result, bless [$$token[0], $cc, $token], 'LaTeXML::Core::Token'); }

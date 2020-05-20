@@ -101,9 +101,8 @@ sub substituteParameters {
   my ($self, @args) = @_;
   my @in     = @{$self};    # ->unlist
   my @result = ();
-  while (@in) {
-    my $token;
-    if (($token = shift(@in))->[1] != CC_PARAM) {    # Non '#'; copy it
+  while (my $token = shift(@in)) {
+    if ($$token[1] != CC_PARAM) {    # Non '#'; copy it
       push(@result, $token); }
     elsif (!$$token[2] && (($token = shift(@in))->[1] != CC_PARAM)) {    # Not multiple '#'; read arg.
       if (my $arg = $args[ord($$token[0]) - ord('0') - 1]) {

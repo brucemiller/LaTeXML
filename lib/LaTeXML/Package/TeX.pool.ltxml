@@ -850,22 +850,21 @@ DefMacro('\meaning Token', sub {
         # Should we be more careful to distinguish between latex and tex counters?
         $meaning = $prefix . $literal_value; }
       elsif ($type =~ /expandable$/i) {
-        my $expansion = $definition->getExpansion;
-        my $ltxps     = $definition->getParameters;
-        my @params;
-        my $argcount = 0;
-        if (defined $ltxps) {
-          @params   = $ltxps->getParameters;
-          $argcount = $ltxps->getNumArgs;
-        }
-        my $sp;
-        my @specparts = map { (($sp = $_->{spec}) =~ s/^(\w+):// ? $sp : $sp) } @params;
-        my $arg       = 1;
-        foreach (@specparts) {
-          last if ($arg > $argcount);
-          $_ = "#$arg$_";
-          $arg++; }
-        my $spec = join("", @specparts);
+        my $expansion  = $definition->getExpansion;
+        my $ltxps      = $definition->getParameters;
+        my $arg_index  = 0;
+        my @spec_parts = ();
+        my @params     = $ltxps ? $ltxps->getParameters : ();
+        for my $param (@params) {
+          my $p_spec = $$param{spec};
+          if ($p_spec =~ s/^Match://) { }    # just match, don't increment arg index
+          elsif ($p_spec =~ s/^\w?Until(\w*)://) {    # implied argument at this slot
+            $p_spec = "#" . (++$arg_index) . $p_spec; }
+          else {                                      # regular parameter, increment
+            next if $$param{novalue}; # skip the latexml-only requirement params, but only here, since Match also have "novalue" set.
+            $p_spec = "#" . (++$arg_index); }
+          push @spec_parts, $p_spec; }
+        my $spec = join("", @spec_parts);
         $spec =~ s/\{\}//g;
         $spec =~ s/Token//g;
         my $prefixes = join('',
