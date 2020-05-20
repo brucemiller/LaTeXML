@@ -105,11 +105,11 @@ sub substituteParameters {
     my $token;
     if (($token = shift(@in))->[1] != CC_PARAM) {    # Non '#'; copy it
       push(@result, $token); }
-    elsif (($token = shift(@in))->[1] != CC_PARAM) {    # Not multiple '#'; read arg.
+    elsif (!$$token[2] && (($token = shift(@in))->[1] != CC_PARAM)) {    # Not multiple '#'; read arg.
       if (my $arg = $args[ord($$token[0]) - ord('0') - 1]) {
         push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } }    # ->unlist
     else {    # Duplicated '#', copy 2nd '#'
-      push(@result, $token); } }
+      push(@result, $$token[2] || $token); } }
   return LaTeXML::Core::Tokens->new(@result); }
 
 # Trims outer braces (if they balance each other)
@@ -145,7 +145,7 @@ sub stripBraces {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -184,4 +184,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

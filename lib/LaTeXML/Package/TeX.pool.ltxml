@@ -213,13 +213,14 @@ DefParameterType('XUntil', sub {
 # This is sorta like readbalanced, but expands as it goes.
 # This appears to be needed by certain primitives (eg. \noalign ?)
 # and maybe what we should be using for some Digested ??
+# and maybe we have to remove any "dont_expand" tokens here if we are to digest twice?
 DefParameterType('Expanded', sub {
     my ($gullet) = @_;
     my $token    = $gullet->readXToken(0);
     my @tokens   = ();
     if ($token->getCatcode == CC_BEGIN) {
       my $level = 1;
-      while ($token = $gullet->readXToken(0)) {
+      while ($token = $gullet->readXToken(0)->without_dont_expand) {
         my $cc = $$token[1];
         if ($cc == CC_END) {
           $level--;
@@ -237,10 +238,11 @@ DefParameterType('Expanded', sub {
 DefParameterType('EExpanded', sub {
     my ($gullet) = @_;
     local $LaTeXML::NOEXPAND_THE = 1;
-    my $token  = $gullet->readXToken(0);
+    my $token  = $gullet->readXToken(0)->without_dont_expand;
     my @tokens = ();
     if ($token->getCatcode == CC_BEGIN) {
-      return scalar($gullet->readBalanced(1)); }
+      my $balanced = scalar($gullet->readBalanced(1));
+      return Tokens(map { $_->without_dont_expand } $balanced->unlist) }
     else {
       return $token; } },
   reversion => sub {
@@ -831,9 +833,11 @@ DefMacro('\meaning Token', sub {
         $type =~ s/^LaTeXML:://; }
       # The actual tests start here
       if ($type =~ /token$/i) {
-        my $cc   = $definition->getCatcode;
-        my $char = $definition->getString;
-        $meaning = ($CATCODE_MEANING[$cc] || '') . ' ' . ($cc == CC_SPACE ? ' ' : $char); }
+        my $cc         = $definition->getCatcode;
+        my $char       = $definition->getString;
+        my $meaning_cc = $CATCODE_MEANING[$cc] || '';
+        $meaning_cc .= ' ' if $meaning_cc;    # append space separator if defined
+        $meaning = $meaning_cc . $char; }
       elsif ($type =~ /register$/i) {
         my $value         = $definition->valueOf;
         my $register_type = lc(ref $value);
@@ -874,10 +878,8 @@ DefMacro('\meaning Token', sub {
         my $prefix = '\char';
         if ($$definition{internalcs} && $$definition{internalcs}->getCSName =~ /^\\\@mathchardef/) {
           $prefix = '\mathchar'; }
-        $meaning = $prefix . '"' . $definition->valueOf->valueOf; }
-      Explode($meaning); }
-    else {
-      Explode('undefined'); } });
+        $meaning = $prefix . '"' . $definition->valueOf->valueOf; } }
+    return Explode($meaning); });
 
 DefParameterType('CSName', sub {
     my ($gullet) = @_;
@@ -2145,7 +2147,12 @@ DefPrimitive('\begingroup', sub { $_[0]->begingroup; });
 DefPrimitive('\endgroup',   sub { $_[0]->endgroup; });
 
 # Debugging aids; Ignored!
-DefPrimitive('\show Token',     undef);
+DefPrimitive('\show Token', sub {
+    my $stuff = Invocation(T_CS('\meaning'), $_[1]);
+    print STDERR ToString($_[1]) . '=' . writableTokens(Expand($stuff), 1) . "\n";
+    print STDERR $_[0]->getLocator->toString() . "\n\n\n";
+    return; });
+
 DefPrimitive('\showbox Number', undef);
 DefPrimitive('\showlists',      undef);
 DefPrimitive('\showthe Token',  undef);
@@ -2195,6 +2202,8 @@ DefPrimitive('\lowercase GeneralText', sub {
 sub writableTokens {
   my ($tokens, $addspaces) = @_;
   my @tokens = $tokens->unlist;
+# unwrap a \noexpand-created \relax to its actual content, to avoid confusing users with a \relax dontexpand
+  @tokens = map { $$_[2] || $_ } @tokens;
   if ($addspaces) {
     @tokens = map { $_->getCatcode == CC_CS ? ($_, T_SPACE) : $_ } @tokens; }
   @tokens = map { $_->getCatcode == CC_PARAM ? ($_, $_) : $_ } @tokens;

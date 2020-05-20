@@ -29,11 +29,15 @@ DefPrimitiveI('\protected', undef, sub {
 DefMacro('\detokenize GeneralText', sub { Explode(writableTokens($_[1])); });
 
 # \unexpanded
-# This is like \noexpand, but acts on <general text>
+# This is like a partial \noexpand (akin to \the),
+# but acts on <general text>
 # with the peculiarity of how <filler> is expanded beforehand!
 DefMacro('\unexpanded GeneralText', sub {
     my ($gullet, $tokens) = @_;
-    return $gullet->neutralizeTokens($tokens->unlist); });
+    my @tokens = $tokens->unlist;
+    if ($LaTeXML::NOEXPAND_THE) {    # See \the for the sense in this.
+      @tokens = $gullet->neutralizeTokens(@tokens); }
+    return @tokens; });
 #======================================================================
 # 3.2. Provision for re-scanning already read text
 
@@ -117,7 +121,10 @@ DefPrimitive('\showgroups', undef);
 
 # \showtokens <generaltext>
 # NOTE Debugging aids are currently IGNORED!
-DefPrimitive('\showtokens GeneralText', undef);
+DefPrimitive('\showtokens GeneralText', sub {
+    print STDERR "\n> " . writableTokens($_[1], 1) . ".\n";
+    print STDERR $_[0]->getLocator->toString() . "\n\n";
+    return; });
 
 DefRegister('\tracingassigns'    => Number(0));    # ???
 DefRegister('\tracinggroups'     => Number(0));

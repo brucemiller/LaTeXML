@@ -191,12 +191,10 @@ sub neutralizeTokens {
   my @result = ();
   foreach my $token (@tokens) {
     my $cc = $$token[1];
-    if ($cc == CC_PARAM) {    # Inline ->getCatcode!
-      push(@result, $token, $token); }
-    elsif ((($cc == CC_CS) || ($cc == CC_ACTIVE))
-      # AND it is either undefined, or is expandable!
-      && (!defined($STATE->lookupDefinition($token))
-        || defined($STATE->lookupExpandable($token)))) {
+    if ($cc == CC_PARAM || ((($cc == CC_CS) || ($cc == CC_ACTIVE))
+        # AND it is either undefined, or is expandable!
+        && (!defined($STATE->lookupDefinition($token))
+          || defined($STATE->lookupExpandable($token))))) {
       push(@result, bless [$$token[0], $cc, $token], 'LaTeXML::Core::Token'); }
     else {
       push(@result, $token); } }
@@ -267,8 +265,8 @@ sub readXToken {
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
     elsif (my $unexpanded = $$token[2]) {               # Inline get_dont_expand
-      return $token; }                                  # Defer expansion (recursion?)
-        # Note: special-purpose lookup in State, for efficiency
+      return $token; }
+    # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
       if (my $r = $defn->invoke($self)) {

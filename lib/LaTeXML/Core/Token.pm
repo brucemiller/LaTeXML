@@ -318,14 +318,15 @@ my @CONTROLNAME = (                                   #[CONSTANT]
 # Primarily for error reporting.
 sub stringify {
   my ($self) = @_;
+  if ($$self[2]) {
+    return $$self[2]->stringify() . " (dont expand)"; }
   my $string = $$self[0];
   # Make the token's char content more printable, since this is for error messages.
   if (length($string) == 1) {
     my $c = ord($string);
     if ($c < 0x020) {
       $string = 'U+' . sprintf("%04x", $c) . '/' . $CONTROLNAME[$c]; } }
-  my $noexpand = $$self[2] ? " (dont expand)" : '';
-  return $CC_SHORT_NAME[$$self[1]] . '[' . $string . ']' . $noexpand; }
+  return $CC_SHORT_NAME[$$self[1]] . '[' . $string . ']'; }
 
 #======================================================================
 
