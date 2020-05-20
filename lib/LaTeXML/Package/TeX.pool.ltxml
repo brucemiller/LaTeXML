@@ -863,7 +863,7 @@ DefMacro('\meaning Token', sub {
         my $arg       = 1;
         foreach (@specparts) {
           last if ($arg > $argcount);
-          $_ .= "#$arg";
+          $_ = "#$arg$_";
           $arg++; }
         my $spec = join("", @specparts);
         $spec =~ s/\{\}//g;
@@ -879,6 +879,8 @@ DefMacro('\meaning Token', sub {
         if ($$definition{internalcs} && $$definition{internalcs}->getCSName =~ /^\\\@mathchardef/) {
           $prefix = '\mathchar'; }
         $meaning = $prefix . '"' . $definition->valueOf->valueOf; } }
+    # One catch: make sure all \s in the meaning string are normalized to a simple space ' '
+    $meaning =~ s/\s/ /g;
     return Explode($meaning); });
 
 DefParameterType('CSName', sub {
@@ -2149,8 +2151,8 @@ DefPrimitive('\endgroup',   sub { $_[0]->endgroup; });
 # Debugging aids; Ignored!
 DefPrimitive('\show Token', sub {
     my $stuff = Invocation(T_CS('\meaning'), $_[1]);
-    print STDERR ToString($_[1]) . '=' . writableTokens(Expand($stuff), 1) . "\n";
-    print STDERR $_[0]->getLocator->toString() . "\n\n\n";
+    print STDERR "> " . ToString($_[1]) . '=' . writableTokens(Expand($stuff), 1) . " .\n";
+    print STDERR $_[0]->getLocator->toString() . "\n\n";
     return; });
 
 DefPrimitive('\showbox Number', undef);
