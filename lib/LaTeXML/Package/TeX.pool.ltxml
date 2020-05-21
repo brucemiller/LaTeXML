@@ -872,7 +872,7 @@ DefMacro('\meaning Token', sub {
           ($definition->isLong      ? '\long'      : ()),
           ($definition->isOuter     ? '\outer'     : ()),
         );
-        $meaning = ($prefixes ? $prefixes . ' ' : '') . "macro:" . ToString($spec) . "->" . ToString($expansion); }
+        $meaning = ($prefixes ? $prefixes . ' ' : '') . "macro:" . ToString($spec) . "->" . writableTokens($expansion, 1); }
       elsif ($type =~ /chardef$/i) {    # from \mathchardef and the like.
         my $prefix = '\char';
         if ($$definition{internalcs} && $$definition{internalcs}->getCSName =~ /^\\\@mathchardef/) {
@@ -2150,7 +2150,7 @@ DefPrimitive('\endgroup',   sub { $_[0]->endgroup; });
 # Debugging aids; Ignored!
 DefPrimitive('\show Token', sub {
     my $stuff = Invocation(T_CS('\meaning'), $_[1]);
-    print STDERR "> " . ToString($_[1]) . '=' . writableTokens(Expand($stuff), 1) . " .\n";
+    print STDERR "\n> " . ToString($_[1]) . '=' . writableTokens(Expand($stuff), 1) . " .\n";
     print STDERR $_[0]->getLocator->toString() . "\n\n";
     return; });
 
