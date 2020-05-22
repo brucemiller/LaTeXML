@@ -1,0 +1,115 @@
+\documentclass{article}
+\catcode`\:=11
+\catcode`\ =9
+\catcode`\~=10
+\endlinechar=32
+
+\protected\long\def\csset{\long\def}
+\protected\long\def\cssetp{\protected\long\def}
+\protected\def\use#1{\edef\internal{#1}\internal}
+
+\csset \usen #1 {#1}
+\csset \usei  #1#2 {#1}
+\csset \useii #1#2 {#2}
+\csset \useiii  #1#2#3 {#1#2}
+\cssetp \usec #1 { \csname #1 \endcsname }
+%
+\csset \returntrue  { \expandafter \usei  \romannumeral }
+\csset \returnfalse  { \expandafter \useii \romannumeral }
+%
+%
+\chardef\ctrue=1
+\chardef\cfalse=0
+\chardef\zero=0
+\chardef\expend=0
+\csset \none:n         #1                 { }
+\csset \none:nn        #1#2               { }
+%
+\csset \genfast #1#2 \noexpand #3
+  { \noexpand { {#1} \usei } }
+
+\csset \useqrecstop #1 \qrecstop { }
+
+\cssetp \gencondaux #1#2#3#4#5#6#7#8 ,
+  {
+    \ifx \qrectail #8
+      \expandafter \useqrecstop
+    \fi
+    \usec { gen #8 }
+      \qstop
+      #1 #2 {#3} {#4} {#5} {#6} #7
+    \gencondaux #1 #2 {#3} {#4} {#5} {#6} #7
+  }
+
+\csset \gencondtest
+  #1 \returntrue \else \returnfalse \fi \qmark #2
+{ #2 {#1} }
+
+% split-related
+\csset \cstostrN #1 { \zero }
+\csset \cstostrw #1 \cstostrN
+  { - \number \fi \expandafter \zero }
+\csset \cstostr
+  {
+    \romannumeral
+      \if \string \ \cstostrw \fi
+      \expandafter \cstostrN \string
+  }
+
+\csset\expargs #1#2{ \expandafter #1 \csname #2 \endcsname }
+
+\catcode`\:=12
+\cssetp\genF #1\qstop#2#3#4#5#6#7#8{
+    #8
+      { \expargs #2 { #4 : #5 F } #6 }
+      { { #7 \expend { } } }
+      { #7 \expandafter \none:nn \fi \usen }
+  }
+\csset \cssplit #1{
+  \expandafter \expandafter \expandafter
+  \cssplitauxi
+  \cstostr #1 \qmark \ctrue
+    : \qmark \cfalse \qstop
+}
+\csset \cssplitauxi
+  #1 : #2 \qmark #3#4 \qstop
+  { \cssplitauxii #1 \qmark \qstop {#2} #3 }
+
+\csset \cssplitauxii #1 \qmark #2 \qstop
+  { {#1} }
+
+\catcode`\:=11
+% main macro
+
+\cssetp \generateconditional #1#2#3#4#5#6#7#8
+{
+  \use{
+      \noexpand \gencondaux
+      \unexpanded { #4 #5 {#1} {#2} {#6} }
+      \gencondtest
+        #8 \qmark
+          \genfast
+        \returntrue \else \returnfalse \fi \qmark
+          \none:n
+      \unexpanded { {#8} \useiii }
+      \detokenize {#7}
+      \unexpanded { , \qrectail , \qrecstop }
+    }
+}
+
+\protected\def\mygen #1#2#3#4#{
+  \use
+  {
+    \generateconditional
+    \cssplit #3
+  }
+  #1 #2 {#4}
+}
+\mygen \csset e \mytest:N #1 { F }{
+  #1
+}
+\tracingmacros=0
+
+\begin{document}
+mytest=\meaning\mytest:NF
+\end{document}
