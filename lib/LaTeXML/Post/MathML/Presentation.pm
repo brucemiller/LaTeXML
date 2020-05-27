@@ -68,6 +68,15 @@ sub convertNode {
 sub rawIDSuffix {
   return '.pmml'; }
 
+sub associateNodeHook {
+  my ($self, $node, $sourcenode) = @_;
+  if ($$node[0] =~ /^m:(?:mi|mo|mn)$/) {
+    if (my $href = $sourcenode->getAttribute('href')) {
+      $$node[1]{href} = $href; }
+    if (my $title = $sourcenode->getAttribute('title')) {
+      $$node[1]{title} = $title; } }
+  return; }
+
 #================================================================================
 # Presentation MathML with Line breaking
 # Not at all sure how this will integrate with Parallel markup...

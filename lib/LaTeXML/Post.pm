@@ -479,6 +479,7 @@ sub associateNode {
   # What kind of branch are we generating?
   my $ispresentation = $self->rawIDSuffix eq '.pmml';    # TEMPORARY HACK: BAAAAD method!
   my $iscontainer    = 0;
+  my $container;
   if ($isarray) {
     return if $$node[1]{'_sourced'};
     $$node[1]{'_sourced'} = 1;
@@ -489,22 +490,29 @@ sub associateNode {
     $node->setAttribute('_sourced' => 1);
     $iscontainer = scalar(element_nodes($node)); }
   my $sourcenode = $currentnode;
+  # If the current node is declared, use it (but meaning is overridden)
+  if ($currentnode->getAttribute('decl_id')) { }
   # If the generated node is a "container" (non-token!), use the containing XMDual as source
-  if ($iscontainer) {
+  elsif ($iscontainer) {
     my $sid = $sourcenode->getAttribute('xml:id');
     # But ONLY if that XMDual is the "direct" parent, or is parent of XRef that points to $current
-    if (my $container = $document->findnode('parent::ltx:XMDual[1]', $sourcenode)
+    if ($container = $document->findnode('parent::ltx:XMDual[1]', $sourcenode)
       || ($sid &&
         $document->findnode("ancestor-or-self::ltx:XMDual[ltx:XMRef[\@idref='$sid']][1]",
           $sourcenode))) {
       $sourcenode = $container; } }
+  # Parent App w/decl_id or meaning is source, unless current node has decl_id (but ignore meaning)
+  elsif ($container = $document->findnode('ancestor::ltx:XMApp[@decl_id or @meaning][1]', $sourcenode)) {
+    $sourcenode = $container; }
   # If the current node is appropriately visible, use it.
   elsif ($currentnode->getAttribute(($ispresentation ? '_cvis' : '_pvis'))) { }
   # Else (current node isn't visible); try to find content OPERATOR
-  elsif (my $container = $document->findnode('ancestor-or-self::ltx:XMDual[1]', $sourcenode)) {
+  elsif ($container = $document->findnode('ancestor-or-self::ltx:XMDual[1]', $sourcenode)) {
     my ($op) = element_nodes($container);
     my $q = $document->getQName($op) || 'unknown';
-    if ($q eq 'ltx:XMTok') { }
+    if ($container->hasAttribute('decl_id')) {
+      $op = undef; }
+    elsif ($q eq 'ltx:XMTok') { }
     elsif ($q eq 'ltx:XMApp') {
       ($op) = element_nodes($op);
       $q = $document->getQName($op) || 'unknown'; }    # get "real" operator

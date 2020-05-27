@@ -150,6 +150,7 @@ sub translate_constructor {
 sub slashify {
   my ($string) = @_;
   $string =~ s/\\/\\\\/g;
+  $string =~ s/'/\\'/g;     # slashify ', since we're wrapping in ''
   return $string; }
 
 # parse a conditional in a constructor

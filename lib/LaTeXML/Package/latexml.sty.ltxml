@@ -242,12 +242,42 @@ DefConstructor('\lxMathTweak RequiredKeyVals {}',
 # See DefMath in LaTeXML::Package for more information.
 DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
     my ($stomach, $cs, $nargs, $opt, $presentation, $params) = @_;
-    my ($name, $meaning, $cd, $role, $alias) =
+    my ($name, $meaning, $cd, $role, $alias, $scope) =
       $params && map { $_ && ToString($_) } map { $params->getValue($_) }
-      qw(name meaning cd role alias);
+      qw(name meaning cd role alias scope);
+    my $tag = $params->getValue('tag');
+    my $id  = ($tag ? next_declaration_id() : undef);
     DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
-      name => $name, meaning => $meaning, omcd => $cd, role => $role, alias => $alias);
+      name  => $name,  meaning => $meaning, omcd => $cd, role => $role, alias => $alias,
+      scope => $scope, decl_id => $id,
+      hide_content_reversion => 1);
+    if ($tag) {    # Also provide for decl_id hook for definition links.
+      return Digest(Invocation('\@lxDefMathDeclare', $id, $tag)); }
+    else {
+      return; }
 });
+
+DefConstructor('\@lxDefMathDeclare{}{}',
+  sub { my ($document, $id, $tag, %props) = @_;
+    my $save = $document->floatToElement('ltx:declare');
+    $document->openElement('ltx:declare', 'xml:id' => $id);
+    if (my $tag = $props{tag}) {
+      $document->insertElement('ltx:tag', $tag); }
+    if (my $text = $props{text}) {
+      $document->insertElement('ltx:text', $text); }
+    $document->closeElement('ltx:declare');
+    $document->setNode($save); },
+  mode        => 'text',
+  afterDigest => sub { my ($stomach, $whatsit) = @_;
+    my ($id,     $tag)  = $whatsit->getArgs;
+    my ($newtag, $text) = splitDeclareTag($tag);
+    if ($text) {
+      $whatsit->setProperties(tag => $newtag, text => $text); }
+    else {
+      $whatsit->setProperties(tag => $tag); } },
+  properties => { alignmentSkippable => 1 },
+  reversion  => '');
+
 #DefKeyVal('XMath',name,string);
 
 #======================================================================
@@ -275,12 +305,13 @@ DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
 #   nodef : inhibits the marking of the current point as the `definition' of the expression.
 #          (a ref declaration would normally not be a def anyway)
 
-DefKeyVal('Declare', 'wrap',  '{}', 1);
-DefKeyVal('Declare', 'trace', '{}', 1);
+DefKeyVal('Declare', 'wrap',   '{}', 1);
+DefKeyVal('Declare', 'nowrap', '{}', 1);
+DefKeyVal('Declare', 'trace',  '{}', 1);
 DefKeyVal('Declare', 'replace', 'UndigestedKey');
 
 our $declare_keys = { scope => 1, role => 1, tag => 1, name => 1, meaning => 1,
-  trace => 1, wrap => 1, replace => 1, label => 1 };
+  trace => 1, wrap => 1, nowrap => 1, replace => 1, label => 1 };
 DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
   sub { my ($document, $flag, $kv, $pattern, %props) = @_;
     if (my $id = $props{id}) {
@@ -288,6 +319,8 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
       $document->openElement('ltx:declare', 'xml:id' => $id);
       if (my $tag = $kv->getValue('tag')) {
         $document->insertElement('ltx:tag', $tag); }
+      if (my $text = $kv->getValue('text')) {
+        $document->insertElement('ltx:text', $text); }
       $document->closeElement('ltx:declare');
       $document->setNode($save); } },
   mode => 'text',
@@ -309,12 +342,20 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
       Warn('unexpected', 'tag', $stomach,
         "Declaration with tag cannot appear in preamble"
           . Stringify($whatsit)); }
+    if (my $tag = $keys->getValue('tag')) {
+      if (!$keys->getValue('text')) {
+        my ($newtag, $text) = splitDeclareTag($tag);
+        if ($text) {
+          $keys->setValue(tag  => $newtag);
+          $keys->setValue(text => $text);
+    } } }
     $whatsit->setProperties(scope => getDeclarationScope($keys),
       role    => ToString($keys->getValue('role')),
       name    => ToString($keys->getValue('name')),
       meaning => ToString($keys->getValue('meaning')),
       trace   => defined $keys->getValue('trace'),
       wrap    => defined $keys->getValue('wrap'),
+      nowrap  => defined $keys->getValue('nowrap'),
       id      => $id,
       match   => $pattern,
       replace => $keys->getValue('replace'));
@@ -327,6 +368,19 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
     createDeclarationRewrite($document, $scope, $whatsit); },
   properties => { alignmentSkippable => 1 },
   reversion  => '');
+
+# Temporary(?) Hack for DLMF: Split an \lxDeclare tag of the form tag={math: description}
+sub splitDeclareTag {
+  my ($tag) = @_;
+  my @boxes = $tag->unlist;
+  my @tag   = ();
+  while (@boxes && ($boxes[0]->getString ne ':')) {
+    push(@tag, shift(@boxes)); }
+  if (@tag) {
+    shift(@boxes);
+    return (List(@tag), List(@boxes)); }
+  else {
+    return ($tag, undef); } }
 
 DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
   afterDigest => sub { my ($stomach, $whatsit) = @_;
@@ -365,22 +419,22 @@ sub getDeclarationScope {
 sub createDeclarationRewrite {
   my ($document, $scope, $whatsit) = @_;
   my %props = $whatsit->getProperties;
-  my ($id, $match, $wrap, $role, $name, $meaning, $ref, $trace, $replace)
-    = map { $props{$_} } qw(id match wrap role name meaning ref trace replace);
-###  print STDERR "REWRITER: scope=>$scope, match=>$match, role=>$role, dec_id=>$id\n";
+  my ($id, $match, $wrap, $nowrap, $role, $name, $meaning, $ref, $trace, $replace)
+    = map { $props{$_} } qw(id match wrap nowrap role name meaning ref trace replace);
   # Put this rule IN FRONT of other rules!
   UnshiftValue('DOCUMENT_REWRITE_RULES',
     LaTeXML::Core::Rewrite->new('math',
       ($trace ? (trace => $trace) : ()),
       ($scope ? (scope => $scope) : ()),
       ($match ? (match => $match) : ()),
-      ($wrap  ? (wrap  => $wrap)  : ()),
       ($replace
         ? (replace => $replace)
         : attributes => { ($role ? (role => $role) : ()),
           ($name    ? (name    => $name)    : ()),
           ($meaning ? (meaning => $meaning) : ()),
-          ($id      ? (dec_id  => $id)      : ()),
+          ($id      ? (decl_id => $id)      : ()),
+          ($wrap    ? (_wrap   => $wrap)    : ()),
+          ($nowrap  ? (_nowrap => $nowrap)  : ()),
         }),
     ));
   return; }

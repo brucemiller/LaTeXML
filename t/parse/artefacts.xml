@@ -176,9 +176,9 @@
             <p><Math mode="inline" tex="x\times_{i}^{2}y" text="x (* _ i) ^ 2 y" xml:id="S1.I1.i8.p1.m1">
                 <XMath>
                   <XMApp>
-                    <XMApp meaning="times" role="MULOP">
+                    <XMApp role="MULOP">
                       <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
-                      <XMApp meaning="times" role="MULOP">
+                      <XMApp role="MULOP">
                         <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                         <XMTok meaning="times" role="MULOP">×</XMTok>
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
@@ -280,9 +280,9 @@
                     </XMApp>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">|</XMTok>
-                      <XMApp meaning="times" role="MULOP" xml:id="S1.I1.i12.p1.m1.1">
+                      <XMApp role="MULOP" xml:id="S1.I1.i12.p1.m1.1">
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
-                        <XMApp meaning="times" role="MULOP">
+                        <XMApp role="MULOP">
                           <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                           <XMTok meaning="times" role="MULOP">×</XMTok>
                           <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
@@ -332,9 +332,9 @@
                       <XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok>
                     </XMApp>
                     <XMApp>
-                      <XMApp meaning="times" role="MULOP">
+                      <XMApp role="MULOP">
                         <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
-                        <XMApp meaning="times" role="MULOP">
+                        <XMApp role="MULOP">
                           <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                           <XMTok meaning="times" role="MULOP">×</XMTok>
                           <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>

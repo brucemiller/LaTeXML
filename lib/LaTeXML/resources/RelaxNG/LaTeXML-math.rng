@@ -143,6 +143,12 @@ After parsing, the concatenation is moved to the sub|super-script "operator".</a
       </attribute>
     </optional>
     <optional>
+      <attribute name="decl_id">
+        <a:documentation>an id to where the declaration of this object is given,
+preferably the xml:id of an ltx:declare</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="href">
         <a:documentation>reference to an arbitrary url.</a:documentation>
       </attribute>

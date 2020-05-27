@@ -11,12 +11,14 @@ DefMathRewrite(match => 'a', attributes => { role => 'ID' });
 DefMathRewrite(match => 'b', attributes => { role => 'ID' });
 
 DefMathRewrite(match => '\hat{f}',      attributes => { role => 'ID' });
-DefMathRewrite(match => 'f_D)',         attributes => { role => 'DIFFOP' });
-DefMathRewrite(match => 'f_\WildCardA', attributes => { role => 'ID' });
-
+DefMathRewrite(match => 'f_D',          attributes => { role => 'DIFFOP' });
+DefMathRewrite(match => 'f_\WildCard',  attributes => { role => 'ID' });
 DefMathRewrite(match => 'f', attributes => { role => 'FUNCTION' });
-
 DefMathRewrite(match => 'D', attributes => { role => 'ID' });
 DefMathRewrite(match => 'x', attributes => { role => 'ID' });
+
+
+
+
 
 1;

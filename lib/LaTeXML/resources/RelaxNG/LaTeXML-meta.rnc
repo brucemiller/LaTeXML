@@ -14,7 +14,7 @@ default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## Meta elements are generally hidden;
 ## they can appear in both inline and block contexts.
-Meta.class   |= note | indexmark | glossarydefinition | rdf | ERROR | resource | navigation
+Meta.class   |= note | declare | indexmark | glossarydefinition | rdf | ERROR | resource | navigation
 
 #======================================================================
 
@@ -38,6 +38,23 @@ note_attributes =
 note_model = tags?, Flow.model
 
 # should mark be more like label/refnum ?
+
+#======================================================================
+declare = element declare {
+## declare records declarative mathematical information.
+  ID.attributes,
+
+  ## the type of declaration
+  attribute type { text }?,
+
+  ## the sort key for use creating notation indices
+  attribute sortkey { text }?,
+
+  ## short description
+  tag?,
+
+  ## long description
+  \text? }
 
 #======================================================================
 

@@ -6768,7 +6768,7 @@ Tag('ltx:*', 'afterOpen:late' => sub {
 DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='ltx_#1'>#2</ltx:ERROR>");
 
 #**********************************************************************
-DefConstructorI('\WildCard',  undef, "<_WildCard_/>");
+DefConstructor('\WildCard[]', "<_WildCard_>#1</_WildCard_>");
 DefConstructorI('\WildCardA', undef, "<_WildCard_/>");
 DefConstructorI('\WildCardB', undef, "<_WildCard_/>");
 DefConstructorI('\WildCardC', undef, "<_WildCard_/>");

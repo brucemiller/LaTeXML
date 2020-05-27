@@ -1430,8 +1430,8 @@ sub createXMRefs {
 # When to make a dual ?
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
 my $math_options = {    # [CONSTANT]
-  name => 1, meaning       => 1, omcd    => 1, reversion => 1, sizer => 1, alias => 1,
-  role => 1, operator_role => 1, reorder => 1, dual      => 1,
+  name => 1, meaning       => 1, omcd    => 1, reversion => 1, sizer   => 1, alias => 1,
+  role => 1, operator_role => 1, reorder => 1, dual      => 1, decl_id => 1,
   mathstyle    => 1, font               => 1,
   scriptpos    => 1, operator_scriptpos => 1,
   stretchy     => 1, operator_stretchy  => 1,
@@ -1474,6 +1474,7 @@ sub DefMathI {
 
   # If single character, handle with a rewrite rule
   if (length($csname) == 1) {
+    ###print STDERR "Defining ".Stringify($cs)." as rewrite\n";
     defmath_rewrite($cs, %options); }
 
   # If the macro involves arguments,
@@ -1482,17 +1483,21 @@ sub DefMathI {
   elsif ((ref $presentation eq 'CODE')
     || ((ref $presentation) && grep { $_->equals(T_PARAM) } $presentation->unlist)
     || (!(ref $presentation) && ($presentation =~ /\#\d|\\./))) {
+    ###print STDERR "Defining ".Stringify($cs)." as dual\n";
     defmath_dual($cs, $paramlist, $presentation, %options); }
   # If no arguments, but the presentation involves macros, presumably with internal structure,
   # we'll wrap the presentation in ordet to capture the various semantic attributes
   elsif ((ref $presentation) && (grep { $_->isExecutable } $presentation->unlist)) {
+    ###print STDERR "Defining ".Stringify($cs)." as wrapped\n";
     defmath_wrapped($cs, $presentation, %options); }
 
   # EXPERIMENT: Introduce an intermediate case for simple symbols
   # Define a primitive that will create a Box with the appropriate set of XMTok attributes.
   elsif (($nargs == 0) && !grep { !$$simpletoken_options{$_} } keys %options) {
+    ###print STDERR "Defining ".Stringify($cs)." as primitive\n";
     defmath_prim($cs, $paramlist, $presentation, %options); }
   else {
+    ###print STDERR "Defining ".Stringify($cs)." as constructor\n";
     defmath_cons($cs, $paramlist, $presentation, %options); }
   AssignValue($csname . ":locked" => 1) if $options{locked};
   return; }
@@ -1515,7 +1520,7 @@ sub defmath_rewrite {
   # No, do NOT make mathactive; screws up things like babel french, or... ?
   # EXPERIMENT: store XMTok attributes for if this char ends up a Math Token.
   # But only some DefMath options make sense!
-  my $rw_options = { name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1, stretchy => 1 }; # (well, mathstyle?)
+  my $rw_options = { name => 1, meaning => 1, omcd => 1, decl_id => 1, role => 1, mathstyle => 1, stretchy => 1 }; # (well, mathstyle?)
   CheckOptions("DefMath reimplemented as DefRewrite ($csname)", $rw_options, %options);
   AssignValue('math_token_attributes_' . $csname => {%options}, 'global');
   return; }
@@ -1540,6 +1545,7 @@ sub defmath_common_constructor_options {
       meaning            => $options{meaning},
       omcd               => $options{omcd},
       role               => $options{role},
+      decl_id            => $options{decl_id},
       operator_role      => $options{operator_role},
       mathstyle          => $options{mathstyle},
       scriptpos          => $options{scriptpos},
@@ -1585,8 +1591,8 @@ sub defmath_dual {
   $presentation = TokenizeInternal($presentation) unless ref $presentation;
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, $paramlist, $presentation),
     $options{scope});
-  my $nargs     = ($paramlist ? scalar($paramlist->getParameters) : 0);
-  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
+  my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
+  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle'";
 
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cont_cs, $paramlist,
       ($nargs == 0
@@ -1615,7 +1621,7 @@ sub defmath_wrapped {
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, undef, $presentation),
     $options{scope});
   # Make the wrapper constructor
-  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
+  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle'";
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($wrap_cs,
       parseParameters('{}', $csname),
       "<ltx:XMWrap $cons_attr role='#role' scriptpos='#scriptpos' stretchy='#stretchy'>"
@@ -1642,7 +1648,9 @@ sub defmath_prim {
           my $value = $properties{$key};
           if (ref $value eq 'CODE') {
             $properties{$key} = &$value(); } }
-        LaTeXML::Core::Box->new($string, $font, $locator, $cs, mode => $mode, %properties); }));
+        LaTeXML::Core::Box->new($string, $font, $locator,
+          ($options{hide_content_reversion} ? $presentation : $cs),
+          mode => $mode, %properties); }));
   return; }
 
 sub defmath_cons {
@@ -1650,9 +1658,11 @@ sub defmath_cons {
   # do we need to do anything about digesting the presentation?
   my $qpresentation = $presentation && ToString($presentation);    # Quote any constructor specials
   $qpresentation =~ s/(\#|\&|\?|\\|<|>)/\\$1/g if $presentation;
-  my $end_tok   = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
-  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
-  my $nargs     = ($paramlist ? scalar($paramlist->getParameters) : 0);
+  my $end_tok = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
+  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle'";
+  my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
+  if (!$options{reversion} && $options{hide_content_reversion} && !$nargs) {
+    $options{reversion} = sub { (($LaTeXML::DUAL_BRANCH || '') eq 'content' ? $cs : $presentation->unlist); }; }
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cs, $paramlist,
       ($nargs == 0
           # If trivial presentation, allow it in Text

@@ -81,6 +81,9 @@
     </xsl:element>
   </xsl:template>
 
+  <!-- disappears -->
+  <xsl:template match="ltx:declare"/>
+
   <!-- Actually, this ought to be annoyingly visible -->
   <xsl:preserve-space elements="ltx:ERROR"/>
   <xsl:template match="ltx:ERROR">

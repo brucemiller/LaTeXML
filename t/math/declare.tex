@@ -1,0 +1,66 @@
+\documentclass{article}
+\usepackage{latexml}
+\begin{document}
+\section{Basics}
+\lxDeclare[scope=section,role=ID,tag={integer}]{$n$}
+\lxDeclare[scope=section,role=ID,tag={hatted}]{$\hat{\WildCard}$}
+\lxDeclare[scope=section,role=ID,tag={widehatted}]{$\widehat{\WildCard}$}
+\lxDeclare[scope=section,role=ID,tag={ecks}]{$x$}
+\lxDeclare[scope=section,role=ID,tag={ecksprime}]{$x'$}
+\lxDeclare[scope=section,role=ID,tag={ecksindexed}]{$x_\WildCard$}
+\lxDeclare[scope=section,role=ID,tag={ecksone}]{$x_1$}
+\lxDeclare[scope=section,role=ID,tag={eckshat}]{$\hat{x}$}
+\lxDeclare[scope=section,role=ID,tag={why}]{$y$}
+\[ x, x', x_1, x_n, x_{2n-1}, \hat{x}, \widehat{x}, \mathbf{x}\]
+\[ y, y', y_1, y_n, y_{2n-1}, \hat{y}, \widehat{y}\]
+
+\section{WildCards}
+\lxDeclare[scope=section,role=ID,tag={queue-zero}]{$q$}
+\lxDeclare[scope=section,role=ID,tag={queue-one}]{$q_{\WildCard}$}
+\lxDeclare[scope=section,role=ID,tag={queue-two}]{$q_{\WildCard,\WildCard}$}
+\lxDeclare[scope=section,role=ID,tag={eff-zero}]{$f$}
+\lxDeclare[scope=section,nowrap,role=FUNCTION,tag={eff-one}]{$f\WildCard[(\WildCard)]$}
+\lxDeclare[scope=section,nowrap,role=FUNCTION,tag={eff-two}]{$f\WildCard[(\WildCard,\WildCard)]$}
+\lxDeclare[scope=section,role=ID,tag={constant}]{$z$}
+\lxDeclare[scope=section,role=FUNCTION,tag={functionalized}]{$\widehat{\WildCard}$}
+\lxDeclare[scope=section,role=ID,tag={gee-zero}]{$g$}
+\lxDeclare[scope=section,role=FUNCTION,tag={gee-one}]{$g\WildCard[(\WildCard)]$}
+\[ q, q_{a}, q_{a,b}, \mbox{ but accidentally }q_{a+b}\]
+\[ f, f(a), f(q), f(a,b), \mbox{ but } f(a+b)\]
+\[ g, g(a), g(a)(b) \]
+\[ z(a+b), \widehat{z}(a) \]
+\section{Practical}
+\lxDeclare[scope=section,role=ID,tag={variable}]{$x$}
+\lxDeclare[scope=section,role=ID,tag={integer}]{$i$}
+\lxDeclare[scope=section,role=FUNCTION,tag={function}]{$f$}
+\lxDeclare[scope=section,role=ID,tag={coefficient}]{$f_\WildCard$}
+\[ f(x) = \sum_{i=0}^\infty f_i x^i \]
+\section{Impractical}
+\lxDeclare[scope=section,nowrap,tag={bafter}]{$\WildCard[a]b$}
+\lxDeclare[scope=section,nowrap,tag={cafter}]{$\WildCard[ab]c$}
+\[ a, b, c, ab, bc, abc \]
+\lxDeclare[scope=section,role=ID,tag={transformation}]{$\mathcal{T}_\WildCard$}%
+\lxDeclare[scope=section,role=ID,tag={sign}]{$\varepsilon_\WildCard$}%
+\[ \varepsilon, \varepsilon_1,
+  \mathcal{T}_{\varepsilon},
+  \mathcal{T}_{\varepsilon_1},
+  \mathcal{T}_{\varepsilon_1, \varepsilon_2, \varepsilon_3} \]
+\section{Declaration order}
+\lxDeclare[scope=section,role=ID,tag={sign}]{$\varepsilon_\WildCard$}%
+\lxDeclare[scope=section,role=ID,tag={transformation}]{$\mathcal{T}_\WildCard$}%
+\[ \varepsilon, \varepsilon_1,
+  \mathcal{T}_{\varepsilon},
+  \mathcal{T}_{\varepsilon_1},
+  \mathcal{T}_{\varepsilon_1, \varepsilon_2, \varepsilon_3} \]
+
+\section{Notations?}
+\lxDefMath{\baz}{\mathbf{baz}}[meaning=foo,tag={Baz}]
+\lxDefMath{\plus}{+}[role=ADDOP,tag={Plus}]
+\lxDefMath{\foo}[1]{\mathbf{foo}}[meaning=foo,tag={Foo}]
+\lxDefMath{\oddball}[2]{\left|\left(#1\right)_{#2}\right|}[tag={Oddball}]
+\[ a\plus b; \baz, \foo{x}, \foo{j} \]
+\[ \oddball{a}{j}; \oddball{abc}{j} \]
+\end{document}
+
+
+\end{document}
