@@ -457,7 +457,7 @@ sub domToXPath_rec {
         push(@predicates, "\@" . $key . "='" . $attribute->getValue . "'"); } }
     if (@children) {
       if (!grep { $_->nodeType != XML_TEXT_NODE } @children) {    # All are text nodes:
-        push(@predicates, "text()='" . $node->textContent . "'"); }
+        push(@predicates, "text()=" . quoteXPathLiteral($node->textContent)); }
       elsif (!grep { $_->nodeType != XML_ELEMENT_NODE } @children) {
         my ($xp, $n, @w) = domToXPath_seq($document, 'child', 1, @children);
         push(@predicates, $xp);
@@ -479,7 +479,14 @@ sub domToXPath_rec {
   }
 
   elsif ($type == XML_TEXT_NODE) {
-    return ("*[text()='" . $node->textContent . "']", 1, 0); } }
+    return ("*[text()=" . quoteXPathLiteral($node->textContent) . "]", 1, 0); } }
+
+# Return quoted string, but note: XPath doesn't provide sensible way to slashify ' or "
+sub quoteXPathLiteral {
+  my ($string) = @_;
+  if    ($string !~ /'/) { return "'" . $string . "'"; }
+  elsif ($string !~ /"/) { return '"' . $string . '"'; }
+  else { return 'concat(' . join(',"\'",', map { "'" . $_ . "'"; } split(/'/, $string)) . ')'; } }
 
 sub domToXPath_seq {
   my ($document, $axis, $pos, @nodes) = @_;
