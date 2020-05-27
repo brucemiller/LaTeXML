@@ -65,21 +65,11 @@
       { { #7 \expend { } } }
       { #7 \expandafter \none:nn \fi \usen }
   }
-\csset \cssplit #1{
-  \expandafter \expandafter \expandafter
-  \cssplitauxi
-  \cstostr #1 \qmark \ctrue
-    : \qmark \cfalse \qstop
-}
-\csset \cssplitauxi
-  #1 : #2 \qmark #3#4 \qstop
-  { \cssplitauxii #1 \qmark \qstop {#2} #3 }
-
-\csset \cssplitauxii #1 \qmark #2 \qstop
-  { {#1} }
 
 \catcode`\:=11
 % main macro
+\tracingmacros=1
+\tracingcommands=1
 
 \cssetp \generateconditional #1#2#3#4#5#6#7#8
 {
@@ -97,18 +87,12 @@
     }
 }
 
-\protected\def\mygen #1#2#3#4#{
-  \use
-  {
-    \generateconditional
-    \cssplit #3
-  }
-  #1 #2 {#4}
-}
-\mygen \csset e \mytest:N #1 { F }{
+\generateconditional {mytest}{N}\ctrue \csset e {#1}{ F }{
   #1
 }
+
 \tracingmacros=0
+\tracingcommands=0
 
 \begin{document}
 mytest=\meaning\mytest:NF
