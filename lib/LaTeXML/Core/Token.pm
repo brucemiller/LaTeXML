@@ -20,6 +20,7 @@ use strict;
 use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
+use LaTeXML::Common::Error qw(Fatal);
 use base qw(LaTeXML::Common::Object);
 use base qw(Exporter);
 our @EXPORT = (
@@ -28,11 +29,11 @@ our @EXPORT = (
     CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
     CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
     CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
-    CC_CS      CC_MARKER),
+    CC_CS      CC_MARKER CC_MATCH),
   # Token constructors
   qw( T_BEGIN T_END T_MATH T_ALIGN T_PARAM T_SUB T_SUPER T_SPACE
     &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
-    T_CR &T_MARKER
+    T_CR &T_MARKER &T_MATCH
     &Token),
   # String exploders
   qw(&Explode &ExplodeText &UnTeX)
@@ -60,26 +61,36 @@ use constant CC_INVALID => 15;
 # Extended Catcodes for expanded output.
 use constant CC_CS     => 16;
 use constant CC_MARKER => 17;    # non TeX extension!
+use constant CC_MATCH  => 18;
 
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
 # These are immutable
-use constant T_BEGIN => bless ['{',  1],  'LaTeXML::Core::Token';
-use constant T_END   => bless ['}',  2],  'LaTeXML::Core::Token';
-use constant T_MATH  => bless ['$',  3],  'LaTeXML::Core::Token';
-use constant T_ALIGN => bless ['&',  4],  'LaTeXML::Core::Token';
-use constant T_PARAM => bless ['#',  6],  'LaTeXML::Core::Token';
-use constant T_SUPER => bless ['^',  7],  'LaTeXML::Core::Token';
-use constant T_SUB   => bless ['_',  8],  'LaTeXML::Core::Token';
-use constant T_SPACE => bless [' ',  10], 'LaTeXML::Core::Token';
-use constant T_CR    => bless ["\n", 10], 'LaTeXML::Core::Token';
-sub T_LETTER { my ($c) = @_; return bless [$c, 11], 'LaTeXML::Core::Token'; }
-sub T_OTHER  { my ($c) = @_; return bless [$c, 12], 'LaTeXML::Core::Token'; }
-sub T_ACTIVE { my ($c) = @_; return bless [$c, 13], 'LaTeXML::Core::Token'; }
-sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), 14], 'LaTeXML::Core::Token'; }
-sub T_CS { my ($c) = @_; return bless [$c, 16], 'LaTeXML::Core::Token'; }
+use constant T_BEGIN => bless ['{',  CC_BEGIN], 'LaTeXML::Core::Token';
+use constant T_END   => bless ['}',  CC_END],   'LaTeXML::Core::Token';
+use constant T_MATH  => bless ['$',  CC_MATH],  'LaTeXML::Core::Token';
+use constant T_ALIGN => bless ['&',  CC_ALIGN], 'LaTeXML::Core::Token';
+use constant T_PARAM => bless ['#',  CC_PARAM], 'LaTeXML::Core::Token';
+use constant T_SUPER => bless ['^',  CC_SUPER], 'LaTeXML::Core::Token';
+use constant T_SUB   => bless ['_',  CC_SUB],   'LaTeXML::Core::Token';
+use constant T_SPACE => bless [' ',  CC_SPACE], 'LaTeXML::Core::Token';
+use constant T_CR    => bless ["\n", CC_SPACE], 'LaTeXML::Core::Token';
+sub T_LETTER { my ($c) = @_; return bless [$c, CC_LETTER], 'LaTeXML::Core::Token'; }
+sub T_OTHER  { my ($c) = @_; return bless [$c, CC_OTHER],  'LaTeXML::Core::Token'; }
+sub T_ACTIVE { my ($c) = @_; return bless [$c, CC_ACTIVE], 'LaTeXML::Core::Token'; }
+sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), CC_COMMENT], 'LaTeXML::Core::Token'; }
+sub T_CS { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
 # Illegal: don't use unless you know...
-sub T_MARKER { my ($t) = @_; return bless [$t, 17], 'LaTeXML::Core::Token'; }
+sub T_MARKER { my ($t) = @_; return bless [$t, CC_MARKER], 'LaTeXML::Core::Token'; }
+
+sub T_MATCH {
+  my ($v) = @_;
+  my $int = $v;
+  if (ref $v eq 'LaTeXML::Core::Token') {    # get the integer value from the token
+    $int = ord($$v[0]) - ord('0');
+    if ($int < 1 || $int > 9) {
+      Fatal('malformed', 'T_MATCH', 'value should be #1-#9', "Illegal: " . $v->stringify); } }
+  return bless ["#$int", CC_MATCH], 'LaTeXML::Core::Token'; }
 
 sub Token {
   my ($string, $cc) = @_;
@@ -156,13 +167,13 @@ our @primitive_catcode = (    # [CONSTANT]
   1, 1, 1, 1,
   1, 0, 1, 0,
   0, 0, 0, 0,
-  0);
+  0, 0, 0);
 our @executable_catcode = (    # [CONSTANT]
   0, 1, 1, 1,
   1, 0, 0, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  1);
+  1, 0, 0);
 
 our @standardchar = (          # [CONSTANT]
   "\\",  '{',   '}',   q{$},
@@ -175,19 +186,19 @@ our @CC_NAME =                 #[CONSTANT]
   Align EOL Parameter Superscript
   Subscript Ignore Space Letter
   Other Active Comment Invalid
-  ControlSequence);
+  ControlSequence Marker Match);
 our @PRIMITIVE_NAME = (        # [CONSTANT]
   'Escape',    'Begin', 'End',       'Math',
   'Align',     'EOL',   'Parameter', 'Superscript',
   'Subscript', undef,   'Space',     undef,
   undef,       undef,   undef,       undef,
-  undef);
+  undef,       undef,   undef);
 our @CC_SHORT_NAME =           #[CONSTANT]
   qw(T_ESCAPE T_BEGIN T_END T_MATH
   T_ALIGN T_EOL T_PARAM T_SUPER
   T_SUB T_IGNORE T_SPACE T_LETTER
   T_OTHER T_ACTIVE T_COMMENT T_INVALID
-  T_CS
+  T_CS T_MARKER T_MATCH
 );
 
 #======================================================================
@@ -240,7 +251,7 @@ my @NEUTRALIZABLE = (    # [CONSTANT]
   1, 0, 1, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  0);
+  0, 0, 0);
 
 # neutralize really should only retroactively imitate what Semiverbatim would have done.
 # So, it needs to neutralize those in SPECIALS
@@ -261,9 +272,9 @@ sub with_dont_expand {
   return ((($cc == CC_CS) || ($cc == CC_ACTIVE))
     # AND it is either undefined, or is expandable!
       && (!defined($STATE->lookupDefinition($self))
-      || defined($STATE->lookupExpandable($self)))
+      || defined($STATE->lookupExpandable($self))))
     ? bless ['\relax', CC_CS, $self], 'LaTeXML::Core::Token'
-    : $self); }
+    : $self; }
 
 # Return the original token of a not-expanded token,
 # or undef if it isn't marked as such.
@@ -271,9 +282,13 @@ sub get_dont_expand {
   my ($self) = @_;
   return $$self[2]; }
 
+# Experiment: We are trying to represent "{#1}" with a noexpand-T_MATCH,
+#           and notice that TeX will allow passing that #1 in nested calls without ever wrongfully expanding it.
+#           i.e. unless it is in a defining parameter slot, it will remain inactive, so we should never re-activate it
+#           once no-expanded. (Or is there a better abstraction?!)
 sub without_dont_expand {
   my ($self) = @_;
-  return ($$self[2] || $self); }
+  return (($$self[1] != CC_MATCH && $$self[2]) || $self); }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.

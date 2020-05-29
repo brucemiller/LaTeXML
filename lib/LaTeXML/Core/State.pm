@@ -107,8 +107,8 @@ sub new {
   if ($options{catcodes} =~ /^(standard|style)/) {
     # Setup default catcodes.
     my %std = ("\\" => CC_ESCAPE, "{" => CC_BEGIN, "}" => CC_END, "\$" => CC_MATH,
-      "\&" => CC_ALIGN, "\r" => CC_EOL,   "#"  => CC_PARAM, "^" => CC_SUPER,
-      "_"  => CC_SUB,   " "  => CC_SPACE, "\t" => CC_SPACE, "%" => CC_COMMENT,
+      "&" => CC_ALIGN, "\r" => CC_EOL,   "#"  => CC_PARAM, "^" => CC_SUPER,
+      "_" => CC_SUB,   " "  => CC_SPACE, "\t" => CC_SPACE, "%" => CC_COMMENT,
       "~" => CC_ACTIVE, chr(0) => CC_IGNORE, "\f" => CC_ACTIVE);
     map { $$self{catcode}{$_} = [$std{$_}] } keys %std;
     for (my $c = ord('A') ; $c <= ord('Z') ; $c++) {
@@ -325,20 +325,19 @@ our @active_or_cs = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 1, 0, 0,
-  1, 0);
+  1, 0, 0);
 our @letter_or_other = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 1,
   1, 0, 0, 0,
-  0, 0);
+  0, 0, 0);
 
 # Get the `Meaning' of a token.  For active control sequence's
 # this may give the definition object (if defined) or another token (if \let) or undef
 # Any other token is returned as is.
 sub lookupMeaning {
   my ($self, $token) = @_;
-  my $e;
   if (my $cs = $token
     && $active_or_cs[$$token[1]]
     && !$$token[2]    # return token itself, if \noexpand

@@ -84,13 +84,13 @@ sub beDigested {
 
 sub neutralize {
   my ($self, @extraspecials) = @_;
-  return Tokens(map { $_->neutralize(@extraspecials) } $self->unlist); }
+  return Tokens(map { $_->neutralize(@extraspecials) } @$self); }    # ->unlist
 
 sub isBalanced {
   my ($self) = @_;
   my $level = 0;
   foreach my $t (@$self) {
-    my $cc = $$t[1];    # INLINE
+    my $cc = $$t[1];                                                 # INLINE
     $level++ if $cc == CC_BEGIN;
     $level-- if $cc == CC_END; }
   return $level == 0; }
@@ -102,13 +102,26 @@ sub substituteParameters {
   my @in     = @{$self};    # ->unlist
   my @result = ();
   while (my $token = shift(@in)) {
-    if ($$token[1] != CC_PARAM) {    # Non '#'; copy it
+    my $arg;
+    if ($$token[2]) {
       push(@result, $token); }
-    elsif (!$$token[2] && (($token = shift(@in))->[1] != CC_PARAM)) {    # Not multiple '#'; read arg.
-      if (my $arg = $args[ord($$token[0]) - ord('0') - 1]) {
-        push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } }    # ->unlist
-    else {    # Duplicated '#', copy 2nd '#'
-      push(@result, $$token[2] || $token); } }
+    elsif ($$token[1] == CC_MATCH) {
+      my $index = $$token[0];
+      $index =~ s/^#//;
+      $arg = $args[int($index) - 1]; }
+    elsif ($$token[1] != CC_PARAM) {    # Non '#'; copy it
+      push(@result, $token); }
+    elsif (($token = shift(@in))->[1] != CC_PARAM) {    # Not multiple '#'; read arg.
+      $arg = $args[ord($$token[0]) - ord('0') - 1]; }
+    else {                                              # Duplicated '#', copy 2nd '#'
+      push(@result, $token); }
+
+    # Did we set a current arg? If so, substitute it in:
+    if ($arg) {
+      if (ref $arg eq 'LaTeXML::Core::Token') {
+        push(@result, $arg); }
+      elsif (my @arg_toks = $arg->unlist) {             # skip the empty case.
+        push(@result, @arg_toks); } } }
   return LaTeXML::Core::Tokens->new(@result); }
 
 # Trims outer braces (if they balance each other)
@@ -137,6 +150,10 @@ sub stripBraces {
   if ($ntopbraces == 1) {
     $i0++; $i1--; }
   return (($i0 < $i1) && (($i0 > 0) || ($i1 < $n)) ? Tokens(@$self[$i0 .. $i1 - 1]) : $self); }
+
+sub without_dont_expand {
+  my ($self) = @_;
+  return Tokens(map { $_->without_dont_expand } @$self); }
 
 #======================================================================
 

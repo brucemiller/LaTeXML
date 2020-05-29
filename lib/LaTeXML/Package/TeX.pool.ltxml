@@ -134,7 +134,8 @@ DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
     my $open = $gullet->readXToken;
     if ($open->equals(T_BEGIN)) {
-      return scalar($gullet->readBalanced); }
+      my $balanced = scalar($gullet->readBalanced);
+      return $balanced; }
     else {
       Error('expected', '{', $gullet,
         "Expected <general text> here");
@@ -220,17 +221,17 @@ DefParameterType('Expanded', sub {
     my @tokens   = ();
     if ($token->getCatcode == CC_BEGIN) {
       my $level = 1;
-      while ($token = $gullet->readXToken(0)->without_dont_expand) {
+      while ($token = $gullet->readXToken(0)) {
         my $cc = $$token[1];
         if ($cc == CC_END) {
           $level--;
           last unless $level; }
         elsif ($cc == CC_BEGIN) {
           $level++; }
-        push(@tokens, $token); }
+        push(@tokens, $token->without_dont_expand); }
       return Tokens(@tokens); }
     else {
-      return $token; } },
+      return $token->without_dont_expand; } },
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
@@ -238,13 +239,13 @@ DefParameterType('Expanded', sub {
 DefParameterType('EExpanded', sub {
     my ($gullet) = @_;
     local $LaTeXML::NOEXPAND_THE = 1;
-    my $token  = $gullet->readXToken(0)->without_dont_expand;
+    my $token  = $gullet->readXToken(0);
     my @tokens = ();
     if ($token->getCatcode == CC_BEGIN) {
       my $balanced = scalar($gullet->readBalanced(1));
-      return Tokens(map { $_->without_dont_expand } $balanced->unlist) }
+      return $balanced->without_dont_expand; }
     else {
-      return $token; } },
+      return $token->without_dont_expand; } },
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
@@ -855,11 +856,16 @@ DefMacro('\meaning Token', sub {
         my $arg_index  = 0;
         my @spec_parts = ();
         my @params     = $ltxps ? $ltxps->getParameters : ();
+        my $p_trailer  = '';
         for my $param (@params) {
           my $p_spec = $$param{spec};
           if ($p_spec =~ s/^Match://) { }    # just match, don't increment arg index
           elsif ($p_spec =~ s/^\w?Until(\w*)://) {    # implied argument at this slot
             $p_spec = "#" . (++$arg_index) . $p_spec; }
+          elsif ($p_spec eq 'RequireBrace') {
+            # tex's \meaning prints out the required braces for "\def\a#{}" variants
+            $p_trailer .= '{';
+            $p_spec = '{'; }
           else {                                      # regular parameter, increment
             next if $$param{novalue}; # skip the latexml-only requirement params, but only here, since Match also have "novalue" set.
             $p_spec = "#" . (++$arg_index); }
@@ -872,7 +878,8 @@ DefMacro('\meaning Token', sub {
           ($definition->isLong      ? '\long'      : ()),
           ($definition->isOuter     ? '\outer'     : ()),
         );
-        $meaning = ($prefixes ? $prefixes . ' ' : '') . "macro:" . ToString($spec) . "->" . writableTokens($expansion, 1); }
+        $meaning = ($prefixes ? $prefixes . ' ' : '') .
+          "macro:" . ToString($spec) . "->" . ToString($expansion) . $p_trailer; }
       elsif ($type =~ /chardef$/i) {    # from \mathchardef and the like.
         my $prefix = '\char';
         if ($$definition{internalcs} && $$definition{internalcs}->getCSName =~ /^\\\@mathchardef/) {
@@ -1149,36 +1156,44 @@ sub parseDefParameters {
   my @params = ();
   my $n      = 0;
   while (@tokens) {
-    my $t = shift(@tokens);
-    if ($t->getCatcode == CC_PARAM) {
-      if (!@tokens) {    # Special case: lone # NOT following a numbered parameter
-                         # Note that we require a { to appear next, but do NOT read it!
-        push(@params, LaTeXML::Core::Parameter->new('RequireBrace', 'RequireBrace')); }
-      else {
+    my $t  = shift(@tokens);
+    my $cc = $$t[1];
+    if ($cc == CC_MATCH || $cc == CC_PARAM) {
+      if ($cc == CC_MATCH) {
+        $n++;
+        Fatal('expected', "#$n", $STATE->getStomach,
+          "Parameters for '" . ToString($cs) . "' not in order in " . ToString($params))
+          unless ("#$n" eq $$t[0]); }
+      elsif ($cc == CC_PARAM) {
+        if (!@tokens) {    # Special case: lone # NOT following a numbered parameter
+                           # Note that we require a { to appear next, but do NOT read it!
+          push(@params, LaTeXML::Core::Parameter->new('RequireBrace', 'RequireBrace'));
+          next; }
         $n++; $t = shift(@tokens);
         Fatal('expected', "#$n", $STATE->getStomach,
           "Parameters for '" . ToString($cs) . "' not in order in " . ToString($params))
-          unless (defined $t) && ($n == (ord($t->getString) - ord('0')));
-        # Check for delimiting text following the parameter #n
-        my @delim = ();
-        my ($pc, $cc) = (-1, 0);
-        while (@tokens && (($cc = $tokens[0]->getCatcode) != CC_PARAM)) {
-          my $d = shift(@tokens);
-          push(@delim, $d) unless $cc == $pc && $cc == CC_SPACE;    # BUT collapse whitespace!
-          $pc = $cc; }
-        # Found text that marks the end of the parameter
-        if (@delim) {
-          my $expected = Tokens(@delim);
-          push(@params, LaTeXML::Core::Parameter->new('Until',
-              'Until:' . ToString($expected),
-              extra => [$expected])); }
-        # Special case: trailing sole # => delimited by next opening brace.
-        elsif ((scalar(@tokens) == 1) && ($tokens[0]->getCatcode == CC_PARAM)) {
-          shift(@tokens);
-          push(@params, LaTeXML::Core::Parameter->new('UntilBrace', 'UntilBrace')); }
-        # Nothing? Just a plain parameter.
-        else {
-          push(@params, LaTeXML::Core::Parameter->new('Plain', '{}')); } } }
+          unless (defined $t) && ($n == (ord($t->getString) - ord('0'))); }
+      # Unified treatment for both CC_MATCH and CC_PARAM:
+      # Check for delimiting text following the parameter #n
+      my @delim = ();
+      my ($pc, $cc) = (-1, 0);
+      while (@tokens && (($cc = $tokens[0]->getCatcode) != CC_PARAM)) {
+        my $d = shift(@tokens);
+        push(@delim, $d) unless $cc == $pc && $cc == CC_SPACE;    # BUT collapse whitespace!
+        $pc = $cc; }
+      # Found text that marks the end of the parameter
+      if (@delim) {
+        my $expected = Tokens(@delim);
+        push(@params, LaTeXML::Core::Parameter->new('Until',
+            'Until:' . ToString($expected),
+            extra => [$expected])); }
+      # Special case: trailing sole # => delimited by next opening brace.
+      elsif ((scalar(@tokens) == 1) && ($tokens[0]->getCatcode == CC_PARAM)) {
+        shift(@tokens);
+        push(@params, LaTeXML::Core::Parameter->new('UntilBrace', 'UntilBrace')); }
+      # Nothing? Just a plain parameter.
+      else {
+        push(@params, LaTeXML::Core::Parameter->new('Plain', '{}')); } }
     else {
       # Initial delimiting text is required.
       my @lit = ($t);
@@ -2150,7 +2165,7 @@ DefPrimitive('\endgroup',   sub { $_[0]->endgroup; });
 # Debugging aids; Ignored!
 DefPrimitive('\show Token', sub {
     my $stuff = Invocation(T_CS('\meaning'), $_[1]);
-    print STDERR "\n> " . ToString($_[1]) . '=' . writableTokens(Expand($stuff), 1) . " .\n";
+    print STDERR "\n> " . ToString($_[1]) . '=' . writableTokens(Expand($stuff), 1) . ".\n";
     print STDERR $_[0]->getLocator->toString() . "\n\n";
     return; });
 

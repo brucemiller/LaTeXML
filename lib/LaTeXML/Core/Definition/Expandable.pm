@@ -29,11 +29,11 @@ sub new {
   if (ref $expansion eq 'LaTeXML::Core::Tokens') {
     Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
       "Expansion is " . ToString($expansion)) unless $expansion->isBalanced;
-    $expansion = Tokens(map { $_->without_dont_expand; } $expansion->unlist);
+    $expansion = Tokens($expansion->unlist);
     # If expansion is Tokens, and no arguments, we're a "trivial macro"
     if (!$parameters) {
-      $trivexpansion = $expansion->substituteParameters(); }
-  }
+      $trivexpansion = $expansion->substituteParameters()->without_dont_expand; }
+    $expansion = $expansion->without_dont_expand; }
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
     trivial_expansion => $trivexpansion,
     locator           => $source->getLocator,
@@ -146,7 +146,7 @@ sub equals {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

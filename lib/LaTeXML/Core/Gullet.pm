@@ -191,10 +191,11 @@ sub neutralizeTokens {
   my @result = ();
   foreach my $token (@tokens) {
     my $cc = $$token[1];
-    if ($cc == CC_PARAM || ((($cc == CC_CS) || ($cc == CC_ACTIVE))
-        # AND CS/CC is either undefined, or is expandable!
-        && (!defined($STATE->lookupDefinition($token))
-          || defined($STATE->lookupExpandable($token))))) {
+    if (!$$token[2] && ($cc == CC_MATCH ||
+        ((($cc == CC_CS) || ($cc == CC_ACTIVE)
+            # AND CS/CC is either undefined, or is expandable!
+            && (!defined($STATE->lookupDefinition($token))
+              || defined($STATE->lookupExpandable($token))))))) {    # always neutralize match tokens
       push(@result, bless [$$token[0], $cc, $token], 'LaTeXML::Core::Token'); }
     else {
       push(@result, $token); } }
@@ -210,7 +211,7 @@ our @hold_token = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 1, 0,
-  0, 0, 1);
+  0, 1, 0);
 
 sub readToken {
   my ($self) = @_;
@@ -264,7 +265,7 @@ sub readXToken {
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
-    elsif (my $unexpanded = $$token[2]) {               # Inline get_dont_expand
+    elsif (my $protected = $$token[2]) {                # Inline get_dont_expand
       return $token; }
     # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
@@ -360,7 +361,7 @@ our @balanced_interesting_cc = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 0,
-  0, 0, 1);
+  0, 1, 0);
 
 sub readBalanced {
   my ($self, $expanded) = @_;

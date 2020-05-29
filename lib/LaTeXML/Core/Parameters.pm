@@ -17,6 +17,7 @@ use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Parameter;
 use LaTeXML::Core::Tokens;
+use LaTeXML::Core::Token;
 use base qw(LaTeXML::Common::Object);
 
 sub new {
@@ -61,7 +62,13 @@ sub readArguments {
   my @args = ();
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
-    push(@args, $value) unless $$parameter{novalue}; }
+    if (!$$parameter{novalue}) {
+      # Special case, group match tokens together exactly (and only) when building parameter lists
+      if (ref $value eq 'LaTeXML::Core::Tokens' && scalar(@$value) == 2 &&
+        $$value[0][1] == CC_PARAM && $$value[1][1] == CC_OTHER) {
+        push(@args, T_MATCH($$value[1])); }
+      else {
+        push(@args, $value); } } }
   return @args; }
 
 sub readArgumentsAndDigest {
@@ -72,7 +79,12 @@ sub readArgumentsAndDigest {
     my $value = $parameter->read($gullet, $fordefn);
     if (!$$parameter{novalue}) {
       $value = $parameter->digest($stomach, $value, $fordefn);
-      push(@args, $value); } }
+      # Special case, group match tokens together exactly (and only) when building parameter lists
+      if (ref $value eq 'LaTeXML::Core::Tokens' && scalar(@$value) == 2 &&
+        $$value[0][1] == CC_PARAM && $$value[1][1] == CC_OTHER) {
+        push(@args, T_MATCH($$value[1])); }
+      else {
+        push(@args, $value); } } }
   return @args; }
 
 sub reparseArgument {
@@ -92,7 +104,7 @@ sub reparseArgument {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
