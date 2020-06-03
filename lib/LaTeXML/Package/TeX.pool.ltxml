@@ -878,8 +878,11 @@ DefMacro('\meaning Token', sub {
           ($definition->isLong      ? '\long'      : ()),
           ($definition->isOuter     ? '\outer'     : ()),
         );
+        my $expansion_str = ref $expansion eq 'LaTeXML::Core::Tokens' ?
+          join("", map { ToString($_) . ($$_[1] == CC_CS ? ' ' : '') } @$expansion) :
+          ToString($expansion);
         $meaning = ($prefixes ? $prefixes . ' ' : '') .
-          "macro:" . ToString($spec) . "->" . ToString($expansion) . $p_trailer; }
+          "macro:" . ToString($spec) . "->" . $expansion_str . $p_trailer; }
       elsif ($type =~ /chardef$/i) {    # from \mathchardef and the like.
         my $prefix = '\char';
         if ($$definition{internalcs} && $$definition{internalcs}->getCSName =~ /^\\\@mathchardef/) {
@@ -1177,7 +1180,7 @@ sub parseDefParameters {
       # Check for delimiting text following the parameter #n
       my @delim = ();
       my ($pc, $cc) = (-1, 0);
-      while (@tokens && (($cc = $tokens[0]->getCatcode) != CC_PARAM)) {
+      while (@tokens && (($cc = $tokens[0]->getCatcode) != CC_PARAM) && $cc != CC_MATCH) {
         my $d = shift(@tokens);
         push(@delim, $d) unless $cc == $pc && $cc == CC_SPACE;    # BUT collapse whitespace!
         $pc = $cc; }
@@ -1197,8 +1200,12 @@ sub parseDefParameters {
     else {
       # Initial delimiting text is required.
       my @lit = ($t);
-      while (@tokens && ($tokens[0]->getCatcode != CC_PARAM)) {
-        push(@lit, shift(@tokens)); }
+      while (my $literal_t = shift @tokens) {
+        if ($$literal_t[1] == CC_PARAM || $$literal_t[1] == CC_MATCH) {
+          unshift @tokens, $literal_t;
+          last; }
+        else {
+          push(@lit, $literal_t); } }
       my $expected = Tokens(@lit);
       push(@params, LaTeXML::Core::Parameter->new('Match',
           'Match:' . ToString($expected),

@@ -1,7 +1,7 @@
 \catcode`\:=11
 \catcode`\ =9
 \catcode`\~=10
-\endlinechar=32
+\endlinechar=32 \relax
 
 \protected\long\def\csset{\long\def}
 \protected\long\def\cssetp{\protected\long\def}
@@ -84,7 +84,15 @@
     }
 }
 
-\generateconditional {mytest}{N}\ctrue \csset e {#1}{F}{#1}
+\generateconditional {mytest}{N}\ctrue \csset e {#1}{F}{
+  \ifx #1 \relax
+    \returnfalse
+  \else
+    \ifdefined #1
+      \returntrue
+    \else
+      \returnfalse
+    \fi\fi}
 
 mytest=\meaning\mytest:NF
 \bye
