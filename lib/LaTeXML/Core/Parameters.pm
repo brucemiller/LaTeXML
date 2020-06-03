@@ -63,12 +63,8 @@ sub readArguments {
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
     if (!$$parameter{novalue}) {
-      # Special case, group match tokens together exactly (and only) when building parameter lists
-      if (ref $value eq 'LaTeXML::Core::Tokens' && scalar(@$value) == 2 &&
-        $$value[0][1] == CC_PARAM && $$value[1][1] == CC_OTHER) {
-        push(@args, T_MATCH($$value[1])); }
-      else {
-        push(@args, $value); } } }
+      $value = rescanMatchTokens($value);
+      push(@args, $value); } }
   return @args; }
 
 sub readArgumentsAndDigest {
@@ -78,13 +74,9 @@ sub readArgumentsAndDigest {
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
     if (!$$parameter{novalue}) {
+      $value = rescanMatchTokens($value);
       $value = $parameter->digest($stomach, $value, $fordefn);
-      # Special case, group match tokens together exactly (and only) when building parameter lists
-      if (ref $value eq 'LaTeXML::Core::Tokens' && scalar(@$value) == 2 &&
-        $$value[0][1] == CC_PARAM && $$value[1][1] == CC_OTHER) {
-        push(@args, T_MATCH($$value[1])); }
-      else {
-        push(@args, $value); } } }
+      push(@args, $value); } }
   return @args; }
 
 sub reparseArgument {
@@ -98,6 +90,25 @@ sub reparseArgument {
         return @values; }); }
   else {
     return (); } }
+
+# Special case, group match tokens together exactly (and only) when building parameter lists
+sub rescanMatchTokens {
+  my ($tokens) = @_;
+  if (ref $tokens eq 'LaTeXML::Core::Tokens' && scalar(@$tokens) >= 2) {
+    my @toks      = @$tokens;
+    my @rescanned = ();
+    while (my $t = shift @toks) {
+      if ($$t[1] == CC_PARAM && @toks) {
+        my $next_t = shift @toks;
+        if ($$next_t[1] == CC_OTHER) {
+          push(@rescanned, T_MATCH($next_t)); }
+        else {    # any other case, preserve as-is
+          push(@rescanned, $t, $next_t); }
+      } else {
+        push(@rescanned, $t); } }
+    return Tokens(@rescanned);
+  } else {
+    return $tokens; } }
 
 #======================================================================
 1;
