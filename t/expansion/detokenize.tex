@@ -1,0 +1,15 @@
+\def\printcat#1{\the\catcode`#1}
+
+\expandafter\printcat\detokenize{\relax}
+
+\expandafter\printcat\detokenize{relax}
+
+\expandafter\printcat\detokenize{\\}
+
+\expandafter\printcat\detokenize{ \\}
+
+\expandafter\printcat\detokenize{\ .}
+
+\detokenize{.\relax\sample.}
+
+\bye

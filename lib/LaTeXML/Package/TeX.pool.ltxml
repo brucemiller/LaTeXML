@@ -878,11 +878,16 @@ DefMacro('\meaning Token', sub {
           ($definition->isLong      ? '\long'      : ()),
           ($definition->isOuter     ? '\outer'     : ()),
         );
-        my $expansion_str = ref $expansion eq 'LaTeXML::Core::Tokens' ?
-          join("", map { ToString($_) . ($$_[1] == CC_CS ? ' ' : '') } @$expansion) :
-          ToString($expansion);
+        my $expansion_str = '';
+        if (ref $expansion eq 'LaTeXML::Core::Tokens') {
+          for my $t (@$expansion) {
+            $expansion_str .= $$t[0];
+            if (@$expansion && $$t[1] == CC_CS) {
+              $expansion_str .= ' '; } } }
+        else {
+          $expansion_str = ToString($expansion); }
         $meaning = ($prefixes ? $prefixes . ' ' : '') .
-          "macro:" . ToString($spec) . "->" . $expansion_str . $p_trailer; }
+          "macro:$spec->$expansion_str$p_trailer"; }
       elsif ($type =~ /chardef$/i) {    # from \mathchardef and the like.
         my $prefix = '\char';
         if ($$definition{internalcs} && $$definition{internalcs}->getCSName =~ /^\\\@mathchardef/) {
@@ -2172,7 +2177,7 @@ DefPrimitive('\endgroup',   sub { $_[0]->endgroup; });
 # Debugging aids; Ignored!
 DefPrimitive('\show Token', sub {
     my $stuff = Invocation(T_CS('\meaning'), $_[1]);
-    print STDERR "\n> " . ToString($_[1]) . '=' . writableTokens(Expand($stuff), 1) . ".\n";
+    print STDERR "\n> " . ($_[1][1] == CC_CS ? ToString($_[1]) . '=' : '') . writableTokens(Expand($stuff), 1) . ".\n";
     print STDERR $_[0]->getLocator->toString() . "\n\n";
     return; });
 
@@ -2222,6 +2227,7 @@ DefPrimitive('\lowercase GeneralText', sub {
 
 # Converts $tokens to a string in the fashion of \message and others:
 # doubles #, converts to string; optionally adds spaces after control sequences
+# in the spirit of the B Book, "show_token_list" routine, in 292.
 sub writableTokens {
   my ($tokens, $addspaces) = @_;
   my @tokens = $tokens->unlist;
@@ -2229,7 +2235,15 @@ sub writableTokens {
   @tokens = map { $$_[2] || $_ } @tokens;
   if ($addspaces) {
     @tokens = map { $_->getCatcode == CC_CS ? ($_, T_SPACE) : $_ } @tokens; }
-  @tokens = map { $_->getCatcode == CC_PARAM ? ($_, $_) : $_ } @tokens;
+  @tokens = map {
+    my $cc = $$_[1];
+    if ($cc == CC_PARAM) { ($_, $_) }
+    elsif ($cc == CC_MATCH) {
+      # B Book, 294.
+      # Reduce to param+integer
+      (T_PARAM, T_OTHER(substr($$_[0], -1, 1))) }
+    else { $_ }
+  } @tokens;
   return UnTeX(Tokens(@tokens)); }
 
 DefPrimitive('\message{}', sub {

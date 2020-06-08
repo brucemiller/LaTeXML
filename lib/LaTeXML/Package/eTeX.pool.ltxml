@@ -26,7 +26,7 @@ DefPrimitiveI('\protected', undef, sub {
     $STATE->setPrefix('protected'); return; }, isPrefix => 1);
 
 # \detokenize
-DefMacro('\detokenize GeneralText', sub { Explode(writableTokens($_[1])); });
+DefMacro('\detokenize GeneralText', sub { Explode(writableTokens($_[1], 1)); });
 
 # \unexpanded
 # This is like a partial \noexpand (akin to \the),

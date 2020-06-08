@@ -100,9 +100,11 @@ sub rescanMatchTokens {
     while (my $t = shift @toks) {
       if ($$t[1] == CC_PARAM && @toks) {
         my $next_t = shift @toks;
-        if ($$next_t[1] == CC_OTHER) {
+        if ($$next_t[1] == CC_OTHER && $$next_t[0] =~ /^\d$/) {
+          # only group clear match token cases
           push(@rescanned, T_MATCH($next_t)); }
-        else {    # any other case, preserve as-is
+        else {    # any other case, preserve as-is, let the higher level call resolve any errors
+                  # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
           push(@rescanned, $t, $next_t); }
       } else {
         push(@rescanned, $t); } }
