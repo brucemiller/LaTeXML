@@ -1190,7 +1190,7 @@ sub parseDefParameters {
   return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
 
 sub do_def {
-  my ($globally, $expanded, $gullet, $cs, $params, $body) = @_;
+  my ($globally, $gullet, $cs, $params, $body) = @_;
   if (!$cs) {
     Error('expected', 'Token', $gullet, "Expected definition token");
     return; }
@@ -1198,18 +1198,15 @@ sub do_def {
     Error('misdefined', $cs, $gullet, "Expected definition parameter list");
     return; }
   $params = parseDefParameters($cs, $params);
-  if ($expanded) {
-    local $LaTeXML::NOEXPAND_THE = 1;
-    $body = Expand($body); }
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body),
     ($globally ? 'global' : undef));
   AfterAssignment();
   return; }
 
-DefPrimitive('\def  SkipSpaces Token UntilBrace {}',        sub { do_def(0, 0, @_); }, locked => 1);
-DefPrimitive('\gdef SkipSpaces Token UntilBrace {}',        sub { do_def(1, 0, @_); }, locked => 1);
-DefPrimitive('\edef SkipSpaces Token UntilBrace EExpanded', sub { do_def(0, 0, @_); }, locked => 1);
-DefPrimitive('\xdef SkipSpaces Token UntilBrace EExpanded', sub { do_def(1, 0, @_); }, locked => 1);
+DefPrimitive('\def  SkipSpaces Token UntilBrace {}',        sub { do_def(0, @_); }, locked => 1);
+DefPrimitive('\gdef SkipSpaces Token UntilBrace {}',        sub { do_def(1, @_); }, locked => 1);
+DefPrimitive('\edef SkipSpaces Token UntilBrace EExpanded', sub { do_def(0, @_); }, locked => 1);
+DefPrimitive('\xdef SkipSpaces Token UntilBrace EExpanded', sub { do_def(1, @_); }, locked => 1);
 
 # <prefix> = \global | \long | \outer
 # See Stomach.pm & Stomach.pm
