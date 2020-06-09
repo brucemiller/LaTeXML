@@ -859,13 +859,16 @@ DefMacro('\meaning Token', sub {
         my $p_trailer  = '';
         for my $param (@params) {
           my $p_spec = $$param{spec};
-          if ($p_spec =~ s/^Match://) { }    # just match, don't increment arg index
+          if ($p_spec eq 'RequireBrace') {
+            # tex's \meaning prints out the required braces for "\def\a#{}" variants
+            $p_trailer = '{';
+            $p_spec    = '{'; }
+          elsif ($p_spec eq 'UntilBrace') {    # should only ever be used in the last argument?
+            $p_trailer = '{';
+            $p_spec    = "#" . (++$arg_index) . '{'; }
+          elsif ($p_spec =~ s/^Match://) { }    # just match, don't increment arg index
           elsif ($p_spec =~ s/^\w?Until(\w*)://) {    # implied argument at this slot
             $p_spec = "#" . (++$arg_index) . $p_spec; }
-          elsif ($p_spec eq 'RequireBrace') {
-            # tex's \meaning prints out the required braces for "\def\a#{}" variants
-            $p_trailer .= '{';
-            $p_spec = '{'; }
           else {                                      # regular parameter, increment
             next if $$param{novalue}; # skip the latexml-only requirement params, but only here, since Match also have "novalue" set.
             $p_spec = "#" . (++$arg_index); }
@@ -1176,7 +1179,7 @@ sub parseDefParameters {
         if (!@tokens) {    # Special case: lone # NOT following a numbered parameter
                            # Note that we require a { to appear next, but do NOT read it!
           push(@params, LaTeXML::Core::Parameter->new('RequireBrace', 'RequireBrace'));
-          next; }
+          last; }
         $n++; $t = shift(@tokens);
         Fatal('expected', "#$n", $STATE->getStomach,
           "Parameters for '" . ToString($cs) . "' not in order in " . ToString($params))
