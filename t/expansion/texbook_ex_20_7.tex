@@ -1,0 +1,13 @@
+\catcode`[=1
+\catcode`]=2
+\catcode`!=6
+
+\def\!!1#2![{!#]#!!2}
+\def\alt#1!2#[{##]!!#2]
+
+\tracingmacros=1
+\expandafter\detokenize\expandafter{\! x{[y]][z}}
+
+\expandafter\detokenize\expandafter{\alt x{[y]][z}}%
+\tracingmacros=0%
+\bye
