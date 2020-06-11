@@ -423,13 +423,24 @@ sub fill_in_mathlinks {
 # Given a declaration entry (ltx:declare, or ltx:mark or ...)
 # Return the id of an appropriate link target.
 # Basically this is the parent, except (DLMF specific?) it should be a table ROW, not CELL
+# Or the numbered equationgroup, not the unnumbered equation
 sub getIDForDeclaration {
   my ($self, $entry) = @_;
   if (my $pid = $entry && $entry->getValue('parent')) {
     if (my $pentry = $$self{db}->lookup("ID:$pid")) {
-      if (($pentry->getValue('type') || '') eq 'ltx:td') {
-        if (my $ppid = $pentry->getValue('parent')) {
-          return $ppid; } } }
+      my $ptype = $pentry->getValue('type') || '';
+      # If definition is in a table cell, the correct id will be that of the row
+      if ($ptype eq 'ltx:td') {
+        if (my $gpid = $pentry->getValue('parent')) {
+          return $gpid; } }
+      # If definition is in unnumbered equation within an equation group, use id of the group
+      elsif (($ptype eq 'ltx:equation') && !$entry->getValue('refnum')) {
+        if (my $gpid = $pentry->getValue('parent')) {
+          if (my $gpentry = $$self{db}->lookup("ID:$gpid")) {
+            my $gptype = $gpentry->getValue('type') || '';
+            if ($gptype eq 'ltx:equationgroup') {
+              return $gpid; } } } }
+    }
     return $pid; } }
 
 # Needs to evolve into the combined stuff that we had in DLMF.
@@ -609,10 +620,11 @@ sub generateURL {
   return; }
 
 my $NBSP = pack('U', 0xA0);    # CONSTANT
-# Generate the contents of a <ltx:ref> of the given id.
-# show is a string containing substrings 'type', 'refnum' and 'title'
-# (standing for the type prefix, refnum and title of the id'd object)
-# and any other random characters; the
+                               # Generate the contents of a <ltx:ref> of the given id.
+                               # show is a string containing substrings 'type', 'refnum' and 'title'
+                               # (standing for the type prefix, refnum and title of the id'd object)
+                               # and any other random characters; the
+
 sub generateRef {
   my ($self, $doc, $reqid, $reqshow) = @_;
   my $pending = '';
