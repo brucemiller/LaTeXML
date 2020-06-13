@@ -474,8 +474,28 @@ DefMacro('\lxSVG@endgroup',
 DefMacro('\lxSVG@endgroups', sub {
     map { T_CS('\lxSVG@endgroup') } 1 .. LookupValue('pgf_scopecount'); });
 
-DefConstructor('\lxSVG@begingroup@ RequiredKeyVals',
-  '<svg:g %&GetKeyVals(#1)>',
+DefConstructor('\lxSVG@begingroup@ RequiredKeyVals', sub {
+    my ($doc, $kv) = @_;
+    my $g_attrs        = $kv->getKeyVals;
+    my @keys           = keys %$g_attrs;
+    my $this           = $doc->getElement;
+    my $orig_this_name = $doc->getNodeQName($this);
+    # Special case check: if we are in a latexml context, the parent svg:g is acceptable
+    if ($orig_this_name =~ /^ltx:/ && (my $g_ancestor = $doc->findnode("ancestor::svg:g", $this))) {
+      # Sometimes even when we have a parent g, there is an attribute conflict
+      #    and we need to open a new one. AND make it the current insertion point OR?!
+      my @needs_wrap = grep { $g_ancestor->hasAttribute($_) } @keys;
+      if (@needs_wrap) {    # incompatible, wrap with new g
+        $this = $doc->wrapNodes('svg:g', $g_ancestor->lastChild); }
+      else {                # compatible, reuse
+        $this = $g_ancestor; } }
+    else {                  # all other cases, just open a g.
+                            # TODO: Redundant g's get made, we can merge them on afterClose?
+      $this = $doc->openElement('svg:g'); }
+    # We have the _correct_ svg:g here, let's assign the attributes
+    foreach my $key (@keys) {
+      my $value = $kv->getValue($key);
+      $doc->setAttribute($this, $key, $value); } },
   reversion => '', sizer => 0);
 
 DefConstructor('\lxSVG@endgroup@',

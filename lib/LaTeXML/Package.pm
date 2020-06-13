@@ -4044,7 +4044,7 @@ are added.
 
 C<afterOpen:early> or C<afterOpen:late> can be used in
 place of C<afterOpen>; these will be run as a group
-bfore, or after (respectively) the unmodified blocks.
+before, or after (respectively) the unmodified blocks.
 
 =item C<afterClose=E<gt>I<code>($document,$box)>
 
