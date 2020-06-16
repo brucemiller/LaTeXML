@@ -753,7 +753,7 @@ DefConstructor('\bib@field@default@doi Semiverbatim',
     my $id = processIdentifier($_[1]);
     # doi's can have all sorts of screwy characters which must be encoded in urls
     $id =~ s/([^0-9a-zA-Z\.\/\-\+])/ sprintf('%%%02X',ord($1)) /ge;
-    (id => $id, href => "http://dx.doi.org/$id"); });
+    (id => $id, href => "https://dx.doi.org/$id"); });
 
 # ISBN : the International Standard Book Number
 # Is there any useful URL that could be associated here?
@@ -822,7 +822,7 @@ DefConstructor('\bib@@mr {}{}',
     my $isreview = ToString($reviewer) ne '';
     if ($id =~ /^\s*(?:MR)?(\d+)\s+\(.*\)\s*$/) {    # If extra number, there's a review
       $id = $1; $isreview = 1; }
-    my $href = "http://www.ams.org/mathscinet-getitem?mr=" . $id;
+    my $href = "https://www.ams.org/mathscinet-getitem?mr=" . $id;
     (isreview => $isreview, id => $id, href => $href, reviewer => $reviewer); });
 
 DefMacro('\bib@synthesize@zbl', sub {
@@ -841,7 +841,7 @@ DefConstructor('\bib@@zbl {}{}',
   properties => sub {
     my $id       = ToString($_[1]);
     my $reviewer = $_[2];
-    my $href     = "http://zbmath.org/$id";
+    my $href     = "https://zbmath.org/$id";
     (id => $id, href => $href, reviewer => $reviewer); });
 
 #======================================================================
