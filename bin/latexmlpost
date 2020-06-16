@@ -18,7 +18,6 @@ use File::Spec;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML;    # Currently, just for version information.
-use LaTeXML::Common::Error qw(generateMessage colorizeString);
 use LaTeXML::Post;
 use LaTeXML::Post::Writer;
 use LaTeXML::Post::Scan;
@@ -290,9 +289,8 @@ else {
 if ((!defined $destination)
   && ($dographics || $picimages
     || checkMathFormat('images') || checkMathFormat('svg'))) {
-  print STDERR generateMessage(colorizeString("Warning:expected:options", 'warning'), undef,
-    "must supply --destination to support auxilliary files", 0,
-    "  disabling: --nomathimages --nographicimages --nopictureimages");
+  LaTeXML::Post::Warn("expected","options", undef,
+    "must supply --destination to support auxilliary files disabling: --nomathimages --nographicimages --nopictureimages");
   # default resources is sorta ok: we might not copy, but we'll still have the links/script/etc
   $dographics = $picimages = 0;
   removeMathFormat('images');
