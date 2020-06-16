@@ -1009,7 +1009,8 @@ DefMacro('\lst@@mathescape Until:\end', sub {
     my ($gullet, $boole) = @_;
     if (ToString($boole) eq 'true') {
       LookupValue('LST_DELIMITERS')->{'$'} = { open => '\$', close => '\$', class => 'mathescape', escape => 1 };
-      LookupValue('LST_CLASSES')->{mathescape} = { begin => T_MATH, end => T_MATH, eval => 1 }; }
+      LookupValue('LST_CLASSES')->{mathescape} = { begin => T_MATH, end => T_MATH, eval => 1 };
+      delete LookupValue('LST_CHARACTERS')->{letter}{'\$'}; }
     else {
       delete(LookupValue('LST_DELIMITERS')->{'$'}); }
     return; });
@@ -1352,7 +1353,7 @@ sub lstProcess_internal {
         $LaTeXML::colnum = 0;                      # Reset column number
           # NOTE: should ignore blank lines at end of listing, even if they aren't the last line of the code!
           # NOTE: should handle showlines, emptylines keywords
-        while (($LaTeXML::listing ne '') && !&$LaTeXML::linetest($LaTeXML::linenum)) {    # Ignore next line?
+        while (($LaTeXML::listing ne '') && !&$LaTeXML::linetest($LaTeXML::linenum)) {   # Ignore next line?
           $LaTeXML::listing =~ s/^.*?(\n|$)//s;
           lstProcessPush(Invocation(T_CS('\stepcounter'), T_OTHER('lstnumber')));
           $LaTeXML::linenum++; }
@@ -1361,10 +1362,10 @@ sub lstProcess_internal {
       my $gobble = lstGetNumber('gobble');
       (map { $LaTeXML::listing =~ s/^.// } 1 .. $gobble) if $gobble;
     }
-    elsif ($LaTeXML::listing =~ s/^\f//s) {                                       # Formfeed
+    elsif ($LaTeXML::listing =~ s/^\f//s) {                                              # Formfeed
       lstProcessPush(lstGetTokens('formfeed')->unlist);
       $LaTeXML::colnum++; }
-    elsif ($LaTeXML::listing =~ s/^([\t\s]+)//s) {                                # Tab expansion
+    elsif ($LaTeXML::listing =~ s/^([\t\s]+)//s) {                                       # Tab expansion
       my $s       = $1;
       my $n       = 0;
       my $tabsize = lstGetNumber('tabsize') || 1;
