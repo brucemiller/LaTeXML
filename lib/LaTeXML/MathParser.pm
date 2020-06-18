@@ -1311,14 +1311,18 @@ sub Fence {
   else {
     return InterpretDelimited(New($op), @stuff); } }
 
-# Compose a complex relational operator from two tokens, such as >=
+# Compose a complex relational operator from two tokens, such as >=, >>
 sub TwoPartRelop {
   my ($op1, $op2) = @_;
   $op1 = Lookup($op1);
   $op2 = Lookup($op2);
-  my $m1      = p_getTokenMeaning($op1);
-  my $m2      = p_getTokenMeaning($op2);
-  my $meaning = "$m1-or-$m2";
+  my $m1 = p_getTokenMeaning($op1);
+  my $m2 = p_getTokenMeaning($op2);
+  my $meaning;
+  if ($m1 eq $m2) {
+    $meaning = "much-$m1"; }
+  else {
+    $meaning = "$m1-or-$m2"; }
   my $content = $op1->textContent . $op2->textContent;
   return ['ltx:XMTok', { role => "RELOP", meaning => $meaning }, $content]; }
 
