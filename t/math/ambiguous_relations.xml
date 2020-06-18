@@ -122,7 +122,7 @@
       <Math mode="display" tex="a&lt;&lt;b" text="a lessless b" xml:id="S0.Ex7.m1">
         <XMath>
           <XMApp>
-            <XMTok meaning="much-less-than" role="RELOP">≪</XMTok>
+            <XMTok font="italic" meaning="much-less-than" role="RELOP">&lt;&lt;</XMTok>
             <XMTok font="italic" role="UNKNOWN">a</XMTok>
             <XMTok font="italic" role="UNKNOWN">b</XMTok>
           </XMApp>
@@ -137,19 +137,19 @@
           <XMDual>
             <XMApp>
               <XMTok meaning="formulae"/>
-              <XMRef idref="S0.Ex8.m1.1"/>
-              <XMRef idref="S0.Ex8.m1.2"/>
+              <XMRef idref="S0.Ex8.m1.3"/>
+              <XMRef idref="S0.Ex8.m1.4"/>
             </XMApp>
             <XMWrap>
-              <XMApp xml:id="S0.Ex8.m1.1">
-                <XMTok meaning="much-less-than" role="RELOP">≪</XMTok>
+              <XMApp xml:id="S0.Ex8.m1.3">
+                <XMTok font="italic" meaning="much-less-than" role="RELOP">&lt;&lt;</XMTok>
                 <XMTok meaning="0" role="NUMBER">0</XMTok>
-                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex8.m1.1">a</XMTok>
               </XMApp>
               <XMTok role="PUNCT">,</XMTok>
-              <XMApp xml:id="S0.Ex8.m1.2">
-                <XMTok meaning="much-greater-than" role="RELOP">≫</XMTok>
-                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMApp xml:id="S0.Ex8.m1.4">
+                <XMTok font="italic" meaning="much-greater-than" role="RELOP">&gt;&gt;</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex8.m1.2">b</XMTok>
                 <XMTok meaning="1" role="NUMBER">1</XMTok>
               </XMApp>
             </XMWrap>
