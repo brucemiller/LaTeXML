@@ -25,6 +25,9 @@ our $PROFILES_DB = {};    # Class-wide, caches all profiles that get used while 
 our $is_bibtex  = qr/(^literal\:\s*\@)|(\.bib$)/;
 our $is_archive = qr/(^literal\:PK)|(\.zip$)/;
 
+use base qw(Exporter);
+our @EXPORT = (qw(addMathFormat removeMathFormat maybeAddMathFormat));
+
 sub new {
   my ($class, %opts) = @_;
   #TODO: How about defaults in the daemon server use case? Should we support those here?
@@ -93,20 +96,20 @@ sub getopt_specification {
     "linelength=i"                => \$$opts{linelength},
     "plane1!"                     => \$$opts{plane1},
     "hackplane1!"                 => \$$opts{hackplane1},
-    "mathimages"                  => sub { _addMathFormat($opts, 'images'); },
-    "nomathimages"                => sub { _removeMathFormat($opts, 'images'); },
-    "mathsvg"                     => sub { _addMathFormat($opts, 'svg'); },
-    "nomathsvg"                   => sub { _removeMathFormat($opts, 'svg'); },
-    "presentationmathml|pmml"     => sub { _addMathFormat($opts, 'pmml'); },
-    "contentmathml|cmml"          => sub { _addMathFormat($opts, 'cmml'); },
-    "openmath|om"                 => sub { _addMathFormat($opts, 'om'); },
-    "keepXMath|xmath"             => sub { _addMathFormat($opts, 'xmath'); },
-    "nopresentationmathml|nopmml" => sub { _removeMathFormat($opts, 'pmml'); },
-    "nocontentmathml|nocmml"      => sub { _removeMathFormat($opts, 'cmml'); },
-    "noopenmath|noom"             => sub { _removeMathFormat($opts, 'om'); },
-    "nokeepXMath|noxmath"         => sub { _removeMathFormat($opts, 'xmath'); },
-    "mathtex"                     => sub { _addMathFormat($opts, 'mathtex'); },
-    "nomathtex"                   => sub { _removeMathFormat($opts, 'mathtex'); },
+    "mathimages"                  => sub { addMathFormat($opts, 'images'); },
+    "nomathimages"                => sub { removeMathFormat($opts, 'images'); },
+    "mathsvg"                     => sub { addMathFormat($opts, 'svg'); },
+    "nomathsvg"                   => sub { removeMathFormat($opts, 'svg'); },
+    "presentationmathml|pmml"     => sub { addMathFormat($opts, 'pmml'); },
+    "contentmathml|cmml"          => sub { addMathFormat($opts, 'cmml'); },
+    "openmath|om"                 => sub { addMathFormat($opts, 'om'); },
+    "keepXMath|xmath"             => sub { addMathFormat($opts, 'xmath'); },
+    "nopresentationmathml|nopmml" => sub { removeMathFormat($opts, 'pmml'); },
+    "nocontentmathml|nocmml"      => sub { removeMathFormat($opts, 'cmml'); },
+    "noopenmath|noom"             => sub { removeMathFormat($opts, 'om'); },
+    "nokeepXMath|noxmath"         => sub { removeMathFormat($opts, 'xmath'); },
+    "mathtex"                     => sub { addMathFormat($opts, 'mathtex'); },
+    "nomathtex"                   => sub { removeMathFormat($opts, 'mathtex'); },
     "parallelmath!"               => \$$opts{parallelmath},
     # Some general XSLT/CSS/JavaScript options.
     "stylesheet=s"      => \$$opts{stylesheet},
@@ -545,7 +548,7 @@ sub _prepare_options {
         && scalar(grep { $_ ne 'images' } @{ $$opts{math_formats} });
       croak("Default html stylesheet does not support svg") if $$opts{svg};
       $$opts{math_formats} = [];
-      _maybeAddMathFormat($opts, 'images');
+      maybeAddMathFormat($opts, 'images');
     }
     $$opts{svg} = 1 unless defined $$opts{svg};      # If we're not making HTML, SVG is on by default
           # PMML default if we're HTMLy and all else fails and no mathimages:
@@ -561,30 +564,33 @@ sub _prepare_options {
   $$self{dirty}  = 0;
   return; }
 
-## Utilities:
+## Public Utilities:
 
-sub _addMathFormat {
+sub addMathFormat {
   my ($opts, $fmt) = @_;
   $$opts{math_formats} = [] unless defined $$opts{math_formats};
   CORE::push(@{ $$opts{math_formats} }, $fmt)
     unless (grep { $_ eq $fmt } @{ $$opts{math_formats} }) || $$opts{removed_math_formats}->{$fmt};
   return; }
 
-sub _removeMathFormat {
+sub removeMathFormat {
   my ($opts, $fmt) = @_;
   @{ $$opts{math_formats} } = grep { $_ ne $fmt } @{ $$opts{math_formats} };
   $$opts{removed_math_formats}->{$fmt} = 1;
   return; }
 
-sub _maybeAddMathFormat {
+# Add a default math format, when no math formatter is requested, unless specifically forbidden
+sub maybeAddMathFormat {
   my ($opts, $fmt) = @_;
   unshift(@{ $$opts{math_formats} }, $fmt)
-    unless (grep { $_ eq $fmt } @{ $$opts{math_formats} }) || $$opts{removed_math_formats}{$fmt};
+    unless @{ $$opts{math_formats} } || $$opts{removed_math_formats}{$fmt};
   return; }
 
 sub _checkMathFormat {
   my ($opts, $fmt) = @_;
   return grep { $_ eq $fmt } @{ $$opts{math_formats} }; }
+
+## Utilities:
 
 sub _checkOptionValue {
   my ($option, $value, @choices) = @_;
