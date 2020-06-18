@@ -148,12 +148,6 @@
     <xsl:copy-of select="."/>
   </xsl:template>
   <!-- Front matter section -->
-  <xsl:template match="ltx:emph" mode="front">
-    <italic>
-      <xsl:apply-templates mode="front" select="@*|node()"/>
-    </italic>
-  </xsl:template> 
-
   <xsl:template match="ltx:creator[@role='author']" mode="front">
     <contrib contrib-type="author">
       <xsl:apply-templates mode="front"/>
@@ -494,12 +488,6 @@
     <xsl:apply-templates mode="back"/>
   </xsl:template>
 
-  <xsl:template match="ltx:emph" mode="back">
-    <italic>
-      <xsl:apply-templates mode="back" select="@*|node()"/>
-    </italic>
-  </xsl:template>
-
   <xsl:template match="ltx:acknowledgements" mode="back">
     <ack> 
       <xsl:if test="not(./ltx:p)">
@@ -565,27 +553,9 @@
   <!-- End back section -->
   <!-- Start main section --> 
 
-  <xsl:template match="ltx:text[@font='bold']">
-    <bold>
-      <xsl:apply-templates select="@*|node()"/>
-    </bold>
-  </xsl:template>
-
   <xsl:template match="ltx:note[@role='institutetext']" mode="back"/>
   <xsl:template match="ltx:note[@role='institutetext']"/>
   <xsl:template match="ltx:note[@role='institutetext']" mode="front"/> 
-
-  <xsl:template match="ltx:text[@font='italic']">
-    <italic>
-      <xsl:apply-templates select="@*|node()"/> 
-    </italic>
-  </xsl:template>
-
-  <xsl:template match="ltx:emph">
-    <italic>
-      <xsl:apply-templates select="@*|node()"/>
-    </italic>
-  </xsl:template>
 
   <xsl:template match="ltx:note[@role='footnote']">
     <fn id="{generate-id(.)}">
@@ -845,12 +815,6 @@
     <xsl:apply-templates select="@*|node()"/>
   </xsl:template>
 
-  <xsl:template match="ltx:text[@font='italic']">
-    <italic>
-      <xsl:apply-templates select="@*|node()" />
-    </italic>
-  </xsl:template>
-
   <xsl:template match="ltx:section/ltx:title">
     <title>
       <xsl:apply-templates select="@*|node()" />
@@ -1083,6 +1047,18 @@
   <xsl:template match="@*" mode="front"/>
   <!-- end of hackish references stuff --> 
   <!-- font section --> 
+  <xsl:template match="ltx:text[@font='bold']">
+    <bold>
+      <xsl:apply-templates select="@*|node()"/>
+    </bold>
+  </xsl:template>
+	
+  <xsl:template match="ltx:text[@font='italic']">
+    <italic>
+      <xsl:apply-templates select="@*|node()"/> 
+    </italic>
+  </xsl:template>
+	
   <xsl:template match="ltx:text[@font='medium']">
     <xsl:apply-templates select="@*|node()"/>
   </xsl:template>
@@ -1212,6 +1188,63 @@
   <xsl:template match="ltx:text" mode="front">
     <xsl:apply-templates mode="back" select="@*|node()"/> 
   </xsl:template>
+	
+  <!-- text formatting -->
+	
+  <xsl:template match="ltx:emph">
+    <italic>
+      <xsl:apply-templates select="@*|node()"/>
+    </italic>
+  </xsl:template>
+	
+  <xsl:template match="ltx:emph" mode="front">
+    <italic>
+      <xsl:apply-templates select="@*|node()" mode="front"/>
+    </italic>
+  </xsl:template>
+	
+  <xsl:template match="ltx:emph" mode="back">
+    <italic>
+      <xsl:apply-templates select="@*|node()" mode="back"/>
+    </italic>
+  </xsl:template>
+	
+  <xsl:template match="ltx:sub">
+    <sub>
+      <xsl:apply-templates select="@*|node()"/>
+    </sub>
+  </xsl:template>
+	
+  <xsl:template match="ltx:sub" mode="front">
+    <sub>
+      <xsl:apply-templates select="@*|node()" mode="front"/>
+    </sub>
+  </xsl:template>
+	
+  <xsl:template match="ltx:sub" mode="back">
+    <sub>
+      <xsl:apply-templates select="@*|node()" mode="back"/>
+    </sub>
+  </xsl:template>
+	
+  <xsl:template match="ltx:sup">
+    <sup>
+      <xsl:apply-templates select="@*|node()"/>
+    </sup>
+  </xsl:template>
+	
+  <xsl:template match="ltx:sup" mode="front">
+    <sup>
+      <xsl:apply-templates select="@*|node()" mode="front"/>
+    </sup>
+  </xsl:template>
+	
+  <xsl:template match="ltx:sup" mode="back">
+    <sup>
+      <xsl:apply-templates select="@*|node()" mode="back"/>
+    </sup>
+  </xsl:template>
+	
   <!-- Templates to make things more convenient -->
 </xsl:stylesheet> 
 
