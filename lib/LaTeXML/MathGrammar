@@ -699,6 +699,9 @@ addOpDecoration :
 # Note we disallow < or > if we're parsing the contents of a bra or ket!
 relop   :
           { ($forbidLRAngle ? 1 : undef); } /RELOP:(less|greater)-than:\d+/ <commit> <reject>
+        | /RELOP:less-than:\d+/ /RELOP:less-than:\d+/ { TwoPartRelop($item[1],$item[2]) }
+        | /RELOP:greater-than:\d+/ /RELOP:greater-than:\d+/ { TwoPartRelop($item[1],$item[2]) }
+        | /RELOP:(less|greater)-than:\d+/ /RELOP:equals:\d+/ { TwoPartRelop($item[1],$item[2]) }
         | RELOP addOpDecoration[$item[1]]
         | ARROW addOpDecoration[$item[1]]
 

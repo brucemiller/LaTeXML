@@ -4226,17 +4226,6 @@ DefMathLigature("!!" => "!!", role => 'POSTFIX', meaning => 'double-factorial');
 # Recognize :=
 DefMathLigature(":=" => ":=", role => 'RELOP', meaning => 'assign');
 
-# Recognize: <=, << and <<<
-# # Note that in <<<, the leading << will already have been converted to \ll !!!
-DefMathLigature("<="        => "\x{2264}", role => 'RELOP', meaning => 'less-than-or-equals');
-DefMathLigature("<<"        => "\x{226A}", role => 'RELOP', meaning => 'much-less-than');
-DefMathLigature("\x{226A}<" => "\x{22D8}", role => 'RELOP', meaning => 'very-much-less-than');
-
-# Recognize: >=, >> and >>>
-DefMathLigature(">="        => "\x{2265}", role => 'RELOP', meaning => 'greater-than-or-equals');
-DefMathLigature(">>"        => "\x{226B}", role => 'RELOP', meaning => 'much-greater-than');
-DefMathLigature("\x{226B}>" => "\x{22D8}", role => 'RELOP', meaning => 'very-much-greater-than');
-
 #======================================================================
 # Combine letters, when the fonts are right. (sorta related to mathcode)
 # well, maybe a letter followed by letters & digits?
