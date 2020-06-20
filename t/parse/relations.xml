@@ -124,7 +124,7 @@
         </Math>
       </equation>
       <equation xml:id="S1.Ex5">
-        <Math mode="display" tex="a=b&gt;c\leq d=e" text="a = b &gt; c less= d = e" xml:id="S1.Ex5.m1">
+        <Math mode="display" tex="a=b&gt;c\leq d=e" text="a = b &gt; c &lt;= d = e" xml:id="S1.Ex5.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="multirelation"/>
@@ -231,7 +231,7 @@
     <title><tag close=" ">2</tag>Arrows as meta-relation</title>
     <para xml:id="S2.p1">
       <equation xml:id="S2.Ex8">
-        <Math mode="display" tex="a=b\rightarrow c\leq d=e" text="a = b rightarrow c less= d = e" xml:id="S2.Ex8.m1">
+        <Math mode="display" tex="a=b\rightarrow c\leq d=e" text="a = b rightarrow c &lt;= d = e" xml:id="S2.Ex8.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="multirelation"/>
@@ -278,7 +278,7 @@
         </Math>
       </equation>
       <equation xml:id="S2.Ex10">
-        <Math mode="display" tex="a=b\leftrightarrow c\leq d=e" text="a = b leftrightarrow c less= d = e" xml:id="S2.Ex10.m1">
+        <Math mode="display" tex="a=b\leftrightarrow c\leq d=e" text="a = b leftrightarrow c &lt;= d = e" xml:id="S2.Ex10.m1">
           <XMath>
             <XMApp>
               <XMTok name="leftrightarrow" role="METARELOP">↔</XMTok>
@@ -340,7 +340,7 @@
     <title><tag close=" ">3</tag>Other Meta relations</title>
     <para xml:id="S3.p1">
       <equation xml:id="S3.Ex12">
-        <Math mode="display" tex="a(&lt;e)" text="annotated@(a, absent less e)" xml:id="S3.Ex12.m1">
+        <Math mode="display" tex="a(&lt;e)" text="annotated@(a, absent &lt; e)" xml:id="S3.Ex12.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="annotated"/>
@@ -362,7 +362,7 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex13">
-        <Math mode="display" tex="a;(&lt;e)" text="annotated@(a, absent less e)" xml:id="S3.Ex13.m1">
+        <Math mode="display" tex="a;(&lt;e)" text="annotated@(a, absent &lt; e)" xml:id="S3.Ex13.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="annotated"/>
@@ -384,7 +384,7 @@
         </Math>
       </equation>
       <equation xml:id="S3.Ex14">
-        <Math mode="display" tex="a=b+c+d(&lt;e)" text="a = annotated@(b + c + d, absent less e)" xml:id="S3.Ex14.m1">
+        <Math mode="display" tex="a=b+c+d(&lt;e)" text="a = annotated@(b + c + d, absent &lt; e)" xml:id="S3.Ex14.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>

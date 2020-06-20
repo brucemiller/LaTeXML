@@ -118,7 +118,7 @@
   </para>
   <para>
     <equation>
-      <Math mode="display" tex="s(x)=\cases{+1&amp;whatever\cr-1&amp;$x&lt;0$\cr 0}" text="s * x = cases@(+ 1, [whatever], - 1, x less 0, 0, [otherwise])">
+      <Math mode="display" tex="s(x)=\cases{+1&amp;whatever\cr-1&amp;$x&lt;0$\cr 0}" text="s * x = cases@(+ 1, [whatever], - 1, x &lt; 0, 0, [otherwise])">
         <XMath>
           <XMApp>
             <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -189,7 +189,7 @@
   </para>
   <para>
     <equation>
-      <Math mode="display" tex="\eqalign{x&amp;\ll y+i+\cdots+y_{n}\cr&amp;\leq z}" text="Array[[x, absent lessless y + i + cdots + y _ n], [, absent less= z]]">
+      <Math mode="display" tex="\eqalign{x&amp;\ll y+i+\cdots+y_{n}\cr&amp;\leq z}" text="Array[[x, absent &lt;&lt; y + i + cdots + y _ n], [, absent &lt;= z]]">
         <XMath>
           <XMArray vattach="baseline">
             <XMRow>
@@ -229,7 +229,7 @@
       </Math>
     </equation>
     <equation>
-      <Math mode="display" tex="\eqalign{x+y+z&amp;\ll y+i+\cdots+y_{n}\cr&amp;\leq q}" text="Array[[x + y + z, absent lessless y + i + cdots + y _ n], [, absent less= q]]">
+      <Math mode="display" tex="\eqalign{x+y+z&amp;\ll y+i+\cdots+y_{n}\cr&amp;\leq q}" text="Array[[x + y + z, absent &lt;&lt; y + i + cdots + y _ n], [, absent &lt;= q]]">
         <XMath>
           <XMArray vattach="baseline">
             <XMRow>
@@ -274,7 +274,7 @@
       </Math>
     </equation>
     <equation>
-      <Math mode="display" tex="\eqalignno{x&amp;\ll y+i+\cdots+y_{n}&amp;(x)\cr&amp;\leq z}" text="Array[[x, absent lessless y + i + cdots + y _ n, x], [, absent less= z, ]]">
+      <Math mode="display" tex="\eqalignno{x&amp;\ll y+i+\cdots+y_{n}&amp;(x)\cr&amp;\leq z}" text="Array[[x, absent &lt;&lt; y + i + cdots + y _ n, x], [, absent &lt;= z, ]]">
         <XMath>
           <XMArray vattach="baseline">
             <XMRow>
@@ -325,7 +325,7 @@
       </Math>
     </equation>
     <equation>
-      <Math mode="display" tex="\leqalignno{x&amp;\ll y+i+\cdots+y_{n}&amp;(x)\cr&amp;\leq z}" text="Array[[x, absent lessless y + i + cdots + y _ n, x], [, absent less= z, ]]">
+      <Math mode="display" tex="\leqalignno{x&amp;\ll y+i+\cdots+y_{n}&amp;(x)\cr&amp;\leq z}" text="Array[[x, absent &lt;&lt; y + i + cdots + y _ n, x], [, absent &lt;= z, ]]">
         <XMath>
           <XMArray vattach="baseline">
             <XMRow>

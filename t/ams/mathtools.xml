@@ -17,7 +17,7 @@
       <title>mathclap &amp; friends</title>
       <para xml:id="S1.SS0.SSS0.Px1.p1">
         <equation xml:id="S1.Ex1">
-          <Math mode="display" tex="X=\sum_{1\leq i\leq j\leq n}X_{ij}" text="X = (sum _ (1 less= i less= j less= n))@(X _ (i * j))" xml:id="S1.Ex1.m1">
+          <Math mode="display" tex="X=\sum_{1\leq i\leq j\leq n}X_{ij}" text="X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j))" xml:id="S1.Ex1.m1">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -52,7 +52,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex2">
-          <Math mode="display" tex="X=\sum_{\mathclap{1\leq i\leq j\leq n}}X_{ij}" text="X = (sum _ (1 less= i less= j less= n))@(X _ (i * j))" xml:id="S1.Ex2.m1">
+          <Math mode="display" tex="X=\sum_{\mathclap{1\leq i\leq j\leq n}}X_{ij}" text="X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j))" xml:id="S1.Ex2.m1">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -87,7 +87,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex3">
-          <Math mode="display" tex="X=\sum_{\mathrlap{1\leq i\leq j\leq n}}X_{ij}" text="X = (sum _ (1 less= i less= j less= n))@(X _ (i * j))" xml:id="S1.Ex3.m1">
+          <Math mode="display" tex="X=\sum_{\mathrlap{1\leq i\leq j\leq n}}X_{ij}" text="X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j))" xml:id="S1.Ex3.m1">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -122,7 +122,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex4">
-          <Math mode="display" tex="X=\sum_{\mathllap{1\leq i\leq j\leq n}}X_{ij}" text="X = (sum _ (1 less= i less= j less= n))@(X _ (i * j))" xml:id="S1.Ex4.m1">
+          <Math mode="display" tex="X=\sum_{\mathllap{1\leq i\leq j\leq n}}X_{ij}" text="X = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j))" xml:id="S1.Ex4.m1">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -208,7 +208,7 @@
       <title>Smashoperator</title>
       <para xml:id="S1.SS0.SSS0.Px3.p1">
         <equation xml:id="S1.Ex6">
-          <Math mode="display" tex="V=\sum_{1\leq i\leq j\leq n}^{\infty}V_{ij}\quad X=\sum_{1\leq i\leq j\leq n}^%&#10;{3456}X_{ij}\quad Y=\sum\limits_{1\leq i\leq j\leq n}Y_{ij}\quad Z=\mathop{T}_%&#10;{1\leq i\leq j\leq n}Z_{ij}" text="formulae@(V = ((sum _ (1 less= i less= j less= n)) ^ infinity)@(V _ (i * j)), formulae@(X = ((sum _ (1 less= i less= j less= n)) ^ 3456)@(X _ (i * j)), formulae@(Y = (sum _ (1 less= i less= j less= n))@(Y _ (i * j)), Z = (T _ (1 less= i less= j less= n))@(Z _ (i * j)))))" xml:id="S1.Ex6.m1">
+          <Math mode="display" tex="V=\sum_{1\leq i\leq j\leq n}^{\infty}V_{ij}\quad X=\sum_{1\leq i\leq j\leq n}^%&#10;{3456}X_{ij}\quad Y=\sum\limits_{1\leq i\leq j\leq n}Y_{ij}\quad Z=\mathop{T}_%&#10;{1\leq i\leq j\leq n}Z_{ij}" text="formulae@(V = ((sum _ (1 &lt;= i &lt;= j &lt;= n)) ^ infinity)@(V _ (i * j)), formulae@(X = ((sum _ (1 &lt;= i &lt;= j &lt;= n)) ^ 3456)@(X _ (i * j)), formulae@(Y = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(Y _ (i * j)), Z = (T _ (1 &lt;= i &lt;= j &lt;= n))@(Z _ (i * j)))))" xml:id="S1.Ex6.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -370,7 +370,7 @@
       </para>
       <para xml:id="S1.SS0.SSS0.Px3.p2">
         <equation xml:id="S1.Ex7">
-          <Math mode="display" tex="V=\sum_{1\leq i\leq j\leq n}^{\infty}V_{ij}\quad X=\smashoperator[]{\sum_{1%&#10;\leq i\leq j\leq n}^{3456}}X_{ij}\quad Y=\smashoperator[r]{\sum_{1\leq i\leq j%&#10;\leq n}^{}}Y_{ij}\quad Z=\smashoperator[l]{\mathop{T}_{1\leq i\leq j\leq n}^{}%&#10;}Z_{ij}" text="formulae@(V = ((sum _ (1 less= i less= j less= n)) ^ infinity)@(V _ (i * j)), formulae@(X = ((sum ^ 3456) _ (1 less= i less= j less= n))@(X _ (i * j)), formulae@(Y = (sum _ (1 less= i less= j less= n))@(Y _ (i * j)), Z = (T _ (1 less= i less= j less= n))@(Z _ (i * j)))))" xml:id="S1.Ex7.m1">
+          <Math mode="display" tex="V=\sum_{1\leq i\leq j\leq n}^{\infty}V_{ij}\quad X=\smashoperator[]{\sum_{1%&#10;\leq i\leq j\leq n}^{3456}}X_{ij}\quad Y=\smashoperator[r]{\sum_{1\leq i\leq j%&#10;\leq n}^{}}Y_{ij}\quad Z=\smashoperator[l]{\mathop{T}_{1\leq i\leq j\leq n}^{}%&#10;}Z_{ij}" text="formulae@(V = ((sum _ (1 &lt;= i &lt;= j &lt;= n)) ^ infinity)@(V _ (i * j)), formulae@(X = ((sum ^ 3456) _ (1 &lt;= i &lt;= j &lt;= n))@(X _ (i * j)), formulae@(Y = (sum _ (1 &lt;= i &lt;= j &lt;= n))@(Y _ (i * j)), Z = (T _ (1 &lt;= i &lt;= j &lt;= n))@(Z _ (i * j)))))" xml:id="S1.Ex7.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -6666,7 +6666,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S10.p14">
       <equation xml:id="S10.Ex81">
-        <Math mode="display" tex="\sum_{\begin{subarray}{l}i\in\Lambda\\&#10;0&lt;j&lt;n\end{subarray}}P(i,j)" text="(sum _ list[[i element-of Lambda], [0 less j less n]])@(P * open-interval@(i, j))" xml:id="S10.Ex81.m1">
+        <Math mode="display" tex="\sum_{\begin{subarray}{l}i\in\Lambda\\&#10;0&lt;j&lt;n\end{subarray}}P(i,j)" text="(sum _ list[[i element-of Lambda], [0 &lt; j &lt; n]])@(P * open-interval@(i, j))" xml:id="S10.Ex81.m1">
           <XMath>
             <XMApp>
               <XMApp scriptpos="mid">

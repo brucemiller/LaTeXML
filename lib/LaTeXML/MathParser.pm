@@ -894,13 +894,7 @@ sub node_string {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub text_form {
   my ($node) = @_;
-  #  $self->textrec($node,0); }
-  # Hmm, Something Weird is broken!!!!
-  # With <, I get "unterminated entity reference" !?!?!?
-  #  my $text= $self->textrec($node,0);
-  my $text = textrec($node, undef);
-  $text =~ s/</less/g;
-  return $text; }
+  return textrec($node, undef); }
 
 my %PREFIX_ALIAS = (    # [CONSTANT]
   SUPERSCRIPTOP => '^', SUBSCRIPTOP => '_', times          => '*',
