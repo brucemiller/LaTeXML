@@ -434,7 +434,7 @@ sub getIDForDeclaration {
         if (my $gpid = $pentry->getValue('parent')) {
           return $gpid; } }
       # If definition is in unnumbered equation within an equation group, use id of the group
-      elsif (($ptype eq 'ltx:equation') && !$entry->getValue('refnum')) {
+      elsif (($ptype eq 'ltx:equation') && !$pentry->getValue('refnum')) {
         if (my $gpid = $pentry->getValue('parent')) {
           if (my $gpentry = $$self{db}->lookup("ID:$gpid")) {
             my $gptype = $gpentry->getValue('type') || '';
