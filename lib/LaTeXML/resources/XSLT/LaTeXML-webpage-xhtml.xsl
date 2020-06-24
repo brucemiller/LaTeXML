@@ -517,7 +517,7 @@
 
   <!-- Generate javascript script entries for the head -->
   <xsl:template match="/" mode="head-javascript">
-    <xsl:if test='$JAVASCRIPT'>
+    <xsl:if test='$JAVASCRIPT and not($LATEJS)'>
       <xsl:for-each select="string:split($JAVASCRIPT,'|')">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="script" namespace="{$html_ns}">
@@ -615,8 +615,7 @@
   <xsl:template match="/" mode="body-begin"/>
   <!-- Generate javascript script entries for the end of body -->
   <xsl:template match="/" mode="body-end">
-    <xsl:if test='$LATEJS'>
-      <xsl:if test='$JAVASCRIPT'>
+      <xsl:if test='$JAVASCRIPT and $LATEJS'>
         <xsl:for-each select="string:split($JAVASCRIPT,'|')">
           <xsl:text>&#x0A;</xsl:text>
           <xsl:element name="script" namespace="{$html_ns}">
@@ -625,7 +624,6 @@
           </xsl:element>
         </xsl:for-each>
       </xsl:if>
-    </xsl:if>
   </xsl:template>
 
 
