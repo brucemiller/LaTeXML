@@ -217,6 +217,7 @@ DefMacro('\lx@autorefnum@@{}', sub {
       (LookupDefinition(T_CS('\\' . $type_s . 'autorefname'))
         ? (Tokens(T_CS('\\' . $type_s . 'autorefname'), T_CS('\text@nobreakspace')))
         : ()),
+      (LookupDefinition(T_CS('\p@' . $counter)) ? T_CS('\p@' . $counter) : ()),
       T_CS('\the' . $counter)); });
 
 AssignMapping('type_tag_formatter', 'autoref' => '\lx@autorefnum@@');
