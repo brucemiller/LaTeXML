@@ -196,7 +196,7 @@ sub pathname_absolute {
 sub pathname_to_url {
   my $relative_pathname = pathname_relative($_[0]);
   if ($SEP ne '/') {
-    $relative_pathname = join('/', split(/$SEP/, $relative_pathname)); }
+    $relative_pathname = join('/', split(/\Q$SEP\E/, $relative_pathname)); }
   return $relative_pathname; }
 
 #======================================================================
