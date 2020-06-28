@@ -640,9 +640,11 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
     my %props = RefStepID($type);
     if ($type eq 'appendix') {
       $props{backmatterelement} = LookupMapping('BACKMATTER_ELEMENT', 'ltx:' . $type); }
-    $props{title}    = Digest(T_CS('\@hidden@bgroup'), $title, T_CS('\@hidden@egroup'));
+    $props{title} = Digest(T_CS('\@hidden@bgroup'),
+      Invocation(T_CS('\lx@format@title@font@@'), $type), $title, T_CS('\@hidden@egroup'));
     $props{toctitle} = $toctitle
-      && Digest(T_CS('\@hidden@bgroup'), $toctitle, T_CS('\@hidden@egroup'));
+      && Digest(T_CS('\@hidden@bgroup'), Invocation(T_CS('\lx@format@toctitle@font@@'), $type),
+      $toctitle, T_CS('\@hidden@egroup'));
     return %props; });
 
 #======================================================================
