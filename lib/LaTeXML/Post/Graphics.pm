@@ -163,6 +163,9 @@ sub getTypeProperties {
 # width and height.
 sub setGraphicSrc {
   my ($self, $node, $src, $width, $height) = @_;
+  # If we are on windows, the $src path will be used for a URI context from the 'imagesrc' attribute,
+  # so we can already switch it to the canonical slashified form
+  $src =~ s/\\/\//g;
   $node->setAttribute('imagesrc',    $src);
   $node->setAttribute('imagewidth',  $width) if defined $width;
   $node->setAttribute('imageheight', $height) if defined $height;
