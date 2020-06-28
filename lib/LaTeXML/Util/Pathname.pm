@@ -38,7 +38,7 @@ our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_split &pathname_directory &pathname_name &pathname_type
   &pathname_timestamp
   &pathname_concat
-  &pathname_relative &pathname_absolute
+  &pathname_relative &pathname_absolute &pathname_to_url
   &pathname_is_absolute &pathname_is_contained
   &pathname_is_url &pathname_is_literaldata
   &pathname_protocol
@@ -192,6 +192,12 @@ sub pathname_absolute {
   return (!pathname_is_absolute($pathname) && !pathname_is_url($pathname)
     ? File::Spec->rel2abs($pathname, ($base ? pathname_canonical($base) : pathname_cwd()))
     : $pathname); }
+
+sub pathname_to_url {
+  my $relative_pathname = pathname_relative($_[0]);
+  if ($SEP ne '/') {
+    $relative_pathname = join('/', split(/$SEP/, $relative_pathname)); }
+  return $relative_pathname; }
 
 #======================================================================
 # Actual file system operations.
@@ -418,7 +424,7 @@ sub build_kpse_cache {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -492,6 +498,11 @@ Returns the absolute pathname resulting from interpretting
 C<$path> relative to the directory C<$base>.  If C<$path>
 is already absolute, it is returned unchanged.
 
+=item C<< $relative_url = pathname_to_url($path); >>
+
+Creates a local, relative URL for a given pathname,
+also ensuring proper path separators on non-Unix systems.
+
 =back
 
 =head2 File System Operations
@@ -520,9 +531,9 @@ It preserves the timestamp of C<$source>.
 
 =item C<< $path = pathname_find($name,%options); >>
 
-Finds the first file named C<$name> that exists 
+Finds the first file named C<$name> that exists
 and that matches the specification
-in the keywords C<%options>.  
+in the keywords C<%options>.
 An absolute pathname is returned.
 
 If C<$name> is not already an absolute pathname, then
@@ -545,6 +556,13 @@ The type C<*> matches any extension.
 Like C<pathname_find>,
 but returns I<all> matching (absolute) paths that exist.
 
+=item C<< $path = pathname_kpsewhich(@names); >>
+
+Attempt to find a candidate name via the external C<kpsewhich>
+capability of the system's TeX toolchain. If C<kpsewhich> is
+not available, or the file is not found, returns a
+Perl undefined value.
+
 =back
 
 =head1 AUTHOR
@@ -557,4 +575,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-
