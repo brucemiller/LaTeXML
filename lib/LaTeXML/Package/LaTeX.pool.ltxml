@@ -74,13 +74,18 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
     my $class   = ToString($whatsit->getArg(2));
     my $options = $whatsit->getArg(1);
     $options = [($options ? split(/\s*,\s*/, ToString($options)) : ())];
-    # Watch out; In principle, compatibility mode wants a .sty, not a .cls!!!
-    # But, we'd prefer .cls, since we'll have better bindings.
-    # And in fact, nobody's likely to write a binding for a .sty that wants to be a class anyway.
-    # So, we'll just try for a .cls, punting to OmniBus if needed.
-    # If we start wanting to read style files by default, we'll still need to handle this
-    # specially, since class (or sty files pretending to be) cover so much more.
-    if (FindFile($class, type => 'cls', notex => !LookupValue('INCLUDE_CLASSES'))) {
+# Watch out; In principle, compatibility mode wants a .sty, not a .cls!!!
+# But, we'd prefer .cls, since we'll have better bindings.
+# And in fact, nobody's likely to write a binding for a .sty that wants to be a class anyway.
+# So, we'll just try for a .cls, punting to OmniBus if needed.
+# If we start wanting to read style files by default, we'll still need to handle this
+# specially, since class (or sty files pretending to be) cover so much more.
+#
+# EXCEPTION: of course there is an exception. Older arXiv articles use \documentstyle{aipproc}
+# to load a different aipproc.sty than the later evolved aipproc.cls. And of course we need to support that.
+    if ($class eq 'aipproc') {
+      RequirePackage('aipproc', options => $options); }
+    elsif (FindFile($class, type => 'cls', notex => !LookupValue('INCLUDE_CLASSES'))) {
       LoadClass($class, options => $options,
         after => Tokens(T_CS('\compat@loadpackages'))); }
     else {

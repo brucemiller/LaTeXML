@@ -117,11 +117,19 @@ Let('\endacknowledgements',   '\endacknowledgments');
 Let('\theacknowledgments',    '\acknowledgments');
 Let('\endtheacknowledgments', '\endacknowledgments');
 
-DefMacro('\received{}', '\@add@frontmatter{ltx:date}[role=received]{#1}');
-DefMacro('\revised{}',  '\@add@frontmatter{ltx:date}[role=revised]{#1}');
-DefMacro('\accepted{}', '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
-DefMacro('\pubyear',    '\@add@frontmatter{ltx:date}[role=publication]{#1}');
-DefMacro('\preprint{}', '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\received{}',     '\@add@frontmatter{ltx:date}[role=received]{#1}');
+DefMacro('\revised{}',      '\@add@frontmatter{ltx:date}[role=revised]{#1}');
+DefMacro('\accepted{}',     '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
+DefMacro('\pubyear',        '\@add@frontmatter{ltx:date}[role=publication]{#1}');
+DefMacro('\preprint{}',     '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\communicated{}', '\@add@frontmatter{ltx:date}[role=communicated]{#1}');
+DefMacro('\dedicated{}',    '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
+DefMacro('\presented{}',    '\@add@frontmatter{ltx:date}[role=presented]{#1}');
+DefMacro('\articletype{}',  '\@add@frontmatter{ltx:note}[role=articletype]{#1}');
+DefMacro('\issue{}',        '\@add@frontmatter{ltx:note}[role=issue]{#1}');
+DefMacro('\journal{}',      '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\volume',         '\@add@frontmatter{ltx:note}[role=volume]{#1}');
+DefMacro('\pubyear',        '\@add@frontmatter{ltx:date}[role=publication]{#1}');
 
 # work as environment or not...
 DefConstructor('\references',
@@ -130,7 +138,7 @@ DefConstructor('\references',
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "<ltx:biblist>",
   beforeDigest => sub { beforeDigestBibliography(); },
-  afterDigest => sub { beginBibliography($_[1]); }
+  afterDigest  => sub { beginBibliography($_[1]); }
 );
 
 DefConstructor('\endreferences',
