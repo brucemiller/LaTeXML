@@ -321,8 +321,10 @@ sub image_graphicx_complex {
   my $notes = '';
   foreach my $trans (@transform) {
     my ($op, $a1, $a2, $a3, $a4) = @$trans;
+    return unless $w && $h;
     if ($op eq 'scale') {                                                            # $a1 => scale
       ($w, $h) = (ceil($w * $a1), ceil($h * ($a2 || $a1)));
+      return unless $w && $h;
       $notes .= " scale to $w x $h";
       image_internalop($image, 'Scale', width => $w, height => $h) or return; }
     elsif ($op eq 'scale-to') {
