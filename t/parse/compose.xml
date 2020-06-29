@@ -223,4 +223,42 @@
       </equation>
     </para>
   </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Different operators</title>
+    <para xml:id="S3.p1">
+      <equation xml:id="S3.Ex7">
+        <Math mode="display" tex="f\circ\sin x" text="(compose@(f, sine))@(x)" xml:id="S3.Ex7.m1">
+          <XMath>
+            <XMApp>
+              <XMApp>
+                <XMTok meaning="compose" name="circ" role="COMPOSEOP">∘</XMTok>
+                <XMTok font="italic" role="FUNCTION">f</XMTok>
+                <XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok>
+              </XMApp>
+              <XMTok font="italic" role="ID">x</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation xml:id="S3.Ex8">
+        <Math mode="display" tex="f\circ\log x" text="(compose@(f, logarithm))@(x)" xml:id="S3.Ex8.m1">
+          <XMath>
+            <XMApp>
+              <XMApp>
+                <XMTok meaning="compose" name="circ" role="COMPOSEOP">∘</XMTok>
+                <XMTok font="italic" role="FUNCTION">f</XMTok>
+                <XMTok meaning="logarithm" role="OPFUNCTION">log</XMTok>
+              </XMApp>
+              <XMTok font="italic" role="ID">x</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
 </document>

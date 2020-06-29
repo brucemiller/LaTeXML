@@ -24,19 +24,47 @@ use LaTeXML::Package;
 # this is just a stub to avoid errors
 
 # This should probably define \fnum@<section>,...
-DefMacro('\titlelabel{}',                  '');
-DefMacro('\titleformat',                   '\@ifstar{\lx@titleformat@star}{\lx@titleformat}');
-DefMacro('\lx@titleformat@star {}{}',      '');
-DefMacro('\lx@titleformat {} [] {}{}{}{}', '');
-DefMacro('\chaptertitlename',              '\chaptername');
+DefMacro('\titlelabel{}', '');
+DefMacro('\titleformat',  '\@ifstar{\lx@titleformat@star}{\lx@titleformat}');
+# \titleformat*{cmd}{format}
+DefMacro('\lx@titleformat@star {}{}', sub {
+    my ($gullet, $cmd, $format) = @_;
+    my $sec = ToString($cmd); $sec =~ s/^\\//;
+    DefMacroI(T_CS('\format@title@' . $sec), convertLaTeXArgs(1),
+      Tokens($format, T_SPACE, T_PARAM, T_OTHER('1'))); });
+our %titlesec_shape_class_map = (
+  runin       => 'ltx_runin',
+  frame       => 'ltx_framed',
+  rightmargin => 'ltx_align_right',
+  leftmargin  => 'ltx_align_left'
+);
+# \titleformat{cmd}[shape]{format}{label}{sep}{before}[after]
+DefMacro('\lx@titleformat {} [] {}{}{}{}[]', sub {
+    my ($gullet, $cmd, $shape, $format, $label, $sep, $before, $after) = @_;
+    # Ignore $shape (for now)
+    # Ignore $before, $after (for now)
+    $shape = ToString($shape);
+    my $class = $shape && $titlesec_shape_class_map{$shape};
+    my $sec   = ToString($cmd); $sec =~ s/^\\//;
+    # Perhaps should wrap $label with \lx@tag, but then have to worry about inheritted CSS?
+    DefMacroI(T_CS('\format@title@font@' . $sec), undef,
+      Tokens($format, ($class ? (T_CS('\@ADDCLASS'), T_OTHER($class)) : ())));
+    DefMacroI(T_CS('\format@title@' . $sec), convertLaTeXArgs(1),
+      Tokens(
+        T_CS('\format@title@font@' . $sec),
+        $label,
+        T_CS('\hspace'), T_BEGIN, $sep, T_END,
+        T_PARAM, T_OTHER('1'))); });
+
+DefMacro('\chaptertitlename',                        '\chaptername');
 DefMacro('\titlespacing OptionalMatch:* {}{}{}{}[]', '');
 
-DefMacro('\filright',  '');
-DefMacro('\filcenter', '');
-DefMacro('\filleft',   '');
+DefMacro('\filright',  '\raggedright');
+DefMacro('\filcenter', '\centering');
+DefMacro('\filleft',   '\raggedleft');
 DefMacro('\fillast',   '');
-DefMacro('\filinner',  '');
-DefMacro('\filouter',  '');
+DefMacro('\filinner',  '\filleft');
+DefMacro('\filouter',  '\filright');
 DefRegister('\wordsep', Dimension(0));
 
 DefMacro('\titleline[]{}',          '');

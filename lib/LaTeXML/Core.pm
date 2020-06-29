@@ -35,10 +35,11 @@ use base qw(LaTeXML::Common::Object);
 
 sub new {
   my ($class, %options) = @_;
+  my $verbosity = defined $options{verbosity} ? $options{verbosity} : 0;
   my $state = LaTeXML::Core::State->new(catcodes => 'standard',
-    stomach => LaTeXML::Core::Stomach->new(),
+    stomach => LaTeXML::Core::Stomach->new(verbosity => $verbosity),
     model   => $options{model} || LaTeXML::Common::Model->new());
-  $state->assignValue(VERBOSITY => (defined $options{verbosity} ? $options{verbosity} : 0),
+  $state->assignValue(VERBOSITY => $verbosity,
     'global');
   $state->assignValue(STRICT => (defined $options{strict} ? $options{strict} : 0),
     'global');
@@ -51,7 +52,9 @@ sub new {
     'global');
   $state->assignValue(GRAPHICSPATHS => [map { pathname_absolute(pathname_canonical($_)) }
         @{ $options{graphicspaths} || [] }], 'global');
-  $state->assignValue(INCLUDE_STYLES => $options{includestyles} || 0, 'global');
+ # For now the "includestyles" option passed from --includestyles will accept both classes and styles?
+  $state->assignValue(INCLUDE_STYLES  => $options{includestyles} || 0, 'global');
+  $state->assignValue(INCLUDE_CLASSES => $options{includestyles} || 0, 'global');
   # Core has to ensure a default input encoding, and we default towards modern utf-8 documents
   # This can be removed when all executables rely on LaTeXML::Common::Config
   $options{inputencoding} = "utf-8" unless $options{inputencoding};

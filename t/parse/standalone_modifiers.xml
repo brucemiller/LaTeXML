@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><Math mode="inline" tex="\mod-2y" text="modulo@(absent, - 2 * y)" xml:id="p1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="modulo" role="MODIFIEROP">mod</XMTok>
+            <XMTok meaning="absent"/>
+            <XMApp>
+              <XMTok meaning="minus" role="ADDOP">-</XMTok>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="2" role="NUMBER">2</XMTok>
+                <XMTok font="italic" role="UNKNOWN">y</XMTok>
+              </XMApp>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p2">
+    <p><Math mode="inline" tex=":x&lt;2" text="absent colon x &lt; 2" xml:id="p2.m1">
+        <XMath>
+          <XMApp>
+            <XMTok name="colon" role="METARELOP">:</XMTok>
+            <XMTok meaning="absent"/>
+            <XMApp>
+              <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              <XMTok meaning="2" role="NUMBER">2</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p3">
+    <p><Math mode="inline" tex="(&lt;0)" text="absent &lt; 0" xml:id="p3.m1">
+        <XMath>
+          <XMDual>
+            <XMRef idref="p3.m1.1"/>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="false">(</XMTok>
+              <XMApp xml:id="p3.m1.1">
+                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                <XMTok meaning="absent"/>
+                <XMTok meaning="0" role="NUMBER">0</XMTok>
+              </XMApp>
+              <XMTok role="CLOSE" stretchy="false">)</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p4">
+    <p><Math mode="inline" tex="&gt;0" text="absent &gt; 0" xml:id="p4.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+            <XMTok meaning="absent"/>
+            <XMTok meaning="0" role="NUMBER">0</XMTok>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p5">
+    <p><Math mode="inline" tex="(&gt;0)" text="absent &gt; 0" xml:id="p5.m1">
+        <XMath>
+          <XMDual>
+            <XMRef idref="p5.m1.1"/>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="false">(</XMTok>
+              <XMApp xml:id="p5.m1.1">
+                <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                <XMTok meaning="absent"/>
+                <XMTok meaning="0" role="NUMBER">0</XMTok>
+              </XMApp>
+              <XMTok role="CLOSE" stretchy="false">)</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p6">
+    <p><Math mode="inline" tex="x(&gt;0)" text="annotated@(x, absent &gt; 0)" xml:id="p6.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="annotated"/>
+            <XMTok font="italic" role="UNKNOWN">x</XMTok>
+            <XMDual>
+              <XMRef idref="p6.m1.1"/>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                <XMApp xml:id="p6.m1.1">
+                  <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                  <XMTok meaning="absent"/>
+                  <XMTok meaning="0" role="NUMBER">0</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p7">
+    <p><Math mode="inline" tex="h(\in C)" text="annotated@(h, absent element-of C)" xml:id="p7.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="annotated"/>
+            <XMTok font="italic" role="UNKNOWN">h</XMTok>
+            <XMDual>
+              <XMRef idref="p7.m1.1"/>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                <XMApp xml:id="p7.m1.1">
+                  <XMTok meaning="element-of" name="in" role="RELOP">∈</XMTok>
+                  <XMTok meaning="absent"/>
+                  <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p8">
+    <p><Math mode="inline" tex="x:\mathrm{Integer}" text="x colon Integer" xml:id="p8.m1">
+        <XMath>
+          <XMApp>
+            <XMTok name="colon" role="METARELOP">:</XMTok>
+            <XMTok font="italic" role="UNKNOWN">x</XMTok>
+            <XMTok role="UNKNOWN">Integer</XMTok>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p9">
+    <p><Math mode="inline" tex="f:\mathrm{Integer}\Rightarrow\mathrm{Real}" text="f colon Integer Rightarrow Real" xml:id="p9.m1">
+        <XMath>
+          <XMApp>
+            <XMTok name="colon" role="METARELOP">:</XMTok>
+            <XMTok font="italic" role="UNKNOWN">f</XMTok>
+            <XMApp>
+              <XMTok name="Rightarrow" role="ARROW">⇒</XMTok>
+              <XMTok role="UNKNOWN">Integer</XMTok>
+              <XMTok role="UNKNOWN">Real</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p10">
+    <p><Math mode="inline" tex="\rightarrow G" text="absent rightarrow G" xml:id="p10.m1">
+        <XMath>
+          <XMApp>
+            <XMTok name="rightarrow" role="ARROW">→</XMTok>
+            <XMTok meaning="absent"/>
+            <XMTok font="italic" role="UNKNOWN">G</XMTok>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p11">
+    <p><Math mode="inline" tex="5\equiv 8\pmod{3}" text="5 equivalent-to annotated@(8, pmod@(3))" xml:id="p11.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="equivalent-to" name="equiv" role="RELOP">≡</XMTok>
+            <XMTok meaning="5" role="NUMBER">5</XMTok>
+            <XMApp>
+              <XMTok meaning="annotated"/>
+              <XMTok meaning="8" role="NUMBER">8</XMTok>
+              <XMDual role="MODIFIER">
+                <XMApp role="MODIFIER">
+                  <XMTok name="pmod" role="UNKNOWN"/>
+                  <XMRef idref="p11.m1.1"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok lpadding="5.6pt" role="OPEN" stretchy="false">(</XMTok>
+                  <XMApp xml:id="p11.m1.2">
+                    <XMTok role="BIGOP" scriptpos="post">mod</XMTok>
+                    <XMTok meaning="3" role="NUMBER" xml:id="p11.m1.1">3</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+</document>

@@ -25,6 +25,8 @@ our @EXPORT = (
   qw(&NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
   # Colored-logging related functions
   qw(&colorizeString),
+  # stateless message generation
+  qw(&generateMessage),
   # Status management
   qw(&MergeStatus),
 );

@@ -28,7 +28,8 @@ use LaTeXML::Package;
 # in order to pick up all the unit definitions!
 
 RequirePackage('xcolor');
-
+RequirePackage('amstext');
+RequirePackage('array');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Dealing with the Options
 
@@ -68,20 +69,12 @@ sub six_getChoice {
   $v =~ s/^\s*//; $v =~ s/\s*$//;
   return $v; }
 
-sub trim_spaces {    # Haven't I written this code several times?
-  my ($tokens) = @_;
-  return unless $tokens;
-  my @tokens = $tokens->unlist;
-  while (@tokens && $tokens[0]->equals(T_SPACE))  { shift(@tokens); }
-  while (@tokens && $tokens[-1]->equals(T_SPACE)) { pop(@tokens); }
-  return Tokens(@tokens); }
-
 sub six_setup {
   my ($kv) = @_;
   my $hash = $kv->getKeyVals;
   foreach my $key (keys %$hash) {
     my $value = $kv->getValue($key);
-    AssignValue('SIX_' . $key => trim_spaces($value)); }
+    AssignValue('SIX_' . $key => $value); }
   return; }
 
 DefPrimitive('\sisetup RequiredKeyVals:SIX', sub { six_setup($_[1]); });
@@ -89,7 +82,7 @@ DefPrimitive('\sisetup RequiredKeyVals:SIX', sub { six_setup($_[1]); });
 DefMacro('\ProvidesExplFile{}{}{}{}', '');
 DefPrimitiveI('\lx@six@initialize', undef, sub {
     my $pkgoptions = LookupValue('opt@siunitx.sty');
-    my $setup = $pkgoptions && Tokenize('\sisetup{' . join(',', map { $_ } @$pkgoptions) . '}');
+    my $setup      = $pkgoptions && Tokenize('\sisetup{' . join(',', map { $_ } @$pkgoptions) . '}');
     Digest($setup) if $setup;
     if (six_getBool('version-1-compatibility') || six_get('alsoload')) {
       # At present time (siunitx 2.6q) compatibility file is deeply expl3-ish.
@@ -222,7 +215,7 @@ sub six_parse_cenumber {
   my ($expmark, $expsign, $exp);
   if ($expmark = six_match($tokens, 'input-exponent-markers')) {
     $expsign = six_match($tokens, 'input-signs');
-    $exp = six_match($tokens, 'input-digits', 'input-symbols');
+    $exp     = six_match($tokens, 'input-digits', 'input-symbols');
     $number = { operator => 'exponent', arg1 => $number,
       arg2 => { sign => $expsign, integer => $exp } }; }
   return $number; }
@@ -295,14 +288,14 @@ sub six_adjust_uncertainty {
       for (my $i = $n ; $i < $ndigits ; $i++) {
         unshift(@dig, T_OTHER('0')); }
       $$number{uncertainty} = { sign => T_CS('\pm'),
-        integer => T_OTHER('0'), decimal => six_get('output-decimal-marker'),
+        integer  => T_OTHER('0'), decimal => six_get('output-decimal-marker'),
         fraction => Tokens(@dig) }; }
     else {
       my @man = ();
       for (my $i = $n ; $i > $ndigits ; $i--) {
         push(@man, shift(@dig)); }
       $$number{uncertainty} = { sign => T_CS('\pm'),
-        integer => Tokens(@man), decimal => six_get('output-decimal-marker'),
+        integer  => Tokens(@man), decimal => six_get('output-decimal-marker'),
         fraction => Tokens(@dig) }; } }
   else {    # Need bracketted, but have separate uncertainty.
     my @dig = ();
@@ -318,7 +311,7 @@ sub six_adjust_uncertainty {
       for (my $i = $ndigits ; $i < $nuf ; $i++) {
         push(@frac, T_OTHER('0')); }
       $$number{fraction} = Tokens(@frac);
-      $$number{decimal} = six_get('output-decimal-marker') unless $$number{decimal}; }
+      $$number{decimal}  = six_get('output-decimal-marker') unless $$number{decimal}; }
     $$number{uncertainty} = { integer => Tokens(@dig) }; }
   return; }
 
@@ -415,7 +408,6 @@ sub six_format_number {
   return $number unless ref $number eq 'HASH';
   $bracket = 0 unless $bracket && six_getBool('bracket-numbers');
   # Not ONLY format the number, but arrange for a fork representing the semantics!
-  return unless $number;
   my @tokens = ();
   if (my $op = $$number{operator}) {
     if ($op eq 'comparator') {
@@ -503,7 +495,9 @@ sub six_parse_begin {
   my $stomach = $STATE->getStomach;
   $stomach->bgroup;
   six_setup($kv) if $kv;
-  map { Let($_, T_CS('\nothing')); } six_get('input-protect-tokens')->unlist;
+  for my $token (six_get('input-protect-tokens')->unlist) {
+    my $name = $token->getCSName;
+    Let($token, T_OTHER($name)); }
   return; }
 
 sub six_parse_end {
@@ -567,7 +561,6 @@ sub six_wrap {
     (grep { $_; } @stuff),
     T_CS('\@@ENDINLINEMATH'),
     ($color ? (T_END) : ())); }
-
 # \num[options]{number}
 DefMacro('\num OptionalKeyVals:SIX {}', sub {
     my ($gullet, $kv, $number) = @_;
@@ -1037,7 +1030,7 @@ DefMacro('\lx@six@unitobject@collapsible{}{}', sub {
 #   \__siunitx_declare_prefix : Nnnn    #1 {#2} { 2 } {#3} }
 DefPrimitive('\DeclareBinaryPrefix OptionalKeyVals:SIX SkipSpaces DefToken {}{}', sub {
     my ($stomach, $kv, $cs, $presentation, $power) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs, keyvals => $kv, type => 'prefix',
@@ -1051,7 +1044,7 @@ DefPrimitive('\DeclareBinaryPrefix OptionalKeyVals:SIX SkipSpaces DefToken {}{}'
 # Prefix operator, applies a power
 DefPrimitive('\DeclareSIPrefix OptionalKeyVals:SIX SkipSpaces DefToken {}{}', sub {
     my ($stomach, $kv, $cs, $presentation, $power) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs, keyvals => $kv, type => 'prefix',
@@ -1064,7 +1057,7 @@ DefPrimitive('\DeclareSIPrefix OptionalKeyVals:SIX SkipSpaces DefToken {}{}', su
 # Prefix operator, applies a power
 DefPrimitive('\DeclareSIPrePower OptionalKeyVals:SIX SkipSpaces DefToken {}', sub {
     my ($stomach, $kv, $cs, $power) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
@@ -1078,7 +1071,7 @@ DefPrimitive('\DeclareSIPrePower OptionalKeyVals:SIX SkipSpaces DefToken {}', su
 # Postfix operator, applies a power
 DefPrimitive('\DeclareSIPostPower OptionalKeyVals:SIX SkipSpaces DefToken {}', sub {
     my ($stomach, $kv, $cs, $power) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
@@ -1103,7 +1096,7 @@ DefMacro('\lx@six@raiseto{}', '\lx@six@unitobject@arg{raiseto}{#1}');
 # Postfix operator, qualifies the meaning, applies a subscript
 DefPrimitive('\DeclareSIQualifier OptionalKeyVals:SIX SkipSpaces DefToken {}', sub {
     my ($stomach, $kv, $cs, $qualifier) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
@@ -1124,14 +1117,14 @@ DefMacro('\lx@six@of{}', '\lx@six@unitobject@arg{of}{#1}');
 # Or a macro (or Unit) that expands into... (and it may not even be defined yet)
 DefPrimitive('\DeclareSIUnit OptionalKeyVals:SIX SkipSpaces DefToken {}', sub {
     my ($stomach, $kv, $cs, $presentation) = @_;
-    my $name = $cs->getCSName; $name =~ s/^\\//;
+    my $name  = $cs->getCSName; $name =~ s/^\\//;
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
         keyvals => $kv, type => 'unit', presentation => $presentation });
     DefMacroI($newcs, undef,
       '\lx@six@unitobject@collapsible{' . $name . '}{' . ToString($presentation) . '}');
-
+    Let($cs, T_CS('\relax')) unless LookupMeaning($cs);
     return; });
 
 # \NewDocumentCommand \DeclareSIUnitWithOptions { m m m }{
@@ -1161,7 +1154,7 @@ DefMacro('\lx@six@highlight{}', '\lx@six@unitobject@arg{highlight}{#1}');
 DefColumnType('s Optional', sub {
     my ($gullet, $kv) = @_;
     $LaTeXML::BUILD_TEMPLATE->addColumn(
-      before => Tokens(T_CS('\lx@si@column@begin'), ($kv ? (T_OTHER('['), $kv, T_OTHER(']')) : ())),
+      before => Tokens(T_CS('\lx@sicolumn@begin'), ($kv ? (T_OTHER('['), $kv, T_OTHER(']')) : ()), T_LETTER("sismall")),
       #      after => Tokens(T_CS('\lx@si@column@end')),
       #      align => 'char:' . ToString(Digest(T_CS('\nprt@decimal')))
     );
@@ -1170,25 +1163,30 @@ DefColumnType('s Optional', sub {
 DefColumnType('S Optional', sub {
     my ($gullet, $kv) = @_;
     $LaTeXML::BUILD_TEMPLATE->addColumn(
-      before => Tokens(T_CS('\lx@SI@column@begin'), ($kv ? (T_OTHER('['), $kv, T_OTHER(']')) : ())),
+      before => Tokens(T_CS('\lx@sicolumn@begin'), ($kv ? (T_OTHER('['), $kv, T_OTHER(']')) : ()), T_LETTER("SILARGE")),
       #      after => Tokens(T_CS('\lx@SI@column@end')),
       #      align => 'char:' . ToString(Digest(T_CS('\nprt@decimal'))));
     );
     return; });
 
-DefMacro('\lx@si@column@begin Optional XUntil:\@@close@inner@column',
-  '\def\@@eat@space{}\lx@table@si[#1]{#2}\@@close@inner@column');
-DefMacro('\lx@SI@column@begin Optional XUntil:\@@close@inner@column',
-  '\def\@@eat@space{}\lx@table@num[#1]{#2}\@@close@inner@column');
+DefMacro('\lx@sicolumn@begin OptionalKeyVals:SIX Token', sub {
+    my ($gullet, $kv, $type) = @_;
+    six_parse_begin($gullet, $kv);
+    if (ToString($type) eq 'sismall') {
+      six_enableUnitMacros(1);
+      return (T_CS('\lx@column@next'), T_CS('\lx@table@si')); }
+    else {
+      return (T_CS('\lx@column@next'), T_CS('\lx@table@num')); }
+});
+DefMacro('\lx@column@next Token XUntil:\@@close@inner@column', '\def\@@eat@space{}#1{#2}\@@close@inner@column');
 
 # TODO: These two need to deal better with unrecognized arguments.
 # Generally they should NOT be in math mode... (but sometimes, still?)
 
 # Similar to \num, no error...
 # color treated a bit differently?
-DefMacro('\lx@table@num OptionalKeyVals:SIX {}', sub {
-    my ($gullet, $kv, $number) = @_;
-    six_parse_begin($gullet, $kv);
+DefMacro('\lx@table@num {}', sub {
+    my ($gullet, $number) = @_;
     my @tokens  = Expand($number)->unlist;
     my $doparse = six_getBool('parse-numbers');
     # Deal with recognizing "surrounding material"
@@ -1226,10 +1224,8 @@ DefMacro('\lx@table@num OptionalKeyVals:SIX {}', sub {
       @post); });
 
 # similar to \si
-DefMacro('\lx@table@si OptionalKeyVals:SIX {}', sub {
-    my ($gullet, $kv, $units) = @_;
-    six_parse_begin($gullet, $kv);
-    six_enableUnitMacros(1);
+DefMacro('\lx@table@si {}', sub {
+    my ($gullet, $units) = @_;
     my @tokens = Expand($units)->unlist;
     my @pre    = ();
     my @post   = ();
@@ -1585,5 +1581,6 @@ sub six_load_compat1 {
 \DeclareSIUnit \yb        { \yocto \barn }
 EoTeX
   return; }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

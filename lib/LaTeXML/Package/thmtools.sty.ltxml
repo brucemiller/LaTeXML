@@ -86,12 +86,12 @@ DefPrimitive('\declaretheorem OptionalKeyVals {}', sub {
       && ($kv->getValue('parent') || $kv->getValue('numberwithin') || $kv->getValue('within'));
 
     if (my $refname = $kv && $kv->getValue('refname')) {
-      my ($s, $p) = map { Tokens(@$_); } SplitTokens(stripBraces($refname), T_OTHER(','));
+      my ($s, $p) = map { Tokens(@$_); } SplitTokens($refname, T_OTHER(','));
       DefMacroI('\\' . $name . 'autorefname',       undef, $s);
       DefMacroI('\\cref@' . $name . '@name',        undef, $s);
       DefMacroI('\\cref@' . $name . '@name@plural', undef, $p); }
     if (my $refname = $kv && $kv->getValue('Refname')) {
-      my ($s, $p) = map { Tokens(@$_); } SplitTokens(stripBraces($refname), T_OTHER(','));
+      my ($s, $p) = map { Tokens(@$_); } SplitTokens($refname, T_OTHER(','));
       DefMacroI('\\Cref@' . $name . '@name',        undef, $s);
       DefMacroI('\\Cref@' . $name . '@name@plural', undef, $p); }
 

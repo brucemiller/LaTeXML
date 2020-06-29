@@ -434,7 +434,7 @@ sub pmml_internal {
     my ($content, $presentation) = element_nodes($node);
     return pmml($presentation); }
   elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {      # Only present if parsing failed!
-    return pmml_row(map { pmml($_) } element_nodes($node)); }
+    return pmml_mayberesize($node, pmml_row(map { pmml($_) } element_nodes($node))); }
   elsif ($tag eq 'ltx:XMApp') {
     my ($op, @args) = element_nodes($node);
     if (!$op) {
@@ -459,9 +459,6 @@ sub pmml_internal {
       my %styleattr      = %{ ($style && ($needsmathstyle
             ? $stylemap{$ostyle}{$style}
             : $stylemap2{$ostyle}{$style})) || {} };
-      # And also check for stray attributes that maybe aren't really style, like href?
-      if (my $href = $node->getAttribute('href')) {
-        $styleattr{href} = $href; }
       $result = ['m:mstyle', {%styleattr}, $result] if keys %styleattr;
       return $result; } }
   elsif ($tag eq 'ltx:XMTok') {
@@ -527,7 +524,7 @@ sub pmml_internal {
           ? $stylemap{$ostyle}{$style}
           : $stylemap2{$ostyle}{$style})) || {} };
     $result = ['m:mstyle', {%styleattr}, $result] if keys %styleattr;
-
+    $result = pmml_mayberesize($node, $result);
     return $result; }
   elsif ($tag eq 'ltx:XMText') {
     my @c = $node->childNodes;
@@ -562,11 +559,16 @@ sub needsMathstyle {
 sub pmml_mayberesize {
   my ($node, $result) = @_;
   return $result unless ref $node;
-  my $width  = $node->getAttribute('width');
-  my $height = $node->getAttribute('height');
-  my $depth  = $node->getAttribute('depth');
-  my $xoff   = $node->getAttribute('xoffset');
-  my $yoff   = $node->getAttribute('yoffset');
+  my $parent;
+  # There MAY be relevant attributes on a containing XMDual (if any)!!!
+  if ((ref $node) && ($node->nodeType == XML_ELEMENT_NODE)
+    && ($parent = $node->parentNode) && (getQName($parent) eq 'ltx:XMDual')) { }
+  else { $parent = undef; }
+  my $width  = $node->getAttribute('width')   || ($parent && $parent->getAttribute('width'));
+  my $height = $node->getAttribute('height')  || ($parent && $parent->getAttribute('height'));
+  my $depth  = $node->getAttribute('depth')   || ($parent && $parent->getAttribute('depth'));
+  my $xoff   = $node->getAttribute('xoffset') || ($parent && $parent->getAttribute('xoffset'));
+  my $yoff   = $node->getAttribute('yoffset') || ($parent && $parent->getAttribute('yoffset'));
   if ($width || $height || $depth || $xoff || $yoff) {
     if ($$result[0] eq 'm:mpadded') { }
     elsif ($$result[0] eq 'm:mrow') {
@@ -720,7 +722,7 @@ my %normally_stretchy = map { $_ => 1 }
   "\x{2953}", "\x{2196}", "\x{2197}", "\x{2225}", "\x{2016}", "\x{21CC}", "\x{21CB}", "\x{2223}",
   "\x{2294}", "\x{22C3}", "\x{228E}", "\x{22C2}", "\x{2293}", "\x{22C1}", "\x{2211}", "\x{22C3}",
   "\x{228E}", "\x{2A04}", "\x{2A06}", "\x{2232}", "\x{222E}", "\x{2233}", "\x{222F}", "\x{222B}",
-  "\x{22C0}", "\x{2210}", "\x{220F}", "\x{22C2}", "\x{2216}", "\x{002F}", "\x{221A}", "\x{21D3}",
+  "\x{22C0}", "\x{2210}", "\x{220F}", "\x{22C2}", "\x{2216}", "\x{221A}", "\x{21D3}",
   "\x{27F8}", "\x{27FA}", "\x{27F9}", "\x{21D1}", "\x{21D5}", "\x{2193}", "\x{2913}", "\x{21F5}",
   "\x{21A7}", "\x{2961}", "\x{21C3}", "\x{2959}", "\x{2951}", "\x{2960}", "\x{21BF}", "\x{2958}",
   "\x{27F5}", "\x{27F7}", "\x{27F6}", "\x{296F}", "\x{295D}", "\x{21C2}", "\x{2955}", "\x{294F}",
@@ -824,7 +826,9 @@ sub stylizeContent {
       $text = join('', @c);
       $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef); } }
   # Other attributes that should be copied?
-  my $href = ($iselement ? $item->getAttribute('href') : $attr{href});
+  my $istoken = $tag =~ /^m:(?:mi|mo|mn)$/; # mrow?
+  my $href  = $istoken && ($iselement ? $item->getAttribute('href')  : $attr{href});
+  my $title = $istoken && ($iselement ? $item->getAttribute('title') : $attr{title});
   return ($text,
     ($variant ? (mathvariant => $variant) : ()),
     ($size ? ($stretchyhack
@@ -837,6 +841,7 @@ sub stylizeContent {
     ($stretchy ? (stretchy       => $stretchy)          : ()),
     ($class    ? (class          => $class)             : ()),
     ($href     ? (href           => $href)              : ()),
+    ($title    ? (title          => $title)             : ()),
   ); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
@@ -1435,8 +1440,10 @@ DefMathML('Apply:FRACOP:?', sub {
     my ($op, $num, $den, @more) = @_;
     my $thickness = $op->getAttribute('thickness');
     my $color     = $op->getAttribute('color') || $LaTeXML::MathML::COLOR;
+    my $bevelled  = grep { $_ eq 'ltx_bevelled' } split(/\s+/, $op->getAttribute('class') || '');
     return ['m:mfrac', { (defined $thickness ? (linethickness => $thickness) : ()),
-        ($color ? (mathcolor => $color) : ()) },
+        ($color    ? (mathcolor => $color) : ()),
+        ($bevelled ? (bevelled  => 'true') : ()) },
       pmml_smaller($num), pmml_smaller($den)]; });
 
 DefMathML('Apply:MODIFIEROP:?', \&pmml_infix, undef);

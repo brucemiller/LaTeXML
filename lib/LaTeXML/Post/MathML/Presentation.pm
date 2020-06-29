@@ -68,6 +68,24 @@ sub convertNode {
 sub rawIDSuffix {
   return '.pmml'; }
 
+sub associateNodeHook {
+  my ($self, $node, $sourcenode) = @_;
+  # TODO: Shouldn't we have a single getQName shared for the entire latexml codebase
+  #  in LaTeXML::Common or LaTeXML::Util ?
+  my $name = LaTeXML::Post::MathML::getQName($node);
+  if ($name =~ /^m:(?:mi|mo|mn)$/) {
+    if (my $href = $sourcenode->getAttribute('href')) {
+      if (ref $node eq 'ARRAY') {
+        $$node[1]{href} = $href; }
+      else {
+        $node->setAttribute('href', $href); } }
+    if (my $title = $sourcenode->getAttribute('title')) {
+      if (ref $node eq 'ARRAY') {
+        $$node[1]{title} = $title; }
+      else {
+        $node->setAttribute('title', $title); } } }
+  return; }
+
 #================================================================================
 # Presentation MathML with Line breaking
 # Not at all sure how this will integrate with Parallel markup...

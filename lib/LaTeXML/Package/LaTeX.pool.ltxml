@@ -80,7 +80,13 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
     # So, we'll just try for a .cls, punting to OmniBus if needed.
     # If we start wanting to read style files by default, we'll still need to handle this
     # specially, since class (or sty files pretending to be) cover so much more.
-    LoadClass($class, options => $options, after => Tokens(T_CS('\compat@loadpackages')));
+    if (FindFile($class, type => 'cls', notex => !LookupValue('INCLUDE_CLASSES'))) {
+      LoadClass($class, options => $options,
+        after => Tokens(T_CS('\compat@loadpackages'))); }
+    else {
+      InputDefinitions('OmniBus', type => 'cls', noerror => 1, handleoptions => 1);
+      RequirePackage($class, options => $options, as_class => 1,
+        after => Tokens(T_CS('\compat@loadpackages'))); }
     return; });
 
 DefPrimitiveI('\compat@loadpackages', undef, sub {
@@ -153,7 +159,7 @@ DefMacro('\begin{}', sub {
         $STATE->noteStatus(undefined => $undef);
         Error('undefined', $undef, $gullet, "The environment " . $undef . " is not defined.");
         $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, undef,
-            sub { LaTeXML::Core::Stomach::makeError($_[0], 'undefined', $undef); })); }
+            sub { $_[0]->makeError('undefined', $undef); })); }
       (($before ? @$before : ()),
         T_CS('\begingroup'),
         ($after ? @$after : ()),
@@ -457,7 +463,7 @@ sub makeNoteTags {
 
 DefMacroI('\ext@footnote', undef, undef);
 DefConstructor('\lx@note[]{}[]{}',
-  "<ltx:note role='#role' mark='#mark' xml:id='#id' inlist='#list'>"
+  "^<ltx:note role='#role' mark='#mark' xml:id='#id' inlist='#list'>"
     . "#tags"
     . "#4"
     . "</ltx:note>",
@@ -604,6 +610,7 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
+    MaybePeekLabel();
     $type = ToString($type);
     my %props     = RefStepCounter($type);
     my $xtitle    = Digest(Invocation(T_CS('\lx@format@title@@'), $type, $title));
@@ -628,13 +635,16 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
+    MaybePeekLabel();
     $type = ToString($type);
     my %props = RefStepID($type);
     if ($type eq 'appendix') {
       $props{backmatterelement} = LookupMapping('BACKMATTER_ELEMENT', 'ltx:' . $type); }
-    $props{title}    = Digest(T_CS('\@hidden@bgroup'), $title, T_CS('\@hidden@egroup'));
+    $props{title} = Digest(T_CS('\@hidden@bgroup'),
+      Invocation(T_CS('\lx@format@title@font@@'), $type), $title, T_CS('\@hidden@egroup'));
     $props{toctitle} = $toctitle
-      && Digest(T_CS('\@hidden@bgroup'), $toctitle, T_CS('\@hidden@egroup'));
+      && Digest(T_CS('\@hidden@bgroup'), Invocation(T_CS('\lx@format@toctitle@font@@'), $type),
+      $toctitle, T_CS('\@hidden@egroup'));
     return %props; });
 
 #======================================================================
@@ -751,6 +761,10 @@ DefMacroI('\@pkgextension', undef, 'sty');
 Let('\@currext',          '\@empty');
 Let('\@currname',         '\@empty');
 Let('\@classoptionslist', '\relax');
+# Note that there are variables used in Package.pmfor these,
+# but they are NOT tied to these macros. Do they need to be?
+DefMacroI('\@declaredoptions', undef, undef);
+DefMacroI('\@curroptions',     undef, undef);
 
 DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
   "<?latexml package='#2' ?#1(options='#1')?>",
@@ -834,6 +848,11 @@ DefConstructor('\LoadClassWithOptions Semiverbatim []',
     LoadClass(ToString($class), withoptions => 1);
     return; });
 
+DefPrimitive('\@onefilewithoptions {} [][] {}', sub {
+    my ($stomach, $name, $option1, $option2, $ext) = @_;
+    InputDefinitions(ToString(Expand($name)), type => ToString(Expand($ext)), options => $option1);
+    return; });
+
 DefMacroI('\CurrentOption', undef, Tokens());
 
 DefPrimitiveI('\OptionNotUsed', undef, sub {
@@ -857,6 +876,7 @@ DefPrimitive('\ExecuteOptions{}', sub {
 DefPrimitive('\ProcessOptions OptionalMatch:*', sub {
     my ($stomach, $star) = @_;
     ProcessOptions(($star ? (inorder => 1) : ())); });
+DefMacro('\@options', '\ProcessOptions*');
 
 DefMacro('\AtEndOfPackage{}', sub {
     my ($gullet, $code) = @_;
@@ -898,6 +918,22 @@ Let('\AtEndOfClass', '\AtEndOfPackage');
 
 DefMacro('\AtBeginDvi {}', Tokens());
 
+RawTeX(<<'EoTeX');
+\def\@ifl@t@r#1#2{%
+  \ifnum\expandafter\@parse@version@#1//00\@nil<%
+        \expandafter\@parse@version@#2//00\@nil
+    \expandafter\@secondoftwo
+  \else
+    \expandafter\@firstoftwo
+  \fi}
+\def\@parse@version@#1{\@parse@version0#1}
+\def\@parse@version#1/#2/#3#4#5\@nil{%
+\@parse@version@dash#1-#2-#3#4\@nil
+}
+\def\@parse@version@dash#1-#2-#3#4#5\@nil{%
+  \if\relax#2\relax\else#1\fi#2#3#4 }
+EoTeX
+
 #======================================================================
 # Somewhat related I/O stuff
 DefMacro('\filename@parse{}', sub {
@@ -912,6 +948,7 @@ DefMacroI('\@filelist', undef, Tokens());
 DefMacro('\@addtofilelist{}', sub {
     DefMacroI('\@filelist', undef,
       Expand(T_CS('\@filelist'), T_OTHER(','), $_[1]->unlist)); });
+
 #======================================================================
 # C.5.3 Page Styles
 #======================================================================
@@ -1604,7 +1641,22 @@ DefRegister('\@itemdepth' => Number(0));
 # NOTE: how's the best way to get verbatim material through?
 DefEnvironment('{verbatim}',  '<ltx:verbatim>#body</ltx:verbatim>');
 DefEnvironment('{verbatim*}', '<ltx:verbatim>#body</ltx:verbatim>');
-Let('\@verbatim', '\verbatim');    # Close enough?
+
+DefMacroI('\@verbatim', undef,
+  '\par\aftergroup\lx@end@verbatim\lx@@verbatim');    # Close enough?
+DefConstructorI('\lx@@verbatim', undef,
+  "<ltx:verbatim font='#font'>",
+  beforeDigest => sub {
+    my ($stomach) = @_;
+    StartSemiverbatim('%', '\\', '{', '}');
+    MergeFont(family => 'typewriter', series => 'medium', shape => 'upright');
+    $STATE->assignCatcode(' ', CC_ACTIVE);            # Do NOT (necessarily) skip spaces after \verb!!!
+    Let(T_ACTIVE(' '), T_SPACE); });
+DefConstructorI('\lx@end@verbatim', undef,
+  "</ltx:verbatim>",
+  beforeDigest => sub {
+    EndSemiverbatim(); });
+
 # verbatim is a bit of special case;
 # It looks like an environment, but it only ends with an explicit "\end{verbatim}" on it's own line.
 # So, we'll end up doing things more manually.
@@ -1654,34 +1706,41 @@ DefPrimitiveI('\@vobeyspaces', undef, sub {
 # WARNING: Need to be careful about what catcodes are active here
 DefMacroI('\verb', undef, sub {
     my ($gullet) = @_;
-    my $mouth = $gullet->getMouth;
-    my ($init, $body);
+    my $inmath = LookupValue('IN_MATH');
     StartSemiverbatim('%', '\\', '{', '}');
-    $init = $mouth->readToken;
-    $init = $mouth->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
+    MergeFont(family => 'typewriter', series => 'medium', shape => 'upright');
+    $STATE->assignCatcode(' ', CC_ACTIVE);    # Do NOT (necessarily) skip spaces after \verb!!!
+    Let(T_ACTIVE(' '), T_SPACE);
+    my $init    = $gullet->readToken;
+    my $starred = 0;
 
+    if (T_OTHER('*')->equals($init)) {
+      $starred = 1;
+      Let(T_ACTIVE(' '), T_OTHER("\x{2423}"));    # Visible space
+      $init = $gullet->readToken; }
     if (!$init) {    # typically something read too far got \verb and the content is somewhere else..?
       Error('expected', 'delimiter', $gullet,
         "Verbatim argument lost", "Bindings for preceding code is probably broken");
       EndSemiverbatim();
       return (); }
-    $body = $mouth->readTokens($init);
-    EndSemiverbatim();
-    Invocation((LookupValue('IN_MATH') ? T_CS('\@math@verb') : T_CS('\@text@verb')),
+    my $init_str = $init->getString();
+    AssignCatcode($init_str => CC_ACTIVE);
+    my $delim = T_ACTIVE($init_str);
+    my $body  = $gullet->readUntil($delim);
+    Invocation(($inmath ? T_CS('\@math@verb') : T_CS('\@text@verb')),
+      ($starred ? T_OTHER('*') : Tokens()),
       Tokens($init), $body)->unlist; });
 
-DefConstructor('\@text@verb{}{}', "<ltx:verbatim font='#font'>#2</ltx:verbatim>",
-  beforeDigest => [sub { $_[0]->bgroup; MergeFont(family => 'typewriter'); }],
-  afterDigest  => sub { $_[0]->egroup; },
+DefConstructor('\@text@verb{}{}{}', "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
+  afterDigest => sub { EndSemiverbatim(); },
   # Since ltx:verbatim is both inline & block, we have to fudge inline mode
   beforeConstruct => sub {
     $_[0]->canContain($_[0]->getElement, '#PCDATA')
       || $_[0]->openElement('ltx:p'); },
-  reversion => '\verb#1#2#1');
-DefConstructor('\@math@verb{}{}', "#2",    # Will already end up wrapped as XMTok!
-  beforeDigest => [sub { $_[0]->bgroup; MergeFont(family => 'typewriter'); }],
-  afterDigest  => sub { $_[0]->egroup; },
-  reversion    => '\verb#1#2#1');
+  reversion => '\verb#1#2#3#2');
+DefConstructor('\@math@verb{}{}{}', "<ltx:XMTok font='#font'>#3</ltx:XMTok>",
+  afterDigest => sub { EndSemiverbatim(); },
+  reversion   => '\verb#1#2#3#2');
 
 # This is defined by the alltt package.
 # Environment('alltt', ?);
@@ -1758,6 +1817,7 @@ sub beforeEquation {
   my $numbering = LookupValue('EQUATION_NUMBERING');
   my $numbered  = $$numbering{numbered};
   my $ctr       = $$numbering{counter} || 'equation';
+  MaybePeekLabel();
   $$numbering{in_equation} = 1;
   if ($$numbering{preset}) {
     AssignValue(EQUATIONROW_TAGS => {
@@ -1765,16 +1825,31 @@ sub beforeEquation {
         ($numbered ? RefStepCounter($ctr) : RefStepID($ctr)) }, 'global'); }
   else {
     AssignValue(EQUATIONROW_TAGS => {}, 'global'); }
-  Let('\@@ENDDISPLAYMATH',   '\lx@begin@fake@intertext');
-  Let('\@@BEGINDISPLAYMATH', '\lx@end@fake@intertext');
-  Let('\]',                  '\lx@begin@fake@intertext');
-  Let('\[',                  '\lx@end@fake@intertext');
+  Let('\lx@saved@BEGINDISPLAYMATH', '\@@BEGINDISPLAYMATH');
+  Let('\lx@saved@ENDDISPLAYMATH',   '\@@ENDDISPLAYMATH');
+  Let('\@@ENDDISPLAYMATH',          '\lx@eDM@in@equation');
+  Let('\@@BEGINDISPLAYMATH',        '\lx@bDM@in@equation');
   return; }
 
-# Apparently folks use $$text$$ or even \]text\[ inside display math!
-# This SHOULD create a line break, not merely text!
-DefPrimitive('\lx@begin@fake@intertext', sub { $_[0]->beginMode('text'); });
-DefPrimitive('\lx@end@fake@intertext',   sub { $_[0]->endMode('text'); });
+# Note peculiar usages of \[,\],$$ WITHIN displayed math, like {equation}.
+# Authors sometimes use \begin{equation} math \] some text \[ more math \end{equation}
+# to create a cheap intertext. And, the refnum appears on the SECOND equation!
+# But in redefining these, note that a "valid" \[ math \] might be used within some
+# sort of text insertion (eg \footnote)!
+# So, we've got to dance around with redefinitions!!
+# SIDE NOTE: \[,\] are really just $$ w/ appropriate error checking!
+DefMacro('\lx@bDM@in@equation', '\lx@saved@BEGINDISPLAYMATH\let\@@ENDDISPLAYMATH\lx@saved@ENDDISPLAYMATH');
+DefMacro('\lx@eDM@in@equation',
+  '\lx@retract@eqnno\lx@begin@fake@intertext'
+    . '\let\lx@saved@BEGINDISPLAYMATH\@@BEGINDISPLAYMATH\let\lx@saved@bdm\['
+    . '\let\@@BEGINDISPLAYMATH\lx@end@fake@intertext'
+    . '\let\[\lx@end@fake@intertext');
+
+DefMacro('\lx@begin@fake@intertext', '\end{equation}');
+DefMacro('\lx@end@fake@intertext',
+  '\let\@@BEGINDISPLAYMATH\lx@saved@BEGINDISPLAYMATH\let\[\lx@saved@bdm' .
+    '\begin{equation}');
+DefPrimitive('\lx@retract@eqnno', sub { retractEquation(); });
 
 sub retractEquation {
   my $numbering = LookupValue('EQUATION_NUMBERING');
@@ -1879,33 +1954,10 @@ DefEnvironment('{equation*}',
     afterEquation($_[1]); },
   locked => 1);
 
-# Define \( ..\) and \[ ... \] to act like environments.
-# I would have thought these should be locked, but it seems relatively common to
-# redefine them as \left[ \right] and \left( \right) !
-DefConstructorI('\[', undef,
-  "<ltx:equation xml:id='#id'>"
-    . "<ltx:Math mode='display'>"
-    . "<ltx:XMath>"
-    . "#body"
-    . "</ltx:XMath>"
-    . "</ltx:Math>"
-    . "</ltx:equation>",
-  beforeDigest => sub { $_[0]->beginMode('display_math'); },
-  captureBody  => 1,
-  properties   => sub { RefStepID('equation') },
-  locked       => 1);
-DefConstructorI('\]', undef, "",
-  beforeDigest => sub { $_[0]->endMode('display_math'); },
-  locked       => 1);
-DefConstructorI('\(', undef,
-  "<ltx:Math mode='inline'>"
-    . "<ltx:XMath>"
-    . "#body"
-    . "</ltx:XMath>"
-    . "</ltx:Math>",
-  beforeDigest => sub { $_[0]->beginMode('inline_math'); },
-  captureBody  => 1);
-DefConstructorI('\)', undef, "", beforeDigest => sub { $_[0]->endMode('inline_math'); });
+DefMacro('\[', '\@@BEGINDISPLAYMATH');
+DefMacro('\]', '\@@ENDDISPLAYMATH');
+DefMacro('\(', '\@@BEGININLINEMATH');
+DefMacro('\)', '\@@ENDINLINEMATH');
 
 # Keep from expanding too early, if in alignments, or such.
 DefMacroI('\ensuremath', undef,
@@ -1949,7 +2001,7 @@ Tag('ltx:Math', afterOpen => sub { GenerateID(@_, 'm'); });
 # Although LaTeX itself doesn't provide such an environment,
 # many other packages & classes do, and they seem essentially equivalent.
 # They provide an environment to wrap around equations,
-# which highjack the equation counter to sub-number within the group.
+# which hijack the equation counter to sub-number within the group.
 DefConstructor('\lx@equationgroup@subnumbering@begin',
   "<ltx:equationgroup xml:id='#id'>#tags",
   afterDigest => sub {
@@ -2336,12 +2388,18 @@ DefPrimitive('\renewcommand OptionalMatch:* DefToken [Number][]{}', sub {
 
 # low-level implementation of both \newcommand and \renewcommand depends on \@argdef
 # and robustness upgrades are often realized via redefining \l@ngrel@x
-#
-# Experiment: use \l@ngrel@x to carry over \protected information from outside, etoolbox-style.
-# DefMacro('\@argdef','\l@ngrel@x\renewcommand');
-#
-# The etoolbox binding now defines \newrobustcmd & friends directly, so \@argdef is not directly needed
-# However, we would need to add support for other packages that may leverage that machinery.
+DefPrimitive('\@argdef DefToken []{}', sub {
+    DefMacroI($_[1], convertLaTeXArgs($_[2]), $_[3]); });
+DefPrimitive('\@xargdef DefToken [][]{}', sub {
+    DefMacroI($_[1], convertLaTeXArgs($_[2], $_[3]), $_[4]); });
+DefPrimitive('\@yargdef DefToken DefToken {}{}', sub {
+    DefMacroI($_[1],
+      (T_CS('\tw@')->equals($_[2])
+        ? convertLaTeXArgs($_[3], Tokens())
+        : convertLaTeXArgs($_[3])),
+      $_[4]); });
+DefPrimitive('\@reargdef DefToken []{}', sub {
+    DefMacroI($_[1], convertLaTeXArgs($_[2]), $_[3]); });
 
 DefPrimitive('\providecommand OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
@@ -2835,7 +2893,7 @@ DefPrimitive('\@addtoreset{}{}', sub {
     $ctr    = ToString(Expand($ctr));
     $within = ToString(Expand($within));
     addtoCounterReset($ctr, $within);
-    defCounterID($ctr, $within);
+    defCounterID($ctr, $within) unless LookupDefinition(T_CS("\\the$ctr\@ID"));
     return; });
 
 DefMacro('\value{}', sub {
@@ -2942,12 +3000,24 @@ DefMacro('\ext@table',  'lot');
 DefConditional('\iflx@donecaption');
 DefMacro('\caption',
 '\lx@donecaptiontrue\@ifundefined{@captype}{\@@generic@caption}{\expandafter\@caption\expandafter{\@captype}}');
+# First, check for trailing \label, move it into the caption as a standard position
 DefMacro('\@caption{}[]{}',
   '\@ifnext\label{\@caption@postlabel{#1}{#2}{#3}}{\@caption@{#1}{#2}{#3}}');
-# Check for trailing \label, move it into the caption
 DefMacro('\@caption@postlabel{}{}{} SkipMatch:\label Semiverbatim',
   '\@caption@{#1}{#2}{#3\label{#4}}');
-DefMacro('\@caption@{}{}{}',
+
+# Now, check for label inside to (potentially) record it.
+DefMacro('\@caption@{}{}{}', '\@hack@caption@{#1}{#2}#3\label\endcaption');
+DefMacro('\@hack@caption@{}{} Until:\label Until:\endcaption',
+  '\ifx.#4.\@caption@@@{#1}{#2}{#3}'    # No label
+    . '\else\@@@hack@caption@{#1}{#2}{#3}#4\fi');
+DefMacro('\@@@hack@caption@{}{}{}{} Until:\label',
+  '\lx@note@caption@label{#4}' .
+    '\@caption@@@{#1}{#2}{#3\label{#4}#5}');
+
+DefPrimitive('\lx@note@caption@label{}', sub { MaybeNoteLabel($_[1]); });
+
+DefMacro('\@caption@@@{}{}{}',
   '\@@add@caption@counters'
     . '\@@toccaption{\lx@format@toctitle@@{#1}{\ifx.#2.#3\else#2\fi}}'
     . '\@@caption{\lx@format@title@@{#1}{#3}}');
@@ -3342,6 +3412,7 @@ DefPrimitive('\@array@bindings [] AlignmentTemplate', sub {
     if ($str != 1) {
       $$attr{rowsep} = Dimension(($str - 1) . 'em'); }
     alignmentBindings($template, 'math', attributes => $attr);
+    MergeFont(mathstyle => 'text');
     return; });
 
 DefMacro('\array[]{}',
@@ -3381,6 +3452,7 @@ DefConstructor('\label Semiverbatim', sub {
   reversion   => '',
   properties  => { alignmentSkippable => 1, alignmentPreserve => 1 },
   afterDigest => sub {
+    MaybeNoteLabel($_[1]->getArg(1));
     my $label = CleanLabel(ToString($_[1]->getArg(1)));
     $_[1]->setProperty(label => $label);
     my $scope = $label; $scope =~ s/^LABEL:/label:/;
@@ -3413,6 +3485,14 @@ DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#lab
 # And likewise, mixed up in various other classes!
 
 DefMacroI('\thebibliography@ID', undef, Tokens());
+
+# Do this before digesting the body of a bibliography
+sub beforeDigestBibliography {
+  AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
+  DefMacro('\bibliographystyle{}', '');
+  DefMacro('\bibliography {}',     '');
+  ResetCounter('@bibitem');
+  return; }
 
 # This sub does things that would commonly be needed when starting a bibliography
 # setting the ID, etc...
@@ -3559,10 +3639,7 @@ DefConstructorI('\thebibliography', undef,
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "<ltx:biblist>",
   beforeDigest => sub {
-    AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
-    DefMacro('\bibliographystyle{}', '');
-    DefMacro('\bibliography {}',     '');
-    ResetCounter('@bibitem'); },
+    beforeDigestBibliography(); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     # NOTE that in some perverse situations (revtex?)
@@ -3714,6 +3791,7 @@ AssignValue(CITE_YY_SEPARATOR   => T_OTHER(','));
 AssignValue(CITE_NOTE_SEPARATOR => T_OTHER(','));
 AssignValue(CITE_UNIT           => undef);
 
+DefMacro('\@cite{}{}', '[{#1\if@tempswa , #2\fi}]');
 DefConstructor('\@@cite []{}', "<ltx:cite ?#1(class='ltx_citemacro_#1')>#2</ltx:cite>",
   mode => 'text');
 
@@ -4065,28 +4143,29 @@ DefPrimitiveI('\samepage', undef, undef);
 # \fill
 DefMacro('\stretch{}', '0pt plus #1fill\relax');
 
-DefPrimitive('\@check@length DefToken', sub {
-    my ($stomach, $cs) = @_;
-    my $defn = LookupDefinition($cs);
-    if (!$defn) {
-      Warn('undefined', $cs, $stomach, "'" . ToString($cs) . "' is not a length; defining it now");
-      DefRegisterI($cs, undef, Dimension(0)); }
-    elsif (!$defn->isRegister) {
-      Error('misdefined', $cs, $stomach, "'" . ToString($cs) . "' length was expected, got " . ref($defn) . " instead of register.");
-    }
-    return; });
-
 DefPrimitive('\newlength DefToken', sub {
     my ($stomach, $cs) = @_;
     DefRegisterI($cs, undef, Glue(0)); });
-DefMacro('\setlength{}{}',   '\@check@length{#1}#1#2\relax');
-DefMacro('\addtolength{}{}', '\@check@length{#1}\advance#1 #2\relax');
+DefPrimitive('\setlength {Variable}{Dimension}', sub {
+    my ($stomach, $variable, $length) = @_;
+    my ($defn, @params) = @$variable;
+    if ($defn) {
+      $defn->setValue($length, @params); }
+    return; });
+DefPrimitive('\addtolength {Variable}{Dimension}', sub {
+    my ($stomach, $variable, $length) = @_;
+    my ($defn, @params) = @$variable;
+    if ($defn) {
+      my $oldlength = $defn->valueOf(@params);
+      $defn->setValue($defn->valueOf(@params)->add($length), @params); }
+    return; });
 
 DefMacro('\@settodim{}{}{}',
   '\setbox\@tempboxa\hbox{{#3}}#2#1\@tempboxa\setbox\@tempboxa\box\voidb@x');
 DefMacroI('\settoheight', undef, '\@settodim\ht');
 DefMacroI('\settodepth',  undef, '\@settodim\dp');
 DefMacroI('\settowidth',  undef, '\@settodim\wd');
+DefMacro('\@settopoint{}', '\divide#1\p@\multiply#1\p@');
 
 # Assuming noone tries to get clever with figuring out the allocation of
 # numbers, these become simple DefRegister's
@@ -4923,7 +5002,10 @@ DefMacro('\@secondoftwo{}{}',    sub { $_[2]; });
 DefMacro('\@thirdofthree{}{}{}', sub { $_[3]; });
 DefMacro('\@expandtwoargs{}{}{}', sub {
     ($_[1]->unlist, T_BEGIN, Expand($_[2])->unlist, T_END, T_BEGIN, Expand($_[3])->unlist, T_END); });
-DefMacro('\@makeother{}', sub { AssignCatcode($_[1] => CC_OTHER, 'local'); });
+DefMacro('\@makeother{}', sub {
+    my ($gullet, $char) = @_;
+    $char = ToString($char); $char =~ s/\\//;
+    AssignCatcode($char => CC_OTHER, 'local'); });
 
 RawTeX(<<'EoTeX');
 {\catcode`\^^M=13 \gdef\obeycr{\catcode`\^^M13 \def^^M{\\\relax}%
@@ -5197,6 +5279,7 @@ RawTeX(<<'EOTeX');
 \newif\if@twoside       \@twosidefalse
 \newif\if@reversemargin \@reversemarginfalse
 \newif\if@mparswitch    \@mparswitchfalse
+\newif\if@firstamp      \@firstampfalse
 \newcount\col@number    \@ne
 \newread\@inputcheck
 \newwrite\@unused
@@ -5294,7 +5377,7 @@ DefMacroI('\@charrb',        undef, T_LETTER('}'));
 DefMacroI('\check@mathfonts', undef, Tokens());
 DefMacro('\fontsize{}{}', Tokens());
 # https://tex.stackexchange.com/questions/112492/setfontsize-vs-fontsize#112501
-DefMacro('\@setfontsize{}{}{}', Tokens());
+DefMacro('\@setfontsize{}{}{}', '\let\@currsize#1');
 
 DefMacroI('\defaultscriptratio',       undef, '.7');
 DefMacroI('\defaultscriptscriptratio', undef, '.5');

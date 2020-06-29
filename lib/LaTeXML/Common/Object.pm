@@ -39,7 +39,7 @@ sub Stringify {
     elsif ($object->isa('XML::LibXML::Node')) {
       if ($object->nodeType == XML_ELEMENT_NODE) {
         my $model = $STATE && $STATE->getModel;
-        my $tag = ($model ? $model->getNodeQName($object)
+        my $tag   = ($model ? $model->getNodeQName($object)
           : $object->nodeName);
         my $attributes = '';
         foreach my $attr ($object->attributes) {
@@ -71,8 +71,8 @@ sub ToString {
 # Just how deep of an equality test should this be?
 sub Equals {
   my ($x, $y) = @_;
-  return 1 if !(defined $x) && !(defined $y);    # both undefined, equal, I guess
-  return 0 unless (defined $x) && (defined $y);  # else both must be defined
+  return 1 if !(defined $x)    && !(defined $y);    # both undefined, equal, I guess
+  return 0 unless (defined $x) && (defined $y);     # else both must be defined
   my $refx = (ref $x) || '_notype_';
   my $refy = (ref $y) || '_notype_';
 
@@ -94,12 +94,12 @@ sub Equals {
     else { return 0; } }
 
   return $x eq $y if ($refx eq '_notype_') || $NOBLESS{$refx};    # Deep comparison of builtins?
-        # Special cases? (should be methods, but that embeds State knowledge too low)
+      # Special cases? (should be methods, but that embeds State knowledge too low)
 
   if ($refx eq 'LaTeXML::Core::Token') {    # Check if they've been \let to the same defn.
-    my $defx = $STATE->lookupMeaning($x) || $x;
-    my $defy = $STATE->lookupMeaning($y) || $y;
-    return $defx->equals($defy); }
+    $x = $STATE->lookupMeaning($x) || $x;
+    $y = $STATE->lookupMeaning($y) || $y;
+  }
   return $x->equals($y); }                  # semi-shallow comparison?
 
 # Reverts an object into TeX code, as a Tokens list, that would create it.
@@ -165,11 +165,25 @@ sub unlist {
   return $self; }
 
 #**********************************************************************
+# What about Kern, Glue, Penalty ...
+
+# stubs to avoid "shallow" Fatal errors on broken documents
+sub multiply { return Dimension(0); }
+sub subtract { return Dimension(0); }
+sub add      { return Dimension(0); }
+sub negate   { return Dimension(0); }
+sub divide   { return Dimension(0); }
+sub getX     { return Dimension(0); }
+sub getY     { return Dimension(0); }
+sub ptValue  { return 0.0; }
+sub valueOf  { return 0.0; }
+#**********************************************************************
+
 1;
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -189,7 +203,7 @@ to beautify error reporting.
 =item C<< $string = Stringify($object); >>
 
 Returns a string identifying C<$object>, for debugging.
-Works on any values and objects, but invokes the stringify method on 
+Works on any values and objects, but invokes the stringify method on
 blessed objects.
 More informative than the default perl conversion to a string.
 
@@ -207,7 +221,7 @@ the toString method on blessed objects.
 
 =item C<< $boolean = Equals($x,$y); >>
 
-Compares the two objects for equality.  Works on any values and objects, 
+Compares the two objects for equality.  Works on any values and objects,
 but invokes the equals method on blessed objects, which does a
 deep comparison of the two objects.
 
@@ -279,4 +293,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

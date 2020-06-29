@@ -1298,7 +1298,9 @@ DefMacro('\patchcmd [] DefToken {}{}{}{}', sub {
       }
       my $string        = ToString($expansion);
       my $search_string = ToString($search);
-      my $search_regex  = qr/$search_string/;
+      # All characters are meant to be matched as literal, avoid regex interpretation
+      $search_string = quotemeta($search_string);
+      my $search_regex = qr/$search_string/;
       if ($string =~ $search_regex) {
         # Should the token substitution happen on the actual data structure?
         # string replacement is a quick&dirty way out...

@@ -62,7 +62,7 @@ sub newFromFile {
   my $self = { source => $bibname, preamble => [], entries => [], macros => {%default_macros} };
   bless $self, $class;
   my $paths = $STATE->lookupValue('SEARCHPATHS');
-  my $file = pathname_find($bibname, types => ['bib'], paths => $paths);
+  my $file  = pathname_find($bibname, types => ['bib'], paths => $paths);
   Fatal('missing_file', $bibname, undef, "Can't find BibTeX file $bibname",
     "SEACHPATHS is " . join(', ', @$paths)) unless $file;
   my $BIB;
@@ -70,7 +70,7 @@ sub newFromFile {
   open($BIB, '<', $file) or Fatal('I/O', $file, undef, "Can't open BibTeX $file for reading", $!);
   $$self{lines} = [<$BIB>];
   close($BIB);
-  $$self{line} = shift(@{ $$self{lines} }) || '';
+  $$self{line}   = shift(@{ $$self{lines} }) || '';
   $$self{lineno} = 1;
   return $self; }
 
@@ -334,6 +334,7 @@ sub skipWhite {
 # So, until an @ is encountered, pretty much skip anything
 sub skipJunk {
   my ($self) = @_;
+  $$self{line} ||= "";
   while (1) {
     $$self{line} =~ s/^[^@%]*//;    # Skip till comment or @
     return '@' if $$self{line} =~ s/^@//;    # Found @
@@ -349,7 +350,7 @@ sub skipJunk {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -436,4 +437,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

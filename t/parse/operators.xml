@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
+<?latexml package="amsmath"?>
+<?latexml package="amsopn"?>
 <?latexml package="latexml"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
@@ -240,6 +242,108 @@
         </Math>
       </equation>
     </para>
+    <para xml:id="S1.p2">
+      <equation xml:id="S1.Ex4">
+        <Math mode="display" tex="\int_{a}^{b}f(x)dx" text="((integral _ a) ^ b)@(f@(x) * differential-d@(x))" xml:id="S1.Ex4.m1">
+          <XMath>
+            <XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                  <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="ID">a</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="ID">b</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMDual>
+                  <XMApp>
+                    <XMRef idref="S1.Ex4.m1.1"/>
+                    <XMRef idref="S1.Ex4.m1.2"/>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok font="italic" role="FUNCTION" xml:id="S1.Ex4.m1.1">f</XMTok>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S1.Ex4.m1.2">x</XMTok>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMApp>
+                </XMDual>
+                <XMApp>
+                  <XMTok font="italic" meaning="differential-d" role="DIFFOP">d</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation xml:id="S1.Ex5">
+        <Math content-tex="\int_{a}^{b}f(x)\diffd x" mode="display" tex="\int_{a}^{b}f(x)\operatorname{\operatorname{d}\!}x" text="((integral _ a) ^ b)@(f@(x) * diffd@(x))" xml:id="S1.Ex5.m1">
+          <XMath>
+            <XMApp>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                  <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP">∫</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="ID">a</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="ID">b</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMDual>
+                  <XMApp>
+                    <XMRef idref="S1.Ex5.m1.1"/>
+                    <XMRef idref="S1.Ex5.m1.2"/>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok font="italic" role="FUNCTION" xml:id="S1.Ex5.m1.1">f</XMTok>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S1.Ex5.m1.2">x</XMTok>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMApp>
+                </XMDual>
+                <XMApp>
+                  <XMTok name="diffd" role="OPFUNCTION" rpadding="-1.7pt" scriptpos="post">d</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+      <equation xml:id="S1.Ex6">
+        <Math content-tex="\diffd u=\diffd x+\diffd y" mode="display" tex="\operatorname{\operatorname{d}\!}u=\operatorname{\operatorname{d}\!}x+%&#10;\operatorname{\operatorname{d}\!}y" text="diffd@(u) = diffd@(x) + diffd@(y)" xml:id="S1.Ex6.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMApp>
+                <XMTok name="diffd" role="OPFUNCTION" rpadding="-1.7pt" scriptpos="post">d</XMTok>
+                <XMTok font="italic" role="UNKNOWN">u</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMApp>
+                  <XMTok name="diffd" role="OPFUNCTION" rpadding="-1.7pt" scriptpos="post">d</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok name="diffd" role="OPFUNCTION" rpadding="-1.7pt" scriptpos="post">d</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
   </section>
   <section inlist="toc" xml:id="S2">
     <tags>
@@ -249,8 +353,8 @@
     </tags>
     <title><tag close=" ">2</tag>Operators</title>
     <para xml:id="S2.p1">
-      <equation xml:id="S2.Ex4">
-        <Math mode="display" tex="Da" text="D@(a)" xml:id="S2.Ex4.m1">
+      <equation xml:id="S2.Ex7">
+        <Math mode="display" tex="Da" text="D@(a)" xml:id="S2.Ex7.m1">
           <XMath>
             <XMApp>
               <XMTok font="italic" role="OPERATOR">D</XMTok>
@@ -259,8 +363,8 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="S2.Ex5">
-        <Math mode="display" tex="Df" text="D@(f)" xml:id="S2.Ex5.m1">
+      <equation xml:id="S2.Ex8">
+        <Math mode="display" tex="Df" text="D@(f)" xml:id="S2.Ex8.m1">
           <XMath>
             <XMApp>
               <XMTok font="italic" role="OPERATOR">D</XMTok>
@@ -269,22 +373,22 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="S2.Ex6">
-        <Math mode="display" tex="Df(a)" text="(D@(f))@(a)" xml:id="S2.Ex6.m1">
+      <equation xml:id="S2.Ex9">
+        <Math mode="display" tex="Df(a)" text="(D@(f))@(a)" xml:id="S2.Ex9.m1">
           <XMath>
             <XMDual>
               <XMApp>
-                <XMRef idref="S2.Ex6.m1.2"/>
-                <XMRef idref="S2.Ex6.m1.1"/>
+                <XMRef idref="S2.Ex9.m1.2"/>
+                <XMRef idref="S2.Ex9.m1.1"/>
               </XMApp>
               <XMApp>
-                <XMApp xml:id="S2.Ex6.m1.2">
+                <XMApp xml:id="S2.Ex9.m1.2">
                   <XMTok font="italic" role="OPERATOR">D</XMTok>
                   <XMTok font="italic" role="FUNCTION">f</XMTok>
                 </XMApp>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMTok font="italic" role="ID" xml:id="S2.Ex6.m1.1">a</XMTok>
+                  <XMTok font="italic" role="ID" xml:id="S2.Ex9.m1.1">a</XMTok>
                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                 </XMWrap>
               </XMApp>
@@ -292,8 +396,8 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="S2.Ex7">
-        <Math mode="display" tex="DGHf" text="D@(G@(H@(f)))" xml:id="S2.Ex7.m1">
+      <equation xml:id="S2.Ex10">
+        <Math mode="display" tex="DGHf" text="D@(G@(H@(f)))" xml:id="S2.Ex10.m1">
           <XMath>
             <XMApp>
               <XMTok font="italic" role="OPERATOR">D</XMTok>
@@ -308,16 +412,16 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="S2.Ex8">
-        <Math mode="display" tex="DGHf(a)" text="(D@(G@(H@(f))))@(a)" xml:id="S2.Ex8.m1">
+      <equation xml:id="S2.Ex11">
+        <Math mode="display" tex="DGHf(a)" text="(D@(G@(H@(f))))@(a)" xml:id="S2.Ex11.m1">
           <XMath>
             <XMDual>
               <XMApp>
-                <XMRef idref="S2.Ex8.m1.2"/>
-                <XMRef idref="S2.Ex8.m1.1"/>
+                <XMRef idref="S2.Ex11.m1.2"/>
+                <XMRef idref="S2.Ex11.m1.1"/>
               </XMApp>
               <XMApp>
-                <XMApp xml:id="S2.Ex8.m1.2">
+                <XMApp xml:id="S2.Ex11.m1.2">
                   <XMTok font="italic" role="OPERATOR">D</XMTok>
                   <XMApp>
                     <XMTok font="italic" role="OPERATOR">G</XMTok>
@@ -329,7 +433,7 @@
                 </XMApp>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMTok font="italic" role="ID" xml:id="S2.Ex8.m1.1">a</XMTok>
+                  <XMTok font="italic" role="ID" xml:id="S2.Ex11.m1.1">a</XMTok>
                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                 </XMWrap>
               </XMApp>
@@ -337,35 +441,123 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="S2.Ex9">
-        <Math mode="display" tex="D(a)(b)" text="(D@(a))@(b)" xml:id="S2.Ex9.m1">
+      <equation xml:id="S2.Ex12">
+        <Math mode="display" tex="D(a)(b)" text="(D@(a))@(b)" xml:id="S2.Ex12.m1">
           <XMath>
             <XMDual>
               <XMApp>
-                <XMRef idref="S2.Ex9.m1.4"/>
-                <XMRef idref="S2.Ex9.m1.3"/>
+                <XMRef idref="S2.Ex12.m1.4"/>
+                <XMRef idref="S2.Ex12.m1.3"/>
               </XMApp>
               <XMApp>
-                <XMDual xml:id="S2.Ex9.m1.4">
+                <XMDual xml:id="S2.Ex12.m1.4">
                   <XMApp>
-                    <XMRef idref="S2.Ex9.m1.1"/>
-                    <XMRef idref="S2.Ex9.m1.2"/>
+                    <XMRef idref="S2.Ex12.m1.1"/>
+                    <XMRef idref="S2.Ex12.m1.2"/>
                   </XMApp>
                   <XMApp>
-                    <XMTok font="italic" role="OPERATOR" xml:id="S2.Ex9.m1.1">D</XMTok>
+                    <XMTok font="italic" role="OPERATOR" xml:id="S2.Ex12.m1.1">D</XMTok>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok font="italic" role="ID" xml:id="S2.Ex9.m1.2">a</XMTok>
+                      <XMTok font="italic" role="ID" xml:id="S2.Ex12.m1.2">a</XMTok>
                       <XMTok role="CLOSE" stretchy="false">)</XMTok>
                     </XMWrap>
                   </XMApp>
                 </XMDual>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMTok font="italic" role="ID" xml:id="S2.Ex9.m1.3">b</XMTok>
+                  <XMTok font="italic" role="ID" xml:id="S2.Ex12.m1.3">b</XMTok>
                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                 </XMWrap>
               </XMApp>
+            </XMDual>
+          </XMath>
+        </Math>
+      </equation>
+      <equation xml:id="S2.Ex13">
+        <Math mode="display" tex="D-1" text="D - 1" xml:id="S2.Ex13.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="minus" role="ADDOP">-</XMTok>
+              <XMTok font="italic" role="OPERATOR">D</XMTok>
+              <XMTok meaning="1" role="NUMBER">1</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Higher constructs</title>
+    <para xml:id="S3.p1">
+      <equation xml:id="S3.Ex14">
+        <Math mode="display" tex="|\nabla|^{\alpha}f" text="(absolute-value@(nabla)) ^ alpha * f" xml:id="S3.Ex14.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMDual>
+                  <XMApp>
+                    <XMTok meaning="absolute-value"/>
+                    <XMRef idref="S3.Ex14.m1.1"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+                    <XMTok name="nabla" role="OPERATOR" xml:id="S3.Ex14.m1.1">∇</XMTok>
+                    <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok font="italic" fontsize="70%" name="alpha" role="UNKNOWN">α</XMTok>
+              </XMApp>
+              <XMTok font="italic" role="FUNCTION">f</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+      </equation>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
+    <title><tag close=" ">4</tag>Logic operators</title>
+    <para xml:id="S4.p1">
+      <equation xml:id="S4.Ex15">
+        <Math mode="display" tex="\exists x.P(x)" text="formulae@(exists@(x), P * x)" xml:id="S4.Ex15.m1">
+          <XMath>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="formulae"/>
+                <XMRef idref="S4.Ex15.m1.2"/>
+                <XMRef idref="S4.Ex15.m1.3"/>
+              </XMApp>
+              <XMWrap>
+                <XMApp xml:id="S4.Ex15.m1.2">
+                  <XMTok meaning="exists" role="BIGOP">∃</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                </XMApp>
+                <XMTok role="PERIOD">.</XMTok>
+                <XMApp xml:id="S4.Ex15.m1.3">
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">P</XMTok>
+                  <XMDual>
+                    <XMRef idref="S4.Ex15.m1.1"/>
+                    <XMWrap>
+                      <XMTok role="OPEN" stretchy="false">(</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S4.Ex15.m1.1">x</XMTok>
+                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                </XMApp>
+              </XMWrap>
             </XMDual>
           </XMath>
         </Math>

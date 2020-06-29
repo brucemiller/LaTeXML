@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="graphicx"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" class="ltx_authors_1line">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <title>Demonstration of Preemptive numbering</title>
+  <creator role="author">
+    <personname>BRM</personname>
+  </creator>
+  <section inlist="toc" labels="LABEL:Intro" xml:id="Intro">
+    <tags>
+      <tag>Intro</tag>
+      <tag role="refnum">Intro</tag>
+      <tag role="typerefnum">§Intro</tag>
+    </tags>
+    <title>Intro: Introduction</title>
+    <para xml:id="Intro.p1">
+      <p>You will see: sections <ref labelref="LABEL:First"/> and <ref labelref="LABEL:Second"/>;
+subsections <ref labelref="LABEL:First.First"/>, <ref labelref="LABEL:First.Second"/>,
+<ref labelref="LABEL:Second.First"/> and <ref labelref="LABEL:Second.Second"/>;
+some equations <ref labelref="LABEL:First.Pythagoras"/> and <ref labelref="LABEL:Second.Einstein"/>;
+as well as some figures <ref labelref="LABEL:First.Sunset"/>, <ref labelref="LABEL:Second.Sunset"/>.</p>
+    </para>
+  </section>
+  <section inlist="toc" labels="LABEL:First" xml:id="First">
+    <tags>
+      <tag>First</tag>
+      <tag role="refnum">First</tag>
+      <tag role="typerefnum">§First</tag>
+    </tags>
+    <title>First: First Section</title>
+    <para xml:id="First.p1">
+      <p>The first section of the document.</p>
+    </para>
+    <subsection inlist="toc" labels="LABEL:First.First" xml:id="First.First">
+      <tags>
+        <tag>First</tag>
+        <tag role="refnum">First</tag>
+        <tag role="typerefnum">§First</tag>
+      </tags>
+      <title>First: First Subsection</title>
+      <para xml:id="First.First.p1">
+        <p>A subsection with some math.</p>
+        <equation labels="LABEL:First.Pythagoras" xml:id="First.Pythagoras">
+          <tags>
+            <tag>(Pythagoras)</tag>
+            <tag role="refnum">Pythagoras</tag>
+          </tags>
+          <Math mode="display" tex="a^{2}+b^{2}=c^{2}" text="a ^ 2 + b ^ 2 = c ^ 2" xml:id="First.Pythagoras.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                  </XMApp>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                  </XMApp>
+                </XMApp>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                  <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+      </para>
+    </subsection>
+    <subsection inlist="toc" labels="LABEL:First.Second" xml:id="First.Second">
+      <tags>
+        <tag>Second</tag>
+        <tag role="refnum">Second</tag>
+        <tag role="typerefnum">§Second</tag>
+      </tags>
+      <title>Second: Second Subsection</title>
+      <para xml:id="First.Second.p1">
+        <p>A subsection with a figure.</p>
+      </para>
+      <figure inlist="lof" labels="LABEL:First.Sunset" xml:id="First.Sunset">
+        <tags>
+          <tag>Figure Sunset</tag>
+          <tag role="refnum">Sunset</tag>
+          <tag role="typerefnum">Figure Sunset</tag>
+        </tags>
+        <graphics candidates="sunset.jpg" graphic="sunset" xml:id="First.Sunset.g1"/>
+        <toccaption><tag close=" ">Sunset</tag>A beautiful sunset</toccaption>
+        <caption><tag close=": ">Figure Sunset</tag>A beautiful sunset</caption>
+      </figure>
+    </subsection>
+  </section>
+  <section inlist="toc" labels="LABEL:Second" xml:id="Second">
+    <tags>
+      <tag>Second</tag>
+      <tag role="refnum">Second</tag>
+      <tag role="typerefnum">§Second</tag>
+    </tags>
+    <title>Second: Second Section</title>
+    <para xml:id="Second.p1">
+      <p>The section section of the document.</p>
+    </para>
+    <subsection inlist="toc" labels="LABEL:Second.First" xml:id="Second.First">
+      <tags>
+        <tag>First</tag>
+        <tag role="refnum">First</tag>
+        <tag role="typerefnum">§First</tag>
+      </tags>
+      <title>First: First Subsection</title>
+      <para xml:id="Second.First.p1">
+        <p>Another subsection with some math.</p>
+        <equation labels="LABEL:Second.Einstein" xml:id="Second.Einstein">
+          <tags>
+            <tag>(Einstein)</tag>
+            <tag role="refnum">Einstein</tag>
+          </tags>
+          <Math mode="display" tex="E=mc^{2}" text="E = m * c ^ 2" xml:id="Second.Einstein.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">E</XMTok>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">m</XMTok>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                    <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                  </XMApp>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+        </equation>
+      </para>
+    </subsection>
+    <subsection inlist="toc" labels="LABEL:Second.Second" xml:id="Second.Second">
+      <tags>
+        <tag>Second</tag>
+        <tag role="refnum">Second</tag>
+        <tag role="typerefnum">§Second</tag>
+      </tags>
+      <title>Second: Second Subsection</title>
+      <para xml:id="Second.Second.p1">
+        <p>Another subsection with a figure.</p>
+      </para>
+      <figure inlist="lof" labels="LABEL:Second.Sunset" xml:id="Second.Sunset">
+        <tags>
+          <tag>Figure Sunset</tag>
+          <tag role="refnum">Sunset</tag>
+          <tag role="typerefnum">Figure Sunset</tag>
+        </tags>
+        <graphics candidates="sunset.jpg" graphic="sunset" xml:id="Second.Sunset.g1"/>
+        <toccaption><tag close=" ">Sunset</tag>The same beautiful sunset</toccaption>
+        <caption><tag close=": ">Figure Sunset</tag>The same beautiful sunset</caption>
+      </figure>
+    </subsection>
+  </section>
+</document>

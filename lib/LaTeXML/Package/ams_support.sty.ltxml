@@ -281,12 +281,11 @@ DefMacroI('\Mc', undef, 'Mc');
 DefMacro('\URLhref{}', '');
 DefMacroI('\URL', undef, sub {
     my ($gullet) = @_;
-    my $mouth = $gullet->getMouth;
     my ($init, $body);
     { local $STATE = LaTeXML::Core::State->new(catcodes => 'none');
-      $init = $mouth->readToken;
-      $init = $mouth->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
-      $body = $mouth->readTokens($init); }
+      $init = $gullet->readToken;
+      $init = $gullet->readToken if ToString($init) eq '*';    # Should I bother handling \verb* ?
+      $body = $gullet->readUntil($init); }
     Invocation(T_CS('\@ams@url'), Tokens($init), $body)->unlist; });
 
 DefConstructor('\@ams@url {}',

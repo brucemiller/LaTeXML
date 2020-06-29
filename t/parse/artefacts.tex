@@ -1,0 +1,33 @@
+\documentclass{article}
+\usepackage{stmaryrd}
+\usepackage{latexml}
+\usepackage{amsmath}
+\usepackage{array}
+\makeatletter
+\lxDeclare[role=DIFFOP]{$\Delta$}%
+\def\apply{\iflatexml\@APPLYFUNCTION\fi}
+\makeatother
+\begin{document}
+\section{Edge/Artefact Cases}
+% What are good real formulas that demonstrate this grammar behaviour?
+\begin{enumerate}
+  \item $\,$  % empty formula
+  \item $\times x$ % surprisingly parses as "times(absent, x)"
+  \item $\mathbin{|} x$ % surprisingly parses via the "MulOp Factor" rule.
+  \item $\rightarrow.$
+  \item $\rightarrow,$
+  \item $\left. xyz \right|_0^2 x$
+  \item $ A \boxslash B $
+  \item $ x \times_i^2 y $ % MulOp - operator decorators, what is a real formula for this syntax?
+  \item $| \rightarrow \rangle$ % ket over arrow is allowed? why?
+  \item $| \iff \rangle$ % ket over metarelop is allowed? why?
+  \item $| \bmod \rangle$ % ket over modifierop is allowed? why?
+  \item $| \times_i^2 \rangle$ % ket over mulop is allowed? why?
+  \item $\sin \pi | x$ % aTrigBareArg with an absExpression child? why?
+  \item $\partial \sin x\times_i^2 y $ %moreBarearg -> mulOp
+  \item $ ( \int ) $ % bigop -> INTOP
+  \item $ ( \Delta ) $ % bigop ->DIFFD
+  \item $ {}^x{}_y f$ % inprescripted -> FLOATSUBSCRIPT
+  \item $\begin{array}{cc}F & G \end{array} \apply \begin{array}{cc}x & y\end{array}$
+\end{enumerate}
+\end{document}

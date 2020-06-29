@@ -75,8 +75,29 @@ XMath.attributes =
   ## right, or trailing, (presumably non-semantic) padding space.
   attribute rpadding { text }?,
 
+  ## The name of the token, typically the control sequence that created it.
+  attribute name { text }?,
+
+  ## A more semantic name corresponding to the intended meaning,
+  ## such as the OpenMath name.
+  attribute meaning { text }?,
+
+  ## The OpenMath CD for which \attr{meaning} is a symbol.
+  attribute omcd { text }?,
+
+  ## An encoding of the position of sub/superscripts
+  ## Before parsing, it takes two forms. On a base token or element,
+  ## it is one of (pre|mid|post), indicating where any script can be placed.
+  ## On a script token, it is an integer level.
+  ## After parsing, the concatenation is moved to the sub|super-script "operator".
+  attribute scriptpos { text }?,
+
   ## an annotation placed by the parser when it suspects this token may be used as a function.
   attribute possibleFunction { text }?,
+
+  ## an id to where the declaration of this object is given,
+  ## preferably the xml:id of an ltx:declare
+  attribute decl_id { text }?,
 
   ## reference to an arbitrary url.
   attribute href { text }?
@@ -107,25 +128,6 @@ XMTok_attributes =
   Fontable.attributes,
   Colorable.attributes,
   Backgroundable.attributes,
-
-  ## The name of the token, typically the control sequence that created it.
-  attribute name { text }?,
-
-  ## A more semantic name corresponding to the intended meaning,
-  ## such as the OpenMath name.
-  attribute meaning { text }?,
-
-  ## The OpenMath CD for which \attr{meaning} is a symbol.
-  attribute omcd { text }?,
-
-  ## An encoding of the position of this token as a sub/superscript, used
-  ## to handle aligned and nested scripts, both pre and post.
-  ## It is a concatenation of (pre|mid|post), which indicates the horizontal
-  ## positioning of the script with relation to it's base, and a counter
-  ## indicating the level. These are used to position the scripts, 
-  ## and to pair up aligned sub- and superscripts.
-  ## NOTE: Clarify where this appears: token, base, script operator, apply?
-  attribute scriptpos { text }?,
 
   ## A thickness used for drawing any lines which are part of presenting the token,
   ## such as the fraction line for the fraction operator.
@@ -161,19 +163,7 @@ XMApp_attributes =
   XMath.attributes,
   ID.attributes,
   Colorable.attributes,
-  Backgroundable.attributes,
-
-  ## The name of the token, typically the control sequence that created it.
-  attribute name { text }?,
-
-  ## A more semantic name corresponding to the intended meaning,
-  ## such as the OpenMath name.
-  attribute meaning { text }?,
-
-  ## An encoding of the position of this token as a sub/superscript, used
-  ## to handle aligned and nested scripts, both pre and post.
-  ## (See \elementref{XMTok} for details)
-  attribute scriptpos { text }?
+  Backgroundable.attributes
 
 ## Content model for \elementref{XMApp}.
 XMApp_model = XMath.class*
@@ -208,10 +198,7 @@ element XMHint { XMHint_attributes, XMHint_model }
 XMHint_attributes = 
   Common.attributes,
   XMath.attributes,
-  ID.attributes,
-  
-  ## The name of the kind of hint.
-  attribute name { text }?
+  ID.attributes
 
 ## Content model for \elementref{XMHint}.
 XMHint_model = empty
@@ -227,12 +214,7 @@ XMText_attributes =
   Common.attributes,
   XMath.attributes,
   Backgroundable.attributes,
-  ID.attributes,
-  
-  ## An encoding of the position of this token as a sub/superscript, used
-  ## to handle aligned and nested scripts, both pre and post.
-  ## (See \elementref{XMTok} for details)
-  attribute scriptpos { text }?
+  ID.attributes
 
 ## Content model for \elementref{XMText}.
 XMText_model = (text | Inline.class | Misc.class)*
@@ -255,18 +237,7 @@ XMWrap_attributes =
   ## The grammatical rule that should apply to the contained sequence
   attribute rule { text }?,
 
-  attribute name { text }?,
-
-  ## A more semantic name corresponding to the intended meaning,
-  ## such as the OpenMath name.
-  attribute meaning { text }?,
-
-  attribute style { text }?,
-
-  ## An encoding of the position of this token as a sub/superscript, used
-  ## to handle aligned and nested scripts, both pre and post.
-  ## (See \elementref{XMTok} for details)
-  attribute scriptpos { text }?
+  attribute style { text }?
 
 ## Content model for \elementref{XMWrap}.
 XMWrap_model = XMath.class*
@@ -286,12 +257,7 @@ XMArg_attributes =
   ID.attributes,
 
   ## The grammatical rule that should apply to the contained sequence
-  attribute rule { text }?,
-
-  ## An encoding of the position of this token as a sub/superscript, used
-  ## to handle aligned and nested scripts, both pre and post.
-  ## (See \elementref{XMTok} for details)
-  attribute scriptpos { text }?
+  attribute rule { text }?
 
 ## Content model for \elementref{XMArg}.
 XMArg_model = XMath.class*
@@ -325,16 +291,6 @@ XMArray_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
-
-  ## The name of the object, typically the control sequence that created it.
-  attribute name { text }?,
-
-  ## A more semantic name corresponding to the intended meaning of the object,
-  ## such as the OpenMath name.
-  attribute meaning { text }?,
-
-  ## The OpenMath CD for which \attr{meaning} is a symbol.
-  attribute omcd { text }?,
 
   ## the spacing between rows
   attribute rowsep { Length.type}?,

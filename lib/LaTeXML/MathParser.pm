@@ -28,7 +28,7 @@ use base (qw(Exporter));
 
 our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbols
     &Annotate &InvisibleTimes &InvisibleComma
-    &NewFormulae &NewFormula &NewList
+    &TwoPartRelop &NewFormulae &NewFormula &NewList
     &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited &NewEvalAt
     &LeftRec
     &Arg &MaybeFunction
@@ -37,7 +37,7 @@ our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbol
 our %EXPORT_TAGS = (constructors
     => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbols
       &Annotate &InvisibleTimes &InvisibleComma
-      &NewFormulae &NewFormula &NewList
+      &TwoPartRelop &NewFormulae &NewFormula &NewList
       &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited &NewEvalAt
       &LeftRec
       &Arg &MaybeFunction
@@ -191,7 +191,7 @@ sub printNode {
     my ($tag, $attr, @children) = @$node;
     my @keys = sort keys %$attr;
     return "<$tag"
-      . (@keys ? ' ' . join(' ', map { "$_='$$attr{$_}'" } @keys) : '')
+      . (@keys ? ' ' . join(' ', map { "$_='" . ($$attr{$_} || '') . "'" } @keys) : '')
       . (@children
       ? ">\n" . join('', map { printNode($_) } @children) . "</$tag>"
       : '/>')
@@ -673,7 +673,6 @@ sub parse_single {
     # Now do the actual parse.
     ($result, $unparsed) = $self->parse_internal($rule, @nodes);
   }
-
   # Failure? No result or uparsed lexemes remain.
   # NOTE: Should do script hack??
   if ((!defined $result) || $unparsed) {
@@ -688,8 +687,6 @@ sub parse_single {
     if ($LaTeXML::MathParser::DEBUG) {
       print STDERR "\n=>" . printNode($result) . "\n" . ('=' x 60) . "\n"; }
     return $result; } }
-
-use Data::Dumper;
 
 sub node_to_lexeme {
   my ($self, $node) = @_;
@@ -708,6 +705,7 @@ sub node_to_lexeme {
           push @to_add, $value; } }
       if (@to_add) {
         $lexeme = join("-", sort(@to_add)) . "-" . $lexeme; } } }
+  local $LaTeXML::MathParser::STRICT = 0;
   if (my $role = $self->getGrammaticalRole($node)) {
     if ($role ne 'UNKNOWN') {
       $lexeme = $role . ":" . $lexeme; } }
@@ -733,11 +731,11 @@ sub node_to_lexeme_full {
   if ($tag ne 'ltx:XMath') {
     if ($role) {
       $mark_start = "$role:start ";
-      $mark_end   = "$role:end";
+      $mark_end   = " $role:end";
     } elsif ($tag =~ '^ltx:XM(Arg|Row|Cell)') {
       my $tag_role = uc($1);
       $mark_start = "$tag_role:start ";
-      $mark_end   = "$tag_role:end";
+      $mark_end   = " $tag_role:end";
     }
   }
   my $lexemes = $mark_start;
@@ -828,14 +826,14 @@ sub parse_internal {
 sub getGrammaticalRole {
   my ($self, $node) = @_;
   $node = realizeXMNode($node);
-  #  my $role = $node->getAttribute('role');
   my $role = p_getAttribute($node, 'role');
   if (!defined $role) {
     my $tag = getQName($node);
     if ($tag eq 'ltx:XMTok') {
       $role = 'UNKNOWN'; }
     elsif ($tag eq 'ltx:XMDual') {
-      $role = $LaTeXML::MathParser::DOCUMENT->getFirstChildElement($node)->getAttribute('role'); }
+      my ($content, $presentation) = element_nodes($node);
+      $role = p_getAttribute($content,'role') || p_getAttribute($presentation,'role'); }
     $role = 'ATOM' unless defined $role; }
   $self->note_unknown($node) if ($role eq 'UNKNOWN') && $LaTeXML::MathParser::STRICT;
   return $role; }
@@ -896,13 +894,7 @@ sub node_string {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 sub text_form {
   my ($node) = @_;
-  #  $self->textrec($node,0); }
-  # Hmm, Something Weird is broken!!!!
-  # With <, I get "unterminated entity reference" !?!?!?
-  #  my $text= $self->textrec($node,0);
-  my $text = textrec($node, undef);
-  $text =~ s/</less/g;
-  return $text; }
+  return textrec($node, undef); }
 
 my %PREFIX_ALIAS = (    # [CONSTANT]
   SUPERSCRIPTOP => '^', SUBSCRIPTOP => '_', times          => '*',
@@ -924,6 +916,8 @@ sub textrec {
   $outer_bp   = 0  unless defined $outer_bp;
   $outer_name = '' unless defined $outer_name;
   if ($tag eq 'ltx:XMApp') {
+    if (my $meaning  = p_getAttribute($node, 'meaning') || p_getAttribute($node, 'name')) {
+      return $meaning; }
     my $app_role = $node->getAttribute('role');
     my ($op, @args) = element_nodes($node);
     $op = realizeXMNode($op);
@@ -935,8 +929,12 @@ sub textrec {
       return (($bp < $outer_bp) || (($bp == $outer_bp) && ($name ne $outer_name))
         ? '(' . $string . ')' : $string); } }
   elsif ($tag eq 'ltx:XMDual') {
+    if (my $meaning  = p_getAttribute($node, 'meaning') || p_getAttribute($node, 'name')) {
+      return $meaning; }
     my ($content, $presentation) = element_nodes($node);
-    return textrec($content, $outer_bp, $outer_name); }    # Just send out the semantic form.
+    my $text = textrec($content, $outer_bp, $outer_name);   # Just send out the semantic form.
+    # Fall back to presentation, if content has poor semantics (eg. from replacement patterns)
+    return ($text =~ /^\(*Unknown/ ? textrec($presentation, $outer_bp, $outer_name) : $text); }
   elsif ($tag eq 'ltx:XMTok') {
     my $name = getTokenMeaning($node);
     $name = 'Unknown' unless defined $name;
@@ -1306,12 +1304,28 @@ sub Fence {
         ? ($enclose2{ $o . '@' . $p[0] . '@' . $c } || 'list')
         : ($encloseN{ $o . '@' . $p[0] . '@' . $c } || 'list'))));
   $op = 'delimited-' . $o . $c unless defined $op;
+  my $decl_id = p_getAttribute($open,'decl_id');
   if (($n == 1) && ($op eq 'delimited-()')) {    # Hopefully, can just ignore the parens?
     return ['ltx:XMDual', {},
       LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $stuff[1]),
       ['ltx:XMWrap', {}, @stuff]]; }
   else {
-    return InterpretDelimited(New($op), @stuff); } }
+    return InterpretDelimited(New($op, undef, ($decl_id ? (decl_id=>$decl_id):())), @stuff); } }
+
+# Compose a complex relational operator from two tokens, such as >=, >>
+sub TwoPartRelop {
+  my ($op1, $op2) = @_;
+  $op1 = Lookup($op1);
+  $op2 = Lookup($op2);
+  my $m1 = p_getTokenMeaning($op1);
+  my $m2 = p_getTokenMeaning($op2);
+  my $meaning;
+  if ($m1 eq $m2) {
+    $meaning = "much-$m1"; }
+  else {
+    $meaning = "$m1-or-$m2"; }
+  my $content = $op1->textContent . $op2->textContent;
+  return ['ltx:XMTok', { role => "RELOP", meaning => $meaning }, $content]; }
 
 # NOTE: It might be best to separate the multiple Formulae into separate XMath's???
 # but only at the top level!
@@ -1476,10 +1490,12 @@ sub NewScript {
   my $rbase   = realizeXMNode($base);
   my $rscript = realizeXMNode($script);
   my $ibase   = $rbase;
-  # Get "inner" (content) base, if the base is a dual
+  # Get "inner" (content) base, if the base is a dual it may be more relevant
   if (p_getQName($rbase) eq 'ltx:XMDual') {
     ($ibase) = p_element_nodes($rbase); }
-  my ($bx, $bl) = (p_getAttribute($ibase,   'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
+  my ($bx, $bl) = (p_getAttribute($base, 'scriptpos')
+      || p_getAttribute($ibase, 'scriptpos')
+      || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($sx, $sl) = (p_getAttribute($rscript, 'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($mode, $y) = p_getAttribute($rscript, 'role') =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
   my $x = ($pos ? $pos : ($mode eq 'FLOAT' ? 'pre' : $bx || 'post'));
@@ -1514,8 +1530,7 @@ sub DecorateOperator {
   my $decop   = NewScript($op, $script);
   my $rop     = realizeXMNode($op);
   my $role    = p_getAttribute($rop, 'role');
-  my $meaning = p_getAttribute($rop, 'meaning');
-  return Annotate($decop, role => $role, meaning => $meaning); }
+  return Annotate($decop, role => $role); }
 
 sub NewEvalAt {
   my ($base, $vertbar, $lower, $upper) = @_;

@@ -1,0 +1,19 @@
+#!/bin/bash
+# /=====================================================================\ #
+# | LaTeXML DockerHub Hooks                                             | #
+# | This file is used by DockerHub during the automated build           | #
+# |=====================================================================| #
+# | Thanks to Tom Wiesing <tom.wiesing@gmail.com>                       | #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+# cd into the LaTeXML root directory
+cd $(git rev-parse --show-toplevel)
+
+# run the docker build without TeXLive to speed up builds
+docker build --build-arg WITH_TEXLIVE=no --build-arg WITH_TESTS=no -f $DOCKERFILE_PATH -t $IMAGE_NAME .

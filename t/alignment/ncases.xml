@@ -100,7 +100,7 @@
           <tag role="refnum">2</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle|x|=-x,for x&lt;0" text="formulae@(absolute-value@(x) = - x, [for ] * x less 0)" xml:id="S0.E2.m4">
+          <Math tex="\displaystyle|x|=-x,for x&lt;0" text="formulae@(absolute-value@(x) = - x, [for ] * x &lt; 0)" xml:id="S0.E2.m4">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -175,7 +175,7 @@
                   </XMDual>
                 </XMath>
               </Math></td>
-            <td align="left">for <Math mode="inline" tex="x&lt;0" text="x less 0" xml:id="S0.E2.m3">
+            <td align="left">for <Math mode="inline" tex="x&lt;0" text="x &lt; 0" xml:id="S0.E2.m3">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
@@ -450,7 +450,7 @@
           <tag role="refnum">3c</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle w\equiv\sqrt{|d|}\,\sqrt{\frac{|c/d|+\sqrt{1+(c/d)^{2}}}{2}}|c|&lt;%&#10;|d|" text="w equivalent-to square-root@(absolute-value@(d)) * square-root@((absolute-value@(c / d) + square-root@(1 + (c / d) ^ 2)) / 2) * absolute-value@(c) less absolute-value@(d)" xml:id="S0.E3.3.m4">
+          <Math tex="\displaystyle w\equiv\sqrt{|d|}\,\sqrt{\frac{|c/d|+\sqrt{1+(c/d)^{2}}}{2}}|c|&lt;%&#10;|d|" text="w equivalent-to square-root@(absolute-value@(d)) * square-root@((absolute-value@(c / d) + square-root@(1 + (c / d) ^ 2)) / 2) * absolute-value@(c) &lt; absolute-value@(d)" xml:id="S0.E3.3.m4">
             <XMath>
               <XMApp>
                 <XMTok meaning="multirelation"/>
@@ -626,7 +626,7 @@
                   </XMApp>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="|c|&lt;|d|" text="absolute-value@(c) less absolute-value@(d)" xml:id="S0.E3.3.m3">
+            <td align="left"><Math mode="inline" tex="|c|&lt;|d|" text="absolute-value@(c) &lt; absolute-value@(d)" xml:id="S0.E3.3.m3">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
@@ -862,7 +862,7 @@
           <tag role="refnum">4c</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle\sqrt{c+id}=\frac{|d|}{2w}+iww\neq 0, c&lt;0, d\geq 0" text="square-root@(c + i * d) = absolute-value@(d) / (2 * w) + i * w * w not-equals 0 * [, ] * c less 0 * [, ] * d &gt;= 0" xml:id="S0.E4.3.m6">
+          <Math tex="\displaystyle\sqrt{c+id}=\frac{|d|}{2w}+iww\neq 0, c&lt;0, d\geq 0" text="square-root@(c + i * d) = absolute-value@(d) / (2 * w) + i * w * w not-equals 0 * [, ] * c &lt; 0 * [, ] * d &gt;= 0" xml:id="S0.E4.3.m6">
             <XMath>
               <XMApp>
                 <XMTok meaning="multirelation"/>
@@ -986,7 +986,7 @@
                     <XMTok meaning="0" role="NUMBER">0</XMTok>
                   </XMApp>
                 </XMath>
-              </Math>, <Math mode="inline" tex="c&lt;0" text="c less 0" xml:id="S0.E4.3.m4">
+              </Math>, <Math mode="inline" tex="c&lt;0" text="c &lt; 0" xml:id="S0.E4.3.m4">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
@@ -1012,7 +1012,7 @@
           <tag role="refnum">4d</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle\sqrt{c+id}=\frac{|d|}{2w}-iww\neq 0, c&lt;0, d&lt;0" text="square-root@(c + i * d) = absolute-value@(d) / (2 * w) - i * w * w not-equals 0 * [, ] * c less 0 * [, ] * d less 0" xml:id="S0.E4.4.m6">
+          <Math tex="\displaystyle\sqrt{c+id}=\frac{|d|}{2w}-iww\neq 0, c&lt;0, d&lt;0" text="square-root@(c + i * d) = absolute-value@(d) / (2 * w) - i * w * w not-equals 0 * [, ] * c &lt; 0 * [, ] * d &lt; 0" xml:id="S0.E4.4.m6">
             <XMath>
               <XMApp>
                 <XMTok meaning="multirelation"/>
@@ -1136,7 +1136,7 @@
                     <XMTok meaning="0" role="NUMBER">0</XMTok>
                   </XMApp>
                 </XMath>
-              </Math>, <Math mode="inline" tex="c&lt;0" text="c less 0" xml:id="S0.E4.4.m4">
+              </Math>, <Math mode="inline" tex="c&lt;0" text="c &lt; 0" xml:id="S0.E4.4.m4">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
@@ -1144,7 +1144,7 @@
                     <XMTok meaning="0" role="NUMBER">0</XMTok>
                   </XMApp>
                 </XMath>
-              </Math>, <Math mode="inline" tex="d&lt;0" text="d less 0" xml:id="S0.E4.4.m5">
+              </Math>, <Math mode="inline" tex="d&lt;0" text="d &lt; 0" xml:id="S0.E4.4.m5">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>

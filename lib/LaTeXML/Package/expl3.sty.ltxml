@@ -1,0 +1,26 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  lipsum                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Should just work?
+InputDefinitions('expl3', type => 'sty', noltxml => 1);
+
+# Redefine aux macro to avoid reliance on argument ordering artefacts in latex.ltx
+# The purpose here was originally to set `\g_file_curr_name_str`,
+#  but I am unsure if it is used anywhere currently?
+DefMacroI('\@pushfilenameaux', undef, Tokens(), locked => 1);
+
+1;

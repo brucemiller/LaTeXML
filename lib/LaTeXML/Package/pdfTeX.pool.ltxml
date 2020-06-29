@@ -66,7 +66,8 @@ DefRegister('\pdfpageresources' => Tokens());
 DefRegister('\pdfpkmode'        => Tokens());
 
 # Expandable Commands
-DefMacro('\pdftexrevision',           '');
+DefMacro('\pdftexrevision', '19');
+
 DefMacro('\pdftexbanner',             '');
 DefMacro('\pdfcreationdate',          '');
 DefMacro('\pdfpageref Number',        '');
@@ -92,7 +93,7 @@ DefMacro('\pdffilemoddate {}',              '');
 # DefMacro('\pdfcolorstackinit {}','');
 
 # Read-only registers
-DefRegister('\pdftexversion'      => Number(0));
+DefRegister('\pdftexversion'      => Number(140));
 DefRegister('\pdflastobj'         => Number(0));
 DefRegister('\pdflastxform'       => Number(0));
 DefRegister('\pdflastximage'      => Number(0));
@@ -145,6 +146,8 @@ DefMacro('\quitvmode', '');
 # \pdfsetrandomseed number
 # \pdfnoligatures font
 # \pdfprimitive control sequence
+# TODO: https://tex.stackexchange.com/questions/13771/let-a-control-sequence-to-a-redefined-primitive
+DefMacro('\pdfprimitive DefToken', '#1');    # we can just ignore the advanced effects for now.
 # \pdfcolorstack stack number stack action general text
 DefMacro('\pdfsetmatrix', '');
 DefMacro('\pdfsave',      '');
@@ -198,4 +201,11 @@ DefMacro('\pdfrestore',   '');
 # pdfspecial modifier → direct:
 # stack action → set | push | pop | current
 
+DefMacro('\expanded Expanded', '#1');
+
+DefMacro('\pdfstrcmp Expanded Expanded', sub {
+    my $cmp = (ToString($_[1]) cmp ToString($_[2]));
+    return ($cmp == 1 ? T_OTHER('1')
+      : ($cmp == 0 ? T_OTHER('0')
+        : Tokens(T_OTHER('-'), T_OTHER('1')))); });
 1;

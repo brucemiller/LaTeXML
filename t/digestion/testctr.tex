@@ -253,4 +253,21 @@ Catcode: 12 = \the\catcode`\@
 
 \makeatother
 
+\subsection{Quirks}
+Note that for toksdef and otheres, \TeX\ binds the token to relax
+before reading the number, in case the definition is immediagely
+followed by a usage or assignment (See TeX Program \S1224)
+
+\toksdef\tooksa=1\tooksa={abc}\relax Tooks:\the\tooksa
+
+\dimendef\dima=99\dima=1.0pt\relax dima:\the\dima
+
+\skipdef\skipa=99\skipa=1.0pt plus 1pt\relax skipa:\the\skipa
+
+\muskipdef\muskipa=99\muskipa=1.0mu\relax muskipa:\the\muskipa
+
+\chardef\chara=64\chara
+
+$\mathchardef\mathchara="1350\mathchara$
+
 \end{document}

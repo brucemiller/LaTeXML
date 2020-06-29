@@ -10,7 +10,7 @@
       <tag role="refnum">1</tag>
       <tag role="typerefnum">§1</tag>
     </tags>
-    <title><tag close=" ">1</tag>Testing Verbatim</title>
+    <title><tag close=" ">1</tag>Verbatim Environment</title>
     <para xml:id="S1.p1">
       <p>Normal <text font="bold">Bold</text> stuff.</p>
     </para>
@@ -34,17 +34,64 @@ still inside verbatim
 AbNormal {\bf NonBold} stuff.
 keep this too    
 </verbatim>
-      <p>yyy
+      <p>outside verbatim
 More Normal <text font="bold">Bold</text> stuff.</p>
     </para>
-    <para xml:id="S1.p5">
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Inline verb command</title>
+    <para xml:id="S2.p1">
       <p>Some inline <verbatim font="typewriter">\verb</verbatim> verbatim.</p>
     </para>
-    <para xml:id="S1.p6">
+    <para xml:id="S2.p2">
+      <p>More <verbatim font="typewriter">a } b # c ^ d _ e $ f</verbatim> stuff;</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>And more <verbatim font="typewriter">a␣}␣b␣#␣c␣^␣d␣_␣e␣$␣f</verbatim> stuff</p>
+    </para>
+    <para xml:id="S2.p4">
+      <p>Even in math <Math mode="inline" tex="\verb|a_b|^{2}" text="a_b ^ 2" xml:id="S2.p4.m1">
+          <XMath>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+              <XMTok font="typewriter">a_b</XMTok>
+              <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>.</p>
+    </para>
+    <para xml:id="S2.p5">
       <p>More inline <verbatim font="typewriter">\verb</verbatim> verbatim.</p>
     </para>
-    <para xml:id="S1.p7">
-      <p>x<text font="bold" width="144.5pt">x<verbatim font="typewriter">\verb</verbatim>y.</text>y</p>
+    <para xml:id="S2.p6">
+      <p>x<text font="bold" width="144.5pt">x<verbatim font="typewriter medium">\verb</verbatim>y.</text>y</p>
+    </para>
+    <para xml:id="S2.p7">
+      <p><verbatim font="typewriter">Nested | is allowed .</verbatim></p>
+    </para>
+    <para xml:id="S2.p8">
+      <p>Some use <verbatim font="typewriter">\verb</verbatim> like <verbatim font="typewriter">\rm</verbatim>,
+bit it’s actually using space as delimiter.
+Note that spaces after cs are skipped on the <emph font="italic">next</emph> read!</p>
+    </para>
+    <para xml:id="S2.p9">
+      <p><verbatim font="typewriter">|a}b#c^d_e$f|</verbatim>stuff</p>
+    </para>
+    <para xml:id="S2.p10">
+      <p><verbatim font="typewriter">tricky}</verbatim></p>
+    </para>
+    <para xml:id="S2.p11">
+      <p>Input snippet</p>
+    </para>
+    <para xml:id="S2.p12">
+      <verbatim font="typewriter">|a}b#c^d_e$f|
+</verbatim>
+      <p>after.</p>
     </para>
   </section>
 </document>

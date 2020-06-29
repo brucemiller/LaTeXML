@@ -1,0 +1,42 @@
+\documentclass{article}
+\usepackage{glossaries}
+\makenoidxglossaries
+%\tracingmacros=2\relax
+%\tracingcommands=2\relax
+%\newglossaryentry{poo}{name={poo},description={doodoo}}
+%\tracingmacros=0\relax
+%\tracingcommands=0\relax
+\newglossaryentry{potato}{name={potato},plural={potatoes},
+description={starchy tuber}}
+\newglossaryentry{cabbage}{name={cabbage},
+description={vegetable with thick green or purple leaves}}
+\newglossaryentry{carrot}{name={carrot},
+  description={orange root}}
+\longnewglossaryentry{fishage}
+{name={Fish Age}}
+{%
+A common name for the Devonian geologic period
+spanning from the end of the Silurian Period to
+the beginning of the Carboniferous Period.
+This age was known for its remarkable variety of
+fish species.
+}
+\setacronymstyle{long-short}
+\newacronym{svm}{SVM}{support vector machine}
+\begin{document}
+First use: \gls{svm}. Second use: \gls{svm}. A use \gls{svm} within a sentence.
+
+Chop the \gls{cabbage}, \glspl{potato} and \glspl{carrot}.
+
+Or, more loudly: Chop the \Gls{cabbage}, \Glspl{potato} and \Glspl{carrot}.
+
+Or, more loudly: Chop the \GLS{cabbage}, \GLSpl{potato} and \GLSpl{carrot}.
+
+But do not use the \gls{fishage}; however, how about \glssymbol{fishage}?
+
+\def\test#1{Word: #1; \xmakefirstuc{#1}; \MakeTextUppercase{#1}}%
+\test{foo}.
+\test{albatross}.
+
+\printnoidxglossaries
+\end{document}

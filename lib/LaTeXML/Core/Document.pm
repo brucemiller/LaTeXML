@@ -394,6 +394,12 @@ sub finalize_rec {
           $declared_font = $declared_font->merge(%{ $pending_declaration{$attr}{properties} });
           delete $pending_declaration{$attr}; } }
   } }
+  # Optionally add ids to all nodes (AFTER all parsing, rearrangement, etc)
+  if ($STATE && $STATE->lookupValue('GENERATE_IDS')
+    && !$node->hasAttribute('xml:id')
+    && $self->canHaveAttribute($qname, 'xml:id')
+    && ($qname ne 'ltx:document')) {
+    LaTeXML::Package::GenerateID($self, $node); }
 
   local $LaTeXML::FONT = $declared_font;
   foreach my $child ($node->childNodes) {
@@ -415,6 +421,7 @@ sub finalize_rec {
     elsif ($type == XML_TEXT_NODE) {
       # Remove any pending declarations that can't be on $FONT_ELEMENT_NAME
       my $elementname = $pending_declaration{element}{value} || $FONT_ELEMENT_NAME;
+      delete $pending_declaration{element};    # If any...
       foreach my $key (keys %pending_declaration) {
         delete $pending_declaration{$key} unless $self->canHaveAttribute($elementname, $key); }
       if ($self->canContain($qname, $elementname)
@@ -424,11 +431,11 @@ sub finalize_rec {
         # Add (or combine) attributes
         foreach my $attr (keys %pending_declaration) {
           my $value = $pending_declaration{$attr}{value};
-          if ($attr eq 'class') {    # Generalize?
+          if ($attr eq 'class') {              # Generalize?
             if (my $ovalue = $text->getAttribute('class')) {
               $value .= ' ' . $ovalue; } }
           $self->setAttribute($text, $attr => $value); }
-        $self->finalize_rec($text);    # Now have to clean up the new node!
+        $self->finalize_rec($text);            # Now have to clean up the new node!
       }
   } }
 
@@ -990,6 +997,11 @@ sub floatToElement {
   my ($self, $qname, $closeifpossible) = @_;
   my @candidates = getInsertionCandidates($$self{node});
   my $closeable  = 1;
+  # If the current node can contain already, we're fine right here - just return
+  if (@candidates && $self->canContain($candidates[0], $qname)) {
+# Edge case: Don't resume at a text node, if it is current. Don't append more to it after other insertions.
+    $self->setNode($candidates[0]) if $$self{node}->getType == XML_TEXT_NODE;
+    return $candidates[0]; }
   while (@candidates && !$self->canContain($candidates[0], $qname)) {
     $closeable &&= $self->canAutoClose($candidates[0]);
     shift(@candidates); }
@@ -1026,10 +1038,15 @@ sub floatToAttribute {
 # find a node that can accept a label.
 # A bit more than just whether the element can have the attribute, but
 # whether it has an id (and ideally either a refnum or title)
+# Moreover, can commonly occur after an already-closed (probably empty) element like bibliography
 sub floatToLabel {
   my ($self) = @_;
-  my $key = 'labels';
-  my @ancestors  = grep { $_->nodeType == XML_ELEMENT_NODE } getInsertionCandidates($$self{node});
+  my $key    = 'labels';
+  my $start  = $$self{node};
+  if ($start && ($start->nodeType == XML_ELEMENT_NODE)) {
+    if (my $last = $start->lastChild) {
+      $start = $last; } }
+  my @ancestors  = grep { $_->nodeType == XML_ELEMENT_NODE } getInsertionCandidates($start);
   my @candidates = @ancestors;
   # Should we only accept a node that already has an id, or should we create an id?
   while (@candidates
@@ -1219,6 +1236,19 @@ sub autoCollapseChildren {
         else {
           $node->setAttribute($attr->localname, $val); } } }
   }
+  return; }
+
+#======================================================================
+# Make an ltx:ERROR node.
+sub makeError {
+  my ($self, $type, $content) = @_;
+  my $savenode = undef;
+  $savenode = $self->floatToElement('ltx:ERROR')
+    unless $self->isOpenable('ltx:ERROR');
+  $self->openElement('ltx:ERROR', class => ToString($type));
+  $self->openText_internal(ToString($content));
+  $self->closeElement('ltx:ERROR');
+  $self->setNode($savenode) if $savenode;
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -2262,4 +2292,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

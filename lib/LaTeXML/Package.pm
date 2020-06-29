@@ -14,6 +14,7 @@ package LaTeXML::Package;
 use strict;
 use warnings;
 use Exporter;
+use Scalar::Util qw(blessed);
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
@@ -67,7 +68,8 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
 
   # Counter support
   qw(&NewCounter &CounterValue &SetCounter &AddToCounter &StepCounter &RefStepCounter &RefStepID &ResetCounter
-    &GenerateID &AfterAssignment),
+    &GenerateID &AfterAssignment
+    &MaybePeekLabel &MaybeNoteLabel),
 
   # Document Model
   qw(&Tag &DocType &RelaxNGSchema &RegisterNamespace &RegisterDocumentNamespace),
@@ -309,12 +311,12 @@ sub XEquals {
   my $def1 = LookupMeaning($token1);    # token, definition object or undef
   my $def2 = LookupMeaning($token2);    # ditto
   if (defined $def1 != defined $def2) { # False, if only one has 'meaning'
-    return; }
+    return 0; }
   elsif (!defined $def1 && !defined $def2) {    # true if both undefined
     return 1; }
   elsif ($def1->equals($def2)) {                # If both have defns, must be same defn!
     return 1; }
-  return; }
+  return 0; }
 
 # Is defined in the LaTeX-y sense of also not being let to \relax.
 sub IsDefined {
@@ -375,7 +377,8 @@ sub Let {
   # If strings are given, assume CS tokens (most common case)
   $token1 = T_CS($token1) unless ref $token1;
   $token2 = T_CS($token2) unless ref $token2;
-  $STATE->assignMeaning($token1, $STATE->lookupMeaning($token2), $scope);
+  $STATE->assignMeaning($token1,
+    ($token2->get_dont_expand ? $token2 : $STATE->lookupMeaning($token2)), $scope);
   AfterAssignment();
   return; }
 
@@ -430,9 +433,14 @@ my @rmletters = ('i', 'v', 'x', 'l', 'c', 'd', 'm');    # [CONSTANT]
 
 sub roman_aux {
   my ($n) = @_;
+  # We used to have a expl3-code.tex bug here with
+  # input: -1
+  # output: cmxcix
+  # TeX proper returns empty on negative integers
+  return '' unless $n && ($n > 0);
   my $div = 1000;
-  my $s = ($n > $div ? ('m' x int($n / $div)) : '');
-  my $p = 4;
+  my $s   = ($n > $div ? ('m' x int($n / $div)) : '');
+  my $p   = 4;
   while ($n %= $div) {
     $div /= 10;
     my $d = int($n / $div);
@@ -484,7 +492,7 @@ sub CleanLabel {
   my $key = ToString($label);
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
   $key =~ s/\s+/_/sg;
-  return ($prefix || "LABEL") . ":" . $key; }
+  return (defined $prefix ? ($prefix ? $prefix . ':' . $key : $key) : 'LABEL:' . $key); }
 
 sub CleanIndexKey {
   my ($key) = @_;
@@ -689,6 +697,7 @@ sub RefStepCounter {
   my ($type, $noreset) = @_;
   my $ctr = LookupMapping('counter_for_type', $type) || $type;
   StepCounter($ctr, $noreset);
+  maybePreemptRefnum($ctr);
   my $iddef = $STATE->lookupDefinition(T_CS("\\the$ctr\@ID"));
   my $has_id = $iddef && ((!defined $iddef->getParameters) || ($iddef->getParameters->getNumArgs == 0));
 
@@ -711,6 +720,70 @@ sub RefStepCounter {
     ($tags   ? (tags => $tags) : ()),
     ($has_id ? (id   => $id)   : ())); }
 
+# Internal: Use a label-derived reference number and/or ID
+# instead of the traditional counter based ones.
+# Since the \label{} determins the reference number and ID,
+# we MUST sniff out the label BEFORE we call RefStepCounter/RefStepID !!!!!
+# (see MaybePeekLabel below; and also MaybeNoteLabel for use within
+# captions & certain equation environments)
+# Assign a sub to LABEL_MAPPING_HOOK: &sub($label,$counter,$norefnum)
+# to return the desired refnum and id for a given object.
+sub maybePreemptRefnum {
+  my ($ctr, $norefnum) = @_;
+  if (my $mapper = LookupValue('LABEL_MAPPING_HOOK')) {
+    my $hj_refnum = T_CS('\_PREEMPTED_REFNUM_' . $ctr);
+    my $hj_id     = T_CS('\_PREEMPTED_ID_' . $ctr);
+    # First, restore the \the<ctr> and \the<ctr>@ID macros to defaults
+    if (!$norefnum && LookupMeaning($hj_refnum)) {
+      Let(T_CS('\the' . $ctr), $hj_refnum, 'global'); }
+    if (LookupMeaning($hj_id)) {
+      Let(T_CS('\the' . $ctr . '@ID'), $hj_id, 'global'); }
+    my $label = LookupValue('PEEKED_LABEL');
+    my ($fixedrefnum, $fixedid) = &$mapper($label, $ctr, $norefnum);
+    if (!$norefnum && $fixedrefnum) {
+      if (!LookupMeaning($hj_refnum)) {    # Save for later
+        Let($hj_refnum, T_CS('\the' . $ctr), 'global'); }
+      DefMacroI('\the' . $ctr, undef, $fixedrefnum, scope => 'global'); }
+    if ($fixedid) {
+      if (!LookupMeaning($hj_id)) {        # Save for later
+        Let($hj_id, T_CS('\the' . $ctr . '@ID'), 'global'); }
+      DefMacroI('\the' . $ctr . '@ID', undef, $fixedid, scope => 'global'); }
+    AssignValue(PEEKED_LABEL    => undef,  'global');    # CONSUME the label
+    AssignValue(PROCESSED_LABEL => $label, 'global');    # Note that we've consumed the label
+  }
+  return; }
+
+# Use to peek for FOLLOWING \label{...} to support label-derived refererence numbers
+sub MaybePeekLabel {
+  if (LookupValue('LABEL_MAPPING_HOOK')) {
+    my $gullet = $STATE->getStomach->getGullet;
+    my $peek   = $gullet->readNonSpace;
+    if (Equals($peek, T_CS('\label'))) {
+      StartSemiverbatim();
+      my $arg = $gullet->readArg();
+      EndSemiverbatim();
+      my $label = CleanLabel($arg, '');
+      AssignValue(PEEKED_LABEL => $label, 'global');
+      $gullet->unread(T_BEGIN, $arg, T_END); }
+    else {
+      AssignValue(PROCESSED_LABEL => undef, 'global');
+      AssignValue(PEEKED_LABEL    => undef, 'global'); }
+    $gullet->unread($peek); }
+  return; }
+
+# Use to note a discovered label to support label-derived refererence numbers
+# Can by used by \label, among others. Note we only record the label
+# if it hasn't already been peeked, and consumed.
+sub MaybeNoteLabel {
+  my ($label) = @_;
+  if (LookupValue('LABEL_MAPPING_HOOK')) {
+    $label = CleanLabel($label, '');
+    my $processed = LookupValue('PROCESSED_LABEL');
+    if (!$processed || ($processed ne $label)) {    # Only if not already processed
+      AssignValue(PROCESSED_LABEL => undef,  'global');
+      AssignValue(PEEKED_LABEL    => $label, 'global'); } }
+  return; }
+
 sub deactivateCounterScope {
   my ($ctr) = @_;
   #  print STDERR "Unusing scopes for $ctr\n";
@@ -726,6 +799,7 @@ sub RefStepID {
   my $ctr   = LookupMapping('counter_for_type', $type) || $type;
   my $unctr = "UN$ctr";
   StepCounter($unctr);
+  maybePreemptRefnum($ctr, 1);
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef,
     Tokens(T_OTHER('x'), Explode(LookupValue('\c@' . $unctr)->valueOf)),
     scope => 'global');
@@ -754,27 +828,45 @@ sub ResetCounter {
 # <number> for <prefix> amongst its descendents.
 sub GenerateID {
   my ($document, $node, $whatsit, $prefix) = @_;
-  # If node doesn't already have an id, and can
+  # If node doesn't already have an id, and can have one
+  # make a "sensible" id for it. Avoid adding unneeded/unwanted ids until as late as possible,
+  # since it causes lots of book-keeping when rearranging XML (you have to monitor id references!)
   if (!$node->hasAttribute('xml:id') && $document->canHaveAttribute($node, 'xml:id')
     # but isn't a _Capture_ node (which ultimately should disappear)
     && ($document->getNodeQName($node) ne 'ltx:_Capture_')) {
-    my $ancestor = $document->findnode('ancestor::*[@xml:id][1]', $node)
-      || $document->getDocument->documentElement;
-    ## Old versions don't like $ancestor->getAttribute('xml:id');
-    my $ancestor_id = $ancestor && $ancestor->getAttributeNS($LaTeXML::Common::XML::XML_NS, 'id');
-    # If we've got no $ancestor_id, then we've got no $ancestor (no document yet!),
-    # or $ancestor IS the root element (but without an id);
-    # If we also have no $prefix, we'll end up with an illegal id (just digits)!!!
-    # We'll use "id" for an id prefix; this will work whether or not we have an $ancestor.
-    $prefix = 'id' unless $prefix || $ancestor_id;
-
-    my $ctrkey = '_ID_counter_' . (defined $prefix ? $prefix . '_' : '');
-    my $ctr = ($ancestor && $ancestor->getAttribute($ctrkey)) || 0;
-
-    my $id = ($ancestor_id ? $ancestor_id . "." : '') . (defined $prefix ? $prefix : '') . (++$ctr);
-    $ancestor->setAttribute($ctrkey => $ctr) if $ancestor;
+    my $id = '';
+    if (my $prelim_id = $node->getAttribute('_pregenerated_id_')) {
+      $id = $prelim_id; }    # Or an id generated while id'ing a child
+    else {
+      my @p = ();
+      my $p = $node->parentNode;
+      # Walk up to root or an id'd node...
+      while ($p && ($p->nodeType == XML_ELEMENT_NODE)) {
+        if ($document->getNodeQName($p) ne 'ltx:_Capture_') {
+          push(@p, $p);
+          last if $id = $p->getAttribute('xml:id'); }
+        $p = $p->parentNode; }
+      $prefix = 'id' unless $prefix || $id;
+      if (LookupValue('GENERATE_IDS') && @p) {
+        # If generating ALL ids, prepare a chain of ids back down to the current node
+        while ($p = pop(@p)) {
+          $id = generateID_nextid($p, (@p ? '' : $prefix), $id);
+          $p[-1]->setAttribute('_pregenerated_id_', $id) if @p; } }
+      else {
+        # Or base the id on the id'd ancestor's id.
+        $id = generateID_nextid($p[-1] || $document->documentElement, $prefix, $id); } }
+    # We may still be in a case where we got a raw numeric id. If so, guard with a prefix:
+    $id = "id$id" if $id =~ /^\d/;
     $document->setAttribute($node, 'xml:id' => $id); }
   return; }
+
+sub generateID_nextid {
+  my ($parent, $prefix, $id_sofar) = @_;
+  my $ctrkey = '_ID_counter_' . ($prefix ? $prefix . '_' : '');
+  my $ctr = $parent->getAttribute($ctrkey) || 0;
+  $id_sofar = ($id_sofar ? $id_sofar . '.' : '') . ($prefix ? $prefix : '') . (++$ctr);
+  $parent->setAttribute($ctrkey => $ctr);
+  return $id_sofar; }
 
 #======================================================================
 #
@@ -800,10 +892,7 @@ sub Invocation {
     my $params = $defn->getParameters;
     return Tokens($token, ($params ? $params->revertArguments(@args) : ())); }
   else {
-    Error('undefined', $token, undef,
-      "Can't invoke " . Stringify($token) . "; it is undefined");
-    DefConstructorI($token, convertLaTeXArgs(scalar(@args), 0),
-      sub { LaTeXML::Core::Stomach::makeError($_[0], 'undefined', $token); });
+    $STATE->generateErrorStub(undef, $token, convertLaTeXArgs(scalar(@args), 0));
     return Tokens($token, map { (T_BEGIN, $_->unlist, T_END) } @args); } }
 
 sub RawTeX {
@@ -982,8 +1071,15 @@ sub DefConditionalI {
     $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new(
         $cs, undef, undef, conditional_type => 'or', %options),
       $options{scope}); }
-  elsif ($csname =~ /^\\(?:if(.*)|unless)$/) {
-    my $name = $1;
+  elsif ($csname eq '\unless') {
+    $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
+        conditional_type => 'unless', %options),
+      $options{scope}); }
+  elsif ($csname =~ /^\\(..)(.*)$/) {
+    my ($prefix, $name) = ($1, $2);
+    if ($prefix ne 'if') {
+      Warn('misdefined', $cs, $STATE->getStomach,
+        "The conditional " . Stringify($cs) . " is being defined but doesn't start with \\if"); }
     if ((defined $name) && ($name ne 'case')
       && (!defined $test)) {    # user-defined conditional, like with \newif
       DefMacroI(T_CS('\\' . $name . 'true'),  undef, Tokens(T_CS('\let'), $cs, T_CS('\iftrue')));
@@ -1082,7 +1178,7 @@ sub DefPrimitiveI {
   return; }
 
 my $register_options = {    # [CONSTANT]
-  readonly => 1, getter => 1, setter => 1 };
+  readonly => 1, getter => 1, setter => 1, name => 1 };
 my %register_types = (      # [CONSTANT]
   'LaTeXML::Common::Number'    => 'Number',
   'LaTeXML::Common::Dimension' => 'Dimension',
@@ -1103,7 +1199,7 @@ sub DefRegisterI {
   $cs = coerceCS($cs);
 ###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $type   = $register_types{ ref $value };
-  my $name   = ToString($cs);
+  my $name   = ToString($options{name} || $cs);
   my $getter = $options{getter}
     || sub { LookupValue(join('', $name, map { ToString($_) } @_)) || $value; };
   my $setter = $options{setter}
@@ -1116,6 +1212,7 @@ sub DefRegisterI {
   # Not really right to set the value!
   AssignValue(ToString($cs) => $value) if defined $value;
   $STATE->installDefinition(LaTeXML::Core::Definition::Register->new($cs, $paramlist,
+      replacement  => $name,
       registerType => $type,
       getter       => $getter, setter => $setter,
       readonly     => $options{readonly}),
@@ -1333,8 +1430,8 @@ sub createXMRefs {
 # When to make a dual ?
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
 my $math_options = {    # [CONSTANT]
-  name => 1, meaning       => 1, omcd    => 1, reversion => 1, sizer => 1, alias => 1,
-  role => 1, operator_role => 1, reorder => 1, dual      => 1,
+  name => 1, meaning       => 1, omcd    => 1, reversion => 1, sizer   => 1, alias => 1,
+  role => 1, operator_role => 1, reorder => 1, dual      => 1, decl_id => 1,
   mathstyle    => 1, font               => 1,
   scriptpos    => 1, operator_scriptpos => 1,
   stretchy     => 1, operator_stretchy  => 1,
@@ -1377,22 +1474,30 @@ sub DefMathI {
 
   # If single character, handle with a rewrite rule
   if (length($csname) == 1) {
+    ###print STDERR "Defining ".Stringify($cs)." as rewrite\n";
     defmath_rewrite($cs, %options); }
 
-  # If the presentation is complex, and involves arguments,
-  # we will create an XMDual to separate content & presentation.
+  # If the macro involves arguments,
+  # we will create an XMDual to separate simple content application
+  # from the (likely) convoluted presentation.
   elsif ((ref $presentation eq 'CODE')
     || ((ref $presentation) && grep { $_->equals(T_PARAM) } $presentation->unlist)
-    || (!(ref $presentation) && ($presentation =~ /\#\d|\\./))
-    || ((ref $presentation) && (grep { $_->isExecutable } $presentation->unlist))) {
+    || (!(ref $presentation) && ($presentation =~ /\#\d|\\./))) {
+    ###print STDERR "Defining ".Stringify($cs)." as dual\n";
     defmath_dual($cs, $paramlist, $presentation, %options); }
+  # If no arguments, but the presentation involves macros, presumably with internal structure,
+  # we'll wrap the presentation in ordet to capture the various semantic attributes
+  elsif ((ref $presentation) && (grep { $_->isExecutable } $presentation->unlist)) {
+    ###print STDERR "Defining ".Stringify($cs)." as wrapped\n";
+    defmath_wrapped($cs, $presentation, %options); }
 
   # EXPERIMENT: Introduce an intermediate case for simple symbols
   # Define a primitive that will create a Box with the appropriate set of XMTok attributes.
   elsif (($nargs == 0) && !grep { !$$simpletoken_options{$_} } keys %options) {
+    ###print STDERR "Defining ".Stringify($cs)." as primitive\n";
     defmath_prim($cs, $paramlist, $presentation, %options); }
-
   else {
+    ###print STDERR "Defining ".Stringify($cs)." as constructor\n";
     defmath_cons($cs, $paramlist, $presentation, %options); }
   AssignValue($csname . ":locked" => 1) if $options{locked};
   return; }
@@ -1415,7 +1520,7 @@ sub defmath_rewrite {
   # No, do NOT make mathactive; screws up things like babel french, or... ?
   # EXPERIMENT: store XMTok attributes for if this char ends up a Math Token.
   # But only some DefMath options make sense!
-  my $rw_options = { name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1, stretchy => 1 }; # (well, mathstyle?)
+  my $rw_options = { name => 1, meaning => 1, omcd => 1, decl_id => 1, role => 1, mathstyle => 1, stretchy => 1 }; # (well, mathstyle?)
   CheckOptions("DefMath reimplemented as DefRewrite ($csname)", $rw_options, %options);
   AssignValue('math_token_attributes_' . $csname => {%options}, 'global');
   return; }
@@ -1440,6 +1545,7 @@ sub defmath_common_constructor_options {
       meaning            => $options{meaning},
       omcd               => $options{omcd},
       role               => $options{role},
+      decl_id            => $options{decl_id},
       operator_role      => $options{operator_role},
       mathstyle          => $options{mathstyle},
       scriptpos          => $options{scriptpos},
@@ -1485,8 +1591,8 @@ sub defmath_dual {
   $presentation = TokenizeInternal($presentation) unless ref $presentation;
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, $paramlist, $presentation),
     $options{scope});
-  my $nargs     = ($paramlist ? scalar($paramlist->getParameters) : 0);
-  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
+  my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
+  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle'";
 
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cont_cs, $paramlist,
       ($nargs == 0
@@ -1498,6 +1604,32 @@ sub defmath_dual {
             ($options{reorder} ? @{ $options{reorder} } : (1 .. $nargs)))
           . "</ltx:XMApp>"),
       defmath_common_constructor_options($cs, $presentation, %options)), $options{scope});
+  return; }
+
+# The case where there are NO arguments, but the presentation is (potentially) complex.
+sub defmath_wrapped {
+  my ($cs, $presentation, %options) = @_;
+  my $csname  = $cs->getString;
+  my $wrap_cs = T_CS($csname . "\@wrapper");
+  my $pres_cs = T_CS($csname . "\@presentation");
+  # Make the original CS expand into a wrapper constructor invoking a presentation
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, undef,
+      Tokens($wrap_cs, T_BEGIN, $pres_cs, T_END)),
+    $options{scope});
+  # Make the presentation macro.
+  $presentation = TokenizeInternal($presentation) unless ref $presentation;
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, undef, $presentation),
+    $options{scope});
+  # Make the wrapper constructor
+  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle'";
+  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($wrap_cs,
+      parseParameters('{}', $csname),
+      "<ltx:XMWrap $cons_attr role='#role' scriptpos='#scriptpos' stretchy='#stretchy'>"
+        . "#1"
+        . "</ltx:XMWrap>",
+      defmath_common_constructor_options($cs, $presentation, %options),
+      reversion => sub { (($LaTeXML::DUAL_BRANCH || '') eq 'content' ? $cs : Revert($_[1])); }),
+    $options{scope});
   return; }
 
 sub defmath_prim {
@@ -1516,17 +1648,21 @@ sub defmath_prim {
           my $value = $properties{$key};
           if (ref $value eq 'CODE') {
             $properties{$key} = &$value(); } }
-        LaTeXML::Core::Box->new($string, $font, $locator, $cs, mode => $mode, %properties); }));
+        LaTeXML::Core::Box->new($string, $font, $locator,
+          ($options{hide_content_reversion} ? $presentation : $cs),
+          mode => $mode, %properties); }));
   return; }
 
 sub defmath_cons {
   my ($cs, $paramlist, $presentation, %options) = @_;
   # do we need to do anything about digesting the presentation?
   my $qpresentation = $presentation && ToString($presentation);    # Quote any constructor specials
-  $qpresentation =~ s/(\#|\&|\?|\\)/\\$1/g if $presentation;
-  my $end_tok   = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
-  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' mathstyle='#mathstyle'";
-  my $nargs     = ($paramlist ? scalar($paramlist->getParameters) : 0);
+  $qpresentation =~ s/(\#|\&|\?|\\|<|>)/\\$1/g if $presentation;
+  my $end_tok = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
+  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle'";
+  my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
+  if (!$options{reversion} && $options{hide_content_reversion} && !$nargs) {
+    $options{reversion} = sub { (($LaTeXML::DUAL_BRANCH || '') eq 'content' ? $cs : $presentation->unlist); }; }
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cs, $paramlist,
       ($nargs == 0
           # If trivial presentation, allow it in Text
@@ -1735,7 +1871,7 @@ sub pathname_is_raw {
   return ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
 
 my $findfile_options = {    # [CONSTANT]
-  type => 1, notex => 1, noltxml => 1 };
+  type => 1, notex => 1, noltxml => 1, searchpaths_only => 1 };
 
 sub FindFile {
   my ($file, %options) = @_;
@@ -1803,7 +1939,7 @@ sub FindFile_aux {
     (!$options{notex} ? ($file) : ()));
   local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
     @$paths, $ENV{TEXINPUTS} || $Config::Config{'path_sep'});
-  if (my $result = pathname_kpsewhich(@candidates)) {
+  if (my $result = (!$options{searchpaths_only}) && pathname_kpsewhich(@candidates)) {
     return (-f $result ? $result : undef); }
   if ($urlbase && ($path = url_find($file, urlbase => $urlbase))) {
     return $path; }
@@ -2118,15 +2254,16 @@ sub AddToMacro {
     Warn('unexpected', $cs, $STATE->getStomach->getGullet,
       ToString($cs) . " is not an expandable control sequence", "Ignoring addition"); }
   else {
-    DefMacroI($cs, undef, Tokens($defn->getExpansion->unlist,
-        map { $_->unlist } map { (ref $_ ? $_ : TokenizeInternal($_)) } @tokens),
+    DefMacroI($cs, undef, Tokens(map { $_->unlist }
+          map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
       scope => 'global'); }
   return; }
 
 #======================================================================
 my $inputdefinitions_options = {    # [CONSTANT]
   options => 1, withoptions => 1, handleoptions => 1,
-  type    => 1, as_class    => 1, noltxml       => 1, notex => 1, noerror => 1, after => 1 };
+  type    => 1, as_class    => 1, noltxml       => 1, notex => 1, noerror => 1, after => 1,
+  searchpaths_only => 1 };
 #   options=>[options...]
 #   withoptions=>boolean : pass options from calling class/package
 #   after=>code or tokens or string as $name.$type-h@@k macro. (executed after the package is loaded)
@@ -2147,7 +2284,12 @@ sub InputDefinitions {
     && grep { $prevname eq $_ } @{ LookupValue('@masquerading@as@class') || [] };
 
   $options{raw} = 1 if $options{noltxml};    # so it will be read as raw by Gullet.!L!
-  my $astype = ($options{as_class} ? 'cls' : $options{type});
+  my $astype = ($options{as_class} ? 'cls' : $options{type} || 'sty');
+
+  if ($astype eq 'cls' and $options{options}) {
+    PushValue(class_options => @{ $options{options} });
+    # ? Expand {\zap@space#2 \@empty}%
+    DefMacroI('\@classoptionslist', undef, join(',', @{ $options{options} })); }
 
   my $filename = $name;
   $filename .= '.' . $options{type} if $options{type};
@@ -2158,8 +2300,9 @@ sub InputDefinitions {
         "Option clash for file $filename with options '$curroptions'",
         "previously loaded with '$prevoptions'") unless $curroptions eq $prevoptions; } }
   if (my $file = FindFile($filename, type => $options{type},
-      notex => $options{notex}, noltxml => $options{noltxml})) {
+      notex => $options{notex}, noltxml => $options{noltxml}, searchpaths_only => $options{searchpaths_only})) {
     if ($options{handleoptions}) {
+      Digest(T_CS('\@pushfilename'));
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
       if (my $passoptions = $options{withoptions} && $prevname
         && LookupValue('opt@' . $prevname . "." . $prevext)) {
@@ -2205,6 +2348,7 @@ sub InputDefinitions {
       Digest(T_CS('\\' . $name . '.' . $astype . '-h@@k'));
       DefMacroI('\@currname', undef, Tokens(Explode($prevname))) if $prevname;
       DefMacroI('\@currext',  undef, Tokens(Explode($prevext)))  if $prevext;
+      Digest(T_CS('\@popfilename'));
       resetOptions(); }    # And reset options afterwards, too.
     return $file; }
   elsif (!$options{noerror}) {
@@ -2222,7 +2366,7 @@ sub InputDefinitions {
 
 my $require_options = {    # [CONSTANT]
   options => 1, withoptions => 1, type => 1, as_class => 1,
-  noltxml => 1, notex       => 1, raw  => 1, after    => 1 };
+  noltxml => 1, notex       => 1, raw  => 1, after    => 1, searchpaths_only => 1 };
 # This (& FindFile) needs to evolve a bit to support reading raw .sty (.def, etc) files from
 # the standard texmf directories.  Maybe even use kpsewhich itself (INSTEAD of pathname_find ???)
 # Another potentially useful option might be that if we are reading a raw file,
@@ -2238,6 +2382,8 @@ sub RequirePackage {
   # We'll usually disallow raw TeX, unless the option explicitly given, or globally set.
   $options{notex} = 1
     if !defined $options{notex} && !LookupValue('INCLUDE_STYLES') && !$options{noltxml};
+  # Top-level requires can be limited to local sources via searchpaths_only => 1
+  $options{searchpaths_only} //= (!$options{notex}) && ((LookupValue('INCLUDE_STYLES') || '') eq 'searchpaths');
   my $success = InputDefinitions($package, type => $options{type} || 'sty', handleoptions => 1,
     # Pass classes options if we have NONE!
     withoptions => !($options{options} && @{ $options{options} }),
@@ -2246,20 +2392,17 @@ sub RequirePackage {
   return; }
 
 my $loadclass_options = {    # [CONSTANT]
-  options => 1, withoptions => 1, after => 1, notex => 1 };
+  options => 1, withoptions => 1, after => 1, notex => 1, searchpaths_only => 1 };
 
 sub LoadClass {
   my ($class, %options) = @_;
   $options{notex} = 1
-    if !defined $options{notex} && !LookupValue('INCLUDE_STYLES') && !$options{noltxml};
+    if !defined $options{notex} && !LookupValue('INCLUDE_CLASSES') && !$options{noltxml};
+  # Top-level requires can be limited to local sources via searchpaths_only => 1
+  $options{searchpaths_only} //= (!$options{notex}) && ((LookupValue('INCLUDE_CLASSES') || '') eq 'searchpaths');
 
   $class = ToString($class) if ref $class;
   CheckOptions("LoadClass ($class)", $loadclass_options, %options);
-  #  AssignValue(class_options => [$options{options} ? @{ $options{options} } : ()]);
-  PushValue(class_options => ($options{options} ? @{ $options{options} } : ()));
-  if (my $op = $options{options}) {
-    # ? Expand {\zap@space#2 \@empty}%
-    DefMacroI('\@classoptionslist', undef, join(',', @$op)); }
   # Note that we'll handle errors specifically for this case.
   if (my $success = InputDefinitions($class, type => 'cls', notex => $options{notex}, handleoptions => 1, noerror => 1,
       %options)) {
@@ -3901,7 +4044,7 @@ are added.
 
 C<afterOpen:early> or C<afterOpen:late> can be used in
 place of C<afterOpen>; these will be run as a group
-bfore, or after (respectively) the unmodified blocks.
+before, or after (respectively) the unmodified blocks.
 
 =item C<afterClose=E<gt>I<code>($document,$box)>
 

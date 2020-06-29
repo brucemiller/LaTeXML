@@ -1,0 +1,58 @@
+\documentclass{article}
+\begin{document}
+$$ a=b \]
+but
+\[ a=b $$
+  
+
+\[
+  a=b $$ and $$ b=c
+\]
+
+\begin{equation}
+  a=b \] and \[ b=c
+\end{equation}
+
+\begin{equation}
+  a=b $$ and $$ b=c
+\end{equation}
+
+\begin{equation}
+  a=b \] and $$ b=c
+\end{equation}
+
+\begin{equation}
+  a=b $$ and \[ b=c
+\end{equation}
+
+\begin{equation}
+  a=b
+  \footnote{But beware that
+    \[ b=c \]
+    and so on.}
+\end{equation}
+
+\begin{equation}
+  a=b
+  \footnote{But beware that
+    $$ b=c $$
+    and so on.}
+\end{equation}
+
+\end{document}
+
+% These are not legit, however
+\begin{equation}
+  a=b $ and $ b=c
+\end{equation}
+
+\begin{equation}
+  a=b \) and \( b=c
+\end{equation}
+
+\begin{eqnarray}
+  a&=&b\\ \] and \[
+  b&=&c\\
+\end{eqnarray}
+
+\end{document}

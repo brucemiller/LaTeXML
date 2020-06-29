@@ -151,8 +151,6 @@ GetOptions("quiet" => sub { $verbosity--; },
   "nokeepXMath"                 => sub { removeMathFormat('XMath'); },
   "mathtex"                     => sub { addMathFormat('mathtex'); },
   "nomathtex"                   => sub { removeMathFormat('mathtex'); },
-  "mathlex"                     => sub { addMathFormat('mathlex'); },
-  "nomathlex"                   => sub { removeMathFormat('mathlex'); },
   # For graphics: vaguely similar issues, but more limited.
   # includegraphics images (eg. ps) can be converted to webimages (eg.png)
   # picture/pstricks images can be converted to png or possibly svg.
@@ -163,8 +161,8 @@ GetOptions("quiet" => sub { $verbosity--; },
 
 ) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
-pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
-if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(1); }
+pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 2, -output => \*STDOUT) if $help;
+if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(0); }
 
 # Get the requested XML file
 xError("Missing input xmlfile") unless @ARGV;
@@ -291,12 +289,13 @@ else {
 if ((!defined $destination)
   && ($dographics || $picimages
     || checkMathFormat('images') || checkMathFormat('svg'))) {
-  print STDERR "WARNING: must supply destination to support auxilliary files;\n"
-    . "  disabling: --nomathimages --nographicimages --nopictureimages\n";
+  LaTeXML::Post::Warn("expected","options", undef,
+    "must supply --destination to support auxilliary files disabling: --nomathimages --nographicimages --nopictureimages");
   # default resources is sorta ok: we might not copy, but we'll still have the links/script/etc
   $dographics = $picimages = 0;
-  removeMathFormat('images'); removeMathFormat('svg');
-}
+  removeMathFormat('images');
+  removeMathFormat('svg');
+  maybeAddMathFormat('pmml'); }
 
 #======================================================================
 # Do the processing.
@@ -414,9 +413,6 @@ if (!$prescan) {
       elsif ($fmt eq 'mathtex') {
         require LaTeXML::Post::TeXMath;
         push(@mprocs, LaTeXML::Post::TeXMath->new(%OPTIONS)); }
-      elsif ($fmt eq 'mathlex') {
-        require LaTeXML::Post::LexMath;
-        push(@mprocs, LaTeXML::Post::LexMath->new(%OPTIONS)); }
     }
     my $main = shift(@mprocs);
     $main->setParallel(@mprocs);
@@ -487,10 +483,11 @@ sub removeMathFormat {
   $removed_math_formats{$fmt} = 1;
   return; }
 
+# Add a default math format, when no math formatter is requested, unless specifically forbidden
 sub maybeAddMathFormat {
   my ($fmt) = @_;
   unshift(@math_formats, $fmt)
-    unless (grep { $_ eq $fmt } @math_formats) || $removed_math_formats{$fmt};
+    unless @math_formats || $removed_math_formats{$fmt};
   return; }
 
 sub checkMathFormat {
@@ -598,8 +595,6 @@ latexmlpost [options] I<xmlfile>
                          representation (default is to remove)
  --mathtex               adds TeX annotation to parallel markup
  --nomathtex             disables the above (default)
- --mathlex               adds linguistic lexeme annotation to parallel markup
- --nomathlex             disables the above (default)
  --plane1                use plane-1 unicode for symbols
                          (default, if needed)
  --noplane1              do not use plane-1 unicode
@@ -780,7 +775,7 @@ Specifies how to name the files for subdocuments created by splitting.
 The values C<id> and C<label> simply use the id or label of the subdocument's
 root node for it's filename.  C<idrelative> and C<labelrelative> use
 the portion of the id or label that follows the parent document's
-id or label. Furthermore, to impose structure and uniqueness, 
+id or label. Furthermore, to impose structure and uniqueness,
 if a split document has children that are also split, that document
 (and it's children) will be in a separate subdirectory with the
 name index.
@@ -955,7 +950,7 @@ specify a graphics file that will be converted to a more appropriate file
 target format; for example, postscript files used for graphics with LaTeX
 will be converted to png format for use on the web.  As with LaTeX,
 when a graphics file is specified without a file type, the system will search
-for the most appropriate target type file. 
+for the most appropriate target type file.
 
 When this option is used, it overrides I<and replaces> the defaults and provides
 a mapping of I<sourcetype> to I<desttype>.  The option can be

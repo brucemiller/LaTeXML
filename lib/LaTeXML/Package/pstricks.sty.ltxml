@@ -81,7 +81,7 @@ sub ReadOptionalBracketed {
   $gullet->skipSpaces;
   if ($gullet->ifNext(T_BEGIN)) {
     my $itemreader;
-    if (!$itemtype) { $itemreader = sub { $gullet->readBalanced; }; }
+    if (!$itemtype) { $itemreader = sub { scalar($gullet->readBalanced); }; }
     else            { $itemreader = ResolveReader($itemtype); }
     if (!$itemreader) {
       Error('misdefined', $itemtype, $gullet,
@@ -665,6 +665,9 @@ DefPrimitive('\psaddtolength{Token}{PSDimension}', sub {
     my ($self, $cmd, $dimen) = @_;
     my $register = LookupDefinition($cmd);
     $register->setValue($register->valueOf->add($dimen)); });
+
+Let('\pssetlength','\setlength');
+Let('\psaddtolength','\addtolength');
 
 DefPrimitive('\degrees [Float]', sub { AssignValue('\degrees', $_[1]); });
 DefPrimitive('\radians',         sub { AssignValue('\degrees', Float(6.28319)); });

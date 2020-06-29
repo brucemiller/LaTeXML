@@ -21,6 +21,7 @@ use File::Path qw(rmtree);
 use File::Spec;
 use List::Util qw(max);
 use LaTeXML::Common::Config;
+use LaTeXML::Common::Error qw(generateMessage colorizeString);
 use LaTeXML::Core;
 use LaTeXML::Util::Pack;
 use LaTeXML::Util::Pathname;
@@ -205,6 +206,20 @@ sub convert {
     else {
       $$opts{destination} = pathname_concat($sandbox_directory, $sandbox_destination); }
   }
+  # 1.4.1 Since we can allow "virtual" destinations for archives / webservice APIs,
+  #       we postpone the auxiliary resource sanity check (logically of LaTeXML::Config)
+  #       to this time, where we can be certain if a user has run a local job without --dest
+  if ((!$$opts{destination})
+    && ($$opts{dographics} || $$opts{picimages} || grep { $_ eq 'images' or $_ eq 'svg' } @{ $$opts{math_formats} })) {
+    print STDERR generateMessage(colorizeString("Warning:expected:options", 'warning'), undef,
+      "must supply --destination to support auxilliary files", 0,
+      "  disabling: --nomathimages --nographicimages --nopictureimages");
+    # default resources is sorta ok: we might not copy, but we'll still have the links/script/etc
+    $$opts{dographics} = 0;
+    $$opts{picimages}  = 0;
+    removeMathFormat($opts, 'images');
+    removeMathFormat($opts, 'svg');
+    maybeAddMathFormat($opts, 'pmml'); }
 
   # 1.5 Prepare a daemon frame
   my $latexml = $$self{latexml};
@@ -254,7 +269,17 @@ sub convert {
   # End daemon run, by popping frame:
   $latexml->withState(sub {
       my ($state) = @_;    # Remove current state frame
+      ## TODO: This section of option preparations can be factored out as a subroutine if it grows further
+      ##       the general idea is that right before the "pop" of the daemon frame, we have access to all meaningful
+      ##       global state values, and we can preserve the relevant ones for the post-processing stage
+      ## BEGIN POST-PROCESSING-PREP
       $$opts{searchpaths} = $state->lookupValue('SEARCHPATHS'); # save the searchpaths for post-processing
+      if ($state->lookupValue('LEXEMATIZE_MATH')) {  # save potential request for serializing math lexemes
+        $$opts{math_formats} ||= [];
+        push @{ $$opts{math_formats} }, 'lexemes';
+        # recheck need for parallel
+        $$opts{parallelmath} = 1 if (@{ $$opts{math_formats} } > 1); }
+      ## END POST-PROCESSING-PREP
       $state->popDaemonFrame;
   });
   if ($LaTeXML::UNSAFE_FATAL) {
@@ -495,7 +520,7 @@ sub convert_post {
         elsif ($fmt eq 'mathtex') {
           require LaTeXML::Post::TeXMath;
           push(@mprocs, LaTeXML::Post::TeXMath->new(%PostOPS)); }
-        elsif ($fmt eq 'mathlex') {
+        elsif ($fmt eq 'lexemes') {
           require LaTeXML::Post::LexMath;
           push(@mprocs, LaTeXML::Post::LexMath->new(%PostOPS)); }
       }

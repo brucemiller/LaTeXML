@@ -51,6 +51,7 @@ sub process {
   $self->fill_in_refs($doc);
   $self->fill_in_RDFa_refs($doc);
   $self->fill_in_bibrefs($doc);
+  $self->fill_in_mathlinks($doc);
   $self->copy_resources($doc);
 
   if (keys %LaTeXML::Post::CrossRef::MISSING) {
@@ -389,6 +390,59 @@ sub fill_in_RDFa_refs {
   NoteProgressDetailed(" [Filled in $n RDFa refs]");
   return; }
 
+sub fill_in_mathlinks {
+  my ($self, $doc) = @_;
+  my $db = $$self{db};
+  my $n  = 0;
+  foreach my $sym ($doc->findnodes('descendant::*[@decl_id or @meaning]')) {
+    my $tag = $doc->getQName($sym);
+    next if $tag eq 'ltx:XMRef';               # Blech; list those TO fill-in, or list those to exclude?
+    next if $sym->hasAttribute('href');
+    my $decl_id = $sym->getAttribute('decl_id');
+    my $meaning = $sym->getAttribute('meaning');
+    my $entry;
+    if ($decl_id
+      && !$doc->findnodes('ancestor::ltx:glossaryphrase | ancestor::ltx:declare[@type]', $sym)) {
+      $entry = $$self{db}->lookup("DECLARATION:local:$decl_id"); }
+    elsif ($meaning) {
+      $entry = $$self{db}->lookup("DECLARATION:global:$meaning"); }
+    if ($entry) {
+      $n++;
+      ## HACK: DLMF copies $meaning to ltxx:meaning for search indexing
+      ## This should evolve into using (future) mml @mathrole?
+##      if ($meaning && $$doc{namespaces}{ltxx}) {
+##        $$node[1]{'ltxx:meaning'} = $meaning; }
+      if (my $id = $self->getIDForDeclaration($entry)) {    # Where defined
+        $sym->setAttribute(href => $self->generateURL($doc, $id));
+        if (my $tag = $entry->getValue('text') || $entry->getValue('tag')) {
+          $sym->setAttribute(title => getTextContent($doc, $tag)); }
+  } } }
+  NoteProgressDetailed(" [Filled in $n math links]");
+  return; }
+
+# Given a declaration entry (ltx:declare, or ltx:mark or ...)
+# Return the id of an appropriate link target.
+# Basically this is the parent, except (DLMF specific?) it should be a table ROW, not CELL
+# Or the numbered equationgroup, not the unnumbered equation
+sub getIDForDeclaration {
+  my ($self, $entry) = @_;
+  if (my $pid = $entry && $entry->getValue('parent')) {
+    if (my $pentry = $$self{db}->lookup("ID:$pid")) {
+      my $ptype = $pentry->getValue('type') || '';
+      # If definition is in a table cell, the correct id will be that of the row
+      if ($ptype eq 'ltx:td') {
+        if (my $gpid = $pentry->getValue('parent')) {
+          return $gpid; } }
+      # If definition is in unnumbered equation within an equation group, use id of the group
+      elsif (($ptype eq 'ltx:equation') && !$pentry->getValue('refnum')) {
+        if (my $gpid = $pentry->getValue('parent')) {
+          if (my $gpentry = $$self{db}->lookup("ID:$gpid")) {
+            my $gptype = $gpentry->getValue('type') || '';
+            if ($gptype eq 'ltx:equationgroup') {
+              return $gpid; } } } }
+    }
+    return $pid; } }
+
 # Needs to evolve into the combined stuff that we had in DLMF.
 # (eg. concise author/year combinations for multiple bibrefs)
 sub fill_in_bibrefs {
@@ -566,10 +620,11 @@ sub generateURL {
   return; }
 
 my $NBSP = pack('U', 0xA0);    # CONSTANT
-# Generate the contents of a <ltx:ref> of the given id.
-# show is a string containing substrings 'type', 'refnum' and 'title'
-# (standing for the type prefix, refnum and title of the id'd object)
-# and any other random characters; the
+                               # Generate the contents of a <ltx:ref> of the given id.
+                               # show is a string containing substrings 'type', 'refnum' and 'title'
+                               # (standing for the type prefix, refnum and title of the id'd object)
+                               # and any other random characters; the
+
 sub generateRef {
   my ($self, $doc, $reqid, $reqshow) = @_;
   my $pending = '';
@@ -720,9 +775,6 @@ sub generateTitle {
         || $entry->getValue('frefnum') || $entry->getValue('refnum'));
     #    $title = $title->textContent if $title && ref $title;
     $title = getTextContent($doc, $title) if $title && ref $title;
-    $title =~ s/^\s+//s  if $title;    # Trim leading whitespace
-    $title =~ s/\s+$//s  if $title;    # and trailing
-    $title =~ s/\s+/ /gs if $title;    # and normalize all other whitespace.
     if ($title) {
       $string .= $$self{ref_join} if $string;
       $string .= $title; }
@@ -730,6 +782,14 @@ sub generateTitle {
   return $string || $altstring; }
 
 sub getTextContent {
+  my ($doc, $title) = @_;
+  $title = getTextContent_rec($doc, $title) if $title && ref $title;
+  $title =~ s/^\s+//s  if $title;    # Trim leading whitespace
+  $title =~ s/\s+$//s  if $title;    # and trailing
+  $title =~ s/\s+/ /gs if $title;    # and normalize all other whitespace.
+  return $title; }
+
+sub getTextContent_rec {
   my ($doc, $node) = @_;
   my $type = $node->nodeType;
   if ($type == XML_TEXT_NODE) {
@@ -738,12 +798,12 @@ sub getTextContent {
     my $tag = $doc->getQName($node);
     if ($tag eq 'ltx:tag') {
       return ($node->getAttribute('open') || '')
-        . $node->textContent    # assuming no nested ltx:tag
+        . $node->textContent         # assuming no nested ltx:tag
         . ($node->getAttribute('close') || ''); }
     else {
-      return join('', map { getTextContent($doc, $_); } $node->childNodes); } }
+      return join('', map { getTextContent_rec($doc, $_); } $node->childNodes); } }
   elsif ($type == XML_DOCUMENT_FRAG_NODE) {
-    return join('', map { getTextContent($doc, $_); } $node->childNodes); }
+    return join('', map { getTextContent_rec($doc, $_); } $node->childNodes); }
   else {
     return ''; } }
 

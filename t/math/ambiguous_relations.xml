@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" tex="x&gt;=0" text="x &gt;= 0" xml:id="S0.Ex1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok font="italic" meaning="greater-than-or-equals" role="RELOP">&gt;=</XMTok>
+            <XMTok font="italic" role="UNKNOWN">x</XMTok>
+            <XMTok meaning="0" role="NUMBER">0</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p2">
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" tex="x&lt;=0" text="x &lt;= 0" xml:id="S0.Ex2.m1">
+        <XMath>
+          <XMApp>
+            <XMTok font="italic" meaning="less-than-or-equals" role="RELOP">&lt;=</XMTok>
+            <XMTok font="italic" role="UNKNOWN">x</XMTok>
+            <XMTok meaning="0" role="NUMBER">0</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p3">
+    <equation xml:id="S0.Ex3">
+      <Math mode="display" tex="&lt;x,y&gt;=0" text="formulae@(absent &lt; x, y &gt;= 0)" xml:id="S0.Ex3.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="formulae"/>
+              <XMRef idref="S0.Ex3.m1.3"/>
+              <XMRef idref="S0.Ex3.m1.4"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="S0.Ex3.m1.3">
+                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                <XMTok meaning="absent"/>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex3.m1.1">x</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="S0.Ex3.m1.4">
+                <XMTok font="italic" meaning="greater-than-or-equals" role="RELOP">&gt;=</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex3.m1.2">y</XMTok>
+                <XMTok meaning="0" role="NUMBER">0</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p4">
+    <equation xml:id="S0.Ex4">
+      <Math mode="display" tex="0=&lt;x,y&gt;" xml:id="S0.Ex4.m1">
+        <XMath>
+          <XMTok meaning="0" role="NUMBER">0</XMTok>
+          <XMTok meaning="equals" role="RELOP">=</XMTok>
+          <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex4.m1.1">x</XMTok>
+          <XMTok role="PUNCT">,</XMTok>
+          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex4.m1.2">y</XMTok>
+          <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p5">
+    <equation xml:id="S0.Ex5">
+      <Math mode="display" tex="2&lt;x,y&gt;=z" text="formulae@(2 &lt; x, y &gt;= z)" xml:id="S0.Ex5.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="formulae"/>
+              <XMRef idref="S0.Ex5.m1.3"/>
+              <XMRef idref="S0.Ex5.m1.4"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="S0.Ex5.m1.3">
+                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                <XMTok meaning="2" role="NUMBER">2</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex5.m1.1">x</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="S0.Ex5.m1.4">
+                <XMTok font="italic" meaning="greater-than-or-equals" role="RELOP">&gt;=</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex5.m1.2">y</XMTok>
+                <XMTok font="italic" role="UNKNOWN">z</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p6">
+    <equation xml:id="S0.Ex6">
+      <Math mode="display" tex="0=&lt;x,y&gt;A" xml:id="S0.Ex6.m1">
+        <XMath>
+          <XMTok meaning="0" role="NUMBER">0</XMTok>
+          <XMTok meaning="equals" role="RELOP">=</XMTok>
+          <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex6.m1.1">x</XMTok>
+          <XMTok role="PUNCT">,</XMTok>
+          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex6.m1.2">y</XMTok>
+          <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+          <XMTok font="italic" role="UNKNOWN">A</XMTok>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p7">
+    <equation xml:id="S0.Ex7">
+      <Math mode="display" tex="a&lt;&lt;b" text="a &lt;&lt; b" xml:id="S0.Ex7.m1">
+        <XMath>
+          <XMApp>
+            <XMTok font="italic" meaning="much-less-than" role="RELOP">&lt;&lt;</XMTok>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p8">
+    <equation xml:id="S0.Ex8">
+      <Math mode="display" tex="0&lt;&lt;a,b&gt;&gt;1" text="formulae@(0 &lt;&lt; a, b &gt;&gt; 1)" xml:id="S0.Ex8.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="formulae"/>
+              <XMRef idref="S0.Ex8.m1.3"/>
+              <XMRef idref="S0.Ex8.m1.4"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="S0.Ex8.m1.3">
+                <XMTok font="italic" meaning="much-less-than" role="RELOP">&lt;&lt;</XMTok>
+                <XMTok meaning="0" role="NUMBER">0</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex8.m1.1">a</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="S0.Ex8.m1.4">
+                <XMTok font="italic" meaning="much-greater-than" role="RELOP">&gt;&gt;</XMTok>
+                <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex8.m1.2">b</XMTok>
+                <XMTok meaning="1" role="NUMBER">1</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+</document>

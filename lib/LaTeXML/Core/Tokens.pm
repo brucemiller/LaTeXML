@@ -112,6 +112,33 @@ sub substituteParameters {
       push(@result, $token); } }
   return LaTeXML::Core::Tokens->new(@result); }
 
+# Trims outer braces (if they balance each other)
+# Should this also trim whitespace? or only if there are braces?
+sub stripBraces {
+  my ($self) = @_;
+  my $n      = 1 + $#$self;
+  my $i0     = 0;
+  my $i1     = $n;
+  while (($i0 < $n) && ($$self[$i0]->getCatcode == CC_SPACE))     { $i0++; }
+  while (($i1 > 0)  && ($$self[$i1 - 1]->getCatcode == CC_SPACE)) { $i1--; }
+  my $ntopbraces = 0;
+  # If begins & ends w/ { ... }
+  if (($i0 < $i1) && ($i0 < $n)
+    && ($$self[$i0]->getCatcode == CC_BEGIN) && ($$self[$i1 - 1]->getCatcode == CC_END)) {
+    for (my $i = $i0 ; $i < $i1 ; $i++) {
+      if ($$self[$i]->getCatcode == CC_BEGIN) {    # If top-level brace
+        $ntopbraces++;
+        my $level = 0;
+        while ($i < $i1) {                         # Read balanced
+          my $cc = $$self[$i++]->getCatcode;
+          $level++ if $cc == CC_BEGIN;
+          $level-- if $cc == CC_END;
+          last unless $level; } } } }
+  # Strip outer braces if a single set encloses entire value and not just {}
+  if ($ntopbraces == 1) {
+    $i0++; $i1--; }
+  return (($i0 < $i1) && (($i0 > 0) || ($i1 < $n)) ? Tokens(@$self[$i0 .. $i1 - 1]) : $self); }
+
 #======================================================================
 
 1;

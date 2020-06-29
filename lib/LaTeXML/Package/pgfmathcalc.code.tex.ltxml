@@ -1,0 +1,36 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  pgfmathcalc.code.tex                                               | #
+# | Implementation for LaTeXML                                          | #
+# |---------------------------------------------------------------------| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Load pgf's TeX code for math, first
+InputDefinitions('pgfmathcalc.code', type => 'tex', noltxml => 1)
+  || Warn(":missing:pgfmathcalc.code.tex Couldn't find pgfmath.code.tex");
+
+# \pgfmathsetmacro
+# \edef#1 as the result of evaluating #2.
+DefPrimitive('\pgfmathsetmacro{}{}', sub {
+    my ($stomach, $cs, $expression) = @_;
+    $stomach->begingroup;
+    my $parse_result = Tokens(Explode(pgfmathparse($stomach->getGullet, $expression)));
+    $stomach->endgroup;
+    # We can simply endgroup immediately,
+    # Perl can jump around the trick of \pgfmath@smuggleone{#1}
+    DefMacroI($cs, undef, $parse_result, scope => 'local');
+    return; });
+
+1;
+

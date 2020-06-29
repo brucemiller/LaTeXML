@@ -65,6 +65,7 @@ DefMacro('\institute{}',
     . '\let\email\@in@inst@email\@new@institute#1\@end@institute\egroup');
 DefMacro('\institute@and', '\@end@institute\stepcounter{inst}\@new@institute');
 DefMacro('\@new@institute XUntil:\@end@institute', '\if.#1.\else\@add@institute{#1}\fi');
+Let('\@end@institute', '\relax');
 
 #should play similar game as with institute, relocate?
 DefMacro('\emailname', 'E-mail');

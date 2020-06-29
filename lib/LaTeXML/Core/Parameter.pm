@@ -89,7 +89,8 @@ sub read {
   $self->revertCatcodes;
   if ((!defined $value) && !$$self{optional}) {
     Error('expected', $self, $gullet,
-      "Missing argument " . Stringify($self) . " for " . Stringify($fordefn));
+      "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
+      "Ended at " . ToString($gullet->getLocator));
     $value = T_OTHER('missing'); }
   return $value; }
 
@@ -152,7 +153,7 @@ sub revert {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

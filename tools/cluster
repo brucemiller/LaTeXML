@@ -130,7 +130,7 @@ while (@toscan) {
   my $cluster = Cluster->new(@same);
   $clusters{ $cluster->name } = $cluster; }
 
-print "Comparison yeilded " . scalar(keys %clusters) . " identical clusters.\n";
+print "Comparison yielded " . scalar(keys %clusters) . " identical clusters.\n";
 
 #======================================================================
 # Further group clusters that are simple subsets of others and combine.

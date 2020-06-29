@@ -63,6 +63,8 @@ DefEnvironment('{bibdiv}',
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "#body"
     . "</ltx:bibliography>",
+  beforeDigest => sub {
+    beforeDigestBibliography(); },
   afterDigestBegin => sub { beginBibliography_clean($_[1]); Let('\par', '\relax'); });
 
 DefEnvironment('{biblist}', "<ltx:biblist>#body</ltx:biblist>");

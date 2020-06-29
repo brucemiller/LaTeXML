@@ -149,19 +149,25 @@ sub RDFTriple {
 # You are responsible for how the attributes relate to those
 # in both parent and children nodes, such as establishing
 # of default subject or objects, chaining and so forth.
-DefConstructor('\lxRDFa [Semiverbatim] RequiredKeyVals:RDFa', sub {
+DefConstructor('\lxRDFa OptionalSemiverbatim RequiredKeyVals:RDFa', sub {
     my ($document, $xpath, $kv) = @_;
-    my ($save, $node);
+    my ($save, @nodes);
+    $xpath = ToString($xpath);
     if ($xpath) {
-      $save = $document->getNode;
-      $node = $document->findnode(ToString($xpath), $save); }
+      $save  = $document->getNode;
+      @nodes = $document->findnodes(ToString($xpath), $save);
+      Warn('expected', 'node', $document,
+        "No node matched xpath $xpath for RDFa properties") unless scalar(@nodes); }
     else {
-      $save = $document->floatToAttribute('property');    # pic arbitrary rdf attribute
-      $node = $document->getElement; }
+      $save  = $document->floatToAttribute('property');    # pic arbitrary rdf attribute
+      @nodes = ($document->getElement);
+      Warn('expected', 'node', $document,
+        "No node matched accepts RDFa properties") unless scalar(@nodes); }
     my $attr = RDFAttributes($kv);
-    foreach my $k (sort keys %$attr) {
-      # use direct method ($doc method doesn't skips about="", which we need!)
-      $node->setAttribute($k => ToString($$attr{$k})); }
+    foreach my $node (@nodes) {
+      foreach my $k (sort keys %$attr) {
+        # use direct method ($doc method doesn't skips about="", which we need!)
+        $node->setAttribute($k => ToString($$attr{$k})); } }
     $document->setNode($save); });
 
 #======================================================================

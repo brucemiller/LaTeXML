@@ -1,6 +1,7 @@
 \documentclass{article}
 \usepackage{latexml}
 \lxDeclare[role=COMPOSEOP,meaning=compose]{$*$}
+\lxDeclare[role=COMPOSEOP]{$\circ$}%
 \lxDeclare[role=FUNCTION]{$f$}
 \lxDeclare[role=FUNCTION]{$g$}
 \lxDeclare[role=FUNCTION]{$h$}
@@ -21,4 +22,8 @@
 % \[ y y^2 * f x \]
 % \[ f * y^2 x \]
 % \[ f * y^2 (x) \]
+
+\section{Different operators}
+\[ f \circ \sin x \]
+\[ f \circ \log x \]
 \end{document}

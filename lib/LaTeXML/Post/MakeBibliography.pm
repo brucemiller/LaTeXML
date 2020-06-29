@@ -108,8 +108,10 @@ sub getBibliographies {
       || $bibnode->parentNode->getAttribute('files')    # !!!!!
     ) {
       @bibnames = map { $_ . '.bib' } split(',', $files); } }
-  my @paths = $doc->getSearchPaths;
-  my @bibs  = ();
+  my @paths   = $doc->getSearchPaths;
+  my @bibs    = ();
+  my @rawbibs = ();
+ # Collect the "ready" bibliographies, while accumulating all raw sources for a single conversion pass
   foreach my $bib (@bibnames) {
     my $ref = ref $bib;
     my $bibdoc;
@@ -121,11 +123,10 @@ sub getBibliographies {
       Error('unexpected', $ref, $self,
         "Don't know how to convert '$bib' (a '$ref') into a Bibliography document"); }
     elsif (pathname_is_literaldata($bib)) {
-      # Assume (for now) that the data is BibTeX text;
-      # [another possibility is serialized xml!]
-      $bibdoc = $self->convertBibliography($doc, $bib); }
-    elsif ($bib =~ /\.xml/) {
-      $bibdoc = $doc->newFromFile($bib); }    # doc will do the searching...
+      push(@rawbibs, $bib);
+      next; }
+    elsif ($bib =~ /\.xml$/) {
+      $bibdoc = $doc->newFromFile($bib); }                 # doc will do the searching...
     elsif ($bib =~ /\.bib(?:\.xml)?$/) {
       my $name = $1;
       # NOTE: We should also use kpsewhich to get the effects of $BIBINPUTS?
@@ -134,7 +135,8 @@ sub getBibliographies {
         $bibdoc = $doc->newFromFile($xmlpath); }    # doc will do the searching...
       elsif (my $bibpath = pathname_find($bib, paths => [@paths], types => ['bib'])
         || pathname_kpsewhich($bib)) {
-        $bibdoc = $self->convertBibliography($doc, $bibpath); }
+        push(@rawbibs, $bibpath);
+        next; }
       else {
         Error('missing_file', $bib, $self,
           "Couldn't find Bibliography '$bib'",
@@ -144,6 +146,26 @@ sub getBibliographies {
     else {
       Info('expected', $bib, $self,
         "Couldn't find usable Bibliography for '$bib'"); } }
+  # Lastly, If we found any raw .bib files/literaldata, convert and include them.
+  if (@rawbibs) {
+    my $raw;
+    if (scalar(@rawbibs) == 1) {    # Single, just convert as-is
+      $raw = $rawbibs[0]; }
+    else {
+      $raw = 'literal:';
+      for my $rawbib (@rawbibs) {    # Multiple, arrange into a single conversion payload
+        if ($rawbib =~ s/literal\://) {
+          $raw .= $rawbib; }
+        else {
+          # TODO: Is this a memory concern for large bib files?
+          if (open(my $bibfh, '<', $rawbib)) {
+            $raw .= join("", <$bibfh>);
+            close $bibfh; }
+          else {
+            Info("open", $rawbib, $self, "Couldn't open file $rawbib"); } }
+        $raw .= "%\n"; } }
+    my $bibdoc = $self->convertBibliography($doc, $raw);
+    push(@bibs, $bibdoc) if $bibdoc; }
   NoteProgress(" [using bibliographies "
       . join(',', map { (length($_) > 100 ? substr($_, 100) . '...' : $_) } @bibnames)
       . "]");
@@ -178,7 +200,8 @@ sub convertBibliography {
       push(@preload, "[$options]$pkg.sty"); }
     else {
       push(@preload, "$pkg.sty"); } }
-  NoteProgress(" [Converting bibliography $bib ...");
+  my $bibname = pathname_is_literaldata($bib) ? 'Anonymous Bib String' : $bib;
+  NoteProgress(" [Converting bibliography $bibname ...");
   my $bib_config = LaTeXML::Common::Config->new(
     cache_key      => 'BibTeX',
     type           => "BibTeX",
@@ -186,6 +209,7 @@ sub convertBibliography {
     format         => 'dom',
     whatsin        => 'document',
     whatsout       => 'document',
+    includestyles  => 1,
     bibliographies => [],
     (@preload ? (preload => [@preload]) : ()));
   my $bib_converter = LaTeXML->get_converter($bib_config);

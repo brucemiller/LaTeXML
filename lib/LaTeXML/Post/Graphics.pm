@@ -113,7 +113,7 @@ sub findGraphicsPaths {
 
 sub getGraphicsSourceTypes {
   my ($self) = @_;
-  return @{ $$self{graphics_types} }; }
+  return @{ $$self{graphics_types} }, map {uc($_); } @{ $$self{graphics_types} }; }
 
 # Return the pathname to an appropriate image.
 sub findGraphicFile {

@@ -13,6 +13,7 @@ package LaTeXML::Core::Box;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Dimension qw(Dimension);
 use LaTeXML::Common::Object;
 use base qw(LaTeXML::Common::Object);
 use base qw(Exporter);
@@ -233,15 +234,12 @@ sub computeSize {
   $$props{cdepth}  = $d unless defined $$props{depth};
   return; }
 
-#**********************************************************************
-# What about Kern, Glue, Penalty ...
-
 #======================================================================
 1;
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

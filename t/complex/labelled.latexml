@@ -1,0 +1,40 @@
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#======================================================================
+# LaTeXML Hack Feature
+#======================================================================
+# Demonstration of Label Mapping Hook
+# Reference numbers and ID's (each, optionally) are determined by
+# mapping (or computing) based on the apparent \label,
+# rather than the traditional LaTeX method of computing from counters.
+#
+# To make this work, you have to place the \label{} commands
+# DIRECTLY after the \section{title}, \begin{equation} or whatever
+# so that LaTeXML can find them.
+# usually, \label comes after the refnum/id has already been computed.
+#
+# Here we're assuming that the labels are structured to correspond
+# to the page structure that you would get with postprocessing
+#   --splitat=section --splitnaming=id
+# That is, use a label for sections which will be the pages,
+# and within each section, use ids of the form <pagename>.<localname>
+# This gives you "meaningful" fragment id's in URL's across the document.
+
+AssignValue(LABEL_MAPPING_HOOK => sub {
+    my ($label, $ctr, $norefnum) = @_;
+    $label =~ /[\.^](\w+)$/;
+    my $last = $1 || $label;
+    # Return the desired refnum and ID
+    # If your return undef for either of them, the standard result will be used.
+    return ($last, $label); },
+  'global');
+
+# A tiny aesthetic
+DefMacro('\format@title@section{}',       '{\thesection: #1}');
+DefMacro('\format@title@subsection{}',    '{\thesubsection: #1}');
+DefMacro('\format@toctitle@section{}',    '{\thesection: #1}');
+DefMacro('\format@toctitle@subsection{}', '{\thesubsection: #1}');
+#======================================================================
+1;

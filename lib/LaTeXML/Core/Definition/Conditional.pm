@@ -41,7 +41,7 @@ sub invoke {
   my ($self, $gullet) = @_;
   # A real conditional must have condition_type set
   if (my $cond_type = $$self{conditional_type}) {
-    if ($cond_type eq 'if') {
+    if (($cond_type eq 'if') || ($cond_type eq 'unless')) {
       return $self->invoke_conditional($gullet); }
     elsif ($cond_type eq 'else') {
       return $self->invoke_else($gullet); }
@@ -126,8 +126,7 @@ sub skipConditionalBody {
       elsif (!--$level) {           # If no more nesting, we're done.
         shift(@$stack);             # Done with this frame
         return $t; } }              # AND Return the finishing token.
-    elsif ($level > 1) {            # Ignore \else,\or nested in the body.
-    }
+    elsif ($level > 1) { }          # Ignore \else,\or nested in the body.
     elsif (($cond_type eq 'or') && (++$n_ors == $nskips)) {
       return $t; }
     elsif (($cond_type eq 'else') && $nskips
@@ -188,7 +187,7 @@ sub invoke_fi {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

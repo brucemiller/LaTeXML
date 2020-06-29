@@ -135,7 +135,7 @@ sub getNextLine {
 
 sub hasMoreInput {
   my ($self) = @_;
-  return ($$self{colno} < $$self{nchars}) || scalar(@{ $$self{buffer} }); }
+  return !$self->isEOL || scalar(@{ $$self{buffer} }); }
 
 # Get the next character & it's catcode from the input,
 # handling TeX's "^^" encoding.
@@ -158,7 +158,7 @@ sub getNextChar {
       else {    # OR ^^ followed by a SINGLE Control char type code???
         my $c  = $$self{chars}[$$self{colno} + 1];
         my $cn = ord($c);
-        $ch = chr($cn + ($cn > 64 ? -64 : 64));
+        $ch = chr($cn + ($cn >= 64 ? -64 : 64));
         splice(@{ $$self{chars} }, $$self{colno} - 1, 3, $ch);
         $$self{nchars} -= 2; }
       $cc = $STATE->lookupCatcode($ch) // CC_OTHER; }
@@ -201,16 +201,9 @@ sub handle_escape {    # Read control sequence
   if ((defined $cc) && ($cc == CC_LETTER)) {    # For letter, read more letters for csname.
     while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_LETTER)) {
       $cs .= $ch; }
+    # We WILL skip spaces, but not till next token is read (in case catcode changes!!!!)
+    $$self{skipping_spaces} = 1;
     $$self{colno}--; }
-  if ((defined $cc) && ($cc == CC_SPACE)) {     # We'll skip whitespace here.
-    while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_SPACE)) { }
-    $$self{colno}-- if ($$self{colno} < $$self{nchars}); }
-  if ((defined $cc) && ($cc == CC_EOL)) {       # If we've got an EOL
-        # if in \read mode, leave the EOL to be turned into a T_SPACE
-    if (($STATE->lookupValue('PRESERVE_NEWLINES') || 0) > 1) { }
-    else {    # else skip it.
-      getNextChar($self);
-      $$self{colno}-- if ($$self{colno} < $$self{nchars}); } }
   return T_CS($cs); }
 
 sub handle_EOL {
@@ -289,7 +282,14 @@ sub readToken {
         $$self{nchars} = 0;
         return; }
       # Remove trailing space, but NOT a control space!  End with CR (not \n) since this gets tokenized!
-      $line =~ s/((\\ )*)\s*$/$1\r/s;
+      $line =~ s/((\\ )*)\s*$/$1/s;
+      # Then append the appropriaate \endlinechar, or "\r"
+      if (my $eol = $STATE->lookupDefinition(T_CS('\endlinechar'))) {
+        # \endlinechar=-1 means what?
+        $eol = $eol->valueOf()->valueOf;
+        $line .= chr($eol) if $eol > 0; }
+      else {
+        $line .= "\r"; }
       $$self{chars}  = splitChars($line);
       $$self{nchars} = scalar(@{ $$self{chars} });
       while (($$self{colno} < $$self{nchars})
@@ -301,6 +301,18 @@ sub readToken {
       if ((($$self{lineno} % 25) == 0) && $STATE->lookupValue('INCLUDE_COMMENTS')) {
         return T_COMMENT("**** " . ($$self{shortsource} || 'String') . " Line $$self{lineno} ****"); }
     }
+    if ($$self{skipping_spaces}) {    # Skip spaces now
+      my ($ch, $cc);
+      while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_SPACE)) { }
+      $$self{colno}-- if ($$self{colno} < $$self{nchars});
+      if ((defined $cc) && ($cc == CC_EOL)) {    # If we've got an EOL
+            # if in \read mode, leave the EOL to be turned into a T_SPACE
+        if (($STATE->lookupValue('PRESERVE_NEWLINES') || 0) > 1) { }
+        else {    # else skip it.
+          getNextChar($self);
+          $$self{colno}-- if ($$self{colno} < $$self{nchars}); } }
+      $$self{skipping_spaces} = 0; }
+
     # ==== Extract next token from line.
     my ($ch, $cc) = getNextChar($self);
     my $token = (defined $cc ? $DISPATCH[$cc] : undef);
@@ -315,10 +327,9 @@ sub readToken {
 # Returns an empty Tokens list, if there is no input
 
 sub readTokens {
-  my ($self, $until) = @_;
+  my ($self) = @_;
   my @tokens = ();
   while (defined(my $token = $self->readToken())) {
-    last if $until and $token->getString eq $until->getString;
     push(@tokens, $token); }
   while (@tokens && $tokens[-1]->getCatcode == CC_SPACE) {    # Remove trailing space
     pop(@tokens); }
@@ -354,14 +365,29 @@ sub readRawLine {
 
 sub isEOL {
   my ($self) = @_;
-  return $$self{colno} >= $$self{nchars};
+  my $savecolno = $$self{colno};
+  # We have to peek past any to-be-skipped spaces!!!!
+  if ($$self{skipping_spaces}) {
+    my ($ch, $cc);
+    while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_SPACE)) { }
+    $$self{colno}-- if ($$self{colno} < $$self{nchars});
+    if ((defined $cc) && ($cc == CC_EOL)) {    # If we've got an EOL
+          # if in \read mode, leave the EOL to be turned into a T_SPACE
+      if (($STATE->lookupValue('PRESERVE_NEWLINES') || 0) > 1) { }
+      else {    # else skip it.
+        getNextChar($self);
+        $$self{colno}-- if ($$self{colno} < $$self{nchars}); } }
+  }
+  my $eol = $$self{colno} >= $$self{nchars};
+  $$self{colno} = $savecolno;
+  return $eol;
 }
 #======================================================================
 1;
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -405,10 +431,9 @@ Returns whether there is more data to read.
 
 Return a description of current position in the source, for reporting errors.
 
-=item C<< $tokens = $mouth->readTokens($until); >>
+=item C<< $tokens = $mouth->readTokens; >>
 
-Reads tokens until one matches C<$until> (comparing the character, but not catcode).
-This is useful for the C<\verb> command.
+Reads all remaining tokens in the mouth, removing any trailing space catcode tokens
 
 =item C<< $lines = $mouth->readRawLine; >>
 

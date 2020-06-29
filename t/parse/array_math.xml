@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" tex="\begin{cases}{cc}d&amp;c\\&#10;b&amp;a\end{cases}" text="cases@(c * c * d, c, b, a)" xml:id="S0.Ex1.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="cases"/>
+              <XMRef idref="S0.Ex1.m1.1"/>
+              <XMRef idref="S0.Ex1.m1.2"/>
+              <XMRef idref="S0.Ex1.m1.3"/>
+              <XMRef idref="S0.Ex1.m1.4"/>
+            </XMApp>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="true">{</XMTok>
+              <XMArray>
+                <XMRow>
+                  <XMCell align="left">
+                    <XMApp xml:id="S0.Ex1.m1.1">
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                    </XMApp>
+                  </XMCell>
+                  <XMCell align="left">
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex1.m1.2">c</XMTok>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell align="left">
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex1.m1.3">b</XMTok>
+                  </XMCell>
+                  <XMCell align="left">
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex1.m1.4">a</XMTok>
+                  </XMCell>
+                </XMRow>
+              </XMArray>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p2">
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" tex="\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}" text="Array[[a, b], [c, d]]" xml:id="S0.Ex2.m1">
+        <XMath>
+          <XMArray role="ARRAY" vattach="middle">
+            <XMRow>
+              <XMCell align="center">
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              </XMCell>
+              <XMCell align="center">
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              </XMCell>
+            </XMRow>
+            <XMRow>
+              <XMCell align="center">
+                <XMTok font="italic" role="UNKNOWN">c</XMTok>
+              </XMCell>
+              <XMCell align="center">
+                <XMTok font="italic" role="UNKNOWN">d</XMTok>
+              </XMCell>
+            </XMRow>
+          </XMArray>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p3">
+    <equation xml:id="S0.Ex3">
+      <Math mode="display" tex="\{\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}" text="cases@(Array[[a, b], [c, d]])" xml:id="S0.Ex3.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="cases"/>
+              <XMRef idref="S0.Ex3.m1.1"/>
+            </XMApp>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="false">{</XMTok>
+              <XMArray role="ARRAY" vattach="middle" xml:id="S0.Ex3.m1.1">
+                <XMRow>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                  </XMCell>
+                </XMRow>
+              </XMArray>
+              <XMTok meaning="absent"/>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p4">
+    <equation xml:id="S0.Ex4">
+      <Math mode="display" tex="\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}\}" text="cases@(Array[[a, b], [c, d]])" xml:id="S0.Ex4.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="cases"/>
+              <XMRef idref="S0.Ex4.m1.1"/>
+            </XMApp>
+            <XMWrap>
+              <XMTok meaning="absent"/>
+              <XMArray role="ARRAY" vattach="middle" xml:id="S0.Ex4.m1.1">
+                <XMRow>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                  </XMCell>
+                </XMRow>
+              </XMArray>
+              <XMTok role="CLOSE" stretchy="false">}</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p5">
+    <equation xml:id="S0.Ex5">
+      <Math mode="display" tex="\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}\begin{cases}{cc}d&amp;c\\&#10;b&amp;a\end{cases}" text="Array[[a, b], [c, d]] * cases@(c * c * d, c, b, a)" xml:id="S0.Ex5.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMArray role="ARRAY" vattach="middle">
+              <XMRow>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                </XMCell>
+              </XMRow>
+            </XMArray>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="cases"/>
+                <XMRef idref="S0.Ex5.m1.1"/>
+                <XMRef idref="S0.Ex5.m1.2"/>
+                <XMRef idref="S0.Ex5.m1.3"/>
+                <XMRef idref="S0.Ex5.m1.4"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="true">{</XMTok>
+                <XMArray>
+                  <XMRow>
+                    <XMCell align="left">
+                      <XMApp xml:id="S0.Ex5.m1.1">
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                      </XMApp>
+                    </XMCell>
+                    <XMCell align="left">
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex5.m1.2">c</XMTok>
+                    </XMCell>
+                  </XMRow>
+                  <XMRow>
+                    <XMCell align="left">
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex5.m1.3">b</XMTok>
+                    </XMCell>
+                    <XMCell align="left">
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex5.m1.4">a</XMTok>
+                    </XMCell>
+                  </XMRow>
+                </XMArray>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p6">
+    <equation xml:id="S0.Ex6">
+      <Math mode="display" tex="a+b&lt;\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}" text="a + b &lt; Array[[a, b], [c, d]]" xml:id="S0.Ex6.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            </XMApp>
+            <XMArray role="ARRAY" vattach="middle">
+              <XMRow>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                </XMCell>
+              </XMRow>
+            </XMArray>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p7">
+    <equation xml:id="S0.Ex7">
+      <Math mode="display" tex="\arcsin\pi+\neg a=\{\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}" text="inverse-sine@(pi) + not * a = cases@(Array[[a, b], [c, d]])" xml:id="S0.Ex7.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMApp>
+                <XMTok meaning="inverse-sine" role="OPFUNCTION">arcsin</XMTok>
+                <XMTok font="italic" name="pi" role="UNKNOWN">π</XMTok>
+              </XMApp>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok meaning="not" name="neg" role="FUNCTION">¬</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              </XMApp>
+            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="cases"/>
+                <XMRef idref="S0.Ex7.m1.1"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">{</XMTok>
+                <XMArray role="ARRAY" vattach="middle" xml:id="S0.Ex7.m1.1">
+                  <XMRow>
+                    <XMCell align="center">
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    </XMCell>
+                    <XMCell align="center">
+                      <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    </XMCell>
+                  </XMRow>
+                  <XMRow>
+                    <XMCell align="center">
+                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                    </XMCell>
+                    <XMCell align="center">
+                      <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                    </XMCell>
+                  </XMRow>
+                </XMArray>
+                <XMTok meaning="absent"/>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+</document>

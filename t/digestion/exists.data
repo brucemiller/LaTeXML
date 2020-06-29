@@ -1,10 +1,18 @@
 This file exists!
 line 2
+
 another line       spaces
 %oddchars # & \foo
 \foo
 
 $x'$
+macro followed by 5 spaces \foo     
+fake spaces^^20^^20^^20
+macro followed by fake spaces \foo^^20^^20^^20
+fake cr^^M apparently looses remainder of line
 line { in brackets
 still } continues
+line with par \par inside.
+\par par at beginning
+line ended by par \par
 last line.

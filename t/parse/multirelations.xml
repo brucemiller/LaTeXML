@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml package="amsmath"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" tex="a=b=c" text="a = b = c" xml:id="S0.Ex1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="multirelation"/>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
+            <XMTok font="italic" role="UNKNOWN">c</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p2">
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" tex="y&lt;2&lt;" text="y &lt; 2 &lt; absent" xml:id="S0.Ex2.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="multirelation"/>
+            <XMTok font="italic" role="UNKNOWN">y</XMTok>
+            <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+            <XMTok meaning="2" role="NUMBER">2</XMTok>
+            <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+            <XMTok meaning="absent"/>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p3">
+    <equation xml:id="S0.Ex3">
+      <Math mode="display" tex="1\leq l&lt;j\leq n" text="1 &lt;= l &lt; j &lt;= n" xml:id="S0.Ex3.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="multirelation"/>
+            <XMTok meaning="1" role="NUMBER">1</XMTok>
+            <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
+            <XMTok font="italic" role="UNKNOWN">l</XMTok>
+            <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+            <XMTok font="italic" role="UNKNOWN">j</XMTok>
+            <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
+            <XMTok font="italic" role="UNKNOWN">n</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p4">
+    <equation xml:id="S0.Ex4">
+      <Math mode="display" tex="1&lt;x&lt;10,2&lt;y&lt;20,3&lt;z&lt;30" text="formulae@(1 &lt; x &lt; 10, 2 &lt; y &lt; 20, 3 &lt; z &lt; 30)" xml:id="S0.Ex4.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="formulae"/>
+              <XMRef idref="S0.Ex4.m1.5"/>
+              <XMRef idref="S0.Ex4.m1.6"/>
+              <XMRef idref="S0.Ex4.m1.7"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="S0.Ex4.m1.5">
+                <XMTok meaning="multirelation"/>
+                <XMTok meaning="1" role="NUMBER">1</XMTok>
+                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                <XMTok meaning="10" role="NUMBER" xml:id="S0.Ex4.m1.3">10</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="S0.Ex4.m1.6">
+                <XMTok meaning="multirelation"/>
+                <XMTok meaning="2" role="NUMBER" xml:id="S0.Ex4.m1.4">2</XMTok>
+                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                <XMTok meaning="20" role="NUMBER" xml:id="S0.Ex4.m1.1">20</XMTok>
+              </XMApp>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="S0.Ex4.m1.7">
+                <XMTok meaning="multirelation"/>
+                <XMTok meaning="3" role="NUMBER" xml:id="S0.Ex4.m1.2">3</XMTok>
+                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                <XMTok font="italic" role="UNKNOWN">z</XMTok>
+                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                <XMTok meaning="30" role="NUMBER">30</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p5">
+    <equation xml:id="S0.Ex5">
+      <Math mode="display" tex="a,b~{}\alpha+\frac{1}{\alpha}" text="list@(a, b * alpha + 1 / alpha)" xml:id="S0.Ex5.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="S0.Ex5.m1.1"/>
+              <XMRef idref="S0.Ex5.m1.2"/>
+            </XMApp>
+            <XMWrap>
+              <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex5.m1.1">a</XMTok>
+              <XMTok role="PUNCT">,</XMTok>
+              <XMApp xml:id="S0.Ex5.m1.2">
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" rpadding="3.3pt">b</XMTok>
+                  <XMTok font="italic" name="alpha" role="UNKNOWN">α</XMTok>
+                </XMApp>
+                <XMApp>
+                  <XMTok mathstyle="display" meaning="divide" role="FRACOP"/>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                  <XMTok font="italic" name="alpha" role="UNKNOWN">α</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+</document>

@@ -1,6 +1,6 @@
 \documentclass{article}
 \begin{document}
-\section{Testing Verbatim}
+\section{Verbatim Environment}
 Normal {\bf Bold} stuff.
 
 Verbatim 1:
@@ -18,18 +18,47 @@ still inside verbatim
 Verbatim 3:
 \begin{verbatim} keep this
 AbNormal {\bf NonBold} stuff.
-keep this too    \end{verbatim} yyy
+keep this too    \end{verbatim} outside verbatim
 More Normal {\bf Bold} stuff.
 
 % NOT allowed
 %\section{Inline \verb|\verb| verbatim.}
+\section{Inline verb command}
 
 Some inline \verb|\verb| verbatim.
 
-% But this IS allowed!
+More \verb|a } b # c ^ d _ e $ f| stuff;
+
+And more \verb*|a } b # c ^ d _ e $ f| stuff
+
+Even in math $\verb|a_b|^2$.
+
+% This IS allowed!
 \hbox{More inline \verb|\verb| verbatim.}
 
 % and this:
 x\hbox to 2in  {\bf x\verb|\verb|y.}y
+
+% Also, make sure \verb is using the Gullet API to obtain any \expandafter tokens
+% AND it is using the correct delimiter activation sequence
+\def\nested{Nested | is allowed}
+\expandafter\verb\expandafter|\nested .|
+
+Some use \verb|\verb| like \verb|\rm|,
+bit it's actually using space as delimiter.
+Note that spaces after cs are skipped on the \emph{next} read!
+
+\verb |a}b#c^d_e$f| stuff
+
+{\verb tricky} }
+
+% Another tricky case
+\makeatletter
+\def\verbatimlisting#1{%
+  \begingroup\@verbatim
+  \input#1
+  \endgroup}
+\makeatother
+Input snippet \verbatimlisting{snippet} after.
 
 \end{document}

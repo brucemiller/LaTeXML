@@ -99,7 +99,9 @@ sub new {
   $$self{value}{UNITS} = [{
       pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
       cm => 72.27 * 65536 / 2.54,     mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
-      cc => 12 * 1238 * 65536 / 1157, sp => 1 }];
+      cc => 12 * 1238 * 65536 / 1157, sp => 1,
+      px => 72.27 * 65536 / 72,    # Assume px=bp ?
+  }];
 
   $options{catcodes} = 'standard' unless defined $options{catcodes};
   if ($options{catcodes} =~ /^(standard|style)/) {
@@ -113,7 +115,7 @@ sub new {
       $$self{catcode}{ chr($c) } = [CC_LETTER];
       $$self{catcode}{ chr($c + ord('a') - ord('A')) } = [CC_LETTER]; }
   }
-  $$self{value}{SPECIALS} = [['^', '_', '@', '~', '&', '$', '#', "'"]];
+  $$self{value}{SPECIALS} = [['^', '_', '~', '&', '$', '#', "'"]];
   if ($options{catcodes} eq 'style') {
     $$self{catcode}{'@'} = [CC_LETTER]; }
   $$self{mathcode}            = {};
@@ -339,6 +341,7 @@ sub lookupMeaning {
   my $e;
   if (my $cs = $token
     && $active_or_cs[$$token[1]]
+    && !$$token[2]    # return token itself, if \noexpand
     && $$token[0]) {
     my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
   else { return $token; } }
@@ -448,8 +451,9 @@ sub lookupDigestableDefinition {
     && ($defn = $$entry[0])) {
     # If a cs has been let to an executable token, lookup ITS defn.
     if (((ref $defn) eq 'LaTeXML::Core::Token')
-      && ($lookupname = $executable_primitive_name[$$defn[1]])
-      && ($entry      = $$self{meaning}{$lookupname})) {
+      # If we're digesting an unexpanded, act like \relax
+      && ($lookupname = ($$defn[2] ? '\relax' : $executable_primitive_name[$$defn[1]]))
+      && ($entry = $$self{meaning}{$lookupname})) {
       $defn = $$entry[0]; }
     return $defn; }
   return $token; }
@@ -480,6 +484,32 @@ sub installDefinition {
 # or just variants on testing defined-ness
 # May be will introduce more clarity (possibly efficiency)
 # to collect those more uniformly and implement here, or in Package
+
+#======================================================================
+
+# Generate a stub definition for an undefined control-sequence,
+# along with appropriate error messge.
+sub generateErrorStub {
+  my ($self, $caller, $token, $params) = @_;
+  my $cs = $token->getCSName;
+  $self->noteStatus(undefined => $cs);
+  # To minimize chatter, go ahead and define it...
+  if ($cs =~ /^\\if(.*)$/) {    # Apparently an \ifsomething ???
+    my $name = $1;
+    Error('undefined', $token, $caller, "The token " . $token->stringify . " is not defined.",
+      "Defining it now as with \\newif");
+    $self->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        T_CS('\\' . $name . 'true'), undef, '\let' . $cs . '\iftrue'));
+    $self->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+        T_CS('\\' . $name . 'false'), undef, '\let' . $cs . '\iffalse'));
+    LaTeXML::Package::Let($token, T_CS('\iffalse')); }
+  else {
+    Error('undefined', $token, $caller, "The token " . $token->stringify . " is not defined.",
+      "Defining it now as <ltx:ERROR/>");
+    $self->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, $params,
+        sub { $_[0]->makeError('undefined', $cs); }),
+      'global'); }
+  return $token; }
 
 #======================================================================
 

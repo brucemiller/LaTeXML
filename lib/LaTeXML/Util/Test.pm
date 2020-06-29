@@ -26,6 +26,9 @@ our @EXPORT = (qw(&latexml_ok &latexml_tests),
 sub latexml_tests {
   my ($directory, %options) = @_;
   my $DIR;
+  if ($options{texlive_min} && (texlive_version() < $options{texlive_min})) {
+    plan skip_all => "Requirement minimal texlive $options{texlive_min} not met.";
+    return done_testing(); }
   if (!opendir($DIR, $directory)) {
     # Can't read directory? Fail (assumed single) test.
     return do_fail($directory, "Couldn't read directory $directory:$!"); }
@@ -52,7 +55,7 @@ sub latexml_tests {
         SKIP: {
             skip("No file $test.xml", 1) unless (-f "$test.xml");
             next unless check_requirements($test, 1, $$requires{'*'}, $$requires{$name});
-            latexml_ok("$test.tex", "$test.xml", $test, $options{compare}); } }
+            latexml_ok("$test.tex", "$test.xml", $test, $options{compare}, $options{core_options}); } }
         # Carry out any post-processing tests
         foreach my $name (@post_tests) {
           my $test = "$directory/$name";
@@ -78,14 +81,29 @@ sub latexml_tests {
 sub check_requirements {
   my ($test, $ntests, @reqmts) = @_;
   foreach my $reqmts (@reqmts) {
-    next unless defined $reqmts;
-    foreach my $reqmt (!$reqmts ? () : (ref $reqmts ? @$reqmts : $reqmts)) {
+    next unless $reqmts;
+    my @required_packages = ();
+    my $texlive_min       = 0;
+    if (!(ref $reqmts)) {
+      @required_packages = ($reqmts); }
+    elsif (ref $reqmts eq 'ARRAY') {
+      @required_packages = @$reqmts; }
+    elsif (ref $reqmts eq 'HASH') {
+      @required_packages = (ref $$reqmts{packages} eq 'ARRAY' ? @{ $$reqmts{packages} } : $$reqmts{packages});
+      $texlive_min = $$reqmts{texlive_min} || 0; }
+    foreach my $reqmt (@required_packages) {
       if (pathname_kpsewhich($reqmt) || pathname_find($reqmt)) { }
       else {
         my $message = "Missing requirement $reqmt for $test";
         diag("Skip: $message");
         skip($message, $ntests);
-        return 0; } } }
+        return 0; } }
+    # Check if specific texlive versions are required for this test
+    if ($texlive_min && (texlive_version() < $texlive_min)) {
+      my $message = "Minimal texlive $texlive_min requirement not met for $test";
+      diag("Skip: $message");
+      skip($message, $ntests);
+      return 0; } }
   return 1; }
 
 sub do_fail {
@@ -99,8 +117,8 @@ sub do_fail {
 
 # NOTE: This assumes you will have successfully loaded LaTeXML.
 sub latexml_ok {
-  my ($texpath, $xmlpath, $name, $compare_kind) = @_;
-  if (my $texstrings = process_texfile($texpath, $name, $compare_kind)) {
+  my ($texpath, $xmlpath, $name, $compare_kind, $core_options) = @_;
+  if (my $texstrings = process_texfile(texpath => $texpath, name => $name, core_options => $core_options, compare_kind => $compare_kind)) {
     if (my $xmlstrings = process_xmlfile($xmlpath, $name, $compare_kind)) {
       return is_strings($texstrings, $xmlstrings, $name); } } }
 
@@ -113,9 +131,14 @@ sub latexmlpost_ok {
 # These return the list-of-strings form of whatever was requested, if successful,
 # otherwise undef; and they will have reported the failure
 sub process_texfile {
-  my ($texpath, $name, $compare_kind) = @_;
-  my $latexml = eval { LaTeXML::Core->new(preload => [], searchpaths => [], includecomments => 0,
-      verbosity => -2); };
+  my (%options)    = @_;
+  my $texpath      = $options{texpath};
+  my $name         = $options{name};
+  my $compare_kind = $options{compare_kind};
+  my %core_options = $options{core_options} ? %{ $options{core_options} } : (
+    preload => [], searchpaths => [], includecomments => 0, verbosity => -2
+  );
+  my $latexml = eval { LaTeXML::Core->new(%core_options) };
   if (!$latexml) {
     do_fail($name, "Couldn't instanciate LaTeXML: " . @!); return; }
   else {
@@ -227,7 +250,7 @@ sub daemon_ok {
     if ($exit_code != 0) {
       $exit_code = $exit_code >> 8;
     }
-    is($exit_code, 0, "latexmlc invocation for test $localname: $invocation yeilded $!");
+    is($exit_code, 0, "latexmlc invocation for test $localname: $invocation yielded $!");
     pathname_chdir($current_dir);
     # Compare the just generated $base.test.xml to the previous $base.xml
     if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {
@@ -288,6 +311,25 @@ sub get_filecontent {
     push @lines, '';
   }
   return \@lines; }
+
+our $texlive_version;
+
+sub texlive_version {
+  if (defined $texlive_version) {
+    return $texlive_version; }
+  my $extra_flag = '';
+  if ($ENV{"APPVEYOR"}) {
+    # disabled under windows for now
+    return 0; }
+  if (my $tex = which("tex")) {
+    my $version_string = `$tex --version`;
+    if ($version_string =~ /TeX Live (\d+)/) {
+      $texlive_version = int($1); }
+    else {
+      $texlive_version = 0; } }
+  else {
+    $texlive_version = 0; }
+  return $texlive_version; }
 
 # TODO: Reconsider what else we need to test, ideas below:
 
