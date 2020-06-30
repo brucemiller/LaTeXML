@@ -16,9 +16,8 @@ use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Pathname;
 
-# I think we are finally able to process babel.sty directly
-# and more closely track development of babel.
-# We'll make minimal redefinitions in babel.def.ltxml
+# english.sty advises to do \usepackage[english]{babel} isntead
+# so let's take that advice to heart in this binding:
 PassOptions('babel', 'sty', 'english');
 RequirePackage('babel');
 
