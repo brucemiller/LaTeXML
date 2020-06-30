@@ -109,26 +109,18 @@ DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
 DefMacro('\pacs{}',           '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
 DefMacro('\doi{}',            '\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
 
-sub bootstrapAmsThm {
-  my ($token) = @_;
-  RequirePackage('amsthm');
-  return Tokenize("\\newtheorem{theorem}{Theorem}[section]
-\\newtheorem{conjecture}[theorem]{Conjecture}
-\\newtheorem{proposition}[theorem]{Proposition}
-\\newtheorem{lemma}[theorem]{Lemma}
-\\newtheorem{corollary}[theorem]{Corollary}
-\\newtheorem{example}[theorem]{Example}
-\\newtheorem{definition}[theorem]{Definition}
-$token")->unlist; }
-
-DefMacroI(T_CS('\begin{proof}'), undef, sub {
-    return bootstrapAmsThm('\\begin{proof}'); });
-DefMacroI(T_CS('\begin{theorem}'), undef, sub {
-    return bootstrapAmsThm('\\begin{theorem}'); });
-DefMacroI(T_CS('\begin{lemma}'), undef, sub {
-    return bootstrapAmsThm('\\begin{lemma}'); });
-DefMacroI(T_CS('\begin{proposition}'), undef, sub {
-    return bootstrapAmsThm('\\begin{proposition}'); });
+for my $env (qw(conjecture proposition lemma corollary example definition)) {
+  my $beginenv = "\\begin{$env}";
+  DefMacroI(T_CS($beginenv), undef, sub {
+      RequirePackage('amsthm');
+      return Tokenize("\\newtheorem{theorem}{Theorem}[section]
+  \\newtheorem{conjecture}[theorem]{Conjecture}
+  \\newtheorem{proposition}[theorem]{Proposition}
+  \\newtheorem{lemma}[theorem]{Lemma}
+  \\newtheorem{corollary}[theorem]{Corollary}
+  \\newtheorem{example}[theorem]{Example}
+  \\newtheorem{definition}[theorem]{Definition}
+  $beginenv")->unlist; }); }
 
 # \abstracts
 Let('\abst', '\abstract');
