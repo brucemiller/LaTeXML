@@ -57,6 +57,7 @@ DefMacro('\bibitem',
 DefEnvironment('{frontmatter}', '#body');
 DefEnvironment('{mainmatter}',  '#body');
 DefEnvironment('{backmatter}',  '#body');
+
 DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\shortauthor{}', '');
 DefRegister('\titlerunning',  Tokens());
@@ -97,9 +98,37 @@ DefMacro('\keyword{}',  '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\kword{}',    '\@add@frontmatter{ltx:keywords}{#1}');
 # {keyword}, {keywords}
+DefEnvironment('{keywords}', '',
+  afterDigest => sub {
+    my $frontmatter = LookupValue('frontmatter');
+    push(@{ $$frontmatter{'ltx:classification'} },
+      ['ltx:classification', { scheme => 'keywords' }, @LaTeXML::LIST]);
+    return; });
 
 DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
 DefMacro('\pacs{}',           '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
+DefMacro('\doi{}',            '\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
+
+sub bootstrapAmsThm {
+  my ($token) = @_;
+  RequirePackage('amsthm');
+  return Tokenize("\\newtheorem{theorem}{Theorem}[section]
+\\newtheorem{conjecture}[theorem]{Conjecture}
+\\newtheorem{proposition}[theorem]{Proposition}
+\\newtheorem{lemma}[theorem]{Lemma}
+\\newtheorem{corollary}[theorem]{Corollary}
+\\newtheorem{example}[theorem]{Example}
+\\newtheorem{definition}[theorem]{Definition}
+$token")->unlist; }
+
+DefMacroI(T_CS('\begin{proof}'), undef, sub {
+    return bootstrapAmsThm('\\begin{proof}'); });
+DefMacroI(T_CS('\begin{theorem}'), undef, sub {
+    return bootstrapAmsThm('\\begin{theorem}'); });
+DefMacroI(T_CS('\begin{lemma}'), undef, sub {
+    return bootstrapAmsThm('\\begin{lemma}'); });
+DefMacroI(T_CS('\begin{proposition}'), undef, sub {
+    return bootstrapAmsThm('\\begin{proposition}'); });
 
 # \abstracts
 Let('\abst', '\abstract');
