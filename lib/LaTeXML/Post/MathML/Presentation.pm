@@ -14,6 +14,8 @@ package LaTeXML::Post::MathML::Presentation;
 use strict;
 use warnings;
 use base qw(LaTeXML::Post::MathML);
+use LaTeXML::Post::MathML qw(getQName);
+use LaTeXML::Common::XML qw(isElementNode);
 
 sub preprocess {
   my ($self, $doc, @maths) = @_;
@@ -68,11 +70,13 @@ sub convertNode {
 sub rawIDSuffix {
   return '.pmml'; }
 
+use Data::Dumper;
+
 sub associateNodeHook {
   my ($self, $node, $sourcenode) = @_;
   # TODO: Shouldn't we have a single getQName shared for the entire latexml codebase
   #  in LaTeXML::Common or LaTeXML::Util ?
-  my $name = LaTeXML::Post::MathML::getQName($node);
+  my $name = getQName($node);
   if ($name =~ /^m:(?:mi|mo|mn)$/) {
     if (my $href = $sourcenode->getAttribute('href')) {
       if (ref $node eq 'ARRAY') {
@@ -84,6 +88,50 @@ sub associateNodeHook {
         $$node[1]{title} = $title; }
       else {
         $node->setAttribute('title', $title); } } }
+  # Experiment: set accessibility attributes on the resulting presentation tree,
+  # if the XMath source has a claim to the semantics via a "meaning" attribute.
+  my $meaning;
+  my $source_name = getQName($sourcenode);
+  if ($source_name eq 'ltx:XMTok') {
+    $meaning = $sourcenode->getAttribute('meaning'); }
+  elsif ($source_name eq 'ltx:XMApp') {
+    my @src_children;
+    if (ref $sourcenode eq 'ARRAY') {
+      @src_children = @$sourcenode[2 .. -1]; }
+    else {
+      @src_children = $sourcenode->childNodes; }
+    if ($name ne 'm:mrow') {
+      # Implied operator case with special presentation element, rather than an mrow
+      # (e.g. in \sqrt{} we don't have an operator token, but a wrapping msqrt)
+      if (my $op_literal = $src_children[0]->getAttribute('meaning')) {
+# attempt annotating only if we understand the operator, otherwise leave the default behavior to handle this element
+        $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. scalar(@src_children) - 1)) . ')'; } }
+    else {
+      # Equivalent layout case:
+      $meaning = '@op(' . join(",", map { '@' . $_ } (1 .. scalar(@src_children) - 1)) . ')'; } }
+  if ($meaning) {
+    if (ref $node eq 'ARRAY') {
+      $$node[1]{semantic} = $meaning; }
+    else {
+      $node->setAttribute('semantic', $meaning); } }
+  # Also check if argument of higher parent notation, mark if so.
+  my $sourceparent = $sourcenode->parentNode;
+  if (getQName($sourceparent) eq 'ltx:XMApp') {
+    my $op_node = $sourceparent->firstChild;
+    if ($op_node->getAttribute('meaning')) {    # only annotated applications we understand
+      my $arg;
+      my $index        = 0;
+      my $prev_sibling = $sourcenode;
+      while ($prev_sibling = $prev_sibling->previousSibling) {
+        $index++ if isElementNode($prev_sibling); }
+      if ($index == 0) {
+        $arg = 'op'; }
+      else {
+        $arg = $index; }
+      if (ref $node eq 'ARRAY') {
+        $$node[1]{arg} = $arg; }
+      else {
+        $node->setAttribute('arg', $arg); } } }
   return; }
 
 #================================================================================

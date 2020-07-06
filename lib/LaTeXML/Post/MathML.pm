@@ -26,6 +26,7 @@ our @EXPORT = (
     &pmml_infix &pmml_script &pmml_summation),
   qw( &cmml &cmml_share &cmml_shared &cmml_ci
     &cmml_or_compose &cmml_synth_not &cmml_synth_complement),
+  qw(&getQName)
 );
 require LaTeXML::Post::MathML::Presentation;
 require LaTeXML::Post::MathML::Content;
