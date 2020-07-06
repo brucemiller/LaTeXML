@@ -70,9 +70,16 @@ sub convertNode {
 sub rawIDSuffix {
   return '.pmml'; }
 
+use Data::Dumper;
+
 sub associateNodeHook {
   # technical note: $sourcenode is a LibXML element, while $node is that OR the arrayref triple form
   my ($self, $node, $sourcenode) = @_;
+  # if (ref $node eq 'ARRAY') {
+  #   print STDERR "node: ", Dumper($node), "\nxmath: ", $sourcenode->toString(1), "\n"; }
+  # else {
+  #   print STDERR "node: ", $node->toString(1), "\nxmath: ", $sourcenode->toString(1), "\n"; }
+
   # TODO: Shouldn't we have a single getQName shared for the entire latexml codebase
   #  in LaTeXML::Common or LaTeXML::Util ?
   my $name = getQName($node);
@@ -96,31 +103,31 @@ sub associateNodeHook {
   my $src_parent_name      = getQName($src_parent);
   my $src_grandparent      = $src_parent->parentNode;
   my $src_grandparent_name = getQName($src_grandparent);
-  # avoid any handlers in the constituent subtrees of a dual, handle those top-down
-  if ($src_grandparent_name ne 'ltx:XMDual') {
-    # tokens are simplest - if we know of a meaning, use that for accessibility
-    if ($source_name eq 'ltx:XMTok') {
-      $meaning = $sourcenode->getAttribute('meaning'); }
-    elsif ($source_name eq 'ltx:XMApp') {
-      my @src_children = $sourcenode->childNodes;
-      my $arg_count    = scalar(@src_children) - 1;
-      # Implied operator case with special presentation element, rather than an mrow
-      # (e.g. in \sqrt{} we don't have an operator token, but a wrapping msqrt)
-      if ($name ne 'm:mrow') {
-        # attempt annotating only if we understand the operator,
-        # otherwise leave the default behavior to handle this element
-        if (my $op_literal = $src_children[0]->getAttribute('meaning')) {
-          $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } }
-      else {
-        # Directly translate the content tree in the attribute, all constitutents can be cross-annotated:
-        $meaning = '@op(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } }
-    elsif ($source_name eq 'ltx:XMDual') {
-      # duals always have a literal head applied to a list of referenced arguments
-      my $content_child = $sourcenode->firstChild;
-      my $op_literal    = $content_child->firstChild->getAttribute('meaning');
-      my @arg_nodes     = $content_child->childNodes;
-      my $arg_count     = scalar(@arg_nodes) - 1;
-      $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } }
+  # tokens are simplest - if we know of a meaning, use that for accessibility
+  if ($source_name eq 'ltx:XMTok') {
+    # avoid token handlers in the constituent subtrees of a dual, handle those top-down
+    if ($src_grandparent_name ne 'ltx:XMDual') {
+      $meaning = $sourcenode->getAttribute('meaning'); } }
+  elsif ($source_name eq 'ltx:XMApp') {
+    my @src_children = $sourcenode->childNodes;
+    my $arg_count    = scalar(@src_children) - 1;
+    # Implied operator case with special presentation element, rather than an mrow
+    # (e.g. in \sqrt{} we don't have an operator token, but a wrapping msqrt)
+    if ($name ne 'm:mrow') {
+      # attempt annotating only if we understand the operator,
+      # otherwise leave the default behavior to handle this element
+      if (my $op_literal = $src_children[0]->getAttribute('meaning')) {
+        $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } }
+    else {
+      # Directly translate the content tree in the attribute, all constitutents can be cross-annotated:
+      $meaning = '@op(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } }
+  elsif ($source_name eq 'ltx:XMDual') {
+    # duals always have a literal head applied to a list of referenced arguments
+    my $content_child = $sourcenode->firstChild;
+    my $op_literal    = $content_child->firstChild->getAttribute('meaning');
+    my @arg_nodes     = $content_child->childNodes;
+    my $arg_count     = scalar(@arg_nodes) - 1;
+    $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; }
   # if we found some meaning, attach it as an accessible attribute
   if ($meaning) {
     if (ref $node eq 'ARRAY') {
