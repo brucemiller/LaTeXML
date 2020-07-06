@@ -105,9 +105,15 @@ sub associateNodeHook {
   my $src_grandparent_name = getQName($src_grandparent);
   # tokens are simplest - if we know of a meaning, use that for accessibility
   if ($source_name eq 'ltx:XMTok') {
-    # avoid token handlers in the constituent subtrees of a dual, handle those top-down
-    if ($src_grandparent_name ne 'ltx:XMDual') {
-      $meaning = $sourcenode->getAttribute('meaning'); } }
+    if (my $token_meaning = $sourcenode->getAttribute('meaning')) {
+      if ($src_grandparent_name eq 'ltx:XMDual') {
+        # often an XMDual contains the participating tokens of a transfix notation
+        # and those tokens carry the same meaning as the top-level dual operation.
+        # in those cases, don't tag the tokens, only tag the top-level dual node
+        my $dual_meaning = $src_grandparent->firstChild->firstChild->getAttribute('meaning');
+        $meaning = $token_meaning if ($token_meaning ne $dual_meaning); }
+      else {    # just copy the meaning in the usual case
+        $meaning = $token_meaning; } } }
   elsif ($source_name eq 'ltx:XMApp') {
     my @src_children = $sourcenode->childNodes;
     my $arg_count    = scalar(@src_children) - 1;
