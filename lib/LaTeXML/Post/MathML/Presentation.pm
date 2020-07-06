@@ -70,9 +70,8 @@ sub convertNode {
 sub rawIDSuffix {
   return '.pmml'; }
 
-use Data::Dumper;
-
 sub associateNodeHook {
+  # technical note: $sourcenode is a LibXML element, while $node is that OR the arrayref triple form
   my ($self, $node, $sourcenode) = @_;
   # TODO: Shouldn't we have a single getQName shared for the entire latexml codebase
   #  in LaTeXML::Common or LaTeXML::Util ?
@@ -90,36 +89,51 @@ sub associateNodeHook {
         $node->setAttribute('title', $title); } } }
   # Experiment: set accessibility attributes on the resulting presentation tree,
   # if the XMath source has a claim to the semantics via a "meaning" attribute.
+  # Part I: Top-down. Recover the meaning of a subtree as an accessible annotation
   my $meaning;
-  my $source_name = getQName($sourcenode);
-  if ($source_name eq 'ltx:XMTok') {
-    $meaning = $sourcenode->getAttribute('meaning'); }
-  elsif ($source_name eq 'ltx:XMApp') {
-    my @src_children;
-    if (ref $sourcenode eq 'ARRAY') {
-      @src_children = @$sourcenode[2 .. -1]; }
-    else {
-      @src_children = $sourcenode->childNodes; }
-    if ($name ne 'm:mrow') {
+  my $source_name          = getQName($sourcenode);
+  my $src_parent           = $sourcenode->parentNode;
+  my $src_parent_name      = getQName($src_parent);
+  my $src_grandparent      = $src_parent->parentNode;
+  my $src_grandparent_name = getQName($src_grandparent);
+  # avoid any handlers in the constituent subtrees of a dual, handle those top-down
+  if ($src_grandparent_name ne 'ltx:XMDual') {
+    # tokens are simplest - if we know of a meaning, use that for accessibility
+    if ($source_name eq 'ltx:XMTok') {
+      $meaning = $sourcenode->getAttribute('meaning'); }
+    elsif ($source_name eq 'ltx:XMApp') {
+      my @src_children = $sourcenode->childNodes;
+      my $arg_count    = scalar(@src_children) - 1;
       # Implied operator case with special presentation element, rather than an mrow
       # (e.g. in \sqrt{} we don't have an operator token, but a wrapping msqrt)
-      if (my $op_literal = $src_children[0]->getAttribute('meaning')) {
-# attempt annotating only if we understand the operator, otherwise leave the default behavior to handle this element
-        $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. scalar(@src_children) - 1)) . ')'; } }
-    else {
-      # Equivalent layout case:
-      $meaning = '@op(' . join(",", map { '@' . $_ } (1 .. scalar(@src_children) - 1)) . ')'; } }
+      if ($name ne 'm:mrow') {
+        # attempt annotating only if we understand the operator,
+        # otherwise leave the default behavior to handle this element
+        if (my $op_literal = $src_children[0]->getAttribute('meaning')) {
+          $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } }
+      else {
+        # Directly translate the content tree in the attribute, all constitutents can be cross-annotated:
+        $meaning = '@op(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } }
+    elsif ($source_name eq 'ltx:XMDual') {
+      # duals always have a literal head applied to a list of referenced arguments
+      my $content_child = $sourcenode->firstChild;
+      my $op_literal    = $content_child->firstChild->getAttribute('meaning');
+      my @arg_nodes     = $content_child->childNodes;
+      my $arg_count     = scalar(@arg_nodes) - 1;
+      $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } }
+  # if we found some meaning, attach it as an accessible attribute
   if ($meaning) {
     if (ref $node eq 'ARRAY') {
       $$node[1]{semantic} = $meaning; }
     else {
       $node->setAttribute('semantic', $meaning); } }
-  # Also check if argument of higher parent notation, mark if so.
-  my $sourceparent = $sourcenode->parentNode;
-  if (getQName($sourceparent) eq 'ltx:XMApp') {
-    my $op_node = $sourceparent->firstChild;
+
+  # Part II: Bottom-up. Also check if argument of higher parent notation, mark if so.
+  my $arg;
+  if ($src_parent_name eq 'ltx:XMApp' && $src_grandparent_name ne 'ltx:XMDual') {
+    # Handle applications, but not inside duals - those should be handled when entering the dual
+    my $op_node = $src_parent->firstChild;
     if ($op_node->getAttribute('meaning')) {    # only annotated applications we understand
-      my $arg;
       my $index        = 0;
       my $prev_sibling = $sourcenode;
       while ($prev_sibling = $prev_sibling->previousSibling) {
@@ -127,11 +141,25 @@ sub associateNodeHook {
       if ($index == 0) {
         $arg = 'op'; }
       else {
-        $arg = $index; }
-      if (ref $node eq 'ARRAY') {
-        $$node[1]{arg} = $arg; }
-      else {
-        $node->setAttribute('arg', $arg); } } }
+        $arg = $index; } } }
+  elsif ($src_parent_name eq 'ltx:XMWrap' && $src_grandparent_name eq 'ltx:XMDual' &&
+    # in which case, associated with the XMRef for this argument, if any.
+    (my $fragid = $sourcenode->getAttribute('fragid'))) {
+    my $content_child = $src_grandparent->firstChild;
+    my @arg_nodes     = grep { isElementNode($_) } $content_child->childNodes;
+    my $index         = 0;
+    while (my $arg_node = shift @arg_nodes) {
+      if ((getQName($arg_node) eq 'ltx:XMRef') && $arg_node->getAttribute('idref') eq $fragid) {
+        # Found!
+        $arg = $index; last; }
+      $index += 1;
+  } }
+# if we found an indication that this node is an argument of a higher-up content tree, attach the annotation
+  if ($arg) {
+    if (ref $node eq 'ARRAY') {
+      $$node[1]{arg} = $arg; }
+    else {
+      $node->setAttribute('arg', $arg); } }
   return; }
 
 #================================================================================
