@@ -137,9 +137,9 @@ sub associateNodeHook {
   # if we found some meaning, attach it as an accessible attribute
   if ($meaning) {
     if (ref $node eq 'ARRAY') {
-      $$node[1]{semantic} = $meaning; }
+      $$node[1]{'data-semantic'} = $meaning; }
     else {
-      $node->setAttribute('semantic', $meaning); } }
+      $node->setAttribute('data-semantic', $meaning); } }
 
   # Part II: Bottom-up. Also check if argument of higher parent notation, mark if so.
   my $arg;
@@ -170,9 +170,9 @@ sub associateNodeHook {
 # if we found an indication that this node is an argument of a higher-up content tree, attach the annotation
   if ($arg) {
     if (ref $node eq 'ARRAY') {
-      $$node[1]{arg} = $arg; }
+      $$node[1]{'data-arg'} = $arg; }
     else {
-      $node->setAttribute('arg', $arg); } }
+      $node->setAttribute('data-arg', $arg); } }
   return; }
 
 #================================================================================
