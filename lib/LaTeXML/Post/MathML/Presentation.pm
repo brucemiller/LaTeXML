@@ -125,16 +125,19 @@ sub addAccessibilityAnnotations {
   elsif ($source_name eq 'ltx:XMApp') {
     my @src_children = $sourcenode->childNodes;
     my $arg_count    = scalar(@src_children) - 1;
-    # Implied operator case with special presentation element, rather than an mrow
-    # (e.g. in \sqrt{} we don't have an operator token, but a wrapping msqrt)
-    if ($name ne 'm:mrow') {
-      # attempt annotating only if we understand the operator,
-      # otherwise leave the default behavior to handle this element
-      if (my $op_literal = $src_children[0]->getAttribute('meaning')) {
-        $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } }
-    else {
-      # Directly translate the content tree in the attribute, all constitutents can be cross-annotated:
-      $meaning = '@op(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } }
+    # Ok, so we need to disentangle the case where the operator XMTok is preserved in pmml,
+    # and the case where it isn't. E.g. in \sqrt{x} we get a msqrt wrapper, but no dedicated token
+    # so we need to mark the literal "square-root" in msqrt
+    my $op_literal = $src_children[0]->getAttribute('meaning');
+    if ($op_literal && $name ne 'm:mrow') { # assume we have phased out the operator node. Are there counter-examples?
+      $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; }
+    elsif ($name eq 'm:mrow') {
+      # usually an mrow keeps the operator token in its children as an <mo> (or such)
+      # when doesn't it? one example is "multirelation", is there a general pattern?
+      if ($op_literal eq 'multirelation') {
+        $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; }
+      else {    # default case, assume we'll find the @op inside
+        $meaning = '@op(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } } }
   elsif ($source_name eq 'ltx:XMDual' and $current_node_name eq 'ltx:XMWrap') {
 # Duals are tricky, we'd like to annotate them on the top-level only, while still annotating the inner structure as needed
 # top-level is (mostly? always?) available when we are examining an XMWrap, use that as a guide for now.
@@ -159,7 +162,29 @@ sub addAccessibilityAnnotations {
   # Part II: Bottom-up. Also check if argument of higher parent notation, mark if so.
   my $arg;
   my $index = 0;
-  if ($src_parent_name eq 'ltx:XMApp' && $src_grandparent_name ne 'ltx:XMDual' && $current_parent_name ne 'ltx:XMWrap') {
+  if ((my $fragid = $sourcenode->getAttribute('fragid')) &&
+    # duals are again special, since they source many nodes
+    # we only want to handle the top XMWrap presentation
+    ($source_name ne 'ltx:XMDual' or $current_node_name eq 'ltx:XMWrap')) {
+
+    # fragid-carrying nodes always  have an arg annotation
+    # step 1. find their dual
+    my $dual_node = $sourcenode->parentNode;
+    while (getQName($dual_node) ne 'ltx:XMDual') {
+      $dual_node = $dual_node->parentNode; }
+    my $content_child = $dual_node->firstChild;
+    my @content_nodes = getQName($content_child) eq 'ltx:XMApp' ? $content_child->childNodes : ();
+    my $index         = 0;
+    while (my $content_arg = shift @content_nodes) {
+      if (getQName($content_arg) eq 'ltx:XMRef' and $content_arg->getAttribute('idref') eq $fragid) {
+        if ($index) {
+          $arg = $index; }
+        else {
+          $arg = 'op'; }
+        last; }
+      else {
+        $index++; } } }
+  elsif ($src_parent_name eq 'ltx:XMApp' && $src_grandparent_name ne 'ltx:XMDual' && $current_parent_name ne 'ltx:XMWrap') {
     # Handle applications, but not inside duals - those should be handled when entering the dual
     my $op_node = $src_parent->firstChild;
     if ($op_node->getAttribute('meaning')) {    # only annotated applications we understand
@@ -170,22 +195,6 @@ sub addAccessibilityAnnotations {
         $arg = 'op'; }
       else {
         $arg = $index; } } }
-  elsif ($src_parent_name eq 'ltx:XMWrap' && $src_grandparent_name eq 'ltx:XMDual' &&
-    (my $fragid = $sourcenode->getAttribute('fragid'))) {
-    # This $node is a constituent of a higher-up Dual's presentation.
-    # If it has been XRef-ed, it should have an arg= annotation
-    my $content_child = $src_grandparent->firstChild;
-    my @content_nodes = grep { isElementNode($_) } $content_child->childNodes;
-    my $index         = 0;
-    while (my $content_arg = shift @content_nodes) {
-      if (getQName($content_arg) eq 'ltx:XMRef' && $content_arg->getAttribute('idref') eq $fragid) {
-        if ($index) {
-          $arg = $index; }
-        else {
-          $arg = 'op'; }
-        last; }
-      else {
-        $index++; } } }
   if ($arg) {
     if (ref $node eq 'ARRAY') {
       $$node[1]{'data-arg'} = $arg; }
