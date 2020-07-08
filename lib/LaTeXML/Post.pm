@@ -546,7 +546,7 @@ sub associateNode {
       else {
         $node->setAttribute('xml:id' => $id); }
       push(@{ $$self{convertedIDs}{$sourceid} }, $id) unless $noxref; } }
-  $self->associateNodeHook($node, $sourcenode, $noxref);
+  $self->associateNodeHook($node, $sourcenode, $noxref, $currentnode);
   if ($isarray) {                                                # Array represented
     map { $self->associateNode($_, $currentnode, $noxref) } @$node[2 .. $#$node]; }
   else {                                                         # LibXML node
