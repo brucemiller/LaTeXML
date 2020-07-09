@@ -14,6 +14,7 @@ package LaTeXML::Post::MathML::Presentation;
 use strict;
 use warnings;
 use base qw(LaTeXML::Post::MathML);
+use LaTeXML::Common::XML;
 
 sub preprocess {
   my ($self, $doc, @maths) = @_;
@@ -84,7 +85,61 @@ sub associateNodeHook {
         $$node[1]{title} = $title; }
       else {
         $node->setAttribute('title', $title); } } }
+
+  $self->addAccessibilityAnnotations($node,$sourcenode);
   return; }
+
+#================================================================================
+# First copy some useful utilities that should have been exported somehow
+sub p_setAttribute {
+  my($node,$key,$value)=@_;
+  if (ref $node eq 'ARRAY') {
+    $$node[1]{$key} = $value; }
+  else {
+    $node->setAttribute($key=>$value); }
+  return; }
+
+sub p_getAttribute {
+  my($node,$key)=@_;
+  return (ref $node eq 'ARRAY' ? defined $$node[1]{$key} : $node->getAttribute($key)); }
+
+sub realize {
+  my ($node, $branch) = @_;
+  return (ref $node) ? $LaTeXML::Post::DOCUMENT->realizeXMNode($node, $branch) : $node; }
+
+sub addAccessibilityAnnotations {
+  my($self,$node,$sourcenode)=@_;
+  $$self{arg_ctr} = 0 unless defined $$self{arg_ctr};
+  my $qname = LaTeXML::Post::MathML::getQName($sourcenode);
+  my $meaning;
+  if($meaning = $self->getSemanticAnnotation($sourcenode)){
+    p_setAttribute($node,'data-semantic'=>$meaning); }
+  if(! p_getAttribute($node,'data-arg')){
+    my $arg = ++$$self{arg_ctr};
+    p_setAttribute($node,'data-arg'=>$arg);
+    $sourcenode->setAttribute('_reffedarg' => $arg); }
+  # print STDERR "ANNOTATE "
+  #   ."\n".LaTeXML::Post::MathProcessor::shownode($node)
+  #   ."\n from ".LaTeXML::Post::MathProcessor::shownode($sourcenode)
+  #   ."\n ==> ".($meaning || '<none>')."\n";
+  return; }
+
+sub getSemanticAnnotation {
+  my($self,$sourcenode)=@_;
+  $$self{arg_ctr} = 0 unless defined $$self{arg_ctr};
+  my $qname = LaTeXML::Post::MathML::getQName($sourcenode);
+  my $meaning = $sourcenode->getAttribute('meaning');
+  if($meaning){}
+  elsif($qname eq 'ltx:XMApp'){
+#    my($op,@args)=$sourcenode->childNodes;
+    my($op,@args)=map { realize($_) || $_ } element_nodes($sourcenode);
+    my ($opid,@argids) = map { $_->getAttribute('_reffedarg'); } $op,@args;
+    if(! grep { ! $_ } $opid, @argids){
+      $meaning = "#$opid(".join(',', map { "#$_"; } @argids).")"; } }
+  elsif($qname eq 'ltx:XMDual'){
+    my($c,$p)=element_nodes($sourcenode);
+    $meaning = $self->getSemanticAnnotation($c); }
+  return $meaning; }
 
 #================================================================================
 # Presentation MathML with Line breaking
