@@ -117,7 +117,8 @@ sub addAccessibilityAnnotations {
   if(! p_getAttribute($node,'data-arg')){
     my $arg = ++$$self{arg_ctr};
     p_setAttribute($node,'data-arg'=>$arg);
-    $sourcenode->setAttribute('_reffedarg' => $arg); }
+    $sourcenode->setAttribute('_reffedarg' => $arg)
+      unless  $sourcenode->hasAttribute('_reffedarg'); }
   # print STDERR "ANNOTATE "
   #   ."\n".LaTeXML::Post::MathProcessor::shownode($node)
   #   ."\n from ".LaTeXML::Post::MathProcessor::shownode($sourcenode)
