@@ -170,11 +170,11 @@ sub addAccessibilityAnnotations {
     # fragid-carrying nodes always  have an arg annotation
     # step 1. find their dual
     my $dual_node = $sourcenode->parentNode;
-    while (getQName($dual_node) ne 'ltx:XMDual') {
+    while ($dual_node && ((getQName($dual_node) || '') ne 'ltx:XMDual')) {
       $dual_node = $dual_node->parentNode; }
-    my $content_child = $dual_node->firstChild;
-    my @content_nodes = getQName($content_child) eq 'ltx:XMApp' ? $content_child->childNodes : ();
-    my $index         = 0;
+    my $content_child = $dual_node && $dual_node->firstChild;
+    my @content_nodes = ($content_child && getQName($content_child) eq 'ltx:XMApp') ? $content_child->childNodes : ();
+    my $index = 0;
     while (my $content_arg = shift @content_nodes) {
       if (getQName($content_arg) eq 'ltx:XMRef' and $content_arg->getAttribute('idref') eq $fragid) {
         if ($index) {
