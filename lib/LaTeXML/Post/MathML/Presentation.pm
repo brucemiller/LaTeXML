@@ -99,19 +99,19 @@ sub addAccessibilityAnnotations {
   my $current_node_name   = getQName($currentnode);
   my $current_parent      = $currentnode->parentNode;
   my $current_parent_name = getQName($current_parent);
-  my $fragid              = $currentnode->getAttribute('fragid');
+  my $id                  = $currentnode->getAttribute('xml:id');
   my ($meaning, $arg);
   # FIRST AND FOREMOST, run an exclusion check for pieces that are presentation-only fluff for duals
   # namely:
   my @dual_pres_ancestry = $LaTeXML::Post::DOCUMENT->findnodes("ancestor-or-self::*[preceding-sibling::*][parent::ltx:XMDual]", $currentnode);
   my $dual_pres_node = $dual_pres_ancestry[-1]; #  Weirdly ->findnode() is finding the highest ancestor, rather than the tightest ancestor? This [-1] seems to do it.
   if ($dual_pres_node) {                        # 1) they have a dual ancestor
-                                                # 2) no node on the path to that dual has a "fragid"
+                                                # 2) no node on the path to that dual has a "id"
     my $check_node = $currentnode;
-    while (!$fragid && !$check_node->isSameNode($dual_pres_node)) {
-      $fragid     = $check_node->getAttribute('fragid');
+    while (!$id && !$check_node->isSameNode($dual_pres_node)) {
+      $id         = $check_node->getAttribute('xml:id');
       $check_node = $check_node->parentNode; }
-    if (!$fragid) {
+    if (!$id) {
       # 3) they're not "The Main Presentation" node, which is where we want to annotate duals
       return unless $currentnode->isSameNode($dual_pres_node); } }
   # All other cases, process the node, it has meaningful annotations to add, handle them first
@@ -131,11 +131,11 @@ sub addAccessibilityAnnotations {
       my @arg_nodes = $content_child->childNodes;
       my $arg_count = scalar(@arg_nodes) - 1;
       $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; }
-# Note that if the carrier ltx:XMDual had a fragid, it would get lost as we never visit it through this hook.
+# Note that if the carrier ltx:XMDual had a id, it would get lost as we never visit it through this hook.
 # to correct that, assign it in the top presentation child
-    if (!$fragid) {
+    if (!$id) {
       my $dual = $dual_pres_node->parentNode;
-      if (my $dual_fragid = $dual->getAttribute('fragid')) {
+      if (my $id = $dual->getAttribute('xml:id')) {
 # But we can't reuse the common logic, since it will comapare the dual with itself rather than its parent, ugh
         my $grand_dual = $dual->parentNode;
         while (getQName($grand_dual) ne 'ltx:XMDual') { $grand_dual = $grand_dual->parentNode; }
@@ -144,7 +144,7 @@ sub addAccessibilityAnnotations {
         my $grand_args_count   = scalar(@grand_content_args);
         my $index              = 0;
         while (my $grand_content_arg = shift @grand_content_args) {
-          if ($grand_content_arg->getAttribute('idref') eq $dual_fragid) {
+          if ($grand_content_arg->getAttribute('idref') eq $id) {
             $arg = $index ? $index : ($grand_args_count > 1 ? 'op' : '1'); }
           else { $index++; } }
   } } }
@@ -173,12 +173,12 @@ sub addAccessibilityAnnotations {
     p_setAttribute($node, 'data-semantic', $meaning); }
 
   # Part II: Bottom-up. Also check if argument of higher parent notation, mark if so.
-  # best to reset fragid here
-  $fragid = $currentnode->getAttribute('fragid');
+  # best to reset id here
+  $id = $currentnode->getAttribute('xml:id');
   my $index = 0;
-  # II.1 fragid-carrying nodes always point to their referrees.
-  if ($fragid) {
-    print STDERR "fragid $fragid carried: ", $currentnode->toString(1), "\n";
+  # II.1 id-carrying nodes always point to their referrees.
+  if ($id) {
+    print STDERR "id $id carried: ", $currentnode->toString(1), "\n";
     # We already found the dual
     my $content_child = $dual_pres_node->previousSibling;
     my @content_args = getQName($content_child) eq 'ltx:XMApp' ? ($content_child->childNodes) : ($content_child);
@@ -187,7 +187,7 @@ sub addAccessibilityAnnotations {
     my $index = 0;
     while (my $c_arg = shift @content_args) {
       my $idref = $c_arg->getAttribute('idref') || '';
-      if ($idref eq $fragid) {
+      if ($idref eq $id) {
         $arg = $index || ($arg_count >= 2 ? 'op' : '1');
       } else {
         $index++; } } }
