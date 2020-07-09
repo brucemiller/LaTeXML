@@ -33,7 +33,8 @@ our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbol
     &LeftRec
     &Arg &MaybeFunction
     &SawNotation &IsNotationAllowed
-    &isMatchingClose &Fence));
+    &isMatchingClose &Fence
+    &p_getAttribute &p_setAttribute));
 our %EXPORT_TAGS = (constructors
     => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbols
       &Annotate &InvisibleTimes &InvisibleComma
@@ -1053,6 +1054,14 @@ sub p_getAttribute {
     return $$item[1]{$key}; }
   elsif (ref $item eq 'XML::LibXML::Element') {
     return $item->getAttribute($key); } }
+
+sub p_setAttribute {
+  my ($node, $key, $value) = @_;
+  if (ref $node eq 'ARRAY') {
+    $$node[1]{$key} = $value; }
+  else {
+    $node->setAttribute($key => $value); }
+  return; }
 
 sub p_element_nodes {
   my ($item) = @_;
