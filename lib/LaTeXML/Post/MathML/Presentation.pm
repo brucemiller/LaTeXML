@@ -134,10 +134,10 @@ sub addAccessibilityAnnotations {
 # Note that if the carrier ltx:XMDual had a id, it would get lost as we never visit it through this hook.
 # to correct that, assign it in the top presentation child
     if (!$id) {
-      my $dual = $dual_pres_node->parentNode;
+      my $dual       = $dual_pres_node->parentNode;
+      my $grand_dual = $dual->parentNode;
       if (my $id = $dual->getAttribute('xml:id')) {
 # But we can't reuse the common logic, since it will comapare the dual with itself rather than its parent, ugh
-        my $grand_dual = $dual->parentNode;
         while (getQName($grand_dual) ne 'ltx:XMDual') { $grand_dual = $grand_dual->parentNode; }
         # this HAS to be an apply child right??
         my @grand_content_args = $grand_dual->firstChild->childNodes;
@@ -146,8 +146,15 @@ sub addAccessibilityAnnotations {
         while (my $grand_content_arg = shift @grand_content_args) {
           if ($grand_content_arg->getAttribute('idref') eq $id) {
             $arg = $index ? $index : ($grand_args_count > 1 ? 'op' : '1'); }
-          else { $index++; } }
-  } } }
+          else { $index++; } } }
+      elsif (getQName($grand_dual) eq 'ltx:XMApp') {
+        # simpler case of the dual being an simple argument, as in x\in(0,1)
+        my $index = 0;
+        my $prev  = $dual->previousSibling;
+        while ($prev) {
+          $index++;
+          $prev = $prev->previousSibling; }
+        $arg = $index ? $index : 'op'; } } }
   # tokens are simplest - if we know of a meaning, use that for accessibility
   elsif ($current_node_name eq 'ltx:XMTok') {
     $meaning = $currentnode->getAttribute('meaning'); }
