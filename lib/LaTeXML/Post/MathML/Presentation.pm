@@ -119,18 +119,18 @@ sub addAccessibilityAnnotations {
     my $content_child = $dual_pres_node->previousSibling;
     my $op_literal;
     if (getQName($content_child) eq 'ltx:XMRef') {
-      $op_literal = '@op'; # important: we have a clear match in the presentation, so the operator will have an arg
+      $op_literal = '#op'; # important: we have a clear match in the presentation, so the operator will have an arg
       $content_child = $LaTeXML::Post::DOCUMENT->realizeXMNode($content_child); }
     if (getQName($content_child) eq 'ltx:XMTok') { # not an else, since this may have just been realized from XMRef
                                                    # another exception! (x) will have meaning x, so...
       undef $op_literal;
-      $meaning = '@1'; }
+      $meaning = '#1'; }
     else {
       my $op_node = $content_child->firstChild;
-      $op_literal = $op_literal || ($op_node && $op_node->getAttribute('meaning')) || '@op';
+      $op_literal = $op_literal || ($op_node && $op_node->getAttribute('meaning')) || '#op';
       my @arg_nodes = $content_child->childNodes;
       my $arg_count = scalar(@arg_nodes) - 1;
-      $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; }
+      $meaning = $op_literal . '(' . join(",", map { '#' . $_ } (1 .. $arg_count)) . ')'; }
 # Note that if the carrier ltx:XMDual had a id, it would get lost as we never visit it through this hook.
 # to correct that, assign it in the top presentation child
     if (!$id) {
@@ -166,14 +166,14 @@ sub addAccessibilityAnnotations {
     # so we need to mark the literal "square-root" in msqrt
     my $op_literal = $src_children[0]->getAttribute('meaning');
     if ($op_literal and $name ne 'm:mrow') { # assume we have phased out the operator node. Are there counter-examples?
-      $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; }
+      $meaning = $op_literal . '(' . join(",", map { '#' . $_ } (1 .. $arg_count)) . ')'; }
     elsif ($name eq 'm:mrow') {
       # usually an mrow keeps the operator token in its children as an <mo> (or such)
       # when doesn't it? one example is "multirelation", is there a general pattern?
       if ($op_literal and $op_literal eq 'multirelation') {
-        $meaning = $op_literal . '(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; }
+        $meaning = $op_literal . '(' . join(",", map { '#' . $_ } (1 .. $arg_count)) . ')'; }
       else {    # default case, assume we'll find the @op inside
-        $meaning = '@op(' . join(",", map { '@' . $_ } (1 .. $arg_count)) . ')'; } } }
+        $meaning = '#op(' . join(",", map { '#' . $_ } (1 .. $arg_count)) . ')'; } } }
 
   # if we found some meaning, attach it as an accessible attribute
   if ($meaning) {
