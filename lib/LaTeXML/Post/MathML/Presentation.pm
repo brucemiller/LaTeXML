@@ -126,11 +126,8 @@ sub addAccessibilityAnnotations {
       my @arg_nodes = element_nodes($dual_content_node);
       my $arg_count = scalar(@arg_nodes) - 1;
       $meaning = $op . '(' . join(",", map { '#' . $_ } (1 .. $arg_count)) . ')'; }
-# Note that if the carrier ltx:XMDual had a referenced id, it would get lost as we never visit it through this hook.
-# to correct that, assign it in the top presentation child
-    my $dual = $dual_pres_node->parentNode;
-    if (my $id = $dual->getAttribute('xml:id')) {
-      $self->addAccessibilityAnnotations($node, $dual); } }
+# Note that the carrier ltx:XMDual is never passed in associateNode, but often requires an "arg". Recurse:
+    $self->addAccessibilityAnnotations($node, $dual_pres_node->parentNode); }
   # tokens are simplest - if we know of a meaning, use that for accessibility
   elsif ($current_node_name eq 'ltx:XMTok') {
     # stylistic choice - avoid tagging numbers, even though we could, too obvious
