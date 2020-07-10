@@ -15,7 +15,7 @@ use strict;
 use warnings;
 use base qw(LaTeXML::Post::MathML);
 use LaTeXML::Post::MathML qw(getQName);
-use LaTeXML::MathParser qw(p_getAttribute p_setAttribute);
+use LaTeXML::MathParser qw(p_getAttribute p_setAttribute p_removeAttribute p_element_nodes);
 use LaTeXML::Common::XML;
 
 sub preprocess {
@@ -144,11 +144,15 @@ sub addAccessibilityAnnotations {
     my $op;
     my $name = getQName($node);
     if ($name ne 'm:mrow') {    # not an mrow, prefer the literal semantic
-      $op = $current_op_meaning || $name; }
+      $op = $current_op_meaning; }
     else {    # mrow, prefer #op, except for whitelisted exception cases (which ones??)
       $op = ($current_op_meaning eq 'multirelation') ? $current_op_meaning : '#op'; }
     if ($op) {    # Set the meaning, if we found a satisfying $op:
-      $meaning = "$op(" . join(",", map { '#' . $_ } (1 .. $arg_count)) . ")"; } }
+      $meaning = "$op(" . join(",", map { '#' . $_ } (1 .. $arg_count)) . ")"; }
+    else {        # if there is no op, we should undo argument annotations pointing at the application,
+      for my $arg_node (p_element_nodes($node)) {
+        p_removeAttribute($arg_node, 'data-arg');
+  } } }
 
   # if we found some meaning, attach it as an accessible attribute
   p_setAttribute($node, 'data-semantic', $meaning) if $meaning;

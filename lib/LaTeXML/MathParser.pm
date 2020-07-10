@@ -34,7 +34,7 @@ our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbol
     &Arg &MaybeFunction
     &SawNotation &IsNotationAllowed
     &isMatchingClose &Fence
-    &p_getAttribute &p_setAttribute));
+    &p_getAttribute &p_setAttribute &p_removeAttribute &p_element_nodes));
 our %EXPORT_TAGS = (constructors
     => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbols
       &Annotate &InvisibleTimes &InvisibleComma
@@ -1061,6 +1061,14 @@ sub p_setAttribute {
     $$node[1]{$key} = $value; }
   else {
     $node->setAttribute($key => $value); }
+  return; }
+
+sub p_removeAttribute {
+  my ($node, $key) = @_;
+  if (ref $node eq 'ARRAY') {
+    delete $$node[1]{$key}; }
+  else {
+    $node->removeAttribute($key); }
   return; }
 
 sub p_element_nodes {
