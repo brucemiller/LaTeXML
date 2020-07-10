@@ -97,8 +97,8 @@ sub addAccessibilityAnnotations {
 # e.g. we end up creating a new invisible-apply XMTok, and then associate its node
 # with the $currentnode of its parent <XMApp>f(x)</XMApp>, now as <XMApp>f<XMTok>invisible-apply</XMTok>(x)</XMApp>
 # that second call should just immediately terminate, there is nothing to add in such cases.
-  return if $currentnode->getAttribute('_a11y_done');
-  $currentnode->setAttribute('_a11y_done', '1');
+  return if $currentnode->getAttribute('_a11y');
+  $currentnode->setAttribute('_a11y', 'done');
   # --- TOP PRIORITY: run an exclusion check for pieces that are presentation-only fluff for duals
   my @dual_pres_ancestry = $LaTeXML::Post::DOCUMENT->findnodes("ancestor-or-self::*[preceding-sibling::*][parent::ltx:XMDual]", $currentnode);
   my $dual_pres_node = $dual_pres_ancestry[-1]; #  Weirdly ->findnode() is finding the highest ancestor, rather than the tightest ancestor? This [-1] seems to do it.
@@ -133,7 +133,9 @@ sub addAccessibilityAnnotations {
       $self->addAccessibilityAnnotations($node, $dual); } }
   # tokens are simplest - if we know of a meaning, use that for accessibility
   elsif ($current_node_name eq 'ltx:XMTok') {
-    $meaning = $currentnode->getAttribute('meaning'); }
+    # stylistic choice - avoid tagging numbers, even though we could, too obvious
+    my $role = $currentnode->getAttribute('role') || '';
+    $meaning = ($role ne 'NUMBER') && $currentnode->getAttribute('meaning'); }
   elsif ($current_node_name eq 'ltx:XMApp') {
     my @current_children   = element_nodes($currentnode);
     my $current_op_meaning = $current_children[0]->getAttribute('meaning') || '';
@@ -151,8 +153,8 @@ sub addAccessibilityAnnotations {
       $meaning = "$op(" . join(",", map { '#' . $_ } (1 .. $arg_count)) . ")"; }
     else {        # if there is no op, we should undo argument annotations pointing at the application,
       for my $arg_node (p_element_nodes($node)) {
-        p_removeAttribute($arg_node, 'data-arg');
-  } } }
+        if ((p_getAttribute($arg_node, '_a11y') || '') ne 'ref') {
+          p_removeAttribute($arg_node, 'data-arg'); } } } }
 
   # if we found some meaning, attach it as an accessible attribute
   p_setAttribute($node, 'data-semantic', $meaning) if $meaning;
@@ -168,6 +170,7 @@ sub addAccessibilityAnnotations {
     # if no compound-apply, no need for top-level dual annotation, leave it to the descendants
     while (my $c_arg = shift @content_args) {
       if ($id eq ($c_arg->getAttribute('idref') || '')) {
+        p_setAttribute($node, '_a11y', 'ref');    # mark as used in ref
         $arg = $index || ($arg_count >= 2 ? 'op' : '1');
         last;
       } else {    # note that if we never find the 'idref', arg is never set
