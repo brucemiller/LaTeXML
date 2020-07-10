@@ -1,0 +1,32 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  a11ymark.sty -- demo semantic bindings for accessibility           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+DefConstructor('\diffd', '<ltx:XMTok meaning="differential" name="diffd" role="DIFFOP">d</ltx:XMTok>');
+DefMath('\deriv[]{}{}',
+  '\frac{\@MAYBEAPPLY{\@SUPERSCRIPT{\diffd}{#1}}{#2}}'
+    . '{\@SUPERSCRIPT{\@APPLY{\diffd #3}}{#1}}',
+  meaning => 'derivative', reorder => [2, 3, 1],
+  # afterDigest => sub {
+  #   # NOTE: arg 2 will be wrapped in XMRef!
+  #   $_[1]->setProperty(role => 'DIFFOP') if checkDiffOp($_[1]);
+  #   return; },
+  hide_content_reversion => 1);
+
+DefMath('\integral{}{}', '\int #1 \diffd #2', meaning => 'integral');
+
+########
+1;
