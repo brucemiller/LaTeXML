@@ -85,21 +85,23 @@ sub associateNodeHook {
       p_setAttribute($node, 'href', $href); }
     if (my $title = $sourcenode->getAttribute('title')) {
       p_setAttribute($node, 'title', $title); } }
-  $self->addAccessibilityAnnotations($node, $sourcenode, $currentnode);
+  $self->addAccessibilityAnnotations($node, $currentnode);
   return; }
 
 sub addAccessibilityAnnotations {
   # Experiment: set accessibility attributes on the resulting presentation tree,
   # if the XMath source has a claim to the semantics via a "meaning" attribute.
   # Part I: Top-down. Recover the meaning of a subtree as an accessible annotation
-  my ($self, $node, $sourcenode, $currentnode) = @_;
-  my $name        = getQName($node);
-  my $source_name = getQName($sourcenode);
-  return if $source_name eq 'ltx:XMath';
-  my $current_node_name   = getQName($currentnode);
-  my $current_parent      = $currentnode->parentNode;
-  my $current_parent_name = getQName($current_parent);
-  my $id                  = $currentnode->getAttribute('xml:id');
+  my ($self, $node, $currentnode) = @_;
+  my $current_node_name = getQName($currentnode);
+  return if $current_node_name eq 'ltx:XMath';
+# a number of redundant annotations are caused by reusing the same content node for on-the-fly content,
+# e.g. we end up creating a new invisible-apply XMTok, and then associate its node
+# with the $currentnode of its parent <XMApp>f(x)</XMApp>, now as <XMApp>f<XMTok>invisible-apply</XMTok>(x)</XMApp>
+# that second call should just immediately terminate, there is nothing to add in such cases.
+  return if $currentnode->getAttribute('_a11y_done');
+  $currentnode->setAttribute('_a11y_done', '1');
+  my $id = $currentnode->getAttribute('xml:id');
   my ($meaning, $arg);
   # FIRST AND FOREMOST, run an exclusion check for pieces that are presentation-only fluff for duals
   # namely:
@@ -144,7 +146,7 @@ sub addAccessibilityAnnotations {
         my $grand_args_count   = scalar(@grand_content_args);
         my $index              = 0;
         while (my $grand_content_arg = shift @grand_content_args) {
-          if ($grand_content_arg->getAttribute('idref') eq $id) {
+          if (($grand_content_arg->getAttribute('idref') || '') eq $id) {
             $arg = $index ? $index : ($grand_args_count > 1 ? 'op' : '1'); }
           else { $index++; } } }
       elsif (getQName($grand_dual) eq 'ltx:XMApp') {
@@ -165,6 +167,7 @@ sub addAccessibilityAnnotations {
     # and the case where it isn't. E.g. in \sqrt{x} we get a msqrt wrapper, but no dedicated token
     # so we need to mark the literal "square-root" in msqrt
     my $op_literal = $src_children[0]->getAttribute('meaning');
+    my $name       = getQName($node);
     if ($op_literal and $name ne 'm:mrow') { # assume we have phased out the operator node. Are there counter-examples?
       $meaning = $op_literal . '(' . join(",", map { '#' . $_ } (1 .. $arg_count)) . ')'; }
     elsif ($name eq 'm:mrow') {
@@ -176,16 +179,15 @@ sub addAccessibilityAnnotations {
         $meaning = '#op(' . join(",", map { '#' . $_ } (1 .. $arg_count)) . ')'; } } }
 
   # if we found some meaning, attach it as an accessible attribute
-  if ($meaning) {
-    p_setAttribute($node, 'data-semantic', $meaning); }
+  p_setAttribute($node, 'data-semantic', $meaning) if $meaning;
 
   # Part II: Bottom-up. Also check if argument of higher parent notation, mark if so.
   # best to reset id here
   $id = $currentnode->getAttribute('xml:id');
-  my $index = 0;
+  my $current_parent = $currentnode->parentNode;
+  my $index          = 0;
   # II.1 id-carrying nodes always point to their referrees.
   if ($id) {
-    print STDERR "id $id carried: ", $currentnode->toString(1), "\n";
     # We already found the dual
     my $content_child = $dual_pres_node->previousSibling;
     my @content_args = getQName($content_child) eq 'ltx:XMApp' ? ($content_child->childNodes) : ($content_child);
@@ -199,7 +201,7 @@ sub addAccessibilityAnnotations {
       } else {
         $index++; } } }
   # II.2. applications children are directly pointing to their parents
-  elsif ($current_parent_name eq 'ltx:XMApp') {
+  elsif (getQName($current_parent) eq 'ltx:XMApp') {
     my $op_node = $current_parent->firstChild;
     if ($op_node->getAttribute('meaning')) {    # only annotated applications we understand
       my $prev_sibling = $currentnode;
@@ -209,8 +211,7 @@ sub addAccessibilityAnnotations {
         $arg = 'op'; }
       else {
         $arg = $index; } } }
-  if ($arg) {
-    p_setAttribute($node, 'data-arg', $arg); }
+  p_setAttribute($node, 'data-arg', $arg) if ($arg);
   return; }
 
 #================================================================================
