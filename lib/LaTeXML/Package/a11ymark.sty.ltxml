@@ -18,10 +18,13 @@ use LaTeXML::Package;
 ## 0. Semantic infrastructure
 DefConstructor('\meaning{}{}', '#2', afterConstruct => sub {
     my ($doc, $whatsit) = @_;
-    my $apply = $doc->getNode->lastChild;
-    if ($apply->localName eq 'XMApp') {    # should be an apply, if by design
-      $apply->setAttribute('meaning', ToString($whatsit->getArg(1))); } },
-  bounded => 1, requireMath => 1);
+    my $node  = $doc->getNode;
+    my $apply = $node->lastChild;
+    if ($apply && $apply->localName eq 'XMApp') {    # should be an apply, if by design
+      $apply->setAttribute('meaning', ToString($whatsit->getArg(1))); }
+    else {    # otherwise, add the meaning on the current node, possibly an empty XMArg
+      $node->setAttribute('meaning', ToString($whatsit->getArg(1))); }
+    return; }, bounded => 1, requireMath => 1);
 
 # Embellishment is hard to write, hard to speak, but describes exactly several cases
 # I will abbreviate it "emb", for now, and use it as a prefix
@@ -40,8 +43,13 @@ DefMacro('\emb@base{}{}{}', sub {
     my $id_token  = T_OTHER("id" . int(rand(10000)));
     my $ref_token = Invocation(T_CS('\@XMRef'), $id_token);
     my $arg_token = Invocation(T_CS('\@XMArg'), $id_token, $base);
-    return Invocation(T_CS('\emb@base@build'), $meaning, $ref_token, Tokens($arg_token, $emb))->unlist;
-});
+    return Invocation(T_CS('\emb@base@build'),
+      $meaning, $ref_token, Tokens($arg_token, $emb))->unlist });
+
+DefMacro('\numprimemarks{}', sub {
+    my ($gullet, $numtok) = @_;
+    my $num = int(ToString($numtok));
+    return map { T_CS('\prime') } 1 .. $num; });
 
 DefConstructor('\emb@base@build{}{}{}',
   '<ltx:XMDual>'
@@ -71,6 +79,15 @@ DefMath('\integral{}{}', '\int #1 \diffd #2', meaning => 'integral');
 DefMacro('\power{}{}',   '\meaning{power}{#1^{#2}}');
 DefMacro('\frobulator',  '\emb@atom{frobulator}{x\'}');
 DefMacro('\transpose{}', '\emb@base{transpose}{#1}{^T}');
+DefMacro('\adjoint{}',   '\emb@base{adjoint}{#1}{^\dagger}');
 
-########
+# This looks misleadingly "straightforward". The floating script is hard to convince to bind to #1,
+# so literally writing f'' and trying to annotate failed in pretty much all different configurations I tried.
+# what seems to succeed gracefully is my \meaning-based semantic injections in the constructed tree,
+# *given that* I use the f^{\prime\prime} form.
+#
+DefMacro('\derivenum{}{}', '\meaning{derivative-implicit-variable}{#1^{\meaning{#2}{\numprimemarks{#2}}}}');
+
+################################################################################################################
+
 1;
