@@ -1706,14 +1706,12 @@ DefPrimitiveI('\@vobeyspaces', undef, sub {
 # WARNING: Need to be careful about what catcodes are active here
 DefMacroI('\verb', undef, sub {
     my ($gullet) = @_;
-    my $inmath = LookupValue('IN_MATH');
     StartSemiverbatim('%', '\\', '{', '}');
     MergeFont(family => 'typewriter', series => 'medium', shape => 'upright');
     $STATE->assignCatcode(' ', CC_ACTIVE);    # Do NOT (necessarily) skip spaces after \verb!!!
     Let(T_ACTIVE(' '), T_SPACE);
     my $init    = $gullet->readToken;
     my $starred = 0;
-
     if (T_OTHER('*')->equals($init)) {
       $starred = 1;
       Let(T_ACTIVE(' '), T_OTHER("\x{2423}"));    # Visible space
@@ -1727,20 +1725,32 @@ DefMacroI('\verb', undef, sub {
     AssignCatcode($init_str => CC_ACTIVE);
     my $delim = T_ACTIVE($init_str);
     my $body  = $gullet->readUntil($delim);
-    Invocation(($inmath ? T_CS('\@math@verb') : T_CS('\@text@verb')),
-      ($starred ? T_OTHER('*') : Tokens()),
-      Tokens($init), $body)->unlist; });
+    EndSemiverbatim();
+    Tokens(
+      T_CS('\@hidden@bgroup'),
+      ($starred ? T_CS('\lx@use@visiblespace') : ()),
+      Invocation(T_CS('\@internal@verb'),
+        ($starred ? T_OTHER('*') : Tokens()),
+        Tokens($init), $body),
+      T_CS('\@hidden@egroup'))->unlist; });
 
-DefConstructor('\@text@verb{}{}{}', "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
-  afterDigest => sub { EndSemiverbatim(); },
-  # Since ltx:verbatim is both inline & block, we have to fudge inline mode
+DefPrimitive('\lx@use@visiblespace', sub {
+    my ($stomach, $star) = @_;
+    $STATE->assignCatcode(' ', CC_ACTIVE);    # Do NOT (necessarily) skip spaces after \verb!!!
+    Let(T_ACTIVE(' '), T_OTHER("\x{2423}"));  # Visible space
+});
+
+DefConstructor('\@internal@verb{} Undigested {}',
+  "?#isMath(<ltx:XMTok font='#font'>#text</ltx:XMTok>)"
+    . "(<ltx:verbatim font='#font'>#text</ltx:verbatim>)",
+  properties => sub { (text => ToString($_[3])); },
+  font       => { family => 'typewriter', series => 'medium', shape => 'upright' },
+  #  bounded         => 1,
   beforeConstruct => sub {
-    $_[0]->canContain($_[0]->getElement, '#PCDATA')
-      || $_[0]->openElement('ltx:p'); },
+    my ($doc, $whatsit) = @_;
+    if (!$whatsit->isMath) {
+      $doc->canContain($doc->getElement, '#PCDATA') || $doc->openElement('ltx:p'); } },
   reversion => '\verb#1#2#3#2');
-DefConstructor('\@math@verb{}{}{}', "<ltx:XMTok font='#font'>#3</ltx:XMTok>",
-  afterDigest => sub { EndSemiverbatim(); },
-  reversion   => '\verb#1#2#3#2');
 
 # This is defined by the alltt package.
 # Environment('alltt', ?);
