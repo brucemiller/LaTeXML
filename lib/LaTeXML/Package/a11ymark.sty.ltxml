@@ -28,5 +28,21 @@ DefMath('\deriv[]{}{}',
 
 DefMath('\integral{}{}', '\int #1 \diffd #2', meaning => 'integral');
 
+DefConstructor('\meaning{}{}', '#2', afterConstruct => sub {
+    my ($doc, $whatsit) = @_;
+    my $apply = $doc->getNode->lastChild;
+    if ($apply->localName eq 'XMApp') {    # should be an apply, if by design
+      $apply->setAttribute('meaning', ToString($whatsit->getArg(1))); } },
+  bounded => 1, requireMath => 1);
+
+DefMacro('\power{}{}', '\meaning{power}{#1^{#2}}');
+
+# These still need work, since currently we get
+# annotations "transpose(#1,#2)" and "frobulator(#1,#2)"
+# instead of the desired "transpose(#1)" and "frobulator"
+# I guess this needs a different type of XMath structural pattern...
+DefMacro('\transpose{}', '\meaning{transpose}{#1^T}');
+DefMacro('\frobulator',  '\meaning{frobulator}{x\'}');
+
 ########
 1;
