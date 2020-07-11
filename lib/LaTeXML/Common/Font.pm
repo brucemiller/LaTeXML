@@ -31,7 +31,7 @@ my $DEFFAMILY     = 'serif';      # [CONSTANT]
 my $DEFSERIES     = 'medium';     # [CONSTANT]
 my $DEFSHAPE      = 'upright';    # [CONSTANT]
 my $DEFCOLOR      = 'black';      # [CONSTANT]
-my $DEFBACKGROUND = 'white';      # [CONSTANT]
+my $DEFBACKGROUND = undef;        # [CONSTANT] no color; transparent
 my $DEFOPACITY    = '1';          # [CONSTANT]
 my $DEFENCODING   = 'OT1';        # [CONSTANT]
 my $DEFLANGUAGE   = undef;
@@ -132,7 +132,7 @@ my %font_size = (
   tiny   => 0.5, SMALL => 0.7, Small => 0.8,  small => 0.9,
   normal => 1.0, large => 1.2, Large => 1.44, LARGE => 1.728,
   huge => 2.074, Huge => 2.488,
-  big => 1.2, Big => 1.6, bigg => 2.1, Bigg => 2.6,
+  big  => 1.2,   Big  => 1.6, bigg => 2.1, Bigg => 2.6,
 );
 
 sub rationalizeFontSize {
@@ -391,7 +391,7 @@ sub match_font {
   if (!$regexp) {
     if ($font1 =~ /^Font\[(.*)\]$/) {
       my @comp = split(',', $1);
-      my $re = '^Font\['
+      my $re   = '^Font\['
         . join(',', map { ($_ eq '*' ? "[^,]+" : "\Q$_\E") } @comp)
         . '\]$';
       print STDERR "\nCreating re for \"$font1\" => $re\n";
@@ -454,7 +454,7 @@ sub computeStringSize {
 sub getNominalSize {
   my ($self) = @_;
   my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
-  my $u = $size * 65535;
+  my $u    = $size * 65535;
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
 # Here's where I avoid trying to emulate Knuth's line-breaking...
@@ -476,12 +476,12 @@ sub getNominalSize {
 # requested vs real sizes?
 sub computeBoxesSize {
   my ($self, $boxes, %options) = @_;
-  my $font = (ref $self ? $self : $STATE->lookupValue('font'));
+  my $font      = (ref $self ? $self : $STATE->lookupValue('font'));
   my $fillwidth = $options{width};
   if ((!defined $fillwidth) && ($fillwidth = $STATE->lookupDefinition(T_CS('\textwidth')))) {
     $fillwidth = $fillwidth->valueOf; }    # get register
   my $maxwidth = $fillwidth && $fillwidth->valueOf;
-  my @lines = ();
+  my @lines    = ();
   my ($wd, $ht, $dp) = (0, 0, 0);
   my $vattach = $options{vattach} || 'baseline';
   foreach my $box (@$boxes) {
@@ -530,7 +530,7 @@ sub computeBoxesSize {
     $dp = sum(map { $$_[2] } @lines);
     if ($vattach eq 'top') {    # Top of box is aligned with top(?) of current text
       my ($w, $h, $d) = $font->getNominalSize;
-      $h = $h->valueOf;
+      $h  = $h->valueOf;
       $dp = $ht + $dp - $h; $ht = $h; }
     elsif ($vattach eq 'bottom') {    # Bottom of box is aligned with bottom (?) of current text
       $ht = $ht + $dp; $dp = 0; }
@@ -648,8 +648,8 @@ sub specialize {
     if ($string =~ /^\p{Lu}$/) {                                 # Uppercase
       if (!$family || ($family eq 'math')) {
         $family = $deffamily;
-        $shape = $defshape if $shape && ($shape ne $DEFSHAPE); } }    # if ANY shape, must be default
-    else {    # Lowercase
+        $shape  = $defshape if $shape && ($shape ne $DEFSHAPE); } }    # if ANY shape, must be default
+    else {                                                             # Lowercase
       $family = $deffamily if !$family || ($family ne $DEFFAMILY);
       $shape  = 'italic'   if !$shape  || !($flags & $FLAG_FORCE_SHAPE);    # always ?
       if ($series && ($series ne $DEFSERIES)) { $series = $defseries; }
