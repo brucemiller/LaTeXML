@@ -101,7 +101,7 @@ DefPrimitive('\normalcolor', sub {
 DefMacro('\textcolor[]{}{}', '{\ifx.#1.\color{#2}\else\color[#1]{#2}\fi#3}');
 
 #\colorbox{name}{text} or \colorbox[model]{spec}{text}
-DefMacro('\colorbox[]{}{}', '{\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}\fi#3}');
+DefMacro('\colorbox[]{}{}', '\hbox{\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}\fi#3}');
 
 #\fcolorbox{name}{text} or \fcolorbox[model]{spec}{text}
 DefConstructor('\fcolorbox[]{}{} Undigested',

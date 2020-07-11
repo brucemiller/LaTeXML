@@ -134,13 +134,13 @@ vs. <text color="#E6E6E6">Light</text></p>
     </para>
     <para xml:id="S6.p2">
       <equation xml:id="S6.Ex2">
-        <Math mode="display" tex="{\pagecolor{red}R}+{\pagecolor{green}G}+{\pagecolor{blue}B}" text="R + G + B" xml:id="S6.Ex2.m1">
+        <Math mode="display" tex="\hbox{\pagecolor{red}R}+\hbox{\pagecolor{green}G}+\hbox{\pagecolor{blue}B}" text="[R] + [G] + [B]" xml:id="S6.Ex2.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="plus" role="ADDOP">+</XMTok>
-              <XMTok backgroundcolor="#FF0000" font="italic" role="UNKNOWN">R</XMTok>
-              <XMTok backgroundcolor="#00FF00" font="italic" role="UNKNOWN">G</XMTok>
-              <XMTok backgroundcolor="#0000FF" font="italic" role="UNKNOWN">B</XMTok>
+              <XMText backgroundcolor="#FF0000">R</XMText>
+              <XMText backgroundcolor="#00FF00">G</XMText>
+              <XMText backgroundcolor="#0000FF">B</XMText>
             </XMApp>
           </XMath>
         </Math>
