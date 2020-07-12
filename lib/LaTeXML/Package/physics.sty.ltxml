@@ -130,16 +130,7 @@ sub phys_applyFunction {
       Invocation(T_CS('\@WRAP'),
         Tokens(
           ($pfunc ? ($pfunc, T_CS('\@APPLYFUNCTION')) : ()),
-          ($open ? $open : ()), comma_join(@$pargs), ($close ? $close : ())))); } }
-
-# Or some other punctuation?
-sub comma_join {
-  my (@things) = @_;
-  if (!@things) { return (); }
-  my @result = (shift(@things));
-  while (my $thing = shift(@things)) {
-    push(@result, T_OTHER(','), $thing); }
-  return @result; }
+          ($open ? $open : ()), JoinTokens(T_OTHER(','), @$pargs), ($close ? $close : ())))); } }
 
 #======================================================================
 # Automatic bracing
