@@ -2381,7 +2381,7 @@ DefPrimitiveI('\operator@font', undef, undef,
 
 DefMacro('\@tabacckludge {}', '\csname\string#1\endcsname');
 
-DefPrimitive('\newcommand OptionalMatch:* DefToken [Number][]{}', sub {
+DefPrimitive('\newcommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (!isDefinable($cs)) {
       Info('ignore', $cs, $stomach,
@@ -2390,9 +2390,9 @@ DefPrimitive('\newcommand OptionalMatch:* DefToken [Number][]{}', sub {
       return; }
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
-DefPrimitive('\CheckCommand OptionalMatch:* DefToken [Number][]{}', undef);
+DefPrimitive('\CheckCommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', undef);
 
-DefPrimitive('\renewcommand OptionalMatch:* DefToken [Number][]{}', sub {
+DefPrimitive('\renewcommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
@@ -2411,13 +2411,13 @@ DefPrimitive('\@yargdef DefToken DefToken {}{}', sub {
 DefPrimitive('\@reargdef DefToken []{}', sub {
     DefMacroI($_[1], convertLaTeXArgs($_[2]), $_[3]); });
 
-DefPrimitive('\providecommand OptionalMatch:* DefToken [Number][]{}', sub {
+DefPrimitive('\providecommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     return unless isDefinable($cs);
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
 # Crazy; define \cs in terms of \cs[space] !!!
-DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [Number][]{}', sub {
+DefPrimitive('\DeclareRobustCommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     my $mungedcs = T_CS($cs->getString . ' ');
     DefMacroI($mungedcs, convertLaTeXArgs($nargs, $opt), $body);
