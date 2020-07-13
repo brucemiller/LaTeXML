@@ -1530,8 +1530,7 @@ sub NewScript {
     $l++; $bumped = 1 }
   elsif (my $innerl = p_getAttribute($rbase, '_bumplevel')) {
     $l = $innerl; }
-  my $meaning = p_getAttribute($rscript, 'meaning');
-  my $app = Apply(New(undef, undef, role => $y . 'SCRIPTOP', scriptpos => "$x$l", ($meaning ? (meaning => $meaning) : ())),
+  my $app = Apply(New(undef, undef, role => $y . 'SCRIPTOP', scriptpos => "$x$l"),
     $base, Arg($script, 0));
   # Record whether this script was a floating one
   $$app[1]{_wasfloat}  = 1  if $mode eq 'FLOAT';
