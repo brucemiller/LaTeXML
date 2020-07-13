@@ -1,0 +1,32 @@
+\documentclass{article}
+\usepackage{latexml}
+\makeatletter
+\iflatexml\else % TeX stubs to get a PDF
+\def\@APPLY#1{#1}
+\def\@XMRef#1{}
+\def\@XMArg#1#2{#2}
+\def\DUAL#1#2{#2}
+\fi
+% simple demo, likely a bad fit for real use
+\newcount\var@ref
+\advance\var@ref by 1
+\newcount\var@@ref
+\advance\var@@ref by 10
+%
+\def\power#1#2{
+  \advance\var@ref by 1
+  \edef\ref@{\@XMRef{\the\var@ref}}
+  \edef\arg@{\@XMArg{\the\var@ref}{#1}}
+  \advance\var@@ref by 1
+  \edef\ref@@{\@XMRef{\the\var@@ref}}
+  \edef\arg@@{\@XMArg{\the\var@@ref}{#2}}
+%
+  \DUAL{\@APPLY{\@CSYMBOL{power}\ref@\ref@@}}{\arg@^\arg@@}
+}
+\makeatother
+
+\begin{document}
+
+$\power{x}{2}+\power{y}{3}$
+
+\end{document}

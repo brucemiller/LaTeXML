@@ -1439,7 +1439,60 @@ sub pruneXMDuals {
       $self->collapseXMDual($dual, $presentation); }
     elsif (!$self->findnode('descendant-or-self::*[@_pvis or @_cvis]', $presentation)) {    # pres.
       $self->collapseXMDual($dual, $content); }
-  }
+    else {    # compact aligned structures, where possible
+      $self->compactXMDual($dual, $content, $presentation); } }
+  return; }
+
+sub compactXMDual {
+  my ($self, $dual, $content, $presentation) = @_;
+  # For now only handle compacting mirror applications
+  return if ($self->getNodeQName($content) ne 'ltx:XMApp') ||
+    ($self->getNodeQName($presentation) ne 'ltx:XMApp');
+  my @content_args = element_nodes($content);
+  my @pres_args    = element_nodes($presentation);
+  return if scalar(@content_args) != scalar(@pres_args);
+
+  my @new_args = ();
+  my $single_duality;
+  # walk the corresponding children, and double-check they are referenced in the same order
+  while ((my $c_arg = shift(@content_args)) and (my $p_arg = shift(@pres_args))) {
+    my $c_idref = $c_arg->getAttribute('idref');
+    if ($c_idref && ($c_idref eq ($p_arg->getAttribute('xml:id') || ''))) {
+      push @new_args, $p_arg;
+      next; }    # content-refs-pres, OK
+    my $p_idref = $p_arg->getAttribute('idref');
+    if ($p_idref && ($p_idref eq ($c_arg->getAttribute('xml:id') || ''))) {
+      push @new_args, $c_arg;
+      next; }    # pres-refs-content, OK
+     # difference. If 1) we saw such a difference before tokens, or 2) the tree is too complex - give up on compacting and return.
+     # we only handle two XMToks differing for now.
+    if ($single_duality || ($self->getNodeQName($c_arg) ne 'ltx:XMTok') || $self->getNodeQName($p_arg) ne 'ltx:XMTok') {
+      return; }
+    else { # otherwise we can compact this case. but delay actual libxml changes until we are *sure* the entire tree is compactable
+      $single_duality = [$c_arg, $p_arg];
+      push(@new_args, $single_duality); } }
+  return unless $single_duality;
+
+# If we made it here, this is a dual with two mirrored applications and a single XMTok difference, compact it.
+  my $compact_apply = $self->openElementAt($dual->parentNode, 'ltx:XMApp');
+  for my $n_arg (@new_args) {
+    # one of the args has our dual node that needs compacting
+    if (ref $n_arg eq 'ARRAY') {
+      my ($c_arg, $p_arg) = @$n_arg;
+      # Transfer all c_arg attributes over, it should be primary?
+      for my $attr_key (qw(decl_id meaning name)) {
+        if (my $attr_val = $c_arg->getAttribute($attr_key)) {
+          $c_arg->removeAttribute($attr_key);
+          $p_arg->setAttribute($attr_key, $attr_val); } }
+      $n_arg = $p_arg; }
+    $n_arg->unbindNode;
+    $compact_apply->appendChild($n_arg); }
+  # if the dual has a role/id migrate them to the XMApp
+  for my $attr_key (qw(role xml:id)) {
+    if (my $attr_val = $dual->getAttribute($attr_key)) {
+      $dual->removeAttribute($attr_key);
+      $compact_apply->setAttribute($attr_key, $attr_val); } }
+  $self->replaceNode($dual, $compact_apply);
   return; }
 
 # Replace an XMDual with one of its branches

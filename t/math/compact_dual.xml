@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><Math mode="inline" tex="\@CSYMBOL{power}x2+\@CSYMBOL{power}y3" text="power@(x, 2) + power@(y, 3)" xml:id="p1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMApp>
+              <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+              <XMTok font="italic" role="UNKNOWN" xml:id="p1.m1.1">x</XMTok>
+              <XMTok fontsize="70%" meaning="2" role="NUMBER" xml:id="p1.m1.2">2</XMTok>
+            </XMApp>
+            <XMApp>
+              <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+              <XMTok font="italic" role="UNKNOWN" xml:id="p1.m1.3">y</XMTok>
+              <XMTok fontsize="70%" meaning="3" role="NUMBER" xml:id="p1.m1.4">3</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+</document>
