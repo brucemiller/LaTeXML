@@ -1464,8 +1464,11 @@ sub compactXMDual {
     if ($p_idref && ($p_idref eq ($c_arg->getAttribute('xml:id') || ''))) {
       push @new_args, $c_arg;
       next; }    # pres-refs-content, OK
-     # difference. If 1) we saw such a difference before tokens, or 2) the tree is too complex - give up on compacting and return.
-     # we only handle two XMToks differing for now.
+
+    # Next up: differences. If:
+    # 1) we saw such a difference beforehand, or
+    # 2) the tree is too complex - give up on compacting and return.
+    # we only handle two XMToks differing for now.
     if ($single_duality || ($self->getNodeQName($c_arg) ne 'ltx:XMTok') || $self->getNodeQName($p_arg) ne 'ltx:XMTok') {
       return; }
     else { # otherwise we can compact this case. but delay actual libxml changes until we are *sure* the entire tree is compactable
