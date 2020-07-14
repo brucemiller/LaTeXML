@@ -293,6 +293,8 @@ DefMacro('\figcaption', sub {
 #======================================================================
 # 2.15 Tables
 RequirePackage('deluxetable');
+Let(T_CS('\begin{planotable}'), T_CS('\begin{deluxetable}'));
+Let(T_CS('\end{planotable}'),   T_CS('\end{deluxetable}'));
 
 DefMacro('\phn',   '\phantom{0}');
 DefMacro('\phd',   '\phantom{.}');
