@@ -15,7 +15,7 @@
 \newcount\var@@ref
 \advance\var@@ref by 10
 %
-\def\dual@infix#1#2#3#4{%
+\def\dual@script#1#2#3#4{%
   \global\advance\var@ref by 1
   \edef\ref@{\@XMRef{\the\var@ref}}
   \edef\arg@{\@XMArg{\the\var@ref}{#3}}
@@ -33,14 +33,14 @@
     \@WRAP{#2}}
 }
 %
-\def\power#1#2{\dual@infix{power}{^}{#1}{#2}}
+\def\power#1#2{\dual@script{power}{^}{#1}{#2}}
 
 % making the generalized form with repeating primes in TeX is a pain
 % so hardcoding "2" just to illustrate:
 \def\degtwo{\dual@atom{2}{\prime\prime}}
 
 \def\derive2#1{
-  \dual@infix{derivative-implicit-variable}{^}{#1}{\degtwo}}
+  \dual@script{derivative-implicit-variable}{^}{#1}{\degtwo}}
 
 \begin{document}
 
