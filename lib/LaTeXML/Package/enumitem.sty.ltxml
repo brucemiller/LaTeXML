@@ -18,34 +18,223 @@ use LaTeXML::Package;
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # TODO  Deal with Scads of options!
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Package Options:
+#  inline
+#  shortlabels
+#======================================================================
+# Labelling:
+DefKeyVal('enumitem', 'label',  'UndigestedKey');
+DefKeyVal('enumitem', 'label*', 'UndigestedKey');
+DefKeyVal('enumitem', 'ref',    'UndigestedKey');
+DefKeyVal('enumitem', 'font',   'UndigestedKey');
+DefKeyVal('enumitem', 'format', 'UndigestedKey');
+
+# Numbering
+DefKeyVal('enumitem', 'start',   'Number');
+DefKeyVal('enumitem', 'series',  'UndigestedKey');
+DefKeyVal('enumitem', 'resume',  '', 'noseries');
+DefKeyVal('enumitem', 'resume*', '', 'noseries');    # NOTE: not complete; we don't reuse options
+
+# Description styles
+#   style=(standard|unboxed|nextline|sameline|multiline)
+DefKeyVal('enumitem', 'style', 'UndigestedKey');    # Not done
+
+# Inline lists
+DefKeyVal('enumitem', 'itemjoin',   'UndigestedKey');    # Not done
+DefKeyVal('enumitem', 'itemjoin*',  'UndigestedKey');    # Not done
+DefKeyVal('enumitem', 'afterlabel', 'UndigestedKey');    # Not done [only applies to inline!]
+DefKeyVal('enumitem', 'mode',       'UndigestedKey');    # =(boxed|unboxed) ignored
+
+# IGNORED: Alignment, Positioning, penalties
+DefKeyVal('enumitem', 'align',        'UndigestedKey');   # =(left|right|parleft|SetLabelAlign-name)
+DefKeyVal('enumitem', 'labelindent',  'Dimension');
+DefKeyVal('enumitem', 'left',         'Dimension');
+DefKeyVal('enumitem', 'leftmargin',   'UndigestedKey');
+DefKeyVal('enumitem', 'itemindent',   'Dimension');
+DefKeyVal('enumitem', 'labelsep',     'Dimension');
+DefKeyVal('enumitem', 'labelwidth',   'Dimension');
+DefKeyVal('enumitem', 'labelindent',  'Dimension');
+DefKeyVal('enumitem', 'widest',       'UndigestedKey');
+DefKeyVal('enumitem', 'beginpenalty', 'Number');
+DefKeyVal('enumitem', 'midpenalty',   'Number');
+DefKeyVal('enumitem', 'endpenalty',   'Number');
+DefKeyVal('enumitem', 'noitemsep',    'UndigestedKey');
+
+# Code
+#   before=code, after=code
+DefKeyVal('enumitem', 'before', 'UndigestedKey');    # TODO ?
+DefKeyVal('enumitem', 'after',  'UndigestedKey');    # TODO ?
+
+# \EnumitemId
+# \SetEnumerateShortLabel{key}{replacement}
+
+# Duplicate LaTeX's beginItemize, with modifications...
+sub beginEnumItemize {
+  my ($type, $counter, $nolevel, $keys) = @_;
+  $counter = '@item' unless $counter;
+  my $level = (LookupValue($counter . 'level') || 0) + 1;
+  AssignRegister('\itemsep' => LookupDimension('\lx@default@itemsep'));
+  AssignValue($counter . 'level' => $level);
+  AssignValue(itemization_items  => 0);
+  my $postfix    = ToString(Tokens(roman($level)));
+  my $usecounter = ($nolevel ? $counter : $counter . $postfix);
+  Let('\item' => "\\" . $type . '@item') if defined $type;
+  Let('\par', '\normal@par');    # In case within odd environment.
+  DefMacroI('\@listctr', undef, Tokens(Explode($usecounter)));
+  AssignValue(itemcounter => $usecounter);
+
+  my $hash = merged_enumitem_keyvals($type, $level, $keys);
+  # Deal with counters, series, etc
+  my $series;
+  if ($series = $$hash{series}) {
+    $series = ToString($series); }
+  if (my $start = $$hash{start}) {
+    SetCounter($usecounter, $start);
+    AddToCounter($usecounter, Number(-1)); }
+  elsif (my $s = $$hash{resume} || $$hash{'resume*'}) {
+    if (($s = ToString($s)) ne 'noseries') {
+      $series = ToString($s);
+      SetCounter($usecounter, LookupValue('enumitem_series_' . $series . '_last')); } }
+  else {
+    ResetCounter($usecounter); }
+
+  # Deal with label formatting
+  if (my $label = $$hash{label} || $$hash{'label*'}) {
+    my $llabel = replace_star($label, T_OTHER($usecounter));
+    if ($$hash{'label*'} && ($level > 1)) {
+      $llabel = Tokens(T_CS('\label' . $counter . ToString(Tokens(roman($level - 1)))), $llabel); }
+    DefMacroI('\the' . $usecounter,   undef, $llabel);
+    DefMacroI('\label' . $usecounter, undef, $llabel);
+    DefMacroI('\fnum@' . $usecounter, undef,
+      '{\makelabel{\fnum@font@' . $usecounter . '\label' . $usecounter . '}}'); }
+  if (my $label = $$hash{ref}) {
+    my $llabel = replace_star($label, T_OTHER($usecounter));
+    DefMacroI('\the' . $usecounter, undef, $llabel); }
+  if (my $font = $$hash{font} || $$hash{format}) {
+    DefMacroI('\fnum@font@' . $usecounter, undef, $font); }
+
+  return (RefStepCounter('@itemize' . $postfix),
+    counter => $usecounter, series => $series); }    # So end can save counter value
+
+sub replace_star {
+  my ($tokens, $replacement) = @_;
+  my @t = ();
+  foreach my $t ($tokens->unlist) {
+    push(@t, ($t->equals(T_OTHER('*')) ? $replacement : $t)); }
+  return Tokens(@t); }
+
+sub endEnumItemize {
+  my ($whatsit) = @_;
+  if (my $series = $whatsit->getProperty('series')) {
+    if (my $ctr = $whatsit->getProperty('counter')) {
+      AssignValue('enumitem_series_' . $series . '_last' => CounterValue($ctr), 'global'); } }
+  return; }
 #======================================================================
 
 # But first, a stub that ignores the new optional arg to itemize, etal.
 # Since the keyvals contain Registers, Dimensions, macros, etc,
 # we'll use OptionalUndigested for what will eventually be OptionalKeywords
-DefEnvironment('{itemize} OptionalUndigested',
+DefEnvironment('{itemize} OptionalKeyVals:enumitem',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  properties => sub { beginItemize('itemize', '@item'); },
+  properties      => sub { beginEnumItemize('itemize', '@item', 0, $_[1]); },
   beforeDigestEnd => sub { Digest('\par'); },
+  afterDigestBody => sub { endEnumItemize($_[1]); },
   locked => 1, mode => 'text');
 
-DefEnvironment('{enumerate} OptionalUndigested',
+DefEnvironment('{enumerate} OptionalKeyVals:enumitem',
   "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
-  properties => sub { beginItemize('enumerate', 'enum'); },
+  properties      => sub { beginEnumItemize('enumerate', 'enum', 0, $_[1]); },
   beforeDigestEnd => sub { Digest('\par'); },
+  afterDigestBody => sub { endEnumItemize($_[1]); },
   locked => 1, mode => 'text');
-DefEnvironment('{description} OptionalUndigested',
+DefEnvironment('{description} OptionalKeyVals:enumitem',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
-  beforeDigest => sub { Let('\makelabel', '\descriptionlabel'); },
-  properties => sub { beginItemize('description', '@desc'); },
+  beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
+  properties      => sub { beginEnumItemize('description', '@desc', 0, $_[1]); },
   beforeDigestEnd => sub { Digest('\par'); },
-  locked => 1, mode => 'text');
+  afterDigestBody => sub { endEnumItemize($_[1]); },
+  locked          => 1, mode => 'text');
+
+# TODO: Really should only define if package option inline
+DefEnvironment('{itemize*} OptionalKeyVals:enumitem',
+  "<ltx:inline-itemize xml:id='#id'>#body</ltx:inline-itemize>",
+  properties      => sub { beginEnumItemize('inline@itemize', '@item', 0, $_[1]); },
+  afterDigestBody => sub { endEnumItemize($_[1]); },);
+DefEnvironment('{enumerate*} OptionalKeyVals:enumitem',
+  "<ltx:inline-enumerate xml:id='#id'>#body</ltx:inline-enumerate>",
+  properties      => sub { beginEnumItemize('inline@enumerate', 'enum', 0, $_[1]); },
+  afterDigestBody => sub { endEnumItemize($_[1]); },);
+DefEnvironment('{description*} OptionalKeyVals:enumitem',
+  "<ltx:inline-description xml:id='#id'>#body</ltx:inline-description>",
+  properties      => sub { beginEnumItemize('inline@description', '@desc', 0, $_[1]); },
+  afterDigestBody => sub { endEnumItemize($_[1]); },);
 
 # TODO: Manage and store the options and maximum depth
-DefMacro('\newlist{}{}{}',   '\newenvironment{#1}[1]{\begin{#2}##1}{\end{#2}}');
-DefMacro('\renewlist{}{}{}', '\renewenvironment{#1}[1]{\begin{#2}##1}{\end{#2}}');
+#DefMacro('\newlist{}{}{}',   '\newenvironment{#1}[1]{\begin{#2}##1}{\end{#2}}');
+DefPrimitive('\newlist{}{}{}', sub {
+    my ($stomach, $listname, $listtype, $maxdepth) = @_;
+    #'\newenvironment{#1}[1]{\begin{#2}##1}{\end{#2}}'
+    $listname = ToString($listname);
+    $listtype = ToString($listtype);
+    $maxdepth = ToString($maxdepth);    # Or should it be a Number?
+    my ($basetype, $inline) = ($listtype, '');
+    if ($listtype =~ /^(.*)\*$/) { $basetype = $1; $inline = 1; }
+    my $elementname = ($inline ? 'inline-' . $basetype : $basetype);
+    # Officially only supposed to define counters for enumerate,
+    # but we need them; prefixed with '@' if NOT enumerate!
+    my $prefix = ($basetype eq 'enumerate' ? '' : '@');
+    my $ctr    = $prefix . $listname;
+    for (my $d = 1 ; $d <= $maxdepth ; $d++) {
+      NewCounter($prefix . $listname . ToString(Tokens(roman($d)))); }
+    # Need to hook-up to \itemize@item, inline, etc
+    Let(T_CS('\\' . $listname . '@item'),
+      T_CS('\\' . ($inline ? 'inline@' : '') . $basetype . '@item'),
+      'global');
+    DefEnvironment("{$listname} OptionalKeyVals:enumitem",
+      "<ltx:$elementname xml:id='#id'>#body</ltx:$elementname>",
+      properties      => sub { beginEnumItemize($listname, $ctr, 0, $_[1]); },
+      beforeDigestEnd => sub { Digest('\par'); },
+      afterDigestBody => sub { endEnumItemize($_[1]); },
+      locked => 1, mode => 'text');
+    return; });
+Let('\renewlist', '\newlist');
 
-DefMacro('\setlist OptionalUndigested {}', '');
+# Convoluted: optionally applies to all lists, all levels of one list or a single level
+DefPrimitive('\setlist Optional RequiredKeyVals:enumitem', sub {
+    my ($stomach, $names, $kv) = @_;
+    if (!$names) {    # No names? applies to ALL lists
+      store_enumitem_defaults('enumitem_defaults', $kv); }
+    else {
+      my ($name, @levels) = split(/\s*,\s*/, ToString($names));
+      if (!@levels) {    # No levels? applies to ALL levels of this list
+        store_enumitem_defaults('enumitem_' . $name . '_defaults', $kv); }
+      else {
+        foreach my $level (@levels) {
+          store_enumitem_defaults('enumitem_' . $name . $level . '_defaults', $kv); } } }
+    return; });
+
+sub store_enumitem_defaults {
+  my ($name, $kv) = @_;
+  my $kvdef = LookupValue($name);
+  if (!$kvdef) {
+    $kvdef = LaTeXML::Core::KeyVals->new('KV', 'enumitem');
+    AssignValue($name, $kvdef, 'global'); }
+  my $hash = $kv->getKeyVals;
+  foreach my $key (keys %$hash) {
+    $kvdef->setValue($key, $$hash{$key}); }
+  return; }
+
+sub merged_enumitem_keyvals {
+  my ($name, $level, $argkv) = @_;
+  my @defaults = map { LookupValue($_); }
+'enumitem_defaults', 'enumitem_' . $name . '_defaults', 'enumitem_' . $name . $level . '_defaults';
+  my $hash = {};
+  foreach my $kv (@defaults, $argkv) {
+    if ($kv) {
+      my $defhash = $kv->getKeyVals;
+      foreach my $key (keys %$defhash) {
+        $$hash{$key} = $$defhash{$key}; } } }
+  return $hash; }
 
 #======================================================================
 1;

@@ -1,0 +1,166 @@
+\documentclass{article}
+\usepackage[inline]{enumitem}
+\begin{document}
+
+\section{Itemizations}
+\begin{itemize}
+\item Line one
+\item Line two
+\end{itemize}
+
+\begin{itemize}[label=\dag]
+\item Line one
+\item Line two
+\end{itemize}
+
+\section{Enumerations}
+\begin{enumerate}[labelindent=\parindent,leftmargin=*]
+\item Line one
+\item Line two
+\end{enumerate}
+
+\begin{enumerate}[leftmargin=*] % labelindent=0pt by default.
+\item Line one
+\item Line two
+\end{enumerate}
+
+\begin{enumerate}[leftmargin=\parindent]
+\item Line one
+\item Line two
+\end{enumerate}
+
+\begin{enumerate}[labelindent=\parindent, leftmargin=*, label=\Roman*., widest=III,align=left]
+\item Line one
+\item Line two
+\end{enumerate}
+
+\begin{enumerate}[label=\fbox{\arabic*}]
+\item Line one
+\item Line two
+\end{enumerate}
+
+\newlist{fonty}{enumerate}{1}
+\setlist[fonty]{font=\bf}
+\begin{fonty}[label=\arabic*)]  \item A \item B\end{fonty}
+\begin{fonty}[label=\roman*{]}]  \item A \item B\end{fonty}
+
+\section{References}
+See items \ref{AA},\ref{AB}.
+\begin{enumerate}[label=\roman*)]
+  \item\label{AA} aye aye
+  \item\label{AB} aye bee
+\end{enumerate}
+See items \ref{BA},\ref{BB}.
+\begin{enumerate}[label=\roman*),ref=\roman*]
+  \item\label{BA} bee aye
+  \item\label{BB} bee bee
+\end{enumerate}
+
+\section{Inline Enumerations}
+Some text:
+\begin{enumerate*}[labelindent=\parindent,leftmargin=*]
+\item Line one
+\item Line two
+\end{enumerate*}
+And more.
+
+And so:
+\begin{enumerate*}[label=\arabic*),itemjoin={{, and then }}, itemjoin*={{, and finally }}] 
+\item this \item that \item the other
+\end{enumerate*}
+
+\section{Nested Enumerations}
+Some text
+\begin{enumerate}[label=(\alph*), labelindent=\parindent,
+leftmargin=*, start=12]
+\item Line one
+\begin{enumerate}[label=(\alph{enumi}.\roman*), leftmargin=*, start=7]
+\item Line one, first
+\end{enumerate}
+\item roc\'{\i}n flaco, y
+\begin{enumerate}[label=(\alph{enumi}.\roman*), leftmargin=*, resume]
+\item Line one, second
+\end{enumerate}
+\end{enumerate}
+And more.
+
+
+Some text
+\begin{description}[font=\sffamily\bfseries, leftmargin=3cm,style=nextline]
+\item[Lo primero que ten\'{\i}a el Quijote] the first
+\item[Lo segundo] the second
+\item[Lo tercero] the third
+\item[Y por \'{u}ltimo, lo cuarto] last
+\end{description}
+And so on.
+
+\newlist{legal}{enumerate}{10}
+\setlist[legal]{label*=\arabic*.}
+\begin{legal}
+\item A
+  \begin{legal}
+    \item AA
+    \item AB
+    \end{legal}
+\item B
+  \begin{legal}
+    \item BA
+    \item BB
+    \end{legal}
+  \end{legal}
+
+\section{Series}
+\newlist{cont}{enumerate}{2}
+\setlist[cont,1,2]{label=(\arabic*), resume}
+
+\begin{cont}
+\item A Thing
+\end{cont}
+\begin{cont}
+\item A Thing
+\end{cont}
+\begin{cont}
+\item A Thing
+\end{cont}
+  
+\begin{enumerate}[series=foo]
+\item A Thing
+\end{enumerate}
+\begin{enumerate}
+\item Entirely different Things
+\item Entirely different Things
+\end{enumerate}
+\begin{enumerate}[resume=foo]
+\item Another Thing
+\end{enumerate}
+
+\section{New Lists}
+\newlist{ingredients}{itemize}{1}
+\setlist[ingredients]{label=\textbullet}
+\newlist{steps}{enumerate}{2}
+\setlist[steps,1,2]{label=(\arabic*)}
+
+\newlist{isteps}{enumerate*}{2}
+\setlist[isteps,1,2]{label=(\arabic*)}
+
+
+\begin{ingredients}
+\item flour
+\item eggs
+\item milk
+\end{ingredients}
+
+\begin{steps}
+\item first
+\item second
+\item third
+\end{steps}
+
+Inline:
+\begin{isteps}
+\item first
+\item second
+\item third
+\end{isteps}
+
+\end{document}
