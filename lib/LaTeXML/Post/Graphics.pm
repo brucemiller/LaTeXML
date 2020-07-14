@@ -113,7 +113,7 @@ sub findGraphicsPaths {
 
 sub getGraphicsSourceTypes {
   my ($self) = @_;
-  return @{ $$self{graphics_types} }, map {uc($_); } @{ $$self{graphics_types} }; }
+  return @{ $$self{graphics_types} }, map { uc($_); } @{ $$self{graphics_types} }; }
 
 # Return the pathname to an appropriate image.
 sub findGraphicFile {
@@ -163,7 +163,9 @@ sub getTypeProperties {
 # width and height.
 sub setGraphicSrc {
   my ($self, $node, $src, $width, $height) = @_;
-  $node->setAttribute('imagesrc',    $src);
+  # If we are on windows, the $src path will be used for a URI context from the 'imagesrc' attribute,
+  # so we can already switch it to the canonical slashified form
+  $node->setAttribute('imagesrc',    pathname_to_url($src));
   $node->setAttribute('imagewidth',  $width) if defined $width;
   $node->setAttribute('imageheight', $height) if defined $height;
   return; }
