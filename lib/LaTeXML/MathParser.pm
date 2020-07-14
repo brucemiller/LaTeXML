@@ -430,12 +430,13 @@ sub filter_hints {
       if (my $width = $node->getAttribute('width')) {
         if (my $pts = getXMHintSpacing($width)) {
           my $ph = ($node->getAttribute('name') || '') =~ /phantom$/;
-          if ($prev) {
+          # If previous token (and not open paren), add the space to the right of it
+          if ($prev && (($prev->getAttribute('role') || '') ne 'OPEN')) {
             my $s = $prev->getAttribute('_space') || 0.0;
             my $p = $prev->getAttribute('_phantom');
             $prev->setAttribute(_space   => $s + $pts);
             $prev->setAttribute(_phantom => $p || $ph); }
-          else {
+          else {                                 # Else save it for the next token.
             $pending_space += $pts;
             $pending_phantom = $ph; } } }
       # If XMHint is referenced??
@@ -833,7 +834,7 @@ sub getGrammaticalRole {
       $role = 'UNKNOWN'; }
     elsif ($tag eq 'ltx:XMDual') {
       my ($content, $presentation) = element_nodes($node);
-      $role = p_getAttribute($content,'role') || p_getAttribute($presentation,'role'); }
+      $role = p_getAttribute($content, 'role') || p_getAttribute($presentation, 'role'); }
     $role = 'ATOM' unless defined $role; }
   $self->note_unknown($node) if ($role eq 'UNKNOWN') && $LaTeXML::MathParser::STRICT;
   return $role; }
@@ -916,7 +917,7 @@ sub textrec {
   $outer_bp   = 0  unless defined $outer_bp;
   $outer_name = '' unless defined $outer_name;
   if ($tag eq 'ltx:XMApp') {
-    if (my $meaning  = p_getAttribute($node, 'meaning') || p_getAttribute($node, 'name')) {
+    if (my $meaning = p_getAttribute($node, 'meaning') || p_getAttribute($node, 'name')) {
       return $meaning; }
     my $app_role = $node->getAttribute('role');
     my ($op, @args) = element_nodes($node);
@@ -929,11 +930,11 @@ sub textrec {
       return (($bp < $outer_bp) || (($bp == $outer_bp) && ($name ne $outer_name))
         ? '(' . $string . ')' : $string); } }
   elsif ($tag eq 'ltx:XMDual') {
-    if (my $meaning  = p_getAttribute($node, 'meaning') || p_getAttribute($node, 'name')) {
+    if (my $meaning = p_getAttribute($node, 'meaning') || p_getAttribute($node, 'name')) {
       return $meaning; }
     my ($content, $presentation) = element_nodes($node);
-    my $text = textrec($content, $outer_bp, $outer_name);   # Just send out the semantic form.
-    # Fall back to presentation, if content has poor semantics (eg. from replacement patterns)
+    my $text = textrec($content, $outer_bp, $outer_name);    # Just send out the semantic form.
+           # Fall back to presentation, if content has poor semantics (eg. from replacement patterns)
     return ($text =~ /^\(*Unknown/ ? textrec($presentation, $outer_bp, $outer_name) : $text); }
   elsif ($tag eq 'ltx:XMTok') {
     my $name = getTokenMeaning($node);
@@ -1304,13 +1305,13 @@ sub Fence {
         ? ($enclose2{ $o . '@' . $p[0] . '@' . $c } || 'list')
         : ($encloseN{ $o . '@' . $p[0] . '@' . $c } || 'list'))));
   $op = 'delimited-' . $o . $c unless defined $op;
-  my $decl_id = p_getAttribute($open,'decl_id');
+  my $decl_id = p_getAttribute($open, 'decl_id');
   if (($n == 1) && ($op eq 'delimited-()')) {    # Hopefully, can just ignore the parens?
     return ['ltx:XMDual', {},
       LaTeXML::Package::createXMRefs($LaTeXML::MathParser::DOCUMENT, $stuff[1]),
       ['ltx:XMWrap', {}, @stuff]]; }
   else {
-    return InterpretDelimited(New($op, undef, ($decl_id ? (decl_id=>$decl_id):())), @stuff); } }
+    return InterpretDelimited(New($op, undef, ($decl_id ? (decl_id => $decl_id) : ())), @stuff); } }
 
 # Compose a complex relational operator from two tokens, such as >=, >>
 sub TwoPartRelop {
@@ -1527,9 +1528,9 @@ sub NewScript {
 # but which will preserve the role (& meaning?)
 sub DecorateOperator {
   my ($op, $script) = @_;
-  my $decop   = NewScript($op, $script);
-  my $rop     = realizeXMNode($op);
-  my $role    = p_getAttribute($rop, 'role');
+  my $decop = NewScript($op, $script);
+  my $rop   = realizeXMNode($op);
+  my $role  = p_getAttribute($rop, 'role');
   return Annotate($decop, role => $role); }
 
 sub NewEvalAt {

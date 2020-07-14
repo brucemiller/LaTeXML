@@ -381,9 +381,17 @@ sub pmml {
   # Add spacing last; outside parens & enclosing (?)
   if (!(((ref $result) eq 'ARRAY') && ($$result[0] eq 'm:mo'))  # mo will already have gotten spacing!
     && ($r || $l)) {
-    my $w = ($l && $r ? $l + $r : ($l ? $l : $r));
-    $result = ['m:mpadded', { ($l ? (lspace => $l . "pt") : ()),
-        ($w ? (width => ($w =~ /^-/ ? $w : '+' . $w) . "pt") : ()) }, $result]; }
+    # If only lpadding given, we'll try to find an inner m:mo to accept it (so it will take effect)
+    my $inner = $result;
+    while (($$inner[0] eq 'm:mrow') && $$inner[2] && ref $$inner[2]) {
+      $inner = $$inner[2]; }
+    if (!$r && $inner && ($$inner[0] eq 'm:mo')) {
+      my $ls = $l && max(0, 1.6 + $l);                          # must be \ge 0
+      $$inner[1]{lspace} = $ls . 'pt'; }                        # Found inner op: use simple lspace
+    else {                                                      # Else fall back to wrap with m:mpadded
+      my $w = ($l && $r ? $l + $r : ($l ? $l : $r));
+      $result = ['m:mpadded', { ($l ? (lspace => $l . "pt") : ()),
+          ($w ? (width => ($w =~ /^-/ ? $w : '+' . $w) . "pt") : ()) }, $result]; } }
 
   if ($cl && ((ref $result) eq 'ARRAY')) {                      # Add classs, if any and different
     my $ocl = $$result[1]{class};
@@ -826,9 +834,9 @@ sub stylizeContent {
       $text = join('', @c);
       $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef); } }
   # Other attributes that should be copied?
-  my $istoken = $tag =~ /^m:(?:mi|mo|mn)$/; # mrow?
-  my $href  = $istoken && ($iselement ? $item->getAttribute('href')  : $attr{href});
-  my $title = $istoken && ($iselement ? $item->getAttribute('title') : $attr{title});
+  my $istoken = $tag =~ /^m:(?:mi|mo|mn)$/;                                               # mrow?
+  my $href    = $istoken && ($iselement ? $item->getAttribute('href') : $attr{href});
+  my $title   = $istoken && ($iselement ? $item->getAttribute('title') : $attr{title});
   return ($text,
     ($variant ? (mathvariant => $variant) : ()),
     ($size ? ($stretchyhack
@@ -837,7 +845,7 @@ sub stylizeContent {
       : ()),
     ($color    ? (mathcolor      => $color)             : ()),
     ($bgcolor  ? (mathbackground => $bgcolor)           : ()),
-    ($opacity  ? (style          => "opacity:$opacity") : ()),    # ???
+    ($opacity  ? (style          => "opacity:$opacity") : ()),                            # ???
     ($stretchy ? (stretchy       => $stretchy)          : ()),
     ($class    ? (class          => $class)             : ()),
     ($href     ? (href           => $href)              : ()),
@@ -845,7 +853,7 @@ sub stylizeContent {
   ); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
-my %fences = (                                                    # CONSTANT
+my %fences = (                                                                            # CONSTANT
   '('  => 1, ')' => 1, '[' => 1, ']' => 1, '{' => 1, '}' => 1, "\x{201C}" => 1, "\x{201D}" => 1,
   "\`" => 1, "'" => 1, "<" => 1, ">" => 1,
   "\x{2329}" => 1, "\x{232A}" => 1, # angle brackets; NOT mathematical, but balance in case they show up.
