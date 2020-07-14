@@ -6651,9 +6651,9 @@ DefConstructor('\FCN{}', "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", reversio
 DefConstructor('\ROLE{}{}', "<ltx:XMWrap role='#1'>#2</ltx:XMWrap>", reversion => '#2', alias => '');
 
 # NOTE: work through this systematically!
-DefConstructor('\@SYMBOL{}', "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", reversion => '#1');
-DefConstructor('\@CSYMBOL{}', "<ltx:XMTok meaning='#1'/>");
-DefConstructor('\@APPLY{}', "<ltx:XMApp>#1</ltx:XMApp>", reversion => '#1');
+DefConstructor('\@SYMBOL{}',  "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", reversion => '#1');
+DefConstructor('\@CSYMBOL{}', "<ltx:XMTok meaning='#1'/>",             reversion => '');
+DefConstructor('\@APPLY{}',   "<ltx:XMApp>#1</ltx:XMApp>",             reversion => '#1');
 DefConstructor('\@MAYBEAPPLY{}{}',
   "?#2(<ltx:XMApp>#1#2</ltx:XMApp>)(#1)",
   reversion => '#1#2');
