@@ -6,7 +6,7 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p><Math mode="inline" tex="\@CSYMBOL{power}x2+\@CSYMBOL{power}y3" text="power@(x, 2) + power@(y, 3)" xml:id="p1.m1">
+    <p><Math content-tex="x2+y3" mode="inline" tex="x^{2}+y^{3}" text="power@(x, 2) + power@(y, 3)" xml:id="p1.m1">
         <XMath>
           <XMApp>
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -25,7 +25,7 @@
       </Math></p>
   </para>
   <para xml:id="p2">
-    <p><Math mode="inline" tex="\@CSYMBOL{derivative-implicit-variable}f\@CSYMBOL{2}" text="derivative-implicit-variable@(f, 2)" xml:id="p2.m1">
+    <p><Math content-tex="f" mode="inline" tex="f^{\prime\prime}" text="derivative-implicit-variable@(f, 2)" xml:id="p2.m1">
         <XMath>
           <XMApp>
             <XMTok meaning="derivative-implicit-variable" role="SUPERSCRIPTOP" scriptpos="post1"/>
