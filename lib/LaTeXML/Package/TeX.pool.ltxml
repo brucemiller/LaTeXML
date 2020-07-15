@@ -2391,7 +2391,7 @@ DefColumnType('r', sub {
 # and it handles $ and & appropriately
 DefConstructor('\tabularcell@hbox HBoxContents',
   "#1",
-  mode => 'text', bounded => 1,
+  mode => 'text', bounded => 1, alias => '\hbox',
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
   beforeDigest => sub {
@@ -6080,7 +6080,8 @@ DefParameterType('ScriptStyleUntil', sub {
 DefConstructor('\root ScriptStyleUntil:\of {}',
   "<ltx:XMApp><ltx:XMTok meaning='nth-root'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
-    . "</ltx:XMApp>");
+    . "</ltx:XMApp>",
+  reversion => '\root #1 \of {#2}');
 
 #----------------------------------------------------------------------
 # LaTeX; Table 3.9. Log-like Functions, p.44.
@@ -6597,6 +6598,22 @@ Let('\@currext',  '\@empty');
 # LaTeXML Specific.
 # Support for Declarations & Presentation/Semantic Duality
 #**********************************************************************
+
+#======================================================================
+# Normally definitions disappear; the macros are expanded or have their expected effect.
+# But in a few cases (eg tabular column definitions, or LaTeX \Declarexxxx)
+# they will need declarations in the (La)TeX preamble to allow (La)TeX to process snippets
+# (eg. math) in order to create images.
+# Returning a call to this utility from Primitives will add a preamble Processing Instruction
+sub AddToPreamble {
+  my ($cs, @args) = @_;
+  Digest(Invocation(T_CS('\lx@add@Preamble@PI'), Invocation((ref $cs ? $cs : T_CS($cs)), @args))); }
+
+DefConstructor('\lx@add@Preamble@PI Undigested',
+  "<?latexml preamble='#1'?>");
+
+#======================================================================
+
 DefConstructor('\DUAL OptionalKeyVals {}{}',
   "<ltx:XMDual role='&GetKeyVal(#1,role)'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
   reversion => sub {
