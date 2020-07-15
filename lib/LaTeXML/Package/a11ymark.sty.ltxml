@@ -15,26 +15,9 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-## 0. Semantic infrastructure
-DefConstructor('\meaning{}{}', '#2', afterConstruct => sub {
-    my ($doc, $whatsit) = @_;
-    my $node  = $doc->getNode;
-    my $apply = $node->lastChild;
-    if ($apply && $apply->localName eq 'XMApp') {    # should be an apply, if by design
-      $apply->setAttribute('meaning', ToString($whatsit->getArg(1))); }
-    else {    # otherwise, add the meaning on the current node, possibly an empty XMArg
-      $node->setAttribute('meaning', ToString($whatsit->getArg(1))); }
-    return; }, bounded => 1, requireMath => 1);
-
 # Embellishment is hard to write, hard to speak, but describes exactly several cases
 # I will abbreviate it "emb", for now, and use it as a prefix
-DefConstructor('\emb@atom{}{}',
-  '<ltx:XMDual>'
-    . '<ltx:XMTok meaning="#1" />'
-    . '<ltx:XMWrap>#2</ltx:XMWrap>'
-    . '</ltx:XMDual>',
-  bounded => 1, requireMath => 1);
-
+DefMacro('\emb@atom{}{}', '\DUAL{\@CSYMBOL{#1}}{\@WRAP{#2}}');
 DefMacro('\emb@base{}{}{}', sub {
     my ($gullet, $meaning, $base, $emb) = @_;
     # Package::dualize_arglist seems to be doing this with more sophistication,
@@ -48,8 +31,10 @@ DefMacro('\emb@base{}{}{}', sub {
 
 DefMacro('\numprimemarks{}', sub {
     my ($gullet, $numtok) = @_;
-    my $num = int(ToString($numtok));
-    return map { T_CS('\prime') } 1 .. $num; });
+    # we need to digest due to \@XMArg being a constructor
+    my $num = int(ToString(Digest($numtok)));
+    return Tokens(map { T_CS('\prime') } 1 .. $num);
+});
 
 DefConstructor('\emb@base@build{}{}{}',
   '<ltx:XMDual>'
@@ -76,17 +61,16 @@ DefMath('\deriv[]{}{}',
 DefMath('\integral{}{}', '\int #1 \diffd #2', meaning => 'integral');
 
 ## II. Scripts
-DefMacro('\power{}{}',   '\meaning{power}{#1^{#2}}');
+DefMath('\power{}{}', "{#1^{#2}}", meaning => 'power',
+  reversion              => '#1^{#2}',
+  hide_content_reversion => 1);
 DefMacro('\frobulator',  '\emb@atom{frobulator}{x\'}');
 DefMacro('\transpose{}', '\emb@base{transpose}{#1}{^T}');
 DefMacro('\adjoint{}',   '\emb@base{adjoint}{#1}{^\dagger}');
 
-# This looks misleadingly "straightforward". The floating script is hard to convince to bind to #1,
-# so literally writing f'' and trying to annotate failed in pretty much all different configurations I tried.
-# what seems to succeed gracefully is my \meaning-based semantic injections in the constructed tree,
-# *given that* I use the f^{\prime\prime} form.
-#
-DefMacro('\derivenum{}{}', '\meaning{derivative-implicit-variable}{#1^{\meaning{#2}{\numprimemarks{#2}}}}');
+DefMacro('\derivemark{}', '\DUAL{#1}{\@WRAP{\numprimemarks{#1}}}');
+DefMath('\fnderive{}{}', '#1^{\derivemark{#2}}',
+  meaning => 'derivative-implicit-variable');
 
 ################################################################################################################
 
