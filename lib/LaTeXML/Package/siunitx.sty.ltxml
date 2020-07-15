@@ -599,12 +599,8 @@ DefMacro('\numrange OptionalKeyVals:SIX {}{}', sub {
     six_parse_end();
     return $result; });
 
-DefMathI('\lx@arcdegree', undef, UTF(0xB0),           meaning => 'arcdegree');
-DefMathI('\lx@arcminute', undef, '{}^{\prime}',       meaning => 'arcminute');
-DefMathI('\lx@arcsecond', undef, '{}^{\prime\prime}', meaning => 'arcsecond');
-
 # These are in serious need of tweaking!
-DefMacro('\lx@arcdegreeoverdot', '\lx@stackrel{\lx@arcdegree}{.}');
+DefMacro('\lx@arcdegreeoverdot', '\lx@stackrel{\SIUnitSymbolDegree}{.}');
 DefMacro('\lx@arcminuteoverdot', '\lx@stackrel{{\scriptstyle\prime}}{.}');
 DefMacro('\lx@arcsecondoverdot', '\lx@stackrel{{\scriptstyle\prime\prime}}{.}');
 DefConstructor('\lx@astimes{}',
@@ -647,14 +643,14 @@ DefMacro('\ang OptionalKeyVals:SIX {}', sub {
         $$degrees{decimal} = T_CS('\lx@arcdegreeoverdot');
         push(@punctuated, six_format_number($degrees)); }
       else {
-        push(@punctuated, six_format_number($degrees), $sep1, T_CS('\lx@arcdegree')); } }
+        push(@punctuated, six_format_number($degrees), $sep1, T_CS('\SIUnitSymbolDegree')); } }
     if ($minutes) {
       if (@punctuated) { push(@punctuated, $sep2); }
       if ($above && $$minutes{decimal}) {
         $$minutes{decimal} = T_CS('\lx@marcinuteoverdot');
         push(@punctuated, six_format_number($minutes)); }
       else {
-        push(@punctuated, six_format_number($minutes), $sep1, T_CS('\lx@arcminute')); } }
+        push(@punctuated, six_format_number($minutes), $sep1, T_CS('\SIUnitSymbolArcminute')); } }
     # Need special formatting of decimal for angle-symbol-over-decimal!!!
     if ($seconds) {
       if (@punctuated) { push(@punctuated, $sep2); }
@@ -662,7 +658,7 @@ DefMacro('\ang OptionalKeyVals:SIX {}', sub {
         $$seconds{decimal} = T_CS('\lx@arcsecondoverdot');
         push(@punctuated, six_format_number($seconds)); }
       else {
-        push(@punctuated, six_format_number($seconds), $sep1, T_CS('\lx@arcsecond')); } }
+        push(@punctuated, six_format_number($seconds), $sep1, T_CS('\SIUnitSymbolArcsecond')); } }
     AssignValue('SIX_copy-decimal-marker' => $save);
     six_parse_end();
     return six_wrap(@punctuated); });
