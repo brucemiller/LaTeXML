@@ -32,13 +32,6 @@ DefMacro('\emb@base{}{}{}', sub {
     return Invocation(T_CS('\emb@base@build'),
       $meaning, $ref_token, Tokens($arg_token, $emb))->unlist });
 
-DefMacro('\numprimemarks{}', sub {
-    my ($gullet, $numtok) = @_;
-    # we need to digest due to \@XMArg being a constructor
-    my $num = int(ToString(Digest($numtok)));
-    return Tokens(map { T_CS('\prime') } 1 .. $num);
-});
-
 DefConstructor('\emb@base@build{}{}{}',
   '<ltx:XMDual>'
     . '<ltx:XMApp>'
@@ -71,9 +64,53 @@ DefMacro('\frobulator',  '\emb@atom{frobulator}{x\'}');
 DefMacro('\transpose{}', '\emb@base{transpose}{#1}{^T}');
 DefMacro('\adjoint{}',   '\emb@base{adjoint}{#1}{^\dagger}');
 
-DefMacro('\derivemark{}', '\DUAL{#1}{\@WRAP{\numprimemarks{#1}}}');
-DefMath('\fnderive{}{}', '#1^{\derivemark{#2}}',
-  meaning => 'derivative-implicit-variable');
+# What I Really Want to Say here, but can't is likely:
+# DefMath('\derivemark{}', '\derivemark@pres{#1}', meaning=>'#1');
+DefMacro('\derivemark{}', sub {
+    my ($gullet, $token) = @_;
+    # Dualizing the arglist only works if we are going to keep the same token at the end
+    # in the case of 2 --> '' , this fails. So, obtain the presentation right away to figure this out
+
+    # we need to digest due to \@XMArg being a constructor
+    my $mark = ToString(Digest($token));
+    my ($content, $presentation);
+    if ($mark =~ /^\d$/) {    # single digit, add primes
+      $content      = $token;
+      $presentation = Tokens(map { T_CS('\prime') } 1 .. int($mark)) }
+    else {
+      # assume an id, wrap in parens
+      my ($cargs, $pargs) = dualize_arglist('#1', $token);
+      $content      = $$cargs[0];
+      $presentation = Tokens(T_OTHER('('), $$pargs[0], T_OTHER(')')); }
+
+    return Invocation(T_CS('\DUAL'),
+      undef,                  # debugging that I missed this 'undef' argument was not fun.
+      $content,
+      Invocation(T_CS('\@WRAP'), $presentation))->unlist;
+});
+
+# curiously we need an indirection level, so that we point to the dual instead of
+# the content node of the dual. The a11y attribute generation does not support the following markup
+# at the moment:
+#
+# <XMDual>
+#   <XMApp>
+#     <XMTok meaning="derivative-implicit-variable" name="fnderive" role="UNKNOWN"/>
+#     <XMRef idref="p1.m1.1"/>
+#     <XMRef idref="p1.m1.2"/>
+#   </XMApp>
+#   <XMApp>
+#     <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+#     <XMTok font="italic" role="UNKNOWN" xml:id="p1.m1.1">f</XMTok>
+#     <XMDual>
+#       <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p1.m1.2">n</XMTok>
+#       <XMWrap> ...
+#
+# We can only deal with 'p1.m1.2' pointing to the inner XMDual, rather than directly to its content "n"
+DefMacro('\fnderive{}{}', '\fnderive@build{#1}{\derivemark{#2}}');
+DefMath('\fnderive@build{}{}', '#1^#2',
+  meaning                => 'derivative-implicit-variable',
+  hide_content_reversion => 1);
 
 ################################################################################################################
 
