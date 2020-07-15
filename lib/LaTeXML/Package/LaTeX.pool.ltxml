@@ -270,8 +270,13 @@ EOTeX
 DefConstructor("\\\\ OptionalMatch:* [Glue]",
   "?#isMath(<ltx:XMHint name='newline'/>)(<ltx:break/>)",
   reversion => Tokens(T_CS("\\\\"), T_CR));
-Let('\@normalcr', "\\\\");
-PushValue(TEXT_MODE_BINDINGS => [T_CS("\\\\"), T_CS('\@normalcr')]);
+DefConstructor('\newline',
+  "?#isMath(<ltx:XMHint name='newline'/>)(<ltx:break/>)",
+  reversion => Tokens(T_CS('\newline'), T_CR));
+Let('\@normalcr',      "\\\\");
+Let('\@normalnewline', '\newline');
+PushValue(TEXT_MODE_BINDINGS => [
+    T_CS("\\\\"), T_CS('\@normalcr'), T_CS('\newline'), T_CS('\@normalnewline')]);
 
 DefMacro('\@nolnerr', '');
 DefMacro('\@centercr', '\ifhmode\unskip\else\@nolnerr\fi'
@@ -473,7 +478,8 @@ DefConstructor('\lx@note[]{}[]{}',
     my $type = ToString($_[2]);
     (role => $type,
       list => DigestText(T_CS('\ext@' . $type)),
-      makeNoteTags($type, $_[1], $_[3])); });
+      makeNoteTags($type, $_[1], $_[3])); },
+  reversion => '');
 DefConstructor('\lx@notemark[]{}[]',
   "<ltx:note role='#role' mark='#mark' xml:id='#id' inlist='#list'>"
     . "#tags"
@@ -483,13 +489,15 @@ DefConstructor('\lx@notemark[]{}[]',
     my $type = ToString($_[2]);
     (role => $type . 'mark',
       list => DigestText(T_CS('\ext@' . $type)),
-      makeNoteTags($type, $_[1], $_[3])); });
+      makeNoteTags($type, $_[1], $_[3])); },
+  reversion => '');
 DefConstructor('\lx@notetext[]{}[]{}',
   "<ltx:note role='#role' mark='#mark' xml:id='#id'>#4</ltx:note>",
   mode       => 'text',
   properties => sub {
     my $type = ToString($_[2]);
-    (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || Digest(T_CS('\the' . $type)))); });
+    (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || Digest(T_CS('\the' . $type)))); },
+  reversion => '');
 
 DefMacro('\footnote',     '\lx@note{footnote}');
 DefMacro('\footnotemark', '\lx@notemark{footnote}');
@@ -2503,6 +2511,9 @@ DefPrimitive('\DeclareTextAccentDefault{}{}',
   sub { ignoredDefinition('DeclareTextAccentDefault', $_[1]); });
 
 #------------------------------------------------------------
+# TODO: Need to convert these DefPrimitive's into DefConstroctors
+# that add a preable PI!!!!!!!!!
+
 DefPrimitive('\DeclareTextComposite{}{}{}{}',
   sub { ignoredDefinition('DeclareTextComposite', $_[1]); });
 DefPrimitive('\DeclareTextCompositeCommand{}{}{}{}',
@@ -2518,12 +2529,12 @@ DefPrimitive('\DeclareMathAccent DefToken {}{} {Number}', sub {
     my $info  = LookupValue('fontdeclaration@' . $class);
     my $glyph = FontDecode($code->valueOf, ($info ? $$info{encoding} : $class));
     DefMathI($cs, 'Digested', $glyph, operator_role => 'OVERACCENT');
-    return; });
+    return AddToPreamble('\DeclareMathAccent', $cs, $kind, $class, $code); });
 
 DefPrimitive('\DeclareMathDelimiter{}{}{}{}',
-  sub { ignoredDefinition('DeclareMathAccent', $_[1]); });
+  sub { ignoredDefinition('DeclareMathDelimiter', $_[1]); });
 DefPrimitive('\DeclareMathRadical{}{}{}{}{}',
-  sub { ignoredDefinition('DeclareMathAccent', $_[1]); });
+  sub { ignoredDefinition('DeclareMathRadical', $_[1]); });
 DefPrimitive('\DeclareMathVersion{}',          undef);
 DefPrimitive('\DeclarePreloadSizes{}{}{}{}{}', undef);
 
@@ -4111,8 +4122,6 @@ DefPrimitive('\typein[]{}', undef);
 #======================================================================
 DefPrimitive('\linebreak[]',   undef);
 DefPrimitive('\nolinebreak[]', undef);
-# \\ already defined
-DefMacroI('\newline', undef, Tokens(T_CS('\protect'), T_CS('\@normalcr'), T_CS('\relax')));
 DefPrimitiveI('\-', undef, undef);    # We don't do hyphenation.
                                       # \hyphenation in TeX.pool
 
