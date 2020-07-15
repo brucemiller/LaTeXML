@@ -229,6 +229,16 @@ sub find_documentclass_and_packages {
     $class = 'article'; }
   return ([$class, $classoptions, $oldstyle], @packages); }
 
+sub find_preambles {
+  my ($self, $doc) = @_;
+  my @preambles = ();
+  foreach my $pi ($doc->findnodes(".//processing-instruction('latexml')")) {
+    my $data = $pi->textContent;
+    while ($data =~ s/\s*([\w\-\_]*)=([\"\'])(.*?)\2//) {
+      if ($1 eq 'preamble') {
+        push(@preambles, $3); } } }
+  return join("\n", @preambles); }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Post::MathProcessor;
 use strict;
