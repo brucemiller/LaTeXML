@@ -157,7 +157,6 @@ sub addAccessibilityAnnotations {
   p_setAttribute($node, 'data-semantic', $meaning) if $meaning;
 
   # Part II: Bottom-up. Also check if argument of higher parent notation, mark if so.
-  my $index = 0;
   # II.1 id-carrying nodes always point to their referrees.
   if ($dual_pres_node && (my $id = $currentnode->getAttribute('xml:id'))) {
     # We already found the dual
@@ -165,6 +164,7 @@ sub addAccessibilityAnnotations {
     my @content_args = getQName($dual_content_node) eq 'ltx:XMApp' ? element_nodes($dual_content_node) : ($dual_content_node);
     my $arg_count = scalar(@content_args);
     # if no compound-apply, no need for top-level dual annotation, leave it to the descendants
+    my $index = 0;
     while (my $c_arg = shift @content_args) {
       if ($id eq ($c_arg->getAttribute('idref') || '')) {
         p_setAttribute($node, '_a11y', 'ref');    # mark as used in ref
@@ -175,6 +175,7 @@ sub addAccessibilityAnnotations {
   # II.2. applications children are directly pointing to their parents
   #   also fallback in the dual case, if the XMApp had an id but wasn't an arg
   if (!$arg && (getQName($currentnode->parentNode) eq 'ltx:XMApp')) {
+    my $index        = 0;
     my $prev_sibling = $currentnode;
     while ($prev_sibling = $prev_sibling->previousSibling) {
       $index++; }
