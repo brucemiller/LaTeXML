@@ -552,7 +552,7 @@ DefConstructor('\@@multlined DigestedBody',
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   afterConstruct => sub {
     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); },
-  reversion => '\begin{multlined}#1{multlined}');
+  reversion => '\begin{multlined}#1\end{multlined}');
 
 DefMacroI('\@multlined@tmp', 'RequiredKeyVals', sub {
     my ($gullet, $kv) = @_;
@@ -593,7 +593,7 @@ DefMacro('\enddcases',
   '\lx@end@ams@cases');
 
 DefMacro('\csname dcases*\endcsname',
-  '\lx@ams@cases{name=dcases,meaning=cases,left=\@left\{,style=\displaystyle,conditionmode=text}');
+  '\lx@ams@cases{name=dcases*,meaning=cases,left=\@left\{,style=\displaystyle,conditionmode=text}');
 DefMacro('\csname enddcases*\endcsname',
   '\lx@end@ams@cases');
 
@@ -603,7 +603,7 @@ DefMacro('\csname endrcases\endcsname',
   '\lx@end@ams@cases');
 
 DefMacro('\csname rcases*\endcsname',
-  '\lx@ams@cases{name=rcases,meaning=cases,right=\@right\},style=\textstyle,conditionmode=text}');
+  '\lx@ams@cases{name=rcases*,meaning=cases,right=\@right\},style=\textstyle,conditionmode=text}');
 DefMacro('\csname endrcases*\endcsname',
   '\lx@end@ams@cases');
 
@@ -613,12 +613,12 @@ DefMacro('\csname enddrcases\endcsname',
   '\lx@end@ams@cases');
 
 DefMacro('\csname drcases*\endcsname',
-  '\lx@ams@cases{name=drcases,meaning=cases,right=\@right\},style=\displaystyle,conditionmode=text}');
+  '\lx@ams@cases{name=drcases*,meaning=cases,right=\@right\},style=\displaystyle,conditionmode=text}');
 DefMacro('\csname enddrcases*\endcsname',
   '\lx@end@ams@cases');
 
 DefMacro('\csname cases*\endcsname',
-  '\lx@ams@cases{name=cases,meaning=cases,left=\@left\{,style=\textstyle,conditionmode=text}');
+  '\lx@ams@cases{name=cases*,meaning=cases,left=\@left\{,style=\textstyle,conditionmode=text}');
 DefMacro('\csname endcases*\endcsname',
   '\lx@end@ams@cases');
 
@@ -786,7 +786,7 @@ DefConstructor('\@@newgathered@dummy DigestedBody',
         $array],
       $array);
     return; },
-  reversion => '');
+  reversion => '\begin{gathered}#1\end{gathered}');
 
 DefMacro('\newgathered{}{}{}{}', sub {
     my ($gullet, $name, $pre_line, $post_line, $after) = @_;
