@@ -83,7 +83,7 @@ sub associateNodeHook {
       p_setAttribute($node, 'href', $href); }
     if (my $title = $sourcenode->getAttribute('title')) {
       p_setAttribute($node, 'title', $title); } }
-  $self->addAccessibilityAnnotations($node, $currentnode);
+  $self->addAccessibilityAnnotations($node, $currentnode) if $$self{a11y};
   return; }
 
 # Experiment: set accessibility attributes on the resulting presentation tree,
@@ -161,7 +161,8 @@ sub addAccessibilityAnnotations {
   if ($dual_pres_node && (my $id = $currentnode->getAttribute('xml:id'))) {
     # We already found the dual
     my $dual_content_node = $dual_pres_node->previousSibling;
-    my @content_args = getQName($dual_content_node) eq 'ltx:XMApp' ? element_nodes($dual_content_node) : ($dual_content_node);
+    my @content_args      = ($dual_content_node && getQName($dual_content_node)) eq 'ltx:XMApp' ?
+      element_nodes($dual_content_node) : ($dual_content_node);
     my $arg_count = scalar(@content_args);
     # if no compound-apply, no need for top-level dual annotation, leave it to the descendants
     my $index = 0;

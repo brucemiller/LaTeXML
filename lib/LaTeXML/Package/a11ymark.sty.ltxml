@@ -15,6 +15,9 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+DefConstructorI(T_CS('\@request@math@a11y'), undef, "<?latexml a11y='enabled'?>");
+AtBeginDocument(T_CS('\@request@math@a11y'));
+
 # Embellishment is hard to write, hard to speak, but describes exactly several cases
 # I will abbreviate it "emb", for now, and use it as a prefix
 DefMacro('\emb@atom{}{}', '\DUAL{\@CSYMBOL{#1}}{\@WRAP{#2}}');
