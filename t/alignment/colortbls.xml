@@ -3,6 +3,15 @@
 <?latexml package="colortbl"?>
 <?latexml package="dcolumn,longtable,hhline"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
+<?latexml preamble="\newcolumntype{A}{>{\color{white}\columncolor{red}[.5\tabcolsep]\raggedright}p{2cm}}"?>
+<?latexml preamble="\newcolumntype{B}{>{\columncolor{blue}[.5\tabcolsep]\color{yellow}\raggedright}
+p{3cm}}"?>
+<?latexml preamble="\newcolumntype{C}{>{\columncolor{yellow}[.5\tabcolsep]}D{.}{\cdot}{3.3}}"?>
+<?latexml preamble="\newcolumntype{E}{>{\large\bfseries\columncolor{cyan}[.5\tabcolsep]}c}"?>
+<?latexml preamble="\newcolumntype{F}{>{\color{white}\columncolor{magenta}[.5\tabcolsep]}c}"?>
+<?latexml preamble="\newcolumntype{G}{>{\columncolor[gray]{0.8}[.5\tabcolsep][\tabcolsep]}l}"?>
+<?latexml preamble="\newcolumntype{H}{>{\columncolor[gray]{0.8}}l}"?>
+<?latexml preamble="\newcolumntype{I}{>{\columncolor[gray]{0.8}[\tabcolsep][.5\tabcolsep]}D{.}{\cdot}{3.3}}"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
