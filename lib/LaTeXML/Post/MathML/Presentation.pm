@@ -121,11 +121,11 @@ sub addAccessibilityAnnotations {
     elsif ($dual_content_name eq 'ltx:XMTok') {
       $meaning = $dual_content_node->getAttribute('meaning'); }
     elsif ($dual_content_name eq 'ltx:XMApp') {
-      my $op_node   = $dual_content_node->firstChild;
-      my $op        = ($op_node && $op_node->getAttribute('meaning')) || '#op';
-      my @arg_nodes = element_nodes($dual_content_node);
-      my $arg_count = scalar(@arg_nodes) - 1;
-      $meaning = $op . '(' . join(",", map { '#' . $_ } (1 .. $arg_count)) . ')'; }
+      # another special case, from the \overline{x}_i land,
+      # we could get a deeply nested application tree with a lot of nodes which have no referrents
+      # but should be translated into the final data-semantic
+      # best to call out into a subroutine?
+      $meaning = get_dual_content_meaning($dual_content_node, 0); }
 # Note that the carrier ltx:XMDual is never passed in associateNode, but often requires an "arg". Recurse:
     $self->addAccessibilityAnnotations($node, $dual_pres_node->parentNode); }
   # tokens are simplest - if we know of a meaning, use that for accessibility
@@ -180,9 +180,32 @@ sub addAccessibilityAnnotations {
     my $prev_sibling = $currentnode;
     while ($prev_sibling = $prev_sibling->previousSibling) {
       $index++; }
-    $arg = $index ? $index : 'op'; }
+    $arg = $index ? $index : 'op';
+    # if this is a nested apply in a dual, and only then, obtain a suffix marker
+    my $parent = $currentnode->parentNode;
+    my $lvl    = 0;
+    while (getQName($parent) eq 'ltx:XMApp') {
+      $lvl++; $parent = $parent->parentNode; }
+    if ((getQName($parent) eq 'ltx:XMDual') && $lvl) {
+      $arg .= "_$lvl"; } }
   p_setAttribute($node, 'data-arg', $arg) if $arg;
   return; }
+
+sub get_dual_content_meaning {
+  my ($node, $lvl) = @_;
+  my @arg_nodes = element_nodes($node);
+  my $op_node   = shift @arg_nodes;
+  my $op        = $op_node ? $op_node->getAttribute('meaning') :
+    ($lvl ? '#op' . $lvl : '#op');
+  my @arg_strings = ();
+  my $index       = 0;
+  for my $arg_node (@arg_nodes) {
+    $index++;
+    if (getQName($arg_node) eq 'ltx:XMApp') {
+      push @arg_strings, get_dual_content_meaning($arg_node, $lvl + 1); }
+    else {
+      push @arg_strings, '#' . $index . ($lvl ? "_$lvl" : ""); } }    # will we need level suffixes?
+  return $op . '(' . join(",", @arg_strings) . ')'; }
 
 #================================================================================
 # Presentation MathML with Line breaking

@@ -24,9 +24,8 @@ AtBeginDocument(T_CS('\@request@math@a11y'));
 # I will abbreviate it "emb", for now, and use it as a prefix
 
 # \emb@atom{meaning}{presentation}
-DefMacro('\dual',                '\DUAL[hide_content_reversion=true]');
-DefMacro('\emb@atom{}{}',        '\dual{\@CSYMBOL{#1}}{\@WRAP{#2}}');
-DefMacro('\emb@build@apply{}{}', '\dual{\@APPLY{#1}}{\@WRAP{#2}}');
+DefMacro('\emb@atom{}{}',        '\DUAL[hide_content_reversion=true]{\@CSYMBOL{#1}}{\@WRAP{#2}}');
+DefMacro('\emb@build@apply{}{}', '\DUAL[hide_content_reversion=true]{\@APPLY{#1}}{\@WRAP{#2}}');
 
 sub emb_apply {
   my ($gullet, $base, $meaning, $emb, $invert_to_prefix) = @_;
@@ -41,7 +40,7 @@ sub emb_apply {
 sub emb_apply_two {    # one-or-two operations, can't fully reuse the simple case...
   my ($gullet, $base, $op1_meaning, $op1_pres, $op2_meaning, $op2_pres, $invert_to_prefix) = @_;
   if (!$op2_meaning && !$op2_pres) {    # one operation, use the simple apply call
-    return emb_apply(@_); }
+    return emb_apply($gullet, $base, $op1_meaning, $op1_pres, $invert_to_prefix); }
   # Case where we have two consecutive operations
   my ($cargs, $pargs) = dualize_arglist('#1', $base);
   my $ref_base = $$cargs[0];
@@ -60,6 +59,38 @@ DefMacro('\emb@apply{}{}{}[][]', \&emb_apply_two);
 # As with \emb@apply, but the presentation is right-to-left prefix "op2_pres op1_pres base"
 # \emb@preapply{base}{op1 meaning}{op1 pres}[op2 meaning][op2 pres]
 DefMacro('\emb@preapply{}{}{}[][]', sub { emb_apply_two(@_, 1); });
+
+# ADHOC for the very awkward example we have so far.
+# and the order of presentation args is inverted, while the semantic one is kept.
+# Example \PrePostArgCrosswise{x}{median}{\overline}{index}{_}{i}
+DefMacro('\PrePostArgCrosswise{}{}{}{}{}{}', sub {
+    my ($gullet, $base, $op1_meaning, $op1_pres, $op2_meaning, $op2_pres, $op2_rhs_var) = @_;
+    my ($cargs, $pargs) = dualize_arglist('#1#2', $base, $op2_rhs_var);
+    my ($ref_base, $ref_rhs_var) = @$cargs;
+    my ($arg_base, $arg_rhs_var) = @$pargs;
+
+    my $presentation = Tokens(Tokens($op1_pres, $arg_base), $op2_pres, $arg_rhs_var);
+    my $content      = Tokens(Invocation(T_CS('\@CSYMBOL'), $op1_meaning),
+      Invocation(T_CS('\@APPLY'), Tokens(
+          Invocation(T_CS('\@CSYMBOL'), $op2_meaning),
+          $ref_base, $ref_rhs_var)));
+    return Invocation(T_CS('\emb@build@apply'), $content, $presentation)->unlist; });
+
+# ADHOC - terrible low-level soup macro with 7 arguments,
+# just an example of things being possible...
+# \PostArgsCrosswise{x}{derivative-implicit-variable}{^}{\derivemark{1}}{index}{_}{i}
+DefMacro('\PostArgsCrosswise{}{}{}{}{}{}{}', sub {
+    my ($gullet, $base, $op1_meaning, $op1_pres, $op1_rhs_var, $op2_meaning, $op2_pres, $op2_rhs_var) = @_;
+    my ($cargs, $pargs) = dualize_arglist('#1#2', $base, $op1_rhs_var, $op2_rhs_var);
+    my ($ref_base, $ref_rhs_var1, $ref_rhs_var2) = @$cargs;
+    my ($arg_base, $arg_rhs_var1, $arg_rhs_var2) = @$pargs;
+
+    my $presentation = Tokens(Tokens($arg_base, $op1_pres, $arg_rhs_var1), $op2_pres, $arg_rhs_var2);
+    my $content      = Tokens(Invocation(T_CS('\@CSYMBOL'), $op1_meaning),
+      Invocation(T_CS('\@APPLY'), Tokens(
+          Invocation(T_CS('\@CSYMBOL'), $op2_meaning), $ref_base, $ref_rhs_var2)),
+      $ref_rhs_var1);
+    return Invocation(T_CS('\emb@build@apply'), $content, $presentation)->unlist; });
 
 ## I. Calculus
 DefConstructor('\diffd', '<ltx:XMTok meaning="differential" name="diffd" role="DIFFOP">d</ltx:XMTok>');
@@ -83,12 +114,35 @@ DefMacro('\@sup@apply{}{}', sub {
       Tokens($$cargs[1], $$cargs[0]),
       Invocation(T_CS('\@SUPERSCRIPT'), @$pargs))->unlist; });
 DefMacro('\supop{}{}{}', '\@sup@apply{#1}{\emb@atom{#2}{#3}}');
+DefMacro('\@sub@apply{}{}', sub {
+    my ($gullet, $base, $script) = @_;
+    my ($cargs, $pargs) = dualize_arglist('#1#2', $base, $script);
+    return Invocation(T_CS('\emb@build@apply'),
+      Tokens($$cargs[1], $$cargs[0]),
+      Invocation(T_CS('\@SUBCRIPT'), @$pargs))->unlist; });
+DefMacro('\subop{}{}{}', '\@sub@apply{#1}{\emb@atom{#2}{#3}}');
+
 DefMath('\power{}{}', "{#1^{#2}}", meaning => 'power',
   reversion              => '#1^{#2}',
   hide_content_reversion => 1);
+
+DefMath('\index{}{}', "{#1_{#2}}", meaning => 'index',
+  reversion              => '#1_{#2}',
+  hide_content_reversion => 1);
+# only mark the script as a dual, so that we can remix it
+DefMacro('\indexArg{}', sub {
+    my ($gullet, $arg) = @_;
+    my ($cargs, $pargs) = dualize_arglist('#1', $arg);
+    return Invocation(T_CS('\emb@build@apply'),
+      Tokens(Invocation(T_CS('\@CSYMBOL'), 'index'), $$cargs[0]),
+      Tokens(T_SUB, $$pargs[0]))->unlist; });
+DefMacro('\supop{}{}{}', '\@sup@apply{#1}{\emb@atom{#2}{#3}}');
+
 DefMacro('\frobulator',  '\emb@atom{frobulator}{x\'}');
 DefMacro('\transpose{}', '\supop{#1}{transpose}{T}');
 DefMacro('\adjoint{}',   '\supop{#1}{adjoint}{\dagger}');
+# This works well, but can't be remixed crosswise as \median{x}_i:
+DefMacro('\median', '\emb@atom{median}{\overline}');
 
 # What I Really Want to Say here, but can't is likely:
 # DefMath('\derivemark{}', '\derivemark@pres{#1}', meaning=>'#1');
