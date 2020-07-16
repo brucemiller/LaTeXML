@@ -163,7 +163,7 @@ sub addAccessibilityAnnotations {
     my $dual_content_node = $dual_pres_node->previousSibling;
     # note that if we never find the 'idref', arg is never set
     if (my $xmref = $LaTeXML::Post::DOCUMENT->findnode('//ltx:XMRef[@idref="' . $id . '"]', $dual_content_node)) {
-      p_setAttribute($xmref, '_a11y', 'ref');    # mark as used in ref
+      p_setAttribute($node, '_a11y', 'ref');    # mark as used in ref
       my $index  = 0;
       my $parent = $xmref->parentNode;
       my $c_arg  = $xmref;
