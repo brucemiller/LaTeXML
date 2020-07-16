@@ -2617,7 +2617,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p3">
       <equation xml:id="S5.Ex40">
-        <Math mode="display" tex="a=\begin{dcases}E=mc^{2}&amp;Nothing to see here (text in math)\\&#10;\int x-3\,dx&amp;Integral is display style (text in math)\end{dcases}" text="a = cases@(E = m * c ^ 2, [Nothing to see here (text in math)], integral@(x) - 3 * d * x, [Integral is display style (text in math)])" xml:id="S5.Ex40.m1">
+        <Math mode="display" tex="a=\begin{dcases*}E=mc^{2}&amp;Nothing to see here (text in math)\\&#10;\int x-3\,dx&amp;Integral is display style (text in math)\end{dcases*}" text="a = cases@(E = m * c ^ 2, [Nothing to see here (text in math)], integral@(x) - 3 * d * x, [Integral is display style (text in math)])" xml:id="S5.Ex40.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -2683,7 +2683,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p4">
       <equation xml:id="S5.Ex41">
-        <Math mode="display" tex="\begin{rcases}E=mc^{2}&amp;5^{6}\quad andsoon\\&#10;\int x-3\,dx&amp;\int x\,dx\end{rcases}=b" text="cases@(E = m * c ^ 2, list@(5 ^ 6, a * n * d * s * o * o * n), integral@(x) - 3 * d * x, integral@(x * differential-d@(x))) = b" xml:id="S5.Ex41.m1">
+        <Math mode="display" tex="\begin{rcases}E=mc^{2}&amp;5^{6}\quad\text{and so on}\\&#10;\int x-3\,dx&amp;\int x\,dx\end{rcases}=b" text="cases@(E = m * c ^ 2, list@(5 ^ 6, [and so on]), integral@(x) - 3 * d * x, integral@(x * differential-d@(x))) = b" xml:id="S5.Ex41.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -2717,26 +2717,17 @@ Then a switch of tag forms.</p>
                         <XMDual xml:id="S5.Ex41.m1.2">
                           <XMApp>
                             <XMTok meaning="list"/>
-                            <XMRef idref="S5.Ex41.m1.2.1"/>
                             <XMRef idref="S5.Ex41.m1.2.2"/>
+                            <XMRef idref="S5.Ex41.m1.2.1"/>
                           </XMApp>
                           <XMWrap>
-                            <XMApp xml:id="S5.Ex41.m1.2.1">
+                            <XMApp xml:id="S5.Ex41.m1.2.2">
                               <XMTok role="SUPERSCRIPTOP" scriptpos="post6"/>
                               <XMTok meaning="5" role="NUMBER">5</XMTok>
                               <XMTok fontsize="70%" meaning="6" role="NUMBER">6</XMTok>
                             </XMApp>
-                            <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
-                            <XMApp xml:id="S5.Ex41.m1.2.2">
-                              <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">n</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">d</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">s</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">o</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">o</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">n</XMTok>
-                            </XMApp>
+                            <XMTok name="quad" role="PUNCT"> </XMTok>
+                            <XMText xml:id="S5.Ex41.m1.2.1">and so on</XMText>
                           </XMWrap>
                         </XMDual>
                       </XMCell>
@@ -2783,7 +2774,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p5">
       <equation xml:id="S5.Ex42">
-        <Math mode="display" tex="\begin{rcases}x^{2}&amp;for $\int x\,dx&gt;0$\\&#10;x^{3}&amp;else\end{rcases}\Rightarrow\cdots" text="cases@(x ^ 2, [for &gt;∫⁢xdx0], x ^ 3, [else]) Rightarrow cdots" xml:id="S5.Ex42.m1">
+        <Math mode="display" tex="\begin{rcases*}x^{2}&amp;for $\int x\,dx&gt;0$\\&#10;x^{3}&amp;else\end{rcases*}\Rightarrow\cdots" text="cases@(x ^ 2, [for &gt;∫⁢xdx0], x ^ 3, [else]) Rightarrow cdots" xml:id="S5.Ex42.m1">
           <XMath>
             <XMApp>
               <XMTok name="Rightarrow" role="ARROW">⇒</XMTok>
@@ -2851,7 +2842,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p6">
       <equation xml:id="S5.Ex43">
-        <Math mode="display" tex="\begin{drcases}E=mc^{2}&amp;5^{6}\quad andsoon\\&#10;\int x-3\,dx&amp;\int x\,dx\end{drcases}=b" text="cases@(E = m * c ^ 2, list@(5 ^ 6, a * n * d * s * o * o * n), integral@(x) - 3 * d * x, integral@(x * differential-d@(x))) = b" xml:id="S5.Ex43.m1">
+        <Math mode="display" tex="\begin{drcases}E=mc^{2}&amp;5^{6}\quad\text{and so on}\\&#10;\int x-3\,dx&amp;\int x\,dx\end{drcases}=b" text="cases@(E = m * c ^ 2, list@(5 ^ 6, [and so on]), integral@(x) - 3 * d * x, integral@(x * differential-d@(x))) = b" xml:id="S5.Ex43.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -2885,26 +2876,17 @@ Then a switch of tag forms.</p>
                         <XMDual xml:id="S5.Ex43.m1.2">
                           <XMApp>
                             <XMTok meaning="list"/>
-                            <XMRef idref="S5.Ex43.m1.2.1"/>
                             <XMRef idref="S5.Ex43.m1.2.2"/>
+                            <XMRef idref="S5.Ex43.m1.2.1"/>
                           </XMApp>
                           <XMWrap>
-                            <XMApp xml:id="S5.Ex43.m1.2.1">
+                            <XMApp xml:id="S5.Ex43.m1.2.2">
                               <XMTok role="SUPERSCRIPTOP" scriptpos="post6"/>
                               <XMTok meaning="5" role="NUMBER">5</XMTok>
                               <XMTok fontsize="70%" meaning="6" role="NUMBER">6</XMTok>
                             </XMApp>
-                            <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
-                            <XMApp xml:id="S5.Ex43.m1.2.2">
-                              <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">n</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">d</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">s</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">o</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">o</XMTok>
-                              <XMTok font="italic" role="UNKNOWN">n</XMTok>
-                            </XMApp>
+                            <XMTok name="quad" role="PUNCT"> </XMTok>
+                            <XMText xml:id="S5.Ex43.m1.2.1">and so on</XMText>
                           </XMWrap>
                         </XMDual>
                       </XMCell>
@@ -2951,7 +2933,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p7">
       <equation xml:id="S5.Ex44">
-        <Math mode="display" tex="\begin{drcases}x^{2}&amp;for $\int x\,dx&gt;0$\\&#10;\int x^{3}\,x&amp;else\end{drcases}\Rightarrow\cdots" text="cases@(x ^ 2, [for &gt;∫⁢xdx0], integral@(x ^ 3 * x), [else]) Rightarrow cdots" xml:id="S5.Ex44.m1">
+        <Math mode="display" tex="\begin{drcases*}x^{2}&amp;for $\int x\,dx&gt;0$\\&#10;\int x^{3}\,x&amp;else\end{drcases*}\Rightarrow\cdots" text="cases@(x ^ 2, [for &gt;∫⁢xdx0], integral@(x ^ 3 * x), [else]) Rightarrow cdots" xml:id="S5.Ex44.m1">
           <XMath>
             <XMApp>
               <XMTok name="Rightarrow" role="ARROW">⇒</XMTok>
@@ -3026,7 +3008,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S5.p8">
       <equation xml:id="S5.Ex45">
-        <Math mode="display" tex="\text{foo}=\begin{cases}\pi&amp;if something\\&#10;\int\Omega^{\Xi}\,\Omega&amp;otherwise\end{cases}" text="[foo] = cases@(pi, [if something], integral@(Omega ^ Xi * Omega), [otherwise])" xml:id="S5.Ex45.m1">
+        <Math mode="display" tex="\text{foo}=\begin{cases*}\pi&amp;if something\\&#10;\int\Omega^{\Xi}\,\Omega&amp;otherwise\end{cases*}" text="[foo] = cases@(pi, [if something], integral@(Omega ^ Xi * Omega), [otherwise])" xml:id="S5.Ex45.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -4261,7 +4243,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S8.p3">
       <equation xml:id="S8.Ex64">
-        <Math mode="display" tex="a=\frac{\begin{multlined}\displaystyle xy+xy+\int xy\,\text{dx}+xy+xy\\&#10;\displaystyle+xy+xy+xy+xy{multlined}\displaystyle xy+xy+\int xy\,\text{dx}+xy+%&#10;xy\\&#10;\displaystyle+xy+xy+xy+xy}{z}=\frac{\displaystyle\begin{multlined}%&#10;\displaystyle xy+xy+\int xy\,\text{dx}+xy+xy\\&#10;\displaystyle+xy+xy+xy+xy{multlined}\displaystyle xy+xy+\int xy\,\text{dx}+xy+%&#10;xy\\&#10;\displaystyle+xy+xy+xy+xy}{z}" text="a = (x * y + x * y + integral@(x * y * [dx]) + x * y + x * y + x * y + x * y + x * y + x * y) / z = (x * y + x * y + integral@(x * y * [dx]) + x * y + x * y + x * y + x * y + x * y + x * y) / z" xml:id="S8.Ex64.m1">
+        <Math mode="display" tex="a=\frac{\begin{multlined}\displaystyle xy+xy+\int xy\,\text{dx}+xy+xy\\&#10;\displaystyle+xy+xy+xy+xy\end{multlined}\displaystyle xy+xy+\int xy\,\text{dx}%&#10;+xy+xy\\&#10;\displaystyle+xy+xy+xy+xy}{z}=\frac{\displaystyle\begin{multlined}%&#10;\displaystyle xy+xy+\int xy\,\text{dx}+xy+xy\\&#10;\displaystyle+xy+xy+xy+xy\end{multlined}\displaystyle xy+xy+\int xy\,\text{dx}%&#10;+xy+xy\\&#10;\displaystyle+xy+xy+xy+xy}{z}" text="a = (x * y + x * y + integral@(x * y * [dx]) + x * y + x * y + x * y + x * y + x * y + x * y) / z = (x * y + x * y + integral@(x * y * [dx]) + x * y + x * y + x * y + x * y + x * y + x * y) / z" xml:id="S8.Ex64.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="multirelation"/>
@@ -4788,7 +4770,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S9.p2">
       <equation xml:id="S9.Ex65">
-        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex65.m1">
+        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}\end{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex65.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -4836,7 +4818,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S9.p3">
       <equation xml:id="S9.Ex66">
-        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex66.m1">
+        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}\end{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex66.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -4884,7 +4866,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S9.p4">
       <equation xml:id="S9.Ex67">
-        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex67.m1">
+        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}\end{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex67.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -4932,7 +4914,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S9.p5">
       <equation xml:id="S9.Ex68">
-        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex68.m1">
+        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}\end{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex68.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -4980,7 +4962,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S9.p6">
       <equation xml:id="S9.Ex69">
-        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex69.m1">
+        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}\end{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex69.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -5028,7 +5010,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S9.p7">
       <equation xml:id="S9.Ex70">
-        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex70.m1">
+        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}\end{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex70.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -5076,7 +5058,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S9.p8">
       <equation xml:id="S9.Ex71">
-        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex71.m1">
+        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}\end{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex71.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -5124,7 +5106,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S9.p9">
       <equation xml:id="S9.Ex72">
-        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex72.m1">
+        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}\end{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex72.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -5172,7 +5154,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S9.p10">
       <equation xml:id="S9.Ex73">
-        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex73.m1">
+        <Math mode="display" tex="A=\begin{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}\end{multlined}\displaystyle\boxed{first}\\&#10;\displaystyle\boxed{last}B" text="A = f * i * r * s * t * l * a * s * t * B" xml:id="S9.Ex73.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -6889,7 +6871,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S10.p16">
       <equation xml:id="S10.Ex82">
-        <Math mode="display" tex="\begin{multlined}\displaystyle\boxed{Firstline}\\&#10;\displaystyle\boxed{Secondline}\\&#10;\displaystyle L+E+F+T\\&#10;\displaystyle R+I+G+H+T\\&#10;\displaystyle L+E+F+T\\&#10;\displaystyle R+I+G+H+T\\&#10;\displaystyle\boxed{WupWup}\\&#10;\displaystyle\boxed{Lastline}{multlined}\displaystyle\boxed{Firstline}\\&#10;\displaystyle\boxed{Secondline}\\&#10;\displaystyle L+E+F+T\\&#10;\displaystyle R+I+G+H+T\\&#10;\displaystyle L+E+F+T\\&#10;\displaystyle R+I+G+H+T\\&#10;\displaystyle\boxed{WupWup}\\&#10;\displaystyle\boxed{Lastline}" text="F * i * r * s * t * l * i * n * e * S * e * c * o * n * d * l * i * n * e * L + E + F + T * R + I + G + H + T * L + E + F + T * R + I + G + H + T * W * u * p * W * u * p * L * a * s * t * l * i * n * e" xml:id="S10.Ex82.m1">
+        <Math mode="display" tex="\begin{multlined}\displaystyle\boxed{Firstline}\\&#10;\displaystyle\boxed{Secondline}\\&#10;\displaystyle L+E+F+T\\&#10;\displaystyle R+I+G+H+T\\&#10;\displaystyle L+E+F+T\\&#10;\displaystyle R+I+G+H+T\\&#10;\displaystyle\boxed{WupWup}\\&#10;\displaystyle\boxed{Lastline}\end{multlined}\displaystyle\boxed{Firstline}\\&#10;\displaystyle\boxed{Secondline}\\&#10;\displaystyle L+E+F+T\\&#10;\displaystyle R+I+G+H+T\\&#10;\displaystyle L+E+F+T\\&#10;\displaystyle R+I+G+H+T\\&#10;\displaystyle\boxed{WupWup}\\&#10;\displaystyle\boxed{Lastline}" text="F * i * r * s * t * l * i * n * e * S * e * c * o * n * d * l * i * n * e * L + E + F + T * R + I + G + H + T * L + E + F + T * R + I + G + H + T * W * u * p * W * u * p * L * a * s * t * l * i * n * e" xml:id="S10.Ex82.m1">
           <XMath>
             <XMDual>
               <XMApp>
@@ -7056,7 +7038,7 @@ Then a switch of tag forms.</p>
     <title><tag close=" ">11</tag>Stepped lines</title>
     <para xml:id="S11.p1">
       <equation xml:id="S11.Ex83">
-        <Math mode="display" text="[1*  ]@x@=@1@,@quad@x@+@1@=@2@[ over]@[2*  ]@y@=@2@[ over]" xml:id="S11.Ex83.m1">
+        <Math mode="display" tex="\begin{gathered}\displaystyle\text{\hbox to 0.0pt{1}$*$\quad\hfil}x=1,\quad x+%&#10;1=2\text{\quad{over}}\\&#10;\displaystyle\text{\hbox to 0.0pt{2}$*$\quad\hfil}y=2\text{\quad{over}}\end{gathered}" text="[1*  ]@x@=@1@,@quad@x@+@1@=@2@[ over]@[2*  ]@y@=@2@[ over]" xml:id="S11.Ex83.m1">
           <XMath>
             <XMDual>
               <XMWrap rule="Anything,">
@@ -7142,7 +7124,7 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S11.p2">
       <equation xml:id="S11.Ex84">
-        <Math mode="display" text="[See:]@s@=@2.8@,@quad@s@+@0.2@=@3@[the end]@[See:]@t@=@4.5@[the end]" xml:id="S11.Ex84.m1">
+        <Math mode="display" tex="\begin{gathered}\displaystyle\text{See:}s=2.8,\quad s+0.2=3\text{the end}\\&#10;\displaystyle\text{See:}t=4.5\text{the end}\end{gathered}" text="[See:]@s@=@2.8@,@quad@s@+@0.2@=@3@[the end]@[See:]@t@=@4.5@[the end]" xml:id="S11.Ex84.m1">
           <XMath>
             <XMDual>
               <XMWrap rule="Anything,">

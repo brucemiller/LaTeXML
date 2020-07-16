@@ -20,11 +20,11 @@ DefMath('\ring{}', "\x{030A}", operator_role => 'OVERACCENT');
 
 DefMacro('\lx@acc@size', '\scriptstyle');    # should be \scriptscriptstyle??
 
-# \accentset{acc}{base}
-DefMacro('\accentset{}{}', '\lx@overaccentset{{\lx@acc@size #1}}{#2}');
-DefConstructor('\lx@overaccentset Digested Digested',
+DefMacro('\accentset{}{}', '\lx@overaccentset{#1}{#2}');
+DefConstructor('\lx@overaccentset ScriptStyle Digested',
   "<ltx:XMApp><ltx:XMWrap role='OVERACCENT'>#1</ltx:XMWrap><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
-  sizer => '#1');                            # Close enough?
+  sizer => '#1',                             # Close enough?
+  alias => '\accentset');
 
 DefMath('\dddot{}', "\x{02D9}\x{02D9}\x{02D9}",
   operator_role => 'OVERACCENT');            # DOT ABOVE
@@ -47,20 +47,19 @@ DefMacro('\lx@if@isaccent{}{}{}', sub {
       ? $true : $false); });
 
 DefMacro('\underaccent{}{}',
-  '\lx@if@isaccent{#1}{\lx@converttounder{#1{#2}}}{\lx@underaccentset{{\lx@acc@size #1}}{#2}}');
-
-DefConstructor('\lx@underaccentset Digested Digested',
+  '\lx@if@isaccent{#1}{\lx@converttounder{#1}{#2}{#1{#2}}}{\lx@underaccentset{#1}{#2}}');
+DefConstructor('\lx@underaccentset ScriptStyle Digested',
   "<ltx:XMApp><ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
-  sizer => '#1');    # Close enough?
-
-DefConstructor('\lx@converttounder{}', sub {
-    my ($document, $thing) = @_;
+  sizer => '#1',              # Close enough?
+  alias => '\underaccent');
+DefConstructor('\lx@converttounder Undigested Undigested {}', sub {
+    my ($document, $ignore1, $ignore2, $thing) = @_;
     $document->absorb($thing);
     # replace role=OVERACCENT with UNDERACCENT
     my $node = $document->getNode->lastChild;
     if (my $acc = $document->findnode("ltx:XMTok[\@role='OVERACCENT']", $node)) {
-      $acc->setAttribute(role => 'UNDERACCENT'); }
-});
+      $acc->setAttribute(role => 'UNDERACCENT'); } },
+  reversion => '\underaccent{#1}{#2}');
 
 # \undertilde{base}
 DefMath('\undertilde Digested', UTF(0x7E),
