@@ -125,6 +125,14 @@ DefMacro('\subop{}{}{}', '\@sub@apply{#1}{\emb@atom{#2}{#3}}');
 DefMath('\power{}{}', "{#1^{#2}}", meaning => 'power',
   reversion              => '#1^{#2}',
   hide_content_reversion => 1);
+DefMath('\fnpower{}{}', "{#1^{#2}}", meaning => 'functional-power',
+  reversion              => '#1^{#2}',
+  hide_content_reversion => 1);
+DefMath('\fninverse{}', "#1^{-1}", meaning => "inverse", role => 'OPFUNCTION',
+  reversion              => '#1^{-1}',
+  hide_content_reversion => 1);
+DefMath('\laplacian', '\\nabla^2',
+  meaning => 'Laplacian', role => 'OPERATOR', hide_content_reversion => 1);
 
 DefMath('\index{}{}', "{#1_{#2}}", meaning => 'index',
   reversion              => '#1_{#2}',
@@ -138,7 +146,8 @@ DefMacro('\indexArg{}', sub {
       Tokens(T_SUB, $$pargs[0]))->unlist; });
 DefMacro('\supop{}{}{}', '\@sup@apply{#1}{\emb@atom{#2}{#3}}');
 
-DefMacro('\frobulator',  '\emb@atom{frobulator}{x\'}');
+DefMacro('\frobulator', '\emb@atom{frobulator}{x\'}');
+
 DefMacro('\transpose{}', '\supop{#1}{transpose}{T}');
 DefMacro('\adjoint{}',   '\supop{#1}{adjoint}{\dagger}');
 # This works well, but can't be remixed crosswise as \median{x}_i:
