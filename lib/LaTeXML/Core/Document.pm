@@ -1491,10 +1491,14 @@ sub compactXMDual {
     $n_arg->unbindNode;
     $compact_apply->appendChild($n_arg); }
   # if the dual has any attributes migrate them to the new XMApp
+  my %transfer_attrs = ();
   for my $attr ($dual->attributes) {
     if ($attr->nodeType == XML_ATTRIBUTE_NODE) {
-      $compact_apply->setAttribute($attr->nodeName, $attr->getValue); } }
+      $transfer_attrs{ $attr->nodeName } = $attr->getValue; } }
   $self->replaceNode($dual, $compact_apply);
+  # transfer the attributes after replacing, so that the bookkeeping has been undone
+  for my $key (keys %transfer_attrs) {
+    $self->setAttribute($compact_apply, $key, $transfer_attrs{$key}); }
   return; }
 
 # Replace an XMDual with one of its branches
