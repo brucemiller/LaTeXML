@@ -163,16 +163,15 @@ sub addAccessibilityAnnotations {
     my $dual_content_node = $dual_pres_node->previousSibling;
     # note that if we never find the 'idref', arg is never set
     if (my $xmref = $LaTeXML::Post::DOCUMENT->findnode('//ltx:XMRef[@idref="' . $id . '"]', $dual_content_node)) {
-      print STDERR "XMREF: ", $xmref->toString(1);
       p_setAttribute($xmref, '_a11y', 'ref');    # mark as used in ref
-      my $index     = 0;
-      my @arg_nodes = element_nodes($xmref->parentNode);
-      my $c_arg     = $xmref;
+      my $index  = 0;
+      my $parent = $xmref->parentNode;
+      my $c_arg  = $xmref;
       while ($c_arg = $c_arg->previousSibling) {
         $index++; }
-      $arg = $index || (scalar(@arg_nodes) >= 2 ? 'op' : '1');
-      my $parent = $xmref->parentNode;
-      my $lvl    = -1;
+      $arg = $index || ((getQName($xmref->parentNode) eq 'ltx:XMDual') ? '1' : ($xmref->nextSibling ? 'op' : '1'));
+      # compute a level suffix if nested within main dual
+      my $lvl = -1;
       while (getQName($parent) eq 'ltx:XMApp') {
         $parent = $parent->parentNode;
         $lvl++; }
