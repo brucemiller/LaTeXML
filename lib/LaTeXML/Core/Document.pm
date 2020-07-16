@@ -1468,8 +1468,8 @@ sub compactXMDual {
     # Next up: differences. If:
     # 1) we saw such a difference beforehand, or
     # 2) the tree is too complex - give up on compacting and return.
-    # we only handle two XMToks differing for now.
-    if ($single_duality || ($self->getNodeQName($c_arg) ne 'ltx:XMTok') || $self->getNodeQName($p_arg) ne 'ltx:XMTok') {
+    # we handle a single content-side XMTok, to any XM* presentation subtree differing for now.
+    if ($single_duality || ($self->getNodeQName($c_arg) ne 'ltx:XMTok')) {
       return; }
     else { # otherwise we can compact this case. but delay actual libxml changes until we are *sure* the entire tree is compactable
       $single_duality = [$c_arg, $p_arg];
