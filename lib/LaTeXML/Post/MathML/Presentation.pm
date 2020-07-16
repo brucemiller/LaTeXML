@@ -161,18 +161,22 @@ sub addAccessibilityAnnotations {
   if ($dual_pres_node && (my $id = $currentnode->getAttribute('xml:id'))) {
     # We already found the dual
     my $dual_content_node = $dual_pres_node->previousSibling;
-    my @content_args      = ($dual_content_node && getQName($dual_content_node)) eq 'ltx:XMApp' ?
-      element_nodes($dual_content_node) : ($dual_content_node);
-    my $arg_count = scalar(@content_args);
-    # if no compound-apply, no need for top-level dual annotation, leave it to the descendants
-    my $index = 0;
-    while (my $c_arg = shift @content_args) {
-      if ($id eq ($c_arg->getAttribute('idref') || '')) {
-        p_setAttribute($node, '_a11y', 'ref');    # mark as used in ref
-        $arg = $index || ($arg_count >= 2 ? 'op' : '1');
-        last;
-      } else {    # note that if we never find the 'idref', arg is never set
-        $index++; } } }
+    # note that if we never find the 'idref', arg is never set
+    if (my $xmref = $LaTeXML::Post::DOCUMENT->findnode('//ltx:XMRef[@idref="' . $id . '"]', $dual_content_node)) {
+      print STDERR "XMREF: ", $xmref->toString(1);
+      p_setAttribute($xmref, '_a11y', 'ref');    # mark as used in ref
+      my $index     = 0;
+      my @arg_nodes = element_nodes($xmref->parentNode);
+      my $c_arg     = $xmref;
+      while ($c_arg = $c_arg->previousSibling) {
+        $index++; }
+      $arg = $index || (scalar(@arg_nodes) >= 2 ? 'op' : '1');
+      my $parent = $xmref->parentNode;
+      my $lvl    = -1;
+      while (getQName($parent) eq 'ltx:XMApp') {
+        $parent = $parent->parentNode;
+        $lvl++; }
+      $arg .= "_$lvl" if ($lvl > 0); } }
   # II.2. applications children are directly pointing to their parents
   #   also fallback in the dual case, if the XMApp had an id but wasn't an arg
   if (!$arg && (getQName($currentnode->parentNode) eq 'ltx:XMApp')) {
@@ -180,14 +184,7 @@ sub addAccessibilityAnnotations {
     my $prev_sibling = $currentnode;
     while ($prev_sibling = $prev_sibling->previousSibling) {
       $index++; }
-    $arg = $index ? $index : 'op';
-    # if this is a nested apply in a dual, and only then, obtain a suffix marker
-    my $parent = $currentnode->parentNode;
-    my $lvl    = 0;
-    while (getQName($parent) eq 'ltx:XMApp') {
-      $lvl++; $parent = $parent->parentNode; }
-    if ((getQName($parent) eq 'ltx:XMDual') && $lvl) {
-      $arg .= "_$lvl"; } }
+    $arg = $index ? $index : 'op'; }
   p_setAttribute($node, 'data-arg', $arg) if $arg;
   return; }
 
