@@ -126,17 +126,14 @@ DefMath('\power{}{}', "{#1^{#2}}", meaning => 'power',
   reversion              => '#1^{#2}',
   hide_content_reversion => 1);
 DefMath('\fnpower{}{}', "{#1^{#2}}", meaning => 'functional-power',
-  reversion              => '#1^{#2}',
-  hide_content_reversion => 1);
+  reversion => '#1^{#2}', hide_content_reversion => 1);
 DefMath('\fninverse{}', "#1^{-1}", meaning => "inverse", role => 'OPFUNCTION',
-  reversion              => '#1^{-1}',
+  reversion => '#1^{-1}', hide_content_reversion => 1);
+DefMath('\laplacian', '\nabla^2', meaning => 'Laplacian', role => 'OPERATOR',
   hide_content_reversion => 1);
-DefMath('\laplacian', '\\nabla^2',
-  meaning => 'Laplacian', role => 'OPERATOR', hide_content_reversion => 1);
-
 DefMath('\index{}{}', "{#1_{#2}}", meaning => 'index',
-  reversion              => '#1_{#2}',
-  hide_content_reversion => 1);
+  reversion => '#1_{#2}', hide_content_reversion => 1);
+
 # only mark the script as a dual, so that we can remix it
 DefMacro('\indexArg{}', sub {
     my ($gullet, $arg) = @_;
@@ -200,6 +197,16 @@ DefMacro('\fnderive{}{}', '\fnderive@build{#1}{\derivemark{#2}}');
 DefMath('\fnderive@build{}{}', '#1^#2',
   meaning                => 'derivative-implicit-variable',
   hide_content_reversion => 1);
+
+## Circumfix, applicative:
+DefMath('\norm{}', '|\mathbf{#1}|', meaning => 'norm', role => 'ID',
+  reversion => '|\mathbf{#1}|', hide_content_reversion => 1);
+DefMath('\determinant{}', '|\mathbf{#1}|', meaning => 'determinant', role => 'ID',
+  reversion => '|\mathbf{#1}|', hide_content_reversion => 1);
+DefMath('\innerp{}{}', '\left<\mathbf{#1},\mathbf{#2}\right>', meaning => 'inner-product', role => 'ID',
+  reversion => '\left<\mathbf{#1},\mathbf{#2}\right>', hide_content_reversion => 1);
+DefMath('\legendre{}{}', '(#1|#2)', meaning => 'Legendre-symbol', role => 'ID',
+  reversion => '(#1|#2)', hide_content_reversion => 1);
 
 ################################################################################################################
 
