@@ -1490,11 +1490,10 @@ sub compactXMDual {
       $n_arg = $p_arg; }
     $n_arg->unbindNode;
     $compact_apply->appendChild($n_arg); }
-  # if the dual has a role/id migrate them to the XMApp
-  for my $attr_key (qw(role xml:id)) {
-    if (my $attr_val = $dual->getAttribute($attr_key)) {
-      $dual->removeAttribute($attr_key);
-      $compact_apply->setAttribute($attr_key, $attr_val); } }
+  # if the dual has any attributes migrate them to the new XMApp
+  for my $attr ($dual->attributes) {
+    if ($attr->nodeType == XML_ATTRIBUTE_NODE) {
+      $compact_apply->setAttribute($attr->nodeName, $attr->getValue); } }
   $self->replaceNode($dual, $compact_apply);
   return; }
 
