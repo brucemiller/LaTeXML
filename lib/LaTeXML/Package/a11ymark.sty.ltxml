@@ -81,7 +81,7 @@ DefMacro('\PrePostArgCrosswise{}{}{}{}{}{}', sub {
 # \PostArgsCrosswise{x}{derivative-implicit-variable}{^}{\derivemark{1}}{index}{_}{i}
 DefMacro('\PostArgsCrosswise{}{}{}{}{}{}{}', sub {
     my ($gullet, $base, $op1_meaning, $op1_pres, $op1_rhs_var, $op2_meaning, $op2_pres, $op2_rhs_var) = @_;
-    my ($cargs, $pargs) = dualize_arglist('#1#2', $base, $op1_rhs_var, $op2_rhs_var);
+    my ($cargs, $pargs) = dualize_arglist('#1#2#3', $base, $op1_rhs_var, $op2_rhs_var);
     my ($ref_base, $ref_rhs_var1, $ref_rhs_var2) = @$cargs;
     my ($arg_base, $arg_rhs_var1, $arg_rhs_var2) = @$pargs;
 
