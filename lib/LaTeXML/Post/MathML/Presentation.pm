@@ -125,7 +125,7 @@ sub addAccessibilityAnnotations {
       # we could get a deeply nested application tree with a lot of nodes which have no referrents
       # but should be translated into the final data-semantic
       # best to call out into a subroutine?
-      $meaning = get_dual_content_meaning($dual_content_node, 0); }
+      $meaning = dual_content_xmapp_to_semantic_attr($dual_content_node, 0); }
 # Note that the carrier ltx:XMDual is never passed in associateNode, but often requires an "arg". Recurse:
     $self->addAccessibilityAnnotations($node, $dual_pres_node->parentNode); }
   # tokens are simplest - if we know of a meaning, use that for accessibility
@@ -187,18 +187,17 @@ sub addAccessibilityAnnotations {
   p_setAttribute($node, 'data-arg', $arg) if $arg;
   return; }
 
-sub get_dual_content_meaning {
+sub dual_content_xmapp_to_semantic_attr {
   my ($node, $lvl) = @_;
-  my @arg_nodes = element_nodes($node);
-  my $op_node   = shift @arg_nodes;
-  my $op        = $op_node ? $op_node->getAttribute('meaning') :
-    ($lvl ? '#op' . $lvl : '#op');
+  my @arg_nodes   = element_nodes($node);
+  my $op_node     = shift @arg_nodes;
+  my $op          = ($op_node && $op_node->getAttribute('meaning')) || ($lvl ? '#op' . $lvl : '#op');
   my @arg_strings = ();
   my $index       = 0;
   for my $arg_node (@arg_nodes) {
     $index++;
     if (getQName($arg_node) eq 'ltx:XMApp') {
-      push @arg_strings, get_dual_content_meaning($arg_node, $lvl + 1); }
+      push @arg_strings, dual_content_xmapp_to_semantic_attr($arg_node, $lvl + 1); }
     else {
       push @arg_strings, '#' . $index . ($lvl ? "_$lvl" : ""); } }    # will we need level suffixes?
   return $op . '(' . join(",", @arg_strings) . ')'; }
