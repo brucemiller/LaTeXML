@@ -18,29 +18,48 @@ use LaTeXML::Package;
 DefConstructorI(T_CS('\@request@math@a11y'), undef, "<?latexml a11y='enabled'?>");
 AtBeginDocument(T_CS('\@request@math@a11y'));
 
+# NOTE: demonstration-oriented binding, all names and definitions subject to change without notice.
+
 # Embellishment is hard to write, hard to speak, but describes exactly several cases
 # I will abbreviate it "emb", for now, and use it as a prefix
-DefMacro('\emb@atom{}{}', '\DUAL{\@CSYMBOL{#1}}{\@WRAP{#2}}');
-DefMacro('\emb@base{}{}{}', sub {
-    my ($gullet, $meaning, $base, $emb) = @_;
-    # Package::dualize_arglist seems to be doing this with more sophistication,
-    # a good bit to read if we ever need to build more infra here.
-    # for now, fast and loose, these don't get saved and are only for local association
-    my $id_token  = T_OTHER("id" . int(rand(10000)));
-    my $ref_token = Invocation(T_CS('\@XMRef'), $id_token);
-    my $arg_token = Invocation(T_CS('\@XMArg'), $id_token, $base);
-    return Invocation(T_CS('\emb@base@build'),
-      $meaning, $ref_token, Tokens($arg_token, $emb))->unlist });
 
-DefConstructor('\emb@base@build{}{}{}',
-  '<ltx:XMDual>'
-    . '<ltx:XMApp>'
-    . '<ltx:XMTok meaning="#1"/>'
-    . '#2'
-    . '</ltx:XMApp>'
-    . '<ltx:XMWrap>#3</ltx:XMWrap>'
-    . '</ltx:XMDual>',
-  bounded => 1, requireMath => 1);
+# \emb@atom{meaning}{presentation}
+DefMacro('\dual',                '\DUAL[hide_content_reversion=true]');
+DefMacro('\emb@atom{}{}',        '\dual{\@CSYMBOL{#1}}{\@WRAP{#2}}');
+DefMacro('\emb@build@apply{}{}', '\dual{\@APPLY{#1}}{\@WRAP{#2}}');
+
+sub emb_apply {
+  my ($gullet, $base, $meaning, $emb, $invert_to_prefix) = @_;
+  my ($cargs, $pargs) = dualize_arglist('#1', $base);
+  my $ref_base     = $$cargs[0];
+  my $arg_base     = $$pargs[0];
+  my $presentation = $invert_to_prefix ? Tokens($emb, $arg_base) : Tokens($arg_base, $emb);
+  return Invocation(T_CS('\emb@build@apply'),
+    Tokens(Invocation(T_CS('\@CSYMBOL'), $meaning), $ref_base),
+    $presentation)->unlist; }
+
+sub emb_apply_two {    # one-or-two operations, can't fully reuse the simple case...
+  my ($gullet, $base, $op1_meaning, $op1_pres, $op2_meaning, $op2_pres, $invert_to_prefix) = @_;
+  if (!$op2_meaning && !$op2_pres) {    # one operation, use the simple apply call
+    return emb_apply(@_); }
+  # Case where we have two consecutive operations
+  my ($cargs, $pargs) = dualize_arglist('#1', $base);
+  my $ref_base = $$cargs[0];
+  my $arg_base = $$pargs[0];
+
+  my $pres_tokens = $invert_to_prefix ? Tokens($op2_pres, $op1_pres, $arg_base) : Tokens($arg_base, $op1_pres, $op2_pres);
+  my $presentation = Invocation(T_CS('\@WRAP'), $pres_tokens);
+  my $content      = Invocation(T_CS('\@APPLY'), Invocation(T_CS('\@CSYMBOL'), $op2_meaning),
+    Invocation(T_CS('\@APPLY'), Invocation(T_CS('\@CSYMBOL'), $op1_meaning), $ref_base));
+  return Invocation(T_CS('\DUAL'), undef, $content, $presentation)->unlist; }
+
+# Two operators acting on base in sequence, commonly alternate scripts ^m_n.
+# \emb@apply{base}{op1 meaning}{op1 pres}[op2 meaning][op2 pres]
+DefMacro('\emb@apply{}{}{}[][]', \&emb_apply_two);
+
+# As with \emb@apply, but the presentation is right-to-left prefix "op2_pres op1_pres base"
+# \emb@preapply{base}{op1 meaning}{op1 pres}[op2 meaning][op2 pres]
+DefMacro('\emb@preapply{}{}{}[][]', sub { emb_apply_two(@_, 1); });
 
 ## I. Calculus
 DefConstructor('\diffd', '<ltx:XMTok meaning="differential" name="diffd" role="DIFFOP">d</ltx:XMTok>');
@@ -57,12 +76,19 @@ DefMath('\deriv[]{}{}',
 DefMath('\integral{}{}', '\int #1 \diffd #2', meaning => 'integral');
 
 ## II. Scripts
+DefMacro('\@sup@apply{}{}', sub {
+    my ($gullet, $base, $script) = @_;
+    my ($cargs, $pargs) = dualize_arglist('#1#2', $base, $script);
+    return Invocation(T_CS('\emb@build@apply'),
+      Tokens($$cargs[1], $$cargs[0]),
+      Invocation(T_CS('\@SUPERSCRIPT'), @$pargs))->unlist; });
+DefMacro('\supop{}{}{}', '\@sup@apply{#1}{\emb@atom{#2}{#3}}');
 DefMath('\power{}{}', "{#1^{#2}}", meaning => 'power',
   reversion              => '#1^{#2}',
   hide_content_reversion => 1);
 DefMacro('\frobulator',  '\emb@atom{frobulator}{x\'}');
-DefMacro('\transpose{}', '\emb@base{transpose}{#1}{^T}');
-DefMacro('\adjoint{}',   '\emb@base{adjoint}{#1}{^\dagger}');
+DefMacro('\transpose{}', '\supop{#1}{transpose}{T}');
+DefMacro('\adjoint{}',   '\supop{#1}{adjoint}{\dagger}');
 
 # What I Really Want to Say here, but can't is likely:
 # DefMath('\derivemark{}', '\derivemark@pres{#1}', meaning=>'#1');
