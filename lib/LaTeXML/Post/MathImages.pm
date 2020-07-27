@@ -58,6 +58,10 @@ sub convertNode {
   my ($self, $doc, $xmath, $style) = @_;
   my $math = $xmath->parentNode;
   my $tex  = $self->extractTeX($doc, $math);
+  if (!$tex) {
+    Warn('imageprocessing', 'TeX', undef,
+      "No TeX string for math node");
+    return (); }
   my $type = $$self{imagetype};
   #  next if !(defined $tex) || ($tex =~ /^\s*$/);
   my $key = (ref $self) . ':' . $type . ':' . $tex;

@@ -1,6 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
 <?latexml package="array"?>
+<?latexml preamble="\newcolumntype{C}{>{$}c<{$}}"?>
+<?latexml preamble="\newcolumntype{L}{>{$}l<{$}}"?>
+<?latexml preamble="\newcolumntype{R}{>{$}r<{$}}"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
@@ -132,6 +135,37 @@
           </XMath>
         </Math>
       </equation>
+    </para>
+    <para xml:id="S2.p3">
+      <p>And trickness of embedded verbatim
+<tabular vattach="middle">
+          <tbody>
+            <tr>
+              <td align="center"><verbatim font="typewriter">\word</verbatim></td>
+              <td align="center"><Math mode="inline" tex="a+b" text="a + b" xml:id="S2.p3.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math></td>
+            </tr>
+            <tr>
+              <td align="center">word</td>
+              <td align="center"><Math mode="inline" tex="\verb|a_x|+\verb|b_y|" text="a_x + b_y" xml:id="S2.p3.m2">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                      <XMTok font="typewriter">a_x</XMTok>
+                      <XMTok font="typewriter">b_y</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math></td>
+            </tr>
+          </tbody>
+        </tabular></p>
     </para>
   </section>
   <section inlist="toc" xml:id="S3">

@@ -67,7 +67,8 @@ DefColumnType('W{}{Dimension}', sub {
 # NOTE:  Come back & check this; is the arglist right??
 DefPrimitive('\newcolumntype{}[Number][]{}', sub {
     my ($stomach, $char, $nargs, $opt, $replacement) = @_;
-    DefMacroI(T_CS('\NC@rewrite@' . ToString($char)), convertLaTeXArgs($nargs, $opt), $replacement); });
+    DefMacroI(T_CS('\NC@rewrite@' . ToString($char)), convertLaTeXArgs($nargs, $opt), $replacement);
+    return AddToPreamble(T_CS('\newcolumntype'),$char, $nargs, $opt, $replacement); });
 
 Let('\arraybackslash', '\tabularnewline');
 1;

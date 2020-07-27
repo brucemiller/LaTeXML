@@ -1988,11 +1988,20 @@ sub insertBlock {
     $document->closeToNode($context, 1); }
   # Check if the ltx:inline-block container is really needed.
   if ($newblock) {
-    my @rows = $newblock->childNodes;
+    my @rows  = $newblock->childNodes;
+    my @crows = $rows[0] && $rows[0]->childNodes;
     if (scalar(@rows) < 1) {    # Insertion came up empty?
       $document->removeNode($newblock); }    # then remove the new block entirely
+    elsif ((scalar(@rows) == 1)              # Else only 1 item inside...
+      && ($model->getNodeQName($rows[0]) eq 'ltx:p')    # Which is an ltx:p with 1 item
+      && (scalar(@crows) == 1)
+      && $document->canContain($newblock->parentNode, $crows[0])    # if allowed.
+      && (!$hasattr || !grep { !$document->canHaveAttribute($crows[0], $_) } keys %blockattr)) {
+      map { $document->setAttribute($crows[0], $_ => $blockattr{$_}) } keys %blockattr;
+      $document->unwrapNodes($rows[0]);
+      $document->unwrapNodes($newblock); }
     elsif ($unwrap ||
-      ((scalar(@rows) == 1)                  # Else only 1 item inside, then flatten
+      ((scalar(@rows) == 1)    # Else only 1 item inside, then flatten
         && $document->canContain($newblock->parentNode, $rows[0])    # if allowed.
         && (!$hasattr || !grep { !$document->canHaveAttribute($rows[0], $_) } keys %blockattr))) {
       map { $document->setAttribute($rows[0], $_ => $blockattr{$_}) } keys %blockattr;
@@ -2064,8 +2073,7 @@ DefConstructor('\vrule RuleSpecification',
         $whatsit->setProperty(isVerticalRule => 1) } }
     elsif ((defined $w) && ($w == 0)) {
       $whatsit->setProperty(invisible => 1); }
-    else {
-      $dims->setValue(width => '1px') unless defined $w; }
+    $dims->setValue(width => '1px') unless defined $w;
     if (my $color = LookupValue('font')->getColor) {
       if ($color ne 'black') {
         $whatsit->setProperty(color => $color); } }
@@ -2097,9 +2105,8 @@ DefConstructor('\hrule RuleSpecification',
         # This isXxxxRule property is to determine if it is used for separating rules within alignments
         $alignment->addLine('t');
         $whatsit->setProperty(isHorizontalRule => 1) } }
-    else {
-      $dims->setValue(width  => '100%') unless defined $w;
-      $dims->setValue(height => '1px')  unless defined $h; }
+    $dims->setValue(width  => '100%') unless defined $w;
+    $dims->setValue(height => '1px')  unless defined $h;
     if (my $color = LookupValue('font')->getColor) {
       if ($color ne 'black') {
         $whatsit->setProperty(color => $color); } }
@@ -2384,7 +2391,7 @@ DefColumnType('r', sub {
 # and it handles $ and & appropriately
 DefConstructor('\tabularcell@hbox HBoxContents',
   "#1",
-  mode => 'text', bounded => 1,
+  mode => 'text', bounded => 1, alias => '\hbox',
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
   beforeDigest => sub {
@@ -6073,7 +6080,8 @@ DefParameterType('ScriptStyleUntil', sub {
 DefConstructor('\root ScriptStyleUntil:\of {}',
   "<ltx:XMApp><ltx:XMTok meaning='nth-root'/>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
-    . "</ltx:XMApp>");
+    . "</ltx:XMApp>",
+  reversion => '\root #1 \of {#2}');
 
 #----------------------------------------------------------------------
 # LaTeX; Table 3.9. Log-like Functions, p.44.
@@ -6590,6 +6598,22 @@ Let('\@currext',  '\@empty');
 # LaTeXML Specific.
 # Support for Declarations & Presentation/Semantic Duality
 #**********************************************************************
+
+#======================================================================
+# Normally definitions disappear; the macros are expanded or have their expected effect.
+# But in a few cases (eg tabular column definitions, or LaTeX \Declarexxxx)
+# they will need declarations in the (La)TeX preamble to allow (La)TeX to process snippets
+# (eg. math) in order to create images.
+# Returning a call to this utility from Primitives will add a preamble Processing Instruction
+sub AddToPreamble {
+  my ($cs, @args) = @_;
+  Digest(Invocation(T_CS('\lx@add@Preamble@PI'), Invocation((ref $cs ? $cs : T_CS($cs)), @args))); }
+
+DefConstructor('\lx@add@Preamble@PI Undigested',
+  "<?latexml preamble='#1'?>");
+
+#======================================================================
+
 DefConstructor('\DUAL OptionalKeyVals {}{}',
   "<ltx:XMDual role='&GetKeyVal(#1,role)'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
   reversion => sub {
@@ -6630,7 +6654,8 @@ DefConstructor('\ROLE{}{}', "<ltx:XMWrap role='#1'>#2</ltx:XMWrap>", reversion =
 
 # NOTE: work through this systematically!
 DefConstructor('\@SYMBOL{}', "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", reversion => '#1');
-DefConstructor('\@APPLY{}',  "<ltx:XMApp>#1</ltx:XMApp>",             reversion => '#1');
+DefConstructor('\@CSYMBOL{}', "<ltx:XMTok meaning='#1'/>");
+DefConstructor('\@APPLY{}', "<ltx:XMApp>#1</ltx:XMApp>", reversion => '#1');
 DefConstructor('\@MAYBEAPPLY{}{}',
   "?#2(<ltx:XMApp>#1#2</ltx:XMApp>)(#1)",
   reversion => '#1#2');

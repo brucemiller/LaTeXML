@@ -181,7 +181,11 @@ sub readValue {
   elsif (Equals($peek, T_CS('\ratio'))) {
     my $x = readExpression($gullet, 'Glue', $gullet->readArg);
     my $y = readExpression($gullet, 'Glue', $gullet->readArg);
-    return Float($x->ptValue / $y->ptValue); }
+    my $y_pt = $y->ptValue;
+    if ($y_pt == 0) {
+      Warn("unexpected", "<number>", "calc: divisor should never be zero!");
+      $y_pt = 1; }
+    return Float($x->ptValue / $y_pt); }
   # Evaluate MinMax values
   elsif (Equals($peek, T_CS('\minof'))) {
     my $x = readExpression($gullet, $type, $gullet->readArg);
@@ -259,7 +263,11 @@ sub readReal {
   elsif (Equals($peek, T_CS('\ratio'))) {
     my $x = readExpression($gullet, 'Glue', $gullet->readArg);
     my $y = readExpression($gullet, 'Glue', $gullet->readArg);
-    return Float($x->ptValue / $y->ptValue); }
+    my $y_pt = $y->ptValue;
+    if ($y_pt == 0) {
+      Warn("unexpected", "<number>", "calc: divisor should never be zero!");
+      $y_pt = 1; }
+    return Float($x->ptValue / $y_pt); }
   else {
     $gullet->unread($peek);
     return; } }

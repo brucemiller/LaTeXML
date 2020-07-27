@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-/=====================================================================\ 
+/=====================================================================\
 |  LaTeXML-webpage-xhtml.xsl                                          |
 |  General purpose webpage wrapper for LaTeXML documents in xhtml     |
 |=====================================================================|
@@ -26,6 +26,8 @@
   <xsl:param name="CSS"></xsl:param>
   <!-- Include these "|" separated Javascript files -->
   <xsl:param name="JAVASCRIPT"></xsl:param>
+  <!-- Include javascript at the end of body, instead of head -->
+  <xsl:param name="LATEJS"></xsl:param>
   <!-- Use this image file as icon -->
   <xsl:param name="ICON"></xsl:param>
   <!-- Use this string as the created date/time timestamp -->
@@ -64,7 +66,7 @@
          </body>
        </html>
   -->
-  <!-- This version generates MathML & SVG with an xmlns namespace declaration 
+  <!-- This version generates MathML & SVG with an xmlns namespace declaration
        on EACH math/svg node;
        If you want to declare and use namespace prefixes (m & svg, resp), add this here
        xmlns:m   = "http://www.w3.org/1998/Math/MathML"
@@ -353,31 +355,31 @@
   <xsl:template match="m:mfenced"  mode="visible-text">
     <xsl:value-of select="@open | '('"/>
     <xsl:apply-templates mode="visible-text-punctuated"/>
-    <xsl:value-of select="@close | ')'"/>  
+    <xsl:value-of select="@close | ')'"/>
   </xsl:template>
 
   <!-- NO, I'm not going to try to decipher @separators -->
   <xsl:template match="*"  mode="visible-text-punctuated">
-    <xsl:apply-templates mode="visible-text"/>    
+    <xsl:apply-templates mode="visible-text"/>
     <xsl:if test="./following-sibling::*">
       <xsl:text>,</xsl:text>
     </xsl:if>
   </xsl:template>
-    
+
   <xsl:template match="m:mtable"  mode="visible-text">
     <xsl:text>[</xsl:text>
-    <xsl:apply-templates mode="visible-text"/>    
+    <xsl:apply-templates mode="visible-text"/>
     <xsl:text>]</xsl:text>
   </xsl:template>
 
   <xsl:template match="m:mtr"  mode="visible-text">
     <xsl:text>[</xsl:text>
-    <xsl:apply-templates mode="visible-text"/>    
+    <xsl:apply-templates mode="visible-text"/>
     <xsl:text>]</xsl:text>
   </xsl:template>
 
   <xsl:template match="m:mtd"  mode="visible-text">
-    <xsl:apply-templates mode="visible-text"/>    
+    <xsl:apply-templates mode="visible-text"/>
     <xsl:if test="./following-sibling::m:mtd">
       <xsl:text>,</xsl:text>
     </xsl:if>
@@ -515,7 +517,7 @@
 
   <!-- Generate javascript script entries for the head -->
   <xsl:template match="/" mode="head-javascript">
-    <xsl:if test='$JAVASCRIPT'>
+    <xsl:if test='$JAVASCRIPT and not($LATEJS)'>
       <xsl:for-each select="string:split($JAVASCRIPT,'|')">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="script" namespace="{$html_ns}">
@@ -586,7 +588,7 @@
           </xsl:if>
           <xsl:for-each select="//ltx:indexphrase[not(.=preceding::ltx:indexphrase)]">
             <xsl:sort select="text()"/>
-            <xsl:if test="position() &gt; 1">, </xsl:if> 
+            <xsl:if test="position() &gt; 1">, </xsl:if>
             <xsl:value-of select="text()"/>
           </xsl:for-each>
         </xsl:attribute>
@@ -611,7 +613,19 @@
   </xsl:template>
 
   <xsl:template match="/" mode="body-begin"/>
-  <xsl:template match="/" mode="body-end"/>
+  <!-- Generate javascript script entries for the end of body -->
+  <xsl:template match="/" mode="body-end">
+      <xsl:if test='$JAVASCRIPT and $LATEJS'>
+        <xsl:for-each select="string:split($JAVASCRIPT,'|')">
+          <xsl:text>&#x0A;</xsl:text>
+          <xsl:element name="script" namespace="{$html_ns}">
+            <xsl:attribute name="src"><xsl:value-of select="f:url(text())"/></xsl:attribute>
+            <xsl:attribute name="type">text/javascript</xsl:attribute>
+          </xsl:element>
+        </xsl:for-each>
+      </xsl:if>
+  </xsl:template>
+
 
   <xsl:template match="/" mode="body-main">
     <xsl:text>&#x0A;</xsl:text>

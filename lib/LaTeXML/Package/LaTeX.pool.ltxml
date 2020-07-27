@@ -270,8 +270,13 @@ EOTeX
 DefConstructor("\\\\ OptionalMatch:* [Glue]",
   "?#isMath(<ltx:XMHint name='newline'/>)(<ltx:break/>)",
   reversion => Tokens(T_CS("\\\\"), T_CR));
-Let('\@normalcr', "\\\\");
-PushValue(TEXT_MODE_BINDINGS => [T_CS("\\\\"), T_CS('\@normalcr')]);
+DefConstructor('\newline',
+  "?#isMath(<ltx:XMHint name='newline'/>)(<ltx:break/>)",
+  reversion => Tokens(T_CS('\newline'), T_CR));
+Let('\@normalcr',      "\\\\");
+Let('\@normalnewline', '\newline');
+PushValue(TEXT_MODE_BINDINGS => [
+    T_CS("\\\\"), T_CS('\@normalcr'), T_CS('\newline'), T_CS('\@normalnewline')]);
 
 DefMacro('\@nolnerr', '');
 DefMacro('\@centercr', '\ifhmode\unskip\else\@nolnerr\fi'
@@ -473,7 +478,8 @@ DefConstructor('\lx@note[]{}[]{}',
     my $type = ToString($_[2]);
     (role => $type,
       list => DigestText(T_CS('\ext@' . $type)),
-      makeNoteTags($type, $_[1], $_[3])); });
+      makeNoteTags($type, $_[1], $_[3])); },
+  reversion => '');
 DefConstructor('\lx@notemark[]{}[]',
   "<ltx:note role='#role' mark='#mark' xml:id='#id' inlist='#list'>"
     . "#tags"
@@ -483,13 +489,15 @@ DefConstructor('\lx@notemark[]{}[]',
     my $type = ToString($_[2]);
     (role => $type . 'mark',
       list => DigestText(T_CS('\ext@' . $type)),
-      makeNoteTags($type, $_[1], $_[3])); });
+      makeNoteTags($type, $_[1], $_[3])); },
+  reversion => '');
 DefConstructor('\lx@notetext[]{}[]{}',
   "<ltx:note role='#role' mark='#mark' xml:id='#id'>#4</ltx:note>",
   mode       => 'text',
   properties => sub {
     my $type = ToString($_[2]);
-    (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || Digest(T_CS('\the' . $type)))); });
+    (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || Digest(T_CS('\the' . $type)))); },
+  reversion => '');
 
 DefMacro('\footnote',     '\lx@note{footnote}');
 DefMacro('\footnotemark', '\lx@notemark{footnote}');
@@ -1706,14 +1714,12 @@ DefPrimitiveI('\@vobeyspaces', undef, sub {
 # WARNING: Need to be careful about what catcodes are active here
 DefMacroI('\verb', undef, sub {
     my ($gullet) = @_;
-    my $inmath = LookupValue('IN_MATH');
     StartSemiverbatim('%', '\\', '{', '}');
     MergeFont(family => 'typewriter', series => 'medium', shape => 'upright');
     $STATE->assignCatcode(' ', CC_ACTIVE);    # Do NOT (necessarily) skip spaces after \verb!!!
     Let(T_ACTIVE(' '), T_SPACE);
     my $init    = $gullet->readToken;
     my $starred = 0;
-
     if (T_OTHER('*')->equals($init)) {
       $starred = 1;
       Let(T_ACTIVE(' '), T_OTHER("\x{2423}"));    # Visible space
@@ -1727,20 +1733,32 @@ DefMacroI('\verb', undef, sub {
     AssignCatcode($init_str => CC_ACTIVE);
     my $delim = T_ACTIVE($init_str);
     my $body  = $gullet->readUntil($delim);
-    Invocation(($inmath ? T_CS('\@math@verb') : T_CS('\@text@verb')),
-      ($starred ? T_OTHER('*') : Tokens()),
-      Tokens($init), $body)->unlist; });
+    EndSemiverbatim();
+    Tokens(
+      T_CS('\@hidden@bgroup'),
+      ($starred ? T_CS('\lx@use@visiblespace') : ()),
+      Invocation(T_CS('\@internal@verb'),
+        ($starred ? T_OTHER('*') : Tokens()),
+        Tokens($init), $body),
+      T_CS('\@hidden@egroup'))->unlist; });
 
-DefConstructor('\@text@verb{}{}{}', "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
-  afterDigest => sub { EndSemiverbatim(); },
-  # Since ltx:verbatim is both inline & block, we have to fudge inline mode
+DefPrimitive('\lx@use@visiblespace', sub {
+    my ($stomach, $star) = @_;
+    $STATE->assignCatcode(' ', CC_ACTIVE);    # Do NOT (necessarily) skip spaces after \verb!!!
+    Let(T_ACTIVE(' '), T_OTHER("\x{2423}"));  # Visible space
+});
+
+DefConstructor('\@internal@verb{} Undigested {}',
+  "?#isMath(<ltx:XMTok font='#font'>#text</ltx:XMTok>)"
+    . "(<ltx:verbatim font='#font'>#text</ltx:verbatim>)",
+  properties => sub { (text => ToString($_[3])); },
+  font       => { family => 'typewriter', series => 'medium', shape => 'upright' },
+  #  bounded         => 1,
   beforeConstruct => sub {
-    $_[0]->canContain($_[0]->getElement, '#PCDATA')
-      || $_[0]->openElement('ltx:p'); },
+    my ($doc, $whatsit) = @_;
+    if (!$whatsit->isMath) {
+      $doc->canContain($doc->getElement, '#PCDATA') || $doc->openElement('ltx:p'); } },
   reversion => '\verb#1#2#3#2');
-DefConstructor('\@math@verb{}{}{}', "<ltx:XMTok font='#font'>#3</ltx:XMTok>",
-  afterDigest => sub { EndSemiverbatim(); },
-  reversion   => '\verb#1#2#3#2');
 
 # This is defined by the alltt package.
 # Environment('alltt', ?);
@@ -2371,7 +2389,7 @@ DefPrimitiveI('\operator@font', undef, undef,
 
 DefMacro('\@tabacckludge {}', '\csname\string#1\endcsname');
 
-DefPrimitive('\newcommand OptionalMatch:* DefToken [Number][]{}', sub {
+DefPrimitive('\newcommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (!isDefinable($cs)) {
       Info('ignore', $cs, $stomach,
@@ -2380,9 +2398,9 @@ DefPrimitive('\newcommand OptionalMatch:* DefToken [Number][]{}', sub {
       return; }
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
-DefPrimitive('\CheckCommand OptionalMatch:* DefToken [Number][]{}', undef);
+DefPrimitive('\CheckCommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', undef);
 
-DefPrimitive('\renewcommand OptionalMatch:* DefToken [Number][]{}', sub {
+DefPrimitive('\renewcommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
@@ -2401,13 +2419,13 @@ DefPrimitive('\@yargdef DefToken DefToken {}{}', sub {
 DefPrimitive('\@reargdef DefToken []{}', sub {
     DefMacroI($_[1], convertLaTeXArgs($_[2]), $_[3]); });
 
-DefPrimitive('\providecommand OptionalMatch:* DefToken [Number][]{}', sub {
+DefPrimitive('\providecommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     return unless isDefinable($cs);
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
 
 # Crazy; define \cs in terms of \cs[space] !!!
-DefPrimitive('\DeclareRobustCommand OptionalMatch:* DefToken [Number][]{}', sub {
+DefPrimitive('\DeclareRobustCommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     my $mungedcs = T_CS($cs->getString . ' ');
     DefMacroI($mungedcs, convertLaTeXArgs($nargs, $opt), $body);
@@ -2493,6 +2511,9 @@ DefPrimitive('\DeclareTextAccentDefault{}{}',
   sub { ignoredDefinition('DeclareTextAccentDefault', $_[1]); });
 
 #------------------------------------------------------------
+# TODO: Need to convert these DefPrimitive's into DefConstroctors
+# that add a preable PI!!!!!!!!!
+
 DefPrimitive('\DeclareTextComposite{}{}{}{}',
   sub { ignoredDefinition('DeclareTextComposite', $_[1]); });
 DefPrimitive('\DeclareTextCompositeCommand{}{}{}{}',
@@ -2508,12 +2529,12 @@ DefPrimitive('\DeclareMathAccent DefToken {}{} {Number}', sub {
     my $info  = LookupValue('fontdeclaration@' . $class);
     my $glyph = FontDecode($code->valueOf, ($info ? $$info{encoding} : $class));
     DefMathI($cs, 'Digested', $glyph, operator_role => 'OVERACCENT');
-    return; });
+    return AddToPreamble('\DeclareMathAccent', $cs, $kind, $class, $code); });
 
 DefPrimitive('\DeclareMathDelimiter{}{}{}{}',
-  sub { ignoredDefinition('DeclareMathAccent', $_[1]); });
+  sub { ignoredDefinition('DeclareMathDelimiter', $_[1]); });
 DefPrimitive('\DeclareMathRadical{}{}{}{}{}',
-  sub { ignoredDefinition('DeclareMathAccent', $_[1]); });
+  sub { ignoredDefinition('DeclareMathRadical', $_[1]); });
 DefPrimitive('\DeclareMathVersion{}',          undef);
 DefPrimitive('\DeclarePreloadSizes{}{}{}{}{}', undef);
 
@@ -4101,8 +4122,6 @@ DefPrimitive('\typein[]{}', undef);
 #======================================================================
 DefPrimitive('\linebreak[]',   undef);
 DefPrimitive('\nolinebreak[]', undef);
-# \\ already defined
-DefMacroI('\newline', undef, Tokens(T_CS('\protect'), T_CS('\@normalcr'), T_CS('\relax')));
 DefPrimitiveI('\-', undef, undef);    # We don't do hyphenation.
                                       # \hyphenation in TeX.pool
 

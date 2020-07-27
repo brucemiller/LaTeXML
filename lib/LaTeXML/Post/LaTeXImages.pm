@@ -388,7 +388,8 @@ sub pre_preamble {
   my $th  = ($$self{frame_output}
     ? $$self{clippingrule} * $pts_per_pixel    # clipping box thickness in points.
     : 0);                                      # NO clipping box!
-                                               #  print STDERR "w=$w, gap=$gap, thickness=$th\n";
+  my $preambles = $self->find_preambles($doc);
+
   return <<"EOPreamble";
 \\batchmode
 \\def\\inlatexml{true}
@@ -438,6 +439,7 @@ $packages
 }%
 \\def\\lxBeginImage{\\setbox\\lxImageBox\\hbox\\bgroup\\color\@begingroup\\kern\\lxImageBoxSep}
 \\def\\lxEndImage{\\kern\\lxImageBoxSep\\color\@endgroup\\egroup}
+$preambles
 \\makeatother
 EOPreamble
 }

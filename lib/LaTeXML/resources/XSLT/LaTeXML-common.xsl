@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-/=====================================================================\ 
+/=====================================================================\
 |  Common utility functions for stylesheet; for inclusion             |
 |=====================================================================|
 | Part of LaTeXML:                                                    |
@@ -38,17 +38,17 @@
   <!-- What version of RDFa to generate. [Set to "1.0" for broken behaviour] -->
   <xsl:param name="RDFA_VERSION"></xsl:param>
 
-  <!-- Whether to use Namespaces in the generated xml/xhtml/...-->  
+  <!-- Whether to use Namespaces in the generated xml/xhtml/...-->
   <xsl:param name="USE_NAMESPACES">true</xsl:param>
-  
+
   <!-- Whether to use HTML5 constructs in the generated html. -->
   <xsl:param name="USE_HTML5"></xsl:param>
- 
+
   <!-- The XHTML namespace -->
   <xsl:param name="XHTML_NAMESPACE">http://www.w3.org/1999/xhtml</xsl:param>
 
   <!-- Whether to use xml:id instead of plain ole id;
-       Not sure if we ever should; probably depends on embedded schema, as well? -->  
+       Not sure if we ever should; probably depends on embedded schema, as well? -->
   <xsl:param name="USE_XMLID"></xsl:param>
 
   <!-- The namespace to use on html elements (typically XHTML_NAMESPACE or none) -->
@@ -81,7 +81,7 @@
     <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1]">
       <xsl:comment>
         <xsl:text>Document created on </xsl:text>
-        <xsl:value-of select='//ltx:date/node()'/>
+        <xsl:value-of select='translate(//ltx:date/node(),"-","‐")'/>
         <xsl:text>.</xsl:text>
       </xsl:comment>
       <xsl:text>&#x0A;</xsl:text>
@@ -227,7 +227,7 @@
        Dimension utilities
        [hopefully only see units of px or pt?
   -->
-  
+
   <func:function name="f:adddim">
     <xsl:param name="value1"/>
     <xsl:param name="value2"/>
@@ -413,7 +413,7 @@
       <xsl:apply-templates select="@xml:lang" mode="copy-attribute"/>
     </xsl:if>
   </xsl:template>
-      
+
   <!-- Add a class attribute value to the current html element
        according to the attributes of the context element:
        * the element name (this should be prefixed somehow!!!)
@@ -421,7 +421,7 @@
        * attributes in the Fontable.attribute set
        * content passed in via the parameter $extra_classes.
 
-       HOOKS: 
+       HOOKS:
        (1) override by defining a more specific template with mode="classes"
        that applies templates with mode="base-classes".
        [ <xsl:apply-imports/> would be more elegant, but Xalan apparently doesn't
@@ -482,9 +482,9 @@
        Note that width & height (& padding versions)
        will be ignored in most cases... silly CSS.
        Note that some attributes clash because they're setting
-       the same CSS property; there's no combining here (yet?).   
+       the same CSS property; there's no combining here (yet?).
 
-       HOOKS: 
+       HOOKS:
        (1) override by defining a more specific template with mode="classes"
        that applies templates with mode="base-styling".
        (2) pass in parameter $extra_style
@@ -581,7 +581,7 @@
 
   <!-- Add an RDFa attributes from the context element to the current one.
        All of these attributes (except content) could be IRI (ie. URL),
-       as well as term(s), CURIE, etc.  So, should f:url(.) be applied? 
+       as well as term(s), CURIE, etc.  So, should f:url(.) be applied?
        It either needs to be written safely enough, or a safer version applied-->
   <xsl:template match="*" mode="add_RDFa">
     <!-- perhaps we want to disallow these being spread around?
@@ -644,7 +644,7 @@
         <xsl:with-param name="url">
           <xsl:choose>
             <xsl:when test="substring-before(substring-after($prefix,' '),' ')">
-              <xsl:value-of select="substring-before(substring-after($prefix,' '),' ')"/>           
+              <xsl:value-of select="substring-before(substring-after($prefix,' '),' ')"/>
             </xsl:when>
             <xsl:otherwise>
               <xsl:value-of select="substring-after($prefix,' ')"/>
@@ -683,5 +683,3 @@
   </xsl:template>
 
 </xsl:stylesheet>
-
-

@@ -57,15 +57,16 @@ DefMacro('\lx@AC@if{}{}{}', sub {
 # Acronym lists can (optionally) only include the acronyms actually used in the text!
 
 # \lx@acronym{acronym}{listname}{showform}
-DefConstructor('\lx@acronym{}{}{}',
-  "<ltx:glossaryref key='#1' inlist='#2' show='#3'/>");
+DefConstructor('\lx@acronym Undigested {}{}{}',
+  "<ltx:glossaryref key='#2' inlist='#3' show='#4'/>",
+  reversion => '#1{#2}');
 
-DefMacro('\AC@acs{}',  '\lx@acronym{#1}{acronym}{short}');
-DefMacro('\AC@acl{}',  '\lx@acronym{#1}{acronym}{long}');
-DefMacro('\AC@acsp{}', '\lx@acronym{#1}{acronym}{short-plural}');
-DefMacro('\AC@aclp{}', '\lx@acronym{#1}{acronym}{long-plural}');
-DefMacro('\AC@acsi{}', '\lx@acronym{#1}{acronym}{short-indefinite}');
-DefMacro('\AC@aclI{}', '\lx@acronym{#1}{acronym}{long-indefinite}');
+DefMacro('\AC@acs{}',  '\lx@acronym{\acs}{#1}{acronym}{short}');
+DefMacro('\AC@acl{}',  '\lx@acronym{\acl}{#1}{acronym}{long}');
+DefMacro('\AC@acsp{}', '\lx@acronym{\acsp}{#1}{acronym}{short-plural}');
+DefMacro('\AC@aclp{}', '\lx@acronym{\aclp}{#1}{acronym}{long-plural}');
+DefMacro('\AC@acsi{}', '\lx@acronym{\acsi}{#1}{acronym}{short-indefinite}');
+DefMacro('\AC@aclI{}', '\lx@acronym{\aclI}{#1}{acronym}{long-indefinite}');
 
 # Short form
 DefMacro('\acs OptionalMatch:*', '\ifx.#1.\AC@starredfalse\else\AC@starredtrue\fi\acsa');
