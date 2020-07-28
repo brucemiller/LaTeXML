@@ -139,7 +139,9 @@ sub inPageID {
         my ($bl) = split(' ', $baselabels);
         $bl =~ s/^LABEL://;
         $baseid = $bl; } } }
-  if ($baseid eq $id) {
+  if (!$id) {
+    return $id; }
+  elsif ($baseid eq $id) {
     return; }
   elsif ($baseid && ($id =~ /^\Q$baseid\E\.(.*)$/)) {
     return $1; }
@@ -445,34 +447,36 @@ sub declare_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   # See preprocess_symbols for the extraction of the "defined" symbol (if any)
   # Also recognize marks for definition, notation...
-  my $type     = $node->getAttribute('type');
-  my $sort     = $node->getAttribute('sortkey');
-  my $tagnode  = $self->cleanNode($doc, $doc->findnode('child::ltx:tag', $node));
-  my $textnode = $self->cleanNode($doc, $doc->findnode('child::ltx:text', $node));
-  if ($node->getAttribute('undefined')) { # This is a general purpose notation mark, which the parent does NOT define!
-    $parent_id = undef; }
+  my $type    = $node->getAttribute('type');
+  my $sort    = $node->getAttribute('sortkey');
+  my $decl_id = $node->getAttribute('xml:id');
+  my $term = $self->cleanNode($doc, $doc->findnode('child::ltx:tags/ltx:tag[@role="term"]', $node));
+  my $description = $self->cleanNode($doc, $doc->findnode('child::ltx:text', $node));
+  my $definiens   = $node->getAttribute('definiens');
   if (defined $type && ($type eq 'definition')) {
-    my (@syms) = $doc->findnodes('descendant-or-self::ltx:XMTok[@meaning]', $tagnode);
-    # We're probably not defining a relation, so put those first.
-    @syms = (grep(($_->getAttribute('role') || '') ne 'RELOP', @syms), @syms);
-    # HACK; remove apparent definitions to lists
-    # [these will have to be handled much more intentionally]
-    @syms = grep { $_->getAttribute('meaning') !~ /^delimited-/ } @syms;
-    if (my $name = $syms[0] && $syms[0]->getAttribute('meaning')) {
-      $$self{db}->register("DECLARATION:global:$name",
-        parent => $parent_id, tag => $tagnode, text => $textnode);
-  } }
+    if ((!defined $definiens) && (defined $term)){
+      # Extract the definiens from the term nade
+      my (@syms) = $doc->findnodes('descendant-or-self::ltx:XMTok[@meaning]', $term);
+      # We're probably not defining a relation, so put non-relations first.
+      @syms = (grep(($_->getAttribute('role') || '') ne 'RELOP', @syms), @syms);
+      # HACK; remove apparent definitions to lists
+      # [these will have to be handled much more intentionally]
+      @syms = grep { $_->getAttribute('meaning') !~ /^delimited-/ } @syms;
+      $definiens = $syms[0] && $syms[0]->getAttribute('meaning'); }
+    if (defined $definiens) {
+      $$self{db}->register("DECLARATION:global:$definiens",
+        $self->addCommon($doc, $node, $tag, $parent_id),
+        description => $description); } }
   elsif ((!$type) && $parent_id) {   # No type? Assume local definition. (or should be explicit scope?
-    if (my $tag = $doc->findnode('ltx:tag', $node)) {
-      if (my $decl_id = $node->getAttribute('xml:id')) {
-        $$self{db}->register("DECLARATION:local:$decl_id", id => $decl_id,
-          parent => $parent_id, tag => $tag, text => $textnode);
-  } } }
+    if ($decl_id && ($description || $doc->findnode('ltx:tags/ltx:tag', $node))) {
+      $$self{db}->register("DECLARATION:local:$decl_id",
+        $self->addCommon($doc, $node, $tag, $parent_id),
+        description => $description); } }
 
   if ($sort) {                       # It only goes into Notation tables/indices if a sortkey.
-    $$self{db}->register("NOTATION:" . $tagnode->cloneNode(1)->toString,
-      parent => $parent_id,
-      tag    => $tagnode, text => $textnode, sortkey => $sort); }
+    $$self{db}->register("NOTATION:" . ($definiens || $decl_id || $sort),
+      $self->addCommon($doc, $node, $tag, $parent_id),
+      sortkey => $sort, description => $description); }
   # No real benefit to scan the contents? (and makes it SLOW)
   #  $self->default_handler($doc,$node,$tag,$parent_id);
 }
