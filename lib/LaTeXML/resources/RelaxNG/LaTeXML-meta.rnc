@@ -40,21 +40,30 @@ note_model = tags?, Flow.model
 # should mark be more like label/refnum ?
 
 #======================================================================
-declare = element declare {
+declare =
 ## declare records declarative mathematical information.
+element declare { declare_attributes, declare_model }
+
+## Attributes for \elementref{declare}.
+declare_attributes =
   ID.attributes,
 
   ## the type of declaration
   attribute type { text }?,
 
-  ## the sort key for use creating notation indices
-  attribute sortkey { text }?,
+  ## the thing being defined (if global), else must have xml:id
+  attribute definiens { text }?,
 
-  ## short description
-  tag?,
+  ## the sort key for use creating notation indices
+  attribute sortkey { text }?
+
+## Content model for \elementref{declare}
+declare_model =
+  ## various tags, short labels
+  tags?,
 
   ## long description
-  \text? }
+  \text?
 
 #======================================================================
 
