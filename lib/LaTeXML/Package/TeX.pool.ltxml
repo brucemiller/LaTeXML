@@ -6862,7 +6862,8 @@ sub setAlignOrClass {
   return; }
 
 #======================================================================
-# A random collection of utility functions.
+# A random collection of Tokens utility functions.
+# [probably should be exported from Tokens.pm ?]
 # [maybe need to do some reorganization?]
 # Since this is used for textual tokens, typically to split author lists,
 # we don't split within braces or math
@@ -6900,6 +6901,15 @@ sub andSplit {
 
 sub orNull {
   return (grep { defined } @_) ? @_ : undef; }
+
+# Inverse operation
+sub JoinTokens {
+  my ($conjunction, @things) = @_;
+  if (!@things) { return (); }
+  my @result = (shift(@things));
+  while (my $thing = shift(@things)) {
+    push(@result, $conjunction, $thing); }
+  return Tokens(@result); }
 
 #**********************************************************************
 LoadPool('eTeX');      # unless.... ?
