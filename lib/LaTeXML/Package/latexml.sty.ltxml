@@ -337,13 +337,12 @@ sub splitDeclareTag {
 #   nodef : inhibits the marking of the current point as the `definition' of the expression.
 #          (a ref declaration would normally not be a def anyway)
 
-DefKeyVal('Declare', 'wrap',   '{}', 1);
 DefKeyVal('Declare', 'nowrap', '{}', 1);
 DefKeyVal('Declare', 'trace',  '{}', 1);
 DefKeyVal('Declare', 'replace', 'UndigestedKey');
 
 our $declare_keys = { scope => 1, role => 1, tag => 1, description => 1, name => 1, meaning => 1,
-  trace => 1, wrap => 1, nowrap => 1, replace => 1, label => 1 };
+  trace => 1, nowrap => 1, replace => 1, label => 1 };
 # Most is same as above; merge into one!!!!!
 DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
     my ($document, $flag, $kv, $pattern, %props) = @_;
@@ -385,7 +384,6 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
       name    => ToString($kv->getValue('name')),
       meaning => ToString($kv->getValue('meaning')),
       trace   => defined $kv->getValue('trace'),
-      wrap    => defined $kv->getValue('wrap'),
       nowrap  => defined $kv->getValue('nowrap'),
       id      => $id,
       match   => $pattern,
@@ -438,8 +436,8 @@ sub getDeclarationScope {
 sub createDeclarationRewrite {
   my ($document, $scope, $whatsit) = @_;
   my %props = $whatsit->getProperties;
-  my ($id, $match, $wrap, $nowrap, $role, $name, $meaning, $ref, $trace, $replace)
-    = map { $props{$_} } qw(id match wrap nowrap role name meaning ref trace replace);
+  my ($id, $match, $nowrap, $role, $name, $meaning, $ref, $trace, $replace)
+    = map { $props{$_} } qw(id match nowrap role name meaning ref trace replace);
   # Put this rule IN FRONT of other rules!
   UnshiftValue('DOCUMENT_REWRITE_RULES',
     LaTeXML::Core::Rewrite->new('math',
@@ -452,7 +450,6 @@ sub createDeclarationRewrite {
           ($name    ? (name    => $name)    : ()),
           ($meaning ? (meaning => $meaning) : ()),
           ($id      ? (decl_id => $id)      : ()),
-          ($wrap    ? (_wrap   => $wrap)    : ()),
           ($nowrap  ? (_nowrap => $nowrap)  : ()),
         }),
     ));
