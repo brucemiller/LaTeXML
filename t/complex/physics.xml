@@ -9,6 +9,8 @@
 <?latexml package="array"?>
 <?latexml package="longtable"?>
 <?latexml package="multirow"?>
+<?latexml preamble="\newcolumntype{M}{>{$\displaystyle}c<{$}}"?>
+<?latexml preamble="\newcolumntype{L}{>{$\displaystyle}l<{$}}"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
@@ -63,8 +65,8 @@
                       <XMTok meaning="list"/>
                     </XMApp>
                     <XMWrap>
-                      <XMTok role="OPEN" rpadding="2.8pt" stretchy="true">(</XMTok>
-                      <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                      <XMTok role="OPEN" stretchy="true">(</XMTok>
+                      <XMTok lpadding="2.8pt" role="CLOSE" stretchy="true">)</XMTok>
                     </XMWrap>
                   </XMDual>
                 </XMath>
@@ -158,8 +160,8 @@
                       <XMTok meaning="list"/>
                     </XMApp>
                     <XMWrap>
-                      <XMTok role="OPEN" rpadding="2.8pt" stretchy="true">[</XMTok>
-                      <XMTok role="CLOSE" stretchy="true">]</XMTok>
+                      <XMTok role="OPEN" stretchy="true">[</XMTok>
+                      <XMTok lpadding="2.8pt" role="CLOSE" stretchy="true">]</XMTok>
                     </XMWrap>
                   </XMDual>
                 </XMath>
@@ -223,8 +225,8 @@
                       <XMTok meaning="list"/>
                     </XMApp>
                     <XMWrap>
-                      <XMTok role="OPEN" rpadding="2.8pt" stretchy="true">{</XMTok>
-                      <XMTok role="CLOSE" stretchy="true">}</XMTok>
+                      <XMTok role="OPEN" stretchy="true">{</XMTok>
+                      <XMTok lpadding="2.8pt" role="CLOSE" stretchy="true">}</XMTok>
                     </XMWrap>
                   </XMDual>
                 </XMath>
