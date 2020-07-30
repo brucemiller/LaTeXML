@@ -66,30 +66,42 @@ It's content allows both inline and block-level content.</a:documentation>
   <!-- ====================================================================== -->
   <define name="declare">
     <element name="declare">
-      <ref name="ID.attributes">
-        <a:documentation>declare records declarative mathematical information.</a:documentation>
-      </ref>
-      <optional>
-        <attribute name="type">
-          <a:documentation>the type of declaration</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <attribute name="sortkey">
-          <a:documentation>the sort key for use creating notation indices</a:documentation>
-        </attribute>
-      </optional>
-      <optional>
-        <ref name="tag">
-          <a:documentation>short description</a:documentation>
-        </ref>
-      </optional>
-      <optional>
-        <ref name="text">
-          <a:documentation>long description</a:documentation>
-        </ref>
-      </optional>
+      <a:documentation>declare records declarative mathematical information.</a:documentation>
+      <ref name="declare_attributes"/>
+      <ref name="declare_model"/>
     </element>
+  </define>
+  <define name="declare_attributes">
+    <a:documentation>Attributes for \elementref{declare}.</a:documentation>
+    <ref name="ID.attributes"/>
+    <optional>
+      <attribute name="type">
+        <a:documentation>the type of declaration</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="definiens">
+        <a:documentation>the thing being defined (if global), else must have xml:id</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="sortkey">
+        <a:documentation>the sort key for use creating notation indices</a:documentation>
+      </attribute>
+    </optional>
+  </define>
+  <define name="declare_model">
+    <a:documentation>Content model for \elementref{declare}</a:documentation>
+    <optional>
+      <ref name="tags">
+        <a:documentation>various tags, short labels</a:documentation>
+      </ref>
+    </optional>
+    <optional>
+      <ref name="text">
+        <a:documentation>long description</a:documentation>
+      </ref>
+    </optional>
   </define>
   <!-- ====================================================================== -->
   <define name="indexmark">

@@ -58,9 +58,19 @@
 \lxDefMath{\plus}{+}[role=ADDOP,tag={Plus}]
 \lxDefMath{\foo}[1]{\mathbf{foo}}[meaning=foo,tag={Foo}]
 \lxDefMath{\oddball}[2]{\left|\left(#1\right)_{#2}\right|}[tag={Oddball}]
+% Separate defn & decl
+\lxDefMath{\weird}[2]{\left(\left[#1\right]_{#2}\right)}
+\lxDeclare[tag={Weird}]{$\weird{\WildCard}{\WildCard}$}
 \[ a\plus b; \baz, \foo{x}, \foo{j} \]
 \[ \oddball{a}{j}; \oddball{abc}{j} \]
-\end{document}
+\[ \weird{a}{j}; \weird{abc}{j} \]
+
+\section{More detail}
+\lxDeclare[scope=section,role=ID,tag={variable},description={$x$: a real variable}]{$x$}
+\lxDeclare[scope=section,role=ID,description={$i$: an integer variable}]{$i$}
+\lxDeclare[scope=section,role=FUNCTION,tag={function},description={$f(x)$: a function of reals}]{$f$}
+\lxDeclare[scope=section,role=ID,tag={coefficient},description={$f_i$: expansion coefficient}]{$f_\WildCard$}
+\[ f(x) = \sum_{i=0}^\infty f_i x^i \]
 
 
 \end{document}

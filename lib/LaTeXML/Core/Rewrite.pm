@@ -194,7 +194,8 @@ sub setAttributes_wild {
   my ($document, $attributes, @nodes) = @_;
   my $node = $nodes[0];
   return unless grep { !$_->getAttribute('_matched'); } @nodes;
-  if ($$attributes{_nowrap}) {
+  if ($$attributes{_nowrap}    # No wrapping requested, or already is an XMDual
+    || ((scalar(@nodes) == 1) && ($document->getNodeQName($nodes[0]) eq 'ltx:XMDual'))) {
     my ($nonwild) = grep { !$_->getAttribute('_wildcard'); } @nodes;
     if ($nonwild) {
       map { $nonwild->setAttribute($_ => $$attributes{$_}); } keys %$attributes; } }
@@ -437,6 +438,19 @@ sub domToXPath_rec {
         my $n = (scalar(@children) || 1);
         return ($xpath, $n, $n); }
       else {
+        return ($axis . '::*', 1, 1); } }
+    # Also, an XMRef pointing to a wildcard is a wildcard!
+    # (or pointing to an XMArg|XMWrap of a wildcard!)
+    elsif ($qname eq 'ltx:XMRef') {
+      my $id = $node->getAttribute('idref');
+      my $r  = $id && $document->lookupID($id);
+      my $rq = $r && $document->getNodeQName($r);    # eq '_WildCard_')
+      if ($rq && ($rq =~ /ltx:(?:XMArg|XMWrap)$/)) {
+        my @rc = $r->childNodes;
+        if ((scalar(@rc) == 1)) {
+          $r  = $r->firstChild;
+          $rq = $document->getNodeQName($r); } }
+      if ($rq && ($rq eq '_WildCard_')) {
         return ($axis . '::*', 1, 1); } }
     # Also treat XMArg or XMWrap with single wildcard child as a wildcard (w/o children)
     elsif (($qname =~ /ltx:(?:XMArg|XMWrap)$/)

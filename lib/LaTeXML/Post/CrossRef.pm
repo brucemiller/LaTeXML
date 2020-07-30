@@ -414,7 +414,7 @@ sub fill_in_mathlinks {
 ##        $$node[1]{'ltxx:meaning'} = $meaning; }
       if (my $id = $self->getIDForDeclaration($entry)) {    # Where defined
         $sym->setAttribute(href => $self->generateURL($doc, $id));
-        if (my $tag = $entry->getValue('text') || $entry->getValue('tag')) {
+        if (my $tag = $entry->getValue('tag:short') || $entry->getValue('description')) {
           $sym->setAttribute(title => getTextContent($doc, $tag)); }
   } } }
   NoteProgressDetailed(" [Filled in $n math links]");
