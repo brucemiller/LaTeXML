@@ -15,6 +15,8 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+RequirePackage('latexml');
+
 DefConstructorI(T_CS('\@request@math@a11y'), undef, "<?latexml a11y='enabled'?>");
 AtBeginDocument(T_CS('\@request@math@a11y'));
 
@@ -65,7 +67,7 @@ DefMacro('\emb@preapply{}{}{}[][]', sub { emb_apply_two(@_, 1); });
 # Example \PrePostArgCrosswise{x}{median}{\overline}{index}{_}{i}
 DefMacro('\PrePostArgCrosswise{}{}{}{}{}{}', sub {
     my ($gullet, $base, $op1_meaning, $op1_pres, $op2_meaning, $op2_pres, $op2_rhs_var) = @_;
-    my ($cargs, $pargs) = dualize_arglist('#1#2', $base, $op2_rhs_var);
+    my ($cargs,    $pargs)       = dualize_arglist('#1#2', $base, $op2_rhs_var);
     my ($ref_base, $ref_rhs_var) = @$cargs;
     my ($arg_base, $arg_rhs_var) = @$pargs;
 
@@ -136,11 +138,11 @@ DefMath('\index{}{}', "{#1_{#2}}", meaning => 'index',
 
 # only mark the script as a dual, so that we can remix it
 DefMacro('\indexArg{}', sub {
-    my ($gullet, $arg) = @_;
-    my ($cargs, $pargs) = dualize_arglist('#1', $arg);
+    my ($gullet, $arg)   = @_;
+    my ($cargs,  $pargs) = dualize_arglist('#1', $arg);
     return Invocation(T_CS('\emb@build@apply'),
       Tokens(Invocation(T_CS('\@CSYMBOL'), 'index'), $$cargs[0]),
-      Tokens(T_SUB, $$pargs[0]))->unlist; });
+      Tokens(T_SUB,                                  $$pargs[0]))->unlist; });
 DefMacro('\supop{}{}{}', '\@sup@apply{#1}{\emb@atom{#2}{#3}}');
 
 DefMacro('\frobulator', '\emb@atom{frobulator}{x\'}');
@@ -203,11 +205,40 @@ DefMath('\norm{}', '|\mathbf{#1}|', meaning => 'norm', role => 'ID',
   reversion => '|\mathbf{#1}|', hide_content_reversion => 1);
 DefMath('\determinant{}', '|\mathbf{#1}|', meaning => 'determinant', role => 'ID',
   reversion => '|\mathbf{#1}|', hide_content_reversion => 1);
-DefMath('\innerp{}{}', '\left<\mathbf{#1},\mathbf{#2}\right>', meaning => 'inner-product', role => 'ID',
-  reversion => '\left<\mathbf{#1},\mathbf{#2}\right>', hide_content_reversion => 1);
-DefMath('\legendre{}{}', '(#1|#2)', meaning => 'Legendre-symbol', role => 'ID',
-  reversion => '(#1|#2)', hide_content_reversion => 1);
-
 ################################################################################################################
+
+# Declare some default common in K12 math when using this package:
+# Also, improve ergonomics of \lxDecalre to my (Deyan's) liking
+DefKeyVal('Declare', 'role',    '', '');
+DefKeyVal('Declare', 'meaning', '', '');
+our %PRAGMA_ROLES = map { $_ => 1 } qw(ID FUNCTION);
+DefMacro('\pragma OptionalMatch:* {}{}', sub { # Limitation: never use commas in the symbol/notation contents
+    my ($gullet, $star, $properties, $notations) = @_;
+    my @declarations       = ();
+    my $notations_expanded = ToString($notations);
+    $notations_expanded =~ s/\?/\\WildCard/g;
+    my @notations  = $star ? $notations_expanded : split(",", $notations_expanded);
+    my @properties = split(",", ToString($properties));
+    for my $notation (@notations) {
+      my $kvprops = LaTeXML::Core::KeyVals->new('KV', 'Declare', assign => T_OTHER('='), punct => T_OTHER(','));
+      for my $p (@properties) {                # extend with more of the lxDeclare capabilities? scopes?
+        if ($PRAGMA_ROLES{$p}) {
+          $kvprops->setValue('role', $p); }
+        else {
+          $kvprops->setValue('meaning', $p); } }
+      push @declarations,
+        Invocation(T_CS('\lxDeclare'), undef, $kvprops,
+        Tokens(T_MATH, Tokenize($notation), T_MATH)); }
+    return @declarations; });
+
+PushValue('@at@begin@document', Tokenize(<<'EOL'));
+\pragma{FUNCTION}{f,g,h}
+\pragma{ID}{a,b,c,d,n,m,x,y,z}
+\pragma{index}{?_?}
+\pragma{power}{?^?}
+\pragma{Pochhamer-symbol}{\left(?\right)_?}
+\pragma{Legendre-symbol}{\left(?|?\right)}
+\pragma*{ID,inner-product}{\left<\mathbf{?},\mathbf{?}\right>}
+EOL
 
 1;
