@@ -236,9 +236,11 @@ PushValue('@at@begin@document', Tokenize(<<'EOL'));
 \pragma{ID}{a,b,c,d,n,m,x,y,z}
 \pragma{index}{?_?}
 \pragma{power}{?^?}
-\pragma{Pochhamer-symbol}{\left(?\right)_?}
-\pragma{Legendre-symbol}{\left(?|?\right)}
-\pragma*{ID,inner-product}{\left<\mathbf{?},\mathbf{?}\right>}
+\pragma{Pochhamer-symbol,ID}{\left(?\right)_?}
+\pragma{Legendre-symbol,ID}{\left(?|?\right)}
+\pragma{BesselJ,FUNCTION}{J_?}
+\pragma*{inner-product,ID}{\left<\mathbf{?},\mathbf{?}\right>}
+
 EOL
 
 1;
