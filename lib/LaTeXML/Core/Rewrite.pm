@@ -200,8 +200,9 @@ sub setAttributes_wild {
     if ($nonwild) {
       map { $nonwild->setAttribute($_ => $$attributes{$_}); } keys %$attributes; } }
   else {
+    # Do this slightly clunky, in order to keep the SAME xml @nodes in the result
     my $wrapper = $document->wrapNodes('ltx:XMWrap', @nodes);
-    my @wildids = set_wildcard_ids($wrapper);
+    my @wildids = set_wildcard_ids($document, $wrapper);
     $node = $document->wrapNodes('ltx:XMDual', $wrapper);
     $node->setAttribute(role => $$attributes{role}) if defined $$attributes{role};
     $node->removeChild($wrapper);
@@ -214,18 +215,18 @@ sub setAttributes_wild {
   return; }
 
 sub set_wildcard_ids {
-  my ($node) = @_;
+  my ($document, $node) = @_;
   if (($node->nodeType != XML_ELEMENT_NODE)
     || $node->getAttribute('_matched')) {
     return (); }
   elsif ($node->hasAttribute('_wildcard')) {
     my $id = $node->getAttribute('xml:id');
     if (!$id) {
-      $id = ToString(LaTeXML::Package::getXMArgID());
-      $node->setAttribute('xml:id' => $id); }
+      LaTeXML::Package::GenerateID($document, $node, undef, '');
+      $id = $node->getAttribute('xml:id'); }
     return ($id); }
   else {
-    return map { set_wildcard_ids($_); } $node->childNodes; } }
+    return map { set_wildcard_ids($document, $_); } $node->childNodes; } }
 
 sub markSeen {
   my ($node, $nsibs) = @_;

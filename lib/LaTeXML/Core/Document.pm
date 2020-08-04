@@ -1809,7 +1809,8 @@ sub appendTree {
     if (ref $child eq 'ARRAY') {
       my ($tag, $attributes, @children) = @$child;
       my $new = $self->openElementAt($node, $tag, ($attributes ? %$attributes : ()));
-      $self->appendTree($new, @children); }
+      $self->appendTree($new, @children);
+      $self->closeElementAt($new); }
     elsif ((ref $child) =~ /^XML::LibXML::/) {
       my $type = $child->nodeType;
       if ($type == XML_ELEMENT_NODE) {
@@ -1823,7 +1824,8 @@ sub appendTree {
           $child->removeAttribute('xml:id');
           $self->unRecordID($id); }
         my $new = $self->openElementAt($node, $tag, %attributes);
-        $self->appendTree($new, $child->childNodes); }
+        $self->appendTree($new, $child->childNodes);
+        $self->closeElementAt($new); }
       elsif ($type == XML_DOCUMENT_FRAG_NODE) {
         $self->appendTree($node, $child->childNodes); }
       elsif ($type == XML_TEXT_NODE) {

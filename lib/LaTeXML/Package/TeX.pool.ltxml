@@ -3295,28 +3295,26 @@ DefConstructorI('\@@ENDINLINEMATH', undef, "",
 # unless it has already been recorded on another node.
 sub add_TeX {
   my ($document, $node, $thing) = @_;
-  if ($thing && (ref $thing eq 'LaTeXML::Core::Whatsit') && !$thing->getProperty('_added_tex')) {
+  if ($thing) {
     local $LaTeXML::DUAL_BRANCH = 'presentation';
     my $tex = UnTeX($thing);
     $LaTeXML::DUAL_BRANCH = 'content';
     my $ctex = UnTeX($thing);
     $document->setAttribute($node, tex => $tex);
-    $document->setAttribute($node, 'content-tex' => $ctex) if $ctex ne $tex;
-    $thing->setProperty('_added_tex', 1); }
+    $document->setAttribute($node, 'content-tex' => $ctex) if $ctex ne $tex; }
   return; }
 
 # Same as add_TeX, but add the code from the body of the object.
 sub add_body_TeX {
   my ($document, $node, $thing) = @_;
-  if ($thing && !$thing->getProperty('_added_body_tex')) {
+  if ($thing) {
     if (defined(my $body = $thing->getProperty('body'))) {
       local $LaTeXML::DUAL_BRANCH = 'presentation';
       my $tex = UnTeX($body);
       $LaTeXML::DUAL_BRANCH = 'content';
       my $ctex = UnTeX($body);
       $document->setAttribute($node, tex => $tex);
-      $document->setAttribute($node, 'content-tex' => $ctex) if $ctex ne $tex; }
-    $thing->setProperty('_added_body_tex', 1); }
+      $document->setAttribute($node, 'content-tex' => $ctex) if $ctex ne $tex; } }
   return; }
 
 Tag('ltx:Math', afterClose => \&add_body_TeX);
@@ -6758,28 +6756,32 @@ DefConstructor('\@XMRef{}', "<ltx:XMRef _xmkey='#1'/>",
 # but usually the XMRef is created first, and we want to let the referred to element
 # get it's id computed by whatever means it prefers.
 # so we have to work both ways (use state to record associations, to avoid expensive xpath)
+# Set id's on any non-XMRef nodes that have an _xmkey
+# This gets a more natural ordering
 Tag('ltx:*', 'afterOpen:late' => sub {
     my ($document, $node) = @_;
     if (my $key = $node->getAttribute('_xmkey')) {
       my $qname = $document->getNodeQName($node);
-      # If this is an XMRef w/o idref & referred node already has id; update the XMRef
-      if ($qname eq 'ltx:XMRef') {
-        if (!$node->getAttribute('idref')) {    # If not yet set
-          if (my $id = LookupValue('xmkey:' . $key)) {    # If XMArg already has an id
-            $document->setAttribute($node, idref => $id); }    # Note that id here
-          else {
-            PushValue('xmkey_referrers:' . $key, $node); } } }    # else, note that we still need an i
-          # If this is any other node w/_xmkey, make sure it has an id
-          # and record it on the corresponding XMRef
-      elsif ($qname =~ /^ltx:XM/) {
-        GenerateID($document, $node, undef, '');    # Generate id if none already.
-        my $id = $node->getAttribute('xml:id');
-        AssignValue('xmkey:' . $key => $id, 'global');    # for future use by XMRef
-              # but if we came after any XMRef's record their idref's as well.
-        if (my $referrers = LookupValue('xmkey_referrers:' . $key)) {
-          map { $document->setAttribute($_, idref => $id) } @$referrers;
-          AssignValue('xmkey_referrers:' . $key, undef, 'global'); } }
-} });
+      if (($qname ne 'ltx:XMRef') && ($qname =~ /^ltx:XM/) && !$node->hasAttribute('xml:id')) {
+        GenerateID($document, $node, undef, ''); } } });
+
+Tag('ltx:XMDual', 'afterClose:late' => sub {
+    my ($document, $node) = @_;
+    my %ids  = ();
+    my @refs = ();
+    # Collect all children with _xmkey attribute
+    foreach my $n ($document->findnodes('descendant::*[@_xmkey]', $node)) {
+      if (($document->getNodeQName($n) eq 'ltx:XMRef') && !$n->hasAttribute('idref')) {
+        push(@refs, $n); }    # we'll fill these in next
+      else {                  # generate & record ids for all referenced noces
+        my $key = $n->getAttribute('_xmkey');
+        if (!$ids{$key}) {
+          GenerateID($document, $n, undef, '');    # Generate id if none already.
+          $ids{$key} = $n->getAttribute('xml:id'); } } }
+    foreach my $r (@refs) {                        # Now fill in the references
+      $document->setAttribute($r, idref => $ids{ $r->getAttribute('_xmkey') });
+      $r->removeAttribute('_xmkey'); }
+});
 
 DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='ltx_#1'>#2</ltx:ERROR>");
 

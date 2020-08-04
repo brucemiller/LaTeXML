@@ -1,0 +1,20 @@
+\documentclass{article}
+\usepackage{latexml}
+\iflatexml\else
+% Dummy definitions for pdflatex
+  \def\brackets#1{\{#1\}}
+  \def\parens#1{(#1)}
+  \def\BoxDup#1{#1#1}
+  \def\SaveBox#1{\def\mysavedbox{#1}#1}
+  \def\UseBox{\mysavedbox}
+\fi
+\title{Verify Reuse of Digested Boxes/Whatsits}
+\begin{document}
+% Duplicated nexted XMDuals
+\[ \brackets{\parens{x}} \]
+\[ \BoxDup{\brackets{\parens{x}}} \]
+
+% Check reversion of math whatsits
+\SaveBox{$\brackets{\parens{x}}$}
+\UseBox
+\end{document}
