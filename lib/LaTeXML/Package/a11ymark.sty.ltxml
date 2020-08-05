@@ -209,21 +209,26 @@ DefMath('\determinant{}', '|\mathbf{#1}|', meaning => 'determinant', role => 'ID
 
 # Declare some default common in K12 math when using this package:
 # Also, improve ergonomics of \lxDecalre to my (Deyan's) liking
+# TODO: Can we reuse this keyval from latexml.sty? How?
 DefKeyVal('Declare', 'role',    '', '');
 DefKeyVal('Declare', 'meaning', '', '');
+DefKeyVal('Declare', 'action',  '', '');
+DefKeyVal('Declare', 'replace', '', '');
 our %PRAGMA_ROLES = map { $_ => 1 } qw(ID FUNCTION);
 DefMacro('\pragma OptionalMatch:* {}{}', sub { # Limitation: never use commas in the symbol/notation contents
     my ($gullet, $star, $properties, $notations) = @_;
     my @declarations       = ();
     my $notations_expanded = ToString($notations);
-    $notations_expanded =~ s/\?/\\WildCard/g;
-    my @notations  = $star ? $notations_expanded : split(",", $notations_expanded);
-    my @properties = split(",", ToString($properties));
+    $notations_expanded =~ s/\?/\\WildCard[]/g;
+    my @notations  = $star ? $notations_expanded : split(/\s*,\s*/, $notations_expanded);
+    my @properties = split(/\s*,\s*/, ToString($properties));
     for my $notation (@notations) {
       my $kvprops = LaTeXML::Core::KeyVals->new('KV', 'Declare', assign => T_OTHER('='), punct => T_OTHER(','));
       for my $p (@properties) {                # extend with more of the lxDeclare capabilities? scopes?
         if ($PRAGMA_ROLES{$p}) {
           $kvprops->setValue('role', $p); }
+        elsif ($p =~ /^(pre|post)\:/) {
+          $kvprops->setValue('action', $p); }
         else {
           $kvprops->setValue('meaning', $p); } }
       push @declarations,
@@ -240,7 +245,7 @@ PushValue('@at@begin@document', Tokenize(<<'EOL'));
 \pragma{Legendre-symbol,ID}{\left(?|?\right)}
 \pragma{BesselJ,FUNCTION}{J_?}
 \pragma*{inner-product,ID}{\left<\mathbf{?},\mathbf{?}\right>}
-
+\pragma*{pre:\@APPLYFUNCTION}{\left(?,?;?|?\right)}
 EOL
-
+#
 1;

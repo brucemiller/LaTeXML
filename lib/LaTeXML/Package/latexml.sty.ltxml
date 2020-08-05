@@ -246,7 +246,7 @@ DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
       $params && map { $_ && ToString($_) } map { $params->getValue($_) }
       qw(name meaning cd role alias scope);
     my $needsid = $params && ($params->getValue('tag') || $params->getValue('description'));
-    my $id = ($needsid ? next_declaration_id() : undef);
+    my $id      = ($needsid ? next_declaration_id() : undef);
     DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
       name  => $name,  meaning => $meaning, omcd => $cd, role => $role, alias => $alias,
       scope => $scope, decl_id => $id,
@@ -294,7 +294,7 @@ sub normalizeDeclareKeys {
   if (my $stuff = $description || $tag) {
     ($term, $desc) = splitDeclareTag($stuff); }
   $short = ($description ? $tag || $desc : undef);
-  $desc = $desc || $description || $tag;
+  $desc  = $desc || $description || $tag;
   $whatsit->setProperties(term => $term, short => $short, description => $desc);
   return; }
 
@@ -340,9 +340,10 @@ sub splitDeclareTag {
 DefKeyVal('Declare', 'nowrap', '{}', 1);
 DefKeyVal('Declare', 'trace',  '{}', 1);
 DefKeyVal('Declare', 'replace', 'UndigestedKey');
+DefKeyVal('Declare', 'action',  'UndigestedKey');
 
 our $declare_keys = { scope => 1, role => 1, tag => 1, description => 1, name => 1, meaning => 1,
-  trace => 1, nowrap => 1, replace => 1, label => 1 };
+  trace => 1, nowrap => 1, replace => 1, action => 1, label => 1 };
 # Most is same as above; merge into one!!!!!
 DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
     my ($document, $flag, $kv, $pattern, %props) = @_;
@@ -387,7 +388,8 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
       nowrap  => defined $kv->getValue('nowrap'),
       id      => $id,
       match   => $pattern,
-      replace => $kv->getValue('replace'));
+      replace => $kv->getValue('replace'),
+      action  => $kv->getValue('action'));
     normalizeDeclareKeys($kv, $whatsit);
 
     if (my $label = ToString($kv->getValue('label'))) {
@@ -436,8 +438,8 @@ sub getDeclarationScope {
 sub createDeclarationRewrite {
   my ($document, $scope, $whatsit) = @_;
   my %props = $whatsit->getProperties;
-  my ($id, $match, $nowrap, $role, $name, $meaning, $ref, $trace, $replace)
-    = map { $props{$_} } qw(id match nowrap role name meaning ref trace replace);
+  my ($id, $match, $nowrap, $role, $name, $meaning, $ref, $trace, $replace, $action)
+    = map { $props{$_} } qw(id match nowrap role name meaning ref trace replace action);
   # Put this rule IN FRONT of other rules!
   UnshiftValue('DOCUMENT_REWRITE_RULES',
     LaTeXML::Core::Rewrite->new('math',
@@ -446,12 +448,14 @@ sub createDeclarationRewrite {
       ($match ? (match => $match) : ()),
       ($replace
         ? (replace => $replace)
-        : attributes => { ($role ? (role => $role) : ()),
-          ($name    ? (name    => $name)    : ()),
-          ($meaning ? (meaning => $meaning) : ()),
-          ($id      ? (decl_id => $id)      : ()),
-          ($nowrap  ? (_nowrap => $nowrap)  : ()),
-        }),
+        : ($action
+          ? (action => $action)
+          : attributes => { ($role ? (role => $role) : ()),
+            ($name    ? (name    => $name)    : ()),
+            ($meaning ? (meaning => $meaning) : ()),
+            ($id      ? (decl_id => $id)      : ()),
+            ($nowrap  ? (_nowrap => $nowrap)  : ()),
+          })),
     ));
   return; }
 
