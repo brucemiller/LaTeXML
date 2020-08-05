@@ -1128,16 +1128,19 @@
           </tr>
           <tr>
             <td/>
-            <td align="left"><verbatim font="typewriter">\grad{\Psi}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{gradient}" text="absent rightarrow gradient" xml:id="S1.T2.m17">
+            <td align="left"><verbatim font="typewriter">\grad{\Psi}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{gradient}\Psi" text="absent rightarrow gradient@(Psi)" xml:id="S1.T2.m17">
                 <XMath>
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
                     <XMDual>
-                      <XMTok meaning="gradient"/>
+                      <XMApp>
+                        <XMTok meaning="gradient"/>
+                        <XMRef idref="S1.T2.m17.1"/>
+                      </XMApp>
                       <XMApp>
                         <XMTok name="nabla" role="OPERATOR">∇</XMTok>
-                        <XMTok name="Psi" role="UNKNOWN">Ψ</XMTok>
+                        <XMTok name="Psi" role="UNKNOWN" xml:id="S1.T2.m17.1">Ψ</XMTok>
                       </XMApp>
                     </XMDual>
                   </XMApp>
@@ -1254,18 +1257,21 @@
           </tr>
           <tr>
             <td/>
-            <td align="left"><verbatim font="typewriter">\div{\vb{a}}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{divergence}" text="absent rightarrow divergence" xml:id="S1.T2.m22">
+            <td align="left"><verbatim font="typewriter">\div{\vb{a}}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{divergence}\mathbf{a}" text="absent rightarrow divergence@(a)" xml:id="S1.T2.m22">
                 <XMath>
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
                     <XMDual>
-                      <XMTok meaning="divergence"/>
+                      <XMApp>
+                        <XMTok meaning="divergence"/>
+                        <XMRef idref="S1.T2.m22.1"/>
+                      </XMApp>
                       <XMWrap>
                         <XMTok name="nabla" role="OPERATOR">∇</XMTok>
                         <XMTok name="cdot" role="MULOP">⋅</XMTok>
                         <XMTok role="APPLYOP">⁡</XMTok>
-                        <XMTok font="bold" role="ID">a</XMTok>
+                        <XMTok font="bold" role="ID" xml:id="S1.T2.m22.1">a</XMTok>
                       </XMWrap>
                     </XMDual>
                   </XMApp>
@@ -1382,18 +1388,21 @@
           </tr>
           <tr>
             <td/>
-            <td align="left"><verbatim font="typewriter">\curl{\vb{a}}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{curl}" text="absent rightarrow curl" xml:id="S1.T2.m26">
+            <td align="left"><verbatim font="typewriter">\curl{\vb{a}}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{curl}\mathbf{a}" text="absent rightarrow curl@(a)" xml:id="S1.T2.m26">
                 <XMath>
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
                     <XMDual>
-                      <XMTok meaning="curl"/>
+                      <XMApp>
+                        <XMTok meaning="curl"/>
+                        <XMRef idref="S1.T2.m26.1"/>
+                      </XMApp>
                       <XMWrap>
                         <XMTok name="nabla" role="OPERATOR">∇</XMTok>
                         <XMTok meaning="crossproduct" role="MULOP">×</XMTok>
                         <XMTok role="APPLYOP">⁡</XMTok>
-                        <XMTok font="bold" role="ID">a</XMTok>
+                        <XMTok font="bold" role="ID" xml:id="S1.T2.m26.1">a</XMTok>
                       </XMWrap>
                     </XMDual>
                   </XMApp>
@@ -1511,20 +1520,23 @@
           </tr>
           <tr>
             <td/>
-            <td align="left"><verbatim font="typewriter">\laplacian{\Psi}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{laplacian}" text="absent rightarrow laplacian" xml:id="S1.T2.m30">
+            <td align="left"><verbatim font="typewriter">\laplacian{\Psi}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{laplacian}\Psi" text="absent rightarrow laplacian@(Psi)" xml:id="S1.T2.m30">
                 <XMath>
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
                     <XMDual>
-                      <XMTok meaning="laplacian"/>
+                      <XMApp>
+                        <XMTok meaning="laplacian"/>
+                        <XMRef idref="S1.T2.m30.1"/>
+                      </XMApp>
                       <XMApp>
                         <XMApp>
                           <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                           <XMTok name="nabla" role="OPERATOR">∇</XMTok>
                           <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                         </XMApp>
-                        <XMTok name="Psi" role="UNKNOWN">Ψ</XMTok>
+                        <XMTok name="Psi" role="UNKNOWN" xml:id="S1.T2.m30.1">Ψ</XMTok>
                       </XMApp>
                     </XMDual>
                   </XMApp>
@@ -2807,7 +2819,7 @@
           </tr>
           <tr>
             <td align="left"><verbatim font="typewriter">\principalvalue</verbatim></td>
-            <td align="left"><verbatim font="typewriter">\pv{\int f(z) \dd{z}}</verbatim><Math mode="inline" tex="\rightarrow\@CSYMBOL{principalvalue}\int f(z)\@CSYMBOL{differential}" text="absent rightarrow principalvalue@(integral@(f * z * differential))" xml:id="S1.T3.m7">
+            <td align="left"><verbatim font="typewriter">\pv{\int f(z) \dd{z}}</verbatim><Math mode="inline" tex="\rightarrow\@CSYMBOL{principalvalue}\int f(z)\@CSYMBOL{differential}z" text="absent rightarrow principalvalue@(integral@(f * z * differential@(z)))" xml:id="S1.T3.m7">
                 <XMath>
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
@@ -2827,18 +2839,21 @@
                               <XMTok meaning="times" role="MULOP">⁢</XMTok>
                               <XMTok font="italic" role="UNKNOWN">f</XMTok>
                               <XMDual>
-                                <XMRef idref="S1.T3.m7.1.1"/>
+                                <XMRef idref="S1.T3.m7.1.2"/>
                                 <XMWrap>
                                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                                  <XMTok font="italic" role="UNKNOWN" xml:id="S1.T3.m7.1.1">z</XMTok>
+                                  <XMTok font="italic" role="UNKNOWN" xml:id="S1.T3.m7.1.2">z</XMTok>
                                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                                 </XMWrap>
                               </XMDual>
                               <XMDual>
-                                <XMTok meaning="differential"/>
+                                <XMApp>
+                                  <XMTok meaning="differential"/>
+                                  <XMRef idref="S1.T3.m7.1.1"/>
+                                </XMApp>
                                 <XMApp>
                                   <XMTok role="UNKNOWN">d</XMTok>
-                                  <XMTok font="italic" role="UNKNOWN">z</XMTok>
+                                  <XMTok font="italic" role="UNKNOWN" xml:id="S1.T3.m7.1.1">z</XMTok>
                                 </XMApp>
                               </XMDual>
                             </XMApp>
@@ -2854,7 +2869,7 @@
           </tr>
           <tr>
             <td/>
-            <td align="left"><verbatim font="typewriter">\PV{\int f(z) \dd{z}}</verbatim><Math mode="inline" tex="\rightarrow\@CSYMBOL{principalvalue}\int f(z)\@CSYMBOL{differential}" text="absent rightarrow principalvalue@(integral@(f * z * differential))" xml:id="S1.T3.m8">
+            <td align="left"><verbatim font="typewriter">\PV{\int f(z) \dd{z}}</verbatim><Math mode="inline" tex="\rightarrow\@CSYMBOL{principalvalue}\int f(z)\@CSYMBOL{differential}z" text="absent rightarrow principalvalue@(integral@(f * z * differential@(z)))" xml:id="S1.T3.m8">
                 <XMath>
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
@@ -2879,18 +2894,21 @@
                               <XMTok meaning="times" role="MULOP">⁢</XMTok>
                               <XMTok font="italic" role="UNKNOWN">f</XMTok>
                               <XMDual>
-                                <XMRef idref="S1.T3.m8.1.1"/>
+                                <XMRef idref="S1.T3.m8.1.2"/>
                                 <XMWrap>
                                   <XMTok role="OPEN" stretchy="false">(</XMTok>
-                                  <XMTok font="italic" role="UNKNOWN" xml:id="S1.T3.m8.1.1">z</XMTok>
+                                  <XMTok font="italic" role="UNKNOWN" xml:id="S1.T3.m8.1.2">z</XMTok>
                                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                                 </XMWrap>
                               </XMDual>
                               <XMDual>
-                                <XMTok meaning="differential"/>
+                                <XMApp>
+                                  <XMTok meaning="differential"/>
+                                  <XMRef idref="S1.T3.m8.1.1"/>
+                                </XMApp>
                                 <XMApp>
                                   <XMTok role="UNKNOWN">d</XMTok>
-                                  <XMTok font="italic" role="UNKNOWN">z</XMTok>
+                                  <XMTok font="italic" role="UNKNOWN" xml:id="S1.T3.m8.1.1">z</XMTok>
                                 </XMApp>
                               </XMDual>
                             </XMApp>
@@ -3348,13 +3366,16 @@
                 <XMath>
                   <XMTok name="rightarrow" role="ARROW">→</XMTok>
                 </XMath>
-              </Math> ␣ <Math mode="inline" tex="\@CSYMBOL{differential}" text="differential" xml:id="S1.T6.m4">
+              </Math> ␣ <Math mode="inline" tex="\@CSYMBOL{differential}x" text="differential@(x)" xml:id="S1.T6.m4">
                 <XMath>
                   <XMDual>
-                    <XMTok meaning="differential"/>
+                    <XMApp>
+                      <XMTok meaning="differential"/>
+                      <XMRef idref="S1.T6.m4.1"/>
+                    </XMApp>
                     <XMApp>
                       <XMTok role="UNKNOWN">d</XMTok>
-                      <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S1.T6.m4.1">x</XMTok>
                     </XMApp>
                   </XMDual>
                 </XMath>
@@ -3363,16 +3384,19 @@
           </tr>
           <tr>
             <td/>
-            <td align="left"><verbatim font="typewriter">\dd[3]{x}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{power}\@CSYMBOL{differential}3" text="absent rightarrow power@(differential, 3)" xml:id="S1.T6.m5">
+            <td align="left"><verbatim font="typewriter">\dd[3]{x}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{power}\@CSYMBOL{differential}3x" text="absent rightarrow (power@(differential, 3))@(x)" xml:id="S1.T6.m5">
                 <XMath>
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
                     <XMDual>
                       <XMApp>
-                        <XMTok meaning="power"/>
-                        <XMTok meaning="differential"/>
-                        <XMRef idref="S1.T6.m5.1"/>
+                        <XMApp>
+                          <XMTok meaning="power"/>
+                          <XMTok meaning="differential"/>
+                          <XMRef idref="S1.T6.m5.1"/>
+                        </XMApp>
+                        <XMRef idref="S1.T6.m5.2"/>
                       </XMApp>
                       <XMApp>
                         <XMApp>
@@ -3380,7 +3404,7 @@
                           <XMTok role="UNKNOWN">d</XMTok>
                           <XMTok fontsize="70%" meaning="3" role="NUMBER" xml:id="S1.T6.m5.1">3</XMTok>
                         </XMApp>
-                        <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="S1.T6.m5.2">x</XMTok>
                       </XMApp>
                     </XMDual>
                   </XMApp>
@@ -3824,32 +3848,44 @@
           </tr>
           <tr>
             <td align="left"><verbatim font="typewriter">\variation</verbatim></td>
-            <td align="left"><verbatim font="typewriter">\var{F[g(x)]}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{variation}" text="absent rightarrow variation" xml:id="S1.T6.m19">
+            <td align="left"><verbatim font="typewriter">\var{F[g(x)]}</verbatim> <Math mode="inline" tex="\rightarrow\@CSYMBOL{variation}F[g(x)]" text="absent rightarrow variation@(F * delimited-[]@(g * x))" xml:id="S1.T6.m19">
                 <XMath>
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
                     <XMDual>
-                      <XMTok meaning="variation"/>
                       <XMApp>
-                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                        <XMApp>
-                          <XMTok font="italic" name="delta" role="UNKNOWN">δ</XMTok>
+                        <XMTok meaning="variation"/>
+                        <XMRef idref="S1.T6.m19.1"/>
+                      </XMApp>
+                      <XMApp>
+                        <XMTok font="italic" name="delta" role="UNKNOWN">δ</XMTok>
+                        <XMApp xml:id="S1.T6.m19.1">
+                          <XMTok meaning="times" role="MULOP">⁢</XMTok>
                           <XMTok font="italic" role="UNKNOWN">F</XMTok>
-                        </XMApp>
-                        <XMWrap>
-                          <XMTok role="OPEN" stretchy="false">[</XMTok>
-                          <XMApp xml:id="S1.T6.m19.2">
-                            <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                            <XMTok font="italic" role="UNKNOWN">g</XMTok>
+                          <XMDual>
+                            <XMApp>
+                              <XMTok meaning="delimited-[]"/>
+                              <XMRef idref="S1.T6.m19.1.2"/>
+                            </XMApp>
                             <XMWrap>
-                              <XMTok role="OPEN" stretchy="false">(</XMTok>
-                              <XMTok font="italic" role="UNKNOWN" xml:id="S1.T6.m19.1">x</XMTok>
-                              <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                              <XMTok role="OPEN" stretchy="false">[</XMTok>
+                              <XMApp xml:id="S1.T6.m19.1.2">
+                                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                                <XMTok font="italic" role="UNKNOWN">g</XMTok>
+                                <XMDual>
+                                  <XMRef idref="S1.T6.m19.1.1"/>
+                                  <XMWrap>
+                                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                    <XMTok font="italic" role="UNKNOWN" xml:id="S1.T6.m19.1.1">x</XMTok>
+                                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                                  </XMWrap>
+                                </XMDual>
+                              </XMApp>
+                              <XMTok role="CLOSE" stretchy="false">]</XMTok>
                             </XMWrap>
-                          </XMApp>
-                          <XMTok role="CLOSE" stretchy="false">]</XMTok>
-                        </XMWrap>
+                          </XMDual>
+                        </XMApp>
                       </XMApp>
                     </XMDual>
                   </XMApp>

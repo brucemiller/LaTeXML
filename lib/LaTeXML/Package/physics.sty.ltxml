@@ -113,13 +113,14 @@ sub phys_applyPower {
 
 # TODO: Work out the optimum assumptions for missing $cfunc, $pfunc, @args...
 sub phys_applyFunction {
-  my ($cfunc, $pfunc, $open, $close, @args) = @_;
+  my ($cfunc, $pfunc, $size, $open, $close, @args) = @_;
   $cfunc = undef unless $cfunc && $cfunc->unlist;
   $pfunc = undef unless $pfunc && $pfunc->unlist;
   my ($cargs, $pargs) = dualize_arglist('#1#2#3#4#5#6#7#8#9', @args);
   if (!$cfunc && !@args) {    # No need for dual.
     return Invocation(T_CS('\@WRAP'),
-      Tokens(($pfunc ? ($pfunc, T_CS('\@APPLYFUNCTION')) : ()), ($open ? $open : ()), ($close ? $close : ()))); }
+      Tokens(($pfunc ? ($pfunc, T_CS('\@APPLYFUNCTION')) : ()),
+        phys_open($size, $open), phys_close($size, $close))); }
   else {
     return Invocation(T_CS('\DUAL'), undef,
       ($cfunc && @args
@@ -130,7 +131,8 @@ sub phys_applyFunction {
       Invocation(T_CS('\@WRAP'),
         Tokens(
           ($pfunc ? ($pfunc, T_CS('\@APPLYFUNCTION')) : ()),
-          ($open ? $open : ()), JoinTokens(T_OTHER(','), @$pargs), ($close ? $close : ())))); } }
+          phys_open($size, $open), JoinTokens(T_OTHER(','), @$pargs), phys_close($size, $close))));
+} }
 
 #======================================================================
 # Automatic bracing
@@ -153,7 +155,7 @@ DefMacro('\lx@physics@fenced{}{}{}{}{}', sub {
     my $size = phys_readDelimiterSize($gullet);
     my $arg  = $gullet->readArg();
     return phys_applyFunction($semantic && Invocation(T_CS('\@CSYMBOL'), $semantic),
-      $function, phys_open($size, $open), phys_close($size, $close), $arg); });
+      $function, $size, $open, $close, $arg); });
 
 # required TeX only, fences specified
 DefMacro('\pqty',          '\lx@physics@fenced{\pqty}{}{}{(}{)}');
@@ -204,7 +206,7 @@ DefMacro('\lx@physics@fencedII{}{}{}{}{}', sub {
     my $arg1 = $gullet->readArg();
     my $arg2 = $gullet->readArg();
     return phys_applyFunction($semantic && Invocation(T_CS('\@CSYMBOL'), $semantic),
-      $function, phys_open($size, $open), phys_close($size, $close), $arg1, $arg2); });
+      $function, $size, $open, $close, $arg1, $arg2); });
 
 DefMacro('\commutator',     '\lx@physics@fencedII{\commutator}{commutator}{}{[}{]}');
 DefMacro('\anticommutator', '\lx@physics@fencedII{\anticommutator}{anticommutator}{}{\{}{\}}');
@@ -243,7 +245,7 @@ DefMacro('\lx@physics@operator{}{}{}', sub {
     my $size  = phys_readDelimiterSize($gullet);
     my ($arg, $open, $close) = phys_readArg($gullet, 0, undef, undef, %physics_delimiters);
     return ($arg
-      ? phys_applyFunction($cfunc, $function, phys_open($size, $open), phys_close($size, $close), $arg)
+      ? phys_applyFunction($cfunc, $function, $size, $open, $close, $arg)
       : Invocation(T_CS('\DUAL'), undef, $cfunc, Invocation(T_CS('\@WRAP'), $function))); });
 
 DefMacro('\gradient',   '\lx@physics@operator{\gradient}{gradient}{\nabla}');
@@ -273,7 +275,7 @@ DefMacro('\lx@physics@operatorP{}{}{}', sub {
     else {
       if ($power) {
         ($cfunc, $pfunc) = phys_applyPower($cfunc, $pfunc, $power); }
-      return phys_applyFunction($cfunc, $pfunc, phys_open($size, $open), phys_close($size, $close), $arg); } });
+      return phys_applyFunction($cfunc, $pfunc, $size, $open, $close, $arg); } });
 
 my @operators = (qw(
     sin sine cos cosine tan tangent csc cosecant sec secand cot cotangent
@@ -312,7 +314,7 @@ DefMacro('\lx@physics@ReIm{}{}{}', sub {
     my $arg   = phys_readArg($gullet);
     return ($arg
       ? phys_applyFunction($cfunc, $function,
-        phys_open($size, T_CS('\lbrace')), phys_close($size, T_CS('\rbrace')), $arg)
+        $size, T_CS('\lbrace'), T_CS('\rbrace'), $arg)
       : Invocation(T_CS('\DUAL'), undef, $cfunc, Invocation(T_CS('\@WRAP'), $function))); });
 
 DefMacro('\Re', '\lx@physics@ReIm{\Re}{realport}{\operatorname{Re}}');
@@ -343,7 +345,7 @@ DefMacro('\lx@physics@diff{}{}{}', sub {
       ($cfunc, $pfunc) = phys_applyPower($cfunc, $pfunc, $power); }
     my ($arg, $open, $close) = phys_readArg($gullet, 0, undef, undef, '(' => T_OTHER(')'));
     return ($arg
-      ? phys_applyFunction($cfunc, $pfunc, phys_open(1, $open), phys_close(1, $close), $arg)
+      ? phys_applyFunction($cfunc, $pfunc, 1, $open, $close, $arg)
       : Invocation(T_CS('\DUAL'), undef, $cfunc, Invocation(T_CS('\@WRAP'), $pfunc))); });
 
 DefMacro('\lx@physics@deriv{}{}{}', sub {
@@ -395,7 +397,7 @@ DefMacro('\ket', sub {
     my $size     = phys_readDelimiterSize($gullet);
     my $arg      = $gullet->readArg();
     return phys_applyFunction(Invocation(T_CS('\@CSYMBOL'), 'bra'), undef,
-      phys_open($size, T_CS('\vert')), phys_close($size, T_CS('\rangle')), $arg); });
+      $size, T_CS('\vert'), T_CS('\rangle'), $arg); });
 
 DefMacro('\bra', sub {
     my ($gullet) = @_;
@@ -413,7 +415,7 @@ DefMacro('\bra', sub {
             $$pargs[1], phys_close($size, T_CS('\rangle'))))); }
     else {
       return phys_applyFunction(Invocation(T_CS('\@CSYMBOL'), 'bra'), undef,
-        phys_open($size, T_CS('\langle')), phys_close($size, T_CS('\vert')), $arg); } });
+        $size, T_CS('\langle'), T_CS('\vert'), $arg); } });
 
 DefMacro('\lx@physics@qm@product{}{}{}{}{}', sub {
     my ($gullet, $cs, $semantic, $open, $middle, $close) = @_;
