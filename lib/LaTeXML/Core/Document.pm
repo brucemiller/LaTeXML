@@ -162,7 +162,7 @@ sub canContain {
 sub canContainIndirect {
   my ($self, $tag, $child) = @_;
   my $model = $$self{model};
-  $tag = $model->getNodeQName($tag) if ref $tag;          # In case tag is a node.
+  $tag   = $model->getNodeQName($tag)   if ref $tag;      # In case tag is a node.
   $child = $model->getNodeQName($child) if ref $child;    # In case child is a node.
         # $imodel{$tag}{$child} => $intermediate || $child
   my $imodel = $STATE->lookupValue('INDIRECT_MODEL');
@@ -325,7 +325,7 @@ sub doctest_head {
   my ($self, $parent, $node, $severe) = @_;
   # Check consistency of document, parent & type, before proceeding
   print STDERR "  NODE $$node [" if $severe;    # BEFORE checking nodeType!
-  print STDERR "d" if $severe;
+  print STDERR "d"               if $severe;
   if (!$node->ownerDocument->isSameNode($self->getDocument)) {
     print STDERR "!" if $severe; }
   print STDERR "p" if $severe;
@@ -1223,7 +1223,7 @@ sub autoCollapseChildren {
         # xoffset, yoffset should sum up, if present on both.
         elsif ($key =~ /^(xoffset|yoffset)$/) {
           if (my $val2 = $node->getAttribute($key)) {
-            my $v1 = $val =~ /^([\+\-\d\.]*)pt$/  && $1;
+            my $v1 = $val  =~ /^([\+\-\d\.]*)pt$/ && $1;
             my $v2 = $val2 =~ /^([\+\-\d\.]*)pt$/ && $1;
             $node->setAttribute($key => ($v1 + $v2) . 'pt'); }
           else {
@@ -1266,7 +1266,7 @@ sub setAttribute {
   $value = $value->toAttribute if ref $value;
   if ((defined $value) && ($value ne '')) {    # Skip if `empty'; but 0 is OK!
     if ($key eq 'xml:id') {                    # If it's an ID attribute
-      $value = $self->recordID($value, $node);    # Do id book keeping
+      $value = $self->recordID($value, $node);                                 # Do id book keeping
       $node->setAttributeNS($LaTeXML::Common::XML::XML_NS, 'id', $value); }    # and bypass all ns stuff
     elsif ($key !~ /:/) {    # No colon; no namespace (the common case!)
                              # Ignore attributes not allowed by the model,
@@ -1280,7 +1280,7 @@ sub setAttribute {
       if ($ns) {             # If namespaced attribute (must have prefix!
         my $prefix = $node->lookupNamespacePrefix($ns);    # namespace already declared?
         if (!$prefix) {                                    # if namespace not already declared
-          $prefix = $$self{model}->getDocumentNamespacePrefix($ns, 1);    # get the prefix to use
+          $prefix = $$self{model}->getDocumentNamespacePrefix($ns, 1);             # get the prefix to use
           $self->getDocument->documentElement->setNamespace($ns, $prefix, 0); }    # and declare it
         if ($prefix eq '#default') {    # Probably shouldn't happen...?
           $node->setAttribute($name => $value); }
@@ -1499,6 +1499,7 @@ sub compactXMDual {
   # transfer the attributes after replacing, so that the bookkeeping has been undone
   for my $key (keys %transfer_attrs) {
     $self->setAttribute($compact_apply, $key, $transfer_attrs{$key}); }
+  $self->closeElementAt($compact_apply);
   return; }
 
 # Replace an XMDual with one of its branches
@@ -1507,7 +1508,7 @@ sub collapseXMDual {
   # The other branch is not visible, nor referenced,
   # but the dual may have an id and be referenced
   if (my $dualid = $dual->getAttribute('xml:id')) {
-    $self->unRecordID($dualid);    # We'll move or remove the ID from the dual
+    $self->unRecordID($dualid);                              # We'll move or remove the ID from the dual
     if (my $branchid = $branch->getAttribute('xml:id')) {    # branch has id too!
       foreach my $ref ($self->findnodes("//*[\@idref='$dualid']")) {
         $ref->setAttribute(idref => $branchid); } }          # Change dualid refs to branchid
@@ -1634,7 +1635,7 @@ sub openElementAt {
   my $font = $attributes{_font} || $attributes{font};
   my $box  = $attributes{_box};
   $box = $$self{node_boxes}{$box} if $box && !ref $box;    # may already be the string key
-         # If this will be the document root node, things are slightly more involved.
+      # If this will be the document root node, things are slightly more involved.
   if ($point->nodeType == XML_DOCUMENT_NODE) {    # First node! (?)
     $$self{model}->addSchemaDeclaration($self, $tag);
     map { $$self{document}->appendChild($_) } @{ $$self{pending} };    # Add saved comments, PI's
@@ -1661,7 +1662,7 @@ sub openElementAt {
     next if $key eq 'locator';    # !!!
     $self->setAttribute($newnode, $key, $attributes{$key}); }
   $self->setNodeFont($newnode, $font) if $font;
-  $self->setNodeBox($newnode, $box) if $box;
+  $self->setNodeBox($newnode, $box)   if $box;
   print STDERR "Inserting " . Stringify($newnode) . " into " . Stringify($point) . "\n" if $LaTeXML::Core::Document::DEBUG;
 
   # Run afterOpen operations
