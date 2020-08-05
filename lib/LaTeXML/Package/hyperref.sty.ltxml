@@ -191,6 +191,8 @@ DefConstructor('\htmlref Semiverbatim  Semiverbatim',
 DefConstructor('\hyperlink Semiverbatim {}',
   "<ltx:ref idref='#1'>#2</ltx:ref>",
   properties => sub { (id => CleanID($_[1])); });
+DefMacro('\hyper@@link{}{}{}', '\hyperlink{#2}{#3}');
+
 DefConstructor('\hypertarget Semiverbatim {}',
   "<ltx:anchor xml:id='#id'>#2</ltx:anchor>",
   properties => sub { (id => CleanID(ToString($_[1]))); });
@@ -219,6 +221,9 @@ DefMacro('\lx@autorefnum@@{}', sub {
         : ()),
       (LookupDefinition(T_CS('\p@' . $counter)) ? T_CS('\p@' . $counter) : ()),
       T_CS('\the' . $counter)); });
+
+Let('\HyOrg@addtoreset', '\@addtoreset');
+Let('\H@refstepcounter', '\refstepcounter');
 
 AssignMapping('type_tag_formatter', 'autoref' => '\lx@autorefnum@@');
 
