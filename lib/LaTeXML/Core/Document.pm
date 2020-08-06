@@ -1483,7 +1483,7 @@ sub compactXMDual {
     if (ref $n_arg eq 'ARRAY') {
       my ($c_arg, $p_arg) = @$n_arg;
       # Transfer all c_arg attributes over, it should be primary?
-      for my $attr_key (qw(decl_id meaning name)) {
+      for my $attr_key (qw(decl_id meaning name omcd)) {
         if (my $attr_val = $c_arg->getAttribute($attr_key)) {
           $c_arg->removeAttribute($attr_key);
           $p_arg->setAttribute($attr_key, $attr_val); } }
