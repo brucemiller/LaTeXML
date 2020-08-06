@@ -236,16 +236,20 @@ DefMacro('\pragma OptionalMatch:* {}{}', sub { # Limitation: never use commas in
         Tokens(T_MATH, Tokenize($notation), T_MATH)); }
     return @declarations; });
 
-PushValue('@at@begin@document', Tokenize(<<'EOL'));
-\pragma{FUNCTION}{f,g,h}
-\pragma{ID}{a,b,c,d,n,m,x,y,z}
-\pragma{index}{?_?}
-\pragma{power}{?^?}
-\pragma{Pochhamer-symbol,ID}{\left(?\right)_?}
-\pragma{Legendre-symbol,ID}{\left(?|?\right)}
-\pragma{BesselJ,FUNCTION}{J_?}
-\pragma*{inner-product,ID}{\left<\mathbf{?},\mathbf{?}\right>}
-\pragma*{pre:\@APPLYFUNCTION}{\left(?,?;?|?\right)}
-EOL
+# Example pragmas, as incldued with the tiny accessibility showcase:
+#
+# disabled by default here, since they may assume too much
+#
+# PushValue('@at@begin@document', Tokenize(<<'EOL'));
+# \pragma{FUNCTION}{f,g,h}
+# \pragma{ID}{a,b,c,d,n,m,x,y,z}
+# \pragma{index}{?_?}
+# \pragma{power}{?^?}
+# \pragma{Pochhamer-symbol,ID}{\left(?\right)_?}
+# \pragma{Legendre-symbol,ID}{\left(?|?\right)}
+# \pragma{BesselJ,FUNCTION}{J_?}
+# \pragma*{inner-product,ID}{\left<\mathbf{?},\mathbf{?}\right>}
+# \pragma*{pre:\@APPLYFUNCTION}{\left(?,?;?|?\right)}
+# EOL
 #
 1;
