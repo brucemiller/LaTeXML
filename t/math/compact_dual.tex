@@ -1,0 +1,51 @@
+\documentclass{article}
+\usepackage{latexml}
+\makeatletter
+\iflatexml\else % TeX stubs to get a PDF, not perfect
+  \def\@APPLY#1{#1}
+  \def\@WRAP#1{\bgroup#1\egroup}
+  \def\@XMRef#1{}
+  \def\@XMArg#1#2{#2}
+  \def\@CSYMBOL#1{}
+  \def\DUAL[#1]#2#3{#3}
+\fi
+% simple demo, likely a bad fit for real use
+\newcount\var@ref
+\advance\var@ref by 1
+\newcount\var@@ref
+\advance\var@@ref by 10
+%
+\def\dual@script#1#2#3#4{%
+  \global\advance\var@ref by 1
+  \edef\ref@{\@XMRef{\the\var@ref}}
+  \edef\arg@{\@XMArg{\the\var@ref}{#3}}
+  \global\advance\var@@ref by 1
+  \edef\ref@@{\@XMRef{\the\var@@ref}}
+  \edef\arg@@{\@XMArg{\the\var@@ref}{#4}}
+%
+  \DUAL[hide_content_reversion=1]{%
+    \@APPLY{\@CSYMBOL{#1}\ref@\ref@@}}{%
+    \arg@#2\arg@@}
+}
+\def\dual@atom#1#2{%
+  \DUAL[hide_content_reversion=1]{%
+    \@CSYMBOL{#1}}{%
+    \@WRAP{#2}}
+}
+%
+\def\power#1#2{\dual@script{power}{^}{#1}{#2}}
+
+% making the generalized form with repeating primes in TeX is a pain
+% so hardcoding "2" just to illustrate:
+\def\degtwo{\dual@atom{2}{\prime\prime}}
+
+\def\derive2#1{
+  \dual@script{derivative-implicit-variable}{^}{#1}{\degtwo}}
+
+\begin{document}
+
+$\power{x}{2}+\power{y}{3}$
+
+$\derive2{f}$
+
+\end{document}

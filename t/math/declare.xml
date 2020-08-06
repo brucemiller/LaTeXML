@@ -107,16 +107,10 @@
                   <XMTok font="italic" role="UNKNOWN">x</XMTok>
                 </XMApp>
                 <XMTok role="PUNCT">,</XMTok>
-                <XMDual role="ID" xml:id="S1.Ex1.m1.10">
-                  <XMApp>
-                    <XMTok decl_id="S1.XMD3"/>
-                    <XMRef idref="S1.Ex1.m1.3"/>
-                  </XMApp>
-                  <XMApp>
-                    <XMTok name="widehat" role="OVERACCENT">^</XMTok>
-                    <XMTok decl_id="S1.XMD4" font="italic" role="ID" xml:id="S1.Ex1.m1.3">x</XMTok>
-                  </XMApp>
-                </XMDual>
+                <XMApp role="ID" xml:id="S1.Ex1.m1.10">
+                  <XMTok decl_id="S1.XMD3" name="widehat" role="OVERACCENT">^</XMTok>
+                  <XMTok decl_id="S1.XMD4" font="italic" role="ID" xml:id="S1.Ex1.m1.3">x</XMTok>
+                </XMApp>
                 <XMTok role="PUNCT">,</XMTok>
                 <XMTok font="bold" role="UNKNOWN" xml:id="S1.Ex1.m1.11">x</XMTok>
               </XMWrap>
@@ -173,27 +167,15 @@
                   </XMApp>
                 </XMApp>
                 <XMTok role="PUNCT">,</XMTok>
-                <XMDual role="ID" xml:id="S1.Ex2.m1.4">
-                  <XMApp>
-                    <XMTok decl_id="S1.XMD2"/>
-                    <XMRef idref="S1.Ex2.m1.2"/>
-                  </XMApp>
-                  <XMApp>
-                    <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
-                    <XMTok decl_id="S1.XMD9" font="italic" role="ID" xml:id="S1.Ex2.m1.2">y</XMTok>
-                  </XMApp>
-                </XMDual>
+                <XMApp role="ID" xml:id="S1.Ex2.m1.4">
+                  <XMTok decl_id="S1.XMD2" name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
+                  <XMTok decl_id="S1.XMD9" font="italic" role="ID" xml:id="S1.Ex2.m1.2">y</XMTok>
+                </XMApp>
                 <XMTok role="PUNCT">,</XMTok>
-                <XMDual role="ID" xml:id="S1.Ex2.m1.5">
-                  <XMApp>
-                    <XMTok decl_id="S1.XMD3"/>
-                    <XMRef idref="S1.Ex2.m1.1"/>
-                  </XMApp>
-                  <XMApp>
-                    <XMTok name="widehat" role="OVERACCENT">^</XMTok>
-                    <XMTok decl_id="S1.XMD9" font="italic" role="ID" xml:id="S1.Ex2.m1.1">y</XMTok>
-                  </XMApp>
-                </XMDual>
+                <XMApp role="ID" xml:id="S1.Ex2.m1.5">
+                  <XMTok decl_id="S1.XMD3" name="widehat" role="OVERACCENT">^</XMTok>
+                  <XMTok decl_id="S1.XMD9" font="italic" role="ID" xml:id="S1.Ex2.m1.1">y</XMTok>
+                </XMApp>
               </XMWrap>
             </XMDual>
           </XMath>
@@ -490,16 +472,10 @@
                     <XMRef idref="S2.Ex6.m1.3"/>
                   </XMApp>
                   <XMApp>
-                    <XMDual role="FUNCTION" xml:id="S2.Ex6.m1.2">
-                      <XMApp>
-                        <XMTok decl_id="S2.XMD8"/>
-                        <XMRef idref="S2.Ex6.m1.1"/>
-                      </XMApp>
-                      <XMApp>
-                        <XMTok name="widehat" role="OVERACCENT">^</XMTok>
-                        <XMTok decl_id="S2.XMD7" font="italic" role="ID" xml:id="S2.Ex6.m1.1">z</XMTok>
-                      </XMApp>
-                    </XMDual>
+                    <XMApp role="FUNCTION" xml:id="S2.Ex6.m1.2">
+                      <XMTok decl_id="S2.XMD8" name="widehat" role="OVERACCENT">^</XMTok>
+                      <XMTok decl_id="S2.XMD7" font="italic" role="ID" xml:id="S2.Ex6.m1.1">z</XMTok>
+                    </XMApp>
                     <XMWrap>
                       <XMTok role="OPEN" stretchy="false">(</XMTok>
                       <XMTok font="italic" role="UNKNOWN" xml:id="S2.Ex6.m1.3">a</XMTok>

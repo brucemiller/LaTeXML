@@ -1133,16 +1133,10 @@
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
-                    <XMDual>
-                      <XMApp>
-                        <XMTok meaning="gradient"/>
-                        <XMRef idref="S1.T2.m17.1"/>
-                      </XMApp>
-                      <XMApp>
-                        <XMTok name="nabla" role="OPERATOR">∇</XMTok>
-                        <XMTok name="Psi" role="UNKNOWN" xml:id="S1.T2.m17.1">Ψ</XMTok>
-                      </XMApp>
-                    </XMDual>
+                    <XMApp>
+                      <XMTok meaning="gradient" name="nabla" role="OPERATOR">∇</XMTok>
+                      <XMTok name="Psi" role="UNKNOWN" xml:id="S1.T2.m17.1">Ψ</XMTok>
+                    </XMApp>
                   </XMApp>
                 </XMath>
               </Math></td>
@@ -1525,20 +1519,14 @@
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
-                    <XMDual>
-                      <XMApp>
-                        <XMTok meaning="laplacian"/>
-                        <XMRef idref="S1.T2.m30.1"/>
+                    <XMApp>
+                      <XMApp meaning="laplacian">
+                        <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                        <XMTok name="nabla" role="OPERATOR">∇</XMTok>
+                        <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                       </XMApp>
-                      <XMApp>
-                        <XMApp>
-                          <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
-                          <XMTok name="nabla" role="OPERATOR">∇</XMTok>
-                          <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
-                        </XMApp>
-                        <XMTok name="Psi" role="UNKNOWN" xml:id="S1.T2.m30.1">Ψ</XMTok>
-                      </XMApp>
-                    </XMDual>
+                      <XMTok name="Psi" role="UNKNOWN" xml:id="S1.T2.m30.1">Ψ</XMTok>
+                    </XMApp>
                   </XMApp>
                 </XMath>
               </Math></td>
@@ -2846,16 +2834,10 @@
                                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                                 </XMWrap>
                               </XMDual>
-                              <XMDual>
-                                <XMApp>
-                                  <XMTok meaning="differential"/>
-                                  <XMRef idref="S1.T3.m7.1.1"/>
-                                </XMApp>
-                                <XMApp>
-                                  <XMTok role="UNKNOWN">d</XMTok>
-                                  <XMTok font="italic" role="UNKNOWN" xml:id="S1.T3.m7.1.1">z</XMTok>
-                                </XMApp>
-                              </XMDual>
+                              <XMApp>
+                                <XMTok meaning="differential" role="UNKNOWN">d</XMTok>
+                                <XMTok font="italic" role="UNKNOWN" xml:id="S1.T3.m7.1.1">z</XMTok>
+                              </XMApp>
                             </XMApp>
                           </XMApp>
                           <XMTok role="CLOSE" stretchy="true">)</XMTok>
@@ -2901,16 +2883,10 @@
                                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                                 </XMWrap>
                               </XMDual>
-                              <XMDual>
-                                <XMApp>
-                                  <XMTok meaning="differential"/>
-                                  <XMRef idref="S1.T3.m8.1.1"/>
-                                </XMApp>
-                                <XMApp>
-                                  <XMTok role="UNKNOWN">d</XMTok>
-                                  <XMTok font="italic" role="UNKNOWN" xml:id="S1.T3.m8.1.1">z</XMTok>
-                                </XMApp>
-                              </XMDual>
+                              <XMApp>
+                                <XMTok meaning="differential" role="UNKNOWN">d</XMTok>
+                                <XMTok font="italic" role="UNKNOWN" xml:id="S1.T3.m8.1.1">z</XMTok>
+                              </XMApp>
                             </XMApp>
                           </XMApp>
                           <XMTok role="CLOSE" stretchy="true">)</XMTok>
@@ -3368,16 +3344,10 @@
                 </XMath>
               </Math> ␣ <Math mode="inline" tex="\@CSYMBOL{differential}x" text="differential@(x)" xml:id="S1.T6.m4">
                 <XMath>
-                  <XMDual>
-                    <XMApp>
-                      <XMTok meaning="differential"/>
-                      <XMRef idref="S1.T6.m4.1"/>
-                    </XMApp>
-                    <XMApp>
-                      <XMTok role="UNKNOWN">d</XMTok>
-                      <XMTok font="italic" role="UNKNOWN" xml:id="S1.T6.m4.1">x</XMTok>
-                    </XMApp>
-                  </XMDual>
+                  <XMApp>
+                    <XMTok meaning="differential" role="UNKNOWN">d</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S1.T6.m4.1">x</XMTok>
+                  </XMApp>
                 </XMath>
               </Math>␣</td>
             <td align="justify" width="170.7pt">automatic spacing based on neighbors</td>
@@ -3853,41 +3823,35 @@
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
-                    <XMDual>
-                      <XMApp>
-                        <XMTok meaning="variation"/>
-                        <XMRef idref="S1.T6.m19.1"/>
-                      </XMApp>
-                      <XMApp>
-                        <XMTok font="italic" name="delta" role="UNKNOWN">δ</XMTok>
-                        <XMApp xml:id="S1.T6.m19.1">
-                          <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                          <XMTok font="italic" role="UNKNOWN">F</XMTok>
-                          <XMDual>
-                            <XMApp>
-                              <XMTok meaning="delimited-[]"/>
-                              <XMRef idref="S1.T6.m19.1.2"/>
+                    <XMApp>
+                      <XMTok font="italic" meaning="variation" name="delta" role="UNKNOWN">δ</XMTok>
+                      <XMApp xml:id="S1.T6.m19.1">
+                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">F</XMTok>
+                        <XMDual>
+                          <XMApp>
+                            <XMTok meaning="delimited-[]"/>
+                            <XMRef idref="S1.T6.m19.1.2"/>
+                          </XMApp>
+                          <XMWrap>
+                            <XMTok role="OPEN" stretchy="false">[</XMTok>
+                            <XMApp xml:id="S1.T6.m19.1.2">
+                              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                              <XMTok font="italic" role="UNKNOWN">g</XMTok>
+                              <XMDual>
+                                <XMRef idref="S1.T6.m19.1.1"/>
+                                <XMWrap>
+                                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                                  <XMTok font="italic" role="UNKNOWN" xml:id="S1.T6.m19.1.1">x</XMTok>
+                                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                                </XMWrap>
+                              </XMDual>
                             </XMApp>
-                            <XMWrap>
-                              <XMTok role="OPEN" stretchy="false">[</XMTok>
-                              <XMApp xml:id="S1.T6.m19.1.2">
-                                <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                                <XMTok font="italic" role="UNKNOWN">g</XMTok>
-                                <XMDual>
-                                  <XMRef idref="S1.T6.m19.1.1"/>
-                                  <XMWrap>
-                                    <XMTok role="OPEN" stretchy="false">(</XMTok>
-                                    <XMTok font="italic" role="UNKNOWN" xml:id="S1.T6.m19.1.1">x</XMTok>
-                                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                                  </XMWrap>
-                                </XMDual>
-                              </XMApp>
-                              <XMTok role="CLOSE" stretchy="false">]</XMTok>
-                            </XMWrap>
-                          </XMDual>
-                        </XMApp>
+                            <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                          </XMWrap>
+                        </XMDual>
                       </XMApp>
-                    </XMDual>
+                    </XMApp>
                   </XMApp>
                 </XMath>
               </Math></td>

@@ -162,7 +162,7 @@ sub canContain {
 sub canContainIndirect {
   my ($self, $tag, $child) = @_;
   my $model = $$self{model};
-  $tag = $model->getNodeQName($tag) if ref $tag;          # In case tag is a node.
+  $tag   = $model->getNodeQName($tag)   if ref $tag;      # In case tag is a node.
   $child = $model->getNodeQName($child) if ref $child;    # In case child is a node.
         # $imodel{$tag}{$child} => $intermediate || $child
   my $imodel = $STATE->lookupValue('INDIRECT_MODEL');
@@ -325,7 +325,7 @@ sub doctest_head {
   my ($self, $parent, $node, $severe) = @_;
   # Check consistency of document, parent & type, before proceeding
   print STDERR "  NODE $$node [" if $severe;    # BEFORE checking nodeType!
-  print STDERR "d" if $severe;
+  print STDERR "d"               if $severe;
   if (!$node->ownerDocument->isSameNode($self->getDocument)) {
     print STDERR "!" if $severe; }
   print STDERR "p" if $severe;
@@ -1223,7 +1223,7 @@ sub autoCollapseChildren {
         # xoffset, yoffset should sum up, if present on both.
         elsif ($key =~ /^(xoffset|yoffset)$/) {
           if (my $val2 = $node->getAttribute($key)) {
-            my $v1 = $val =~ /^([\+\-\d\.]*)pt$/  && $1;
+            my $v1 = $val  =~ /^([\+\-\d\.]*)pt$/ && $1;
             my $v2 = $val2 =~ /^([\+\-\d\.]*)pt$/ && $1;
             $node->setAttribute($key => ($v1 + $v2) . 'pt'); }
           else {
@@ -1266,7 +1266,7 @@ sub setAttribute {
   $value = $value->toAttribute if ref $value;
   if ((defined $value) && ($value ne '')) {    # Skip if `empty'; but 0 is OK!
     if ($key eq 'xml:id') {                    # If it's an ID attribute
-      $value = $self->recordID($value, $node);    # Do id book keeping
+      $value = $self->recordID($value, $node);                                 # Do id book keeping
       $node->setAttributeNS($LaTeXML::Common::XML::XML_NS, 'id', $value); }    # and bypass all ns stuff
     elsif ($key !~ /:/) {    # No colon; no namespace (the common case!)
                              # Ignore attributes not allowed by the model,
@@ -1280,7 +1280,7 @@ sub setAttribute {
       if ($ns) {             # If namespaced attribute (must have prefix!
         my $prefix = $node->lookupNamespacePrefix($ns);    # namespace already declared?
         if (!$prefix) {                                    # if namespace not already declared
-          $prefix = $$self{model}->getDocumentNamespacePrefix($ns, 1);    # get the prefix to use
+          $prefix = $$self{model}->getDocumentNamespacePrefix($ns, 1);             # get the prefix to use
           $self->getDocument->documentElement->setNamespace($ns, $prefix, 0); }    # and declare it
         if ($prefix eq '#default') {    # Probably shouldn't happen...?
           $node->setAttribute($name => $value); }
@@ -1439,7 +1439,67 @@ sub pruneXMDuals {
       $self->collapseXMDual($dual, $presentation); }
     elsif (!$self->findnode('descendant-or-self::*[@_pvis or @_cvis]', $presentation)) {    # pres.
       $self->collapseXMDual($dual, $content); }
-  }
+    else {    # compact aligned structures, where possible
+      $self->compactXMDual($dual, $content, $presentation); } }
+  return; }
+
+sub compactXMDual {
+  my ($self, $dual, $content, $presentation) = @_;
+  # For now only handle compacting mirror applications
+  return if ($self->getNodeQName($content) ne 'ltx:XMApp') ||
+    ($self->getNodeQName($presentation) ne 'ltx:XMApp');
+  my @content_args = element_nodes($content);
+  my @pres_args    = element_nodes($presentation);
+  return if scalar(@content_args) != scalar(@pres_args);
+
+  my @new_args = ();
+  my $single_duality;
+  # walk the corresponding children, and double-check they are referenced in the same order
+  while ((my $c_arg = shift(@content_args)) and (my $p_arg = shift(@pres_args))) {
+    my $c_idref = $c_arg->getAttribute('idref');
+    if ($c_idref && ($c_idref eq ($p_arg->getAttribute('xml:id') || ''))) {
+      push @new_args, $p_arg;
+      next; }    # content-refs-pres, OK
+    my $p_idref = $p_arg->getAttribute('idref');
+    if ($p_idref && ($p_idref eq ($c_arg->getAttribute('xml:id') || ''))) {
+      push @new_args, $c_arg;
+      next; }    # pres-refs-content, OK
+
+    # Next up: differences. If:
+    # 1) we saw such a difference beforehand, or
+    # 2) the tree is too complex - give up on compacting and return.
+    # we handle a single content-side XMTok, to any XM* presentation subtree differing for now.
+    if ($single_duality || ($self->getNodeQName($c_arg) ne 'ltx:XMTok')) {
+      return; }
+    else { # otherwise we can compact this case. but delay actual libxml changes until we are *sure* the entire tree is compactable
+      $single_duality = [$c_arg, $p_arg];
+      push(@new_args, $single_duality); } }
+  return unless $single_duality;
+
+# If we made it here, this is a dual with two mirrored applications and a single XMTok difference, compact it.
+  my $compact_apply = $self->openElementAt($dual->parentNode, 'ltx:XMApp');
+  for my $n_arg (@new_args) {
+    # one of the args has our dual node that needs compacting
+    if (ref $n_arg eq 'ARRAY') {
+      my ($c_arg, $p_arg) = @$n_arg;
+      # Transfer all c_arg attributes over, it should be primary?
+      for my $attr_key (qw(decl_id meaning name omcd)) {
+        if (my $attr_val = $c_arg->getAttribute($attr_key)) {
+          $c_arg->removeAttribute($attr_key);
+          $p_arg->setAttribute($attr_key, $attr_val); } }
+      $n_arg = $p_arg; }
+    $n_arg->unbindNode;
+    $compact_apply->appendChild($n_arg); }
+  # if the dual has any attributes migrate them to the new XMApp
+  my %transfer_attrs = ();
+  for my $attr ($dual->attributes) {
+    if ($attr->nodeType == XML_ATTRIBUTE_NODE) {
+      $transfer_attrs{ $attr->nodeName } = $attr->getValue; } }
+  $self->replaceNode($dual, $compact_apply);
+  # transfer the attributes after replacing, so that the bookkeeping has been undone
+  for my $key (keys %transfer_attrs) {
+    $self->setAttribute($compact_apply, $key, $transfer_attrs{$key}); }
+  $self->closeElementAt($compact_apply);
   return; }
 
 # Replace an XMDual with one of its branches
@@ -1448,7 +1508,7 @@ sub collapseXMDual {
   # The other branch is not visible, nor referenced,
   # but the dual may have an id and be referenced
   if (my $dualid = $dual->getAttribute('xml:id')) {
-    $self->unRecordID($dualid);    # We'll move or remove the ID from the dual
+    $self->unRecordID($dualid);                              # We'll move or remove the ID from the dual
     if (my $branchid = $branch->getAttribute('xml:id')) {    # branch has id too!
       foreach my $ref ($self->findnodes("//*[\@idref='$dualid']")) {
         $ref->setAttribute(idref => $branchid); } }          # Change dualid refs to branchid
@@ -1575,7 +1635,7 @@ sub openElementAt {
   my $font = $attributes{_font} || $attributes{font};
   my $box  = $attributes{_box};
   $box = $$self{node_boxes}{$box} if $box && !ref $box;    # may already be the string key
-         # If this will be the document root node, things are slightly more involved.
+      # If this will be the document root node, things are slightly more involved.
   if ($point->nodeType == XML_DOCUMENT_NODE) {    # First node! (?)
     $$self{model}->addSchemaDeclaration($self, $tag);
     map { $$self{document}->appendChild($_) } @{ $$self{pending} };    # Add saved comments, PI's
@@ -1602,7 +1662,7 @@ sub openElementAt {
     next if $key eq 'locator';    # !!!
     $self->setAttribute($newnode, $key, $attributes{$key}); }
   $self->setNodeFont($newnode, $font) if $font;
-  $self->setNodeBox($newnode, $box) if $box;
+  $self->setNodeBox($newnode, $box)   if $box;
   print STDERR "Inserting " . Stringify($newnode) . " into " . Stringify($point) . "\n" if $LaTeXML::Core::Document::DEBUG;
 
   # Run afterOpen operations
