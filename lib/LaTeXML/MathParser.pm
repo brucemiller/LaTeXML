@@ -323,7 +323,7 @@ sub parse_rec {
       NoteProgressDetailed($TAG_FEEDBACK{$tag} || '.');
       # Copy all attributes
       my $resultid = p_getAttribute($result, 'xml:id');
-      my %attr = map { (getQName($_) => $_->getValue) }
+      my %attr     = map { (getQName($_) => $_->getValue) }
         grep { $_->nodeType == XML_ATTRIBUTE_NODE } $node->attributes;
       # add to result, even allowing modification of xml node, since we're committed.
       # [Annotate converts node to array which messes up clearing the id!]
@@ -346,7 +346,7 @@ sub parse_rec {
           $document->unRecordID($value);
           $node->removeAttribute('xml:id'); }
         if ($isarr) { $$result[1]{$key} = $value; }
-        else { $document->setAttribute($result, $key => $value); } }
+        else        { $document->setAttribute($result, $key => $value); } }
       $result = $document->replaceTree($result, $node);
       my $newid = $attr{'xml:id'};
       # Danger: the above code replaced the id on the parsed result with the one from XMArg,..
@@ -531,8 +531,8 @@ sub parse_kludge {
     if ($role eq 'OPEN') {
       unshift(@stack, [$pair]); }    # Start new fenced row;
     elsif ($role eq 'CLOSE') {       # Close the current row
-      my $row = shift(@stack);       # get the current list of items
-      push(@$row, $pair) if $pair;   # Put the close (if any) into it
+      my $row = shift(@stack);        # get the current list of items
+      push(@$row, $pair) if $pair;    # Put the close (if any) into it
       my @kludged = $self->parse_kludgeScripts_rec(@$row);    # handle scripts
                                                               # wrap, if needed.
       $row = [(scalar(@kludged) > 1 ? ['ltx:XMWrap', {}, @kludged] : $kludged[0]), 'FENCED'];
@@ -934,7 +934,7 @@ sub textrec {
       return $meaning; }
     my ($content, $presentation) = element_nodes($node);
     my $text = textrec($content, $outer_bp, $outer_name);    # Just send out the semantic form.
-           # Fall back to presentation, if content has poor semantics (eg. from replacement patterns)
+        # Fall back to presentation, if content has poor semantics (eg. from replacement patterns)
     return ($text =~ /^\(*Unknown/ ? textrec($presentation, $outer_bp, $outer_name) : $text); }
   elsif ($tag eq 'ltx:XMTok') {
     my $name = getTokenMeaning($node);
@@ -968,8 +968,8 @@ sub textrec_apply {
 
 sub textrec_array {
   my ($node) = @_;
-  my $name = $node->getAttribute('meaning') || $node->getAttribute('name') || 'Array';
-  my @rows = ();
+  my $name   = $node->getAttribute('meaning') || $node->getAttribute('name') || 'Array';
+  my @rows   = ();
   foreach my $row (element_nodes($node)) {
     push(@rows, '[' . join(', ', map { ($_->firstChild ? textrec($_->firstChild) : '') } element_nodes($row)) . ']'); }
   return $name . '[' . join(', ', @rows) . ']'; }
@@ -1390,7 +1390,7 @@ sub ApplyNary {
   my $opname    = p_getTokenMeaning($rop) || '__undef_meaning__';
   my $opcontent = p_getValue($rop) || '__undef_content__';
   my @args      = ();
-  if (p_getQName($arg1) eq 'ltx:XMApp') {
+  if (p_getQName($arg1) eq 'ltx:XMApp' && !p_getAttribute($arg1, 'meaning')) {
     my ($op1, @args1) = p_element_nodes($arg1);
     my $rop1 = realizeXMNode($op1);
     if (isSameExpr($rop, $rop1)
@@ -1499,7 +1499,7 @@ sub NewScript {
       || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($sx, $sl) = (p_getAttribute($rscript, 'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($mode, $y) = p_getAttribute($rscript, 'role') =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
-  my $x = ($pos ? $pos : ($mode eq 'FLOAT' ? 'pre' : $bx || 'post'));
+  my $x    = ($pos ? $pos : ($mode eq 'FLOAT' ? 'pre' : $bx || 'post'));
   my $lpad = ($x eq 'pre') && p_getAttribute($rscript, 'lpadding');
   my $rpad = ($x ne 'pre') && p_getAttribute($rscript, 'rpadding');
   my $t;

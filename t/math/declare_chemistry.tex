@@ -1,0 +1,18 @@
+\documentclass{article}
+\usepackage{latexml}
+% Cheat "molecule" until we can do better patterns:
+\makeatletter
+\def\molecule{\mathbin{\@CSYMBOL{molecule}}}
+\lxDeclare[replace=$\molecule$]{$\,$}
+\makeatother
+
+\begin{document}
+
+\lxDeclare[meaning=sodium]{$Na$}
+\lxDeclare[meaning=chlorine]{$Cl$}
+
+% No markup, rewritten:
+
+\[ Na\,Cl \]
+
+\end{document}

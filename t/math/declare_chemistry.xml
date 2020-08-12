@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" tex="Na\,Cl" text="molecule@(sodium, chlorine)" xml:id="S0.Ex1.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="molecule" role="BINOP"/>
+            <XMApp meaning="sodium">
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">N</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            </XMApp>
+            <XMApp meaning="chlorine">
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">C</XMTok>
+              <XMTok font="italic" role="UNKNOWN">l</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+</document>
