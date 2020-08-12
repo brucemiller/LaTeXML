@@ -60,7 +60,7 @@ sub convertNode {
   # NEXT better strategy will be to scan columns of MathBranches to establish desired line length?
   elsif ($$self{linelength}    # If line breaking
     && ($doc->findnodes('ancestor::ltx:MathBranch', $xmath))    # In formatted side of MathFork?
-          # But ONLY if last column!! (until we can adapt LineBreaker!)
+        # But ONLY if last column!! (until we can adapt LineBreaker!)
     && !$doc->findnodes('parent::ltx:Math/parent::ltx:td/following-sibling::ltx:td', $xmath)) {
     my ($pmmlb, $broke) = $self->convertNode_linebreak($doc, $xmath, $style);
     $pmml = $pmmlb; }
@@ -134,18 +134,30 @@ sub addAccessibilityAnnotations {
     my $role = $currentnode->getAttribute('role') || '';
     $meaning = ($role ne 'NUMBER') && $currentnode->getAttribute('meaning'); }
   elsif ($current_node_name eq 'ltx:XMApp') {
-    my @current_children   = element_nodes($currentnode);
-    my $current_op_meaning = $current_children[0]->getAttribute('meaning') || '';
-    my $arg_count          = scalar(@current_children) - 1;
     # Ok, so we need to disentangle the case where the operator XMTok is preserved in pmml,
     # and the case where it isn't. E.g. in \sqrt{x} we get a msqrt wrapper, but no dedicated token
     # so we need to mark the literal "square-root" in msqrt
-    my $op;
-    my $name = getQName($node);
-    if ($name ne 'm:mrow') {    # not an mrow, prefer the literal semantic
-      $op = $current_op_meaning; }
-    else {    # mrow, prefer #op, except for whitelisted exception cases (which ones??)
-      $op = ($current_op_meaning eq 'multirelation') ? $current_op_meaning : '#op'; }
+    #
+    # Additionally, semantic annotations via e.g. \lxDeclare will appear as top-level XMApp meaning
+    # attributes, and we must be extra careful not to descend into those nodes.
+    my ($op, $arg_count);
+    my $app_meaning = $currentnode->getAttribute('meaning');
+    if ($app_meaning) {
+      $meaning = $app_meaning;
+      # TODO: This still feels like "choppy" ad-hoc treatment.
+      # What is a good general traversal algorithm that avoids all these special cases?
+      for my $arg_node (p_element_nodes($node)) {
+        if ((p_getAttribute($arg_node, '_a11y') || '') ne 'ref') {
+          p_removeAttribute($arg_node, 'data-semantic'); } } }
+    else {
+      my @current_children   = element_nodes($currentnode);
+      my $current_op_meaning = $current_children[0]->getAttribute('meaning') || '';
+      $arg_count = scalar(@current_children) - 1;
+      my $name = getQName($node);
+      if ($name ne 'm:mrow') {    # not an mrow, prefer the literal semantic
+        $op = $current_op_meaning; }
+      else {    # mrow, prefer #op, except for whitelisted exception cases (which ones??)
+        $op = ($current_op_meaning eq 'multirelation') ? $current_op_meaning : '#op'; } }
     if ($op) {    # Set the meaning, if we found a satisfying $op:
       $meaning = "$op(" . join(",", map { '#' . $_ } (1 .. $arg_count)) . ")"; }
     else {        # if there is no op, we should undo argument annotations pointing at the application,
@@ -232,8 +244,8 @@ sub preprocess_linebreaking {
     my $style = ($mode eq 'display' ? 'display' : 'text');
     # If already has in a MathBranch, we can't really know if, or how wide, to line break!?!?!
     next if $doc->findnodes('ancestor::ltx:MathFork', $math);    # SKIP if already in a branch?
-          # Now let's do the layout & see if it actually needs line breaks!
-          # next if $math isn't really so wide ..
+        # Now let's do the layout & see if it actually needs line breaks!
+        # next if $math isn't really so wide ..
     my $id    = $math->getAttribute('xml:id');
     my $xmath = $doc->findnode('ltx:XMath', $math);
     my ($pmml, $broke) = $self->convertNode_linebreak($doc, $xmath, $style);
