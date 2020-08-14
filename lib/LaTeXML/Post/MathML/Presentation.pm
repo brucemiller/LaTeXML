@@ -121,7 +121,7 @@ sub addAccessibilityAnnotations {
     my $op = ($$node[0] eq 'm:mrow') ? '#op' : p_getAttribute($sourcenode->firstChild, 'meaning');
     $meaning = "$op(" . join(",", map { "#$_" } 1 .. scalar(element_nodes($sourcenode)) - 1) . ')'; }
   elsif ($source_node_name eq 'ltx:XMDual') {
-    $meaning = dual_content_xmapp_to_semantic_attr($sourcenode->firstChild); }
+    $meaning = dual_content_to_semantic_attr($sourcenode->firstChild); }
 
 # 3. Bookkeep "arg" information
 # (careful, can be arbitrary deep in a dual content tree)
@@ -141,20 +141,27 @@ sub addAccessibilityAnnotations {
   return; }
 
 # Given the first (content) child of an ltx:XMDual, compute its corresponding a11y "semantic" attribute
-sub dual_content_xmapp_to_semantic_attr {
+sub dual_content_to_semantic_attr {
   my ($node, $prefix) = @_;
-  my @arg_nodes   = element_nodes($node);
-  my $op_node     = shift @arg_nodes;
-  my $op          = ($op_node && $op_node->getAttribute('meaning')) || '#op';
-  my @arg_strings = ();
-  my $index       = 0;
-  for my $arg_node (@arg_nodes) {
-    $index++;
-    if (getQName($arg_node) eq 'ltx:XMApp') {
-      push @arg_strings, dual_content_xmapp_to_semantic_attr($arg_node, $prefix ? ($prefix . "_$index") : $index); }
-    else {
-      push @arg_strings, '#' . ($prefix ? ($prefix . "_$index") : $index); } } # will we need level suffixes?
-  return $op . '(' . join(",", @arg_strings) . ')'; }
+  my $name = getQName($node);
+  if ($name eq 'ltx:XMTok') {
+    return $node->getAttribute('meaning') || $node->getAttribute('name') || 'unknown'; }
+  elsif ($name eq 'ltx:XMApp') {
+    my @arg_nodes   = element_nodes($node);
+    my $op_node     = shift @arg_nodes;
+    my $op          = ($op_node && $op_node->getAttribute('meaning')) || '#op';
+    my @arg_strings = ();
+    my $index       = 0;
+    for my $arg_node (@arg_nodes) {
+      $index++;
+      if (getQName($arg_node) eq 'ltx:XMApp') {
+        push @arg_strings, dual_content_to_semantic_attr($arg_node, $prefix ? ($prefix . "_$index") : $index); }
+      else {
+        push @arg_strings, '#' . ($prefix ? ($prefix . "_$index") : $index); } } # will we need level suffixes?
+    return $op . '(' . join(",", @arg_strings) . ')'; }
+  else {
+    print STDERR "Warning:unknown XMDual content child '$name' will default data-semantic attribute to 'unknown'\n";
+    return 'unknown'; } }
 
 # Given the first (content) child of an ltx:XMDual, and an idref value, compute the corresponding "arg" attribute for that XMRef
 sub dual_content_idref_to_data_attr {
