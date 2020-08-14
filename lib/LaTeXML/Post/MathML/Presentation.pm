@@ -98,27 +98,26 @@ sub addAccessibilityAnnotations {
   my $source_node_name = getQName($sourcenode);
   my $container;
 # skip non-material dual presentation, which points to content nodes but should *not* carry annotations itself
-  if ($$currentnode != $$sourcenode) {
-    return if ($source_node_name ne 'ltx:XMDual') or ($sourcenode->getAttribute('_a11y'));
-    $sourcenode->setAttribute('_a11y', 'done'); }
-  elsif ($container = $LaTeXML::Post::DOCUMENT->findnode('ancestor::ltx:XMDual[1]', $currentnode)) {
+  if (($container = $LaTeXML::Post::DOCUMENT->findnode('ancestor::ltx:XMDual[1]', $currentnode)) and
+    (${ $currentnode->parentNode } != $$container)) {
 # also skip any embellishments in duals that are not semantic, a bit tricky since we need to check parent xmapps
     my $content_node = $container->firstChild;
     my %xmrefs       = map { my $ref = $_->getAttribute('idref'); $ref ? ($ref => 1) : () }
-      $LaTeXML::Post::DOCUMENT->findnodes("//ltx:XMRef[\@idref]", $content_node);
-    return unless %xmrefs;    # certainly not usable if no refs.
+      $LaTeXML::Post::DOCUMENT->findnodes("descendant-or-self::ltx:XMRef[\@idref]", $content_node);
+    return unless %xmrefs;    # certainly not usable if no refs in the dual.
     my $ancestor = $currentnode;
     while ($$ancestor != $$container && !$xmrefs{ $ancestor->getAttribute('xml:id') || '' }) {
       $ancestor = $ancestor->parentNode; }
     return if $$ancestor == $$container; }
   # 1--end. We reach here only with semantic nodes in hand (or the logic has a Bug).
-
   # 2. Bookkeep the semantic information.
   my ($meaning, $arg);
   if (my $src_meaning = $sourcenode->getAttribute('meaning')) {
     $meaning = $src_meaning; }
   elsif ($source_node_name eq 'ltx:XMApp') {
-    my $op = ($$node[0] eq 'm:mrow') ? '#op' : p_getAttribute($sourcenode->firstChild, 'meaning');
+# Tricky, what is the best way to figure out if the operator is presentable vs implied? Check if it has _a11y=done?
+    my $op_node = $sourcenode->firstChild;
+    my $op      = $op_node->getAttribute('_a11y') ? '#op' : p_getAttribute($op_node, 'meaning');
     if ($op) {    # annotate only if we knew a 'meaning' attribute, for the special markup scenarios
       $meaning = "$op(" . join(",", map { "#$_" } 1 .. scalar(element_nodes($sourcenode)) - 1) . ')'; }
     else {
@@ -151,6 +150,8 @@ sub dual_content_to_semantic_attr {
   my $name = getQName($node);
   if ($name eq 'ltx:XMTok') {
     return $node->getAttribute('meaning') || $node->getAttribute('name') || 'unknown'; }
+  elsif ($name eq 'ltx:XMRef') {    # pass through case
+    return '#1'; }
   elsif ($name eq 'ltx:XMApp') {
     my @arg_nodes   = element_nodes($node);
     my $op_node     = shift @arg_nodes;
@@ -172,14 +173,15 @@ sub dual_content_to_semantic_attr {
 sub dual_content_idref_to_data_attr {
   my ($content_node, $idref) = @_;
   my ($ref_node) = $LaTeXML::Post::DOCUMENT->findnodes(
-    "//ltx:XMRef[\@idref=\"" . $idref . "\"][1]", $content_node);
+    "descendant-or-self::ltx:XMRef[\@idref=\"" . $idref . "\"][1]", $content_node);
+  return '' unless $ref_node;
   my $path     = '';
   my $ancestor = $ref_node;
   while ($$ancestor != $$content_node) {
     my $position = $LaTeXML::Post::DOCUMENT->findvalue("count(preceding-sibling::*)", $ancestor);
     $path     = $path ? ($position . '_' . $path) : $position;
     $ancestor = $ancestor->parentNode; }
-  return $path || 'op'; }
+  return $path ? $path : (scalar(element_nodes($content_node)) > 1 ? 'op' : '1'); }
 
 #================================================================================
 # Presentation MathML with Line breaking
