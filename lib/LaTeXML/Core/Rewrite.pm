@@ -183,7 +183,6 @@ sub applyClause {
 ## EXPERIMENTAL: This is an early experiment and needs to be refactored before it can be considered for serious use
 sub action_insert {
   my ($document, $direction, $extra, $tree) = @_;
-  print STDERR "Tree: ", $tree->toString(1), "\n";
   my $anchor;
   if ($direction eq 'pre') {
     $anchor = $tree->previousSibling; }

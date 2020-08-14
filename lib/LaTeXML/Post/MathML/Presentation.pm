@@ -72,7 +72,7 @@ sub rawIDSuffix {
   return '.pmml'; }
 
 sub associateNodeHook {
-  # technical note: $sourcenode is a LibXML element, while $node is that OR the arrayref triple form
+# technical note: $sourcenode and $currentnode are LibXML elements, while $node is that OR the arrayref triple form
   my ($self, $node, $sourcenode, $noxref, $currentnode) = @_;
   # TODO: Shouldn't we have a single getQName shared for the entire latexml codebase
   #       (same for the p_* methods from MathParser)
@@ -83,122 +83,66 @@ sub associateNodeHook {
       p_setAttribute($node, 'href', $href); }
     if (my $title = $sourcenode->getAttribute('title')) {
       p_setAttribute($node, 'title', $title); } }
-  $self->addAccessibilityAnnotations($node, $currentnode) if $$self{a11y};
+  $self->addAccessibilityAnnotations($node, $sourcenode, $currentnode) if $$self{a11y};
   return; }
 
 # Experiment: set accessibility attributes on the resulting presentation tree,
 # if the XMath source has a claim to the semantics via a "meaning" attribute.
 sub addAccessibilityAnnotations {
-  # Part I: Top-down. Recover the meaning of a subtree as an accessible annotation
-  my ($self, $node, $currentnode) = @_;
+  my ($self, $node, $sourcenode, $currentnode) = @_;
+  # 1. Filter and bookkeep which nodes are to be treated.
   my $current_node_name = getQName($currentnode);
   return if $current_node_name eq 'ltx:XMath';
-# a number of redundant annotations are caused by reusing the same content node for on-the-fly content,
-# e.g. we end up creating a new invisible-apply XMTok, and then associate its node
-# with the $currentnode of its parent <XMApp>f(x)</XMApp>, now as <XMApp>f<XMTok>invisible-apply</XMTok>(x)</XMApp>
-# that second call should just immediately terminate, there is nothing to add in such cases.
   return if $currentnode->getAttribute('_a11y');
   $currentnode->setAttribute('_a11y', 'done');
-  # --- TOP PRIORITY: run an exclusion check for pieces that are presentation-only fluff for duals
-  my @dual_pres_ancestry = $LaTeXML::Post::DOCUMENT->findnodes("ancestor-or-self::*[preceding-sibling::*][parent::ltx:XMDual]", $currentnode);
-  my $dual_pres_node = $dual_pres_ancestry[-1]; #  Weirdly ->findnode() is finding the highest ancestor, rather than the tightest ancestor? This [-1] seems to do it.
-  if ($dual_pres_node && !$dual_pres_node->isSameNode($currentnode)) { # 1) they have a dual ancestor, but are not the main presentation node
-    my $check_node = $currentnode;
-    my $id         = $currentnode->getAttribute('xml:id');
-    while (!$id && !$check_node->isSameNode($dual_pres_node)) {
-      $id         = $check_node->getAttribute('xml:id');
-      $check_node = $check_node->parentNode; }
-    # if no id is found, they are not referenced by the dual
-    return unless $id; }
-  # ---
-  # In the remaining cases, process the node, check if it has meaningful annotations to add
+  my $source_node_name = getQName($sourcenode);
+  my $container;
+# skip non-material dual presentation, which points to content nodes but should *not* carry annotations itself
+  if ($$currentnode != $$sourcenode) {
+    return if ($source_node_name ne 'ltx:XMDual') or ($sourcenode->getAttribute('_a11y'));
+    $sourcenode->setAttribute('_a11y', 'done'); }
+  elsif ($container = $LaTeXML::Post::DOCUMENT->findnode('ancestor::ltx:XMDual[1]', $currentnode)) {
+# also skip any embellishments in duals that are not semantic, a bit tricky since we need to check parent xmapps
+    my $content_node = $container->firstChild;
+    my %xmrefs       = map { my $ref = $_->getAttribute('idref'); $ref ? ($ref => 1) : () }
+      $LaTeXML::Post::DOCUMENT->findnodes("//ltx:XMRef[\@idref]", $content_node);
+    return unless %xmrefs;    # certainly not usable if no refs.
+    my $ancestor = $currentnode;
+    while ($$ancestor != $$container && !$xmrefs{ $ancestor->getAttribute('xml:id') || '' }) {
+      $ancestor = $ancestor->parentNode; }
+    return if $$ancestor == $$container; }
+  # 1--end. We reach here only with semantic nodes in hand (or the logic has a Bug).
+
+  print STDERR "semantic node: ", $sourcenode->toString(1), "\n";
+
+  # 2. Bookkeep the semantic information.
   my ($meaning, $arg);
-  if ($dual_pres_node && $dual_pres_node->isSameNode($currentnode)) {    # top-level pres of dual
-    my $dual_content_node = $dual_pres_node->previousSibling;
-    my $dual_content_name = getQName($dual_content_node);
-    if ($dual_content_name eq 'ltx:XMRef') {    # single subtree of the presentation, point to it
-      $meaning = '#1'; }
-    elsif ($dual_content_name eq 'ltx:XMTok') {
-      $meaning = $dual_content_node->getAttribute('meaning'); }
-    elsif ($dual_content_name eq 'ltx:XMApp') {
-      # another special case, from the \overline{x}_i land,
-      # we could get a deeply nested application tree with a lot of nodes which have no referrents
-      # but should be translated into the final data-semantic
-      # best to call out into a subroutine?
-      $meaning = dual_content_xmapp_to_semantic_attr($dual_content_node, 0); }
-# Note that the carrier ltx:XMDual is never passed in associateNode, but often requires an "arg". Recurse:
-    $self->addAccessibilityAnnotations($node, $dual_pres_node->parentNode); }
-  # tokens are simplest - if we know of a meaning, use that for accessibility
-  elsif ($current_node_name eq 'ltx:XMTok') {
-    # stylistic choice - avoid tagging numbers, even though we could, too obvious
-    my $role = $currentnode->getAttribute('role') || '';
-    $meaning = ($role ne 'NUMBER') && $currentnode->getAttribute('meaning'); }
-  elsif ($current_node_name eq 'ltx:XMApp') {
-    # Ok, so we need to disentangle the case where the operator XMTok is preserved in pmml,
-    # and the case where it isn't. E.g. in \sqrt{x} we get a msqrt wrapper, but no dedicated token
-    # so we need to mark the literal "square-root" in msqrt
-    #
-    # Additionally, semantic annotations via e.g. \lxDeclare will appear as top-level XMApp meaning
-    # attributes, and we must be extra careful not to descend into those nodes.
-    my ($op, $arg_count);
-    my $app_meaning = $currentnode->getAttribute('meaning');
-    if ($app_meaning) {
-      $meaning = $app_meaning;
-      # TODO: This still feels like "choppy" ad-hoc treatment.
-      # What is a good general traversal algorithm that avoids all these special cases?
-      for my $arg_node (p_element_nodes($node)) {
-        if ((p_getAttribute($arg_node, '_a11y') || '') ne 'ref') {
-          p_removeAttribute($arg_node, 'data-semantic'); } } }
-    else {
-      my @current_children   = element_nodes($currentnode);
-      my $current_op_meaning = $current_children[0]->getAttribute('meaning') || '';
-      $arg_count = scalar(@current_children) - 1;
-      my $name = getQName($node);
-      if ($name ne 'm:mrow') {    # not an mrow, prefer the literal semantic
-        $op = $current_op_meaning; }
-      else {    # mrow, prefer #op, except for whitelisted exception cases (which ones??)
-        $op = ($current_op_meaning eq 'multirelation') ? $current_op_meaning : '#op'; } }
-    if ($op) {    # Set the meaning, if we found a satisfying $op:
-      $meaning = "$op(" . join(",", map { '#' . $_ } (1 .. $arg_count)) . ")"; }
-    else {        # if there is no op, we should undo argument annotations pointing at the application,
-      for my $arg_node (p_element_nodes($node)) {
-        if ((p_getAttribute($arg_node, '_a11y') || '') ne 'ref') {
-          p_removeAttribute($arg_node, 'data-arg'); } } } }
+  if (my $src_meaning = $sourcenode->getAttribute('meaning')) {
+    $meaning = $src_meaning; }
+  elsif ($source_node_name eq 'ltx:XMApp') {
+    my $op = ($$node[0] eq 'm:mrow') ? '#op' : p_getAttribute($sourcenode->firstChild, 'meaning');
+    $meaning = "$op(" . join(",", map { "#$_" } 1 .. scalar(element_nodes($sourcenode)) - 1) . ')'; }
+  elsif ($source_node_name eq 'ltx:XMDual') {
+    $meaning = dual_content_xmapp_to_semantic_attr($sourcenode->firstChild); }
 
-  # if we found some meaning, attach it as an accessible attribute
+# 3. Bookkeep "arg" information
+# (careful, can be arbitrary deep in a dual content tree)
+# also, not so easy to disentangle - a node nested deeply inside a dual may be _either_ referenced in the dual (primary)
+# _or_ a classic direct child of an intermediate XMApp. So we test until we find an $arg:
+  $container = $container || $LaTeXML::Post::DOCUMENT->findnode('ancestor::ltx:XMDual[1]', $sourcenode);
+  if ($container) {
+    my $id = $sourcenode->getAttribute('xml:id');
+    $arg = $id && dual_content_idref_to_data_attr($container->firstChild, $id); }
+  if (!$arg && (getQName($sourcenode->parentNode) eq 'ltx:XMApp')) {    # normal apply case
+        # note we can only do this simple check because we filtered out all embellishments in step 1.
+    my $position = $LaTeXML::Post::DOCUMENT->findvalue("count(preceding-sibling::*)", $sourcenode);
+    $arg = $position || 'op'; }
+
   p_setAttribute($node, 'data-semantic', $meaning) if $meaning;
-
-  # Part II: Bottom-up. Also check if argument of higher parent notation, mark if so.
-  # II.1 id-carrying nodes always point to their referrees.
-  if ($dual_pres_node && (my $id = $currentnode->getAttribute('xml:id'))) {
-    # We already found the dual
-    my $dual_content_node = $dual_pres_node->previousSibling;
-    # note that if we never find the 'idref', arg is never set
-    if (my $xmref = $LaTeXML::Post::DOCUMENT->findnode('//ltx:XMRef[@idref="' . $id . '"]', $dual_content_node)) {
-      p_setAttribute($node, '_a11y', 'ref');    # mark as used in ref
-      my $index  = 0;
-      my $parent = $xmref->parentNode;
-      my $c_arg  = $xmref;
-      while ($c_arg = $c_arg->previousSibling) {
-        $index++; }
-      $arg = $index || ((getQName($xmref->parentNode) eq 'ltx:XMDual') ? '1' : ($xmref->nextSibling ? 'op' : '1'));
-      # compute a level suffix if nested within main dual
-      my $lvl = -1;
-      while (getQName($parent) eq 'ltx:XMApp') {
-        $parent = $parent->parentNode;
-        $lvl++; }
-      $arg .= "_$lvl" if ($lvl > 0); } }
-  # II.2. applications children are directly pointing to their parents
-  #   also fallback in the dual case, if the XMApp had an id but wasn't an arg
-  if (!$arg && (getQName($currentnode->parentNode) eq 'ltx:XMApp')) {
-    my $index        = 0;
-    my $prev_sibling = $currentnode;
-    while ($prev_sibling = $prev_sibling->previousSibling) {
-      $index++; }
-    $arg = $index ? $index : 'op'; }
-  p_setAttribute($node, 'data-arg', $arg) if $arg;
+  p_setAttribute($node, 'data-arg',      $arg)     if $arg;
   return; }
 
+# Given the first (content) child of an ltx:XMDual, compute its corresponding a11y "semantic" attribute
 sub dual_content_xmapp_to_semantic_attr {
   my ($node, $lvl) = @_;
   my @arg_nodes   = element_nodes($node);
@@ -214,6 +158,18 @@ sub dual_content_xmapp_to_semantic_attr {
       push @arg_strings, '#' . $index . ($lvl ? "_$lvl" : ""); } }    # will we need level suffixes?
   return $op . '(' . join(",", @arg_strings) . ')'; }
 
+# Given the first (content) child of an ltx:XMDual, and an idref value, compute the corresponding "arg" attribute for that XMRef
+sub dual_content_idref_to_data_attr {
+  my ($content_node, $idref) = @_;
+  my ($ref_node) = $LaTeXML::Post::DOCUMENT->findnodes(
+    "//ltx:XMRef[\@idref=\"" . $idref . "\"][1]", $content_node);
+  my $path     = '';
+  my $ancestor = $ref_node;
+  while ($$ancestor != $$content_node) {
+    my $position = $LaTeXML::Post::DOCUMENT->findvalue("count(preceding-sibling::*)", $ancestor);
+    $path     = $path ? ($position . '_' . $path) : $position;
+    $ancestor = $ancestor->parentNode; }
+  return $path || 'op'; }
 #================================================================================
 # Presentation MathML with Line breaking
 # Not at all sure how this will integrate with Parallel markup...
