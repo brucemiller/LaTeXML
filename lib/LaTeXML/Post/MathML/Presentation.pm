@@ -113,8 +113,6 @@ sub addAccessibilityAnnotations {
     return if $$ancestor == $$container; }
   # 1--end. We reach here only with semantic nodes in hand (or the logic has a Bug).
 
-  print STDERR "semantic node: ", $sourcenode->toString(1), "\n";
-
   # 2. Bookkeep the semantic information.
   my ($meaning, $arg);
   if (my $src_meaning = $sourcenode->getAttribute('meaning')) {
