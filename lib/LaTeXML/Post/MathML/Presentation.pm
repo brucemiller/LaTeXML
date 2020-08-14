@@ -119,7 +119,12 @@ sub addAccessibilityAnnotations {
     $meaning = $src_meaning; }
   elsif ($source_node_name eq 'ltx:XMApp') {
     my $op = ($$node[0] eq 'm:mrow') ? '#op' : p_getAttribute($sourcenode->firstChild, 'meaning');
-    $meaning = "$op(" . join(",", map { "#$_" } 1 .. scalar(element_nodes($sourcenode)) - 1) . ')'; }
+    if ($op) {    # annotate only if we knew a 'meaning' attribute, for the special markup scenarios
+      $meaning = "$op(" . join(",", map { "#$_" } 1 .. scalar(element_nodes($sourcenode)) - 1) . ')'; }
+    else {
+      # otherwise, take the liberty to delete all data-arg of direct children
+      for my $pmml_child (@$node[2 .. scalar(@$node) - 1]) {
+        p_removeAttribute($pmml_child, 'data-arg'); } } }
   elsif ($source_node_name eq 'ltx:XMDual') {
     $meaning = dual_content_to_semantic_attr($sourcenode->firstChild); }
 
@@ -175,6 +180,7 @@ sub dual_content_idref_to_data_attr {
     $path     = $path ? ($position . '_' . $path) : $position;
     $ancestor = $ancestor->parentNode; }
   return $path || 'op'; }
+
 #================================================================================
 # Presentation MathML with Line breaking
 # Not at all sure how this will integrate with Parallel markup...
