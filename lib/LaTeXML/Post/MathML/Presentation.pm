@@ -142,18 +142,18 @@ sub addAccessibilityAnnotations {
 
 # Given the first (content) child of an ltx:XMDual, compute its corresponding a11y "semantic" attribute
 sub dual_content_xmapp_to_semantic_attr {
-  my ($node, $lvl) = @_;
+  my ($node, $prefix) = @_;
   my @arg_nodes   = element_nodes($node);
   my $op_node     = shift @arg_nodes;
-  my $op          = ($op_node && $op_node->getAttribute('meaning')) || ($lvl ? '#op' . $lvl : '#op');
+  my $op          = ($op_node && $op_node->getAttribute('meaning')) || '#op';
   my @arg_strings = ();
   my $index       = 0;
   for my $arg_node (@arg_nodes) {
     $index++;
     if (getQName($arg_node) eq 'ltx:XMApp') {
-      push @arg_strings, dual_content_xmapp_to_semantic_attr($arg_node, $lvl + 1); }
+      push @arg_strings, dual_content_xmapp_to_semantic_attr($arg_node, $prefix ? ($prefix . "_$index") : $index); }
     else {
-      push @arg_strings, '#' . $index . ($lvl ? "_$lvl" : ""); } }    # will we need level suffixes?
+      push @arg_strings, '#' . ($prefix ? ($prefix . "_$index") : $index); } } # will we need level suffixes?
   return $op . '(' . join(",", @arg_strings) . ')'; }
 
 # Given the first (content) child of an ltx:XMDual, and an idref value, compute the corresponding "arg" attribute for that XMRef
