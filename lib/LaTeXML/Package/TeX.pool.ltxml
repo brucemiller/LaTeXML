@@ -4219,6 +4219,20 @@ DefConstructor('\@ASSERT@MEANING{}{}', '#2',
     addMeaningRec($document, $node, $meaning);
     $node; });
 
+sub addMeaningRec {
+  my ($document, $node, $meaning) = @_;
+  if ($node->nodeType == XML_ELEMENT_NODE) {
+    my $qname = $document->getModel->getNodeQName($node);
+    if ($qname eq 'ltx:XMArg') { }                 # DONT cross through into arguments!
+    elsif ($qname eq 'ltx:XMTok') {
+      if ((($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
+        && !$node->getAttribute('meaning')) {
+        $document->setAttribute($node, meaning => $meaning); } }
+    else {
+      foreach my $c ($node->childNodes) {
+        addMeaningRec($document, $c, $meaning); } } }
+  return; }
+
 #======================================================================
 # Properties for plain characters.
 # These are allowed in plain text, but need to act a bit special in math.
@@ -6639,40 +6653,68 @@ DefConstructor('\lx@add@Preamble@PI Undigested',
 
 #======================================================================
 
-DefConstructor('\DUAL OptionalKeyVals {}{}',
+DefKeyVal('lx@DUAL', 'reversion',              'UndigestedKey');
+DefKeyVal('lx@DUAL', 'content_reversion',      'UndigestedKey');
+DefKeyVal('lx@DUAL', 'presentation_reversion', 'UndigestedKey');
+our @PENDING_DUAL_XMARGS = ();
+DefConstructor('\DUAL OptionalKeyVals:lx@DUAL {}{}',
   "<ltx:XMDual role='&GetKeyVal(#1,role)'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
-  reversion => sub {
-    my ($whatsit) = @_;
-    my ($kv, $content, $presentation) = $whatsit->getArgs;
-    if (!$LaTeXML::DUAL_BRANCH) {
-      Tokens(T_CS('\DUAL'),
-        $whatsit->getDefinition->getParameters->revertArguments($kv, $content, $presentation)); }
-    elsif (($LaTeXML::DUAL_BRANCH eq 'content')
-      || !GetKeyVal($kv, 'hide_content_reversion')) {
-      Revert($content); }
-    elsif ($LaTeXML::DUAL_BRANCH eq 'presentation') {
-      Revert($presentation); }
-    else {
-      Warn('misdefined', 'DUAL', $_[0],
-        "$LaTeXML::DUAL_BRANCH Unknown DUAL_BRANCH: $LaTeXML::DUAL_BRANCH");
-      Tokens(T_CS('\DUAL'),
-        $whatsit->getDefinition->getParameters->revertArguments($kv, $content, $presentation)); }
-  },
-  sizer => '#3');    # size according to presentation
+  beforeDigest => sub {
+    push(@PENDING_DUAL_XMARGS, {});
+    return; },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $kv     = $whatsit->getArg(1);
+    my $xmargs = pop(@PENDING_DUAL_XMARGS);
+    $whatsit->setProperties($kv->getPairs);
+    if (!$kv->getValue('reversion')) {
+      if (!$kv->getValue('content_reversion')) {
+        $whatsit->setProperty('content_reversion' => Tokens(T_PARAM, T_OTHER('2'))); }
+      if (!$kv->getValue('presentation_reversion')) {
+        $whatsit->setProperty('presentation_reversion' => Tokens(T_PARAM,
+            ($kv->getValue('hide_content_reversion') ? T_OTHER('3') : T_OTHER('2')))); } }
+    $whatsit->setProperties(%$xmargs);    # Hopefully no name class with XM<digits>
+    return; },
+  sizer => '#3');                         # size according to presentation
 
-sub addMeaningRec {
-  my ($document, $node, $meaning) = @_;
-  if ($node->nodeType == XML_ELEMENT_NODE) {
-    my $qname = $document->getModel->getNodeQName($node);
-    if ($qname eq 'ltx:XMArg') { }    # DONT cross through into arguments!
-    elsif ($qname eq 'ltx:XMTok') {
-      if ((($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
-        && !$node->getAttribute('meaning')) {
-        $document->setAttribute($node, meaning => $meaning); } }
-    else {
-      foreach my $c ($node->childNodes) {
-        addMeaningRec($document, $c, $meaning); } } }
-  return; }
+# Construction aids
+# Build an XMDual (via \DUAL) given the content & presentation forms.
+# These forms are provided as Tokens, invoking the appropriate constructor macros,
+# and refering to any arguments using #1, #2.... (see T_XMArg for syntactic sugar)
+# The arguments (if any) are given separately; within the content & presentation
+# they are replaced by \@XMRef and \@XMArg, appropriately,
+# so that they will be linked/shared in the XML tree.
+# The keyvals argument is a hash containing any properties of the construct,
+# along with reversion, content_reversion  & presentation_reversion, which are
+# substituted for arguments as well.
+sub BuildXMDual {
+  my ($keyvals, $content, $presentation, @args) = @_;
+  $content      = TokenizeInternal($content)      if $content      && !ref $content;
+  $presentation = TokenizeInternal($presentation) if $presentation && !ref $presentation;
+  my (@revargs, @pargs, @cargs);
+  foreach my $arg (@args) {
+    my $id = LaTeXML::Package::getXMArgID();
+    push(@revargs, Tokens(T_PARAM, T_OTHER(ToString($id))));
+    push(@pargs, Invocation(T_CS('\@XMArg'), $id, $arg));
+    push(@cargs, Invocation(T_CS('\@XMRef'), $id)); }
+  my $optional = undef;
+  if ($keyvals) {
+    my @options = ();
+    foreach my $key (keys %$keyvals) {
+      my $value = $$keyvals{$key};
+      $value = TokenizeInternal($value) if $value && !ref $value;
+      if ($key =~ /^(?:presentation_|content_|)reversion$/) {
+        $value = $value->substituteParameters(@revargs); }
+      push(@options, T_OTHER(',')) if @options;
+      push(@options, T_OTHER($key), T_OTHER('='), T_BEGIN, $value, T_END); }
+    $optional = Tokens(@options); }
+  return
+    Invocation(T_CS('\DUAL'), $optional,
+    $content->substituteParameters(@cargs),
+    Invocation(T_CS('\@WRAP'), $presentation->substituteParameters(@pargs))); }
+
+# A little helper to shorten things up a bit; simply generates #1 (or whatever)
+sub T_XMArg { return Tokens(T_PARAM, T_OTHER($_[0])); }
 
 DefConstructor('\FCN{}', "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", reversion => '#1', alias => '');
 DefConstructor('\ROLE{}{}', "<ltx:XMWrap role='#1'>#2</ltx:XMWrap>", reversion => '#2', alias => '');
@@ -6772,6 +6814,11 @@ DefConstructor('\lx@text@nounicode DefToken',
 DefConstructor('\@XMArg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>",
   reversion   => '#2',
   afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($xmid,    $arg)     = $whatsit->getArgs();
+    $xmid = ToString($xmid);
+    my $xmargs = $PENDING_DUAL_XMARGS[-1];
+    $$xmargs{$xmid} = $arg;
     AssignValue('xref:' . ToString($_[1]->getArg(1)) => $_[1], 'global'); });
 DefConstructor('\@XMRef{}', "<ltx:XMRef _xmkey='#1'/>",
   reversion => sub {
