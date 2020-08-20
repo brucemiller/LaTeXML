@@ -174,7 +174,6 @@ DefMacro('\evaluated', sub {
             T_XMArg(1), phys_close($size, $close || $c))),
         ($lower ? Invocation(T_CS('\@@POSTSUBSCRIPT'),   T_XMArg(2)) : ()),
         ($upper ? Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_XMArg(3)) : ())),
-      # NOTE: Is Tokens() sufficient for a missing argument?
       $arg, ($lower || $upper ? (($lower || Tokens()), $upper || Tokens()) : ())); });
 
 Let('\eval', '\evaluated');
@@ -319,7 +318,6 @@ DefMacro('\lx@physics@ReIm{}{}{}{}', sub {
     my $size  = phys_readSize($gullet);
     my $cfunc = Invocation(T_CS('\@CSYMBOL'), $semantic);
     my $arg   = phys_readArg($gullet);
-    # NOTE: role=FUNCTION if no arg????
     return BuildXMDual(
       { ($arg ? () : (role => 'OPERATOR')),
         reversion =>
@@ -357,17 +355,16 @@ DefMacro('\lx@physics@diff{}{}{}', sub {
     my $pfunc = $function;
     my $power = $gullet->readOptional;
     my ($arg, $open, $close) = phys_readArg($gullet, 0, '(' => T_OTHER(')'));
-    # Note: functional-power!
     if ($power) {
       $cfunc = Invocation(T_CS('\@APPLY'),
-        Tokens(Invocation(T_CS('\@CSYMBOL'), T_OTHER('power')), Tokens($cfunc, T_XMArg(2))));
+        Tokens(Invocation(T_CS('\@CSYMBOL'), T_OTHER('functional-power')), Tokens($cfunc, T_XMArg(2))));
       $pfunc = Tokens($pfunc, Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_XMArg(2))) }
     return BuildXMDual(
       { ($arg ? () : (role => 'DIFFOP')),
         reversion => Tokens($cs,
           ($power ? (T_OTHER('['), T_XMArg(2), T_OTHER(']')) : ()),
           ($arg ? phys_revArg(T_XMArg(1), $open, $close) : ())) },
-      ($arg ? Invocation(T_CS('\@APPLY'), Tokens($cfunc, $arg)) : $cfunc),
+      ($arg ? Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(1))) : $cfunc),
       Tokens($pfunc, phys_open(1, $open), ($arg ? T_XMArg(1) : ()), phys_close(1, $close)),
       $arg, ($power ? $power : ())); });
 
@@ -387,7 +384,7 @@ DefMacro('\lx@physics@deriv{}{}{}', sub {
     #    my ($opensize, $closesize) = (T_CS('\left'), T_CS('\right'));
     my $semantic_string = ToString($semantic);
     my $inline          = $gullet->readMatch(T_OTHER('*'));
-    my $power           = $gullet->readOptional;              # Optional arg is degree
+    my $degree          = $gullet->readOptional;              # Optional arg is degree
     my $tmp1            = $gullet->readArg();                 # 1st arg required: var1 or expr
     my ($tmp2, $open, $close) = phys_readArg($gullet, 0, '(' => T_OTHER(')'));
     my $tmp3;
@@ -404,46 +401,47 @@ DefMacro('\lx@physics@deriv{}{}{}', sub {
       $var = $tmp1; }
     # Check if $expr is EMPTY ??? still an operator!
     $expr = undef if $expr && !scalar($expr->unlist);
-    my $cfunc = Invocation(T_CS('\@CSYMBOL'),
-      ($expr ? $semantic : T_OTHER($semantic_string . '-operator')));
+    my $cfunc = Invocation(T_CS('\@CSYMBOL'), $semantic);
     if ($tmp3) {                                                  # double derivative!
-                                                                  # power is IGNORED!
+          # power is IGNORED!
+          # Since we're treating (portial-)differentiaion as taking an optional argument for n-th
+          # the double derivative is a nested differentiation.
+      my $op = Invocation(T_CS('\@APPLY'),
+        Tokens(Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(2))),
+          Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(3)))));
       return BuildXMDual(
         { ($expr ? () : (role => 'DIFFOP')),
           reversion => Tokens($cs, ($inline ? T_OTHER('*') : ()),
             phys_revArg(T_XMArg(1)), phys_revArg(T_XMArg(2)), phys_revArg(T_XMArg(3))) },
-        Invocation(T_CS('\@APPLY'),
-          Tokens($cfunc, ($expr ? T_XMArg(1) : ()), T_XMArg(2), T_XMArg(3))),
+        ($expr ? Invocation(T_CS('\@APPLY'), Tokens($op, T_XMArg(1))) : $op),
         Invocation(($inline ? T_CS('\ifrac') : T_CS('\frac')),
           Tokens($function, Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_OTHER(2)),
             ($expr ? T_XMArg(1) : ())),
           Tokens($function, T_XMArg(2), $function, T_XMArg(3))),
         $expr, $var, $var2); }
     else {
+      my $op = Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(2), ($degree ? T_XMArg(3) : ())));
       return BuildXMDual(
         { ($expr ? () : (role => 'DIFFOP')),
           reversion => Tokens($cs, ($inline ? T_OTHER('*') : ()),
-            ($power ? (T_OTHER('['), T_XMArg(3), T_OTHER(']')) : ()),
+            ($degree ? (T_OTHER('['), T_XMArg(3), T_OTHER(']')) : ()),
             ($open
               ? (phys_revArg(T_XMArg(2)), phys_revArg(T_XMArg(1), $open, $close))
               : ($expr
                 ? (phys_revArg(T_XMArg(1)), phys_revArg(T_XMArg(2), $open, $close))
                 : (phys_revArg(T_XMArg(2)))))) },
-        Invocation(T_CS('\@APPLY'), Tokens($cfunc,
-            ($expr ? T_XMArg(1) : ()),
-            T_XMArg(2),
-            ($power ? T_XMArg(3) : ()))),
+        ($expr ? Invocation(T_CS('\@APPLY'), Tokens($op, T_XMArg(1))) : $op),
         Tokens(
           Invocation(($inline ? T_CS('\ifrac') : T_CS('\frac')),
             Tokens($function,
-              ($power ? Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_XMArg(3)) : ()),
+              ($degree ? Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_XMArg(3)) : ()),
               (!$expr || $open ? () : T_XMArg(1))),
             Tokens($function, T_XMArg(2),
-              ($power ? Tokens(Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_XMArg(3))) : ()))),
+              ($degree ? Tokens(Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_XMArg(3))) : ()))),
           ($expr && $open
             ? (T_CS('\@APPLYFUNCTION'), phys_open(1, $open), T_XMArg(1), phys_close(1, $close))
             : ())),
-        $expr, $var, $power); } });
+        $expr, $var, $degree); } });
 
 DefMacro('\differential', '\lx@physics@diff{\differential}{differential}{\mathrm{d}}');
 DefMacro('\variation',    '\lx@physics@diff{\variation}{variation}{\delta}');
