@@ -1444,6 +1444,7 @@ sub pruneXMDuals {
   return; }
 
 our @CONTENT_TRANSFER_ATTRS = qw(decl_id meaning name omcd);
+our @DUAL_TRANSFER_ATTRS    = (@CONTENT_TRANSFER_ATTRS, 'xml:id', 'role');
 
 sub compactXMDual {
   my ($self, $dual, $content, $presentation) = @_;
@@ -1457,14 +1458,13 @@ sub compactXMDual {
         $presentation->setAttribute($attr_key, $attr_val); } }
     # if the dual has any attributes migrate them to the new XMTok
     my %transfer_attrs = ();
-    for my $attr ($dual->attributes) {
-      if ($attr->nodeType == XML_ATTRIBUTE_NODE) {
-        $transfer_attrs{ $attr->nodeName } = $attr->getValue; } }
+    for my $attr_key (@DUAL_TRANSFER_ATTRS) {
+      if (my $v = $dual->getAttribute($attr_key)) {
+        $transfer_attrs{$attr_key} = $v; } }
     $self->replaceNode($dual, $presentation);
     # transfer the attributes after replacing, so that the bookkeeping has been undone
     for my $key (keys %transfer_attrs) {
-      if (($key eq 'xml:id') || !$presentation->getAttribute($key)) {
-        $self->setAttribute($presentation, $key, $transfer_attrs{$key}); } }
+      $self->setAttribute($presentation, $key, $transfer_attrs{$key}); }
     return; }
 
   # 2.For now, only main use case is compacting mirror XMApp nodes
@@ -1513,9 +1513,9 @@ sub compactXMDual {
     $compact_apply->appendChild($n_arg); }
   # if the dual has any attributes migrate them to the new XMApp
   my %transfer_attrs = ();
-  for my $attr ($dual->attributes) {
-    if ($attr->nodeType == XML_ATTRIBUTE_NODE) {
-      $transfer_attrs{ $attr->nodeName } = $attr->getValue; } }
+  for my $attr_key (@DUAL_TRANSFER_ATTRS) {
+    if (my $v = $dual->getAttribute($attr_key)) {
+      $transfer_attrs{$attr_key} = $v; } }
   $self->replaceNode($dual, $compact_apply);
   # transfer the attributes after replacing, so that the bookkeeping has been undone
   for my $key (keys %transfer_attrs) {
