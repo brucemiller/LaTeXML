@@ -1443,11 +1443,31 @@ sub pruneXMDuals {
       $self->compactXMDual($dual, $content, $presentation); } }
   return; }
 
+our @CONTENT_TRANSFER_ATTRS = qw(decl_id meaning name omcd);
+
 sub compactXMDual {
   my ($self, $dual, $content, $presentation) = @_;
-  # For now only handle compacting mirror applications
-  return if ($self->getNodeQName($content) ne 'ltx:XMApp') ||
-    ($self->getNodeQName($presentation) ne 'ltx:XMApp');
+  my $c_name = $self->getNodeQName($content);
+  my $p_name = $self->getNodeQName($presentation);
+  # 1.Quick fix: merge two tokens
+  if (($c_name eq 'ltx:XMTok') && ($p_name eq 'ltx:XMTok')) {
+    for my $attr_key (@CONTENT_TRANSFER_ATTRS) {
+      if (my $attr_val = $content->getAttribute($attr_key)) {
+        $content->removeAttribute($attr_key);
+        $presentation->setAttribute($attr_key, $attr_val); } }
+    # if the dual has any attributes migrate them to the new XMTok
+    my %transfer_attrs = ();
+    for my $attr ($dual->attributes) {
+      if ($attr->nodeType == XML_ATTRIBUTE_NODE) {
+        $transfer_attrs{ $attr->nodeName } = $attr->getValue; } }
+    $self->replaceNode($dual, $presentation);
+    # transfer the attributes after replacing, so that the bookkeeping has been undone
+    for my $key (keys %transfer_attrs) {
+      $self->setAttribute($presentation, $key, $transfer_attrs{$key}); }
+    return; }
+
+  # 2.For now, only main use case is compacting mirror XMApp nodes
+  return if ($c_name ne 'ltx:XMApp') || ($p_name ne 'ltx:XMApp');
   my @content_args = element_nodes($content);
   my @pres_args    = element_nodes($presentation);
   return if scalar(@content_args) != scalar(@pres_args);
@@ -1483,7 +1503,7 @@ sub compactXMDual {
     if (ref $n_arg eq 'ARRAY') {
       my ($c_arg, $p_arg) = @$n_arg;
       # Transfer all c_arg attributes over, it should be primary?
-      for my $attr_key (qw(decl_id meaning name omcd)) {
+      for my $attr_key (@CONTENT_TRANSFER_ATTRS) {
         if (my $attr_val = $c_arg->getAttribute($attr_key)) {
           $c_arg->removeAttribute($attr_key);
           $p_arg->setAttribute($attr_key, $attr_val); } }
