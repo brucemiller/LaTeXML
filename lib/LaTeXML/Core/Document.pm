@@ -1463,7 +1463,8 @@ sub compactXMDual {
     $self->replaceNode($dual, $presentation);
     # transfer the attributes after replacing, so that the bookkeeping has been undone
     for my $key (keys %transfer_attrs) {
-      $self->setAttribute($presentation, $key, $transfer_attrs{$key}); }
+      if (($key eq 'xml:id') || !$presentation->getAttribute($key)) {
+        $self->setAttribute($presentation, $key, $transfer_attrs{$key}); } }
     return; }
 
   # 2.For now, only main use case is compacting mirror XMApp nodes
