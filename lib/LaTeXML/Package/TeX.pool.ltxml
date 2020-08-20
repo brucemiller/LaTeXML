@@ -6666,11 +6666,11 @@ DefConstructor('\DUAL OptionalKeyVals:lx@DUAL {}{}',
     my ($stomach, $whatsit) = @_;
     my $kv     = $whatsit->getArg(1);
     my $xmargs = pop(@PENDING_DUAL_XMARGS);
-    $whatsit->setProperties($kv->getPairs);
-    if (!$kv->getValue('reversion')) {
-      if (!$kv->getValue('content_reversion')) {
+    $whatsit->setProperties($kv->getPairs) if $kv;
+    if (!($kv && $kv->getValue('reversion'))) {
+      if (! ($kv && $kv->getValue('content_reversion'))) {
         $whatsit->setProperty('content_reversion' => Tokens(T_PARAM, T_OTHER('2'))); }
-      if (!$kv->getValue('presentation_reversion')) {
+      if (!($kv && $kv->getValue('presentation_reversion'))) {
         $whatsit->setProperty('presentation_reversion' => Tokens(T_PARAM,
             ($kv->getValue('hide_content_reversion') ? T_OTHER('3') : T_OTHER('2')))); } }
     $whatsit->setProperties(%$xmargs);    # Hopefully no name class with XM<digits>
