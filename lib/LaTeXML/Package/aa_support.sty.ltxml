@@ -233,14 +233,13 @@ DefMacro('\element[][][][]{}', '\ensuremath{\@element[#1][#2][#3][#4]{\mathrm{#5
 
 DefConstructor('\@element[][][][]{}', sub {
     my ($document, $charge, $nucleons, $protons, $neutrons, $element, %props) = @_;
-    my $level = $props{level};
+    my $level = $props{scriptlevel};
     my $node  = $document->insertElement('ltx:XMArg', $element);
     $node = wrapIsotope($document, $node, $charge,   'post', 'SUPER', $level) if $charge;
     $node = wrapIsotope($document, $node, $neutrons, 'post', 'SUB',   $level) if $neutrons;
     $node = wrapIsotope($document, $node, $nucleons, 'pre',  'SUPER', $level) if $nucleons;
     $node = wrapIsotope($document, $node, $protons,  'pre',  'SUB',   $level) if $protons;
-    $node; },
-  properties => sub { (level => $_[0]->getScriptLevel); });
+    $node; });
 
 sub wrapIsotope {
   my ($document, $node, $script, $x, $y, $l) = @_;

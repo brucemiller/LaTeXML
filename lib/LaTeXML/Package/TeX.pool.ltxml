@@ -3506,7 +3506,6 @@ sub MathWhatsit {
   return LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@BEGININLINEMATH')), [],
     body    => List(@items, mode => 'math'),
     trailer => T_CS('\@@ENDINLINEMATH'),
-    # locator=>$gullet->getLocator, font=>$script->getFont,level=>$level
     locator => $locator, isMath => 1); }
 
 #======================================================================
@@ -3821,19 +3820,19 @@ sub scriptHandler {
       last if @stuff; }
     Fatal('expected', '{', $stomach, "Missing { in sub/super-script argument", $gullet->showUnexpected)
       unless @stuff;
-    my $script = shift(@stuff);              # ONLY the first box is the script!
-    my $level  = $stomach->getScriptLevel;
+    my $script = shift(@stuff);    # ONLY the first box is the script!
     unshift(@stuff,
       LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS($cs)), [$script],
-        locator    => $gullet->getLocator,
-        font       => $script->getFont, isMath => 1,
-        level      => $level,
-        base       => $base,                           # for sizing/positioning
-        prevscript => $prevscript))
+        locator     => $gullet->getLocator,
+        font        => $script->getFont, isMath => 1,
+        level       => $stomach->getBoxingLevel,
+        scriptlevel => $stomach->getScriptLevel,
+        base        => $base,                           # for sizing/positioning
+        prevscript  => $prevscript))
       unless IsEmpty($script);
-    AssignValue(font => $font);                        # revert
+    AssignValue(font => $font);                         # revert
     return @stuff; }
-  else {                                               # Non math use of _ ??
+  else {                                                # Non math use of _ ??
     my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
     Error('unexpected', $c, $stomach, "Script $c can only appear in math mode");
     return Box($c, undef, undef, (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
@@ -3900,14 +3899,14 @@ sub scriptSizer {
 
 # NOTE: The When reverting these, the
 DefConstructor('\@@POSTSUPERSCRIPT InScriptStyle',
-  "<ltx:XMApp role='POSTSUPERSCRIPT' scriptpos='#level'>"
+  "<ltx:XMApp role='POSTSUPERSCRIPT' scriptpos='#scriptlevel'>"
     . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_SUPER, revertScript($_[1])); },
   sizer     => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
       $_[0]->getProperty('prevscript'), 'SUPERSCRIPT', 'post'); });
 DefConstructor('\@@POSTSUBSCRIPT InScriptStyle',
-  "<ltx:XMApp role='POSTSUBSCRIPT' scriptpos='#level'>"
+  "<ltx:XMApp role='POSTSUBSCRIPT' scriptpos='#scriptlevel'>"
     . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_SUB, revertScript($_[1])); },
@@ -3915,13 +3914,13 @@ DefConstructor('\@@POSTSUBSCRIPT InScriptStyle',
       $_[0]->getProperty('prevscript'),
       'SUBSCRIPT', 'post'); });
 DefConstructor('\@@FLOATINGSUPERSCRIPT InScriptStyle',
-  "<ltx:XMApp role='FLOATSUPERSCRIPT' scriptpos='#level'>"
+  "<ltx:XMApp role='FLOATSUPERSCRIPT' scriptpos='#scriptlevel'>"
     . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_BEGIN, T_END, T_SUPER, revertScript($_[1])); },
   sizer     => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUPERSCRIPT', 'post'); });
 DefConstructor('\@@FLOATINGSUBSCRIPT InScriptStyle',
-  "<ltx:XMApp role='FLOATSUBSCRIPT' scriptpos='#level'>"
+  "<ltx:XMApp role='FLOATSUBSCRIPT' scriptpos='#scriptlevel'>"
     . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_BEGIN, T_END, T_SUB, revertScript($_[1])); },
@@ -6651,9 +6650,9 @@ DefConstructor('\FCN{}', "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", reversio
 DefConstructor('\ROLE{}{}', "<ltx:XMWrap role='#1'>#2</ltx:XMWrap>", reversion => '#2', alias => '');
 
 # NOTE: work through this systematically!
-DefConstructor('\@SYMBOL{}',  "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", reversion => '#1');
+DefConstructor('\@SYMBOL{}', "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", reversion => '#1');
 DefConstructor('\@CSYMBOL{}', "<ltx:XMTok meaning='#1'/>");
-DefConstructor('\@APPLY{}',   "<ltx:XMApp>#1</ltx:XMApp>",             reversion => '#1');
+DefConstructor('\@APPLY{}', "<ltx:XMApp>#1</ltx:XMApp>", reversion => '#1');
 DefConstructor('\@MAYBEAPPLY{}{}',
   "?#2(<ltx:XMApp>#1#2</ltx:XMApp>)(#1)",
   reversion => '#1#2');

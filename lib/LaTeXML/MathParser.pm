@@ -1505,7 +1505,7 @@ sub NewScript {
   my $t;
   my $l = $sl || $bl ||
     (($t = $LaTeXML::MathParser::DOCUMENT->getNodeBox($script))
-    && ($t->getProperty('level'))) || 0;
+    && ($t->getProperty('scriptlevel'))) || 0;
   # If the INNER script was a floating script (ie. {}^{x})
   # we'll NOT want this one to stack over it so bump the level.
   my $bumped;
