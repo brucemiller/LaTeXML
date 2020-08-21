@@ -106,7 +106,7 @@ sub invoke {
   $props{locator} = $stomach->getGullet->getLocator unless defined $props{locator};
   $props{isMath}  = $ismath                         unless defined $props{isMath};
   $props{level}   = $stomach->getBoxingLevel;
-
+  $props{scriptlevel} = $stomach->getScriptLevel if $ismath;
   # Now create the Whatsit, itself.
   my $whatsit = LaTeXML::Core::Whatsit->new($self, [@args], %props);
   # Call any 'After' code.
