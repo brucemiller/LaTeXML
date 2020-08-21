@@ -1194,7 +1194,7 @@ DefConstructor('\sideset{}{}{}', sub {
     my $ch   = $document->getFirstChildElement($node);
     my ($opx, $ignore)
       = ($ch && $ch->getAttribute('scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
-    my $level = $props{level} || 0;
+    my $level = $props{scriptlevel} || 0;
     foreach my $script (reverse $pre->unlist) {
       # If it's a script, handle it (non-scripts dealt with above & below)
       if (my $scriptop = IsScript($script)) {
