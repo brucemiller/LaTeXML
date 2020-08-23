@@ -1117,10 +1117,7 @@
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
-                    <XMDual>
-                      <XMTok meaning="gradient"/>
-                      <XMTok name="nabla" role="OPERATOR">∇</XMTok>
-                    </XMDual>
+                    <XMTok meaning="gradient" name="nabla" role="OPERATOR">∇</XMTok>
                   </XMApp>
                 </XMath>
               </Math></td>
@@ -1719,10 +1716,7 @@
                       <XMTok name="rightarrow" role="ARROW">→</XMTok>
                       <XMTok meaning="absent"/>
                       <XMApp>
-                        <XMDual>
-                          <XMTok meaning="sine"/>
-                          <XMTok role="OPFUNCTION" scriptpos="post">sin</XMTok>
-                        </XMDual>
+                        <XMTok meaning="sine" role="OPFUNCTION" scriptpos="post">sin</XMTok>
                         <XMTok font="italic" role="UNKNOWN">x</XMTok>
                       </XMApp>
                     </XMApp>
@@ -1754,10 +1748,7 @@
                       <XMRef idref="S1.Ex1.m1.5"/>
                     </XMApp>
                     <XMApp>
-                      <XMDual xml:id="S1.Ex1.m1.4">
-                        <XMTok meaning="sine"/>
-                        <XMTok role="OPFUNCTION" scriptpos="post">sin</XMTok>
-                      </XMDual>
+                      <XMTok meaning="sine" role="OPFUNCTION" scriptpos="post" xml:id="S1.Ex1.m1.4">sin</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">[</XMTok>
                         <XMApp backgroundcolor="#00FFFF" xml:id="S1.Ex1.m1.5">
@@ -1782,10 +1773,7 @@
                         <XMRef idref="S1.Ex1.m1.7"/>
                       </XMApp>
                       <XMApp>
-                        <XMDual xml:id="S1.Ex1.m1.6">
-                          <XMTok meaning="sine"/>
-                          <XMTok role="OPFUNCTION" scriptpos="post">sin</XMTok>
-                        </XMDual>
+                        <XMTok meaning="sine" role="OPFUNCTION" scriptpos="post" xml:id="S1.Ex1.m1.6">sin</XMTok>
                         <XMWrap>
                           <XMTok role="OPEN" stretchy="false">[</XMTok>
                           <XMTok font="italic" role="UNKNOWN" xml:id="S1.Ex1.m1.7">x</XMTok>
@@ -1851,10 +1839,7 @@
                       <XMRef idref="S1.Ex1.m1.10"/>
                     </XMApp>
                     <XMApp>
-                      <XMDual xml:id="S1.Ex1.m1.9">
-                        <XMTok meaning="sine"/>
-                        <XMTok role="OPFUNCTION" scriptpos="post">sin</XMTok>
-                      </XMDual>
+                      <XMTok meaning="sine" role="OPFUNCTION" scriptpos="post" xml:id="S1.Ex1.m1.9">sin</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">{</XMTok>
                         <XMApp backgroundcolor="#00FFFF" xml:id="S1.Ex1.m1.10">
@@ -1879,10 +1864,7 @@
                         <XMRef idref="S1.Ex1.m1.12"/>
                       </XMApp>
                       <XMApp>
-                        <XMDual xml:id="S1.Ex1.m1.11">
-                          <XMTok meaning="sine"/>
-                          <XMTok role="OPFUNCTION" scriptpos="post">sin</XMTok>
-                        </XMDual>
+                        <XMTok meaning="sine" role="OPFUNCTION" scriptpos="post" xml:id="S1.Ex1.m1.11">sin</XMTok>
                         <XMWrap>
                           <XMTok role="OPEN" stretchy="false">[</XMTok>
                           <XMTok font="italic" role="UNKNOWN" xml:id="S1.Ex1.m1.12">x</XMTok>
@@ -2657,10 +2639,7 @@
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
                     <XMApp>
-                      <XMDual>
-                        <XMTok meaning="trace"/>
-                        <XMTok role="OPFUNCTION" scriptpos="post">tr</XMTok>
-                      </XMDual>
+                      <XMTok meaning="trace" role="OPFUNCTION" scriptpos="post">tr</XMTok>
                       <XMTok font="italic" name="rho" role="UNKNOWN">ρ</XMTok>
                     </XMApp>
                   </XMApp>
@@ -2709,10 +2688,7 @@
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
                     <XMApp>
-                      <XMDual>
-                        <XMTok meaning="trace"/>
-                        <XMTok role="OPFUNCTION" scriptpos="post">Tr</XMTok>
-                      </XMDual>
+                      <XMTok meaning="trace" role="OPFUNCTION" scriptpos="post">Tr</XMTok>
                       <XMTok font="italic" name="rho" role="UNKNOWN">ρ</XMTok>
                     </XMApp>
                   </XMApp>
@@ -2728,10 +2704,7 @@
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
                     <XMApp>
-                      <XMDual>
-                        <XMTok meaning="rank"/>
-                        <XMTok role="OPFUNCTION" scriptpos="post">rank</XMTok>
-                      </XMDual>
+                      <XMTok meaning="rank" role="OPFUNCTION" scriptpos="post">rank</XMTok>
                       <XMTok font="italic" role="UNKNOWN">M</XMTok>
                     </XMApp>
                   </XMApp>
@@ -2778,10 +2751,7 @@
                         <XMRef idref="S1.T3.m6.3"/>
                       </XMApp>
                       <XMApp>
-                        <XMDual xml:id="S1.T3.m6.2">
-                          <XMTok meaning="residue"/>
-                          <XMTok role="OPFUNCTION" scriptpos="post">Res</XMTok>
-                        </XMDual>
+                        <XMTok meaning="residue" role="OPFUNCTION" scriptpos="post" xml:id="S1.T3.m6.2">Res</XMTok>
                         <XMWrap>
                           <XMTok role="OPEN" stretchy="false">[</XMTok>
                           <XMApp xml:id="S1.T3.m6.3">
@@ -2988,10 +2958,7 @@
                       <XMRef idref="S1.Ex2.m1.2"/>
                     </XMApp>
                     <XMApp>
-                      <XMDual xml:id="S1.Ex2.m1.1">
-                        <XMTok meaning="realport"/>
-                        <XMTok role="OPFUNCTION" scriptpos="post">Re</XMTok>
-                      </XMDual>
+                      <XMTok meaning="realport" role="OPFUNCTION" scriptpos="post" xml:id="S1.Ex2.m1.1">Re</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">(</XMTok>
                         <XMApp backgroundcolor="#00FFFF" xml:id="S1.Ex2.m1.2">
@@ -3014,10 +2981,7 @@
                       <XMRef idref="S1.Ex2.m1.4"/>
                     </XMApp>
                     <XMApp>
-                      <XMDual xml:id="S1.Ex2.m1.3">
-                        <XMTok meaning="realport"/>
-                        <XMTok role="OPFUNCTION" scriptpos="post">Re</XMTok>
-                      </XMDual>
+                      <XMTok meaning="realport" role="OPFUNCTION" scriptpos="post" xml:id="S1.Ex2.m1.3">Re</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">[</XMTok>
                         <XMApp backgroundcolor="#00FFFF" xml:id="S1.Ex2.m1.4">
@@ -3040,10 +3004,7 @@
                       <XMRef idref="S1.Ex2.m1.6"/>
                     </XMApp>
                     <XMApp>
-                      <XMDual xml:id="S1.Ex2.m1.5">
-                        <XMTok meaning="imagport"/>
-                        <XMTok role="OPFUNCTION" scriptpos="post">Im</XMTok>
-                      </XMDual>
+                      <XMTok meaning="imagport" role="OPFUNCTION" scriptpos="post" xml:id="S1.Ex2.m1.5">Im</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">(</XMTok>
                         <XMApp backgroundcolor="#00FFFF" xml:id="S1.Ex2.m1.6">
@@ -3066,10 +3027,7 @@
                       <XMRef idref="S1.Ex2.m1.8"/>
                     </XMApp>
                     <XMApp>
-                      <XMDual xml:id="S1.Ex2.m1.7">
-                        <XMTok meaning="imagport"/>
-                        <XMTok role="OPFUNCTION" scriptpos="post">Im</XMTok>
-                      </XMDual>
+                      <XMTok meaning="imagport" role="OPFUNCTION" scriptpos="post" xml:id="S1.Ex2.m1.7">Im</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">[</XMTok>
                         <XMApp backgroundcolor="#00FFFF" xml:id="S1.Ex2.m1.8">
@@ -3307,10 +3265,7 @@
                   <XMApp>
                     <XMTok name="rightarrow" role="ARROW">→</XMTok>
                     <XMTok meaning="absent"/>
-                    <XMDual>
-                      <XMTok meaning="differential"/>
-                      <XMTok role="UNKNOWN">d</XMTok>
-                    </XMDual>
+                    <XMTok meaning="differential" role="UNKNOWN">d</XMTok>
                   </XMApp>
                 </XMath>
               </Math></td>
@@ -3325,10 +3280,7 @@
                     <XMTok meaning="absent"/>
                     <XMApp>
                       <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMDual>
-                        <XMTok meaning="differential"/>
-                        <XMTok role="UNKNOWN">d</XMTok>
-                      </XMDual>
+                      <XMTok meaning="differential" role="UNKNOWN">d</XMTok>
                       <XMTok font="italic" role="UNKNOWN">x</XMTok>
                     </XMApp>
                   </XMApp>
@@ -3399,10 +3351,7 @@
                         <XMWrap>
                           <XMTok role="OPEN" stretchy="true">(</XMTok>
                           <XMApp xml:id="S1.T6.m6.1">
-                            <XMDual>
-                              <XMTok meaning="cosine"/>
-                              <XMTok role="OPFUNCTION" scriptpos="post">cos</XMTok>
-                            </XMDual>
+                            <XMTok meaning="cosine" role="OPFUNCTION" scriptpos="post">cos</XMTok>
                             <XMTok font="italic" name="theta" role="UNKNOWN">θ</XMTok>
                           </XMApp>
                           <XMTok role="CLOSE" stretchy="true">)</XMTok>
@@ -6616,19 +6565,13 @@
                             <XMCell align="center">
                               <XMApp>
                                 <XMTok fontsize="70%" meaning="minus" role="ADDOP">-</XMTok>
-                                <XMDual role="UNKNOWN">
-                                  <XMTok meaning="imaginary-unit" name="lx@physics@iunit" role="UNKNOWN"/>
-                                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
-                                </XMDual>
+                                <XMTok font="italic" fontsize="70%" meaning="imaginary-unit" name="lx@physics@iunit" role="UNKNOWN">i</XMTok>
                               </XMApp>
                             </XMCell>
                           </XMRow>
                           <XMRow>
                             <XMCell align="center">
-                              <XMDual role="UNKNOWN">
-                                <XMTok meaning="imaginary-unit" name="lx@physics@iunit" role="UNKNOWN"/>
-                                <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
-                              </XMDual>
+                              <XMTok font="italic" fontsize="70%" meaning="imaginary-unit" name="lx@physics@iunit" role="UNKNOWN">i</XMTok>
                             </XMCell>
                             <XMCell align="center">
                               <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
