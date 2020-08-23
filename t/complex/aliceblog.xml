@@ -33,7 +33,7 @@
             <tag role="typerefnum">1st item</tag>
           </tags>
           <para xml:id="S1.I1.i1.p1">
-            <p><ref href="http://example.com/bob/" property="foaf:name">Bob</ref></p>
+            <p><ref href="http://example.com/bob/" property="foaf:homepage"><text property="foaf:name">Bob</text></ref></p>
           </para>
         </item>
         <item property="foaf:knows" typeof="foaf:Person" xml:id="S1.I1.i2">
@@ -42,7 +42,7 @@
             <tag role="typerefnum">2nd item</tag>
           </tags>
           <para xml:id="S1.I1.i2.p1">
-            <p><ref href="http://example.com/eve/" property="foaf:name">Eve</ref></p>
+            <p><ref href="http://example.com/eve/" property="foaf:homepage"><text property="foaf:name">Eve</text></ref></p>
           </para>
         </item>
         <item property="foaf:knows" typeof="foaf:Person" xml:id="S1.I1.i3">
@@ -51,7 +51,7 @@
             <tag role="typerefnum">3rd item</tag>
           </tags>
           <para xml:id="S1.I1.i3.p1">
-            <p><ref href="http://example.com/manu/" property="foaf:name">Manu</ref></p>
+            <p><ref href="http://example.com/manu/" property="foaf:homepage"><text property="foaf:name">Manu</text></ref></p>
           </para>
         </item>
       </itemize>
