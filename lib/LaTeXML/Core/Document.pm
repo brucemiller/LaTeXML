@@ -162,7 +162,7 @@ sub canContain {
 sub canContainIndirect {
   my ($self, $tag, $child) = @_;
   my $model = $$self{model};
-  $tag   = $model->getNodeQName($tag)   if ref $tag;      # In case tag is a node.
+  $tag = $model->getNodeQName($tag) if ref $tag;          # In case tag is a node.
   $child = $model->getNodeQName($child) if ref $child;    # In case child is a node.
         # $imodel{$tag}{$child} => $intermediate || $child
   my $imodel = $STATE->lookupValue('INDIRECT_MODEL');
@@ -325,7 +325,7 @@ sub doctest_head {
   my ($self, $parent, $node, $severe) = @_;
   # Check consistency of document, parent & type, before proceeding
   print STDERR "  NODE $$node [" if $severe;    # BEFORE checking nodeType!
-  print STDERR "d"               if $severe;
+  print STDERR "d" if $severe;
   if (!$node->ownerDocument->isSameNode($self->getDocument)) {
     print STDERR "!" if $severe; }
   print STDERR "p" if $severe;
@@ -1183,6 +1183,14 @@ sub closeNode_internal {
   #  $self->autoCollapseChildren($node);
   return $$self{node}; }
 
+# If these attributes are present on both of two nodes,
+# it should inhibit merging those two nodes  (typically a child into parent).
+our %non_mergeable_attributes = map { $_ => 1; }
+  qw(about aboutlabelref aboutidref
+  resource resourcelabelref resourceidref
+  property rel rev tyupeof datatype content
+  data datamimetype dataencoding);
+
 # Avoid redundant nesting of font switching elements:
 # If we're closing a node that can take font switches and it contains
 # a single FONT_ELEMENT_NAME node; pull it up.
@@ -1197,6 +1205,8 @@ sub autoCollapseChildren {
     # AND, $node can have all the attributes that the child has (but at least 'font')
     && !(grep { !$model->canHaveAttribute($qname, $_) }
       ('font', grep { /^[^_]/ } map { $_->nodeName } $c[0]->attributes))
+    # AND, $node doesn't have any attributes which collide!
+    && !(grep { $non_mergeable_attributes{ $_->nodeName }; } $c[0]->attributes)
     # BUT, it isn't being forced somehow
     && !$c[0]->hasAttribute('_force_font')) {
     my $c = $c[0];
@@ -1206,36 +1216,55 @@ sub autoCollapseChildren {
       $node->appendChild($gc);
       $self->recordNodeIDs($node); }
     # Merge the attributes from the child onto $node
-    foreach my $attr ($c->attributes()) {
-      if ($attr->nodeType == XML_ATTRIBUTE_NODE) {
-        my $key = $attr->nodeName;
-        my $val = $attr->getValue;
-        # Special case attributes
-        if ($key eq 'xml:id') {    # Use the replacement id
-          if (!$node->hasAttribute($key)) {
-            $val = $self->recordID($val, $node);
-            $node->setAttribute($key, $val); } }
-        elsif ($key eq 'class') {    # combine $class
-          if (my $class = $node->getAttribute($key)) {
-            $node->setAttribute($key, $class . ' ' . $val); }
-          else {
-            $node->setAttribute($key, $val); } }
-        # xoffset, yoffset should sum up, if present on both.
-        elsif ($key =~ /^(xoffset|yoffset)$/) {
-          if (my $val2 = $node->getAttribute($key)) {
-            my $v1 = $val  =~ /^([\+\-\d\.]*)pt$/ && $1;
-            my $v2 = $val2 =~ /^([\+\-\d\.]*)pt$/ && $1;
-            $node->setAttribute($key => ($v1 + $v2) . 'pt'); }
-          else {
-            $node->setAttribute($key => $val); } }
-        # Remaining attributes should prefer the inner (child's) values, if any
-        # (font, size, color, framed)
-        # (width,height, depth, align, vattach, float)
-        elsif (my $ns = $attr->namespaceURI) {
-          $node->setAttributeNS($ns, $attr->name, $val); }
+    $self->mergeAttributes($c, $node); }
+  return; }
+
+# When merging attributes of two nodes, some attributes should be combined
+our %merge_attribute_spacejoin = map { $_ => 1; }    # Merged space separated
+  qw(class lists inlist labels);
+our %merge_attribute_semicolonjoin = map { $_ => 1; }    # Merged ";" separated
+  qw(cssstyle);
+our %merge_attribute_sumlength = map { $_ => 1; }        # Summed lengths
+  qw(xoffset yoffset lpadding rpadding xtranslate ytranslate);
+# Merge the attributes from node $from into those of the node $to.
+# The presumption is that node $from will be removed afterwards.
+# If an attribute is already present on $to, it will be ignored, unless named in $override.
+sub mergeAttributes {
+  my ($self, $from, $to, $override) = @_;
+  # Merge the attributes from the node $from onto the node $to
+  foreach my $attr ($from->attributes()) {
+    if ($attr->nodeType == XML_ATTRIBUTE_NODE) {
+      my $key = $attr->nodeName;
+      my $val = $attr->getValue;
+      # Special case attributes
+      if ($key eq 'xml:id') {    # Use the replacement id
+        if (!$to->hasAttribute($key) || ($override && $$override{$key})) {
+          # BUT: If $to DID have an attribute, we really should patch any idrefs!!!!!!!
+          $self->unRecordID($val);    # presuming that $from will be going away.
+          $val = $self->recordID($val, $to);
+          $to->setAttribute($key, $val); } }
+      elsif ($merge_attribute_spacejoin{$key}) {    # combine space separated values
+        $self->addSSValues($to, $key, $val); }
+      elsif ($merge_attribute_semicolonjoin{$key}) {    # combine space separated values
+        my $oldval = $to->getAttribute($key);
+        if ($oldval) {                                  # if duplicate?
+          $to->setAttribute($key, $oldval . '; ' . $val); }
         else {
-          $node->setAttribute($attr->localname, $val); } } }
-  }
+          $to->setAttribute($key, $val); } }
+      # Several length attributes should be cummulative; sum them up, if present on both.
+      elsif ($merge_attribute_sumlength{$key}) {
+        if (my $val2 = $to->getAttribute($key)) {
+          my $v1 = $val =~ /^([\+\-\d\.]*)pt$/  && $1;
+          my $v2 = $val2 =~ /^([\+\-\d\.]*)pt$/ && $1;
+          $to->setAttribute($key => ($v1 + $v2) . 'pt'); }
+        else {
+          $to->setAttribute($key => $val); } }
+      # Else if attribute not present on $to, or if we specificallly override it, just copy
+      elsif ((!$to->hasAttribute($key)) || ($override && $$override{$key})) {
+        if (my $ns = $attr->namespaceURI) {
+          $to->setAttributeNS($ns, $attr->name, $val); }
+        else {
+          $to->setAttribute($attr->localname, $val); } } } }
   return; }
 
 #======================================================================
@@ -1266,7 +1295,7 @@ sub setAttribute {
   $value = $value->toAttribute if ref $value;
   if ((defined $value) && ($value ne '')) {    # Skip if `empty'; but 0 is OK!
     if ($key eq 'xml:id') {                    # If it's an ID attribute
-      $value = $self->recordID($value, $node);                                 # Do id book keeping
+      $value = $self->recordID($value, $node);    # Do id book keeping
       $node->setAttributeNS($LaTeXML::Common::XML::XML_NS, 'id', $value); }    # and bypass all ns stuff
     elsif ($key !~ /:/) {    # No colon; no namespace (the common case!)
                              # Ignore attributes not allowed by the model,
@@ -1280,7 +1309,7 @@ sub setAttribute {
       if ($ns) {             # If namespaced attribute (must have prefix!
         my $prefix = $node->lookupNamespacePrefix($ns);    # namespace already declared?
         if (!$prefix) {                                    # if namespace not already declared
-          $prefix = $$self{model}->getDocumentNamespacePrefix($ns, 1);             # get the prefix to use
+          $prefix = $$self{model}->getDocumentNamespacePrefix($ns, 1);    # get the prefix to use
           $self->getDocument->documentElement->setNamespace($ns, $prefix, 0); }    # and declare it
         if ($prefix eq '#default') {    # Probably shouldn't happen...?
           $node->setAttribute($name => $value); }
@@ -1443,8 +1472,9 @@ sub pruneXMDuals {
       $self->compactXMDual($dual, $content, $presentation); } }
   return; }
 
-our @CONTENT_TRANSFER_ATTRS = qw(decl_id meaning name omcd);
-our @DUAL_TRANSFER_ATTRS    = (@CONTENT_TRANSFER_ATTRS, 'xml:id', 'role');
+our $content_transfer_overrides = { map { ($_ => 1) } qw(decl_id meaning name omcd) };
+our $dual_transfer_overrides    = { %$content_transfer_overrides,
+  map { ($_ => 1) } qw(xml:id role) };
 
 sub compactXMDual {
   my ($self, $dual, $content, $presentation) = @_;
@@ -1452,19 +1482,9 @@ sub compactXMDual {
   my $p_name = $self->getNodeQName($presentation);
   # 1.Quick fix: merge two tokens
   if (($c_name eq 'ltx:XMTok') && ($p_name eq 'ltx:XMTok')) {
-    for my $attr_key (@CONTENT_TRANSFER_ATTRS) {
-      if (my $attr_val = $content->getAttribute($attr_key)) {
-        $content->removeAttribute($attr_key);
-        $presentation->setAttribute($attr_key, $attr_val); } }
-    # if the dual has any attributes migrate them to the new XMTok
-    my %transfer_attrs = ();
-    for my $attr_key (@DUAL_TRANSFER_ATTRS) {
-      if (my $v = $dual->getAttribute($attr_key)) {
-        $transfer_attrs{$attr_key} = $v; } }
+    $self->mergeAttributes($content, $presentation, $content_transfer_overrides);
+    $self->mergeAttributes($dual,    $presentation, $dual_transfer_overrides);
     $self->replaceNode($dual, $presentation);
-    # transfer the attributes after replacing, so that the bookkeeping has been undone
-    for my $key (keys %transfer_attrs) {
-      $self->setAttribute($presentation, $key, $transfer_attrs{$key}); }
     return; }
 
   # 2.For now, only main use case is compacting mirror XMApp nodes
@@ -1503,23 +1523,13 @@ sub compactXMDual {
     # one of the args has our dual node that needs compacting
     if (ref $n_arg eq 'ARRAY') {
       my ($c_arg, $p_arg) = @$n_arg;
-      # Transfer all c_arg attributes over, it should be primary?
-      for my $attr_key (@CONTENT_TRANSFER_ATTRS) {
-        if (my $attr_val = $c_arg->getAttribute($attr_key)) {
-          $c_arg->removeAttribute($attr_key);
-          $p_arg->setAttribute($attr_key, $attr_val); } }
+      $self->mergeAttributes($c_arg, $p_arg, $content_transfer_overrides);
       $n_arg = $p_arg; }
     $n_arg->unbindNode;
     $compact_apply->appendChild($n_arg); }
   # if the dual has any attributes migrate them to the new XMApp
-  my %transfer_attrs = ();
-  for my $attr_key (@DUAL_TRANSFER_ATTRS) {
-    if (my $v = $dual->getAttribute($attr_key)) {
-      $transfer_attrs{$attr_key} = $v; } }
+  $self->mergeAttributes($dual, $compact_apply, $dual_transfer_overrides);
   $self->replaceNode($dual, $compact_apply);
-  # transfer the attributes after replacing, so that the bookkeeping has been undone
-  for my $key (keys %transfer_attrs) {
-    $self->setAttribute($compact_apply, $key, $transfer_attrs{$key}); }
   $self->closeElementAt($compact_apply);
   return; }
 
@@ -1529,7 +1539,7 @@ sub collapseXMDual {
   # The other branch is not visible, nor referenced,
   # but the dual may have an id and be referenced
   if (my $dualid = $dual->getAttribute('xml:id')) {
-    $self->unRecordID($dualid);                              # We'll move or remove the ID from the dual
+    $self->unRecordID($dualid);    # We'll move or remove the ID from the dual
     if (my $branchid = $branch->getAttribute('xml:id')) {    # branch has id too!
       foreach my $ref ($self->findnodes("//*[\@idref='$dualid']")) {
         $ref->setAttribute(idref => $branchid); } }          # Change dualid refs to branchid
@@ -1656,7 +1666,7 @@ sub openElementAt {
   my $font = $attributes{_font} || $attributes{font};
   my $box  = $attributes{_box};
   $box = $$self{node_boxes}{$box} if $box && !ref $box;    # may already be the string key
-      # If this will be the document root node, things are slightly more involved.
+         # If this will be the document root node, things are slightly more involved.
   if ($point->nodeType == XML_DOCUMENT_NODE) {    # First node! (?)
     $$self{model}->addSchemaDeclaration($self, $tag);
     map { $$self{document}->appendChild($_) } @{ $$self{pending} };    # Add saved comments, PI's
@@ -1683,7 +1693,7 @@ sub openElementAt {
     next if $key eq 'locator';    # !!!
     $self->setAttribute($newnode, $key, $attributes{$key}); }
   $self->setNodeFont($newnode, $font) if $font;
-  $self->setNodeBox($newnode, $box)   if $box;
+  $self->setNodeBox($newnode, $box) if $box;
   print STDERR "Inserting " . Stringify($newnode) . " into " . Stringify($point) . "\n" if $LaTeXML::Core::Document::DEBUG;
 
   # Run afterOpen operations
