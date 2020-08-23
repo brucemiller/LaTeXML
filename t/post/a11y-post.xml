@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml searchpaths="/home/deyan/git/my-LaTeXML,/home/deyan/git/my-LaTeXML"?>
+<?latexml package="a11ymark"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<?latexml a11y="enabled"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML" xmlns:m="http://www.w3.org/1998/Math/MathML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p><Math mode="inline" tex="\sqrt{x}" text="square-root@(x)" xml:id="p1.m1"><XMath>
+          <XMApp>
+            <XMTok meaning="square-root"/>
+            <XMTok font="italic" role="UNKNOWN">x</XMTok>
+          </XMApp>
+        </XMath><m:math alttext="\sqrt{x}" display="inline"><m:msqrt data-semantic="square-root(#1)"><m:mi data-arg="1">x</m:mi></m:msqrt></m:math></Math></p>
+  </para>
+</document>

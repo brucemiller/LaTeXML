@@ -1,0 +1,23 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  a11ymark.sty -- demo semantic bindings for accessibility           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+RequirePackage('latexml');
+
+DefConstructorI(T_CS('\@request@math@a11y'), undef, "<?latexml a11y='enabled'?>");
+AtBeginDocument(T_CS('\@request@math@a11y'));
+
+1;

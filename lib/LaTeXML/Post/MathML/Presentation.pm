@@ -14,6 +14,9 @@ package LaTeXML::Post::MathML::Presentation;
 use strict;
 use warnings;
 use base qw(LaTeXML::Post::MathML);
+use LaTeXML::Post::MathML qw(getQName);
+use LaTeXML::MathParser qw(p_getAttribute p_setAttribute p_removeAttribute p_element_nodes);
+use LaTeXML::Common::XML;
 
 sub preprocess {
   my ($self, $doc, @maths) = @_;
@@ -57,7 +60,7 @@ sub convertNode {
   # NEXT better strategy will be to scan columns of MathBranches to establish desired line length?
   elsif ($$self{linelength}    # If line breaking
     && ($doc->findnodes('ancestor::ltx:MathBranch', $xmath))    # In formatted side of MathFork?
-          # But ONLY if last column!! (until we can adapt LineBreaker!)
+        # But ONLY if last column!! (until we can adapt LineBreaker!)
     && !$doc->findnodes('parent::ltx:Math/parent::ltx:td/following-sibling::ltx:td', $xmath)) {
     my ($pmmlb, $broke) = $self->convertNode_linebreak($doc, $xmath, $style);
     $pmml = $pmmlb; }
@@ -69,22 +72,118 @@ sub rawIDSuffix {
   return '.pmml'; }
 
 sub associateNodeHook {
-  my ($self, $node, $sourcenode) = @_;
+# technical note: $sourcenode and $currentnode are LibXML elements, while $node is that OR the arrayref triple form
+  my ($self, $node, $sourcenode, $noxref, $currentnode) = @_;
   # TODO: Shouldn't we have a single getQName shared for the entire latexml codebase
+  #       (same for the p_* methods from MathParser)
   #  in LaTeXML::Common or LaTeXML::Util ?
-  my $name = LaTeXML::Post::MathML::getQName($node);
+  my $name = getQName($node);
   if ($name =~ /^m:(?:mi|mo|mn)$/) {
     if (my $href = $sourcenode->getAttribute('href')) {
-      if (ref $node eq 'ARRAY') {
-        $$node[1]{href} = $href; }
-      else {
-        $node->setAttribute('href', $href); } }
+      p_setAttribute($node, 'href', $href); }
     if (my $title = $sourcenode->getAttribute('title')) {
-      if (ref $node eq 'ARRAY') {
-        $$node[1]{title} = $title; }
-      else {
-        $node->setAttribute('title', $title); } } }
+      p_setAttribute($node, 'title', $title); } }
+  $self->addAccessibilityAnnotations($node, $sourcenode, $currentnode) if $$self{a11y};
   return; }
+
+# Experiment: set accessibility attributes on the resulting presentation tree,
+# if the XMath source has a claim to the semantics via a "meaning" attribute.
+sub addAccessibilityAnnotations {
+  my ($self, $node, $sourcenode, $currentnode) = @_;
+  # 1. Filter and bookkeep which nodes are to be treated.
+  my $current_node_name = getQName($currentnode);
+  return if $current_node_name eq 'ltx:XMath';
+  return if $currentnode->getAttribute('_a11y');
+  $currentnode->setAttribute('_a11y', 'done');
+  my $source_node_name = getQName($sourcenode);
+  my $container;
+# skip non-material dual presentation, which points to content nodes but should *not* carry annotations itself
+  if (($container = $LaTeXML::Post::DOCUMENT->findnode('ancestor::ltx:XMDual[1]', $currentnode)) and
+    (${ $currentnode->parentNode } != $$container)) {
+# also skip any embellishments in duals that are not semantic, a bit tricky since we need to check parent xmapps
+    my $content_node = $container->firstChild;
+    my %xmrefs       = map { my $ref = $_->getAttribute('idref'); $ref ? ($ref => 1) : () }
+      $LaTeXML::Post::DOCUMENT->findnodes("descendant-or-self::ltx:XMRef[\@idref]", $content_node);
+    return unless %xmrefs;    # certainly not usable if no refs in the dual.
+    my $ancestor = $currentnode;
+    while ($$ancestor != $$container && !$xmrefs{ $ancestor->getAttribute('xml:id') || '' }) {
+      $ancestor = $ancestor->parentNode; }
+    return if $$ancestor == $$container; }
+  # 1--end. We reach here only with semantic nodes in hand (or the logic has a Bug).
+  # 2. Bookkeep the semantic information.
+  my ($meaning, $arg);
+  if (my $src_meaning = $sourcenode->getAttribute('meaning')) {
+    $meaning = $src_meaning; }
+  elsif ($source_node_name eq 'ltx:XMApp') {
+# Tricky, what is the best way to figure out if the operator is presentable vs implied? Check if it has _a11y=done?
+    my @source_children = element_nodes($sourcenode);
+    my $op_node         = $source_children[0];
+    my $op              = $op_node->getAttribute('_a11y') ? '#op' : p_getAttribute($op_node, 'meaning');
+    if ($op) {    # annotate only if we knew a 'meaning' attribute, for the special markup scenarios
+      $meaning = "$op(" . join(",", map { "#$_" } 1 .. scalar(@source_children) - 1) . ')'; }
+    else {
+      # otherwise, take the liberty to delete all data-arg of direct children
+      for my $pmml_child (@$node[2 .. scalar(@$node) - 1]) {
+        p_removeAttribute($pmml_child, 'data-arg'); } } }
+  elsif ($source_node_name eq 'ltx:XMDual') {
+    my @source_children = element_nodes($sourcenode);
+    $meaning = dual_content_to_semantic_attr($source_children[0]); }
+
+# 3. Bookkeep "arg" information
+# (careful, can be arbitrary deep in a dual content tree)
+# also, not so easy to disentangle - a node nested deeply inside a dual may be _either_ referenced in the dual (primary)
+# _or_ a classic direct child of an intermediate XMApp. So we test until we find an $arg:
+  $container = $container || $LaTeXML::Post::DOCUMENT->findnode('ancestor::ltx:XMDual[1]', $sourcenode);
+  if ($container) {
+    my $id = $sourcenode->getAttribute('xml:id');
+    $arg = $id && dual_content_idref_to_data_attr($container->firstChild, $id); }
+  if (!$arg && (getQName($sourcenode->parentNode) eq 'ltx:XMApp')) {    # normal apply case
+        # note we can only do this simple check because we filtered out all embellishments in step 1.
+    my $position = $LaTeXML::Post::DOCUMENT->findvalue("count(preceding-sibling::*)", $sourcenode);
+    $arg = $position || 'op'; }
+
+  p_setAttribute($node, 'data-semantic', $meaning) if $meaning;
+  p_setAttribute($node, 'data-arg',      $arg)     if $arg;
+  return; }
+
+# Given the first (content) child of an ltx:XMDual, compute its corresponding a11y "semantic" attribute
+sub dual_content_to_semantic_attr {
+  my ($node, $prefix) = @_;
+  my $name = getQName($node);
+  if ($name eq 'ltx:XMTok') {
+    return $node->getAttribute('meaning') || $node->getAttribute('name') || 'unknown'; }
+  elsif ($name eq 'ltx:XMRef') {    # pass through case
+    return '#1'; }
+  elsif ($name eq 'ltx:XMApp') {
+    my @arg_nodes   = element_nodes($node);
+    my $op_node     = shift @arg_nodes;
+    my $op          = ($op_node && $op_node->getAttribute('meaning')) || '#op';
+    my @arg_strings = ();
+    my $index       = 0;
+    for my $arg_node (@arg_nodes) {
+      $index++;
+      if (getQName($arg_node) eq 'ltx:XMApp') {
+        push @arg_strings, dual_content_to_semantic_attr($arg_node, $prefix ? ($prefix . "_$index") : $index); }
+      else {
+        push @arg_strings, '#' . ($prefix ? ($prefix . "_$index") : $index); } } # will we need level suffixes?
+    return $op . '(' . join(",", @arg_strings) . ')'; }
+  else {
+    print STDERR "Warning:unknown XMDual content child '$name' will default data-semantic attribute to 'unknown'\n";
+    return 'unknown'; } }
+
+# Given the first (content) child of an ltx:XMDual, and an idref value, compute the corresponding "arg" attribute for that XMRef
+sub dual_content_idref_to_data_attr {
+  my ($content_node, $idref) = @_;
+  my ($ref_node) = $LaTeXML::Post::DOCUMENT->findnodes(
+    "descendant-or-self::ltx:XMRef[\@idref=\"" . $idref . "\"][1]", $content_node);
+  return '' unless $ref_node;
+  my $path     = '';
+  my $ancestor = $ref_node;
+  while ($$ancestor != $$content_node) {
+    my $position = $LaTeXML::Post::DOCUMENT->findvalue("count(preceding-sibling::*)", $ancestor);
+    $path     = $path ? ($position . '_' . $path) : $position;
+    $ancestor = $ancestor->parentNode; }
+  return $path ? $path : (scalar(element_nodes($content_node)) > 1 ? 'op' : '1'); }
 
 #================================================================================
 # Presentation MathML with Line breaking
@@ -116,8 +215,8 @@ sub preprocess_linebreaking {
     my $style = ($mode eq 'display' ? 'display' : 'text');
     # If already has in a MathBranch, we can't really know if, or how wide, to line break!?!?!
     next if $doc->findnodes('ancestor::ltx:MathFork', $math);    # SKIP if already in a branch?
-          # Now let's do the layout & see if it actually needs line breaks!
-          # next if $math isn't really so wide ..
+        # Now let's do the layout & see if it actually needs line breaks!
+        # next if $math isn't really so wide ..
     my $id    = $math->getAttribute('xml:id');
     my $xmath = $doc->findnode('ltx:XMath', $math);
     my ($pmml, $broke) = $self->convertNode_linebreak($doc, $xmath, $style);

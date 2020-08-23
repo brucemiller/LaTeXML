@@ -26,6 +26,7 @@ our @EXPORT = (
     &pmml_infix &pmml_script &pmml_summation),
   qw( &cmml &cmml_share &cmml_shared &cmml_ci
     &cmml_or_compose &cmml_synth_not &cmml_synth_complement),
+  qw(&getQName)
 );
 require LaTeXML::Post::MathML::Presentation;
 require LaTeXML::Post::MathML::Content;
@@ -67,6 +68,10 @@ sub preprocess {
   $$self{nestmath}   = 0 unless $$self{nestmath};
   $doc->adjust_latexml_doctype('MathML');    # Add MathML if LaTeXML dtd.
   $doc->addNamespace($mmlURI, 'm');
+  # flip the accessibility switch on if requested, as it is currently experimental
+  if (my $a11y = $doc->findnode('.//processing-instruction("latexml")[contains(.,"a11y=")]')) {
+    if ($a11y->textContent =~ /a11y=['"]enabled['"]/) {
+      $$self{a11y} = 1; } }
   return; }
 
 # Works for pmml, cmml

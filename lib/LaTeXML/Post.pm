@@ -106,7 +106,7 @@ sub getStatusMessage {
 sub getsorter {
   my ($self, $lang) = @_;
   my $collator;
-  if ($collator = $$self{collatorcache}{$lang}) { }
+  if    ($collator = $$self{collatorcache}{$lang}) { }
   elsif ($collator = eval {
       local $LaTeXML::IGNORE_ERRORS = 1;
       require 'Unicode/Collate/Locale.pm';
@@ -198,8 +198,8 @@ sub generateResourcePathname {
   my $subdir = $$self{resource_directory} || '';
   my $prefix = $$self{resource_prefix}    || "x";
   my $counter = join('_', "_max", $subdir, $prefix, "counter_");
-  my $n    = $doc->cacheLookup($counter) || 0;
-  my $name = $prefix . ++$n;
+  my $n       = $doc->cacheLookup($counter) || 0;
+  my $name    = $prefix . ++$n;
   $doc->cacheStore($counter, $n);
   return pathname_make(dir => $subdir, name => $name, type => $type); }
 
@@ -546,7 +546,7 @@ sub associateNode {
       else {
         $node->setAttribute('xml:id' => $id); }
       push(@{ $$self{convertedIDs}{$sourceid} }, $id) unless $noxref; } }
-  $self->associateNodeHook($node, $sourcenode, $noxref);
+  $self->associateNodeHook($node, $sourcenode, $noxref, $currentnode);
   if ($isarray) {                                                # Array represented
     map { $self->associateNode($_, $currentnode, $noxref) } @$node[2 .. $#$node]; }
   else {                                                         # LibXML node
@@ -1096,7 +1096,7 @@ sub addNodes {
           my $atype = $attr->nodeType;
           if ($atype == XML_ATTRIBUTE_NODE) {
             my $key = $attr->nodeName;
-            if ($key =~ /^_/) { }    # don't copy internal attributes
+            if ($key =~ /^_/) { }        # don't copy internal attributes
             elsif ($key eq 'xml:id') {
               my $value = $attr->getValue;
               my $old;
