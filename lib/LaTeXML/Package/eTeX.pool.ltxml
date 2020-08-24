@@ -26,7 +26,7 @@ DefPrimitiveI('\protected', undef, sub {
     $STATE->setPrefix('protected'); return; }, isPrefix => 1);
 
 # \detokenize
-DefMacro('\detokenize GeneralText', sub { Explode(writableTokens($_[1])); });
+DefMacro('\detokenize GeneralText', sub { Explode(writableTokens($_[1], 1)); });
 
 # \unexpanded
 # This is like \noexpand, but acts on <general text>
@@ -116,8 +116,10 @@ DefRegister('\interactionmode' => Number(0));
 DefPrimitive('\showgroups', undef);
 
 # \showtokens <generaltext>
-# NOTE Debugging aids are currently IGNORED!
-DefPrimitive('\showtokens GeneralText', undef);
+DefPrimitive('\showtokens GeneralText', sub {
+    print STDERR "\n> " . writableTokens($_[1], 1) . ".\n";
+    print STDERR $_[0]->getLocator->toString() . "\n\n";
+    return; });
 
 DefRegister('\tracingassigns'    => Number(0));    # ???
 DefRegister('\tracinggroups'     => Number(0));
@@ -134,8 +136,8 @@ DefRegister('\everyeof', Tokens());
 DefConstructor('\middle Token', '#1',
   afterConstruct => sub {
     my ($document) = @_;
-    my $current = $document->getNode;
-    my $delim = $document->getLastChildElement($current) || $current;
+    my $current    = $document->getNode;
+    my $delim      = $document->getLastChildElement($current) || $current;
     $document->setAttribute($delim, role     => 'MIDDLE');
     $document->setAttribute($delim, stretchy => 'true');
     return; });

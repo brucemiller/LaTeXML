@@ -43,18 +43,18 @@ DefMacro('\newrobustcmd OptionalMatch:* DefToken [Number][]{}', sub {
         "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'")
         unless LookupValue(ToString($cs) . ':locked'); }
     else {
-      DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1); }
+      DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1, long => 1); }
     return Tokens(); });
 
 DefMacro('\renewrobustcmd OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-    DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1);
+    DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1, long => 1);
     return Tokens(); });
 
 DefMacro('\providerobustcmd OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (isDefinable($cs)) {
-      DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1); }
+      DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1, long => 1); }
     return Tokens(); });
 
 RawTeX(<<'EoTeX');
