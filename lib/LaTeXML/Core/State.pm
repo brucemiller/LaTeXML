@@ -90,8 +90,8 @@ sub new {
   my $self = bless {    # table => {},
     value   => {}, meaning  => {}, stash  => {}, stash_active => {},
     catcode => {}, mathcode => {}, sfcode => {}, lccode       => {}, uccode => {}, delcode => {},
-    undo => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
-    stomach => $options{stomach}, model => $options{model} }, $class;
+    undo    => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
+    stomach => $options{stomach},       model    => $options{model} }, $class;
   # Note that "100" is hardwired into TeX, The Program!!!
   $$self{value}{MAX_ERRORS} = [100];
   $$self{value}{VERBOSITY}  = [0];
@@ -107,9 +107,9 @@ sub new {
   if ($options{catcodes} =~ /^(standard|style)/) {
     # Setup default catcodes.
     my %std = ("\\" => CC_ESCAPE, "{" => CC_BEGIN, "}" => CC_END, "\$" => CC_MATH,
-      "\&" => CC_ALIGN, "\r" => CC_EOL,   "#"  => CC_PARAM, "^" => CC_SUPER,
-      "_"  => CC_SUB,   " "  => CC_SPACE, "\t" => CC_SPACE, "%" => CC_COMMENT,
-      "~" => CC_ACTIVE, chr(0) => CC_IGNORE, "\f" => CC_ACTIVE);
+      "&" => CC_ALIGN, "\r" => CC_EOL,   "#"  => CC_PARAM, "^" => CC_SUPER,
+      "_" => CC_SUB,   " "  => CC_SPACE, "\t" => CC_SPACE, "%" => CC_COMMENT,
+      "~" => CC_ACTIVE, chr(0) => CC_ESCAPE, "\f" => CC_ACTIVE);
     map { $$self{catcode}{$_} = [$std{$_}] } keys %std;
     for (my $c = ord('A') ; $c <= ord('Z') ; $c++) {
       $$self{catcode}{ chr($c) } = [CC_LETTER];
@@ -453,7 +453,7 @@ sub lookupDigestableDefinition {
     if (((ref $defn) eq 'LaTeXML::Core::Token')
       # If we're digesting an unexpanded, act like \relax
       && ($lookupname = ($$defn[2] ? '\relax' : $executable_primitive_name[$$defn[1]]))
-      && ($entry = $$self{meaning}{$lookupname})) {
+      && ($entry      = $$self{meaning}{$lookupname})) {
       $defn = $$entry[0]; }
     return $defn; }
   return $token; }
@@ -577,7 +577,7 @@ sub pushDaemonFrame {
         my $type  = ref $value;
         if (($type eq 'HASH') || ($type eq 'ARRAY')) {    # Only concerned with mutable perl data?
                                                           # Local assignment
-          $$frame{$table}{$key} = 1;                      # Note new value in this frame.
+          $$frame{$table}{$key} = 1;                                  # Note new value in this frame.
           unshift(@{ $$hash{$key} }, daemon_copy($value)); } } } }    # And push new binding.
       # Record the contents of LaTeXML::Package::Pool as preloaded
   my $pool_preloaded_hash = { map { $_ => 1 } keys %LaTeXML::Package::Pool:: };
@@ -647,7 +647,7 @@ sub activateScope {
         # Here we ALWAYS push the stashed values into the table
         # since they may be popped off by deactivateScope
         my ($table, $key, $value) = @$entry;
-        $$frame{$table}{$key}++;    # Note that this many values must be undone
+        $$frame{$table}{$key}++;                             # Note that this many values must be undone
         unshift(@{ $$self{$table}{$key} }, $value); } } }    # And push new binding.
   return; }
 

@@ -137,7 +137,11 @@ my $MAXSTACK = 200;    # [CONSTANT]
 
 # Overly complex, but want to avoid recursion/stack
 my @absorbable_cc = (    # [CONSTANT]
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0);
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 1, 1,
+  1, 0, 1, 0,
+  0, 0);
 
 sub invokeToken {
   my ($self, $token) = @_;
