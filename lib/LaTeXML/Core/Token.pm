@@ -64,22 +64,22 @@ use constant CC_MARKER => 17;    # non TeX extension!
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
 # These are immutable
-use constant T_BEGIN => bless ['{',  1],  'LaTeXML::Core::Token';
-use constant T_END   => bless ['}',  2],  'LaTeXML::Core::Token';
-use constant T_MATH  => bless ['$',  3],  'LaTeXML::Core::Token';
-use constant T_ALIGN => bless ['&',  4],  'LaTeXML::Core::Token';
-use constant T_PARAM => bless ['#',  6],  'LaTeXML::Core::Token';
-use constant T_SUPER => bless ['^',  7],  'LaTeXML::Core::Token';
-use constant T_SUB   => bless ['_',  8],  'LaTeXML::Core::Token';
-use constant T_SPACE => bless [' ',  10], 'LaTeXML::Core::Token';
-use constant T_CR    => bless ["\n", 10], 'LaTeXML::Core::Token';
-sub T_LETTER { my ($c) = @_; return bless [$c, 11], 'LaTeXML::Core::Token'; }
-sub T_OTHER  { my ($c) = @_; return bless [$c, 12], 'LaTeXML::Core::Token'; }
-sub T_ACTIVE { my ($c) = @_; return bless [$c, 13], 'LaTeXML::Core::Token'; }
-sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), 14], 'LaTeXML::Core::Token'; }
-sub T_CS { my ($c) = @_; return bless [$c, 16], 'LaTeXML::Core::Token'; }
+use constant T_BEGIN => bless ['{',  CC_BEGIN], 'LaTeXML::Core::Token';
+use constant T_END   => bless ['}',  CC_END],   'LaTeXML::Core::Token';
+use constant T_MATH  => bless ['$',  CC_MATH],  'LaTeXML::Core::Token';
+use constant T_ALIGN => bless ['&',  CC_ALIGN], 'LaTeXML::Core::Token';
+use constant T_PARAM => bless ['#',  CC_PARAM], 'LaTeXML::Core::Token';
+use constant T_SUPER => bless ['^',  CC_SUPER], 'LaTeXML::Core::Token';
+use constant T_SUB   => bless ['_',  CC_SUB],   'LaTeXML::Core::Token';
+use constant T_SPACE => bless [' ',  CC_SPACE], 'LaTeXML::Core::Token';
+use constant T_CR    => bless ["\n", CC_SPACE], 'LaTeXML::Core::Token';
+sub T_LETTER { my ($c) = @_; return bless [$c, CC_LETTER], 'LaTeXML::Core::Token'; }
+sub T_OTHER  { my ($c) = @_; return bless [$c, CC_OTHER],  'LaTeXML::Core::Token'; }
+sub T_ACTIVE { my ($c) = @_; return bless [$c, CC_ACTIVE], 'LaTeXML::Core::Token'; }
+sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), CC_COMMENT], 'LaTeXML::Core::Token'; }
+sub T_CS { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
 # Illegal: don't use unless you know...
-sub T_MARKER { my ($t) = @_; return bless [$t, 17], 'LaTeXML::Core::Token'; }
+sub T_MARKER { my ($t) = @_; return bless [$t, CC_MARKER], 'LaTeXML::Core::Token'; }
 
 sub Token {
   my ($string, $cc) = @_;
@@ -143,7 +143,7 @@ sub UnTeX {
     if ($cc == CC_END) { $level--; }
     $prevs = $s; $prevcc = $cc; }
   # Patch up nesting for valid TeX !!!
-  if ($level > 0) { $string = $string . ('}' x $level); }
+  if    ($level > 0) { $string = $string . ('}' x $level); }
   elsif ($level < 0) { $string = ('{' x -$level) . $string; }
   return $string; }
 
@@ -156,32 +156,33 @@ our @primitive_catcode = (    # [CONSTANT]
   1, 1, 1, 1,
   1, 0, 1, 0,
   0, 0, 0, 0,
-  0);
+  0, 0);
 our @executable_catcode = (    # [CONSTANT]
   0, 1, 1, 1,
   1, 0, 0, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  1);
+  1, 0);
 
 our @standardchar = (          # [CONSTANT]
   "\\",  '{',   '}',   q{$},
   q{&},  "\n",  q{#},  q{^},
   q{_},  undef, undef, undef,
-  undef, undef, q{%},  undef);
+  undef, undef, q{%},  undef,
+  undef, undef);
 
 our @CC_NAME =                 #[CONSTANT]
   qw(Escape Begin End Math
   Align EOL Parameter Superscript
   Subscript Ignore Space Letter
   Other Active Comment Invalid
-  ControlSequence);
+  ControlSequence Marker);
 our @PRIMITIVE_NAME = (        # [CONSTANT]
   'Escape',    'Begin', 'End',       'Math',
   'Align',     'EOL',   'Parameter', 'Superscript',
   'Subscript', undef,   'Space',     undef,
   undef,       undef,   undef,       undef,
-  undef);
+  undef,       undef);
 our @CC_SHORT_NAME =           #[CONSTANT]
   qw(T_ESCAPE T_BEGIN T_END T_MATH
   T_ALIGN T_EOL T_PARAM T_SUPER
@@ -240,7 +241,7 @@ my @NEUTRALIZABLE = (    # [CONSTANT]
   1, 0, 1, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  0);
+  0, 0);
 
 # neutralize really should only retroactively imitate what Semiverbatim would have done.
 # So, it needs to neutralize those in SPECIALS
