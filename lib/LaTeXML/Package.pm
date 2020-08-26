@@ -1369,12 +1369,12 @@ sub dualize_arglist {
       push(@cargs, $arg); }
     elsif ($used{$i}) {                            # used in presentation?
       my $id = getXMArgID();
-      push(@pargs, Invocation(T_CS('\@XMArg'), $id, $arg));    # put XMArg in presentation
-      push(@cargs, Invocation(T_CS('\@XMRef'), $id)); }
+      push(@pargs, Invocation(T_CS('\lx@xmarg'), $id, $arg));    # put XMArg in presentation
+      push(@cargs, Invocation(T_CS('\lx@xmref'), $id)); }
     else {                                                     # Hidden arg, put XMArg in content.
       my $id = getXMArgID();
-      push(@cargs, Invocation(T_CS('\@XMArg'), $id, $arg));
-      push(@pargs, Invocation(T_CS('\@XMRef'), $id)); } }
+      push(@cargs, Invocation(T_CS('\lx@xmarg'), $id, $arg));
+      push(@pargs, Invocation(T_CS('\lx@xmref'), $id)); } }
   return ([@cargs], [@pargs]); }
 
 # Given a list of XML nodes (either libxml nodes, or array representations)
@@ -1560,7 +1560,7 @@ sub defmath_common_constructor_options {
 # If the presentation is complex, and involves arguments,
 # we will create an XMDual to separate content & presentation.
 # This involves creating 3 control sequences:
-#   \cs              macro that expands into \DUAL{pres}{content}
+#   \cs              macro that expands into \lxdual{pres}{content}
 #   \cs@content      constructor creates the content branch
 #   \cs@presentation macro that expands into code in the presentation branch.
 # OK, this is getting a bit out-of-hand; I can't, myself, predict whether XMDual gets involved!
@@ -1576,7 +1576,7 @@ sub defmath_dual {
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, sub {
         my ($self, @args) = @_;
         my ($cargs, $pargs) = dualize_arglist($presentation, @args);
-        Invocation(T_CS('\DUAL'),
+        Invocation(T_CS('\lx@dual'),
           Tokens(
             ($options{role}
               ? (T_OTHER('role'), T_OTHER('='), T_OTHER($options{role})) : ()),

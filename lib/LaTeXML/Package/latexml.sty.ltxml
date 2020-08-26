@@ -84,12 +84,12 @@ DefMacro('\LaTeXML',  '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 DefMacro('\lxDocumentID{}', '\def\thedocument@ID{#1}');
 
 # \LXMID{id}{math}  Associate the identifier id with the given math expression.
-DefMacro('\LXMID{}{}', '\@XMArg{#1}{#2}');
+DefMacro('\LXMID{}{}', '\lx@xmarg{#1}{#2}');
 
 # \LXRef{id} Refer to the math expression associated with id.
 # In presentation, this is similar to using a shorthand macro.
 # In content situations, an XMRef is generated.
-DefMacro('\LXMRef{}', '\@XMRef{#1}');
+DefMacro('\LXMRef{}', '\lx@xmref{#1}');
 
 #======================================================================
 # class related features
