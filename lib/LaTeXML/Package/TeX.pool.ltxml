@@ -3954,41 +3954,6 @@ DefConstructor('\@@FLOATINGSUBSCRIPT InScriptStyle',
   reversion => sub { (T_BEGIN, T_END, T_SUB, revertScript($_[1])); },
   sizer     => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUBSCRIPT', 'post'); });
 
-## NOTE: Strictly speaking, these two should examine the scriptpos
-# attribute of the base (it may have \limits,\nolimits)
-## OR, alternatively, there could be separate \@OVERSCRIPT/\@UNDERSCRIPT macros ?
-DefConstructor('\@SUPERSCRIPT{} InScriptStyle',
-  "?#2(<ltx:XMApp>"
-    . "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
-    . "<ltx:XMArg>#1</ltx:XMArg>"
-    . "<ltx:XMArg rule='Superscript'>#2</ltx:XMArg>"
-    . "</ltx:XMApp>)"
-    . "(#1)",
-  reversion => sub {
-    my ($whatsit, $base, $sup) = @_;
-    ($sup && $sup->unlist
-      ? (T_BEGIN, Revert($base), T_END, T_SUPER, revertScript($sup))
-      : Revert($base)); },
-  properties => sub {
-    (scriptpos => "post" . $_[0]->getScriptLevel); },
-  sizer => sub { scriptSizer($_[0]->getArg(2), $_[0]->getArg(1), undef, 'SUPERSCRIPT', 'post'); });
-
-DefConstructor('\@SUBSCRIPT{} InScriptStyle',
-  "?#2(<ltx:XMApp>"
-    . "<ltx:XMTok role='SUBSCRIPTOP' scriptpos='#scriptpos'/>"
-    . "<ltx:XMArg>#1</ltx:XMArg>"
-    . "<ltx:XMArg rule='Subscript'>#2</ltx:XMArg>"
-    . "</ltx:XMApp>)"
-    . "(#1)",
-  reversion => sub {
-    my ($whatsit, $base, $sub) = @_;
-    ($sub && $sub->unlist
-      ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
-      : Revert($base)); },
-  properties => sub {
-    (scriptpos => "post" . $_[0]->getScriptLevel); },
-  sizer => sub { scriptSizer($_[0]->getArg(2), $_[0]->getArg(1), undef, 'SUBSCRIPT', 'post'); });
-
 DefMacroI('\'', undef, sub {
     my ($gullet) = @_;
     my @sup = (T_CS('\prime'));
@@ -6652,86 +6617,125 @@ DefConstructor('\lx@add@Preamble@PI Undigested',
   "<?latexml preamble='#1'?>");
 
 #======================================================================
+# Support for constructing mathematical expressions
 
-DefKeyVal('lx@DUAL', 'reversion',              'UndigestedKey');
-DefKeyVal('lx@DUAL', 'content_reversion',      'UndigestedKey');
-DefKeyVal('lx@DUAL', 'presentation_reversion', 'UndigestedKey');
-our @PENDING_DUAL_XMARGS = ();
-DefConstructor('\DUAL OptionalKeyVals:lx@DUAL {}{}',
-  "<ltx:XMDual role='&GetKeyVal(#1,role)'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
-  beforeDigest => sub {
-    push(@PENDING_DUAL_XMARGS, {});
-    return; },
-  afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $kv     = $whatsit->getArg(1);
-    my $xmargs = pop(@PENDING_DUAL_XMARGS);
-    $whatsit->setProperties($kv->getPairs) if $kv;
-    if (!($kv && $kv->getValue('reversion'))) {
-      if (! ($kv && $kv->getValue('content_reversion'))) {
-        $whatsit->setProperty('content_reversion' => Tokens(T_PARAM, T_OTHER('2'))); }
-      if (!($kv && $kv->getValue('presentation_reversion'))) {
-        $whatsit->setProperty('presentation_reversion' => Tokens(T_PARAM,
-            ($kv->getValue('hide_content_reversion') ? T_OTHER('3') : T_OTHER('2')))); } }
-    $whatsit->setProperties(%$xmargs);    # Hopefully no name class with XM<digits>
-    return; },
-  sizer => '#3');                         # size according to presentation
+# Common XMath pattern for assigning attributes from Whatsit properties.
+our $XMath_attributes =
+  " role='#role' name='#name' meaning='#meaning' omcd='#omcd'"
+  . " lpadding='#lpadding' rpadding='#rpadding'";
 
-# Construction aids
-# Build an XMDual (via \DUAL) given the content & presentation forms.
-# These forms are provided as Tokens, invoking the appropriate constructor macros,
-# and refering to any arguments using #1, #2.... (see T_XMArg for syntactic sugar)
-# The arguments (if any) are given separately; within the content & presentation
-# they are replaced by \@XMRef and \@XMArg, appropriately,
-# so that they will be linked/shared in the XML tree.
-# The keyvals argument is a hash containing any properties of the construct,
-# along with reversion, content_reversion  & presentation_reversion, which are
-# substituted for arguments as well.
-sub BuildXMDual {
-  my ($keyvals, $content, $presentation, @args) = @_;
-  $content      = TokenizeInternal($content)      if $content      && !ref $content;
-  $presentation = TokenizeInternal($presentation) if $presentation && !ref $presentation;
-  my (@revargs, @pargs, @cargs);
-  foreach my $arg (@args) {
-    my $id = LaTeXML::Package::getXMArgID();
-    push(@revargs, Tokens(T_PARAM, T_OTHER(ToString($id))));
-    push(@pargs, Invocation(T_CS('\@XMArg'), $id, $arg));
-    push(@cargs, Invocation(T_CS('\@XMRef'), $id)); }
-  my $optional = undef;
+sub XMath_copy_keyvals {
+  my ($stomach, $whatsit) = @_;
+  my $kv = $whatsit->getArg(1);
+  $whatsit->setProperties($kv->getPairs) if $kv;
+  return; }
+
+# Build an ltx:XMApp, application of function/operator to arguments
+# first piece of (TeX) argument is expected to be the operator
+# Usually used on content side, but at least the arguments should be properly encapsulated:
+# They should build individual subtrees; use ltx::XMArg, ltx:XMWrap ... if needed
+DefConstructor('\lx@apply OptionalKeyVals:XMath {}{}',
+  "<ltx:XMApp $XMath_attributes>#2#3</ltx:XMApp>",
+  reversion   => '#2#3',
+  afterDigest => sub { XMath_copy_keyvals(@_); });
+
+# Build an ltx:XMTok, a mathematical symbol, with given attributes
+# the argument should create text to be the content of the token.
+DefConstructor('\lx@symbol OptionalKeyVals:XMath {}',
+  "<ltx:XMTok $XMath_attributes>#2</ltx:XMTok>",
+  reversion   => '#2',
+  afterDigest => sub { XMath_copy_keyvals(@_); });
+
+# Wrap the contents in an ltx:XMWrap, to stand as a single subtree & providing attributes
+# The ltx:XMWrap may be collapsed, later, by parsing
+DefConstructor('\lx@wrap OptionalKeyVals:XMath {}',
+  "<ltx:XMWrap $XMath_attributes>#2</ltx:XMWrap>",
+  reversion   => '#2',
+  afterDigest => sub { XMath_copy_keyvals(@_); });
+
+# Convert a hashref into a list of tokens of the form key=value,...
+sub I_keyvals {
+  my ($keyvals) = @_;
+  my @options = ();
   if ($keyvals) {
-    my @options = ();
     foreach my $key (keys %$keyvals) {
       my $value = $$keyvals{$key};
       $value = TokenizeInternal($value) if $value && !ref $value;
-      if ($key =~ /^(?:presentation_|content_|)reversion$/) {
-        $value = $value->substituteParameters(@revargs); }
       push(@options, T_OTHER(',')) if @options;
-      push(@options, T_OTHER($key), T_OTHER('='), T_BEGIN, $value, T_END); }
-    $optional = Tokens(@options); }
-  return
-    Invocation(T_CS('\DUAL'), $optional,
-    $content->substituteParameters(@cargs),
-    Invocation(T_CS('\@WRAP'), $presentation->substituteParameters(@pargs))); }
+      push(@options, T_OTHER($key), T_OTHER('='), T_BEGIN, $value, T_END); } }
+  return (@options ? Tokens(T_OTHER('['), @options, T_OTHER(']')) : ()); }
 
-# A little helper to shorten things up a bit; simply generates #1 (or whatever)
-sub T_XMArg { return Tokens(T_PARAM, T_OTHER($_[0])); }
+sub I_apply {
+  my ($kv, $op, @args) = @_;
+  return Tokens(T_CS('\lx@apply'), I_keyvals($kv),
+    T_BEGIN, T_CS('\lx@wrap'), T_BEGIN, $op, T_END, T_END,
+    T_BEGIN, (map { (T_CS('\lx@wrap'), T_BEGIN, $_, T_END); } @args), T_END); }
 
-DefConstructor('\FCN{}', "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", reversion => '#1', alias => '');
-DefConstructor('\ROLE{}{}', "<ltx:XMWrap role='#1'>#2</ltx:XMWrap>", reversion => '#2', alias => '');
+sub I_symbol {
+  my ($kv, $text) = @_;
+  return Tokens(T_CS('\lx@symbol'), I_keyvals($kv), T_BEGIN, (defined $text ? $text : ()), T_END); }
 
-# NOTE: work through this systematically!
-DefConstructor('\@SYMBOL{}', "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", reversion => '#1');
-DefConstructor('\@CSYMBOL{}', "<ltx:XMTok meaning='#1'/>");
-DefConstructor('\@APPLY{}', "<ltx:XMApp>#1</ltx:XMApp>", reversion => '#1');
-DefConstructor('\@MAYBEAPPLY{}{}',
-  "?#2(<ltx:XMApp>#1#2</ltx:XMApp>)(#1)",
-  reversion => '#1#2');
-DefConstructor('\@WRAP{}',  "<ltx:XMWrap>#1</ltx:XMWrap>", reversion => '#1');
-DefConstructor('\@TOKEN{}', "<ltx:XMTok name='#1'/>",      reversion => '');
+sub I_wrap {
+  my ($kv, @stuff) = @_;
+  return Tokens(T_CS('\lx@wrap'), I_keyvals($kv), T_BEGIN, @stuff, T_END); }
+
+# These two accept key operator_meaning, operator_omcd to give a meaning to the sub/superscript
+DefConstructor('\lx@superscript OptionalKeyVals:XMath {} InScriptStyle',
+  "<ltx:XMApp $XMath_attributes>"
+    . "<ltx:XMTok role='SUPERSCRIPTOP' meaning='#operator_meaning' omcd='#operator_omcd' scriptpos='#scriptpos'/>"
+    . "<ltx:XMArg>#2</ltx:XMArg>"
+    . "<ltx:XMArg rule='Superscript'>#3</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  afterDigest => sub { XMath_copy_keyvals(@_); },
+  reversion   => sub {
+    my ($whatsit, $kv, $base, $sup) = @_;
+    ($sup && $sup->unlist
+      ? (T_BEGIN, Revert($base), T_END, T_SUPER, revertScript($sup))
+      : Revert($base)); },
+  properties => sub {
+    (scriptpos => "post" . $_[0]->getScriptLevel); },
+  sizer => sub { scriptSizer($_[0]->getArg(3), $_[0]->getArg(2), undef, 'SUPERSCRIPT', 'post'); });
+
+DefConstructor('\lx@subscript OptionalKeyVals:XMath {} InScriptStyle',
+  "<ltx:XMApp $XMath_attributes>"
+    . "<ltx:XMTok role='SUBSCRIPTOP' meaning='#operator_meaning' omcd='#operator_omcd' scriptpos='#scriptpos'/>"
+    . "<ltx:XMArg>#2</ltx:XMArg>"
+    . "<ltx:XMArg rule='Subscript'>#3</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  afterDigest => sub { XMath_copy_keyvals(@_); },
+  reversion   => sub {
+    my ($whatsit, $kv, $base, $sub) = @_;
+    ($sub && $sub->unlist
+      ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
+      : Revert($base)); },
+  properties => sub {
+    (scriptpos => "post" . $_[0]->getScriptLevel); },
+  sizer => sub { scriptSizer($_[0]->getArg(3), $_[0]->getArg(2), undef, 'SUBSCRIPT', 'post'); });
+
+# Ignore $kv for the moment?????
+sub I_subscript {
+  my ($kv, $base, $script) = @_;
+  return Tokens(T_CS('\lx@subscript'), I_keyvals($kv), T_BEGIN, $base, T_END, T_BEGIN, $script, T_END); }
+
+sub I_superscript {
+  my ($kv, $base, $script) = @_;
+  return Tokens(T_CS('\lx@superscript'), I_keyvals($kv), T_BEGIN, $base, T_END, T_BEGIN, $script, T_END); }
+
+# Superscript meaning power
+DefMacro('\lx@power{}{}', '\lx@superscript[operator_meaning=power]{#1}{#2}');
+# Superscript meaning functional (or applicative) power; iterated function/operator application
+DefMacro('\lx@functionalpower{}{}', '\lx@superscript[operator_meaning=functional-power]{#1}{#2}');
+
+# These to be used in presentation side
+DefMathI('\lx@ApplyFunction', undef, "\x{2061}", reversion => '', name => '', role => 'APPLYOP');
+DefMathI('\lx@InvisibleTimes', undef, "\x{2062}", reversion => '', name => '', meaning => 'times', role => 'MULOP');
+DefMathI('\lx@InvisibleComma', undef, "\x{2063}", reversion => '', name => '', role => 'PUNCT');
+DefMathI('\lx@InvisiblePlus', undef, "\x{2064}", reversion => '', name => '', meaning => 'plus', role => 'ADDOP');
+
 DefConstructor('\lx@kludged{}',
   "?#isMath(<ltx:XMWrap rule='kludge'>#1</ltx:XMWrap>)(#1)",
   reversion => '#1');
-DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
+DefConstructor('\lx@padded[MuDimension]{MuDimension}{}',
   '#3',
   afterConstruct => sub {
     my ($document, $whatsit) = @_;
@@ -6745,10 +6749,171 @@ DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
       $document->setAttribute($node, rpadding => $rpadding); } },
   reversion => '#3');
 
-DefMathI('\@APPLYFUNCTION', undef, "\x{2061}", reversion => '', name => '', role => 'APPLYOP');
-DefMathI('\@INVISIBLETIMES', undef, "\x{2062}", reversion => '', name => '', meaning => 'times', role => 'MULOP');
-DefMathI('\@INVISIBLECOMMA', undef, "\x{2063}", reversion => '', name => '', role => 'PUNCT');
-DefMathI('\@INVISIBLEPLUS', undef, "\x{2064}", reversion => '', name => '', meaning => 'plus', role => 'ADDOP');
+#======================================================================
+# Building XMDuals for Mathematical Parallel markup
+# Used when the content and presentation forms have different structure.
+
+DefKeyVal('XMath', 'reversion',              'UndigestedKey');
+DefKeyVal('XMath', 'content_reversion',      'UndigestedKey');
+DefKeyVal('XMath', 'presentation_reversion', 'UndigestedKey');
+our @PENDING_DUAL_XMARGS = ();
+DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
+  #  "<ltx:XMDual role='&GetKeyVal(#1,role)'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
+  "<ltx:XMDual role='#role'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
+  beforeDigest => sub {
+    push(@PENDING_DUAL_XMARGS, {});
+    return; },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $kv     = $whatsit->getArg(1);
+    my $xmargs = pop(@PENDING_DUAL_XMARGS);
+    $whatsit->setProperties($kv->getPairs) if $kv;
+    if (!($kv && $kv->getValue('reversion'))) {
+      if (!($kv && $kv->getValue('content_reversion'))) {
+        $whatsit->setProperty('content_reversion' => Tokens(T_PARAM, T_OTHER('2'))); }
+      if (!($kv && $kv->getValue('presentation_reversion'))) {
+        $whatsit->setProperty('presentation_reversion' => Tokens(T_PARAM,
+            ($kv && $kv->getValue('hide_content_reversion') ? T_OTHER('3') : T_OTHER('2')))); } }
+    $whatsit->setProperties(%$xmargs);    # Hopefully no name class with XM<digits>
+    return; },
+  reversion => '#2',                      # Probably the best default
+  sizer     => '#3');                     # size according to presentation
+
+# These are used within XMDual
+# The XMDual represents both a content & presentation representation of some
+# possibly exotic structure ("Transfix notation"),
+# or just a somewhat complex presentation that corresponds (often) to a simpler
+# applicative content structure.
+# Invoking such a mathematical object to "arguments" requires that both the
+# content & presentation branches contain those arguments.
+# There will be an XMArg, with an ID, containing the actual markup, and an XMRef that referrs to it.
+# The XMArg will usually be in the presentation branch (so that it inherits appropriate style),
+# unless the arg is "hidden" (ie. semantic, but not displayed).
+# This means that we don't know which one appears first! (See Package's dualize_arglist)
+#
+# To get a "proper id", we'll use a temporary label-like attribute (_xmkey)
+# and establish an id and idref later.
+DefConstructor('\lx@xmarg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>",
+  reversion   => '#2',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($xmid,    $arg)     = $whatsit->getArgs();
+    $xmid = ToString($xmid);
+    my $xmargs = $PENDING_DUAL_XMARGS[-1];
+    $$xmargs{$xmid} = $arg;
+    AssignValue('xref:' . ToString($_[1]->getArg(1)) => $_[1], 'global'); });
+
+DefConstructor('\lx@xmref{}', "<ltx:XMRef _xmkey='#1'/>",
+  reversion => sub {
+    Revert(LookupValue('xref:' . ToString($_[1]))); },
+  sizer => sub { LookupValue('xref:' . ToString($_[0]->getArg(1)))->getSize; });
+
+# Connect up the XMRef/XMArg pairs (actually can be multiple XMRef's)
+# We want to set the idref of the XMRef's to point to the id of the XMArg (or other XM element),
+# but usually the XMRef is created first, and we want to let the referred to element
+# get it's id computed by whatever means it prefers.
+# so we have to work both ways (use state to record associations, to avoid expensive xpath)
+# Set id's on any non-XMRef nodes that have an _xmkey
+# This gets a more natural ordering
+Tag('ltx:*', 'afterOpen:late' => sub {
+    my ($document, $node) = @_;
+    if (my $key = $node->getAttribute('_xmkey')) {
+      my $qname = $document->getNodeQName($node);
+      if (($qname ne 'ltx:XMRef') && ($qname =~ /^ltx:XM/) && !$node->hasAttribute('xml:id')) {
+        GenerateID($document, $node, undef, ''); } } });
+
+Tag('ltx:XMDual', 'afterClose:late' => sub {
+    my ($document, $node) = @_;
+    my %ids  = ();
+    my @refs = ();
+    # Collect all children with _xmkey attribute
+    foreach my $n ($document->findnodes('descendant::*[@_xmkey]', $node)) {
+      if (($document->getNodeQName($n) eq 'ltx:XMRef') && !$n->hasAttribute('idref')) {
+        push(@refs, $n); }    # we'll fill these in next
+      else {                  # generate & record ids for all referenced noces
+        my $key = $n->getAttribute('_xmkey');
+        if (!$ids{$key}) {
+          GenerateID($document, $n, undef, '');    # Generate id if none already.
+          $ids{$key} = $n->getAttribute('xml:id'); } } }
+    foreach my $r (@refs) {                        # Now fill in the references
+      $document->setAttribute($r, idref => $ids{ $r->getAttribute('_xmkey') });
+      $r->removeAttribute('_xmkey'); }
+});
+
+# Construction aids
+# Build an XMDual (via \lx@dual) given the content & presentation forms.
+# These forms are provided as Tokens, invoking the appropriate constructor macros,
+# and refering to any arguments using #1, #2.... (see T_XMArg for syntactic sugar)
+# The arguments (if any) are given separately; within the content & presentation
+# they are replaced by \lx@xmref and \lx@xmarg, appropriately,
+# so that they will be linked/shared in the XML tree.
+# The keyvals argument is a hash containing any properties of the construct,
+# along with reversion, content_reversion  & presentation_reversion, which are
+# substituted for arguments as well.
+sub I_dual {
+  my ($keyvals, $content, $presentation, @args) = @_;
+  $content      = TokenizeInternal($content)      if $content      && !ref $content;
+  $presentation = TokenizeInternal($presentation) if $presentation && !ref $presentation;
+  my (@revargs, @pargs, @cargs);
+  foreach my $arg (@args) {
+    my $id = LaTeXML::Package::getXMArgID();
+    push(@revargs, Tokens(T_PARAM, T_OTHER(ToString($id))));
+    push(@pargs, Invocation(T_CS('\lx@xmarg'), $id, $arg));
+    push(@cargs, Invocation(T_CS('\lx@xmref'), $id)); }
+  my $optional = undef;
+  if ($keyvals) {
+    my @options = ();
+    foreach my $key (keys %$keyvals) {
+      my $value = $$keyvals{$key};
+      $value = TokenizeInternal($value) if $value && !ref $value;
+      if ($key =~ /^(?:presentation_|content_|)reversion$/) {
+        $value = $value->substituteParameters(@revargs); }
+      push(@options, T_OTHER(',')) if @options;
+      push(@options, T_OTHER($key), T_OTHER('='), T_BEGIN, $value, T_END); }
+    $optional = Tokens(@options); }
+  return
+    Invocation(T_CS('\lx@dual'), $optional,
+    $content->substituteParameters(@cargs),
+    I_wrap({}, $presentation->substituteParameters(@pargs))); }
+
+# A little helper to shorten things up a bit; simply generates #1 (or whatever)
+sub I_arg { return Tokens(T_PARAM, T_OTHER($_[0])); }
+
+sub I_xmarg {
+  my ($id, $arg) = @_;
+  return Tokens(T_CS('\lx@xmarg'),
+    T_BEGIN, (ref $id ? $id : T_OTHER($id)), T_END, T_BEGIN, $arg, T_END); }
+
+sub I_xmref {
+  my ($id) = @_;
+  return Tokens(T_CS('\lx@xmref'), T_BEGIN, (ref $id ? $id : T_OTHER($id)), T_END); }
+
+#----------------------------------------------------------------------
+# This group should be renamed to \lx@somethings and deprecated
+# NOTE: work through this systematically!
+DefMacro('\FCN{}',            '\lx@wrap[role=FUNCTION]{#1}');
+DefMacro('\ROLE{}{}',         '\lx@wrap[role={#1}]{#2}');
+DefMacro('\@SYMBOL{}',        '\lx@wrap[role=ID]{#1}');
+DefMacro('\@CSYMBOL{}',       '\lx@symbol[meaning={#1}]{}');
+DefMacro('\@APPLY{}',         '\lx@apply[]{#1}{}');                             # Sorta broken?
+DefMacro('\@MAYBEAPPLY{}{}',  '\ifx.#2.#1\else\lx@apply{#1}{#2}\fi');
+DefMacro('\@WRAP{}',          '\lx@wrap[]{#1}');
+DefMacro('\@TOKEN{}',         '\lx@symbol[name={#1}]{}');
+DefMacro('\@SUPERSCRIPT{}{}', '\ifx.#2.#1\else\lx@superscript[]{#1}{#2}\fi');
+DefMacro('\@SUBSCRIPT{}{}',   '\ifx.#2.#1\else\lx@subscript[]{#1}{#2}\fi');
+Let('\@PADDED',         '\lx@padded');
+Let('\DUAL',            '\lx@dual');
+Let('\@XMArg',          '\lx@xmarg');
+Let('\@XMRef',          '\lx@xmref');
+Let('\@APPLYFUNCTION',  '\lx@ApplyFunction');
+Let('\@INVISIBLETIMES', '\lx@InvisibleTimes');
+Let('\@INVISIBLECOMMA', '\lx@InvisibleComma');
+Let('\@INVISIBLEPLUS',  '\lx@InvisiblePlus');
+
+# End of stuff to be deprecated.
+#----------------------------------------------------------------------
+
+#======================================================================
 
 # We OUGHT to be able to do this using \llap,\rlap,\hss...
 DefMacro('\lx@tweaked{}{}', '\ifmmode\lx@math@tweaked{#1}{#2}\else\lx@text@tweaked{#1}{#2}\fi');
@@ -6796,66 +6961,6 @@ DefConstructor('\lx@text@nounicode DefToken',
   "<ltx:text _no_autoclose='true' class='ltx_nounicode'>#1</ltx:text>",
   afterDigest => sub {
     reportNoUnicode(ToString($_[1]->getArg(0))); });
-
-# These are used (primarily?) within XMDual
-# The XMDual represents both a content & presentation representation of some
-# possibly exotic structure ("Transfix notation"),
-# or just a somewhat complex presentation that corresponds (often) to a simpler
-# applicative content structure.
-# Invoking such a mathematical object to "arguments" requires that both the
-# content & presentation branches contain those arguments.
-# There will be an XMArg, with an ID, containing the actual markup, and an XMRef that referrs to it.
-# The XMArg will usually be in the presentation branch (so that it inherits appropriate style),
-# unless the arg is "hidden" (ie. semantic, but not displayed).
-# This means that we don't know which one appears first! (See Package's dualize_arglist)
-#
-# To get a "proper id", we'll use a temporary label-like attribute (_xmkey)
-# and establish an id and idref later.
-DefConstructor('\@XMArg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>",
-  reversion   => '#2',
-  afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($xmid,    $arg)     = $whatsit->getArgs();
-    $xmid = ToString($xmid);
-    my $xmargs = $PENDING_DUAL_XMARGS[-1];
-    $$xmargs{$xmid} = $arg;
-    AssignValue('xref:' . ToString($_[1]->getArg(1)) => $_[1], 'global'); });
-DefConstructor('\@XMRef{}', "<ltx:XMRef _xmkey='#1'/>",
-  reversion => sub {
-    Revert(LookupValue('xref:' . ToString($_[1]))); },
-  sizer => sub { LookupValue('xref:' . ToString($_[0]->getArg(1)))->getSize; });
-
-# Connect up the XMRef/XMwhatever pairs (actually can be multiple XMRef's)
-# We want to set the idref of the XMRef's to point to the id of the XMArg (or other XM element),
-# but usually the XMRef is created first, and we want to let the referred to element
-# get it's id computed by whatever means it prefers.
-# so we have to work both ways (use state to record associations, to avoid expensive xpath)
-# Set id's on any non-XMRef nodes that have an _xmkey
-# This gets a more natural ordering
-Tag('ltx:*', 'afterOpen:late' => sub {
-    my ($document, $node) = @_;
-    if (my $key = $node->getAttribute('_xmkey')) {
-      my $qname = $document->getNodeQName($node);
-      if (($qname ne 'ltx:XMRef') && ($qname =~ /^ltx:XM/) && !$node->hasAttribute('xml:id')) {
-        GenerateID($document, $node, undef, ''); } } });
-
-Tag('ltx:XMDual', 'afterClose:late' => sub {
-    my ($document, $node) = @_;
-    my %ids  = ();
-    my @refs = ();
-    # Collect all children with _xmkey attribute
-    foreach my $n ($document->findnodes('descendant::*[@_xmkey]', $node)) {
-      if (($document->getNodeQName($n) eq 'ltx:XMRef') && !$n->hasAttribute('idref')) {
-        push(@refs, $n); }    # we'll fill these in next
-      else {                  # generate & record ids for all referenced noces
-        my $key = $n->getAttribute('_xmkey');
-        if (!$ids{$key}) {
-          GenerateID($document, $n, undef, '');    # Generate id if none already.
-          $ids{$key} = $n->getAttribute('xml:id'); } } }
-    foreach my $r (@refs) {                        # Now fill in the references
-      $document->setAttribute($r, idref => $ids{ $r->getAttribute('_xmkey') });
-      $r->removeAttribute('_xmkey'); }
-});
 
 DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='ltx_#1'>#2</ltx:ERROR>");
 
