@@ -114,12 +114,12 @@ DefMacro('\quantity', sub {
     my ($gullet) = @_;
     my $size = phys_readSize($gullet);
     my ($arg, $open, $close) = phys_readArg($gullet, 1, %physics_delimiters);
-    return BuildXMDual(
+    return I_dual(
       { reversion => Tokens(T_CS('\quantity'), phys_revSize($size),
-          phys_revArg(T_XMArg(1), $open, $close)) },
-      T_XMArg(1),    # No apparent semantics, other than the arg.
+          phys_revArg(I_arg(1), $open, $close)) },
+      I_arg(1),    # No apparent semantics, other than the arg.
       Tokens(phys_open($size, $open || T_CS('\lbrace')),
-        T_XMArg(1), phys_close($size, $close || T_CS('\rbrace'))),
+        I_arg(1), phys_close($size, $close || T_CS('\rbrace'))),
       $arg); });
 
 # Fenced stuff, Optionally prefixed with Semantics & function;
@@ -129,12 +129,12 @@ DefMacro('\lx@physics@fenced{}{}{}{}{}', sub {
     $semantic = undef unless $semantic->unlist;
     my $size = phys_readSize($gullet);
     my $arg  = $gullet->readArg();
-    return BuildXMDual(
-      { reversion => Tokens($cs, phys_revSize($size), phys_revArg(T_XMArg(1))) },
+    return I_dual(
+      { reversion => Tokens($cs, phys_revSize($size), phys_revArg(I_arg(1))) },
       ($semantic
-        ? Invocation(T_CS('\@APPLY'), Tokens(Invocation(T_CS('\@CSYMBOL'), $semantic), T_XMArg(1)))
-        : T_XMArg(1)),
-      Tokens(phys_open($size, $open), T_XMArg(1), phys_close($size, $close)),
+        ? I_apply({}, I_symbol({ meaning => $semantic }), I_arg(1))
+        : I_arg(1)),
+      Tokens(phys_open($size, $open), I_arg(1), phys_close($size, $close)),
       $arg); });
 
 # required TeX only, fences specified
@@ -161,19 +161,16 @@ DefMacro('\evaluated', sub {
       else {
         $gullet->unread($next);
         last; } }
-    return BuildXMDual(
+    return I_dual(
       { reversion => Tokens(T_CS('\evaluated'), phys_revSize($size),
-          phys_revArg(T_XMArg(1), $open, $close),
-          ($lower ? (T_SUB,   phys_revArg(T_XMArg(2))) : ()),
-          ($upper ? (T_SUPER, phys_revArg(T_XMArg(3))) : ())) },
-      Invocation(T_CS('\@APPLY'),
-        Tokens(Invocation(T_CS('\@CSYMBOL'), T_OTHER('evaluatedat')),
-          T_XMArg(1), T_XMArg(2), T_XMArg(3))),
-      Tokens(Invocation(T_CS('\@WRAP'),
-          Tokens(phys_open($size, $open || T_OTHER('.')),
-            T_XMArg(1), phys_close($size, $close || $c))),
-        ($lower ? Invocation(T_CS('\@@POSTSUBSCRIPT'),   T_XMArg(2)) : ()),
-        ($upper ? Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_XMArg(3)) : ())),
+          phys_revArg(I_arg(1), $open, $close),
+          ($lower ? (T_SUB,   phys_revArg(I_arg(2))) : ()),
+          ($upper ? (T_SUPER, phys_revArg(I_arg(3))) : ())) },
+      I_apply({}, I_symbol({ meaning => 'evaluatedat' }), I_arg(1), I_arg(2), I_arg(3)),
+      Tokens(I_wrap({}, phys_open($size, $open || T_OTHER('.')),
+          I_arg(1), phys_close($size, $close || $c)),
+        ($lower ? (T_SUB,   I_arg(2)) : ()),
+        ($upper ? (T_SUPER, I_arg(3)) : ())),
       $arg, ($lower || $upper ? (($lower || Tokens()), $upper || Tokens()) : ())); });
 
 Let('\eval', '\evaluated');
@@ -189,13 +186,12 @@ DefMacro('\lx@physics@fencedII{}{}{}{}{}', sub {
     my $size = phys_readSize($gullet);
     my $arg1 = $gullet->readArg();
     my $arg2 = $gullet->readArg();
-    return BuildXMDual(
+    return I_dual(
       { reversion => Tokens($cs, phys_revSize($size),
-          phys_revArg(T_XMArg(1)), phys_revArg(T_XMArg(2))) },
-      Invocation(T_CS('\@APPLY'), Tokens(Invocation(T_CS('\@CSYMBOL'), $semantic),
-          T_XMArg(1), T_XMArg(2))),
-      Tokens(phys_open($size, $open), T_XMArg(1),
-        T_OTHER(','), T_XMArg(2), phys_close($size, $close)),
+          phys_revArg(I_arg(1)), phys_revArg(I_arg(2))) },
+      I_apply({}, I_symbol({ meaning => $semantic }), I_arg(1), I_arg(2)),
+      Tokens(phys_open($size, $open), I_arg(1),
+        T_OTHER(','), I_arg(2), phys_close($size, $close)),
       $arg1, $arg2); });
 
 DefMacro('\commutator',     '\lx@physics@fencedII{\commutator}{commutator}{}{[}{]}');
@@ -213,11 +209,11 @@ DefConstructor('\lx@physics@mathbfit{}', '#1', bounded => 1, requireMath => 1,
   font      => { shape => 'italic', family => 'serif', series => 'bold', forcebold => 1 },
   reversion => '{\bf\it#1}');
 DefMacro('\vectorbold OptionalMatch:* {}',
-  '\ROLE{ID}{\ifx.#1.\mathbf{#2}\else\lx@physics@mathbfit{#2}\fi}');
+  '\lx@wrap[role=ID]{\ifx.#1.\mathbf{#2}\else\lx@physics@mathbfit{#2}\fi}');
 DefMacro('\vectorarrow OptionalMatch:* {}',
-  '\ROLE{ID}{\math@overrightarrow{\ifx.#1.\mathbf{#2}\else\lx@physics@mathbfit{#2}\fi}}');
+  '\lx@wrap[role=ID]{\math@overrightarrow{\ifx.#1.\mathbf{#2}\else\lx@physics@mathbfit{#2}\fi}}');
 DefMacro('\vectorunit OptionalMatch:* {}',
-  '\ROLE{ID}{\hat{\ifx.#1.\mathbf{#2}\else\lx@physics@mathbfit{#2}\fi}}');
+  '\lx@wrap[role=ID]{\hat{\ifx.#1.\mathbf{#2}\else\lx@physics@mathbfit{#2}\fi}}');
 Let('\vb', '\vectorbold');
 Let('\va', '\vectorarrow');
 Let('\vu', '\vectorunit');
@@ -232,15 +228,15 @@ Let('\cp',    '\crossproduct');
 # Optional TeX or Delimited argument; default no fences
 DefMacro('\lx@physics@operator{}{}{}', sub {
     my ($gullet, $cs, $semantic, $function) = @_;
-    my $cfunc = Invocation(T_CS('\@CSYMBOL'), $semantic);
+    my $cfunc = I_symbol({ meaning => $semantic });
     my $size  = phys_readSize($gullet);
     my ($arg, $open, $close) = phys_readArg($gullet, 0, %physics_delimiters);
-    return BuildXMDual(
+    return I_dual(
       { ($arg ? () : (role => 'OPERATOR')),
         reversion => Tokens($cs, phys_revSize($size),
-          ($arg ? phys_revArg(T_XMArg(1), $open, $close) : ())) },
-      ($arg ? Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(1))) : $cfunc),
-      Tokens($function, phys_open($size, $open), ($arg ? T_XMArg(1) : ()), phys_close($size, $close)),
+          ($arg ? phys_revArg(I_arg(1), $open, $close) : ())) },
+      ($arg ? I_apply({}, $cfunc, I_arg(1)) : $cfunc),
+      Tokens($function, phys_open($size, $open), ($arg ? I_arg(1) : ()), phys_close($size, $close)),
       ($arg ? $arg : ())); });
 
 DefMacro('\gradient',   '\lx@physics@operator{\gradient}{gradient}{\nabla}');
@@ -259,28 +255,26 @@ Let('\div',            '\divergence');
 # [I guess, since LaTeX optional arg, the argument delimiters are limited]
 DefMacro('\lx@physics@operatorP{}{}{}', sub {
     my ($gullet, $cs, $semantic, $function) = @_;
-    my $cfunc = Invocation(T_CS('\@CSYMBOL'), $semantic);
+##    my $cfunc = I_symbol({ meaning => $semantic, role=>'OPFUNCTION' });
+    my $cfunc = I_symbol({ meaning => $semantic });
     my $pfunc = $function;
     my $size  = phys_readSize($gullet);
     my $power = $gullet->readOptional;
     my ($arg, $open, $close) = phys_readArg($gullet, 0, '(' => T_OTHER(')'));
     if (!$arg) {    # With no arg, we've got to put back the power!
       $gullet->unread(($power ? (T_OTHER('['), $power, T_OTHER(']')) : ()));
-      return BuildXMDual({ reversion => $cs }, $cfunc, $pfunc); }
+      return I_dual({ reversion => $cs }, $cfunc, $pfunc); }
     else {
       if ($power) {
-        $cfunc = Invocation(T_CS('\@APPLY'),
-          Tokens(Invocation(T_CS('\@CSYMBOL'), T_OTHER('power')),
-            Tokens($cfunc, T_XMArg(2))));
-        $pfunc = Tokens($pfunc, Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_XMArg(2))); }
-      return BuildXMDual(
-        { ($arg ? () : (role => 'FUNCTION')),
-          reversion => Tokens($cs, phys_revSize($size),
-            ($power ? (T_OTHER('['), T_XMArg(2), T_OTHER(']')) : ()),
-            ($arg ? phys_revArg(T_XMArg(1), $open, $close) : ())) },
-        ($arg ? Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(1))) : $cfunc),
+        $cfunc = I_apply({}, I_symbol({ meaning => 'power' }), $cfunc, I_arg(2));
+        $pfunc = I_superscript({ role => 'OPFUNCTION' }, $pfunc, I_arg(2)); }
+      return I_dual(
+        { reversion => Tokens($cs, phys_revSize($size),
+            ($power ? (T_OTHER('['), I_arg(2), T_OTHER(']')) : ()),
+            phys_revArg(I_arg(1), $open, $close)) },
+        I_apply({}, $cfunc, I_arg(1)),
         Tokens($pfunc,
-          phys_open($size, $open || T_OTHER('(')), ($arg ? T_XMArg(1) : ()), phys_close($size, $close || T_OTHER(')'))),
+          phys_open($size, $open || T_OTHER('(')), I_arg(1), phys_close($size, $close || T_OTHER(')'))),
         $arg, ($power ? $power : ())); } });
 
 my @operators = (qw(
@@ -316,17 +310,17 @@ Let('\imaginary', '\Im');
 DefMacro('\lx@physics@ReIm{}{}{}{}', sub {
     my ($gullet, $cs, $semantic, $raw, $function) = @_;
     my $size  = phys_readSize($gullet);
-    my $cfunc = Invocation(T_CS('\@CSYMBOL'), $semantic);
+    my $cfunc = I_symbol({ meaning => $semantic });
     my $arg   = phys_readArg($gullet);
-    return BuildXMDual(
+    return I_dual(
       { ($arg ? () : (role => 'OPERATOR')),
         reversion =>
           ($arg
-          ? Tokens($cs, phys_revSize($size), phys_revArg(T_XMArg(1)))
+          ? Tokens($cs, phys_revSize($size), phys_revArg(I_arg(1)))
           : $raw) },
-      ($arg ? Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(1))) : $cfunc),
+      ($arg ? I_apply({}, $cfunc, I_arg(1)) : $cfunc),
       Tokens($function,
-        ($arg ? (phys_open($size, T_CS('\lbrace')), T_XMArg(1), phys_close($size, T_CS('\rbrace'))) : ())),
+        ($arg ? (phys_open($size, T_CS('\lbrace')), I_arg(1), phys_close($size, T_CS('\rbrace'))) : ())),
       ($arg ? $arg : ())); });
 
 DefMacro('\Re', '\lx@physics@ReIm{\Re}{realpart}{\real}{\operatorname{Re}}');
@@ -350,22 +344,21 @@ Let('\qc', '\qcomma');
 Let('\flatfrac', '\ifrac');
 
 DefMacro('\lx@physics@diff{}{}{}', sub {
-    my ($gullet, $cs, $semantic, $function) = @_;
-    my $cfunc = Invocation(T_CS('\@CSYMBOL'), $semantic);
-    my $pfunc = $function;
+    my ($gullet, $cs, $semantic, $diff) = @_;
+    my $cfunc = I_symbol({ meaning => $semantic });
+    my $pfunc = I_wrap({ role => 'DIFFOP' }, $diff);
     my $power = $gullet->readOptional;
     my ($arg, $open, $close) = phys_readArg($gullet, 0, '(' => T_OTHER(')'));
     if ($power) {
-      $cfunc = Invocation(T_CS('\@APPLY'),
-        Tokens(Invocation(T_CS('\@CSYMBOL'), T_OTHER('functional-power')), Tokens($cfunc, T_XMArg(2))));
-      $pfunc = Tokens($pfunc, Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_XMArg(2))) }
-    return BuildXMDual(
+      $cfunc = I_apply({}, I_symbol({ meaning => 'functional-power' }), $cfunc, I_arg(2));
+      $pfunc = I_superscript({ role => 'DIFFOP' }, $pfunc, I_arg(2)); }
+    return I_dual(
       { ($arg ? () : (role => 'DIFFOP')),
         reversion => Tokens($cs,
-          ($power ? (T_OTHER('['), T_XMArg(2), T_OTHER(']')) : ()),
-          ($arg ? phys_revArg(T_XMArg(1), $open, $close) : ())) },
-      ($arg ? Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(1))) : $cfunc),
-      Tokens($pfunc, phys_open(1, $open), ($arg ? T_XMArg(1) : ()), phys_close(1, $close)),
+          ($power ? (T_OTHER('['), I_arg(2), T_OTHER(']')) : ()),
+          ($arg ? phys_revArg(I_arg(1), $open, $close) : ())) },
+      ($arg ? I_apply({}, $cfunc, I_arg(1)) : $cfunc),
+      Tokens($pfunc, phys_open(1, $open), ($arg ? I_arg(1) : ()), phys_close(1, $close)),
       $arg, ($power ? $power : ())); });
 
 # Trys to be (too) many things (but the syntax is insufficient)
@@ -380,12 +373,13 @@ DefMacro('\lx@physics@diff{}{}{}', sub {
 # \pderivative[n]{expr}{var1}{var2}  n is read but IGNORED
 # \pderivative{expr}{var1}{var2}(expr2)  expr2 is read but IGNORED
 DefMacro('\lx@physics@deriv{}{}{}', sub {
-    my ($gullet, $cs, $semantic, $function) = @_;
+    my ($gullet, $cs, $semantic, $diff) = @_;
     #    my ($opensize, $closesize) = (T_CS('\left'), T_CS('\right'));
     my $semantic_string = ToString($semantic);
-    my $inline          = $gullet->readMatch(T_OTHER('*'));
-    my $degree          = $gullet->readOptional;              # Optional arg is degree
-    my $tmp1            = $gullet->readArg();                 # 1st arg required: var1 or expr
+
+    my $inline = $gullet->readMatch(T_OTHER('*'));
+    my $degree = $gullet->readOptional;              # Optional arg is degree
+    my $tmp1   = $gullet->readArg();                 # 1st arg required: var1 or expr
     my ($tmp2, $open, $close) = phys_readArg($gullet, 0, '(' => T_OTHER(')'));
     my $tmp3;
     my ($expr, $var, $var2);
@@ -401,45 +395,42 @@ DefMacro('\lx@physics@deriv{}{}{}', sub {
       $var = $tmp1; }
     # Check if $expr is EMPTY ??? still an operator!
     $expr = undef if $expr && !scalar($expr->unlist);
-    my $cfunc = Invocation(T_CS('\@CSYMBOL'), $semantic);
+    my $cfunc = I_symbol({ meaning => $semantic });
+    my $pfunc = I_wrap({ role => 'DIFFOP' }, $diff);
     if ($tmp3) {                                                  # double derivative!
           # power is IGNORED!
           # Since we're treating (portial-)differentiaion as taking an optional argument for n-th
           # the double derivative is a nested differentiation.
-      my $op = Invocation(T_CS('\@APPLY'),
-        Tokens(Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(2))),
-          Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(3)))));
-      return BuildXMDual(
+      my $op = I_apply({}, I_apply({}, $cfunc, I_arg(2)), I_apply({}, $cfunc, I_arg(3)));
+      return I_dual(
         { ($expr ? () : (role => 'DIFFOP')),
           reversion => Tokens($cs, ($inline ? T_OTHER('*') : ()),
-            phys_revArg(T_XMArg(1)), phys_revArg(T_XMArg(2)), phys_revArg(T_XMArg(3))) },
-        ($expr ? Invocation(T_CS('\@APPLY'), Tokens($op, T_XMArg(1))) : $op),
+            phys_revArg(I_arg(1)), phys_revArg(I_arg(2)), phys_revArg(I_arg(3))) },
+        ($expr ? I_apply({}, $op, I_arg(1)) : $op),
         Invocation(($inline ? T_CS('\ifrac') : T_CS('\frac')),
-          Tokens($function, Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_OTHER(2)),
-            ($expr ? T_XMArg(1) : ())),
-          Tokens($function, T_XMArg(2), $function, T_XMArg(3))),
+          Tokens(I_superscript({ role => 'DIFFOP' }, $pfunc, T_OTHER(2)), ($expr ? I_arg(1) : ())),
+          Tokens(I_apply({}, $pfunc, I_arg(2)), I_apply({}, $pfunc, I_arg(3)))),
         $expr, $var, $var2); }
     else {
-      my $op = Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(2), ($degree ? T_XMArg(3) : ())));
-      return BuildXMDual(
+      my $op = I_apply({}, $cfunc, I_arg(2), ($degree ? I_arg(3) : ()));
+      return I_dual(
         { ($expr ? () : (role => 'DIFFOP')),
           reversion => Tokens($cs, ($inline ? T_OTHER('*') : ()),
-            ($degree ? (T_OTHER('['), T_XMArg(3), T_OTHER(']')) : ()),
+            ($degree ? (T_OTHER('['), I_arg(3), T_OTHER(']')) : ()),
             ($open
-              ? (phys_revArg(T_XMArg(2)), phys_revArg(T_XMArg(1), $open, $close))
+              ? (phys_revArg(I_arg(2)), phys_revArg(I_arg(1), $open, $close))
               : ($expr
-                ? (phys_revArg(T_XMArg(1)), phys_revArg(T_XMArg(2), $open, $close))
-                : (phys_revArg(T_XMArg(2)))))) },
-        ($expr ? Invocation(T_CS('\@APPLY'), Tokens($op, T_XMArg(1))) : $op),
+                ? (phys_revArg(I_arg(1)), phys_revArg(I_arg(2), $open, $close))
+                : (phys_revArg(I_arg(2)))))) },
+        ($expr ? I_apply({}, $op, I_arg(1)) : $op),
         Tokens(
           Invocation(($inline ? T_CS('\ifrac') : T_CS('\frac')),
-            Tokens($function,
-              ($degree ? Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_XMArg(3)) : ()),
-              (!$expr || $open ? () : T_XMArg(1))),
-            Tokens($function, T_XMArg(2),
-              ($degree ? Tokens(Invocation(T_CS('\@@POSTSUPERSCRIPT'), T_XMArg(3))) : ()))),
+            Tokens(($degree ? I_superscript({ role => 'DIFFOP' }, $pfunc, I_arg(3)) : $pfunc),
+              (!$expr || $open ? () : I_arg(1))),
+            ($degree ? I_superscript({}, I_apply({}, $pfunc, I_arg(2)), I_arg(3))
+              : I_apply({}, $pfunc, I_arg(2)))),
           ($expr && $open
-            ? (T_CS('\@APPLYFUNCTION'), phys_open(1, $open), T_XMArg(1), phys_close(1, $close))
+            ? (T_CS('\lx@ApplyFunction'), phys_open(1, $open), I_arg(1), phys_close(1, $close))
             : ())),
         $expr, $var, $degree); } });
 
@@ -466,10 +457,10 @@ DefMacro('\ket', sub {
     my ($gullet) = @_;
     my $size     = phys_readSize($gullet);
     my $arg      = $gullet->readArg();
-    return BuildXMDual(
-      { reversion => Tokens(T_CS('\ket'), phys_revSize($size), phys_revArg(T_XMArg(1))) },
-      Invocation(T_CS('\@APPLY'), Tokens(Invocation(T_CS('\@CSYMBOL'), 'ket'), T_XMArg(1))),
-      Tokens(phys_open($size, T_CS('\vert')), T_XMArg(1), phys_close($size, T_CS('\rangle'))),
+    return I_dual(
+      { reversion => Tokens(T_CS('\ket'), phys_revSize($size), phys_revArg(I_arg(1))) },
+      I_apply({}, I_symbol({ meaning => 'ket' }), I_arg(1)),
+      Tokens(phys_open($size, T_CS('\vert')), I_arg(1), phys_close($size, T_CS('\rangle'))),
       $arg); });
 
 DefMacro('\bra', sub {
@@ -480,36 +471,34 @@ DefMacro('\bra', sub {
     if ($gullet->readMatch(T_CS('\ket'))) {    # join to make braket!
       $size = 0 if $gullet->readMatch(T_OTHER('*'));    # star here, too
       my $arg2 = $gullet->readArg();
-      return BuildXMDual(
-        { reversion => Tokens(T_CS('\bra'), phys_revSize($size), phys_revArg(T_XMArg(1)),
-            T_CS('\ket'), phys_revSize($size), phys_revArg(T_XMArg(2))) },
-        Invocation(T_CS('\@APPLY'),
-          Tokens(Invocation(T_CS('\@CSYMBOL'), 'innerproduct'), T_XMArg(1), T_XMArg(2))),
-        Tokens(phys_open($size, T_CS('\langle')), T_XMArg(1),
-          phys_mid($size, T_CS('\vert')), T_XMArg(2), phys_close($size, T_CS('\rangle'))),
+      return I_dual(
+        { reversion => Tokens(T_CS('\bra'), phys_revSize($size), phys_revArg(I_arg(1)),
+            T_CS('\ket'), phys_revSize($size), phys_revArg(I_arg(2))) },
+        I_apply({}, I_symbol({ meaning => 'innerproduct' }), I_arg(1), I_arg(2)),
+        Tokens(phys_open($size, T_CS('\langle')), I_arg(1),
+          phys_mid($size, T_CS('\vert')), I_arg(2), phys_close($size, T_CS('\rangle'))),
         $arg, $arg2); }
     else {
-      return BuildXMDual(
-        { reversion => Tokens(T_CS('\bra'), phys_revSize($size), phys_revArg(T_XMArg(1))) },
-        Invocation(T_CS('\@APPLY'), Tokens(Invocation(T_CS('\@CSYMBOL'), 'bra'), T_XMArg(1))),
-        Tokens(phys_open($size, T_CS('\langle')), T_XMArg(1),
+      return I_dual(
+        { reversion => Tokens(T_CS('\bra'), phys_revSize($size), phys_revArg(I_arg(1))) },
+        I_apply({}, I_symbol({ meaning => 'bra' }), I_arg(1)),
+        Tokens(phys_open($size, T_CS('\langle')), I_arg(1),
           phys_close($size, T_CS('\vert'))),
         $arg); } });
 
 DefMacro('\lx@physics@qm@product{}{}{}{}{}', sub {
     my ($gullet, $cs, $semantic, $open, $middle, $close) = @_;
-    my $cfunc = Invocation(T_CS('\@CSYMBOL'), $semantic);
+    my $cfunc = I_symbol({ meaning => $semantic });
     my $size = ($gullet->readMatch(T_OTHER('*')) ? 0 : 1);
     my $arg0 = $gullet->readArg();
     my $argx = phys_readArg($gullet);
     my $arg1 = $argx || $arg0;
-    return BuildXMDual(
+    return I_dual(
       { reversion => Tokens($cs, phys_revSize($size),
-          phys_revArg(T_XMArg(1)), phys_revArg(T_XMArg(2))) },
-      Invocation(T_CS('\@APPLY'),
-        Tokens(Invocation(T_CS('\@CSYMBOL'), $semantic), T_XMArg(1), T_XMArg(2))),
-      Tokens(phys_open($size, $open), T_XMArg(1),
-        phys_mid($size, $middle), T_XMArg(2), phys_close($size, $close)),
+          phys_revArg(I_arg(1)), phys_revArg(I_arg(2))) },
+      I_apply({}, I_symbol({ meaning => $semantic }), I_arg(1), I_arg(2)),
+      Tokens(phys_open($size, $open), I_arg(1),
+        phys_mid($size, $middle), I_arg(2), phys_close($size, $close)),
       $arg0, $arg1); });
 
 DefMacro('\innerproduct',
@@ -519,7 +508,7 @@ DefMacro('\outerproduct',
 
 DefMacro('\expectationvalue', sub {
     my ($gullet) = @_;
-    my $cfunc = Invocation(T_CS('\@CSYMBOL'), T_OTHER('expectationvalue'));
+    my $cfunc = I_symbol({ meaning => 'expectationvalue' });
     my $size  = ($gullet->readMatch(T_OTHER('*'))
       ? ($gullet->readMatch(T_OTHER('*')) ? 1 : 0)
       : 1);
@@ -528,23 +517,23 @@ DefMacro('\expectationvalue', sub {
     my $arg0 = $gullet->readArg();
     my $arg1 = phys_readArg($gullet);
     if ($arg1) {
-      return BuildXMDual(
+      return I_dual(
         { reversion => Tokens(T_CS('\expectationvalue'), ($size ? () : T_OTHER('*')),
-            phys_revArg(T_XMArg(1)), phys_revArg(T_XMArg(2))) },
-        Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(1), T_XMArg(2), T_XMArg(3))),
-        Tokens($open, T_XMArg(2), $middle, T_XMArg(1), $middle, T_XMArg(3), $close),
+            phys_revArg(I_arg(1)), phys_revArg(I_arg(2))) },
+        I_apply({}, $cfunc, I_arg(1), I_arg(2), I_arg(3)),
+        Tokens($open, I_arg(2), $middle, I_arg(1), $middle, I_arg(3), $close),
         $arg0, $arg1, $arg1); }
     else {
-      return BuildXMDual(
+      return I_dual(
         { reversion => Tokens(T_CS('\expectationvalue'), ($size ? () : T_OTHER('*')),
-            phys_revArg(T_XMArg(1))) },
-        Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(1))),
-        Tokens($open, T_XMArg(1), $close),
+            phys_revArg(I_arg(1))) },
+        I_apply({}, $cfunc, I_arg(1)),
+        Tokens($open, I_arg(1), $close),
         $arg0); } });
 
 DefMacro('\matrixelement', sub {
     my ($gullet) = @_;
-    my $cfunc = Invocation(T_CS('\@CSYMBOL'), T_OTHER('expectationvalue'));
+    my $cfunc = I_symbol({ meaning => 'expectationvalue' });
     my $size  = ($gullet->readMatch(T_OTHER('*'))
       ? ($gullet->readMatch(T_OTHER('*')) ? 1 : 0)
       : 1);
@@ -553,11 +542,11 @@ DefMacro('\matrixelement', sub {
     my $arg0 = $gullet->readArg();
     my $arg1 = $gullet->readArg();
     my $arg2 = $gullet->readArg();
-    return BuildXMDual(
+    return I_dual(
       { reversion => Tokens(T_CS('\matrixelement'), ($size ? () : T_OTHER('*')),
-          phys_revArg(T_XMArg(1)), phys_revArg(T_XMArg(2)), phys_revArg(T_XMArg(3))) },
-      Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(2), T_XMArg(1), T_XMArg(3))),
-      Tokens($open, T_XMArg('1'), $middle, T_XMArg(2), $middle, T_XMArg(3), $close),
+          phys_revArg(I_arg(1)), phys_revArg(I_arg(2)), phys_revArg(I_arg(3))) },
+      I_apply({}, $cfunc, I_arg(2), I_arg(1), I_arg(3)),
+      Tokens($open, I_arg('1'), $middle, I_arg(2), $middle, I_arg(3), $close),
       $arg0, $arg1, $arg2); });
 
 Let('\braket',   '\innerproduct');
@@ -598,7 +587,7 @@ DefMacro('\xmatrix OptionalMatch:* {}{}{}', sub {
             ? Invocation(T_CS('\@@POSTSUBSCRIPT'),
               ($n == 1 ? T_OTHER($j + 1)
                 : ($m == 1 ? T_OTHER($i + 1)
-                  : Tokens(T_OTHER($i + 1), T_CS('\@INVISIBLECOMMA'), T_OTHER($j + 1)))))    # one based
+                  : Tokens(T_OTHER($i + 1), T_CS('\lx@InvisibleComma'), T_OTHER($j + 1)))))    # one based
             : ())
         ); } }
     return Tokens(@tokens); });
@@ -665,16 +654,16 @@ DefMacro('\lx@physics@mat{}{}{}{}{}', sub {
     my ($gullet, $cs, $semantic, $env, $defopen, $defclose) = @_;
     my $alt = $gullet->readMatch(T_OTHER('*'));
     $semantic = undef unless $semantic->unlist;
-    my $cfunc = $semantic && Invocation(T_CS('\@CSYMBOL'), $semantic);
+    my $cfunc = $semantic && I_symbol({ meaning => $semantic });
     $env = ToString($env);
     my ($body, $open, $close) = phys_readArg($gullet, 1, %physics_delimiters);
     my $matrix = Tokens(T_CS('\\' . $env), $body, T_CS('\end' . $env));
-    return BuildXMDual(
-      { reversion => Tokens($cs, ($alt ? T_OTHER('*') : ()), phys_revArg(T_XMArg(1), $open, $close)) },
+    return I_dual(
+      { reversion => Tokens($cs, ($alt ? T_OTHER('*') : ()), phys_revArg(I_arg(1), $open, $close)) },
       ($cfunc
-        ? Invocation(T_CS('\@APPLY'), Tokens($cfunc, T_XMArg(1)))
-        : T_XMArg(1)),
-      Tokens(phys_open(1, $open || $defopen), T_XMArg(1), phys_close(1, $close || $defclose)),
+        ? I_apply({}, $cfunc, I_arg(1))
+        : I_arg(1)),
+      Tokens(phys_open(1, $open || $defopen), I_arg(1), phys_close(1, $close || $defclose)),
       $matrix);
 });
 
