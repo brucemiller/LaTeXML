@@ -780,7 +780,9 @@ sub setDocument_internal {
     foreach my $pi (@{ $$self{processingInstructions} }) {
       if ($pi =~ /^\s*searchpaths\s*=\s*([\"\'])(.*?)\1\s*$/) {
         push(@paths, split(',', $2)); } }
-    push(@paths, pathname_absolute($$self{sourceDirectory})) if $$self{sourceDirectory};
+    ### No, this ultimately can be the xml source, which may be the destination;
+    ### adding this gets the wrong graphics (already processed!)
+    ### push(@paths, pathname_absolute($$self{sourceDirectory})) if $$self{sourceDirectory};
     $$self{searchpaths} = [@paths]; }
   elsif ($roottype eq 'XML::LibXML::Element') {
     $$self{document} = XML::LibXML::Document->new("1.0", "UTF-8");
