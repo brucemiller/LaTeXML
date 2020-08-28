@@ -155,7 +155,7 @@ sub getSource {
 
 sub getSourceMouth {
   my ($self) = @_;
-  my $mouth = $$self{mouth};
+  my $mouth  = $$self{mouth};
   my $source = defined $mouth && $mouth->getSource;
   if (!defined($source)) {
     foreach my $frame (@{ $$self{mouthstack} }) {
@@ -212,7 +212,7 @@ our @hold_token = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 1, 0,
-  0, 0, 1);
+  0, 1);
 
 sub readToken {
   my ($self) = @_;
@@ -295,7 +295,7 @@ sub readRawLine {
   my @tokens  = @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
   if (@markers) {    # Whoops, profiling markers!
-    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;    # Remove
+    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;                      # Remove
     map { LaTeXML::Core::Definition::stopProfiling($_, 'expand') } @markers; }
   $$self{pushback} = [];
   # If we still have peeked tokens, we ONLY want to combine it with the remainder
@@ -362,7 +362,7 @@ our @balanced_interesting_cc = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 0,
-  0, 0, 1);
+  0, 1);
 
 sub readBalanced {
   my ($self, $expanded) = @_;
@@ -432,7 +432,7 @@ sub readKeyword {
     while (@tomatch && defined($tok = $self->readXToken(0)) && push(@matched, $tok)
       && (uc($tok->getString) eq $tomatch[0])) {
       shift(@tomatch); }
-    return $keyword unless @tomatch;    # All matched!!!
+    return $keyword unless @tomatch;             # All matched!!!
     unshift(@{ $$self{pushback} }, @matched);    # Put 'em back and try next!
   }
   return; }
@@ -610,7 +610,7 @@ sub readFactor {
 sub readNumber {
   my ($self) = @_;
   my $s = $self->readOptionalSigns;
-  if (defined(my $n = $self->readNormalInteger)) { return ($s < 0 ? $n->negate : $n); }
+  if    (defined(my $n = $self->readNormalInteger))  { return ($s < 0 ? $n->negate : $n); }
   elsif (defined($n = $self->readInternalDimension)) { return Number($s * $n->valueOf); }
   elsif (defined($n = $self->readInternalGlue))      { return Number($s * $n->valueOf); }
   else {
@@ -633,11 +633,11 @@ sub readNormalInteger {
     return; }
   elsif (($$token[1] == CC_OTHER) && ($token->getString =~ /^[0-9]$/)) {    # Read decimal literal
     return Number(int($token->getString . $self->readDigits('0-9', 1))); }
-  elsif ($token->equals(T_OTHER("\'"))) {                                   # Read Octal literal
+  elsif ($token->equals(T_OTHER("'"))) {                                    # Read Octal literal
     return Number(oct($self->readDigits('0-7', 1))); }
   elsif ($token->equals(T_OTHER("\""))) {                                   # Read Hex literal
     return Number(hex($self->readDigits('0-9A-F', 1))); }
-  elsif ($token->equals(T_OTHER("\`"))) {                                   # Read Charcode
+  elsif ($token->equals(T_OTHER("`"))) {                                    # Read Charcode
     my $next = $self->readToken;
     my $s    = ($next && $next->getString) || '';
     $s =~ s/^\\//;
