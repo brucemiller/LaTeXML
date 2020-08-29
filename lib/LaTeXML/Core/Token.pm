@@ -191,6 +191,13 @@ our @CC_SHORT_NAME =           #[CONSTANT]
   T_CS
 );
 
+our $X_THE = {
+  '\the'        => 1,
+  '\showthe'    => 1,
+  '\unexpanded' => 1,
+  '\detokenize' => 1
+};
+
 #======================================================================
 # Accessors.
 

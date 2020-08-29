@@ -220,7 +220,9 @@ sub readToken {
   my $token;
   my $cc;
   # Check in pushback first....
-  while (($token = shift(@{ $$self{pushback} })) && $hold_token[$cc = $$token[1]]) {
+  while (($token = shift(@{ $$self{pushback} })) &&
+    ($token = ref $token eq 'ARRAY' ? $$token[1] : $token) &&
+    $hold_token[$cc = $$token[1]]) {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }
     elsif ($cc == CC_MARKER) {
@@ -261,6 +263,8 @@ sub readXToken {
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
+    elsif (ref $token eq 'ARRAY') {
+      return $$token[1]; }
     elsif (($cc = $$token[1]) == CC_COMMENT) {    # NOTE: Inlined ->getCatcode
       return $token if $commentsok;
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
@@ -271,13 +275,26 @@ sub readXToken {
         # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
-      if (my $r = $defn->invoke($self)) {
-        unshift(@{ $$self{pushback} },
-          map { (!defined $_ ? ()
-              : (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
-                : ($r eq 'LaTeXML::Core::Tokens' ? @$_
-                  : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))))) }
-            @{$r}); } }
+      my $invoked   = $defn->invoke($self) || [];
+      my @expansion = ();
+      for my $exp_t (@$invoked) {
+        my $r = ref $exp_t;
+        if ($r eq 'LaTeXML::Core::Token') {
+          push @expansion, $exp_t; }
+        elsif ($r eq 'LaTeXML::Core::Tokens') {
+          push @expansion, @$exp_t; }
+        else {
+          Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)); } }
+      next unless @expansion;
+      if ($$LaTeXML::Core::Token::X_THE{ $$token[0] }) {
+        # magic THE_TOKS handling, add to pushback with a single-use noexpand flag only valid
+        #    at the exact time
+        # the token leaves the pushback.
+        # This is *required to be different* from the noexpand flag, as per the B Book
+        # Let's choose something that will immediately break latexml if we overlook it...
+        @expansion = map { ['the_token', $_] } @expansion; }
+      # add the newly expanded tokens back into the gullet stream, in the ordinary case.
+      unshift(@{ $$self{pushback} }, @expansion); }
     elsif ($cc == CC_CS && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
       $STATE->generateErrorStub($self, $token);
       return $token; }
@@ -292,7 +309,7 @@ sub readRawLine {
   my ($self) = @_;
   # If we've got unread tokens, they presumably should come before the Mouth's raw data
   # but we'll convert them back to string.
-  my @tokens  = @{ $$self{pushback} };
+  my @tokens  = map  { ref $_ eq 'ARRAY' ? $$_[1] : $_ } @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
   if (@markers) {    # Whoops, profiling markers!
     @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;                      # Remove
@@ -474,6 +491,7 @@ sub readNextConditional {
   my $token;
   my $type;
   while ($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken()) {
+    $token = $$token[1] if ref $token eq 'ARRAY';
     if ($type = $STATE->lookupConditional($token)) {
       return ($token, $type); } }
   return; }

@@ -86,6 +86,10 @@ sub neutralize {
   my ($self, @extraspecials) = @_;
   return Tokens(map { $_->neutralize(@extraspecials) } $self->unlist); }
 
+sub without_dont_expand {
+  my ($self) = @_;
+  return Tokens(map { $_->without_dont_expand } $self->unlist); }
+
 sub isBalanced {
   my ($self) = @_;
   my $level = 0;
@@ -148,7 +152,7 @@ sub stripBraces {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -187,4 +191,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

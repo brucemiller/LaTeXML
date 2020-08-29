@@ -218,18 +218,9 @@ DefParameterType('Expanded', sub {
     my $token    = $gullet->readXToken(0);
     my @tokens   = ();
     if ($token->getCatcode == CC_BEGIN) {
-      my $level = 1;
-      while ($token = $gullet->readXToken(0)) {
-        my $cc = $$token[1];
-        if ($cc == CC_END) {
-          $level--;
-          last unless $level; }
-        elsif ($cc == CC_BEGIN) {
-          $level++; }
-        push(@tokens, $token); }
-      return Tokens(@tokens); }
+      return scalar($gullet->readBalanced(1))->without_dont_expand; }
     else {
-      return $token; } },
+      return $token->without_dont_expand; } },
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
@@ -987,8 +978,6 @@ DefMacro('\the Register', sub {
     my $value = $defn->valueOf(@args);
     ## In all cases, these should be OTHER, except for space. (!?)
     my @tokens = ($type eq 'Tokens' ? ($value ? $value->unlist : ()) : Explode(ToString($value)));
-    if ($LaTeXML::NOEXPAND_THE) {    # See \the for the sense in this.
-      @tokens = $gullet->neutralizeTokens(@tokens); }
     return @tokens; });
 
 #**********************************************************************
