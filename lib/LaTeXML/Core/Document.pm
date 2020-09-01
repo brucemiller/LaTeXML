@@ -648,14 +648,19 @@ sub insertElement {
 sub insertMathToken {
   my ($self, $string, %attributes) = @_;
   $attributes{role} = 'UNKNOWN' unless $attributes{role};
-  my $node = $self->openElement($MATH_TOKEN_NAME, %attributes);
-  my $box  = $attributes{_box} || $LaTeXML::BOX;
-  my $font = $attributes{font} || $box->getFont;
-  $self->setNodeFont($node, $font);
-  $self->setNodeBox($node, $box);
-  $self->openMathText_internal($string) if defined $string;
-  $self->closeNode_internal($node);    # Should be safe.
-  return $node; }
+  my $cur_qname = $$self{model}->getNodeQName($$self{node});
+  if ($cur_qname eq $MATH_TOKEN_NAME) {    # Already INSIDE a token!
+    $self->openMathText_internal($string) if defined $string;
+    return $$self{node}; }
+  else {
+    my $node = $self->openElement($MATH_TOKEN_NAME, %attributes);
+    my $box  = $attributes{_box} || $LaTeXML::BOX;
+    my $font = $attributes{font} || $box->getFont;
+    $self->setNodeFont($node, $font);
+    $self->setNodeBox($node, $box);
+    $self->openMathText_internal($string) if defined $string;
+    $self->closeNode_internal($node);      # Should be safe.
+    return $node; } }
 
 # Insert a new comment, or append to previous comment.
 # Does NOT move the current insertion point to the Comment,
