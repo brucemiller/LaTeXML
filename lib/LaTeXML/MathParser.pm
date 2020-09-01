@@ -955,10 +955,13 @@ sub textrec_apply {
     # Note that this will likely get parenthesized due to high bp
     return (5000, textrec($op) . " " . textrec($args[1]) . " " . textrec($args[0])); }
   elsif (my $bp = $IS_INFIX{$role}) {
-    # Format as infix.
-    return ($bp, (scalar(@args) == 1    # unless a single arg; then prefix.
-        ? textrec($op) . ' ' . textrec($args[0], $bp, $name)
-        : join(' ' . textrec($op) . ' ', map { textrec($_, $bp, $name) } @args))); }
+    # A sub/superscript with a meaning probably should be prefix
+    if (($role =~ /^(SUB|SUPER)SCRIPTOP$/) && $op->getAttribute('meaning')) {
+      return (500, textrec($op, 10000, $name) . '@(' . join(', ', map { textrec($_) } @args) . ')') }
+    else {    # Format as infix.
+      return ($bp, (scalar(@args) == 1    # unless a single arg; then prefix.
+          ? textrec($op) . ' ' . textrec($args[0], $bp, $name)
+          : join(' ' . textrec($op) . ' ', map { textrec($_, $bp, $name) } @args))); } }
   elsif ($role eq 'POSTFIX') {
     return (10000, textrec($args[0], 10000, $name) . textrec($op)); }
   elsif ($name eq 'multirelation') {
