@@ -248,9 +248,8 @@ DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
     my $needsid = $params && ($params->getValue('tag') || $params->getValue('description'));
     my $id = ($needsid ? next_declaration_id() : undef);
     DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
-      name  => $name,  meaning => $meaning, omcd => $cd, role => $role, alias => $alias,
-      scope => $scope, decl_id => $id,
-      hide_content_reversion => 1);
+      name  => $name,  meaning => $meaning, omcd      => $cd, role => $role, alias => $alias,
+      scope => $scope, decl_id => $id,      revert_as => 'context');
     if ($needsid) {    # Also provide for decl_id hook for definition links.
       return Digest(Invocation('\@lxDefMathDeclare', $id, $params)); }
     else {
