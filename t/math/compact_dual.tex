@@ -5,10 +5,8 @@
   \@tempcnta=#1\relax  \loop \ifnum\@tempcnta>0 \prime \advance\@tempcnta\m@ne \repeat}
 \iflatexml
 \let\power\lx@power
-\def\dual@atom#1#2{%
-  \lx@dual[reversion=##3]{#1}{#2}}
 \def\derive#1#2{%
-  \lx@superscript[operator_meaning={derivative-implicit-variable}]{#2}{\dual@atom{#1}{\makeprimes{#1}}}}
+  \lx@superscript[operator_meaning={derivative-implicit-variable}]{#2}{\lx@symbol[meaning=#1]{\makeprimes{#1}}}}
 \else
 \def\power#1#2{{#1}^{#2}}
 \def\derive#1#2{{#2}^{\makeprimes{#1}}}

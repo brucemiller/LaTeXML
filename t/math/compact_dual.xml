@@ -6,7 +6,7 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p><Math mode="inline" tex="{x}^{2}+{y}^{3}" text="x power 2 + y power 3" xml:id="p1.m1">
+    <p><Math mode="inline" tex="{x}^{2}+{y}^{3}" text="power@(x, 2) + power@(y, 3)" xml:id="p1.m1">
         <XMath>
           <XMApp>
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -25,32 +25,19 @@
       </Math></p>
   </para>
   <para xml:id="p2">
-    <p><Math mode="inline" tex="{f}^{\prime\prime}+{g}^{\prime\prime\prime}" text="f derivative-implicit-variable 2 + g derivative-implicit-variable 3" xml:id="p2.m1">
+    <p><Math mode="inline" tex="{f}^{\prime\prime}+{g}^{\prime\prime\prime}" text="derivative-implicit-variable@(f, 2) + derivative-implicit-variable@(g, 3)" xml:id="p2.m1">
         <XMath>
           <XMApp>
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
             <XMApp>
               <XMTok meaning="derivative-implicit-variable" role="SUPERSCRIPTOP" scriptpos="post1"/>
               <XMTok font="italic" role="UNKNOWN">f</XMTok>
-              <XMDual>
-                <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
-                <XMWrap>
-                  <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
-                  <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
-                </XMWrap>
-              </XMDual>
+              <XMTok font="italic" fontsize="70%" meaning="2">′′</XMTok>
             </XMApp>
             <XMApp>
               <XMTok meaning="derivative-implicit-variable" role="SUPERSCRIPTOP" scriptpos="post1"/>
               <XMTok font="italic" role="UNKNOWN">g</XMTok>
-              <XMDual>
-                <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
-                <XMWrap>
-                  <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
-                  <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
-                  <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
-                </XMWrap>
-              </XMDual>
+              <XMTok font="italic" fontsize="70%" meaning="3">′′′</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
