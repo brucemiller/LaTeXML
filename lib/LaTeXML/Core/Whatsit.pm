@@ -109,15 +109,10 @@ sub revert {
     # Find the appropriate reversion spec;
     # content_reversion or presntation_reversion if on dual branch
     # or (general) reversion, or the reversion from the definition
-    my $spec =
-      ($LaTeXML::DUAL_BRANCH
-        && ((($LaTeXML::DUAL_BRANCH eq 'content') && $$props{content_reversion})
-        || (($LaTeXML::DUAL_BRANCH eq 'presentation') && $$props{presentation_reversion})))
-      || $$props{'reversion'}
-      || $defn->getReversionSpec;
+    my $spec   = $$props{'reversion'} || $defn->getReversionSpec;
     my @tokens = ();
     if ((defined $spec) && (ref $spec eq 'CODE')) {    # If handled by CODE, call it
-      @tokens = &$spec($self, $self->getArgs); }
+      @tokens = $self->substituteParameters(Tokens(&$spec($self, $self->getArgs))); }
     else {
       if (defined $spec) {
         @tokens = $self->substituteParameters($spec)

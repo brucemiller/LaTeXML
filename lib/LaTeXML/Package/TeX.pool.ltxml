@@ -3792,6 +3792,8 @@ sub IsEmpty {
 # Returns [ (FLOATING|POST) , (SUBSCRIPT|SUPERSCRIPT) ] or nothing
 sub IsScript {
   my ($object) = @_;
+  if (ref $object eq 'LaTeXML::Core::List') {
+    $object = [$object->unlist]->[-1]; }
   if ((ref $object eq 'LaTeXML::Core::Whatsit')    # careful w/alias in getCSName!
     && ($object->getDefinition->getCS->getCSName =~ /^\\@@(FLOATING|POST)(SUBSCRIPT|SUPERSCRIPT)$/)) {
     return [$1, $2]; }
@@ -3992,7 +3994,7 @@ sub adjustMathstyle {
     next if $$adjusted{$box};    # since we do args AND props, be careful not to adjust twice!
     $$adjusted{$box} = 1;
     my $r = ref $box;
-    next unless $r and $r->isaBox;
+    next unless $r && ($r !~ /(?:SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE)/) && $r->isaBox;
     return if $box->getProperty('explicit_mathstyle');
     next   if $box->getProperty('own_mathstyle');
 
@@ -6680,6 +6682,11 @@ sub I_wrap {
   return Tokens(T_CS('\lx@wrap'), I_keyvals($kv), T_BEGIN, @stuff, T_END); }
 
 # These two accept key operator_meaning, operator_omcd to give a meaning to the sub/superscript
+# NOTE (BUG): We SHOULD nest paired sub/superscripts, but avoid conflicting double scripts
+# To do that we need to sniff at the base, whether it already contains scripts.
+# However, IsScript isn't quite sufficient if the scripts are hidden within Whatsits, duals, etc.
+# Currently, LaTeXML manages to deal with the double scripts anyway;
+# The reversion ALWAYS wraps the base (which will render non-optimally in images but avoid Errors)
 DefConstructor('\lx@superscript OptionalKeyVals:XMath {} InScriptStyle',
   "<ltx:XMApp $XMath_attributes>"
     . "<ltx:XMTok role='SUPERSCRIPTOP' meaning='#operator_meaning' omcd='#operator_omcd' scriptpos='#scriptpos'/>"
@@ -6689,11 +6696,17 @@ DefConstructor('\lx@superscript OptionalKeyVals:XMath {} InScriptStyle',
   afterDigest => sub { XMath_copy_keyvals(@_); },
   reversion   => sub {
     my ($whatsit, $kv, $base, $sup) = @_;
+    my $bump = $whatsit->getProperty('bump');
+    $bump=1;                    # For now: ALWAYS {} wrap base in the reversion!
     ($sup && $sup->unlist
-      ? (T_BEGIN, Revert($base), T_END, T_SUPER, revertScript($sup))
+      ? (($bump ? (T_BEGIN, Revert($base), T_END) : Revert($base)), T_SUPER, revertScript($sup))
       : Revert($base)); },
   properties => sub {
-    (scriptpos => "post" . $_[0]->getScriptLevel); },
+    my ($stomach, $kv, $base, $script) = @_;
+    my $basetype = IsScript($base);
+    my $bump     = ($basetype && ($$basetype[1] eq 'SUPERSCRIPT') ? 1 : 0);
+    (scriptpos => "post" . ($_[0]->getScriptLevel + $bump),
+      bump => $bump); },
   sizer => sub { scriptSizer($_[0]->getArg(3), $_[0]->getArg(2), undef, 'SUPERSCRIPT', 'post'); });
 
 DefConstructor('\lx@subscript OptionalKeyVals:XMath {} InScriptStyle',
@@ -6705,11 +6718,18 @@ DefConstructor('\lx@subscript OptionalKeyVals:XMath {} InScriptStyle',
   afterDigest => sub { XMath_copy_keyvals(@_); },
   reversion   => sub {
     my ($whatsit, $kv, $base, $sub) = @_;
+    my $bump = $whatsit->getProperty('bump');
+    $bump=1;                    # For now: ALWAYS {} wrap base in the reversion!
     ($sub && $sub->unlist
-      ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
+###      ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
+      ? (($bump ? (T_BEGIN, Revert($base), T_END) : Revert($base)), T_SUB, revertScript($sub))
       : Revert($base)); },
   properties => sub {
-    (scriptpos => "post" . $_[0]->getScriptLevel); },
+    my ($stomach, $kv, $base, $script) = @_;
+    my $basetype = IsScript($base);
+    my $bump     = ($basetype && ($$basetype[1] eq 'SUBSCRIPT') ? 1 : 0);
+    (scriptpos => "post" . ($_[0]->getScriptLevel + $bump),
+      bump => $bump); },
   sizer => sub { scriptSizer($_[0]->getArg(3), $_[0]->getArg(2), undef, 'SUBSCRIPT', 'post'); });
 
 # Ignore $kv for the moment?????
@@ -6767,17 +6787,27 @@ DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
     my ($stomach, $whatsit) = @_;
     my $kv     = $whatsit->getArg(1);
     my $xmargs = pop(@PENDING_DUAL_XMARGS);
-    $whatsit->setProperties($kv->getPairs) if $kv;
-    if (!($kv && $kv->getValue('reversion'))) {
-      if (!($kv && $kv->getValue('content_reversion'))) {
-        $whatsit->setProperty('content_reversion' => Tokens(T_PARAM, T_OTHER('2'))); }
-      if (!($kv && $kv->getValue('presentation_reversion'))) {
-        $whatsit->setProperty('presentation_reversion' => Tokens(T_PARAM,
-            ($kv && $kv->getValue('hide_content_reversion') ? T_OTHER('3') : T_OTHER('2')))); } }
     $whatsit->setProperties(%$xmargs);    # Hopefully no name class with XM<digits>
+    $whatsit->setProperties($kv->getPairs) if $kv;
+    my %props = $whatsit->getProperties;
+    my $cr    = $props{content_reversion};
+    my $pr    = $props{presentation_reversion};
+    my $r     = ToString($props{revert_as}) || 'content';    # ?????
+
+    if (!defined $props{reversion}) {
+      $whatsit->setProperty(reversion => sub {
+          my ($self, $kv, $c, $p) = @_;
+          ($r eq 'content' ? $cr || Revert($c)
+            : ($r eq 'presentation' ? $pr || Revert($p)
+              : ($r eq 'dual'
+                ? Tokens(T_CS('\lx@dual'), I_keyvals($kv),
+                  T_BEGIN, ($cr || Revert($c)), T_END,
+                  T_BEGIN, ($pr || Revert($p)), T_END)
+                : (($LaTeXML::DUAL_BRANCH || '') eq 'presentation'    # Context dependent reversion
+                  ? $pr || Revert($p)
+                  : $cr || Revert($c))))); }); }
     return; },
-  reversion => '#2',                      # Probably the best default
-  sizer     => '#3');                     # size according to presentation
+  sizer => '#3');                                                     # size according to presentation
 
 # These are used within XMDual
 # The XMDual represents both a content & presentation representation of some
