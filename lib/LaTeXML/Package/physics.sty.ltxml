@@ -343,23 +343,26 @@ Let('\qc', '\qcomma');
 # Derivatives
 Let('\flatfrac', '\ifrac');
 
+#  => (differential var [degree])
 DefMacro('\lx@physics@diff{}{}{}', sub {
     my ($gullet, $cs, $semantic, $diff) = @_;
     my $cfunc = I_symbol({ meaning => $semantic });
-    my $pfunc = I_wrap({ role => 'DIFFOP' }, $diff);
-    my $power = $gullet->readOptional;
+    my $pfunc  = I_wrap({ role => 'DIFFOP' }, $diff);
+    my $degree = $gullet->readOptional;
     my ($arg, $open, $close) = phys_readArg($gullet, 0, '(' => T_OTHER(')'));
-    if ($power) {
-      $cfunc = I_apply({}, I_symbol({ meaning => 'functional-power' }), $cfunc, I_arg(2));
-      $pfunc = I_superscript({ role => 'DIFFOP' }, $pfunc, I_arg(2)); }
     return I_dual(
       { ($arg ? () : (role => 'DIFFOP')),
         reversion => Tokens($cs,
-          ($power ? (T_OTHER('['), I_arg(2), T_OTHER(']')) : ()),
+          ($degree ? (T_OTHER('['), I_arg(2), T_OTHER(']')) : ()),
           ($arg ? phys_revArg(I_arg(1), $open, $close) : ())) },
-      ($arg ? I_apply({}, $cfunc, I_arg(1)) : $cfunc),
-      Tokens($pfunc, phys_open(1, $open), ($arg ? I_arg(1) : ()), phys_close(1, $close)),
-      $arg, ($power ? $power : ())); });
+      ($arg
+        ? I_apply({}, $cfunc, I_arg(1), ($degree ? I_arg(2) : ()))
+        : ($degree
+          ? I_apply({}, I_symbol({ meaning => 'functional-power' }), $cfunc, I_arg(2))
+          : $cfunc)),
+      Tokens(($degree ? I_superscript({ role => 'DIFFOP' }, $pfunc, I_arg(2)) : $pfunc),
+        phys_open(1, $open), ($arg ? I_arg(1) : ()), phys_close(1, $close)),
+      $arg, ($degree ? $degree : ())); });
 
 # Trys to be (too) many things (but the syntax is insufficient)
 # \derivative{var}
@@ -399,9 +402,8 @@ DefMacro('\lx@physics@deriv{}{}{}', sub {
     my $pfunc = I_wrap({ role => 'DIFFOP' }, $diff);
     if ($tmp3) {                                                  # double derivative!
           # power is IGNORED!
-          # Since we're treating (portial-)differentiaion as taking an optional argument for n-th
-          # the double derivative is a nested differentiation.
-      my $op = I_apply({}, I_apply({}, $cfunc, I_arg(2)), I_apply({}, $cfunc, I_arg(3)));
+##      my $op = I_apply({}, I_apply({}, $cfunc, I_arg(2)), I_apply({}, $cfunc, I_arg(3)));
+      my $op = I_apply({}, $cfunc, I_arg(2), T_OTHER('1'), I_arg(3), T_OTHER('1'));
       return I_dual(
         { ($expr ? () : (role => 'DIFFOP')),
           reversion => Tokens($cs, ($inline ? T_OTHER('*') : ()),
@@ -439,9 +441,9 @@ DefMacro('\variation',    '\lx@physics@diff{\variation}{variation}{\delta}');
 DefMacro('\derivative',
   '\lx@physics@deriv{\derivative}{derivative}{\mathrm{d}}');
 DefMacro('\partialderivative',
-  '\lx@physics@deriv{\partialderivative}{partialderivative}{\partial}');
+  '\lx@physics@deriv{\partialderivative}{partial-derivative}{\partial}');
 DefMacro('\functionalderivative',
-  '\lx@physics@deriv{\functionalderivative}{functionalderivative}{\delta}');
+  '\lx@physics@deriv{\functionalderivative}{functional-derivative}{\delta}');
 
 Let('\dd',          '\differential');
 Let('\var',         '\variation');
