@@ -92,8 +92,29 @@ sub phys_readArg {
     $gullet->unread($next);
     $arg = $gullet->readArg(); }
   elsif (my $c = $next && $delimiters{ ToString($next) }) {
+    # Must read balanced in $open/$close, as well as(?) regular braces
     $open = $next; $close = $c;
-    $arg  = $gullet->readUntil($c); }
+    my @tokens = ();
+    my ($token, $level, $blevel) = (undef, 1, 0);
+    # Inlined readToken (we'll keep comments in the result)
+    while ($token = $gullet->readToken()) {
+      my $cc = $$token[1];
+      if ($cc == CC_END) {
+        $blevel--;
+        push(@tokens, $token); }
+      elsif ($cc == CC_BEGIN) {
+        $blevel++;
+        push(@tokens, $token); }
+      elsif ($token->equals($close)) {
+        $level--;
+        last unless $level;
+        push(@tokens, $token); }
+      elsif ($token->equals($open)) {
+        $level++;
+        push(@tokens, $token); }
+      else {
+        push(@tokens, $token); } }
+    $arg = Tokens(@tokens); }
   else {
     $gullet->unread($next);
     Error('unexpected', $next, $gullet, "Expected an open delimiter", "Got " . Stringify($next))
@@ -401,7 +422,7 @@ DefMacro('\lx@physics@deriv{}{}{}', sub {
     my $cfunc = I_symbol({ meaning => $semantic });
     my $pfunc = I_wrap({ role => 'DIFFOP' }, $diff);
     if ($tmp3) {                                                  # double derivative!
-          # power is IGNORED!
+                                                                  # power is IGNORED!
 ##      my $op = I_apply({}, I_apply({}, $cfunc, I_arg(2)), I_apply({}, $cfunc, I_arg(3)));
       my $op = I_apply({}, $cfunc, I_arg(2), T_OTHER('1'), I_arg(3), T_OTHER('1'));
       return I_dual(
@@ -469,7 +490,6 @@ DefMacro('\bra', sub {
     my ($gullet) = @_;
     my $size = ($gullet->readMatch(T_OTHER('*')) ? 0 : 1);
     my $arg  = $gullet->readArg();
-    my $result;
     if ($gullet->readMatch(T_CS('\ket'))) {    # join to make braket!
       $size = 0 if $gullet->readMatch(T_OTHER('*'));    # star here, too
       my $arg2 = $gullet->readArg();
