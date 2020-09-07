@@ -1,10 +1,7 @@
 \documentclass{article}
-\usepackage{fullpage}
 \usepackage{parskip}
 \usepackage{physics}
 \usepackage{amssymb}
-\usepackage{xcolor}
-\usepackage[colorlinks,urlcolor=blue]{hyperref}
 \usepackage{array}
 \usepackage{longtable}
 \usepackage{multirow}
@@ -12,21 +9,10 @@
 \newcolumntype{M}{>{$\displaystyle}c<{$}}
 \newcolumntype{L}{>{$\displaystyle}l<{$}}
 
-% Disable phantoms, since we currently only add their space to a sibling
-\def\phantom#1{#1}
-\def\vphantom#1{#1}
-
-\newcommand{\cbox}[2][cyan]
-{\mathchoice
-	{\setlength{\fboxsep}{0pt}\colorbox{#1}{$\displaystyle#2$}}
-	{\setlength{\fboxsep}{0pt}\colorbox{#1}{$\textstyle#2$}}
-	{\setlength{\fboxsep}{0pt}\colorbox{#1}{$\scriptstyle#2$}}
-	{\setlength{\fboxsep}{0pt}\colorbox{#1}{$\scriptscriptstyle#2$}}
-}
-\newcommand{\typical}{\cbox{\phantom{A}}}
-\newcommand{\tall}{\cbox{\phantom{A^{\vphantom{x^x}}_x}}}
-\newcommand{\grande}{\cbox{\phantom{\frac{1}{xx}}}}
-\newcommand{\venti}{\cbox{\phantom{\sum_x^x}}}
+\newcommand{\typical}{X}
+\newcommand{\tall}{X^Y}
+\newcommand{\grande}{\frac{X}{Y}}
+\newcommand{\venti}{\sum_{X=0}^N}
 
 % physics 1.30
 \title{The \texttt{physics} package}
@@ -34,81 +20,96 @@
 \section{List of commands}
 %======================================================================
 \subsection{Automatic bracing}
-\begin{longtable}[l]{ l l p{6cm} }
-\verb|\quantity| & \verb|\qty(\typical)| $\displaystyle\rightarrow \qty(\typical)$ & automatic $\qty(\;)$ braces \\
-& \verb|\qty(\tall)| $\displaystyle\rightarrow \qty(\tall)$ & \\
-& \verb|\qty(\grande)| $\displaystyle\rightarrow \qty(\grande)$ & \\
-& \verb|\qty[\typical]| $\rightarrow \qty[\typical]$ & automatic $\qty[\;]$ braces \\
-& \verb+\qty|\typical|+ $\rightarrow \qty|\typical|$ & automatic $\qty|\;|$ braces \\
-& \verb|\qty{\typical}| $\rightarrow \qty{\typical}$ & automatic $\qty{\;}$ braces \\
-& \verb|\qty\big{}| $\rightarrow \qty\big{}$ & \multirow{2}{*}{\parbox{6cm}{manual sizing (works with any of the above bracket types)}} \\
-& \verb|\qty\Big{}| $\rightarrow \qty\Big{}$ & \\
-& \verb|\qty\bigg{}| $\rightarrow \qty\bigg{}$ & \\
-& \verb|\qty\Bigg{}| $\rightarrow \qty\Bigg{}$ & \\
+\[
+\qty(\typical)
+\qquad \qty(\tall)
+\qquad\qty(\grande)
+\qquad\qty[\typical]
+\qquad\qty|\typical|
+\qquad\qty{\typical}
+\qquad\qty\big{x}
+\qquad\qty\Big{x}
+\qquad\qty\bigg{x}
+\qquad\qty\Bigg{x}
+\]
 
-& \verb|\pqty{}| $\leftrightarrow$ \verb|\qty()| & \multirow{2}{*}{\parbox{6cm}{alternative syntax; robust and more \LaTeX-friendly}} \\
-& \verb|\bqty{}| $\leftrightarrow$ \verb|\qty[]| & \\
-& \verb+\vqty{}+ $\leftrightarrow$ \verb+\qty||+ & \\
-& \verb|\Bqty{}| $\leftrightarrow$ \verb|\qty{}| & \\
-\verb|\absolutevalue| & \verb|\abs{a}| $\rightarrow \abs{a}$ & automatic sizing; equivalent to \verb|\qty| \!\!\texttt{|a|} \\
-& \verb|\abs\Big{a}| $\rightarrow \abs\Big{a}$ & inherits manual sizing syntax from \verb|\qty| \\
-& \verb|\abs*{\grande}| $\displaystyle\rightarrow \abs*{\grande}$ & star for no resize \\
-\verb|\norm| & \verb|\norm{a}| $\rightarrow \norm{a}$ & automatic sizing \\
-& \verb|\norm\Big{a}| $\rightarrow \norm\Big{a}$ & manual sizing \\
-& \verb|\norm*{\grande}| $\displaystyle\rightarrow \norm*{\grande}$ & star for no resize \\
-\verb|\evaluated| & \verb|\eval{x}_0^\infty| $\displaystyle\rightarrow \eval{x}_0^\infty$ & vertical bar for evaluation limits \\
-& \verb|\eval(x| \!\!\texttt{|}\!\! \verb|_0^\infty| $\displaystyle\rightarrow \eval(x|_0^\infty$ & alternate form \\
-& \verb|\eval[x| \!\!\texttt{|}\!\! \verb|_0^\infty| $\displaystyle\rightarrow \eval[x|_0^\infty$ & alternate form \\
-& \verb|\eval[\venti| \!\!\texttt{|}\!\! \verb|_0^\infty| $\displaystyle\rightarrow \eval[\venti|_0^\infty$ & automatic sizing\\
-& \verb|\eval*[\venti| \!\!\texttt{|}\!\! \verb|_0^\infty| $\displaystyle\rightarrow \eval*[\venti|_0^\infty$ & star for no resize \\
-\verb|\order| & \verb|\order{x^2}| $\rightarrow \order{x^2}$ & order symbol; automatic sizing and space handling \\
-& \verb|\order\Big{x^2}| $\rightarrow \order\Big{x^2}$ & manual sizing \\
-& \verb|\order*{\grande}| $\displaystyle\rightarrow \order*{\grande}$ & star for no resize \\
-\verb|\commutator| & \verb|\comm{A}{B}| $\rightarrow \comm{A}{B}$ & automatic sizing \\
-& \verb|\comm\Big{A}{B}| $\rightarrow \comm\Big{A}{B}$ & manual sizing \\
-& \verb|\comm*{A}{\grande}| $\displaystyle\rightarrow \comm*{A}{\grande}$ & star for no resize \\
-\verb|\anticommutator| & \verb|\acomm{A}{B}| $\rightarrow \acomm{A}{B}$ & same as \verb|\poissonbracket| \\
-%& \verb|\acommutator{A}{B}| $\rightarrow \acommutator{A}{B}$ & alternate name \\
-\verb|\poissonbracket| & \verb|\pb{A}{B}| $\rightarrow \pb{A}{B}$ & same as \verb|\anticommutator|
-\end{longtable}
+\[
+\pqty{x}  
+\qquad\bqty{x}  
+\qquad\vqty{x}  
+\qquad\Bqty{x}  
+\]
+
+\[
+\abs{a}
+\qquad\abs\Big{a}
+\qquad \abs*{\grande}
+\qquad \norm{a}
+\qquad\norm\Big{a}
+\qquad\norm*{\grande}
+\]
+
+\[
+ \eval{x}_0^\infty
+\qquad \eval(x|_0^\infty
+\qquad \eval[x|_0^\infty
+\qquad \eval[\venti|_0^\infty
+\qquad \eval*[\venti|_0^\infty
+\]
+\[
+ \order{x^2}
+\qquad \order\Big{x^2}
+\qquad \order*{\grande}
+\qquad \comm{A}{B}
+\qquad \comm\Big{A}{B}
+\qquad \comm*{A}{\grande}
+\qquad \acomm{A}{B}
+\qquad \pb{A}{B}
+\]
 
 \subsection{Vector notation}
-\begin{longtable}[l]{ l l p{6cm} }
-\verb|\vectorbold| & \verb|\vb{a}| $\rightarrow \vb{a}$ & upright/no Greek \\
-& \verb|\vb*{a}|, \verb|\vb*{\theta}| $\rightarrow \vb*{a}$, $\vb*{\theta}$ & italic/Greek \\
-\verb|\vectorarrow| & \verb|\va{a}| $\rightarrow \va{a}$ & upright/no Greek \\
-& \verb|\va*{a}|, \verb|\va*{\theta}| $\rightarrow \va*{a}$, $\va*{\theta}$ & italic/Greek \\
-\verb|\vectorunit| & \verb|\vu{a}| $\rightarrow \vu{a}$ & upright/no Greek \\
-& \verb|\vu*{a}|, \verb|\vu*{\theta}| $\rightarrow \vu*{a}$, $\vu*{\theta}$ & italic/Greek \\
-\verb|\dotproduct| & \verb|\vdot| $\rightarrow \vdot$ as in $\vb{a} \vdot \vb{b}$ & note: \verb|\dp| is a protected \TeX\ primitive \\
-\verb|\crossproduct| & \verb|\cross| $\rightarrow \cross$ as in $\vb{a} \cross \vb{b}$ & alternate name \\
-& \verb|\cp| $\rightarrow \cp$ as in $\vb{a} \cp \vb{b}$ & shorthand name \\
-\verb|\gradient| & \verb|\grad| $\rightarrow \grad$ & \\
-& \verb|\grad{\Psi}| $\rightarrow \grad{\Psi}$ & default mode \\
-& \verb|\grad(\Psi+\tall)| $\displaystyle\rightarrow \grad(\Psi+\tall)$ & long-form (like \verb|\qty| but also handles spacing) \\
-& \verb|\grad[\Psi+\tall]| $\displaystyle\rightarrow \grad[\Psi+\tall]$ & \\
-\verb|\divergence| & \verb|\div| $\rightarrow \div$ & note: \texttt{amsmath} symbol $\divisionsymbol$ renamed \verb|\divisionsymbol| \\
-& \verb|\div{\vb{a}}| $\rightarrow \div{\vb{a}}$ & default mode \\
-& \verb|\div(\vb{a}+\tall)| $\displaystyle\rightarrow \div(\vb{a}+\tall)$ & long-form \\
-& \verb|\div[\vb{a}+\tall]| $\displaystyle\rightarrow \div[\vb{a}+\tall]$ & \\
-\verb|\curl| & \verb|\curl| $\rightarrow \curl$ & \\
-& \verb|\curl{\vb{a}}| $\rightarrow \curl{\vb{a}}$ & default mode \\
-& \verb|\curl(\vb{a}+\tall)| $\displaystyle\rightarrow \curl(\vb{a}+\tall)$ & long-form \\
-& \verb|\curl[\vb{a}+\tall]| $\displaystyle\rightarrow \curl[\vb{a}+\tall]$ & \\
-\verb|\laplacian| & \verb|\laplacian| $\rightarrow \laplacian$ & \\
-& \verb|\laplacian{\Psi}| $\rightarrow \laplacian{\Psi}$ & default mode \\
-& \verb|\laplacian(\Psi+\tall)| $\displaystyle\rightarrow \laplacian(\Psi+\tall)$ & long-form \\
-& \verb|\laplacian[\Psi+\tall]| $\displaystyle\rightarrow \laplacian[\Psi+\tall]$ &
-\end{longtable}
-
+\[ \vb{a}
+\qquad \vb*{a}
+\qquad \va{a}
+\qquad \va*{a}
+\qquad \vu{a}
+\qquad \vu*{a}
+\]
+\[
+ \vdot
+\qquad \cross
+\qquad \cp
+\]
+\[
+ \grad
+\qquad \grad{\Psi}
+\qquad \grad(\Psi+\tall)
+\qquad \grad[\Psi+\tall]
+\]
+\[
+ \div
+\qquad \div{\vb{a}}
+\qquad \div(\vb{a}+\tall)
+\qquad \div[\vb{a}+\tall]
+\]
+\[
+ \curl
+\qquad \curl{\vb{a}}
+\qquad \curl(\vb{a}+\tall)
+\qquad \curl[\vb{a}+\tall]
+\]
+\[
+ \laplacian
+\qquad \laplacian{\Psi}
+\qquad \laplacian(\Psi+\tall)
+\qquad \laplacian[\Psi+\tall]
+\]
 \subsection{Operators}
-\begin{tabular}[l]{ l l p{8cm} }
-\multicolumn{3}{l}{Example trig redefinitions:} \\
-\verb|\sin| & \verb|\sin(\grande)| $\displaystyle\rightarrow \sin(\grande)$ & automatic braces; old \verb|\sin| renamed \verb|\sine| \\
-& \verb|\sin[2](x)| $\rightarrow \sin[2](x)$ & optional power \\
-& \verb|\sin x| $\rightarrow \sin x$ & can still use without an argument
-\end{tabular}
-
+\[
+ \sin(\grande)
+\qquad \sin[2](x)
+\qquad \sin x
+\]
 But
 \[
 \sin[\grande]
@@ -118,16 +119,7 @@ But
 \qquad \sin[x]\{\grande\}
  \]
 
-
-\begin{tabular}{llll}
-\verb|\sin(x)| & \verb|\sinh(x)| & \verb|\arcsin(x)| & \verb|\asin(x)| \\
-\verb|\cos(x)| & \verb|\cosh(x)| & \verb|\arccos(x)| & \verb|\acos(x)| \\
-\verb|\tan(x)| & \verb|\tanh(x)| & \verb|\arctan(x)| & \verb|\atan(x)| \\
-\verb|\csc(x)| & \verb|\csch(x)| & \verb|\arccsc(x)| & \verb|\acsc(x)| \\
-\verb|\sec(x)| & \verb|\sech(x)| & \verb|\arcsec(x)| & \verb|\asec(x)| \\
-\verb|\cot(x)| & \verb|\coth(x)| & \verb|\arccot(x)| & \verb|\acot(x)|
-\end{tabular}$\Rightarrow$
-\begin{tabular}{MMMM}
+ \begin{tabular}{MMMM}
 \sin(x) & \sinh(x) & \arcsin(x) & \asin(x) \\
 \cos(x) & \cosh(x) & \arccos(x) & \acos(x) \\
 \tan(x) & \tanh(x) & \arctan(x) & \atan(x) \\
@@ -136,35 +128,40 @@ But
 \cot(x) & \coth(x) & \arccot(x) & \acot(x)
 \end{tabular}
 
-\begin{tabular}{llll}
-\verb|\sine| & \verb|\hypsine| & \verb|\arcsine| & \verb|\asine| \\
-\verb|\cosine| & \verb|\hypcosine| & \verb|\arccosine| & \verb|\acosine| \\
-\verb|\tangent| & \verb|\hyptangent| & \verb|\arctangent| & \verb|\atangent| \\
-\verb|\cosecant| & \verb|\hypcosecant| & \verb|\arccosecant| & \verb|\acosecant| \\
-\verb|\secant| & \verb|\hypsecant| & \verb|\arcsecant| & \verb|\asecant| \\
-\verb|\cotangent| & \verb|\hypcotangent| & \verb|\arccotangent| & \verb|\acotangent|
-\end{tabular}
+% \begin{tabular}{llll}
+% \verb|\sine| & \verb|\hypsine| & \verb|\arcsine| & \verb|\asine| \\
+% \verb|\cosine| & \verb|\hypcosine| & \verb|\arccosine| & \verb|\acosine| \\
+% \verb|\tangent| & \verb|\hyptangent| & \verb|\arctangent| & \verb|\atangent| \\
+% \verb|\cosecant| & \verb|\hypcosecant| & \verb|\arccosecant| & \verb|\acosecant| \\
+% \verb|\secant| & \verb|\hypsecant| & \verb|\arcsecant| & \verb|\asecant| \\
+% \verb|\cotangent| & \verb|\hypcotangent| & \verb|\arccotangent| & \verb|\acotangent|
+% \end{tabular}
 
-\begin{tabular}{l>{$}l<{$}ll}
-\verb|\exp(\tall)| & \exp(\tall) & & \verb|\exponential| \\
-\verb|\log(\tall)| & \log(\tall) & & \verb|\logarithm| \\
-\verb|\ln(\tall)| & \ln(\tall) & old definitions $\Rightarrow$ & \verb|\naturallogarithm| \\
-\verb|\det(\tall)| & \det(\tall) & & \verb|\determinant| \\
-\verb|\Pr(\tall)| & \Pr(\tall) & & \verb|\Probability|
-\end{tabular}
+\[
+  \exp(\tall)
+\qquad \log(\tall)
+\qquad\ln(\tall) 
+\qquad \det(\tall)
+\qquad \Pr(\tall)
+\]
 
-\begin{longtable}[l]{ l l p{8cm} }
-\multicolumn{3}{l}{New operators:} \\
-\verb|\trace| or \verb|\tr| & \verb|\tr\rho| $\rightarrow \tr\rho$ also \verb|\tr(\tall)| $\rightarrow \tr(\tall)$  & trace; same bracing as trig functions \\
-\verb|\Trace| or \verb|\Tr| & \verb|\Tr\rho| $\rightarrow \Tr\rho$ & alternate \\
-\verb|\rank| & \verb|\rank M| $\rightarrow \rank M$ & matrix rank \\
-\verb|\erf| & \verb|\erf(x)|$\rightarrow \erf(x)$ & Gauss error function \\
-\verb|\Res| & \verb|\Res[f(z)]|$\rightarrow \Res[f(z)]$ & residue; same bracing as trig functions \\
-\verb|\principalvalue| & \verb|\pv{\int f(z) \dd{z}}|$\rightarrow \pv{\int f(z) \dd{z}}$ & Cauchy principal value \\
-& \verb|\PV{\int f(z) \dd{z}}|$\rightarrow \PV{\int f(z) \dd{z}}$ & alternate \\
-\verb|\Re| & \verb|\Re{z}| $\rightarrow \Re{z}$ & old \verb|\Re| renamed to \verb|\real| $\rightarrow \real$ \\
-\verb|\Im| & \verb|\Im{z}| $\rightarrow \Im{z}$ & old \verb|\Im| renamed to \verb|\imaginary| $\rightarrow \imaginary$
-\end{longtable}
+
+\[
+ \tr\rho
+\qquad \tr(\tall)
+\qquad \Tr\rho
+\qquad \rank M
+\qquad \erf(x)
+\qquad \Res[f(z)]
+\]
+\[
+\qquad \pv{\int f(z) \dd{z}}
+\qquad \PV{\int f(z) \dd{z}}
+\qquad \Re{z}
+\qquad \real
+\qquad \Im{z}
+\qquad \imaginary
+\]
 
 But
   \[ \Re(\grande)
@@ -174,151 +171,140 @@ But
 \]
 
 \subsection{Quick quad text}
+\[
+[\qq{word or phrase}]
+[\qq*{word or phrase}]
+\]
 
-\begin{tabular}[l]{ l l p{6cm} }
-General text: & & \\
-\verb|\qqtext| & \verb|\qq{}| & general quick quad text with argument \\
-& \verb|[\qq{word or phrase}]| $\rightarrow[\qq{word or phrase}]$ & normal mode; left and right \verb|\quad| \\
-& \verb|[\qq*{word or phrase}]| $\rightarrow[\qq*{word or phrase}]$ & starred mode; right \verb|\quad| only
-\end{tabular}
-
-\begin{longtable}[l]{ l l }
-Special macros: & \\
-\verb|\qcomma| or \verb|[\qc]| $\rightarrow[\qc]$ & right \verb|\quad| only \\
-\verb|[\qcc]| $\rightarrow[\qcc]$ & complex conjugate; left and right \verb|\quad| unless starred \verb|[\qcc*]| $\rightarrow[qcc*]$ \\
-\verb|[\qif]| $\rightarrow[\qif]$ & left and right \verb|\quad| unless starred \verb|[\qif*]| $\rightarrow[\qif*]$
-\end{longtable}
-\begin{longtable}[l]{ l }
-Similar to \verb|\qif|: \\
-\verb|\qthen|, \verb|\qelse|, \verb|\qotherwise|, \verb|\qunless|, \verb|\qgiven|, \verb|\qusing|, \verb|\qassume|, \verb|\qsince|, \\
-\verb|\qlet|, \verb|\qfor|, \verb|\qall|, \verb|\qeven|, \verb|\qodd|, \verb|\qinteger|, \verb|\qand|, \verb|\qor|, \verb|\qas|, \verb|\qin|
-\end{longtable}
+\[
+  [\qcomma], [\qcc], [\qif],[\qthen], [\qelse], [\qotherwise], [\qunless], [\qgiven]
+\]
+\[
+  [\qusing],[\qassume], [\qsince], [\qlet], [\qfor], [\qall], [\qeven], [\qodd],
+\]
+\[
+  [\qinteger], [\qand], [\qor], [\qas], [\qin]
+\]
 
 \subsection{Derivatives}
 
-\begin{longtable}[l]{ l l p{6cm} }
-\verb|\differential| & \verb|\dd| $\rightarrow \dd$ & \\
-& \verb|\dd x| $\rightarrow \dd x$ & no spacing (not recommended) \\
-& \verb|\dd{x}| $\rightarrow$ \textvisiblespace\,$\dd{x}$\textvisiblespace & automatic spacing based on neighbors \\
-& \verb|\dd[3]{x}| $\rightarrow \dd[3]{x}$ & optional power \\
-& \verb|\dd(\cos\theta)| $\rightarrow \dd(\cos\theta)$ & long-form; automatic braces \\
-\verb|\derivative| & \verb|\dv{x}| $\displaystyle\rightarrow \dv{x}$ & one argument \\
-& \verb|\dv{f}{x}| $\displaystyle\rightarrow \dv{f}{x}$ & two arguments \\
-& \verb|\dv[n]{f}{x}| $\displaystyle\rightarrow \dv[n]{f}{x}$ & optional power \\
-& \verb|\dv{x}(\grande)| $\displaystyle\rightarrow \dv{x}(\grande)$ & long-form; automatic braces, spacing \\
-& \verb|\dv*{f}{x}| $\displaystyle\rightarrow \dv*{f}{x}$ & inline form using \verb|\flatfrac| \\
-\verb|\partialderivative| & \verb|\pderivative{x}| $\displaystyle\rightarrow \pderivative{x}$ & alternate name \\
-& \verb|\pdv{x}| $\displaystyle\rightarrow \pdv{x}$ & shorthand name \\
-& \verb|\pdv{f}{x}| $\displaystyle\rightarrow \pdv{f}{x}$ & two arguments \\
-& \verb|\pdv[n]{f}{x}| $\displaystyle\rightarrow \pdv[n]{f}{x}$ & optional power \\
-& \verb|\pdv{x}(\grande)| $\displaystyle\rightarrow \pdv{x}(\grande)$ & long-form \\
-& \verb|\pdv{f}{x}{y}| $\displaystyle\rightarrow \pdv{f}{x}{y}$ & mixed partial \\
-& \verb|\pdv*{f}{x}| $\displaystyle\rightarrow \pdv*{f}{x}$ & inline form using \verb|\flatfrac| \\
-\verb|\variation| & \verb|\var{F[g(x)]}| $\rightarrow \var{F[g(x)]}$ & functional variation (works like \verb|\dd|) \\
-& \verb|\var(E-TS)| $\rightarrow \var(E-TS)$ & long-form \\
-\verb|\functionalderivative| & \verb|\fdv{g}| $\displaystyle\rightarrow \fdv{g}$ & functional derivative (works like \verb|\dv|) \\
-& \verb|\fdv{F}{g}| $\displaystyle\rightarrow \fdv{F}{g}$ & \\
-& \verb|\fdv{V}(E-TS)| $\displaystyle\rightarrow \fdv{V}(E-TS)$ & long-form \\
-& \verb|\fdv*{F}{x}| $\displaystyle\rightarrow \fdv*{F}{x}$ & inline form using \verb|\flatfrac|
-\end{longtable}
-
+\[
+ \dd
+   \qquad \dd x
+   \qquad\dd{x}
+   \qquad \dd[3]{x}
+   \qquad \dd(\cos\theta)
+\]
+\[
+ \dv{x}
+ \qquad \dv{x} f
+   \qquad \dv{f}{x}
+   \qquad \dv[n]{f}{x}
+   \qquad \dv{x}(\grande)
+   \qquad \dv*{f}{x}
+\]
+\[
+ \pderivative{x}
+   \qquad \pderivative{x} f
+   \qquad \pdv{x}
+   \qquad \pdv{f}{x}
+   \qquad \pdv[n]{f}{x}
+   \qquad \pdv{x}(\grande)
+   \qquad \pdv*{f}{x}
+\]
+ \[
+ \var{F[g(x)]}
+   \qquad \var(E-TS)
+   \qquad \fdv{g}
+   \qquad \fdv{F}{g}
+   \qquad \fdv{V}(E-TS)
+   \qquad \fdv*{F}{x}
+\]
 But
  \[
-   \qquad \dd[2][\grande]
+ \dd[2][\grande]
 \]
-
+And multiple derivatives, sorta; But only for partial:
+\[
+   \pdv{f}{x}{y}
+   \qquad \pdv{f}{x}{y}{z}
+   \qquad \pdv[3]{f}{x}{y}{z}
+   \qquad \pdv{x}{y}(f)
+ \]
+\[
+   \qquad \dv{f}{x}{y}
+   \qquad \fdv{F}{f}{g}
+\]
 
 \subsection{Dirac bra-ket notation}
 \begin{displaymath}
-\verb|\bra{\phi}\ket{\psi}| \rightarrow \bra{\phi}\ket{\psi} \qq{as opposed to} \bra{\phi} \ket{\psi}
+  \bra{\phi}\ket{\psi}  \qq{as opposed to} \bra{\phi} \ket{\psi}
 \end{displaymath}
-whereas a similar construction with higher-level macros will not contract in a robust manner
 \begin{displaymath}
-\verb|\bra{\phi}\dyad{\psi}{\xi}| \rightarrow \bra{\phi}\dyad{\psi}{\xi}.
-\end{displaymath}
-On the other hand, the correct output can be generated by sticking to the fundamental commands,
-\begin{displaymath}
-\verb|\bra{\phi}\ket{\psi}\bra{\xi}| \rightarrow \bra{\phi}\ket{\psi}\bra{\xi}
+ \bra{\phi}\dyad{\psi}{\xi}.
+ \qq{as opposed to}
+ \bra{\phi}\ket{\psi}\bra{\xi}
 \end{displaymath}
 
-\begin{longtable}[l]{ l L p{6cm} }
-\verb|\ket| & \verb|\ket{\tall}| \rightarrow \ket{\tall} & automatic sizing \\
-& \verb|\ket*{\tall}| \rightarrow \ket*{\tall} & no resize \\
-\verb|\bra| & \verb|\bra{\tall}| \rightarrow \bra{\tall} & automatic sizing \\
-%& \verb|\bra*{\tall}| \rightarrow \bra*{\tall} & no resize \\
-& \verb|\bra{\phi}\ket{\psi}| \rightarrow \bra{\phi}\ket{\psi} & automatic contraction \\
-& \verb|\bra{\phi}\ket{\tall}| \rightarrow \bra{\phi}\ket{\tall} & contraction inherits automatic sizing \\
-& \verb|\bra{\phi}\ket*{\tall}| \rightarrow \bra{\phi}\ket*{\tall} & \multirow{2}{*}{\parbox{6cm}{a star on either term in the contraction prohibits resizing}} \\
-& \verb|\bra*{\phi}\ket{\tall}| \rightarrow \bra*{\phi}\ket{\tall} & \\
-& \verb|\bra*{\phi}\ket*{\tall}| \rightarrow \bra*{\phi}\ket*{\tall} & \\
-\verb|\innerproduct| & \verb|\braket{a}{b}| \rightarrow \braket{a}{b} & two-argument braket \\
-& \verb|\braket{a}| \rightarrow \braket{a} & one-argument (norm) \\
-& \verb|\braket{a}{\tall}| \rightarrow \braket{a}{\tall} & automatic sizing \\
-& \verb|\braket*{a}{\tall}| \rightarrow \braket*{a}{\tall} & no resize \\
-& \verb|\ip{a}{b}| \rightarrow \ip{a}{b} & shorthand name \\
-\verb|\outerproduct| & \verb|\dyad{a}{b}| \rightarrow \dyad{a}{b} & two-argument dyad \\
-& \verb|\dyad{a}| \rightarrow \dyad{a} & one-argument (projector) \\
-& \verb|\dyad{a}{\tall}| \rightarrow \dyad{a}{\tall} & automatic sizing \\
-& \verb|\dyad*{a}{\tall}| \rightarrow \dyad*{a}{\tall} & no resize \\
-& \verb|\ketbra{a}{b}| \rightarrow \ketbra{a}{b} & alternative name \\
-& \verb|\op{a}{b}| \rightarrow \op{a}{b} & shorthand name \\
-\verb|\expectationvalue| & \verb|\expval{A}| \rightarrow \expval{A} & implicit form \\
-& \verb|\expval{A}{\Psi}| \rightarrow \expval{A}{\Psi} & explicit form \\
-& \verb|\ev{A}{\Psi}| \rightarrow \ev{A}{\Psi} & shorthand name \\
-& \verb|\ev{\grande}{\Psi}| \rightarrow \ev{\grande}{\Psi} & default sizing ignores middle argument \\
-& \verb|\ev*{\grande}{\tall}| \rightarrow \ev*{\grande}{\tall} & single star does no resizing whatsoever \\
-& \verb|\ev**{\grande}{\Psi}| \rightarrow \ev**{\grande}{\Psi} & double star resizes based on all parts \\
-\verb|\matrixelement| & \verb|\matrixel{n}{A}{m}| \rightarrow \matrixel{n}{A}{m} & requires all three arguments \\
-& \verb|\mel{n}{A}{m}| \rightarrow \mel{n}{A}{m} & shorthand name \\
-& \verb|\mel{n}{\grande}{m}| \rightarrow \mel{n}{\grande}{m} & default sizing ignores middle argument \\
-& \verb|\mel*{n}{\grande}{\tall}| \rightarrow \mel*{n}{\grande}{\tall} & single star does no resizing whatsoever \\
-& \verb|\mel**{n}{\grande}{m}| \rightarrow \mel**{n}{\grande}{m} & double star resizes based on all parts
-\end{longtable}
+\[
+ \ket{\tall}
+\qquad \ket*{\tall}
+\qquad \bra{\tall}
+\qquad \bra*{\tall}
+\]
+\[
+ \bra{\phi}\ket{\psi}
+\qquad \bra{\phi}\ket{\tall}
+\qquad \bra{\phi}\ket*{\tall}
+\qquad \bra*{\phi}\ket{\tall}
+\qquad \bra*{\phi}\ket*{\tall}
+\]
+\[
+ \braket{a}{b}
+\qquad \braket{a}
+\qquad \braket{a}{\tall}
+\qquad \braket*{a}{\tall}
+\]
+\[
+ \ip{a}{b}
+\qquad \dyad{a}{b}
+\qquad \dyad{a}
+\qquad \dyad{a}{\tall}
+\qquad \dyad*{a}{\tall}
+\qquad \ketbra{a}{b}
+\]
+\[
+ \op{a}{b}
+\qquad \expval{A}
+\qquad \expval{A}{\Psi}
+\qquad \ev{A}{\Psi}
+\qquad \ev{\grande}{\Psi}
+\qquad \ev*{\grande}{\tall}
+\qquad \ev**{\grande}{\Psi}
+\]
+\[
+ \matrixel{n}{A}{m}
+\qquad \mel{n}{A}{m}
+\qquad \mel{n}{\grande}{m}
+\qquad \mel*{n}{\grande}{\tall}
+\qquad \mel**{n}{\grande}{m}
+\]
 
 \subsection{Matrix macros}
-\begin{minipage}{3cm}
-\begin{verbatim}
-\begin{pmatrix}
+\[\begin{pmatrix}
 \imat{2} \\ a & b
 \end{pmatrix}
-\end{verbatim}
-\end{minipage}
-\begin{minipage}{6cm}
-\begin{displaymath}
-\Rightarrow\qquad
-\begin{pmatrix}
-\imat{2} \\ a & b
-\end{pmatrix}
-\end{displaymath}
-\end{minipage}
+\]
 
-\begin{minipage}{9cm}
-\begin{verbatim}
+\[
 \begin{pmatrix}
 \mqty{\imat{2}} & \mqty{a\\b} \\ \mqty{c & d} & e
 \end{pmatrix}
-\end{verbatim}
-\end{minipage}
-\begin{minipage}{6cm}
-\begin{displaymath}
-\Rightarrow\qquad
-\begin{pmatrix}
-\mqty{\imat{2}} & \mqty{a\\b} \\ \mqty{c & d} & e
-\end{pmatrix}
-\end{displaymath}
-\end{minipage}
+\]
 
-\begin{minipage}{9cm}
-\begin{verbatim}
+\[
 \mqty(\mqty{\imat{2}} & \mqty{a\\b} \\ \mqty{c & d} & e)
-\end{verbatim}
-\end{minipage}
-\begin{minipage}{6cm}
-\begin{displaymath}
-\Rightarrow\qquad
-\mqty(\mqty{\imat{2}} & \mqty{a\\b} \\ \mqty{c & d} & e)
-\end{displaymath}
-\end{minipage}
+\]
 
 But, alignment is illusion
 \[
@@ -327,43 +313,35 @@ But, alignment is illusion
   \end{pmatrix}
 \]
 
-\begin{longtable}[l]{ l L p{6cm} }
-\verb|\matrixquantity| & \verb|\mqty{a & b \\ c & d}| \rightarrow \mqty{a & b \\ c & d} & groups a set of matrix elements into a single object \\
-& \verb|\mqty(a & b \\ c & d)| \rightarrow {\mqty(a & b \\ c & d)} & parentheses \\
-& \verb|\mqty*(a & b \\ c & d)| \rightarrow {\mqty*(a & b \\ c & d)} & alternate parentheses \\
-& \verb|\mqty[a & b \\ c & d]| \rightarrow {\mqty[a & b \\ c & d]} & square brackets \\
-& \verb|\mqty| \texttt{|} \verb|a & b \\ c & d| \texttt{|} \rightarrow {\mqty|a & b \\ c & d|} & vertical bars \\
-& \verb|\pmqty{}| \leftrightarrow \verb|\mqty()| & \multirow{2}{*}{\parbox{6cm}{alternative syntax; robust and more \LaTeX-friendly}} \\
-& \verb|\Pmqty{}| \leftrightarrow \verb|\mqty*()| & \\
-& \verb|\bmqty{}| \leftrightarrow \verb|\mqty[]| & \\
-& \verb|\vmqty{}| \leftrightarrow \verb+\mqty||+ & \\
-\verb|\smallmatrixquantity| & \verb|\smqty{a & b \\ c & d}| \rightarrow \smqty{a & b \\ c & d} & the \texttt{smallmatrix} form of \verb|\mqty| \\
-& \verb|\smqty()| \qor \verb|\spmqty{}| & small version of \verb|\mqty()| \\
-& \verb|\smqty*()| \qor \verb|\sPmqty{}| & small version of \verb|\mqty*()|\\
-& \verb|\smqty[]| \qor \verb|\sbmqty{}| & small version of \verb|\mqty[]| \\
-& \verb+\smqty||+ \qor \verb|\svmqty{}| & small version of \verb+\mqty||+ \\
-\verb|\matrixdeterminant| & \verb|\mdet{a & b \\ c & d}| \rightarrow {\mdet{a & b \\ c & d}} & matrix determinant \\
-& \verb|\smdet{a & b \\ c & d}| \rightarrow {\smdet{a & b \\ c & d}} & small matrix determinant \\
-\verb|\identitymatrix| & \verb|\imat{n}| & elements of $n \times n$ identity matrix \\
-& \verb|\smqty(\imat{3})| \rightarrow \smqty(\imat{3}) & formatted with \verb|\mqty| or \verb|\smqty| \\
-\verb|\xmatrix| & \verb|\xmat{x}{n}{m}| & elements of $n \times m$ matrix filled with $x$ \\
-& \verb|\smqty(\xmat{1}{2}{3})| \rightarrow \smqty(\xmat{1}{2}{3}) & formatted with \verb|\mqty| or \verb|\smqty| \\
-& \verb|\smqty(\xmat*{a}{3}{3})| \rightarrow \smqty(\xmat*{a}{3}{3}) & star for element indices \\
-& \verb|\smqty(\xmat*{a}{3}{1})| \rightarrow \smqty(\xmat*{a}{3}{1}) & as a vector with indices \\
-& \verb|\smqty(\xmat*{a}{1}{3})| \rightarrow \smqty(\xmat*{a}{1}{3}) & \\
-\verb|\zeromatrix| & \verb|\zmat{n}{m}| & $n \times m$ matrix filled with zeros \\
-& \verb|\smqty(\zmat{2}{2})| \rightarrow \smqty(\zmat{2}{2}) & equivalent to \verb|\xmat{0}{n}{m}| \\
-\verb|\paulimatrix| & \verb|\pmat{n}| & $n^\text{th}$ Pauli matrix \\
-& \verb|\smqty(\pmat{0})| \rightarrow \smqty(\pmat{0}) & $n\in \lbrace 0,1,2,3$ or $x,y,z \rbrace$ \\
-& \verb|\smqty(\pmat{1})| \rightarrow \smqty(\pmat{1}) & \\
-& \verb|\smqty(\pmat{2})| \rightarrow \smqty(\pmat{2}) & \\
-& \verb|\smqty(\pmat{3})| \rightarrow \smqty(\pmat{3}) & \\
-\verb|\diagonalmatrix| & \verb|\dmat{a,b,c,...}| & \multirow{2}{*}{\parbox{6cm}{specify up to eight diagonal or block diagonal elements}} \\
-& \verb|\mqty(\dmat{1,2,3})| \rightarrow \mqty(\dmat{1,2,3}) & \\
-& \verb|\mqty(\dmat[0]{1,2})| \rightarrow \mqty(\dmat[0]{1,2}) & optional argument to fill spaces \\
-& \verb|\mqty(\dmat{1,2&3\\4&5})| \rightarrow \mqty(\dmat{1,2&3\\4&5}) & \parbox{6cm}{enter matrix elements for each block as a single diagonal element} \\
-\verb|\antidiagonalmatrix| & \verb|\admat{a,b,c,...}| & same as syntax as \verb|\dmat| \\
-& \verb|\mqty(\admat{1,2,3})| \rightarrow \mqty(\admat{1,2,3}) & \\
-\end{longtable}
+\[
+ \mqty{a & b \\ c & d}
+\qquad {\mqty(a & b \\ c & d)}
+\qquad {\mqty*(a & b \\ c & d)}
+\qquad {\mqty[a & b \\ c & d]}
+\qquad {\mqty|a & b \\ c & d|}
+\qquad \smqty{a & b \\ c & d} 
+\qquad {\mdet{a & b \\ c & d}}
+\qquad {\smdet{a & b \\ c & d}}
+\]
+\[
+ \smqty(\imat{3})
+\qquad \smqty(\xmat{1}{2}{3})
+\qquad \smqty(\xmat*{a}{3}{3})
+\qquad \smqty(\xmat*{a}{3}{1})
+\qquad \smqty(\xmat*{a}{1}{3})
+\qquad \smqty(\zmat{2}{2})
+\]
+\[
+ \smqty(\pmat{0})
+\qquad \smqty(\pmat{1})
+\qquad \smqty(\pmat{2})
+\qquad \smqty(\pmat{3})
+\]
+\[
+ \mqty(\dmat{1,2,3})
+\qquad \mqty(\dmat[0]{1,2})
+\qquad \mqty(\dmat{1,2&3\\4&5})
+\qquad \mqty(\admat{1,2,3})
+\]
 
 \end{document}

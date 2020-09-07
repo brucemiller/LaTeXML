@@ -6,37 +6,39 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <p><Math content-tex="\@CSYMBOL{power}x2+\@CSYMBOL{power}y3" mode="inline" tex="x^{2}+y^{3}" text="power@(x, 2) + power@(y, 3)" xml:id="p1.m1">
+    <p><Math mode="inline" tex="{x}^{2}+{y}^{3}" text="power@(x, 2) + power@(y, 3)" xml:id="p1.m1">
         <XMath>
           <XMApp>
             <XMTok meaning="plus" role="ADDOP">+</XMTok>
             <XMApp>
               <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
-              <XMTok font="italic" role="UNKNOWN" xml:id="p1.m1.1">x</XMTok>
-              <XMTok fontsize="70%" meaning="2" role="NUMBER" xml:id="p1.m1.2">2</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
             </XMApp>
             <XMApp>
               <XMTok meaning="power" role="SUPERSCRIPTOP" scriptpos="post1"/>
-              <XMTok font="italic" role="UNKNOWN" xml:id="p1.m1.3">y</XMTok>
-              <XMTok fontsize="70%" meaning="3" role="NUMBER" xml:id="p1.m1.4">3</XMTok>
+              <XMTok font="italic" role="UNKNOWN">y</XMTok>
+              <XMTok fontsize="70%" meaning="3" role="NUMBER">3</XMTok>
             </XMApp>
           </XMApp>
         </XMath>
       </Math></p>
   </para>
   <para xml:id="p2">
-    <p><Math content-tex="\@CSYMBOL{derivative-implicit-variable}f\@CSYMBOL{2}" mode="inline" tex="f^{\prime\prime}" text="derivative-implicit-variable@(f, 2)" xml:id="p2.m1">
+    <p><Math mode="inline" tex="{f}^{\prime\prime}+{g}^{\prime\prime\prime}" text="derivative-implicit-variable@(f, 2) + derivative-implicit-variable@(g, 3)" xml:id="p2.m1">
         <XMath>
           <XMApp>
-            <XMTok meaning="derivative-implicit-variable" role="SUPERSCRIPTOP" scriptpos="post1"/>
-            <XMTok font="italic" role="UNKNOWN" xml:id="p2.m1.1">f</XMTok>
-            <XMDual xml:id="p2.m1.2">
-              <XMTok meaning="2"/>
-              <XMWrap>
-                <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
-                <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
-              </XMWrap>
-            </XMDual>
+            <XMTok meaning="plus" role="ADDOP">+</XMTok>
+            <XMApp>
+              <XMTok meaning="derivative-implicit-variable" role="SUPERSCRIPTOP" scriptpos="post1"/>
+              <XMTok font="italic" role="UNKNOWN">f</XMTok>
+              <XMTok font="italic" fontsize="70%" meaning="2">′′</XMTok>
+            </XMApp>
+            <XMApp>
+              <XMTok meaning="derivative-implicit-variable" role="SUPERSCRIPTOP" scriptpos="post1"/>
+              <XMTok font="italic" role="UNKNOWN">g</XMTok>
+              <XMTok font="italic" fontsize="70%" meaning="3">′′′</XMTok>
+            </XMApp>
           </XMApp>
         </XMath>
       </Math></p>

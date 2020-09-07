@@ -53,7 +53,7 @@ my $preamble = "literal:" . <<'EOL';
 \def\FUNCTION{\neg}
 \def\OPFUNCTION{\arcsin}
 \def\TRIGFUNCTION{\sin}
-% \def\APPLYOP{\@APPLYFUNCTION} % internal mechanism?
+% \def\APPLYOP{\lx@ApplyFunction} % internal mechanism?
 \def\COMPOSEOP{*}
 \def\SUPOP{\prime}
 \def\OPEN{(}

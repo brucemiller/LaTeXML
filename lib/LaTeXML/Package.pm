@@ -1369,12 +1369,12 @@ sub dualize_arglist {
       push(@cargs, $arg); }
     elsif ($used{$i}) {                            # used in presentation?
       my $id = getXMArgID();
-      push(@pargs, Invocation(T_CS('\@XMArg'), $id, $arg));    # put XMArg in presentation
-      push(@cargs, Invocation(T_CS('\@XMRef'), $id)); }
-    else {                                                     # Hidden arg, put XMArg in content.
+      push(@pargs, Invocation(T_CS('\lx@xmarg'), $id, $arg));    # put XMArg in presentation
+      push(@cargs, Invocation(T_CS('\lx@xmref'), $id)); }
+    else {                                                       # Hidden arg, put XMArg in content.
       my $id = getXMArgID();
-      push(@cargs, Invocation(T_CS('\@XMArg'), $id, $arg));
-      push(@pargs, Invocation(T_CS('\@XMRef'), $id)); } }
+      push(@cargs, Invocation(T_CS('\lx@xmarg'), $id, $arg));
+      push(@pargs, Invocation(T_CS('\lx@xmref'), $id)); } }
   return ([@cargs], [@pargs]); }
 
 # Given a list of XML nodes (either libxml nodes, or array representations)
@@ -1436,8 +1436,9 @@ my $math_options = {    # [CONSTANT]
   scriptpos    => 1, operator_scriptpos => 1,
   stretchy     => 1, operator_stretchy  => 1,
   beforeDigest => 1, afterDigest        => 1, scope => 1, nogroup => 1, locked => 1,
-  hide_content_reversion => 1 };
-my $simpletoken_options = {    # [CONSTANT]
+  revert_as              => 1,
+  hide_content_reversion => 1 };    # DEPRECATE!
+my $simpletoken_options = {         # [CONSTANT]
   name => 1, meaning   => 1, omcd  => 1, role   => 1, mathstyle => 1,
   font => 1, scriptpos => 1, scope => 1, locked => 1 };
 
@@ -1469,6 +1470,7 @@ sub DefMathI {
     if ($nargs == 0) && !defined $options{role};
   $options{operator_role} = 'UNKNOWN'
     if ($nargs > 0) && !defined $options{operator_role};
+  $options{revert_as} = 'context' if $options{hide_content_reversion};
   # Store some data for introspection
   defmath_introspective($cs, $paramlist, $presentation, %options);
 
@@ -1560,7 +1562,7 @@ sub defmath_common_constructor_options {
 # If the presentation is complex, and involves arguments,
 # we will create an XMDual to separate content & presentation.
 # This involves creating 3 control sequences:
-#   \cs              macro that expands into \DUAL{pres}{content}
+#   \cs              macro that expands into \lxdual{pres}{content}
 #   \cs@content      constructor creates the content branch
 #   \cs@presentation macro that expands into code in the presentation branch.
 # OK, this is getting a bit out-of-hand; I can't, myself, predict whether XMDual gets involved!
@@ -1576,14 +1578,13 @@ sub defmath_dual {
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, sub {
         my ($self, @args) = @_;
         my ($cargs, $pargs) = dualize_arglist($presentation, @args);
-        Invocation(T_CS('\DUAL'),
+        Invocation(T_CS('\lx@dual'),
           Tokens(
             ($options{role}
               ? (T_OTHER('role'), T_OTHER('='), T_OTHER($options{role})) : ()),
-            ($options{role} && $options{hide_content_reversion} ? (T_OTHER(',')) : ()),
-            ($options{hide_content_reversion}
-              ? (T_OTHER('hide_content_reversion'), T_OTHER('='), T_OTHER('true')) : ())),
-
+            ($options{role} && $options{revert_as} ? (T_OTHER(',')) : ()),
+            ($options{revert_as}
+              ? (T_OTHER('revert_as'), T_OTHER('='), T_OTHER($options{revert_as})) : ())),
           Invocation($cont_cs, @$cargs),
           Invocation($pres_cs, @$pargs))->unlist; }),
     $options{scope});
@@ -1649,7 +1650,8 @@ sub defmath_prim {
           if (ref $value eq 'CODE') {
             $properties{$key} = &$value(); } }
         LaTeXML::Core::Box->new($string, $font, $locator,
-          ($options{hide_content_reversion} ? $presentation : $cs),
+          ((!defined $options{reversion}) && (($options{revert_as} || '') eq 'presentation')
+            ? $presentation : $cs),
           mode => $mode, %properties); }));
   return; }
 
@@ -1661,8 +1663,12 @@ sub defmath_cons {
   my $end_tok = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle'";
   my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
-  if (!$options{reversion} && $options{hide_content_reversion} && !$nargs) {
-    $options{reversion} = sub { (($LaTeXML::DUAL_BRANCH || '') eq 'content' ? $cs : $presentation->unlist); }; }
+  if ((! defined $options{reversion}) && !$nargs && !(defined $options{alias})) {
+    $options{reversion} = sub {
+      (!$options{revert_as}
+          || ($options{revert_as} eq 'content')
+          || (($options{revert_as} eq 'context') && (($LaTeXML::DUAL_BRANCH || 'content') eq 'content'))
+        ? $cs : $presentation->unlist); }; }
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cs, $paramlist,
       ($nargs == 0
           # If trivial presentation, allow it in Text

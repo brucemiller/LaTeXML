@@ -776,10 +776,10 @@ DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
     my ($whatsit, $kv, $body) = @_;
     my $name  = $kv->getValue('name');
     my $align = $kv->getValue('alignment');
-    (T_CS('\begin'), T_BEGIN, Revert($name), T_END,
+    (($name ? (T_CS('\begin'), T_BEGIN, Revert($name), T_END) : ()),
       ($align && $align->unlist ? (T_OTHER('['), Revert($align), T_OTHER(']')) : ()),
       Revert($body),
-      T_CS('\end'), T_BEGIN, Revert($name), T_END); }
+     ($name ? (T_CS('\end'), T_BEGIN, Revert($name), T_END) : ())); }
 );
 
 # NOTE: Use \@left,\@right here, to avoid the hidden grouping (see TeX.pool, \@hidden@bgroup)

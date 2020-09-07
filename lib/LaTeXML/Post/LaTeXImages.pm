@@ -400,10 +400,6 @@ $packages
 \\setlength{\\hoffset}{0pt}\\setlength{\\voffset}{0pt}
 \\setlength{\\textwidth}{${w}pt}
 \\thispagestyle{empty}\\pagestyle{empty}\\title{}\\author{}\\date{}
-% Extra definitions for LaTeXML generated TeX
-\\def\\FCN#1{#1}
-\\def\\DUAL{\\\@ifnextchar[{\\\@DUAL}{\\\@DUAL[]}}
-\\def\\\@DUAL[#1]#2#3{#3}% Use presentation form!!!
 \\newcount\\lxImageNumber\\lxImageNumber=0\\relax
 \\newbox\\lxImageBox
 \\newdimen\\lxImageBoxSep

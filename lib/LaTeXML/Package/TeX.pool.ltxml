@@ -311,8 +311,8 @@ DefRegisterI('\lx@DUMMY@REGISTER', undef, Tokens());
 # Read a variable, ie. a token (after expansion) that is a writable register.
 DefParameterType('Variable', sub {
     my ($gullet) = @_;
-    my $token    = $gullet->readXToken;
-    my $defn     = $token && LookupDefinition($token);
+    my $token = $gullet->readXToken;
+    my $defn = $token && LookupDefinition($token);
     if ((defined $defn) && $defn->isRegister && !$defn->isReadonly) {
       [$defn, $defn->readArguments($gullet)]; }
     else {
@@ -337,8 +337,8 @@ DefParameterType('Variable', sub {
 # Same, but not necessarily writable
 DefParameterType('Register', sub {
     my ($gullet) = @_;
-    my $token    = $gullet->readXToken;
-    my $defn     = $token && LookupDefinition($token);
+    my $token = $gullet->readXToken;
+    my $defn = $token && LookupDefinition($token);
     if ((defined $defn) && $defn->isRegister) {
       [$defn, $defn->readArguments($gullet)]; }
     else {
@@ -863,7 +863,7 @@ DefMacro('\meaning Token', sub {
           elsif ($p_spec eq 'UntilBrace') {    # should only ever be used in the last argument?
             $p_trailer = '{';
             $p_spec    = "#" . (++$arg_index) . '{'; }
-          elsif ($p_spec =~ s/^Match://) { }          # just match, don't increment arg index
+          elsif ($p_spec =~ s/^Match://) { }    # just match, don't increment arg index
           elsif ($p_spec =~ s/^\w?Until(\w*)://) {    # implied argument at this slot
             $p_spec = "#" . (++$arg_index) . $p_spec; }
           else {                                      # regular parameter, increment
@@ -1017,10 +1017,10 @@ DefRegister('\tracingcommands', Number(0),
 
 {
   my %iparms = (
-    pretolerance => 100, tolerance     => 200, hbadness        => 1000, vbadness => 1000,
-    linepenalty  => 10,  hyphenpenalty => 50,  exhyphenpenalty => 50,
-    binoppenalty         => 700,   relpenalty          => 500,
-    clubpenalty          => 150,   widowpenalty        => 150, displaywidowpenalty => 50,
+    pretolerance => 100, tolerance     => 200, hbadness            => 1000, vbadness => 1000,
+    linepenalty  => 10,  hyphenpenalty => 50,  exhyphenpenalty     => 50,
+    binoppenalty => 700, relpenalty    => 500,
+    clubpenalty  => 150, widowpenalty  => 150, displaywidowpenalty => 50,
     brokenpenalty        => 100,   predisplaypenalty   => 10000,
     postdisplaypenalty   => 0,     interlinepenalty    => 0,
     floatingpenalty      => 0,     outputpenalty       => 0,
@@ -1517,10 +1517,10 @@ DefParameterType('FontToken', sub {
     $token; });    #?
 DefRegister('\fontdimen Number FontToken' => Dimension(0),
   getter => sub { my $p = ToString($_[0]);
-    if ($p == 2)    { Dimension('0.5em'); }    # interword space
+    if    ($p == 2) { Dimension('0.5em'); }    # interword space
     elsif ($p == 5) { Dimension('1ex'); }      # x-height
     elsif ($p == 6) { Dimension('1em'); }      # quad width
-    else            { Dimension(0); } });
+    else { Dimension(0); } });
 
 #   Could be handled by setting dimensions whenever the box itself is set?
 
@@ -1804,8 +1804,8 @@ DefConstructor('\mathaccent Number Digested',
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
     my ($role, $glyph) = decodeMathChar($n);
-    $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
-    $whatsit->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
+    $whatsit->setProperty(glyph => $glyph) if $glyph;
+    $whatsit->setProperty(font => LookupValue('font')->specialize($glyph)) if $glyph;
     return; });
 
 # <box> = \box <8bit> | \copy <8bit> | \lastbox | \vsplit <8bit> to <dimen>
@@ -1862,7 +1862,7 @@ sub readBoxContents {
   my ($gullet, $everybox) = @_;
   my $t;
   while (($t = $gullet->readToken) && !Equals($t, T_BEGIN)) { }    # Skip till { or \bgroup
-      # Now, insert some extra tokens, if any, possibly from \afterassignment
+          # Now, insert some extra tokens, if any, possibly from \afterassignment
   if (my $token = LookupValue('BeforeNextBox')) {
     AssignValue(BeforeNextBox => undef, 'global');
     $gullet->unread($token); }
@@ -1919,7 +1919,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $issvg = $current && $document->getNodeQName($current) =~ /^svg:/;
     my $vmode = $current && $current->getAttribute('_vertical_mode_');
     my $newtag = ($issvg ? 'svg:g' : ($vmode ? 'ltx:p' : 'ltx:text'));
-    my $node   = $document->openElement($newtag, _noautoclose => 1,
+    my $node = $document->openElement($newtag, _noautoclose => 1,
       width => $props{width});
 
     $document->absorb($contents);
@@ -2276,7 +2276,7 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
         push(@tokens, $t);
         $level++ if $cc == CC_BEGIN;
         $level-- if $cc == CC_END;
-        last     if !$level && $mouth->isEOL; }
+        last if !$level && $mouth->isEOL; }
       $stomach->egroup;
       @tokens = (T_CS('\par')) unless @tokens;    # trailing blank line
       DefMacroI($token, undef, Tokens(@tokens)); }
@@ -2876,7 +2876,7 @@ DefPrimitiveI('\@@open@inner@column', undef, sub {
                                     # Scan for leading \omit, skipping over (& saving) \hline.
 
     while (my $tok = $gullet->readXToken(0, 0)) {
-      if ($tok->equals(T_SPACE)) { }                      # Skip leading space
+      if ($tok->equals(T_SPACE)) { }    # Skip leading space
       elsif (grep { $tok->equals($_) } @line_tokens) {    # Save line commands
         push(@lines, $stomach->invokeToken($tok)); }
       elsif (Equals($tok, T_BEGIN)) {                     # Crazy... seems { doesn't "block" \omit!
@@ -3328,7 +3328,7 @@ sub add_TeX {
     my $tex = UnTeX($thing);
     $LaTeXML::DUAL_BRANCH = 'content';
     my $ctex = UnTeX($thing);
-    $document->setAttribute($node, tex           => $tex);
+    $document->setAttribute($node, tex => $tex);
     $document->setAttribute($node, 'content-tex' => $ctex) if $ctex ne $tex; }
   return; }
 
@@ -3341,7 +3341,7 @@ sub add_body_TeX {
       my $tex = UnTeX($body);
       $LaTeXML::DUAL_BRANCH = 'content';
       my $ctex = UnTeX($body);
-      $document->setAttribute($node, tex           => $tex);
+      $document->setAttribute($node, tex => $tex);
       $document->setAttribute($node, 'content-tex' => $ctex) if $ctex ne $tex; } }
   return; }
 
@@ -3676,7 +3676,7 @@ sub equationgroupJoinRows {
 # which contain several columns, each pair of which represent a semantic equation.
 sub equationgroupJoinCols {
   my ($document, $ncols, $equation) = @_;
-  my ($col,      $main,  $branch)   = (0, undef, undef);
+  my ($col, $main, $branch) = (0, undef, undef);
   foreach my $cell ($document->findnodes('ltx:_Capture_', $equation)) {
     next unless $document->getNodeQName($cell) =~ /(.*?:)?_Capture_$/;
     if (($col++ % $ncols) == 0) {    # Create new MathFork every $ncols cells.
@@ -3706,7 +3706,7 @@ DefMacroI('\eqno', undef, sub {
         push(@stuff, $t, $gullet->readBalanced); }
       # What do I need to explicitly list here!?!?!? UGGH!
       elsif (Equals($t, T_MATH) || Equals($t, T_CS('\]')) || Equals($t, T_CS('\@@ENDDISPLAYMATH'))
-        || Equals($t, T_CS('\begingroup'))           # Totally wrong, but to catch expanded environments
+        || Equals($t, T_CS('\begingroup'))    # Totally wrong, but to catch expanded environments
         || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
                                                      # This seems needed within AmSTeX environs
         || Equals($t, T_CS('\@@close@inner@column'))
@@ -3792,6 +3792,8 @@ sub IsEmpty {
 # Returns [ (FLOATING|POST) , (SUBSCRIPT|SUPERSCRIPT) ] or nothing
 sub IsScript {
   my ($object) = @_;
+  if (ref $object eq 'LaTeXML::Core::List') {
+    $object = [$object->unlist]->[-1]; }
   if ((ref $object eq 'LaTeXML::Core::Whatsit')    # careful w/alias in getCSName!
     && ($object->getDefinition->getCS->getCSName =~ /^\\@@(FLOATING|POST)(SUBSCRIPT|SUPERSCRIPT)$/)) {
     return [$1, $2]; }
@@ -3814,7 +3816,7 @@ sub scriptHandler {
     # Parsing is too late!
     while (my $prev = pop(@LaTeXML::LIST)) {
       if ((ref $prev eq 'LaTeXML::Core::Whatsit') && $prev->getProperty('isSpace')) {
-        $prevspace = 1;              # a space avoids double-scripts
+        $prevspace = 1;    # a space avoids double-scripts
         unshift(@putback, $prev);    # put back? assuming it will add rpadding to previous???
         next; }
       elsif (IsEmpty($prev)) {       # If empty, the script floats, can't conflict, but don't put back
@@ -3907,7 +3909,7 @@ sub scriptSizer {
   # Fishing for the scriptpos on the base (if any)
   my $attr;
   $pos = $base->getProperty('scriptpos') if !defined $pos && defined $base;
-  $pos = 'post'                          if !defined $pos;
+  $pos = 'post' if !defined $pos;
   if ($pos eq 'mid') {
     $w = max(0, $ws - $wb);              # as if max width of base & script
     if ($op eq 'SUPERSCRIPT') {
@@ -3954,41 +3956,6 @@ DefConstructor('\@@FLOATINGSUBSCRIPT InScriptStyle',
   reversion => sub { (T_BEGIN, T_END, T_SUB, revertScript($_[1])); },
   sizer     => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUBSCRIPT', 'post'); });
 
-## NOTE: Strictly speaking, these two should examine the scriptpos
-# attribute of the base (it may have \limits,\nolimits)
-## OR, alternatively, there could be separate \@OVERSCRIPT/\@UNDERSCRIPT macros ?
-DefConstructor('\@SUPERSCRIPT{} InScriptStyle',
-  "?#2(<ltx:XMApp>"
-    . "<ltx:XMTok role='SUPERSCRIPTOP' scriptpos='#scriptpos'/>"
-    . "<ltx:XMArg>#1</ltx:XMArg>"
-    . "<ltx:XMArg rule='Superscript'>#2</ltx:XMArg>"
-    . "</ltx:XMApp>)"
-    . "(#1)",
-  reversion => sub {
-    my ($whatsit, $base, $sup) = @_;
-    ($sup && $sup->unlist
-      ? (T_BEGIN, Revert($base), T_END, T_SUPER, revertScript($sup))
-      : Revert($base)); },
-  properties => sub {
-    (scriptpos => "post" . $_[0]->getScriptLevel); },
-  sizer => sub { scriptSizer($_[0]->getArg(2), $_[0]->getArg(1), undef, 'SUPERSCRIPT', 'post'); });
-
-DefConstructor('\@SUBSCRIPT{} InScriptStyle',
-  "?#2(<ltx:XMApp>"
-    . "<ltx:XMTok role='SUBSCRIPTOP' scriptpos='#scriptpos'/>"
-    . "<ltx:XMArg>#1</ltx:XMArg>"
-    . "<ltx:XMArg rule='Subscript'>#2</ltx:XMArg>"
-    . "</ltx:XMApp>)"
-    . "(#1)",
-  reversion => sub {
-    my ($whatsit, $base, $sub) = @_;
-    ($sub && $sub->unlist
-      ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
-      : Revert($base)); },
-  properties => sub {
-    (scriptpos => "post" . $_[0]->getScriptLevel); },
-  sizer => sub { scriptSizer($_[0]->getArg(2), $_[0]->getArg(1), undef, 'SUBSCRIPT', 'post'); });
-
 DefMacroI('\'', undef, sub {
     my ($gullet) = @_;
     my @sup = (T_CS('\prime'));
@@ -4027,7 +3994,7 @@ sub adjustMathstyle {
     next if $$adjusted{$box};    # since we do args AND props, be careful not to adjust twice!
     $$adjusted{$box} = 1;
     my $r = ref $box;
-    next unless $r and $r->isaBox;
+    next unless $r && ($r !~ /(?:SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE)/) && $r->isaBox;
     return if $box->getProperty('explicit_mathstyle');
     next   if $box->getProperty('own_mathstyle');
 
@@ -4108,7 +4075,7 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
     my $role      = ToString($kv->getValue('role'));
     my $meaning   = ToString($kv->getValue('meaning'));
     my $thickness = ToString($kv->getValue('thickness'));
-    $role    = 'FRACOP' unless $role;
+    $role = 'FRACOP' unless $role;
     $meaning = 'divide' if (!$meaning) && ($thickness ne '0pt');
     # Unfortunately, the numerator's already digested! We have to adjust it's mathstyle
     my @top = $stomach->regurgitate;
@@ -4132,7 +4099,7 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
     return $closing; },    # and leave the closing bit, whatever it is.
   properties => sub { %{ $_[2]->getKeyVals }; },
   sizer      => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
-  reversion  => sub {
+  reversion => sub {
     my ($whatsit) = @_;
     (Revert($whatsit->getProperty('top')),
       $whatsit->getArg(1)->unlist,
@@ -4218,6 +4185,20 @@ DefConstructor('\@ASSERT@MEANING{}{}', '#2',
     my $meaning = ToString($whatsit->getArg(1));
     addMeaningRec($document, $node, $meaning);
     $node; });
+
+sub addMeaningRec {
+  my ($document, $node, $meaning) = @_;
+  if ($node->nodeType == XML_ELEMENT_NODE) {
+    my $qname = $document->getModel->getNodeQName($node);
+    if ($qname eq 'ltx:XMArg') { }                 # DONT cross through into arguments!
+    elsif ($qname eq 'ltx:XMTok') {
+      if ((($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
+        && !$node->getAttribute('meaning')) {
+        $document->setAttribute($node, meaning => $meaning); } }
+    else {
+      foreach my $c ($node->childNodes) {
+        addMeaningRec($document, $c, $meaning); } } }
+  return; }
 
 #======================================================================
 # Properties for plain characters.
@@ -4324,7 +4305,7 @@ DefMathLigature(matcher => sub { my ($document, $node) = @_;
         # if thousands separator (but NOT simultaneously PUNCT!!!! Be paranoid about lists)
         elsif (($text eq $thou) && ($r ne 'PUNCT')) {
           $string = $text . $string; }    # Add to string, but omit from number
-                                                         # if decimal separator, turn it into "standard" "."
+                                          # if decimal separator, turn it into "standard" "."
         elsif (($text eq $dec) || ($r eq $decrole)) {    # was $r eq 'PERIOD'
           $string = $node->textContent . $string;
           $number = '.' . $number; }
@@ -4431,7 +4412,7 @@ DefPrimitive('\newbox    Token', sub {
     AssignValue("box$n", List());
     DefRegisterI($_[1], undef, Number($n), readonly => 1); });
 DefPrimitive('\newhelp Token {}', sub { AssignValue(ToString($_[1]) => $_[2]); });
-DefPrimitive('\newtoks Token',    sub { DefRegisterI($_[1], undef, Tokens()); });
+DefPrimitive('\newtoks Token', sub { DefRegisterI($_[1], undef, Tokens()); });
 # the next 4 actually work by doing a \chardef instead of \countdef, etc.
 # which means they actually work quite differently
 DefRegister('\allocationnumber' => Number(0));
@@ -5161,7 +5142,7 @@ DefAccent('\t', "\x{0361}", "-");    # COMBINING DOUBLE INVERTED BREVE & ???? Wh
       # this one's actually defined in mathscinet.sty, but just stick it here!
 DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
                                                      # I doubt that latter covers multiple chars...?
-       #DefAccent('\bar',"\x{0304}", ?);  # COMBINING MACRON or is this the longer overbar?
+        #DefAccent('\bar',"\x{0304}", ?);  # COMBINING MACRON or is this the longer overbar?
 
 # This will fail if there really are "assignments" after the number!
 # We're given a number pointing into the font, from which we can derive the standalone char.
@@ -5344,10 +5325,10 @@ DefMathI('\hbar',  undef, "\x{210F}", role => 'ID', meaning => 'Planck-constant-
 DefMathI('\imath', undef, "\x{0131}");
 DefMathI('\jmath', undef, "\x{0237}");
 DefMathI('\ell',   undef, "\x{2113}");
-DefMathI('\wp',    undef, "\x{2118}", meaning => 'Weierstrass-p');
-DefMathI('\Re',    undef, "\x{211C}", role => 'OPFUNCTION', meaning => 'real-part');
-DefMathI('\Im',    undef, "\x{2111}", role => 'OPFUNCTION', meaning => 'imaginary-part');
-DefMathI('\mho',   undef, "\x{2127}");
+DefMathI('\wp', undef, "\x{2118}", meaning => 'Weierstrass-p');
+DefMathI('\Re', undef, "\x{211C}", role    => 'OPFUNCTION', meaning => 'real-part');
+DefMathI('\Im', undef, "\x{2111}", role    => 'OPFUNCTION', meaning => 'imaginary-part');
+DefMathI('\mho', undef, "\x{2127}");
 
 DefMathI('\prime',    undef, "\x{2032}", role => 'SUPOP',    locked  => 1);
 DefMathI('\emptyset', undef, "\x{2205}", role => 'ID',       meaning => 'empty-set');
@@ -5371,7 +5352,7 @@ DefMathI('\backslash', undef, UTF(0x5C), role => 'MULOP');
 DefMathI('\partial',   undef, "\x{2202}", role => 'OPERATOR', meaning => 'partial-differential');
 
 DefMathI('\infty', undef, "\x{221E}", role => 'ID', meaning => 'infinity');
-DefMathI('\Box',         undef, "\x{25A1}");
+DefMathI('\Box', undef, "\x{25A1}");
 DefMathI('\Diamond',     undef, "\x{25C7}");
 DefMathI('\triangle',    undef, "\x{25B3}");
 DefMathI('\clubsuit',    undef, "\x{2663}");
@@ -5493,7 +5474,7 @@ DefMathI('\times', undef, UTF(0xD7),  role => 'MULOP', meaning => 'times');
 DefMathI('\div',   undef, UTF(0xF7),  role => 'MULOP', meaning => 'divide');
 DefMathI('\ast',   undef, "\x{2217}", role => 'MULOP');
 DefMathI('\star',  undef, "\x{22C6}", role => 'MULOP');
-DefMathI('\circ', undef, "\x{2218}", role => 'MULOP', meaning => 'compose');
+DefMathI('\circ',  undef, "\x{2218}", role => 'MULOP', meaning => 'compose');
 DefMathI('\bullet', undef, "\x{2219}", role => 'MULOP');
 DefMathI('\cdot',   undef, "\x{22C5}", role => 'MULOP');
 ##  , meaning=>'inner-product');  that's pushing it a bit far...
@@ -5526,7 +5507,7 @@ DefMathI('\oplus',  undef, "\x{2295}", role => 'ADDOP', meaning => 'direct-sum')
 DefMathI('\ominus', undef, "\x{2296}", role => 'ADDOP', meaning => 'symmetric-difference');
 DefMathI('\otimes', undef, "\x{2297}", role => 'MULOP', meaning => 'tensor-product');
 DefMathI('\oslash', undef, "\x{2298}", role => 'MULOP');
-DefMathI('\odot', undef, "\x{2299}", role => 'MULOP', meaning => 'direct-product');
+DefMathI('\odot',   undef, "\x{2299}", role => 'MULOP', meaning => 'direct-product');
 DefMathI('\bigcirc', undef, "\x{25CB}", role => 'MULOP');
 DefMathI('\dagger',  undef, "\x{2020}", role => 'MULOP');
 DefMathI('\ddagger', undef, "\x{2021}", role => 'MULOP');
@@ -5755,13 +5736,13 @@ DefConstructorI('\vdots', undef,
       ? (font => LookupValue('font')->merge(family => 'serif',
           series => 'medium', shape => 'upright')->specialize("\x{22EE}"))
       : ()); });    # Since not DefMath!
-                                                        # But not these!
+                    # But not these!
 DefMathI('\cdots', undef, "\x{22EF}", role => 'ID');    # MIDLINE HORIZONTAL ELLIPSIS
 
 DefMathI('\ddots', undef, "\x{22F1}", role => 'ID');           # DOWN RIGHT DIAGONAL ELLIPSIS
 DefMathI('\colon', undef, ':',        role => 'METARELOP');    # Seems like good default role
-    # Note that amsmath redefines \dots to be `smart'.
-    # Aha, also can be in text...
+        # Note that amsmath redefines \dots to be `smart'.
+        # Aha, also can be in text...
 DefConstructorI('\dots', undef,
   "?#isMath(<ltx:XMTok name='dots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
   properties => sub {
@@ -6193,7 +6174,7 @@ DefKeyVal('lx@GEN', 'style', 'UndigestedKey');
 DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
     my ($stomach, $kv) = @_;
     $stomach->bgroup;
-    my $style = $kv->getValue('style')               || T_CS('\textstyle');
+    my $style = $kv->getValue('style') || T_CS('\textstyle');
     my $align = ToString($kv->getValue('alignment')) || 'c';
     # We really should be using ReadAlignmentTemplate (LaTeXML::Core::Alignment)
     # but we'd have to convert it to a repeating spec somehow.
@@ -6638,58 +6619,143 @@ DefConstructor('\lx@add@Preamble@PI Undigested',
   "<?latexml preamble='#1'?>");
 
 #======================================================================
+# Support for constructing mathematical expressions
 
-DefConstructor('\DUAL OptionalKeyVals {}{}',
-  "<ltx:XMDual role='&GetKeyVal(#1,role)'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
-  reversion => sub {
-    my ($whatsit) = @_;
-    my ($kv, $content, $presentation) = $whatsit->getArgs;
-    if (!$LaTeXML::DUAL_BRANCH) {
-      Tokens(T_CS('\DUAL'),
-        $whatsit->getDefinition->getParameters->revertArguments($kv, $content, $presentation)); }
-    elsif (($LaTeXML::DUAL_BRANCH eq 'content')
-      || !GetKeyVal($kv, 'hide_content_reversion')) {
-      Revert($content); }
-    elsif ($LaTeXML::DUAL_BRANCH eq 'presentation') {
-      Revert($presentation); }
-    else {
-      Warn('misdefined', 'DUAL', $_[0],
-        "$LaTeXML::DUAL_BRANCH Unknown DUAL_BRANCH: $LaTeXML::DUAL_BRANCH");
-      Tokens(T_CS('\DUAL'),
-        $whatsit->getDefinition->getParameters->revertArguments($kv, $content, $presentation)); }
-  },
-  sizer => '#3');    # size according to presentation
+# Common XMath pattern for assigning attributes from Whatsit properties.
+our $XMath_attributes =
+  " role='#role' name='#name' meaning='#meaning' omcd='#omcd'"
+  . " width='#width' height='#height' xoffset='#xoffset' yoffset='#yoffset'"
+  . " lpadding='#lpadding' rpadding='#rpadding'";
 
-sub addMeaningRec {
-  my ($document, $node, $meaning) = @_;
-  if ($node->nodeType == XML_ELEMENT_NODE) {
-    my $qname = $document->getModel->getNodeQName($node);
-    if ($qname eq 'ltx:XMArg') { }    # DONT cross through into arguments!
-    elsif ($qname eq 'ltx:XMTok') {
-      if ((($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
-        && !$node->getAttribute('meaning')) {
-        $document->setAttribute($node, meaning => $meaning); } }
-    else {
-      foreach my $c ($node->childNodes) {
-        addMeaningRec($document, $c, $meaning); } } }
+sub XMath_copy_keyvals {
+  my ($stomach, $whatsit) = @_;
+  my $kv = $whatsit->getArg(1);
+  $whatsit->setProperties($kv->getPairs) if $kv;
   return; }
 
-DefConstructor('\FCN{}', "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>", reversion => '#1', alias => '');
-DefConstructor('\ROLE{}{}', "<ltx:XMWrap role='#1'>#2</ltx:XMWrap>", reversion => '#2', alias => '');
+# Build an ltx:XMApp, application of function/operator to arguments
+# first piece of (TeX) argument is expected to be the operator
+# Usually used on content side, but at least the arguments should be properly encapsulated:
+# They should build individual subtrees; use ltx::XMArg, ltx:XMWrap ... if needed
+DefConstructor('\lx@apply OptionalKeyVals:XMath {}{}',
+  "<ltx:XMApp $XMath_attributes>#2#3</ltx:XMApp>",
+  reversion   => '#2#3',
+  afterDigest => sub { XMath_copy_keyvals(@_); });
 
-# NOTE: work through this systematically!
-DefConstructor('\@SYMBOL{}', "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>", reversion => '#1');
-DefConstructor('\@CSYMBOL{}', "<ltx:XMTok meaning='#1'/>");
-DefConstructor('\@APPLY{}', "<ltx:XMApp>#1</ltx:XMApp>", reversion => '#1');
-DefConstructor('\@MAYBEAPPLY{}{}',
-  "?#2(<ltx:XMApp>#1#2</ltx:XMApp>)(#1)",
-  reversion => '#1#2');
-DefConstructor('\@WRAP{}',  "<ltx:XMWrap>#1</ltx:XMWrap>", reversion => '#1');
-DefConstructor('\@TOKEN{}', "<ltx:XMTok name='#1'/>",      reversion => '');
+# Build an ltx:XMTok, a mathematical symbol, with given attributes
+# the argument should create text to be the content of the token.
+DefConstructor('\lx@symbol OptionalKeyVals:XMath {}',
+  "<ltx:XMTok $XMath_attributes>#2</ltx:XMTok>",
+  reversion   => '#2',
+  afterDigest => sub { XMath_copy_keyvals(@_); });
+
+# Wrap the contents in an ltx:XMWrap, to stand as a single subtree & providing attributes
+# The ltx:XMWrap may be collapsed, later, by parsing
+DefConstructor('\lx@wrap OptionalKeyVals:XMath {}',
+  "<ltx:XMWrap $XMath_attributes>#2</ltx:XMWrap>",
+  reversion   => '#2',
+  afterDigest => sub { XMath_copy_keyvals(@_); });
+
+# Convert a hashref into a list of tokens of the form key=value,...
+sub I_keyvals {
+  my ($keyvals) = @_;
+  my @options = ();
+  if ($keyvals) {
+    while (my ($key, $value) = each %$keyvals) {
+      $value = TokenizeInternal($value) if $value && !ref $value;
+      push(@options, T_OTHER(',')) if @options;
+      push(@options, T_OTHER($key), T_OTHER('='), T_BEGIN, $value, T_END); } }
+  return (@options ? Tokens(T_OTHER('['), @options, T_OTHER(']')) : ()); }
+
+sub I_apply {
+  my ($kv, $op, @args) = @_;
+  return Tokens(T_CS('\lx@apply'), I_keyvals($kv),
+    T_BEGIN, T_CS('\lx@wrap'), T_BEGIN, $op, T_END, T_END,
+    T_BEGIN, (map { (T_CS('\lx@wrap'), T_BEGIN, $_, T_END); } @args), T_END); }
+
+sub I_symbol {
+  my ($kv, $text) = @_;
+  return Tokens(T_CS('\lx@symbol'), I_keyvals($kv), T_BEGIN, (defined $text ? $text : ()), T_END); }
+
+sub I_wrap {
+  my ($kv, @stuff) = @_;
+  return Tokens(T_CS('\lx@wrap'), I_keyvals($kv), T_BEGIN, @stuff, T_END); }
+
+# These two accept key operator_meaning, operator_omcd to give a meaning to the sub/superscript
+# NOTE (BUG): We SHOULD nest paired sub/superscripts, but avoid conflicting double scripts
+# To do that we need to sniff at the base, whether it already contains scripts.
+# However, IsScript isn't quite sufficient if the scripts are hidden within Whatsits, duals, etc.
+# Currently, LaTeXML manages to deal with the double scripts anyway;
+# The reversion ALWAYS wraps the base (which will render non-optimally in images but avoid Errors)
+DefConstructor('\lx@superscript OptionalKeyVals:XMath {} InScriptStyle',
+  "<ltx:XMApp $XMath_attributes>"
+    . "<ltx:XMTok role='SUPERSCRIPTOP' meaning='#operator_meaning' omcd='#operator_omcd' scriptpos='#scriptpos'/>"
+    . "<ltx:XMArg>#2</ltx:XMArg>"
+    . "<ltx:XMArg rule='Superscript'>#3</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  afterDigest => sub { XMath_copy_keyvals(@_); },
+  reversion   => sub {
+    my ($whatsit, $kv, $base, $sup) = @_;
+    my $bump = $whatsit->getProperty('bump');
+    $bump = 1;    # For now: ALWAYS {} wrap base in the reversion!
+    ($sup && $sup->unlist
+      ? (($bump ? (T_BEGIN, Revert($base), T_END) : Revert($base)), T_SUPER, revertScript($sup))
+      : Revert($base)); },
+  properties => sub {
+    my ($stomach, $kv, $base, $script) = @_;
+    my $basetype = IsScript($base);
+    my $bump     = ($basetype && ($$basetype[1] eq 'SUPERSCRIPT') ? 1 : 0);
+    (scriptpos => "post" . ($_[0]->getScriptLevel + $bump),
+      bump => $bump); },
+  sizer => sub { scriptSizer($_[0]->getArg(3), $_[0]->getArg(2), undef, 'SUPERSCRIPT', 'post'); });
+
+DefConstructor('\lx@subscript OptionalKeyVals:XMath {} InScriptStyle',
+  "<ltx:XMApp $XMath_attributes>"
+    . "<ltx:XMTok role='SUBSCRIPTOP' meaning='#operator_meaning' omcd='#operator_omcd' scriptpos='#scriptpos'/>"
+    . "<ltx:XMArg>#2</ltx:XMArg>"
+    . "<ltx:XMArg rule='Subscript'>#3</ltx:XMArg>"
+    . "</ltx:XMApp>",
+  afterDigest => sub { XMath_copy_keyvals(@_); },
+  reversion   => sub {
+    my ($whatsit, $kv, $base, $sub) = @_;
+    my $bump = $whatsit->getProperty('bump');
+    $bump = 1;    # For now: ALWAYS {} wrap base in the reversion!
+    ($sub && $sub->unlist
+###      ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
+      ? (($bump ? (T_BEGIN, Revert($base), T_END) : Revert($base)), T_SUB, revertScript($sub))
+      : Revert($base)); },
+  properties => sub {
+    my ($stomach, $kv, $base, $script) = @_;
+    my $basetype = IsScript($base);
+    my $bump     = ($basetype && ($$basetype[1] eq 'SUBSCRIPT') ? 1 : 0);
+    (scriptpos => "post" . ($_[0]->getScriptLevel + $bump),
+      bump => $bump); },
+  sizer => sub { scriptSizer($_[0]->getArg(3), $_[0]->getArg(2), undef, 'SUBSCRIPT', 'post'); });
+
+# Ignore $kv for the moment?????
+sub I_subscript {
+  my ($kv, $base, $script) = @_;
+  return Tokens(T_CS('\lx@subscript'), I_keyvals($kv), T_BEGIN, $base, T_END, T_BEGIN, $script, T_END); }
+
+sub I_superscript {
+  my ($kv, $base, $script) = @_;
+  return Tokens(T_CS('\lx@superscript'), I_keyvals($kv), T_BEGIN, $base, T_END, T_BEGIN, $script, T_END); }
+
+# Superscript meaning power
+DefMacro('\lx@power{}{}', '\lx@superscript[operator_meaning=power]{#1}{#2}');
+# Superscript meaning functional (or applicative) power; iterated function/operator application
+DefMacro('\lx@functionalpower{}{}', '\lx@superscript[operator_meaning=functional-power]{#1}{#2}');
+
+# These to be used in presentation side
+DefMathI('\lx@ApplyFunction', undef, "\x{2061}", reversion => '', name => '', role => 'APPLYOP');
+DefMathI('\lx@InvisibleTimes', undef, "\x{2062}", reversion => '', name => '', meaning => 'times', role => 'MULOP');
+DefMathI('\lx@InvisibleComma', undef, "\x{2063}", reversion => '', name => '', role => 'PUNCT');
+DefMathI('\lx@InvisiblePlus', undef, "\x{2064}", reversion => '', name => '', meaning => 'plus', role => 'ADDOP');
+
 DefConstructor('\lx@kludged{}',
   "?#isMath(<ltx:XMWrap rule='kludge'>#1</ltx:XMWrap>)(#1)",
   reversion => '#1');
-DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
+DefConstructor('\lx@padded[MuDimension]{MuDimension}{}',
   '#3',
   afterConstruct => sub {
     my ($document, $whatsit) = @_;
@@ -6703,19 +6769,189 @@ DefConstructor('\@PADDED[MuDimension]{MuDimension}{}',
       $document->setAttribute($node, rpadding => $rpadding); } },
   reversion => '#3');
 
-DefMathI('\@APPLYFUNCTION', undef, "\x{2061}", reversion => '', name => '', role => 'APPLYOP');
-DefMathI('\@INVISIBLETIMES', undef, "\x{2062}", reversion => '', name => '', meaning => 'times', role => 'MULOP');
-DefMathI('\@INVISIBLECOMMA', undef, "\x{2063}", reversion => '', name => '', role => 'PUNCT');
-DefMathI('\@INVISIBLEPLUS', undef, "\x{2064}", reversion => '', name => '', meaning => 'plus', role => 'ADDOP');
+#======================================================================
+# Building XMDuals for Mathematical Parallel markup
+# Used when the content and presentation forms have different structure.
+
+DefKeyVal('XMath', 'reversion',              'UndigestedKey');
+DefKeyVal('XMath', 'content_reversion',      'UndigestedKey');
+DefKeyVal('XMath', 'presentation_reversion', 'UndigestedKey');
+DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
+  #  "<ltx:XMDual role='&GetKeyVal(#1,role)'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
+  "<ltx:XMDual role='#role'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
+  beforeDigest => sub {
+    PushValue(PENDING_DUAL_XMARGS => {});
+    return; },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $kv     = $whatsit->getArg(1);
+    my $xmargs = PopValue('PENDING_DUAL_XMARGS');    # Really SHOULD be a hash
+    $whatsit->setProperties(%$xmargs) if $xmargs;    # Hopefully no name class with XM<digits>
+    $whatsit->setProperties($kv->getPairs) if $kv;
+    my %props = $whatsit->getProperties;
+    my $cr    = $props{content_reversion};
+    my $pr    = $props{presentation_reversion};
+    my $r     = ToString($props{revert_as}) || 'content';    # ?????
+
+    if (!defined $props{reversion}) {
+      $whatsit->setProperty(reversion => sub {
+          my ($self, $kv, $c, $p) = @_;
+          ($r eq 'content' ? $cr || Revert($c)
+            : ($r eq 'presentation' ? $pr || Revert($p)
+              : ($r eq 'dual'
+                ? Tokens(T_CS('\lx@dual'), I_keyvals($kv),
+                  T_BEGIN, ($cr || Revert($c)), T_END,
+                  T_BEGIN, ($pr || Revert($p)), T_END)
+                : (($LaTeXML::DUAL_BRANCH || '') eq 'presentation'    # Context dependent reversion
+                  ? $pr || Revert($p)
+                  : $cr || Revert($c))))); }); }
+    return; },
+  sizer => '#3');                                                     # size according to presentation
+
+# These are used within XMDual
+# The XMDual represents both a content & presentation representation of some
+# possibly exotic structure ("Transfix notation"),
+# or just a somewhat complex presentation that corresponds (often) to a simpler
+# applicative content structure.
+# Invoking such a mathematical object to "arguments" requires that both the
+# content & presentation branches contain those arguments.
+# There will be an XMArg, with an ID, containing the actual markup, and an XMRef that referrs to it.
+# The XMArg will usually be in the presentation branch (so that it inherits appropriate style),
+# unless the arg is "hidden" (ie. semantic, but not displayed).
+# This means that we don't know which one appears first! (See Package's dualize_arglist)
+#
+# To get a "proper id", we'll use a temporary label-like attribute (_xmkey)
+# and establish an id and idref later.
+DefConstructor('\lx@xmarg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>",
+  reversion   => '#2',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($xmid,    $arg)     = $whatsit->getArgs();
+    $xmid = ToString($xmid);
+    if (my $pending = LookupValue('PENDING_DUAL_XMARGS')) {
+      if (my $xmargs = $$pending[-1]) {
+        $$xmargs{$xmid} = $arg; } }
+    AssignValue('xref:' . ToString($_[1]->getArg(1)) => $_[1], 'global'); });
+
+DefConstructor('\lx@xmref{}', "<ltx:XMRef _xmkey='#1'/>",
+  reversion => sub {
+    Revert(LookupValue('xref:' . ToString($_[1]))); },
+  sizer => sub { LookupValue('xref:' . ToString($_[0]->getArg(1)))->getSize; });
+
+# Connect up the XMRef/XMArg pairs (actually can be multiple XMRef's)
+# We want to set the idref of the XMRef's to point to the id of the XMArg (or other XM element),
+# but usually the XMRef is created first, and we want to let the referred to element
+# get it's id computed by whatever means it prefers.
+# so we have to work both ways (use state to record associations, to avoid expensive xpath)
+# Set id's on any non-XMRef nodes that have an _xmkey
+# This gets a more natural ordering
+Tag('ltx:*', 'afterOpen:late' => sub {
+    my ($document, $node) = @_;
+    if (my $key = $node->getAttribute('_xmkey')) {
+      my $qname = $document->getNodeQName($node);
+      if (($qname ne 'ltx:XMRef') && ($qname =~ /^ltx:XM/) && !$node->hasAttribute('xml:id')) {
+        GenerateID($document, $node, undef, ''); } } });
+
+Tag('ltx:XMDual', 'afterClose:late' => sub {
+    my ($document, $node) = @_;
+    my %ids  = ();
+    my @refs = ();
+    # Collect all children with _xmkey attribute
+    foreach my $n ($document->findnodes('descendant::*[@_xmkey]', $node)) {
+      if (($document->getNodeQName($n) eq 'ltx:XMRef') && !$n->hasAttribute('idref')) {
+        push(@refs, $n); }    # we'll fill these in next
+      else {                  # generate & record ids for all referenced noces
+        my $key = $n->getAttribute('_xmkey');
+        if (!$ids{$key}) {
+          GenerateID($document, $n, undef, '');    # Generate id if none already.
+          $ids{$key} = $n->getAttribute('xml:id'); } } }
+    foreach my $r (@refs) {                        # Now fill in the references
+      $document->setAttribute($r, idref => $ids{ $r->getAttribute('_xmkey') });
+      $r->removeAttribute('_xmkey'); }
+});
+
+# Construction aids
+# Build an XMDual (via \lx@dual) given the content & presentation forms.
+# These forms are provided as Tokens, invoking the appropriate constructor macros,
+# and refering to any arguments using #1, #2.... (see T_XMArg for syntactic sugar)
+# The arguments (if any) are given separately; within the content & presentation
+# they are replaced by \lx@xmref and \lx@xmarg, appropriately,
+# so that they will be linked/shared in the XML tree.
+# The keyvals argument is a hash containing any properties of the construct,
+# along with reversion, content_reversion  & presentation_reversion, which are
+# substituted for arguments as well.
+sub I_dual {
+  my ($keyvals, $content, $presentation, @args) = @_;
+  $content      = TokenizeInternal($content)      if $content      && !ref $content;
+  $presentation = TokenizeInternal($presentation) if $presentation && !ref $presentation;
+  my (@revargs, @pargs, @cargs);
+  foreach my $arg (@args) {
+    my $id = LaTeXML::Package::getXMArgID();
+    push(@revargs, Tokens(T_PARAM, T_OTHER(ToString($id))));
+    push(@pargs, Invocation(T_CS('\lx@xmarg'), $id, $arg));
+    push(@cargs, Invocation(T_CS('\lx@xmref'), $id)); }
+  my $optional = undef;
+  if ($keyvals) {
+    my @options = ();
+    while (my ($key, $value) = each %$keyvals) {
+      $value = TokenizeInternal($value) if $value && !ref $value;
+      if ($key =~ /^(?:presentation_|content_|)reversion$/) {
+        $value = $value->substituteParameters(@revargs); }
+      push(@options, T_OTHER(',')) if @options;
+      push(@options, T_OTHER($key), T_OTHER('='), T_BEGIN, $value, T_END); }
+    $optional = Tokens(@options); }
+  return
+    Invocation(T_CS('\lx@dual'), $optional,
+    $content->substituteParameters(@cargs),
+    I_wrap({}, $presentation->substituteParameters(@pargs))); }
+
+# A little helper to shorten things up a bit; simply generates #1 (or whatever)
+sub I_arg { return Tokens(T_PARAM, T_OTHER($_[0])); }
+
+sub I_xmarg {
+  my ($id, $arg) = @_;
+  return Tokens(T_CS('\lx@xmarg'),
+    T_BEGIN, (ref $id ? $id : T_OTHER($id)), T_END, T_BEGIN, $arg, T_END); }
+
+sub I_xmref {
+  my ($id) = @_;
+  return Tokens(T_CS('\lx@xmref'), T_BEGIN, (ref $id ? $id : T_OTHER($id)), T_END); }
+
+#----------------------------------------------------------------------
+# This group should be renamed to \lx@somethings and deprecated
+# NOTE: work through this systematically!
+DefMacro('\FCN{}',            '\lx@wrap[role=FUNCTION]{#1}');
+DefMacro('\ROLE{}{}',         '\lx@wrap[role={#1}]{#2}');
+DefMacro('\@SYMBOL{}',        '\lx@wrap[role=ID]{#1}');
+DefMacro('\@CSYMBOL{}',       '\lx@symbol[meaning={#1}]{}');
+DefMacro('\@APPLY{}',         '\lx@apply[]{#1}{}');                             # Sorta broken?
+DefMacro('\@MAYBEAPPLY{}{}',  '\ifx.#2.#1\else\lx@apply{#1}{#2}\fi');
+DefMacro('\@WRAP{}',          '\lx@wrap[]{#1}');
+DefMacro('\@TOKEN{}',         '\lx@symbol[name={#1}]{}');
+DefMacro('\@SUPERSCRIPT{}{}', '\ifx.#2.#1\else\lx@superscript[]{#1}{#2}\fi');
+DefMacro('\@SUBSCRIPT{}{}',   '\ifx.#2.#1\else\lx@subscript[]{#1}{#2}\fi');
+Let('\@PADDED',         '\lx@padded');
+Let('\DUAL',            '\lx@dual');
+Let('\@XMArg',          '\lx@xmarg');
+Let('\@XMRef',          '\lx@xmref');
+Let('\@APPLYFUNCTION',  '\lx@ApplyFunction');
+Let('\@INVISIBLETIMES', '\lx@InvisibleTimes');
+Let('\@INVISIBLECOMMA', '\lx@InvisibleComma');
+Let('\@INVISIBLEPLUS',  '\lx@InvisiblePlus');
+
+# End of stuff to be deprecated.
+#----------------------------------------------------------------------
+
+#======================================================================
 
 # We OUGHT to be able to do this using \llap,\rlap,\hss...
 DefMacro('\lx@tweaked{}{}', '\ifmmode\lx@math@tweaked{#1}{#2}\else\lx@text@tweaked{#1}{#2}\fi');
 DefConstructor('\lx@math@tweaked RequiredKeyVals {}',
-  "<ltx:XMWrap %&GetKeyVals(#1)>#2</ltx:XMWrap>",
+  "<ltx:XMWrap $XMath_attributes>#2</ltx:XMWrap>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($kv,      $body)    = $whatsit->getArgs;
-    $whatsit->setProperties($kv->getPairs);
+    XMath_copy_keyvals($stomach, $whatsit);
     $whatsit->setFont($body->getFont);
     return; },
   reversion => '#2');
@@ -6754,61 +6990,6 @@ DefConstructor('\lx@text@nounicode DefToken',
   "<ltx:text _no_autoclose='true' class='ltx_nounicode'>#1</ltx:text>",
   afterDigest => sub {
     reportNoUnicode(ToString($_[1]->getArg(0))); });
-
-# These are used (primarily?) within XMDual
-# The XMDual represents both a content & presentation representation of some
-# possibly exotic structure ("Transfix notation"),
-# or just a somewhat complex presentation that corresponds (often) to a simpler
-# applicative content structure.
-# Invoking such a mathematical object to "arguments" requires that both the
-# content & presentation branches contain those arguments.
-# There will be an XMArg, with an ID, containing the actual markup, and an XMRef that referrs to it.
-# The XMArg will usually be in the presentation branch (so that it inherits appropriate style),
-# unless the arg is "hidden" (ie. semantic, but not displayed).
-# This means that we don't know which one appears first! (See Package's dualize_arglist)
-#
-# To get a "proper id", we'll use a temporary label-like attribute (_xmkey)
-# and establish an id and idref later.
-DefConstructor('\@XMArg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>",
-  reversion   => '#2',
-  afterDigest => sub {
-    AssignValue('xref:' . ToString($_[1]->getArg(1)) => $_[1], 'global'); });
-DefConstructor('\@XMRef{}', "<ltx:XMRef _xmkey='#1'/>",
-  reversion => sub {
-    Revert(LookupValue('xref:' . ToString($_[1]))); },
-  sizer => sub { LookupValue('xref:' . ToString($_[0]->getArg(1)))->getSize; });
-
-# Connect up the XMRef/XMwhatever pairs (actually can be multiple XMRef's)
-# We want to set the idref of the XMRef's to point to the id of the XMArg (or other XM element),
-# but usually the XMRef is created first, and we want to let the referred to element
-# get it's id computed by whatever means it prefers.
-# so we have to work both ways (use state to record associations, to avoid expensive xpath)
-# Set id's on any non-XMRef nodes that have an _xmkey
-# This gets a more natural ordering
-Tag('ltx:*', 'afterOpen:late' => sub {
-    my ($document, $node) = @_;
-    if (my $key = $node->getAttribute('_xmkey')) {
-      my $qname = $document->getNodeQName($node);
-      if (($qname ne 'ltx:XMRef') && ($qname =~ /^ltx:XM/) && !$node->hasAttribute('xml:id')) {
-        GenerateID($document, $node, undef, ''); } } });
-
-Tag('ltx:XMDual', 'afterClose:late' => sub {
-    my ($document, $node) = @_;
-    my %ids  = ();
-    my @refs = ();
-    # Collect all children with _xmkey attribute
-    foreach my $n ($document->findnodes('descendant::*[@_xmkey]', $node)) {
-      if (($document->getNodeQName($n) eq 'ltx:XMRef') && !$n->hasAttribute('idref')) {
-        push(@refs, $n); }    # we'll fill these in next
-      else {                  # generate & record ids for all referenced noces
-        my $key = $n->getAttribute('_xmkey');
-        if (!$ids{$key}) {
-          GenerateID($document, $n, undef, '');    # Generate id if none already.
-          $ids{$key} = $n->getAttribute('xml:id'); } } }
-    foreach my $r (@refs) {                        # Now fill in the references
-      $document->setAttribute($r, idref => $ids{ $r->getAttribute('_xmkey') });
-      $r->removeAttribute('_xmkey'); }
-});
 
 DefConstructor('\@ERROR{}{}', "<ltx:ERROR class='ltx_#1'>#2</ltx:ERROR>");
 
@@ -6883,7 +7064,7 @@ sub setAlignOrClass {
   my ($document, $node, $align, $class) = @_;
   my $model = $document->getModel;
   my $qname = $model->getNodeQName($node);
-  if ($qname eq 'ltx:tag') { }                                       # HACK
+  if ($qname eq 'ltx:tag') { }    # HACK
   elsif ($align && $document->canHaveAttribute($qname, 'align')) {
     $node->setAttribute(align => $align); }
   elsif ($class && $document->canHaveAttribute($qname, 'class')) {

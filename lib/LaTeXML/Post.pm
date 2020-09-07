@@ -524,8 +524,9 @@ sub associateNode {
       $op = undef; }
     elsif ($q eq 'ltx:XMTok') { }
     elsif ($q eq 'ltx:XMApp') {
-      ($op) = element_nodes($op);
-      $q = $document->getQName($op) || 'unknown'; }    # get "real" operator
+      while (($q eq 'ltx:XMApp') && !$op->hasAttribute('meaning')) {
+        ($op) = element_nodes($op);
+        $q = $document->getQName($op) || 'unknown'; } }    # get "real" operator
     if ($q eq 'ltx:XMRef') {
       $op = $document->realizeXMNode($op); }
     # Be a bit fuzzy about whether something is "visible"

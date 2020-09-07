@@ -98,26 +98,27 @@ sub unlist {
 sub revert {
   my ($self) = @_;
   # WARNING: Forbidden knowledge?
-  # (1) provide a means to get the RAW, internal markup that can (hopefully) be RE-digested
-  #     this is needed for getting the numerator of \over into textstyle!
   # (2) caching the reversion (which is a big performance boost)
-  if (my $saved = !$LaTeXML::REVERT_RAW
-    && ($LaTeXML::DUAL_BRANCH
+  if (my $saved = ($LaTeXML::DUAL_BRANCH
       ? $$self{dual_reversion}{$LaTeXML::DUAL_BRANCH}
       : $$self{reversion})) {
     return $saved->unlist; }
   else {
-    my $defn   = $self->getDefinition;
-    my $spec   = ($LaTeXML::REVERT_RAW ? undef : $defn->getReversionSpec);
+    my $defn  = $self->getDefinition;
+    my $props = $$self{properties};
+    # Find the appropriate reversion spec;
+    # content_reversion or presntation_reversion if on dual branch
+    # or (general) reversion, or the reversion from the definition
+    my $spec   = $$props{'reversion'} || $defn->getReversionSpec;
     my @tokens = ();
     if ((defined $spec) && (ref $spec eq 'CODE')) {    # If handled by CODE, call it
-      @tokens = &$spec($self, $self->getArgs); }
+      @tokens = $self->substituteParameters(Tokens(&$spec($self, $self->getArgs))); }
     else {
       if (defined $spec) {
-        @tokens = $spec->substituteParameters(map { Tokens(Revert($_)) } $self->getArgs)->unlist
+        @tokens = $self->substituteParameters($spec)
           if $spec ne ''; }
       else {
-        my $alias = ($LaTeXML::REVERT_RAW ? undef : $defn->getAlias);
+        my $alias = $defn->getAlias;
         if (defined $alias) {
           push(@tokens, T_CS($alias)) if $alias ne ''; }
         else {
@@ -129,20 +130,41 @@ sub revert {
         if (defined(my $trailer = $self->getTrailer)) {
           push(@tokens, Revert($trailer)); } } }
     # Now cache it, in case it's needed again
-    if ($LaTeXML::REVERT_RAW) { }    # don't cache
-    elsif ($LaTeXML::DUAL_BRANCH) {
+    if ($LaTeXML::DUAL_BRANCH) {
       $$self{dual_reversion}{$LaTeXML::DUAL_BRANCH} = Tokens(@tokens); }
     else {
       $$self{reversion} = Tokens(@tokens); }
     return @tokens; } }
 
+# Like Tokens-substituteParameters, but substitutes in the Whatsit's arguments OR properties!
+# #<digit> is the standard TeX positional argument
+# # followed by a T_OTHER(propname) specifies the property propname!!
+sub substituteParameters {
+  my ($self, $spec) = @_;
+  my @in     = $spec->unlist;
+  my @args   = $self->getArgs;
+  my $props  = $$self{properties};
+  my @result = ();
+  while (@in) {
+    my $token;
+    if (($token = shift(@in))->[1] != CC_PARAM) {    # Non '#'; copy it
+      push(@result, $token); }
+    elsif (($token = shift(@in))->[1] != CC_PARAM) {    # Not multiple '#'; read arg.
+      my $s = $$token[0];
+      my $n = ord($s) - ord('0') - 1;
+      if (my $arg = (($n >= 0) && ($n < 10) ? $args[$n] : $$props{$s})) {
+        push(@result, Revert($arg)); } }                # ->unlist
+    else {                                              # Duplicated '#', copy 2nd '#'
+      push(@result, $token); } }
+  return @result; }
+
 sub toString {
   my ($self) = @_;
-  return ToString(Tokens($self->revert)); }    # What else??
+  return ToString(Tokens($self->revert)); }             # What else??
 
 sub getString {
   my ($self) = @_;
-  return $self->toString; }                    # Ditto?
+  return $self->toString; }                             # Ditto?
 
 # Methods for overloaded operators
 sub stringify {
@@ -171,7 +193,7 @@ sub beAbsorbed {
   # Significant time is consumed here, and associated with a specific CS,
   # so we should be profiling as well!
   # Hopefully the csname is the same that was charged in the digestioned phase!
-  my $defn = $self->getDefinition;
+  my $defn     = $self->getDefinition;
   my $profiled = $STATE->lookupValue('PROFILING') && $defn->getCS;
   LaTeXML::Core::Definition::startProfiling($profiled, 'absorb') if $profiled;
   my @result = $defn->doAbsorbtion($document, $self);
