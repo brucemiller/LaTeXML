@@ -255,21 +255,24 @@ my %stylemap2 = (    # CONSTANT
 # Mappings between (normalized) internal fonts & sizes.
 # Default math font is roman|medium|upright.
 my %mathvariants = (    # CONSTANT
-  'upright'          => 'normal',
-  'serif'            => 'normal',
-  'medium'           => 'normal',
-  'bold'             => 'bold',
-  'italic'           => 'italic',
-  'medium italic'    => 'italic',
-  'bold italic'      => 'bold-italic',
-  'doublestruck'     => 'double-struck',
-  'blackboard'       => 'double-struck',
-  'fraktur'          => 'fraktur',
-  'fraktur italic'   => 'fraktur',             # all collapse
-  'fraktur bold'     => 'bold-fraktur',
-  'script'           => 'script',
-  'script italic'    => 'script',              # all collapse
-  'script bold'      => 'bold-script',
+  'upright'                 => 'normal',
+  'serif'                   => 'normal',
+  'medium'                  => 'normal',
+  'bold'                    => 'bold',
+  'italic'                  => 'italic',
+  'medium italic'           => 'italic',
+  'bold italic'             => 'bold-italic',
+  'doublestruck'            => 'double-struck',
+  'blackboard'              => 'double-struck',
+  'blackboard bold'         => 'double-struck',    # all collapse
+  'blackboard upright'      => 'double-struck',    # all collapse
+  'blackboard bold upright' => 'double-struck',    # all collapse
+  'fraktur'                 => 'fraktur',
+  'fraktur italic'          => 'fraktur',          # all collapse
+  'fraktur bold'            => 'bold-fraktur',
+  'script'                  => 'script',
+  'script italic'           => 'script',           # all collapse
+  'script bold'             => 'bold-script',
   'caligraphic'      => 'script',              # all collapse; NOTE: In TeX caligraphic is NOT script!
   'caligraphic bold' => 'bold-script',
   'sansserif'        => 'sans-serif',
@@ -293,10 +296,11 @@ my %mathvariants = (    # CONSTANT
 #  default values like medium or upright (unless that is the only component).
 sub mathvariantForFont {
   my ($font) = @_;
-  $font =~ s/slanted/italic/;        # equivalent in math
-  $font =~ s/(?<!^)serif(?>!$)//;    # Not needed (unless alone)
-  $font =~ s/(?<!^)upright//;        # Not needed (unless 1st element)
-  $font =~ s/(?<!^)medium//;         # Not needed (unless 1st element)
+  $font =~ s/slanted/italic/;             # equivalent in math
+  $font =~ s/(?<!^)serif(?>!$)//;         # Not needed (unless alone)
+  $font =~ s/(?<!^)upright//;             # Not needed (unless 1st element)
+  $font =~ s/(?<!^)medium//;              # Not needed (unless 1st element)
+  $font =~ s/^\s+//; $font =~ s/\s+$//;
   my $variant;
   return $variant if $variant = $mathvariants{$font};
   #  $font =~ s/\sitalic//;          # try w/o italic ?
