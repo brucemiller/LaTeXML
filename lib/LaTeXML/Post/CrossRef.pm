@@ -19,6 +19,8 @@ use charnames qw(:full);
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Processor);
 
+my $NBSP = pack('U', 0xA0);    # CONSTANT
+
 sub new {
   my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
@@ -535,53 +537,66 @@ sub make_bibcite {
       $show   = '';
     }
 
+    # Add delimeters for parsing...
+    $show =~ s/(\w)year/$1\{\}year/gi;
+    $show =~ s/(\w)phrase/$1\{\}phrase/gi;
     while ($show) {
-      if ($show =~ s/^authors?//i) {
-        push(@stuff, $doc->cloneNodes(@{ $$datum{authors} })); }
-      elsif ($show =~ s/^fullauthors?//i) {
-        push(@stuff, $doc->cloneNodes(@{ $$datum{fullauthors} })); }
-      elsif ($show =~ s/^title//i) {
-        push(@stuff, $doc->cloneNodes(@{ $$datum{title} })); }
-      elsif ($show =~ s/^refnum//i) {
-        push(@stuff, $doc->cloneNodes(@{ $$datum{refnum} })); }
-      elsif ($show =~ s/^phrase(\d)//i) {
-        # HACK! Avoid empty () from situations where we've set the show (CITE_STYLE) too early
-        # and don't actually have author-year information!
-        my $n = $1;
-        if (($n == 1) && ($show =~ /^\s*year\s*phrase2/i) && !scalar(@{ $$datum{year} })
-          && (!$phrases[0] || (length($phrases[0]->textContent) <= 1))
-          && (!$phrases[1] || (length($phrases[1]->textContent) <= 1))) {
-          $show =~ s/^\s*year\s*phrase2//i; }
-        else {
-          push(@stuff, $phrases[$n - 1]->childNodes) if $phrases[$n - 1]; } }
-      elsif ($show =~ s/^year//i) {
-        if (!$$datum{year}) {
-          $self->note_missing('warn', 'Date for citation', $$datum{key}); }
-        elsif (@{ $$datum{year} }) {
-          push(@stuff, ['ltx:ref', $$datum{attr}, @{ $$datum{year} }]);
+      if ($show =~ s/^(\w+)//) {
+        my $role = lc($1); $role =~ s/s$//;    # remove trailing plural
+        if ($role eq 'author') {
+          push(@stuff, $doc->cloneNodes(@{ $$datum{authors} })); }
+        elsif ($role eq 'fullauthor') {
+          push(@stuff, $doc->cloneNodes(@{ $$datum{fullauthors} })); }
+        elsif ($role eq 'title') {
+          push(@stuff, $doc->cloneNodes(@{ $$datum{title} })); }
+        elsif ($role eq 'refnum') {
+          push(@stuff, $doc->cloneNodes(@{ $$datum{refnum} })); }
+        elsif ($role =~ /^phrase(\d)$/) {
+          # HACK! Avoid empty () from situations where we've set the show (CITE_STYLE) too early
+          # and don't actually have author-year information!
+          my $n = $1;
+          if (($n == 1) && ($show =~ /^\s*year\s*phrase2/i) && !scalar(@{ $$datum{year} })
+            && (!$phrases[0] || (length($phrases[0]->textContent) <= 1))
+            && (!$phrases[1] || (length($phrases[1]->textContent) <= 1))) {
+            $show =~ s/^\s*year\s*phrase2//i; }
+          else {
+            push(@stuff, $phrases[$n - 1]->childNodes) if $phrases[$n - 1]; } }
+        elsif ($role eq 'year') {
+          if (!$$datum{year}) {
+            $self->note_missing('warn', 'Date for citation', $$datum{key}); }
+          elsif (@{ $$datum{year} }) {
+            push(@stuff, ['ltx:ref', $$datum{attr}, @{ $$datum{year} }]);
+            $didref = 1;
+            while ($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})) {
+              my $next = shift(@data);
+              push(@stuff, $yysep, ' ');
+              if ((($$datum{rawyear} || 'no_year_1') eq ($$next{rawyear} || 'no_year_2')) && $$next{suffix}) {
+                push(@stuff, ['ltx:ref', $$next{attr}, $$next{suffix}]); }
+              else {
+                push(@stuff, ['ltx:ref', $$next{attr}, @{ $$next{year} }]); } } } }
+        elsif ($role eq 'number') {
+          push(@stuff, ['ltx:ref', $$datum{attr}, @{ $$datum{number} }]);
           $didref = 1;
           while ($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})) {
             my $next = shift(@data);
-            push(@stuff, $yysep, ' ');
-            if ((($$datum{rawyear} || 'no_year_1') eq ($$next{rawyear} || 'no_year_2')) && $$next{suffix}) {
-              push(@stuff, ['ltx:ref', $$next{attr}, $$next{suffix}]); }
-            else {
-              push(@stuff, ['ltx:ref', $$next{attr}, @{ $$next{year} }]); } } } }
-      elsif ($show =~ s/^number//i) {
-        push(@stuff, ['ltx:ref', $$datum{attr}, @{ $$datum{number} }]);
-        $didref = 1;
-        while ($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})) {
-          my $next = shift(@data);
-          push(@stuff, $yysep, ' ', ['ltx:ref', $$next{attr}, @{ $$next{number} }]); } }
-      elsif ($show =~ s/^super//i) {
-        my @r = ();
-        push(@r, ['ltx:ref', $$datum{attr}, @{ $$datum{number} }]);
-        $didref = 1;
-        while ($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})) {
-          my $next = shift(@data);
-          push(@r, $yysep, ' ', ['ltx:ref', $$next{attr}, @{ $$next{number} }]); }
-        push(@stuff, ['ltx:sup', {}, @r]); }
-      elsif ($show =~ s/^(.)//) {
+            push(@stuff, $yysep, ' ', ['ltx:ref', $$next{attr}, @{ $$next{number} }]); } }
+        elsif ($role eq 'super') {
+          my @r = ();
+          push(@r, ['ltx:ref', $$datum{attr}, @{ $$datum{number} }]);
+          $didref = 1;
+          while ($checkdups && @data && ($$datum{authortext} eq $data[0]{authortext})) {
+            my $next = shift(@data);
+            push(@r, $yysep, ' ', ['ltx:ref', $$next{attr}, @{ $$next{number} }]); }
+          push(@stuff, ['ltx:sup', {}, @r]); }
+        else {
+          print STDERR "CITE ignoring show key '$role'\n"; } }
+      elsif ($show =~ s/^\{([^\}]*)\}//) {    # pass-thru literal, quoted with {}
+        push(@stuff, $1) if $1; }
+      elsif ($show =~ s/^~//) {               # Pass-thru spaces
+        push(@stuff, $NBSP) if @stuff; }
+      elsif ($show =~ s/^(\s+)//) {           # Pass-thru spaces
+        push(@stuff, $1) if @stuff; }
+      elsif ($show =~ s/^(\W+)//) {           # Pass-thru non show keywords
         push(@stuff, $1); } }
     push(@refs,
       (@refs ? ($sep, ' ') : ()),
@@ -619,12 +634,10 @@ sub generateURL {
     $self->note_missing('warn', 'DB Entry for ID', $id); }
   return; }
 
-my $NBSP = pack('U', 0xA0);    # CONSTANT
-                               # Generate the contents of a <ltx:ref> of the given id.
-                               # show is a string containing substrings 'type', 'refnum' and 'title'
-                               # (standing for the type prefix, refnum and title of the id'd object)
-                               # and any other random characters; the
-
+# Generate the contents of a <ltx:ref> of the given id.
+# show is a string containing substrings 'type', 'refnum' and 'title'
+# (standing for the type prefix, refnum and title of the id'd object)
+# and any other random characters; the
 sub generateRef {
   my ($self, $doc, $reqid, $reqshow) = @_;
   my $pending = '';
@@ -683,70 +696,46 @@ sub text_content_aux {
   else {
     return $n; } }
 
-# Interpret a "Show" pattern for a given DB entry.
-# The pattern can contain substrings to be substituted
-#   type   => the type prefix (eg Ch. or similar)
-#   refnum => the reference number
-#   title  => the title.
-# and any other random characters which are preserved.
+my %ref_fallbacks = (    # Alternative fields, when not found
+  typerefnum  => [qw(refnum)],
+  rrefnum     => [qw(typerefnum frefnum refnum)],    # obsolete?
+  toctitle    => [qw(title toccaption)],
+  title       => [qw(toccaption)],
+  rawtoctitle => [qw(toctitle title toccaption)],
+  rawtitle    => [qw(title toccaption)],
+);
+
+# Generate text to fill in an ltx:ref from a database entry for some object.
+# The show pattern indicates what data to use; usually a single keyword
+# (or keywords separated by spaces, ~ or {} enclosed literal text)
+# The keywords are things like refnum, title, caption, etc
+# (possibly coming from ltx:tag or other data; see Scan)
 sub generateRef_aux {
   my ($self, $doc, $entry, $show) = @_;
   my @stuff = ();
   my $OK    = 0;
   while ($show) {
-    if ($show =~ s/^typerefnum(\.?\s*)//) {
-      if (my $frefnum = $entry->getValue('typerefnum')
-        || $entry->getValue('refnum')) {
+    if ($show =~ s/^(\w+)//) {    # peel off next keyword
+      my $key   = lc($1);
+      my $class = ($key =~ /title/ ? 'ltx_ref_title' : 'ltx_ref_tag');
+      my @keys  = ($key, 'tag:' . $key,
+        ($ref_fallbacks{$key} ? @{ $ref_fallbacks{$key} } : ()));
+      my $value;
+      foreach my $k (@keys) {     # lookup the data for that keyword (or an alternative)
+        $value = $entry->getValue($k);
+        last if $value; }
+      if ($value) {
         $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
-            $self->prepRefText($doc, $frefnum)]); } }
-    elsif ($show =~ s/^rrefnum(\.?\s*)//) {    # to be obsolete?
-###      if (my $refnum = $entry->getValue('rrefnum') || $entry->getValue('frefnum')  || $entry->getValue('refnum')) {
-      if (my $refnum = $entry->getValue('typerefnum') || $entry->getValue('frefnum') || $entry->getValue('refnum')) {
-        $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
-            $self->prepRefText($doc, $refnum)]); } }
-    elsif ($show =~ s/^refnum(\.?\s*)//) {
-###      if (my $refnum = $entry->getValue('refnum') || $entry->getValue('frefnum')) {
-      if (my $refnum = $entry->getValue('refnum')) {
-        $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
-            $self->prepRefText($doc, $refnum)]); } }
-    elsif ($show =~ s/^toctitle//) {
-      if (my $title = $entry->getValue('toctitle') || $entry->getValue('title')
-        || $entry->getValue('toccaption')) {
-        $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_title' },
-            $self->prepRefText($doc, $title)]); } }
-    elsif ($show =~ s/^title//) {
-      if (my $title = $entry->getValue('title') || $entry->getValue('toccaption')) {    # !!!
-        $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_title' },
-            $self->prepRefText($doc, $title)]); } }
-    elsif ($show =~ s/^rawtoctitle//) {
-      if (my $title = $entry->getValue('toctitle') || $entry->getValue('title')
-        || $entry->getValue('toccaption')) {
-        $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_title' },
-            $self->prepRawRefText($doc, $title)]); } }
-    elsif ($show =~ s/^rawtitle//) {
-      if (my $title = $entry->getValue('title') || $entry->getValue('toccaption')) {    # !!!
-        $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_title' },
-            $self->prepRawRefText($doc, $title)]); } }
-    # The beginnings of extensibility!
-    elsif ($show =~ s/^(\w+)//) {
-      my $role = $1;
-      if (my $tag = $entry->getValue($role) || $entry->getValue('tag:' . $role)) {
-        $OK = 1;
-        push(@stuff, ['ltx:text', { class => 'ltx_ref_tag' },
-            $self->prepRefText($doc, $tag)]); }
-      else {
-        push(@stuff, $role); } }
-    elsif ($show =~ s/^(~)//) {
-      push(@stuff, ' '); }
-    elsif ($show =~ s/^(.)//) {
+        push(@stuff, ['ltx:text', { class => $class }, $self->prepRefText($doc, $value)]); } }
+    elsif ($show =~ s/^\{([^\}]*)\}//) {    # pass-thru literal, quoted with {}
+      push(@stuff, $1) if $1; }
+    elsif ($show =~ s/^~//) {               # Pass-thru spaces
+      push(@stuff, $NBSP) if @stuff; }
+    elsif ($show =~ s/^(\s+)//) {           # Pass-thru spaces
+      push(@stuff, $1) if @stuff; }
+    elsif ($show =~ s/^(\W+)//) {           # Pass-thru non show keywords
       push(@stuff, $1); } }
+  # Maybe nothing found for this entry (probably retry on parent?)
   return ($OK ? @stuff : ()); }
 
 sub prepRefText {
