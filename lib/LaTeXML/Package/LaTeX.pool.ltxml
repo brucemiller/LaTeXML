@@ -1329,11 +1329,13 @@ sub RefStepItemCounter {
     else {
       my $ttag      = (ref $tag              ? $tag                      : T_OTHER($tag));
       my $formatter = ($counter =~ /^\@desc/ ? T_CS('\descriptionlabel') : T_CS('\makelabel'));
-      my $tags      = Digest(T_BEGIN,
+      my $typename  = (IsDefined(T_CS('\\' . $counter . 'name'))
+        ? T_CS('\\' . $counter . 'name') : T_CS('\itemtyperefname'));
+      my $tags = Digest(T_BEGIN,
         T_CS('\let'), T_CS('\the' . $counter), T_CS('\@empty'),
         T_CS('\def'), T_CS('\fnum@' . $counter), T_BEGIN, $formatter, T_BEGIN, Revert($tag), T_END, T_END,
         T_CS('\def'), T_CS('\typerefnum@' . $counter),
-        T_BEGIN, T_CS('\itemtyperefname'), T_SPACE, Revert($tag), T_END,
+        T_BEGIN, $typename, T_SPACE, Revert($tag), T_END,
         Invocation(T_CS('\lx@make@tags'), T_OTHER($counter)),
         T_END);
 
@@ -1428,7 +1430,7 @@ DefEnvironment('{itemize}',
   beforeDigestEnd => sub { Digest('\par'); },
   locked => 1, mode => 'text');
 DefEnvironment('{enumerate}',
-  "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
+  "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
   properties      => sub { beginItemize('enumerate', 'enum'); },
   beforeDigestEnd => sub { Digest('\par'); },
   locked => 1, mode => 'text');
@@ -1558,9 +1560,11 @@ DefMacroI('\desctyperefname', undef, 'item');
 
 # Blech
 map { DefMacroI(T_CS('\\' . $_ . 'name'), undef, '\itemtyperefname'); }
-  qw(@itemi @itemii @itemiii @itemiv @itemv @itemvi
-  enumi enumii enumiii enumiv
-  @desci @descii @desciii @desciv @descv @descvi);
+  qw(@itemi @itemii @itemiii @itemiv @itemv @itemvi);
+map { DefMacroI(T_CS('\\' . $_ . 'name'), undef, '\enumtyperefname'); }
+  qw(enumi enumii enumiii enumiv);
+map { DefMacroI(T_CS('\\' . $_ . 'name'), undef, '\desctyperefname'); }
+  qw(@desci @descii @desciii @desciv @descv @descvi);
 
 #======================================================================
 # C.6.3 The list and trivlist environments.
