@@ -225,19 +225,6 @@ DefParameterType('Expanded', sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
 
-DefParameterType('EExpanded', sub {
-    my ($gullet) = @_;
-    local $LaTeXML::NOEXPAND_THE = 1;
-    my $token  = $gullet->readXToken(0);
-    my @tokens = ();
-    if ($token->getCatcode == CC_BEGIN) {
-      return scalar($gullet->readBalanced(1)); }
-    else {
-      return $token; } },
-  reversion => sub {
-    my ($arg) = @_;
-    (T_BEGIN, Revert($arg), T_END); });
-
 # Read a matching keyword, eg. Match:=
 DefParameterType('Match', sub { shift->readMatch(@_); });
 
@@ -925,7 +912,6 @@ DefMacro('\expandafter Token Token', sub {
       my @x = ();
       {
         local $LaTeXML::CURRENT_TOKEN = $xtok;
-        local $LaTeXML::NOEXPAND_THE  = undef;
         my $x = $defn->invoke($gullet, 1);
         @x = @$x if $x;    # Expand $xtok ONCE ONLY!
       }
@@ -1209,10 +1195,10 @@ sub do_def {
   AfterAssignment();
   return; }
 
-DefPrimitive('\def  SkipSpaces Token UntilBrace {}',        sub { do_def(0, @_); }, locked => 1);
-DefPrimitive('\gdef SkipSpaces Token UntilBrace {}',        sub { do_def(1, @_); }, locked => 1);
-DefPrimitive('\edef SkipSpaces Token UntilBrace EExpanded', sub { do_def(0, @_); }, locked => 1);
-DefPrimitive('\xdef SkipSpaces Token UntilBrace EExpanded', sub { do_def(1, @_); }, locked => 1);
+DefPrimitive('\def  SkipSpaces Token UntilBrace {}',       sub { do_def(0, @_); }, locked => 1);
+DefPrimitive('\gdef SkipSpaces Token UntilBrace {}',       sub { do_def(1, @_); }, locked => 1);
+DefPrimitive('\edef SkipSpaces Token UntilBrace Expanded', sub { do_def(0, @_); }, locked => 1);
+DefPrimitive('\xdef SkipSpaces Token UntilBrace Expanded', sub { do_def(1, @_); }, locked => 1);
 
 # <prefix> = \global | \long | \outer
 # See Stomach.pm & Stomach.pm
