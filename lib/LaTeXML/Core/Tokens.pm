@@ -119,24 +119,27 @@ sub stripBraces {
   my $n      = 1 + $#$self;
   my $i0     = 0;
   my $i1     = $n;
+  # skip past spaces at ends.
   while (($i0 < $n) && ($$self[$i0]->getCatcode == CC_SPACE))     { $i0++; }
   while (($i1 > 0)  && ($$self[$i1 - 1]->getCatcode == CC_SPACE)) { $i1--; }
-  my $ntopbraces = 0;
-  # If begins & ends w/ { ... }
-  if (($i0 < $i1) && ($i0 < $n)
-    && ($$self[$i0]->getCatcode == CC_BEGIN) && ($$self[$i1 - 1]->getCatcode == CC_END)) {
-    for (my $i = $i0 ; $i < $i1 ; $i++) {
-      if ($$self[$i]->getCatcode == CC_BEGIN) {    # If top-level brace
-        $ntopbraces++;
-        my $level = 0;
-        while ($i < $i1) {                         # Read balanced
-          my $cc = $$self[$i++]->getCatcode;
-          $level++ if $cc == CC_BEGIN;
-          $level-- if $cc == CC_END;
-          last unless $level; } } } }
-  # Strip outer braces if a single set encloses entire value and not just {}
-  if ($ntopbraces == 1) {
-    $i0++; $i1--; }
+  my (@o, @p);
+  # Collect balanced pairs.
+  for (my $i = $i0 ; $i < $i1 ; $i++) {
+    my $cc = $$self[$i]->getCatcode;
+    if ($cc == CC_BEGIN) {
+      push(@o, $i); }
+    elsif ($cc == CC_END) {
+      if (@o) {
+        push(@p, pop(@o), $i); }
+      else {
+        return $self; } } }    # Unbalanced: Too many }
+  return $self if @o;          # Unbalanced: Too many {
+  ## COULD strip multiple pairs of braces by checking more @p pairs
+  if (@p) {
+    my $j1 = pop(@p);
+    my $j0 = pop(@p);
+    if (($j0 == $i0) && ($j1 == $i1 - 1)) {
+      $i0++; $i1--; } }
   return (($i0 < $i1) && (($i0 > 0) || ($i1 < $n)) ? Tokens(@$self[$i0 .. $i1 - 1]) : $self); }
 
 #======================================================================
