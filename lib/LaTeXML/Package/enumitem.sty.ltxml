@@ -19,8 +19,15 @@ use LaTeXML::Package;
 # TODO  Deal with Scads of options!
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Package Options:
-#  inline
-#  shortlabels
+DeclareOption('shortlabels', sub { AssignValue('enumitem@shortlabels' => 1); return; });
+DeclareOption('inline',      sub { AssignValue('enumitem@inline'      => 1); return; });
+DeclareOption('loadonly',    sub { AssignValue('enumitem@loadonly'    => 1); return; });
+# sizes requires a peculiar dimension parser...
+# ignoredisplayed
+# series=override
+# ignoredisplayed, includedisplayed; affects redefinition of trivlist, which we haven't done.
+ProcessOptions();
+
 #======================================================================
 # Labelling:
 DefKeyVal('enumitem', 'label',  'UndigestedKey');
@@ -100,6 +107,11 @@ sub beginEnumItemize {
     ResetCounter($usecounter); }
 
   # Deal with label formatting
+  my ($firstkey, $firstvalue) = $keys && $keys->getPairs;
+  if ($firstkey && !$firstvalue    # 1st key has no value
+    && LookupValue('enumitem@shortlabels')                        # and shortlabels enabled
+    && !LookupDefinition(T_CS('\KV@enumitem@' . $firstkey))) {    # AND unknown!!!
+    setEnumerationStyle(TokenizeInternal($firstkey)); }           # alas already turned to string
   if (my $label = $$hash{label} || $$hash{'label*'}) {
     my $llabel = replace_star($label, T_OTHER($usecounter));
     if ($$hash{'label*'} && ($level > 1)) {
@@ -150,41 +162,42 @@ DefMacro('\restartlist{}', sub {
 # But first, a stub that ignores the new optional arg to itemize, etal.
 # Since the keyvals contain Registers, Dimensions, macros, etc,
 # we'll use OptionalUndigested for what will eventually be OptionalKeywords
-DefEnvironment('{itemize} OptionalKeyVals:enumitem',
-  "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  properties      => sub { beginEnumItemize('itemize', '@item', 0, $_[1]); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  afterDigestBody => sub { endEnumItemize($_[1]); },
-  locked => 1, mode => 'text');
+if (!LookupValue('enumitem@loadonly')) {
+  DefEnvironment('{itemize} OptionalKeyVals:enumitem',
+    "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
+    properties      => sub { beginEnumItemize('itemize', '@item', 0, $_[1]); },
+    beforeDigestEnd => sub { Digest('\par'); },
+    afterDigestBody => sub { endEnumItemize($_[1]); },
+    locked => 1, mode => 'text');
 
-DefEnvironment('{enumerate} OptionalKeyVals:enumitem',
-  "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
-  properties      => sub { beginEnumItemize('enumerate', 'enum', 0, $_[1]); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  afterDigestBody => sub { endEnumItemize($_[1]); },
-  locked => 1, mode => 'text');
-DefEnvironment('{description} OptionalKeyVals:enumitem',
-  "<ltx:description  xml:id='#id'>#body</ltx:description>",
-  beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
-  properties      => sub { beginEnumItemize('description', '@desc', 0, $_[1]); },
-  beforeDigestEnd => sub { Digest('\par'); },
-  afterDigestBody => sub { endEnumItemize($_[1]); },
-  locked          => 1, mode => 'text');
-
-# TODO: Really should only define if package option inline
-DefEnvironment('{itemize*} OptionalKeyVals:enumitem',
-  "<ltx:inline-itemize xml:id='#id'>#body</ltx:inline-itemize>",
-  properties      => sub { beginEnumItemize('inline@itemize', '@item', 0, $_[1]); },
-  afterDigestBody => sub { endEnumItemize($_[1]); },);
-DefEnvironment('{enumerate*} OptionalKeyVals:enumitem',
-  "<ltx:inline-enumerate xml:id='#id'>#body</ltx:inline-enumerate>",
-  properties      => sub { beginEnumItemize('inline@enumerate', 'enum', 0, $_[1]); },
-  afterDigestBody => sub { endEnumItemize($_[1]); },);
-DefEnvironment('{description*} OptionalKeyVals:enumitem',
-  "<ltx:inline-description xml:id='#id'>#body</ltx:inline-description>",
-  properties      => sub { beginEnumItemize('inline@description', '@desc', 0, $_[1]); },
-  afterDigestBody => sub { endEnumItemize($_[1]); },);
-
+  DefEnvironment('{enumerate} OptionalKeyVals:enumitem',
+    "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
+    properties      => sub { beginEnumItemize('enumerate', 'enum', 0, $_[1]); },
+    beforeDigestEnd => sub { Digest('\par'); },
+    afterDigestBody => sub { endEnumItemize($_[1]); },
+    locked => 1, mode => 'text');
+  DefEnvironment('{description} OptionalKeyVals:enumitem',
+    "<ltx:description  xml:id='#id'>#body</ltx:description>",
+    beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
+    properties      => sub { beginEnumItemize('description', '@desc', 0, $_[1]); },
+    beforeDigestEnd => sub { Digest('\par'); },
+    afterDigestBody => sub { endEnumItemize($_[1]); },
+    locked          => 1, mode => 'text');
+}
+if (LookupValue('enumitem@inline')) {
+  DefEnvironment('{itemize*} OptionalKeyVals:enumitem',
+    "<ltx:inline-itemize xml:id='#id'>#body</ltx:inline-itemize>",
+    properties      => sub { beginEnumItemize('inline@itemize', '@item', 0, $_[1]); },
+    afterDigestBody => sub { endEnumItemize($_[1]); },);
+  DefEnvironment('{enumerate*} OptionalKeyVals:enumitem',
+    "<ltx:inline-enumerate xml:id='#id'>#body</ltx:inline-enumerate>",
+    properties      => sub { beginEnumItemize('inline@enumerate', 'enum', 0, $_[1]); },
+    afterDigestBody => sub { endEnumItemize($_[1]); },);
+  DefEnvironment('{description*} OptionalKeyVals:enumitem',
+    "<ltx:inline-description xml:id='#id'>#body</ltx:inline-description>",
+    properties      => sub { beginEnumItemize('inline@description', '@desc', 0, $_[1]); },
+    afterDigestBody => sub { endEnumItemize($_[1]); },);
+}
 DefPrimitive('\newlist{}{}{}', sub {
     my ($stomach, $listname, $listtype, $maxdepth) = @_;
     $listname = ToString($listname);
@@ -247,4 +260,14 @@ sub merged_enumitem_keyvals {
   return $hash; }
 
 #======================================================================
+# Not yet handled bits
+DefMacro('\SetLabelAlign{}{}',          '');
+DefMacro('\EnumitemId',                 '');
+DefMacro('\SetEnumitemKey{}{}',         '');
+DefMacro('\SetEnumerateShortLabel{}{}', '');
+DefMacro('\SetEnumitemValue{}{}{}',     '');
+DefMacro('\SetEnumitemSize{}{}',        '');
+DefMacro('\AddEnumerateCounter{}{}{}',  '');
+#======================================================================
+
 1;
