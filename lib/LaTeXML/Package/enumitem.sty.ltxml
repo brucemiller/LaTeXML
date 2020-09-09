@@ -94,7 +94,8 @@ sub beginEnumItemize {
   elsif (my $s = $$hash{resume} || $$hash{'resume*'}) {
     if (($s = ToString($s)) ne 'noseries') {
       $series = ToString($s);
-      SetCounter($usecounter, LookupValue('enumitem_series_' . $series . '_last')); } }
+      SetCounter($usecounter,
+        LookupValue('enumitem_series_' . $series . '_last') || Number(0)); } }
   else {
     ResetCounter($usecounter); }
 
@@ -129,6 +130,21 @@ sub endEnumItemize {
     if (my $ctr = $whatsit->getProperty('counter')) {
       AssignValue('enumitem_series_' . $series . '_last' => CounterValue($ctr), 'global'); } }
   return; }
+
+DefMacro('\restartlist{}', sub {
+    my ($gullet, $listname) = @_;
+    $listname = ToString($listname);
+    my $counter = ($listname eq 'enumerate' ? 'enum'
+      : ($listname eq 'itemize' ? '@item'
+        : ($listname eq 'description' ? '@desc'
+          : $listname)));
+    # Assme we reset all levels? Assume no more than 6 levels?
+    for (my $i = 0 ; $i < 6 ; $i++) {
+      my $r = ToString(Tokens(roman($i)));
+      if (LookupValue('\c@' . $counter . $r)) {
+        SetCounter($counter . $r, Number(0)); } }
+    return; });
+
 #======================================================================
 
 # But first, a stub that ignores the new optional arg to itemize, etal.
@@ -169,30 +185,24 @@ DefEnvironment('{description*} OptionalKeyVals:enumitem',
   properties      => sub { beginEnumItemize('inline@description', '@desc', 0, $_[1]); },
   afterDigestBody => sub { endEnumItemize($_[1]); },);
 
-# TODO: Manage and store the options and maximum depth
-#DefMacro('\newlist{}{}{}',   '\newenvironment{#1}[1]{\begin{#2}##1}{\end{#2}}');
 DefPrimitive('\newlist{}{}{}', sub {
     my ($stomach, $listname, $listtype, $maxdepth) = @_;
-    #'\newenvironment{#1}[1]{\begin{#2}##1}{\end{#2}}'
     $listname = ToString($listname);
     $listtype = ToString($listtype);
     $maxdepth = ToString($maxdepth);    # Or should it be a Number?
     my ($basetype, $inline) = ($listtype, '');
     if ($listtype =~ /^(.*)\*$/) { $basetype = $1; $inline = 1; }
     my $elementname = ($inline ? 'inline-' . $basetype : $basetype);
-    # Officially only supposed to define counters for enumerate,
-    # but we need them; prefixed with '@' if NOT enumerate!
-    my $prefix = ($basetype eq 'enumerate' ? '' : '@');
-    my $ctr    = $prefix . $listname;
+    # Officially only supposed to define counters for enumerate, but we need them (no prefix?)
     for (my $d = 1 ; $d <= $maxdepth ; $d++) {
-      NewCounter($prefix . $listname . ToString(Tokens(roman($d)))); }
+      NewCounter($listname . ToString(Tokens(roman($d)))); }
     # Need to hook-up to \itemize@item, inline, etc
     Let(T_CS('\\' . $listname . '@item'),
       T_CS('\\' . ($inline ? 'inline@' : '') . $basetype . '@item'),
       'global');
     DefEnvironment("{$listname} OptionalKeyVals:enumitem",
       "<ltx:$elementname xml:id='#id'>#body</ltx:$elementname>",
-      properties      => sub { beginEnumItemize($listname, $ctr, 0, $_[1]); },
+      properties      => sub { beginEnumItemize($listname, $listname, 0, $_[1]); },
       beforeDigestEnd => sub { Digest('\par'); },
       afterDigestBody => sub { endEnumItemize($_[1]); },
       locked => 1, mode => 'text');
