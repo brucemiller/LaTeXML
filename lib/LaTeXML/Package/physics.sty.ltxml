@@ -163,7 +163,7 @@ DefMacro('\pqty',          '\lx@physics@fenced{\pqty}{}{}{(}{)}');
 DefMacro('\bqty',          '\lx@physics@fenced{\bqty}{}{}{[}{]}');
 DefMacro('\vqty',          '\lx@physics@fenced{\vqty}{}{}{\vert}{\vert}');
 DefMacro('\Bqty',          '\lx@physics@fenced{\Bqty}{}{}{\{}{\}}');
-DefMacro('\absolutevalue', '\lx@physics@fenced{\absolutevalue}{absolutevalue}{}{\vert}{\vert}');
+DefMacro('\absolutevalue', '\lx@physics@fenced{\absolutevalue}{absolute-value}{}{\vert}{\vert}');
 DefMacro('\norm',          '\lx@physics@fenced{\norm}{norm}{}{\|}{\|}');
 
 Let('\qty', '\quantity');
@@ -187,7 +187,7 @@ DefMacro('\evaluated', sub {
           phys_revArg(I_arg(1), $open, $close),
           ($lower ? (T_SUB,   phys_revArg(I_arg(2))) : ()),
           ($upper ? (T_SUPER, phys_revArg(I_arg(3))) : ())) },
-      I_apply({}, I_symbol({ meaning => 'evaluatedat' }), I_arg(1), I_arg(2), I_arg(3)),
+      I_apply({}, I_symbol({ meaning => 'evaluated-at' }), I_arg(1), I_arg(2), I_arg(3)),
       Tokens(I_wrap({}, phys_open($size, $open || T_OTHER('.')),
           I_arg(1), phys_close($size, $close || $c)),
         ($lower ? (T_SUB,   I_arg(2)) : ()),
@@ -217,7 +217,7 @@ DefMacro('\lx@physics@fencedII{}{}{}{}{}', sub {
 
 DefMacro('\commutator',     '\lx@physics@fencedII{\commutator}{commutator}{}{[}{]}');
 DefMacro('\anticommutator', '\lx@physics@fencedII{\anticommutator}{anticommutator}{}{\{}{\}}');
-DefMacro('\poissonbracket', '\lx@physics@fencedII{\poissonbracket}{poissonbracket}{}{\{}{\}}');
+DefMacro('\poissonbracket', '\lx@physics@fencedII{\poissonbracket}{poisson-bracket}{}{\{}{\}}');
 Let('\comm',  '\commutator');
 Let('\acomm', '\anticommutator');
 Let('\pb',    '\poissonbracket');
@@ -239,8 +239,8 @@ Let('\vb', '\vectorbold');
 Let('\va', '\vectorarrow');
 Let('\vu', '\vectorunit');
 
-DefMathI('\dotproduct',   undef, "\x{22C5}", role => 'MULOP', meaning => 'dotproduct');
-DefMathI('\crossproduct', undef, UTF(0xD7),  role => 'MULOP', meaning => 'crossproduct');
+DefMathI('\dotproduct',   undef, "\x{22C5}", role => 'MULOP', meaning => 'dot-product');
+DefMathI('\crossproduct', undef, UTF(0xD7),  role => 'MULOP', meaning => 'cross-product');
 Let('\vdot',  '\dotproduct');
 Let('\cross', '\crossproduct');
 Let('\cp',    '\crossproduct');
@@ -316,10 +316,10 @@ while (@operators) {
 DefMacro('\trace',          '\lx@physics@operatorP{\tr}{trace}{\operatorname{tr}}');
 DefMacro('\Trace',          '\lx@physics@operatorP{\Tr}{trace}{\operatorname{Tr}}');
 DefMacro('\rank',           '\lx@physics@operatorP{\rank}{rank}{\operatorname{rank}}');
-DefMacro('\erf',            '\lx@physics@operatorP{\erf}{errorfunction}{\operatorname{erf}}');
+DefMacro('\erf',            '\lx@physics@operatorP{\erf}{error-function}{\operatorname{erf}}');
 DefMacro('\Res',            '\lx@physics@operatorP{\Res}{residue}{\operatorname{Res}}');
-DefMacro('\principalvalue', '\lx@physics@operatorP{\principalvalue}{principalvalue}{\mathcal{P}}');
-DefMacro('\PV',             '\lx@physics@operatorP{\PV}{principalvalue}{\operatorname{P.V.}}');
+DefMacro('\principalvalue', '\lx@physics@operatorP{\principalvalue}{principal-value}{\mathcal{P}}');
+DefMacro('\PV',             '\lx@physics@operatorP{\PV}{principal-value}{\operatorname{P.V.}}');
 Let('\tr', '\trace');
 Let('\Tr', '\Trace');
 Let('\pv', '\principalvalue');
@@ -344,8 +344,8 @@ DefMacro('\lx@physics@ReIm{}{}{}{}', sub {
         ($arg ? (phys_open($size, T_CS('\lbrace')), I_arg(1), phys_close($size, T_CS('\rbrace'))) : ())),
       ($arg ? $arg : ())); });
 
-DefMacro('\Re', '\lx@physics@ReIm{\Re}{realpart}{\real}{\operatorname{Re}}');
-DefMacro('\Im', '\lx@physics@ReIm{\Im}{imagpart}{\imaginary}{\operatorname{Im}}');
+DefMacro('\Re', '\lx@physics@ReIm{\Re}{real-part}{\real}{\operatorname{Re}}');
+DefMacro('\Im', '\lx@physics@ReIm{\Im}{imaginary-part}{\imaginary}{\operatorname{Im}}');
 
 #======================================================================
 # Quick quad text
@@ -496,7 +496,7 @@ DefMacro('\bra', sub {
       return I_dual(
         { reversion => Tokens(T_CS('\bra'), phys_revSize($size), phys_revArg(I_arg(1)),
             T_CS('\ket'), phys_revSize($size), phys_revArg(I_arg(2))) },
-        I_apply({}, I_symbol({ meaning => 'innerproduct' }), I_arg(1), I_arg(2)),
+        I_apply({}, I_symbol({ meaning => 'inner-product' }), I_arg(1), I_arg(2)),
         Tokens(phys_open($size, T_CS('\langle')), I_arg(1),
           phys_mid($size, T_CS('\vert')), I_arg(2), phys_close($size, T_CS('\rangle'))),
         $arg, $arg2); }
@@ -524,13 +524,13 @@ DefMacro('\lx@physics@qm@product{}{}{}{}{}', sub {
       $arg0, $arg1); });
 
 DefMacro('\innerproduct',
-  '\lx@physics@qm@product{\innerproduct}{innerproduct}{\langle}{\vert}{\rangle}');
+  '\lx@physics@qm@product{\innerproduct}{inner-product}{\langle}{\vert}{\rangle}');
 DefMacro('\outerproduct',
-  '\lx@physics@qm@product{\outerproduct}{outerproduct}{\vert}{\rangle\langle}{\vert}');
+  '\lx@physics@qm@product{\outerproduct}{outer-product}{\vert}{\rangle\langle}{\vert}');
 
 DefMacro('\expectationvalue', sub {
     my ($gullet) = @_;
-    my $cfunc = I_symbol({ meaning => 'expectationvalue' });
+    my $cfunc = I_symbol({ meaning => 'expectation-value' });
     my $size  = ($gullet->readMatch(T_OTHER('*'))
       ? ($gullet->readMatch(T_OTHER('*')) ? 1 : 0)
       : 1);
@@ -555,7 +555,7 @@ DefMacro('\expectationvalue', sub {
 
 DefMacro('\matrixelement', sub {
     my ($gullet) = @_;
-    my $cfunc = I_symbol({ meaning => 'expectationvalue' });
+    my $cfunc = I_symbol({ meaning => 'expectation-value' });
     my $size  = ($gullet->readMatch(T_OTHER('*'))
       ? ($gullet->readMatch(T_OTHER('*')) ? 1 : 0)
       : 1);

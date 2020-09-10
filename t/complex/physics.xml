@@ -237,7 +237,7 @@
       </para>
       <para xml:id="S1.SS1.p2">
         <equation xml:id="S1.Ex4">
-          <Math mode="display" tex="\absolutevalue{a}\qquad\absolutevalue\Big{a}\qquad\absolutevalue*{\frac{X}{Y}}%&#10;\qquad\norm{a}\qquad\norm\Big{a}\qquad\norm*{\frac{X}{Y}}" text="list@(absolutevalue@(a), absolutevalue@(a), absolutevalue@(X / Y), norm@(a), norm@(a), norm@(X / Y))" xml:id="S1.Ex4.m1">
+          <Math mode="display" tex="\absolutevalue{a}\qquad\absolutevalue\Big{a}\qquad\absolutevalue*{\frac{X}{Y}}%&#10;\qquad\norm{a}\qquad\norm\Big{a}\qquad\norm*{\frac{X}{Y}}" text="list@(absolute-value@(a), absolute-value@(a), absolute-value@(X / Y), norm@(a), norm@(a), norm@(X / Y))" xml:id="S1.Ex4.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -252,7 +252,7 @@
                 <XMWrap>
                   <XMDual xml:id="S1.Ex4.m1.7">
                     <XMApp>
-                      <XMTok meaning="absolutevalue"/>
+                      <XMTok meaning="absolute-value"/>
                       <XMRef idref="S1.Ex4.m1.1"/>
                     </XMApp>
                     <XMWrap>
@@ -264,7 +264,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex4.m1.8">
                     <XMApp>
-                      <XMTok meaning="absolutevalue"/>
+                      <XMTok meaning="absolute-value"/>
                       <XMRef idref="S1.Ex4.m1.2"/>
                     </XMApp>
                     <XMWrap>
@@ -276,7 +276,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex4.m1.9">
                     <XMApp>
-                      <XMTok meaning="absolutevalue"/>
+                      <XMTok meaning="absolute-value"/>
                       <XMRef idref="S1.Ex4.m1.3"/>
                     </XMApp>
                     <XMWrap>
@@ -337,7 +337,7 @@
       </para>
       <para xml:id="S1.SS1.p3">
         <equation xml:id="S1.Ex5">
-          <Math mode="display" tex="\evaluated{x}_{0}^{\infty}\qquad\evaluated(x|_{0}^{\infty}\qquad\evaluated[x|_%&#10;{0}^{\infty}\qquad\evaluated[\sum_{X=0}^{N}|_{0}^{\infty}\qquad\evaluated*[%&#10;\sum_{X=0}^{N}|_{0}^{\infty}" text="list@(evaluatedat@(x, 0, infinity), evaluatedat@(x, 0, infinity), evaluatedat@(x, 0, infinity), evaluatedat@((sum _ (X = 0)) ^ N, 0, infinity), evaluatedat@((sum _ (X = 0)) ^ N, 0, infinity))" xml:id="S1.Ex5.m1">
+          <Math mode="display" tex="\evaluated{x}_{0}^{\infty}\qquad\evaluated(x|_{0}^{\infty}\qquad\evaluated[x|_%&#10;{0}^{\infty}\qquad\evaluated[\sum_{X=0}^{N}|_{0}^{\infty}\qquad\evaluated*[%&#10;\sum_{X=0}^{N}|_{0}^{\infty}" text="list@(evaluated-at@(x, 0, infinity), evaluated-at@(x, 0, infinity), evaluated-at@(x, 0, infinity), evaluated-at@((sum _ (X = 0)) ^ N, 0, infinity), evaluated-at@((sum _ (X = 0)) ^ N, 0, infinity))" xml:id="S1.Ex5.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -351,7 +351,7 @@
                 <XMWrap>
                   <XMDual xml:id="S1.Ex5.m1.16">
                     <XMApp>
-                      <XMTok meaning="evaluatedat"/>
+                      <XMTok meaning="evaluated-at"/>
                       <XMRef idref="S1.Ex5.m1.1"/>
                       <XMRef idref="S1.Ex5.m1.2"/>
                       <XMRef idref="S1.Ex5.m1.3"/>
@@ -372,7 +372,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex5.m1.17">
                     <XMApp>
-                      <XMTok meaning="evaluatedat"/>
+                      <XMTok meaning="evaluated-at"/>
                       <XMRef idref="S1.Ex5.m1.4"/>
                       <XMRef idref="S1.Ex5.m1.5"/>
                       <XMRef idref="S1.Ex5.m1.6"/>
@@ -394,7 +394,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex5.m1.18">
                     <XMApp>
-                      <XMTok meaning="evaluatedat"/>
+                      <XMTok meaning="evaluated-at"/>
                       <XMRef idref="S1.Ex5.m1.7"/>
                       <XMRef idref="S1.Ex5.m1.8"/>
                       <XMRef idref="S1.Ex5.m1.9"/>
@@ -416,7 +416,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex5.m1.19">
                     <XMApp>
-                      <XMTok meaning="evaluatedat"/>
+                      <XMTok meaning="evaluated-at"/>
                       <XMRef idref="S1.Ex5.m1.10"/>
                       <XMRef idref="S1.Ex5.m1.11"/>
                       <XMRef idref="S1.Ex5.m1.12"/>
@@ -450,7 +450,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex5.m1.20">
                     <XMApp>
-                      <XMTok meaning="evaluatedat"/>
+                      <XMTok meaning="evaluated-at"/>
                       <XMRef idref="S1.Ex5.m1.13"/>
                       <XMRef idref="S1.Ex5.m1.14"/>
                       <XMRef idref="S1.Ex5.m1.15"/>
@@ -487,7 +487,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex6">
-          <Math mode="display" tex="\order{x^{2}}\qquad\order\Big{x^{2}}\qquad\order*{\frac{X}{Y}}\qquad%&#10;\commutator{A}{B}\qquad\commutator\Big{A}{B}\qquad\commutator*{A}{\frac{X}{Y}}%&#10;\qquad\anticommutator{A}{B}\qquad\poissonbracket{A}{B}" text="list@(order@(x ^ 2), order@(x ^ 2), order@(X / Y), commutator@(A, B), commutator@(A, B), commutator@(A, X / Y), anticommutator@(A, B), poissonbracket@(A, B))" xml:id="S1.Ex6.m1">
+          <Math mode="display" tex="\order{x^{2}}\qquad\order\Big{x^{2}}\qquad\order*{\frac{X}{Y}}\qquad%&#10;\commutator{A}{B}\qquad\commutator\Big{A}{B}\qquad\commutator*{A}{\frac{X}{Y}}%&#10;\qquad\anticommutator{A}{B}\qquad\poissonbracket{A}{B}" text="list@(order@(x ^ 2), order@(x ^ 2), order@(X / Y), commutator@(A, B), commutator@(A, B), commutator@(A, X / Y), anticommutator@(A, B), poisson-bracket@(A, B))" xml:id="S1.Ex6.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -616,7 +616,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex6.m1.21">
                     <XMApp>
-                      <XMTok meaning="poissonbracket"/>
+                      <XMTok meaning="poisson-bracket"/>
                       <XMRef idref="S1.Ex6.m1.12"/>
                       <XMRef idref="S1.Ex6.m1.13"/>
                     </XMApp>
@@ -686,7 +686,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex8">
-          <Math mode="display" tex="\dotproduct\qquad\crossproduct\qquad\crossproduct" text="list@(dotproduct, crossproduct, crossproduct)" xml:id="S1.Ex8.m1">
+          <Math mode="display" tex="\dotproduct\qquad\crossproduct\qquad\crossproduct" text="list@(dot-product, cross-product, cross-product)" xml:id="S1.Ex8.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -696,11 +696,11 @@
                   <XMRef idref="S1.Ex8.m1.3"/>
                 </XMApp>
                 <XMWrap>
-                  <XMTok meaning="dotproduct" role="MULOP" xml:id="S1.Ex8.m1.1">⋅</XMTok>
+                  <XMTok meaning="dot-product" name="dotproduct" role="MULOP" xml:id="S1.Ex8.m1.1">⋅</XMTok>
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
-                  <XMTok meaning="crossproduct" role="MULOP" xml:id="S1.Ex8.m1.2">×</XMTok>
+                  <XMTok meaning="cross-product" name="crossproduct" role="MULOP" xml:id="S1.Ex8.m1.2">×</XMTok>
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
-                  <XMTok meaning="crossproduct" role="MULOP" xml:id="S1.Ex8.m1.3">×</XMTok>
+                  <XMTok meaning="cross-product" name="crossproduct" role="MULOP" xml:id="S1.Ex8.m1.3">×</XMTok>
                 </XMWrap>
               </XMDual>
             </XMath>
@@ -875,7 +875,7 @@
                     <XMTok meaning="curl"/>
                     <XMWrap>
                       <XMTok name="nabla" role="OPERATOR">∇</XMTok>
-                      <XMTok meaning="crossproduct" role="MULOP">×</XMTok>
+                      <XMTok meaning="cross-product" name="crossproduct" role="MULOP">×</XMTok>
                     </XMWrap>
                   </XMDual>
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
@@ -885,7 +885,7 @@
                       <XMRef idref="S1.Ex11.m1.1"/>
                     </XMApp>
                     <XMApp>
-                      <XMTok meaning="crossproduct" role="MULOP">×</XMTok>
+                      <XMTok meaning="cross-product" name="crossproduct" role="MULOP">×</XMTok>
                       <XMTok name="nabla" role="OPERATOR">∇</XMTok>
                       <XMTok font="bold" role="ID" xml:id="S1.Ex11.m1.1">a</XMTok>
                     </XMApp>
@@ -897,7 +897,7 @@
                       <XMRef idref="S1.Ex11.m1.2"/>
                     </XMApp>
                     <XMApp>
-                      <XMTok meaning="crossproduct" role="MULOP">×</XMTok>
+                      <XMTok meaning="cross-product" name="crossproduct" role="MULOP">×</XMTok>
                       <XMTok name="nabla" role="OPERATOR">∇</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="true">(</XMTok>
@@ -921,7 +921,7 @@
                       <XMRef idref="S1.Ex11.m1.3"/>
                     </XMApp>
                     <XMApp>
-                      <XMTok meaning="crossproduct" role="MULOP">×</XMTok>
+                      <XMTok meaning="cross-product" name="crossproduct" role="MULOP">×</XMTok>
                       <XMTok name="nabla" role="OPERATOR">∇</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="true">[</XMTok>
@@ -1819,7 +1819,7 @@
       </para>
       <para xml:id="S1.SS3.p4">
         <equation xml:id="S1.Ex16">
-          <Math mode="display" tex="\tr\rho\qquad\tr(X^{Y})\qquad\Tr\rho\qquad\rank M\qquad\erf(x)\qquad\Res[f(z)]" text="list@(trace@(rho), trace@(X ^ Y), trace@(rho), rank@(M), errorfunction@(x), residue@(f * z))" xml:id="S1.Ex16.m1">
+          <Math mode="display" tex="\tr\rho\qquad\tr(X^{Y})\qquad\Tr\rho\qquad\rank M\qquad\erf(x)\qquad\Res[f(z)]" text="list@(trace@(rho), trace@(X ^ Y), trace@(rho), rank@(M), error-function@(x), residue@(f * z))" xml:id="S1.Ex16.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -1868,7 +1868,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex16.m1.8">
                     <XMApp>
-                      <XMTok meaning="errorfunction"/>
+                      <XMTok meaning="error-function"/>
                       <XMRef idref="S1.Ex16.m1.2"/>
                     </XMApp>
                     <XMApp>
@@ -1912,7 +1912,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex17">
-          <Math mode="display" tex="\qquad\principalvalue{\int f(z)\differential{z}}\qquad\PV{\int f(z)%&#10;\differential{z}}\qquad\Re{z}\qquad\Re\qquad\Im{z}\qquad\Im" text="list@(principalvalue@(integral@(f * z * differential@(z))), principalvalue@(integral@(f * z * differential@(z))), realpart@(z), real-part, imagpart@(z), imaginary-part)" xml:id="S1.Ex17.m1">
+          <Math mode="display" tex="\qquad\principalvalue{\int f(z)\differential{z}}\qquad\PV{\int f(z)%&#10;\differential{z}}\qquad\Re{z}\qquad\Re\qquad\Im{z}\qquad\Im" text="list@(principal-value@(integral@(f * z * differential@(z))), principal-value@(integral@(f * z * differential@(z))), real-part@(z), real-part, imaginary-part@(z), imaginary-part)" xml:id="S1.Ex17.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -1927,7 +1927,7 @@
                 <XMWrap>
                   <XMDual lpadding="20.0pt" xml:id="S1.Ex17.m1.10">
                     <XMApp>
-                      <XMTok meaning="principalvalue"/>
+                      <XMTok meaning="principal-value"/>
                       <XMRef idref="S1.Ex17.m1.1"/>
                     </XMApp>
                     <XMApp>
@@ -1961,7 +1961,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex17.m1.11">
                     <XMApp>
-                      <XMTok meaning="principalvalue"/>
+                      <XMTok meaning="principal-value"/>
                       <XMRef idref="S1.Ex17.m1.2"/>
                     </XMApp>
                     <XMApp>
@@ -1999,7 +1999,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex17.m1.12">
                     <XMApp>
-                      <XMTok meaning="realpart"/>
+                      <XMTok meaning="real-part"/>
                       <XMRef idref="S1.Ex17.m1.3"/>
                     </XMApp>
                     <XMApp>
@@ -2016,7 +2016,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex17.m1.14">
                     <XMApp>
-                      <XMTok meaning="imagpart"/>
+                      <XMTok meaning="imaginary-part"/>
                       <XMRef idref="S1.Ex17.m1.4"/>
                     </XMApp>
                     <XMApp>
@@ -2039,7 +2039,7 @@
       <para xml:id="S1.SS3.p5">
         <p>But</p>
         <equation xml:id="S1.Ex18">
-          <Math mode="display" tex="\real(\frac{X}{Y})\qquad\real[\frac{X}{Y}]\qquad\imaginary(\frac{X}{Y})\qquad%&#10;\imaginary[\frac{X}{Y}]" text="list@(realpart@(X / Y), realpart@(X / Y), imagpart@(X / Y), imagpart@(X / Y))" xml:id="S1.Ex18.m1">
+          <Math mode="display" tex="\real(\frac{X}{Y})\qquad\real[\frac{X}{Y}]\qquad\imaginary(\frac{X}{Y})\qquad%&#10;\imaginary[\frac{X}{Y}]" text="list@(real-part@(X / Y), real-part@(X / Y), imaginary-part@(X / Y), imaginary-part@(X / Y))" xml:id="S1.Ex18.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -2056,7 +2056,7 @@
                       <XMRef idref="S1.Ex18.m1.2"/>
                     </XMApp>
                     <XMApp>
-                      <XMTok meaning="realpart" role="OPERATOR" scriptpos="post" xml:id="S1.Ex18.m1.1">Re</XMTok>
+                      <XMTok meaning="real-part" role="OPERATOR" scriptpos="post" xml:id="S1.Ex18.m1.1">Re</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">(</XMTok>
                         <XMApp xml:id="S1.Ex18.m1.2">
@@ -2075,7 +2075,7 @@
                       <XMRef idref="S1.Ex18.m1.4"/>
                     </XMApp>
                     <XMApp>
-                      <XMTok meaning="realpart" role="OPERATOR" scriptpos="post" xml:id="S1.Ex18.m1.3">Re</XMTok>
+                      <XMTok meaning="real-part" role="OPERATOR" scriptpos="post" xml:id="S1.Ex18.m1.3">Re</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">[</XMTok>
                         <XMApp xml:id="S1.Ex18.m1.4">
@@ -2094,7 +2094,7 @@
                       <XMRef idref="S1.Ex18.m1.6"/>
                     </XMApp>
                     <XMApp>
-                      <XMTok meaning="imagpart" role="OPERATOR" scriptpos="post" xml:id="S1.Ex18.m1.5">Im</XMTok>
+                      <XMTok meaning="imaginary-part" role="OPERATOR" scriptpos="post" xml:id="S1.Ex18.m1.5">Im</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">(</XMTok>
                         <XMApp xml:id="S1.Ex18.m1.6">
@@ -2113,7 +2113,7 @@
                       <XMRef idref="S1.Ex18.m1.8"/>
                     </XMApp>
                     <XMApp>
-                      <XMTok meaning="imagpart" role="OPERATOR" scriptpos="post" xml:id="S1.Ex18.m1.7">Im</XMTok>
+                      <XMTok meaning="imaginary-part" role="OPERATOR" scriptpos="post" xml:id="S1.Ex18.m1.7">Im</XMTok>
                       <XMWrap>
                         <XMTok role="OPEN" stretchy="false">[</XMTok>
                         <XMApp xml:id="S1.Ex18.m1.8">
@@ -3241,13 +3241,13 @@
       <title><tag close=" ">1.6</tag>Dirac bra-ket notation</title>
       <para xml:id="S1.SS6.p1">
         <equation xml:id="S1.Ex30">
-          <Math mode="display" tex="\bra{\phi}\ket{\psi}\mbox{\quad as opposed to\quad}\bra{\phi}\ket{\psi}" text="innerproduct@(phi, psi) * [ as opposed to ] * bra@(phi) * ket@(psi)" xml:id="S1.Ex30.m1">
+          <Math mode="display" tex="\bra{\phi}\ket{\psi}\mbox{\quad as opposed to\quad}\bra{\phi}\ket{\psi}" text="inner-product@(phi, psi) * [ as opposed to ] * bra@(phi) * ket@(psi)" xml:id="S1.Ex30.m1">
             <XMath>
               <XMApp>
                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                 <XMDual>
                   <XMApp>
-                    <XMTok meaning="innerproduct"/>
+                    <XMTok meaning="inner-product"/>
                     <XMRef idref="S1.Ex30.m1.1"/>
                     <XMRef idref="S1.Ex30.m1.2"/>
                   </XMApp>
@@ -3287,7 +3287,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex31">
-          <Math mode="display" tex="\bra{\phi}\outerproduct{\psi}{\xi}.\mbox{\quad as opposed to\quad}\bra{\phi}%&#10;\ket{\psi}\bra{\xi}" text="formulae@(bra@(phi) * outerproduct@(psi, xi), [ as opposed to ] * innerproduct@(phi, psi) * bra@(xi))" xml:id="S1.Ex31.m1">
+          <Math mode="display" tex="\bra{\phi}\outerproduct{\psi}{\xi}.\mbox{\quad as opposed to\quad}\bra{\phi}%&#10;\ket{\psi}\bra{\xi}" text="formulae@(bra@(phi) * outer-product@(psi, xi), [ as opposed to ] * inner-product@(phi, psi) * bra@(xi))" xml:id="S1.Ex31.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -3311,7 +3311,7 @@
                     </XMDual>
                     <XMDual>
                       <XMApp>
-                        <XMTok meaning="outerproduct"/>
+                        <XMTok meaning="outer-product"/>
                         <XMRef idref="S1.Ex31.m1.2"/>
                         <XMRef idref="S1.Ex31.m1.3"/>
                       </XMApp>
@@ -3333,7 +3333,7 @@
                     <XMText> as opposed to </XMText>
                     <XMDual>
                       <XMApp>
-                        <XMTok meaning="innerproduct"/>
+                        <XMTok meaning="inner-product"/>
                         <XMRef idref="S1.Ex31.m1.4"/>
                         <XMRef idref="S1.Ex31.m1.5"/>
                       </XMApp>
@@ -3445,7 +3445,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex33">
-          <Math mode="display" tex="\bra{\phi}\ket{\psi}\qquad\bra{\phi}\ket{X^{Y}}\qquad\bra*{\phi}\ket*{X^{Y}}%&#10;\qquad\bra*{\phi}\ket*{X^{Y}}\qquad\bra*{\phi}\ket*{X^{Y}}" text="list@(innerproduct@(phi, psi), innerproduct@(phi, X ^ Y), innerproduct@(phi, X ^ Y), innerproduct@(phi, X ^ Y), innerproduct@(phi, X ^ Y))" xml:id="S1.Ex33.m1">
+          <Math mode="display" tex="\bra{\phi}\ket{\psi}\qquad\bra{\phi}\ket{X^{Y}}\qquad\bra*{\phi}\ket*{X^{Y}}%&#10;\qquad\bra*{\phi}\ket*{X^{Y}}\qquad\bra*{\phi}\ket*{X^{Y}}" text="list@(inner-product@(phi, psi), inner-product@(phi, X ^ Y), inner-product@(phi, X ^ Y), inner-product@(phi, X ^ Y), inner-product@(phi, X ^ Y))" xml:id="S1.Ex33.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -3459,7 +3459,7 @@
                 <XMWrap>
                   <XMDual xml:id="S1.Ex33.m1.11">
                     <XMApp>
-                      <XMTok meaning="innerproduct"/>
+                      <XMTok meaning="inner-product"/>
                       <XMRef idref="S1.Ex33.m1.1"/>
                       <XMRef idref="S1.Ex33.m1.2"/>
                     </XMApp>
@@ -3474,7 +3474,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex33.m1.12">
                     <XMApp>
-                      <XMTok meaning="innerproduct"/>
+                      <XMTok meaning="inner-product"/>
                       <XMRef idref="S1.Ex33.m1.3"/>
                       <XMRef idref="S1.Ex33.m1.4"/>
                     </XMApp>
@@ -3493,7 +3493,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex33.m1.13">
                     <XMApp>
-                      <XMTok meaning="innerproduct"/>
+                      <XMTok meaning="inner-product"/>
                       <XMRef idref="S1.Ex33.m1.5"/>
                       <XMRef idref="S1.Ex33.m1.6"/>
                     </XMApp>
@@ -3512,7 +3512,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex33.m1.14">
                     <XMApp>
-                      <XMTok meaning="innerproduct"/>
+                      <XMTok meaning="inner-product"/>
                       <XMRef idref="S1.Ex33.m1.7"/>
                       <XMRef idref="S1.Ex33.m1.8"/>
                     </XMApp>
@@ -3531,7 +3531,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex33.m1.15">
                     <XMApp>
-                      <XMTok meaning="innerproduct"/>
+                      <XMTok meaning="inner-product"/>
                       <XMRef idref="S1.Ex33.m1.9"/>
                       <XMRef idref="S1.Ex33.m1.10"/>
                     </XMApp>
@@ -3553,7 +3553,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex34">
-          <Math mode="display" tex="\innerproduct{a}{b}\qquad\innerproduct{a}{a}\qquad\innerproduct{a}{X^{Y}}%&#10;\qquad\innerproduct*{a}{X^{Y}}" text="list@(innerproduct@(a, b), innerproduct@(a, a), innerproduct@(a, X ^ Y), innerproduct@(a, X ^ Y))" xml:id="S1.Ex34.m1">
+          <Math mode="display" tex="\innerproduct{a}{b}\qquad\innerproduct{a}{a}\qquad\innerproduct{a}{X^{Y}}%&#10;\qquad\innerproduct*{a}{X^{Y}}" text="list@(inner-product@(a, b), inner-product@(a, a), inner-product@(a, X ^ Y), inner-product@(a, X ^ Y))" xml:id="S1.Ex34.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -3566,7 +3566,7 @@
                 <XMWrap>
                   <XMDual xml:id="S1.Ex34.m1.9">
                     <XMApp>
-                      <XMTok meaning="innerproduct"/>
+                      <XMTok meaning="inner-product"/>
                       <XMRef idref="S1.Ex34.m1.1"/>
                       <XMRef idref="S1.Ex34.m1.2"/>
                     </XMApp>
@@ -3581,7 +3581,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex34.m1.10">
                     <XMApp>
-                      <XMTok meaning="innerproduct"/>
+                      <XMTok meaning="inner-product"/>
                       <XMRef idref="S1.Ex34.m1.3"/>
                       <XMRef idref="S1.Ex34.m1.4"/>
                     </XMApp>
@@ -3596,7 +3596,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex34.m1.11">
                     <XMApp>
-                      <XMTok meaning="innerproduct"/>
+                      <XMTok meaning="inner-product"/>
                       <XMRef idref="S1.Ex34.m1.5"/>
                       <XMRef idref="S1.Ex34.m1.6"/>
                     </XMApp>
@@ -3615,7 +3615,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex34.m1.12">
                     <XMApp>
-                      <XMTok meaning="innerproduct"/>
+                      <XMTok meaning="inner-product"/>
                       <XMRef idref="S1.Ex34.m1.7"/>
                       <XMRef idref="S1.Ex34.m1.8"/>
                     </XMApp>
@@ -3637,7 +3637,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex35">
-          <Math mode="display" tex="\innerproduct{a}{b}\qquad\outerproduct{a}{b}\qquad\outerproduct{a}{a}\qquad%&#10;\outerproduct{a}{X^{Y}}\qquad\outerproduct*{a}{X^{Y}}\qquad\outerproduct{a}{b}" text="list@(innerproduct@(a, b), outerproduct@(a, b), outerproduct@(a, a), outerproduct@(a, X ^ Y), outerproduct@(a, X ^ Y), outerproduct@(a, b))" xml:id="S1.Ex35.m1">
+          <Math mode="display" tex="\innerproduct{a}{b}\qquad\outerproduct{a}{b}\qquad\outerproduct{a}{a}\qquad%&#10;\outerproduct{a}{X^{Y}}\qquad\outerproduct*{a}{X^{Y}}\qquad\outerproduct{a}{b}" text="list@(inner-product@(a, b), outer-product@(a, b), outer-product@(a, a), outer-product@(a, X ^ Y), outer-product@(a, X ^ Y), outer-product@(a, b))" xml:id="S1.Ex35.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -3652,7 +3652,7 @@
                 <XMWrap>
                   <XMDual xml:id="S1.Ex35.m1.13">
                     <XMApp>
-                      <XMTok meaning="innerproduct"/>
+                      <XMTok meaning="inner-product"/>
                       <XMRef idref="S1.Ex35.m1.1"/>
                       <XMRef idref="S1.Ex35.m1.2"/>
                     </XMApp>
@@ -3667,7 +3667,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex35.m1.14">
                     <XMApp>
-                      <XMTok meaning="outerproduct"/>
+                      <XMTok meaning="outer-product"/>
                       <XMRef idref="S1.Ex35.m1.3"/>
                       <XMRef idref="S1.Ex35.m1.4"/>
                     </XMApp>
@@ -3685,7 +3685,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex35.m1.15">
                     <XMApp>
-                      <XMTok meaning="outerproduct"/>
+                      <XMTok meaning="outer-product"/>
                       <XMRef idref="S1.Ex35.m1.5"/>
                       <XMRef idref="S1.Ex35.m1.6"/>
                     </XMApp>
@@ -3703,7 +3703,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex35.m1.16">
                     <XMApp>
-                      <XMTok meaning="outerproduct"/>
+                      <XMTok meaning="outer-product"/>
                       <XMRef idref="S1.Ex35.m1.7"/>
                       <XMRef idref="S1.Ex35.m1.8"/>
                     </XMApp>
@@ -3725,7 +3725,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex35.m1.17">
                     <XMApp>
-                      <XMTok meaning="outerproduct"/>
+                      <XMTok meaning="outer-product"/>
                       <XMRef idref="S1.Ex35.m1.9"/>
                       <XMRef idref="S1.Ex35.m1.10"/>
                     </XMApp>
@@ -3750,7 +3750,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex35.m1.18">
                     <XMApp>
-                      <XMTok meaning="outerproduct"/>
+                      <XMTok meaning="outer-product"/>
                       <XMRef idref="S1.Ex35.m1.11"/>
                       <XMRef idref="S1.Ex35.m1.12"/>
                     </XMApp>
@@ -3771,7 +3771,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex36">
-          <Math mode="display" tex="\outerproduct{a}{b}\qquad\expectationvalue{A}\qquad\expectationvalue{A}{\Psi}%&#10;\qquad\expectationvalue{A}{\Psi}\qquad\expectationvalue{\frac{X}{Y}}{\Psi}%&#10;\qquad\expectationvalue*{\frac{X}{Y}}{X^{Y}}\qquad\expectationvalue{\frac{X}{Y%&#10;}}{\Psi}" text="list@(outerproduct@(a, b), expectationvalue@(A), expectationvalue@(A, Psi, Psi), expectationvalue@(A, Psi, Psi), expectationvalue@(X / Y, Psi, Psi), expectationvalue@(X / Y, X ^ Y, X ^ Y), expectationvalue@(X / Y, Psi, Psi))" xml:id="S1.Ex36.m1">
+          <Math mode="display" tex="\outerproduct{a}{b}\qquad\expectationvalue{A}\qquad\expectationvalue{A}{\Psi}%&#10;\qquad\expectationvalue{A}{\Psi}\qquad\expectationvalue{\frac{X}{Y}}{\Psi}%&#10;\qquad\expectationvalue*{\frac{X}{Y}}{X^{Y}}\qquad\expectationvalue{\frac{X}{Y%&#10;}}{\Psi}" text="list@(outer-product@(a, b), expectation-value@(A), expectation-value@(A, Psi, Psi), expectation-value@(A, Psi, Psi), expectation-value@(X / Y, Psi, Psi), expectation-value@(X / Y, X ^ Y, X ^ Y), expectation-value@(X / Y, Psi, Psi))" xml:id="S1.Ex36.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -3787,7 +3787,7 @@
                 <XMWrap>
                   <XMDual xml:id="S1.Ex36.m1.19">
                     <XMApp>
-                      <XMTok meaning="outerproduct"/>
+                      <XMTok meaning="outer-product"/>
                       <XMRef idref="S1.Ex36.m1.1"/>
                       <XMRef idref="S1.Ex36.m1.2"/>
                     </XMApp>
@@ -3805,7 +3805,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex36.m1.20">
                     <XMApp>
-                      <XMTok meaning="expectationvalue"/>
+                      <XMTok meaning="expectation-value"/>
                       <XMRef idref="S1.Ex36.m1.3"/>
                     </XMApp>
                     <XMWrap>
@@ -3817,7 +3817,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex36.m1.21">
                     <XMApp>
-                      <XMTok meaning="expectationvalue"/>
+                      <XMTok meaning="expectation-value"/>
                       <XMRef idref="S1.Ex36.m1.5"/>
                       <XMRef idref="S1.Ex36.m1.4"/>
                       <XMRef idref="S1.Ex36.m1.6"/>
@@ -3835,7 +3835,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex36.m1.22">
                     <XMApp>
-                      <XMTok meaning="expectationvalue"/>
+                      <XMTok meaning="expectation-value"/>
                       <XMRef idref="S1.Ex36.m1.8"/>
                       <XMRef idref="S1.Ex36.m1.7"/>
                       <XMRef idref="S1.Ex36.m1.9"/>
@@ -3853,7 +3853,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex36.m1.23">
                     <XMApp>
-                      <XMTok meaning="expectationvalue"/>
+                      <XMTok meaning="expectation-value"/>
                       <XMRef idref="S1.Ex36.m1.11"/>
                       <XMRef idref="S1.Ex36.m1.10"/>
                       <XMRef idref="S1.Ex36.m1.12"/>
@@ -3875,7 +3875,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex36.m1.24">
                     <XMApp>
-                      <XMTok meaning="expectationvalue"/>
+                      <XMTok meaning="expectation-value"/>
                       <XMRef idref="S1.Ex36.m1.14"/>
                       <XMRef idref="S1.Ex36.m1.13"/>
                       <XMRef idref="S1.Ex36.m1.15"/>
@@ -3905,7 +3905,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex36.m1.25">
                     <XMApp>
-                      <XMTok meaning="expectationvalue"/>
+                      <XMTok meaning="expectation-value"/>
                       <XMRef idref="S1.Ex36.m1.17"/>
                       <XMRef idref="S1.Ex36.m1.16"/>
                       <XMRef idref="S1.Ex36.m1.18"/>
@@ -3930,7 +3930,7 @@
           </Math>
         </equation>
         <equation xml:id="S1.Ex37">
-          <Math mode="display" tex="\matrixelement{n}{A}{m}\qquad\matrixelement{n}{A}{m}\qquad\matrixelement{n}{%&#10;\frac{X}{Y}}{m}\qquad\matrixelement*{n}{\frac{X}{Y}}{X^{Y}}\qquad%&#10;\matrixelement{n}{\frac{X}{Y}}{m}" text="list@(expectationvalue@(A, n, m), expectationvalue@(A, n, m), expectationvalue@(X / Y, n, m), expectationvalue@(X / Y, n, X ^ Y), expectationvalue@(X / Y, n, m))" xml:id="S1.Ex37.m1">
+          <Math mode="display" tex="\matrixelement{n}{A}{m}\qquad\matrixelement{n}{A}{m}\qquad\matrixelement{n}{%&#10;\frac{X}{Y}}{m}\qquad\matrixelement*{n}{\frac{X}{Y}}{X^{Y}}\qquad%&#10;\matrixelement{n}{\frac{X}{Y}}{m}" text="list@(expectation-value@(A, n, m), expectation-value@(A, n, m), expectation-value@(X / Y, n, m), expectation-value@(X / Y, n, X ^ Y), expectation-value@(X / Y, n, m))" xml:id="S1.Ex37.m1">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -3944,7 +3944,7 @@
                 <XMWrap>
                   <XMDual xml:id="S1.Ex37.m1.16">
                     <XMApp>
-                      <XMTok meaning="expectationvalue"/>
+                      <XMTok meaning="expectation-value"/>
                       <XMRef idref="S1.Ex37.m1.2"/>
                       <XMRef idref="S1.Ex37.m1.1"/>
                       <XMRef idref="S1.Ex37.m1.3"/>
@@ -3962,7 +3962,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex37.m1.17">
                     <XMApp>
-                      <XMTok meaning="expectationvalue"/>
+                      <XMTok meaning="expectation-value"/>
                       <XMRef idref="S1.Ex37.m1.5"/>
                       <XMRef idref="S1.Ex37.m1.4"/>
                       <XMRef idref="S1.Ex37.m1.6"/>
@@ -3980,7 +3980,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex37.m1.18">
                     <XMApp>
-                      <XMTok meaning="expectationvalue"/>
+                      <XMTok meaning="expectation-value"/>
                       <XMRef idref="S1.Ex37.m1.8"/>
                       <XMRef idref="S1.Ex37.m1.7"/>
                       <XMRef idref="S1.Ex37.m1.9"/>
@@ -4002,7 +4002,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex37.m1.19">
                     <XMApp>
-                      <XMTok meaning="expectationvalue"/>
+                      <XMTok meaning="expectation-value"/>
                       <XMRef idref="S1.Ex37.m1.11"/>
                       <XMRef idref="S1.Ex37.m1.10"/>
                       <XMRef idref="S1.Ex37.m1.12"/>
@@ -4028,7 +4028,7 @@
                   <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
                   <XMDual xml:id="S1.Ex37.m1.20">
                     <XMApp>
-                      <XMTok meaning="expectationvalue"/>
+                      <XMTok meaning="expectation-value"/>
                       <XMRef idref="S1.Ex37.m1.14"/>
                       <XMRef idref="S1.Ex37.m1.13"/>
                       <XMRef idref="S1.Ex37.m1.15"/>
