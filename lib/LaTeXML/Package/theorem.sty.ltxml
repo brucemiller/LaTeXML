@@ -20,8 +20,9 @@ use LaTeXML::Package;
 # This is close enough to amsthm to just use it.
 RequirePackage('amsthm');
 # However, theorem.sty's styles do NOT record the headfont!
-if (my $p = LookupValue('THEOREM_PARAMETERS')) {
-  delete $$p{'\thm@headfont'}; }    # amsthm added this!
+setSavableTheoremParameters(qw(
+    \thm@bodyfont \thm@headpunct
+    \thm@styling \thm@headstyling thm@swap));
 
 # And headpunct defaults to none.
 DefRegister('\thm@headpunct' => Tokens());
@@ -51,6 +52,9 @@ RawTeX(<<'EoTeX');
 \lx@theorem@newtheoremstyle{margin}{\slshape}{\lx@makerunin\lx@makeoutdent}{S}
 \lx@theorem@newtheoremstyle{marginbreak}{\slshape}{\lx@makeoutdent}{S}
 \lx@theorem@newtheoremstyle{changebreak}{\slshape}{}{S}
+% Redefine so we get correct parameters recorded
+\lx@theorem@newtheoremstyle{definition}{}{\lx@makerunin}{\normalfont}%{}{\bfseries}{.}{}{}
+\lx@theorem@newtheoremstyle{remark}{}{}{\normalfont}%{}{\itshape}{.}{}{}
 \th@plain
 EoTeX
 #**********************************************************************

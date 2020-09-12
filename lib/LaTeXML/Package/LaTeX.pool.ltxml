@@ -2689,7 +2689,7 @@ DefPrimitive('\renewenvironment OptionalMatch:* {}[Number][]{}{}', sub {
 AssignValue('thm@swap' => 0);
 DefRegister('\thm@style'        => Tokenize('plain'));
 DefRegister('\thm@headfont'     => Tokens(T_CS('\bfseries')));
-DefRegister('\thm@notefont'     => Tokens());
+DefRegister('\thm@notefont'     => Tokens(T_CS('\the'), T_CS('\thm@headfont')));
 DefRegister('\thm@bodyfont'     => Tokens(T_CS('\itshape')));
 DefRegister('\thm@headpunct'    => Tokens());
 DefRegister('\thm@styling'      => Tokens());
@@ -2699,13 +2699,9 @@ DefRegister('\thm@postwork'     => Tokens());
 DefRegister('\thm@symbol'       => Tokens());
 DefRegister('\thm@numbering'    => Tokens(T_CS('\arabic')));
 DefRegister('\thm@headformater' => undef);
-#  AssignValue('\thm@headfont' => T_CS('\bfseries'));
-#  AssignValue('\thm@bodyfont' => T_CS('\itshape'));
 
 DefPrimitive('\th@plain', sub {
-    #  AssignValue('\thm@headfont' => T_CS('\bfseries'));
-    AssignValue('\thm@bodyfont' => T_CS('\itshape'));
-    #  AssignValue('\thm@headpunct'=> T_OTHER('.'));
+    AssignValue('\thm@bodyfont'    => T_CS('\itshape'));
     AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
     return; });
 
@@ -2715,7 +2711,7 @@ DefMacroI('\lx@makeoutdent', undef, '\@ADDCLASS{ltx_outdent}');
 DefMacroI('\@thmcountersep', undef, '.');
 DefMacroI('\thm@doendmark',  undef, '');
 
-DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
+DefPrimitive('\newtheorem OptionalMatch:* {}[]{}[]', sub {
     my ($stomach, $flag, $thmset, $otherthmset, $type, $reset) = @_;
     defineNewTheorem($stomach, $flag, $thmset, $otherthmset, $type, $reset);
     # Reset these!
@@ -2723,24 +2719,28 @@ DefMacro('\newtheorem OptionalMatch:* {}[]{}[]', sub {
     DefRegister('\thm@postwork' => Tokens()); },
   locked => 1);
 
-AssignValue('THEOREM_PARAMETERS' => {});
+# These record which style parameters CAN BE saved/restored for each style.
+# (kinda weird, but different packages use different sets; particularly \thm@headfont)
+#  THEOREM_<theoremname>_PARAMETERS will store the actual values for those parameters
+AssignValue('SAVABLE_THEOREM_PARAMETERS' => {});
 
-sub snapshotTheoremParameters {
-  my (@keys) = @_;
-  my $saved = LookupValue('THEOREM_PARAMETERS');
-  map { $$saved{$_} = 1; } @keys;    # Noe that these are saved for each theorem type.
+sub setSavableTheoremParameters {
+  my (@keys) = @_;    # Noe that these are saved for each theorem type.
+  AssignValue('SAVABLE_THEOREM_PARAMETERS' => { map { $_ => 1; } @keys });
   return; }
 
 # Following amsthm's model, the various theorem customizations are stored in token registers
-# Some packages may want to add '\thm@headfont'
-snapshotTheoremParameters(qw(
+# Some packages may want to add '\thm@headfont' (or exclude it)
+setSavableTheoremParameters(qw(
     \thm@bodyfont \thm@headpunct \thm@styling \thm@headstyling thm@swap));
 
 sub useTheoremStyle {
   my ($name) = @_;
+  my $savable = LookupValue('SAVABLE_THEOREM_PARAMETERS');
   if (my $params = LookupValue('THEOREM_' . ToString($name) . '_PARAMETERS')) {
     foreach my $key (keys %$params) {
-      AssignValue($key => $$params{$key}); } }
+      if ($$savable{$key}) {    # Only use the officieally saved ones
+        AssignValue($key => $$params{$key}); } } }
   return; }
 
 sub saveTheoremStyle {
@@ -2749,7 +2749,7 @@ sub saveTheoremStyle {
   AssignValue('THEOREM_' . $name . '_PARAMETERS' => {%parameters}, 'global');
   return; }
 
-RawTeX('\th@plain');    # Activate the default style.
+RawTeX('\th@plain');            # Activate the default style.
 # [or just make it's values the defaults...]
 
 Tag('ltx:theorem', autoClose => 1);
@@ -2785,9 +2785,8 @@ sub defineNewTheorem {
         : $numbering . "{" . $counter . "}"),
       scope => 'global') if $numbering; }
 
-  my %parameters = %{ LookupValue('THEOREM_PARAMETERS') };
-  AssignValue('THEOREM_' . $thmset . '_PARAMETERS'
-      => { map { ($_ => LookupValue($_)) } keys %parameters }, 'global');
+  my %parameters = %{ LookupValue('SAVABLE_THEOREM_PARAMETERS') };
+  saveTheoremStyle($thmset, map { ($_ => LookupValue($_)) } keys %parameters);
 
   my $thmname = '\\lx@name@' . $thmset;
   DefMacroI($thmname, undef, $type, scope => 'global');
@@ -2809,9 +2808,9 @@ sub defineNewTheorem {
         T_BEGIN, ($type ? $type->unlist : ()), T_END,
         T_CS('\the' . $counter), T_BEGIN, Tokens(T_PARAM, T_OTHER('1')), T_END,
         T_CS('\the'), T_CS('\thm@headpunct'))
-      : '{\the\thm@headfont\lx@tag{\csname fnum@' . $thmset . '\endcsname}}'
-        . '{\the\thm@notefont' . ($type ? '\ifx.#1.\else\space(#1)\fi' : '#1') . '}'
-        . '\the\thm@headpunct'),
+      : '{\the\thm@headfont\lx@tag{\csname fnum@' . $thmset . '\endcsname}'
+        . '{' . ($type ? '\ifx.#1.\else\space\the\thm@notefont(#1)\fi' : '#1') . '}'
+        . '\the\thm@headpunct}'),
 
     scope => 'global');
 
@@ -2822,9 +2821,7 @@ sub defineNewTheorem {
       . "#body",
     afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
     beforeDigest   => sub {
-      my $params = LookupValue('THEOREM_' . $thmset . '_PARAMETERS');
-      foreach my $v (keys %$params) {
-        AssignValue($v => $$params{$v}); }
+      useTheoremStyle($thmset);
       Digest('\normalfont\the\thm@prework'); },
     afterDigestBegin => sub {
       my $name = $_[1]->getArg(1);
@@ -2846,11 +2843,6 @@ sub defineNewTheorem {
         } }
         else {
           %ctr = RefStepCounter($thmset); } }
-      # my $title = Digest(Tokens(T_BEGIN,
-      #     T_CS('\the'), T_CS('\thm@headstyling'),
-      #     T_BEGIN, T_CS('\the'), T_CS('\thm@headfont'), T_CS('\format@title@' . $thmset), T_END,
-      #     T_BEGIN, ($_[1] ? (T_CS('\the'), T_CS('\thm@notefont'), $_[1]->unlist) : ()), T_END,
-      #     T_END));
       my $title = Digest(Tokens(T_BEGIN,
           T_CS('\the'), T_CS('\thm@headstyling'),
           T_CS('\format@title@' . $thmset),    #T_END,

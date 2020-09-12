@@ -45,8 +45,9 @@ use LaTeXML::Package;
 #   Not done yet:
 #     shaded : kv of textwiddth, bgcolor, rulecolor, rulewidth, margin
 # See ntheorem for an idea how to deal with framing, colors, etc?
-snapshotTheoremParameters(qw(
-    \thm@headfont \thm@notefont \thm@bodyfont \thm@headpunct \thm@styling \thm@headstyling));
+setSavableTheoremParameters(qw(
+    \thm@bodyfont \thm@headfont \thm@notefont  \thm@bodyfont \thm@headpunct
+    \thm@styling \thm@headstyling));
 
 # should nu
 sub thmtools_style {

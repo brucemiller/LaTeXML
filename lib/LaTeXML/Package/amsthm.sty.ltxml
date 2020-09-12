@@ -32,8 +32,11 @@ DefMacroI('\nopunct', undef, Tokens());
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Theorem Styles.
 
-# amsthm includes headfont!
-snapshotTheoremParameters(qw(
+# Redefine from LaTeX; notes go in normal font, not headfont
+DefRegister('\thm@notefont' => Tokens(T_CS('\fontseries'), T_CS('\mddefault'), T_CS('\upshape')));
+
+# amsthm also saves headfont!
+setSavableTheoremParameters(qw(
     \thm@headfont \thm@bodyfont \thm@headpunct
     \thm@styling \thm@headstyling thm@swap));
 
