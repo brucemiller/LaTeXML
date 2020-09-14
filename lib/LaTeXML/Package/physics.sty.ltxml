@@ -87,7 +87,7 @@ sub phys_close {
 sub phys_readArg {
   my ($gullet, $required, %delimiters) = @_;
   my ($arg, $open, $close);
-  my $next = $gullet->readToken();    # or XToken ?
+  my $next = $gullet->readToken();          # or XToken ?
   if ($next && $next->equals(T_BEGIN)) {    # Read regular arg, use default delimiters
     $gullet->unread($next);
     $arg = $gullet->readArg(); }
@@ -298,19 +298,21 @@ DefMacro('\lx@physics@operatorP{}{}{}', sub {
           phys_open($size, $open || T_OTHER('(')), I_arg(1), phys_close($size, $close || T_OTHER(')'))),
         $arg, ($power ? $power : ())); } });
 
-my @operators = (qw(
-    sin sine cos cosine tan tangent csc cosecant sec secand cot cotangent
-    hsin hypsine cosh hypcosine tanh hyptangent csch hypcosecant sech hypsecand coth hypcotangent
-    arcsin arcsine arccos arccosine arctan arctangent arccsc arccosecant arcsec arcsecand arccot arccotangent
-    asin asine acos acosine atan atangent acsc acosecant asec asecand acot acotangent
-    exp exponential log logarithm ln naturallogarithm det determinant Pr Probability
-    ));
+my @operators = (
+  ['sin', 'sine'], ['cos', 'cosine'], ['tan', 'tangent'], ['csc', 'cosecant'], ['sec', 'secant'], ['cot', 'cotangent'], ['hsin', 'hypsine', 'hyperbolic-sine'],
+  ['cosh', 'hypcosine', 'hyperbolic-cosine'], ['tanh', 'hyptangent', 'hyperbolic-tangent'], ['csch', 'hypcosecant', 'hyperbolic-cosecant'],
+  ['sech', 'hypsecant', 'hyperbolic-secant'], ['coth', 'hypcotangent', 'hyperbolic-cotangent'], ['arcsin', 'arcsine'], ['arccos', 'arccosine'],
+  ['arctan', 'arctangent'], ['arccsc', 'arccosecant'], ['arcsec', 'arcsecant'], ['arccot', 'arccotangent'], ['asin', 'asine', 'arcsine'],
+  ['acos', 'acosine', 'arccosine'], ['atan', 'atangent', 'arctangent'], ['acsc', 'acosecant', 'arccosecant'], ['asec', 'asecant', 'arcsecant'],
+  ['acot', 'acotangent', 'arccotangent'], ['exp', 'exponential'], ['log', 'logarithm'], ['ln', 'naturallogarithm', 'natural-logarithm'],
+  ['det', 'determinant'], ['Pr', 'Probability', 'probability']);
 
 while (@operators) {
-  my ($shortname, $longname) = (shift(@operators), shift(@operators));
+  my ($shortname, $longname, $meaning) = @{ shift(@operators) };
+  $meaning ||= $longname;
   Let('\\' . $longname, '\\' . $shortname);
   DefMacro('\\' . $shortname,
-    "\\lx\@physics\@operatorP{\\$shortname}{$longname}{\\operatorname{$shortname}}"); }
+    "\\lx\@physics\@operatorP{\\$shortname}{$meaning}{\\operatorname{$shortname}}"); }
 
 # New operators
 DefMacro('\trace',          '\lx@physics@operatorP{\tr}{trace}{\operatorname{tr}}');
@@ -367,7 +369,7 @@ Let('\flatfrac', '\ifrac');
 #  => (differential var [degree])
 DefMacro('\lx@physics@diff{}{}{}', sub {
     my ($gullet, $cs, $semantic, $diff) = @_;
-    my $cfunc = I_symbol({ meaning => $semantic });
+    my $cfunc  = I_symbol({ meaning => $semantic });
     my $pfunc  = I_wrap({ role => 'DIFFOP' }, $diff);
     my $degree = $gullet->readOptional;
     my ($arg, $open, $close) = phys_readArg($gullet, 0, '(' => T_OTHER(')'));
@@ -375,7 +377,7 @@ DefMacro('\lx@physics@diff{}{}{}', sub {
       { ($arg ? () : (role => 'DIFFOP')),
         reversion => Tokens($cs,
           ($degree ? (T_OTHER('['), I_arg(2), T_OTHER(']')) : ()),
-          ($arg ? phys_revArg(I_arg(1), $open, $close) : ())) },
+          ($arg    ? phys_revArg(I_arg(1), $open, $close)   : ())) },
       ($arg
         ? I_apply({}, $cfunc, I_arg(1), ($degree ? I_arg(2) : ()))
         : ($degree
@@ -488,8 +490,8 @@ DefMacro('\ket', sub {
 
 DefMacro('\bra', sub {
     my ($gullet) = @_;
-    my $size = ($gullet->readMatch(T_OTHER('*')) ? 0 : 1);
-    my $arg  = $gullet->readArg();
+    my $size     = ($gullet->readMatch(T_OTHER('*')) ? 0 : 1);
+    my $arg      = $gullet->readArg();
     if ($gullet->readMatch(T_CS('\ket'))) {    # join to make braket!
       $size = 0 if $gullet->readMatch(T_OTHER('*'));    # star here, too
       my $arg2 = $gullet->readArg();
@@ -511,10 +513,10 @@ DefMacro('\bra', sub {
 DefMacro('\lx@physics@qm@product{}{}{}{}{}', sub {
     my ($gullet, $cs, $semantic, $open, $middle, $close) = @_;
     my $cfunc = I_symbol({ meaning => $semantic });
-    my $size = ($gullet->readMatch(T_OTHER('*')) ? 0 : 1);
-    my $arg0 = $gullet->readArg();
-    my $argx = phys_readArg($gullet);
-    my $arg1 = $argx || $arg0;
+    my $size  = ($gullet->readMatch(T_OTHER('*')) ? 0 : 1);
+    my $arg0  = $gullet->readArg();
+    my $argx  = phys_readArg($gullet);
+    my $arg1  = $argx || $arg0;
     return I_dual(
       { reversion => Tokens($cs, phys_revSize($size),
           phys_revArg(I_arg(1)), phys_revArg(I_arg(2))) },
@@ -530,8 +532,8 @@ DefMacro('\outerproduct',
 
 DefMacro('\expectationvalue', sub {
     my ($gullet) = @_;
-    my $cfunc = I_symbol({ meaning => 'expectation-value' });
-    my $size  = ($gullet->readMatch(T_OTHER('*'))
+    my $cfunc    = I_symbol({ meaning => 'expectation-value' });
+    my $size     = ($gullet->readMatch(T_OTHER('*'))
       ? ($gullet->readMatch(T_OTHER('*')) ? 1 : 0)
       : 1);
     my ($open, $middle, $close) =
@@ -555,8 +557,8 @@ DefMacro('\expectationvalue', sub {
 
 DefMacro('\matrixelement', sub {
     my ($gullet) = @_;
-    my $cfunc = I_symbol({ meaning => 'expectation-value' });
-    my $size  = ($gullet->readMatch(T_OTHER('*'))
+    my $cfunc    = I_symbol({ meaning => 'expectation-value' });
+    my $size     = ($gullet->readMatch(T_OTHER('*'))
       ? ($gullet->readMatch(T_OTHER('*')) ? 1 : 0)
       : 1);
     my ($open, $middle, $close) =
