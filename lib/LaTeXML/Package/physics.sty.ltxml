@@ -299,11 +299,11 @@ DefMacro('\lx@physics@operatorP{}{}{}', sub {
         $arg, ($power ? $power : ())); } });
 
 my @operators = (
-  ['sin', 'sine'], ['cos', 'cosine'], ['tan', 'tangent'], ['csc', 'cosecant'], ['sec', 'secand'], ['cot', 'cotangent'], ['hsin', 'hypsine', 'hyperbolic-sine'],
+  ['sin', 'sine'], ['cos', 'cosine'], ['tan', 'tangent'], ['csc', 'cosecant'], ['sec', 'secant'], ['cot', 'cotangent'], ['hsin', 'hypsine', 'hyperbolic-sine'],
   ['cosh', 'hypcosine', 'hyperbolic-cosine'], ['tanh', 'hyptangent', 'hyperbolic-tangent'], ['csch', 'hypcosecant', 'hyperbolic-cosecant'],
-  ['sech', 'hypsecand', 'hyperbolic-secand'], ['coth', 'hypcotangent', 'hyperbolic-cotangent'], ['arcsin', 'arcsine'], ['arccos', 'arccosine'],
-  ['arctan', 'arctangent'], ['arccsc', 'arccosecant'], ['arcsec', 'arcsecand'], ['arccot', 'arccotangent'], ['asin', 'asine', 'arcsine'],
-  ['acos', 'acosine', 'arccosine'], ['atan', 'atangent', 'arctangent'], ['acsc', 'acosecant', 'arccosecant'], ['asec', 'asecand', 'arcsecand'],
+  ['sech', 'hypsecant', 'hyperbolic-secant'], ['coth', 'hypcotangent', 'hyperbolic-cotangent'], ['arcsin', 'arcsine'], ['arccos', 'arccosine'],
+  ['arctan', 'arctangent'], ['arccsc', 'arccosecant'], ['arcsec', 'arcsecant'], ['arccot', 'arccotangent'], ['asin', 'asine', 'arcsine'],
+  ['acos', 'acosine', 'arccosine'], ['atan', 'atangent', 'arctangent'], ['acsc', 'acosecant', 'arccosecant'], ['asec', 'asecant', 'arcsecant'],
   ['acot', 'acotangent', 'arccotangent'], ['exp', 'exponential'], ['log', 'logarithm'], ['ln', 'naturallogarithm', 'natural-logarithm'],
   ['det', 'determinant'], ['Pr', 'Probability', 'probability']);
 
