@@ -300,10 +300,10 @@ DefMacro('\lx@physics@operatorP{}{}{}', sub {
 
 my @operators = (qw(
     sin sine cos cosine tan tangent csc cosecant sec secand cot cotangent
-    hsin hypsine cosh hypcosine tanh hyptangent csch hypcosecant sech hypsecand coth hypcotangent
+    hsin hyperbolic-sine cosh hyperbolic-cosine tanh hyperbolic-tangent csch hyperbolic-cosecant sech hyperbolic-secand coth hyperbolic-cotangent
     arcsin arcsine arccos arccosine arctan arctangent arccsc arccosecant arcsec arcsecand arccot arccotangent
-    asin asine acos acosine atan atangent acsc acosecant asec asecand acot acotangent
-    exp exponential log logarithm ln naturallogarithm det determinant Pr Probability
+    asin arcsine acos arccosine atan arctangent acsc arccosecant asec arcsecand acot arccotangent
+    exp exponential log logarithm ln natural-logarithm det determinant Pr probability
     ));
 
 while (@operators) {
