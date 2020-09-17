@@ -28,11 +28,11 @@ our @EXPORT = (
     CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
     CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
     CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
-    CC_CS      CC_MARKER),
+    CC_CS      CC_MARKER CC_ARG),
   # Token constructors
   qw( T_BEGIN T_END T_MATH T_ALIGN T_PARAM T_SUB T_SUPER T_SPACE
     &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
-    T_CR &T_MARKER
+    T_CR &T_MARKER T_ARG
     &Token),
   # String exploders
   qw(&Explode &ExplodeText &UnTeX)
@@ -60,6 +60,7 @@ use constant CC_INVALID => 15;
 # Extended Catcodes for expanded output.
 use constant CC_CS     => 16;
 use constant CC_MARKER => 17;    # non TeX extension!
+use constant CC_ARG    => 18;    # "out_param" in B Book
 
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
@@ -80,6 +81,16 @@ sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), CC_COMMENT], 'LaTe
 sub T_CS { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
 # Illegal: don't use unless you know...
 sub T_MARKER { my ($t) = @_; return bless [$t, CC_MARKER], 'LaTeXML::Core::Token'; }
+
+sub T_ARG {
+  my ($v) = @_;
+  my $int = $v;
+  # get the integer value from the token
+  if (ref $v eq 'LaTeXML::Core::Token') {
+    $int = int($$v[0]);
+    if ($int < 1 || $int > 9) {
+      Fatal('malformed', 'T_ARG', 'value should be #1-#9', "Illegal: " . $v->stringify); } }
+  return bless ["$int", CC_ARG], 'LaTeXML::Core::Token'; }
 
 sub Token {
   my ($string, $cc) = @_;
@@ -115,10 +126,10 @@ sub UnTeX {
     my $token = shift(@tokens);
     my $cc    = $token->getCatcode;
     next if $cc == CC_COMMENT;
-    my $s = $token->getString();
+    my $s = $token->toString();
     if ($cc == CC_LETTER) {    # keep "words" together, just for aesthetics
       while (@tokens && ($tokens[0]->getCatcode == CC_LETTER)) {
-        $s .= shift(@tokens)->getString; } }
+        $s .= shift(@tokens)->toString; } }
     my $l = length($s);
     if ($cc == CC_BEGIN) { $level++; }
     # Seems a reasonable & safe time to line break, for readability, etc.
@@ -156,13 +167,13 @@ our @primitive_catcode = (    # [CONSTANT]
   1, 1, 1, 1,
   1, 0, 1, 0,
   0, 0, 0, 0,
-  0, 0);
+  0, 0, 0);
 our @executable_catcode = (    # [CONSTANT]
   0, 1, 1, 1,
   1, 0, 0, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  1, 0);
+  1, 0, 0);
 
 our @standardchar = (          # [CONSTANT]
   "\\",  '{',   '}',   q{$},
@@ -176,19 +187,19 @@ our @CC_NAME =                 #[CONSTANT]
   Align EOL Parameter Superscript
   Subscript Ignore Space Letter
   Other Active Comment Invalid
-  ControlSequence Marker);
+  ControlSequence Marker Arg);
 our @PRIMITIVE_NAME = (        # [CONSTANT]
   'Escape',    'Begin', 'End',       'Math',
   'Align',     'EOL',   'Parameter', 'Superscript',
   'Subscript', undef,   'Space',     undef,
   undef,       undef,   undef,       undef,
-  undef,       undef);
+  undef,       undef,   undef);
 our @CC_SHORT_NAME =           #[CONSTANT]
   qw(T_ESCAPE T_BEGIN T_END T_MATH
   T_ALIGN T_EOL T_PARAM T_SUPER
   T_SUB T_IGNORE T_SPACE T_LETTER
   T_OTHER T_ACTIVE T_COMMENT T_INVALID
-  T_CS
+  T_CS T_MARKER T_ARG
 );
 
 our $X_THE = {
@@ -248,7 +259,7 @@ my @NEUTRALIZABLE = (    # [CONSTANT]
   1, 0, 1, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  0, 0);
+  0, 0, 0);
 
 # neutralize really should only retroactively imitate what Semiverbatim would have done.
 # So, it needs to neutralize those in SPECIALS
@@ -261,6 +272,13 @@ sub neutralize {
   return ($NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') }, @extraspecials)
     ? T_OTHER($ch) : $self); }
 
+sub substituteParameters {
+  my ($self, @args) = @_;
+  if ($$self[1] == CC_ARG) {
+    return $args[ord($$self[0]) - ord("0") - 1]; }
+  else {
+    return $self; } }
+
 # Mark a token as not to be expanded (\noexpand) by hiding itself as the 3rd element of a new token.
 # Wonder if this should only have effect on expandable tokens?
 sub with_dont_expand {
@@ -269,9 +287,9 @@ sub with_dont_expand {
   return ((($cc == CC_CS) || ($cc == CC_ACTIVE))
     # AND it is either undefined, or is expandable!
       && (!defined($STATE->lookupDefinition($self))
-      || defined($STATE->lookupExpandable($self)))
+      || defined($STATE->lookupExpandable($self))))
     ? bless ['\relax', CC_CS, $self], 'LaTeXML::Core::Token'
-    : $self); }
+    : $self; }
 
 # Return the original token of a not-expanded token,
 # or undef if it isn't marked as such.
@@ -297,7 +315,7 @@ sub revert {
 
 sub toString {
   my ($self) = @_;
-  return $$self[0]; }
+  return $$self[1] == CC_ARG ? ("#" . $$self[0]) : $$self[0]; }
 
 sub beDigested {
   my ($self, $stomach) = @_;
@@ -326,14 +344,15 @@ my @CONTROLNAME = (                                   #[CONSTANT]
 # Primarily for error reporting.
 sub stringify {
   my ($self) = @_;
-  my $string = $$self[0];
+  if ($$self[2]) {
+    return $$self[2]->stringify() . " (dont expand)"; }
+  my $string = $self->toString;
   # Make the token's char content more printable, since this is for error messages.
   if (length($string) == 1) {
     my $c = ord($string);
     if ($c < 0x020) {
       $string = 'U+' . sprintf("%04x", $c) . '/' . $CONTROLNAME[$c]; } }
-  my $noexpand = $$self[2] ? " (dont expand)" : '';
-  return $CC_SHORT_NAME[$$self[1]] . '[' . $string . ']' . $noexpand; }
+  return $CC_SHORT_NAME[$$self[1]] . '[' . $string . ']'; }
 
 #======================================================================
 

@@ -320,7 +320,7 @@ sub XEquals {
 
 # Is defined in the LaTeX-y sense of also not being let to \relax.
 sub IsDefined {
-  my ($name) = @_;
+  my ($name)  = @_;
   my $cs      = (ref $name ? $name : T_CS($name));
   my $meaning = $STATE->lookupMeaning($cs);
   return $meaning
@@ -444,9 +444,9 @@ sub roman_aux {
   while ($n %= $div) {
     $div /= 10;
     my $d = int($n / $div);
-    if ($d % 5 == 4) { $s .= $rmletters[$p]; $d++; }
-    if ($d > 4) { $s .= $rmletters[$p + int($d / 5)]; $d %= 5; }
-    if ($d) { $s .= $rmletters[$p] x $d; }
+    if ($d % 5 == 4) { $s .= $rmletters[$p];               $d++; }
+    if ($d > 4)      { $s .= $rmletters[$p + int($d / 5)]; $d %= 5; }
+    if ($d)          { $s .= $rmletters[$p] x $d; }
     $p -= 2; }
   return $s; }
 
@@ -498,7 +498,7 @@ sub CleanIndexKey {
   my ($key) = @_;
   $key = ToString($key);
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
-        # We don't want accented chars (do we?) but we need to decompose the accents!
+      # We don't want accented chars (do we?) but we need to decompose the accents!
 ## No, leave in the unicode at this point (strip them later)
 ##  $key = NFD($key);
 ##  $key =~ s/[^a-zA-Z0-9]//g;
@@ -512,7 +512,7 @@ sub CleanClassName {
   my ($key) = @_;
   $key = ToString($key);
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
-        # We don't want accented chars (do we?) but we need to decompose the accents!
+      # We don't want accented chars (do we?) but we need to decompose the accents!
   $key = NFD($key);
   $key =~ s/[^a-zA-Z0-9]//g;
   $key = NFC($key);    # just to be safe(?)
@@ -611,8 +611,8 @@ sub NewCounter {
   AfterAssignment();
   AssignValue("\\cl\@$ctr" => Tokens(), 'global') unless LookupValue("\\cl\@$ctr");
   DefRegisterI(T_CS("\\c\@$unctr"), undef, Number(0));
-  AssignValue("\\c\@$unctr" => Number(0), 'global');
-  AssignValue("\\cl\@$unctr" => Tokens(), 'global') unless LookupValue("\\cl\@$unctr");
+  AssignValue("\\c\@$unctr"  => Number(0), 'global');
+  AssignValue("\\cl\@$unctr" => Tokens(),  'global') unless LookupValue("\\cl\@$unctr");
   my $x;
   AssignValue("\\cl\@$within" =>
       Tokens(T_CS($ctr), T_CS($unctr), (($x = LookupValue("\\cl\@$within")) ? $x->unlist : ())),
@@ -701,8 +701,8 @@ sub RefStepCounter {
   my $iddef = $STATE->lookupDefinition(T_CS("\\the$ctr\@ID"));
   my $has_id = $iddef && ((!defined $iddef->getParameters) || ($iddef->getParameters->getNumArgs == 0));
 
-  DefMacroI(T_CS('\@currentlabel'), undef, T_CS("\\the$ctr"), scope => 'global');
-  DefMacroI(T_CS('\@currentID'), undef, T_CS("\\the$ctr\@ID"), scope => 'global') if $has_id;
+  DefMacroI(T_CS('\@currentlabel'), undef, T_CS("\\the$ctr"),     scope => 'global');
+  DefMacroI(T_CS('\@currentID'),    undef, T_CS("\\the$ctr\@ID"), scope => 'global') if $has_id;
 
   my $id = $has_id && CleanID(ToString(DigestLiteral(T_CS("\\the$ctr\@ID"))));
 
@@ -796,8 +796,8 @@ sub deactivateCounterScope {
 # For UN-numbered units
 sub RefStepID {
   my ($type) = @_;
-  my $ctr   = LookupMapping('counter_for_type', $type) || $type;
-  my $unctr = "UN$ctr";
+  my $ctr    = LookupMapping('counter_for_type', $type) || $type;
+  my $unctr  = "UN$ctr";
   StepCounter($unctr);
   maybePreemptRefnum($ctr, 1);
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef,
@@ -863,7 +863,7 @@ sub GenerateID {
 sub generateID_nextid {
   my ($parent, $prefix, $id_sofar) = @_;
   my $ctrkey = '_ID_counter_' . ($prefix ? $prefix . '_' : '');
-  my $ctr = $parent->getAttribute($ctrkey) || 0;
+  my $ctr    = $parent->getAttribute($ctrkey) || 0;
   $id_sofar = ($id_sofar ? $id_sofar . '.' : '') . ($prefix ? $prefix : '') . (++$ctr);
   $parent->setAttribute($ctrkey => $ctr);
   return $id_sofar; }
@@ -1163,7 +1163,7 @@ sub DefPrimitiveI {
       ->new($cs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($cs); }) : ()),
-        ($mode ? (sub { $_[0]->beginMode($mode); })
+        ($mode                ? (sub { $_[0]->beginMode($mode); })
           : ($bounded ? (sub { $_[0]->bgroup; }) : ())),
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
         $options{beforeDigest}),
@@ -1311,7 +1311,7 @@ sub DefConstructorI {
       ->new($cs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($cs); }) : ()),
-        ($mode ? (sub { $_[0]->beginMode($mode); })
+        ($mode                ? (sub { $_[0]->beginMode($mode); })
           : ($bounded ? (sub { $_[0]->bgroup; }) : ())),
         ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
         $options{beforeDigest}),
@@ -1485,7 +1485,7 @@ sub DefMathI {
   # we will create an XMDual to separate simple content application
   # from the (likely) convoluted presentation.
   elsif ((ref $presentation eq 'CODE')
-    || ((ref $presentation) && grep { $_->equals(T_PARAM) } $presentation->unlist)
+    || ((ref $presentation)  && grep { $$_[1] == CC_ARG || $_->equals(T_PARAM) } $presentation->unlist)
     || (!(ref $presentation) && ($presentation =~ /\#\d|\\./))) {
     ###print STDERR "Defining ".Stringify($cs)." as dual\n";
     defmath_dual($cs, $paramlist, $presentation, %options); }
@@ -1536,10 +1536,10 @@ sub defmath_common_constructor_options {
   return (
     alias => $options{alias} || $cs->getString,
     (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
-    (defined $sizer ? (sizer => $sizer) : ()),
+    (defined $sizer              ? (sizer     => $sizer)              : ()),
     beforeDigest => flatten(sub { requireMath($cs->getString); },
-      ($options{nogroup} ? () : (sub { $_[0]->bgroup; })),
-      ($options{font} ? (sub { MergeFont(%{ $options{font} }); }) : ()),
+      ($options{nogroup} ? ()                                        : (sub { $_[0]->bgroup; })),
+      ($options{font}    ? (sub { MergeFont(%{ $options{font} }); }) : ()),
       $options{beforeDigest}),
     afterDigest => flatten($options{afterDigest},
       ($options{nogroup} ? () : (sub { $_[0]->egroup; }))),
@@ -1579,7 +1579,7 @@ sub defmath_dual {
   my $pres_cs = T_CS($csname . "\@presentation");
   # Make the original CS expand into a DUAL invoking a presentation macro and content constructor
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, sub {
-        my ($self, @args) = @_;
+        my ($self,  @args)  = @_;
         my ($cargs, $pargs) = dualize_arglist($presentation, @args);
         Invocation(T_CS('\lx@dual'),
           Tokens(
@@ -1647,7 +1647,7 @@ sub defmath_prim {
         my $locator    = $stomach->getGullet->getLocator;
         my %properties = %options;
         my $font       = LookupValue('font')->merge(%$reqfont)->specialize($string);
-        my $mode = (LookupValue('IN_MATH') ? 'math' : 'text');
+        my $mode       = (LookupValue('IN_MATH') ? 'math' : 'text');
         foreach my $key (keys %properties) {
           my $value = $properties{$key};
           if (ref $value eq 'CODE') {
@@ -1746,7 +1746,7 @@ sub DefEnvironmentI {
       captureBody    => 1,
       properties     => $options{properties} || {},
       (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
-      (defined $sizer ? (sizer => $sizer) : ()),
+      (defined $sizer              ? (sizer     => $sizer)              : ()),
       ), $options{scope});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end{$name}"), "", "",
@@ -1787,7 +1787,7 @@ sub DefEnvironmentI {
       captureBody => T_CS("\\end$name"),           # Required to capture!!
       properties  => $options{properties} || {},
       (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
-      (defined $sizer ? (sizer => $sizer) : ()),
+      (defined $sizer              ? (sizer     => $sizer)              : ()),
       ), $options{scope});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new(T_CS("\\end$name"), "", "",
@@ -1943,7 +1943,7 @@ sub FindFile_aux {
   # Depending on flags, maybe search for ltxml in texmf or for plain tex in ours!
   # The main point, though, is to we make only ONE (more) call.
   return if grep { pathname_is_nasty($_) } @$paths;    # SECURITY! No nasty paths in cmdline
-        # Do we need to sanitize these environment variables?
+      # Do we need to sanitize these environment variables?
   my @candidates = (((!$options{noltxml} && !$nopaths) ? ("$file.ltxml") : ()),
     (!$options{notex} ? ($file) : ()));
   local $ENV{TEXINPUTS} = join($Config::Config{'path_sep'},
@@ -2255,7 +2255,7 @@ sub resetOptions {
 
 sub AddToMacro {
   my ($cs, @tokens) = @_;
-  $cs = T_CS($cs) unless ref $cs;
+  $cs     = T_CS($cs) unless ref $cs;
   @tokens = map { (ref $_ ? $_ : TokenizeInternal($_)) } @tokens;
   # Needs error checking!
   my $defn = $STATE->lookupDefinition($cs);
@@ -2326,7 +2326,7 @@ sub InputDefinitions {
       # reset options (Note reset & pass were in opposite order in LoadClass ????)
       resetOptions();
       PassOptions($name, $astype, @{ $options{options} || [] });    # passed explicit options.
-             # Note which packages are pretending to be classes.
+          # Note which packages are pretending to be classes.
       PushValue('@masquerading@as@class', $name) if $options{as_class};
       DefMacroI(T_CS('\\' . $name . '.' . $astype . '-h@@k'), undef, $options{after} || '');
       DefMacroI(T_CS('\opt@' . $name . '.' . $astype), undef,

@@ -16,6 +16,7 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Parameter;
+use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use base qw(LaTeXML::Common::Object);
 
@@ -61,7 +62,9 @@ sub readArguments {
   my @args = ();
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
-    push(@args, $value) unless $$parameter{novalue}; }
+    if (!$$parameter{novalue}) {
+      $value = rescanArgTokens($value);
+      push(@args, $value); } }
   return @args; }
 
 sub readArgumentsAndDigest {
@@ -71,6 +74,7 @@ sub readArgumentsAndDigest {
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
     if (!$$parameter{novalue}) {
+      $value = rescanArgTokens($value);
       $value = $parameter->digest($stomach, $value, $fordefn);
       push(@args, $value); } }
   return @args; }
@@ -87,12 +91,33 @@ sub reparseArgument {
   else {
     return (); } }
 
+# Special case, group match tokens together exactly (and only) when building parameter lists
+sub rescanArgTokens {
+  my ($tokens) = @_;
+  if (ref $tokens eq 'LaTeXML::Core::Tokens' && scalar(@$tokens) >= 2) {
+    my @toks      = @$tokens;
+    my @rescanned = ();
+    while (my $t = shift @toks) {
+      if ($$t[1] == CC_PARAM && @toks) {
+        my $next_t = shift @toks;
+        if ($$next_t[1] == CC_OTHER && $$next_t[0] =~ /^\d$/) {
+          # only group clear match token cases
+          push(@rescanned, T_ARG($next_t)); }
+        else {    # any other case, preserve as-is, let the higher level call resolve any errors
+                  # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
+          push(@rescanned, $t, $next_t); }
+      } else {
+        push(@rescanned, $t); } }
+    return Tokens(@rescanned);
+  } else {
+    return $tokens; } }
+
 #======================================================================
 1;
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

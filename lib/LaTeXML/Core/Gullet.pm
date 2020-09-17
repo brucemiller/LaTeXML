@@ -181,28 +181,6 @@ sub show_pushback {
   return (@pb ? "\n  To be read again " . ToString(Tokens(@pb)) : ''); }
 
 #**********************************************************************
-# Not really 100% sure how this is supposed to work
-# See TeX Ch 20, p216 regarding noexpand, \edef with token list registers, etc.
-# Solution: Duplicate param tokens, mark  expandable+undefined tokens as dont-expand
-# Curious that we do NOT make the cs's \relax, but still defer expansion by marking as dont-expand
-# BUT the CS+CC are unchanged, rather than \relax!!!
-sub neutralizeTokens {
-  my ($self, @tokens) = @_;
-  my @result = ();
-  foreach my $token (@tokens) {
-    my $cc = $$token[1];
-    if ($cc == CC_PARAM) {    # Inline ->getCatcode!
-      push(@result, $token, $token); }
-    elsif ((($cc == CC_CS) || ($cc == CC_ACTIVE))
-      # AND it is either undefined, or is expandable!
-      && (!defined($STATE->lookupDefinition($token))
-        || defined($STATE->lookupExpandable($token)))) {
-      push(@result, bless [$$token[0], $cc, $token], 'LaTeXML::Core::Token'); }
-    else {
-      push(@result, $token); } }
-  return @result; }
-
-#**********************************************************************
 # Low-level readers: read token, read expanded token
 #**********************************************************************
 # Note that every char (token) comes through here (maybe even twice, through args parsing),
@@ -447,7 +425,7 @@ sub readKeyword {
     my @matched = ();
     my $tok;
     while (@tomatch && defined($tok = $self->readXToken(0)) && push(@matched, $tok)
-      && (uc($tok->getString) eq $tomatch[0])) {
+      && (uc($tok->toString) eq $tomatch[0])) {
       shift(@tomatch); }
     return $keyword unless @tomatch;             # All matched!!!
     unshift(@{ $$self{pushback} }, @matched);    # Put 'em back and try next!
@@ -595,7 +573,7 @@ sub readDigits {
   my ($self, $range, $skip) = @_;
   my $string = '';
   my ($token, $digit);
-  while (($token = $self->readXToken(0)) && (($digit = $token->getString) =~ /^[$range]$/)) {
+  while (($token = $self->readXToken(0)) && (($digit = $token->toString) =~ /^[$range]$/)) {
     $string .= $digit; }
   unshift(@{ $$self{pushback} }, $token) if $token && !($skip && Equals($token, T_SPACE));    #Inline
   return $string; }
@@ -649,15 +627,15 @@ sub readNormalInteger {
   my $token = $self->readXToken(1);    # expand more
   if (!defined $token) {
     return; }
-  elsif (($$token[1] == CC_OTHER) && ($token->getString =~ /^[0-9]$/)) {    # Read decimal literal
+  elsif (($$token[1] == CC_OTHER) && ($token->toString =~ /^[0-9]$/)) {    # Read decimal literal
     return Number(int($token->getString . $self->readDigits('0-9', 1))); }
-  elsif ($token->equals(T_OTHER("'"))) {                                    # Read Octal literal
+  elsif ($token->equals(T_OTHER("'"))) {                                   # Read Octal literal
     return Number(oct($self->readDigits('0-7', 1))); }
-  elsif ($token->equals(T_OTHER("\""))) {                                   # Read Hex literal
+  elsif ($token->equals(T_OTHER("\""))) {                                  # Read Hex literal
     return Number(hex($self->readDigits('0-9A-F', 1))); }
-  elsif ($token->equals(T_OTHER("`"))) {                                    # Read Charcode
+  elsif ($token->equals(T_OTHER("`"))) {                                   # Read Charcode
     my $next = $self->readToken;
-    my $s    = ($next && $next->getString) || '';
+    my $s    = ($next && $next->toString) || '';
     $s =~ s/^\\//;
     $self->skip1Space(1);
     return Number(ord($s)); }    # Only a character token!!! NOT expanded!!!!
@@ -924,11 +902,6 @@ Returns an object describing the current location in the input stream.
 Return the L<LaTeXML::Core::Tokens> resulting from expanding all the tokens in C<$tokens>.
 This is actually only used in a few circumstances where the arguments to
 an expandable need explicit expansion; usually expansion happens at the right time.
-
-=item C<< @tokens = $gullet->neutralizeTokens(@tokens); >>
-
-Another unusual method: Used for things like \edef and token registers, to
-inhibit further expansion of control sequences and proper spawning of register tokens.
 
 =item C<< $token = $gullet->readToken; >>
 

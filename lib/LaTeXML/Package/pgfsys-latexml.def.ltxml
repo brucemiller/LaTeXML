@@ -161,7 +161,7 @@ sub foreignObjectCheck {
   my $node = $doc->getNode;
   while ($node) {
     my $n = $doc->getNodeQName($node);
-    return if $n eq 'svg:svg';
+    return       if $n eq 'svg:svg';
     return $node if $n eq 'svg:foreignObject';
     $node = $node->parentNode; }
   return; }
@@ -255,12 +255,12 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
     my $box = $prop{thebox};
     return unless $box;
     my $font = $box->getFont;
-    my ($w, $h, $d) = $box->getSize;
+    my ($w,  $h,  $d)  = $box->getSize;
     my ($fw, $fh, $fd) = $font && $font->getNominalSize;
     # Fishing for the correct y position (maybe w/o the depth?)
     #    my $y = $h->pxValue;   # Seemingly should NOT have ->add($d)
     my $y = $h->add(($font ? $fd : $d))->pxValue;    # Seemingly should NOT have ->add($d)
-           # But if the box's height has been set to 0, still need adjustment; Use font?
+         # But if the box's height has been set to 0, still need adjustment; Use font?
     $y = $fh->add($fd)->pxValue if !$y && $font;    # Seemingly SHOULD have ->add($fd)
     $doc->openElement('svg:g',
       transform => 'matrix(1 0 0 -1 0 ' . $y . ')',
@@ -1010,7 +1010,7 @@ DefConstructor('\lxSVG@halign BoxSpecification',
     my @nonreps = ();
     foreach my $t (@template, T_ALIGN) {            # put & at end, to save column!
 
-      if ($t->equals(T_PARAM)) {
+      if ($$t[1] == CC_ARG || $t->equals(T_PARAM)) {
         $before = 0; }
       elsif ($t->equals(T_ALIGN)) {
         if ($before) { @nonreps = @cols; @cols = (); } # A & while we're before a column means Repeated columns

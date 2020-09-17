@@ -141,7 +141,7 @@ my @absorbable_cc = (    # [CONSTANT]
   0, 0, 0, 0,
   0, 0, 1, 1,
   1, 0, 1, 0,
-  0, 0);
+  0, 0, 0);
 
 sub invokeToken {
   my ($self, $token) = @_;
@@ -208,15 +208,15 @@ sub invokeToken_simple {
     if ($STATE->lookupValue('IN_MATH')) {    # (but in Preamble, OK ?)
       return (); }
     else {
-      return Box($meaning->getString, $font, $self->getGullet->getLocator, $meaning); } }
+      return Box($meaning->toString, $font, $self->getGullet->getLocator, $meaning); } }
   elsif ($cc == CC_COMMENT) {                # Note: Comments need char decoding as well!
-    my $comment = LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1);
+    my $comment = LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1);
     # However, spaces normally would have be digested away as positioning...
     my $badspace = pack('U', 0xA0) . "\x{0335}";    # This is at space's pos in OT1
     $comment =~ s/\Q$badspace\E/ /g;
     return LaTeXML::Core::Comment->new($comment); }
   else {
-    return Box(LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1),
+    return Box(LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1),
       undef, undef, $meaning); } }
 
 # Regurgitate: steal the previously digested boxes from the current level.

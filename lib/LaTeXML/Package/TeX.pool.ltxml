@@ -289,8 +289,8 @@ DefRegisterI('\lx@DUMMY@REGISTER', undef, Tokens());
 # Read a variable, ie. a token (after expansion) that is a writable register.
 DefParameterType('Variable', sub {
     my ($gullet) = @_;
-    my $token = $gullet->readXToken;
-    my $defn = $token && LookupDefinition($token);
+    my $token    = $gullet->readXToken;
+    my $defn     = $token && LookupDefinition($token);
     if ((defined $defn) && $defn->isRegister && !$defn->isReadonly) {
       [$defn, $defn->readArguments($gullet)]; }
     else {
@@ -315,8 +315,8 @@ DefParameterType('Variable', sub {
 # Same, but not necessarily writable
 DefParameterType('Register', sub {
     my ($gullet) = @_;
-    my $token = $gullet->readXToken;
-    my $defn = $token && LookupDefinition($token);
+    my $token    = $gullet->readXToken;
+    my $defn     = $token && LookupDefinition($token);
     if ((defined $defn) && $defn->isRegister) {
       [$defn, $defn->readArguments($gullet)]; }
     else {
@@ -841,7 +841,7 @@ DefMacro('\meaning Token', sub {
           elsif ($p_spec eq 'UntilBrace') {    # should only ever be used in the last argument?
             $p_trailer = '{';
             $p_spec    = "#" . (++$arg_index) . '{'; }
-          elsif ($p_spec =~ s/^Match://) { }    # just match, don't increment arg index
+          elsif ($p_spec =~ s/^Match://) { }          # just match, don't increment arg index
           elsif ($p_spec =~ s/^\w?Until(\w*)://) {    # implied argument at this slot
             $p_spec = "#" . (++$arg_index) . $p_spec; }
           else {                                      # regular parameter, increment
@@ -859,7 +859,7 @@ DefMacro('\meaning Token', sub {
         my $expansion_str = '';
         if (ref $expansion eq 'LaTeXML::Core::Tokens') {
           for my $t (@$expansion) {
-            $expansion_str .= $$t[0];
+            $expansion_str .= $t->toString;
             if (@$expansion && $$t[1] == CC_CS) {
               $expansion_str .= ' '; } } }
         else {
@@ -889,7 +889,7 @@ DefParameterType('CSName', sub {
         else {
           Error('undefined', $token, $gullet, "The token " . Stringify($token) . " is not defined"); } }
       # Keep newlines from having \n!
-      $cs .= ($cc == CC_SPACE ? ' ' : $token->getString); }
+      $cs .= ($cc == CC_SPACE ? ' ' : $token->toString); }
     T_CS($cs); });
 
 DefMacro('\csname CSName', sub {
@@ -992,10 +992,10 @@ DefRegister('\tracingcommands', Number(0),
 
 {
   my %iparms = (
-    pretolerance => 100, tolerance     => 200, hbadness            => 1000, vbadness => 1000,
-    linepenalty  => 10,  hyphenpenalty => 50,  exhyphenpenalty     => 50,
-    binoppenalty => 700, relpenalty    => 500,
-    clubpenalty  => 150, widowpenalty  => 150, displaywidowpenalty => 50,
+    pretolerance => 100, tolerance     => 200, hbadness        => 1000, vbadness => 1000,
+    linepenalty  => 10,  hyphenpenalty => 50,  exhyphenpenalty => 50,
+    binoppenalty         => 700,   relpenalty          => 500,
+    clubpenalty          => 150,   widowpenalty        => 150, displaywidowpenalty => 50,
     brokenpenalty        => 100,   predisplaypenalty   => 10000,
     postdisplaypenalty   => 0,     interlinepenalty    => 0,
     floatingpenalty      => 0,     outputpenalty       => 0,
@@ -1138,40 +1138,49 @@ sub parseDefParameters {
   my @params = ();
   my $n      = 0;
   while (@tokens) {
-    my $t = shift(@tokens);
-    if ($t->getCatcode == CC_PARAM) {
-      if (!@tokens) {    # Special case: lone # NOT following a numbered parameter
-                         # Note that we require a { to appear next, but do NOT read it!
-        push(@params, LaTeXML::Core::Parameter->new('RequireBrace', 'RequireBrace')); }
-      else {
-        $n++; $t = shift(@tokens);
-        Fatal('expected', "#$n", $STATE->getStomach,
-          "Parameters for '" . ToString($cs) . "' not in order in " . ToString($params))
-          unless (defined $t) && ($n == (ord($t->getString) - ord('0')));
-        # Check for delimiting text following the parameter #n
-        my @delim = ();
-        my ($pc, $cc) = (-1, 0);
-        while (@tokens && (($cc = $tokens[0]->getCatcode) != CC_PARAM)) {
-          my $d = shift(@tokens);
-          push(@delim, $d) unless $cc == $pc && $cc == CC_SPACE;    # BUT collapse whitespace!
-          $pc = $cc; }
-        # Found text that marks the end of the parameter
-        if (@delim) {
-          my $expected = Tokens(@delim);
-          push(@params, LaTeXML::Core::Parameter->new('Until',
-              'Until:' . ToString($expected),
-              extra => [$expected])); }
-        # Special case: trailing sole # => delimited by next opening brace.
-        elsif ((scalar(@tokens) == 1) && ($tokens[0]->getCatcode == CC_PARAM)) {
-          shift(@tokens);
-          push(@params, LaTeXML::Core::Parameter->new('UntilBrace', 'UntilBrace')); }
-        # Nothing? Just a plain parameter.
+    my $t  = shift(@tokens);
+    my $cc = $$t[1];
+    if ($cc == CC_PARAM || $cc == CC_ARG) {
+      if ($cc == CC_PARAM) {
+        if (!@tokens) {    # Special case: lone # NOT following a numbered parameter
+                           # Note that we require a { to appear next, but do NOT read it!
+          push(@params, LaTeXML::Core::Parameter->new('RequireBrace', 'RequireBrace'));
+          last; }
         else {
-          push(@params, LaTeXML::Core::Parameter->new('Plain', '{}')); } } }
+          $n++; $t = shift(@tokens); } }
+      else {               # CC_ARG case, keep looking at this token
+        $n++; }
+      Fatal('expected', "#$n", $STATE->getStomach,
+        "Parameters for '" . ToString($cs) . "' not in order in " . ToString($params))
+        unless (defined $t) && ($n == int($$t[0]));
+      # Check for delimiting text following the parameter #n
+      my @delim = ();
+      my $pc    = -1;
+    INNER_DELIM: while (@tokens) {
+        my $inner_cc = $tokens[0]->getCatcode;
+        last INNER_DELIM if $inner_cc == CC_PARAM || $inner_cc == CC_ARG;
+        my $d = shift(@tokens);
+        push(@delim, $d) unless $pc == CC_SPACE && $inner_cc == CC_SPACE;    # BUT collapse whitespace!
+        $pc = $inner_cc; }
+      # Found text that marks the end of the parameter
+      if (@delim) {
+        my $expected = Tokens(@delim);
+        push(@params, LaTeXML::Core::Parameter->new('Until',
+            'Until:' . ToString($expected),
+            extra => [$expected])); }
+      # Special case: trailing sole # => delimited by next opening brace.
+      elsif ((scalar(@tokens) == 1) && ($tokens[0]->getCatcode == CC_PARAM)) {
+        shift(@tokens);
+        push(@params, LaTeXML::Core::Parameter->new('UntilBrace', 'UntilBrace')); }
+      # Nothing? Just a plain parameter.
+      else {
+        push(@params, LaTeXML::Core::Parameter->new('Plain', '{}')); } }
     else {
       # Initial delimiting text is required.
       my @lit = ($t);
-      while (@tokens && ($tokens[0]->getCatcode != CC_PARAM)) {
+      my $lit_cc;
+      while (@tokens && ($lit_cc = $tokens[0]->getCatcode) &&
+        ($lit_cc != CC_PARAM && $lit_cc != CC_ARG)) {
         push(@lit, shift(@tokens)); }
       my $expected = Tokens(@lit);
       push(@params, LaTeXML::Core::Parameter->new('Match',
@@ -1492,10 +1501,10 @@ DefParameterType('FontToken', sub {
     $token; });    #?
 DefRegister('\fontdimen Number FontToken' => Dimension(0),
   getter => sub { my $p = ToString($_[0]);
-    if    ($p == 2) { Dimension('0.5em'); }    # interword space
+    if ($p == 2)    { Dimension('0.5em'); }    # interword space
     elsif ($p == 5) { Dimension('1ex'); }      # x-height
     elsif ($p == 6) { Dimension('1em'); }      # quad width
-    else { Dimension(0); } });
+    else            { Dimension(0); } });
 
 #   Could be handled by setting dimensions whenever the box itself is set?
 
@@ -1779,8 +1788,8 @@ DefConstructor('\mathaccent Number Digested',
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
     my ($role, $glyph) = decodeMathChar($n);
-    $whatsit->setProperty(glyph => $glyph) if $glyph;
-    $whatsit->setProperty(font => LookupValue('font')->specialize($glyph)) if $glyph;
+    $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
+    $whatsit->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
     return; });
 
 # <box> = \box <8bit> | \copy <8bit> | \lastbox | \vsplit <8bit> to <dimen>
@@ -1837,7 +1846,7 @@ sub readBoxContents {
   my ($gullet, $everybox) = @_;
   my $t;
   while (($t = $gullet->readToken) && !Equals($t, T_BEGIN)) { }    # Skip till { or \bgroup
-          # Now, insert some extra tokens, if any, possibly from \afterassignment
+      # Now, insert some extra tokens, if any, possibly from \afterassignment
   if (my $token = LookupValue('BeforeNextBox')) {
     AssignValue(BeforeNextBox => undef, 'global');
     $gullet->unread($token); }
@@ -1894,7 +1903,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     my $issvg = $current && $document->getNodeQName($current) =~ /^svg:/;
     my $vmode = $current && $current->getAttribute('_vertical_mode_');
     my $newtag = ($issvg ? 'svg:g' : ($vmode ? 'ltx:p' : 'ltx:text'));
-    my $node = $document->openElement($newtag, _noautoclose => 1,
+    my $node   = $document->openElement($newtag, _noautoclose => 1,
       width => $props{width});
 
     $document->absorb($contents);
@@ -2199,7 +2208,10 @@ sub writableTokens {
     my $cc = $$t[1];
     if    ($cc == CC_CS)    { ($t, T_SPACE); }
     elsif ($cc == CC_PARAM) { ($t, $t); }
-    else                    { $t; }
+    elsif ($cc == CC_ARG) {
+      # B Book, 294. Reduce to param+integer
+      (T_PARAM, T_OTHER($$t[0])); }
+    else { $t; }
   } @tokens;
   return UnTeX(Tokens(@tokens)); }
 
@@ -2251,7 +2263,7 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
         push(@tokens, $t);
         $level++ if $cc == CC_BEGIN;
         $level-- if $cc == CC_END;
-        last if !$level && $mouth->isEOL; }
+        last     if !$level && $mouth->isEOL; }
       $stomach->egroup;
       @tokens = (T_CS('\par')) unless @tokens;    # trailing blank line
       DefMacroI($token, undef, Tokens(@tokens)); }
@@ -2851,7 +2863,7 @@ DefPrimitiveI('\@@open@inner@column', undef, sub {
                                     # Scan for leading \omit, skipping over (& saving) \hline.
 
     while (my $tok = $gullet->readXToken(0, 0)) {
-      if ($tok->equals(T_SPACE)) { }    # Skip leading space
+      if ($tok->equals(T_SPACE)) { }                      # Skip leading space
       elsif (grep { $tok->equals($_) } @line_tokens) {    # Save line commands
         push(@lines, $stomach->invokeToken($tok)); }
       elsif (Equals($tok, T_BEGIN)) {                     # Crazy... seems { doesn't "block" \omit!
@@ -2949,7 +2961,7 @@ DefConstructor('\halign BoxSpecification',
     my @nonreps = ();
     foreach my $t (@template, T_ALIGN) {            # put & at end, to save column!
 
-      if ($t->equals(T_PARAM)) {
+      if ($$t[1] == CC_ARG || $t->equals(T_PARAM)) {
         $before = 0; }
       elsif ($t->equals(T_ALIGN)) {
         if ($before) { @nonreps = @cols; @cols = (); } # A & while we're before a column means Repeated columns
@@ -3303,7 +3315,7 @@ sub add_TeX {
     my $tex = UnTeX($thing);
     $LaTeXML::DUAL_BRANCH = 'content';
     my $ctex = UnTeX($thing);
-    $document->setAttribute($node, tex => $tex);
+    $document->setAttribute($node, tex           => $tex);
     $document->setAttribute($node, 'content-tex' => $ctex) if $ctex ne $tex; }
   return; }
 
@@ -3316,7 +3328,7 @@ sub add_body_TeX {
       my $tex = UnTeX($body);
       $LaTeXML::DUAL_BRANCH = 'content';
       my $ctex = UnTeX($body);
-      $document->setAttribute($node, tex => $tex);
+      $document->setAttribute($node, tex           => $tex);
       $document->setAttribute($node, 'content-tex' => $ctex) if $ctex ne $tex; } }
   return; }
 
@@ -3651,7 +3663,7 @@ sub equationgroupJoinRows {
 # which contain several columns, each pair of which represent a semantic equation.
 sub equationgroupJoinCols {
   my ($document, $ncols, $equation) = @_;
-  my ($col, $main, $branch) = (0, undef, undef);
+  my ($col,      $main,  $branch)   = (0, undef, undef);
   foreach my $cell ($document->findnodes('ltx:_Capture_', $equation)) {
     next unless $document->getNodeQName($cell) =~ /(.*?:)?_Capture_$/;
     if (($col++ % $ncols) == 0) {    # Create new MathFork every $ncols cells.
@@ -3681,7 +3693,7 @@ DefMacroI('\eqno', undef, sub {
         push(@stuff, $t, $gullet->readBalanced); }
       # What do I need to explicitly list here!?!?!? UGGH!
       elsif (Equals($t, T_MATH) || Equals($t, T_CS('\]')) || Equals($t, T_CS('\@@ENDDISPLAYMATH'))
-        || Equals($t, T_CS('\begingroup'))    # Totally wrong, but to catch expanded environments
+        || Equals($t, T_CS('\begingroup'))           # Totally wrong, but to catch expanded environments
         || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
                                                      # This seems needed within AmSTeX environs
         || Equals($t, T_CS('\@@close@inner@column'))
@@ -3791,7 +3803,7 @@ sub scriptHandler {
     # Parsing is too late!
     while (my $prev = pop(@LaTeXML::LIST)) {
       if ((ref $prev eq 'LaTeXML::Core::Whatsit') && $prev->getProperty('isSpace')) {
-        $prevspace = 1;    # a space avoids double-scripts
+        $prevspace = 1;              # a space avoids double-scripts
         unshift(@putback, $prev);    # put back? assuming it will add rpadding to previous???
         next; }
       elsif (IsEmpty($prev)) {       # If empty, the script floats, can't conflict, but don't put back
@@ -3884,7 +3896,7 @@ sub scriptSizer {
   # Fishing for the scriptpos on the base (if any)
   my $attr;
   $pos = $base->getProperty('scriptpos') if !defined $pos && defined $base;
-  $pos = 'post' if !defined $pos;
+  $pos = 'post'                          if !defined $pos;
   if ($pos eq 'mid') {
     $w = max(0, $ws - $wb);              # as if max width of base & script
     if ($op eq 'SUPERSCRIPT') {
@@ -4050,7 +4062,7 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
     my $role      = ToString($kv->getValue('role'));
     my $meaning   = ToString($kv->getValue('meaning'));
     my $thickness = ToString($kv->getValue('thickness'));
-    $role = 'FRACOP' unless $role;
+    $role    = 'FRACOP' unless $role;
     $meaning = 'divide' if (!$meaning) && ($thickness ne '0pt');
     # Unfortunately, the numerator's already digested! We have to adjust it's mathstyle
     my @top = $stomach->regurgitate;
@@ -4074,7 +4086,7 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
     return $closing; },    # and leave the closing bit, whatever it is.
   properties => sub { %{ $_[2]->getKeyVals }; },
   sizer      => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
-  reversion => sub {
+  reversion  => sub {
     my ($whatsit) = @_;
     (Revert($whatsit->getProperty('top')),
       $whatsit->getArg(1)->unlist,
@@ -4282,7 +4294,7 @@ DefMathLigature(matcher => sub { my ($document, $node) = @_;
         # if thousands separator (but NOT simultaneously PUNCT!!!! Be paranoid about lists)
         elsif (($text eq $thou) && ($r ne 'PUNCT')) {
           $string = $text . $string; }    # Add to string, but omit from number
-                                          # if decimal separator, turn it into "standard" "."
+                                                         # if decimal separator, turn it into "standard" "."
         elsif (($text eq $dec) || ($r eq $decrole)) {    # was $r eq 'PERIOD'
           $string = $node->textContent . $string;
           $number = '.' . $number; }
@@ -4389,7 +4401,7 @@ DefPrimitive('\newbox    Token', sub {
     AssignValue("box$n", List());
     DefRegisterI($_[1], undef, Number($n), readonly => 1); });
 DefPrimitive('\newhelp Token {}', sub { AssignValue(ToString($_[1]) => $_[2]); });
-DefPrimitive('\newtoks Token', sub { DefRegisterI($_[1], undef, Tokens()); });
+DefPrimitive('\newtoks Token',    sub { DefRegisterI($_[1], undef, Tokens()); });
 # the next 4 actually work by doing a \chardef instead of \countdef, etc.
 # which means they actually work quite differently
 DefRegister('\allocationnumber' => Number(0));
@@ -5119,7 +5131,7 @@ DefAccent('\t', "\x{0361}", "-");    # COMBINING DOUBLE INVERTED BREVE & ???? Wh
       # this one's actually defined in mathscinet.sty, but just stick it here!
 DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
                                                      # I doubt that latter covers multiple chars...?
-        #DefAccent('\bar',"\x{0304}", ?);  # COMBINING MACRON or is this the longer overbar?
+       #DefAccent('\bar',"\x{0304}", ?);  # COMBINING MACRON or is this the longer overbar?
 
 # This will fail if there really are "assignments" after the number!
 # We're given a number pointing into the font, from which we can derive the standalone char.
@@ -5302,10 +5314,10 @@ DefMathI('\hbar',  undef, "\x{210F}", role => 'ID', meaning => 'Planck-constant-
 DefMathI('\imath', undef, "\x{0131}");
 DefMathI('\jmath', undef, "\x{0237}");
 DefMathI('\ell',   undef, "\x{2113}");
-DefMathI('\wp', undef, "\x{2118}", meaning => 'Weierstrass-p');
-DefMathI('\Re', undef, "\x{211C}", role    => 'OPFUNCTION', meaning => 'real-part');
-DefMathI('\Im', undef, "\x{2111}", role    => 'OPFUNCTION', meaning => 'imaginary-part');
-DefMathI('\mho', undef, "\x{2127}");
+DefMathI('\wp',    undef, "\x{2118}", meaning => 'Weierstrass-p');
+DefMathI('\Re',    undef, "\x{211C}", role => 'OPFUNCTION', meaning => 'real-part');
+DefMathI('\Im',    undef, "\x{2111}", role => 'OPFUNCTION', meaning => 'imaginary-part');
+DefMathI('\mho',   undef, "\x{2127}");
 
 DefMathI('\prime',    undef, "\x{2032}", role => 'SUPOP',    locked  => 1);
 DefMathI('\emptyset', undef, "\x{2205}", role => 'ID',       meaning => 'empty-set');
@@ -5329,7 +5341,7 @@ DefMathI('\backslash', undef, UTF(0x5C), role => 'MULOP');
 DefMathI('\partial',   undef, "\x{2202}", role => 'OPERATOR', meaning => 'partial-differential');
 
 DefMathI('\infty', undef, "\x{221E}", role => 'ID', meaning => 'infinity');
-DefMathI('\Box', undef, "\x{25A1}");
+DefMathI('\Box',         undef, "\x{25A1}");
 DefMathI('\Diamond',     undef, "\x{25C7}");
 DefMathI('\triangle',    undef, "\x{25B3}");
 DefMathI('\clubsuit',    undef, "\x{2663}");
@@ -5451,7 +5463,7 @@ DefMathI('\times', undef, UTF(0xD7),  role => 'MULOP', meaning => 'times');
 DefMathI('\div',   undef, UTF(0xF7),  role => 'MULOP', meaning => 'divide');
 DefMathI('\ast',   undef, "\x{2217}", role => 'MULOP');
 DefMathI('\star',  undef, "\x{22C6}", role => 'MULOP');
-DefMathI('\circ',  undef, "\x{2218}", role => 'MULOP', meaning => 'compose');
+DefMathI('\circ', undef, "\x{2218}", role => 'MULOP', meaning => 'compose');
 DefMathI('\bullet', undef, "\x{2219}", role => 'MULOP');
 DefMathI('\cdot',   undef, "\x{22C5}", role => 'MULOP');
 ##  , meaning=>'inner-product');  that's pushing it a bit far...
@@ -5484,7 +5496,7 @@ DefMathI('\oplus',  undef, "\x{2295}", role => 'ADDOP', meaning => 'direct-sum')
 DefMathI('\ominus', undef, "\x{2296}", role => 'ADDOP', meaning => 'symmetric-difference');
 DefMathI('\otimes', undef, "\x{2297}", role => 'MULOP', meaning => 'tensor-product');
 DefMathI('\oslash', undef, "\x{2298}", role => 'MULOP');
-DefMathI('\odot',   undef, "\x{2299}", role => 'MULOP', meaning => 'direct-product');
+DefMathI('\odot', undef, "\x{2299}", role => 'MULOP', meaning => 'direct-product');
 DefMathI('\bigcirc', undef, "\x{25CB}", role => 'MULOP');
 DefMathI('\dagger',  undef, "\x{2020}", role => 'MULOP');
 DefMathI('\ddagger', undef, "\x{2021}", role => 'MULOP');
@@ -5713,13 +5725,13 @@ DefConstructorI('\vdots', undef,
       ? (font => LookupValue('font')->merge(family => 'serif',
           series => 'medium', shape => 'upright')->specialize("\x{22EE}"))
       : ()); });    # Since not DefMath!
-                    # But not these!
+                                                        # But not these!
 DefMathI('\cdots', undef, "\x{22EF}", role => 'ID');    # MIDLINE HORIZONTAL ELLIPSIS
 
 DefMathI('\ddots', undef, "\x{22F1}", role => 'ID');           # DOWN RIGHT DIAGONAL ELLIPSIS
 DefMathI('\colon', undef, ':',        role => 'METARELOP');    # Seems like good default role
-        # Note that amsmath redefines \dots to be `smart'.
-        # Aha, also can be in text...
+    # Note that amsmath redefines \dots to be `smart'.
+    # Aha, also can be in text...
 DefConstructorI('\dots', undef,
   "?#isMath(<ltx:XMTok name='dots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
   properties => sub {
@@ -6151,7 +6163,7 @@ DefKeyVal('lx@GEN', 'style', 'UndigestedKey');
 DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
     my ($stomach, $kv) = @_;
     $stomach->bgroup;
-    my $style = $kv->getValue('style') || T_CS('\textstyle');
+    my $style = $kv->getValue('style')               || T_CS('\textstyle');
     my $align = ToString($kv->getValue('alignment')) || 'c';
     # We really should be using ReadAlignmentTemplate (LaTeXML::Core::Alignment)
     # but we'd have to convert it to a repeating spec somehow.
@@ -6763,7 +6775,7 @@ DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
     my ($stomach, $whatsit) = @_;
     my $kv     = $whatsit->getArg(1);
     my $xmargs = PopValue('PENDING_DUAL_XMARGS');    # Really SHOULD be a hash
-    $whatsit->setProperties(%$xmargs) if $xmargs;    # Hopefully no name class with XM<digits>
+    $whatsit->setProperties(%$xmargs)      if $xmargs;    # Hopefully no name class with XM<digits>
     $whatsit->setProperties($kv->getPairs) if $kv;
     my %props = $whatsit->getProperties;
     my $cr    = $props{content_reversion};
@@ -6883,7 +6895,8 @@ sub I_dual {
     I_wrap({}, $presentation->substituteParameters(@pargs))); }
 
 # A little helper to shorten things up a bit; simply generates #1 (or whatever)
-sub I_arg { return Tokens(T_PARAM, T_OTHER($_[0])); }
+sub I_arg {    # uncoditionally create an arg token
+  return bless ["$_[0]", CC_ARG], 'LaTeXML::Core::Token'; }
 
 sub I_xmarg {
   my ($id, $arg) = @_;
@@ -7041,7 +7054,7 @@ sub setAlignOrClass {
   my ($document, $node, $align, $class) = @_;
   my $model = $document->getModel;
   my $qname = $model->getNodeQName($node);
-  if ($qname eq 'ltx:tag') { }    # HACK
+  if ($qname eq 'ltx:tag') { }                                       # HACK
   elsif ($align && $document->canHaveAttribute($qname, 'align')) {
     $node->setAttribute(align => $align); }
   elsif ($class && $document->canHaveAttribute($qname, 'class')) {

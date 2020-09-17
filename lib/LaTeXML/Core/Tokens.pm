@@ -62,7 +62,7 @@ sub revert {
 # NOT for creating valid TeX (use revert or UnTeX for that!)
 sub toString {
   my ($self) = @_;
-  return join('', map { $$_[0] } @$self); }
+  return join('', map { $_->toString } @$self); }
 
 # Methods for overloaded ops.
 sub equals {
@@ -84,7 +84,7 @@ sub beDigested {
 
 sub neutralize {
   my ($self, @extraspecials) = @_;
-  return Tokens(map { $_->neutralize(@extraspecials) } $self->unlist); }
+  return Tokens(map { $_->neutralize(@extraspecials) } @$self); }
 
 sub without_dont_expand {
   my ($self) = @_;
@@ -106,12 +106,12 @@ sub substituteParameters {
   my @in     = @{$self};    # ->unlist
   my @result = ();
   while (@in) {
-    my $token;
-    if (($token = shift(@in))->[1] != CC_PARAM) {    # Non '#'; copy it
+    my $token = shift(@in);
+    if ($$token[1] != CC_PARAM && $$token[1] != CC_ARG) {    # Non '#'; copy it
       push(@result, $token); }
-    elsif (@in && (($token = shift(@in))->[1] != CC_PARAM)) {    # Not multiple '#'; read arg.
-      if (my $arg = $args[ord($$token[0]) - ord('0') - 1]) {
-        push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } }    # ->unlist
+    elsif ($$token[1] == CC_ARG || (@in && (($token = shift(@in))->[1] != CC_PARAM))) { # Not multiple '#'; read arg.
+      if (my $arg = $args[ord($$token[0]) - ord("0") - 1]) {
+        push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } }         # ->unlist
     else {    # Duplicated '#', copy 2nd '#'
       push(@result, $token); } }
   return LaTeXML::Core::Tokens->new(@result); }

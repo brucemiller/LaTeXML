@@ -325,20 +325,19 @@ our @active_or_cs = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 1, 0, 0,
-  1, 0);
+  1, 0, 0);
 our @letter_or_other = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 1,
   1, 0, 0, 0,
-  0, 0);
+  0, 0, 0);
 
 # Get the `Meaning' of a token.  For active control sequence's
 # this may give the definition object (if defined) or another token (if \let) or undef
 # Any other token is returned as is.
 sub lookupMeaning {
   my ($self, $token) = @_;
-  my $e;
   if (my $cs = $token
     && $active_or_cs[$$token[1]]
     && !$$token[2]    # return token itself, if \noexpand
