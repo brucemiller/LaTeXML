@@ -264,7 +264,7 @@ sub readXToken {
         else {
           Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)); } }
       next unless @expansion;
-      if ($$LaTeXML::Core::Token::X_THE{ $$token[0] }) {
+      if ($$LaTeXML::Core::Token::X_THE{ $$defn{cs}[0] }) {
         # magic THE_TOKS handling, add to pushback with a single-use noexpand flag only valid
         #    at the exact time
         # the token leaves the pushback.

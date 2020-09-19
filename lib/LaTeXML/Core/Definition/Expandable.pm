@@ -134,7 +134,7 @@ sub recursion_check {
 # print a string of tokens like TeX would when tracing.
 sub tracetoString {
   my ($tokens) = @_;
-  return join('', map { ($_->getCatcode == CC_CS ? $_->getString . ' ' : $_->getString) }
+  return join('', map { ($_->getCatcode == CC_CS ? $_->toString . ' ' : $_->toString) }
       $tokens->unlist); }
 
 sub equals {
