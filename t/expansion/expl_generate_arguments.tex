@@ -1,0 +1,88 @@
+\catcode`\:=11
+\catcode`\ =9
+\catcode`\~=10
+\endlinechar=32 \relax
+
+\protected\def\use#1{\edef\internal{#1}\message{\meaning\internal}\internal}
+
+\def \usen #1 {#1}
+\def \usei  #1#2 {#1}
+\def \useii #1#2 {#2}
+\def \useiii  #1#2#3 {#1#2}
+\protected\def \usec #1 { \csname #1 \endcsname }
+\def \returntrue  { \expandafter \usei  \romannumeral }
+\def \returnfalse  { \expandafter \useii \romannumeral }
+\chardef\ctrue=1
+\chardef\cfalse=0
+\chardef\zero=0
+\chardef\expend=0
+\def \none:n         #1                 { }
+\def \none:nn        #1#2               { }
+\def \genfast #1#2 \noexpand #3
+  { \noexpand { {#1} \usei } }
+
+\def \useqrecstop #1 \qrecstop { }
+
+\protected\def \gencondaux #1#2#3#4#5#6#7#8 ,
+  {\ifx \qrectail #8
+      \expandafter \useqrecstop
+    \fi
+    \usec { gen #8 }
+      \qstop
+      #1 #2 {#3} {#4} {#5} {#6} #7
+    \gencondaux #1 #2 {#3} {#4} {#5} {#6} #7
+  }
+
+\def \gencondtest
+  #1 \returntrue \else \returnfalse \fi \qmark #2
+{ #2 {#1} }
+
+\def \cstostrN #1 { \zero }
+\def \cstostrw #1 \cstostrN
+  { - \number \fi \expandafter \zero }
+\def \cstostr
+  {
+    \romannumeral
+      \if \string \ \cstostrw \fi
+      \expandafter \cstostrN \string
+  }
+
+\def\expargs #1#2{ \expandafter #1 \csname #2 \endcsname }
+
+\catcode`\:=12
+\protected\def\genF #1\qstop#2#3#4#5#6#7#8{
+    #8
+      { \expargs #2 { #4 : #5 F } #6 }
+      { { #7 \expend { } } }
+      { #7 \expandafter \none:nn \fi \usen }
+  }
+
+\catcode`\:=11
+\protected\def \generateconditional #1#2#3#4#5#6#7#8
+{
+  \use{
+      \noexpand \gencondaux
+      \unexpanded { #4 #5 {#1} {#2} {#6} }
+      \gencondtest
+        #8 \qmark
+          \genfast
+        \returntrue \else \returnfalse \fi \qmark
+          \none:n
+      \unexpanded { {#8} \useiii }
+      \detokenize {#7}
+      \unexpanded { , \qrectail , \qrecstop }
+    }
+}
+
+\generateconditional {mytest}{N}\ctrue \def e {#1}{F}{
+  \ifx #1 \relax
+    \returnfalse
+  \else
+    \ifdefined #1
+      \returntrue
+    \else
+      \returnfalse
+    \fi\fi}
+
+mytest=\meaning\mytest:NF
+\bye

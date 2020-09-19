@@ -49,10 +49,10 @@ my ($subst, $nosubst, $pattern);
 ok(eval { $nosubst = $balanced->substituteParameters(T_LETTER('u'), T_LETTER('v'), T_LETTER('w')); },
   "substitute tokens w/o params");
 is(eval { Stringify($nosubst); }, 'Tokens[a,{,...,},z]', "Got correct (non)substitution");
-ok(eval { $pattern = Tokens(T_LETTER('a'), T_BEGIN, T_PARAM, T_OTHER(1), T_LETTER('m'), T_PARAM, T_OTHER(2), T_END, T_LETTER('z')); },
-  "make tokens w/ params");
-ok(eval { $subst = $pattern->substituteParameters(T_LETTER('u'), T_LETTER('v'), T_LETTER('w')); },
-  "subsitute tokens w/params");
+ok(eval { $pattern = Tokens(T_LETTER('a'),T_BEGIN,T_ARG('1'),T_LETTER('m'),T_ARG('2'),T_END,T_LETTER('z'));  },
+ "make tokens w/ params");
+ok(eval { $subst = $pattern->substituteParameters(T_LETTER('u'),T_LETTER('v'),T_LETTER('w'));  },
+ "subsitute tokens w/params");
 is(eval { Stringify($subst); }, 'Tokens[a,{,u,m,v,},z]', "Got correct substitution");
 
 # Strip Braces tests
@@ -81,4 +81,3 @@ is(eval {
   "{a}{b}", "strip outermost braces");
 
 done_testing();
-

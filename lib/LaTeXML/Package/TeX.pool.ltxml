@@ -792,7 +792,9 @@ our @CATCODE_MEANING = (
   "subscript character",       "ignored character",
   "blank space",               "the letter",
   "the character",             "active character",
-  "comment character",         "invalid character");
+  "comment character",         "invalid character",
+  undef,                       "latexml marker character",
+  "macro parameter character");
 
 # Not sure about this yet...
 DefMacro('\meaning Token', sub {
@@ -810,7 +812,7 @@ DefMacro('\meaning Token', sub {
       # The actual tests start here
       if ($type =~ /token$/i) {
         my $cc         = $definition->getCatcode;
-        my $char       = $definition->getString;
+        my $char       = $definition->toString;
         my $meaning_cc = $CATCODE_MEANING[$cc] || '';
         $meaning_cc .= ' ' if $meaning_cc;    # append space separator if defined
         $meaning = $meaning_cc . $char; }
@@ -858,10 +860,7 @@ DefMacro('\meaning Token', sub {
         );
         my $expansion_str = '';
         if (ref $expansion eq 'LaTeXML::Core::Tokens') {
-          for my $t (@$expansion) {
-            $expansion_str .= $t->toString;
-            if (@$expansion && $$t[1] == CC_CS) {
-              $expansion_str .= ' '; } } }
+          $expansion_str = writableTokens($expansion); }
         else {
           $expansion_str = ToString($expansion); }
         $meaning = ($prefixes ? $prefixes . ' ' : '') .
@@ -1198,6 +1197,7 @@ sub do_def {
   elsif (!$params) {
     Error('misdefined', $cs, $gullet, "Expected definition parameter list");
     return; }
+  $params = Tokens(PrepArgTokens(@$params));
   $params = parseDefParameters($cs, $params);
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body),
     ($globally ? 'global' : undef));
@@ -2213,7 +2213,7 @@ sub writableTokens {
       (T_PARAM, T_OTHER($$t[0])); }
     else { $t; }
   } @tokens;
-  return UnTeX(Tokens(@tokens)); }
+  return UnTeX(Tokens(@tokens), 1); }
 
 DefPrimitive('\message{}', sub {
     my ($stomach, $stuff) = @_;

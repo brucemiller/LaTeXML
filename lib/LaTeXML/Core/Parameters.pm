@@ -63,7 +63,6 @@ sub readArguments {
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
     if (!$$parameter{novalue}) {
-      $value = rescanArgTokens($value);
       push(@args, $value); } }
   return @args; }
 
@@ -74,7 +73,6 @@ sub readArgumentsAndDigest {
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
     if (!$$parameter{novalue}) {
-      $value = rescanArgTokens($value);
       $value = $parameter->digest($stomach, $value, $fordefn);
       push(@args, $value); } }
   return @args; }
@@ -90,27 +88,6 @@ sub reparseArgument {
         return @values; }); }
   else {
     return (); } }
-
-# Special case, group match tokens together exactly (and only) when building parameter lists
-sub rescanArgTokens {
-  my ($tokens) = @_;
-  if (ref $tokens eq 'LaTeXML::Core::Tokens' && scalar(@$tokens) >= 2) {
-    my @toks      = @$tokens;
-    my @rescanned = ();
-    while (my $t = shift @toks) {
-      if ($$t[1] == CC_PARAM && @toks) {
-        my $next_t = shift @toks;
-        if ($$next_t[1] == CC_OTHER && $$next_t[0] =~ /^\d$/) {
-          # only group clear match token cases
-          push(@rescanned, T_ARG($next_t)); }
-        else {    # any other case, preserve as-is, let the higher level call resolve any errors
-                  # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
-          push(@rescanned, $t, $next_t); }
-      } else {
-        push(@rescanned, $t); } }
-    return Tokens(@rescanned);
-  } else {
-    return $tokens; } }
 
 #======================================================================
 1;

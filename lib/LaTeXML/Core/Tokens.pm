@@ -107,14 +107,13 @@ sub substituteParameters {
   my @result = ();
   while (@in) {
     my $token = shift(@in);
-    if ($$token[1] != CC_PARAM && $$token[1] != CC_ARG) {    # Non '#'; copy it
+    if ($$token[1] != CC_ARG) {    # Non-match; copy it
       push(@result, $token); }
-    elsif ($$token[1] == CC_ARG || (@in && (($token = shift(@in))->[1] != CC_PARAM))) { # Not multiple '#'; read arg.
+    else {
       if (my $arg = $args[ord($$token[0]) - ord("0") - 1]) {
-        push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } }         # ->unlist
-    else {    # Duplicated '#', copy 2nd '#'
-      push(@result, $token); } }
-  return LaTeXML::Core::Tokens->new(@result); }
+        push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } } }    # ->unlist
+  my $result = LaTeXML::Core::Tokens->new(@result);
+  return $result; }
 
 # Trims outer braces (if they balance each other)
 # Should this also trim whitespace? or only if there are braces?

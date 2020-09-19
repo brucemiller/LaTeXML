@@ -19,20 +19,25 @@ use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use LaTeXML::Core::Parameters;
+use LaTeXML::Package qw(TokenizeInternal);
 use base qw(LaTeXML::Core::Definition);
 
 sub new {
   my ($class, $cs, $parameters, $expansion, %traits) = @_;
+  if (!ref $expansion) {    # Tokenization DEFERRED till actually used (shaves > 5%)
+    $expansion = TokenizeInternal($expansion); }
   $expansion = Tokens($expansion) if ref $expansion eq 'LaTeXML::Core::Token';
   my $source = $STATE->getStomach->getGullet->getMouth;
   my $trivexpansion;
   if (ref $expansion eq 'LaTeXML::Core::Tokens') {
     Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
       "Expansion is " . ToString($expansion)) unless $expansion->isBalanced;
-    $expansion = Tokens(map { $_->without_dont_expand; } $expansion->unlist);
+    # rescan for match tokens and unwrap dont_expand...
+    $expansion = Tokens(PrepArgTokens(@$expansion));
+
     # If expansion is Tokens, and no arguments, we're a "trivial macro"
     if (!$parameters) {
-      $trivexpansion = $expansion->substituteParameters(); }
+      $trivexpansion = $expansion; }
   }
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
     trivial_expansion => $trivexpansion,
@@ -48,9 +53,6 @@ sub isExpandable {
 
 sub getExpansion {
   my ($self) = @_;
-  if (!ref $$self{expansion}) {    # Tokenization DEFERRED till actually used (shaves > 5%)
-    require LaTeXML::Package;      # make sure present, but no imports
-    $$self{expansion} = LaTeXML::Package::TokenizeInternal($$self{expansion}); }
   return $$self{expansion}; }
 
 # Expand the expandable control sequence. This should be carried out by the Gullet.
@@ -141,12 +143,37 @@ sub equals {
     && Equals($self->getParameters, $other->getParameters)
     && Equals($self->getExpansion,  $other->getExpansion); }
 
+# Groups PARAM+OTHER token pair into match tokens.
+# Collapses PARAM+PARAM token pair into a single PARAM
+# B book suggests running this
+sub PrepArgTokens {
+  my (@toks) = @_;
+  my @rescanned = ();
+  while (my $t = shift @toks) {
+    $t = $$t[2] || $t;    # remove noexpand flag
+    if ($$t[1] == CC_PARAM && @toks) {
+      my $next_t = shift @toks;
+      $next_t = $$next_t[2] || $next_t;
+      my $next_cc = $next_t && $$next_t[1];
+      if ($next_cc == CC_OTHER) {
+        # only group clear match token cases
+        push(@rescanned, T_ARG($next_t)); }
+      elsif ($next_cc == CC_PARAM) {
+        push(@rescanned, $t); }
+      else {              # any other case, preserve as-is, let the higher level call resolve any errors
+                          # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
+        Error('misdefined', 'expansion', undef, "Parameter has a malformed arg, should be #1-#9 or ##. ",
+          "In expansion " . ToString(Tokens(@toks))); } }
+    else {
+      push(@rescanned, $t); } }
+  return @rescanned; }
+
 #======================================================================
 1;
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

@@ -26,7 +26,7 @@ DefPrimitiveI('\protected', undef, sub {
     $STATE->setPrefix('protected'); return; }, isPrefix => 1);
 
 # \detokenize
-DefMacro('\detokenize GeneralText', sub { Explode(writableTokens($_[1], 1)); });
+DefMacro('\detokenize GeneralText', sub { Explode(writableTokens($_[1])); });
 
 # When building an expanded token list, the tokens resulting from the expansion
 # of \unexpanded are not expanded further (this is the same behaviour as is

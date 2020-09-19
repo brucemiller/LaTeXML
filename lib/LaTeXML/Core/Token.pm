@@ -19,6 +19,7 @@ package LaTeXML::Core::Token;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Error;
 use LaTeXML::Common::Object;
 use base qw(LaTeXML::Common::Object);
 use base qw(Exporter);
@@ -82,14 +83,20 @@ sub T_CS { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
 # Illegal: don't use unless you know...
 sub T_MARKER { my ($t) = @_; return bless [$t, CC_MARKER], 'LaTeXML::Core::Token'; }
 
+our $STRICT_ARG = 1;
+
 sub T_ARG {
   my ($v) = @_;
   my $int = $v;
   # get the integer value from the token
   if (ref $v eq 'LaTeXML::Core::Token') {
-    $int = int($$v[0]);
-    if ($int < 1 || $int > 9) {
-      Fatal('malformed', 'T_ARG', 'value should be #1-#9', "Illegal: " . $v->stringify); } }
+    my $v_str = $$v[0];
+    if (!$STRICT_ARG) {
+      $int = ($v_str =~ /^\d+$/) ? int($v_str) : $v_str; }
+    else {
+      $int = int($$v[0]);
+      if ($int < 1 || $int > 9) {
+        Fatal('malformed', 'T_ARG', 'value should be #1-#9', "Illegal: " . $v->stringify); } } }
   return bless ["$int", CC_ARG], 'LaTeXML::Core::Token'; }
 
 sub Token {
@@ -115,7 +122,7 @@ sub ExplodeText {
 my $UNTEX_LINELENGTH = 78;    # [CONSTANT]
 
 sub UnTeX {
-  my ($thing) = @_;
+  my ($thing, $suppress_linebreak) = @_;
   return unless defined $thing;
   my @tokens = (ref $thing ? $thing->revert : Explode($thing));
   my $string = '';
@@ -143,12 +150,12 @@ sub UnTeX {
       # Insert a (virtual) space before a letter if previous token was a CS w/letters
       # This is required for letters, but just aesthetic for digits (to me?)
       # Of course, use a newline if we're already at end
-      my $space = (($length > 0) && ($length + $l > $UNTEX_LINELENGTH) ? "\n" : ' ');
+      my $space = (!$suppress_linebreak && ($length > 0) && ($length + $l > $UNTEX_LINELENGTH) ? "\n" : ' ');
       $string .= $space . $s; $length += 1 + $l; }
-    elsif (($length > 0) && ($length + $l > $UNTEX_LINELENGTH)    # linebreak before this token?
-      && (scalar(@tokens) > 1)                                    # and not at end!
-      ) {                                                         # Or even within an arg!
-      $string .= "%\n" . $s; $length = $l; }                      # with %, so that it "disappears"
+    elsif (!$suppress_linebreak && ($length > 0) && ($length + $l > $UNTEX_LINELENGTH) # linebreak before this token?
+      && (scalar(@tokens) > 1)                                                         # and not at end!
+      ) {    # Or even within an arg!
+      $string .= "%\n" . $s; $length = $l; }    # with %, so that it "disappears"
     else {
       $string .= $s; $length += $l; }
     if ($cc == CC_END) { $level--; }

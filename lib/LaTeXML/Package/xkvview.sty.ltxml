@@ -35,7 +35,6 @@ InputDefinitions('xkvview', type => 'sty', noltxml => 1)
 Let('\ltx@orig@define@key', '\define@key');
 DefMacro('\define@key[]{}{}[]{}', sub {
     my ($gullet, $prefix, $keyset, $key, $default, $code) = @_;
-
     # define the key, but omit $code so that it doesn't get redefined
     my $sprefix = defined($prefix) ? ToString($prefix) : undef;
     DefKeyVal(ToString($keyset), ToString($key), '', ToString($default), prefix => $sprefix);
@@ -105,11 +104,11 @@ DefMacro('\define@choicekey OptionalMatch:* OptionalMatch:+ []{}{}[]{}[]{}', sub
     my ($gullet, $star, $plus, $prefix, $keyset, $key, $bin, $choices, $default, $code) = @_;
 
     # define the choice key, but omit $code so that it doesn't get redefined
-    my $sprefix = defined($prefix) ? ToString($prefix) : undef;
+    my $sprefix    = defined($prefix) ? ToString($prefix) : undef;
     my @thechoices = split(',', ToString($choices));
     DefKeyVal(ToString($keyset), ToString($key), '', ToString($default), prefix => $sprefix,
       kind => 'choice', normalize => defined($star), choices => [@thechoices],
-      bin => $bin);
+      bin  => $bin);
 
     # Invocation() doesn't work here, because we are faking a signature
     # we can also omit the $mismatch argument, as it is still to be processed
@@ -118,12 +117,12 @@ DefMacro('\define@choicekey OptionalMatch:* OptionalMatch:+ []{}{}[]{}[]{}', sub
     push(@tokens, $star) if defined($star);
     push(@tokens, $plus) if defined($plus);
     push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
-    push(@tokens, T_BEGIN, $keyset, T_END);
-    push(@tokens, T_BEGIN, $key,    T_END);
-    push(@tokens, T_OTHER('['), $bin, T_OTHER(']')) if defined($bin);
-    push(@tokens, T_BEGIN, $choices, T_END);
+    push(@tokens, T_BEGIN,      $keyset,  T_END);
+    push(@tokens, T_BEGIN,      $key,     T_END);
+    push(@tokens, T_OTHER('['), $bin,     T_OTHER(']')) if defined($bin);
+    push(@tokens, T_BEGIN,      $choices, T_END);
     push(@tokens, T_OTHER('['), $default, T_OTHER(']')) if defined($default);
-    push(@tokens, T_BEGIN, $code, T_END);
+    push(@tokens, T_BEGIN,      $code,    T_END);
     @tokens; });
 
 ## ------------
@@ -144,7 +143,7 @@ DefMacro('\define@boolkey OptionalMatch:+ []{}[]{}[]{}', sub {
     push(@tokens, T_CS('\\ltx@orig@define@boolkey'));
     push(@tokens, $plus) if defined($plus);
     push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
-    push(@tokens, T_BEGIN, $keyset, T_END);
+    push(@tokens, T_BEGIN,      $keyset,      T_END);
     push(@tokens, T_OTHER('['), $macroprefix, T_OTHER(']')) if defined($macroprefix);
     push(@tokens, T_BEGIN,      $key,         T_END);
     push(@tokens, T_OTHER('['), $default,     T_OTHER(']')) if defined($default);

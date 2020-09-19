@@ -14,6 +14,9 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+use LaTeXML::Core::Token;
+
+$LaTeXML::Core::Token::STRICT_ARG = 0;
 
 RequirePackage('amsmath');
 # Currently physics uses xparse, which uses expl3, which is kinda large & rough to process...
