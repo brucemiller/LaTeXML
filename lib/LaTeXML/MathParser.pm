@@ -916,9 +916,10 @@ sub textrec {
   my $tag = getQName($node);
   $outer_bp   = 0  unless defined $outer_bp;
   $outer_name = '' unless defined $outer_name;
-  if ($tag eq 'ltx:XMApp') {
-    if (my $meaning = p_getAttribute($node, 'meaning') || p_getAttribute($node, 'name')) {
-      return $meaning; }
+  # If node has meaning, that's the text form.
+  if (my $meaning = p_getAttribute($node, 'meaning') || p_getAttribute($node, 'name')) {
+    return $PREFIX_ALIAS{$meaning} || $meaning; }
+  elsif ($tag eq 'ltx:XMApp') {
     my $app_role = $node->getAttribute('role');
     my ($op, @args) = element_nodes($node);
     $op = realizeXMNode($op);
@@ -930,8 +931,6 @@ sub textrec {
       return (($bp < $outer_bp) || (($bp == $outer_bp) && ($name ne $outer_name))
         ? '(' . $string . ')' : $string); } }
   elsif ($tag eq 'ltx:XMDual') {
-    if (my $meaning = p_getAttribute($node, 'meaning') || p_getAttribute($node, 'name')) {
-      return $meaning; }
     my ($content, $presentation) = element_nodes($node);
     my $text = textrec($content, $outer_bp, $outer_name);    # Just send out the semantic form.
            # Fall back to presentation, if content has poor semantics (eg. from replacement patterns)
