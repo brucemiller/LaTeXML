@@ -6166,7 +6166,7 @@ DefMath('\bmod', 'mod', role => 'MODIFIEROP', meaning => 'modulo');
 # keys are
 #  name  : the name of the environment (for reversion)
 #  datameaning: the (presumed) meaning of the array construct (typically 'matrix')
-#  delimitermeaning  : the meaning of an operator to be applied to the array (if any, eg, 'norm')
+#  delimitermeaning  : the operator meaning due to delimiters (eg. norm)(as applied to the array)
 #  style : typically \displaystyle, \textstyle...
 #  left  : TeX code for left of matrix
 #  right  : TeX code for right
@@ -6183,12 +6183,16 @@ DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
     my @colspec = (before => Tokens(($align =~ /^(?:c|r)/ ? (T_CS('\hfil')) : ()),
         Invocation(T_CS('\@hidden'), $style)),
       after => Tokens(($align =~ /^(?:c|l)/ ? (T_CS('\hfil')) : ())));
-    my $ncols = ToString($kv->getValue('ncolumns'));
+    my $ncols      = ToString($kv->getValue('ncolumns'));
+    my %attributes = ();
+    foreach my $key (qw(rowsep)) {    # Probably more?
+      if (my $value = $kv->getValue($key)) {
+        $attributes{$key} = $value; } }
     alignmentBindings(LaTeXML::Core::Alignment::Template->new(
         ($ncols ? (columns => [map { { @colspec } } 1 .. $ncols])
           : (repeated => [{@colspec}]))),
       'math',
-      attributes => { meaning => $kv->getValue('datameaning') }); });
+      (keys %attributes ? (attributes => {%attributes}) : ())); });
 DefPrimitive('\lx@end@gen@matrix', sub { $_[0]->egroup; });
 
 DefMacro('\lx@gen@plain@matrix{}{}',
@@ -6201,14 +6205,11 @@ DefMacro('\lx@gen@plain@matrix{}{}',
 DefConstructor('\lx@gen@plain@matrix@ RequiredKeyVals:lx@GEN {}',
   "?#needXMDual("
     . "<ltx:XMDual>"
-    . "?#delimitermeaning("
-    . "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='#delimitermeaning'/>"
+    . "?#delimitermeaning(<ltx:XMApp><ltx:XMTok meaning='#delimitermeaning'/>)()"
+    . "?#datameaning(<ltx:XMApp><ltx:XMTok meaning='#datameaning'/>)()"
     . "<ltx:XMRef _xmkey='#xmkey'/>"
-    . "</ltx:XMApp>"
-    . ")("
-    . "<ltx:XMRef _xmkey='#xmkey'/>"
-    . ")"
+    . "?#delimitermeaning(</ltx:XMApp>)()"
+    . "?#datameaning(</ltx:XMApp>)()"
     . "<ltx:XMWrap>#left<ltx:XMArg _xmkey='#xmkey'>#2</ltx:XMArg>#right</ltx:XMWrap>"
     . "</ltx:XMDual>"
     . ")("
@@ -6222,7 +6223,7 @@ DefConstructor('\lx@gen@plain@matrix@ RequiredKeyVals:lx@GEN {}',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $kv = $whatsit->getArg(1);
-    if ($kv->getValue('left') || $kv->getValue('right')) {
+    if ($kv->getValue('datameaning') || $kv->getValue('delimitermeaning')) {
       $whatsit->setProperties(
         needXMDual => 1,
         xmkey      => LaTeXML::Package::getXMArgID()); }
@@ -6232,8 +6233,8 @@ DefConstructor('\lx@gen@plain@matrix@ RequiredKeyVals:lx@GEN {}',
 DefMacro('\matrix{}',
   '\lx@gen@plain@matrix{name=matrix,datameaning=matrix}{#1}');
 
-DefMacro('\bordermatrix{}',
-  '\lx@hack@bordermatrix{\lx@gen@plain@matrix{name=bordermatrix,datameaning=matrix}{#1}}');
+DefMacro('\bordermatrix{}',    # Semantics?
+  '\lx@hack@bordermatrix{\lx@gen@plain@matrix{name=bordermatrix}{#1}}');
 # HACK the newly created border matrix to add columns for the (spanned) parentheses!!!
 # Assume (for now) that there's no XMDual structure here.
 # What is the semantics, anyway?
@@ -6664,7 +6665,7 @@ sub I_keyvals {
   my @options = ();
   if ($keyvals) {
     while (my ($key, $value) = each %$keyvals) {
-      $value = TokenizeInternal($value) if $value && !ref $value;
+      $value = TokenizeInternal($value) if defined $value && !ref $value;
       push(@options, T_OTHER(',')) if @options;
       push(@options, T_OTHER($key), T_OTHER('='), T_BEGIN, $value, T_END); } }
   return (@options ? Tokens(T_OTHER('['), @options, T_OTHER(']')) : ()); }
