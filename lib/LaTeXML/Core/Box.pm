@@ -32,7 +32,8 @@ sub Box {
   my $state = $STATE;
   if ($state->lookupValue('IN_MATH')) {
     my $attr = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
-    return LaTeXML::Core::Box->new($string, $font->specialize($string), $locator, $tokens,
+    my $usestring = ($attr && $$attr{replace}) || $string;
+    return LaTeXML::Core::Box->new($usestring, $font->specialize($string), $locator, $tokens,
       mode => 'math', ($attr ? %$attr : ()), %properties); }
   else {
     return LaTeXML::Core::Box->new($string, $font, $locator, $tokens, %properties); } }

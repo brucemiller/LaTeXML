@@ -4203,9 +4203,11 @@ sub addMeaningRec {
 #======================================================================
 # Properties for plain characters.
 # These are allowed in plain text, but need to act a bit special in math.
-DefMathI('=', undef, '=', role => 'RELOP',   meaning  => 'equals');
-DefMathI('+', undef, '+', role => 'ADDOP',   meaning  => 'plus');
-DefMathI('-', undef, '-', role => 'ADDOP',   meaning  => 'minus');
+DefMathI('=', undef, '=', role => 'RELOP', meaning => 'equals');
+DefMathI('+', undef, '+', role => 'ADDOP', meaning => 'plus');
+DefMathI('-', undef, '-', role => 'ADDOP', meaning => 'minus');
+## Redefine, if we want Unicode minus
+##DefMathI('-', undef, "\x{2212}", role => 'ADDOP',   meaning  => 'minus');
 DefMathI('*', undef, '*', role => 'MULOP',   meaning  => 'times');
 DefMathI('/', undef, '/', role => 'MULOP',   meaning  => 'divide');
 DefMathI('!', undef, '!', role => 'POSTFIX', meaning  => 'factorial');

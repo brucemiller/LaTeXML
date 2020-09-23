@@ -1477,8 +1477,10 @@ sub DefMathI {
   # If single character, handle with a rewrite rule
   if (length($csname) == 1) {
     ###print STDERR "Defining ".Stringify($cs)." as rewrite\n";
+    if ($csname ne ToString($presentation)) {
+      $options{replace} = $presentation;
+      delete $options{name}; }
     defmath_rewrite($cs, %options); }
-
   # If the macro involves arguments,
   # we will create an XMDual to separate simple content application
   # from the (likely) convoluted presentation.
@@ -1522,7 +1524,8 @@ sub defmath_rewrite {
   # No, do NOT make mathactive; screws up things like babel french, or... ?
   # EXPERIMENT: store XMTok attributes for if this char ends up a Math Token.
   # But only some DefMath options make sense!
-  my $rw_options = { name => 1, meaning => 1, omcd => 1, decl_id => 1, role => 1, mathstyle => 1, stretchy => 1 }; # (well, mathstyle?)
+  my $rw_options = { name => 1, meaning => 1, omcd => 1, decl_id => 1, role => 1,
+    replace => 1, mathstyle => 1, stretchy => 1 };    # (well, mathstyle?)
   CheckOptions("DefMath reimplemented as DefRewrite ($csname)", $rw_options, %options);
   AssignValue('math_token_attributes_' . $csname => {%options}, 'global');
   return; }
@@ -1663,7 +1666,7 @@ sub defmath_cons {
   my $end_tok = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle'";
   my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
-  if ((! defined $options{reversion}) && !$nargs && !(defined $options{alias})) {
+  if ((!defined $options{reversion}) && !$nargs && !(defined $options{alias})) {
     $options{reversion} = sub {
       (!$options{revert_as}
           || ($options{revert_as} eq 'content')
