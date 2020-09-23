@@ -1357,75 +1357,90 @@ are not currently tested.</p>
           <tag>(22)</tag>
           <tag role="refnum">22</tag>
         </tags>
-        <Math mode="display" tex="\begin{matrix}-1&amp;3\\&#10;2&amp;-4\end{matrix},\qquad\begin{matrix}[r]-1&amp;3\\&#10;2&amp;-4\end{matrix},\qquad\begin{Vmatrix}-1&amp;3\\&#10;2&amp;-4\end{Vmatrix},\qquad\begin{Vmatrix}[r]-1&amp;3\\&#10;2&amp;-4\end{Vmatrix}" text="list@(matrix[[- 1, 3], [2, - 4]], matrix[[- 1, 3], [2, - 4]], norm@(matrix[[- 1, 3], [2, - 4]]), norm@(matrix[[- 1, 3], [2, - 4]]))" xml:id="S4.E22.m1">
+        <Math mode="display" tex="\begin{matrix}-1&amp;3\\&#10;2&amp;-4\end{matrix},\qquad\begin{matrix}[r]-1&amp;3\\&#10;2&amp;-4\end{matrix},\qquad\begin{Vmatrix}-1&amp;3\\&#10;2&amp;-4\end{Vmatrix},\qquad\begin{Vmatrix}[r]-1&amp;3\\&#10;2&amp;-4\end{Vmatrix}" text="list@(matrix@(Array[[- 1, 3], [2, - 4]]), matrix@(Array[[- 1, 3], [2, - 4]]), norm@(matrix@(Array[[- 1, 3], [2, - 4]])), norm@(matrix@(Array[[- 1, 3], [2, - 4]])))" xml:id="S4.E22.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="list"/>
-                <XMRef idref="S4.E22.m1.3"/>
-                <XMRef idref="S4.E22.m1.4"/>
                 <XMRef idref="S4.E22.m1.5"/>
                 <XMRef idref="S4.E22.m1.6"/>
+                <XMRef idref="S4.E22.m1.7"/>
+                <XMRef idref="S4.E22.m1.8"/>
               </XMApp>
               <XMWrap>
-                <XMArray meaning="matrix" xml:id="S4.E22.m1.3">
-                  <XMRow>
-                    <XMCell align="center">
-                      <XMApp>
-                        <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                        <XMTok meaning="1" role="NUMBER">1</XMTok>
-                      </XMApp>
-                    </XMCell>
-                    <XMCell align="center">
-                      <XMTok meaning="3" role="NUMBER">3</XMTok>
-                    </XMCell>
-                  </XMRow>
-                  <XMRow>
-                    <XMCell align="center">
-                      <XMTok meaning="2" role="NUMBER">2</XMTok>
-                    </XMCell>
-                    <XMCell align="center">
-                      <XMApp>
-                        <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                        <XMTok meaning="4" role="NUMBER">4</XMTok>
-                      </XMApp>
-                    </XMCell>
-                  </XMRow>
-                </XMArray>
-                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMArray meaning="matrix" xml:id="S4.E22.m1.4">
-                  <XMRow>
-                    <XMCell align="right">
-                      <XMApp>
-                        <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                        <XMTok meaning="1" role="NUMBER">1</XMTok>
-                      </XMApp>
-                    </XMCell>
-                    <XMCell align="right">
-                      <XMTok meaning="3" role="NUMBER">3</XMTok>
-                    </XMCell>
-                  </XMRow>
-                  <XMRow>
-                    <XMCell align="right">
-                      <XMTok meaning="2" role="NUMBER">2</XMTok>
-                    </XMCell>
-                    <XMCell align="right">
-                      <XMApp>
-                        <XMTok meaning="minus" role="ADDOP">-</XMTok>
-                        <XMTok meaning="4" role="NUMBER">4</XMTok>
-                      </XMApp>
-                    </XMCell>
-                  </XMRow>
-                </XMArray>
-                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
                 <XMDual xml:id="S4.E22.m1.5">
                   <XMApp>
-                    <XMTok meaning="norm"/>
+                    <XMTok meaning="matrix"/>
                     <XMRef idref="S4.E22.m1.1"/>
+                  </XMApp>
+                  <XMArray xml:id="S4.E22.m1.1">
+                    <XMRow>
+                      <XMCell align="center">
+                        <XMApp>
+                          <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                          <XMTok meaning="1" role="NUMBER">1</XMTok>
+                        </XMApp>
+                      </XMCell>
+                      <XMCell align="center">
+                        <XMTok meaning="3" role="NUMBER">3</XMTok>
+                      </XMCell>
+                    </XMRow>
+                    <XMRow>
+                      <XMCell align="center">
+                        <XMTok meaning="2" role="NUMBER">2</XMTok>
+                      </XMCell>
+                      <XMCell align="center">
+                        <XMApp>
+                          <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                          <XMTok meaning="4" role="NUMBER">4</XMTok>
+                        </XMApp>
+                      </XMCell>
+                    </XMRow>
+                  </XMArray>
+                </XMDual>
+                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+                <XMDual xml:id="S4.E22.m1.6">
+                  <XMApp>
+                    <XMTok meaning="matrix"/>
+                    <XMRef idref="S4.E22.m1.2"/>
+                  </XMApp>
+                  <XMArray xml:id="S4.E22.m1.2">
+                    <XMRow>
+                      <XMCell align="right">
+                        <XMApp>
+                          <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                          <XMTok meaning="1" role="NUMBER">1</XMTok>
+                        </XMApp>
+                      </XMCell>
+                      <XMCell align="right">
+                        <XMTok meaning="3" role="NUMBER">3</XMTok>
+                      </XMCell>
+                    </XMRow>
+                    <XMRow>
+                      <XMCell align="right">
+                        <XMTok meaning="2" role="NUMBER">2</XMTok>
+                      </XMCell>
+                      <XMCell align="right">
+                        <XMApp>
+                          <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                          <XMTok meaning="4" role="NUMBER">4</XMTok>
+                        </XMApp>
+                      </XMCell>
+                    </XMRow>
+                  </XMArray>
+                </XMDual>
+                <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+                <XMDual xml:id="S4.E22.m1.7">
+                  <XMApp>
+                    <XMTok meaning="norm"/>
+                    <XMApp>
+                      <XMTok meaning="matrix"/>
+                      <XMRef idref="S4.E22.m1.3"/>
+                    </XMApp>
                   </XMApp>
                   <XMWrap>
                     <XMTok role="VERTBAR" stretchy="true">∥</XMTok>
-                    <XMArray meaning="matrix" xml:id="S4.E22.m1.1">
+                    <XMArray xml:id="S4.E22.m1.3">
                       <XMRow>
                         <XMCell align="center">
                           <XMApp>
@@ -1453,14 +1468,17 @@ are not currently tested.</p>
                   </XMWrap>
                 </XMDual>
                 <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-                <XMDual xml:id="S4.E22.m1.6">
+                <XMDual xml:id="S4.E22.m1.8">
                   <XMApp>
                     <XMTok meaning="norm"/>
-                    <XMRef idref="S4.E22.m1.2"/>
+                    <XMApp>
+                      <XMTok meaning="matrix"/>
+                      <XMRef idref="S4.E22.m1.4"/>
+                    </XMApp>
                   </XMApp>
                   <XMWrap>
                     <XMTok role="VERTBAR" stretchy="true">∥</XMTok>
-                    <XMArray meaning="matrix" xml:id="S4.E22.m1.2">
+                    <XMArray xml:id="S4.E22.m1.4">
                       <XMRow>
                         <XMCell align="right">
                           <XMApp>
