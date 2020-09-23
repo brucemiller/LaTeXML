@@ -6779,8 +6779,7 @@ DefKeyVal('XMath', 'reversion',              'UndigestedKey');
 DefKeyVal('XMath', 'content_reversion',      'UndigestedKey');
 DefKeyVal('XMath', 'presentation_reversion', 'UndigestedKey');
 DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
-  #  "<ltx:XMDual role='&GetKeyVal(#1,role)'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
-  "<ltx:XMDual role='#role'>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
+  "<ltx:XMDual $XMath_attributes>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
   beforeDigest => sub {
     PushValue(PENDING_DUAL_XMARGS => {});
     return; },
