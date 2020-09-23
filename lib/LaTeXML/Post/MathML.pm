@@ -86,6 +86,8 @@ sub outerWrapper {
   my $wrapped = ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
       class   => $math->getAttribute('class'),
       alttext => $math->getAttribute('tex'),
+#### Handy for debugging math
+###      title => $math->getAttribute('text'),
       @rdfa,
       @img },
     $mml];
@@ -744,6 +746,8 @@ my %normally_stretchy = map { $_ => 1 }
   "\x{2225}", "\x{2225}", "\x{2016}", "\x{2016}", "\x{2223}", "\x{2223}", "\x{007C}", "\x{007C}",
   "\x{20D7}", "\x{20D6}", "\x{20E1}", "\x{20D1}", "\x{20D0}", "\x{21A9}", "\x{21AA}", "\x{23B0}",
   "\x{23B1}");
+my %default_token_content = (
+  MULOP => "\x{2062}", ADDOP => "\x{2064}", PUNCT => "\x{2063}");
 # Given an item (string or token element w/attributes) and latexml attributes,
 # convert the string to the appropriate unicode (possibly plane1)
 # & MathML presentation attributes (mathvariant, mathsize, mathcolor, stretchy)
@@ -800,8 +804,11 @@ sub stylizeContent {
     $stretchy = undef; }                 # Otherwise, doesn't need to be said at all.
 
   if ((!defined $text) || ($text eq '')) {    # Failsafe for empty tokens?
-    $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $role : '?');
-    $color = 'red'; }
+    if (my $default = $role && $default_token_content{$role}) {
+      $text = $default; }
+    else {
+      $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $role : '?');
+      $color = 'red'; } }
 
   if ($font && !$variant) {
     Warn('unexpected', $font, undef, "Unrecognized font variant '$font'"); $variant = ''; }
