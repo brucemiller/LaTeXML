@@ -192,7 +192,7 @@ sub convert {
   if ($$opts{whatsout} =~ /^archive/) {
     $$opts{archive_sitedirectory} = $$opts{sitedirectory};
     $$opts{archive_destination}   = $$opts{destination};
-    my $destination_name = $$opts{destination} ? pathname_name($$opts{destination}) : 'document';
+    my $destination_name  = $$opts{destination} ? pathname_name($$opts{destination}) : 'document';
     my $sandbox_directory = File::Temp->newdir(TMPDIR => 1);
     my $extension         = $$opts{format};
     $extension =~ s/\d+$//;
@@ -300,7 +300,7 @@ sub convert {
 
     # Close and restore STDERR to original condition.
     my $log = $self->flush_log;
-    $serialized = $dom if ($$opts{format} eq 'dom');
+    $serialized = $dom           if ($$opts{format} eq 'dom');
     $serialized = $dom->toString if ($dom && (!defined $serialized));
     # Using the Core::Document::serialize_aux, so need an explicit encode into bytes
     $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
@@ -462,8 +462,8 @@ sub convert_post {
       push(@procs, LaTeXML::Post::CrossRef->new(
           db        => $DB, urlstyle => $$opts{urlstyle},
           extension => $$opts{extension},
-          ($$opts{numbersections} ? (number_sections => 1) : ()),
-          ($$opts{navtoc} ? (navigation_toc => $$opts{navtoc}) : ()),
+          ($$opts{numbersections} ? (number_sections => 1)              : ()),
+          ($$opts{navtoc}         ? (navigation_toc  => $$opts{navtoc}) : ()),
           %PostOPS)); }
     if ($$opts{picimages}) {
       require LaTeXML::Post::PictureImages;
@@ -493,20 +493,20 @@ sub convert_post {
           require LaTeXML::Post::MathML::Presentation;
           push(@mprocs, LaTeXML::Post::MathML::Presentation->new(
               linelength => $$opts{linelength},
-              (defined $$opts{plane1} ? (plane1 => $$opts{plane1}) : (plane1 => 1)),
-              ($$opts{hackplane1} ? (hackplane1 => 1) : ()),
+              (defined $$opts{plane1} ? (plane1     => $$opts{plane1}) : (plane1 => 1)),
+              ($$opts{hackplane1}     ? (hackplane1 => 1)              : ()),
               %PostOPS)); }
         elsif ($fmt eq 'cmml') {
           require LaTeXML::Post::MathML::Content;
           push(@mprocs, LaTeXML::Post::MathML::Content->new(
-              (defined $$opts{plane1} ? (plane1 => $$opts{plane1}) : (plane1 => 1)),
-              ($$opts{hackplane1} ? (hackplane1 => 1) : ()),
+              (defined $$opts{plane1} ? (plane1     => $$opts{plane1}) : (plane1 => 1)),
+              ($$opts{hackplane1}     ? (hackplane1 => 1)              : ()),
               %PostOPS)); }
         elsif ($fmt eq 'om') {
           require LaTeXML::Post::OpenMath;
           push(@mprocs, LaTeXML::Post::OpenMath->new(
-              (defined $$opts{plane1} ? (plane1 => $$opts{plane1}) : (plane1 => 1)),
-              ($$opts{hackplane1} ? (hackplane1 => 1) : ()),
+              (defined $$opts{plane1} ? (plane1     => $$opts{plane1}) : (plane1 => 1)),
+              ($$opts{hackplane1}     ? (hackplane1 => 1)              : ()),
               %PostOPS)); }
         elsif ($fmt eq 'images') {
           require LaTeXML::Post::MathImages;
@@ -652,11 +652,13 @@ sub new_latexml {
       push @pre, $pre;
     }
   }
+  my $includexmlpis = !($$opts{xsltparameters} && (@{ $$opts{xsltparameters} }[0] eq 'LATEXML_VERSION:TEST'));
   require LaTeXML;
   my $latexml = LaTeXML::Core->new(preload => [@pre], searchpaths => [@{ $$opts{paths} }],
     graphicspaths   => ['.'],
     verbosity       => $$opts{verbosity}, strict => $$opts{strict},
     includecomments => $$opts{comments},
+    includexmlpis   => $includexmlpis,
     inputencoding   => $$opts{inputencoding},
     includestyles   => $$opts{includestyles},
     documentid      => $$opts{documentid},
