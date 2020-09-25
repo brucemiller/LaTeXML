@@ -2984,18 +2984,11 @@
           <Math mode="display" tex="\differential[2][\frac{X}{Y}]" text="(functional-power@(differential, 2))@(delimited-[]@(X / Y))" xml:id="S1.Ex27.m1">
             <XMath>
               <XMApp>
-                <XMDual role="DIFFOP">
-                  <XMApp>
-                    <XMTok meaning="functional-power"/>
-                    <XMTok meaning="differential"/>
-                    <XMRef idref="S1.Ex27.m1.1"/>
-                  </XMApp>
-                  <XMApp role="DIFFOP">
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
-                    <XMTok role="DIFFOP">d</XMTok>
-                    <XMTok fontsize="70%" meaning="2" role="NUMBER" xml:id="S1.Ex27.m1.1">2</XMTok>
-                  </XMApp>
-                </XMDual>
+                <XMApp role="DIFFOP">
+                  <XMTok meaning="functional-power" role="SUPERSCRIPTOP" scriptpos="post1"/>
+                  <XMTok meaning="differential" role="DIFFOP">d</XMTok>
+                  <XMTok fontsize="70%" meaning="2" role="NUMBER" xml:id="S1.Ex27.m1.1">2</XMTok>
+                </XMApp>
                 <XMDual>
                   <XMApp>
                     <XMTok meaning="delimited-[]"/>

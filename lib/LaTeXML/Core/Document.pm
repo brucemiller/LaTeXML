@@ -1499,7 +1499,6 @@ sub compactXMDual {
   return if scalar(@content_args) != scalar(@pres_args);
 
   my @new_args = ();
-  my $single_duality;
   # walk the corresponding children, and double-check they are referenced in the same order
   while ((my $c_arg = shift(@content_args)) and (my $p_arg = shift(@pres_args))) {
     my $c_idref = $c_arg->getAttribute('idref');
@@ -1511,16 +1510,11 @@ sub compactXMDual {
       push @new_args, $c_arg;
       next; }    # pres-refs-content, OK
 
-    # Next up: differences. If:
-    # 1) we saw such a difference beforehand, or
-    # 2) the tree is too complex - give up on compacting and return.
-    # we handle a single content-side XMTok, to any XM* presentation subtree differing for now.
-    if ($single_duality || ($self->getNodeQName($c_arg) ne 'ltx:XMTok')) {
+    # we can handle content-side XMToks, to any XM* presentation subtree differing for now.
+    if ($self->getNodeQName($c_arg) ne 'ltx:XMTok') {
       return; }
     else { # otherwise we can compact this case. but delay actual libxml changes until we are *sure* the entire tree is compactable
-      $single_duality = [$c_arg, $p_arg];
-      push(@new_args, $single_duality); } }
-  return unless $single_duality;
+      push(@new_args, [$c_arg, $p_arg]); } }
 
 # If we made it here, this is a dual with two mirrored applications and a single XMTok difference, compact it.
   my $compact_apply = $self->openElementAt($dual->parentNode, 'ltx:XMApp');
