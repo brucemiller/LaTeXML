@@ -1436,12 +1436,14 @@ my $math_options = {    # [CONSTANT]
   mathstyle              => 1, font               => 1,
   scriptpos              => 1, operator_scriptpos => 1,
   stretchy               => 1, operator_stretchy  => 1,
+  lpadding               => 1, rpadding           => 1,
   beforeDigest           => 1, afterDigest        => 1, scope => 1, nogroup => 1, locked => 1,
   revert_as              => 1,
   hide_content_reversion => 1 };    # DEPRECATE!
 my $simpletoken_options = {         # [CONSTANT]
-  name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1,
-  font => 1, scriptpos => 1, scope => 1, locked => 1 };
+  name     => 1, meaning   => 1, omcd => 1, role => 1, mathstyle => 1,
+  lpadding => 1, rpadding  => 1,
+  font     => 1, scriptpos => 1, scope => 1, locked => 1 };
 
 sub DefMath {
   my ($proto, $presentation, %options) = @_;
@@ -1560,7 +1562,9 @@ sub defmath_common_constructor_options {
       operator_stretchy  => $options{operator_stretchy},
       font               => ($options{mathstyle}
         ? sub { LookupValue('font')->merge(mathstyle => $options{mathstyle})->specialize($presentation); }
-        : sub { LookupValue('font')->specialize($presentation); }) },
+        : sub { LookupValue('font')->specialize($presentation); }),
+      lpadding => $options{lpadding},
+      rpadding => $options{rpadding} },
     scope => $options{scope}); }
 
 # If the presentation is complex, and involves arguments,
@@ -1597,7 +1601,7 @@ sub defmath_dual {
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, $paramlist, $presentation),
     $options{scope});
   my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
-  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle'";
+  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle' lpadding='#lpadding' rpadding='#rpadding'";
 
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cont_cs, $paramlist,
       ($nargs == 0
@@ -1626,7 +1630,7 @@ sub defmath_wrapped {
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, undef, $presentation),
     $options{scope});
   # Make the wrapper constructor
-  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle'";
+  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle' lpadding='#lpadding' rpadding='#rpadding'";
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($wrap_cs,
       parseParameters('{}', $csname),
       "<ltx:XMWrap $cons_attr role='#role' scriptpos='#scriptpos' stretchy='#stretchy'>"
@@ -1665,7 +1669,7 @@ sub defmath_cons {
   my $qpresentation = $presentation && ToString($presentation);    # Quote any constructor specials
   $qpresentation =~ s/(\#|\&|\?|\\|<|>)/\\$1/g if $presentation;
   my $end_tok = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
-  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle'";
+  my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle' lpadding='#lpadding' rpadding='#rpadding'";
   my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
   if ((!defined $options{reversion}) && !$nargs && !(defined $options{alias})) {
     $options{reversion} = sub {
