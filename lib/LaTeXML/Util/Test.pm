@@ -136,7 +136,7 @@ sub process_texfile {
   my $name         = $options{name};
   my $compare_kind = $options{compare_kind};
   my %core_options = $options{core_options} ? %{ $options{core_options} } : (
-    preload => [], searchpaths => [], includecomments => 0, verbosity => -2
+    preload => [], searchpaths => [], includecomments => 0, includexmlpis => 0, verbosity => -2
   );
   my $latexml = eval { LaTeXML::Core->new(%core_options) };
   if (!$latexml) {
