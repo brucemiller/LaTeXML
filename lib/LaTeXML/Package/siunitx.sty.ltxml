@@ -130,22 +130,16 @@ AtBeginDocument('\lx@six@initialize');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Some useful macros & symbols
-DefMathI('\SIUnitSymbolCelsius',   undef, UTF(0xB0) . "C");
-DefMathI('\SIUnitSymbolOhm',       undef, "\x{2126}");
-DefMathI('\SIUnitSymbolDegree',    undef, UTF(0xB0));         # , lpadding=>0 ????
-DefMathI('\SIUnitSymbolArcminute', undef, "\x{2032}");
-DefMathI('\SIUnitSymbolArcsecond', undef, "\x{2033}");
-DefMathI('\SIUnitSymbolAngstrom',  undef, UTF(0xC5));
-DefMathI('\SIUnitSymbolMicro',     undef, UTF(0xB5));
-
-# These need less left space.
-# Should these be multiplied "ID"s, or postfix?
-DefConstructorI('\SIUnitSymbolDegree', undef,
-  "<ltx:XMTok meaning='arcminute' role='ID' lpadding='0pt'>" . UTF(0xB0) . "</ltx:XMTok>");
-DefConstructorI('\SIUnitSymbolArcminute', undef,
-  "<ltx:XMTok meaning='arcminute' role='ID' lpadding='0pt'>\x{2032}</ltx:XMTok>");
-DefConstructorI('\SIUnitSymbolArcsecond', undef,
-  "<ltx:XMTok meaning='arcminute' role='ID' lpadding='0pt'>\x{2033}</ltx:XMTok>");
+DefMathI('\SIUnitSymbolCelsius', undef, UTF(0xB0) . "C");
+DefMathI('\SIUnitSymbolOhm',     undef, "\x{2126}");
+DefMathI('\SIUnitSymbolDegree', undef, UTF(0xB0),
+  meaning => 'arcdegree', lpadding => "0pt", name => '');
+DefMathI('\SIUnitSymbolArcminute', undef, "\x{2032}",
+  meaning => 'arcminute', lpadding => "0pt", name => '');
+DefMathI('\SIUnitSymbolArcsecond', undef, "\x{2033}",
+  meaning => 'arcsecond', lpadding => "0pt", name => '');
+DefMathI('\SIUnitSymbolAngstrom', undef, UTF(0xC5));
+DefMathI('\SIUnitSymbolMicro',    undef, UTF(0xB5));
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Low-level Parsing numbers
