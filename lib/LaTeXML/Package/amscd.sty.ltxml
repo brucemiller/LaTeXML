@@ -29,24 +29,19 @@ use LaTeXML::Package;
 # the more general svg(-like) problems.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-DefMacro('\CD',    '\@@CD\@start@alignment');
-DefMacro('\endCD', '\@finish@alignment\@end@CD');
-DefPrimitive('\@end@CD', sub { $_[0]->egroup; });
-DefConstructor('\@@CD DigestedBody',
-  '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    alignmentBindings(MatrixTemplate(), 'math', attributes => { meaning => 'commutative-diagram' });
+DefMacro('\CD', '\lx@ams@CD{name=CD,datameaning=commutative-diagram}');
+DefMacro('\lx@ams@CD RequiredKeyVals:lx@GEN',
+  '\lx@gen@matrix@bindings{#1}\lx@ams@CD@bindings\lx@ams@matrix@{#1}\@start@alignment');
+DefMacro('\endCD', '\@finish@alignment\lx@end@gen@matrix');
+DefPrimitive('\lx@ams@CD@bindings', sub {
     Let(T_ALIGN, '\@cd@invisible@align');
     Let("\\\\",  '\@alignment@newline@noskip');
     $STATE->assignMathcode('@' => 0x8000);
-    Let('@', '\cd@'); },
-  reversion => '\begin{CD}#1\end{CD}');
+    Let('@', '\cd@'); });
 
 DefMacroI('\@cd@invisible@align', undef,
   '\@close@inner@column\@close@column'
     . '\@open@column\@open@inner@column');
-#DefConstructorI('\@alignment@align@marker',undef,'',reversion=>'&');
 
 DefMacro('\cd@ Token', sub {
     my ($gullet, $token) = @_;
@@ -83,8 +78,7 @@ DefMath('\@cd@vert@', "\x{2225}", role => 'ARROW', font => { size => 'Big' }, re
 
 DefRegister('\minaw@' => Dimension('11.111pt'));
 
-# deal with under, over & underover!
-DefConstructor('\cd@stack Undigested {}{}{}', sub {
+DefConstructor('\cd@stack Undigested {} ScriptStyle ScriptStyle', sub {
     my ($document, $reversion, $op, $over, $under, %props) = @_;
     my $scriptpos = $props{scriptpos};
     if ($under->unlist) {
@@ -109,14 +103,12 @@ DefConstructor('\cd@stack Undigested {}{}{}', sub {
     else {
       $document->insertElement('ltx:XMArg', $op); } },
   properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } },
-  reversion => '@#1{#3}#1{#4}#1');
+  reversion  => '@#1{#3}#1{#4}#1');
 
-# \cd@adj{}{}{}
 # Temporary...
 # Later deal with vertically centering the side things, parser issues...
-#DefMacro('\cd@adjacent{}{}{}{}','{#3}{#2}{#4}');
 
-DefConstructor('\cd@adjacent Undigested {}{}{}', sub {
+DefConstructor('\cd@adjacent Undigested {} ScriptStyle ScriptStyle', sub {
     my ($document, $reversion, $op, $left, $right, %props) = @_;
     $document->openElement('ltx:XMWrap', role => 'ARROW');    # Role?
     $document->insertElement('ltx:XMArg', $left)  if $left->unlist;

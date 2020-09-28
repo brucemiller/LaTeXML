@@ -12,96 +12,108 @@
         <tag>(1)</tag>
         <tag role="refnum">1</tag>
       </tags>
-      <Math mode="display" tex="\begin{CD}S^{{\mathcal{W}}_{\Lambda}}\otimes T@&gt;{j}&gt;{}&gt;T\\&#10;@V{}V{}V@V{}V{\operatorname{End}P}V\\&#10;(S\otimes T)/I@=(Z\otimes T)/J\end{CD}" text="commutative-diagram[[S ^ (W _ Lambda) tensor-product T, rightarrowfill@ ^ j, T], [downarrow, , absent downarrow End@(P), , ], [(S tensor-product T) / I, @cd@equals@, (Z tensor-product T) / J]]" xml:id="S0.E1.m1">
+      <Math mode="display" tex="\begin{CD}S^{{\mathcal{W}}_{\Lambda}}\otimes T@&gt;{j}&gt;{}&gt;T\\&#10;@V{}V{}V@V{}V{\operatorname{End}P}V\\&#10;(S\otimes T)/I@=(Z\otimes T)/J\end{CD}" text="commutative-diagram@(Array[[S ^ (W _ Lambda) tensor-product T, rightarrowfill@ ^ j, T], [downarrow, absent, absent downarrow End@(P), absent, absent], [(S tensor-product T) / I, @cd@equals@, (Z tensor-product T) / J]])" xml:id="S0.E1.m1">
         <XMath>
-          <XMArray meaning="commutative-diagram">
-            <XMRow>
-              <XMCell align="center">
-                <XMApp>
-                  <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="commutative-diagram"/>
+              <XMRef idref="S0.E1.m1.1"/>
+            </XMApp>
+            <XMArray xml:id="S0.E1.m1.1">
+              <XMRow>
+                <XMCell align="center">
                   <XMApp>
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post6"/>
-                    <XMTok font="italic" role="UNKNOWN">S</XMTok>
+                    <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
                     <XMApp>
-                      <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
-                      <XMTok font="caligraphic" fontsize="70%" role="UNKNOWN">W</XMTok>
-                      <XMTok fontsize="50%" name="Lambda" role="UNKNOWN">Λ</XMTok>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post6"/>
+                      <XMTok font="italic" role="UNKNOWN">S</XMTok>
+                      <XMApp>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                        <XMTok font="caligraphic" fontsize="70%" role="UNKNOWN">W</XMTok>
+                        <XMTok fontsize="50%" name="Lambda" role="UNKNOWN">Λ</XMTok>
+                      </XMApp>
+                    </XMApp>
+                    <XMTok font="italic" role="UNKNOWN">T</XMTok>
+                  </XMApp>
+                </XMCell>
+                <XMCell align="center">
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="mid6"/>
+                    <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                  </XMApp>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok font="italic" role="UNKNOWN">T</XMTok>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="center">
+                  <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok meaning="absent"/>
+                </XMCell>
+                <XMCell align="center">
+                  <XMApp role="ARROW">
+                    <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMApp>
+                      <XMTok fontsize="70%" role="OPFUNCTION" scriptpos="post">End</XMTok>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">P</XMTok>
                     </XMApp>
                   </XMApp>
-                  <XMTok font="italic" role="UNKNOWN">T</XMTok>
-                </XMApp>
-              </XMCell>
-              <XMCell align="center">
-                <XMApp>
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="mid6"/>
-                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
-                  <XMTok font="italic" role="UNKNOWN">j</XMTok>
-                </XMApp>
-              </XMCell>
-              <XMCell align="center">
-                <XMTok font="italic" role="UNKNOWN">T</XMTok>
-              </XMCell>
-            </XMRow>
-            <XMRow>
-              <XMCell align="center">
-                <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
-              </XMCell>
-              <XMCell/>
-              <XMCell align="center">
-                <XMApp role="ARROW">
-                  <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
+                </XMCell>
+                <XMCell align="center">
                   <XMTok meaning="absent"/>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok meaning="absent"/>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="center">
                   <XMApp>
-                    <XMTok role="OPFUNCTION" scriptpos="post">End</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">P</XMTok>
+                    <XMTok meaning="divide" role="MULOP">/</XMTok>
+                    <XMDual>
+                      <XMRef idref="S0.E1.m1.1.1"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMApp xml:id="S0.E1.m1.1.1">
+                          <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
+                          <XMTok font="italic" role="UNKNOWN">S</XMTok>
+                          <XMTok font="italic" role="UNKNOWN">T</XMTok>
+                        </XMApp>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
+                    <XMTok font="italic" role="UNKNOWN">I</XMTok>
                   </XMApp>
-                </XMApp>
-              </XMCell>
-              <XMCell/>
-              <XMCell/>
-            </XMRow>
-            <XMRow>
-              <XMCell align="center">
-                <XMApp>
-                  <XMTok meaning="divide" role="MULOP">/</XMTok>
-                  <XMDual>
-                    <XMRef idref="S0.E1.m1.1"/>
-                    <XMWrap>
-                      <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMApp xml:id="S0.E1.m1.1">
-                        <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
-                        <XMTok font="italic" role="UNKNOWN">S</XMTok>
-                        <XMTok font="italic" role="UNKNOWN">T</XMTok>
-                      </XMApp>
-                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                    </XMWrap>
-                  </XMDual>
-                  <XMTok font="italic" role="UNKNOWN">I</XMTok>
-                </XMApp>
-              </XMCell>
-              <XMCell align="center">
-                <XMTok name="@cd@equals@" role="ARROW" stretchy="true">=</XMTok>
-              </XMCell>
-              <XMCell align="center">
-                <XMApp>
-                  <XMTok meaning="divide" role="MULOP">/</XMTok>
-                  <XMDual>
-                    <XMRef idref="S0.E1.m1.2"/>
-                    <XMWrap>
-                      <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMApp xml:id="S0.E1.m1.2">
-                        <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
-                        <XMTok font="italic" role="UNKNOWN">Z</XMTok>
-                        <XMTok font="italic" role="UNKNOWN">T</XMTok>
-                      </XMApp>
-                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                    </XMWrap>
-                  </XMDual>
-                  <XMTok font="italic" role="UNKNOWN">J</XMTok>
-                </XMApp>
-              </XMCell>
-            </XMRow>
-          </XMArray>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok name="@cd@equals@" role="ARROW" stretchy="true">=</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMApp>
+                    <XMTok meaning="divide" role="MULOP">/</XMTok>
+                    <XMDual>
+                      <XMRef idref="S0.E1.m1.1.2"/>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMApp xml:id="S0.E1.m1.1.2">
+                          <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
+                          <XMTok font="italic" role="UNKNOWN">Z</XMTok>
+                          <XMTok font="italic" role="UNKNOWN">T</XMTok>
+                        </XMApp>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMDual>
+                    <XMTok font="italic" role="UNKNOWN">J</XMTok>
+                  </XMApp>
+                </XMCell>
+              </XMRow>
+            </XMArray>
+          </XMDual>
         </XMath>
       </Math>
     </equation>
@@ -110,179 +122,195 @@
         <tag>(2)</tag>
         <tag role="refnum">2</tag>
       </tags>
-      <Math mode="display" tex="\begin{CD}\operatorname{cov}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{K%&#10;})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{L})%&#10;\\&#10;@V{}V{}V@A{}A{}A@A{}A{}A@V{}V{}V\\&#10;\operatorname{add}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{add}(\mathcal{K})@&gt;{}&gt;{}&gt;%&#10;\operatorname{cov}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{L})\end{CD}" text="commutative-diagram[[cov@(L), rightarrowfill@, non@(K), rightarrowfill@, cf@(K), rightarrowfill@, cf@(L)], [downarrow, , uparrow, , uparrow, , downarrow, , ], [add@(L), rightarrowfill@, add@(K), rightarrowfill@, cov@(K), rightarrowfill@, non@(L)]]" xml:id="S0.E2.m1">
+      <Math mode="display" tex="\begin{CD}\operatorname{cov}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{K%&#10;})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{L})%&#10;\\&#10;@V{}V{}V@A{}A{}A@A{}A{}A@V{}V{}V\\&#10;\operatorname{add}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{add}(\mathcal{K})@&gt;{}&gt;{}&gt;%&#10;\operatorname{cov}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{L})\end{CD}" text="commutative-diagram@(Array[[cov@(L), rightarrowfill@, non@(K), rightarrowfill@, cf@(K), rightarrowfill@, cf@(L)], [downarrow, absent, uparrow, absent, uparrow, absent, downarrow, absent, absent], [add@(L), rightarrowfill@, add@(K), rightarrowfill@, cov@(K), rightarrowfill@, non@(L)]])" xml:id="S0.E2.m1">
         <XMath>
-          <XMArray meaning="commutative-diagram">
-            <XMRow>
-              <XMCell align="center">
-                <XMDual>
-                  <XMApp>
-                    <XMRef idref="S0.E2.m1.1"/>
-                    <XMRef idref="S0.E2.m1.2"/>
-                  </XMApp>
-                  <XMApp>
-                    <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.1">cov</XMTok>
-                    <XMWrap>
-                      <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.2">L</XMTok>
-                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                    </XMWrap>
-                  </XMApp>
-                </XMDual>
-              </XMCell>
-              <XMCell align="center">
-                <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
-              </XMCell>
-              <XMCell align="center">
-                <XMDual>
-                  <XMApp>
-                    <XMRef idref="S0.E2.m1.3"/>
-                    <XMRef idref="S0.E2.m1.4"/>
-                  </XMApp>
-                  <XMApp>
-                    <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.3">non</XMTok>
-                    <XMWrap>
-                      <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.4">K</XMTok>
-                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                    </XMWrap>
-                  </XMApp>
-                </XMDual>
-              </XMCell>
-              <XMCell align="center">
-                <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
-              </XMCell>
-              <XMCell align="center">
-                <XMDual>
-                  <XMApp>
-                    <XMRef idref="S0.E2.m1.5"/>
-                    <XMRef idref="S0.E2.m1.6"/>
-                  </XMApp>
-                  <XMApp>
-                    <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.5">cf</XMTok>
-                    <XMWrap>
-                      <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.6">K</XMTok>
-                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                    </XMWrap>
-                  </XMApp>
-                </XMDual>
-              </XMCell>
-              <XMCell align="center">
-                <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
-              </XMCell>
-              <XMCell align="center">
-                <XMDual>
-                  <XMApp>
-                    <XMRef idref="S0.E2.m1.7"/>
-                    <XMRef idref="S0.E2.m1.8"/>
-                  </XMApp>
-                  <XMApp>
-                    <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.7">cf</XMTok>
-                    <XMWrap>
-                      <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.8">L</XMTok>
-                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                    </XMWrap>
-                  </XMApp>
-                </XMDual>
-              </XMCell>
-            </XMRow>
-            <XMRow>
-              <XMCell align="center">
-                <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
-              </XMCell>
-              <XMCell/>
-              <XMCell align="center">
-                <XMTok fontsize="160%" name="uparrow" role="ARROW">↑</XMTok>
-              </XMCell>
-              <XMCell/>
-              <XMCell align="center">
-                <XMTok fontsize="160%" name="uparrow" role="ARROW">↑</XMTok>
-              </XMCell>
-              <XMCell/>
-              <XMCell align="center">
-                <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
-              </XMCell>
-              <XMCell/>
-              <XMCell/>
-            </XMRow>
-            <XMRow>
-              <XMCell align="center">
-                <XMDual>
-                  <XMApp>
-                    <XMRef idref="S0.E2.m1.9"/>
-                    <XMRef idref="S0.E2.m1.10"/>
-                  </XMApp>
-                  <XMApp>
-                    <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.9">add</XMTok>
-                    <XMWrap>
-                      <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.10">L</XMTok>
-                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                    </XMWrap>
-                  </XMApp>
-                </XMDual>
-              </XMCell>
-              <XMCell align="center">
-                <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
-              </XMCell>
-              <XMCell align="center">
-                <XMDual>
-                  <XMApp>
-                    <XMRef idref="S0.E2.m1.11"/>
-                    <XMRef idref="S0.E2.m1.12"/>
-                  </XMApp>
-                  <XMApp>
-                    <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.11">add</XMTok>
-                    <XMWrap>
-                      <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.12">K</XMTok>
-                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                    </XMWrap>
-                  </XMApp>
-                </XMDual>
-              </XMCell>
-              <XMCell align="center">
-                <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
-              </XMCell>
-              <XMCell align="center">
-                <XMDual>
-                  <XMApp>
-                    <XMRef idref="S0.E2.m1.13"/>
-                    <XMRef idref="S0.E2.m1.14"/>
-                  </XMApp>
-                  <XMApp>
-                    <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.13">cov</XMTok>
-                    <XMWrap>
-                      <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.14">K</XMTok>
-                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                    </XMWrap>
-                  </XMApp>
-                </XMDual>
-              </XMCell>
-              <XMCell align="center">
-                <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
-              </XMCell>
-              <XMCell align="center">
-                <XMDual>
-                  <XMApp>
-                    <XMRef idref="S0.E2.m1.15"/>
-                    <XMRef idref="S0.E2.m1.16"/>
-                  </XMApp>
-                  <XMApp>
-                    <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.15">non</XMTok>
-                    <XMWrap>
-                      <XMTok role="OPEN" stretchy="false">(</XMTok>
-                      <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.16">L</XMTok>
-                      <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                    </XMWrap>
-                  </XMApp>
-                </XMDual>
-              </XMCell>
-            </XMRow>
-          </XMArray>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="commutative-diagram"/>
+              <XMRef idref="S0.E2.m1.1"/>
+            </XMApp>
+            <XMArray xml:id="S0.E2.m1.1">
+              <XMRow>
+                <XMCell align="center">
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="S0.E2.m1.1.1"/>
+                      <XMRef idref="S0.E2.m1.1.2"/>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.1.1">cov</XMTok>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.1.2">L</XMTok>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMApp>
+                  </XMDual>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="S0.E2.m1.1.3"/>
+                      <XMRef idref="S0.E2.m1.1.4"/>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.1.3">non</XMTok>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.1.4">K</XMTok>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMApp>
+                  </XMDual>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="S0.E2.m1.1.5"/>
+                      <XMRef idref="S0.E2.m1.1.6"/>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.1.5">cf</XMTok>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.1.6">K</XMTok>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMApp>
+                  </XMDual>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="S0.E2.m1.1.7"/>
+                      <XMRef idref="S0.E2.m1.1.8"/>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.1.7">cf</XMTok>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.1.8">L</XMTok>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMApp>
+                  </XMDual>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="center">
+                  <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok meaning="absent"/>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok fontsize="160%" name="uparrow" role="ARROW">↑</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok meaning="absent"/>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok fontsize="160%" name="uparrow" role="ARROW">↑</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok meaning="absent"/>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok meaning="absent"/>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok meaning="absent"/>
+                </XMCell>
+              </XMRow>
+              <XMRow>
+                <XMCell align="center">
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="S0.E2.m1.1.9"/>
+                      <XMRef idref="S0.E2.m1.1.10"/>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.1.9">add</XMTok>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.1.10">L</XMTok>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMApp>
+                  </XMDual>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="S0.E2.m1.1.11"/>
+                      <XMRef idref="S0.E2.m1.1.12"/>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.1.11">add</XMTok>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.1.12">K</XMTok>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMApp>
+                  </XMDual>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="S0.E2.m1.1.13"/>
+                      <XMRef idref="S0.E2.m1.1.14"/>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.1.13">cov</XMTok>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.1.14">K</XMTok>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMApp>
+                  </XMDual>
+                </XMCell>
+                <XMCell align="center">
+                  <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
+                </XMCell>
+                <XMCell align="center">
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="S0.E2.m1.1.15"/>
+                      <XMRef idref="S0.E2.m1.1.16"/>
+                    </XMApp>
+                    <XMApp>
+                      <XMTok role="OPFUNCTION" scriptpos="post" xml:id="S0.E2.m1.1.15">non</XMTok>
+                      <XMWrap>
+                        <XMTok role="OPEN" stretchy="false">(</XMTok>
+                        <XMTok font="caligraphic" role="UNKNOWN" xml:id="S0.E2.m1.1.16">L</XMTok>
+                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      </XMWrap>
+                    </XMApp>
+                  </XMDual>
+                </XMCell>
+              </XMRow>
+            </XMArray>
+          </XMDual>
         </XMath>
       </Math>
     </equation>

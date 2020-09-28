@@ -1533,133 +1533,154 @@ Then a switch of tag forms.</p>
     <title><tag close=" ">4</tag>Matrices</title>
     <para xml:id="S4.p1">
       <equation xml:id="S4.Ex23">
-        <Math mode="display" tex="\begin{matrix}c&amp;cocococococo\\&#10;c&amp;c\end{matrix}" text="matrix[[c, c * o * c * o * c * o * c * o * c * o * c * o], [c, c]]" xml:id="S4.Ex23.m1">
+        <Math mode="display" tex="\begin{matrix}c&amp;cocococococo\\&#10;c&amp;c\end{matrix}" text="matrix@(Array[[c, c * o * c * o * c * o * c * o * c * o * c * o], [c, c]])" xml:id="S4.Ex23.m1">
           <XMath>
-            <XMArray meaning="matrix">
-              <XMRow>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMApp>
-                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="matrix"/>
+                <XMRef idref="S4.Ex23.m1.1"/>
+              </XMApp>
+              <XMArray xml:id="S4.Ex23.m1.1">
+                <XMRow>
+                  <XMCell align="center">
                     <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">o</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">o</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">o</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">o</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">o</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">o</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">o</XMTok>
+                    </XMApp>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell align="center">
                     <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">o</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
                     <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">o</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">o</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">o</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">o</XMTok>
-                  </XMApp>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                </XMCell>
-              </XMRow>
-            </XMArray>
+                  </XMCell>
+                </XMRow>
+              </XMArray>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
     </para>
     <para xml:id="S4.p2">
       <equation xml:id="S4.Ex24">
-        <Math mode="display" tex="\begin{matrix}[l]lalalalalala&amp;l\\&#10;l&amp;l\end{matrix}" text="matrix[[l * a * l * a * l * a * l * a * l * a * l * a, l], [l, l]]" xml:id="S4.Ex24.m1">
+        <Math mode="display" tex="\begin{matrix}[l]lalalalalala&amp;l\\&#10;l&amp;l\end{matrix}" text="matrix@(Array[[l * a * l * a * l * a * l * a * l * a * l * a, l], [l, l]])" xml:id="S4.Ex24.m1">
           <XMath>
-            <XMArray meaning="matrix">
-              <XMRow>
-                <XMCell align="left">
-                  <XMApp>
-                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="matrix"/>
+                <XMRef idref="S4.Ex24.m1.1"/>
+              </XMApp>
+              <XMArray xml:id="S4.Ex24.m1.1">
+                <XMRow>
+                  <XMCell align="left">
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">l</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">l</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">l</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">l</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">l</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">l</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                    </XMApp>
+                  </XMCell>
+                  <XMCell align="left">
                     <XMTok font="italic" role="UNKNOWN">l</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell align="left">
                     <XMTok font="italic" role="UNKNOWN">l</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  </XMCell>
+                  <XMCell align="left">
                     <XMTok font="italic" role="UNKNOWN">l</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">l</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">l</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">l</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
-                  </XMApp>
-                </XMCell>
-                <XMCell align="left">
-                  <XMTok font="italic" role="UNKNOWN">l</XMTok>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell align="left">
-                  <XMTok font="italic" role="UNKNOWN">l</XMTok>
-                </XMCell>
-                <XMCell align="left">
-                  <XMTok font="italic" role="UNKNOWN">l</XMTok>
-                </XMCell>
-              </XMRow>
-            </XMArray>
+                  </XMCell>
+                </XMRow>
+              </XMArray>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
     </para>
     <para xml:id="S4.p3">
       <equation xml:id="S4.Ex25">
-        <Math mode="display" tex="\begin{matrix}[r]rererererere&amp;r\\&#10;r&amp;r\end{matrix}" text="matrix[[r * e * r * e * r * e * r * e * r * e * r * e, r], [r, r]]" xml:id="S4.Ex25.m1">
+        <Math mode="display" tex="\begin{matrix}[r]rererererere&amp;r\\&#10;r&amp;r\end{matrix}" text="matrix@(Array[[r * e * r * e * r * e * r * e * r * e * r * e, r], [r, r]])" xml:id="S4.Ex25.m1">
           <XMath>
-            <XMArray meaning="matrix">
-              <XMRow>
-                <XMCell align="right">
-                  <XMApp>
-                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="matrix"/>
+                <XMRef idref="S4.Ex25.m1.1"/>
+              </XMApp>
+              <XMArray xml:id="S4.Ex25.m1.1">
+                <XMRow>
+                  <XMCell align="right">
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">r</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">r</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">r</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">r</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">r</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">r</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                    </XMApp>
+                  </XMCell>
+                  <XMCell align="right">
                     <XMTok font="italic" role="UNKNOWN">r</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell align="right">
                     <XMTok font="italic" role="UNKNOWN">r</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                  </XMCell>
+                  <XMCell align="right">
                     <XMTok font="italic" role="UNKNOWN">r</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">e</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">r</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">e</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">r</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">e</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">r</XMTok>
-                    <XMTok font="italic" role="UNKNOWN">e</XMTok>
-                  </XMApp>
-                </XMCell>
-                <XMCell align="right">
-                  <XMTok font="italic" role="UNKNOWN">r</XMTok>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell align="right">
-                  <XMTok font="italic" role="UNKNOWN">r</XMTok>
-                </XMCell>
-                <XMCell align="right">
-                  <XMTok font="italic" role="UNKNOWN">r</XMTok>
-                </XMCell>
-              </XMRow>
-            </XMArray>
+                  </XMCell>
+                </XMRow>
+              </XMArray>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
     </para>
     <para xml:id="S4.p4">
       <equation xml:id="S4.Ex26">
-        <Math mode="display" tex="\begin{pmatrix}[l]ppppppp&amp;foo\\&#10;l&amp;ppppppppppppppp\end{pmatrix}" text="matrix[[p * p * p * p * p * p * p, f * o * o], [l, p * p * p * p * p * p * p * p * p * p * p * p * p * p * p]]" xml:id="S4.Ex26.m1">
+        <Math mode="display" tex="\begin{pmatrix}[l]ppppppp&amp;foo\\&#10;l&amp;ppppppppppppppp\end{pmatrix}" text="matrix@(Array[[p * p * p * p * p * p * p, f * o * o], [l, p * p * p * p * p * p * p * p * p * p * p * p * p * p * p]])" xml:id="S4.Ex26.m1">
           <XMath>
             <XMDual>
-              <XMRef idref="S4.Ex26.m1.1"/>
+              <XMApp>
+                <XMTok meaning="matrix"/>
+                <XMRef idref="S4.Ex26.m1.1"/>
+              </XMApp>
               <XMWrap>
                 <XMTok role="OPEN" stretchy="true">(</XMTok>
-                <XMArray meaning="matrix" xml:id="S4.Ex26.m1.1">
+                <XMArray xml:id="S4.Ex26.m1.1">
                   <XMRow>
                     <XMCell align="left">
                       <XMApp>
@@ -1717,13 +1738,16 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S4.p5">
       <equation xml:id="S4.Ex27">
-        <Math mode="display" tex="\begin{bmatrix}b&amp;b\\&#10;b&amp;b\end{bmatrix}" text="matrix[[b, b], [b, b]]" xml:id="S4.Ex27.m1">
+        <Math mode="display" tex="\begin{bmatrix}b&amp;b\\&#10;b&amp;b\end{bmatrix}" text="matrix@(Array[[b, b], [b, b]])" xml:id="S4.Ex27.m1">
           <XMath>
             <XMDual>
-              <XMRef idref="S4.Ex27.m1.1"/>
+              <XMApp>
+                <XMTok meaning="matrix"/>
+                <XMRef idref="S4.Ex27.m1.1"/>
+              </XMApp>
               <XMWrap>
                 <XMTok role="OPEN" stretchy="true">[</XMTok>
-                <XMArray meaning="matrix" xml:id="S4.Ex27.m1.1">
+                <XMArray xml:id="S4.Ex27.m1.1">
                   <XMRow>
                     <XMCell align="center">
                       <XMTok font="italic" role="UNKNOWN">b</XMTok>
@@ -1750,13 +1774,16 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S4.p6">
       <equation xml:id="S4.Ex28">
-        <Math mode="display" tex="\begin{Bmatrix}[r]B&amp;B\\&#10;B&amp;BBBBBBBrBBBBBB\end{Bmatrix}" text="matrix[[B, B], [B, B * B * B * B * B * B * B * r * B * B * B * B * B * B]]" xml:id="S4.Ex28.m1">
+        <Math mode="display" tex="\begin{Bmatrix}[r]B&amp;B\\&#10;B&amp;BBBBBBBrBBBBBB\end{Bmatrix}" text="matrix@(Array[[B, B], [B, B * B * B * B * B * B * B * r * B * B * B * B * B * B]])" xml:id="S4.Ex28.m1">
           <XMath>
             <XMDual>
-              <XMRef idref="S4.Ex28.m1.1"/>
+              <XMApp>
+                <XMTok meaning="matrix"/>
+                <XMRef idref="S4.Ex28.m1.1"/>
+              </XMApp>
               <XMWrap>
                 <XMTok role="OPEN" stretchy="true">{</XMTok>
-                <XMArray meaning="matrix" xml:id="S4.Ex28.m1.1">
+                <XMArray xml:id="S4.Ex28.m1.1">
                   <XMRow>
                     <XMCell align="right">
                       <XMTok font="italic" role="UNKNOWN">B</XMTok>
@@ -1799,16 +1826,19 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S4.p7">
       <equation xml:id="S4.Ex29">
-        <Math mode="display" tex="\begin{vmatrix}v&amp;v\\&#10;v&amp;v\end{vmatrix}" text="determinant@(matrix[[v, v], [v, v]])" xml:id="S4.Ex29.m1">
+        <Math mode="display" tex="\begin{vmatrix}v&amp;v\\&#10;v&amp;v\end{vmatrix}" text="determinant@(matrix@(Array[[v, v], [v, v]]))" xml:id="S4.Ex29.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="determinant"/>
-                <XMRef idref="S4.Ex29.m1.1"/>
+                <XMApp>
+                  <XMTok meaning="matrix"/>
+                  <XMRef idref="S4.Ex29.m1.1"/>
+                </XMApp>
               </XMApp>
               <XMWrap>
                 <XMTok role="VERTBAR" stretchy="true">|</XMTok>
-                <XMArray meaning="matrix" xml:id="S4.Ex29.m1.1">
+                <XMArray xml:id="S4.Ex29.m1.1">
                   <XMRow>
                     <XMCell align="center">
                       <XMTok font="italic" role="UNKNOWN">v</XMTok>
@@ -1835,16 +1865,19 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S4.p8">
       <equation xml:id="S4.Ex30">
-        <Math mode="display" tex="\begin{Vmatrix}[c]V&amp;V\\&#10;VVVVVVcVVVVVV&amp;bar\end{Vmatrix}" text="norm@(matrix[[V, V], [V * V * V * V * V * V * c * V * V * V * V * V * V, b * a * r]])" xml:id="S4.Ex30.m1">
+        <Math mode="display" tex="\begin{Vmatrix}[c]V&amp;V\\&#10;VVVVVVcVVVVVV&amp;bar\end{Vmatrix}" text="norm@(matrix@(Array[[V, V], [V * V * V * V * V * V * c * V * V * V * V * V * V, b * a * r]]))" xml:id="S4.Ex30.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="norm"/>
-                <XMRef idref="S4.Ex30.m1.1"/>
+                <XMApp>
+                  <XMTok meaning="matrix"/>
+                  <XMRef idref="S4.Ex30.m1.1"/>
+                </XMApp>
               </XMApp>
               <XMWrap>
                 <XMTok role="VERTBAR" stretchy="true">∥</XMTok>
-                <XMArray meaning="matrix" xml:id="S4.Ex30.m1.1">
+                <XMArray xml:id="S4.Ex30.m1.1">
                   <XMRow>
                     <XMCell align="center">
                       <XMTok font="italic" role="UNKNOWN">V</XMTok>
@@ -1891,16 +1924,19 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S4.p9">
       <equation xml:id="S4.Ex31">
-        <Math mode="display" tex="\begin{vmatrix}[l]a&amp;blblblbllbblblblblblblbl\\&#10;c&amp;d\end{vmatrix}" text="determinant@(matrix[[a, b * l * b * l * b * l * b * l * l * b * b * l * b * l * b * l * b * l * b * l * b * l * b * l], [c, d]])" xml:id="S4.Ex31.m1">
+        <Math mode="display" tex="\begin{vmatrix}[l]a&amp;blblblbllbblblblblblblbl\\&#10;c&amp;d\end{vmatrix}" text="determinant@(matrix@(Array[[a, b * l * b * l * b * l * b * l * l * b * b * l * b * l * b * l * b * l * b * l * b * l * b * l], [c, d]]))" xml:id="S4.Ex31.m1">
           <XMath>
             <XMDual>
               <XMApp>
                 <XMTok meaning="determinant"/>
-                <XMRef idref="S4.Ex31.m1.1"/>
+                <XMApp>
+                  <XMTok meaning="matrix"/>
+                  <XMRef idref="S4.Ex31.m1.1"/>
+                </XMApp>
               </XMApp>
               <XMWrap>
                 <XMTok role="VERTBAR" stretchy="true">|</XMTok>
-                <XMArray meaning="matrix" xml:id="S4.Ex31.m1.1">
+                <XMArray xml:id="S4.Ex31.m1.1">
                   <XMRow>
                     <XMCell align="left">
                       <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
@@ -1953,15 +1989,18 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S4.p10">
       <equation xml:id="S4.Ex32">
-        <Math mode="display" tex="\begin{bmatrix}a&amp;-b\\&#10;-c&amp;d\end{bmatrix}\begin{bmatrix}[r]a&amp;-b\\&#10;-c&amp;d\end{bmatrix}" text="matrix[[a, - b], [- c, d]] * matrix[[a, - b], [- c, d]]" xml:id="S4.Ex32.m1">
+        <Math mode="display" tex="\begin{bmatrix}a&amp;-b\\&#10;-c&amp;d\end{bmatrix}\begin{bmatrix}[r]a&amp;-b\\&#10;-c&amp;d\end{bmatrix}" text="matrix@(Array[[a, - b], [- c, d]]) * matrix@(Array[[a, - b], [- c, d]])" xml:id="S4.Ex32.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMDual>
-                <XMRef idref="S4.Ex32.m1.1"/>
+                <XMApp>
+                  <XMTok meaning="matrix"/>
+                  <XMRef idref="S4.Ex32.m1.1"/>
+                </XMApp>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="true">[</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex32.m1.1">
+                  <XMArray xml:id="S4.Ex32.m1.1">
                     <XMRow>
                       <XMCell align="center">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
@@ -1989,10 +2028,13 @@ Then a switch of tag forms.</p>
                 </XMWrap>
               </XMDual>
               <XMDual>
-                <XMRef idref="S4.Ex32.m1.2"/>
+                <XMApp>
+                  <XMTok meaning="matrix"/>
+                  <XMRef idref="S4.Ex32.m1.2"/>
+                </XMApp>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="true">[</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex32.m1.2">
+                  <XMArray xml:id="S4.Ex32.m1.2">
                     <XMRow>
                       <XMCell align="right">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
@@ -2026,18 +2068,21 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S4.p11">
       <equation xml:id="S4.Ex33">
-        <Math mode="display" tex="\begin{Vmatrix}e&amp;-f\\&#10;-g&amp;h\end{Vmatrix}\begin{Vmatrix}[r]e&amp;-f\\&#10;-g&amp;h\end{Vmatrix}" text="norm@(matrix[[e, - f], [- g, h]]) * norm@(matrix[[e, - f], [- g, h]])" xml:id="S4.Ex33.m1">
+        <Math mode="display" tex="\begin{Vmatrix}e&amp;-f\\&#10;-g&amp;h\end{Vmatrix}\begin{Vmatrix}[r]e&amp;-f\\&#10;-g&amp;h\end{Vmatrix}" text="norm@(matrix@(Array[[e, - f], [- g, h]])) * norm@(matrix@(Array[[e, - f], [- g, h]]))" xml:id="S4.Ex33.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMDual>
                 <XMApp>
                   <XMTok meaning="norm"/>
-                  <XMRef idref="S4.Ex33.m1.1"/>
+                  <XMApp>
+                    <XMTok meaning="matrix"/>
+                    <XMRef idref="S4.Ex33.m1.1"/>
+                  </XMApp>
                 </XMApp>
                 <XMWrap>
                   <XMTok role="VERTBAR" stretchy="true">∥</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex33.m1.1">
+                  <XMArray xml:id="S4.Ex33.m1.1">
                     <XMRow>
                       <XMCell align="center">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">e</XMTok>
@@ -2067,11 +2112,14 @@ Then a switch of tag forms.</p>
               <XMDual>
                 <XMApp>
                   <XMTok meaning="norm"/>
-                  <XMRef idref="S4.Ex33.m1.2"/>
+                  <XMApp>
+                    <XMTok meaning="matrix"/>
+                    <XMRef idref="S4.Ex33.m1.2"/>
+                  </XMApp>
                 </XMApp>
                 <XMWrap>
                   <XMTok role="VERTBAR" stretchy="true">∥</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex33.m1.2">
+                  <XMArray xml:id="S4.Ex33.m1.2">
                     <XMRow>
                       <XMCell align="right">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">e</XMTok>
@@ -2105,15 +2153,18 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S4.p12">
       <equation xml:id="S4.Ex34">
-        <Math mode="display" tex="\begin{bmatrix}a&amp;-bbbbb\\&#10;-c&amp;d\end{bmatrix}\begin{bmatrix}[r]a&amp;-bbbbb\\&#10;-c&amp;d\end{bmatrix}" text="matrix[[a, - b * b * b * b * b], [- c, d]] * matrix[[a, - b * b * b * b * b], [- c, d]]" xml:id="S4.Ex34.m1">
+        <Math mode="display" tex="\begin{bmatrix}a&amp;-bbbbb\\&#10;-c&amp;d\end{bmatrix}\begin{bmatrix}[r]a&amp;-bbbbb\\&#10;-c&amp;d\end{bmatrix}" text="matrix@(Array[[a, - b * b * b * b * b], [- c, d]]) * matrix@(Array[[a, - b * b * b * b * b], [- c, d]])" xml:id="S4.Ex34.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMDual>
-                <XMRef idref="S4.Ex34.m1.1"/>
+                <XMApp>
+                  <XMTok meaning="matrix"/>
+                  <XMRef idref="S4.Ex34.m1.1"/>
+                </XMApp>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="true">[</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex34.m1.1">
+                  <XMArray xml:id="S4.Ex34.m1.1">
                     <XMRow>
                       <XMCell align="center">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
@@ -2148,10 +2199,13 @@ Then a switch of tag forms.</p>
                 </XMWrap>
               </XMDual>
               <XMDual>
-                <XMRef idref="S4.Ex34.m1.2"/>
+                <XMApp>
+                  <XMTok meaning="matrix"/>
+                  <XMRef idref="S4.Ex34.m1.2"/>
+                </XMApp>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="true">[</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex34.m1.2">
+                  <XMArray xml:id="S4.Ex34.m1.2">
                     <XMRow>
                       <XMCell align="right">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
@@ -2192,18 +2246,21 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S4.p13">
       <equation xml:id="S4.Ex35">
-        <Math mode="display" tex="\begin{Vmatrix}e&amp;-fffff\\&#10;-g&amp;h\end{Vmatrix}\begin{Vmatrix}[r]e&amp;-fffff\\&#10;-g&amp;h\end{Vmatrix}" text="norm@(matrix[[e, - f * f * f * f * f], [- g, h]]) * norm@(matrix[[e, - f * f * f * f * f], [- g, h]])" xml:id="S4.Ex35.m1">
+        <Math mode="display" tex="\begin{Vmatrix}e&amp;-fffff\\&#10;-g&amp;h\end{Vmatrix}\begin{Vmatrix}[r]e&amp;-fffff\\&#10;-g&amp;h\end{Vmatrix}" text="norm@(matrix@(Array[[e, - f * f * f * f * f], [- g, h]])) * norm@(matrix@(Array[[e, - f * f * f * f * f], [- g, h]]))" xml:id="S4.Ex35.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMDual>
                 <XMApp>
                   <XMTok meaning="norm"/>
-                  <XMRef idref="S4.Ex35.m1.1"/>
+                  <XMApp>
+                    <XMTok meaning="matrix"/>
+                    <XMRef idref="S4.Ex35.m1.1"/>
+                  </XMApp>
                 </XMApp>
                 <XMWrap>
                   <XMTok role="VERTBAR" stretchy="true">∥</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex35.m1.1">
+                  <XMArray xml:id="S4.Ex35.m1.1">
                     <XMRow>
                       <XMCell align="center">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">e</XMTok>
@@ -2240,11 +2297,14 @@ Then a switch of tag forms.</p>
               <XMDual>
                 <XMApp>
                   <XMTok meaning="norm"/>
-                  <XMRef idref="S4.Ex35.m1.2"/>
+                  <XMApp>
+                    <XMTok meaning="matrix"/>
+                    <XMRef idref="S4.Ex35.m1.2"/>
+                  </XMApp>
                 </XMApp>
                 <XMWrap>
                   <XMTok role="VERTBAR" stretchy="true">∥</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex35.m1.2">
+                  <XMArray xml:id="S4.Ex35.m1.2">
                     <XMRow>
                       <XMCell align="right">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">e</XMTok>
@@ -2285,15 +2345,18 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S4.p14">
       <equation xml:id="S4.Ex36">
-        <Math mode="display" tex="\begin{bmatrix}[l]a&amp;-bbbbb\\&#10;-c&amp;d\end{bmatrix}\begin{bmatrix}[r]a&amp;-bbbbb\\&#10;-c&amp;d\end{bmatrix}" text="matrix[[a, - b * b * b * b * b], [- c, d]] * matrix[[a, - b * b * b * b * b], [- c, d]]" xml:id="S4.Ex36.m1">
+        <Math mode="display" tex="\begin{bmatrix}[l]a&amp;-bbbbb\\&#10;-c&amp;d\end{bmatrix}\begin{bmatrix}[r]a&amp;-bbbbb\\&#10;-c&amp;d\end{bmatrix}" text="matrix@(Array[[a, - b * b * b * b * b], [- c, d]]) * matrix@(Array[[a, - b * b * b * b * b], [- c, d]])" xml:id="S4.Ex36.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMDual>
-                <XMRef idref="S4.Ex36.m1.1"/>
+                <XMApp>
+                  <XMTok meaning="matrix"/>
+                  <XMRef idref="S4.Ex36.m1.1"/>
+                </XMApp>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="true">[</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex36.m1.1">
+                  <XMArray xml:id="S4.Ex36.m1.1">
                     <XMRow>
                       <XMCell align="left">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
@@ -2328,10 +2391,13 @@ Then a switch of tag forms.</p>
                 </XMWrap>
               </XMDual>
               <XMDual>
-                <XMRef idref="S4.Ex36.m1.2"/>
+                <XMApp>
+                  <XMTok meaning="matrix"/>
+                  <XMRef idref="S4.Ex36.m1.2"/>
+                </XMApp>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="true">[</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex36.m1.2">
+                  <XMArray xml:id="S4.Ex36.m1.2">
                     <XMRow>
                       <XMCell align="right">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
@@ -2372,18 +2438,21 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S4.p15">
       <equation xml:id="S4.Ex37">
-        <Math mode="display" tex="\begin{Vmatrix}[l]e&amp;-fffff\\&#10;-g&amp;h\end{Vmatrix}\begin{Vmatrix}[r]e&amp;-fffff\\&#10;-g&amp;h\end{Vmatrix}" text="norm@(matrix[[e, - f * f * f * f * f], [- g, h]]) * norm@(matrix[[e, - f * f * f * f * f], [- g, h]])" xml:id="S4.Ex37.m1">
+        <Math mode="display" tex="\begin{Vmatrix}[l]e&amp;-fffff\\&#10;-g&amp;h\end{Vmatrix}\begin{Vmatrix}[r]e&amp;-fffff\\&#10;-g&amp;h\end{Vmatrix}" text="norm@(matrix@(Array[[e, - f * f * f * f * f], [- g, h]])) * norm@(matrix@(Array[[e, - f * f * f * f * f], [- g, h]]))" xml:id="S4.Ex37.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="times" role="MULOP">⁢</XMTok>
               <XMDual>
                 <XMApp>
                   <XMTok meaning="norm"/>
-                  <XMRef idref="S4.Ex37.m1.1"/>
+                  <XMApp>
+                    <XMTok meaning="matrix"/>
+                    <XMRef idref="S4.Ex37.m1.1"/>
+                  </XMApp>
                 </XMApp>
                 <XMWrap>
                   <XMTok role="VERTBAR" stretchy="true">∥</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex37.m1.1">
+                  <XMArray xml:id="S4.Ex37.m1.1">
                     <XMRow>
                       <XMCell align="left">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">e</XMTok>
@@ -2420,11 +2489,14 @@ Then a switch of tag forms.</p>
               <XMDual>
                 <XMApp>
                   <XMTok meaning="norm"/>
-                  <XMRef idref="S4.Ex37.m1.2"/>
+                  <XMApp>
+                    <XMTok meaning="matrix"/>
+                    <XMRef idref="S4.Ex37.m1.2"/>
+                  </XMApp>
                 </XMApp>
                 <XMWrap>
                   <XMTok role="VERTBAR" stretchy="true">∥</XMTok>
-                  <XMArray meaning="matrix" xml:id="S4.Ex37.m1.2">
+                  <XMArray xml:id="S4.Ex37.m1.2">
                     <XMRow>
                       <XMCell align="right">
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">e</XMTok>
@@ -5351,56 +5423,65 @@ Then a switch of tag forms.</p>
     <para xml:id="S10.p1">
       <p>Spread it</p>
       <equation xml:id="S10.Ex74">
-        <Math mode="display" tex="\begin{matrix}a&amp;b&amp;c\\&#10;d&amp;e&amp;f\\&#10;g&amp;h&amp;i\end{matrix}" text="matrix[[a, b, c], [d, e, f], [g, h, i]]" xml:id="S10.Ex74.m1">
+        <Math mode="display" tex="\begin{matrix}a&amp;b&amp;c\\&#10;d&amp;e&amp;f\\&#10;g&amp;h&amp;i\end{matrix}" text="matrix@(Array[[a, b, c], [d, e, f], [g, h, i]])" xml:id="S10.Ex74.m1">
           <XMath>
-            <XMArray meaning="matrix">
-              <XMRow>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">d</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">e</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">f</XMTok>
-                </XMCell>
-              </XMRow>
-              <XMRow>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">g</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">h</XMTok>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok font="italic" role="UNKNOWN">i</XMTok>
-                </XMCell>
-              </XMRow>
-            </XMArray>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="matrix"/>
+                <XMRef idref="S10.Ex74.m1.1"/>
+              </XMApp>
+              <XMArray xml:id="S10.Ex74.m1.1">
+                <XMRow>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">f</XMTok>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">g</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">h</XMTok>
+                  </XMCell>
+                  <XMCell align="center">
+                    <XMTok font="italic" role="UNKNOWN">i</XMTok>
+                  </XMCell>
+                </XMRow>
+              </XMArray>
+            </XMDual>
           </XMath>
         </Math>
       </equation>
     </para>
     <para xml:id="S10.p2">
       <equation xml:id="S10.Ex75">
-        <Math mode="display" tex="\begin{pmatrix}a_{1,1}&amp;a_{1,2}&amp;\cdots&amp;a_{1,n}\\&#10;a_{2,1}&amp;a_{2,2}&amp;\cdots&amp;a_{2,n}\\&#10;\vdots&amp;\vdots&amp;\ddots&amp;\vdots\\&#10;a_{m,1}&amp;a_{m,2}&amp;\cdots&amp;a_{m,n}\end{pmatrix}" text="matrix[[a _ (list@(1, 1)), a _ (list@(1, 2)), cdots, a _ (list@(1, n))], [a _ (list@(2, 1)), a _ (list@(2, 2)), cdots, a _ (list@(2, n))], [vdots, vdots, ddots, vdots], [a _ (list@(m, 1)), a _ (list@(m, 2)), cdots, a _ (list@(m, n))]]" xml:id="S10.Ex75.m1">
+        <Math mode="display" tex="\begin{pmatrix}a_{1,1}&amp;a_{1,2}&amp;\cdots&amp;a_{1,n}\\&#10;a_{2,1}&amp;a_{2,2}&amp;\cdots&amp;a_{2,n}\\&#10;\vdots&amp;\vdots&amp;\ddots&amp;\vdots\\&#10;a_{m,1}&amp;a_{m,2}&amp;\cdots&amp;a_{m,n}\end{pmatrix}" text="matrix@(Array[[a _ (list@(1, 1)), a _ (list@(1, 2)), cdots, a _ (list@(1, n))], [a _ (list@(2, 1)), a _ (list@(2, 2)), cdots, a _ (list@(2, n))], [vdots, vdots, ddots, vdots], [a _ (list@(m, 1)), a _ (list@(m, 2)), cdots, a _ (list@(m, n))]])" xml:id="S10.Ex75.m1">
           <XMath>
             <XMDual>
-              <XMRef idref="S10.Ex75.m1.1"/>
+              <XMApp>
+                <XMTok meaning="matrix"/>
+                <XMRef idref="S10.Ex75.m1.1"/>
+              </XMApp>
               <XMWrap>
                 <XMTok role="OPEN" stretchy="true">(</XMTok>
-                <XMArray meaning="matrix" xml:id="S10.Ex75.m1.1">
+                <XMArray xml:id="S10.Ex75.m1.1">
                   <XMRow>
                     <XMCell align="center">
                       <XMApp>
@@ -6615,30 +6696,36 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S10.p13">
       <equation xml:id="S10.Ex80">
-        <Math mode="display" tex="\bigl{(}\begin{matrix}[l]a&amp;b\\&#10;c&amp;d\end{matrix}\bigr{)}" text="matrix[[a, b], [c, d]]" xml:id="S10.Ex80.m1">
+        <Math mode="display" tex="\bigl{(}\begin{matrix}[l]a&amp;b\\&#10;c&amp;d\end{matrix}\bigr{)}" text="matrix@(Array[[a, b], [c, d]])" xml:id="S10.Ex80.m1">
           <XMath>
             <XMDual>
-              <XMRef idref="S10.Ex80.m1.1"/>
+              <XMRef idref="S10.Ex80.m1.2"/>
               <XMWrap>
                 <XMTok fontsize="120%" role="OPEN" stretchy="false">(</XMTok>
-                <XMArray meaning="matrix" xml:id="S10.Ex80.m1.1">
-                  <XMRow>
-                    <XMCell align="left">
-                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
-                    </XMCell>
-                    <XMCell align="left">
-                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
-                    </XMCell>
-                  </XMRow>
-                  <XMRow>
-                    <XMCell align="left">
-                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
-                    </XMCell>
-                    <XMCell align="left">
-                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
-                    </XMCell>
-                  </XMRow>
-                </XMArray>
+                <XMDual xml:id="S10.Ex80.m1.2">
+                  <XMApp>
+                    <XMTok meaning="matrix"/>
+                    <XMRef idref="S10.Ex80.m1.1"/>
+                  </XMApp>
+                  <XMArray xml:id="S10.Ex80.m1.1">
+                    <XMRow>
+                      <XMCell align="left">
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">a</XMTok>
+                      </XMCell>
+                      <XMCell align="left">
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                      </XMCell>
+                    </XMRow>
+                    <XMRow>
+                      <XMCell align="left">
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">c</XMTok>
+                      </XMCell>
+                      <XMCell align="left">
+                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">d</XMTok>
+                      </XMCell>
+                    </XMRow>
+                  </XMArray>
+                </XMDual>
                 <XMTok fontsize="120%" role="CLOSE" stretchy="false">)</XMTok>
               </XMWrap>
             </XMDual>
@@ -6648,35 +6735,41 @@ Then a switch of tag forms.</p>
     </para>
     <para xml:id="S10.p14">
       <equation xml:id="S10.Ex81">
-        <Math mode="display" tex="\sum_{\begin{subarray}{l}i\in\Lambda\\&#10;0&lt;j&lt;n\end{subarray}}P(i,j)" text="(sum _ list[[i element-of Lambda], [0 &lt; j &lt; n]])@(P * open-interval@(i, j))" xml:id="S10.Ex81.m1">
+        <Math mode="display" tex="\sum_{\begin{subarray}{l}i\in\Lambda\\&#10;0&lt;j&lt;n\end{subarray}}P(i,j)" text="(sum _ (list@(Array[[i element-of Lambda], [0 &lt; j &lt; n]])))@(P * open-interval@(i, j))" xml:id="S10.Ex81.m1">
           <XMath>
             <XMApp>
               <XMApp scriptpos="mid">
                 <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                 <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                <XMArray class="ltx_align_l" name="list" rowsep="0.0pt">
-                  <XMRow>
-                    <XMCell>
-                      <XMApp>
-                        <XMTok fontsize="70%" meaning="element-of" name="in" role="RELOP">∈</XMTok>
-                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
-                        <XMTok fontsize="70%" name="Lambda" role="UNKNOWN">Λ</XMTok>
-                      </XMApp>
-                    </XMCell>
-                  </XMRow>
-                  <XMRow>
-                    <XMCell>
-                      <XMApp>
-                        <XMTok meaning="multirelation"/>
-                        <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
-                        <XMTok fontsize="70%" meaning="less-than" role="RELOP">&lt;</XMTok>
-                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
-                        <XMTok fontsize="70%" meaning="less-than" role="RELOP">&lt;</XMTok>
-                        <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
-                      </XMApp>
-                    </XMCell>
-                  </XMRow>
-                </XMArray>
+                <XMDual>
+                  <XMApp>
+                    <XMTok meaning="list"/>
+                    <XMRef idref="S10.Ex81.m1.1"/>
+                  </XMApp>
+                  <XMArray rowsep="0pt" xml:id="S10.Ex81.m1.1">
+                    <XMRow>
+                      <XMCell align="left">
+                        <XMApp>
+                          <XMTok fontsize="70%" meaning="element-of" name="in" role="RELOP">∈</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                          <XMTok fontsize="70%" name="Lambda" role="UNKNOWN">Λ</XMTok>
+                        </XMApp>
+                      </XMCell>
+                    </XMRow>
+                    <XMRow>
+                      <XMCell align="left">
+                        <XMApp>
+                          <XMTok meaning="multirelation"/>
+                          <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
+                          <XMTok fontsize="70%" meaning="less-than" role="RELOP">&lt;</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
+                          <XMTok fontsize="70%" meaning="less-than" role="RELOP">&lt;</XMTok>
+                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">n</XMTok>
+                        </XMApp>
+                      </XMCell>
+                    </XMRow>
+                  </XMArray>
+                </XMDual>
               </XMApp>
               <XMApp>
                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -6684,14 +6777,14 @@ Then a switch of tag forms.</p>
                 <XMDual>
                   <XMApp>
                     <XMTok meaning="open-interval"/>
-                    <XMRef idref="S10.Ex81.m1.1"/>
                     <XMRef idref="S10.Ex81.m1.2"/>
+                    <XMRef idref="S10.Ex81.m1.3"/>
                   </XMApp>
                   <XMWrap>
                     <XMTok role="OPEN" stretchy="false">(</XMTok>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex81.m1.1">i</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex81.m1.2">i</XMTok>
                     <XMTok role="PUNCT">,</XMTok>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex81.m1.2">j</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S10.Ex81.m1.3">j</XMTok>
                     <XMTok role="CLOSE" stretchy="false">)</XMTok>
                   </XMWrap>
                 </XMDual>

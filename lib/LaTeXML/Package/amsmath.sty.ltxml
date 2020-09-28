@@ -729,7 +729,7 @@ DefMacro('\endsubequations', '\lx@equationgroup@subnumbering@end');
 # keys are
 #  name  : the name of the environment (for reversion)
 #  datameaning: the (presumed) meaning of the array construct
-#  opmeaning  : the meaning of an operator to be applied to the array (if any)
+#  delimitermeaning  : the operator meaning due to delimiters (eg. norm)(as applied to the array)
 #  style : (display|text|script|scriptscript)
 #  left  : TeX code for left of matrix
 #  right  : TeX code for right
@@ -746,18 +746,15 @@ DefMacro('\lx@end@ams@matrix',
 # HOWEVER, the delimeters may also signify an OPERATION on the matrix
 # in which case the application & meaning of that operator must be supplied.
 
-# Similar to \lx#gen@plain@matrix@, but for the body & reversion!
+# Essentially same as \lx#gen@plain@matrix@, but for the body & reversion!
 DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
   "?#needXMDual("
     . "<ltx:XMDual>"
-    . "?#delimitermeaning("
-    . "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='#delimitermeaning'/>"
+    . "?#delimitermeaning(<ltx:XMApp><ltx:XMTok meaning='#delimitermeaning'/>)()"
+    . "?#datameaning(<ltx:XMApp><ltx:XMTok meaning='#datameaning'/>)()"
     . "<ltx:XMRef _xmkey='#xmkey'/>"
-    . "</ltx:XMApp>"
-    . ")("
-    . "<ltx:XMRef _xmkey='#xmkey'/>"
-    . ")"
+    . "?#delimitermeaning(</ltx:XMApp>)()"
+    . "?#datameaning(</ltx:XMApp>)()"
     . "<ltx:XMWrap>#left<ltx:XMArg _xmkey='#xmkey'>#2</ltx:XMArg>#right</ltx:XMWrap>"
     . "</ltx:XMDual>"
     . ")("
@@ -767,7 +764,7 @@ DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $kv = $whatsit->getArg(1);
-    if ($kv->getValue('left') || $kv->getValue('right')) {
+    if ($kv->getValue('datameaning') || $kv->getValue('delimitermeaning')) {
       $whatsit->setProperties(
         needXMDual => 1,
         xmkey      => LaTeXML::Package::getXMArgID()); }
@@ -777,9 +774,12 @@ DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
     my $name  = $kv->getValue('name');
     my $align = $kv->getValue('alignment');
     (($name ? (T_CS('\begin'), T_BEGIN, Revert($name), T_END) : ()),
-      ($align && $align->unlist ? (T_OTHER('['), Revert($align), T_OTHER(']')) : ()),
+      ($align && $align->unlist ?
+          ($kv->getValue('alignment-required')
+          ? (T_BEGIN, Revert($align), T_END) : (T_OTHER('['), Revert($align), T_OTHER(']')))
+        : ()),
       Revert($body),
-     ($name ? (T_CS('\end'), T_BEGIN, Revert($name), T_END) : ())); }
+      ($name ? (T_CS('\end'), T_BEGIN, Revert($name), T_END) : ())); }
 );
 
 # NOTE: Use \@left,\@right here, to avoid the hidden grouping (see TeX.pool, \@hidden@bgroup)
@@ -1157,18 +1157,9 @@ DefMath('\pod{}', '(#1)', role => 'MODIFIER',   meaning => 'modulo');    # Well,
 #  \substack, \begin{subarray}
 # These make the combining operator be list, but often formulae would be better
 DefMacro('\substack{}', '\begin{subarray}{c}#1\end{subarray}');
-DefEnvironment('{subarray}{}',
-  "<ltx:XMArray mathstyle='script' name='list' class='ltx_align_#1' rowsep='#rowsep'>"
-    . "<ltx:XMRow><ltx:XMCell><ltx:XMArg>#body</ltx:XMArg></ltx:XMCell></ltx:XMRow>"
-    . "</ltx:XMArray>",
-  properties   => { rowsep => Dimension('0') },
-  beforeDigest => sub { DefConstructor("\\\\ OptionalMatch:* [Dimension]",
-      "</ltx:XMArg></ltx:XMCell></ltx:XMRow><ltx:XMRow><ltx:XMCell><ltx:XMArg>",
-      reversion => Tokens(T_CS("\\\\"), T_CR));
-    Let('\cr', "\\\\");
-    MergeFont(mathstyle => 'script');
-  });
-
+DefMacro('\subarray{}',
+'\lx@ams@matrix{name=subarray,style=\scriptsize,datameaning=list,rowsep=0pt,alignment=#1,alignment-required=true}');
+DefMacro('\endsubarray', '\lx@end@ams@matrix');
 #======================================================================
 # Section 7.2 the \sideset command
 
