@@ -687,11 +687,12 @@ sub purestyleChanges {
   my ($self, $other) = @_;
   my $mathstyle      = $self->getMathstyle;
   my $othermathstyle = $other->getMathstyle;
+  my $othercolor     = $other->getColor;
   return (
-    scale      => $other->getSize / $self->getSize,
-    color      => $other->getColor,
+    scale => $other->getSize / $self->getSize,
+    (isDiff($othercolor, $DEFCOLOR) ? (color => $othercolor) : ()),
     background => $other->getBackground,
-    opacity    => $other->getOpacity,                 # should multiply or replace?
+    opacity    => $other->getOpacity,      # should multiply or replace?
     ($mathstyle && $othermathstyle
       ? (mathstylestep => $mathstylestep{$mathstyle}{$othermathstyle})
       : ()),
