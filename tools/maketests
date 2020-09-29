@@ -237,6 +237,11 @@ sub stringifyDom {
 
 sub gen_xml {
   my ($dir, $name, $is_test) = @_;
+  # Ensure a sandbox for the LaTeXML conversion by forking and working in the child.
+  my $pid = fork();
+  if ($pid) {
+    waitpid($pid, 0);
+    return; }
   my $source = pathname_make(dir => $dir, name => $name, type => 'tex');
   my $xml    = pathname_make(dir => $dir, name => $name, type => $is_test ? 'test.xml' : 'xml');
   if (-f "$xml") {
@@ -253,7 +258,7 @@ sub gen_xml {
     close $test_fh; }
   else {
     die "Failed to convert $source: $!"; }
-  return; }
+  exit; }
 
 sub gen_pdf {
   my ($dir, $name) = @_;
