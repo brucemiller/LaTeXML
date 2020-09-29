@@ -243,8 +243,10 @@ sub gen_xml {
     rename("$xml", "$xml.bak"); }
   #========================================
   # Generate the XML from the current latexml
-  if (my $dom = convert_texfile_as_test(texpath => $source, name => $name)) {
-    my $dom_str = serialize_dom_as_test($dom);
+  my $gen_xml_core_options = {%LaTeXML::Util::Test::CORE_OPTIONS_FOR_TESTS};
+  $$gen_xml_core_options{verbosity} = $verbosity || 0;
+  if (my $dom = convert_texfile_as_test(texpath => $source, name => $name, core_options => $gen_xml_core_options)) {
+    my $dom_str = $dom->toString(1);
     open(my $test_fh, '>', $xml) or die "Couldn't open output file $xml: $!";
     binmode($test_fh, ":encoding(UTF-8)");
     print $test_fh $dom_str;

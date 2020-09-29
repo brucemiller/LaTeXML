@@ -129,15 +129,16 @@ sub latexmlpost_ok {
     if (my $xmlstrings = process_xmlfile($postxmlpath, $name)) {
       return is_strings($texstrings, $xmlstrings, $name); } } }
 
+our %CORE_OPTIONS_FOR_TESTS = (
+  preload => [], searchpaths => [], includecomments => 0, includepathpis => 0, verbosity => -2);
+
 sub convert_texfile_as_test {
   my (%options)    = @_;
   my $texpath      = $options{texpath};
   my $name         = $options{name};
   my $compare_kind = $options{compare_kind};
-  my %core_options = $options{core_options} ? %{ $options{core_options} } : (
-    preload => [], searchpaths => [], includecomments => 0, includepathpis => 0, verbosity => -2
-  );
-  my $latexml = eval { LaTeXML::Core->new(%core_options) };
+  my %core_options = $options{core_options} ? %{ $options{core_options} } : %CORE_OPTIONS_FOR_TESTS;
+  my $latexml      = eval { LaTeXML::Core->new(%core_options) };
   if (!$latexml) {
     do_fail($name, "Couldn't instanciate LaTeXML: " . @!); return; }
   else {
