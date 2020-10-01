@@ -34,7 +34,6 @@ sub new {
       "Expansion is " . ToString($expansion)) unless $expansion->isBalanced;
     # rescan for match tokens and unwrap dont_expand...
     $expansion = Tokens(PrepArgTokens(@$expansion));
-
     # If expansion is Tokens, and no arguments, we're a "trivial macro"
     if (!$parameters) {
       $trivexpansion = $expansion; }
@@ -148,10 +147,19 @@ sub equals {
 # B book suggests running this
 sub PrepArgTokens {
   my (@toks) = @_;
+  my @masks;
+  if (ref $toks[-1] eq 'ARRAY') {
+    # we have masks!
+    my $masks = pop(@toks);
+    @masks = @$masks; }
   my @rescanned = ();
+  my $index     = -1;
   while (my $t = shift @toks) {
+    $index++;
     $t = $$t[2] || $t;    # remove noexpand flag
-    if ($$t[1] == CC_PARAM && @toks) {
+    if (@masks && $masks[$index]) {
+      push(@rescanned, $t); }
+    elsif ($$t[1] == CC_PARAM && @toks) {
       my $next_t = shift @toks;
       $next_t = $$next_t[2] || $next_t;
       my $next_cc = $next_t && $$next_t[1];

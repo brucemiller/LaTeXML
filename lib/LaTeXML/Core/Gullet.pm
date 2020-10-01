@@ -193,19 +193,20 @@ our @hold_token = (
   0, 1);
 
 sub readToken {
-  my ($self) = @_;
+  my ($self, $keep_the) = @_;
   #  my $token = shift(@{$$self{pushback}});
-  my $token;
+  my ($ptoken, $token);
   my $cc;
   # Check in pushback first....
-  while (($token = shift(@{ $$self{pushback} })) &&
-    ($token = ref $token eq 'ARRAY' ? $$token[1] : $token) &&
+  while (($ptoken = shift(@{ $$self{pushback} })) &&
+    ($token = ref $ptoken eq 'ARRAY' ? $$ptoken[1] : $ptoken) &&
     $hold_token[$cc = $$token[1]]) {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
-  return $token if defined $token;
+  if (defined $token) {
+    return $keep_the ? $ptoken : $token; }
   # Not in pushback, use the current mouth
   while (($token = $$self{mouth}->readToken()) && $hold_token[$cc = $$token[1]]) {
     if ($cc == CC_COMMENT) {
@@ -232,7 +233,7 @@ sub unread {
 #  will step to the next input stream (Mouth) if one is available,
 # If $commentsok is true, will also pass comments.
 sub readXToken {
-  my ($self, $toplevel, $commentsok) = @_;
+  my ($self, $toplevel, $commentsok, $keep_the) = @_;
   $toplevel = 1 unless defined $toplevel;
   return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
   my ($token, $cc, $defn);
@@ -242,7 +243,7 @@ sub readXToken {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
     elsif (ref $token eq 'ARRAY') {
-      return $$token[1]; }
+      return $keep_the ? $token : $$token[1]; }
     elsif (($cc = $$token[1]) == CC_COMMENT) {    # NOTE: Inlined ->getCatcode
       return $token if $commentsok;
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
@@ -360,23 +361,33 @@ our @balanced_interesting_cc = (
   0, 1);
 
 sub readBalanced {
-  my ($self, $expanded) = @_;
-  my @tokens = ();
+  my ($self, $expanded, $keep_the) = @_;
+  my @tokens    = ();
+  my @masks_the = ();
   my ($token, $level) = (undef, 1);
   my $startloc = ($$self{verbosity} > 0) && $self->getLocator;
   # Inlined readToken (we'll keep comments in the result)
-  while ($token = ($expanded ? $self->readXToken(0, 1) : $self->readToken())) {
+  while ($token = ($expanded ? $self->readXToken(0, 1, $keep_the) : $self->readToken(0, $keep_the))) {
+    if ($keep_the) {
+      if (ref $token eq 'ARRAY') {
+        $token = $$token[1];
+        push(@masks_the, 1); }
+      else {
+        push(@masks_the, 0); } }
     my $cc = $$token[1];
     if (!$balanced_interesting_cc[$cc]) {
       push(@tokens, $token); }
     elsif ($cc == CC_END) {
       $level--;
-      last unless $level;
+      if (!$level) {
+        pop(@masks_the) if $keep_the;
+        last; }
       push(@tokens, $token); }
     elsif ($cc == CC_BEGIN) {
       $level++;
       push(@tokens, $token); }
     elsif ($cc == CC_MARKER) {
+      pop(@masks_the) if $keep_the;
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
   if ($level > 0) {
  # TODO: The current implementation has a limitation where if the balancing end is in a different mouth,
@@ -384,6 +395,8 @@ sub readBalanced {
     my $loc_message = $startloc ? ("Started at " . ToString($startloc)) : ("Ended at " . ToString($self->getLocator));
     Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.",
       $loc_message); }
+  if ($keep_the && (grep { $_ } @masks_the)) {
+    push(@tokens, [@masks_the]); }
   return (wantarray ? (Tokens(@tokens), $token) : Tokens(@tokens)); }
 
 sub ifNext {
@@ -479,12 +492,12 @@ sub readNextConditional {
 #  tokens, non-expandable tokens, args, Numbers, ...
 #**********************************************************************
 sub readArg {
-  my ($self) = @_;
+  my ($self, $keep_the) = @_;
   my $token = $self->readNonSpace;
   if (!defined $token) {
     return; }
   elsif ($$token[1] == CC_BEGIN) {    # Inline ->getCatcode!
-    return scalar($self->readBalanced); }
+    return scalar($self->readBalanced(0, $keep_the)); }
   else {
     return Tokens($token); } }
 
@@ -907,7 +920,7 @@ an expandable need explicit expansion; usually expansion happens at the right ti
 
 Return the next token from the input source, or undef if there is no more input.
 
-=item C<< $token = $gullet->readXToken($toplevel,$commentsok); >>
+=item C<< $token = $gullet->readXToken($toplevel,$commentsok,$keep_the); >>
 
 Return the next unexpandable token from the input source, or undef if there is no more input.
 If the next token is expandable, it is expanded, and its expansion is reinserted into the input.

@@ -99,7 +99,19 @@ RequireResource('LaTeXML.css');
 
 DefParameterType('Plain', sub {
     my ($gullet, $inner) = @_;
-    my $value = $gullet->readArg;
+    my $value = $gullet->readArg();
+    if ($inner) {
+      ($value) = $inner->reparseArgument($gullet, $value); }
+    $value; },
+  reversion => sub {
+    my ($arg, $inner) = @_;
+    (T_BEGIN,
+      ($inner ? $inner->revertArguments($arg) : Revert($arg)),
+      T_END); });
+
+DefParameterType('DefPlain', sub {
+    my ($gullet, $inner) = @_;
+    my $value = $gullet->readArg(1);
     if ($inner) {
       ($value) = $inner->reparseArgument($gullet, $value); }
     $value; },
@@ -219,6 +231,18 @@ DefParameterType('Expanded', sub {
     my @tokens   = ();
     if ($token->getCatcode == CC_BEGIN) {
       return scalar($gullet->readBalanced(1))->without_dont_expand; }
+    else {
+      return $token->without_dont_expand; } },
+  reversion => sub {
+    my ($arg) = @_;
+    (T_BEGIN, Revert($arg), T_END); });
+
+DefParameterType('DefExpanded', sub {
+    my ($gullet) = @_;
+    my $token    = $gullet->readXToken(0);
+    my @tokens   = ();
+    if ($token->getCatcode == CC_BEGIN) {
+      return scalar($gullet->readBalanced(1, 1))->without_dont_expand; }
     else {
       return $token->without_dont_expand; } },
   reversion => sub {
@@ -775,7 +799,7 @@ sub escapechar {
 # 1) Knuth, The TeXBook, page 40, paragraph 1, Chapter 7: How TEX Reads What You Type.
 # suggests all characters except spaces are returned in category code Other, i.e. Explode()
 DefMacro('\string Token', sub {
-    my $s = $_[1]->getString;
+    my $s = $_[1]->toString;
     if ($s =~ s/^\\//) {
       $s = escapechar() . $s; }
     Explode($s); });
@@ -906,8 +930,6 @@ DefMacro('\expandafter Token Token', sub {
     my ($gullet, $tok, $xtok) = @_;
     my $defn;
     if (defined($defn = $STATE->lookupExpandable($xtok))) {
-      # Note that IF expandafter ends up expanding a \the in an \edef,
-      # that it Overrides the implicit noexpand that \edef would normally use for\the!!
       my @x = ();
       {
         local $LaTeXML::CURRENT_TOKEN = $xtok;
@@ -1132,7 +1154,7 @@ sub today {
 
 sub parseDefParameters {
   my ($cs, $params) = @_;
-  my @tokens = $params->unlist;
+  my @tokens = PrepArgTokens($params->unlist);
   # Now, recognize parameters and delimiters.
   my @params = ();
   my $n      = 0;
@@ -1197,17 +1219,16 @@ sub do_def {
   elsif (!$params) {
     Error('misdefined', $cs, $gullet, "Expected definition parameter list");
     return; }
-  $params = Tokens(PrepArgTokens(@$params));
   $params = parseDefParameters($cs, $params);
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body),
     ($globally ? 'global' : undef));
   AfterAssignment();
   return; }
 
-DefPrimitive('\def  SkipSpaces Token UntilBrace {}',       sub { do_def(0, @_); }, locked => 1);
-DefPrimitive('\gdef SkipSpaces Token UntilBrace {}',       sub { do_def(1, @_); }, locked => 1);
-DefPrimitive('\edef SkipSpaces Token UntilBrace Expanded', sub { do_def(0, @_); }, locked => 1);
-DefPrimitive('\xdef SkipSpaces Token UntilBrace Expanded', sub { do_def(1, @_); }, locked => 1);
+DefPrimitive('\def  SkipSpaces Token UntilBrace DefPlain',    sub { do_def(0, @_); }, locked => 1);
+DefPrimitive('\gdef SkipSpaces Token UntilBrace DefPlain',    sub { do_def(1, @_); }, locked => 1);
+DefPrimitive('\edef SkipSpaces Token UntilBrace DefExpanded', sub { do_def(0, @_); }, locked => 1);
+DefPrimitive('\xdef SkipSpaces Token UntilBrace DefExpanded', sub { do_def(1, @_); }, locked => 1);
 
 # <prefix> = \global | \long | \outer
 # See Stomach.pm & Stomach.pm
