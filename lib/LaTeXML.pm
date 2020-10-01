@@ -652,13 +652,13 @@ sub new_latexml {
       push @pre, $pre;
     }
   }
-  my $includexmlpis = !($$opts{xsltparameters} && (@{ $$opts{xsltparameters} }[0] eq 'LATEXML_VERSION:TEST'));
+  my $includepathpis = !($$opts{xsltparameters} && (@{ $$opts{xsltparameters} }[0] eq 'LATEXML_VERSION:TEST'));
   require LaTeXML;
   my $latexml = LaTeXML::Core->new(preload => [@pre], searchpaths => [@{ $$opts{paths} }],
     graphicspaths   => ['.'],
     verbosity       => $$opts{verbosity}, strict => $$opts{strict},
     includecomments => $$opts{comments},
-    includexmlpis   => $includexmlpis,
+    includepathpis  => $includepathpis,
     inputencoding   => $$opts{inputencoding},
     includestyles   => $$opts{includestyles},
     documentid      => $$opts{documentid},

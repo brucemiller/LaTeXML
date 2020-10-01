@@ -17,7 +17,8 @@ use Config;
 use base qw(Exporter);
 #  @Test::More::EXPORT);
 our @EXPORT = (qw(&latexml_ok &latexml_tests),
-  qw(&process_domstring &process_xmlfile &is_strings),
+  qw(&process_domstring &process_xmlfile &is_strings
+    &convert_texfile_as_test &serialize_dom_as_test),
   @Test::More::EXPORT);
 # Note that this is a singlet; the same Builder is shared.
 
@@ -128,17 +129,16 @@ sub latexmlpost_ok {
     if (my $xmlstrings = process_xmlfile($postxmlpath, $name)) {
       return is_strings($texstrings, $xmlstrings, $name); } } }
 
-# These return the list-of-strings form of whatever was requested, if successful,
-# otherwise undef; and they will have reported the failure
-sub process_texfile {
+our %CORE_OPTIONS_FOR_TESTS = (
+  preload => [], searchpaths => [], includecomments => 0, includepathpis => 0, verbosity => -2);
+
+sub convert_texfile_as_test {
   my (%options)    = @_;
   my $texpath      = $options{texpath};
   my $name         = $options{name};
   my $compare_kind = $options{compare_kind};
-  my %core_options = $options{core_options} ? %{ $options{core_options} } : (
-    preload => [], searchpaths => [], includecomments => 0, includexmlpis => 0, verbosity => -2
-  );
-  my $latexml = eval { LaTeXML::Core->new(%core_options) };
+  my %core_options = $options{core_options} ? %{ $options{core_options} } : %CORE_OPTIONS_FOR_TESTS;
+  my $latexml      = eval { LaTeXML::Core->new(%core_options) };
   if (!$latexml) {
     do_fail($name, "Couldn't instanciate LaTeXML: " . @!); return; }
   else {
@@ -146,7 +146,17 @@ sub process_texfile {
     if (!$dom) {
       do_fail($name, "Couldn't convert $texpath: " . @!); return; }
     else {
-      return process_dom($dom, $name, $compare_kind); } } }
+      return $dom; } } }
+
+# These return the list-of-strings form of whatever was requested, if successful,
+# otherwise undef; and they will have reported the failure
+sub process_texfile {
+  my (%options) = @_;
+  if (my $dom = convert_texfile_as_test(%options)) {
+    my $name         = $options{name};
+    my $compare_kind = $options{compare_kind};
+    return process_dom($dom, $name, $compare_kind); }
+  else { return; } }
 
 sub postprocess_xmlfile {
   my ($xmlpath, $name) = @_;
@@ -163,17 +173,20 @@ sub postprocess_xmlfile {
   return do_fail($name, "Couldn't process $name.xml") unless $doc;
   return process_dom($doc, $name); }
 
+sub serialize_dom_as_test {
+  my ($xmldom) = @_;
+  my $domstring = eval { my $string = $xmldom->toString(1);
+    my $parser = XML::LibXML->new(load_ext_dtd => 0, validation => 0, keep_blanks => 1);
+    $parser->parse_string($string)->toStringC14N(0); };
+  return $domstring; }
+
 sub process_dom {
   my ($xmldom, $name, $compare_kind) = @_;
   # We want the DOM to be BOTH indented AND canonical!!
-  my $domstring =
-    eval { my $string = $xmldom->toString(1);
-    my $parser = XML::LibXML->new(load_ext_dtd => 0, validation => 0, keep_blanks => 1);
-    $parser->parse_string($string)->toStringC14N(0); };
-  if (!$domstring) {
-    do_fail($name, "Couldn't convert dom to string: " . $@); return; }
+  if (my $domstring = serialize_dom_as_test($xmldom)) {
+    return process_domstring($domstring, $name, $compare_kind); }
   else {
-    return process_domstring($domstring, $name, $compare_kind); } }
+    do_fail($name, "Couldn't convert dom to string: " . $@); return; } }
 
 sub process_xmlfile {
   my ($xmlpath, $name, $compare_kind) = @_;
