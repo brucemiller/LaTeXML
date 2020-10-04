@@ -161,6 +161,7 @@ sub PrepArgTokens {
       push(@rescanned, $t); }
     elsif ($$t[1] == CC_PARAM && @toks) {
       my $next_t = shift @toks;
+      $index++;
       $next_t = $$next_t[2] || $next_t;
       my $next_cc = $next_t && $$next_t[1];
       if ($next_cc == CC_OTHER) {
@@ -168,8 +169,8 @@ sub PrepArgTokens {
         push(@rescanned, T_ARG($next_t)); }
       elsif ($next_cc == CC_PARAM) {
         push(@rescanned, $t); }
-      else {              # any other case, preserve as-is, let the higher level call resolve any errors
-                          # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
+      else {    # any other case, preserve as-is, let the higher level call resolve any errors
+                # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
         Error('misdefined', 'expansion', undef, "Parameter has a malformed arg, should be #1-#9 or ##. ",
           "In expansion " . ToString(Tokens(@toks))); } }
     else {
