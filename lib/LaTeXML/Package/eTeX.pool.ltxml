@@ -130,7 +130,9 @@ DefRegister('\tracingassigns'    => Number(0));    # ???
 DefRegister('\tracinggroups'     => Number(0));
 DefRegister('\tracingifs'        => Number(0));    # ???
 DefRegister('\tracingscantokens' => Number(0));
-
+DefRegister('\tracingnesting'    => Number(0));
+DefRegister('\savingvdiscards'   => Number(0));
+DefRegister('\savinghyphcodes'   => Number(0));
 #======================================================================
 # 3.7 Miscellaneous primitives
 
