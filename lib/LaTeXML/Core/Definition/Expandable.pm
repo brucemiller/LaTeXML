@@ -24,8 +24,6 @@ use base qw(LaTeXML::Core::Definition);
 
 sub new {
   my ($class, $cs, $parameters, $expansion, %traits) = @_;
-  if (!ref $expansion) {    # Tokenization DEFERRED till actually used (shaves > 5%)
-    $expansion = TokenizeInternal($expansion); }
   $expansion = Tokens($expansion) if ref $expansion eq 'LaTeXML::Core::Token';
   my $source = $STATE->getStomach->getGullet->getMouth;
   my $trivexpansion;
@@ -52,7 +50,13 @@ sub isExpandable {
 
 sub getExpansion {
   my ($self) = @_;
-  return $$self{expansion}; }
+  my $expansion = $$self{expansion};
+  if (!ref $expansion) {    # Tokenization DEFERRED till actually used (shaves > 5%)
+    $expansion = TokenizeInternal($expansion);
+    # rescan for match tokens and unwrap dont_expand...
+    $expansion = Tokens(PrepArgTokens(@$expansion));
+    $$self{expansion} = $expansion; }
+  return $expansion; }
 
 # Expand the expandable control sequence. This should be carried out by the Gullet.
 sub invoke {
