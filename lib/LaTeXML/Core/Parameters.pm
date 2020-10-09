@@ -16,7 +16,6 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Parameter;
-use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use base qw(LaTeXML::Common::Object);
 
@@ -62,8 +61,7 @@ sub readArguments {
   my @args = ();
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
-    if (!$$parameter{novalue}) {
-      push(@args, $value); } }
+    push(@args, $value) unless $$parameter{novalue}; }
   return @args; }
 
 sub readArgumentsAndDigest {
