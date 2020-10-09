@@ -190,7 +190,7 @@ our @CATCODE_HOLD = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 1, 0,
-  0, 1);
+  0, 1, 0);
 
 sub readToken {
   my ($self, $keep_the) = @_;
@@ -358,7 +358,7 @@ our @CATCODE_BALANCED_INTERESTING = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 0,
-  0, 1);
+  0, 1, 0);
 
 sub readBalanced {
   my ($self, $expanded, $keep_the) = @_;

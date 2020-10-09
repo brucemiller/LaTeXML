@@ -364,7 +364,7 @@ our @CATCODE_EXECUTABLE_PRIMITIVE_NAME = (    # [CONSTANT]
   'Align',     undef,   undef, 'Superscript',
   'Subscript', undef,   undef, undef,
   undef,       undef,   undef, undef,
-  undef,       undef);
+  undef,       undef,   undef);
 
 sub lookupDefinition {
   my ($self, $token) = @_;

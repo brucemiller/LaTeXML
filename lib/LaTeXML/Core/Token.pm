@@ -187,7 +187,7 @@ our @CATCODE_STANDARDCHAR = (    # [CONSTANT]
   q{&},  "\n",  q{#},  q{^},
   q{_},  undef, undef, undef,
   undef, undef, q{%},  undef,
-  undef, undef);
+  undef, undef, undef);
 
 our @CATCODE_NAME =              #[CONSTANT]
   qw(Escape Begin End Math
