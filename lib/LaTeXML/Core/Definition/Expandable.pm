@@ -26,23 +26,18 @@ sub new {
   my ($class, $cs, $parameters, $expansion, %traits) = @_;
   $expansion = Tokens($expansion) if ref $expansion eq 'LaTeXML::Core::Token';
   my $source = $STATE->getStomach->getGullet->getMouth;
-  my $trivexpansion;
   if (ref $expansion eq 'LaTeXML::Core::Tokens') {
     Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
       "Expansion is " . ToString($expansion)) unless $expansion->isBalanced;
     # rescan for match tokens and unwrap dont_expand...
     $expansion = Tokens(PrepArgTokens(@$expansion));
-    # If expansion is Tokens, and no arguments, we're a "trivial macro"
-    if (!$parameters) {
-      $trivexpansion = $expansion; }
   }
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
-    trivial_expansion => $trivexpansion,
-    locator           => $source->getLocator,
-    isProtected       => $traits{protected} || $STATE->getPrefix('protected'),
-    isOuter           => $traits{outer} || $STATE->getPrefix('outer'),
-    isLong            => $traits{long} || $STATE->getPrefix('long'),
-    isExpandable      => 1,
+    locator      => $source->getLocator,
+    isProtected  => $traits{protected} || $STATE->getPrefix('protected'),
+    isOuter      => $traits{outer} || $STATE->getPrefix('outer'),
+    isLong       => $traits{long} || $STATE->getPrefix('long'),
+    isExpandable => 1,
     %traits }, $class; }
 
 sub isExpandable {
@@ -62,13 +57,14 @@ sub getExpansion {
 sub invoke {
   my ($self, $gullet, $onceonly) = @_;
   # shortcut for "trivial" macros; but only if not tracing & profiling!!!!
-  if (my $triv = (!$STATE->lookupValue('TRACINGMACROS')) && $$self{trivial_expansion}) {
-    if (!$onceonly && recursion_check($$self{cs}, $triv->unlist)) {
+  my $expansion = (!$STATE->lookupValue('TRACINGMACROS') && !$$self{parameters} && $self->getExpansion);
+  if (ref $expansion eq 'LaTeXML::Core::Tokens') {
+    if (!$onceonly && recursion_check($$self{cs}, $expansion->unlist)) {
       Error('recursion', $$self{cs}, $gullet,
         "Token " . Stringify($$self{cs}) . " expands into itself!",
         "defining as empty");
-      $triv = Tokens(); }
-    return $triv; }
+      $expansion = Tokens(); }
+    return $expansion; }
   else {
     return $self->doInvocation($gullet, $self->readArguments($gullet)); } }
 
