@@ -110,7 +110,7 @@ sub digest {
     $$self{gullet}->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
       my ($gullet) = @_;
       $gullet->unread($tokens);
-      $STATE->clearPrefixes;    # prefixes shouldn't apply here.
+      $STATE->clearPrefixes;                                             # prefixes shouldn't apply here.
       my $ismath    = $STATE->lookupValue('IN_MATH');
       my $initdepth = scalar(@{ $$self{boxing} });
       my $depth     = $initdepth;
@@ -136,7 +136,7 @@ sub digest {
 my $MAXSTACK = 200;    # [CONSTANT]
 
 # Overly complex, but want to avoid recursion/stack
-my @absorbable_cc = (    # [CONSTANT]
+our @CATCODE_ABSORBABLE = (    # [CONSTANT]
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 1, 1,
@@ -162,7 +162,7 @@ INVOKE:
     my $cc = $meaning->getCatcode;
     if ($cc == CC_CS) {
       @result = $self->invokeToken_undefined($token); }
-    elsif ($absorbable_cc[$cc]) {
+    elsif ($CATCODE_ABSORBABLE[$cc]) {
       @result = $self->invokeToken_simple($token, $meaning); }
     else {
       Error('misdefined', $token, $self,
@@ -326,7 +326,7 @@ sub setMode {
   $STATE->assignValue(MODE    => $mode,   'local');
   $STATE->assignValue(IN_MATH => $ismath, 'local');
   my $curfont = $STATE->lookupValue('font');
-  if ($mode eq $prevmode) { }
+  if    ($mode eq $prevmode) { }
   elsif ($ismath) {
     # When entering math mode, we set the font to the default math font,
     # and save the text font for any embedded text.
@@ -341,7 +341,7 @@ sub setMode {
     # but inherit color and size
     $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
         color => $curfont->getColor, background => $curfont->getBackground,
-        size  => $curfont->getSize), 'local'); }
+        size => $curfont->getSize), 'local'); }
   return; }
 
 sub beginMode {

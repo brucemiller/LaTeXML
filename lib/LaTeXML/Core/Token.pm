@@ -75,11 +75,11 @@ use constant T_SUPER => bless ['^',  CC_SUPER], 'LaTeXML::Core::Token';
 use constant T_SUB   => bless ['_',  CC_SUB],   'LaTeXML::Core::Token';
 use constant T_SPACE => bless [' ',  CC_SPACE], 'LaTeXML::Core::Token';
 use constant T_CR    => bless ["\n", CC_SPACE], 'LaTeXML::Core::Token';
-sub T_LETTER { my ($c) = @_; return bless [$c, CC_LETTER], 'LaTeXML::Core::Token'; }
-sub T_OTHER  { my ($c) = @_; return bless [$c, CC_OTHER],  'LaTeXML::Core::Token'; }
-sub T_ACTIVE { my ($c) = @_; return bless [$c, CC_ACTIVE], 'LaTeXML::Core::Token'; }
+sub T_LETTER  { my ($c) = @_; return bless [$c, CC_LETTER], 'LaTeXML::Core::Token'; }
+sub T_OTHER   { my ($c) = @_; return bless [$c, CC_OTHER],  'LaTeXML::Core::Token'; }
+sub T_ACTIVE  { my ($c) = @_; return bless [$c, CC_ACTIVE], 'LaTeXML::Core::Token'; }
 sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), CC_COMMENT], 'LaTeXML::Core::Token'; }
-sub T_CS { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
+sub T_CS      { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
 # Illegal: don't use unless you know...
 sub T_MARKER { my ($t) = @_; return bless [$t, CC_MARKER], 'LaTeXML::Core::Token'; }
 
@@ -169,39 +169,39 @@ sub UnTeX {
 # Categories of Category codes.
 # For Tokens with these catcodes, only the catcode is relevant for comparison.
 # (if they even make it to a stage where they get compared)
-our @primitive_catcode = (    # [CONSTANT]
+our @CATCODE_PRIMITIVE = (    # [CONSTANT]
   1, 1, 1, 1,
   1, 1, 1, 1,
   1, 0, 1, 0,
   0, 0, 0, 0,
   0, 0, 0);
-our @executable_catcode = (    # [CONSTANT]
+our @CATCODE_EXECUTABLE = (    # [CONSTANT]
   0, 1, 1, 1,
   1, 0, 0, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
   1, 0, 0);
 
-our @standardchar = (          # [CONSTANT]
+our @CATCODE_STANDARDCHAR = (    # [CONSTANT]
   "\\",  '{',   '}',   q{$},
   q{&},  "\n",  q{#},  q{^},
   q{_},  undef, undef, undef,
   undef, undef, q{%},  undef,
   undef, undef);
 
-our @CC_NAME =                 #[CONSTANT]
+our @CATCODE_NAME =              #[CONSTANT]
   qw(Escape Begin End Math
   Align EOL Parameter Superscript
   Subscript Ignore Space Letter
   Other Active Comment Invalid
   ControlSequence Marker Arg);
-our @PRIMITIVE_NAME = (        # [CONSTANT]
+our @CATCODE_PRIMITIVE_NAME = (    # [CONSTANT]
   'Escape',    'Begin', 'End',       'Math',
   'Align',     'EOL',   'Parameter', 'Superscript',
   'Subscript', undef,   'Space',     undef,
   undef,       undef,   undef,       undef,
   undef,       undef,   undef);
-our @CC_SHORT_NAME =           #[CONSTANT]
+our @CATCODE_SHORT_NAME =          #[CONSTANT]
   qw(T_ESCAPE T_BEGIN T_END T_MATH
   T_ALIGN T_EOL T_PARAM T_SUPER
   T_SUB T_IGNORE T_SPACE T_LETTER
@@ -225,13 +225,13 @@ sub isaToken { return 1; }
 # stored under; It's the same for various `different' BEGIN tokens, eg.
 sub getCSName {
   my ($token) = @_;
-  return $PRIMITIVE_NAME[$$token[1]] || $$token[0]; }
+  return $CATCODE_PRIMITIVE_NAME[$$token[1]] || $$token[0]; }
 
 # Get the CSName only if the catcode is executable!
 sub getExecutableName {
   my ($self) = @_;
   my ($cs, $cc) = @$self;
-  return $executable_catcode[$cc] && ($PRIMITIVE_NAME[$cc] || $cs); }
+  return $CATCODE_EXECUTABLE[$cc] && ($CATCODE_PRIMITIVE_NAME[$cc] || $cs); }
 
 # Return the string or character part of the token
 sub getString {
@@ -250,7 +250,7 @@ sub getCatcode {
 
 sub isExecutable {
   my ($self) = @_;
-  return $executable_catcode[$$self[1]]; }
+  return $CATCODE_EXECUTABLE[$$self[1]]; }
 
 # Defined so a Token or Tokens can be used interchangeably.
 sub unlist {
@@ -314,7 +314,7 @@ sub without_dont_expand {
 # actual character is needed.
 
 # Should revert do something with this???
-#  ($standardchar[$$self[1]] || $$self[0]); }
+#  ($CATCODE_STANDARDCHAR[$$self[1]] || $$self[0]); }
 
 sub revert {
   my ($self) = @_;
@@ -359,7 +359,7 @@ sub stringify {
     my $c = ord($string);
     if ($c < 0x020) {
       $string = 'U+' . sprintf("%04x", $c) . '/' . $CONTROLNAME[$c]; } }
-  return $CC_SHORT_NAME[$$self[1]] . '[' . $string . ']'; }
+  return $CATCODE_SHORT_NAME[$$self[1]] . '[' . $string . ']'; }
 
 #======================================================================
 

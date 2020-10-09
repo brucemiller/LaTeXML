@@ -89,16 +89,16 @@ sub new {
   my ($class, %options) = @_;
   my $self = bless {    # table => {},
     value   => {}, meaning  => {}, stash  => {}, stash_active => {},
-    catcode => {}, mathcode => {}, sfcode => {}, lccode       => {}, uccode => {}, delcode => {},
+    catcode => {}, mathcode => {}, sfcode => {}, lccode => {}, uccode => {}, delcode => {},
     undo    => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
-    stomach => $options{stomach},       model    => $options{model} }, $class;
+    stomach => $options{stomach}, model => $options{model} }, $class;
   # Note that "100" is hardwired into TeX, The Program!!!
   $$self{value}{MAX_ERRORS} = [100];
   $$self{value}{VERBOSITY}  = [0];
   # Standard TeX units, in scaled points
   $$self{value}{UNITS} = [{
       pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
-      cm => 72.27 * 65536 / 2.54,     mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
+      cm => 72.27 * 65536 / 2.54, mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
       cc => 12 * 1238 * 65536 / 1157, sp => 1,
       px => 72.27 * 65536 / 72,    # Assume px=bp ?
   }];
@@ -107,8 +107,8 @@ sub new {
   if ($options{catcodes} =~ /^(standard|style)/) {
     # Setup default catcodes.
     my %std = ("\\" => CC_ESCAPE, "{" => CC_BEGIN, "}" => CC_END, "\$" => CC_MATH,
-      "&" => CC_ALIGN, "\r" => CC_EOL,   "#"  => CC_PARAM, "^" => CC_SUPER,
-      "_" => CC_SUB,   " "  => CC_SPACE, "\t" => CC_SPACE, "%" => CC_COMMENT,
+      "&" => CC_ALIGN,  "\r"   => CC_EOL,    "#"  => CC_PARAM, "^" => CC_SUPER,
+      "_" => CC_SUB,    " "    => CC_SPACE,  "\t" => CC_SPACE, "%" => CC_COMMENT,
       "~" => CC_ACTIVE, chr(0) => CC_ESCAPE, "\f" => CC_ACTIVE);
     map { $$self{catcode}{$_} = [$std{$_}] } keys %std;
     for (my $c = ord('A') ; $c <= ord('Z') ; $c++) {
@@ -320,13 +320,13 @@ sub assignDelcode {
 #======================================================================
 # Specialized versions of lookup & assign for dealing with definitions
 
-our @active_or_cs = (
+our @CATCODE_ACTIVE_OR_CS = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 1, 0, 0,
   1, 0, 0);
-our @letter_or_other = (
+our @CATCODE_LETTER_OR_OTHER = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 1,
@@ -339,7 +339,7 @@ our @letter_or_other = (
 sub lookupMeaning {
   my ($self, $token) = @_;
   if (my $cs = $token
-    && $active_or_cs[$$token[1]]
+    && $CATCODE_ACTIVE_OR_CS[$$token[1]]
     && !$$token[2]    # return token itself, if \noexpand
     && $$token[0]) {
     my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
@@ -358,8 +358,8 @@ sub assignMeaning {
 # nor cs let to executable tokens
 # This returns a definition object, or undef
 
-# merge of @executable_catcode & @PRIMITIVE_NAME
-our @executable_primitive_name = (    # [CONSTANT]
+# merge of @CATCODE_EXECUTABLE & @CATCODE_PRIMITIVE_NAME
+our @CATCODE_EXECUTABLE_PRIMITIVE_NAME = (    # [CONSTANT]
   undef,       'Begin', 'End', 'Math',
   'Align',     undef,   undef, 'Superscript',
   'Subscript', undef,   undef, undef,
@@ -374,9 +374,9 @@ sub lookupDefinition {
   #  my $inmath = $self->lookupValue('IN_MATH');
   my $cc = $$token[1];
   my $lookupname =
-    ($active_or_cs[$cc]
+    ($CATCODE_ACTIVE_OR_CS[$cc]
     ? $$token[0]
-    : $executable_primitive_name[$cc]);
+    : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$cc]);
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
     && ($defn  = $$entry[0])
@@ -394,9 +394,9 @@ sub lookupConditional {
   #  my $inmath = $self->lookupValue('IN_MATH');
   my $cc = $$token[1];
   my $lookupname =
-    ($active_or_cs[$cc]
+    ($CATCODE_ACTIVE_OR_CS[$cc]
     ? $$token[0]
-    : $executable_primitive_name[$cc]);
+    : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$cc]);
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
     && ($defn  = $$entry[0])
@@ -414,9 +414,9 @@ sub lookupExpandable {
   #  my $inmath = $self->lookupValue('IN_MATH');
   my $cc = $$token[1];
   my $lookupname =
-    ($active_or_cs[$cc]
+    ($CATCODE_ACTIVE_OR_CS[$cc]
     ? $$token[0]
-    : $executable_primitive_name[$cc]);
+    : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$cc]);
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
     && ($defn  = $$entry[0])
@@ -441,17 +441,17 @@ sub lookupDigestableDefinition {
   my $cc   = $$token[1];
   my $name = $$token[0];
   my $lookupname =
-    (($active_or_cs[$cc]
-        || ($letter_or_other[$cc] && $self->lookupValue('IN_MATH')
+    (($CATCODE_ACTIVE_OR_CS[$cc]
+        || ($CATCODE_LETTER_OR_OTHER[$cc] && $self->lookupValue('IN_MATH')
         && (($self->lookupMathcode($name) || 0) == 0x8000)))
     ? $name
-    : $executable_primitive_name[$cc]);
+    : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$cc]);
   if ($lookupname && ($entry = $$self{meaning}{$lookupname})
     && ($defn = $$entry[0])) {
     # If a cs has been let to an executable token, lookup ITS defn.
     if (((ref $defn) eq 'LaTeXML::Core::Token')
       # If we're digesting an unexpanded, act like \relax
-      && ($lookupname = ($$defn[2] ? '\relax' : $executable_primitive_name[$$defn[1]]))
+      && ($lookupname = ($$defn[2] ? '\relax' : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$$defn[1]]))
       && ($entry      = $$self{meaning}{$lookupname})) {
       $defn = $$entry[0]; }
     return $defn; }
@@ -464,7 +464,7 @@ sub installDefinition {
   # Ignore attempts to (re)define $cs from tex sources
   #  my $cs = $definition->getCS->getCSName;
   my $token = $definition->getCS;
-  my $cs    = ($LaTeXML::Core::Token::PRIMITIVE_NAME[$$token[1]] || $$token[0]);
+  my $cs    = ($LaTeXML::Core::Token::CATCODE_PRIMITIVE_NAME[$$token[1]] || $$token[0]);
   if ($self->lookupValue("$cs:locked") && !$LaTeXML::Core::State::UNLOCKED) {
     my $s = $self->getStomach->getGullet->getSource;
     # report if the redefinition seems to come from document source

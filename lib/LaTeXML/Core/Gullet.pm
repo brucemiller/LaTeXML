@@ -31,7 +31,7 @@ use base qw(LaTeXML::Common::Object);
 sub new {
   my ($class, %options) = @_;
   return bless {
-    mouth     => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
+    mouth => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
     verbosity => $options{verbosity} || 0
   }, $class; }
 
@@ -80,8 +80,8 @@ sub mouthIsOpen {
 # Corresponds (I think) to TeX's \endinput
 sub flushMouth {
   my ($self) = @_;
-  $$self{mouth}->finish;    # but not close!
-  $$self{pushback}  = [];   # And don't read anytyhing more from it.
+  $$self{mouth}->finish;     # but not close!
+  $$self{pushback}  = [];    # And don't read anytyhing more from it.
   $$self{autoclose} = 1;
   return; }
 
@@ -185,7 +185,7 @@ sub show_pushback {
 #**********************************************************************
 # Note that every char (token) comes through here (maybe even twice, through args parsing),
 # So, be Fast & Clean!  This method only reads from the current input stream (Mouth).
-our @hold_token = (
+our @CATCODE_HOLD = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 0,
@@ -200,7 +200,7 @@ sub readToken {
   # Check in pushback first....
   while (($ptoken = shift(@{ $$self{pushback} })) &&
     ($token = ref $ptoken eq 'ARRAY' ? $$ptoken[1] : $ptoken) &&
-    $hold_token[$cc = $$token[1]]) {
+    $CATCODE_HOLD[$cc = $$token[1]]) {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }
     elsif ($cc == CC_MARKER) {
@@ -208,7 +208,7 @@ sub readToken {
   if (defined $token) {
     return $keep_the ? $ptoken : $token; }
   # Not in pushback, use the current mouth
-  while (($token = $$self{mouth}->readToken()) && $hold_token[$cc = $$token[1]]) {
+  while (($token = $$self{mouth}->readToken()) && $CATCODE_HOLD[$cc = $$token[1]]) {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
     elsif ($cc == CC_MARKER) {
@@ -291,7 +291,7 @@ sub readRawLine {
   my @tokens  = map  { ref $_ eq 'ARRAY' ? $$_[1] : $_ } @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
   if (@markers) {    # Whoops, profiling markers!
-    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;                      # Remove
+    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;    # Remove
     map { LaTeXML::Core::Definition::stopProfiling($_, 'expand') } @markers; }
   $$self{pushback} = [];
   # If we still have peeked tokens, we ONLY want to combine it with the remainder
@@ -353,7 +353,7 @@ sub skipFiller {
 # Read a sequence of tokens balanced in {}
 # assuming the { has already been read.
 # Returns a Tokens list of the balanced sequence, omitting the closing }
-our @balanced_interesting_cc = (
+our @CATCODE_BALANCED_INTERESTING = (
   0, 1, 1, 0,
   0, 0, 0, 0,
   0, 0, 0, 0,
@@ -375,7 +375,7 @@ sub readBalanced {
       else {
         push(@masks_the, 0); } }
     my $cc = $$token[1];
-    if (!$balanced_interesting_cc[$cc]) {
+    if (!$CATCODE_BALANCED_INTERESTING[$cc]) {
       push(@tokens, $token); }
     elsif ($cc == CC_END) {
       $level--;
@@ -637,7 +637,7 @@ sub readNumber {
 # Return a Number or undef
 sub readNormalInteger {
   my ($self) = @_;
-  my $token = $self->readXToken(1);    # expand more
+  my $token = $self->readXToken(1);     # expand more
   if (!defined $token) {
     return; }
   elsif (($$token[1] == CC_OTHER) && ($token->toString =~ /^[0-9]$/)) {    # Read decimal literal
