@@ -31,7 +31,7 @@ use base qw(LaTeXML::Common::Object);
 sub new {
   my ($class, %options) = @_;
   return bless {
-    mouth => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
+    mouth     => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
     verbosity => $options{verbosity} || 0
   }, $class; }
 
@@ -80,8 +80,8 @@ sub mouthIsOpen {
 # Corresponds (I think) to TeX's \endinput
 sub flushMouth {
   my ($self) = @_;
-  $$self{mouth}->finish;     # but not close!
-  $$self{pushback}  = [];    # And don't read anytyhing more from it.
+  $$self{mouth}->finish;    # but not close!
+  $$self{pushback}  = [];   # And don't read anytyhing more from it.
   $$self{autoclose} = 1;
   return; }
 
@@ -291,7 +291,7 @@ sub readRawLine {
   my @tokens  = map  { ref $_ eq 'ARRAY' ? $$_[1] : $_ } @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
   if (@markers) {    # Whoops, profiling markers!
-    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;    # Remove
+    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;                      # Remove
     map { LaTeXML::Core::Definition::stopProfiling($_, 'expand') } @markers; }
   $$self{pushback} = [];
   # If we still have peeked tokens, we ONLY want to combine it with the remainder
@@ -395,6 +395,11 @@ sub readBalanced {
     my $loc_message = $startloc ? ("Started at " . ToString($startloc)) : ("Ended at " . ToString($self->getLocator));
     Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.",
       $loc_message); }
+  ## Performance enhancement:
+  # Only include masks if requested AND at least one token was flagged
+  # as returned from a \the-like invocation.
+  # The default no-mask behavior is identical to having all masks set to 0
+  # so they're interchangeable.
   if ($keep_the && (grep { $_ } @masks_the)) {
     push(@tokens, [@masks_the]); }
   return (wantarray ? (Tokens(@tokens), $token) : Tokens(@tokens)); }
@@ -637,7 +642,7 @@ sub readNumber {
 # Return a Number or undef
 sub readNormalInteger {
   my ($self) = @_;
-  my $token = $self->readXToken(1);     # expand more
+  my $token = $self->readXToken(1);    # expand more
   if (!defined $token) {
     return; }
   elsif (($$token[1] == CC_OTHER) && ($token->toString =~ /^[0-9]$/)) {    # Read decimal literal
