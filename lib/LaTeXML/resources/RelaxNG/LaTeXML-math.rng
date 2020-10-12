@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  /=====================================================================\ 
+  /=====================================================================\
   |  LaTeXML-math.rnc                                                   |
   | RelaxNG model for LaTeXML generated documents                       |
   |=====================================================================|
@@ -44,7 +44,7 @@ the content of the \elementref{XMath} element.</a:documentation>
   <!-- ====================================================================== -->
   <define name="Math">
     <element name="Math">
-      <a:documentation>Outer container for all math. This holds the internal 
+      <a:documentation>Outer container for all math. This holds the internal
 \elementref{XMath} representation, as well as image data and other representations.</a:documentation>
       <ref name="Math_attributes"/>
       <ref name="Math_model"/>
@@ -78,6 +78,11 @@ the content of the \elementref{XMath} element.</a:documentation>
     <optional>
       <attribute name="text">
         <a:documentation>a textified representation of the math.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="lexemes">
+        <a:documentation>preserved grammar-near lexemes for export to external apps</a:documentation>
       </attribute>
     </optional>
   </define>
