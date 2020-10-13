@@ -100,10 +100,10 @@ sub beDigested {
 
 sub neutralize {
   my ($self, @extraspecials) = @_;
-  my @neutralized = map { $_->without_dont_expand } $self->unlist;
+  my @neutralized = map { $_->neutralize(@extraspecials) } $self->unlist;
   if (ref @$self[-1] eq 'ARRAY') {    # preserve marks
     push(@neutralized, @$self[-1]); }
-  return Tokens(map { $_->neutralize(@extraspecials) } @$self); }
+  return Tokens(@neutralized); }
 
 sub without_dont_expand {
   my ($self) = @_;
