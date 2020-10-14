@@ -24,7 +24,7 @@ our @EXPORT = (
     &pmml_mi &pmml_mo &pmml_mn &pmml_bigop
     &pmml_punctuate &pmml_parenthesize
     &pmml_infix &pmml_script &pmml_summation),
-  qw( &cmml &cmml_share &cmml_shared &cmml_ci
+  qw( &cmml &cmml_share &cmml_shared &cmml_leaf
     &cmml_or_compose &cmml_synth_not &cmml_synth_complement),
 );
 require LaTeXML::Post::MathML::Presentation;
@@ -216,7 +216,7 @@ sub lookupContent {
       # 3. If no special code, but we have a name, use a generic handler for this element
       $$MMLTable_C{"$mode:?:?"}) : (
     # 4. If we do not have a name, check for a role-based handler
-    $$MMLTable_C{"$mode:$role:?"} ||
+    ($role && $$MMLTable_C{"$mode:$role:?"}) ||
       # 5. Always use a default handler if nothing is known
       $$MMLTable_C{"$mode:?:?"}); }
 
@@ -1244,11 +1244,16 @@ sub cmml_unparsed {
     @results]; }
 
 # Or csymbol if there's some kind of "defining" attribute?
-sub cmml_ci {
+sub cmml_leaf {
   my ($item) = @_;
   if (my $meaning = (ref $item) && $item->getAttribute('meaning')) {
-    my $cd = $item->getAttribute('omcd') || 'latexml';
-    return ['m:csymbol', { cd => $cd }, $meaning]; }
+    if (my $cd = $item->getAttribute('omcd')) {
+      return ['m:csymbol', { cd => $cd }, $meaning]; }
+    elsif (($item->getAttribute('role') || '') eq 'NUMBER') {
+      # special case, numbers with a meaning attribute
+      return ['m:cn', { type => ($meaning =~ /^[+-]?\d+$/ ? 'integer' : 'float') }, $meaning]; }
+    else {
+      return ['m:csymbol', { cd => 'latexml' }, $meaning]; } }
   else {
     my ($content, %mmlattr) = stylizeContent($item, 'm:ci');
     if (my $mv = $mmlattr{mathvariant}) {
@@ -1321,7 +1326,7 @@ sub cmml_or_compose {
 # Token elements:
 #   cn, ci, csymbol
 
-DefMathML("Token:?:?",           \&pmml_mi, \&cmml_ci);
+DefMathML("Token:?:?",           \&pmml_mi, \&cmml_leaf);
 DefMathML("Token:PUNCT:?",       \&pmml_mo, undef);
 DefMathML("Token:PERIOD:?",      \&pmml_mo, undef);
 DefMathML("Token:OPEN:?",        \&pmml_mo, undef);
@@ -1966,14 +1971,13 @@ although the latter wraps the actual C<m:math> element around it.
 
 Converts the C<XMath> C<$node> to Content MathML.
 
-=item C<cmml_ci($token)>
+=item C<cmml_leaf($token)>
 
-Converts the C<XMath> token to an C<m:ci>.
-(This may evolve to generate a C<m:csymbol>, under appropriate circumstances)
+Converts the C<XMath> token to an C<m:ci>, C<m:cn> or C<m:csymbol>, under appropriate circumstances.
 
 =item C<cmml_decoratedSymbol($item)>
 
-Similar to C<cmml_ci>, but used when an operator is itself, apparently, an application.
+Similar to C<cmml_leaf>, but used when an operator is itself, apparently, an application.
 This converts C<$item> to Presentation MathML to use for the content of the C<m:ci>.
 
 =item C<cmml_not($arg)>
