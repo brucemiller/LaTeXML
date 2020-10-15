@@ -325,13 +325,13 @@ our @CATCODE_ACTIVE_OR_CS = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 1, 0, 0,
-  1, 0, 0);
+  1, 0, 0, 0);
 our @CATCODE_LETTER_OR_OTHER = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 1,
   1, 0, 0, 0,
-  0, 0, 0);
+  0, 0, 0, 0);
 
 # Get the `Meaning' of a token.  For active control sequence's
 # this may give the definition object (if defined) or another token (if \let) or undef
@@ -364,7 +364,7 @@ our @CATCODE_EXECUTABLE_PRIMITIVE_NAME = (    # [CONSTANT]
   'Align',     undef,   undef, 'Superscript',
   'Subscript', undef,   undef, undef,
   undef,       undef,   undef, undef,
-  undef,       undef,   undef);
+  undef,       undef,   undef, undef);
 
 sub lookupDefinition {
   my ($self, $token) = @_;

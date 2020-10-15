@@ -29,11 +29,11 @@ our @EXPORT = (
     CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
     CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
     CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
-    CC_CS      CC_MARKER CC_ARG),
+    CC_CS      CC_MARKER CC_ARG     CC_NOEXPAND1),
   # Token constructors
   qw( T_BEGIN T_END T_MATH T_ALIGN T_PARAM T_SUB T_SUPER T_SPACE
     &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
-    T_CR &T_MARKER T_ARG
+    T_CR &T_MARKER T_ARG T_NOEXPAND1
     &Token),
   # String exploders
   qw(&Explode &ExplodeText &UnTeX)
@@ -59,9 +59,10 @@ use constant CC_ACTIVE  => 13;
 use constant CC_COMMENT => 14;
 use constant CC_INVALID => 15;
 # Extended Catcodes for expanded output.
-use constant CC_CS     => 16;
-use constant CC_MARKER => 17;    # non TeX extension!
-use constant CC_ARG    => 18;    # "out_param" in B Book
+use constant CC_CS        => 16;
+use constant CC_MARKER    => 17;    # non TeX extension!
+use constant CC_ARG       => 18;    # "out_param" in B Book
+use constant CC_NOEXPAND1 => 19;    # defered expansion once
 
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
@@ -98,6 +99,18 @@ sub T_ARG {
       if ($int < 1 || $int > 9) {
         Fatal('malformed', 'T_ARG', 'value should be #1-#9', "Illegal: " . $v->stringify); } } }
   return bless ["$int", CC_ARG], 'LaTeXML::Core::Token'; }
+
+# This hides tokens coming from \the (-like) primitives from expansion; CC_CS,CC_ACTIVE, but also CC_PARAM and CC_ARG
+our @CATCODE_CAN_NOEXPAND1 = (
+  0, 0, 0, 0,
+  0, 0, 1, 0,
+  0, 0, 0, 0,
+  0, 1, 0, 0,
+  1, 0, 1, 0);
+
+sub T_NOEXPAND1 {
+  my ($t) = @_;
+  return ($CATCODE_CAN_NOEXPAND1[$$t[1]] ? bless ["NOEXPAND1", CC_NOEXPAND1, $t], 'LaTeXML::Core::Token' : $t); }
 
 sub Token {
   my ($string, $cc) = @_;
@@ -174,39 +187,39 @@ our @CATCODE_PRIMITIVE = (    # [CONSTANT]
   1, 1, 1, 1,
   1, 0, 1, 0,
   0, 0, 0, 0,
-  0, 0, 0);
+  0, 0, 0, 0);
 our @CATCODE_EXECUTABLE = (    # [CONSTANT]
   0, 1, 1, 1,
   1, 0, 0, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  1, 0, 0);
+  1, 0, 0, 0);
 
 our @CATCODE_STANDARDCHAR = (    # [CONSTANT]
   "\\",  '{',   '}',   q{$},
   q{&},  "\n",  q{#},  q{^},
   q{_},  undef, undef, undef,
   undef, undef, q{%},  undef,
-  undef, undef, undef);
+  undef, undef, undef, undef);
 
 our @CATCODE_NAME =              #[CONSTANT]
   qw(Escape Begin End Math
   Align EOL Parameter Superscript
   Subscript Ignore Space Letter
   Other Active Comment Invalid
-  ControlSequence Marker Arg);
+  ControlSequence Marker Arg NoExpand1);
 our @CATCODE_PRIMITIVE_NAME = (    # [CONSTANT]
   'Escape',    'Begin', 'End',       'Math',
   'Align',     'EOL',   'Parameter', 'Superscript',
   'Subscript', undef,   'Space',     undef,
   undef,       undef,   undef,       undef,
-  undef,       undef,   undef);
+  undef,       undef,   undef,       undef);
 our @CATCODE_SHORT_NAME =          #[CONSTANT]
   qw(T_ESCAPE T_BEGIN T_END T_MATH
   T_ALIGN T_EOL T_PARAM T_SUPER
   T_SUB T_IGNORE T_SPACE T_LETTER
   T_OTHER T_ACTIVE T_COMMENT T_INVALID
-  T_CS T_MARKER T_ARG
+  T_CS T_MARKER T_ARG T_NOEXPAND1
 );
 
 our $X_THE = {
@@ -261,12 +274,12 @@ sub stripBraces {
   my ($self) = @_;
   return ($self); }
 
-my @NEUTRALIZABLE = (    # [CONSTANT]
+our @CATCODE_NEUTRALIZABLE = (    # [CONSTANT]
   0, 0, 0, 1,
   1, 0, 1, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  0, 0, 0);
+  0, 0, 0, 0);
 
 # neutralize really should only retroactively imitate what Semiverbatim would have done.
 # So, it needs to neutralize those in SPECIALS
@@ -276,8 +289,12 @@ my @NEUTRALIZABLE = (    # [CONSTANT]
 sub neutralize {
   my ($self, @extraspecials) = @_;
   my ($ch,   $cc)            = @$self;
-  return ($NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') }, @extraspecials)
-    ? T_OTHER($ch) : $self); }
+  if ($cc == CC_NOEXPAND1) {    # Keep NOEXPAND1, but neutralize the hidden token
+    return T_NOEXPAND1($$self[2]->neutralize(@extraspecials)); }
+  elsif ($CATCODE_NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') }, @extraspecials)) {
+    return T_OTHER($ch); }
+  else {
+    return $self; } }
 
 sub substituteParameters {
   my ($self, @args) = @_;
@@ -291,6 +308,8 @@ sub substituteParameters {
 sub with_dont_expand {
   my ($self) = @_;
   my $cc = $$self[1];
+  if ($cc == CC_NOEXPAND1) {    # Keep NOEXPAND1, but remove dont_expand from hidden token
+    return T_NOEXPAND1($$self[2]->with_dont_expand); }
   return ((($cc == CC_CS) || ($cc == CC_ACTIVE))
     # AND it is either undefined, or is expandable!
       && (!defined($STATE->lookupDefinition($self))
@@ -302,11 +321,12 @@ sub with_dont_expand {
 # or undef if it isn't marked as such.
 sub get_dont_expand {
   my ($self) = @_;
-  return $$self[2]; }
+  return ($$self[1] == CC_NOEXPAND1 ? $$self[2]->get_dont_expand : $$self[2]); }
 
 sub without_dont_expand {
   my ($self) = @_;
-  return ($$self[2] || $self); }
+  # Remove dont_expand flag, but keep NOEXPAND1 wrapper
+  return (($$self[1] == CC_NOEXPAND1) ? ($$self[2][2] ? T_NOEXPAND1($$self[2][2]) : $self) : ($$self[2] || $self)); }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
@@ -337,6 +357,8 @@ sub beDigested {
 # That is NOT done here; see Equals(x,y) and XEquals(x,y)
 sub equals {
   my ($a, $b) = @_;
+  $a = $$a[2] if $a && $$a[1] == CC_NOEXPAND1;    # Ignore NOEXPAND1 while comparing
+  $b = $$b[2] if $b && (ref $b eq ref $a) && $$b[1] == CC_NOEXPAND1;
   return
     (defined $b
       && (ref $a) eq (ref $b))
@@ -352,7 +374,7 @@ my @CONTROLNAME = (                                   #[CONSTANT]
 sub stringify {
   my ($self) = @_;
   if ($$self[2]) {
-    return $$self[2]->stringify() . " (dont expand)"; }
+    return $$self[2]->stringify() . ($$self[1] == CC_NOEXPAND1 ? " (defer expand once)" : " (dont expand)"); }
   my $string = $self->toString;
   # Make the token's char content more printable, since this is for error messages.
   if (length($string) == 1) {

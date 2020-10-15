@@ -38,22 +38,16 @@ sub Tokens {
 sub new {
   my ($class, @tokens) = @_;
   my ($r, $marks);
-  if (ref $tokens[-1] eq 'ARRAY') {
-    $marks = pop @tokens; }
   @tokens = map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
       : ($r eq 'LaTeXML::Core::Tokens' ? @$_
         : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)))) }
     @tokens;
-  push(@tokens, $marks) if $marks;
   return bless [@tokens], $class; }
 
 # Return a list of the tokens making up this Tokens
 sub unlist {
   my ($self) = @_;
-  my @unlisted = @$self;
-  if (ref $unlisted[-1] eq 'ARRAY') {
-    @unlisted = @unlisted[0 .. scalar(@unlisted) - 2]; }
-  return @unlisted; }
+  return @$self; }
 
 # Return a shallow copy of the Tokens
 sub clone {
@@ -63,16 +57,7 @@ sub clone {
 # Return a string containing the TeX form of the Tokens
 sub revert {
   my ($self) = @_;
-  my @unlisted = @$self;
-  if (ref $unlisted[-1] eq 'ARRAY') {
-    @unlisted = @unlisted[0 .. scalar(@unlisted) - 2]; }
-  return @unlisted; }
-
-# Return "the marks", if any
-sub get_marks {
-  my ($self) = @_;
-  my $last = @$self[-1];
-  return (ref $last eq 'ARRAY') ? $last : undef; }
+  return map { ($$_[1] == CC_NOEXPAND1 ? $$_[2] : $_); } @$self; }
 
 # toString is used often, and for more keyword-like reasons,
 # NOT for creating valid TeX (use revert or UnTeX for that!)
@@ -100,24 +85,18 @@ sub beDigested {
 
 sub neutralize {
   my ($self, @extraspecials) = @_;
-  my @neutralized = map { $_->neutralize(@extraspecials) } $self->unlist;
-  if (ref @$self[-1] eq 'ARRAY') {    # preserve marks
-    push(@neutralized, @$self[-1]); }
-  return Tokens(@neutralized); }
+  # Remove dont_expand, but preserve NOEXPAND1
+  return Tokens(map { $_->neutralize(@extraspecials) } @$self); }
 
 sub without_dont_expand {
   my ($self) = @_;
-  my @cleaned = map { $_->without_dont_expand } $self->unlist;
-  if (ref @$self[-1] eq 'ARRAY') {    # preserve marks
-    push(@cleaned, @$self[-1]); }
-  return Tokens(@cleaned); }
+  return Tokens(map { $_->without_dont_expand } @$self); }
 
 sub isBalanced {
   my ($self) = @_;
   my $level = 0;
   foreach my $t (@$self) {
-    next if ref $t eq 'ARRAY';
-    my $cc = $$t[1];                  # INLINE
+    my $cc = $$t[1];    # INLINE
     $level++ if $cc == CC_BEGIN;
     $level-- if $cc == CC_END; }
   return $level == 0; }

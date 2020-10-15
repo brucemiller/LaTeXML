@@ -147,22 +147,11 @@ sub equals {
 # B book suggests running this
 sub PrepArgTokens {
   my (@toks) = @_;
-  my @masks;
-  if (ref $toks[-1] eq 'ARRAY') {
-    # we have masks!
-    my $masks = pop(@toks);
-    @masks = @$masks; }
   my @rescanned = ();
-  my $index     = -1;
   while (my $t = shift @toks) {
-    $index++;
-    $t = $$t[2] || $t;    # remove noexpand flag
-    if (@masks && $masks[$index]) {
-      push(@rescanned, $t); }
-    elsif ($$t[1] == CC_PARAM && @toks) {
+    if ($$t[1] == CC_PARAM && @toks) {
+      # NOTE for future cleanup: Only CC_CS & CC_ACTIVE should ever get with_dont_expand!
       my $next_t = shift @toks;
-      $index++;
-      $next_t = $$next_t[2] || $next_t;
       my $next_cc = $next_t && $$next_t[1];
       if ($next_cc == CC_OTHER) {
         # only group clear match token cases
@@ -174,7 +163,7 @@ sub PrepArgTokens {
         Error('misdefined', 'expansion', undef, "Parameter has a malformed arg, should be #1-#9 or ##. ",
           "In expansion " . ToString(Tokens(@toks))); } }
     else {
-      push(@rescanned, $t); } }
+      push(@rescanned, $t->without_dont_expand); } }
   return @rescanned; }
 
 #======================================================================

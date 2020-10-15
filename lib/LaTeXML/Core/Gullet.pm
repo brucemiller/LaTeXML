@@ -190,16 +190,17 @@ our @CATCODE_HOLD = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 1, 0,
-  0, 1, 0);
+  0, 1, 0, 0);
 
 sub readToken {
   my ($self, $keep_the) = @_;
   #  my $token = shift(@{$$self{pushback}});
   my ($ptoken, $token);
   my $cc;
+###  $keep_the = $keep_the || $LaTeXML::KEEP_THE;
   # Check in pushback first....
   while (($ptoken = shift(@{ $$self{pushback} })) &&
-    ($token = ref $ptoken eq 'ARRAY' ? $$ptoken[1] : $ptoken) &&
+    ($token = ($$ptoken[1] == CC_NOEXPAND1 ? $$ptoken[2] : $ptoken)) &&
     $CATCODE_HOLD[$cc = $$token[1]]) {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }
@@ -236,15 +237,16 @@ sub readXToken {
   my ($self, $toplevel, $commentsok, $keep_the) = @_;
   $toplevel = 1 unless defined $toplevel;
   return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
+###  $keep_the = $keep_the || $LaTeXML::KEEP_THE;
   my ($token, $cc, $defn);
   while (1) {
     $token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken();
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
-    elsif (ref $token eq 'ARRAY') {
-      return $keep_the ? $token : $$token[1]; }
-    elsif (($cc = $$token[1]) == CC_COMMENT) {    # NOTE: Inlined ->getCatcode
+    elsif (($cc = $$token[1]) == CC_NOEXPAND1) {
+      return $keep_the ? $token : $$token[2]; }
+    elsif ($cc == CC_COMMENT) {    # NOTE: Inlined ->getCatcode
       return $token if $commentsok;
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
     elsif ($cc == CC_MARKER) {
@@ -254,6 +256,7 @@ sub readXToken {
         # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
+      local $LaTeXML::KEEP_THE = $keep_the;
       my $invoked   = $defn->invoke($self) || [];
       my @expansion = ();
       for my $exp_t (@$invoked) {
@@ -270,8 +273,9 @@ sub readXToken {
         #    at the exact time
         # the token leaves the pushback.
         # This is *required to be different* from the noexpand flag, as per the B Book
-        # Let's choose something that will immediately break latexml if we overlook it...
-        @expansion = map { ['the_token', $_] } @expansion; }
+        @expansion = map { T_NOEXPAND1($_); } @expansion; }
+      else {
+        @expansion = map { ($$_[1] == CC_NOEXPAND1 ? $$_[2] : $_); } @expansion; }
       # add the newly expanded tokens back into the gullet stream, in the ordinary case.
       unshift(@{ $$self{pushback} }, @expansion); }
     elsif ($cc == CC_CS && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
@@ -288,7 +292,7 @@ sub readRawLine {
   my ($self) = @_;
   # If we've got unread tokens, they presumably should come before the Mouth's raw data
   # but we'll convert them back to string.
-  my @tokens  = map  { ref $_ eq 'ARRAY' ? $$_[1] : $_ } @{ $$self{pushback} };
+  my @tokens  = map  { ($$_[1] == CC_NOEXPAND1 ? $$_[2] : $_) } @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
   if (@markers) {    # Whoops, profiling markers!
     @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;                      # Remove
@@ -358,36 +362,27 @@ our @CATCODE_BALANCED_INTERESTING = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 0,
-  0, 1, 0);
+  0, 1, 0, 0);
 
 sub readBalanced {
   my ($self, $expanded, $keep_the) = @_;
   my @tokens    = ();
-  my @masks_the = ();
   my ($token, $level) = (undef, 1);
   my $startloc = ($$self{verbosity} > 0) && $self->getLocator;
   # Inlined readToken (we'll keep comments in the result)
   while ($token = ($expanded ? $self->readXToken(0, 1, $keep_the) : $self->readToken(0, $keep_the))) {
-    if ($keep_the) {
-      if (ref $token eq 'ARRAY') {
-        $token = $$token[1];
-        push(@masks_the, 1); }
-      else {
-        push(@masks_the, 0); } }
     my $cc = $$token[1];
     if (!$CATCODE_BALANCED_INTERESTING[$cc]) {
       push(@tokens, $token); }
     elsif ($cc == CC_END) {
       $level--;
       if (!$level) {
-        pop(@masks_the) if $keep_the;
         last; }
       push(@tokens, $token); }
     elsif ($cc == CC_BEGIN) {
       $level++;
       push(@tokens, $token); }
     elsif ($cc == CC_MARKER) {
-      pop(@masks_the) if $keep_the;
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
   if ($level > 0) {
  # TODO: The current implementation has a limitation where if the balancing end is in a different mouth,
@@ -396,12 +391,6 @@ sub readBalanced {
     Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.",
       $loc_message); }
   ## Performance enhancement:
-  # Only include masks if requested AND at least one token was flagged
-  # as returned from a \the-like invocation.
-  # The default no-mask behavior is identical to having all masks set to 0
-  # so they're interchangeable.
-  if ($keep_the && (grep { $_ } @masks_the)) {
-    push(@tokens, [@masks_the]); }
   return (wantarray ? (Tokens(@tokens), $token) : Tokens(@tokens)); }
 
 sub ifNext {
@@ -487,7 +476,7 @@ sub readNextConditional {
   my $token;
   my $type;
   while ($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken()) {
-    $token = $$token[1] if ref $token eq 'ARRAY';
+    $token = $$token[2] if $$token[1] == CC_NOEXPAND1;
     if ($type = $STATE->lookupConditional($token)) {
       return ($token, $type); } }
   return; }

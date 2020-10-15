@@ -141,7 +141,7 @@ our @CATCODE_ABSORBABLE = (    # [CONSTANT]
   0, 0, 0, 0,
   0, 0, 1, 1,
   1, 0, 1, 0,
-  0, 0, 0);
+  0, 0, 0, 0);
 
 sub invokeToken {
   my ($self, $token) = @_;
