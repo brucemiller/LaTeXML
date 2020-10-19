@@ -31,7 +31,7 @@ use base qw(LaTeXML::Common::Object);
 sub new {
   my ($class, %options) = @_;
   return bless {
-    mouth     => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
+    mouth => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
     verbosity => $options{verbosity} || 0
   }, $class; }
 
@@ -80,8 +80,8 @@ sub mouthIsOpen {
 # Corresponds (I think) to TeX's \endinput
 sub flushMouth {
   my ($self) = @_;
-  $$self{mouth}->finish;    # but not close!
-  $$self{pushback}  = [];   # And don't read anytyhing more from it.
+  $$self{mouth}->finish;     # but not close!
+  $$self{pushback}  = [];    # And don't read anytyhing more from it.
   $$self{autoclose} = 1;
   return; }
 
@@ -193,21 +193,19 @@ our @CATCODE_HOLD = (
   0, 1, 0, 0);
 
 sub readToken {
-  my ($self, $keep_the) = @_;
-  #  my $token = shift(@{$$self{pushback}});
-  my ($ptoken, $token);
+  my ($self) = @_;
+  my $token;
   my $cc;
-###  $keep_the = $keep_the || $LaTeXML::KEEP_THE;
   # Check in pushback first....
-  while (($ptoken = shift(@{ $$self{pushback} })) &&
-    ($token = ($$ptoken[1] == CC_NOEXPAND1 ? $$ptoken[2] : $ptoken)) &&
-    $CATCODE_HOLD[$cc = $$token[1]]) {
+  while (($token = shift(@{ $$self{pushback} }))
+         && (($$token[1] != CC_NOEXPAND1) || ($token = $$token[2]))
+         && $CATCODE_HOLD[$cc = $$token[1]]) {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }
     elsif ($cc == CC_MARKER) {
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
   if (defined $token) {
-    return $keep_the ? $ptoken : $token; }
+    return $token; }
   # Not in pushback, use the current mouth
   while (($token = $$self{mouth}->readToken()) && $CATCODE_HOLD[$cc = $$token[1]]) {
     if ($cc == CC_COMMENT) {
@@ -234,10 +232,9 @@ sub unread {
 #  will step to the next input stream (Mouth) if one is available,
 # If $commentsok is true, will also pass comments.
 sub readXToken {
-  my ($self, $toplevel, $commentsok, $keep_the) = @_;
+  my ($self, $toplevel, $commentsok) = @_;
   $toplevel = 1 unless defined $toplevel;
   return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
-###  $keep_the = $keep_the || $LaTeXML::KEEP_THE;
   my ($token, $cc, $defn);
   while (1) {
     $token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken();
@@ -245,7 +242,7 @@ sub readXToken {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
     elsif (($cc = $$token[1]) == CC_NOEXPAND1) {
-      return $keep_the ? $token : $$token[2]; }
+      return $LaTeXML::KEEP_THE ? $token : $$token[2]; }
     elsif ($cc == CC_COMMENT) {    # NOTE: Inlined ->getCatcode
       return $token if $commentsok;
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
@@ -256,7 +253,6 @@ sub readXToken {
         # Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
-      local $LaTeXML::KEEP_THE = $keep_the;
       my $invoked   = $defn->invoke($self) || [];
       my @expansion = ();
       for my $exp_t (@$invoked) {
@@ -295,7 +291,7 @@ sub readRawLine {
   my @tokens  = map  { ($$_[1] == CC_NOEXPAND1 ? $$_[2] : $_) } @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
   if (@markers) {    # Whoops, profiling markers!
-    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;                      # Remove
+    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;    # Remove
     map { LaTeXML::Core::Definition::stopProfiling($_, 'expand') } @markers; }
   $$self{pushback} = [];
   # If we still have peeked tokens, we ONLY want to combine it with the remainder
@@ -365,12 +361,12 @@ our @CATCODE_BALANCED_INTERESTING = (
   0, 1, 0, 0);
 
 sub readBalanced {
-  my ($self, $expanded, $keep_the) = @_;
-  my @tokens    = ();
+  my ($self, $expanded) = @_;
+  my @tokens = ();
   my ($token, $level) = (undef, 1);
   my $startloc = ($$self{verbosity} > 0) && $self->getLocator;
   # Inlined readToken (we'll keep comments in the result)
-  while ($token = ($expanded ? $self->readXToken(0, 1, $keep_the) : $self->readToken(0, $keep_the))) {
+  while ($token = ($expanded ? $self->readXToken(0, 1) : $self->readToken())) {
     my $cc = $$token[1];
     if (!$CATCODE_BALANCED_INTERESTING[$cc]) {
       push(@tokens, $token); }
@@ -486,12 +482,12 @@ sub readNextConditional {
 #  tokens, non-expandable tokens, args, Numbers, ...
 #**********************************************************************
 sub readArg {
-  my ($self, $keep_the) = @_;
+  my ($self) = @_;
   my $token = $self->readNonSpace;
   if (!defined $token) {
     return; }
   elsif ($$token[1] == CC_BEGIN) {    # Inline ->getCatcode!
-    return scalar($self->readBalanced(0, $keep_the)); }
+    return scalar($self->readBalanced(0)); }
   else {
     return Tokens($token); } }
 
@@ -631,7 +627,7 @@ sub readNumber {
 # Return a Number or undef
 sub readNormalInteger {
   my ($self) = @_;
-  my $token = $self->readXToken(1);    # expand more
+  my $token = $self->readXToken(1);     # expand more
   if (!defined $token) {
     return; }
   elsif (($$token[1] == CC_OTHER) && ($token->toString =~ /^[0-9]$/)) {    # Read decimal literal
@@ -914,7 +910,7 @@ an expandable need explicit expansion; usually expansion happens at the right ti
 
 Return the next token from the input source, or undef if there is no more input.
 
-=item C<< $token = $gullet->readXToken($toplevel,$commentsok,$keep_the); >>
+=item C<< $token = $gullet->readXToken($toplevel,$commentsok); >>
 
 Return the next unexpandable token from the input source, or undef if there is no more input.
 If the next token is expandable, it is expanded, and its expansion is reinserted into the input.

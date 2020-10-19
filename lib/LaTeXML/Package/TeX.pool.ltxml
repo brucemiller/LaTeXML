@@ -111,7 +111,8 @@ DefParameterType('Plain', sub {
 
 DefParameterType('DefPlain', sub {
     my ($gullet, $inner) = @_;
-    my $value = $gullet->readArg(1);
+##    local $LaTeXML::KEEP_THE = 1;
+    my $value = $gullet->readArg;
     if ($inner) {
       ($value) = $inner->reparseArgument($gullet, $value); }
     $value; },
@@ -239,12 +240,10 @@ DefParameterType('Expanded', sub {
 
 DefParameterType('DefExpanded', sub {
     my ($gullet) = @_;
-    my $token    = $gullet->readXToken(0);
-    my @tokens   = ();
-    if ($token->getCatcode == CC_BEGIN) {
-      return scalar($gullet->readBalanced(1, 1))->without_dont_expand; }
-    else {
-      return $token->without_dont_expand; } },
+    local $LaTeXML::KEEP_THE = 1;
+    my $token    = $gullet->readXToken;
+    my $expanded = ($token->getCatcode == CC_BEGIN ? $gullet->readBalanced(1) : $token);
+    return $expanded->without_dont_expand; },
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
@@ -266,7 +265,7 @@ DefParameterType('Semiverbatim', sub { $_[0]->readArg; }, semiverbatim => 1,
 # Read a LaTeX-style optional argument (ie. in []), but the contents read as Semiverbatim.
 DefParameterType('OptionalSemiverbatim', sub { $_[0]->readOptional; },
   semiverbatim => 1, optional => 1,
-  reversion    => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Be careful here: if % appears before the initial {, it's still a comment!
 # Also, note that non-typewriter fonts will mess up some chars on digestion!
@@ -291,7 +290,7 @@ DefParameterType('Undigested', sub { $_[0]->readArg; }, undigested => 1,
 # Read a LaTeX-style optional argument (ie. in []), but it will not be digested.
 DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
   undigested => 1, optional => 1,
-  reversion  => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
@@ -429,7 +428,7 @@ DefParameterType('Digested', sub {
     do { $token = $gullet->readXToken(0);
     } while (defined $token && $token->getCatcode == CC_SPACE);
     my @list = ();
-    if (!defined $token) { }
+    if    (!defined $token) { }
     elsif ($token->equals(T_BEGIN)) {
       Digest($token);
       @list = $STATE->getStomach->digestNextBody(); pop(@list); }
@@ -444,7 +443,7 @@ DefParameterType('Digested', sub {
 # A variation: Digest until we encounter a given token!
 DefParameterType('DigestUntil', sub {
     my ($gullet, $until) = @_;
-    ($until) = $until->unlist;                               # Make sure it's a single token!!!
+    ($until) = $until->unlist;    # Make sure it's a single token!!!
     $gullet->skipSpaces;
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @list   = $STATE->getStomach->digestNextBody($until);
@@ -1013,8 +1012,8 @@ DefRegister('\tracingcommands', Number(0),
 
 {
   my %iparms = (
-    pretolerance => 100, tolerance     => 200, hbadness        => 1000, vbadness => 1000,
-    linepenalty  => 10,  hyphenpenalty => 50,  exhyphenpenalty => 50,
+    pretolerance         => 100,   tolerance           => 200, hbadness => 1000, vbadness => 1000,
+    linepenalty          => 10,    hyphenpenalty       => 50,  exhyphenpenalty => 50,
     binoppenalty         => 700,   relpenalty          => 500,
     clubpenalty          => 150,   widowpenalty        => 150, displaywidowpenalty => 50,
     brokenpenalty        => 100,   predisplaypenalty   => 10000,
@@ -1022,15 +1021,15 @@ DefRegister('\tracingcommands', Number(0),
     floatingpenalty      => 0,     outputpenalty       => 0,
     doublehyphendemerits => 10000, finalhyphendemerits => 5000, adjdemerits => 10000,
     looseness            => 0,     pausing             => 0,
-    holdinginserts       => 0,     tracingonline       => 0, tracingstats => 0,
+    holdinginserts       => 0,     tracingonline       => 0, tracingstats  => 0,
     tracingparagraphs    => 0,     tracingpages        => 0, tracingoutput => 0,
-    tracinglostchars => 1,
-    tracingrestores  => 0, language => 0, uchyph => 1, lefthyphenmin => 0,
-    righthyphenmin   => 0, globaldefs => 0, defaulthyphenchar => ord('-'), defaultskewchar => -1,
+    tracinglostchars     => 1,
+    tracingrestores      => 0, language   => 0, uchyph => 1, lefthyphenmin => 0,
+    righthyphenmin       => 0, globaldefs => 0, defaulthyphenchar => ord('-'), defaultskewchar => -1,
     escapechar => ord('\\'), endlinechar => ord("\r"), newlinechar => -1, maxdeadcycles => 0, hangafter => 0,
-    fam  => -1, mag => 1000, magnification => 1000, delimiterfactor => 0,
-    time => 0,  day => 0,    month         => 0,    year            => 0,
-    showboxbreadth => 5, showboxdepth => 3, errorcontextlines => 5);
+    fam        => -1,    mag          => 1000, magnification     => 1000, delimiterfactor => 0,
+    time       => 0,     day          => 0,    month             => 0,    year            => 0,
+    showboxbreadth => 5, showboxdepth => 3,    errorcontextlines => 5);
 
   foreach my $p (keys %iparms) {
     DefRegister("\\$p", Number($iparms{$p})); }
@@ -1081,7 +1080,7 @@ sub today {
     hfuzz              => '0.1pt', vfuzz => '0.1pt', overfullrule => '5pt',
     emergencystretch   => 0,
     hsize              => '6.5in', vsize => '8.9in',
-    maxdepth           => '4pt', splitmaxdepth => '16383.99999pt', boxmaxdepth => '16383.99999pt',
+    maxdepth           => '4pt',   splitmaxdepth => '16383.99999pt', boxmaxdepth => '16383.99999pt',
     lineskiplimit      => 0,
     delimitershortfall => '5pt', nulldelimiterspace => '1.2pt', scriptspace => '0.5pt',
     mathsurround       => 0,
@@ -1102,8 +1101,8 @@ sub today {
 #    | \pagefillstretch | \pagefilllstretch | pageshrink | \pagedepth
 {
   my %sp_dparms = (
-    prevdepth       => 0, pagegoal         => 0, pagetotal  => 0, pagestretch => 0, pagefilstretch => 0,
-    pagefillstretch => 0, pagefilllstretch => 0, pageshrink => 0, pagedepth   => 0);
+    prevdepth => 0, pagegoal => 0, pagetotal => 0, pagestretch => 0, pagefilstretch => 0,
+    pagefillstretch => 0, pagefilllstretch => 0, pageshrink => 0, pagedepth => 0);
   foreach my $p (keys %sp_dparms) {
     DefRegister("\\$p", Dimension($sp_dparms{$p})); }
 }
@@ -1117,8 +1116,8 @@ sub today {
     abovedisplayshortskip => '0pt plus 3pt',
     belowdisplayskip      => '12pt plus 3pt minus 9pt',
     belowdisplayshortskip => '0pt plus 3pt',
-    leftskip              => 0, rightskip => 0, topskip => '10pt', splittopskip => '10pt',
-    tabskip               => 0, spaceskip => 0, xspaceskip => 0, parfillskip => '0pt plus 1fil');
+    leftskip              => 0, rightskip => 0, topskip    => '10pt', splittopskip => '10pt',
+    tabskip               => 0, spaceskip => 0, xspaceskip => 0,      parfillskip  => '0pt plus 1fil');
 
   foreach my $p (keys %gparms) {
     DefRegister("\\$p", Glue($gparms{$p})); }
@@ -1608,17 +1607,17 @@ DeclareFontMap('OT1',
     "\x{0131}", "\x{0237}", UTF(0x60), UTF(0xB4), "\x{02C7}", "\x{02D8}", UTF(0xAF), "\x{02DA}",
     UTF(0xB8), UTF(0xDF), UTF(0xE6), "\x{0153}", UTF(0xF8), UTF(0xC6), "\x{152}", UTF(0xD8),
     UTF(0xA0) . "\x{0335}", '!', "\x{201D}", '#', '$', '%', '&', "\x{2019}",
-    '(', ')', '*', '+', ',', '-', '.', '/',
-    '0', '1', '2', '3', '4', '5', '6', '7',
-    '8', '9', ':', ';', UTF(0xA1), '=', UTF(0xBF), '?',
-    '@',        'A', 'B', 'C', 'D',        'E', 'F', 'G',
-    'H',        'I', 'J', 'K', 'L',        'M', 'N', 'O',
-    'P',        'Q', 'R', 'S', 'T',        'U', 'V', 'W',
-    'X',        'Y', 'Z', '[', "\x{201C}", ']', "^", "\x{02D9}",
-    "\x{2018}", 'a', 'b', 'c', 'd',        'e', 'f', 'g',
-    'h',        'i', 'j', 'k', 'l',        'm', 'n', 'o',
-    'p',        'q', 'r', 's', 't',        'u', 'v', 'w',
-    'x', 'y', 'z', "\x{2013}", "\x{2014}", "\x{02DD}", UTF(0x7E), UTF(0xA8)]);
+    '(',        ')', '*', '+',        ',', '-', '.', '/',
+    '0',        '1', '2', '3',        '4', '5', '6', '7',
+    '8',        '9', ':', ';',        UTF(0xA1), '=', UTF(0xBF), '?',
+    '@',        'A', 'B', 'C',        'D',        'E',        'F', 'G',
+    'H',        'I', 'J', 'K',        'L',        'M',        'N', 'O',
+    'P',        'Q', 'R', 'S',        'T',        'U',        'V', 'W',
+    'X',        'Y', 'Z', '[',        "\x{201C}", ']',        "^", "\x{02D9}",
+    "\x{2018}", 'a', 'b', 'c',        'd',        'e',        'f', 'g',
+    'h',        'i', 'j', 'k',        'l',        'm',        'n', 'o',
+    'p',        'q', 'r', 's',        't',        'u',        'v', 'w',
+    'x',        'y', 'z', "\x{2013}", "\x{2014}", "\x{02DD}", UTF(0x7E), UTF(0xA8)]);
 
 DeclareFontMap('OT1',
   ["\x{0393}", "\x{0394}", "\x{0398}", "\x{039B}", "\x{039E}", "\x{03A0}", "\x{03A3}", "\x{03A5}",
@@ -1715,7 +1714,7 @@ DeclareFontMap('OMX',
     "(",        ")",        "(",        ")",        "[",        "]",        "\x{230A}", "\x{230B}",
     "\x{2308}", "\x{2309}", "{",        "}",        "\x{27E8}", "\x{27E9}", "/",        UTF(0x5C),
     "(",        ")",        "[",        "]",        "\x{230A}", "\x{230B}", "\x{2308}", "\x{2309}",
-    "{", "}", "\x{27E8}", "\x{27E9}", "/", UTF(0x5C), "/", UTF(0x5C),
+    "{",        "}",        "\x{27E8}", "\x{27E9}", "/",        UTF(0x5C), "/", UTF(0x5C),
     # next two rows are just fragments
     # l.up.paren r.up.paren  l.up.brak   r.up.brak    l.bot.brak  r.bot.brak  l.brak.ext  r.brak.ext
     "\x{239B}", "\x{239E}", "\x{23A1}", "\x{23A4}", "\x{23A3}", "\x{23A6}", "\x{23A2}", "\x{23A5}",
@@ -1727,7 +1726,7 @@ DeclareFontMap('OMX',
     "\x{2211}", "\x{220F}", "\x{222B}", "\x{22C3}", "\x{22C2}", "\x{228C}", "\x{2227}", "\x{2228}",
     "\x{2211}", "\x{220F}", "\x{222B}", "\x{22C3}", "\x{22C2}", "\x{228C}", "\x{2227}", "\x{2228}",
     "\x{2210}", "\x{2210}", UTF(0x5E), UTF(0x5E), UTF(0x5E), UTF(0x7E), UTF(0x7E), UTF(0x7E),
-    "[", "]", "\x{230A}", "\x{230B}", "\x{2308}", "\x{2309}", "{", "}",
+    "[",        "]",        "\x{230A}", "\x{230B}", "\x{2308}", "\x{2309}", "{", "}",
 #                                                              [missing rad frags]     double arrow ext.
     "\x{23B7}", "\x{23B7}", "\x{23B7}", "\x{23B7}", "\x{23B7}", undef, undef, undef,
     #                        [missing tips for horizontal curly braces]
@@ -1755,7 +1754,7 @@ our @mathclassrole = (undef, 'BIGOP', 'BINOP', 'RELOP', 'OPEN', 'CLOSE', 'PUNCT'
 # Is this "fontinfo" stuff sufficient to maintain a math font "family" ??
 # What we're really after is a connectio nto a font encoding mapping.
 sub decodeMathChar {
-  my ($n) = @_;
+  my ($n)   = @_;
   my $class = int($n / (16 * 256)); $n = $n % (16 * 256);
   my $fam   = int($n / 256);        $n = $n % 256;
   my $font  = LookupValue('fontinfo_' . $fam . '_text')
@@ -1921,8 +1920,8 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
 
     # What is the CORRECT (& general) way to ask whether we're in "vertical mode"??
     #  my $vmode = $tag eq 'ltx:inline-block'; # ie, explicitly \vbox !?!?!?!
-    my $issvg = $current && $document->getNodeQName($current) =~ /^svg:/;
-    my $vmode = $current && $current->getAttribute('_vertical_mode_');
+    my $issvg  = $current && $document->getNodeQName($current) =~ /^svg:/;
+    my $vmode  = $current && $current->getAttribute('_vertical_mode_');
     my $newtag = ($issvg ? 'svg:g' : ($vmode ? 'ltx:p' : 'ltx:text'));
     my $node   = $document->openElement($newtag, _noautoclose => 1,
       width => $props{width});
@@ -1930,7 +1929,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     $document->absorb($contents);
     $document->closeNode($node); },
 
-  mode  => 'text', bounded => 1,
+  mode => 'text', bounded => 1,
   sizer => '#2',
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
@@ -2015,7 +2014,7 @@ sub insertBlock {
     if (scalar(@rows) < 1) {    # Insertion came up empty?
       $document->removeNode($newblock); }    # then remove the new block entirely
     elsif ((scalar(@rows) == 1)              # Else only 1 item inside...
-      && ($model->getNodeQName($rows[0]) eq 'ltx:p')    # Which is an ltx:p with 1 item
+      && ($model->getNodeQName($rows[0]) eq 'ltx:p')                # Which is an ltx:p with 1 item
       && (scalar(@crows) == 1)
       && $document->canContain($newblock->parentNode, $crows[0])    # if allowed.
       && (!$hasattr || !grep { !$document->canHaveAttribute($crows[0], $_) } keys %blockattr)) {
@@ -2682,8 +2681,8 @@ sub alignmentBindings {
   $mode = LookupValue('MODE') unless $mode;
   my $ismath    = $mode =~ /math$/;
   my $container = ($ismath ? 'ltx:XMArray' : 'ltx:tabular');
-  my $rowtype   = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
-  my $coltype   = ($ismath ? 'ltx:XMCell' : 'ltx:td');
+  my $rowtype   = ($ismath ? 'ltx:XMRow'   : 'ltx:tr');
+  my $coltype   = ($ismath ? 'ltx:XMCell'  : 'ltx:td');
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
       template       => $template,
       openContainer  => sub { $_[0]->openElement($container, @_[1 .. $#_]); },
@@ -2700,9 +2699,9 @@ sub alignmentBindings {
   Let('\cr',             '\@alignment@cr');
   Let('\crcr',           '\@alignment@cr');
   Let('\hline',          '\@alignment@hline');
-  Let(T_MATH, ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
-  Let('\@open@row',  '\default@open@row');
-  Let('\@close@row', '\default@close@row');
+  Let(T_MATH,            ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
+  Let('\@open@row',      '\default@open@row');
+  Let('\@close@row',     '\default@close@row');
 
   return; }
 
@@ -2884,7 +2883,7 @@ DefPrimitiveI('\@@open@inner@column', undef, sub {
                                     # Scan for leading \omit, skipping over (& saving) \hline.
 
     while (my $tok = $gullet->readXToken(0, 0)) {
-      if ($tok->equals(T_SPACE)) { }                      # Skip leading space
+      if    ($tok->equals(T_SPACE)) { }                   # Skip leading space
       elsif (grep { $tok->equals($_) } @line_tokens) {    # Save line commands
         push(@lines, $stomach->invokeToken($tok)); }
       elsif (Equals($tok, T_BEGIN)) {                     # Crazy... seems { doesn't "block" \omit!
@@ -2965,7 +2964,7 @@ DefConstructor('\halign BoxSpecification',
     # Read the template up till something equivalent to \cr
     my @template = ();
     # Only expand certain things; See TeX book p.238
-    while (($t = $gullet->readToken(0)) && !Equals($t, T_CS('\cr'))) {
+    while (($t = $gullet->readToken()) && !Equals($t, T_CS('\cr'))) {
       if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
         $gullet->readKeyword('=');
         my $value = $gullet->readGlue; }     # Discard! In principle, should store in template!
@@ -3041,7 +3040,7 @@ DefMacro('\oalign{}',
   '\@@oalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@oalign{}',
   '#1',
-  reversion    => '\oalign{#1}', bounded => 1, mode => 'text',
+  reversion => '\oalign{#1}', bounded => 1, mode => 'text',
   beforeDigest => sub { alignmentBindings('l'); });
 
 # This is actually different; the lines should lie ontop of each other.
@@ -3050,7 +3049,7 @@ DefMacro('\ooalign{}',
   '\@@ooalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@ooalign{}',
   '#1',
-  reversion    => '\ooalign{#1}', bounded => 1, mode => 'text',
+  reversion => '\ooalign{#1}', bounded => 1, mode => 'text',
   beforeDigest => sub { alignmentBindings('l'); });
 
 #----------------------------------------------------------------------
@@ -3059,7 +3058,7 @@ DefConstructor('\@@ooalign{}',
 DefConstructorI('\indent', undef, sub {
     my ($document) = @_;
     my $node = $document->getElement;
-    if (!$node) { }
+    if    (!$node) { }
     elsif ($document->getNodeQName($node) eq 'ltx:para') {
       $node->setAttribute(class => "ltx_indent"); }
     elsif ($document->canContainSomehow($node, "ltx:para")) {
@@ -3070,7 +3069,7 @@ DefConstructorI('\indent', undef, sub {
 DefConstructorI('\noindent', undef, sub {
     my ($document) = @_;
     my $node = $document->getElement;
-    if (!$node) { }
+    if    (!$node) { }
     elsif ($document->getNodeQName($node) eq 'ltx:para') {
       $node->setAttribute(class => "ltx_noindent"); }
     elsif ($document->canContainSomehow($node, "ltx:para")) {
@@ -3122,7 +3121,7 @@ Let('\par', '\normal@par');
 # OTOH, sometimes \par is just a minimalistic "start a new line"
 # This should be closer for those cases.
 DefConstructorI('\inner@par', undef, sub {
-    if ($_[0]->maybeCloseElement('ltx:p')) { }
+    if    ($_[0]->maybeCloseElement('ltx:p')) { }
     elsif ($_[0]->canContain($_[0]->getNode, 'ltx:break')) {
       $_[0]->insertElement('ltx:break'); } });
 
@@ -3188,7 +3187,7 @@ DefPrimitiveI('\end', undef, sub { $_[0]->getGullet->flush; return; });
 # a candidate for use by \hskip, \hspace, etc... ?
 sub DimensionToSpaces {
   my ($dimen) = @_;
-  my $fs      = LookupValue('font')->getSize;    # 1 em
+  my $fs      = LookupValue('font')->getSize;        # 1 em
   my $pt      = $dimen->ptValue;
   my $ems     = $pt / $fs;
   if    ($ems < 0.01) { return; }
@@ -3321,7 +3320,7 @@ DefConstructorI('\@@BEGININLINEMATH', undef,
     . "#body"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  reversion    => Tokens(T_MATH),
+  reversion => Tokens(T_MATH),
   beforeDigest => sub { $_[0]->beginMode('inline_math'); }, captureBody => 1);
 DefConstructorI('\@@ENDINLINEMATH', undef, "",
   reversion    => Tokens(T_MATH),
@@ -3500,9 +3499,9 @@ sub cleanup_XMText {
 sub openMathFork {
   my ($document, $equation) = @_;
   my $fork   = $document->openElementAt($equation, 'ltx:MathFork');
-  my $main   = $document->openElementAt($fork,     'ltx:Math', _box => MathWhatsit());  # Start EMPTY!
-  my $xmath  = $document->openElementAt($main,     'ltx:XMath');
-  my $branch = $document->openElementAt($fork,     'ltx:MathBranch');
+  my $main   = $document->openElementAt($fork, 'ltx:Math', _box => MathWhatsit());    # Start EMPTY!
+  my $xmath  = $document->openElementAt($main, 'ltx:XMath');
+  my $branch = $document->openElementAt($fork, 'ltx:MathBranch');
   return ($main, $branch); }
 
 # Close the appropriate elements of an ltx:MathFork created with openMathFork.
@@ -3649,17 +3648,17 @@ sub equationgroupJoinRows {
     if (my $l = $eq->getAttribute('labels')) {
       $labels = ($labels ? "$labels $l" : $l); }
     $id = $eq->getAttribute('xml:id') if $eq->hasAttribute('xml:id');
-    $eq->removeAttribute('xml:id') if $id;
+    $eq->removeAttribute('xml:id')    if $id;
     $tags = $document->findnode('ltx:tags', $eq);
     # Annoying bookkeeping (should be more built in?)
     $idctr  = $eq->getAttribute('_ID_counter_')   if $eq->hasAttribute('_ID_counter_');
     $idctrm = $eq->getAttribute('_ID_counter_m_') if $eq->hasAttribute('_ID_counter_m_'); }
-  $document->unRecordID($id) if $id;
-  $document->setAttribute($equation, labels           => $labels) if $labels;
-  $document->setAttribute($equation, 'xml:id'         => $id)     if $id;
-  $document->setAttribute($equation, '_ID_counter_'   => $idctr)  if $idctr;
+  $document->unRecordID($id)                                      if $id;
+  $document->setAttribute($equation, labels => $labels)           if $labels;
+  $document->setAttribute($equation, 'xml:id' => $id)             if $id;
+  $document->setAttribute($equation, '_ID_counter_' => $idctr)    if $idctr;
   $document->setAttribute($equation, '_ID_counter_m_' => $idctrm) if $idctrm;
-  $equation->appendChild($tags) if $tags;
+  $equation->appendChild($tags)                                   if $tags;
 
   # Scan equations to see which ones likely are continuations of previous
   my ($main, $branch) = openMathFork($document, $equation);
@@ -3865,12 +3864,12 @@ sub scriptHandler {
         font        => $script->getFont, isMath => 1,
         level       => $stomach->getBoxingLevel,
         scriptlevel => $stomach->getScriptLevel,
-        base        => $base,                           # for sizing/positioning
+        base        => $base,                      # for sizing/positioning
         prevscript  => $prevscript))
       unless IsEmpty($script);
-    AssignValue(font => $font);                         # revert
+    AssignValue(font => $font);                    # revert
     return @stuff; }
-  else {                                                # Non math use of _ ??
+  else {                                           # Non math use of _ ??
     my $c = (($op eq 'SUPERSCRIPT') ? '^' : '_');
     Error('unexpected', $c, $stomach, "Script $c can only appear in math mode");
     return Box($c, undef, undef, (($op eq 'SUPERSCRIPT') ? T_SUPER : T_SUB));
@@ -4090,12 +4089,12 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
     # really have to pass +/-1, +/-2 etc..!
     adjustMathstyle($style, {}, @top);
     MergeFont(fraction => 1);
-    my @bot = $stomach->digestNextBody();
+    my @bot     = $stomach->digestNextBody();
     my $closing = pop(@bot);    # We'll leave whatever closed the list (endmath, endgroup...)
     $whatsit->setProperties(
-      top    => List(@top, mode => 'math'),
-      bottom => List(@bot, mode => 'math'),
-      role   => $role,
+      top       => List(@top, mode => 'math'),
+      bottom    => List(@bot, mode => 'math'),
+      role      => $role,
       meaning   => $meaning,
       thickness => $thickness,
       mathstyle => $style);
@@ -4198,7 +4197,7 @@ sub addMeaningRec {
   my ($document, $node, $meaning) = @_;
   if ($node->nodeType == XML_ELEMENT_NODE) {
     my $qname = $document->getModel->getNodeQName($node);
-    if ($qname eq 'ltx:XMArg') { }                 # DONT cross through into arguments!
+    if    ($qname eq 'ltx:XMArg') { }              # DONT cross through into arguments!
     elsif ($qname eq 'ltx:XMTok') {
       if ((($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
         && !$node->getAttribute('meaning')) {
@@ -4216,20 +4215,20 @@ DefMathI('+', undef, '+', role => 'ADDOP', meaning => 'plus');
 DefMathI('-', undef, '-', role => 'ADDOP', meaning => 'minus');
 ## Redefine, if we want Unicode minus
 ##DefMathI('-', undef, "\x{2212}", role => 'ADDOP',   meaning  => 'minus');
-DefMathI('*', undef, '*', role => 'MULOP',   meaning  => 'times');
-DefMathI('/', undef, '/', role => 'MULOP',   meaning  => 'divide');
-DefMathI('!', undef, '!', role => 'POSTFIX', meaning  => 'factorial');
+DefMathI('*', undef, '*', role => 'MULOP',   meaning => 'times');
+DefMathI('/', undef, '/', role => 'MULOP',   meaning => 'divide');
+DefMathI('!', undef, '!', role => 'POSTFIX', meaning => 'factorial');
 DefMathI(',', undef, ',', role => 'PUNCT');
 DefMathI('.', undef, '.', role => 'PERIOD');
 DefMathI(';', undef, ';', role => 'PUNCT');
-DefMathI('(', undef, '(', role => 'OPEN',    stretchy => 'false');
-DefMathI(')', undef, ')', role => 'CLOSE',   stretchy => 'false');
-DefMathI('[', undef, '[', role => 'OPEN',    stretchy => 'false');
-DefMathI(']', undef, ']', role => 'CLOSE',   stretchy => 'false');
-DefMathI('|', undef, '|', role => 'VERTBAR', stretchy => 'false');
-DefMathI(':', undef, ':', role => 'METARELOP', name => 'colon');    # Seems like good default role
-DefMathI('<', undef, '<', role => 'RELOP', meaning => 'less-than');
-DefMathI('>', undef, '>', role => 'RELOP', meaning => 'greater-than');
+DefMathI('(', undef, '(', role => 'OPEN',      stretchy => 'false');
+DefMathI(')', undef, ')', role => 'CLOSE',     stretchy => 'false');
+DefMathI('[', undef, '[', role => 'OPEN',      stretchy => 'false');
+DefMathI(']', undef, ']', role => 'CLOSE',     stretchy => 'false');
+DefMathI('|', undef, '|', role => 'VERTBAR',   stretchy => 'false');
+DefMathI(':', undef, ':', role => 'METARELOP', name     => 'colon');  # Seems like good default role
+DefMathI('<', undef, '<', role => 'RELOP',     meaning  => 'less-than');
+DefMathI('>', undef, '>', role => 'RELOP',     meaning  => 'greater-than');
 
 # NOTE: Need to evolve Ligatures to be easier to write.
 # rough draft of tool to make ligatures more sane to write...
@@ -4295,8 +4294,8 @@ my %thousands_separator = (en => ',', de => '.', fr => '.', nl => '.', pt => '.'
 DefMathLigature(matcher => sub { my ($document, $node) = @_;
     my $lang = $document->getNodeLanguage($node);
     $lang =~ s/-\w+$// if $lang;    # strip off region code, if any.
-    my $dec  = ($lang && $decimal_separator{$lang})   || '.';
-    my $thou = ($lang && $thousands_separator{$lang}) || ',';
+    my $dec     = ($lang && $decimal_separator{$lang})   || '.';
+    my $thou    = ($lang && $thousands_separator{$lang}) || ',';
     my $decrole = ($dec eq '.' ? 'PERIOD' : '');
     # my $skip  = Dimension('5mu')->valueOf;
     my @chars = ();
@@ -4315,7 +4314,7 @@ DefMathLigature(matcher => sub { my ($document, $node) = @_;
         # if thousands separator (but NOT simultaneously PUNCT!!!! Be paranoid about lists)
         elsif (($text eq $thou) && ($r ne 'PUNCT')) {
           $string = $text . $string; }    # Add to string, but omit from number
-                                                         # if decimal separator, turn it into "standard" "."
+                                          # if decimal separator, turn it into "standard" "."
         elsif (($text eq $dec) || ($r eq $decrole)) {    # was $r eq 'PERIOD'
           $string = $node->textContent . $string;
           $number = '.' . $number; }
@@ -4924,13 +4923,13 @@ sub removeEmptyElement {
 # \lx@tag[open][close]{stuff}
 DefConstructor('\lx@tag[][][]{}',
   "<ltx:tag open='#1' close='#2'>#4</ltx:tag>",
-  bounded        => 1, mode => 'text',
+  bounded => 1, mode => 'text',
   afterConstruct => \&removeEmptyElement);
 
 # \lx@tag@intags{role}{stuff}
 DefConstructor('\lx@tag@intags[]{}',
   "<ltx:tag role='#1'>#2</ltx:tag>",
-  bounded        => 1, mode => 'text', beforeDigest => sub { reenterTextMode(); },
+  bounded => 1, mode => 'text', beforeDigest => sub { reenterTextMode(); },
   afterConstruct => \&removeEmptyElement);
 
 DefConstructor('\lx@tags{}',
@@ -5144,15 +5143,15 @@ DefAccent('\v',           "\x{030C}", "\x{02C7}"); # COMBINING CARON & CARON
 DefAccent('\@ringaccent', "\x{030A}", "o");        # COMBINING RING ABOVE & non-combining
 DefAccent('\r',           "\x{030A}", "o");        # COMBINING RING ABOVE & non-combining
 DefAccent('\H',           "\x{030B}", "\x{02DD}"); # COMBINING DOUBLE ACUTE ACCENT & non-combining
-DefAccent('\c', "\x{0327}", UTF(0xB8), below => 1);    # COMBINING CEDILLA & CEDILLA
-      # NOTE: The next two get define for math, as well; See below
+DefAccent('\c',           "\x{0327}", UTF(0xB8), below => 1);    # COMBINING CEDILLA & CEDILLA
+    # NOTE: The next two get define for math, as well; See below
 DefAccent('\@text@daccent', "\x{0323}", '.',       below => 1);   # COMBINING DOT BELOW & DOT (?)
 DefAccent('\@text@baccent', "\x{0331}", UTF(0xAF), below => 1);   # COMBINING MACRON BELOW  & MACRON
-DefAccent('\t', "\x{0361}", "-");    # COMBINING DOUBLE INVERTED BREVE & ???? What????
-      # this one's actually defined in mathscinet.sty, but just stick it here!
+DefAccent('\t',             "\x{0361}", "-");    # COMBINING DOUBLE INVERTED BREVE & ???? What????
+    # this one's actually defined in mathscinet.sty, but just stick it here!
 DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
                                                      # I doubt that latter covers multiple chars...?
-       #DefAccent('\bar',"\x{0304}", ?);  # COMBINING MACRON or is this the longer overbar?
+    #DefAccent('\bar',"\x{0304}", ?);  # COMBINING MACRON or is this the longer overbar?
 
 # This will fail if there really are "assignments" after the number!
 # We're given a number pointing into the font, from which we can derive the standalone char.
@@ -5164,7 +5163,7 @@ DefPrimitive('\accent Number Expanded', sub {
     my $fam      = 0;                                            # ?
     my $font     = LookupValue('fontinfo_' . $fam . '_text');
     my $fontinfo = LookupValue('fontinfo_' . ToString($font));
-    my $acc = ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : chr($n));
+    my $acc      = ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : chr($n));
     my $reversion = Invocation(T_CS('\accent'), $num, $letter);
     # NOTE: REVERSE LOOKUP in above accent list for the non-spacing accent char
     # BUT, \accent always (?) makes an above type accent... doesn't it?
@@ -5183,7 +5182,7 @@ DefConstructor('\@math@daccent {}',
   "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>\x{22c5}</ltx:XMTok>"
     . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
     . "</ltx:XMApp>",
-  mode        => 'text', alias => '\d',
+  mode => 'text', alias => '\d',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);
@@ -5197,7 +5196,7 @@ DefConstructor('\@math@baccent {}',
   "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>" . UTF(0xAF) . "</ltx:XMTok>"
     . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
     . "</ltx:XMApp>",
-  mode        => 'text', alias => '\b',
+  mode => 'text', alias => '\b',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);
@@ -5336,32 +5335,32 @@ DefMathI('\imath', undef, "\x{0131}");
 DefMathI('\jmath', undef, "\x{0237}");
 DefMathI('\ell',   undef, "\x{2113}");
 DefMathI('\wp',    undef, "\x{2118}", meaning => 'Weierstrass-p');
-DefMathI('\Re',    undef, "\x{211C}", role => 'OPFUNCTION', meaning => 'real-part');
-DefMathI('\Im',    undef, "\x{2111}", role => 'OPFUNCTION', meaning => 'imaginary-part');
+DefMathI('\Re',    undef, "\x{211C}", role    => 'OPFUNCTION', meaning => 'real-part');
+DefMathI('\Im',    undef, "\x{2111}", role    => 'OPFUNCTION', meaning => 'imaginary-part');
 DefMathI('\mho',   undef, "\x{2127}");
 
-DefMathI('\prime',    undef, "\x{2032}", role => 'SUPOP',    locked  => 1);
-DefMathI('\emptyset', undef, "\x{2205}", role => 'ID',       meaning => 'empty-set');
+DefMathI('\prime',    undef, "\x{2032}", role => 'SUPOP', locked  => 1);
+DefMathI('\emptyset', undef, "\x{2205}", role => 'ID',    meaning => 'empty-set');
 DefMathI('\nabla',    undef, "\x{2207}", role => 'OPERATOR');
 DefMathI('\surd',     undef, "\x{221A}", role => 'OPERATOR', meaning => 'square-root');
 DefMathI('\top',      undef, "\x{22A4}", role => 'ADDOP',    meaning => 'top');
 DefMathI('\bot',      undef, "\x{22A5}", role => 'ADDOP',    meaning => 'bottom');
-DefMathI('\|', undef, "\x{2225}", role => 'VERTBAR', name => '||', meaning => 'parallel-to');
-DefMathI('\angle', undef, "\x{2220}");
+DefMathI('\|',        undef, "\x{2225}", role => 'VERTBAR', name => '||', meaning => 'parallel-to');
+DefMathI('\angle',    undef, "\x{2220}");
 
 # NOTE: This is probably the wrong role.
 # Also, should probably carry info about Binding for OpenMath
-DefMathI('\forall', undef, "\x{2200}", role => 'BIGOP',    meaning => 'for-all');
-DefMathI('\exists', undef, "\x{2203}", role => 'BIGOP',    meaning => 'exists');
-DefMathI('\neg',    undef, UTF(0xAC),  role => 'FUNCTION', meaning => 'not');
-DefMathI('\lnot',   undef, UTF(0xAC),  role => 'FUNCTION', meaning => 'not');
-DefMathI('\flat',   undef, "\x{266D}");
+DefMathI('\forall',    undef, "\x{2200}", role => 'BIGOP',    meaning => 'for-all');
+DefMathI('\exists',    undef, "\x{2203}", role => 'BIGOP',    meaning => 'exists');
+DefMathI('\neg',       undef, UTF(0xAC),  role => 'FUNCTION', meaning => 'not');
+DefMathI('\lnot',      undef, UTF(0xAC),  role => 'FUNCTION', meaning => 'not');
+DefMathI('\flat',      undef, "\x{266D}");
 DefMathI('\natural',   undef, "\x{266E}");
 DefMathI('\sharp',     undef, "\x{266F}");
-DefMathI('\backslash', undef, UTF(0x5C), role => 'MULOP');
+DefMathI('\backslash', undef, UTF(0x5C),  role => 'MULOP');
 DefMathI('\partial',   undef, "\x{2202}", role => 'OPERATOR', meaning => 'partial-differential');
 
-DefMathI('\infty', undef, "\x{221E}", role => 'ID', meaning => 'infinity');
+DefMathI('\infty',       undef, "\x{221E}", role => 'ID', meaning => 'infinity');
 DefMathI('\Box',         undef, "\x{25A1}");
 DefMathI('\Diamond',     undef, "\x{25C7}");
 DefMathI('\triangle',    undef, "\x{25B3}");
@@ -5478,20 +5477,20 @@ DefConstructorI('\displaylimits', undef, sub {
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.4. Binary Operation Symbols, p.42
 #----------------------------------------------------------------------
-DefMathI('\pm',    undef, UTF(0xB1),  role => 'ADDOP', meaning => 'plus-or-minus');
-DefMathI('\mp',    undef, "\x{2213}", role => 'ADDOP', meaning => 'minus-or-plus');
-DefMathI('\times', undef, UTF(0xD7),  role => 'MULOP', meaning => 'times');
-DefMathI('\div',   undef, UTF(0xF7),  role => 'MULOP', meaning => 'divide');
-DefMathI('\ast',   undef, "\x{2217}", role => 'MULOP');
-DefMathI('\star',  undef, "\x{22C6}", role => 'MULOP');
-DefMathI('\circ', undef, "\x{2218}", role => 'MULOP', meaning => 'compose');
+DefMathI('\pm',     undef, UTF(0xB1),  role => 'ADDOP', meaning => 'plus-or-minus');
+DefMathI('\mp',     undef, "\x{2213}", role => 'ADDOP', meaning => 'minus-or-plus');
+DefMathI('\times',  undef, UTF(0xD7),  role => 'MULOP', meaning => 'times');
+DefMathI('\div',    undef, UTF(0xF7),  role => 'MULOP', meaning => 'divide');
+DefMathI('\ast',    undef, "\x{2217}", role => 'MULOP');
+DefMathI('\star',   undef, "\x{22C6}", role => 'MULOP');
+DefMathI('\circ',   undef, "\x{2218}", role => 'MULOP', meaning => 'compose');
 DefMathI('\bullet', undef, "\x{2219}", role => 'MULOP');
 DefMathI('\cdot',   undef, "\x{22C5}", role => 'MULOP');
 ##  , meaning=>'inner-product');  that's pushing it a bit far...
 
 # Need to classify set operations more carefully....
-DefMathI('\cap', undef, "\x{2229}", role => 'ADDOP', meaning => 'intersection');
-DefMathI('\cup', undef, "\x{222A}", role => 'ADDOP', meaning => 'union');
+DefMathI('\cap',      undef, "\x{2229}", role => 'ADDOP', meaning => 'intersection');
+DefMathI('\cup',      undef, "\x{222A}", role => 'ADDOP', meaning => 'union');
 DefMathI('\uplus',    undef, "\x{228E}", role => 'ADDOP');
 DefMathI('\sqcap',    undef, "\x{2293}", role => 'ADDOP', meaning => 'square-intersection');
 DefMathI('\sqcup',    undef, "\x{2294}", role => 'ADDOP', meaning => 'square-union');
@@ -5508,16 +5507,16 @@ DefMathI('\bigtriangleup',   undef, "\x{25B3}", role => 'ADDOP');
 DefMathI('\bigtriangledown', undef, "\x{25BD}", role => 'ADDOP');
 DefMathI('\triangleleft',    undef, "\x{25C1}", role => 'ADDOP');
 DefMathI('\triangleright',   undef, "\x{25B7}", role => 'ADDOP');
-DefMathI('\lhd',             undef, "\x{22B2}", role => 'ADDOP', meaning => 'subgroup-of');
-DefMathI('\rhd',             undef, "\x{22B3}", role => 'ADDOP', meaning => 'contains-as-subgroup');
+DefMathI('\lhd',   undef, "\x{22B2}", role => 'ADDOP', meaning => 'subgroup-of');
+DefMathI('\rhd',   undef, "\x{22B3}", role => 'ADDOP', meaning => 'contains-as-subgroup');
 DefMathI('\unlhd', undef, "\x{22B4}", role => 'ADDOP', meaning => 'subgroup-of-or-equals');
 DefMathI('\unrhd', undef, "\x{22B5}", role => 'ADDOP', meaning => 'contains-as-subgroup-or-equals');
 
-DefMathI('\oplus',  undef, "\x{2295}", role => 'ADDOP', meaning => 'direct-sum');
-DefMathI('\ominus', undef, "\x{2296}", role => 'ADDOP', meaning => 'symmetric-difference');
-DefMathI('\otimes', undef, "\x{2297}", role => 'MULOP', meaning => 'tensor-product');
-DefMathI('\oslash', undef, "\x{2298}", role => 'MULOP');
-DefMathI('\odot', undef, "\x{2299}", role => 'MULOP', meaning => 'direct-product');
+DefMathI('\oplus',   undef, "\x{2295}", role => 'ADDOP', meaning => 'direct-sum');
+DefMathI('\ominus',  undef, "\x{2296}", role => 'ADDOP', meaning => 'symmetric-difference');
+DefMathI('\otimes',  undef, "\x{2297}", role => 'MULOP', meaning => 'tensor-product');
+DefMathI('\oslash',  undef, "\x{2298}", role => 'MULOP');
+DefMathI('\odot',    undef, "\x{2299}", role => 'MULOP', meaning => 'direct-product');
 DefMathI('\bigcirc', undef, "\x{25CB}", role => 'MULOP');
 DefMathI('\dagger',  undef, "\x{2020}", role => 'MULOP');
 DefMathI('\ddagger', undef, "\x{2021}", role => 'MULOP');
@@ -5535,7 +5534,7 @@ DefMathI('\subseteq',   undef, "\x{2286}", role => 'RELOP', meaning => 'subset-o
 DefMathI('\sqsubset',   undef, "\x{228F}", role => 'RELOP', meaning => 'square-image-of');
 DefMathI('\sqsubseteq', undef, "\x{2291}", role => 'RELOP', meaning => 'square-image-of-or-equals');
 DefMathI('\in',         undef, "\x{2208}", role => 'RELOP', meaning => 'element-of');
-DefMathI('\vdash', undef, "\x{22A2}", role => 'METARELOP', meaning => 'proves');
+DefMathI('\vdash',      undef, "\x{22A2}", role => 'METARELOP', meaning => 'proves');
 
 DefMathI('\geq',      undef, "\x{2265}", role => 'RELOP', meaning => 'greater-than-or-equals');
 DefMathI('\succ',     undef, "\x{227B}", role => 'RELOP', meaning => 'succeeds');
@@ -5545,8 +5544,8 @@ DefMathI('\supset',   undef, "\x{2283}", role => 'RELOP', meaning => 'superset-o
 DefMathI('\supseteq', undef, "\x{2287}", role => 'RELOP', meaning => 'superset-of-or-equals');
 DefMathI('\sqsupset', undef, "\x{2290}", role => 'RELOP', meaning => 'square-original-of');
 DefMathI('\sqsupseteq', undef, "\x{2292}", role => 'RELOP', meaning => 'square-original-of-or-equals');
-DefMathI('\ni',    undef, "\x{220B}", role => 'RELOP',     meaning => 'contains');
-DefMathI('\dashv', undef, "\x{22A3}", role => 'METARELOP', meaning => 'does-not-prove');
+DefMathI('\ni',         undef, "\x{220B}", role => 'RELOP',     meaning => 'contains');
+DefMathI('\dashv',      undef, "\x{22A3}", role => 'METARELOP', meaning => 'does-not-prove');
 
 # I have the impression think that "identical" is a stronger notion than "equivalence"
 # Note that the unicode here is called "Identical To",
@@ -5563,13 +5562,13 @@ DefMathI('\notin',  undef, "\x{2209}", role => 'RELOP', meaning => 'not-element-
 
 DefMathI('\models', undef, "\x{22A7}", role => 'RELOP', meaning => 'models');
 DefMathI('\perp',   undef, "\x{27C2}", role => 'RELOP', meaning => 'perpendicular-to');
-DefMathI('\mid', undef, "\x{2223}", role => 'VERTBAR');    # DIVIDES (RELOP?) ?? well, sometimes...
+DefMathI('\mid',    undef, "\x{2223}", role => 'VERTBAR');  # DIVIDES (RELOP?) ?? well, sometimes...
 DefMathI('\parallel', undef, "\x{2225}", role => 'VERTBAR', meaning => 'parallel-to');
-DefMathI('\bowtie',   undef, "\x{22C8}", role => 'RELOP');                               # BOWTIE
-DefMathI('\Join', undef, "\x{2A1D}", role => 'RELOP', meaning => 'join');
-DefMathI('\smile',  undef, "\x{2323}", role => 'RELOP');                                 # SMILE
-DefMathI('\frown',  undef, "\x{2322}", role => 'RELOP');                                 # FROWN
-DefMathI('\propto', undef, "\x{221D}", role => 'RELOP', meaning => 'proportional-to');
+DefMathI('\bowtie',   undef, "\x{22C8}", role => 'RELOP');    # BOWTIE
+DefMathI('\Join',     undef, "\x{2A1D}", role => 'RELOP', meaning => 'join');
+DefMathI('\smile',    undef, "\x{2323}", role => 'RELOP');    # SMILE
+DefMathI('\frown',    undef, "\x{2322}", role => 'RELOP');    # FROWN
+DefMathI('\propto',   undef, "\x{221D}", role => 'RELOP', meaning => 'proportional-to');
 
 # TeX defines these as alternate names...
 Let('\le', '\leq');
@@ -5659,7 +5658,7 @@ DefPrimitiveI('\joinrel', undef, sub {
       (@stuff,
         LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@joinrel')), [$left, $right],
           locator => $gullet->getLocator,
-          font    => $right->getFont, isMath => 1)); } });
+          font => $right->getFont, isMath => 1)); } });
 
 DefConstructor('\@@joinrel{}{}', sub {
     my ($document, $left, $right) = @_;
@@ -5685,29 +5684,29 @@ DefConstructor('\@@joinrel{}{}', sub {
 # Arrows get treated somewhat like relations (or meta-relations),
 # but it's hard to associate any particular "meaning" to them.
 
-DefMathI('\leftarrow',      undef, "\x{2190}", role => 'ARROW');        # LEFTWARDS ARROW
-DefMathI('\Leftarrow',      undef, "\x{21D0}", role => 'ARROW');        # LEFTWARDS DOUBLE ARROW
-DefMathI('\rightarrow',     undef, "\x{2192}", role => 'ARROW');        # RIGHTWARDS ARROW
-DefMathI('\Rightarrow',     undef, "\x{21D2}", role => 'ARROW');        # RIGHTWARDS DOUBLE ARROW
-DefMathI('\leftrightarrow', undef, "\x{2194}", role => 'METARELOP');    # LEFT RIGHT ARROW
-DefMathI('\Leftrightarrow', undef, "\x{21D4}", role => 'METARELOP');    # LEFT RIGHT DOUBLE ARROW
+DefMathI('\leftarrow',      undef, "\x{2190}", role => 'ARROW');         # LEFTWARDS ARROW
+DefMathI('\Leftarrow',      undef, "\x{21D0}", role => 'ARROW');         # LEFTWARDS DOUBLE ARROW
+DefMathI('\rightarrow',     undef, "\x{2192}", role => 'ARROW');         # RIGHTWARDS ARROW
+DefMathI('\Rightarrow',     undef, "\x{21D2}", role => 'ARROW');         # RIGHTWARDS DOUBLE ARROW
+DefMathI('\leftrightarrow', undef, "\x{2194}", role => 'METARELOP');     # LEFT RIGHT ARROW
+DefMathI('\Leftrightarrow', undef, "\x{21D4}", role => 'METARELOP');     # LEFT RIGHT DOUBLE ARROW
 DefMathI('\iff', undef, "\x{21D4}", role => 'METARELOP', meaning => 'iff'); # LEFT RIGHT DOUBLE ARROW
-DefMathI('\mapsto', undef, "\x{21A6}", role => 'ARROW', meaning => 'maps-to');
+DefMathI('\mapsto',        undef, "\x{21A6}", role => 'ARROW', meaning => 'maps-to');
 DefMathI('\hookleftarrow', undef, "\x{21A9}", role => 'ARROW');    # LEFTWARDS ARROW WITH HOOK
 DefMathI('\leftharpoonup', undef, "\x{21BC}", role => 'ARROW'); # LEFTWARDS HARPOON WITH BARB UPWARDS
 DefMathI('\leftharpoondown', undef, "\x{21BD}", role => 'ARROW'); # LEFTWARDS HARPOON WITH BARB DOWNWARDS
 DefMathI('\rightleftharpoons', undef, "\x{21CC}", role => 'METARELOP'); # RIGHTWARDS HARPOON OVER LEFTWARDS HARPOON
-DefMathI('\longleftarrow',  undef, "\x{27F5}", role => 'ARROW');    # LONG LEFTWARDS ARROW
-DefMathI('\Longleftarrow',  undef, "\x{27F8}", role => 'ARROW');    # LONG LEFTWARDS DOUBLE ARROW
-DefMathI('\longrightarrow', undef, "\x{27F6}", role => 'ARROW');    # LONG RIGHTWARDS ARROW
-DefMathI('\Longrightarrow', undef, "\x{27F9}", role => 'ARROW');    # LONG RIGHTWARDS DOUBLE ARROW
+DefMathI('\longleftarrow',      undef, "\x{27F5}", role => 'ARROW');  # LONG LEFTWARDS ARROW
+DefMathI('\Longleftarrow',      undef, "\x{27F8}", role => 'ARROW');  # LONG LEFTWARDS DOUBLE ARROW
+DefMathI('\longrightarrow',     undef, "\x{27F6}", role => 'ARROW');  # LONG RIGHTWARDS ARROW
+DefMathI('\Longrightarrow',     undef, "\x{27F9}", role => 'ARROW');  # LONG RIGHTWARDS DOUBLE ARROW
 DefMathI('\longleftrightarrow', undef, "\x{27F7}", role => 'METARELOP');    # LONG LEFT RIGHT ARROW
 DefMathI('\Longleftrightarrow', undef, "\x{27FA}", role => 'METARELOP'); # LONG LEFT RIGHT DOUBLE ARROW
 DefMathI('\longmapsto',     undef, "\x{27FC}", role => 'ARROW');    # LONG RIGHTWARDS ARROW FROM BAR
 DefMathI('\hookrightarrow', undef, "\x{21AA}", role => 'ARROW');    # RIGHTWARDS ARROW WITH HOOK
 DefMathI('\rightharpoonup', undef, "\x{21C0}", role => 'ARROW'); # RIGHTWARDS HARPOON WITH BARB UPWARDS
 DefMathI('\rightharpoondown', undef, "\x{21C1}", role => 'ARROW'); # RIGHTWARDS HARPOON WITH BARB DOWNWARDS
-DefMathI('\leadsto', undef, "\x{219D}", role => 'ARROW', meaning => 'leads-to');
+DefMathI('\leadsto',          undef, "\x{219D}", role => 'ARROW', meaning => 'leads-to');
 
 DefMathI('\uparrow',     undef, "\x{2191}", role => 'ARROW');      # UPWARDS ARROW
 DefMathI('\Uparrow',     undef, "\x{21D1}", role => 'ARROW');      # UPWARDS DOUBLE ARROW
@@ -5746,7 +5745,7 @@ DefConstructorI('\vdots', undef,
       ? (font => LookupValue('font')->merge(family => 'serif',
           series => 'medium', shape => 'upright')->specialize("\x{22EE}"))
       : ()); });    # Since not DefMath!
-                                                        # But not these!
+                    # But not these!
 DefMathI('\cdots', undef, "\x{22EF}", role => 'ID');    # MIDLINE HORIZONTAL ELLIPSIS
 
 DefMathI('\ddots', undef, "\x{22F1}", role => 'ID');           # DOWN RIGHT DIAGONAL ELLIPSIS
@@ -5846,7 +5845,7 @@ DefMathI('\lceil',  undef, "\x{2308}", role => 'OPEN',  stretchy => 'false');   
 DefMathI('\rceil',  undef, "\x{2309}", role => 'CLOSE', stretchy => 'false');    # RIGHT CEILING
 DefMathI('\lfloor', undef, "\x{230A}", role => 'OPEN',  stretchy => 'false');    # LEFT FLOOR
 DefMathI('\rfloor', undef, "\x{230B}", role => 'CLOSE', stretchy => 'false');    # RIGHT FLOOR
-          # Note: We should be using 27E8,27E9, which are "mathematical", not 2329,232A
+    # Note: We should be using 27E8,27E9, which are "mathematical", not 2329,232A
 DefMathI('\langle', undef, "\x{27E8}", role => 'OPEN', stretchy => 'false'); # LEFT-POINTING ANGLE BRACKET
 DefMathI('\rangle', undef, "\x{27E9}", role => 'CLOSE', stretchy => 'false'); # RIGHT-POINTING ANGLE BRACKET
 
@@ -5866,21 +5865,21 @@ DefMathI('\bracevert', undef, "|", font => { series => 'bold' }, role => 'VERTBA
 # This duplicates in slightly different way what DefMath has put together.
 our %DELIMITER_MAP =
   ('(' => { char => "(", lrole => 'OPEN', rrole => 'CLOSE' },
-  ')'       => { char => ")",        lrole => 'OPEN',  rrole => 'CLOSE' },
-  '['       => { char => "[",        lrole => 'OPEN',  rrole => 'CLOSE' },
-  ']'       => { char => "]",        lrole => 'OPEN',  rrole => 'CLOSE' },
-  '\{'      => { char => "{",        lrole => 'OPEN',  rrole => 'CLOSE' },
-  '\}'      => { char => "}",        lrole => 'OPEN',  rrole => 'CLOSE' },
-  '\lfloor' => { char => "\x{230A}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'lfloor' },
-  '\rfloor' => { char => "\x{230B}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rfloor' },
-  '\lceil'  => { char => "\x{2308}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'lceil' },
-  '\rceil'  => { char => "\x{2309}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rceil' },
-  '\langle' => { char => "\x{27E8}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'langle' },
-  '\rangle' => { char => "\x{27E9}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rangle' },
-  '<'       => { char => "\x{27E8}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'langle' },
-  '>'       => { char => "\x{27E9}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rangle' },
-  '/'       => { char => "/",        lrole => 'MULOP', rrole => 'MULOP' },
-  '\backslash' => { char => UTF(0x5C),  lrole => 'MULOP',   rrole => 'MULOP', name => 'backslash' },
+  ')'          => { char => ")",        lrole => 'OPEN',  rrole => 'CLOSE' },
+  '['          => { char => "[",        lrole => 'OPEN',  rrole => 'CLOSE' },
+  ']'          => { char => "]",        lrole => 'OPEN',  rrole => 'CLOSE' },
+  '\{'         => { char => "{",        lrole => 'OPEN',  rrole => 'CLOSE' },
+  '\}'         => { char => "}",        lrole => 'OPEN',  rrole => 'CLOSE' },
+  '\lfloor'    => { char => "\x{230A}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'lfloor' },
+  '\rfloor'    => { char => "\x{230B}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rfloor' },
+  '\lceil'     => { char => "\x{2308}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'lceil' },
+  '\rceil'     => { char => "\x{2309}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rceil' },
+  '\langle'    => { char => "\x{27E8}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'langle' },
+  '\rangle'    => { char => "\x{27E9}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rangle' },
+  '<'          => { char => "\x{27E8}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'langle' },
+  '>'          => { char => "\x{27E9}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rangle' },
+  '/'          => { char => "/",        lrole => 'MULOP', rrole => 'MULOP' },
+  '\backslash' => { char => UTF(0x5C), lrole => 'MULOP', rrole => 'MULOP', name => 'backslash' },
   '|'          => { char => "|",        lrole => 'VERTBAR', rrole => 'VERTBAR' },
   '\|'         => { char => "\x{2225}", lrole => 'VERTBAR', rrole => 'VERTBAR' },
   '\uparrow'   => { char => "\x{2191}", lrole => 'OPEN', rrole => 'CLOSE', name => 'uparrow' },   # ??
@@ -6361,7 +6360,7 @@ DefMacro('\eqalign{}',
   '\@@eqalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalign{}',
   '#1',
-  reversion    => '\eqalign{#1}', bounded => 1,
+  reversion => '\eqalign{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rl', 'math',
       attributes => { vattach => 'baseline' }); });
 
@@ -6369,7 +6368,7 @@ DefMacro('\eqalignno{}',
   '\@@eqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalignno{}',
   '#1',
-  reversion    => '\eqalignno{#1}', bounded => 1,
+  reversion => '\eqalignno{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rll', 'math',
       attributes => { vattach => 'baseline' }); });
 
@@ -6377,7 +6376,7 @@ DefMacro('\leqalignno{}',
   '\@@leqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@leqalignno{}',
   '#1',
-  reversion    => '\leqalignno{#1}', bounded => 1,
+  reversion => '\leqalignno{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rll', 'math',
       attributes => { vattach => 'baseline' }); });
 
@@ -6469,7 +6468,7 @@ DefPrimitiveI('\lx@text@percent',    undef, '%',  alias => '\%');
 DefPrimitiveI('\lx@text@dollar',     undef, "\$", alias => "\\\$");
 DefPrimitiveI('\lx@text@underscore', undef, '_',  alias => '\_');
 DefMathI('\lx@math@hash',    undef, '#', alias => '\#');
-DefMathI('\lx@math@amp',     undef, '&', role  => 'ADDOP', meaning => 'and', alias => '\&');
+DefMathI('\lx@math@amp',     undef, '&', role  => 'ADDOP',   meaning => 'and',     alias => '\&');
 DefMathI('\lx@math@percent', undef, '%', role  => 'POSTFIX', meaning => 'percent', alias => '\%');
 DefMathI('\lx@math@dollar', undef, "\$", role => 'OPERATOR', meaning => 'currency-dollar',
   alias => "\\\$");
@@ -6795,8 +6794,8 @@ DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $kv     = $whatsit->getArg(1);
-    my $xmargs = PopValue('PENDING_DUAL_XMARGS');    # Really SHOULD be a hash
-    $whatsit->setProperties(%$xmargs)      if $xmargs;    # Hopefully no name class with XM<digits>
+    my $xmargs = PopValue('PENDING_DUAL_XMARGS');            # Really SHOULD be a hash
+    $whatsit->setProperties(%$xmargs)      if $xmargs;       # Hopefully no name class with XM<digits>
     $whatsit->setProperties($kv->getPairs) if $kv;
     my %props = $whatsit->getProperties;
     my $cr    = $props{content_reversion};
@@ -6898,8 +6897,8 @@ sub I_dual {
   foreach my $arg (@args) {
     my $id = LaTeXML::Package::getXMArgID();
     push(@revargs, Tokens(T_PARAM, T_OTHER(ToString($id))));
-    push(@pargs, Invocation(T_CS('\lx@xmarg'), $id, $arg));
-    push(@cargs, Invocation(T_CS('\lx@xmref'), $id)); }
+    push(@pargs,   Invocation(T_CS('\lx@xmarg'), $id, $arg));
+    push(@cargs,   Invocation(T_CS('\lx@xmref'), $id)); }
   my $optional = undef;
   if ($keyvals) {
     my @options = ();
@@ -7029,7 +7028,7 @@ DefRewrite(xpath => 'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
           my $attr = $attribute->nodeName;
           $document->setAttribute($node, $attr => $attribute->getValue)
             unless ($attr eq 'xml:id') || $attr =~ /^_/;
-          if ($attr =~ /^_/) { }
+          if    ($attr =~ /^_/) { }
           elsif ($attr eq 'xml:id') {
             my $id = $attribute->getValue;
             if (my $previd = $node->getAttribute('xml:id')) {    # Keep original id
@@ -7075,7 +7074,7 @@ sub setAlignOrClass {
   my ($document, $node, $align, $class) = @_;
   my $model = $document->getModel;
   my $qname = $model->getNodeQName($node);
-  if ($qname eq 'ltx:tag') { }                                       # HACK
+  if    ($qname eq 'ltx:tag') { }                                    # HACK
   elsif ($align && $document->canHaveAttribute($qname, 'align')) {
     $node->setAttribute(align => $align); }
   elsif ($class && $document->canHaveAttribute($qname, 'class')) {
