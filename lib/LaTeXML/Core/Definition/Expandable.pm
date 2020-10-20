@@ -30,7 +30,7 @@ sub new {
     Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
       "Expansion is " . ToString($expansion)) unless $expansion->isBalanced;
     # rescan for match tokens and unwrap dont_expand...
-    $expansion = Tokens(PrepArgTokens(@$expansion));
+    $expansion = Tokens(PrepArgTokens(@$expansion)) unless $traits{noprep};
   }
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
     locator      => $source->getLocator,
@@ -151,7 +151,7 @@ sub PrepArgTokens {
   while (my $t = shift @toks) {
     if ($$t[1] == CC_PARAM && @toks) {
       # NOTE for future cleanup: Only CC_CS & CC_ACTIVE should ever get with_dont_expand!
-      my $next_t = shift @toks;
+      my $next_t  = shift @toks;
       my $next_cc = $next_t && $$next_t[1];
       if ($next_cc == CC_OTHER) {
         # only group clear match token cases

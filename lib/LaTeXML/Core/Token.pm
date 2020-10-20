@@ -76,11 +76,11 @@ use constant T_SUPER => bless ['^',  CC_SUPER], 'LaTeXML::Core::Token';
 use constant T_SUB   => bless ['_',  CC_SUB],   'LaTeXML::Core::Token';
 use constant T_SPACE => bless [' ',  CC_SPACE], 'LaTeXML::Core::Token';
 use constant T_CR    => bless ["\n", CC_SPACE], 'LaTeXML::Core::Token';
-sub T_LETTER  { my ($c) = @_; return bless [$c, CC_LETTER], 'LaTeXML::Core::Token'; }
-sub T_OTHER   { my ($c) = @_; return bless [$c, CC_OTHER],  'LaTeXML::Core::Token'; }
-sub T_ACTIVE  { my ($c) = @_; return bless [$c, CC_ACTIVE], 'LaTeXML::Core::Token'; }
+sub T_LETTER { my ($c) = @_; return bless [$c, CC_LETTER], 'LaTeXML::Core::Token'; }
+sub T_OTHER  { my ($c) = @_; return bless [$c, CC_OTHER],  'LaTeXML::Core::Token'; }
+sub T_ACTIVE { my ($c) = @_; return bless [$c, CC_ACTIVE], 'LaTeXML::Core::Token'; }
 sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), CC_COMMENT], 'LaTeXML::Core::Token'; }
-sub T_CS      { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
+sub T_CS { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
 # Illegal: don't use unless you know...
 sub T_MARKER { my ($t) = @_; return bless [$t, CC_MARKER], 'LaTeXML::Core::Token'; }
 
@@ -289,9 +289,7 @@ our @CATCODE_NEUTRALIZABLE = (    # [CONSTANT]
 sub neutralize {
   my ($self, @extraspecials) = @_;
   my ($ch,   $cc)            = @$self;
-  if ($cc == CC_NOEXPAND1) {    # Keep NOEXPAND1, but neutralize the hidden token
-    return T_NOEXPAND1($$self[2]->neutralize(@extraspecials)); }
-  elsif ($CATCODE_NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') }, @extraspecials)) {
+  if ($CATCODE_NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') }, @extraspecials)) {
     return T_OTHER($ch); }
   else {
     return $self; } }
@@ -308,8 +306,6 @@ sub substituteParameters {
 sub with_dont_expand {
   my ($self) = @_;
   my $cc = $$self[1];
-  if ($cc == CC_NOEXPAND1) {    # Keep NOEXPAND1, but remove dont_expand from hidden token
-    return T_NOEXPAND1($$self[2]->with_dont_expand); }
   return ((($cc == CC_CS) || ($cc == CC_ACTIVE))
     # AND it is either undefined, or is expandable!
       && (!defined($STATE->lookupDefinition($self))
@@ -321,12 +317,13 @@ sub with_dont_expand {
 # or undef if it isn't marked as such.
 sub get_dont_expand {
   my ($self) = @_;
-  return ($$self[1] == CC_NOEXPAND1 ? $$self[2]->get_dont_expand : $$self[2]); }
+  return $$self[2]; }
 
 sub without_dont_expand {
   my ($self) = @_;
-  # Remove dont_expand flag, but keep NOEXPAND1 wrapper
-  return (($$self[1] == CC_NOEXPAND1) ? ($$self[2][2] ? T_NOEXPAND1($$self[2][2]) : $self) : ($$self[2] || $self)); }
+  # Remove dont_expand flag, remove NOEXPAND1 wrapper
+  my $inner = $$self[2];
+  return $inner ? ($$inner[2] || $inner) : $self; }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
@@ -357,8 +354,6 @@ sub beDigested {
 # That is NOT done here; see Equals(x,y) and XEquals(x,y)
 sub equals {
   my ($a, $b) = @_;
-  $a = $$a[2] if $a && $$a[1] == CC_NOEXPAND1;    # Ignore NOEXPAND1 while comparing
-  $b = $$b[2] if $b && (ref $b eq ref $a) && $$b[1] == CC_NOEXPAND1;
   return
     (defined $b
       && (ref $a) eq (ref $b))
