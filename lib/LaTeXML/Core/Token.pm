@@ -110,7 +110,11 @@ our @CATCODE_CAN_NOEXPAND1 = (
 
 sub T_NOEXPAND1 {
   my ($t) = @_;
-  return ($CATCODE_CAN_NOEXPAND1[$$t[1]] ? bless ["NOEXPAND1", CC_NOEXPAND1, $t], 'LaTeXML::Core::Token' : $t); }
+  my $cc = $$t[1];
+  if ($cc == CC_NOEXPAND1) {
+    # LaTeXML Bug, we haven't correctly emulated scan_toks! Offending token was:
+    Fatal('unexpected', 'CC_NOEXPAND1', 'We are masking a \the-produced token twice, this must Never happen.', "Illegal: " . $t->stringify); }
+  return ($CATCODE_CAN_NOEXPAND1[$cc] ? bless ["NOEXPAND1", CC_NOEXPAND1, $t], 'LaTeXML::Core::Token' : $t); }
 
 sub Token {
   my ($string, $cc) = @_;
@@ -306,6 +310,9 @@ sub substituteParameters {
 sub with_dont_expand {
   my ($self) = @_;
   my $cc = $$self[1];
+  if ($cc == CC_NOEXPAND1) {
+    # LaTeXML Bug, we haven't correctly emulated scan_toks! Offending token was:
+    Fatal('unexpected', 'CC_NOEXPAND1', 'We are marking as \noexpand a masked \the-produced token, this must Never happen.', "Illegal: " . $self->stringify); }
   return ((($cc == CC_CS) || ($cc == CC_ACTIVE))
     # AND it is either undefined, or is expandable!
       && (!defined($STATE->lookupDefinition($self))
