@@ -110,11 +110,9 @@ DefMacro('\ext@lstlisting', 'lol');
 AssignValue(LISTINGS_DATA_COUNTER => 0);
 
 # Defining new listing environments
-DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
+DefPrimitive('\lstnewenvironment {}[Number][] DefPlain DefPlain', sub {
     my ($stomach, $name, $n, $opt, $start, $end) = @_;
     $name  = ToString($name);
-    $end   = Tokens(PrepArgTokens($end->unlist));
-    $start = Tokens(PrepArgTokens($start->unlist));
     DefMacroI(T_CS("\\begin{$name}"), LaTeXML::Package::convertLaTeXArgs($n, $opt), sub {
         my ($gullet, @args) = @_;
         $STATE->getStomach->bgroup;
