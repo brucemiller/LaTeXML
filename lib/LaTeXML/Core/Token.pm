@@ -29,11 +29,11 @@ our @EXPORT = (
     CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
     CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
     CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
-    CC_CS      CC_MARKER CC_ARG     CC_NOEXPAND1),
+    CC_CS      CC_MARKER CC_ARG     CC_SMUGGLE_THE),
   # Token constructors
   qw( T_BEGIN T_END T_MATH T_ALIGN T_PARAM T_SUB T_SUPER T_SPACE
     &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
-    T_CR &T_MARKER T_ARG T_NOEXPAND1
+    T_CR &T_MARKER T_ARG T_SMUGGLE_THE
     &Token),
   # String exploders
   qw(&Explode &ExplodeText &UnTeX)
@@ -62,7 +62,7 @@ use constant CC_INVALID => 15;
 use constant CC_CS        => 16;
 use constant CC_MARKER    => 17;    # non TeX extension!
 use constant CC_ARG       => 18;    # "out_param" in B Book
-use constant CC_NOEXPAND1 => 19;    # defered expansion once
+use constant CC_SMUGGLE_THE => 19;    # defered expansion once
 
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
@@ -101,20 +101,20 @@ sub T_ARG {
   return bless ["$int", CC_ARG], 'LaTeXML::Core::Token'; }
 
 # This hides tokens coming from \the (-like) primitives from expansion; CC_CS,CC_ACTIVE, but also CC_PARAM and CC_ARG
-our @CATCODE_CAN_NOEXPAND1 = (
+our @CATCODE_CAN_SMUGGLE_THE = (
   0, 0, 0, 0,
   0, 0, 1, 0,
   0, 0, 0, 0,
   0, 1, 0, 0,
   1, 0, 1, 0);
 
-sub T_NOEXPAND1 {
+sub T_SMUGGLE_THE {
   my ($t) = @_;
   my $cc = $$t[1];
-  if ($cc == CC_NOEXPAND1) {
+  if ($cc == CC_SMUGGLE_THE) {
     # LaTeXML Bug, we haven't correctly emulated scan_toks! Offending token was:
-    Fatal('unexpected', 'CC_NOEXPAND1', 'We are masking a \the-produced token twice, this must Never happen.', "Illegal: " . $t->stringify); }
-  return ($CATCODE_CAN_NOEXPAND1[$cc] ? bless ["NOEXPAND1", CC_NOEXPAND1, $t], 'LaTeXML::Core::Token' : $t); }
+    Fatal('unexpected', 'CC_SMUGGLE_THE', 'We are masking a \the-produced token twice, this must Never happen.', "Illegal: " . $t->stringify); }
+  return ($CATCODE_CAN_SMUGGLE_THE[$cc] ? bless ["SMUGGLE_THE", CC_SMUGGLE_THE, $t], 'LaTeXML::Core::Token' : $t); }
 
 sub Token {
   my ($string, $cc) = @_;
@@ -223,10 +223,10 @@ our @CATCODE_SHORT_NAME =          #[CONSTANT]
   T_ALIGN T_EOL T_PARAM T_SUPER
   T_SUB T_IGNORE T_SPACE T_LETTER
   T_OTHER T_ACTIVE T_COMMENT T_INVALID
-  T_CS T_MARKER T_ARG T_NOEXPAND1
+  T_CS T_MARKER T_ARG T_SMUGGLE_THE
 );
 
-our $X_THE = {
+our $SMUGGLE_THE_COMMANDS = {
   '\the'        => 1,
   '\showthe'    => 1,
   '\unexpanded' => 1,
@@ -312,9 +312,9 @@ sub packParameters { return $_[0]; }
 sub with_dont_expand {
   my ($self) = @_;
   my $cc = $$self[1];
-  if ($cc == CC_NOEXPAND1) {
+  if ($cc == CC_SMUGGLE_THE) {
     # LaTeXML Bug, we haven't correctly emulated scan_toks! Offending token was:
-    Fatal('unexpected', 'CC_NOEXPAND1', 'We are marking as \noexpand a masked \the-produced token, this must Never happen.', "Illegal: " . $self->stringify); }
+    Fatal('unexpected', 'CC_SMUGGLE_THE', 'We are marking as \noexpand a masked \the-produced token, this must Never happen.', "Illegal: " . $self->stringify); }
   return ((($cc == CC_CS) || ($cc == CC_ACTIVE))
     # AND it is either undefined, or is expandable!
       && (!defined($STATE->lookupDefinition($self))
@@ -330,7 +330,7 @@ sub get_dont_expand {
 
 sub without_dont_expand {
   my ($self) = @_;
-  # Remove dont_expand flag, remove NOEXPAND1 wrapper
+  # Remove dont_expand flag, remove SMUGGLE_THE wrapper
   my $inner = $$self[2];
   return $inner ? ($$inner[2] || $inner) : $self; }
 
@@ -378,7 +378,7 @@ my @CONTROLNAME = (                                   #[CONSTANT]
 sub stringify {
   my ($self) = @_;
   if ($$self[2]) {
-    return $$self[2]->stringify() . ($$self[1] == CC_NOEXPAND1 ? " (defer expand once)" : " (dont expand)"); }
+    return $$self[2]->stringify() . ($$self[1] == CC_SMUGGLE_THE ? " (defer expand once)" : " (dont expand)"); }
   my $string = $self->toString;
   # Make the token's char content more printable, since this is for error messages.
   if (length($string) == 1) {

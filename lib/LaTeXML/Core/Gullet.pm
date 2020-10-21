@@ -198,7 +198,7 @@ sub readToken {
   my $cc;
   # Check in pushback first....
   while (($token = shift(@{ $$self{pushback} }))
-    && (($$token[1] != CC_NOEXPAND1) || ($token = $$token[2]))
+    && (($$token[1] != CC_SMUGGLE_THE) || ($token = $$token[2]))
     && $CATCODE_HOLD[$cc = $$token[1]]) {
     if ($cc == CC_COMMENT) {
       push(@{ $$self{pending_comments} }, $token); }
@@ -241,8 +241,8 @@ sub readXToken {
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
-    elsif (($cc = $$token[1]) == CC_NOEXPAND1) {
-      return $LaTeXML::KEEP_THE ? $token : $$token[2]; }
+    elsif (($cc = $$token[1]) == CC_SMUGGLE_THE) {
+      return $LaTeXML::SMUGGLE_THE ? $token : $$token[2]; }
     elsif ($cc == CC_COMMENT) {    # NOTE: Inlined ->getCatcode
       return $token if $commentsok;
       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
@@ -264,12 +264,12 @@ sub readXToken {
         else {
           Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)); } }
       next unless @expansion;
-      if ($$LaTeXML::Core::Token::X_THE{ $$defn{cs}[0] }) {
+      if ($$LaTeXML::Core::Token::SMUGGLE_THE_COMMANDS{ $$defn{cs}[0] }) {
         # magic THE_TOKS handling, add to pushback with a single-use noexpand flag only valid
         #    at the exact time
         # the token leaves the pushback.
         # This is *required to be different* from the noexpand flag, as per the B Book
-        @expansion = map { T_NOEXPAND1($_); } @expansion; }
+        @expansion = map { T_SMUGGLE_THE($_); } @expansion; }
       # add the newly expanded tokens back into the gullet stream, in the ordinary case.
       unshift(@{ $$self{pushback} }, @expansion); }
     elsif ($cc == CC_CS && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
@@ -286,7 +286,7 @@ sub readRawLine {
   my ($self) = @_;
   # If we've got unread tokens, they presumably should come before the Mouth's raw data
   # but we'll convert them back to string.
-  my @tokens  = map  { ($$_[1] == CC_NOEXPAND1 ? $$_[2] : $_) } @{ $$self{pushback} };
+  my @tokens  = map  { ($$_[1] == CC_SMUGGLE_THE ? $$_[2] : $_) } @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
   if (@markers) {    # Whoops, profiling markers!
     @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;                      # Remove
@@ -470,7 +470,7 @@ sub readNextConditional {
   my $token;
   my $type;
   while ($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken()) {
-    $token = $$token[2] if $$token[1] == CC_NOEXPAND1;
+    $token = $$token[2] if $$token[1] == CC_SMUGGLE_THE;
     if ($type = $STATE->lookupConditional($token)) {
       return ($token, $type); } }
   return; }

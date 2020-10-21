@@ -57,7 +57,7 @@ sub clone {
 # Return a string containing the TeX form of the Tokens
 sub revert {
   my ($self) = @_;
-  return map { ($$_[1] == CC_NOEXPAND1 ? $$_[2] : $_); } @$self; }
+  return map { ($$_[1] == CC_SMUGGLE_THE ? $$_[2] : $_); } @$self; }
 
 # toString is used often, and for more keyword-like reasons,
 # NOT for creating valid TeX (use revert or UnTeX for that!)
@@ -85,7 +85,7 @@ sub beDigested {
 
 sub neutralize {
   my ($self, @extraspecials) = @_;
-  # Remove dont_expand, but preserve NOEXPAND1
+  # Remove dont_expand, but preserve SMUGGLE_THE
   return Tokens(map { $_->neutralize(@extraspecials) } @$self); }
 
 sub without_dont_expand {
