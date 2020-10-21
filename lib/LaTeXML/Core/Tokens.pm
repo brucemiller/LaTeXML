@@ -115,6 +115,33 @@ sub substituteParameters {
         push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } } }    # ->unlist
   return LaTeXML::Core::Tokens->new(@result); }
 
+# Process the CC_PARAM tokens for use as a macro body (and other token lists)
+# Groups PARAM+OTHER token pair into match tokens.
+# Collapses PARAM+PARAM token pair into a single PARAM
+# B book suggests running this
+# and remove dont_expand markers.
+sub packParameters {
+  my ($self)    = @_;
+  my @rescanned = ();
+  my @toks      = @$self;
+  while (my $t = shift @toks) {
+    if ($$t[1] == CC_PARAM && @toks) {
+      # NOTE for future cleanup: Only CC_CS & CC_ACTIVE should ever get with_dont_expand!
+      my $next_t  = shift @toks;
+      my $next_cc = $next_t && $$next_t[1];
+      if ($next_cc == CC_OTHER) {
+        # only group clear match token cases
+        push(@rescanned, T_ARG($next_t)); }
+      elsif ($next_cc == CC_PARAM) {
+        push(@rescanned, $t); }
+      else {    # any other case, preserve as-is, let the higher level call resolve any errors
+                # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
+        Error('misdefined', 'expansion', undef, "Parameter has a malformed arg, should be #1-#9 or ##. ",
+          "In expansion " . ToString(Tokens(@toks))); } }
+    else {
+      push(@rescanned, $t->without_dont_expand); } }
+  return Tokens(@rescanned); }
+
 # Trims outer braces (if they balance each other)
 # Should this also trim whitespace? or only if there are braces?
 sub stripBraces {

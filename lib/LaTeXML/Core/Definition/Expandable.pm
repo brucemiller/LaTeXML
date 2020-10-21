@@ -30,13 +30,13 @@ sub new {
     Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
       "Expansion is " . ToString($expansion)) unless $expansion->isBalanced;
     # rescan for match tokens and unwrap dont_expand...
-    $expansion = Tokens(PrepArgTokens(@$expansion)) unless $traits{noprep};
+    $expansion = $expansion->packParameters unless $traits{noprep};
   }
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
     locator      => $source->getLocator,
     isProtected  => $traits{protected} || $STATE->getPrefix('protected'),
-    isOuter      => $traits{outer} || $STATE->getPrefix('outer'),
-    isLong       => $traits{long} || $STATE->getPrefix('long'),
+    isOuter      => $traits{outer}     || $STATE->getPrefix('outer'),
+    isLong       => $traits{long}      || $STATE->getPrefix('long'),
     isExpandable => 1,
     %traits }, $class; }
 
@@ -49,7 +49,7 @@ sub getExpansion {
   if (!ref $expansion) {    # Tokenization DEFERRED till actually used (shaves > 5%)
     $expansion = TokenizeInternal($expansion);
     # rescan for match tokens and unwrap dont_expand...
-    $expansion = Tokens(PrepArgTokens(@$expansion));
+    $expansion = $expansion->packParameters;
     $$self{expansion} = $expansion; }
   return $expansion; }
 
@@ -141,30 +141,6 @@ sub equals {
   return (defined $other && (ref $self) eq (ref $other))
     && Equals($self->getParameters, $other->getParameters)
     && Equals($self->getExpansion,  $other->getExpansion); }
-
-# Groups PARAM+OTHER token pair into match tokens.
-# Collapses PARAM+PARAM token pair into a single PARAM
-# B book suggests running this
-sub PrepArgTokens {
-  my (@toks) = @_;
-  my @rescanned = ();
-  while (my $t = shift @toks) {
-    if ($$t[1] == CC_PARAM && @toks) {
-      # NOTE for future cleanup: Only CC_CS & CC_ACTIVE should ever get with_dont_expand!
-      my $next_t  = shift @toks;
-      my $next_cc = $next_t && $$next_t[1];
-      if ($next_cc == CC_OTHER) {
-        # only group clear match token cases
-        push(@rescanned, T_ARG($next_t)); }
-      elsif ($next_cc == CC_PARAM) {
-        push(@rescanned, $t); }
-      else {    # any other case, preserve as-is, let the higher level call resolve any errors
-                # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
-        Error('misdefined', 'expansion', undef, "Parameter has a malformed arg, should be #1-#9 or ##. ",
-          "In expansion " . ToString(Tokens(@toks))); } }
-    else {
-      push(@rescanned, $t->without_dont_expand); } }
-  return @rescanned; }
 
 #======================================================================
 1;

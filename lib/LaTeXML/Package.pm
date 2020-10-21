@@ -81,7 +81,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
   # Mid-level support for writing definitions.
   qw(&Expand &Invocation &Digest &DigestText &DigestIf &DigestLiteral
     &RawTeX &Let &StartSemiverbatim &EndSemiverbatim
-    &Tokenize &TokenizeInternal &PrepArgTokens),
+    &Tokenize &TokenizeInternal),
 
   # Font encoding
   qw(&DeclareFontMap &FontDecode &FontDecodeString &LoadFontMap),
@@ -942,10 +942,6 @@ sub TokenizeInternal {
   $STY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'style') unless $STY_CATTABLE;
   local $STATE = $STY_CATTABLE;
   return LaTeXML::Core::Mouth->new($string)->readTokens; }
-
-# Prepare ##, #1-#9 tokens as per TeX's inner workings
-sub PrepArgTokens {
-  return LaTeXML::Core::Definition::Expandable::PrepArgTokens(@_); }
 
 #======================================================================
 # Non-exported support for defining forms.

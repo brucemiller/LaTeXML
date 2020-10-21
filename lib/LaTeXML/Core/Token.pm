@@ -305,6 +305,8 @@ sub substituteParameters {
   else {
     return $self; } }
 
+sub packParameters { return $_[0]; }
+
 # Mark a token as not to be expanded (\noexpand) by hiding itself as the 3rd element of a new token.
 # Wonder if this should only have effect on expandable tokens?
 sub with_dont_expand {
