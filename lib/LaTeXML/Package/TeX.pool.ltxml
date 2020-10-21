@@ -238,12 +238,19 @@ DefParameterType('Expanded', sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
 
+# Set KEEP_THE=1 whenever you want to handle special TeX neutralization of
+# tokens created by \the-like primitives.
+#
+# IMPORTANTLY, call `PrepArgTokens` early on the tokens read from the Gullet
+# to enact the neutralization and discard the temporary flag that is required (CC_NOEXPAND1)
+#
+# Whenever possible, use this `DefExpanded` parameter type directly, rather than hand-crafting a new one.
 DefParameterType('DefExpanded', sub {
     my ($gullet) = @_;
     local $LaTeXML::KEEP_THE = 1;
     my $token    = $gullet->readXToken;
     my $expanded = ($token->getCatcode == CC_BEGIN ? $gullet->readBalanced(1) : $token);
-    $expanded = Tokens(PrepArgTokens(@$expanded))->without_dont_expand if $expanded;
+    $expanded = Tokens(PrepArgTokens(@$expanded)) if $expanded;
     return $expanded;
   },
   reversion => sub {
