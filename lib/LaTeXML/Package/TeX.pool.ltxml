@@ -114,8 +114,8 @@ DefParameterType('DefPlain', sub {
     my $value = $gullet->readArg;
     if ($inner) {
       ($value) = $inner->reparseArgument($gullet, $value); }
-    $value = $value->packParameters if $value;
     return $value; },
+  macrobody => 1,
   reversion => sub {
     my ($arg, $inner) = @_;
     (T_BEGIN,
@@ -250,9 +250,8 @@ DefParameterType('DefExpanded', sub {
     local $LaTeXML::SMUGGLE_THE = 1;
     my $token    = $gullet->readXToken;
     my $expanded = ($token->getCatcode == CC_BEGIN ? $gullet->readBalanced(1) : $token);
-    $expanded = $expanded->packParameters if $expanded;
-    return $expanded;
-  },
+    return $expanded; },
+  macrobody => 1,
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
@@ -303,6 +302,7 @@ DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
+DefParameterType('UndigestedDefKey', sub { $_[0]->readArg; }, undigested => 1, macrobody=>1);
 
 # Read a token as used when defining it, ie. it may be enclosed in braces.
 DefParameterType('DefToken', sub {
@@ -6794,9 +6794,9 @@ DefConstructor('\lx@padded[MuDimension]{MuDimension}{}',
 # Building XMDuals for Mathematical Parallel markup
 # Used when the content and presentation forms have different structure.
 
-DefKeyVal('XMath', 'reversion',              'UndigestedKey');
-DefKeyVal('XMath', 'content_reversion',      'UndigestedKey');
-DefKeyVal('XMath', 'presentation_reversion', 'UndigestedKey');
+DefKeyVal('XMath', 'reversion',              'UndigestedDefKey');
+DefKeyVal('XMath', 'content_reversion',      'UndigestedDefKey');
+DefKeyVal('XMath', 'presentation_reversion', 'UndigestedDefKey');
 DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
   "<ltx:XMDual $XMath_attributes>#2<ltx:XMWrap>#3</ltx:XMWrap></ltx:XMDual>",
   beforeDigest => sub {
@@ -6907,7 +6907,7 @@ sub I_dual {
   my (@revargs, @pargs, @cargs);
   foreach my $arg (@args) {
     my $id = LaTeXML::Package::getXMArgID();
-    push(@revargs, Tokens(T_PARAM, T_OTHER(ToString($id))));
+    push(@revargs, Tokens(I_arg(ToString($id))));
     push(@pargs,   Invocation(T_CS('\lx@xmarg'), $id, $arg));
     push(@cargs,   Invocation(T_CS('\lx@xmref'), $id)); }
   my $optional = undef;

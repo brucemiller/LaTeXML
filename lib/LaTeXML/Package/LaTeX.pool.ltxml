@@ -5433,11 +5433,10 @@ DefMacro('\@ifnext@n {} {}{}', sub {
 DefMacro('\@ifstar {}{}', sub {
     my ($gullet, $if, $else) = @_;
     my $next = $gullet->readNonSpace;
-    # NOTE: Not actually substituting, but collapsing ## pairs!!!!
     if (T_OTHER('*')->equals($next)) {
-      $if->substituteParameters()->unlist; }
+      $if; }
     else {
-      ($else->substituteParameters()->unlist, ($next ? $next : ())); } });
+      ($else, ($next ? $next : ())); } });
 
 DefMacro('\@dblarg {}',    '\kernel@ifnextchar[{#1}{\@xdblarg{#1}}');
 DefMacro('\@xdblarg {}{}', '#1[{#2}]{#2}');

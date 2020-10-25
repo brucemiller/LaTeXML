@@ -558,7 +558,7 @@ sub ComposeURL {
 my $parameter_options = {    # [CONSTANT]
   nargs        => 1, reversion   => 1, optional => 1, novalue => 1,
   beforeDigest => 1, afterDigest => 1,
-  semiverbatim => 1, undigested  => 1 };
+  semiverbatim => 1, undigested  => 1, macrobody => 1};
 
 sub DefParameterType {
   my ($type, $reader, %options) = @_;

@@ -53,7 +53,7 @@ sub getReversionSpec {
   my ($self) = @_;
   my $spec = $$self{reversion};
   if ($spec && !ref $spec) {
-    $spec = $$self{reversion} = LaTeXML::Package::TokenizeInternal($spec); }
+    $spec = $$self{reversion} = LaTeXML::Package::TokenizeInternal($spec)->packParameters; }
   return $spec; }
 
 sub getSizer {

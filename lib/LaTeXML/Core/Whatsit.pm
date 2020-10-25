@@ -144,7 +144,7 @@ sub substituteParameters {
   my ($self, $spec) = @_;
 # TODO: This is kind of unfortunate -- I am not sure what are the reasonable "entryways" into the Whatsit substituteParameters. For Expandable we now have guarantees that "#,i" has been mapped into a single T_ARG(#i), but not here.
 # so for now run on each call?
-  my @in     = $spec->packParameters->unlist;
+  my @in     = $spec->unlist;
   my @args   = $self->getArgs;
   my $props  = $$self{properties};
   my @result = ();

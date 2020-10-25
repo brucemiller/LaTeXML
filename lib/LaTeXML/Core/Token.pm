@@ -84,20 +84,15 @@ sub T_CS { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
 # Illegal: don't use unless you know...
 sub T_MARKER { my ($t) = @_; return bless [$t, CC_MARKER], 'LaTeXML::Core::Token'; }
 
-our $STRICT_ARG = 1;
-
 sub T_ARG {
   my ($v) = @_;
   my $int = $v;
   # get the integer value from the token
   if (ref $v eq 'LaTeXML::Core::Token') {
     my $v_str = $$v[0];
-    if (!$STRICT_ARG) {
-      $int = ($v_str =~ /^\d+$/) ? int($v_str) : $v_str; }
-    else {
-      $int = int($$v[0]);
-      if ($int < 1 || $int > 9) {
-        Fatal('malformed', 'T_ARG', 'value should be #1-#9', "Illegal: " . $v->stringify); } } }
+    $int = int($$v[0]);
+    if ($int < 1 || $int > 9) {
+      Fatal('malformed', 'T_ARG', 'value should be #1-#9', "Illegal: " . $v->stringify); } }
   return bless ["$int", CC_ARG], 'LaTeXML::Core::Token'; }
 
 # This hides tokens coming from \the (-like) primitives from expansion; CC_CS,CC_ACTIVE, but also CC_PARAM and CC_ARG
