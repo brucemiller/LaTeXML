@@ -167,6 +167,7 @@ sub decodeFontname {
     $props{size} = $size;
     # Experimental Hack !?!?!?
     $props{encoding} = 'OT1' unless defined $props{encoding};
+    $props{at}       = $at . "pt" if defined $at;
     return %props; }
   else {
     return; } }
@@ -713,7 +714,7 @@ sub mergePurestyle {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

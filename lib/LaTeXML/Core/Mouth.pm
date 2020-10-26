@@ -285,9 +285,9 @@ sub readToken {
       $line =~ s/((\\ )*)\s*$/$1/s;
       # Then append the appropriaate \endlinechar, or "\r"
       if (my $eol = $STATE->lookupDefinition(T_CS('\endlinechar'))) {
-        # \endlinechar=-1 means what?
+        # \endlinechar<0 or >255 means no character is appended
         $eol = $eol->valueOf()->valueOf;
-        $line .= chr($eol) if $eol > 0; }
+        $line .= chr($eol) if $eol >= 0 and $eol <= 255; }
       else {
         $line .= "\r"; }
       $$self{chars}  = splitChars($line);
