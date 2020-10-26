@@ -115,7 +115,7 @@ DefParameterType('DefPlain', sub {
     if ($inner) {
       ($value) = $inner->reparseArgument($gullet, $value); }
     return $value; },
-  macrobody => 1,
+  packParameters => 1,
   reversion => sub {
     my ($arg, $inner) = @_;
     (T_BEGIN,
@@ -251,7 +251,7 @@ DefParameterType('DefExpanded', sub {
     my $token    = $gullet->readXToken;
     my $expanded = ($token->getCatcode == CC_BEGIN ? $gullet->readBalanced(1) : $token);
     return $expanded; },
-  macrobody => 1,
+  packParameters => 1,
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
@@ -302,7 +302,7 @@ DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
-DefParameterType('UndigestedDefKey', sub { $_[0]->readArg; }, undigested => 1, macrobody=>1);
+DefParameterType('UndigestedDefKey', sub { $_[0]->readArg; }, undigested => 1, packParameters=>1);
 
 # Read a token as used when defining it, ie. it may be enclosed in braces.
 DefParameterType('DefToken', sub {
