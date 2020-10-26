@@ -19,6 +19,7 @@ package LaTeXML::Core::Token;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Error;
 use LaTeXML::Common::Object;
 use base qw(LaTeXML::Common::Object);
 use base qw(Exporter);
@@ -28,11 +29,11 @@ our @EXPORT = (
     CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
     CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
     CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
-    CC_CS      CC_MARKER),
+    CC_CS      CC_MARKER CC_ARG     CC_SMUGGLE_THE),
   # Token constructors
   qw( T_BEGIN T_END T_MATH T_ALIGN T_PARAM T_SUB T_SUPER T_SPACE
     &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
-    T_CR &T_MARKER
+    T_CR &T_MARKER T_ARG T_SMUGGLE_THE
     &Token),
   # String exploders
   qw(&Explode &ExplodeText &UnTeX)
@@ -58,8 +59,10 @@ use constant CC_ACTIVE  => 13;
 use constant CC_COMMENT => 14;
 use constant CC_INVALID => 15;
 # Extended Catcodes for expanded output.
-use constant CC_CS     => 16;
-use constant CC_MARKER => 17;    # non TeX extension!
+use constant CC_CS        => 16;
+use constant CC_MARKER    => 17;    # non TeX extension!
+use constant CC_ARG       => 18;    # "out_param" in B Book
+use constant CC_SMUGGLE_THE => 19;    # defered expansion once
 
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
@@ -80,6 +83,33 @@ sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), CC_COMMENT], 'LaTe
 sub T_CS { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
 # Illegal: don't use unless you know...
 sub T_MARKER { my ($t) = @_; return bless [$t, CC_MARKER], 'LaTeXML::Core::Token'; }
+
+sub T_ARG {
+  my ($v) = @_;
+  my $int = $v;
+  # get the integer value from the token
+  if (ref $v eq 'LaTeXML::Core::Token') {
+    my $v_str = $$v[0];
+    $int = int($$v[0]);
+    if ($int < 1 || $int > 9) {
+      Fatal('malformed', 'T_ARG', 'value should be #1-#9', "Illegal: " . $v->stringify); } }
+  return bless ["$int", CC_ARG], 'LaTeXML::Core::Token'; }
+
+# This hides tokens coming from \the (-like) primitives from expansion; CC_CS,CC_ACTIVE, but also CC_PARAM and CC_ARG
+our @CATCODE_CAN_SMUGGLE_THE = (
+  0, 0, 0, 0,
+  0, 0, 1, 0,
+  0, 0, 0, 0,
+  0, 1, 0, 0,
+  1, 0, 1, 0);
+
+sub T_SMUGGLE_THE {
+  my ($t) = @_;
+  my $cc = $$t[1];
+  if ($cc == CC_SMUGGLE_THE) {
+    # LaTeXML Bug, we haven't correctly emulated scan_toks! Offending token was:
+    Fatal('unexpected', 'CC_SMUGGLE_THE', 'We are masking a \the-produced token twice, this must Never happen.', "Illegal: " . $t->stringify); }
+  return ($CATCODE_CAN_SMUGGLE_THE[$cc] ? bless ["SMUGGLE_THE", CC_SMUGGLE_THE, $t], 'LaTeXML::Core::Token' : $t); }
 
 sub Token {
   my ($string, $cc) = @_;
@@ -104,7 +134,7 @@ sub ExplodeText {
 my $UNTEX_LINELENGTH = 78;    # [CONSTANT]
 
 sub UnTeX {
-  my ($thing) = @_;
+  my ($thing, $suppress_linebreak) = @_;
   return unless defined $thing;
   my @tokens = (ref $thing ? $thing->revert : Explode($thing));
   my $string = '';
@@ -115,10 +145,10 @@ sub UnTeX {
     my $token = shift(@tokens);
     my $cc    = $token->getCatcode;
     next if $cc == CC_COMMENT;
-    my $s = $token->getString();
+    my $s = $token->toString();
     if ($cc == CC_LETTER) {    # keep "words" together, just for aesthetics
       while (@tokens && ($tokens[0]->getCatcode == CC_LETTER)) {
-        $s .= shift(@tokens)->getString; } }
+        $s .= shift(@tokens)->toString; } }
     my $l = length($s);
     if ($cc == CC_BEGIN) { $level++; }
     # Seems a reasonable & safe time to line break, for readability, etc.
@@ -132,12 +162,12 @@ sub UnTeX {
       # Insert a (virtual) space before a letter if previous token was a CS w/letters
       # This is required for letters, but just aesthetic for digits (to me?)
       # Of course, use a newline if we're already at end
-      my $space = (($length > 0) && ($length + $l > $UNTEX_LINELENGTH) ? "\n" : ' ');
+      my $space = (!$suppress_linebreak && ($length > 0) && ($length + $l > $UNTEX_LINELENGTH) ? "\n" : ' ');
       $string .= $space . $s; $length += 1 + $l; }
-    elsif (($length > 0) && ($length + $l > $UNTEX_LINELENGTH)    # linebreak before this token?
-      && (scalar(@tokens) > 1)                                    # and not at end!
-      ) {                                                         # Or even within an arg!
-      $string .= "%\n" . $s; $length = $l; }                      # with %, so that it "disappears"
+    elsif (!$suppress_linebreak && ($length > 0) && ($length + $l > $UNTEX_LINELENGTH) # linebreak before this token?
+      && (scalar(@tokens) > 1)                                                         # and not at end!
+      ) {    # Or even within an arg!
+      $string .= "%\n" . $s; $length = $l; }    # with %, so that it "disappears"
     else {
       $string .= $s; $length += $l; }
     if ($cc == CC_END) { $level--; }
@@ -151,45 +181,52 @@ sub UnTeX {
 # Categories of Category codes.
 # For Tokens with these catcodes, only the catcode is relevant for comparison.
 # (if they even make it to a stage where they get compared)
-our @primitive_catcode = (    # [CONSTANT]
+our @CATCODE_PRIMITIVE = (    # [CONSTANT]
   1, 1, 1, 1,
   1, 1, 1, 1,
   1, 0, 1, 0,
   0, 0, 0, 0,
-  0, 0);
-our @executable_catcode = (    # [CONSTANT]
+  0, 0, 0, 0);
+our @CATCODE_EXECUTABLE = (    # [CONSTANT]
   0, 1, 1, 1,
   1, 0, 0, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  1, 0);
+  1, 0, 0, 0);
 
-our @standardchar = (          # [CONSTANT]
+our @CATCODE_STANDARDCHAR = (    # [CONSTANT]
   "\\",  '{',   '}',   q{$},
   q{&},  "\n",  q{#},  q{^},
   q{_},  undef, undef, undef,
   undef, undef, q{%},  undef,
-  undef, undef);
+  undef, undef, undef, undef);
 
-our @CC_NAME =                 #[CONSTANT]
+our @CATCODE_NAME =              #[CONSTANT]
   qw(Escape Begin End Math
   Align EOL Parameter Superscript
   Subscript Ignore Space Letter
   Other Active Comment Invalid
-  ControlSequence Marker);
-our @PRIMITIVE_NAME = (        # [CONSTANT]
+  ControlSequence Marker Arg NoExpand1);
+our @CATCODE_PRIMITIVE_NAME = (    # [CONSTANT]
   'Escape',    'Begin', 'End',       'Math',
   'Align',     'EOL',   'Parameter', 'Superscript',
   'Subscript', undef,   'Space',     undef,
   undef,       undef,   undef,       undef,
-  undef,       undef);
-our @CC_SHORT_NAME =           #[CONSTANT]
+  undef,       undef,   undef,       undef);
+our @CATCODE_SHORT_NAME =          #[CONSTANT]
   qw(T_ESCAPE T_BEGIN T_END T_MATH
   T_ALIGN T_EOL T_PARAM T_SUPER
   T_SUB T_IGNORE T_SPACE T_LETTER
   T_OTHER T_ACTIVE T_COMMENT T_INVALID
-  T_CS
+  T_CS T_MARKER T_ARG T_SMUGGLE_THE
 );
+
+our $SMUGGLE_THE_COMMANDS = {
+  '\the'        => 1,
+  '\showthe'    => 1,
+  '\unexpanded' => 1,
+  '\detokenize' => 1
+};
 
 #======================================================================
 # Accessors.
@@ -200,13 +237,13 @@ sub isaToken { return 1; }
 # stored under; It's the same for various `different' BEGIN tokens, eg.
 sub getCSName {
   my ($token) = @_;
-  return $PRIMITIVE_NAME[$$token[1]] || $$token[0]; }
+  return $CATCODE_PRIMITIVE_NAME[$$token[1]] || $$token[0]; }
 
 # Get the CSName only if the catcode is executable!
 sub getExecutableName {
   my ($self) = @_;
   my ($cs, $cc) = @$self;
-  return $executable_catcode[$cc] && ($PRIMITIVE_NAME[$cc] || $cs); }
+  return $CATCODE_EXECUTABLE[$cc] && ($CATCODE_PRIMITIVE_NAME[$cc] || $cs); }
 
 # Return the string or character part of the token
 sub getString {
@@ -225,7 +262,7 @@ sub getCatcode {
 
 sub isExecutable {
   my ($self) = @_;
-  return $executable_catcode[$$self[1]]; }
+  return $CATCODE_EXECUTABLE[$$self[1]]; }
 
 # Defined so a Token or Tokens can be used interchangeably.
 sub unlist {
@@ -236,12 +273,12 @@ sub stripBraces {
   my ($self) = @_;
   return ($self); }
 
-my @NEUTRALIZABLE = (    # [CONSTANT]
+our @CATCODE_NEUTRALIZABLE = (    # [CONSTANT]
   0, 0, 0, 1,
   1, 0, 1, 1,
   1, 0, 0, 0,
   0, 1, 0, 0,
-  0, 0);
+  0, 0, 0, 0);
 
 # neutralize really should only retroactively imitate what Semiverbatim would have done.
 # So, it needs to neutralize those in SPECIALS
@@ -251,20 +288,34 @@ my @NEUTRALIZABLE = (    # [CONSTANT]
 sub neutralize {
   my ($self, @extraspecials) = @_;
   my ($ch,   $cc)            = @$self;
-  return ($NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') }, @extraspecials)
-    ? T_OTHER($ch) : $self); }
+  if ($CATCODE_NEUTRALIZABLE[$cc] && (grep { $ch } @{ $STATE->lookupValue('SPECIALS') }, @extraspecials)) {
+    return T_OTHER($ch); }
+  else {
+    return $self; } }
+
+sub substituteParameters {
+  my ($self, @args) = @_;
+  if ($$self[1] == CC_ARG) {
+    return $args[ord($$self[0]) - ord("0") - 1]; }
+  else {
+    return $self; } }
+
+sub packParameters { return $_[0]; }
 
 # Mark a token as not to be expanded (\noexpand) by hiding itself as the 3rd element of a new token.
 # Wonder if this should only have effect on expandable tokens?
 sub with_dont_expand {
   my ($self) = @_;
   my $cc = $$self[1];
+  if ($cc == CC_SMUGGLE_THE) {
+    # LaTeXML Bug, we haven't correctly emulated scan_toks! Offending token was:
+    Fatal('unexpected', 'CC_SMUGGLE_THE', 'We are marking as \noexpand a masked \the-produced token, this must Never happen.', "Illegal: " . $self->stringify); }
   return ((($cc == CC_CS) || ($cc == CC_ACTIVE))
     # AND it is either undefined, or is expandable!
       && (!defined($STATE->lookupDefinition($self))
-      || defined($STATE->lookupExpandable($self)))
+      || defined($STATE->lookupExpandable($self))))
     ? bless ['\relax', CC_CS, $self], 'LaTeXML::Core::Token'
-    : $self); }
+    : $self; }
 
 # Return the original token of a not-expanded token,
 # or undef if it isn't marked as such.
@@ -274,7 +325,9 @@ sub get_dont_expand {
 
 sub without_dont_expand {
   my ($self) = @_;
-  return ($$self[2] || $self); }
+  # Remove dont_expand flag, remove SMUGGLE_THE wrapper
+  my $inner = $$self[2];
+  return $inner ? ($$inner[2] || $inner) : $self; }
 
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
@@ -282,7 +335,7 @@ sub without_dont_expand {
 # actual character is needed.
 
 # Should revert do something with this???
-#  ($standardchar[$$self[1]] || $$self[0]); }
+#  ($CATCODE_STANDARDCHAR[$$self[1]] || $$self[0]); }
 
 sub revert {
   my ($self) = @_;
@@ -290,7 +343,7 @@ sub revert {
 
 sub toString {
   my ($self) = @_;
-  return $$self[0]; }
+  return $$self[1] == CC_ARG ? ("#" . $$self[0]) : $$self[0]; }
 
 sub beDigested {
   my ($self, $stomach) = @_;
@@ -319,14 +372,15 @@ my @CONTROLNAME = (                                   #[CONSTANT]
 # Primarily for error reporting.
 sub stringify {
   my ($self) = @_;
-  my $string = $$self[0];
+  if ($$self[2]) {
+    return $$self[2]->stringify() . ($$self[1] == CC_SMUGGLE_THE ? " (defer expand once)" : " (dont expand)"); }
+  my $string = $self->toString;
   # Make the token's char content more printable, since this is for error messages.
   if (length($string) == 1) {
     my $c = ord($string);
     if ($c < 0x020) {
       $string = 'U+' . sprintf("%04x", $c) . '/' . $CONTROLNAME[$c]; } }
-  my $noexpand = $$self[2] ? " (dont expand)" : '';
-  return $CC_SHORT_NAME[$$self[1]] . '[' . $string . ']' . $noexpand; }
+  return $CATCODE_SHORT_NAME[$$self[1]] . '[' . $string . ']'; }
 
 #======================================================================
 

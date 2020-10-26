@@ -92,7 +92,7 @@ sub reparseArgument {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 

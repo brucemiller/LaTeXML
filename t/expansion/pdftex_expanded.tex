@@ -1,0 +1,64 @@
+ % $Id$
+% Public domain.
+% Originally written 2018 by David Carlisle, Bruno Le Floch.
+
+\catcode`\{=1 \catcode`\}=2 \catcode`\#=6
+\def\space{ }
+\let\bgroup{ \let\egroup}
+
+START
+EXPANDED TEST 1
+% Check the primitive exists
+expanded \ifx\expanded\relax failed\else exists\fi
+
+EXPANDED TEST 2
+% Simple expansion test
+\def\aaa{x}
+\def\bbb{\aaa\aaa}
+\expandafter\def\expandafter\ccc\expandafter{\expanded{\bbb,\aaa}}
+\meaning\ccc
+
+EXPANDED TEST 3: the
+% Expanding \the
+\expanded{\bbb,\the\numexpr100+20+3\relax}
+
+EXPANDED TEST 4: macro param
+% Constructed #1 is still #1
+\expandafter\def\expandafter\ddd\expandafter#\expanded{1{#\number--1}}
+\meaning\ddd
+
+EXPANDED TEST 5: torture
+% Torture test from Bruno Le Floch testing various tricky interactions
+% \expanded\relax\space\ifincsname \BOOM\fi{\ifincsname \BOOM\fi}
+
+T5.1:
+\detokenize\expandafter{\expanded{#,\noexpand\aaa,\unexpanded{\aaa}}}
+
+T5.2:
+\detokenize\expandafter{\expanded{#,\unexpanded{#}}}
+
+T5.3:
+\detokenize\expandafter{\expanded\expandafter{\noexpand\aaa}}
+
+T5.4:
+\detokenize\expandafter{\expanded\expandafter{\unexpanded{\aaa}}}
+
+T5.5:
+\detokenize\expanded{{\aaa\noexpand\aaa\noexpand\noexpand\noexpand\aaa}}
+
+T5.6:
+\detokenize\expanded{{\expanded{\aaa\noexpand\aaa\noexpand\noexpand\noexpand\aaa}}}
+
+T5.7:
+\toks0{\aaa}
+\detokenize\expanded{{\the\toks0}}
+
+T5.8:
+\expanded\bgroup\meaning\egroup}
+
+T5.9:
+\edef\foo{\expanded{##}}
+\meaning\foo
+
+END
+\end

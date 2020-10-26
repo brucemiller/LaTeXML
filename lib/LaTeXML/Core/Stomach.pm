@@ -110,7 +110,7 @@ sub digest {
     $$self{gullet}->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
       my ($gullet) = @_;
       $gullet->unread($tokens);
-      $STATE->clearPrefixes;    # prefixes shouldn't apply here.
+      $STATE->clearPrefixes;                                             # prefixes shouldn't apply here.
       my $ismath    = $STATE->lookupValue('IN_MATH');
       my $initdepth = scalar(@{ $$self{boxing} });
       my $depth     = $initdepth;
@@ -136,12 +136,12 @@ sub digest {
 my $MAXSTACK = 200;    # [CONSTANT]
 
 # Overly complex, but want to avoid recursion/stack
-my @absorbable_cc = (    # [CONSTANT]
+our @CATCODE_ABSORBABLE = (    # [CONSTANT]
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 1, 1,
   1, 0, 1, 0,
-  0, 0);
+  0, 0, 0, 0);
 
 sub invokeToken {
   my ($self, $token) = @_;
@@ -162,7 +162,7 @@ INVOKE:
     my $cc = $meaning->getCatcode;
     if ($cc == CC_CS) {
       @result = $self->invokeToken_undefined($token); }
-    elsif ($absorbable_cc[$cc]) {
+    elsif ($CATCODE_ABSORBABLE[$cc]) {
       @result = $self->invokeToken_simple($token, $meaning); }
     else {
       Error('misdefined', $token, $self,
@@ -208,15 +208,15 @@ sub invokeToken_simple {
     if ($STATE->lookupValue('IN_MATH')) {    # (but in Preamble, OK ?)
       return (); }
     else {
-      return Box($meaning->getString, $font, $self->getGullet->getLocator, $meaning); } }
+      return Box($meaning->toString, $font, $self->getGullet->getLocator, $meaning); } }
   elsif ($cc == CC_COMMENT) {                # Note: Comments need char decoding as well!
-    my $comment = LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1);
+    my $comment = LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1);
     # However, spaces normally would have be digested away as positioning...
     my $badspace = pack('U', 0xA0) . "\x{0335}";    # This is at space's pos in OT1
     $comment =~ s/\Q$badspace\E/ /g;
     return LaTeXML::Core::Comment->new($comment); }
   else {
-    return Box(LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1),
+    return Box(LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1),
       undef, undef, $meaning); } }
 
 # Regurgitate: steal the previously digested boxes from the current level.
@@ -326,7 +326,7 @@ sub setMode {
   $STATE->assignValue(MODE    => $mode,   'local');
   $STATE->assignValue(IN_MATH => $ismath, 'local');
   my $curfont = $STATE->lookupValue('font');
-  if ($mode eq $prevmode) { }
+  if    ($mode eq $prevmode) { }
   elsif ($ismath) {
     # When entering math mode, we set the font to the default math font,
     # and save the text font for any embedded text.
@@ -341,7 +341,7 @@ sub setMode {
     # but inherit color and size
     $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
         color => $curfont->getColor, background => $curfont->getBackground,
-        size  => $curfont->getSize), 'local'); }
+        size => $curfont->getSize), 'local'); }
   return; }
 
 sub beginMode {

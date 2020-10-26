@@ -1317,19 +1317,6 @@ DefMacro('\patchcmd [] DefToken {}{}{}{}', sub {
       return $failure;
 } }, protected => 1);
 
-# DefMacro('\apptocmd DefToken {}{}{}{}', sub {
-#     my ($gullet, $cs, $code, $success, $failure) = @_;
-#     Info('unexpected', 'apptocmd', $gullet,
-#       "apptocmd is not yet implemented, cannot patch " . ToString($cs));
-#     return;},
-#     , protected=>1);
-# DefMacro('\pretocmd DefToken {}{}{}{}', sub {
-#     my ($gullet, $cs, $code, $success, $failure) = @_;
-#     Info('unexpected', 'pretocmd', $gullet,
-#       "pretocmd is not yet implemented, cannot patch " . ToString($cs));
-#     return; },
-#    , protected=>1);
-
 RawTeX(<<'EoTeX');
 \newcommand{\etb@patchcmd}[4][########1]{%
   \etb@ifpatchable#2{#3}

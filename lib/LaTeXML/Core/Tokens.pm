@@ -37,11 +37,12 @@ sub Tokens {
 # .... Efficiently! since this seems to be called MANY times.
 sub new {
   my ($class, @tokens) = @_;
-  my $r;
-  return bless [map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
-        : ($r eq 'LaTeXML::Core::Tokens' ? @$_
-          : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)))) }
-      @tokens], $class; }
+  my ($r, $marks);
+  @tokens = map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
+      : ($r eq 'LaTeXML::Core::Tokens' ? @$_
+        : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)))) }
+    @tokens;
+  return bless [@tokens], $class; }
 
 # Return a list of the tokens making up this Tokens
 sub unlist {
@@ -56,13 +57,13 @@ sub clone {
 # Return a string containing the TeX form of the Tokens
 sub revert {
   my ($self) = @_;
-  return @$self; }
+  return map { ($$_[1] == CC_SMUGGLE_THE ? $$_[2] : $_); } @$self; }
 
 # toString is used often, and for more keyword-like reasons,
 # NOT for creating valid TeX (use revert or UnTeX for that!)
 sub toString {
   my ($self) = @_;
-  return join('', map { $$_[0] } @$self); }
+  return join('', map { $_->toString } @$self); }
 
 # Methods for overloaded ops.
 sub equals {
@@ -84,7 +85,12 @@ sub beDigested {
 
 sub neutralize {
   my ($self, @extraspecials) = @_;
-  return Tokens(map { $_->neutralize(@extraspecials) } $self->unlist); }
+  # Remove dont_expand, but preserve SMUGGLE_THE
+  return Tokens(map { $_->neutralize(@extraspecials) } @$self); }
+
+sub without_dont_expand {
+  my ($self) = @_;
+  return Tokens(map { $_->without_dont_expand } @$self); }
 
 sub isBalanced {
   my ($self) = @_;
@@ -101,16 +107,40 @@ sub substituteParameters {
   my ($self, @args) = @_;
   my @in     = @{$self};    # ->unlist
   my @result = ();
-  while (@in) {
-    my $token;
-    if (($token = shift(@in))->[1] != CC_PARAM) {    # Non '#'; copy it
+  while (my $token = shift(@in)) {
+    if ($$token[1] != CC_ARG) {    # Non-match; copy it
       push(@result, $token); }
-    elsif (($token = shift(@in))->[1] != CC_PARAM) {    # Not multiple '#'; read arg.
-      if (my $arg = $args[ord($$token[0]) - ord('0') - 1]) {
-        push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } }    # ->unlist
-    else {    # Duplicated '#', copy 2nd '#'
-      push(@result, $token); } }
+    else {
+      if (my $arg = $args[ord($$token[0]) - ord("0") - 1]) {
+        push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } } }    # ->unlist
   return LaTeXML::Core::Tokens->new(@result); }
+
+# Process the CC_PARAM tokens for use as a macro body (and other token lists)
+# Groups PARAM+OTHER token pair into match tokens.
+# Collapses PARAM+PARAM token pair into a single PARAM
+# B book suggests running this
+# and remove dont_expand markers.
+sub packParameters {
+  my ($self)    = @_;
+  my @rescanned = ();
+  my @toks      = @$self;
+  while (my $t = shift @toks) {
+    if ($$t[1] == CC_PARAM && @toks) {
+      # NOTE for future cleanup: Only CC_CS & CC_ACTIVE should ever get with_dont_expand!
+      my $next_t  = shift @toks;
+      my $next_cc = $next_t && $$next_t[1];
+      if ($next_cc == CC_OTHER) {
+        # only group clear match token cases
+        push(@rescanned, T_ARG($next_t)); }
+      elsif ($next_cc == CC_PARAM) {
+        push(@rescanned, $t); }
+      else {    # any other case, preserve as-is, let the higher level call resolve any errors
+                # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
+        Error('misdefined', 'expansion', undef, "Parameter has a malformed arg, should be #1-#9 or ##. ",
+          "In expansion " . ToString(Tokens(@toks))); } }
+    else {
+      push(@rescanned, $t->without_dont_expand); } }
+  return Tokens(@rescanned); }
 
 # Trims outer braces (if they balance each other)
 # Should this also trim whitespace? or only if there are braces?
@@ -148,7 +178,7 @@ sub stripBraces {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -187,4 +217,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

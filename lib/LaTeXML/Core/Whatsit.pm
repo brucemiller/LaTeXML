@@ -27,6 +27,7 @@ use LaTeXML::Common::Locator;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
+use LaTeXML::Core::Definition::Expandable;
 use LaTeXML::Common::Dimension;
 use List::Util qw(min max);
 use LaTeXML::Core::List;
@@ -141,30 +142,30 @@ sub revert {
 # # followed by a T_OTHER(propname) specifies the property propname!!
 sub substituteParameters {
   my ($self, $spec) = @_;
+# TODO: This is kind of unfortunate -- I am not sure what are the reasonable "entryways" into the Whatsit substituteParameters. For Expandable we now have guarantees that "#,i" has been mapped into a single T_ARG(#i), but not here.
+# so for now run on each call?
   my @in     = $spec->unlist;
   my @args   = $self->getArgs;
   my $props  = $$self{properties};
   my @result = ();
   while (@in) {
-    my $token;
-    if (($token = shift(@in))->[1] != CC_PARAM) {    # Non '#'; copy it
+    my $token = shift(@in);
+    if ($$token[1] != CC_ARG) {    # Non '#'; copy it
       push(@result, $token); }
-    elsif (($token = shift(@in))->[1] != CC_PARAM) {    # Not multiple '#'; read arg.
+    else {
       my $s = $$token[0];
       my $n = ord($s) - ord('0') - 1;
       if (my $arg = (($n >= 0) && ($n < 10) ? $args[$n] : $$props{$s})) {
-        push(@result, Revert($arg)); } }                # ->unlist
-    else {                                              # Duplicated '#', copy 2nd '#'
-      push(@result, $token); } }
+        push(@result, Revert($arg)); } } }
   return @result; }
 
 sub toString {
   my ($self) = @_;
-  return ToString(Tokens($self->revert)); }             # What else??
+  return ToString(Tokens($self->revert)); }    # What else??
 
 sub getString {
   my ($self) = @_;
-  return $self->toString; }                             # Ditto?
+  return $self->toString; }                    # Ditto?
 
 # Methods for overloaded operators
 sub stringify {
@@ -218,8 +219,8 @@ sub computeSize {
       @boxes = ($$self{properties}{body}
         ? ($$self{properties}{body})
         : (map { ((ref $_) && ($_->isaBox) ? $_->unlist : ()) } @{ $$self{args} })); }
-    elsif (($sizer eq '0') || ($sizer eq '')) { }    # 0 size!
-    elsif ($sizer =~ /^(#\w+)*$/) {    # Else if of form '#digit' or '#prop', combine sizes
+    elsif (($sizer eq '0') || ($sizer eq '')) { }   # 0 size!
+    elsif ($sizer =~ /^(#\w+)*$/) {                 # Else if of form '#digit' or '#prop', combine sizes
       while ($sizer =~ s/^#(\w+)//) {
         my $arg = $1;
         push(@boxes, ($arg =~ /^\d+$/ ? $self->getArg($arg) : $$props{$arg})); } }
@@ -244,7 +245,7 @@ sub computeSize {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
