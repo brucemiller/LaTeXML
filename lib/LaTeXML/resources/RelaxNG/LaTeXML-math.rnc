@@ -1,4 +1,4 @@
-# /=====================================================================\ 
+# /=====================================================================\
 # |  LaTeXML-math.rnc                                                   |
 # | RelaxNG model for LaTeXML generated documents                       |
 # |=====================================================================|
@@ -24,19 +24,19 @@ Math.class   = XMath
 
 ## These elements comprise the internal math representation, being
 ## the content of the \elementref{XMath} element.
-XMath.class = 
+XMath.class =
     XMApp  | XMTok  | XMRef  | XMHint | XMArg
   | XMWrap | XMDual | XMText | XMArray | ERROR
 
 #======================================================================
 
 Math =
-## Outer container for all math. This holds the internal 
+## Outer container for all math. This holds the internal
 ## \elementref{XMath} representation, as well as image data and other representations.
 element Math { Math_attributes, Math_model }
 
 ## Attributes for \elementref{Math}.
-Math_attributes = 
+Math_attributes =
   Common.attributes,
   Imageable.attributes,
   ID.attributes,
@@ -52,7 +52,10 @@ Math_attributes =
   attribute content-tex { text }?,
 
   ## a textified representation of the math.
-  attribute text { text }?
+  attribute text { text }?,
+
+  ## preserved grammar-near lexemes for export to external apps
+  attribute lexemes { text }?
 
 ## Content model for \elementref{Math}.
 Math_model =   Math.class*
@@ -121,7 +124,7 @@ XMTok =
 element XMTok { XMTok_attributes, XMTok_model }
 
 ## Attributes for \elementref{XMTok}.
-XMTok_attributes = 
+XMTok_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
@@ -158,7 +161,7 @@ XMApp =
 element XMApp { XMApp_attributes, XMApp_model }
 
 ## Attributes for \elementref{XMApp}.
-XMApp_attributes = 
+XMApp_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
@@ -179,7 +182,7 @@ XMDual =
 element XMDual { XMDual_attributes, XMDual_model }
 
 ## Attributes for \elementref{XMDual}.
-XMDual_attributes = 
+XMDual_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes
@@ -195,7 +198,7 @@ XMHint =
 element XMHint { XMHint_attributes, XMHint_model }
 
 ## Attributes for \elementref{XMHint}.
-XMHint_attributes = 
+XMHint_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes
@@ -210,7 +213,7 @@ XMText =
 element XMText { XMText_attributes, XMText_model }
 
 ## Attributes for \elementref{XMText}.
-XMText_attributes = 
+XMText_attributes =
   Common.attributes,
   XMath.attributes,
   Backgroundable.attributes,
@@ -228,7 +231,7 @@ XMWrap =
 element XMWrap { XMWrap_attributes, XMWrap_model }
 
 ## Attributes for \elementref{XMWrap}.
-XMWrap_attributes = 
+XMWrap_attributes =
   Common.attributes,
   XMath.attributes,
   Backgroundable.attributes,
@@ -251,7 +254,7 @@ XMArg =
 element XMArg { XMArg_attributes, XMArg_model }
 
 ## Attributes for \elementref{XMArg}.
-XMArg_attributes = 
+XMArg_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
@@ -270,7 +273,7 @@ XMRef =
 element XMRef { XMRef_attributes, XMRef_model }
 
 ## Attributes for \elementref{XMRef}.
-XMRef_attributes = 
+XMRef_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
@@ -287,7 +290,7 @@ XMArray =
 element XMArray { XMArray_attributes, XMArray_model }
 
 ## Attributes for \elementref{XMArray}.
-XMArray_attributes = 
+XMArray_attributes =
   Common.attributes,
   XMath.attributes,
   ID.attributes,
@@ -322,7 +325,7 @@ XMCell =
 element XMCell { XMCell_attributes, XMCell_model }
 
 ## Attributes for \elementref{XMCell}.
-XMCell_attributes = 
+XMCell_attributes =
   Common.attributes,
   Backgroundable.attributes,
   ID.attributes,
