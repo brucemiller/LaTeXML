@@ -840,7 +840,11 @@ DefMacro('\meaning Token', sub {
       if ($type =~ /(primitive|conditional|constructor)$/i) {
         $definition = $definition->getCSorAlias;
         $type       = ref $definition;
-        $type =~ s/^LaTeXML:://; }
+        $type =~ s/^LaTeXML:://;
+        if (my $fontinfo = LookupValue('fontinfo_' . ToString($definition))) {
+          $meaning = 'select font ' . ($$fontinfo{fontname} || 'fontname');
+          $meaning .= ' at ' . $$fontinfo{at} if $$fontinfo{at};
+          $type = 'font'; } }
       # The actual tests start here
       if ($type =~ /token$/i) {
         my $cc         = $definition->getCatcode;
@@ -1282,7 +1286,8 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
     if (!keys %props) {    # Failed?
       Info('unexpected', $name, $stomach, "Unrecognized font name '$name'",
         "Font switch macro " . ToString($cs) . " will have no effect"); }
-
+    else {
+      $props{fontname} = $name; }
     $gullet->skipSpaces;
     AssignValue('fontinfo_' . ToString($cs) => {%props});
     DefPrimitiveI($cs, undef, undef, font => {%props});

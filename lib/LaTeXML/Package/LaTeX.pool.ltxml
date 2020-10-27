@@ -325,6 +325,9 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     $_[1]->setFont(LookupValue('font'));    # Start w/ whatever font was last selected.
     return @boxes; });
 
+# \document is used directly in e.g. expl3.sty
+Let(T_CS('\document'), T_CS('\begin{document}'), 'global');
+
 DefConstructorI(T_CS('\end{document}'), undef, sub {
     my ($document) = @_;
     $document->closeElement('ltx:document'); },
