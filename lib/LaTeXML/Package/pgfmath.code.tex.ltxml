@@ -93,29 +93,13 @@ DefMacro('\@@@show@pgfmatharg@{}', sub {
     print STDERR "MATH ARG $arg\n";
     return; });
 
-# A variant on Expanded that omits the outer {}
+# A plain argument that is expanded in the parameter type definition,
+# then used for pgf computations.
 DefParameterType('pgfNumber', sub {
     my ($gullet) = @_;
-    my $token;
-    do { $token = $gullet->readXToken(0);
-    } while (defined $token && $$token[1] == CC_SPACE);    # Inline ->getCatcode!
-
-    my $result = '';
-    if ($token->getCatcode == CC_BEGIN) {
-      my @tokens = ();
-      my $level  = 1;
-      while ($token = $gullet->readXToken(0)) {
-        my $cc = $$token[1];
-        if ($cc == CC_END) {
-          $level--;
-          last unless $level; }
-        elsif ($cc == CC_BEGIN) {
-          $level++; }
-        $result .= $$token[0]; } }
-    else {
-      $result = $token->getString; }
-    $result = "0" if $result eq '.';    # Apparently "." is a valid number!
-    return $result; });
+    my $pgf_number = ToString(Expand($gullet->readArg()));
+    $pgf_number = "0" if $pgf_number eq '.';    # Apparently "." is a valid number!
+    return $pgf_number; });
 
 # This one expects {{number}{number}....} and returns an array of them
 DefParameterType('pgfNumbers', sub {
@@ -158,7 +142,7 @@ DefMacro('\pgfmathneg@ pgfNumber', sub {
 DefMacro('\pgfmathmultiply@ pgfNumber pgfNumber', sub {
     pgfmathresult($_[1] * $_[2]); return });
 DefMacro('\pgfmathdivide@ pgfNumber pgfNumber', sub {
-    pgfmathresult($_[1] / $_[2]); return });
+    pgfmathresult($_[1] / pgfmath_divisor($_[2])); return });
 DefMacro('\pgfmathpow@ pgfNumber pgfNumber', sub {
     pgfmathresult($_[1]**$_[2]); return });
 DefMacro('\pgfmathabs@ pgfNumber', sub {
@@ -275,6 +259,20 @@ DefMacro('\@@@test@mathresult{}{}{}', sub {
     else {
       print STDERR "PGFParse OK '$input' => '$pgfresult' or '$lxresult'\n"; }
     return; });
+
+DefMacro('\pgfmath@smuggleone Until:\endgroup', sub {
+    my ($gullet, $arg) = @_;
+    $arg = $$arg[0] if (ref $arg eq 'LaTeXML::Core::Tokens');
+    my $def = LookupDefinition($arg);
+    if (my $is_expandable = $def && $def->isExpandable) {
+      # Texlive 2020 definition:
+      return (T_CS('\expandafter'), T_CS('\endgroup'), T_CS('\expandafter'),
+        T_CS('\def'), T_CS('\expandafter'), $arg, T_CS('\expandafter'),
+        T_BEGIN, $arg, T_END); }
+    else {
+      # do nothing for primitives, bindings already declare them global,
+      # no need to smuggle up. In fact, infinite loop if done carelessly.
+      return T_CS('\endgroup'); } });
 
 our $PGFMATHGrammarSpec;
 our $PGFMATHGrammar;
@@ -422,7 +420,7 @@ sub pgfmath_leftrecapply {
 # (which is sensible for the ultimate output, but wreaks havoc w/ accuracy here!)
 sub pgfmath_convert {
   my ($number, $unit) = @_;
-  SetCondition(T_CS('\ifpgfmathunitsdeclared'), 1, 'global');                        # Saw units!
+  SetCondition(T_CS('\ifpgfmathunitsdeclared'),     1, 'global');                    # Saw units!
   SetCondition(T_CS('\ifpgfmathmathunitsdeclared'), 1, 'global') if $unit eq 'mu';
   return $number * $STATE->convertUnit($unit) / 65536; }    # return value in pts!
 
@@ -532,9 +530,9 @@ BEGIN {
     #    frac       => sub { },
     #    gcd        => sub { },
     #    height     => sub { },
-    hex => sub { sprintf("%x", $_[0]); },
-    Hex => sub { sprintf("%X", $_[0]); },
-    int => sub { int($_[0]); },
+    hex        => sub { sprintf("%x", $_[0]); },
+    Hex        => sub { sprintf("%X", $_[0]); },
+    int        => sub { int($_[0]); },
     ifthenelse => sub { ($_[0] ? $_[1] : $_[2]); },
     iseven     => sub { (int($_[0]) % 2) == 0 },
     isodd      => sub { (int($_[0]) % 2) == 1 },
