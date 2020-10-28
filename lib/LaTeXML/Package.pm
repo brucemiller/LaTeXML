@@ -1875,10 +1875,6 @@ my %definition_name = (    # [CONSTANT]
   'cnf' => 'configuration',        'cfg' => 'configuration',
   'ldf' => 'language definitions', 'def' => 'definitions', 'dfu' => 'definitions');
 
-sub pathname_is_raw {
-  my ($pathname) = @_;
-  return ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
-
 my $findfile_options = {    # [CONSTANT]
   type => 1, notex => 1, noltxml => 1, searchpaths_only => 1 };
 
@@ -2088,18 +2084,15 @@ sub loadLTXML {
 
 sub loadTeXDefinitions {
   my ($request, $pathname) = @_;
-  if (!pathname_is_literaldata($pathname)) {    # We can't analyze literal data's pathnames!
-    my ($dir, $name, $type) = pathname_split($pathname);
+  # We can't analyze literal data's pathnames!
+  if (!pathname_is_literaldata($pathname)) {
     # Don't load if we've already loaded it before.
     # Note that we'll still load it if we've already loaded only the ltxml version
     # since someone's presumably asking _explicitly_ for the raw TeX version.
     # It's probably even the ltxml version is asking for it!!
     # Of course, now it will be marked and wont get reloaded!
     #
-    # babel.sty exception:
-    # we know the same .ldf file may be reloaded with a different option,
-    # to load an adjacently defined language, so allow that.
-    return if $type ne 'ldf' and LookupValue($request . '_loaded');
+    return if LookupValue($request . '_loaded') && !pathname_is_reloadable($pathname);
     AssignValue($request . '_loaded' => 1, 'global'); }
 
   my $stomach = $STATE->getStomach;
