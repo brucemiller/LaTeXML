@@ -124,15 +124,21 @@ sub applyClause {
       $parent->removeChild($sib);
       unshift(@following, $sib);
       last if $tree->isSameNode($sib); }
-    my @replaced = map { shift(@following) } 1 .. $nmatched;    # Remove the nodes to be replaced
+###    my @replaced = map { shift(@following) } 1 .. $nmatched;    # Remove the nodes to be replaced
+    my @replaced = ();
+    my $nm       = $nmatched;
+    while ($nm && @following) {
+      my $nd = shift(@following);
+      if ($document->getNodeQName($nd) ne 'ltx:XMHint') {
+        $nm--; push(@replaced, $nd); } }
     map { $document->unRecordNodeIDs($_) } @replaced;
     # Carry out the operation, inserting whatever nodes.
     $document->setNode($parent);
     my $point = $parent->lastChild;
-    &$pattern($document, @replaced);                            # Carry out the insertion.
+    &$pattern($document, @replaced);    # Carry out the insertion.
 
     # Now collect the newly inserted nodes for any needed patching
-    my @inserted = ();                                          # Collect the newly added nodes.
+    my @inserted = ();                  # Collect the newly added nodes.
     if ($point) {
       my @sibs = $parent->childNodes;
       while (my $sib = pop(@sibs)) {
@@ -143,8 +149,8 @@ sub applyClause {
 
     # Now make any adjustments to the new nodes
     map { $document->recordNodeIDs($_) } @inserted;
-    my $font = $document->getNodeFont($tree);                   # the font of the matched node
-    foreach my $ins (@inserted) {    # Copy the non-semantic parts of font to the replacement
+    my $font = $document->getNodeFont($tree);   # the font of the matched node
+    foreach my $ins (@inserted) {               # Copy the non-semantic parts of font to the replacement
       $document->mergeNodeFontRec($ins => $font); }
     # Now, replace the following nodes.
     map { $parent->appendChild($_) } @following; }
@@ -445,7 +451,7 @@ sub domToXPath_rec {
     elsif ($qname eq 'ltx:XMRef') {
       my $id = $node->getAttribute('idref');
       my $r  = $id && $document->lookupID($id);
-      my $rq = $r && $document->getNodeQName($r);    # eq '_WildCard_')
+      my $rq = $r  && $document->getNodeQName($r);    # eq '_WildCard_')
       if ($rq && ($rq =~ /ltx:(?:XMArg|XMWrap)$/)) {
         my @rc = $r->childNodes;
         if ((scalar(@rc) == 1)) {

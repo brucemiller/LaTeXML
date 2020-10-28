@@ -116,7 +116,7 @@ DefParameterType('DefPlain', sub {
       ($value) = $inner->reparseArgument($gullet, $value); }
     return $value; },
   packParameters => 1,
-  reversion => sub {
+  reversion      => sub {
     my ($arg, $inner) = @_;
     (T_BEGIN,
       ($inner ? $inner->revertArguments($arg) : Revert($arg)),
@@ -252,7 +252,7 @@ DefParameterType('DefExpanded', sub {
     my $expanded = ($token->getCatcode == CC_BEGIN ? $gullet->readBalanced(1) : $token);
     return $expanded; },
   packParameters => 1,
-  reversion => sub {
+  reversion      => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
 
@@ -302,7 +302,7 @@ DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
-DefParameterType('UndigestedDefKey', sub { $_[0]->readArg; }, undigested => 1, packParameters=>1);
+DefParameterType('UndigestedDefKey', sub { $_[0]->readArg; }, undigested => 1, packParameters => 1);
 
 # Read a token as used when defining it, ie. it may be enclosed in braces.
 DefParameterType('DefToken', sub {
@@ -3376,7 +3376,7 @@ Tag('ltx:Math', afterClose => \&cleanup_Math);
 sub cleanup_Math {
   my ($document, $mathnode) = @_;
   # If the Math ONLY contains XMath/XMText, it apparently isn't math at all!?!
-  if (!$document->findnodes('ltx:XMath/ltx:*[local-name() != "XMText"]', $mathnode)) {
+  if (!$document->findnodes('ltx:XMath/ltx:*[local-name() != "XMText" and (local-name() != "XMHint" or @width)]', $mathnode)) {
     # So unwrap down to the contents of the XMText's.
     my @xmtexts = map { $_->childNodes } map { $_->childNodes } $mathnode->childNodes;
     my @texts   = ();
@@ -3873,7 +3873,13 @@ sub scriptHandler {
       last if @stuff; }
     Fatal('expected', '{', $stomach, "Missing { in sub/super-script argument", $gullet->showUnexpected)
       unless @stuff;
-    my $script = shift(@stuff);    # ONLY the first box is the script!
+    my $script = shift(@stuff);     # ONLY the first box is the script!
+                                    # Strip braces from script;  REALLY UGLY!!!
+    my @b      = $script->unlist;
+    if ((ref $b[0] eq 'LaTeXML::Core::Box') && (ToString($b[0]->revert) eq '{')
+      && (ref $b[-1] eq 'LaTeXML::Core::Box') && (ToString($b[-1]->revert) eq '}')) {
+      shift(@b); pop(@b);
+      $script = List(@b); }
     unshift(@stuff,
       LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS($cs)), [$script],
         locator     => $gullet->getLocator,
@@ -4293,8 +4299,10 @@ foreach my $digit (qw(0 1 2 3 4 5 6 7 8 9)) {
   DefMathI($digit, undef, $digit, role => 'NUMBER', meaning => $digit); }
 
 # Would probably be best to collapse all XMHint/spaces at the earliest stage.
-our %space_chars = (negthinspace => '', thinspace => "\x{2009}",
-  medspace => "\x{2005}", thickspace => "\x{2004}");
+our %space_chars = (
+  negthinspace => { char => '', break => 1 }, thinspace => { char => "\x{2009}" },
+  medspace     => { char => "\x{2005}" }, thickspace => { char => "\x{2004}" },
+  '{'          => { char => '' },         '}'        => { char => '' });
 
 # This is getting out-of-hand;
 # (1) this gets done after document build, so we query the document/node for language
@@ -4341,8 +4349,9 @@ DefMathLigature(matcher => sub { my ($document, $node) = @_;
 ##        if (($w = $node->getAttribute('width')) && ($w=Dimension($w)->valueOf) && ($w >= 0) && ($w <= $skip)) {
 ##          $string = $text . $string; } # Add to string, but omit from number
         my $s;
-        if (($s = $node->getAttribute('name')) && ($s = $space_chars{$s})) {
-          $string = $s . $string; }
+##        if (($s = $node->getAttribute('name')) && defined($s = $space_chars{$s})) {
+        if (($s = $node->getAttribute('name')) && ($s = $space_chars{$s}) && !$$s{break}) {
+          $string = ($$s{char} || '') . $string; }
         else {
           last; } }
       else {

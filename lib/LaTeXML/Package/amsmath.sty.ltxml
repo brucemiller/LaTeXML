@@ -116,7 +116,7 @@ sub amsalignBindings {
       closeRow    => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn  => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn => sub { $_[0]->closeElement('ltx:_Capture_'); },
-      properties => {%properties}));
+      properties  => {%properties}));
   Let(T_ALIGN,       '\@alignment@align');
   Let("\\\\",        '\@ams@newline');
   Let('\cr',         '\@alignment@cr');
@@ -152,8 +152,8 @@ sub extractXMArrayCells {
         my @nodes = element_nodes($arg);
         # Strip leading & trailing XMHint's from cells;
         # they're (presumably) only for positioning and interfere with interpretation of the whole.
-        if (@nodes && ($document->getNodeQName($nodes[0]) eq 'ltx:XMHint'))  { shift(@nodes); }
-        if (@nodes && ($document->getNodeQName($nodes[-1]) eq 'ltx:XMHint')) { pop(@nodes); }
+        while (@nodes && ($document->getNodeQName($nodes[0]) eq 'ltx:XMHint'))  { shift(@nodes); }
+        while (@nodes && ($document->getNodeQName($nodes[-1]) eq 'ltx:XMHint')) { pop(@nodes); }
         # Some cultures duplicate an operator at the end of one row and beginning of next
         # when we merge the cells together, this confuses the parser
         if (my $prev = $contents[-1]) {
@@ -339,7 +339,7 @@ DefConstructor('\lx@ams@marksplitinalign', sub {
     $capture->setAttribute(align   => 'center'); },
   # Skip a column (for left/right alignment)
   afterDigest => sub { LookupValue('Alignment')->nextColumn; return; },
-  reversion   => '', sizer => 0);
+  reversion => '', sizer => 0);
 
 DefMacro('\split',
   '\if@inamsalign\lx@ams@marksplitinalign\fi'
@@ -561,7 +561,7 @@ DefConstructor('\@@gathered DigestedBody',
   '#1',
   beforeDigest => sub { $_[0]->bgroup; },
   afterDigest  => sub { $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'center' }); },
-  reversion      => '\begin{gathered}#1\end{gathered}',
+  reversion    => '\begin{gathered}#1\end{gathered}',
   afterConstruct => sub { rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); });
 
 DefMacro('\aligned[]',     '\@hidden@bgroup\@@amsaligned\@start@alignment');
@@ -701,7 +701,7 @@ DefConstructor('\intertext{}', "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode =
 # Section 3.11.1 Numbering hierarchy
 DefPrimitive('\numberwithin[]{}{}', sub {
     my ($ignore, $format, $counter, $within) = @_;
-    $format = ($format ? ToString($format) : '\arabic');
+    $format  = ($format ? ToString($format) : '\arabic');
     $counter = ToString(Expand($counter)); $within = ToString(Expand($within));
     NewCounter($counter, $within);
     DefMacroI("\\the$counter", undef,
@@ -864,7 +864,7 @@ DefMacro('\hdotsfor Number', sub {
 # This currently doesn't see deeply enough into $after, eg. \boldsymbol{+}
 DefPrimitive('\lx@math@dots Digested', sub {
     my ($stomach, $after) = @_;
-    my $role = $after && $after->getProperty('role');
+    my $role   = $after && $after->getProperty('role');
     my %binops = (ADDOP => 1, BINOP => 1, MULOP => 1, RELOP => 1);
     return (Box(($role && $binops{$role} ? "\x{22EF}" : "\x{2026}"),
         undef, undef, T_CS('\dots'), mode => 'math', name => 'dots', role => 'ID'),
@@ -902,7 +902,7 @@ DefConstructor('\boxed@text{}',
     . "#1"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  mode         => 'math', bounded => 1,
+  mode => 'math', bounded => 1,
   beforeDigest => sub {
     Let("\\\\", '\@block@cr'); },
   alias => '\boxed');
