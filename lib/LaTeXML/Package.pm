@@ -308,9 +308,9 @@ sub InstallDefinition {
 
 sub XEquals {
   my ($token1, $token2) = @_;
-  my $def1 = LookupMeaning($token1);    # token, definition object or undef
-  my $def2 = LookupMeaning($token2);    # ditto
-  if (defined $def1 != defined $def2) { # False, if only one has 'meaning'
+  my $def1 = LookupMeaning($token1);       # token, definition object or undef
+  my $def2 = LookupMeaning($token2);       # ditto
+  if (defined $def1 != defined $def2) {    # False, if only one has 'meaning'
     return 0; }
   elsif (!defined $def1 && !defined $def2) {    # true if both undefined
     return 1; }
@@ -558,7 +558,7 @@ sub ComposeURL {
 my $parameter_options = {    # [CONSTANT]
   nargs        => 1, reversion   => 1, optional => 1, novalue => 1,
   beforeDigest => 1, afterDigest => 1,
-  semiverbatim => 1, undigested  => 1, packParameters => 1};
+  semiverbatim => 1, undigested  => 1, packParameters => 1 };
 
 sub DefParameterType {
   my ($type, $reader, %options) = @_;
@@ -1137,11 +1137,11 @@ sub SetCondition {
 #    registerType : for parameters (but needs to be worked into DefParameter, below).
 
 my $primitive_options = {    # [CONSTANT]
-  isPrefix => 1, scope => 1, mode => 1, font => 1,
+  isPrefix     => 1, scope       => 1, mode => 1, font => 1,
   requireMath  => 1, forbidMath  => 1,
   beforeDigest => 1, afterDigest => 1,
-  bounded => 1, locked => 1, alias => 1,
-  outer   => 1, long   => 1 };
+  bounded      => 1, locked      => 1, alias => 1,
+  outer        => 1, long        => 1 };
 
 sub DefPrimitive {
   my ($proto, $replacement, %options) = @_;
@@ -1282,12 +1282,12 @@ sub flatten {
 #   properties      : a hashref listing default values of properties to assign to the Whatsit.
 #                     These properties can be used in the constructor.
 my $constructor_options = {    # [CONSTANT]
-  mode         => 1, requireMath => 1, forbidMath      => 1, font           => 1,
-  alias        => 1, reversion   => 1, sizer           => 1, properties     => 1,
+  mode         => 1, requireMath => 1, forbidMath => 1, font       => 1,
+  alias        => 1, reversion   => 1, sizer      => 1, properties => 1,
   nargs        => 1,
   beforeDigest => 1, afterDigest => 1, beforeConstruct => 1, afterConstruct => 1,
   captureBody  => 1, scope       => 1, bounded         => 1, locked         => 1,
-  outer => 1, long => 1 };
+  outer        => 1, long        => 1 };
 
 sub inferSizer {
   my ($sizer, $reversion) = @_;
@@ -1388,7 +1388,7 @@ sub createXMRefs {
   my @refs = ();
   foreach my $arg (@args) {
     my $isarray = (ref $arg eq 'ARRAY');
-    my $qname   = ($isarray ? $$arg[0] : $document->getNodeQName($arg));
+    my $qname   = ($isarray ? $$arg[0]       : $document->getNodeQName($arg));
     my $box     = ($isarray ? $$arg[1]{_box} : $document->getNodeBox($arg));
     # XMHint's are ephemeral, they may disappear; so just clone it w/o id
     if ($qname eq 'ltx:XMHint') {
@@ -1430,16 +1430,16 @@ sub createXMRefs {
 # When to make a dual ?
 # If the $presentation seems to be TeX (ie. it involves #1... but not ONLY!)
 my $math_options = {    # [CONSTANT]
-  name => 1, meaning       => 1, omcd    => 1, reversion => 1, sizer   => 1, alias => 1,
-  role => 1, operator_role => 1, reorder => 1, dual      => 1, decl_id => 1,
-  mathstyle    => 1, font               => 1,
-  scriptpos    => 1, operator_scriptpos => 1,
-  stretchy     => 1, operator_stretchy  => 1,
-  beforeDigest => 1, afterDigest        => 1, scope => 1, nogroup => 1, locked => 1,
+  name                   => 1, meaning       => 1, omcd => 1, reversion => 1, sizer => 1, alias => 1,
+  role                   => 1, operator_role => 1, reorder => 1, dual   => 1, decl_id => 1,
+  mathstyle              => 1, font               => 1,
+  scriptpos              => 1, operator_scriptpos => 1,
+  stretchy               => 1, operator_stretchy  => 1,
+  beforeDigest           => 1, afterDigest        => 1, scope => 1, nogroup => 1, locked => 1,
   revert_as              => 1,
   hide_content_reversion => 1 };    # DEPRECATE!
 my $simpletoken_options = {         # [CONSTANT]
-  name => 1, meaning   => 1, omcd  => 1, role   => 1, mathstyle => 1,
+  name => 1, meaning => 1, omcd => 1, role => 1, mathstyle => 1,
   font => 1, scriptpos => 1, scope => 1, locked => 1 };
 
 sub DefMath {
@@ -1698,8 +1698,8 @@ sub defmath_cons {
 # Define a LaTeX environment
 # Note that the body of the environment is treated is the 'body' parameter in the constructor.
 my $environment_options = {    # [CONSTANT]
-  mode       => 1, requireMath => 1, forbidMath => 1,
-  properties => 1, nargs       => 1, font       => 1,
+  mode             => 1, requireMath     => 1, forbidMath => 1,
+  properties       => 1, nargs           => 1, font       => 1,
   beforeDigest     => 1, afterDigest     => 1,
   afterDigestBegin => 1, beforeDigestEnd => 1, afterDigestBody => 1,
   beforeConstruct  => 1, afterConstruct  => 1,
@@ -1784,8 +1784,8 @@ sub DefEnvironmentI {
       # Curiously, it's the \begin whose afterConstruct gets called.
       afterConstruct => flatten($options{afterConstruct}, sub { $STATE->popFrame; }),
       nargs          => $options{nargs},
-      captureBody => T_CS("\\end$name"),           # Required to capture!!
-      properties  => $options{properties} || {},
+      captureBody    => T_CS("\\end$name"),           # Required to capture!!
+      properties     => $options{properties} || {},
       (defined $options{reversion} ? (reversion => $options{reversion}) : ()),
       (defined $sizer              ? (sizer     => $sizer)              : ()),
       ), $options{scope});
@@ -1874,10 +1874,6 @@ my %definition_name = (    # [CONSTANT]
   sty   => 'package',              cls   => 'class', clo => 'class options',
   'cnf' => 'configuration',        'cfg' => 'configuration',
   'ldf' => 'language definitions', 'def' => 'definitions', 'dfu' => 'definitions');
-
-sub pathname_is_raw {
-  my ($pathname) = @_;
-  return ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
 
 my $findfile_options = {    # [CONSTANT]
   type => 1, notex => 1, noltxml => 1, searchpaths_only => 1 };
@@ -2088,14 +2084,15 @@ sub loadLTXML {
 
 sub loadTeXDefinitions {
   my ($request, $pathname) = @_;
-  if (!pathname_is_literaldata($pathname)) {    # We can't analyze literal data's pathnames!
-    my ($dir, $name, $type) = pathname_split($pathname);
+  # We can't analyze literal data's pathnames!
+  if (!pathname_is_literaldata($pathname)) {
     # Don't load if we've already loaded it before.
     # Note that we'll still load it if we've already loaded only the ltxml version
     # since someone's presumably asking _explicitly_ for the raw TeX version.
     # It's probably even the ltxml version is asking for it!!
     # Of course, now it will be marked and wont get reloaded!
-    return if LookupValue($request . '_loaded');
+    #
+    return if LookupValue($request . '_loaded') && !pathname_is_reloadable($pathname);
     AssignValue($request . '_loaded' => 1, 'global'); }
 
   my $stomach = $STATE->getStomach;
@@ -2116,7 +2113,7 @@ sub loadTeXDefinitions {
   $stomach->getGullet->readingFromMouth(
     LaTeXML::Core::Mouth->create($pathname,
       fordefinitions => 1, notes => 1,
-      content        => LookupValue($pathname . '_contents')),
+      content => LookupValue($pathname . '_contents')),
     sub {
       my ($gullet) = @_;
       my $token;
@@ -2270,8 +2267,8 @@ sub AddToMacro {
 
 #======================================================================
 my $inputdefinitions_options = {    # [CONSTANT]
-  options => 1, withoptions => 1, handleoptions => 1,
-  type    => 1, as_class    => 1, noltxml       => 1, notex => 1, noerror => 1, after => 1,
+  options          => 1, withoptions => 1, handleoptions => 1,
+  type             => 1, as_class    => 1, noltxml => 1, notex => 1, noerror => 1, after => 1,
   searchpaths_only => 1 };
 #   options=>[options...]
 #   withoptions=>boolean : pass options from calling class/package
@@ -2375,7 +2372,7 @@ sub InputDefinitions {
 
 my $require_options = {    # [CONSTANT]
   options => 1, withoptions => 1, type => 1, as_class => 1,
-  noltxml => 1, notex       => 1, raw  => 1, after    => 1, searchpaths_only => 1 };
+  noltxml => 1, notex => 1, raw => 1, after => 1, searchpaths_only => 1 };
 # This (& FindFile) needs to evolve a bit to support reading raw .sty (.def, etc) files from
 # the standard texmf directories.  Maybe even use kpsewhich itself (INSTEAD of pathname_find ???)
 # Another potentially useful option might be that if we are reading a raw file,
