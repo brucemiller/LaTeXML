@@ -24,7 +24,7 @@ our @EXPORT = (
     &pmml_mi &pmml_mo &pmml_mn &pmml_bigop
     &pmml_punctuate &pmml_parenthesize
     &pmml_infix &pmml_script &pmml_summation),
-  qw( &cmml &cmml_share &cmml_shared &cmml_ci
+  qw( &cmml &cmml_share &cmml_shared &cmml_leaf
     &cmml_or_compose &cmml_synth_not &cmml_synth_complement),
 );
 require LaTeXML::Post::MathML::Presentation;
@@ -63,8 +63,8 @@ sub preprocess {
   my ($self, $doc, @nodes) = @_;
   # Set up rational, modern, defaults.
   $$self{hackplane1} = 0 unless $$self{hackplane1};
-  $$self{plane1} = 1 if $$self{hackplane1} || !defined $$self{plane1};
-  $$self{nestmath} = 0 unless $$self{nestmath};
+  $$self{plane1}     = 1 if $$self{hackplane1} || !defined $$self{plane1};
+  $$self{nestmath}   = 0 unless $$self{nestmath};
   $doc->adjust_latexml_doctype('MathML');    # Add MathML if LaTeXML dtd.
   $doc->addNamespace($mmlURI, 'm');
   return; }
@@ -207,10 +207,18 @@ sub lookupPresenter {
 
 sub lookupContent {
   my ($mode, $role, $name) = @_;
-  $name = '?' unless $name;
-  $role = '?' unless $role;
-  return $$MMLTable_C{"$mode:$role:$name"} || $$MMLTable_C{"$mode:?:$name"}
-    || $$MMLTable_C{"$mode:$role:?"} || $$MMLTable_C{"$mode:?:?"}; }
+  # Content-first lookup. Idea:
+  # If we have a meaning/name provided, we can make a csymbol.
+  # 1. Sometimes we can make a role-specific adaptation to the symbol, so check that first
+  return $name ? (($role && $$MMLTable_C{"$mode:$role:$name"}) ||
+      # 2. Sometimes we want to make a name-specific adaptation, check that second
+      $$MMLTable_C{"$mode:?:$name"} ||
+      # 3. If no special code, but we have a name, use a generic handler for this element
+      $$MMLTable_C{"$mode:?:?"}) : (
+    # 4. If we do not have a name, check for a role-based handler
+    ($role && $$MMLTable_C{"$mode:$role:?"}) ||
+      # 5. Always use a default handler if nothing is known
+      $$MMLTable_C{"$mode:?:?"}); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Various needed maps
@@ -370,7 +378,7 @@ sub pmml {
   # Bind any other style information from the refering node or the current node
   # so that any tokens synthesized from strings recover that style.
   local $LaTeXML::MathML::DESIRED_SIZE = _getattr($refr, $node, 'fontsize') || $LaTeXML::MathML::DESIRED_SIZE;
-  local $LaTeXML::MathML::COLOR   = _getattr($refr, $node, 'color') || $LaTeXML::MathML::COLOR;
+  local $LaTeXML::MathML::COLOR = _getattr($refr, $node, 'color') || $LaTeXML::MathML::COLOR;
   local $LaTeXML::MathML::BGCOLOR = _getattr($refr, $node, 'backgroundcolor')
     || $LaTeXML::MathML::BGCOLOR;
   local $LaTeXML::MathML::OPACITY = _getattr($refr, $node, 'opacity') || $LaTeXML::MathML::OPACITY;
@@ -485,7 +493,7 @@ sub pmml_internal {
     my $vattach = $node->getAttribute('vattach');
     my $rowsep  = $node->getAttribute('rowsep') || '0pt';
     my $colsep  = $node->getAttribute('colsep') || '5pt';
-    $vattach = 'axis' if !$vattach || ($vattach eq 'middle');    # roughly MathML's axis?
+    $vattach = 'axis'    if !$vattach || ($vattach eq 'middle');    # roughly MathML's axis?
     $vattach = 'bottom1' if $vattach && ($vattach eq 'top');
     my $ostyle = $LaTeXML::MathML::STYLE;
     local $LaTeXML::MathML::STYLE
@@ -494,7 +502,7 @@ sub pmml_internal {
     my $nrows = 0;
     my $ncols = 0;
 
-    my @spanned = ();                                            # record columns to be skipped
+    my @spanned = ();                                               # record columns to be skipped
     foreach my $row (element_nodes($node)) {
       my @cols = ();
       my $nc   = 0;
@@ -502,7 +510,7 @@ sub pmml_internal {
       foreach my $col (element_nodes($row)) {
         $nc++;
         $spanned[$nc - 1]-- if $spanned[$nc - 1];
-        next                if $spanned[$nc - 1];                # Omit this mtd, if spanned by another!
+        next                if $spanned[$nc - 1];                   # Omit this mtd, if spanned by another!
         my $a    = $col->getAttribute('align');
         my $b    = $col->getAttribute('border');
         my $bc   = ($b ? join(' ', map { 'ltx_border_' . $_ } split(/\s/, $b)) : $b);
@@ -518,9 +526,9 @@ sub pmml_internal {
           for (my $i = 0 ; $i < ($cs || 1) ; $i++) {
             $spanned[$nc - 1 + $i] = ($rs || 1); } }
         push(@cols, ['m:mtd', { ($a ? (columnalign => $a) : ()),
-              ($c || $cl ? (class => ($c && $cl ? "$c $cl" : $c || $cl)) : ()),
-              ($cs ? (columnspan => $cs) : ()),
-              ($rs ? (rowspan    => $rs) : ()) },
+              ($c || $cl ? (class      => ($c && $cl ? "$c $cl" : $c || $cl)) : ()),
+              ($cs       ? (columnspan => $cs)                                : ()),
+              ($rs       ? (rowspan    => $rs)                                : ()) },
             @cell]); }
       $ncols = $nc if $nc > $ncols;
       push(@rows, ['m:mtr', {}, @cols]); }
@@ -593,10 +601,10 @@ sub pmml_mayberesize {
     if ($yoff) {    # assume this means to move the BOX? (not just the contents?)
       if (!$height) {
         if ($yoff =~ /^-/) { $height = $yoff; }
-        else { $height = "+" . $yoff; } }
+        else               { $height = "+" . $yoff; } }
       if (!$depth) {
         if ($yoff =~ /^-/) { $depth = $yoff; $depth =~ s/^-/+/; }
-        else { $depth = "-" . $yoff; } } }
+        else               { $depth = "-" . $yoff; } } }
     $$attr{width}   = $width  if $width;
     $$attr{height}  = $height if $height;
     $$attr{depth}   = $depth  if $depth;
@@ -782,8 +790,8 @@ sub stylizeContent {
       $size = undef; }
     # If requested relative size, and in script or scriptscript, we'll need to adjust the size
     elsif (($size =~ /%$/) && ($LaTeXML::MathML::STYLE =~ /script/)) {
-      my $req = $size; $req =~ s/%$//;
-      my $ex = $stylesize{$LaTeXML::MathML::STYLE}; $ex =~ s/%$//;
+      my $req = $size;                               $req =~ s/%$//;
+      my $ex  = $stylesize{$LaTeXML::MathML::STYLE}; $ex  =~ s/%$//;
       $size = int(100 * $req / $ex) . '%'; }
     # Note that symmetric is only allowed when stretchy, which looks crappy for specific sizes
     # so we'll pretend that delimiters are still stretchy, but restrict size by minsize & maxsize
@@ -842,7 +850,7 @@ sub stylizeContent {
     && ($mapping = ($plane1hack ? $plane1hack{$variant} : $plane1map{$variant}))) {
     my @c = map { $$mapping{$_} } split(//, (defined $text ? $text : ''));
     if (!grep { !defined $_ } @c) {    # Only if ALL chars in the token could be mapped... ?????
-      $text = join('', @c);
+      $text    = join('', @c);
       $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef); } }
   # Other attributes that should be copied?
   my $istoken = $tag =~ /^m:(?:mi|mo|mn)$/;                                               # mrow?
@@ -850,7 +858,7 @@ sub stylizeContent {
   my $title   = $istoken && ($iselement ? $item->getAttribute('title') : $attr{title});
   return ($text,
     ($variant ? (mathvariant => $variant) : ()),
-    ($size ? ($stretchyhack
+    ($size    ? ($stretchyhack
         ? (minsize => $size, maxsize => $size)
         : (mathsize => $size))
       : ()),
@@ -875,23 +883,23 @@ my %punctuation = (',' => 1, ';' => 1, "\x{2063}" => 1);                 # CONST
 
 # Generally, $item in the following ought to be a string.
 sub pmml_mi {
-  my ($item, %attr) = @_;
+  my ($item, %attr)    = @_;
   my ($text, %mmlattr) = stylizeContent($item, 'm:mi', %attr);
   #  return ['m:mi', {%mmlattr}, $text]; }
   return pmml_mayberesize($item, ['m:mi', {%mmlattr}, $text]); }
 
 # Really, the same issues as with mi.
 sub pmml_mn {
-  my ($item, %attr) = @_;
+  my ($item, %attr)    = @_;
   my ($text, %mmlattr) = stylizeContent($item, 'm:mn', %attr);
   #  return ['m:mn', {%mmlattr}, $text]; }
   return pmml_mayberesize($item, ['m:mn', {%mmlattr}, $text]); }
 
 # Note that $item should be either a string, or at most, an XMTok
 sub pmml_mo {
-  my ($item, %attr) = @_;
+  my ($item, %attr)    = @_;
   my ($text, %mmlattr) = stylizeContent($item, 'm:mo', %attr);
-  my $role = (ref $item ? $item->getAttribute('role') : $attr{role});
+  my $role      = (ref $item ? $item->getAttribute('role') : $attr{role});
   my $isfence   = $role && ($role =~ /^(OPEN|CLOSE)$/);
   my $ispunct   = $role && ($role eq 'PUNCT');
   my $islargeop = $role && ($role =~ /^(SUMOP|INTOP)$/);
@@ -907,7 +915,7 @@ sub pmml_mo {
     ['m:mo', { %mmlattr,
         ($isfence && !$fences{$text}      ? (fence     => 'true') : ()),
         ($ispunct && !$punctuation{$text} ? (separator => 'true') : ()),
-        ($islargeop ? (largeop   => 'true') : ()),
+        ($islargeop                       ? (largeop   => 'true') : ()),
         ($islargeop ? (symmetric => 'true') : ()),    # Not sure this is strictly correct...
                # Note that lspace,rspace is the left & right space that replaces Op.Dictionary
                # what we've recorded is _padding_, so we have to adjust the unknown OpDict entry!
@@ -922,8 +930,8 @@ sub pmml_mo {
       $text]); }
 
 sub pmml_bigop {
-  my ($op) = @_;
-  my $style = $op->getAttribute('mathstyle');
+  my ($op)      = @_;
+  my $style     = $op->getAttribute('mathstyle');
   my %styleattr = %{ ($style && ($style ne $LaTeXML::MathML::STYLE)
         && $stylemap{$LaTeXML::MathML::STYLE}{$style}) || {} };
   local $LaTeXML::MathML::STYLE
@@ -1236,11 +1244,16 @@ sub cmml_unparsed {
     @results]; }
 
 # Or csymbol if there's some kind of "defining" attribute?
-sub cmml_ci {
+sub cmml_leaf {
   my ($item) = @_;
   if (my $meaning = (ref $item) && $item->getAttribute('meaning')) {
-    my $cd = $item->getAttribute('omcd') || 'latexml';
-    return ['m:csymbol', { cd => $cd }, $meaning]; }
+    if (my $cd = $item->getAttribute('omcd')) {
+      return ['m:csymbol', { cd => $cd }, $meaning]; }
+    elsif (($item->getAttribute('role') || '') eq 'NUMBER') {
+      # special case, numbers with a meaning attribute
+      return ['m:cn', { type => ($meaning =~ /^[+-]?\d+$/ ? 'integer' : 'float') }, $meaning]; }
+    else {
+      return ['m:csymbol', { cd => 'latexml' }, $meaning]; } }
   else {
     my ($content, %mmlattr) = stylizeContent($item, 'm:ci');
     if (my $mv = $mmlattr{mathvariant}) {
@@ -1313,7 +1326,7 @@ sub cmml_or_compose {
 # Token elements:
 #   cn, ci, csymbol
 
-DefMathML("Token:?:?",           \&pmml_mi, \&cmml_ci);
+DefMathML("Token:?:?",           \&pmml_mi, \&cmml_leaf);
 DefMathML("Token:PUNCT:?",       \&pmml_mo, undef);
 DefMathML("Token:PERIOD:?",      \&pmml_mo, undef);
 DefMathML("Token:OPEN:?",        \&pmml_mo, undef);
@@ -1328,9 +1341,9 @@ DefMathML("Token:NUMBER:?", \&pmml_mn, sub {
     my $n = $_[0]->textContent;
     return ['m:cn', { type => ($n =~ /^[+-]?\d+$/ ? 'integer' : 'float') }, $n]; });
 DefMathML("Token:?:absent", sub { return ['m:mi', {}] });    # Not m:none!
-        # Hints normally would have disappeared during parsing
-        # (turned into punctuation or padding?)
-        # but if they survive (unparsed?) turn them into space
+    # Hints normally would have disappeared during parsing
+    # (turned into punctuation or padding?)
+    # but if they survive (unparsed?) turn them into space
 DefMathML('Hint:?:?', sub {
     my ($node) = @_;
     if (my $w = $node->getAttribute('width')) {
@@ -1385,8 +1398,8 @@ DefMathML('Apply:?:?', sub {
   sub {
     my ($op, @args) = @_;
     return ['m:apply', {}, cmml($op), map { cmml($_) } @args]; });
-DefMathML('Apply:COMPOSEOP:?', \&pmml_infix, undef);
-DefMathML("Token:DIFFOP:?", sub { pmml_mo($_[0], rpadding => '-2.5pt'); }, undef);
+DefMathML('Apply:COMPOSEOP:?', \&pmml_infix,                                  undef);
+DefMathML("Token:DIFFOP:?",    sub { pmml_mo($_[0], rpadding => '-2.5pt'); }, undef);
 DefMathML("Apply:DIFFOP:?", sub {
     my ($op, @args) = @_;
 ###    return ['m:mrow', {}, map { pmml($_) } $op, @args]; },
@@ -1427,8 +1440,8 @@ DefMathML("Array:?:cases", undef, sub {
     foreach my $row (element_nodes($node)) {
       my @items = element_nodes($row);
       my $n     = scalar(@items);
-      if ($n == 0) { }    # empty row, just skip
-      elsif ($n == 1) {   # No condition? Perhaps it means "otherwise" ?
+      if ($n == 0) { }     # empty row, just skip
+      elsif ($n == 1) {    # No condition? Perhaps it means "otherwise" ?
         push(@otherwises, $items[0]); }
       elsif ($items[1]->textContent eq 'otherwise') {    # more robust test?
         push(@otherwises, $items[0]); }
@@ -1450,10 +1463,10 @@ DefMathML("Array:?:cases", undef, sub {
 
 # BRM:
 
-DefMathML("Token:ADDOP:?", \&pmml_mo, undef);
-DefMathML("Token:ADDOP:plus",  undef, sub { return ['m:plus']; });
-DefMathML("Token:ADDOP:minus", undef, sub { return ['m:minus']; });
-DefMathML('Apply:ADDOP:?', \&pmml_infix, undef);
+DefMathML("Token:ADDOP:?",     \&pmml_mo,    undef);
+DefMathML("Token:ADDOP:plus",  undef,        sub { return ['m:plus']; });
+DefMathML("Token:ADDOP:minus", undef,        sub { return ['m:minus']; });
+DefMathML('Apply:ADDOP:?',     \&pmml_infix, undef);
 
 DefMathML("Token:MULOP:?", \&pmml_mo,    undef);
 DefMathML('Apply:MULOP:?', \&pmml_infix, undef);
@@ -1958,14 +1971,13 @@ although the latter wraps the actual C<m:math> element around it.
 
 Converts the C<XMath> C<$node> to Content MathML.
 
-=item C<cmml_ci($token)>
+=item C<cmml_leaf($token)>
 
-Converts the C<XMath> token to an C<m:ci>.
-(This may evolve to generate a C<m:csymbol>, under appropriate circumstances)
+Converts the C<XMath> token to an C<m:ci>, C<m:cn> or C<m:csymbol>, under appropriate circumstances.
 
 =item C<cmml_decoratedSymbol($item)>
 
-Similar to C<cmml_ci>, but used when an operator is itself, apparently, an application.
+Similar to C<cmml_leaf>, but used when an operator is itself, apparently, an application.
 This converts C<$item> to Presentation MathML to use for the content of the C<m:ci>.
 
 =item C<cmml_not($arg)>
