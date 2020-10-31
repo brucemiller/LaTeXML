@@ -31,7 +31,7 @@ sub new {
   $$self{toc_show} = 'toctitle';
   # Default format for regular ltx:ref's
   # [BTW: Does number_sections really still make sense?]
-  $$self{ref_show} = ($options{number_sections} ? "refnum" : "title");
+  $$self{ref_show}       = ($options{number_sections}        ? "refnum"                 : "title");
   $$self{min_ref_length} = (defined $options{min_ref_length} ? $options{min_ref_length} : 1);
   $$self{ref_join} = (defined $options{ref_join} ? $options{ref_join} : " \x{2023} "); # or " in " or ... ?
   $$self{navigation_toc} = $options{navigation_toc};
@@ -214,7 +214,7 @@ sub fill_in_tocs {
       $types = { map { ($_ => 1) } split(/\s*\|\s*/, $selector) }; }
     # global vs children of THIS or Document node?
     my $id     = $doc->getDocumentElement->getAttribute('xml:id');
-    my $scope  = $toc->getAttribute('scope') || 'current';
+    my $scope  = $toc->getAttribute('scope')  || 'current';
     my $format = $toc->getAttribute('format') || 'normal';
     my $lists;
     if (my $listname = $toc->getAttribute('lists')) {
@@ -277,7 +277,7 @@ sub gentocentry {
           . (defined $selfid && ($selfid eq $id) ? ' ltx_ref_self' : "") },
       ($before ? $self->generateRef_simple($doc, $id, $before) : ()),
       ['ltx:ref', { show => $show, idref => $id }],
-      ($after ? $self->generateRef_simple($doc, $id, $after) : ()),
+      ($after    ? $self->generateRef_simple($doc, $id, $after)                       : ()),
       (@children ? (['ltx:toclist', { class => "ltx_toclist_$typename" }, @children]) : ())]); }
 
 # Generate a "context" TOC, that shows what's on the current page,
@@ -471,15 +471,19 @@ sub make_bibcite {
     $show = 'refnum'; }
   if ($show eq 'nothing') {    # Ad Hoc support for \nocite!t
     return (); }
-  my $sep   = $bibref->getAttribute('separator')   || ',';
-  my $yysep = $bibref->getAttribute('yyseparator') || ',';
+  my $sep     = $bibref->getAttribute('separator')   || ',';
+  my $yysep   = $bibref->getAttribute('yyseparator') || ',';
   my @phrases = element_nodes($bibref);    # get the ltx;bibrefphrase's in the bibref!
                                            # Collect all the data from the bibliography
   my @data    = ();
+  my @lists   = split(/\s+/, $bibref->getAttribute('inlist') || 'bibliography');
   foreach my $key (@keys) {
     my ($bentry, $id, $entry);
     # NOTE: bibkeys are downcased when we look them up!
-    if (($bentry = $$self{db}->lookup("BIBLABEL:" . lc($key)))
+    foreach my $list (@lists) {            # Find the first of the lists that contains this bibkey
+      $bentry = $$self{db}->lookup("BIBLABEL:" . $list . ':' . lc($key));
+      last if $bentry; }
+    if ($bentry
       && ($id    = $bentry->getValue('id'))
       && ($entry = $$self{db}->lookup("ID:$id"))) {
       my $authors  = $entry->getValue('authors');
@@ -504,8 +508,8 @@ sub make_bibcite {
                                                                                      # fullnames ?
       push(@data, {
           key         => $key,
-          authors     => [$doc->trimChildNodes($authors || $fauthors || $keytag)],
-          fullauthors => [$doc->trimChildNodes($fauthors || $authors || $keytag)],
+          authors     => [$doc->trimChildNodes($authors  || $fauthors || $keytag)],
+          fullauthors => [$doc->trimChildNodes($fauthors || $authors  || $keytag)],
           authortext  => ($authors || $fauthors ? ($authors || $fauthors)->textContent : ''),
           year        => [$doc->trimChildNodes($year || $typetag)],
           rawyear     => $rawyear,
@@ -599,8 +603,8 @@ sub make_bibcite {
       elsif ($show =~ s/^(\W+)//) {           # Pass-thru non show keywords
         push(@stuff, $1); } }
     push(@refs,
-      (@refs ? ($sep, ' ') : ()),
-      ($didref ? @stuff : (['ltx:ref', $$datum{attr}, @stuff]))); }
+      (@refs   ? ($sep, ' ') : ()),
+      ($didref ? @stuff      : (['ltx:ref', $$datum{attr}, @stuff]))); }
   return @refs; }
 
 sub generateURL {

@@ -186,8 +186,8 @@ sub convertBibliography {
   require LaTeXML::Common::Config;
   my @preload = ();    # custom macros often used in e.g. howpublished field
                        # need to preload all packages used by the main article
-  my ($classdata, @packages)     = $self->find_documentclass_and_packages($doc);
-  my ($class,     $classoptions) = @$classdata;
+  my ($classdata, @packages) = $self->find_documentclass_and_packages($doc);
+  my ($class, $classoptions) = @$classdata;
   if ($class) {
 
     if ($classoptions) {
@@ -246,7 +246,7 @@ sub convertBibliography {
 
 # ================================================================================
 # Get all cited bibentries from the requested bibliography files.
-# Sort (cited) bibentries on author+year+title, [NOT on the key!!!]
+# Sort (cited) bibentries on author+year+title, [NOT on the key, or even proper BibTeX choices!!!]
 # and then check whether author+year is unique!!!
 # Returns a list of hashes containing:
 #  bibkey : the bibliographic entry's key
@@ -254,10 +254,10 @@ sub convertBibliography {
 #  citations : array of bib keys that are cited somewhere within this bibentry
 #  referrers : array of ID's of places that refer to this bibentry
 #  suffix    : a,b... if adjacent author/year are identical.
-
-# NOTE: biblist now have @lists to restrict to include ONLY
-# those bibitems which have been referenced by bibref's for that same list!
-# [Unfortunately, the logic is a bit screwy here]
+# NOTE: biblist's now have @lists to restrict to include ONLY
+# those bibitems which have been referenced by bibref's for one of those lists!
+# [If a bibref gives several lists, and entries for those lists end up in several bibliographies,
+# first 'list' determines where the idref points]
 sub getBibEntries {
   my ($self, $doc, $bib) = @_;
 
@@ -265,30 +265,25 @@ sub getBibEntries {
   # Also, record the citations from each bibentry to others.
   my %entries = ();
   foreach my $bibdoc ($self->getBibliographies($doc)) {
+    my @lists = split(/\s+/, $doc->findnode('//ltx:bibliography')->getAttribute('lists') || 'bibliography');
     foreach my $bibentry ($bibdoc->findnodes('//ltx:bibentry')) {
       my $bibkey = normalizeBibKey($bibentry->getAttribute('key'));
       my $bibid  = $bibentry->getAttribute('xml:id');
-      $entries{$bibkey}{bibkey}   = $bibkey;
-      $entries{$bibkey}{bibentry} = $bibentry;
+      $entries{$bibkey}{bibkey}    = $bibkey;
+      $entries{$bibkey}{bibentry}  = $bibentry;
       $entries{$bibkey}{citations} = [map { normalizeBibKey($_) } grep { $_ } map { split(',', $_->value) }
-          $bibdoc->findnodes('.//@bibrefs', $bibentry)];
-      # Also, register the key with the DB, if the bibliography hasn't already been scanned.
-      # NOTE: This associates a SINGLE id with the bibkey
-      # which isn't ideal for multiple bibliographies (see formatBibEntry)
-      $$self{db}->register("BIBLABEL:$bibkey", id => $bibid);
-  } }
+          $bibdoc->findnodes('.//@bibrefs', $bibentry)]; } }
   # Now, collect all bibkeys that were cited in other documents (NOT the bibliography)
   # And note any referrers to them (also only those outside the bib)
-  my $citestar = $$self{db}->lookup('BIBLABEL:*');
   my @lists    = split(/\s+/, $bib->getAttribute('lists') || 'bibliography');
+  my $citestar = grep { $$self{db}->lookup("BIBLABEL:$_:*"); } @lists;
 
   my @queue = ();
   foreach my $dbkey ($$self{db}->getKeys) {
-    if ($dbkey =~ /^BIBLABEL:(.*)$/) {
-      my $bibkey     = $1;
+    if ($dbkey =~ /^BIBLABEL:(.*?):(.*)$/) {
+      my ($list, $bibkey) = ($1, $2);
+      next unless grep { $_ eq $list; } @lists;
       my $bibdbentry = $$self{db}->lookup($dbkey);
-      my $inlists    = $bibdbentry->getValue('inlist');
-      next if $inlists && !grep { $$inlists{$_} } @lists;
       if (my $referrers = $bibdbentry->getValue('referrers')) {
         foreach my $refr (keys %$referrers) {
           my ($rid, $e, $t) = ($refr, undef, undef);
@@ -324,15 +319,15 @@ sub getBibEntries {
       elsif (scalar(@names)) {
         $sortnames = join(' ', map { getNameText($doc, $_) } @names);
         my @ns = map { $_ && $_->textContent } map { $doc->findnodes('ltx:surname', $_) } @names;
-        if    (@ns > 2) { $names = $ns[0] . ' et al'; }
+        if (@ns > 2)    { $names = $ns[0] . ' et al'; }
         elsif (@ns > 1) { $names = $ns[0] . ' and ' . $ns[1]; }
-        else { $names = $ns[0]; } }
+        else            { $names = $ns[0]; } }
       elsif (my $t = $doc->findnode('ltx:bib-title', $bibentry)) {
         $sortnames = $names = $t->textContent; }
-      my $date = $doc->findnode('ltx:bib-date[@role="publication"] | ltx:bib-type', $bibentry);
-      my $title = $doc->findnode('ltx:bib-title', $bibentry);
-      $date  = ($date  ? $date->textContent  : '');
-      $title = ($title ? $title->textContent : '');
+      my $date  = $doc->findnode('ltx:bib-date[@role="publication"] | ltx:bib-type', $bibentry);
+      my $title = $doc->findnode('ltx:bib-title',                                    $bibentry);
+      $date            = ($date  ? $date->textContent  : '');
+      $title           = ($title ? $title->textContent : '');
       $$entry{ay}      = "$names.$date";
       $$entry{initial} = $doc->initial($names, 1);
       # Include this entry keyed using a sortkey.
@@ -497,7 +492,7 @@ sub formatBibEntry {
     else {
       $aa = uc(substr($rfnames[0]->textContent, 0, 3)); }
     my $yrtext = (@year ? join('', map { (ref $_ ? $_->textContent : $_); } @year) : '');
-    my $yy = (length($yrtext) >= 2 ? substr($yrtext, 2, 2) : $yrtext);
+    my $yy     = (length($yrtext) >= 2 ? substr($yrtext, 2, 2) : $yrtext);
     push(@tags, ['ltx:tag', { role => 'refnum', class => 'ltx_bib_abbrv', open => '[', close => ']' },
         $aa . $yy . ($$entry{suffix} || '')]); }
 
@@ -526,9 +521,9 @@ sub formatBibEntry {
       my @nodes   = ($xpath eq 'true' ? () : $doc->findnodes($xpath, $bibentry));
       next if ($xpath ne 'true') && ($negated ? @nodes : !@nodes);
       push(@x, $punct) if $punct && @x;
-      push(@x, $pre) if $pre;
+      push(@x, $pre)                                                                           if $pre;
       push(@x, ['ltx:text', { class => 'ltx_bib_' . $class }, &$op($doc->cloneNodes(@nodes))]) if $op;
-      push(@x, $post) if $post; }
+      push(@x, $post)                                                                          if $post; }
     push(@blocks, ['ltx:bibblock', { 'xml:space' => 'preserve' }, @x]) if @x;
   }
   # Add a Cited by block.
@@ -566,9 +561,9 @@ sub do_name {
 
 sub do_names {
   my (@names) = @_;
-  my @stuff = ();
-  my $sep  = (scalar(@names) > 2 ? ', ' : ' ');
-  my $etal = 0;
+  my @stuff   = ();
+  my $sep     = (scalar(@names) > 2 ? ', ' : ' ');
+  my $etal    = 0;
   if (@names && ($names[-1]->textContent eq 'others')) {    # Magic!
     pop(@names);
     $etal = 1; }
@@ -783,7 +778,7 @@ sub do_links {
       ['ltx:bib-date[@role="publication"]', '', '', 'year',   \&do_year,     ''],
       ['ltx:title',                         '', '', 'title',  \&do_any,      ''],
       ['ltx:bib-type',                      '', '', 'type',   \&do_any,      ''],
-      ['! ltx:bib-type', '', '', 'type', sub { ('(Website)'); }, '']],
+      ['! ltx:bib-type',                    '', '', 'type',   sub { ('(Website)'); }, '']],
     [['ltx:bib-organization', ', ', ' ', 'publisher', \&do_any, ''],
       ['ltx:bib-place', ', ', '', 'place', \&do_any, ''],
       ['true', '.']],
