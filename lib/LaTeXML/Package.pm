@@ -2968,7 +2968,8 @@ using TeX's rules for parsing these objects.
 X<Until>X<XUntil>
 Reads tokens until a match to the tokens I<match> is found, returning
 the tokens preceding the match. This corresponds to TeX delimited arguments.
-For C<XUntil>, tokens are expanded as they are matched and accumulated.
+For C<XUntil>, tokens are expanded as they are matched and accumulated
+(but a brace reads and accumulates till a matching close brace, without expanding).
 
 =item C<UntilBrace>
 
