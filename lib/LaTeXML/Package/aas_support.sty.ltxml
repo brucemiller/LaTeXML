@@ -47,6 +47,11 @@ DefMacro('\journalid{}{}', '');
 DefMacro('\articleid{}{}', '');
 DefMacro('\paperid{}',     '');
 DefMacro('\msid{}',        '');    # Manuscript id.
+DefMacro('\added{}',       '');
+DefMacro('\replaced{}',    '');
+DefMacro('\deleted{}',     '');
+DefMacro('\explain{}',     '');
+DefMacro('\edit{}{}',      '');
 
 #\ccc{code}
 DefMacro('\ccc{}', '');            # Ignorable?
@@ -94,8 +99,9 @@ DefMacro('\author{}',
   '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
 
 DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affil{}',       '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefMacro('\affil{}',        '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefMacro('\affiliation{}',  '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefMacro('\altaffiliation', '\affiliation');
 DefConstructor('\@@@authoraddr{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
 DefMacro('\authoraddr{}', '\@add@to@frontmatter{ltx:creator}{\@@@authoraddr{#1}}');
 
@@ -117,8 +123,11 @@ DefConstructor('\@altaffilmark{}',
 DefConstructor('\altaffiltext{}{}',
   "<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>");
 
+DefMacro('\software{}',      '\@add@frontmatter{ltx:note}[role=software]{#1}');
 DefMacro('\submitjournal{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-
+DefMacro('\doi{}',           '\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
+DefMacro('\collaboration',   '');
+DefMacro('\nocollaboration', '');
 #======================================================================
 # 2.4 Abstract
 # normal LaTeX
@@ -188,6 +197,8 @@ Let('\boxedfig', '\fig');
 DefMacro('\rotatefig {Number} Semiverbatim {Dimension}{}',
   '\begin{figure}\caption{#4}\includegraphics[width=#3,angle=#1]{#2}\end{figure}');
 
+DefEnvironment('{interactive}{}{}', '#body');
+
 #======================================================================
 # 2.9 Acknowledgements
 
@@ -202,6 +213,7 @@ Let('\acknowledgments', '\acknowledgements');
 # Ultimately, this would get some more explicit semantic markup, but..
 # \facility{facilityID}
 DefConstructor('\facility{}', "<ltx:text class='ltx_ast_facility'>#1</ltx:text>");
+DefMacro('\facilities{}', '\@add@frontmatter{ltx:note}[role=facilities]{#1}');
 
 #======================================================================
 # 2.11 Appendices
@@ -277,7 +289,8 @@ DefMacro('\plottwo Semiverbatim Semiverbatim',
 
 # \plotfiddle{epsfile}{vsize}{rot}{hsf}{vsf}{htrans}{vtrans}
 # Ugh...
-DefMacro('\plotfiddle Semiverbatim {}{}{}{}{}{}', '\includegraphics[width=#4pt,height=#5pt]{#1}');
+DefMacro('\plotfiddle Semiverbatim {}{}{}{}{}{}',
+  '\includegraphics[width=#4pt,height=#5pt]{#1}');
 
 #======================================================================
 # 2.14.2 Figure Captions
@@ -295,6 +308,68 @@ DefMacro('\figcaption', sub {
 RequirePackage('deluxetable');
 Let(T_CS('\begin{planotable}'), T_CS('\begin{deluxetable}'));
 Let(T_CS('\end{planotable}'),   T_CS('\end{deluxetable}'));
+
+DefConditional('\ifcolnumberson');
+DefConditional('\ifdeluxedecimals');
+DefMacro('\deluxedecimals', '\global\deluxedecimalstrue');
+RawTeX('\global\deluxedecimalsfalse');
+Let(T_CS('\decimals'), T_CS('\deluxedecimals'));
+DefMacro('\colnumbers',              '');                                       # TODO
+DefMacro('\deluxedecimalcolnumbers', '\deluxedecimalstrue\colnumbersontrue');
+Let(T_CS('\decimalcolnumbers'), T_CS('\deluxedecimalcolnumbers'));
+
+# http://tug.ctan.org/tex-archive/macros/latex/contrib/aastex/sample63.pdf
+# decimal alignment, 3.1.2
+DefColumnType('D', sub {
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      before => Tokens(T_CS('\hfill')),
+      after  => Tokens(T_CS('\end@D@col@one')));
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      after => Tokens(T_CS('\hfill')));
+    return; });
+
+DefColumnType('d', sub {    #TODO: these should be "eaten away" I think?
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      before => Tokens(T_CS('\hfill')),
+      after  => Tokens(T_CS('\end@D@col@one')));
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      after => Tokens(T_CS('\hfill')));
+    return; });
+
+DefMacro('\end@D@col@one', sub {
+    my ($gullet)         = @_;
+    my $smuggle_new      = 1;
+    my $current_location = $gullet->getLocator->toString;
+    if (my $smuggled_at = LookupValue('aas_smuggle_D_column')) {
+      if ($smuggled_at eq $current_location) {
+        $smuggle_new = 0;
+    } }
+    if ($smuggle_new) {
+      AssignValue('aas_smuggle_D_column', $current_location, 'local');
+      return T_CS('\@alignment@align'); }
+    else {
+      return (); } });
+
+# hidden column, 3.1.4
+Let(T_CS('\savedollar'), T_MATH);
+DefEnvironment('{eatone}', '');
+DefColumnType('h', sub {
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      before => Tokens(T_BEGIN,            T_CS('\eatone')),
+      after  => Tokens(T_CS('\endeatone'), T_END));
+    return; });
+Let(T_CS('\begin{splitdeluxetable}'),  T_CS('\begin{deluxetable}'));
+Let(T_CS('\end{splitdeluxetable}'),    T_CS('\end{deluxetable}'));
+Let(T_CS('\begin{splitdeluxetable*}'), T_CS('\begin{deluxetable*}'));
+Let(T_CS('\end{splitdeluxetable*}'),   T_CS('\end{deluxetable*}'));
+
+DefColumnType('B', sub {    # TODO: fake for now, should break table eventually
+    $LaTeXML::BUILD_TEMPLATE->addColumn(
+      before => Tokens(T_BEGIN,            T_CS('\eatone')),
+      after  => Tokens(T_CS('\endeatone'), T_END));
+    return; });
+
+DefEnvironment('{longrotatetable}', '#body');
 
 DefMacro('\phn',   '\phantom{0}');
 DefMacro('\phd',   '\phantom{.}');
@@ -388,6 +463,7 @@ DefPrimitiveI('\arcdeg', undef, UTF(0xB0));
 Let('\degr', '\arcdeg');
 DefPrimitiveI('\arcmin', undef, "\x{2032}");
 DefPrimitiveI('\arcsec', undef, "\x{2033}");
+DefMacro('\nodata', ' ~$\cdots$~ ');
 
 # 1st arg is the original macro so that it can be the reversion for UnTeX!
 # 2nd arg is the superscript
@@ -398,7 +474,7 @@ DefConstructor('\aas@@fstack Undigested {}',
     . "<ltx:XMWrap>#2</ltx:XMWrap>"
     . "</ltx:XMApp>",
   properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } },
-  mode       => 'math', font => { shape => 'upright' }, bounded => 1, reversion => '#1');
+  mode => 'math', font => { shape => 'upright' }, bounded => 1, reversion => '#1');
 DefMacro('\aas@fstack{}', '\ensuremath{\aas@@fstack{#1}}');
 
 DefMacro('\fd',    '\ensuremath{\@fd}');
@@ -429,11 +505,11 @@ DefMacro('\onequarter', '\ifmmode\case{1}{4}\else\text@onequarter\fi');
 DefPrimitiveI('\text@onequarter', undef, UTF(0xBC));
 DefMacro('\threequarters', '\ifmmode\case{3}{4}\else\text@threequarters\fi');
 DefPrimitiveI('\text@threequarters', undef, UTF(0xBE));
-DefPrimitiveI('\ubvr', undef, "UBVR", bounded => 1, font => { shape => 'italic' });
-DefPrimitiveI('\ub', undef, "U\x{2000}B", bounded => 1, font => { shape => 'italic' });
-DefPrimitiveI('\bv', undef, "B\x{2000}V", bounded => 1, font => { shape => 'italic' });
-DefPrimitiveI('\vr', undef, "V\x{2000}R", bounded => 1, font => { shape => 'italic' });
-DefPrimitiveI('\ur', undef, "U\x{2000}R", bounded => 1, font => { shape => 'italic' });
+DefPrimitiveI('\ubvr', undef, "UBVR",       bounded => 1, font => { shape => 'italic' });
+DefPrimitiveI('\ub',   undef, "U\x{2000}B", bounded => 1, font => { shape => 'italic' });
+DefPrimitiveI('\bv',   undef, "B\x{2000}V", bounded => 1, font => { shape => 'italic' });
+DefPrimitiveI('\vr',   undef, "V\x{2000}R", bounded => 1, font => { shape => 'italic' });
+DefPrimitiveI('\ur',   undef, "U\x{2000}R", bounded => 1, font => { shape => 'italic' });
 
 # Remaining tables standard LaTeX or amssymb
 RequirePackage('latexsym');
@@ -442,6 +518,25 @@ RequirePackage('amssymb');
 # \lesssim,\gtrsim in amssymb
 Let('\la', '\lesssim');
 Let('\ga', '\gtrsim');
+
+# Nominal Conversion Constants
+
+DefMacro('\nomSolarEffTemp', '\leavevmode\hbox{\boldmath$\mathcal{T}^{\rm N}_{\mathrm{eff}\odot}$}');
+DefMacro('\nomTerrEqRadius',      '\leavevmode\hbox{\boldmath$\mathcal{R}^{\rm N}_{E\mathrm e}$}');
+DefMacro('\nomTerrPolarRadius',   '\leavevmode\hbox{\boldmath$\mathcal{R}^{\rm N}_{E\mathrm p}$}');
+DefMacro('\nomJovianEqRadius',    '\leavevmode\hbox{\boldmath$\mathcal{R}^{\rm N}_{J\mathrm e}$}');
+DefMacro('\nomJovianPolarRadius', '\leavevmode\hbox{\boldmath$\mathcal{R}^{\rm N}_{J\mathrm p}$}');
+DefMacro('\nomTerrMass',   '\leavevmode\hbox{\boldmath$(\mathcal{GM})^{\rm N}_{\mathrm E}$}');
+DefMacro('\nomJovianMass', '\leavevmode\hbox{\boldmath$(\mathcal{GM})^{\rm N}_{\mathrm J}$}');
+DefMacro('\Qnom',          '\leavevmode\hbox{\boldmath$\mathcal{Q}^{\rm N}_{\odot}$}');
+Let(T_CS('\Qn'), T_CS('\Qnom'));
+
+# Generic commands that can be given an argument:
+DefMacro('\nom{}',   '\leavevmode\hbox{\boldmath$\mathcal{#1}^{\rm N}_{\odot}$}');
+DefMacro('\Eenom{}', '\leavevmode\hbox{\boldmath$\mathcal{#1}^{\rm N}_{Ee}$}');
+DefMacro('\Epnom{}', '\leavevmode\hbox{\boldmath$\mathcal{#1}^{\rm N}_{Ep}$}');
+DefMacro('\Jenom{}', '\leavevmode\hbox{\boldmath$\mathcal{#1}^{\rm N}_{Je}$}');
+DefMacro('\Jpnom{}', '\leavevmode\hbox{\boldmath$\mathcal{#1}^{\rm N}_{Jp}$}');
 
 #======================================================================
 # 2.17.5 Hypertext Constructs
