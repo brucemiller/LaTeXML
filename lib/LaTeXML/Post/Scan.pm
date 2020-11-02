@@ -88,8 +88,47 @@ sub process {
               . "but there's an apparent conflict with location '$loc' and previous '$prevloc'"); } } }
     $root->setAttribute('xml:id' => $id); }
 
-  $$self{db}->{document_id} = $id unless defined $$self{db}->{document_id};
+  # By default, 1st document processed is considered the root of the site
+  my $siteentry = $$self{db}->lookup('SITE_ROOT');
+  if (!$siteentry) {
+    $siteentry = $$self{db}->register('SITE_ROOT', id => $id); }
+  my $siteid = $siteentry->getValue('id');
+
   $self->scan($doc, $root, $$doc{parent_id});
+
+  # Set up interconnections on multidocument site.
+  $$self{db}->register("DOCUMENT:" . $doc->siteRelativeDestination, id => $id);
+
+  # Question: If (on multidoc sites) a doc contains a single node (say ltx:chapter)
+  # might it make sense to treat the doc as ONLY that node?
+  # Alternative: May be necessary to extract title from that child?
+
+  # Find a plausible parent doc, unless this is the root, or already has one
+  # Either by relative id's, destination location, or default to the site itself.
+  my $entry = $$self{db}->lookup("ID:$id");
+  if (($id ne $siteid) && !$entry->getValue('parent')) {
+    my $parent_id;
+    if (!$parent_id) {    # Look for parent assuming it's id is component of $id
+      my $upid = $id;
+      while ($upid =~ s/\.[^\.]+$//) {
+        if ($$self{db}->lookup("ID:$upid")) {
+          $parent_id = $upid; last; } } }
+    if (!$parent_id) {    # Look for parent as index.xml in a containing directory.
+      my $loc = $entry->getValue('location');
+      my $dir = $loc;
+      while (($dir) = pathname_split($dir)) {
+        if (my $pentry = $$self{db}->lookup("DOCUMENT:" . pathname_concat($dir, 'index.xml'))) {
+          my $pid = $pentry->getValue('id');
+          if ($pid && ($pid ne $id)) {
+            $parent_id = $pid; last; } } } }
+    if (!$parent_id) {    # Else default to the id of the site itself.
+      $parent_id = $siteid; }
+    if ($parent_id && ($parent_id ne $id)) {
+      $entry->setValues(parent => $parent_id);
+      # Children are added in the order that they were scanned
+      $self->addAsChild($id, $parent_id); }
+    else {
+      Info('expected', 'parent', undef, "No parent document found for '$id'"); } }
   NoteProgressDetailed(" [DBStatus: " . $$self{db}->status . "]");
   return $doc; }
 
