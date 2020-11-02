@@ -83,8 +83,10 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
 #
 # EXCEPTION: of course there is an exception. Older arXiv articles use \documentstyle{aipproc}
 # to load a different aipproc.sty than the later evolved aipproc.cls. And of course we need to support that.
-    if ($class eq 'aipproc') {
-      RequirePackage('aipproc', options => $options); }
+    if (FindFile($class, type => 'sty')) {
+      InputDefinitions('article', type => 'cls', noerror => 1, handleoptions => 1);
+      RequirePackage($class, options => $options, as_class => 1,
+        after => Tokens(T_CS('\compat@loadpackages'))); }
     elsif (FindFile($class, type => 'cls', notex => !LookupValue('INCLUDE_CLASSES'))) {
       LoadClass($class, options => $options,
         after => Tokens(T_CS('\compat@loadpackages'))); }
@@ -577,7 +579,7 @@ DefMath('\mathring{}', "\x{030A}", operator_role => 'OVERACCENT');
 # casual user redefinitions work, too.
 DefMacroI('\chapter', undef, '\@startsection{chapter}{0}{}{}{}{}', locked => 1);
 DefMacroI('\part', undef, '\@startsection{part}{-1}{}{}{}{}'); # not locked since sometimes redefined as partition?
-DefMacroI('\section', undef, '\@startsection{section}{1}{}{}{}{}', locked => 1);
+DefMacroI('\section',       undef, '\@startsection{section}{1}{}{}{}{}',       locked => 1);
 DefMacroI('\subsection',    undef, '\@startsection{subsection}{2}{}{}{}{}',    locked => 1);
 DefMacroI('\subsubsection', undef, '\@startsection{subsubsection}{3}{}{}{}{}', locked => 1);
 DefMacroI('\paragraph',     undef, '\@startsection{paragraph}{4}{}{}{}{}',     locked => 1);
@@ -629,7 +631,7 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
     MaybePeekLabel();
     $type = ToString($type);
     my %props     = RefStepCounter($type);
-    my $xtitle    = Digest(Invocation(T_CS('\lx@format@title@@'), $type, $title));
+    my $xtitle    = Digest(Invocation(T_CS('\lx@format@title@@'),    $type, $title));
     my $xtoctitle = Digest(Invocation(T_CS('\lx@format@toctitle@@'), $type, $toctitle || $title));
     if ($type eq 'appendix') {
       $props{backmatterelement} = LookupMapping('BACKMATTER_ELEMENT', 'ltx:' . $type); }
@@ -1019,7 +1021,7 @@ DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact
   alias => '\thanks', mode => 'text');
 DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
   beforeDigest => sub { Let('\thanks', '\person@thanks'); },
-  bounded      => 1, mode => 'text');
+  bounded => 1, mode => 'text');
 
 DefConstructorI('\and', undef, " and ");
 
@@ -1041,7 +1043,7 @@ DefConstructor('\lx@author@prefix', sub {
     my $node       = $document->getElement;
     my $nauthors   = LookupValue('NUMBER_OF_AUTHORS');
     my $i          = scalar(@{ $document->findnodes('//ltx:creator[@role="author"]') });
-    if ($i <= 1) { }
+    if    ($i <= 1) { }
     elsif ($i == $nauthors) {
       $document->setAttribute($node, before => ToString(Digest(T_CS('\lx@author@conj')))); }
     else {
@@ -1162,7 +1164,7 @@ DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
       "When using titlepage, Frontmatter will not be well-structured");
     return; },
   beforeDigestEnd => sub { Digest(T_CS('\maybe@end@title')); },
-  locked          => 1, mode => 'text');
+  locked => 1, mode => 'text');
 
 Tag('ltx:titlepage', autoClose => 1);
 DefConstructorI('\maybe@end@title', undef, sub {
@@ -1193,13 +1195,13 @@ DefMacroI('\center',    undef, '\centering');
 DefMacroI('\endcenter', undef, '');
 
 DefEnvironment('{flushleft}', sub {
-    $_[0]->maybeCloseElement('ltx:p');                        # this starts a new vertical block
+    $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
     aligningEnvironment('left', 'ltx_align_left', @_); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); });
 DefEnvironment('{flushright}', sub {
-    $_[0]->maybeCloseElement('ltx:p');                        # this starts a new vertical block
+    $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
     aligningEnvironment('right', 'ltx_align_right', @_); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
@@ -1340,7 +1342,7 @@ sub RefStepItemCounter {
       my $typename  = (IsDefined(T_CS('\\' . $counter . 'name'))
         ? T_CS('\\' . $counter . 'name') : T_CS('\itemtyperefname'));
       my $tags = Digest(T_BEGIN,
-        T_CS('\let'), T_CS('\the' . $counter), T_CS('\@empty'),
+        T_CS('\let'), T_CS('\the' . $counter),   T_CS('\@empty'),
         T_CS('\def'), T_CS('\fnum@' . $counter), T_BEGIN, $formatter, T_BEGIN, Revert($tag), T_END, T_END,
         T_CS('\def'), T_CS('\typerefnum@' . $counter),
         T_BEGIN, $typename, T_SPACE, Revert($tag), T_END,
@@ -2228,9 +2230,9 @@ sub rearrangeEqnarray {
   foreach my $rownode ($document->findnodes('ltx:equation', $equationgroup)) {
     my @cells = $document->findnodes('ltx:_Capture_', $rownode);    # representing each column.
     push(@rows, { node => $rownode, cols => [@cells],
-        L => ($cells[0] && $cells[0]->hasChildNodes),
-        M => ($cells[1] && $cells[1]->hasChildNodes),
-        R => ($cells[2] && $cells[2]->hasChildNodes),
+        L        => ($cells[0] && $cells[0]->hasChildNodes),
+        M        => ($cells[1] && $cells[1]->hasChildNodes),
+        R        => ($cells[2] && $cells[2]->hasChildNodes),
         numbered => ($document->findnode('ltx:tags', $rownode) ? 1 : 0),
         labelled => $rownode->hasAttribute('label') }); }
   my $nL = scalar(grep { $$_{L} } @rows);
@@ -2577,11 +2579,11 @@ DefPrimitive('\DeclareFontFamily{}{}{}',      undef);
 DefPrimitive('\DeclareSizeFunction{}{}',      undef);
 
 my $symboltype_roles = {
-  '\mathord'  => 'ID',   '\mathop'    => 'BIGOP', '\mathbin'   => 'BINOP', '\mathrel' => 'RELOP',
+  '\mathord' => 'ID', '\mathop' => 'BIGOP', '\mathbin' => 'BINOP', '\mathrel' => 'RELOP',
   '\mathopen' => 'OPEN', '\mathclose' => 'CLOSE', '\mathpunct' => 'PUNCT' };
 DefPrimitive('\DeclareMathSymbol DefToken SkipSpaces DefToken {}{Number}', sub {
     my ($stomach, $cs, $type, $font, $code) = @_;
-    my $encoding = ToString($font);              # Or maybe just a font name or class?
+    my $encoding = ToString($font);    # Or maybe just a font name or class?
     if (my $decl = LookupValue('fontdeclaration@' . $encoding)) {
       $encoding = $$decl{encoding} if $$decl{encoding}; }
     my $glyph = FontDecode($code->valueOf, $encoding);
@@ -2876,8 +2878,8 @@ DefPrimitive('\newcounter{}[]', sub {
     return; });
 DefPrimitive('\setcounter{}{Number}',   sub { SetCounter(ToString(Expand($_[1])), $_[2]); });
 DefPrimitive('\addtocounter{}{Number}', sub { AddToCounter(ToString(Expand($_[1])), $_[2]); });
-DefPrimitive('\stepcounter{}',    sub { StepCounter(ToString(Expand($_[1])));    return; });
-DefPrimitive('\refstepcounter{}', sub { RefStepCounter(ToString(Expand($_[1]))); return; });
+DefPrimitive('\stepcounter{}',          sub { StepCounter(ToString(Expand($_[1])));    return; });
+DefPrimitive('\refstepcounter{}',       sub { RefStepCounter(ToString(Expand($_[1]))); return; });
 
 sub addtoCounterReset {
   my ($ctr, $within) = @_;
@@ -3964,13 +3966,13 @@ sub process_index_phrases {
       if ($string eq '|') {
         pop(@tokens);    # Remove the extra "!" stopbit.
         my $extra = ToString(Tokens(@tokens));
-        if ($extra =~ /^see\s*{/) { push(@expansion, T_CS('\@indexsee'), @tokens[3 .. $#tokens]); }
+        if    ($extra =~ /^see\s*{/)      { push(@expansion, T_CS('\@indexsee'), @tokens[3 .. $#tokens]); }
         elsif ($extra =~ /^seealso\s*\{/) { push(@expansion, T_CS('\@indexseealso'), @tokens[7 .. $#tokens]); }
-        elsif ($extra eq '(') { $style = 'rangestart'; }                     # ?
-        elsif ($extra eq ')') { $style = 'rangeend'; }                       # ?
-        else                  { $style = $index_style{$extra} || $extra; }
+        elsif ($extra eq '(')             { $style = 'rangestart'; }                     # ?
+        elsif ($extra eq ')')             { $style = 'rangeend'; }                       # ?
+        else                              { $style = $index_style{$extra} || $extra; }
         @tokens = (); } }
-    elsif (!@phrase && ($string =~ /\s/)) { }                                # Skip leading whitespace
+    elsif (!@phrase && ($string =~ /\s/)) { }    # Skip leading whitespace
     else {
       push(@phrase, $tok); } }
   @expansion = (T_CS('\@index'),
@@ -4041,8 +4043,8 @@ sub indexify_tex {
   $string =~ s/(\\mathrm|\\mathit|\\mathbf|\\mathsf|\\mathtt|\\mathcal|\\mathscr|\\mbox|\\rm|\\it|\\bf|\\tt|\\small|\\tiny)//g;
   $string =~ s/\\left\b//g; $string =~ s/\\right\b//g;
   $string =~ s/(\\|\{|\})//g;
-  $string =~ s/\W//g;                                    # to be safe (if perhaps non-unique?)
-  $string =~ s/\s//g;    # Or remove entirely? Eventually worry about many=>1 mapping???
+  $string =~ s/\W//g;           # to be safe (if perhaps non-unique?)
+  $string =~ s/\s//g;           # Or remove entirely? Eventually worry about many=>1 mapping???
   return $string; }
 
 # ---- Creating the index itself
@@ -4137,9 +4139,9 @@ DefMacro('\endsloppypar', '\par');
 DefMacroI('\nobreakdashes', undef, T_OTHER('-'));
 
 DefMacro('\showhyphens{}', '#1');     # ?
-     #======================================================================
-     # C.12.2 Page Breaking
-     #======================================================================
+    #======================================================================
+    # C.12.2 Page Breaking
+    #======================================================================
 DefMacro('\pagebreak[]', '\vadjust{\clearpage}');
 DefPrimitive('\nopagebreak[]', undef);
 DefPrimitiveI('\columnbreak', undef, undef);    # latex? or multicol?
@@ -4260,7 +4262,7 @@ DefConstructor('\@framebox[Dimension][]{}',
     . "(<ltx:text ?#width(width='#width') ?#align(align='#align')"
     . " framed='rectangle' framecolor='#framecolor'"
     . " _noautoclose='1'>#3</ltx:text>)",
-  alias        => '\framebox', sizer => '#3',
+  alias => '\framebox', sizer => '#3',
   beforeDigest => sub {
     my ($stomach) = @_;
     my $wasmath = LookupValue('IN_MATH');
@@ -4365,7 +4367,7 @@ DefConstructor('\parbox[][Dimension][]{Dimension}{}', sub {
     (width => $_[4],
       vattach => translateAttachment($_[1]),
       height  => $_[2]); },
-  mode         => 'text', bounded => 1,
+  mode => 'text', bounded => 1,
   beforeDigest => sub {
     AssignValue('\hsize' => $_[4]);
     Let('\\\\', '\lx@parboxnewline'); });
@@ -4781,32 +4783,32 @@ DefMacro('\usefont{}{}{}{}',
 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
 DefConstructor('\textmd@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { series => 'medium' }, alias => '\textmd',
+  bounded => 1, font => { series => 'medium' }, alias => '\textmd',
   beforeDigest => sub { DefMacro('\f@series', 'm'); });
 DefConstructor('\textbf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { series => 'bold' }, alias => '\textbf',
+  bounded => 1, font => { series => 'bold' }, alias => '\textbf',
   beforeDigest => sub { DefMacro('\f@series', 'b'); });
 DefConstructor('\textrm@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { family => 'serif' }, alias => '\textrm',
+  bounded => 1, font => { family => 'serif' }, alias => '\textrm',
   beforeDigest => sub { DefMacro('\f@family', 'cm'); });
 DefConstructor('\textsf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { family => 'sansserif' }, alias => '\textsf',
+  bounded => 1, font => { family => 'sansserif' }, alias => '\textsf',
   beforeDigest => sub { DefMacro('\f@family', 'cmss'); });
 DefConstructor('\texttt@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { family => 'typewriter' }, alias => '\texttt',
+  bounded => 1, font => { family => 'typewriter' }, alias => '\texttt',
   beforeDigest => sub { DefMacro('\f@family', 'cmtt'); });
 
 DefConstructor('\textup@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'upright' }, alias => '\textup',
+  bounded => 1, font => { shape => 'upright' }, alias => '\textup',
   beforeDigest => sub { DefMacro('\f@shape', ''); });
 DefConstructor('\textit@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'italic' }, alias => '\textit',
+  bounded => 1, font => { shape => 'italic' }, alias => '\textit',
   beforeDigest => sub { DefMacro('\f@shape', 'i'); });
 DefConstructor('\textsl@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'slanted' }, alias => '\textsl',
+  bounded => 1, font => { shape => 'slanted' }, alias => '\textsl',
   beforeDigest => sub { DefMacro('\f@shape', 'sl'); });
 DefConstructor('\textsc@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded      => 1, font => { shape => 'smallcaps' }, alias => '\textsc',
+  bounded => 1, font => { shape => 'smallcaps' }, alias => '\textsc',
   beforeDigest => sub { DefMacro('\f@shape', 'sc'); });
 DefConstructor('\textnormal@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
   bounded => 1, font => { family => 'serif', series => 'medium', shape => 'upright' }, alias => '\textnormal',
@@ -4829,7 +4831,7 @@ DefPrimitive('\DeclareTextFontCommand{}{}', sub {
     my ($stomach, $cmd, $font) = @_;
     DefConstructorI($cmd, "{}",
       "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)",
-      mode         => 'text', bounded => 1,
+      mode => 'text', bounded => 1,
       beforeDigest => sub { Digest($font); (); });
     return; });
 
@@ -4895,9 +4897,9 @@ DefPrimitiveI('\textasciitilde',   undef, "~");
 DefPrimitiveI('\textcompwordmark', undef, "");                # ???
 DefPrimitiveI('\textunderscore',   undef, "_");
 DefPrimitiveI('\textvisiblespace', undef, "\x{2423}"); # SYMBOL FOR SPACE;  Not really the right symbol!
-DefPrimitiveI('\textellipsis',   undef, "\x{2026}");   # HORIZONTAL ELLIPSIS
-DefPrimitiveI('\textregistered', undef, UTF(0xAE));    # REGISTERED SIGN
-DefPrimitiveI('\texttrademark',  undef, "\x{2122}");   # TRADE MARK SIGN
+DefPrimitiveI('\textellipsis',   undef, "\x{2026}");    # HORIZONTAL ELLIPSIS
+DefPrimitiveI('\textregistered', undef, UTF(0xAE));     # REGISTERED SIGN
+DefPrimitiveI('\texttrademark',  undef, "\x{2122}");    # TRADE MARK SIGN
 DefConstructor('\textsuperscript{}', "<ltx:sup>#1</ltx:sup>",
   mode => 'text');
 # This is something coming from xetex/xelatex ? Why define this way?

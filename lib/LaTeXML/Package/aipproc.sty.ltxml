@@ -21,9 +21,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-PassOptions('revtex', 'cls', 'amssymb', 'amsfonts');
-LoadClass('revtex');
-
+RequirePackage('revtex3_support');
 RequirePackage('longtable');
 RequirePackage('psfig');
 
