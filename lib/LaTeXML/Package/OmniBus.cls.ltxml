@@ -57,6 +57,7 @@ DefMacro('\bibitem',
 DefEnvironment('{frontmatter}', '#body');
 DefEnvironment('{mainmatter}',  '#body');
 DefEnvironment('{backmatter}',  '#body');
+
 DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
 DefMacro('\shortauthor{}', '');
 DefRegister('\titlerunning',  Tokens());
@@ -97,9 +98,29 @@ DefMacro('\keyword{}',  '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\kword{}',    '\@add@frontmatter{ltx:keywords}{#1}');
 # {keyword}, {keywords}
+DefEnvironment('{keywords}', '',
+  afterDigest => sub {
+    my $frontmatter = LookupValue('frontmatter');
+    push(@{ $$frontmatter{'ltx:classification'} },
+      ['ltx:classification', { scheme => 'keywords' }, @LaTeXML::LIST]);
+    return; });
 
 DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
 DefMacro('\pacs{}',           '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
+DefMacro('\doi{}',            '\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
+
+for my $env (qw(conjecture proposition lemma corollary example definition)) {
+  my $beginenv = "\\begin{$env}";
+  DefMacroI(T_CS($beginenv), undef, sub {
+      RequirePackage('amsthm');
+      return Tokenize("\\newtheorem{theorem}{Theorem}[section]
+  \\newtheorem{conjecture}[theorem]{Conjecture}
+  \\newtheorem{proposition}[theorem]{Proposition}
+  \\newtheorem{lemma}[theorem]{Lemma}
+  \\newtheorem{corollary}[theorem]{Corollary}
+  \\newtheorem{example}[theorem]{Example}
+  \\newtheorem{definition}[theorem]{Definition}
+  $beginenv")->unlist; }); }
 
 # \abstracts
 Let('\abst', '\abstract');
@@ -117,11 +138,19 @@ Let('\endacknowledgements',   '\endacknowledgments');
 Let('\theacknowledgments',    '\acknowledgments');
 Let('\endtheacknowledgments', '\endacknowledgments');
 
-DefMacro('\received{}', '\@add@frontmatter{ltx:date}[role=received]{#1}');
-DefMacro('\revised{}',  '\@add@frontmatter{ltx:date}[role=revised]{#1}');
-DefMacro('\accepted{}', '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
-DefMacro('\pubyear',    '\@add@frontmatter{ltx:date}[role=publication]{#1}');
-DefMacro('\preprint{}', '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\received{}',     '\@add@frontmatter{ltx:date}[role=received]{#1}');
+DefMacro('\revised{}',      '\@add@frontmatter{ltx:date}[role=revised]{#1}');
+DefMacro('\accepted{}',     '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
+DefMacro('\pubyear',        '\@add@frontmatter{ltx:date}[role=publication]{#1}');
+DefMacro('\preprint{}',     '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\communicated{}', '\@add@frontmatter{ltx:date}[role=communicated]{#1}');
+DefMacro('\dedicated{}',    '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
+DefMacro('\presented{}',    '\@add@frontmatter{ltx:date}[role=presented]{#1}');
+DefMacro('\articletype{}',  '\@add@frontmatter{ltx:note}[role=articletype]{#1}');
+DefMacro('\issue{}',        '\@add@frontmatter{ltx:note}[role=issue]{#1}');
+DefMacro('\journal{}',      '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\volume',         '\@add@frontmatter{ltx:note}[role=volume]{#1}');
+DefMacro('\pubyear',        '\@add@frontmatter{ltx:date}[role=publication]{#1}');
 
 # work as environment or not...
 DefConstructor('\references',
@@ -130,7 +159,7 @@ DefConstructor('\references',
     . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
     . "<ltx:biblist>",
   beforeDigest => sub { beforeDigestBibliography(); },
-  afterDigest => sub { beginBibliography($_[1]); }
+  afterDigest  => sub { beginBibliography($_[1]); }
 );
 
 DefConstructor('\endreferences',
