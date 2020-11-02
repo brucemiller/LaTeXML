@@ -661,7 +661,7 @@ sub generateRef {
     my $entry = $$self{db}->lookup("ID:$reqid");
     if (($entry->getValue('type') || '') eq 'ltx:document') {
       foreach my $c (@{ $entry->getValue('children') }) {
-        if (my $centry = $$self{db}->lookutp("ID:$c")) {
+        if (my $centry = $$self{db}->lookup("ID:$c")) {
           if (my @s = $self->generateRef_aux($doc, $centry, $reqshow)) {
             push(@stuff, @s); last; } } } } }
   if (@stuff) {
