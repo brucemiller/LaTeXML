@@ -83,17 +83,19 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
 #
 # EXCEPTION: of course there is an exception. Older arXiv articles use \documentstyle{aipproc}
 # to load a different aipproc.sty than the later evolved aipproc.cls. And of course we need to support that.
-    if (FindFile($class, type => 'sty')) {
-      InputDefinitions('article', type => 'cls', noerror => 1, handleoptions => 1);
+    if (FindFile($class, type => 'sty', notex => !LookupValue('INCLUDE_CLASSES'))) {
+      InputDefinitions('article', type => 'cls', noerror => 1,
+        handleoptions => 1, options => $options);
       RequirePackage($class, options => $options, as_class => 1,
         after => Tokens(T_CS('\compat@loadpackages'))); }
     elsif (FindFile($class, type => 'cls', notex => !LookupValue('INCLUDE_CLASSES'))) {
       LoadClass($class, options => $options,
         after => Tokens(T_CS('\compat@loadpackages'))); }
     else {
-      InputDefinitions('OmniBus', type => 'cls', noerror => 1, handleoptions => 1);
-      RequirePackage($class, options => $options, as_class => 1,
-        after => Tokens(T_CS('\compat@loadpackages'))); }
+      InputDefinitions('OmniBus', type => 'cls', noerror => 1,
+        handleoptions => 1, options => $options,
+        after => Tokens(T_CS('\compat@loadpackages')));
+      RequirePackage($class, options => $options, as_class => 1); }
     return; });
 
 DefPrimitiveI('\compat@loadpackages', undef, sub {

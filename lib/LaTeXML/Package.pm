@@ -1955,8 +1955,11 @@ sub FindFile_fallback {
   # Supported:
   # Numeric suffixes (version nums, dates) with optional separators
   my $fallback_file = $file;
+  my $type          = $options{type};
   if ($fallback_file =~ s/\.(sty|cls)$//) {
-    my $ltxtype = $1;
+    # if we provide the type, that remains primary.
+    $type = $1 unless $type; }
+  if ($type) {    # if we know what we're dealing with...
     my $discard = "";
     if ($fallback_file =~ s/([-_](?:arxiv|conference|workshop))$//) {
       # arxiv-specific suffixes, maybe move those out to an extension package?
@@ -1967,7 +1970,7 @@ sub FindFile_fallback {
       $discard = "$1$discard";
     }
     if ($discard) {    # we had something to discard, so a new query is needed
-      my $fallback_query = "$fallback_file.$ltxtype";
+      my $fallback_query = "$fallback_file.$type";
       if (my $path = pathname_find("$fallback_query.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
         Info('fallback', $file, $STATE->getStomach->getGullet,
 "Interpreted $discard as a versioned package/class name, falling back to generic $fallback_query\n");
