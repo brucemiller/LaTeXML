@@ -320,35 +320,28 @@ Let(T_CS('\decimalcolnumbers'), T_CS('\deluxedecimalcolnumbers'));
 
 # http://tug.ctan.org/tex-archive/macros/latex/contrib/aastex/sample63.pdf
 # decimal alignment, 3.1.2
-DefColumnType('D', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(
-      before => Tokens(T_CS('\hfill')),
-      after  => Tokens(T_CS('\end@D@col@one')));
-    $LaTeXML::BUILD_TEMPLATE->addColumn(
-      after => Tokens(T_CS('\hfill')));
-    return; });
-
-DefColumnType('d', sub {    #TODO: these should be "eaten away" I think?
-    $LaTeXML::BUILD_TEMPLATE->addColumn(
-      before => Tokens(T_CS('\hfill')),
-      after  => Tokens(T_CS('\end@D@col@one')));
-    $LaTeXML::BUILD_TEMPLATE->addColumn(
-      after => Tokens(T_CS('\hfill')));
-    return; });
-
-DefMacro('\end@D@col@one', sub {
-    my ($gullet)         = @_;
-    my $smuggle_new      = 1;
-    my $current_location = $gullet->getLocator->toString;
-    if (my $smuggled_at = LookupValue('aas_smuggle_D_column')) {
-      if ($smuggled_at eq $current_location) {
-        $smuggle_new = 0;
-    } }
-    if ($smuggle_new) {
-      AssignValue('aas_smuggle_D_column', $current_location, 'local');
-      return T_CS('\@alignment@align'); }
-    else {
-      return (); } });
+sub build_d_columns {
+  $LaTeXML::BUILD_TEMPLATE->addColumn(
+    before => Tokens(T_CS('\hfill'), T_CS('\aas@start@D@column')),
+    after  => Tokens(T_CS('\aas@end@D@column')));
+  $LaTeXML::BUILD_TEMPLATE->addBetweenColumn();
+  $LaTeXML::BUILD_TEMPLATE->addColumn(
+    after => Tokens(T_CS('\hfill')));
+  return; }
+DefColumnType('D', \&build_d_columns);
+DefColumnType('d', \&build_d_columns);
+DefMacro('\aas@start@D@column XUntil:\aas@end@D@column', sub {
+    my ($gullet, $n) = @_;
+    my ($m,      $f) = SplitTokens($n, T_OTHER('.'));
+    return ($f ? (@$m,
+        T_CS('\@ADDCLASS'), T_BEGIN, T_OTHER('ltx_norightpad'), T_END,
+        T_CS('\@alignment@align'),
+        T_CS('\@ADDCLASS'), T_BEGIN, T_OTHER('ltx_noleftpad'), T_END,
+        T_OTHER('.'), @$f)
+      : ($n, T_CS('\@alignment@align')));
+##  return ($n,T_CS('\@alignment@align'));
+});
+DefPrimitive('\aas@end@D@column', '');
 
 # hidden column, 3.1.4
 Let(T_CS('\savedollar'), T_MATH);
