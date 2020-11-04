@@ -390,9 +390,10 @@
       <xsl:call-template name="authors">
         <xsl:with-param name="context" select="$context"/>
       </xsl:call-template>
-      <xsl:apply-templates select="../ltx:date" mode="intitle">
+      <xsl:call-template name="dates">
         <xsl:with-param name="context" select="$context"/>
-      </xsl:apply-templates>
+        <xsl:with-param name="dates" select="../ltx:date"/>
+      </xsl:call-template>
     </xsl:if>
     <xsl:apply-templates select="." mode="end">
       <xsl:with-param name="context" select="$context"/>
@@ -416,9 +417,10 @@
             </xsl:apply-templates>
           </xsl:element>
         </xsl:if>
-      <xsl:apply-templates select="ltx:date" mode="intitle">
+      <xsl:call-template name="dates">
         <xsl:with-param name="context" select="$context"/>
-      </xsl:apply-templates>
+        <xsl:with-param name="dates" select="ltx:date"/>
+      </xsl:call-template>
     </xsl:element>
   </xsl:template>
 
@@ -644,23 +646,34 @@
   <xsl:preserve-space elements="ltx:date"/>
   <xsl:template match="ltx:date"/>
 
-  <xsl:template match="ltx:date" mode="intitle">
+  <xsl:template name="dates">
     <xsl:param name="context"/>
-    <xsl:text>&#x0A;</xsl:text>
-    <!-- Originally, html5 seemed to suggest we might use h2 here, but that is retracted-->
-    <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="//ltx:document/ltx:date/node()">
-        <xsl:with-param name="context" select="$context"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
-      </xsl:apply-templates>
-    </xsl:element>
+    <xsl:param name="dates" select="ltx:date"/>
+    <xsl:if test="$dates">
+      <xsl:text>&#x0A;</xsl:text>
+      <!-- Originally, html5 seemed to suggest we might use h2 here, but that is retracted-->
+      <xsl:element name="div" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_dates</xsl:attribute>
+        <xsl:apply-templates select="." mode="begin">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="$dates" mode="inintitle">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="." mode="end">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+      </xsl:element>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="ltx:date" mode="inintitle">
+    <xsl:param name="context"/>
+    <xsl:if test="@name"><xsl:value-of select="@name"/><xsl:text>: </xsl:text></xsl:if>
+    <xsl:apply-templates select="node()">
+      <xsl:with-param name="context" select="$context"/>
+    </xsl:apply-templates>
+    <xsl:text> </xsl:text>
   </xsl:template>
 
   <xsl:preserve-space elements="ltx:subtitle"/>
