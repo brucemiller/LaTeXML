@@ -2699,18 +2699,17 @@ DefPrimitive('\renewenvironment OptionalMatch:* {}[Number][]{}{}', sub {
 # The core non-customizable part is defined here.
 # For customizable theorems, see amsthm.
 AssignValue('thm@swap' => 0);
-DefRegister('\thm@style'        => Tokenize('plain'));
-DefRegister('\thm@headfont'     => Tokens(T_CS('\bfseries')));
-DefRegister('\thm@notefont'     => Tokens(T_CS('\the'), T_CS('\thm@headfont')));
-DefRegister('\thm@bodyfont'     => Tokens(T_CS('\itshape')));
-DefRegister('\thm@headpunct'    => Tokens());
-DefRegister('\thm@styling'      => Tokens());
-DefRegister('\thm@headstyling'  => Tokens());
-DefRegister('\thm@prework'      => Tokens());
-DefRegister('\thm@postwork'     => Tokens());
-DefRegister('\thm@symbol'       => Tokens());
-DefRegister('\thm@numbering'    => Tokens(T_CS('\arabic')));
-DefRegister('\thm@headformater' => undef);
+DefRegister('\thm@style'       => Tokenize('plain'));
+DefRegister('\thm@headfont'    => Tokens(T_CS('\bfseries')));
+DefRegister('\thm@notefont'    => Tokens(T_CS('\the'), T_CS('\thm@headfont')));
+DefRegister('\thm@bodyfont'    => Tokens(T_CS('\itshape')));
+DefRegister('\thm@headpunct'   => Tokens());
+DefRegister('\thm@styling'     => Tokens());
+DefRegister('\thm@headstyling' => Tokens());
+DefRegister('\thm@prework'     => Tokens());
+DefRegister('\thm@postwork'    => Tokens());
+DefRegister('\thm@symbol'      => Tokens());
+DefRegister('\thm@numbering'   => Tokens(T_CS('\arabic')));
 
 DefPrimitive('\th@plain', sub {
     AssignValue('\thm@bodyfont'    => T_CS('\itshape'));
@@ -2750,9 +2749,10 @@ sub useTheoremStyle {
   my ($name) = @_;
   my $savable = LookupValue('SAVABLE_THEOREM_PARAMETERS');
   if (my $params = LookupValue('THEOREM_' . ToString($name) . '_PARAMETERS')) {
-    foreach my $key (keys %$params) {
-      if ($$savable{$key}) {    # Only use the officieally saved ones
-        AssignValue($key => $$params{$key}); } } }
+    for my $param_key (keys %$savable) {
+      if (exists $$params{$param_key}) {
+        AssignValue($param_key => $$params{$param_key}); }
+  } }
   return; }
 
 sub saveTheoremStyle {
@@ -2761,7 +2761,7 @@ sub saveTheoremStyle {
   AssignValue('THEOREM_' . $name . '_PARAMETERS' => {%parameters}, 'global');
   return; }
 
-RawTeX('\th@plain');            # Activate the default style.
+RawTeX('\th@plain');    # Activate the default style.
 # [or just make it's values the defaults...]
 
 Tag('ltx:theorem', autoClose => 1);
@@ -2816,7 +2816,9 @@ sub defineNewTheorem {
   my $headformatter = LookupValue('\thm@headformatter');
   DefMacroI('\format@title@' . $thmset, convertLaTeXArgs(1, 0),
     ($headformatter
-      ? Tokens($headformatter->unlist,
+      ? Tokens(
+        T_CS('\the'), T_CS('\thm@headfont'),
+        $headformatter->unlist,
         T_BEGIN, ($type ? $type->unlist : ()), T_END,
         T_CS('\the' . $counter), T_BEGIN, Tokens(T_PARAM, T_OTHER('1')), T_END,
         T_CS('\the'), T_CS('\thm@headpunct'))

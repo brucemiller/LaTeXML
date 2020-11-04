@@ -38,7 +38,7 @@ DefRegister('\thm@notefont' => Tokens(T_CS('\fontseries'), T_CS('\mddefault'), T
 # amsthm also saves headfont!
 setSavableTheoremParameters(qw(
     \thm@headfont \thm@bodyfont \thm@headpunct
-    \thm@styling \thm@headstyling thm@swap));
+    \thm@styling \thm@headstyling \thm@headformatter thm@swap));
 
 # activate a certain theorem style
 DefPrimitive('\theoremstyle{}', sub {
@@ -71,12 +71,12 @@ DefPrimitive('\newtheoremstyle{}{}{}{}{}{}{}{}{}', sub {
 
     $name = ToString($name);
     saveTheoremStyle($name,
-      '\thm@bodyfont'    => $bodyfont,
-      '\thm@headfont'    => $headfont,
-      '\thm@headpunct'   => $headpunct,
-      '\thm@headstyling' => (Equals($spaceafter, Tokens(T_CS('\newline')))
-        ? Tokens() : T_CS('\lx@makerunin')),
-      '\thm@headformatter' => $headformatter);
+      '\thm@bodyfont'      => $bodyfont,
+      '\thm@headfont'      => $headfont,
+      '\thm@headpunct'     => $headpunct,
+      '\thm@headformatter' => $headformatter,
+      '\thm@headstyling'   => (Equals($spaceafter, Tokens(T_CS('\newline')))
+        ? Tokens() : T_CS('\lx@makerunin')));
     DefMacroI(T_CS('\th@' . $name), undef, sub { useTheoremStyle($name); });
     return; });
 
@@ -103,7 +103,7 @@ DefMacroI('\thmheadnl', undef, Tokens());
 
 AssignValue('QED@stack', []);
 DefMacro('\pushQED{}', sub { PushValue('QED@stack', $_[1]); });
-DefMacro('\popQED', sub { (PopValue('QED@stack') || ()); });
+DefMacro('\popQED',    sub { (PopValue('QED@stack') || ()); });
 
 # Should mark this as somehow ignorable for math,
 # but we DO want to keep it in the formula...
