@@ -657,7 +657,7 @@
         <xsl:apply-templates select="." mode="begin">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
-        <xsl:apply-templates select="$dates" mode="inintitle">
+        <xsl:apply-templates select="$dates" mode="intitle">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
         <xsl:apply-templates select="." mode="end">
@@ -667,7 +667,7 @@
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="ltx:date" mode="inintitle">
+  <xsl:template match="ltx:date" mode="intitle">
     <xsl:param name="context"/>
     <xsl:if test="@name"><xsl:value-of select="@name"/><xsl:text>: </xsl:text></xsl:if>
     <xsl:apply-templates select="node()">
