@@ -129,9 +129,11 @@ DefConstructor('\altaffiltext{}{}',
 
 DefMacro('\software{}',      '\@add@frontmatter{ltx:note}[role=software]{#1}');
 DefMacro('\submitjournal{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\doi{}',           '\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
-DefMacro('\collaboration',   '');
-DefMacro('\nocollaboration', '');
+# Alas \doi is not frontmatter.
+DefConstructor('\doi{}',             '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>');
+DefConstructor('\@@@collaborator{}', "<ltx:note role='collaborator'>#1</ltx:note>");
+DefMacro('\collaboration{}{}', '\@add@to@frontmatter{ltx:creator}{\@@@collaborator{#2}}');
+DefMacro('\nocollaboration{}', '');
 #======================================================================
 # 2.4 Abstract
 # normal LaTeX
