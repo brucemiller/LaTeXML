@@ -71,8 +71,10 @@ Let('\tablecaption', '\caption');
 
 DefMacro('\tablehead{}',
   '\def\@deluxetable@header{\@tabular@begin@heading#1\\\\\hline\@tabular@end@heading}');
-DefMacro('\colhead{}',
-  '\multicolumn{1}{c}{#1}');
+DefMacro('\colhead{}',    '\multicolumn{1}{c}{#1}');
+DefMacro('\twocolhead{}', '\multicolumn{2}{c}{\hss #1 \hss}');
+DefMacro('\nocolhead{}',  '\multicolumn{1}{h}{#1}');
+DefMacro('\dcolhead{}',   '\multicolumn{1}{c}{$\relax#1$}');
 
 DefMacro('\nl',          '\\\\[0pt]');                     # Obsolete form
 DefMacro('\nextline',    '\\\\[0pt]');                     # Obsolete form

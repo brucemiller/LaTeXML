@@ -26,7 +26,7 @@ foreach my $option (qw(10pt 11pt 12pt
   manuscript preprint preprint2 longabstract
   tighten landscape
   aasms4 aaspp4 aas2pp4 aj_pt4 apjpt4 astro
-  flushrt)) {
+  flushrt anonymous)) {
   DeclareOption($option, undef); }
 
 # Number equations within sections
