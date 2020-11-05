@@ -63,7 +63,7 @@ DefConstructor('\@@@orcid{}', "^ <ltx:contact role='orcid'>#1</ltx:contact>");
 DefMacro('\orcid{}', '\@add@to@frontmatter{ltx:creator}{\@@@orcid{#1}}');
 DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
 DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='additional_affiliation'>#1</ltx:contact>");
+DefConstructor('\@@@addaffiliation{}', "^ <ltx:contact role='additional_affiliation'>#1</ltx:contact>");
 DefMacro('\additionalaffiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@addaffiliation{#1}}');
 DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\email [] Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#2}}');

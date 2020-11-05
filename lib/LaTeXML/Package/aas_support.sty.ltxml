@@ -38,9 +38,9 @@ RequirePackage('ulem');
 #======================================================================
 # 2.1.3 Editorial Information
 
-DefMacro('\received{}', '\@add@frontmatter{ltx:date}[role=received]{#1}');
-DefMacro('\revised{}',  '\@add@frontmatter{ltx:date}[role=revised]{#1}');
-DefMacro('\accepted{}', '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
+DefMacro('\received{}', '\@add@frontmatter{ltx:date}[role=received,name=Received]{#1}');
+DefMacro('\revised{}',  '\@add@frontmatter{ltx:date}[role=revised,name=Revised]{#1}');
+DefMacro('\accepted{}', '\@add@frontmatter{ltx:date}[role=accepted,name=Accepted]{#1}');
 
 # Could add more metadata..
 DefMacro('\journalid{}{}', '');
@@ -94,14 +94,18 @@ DefMacro('\righthead{}', '');    # Obsolete form
 
 #======================================================================
 # 2.3 Title and Author Information
-
-DefMacro('\author{}',
-  '\@add@frontmatter{ltx:creator}[role=author]{\@personname{#1}}');
+AssignMapping('DOCUMENT_CLASSES', ltx_authors_multiline => 1);
+DefConstructor('\@@personname[]{}', "<ltx:personname>" .
+    "?#1(<ltx:ref href='https://orcid.org/#1' class='orcid'>#2</ltx:ref>)(#2)" .
+    "</ltx:personname>)");
+DefMacro('\author[]{}',
+  '\@add@frontmatter{ltx:creator}[role=author]{\@@personname[#1]{#2}}');
 
 DefConstructor('\@@@affiliation{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
-DefMacro('\affil{}',        '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-DefMacro('\affiliation{}',  '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
-DefMacro('\altaffiliation', '\affiliation');
+DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefMacro('\affil',         '\affiliation');
+DefConstructor('\@@@altaffil{}', "^ <ltx:contact role='affiliation'>#1</ltx:contact>");
+DefMacro('\altaffiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@altaffil{#1}}');
 DefConstructor('\@@@authoraddr{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
 DefMacro('\authoraddr{}', '\@add@to@frontmatter{ltx:creator}{\@@@authoraddr{#1}}');
 
