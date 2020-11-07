@@ -304,8 +304,9 @@ DefMacro('\plotfiddle Semiverbatim {}{}{}{}{}{}',
 # For figures added externally; Used at end of file.
 # \figcaption[filename]{text\label{key}}
 # But sometimes used just like \caption!
-DefMacro('\@figcaption OptionalSemiverbatim {}', '\begin{figure}[#1]#2\end{figure}');
-DefMacro('\figcaption', sub {
+DefMacro('\@figcaption {}', '\begin{figure}#1\end{figure}');
+# Note that the optional [filename] seems unused, so we just read and drop it.
+DefMacro('\figcaption OptionalSemiverbatim', sub {
     (((LookupValue('current_environment') || '') =~ 'figure')
       ? T_CS('\caption') : T_CS('\@figcaption')); });
 
