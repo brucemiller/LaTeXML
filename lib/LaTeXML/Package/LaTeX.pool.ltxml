@@ -2880,6 +2880,7 @@ Tag('ltx:para', afterOpen => sub { GenerateID(@_, 'p'); });
 DefPrimitive('\newcounter{}[]', sub {
     NewCounter(ToString(Expand($_[1])), $_[2] && ToString(Expand($_[2])));
     return; });
+Let(T_CS('\@definecounter'), T_CS('\newcounter'));
 DefPrimitive('\setcounter{}{Number}',   sub { SetCounter(ToString(Expand($_[1])), $_[2]); });
 DefPrimitive('\addtocounter{}{Number}', sub { AddToCounter(ToString(Expand($_[1])), $_[2]); });
 DefPrimitive('\stepcounter{}',          sub { StepCounter(ToString(Expand($_[1])));    return; });
@@ -3522,6 +3523,9 @@ sub beforeDigestBibliography {
   AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
   DefMacro('\bibliographystyle{}', '');
   DefMacro('\bibliography {}',     '');
+  DefConstructorI('\endthebibliography', undef,
+    "</ltx:biblist></ltx:bibliography>",
+    locked => 1);
   ResetCounter('@bibitem');
   return; }
 
