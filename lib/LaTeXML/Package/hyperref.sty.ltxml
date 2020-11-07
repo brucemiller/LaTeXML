@@ -64,19 +64,19 @@ foreach my $option (    # 3.1 General Options
 # \hypersetup{keyvals} configures various parameters,
 # for each pdf keyword, provide [property,(content|resource),datatype]
 our %pdfkey_property = (
-  baseurl     => '',                                # xmp:BaseURL ??
-  pdfauthor   => ['dcterms:creator', 'content'],
-  pdfkeywords => ['dcterms:subject', 'content'],    # & pdf:Keywords
+  baseurl     => '',                                 # xmp:BaseURL ??
+  pdfauthor   => ['dcterms:creator',  'content'],
+  pdfkeywords => ['dcterms:subject',  'content'],    # & pdf:Keywords
   pdflang     => ['dcterms:language', 'content'],
-  pdfproducer => '',                                # pdf:Producer & xmp:CreatorTool
+  pdfproducer => '',                                 # pdf:Producer & xmp:CreatorTool
   pdfsubject  => ['dcterms:subject', 'content'],
-  pdftitle    => ['dcterms:title', 'content'],
+  pdftitle    => ['dcterms:title',   'content'],
   # Include hyperxmp's keywords, as well.
-  pdfauthortitle   => '',                               # photoshop:AuthorsPosition
-  pdfcaptionwriter => '',                               # photoshop:CaptionWriter !?!?!?
-  pdfcopyright     => ['dcterms:rights', 'content'],    # & xmpRights:Marked
-  pdflicenseurl    => ['cc:licence', 'resource'],       # xmpRights:WebStatement
-  pdfmetalang      => '',                               # dcterms:language ??
+  pdfauthortitle   => '',                                # photoshop:AuthorsPosition
+  pdfcaptionwriter => '',                                # photoshop:CaptionWriter !?!?!?
+  pdfcopyright     => ['dcterms:rights', 'content'],     # & xmpRights:Marked
+  pdflicenseurl    => ['cc:licence',     'resource'],    # xmpRights:WebStatement
+  pdfmetalang      => '',                                # dcterms:language ??
 );
 # date=>dcterms:date xmp:CreateDate xmp:ModifyDate xmp:MetadataDate ?
 # document identifier => xmlMM:DocumentID
@@ -144,8 +144,8 @@ DefMacro('\@Url Token', sub {
       $open = T_OTHER('{'); $close = T_OTHER('}');
       $url  = $gullet->readBalanced(1); }            # Expand as we go!
     else {
-      $close = $open = T_OTHER($open->getString);
-      $url   = $gullet->readUntil($close); }
+      $url  = T_OTHER($open->getString);
+      $open = T_OTHER('{'); $close = T_OTHER('}'); }
     EndSemiverbatim();
     my @toks = grep { $_->getCatcode != CC_SPACE; } $url->unlist;
     # Identical with url's \@Url except, let CS's through!
