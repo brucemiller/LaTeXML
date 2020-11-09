@@ -2880,6 +2880,7 @@ Tag('ltx:para', afterOpen => sub { GenerateID(@_, 'p'); });
 DefPrimitive('\newcounter{}[]', sub {
     NewCounter(ToString(Expand($_[1])), $_[2] && ToString(Expand($_[2])));
     return; });
+Let(T_CS('\@definecounter'), T_CS('\newcounter'));
 DefPrimitive('\setcounter{}{Number}',   sub { SetCounter(ToString(Expand($_[1])), $_[2]); });
 DefPrimitive('\addtocounter{}{Number}', sub { AddToCounter(ToString(Expand($_[1])), $_[2]); });
 DefPrimitive('\stepcounter{}',          sub { StepCounter(ToString(Expand($_[1])));    return; });
@@ -3522,6 +3523,9 @@ sub beforeDigestBibliography {
   AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
   DefMacro('\bibliographystyle{}', '');
   DefMacro('\bibliography {}',     '');
+  DefConstructorI('\endthebibliography', undef,
+    "</ltx:biblist></ltx:bibliography>",
+    locked => 1);
   ResetCounter('@bibitem');
   return; }
 
@@ -5406,6 +5410,31 @@ DefMacroI('\check@mathfonts', undef, Tokens());
 DefMacro('\fontsize{}{}', Tokens());
 # https://tex.stackexchange.com/questions/112492/setfontsize-vs-fontsize#112501
 DefMacro('\@setfontsize{}{}{}', '\let\@currsize#1');
+
+DefMacroI('\@vpt',    undef, T_OTHER('5'));
+DefMacroI('\@vipt',   undef, T_OTHER('6'));
+DefMacroI('\@viipt',  undef, T_OTHER('7'));
+DefMacroI('\@viiipt', undef, T_OTHER('8'));
+DefMacroI('\@ixpt',   undef, T_OTHER('9'));
+DefMacro('\@xpt',    '10');
+DefMacro('\@xipt',   '10.95');
+DefMacro('\@xiipt',  '12');
+DefMacro('\@xivpt',  '14.4');
+DefMacro('\@xviipt', '17.28');
+DefMacro('\@xxpt',   '20.74');
+DefMacro('\@xxvpt',  '24.88');
+DefMacro('\vpt',     '\edef\f@size{\@vpt}\rm');
+DefMacro('\vipt',    '\edef\f@size{\@vipt}\rm');
+DefMacro('\viipt',   '\edef\f@size{\@viipt}\rm');
+DefMacro('\viiipt',  '\edef\f@size{\@viiipt}\rm');
+DefMacro('\ixpt',    '\edef\f@size{\@ixpt}\rm');
+DefMacro('\xpt',     '\edef\f@size{\@xpt}\rm');
+DefMacro('\xipt',    '\edef\f@size{\@xipt}\rm');
+DefMacro('\xiipt',   '\edef\f@size{\@xiipt}\rm');
+DefMacro('\xivpt',   '\edef\f@size{\@xivpt}\rm');
+DefMacro('\xviipt',  '\edef\f@size{\@xviipt}\rm');
+DefMacro('\xxpt',    '\edef\f@size{\@xxpt}\rm');
+DefMacro('\xxvpt',   '\edef\f@size{\@xxvpt}\rm');
 
 DefMacroI('\defaultscriptratio',       undef, '.7');
 DefMacroI('\defaultscriptscriptratio', undef, '.5');
