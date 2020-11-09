@@ -4871,35 +4871,36 @@ DefMacro('\symbol{}', '\char#1\relax');
 
 # These in LaTeX, but not in the book...
 DefPrimitiveI('\textdollar',           undef, "\$");
-DefPrimitiveI('\textemdash',           undef, "\x{2014}");    # EM DASH
-DefPrimitiveI('\textendash',           undef, "\x{2013}");    # EN DASH
-DefPrimitiveI('\textexclamdown',       undef, UTF(0xA1));     # INVERTED EXCLAMATION MARK
-DefPrimitiveI('\textquestiondown',     undef, UTF(0xBF));     # INVERTED QUESTION MARK
-DefPrimitiveI('\textquotedblleft',     undef, "\x{201C}");    # LEFT DOUBLE QUOTATION MARK
-DefPrimitiveI('\textquotedblright',    undef, "\x{201D}");    # RIGHT DOUBLE QUOTATION MARK
-DefPrimitiveI('\textquotedbl',         undef, "\"");          # plain ascii DOUBLE QUOTATION
-DefPrimitiveI('\textquoteleft',        undef, "\x{2018}");    # LEFT SINGLE QUOTATION MARK
-DefPrimitiveI('\textquoteright',       undef, "\x{2019}");    # RIGHT SINGLE QUOTATION MARK
-DefPrimitiveI('\textsterling',         undef, UTF(0xA3));     # POUND SIGN
+DefPrimitiveI('\textemdash',           undef, "\x{2014}");       # EM DASH
+DefPrimitiveI('\textendash',           undef, "\x{2013}");       # EN DASH
+DefPrimitiveI('\textexclamdown',       undef, UTF(0xA1));        # INVERTED EXCLAMATION MARK
+DefPrimitiveI('\textquestiondown',     undef, UTF(0xBF));        # INVERTED QUESTION MARK
+DefPrimitiveI('\textquotedblleft',     undef, "\x{201C}");       # LEFT DOUBLE QUOTATION MARK
+DefPrimitiveI('\textquotedblright',    undef, "\x{201D}");       # RIGHT DOUBLE QUOTATION MARK
+DefPrimitiveI('\textquotedbl',         undef, "\"");             # plain ascii DOUBLE QUOTATION
+DefPrimitiveI('\textquoteleft',        undef, "\x{2018}");       # LEFT SINGLE QUOTATION MARK
+DefPrimitiveI('\textquoteright',       undef, "\x{2019}");       # RIGHT SINGLE QUOTATION MARK
+DefPrimitiveI('\textsterling',         undef, UTF(0xA3));        # POUND SIGN
 DefPrimitiveI('\textasteriskcentered', undef, "*");
-DefPrimitiveI('\textbackslash',        undef, UTF(0x5C));     # REVERSE SOLIDUS
+DefPrimitiveI('\textbackslash',        undef, UTF(0x5C));        # REVERSE SOLIDUS
 DefPrimitiveI('\textbar',              undef, "|");
 DefPrimitiveI('\textbraceleft',        undef, "{");
 DefPrimitiveI('\textbraceright',       undef, "}");
-DefPrimitiveI('\textbullet',           undef, "\x{2022}");    # BULLET
-DefPrimitiveI('\textdaggerdbl',        undef, "\x{2021}");    # DOUBLE DAGGER
-DefPrimitiveI('\textdagger',           undef, "\x{2020}");    # DAGGER
-DefPrimitiveI('\textparagraph',        undef, UTF(0xB6));     # PILCROW SIGN
-DefPrimitiveI('\textperiodcentered',   undef, "\x{22C5}");    # DOT OPERATOR
-DefPrimitiveI('\textsection',          undef, UTF(0xA7));     # SECTION SIGN
-DefAccent('\textcircled', UTF(0x20DD), UTF(0x25EF));          # Defined in TeX.pool
-DefPrimitiveI('\textless',         undef, "<");
-DefPrimitiveI('\textgreater',      undef, ">");
-DefPrimitiveI('\textcopyright',    undef, UTF(0xA9));         # COPYRIGHT SIGN
-DefPrimitiveI('\textasciicircum',  undef, "^");
-DefPrimitiveI('\textasciitilde',   undef, "~");
-DefPrimitiveI('\textcompwordmark', undef, "");                # ???
-DefPrimitiveI('\textunderscore',   undef, "_");
+DefPrimitiveI('\textbullet',           undef, "\x{2022}");       # BULLET
+DefPrimitiveI('\textdaggerdbl',        undef, "\x{2021}");       # DOUBLE DAGGER
+DefPrimitiveI('\textdagger',           undef, "\x{2020}");       # DAGGER
+DefPrimitiveI('\textparagraph',        undef, UTF(0xB6));        # PILCROW SIGN
+DefPrimitiveI('\textsection',          undef, UTF(0xA7));        # SECTION SIGN
+DefAccent('\textcircled', UTF(0x20DD), UTF(0x25EF));             # Defined in TeX.pool
+DefPrimitiveI('\textless',                 undef, "<");
+DefPrimitiveI('\textgreater',              undef, ">");
+DefPrimitiveI('\textcopyright',            undef, UTF(0xA9));    # COPYRIGHT SIGN
+DefPrimitiveI('\textasciicircum',          undef, "^");
+DefPrimitiveI('\textasciitilde',           undef, "~");
+DefPrimitiveI('\textcompwordmark',         undef, "");           # ???
+DefPrimitiveI('\textcapitalcompwordmark',  undef, "");           # ???
+DefPrimitiveI('\textascendercompwordmark', undef, "");           # ???
+DefPrimitiveI('\textunderscore',           undef, "_");
 DefPrimitiveI('\textvisiblespace', undef, "\x{2423}"); # SYMBOL FOR SPACE;  Not really the right symbol!
 DefPrimitiveI('\textellipsis',   undef, "\x{2026}");    # HORIZONTAL ELLIPSIS
 DefPrimitiveI('\textregistered', undef, UTF(0xAE));     # REGISTERED SIGN
@@ -5657,6 +5658,10 @@ DefMacro('\TextOrMath{}{}', '\ifmmode#2\else#1\fi');
 
 DefConstructor('\textsubscript{}', "<ltx:sub>#1</ltx:sub>",
   mode => 'text');
+
+#**********************************************************************
+# LaTeX now includes textcomp by default.
+RequirePackage('textcomp');
 
 #**********************************************************************
 1;
