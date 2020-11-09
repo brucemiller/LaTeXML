@@ -2677,7 +2677,7 @@ DefMacroI('\TH', undef, '\lx@utf@TH');
 
 DefPrimitive('\newenvironment OptionalMatch:* {}[Number][]{}{}', sub {
     my ($stomach, $star, $name, $nargs, $opt, $begin, $end) = @_;
-    $name = ToString(Digest($name));
+    $name = ToString(Expand($name));
     if (IsDefined(T_CS("\\$name"))) {
       Info('ignore', $name, $stomach,
         "Ignoring redefinition (\\newenvironment) of Environment '$name'")
@@ -2689,7 +2689,7 @@ DefPrimitive('\newenvironment OptionalMatch:* {}[Number][]{}{}', sub {
 
 DefPrimitive('\renewenvironment OptionalMatch:* {}[Number][]{}{}', sub {
     my ($stomach, $star, $name, $nargs, $opt, $begin, $end) = @_;
-    $name = ToString(Digest($name));
+    $name = ToString(Expand($name));
     DefMacroI(T_CS("\\$name"),    convertLaTeXArgs($nargs, $opt), $begin);
     DefMacroI(T_CS("\\end$name"), undef,                          $end); });
 
