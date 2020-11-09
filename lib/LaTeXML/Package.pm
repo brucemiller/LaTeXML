@@ -809,7 +809,8 @@ sub RefStepID {
 
 sub ResetCounter {
   my ($ctr) = @_;
-  AssignValue('\c@' . $ctr => Number(0), 'global');
+  AssignValue('\c@' . $ctr   => Number(0), 'global');
+  AssignValue('\c@UN' . $ctr => Number(0), 'global');    # ?????
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(Explode(LookupValue('\c@' . $ctr)->valueOf)),
     scope => 'global');
   # and reset any within counters!

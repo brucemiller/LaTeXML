@@ -84,10 +84,10 @@ DefPrimitive('\showfont', sub {
     print STDERR "\nFONT IS: " . Stringify($font) . "\n";
     return; });
 
-RequirePackage('color');                                                # ?
+RequirePackage('color');           # ?
 # \@color, \@colorlist, \last@color,
 DefMacro('\blackandwhite', '');
-DefMacro('\colors{}',      '');                                         # ?
+DefMacro('\colors{}',      '');    # ?
 DefMacro('\colorslides{}', '');
 
 DefMacroI('\setupcounters', undef, '');
@@ -102,7 +102,7 @@ DefMacroI('\ps@slide',    undef, '');
 #**********************************************************************
 # The core sectioning commands are defined in LaTeX.pm
 # but the counter setup, etc, depends on article
-NewCounter('slide', 'document', idprefix => 's', nested => ['overlay']);
+NewCounter('slide',   'document', idprefix => 's', nested => ['overlay']);
 NewCounter('overlay', 'slide',    idprefix => 'o');
 NewCounter('note',    'document', idprefix => 'n');
 
@@ -113,12 +113,7 @@ DefMacro('\theoverlay', '\theslide.\arabic{overlay}');
 NewCounter('equation', 'document', idprefix => 'E');
 DefMacro('\theequation', '\arabic{equation}');
 
-NewCounter('@itemizei',   'document',    idprefix => 'I');
-NewCounter('@itemizeii',  '@itemizei',   idprefix => 'I');
-NewCounter('@itemizeiii', '@itemizeii',  idprefix => 'I');
-NewCounter('@itemizeiv',  '@itemizeiii', idprefix => 'I');
-NewCounter('@itemizev',   '@itemizeiv',  idprefix => 'I');
-NewCounter('@itemizevi',  '@itemizev',   idprefix => 'I');
+NewCounter('@itemizei', 'document', idprefix => 'I');
 
 NewCounter('enumi',   '@itemizei',   idprefix => 'i');
 NewCounter('enumii',  '@itemizeii',  idprefix => 'i');

@@ -1299,30 +1299,66 @@ DefMacro('\@itemlabel', '');         # Maybe needs to be same as \item will be u
 # by determining the right counter (level)
 # and binding the right \item ( \$type@item, if $type is defined)
 sub beginItemize {
-  my ($type, $counter, $nolevel) = @_;
+  my ($type, $counter, %options) = @_;
+  # The list-type and level of the *containing* list (if any!)
+  my $outercounter = LookupValue('itemcounter');
+  my $outerlevel   = $outercounter && (LookupValue($outercounter . 'level') || 0);
   $counter = '@item' unless $counter;
-  my $level = (LookupValue($counter . 'level') || 0) + 1;
+  my $listlevel = (LookupValue('itemization_level') || 0) + 1;    # level for this list overall
+  my $level     = (LookupValue($counter . 'level')  || 0) + 1;    # level for lists of specific type
   AssignRegister('\itemsep' => LookupDimension('\lx@default@itemsep'));
-  AssignValue($counter . 'level' => $level);
-  AssignValue(itemization_items  => 0);
-  my $postfix    = ToString(Tokens(roman($level)));
-  my $usecounter = ($nolevel ? $counter : $counter . $postfix);
+  AssignValue('itemization_level' => $listlevel);
+  AssignValue($counter . 'level'  => $level);
+  AssignValue(itemization_items   => 0);
+  my $listpostfix = ToString(Tokens(roman($listlevel)));
+  my $postfix     = ToString(Tokens(roman($level)));
+  my $usecounter  = ($options{nolevel} ? $counter : $counter . $postfix);
   Let('\item' => "\\" . $type . '@item') if defined $type;
-  Let('\par', '\normal@par');    # In case within odd environment.
+  Let('\par', '\normal@par');                                     # In case within odd environment.
   DefMacroI('\@listctr', undef, Tokens(Explode($usecounter)));
+  # Now arrange that this list's id's are relative to the current (outer) item (if any)
+  # And that the items within this list's id's are relative to this (new) list.
 ##  if(! LookupDefinition(T_CS('\@listcontext'))){
 ##    Let(T_CS('\@listcontext'), T_CS('\@currentlabel')); }
   AssignValue(itemcounter => $usecounter);
-  ResetCounter($usecounter);
-  return RefStepCounter('@itemize' . $postfix); }
+  my $listcounter = '@itemize' . $listpostfix;
+  if (!LookupValue('\c@' . $listcounter)) {    # Create new list counters as needed
+    NewCounter($listcounter); }                #,  $outercounter.ToString(Tokens(roman($outerlevel))),
+  if ($outercounter) {                         # Make this list's ID relative to outer list's ID
+    my $outerusecounter = $outercounter . ToString(Tokens(roman($outerlevel)));
+    DefMacroI('\the' . $listcounter . '@ID', undef,
+      '\the' . $outerusecounter . '@ID.I' . '\arabic{' . $listcounter . '}');
+    # AND reset this list's counter when the outer item is stepped
+    my $x;
+    AssignValue("\\cl\@$outerusecounter" =>
+        Tokens(T_CS($listcounter), (($x = LookupValue('\cl@' . $outerusecounter)) ? $x->unlist : ())),
+      'global');
+  }
+  # format the id of \item's relative to the id of this list
+  DefMacroI('\the' . $usecounter . '@ID', undef, '\the' . $listcounter . '@ID.i' . '\@' . $usecounter . '@ID');
 
-# These counters are only used for id's of the various itemize, enumerate, etc elements
-NewCounter('@itemizei',   'section',     idprefix => 'I');
-NewCounter('@itemizeii',  '@itemizei',   idprefix => 'I');
-NewCounter('@itemizeiii', '@itemizeii',  idprefix => 'I');
-NewCounter('@itemizeiv',  '@itemizeiii', idprefix => 'I');
-NewCounter('@itemizev',   '@itemizeiv',  idprefix => 'I');
-NewCounter('@itemizevi',  '@itemizev',   idprefix => 'I');
+  my $series;
+  if ($series = $options{series}) {
+    $series = ToString($series); }
+  if (my $start = $options{start}) {
+    SetCounter($usecounter, $start);
+    AddToCounter($usecounter, Number(-1)); }
+  elsif (my $s = $options{resume} || $options{'resume*'}) {
+    if (($s = ToString($s)) ne 'noseries') {
+      $series = ToString($s);
+      SetCounter($usecounter,
+        LookupValue('enumitem_series_' . $series . '_last') || Number(0)); } }
+  else {
+    ResetCounter($usecounter); }
+
+##  return RefStepCounter('@itemize' . $listpostfix); }
+  return (RefStepCounter('@itemize' . $listpostfix),
+    counter => $usecounter, series => $series); }    # So end can save counter value
+
+# These counters are ONLY used for id's of ALL the various itemize, enumerate, etc elements
+# Only create the 1st level (so that binding style can start numbering 'within' appropriately)
+# Additional ones created by need.
+NewCounter('@itemizei', 'section', idprefix => 'I');
 
 # Create id, and tags for an itemize type \item
 sub RefStepItemCounter {
@@ -1589,7 +1625,7 @@ DefMacro('\@listctr', '');
 DefPrimitive('\usecounter{}', sub {
     my ($stomach, $counter) = @_;
     $counter = ToString(Expand($counter));
-    beginItemize('list', $counter, ($counter ? 1 : 0));
+    beginItemize('list', $counter, ($counter ? (nolevel => 1) : ()));
     return; });
 
 DefMacro('\list{}{}',
