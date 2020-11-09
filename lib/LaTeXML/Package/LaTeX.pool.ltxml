@@ -1359,11 +1359,6 @@ sub beginItemize {
 # Only create the 1st level (so that binding style can start numbering 'within' appropriately)
 # Additional ones created by need.
 NewCounter('@itemizei', 'section', idprefix => 'I');
-##NewCounter('@itemizeii',  '@itemizei',   idprefix => 'I');
-##NewCounter('@itemizeiii', '@itemizeii',  idprefix => 'I');
-##NewCounter('@itemizeiv',  '@itemizeiii', idprefix => 'I');
-##NewCounter('@itemizev',   '@itemizeiv',  idprefix => 'I');
-##NewCounter('@itemizevi',  '@itemizev',   idprefix => 'I');
 
 # Create id, and tags for an itemize type \item
 sub RefStepItemCounter {
