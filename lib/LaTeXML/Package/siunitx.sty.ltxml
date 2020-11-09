@@ -212,8 +212,8 @@ sub six_match_sign {
 # Match (and REMOVE!) leading tokens that fit the pattern of simplenumber
 sub six_match_simplenumber {
   my ($tokens) = @_;
-  my $sign = six_match_sign($tokens);
-  my $integer = six_match_keys($tokens, 'input-digits', 'input-symbols');
+  my $sign     = six_match_sign($tokens);
+  my $integer  = six_match_keys($tokens, 'input-digits', 'input-symbols');
   my ($decimal, $fraction);
   if ($decimal = six_match_keys($tokens, 'input-decimal-markers')) {
     $fraction = six_match_keys($tokens, 'input-digits', 'input-symbols'); }
@@ -309,7 +309,7 @@ sub six_postprocess {
 
 sub six_postprocess_aux {
   my ($number) = @_;
-  if (!$number) { }
+  if    (!$number) { }
   elsif (my $op = $$number{operator}) {
     $$number{arg1} = six_postprocess_aux($$number{arg1});
     $$number{arg2} = six_postprocess_aux($$number{arg2}); }
@@ -338,14 +338,14 @@ sub six_compute_separate_uncertainty {
     for (my $i = $n ; $i < $ndigits ; $i++) {
       unshift(@dig, T_OTHER('0')); }
     return { sign => T_CS('\pm'),
-      integer  => T_OTHER('0'), decimal => six_get('output-decimal-marker'),
+      integer => T_OTHER('0'), decimal => six_get('output-decimal-marker'),
       fraction => Tokens(@dig) }; }
   else {
     my @man = ();
     for (my $i = $n ; $i > $ndigits ; $i--) {
       push(@man, shift(@dig)); }
     return { sign => T_CS('\pm'),
-      integer  => Tokens(@man), decimal => six_get('output-decimal-marker'),
+      integer => Tokens(@man), decimal => six_get('output-decimal-marker'),
       fraction => Tokens(@dig) }; } }
 
 sub six_compute_relative_uncertainty {
@@ -357,6 +357,7 @@ sub six_compute_relative_uncertainty {
   push(@dig, $$uncertainty{fraction}->unlist) if $$uncertainty{fraction};
   my $nuf     = scalar(@dig);
   my $ndigits = ($$number{fraction} ? scalar($$number{fraction}->unlist) : 0);
+
   for (my $i = $nuf ; $i < $ndigits ; $i++) {
     push(@dig, T_OTHER('0')); }
   unshift(@dig, $$uncertainty{integer}->unlist) if $$uncertainty{integer};
@@ -641,17 +642,17 @@ sub six_format_compoundnumber {
 
 sub six_format_number {
   my ($number, $bracket) = @_;
-  return unless $number;
+  return                     unless $number;
   return I_wrap({}, $number) unless ref $number eq 'HASH';
   $bracket = 0 unless $bracket && six_getBool('bracket-numbers');
   my @tokens = ();
   if (my $op = $$number{operator}) {
     my $arg1 = $$number{arg1};
     my $arg2 = $$number{arg2};
-    if ($op eq 'uncertain') { push(@tokens, six_format_uncertainnumber($number, $bracket)); }
-    elsif ($op eq 'complex') { push(@tokens, six_format_complexnumber($number, $bracket)); }
+    if ($op eq 'uncertain')   { push(@tokens, six_format_uncertainnumber($number, $bracket)); }
+    elsif ($op eq 'complex')  { push(@tokens, six_format_complexnumber($number, $bracket)); }
     elsif ($op eq 'exponent') { push(@tokens, six_format_scinumber($number, $bracket)); }
-    else { push(@tokens, six_format_compoundnumber($number, $bracket)); } }
+    else                      { push(@tokens, six_format_compoundnumber($number, $bracket)); } }
   else {
     push(@tokens, six_format_simplenumber($number, $bracket)); }
   return Tokens(@tokens); }
@@ -720,7 +721,7 @@ sub six_format_list {
   my ($bracketed_p, @items) = @_;
   my @list   = ();
   my $nitems = scalar(@items);
-  if ($nitems == 0) { }
+  if    ($nitems == 0) { }
   elsif ($nitems == 1) {
     @list = I_arg(1); }
   elsif ($nitems == 2) {
@@ -968,8 +969,8 @@ sub six_format_1unit {
   my $per    = $$unit{per};
   my $pre    = $$unit{prefix}{presentation};
   my $u      = $$unit{unit}{presentation};
-  my $p = $$unit{prepower}{power} || $$unit{postpower}{power};
-  my $q = $$unit{qualifier}{presentation};
+  my $p      = $$unit{prepower}{power} || $$unit{postpower}{power};
+  my $q      = $$unit{qualifier}{presentation};
   if ($per) {    # NOTE: Probably deal with this more semantically (ie "per" for accessibility)?
     $p = ($p ? Tokens(T_OTHER('-'), $p) : Tokens(T_OTHER('-'), T_OTHER('1'))); }
   if ($q) {      # Format the qualifier, if any
@@ -1065,7 +1066,7 @@ sub six_format_units {
     my @denom = ();
     foreach my $unit (@units) {    # Separate into positive & negative powers.
       if ($$unit{per}) { push(@denom, $unit); }
-      else { push(@numer, $unit); } }
+      else             { push(@numer, $unit); } }
     if ($permode eq 'reciprocal-positive-first') {    # re-ordered, otherwise each per as-is.
       $result = six_format_unitproduct(0, @numer, @denom); }
     else {                                            # Otherwise, remove per markers from denom.
@@ -1181,19 +1182,19 @@ DefMacro('\SIlist OptionalKeyVals:SIX {}{}', sub {
 DefMacro('\SIrange OptionalKeyVals:SIX {}{}{}', sub {
     my ($gullet, $kv, $first, $last, $units) = @_;
     six_begin_processing($gullet, $kv);
-    my $times = six_get_op({ role => 'MULOP', meaning => 'times' }, 'number-unit-product');
-    my $mode    = six_getChoice('range-units');                           # brackets, repeat, single.
+    my $times   = six_get_op({ role => 'MULOP', meaning => 'times' }, 'number-unit-product');
+    my $mode    = six_getChoice('range-units');    # brackets, repeat, single.
     my $fnumber = six_format_number(six_parse_number($gullet, $first));
     my $lnumber = six_format_number(six_parse_number($gullet, $last));
     six_enableUnitMacros(1);
     my $result;
     my $funits = six_process_units($units);
 
-    if ($mode eq 'repeat') {    # repeat the units on each number
+    if ($mode eq 'repeat') {                       # repeat the units on each number
       $result = six_format_range(($mode eq 'brackets'),
         six_format_infix($times, undef, undef, $fnumber, $funits),
         six_format_infix($times, undef, undef, $lnumber, $funits)); }
-    else {                      # put the units after the range
+    else {                                         # put the units after the range
       $result = six_format_infix($times, undef, undef,
         six_format_range(($mode eq 'brackets'), $fnumber, $lnumber), $funits); }
     $result = six_wrap($result);
@@ -1281,7 +1282,7 @@ DefPrimitive('\DeclareSIPrePower OptionalKeyVals:SIX SkipSpaces DefToken {}', su
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
-        keyvals      => $kv, type => 'prepower', power => $power,
+        keyvals => $kv, type => 'prepower', power => $power,
         presentation => Tokens(T_SUPER, T_BEGIN, $power, T_END) });
     DefMacroI($newcs, undef, '\lx@six@unitobject{' . $name . '}');
     return; });
@@ -1295,7 +1296,7 @@ DefPrimitive('\DeclareSIPostPower OptionalKeyVals:SIX SkipSpaces DefToken {}', s
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
-        keyvals      => $kv, type => 'postpower', power => $power,
+        keyvals => $kv, type => 'postpower', power => $power,
         presentation => Tokens(T_SUPER, T_BEGIN, $power, T_END) });
     DefMacroI($newcs, undef, '\lx@six@unitobject{' . $name . '}');
     return; });
@@ -1624,8 +1625,11 @@ RawTeX(<<'EoTeX');
 }
 
 \DeclareSIUnit \kilogram { \kilo \gram }
-\DeclareSIUnit \metre    { m }
-\DeclareSIUnit \meter    { \metre }
+%%%\DeclareSIUnit \metre    { m }
+%%%\DeclareSIUnit \meter    { \metre }
+%%% Swapped to be more NIST consistent.
+\DeclareSIUnit \meter    { m }
+\DeclareSIUnit \metre    { \meter }
 \DeclareSIUnit \mole     { mol }
 \DeclareSIUnit \second   { s }
 \DeclareSIUnit \ampere   { A }
