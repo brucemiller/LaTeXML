@@ -75,38 +75,16 @@ DefKeyVal('enumitem', 'after',  'UndigestedKey');    # TODO ?
 # \EnumitemId
 # \SetEnumerateShortLabel{key}{replacement}
 
-# Duplicate LaTeX's beginItemize, with modifications...
+# Extends LaTeX's beginItemize, with modifications...
 sub beginEnumItemize {
-  my ($type, $counter, $nolevel, $keys) = @_;
+  my ($type, $counter, $keys) = @_;
   $counter = '@item' unless $counter;
-  my $level = (LookupValue($counter . 'level') || 0) + 1;
-  AssignRegister('\itemsep' => LookupDimension('\lx@default@itemsep'));
-  AssignValue($counter . 'level' => $level);
-  AssignValue(itemization_items  => 0);
+  my $level      = (LookupValue($counter . 'level') || 0) + 1;
+  my $hash       = merged_enumitem_keyvals($type, $level, $keys);
   my $postfix    = ToString(Tokens(roman($level)));
-  my $usecounter = ($nolevel ? $counter : $counter . $postfix);
-  Let('\item' => "\\" . $type . '@item') if defined $type;
-  Let('\par', '\normal@par');    # In case within odd environment.
-  DefMacroI('\@listctr', undef, Tokens(Explode($usecounter)));
-  AssignValue(itemcounter => $usecounter);
+  my $usecounter = $counter . $postfix;
 
-  my $hash = merged_enumitem_keyvals($type, $level, $keys);
-  # Deal with counters, series, etc
-  my $series;
-  if ($series = $$hash{series}) {
-    $series = ToString($series); }
-  if (my $start = $$hash{start}) {
-    SetCounter($usecounter, $start);
-    AddToCounter($usecounter, Number(-1)); }
-  elsif (my $s = $$hash{resume} || $$hash{'resume*'}) {
-    if (($s = ToString($s)) ne 'noseries') {
-      $series = ToString($s);
-      SetCounter($usecounter,
-        LookupValue('enumitem_series_' . $series . '_last') || Number(0)); } }
-  else {
-    ResetCounter($usecounter); }
-
-  # Deal with label formatting
+  # Deal with label formatting [Seems this could be cleaned up & standardized a bit more]
   my ($firstkey, $firstvalue) = $keys && $keys->getPairs;
   if ($firstkey && !$firstvalue    # 1st key has no value
     && LookupValue('enumitem@shortlabels')                        # and shortlabels enabled
@@ -118,16 +96,16 @@ sub beginEnumItemize {
       $llabel = Tokens(T_CS('\label' . $counter . ToString(Tokens(roman($level - 1)))), $llabel); }
     DefMacroI('\the' . $usecounter,   undef, $llabel);
     DefMacroI('\label' . $usecounter, undef, $llabel);
-    DefMacroI('\fnum@' . $usecounter, undef,
-      '{\makelabel{\fnum@font@' . $usecounter . '\label' . $usecounter . '}}'); }
+###    DefMacroI('\fnum@' . $usecounter, undef,
+###      '{\makelabel{\fnum@font@' . $usecounter . '\label' . $usecounter . '}}');
+  }
   if (my $label = $$hash{ref}) {
     my $llabel = replace_star($label, T_OTHER($usecounter));
     DefMacroI('\the' . $usecounter, undef, $llabel); }
   if (my $font = $$hash{font} || $$hash{format}) {
     DefMacroI('\fnum@font@' . $usecounter, undef, $font); }
 
-  return (RefStepCounter('@itemize' . $postfix),
-    counter => $usecounter, series => $series); }    # So end can save counter value
+  return beginItemize($type, $counter, %$hash); }
 
 sub replace_star {
   my ($tokens, $replacement) = @_;
@@ -165,21 +143,21 @@ DefMacro('\restartlist{}', sub {
 if (!LookupValue('enumitem@loadonly')) {
   DefEnvironment('{itemize} OptionalKeyVals:enumitem',
     "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-    properties      => sub { beginEnumItemize('itemize', '@item', 0, $_[1]); },
+    properties      => sub { beginEnumItemize('itemize', '@item', $_[1]); },
     beforeDigestEnd => sub { Digest('\par'); },
     afterDigestBody => sub { endEnumItemize($_[1]); },
-    locked => 1, mode => 'text');
+    locked          => 1, mode => 'text');
 
   DefEnvironment('{enumerate} OptionalKeyVals:enumitem',
     "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
-    properties      => sub { beginEnumItemize('enumerate', 'enum', 0, $_[1]); },
+    properties      => sub { beginEnumItemize('enumerate', 'enum', $_[1]); },
     beforeDigestEnd => sub { Digest('\par'); },
     afterDigestBody => sub { endEnumItemize($_[1]); },
-    locked => 1, mode => 'text');
+    locked          => 1, mode => 'text');
   DefEnvironment('{description} OptionalKeyVals:enumitem',
     "<ltx:description  xml:id='#id'>#body</ltx:description>",
     beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
-    properties      => sub { beginEnumItemize('description', '@desc', 0, $_[1]); },
+    properties      => sub { beginEnumItemize('description', '@desc', $_[1]); },
     beforeDigestEnd => sub { Digest('\par'); },
     afterDigestBody => sub { endEnumItemize($_[1]); },
     locked          => 1, mode => 'text');
@@ -187,15 +165,15 @@ if (!LookupValue('enumitem@loadonly')) {
 if (LookupValue('enumitem@inline')) {
   DefEnvironment('{itemize*} OptionalKeyVals:enumitem',
     "<ltx:inline-itemize xml:id='#id'>#body</ltx:inline-itemize>",
-    properties      => sub { beginEnumItemize('inline@itemize', '@item', 0, $_[1]); },
+    properties      => sub { beginEnumItemize('inline@itemize', '@item', $_[1]); },
     afterDigestBody => sub { endEnumItemize($_[1]); },);
   DefEnvironment('{enumerate*} OptionalKeyVals:enumitem',
     "<ltx:inline-enumerate xml:id='#id'>#body</ltx:inline-enumerate>",
-    properties      => sub { beginEnumItemize('inline@enumerate', 'enum', 0, $_[1]); },
+    properties      => sub { beginEnumItemize('inline@enumerate', 'enum', $_[1]); },
     afterDigestBody => sub { endEnumItemize($_[1]); },);
   DefEnvironment('{description*} OptionalKeyVals:enumitem',
     "<ltx:inline-description xml:id='#id'>#body</ltx:inline-description>",
-    properties      => sub { beginEnumItemize('inline@description', '@desc', 0, $_[1]); },
+    properties      => sub { beginEnumItemize('inline@description', '@desc', $_[1]); },
     afterDigestBody => sub { endEnumItemize($_[1]); },);
 }
 DefPrimitive('\newlist{}{}{}', sub {
@@ -215,10 +193,10 @@ DefPrimitive('\newlist{}{}{}', sub {
       'global');
     DefEnvironment("{$listname} OptionalKeyVals:enumitem",
       "<ltx:$elementname xml:id='#id'>#body</ltx:$elementname>",
-      properties      => sub { beginEnumItemize($listname, $listname, 0, $_[1]); },
+      properties      => sub { beginEnumItemize($listname, $listname, $_[1]); },
       beforeDigestEnd => sub { Digest('\par'); },
       afterDigestBody => sub { endEnumItemize($_[1]); },
-      locked => 1, mode => 'text');
+      locked          => 1, mode => 'text');
     return; });
 Let('\renewlist', '\newlist');
 
