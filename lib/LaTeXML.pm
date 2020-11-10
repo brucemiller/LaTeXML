@@ -227,7 +227,7 @@ sub convert {
       my ($state) = @_;    # Sandbox state
       $$state{status} = {};
       $state->pushDaemonFrame;
-      $state->assignValue('_authlist', $$opts{authlist}, 'global');
+      $state->assignValue('_authlist',      $$opts{authlist}, 'global');
       $state->assignValue('REMOTE_REQUEST', (!$$opts{local}), 'global');
   });
 
@@ -460,7 +460,7 @@ sub convert_post {
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
       push(@procs, LaTeXML::Post::CrossRef->new(
-          db        => $DB, urlstyle => $$opts{urlstyle},
+          db => $DB, urlstyle => $$opts{urlstyle},
           extension => $$opts{extension},
           ($$opts{numbersections} ? (number_sections => 1)              : ()),
           ($$opts{navtoc}         ? (navigation_toc  => $$opts{navtoc}) : ()),
@@ -652,7 +652,8 @@ sub new_latexml {
       push @pre, $pre;
     }
   }
-  my $includepathpis = !($$opts{xsltparameters} && (@{ $$opts{xsltparameters} }[0] eq 'LATEXML_VERSION:TEST'));
+  my $includepathpis = !(exists $$opts{xsltparameters} &&
+    (grep { $_ eq 'LATEXML_VERSION:TEST' } @{ $$opts{xsltparameters} }));
   require LaTeXML;
   my $latexml = LaTeXML::Core->new(preload => [@pre], searchpaths => [@{ $$opts{paths} }],
     graphicspaths   => ['.'],
@@ -662,7 +663,7 @@ sub new_latexml {
     inputencoding   => $$opts{inputencoding},
     includestyles   => $$opts{includestyles},
     documentid      => $$opts{documentid},
-    nomathparse     => $$opts{nomathparse},                           # Backwards compatibility
+    nomathparse     => $$opts{nomathparse},     # Backwards compatibility
     mathparse       => $$opts{mathparse});
 
   if (my @baddirs = grep { !-d $_ } @{ $$opts{paths} }) {
