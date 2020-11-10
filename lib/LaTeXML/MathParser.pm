@@ -698,6 +698,8 @@ sub node_to_lexeme {
   if (!$lexeme) {
     $is_inked = 0;
     $lexeme   = getTokenMeaning($node); }
+  elsif ($lexeme eq '-') {
+    $lexeme = 'minus'; }
   my $document = $LaTeXML::MathParser::DOCUMENT;
   return '' unless $lexeme;
   if ($is_inked) {
