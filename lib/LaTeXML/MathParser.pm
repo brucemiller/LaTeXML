@@ -694,12 +694,12 @@ sub node_to_lexeme {
   my ($self, $node) = @_;
   my $qname    = getQName($node);
   my $is_inked = 1;
-  my $lexeme   = ($qname eq 'ltx:XMTok' && $node->textContent);
-  if (!$lexeme) {
+  my $lexeme   = (($qname eq 'ltx:XMTok' or $qname eq 'ltx:text') && $node->textContent);
+  if (!defined($lexeme) || length($lexeme) == 0) {
     $is_inked = 0;
     $lexeme   = getTokenMeaning($node); }
   my $document = $LaTeXML::MathParser::DOCUMENT;
-  return '' unless $lexeme;
+  return unless defined $lexeme;
   if ($is_inked) {
     if (my $font = $node->getAttribute('_font')) {
       my $font_spec = $document->decodeFont($font);
@@ -746,17 +746,18 @@ sub node_to_lexeme_full {
   if ($tag eq 'ltx:XMDual') {
     $lexemes .= $self->node_to_lexeme_full($LaTeXML::MathParser::DOCUMENT->getSecondChildElement($node)); }
   elsif ($tag eq 'ltx:XMText') {
-    # if a single node XMText, we're looking at a leaf text node
-    my @child_nodes = $node->childNodes;
-    if (scalar(@child_nodes) == 1 && ref($child_nodes[0]) eq 'XML::LibXML::Text') {
-      return $self->node_to_lexeme($node); }
-    else {
-      # \text{}-like construct, with multiple math formulas and interleaved text
-      foreach my $child (@child_nodes) {
-        if (ref($child) eq 'XML::LibXML::Text') {
-          $lexemes .= $child->textContent() . ' '; }
-        elsif (my $child_lexeme = $self->node_to_lexeme_full($child)) {
+    # can be either a single node XMText, we're looking at a leaf text node
+    # or \text{}-like construct, with multiple math formulas and interleaved text
+    foreach my $child ($node->childNodes) {
+      if (ref($child) eq 'XML::LibXML::Text') {
+        $lexemes .= $child->textContent() . ' '; }
+      else {
+        my $child_lexeme = $self->node_to_lexeme_full($child);
+        print STDERR "child lexeme: $child_lexeme\n";
+        if (defined $child_lexeme && length($child_lexeme) > 0) {
           $lexemes .= $child_lexeme . ' '; } } } }
+  elsif ($tag eq 'ltx:text') {    # could recurse in from ltx:XMText
+    return $self->node_to_lexeme($node); }
   else {
     my @child_elements = element_nodes($node);
     # skip through single child wrappers (don't serialize)
@@ -764,14 +765,12 @@ sub node_to_lexeme_full {
       @child_elements = element_nodes($child_elements[0]);
     }
     foreach my $child (@child_elements) {
-      if (my $child_lexeme = $self->node_to_lexeme_full($child)) {
+      my $child_lexeme = $self->node_to_lexeme_full($child);
+      if (defined $child_lexeme && length($child_lexeme) > 0) {
         $lexemes .= $child_lexeme . ' ';
-      }
-    }
-  }
+  } } }
   $lexemes .= $mark_end;
-  return $lexemes;
-}
+  return $lexemes; }
 
 sub parse_internal {
   my ($self, $rule, @nodes) = @_;
