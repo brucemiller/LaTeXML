@@ -698,8 +698,6 @@ sub node_to_lexeme {
   if (!$lexeme) {
     $is_inked = 0;
     $lexeme   = getTokenMeaning($node); }
-  elsif ($lexeme eq '-') {
-    $lexeme = 'minus'; }
   my $document = $LaTeXML::MathParser::DOCUMENT;
   return '' unless $lexeme;
   if ($is_inked) {
@@ -713,10 +711,10 @@ sub node_to_lexeme {
           if (my $value = $$properties_pending{$attr}) {
             push @to_add, $value; } }
         if (@to_add) {
-          $lexeme = join("-", sort(@to_add)) . "-" . $lexeme; }
+          $lexeme = join("_", sort(@to_add)) . "_" . $lexeme; }
     } }
-    if ($lexeme =~ /^\p{L}+$/ && ($lexeme ne 'minus')) {
-      $lexeme = "roman-" . $lexeme; } }
+    if ($lexeme =~ /^\p{L}+$/) {
+      $lexeme = "roman_" . $lexeme; } }
   $lexeme =~ s/\s//g;
   return $lexeme; }
 
@@ -736,12 +734,12 @@ sub node_to_lexeme_full {
   my ($mark_start, $mark_end) = ('', '');
   if ($tag ne 'ltx:XMath') {
     if ($role) {
-      $mark_start = "start-$role ";
-      $mark_end   = " end-$role";
+      $mark_start = "start_$role ";
+      $mark_end   = " end_$role";
     } elsif ($tag =~ '^ltx:XM(Arg|Row|Cell)') {
       my $tag_role = uc($1);
-      $mark_start = "start-$tag_role ";
-      $mark_end   = " end-$tag_role";
+      $mark_start = "start_$tag_role ";
+      $mark_end   = " end_$tag_role";
     }
   }
   my $lexemes = $mark_start;
