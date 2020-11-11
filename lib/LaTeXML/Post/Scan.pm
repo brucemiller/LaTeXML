@@ -97,7 +97,7 @@ sub process {
   $self->scan($doc, $root, $$doc{parent_id});
 
   # Set up interconnections on multidocument site.
-  $$self{db}->register("DOCUMENT:" . $doc->siteRelativeDestination, id => $id);
+  $$self{db}->register("DOCUMENT:" . ($doc->siteRelativeDestination || ''), id => $id);
 
   # Question: If (on multidoc sites) a doc contains a single node (say ltx:chapter)
   # might it make sense to treat the doc as ONLY that node?
@@ -549,4 +549,3 @@ sub orNull {
 
 # ================================================================================
 1;
-
