@@ -715,7 +715,7 @@ sub node_to_lexeme {
         if (@to_add) {
           $lexeme = join("-", sort(@to_add)) . "-" . $lexeme; }
     } }
-    if ($lexeme =~ /^\p{L}+$/) {
+    if ($lexeme =~ /^\p{L}+$/ && ($lexeme ne 'minus')) {
       $lexeme = "roman-" . $lexeme; } }
   $lexeme =~ s/\s//g;
   return $lexeme; }
