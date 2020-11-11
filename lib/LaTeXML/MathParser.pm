@@ -694,7 +694,7 @@ sub node_to_lexeme {
   my ($self, $node) = @_;
   my $qname    = getQName($node);
   my $is_inked = 1;
-  my $lexeme   = (($qname eq 'ltx:XMTok' or $qname eq 'ltx:text') && $node->textContent);
+  my $lexeme   = ($qname eq 'ltx:XMTok' or $qname eq 'ltx:text') && $node->textContent;
   if (!defined($lexeme) || length($lexeme) == 0) {
     $is_inked = 0;
     $lexeme   = getTokenMeaning($node); }
@@ -711,11 +711,12 @@ sub node_to_lexeme {
           if (my $value = $$properties_pending{$attr}) {
             push @to_add, $value; } }
         if (@to_add) {
-          $lexeme = join("_", sort(@to_add)) . "_" . $lexeme; }
+          my $prefix = join("_", sort(@to_add)) . "_";
+          $lexeme = join(" ", map { $prefix . $_ } split(' ', $lexeme)); }
     } }
     if ($lexeme =~ /^\p{L}+$/) {
-      $lexeme = "roman_" . $lexeme; } }
-  $lexeme =~ s/\s//g;
+      $lexeme = join(" ", map { 'roman_' . $_ } split(' ', $lexeme)); } }
+  $lexeme =~ s/\s+$//;
   return $lexeme; }
 
 sub node_to_lexeme_full {
