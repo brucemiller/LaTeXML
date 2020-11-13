@@ -7,3 +7,11 @@ We want array lexemes to be compositionally exposing their contents:
 
 We also want atoms to be compositionally exposing their contents:
 \[ 1+\left( \text{$x$ if $x<0$ else $y$} \right) \]
+
+
+\DeclareMathOperator{\func}{func}
+We have explicit font shape/weight for alphabetic tokens when they look like text, compare $a$ to $\mathrm{a}$.
+Also $\mathit{func}$ to $\func$ and $\mathrm{func}$.
+
+Also, be aware of natural uses of the text macro:
+\[ \int_0^\infty x\,dx = \text{zero, \it yes 0} \]

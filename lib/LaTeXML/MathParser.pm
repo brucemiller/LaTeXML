@@ -155,8 +155,8 @@ sub realizeXMNode {
 # ================================================================================
 sub clear {
   my ($self) = @_;
-  $$self{passed} = { 'ltx:XMath' => 0, 'ltx:XMArg' => 0, 'ltx:XMWrap' => 0 };
-  $$self{failed} = { 'ltx:XMath' => 0, 'ltx:XMArg' => 0, 'ltx:XMWrap' => 0 };
+  $$self{passed}          = { 'ltx:XMath' => 0, 'ltx:XMArg' => 0, 'ltx:XMWrap' => 0 };
+  $$self{failed}          = { 'ltx:XMath' => 0, 'ltx:XMArg' => 0, 'ltx:XMWrap' => 0 };
   $$self{unknowns}        = {};
   $$self{maybe_functions} = {};
   $$self{n_parsed}        = 0;
@@ -167,7 +167,7 @@ our %EXCLUDED_PRETTYNAME_ATTRIBUTES = (fontsize => 1, opacity => 1);
 sub token_prettyname {
   my ($node) = @_;
   my $name = $node->getAttribute('name');
-  if (defined $name) { }
+  if    (defined $name) { }
   elsif ($name = $node->textContent) {
     my $font = $LaTeXML::MathParser::DOCUMENT->getNodeFont($node);
     my %attr = $font->relativeTo(LaTeXML::Common::Font->textDefault);
@@ -323,7 +323,7 @@ sub parse_rec {
       NoteProgressDetailed($TAG_FEEDBACK{$tag} || '.');
       # Copy all attributes
       my $resultid = p_getAttribute($result, 'xml:id');
-      my %attr = map { (getQName($_) => $_->getValue) }
+      my %attr     = map { (getQName($_) => $_->getValue) }
         grep { $_->nodeType == XML_ATTRIBUTE_NODE } $node->attributes;
       # add to result, even allowing modification of xml node, since we're committed.
       # [Annotate converts node to array which messes up clearing the id!]
@@ -346,7 +346,7 @@ sub parse_rec {
           $document->unRecordID($value);
           $node->removeAttribute('xml:id'); }
         if ($isarr) { $$result[1]{$key} = $value; }
-        else { $document->setAttribute($result, $key => $value); } }
+        else        { $document->setAttribute($result, $key => $value); } }
       $result = $document->replaceTree($result, $node);
       my $newid = $attr{'xml:id'};
       # Danger: the above code replaced the id on the parsed result with the one from XMArg,..
@@ -531,8 +531,9 @@ sub parse_kludge {
     if ($role eq 'OPEN') {
       unshift(@stack, [$pair]); }    # Start new fenced row;
     elsif ($role eq 'CLOSE') {       # Close the current row
-      my $row = shift(@stack);       # get the current list of items
-      push(@$row, $pair) if $pair;   # Put the close (if any) into it
+      my $row = shift(@stack);        # get the current list of items
+      push(@$row, $pair) if $pair;    # Put the close (if any) into it
+
       my @kludged = $self->parse_kludgeScripts_rec(@$row);    # handle scripts
                                                               # wrap, if needed.
       $row = [(scalar(@kludged) > 1 ? ['ltx:XMWrap', {}, @kludged] : $kludged[0]), 'FENCED'];
@@ -691,29 +692,32 @@ sub parse_single {
 
 sub node_to_lexeme {
   my ($self, $node) = @_;
-  my $lexeme   = getTokenMeaning($node);
   my $qname    = getQName($node);
+  my $is_inked = 1;
+  my $lexeme   = ($qname eq 'ltx:XMTok' or $qname eq 'ltx:text') && $node->textContent;
+  if (!defined($lexeme) || length($lexeme) == 0) {
+    $is_inked = 0;
+    $lexeme   = getTokenMeaning($node); }
   my $document = $LaTeXML::MathParser::DOCUMENT;
-  $lexeme = '' unless defined $lexeme;
-  if (my $font = $node->getAttribute('_font')) {
-    my $font_spec = $document->decodeFont($font);
-    if (my %declarations = $font_spec && $font_spec->relativeTo(LaTeXML::Common::Font->textDefault)) {
-      my @to_add             = ();
-      my $font_pending       = $declarations{font} || {};
-      my $properties_pending = $$font_pending{properties} || {};
-      foreach my $attr (qw(family series shape)) {
-        if (my $value = $$properties_pending{$attr}) {
-          push @to_add, $value; } }
-      if (@to_add) {
-        $lexeme = join("-", sort(@to_add)) . "-" . $lexeme; } } }
-  local $LaTeXML::MathParser::STRICT = 0;
-  if (my $role = $self->getGrammaticalRole($node)) {
-    if ($role ne 'UNKNOWN') {
-      $lexeme = $role . ":" . $lexeme; } }
-
-  $lexeme =~ s/\s//g;
-  return $lexeme;
-}
+  return unless defined $lexeme;
+  if ($is_inked) {
+    if (my $font = $node->getAttribute('_font')) {
+      my $font_spec = $document->decodeFont($font);
+      if (my %declarations = $font_spec && $font_spec->relativeTo(LaTeXML::Common::Font->textDefault)) {
+        my @to_add             = ();
+        my $font_pending       = $declarations{font}        || {};
+        my $properties_pending = $$font_pending{properties} || {};
+        foreach my $attr (qw(family series shape)) {
+          if (my $value = $$properties_pending{$attr}) {
+            push @to_add, $value; } }
+        if (@to_add) {
+          my $prefix = join("_", sort(@to_add)) . "_";
+          $lexeme = join(" ", map { $prefix . $_ } split(' ', $lexeme)); }
+    } }
+    if ($lexeme =~ /^\p{L}+$/) {
+      $lexeme = join(" ", map { 'roman_' . $_ } split(' ', $lexeme)); } }
+  $lexeme =~ s/\s+$//;
+  return $lexeme; }
 
 sub node_to_lexeme_full {
   my ($self, $unrealized_node) = @_;
@@ -731,29 +735,29 @@ sub node_to_lexeme_full {
   my ($mark_start, $mark_end) = ('', '');
   if ($tag ne 'ltx:XMath') {
     if ($role) {
-      $mark_start = "$role:start ";
-      $mark_end   = " $role:end";
+      $mark_start = "start_$role ";
+      $mark_end   = " end_$role";
     } elsif ($tag =~ '^ltx:XM(Arg|Row|Cell)') {
       my $tag_role = uc($1);
-      $mark_start = "$tag_role:start ";
-      $mark_end   = " $tag_role:end";
+      $mark_start = "start_$tag_role ";
+      $mark_end   = " end_$tag_role";
     }
   }
   my $lexemes = $mark_start;
   if ($tag eq 'ltx:XMDual') {
     $lexemes .= $self->node_to_lexeme_full($LaTeXML::MathParser::DOCUMENT->getSecondChildElement($node)); }
   elsif ($tag eq 'ltx:XMText') {
-    # if a single node XMText, we're looking at a leaf text node
-    my @child_nodes = $node->childNodes;
-    if (scalar(@child_nodes) == 1 && ref($child_nodes[0]) eq 'XML::LibXML::Text') {
-      return $self->node_to_lexeme($node); }
-    else {
-      # \text{}-like construct, with multiple math formulas and interleaved text
-      foreach my $child (@child_nodes) {
-        if (ref($child) eq 'XML::LibXML::Text') {
-          $lexemes .= $child->textContent() . ' '; }
-        elsif (my $child_lexeme = $self->node_to_lexeme_full($child)) {
+    # can be either a single node XMText, we're looking at a leaf text node
+    # or \text{}-like construct, with multiple math formulas and interleaved text
+    foreach my $child ($node->childNodes) {
+      if (ref($child) eq 'XML::LibXML::Text') {
+        $lexemes .= $child->textContent() . ' '; }
+      else {
+        my $child_lexeme = $self->node_to_lexeme_full($child);
+        if (defined $child_lexeme && length($child_lexeme) > 0) {
           $lexemes .= $child_lexeme . ' '; } } } }
+  elsif ($tag eq 'ltx:text') {    # could recurse in from ltx:XMText
+    return $self->node_to_lexeme($node); }
   else {
     my @child_elements = element_nodes($node);
     # skip through single child wrappers (don't serialize)
@@ -761,14 +765,12 @@ sub node_to_lexeme_full {
       @child_elements = element_nodes($child_elements[0]);
     }
     foreach my $child (@child_elements) {
-      if (my $child_lexeme = $self->node_to_lexeme_full($child)) {
+      my $child_lexeme = $self->node_to_lexeme_full($child);
+      if (defined $child_lexeme && length($child_lexeme) > 0) {
         $lexemes .= $child_lexeme . ' ';
-      }
-    }
-  }
+  } } }
   $lexemes .= $mark_end;
-  return $lexemes;
-}
+  return $lexemes; }
 
 sub parse_internal {
   my ($self, $rule, @nodes) = @_;
@@ -808,15 +810,15 @@ sub parse_internal {
   my $unparsed = $lexemes;
   my $result   = $$self{internalparser}->$rule(\$unparsed);
   if (((!defined $result) || $unparsed)    # If parsing Failed
-    && $LaTeXML::MathParser::SEEN_NOTATIONS{QM}) {    # & Saw some QM stuff.
-    $LaTeXML::MathParser::DISALLOWED_NOTATIONS{QM} = 1;    # Retry w/o QM notations
+    && $LaTeXML::MathParser::SEEN_NOTATIONS{QM}) {               # & Saw some QM stuff.
+    $LaTeXML::MathParser::DISALLOWED_NOTATIONS{QM} = 1;          # Retry w/o QM notations
     $unparsed = $lexemes;
     $result = $$self{internalparser}->$rule(\$unparsed); }
-  while (((!defined $result) || $unparsed)                 # If parsing Failed
-    && ($LaTeXML::MathParser::SEEN_NOTATIONS{AbsFail})     # & Attempted deeper abs nesting?
-    && ($LaTeXML::MathParser::MAX_ABS_DEPTH < 3)) {        # & Not ridiculously deep
+  while (((!defined $result) || $unparsed)                       # If parsing Failed
+    && ($LaTeXML::MathParser::SEEN_NOTATIONS{AbsFail})           # & Attempted deeper abs nesting?
+    && ($LaTeXML::MathParser::MAX_ABS_DEPTH < 3)) {              # & Not ridiculously deep
     delete $LaTeXML::MathParser::SEEN_NOTATIONS{AbsFail};
-    ++$LaTeXML::MathParser::MAX_ABS_DEPTH;                 # Try deeper.
+    ++$LaTeXML::MathParser::MAX_ABS_DEPTH;                       # Try deeper.
     $unparsed = $lexemes;
     $result   = $$self{internalparser}->$rule(\$unparsed); }
 
@@ -898,8 +900,8 @@ sub text_form {
   return textrec($node, undef); }
 
 my %PREFIX_ALIAS = (    # [CONSTANT]
-  SUPERSCRIPTOP => '^', SUBSCRIPTOP => '_', times          => '*',
-  'equals'      => '=', 'less-than' => '<', 'greater-than' => '>',
+  SUPERSCRIPTOP         => '^',  SUBSCRIPTOP              => '_', times          => '*',
+  'equals'              => '=',  'less-than'              => '<', 'greater-than' => '>',
   'less-than-or-equals' => '<=', 'greater-than-or-equals' => '>=',
   'much-less-than'      => '<<', 'much-greater-than'      => '>>',
   'plus'                => '+',  'minus'                  => '-', 'divide' => '/');
@@ -933,7 +935,7 @@ sub textrec {
   elsif ($tag eq 'ltx:XMDual') {
     my ($content, $presentation) = element_nodes($node);
     my $text = textrec($content, $outer_bp, $outer_name);    # Just send out the semantic form.
-           # Fall back to presentation, if content has poor semantics (eg. from replacement patterns)
+        # Fall back to presentation, if content has poor semantics (eg. from replacement patterns)
     return ($text =~ /^\(*Unknown/ ? textrec($presentation, $outer_bp, $outer_name) : $text); }
   elsif ($tag eq 'ltx:XMTok') {
     my $name = getTokenMeaning($node);
@@ -970,8 +972,8 @@ sub textrec_apply {
 
 sub textrec_array {
   my ($node) = @_;
-  my $name = $node->getAttribute('meaning') || $node->getAttribute('name') || 'Array';
-  my @rows = ();
+  my $name   = $node->getAttribute('meaning') || $node->getAttribute('name') || 'Array';
+  my @rows   = ();
   foreach my $row (element_nodes($node)) {
     push(@rows, '[' . join(', ', map { ($_->firstChild ? textrec($_->firstChild) : '') } element_nodes($row)) . ']'); }
   return $name . '[' . join(', ', @rows) . ']'; }
@@ -1245,8 +1247,8 @@ sub extract_separators {
 # For example, whether (a,b) is an interval or list?
 #  (both could reasonably be preceded by \in )
 my %balanced = (    # [CONSTANT]
-  '(' => ')', '['  => ']', '{' => '}',
-  '|' => '|', '||' => '||',
+  '('        => ')', '['  => ']', '{' => '}',
+  '|'        => '|', '||' => '||',
   "\x{230A}" => "\x{230B}",    # lfloor, rfloor
   "\x{2308}" => "\x{2309}",    # lceil, rceil
   "\x{2329}" => "\x{232A}",    # angle brackets; NOT mathematical, but balance in case they show up.
@@ -1256,19 +1258,19 @@ my %balanced = (    # [CONSTANT]
 # For enclosing a single object
 # Note that the default here is just to put open/closed attributes on the single object
 my %enclose1 = (    # [CONSTANT]
-  '{@}'   => 'set',                                   # alternatively, just variant parentheses
-  '|@|'   => 'absolute-value',
-  '||@||' => 'norm', "\x{2225}@\x{2225}" => 'norm',
+  '{@}'               => 'set',              # alternatively, just variant parentheses
+  '|@|'               => 'absolute-value',
+  '||@||'             => 'norm', "\x{2225}@\x{2225}" => 'norm',
   "\x{230A}@\x{230B}" => 'floor',
   "\x{2308}@\x{2309}" => 'ceiling',
-  '<@>'               => 'expectation',               # or just average?
+  '<@>'               => 'expectation',      # or just average?
   '<@|'               => 'bra', '|@>' => 'ket');
 # For enclosing more than 2 objects; the punctuation is significant too
-my %enclose2 = (                                      # [CONSTANT]
-  '(@,@)' => 'open-interval',                                           # alternatively, just a list
+my %enclose2 = (                             # [CONSTANT]
+  '(@,@)' => 'open-interval',                # alternatively, just a list
   '[@,@]' => 'closed-interval',
   '(@,@]' => 'open-closed-interval', '[@,@)' => 'closed-open-interval',
-  '{@,@}' => 'set',                                                     # alternatively, just a list ?
+  '{@,@}' => 'set',                          # alternatively, just a list ?
 );
 # For enclosing more than 2 objects.
 # assume 1st punct? or should we check all are same?
@@ -1390,7 +1392,7 @@ sub ApplyNary {
   my ($op, $arg1, $arg2) = @_;
   my $rop       = realizeXMNode($op);
   my $opname    = p_getTokenMeaning($rop) || '__undef_meaning__';
-  my $opcontent = p_getValue($rop) || '__undef_content__';
+  my $opcontent = p_getValue($rop)        || '__undef_content__';
   my @args      = ();
   if (p_getQName($arg1) eq 'ltx:XMApp') {
     my ($op1, @args1) = p_element_nodes($arg1);
@@ -1501,7 +1503,7 @@ sub NewScript {
       || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($sx, $sl) = (p_getAttribute($rscript, 'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
   my ($mode, $y) = p_getAttribute($rscript, 'role') =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
-  my $x = ($pos ? $pos : ($mode eq 'FLOAT' ? 'pre' : $bx || 'post'));
+  my $x    = ($pos ? $pos : ($mode eq 'FLOAT' ? 'pre' : $bx || 'post'));
   my $lpad = ($x eq 'pre') && p_getAttribute($rscript, 'lpadding');
   my $rpad = ($x ne 'pre') && p_getAttribute($rscript, 'rpadding');
   my $t;
@@ -1518,11 +1520,11 @@ sub NewScript {
   my $app = Apply(New(undef, undef, role => $y . 'SCRIPTOP', scriptpos => "$x$l"),
     $base, Arg($script, 0));
   # Record whether this script was a floating one
-  $$app[1]{_wasfloat}  = 1  if $mode eq 'FLOAT';
-  $$app[1]{_bumplevel} = $l if $bumped;
-  $$app[1]{scriptpos} = $bx   if $bx   && ($bx ne 'post');
-  $$app[1]{lpadding}  = $lpad if $lpad && !$$app[1]{lpadding};    # better to add?
-  $$app[1]{rpadding}  = $rpad if $rpad && !$$app[1]{rpadding};    # better to add?
+  $$app[1]{_wasfloat}  = 1     if $mode eq 'FLOAT';
+  $$app[1]{_bumplevel} = $l    if $bumped;
+  $$app[1]{scriptpos}  = $bx   if $bx   && ($bx ne 'post');
+  $$app[1]{lpadding}   = $lpad if $lpad && !$$app[1]{lpadding};    # better to add?
+  $$app[1]{rpadding}   = $rpad if $rpad && !$$app[1]{rpadding};    # better to add?
   return $app; }
 
 # Basically, like NewScript, but decorates an operator with sub/superscripts

@@ -1,6 +1,6 @@
 <article class="ltx_document">
 <div id="p1" class="ltx_para">
-<p class="ltx_p">For vector-valued variables, we would write the random variable as <math id="p1.m1" class="ltx_Math" alttext="\bm{\mathrm{x}}" display="inline"><semantics><mi>𝐱</mi><annotation encoding="application/x-llamapun">bold-x</annotation></semantics></math> and one of its values as <math id="p1.m2" class="ltx_Math" alttext="\bm{x}" display="inline"><semantics><mi>𝒙</mi><annotation encoding="application/x-llamapun">bold-italic-x</annotation></semantics></math>.</p>
+<p class="ltx_p">For vector-valued variables, we would write the random variable as <math id="p1.m1" class="ltx_Math" alttext="\bm{\mathrm{x}}" display="inline"><semantics><mi>𝐱</mi><annotation encoding="application/x-llamapun">bold_x</annotation></semantics></math> and one of its values as <math id="p1.m2" class="ltx_Math" alttext="\bm{x}" display="inline"><semantics><mi>𝒙</mi><annotation encoding="application/x-llamapun">bold_italic_x</annotation></semantics></math>.</p>
 </div>
 <div id="p2" class="ltx_para">
 <p class="ltx_p">We want array lexemes to be compositionally exposing their contents:</p>
@@ -8,7 +8,7 @@
 
 <tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
 <td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
-<td class="ltx_eqn_cell ltx_align_center"><math id="S0.Ex1.m1" class="ltx_Math" alttext="\begin{array}[]{cc}a+1&amp;b-2\\&#10;c+3&amp;d-4\end{array}" display="block"><semantics><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd columnalign="center"><mrow><mi>a</mi><mo>+</mo><mn>1</mn></mrow></mtd><mtd columnalign="center"><mrow><mi>b</mi><mo>-</mo><mn>2</mn></mrow></mtd></mtr><mtr><mtd columnalign="center"><mrow><mi>c</mi><mo>+</mo><mn>3</mn></mrow></mtd><mtd columnalign="center"><mrow><mi>d</mi><mo>-</mo><mn>4</mn></mrow></mtd></mtr></mtable><annotation encoding="application/x-llamapun">ARRAY:start ROW:start CELL:start italic-a ADDOP:plus NUMBER:1 CELL:end CELL:start italic-b ADDOP:minus NUMBER:2 CELL:end ROW:end ROW:start CELL:start italic-c ADDOP:plus NUMBER:3 CELL:end CELL:start italic-d ADDOP:minus NUMBER:4 CELL:end ROW:end ARRAY:end</annotation></semantics></math></td>
+<td class="ltx_eqn_cell ltx_align_center"><math id="S0.Ex1.m1" class="ltx_Math" alttext="\begin{array}[]{cc}a+1&amp;b-2\\&#10;c+3&amp;d-4\end{array}" display="block"><semantics><mtable columnspacing="5pt" displaystyle="true" rowspacing="0pt"><mtr><mtd columnalign="center"><mrow><mi>a</mi><mo>+</mo><mn>1</mn></mrow></mtd><mtd columnalign="center"><mrow><mi>b</mi><mo>-</mo><mn>2</mn></mrow></mtd></mtr><mtr><mtd columnalign="center"><mrow><mi>c</mi><mo>+</mo><mn>3</mn></mrow></mtd><mtd columnalign="center"><mrow><mi>d</mi><mo>-</mo><mn>4</mn></mrow></mtd></mtr></mtable><annotation encoding="application/x-llamapun">start_ARRAY start_ROW start_CELL italic_a + 1 end_CELL start_CELL italic_b - 2 end_CELL end_ROW start_ROW start_CELL italic_c + 3 end_CELL start_CELL italic_d - 4 end_CELL end_ROW end_ARRAY</annotation></semantics></math></td>
 <td class="ltx_eqn_cell ltx_eqn_center_padright"></td></tr>
 </table>
 </div>
@@ -18,7 +18,21 @@
 
 <tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
 <td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
-<td class="ltx_eqn_cell ltx_align_center"><math id="S0.Ex2.m1" class="ltx_Math" alttext="1+\left(\text{$x$ if $x&lt;0$ else $y$}\right)" display="block"><semantics><mrow><mn>1</mn><mo>+</mo><mrow><mo>(</mo><mrow><mi>x</mi><mtext> if </mtext><mrow><mi>x</mi><mo>&lt;</mo><mn>0</mn></mrow><mtext> else </mtext><mi>y</mi></mrow><mo>)</mo></mrow></mrow><annotation encoding="application/x-llamapun">NUMBER:1 ADDOP:plus OPEN:( italic-x if italic-x RELOP:less-than NUMBER:0 else italic-y CLOSE:)</annotation></semantics></math></td>
+<td class="ltx_eqn_cell ltx_align_center"><math id="S0.Ex2.m1" class="ltx_Math" alttext="1+\left(\text{$x$ if $x&lt;0$ else $y$}\right)" display="block"><semantics><mrow><mn>1</mn><mo>+</mo><mrow><mo>(</mo><mrow><mi>x</mi><mtext> if </mtext><mrow><mi>x</mi><mo>&lt;</mo><mn>0</mn></mrow><mtext> else </mtext><mi>y</mi></mrow><mo>)</mo></mrow></mrow><annotation encoding="application/x-llamapun">1 + ( italic_x if italic_x &lt; 0 else italic_y )</annotation></semantics></math></td>
+<td class="ltx_eqn_cell ltx_eqn_center_padright"></td></tr>
+</table>
+</div>
+<div class="ltx_para" id="p4">
+<p class="ltx_p">We have explicit font shape/weight for alphabetic tokens when they look like text, compare <math alttext="a" class="ltx_Math" display="inline" id="p4.m1"><semantics><mi>a</mi><annotation encoding="application/x-llamapun">italic_a</annotation></semantics></math> to <math alttext="\mathrm{a}" class="ltx_Math" display="inline" id="p4.m2"><semantics><mi mathvariant="normal">a</mi><annotation encoding="application/x-llamapun">roman_a</annotation></semantics></math>.
+Also <math alttext="\mathit{func}" class="ltx_Math" display="inline" id="p4.m3"><semantics><mi>𝑓𝑢𝑛𝑐</mi><annotation encoding="application/x-llamapun">italic_func</annotation></semantics></math> to <math alttext="\operatorname{func}" class="ltx_Math" display="inline" id="p4.m4"><semantics><mi>func</mi><annotation encoding="application/x-llamapun">roman_func</annotation></semantics></math> and <math alttext="\mathrm{func}" class="ltx_Math" display="inline" id="p4.m5"><semantics><mi>func</mi><annotation encoding="application/x-llamapun">roman_func</annotation></semantics></math>.</p>
+</div>
+<div class="ltx_para" id="p5">
+<p class="ltx_p">Also, be aware of natural uses of the text macro:</p>
+<table class="ltx_equation ltx_eqn_table" id="S0.Ex3">
+
+<tr class="ltx_equation ltx_eqn_row ltx_align_baseline">
+<td class="ltx_eqn_cell ltx_eqn_center_padleft"></td>
+<td class="ltx_eqn_cell ltx_align_center"><math alttext="\int_{0}^{\infty}x\,dx=\text{zero, \it yes 0}" class="ltx_Math" display="block" id="S0.Ex3.m1"><semantics><mrow><mrow><msubsup><mo largeop="true" symmetric="true">∫</mo><mn>0</mn><mi mathvariant="normal">∞</mi></msubsup><mrow><mpadded width="+1.7pt"><mi>x</mi></mpadded><mo>⁢</mo><mrow><mo rspace="0pt">𝑑</mo><mi>x</mi></mrow></mrow></mrow><mo>=</mo><mrow><mtext>zero, </mtext><mtext mathvariant="italic">yes 0</mtext></mrow></mrow><annotation encoding="application/x-llamapun">∫ start_POSTSUBSCRIPT 0 end_POSTSUBSCRIPT start_POSTSUPERSCRIPT ∞ end_POSTSUPERSCRIPT italic_x italic_d italic_x = zero, italic_yes italic_0</annotation></semantics></math></td>
 <td class="ltx_eqn_cell ltx_eqn_center_padright"></td></tr>
 </table>
 </div>
