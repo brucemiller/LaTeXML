@@ -754,7 +754,6 @@ sub node_to_lexeme_full {
         $lexemes .= $child->textContent() . ' '; }
       else {
         my $child_lexeme = $self->node_to_lexeme_full($child);
-        print STDERR "child lexeme: $child_lexeme\n";
         if (defined $child_lexeme && length($child_lexeme) > 0) {
           $lexemes .= $child_lexeme . ' '; } } } }
   elsif ($tag eq 'ltx:text') {    # could recurse in from ltx:XMText
