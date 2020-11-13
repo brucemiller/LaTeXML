@@ -143,7 +143,6 @@ sub unpack_source {
       @files_by_likelihood = @with_bbl; }
     # last tie-breaker is lexicographical order
     @files_by_likelihood = sort { $a cmp $b } @files_by_likelihood;
-    print STDERR "all possible files: ", join(",", @files_by_likelihood), "\n";
     # set the main source
     $main_source = shift @files_by_likelihood; }
 
