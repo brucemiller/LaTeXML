@@ -46,8 +46,7 @@ sub unpack_source {
   }
 
   # Heuristically determine the input (borrowed from arXiv::FileGuess)
-  my %Main_TeX_likelihood;
-  my %Main_TeX_level;
+  my (%Main_TeX_likelihood, %Main_TeX_level);
   my @vetoed = ();
   foreach my $tex_file (@TeX_file_members) {
     # Read in the content
@@ -139,8 +138,12 @@ sub unpack_source {
       $Main_TeX_level{$file} = $count;
       $min_count = $count if $min_count > $count; }
     @files_by_likelihood = grep { $Main_TeX_level{$_} == $min_count } @files_by_likelihood;
+    # if we still have multiples, check if some have a .bbl file
+    if (my @with_bbl = grep { my $base = $_; $base =~ s/\.tex$//; -e "$base.bbl"; } @files_by_likelihood) {
+      @files_by_likelihood = @with_bbl; }
     # last tie-breaker is lexicographical order
     @files_by_likelihood = sort { $a cmp $b } @files_by_likelihood;
+    print STDERR "all possible files: ", join(",", @files_by_likelihood), "\n";
     # set the main source
     $main_source = shift @files_by_likelihood; }
 
@@ -249,7 +252,7 @@ sub get_math {
     my $math_found = 0;
     while ($math_found != $math_count) {
       $math_found = $math->findnodes('.' . $math_xpath)->size;
-      $math_found++ if ($math->localname =~ /^math$/i);
+      $math_found++             if ($math->localname =~ /^math$/i);
       $math = $math->parentNode if ($math_found != $math_count);
     }
     $math = $math->parentNode while ($math->nodeName =~ '^t[rd]$'); }
