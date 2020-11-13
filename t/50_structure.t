@@ -6,5 +6,8 @@ use LaTeXML::Util::Test;
 
 latexml_tests("t/structure",
   requires => {
-    csquotes => 'csquotes.sty',
-    glossary => 'glossaries.sty' });
+    amsarticle => 'amsart.cls',
+    csquotes   => 'csquotes.sty',
+    glossary   => {
+      texlive_min => 2014,
+      packages    => 'glossaries.sty' } });
