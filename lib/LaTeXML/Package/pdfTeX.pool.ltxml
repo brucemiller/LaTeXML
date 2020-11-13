@@ -35,9 +35,15 @@ DefRegister('\pdfprotrudechars'         => Number(0));
 # \efcode <font> <8bitnumber>  => <integer>
 # \lpfcode <font> <8bitnumber> => <integer>
 # \rpfcode <font> <8bitnumber> => <integer>
-DefRegister('\efcode Token Number', Number(0));
-DefRegister('\lpcode Token Number', Number(0));
-DefRegister('\rpcode Token Number', Number(0));
+DefRegister('\efcode Token Number',   Number(0));
+DefRegister('\lpcode Token Number',   Number(0));
+DefRegister('\rpcode Token Number',   Number(0));
+DefRegister('\knaccode Token Number', Number(0));
+DefRegister('\knbccode Token Number', Number(0));
+DefRegister('\knbscode Token Number', Number(0));
+DefRegister('\shbscode Token Number', Number(0));
+DefRegister('\stbscode Token Number', Number(0));
+DefRegister('\tagcode Token Number',  Number(0));
 
 DefRegister('\pdfforcepagebox'                => Number(0));
 DefRegister('\pdfoptionalwaysusepdfpagebox'   => Number(0));
@@ -48,16 +54,32 @@ DefRegister('\pdfimageapplygamma'             => Number(0));
 DefRegister('\pdfgamma'                       => Number(0));
 DefRegister('\pdfimagegamma'                  => Number(0));
 DefRegister('\pdfdraftmode'                   => Number(0));
+DefRegister('\pdfadjustinterwordglue'         => Number(0));
+DefRegister('\pdfappendkern'                  => Number(0));
+DefRegister('\pdfgentounicode'                => Number(0));
+DefRegister('\pdfinclusioncopyfonts'          => Number(0));
+DefRegister('\pdfinfoomitdate'                => Number(0));
+DefRegister('\pdfpagebox'                     => Number(0));
+DefRegister('\pdfprependkern'                 => Number(0));
+DefRegister('\pdfsuppressptexinfo'            => Number(0));
+DefRegister('\pdfsuppresswarningdupdest'      => Number(0));
+DefRegister('\pdfsuppresswarningdupmap'       => Number(0));
+DefRegister('\pdfsuppresswarningpagegroup'    => Number(0));
 
 # Dimen Registers
-DefRegister('\pdfhorigin'      => Dimension('1in'));
-DefRegister('\pdfvorigin'      => Dimension('1in'));
-DefRegister('\pdfpagewidth'    => Dimension('0pt'));
-DefRegister('\pdfpageheight'   => Dimension('0pt'));
-DefRegister('\pdflinkmargin'   => Dimension('0pt'));
-DefRegister('\pdfdestmargin'   => Dimension('0pt'));
-DefRegister('\pdfthreadmargin' => Dimension('0pt'));
-DefRegister('\pdfpxdimen'      => Dimension('0pt'));
+DefRegister('\pdfhorigin'         => Dimension('1in'));
+DefRegister('\pdfvorigin'         => Dimension('1in'));
+DefRegister('\pdfpagewidth'       => Dimension('0pt'));
+DefRegister('\pdfpageheight'      => Dimension('0pt'));
+DefRegister('\pdflinkmargin'      => Dimension('0pt'));
+DefRegister('\pdfdestmargin'      => Dimension('0pt'));
+DefRegister('\pdfthreadmargin'    => Dimension('0pt'));
+DefRegister('\pdfpxdimen'         => Dimension('0pt'));
+DefRegister('\pdfeachlinedepth'   => Dimension('0pt'));
+DefRegister('\pdfeachlineheight'  => Dimension('0pt'));
+DefRegister('\pdffirstlineheight' => Dimension('0pt'));
+DefRegister('\pdfignoreddimen'    => Dimension('0pt'));
+DefRegister('\pdflastlinedepth'   => Dimension('0pt'));
 
 # Token Registers
 DefRegister('\pdfpagesattr'     => Tokens());
@@ -93,19 +115,21 @@ DefMacro('\pdffilemoddate {}',              '');
 # DefMacro('\pdfcolorstackinit {}','');
 
 # Read-only registers
-DefRegister('\pdftexversion'      => Number(140));
-DefRegister('\pdflastobj'         => Number(0));
-DefRegister('\pdflastxform'       => Number(0));
-DefRegister('\pdflastximage'      => Number(0));
-DefRegister('\pdflastximagepages' => Number(0));
-DefRegister('\pdflastannot'       => Number(0));
-DefRegister('\pdflastlink'        => Number(0));
-DefRegister('\pdflastxpos'        => Number(0));
-DefRegister('\pdflastypos'        => Number(0));
-DefRegister('\pdflastdemerits'    => Number(0));
-DefRegister('\pdfelapsedtime'     => Number(0));
-DefRegister('\pdfrandomseed'      => Number(0));
-DefRegister('\pdfshellescape'     => Number(0));
+DefRegister('\pdftexversion'           => Number(140));
+DefRegister('\pdflastobj'              => Number(0));
+DefRegister('\pdflastxform'            => Number(0));
+DefRegister('\pdflastximage'           => Number(0));
+DefRegister('\pdflastximagepages'      => Number(0));
+DefRegister('\pdflastannot'            => Number(0));
+DefRegister('\pdflastlink'             => Number(0));
+DefRegister('\pdflastxpos'             => Number(0));
+DefRegister('\pdflastypos'             => Number(0));
+DefRegister('\pdflastdemerits'         => Number(0));
+DefRegister('\pdfelapsedtime'          => Number(0));
+DefRegister('\pdfrandomseed'           => Number(0));
+DefRegister('\pdfshellescape'          => Number(0));
+DefRegister('\pdflastximagecolordepth' => Number(0));
+DefRegister('\pdfretval'               => Number(0));
 
 # \pdfximage [ image attr spec ] general text (h, v, m)
 # \pdfrefximage object number (h, v, m)
@@ -132,10 +156,10 @@ DefParameterType('OpenActionSpecification', sub {
   optional => 1, undigested => 1);
 
 DefMacro('\pdfcatalog{} OpenActionSpecification', '');
-DefMacro('\pdfnames{}',   {});
-DefMacro('\pdftrailer{}', {});
-DefMacro('\pdfmapfile{}', '');
-DefMacro('\pdfmapline{}', '');
+DefMacro('\pdfnames{}',                           {});
+DefMacro('\pdftrailer{}',                         {});
+DefMacro('\pdfmapfile{}',                         '');
+DefMacro('\pdfmapline{}',                         '');
 # \pdffontattr font general text
 # \pdffontexpand font expand spec
 # \vadjust [ pre spec ] filler { vertical mode material } (h, m)
