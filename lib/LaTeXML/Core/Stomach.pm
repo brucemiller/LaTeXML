@@ -89,10 +89,14 @@ sub digestNextBody {
   my $initdepth = scalar(@{ $$self{boxing} });
   my $token;
   local @LaTeXML::LIST = ();
+  $LaTeXML::SMUGGLE_THE = 1;
   while (defined($token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
+    $LaTeXML::SMUGGLE_THE = 0;
     push(@LaTeXML::LIST, $self->invokeToken($token));
+    $LaTeXML::SMUGGLE_THE = 1;
     last if $terminal and Equals($token, $terminal);
     last if $initdepth > scalar(@{ $$self{boxing} }); }           # if we've closed the initial mode.
+  $LaTeXML::SMUGGLE_THE = 0;
   Warn('expected', $terminal, $self, "body should have ended with '" . ToString($terminal) . "'",
     "current body started at " . ToString($startloc))
     if $terminal && !Equals($token, $terminal);
@@ -147,6 +151,14 @@ sub invokeToken {
   my ($self, $token) = @_;
   no warnings 'recursion';
 INVOKE:
+  # If we are invoking a new token, we'll do a new read of arguments,
+  # and that should void any remaining CC_SMUGGLE_THE noexpands
+  if ($$token[1] == CC_SMUGGLE_THE) {
+    $token = $$token[2];
+    my $gullet = $$self{gullet};
+    $$gullet{pushback} = [map { $$_[1] == CC_SMUGGLE_THE ? $$_[2] : $_ }
+        @{ $$gullet{pushback} }];
+  }
   push(@{ $$self{token_stack} }, $token);
   if (scalar(@{ $$self{token_stack} }) > $MAXSTACK) {
     Fatal('internal', '<recursion>', $self,
