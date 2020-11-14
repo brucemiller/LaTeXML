@@ -238,7 +238,7 @@ sub decodeQName {
   my ($self, $codetag) = @_;
   if ($codetag =~ /^([^:]+):(.+)$/) {
     my ($prefix, $localname) = ($1, $2);
-    return (undef, $codetag) if $prefix eq 'xml';
+    return (undef,                        $codetag) if $prefix eq 'xml';
     return ($self->getNamespace($prefix), $localname); }
   else {
     return (undef, $codetag); } }
@@ -265,7 +265,7 @@ sub getNodeQName {
   elsif ($type == XML_DTD_NODE) {
     return '#DTD'; }
   elsif ($type == XML_NAMESPACE_DECL) {
-    my $ns = $node->declaredURI;
+    my $ns     = $node->declaredURI;
     my $prefix = $ns && $self->getNamespacePrefix($ns, 0, 1);
     return ($prefix ? 'xmlns:' . $prefix : 'xmlns'); }
   # Need others?
@@ -274,7 +274,7 @@ sub getNodeQName {
       "Should not ask for Qualified Name for node of type $type: " . Stringify($node));
     return; }
   else {
-    my $ns = $node->namespaceURI;
+    my $ns     = $node->namespaceURI;
     my $prefix = $ns && $self->getNamespacePrefix($ns, 0, 1);
     return ($prefix ? $prefix . ":" . $node->localname : $node->localname); } }
 
@@ -293,7 +293,7 @@ sub getNodeDocumentQName {
   elsif ($type == XML_DTD_NODE) {
     return '#DTD'; }
   elsif ($type == XML_NAMESPACE_DECL) {
-    my $ns = $node->declaredURI;
+    my $ns     = $node->declaredURI;
     my $prefix = $ns && $self->getDocumentNamespacePrefix($ns, 0, 1);
     return ($prefix ? 'xmlns:' . $prefix : 'xmlns'); }
   # Need others?
@@ -302,7 +302,7 @@ sub getNodeDocumentQName {
       "Should not ask for Qualified Name for node of type $type: " . Stringify($node));
     return; }
   else {
-    my $ns = $node->namespaceURI;
+    my $ns     = $node->namespaceURI;
     my $prefix = $ns && $self->getDocumentNamespacePrefix($ns, 0, 1);
     return ($prefix ? $prefix . ":" . $node->localname : $node->localname); } }
 
@@ -312,8 +312,8 @@ sub getNodeDocumentQName {
 # into a prefixed name using the Code's prefixes
 # NOTE: Used only for DTD
 sub recodeDocumentQName {
-  my ($self, $docQName) = @_;
-  my ($docprefix, $name) = (undef, $docQName);
+  my ($self,      $docQName) = @_;
+  my ($docprefix, $name)     = (undef, $docQName);
   if ($docQName =~ /^(#PCDATA|#Comment|ANY|#ProcessingInstruction|#Document)$/) {
     return $docQName; }
   else {
@@ -372,9 +372,8 @@ sub canContain {
   my ($self, $tag, $childtag) = @_;
   $self->loadSchema unless $$self{schema_loaded};
   # Handle obvious cases explicitly.
-  return 0 if $tag eq '#PCDATA';
-  return 0 if $tag eq '#Comment';
-  return 1 if $tag =~ /(.*?:)?_Capture_$/;             # with or without namespace prefix
+  return 0 if !$tag || ($tag eq '#PCDATA') || ($tag eq '#Comment');
+  return 1 if $tag =~ /(.*?:)?_Capture_$/;                          # with or without namespace prefix
   return 1 if $tag eq '_WildCard_';
   return 1 if $childtag =~ /(.*?:)?_Capture_$/;
   return 1 if $childtag eq '_WildCard_';
@@ -383,7 +382,7 @@ sub canContain {
   return 1 if $childtag eq '#DTD';
   #  return 1 if $$self{permissive}; # No DTD? Punt!
   return 1 if $$self{permissive} && ($tag eq '#Document') && ($childtag ne '#PCDATA'); # No DTD? Punt!
-         # Else query tag properties.
+      # Else query tag properties.
   my $model = $$self{tagprop}{$tag}{model};
   if (!$model && ($tag =~ /^(\w*):/)) {
     my $xtag = $1 . ':*';

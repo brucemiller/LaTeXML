@@ -3625,8 +3625,11 @@ DefMacro('\lx@ifusebbl{}{}{}', sub {
     my $bbl_path     = FindFile($jobname, type => 'bbl');
     my $missing_bibs = '';
     if (LookupValue("NO_BIBTEX")) {
-      Info('expected', "bbl", $_[0], "Couldn't find bbl file, bibliography may be empty.") if not $bbl_path;
-      return $bbl_clause->unlist; }
+      if (not $bbl_path) {
+        Info('expected', "bbl", $_[0], "Couldn't find bbl file, bibliography may be empty.");
+        return Tokens(); }
+      else {
+        return $bbl_clause->unlist; } }
     else {
       for my $bf (split(',', $bib_files)) {
         my $bib_path = FindFile($bf, type => 'bib');
