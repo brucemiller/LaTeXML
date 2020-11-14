@@ -103,11 +103,12 @@ sub flush {
 
 sub setup_scan {
   my ($self) = @_;
-  $$self{pushback_has_smuggled_the} = 0;
-  # setup new scan by removing any smuggle CCs
-  for my $token (@{ $$self{pushback} }) {
-    if ($$token[1] == CC_SMUGGLE_THE) {
-      $token = $$token[2]; } }
+  if ($$self{pushback_has_smuggled_the}) {
+    $$self{pushback_has_smuggled_the} = 0;
+    # setup new scan by removing any smuggle CCs
+    for my $token (@{ $$self{pushback} }) {
+      if ($$token[1] == CC_SMUGGLE_THE) {
+        $token = $$token[2]; } } }
   return; }
 
 # Do something, while reading stuff from a specific Mouth.

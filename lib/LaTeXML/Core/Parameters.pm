@@ -17,7 +17,6 @@ use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Parameter;
 use LaTeXML::Core::Tokens;
-use LaTeXML::Core::Token qw(CC_SMUGGLE_THE);
 use base qw(LaTeXML::Common::Object);
 
 sub new {
@@ -60,7 +59,7 @@ sub revertArguments {
 sub readArguments {
   my ($self, $gullet, $fordefn) = @_;
   my @args = ();
-  $gullet->setup_scan() if $$gullet{pushback_has_smuggled_the};
+  $gullet->setup_scan();
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
     push(@args, $value) unless $$parameter{novalue}; }
@@ -70,7 +69,7 @@ sub readArgumentsAndDigest {
   my ($self, $stomach, $fordefn) = @_;
   my @args   = ();
   my $gullet = $stomach->getGullet;
-  $gullet->setup_scan() if $$gullet{pushback_has_smuggled_the};
+  $gullet->setup_scan();
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
     if (!$$parameter{novalue}) {
