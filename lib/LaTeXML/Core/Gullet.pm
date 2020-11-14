@@ -31,7 +31,7 @@ use base qw(LaTeXML::Common::Object);
 sub new {
   my ($class, %options) = @_;
   return bless {
-    mouth     => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
+    mouth => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
     verbosity => $options{verbosity} || 0
   }, $class; }
 
@@ -80,8 +80,8 @@ sub mouthIsOpen {
 # Corresponds (I think) to TeX's \endinput
 sub flushMouth {
   my ($self) = @_;
-  $$self{mouth}->finish;    # but not close!
-  $$self{pushback}  = [];   # And don't read anytyhing more from it.
+  $$self{mouth}->finish;     # but not close!
+  $$self{pushback}  = [];    # And don't read anytyhing more from it.
   $$self{autoclose} = 1;
   return; }
 
@@ -99,6 +99,16 @@ sub flush {
 ####    $$self{mouth}=undef;
   $$self{autoclose}  = 1;
   $$self{mouthstack} = [];
+  return; }
+
+sub setup_scan {
+  my ($self) = @_;
+  if ($$self{pushback_has_smuggled_the}) {
+    $$self{pushback_has_smuggled_the} = 0;
+    # setup new scan by removing any smuggle CCs
+    for my $token (@{ $$self{pushback} }) {
+      if ($$token[1] == CC_SMUGGLE_THE) {
+        $token = $$token[2]; } } }
   return; }
 
 # Do something, while reading stuff from a specific Mouth.
@@ -269,7 +279,11 @@ sub readXToken {
         #    at the exact time
         # the token leaves the pushback.
         # This is *required to be different* from the noexpand flag, as per the B Book
-        @expansion = map { T_SMUGGLE_THE($_); } @expansion; }
+        @expansion = map { T_SMUGGLE_THE($_); } @expansion;
+        # PERFORMANCE:
+        #   explicitly flag that we've seen this case, so that higher levels know to
+        #   unset the flag from the entire {pushback}
+        $$self{pushback_has_smuggled_the} = 1; }
       # add the newly expanded tokens back into the gullet stream, in the ordinary case.
       unshift(@{ $$self{pushback} }, @expansion); }
     elsif ($cc == CC_CS && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
@@ -289,7 +303,7 @@ sub readRawLine {
   my @tokens  = map  { ($$_[1] == CC_SMUGGLE_THE ? $$_[2] : $_) } @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
   if (@markers) {    # Whoops, profiling markers!
-    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;                      # Remove
+    @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;    # Remove
     map { LaTeXML::Core::Definition::stopProfiling($_, 'expand') } @markers; }
   $$self{pushback} = [];
   # If we still have peeked tokens, we ONLY want to combine it with the remainder
@@ -625,7 +639,7 @@ sub readNumber {
 # Return a Number or undef
 sub readNormalInteger {
   my ($self) = @_;
-  my $token = $self->readXToken(1);    # expand more
+  my $token = $self->readXToken(1);     # expand more
   if (!defined $token) {
     return; }
   elsif (($$token[1] == CC_OTHER) && ($token->toString =~ /^[0-9]$/)) {    # Read decimal literal

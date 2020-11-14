@@ -23,7 +23,8 @@ DefMacro('\lx@cleverref@label[]', '\lx@cleverref@save@label');
 InputDefinitions('cleveref', type => 'sty', noltxml => 1);
 
 # Now define it back.
-RawTeX('\AtBeginDocument{\let\label\lx@cleverref@label}');
+AtBeginDocument(sub {
+    Let(T_CS('\label'), T_CS('\lx@cleverref@label')); });
 
 # And now we just need to make sure we use the right conjunctions and type names!
 
@@ -58,16 +59,16 @@ sub crefMulti {
             ? "creftypepluralcap~refnum"
             : "creftypeplural~refnum")
           : "refnum"),
-        pop(@labels)));
+        shift(@labels)));
     if (scalar(@labels == 1)) {
       push(@tokens, T_CS('\crefpairconjunction'),
         Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), $labels[0])); }
     else {
       while (scalar(@labels) > 1) {
         push(@tokens, T_CS('\crefmiddleconjunction'),
-          Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), pop(@labels))); }
+          Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), shift(@labels))); }
       push(@tokens, T_CS('\creflastconjunction'),
-        Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), pop(@labels))); }
+        Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), shift(@labels))); }
     return @tokens; } }
 # Since we're not grouping by type, we're ignoring \crefpairgroupconjunction, etc
 
