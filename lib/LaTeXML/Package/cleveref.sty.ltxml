@@ -59,16 +59,16 @@ sub crefMulti {
             ? "creftypepluralcap~refnum"
             : "creftypeplural~refnum")
           : "refnum"),
-        pop(@labels)));
+        shift(@labels)));
     if (scalar(@labels == 1)) {
       push(@tokens, T_CS('\crefpairconjunction'),
         Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), $labels[0])); }
     else {
       while (scalar(@labels) > 1) {
         push(@tokens, T_CS('\crefmiddleconjunction'),
-          Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), pop(@labels))); }
+          Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), shift(@labels))); }
       push(@tokens, T_CS('\creflastconjunction'),
-        Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), pop(@labels))); }
+        Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), shift(@labels))); }
     return @tokens; } }
 # Since we're not grouping by type, we're ignoring \crefpairgroupconjunction, etc
 

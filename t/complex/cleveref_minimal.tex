@@ -1,0 +1,23 @@
+\documentclass[11pt]{article}
+\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{cleveref}
+
+\begin{document}
+
+\begin{align}
+y&=a_1x+b_1\label{eqn:1}\\
+y&=a_2x+b_2\label{eqn:2}\\
+y&=a_3x+b_3\label{eqn:3}\\
+y&=a_4x+b_4\label{eqn:4}
+\end{align}
+
+\noindent
+Range example: \crefrange{eqn:1}{eqn:4}
+
+\begin{figure}[ht]\centering\rule{0.5\linewidth}{0.1\linewidth}\caption{First figure}\label{fig:1}\end{figure}
+
+\noindent
+Mixed references example: \cref{eqn:1,eqn:3,eqn:4,fig:1}
+
+\end{document}
