@@ -981,7 +981,14 @@ DefPrimitive('\markboth{}{}',    undef);
 DefPrimitiveI('\leftmark',  undef, undef);
 DefPrimitiveI('\rightmark', undef, undef);
 DefPrimitive('\pagenumbering{}', undef);
-
+DefMacro('\ps@empty',
+  '\let\@mkboth\@gobbletwo\let\@oddhead\@empty\let\@oddfoot\@empty' .
+    '\let\@evenhead\@empty\let\@evenfoot\@empty');
+DefMacro('\ps@plain', '\let\@mkboth\@gobbletwo' .
+    '\let\@oddhead\@empty\def\@oddfoot{\reset@font\hfil\thepage' .
+    '\hfil}\let\@evenhead\@empty\let\@evenfoot\@oddfoot');
+Let(T_CS('\@leftmark'),  T_CS('\@firstoftwo'));
+Let(T_CS('\@rightmark'), T_CS('\@secondoftwo'));
 # In normal latex, these should \clearpage; at least we want new paragraph?
 # Optional arg is sortof a heading, but w/o any particular styling(?)
 DefMacro('\twocolumn[]', '\ifx.#1.\else\par\noindent#1\fi\par');
