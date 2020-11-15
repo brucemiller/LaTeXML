@@ -107,7 +107,11 @@ DefEnvironment('{keywords}', '',
 
 DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
 DefMacro('\pacs{}',           '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
-DefMacro('\doi{}',            '\@add@frontmatter{ltx:classification}[scheme=doi]{#1}');
+# \doi{doi} might be frontmatter, or just a \url-like thing.  So, let's guess!
+DefMacro('\doi{}',
+  '\if@in@preamble{\@add@frontmatter{ltx:classification}[scheme=doi]{#1}'
+    . '\else\lx@doi{#1}\fi');
+DefConstructor('\lx@doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>');
 
 for my $env (qw(conjecture proposition lemma corollary example definition)) {
   my $beginenv = "\\begin{$env}";

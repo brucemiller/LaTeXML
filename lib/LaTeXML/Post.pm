@@ -106,7 +106,7 @@ sub getStatusMessage {
 sub getsorter {
   my ($self, $lang) = @_;
   my $collator;
-  if ($collator = $$self{collatorcache}{$lang}) { }
+  if    ($collator = $$self{collatorcache}{$lang}) { }
   elsif ($collator = eval {
       local $LaTeXML::IGNORE_ERRORS = 1;
       require 'Unicode/Collate/Locale.pm';
@@ -195,11 +195,11 @@ sub desiredResourcePathname {
 # but I think we've accommodated absolute ones.
 sub generateResourcePathname {
   my ($self, $doc, $node, $source, $type) = @_;
-  my $subdir = $$self{resource_directory} || '';
-  my $prefix = $$self{resource_prefix}    || "x";
+  my $subdir  = $$self{resource_directory} || '';
+  my $prefix  = $$self{resource_prefix}    || "x";
   my $counter = join('_', "_max", $subdir, $prefix, "counter_");
-  my $n    = $doc->cacheLookup($counter) || 0;
-  my $name = $prefix . ++$n;
+  my $n       = $doc->cacheLookup($counter) || 0;
+  my $name    = $prefix . ++$n;
   $doc->cacheStore($counter, $n);
   return pathname_make(dir => $subdir, name => $name, type => $type); }
 
@@ -223,7 +223,9 @@ sub find_documentclass_and_packages {
       $classoptions = $$entry{options} || 'onecolumn';
       $oldstyle     = $$entry{oldstyle}; }
     elsif ($$entry{package}) {
-      push(@packages, [$$entry{package}, $$entry{options} || '']); } }
+      my @p = grep { $_; } split(/\s*,\s*/, $$entry{package});
+      foreach my $package (@p) {
+        push(@packages, [$package, $$entry{options} || '']); } } }
   if (!$class) {
     Warn('expected', 'class', undef, "No document class found; using article");
     $class = 'article'; }
@@ -670,9 +672,9 @@ sub new_internal {
     else {
       $data{siteDirectory} = $data{destinationDirectory}; } }
   # Start, at least, with our own namespaces.
-  $data{namespaces}    = { ltx    => $NSURI } unless $data{namespaces};
-  $data{namespaceURIs} = { $NSURI => 'ltx' }  unless $data{namespaceURIs};
-  $data{idcache}       = {};
+  $data{namespaces}       = { ltx    => $NSURI } unless $data{namespaces};
+  $data{namespaceURIs}    = { $NSURI => 'ltx' }  unless $data{namespaceURIs};
+  $data{idcache}          = {};
   $data{idcache_reusable} = {};
   $data{idcache_reserve}  = {};
 
@@ -1099,7 +1101,7 @@ sub addNodes {
           my $atype = $attr->nodeType;
           if ($atype == XML_ATTRIBUTE_NODE) {
             my $key = $attr->nodeName;
-            if ($key =~ /^_/) { }    # don't copy internal attributes
+            if    ($key =~ /^_/) { }     # don't copy internal attributes
             elsif ($key eq 'xml:id') {
               my $value = $attr->getValue;
               my $old;
@@ -1134,7 +1136,7 @@ sub removeNodes {
   my ($self, @nodes) = @_;
   foreach my $node (@nodes) {
     my $ref = ref $node;
-    if (!$ref) { }
+    if    (!$ref) { }
     elsif ($ref eq 'ARRAY') {
       my ($t, $a, @n) = @$node;
       if (my $id = $$a{'xml:id'}) {
@@ -1156,7 +1158,7 @@ sub preremoveNodes {
   my ($self, @nodes) = @_;
   foreach my $node (@nodes) {
     my $ref = ref $node;
-    if (!$ref) { }
+    if    (!$ref) { }
     elsif ($ref eq 'ARRAY') {
       my ($t, $a, @n) = @$node;
       if (my $id = $$a{'xml:id'}) {

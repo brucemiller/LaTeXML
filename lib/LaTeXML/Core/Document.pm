@@ -162,9 +162,9 @@ sub canContain {
 sub canContainIndirect {
   my ($self, $tag, $child) = @_;
   my $model = $$self{model};
-  $tag = $model->getNodeQName($tag) if ref $tag;          # In case tag is a node.
+  $tag   = $model->getNodeQName($tag)   if ref $tag;      # In case tag is a node.
   $child = $model->getNodeQName($child) if ref $child;    # In case child is a node.
-        # $imodel{$tag}{$child} => $intermediate || $child
+      # $imodel{$tag}{$child} => $intermediate || $child
   my $imodel = $STATE->lookupValue('INDIRECT_MODEL');
   if (!$imodel) {
     $imodel = $self->computeIndirectModel();
@@ -206,7 +206,7 @@ sub computeIndirectModel_aux {
   my ($model, $tag, $start, $desirability) = @_;
   my $x;
   foreach my $kid ($model->getTagContents($tag)) {
-    next if $::DESC{$kid}{$start};    # Already solved
+    next                                  if $::DESC{$kid}{$start};    # Already solved
     $::DESC{$kid}{$start} = $desirability if $start;
     if (($kid ne '#PCDATA') && ($x = $::OPENABILITY{$kid})) {
       computeIndirectModel_aux($model, $kid, $start || $kid, $desirability * $x); } }
@@ -215,14 +215,14 @@ sub computeIndirectModel_aux {
 sub canContainSomehow {
   my ($self, $tag, $child) = @_;
   my $model = $$self{model};
-  $tag   = $model->getNodeQName($tag)   if ref $tag;      # In case tag is a node.
-  $child = $model->getNodeQName($child) if ref $child;    # In case child is a node.
+  $tag   = $model->getNodeQName($tag)   if ref $tag;                   # In case tag is a node.
+  $child = $model->getNodeQName($child) if ref $child;                 # In case child is a node.
   return $model->canContain($tag, $child) || $self->canContainIndirect($tag, $child); }
 
 sub canHaveAttribute {
   my ($self, $tag, $attrib) = @_;
   my $model = $$self{model};
-  $tag = $model->getNodeQName($tag) if ref $tag;          # In case tag is a node.
+  $tag = $model->getNodeQName($tag) if ref $tag;                       # In case tag is a node.
   return $model->canHaveAttribute($tag, $attrib); }
 
 sub canAutoOpen {
@@ -257,9 +257,9 @@ sub getTagActionList {
     ($p, $n) = ($1, $2); }
   my $when0   = $when . ':early';
   my $when1   = $when . ':late';
-  my $taghash = $STATE->lookupMapping('TAG_PROPERTIES', $tag) || {};
+  my $taghash = $STATE->lookupMapping('TAG_PROPERTIES', $tag)                        || {};
   my $nshash  = ((defined $p) && $STATE->lookupMapping('TAG_PROPERTIES', $p . ':*')) || {};
-  my $allhash = $STATE->lookupMapping('TAG_PROPERTIES', '*') || {};
+  my $allhash = $STATE->lookupMapping('TAG_PROPERTIES', '*')                         || {};
   my $v;
   return (
     (($v = $$taghash{$when0}) ? @$v : ()),
@@ -325,7 +325,7 @@ sub doctest_head {
   my ($self, $parent, $node, $severe) = @_;
   # Check consistency of document, parent & type, before proceeding
   print STDERR "  NODE $$node [" if $severe;    # BEFORE checking nodeType!
-  print STDERR "d" if $severe;
+  print STDERR "d"               if $severe;
   if (!$node->ownerDocument->isSameNode($self->getDocument)) {
     print STDERR "!" if $severe; }
   print STDERR "p" if $severe;
@@ -365,6 +365,7 @@ sub finalize {
 sub finalize_rec {
   my ($self, $node) = @_;
   my $model = $$self{model};
+  no warnings 'recursion';
   my $qname = $model->getNodeQName($node);
   # _standalone_font is typically for metadata that gets extracted out of context
   my $declared_font = ($node->getAttribute('_standalone_font')
@@ -467,6 +468,7 @@ sub toString {
 # but keep XML declaration, comments and don't convert empty elements.
 sub serialize_aux {
   my ($self, $node, $depth, $noindent, $heuristic) = @_;
+  no warnings 'recursion';
   my $type   = $node->nodeType;
   my $model  = $$self{model};
   my $indent = ('  ' x $depth);
@@ -1259,7 +1261,7 @@ sub mergeAttributes {
       # Several length attributes should be cummulative; sum them up, if present on both.
       elsif ($merge_attribute_sumlength{$key}) {
         if (my $val2 = $to->getAttribute($key)) {
-          my $v1 = $val =~ /^([\+\-\d\.]*)pt$/  && $1;
+          my $v1 = $val  =~ /^([\+\-\d\.]*)pt$/ && $1;
           my $v2 = $val2 =~ /^([\+\-\d\.]*)pt$/ && $1;
           $to->setAttribute($key => ($v1 + $v2) . 'pt'); }
         else {
@@ -1300,7 +1302,7 @@ sub setAttribute {
   $value = $value->toAttribute if ref $value;
   if ((defined $value) && ($value ne '')) {    # Skip if `empty'; but 0 is OK!
     if ($key eq 'xml:id') {                    # If it's an ID attribute
-      $value = $self->recordID($value, $node);    # Do id book keeping
+      $value = $self->recordID($value, $node);                                 # Do id book keeping
       $node->setAttributeNS($LaTeXML::Common::XML::XML_NS, 'id', $value); }    # and bypass all ns stuff
     elsif ($key !~ /:/) {    # No colon; no namespace (the common case!)
                              # Ignore attributes not allowed by the model,
@@ -1314,7 +1316,7 @@ sub setAttribute {
       if ($ns) {             # If namespaced attribute (must have prefix!
         my $prefix = $node->lookupNamespacePrefix($ns);    # namespace already declared?
         if (!$prefix) {                                    # if namespace not already declared
-          $prefix = $$self{model}->getDocumentNamespacePrefix($ns, 1);    # get the prefix to use
+          $prefix = $$self{model}->getDocumentNamespacePrefix($ns, 1);             # get the prefix to use
           $self->getDocument->documentElement->setNamespace($ns, $prefix, 0); }    # and declare it
         if ($prefix eq '#default') {    # Probably shouldn't happen...?
           $node->setAttribute($name => $value); }
@@ -1538,7 +1540,7 @@ sub collapseXMDual {
   # The other branch is not visible, nor referenced,
   # but the dual may have an id and be referenced
   if (my $dualid = $dual->getAttribute('xml:id')) {
-    $self->unRecordID($dualid);    # We'll move or remove the ID from the dual
+    $self->unRecordID($dualid);                              # We'll move or remove the ID from the dual
     if (my $branchid = $branch->getAttribute('xml:id')) {    # branch has id too!
       foreach my $ref ($self->findnodes("//*[\@idref='$dualid']")) {
         $ref->setAttribute(idref => $branchid); } }          # Change dualid refs to branchid
@@ -1665,7 +1667,7 @@ sub openElementAt {
   my $font = $attributes{_font} || $attributes{font};
   my $box  = $attributes{_box};
   $box = $$self{node_boxes}{$box} if $box && !ref $box;    # may already be the string key
-         # If this will be the document root node, things are slightly more involved.
+      # If this will be the document root node, things are slightly more involved.
   if ($point->nodeType == XML_DOCUMENT_NODE) {    # First node! (?)
     $$self{model}->addSchemaDeclaration($self, $tag);
     map { $$self{document}->appendChild($_) } @{ $$self{pending} };    # Add saved comments, PI's
@@ -1683,16 +1685,16 @@ sub openElementAt {
         $newnode->setNamespace($ns, $attprefix, 0); }
       $newnode->setNamespace($ns, $prefix, 1); } }
   else {
-    $font = $self->getNodeFont($point) unless $font;
-    $box  = $self->getNodeBox($point)  unless $box;
+    $font    = $self->getNodeFont($point) unless $font;
+    $box     = $self->getNodeBox($point)  unless $box;
     $newnode = $self->openElement_internal($point, $ns, $tag); }
 
   foreach my $key (sort keys %attributes) {
     next if $key eq 'font';       # !!!
     next if $key eq 'locator';    # !!!
     $self->setAttribute($newnode, $key, $attributes{$key}); }
-  $self->setNodeFont($newnode, $font) if $font;
-  $self->setNodeBox($newnode, $box) if $box;
+  $self->setNodeFont($newnode, $font)                                                   if $font;
+  $self->setNodeBox($newnode, $box)                                                     if $box;
   print STDERR "Inserting " . Stringify($newnode) . " into " . Stringify($point) . "\n" if $LaTeXML::Core::Document::DEBUG;
 
   # Run afterOpen operations
