@@ -44,12 +44,13 @@ sub new {
   $stylesheet = $stylesheet && LaTeXML::Common::XML::XSLT->new($stylesheet);
   if ((!ref $stylesheet) || !($stylesheet->can('transform'))) {
     Error('expected', 'stylesheet', undef, "Stylesheet '$stylesheet' is not a usable stylesheet!"); }
+  XML::LibXSLT->max_depth(500);
   $$self{stylesheet} = $stylesheet;
   my %params = ();
-  %params = %{ $options{parameters} } if $options{parameters};
+  %params                    = %{ $options{parameters} } if $options{parameters};
   $$self{parameters}         = {%params};
   $$self{noresources}        = $options{noresources};
-  $$self{resource_directory} = $options{resource_directory};    # ???
+  $$self{resource_directory} = $options{resource_directory};                        # ???
   return $self; }
 
 sub process {

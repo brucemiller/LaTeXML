@@ -134,6 +134,7 @@ sub process {
 
 sub scan {
   my ($self, $doc, $node, $parent_id) = @_;
+  no warnings 'recursion';
   my $tag     = $doc->getQName($node);
   my $handler = $$self{handlers}{$tag} || \&default_handler;
   &$handler($self, $doc, $node, $tag, $parent_id);
@@ -141,6 +142,7 @@ sub scan {
 
 sub scanChildren {
   my ($self, $doc, $node, $parent_id) = @_;
+  no warnings 'recursion';
   foreach my $child ($node->childNodes) {
     if ($child->nodeType == XML_ELEMENT_NODE) {
       $self->scan($doc, $child, $parent_id); } }
@@ -268,6 +270,7 @@ sub addCommon {
 
 sub default_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
+  no warnings 'recursion';
   my $id = $node->getAttribute('xml:id');
   if ($id) {
     $$self{db}->register("ID:$id",
