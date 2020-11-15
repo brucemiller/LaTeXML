@@ -45,5 +45,6 @@ RawTeX(<<'EoTeX');
 \newenvironment{widetext}{}{}
 EoTeX
 
+DefEnvironment('{acknowledgments}', "<ltx:acknowledgements>#body</ltx:acknowledgements>");
 #**********************************************************************
 1;
