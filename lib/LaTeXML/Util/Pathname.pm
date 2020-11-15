@@ -344,9 +344,9 @@ sub candidate_pathnames {
       if    ($ext eq '') { push(@exts, ''); }
       elsif ($ext eq '*') {
         push(@exts, '.*', ''); }
-      elsif ($pathname =~ /\.\Q$ext\E$/i) {
-        push(@exts, ''); }
       else {
+        if ($pathname =~ /\.\Q$ext\E$/i) {
+          push(@exts, ''); }
         push(@exts, '.' . $ext); } } }
   push(@exts, '') unless @exts;
 
