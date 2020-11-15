@@ -116,7 +116,7 @@ DefParameterType('DefPlain', sub {
       ($value) = $inner->reparseArgument($gullet, $value); }
     return $value; },
   packParameters => 1,
-  reversion => sub {
+  reversion      => sub {
     my ($arg, $inner) = @_;
     (T_BEGIN,
       ($inner ? $inner->revertArguments($arg) : Revert($arg)),
@@ -252,7 +252,7 @@ DefParameterType('DefExpanded', sub {
     my $expanded = ($token->getCatcode == CC_BEGIN ? $gullet->readBalanced(1) : $token);
     return $expanded; },
   packParameters => 1,
-  reversion => sub {
+  reversion      => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
 
@@ -302,7 +302,7 @@ DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
-DefParameterType('UndigestedDefKey', sub { $_[0]->readArg; }, undigested => 1, packParameters=>1);
+DefParameterType('UndigestedDefKey', sub { $_[0]->readArg; }, undigested => 1, packParameters => 1);
 
 # Read a token as used when defining it, ie. it may be enclosed in braces.
 DefParameterType('DefToken', sub {
@@ -4787,6 +4787,8 @@ DefPrimitiveI('\narrower', undef, undef);
 # Note: could be circumstances where you'd want modular frontmatter?
 # (ie. frontmatter for each sectional unit)
 AssignValue(frontmatter => {}, 'global');
+
+DefConditionalI('\if@in@preamble', undef, sub { LookupValue('inPreamble'); });
 
 # Add a new frontmatter item that will be enclosed in <$tag %attr>...</$tag>
 # The content is the result of digesting $tokens.
