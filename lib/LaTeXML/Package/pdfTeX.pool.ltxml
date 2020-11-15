@@ -134,8 +134,12 @@ DefRegister('\pdfretval'               => Number(0));
 # \pdfximage [ image attr spec ] general text (h, v, m)
 # \pdfrefximage object number (h, v, m)
 # \pdfannot annot type spec (h, v, m)
+DefPrimitive('\pdfannot OpenAnnotSpecification', undef);
+
 # \pdfstartlink [ rule spec ] [ attr spec ] action spec (h, m)
+DefPrimitive('\pdfstartlink', undef);
 # \pdfendlink (h, m)
+DefPrimitive('\pdfendlink', undef);
 # \pdfoutline outline spec (h, v, m)
 # \pdfdest dest spec (h, v, m)
 # \pdfthread thread spec (h, v, m)
@@ -155,6 +159,23 @@ DefParameterType('OpenActionSpecification', sub {
   } } },
   optional => 1, undigested => 1);
 
+DefParameterType('OpenAnnotSpecification', sub {
+    my ($gullet) = @_;
+    my $general_text_param = LookupMapping('PARAMETER_TYPES', 'GeneralText');
+
+    if    ($gullet->readKeyword('reserveobjnum')) { return; }
+    elsif ($gullet->readKeyword('useobjnum')) {
+      my $discard = $gullet->readNumber; }
+    elsif ($gullet->readKeyword('stream')) {
+      if ($gullet->readKeyword('attr')) {
+        $gullet->skipSpaces;
+        my $discard_stream = &{ $$general_text_param{reader} }($gullet); }
+    }
+    $gullet->skipSpaces;
+    my $discard_spec = &{ $$general_text_param{reader} }($gullet);
+    return; }
+  , optional => 1, undigested => 1);
+
 DefMacro('\pdfcatalog{} OpenActionSpecification', '');
 DefMacro('\pdfnames{}',                           {});
 DefMacro('\pdftrailer{}',                         {});
@@ -165,6 +186,7 @@ DefMacro('\pdfmapline{}',                         '');
 # \vadjust [ pre spec ] filler { vertical mode material } (h, m)
 DefMacro('\quitvmode', '');
 # \pdfliteral [ pdfliteral spec ] general text (h, v, m)
+DefPrimitive('\pdfliteral OptionalMatch:direct OptionalMatch:page GeneralText', undef);
 # \special pdfspecial spec
 # \pdfresettimer
 # \pdfsetrandomseed number
@@ -173,6 +195,19 @@ DefMacro('\quitvmode', '');
 # TODO: https://tex.stackexchange.com/questions/13771/let-a-control-sequence-to-a-redefined-primitive
 DefMacro('\pdfprimitive DefToken', '#1');    # we can just ignore the advanced effects for now.
 # \pdfcolorstack stack number stack action general text
+DefPrimitive('\pdfcolorstack Number OptionalMatch:set OptionalMatch:push OptionalMatch:pop OptionalMatch:current', sub {
+    # for now, carefully read and discard all arguments
+    my ($stomach, $number, $set, $push, $pop, $current) = @_;
+    return if ($pop);
+    my $gullet = $stomach->getGullet;
+    $gullet->skipSpaces;
+    my $general_text_param = LookupMapping('PARAMETER_TYPES', 'GeneralText');
+    my $discard            = &{ $$general_text_param{reader} }($gullet);
+    return; });
+DefPrimitive('\pdfobj OpenAnnotSpecification', sub {
+    # for now, carefully read and discard all arguments
+    return; });
+# [ stream [ attr spec ] ] object contents
 DefMacro('\pdfsetmatrix', '');
 DefMacro('\pdfsave',      '');
 DefMacro('\pdfrestore',   '');
