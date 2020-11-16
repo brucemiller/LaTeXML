@@ -5,7 +5,7 @@
 use LaTeXML::Util::Test;
 
 latexml_tests("t/babel",
-  requires => { '*' => ['babel.sty', 'babel.def'],
+  requires => { '*' => ['babel.sty', 'babel.def', 'english.ldf'],
     csquotes => { texlive_min => 2015,
       packages => ['csquotes.sty', 'frenchb.ldf', 'germanb.ldf'] },
     numprints => 'numprint.sty',

@@ -40,9 +40,9 @@ jobs:
           command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
               gmake
       - run:
-          name: gmake test 9
+          name: gmake test 8
           command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
-              gmake test TEST_FILES=t/9*
+              gmake test TEST_FILES=t/8*
       - run:
           name: gmake test 0
           command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
@@ -76,9 +76,9 @@ jobs:
           command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
               gmake test TEST_FILES=t/7*
       - run:
-          name: gmake test 8
+          name: gmake test 9
           command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
-              gmake test TEST_FILES=t/8*
+              gmake test TEST_FILES=t/9*
       - save_cache:
           key: chocolatey-miktex-strawberry-v4
           paths:
