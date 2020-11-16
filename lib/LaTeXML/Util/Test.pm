@@ -273,6 +273,8 @@ sub daemon_ok {
     # Compare the just generated $base.test.status to the previous $base.status
     if (my $teststatus = get_filecontent("$base.test.status", $base)) {
       if (my $status = get_filecontent("$base.status", $base)) {
+        if ($ENV{CIRCLECI}) {    # ignore windows complaining about running kpsewhich in admin mode
+          $teststatus = [grep { $_ !~ /^kpsewhich\: / } @$teststatus]; }
         is_strings($teststatus, $status, $base); } }
     unlink "$base.test.xml"    if -e "$base.test.xml";
     unlink "$base.test.status" if -e "$base.test.status";
@@ -331,7 +333,7 @@ sub texlive_version {
   if (defined $texlive_version) {
     return $texlive_version; }
   my $extra_flag = '';
-  if ($ENV{"APPVEYOR"}) {
+  if ($ENV{"CIRCLECI"}) {
     # disabled under windows for now
     return 0; }
   if (my $tex = which("tex")) {

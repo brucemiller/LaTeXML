@@ -1,0 +1,87 @@
+# Use the latest 2.1 version of CircleCI pipeline process engine. See: https://circleci.com/docs/2.0/configuration-reference
+version: 2.1
+orbs:
+  win: circleci/windows@2.4.0
+jobs:
+  build: # name of your job
+    executor:
+      name: win/default
+      size: "medium" # resource class, can be "medium", "large", "xlarge", "2xlarge", defaults to "medium" if not specified
+    steps:
+      # Commands are run in a Windows virtual machine environment
+      # Install miktex to get pdflatex, if we don't get it from the cache
+      # autoinstall latex packages (0=no, 1=autoinstall, 2=ask)
+      # this adds this to the registry!
+      - restore_cache:
+          keys:
+            - chocolatey-miktex-strawberry-v4
+      - run: choco install miktex -y --params '"/Set:essential"'
+      - run:
+          name: initexmf
+          command: $env:Path+="C:\Program Files\MiKTeX\miktex\bin\x64\;";
+              initexmf --set-config-value [MPM]AutoInstall=1
+      - run:
+          name: update miktex db
+          command: $env:Path+="C:\Program Files\MiKTeX\miktex\bin\x64\;";
+              mpm --update
+      - run: refreshenv
+      - run: choco install strawberryperl -y
+      - checkout
+      - run:
+          name: LaTeXML dependencies
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              cpanm --quiet --installdeps --with-develop --notest .
+      - run:
+          name: Makefile.PL
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              perl Makefile.PL
+      - run:
+          name: gmake
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              gmake
+      - run:
+          name: gmake test 9
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              gmake test TEST_FILES=t/9*
+      - run:
+          name: gmake test 0
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              gmake test TEST_FILES=t/0*
+      - run:
+          name: gmake test 1
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              gmake test TEST_FILES=t/1*
+      - run:
+          name: gmake test 2
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              gmake test TEST_FILES=t/2*
+      - run:
+          name: gmake test 3
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              gmake test TEST_FILES=t/3*
+      - run:
+          name: gmake test 4
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              gmake test TEST_FILES=t/4*
+      - run:
+          name: gmake test 5
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              gmake test TEST_FILES=t/5*
+      - run:
+          name: gmake test 6
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              gmake test TEST_FILES=t/6*
+      - run:
+          name: gmake test 7
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              gmake test TEST_FILES=t/7*
+      - run:
+          name: gmake test 8
+          command: $env:Path="C:\Program Files\MiKTeX\miktex\bin\x64\;C:\Strawberry\c\bin;C:\Strawberry\perl\site\bin;C:\Strawberry\perl\bin;$env:Path";
+              gmake test TEST_FILES=t/8*
+      - save_cache:
+          key: chocolatey-miktex-strawberry-v4
+          paths:
+            - C:\ProgramData\chocolatey
+            - C:\Program Files\MiKTeX
+            - C:\Strawberry

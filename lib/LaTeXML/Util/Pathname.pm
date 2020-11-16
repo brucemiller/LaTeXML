@@ -395,9 +395,6 @@ sub build_kpse_cache {
   $kpse_cache = {};    # At least we've tried.
   return unless $kpsewhich;
   # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
-  if ($ENV{"APPVEYOR"}) {
-    $kpse_toolchain = "--miktex-admin";
-  }
   my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\' $kpse_toolchain`; chomp($texmf);
   # These are directories which contain the tex related files we're interested in.
   # (but they're typically below where the ls-R indexes are!)

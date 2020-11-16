@@ -26,8 +26,8 @@ use FindBin;
 #     and post-uninstall stages of the build.
 #======================================================================
 
-our $OLD_LIBXML = grep { /OLD_LIBXML/ } @ARGV;
-our $NOMKTEXLSR = grep { /NOMKTEXLSR/ } @ARGV;
+our $OLD_LIBXML     = grep { /OLD_LIBXML/ } @ARGV;
+our $NOMKTEXLSR     = grep { /NOMKTEXLSR/ } @ARGV;
 our $KPSE_TOOLCHAIN = "";
 our ($KPSEV, $TEXMF);
 my ($texmfspec) = grep { /^TEXMF/ } @ARGV;
@@ -201,8 +201,6 @@ MakeGrammar
 #    embedded spaces.
 sub install_TeXStyles {
   if (!$TEXMF) {
-    if ($ENV{"APPVEYOR"}) {    # assume miktex admin on windows CI
-      $KPSE_TOOLCHAIN = "--miktex-admin"; }
     if (system("kpsewhich --version $KPSE_TOOLCHAIN") == 0) {    # can run kpsewhich?
       $TEXMF = `kpsewhich --expand-var='\$TEXMFLOCAL' $KPSE_TOOLCHAIN`;
       # Strip the quotes (they appear in windows, when spaces in pathnames(?))
