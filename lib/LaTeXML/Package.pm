@@ -689,7 +689,7 @@ sub StepCounter {
     if (my $nested = LookupValue("\\cl\@$ctr")) {
       foreach my $c ($nested->unlist) {
         ResetCounter(ToString($c)); } } }
-  DigestIf(T_CS("\\the$ctr"));
+  #  DigestIf(T_CS("\\the$ctr"));
   return; }
 
 # HOW can we retract this?
