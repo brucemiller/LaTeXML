@@ -26,8 +26,8 @@ use FindBin;
 #     and post-uninstall stages of the build.
 #======================================================================
 
-our $OLD_LIBXML = grep { /OLD_LIBXML/ } @ARGV;
-our $NOMKTEXLSR = grep { /NOMKTEXLSR/ } @ARGV;
+our $OLD_LIBXML     = grep { /OLD_LIBXML/ } @ARGV;
+our $NOMKTEXLSR     = grep { /NOMKTEXLSR/ } @ARGV;
 our $KPSE_TOOLCHAIN = "";
 our ($KPSEV, $TEXMF);
 my ($texmfspec) = grep { /^TEXMF/ } @ARGV;
@@ -44,7 +44,8 @@ install_TeXStyles();
 extra_Tests();
 
 WriteMakefile(NAME => 'LaTeXML',
-  AUTHOR           => 'Bruce Miller <bruce.miller@nist.gov>',
+  AUTHOR => ['Bruce Miller <bruce.miller@nist.gov>',
+    'Deyan Ginev <deyan.ginev@gmail.com>'],
   ABSTRACT         => "transforms TeX and LaTeX into XML/HTML/MathML",
   VERSION_FROM     => 'lib/LaTeXML.pm',
   MIN_PERL_VERSION => 5.010001,

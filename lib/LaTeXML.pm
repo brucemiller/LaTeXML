@@ -30,7 +30,7 @@ use LaTeXML::Util::ObjectDB;
 use LaTeXML::Post::Scan;
 use vars qw($VERSION);
 # This is the main version of LaTeXML being claimed.
-use version; our $VERSION = version->declare("0.8.4");
+use version; our $VERSION = version->declare("0.8.5");
 use LaTeXML::Version;
 # Derived, more informative version numbers
 our $FULLVERSION = "LaTeXML version $LaTeXML::VERSION"
