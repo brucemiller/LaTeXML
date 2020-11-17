@@ -559,10 +559,10 @@ sub make_bibcite {
           # HACK! Avoid empty () from situations where we've set the show (CITE_STYLE) too early
           # and don't actually have author-year information!
           my $n = $1;
-          if (($n == 1) && ($show =~ /^\s*year\s*phrase2/i) && !scalar(@{ $$datum{year} })
+          if (($n == 1) && ($show =~ /^\{\}year\{\}phrase2/i) && !scalar(@{ $$datum{year} })
             && (!$phrases[0] || (length($phrases[0]->textContent) <= 1))
             && (!$phrases[1] || (length($phrases[1]->textContent) <= 1))) {
-            $show =~ s/^\s*year\s*phrase2//i; }
+            $show =~ s/^\{\}year\{\}phrase2//i; }
           else {
             push(@stuff, $phrases[$n - 1]->childNodes) if $phrases[$n - 1]; } }
         elsif ($role eq 'year') {
@@ -907,4 +907,3 @@ sub copy_resources {
 
 # ================================================================================
 1;
-
