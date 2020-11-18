@@ -92,7 +92,9 @@ WriteMakefile(NAME => 'LaTeXML',
           repository => {
             type => 'git',
             url  => 'https://github.com/brucemiller/LaTeXML.git',
-            web  => 'https://github.com/brucemiller/LaTeXML' } } })
+            web  => 'https://github.com/brucemiller/LaTeXML' },
+         bugtracker => {
+             web => 'https://github.com/brucemiller/LaTeXML/issues' } } })
     : ()),
 );
 
