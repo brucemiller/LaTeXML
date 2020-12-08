@@ -1,0 +1,59 @@
+name: CI
+
+on: [push, pull_request]
+
+jobs:
+  ci:
+    runs-on: ubuntu-latest
+    container:
+      image: latexml/latexml-test-runtime:${{ matrix.perl }}_${{ matrix.tex }}
+      env:
+        CI: true
+      options: --entrypoint ""
+
+    name: Continuous Integration
+    strategy:
+      matrix:
+        include:
+          - perl: 5.28.0
+            tex: none
+          - perl: 5.26.2
+            tex: none
+          - perl: 5.24.4
+            tex: none
+          - perl: 5.20.3
+            tex: none
+          - perl: 5.14.4
+            tex: none
+          - perl: 5.28.0
+            tex: texlive-2018
+          - perl: 5.26.2
+            tex: texlive-2016
+          - perl: 5.22.4
+            tex: texlive-2015
+    
+    steps:
+      - uses: actions/checkout@v2
+      - name: Print Program Versions
+        shell: bash
+        run: |
+          source /usr/local/perlbrew/etc/bashrc
+          perl --version
+          cpanm --version
+          tex --version || true
+      - name: Install Dependencies
+        shell: bash
+        run: |
+          source /usr/local/perlbrew/etc/bashrc
+          cpanm -v --installdeps --notest .
+      - name: Run 'make'
+        shell: bash
+        run: |
+          source /usr/local/perlbrew/etc/bashrc
+          perl Makefile.PL
+          make
+      - name: Run 'make test'
+        shell: bash
+        run: |
+          source /usr/local/perlbrew/etc/bashrc
+          make test
