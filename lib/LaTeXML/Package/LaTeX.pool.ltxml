@@ -51,7 +51,9 @@ DefConstructor('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []',
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
     my $options = $whatsit->getArg(1);
-    LoadClass(ToString($whatsit->getArg(2)),
+    my $class   = ToString($whatsit->getArg(2));
+    $class =~ s/\s+//g;
+    LoadClass($class,
       options => [($options ? split(/\s*,\s*/, ToString($options)) : ())],
       after   => Tokens(T_CS('\AtBeginDocument'), T_CS('\warn@unusedclassoptions')));
     return; });
@@ -71,7 +73,8 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
     onlyPreamble('\documentstyle'); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    my $class   = ToString($whatsit->getArg(2));
+    my $class = ToString($whatsit->getArg(2));
+    $class =~ s/\s+//g;
     my $options = $whatsit->getArg(1);
     $options = [($options ? split(/\s*,\s*/, ToString($options)) : ())];
 # Watch out; In principle, compatibility mode wants a .sty, not a .cls!!!
@@ -792,9 +795,11 @@ DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
     my $options  = $whatsit->getArg(1);
     my $packages = $whatsit->getArg(2);
-    my @pkgs     = grep { $_ } grep { !/^\s*%/ } split(/\s*,\s*/, ToString($packages));
     $options = [($options ? split(/\s*,\s*/, (ToString($options))) : ())];
-    map { RequirePackage($_, options => $options) } @pkgs;
+    for my $pkg (split(',', ToString($packages))) {
+      $pkg =~ s/\s+//g;
+      next if !$pkg || $pkg =~ /^%/;
+      RequirePackage($pkg, options => $options); }
     return });
 
 DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
@@ -803,9 +808,11 @@ DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
     my $options  = $whatsit->getArg(1);
     my $packages = $whatsit->getArg(2);
-    my @pkgs     = grep { $_ } grep { !/^\s*%/ } split(/\s*,\s*/, ToString($packages));
     $options = [($options ? split(/\s*,\s*/, (ToString($options))) : ())];
-    map { RequirePackage($_, options => $options) } @pkgs;
+    for my $pkg (split(',', ToString($packages))) {
+      $pkg =~ s/\s+//g;
+      next if !$pkg || $pkg =~ /^%/;
+      RequirePackage($pkg, options => $options); }
     return });
 
 DefConstructor('\LoadClass OptionalSemiverbatim Semiverbatim []',
@@ -813,9 +820,10 @@ DefConstructor('\LoadClass OptionalSemiverbatim Semiverbatim []',
   beforeDigest => sub { onlyPreamble('\LoadClass'); },
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
     my $options = $whatsit->getArg(1);
-    my $class   = $whatsit->getArg(2);
+    my $class   = ToString($whatsit->getArg(2));
+    $class =~ s/\s+//g;
     $options = [($options ? split(/\s*,\s*/, (ToString($options))) : ())];
-    LoadClass(ToString($class), options => $options);
+    LoadClass($class, options => $options);
     return; });
 
 # Related internal macros for package definition
@@ -846,26 +854,32 @@ DefPrimitive('\DeclareOption{}{}', sub {
 
 DefPrimitive('\PassOptionsToPackage{}{}', sub {
     my ($stomach, $name, $options) = @_;
+    $name = ToString($name);
+    $name =~ s/\s+//g;
     PassOptions($name, 'sty', split(/\s*,\s*/, ToString(Expand($options)))); });
 
 DefPrimitive('\PassOptionsToClass{}{}', sub {
     my ($stomach, $name, $options) = @_;
+    $name = ToString($name);
+    $name =~ s/\s+//g;
     PassOptions($name, 'cls', split(/\s*,\s*/, ToString(Expand($options)))); });
 
 DefConstructor('\RequirePackageWithOptions Semiverbatim []',
   "<?latexml package='#1'?>",
   beforeDigest => sub { onlyPreamble('\RequirePackage'); },
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
-    my $package = $whatsit->getArg(1);
-    RequirePackage(ToString($package), withoptions => 1);
+    my $package = ToString($whatsit->getArg(1));
+    $package =~ s/\s+//g;
+    RequirePackage($package, withoptions => 1);
     return; });
 
 DefConstructor('\LoadClassWithOptions Semiverbatim []',
   "<?latexml class='#1'?>",
   beforeDigest => sub { onlyPreamble('\LoadClassWithOptions'); },
   afterDigest  => sub { my ($stomach, $whatsit) = @_;
-    my $class = $whatsit->getArg(1);
-    LoadClass(ToString($class), withoptions => 1);
+    my $class = ToString($whatsit->getArg(1));
+    $class =~ s/\s+//g;
+    LoadClass($class, withoptions => 1);
     return; });
 
 DefPrimitive('\@onefilewithoptions {} [][] {}', sub {
