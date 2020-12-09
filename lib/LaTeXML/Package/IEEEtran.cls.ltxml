@@ -377,8 +377,10 @@ Let('\iedlabeljustifyr', '\IEEEiedlabeljustifyr');
 Let('\QED',       '\IEEEQED');
 Let('\QEDclosed', '\IEEEQEDclosed');
 Let('\QEDopen',   '\IEEEQEDopen');
-Let('\proof',     '\IEEEproof');
-Let('\endproof',  '\endIEEEproof');
+DefConstructor('\qed',
+  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+Let('\proof',    '\IEEEproof');
+Let('\endproof', '\endIEEEproof');
 # V1.8 no longer support biography or biographynophoto
 Let('\biography',           '\IEEEbiography');
 Let('\biographynophoto',    '\IEEEbiographynophoto');
