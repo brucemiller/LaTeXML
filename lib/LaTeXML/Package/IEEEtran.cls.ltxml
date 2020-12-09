@@ -363,8 +363,17 @@ Let('\pubid',              '\IEEEpubid');
 Let('\pubidadjcol',        '\IEEEpubidadjcol');
 Let('\specialpapernotice', '\IEEEspecialpapernotice');
 # and environments
-DefMacro(T_CS('\keywords'),    '\@IEEEkeywords');
-DefMacro(T_CS('\endkeywords'), '\@endIEEEkeywords');
+DefMacro(T_CS('\begin{keywords}'), '\@IEEEkeywords');
+DefMacro(T_CS('\end{keywords}'),   '\@endIEEEkeywords');
+
+DefMacro('\keywords', sub {
+    my ($gullet) = @_;
+    ($gullet->ifNext(T_BEGIN)
+      ? (T_CS('\keywords@onearg'))
+      : T_CS('\@IEEEkeywords')); },
+  locked => 1);
+DefMacro('\keywords@onearg{}', '\@IEEEkeywords #1 \@endIEEEkeywords');
+
 # V1.8 no more support for legacy IED list commands
 Let('\labelindent',      '\IEEElabelindent');
 Let('\calcleftmargin',   '\IEEEcalcleftmargin');
