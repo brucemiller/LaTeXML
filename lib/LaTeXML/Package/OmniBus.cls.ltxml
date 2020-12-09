@@ -123,13 +123,14 @@ DefMacro('\doi{}',
     . '\else\lx@doi{#1}\fi');
 DefConstructor('\lx@doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>');
 
-for my $env (qw(conjecture proposition lemma corollary example definition)) {
+for my $env (qw(conjecture proposition lemma corollary example definition proof)) {
   my $beginenv = "\\begin{$env}";
   DefMacroI(T_CS($beginenv), undef, sub {
       RequirePackage('amsthm');
       return Tokenize("\\newtheorem{theorem}{Theorem}[section]
   \\newtheorem{conjecture}[theorem]{Conjecture}
   \\newtheorem{proposition}[theorem]{Proposition}
+  \\newtheorem{proof}[theorem]{Proof}
   \\newtheorem{lemma}[theorem]{Lemma}
   \\newtheorem{corollary}[theorem]{Corollary}
   \\newtheorem{example}[theorem]{Example}
