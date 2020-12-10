@@ -304,7 +304,10 @@ sub readFrom {
 
     # gobble spaces
     $gullet->skipSpaces;
-
+    if ($gullet->ifNext(T_BEGIN)) {    # Protect against redundant {} wrapping
+      $gullet->readToken;
+      $gullet->unread($gullet->readBalanced()->stripBraces);
+      $gullet->skipSpaces; }
     # Read a single keyword, get a delimiter and a set of keyword tokens
     my ($ktoks, $delim) = $self->readKeyWordFrom($gullet, $until);
 
@@ -316,7 +319,6 @@ sub readFrom {
 
     # turn the key tokens into a string and normalize
     my $key = ToString($ktoks); $key =~ s/\s//g;
-
     # if we have a non-empty key
     if ($key) {
 
@@ -492,7 +494,7 @@ sub setKeysExpansion {
   # reset all the internals (if applicable)
   push(@tokens,
     T_CS('\def'), T_CS('\XKV@fams'), T_BEGIN, T_END,
-    T_CS('\def'), T_CS('\XKV@na'), T_BEGIN, T_END) if $setInternals;
+    T_CS('\def'), T_CS('\XKV@na'),   T_BEGIN, T_END) if $setInternals;
 
   # and return the list of tokens
   return Tokens(@tokens); }
@@ -532,8 +534,8 @@ sub beDigested {
   # then re-create the current object
   my $new = LaTeXML::Core::KeyVals->new(
     $prefix, $keysets,
-    setAll => $setAll, setInternals => $setInternals,
-    skip   => $skip,   skipMissing  => $skipMissing, hookMissing => $hookMissing,
+    setAll       => $setAll, setInternals => $setInternals,
+    skip         => $skip,   skipMissing  => $skipMissing, hookMissing => $hookMissing,
     was_digested => 1,
     punct        => $punct, assign => $assign);
   $new->setTuples(@newtuples);
