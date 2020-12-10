@@ -3079,6 +3079,18 @@ DefMacro('\fnum@font@table',          '\fnum@font@float');
 DefMacro('\format@title@font@figure', '\format@title@font@float');
 DefMacro('\format@title@font@table',  '\format@title@font@float');
 
+# stubs for the latex float internals
+for my $float (qw(@float @dblfloat)) {
+  DefEnvironment('{' . $float . '}[]{}',
+    "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
+      . "#body"
+      . "</ltx:float>",
+    afterDigestBegin => sub {
+      DefMacroI('\@captype', undef, ToString($_[1]->getArg(2)));
+      return; },
+    afterDigest => sub {
+      RescueCaptionCounters(ToString(Expand(T_CS('\@captype'))), $_[1]);
+      return; }); }
 # Could perhaps parameterize further with a separator?
 DefMacro('\format@title@figure{}', '\lx@tag[][: ]{\lx@fnum@@{figure}}#1');
 DefMacro('\format@title@table{}',  '\lx@tag[][: ]{\lx@fnum@@{table}}#1');
