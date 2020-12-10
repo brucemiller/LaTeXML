@@ -168,13 +168,13 @@ sub unlist {
 # What about Kern, Glue, Penalty ...
 
 # stubs to avoid "shallow" Fatal errors on broken documents
-sub multiply { return Dimension(0); }
-sub subtract { return Dimension(0); }
-sub add      { return Dimension(0); }
-sub negate   { return Dimension(0); }
-sub divide   { return Dimension(0); }
-sub getX     { return Dimension(0); }
-sub getY     { return Dimension(0); }
+sub multiply { return LaTeXML::Common::Dimension::Dimension(0); }
+sub subtract { return LaTeXML::Common::Dimension::Dimension(0); }
+sub add      { return LaTeXML::Common::Dimension::Dimension(0); }
+sub negate   { return LaTeXML::Common::Dimension::Dimension(0); }
+sub divide   { return LaTeXML::Common::Dimension::Dimension(0); }
+sub getX     { return LaTeXML::Common::Dimension::Dimension(0); }
+sub getY     { return LaTeXML::Common::Dimension::Dimension(0); }
 sub ptValue  { return 0.0; }
 sub valueOf  { return 0.0; }
 #**********************************************************************
