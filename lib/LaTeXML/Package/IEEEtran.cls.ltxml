@@ -137,7 +137,8 @@ DefMacro('\IEEEdisplaynotcompsoctitleabstractindextext', '');
 DefMacro('\IEEEcompsoctitleabstractindextext',           '');
 Let('\IEEEpeerreviewmaketitle', '\maketitle');
 DefMacro('\IEEEoverridecommandlockouts', '');
-DefMacro('\overrideIEEEmargins',         '');
+# V1.7 and later no longer supports \overrideIEEEmargins
+DefMacro('\overrideIEEEmargins', '');
 
 DefMacro('\IEEEaftertitletext{}',     '');    # ?
 DefMacro('\IEEEspecialpapernotice{}', '');    # ?
@@ -150,10 +151,10 @@ DefMacro('\IEEEauthorblockA{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliati
 
 DefMacro(T_CS('\begin{IEEEkeywords}'), '\@IEEEkeywords');
 DefMacro(T_CS('\end{IEEEkeywords}'),   '\@endIEEEkeywords');
-Let('\@endIEEEkeywords', '\relax');           # stub
+Let('\@endIEEEkeywords', '\relax');                             # stub
 DefMacro('\@IEEEkeywords XUntil:\@endIEEEkeywords', '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\IEEEraisesectionheading{}',              '#1');
-DefMacro('\IEEEPARstart{}{}', '#1#2');        # Eventually, dropcap?
+DefMacro('\IEEEPARstart{}{}',                       '#1#2');    # Eventually, dropcap?
 
 DefMacro('\IEEEcompsocitemizethanks{}', '\thanks{#1}');
 DefMacro('\IEEEcompsocthanksitem[]',    '');
@@ -327,26 +328,73 @@ Let(T_CS('\appendices'), T_CS('\appendix'));
 
 $$LaTeXML::Package::Pool::BIBSTYLES{IEEEtran} = { citestyle => 'numbers', sort => 'true' };
 
-DefMacro('\IEEEsetlabelwidth{}', '\settowidth{\labelwidth}{#1}');
-DefMacro('\IEEEusemathlabelsep', '');
-DefMacro('\IEEEtriggercmd{}',    '');
+DefMacro('\IEEEsetlabelwidth{}',  '\settowidth{\labelwidth}{#1}');
+DefMacro('\IEEEusemathlabelsep',  '');
+DefMacro('\IEEEtriggercmd{}',     '');
+DefMacro('\IEEElabelindent',      '');
+DefMacro('\IEEEcalcleftmargin{}', '');
+DefMacro('\IEEEiedlabeljustifyc', '');
+DefMacro('\IEEEiedlabeljustifyl', '');
+DefMacro('\IEEEiedlabeljustifyr', '');
 
 DefEnvironment('{IEEEitemize}',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
   properties      => sub { beginItemize('itemize', '@item'); },
   beforeDigestEnd => sub { Digest('\par'); },
-  locked => 1, mode => 'text');
+  locked          => 1, mode => 'text');
 DefEnvironment('{IEEEenumerate}',
   "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
   properties      => sub { beginItemize('enumerate', 'enum'); },
   beforeDigestEnd => sub { Digest('\par'); },
-  locked => 1, mode => 'text');
+  locked          => 1, mode => 'text');
 DefEnvironment('{IEEEdescription}',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
   beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
   properties      => sub { beginItemize('description', '@desc'); },
   beforeDigestEnd => sub { Digest('\par'); },
   locked          => 1, mode => 'text');
+
+# V1.8a no more support for these legacy commands
+Let('\authorblockA',       '\IEEEauthorblockA');
+Let('\authorblockN',       '\IEEEauthorblockN');
+Let('\authorrefmark',      '\IEEEauthorrefmark');
+Let('\PARstart',           '\IEEEPARstart');
+Let('\pubid',              '\IEEEpubid');
+Let('\pubidadjcol',        '\IEEEpubidadjcol');
+Let('\specialpapernotice', '\IEEEspecialpapernotice');
+# and environments
+DefMacro(T_CS('\begin{keywords}'), '\@IEEEkeywords');
+DefMacro(T_CS('\end{keywords}'),   '\@endIEEEkeywords');
+
+DefMacro('\keywords', sub {
+    my ($gullet) = @_;
+    ($gullet->ifNext(T_BEGIN)
+      ? (T_CS('\keywords@onearg'))
+      : T_CS('\@IEEEkeywords')); },
+  locked => 1);
+DefMacro('\keywords@onearg{}', '\@IEEEkeywords #1 \@endIEEEkeywords');
+
+# V1.8 no more support for legacy IED list commands
+Let('\labelindent',      '\IEEElabelindent');
+Let('\calcleftmargin',   '\IEEEcalcleftmargin');
+Let('\setlabelwidth',    '\IEEEsetlabelwidth');
+Let('\usemathlabelsep',  '\IEEEusemathlabelsep');
+Let('\iedlabeljustifyc', '\IEEEiedlabeljustifyc');
+Let('\iedlabeljustifyl', '\IEEEiedlabeljustifyl');
+Let('\iedlabeljustifyr', '\IEEEiedlabeljustifyr');
+# V1.8 no more support for QED and proof stuff
+Let('\QED',       '\IEEEQED');
+Let('\QEDclosed', '\IEEEQEDclosed');
+Let('\QEDopen',   '\IEEEQEDopen');
+DefConstructor('\qed',
+  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+Let('\proof',    '\IEEEproof');
+Let('\endproof', '\endIEEEproof');
+# V1.8 no longer support biography or biographynophoto
+Let('\biography',           '\IEEEbiography');
+Let('\biographynophoto',    '\IEEEbiographynophoto');
+Let('\endbiography',        '\endIEEEbiography');
+Let('\endbiographynophoto', '\endIEEEbiographynophoto');
 
 #======================================================================
 
