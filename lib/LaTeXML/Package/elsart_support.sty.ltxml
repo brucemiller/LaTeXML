@@ -206,6 +206,10 @@ if (LookupValue('@seceqn')) {
 else {
   RawTeX('\newtheorem{thm}{Theorem}'); }
 
+# Section 7, https://www.elsevier.com/__data/assets/pdf_file/0008/56843/elsdoc-1.pdf
+Let(T_CS('\newdefinition'), T_CS('\newtheorem'));
+Let(T_CS('\newproof'),      T_CS('\newtheorem'));
+
 RawTeX(<<'EoTeX');
 \theoremstyle{plain}
 \newtheorem{cor}[thm]{Corollary}
