@@ -42,6 +42,7 @@ RequirePackage('epsf');
 # by random cls files by over 10 to 1, so we'll just load graphicx and hope for the best.
 # The alternative would be to write a version that sniffed the arguments...
 RequirePackage('graphicx');
+RequirePackage('aas_macros');
 
 # natbib is also often used, but reportedly clashes with cite.sty
 # We'll autoload natbib if it hasn't already been loaded, and if any of its obvious macros are used.
