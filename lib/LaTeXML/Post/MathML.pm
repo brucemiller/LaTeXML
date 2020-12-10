@@ -164,7 +164,7 @@ sub realize {
 # find the underlying role.
 my %EMBELLISHING_ROLE = (    # CONSTANT
   SUPERSCRIPTOP => 1, SUBSCRIPTOP => 1,
-  OVERACCENT    => 1, UNDERACCENT => 1, MODIFIER => 1, MODIFIEROP => 1);
+  OVERACCENT => 1, UNDERACCENT => 1, MODIFIER => 1, MODIFIEROP => 1);
 
 sub getOperatorRole {
   my ($node) = @_;
@@ -331,10 +331,10 @@ sub pmml_top {
   local $LaTeXML::MathML::FONT  = find_inherited_attribute($node, 'font');
   #  $LaTeXML::MathML::FONT = undef
   #    if $LaTeXML::MathML::FONT && !$mathvariants{$LaTeXML::MathML::FONT};    # verify sane font
-  local $LaTeXML::MathML::SIZE    = find_inherited_attribute($node, 'fontsize') || '100%';
-  local $LaTeXML::MathML::COLOR   = find_inherited_attribute($node, 'color');
-  local $LaTeXML::MathML::BGCOLOR = find_inherited_attribute($node, 'backgroundcolor');
-  local $LaTeXML::MathML::OPACITY = find_inherited_attribute($node, 'opacity');
+  local $LaTeXML::MathML::SIZE         = find_inherited_attribute($node, 'fontsize') || '100%';
+  local $LaTeXML::MathML::COLOR        = find_inherited_attribute($node, 'color');
+  local $LaTeXML::MathML::BGCOLOR      = find_inherited_attribute($node, 'backgroundcolor');
+  local $LaTeXML::MathML::OPACITY      = find_inherited_attribute($node, 'opacity');
   local $LaTeXML::MathML::DESIRED_SIZE = $LaTeXML::MathML::SIZE;
   my @result = map { pmml($_) } element_nodes($node);
   return (scalar(@result) > 1 ? ['m:mrow', {}, @result] : $result[0]); }
@@ -378,7 +378,7 @@ sub pmml {
   # Bind any other style information from the refering node or the current node
   # so that any tokens synthesized from strings recover that style.
   local $LaTeXML::MathML::DESIRED_SIZE = _getattr($refr, $node, 'fontsize') || $LaTeXML::MathML::DESIRED_SIZE;
-  local $LaTeXML::MathML::COLOR = _getattr($refr, $node, 'color') || $LaTeXML::MathML::COLOR;
+  local $LaTeXML::MathML::COLOR   = _getattr($refr, $node, 'color') || $LaTeXML::MathML::COLOR;
   local $LaTeXML::MathML::BGCOLOR = _getattr($refr, $node, 'backgroundcolor')
     || $LaTeXML::MathML::BGCOLOR;
   local $LaTeXML::MathML::OPACITY = _getattr($refr, $node, 'opacity') || $LaTeXML::MathML::OPACITY;
@@ -387,8 +387,8 @@ sub pmml {
   # Now possibly wrap the result in a row, enclose, etc, if needed
   my $e = _getattr($refr, $node, 'enclose');
   # these should COMBINE!
-  my $l = _getspace($refr, $node, 'lpadding');
-  my $r = _getspace($refr, $node, 'rpadding');
+  my $l  = _getspace($refr, $node, 'lpadding');
+  my $r  = _getspace($refr, $node, 'rpadding');
   my $cl = join(' ', grep { $_ } $refr && $refr->getAttribute('class'), $node->getAttribute('class'));
   # Wrap in an enclose, if there's an enclose attribute (Ugh!)
   $result = ['m:menclose', { notation => $e }, $result] if $e;
@@ -592,7 +592,7 @@ sub pmml_mayberesize {
   my $xoff   = $node->getAttribute('xoffset') || ($parent && $parent->getAttribute('xoffset'));
   my $yoff   = $node->getAttribute('yoffset') || ($parent && $parent->getAttribute('yoffset'));
   if ($width || $height || $depth || $xoff || $yoff) {
-    if ($$result[0] eq 'm:mpadded') { }
+    if    ($$result[0] eq 'm:mpadded') { }
     elsif ($$result[0] eq 'm:mrow') {
       $$result[0] = 'm:mpadded'; }
     else {
@@ -727,8 +727,8 @@ my %plane1map = (    # CONSTANT
 );
 
 my %plane1hack = (    # CONSTANT
-  script  => $plane1map{script},  'bold-script'  => $plane1map{script},
-  fraktur => $plane1map{fraktur}, 'bold-fraktur' => $plane1map{fraktur},
+  script          => $plane1map{script},  'bold-script'  => $plane1map{script},
+  fraktur         => $plane1map{fraktur}, 'bold-fraktur' => $plane1map{fraktur},
   'double-struck' => $plane1map{'double-struck'});
 
 my %symmetric_roles = (OPEN => 1, CLOSE => 1, MIDDLE => 1, VERTBAR => 1);
@@ -826,7 +826,7 @@ sub stylizeContent {
     elsif (!$variant)            { $variant = 'normal'; } }    # must say so explicitly.
 
   # Use class (css) to patchup some weak translations
-  if (!$font) { }
+  if    (!$font) { }
   elsif ($font =~ /caligraphic/) {
     # Note that this is unlikely to have effect when plane1 chars are used!
     $class = ($class ? $class . ' ' : '') . 'ltx_font_mathcaligraphic'; }
@@ -853,8 +853,8 @@ sub stylizeContent {
       $text    = join('', @c);
       $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef); } }
   # Other attributes that should be copied?
-  my $istoken = $tag =~ /^m:(?:mi|mo|mn)$/;                                               # mrow?
-  my $href    = $istoken && ($iselement ? $item->getAttribute('href') : $attr{href});
+  my $istoken = $tag =~ /^m:(?:mi|mo|mn)$/;    # mrow?
+  my $href    = $istoken && ($iselement ? $item->getAttribute('href')  : $attr{href});
   my $title   = $istoken && ($iselement ? $item->getAttribute('title') : $attr{title});
   return ($text,
     ($variant ? (mathvariant => $variant) : ()),
@@ -864,7 +864,7 @@ sub stylizeContent {
       : ()),
     ($color    ? (mathcolor      => $color)             : ()),
     ($bgcolor  ? (mathbackground => $bgcolor)           : ()),
-    ($opacity  ? (style          => "opacity:$opacity") : ()),                            # ???
+    ($opacity  ? (style          => "opacity:$opacity") : ()),    # ???
     ($stretchy ? (stretchy       => $stretchy)          : ()),
     ($class    ? (class          => $class)             : ()),
     ($href     ? (href           => $href)              : ()),
@@ -872,14 +872,14 @@ sub stylizeContent {
   ); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
-my %fences = (                                                                            # CONSTANT
-  '('  => 1, ')' => 1, '[' => 1, ']' => 1, '{' => 1, '}' => 1, "\x{201C}" => 1, "\x{201D}" => 1,
-  "\`" => 1, "'" => 1, "<" => 1, ">" => 1,
+my %fences = (                                                    # CONSTANT
+  '('        => 1, ')' => 1, '[' => 1, ']' => 1, '{' => 1, '}' => 1, "\x{201C}" => 1, "\x{201D}" => 1,
+  "\`"       => 1, "'" => 1, "<" => 1, ">" => 1,
   "\x{2329}" => 1, "\x{232A}" => 1, # angle brackets; NOT mathematical, but balance in case they show up.
-  "\x{27E8}" => 1, "\x{27E9}" => 1,                                      # angle brackets (preferred)
+  "\x{27E8}" => 1, "\x{27E9}" => 1,    # angle brackets (preferred)
   "\x{230A}" => 1, "\x{230B}" => 1, "\x{2308}" => 1, "\x{2309}" => 1);
 
-my %punctuation = (',' => 1, ';' => 1, "\x{2063}" => 1);                 # CONSTANT
+my %punctuation = (',' => 1, ';' => 1, "\x{2063}" => 1);    # CONSTANT
 
 # Generally, $item in the following ought to be a string.
 sub pmml_mi {
@@ -917,10 +917,10 @@ sub pmml_mo {
         ($ispunct && !$punctuation{$text} ? (separator => 'true') : ()),
         ($islargeop                       ? (largeop   => 'true') : ()),
         ($islargeop ? (symmetric => 'true') : ()),    # Not sure this is strictly correct...
-               # Note that lspace,rspace is the left & right space that replaces Op.Dictionary
-               # what we've recorded is _padding_, so we have to adjust the unknown OpDict entry!
-               # Just assume something between mediummathspace = 4/18em = 2.222pt
-               # and thickmathspace = 5/18em = 2.7777pt, so 2.5pt.
+            # Note that lspace,rspace is the left & right space that replaces Op.Dictionary
+            # what we've recorded is _padding_, so we have to adjust the unknown OpDict entry!
+            # Just assume something between mediummathspace = 4/18em = 2.222pt
+            # and thickmathspace = 5/18em = 2.7777pt, so 2.5pt.
         ($lpad ? (lspace => max(0, (2.5 + getXMHintSpacing($lpad))) . 'pt') : ()),
         ($rpad ? (rspace => max(0, (2.5 + getXMHintSpacing($rpad))) . 'pt') : ()),
         # If an operator has specifically located it's scripts,
@@ -1197,10 +1197,10 @@ sub cmml_internal {
       return cmml_decoratedSymbol($node); }
     else {
       my ($op, @args) = element_nodes($node);
-      if (!$op) {
+      my $rop = $op;
+      if (!$op || !($rop = realize($op))) {
         return ['m:merror', {}, ['m:mtext', {}, "Missing Operator"]]; }
       else {
-        my $rop = realize($op);
         return &{ lookupContent('Apply', $rop->getAttribute('role'), $rop->getAttribute('meaning')) }($op, @args); } } }
   elsif ($tag eq 'ltx:XMTok') {
     return &{ lookupContent('Token', $node->getAttribute('role'), $node->getAttribute('meaning')) }($node); }
@@ -1393,7 +1393,7 @@ DefMathML("Token:OPERATOR:?", \&pmml_mo, undef);
 DefMathML('Apply:?:?', sub {
     my ($op, @args) = @_;
     return ['m:mrow', {},
-      pmml($op), pmml_mo("\x{2061}"),             # FUNCTION APPLICATION
+      pmml($op), pmml_mo("\x{2061}"),    # FUNCTION APPLICATION
       map { pmml($_) } @args]; },
   sub {
     my ($op, @args) = @_;
@@ -1440,8 +1440,8 @@ DefMathML("Array:?:cases", undef, sub {
     foreach my $row (element_nodes($node)) {
       my @items = element_nodes($row);
       my $n     = scalar(@items);
-      if ($n == 0) { }     # empty row, just skip
-      elsif ($n == 1) {    # No condition? Perhaps it means "otherwise" ?
+      if    ($n == 0) { }    # empty row, just skip
+      elsif ($n == 1) {      # No condition? Perhaps it means "otherwise" ?
         push(@otherwises, $items[0]); }
       elsif ($items[1]->textContent eq 'otherwise') {    # more robust test?
         push(@otherwises, $items[0]); }
@@ -1806,7 +1806,7 @@ sub do_cfrac {
     if ((($denomop->getAttribute('role') || '') eq 'ADDOP')    # Is it a sum or difference?
       || (($denomop->textContent || '') eq "\x{22EF}")) {      # OR a \cdots
       my $last = pop(@denomargs);                              # Check last operand in denominator.
-           # this is the current contribution to the cfrac (if we match the last term)
+          # this is the current contribution to the cfrac (if we match the last term)
       my $curr = ['m:mfrac', {}, pmml_smaller($numer),
         ['m:mrow', {},
           (@denomargs > 1 ? pmml_infix($denomop, @denomargs) : pmml_smaller($denomargs[0])),
