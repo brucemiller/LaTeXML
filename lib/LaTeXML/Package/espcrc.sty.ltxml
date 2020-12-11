@@ -1,0 +1,31 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | espcrc2.sty                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Can handle both espcrc1 and espcrc2
+# Source: https://arxiv.org/macros/espcrc2.sty
+
+DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\address[]{}',     '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
+DefMacro('\addressmark',     Tokens());
+DefMacro('\addresstext{}{}', '#2');
+DefMacro('\filedate',        '24 November 1993');
+DefMacro('\fileversion',     'v2.6');
+NewCounter('address');
+DefMacro('\theaddress', '\alph{address}');
+
+#======================================================================
+1;
