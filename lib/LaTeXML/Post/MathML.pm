@@ -985,7 +985,8 @@ sub pmml_script_mid_layout {
     return $base; }
   else {
     if (scalar(@$midscripts) > 1) {
-      Error("unexpected", 'multiple-mid-level-scripts', "Multiple mid-level (limit) scripts; extras are DROPPED!", $base,
+      Error("unexpected", 'multiple-mid-level-scripts', undef,
+        "Multiple mid-level (limit) scripts; extras are DROPPED!", "base: " . $base->toString(),
         map { @$_ } @$midscripts); }
     { local $LaTeXML::MathML::NOMOVABLELIMITS = 1;
       ##### TRY this to block an extra mstyle
