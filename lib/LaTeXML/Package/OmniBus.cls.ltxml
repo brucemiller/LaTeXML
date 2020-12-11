@@ -107,10 +107,15 @@ DefMacro('\lastpage{}',       Tokens());
 DefMacro('\runauthor{}',      Tokens());
 DefMacro('\runtitle{}',       Tokens());
 DefMacro('\corref{}',         Tokens());
+DefMacro('\listofauthors{}',  Tokens());
+DefMacro('\indexauthor{}',    Tokens());
 DefMacro('\preface',          Tokens());
 DefMacro('\thankstext',       Tokens());
-Let(T_CS('\smonth'), T_CS('\month'));
-Let(T_CS('\syear'),  T_CS('\year'));
+DefMacro('\resumen{}',        '\@add@frontmatter{ltx:abstract}{#1}');
+DefMacro('\ion{}{}',          '{#1 \textsc{#2}}');
+Let(T_CS('\fulladdresses'), T_CS('\address'));
+Let(T_CS('\smonth'),        T_CS('\month'));
+Let(T_CS('\syear'),         T_CS('\year'));
 
 # Comes as both macro with arg, and environment! w/ or w/o "s"!
 DefMacro('\keyword{}',  '\@add@frontmatter{ltx:keywords}{#1}');
