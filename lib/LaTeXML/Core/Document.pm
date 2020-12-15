@@ -1815,7 +1815,6 @@ sub wrapNodes {
     if ($self->isOpen($n)) {
       $leave_open = 1;
       last; } }
-  print STDERR "WRAPPING with $qname, but keeping upen!\n" if $leave_open;
   my $model  = $$self{model};
   my $parent = $nodes[0]->parentNode;
   my ($ns, $tag) = $model->decodeQName($qname);
