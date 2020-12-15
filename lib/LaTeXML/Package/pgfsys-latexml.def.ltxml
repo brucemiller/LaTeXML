@@ -144,15 +144,42 @@ DefParameterType('SVGMoveableBox', sub {
     $box; });
 
 # Try to avoid errors inserting random boxes (esp. ltx:text)(Is this safe?)
-Tag('svg:switch', autoOpen => 1, autoClose => 1);    # ?
+Tag('svg:switch', autoOpen => 1, autoClose => 1,
+  afterClose => \&collapseSVGSwitch);    # ?
+
+# Remove empty <svg:switch><svg:foreignObject> or those that contain only <p/>
+# Possibly could incorporate the collapse when it contains only svg elements?
+sub collapseSVGSwitch {
+  my ($doc, $node) = @_;
+  my ($fo,  @rest) = element_nodes($node);
+  return if !$fo || ($doc->getNodeQName($fo) ne 'svg:foreignObject')
+    || scalar(@rest);    # Expect single svg:foreignObject
+  my @fo_c = element_nodes($fo);
+  if (scalar(@fo_c) == 0) {    # Empty?
+    $doc->removeNode($node); }
+  # Else, single <p> element ?
+  elsif ((scalar(@fo_c) == 1) && ($doc->getNodeQName($fo_c[0]) eq 'ltx:p')) {
+    my @p_c = element_nodes($fo_c[0]);
+    if (scalar(@p_c) == 0) {    # or Empty <p/>?
+      $doc->removeNode($node); }
+    # Else, single ltx:picture ?
+    elsif ((scalar(@p_c) == 1) && ($doc->getNodeQName($p_c[0]) eq 'ltx:picture')) {
+      my @pic_c = element_nodes($p_c[0]);
+      # With single svg:svg ?
+      if ((scalar(@pic_c) == 1) && ($doc->getNodeQName($pic_c[0]) eq 'svg:svg')) {
+        $doc->replaceNode($node, element_nodes($pic_c[0]));
+  } } }
+  return; }
+
 Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
   afterClose => sub {
     my ($document, $node, $whatsit) = @_;
     # Make sure we get a size, in case autoOpen'd
     if ($whatsit) {
       my ($w, $h, $d) = $whatsit->getSize;
-      $node->setAttribute(width  => $w->toAttribute)          unless $node->hasAttribute('width');
-      $node->setAttribute(height => $h->add($d)->toAttribute) unless $node->hasAttribute('height'); } });
+      $node->setAttribute(width    => $w->toAttribute)          unless $node->hasAttribute('width');
+      $node->setAttribute(height   => $h->add($d)->toAttribute) unless $node->hasAttribute('height');
+      $node->setAttribute(overflow => 'visible'); } });
 
 # Check whether a svg:foreignObject is open,
 # but don't check beyond an svg:svg node, in case we're nested.
@@ -285,19 +312,7 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
       if ($n->isSameNode($fo)) {
         $doc->closeElement('svg:foreignObject');
         $doc->closeElement('svg:switch');
-        $doc->closeElement('svg:g');
-        # Check the children of the inserted ltx:p
-        # We should at least try to denest svg ?
-        # If svg:switch/svg:foreignObject/ltx:p/ltx:picture/svg:svg/svg:g
-        # should be replaced by just the final svg:g !!! (?)
-        my @ch = element_nodes($p);
-        if ((scalar(@ch) == 1) && ($doc->getNodeQName($ch[0]) eq 'ltx:picture')) {
-          my @gch = element_nodes($ch[0]);
-          if ((scalar(@gch) == 1) && ($doc->getNodeQName($gch[0]) eq 'svg:svg')) {
-            my ($g) = element_nodes($gch[0]);
-            $doc->replaceNode($sw, $g);
-    } } } }
-    # Could conceivably be simplifying ltx:text ???
+        $doc->closeElement('svg:g'); } }
   },
   reversion => sub {
     my $box = $_[0]->getProperty('thebox');
@@ -480,7 +495,7 @@ DefConstructor('\lxSVG@begingroup@ RequiredKeyVals', sub {
     # Special case check: if we are in a latexml context, move up to parent svg:g
     if ($doc->getNodeQName($this) =~ /^ltx:/
       && (my $g_ancestor = $doc->findnode("ancestor::svg:g[position()=1]", $this))) {
-      $doc->setNode($g_ancestor); }
+      $doc->closeToNode($g_ancestor); }
     $doc->openElement('svg:g', $kv->getHash); },
   reversion => '', sizer => 0);
 
