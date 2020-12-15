@@ -110,7 +110,7 @@ DefConstructor('\lxSVG@insertpicture{}',
     my $miny   = LookupValue('\pgf@picminy')->subtract($margin);
     my $width  = LookupValue('\pgf@picmaxx')->add($margin2);
     my $height = LookupValue('\pgf@picmaxy')->add($margin2);
-    my $w      = max($width->pxValue, 1);
+    my $w      = max($width->pxValue,  1);
     my $h      = max($height->pxValue, 1);
     # Note viewbox is minx, miny, width, height (NOT maxx,maxy!)
     $whatsit->setProperty(minx      => $minx->pxValue);
@@ -260,7 +260,7 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
     # Fishing for the correct y position (maybe w/o the depth?)
     #    my $y = $h->pxValue;   # Seemingly should NOT have ->add($d)
     my $y = $h->add(($font ? $fd : $d))->pxValue;    # Seemingly should NOT have ->add($d)
-         # But if the box's height has been set to 0, still need adjustment; Use font?
+        # But if the box's height has been set to 0, still need adjustment; Use font?
     $y = $fh->add($fd)->pxValue if !$y && $font;    # Seemingly SHOULD have ->add($fd)
     $doc->openElement('svg:g',
       transform => 'matrix(1 0 0 -1 0 ' . $y . ')',
@@ -448,7 +448,7 @@ DefConstructor('\lxSVG@discardpath@clipped{}',
     . '<svg:path d="#1" />'
     . '</svg:clipPath>'
     . '<svg:g clip-path="url(##pgfcp#obj)">',
-  reversion  => '', sizer => 0,
+  reversion => '', sizer => 0,
   properties => { obj => sub { SVGNextObject(); } });
 
 #=====================================================================#
@@ -482,15 +482,8 @@ DefConstructor('\lxSVG@begingroup@ RequiredKeyVals', sub {
     my $orig_this_name = $doc->getNodeQName($this);
     # Special case check: if we are in a latexml context, the parent svg:g is acceptable
     if ($orig_this_name =~ /^ltx:/ && (my $g_ancestor = $doc->findnode("ancestor::svg:g", $this))) {
-      # Sometimes even when we have a parent g, there is an attribute conflict
-      #    and we need to open a new one. AND make it the current insertion point OR?!
-      my @needs_wrap = grep { $g_ancestor->hasAttribute($_) } @keys;
-      if (@needs_wrap) {    # incompatible, wrap with new g
-        $this = $doc->wrapNodes('svg:g', $g_ancestor->lastChild); }
-      else {                # compatible, reuse
-        $this = $g_ancestor; } }
-    else {                  # all other cases, just open a g.
-                            # TODO: Redundant g's get made, we can merge them on afterClose?
+      $this = $doc->wrapNodes('svg:g', $g_ancestor->lastChild); }    # note: this svg:g stays OPEN!
+    else {                                                           # all other cases, just open a g.
       $this = $doc->openElement('svg:g'); }
     # We have the _correct_ svg:g here, let's assign the attributes
     foreach my $key (@keys) {
@@ -502,6 +495,81 @@ DefConstructor('\lxSVG@endgroup@',
 ###  '</svg:g>',
   sub { $_[0]->maybeCloseElement('svg:g'); },
   reversion => '', sizer => 0);
+
+# Collapse redundant svg:g nodes that have only certain simple attributes
+Tag('svg:g', afterClose => \&collapseSVGGroup);
+my %collapsible_group_attributes = map { ($_ => 1); } qw(fill stroke color);
+
+# Collapse/remove/unwrap unneeded svg:g's to reduce depth of tree
+sub collapseSVGGroup {
+  my ($document, $node) = @_;
+  my ($nempty, $nredundant, $nmerged, $npopped, $npushed) = (0, 0, 0, 0, 0);
+  # Record the attributes on $node, for later use.
+  my %nodeattr = ();
+  foreach my $attr ($node->attributes) {
+    my $key = $attr->getName;
+    $nodeattr{$key} = $attr->getValue if ($key !~ /^_/); }
+  my @children = element_nodes($node);
+  # Remove empty svg:g children
+  foreach my $c (@children) {
+    if (($document->getNodeQName($c) eq 'svg:g') && !scalar(element_nodes($c))) {
+      $nempty++;
+      $document->removeNode($c); } }
+  @children = element_nodes($node) if $nempty;
+  # Move ahead, all leading children whose svg:g attributes completely mask $node's attributes.
+  # Could do same moving trailing children to back
+  my $c;
+  while (scalar(@children) && ($document->getNodeQName($c = $children[0]) eq 'svg:g')) {
+    my $nmasked = 0;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key !~ /^_/) && $collapsible_group_attributes{$key} && defined $nodeattr{$key}) {
+        $nmasked++; } }
+    last unless $nmasked == scalar(keys %nodeattr);              # child completely masks attr of node
+    $node->parentNode->insertBefore(shift(@children), $node);    # move it outside!
+    $npopped++; }
+  # Same story for trailing children, but move behind
+  while (scalar(@children) && ($document->getNodeQName($c = $children[-1]) eq 'svg:g')) {
+    my $nmasked = 0;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key !~ /^_/) && $collapsible_group_attributes{$key} && defined $nodeattr{$key}) {
+        $nmasked++; } }
+    last unless $nmasked == scalar(keys %nodeattr);              # child completely masks attr of node
+    $node->parentNode->insertAfter(pop(@children), $node);
+    $npushed++; }
+  # Now remove any redundant svg:g's (same attributes & values) [some left after above]
+  foreach my $c (@children) {
+    if ($c && ($document->getNodeQName($c) eq 'svg:g')) {        # for every nested svg:g
+      my $issame = 1;
+      foreach my $attr ($c->attributes) {
+        my $key = $attr->getName;
+        if (($key !~ /^_/) && ($attr->getValue ne ($nodeattr{$key} || ''))) {
+          $issame = 0; } }
+      if ($issame) {                                             # child is completely redundant.
+        $document->unwrapNodes($c);
+        $nredundant++; } } }
+  @children = element_nodes($node) if $nredundant;
+  # Could check if $node is empty now?
+  # Then if only one left, and it's attributes can be migrated to $node, unwrap it
+  if ((scalar(@children) == 1) && ($document->getNodeQName($c = $children[0]) eq 'svg:g')) {
+    my %av        = ();
+    my $mergeable = 1;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key =~ /^_/) || $collapsible_group_attributes{$key}) {
+        $av{$key} = $attr->getValue; }
+      else {
+        $mergeable = 0; } }
+    if ($mergeable) {
+      foreach my $key (sort keys %av) {
+        $nodeattr{$key} = $av{$key};
+        $node->setAttribute($key => $av{$key}); }
+      $nmerged++;
+      $document->unwrapNodes($c); } }
+###  Debug("COLLAPSE empty=$nempty, redundant=$nredundant, merged=$nmerged, popped=$npopped, pushed=$npushed")
+###    if ($nempty || $nredundant || $nmerged || $npopped || $npushed);
+  return; }
 
 #=====================================================================
 # Implementation
@@ -563,7 +631,7 @@ DefMacro('\pgfsys@color@rgb{}{}{}',
 DefMacro('\lxSVG@RGB{}{}{}',    sub { Explode(Color('rgb',  $_[1], $_[2], $_[3])->toHex); });
 DefMacro('\lxSVG@CMYK{}{}{}{}', sub { Explode(Color('cmyk', $_[1], $_[2], $_[3], $_[4])->toHex); });
 DefMacro('\lxSVG@CMY{}{}{}',    sub { Explode(Color('cmy',  $_[1], $_[2], $_[3])->toHex); });
-DefMacro('\lxSVG@GRAY{}', sub { Explode(Color('gray', $_[1])->toHex); });
+DefMacro('\lxSVG@GRAY{}',       sub { Explode(Color('gray', $_[1])->toHex); });
 
 DefMacro('\pgfsys@color@rgb@stroke{}{}{}',
   '\lxSVG@color@rgb@stroke{#1}{#2}{#3}\lxSVG@begingroup{stroke=\lxSVG@RGB{#1}{#2}{#3}}');
@@ -583,7 +651,7 @@ DefMacro('\pgfsys@color@gray@fill{}',
   '\lxSVG@color@gray@fill{#1}\lxSVG@begingroup{fill=\lxSVG@GRAY{#1}}');
 
 DefConstructor('\lxSVG@color@rgb@stroke{}{}{}', '', alias => '\pgfsys@color@rgb@stroke', sizer => 0);
-DefConstructor('\lxSVG@color@rgb@fill{}{}{}', '', alias => '\pgfsys@color@rgb@fill', sizer => 0);
+DefConstructor('\lxSVG@color@rgb@fill{}{}{}',   '', alias => '\pgfsys@color@rgb@fill', sizer => 0);
 DefConstructor('\lxSVG@color@cmyk@stroke{}{}{}{}', '', alias => '\pgfsys@color@cmyk@stroke', sizer => 0);
 DefConstructor('\lxSVG@color@cmyk@fill{}{}{}{}', '', alias => '\pgfsys@color@cmyk@fill', sizer => 0);
 DefConstructor('\lxSVG@color@cmy@stroke{}{}{}', '', alias => '\pgfsys@color@cmy@stroke', sizer => 0);
@@ -733,7 +801,7 @@ DefMacro('\lxSVG@sh@create', sub {
       T_BEGIN, T_CS('\pgf@sys@shading@end@pos'), T_END,
       T_BEGIN, T_CS('\pgf@sys@shading@end@rgb'), T_END,
       T_BEGIN, T_CS('\pgf@sys@shading@end@rgb'), T_END,
-      T_END, T_BEGIN, T_END); });
+      T_END,   T_BEGIN, T_END); });
 
 DefPrimitive('\lxSVG@sh@color{Float}{Float}{Float}', sub {
     AssignValue(pgf_sh_color => Color('rgb', map { $_->valueOf } @_[1 .. $#_]));
@@ -988,8 +1056,10 @@ DefConstructor('\lxSVG@halign BoxSpecification',
     my ($stomach, $whatsit) = @_;
     my $gullet = $stomach->getGullet;
     my $t      = $gullet->readNonSpace;
-    Error('expected', '\bgroup', $stomach, "Missing \\halign box") unless Equals($t, T_BEGIN);
-    print STDERR "\nHALIGN IN PGF!\n";
+    if (!Equals($t, T_BEGIN)) {
+      Error('expected', '\bgroup', $stomach, "Missing \\halign box"); }
+    else {
+      Warn('unexpected', 'halign', $stomach, "HALIGN IN PGF!"); }
     # Read the template up till something equivalent to \cr
     my @template = ();
     # Only expand certain things; See TeX book p.238
@@ -1031,7 +1101,6 @@ DefConstructor('\lxSVG@halign BoxSpecification',
     my $template = LaTeXML::Core::Alignment::Template->new((@nonreps ?
           (columns => [@nonreps], repeated => [@cols])
         : (columns => [@cols])));
-    #  print STDERR "Template = ".Stringify(Tokens(@template))."\n => ".$template->show."\n";
     # Now read & digest the body.
     # Note that the body MUST end with a \cr, and that we've made Special Arrangments
     # with \alignment@cr to recognize the end of the \halign
