@@ -476,19 +476,12 @@ DefMacro('\lxSVG@endgroups', sub {
 
 DefConstructor('\lxSVG@begingroup@ RequiredKeyVals', sub {
     my ($doc, $kv) = @_;
-    my $g_attrs        = $kv->getKeyVals;
-    my @keys           = keys %$g_attrs;
-    my $this           = $doc->getElement;
-    my $orig_this_name = $doc->getNodeQName($this);
-    # Special case check: if we are in a latexml context, the parent svg:g is acceptable
-    if ($orig_this_name =~ /^ltx:/ && (my $g_ancestor = $doc->findnode("ancestor::svg:g", $this))) {
-      $this = $doc->wrapNodes('svg:g', $g_ancestor->lastChild); }    # note: this svg:g stays OPEN!
-    else {                                                           # all other cases, just open a g.
-      $this = $doc->openElement('svg:g'); }
-    # We have the _correct_ svg:g here, let's assign the attributes
-    foreach my $key (@keys) {
-      my $value = $kv->getValue($key);
-      $doc->setAttribute($this, $key, $value); } },
+    my $this = $doc->getElement;
+    # Special case check: if we are in a latexml context, move up to parent svg:g
+    if ($doc->getNodeQName($this) =~ /^ltx:/
+      && (my $g_ancestor = $doc->findnode("ancestor::svg:g[position()=1]", $this))) {
+      $doc->setNode($g_ancestor); }
+    $doc->openElement('svg:g', $kv->getHash); },
   reversion => '', sizer => 0);
 
 DefConstructor('\lxSVG@endgroup@',
