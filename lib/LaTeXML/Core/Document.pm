@@ -851,12 +851,12 @@ sub closeToNode {
     $n        = $n->parentNode; }
   if ($t == XML_DOCUMENT_NODE) {    # Didn't find $node at all!!
     Error('malformed', $model->getNodeQName($node), $self,
-      "Attempt to close " . Stringify($node) . ", which isn't open",
+      "Attempt to close to " . Stringify($node) . ", which isn't open",
       "Currently in " . $self->getInsertionContext()) unless $ifopen;
     return; }
   else {                            # Found node.
     Error('malformed', $model->getNodeQName($node), $self,
-      "Closing " . Stringify($node) . " whose open descendents do not auto-close",
+      "Closing to " . Stringify($node) . " whose open descendents do not auto-close",
       "Descendents are " . join(', ', map { Stringify($_) } @cant_close))
       if @cant_close;               # But found has intervening non-auto-closeable nodes!!
     $self->closeNode_internal($lastopen) if $lastopen; }
