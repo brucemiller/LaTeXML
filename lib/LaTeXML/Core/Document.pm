@@ -1805,9 +1805,17 @@ sub appendClone_aux {
 # [this makes most sense if @nodes are a sequence of siblings]
 # Returns undef if $qname isn't allowed in the parent, or if @nodes aren't allowed in $qname,
 # otherwise, returns the newly created $qname.
+# This executes ->afterClose, only if one of the wrapped nodes is the current node.
 sub wrapNodes {
   my ($self, $qname, @nodes) = @_;
   return unless @nodes;
+  my $leave_open = 0;
+  # Check if any of @nodes, or any of it's children, are the current node, and thus still "open"
+  foreach my $n (@nodes) {
+    if ($self->isOpen($n)) {
+      $leave_open = 1;
+      last; } }
+  print STDERR "WRAPPING with $qname, but keeping upen!\n" if $leave_open;
   my $model  = $$self{model};
   my $parent = $nodes[0]->parentNode;
   my ($ns, $tag) = $model->decodeQName($qname);
@@ -1821,8 +1829,20 @@ sub wrapNodes {
     $self->setNodeBox($new, $box); }
   foreach my $node (@nodes) {
     $new->appendChild($node); }
-  $self->afterClose($new);
+  $self->afterClose($new) unless $leave_open;
   return $new; }
+
+# Check if $node, or any of it's children, are the current node, and thus still "open"
+# Maybe a better way, such as explicitly marking _open ?
+sub isOpen {
+  my ($self, $node) = @_;
+  my $current = $$self{node};
+  if ($node->isSameNode($current)) {
+    return 1; }
+  else {
+    foreach my $n ($node->childNodes) {
+      return 1 if $self->isOpen($n); }
+    return 0; } }
 
 # Unwrap the children of $node, by replacing $node by its children.
 sub unwrapNodes {
