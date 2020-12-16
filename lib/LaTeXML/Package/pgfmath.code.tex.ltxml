@@ -70,14 +70,15 @@ sub pgfmathfactorial {
 #   <flag>Y<mantissa>e<exponent>] !!!
 # with flag for signs, nans, etc.
 # For the moment: fixed precision!
+# NOTE: Since this is for use in macros, it returns Tokens which will set \pgfmathresult,
+# but doesn't directly set it itself.
 sub pgfmathresult {
   my ($value) = @_;
   $value = sprintf("%06f", $value);
   #print STDERR "ASSIGNING result as $value\n";
   #  my @v = ExplodeText($value);
   #print STDERR " that is ".join(' ',map { Stringify($_) } @v)."\n";
-  DefMacroI(T_CS('\pgfmathresult'), undef, Tokens(ExplodeText($value)));
-  return; }
+  return Tokens(T_CS('\def'), T_CS('\pgfmathresult'), T_BEGIN, ExplodeText($value), T_END); }
 
 DefMacro('\@@@show@mathresult{}', sub {
     my ($gulet, $result) = @_;
@@ -130,29 +131,29 @@ DefParameterType('pgfNumbers', sub {
       return [$token->getString]; } });
 
 DefMacro('\pgfmathpi@', sub {
-    pgfmathresult($PI); return; });
+    return pgfmathresult($PI); });
 DefMacro('\pgfmathe@', sub {
-    pgfmathresult($E); return; });
+    return pgfmathresult($E); });
 DefMacro('\pgfmathadd@ pgfNumber pgfNumber', sub {
-    pgfmathresult($_[1] + $_[2]); return });
+    return pgfmathresult($_[1] + $_[2]); });
 DefMacro('\pgfmathsubtract@ pgfNumber pgfNumber', sub {
-    pgfmathresult($_[1] - $_[2]); return });
+    return pgfmathresult($_[1] - $_[2]); });
 DefMacro('\pgfmathneg@ pgfNumber', sub {
-    pgfmathresult(-$_[1]); return });
+    return pgfmathresult(-$_[1]); });
 DefMacro('\pgfmathmultiply@ pgfNumber pgfNumber', sub {
-    pgfmathresult($_[1] * $_[2]); return });
+    return pgfmathresult($_[1] * $_[2]); });
 DefMacro('\pgfmathdivide@ pgfNumber pgfNumber', sub {
-    pgfmathresult($_[1] / pgfmath_divisor($_[2])); return });
+    return pgfmathresult($_[1] / pgfmath_divisor($_[2])); });
 DefMacro('\pgfmathpow@ pgfNumber pgfNumber', sub {
-    pgfmathresult($_[1]**$_[2]); return });
+    return pgfmathresult($_[1]**$_[2]); });
 DefMacro('\pgfmathabs@ pgfNumber', sub {
-    pgfmathresult(abs($_[1])); return });
+    return pgfmathresult(abs($_[1])); });
 DefMacro('\pgfmathround@ pgfNumber', sub {
-    pgfmathresult(round($_[1])); return });
+    return pgfmathresult(round($_[1])); });
 DefMacro('\pgfmathfloor@ pgfNumber', sub {
-    pgfmathresult(floor($_[1])); return });
+    return pgfmathresult(floor($_[1])); });
 DefMacro('\pgfmathceil@ pgfNumber', sub {
-    pgfmathresult(ceil($_[1])); return });
+    return pgfmathresult(ceil($_[1])); });
 #DefMacro('\pgfmathgcd@ pgfNumber pgfNumber', sub {
 
 # DefMacro('\pgfmathisprime@ pgfNumber pgfNumber', sub {
@@ -169,11 +170,11 @@ DefMacro('\pgfmathmin@ pgfNumbers', sub {
     my @args = @$args;
     return pgfmathresult(min(@args)); });
 DefMacro('\pgfmathsin@ pgfNumber', sub {
-    pgfmathresult(sin(pgfmathargradians($_[1]))); return });
+    return pgfmathresult(sin(pgfmathargradians($_[1]))); });
 DefMacro('\pgfmathcos@ pgfNumber', sub {
-    pgfmathresult(cos(pgfmathargradians($_[1]))); return });
+    return pgfmathresult(cos(pgfmathargradians($_[1]))); });
 DefMacro('\pgfmathtan@ pgfNumber', sub {
-    pgfmathresult(tan(pgfmathargradians($_[1]))); return });
+    return pgfmathresult(tan(pgfmathargradians($_[1]))); });
 # One mod is truncated (can be neg) other is floored, the latter should be capitalized?
 # Apparently mod towards 0
 sub pgfmath_mod_trunc {
@@ -196,39 +197,39 @@ DefMacro('\pgfmathmod@ pgfNumber pgfNumber', sub {
     my ($gullet, $arg1, $arg2) = @_;
     return pgfmathresult(pgfmath_mod_floor($arg1, $arg2)); });
 DefMacro('\pgfmathrad@ pgfNumber', sub {
-    pgfmathresult(deg2rad($_[1])); return });
+    return pgfmathresult(deg2rad($_[1])); });
 DefMacro('\pgfmathdeg@ pgfNumber', sub {
-    pgfmathresult(rad2deg($_[1])); return });
+    return pgfmathresult(rad2deg($_[1])); });
 DefMacro('\pgfmathatan@ pgfNumber', sub {
-    pgfmathresult(atan($_[1])); return });
+    return pgfmathresult(atan($_[1])); });
 DefMacro('\pgfmathatantwo@ pgfNumber', sub {
-    pgfmathresult(atan2($_[1], $_[2])); return });
+    return pgfmathresult(atan2($_[1], $_[2])); });
 DefMacro('\pgfmathasin@ pgfNumber', sub {
-    pgfmathresult(asin($_[1])); return });
+    return pgfmathresult(asin($_[1])); });
 DefMacro('\pgfmathacos@ pgfNumber', sub {
-    pgfmathresult(acos($_[1])); return });
+    return pgfmathresult(acos($_[1])); });
 DefMacro('\pgfmathcot@ pgfNumber', sub {
-    pgfmathresult(cot(pgfmathargradians($_[1]))); return });
+    return pgfmathresult(cot(pgfmathargradians($_[1]))); });
 DefMacro('\pgfmathsec@ pgfNumber', sub {
-    pgfmathresult(sec(pgfmathargradians($_[1]))); return });
+    return pgfmathresult(sec(pgfmathargradians($_[1]))); });
 DefMacro('\pgfmathcosec@ pgfNumber', sub {
-    pgfmathresult(cosec(pgfmathargradians($_[1]))); return });
+    return pgfmathresult(cosec(pgfmathargradians($_[1]))); });
 DefMacro('\pgfmathexp@ pgfNumber', sub {
-    pgfmathresult(exp($_[1])); return });
+    return pgfmathresult(exp($_[1])); });
 DefMacro('\pgfmathln@ pgfNumber', sub {
-    pgfmathresult(log($_[1])); return });
+    return pgfmathresult(log($_[1])); });
 DefMacro('\pgfmathlogten@ pgfNumber', sub {
-    pgfmathresult(log($_[1]) / $LOG10); return });
+    return pgfmathresult(log($_[1]) / $LOG10); });
 DefMacro('\pgfmathsqrt@ pgfNumber', sub {
-    pgfmathresult(sqrt($_[1])); return });
+    return pgfmathresult(sqrt($_[1])); });
 DefMacro('\pgfmathrnd@', sub {
-    pgfmathresult(rand()); return });
+    return pgfmathresult(rand()); });
 DefMacro('\pgfmathrand@', sub {
-    pgfmathresult(1 + rand(2)); return });
+    return pgfmathresult(1 + rand(2)); });
 DefMacro('\pgfmathfactorial@', sub {
-    pgfmathresult(pgfmathfactorial($_[1])); return });
+    return pgfmathresult(pgfmathfactorial($_[1])); });
 DefMacro('\pgfmathreciprocal@ pgfNumber', sub {
-    pgfmathresult(1 / pgfmath_divisor($_[1])); return });
+    return pgfmathresult(1 / pgfmath_divisor($_[1])); });
 
 sub pgfmath_divisor {
   my $divisor = 0.0 + $_[0];
@@ -329,10 +330,10 @@ sub pgfmathparse {
   #     print STDERR "  REMAINDER: $string\n" if $string;
   # There seem to be some pesky expectations for the results
   if ($result == 0.0) {
-    $result = "0"; }
+    $result = "0."; }
   # NOT really correct, but would like to use an internal to distinguish 1.0 from int(1.0)!!!
   elsif ($result == int($result)) {
-    $result = int($result); }
+    $result = int($result) . '.'; }
   else {    # We don't want scientific notation output!!!
     $result = sprintf("%f", $result); }
 ###  print STDERR "PGFPARSE: '$input' => '$result'\n";
@@ -340,13 +341,12 @@ sub pgfmathparse {
 
 DefMacro('\lx@pgfmath@parseX{}', sub {
     my ($gullet, $tokens) = @_;
-    DefMacroI('\lx@pgfmathresult', undef, Tokens(Explode(pgfmathparse($gullet, $tokens))));
-    return; });
+    return Tokens(T_CS('\def'), T_CS('\lx@pgfmathresult'),
+      T_BEGIN, pgfmathparse($gullet, $tokens), T_END); });
 
 DefMacro('\lx@pgfmath@parse{}', sub {
     my ($gullet, $tokens) = @_;
-    DefMacroI('\pgfmathresult', undef, Tokens(Explode(pgfmathparse($gullet, $tokens))));
-    return; });
+    return pgfmathresult(pgfmathparse($gullet, $tokens)); });
 
 DefPrimitive('\pgfmathsetlength DefToken {}', sub {
     my ($stomach, $register, $tokens) = @_;
