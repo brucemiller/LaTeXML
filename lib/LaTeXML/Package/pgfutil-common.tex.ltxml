@@ -24,7 +24,7 @@ InputDefinitions('pgfutil-common', type => 'tex', noltxml => 1)
 
 # Overwrite macros of interest
 
-DefMacro('\pgfutil@in@{}{}', sub {
+DefPrimitive('\pgfutil@in@{}{}', sub {
     AssignValue('pgfutilin_args', [ToString($_[1]), ToString($_[2])]);
     return; });
 
