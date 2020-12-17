@@ -56,6 +56,7 @@ sub installPGFCommands {
   Let(T_CS('\raise'),  T_CS('\lxSVG@raise'));
   Let(T_CS('\hskip'),  T_CS('\lxSVG@hskip'));
   Let(T_CS('\halign'), T_CS('\lxSVG@halign'));
+  Let('\ignorespaces', '\lx@inpgf@ignorespaces');    # Use local defn
   AssignValue(TEXT_MODE_BINDINGS => []);
   return; }
 
@@ -66,9 +67,8 @@ DefPrimitive('\lxSVG@installcommands', sub { installPGFCommands(); });
 DefPrimitive('\lx@inpgf@ignorespaces SkipSpaces', sub { (); });
 # Order might matter here
 DefMacro('\lxSVG@picture', sub {
-    Let('\ignorespaces', '\lx@inpgf@ignorespaces');    # Use local defn
-    AssignValue('pgf_SVGpath' => '', 'global');
-    (T_CS('\begingroup'), T_CS('\lxSVG@installcommands'),
+    (T_CS('\lxSVG@clearpath'),
+      T_CS('\begingroup'), T_CS('\lxSVG@installcommands'),
       #        T_CS('\pgfsysprotocol@setcurrentprotocol'), T_CS('\pgfutil@empty')
     ); });
 
@@ -339,6 +339,11 @@ sub addToSVGPath {
     AssignValue(pgf_SVGpath => $newPath, 'global'); }
   return; }
 
+DefPrimitive('\lxSVG@clearpath', sub {
+    AssignValue(pgf_SVGpath => '', 'global'); });
+DefPrimitive('\lxSVG@clearclip', sub {
+    AssignValue(pgf_clipnext => 0); });
+
 #=====================================================================
 # Implementation
 
@@ -416,19 +421,21 @@ DefConstructor('\lxSVG@fillstroke', '', alias => '\pgfsys@fillstroke', sizer => 
 
 #======================================================================
 
-# Warning: assignments in Macro!!!
 DefMacro('\lxSVG@drawpath{}', sub {
     my ($gullet, $arg) = @_;
     my $path = LookupValue('pgf_SVGpath') || '';
-    AssignValue(pgf_SVGpath => '', 'global');
-    my $op;
     if (LookupValue('pgf_clipnext')) {
-      AssignValue(pgf_clipnext => 0);
-      addToCount('pgf_scopecount', 1, 'global');
-      $op = Invocation('\lxSVG@drawpath@clipped', $path, $arg); }
+      Tokens(
+        T_CS('\lxSVG@clearpath'),
+        T_CS('\lxSVG@clearclip'),
+        T_CS('\lxSVG@incrgroup'),
+        Invocation('\pgfsysprotocol@literal',
+          Invocation('\lxSVG@drawpath@clipped', $path, $arg))); }
     else {
-      $op = Invocation('\lxSVG@drawpath@unclipped', $path, $arg); }
-    Invocation('\pgfsysprotocol@literal', $op)->unlist; });
+      Tokens(
+        T_CS('\lxSVG@clearpath'),
+        Invocation('\pgfsysprotocol@literal',
+          Invocation('\lxSVG@drawpath@unclipped', $path, $arg))); } });
 
 # Seemingly can get called with no path, which is invalid
 DefConstructor('\lxSVG@drawpath@unclipped{}{}',
@@ -446,15 +453,17 @@ DefConstructor('\lxSVG@drawpath@clipped{}{}',
 
 # #======================================================================
 DefMacro('\pgfsys@discardpath', '\lxSVG@discardpath\lxSVG@@discardpath');
-DefConstructor('\lxSVG@discardpath', '', alias => '\pgfsys@discardpath', sizer => 0);
+DefConstructor('\lxSVG@discardpath', '',
+  alias => '\pgfsys@discardpath', sizer => 0);
 DefMacro('\lxSVG@@discardpath', sub {
     my $path = LookupValue('pgf_SVGpath') || '';
-    AssignValue(pgf_SVGpath => '', 'global');
     if (LookupValue('pgf_clipnext')) {
-      AssignValue(pgf_clipnext => 0);
-      addToCount('pgf_scopecount', 1, 'global');
-      Invocation('\pgfsysprotocol@literal',
-        Invocation(T_CS('\lxSVG@discardpath@clipped'), $path))->unlist; }
+      Tokens(
+        T_CS('\lxSVG@clearpath'),
+        T_CS('\lxSVG@clearclip'),
+        T_CS('\lxSVG@incrgroup'),
+        Invocation('\pgfsysprotocol@literal',
+          Invocation(T_CS('\lxSVG@discardpath@clipped'), $path))); }
     else {
       (); } });
 
@@ -672,21 +681,25 @@ DefConstructor('\lxSVG@color@gray@fill{}',    '', alias => '\pgfsys@color@gray@f
 #====================================================================#
 
 # \pgfsys@declarepattern{name}{x1}{y1}{x2}{y2}{x step}{y step}{code}{ﬂag}
-DefMacro('\pgfsys@declarepattern{}'
-    . '{Dimension}{Dimension}{Dimension}{Dimension}{Dimension}{Dimension}'
-    . '{}{Number}', sub {
+DefMacro('\pgfsys@declarepattern{} {}{}{}{}{}{} {}{Number}', sub {
     my ($gullet, $name, $x1, $y1, $x2, $y2, $x_step, $y_step, $code, $flag) = @_;
+    my $op = ($flag->valueOf == 1 ? '\lxSVG@coloredpattern' : '\lxSVG@uncoloredpattern');
+    return Invocation('\pgfsysprotocol@literal',
+      Invocation('\lxSVG@setpattern', $x1, $y1, $x2, $y2, $x_step, $y_step),
+      Invocation($op, $name, $x_step, $y_step, $code)); });
+
+DefPrimitive('\lxSVG@setpattern {Dimension}{Dimension}{Dimension}{Dimension}{Dimension}{Dimension}', sub {
+    #    my ($gullet, $x1, $y1, $x2, $y2, $x_step, $y_step) = @_;
+    my ($stomach, $x1, $y1, $x2, $y2, $x_step, $y_step) = @_;
     AssignValue('\pgf@xa' => $x1);     AssignValue('\pgf@ya' => $y1);
     AssignValue('\pgf@xb' => $x2);     AssignValue('\pgf@yb' => $y2);
     AssignValue('\pgf@xc' => $x_step); AssignValue('\pgf@yc' => $y_step);
-    my $op = ($flag->valueOf == 1 ? '\lxSVG@coloredpattern' : '\lxSVG@uncoloredpattern');
-    return Invocation('\pgfsysprotocol@literal',
-      Invocation($op, $name, $x_step, $y_step, $code)); });
+    return; });
 
 DefMacro('\pgfsys@setpatternuncolored{}{}{}{}', sub {
-    addToCount('pgf_scopecount', 1, 'global');
-    Invocation('\pgfsysprotocol@literal',
-      Invocation('\lxSVG@setpatternuncolored@', @_[1 .. $#_])); });
+    Tokens(T_CS('\lxSVG@incrgroup'),
+      Invocation('\pgfsysprotocol@literal',
+        Invocation('\lxSVG@setpatternuncolored@', @_[1 .. $#_]))); });
 
 DefMacro('\pgfsys@setpatterncolored{}',
   '\lxSVG@setcolor{fill}{url(\#pgfpat#1)}');
