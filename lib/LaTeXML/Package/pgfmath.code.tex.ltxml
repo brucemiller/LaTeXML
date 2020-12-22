@@ -201,13 +201,15 @@ DefMacro('\pgfmathrad@ pgfNumber', sub {
 DefMacro('\pgfmathdeg@ pgfNumber', sub {
     return pgfmathresult(rad2deg($_[1])); });
 DefMacro('\pgfmathatan@ pgfNumber', sub {
-    return pgfmathresult(atan($_[1])); });
-DefMacro('\pgfmathatantwo@ pgfNumber', sub {
-    return pgfmathresult(atan2($_[1], $_[2])); });
+    return pgfmathresult(rad2deg(atan($_[1]))); });
+DefMacro('\pgfmathatantwo@ pgfNumber pgfNumber', sub {
+    return pgfmathresult(rad2deg(atan2($_[1], $_[2]))); });
+# Reverse of tikz, but...
+Let(T_CS('\pgfmathatan2@'), T_CS('\pgfmathatantwo@'));
 DefMacro('\pgfmathasin@ pgfNumber', sub {
-    return pgfmathresult(asin($_[1])); });
+    return pgfmathresult(rad2deg(asin($_[1]))); });
 DefMacro('\pgfmathacos@ pgfNumber', sub {
-    return pgfmathresult(acos($_[1])); });
+    return pgfmathresult(rad2deg(acos($_[1]))); });
 DefMacro('\pgfmathcot@ pgfNumber', sub {
     return pgfmathresult(cot(pgfmathargradians($_[1]))); });
 DefMacro('\pgfmathsec@ pgfNumber', sub {
@@ -336,7 +338,7 @@ sub pgfmathparse {
     $result = int($result) . '.'; }
   else {    # We don't want scientific notation output!!!
     $result = sprintf("%f", $result); }
-###  print STDERR "PGFPARSE: '$input' => '$result'\n";
+###  print STDERR "PGFPARSE: '$input' => '$result'\n" unless LookupValue('inPreamble');
   return $result; }
 
 DefMacro('\lx@pgfmath@parseX{}', sub {
