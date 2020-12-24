@@ -722,7 +722,7 @@ sub openText {
     (($t == XML_DOCUMENT_NODE)    # Ignore initial whitespace
     || (($t == XML_ELEMENT_NODE) && !$self->canContain($node, '#PCDATA')));
   return if $font->getFamily eq 'nullfont';
-  print STDERR "Insert text \"$text\" /" . Stringify($font) . " at " . Stringify($node) . "\n"
+  print STDERR "openText \"$text\" /" . Stringify($font) . " at " . Stringify($node) . "\n"
     if $LaTeXML::Core::Document::DEBUG;
 
   # Get the desired font attributes, particularly the desired element
@@ -746,7 +746,9 @@ sub openText {
       last if ($$self{model}->getNodeQName($n) ne $elementname) || $n->getAttribute('_noautoclose');
       $n = $n->parentNode; }
     $self->closeToNode($closeto) if $closeto ne $node;    # Move to best starting point for this text.
-    $self->openElement($elementname, font => $font, _fontswitch => 1) if $bestdiff > 0; # Open if needed.
+    $self->openElement($elementname, font => $font,
+      _fontswitch => 1, _autoopened => 1)
+      if $bestdiff > 0;                                   # Open if needed.
   }
   # Finally, insert the darned text.
   my $tnode = $self->openText_internal($text);
@@ -760,7 +762,7 @@ sub openText {
 sub openElement {
   my ($self, $qname, %attributes) = @_;
   NoteProgress('.') if ($$self{progress}++ % 25) == 0;
-  print STDERR "Open element $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
+  print STDERR "openElement $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
   my $point = $self->find_insertion_point($qname);
   $attributes{_box} = $LaTeXML::BOX unless $attributes{_box};
   my $newnode = $self->openElementAt($point, $qname,
@@ -776,7 +778,7 @@ sub openElement {
 # This is kinda risky! Maybe we should try to request closing of specific nodes.
 sub closeElement {
   my ($self, $qname) = @_;
-  print STDERR "Close element $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
+  print STDERR "closeElement $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
   $self->closeText_internal();
   my ($node, @cant_close) = ($$self{node});
   while ($node->nodeType != XML_DOCUMENT_NODE) {
@@ -833,6 +835,7 @@ sub isCloseable {
 # Close $qname, if it is closeable.
 sub maybeCloseElement {
   my ($self, $qname) = @_;
+  print STDERR "maybeCloseNode(int) $qname\n" if $LaTeXML::Core::Document::DEBUG;
   if (my $node = $self->isCloseable($qname)) {
     $self->closeNode_internal($node);
     return $node; } }
@@ -868,6 +871,7 @@ sub closeNode {
   my $model = $$self{model};
   my ($t, @cant_close) = ();
   my $n = $$self{node};
+  print STDERR "closeNode " . Stringify($node) . "\n" if $LaTeXML::Core::Document::DEBUG;
   while ((($t = $n->getType) != XML_DOCUMENT_NODE) && !$n->isSameNode($node)) {
     push(@cant_close, $n) unless $self->canAutoClose($n);
     $n = $n->parentNode; }
@@ -935,7 +939,8 @@ sub find_insertion_point {
   # Else, if we can create an intermediate node that accepts $qname, we'll do that.
   elsif (($inter = $self->canContainIndirect($cur_qname, $qname))
     && ($inter ne $qname) && ($inter ne $cur_qname)) {
-    $self->openElement($inter, font => $self->getNodeFont($$self{node}));
+    $self->openElement($inter, _autoopened => 1,
+      font => $self->getNodeFont($$self{node}));
     return $self->find_insertion_point($qname, $inter); }    # And retry insertion (should work now).
   elsif ($has_opened) {    # out of options if already inside an auto-open chain
     Error('malformed', $qname, $self,
@@ -1082,16 +1087,38 @@ sub openText_internal {
   my $qname;
   if ($$self{node}->nodeType == XML_TEXT_NODE) {    # current node already is a text node.
     print STDERR "Appending text \"$text\" to " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
+    my $parent = $$self{node}->parentNode;
+    if ($LaTeXML::BOX && $parent->getAttribute('_autoopened')) {
+      $self->appendTextBox($parent, $LaTeXML::BOX); }
     $$self{node}->appendData($text); }
   elsif (($text =~ /\S/)                            # If non space
     || $self->canContain($$self{node}, '#PCDATA')) {    # or text allowed here
     my $point = $self->find_insertion_point('#PCDATA');
     my $node  = $$self{document}->createTextNode($text);
+    if ($point->getAttribute('_autoopened')) {
+      $self->appendTextBox($point, $LaTeXML::BOX); }
     print STDERR "Inserting text node for \"$text\" into " . Stringify($point) . "\n"
       if $LaTeXML::Core::Document::DEBUG;
     $point->appendChild($node);
     $self->setNode($node); }
   return $$self{node}; }                                # return the text node (current)
+
+# Since xml text nodes don't have attributes to record the origining box,
+# we need to manage the accumulation of autoOpen'ed boxes
+# Indeed, propogate it to ancestors if they were autoOpened for same cause (box)
+sub appendTextBox {
+  my ($self, $node, $box) = @_;
+  my $origbox = $self->getNodeBox($node);
+  if ($origbox && ($box ne $origbox)) {    # if not already the same box
+    my $newbox = List($origbox, $box);
+    $self->setNodeBox($node, $newbox);
+    my $p = $node;
+    # AND, propogate change to autoOpen'd ancestors based on same initial box
+    while (($p = $p->parentNode) && ($p->nodeType == XML_ELEMENT_NODE)
+      && $p->getAttribute('_autoopened')
+      && (($self->getNodeBox($p) || '') eq $origbox)) {
+      $self->setNodeBox($p, $newbox); } }
+  return; }
 
 # Question: Why do I have math ligatures handled within openMathText_internal,
 # but text ligatures handled within closeText_internal ???
@@ -1186,6 +1213,7 @@ sub closeNode_internal {
     $self->autoCollapseChildren($n);
     last if $node->isSameNode($n);
     $n = $n->parentNode; }
+  print STDERR "closeNode(int) " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
   $self->setNode($closeto);
   #  $self->autoCollapseChildren($node);
   return $$self{node}; }
