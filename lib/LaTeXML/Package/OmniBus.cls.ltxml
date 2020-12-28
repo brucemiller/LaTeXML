@@ -94,10 +94,36 @@ DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>"
 DefMacro('\address[]{}',   '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
 DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
 
+# some rarer name macros that are functionally no-ops for latexml
+DefMacro('\prefix{}',         '#1');
+DefMacro('\suffix{}',         '#1');
+DefMacro('\fnms{}',           '#1');
+DefMacro('\snm{}',            '#1');
+DefMacro('\inits{}',          '#1');
+DefMacro('\printaddresses{}', '#1');
+DefMacro('\printead{}',       Tokens());
+DefMacro('\firstpage{}',      Tokens());
+DefMacro('\lastpage{}',       Tokens());
+DefMacro('\runauthor{}',      Tokens());
+DefMacro('\runtitle{}',       Tokens());
+DefMacro('\corref{}',         Tokens());
+DefMacro('\listofauthors{}',  Tokens());
+DefMacro('\indexauthor{}',    Tokens());
+DefMacro('\preface',          Tokens());
+DefMacro('\thankstext',       Tokens());
+DefMacro('\resumen{}',        '\@add@frontmatter{ltx:abstract}{#1}');
+DefMacro('\ion{}{}',          '{#1 \textsc{#2}}');
+Let(T_CS('\fulladdresses'), T_CS('\address'));
+Let(T_CS('\smonth'),        T_CS('\month'));
+Let(T_CS('\syear'),         T_CS('\year'));
+
 # Comes as both macro with arg, and environment! w/ or w/o "s"!
 DefMacro('\keyword{}',  '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\kword{}',    '\@add@frontmatter{ltx:keywords}{#1}');
+DefMacro('\kwd[]{}',    '\@add@frontmatter{ltx:keywords}{#2, }');
+Let(T_CS('\addto@keywords@list'), T_CS('\keyword'));
+
 # {keyword}, {keywords}
 DefEnvironment('{keywords}', '',
   afterDigest => sub {
@@ -130,21 +156,28 @@ for my $env (qw(
   my $beginenv = "\\begin{$env}";
   DefMacroI(T_CS($beginenv), undef, sub {
       RequirePackage('amsthm');
-      return Tokenize("\\newtheorem{theorem}{Theorem}[section]
-  \\newtheorem{conjecture}[theorem]{Conjecture}
-  \\newtheorem{proposition}[theorem]{Proposition}
-  \\newtheorem{proof}[theorem]{Proof}
-  \\newtheorem{lemma}[theorem]{Lemma}
-  \\newtheorem{corollary}[theorem]{Corollary}
-  \\newtheorem{example}[theorem]{Example}
-  \\newtheorem{exercise}[theorem]{Exercise}
-  \\newtheorem{definition}[theorem]{Definition}
-  \\newtheorem{problem}[theorem]{Problem}
-  \\newtheorem{question}[theorem]{Question}
-  \\newtheorem{remark}[theorem]{Remark}
-  \\newtheorem{solution}[theorem]{Solution}
-  \\newtheorem{note}[theorem]{Note}
-  $beginenv")->unlist; }); }
+      return Tokenize(<<"EOL"
+\\newtheorem{theorem}{Theorem}[section]
+\\newtheorem{conjecture}[theorem]{Conjecture}
+\\newtheorem{proposition}[theorem]{Proposition}
+\\newtheorem{proof}[theorem]{Proof}
+\\newtheorem{lemma}[theorem]{Lemma}
+\\newtheorem{corollary}[theorem]{Corollary}
+\\newtheorem{example}[theorem]{Example}
+\\newtheorem{exercise}[theorem]{Exercise}
+\\newtheorem{definition}[theorem]{Definition}
+\\newtheorem{problem}[theorem]{Problem}
+\\newtheorem{question}[theorem]{Question}
+\\newtheorem{remark}[theorem]{Remark}
+\\newtheorem{solution}[theorem]{Solution}
+\\newtheorem{step}[theorem]{Step}
+\\newtheorem{note}[theorem]{Note}
+$beginenv
+EOL
+)->unlist; }); }
+DefMacroI(T_CS('\newproclaim'), undef, sub {
+    RequirePackage('amsthm');
+    return T_CS('\newtheorem'); });
 
 # \abstracts
 Let('\abst', '\abstract');
