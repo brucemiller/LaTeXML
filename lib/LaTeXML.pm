@@ -45,7 +45,6 @@ our $LOG_STACK = 0;
 
 # Switching to white-listing options that are important for new_latexml:
 our @COMPARABLE = qw(preload paths verbosity strict comments inputencoding includestyles documentid mathparse);
-our %DAEMON_DB = ();
 
 sub new {
   my ($class, $config) = @_;
@@ -63,12 +62,6 @@ sub new {
 
 sub prepare_session {
   my ($self, $config) = @_;
-  # TODO: The defaults feature was never used, do we really want it??
-  #0. Ensure all default keys are present:
-  # (always, as users can specify partial options that build on the defaults)
-  #foreach (keys %{$$self{defaults}}) {
-  #  $config->{$_} = $$self{defaults}->{$_} unless exists $config->{$_};
-  #}
   # 1. Ensure option "sanity"
   $self->bind_log;
   my $rv = eval { $config->check; };
@@ -390,15 +383,34 @@ sub convert {
 ###########################################
 ####       Converter Management       #####
 ###########################################
+
+our %DAEMON_CACHE = ();
+our %CONFIG_CACHE = ();
+
 sub get_converter {
-  my ($self, $config) = @_;
-  # TODO: Make this more flexible via an admin interface later
-  my $key = $config->get('cache_key') || $config->get('profile') || 'custom';
-  my $d   = $DAEMON_DB{$key};
-  if (!defined $d) {
-    $d = LaTeXML->new($config->clone);
-    $DAEMON_DB{$key} = $d; }
-  return $d; }
+  my ($self, $config, $key) = @_;
+  # Default key, unless made explicit
+  if (!$key && $config) {
+    $key = $config->get('cache_key') || $config->get('profile'); }
+
+  my $converter = $key && $DAEMON_CACHE{$key};
+
+  if (!defined $converter) {
+    # Trading flexibility for performance:
+    # once a cache_key is used, it can not be redefined in the same session
+    # (and we never needed it redefine-able)
+    #
+    # Instead, once a cache_key is specified, (re)booting converter objects
+    # for that config set can be done without spending time examining options
+    # via the $CONFIG_CACHE
+    $config ||= $CONFIG_CACHE{$key};
+
+    $converter = LaTeXML->new($config->clone);
+    if ($key) {
+      # cache both converter and config, for self-contained reloading
+      $DAEMON_CACHE{$key} = $converter;
+      $CONFIG_CACHE{$key} = $config; } }
+  return $converter; }
 
 ###########################################
 ####       Helper routines            #####
