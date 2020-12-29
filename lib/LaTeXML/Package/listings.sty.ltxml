@@ -1526,5 +1526,13 @@ sub lstLoadConfiguration {
 
 lstLoadConfiguration();
 
+# Also allow some internal macros which get used from sibling bindings e.g. cleveref
+DefMacro('\lst@UseHook{}','\csname\@lst hk@#1\endcsname');
+DefMacro('\lst@AddToHook{}{}',''); # ignore
+DefMacro('\lst@AddToHookExe{}{}',''); # ignore
+DefMacro('\lst@AddTo {}{}',
+    '\expandafter\gdef\expandafter#1\expandafter{#1#2}',
+    long=>1);
+DefMacro('\@lst','lst');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
