@@ -43,8 +43,6 @@ sub SVGNextObject {
 
 sub installPGFCommands {
   # Local definitions.
-  Let(T_CS('\hbox'),   T_CS('\lxSVG@hbox'));
-  Let(T_CS('\vbox'),   T_CS('\lxSVG@vbox'));
   Let(T_CS('\lower'),  T_CS('\lxSVG@lower'));
   Let(T_CS('\raise'),  T_CS('\lxSVG@raise'));
   Let(T_CS('\hskip'),  T_CS('\lxSVG@hskip'));
@@ -135,7 +133,7 @@ DefParameterType('SVGMoveableBox', sub {
     Error(":expected:<box>  A <svghbox> was supposed to be here, got "
         . Stringify($box))
       unless $box && $box->isa('LaTeXML::Core::Whatsit')
-      && ($box->getDefinition->getCSName =~ /^(\\lxSVG\@hbox||)$/);
+      && ($box->getDefinition->getCSName =~ /^(\\hbox||)$/);
     $box; });
 
 # Try to avoid errors inserting random boxes (esp. ltx:text)(Is this safe?)
@@ -157,13 +155,15 @@ sub collapseSVGSwitch {
     my @p_c = element_nodes($fo_c[0]);
     if (scalar(@p_c) == 0) {    # or Empty <p/>?
       $doc->removeNode($node); }
-    # Else, single ltx:picture ?
-    elsif ((scalar(@p_c) == 1) && ($doc->getNodeQName($p_c[0]) eq 'ltx:picture')) {
-      my @pic_c = element_nodes($p_c[0]);
-      # With single svg:svg ?
-      if ((scalar(@pic_c) == 1) && ($doc->getNodeQName($pic_c[0]) eq 'svg:svg')) {
-        $doc->replaceNode($node, element_nodes($pic_c[0]));
-  } } }
+    # Else, single ltx:picture or ltx:text ?
+    elsif (scalar(@p_c) == 1) {
+      my $tag = $doc->getNodeQName($p_c[0]);
+      if (($tag eq 'ltx:picture') || ($tag eq 'ltx:text')) {
+        my @pic_c = element_nodes($p_c[0]);
+        # With single svg:svg ?
+        if ((scalar(@pic_c) == 1) && ($doc->getNodeQName($pic_c[0]) eq 'svg:svg')) {
+          $doc->replaceNode($node, element_nodes($pic_c[0])); } }
+  } }
   return; }
 
 Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
@@ -172,8 +172,11 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
     # Make sure we get a size, in case autoOpen'd
     if ($whatsit) {
       my ($w, $h, $d) = $whatsit->getSize;
-      $node->setAttribute(width    => $w->toAttribute)          unless $node->hasAttribute('width');
-      $node->setAttribute(height   => $h->add($d)->toAttribute) unless $node->hasAttribute('height');
+      $node->setAttribute(width  => $w->toAttribute)          unless $node->hasAttribute('width');
+      $node->setAttribute(height => $h->add($d)->toAttribute) unless $node->hasAttribute('height');
+      # Odd, sometimes needed, sometimes too much (vtop type situations?)
+      if ($d->ptValue < 10) {    # Random heuristic
+        $node->setAttribute(y => $d->negate->toAttribute) unless $node->hasAttribute('y'); }
       $node->setAttribute(overflow => 'visible'); } });
 
 # Check whether a svg:foreignObject is open,
@@ -214,38 +217,6 @@ DefConstructor('\lxSVG@hskip Glue', sub {
       $doc->openElement('ltx:text', 'xoffset' => $skip->pxValue . 'px'); } },
   alias => '\hskip');
 
-# Like regular \hbox, \vbox, but we don't want any extra element around it.
-DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
-  mode => 'text', bounded => 1,
-  # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
-  # And also things like \centerline that will end up bumping up to block level!
-  sizer        => '#2',
-  alias        => '\hbox',
-  beforeDigest => sub { reenterTextMode(); },
-  afterDigest  => sub {
-    my ($stomach, $whatsit) = @_;
-    my $spec = $whatsit->getArg(1);
-    my $box  = $whatsit->getArg(2);
-    if (my $w = GetKeyVal($spec, 'to')) {
-      $whatsit->setWidth($w); }
-    elsif (my $s = GetKeyVal($spec, 'spread')) {
-      $whatsit->setWidth($box->getWidth->add($s)); }
-    return; });
-
-DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
-  sizer       => '#2',
-  alias       => '\vbox',
-  afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $spec = $whatsit->getArg(1);
-    my $box  = $whatsit->getArg(2);
-    if (my $h = GetKeyVal($spec, 'to')) {
-      $whatsit->setHeight($h); }
-    elsif (my $s = GetKeyVal($spec, 'spread')) {
-      $whatsit->setHeight($box->getHeight->add($s)); }
-    return; },
-  mode => 'text');
-
 #=====================================================================#
 # 1. Beginning and ending a stream ===================================#
 #=====================================================================#
@@ -278,7 +249,6 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
     my $y = $h->add(($font ? $fd : $d))->pxValue;    # Seemingly should NOT have ->add($d)
         # But if the box's height has been set to 0, still need adjustment; Use font?
     $y = $fh->add($fd)->pxValue if !$y && $font;    # Seemingly SHOULD have ->add($fd)
-    my ($ww, $hh, $dd) = map { $_->ptValue; } $w, $h, $d;
     $doc->openElement('svg:g',
       transform => 'matrix(1 0 0 -1 0 ' . $y . ')',
       class     => 'ltx_svg_fog');
@@ -289,7 +259,7 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
       # often the size is set to 0, which inhibits display COMPLETELY!
       # Using 100% works, though, and seems apparently best to use for height all the time(?)
       width    => $w->pxValue || '100%',
-      height   => '100%',
+      height   => $H          || '100%',
       overflow => 'visible',
       color    => $strokeattr && $strokeattr->getValue);
     my $p = $doc->openElement('ltx:p');
@@ -491,7 +461,7 @@ DefConstructor('\lxSVG@begingroup@ RequiredKeyVals', sub {
     # Special case check: if we are in a latexml context, move up to parent svg:g
     if ($doc->getNodeQName($this) =~ /^ltx:/
       && (my $g = $doc->findnode("ancestor::svg:g[position()=1]", $this))) {
-      $doc->closeToNode($g); }
+      $doc->openElement('svg:svg', _autoopened => 1); }
     $doc->openElement('svg:g', $kv->getHash); },
   reversion => '', sizer => 0);
 
