@@ -54,9 +54,9 @@ my $FLAG_EMPH         = 0x10;
 # NOTE: This probably doesn't really belong in here...
 
 my %font_family = (
-  cmr  => { family => 'serif' },      cmss  => { family => 'sansserif' },
-  cmtt => { family => 'typewriter' }, cmvtt => { family => 'typewriter' },
-  cmti => { family => 'typewriter', shape => 'italic' },
+  cmr   => { family => 'serif' },      cmss  => { family => 'sansserif' },
+  cmtt  => { family => 'typewriter' }, cmvtt => { family => 'typewriter' },
+  cmti  => { family => 'typewriter', shape => 'italic' },
   cmfib => { family => 'serif' },      cmfr  => { family => 'serif' },
   cmdh  => { family => 'serif' },      cm    => { family => 'serif' },
   ptm   => { family => 'serif' },      ppl   => { family => 'serif' },
@@ -74,21 +74,21 @@ my %font_family = (
   pxr   => { family => 'serif' },      pxms  => { family => 'symbol' },
   pxsya => { family => 'symbol' },     pxsyb => { family => 'symbol' },
   futs  => { family => 'serif' },
-  uaq   => { family => 'serif' },      ugq   => { family => 'sansserif' },
-  eur   => { family => 'serif' },      eus   => { family => 'script' },
-  euf   => { family => 'fraktur' },    euex  => { family => 'symbol' },
+  uaq   => { family => 'serif' },   ugq  => { family => 'sansserif' },
+  eur   => { family => 'serif' },   eus  => { family => 'script' },
+  euf   => { family => 'fraktur' }, euex => { family => 'symbol' },
   # The following are actually math fonts.
   ms    => { family => 'symbol' },
-  ccm   => { family => 'serif', shape => 'italic' },
-  cmm   => { family => 'italic', encoding => 'OML' },
-  cmex  => { family => 'symbol', encoding => 'OMX' },       # Not really symbol, but...
-  cmsy  => { family => 'symbol', encoding => 'OMS' },
-  ccitt => { family => 'typewriter', shape => 'italic' },
-  cmbrm => { family => 'sansserif', shape => 'italic' },
-  futm  => { family => 'serif', shape => 'italic' },
-  futmi => { family => 'serif', shape => 'italic' },
-  txmi  => { family => 'serif', shape => 'italic' },
-  pxmi  => { family => 'serif', shape => 'italic' },
+  ccm   => { family => 'serif',      shape    => 'italic' },
+  cmm   => { family => 'italic',     encoding => 'OML' },
+  cmex  => { family => 'symbol',     encoding => 'OMX' },      # Not really symbol, but...
+  cmsy  => { family => 'symbol',     encoding => 'OMS' },
+  ccitt => { family => 'typewriter', shape    => 'italic' },
+  cmbrm => { family => 'sansserif',  shape    => 'italic' },
+  futm  => { family => 'serif',      shape    => 'italic' },
+  futmi => { family => 'serif',      shape    => 'italic' },
+  txmi  => { family => 'serif',      shape    => 'italic' },
+  pxmi  => { family => 'serif',      shape    => 'italic' },
   bbm   => { family => 'blackboard' },
   bbold => { family => 'blackboard' },
   bbmss => { family => 'blackboard' },
@@ -129,10 +129,10 @@ sub lookupFontShape {
 # extended logical font sizes, based on nominal document size of 10pts
 # Possibly should simply use absolute font point sizes, as declared in class...
 my %font_size = (
-  tiny   => 0.5, SMALL => 0.7, Small => 0.8,  small => 0.9,
-  normal => 1.0, large => 1.2, Large => 1.44, LARGE => 1.728,
-  huge => 2.074, Huge => 2.488,
-  big  => 1.2,   Big  => 1.6, bigg => 2.1, Bigg => 2.6,
+  tiny   => 0.5,   SMALL => 0.7, Small => 0.8,  small => 0.9,
+  normal => 1.0,   large => 1.2, Large => 1.44, LARGE => 1.728,
+  huge   => 2.074, Huge  => 2.488,
+  big    => 1.2,   Big   => 1.6, bigg => 2.1, Bigg => 2.6,
 );
 
 sub rationalizeFontSize {
@@ -200,6 +200,7 @@ sub new {
   my $encoding  = $options{encoding};
   my $language  = $options{language};
   my $mathstyle = $options{mathstyle};
+
   if ($options{forcebold}) {    # for compatibility
     $series = 'bold'; $options{forceseries} = 1; }
   my $flags = 0
@@ -207,8 +208,8 @@ sub new {
     | ($options{forceseries} ? $FLAG_FORCE_SERIES : 0)
     | ($options{forceshape}  ? $FLAG_FORCE_SHAPE  : 0);
   return $class->new_internal(
-    $family, $series, $shape, rationalizeFontSize($size),
-    $color, $bg, $opacity,
+    $family,    $series, $shape, rationalizeFontSize($size),
+    $color,     $bg,     $opacity,
     $encoding,  $language,
     $mathstyle, $flags); }
 
@@ -250,15 +251,15 @@ sub stringify {
   my ($fam, $ser, $shp, $siz, $col, $bkg, $opa, $enc, $lang, $mstyle, $flags) = @$self;
   $fam = 'serif' if $fam && ($fam eq 'math');
   return 'Font[' . join(',', map { Stringify($_) } grep { $_ }
-      (isDiff($fam, $DEFFAMILY) ? ($fam) : ()),
-    (isDiff($ser, $DEFSERIES)     ? ($ser) : ()),
-    (isDiff($shp, $DEFSHAPE)      ? ($shp) : ()),
-    (isDiff($siz, DEFSIZE())      ? ($siz) : ()),
-    (isDiff($col, $DEFCOLOR)      ? ($col) : ()),
-    (isDiff($bkg, $DEFBACKGROUND) ? ($bkg) : ()),
-    (isDiff($opa, $DEFOPACITY)    ? ($opa) : ()),
-    ($mstyle ? ($mstyle) : ()),
-    ($flags  ? ($flags)  : ()),
+      (isDiff($fam, $DEFFAMILY)   ? ($fam)    : ()),
+    (isDiff($ser, $DEFSERIES)     ? ($ser)    : ()),
+    (isDiff($shp, $DEFSHAPE)      ? ($shp)    : ()),
+    (isDiff($siz, DEFSIZE())      ? ($siz)    : ()),
+    (isDiff($col, $DEFCOLOR)      ? ($col)    : ()),
+    (isDiff($bkg, $DEFBACKGROUND) ? ($bkg)    : ()),
+    (isDiff($opa, $DEFOPACITY)    ? ($opa)    : ()),
+    ($mstyle                      ? ($mstyle) : ()),
+    ($flags                       ? ($flags)  : ()),
     )
     . ']'; }
 
@@ -286,9 +287,9 @@ sub makeConcrete {
   my ($family, $series, $shape, $size, $color, $bg, $opacity, $encoding, $lang, $mstyle, $flags) = @$self;
   my ($ofamily, $oseries, $oshape, $osize, $ocolor, $obg, $oopacity, $oencoding, $olang, $omstyle, $oflags) = @$concrete;
   return (ref $self)->new_internal(
-    $family || $ofamily, $series || $oseries, $shape || $oshape, $size || $osize,
-    $color || $ocolor, $bg || $obg, (defined $opacity ? $opacity : $oopacity),
-    $encoding || $oencoding, $lang || $olang, $mstyle || $omstyle,
+    $family   || $ofamily,   $series || $oseries, $shape || $oshape, $size || $osize,
+    $color    || $ocolor,    $bg     || $obg, (defined $opacity ? $opacity : $oopacity),
+    $encoding || $oencoding, $lang   || $olang, $mstyle || $omstyle,
     ($flags || 0) | ($oflags || 0)); }
 
 sub isDiff {
@@ -446,9 +447,11 @@ our %mathstylesize = (display => 1, text => 1,
 # NOTE: that we assume the size has already been adjusted for mathstyle, if necessary.
 sub computeStringSize {
   my ($self, $string) = @_;
+  if ($self->getFamily eq 'nullfont') {
+    return (Dimension(0), Dimension(0), Dimension(0)); }
   my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
-  my $l = (defined $string ? length($string) : 0);
-  my $u = $size * 65535;
+  my $l    = (defined $string ? length($string) : 0);
+  my $u    = $size * 65535;
   return (Dimension(0.75 * $u * $l), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
 # Get nominal width, height base ?
@@ -578,6 +581,7 @@ sub merge {
   my $encoding  = $options{encoding};
   my $language  = $options{language};
   my $mathstyle = $options{mathstyle};
+
   if ($options{forcebold}) {    # for compatibility
     $series = 'bold'; $options{forceseries} = 1; }
   my $flags = 0
@@ -587,24 +591,24 @@ sub merge {
 
   my $oflags = $$self[10];
   # Fallback to positional invocation:
-  $family = $$self[0] if (!defined $family) || ($oflags & $FLAG_FORCE_FAMILY);
-  $series = $$self[1] if (!defined $series) || ($oflags & $FLAG_FORCE_SERIES);
-  $shape  = $$self[2] if (!defined $shape)  || ($oflags & $FLAG_FORCE_SHAPE);
-  $size   = $$self[3] if (!defined $size);
-  $color  = $$self[4] if (!defined $color);
-  $bg     = $$self[5] if (!defined $bg);
+  $family    = $$self[0] if (!defined $family) || ($oflags & $FLAG_FORCE_FAMILY);
+  $series    = $$self[1] if (!defined $series) || ($oflags & $FLAG_FORCE_SERIES);
+  $shape     = $$self[2] if (!defined $shape)  || ($oflags & $FLAG_FORCE_SHAPE);
+  $size      = $$self[3] if (!defined $size);
+  $color     = $$self[4] if (!defined $color);
+  $bg        = $$self[5] if (!defined $bg);
   $opacity   = $$self[6] if (!defined $opacity);
   $encoding  = $$self[7] if (!defined $encoding);
   $language  = $$self[8] if (!defined $language);
   $mathstyle = $$self[9] if (!defined $mathstyle);
-  $flags = ($$self[10] || 0) | $flags;
+  $flags     = ($$self[10] || 0) | $flags;
 
   if (my $scale = $options{scale}) {
     $size = $scale * $size; }
   # Set the mathstyle, and also the size from the mathstyle
   # But we may need to scale that size against the existing or requested size.
   my $stylescale = ($$self[3] ? $$self[3] / $stylesize{ $$self[9] || 'display' } : 1);
-  if ($options{size}) { }    # Explicitly requested size, use it
+  if    ($options{size}) { }       # Explicitly requested size, use it
   elsif ($options{mathstyle}) {    # otherwise set the size from mathstyle
     $size = $stylescale * $stylesize{$mathstyle}; }
   elsif ($options{scripted}) {     # Or adjust both the mathstyle & size for scripts
@@ -620,7 +624,7 @@ sub merge {
   $flags &= ~$FLAG_EMPH if $mathstyle;    # Disable emph in math
 
   my $newfont = (ref $self)->new_internal($family, $series, $shape, $size,
-    $color, $bg, $opacity,
+    $color,     $bg, $opacity,
     $encoding,  $language,
     $mathstyle, $flags);
   if (my $specialize = $options{specialize}) {
@@ -702,10 +706,10 @@ sub purestyleChanges {
 sub mergePurestyle {
   my ($self, %stylechanges) = @_;
   my $new = $self->new_internal(@$self);
-  $$new[3] = $$self[3] * $stylechanges{scale} if $stylechanges{scale};
-  $$new[4] = $stylechanges{color}             if $stylechanges{color};
-  $$new[5] = $stylechanges{background}        if $stylechanges{background};
-  $$new[6] = $stylechanges{opacity}           if $stylechanges{opacity};
+  $$new[3] = $$self[3] * $stylechanges{scale}                            if $stylechanges{scale};
+  $$new[4] = $stylechanges{color}                                        if $stylechanges{color};
+  $$new[5] = $stylechanges{background}                                   if $stylechanges{background};
+  $$new[6] = $stylechanges{opacity}                                      if $stylechanges{opacity};
   $$new[9] = $stepmathstyle{ $$self[9] }{ $stylechanges{mathstylestep} } if $stylechanges{mathstylestep};
   return new; }
 

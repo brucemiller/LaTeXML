@@ -1943,6 +1943,9 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
       width => $props{width});
 
     $document->absorb($contents);
+    if (!$issvg) {
+      while (!$document->getElement()->hasAttribute('_beginscope') && $document->maybeCloseElement('svg:g')) { }
+      $document->maybeCloseElement('svg:svg'); }
     $document->closeNode($node); },
 
   mode => 'text', bounded => 1,
