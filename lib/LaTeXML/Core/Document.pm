@@ -1721,14 +1721,31 @@ sub openElementAt {
     next if $key eq 'font';       # !!!
     next if $key eq 'locator';    # !!!
     $self->setAttribute($newnode, $key, $attributes{$key}); }
-  $self->setNodeFont($newnode, $font)                                                   if $font;
-  $self->setNodeBox($newnode, $box)                                                     if $box;
+  $self->setNodeFont($newnode, $font)     if $font;
+  $self->setNodeBox($newnode, $box)       if $box;
+  $self->appendElementBox($newnode, $box) if $box;
+
   print STDERR "Inserting " . Stringify($newnode) . " into " . Stringify($point) . "\n" if $LaTeXML::Core::Document::DEBUG;
 
   # Run afterOpen operations
   $self->afterOpen($newnode);
-
   return $newnode; }
+
+# When appending nodes to an autoOpen'd node, we'll need to record the new boxes there, too.
+sub appendElementBox {
+  my ($self, $node, $box) = @_;
+  my ($p, $origbox);
+  if (($p = $node->parentNode) && ($p->nodeType == XML_ELEMENT_NODE)
+    && $p->getAttribute('_autoopened')
+    && ($origbox = $self->getNodeBox($p)) && ($origbox ne $box)) {
+    my $newbox = List($origbox, $box);
+    $self->setNodeBox($p, $newbox);
+    # AND, propogate to autoOpen'd ancestors due to same initial box (See appendTextBox)
+    while (($p = $p->parentNode) && ($p->nodeType == XML_ELEMENT_NODE)
+      && $p->getAttribute('_autoopened')
+      && (($self->getNodeBox($p) || '') eq $origbox)) {
+      $self->setNodeBox($p, $newbox); } }
+  return; }
 
 sub openElement_internal {
   my ($self, $point, $ns, $tag) = @_;
