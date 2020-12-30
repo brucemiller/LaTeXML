@@ -398,6 +398,9 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
     # Babel's expecting \bbl@pop@language
     return @boxes; });
 
+# \enddocument is used directly in e.g. standalone.cls
+Let(T_CS('\enddocument'), T_CS('\end{document}'), 'global');
+
 #**********************************************************************
 # C.3. Sentences and Paragraphs
 #**********************************************************************
