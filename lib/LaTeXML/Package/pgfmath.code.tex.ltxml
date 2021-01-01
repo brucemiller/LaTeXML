@@ -83,7 +83,7 @@ sub pgfmathresult {
 DefMacro('\@@@show@mathresult{}', sub {
     my ($gulet, $result) = @_;
     $result = ToString(Expand($result));
-    print STDERR "RESULT $result\n";
+    Debug("RESULT $result");
     return; });
 
 #======================================================================
@@ -91,7 +91,7 @@ DefMacro('\@@@show@mathresult{}', sub {
 DefMacro('\@@@show@pgfmatharg@{}', sub {
     my ($gullet, $arg) = @_;
     $arg = ToString(Expand($arg));
-    print STDERR "MATH ARG $arg\n";
+    Debug("MATH ARG $arg");
     return; });
 
 # A plain argument that is expanded in the parameter type definition,
@@ -260,7 +260,7 @@ DefMacro('\@@@test@mathresult{}{}{}', sub {
         "PGF: '$pgfresult'",
         "LTX: '$lxresult'"); }
     else {
-      print STDERR "PGFParse OK '$input' => '$pgfresult' or '$lxresult'\n"; }
+      Debug("PGFParse OK '$input' => '$pgfresult' or '$lxresult'"); }
     return; });
 
 DefMacro('\pgfmath@smuggleone Until:\endgroup', sub {
@@ -322,14 +322,11 @@ sub pgfmathparse {
     $result         = $PGFMATHGrammar->expr(\$string); }
 
   $result = $result || 0.0;
-  #  $result = "0.0" if $result eq "0";
-  #    print STDERR "  GOT " . (defined $result ? $result : '<fail>') . "\n";
   if ($string) {
     Error('pgfparse', 'pgfparse', $gullet,
       "Parse of '$input' failed",
       "LTX: '$result'",
       "Left: $string"); }
-  #     print STDERR "  REMAINDER: $string\n" if $string;
   # There seem to be some pesky expectations for the results
   if ($result == 0.0) {
     $result = "0."; }

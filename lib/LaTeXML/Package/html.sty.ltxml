@@ -72,7 +72,7 @@ DefConstructorI(T_CS("\\begin{rawhtml}"), undef, '', reversion => '',
       $gullet->readRawLine;    # IGNORE 1st line (after the \begin{$name} !!!
       while (defined($line = $gullet->readRawLine) && ($line ne $endmark)) {
         $nlines++; }
-      NoteProgress("[Skip rawhtml ($nlines lines)]"); }]);
+      NoteStatus(1, "Skip rawhtml ($nlines lines)"); }]);
 
 DefConstructorI(T_CS("\\begin{htmlonly}"), undef, '', reversion => '',
   afterDigest => [sub {
@@ -84,7 +84,7 @@ DefConstructorI(T_CS("\\begin{htmlonly}"), undef, '', reversion => '',
       $gullet->readRawLine;    # IGNORE 1st line (after the \begin{$name} !!!
       while (defined($line = $gullet->readRawLine) && ($line ne $endmark)) {
         $nlines++; }
-      NoteProgress("[Skip htmlonly ($nlines lines)]"); }]);
+      NoteStatus(1, "Skip htmlonly ($nlines lines)"); }]);
 
 DefMacro('\html{}', '');
 # I assume we should go ahead and try to include this material?

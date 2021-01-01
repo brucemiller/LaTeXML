@@ -166,7 +166,7 @@ sub getBibliographies {
         $raw .= "%\n"; } }
     my $bibdoc = $self->convertBibliography($doc, $raw);
     push(@bibs, $bibdoc) if $bibdoc; }
-  NoteProgress(" [using bibliographies "
+  NoteStatus(1, "MakeBibliography: using bibliographies "
       . join(',', map { (length($_) > 100 ? substr($_, 100) . '...' : $_) } @bibnames)
       . "]");
   return @bibs; }
@@ -201,8 +201,10 @@ sub convertBibliography {
     else {
       push(@preload, "$pkg.sty"); } }
   my $bibname = pathname_is_literaldata($bib) ? 'Anonymous Bib String' : $bib;
-  NoteProgress(" [Converting bibliography $bibname ...");
+  NoteStatus(1, "MakeBibliography: Converting bibliography $bibname ...");
   my $bib_config = LaTeXML::Common::Config->new(
+    recursive      => 1,
+    verbosity      => $$self{verbosity},
     cache_key      => 'BibTeX',
     type           => "BibTeX",
     post           => 0,
@@ -216,32 +218,32 @@ sub convertBibliography {
   # Tricky and HACKY, we need to release the log to capture the inner workings separately.
   # ->bind_log analog:
   my $biblog = '';
-  my $biblog_handle;
-  open($biblog_handle, ">>", \$biblog) or Error("Can't redirect STDERR to log for inner bibliography converter!");
-  *BIB_STDERR_SAVED = *STDERR;
-  *STDERR           = *$biblog_handle;
+###  my $biblog_handle;
+###  open($biblog_handle, ">>", \$biblog) or Error("Can't redirect STDERR to log for inner bibliography converter!");
+###  *BIB_STDERR_SAVED = *STDERR;
+###  *STDERR           = *$biblog_handle;
   # end ->bind_log
 
   $bib_converter->prepare_session($bib_config);
   my $response = $bib_converter->convert($bib);
 
   # ->flush_log analog:
-  close $biblog_handle;
-  *STDERR = *BIB_STDERR_SAVED;
+###  close $biblog_handle;
+###  *STDERR = *BIB_STDERR_SAVED;
   # end ->flush_log
 
   # Trim log to look internal and report.
-  $biblog =~ s/^.+?\(Digesting/\n\(Digesting/s;
-  $biblog =~ s/Conversion complete:.+$//s;
-  print STDERR $biblog;
+###  $biblog =~ s/^.+?\(Digesting/\n\(Digesting/s;
+###  $biblog =~ s/Conversion complete:.+$//s;
+###  print STDERR $biblog;
   MergeStatus($$bib_converter{latexml}{state});
 
   # TODO: We need to handle the logging properly, it's a bit of a mess for nested ->convert() calls
   if (my $bibdoc = $$response{result}) {
-    NoteProgress("... converted!]");
+    NoteStatus(1, "... converted!");
     return $doc->new($bibdoc, sourceDirectory => '.'); }
   else {
-    NoteProgress("... Failed!]");
+    NoteStatus(1, "... Failed!");
     return; } }
 
 # ================================================================================
@@ -343,7 +345,7 @@ sub getBibEntries {
     my $bibkey = $$entry{bibkey};
     map { $entries{ normalizeBibKey($_) }{bibreferrers}{$bibkey} = 1 } @{ $$entry{citations} }; }
 
-  NoteProgress(" [" . (scalar keys %entries) . " bibentries, " . (scalar keys %$included) . " cited]");
+  NoteStatus(1, "MakeBibliography: " . (scalar keys %entries) . " bibentries, " . (scalar keys %$included) . " cited");
   Warn('expected', 'bibkeys', undef,
     "Missing bibkeys " . join(', ', sort keys %missing_keys)) if keys %missing_keys;
 

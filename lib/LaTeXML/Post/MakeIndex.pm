@@ -63,11 +63,11 @@ sub build_tree {
   my $defaultlistname = 'idx';
   my $listname        = 'idx';    # Eventually customizable for different indices?
   if (my @keys = grep { /^INDEX:/ } $$self{db}->getKeys) {
-    NoteProgress(" [" . scalar(@keys) . " entries]");
+    NoteStatus(2, "MakeIndex: " . scalar(@keys) . " entries");
 
-    my $id = $index->getAttribute('xml:id');
+    my $id         = $index->getAttribute('xml:id');
     my $allphrases = {};          # Keep a hash of all phrase textContent=>id encountered (for seealso)
-    my $tree = { subtrees => {}, referrers => {}, id => $id, parent => undef };
+    my $tree       = { subtrees => {}, referrers => {}, id => $id, parent => undef };
     foreach my $key (@keys) {
       my $entry   = $$self{db}->lookup($key);
       my $phrases = $entry->getValue('phrases');
@@ -174,7 +174,7 @@ my $GREEK_RE = '(' . join('|', sort keys %GREEK_ASCII_MAP) . ')';
 sub getIndexKeyID {
   my ($key) = @_;
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
-        # We don't want accented chars (do we?) but we need to decompose the accents!
+      # We don't want accented chars (do we?) but we need to decompose the accents!
   $key = NFD($key);
   $key =~ s/$GREEK_RE/$GREEK_ASCII_MAP{$1}/eg;
   $key = unidecode($key);
@@ -317,7 +317,7 @@ sub seealsoSearch {
 sub seealsoSearch_rec {
   my ($doc, $allphrases, $contexttree, @parts) = @_;
   my ($link, @links);
-  if (scalar(@parts) < 1) { return (); }
+  if    (scalar(@parts) < 1) { return (); }
   elsif (scalar(@parts) < 3) {
     # Single term? (w/ possible trailing punct) just look it up
     if ($link = lookupSeealsoPhrase($doc, $allphrases, $contexttree, $parts[0])) {
@@ -352,10 +352,10 @@ sub lookupSeealsoPhrase {
   my ($doc, $allphrases, $contexttree, $pair) = @_;
   my ($phrase, @xml) = @$pair;
   # concoct various phrases to search for
-  my $pnc   = $phrase; $pnc =~ s/,\s*/ /sg;        # Ignore punct?
-  my $ps    = $phrase; $ps =~ s/(\w+)s\b/$1/sg;    # Ignore plurals?
-  my $psnc  = $ps;     $psnc =~ s/,\s*/ /sg;       # Ignore punct AND plurals?
-  my $pnlvl = $phrase; $pnlvl =~ s/,\s*/./sg;      # Convert punct to levels?
+  my $pnc   = $phrase; $pnc   =~ s/,\s*/ /sg;         # Ignore punct?
+  my $ps    = $phrase; $ps    =~ s/(\w+)s\b/$1/sg;    # Ignore plurals?
+  my $psnc  = $ps;     $psnc  =~ s/,\s*/ /sg;         # Ignore punct AND plurals?
+  my $pnlvl = $phrase; $pnlvl =~ s/,\s*/./sg;         # Convert punct to levels?
   foreach my $trial ($phrase, lc($phrase),
     $pnc,   lc($pnc),
     $ps,    lc($ps),
@@ -387,7 +387,7 @@ sub seealsoPartition {
   while (@parts) {
     my $next    = shift(@parts);
     my $prev_is = ($result[-1][0] =~ /^,?\s*(?:,|\.|\s+|\band\s+also|\band|\bor)\s*$/);
-    my $next_is = ($$next[0] =~ /^(?:,|\.|\s+|and\b|or\b)/);
+    my $next_is = ($$next[0]      =~ /^(?:,|\.|\s+|and\b|or\b)/);
     # If either BOTH or NEITHER prev & next are delimiters, combine them.
     if (!($prev_is xor $next_is)) {
       my ($k, @x) = @$next;

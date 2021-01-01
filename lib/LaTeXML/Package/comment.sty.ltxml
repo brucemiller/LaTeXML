@@ -31,7 +31,7 @@ sub defineExcluded {
         $gullet->readRawLine;    # IGNORE 1st line (after the \begin{$name} !!!
         while (defined($line = $gullet->readRawLine) && ($line ne $endmark)) {
           $nlines++; }
-        NoteProgress("[Skipped $name ($nlines lines)]"); }]);
+        NoteStatus(1, "[Skipped $name ($nlines lines)]"); }]);
   return; }
 
 sub defineIncluded {

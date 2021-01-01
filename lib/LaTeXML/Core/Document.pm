@@ -30,6 +30,8 @@ use base qw(LaTeXML::Common::Object);
 our $FONT_ELEMENT_NAME = "ltx:text";
 our $MATH_TOKEN_NAME   = "ltx:XMTok";
 our $MATH_HINT_NAME    = "ltx:XMHint";
+DebuggableFeature('document');
+
 #**********************************************************************
 
 # [could conceivable make more sense to let the Stomach create the Document?]
@@ -49,6 +51,8 @@ sub new {
     idstore    => {}, labelstore => {},
     node_fonts => {}, node_boxes => {}, node_properties => {},
     pending    => [], progress   => 0 }, $class; }
+
+our $CONSTRUCTION_PROGRESS_QUANTUM = 50;
 
 #**********************************************************************
 # Basic Accessors
@@ -282,10 +286,10 @@ sub getTagActionList {
 sub doctest {
   my ($self, $when, $severe) = @_;
   local $LaTeXML::NNODES = 0;
-  print STDERR "\nSTART DOC TEST $when....." . ($severe ? "\n" : '');
+  Debug("START DOC TEST $when.....");
   if (my $root = $self->getDocument->documentElement) {
     $self->doctest_rec(undef, $root, $severe); }
-  print STDERR "...(" . $LaTeXML::NNODES . " nodes)....DONE\n";
+  Debug("...(" . $LaTeXML::NNODES . " nodes)....DONE");
   return; }
 
 sub doctest_rec {
@@ -294,60 +298,57 @@ sub doctest_rec {
   $self->doctest_head($parent, $node, $severe);
   my $type = $node->nodeType;
   if ($type == XML_ELEMENT_NODE) {
-    print STDERR "ELEMENT "
-      . join(' ', "<" . $$self{model}->getNodeQName($node),
-      (map { $_->nodeName . '="' . $_->getValue . '"' } $node->attributes)) . ">\n"
+    Debug("ELEMENT "
+        . join(' ', "<" . $$self{model}->getNodeQName($node),
+        (map { $_->nodeName . '="' . $_->getValue . '"' } $node->attributes)) . ">")
       if $severe;
     $self->doctest_children($node, $severe); }
   elsif ($type == XML_ATTRIBUTE_NODE) {
-    print STDERR "ATTRIBUTE " . $node->nodeName . "=>" . $node->getValue . "\n" if $severe; }
+    Debug("ATTRIBUTE " . $node->nodeName . "=>" . $node->getValue) if $severe; }
   elsif ($type == XML_TEXT_NODE) {
-    print STDERR "TEXT " . $node->textContent . "\n" if $severe; }
+    Debug("TEXT " . $node->textContent) if $severe; }
   elsif ($type == XML_CDATA_SECTION_NODE) {
-    print STDERR "CDATA " . $node->textContent . "\n" if $severe; }
+    Debug("CDATA " . $node->textContent) if $severe; }
   #  elsif($type == XML_ENTITY_REF_NODE){}
   #  elsif($type == XML_ENTITY_NODE){}
   elsif ($type == XML_PI_NODE) {
-    print STDERR "PI " . $node->localname . " " . $node->getData . "\n" if $severe; }
+    Debug("PI " . $node->localname . " " . $node->getData) if $severe; }
   elsif ($type == XML_COMMENT_NODE) {
-    print STDERR "COMMENT " . $node->textContent . "\n" if $severe; }
+    Debug("COMMENT " . $node->textContent) if $severe; }
   #  elsif($type == XML_DOCUMENT_NODE){}
   #  elsif($type == XML_DOCUMENT_TYPE_NODE){
   elsif ($type == XML_DOCUMENT_FRAG_NODE) {
-    print STDERR "DOCUMENT_FRAG \n" if $severe;
+    Debug("DOCUMENT_FRAG") if $severe;
     $self->doctest_children($node, $severe); }
   #  elsif($type == XML_NOTATION_NODE){}
   #  elsif($type == XML_HTML_DOCUMENT_NODE){}
   #  elsif($type == XML_DTD_NODE){}
   else {
-    print STDERR "OTHER $type\n" if $severe; }
+    Debug("OTHER $type") if $severe; }
   return; }
 
 sub doctest_head {
   my ($self, $parent, $node, $severe) = @_;
   # Check consistency of document, parent & type, before proceeding
-  print STDERR "  NODE $$node [" if $severe;    # BEFORE checking nodeType!
-  print STDERR "d"               if $severe;
+  Debug("  NODE $$node [") if $severe;    # BEFORE checking nodeType!
   if (!$node->ownerDocument->isSameNode($self->getDocument)) {
-    print STDERR "!" if $severe; }
-  print STDERR "p" if $severe;
+    Debug("d!") if $severe; }
   if ($parent && !$node->parentNode->isSameNode($parent)) {
-    print STDERR "!" if $severe; }
-  print STDERR "t" if $severe;
+    Debug("p!") if $severe; }
   my $type = $node->nodeType;
-  print STDERR "] " if $severe;
+  Debug("t] ") if $severe;
   return; }
 
 sub doctest_children {
   my ($self, $node, $severe) = @_;
-  print STDERR "[fc" if $severe;
+  Debug("[fc") if $severe;
   my $c = $node->firstChild;
   while ($c) {
-    print STDERR "]\n" if $severe;
+    Debug("]") if $severe;
     $self->doctest_rec($node, $c, $severe);
-    print STDERR "[nc" if $severe;
+    Debug("[nc") if $severe;
     $c = $c->nextSibling; }
-  print STDERR "]done\n" if $severe;
+  Debug("]done") if $severe;
   return; }
 
 #**********************************************************************
@@ -727,8 +728,8 @@ sub openText {
     (($t == XML_DOCUMENT_NODE)    # Ignore initial whitespace
     || (($t == XML_ELEMENT_NODE) && !$self->canContain($node, '#PCDATA')));
   return if $font->getFamily eq 'nullfont';
-  print STDERR "To openText \"$text\" /" . Stringify($font) . " at " . Stringify($node) . "\n"
-    if $LaTeXML::Core::Document::DEBUG;
+  Debug("openText \"$text\" /" . Stringify($font) . " at " . Stringify($node))
+    if $LaTeXML::DEBUG{document};
 
   # Get the desired font attributes, particularly the desired element
   # (usually ltx:text, but let Font override, eg for \emph)
@@ -766,8 +767,8 @@ sub openText {
 #  When relativizing, should it depend on font attribute on element and/or DTD allowed attribute?
 sub openElement {
   my ($self, $qname, %attributes) = @_;
-  NoteProgress('.') if ($$self{progress}++ % 25) == 0;
-  print STDERR "To openElement $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
+  NoteProgress() if ($$self{progress}++ % $CONSTRUCTION_PROGRESS_QUANTUM) == 0;
+  Debug("openElement $qname at " . Stringify($$self{node})) if $LaTeXML::DEBUG{document};
   my $point = $self->find_insertion_point($qname);
   $attributes{_box} = $LaTeXML::BOX unless $attributes{_box};
   my $newnode = $self->openElementAt($point, $qname,
@@ -783,7 +784,7 @@ sub openElement {
 # This is kinda risky! Maybe we should try to request closing of specific nodes.
 sub closeElement {
   my ($self, $qname) = @_;
-  print STDERR "To closeElement $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
+  Debug("closeElement $qname at " . Stringify($$self{node})) if $LaTeXML::DEBUG{document};
   $self->closeText_internal();
   my ($node, @cant_close) = ($$self{node});
   while ($node->nodeType != XML_DOCUMENT_NODE) {
@@ -1029,8 +1030,8 @@ sub floatToElement {
     else {
       my $savenode = $$self{node};
       $self->setNode($n);
-      print STDERR "Floating from " . Stringify($savenode) . " to " . Stringify($n) . " for $qname\n"
-        if ($$savenode ne $$n) && $LaTeXML::Core::Document::DEBUG;
+      Debug("Floating from " . Stringify($savenode) . " to " . Stringify($n) . " for $qname")
+        if ($$savenode ne $$n) && $LaTeXML::DEBUG{document};
       return $savenode; } }
   else {
     Warn('malformed', $qname, $self, "No open node can contain element '$qname'",
@@ -1092,7 +1093,8 @@ sub openText_internal {
   my ($self, $text) = @_;
   my $qname;
   if ($$self{node}->nodeType == XML_TEXT_NODE) {    # current node already is a text node.
-    print STDERR "openText (int): Appending text \"$text\" to " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
+    Debug("Appending text \"$text\" to " . Stringify($$self{node})) if $LaTeXML::DEBUG{document};
+    print STDERR "Appending text \"$text\" to " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
     my $parent = $$self{node}->parentNode;
     if ($LaTeXML::BOX && $parent->getAttribute('_autoopened')) {
       $self->appendTextBox($parent, $LaTeXML::BOX); }
@@ -1103,8 +1105,8 @@ sub openText_internal {
     my $node  = $$self{document}->createTextNode($text);
     if ($point->getAttribute('_autoopened')) {
       $self->appendTextBox($point, $LaTeXML::BOX); }
-    print STDERR "openText (int): Inserting text node for \"$text\" into " . Stringify($point) . "\n"
-      if $LaTeXML::Core::Document::DEBUG;
+    Debug("Inserting text node for \"$text\" into " . Stringify($point))
+      if $LaTeXML::DEBUG{document};
     $point->appendChild($node);
     $self->setNode($node); }
   return $$self{node}; }                                # return the text node (current)
@@ -1135,10 +1137,8 @@ sub openMathText_internal {
   my $node = $$self{node};
   my $font = $self->getNodeFont($node);
   $node->appendText($string);
-  ##print STDERR "Trying Math Ligatures at \"$string\"\n";
   if (!$STATE->lookupValue('NOMATHPARSE')) {
-    $self->applyMathLigatures($node);
-  }
+    $self->applyMathLigatures($node); }
   return $node; }
 
 # New stategy (but inefficient): apply ligatures until one succeeds,
@@ -1728,12 +1728,10 @@ sub openElementAt {
     next if $key eq 'font';       # !!!
     next if $key eq 'locator';    # !!!
     $self->setAttribute($newnode, $key, $attributes{$key}); }
-  $self->setNodeFont($newnode, $font)     if $font;
-  $self->setNodeBox($newnode, $box)       if $box;
-  $self->appendElementBox($newnode, $box) if $box;
-
-  print STDERR "OpenElementAt Inserting " . Stringify($newnode) . " into " . Stringify($point) . "\n" if $LaTeXML::Core::Document::DEBUG;
-
+  $self->setNodeFont($newnode, $font)                                      if $font;
+  $self->setNodeBox($newnode, $box)                                        if $box;
+  $self->appendElementBox($newnode, $box)                                  if $box;
+  Debug("Inserting " . Stringify($newnode) . " into " . Stringify($point)) if $LaTeXML::DEBUG{document};
   # Run afterOpen operations
   $self->afterOpen($newnode);
   return $newnode; }

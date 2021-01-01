@@ -43,7 +43,7 @@ sub process {
     my @nav = $doc->findnodes("descendant::ltx:navigation");
     $doc->removeNodes(@nav) if @nav;
     my $tree = { node => $root, document => $doc,
-      id       => $root->getAttribute('xml:id'), name => $doc->getDestination,
+      id => $root->getAttribute('xml:id'), name => $doc->getDestination,
       children => [] };
     # Group the pages into a tree, in case they are nested.
     my $haschildren = {};
@@ -56,7 +56,7 @@ sub process {
     $self->addNavigation($tree, @nav) if @nav;
   }
   my $n = scalar(@docs);
-  NoteProgressDetailed(($n > 1 ? " [Split into in $n TOCs]" : "[not split]"));
+  NoteStatus(2, ($n > 1 ? " [Split into in $n TOCs]" : "[not split]"));
   return @docs; }
 
 # Get the nodes in the document that WILL BECOME separate "pages".
@@ -125,7 +125,7 @@ sub processPages {
       # Due to the way document building works, we remove & process children pages
       # BEFORE processing this page.
       my @childdocs = $self->processPages($doc, @{ $$entry{children} });
-      my $subdoc = $doc->newDocument($page, destination => $$entry{name},
+      my $subdoc    = $doc->newDocument($page, destination => $$entry{name},
         parentDocument => $doc, parent_id => $$entry{upid});
       $$entry{document} = $subdoc;
       push(@docs, $subdoc, @childdocs); }

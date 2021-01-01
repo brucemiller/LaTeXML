@@ -32,7 +32,9 @@ sub new {
 
 sub finish {
   my ($self) = @_;
+  return if $$self{finished};
   NoteEnd("Loading $$self{source}");
+  $$self{finished} = 1;
   return; }
 
 # Evolve to figure out if this gets dynamic location!

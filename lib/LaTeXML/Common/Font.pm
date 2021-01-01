@@ -396,7 +396,6 @@ sub match_font {
       my $re   = '^Font\['
         . join(',', map { ($_ eq '*' ? "[^,]+" : "\Q$_\E") } @comp)
         . '\]$';
-      print STDERR "\nCreating re for \"$font1\" => $re\n";
       $regexp = $FONT_REGEXP_CACHE{$font1} = qr/$re/; } }
   return $font2 =~ /$regexp/; }
 

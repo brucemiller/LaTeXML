@@ -71,8 +71,8 @@ sub invoke {
     LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
     $result = Tokens(&$expansion($gullet, @args));
     if ($tracing) {    # More involved...
-      print STDERR "\n" . $self->tracingCSName . ' ==> ' . tracetoString($result) . "\n";
-      print STDERR $self->tracingArgs(@args) . "\n" if @args; } }
+      Message("\n" . $self->tracingCSName . ' ==> ' . tracetoString(Tokens(@result)));
+      Message($self->tracingArgs(@args)) if @args; } }
   elsif (!$$self{parameters}) {    # Trivial macro
     LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
     if ($tracing) {                # More involved...
@@ -96,8 +96,8 @@ sub invoke {
           && (($r eq 'LaTeXML::Core::Token') || ($r eq 'LaTeXML::Core::Tokens'))
         ? $_ : Tokens(Revert($_))); } @args;
     if ($tracing) {    # More involved...
-      print STDERR "\n" . $self->tracingCSName . ' -> ' . tracetoString($expansion) . "\n";
-      print STDERR $self->tracingArgs(@targs) . "\n" if @args; }
+      Message("\n" . $self->tracingCSName . ' -> ' . tracetoString($expansion));
+      Message($self->tracingArgs(@targs)) if @args; }
     LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
     $result = $expansion->substituteParameters(@targs); }
   # Getting exclusive requires dubious Gullet support!

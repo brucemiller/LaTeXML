@@ -319,7 +319,7 @@ sub process {
       # Now do cross referencing
       $proc1->addCrossrefs($doc, $proc2);
       $proc2->addCrossrefs($doc, $proc1); } }
-  NoteProgressDetailed(" [converted $n Maths]");
+  NoteStatus(2, "converted $n Maths");
   return $doc; }
 
 # Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),

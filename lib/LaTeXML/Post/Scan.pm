@@ -129,7 +129,7 @@ sub process {
       $self->addAsChild($id, $parent_id); }
     else {
       Info('expected', 'parent', undef, "No parent document found for '$id'"); } }
-  NoteProgressDetailed(" [DBStatus: " . $$self{db}->status . "]");
+  NoteStatus(2, "Scan: DBStatus: " . $$self{db}->status);
   return $doc; }
 
 sub scan {

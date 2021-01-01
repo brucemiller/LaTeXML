@@ -64,21 +64,21 @@ sub invoke_conditional {
   my @args  = ($parms ? $parms->readArguments($gullet) : ());
   $$LaTeXML::IFFRAME{parsing} = 0;    # Now, we're done parsing the Test clause.
   my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
-  print STDERR '{' . $self->tracingCSName . "} [#$ifid]\n" if $tracing;
-  print STDERR $self->tracingArgs(@args) . "\n"            if $tracing && @args;
+  Message('{' . $self->tracingCSName . "} [#$ifid]") if $tracing;
+  Message($self->tracingArgs(@args))                 if $tracing && @args;
   if (my $test = $self->getTest) {
     my $result = &$test($gullet, @args);
     if ($result) {
-      print STDERR "{true}\n" if $tracing; }
+      Message("{true}") if $tracing; }
     else {
       my $to = skipConditionalBody($gullet, -1);
-      print STDERR "{false} [skipped to " . ToString($to) . "]\n" if $tracing; } }
+      Message("{false} [skipped to " . ToString($to) . "]") if $tracing; } }
   # If there's no test, it must be the Special Case, \ifcase
   else {
     my $num = $args[0]->valueOf;
     if ($num > 0) {
       my $to = skipConditionalBody($gullet, $num);
-      print STDERR "{$num} [skipped to " . ToString($to) . "]\n" if $tracing; } }
+      Message("{$num} [skipped to " . ToString($to) . "]") if $tracing; } }
   return; }
 
 #======================================================================
@@ -162,9 +162,9 @@ sub invoke_else {
   else {
     local $LaTeXML::IFFRAME = $$stack[0];
     my $t = skipConditionalBody($gullet, 0);
-    print STDERR '{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
-      . " [for " . ToString($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid}
-      . " skipping to " . ToString($t) . "]\n"
+    Message('{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
+        . " [for " . ToString($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid}
+        . " skipping to " . ToString($t) . "]")
       if $STATE->lookupValue('TRACINGCOMMANDS');
     return; } }
 
@@ -181,8 +181,8 @@ sub invoke_fi {
   else {                            # "expand" by removing the stack entry for this level
     local $LaTeXML::IFFRAME = $$stack[0];
     $STATE->shiftValue('if_stack');    # Done with this frame
-    print STDERR '{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
-      . " [for " . Stringify($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid} . "]\n"
+    Message('{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
+        . " [for " . Stringify($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid} . "]")
       if $STATE->lookupValue('TRACINGCOMMANDS');
     return; } }
 

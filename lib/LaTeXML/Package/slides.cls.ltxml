@@ -81,7 +81,7 @@ DefPrimitiveI('\visible',   undef, undef, font => { opacity => 1 });    # ?
 
 DefPrimitive('\showfont', sub {
     my $font = LookupValue('font');
-    print STDERR "\nFONT IS: " . Stringify($font) . "\n";
+    Message("\nFONT IS: " . Stringify($font));
     return; });
 
 RequirePackage('color');           # ?

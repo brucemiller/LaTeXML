@@ -53,25 +53,25 @@ sub loadSchema {
   NoteBegin("Loading RelaxNG $$self{name}");
   # Scan the schema file(s), and extract the info
   my @schema = $self->scanExternal($$self{name});
-  if ($LaTeXML::Common::Model::RelaxNG::DEBUG) {
-    print STDERR "========================\nRaw Schema\n";
+  if ($LaTeXML::DEBUG{relaxng}) {
+    Debug("========================\nRaw Schema");
     map { showSchema($_) } @schema; }
   @schema = map { $self->simplify($_) } @schema;
-  if ($LaTeXML::Common::Model::RelaxNG::DEBUG) {
-    print STDERR "========================\nSimplified Schema\n";
+  if ($LaTeXML::DEBUG{relaxng}) {
+    Debug("========================\nSimplified Schema");
     map { showSchema($_) } @schema;
-    print STDERR "========================\nElements\n";
+    Debug("========================\nElements");
     foreach my $tag (sort keys %{ $$self{elements} }) {
       showSchema(['element', $tag, @{ $$self{elements}{$tag} }]); }
-    print STDERR "========================\nModules\n";
+    Debug("========================\nModules");
     foreach my $mod (@{ $$self{modules} }) {
       showSchema($mod); } }
 
   # The resulting @schema should contain the "start" of the grammar.
   my ($startcontent) = $self->extractContent('#Document', @schema);
   $$self{model}->addTagContent('#Document', sort keys %$startcontent);
-  if ($LaTeXML::Common::Model::RelaxNG::DEBUG) {
-    print STDERR "========================\nStart\n" . join(', ', sort keys %$startcontent) . "\n"; }
+  if ($LaTeXML::DEBUG{relaxng}) {
+    Debug("========================\nStart\n" . join(', ', sort keys %$startcontent)); }
 
   # NOTE: Do something automatic about this too!?!
   # We'll need to generate namespace prefixes for all namespaces found in the doc!
@@ -107,7 +107,7 @@ sub extractContent {
       my ($op, $name, @args) = @$item;
       if    ($op eq 'attribute')  { $attr{$name}  = 1; }
       elsif ($op eq 'elementref') { $child{$name} = 1; }
-      elsif ($op eq 'doc')        { }
+      elsif ($op eq 'doc')         { }
       elsif ($op eq 'combination') { push(@body, @args); }
       elsif ($op eq 'grammar')     { push(@body, $self->extractStart(@args)); }
       elsif ($op eq 'module')      { push(@body, $self->extractStart(@args)); }
@@ -122,7 +122,8 @@ sub extractContent {
         $child{$name} = 1; }    # ???
       elsif (($op eq 'value') || ($op eq 'data')) {
         $child{'#PCDATA'} = 1; }
-      else { print STDERR "Unknown child $op [$name] of element $tag in extractContent\n"; } }
+      else { Warn('unexpected', $name, undef,
+          "Unknown child $op [$name] of element $tag in extractContent\n"); } }
     elsif ($item eq '#PCDATA') { $child{'#PCDATA'} = 1; } }
   return ({%child}, {%attr}); }
 
@@ -181,7 +182,7 @@ local @LaTeXML::Common::Model::RelaxNG::PATHS = ();
 sub scanExternal {
   my ($self, $name, $inherit_ns) = @_;
   my $modname = $name; $modname =~ s/\.rn(g|c)$//;
-  my $paths = [@LaTeXML::Common::Model::RelaxNG::PATHS, @{ $STATE->lookupValue('SEARCHPATHS') }];
+  my $paths   = [@LaTeXML::Common::Model::RelaxNG::PATHS, @{ $STATE->lookupValue('SEARCHPATHS') }];
   if (my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name, searchpaths => $paths)) {
     my $uri = $schemadoc->URI;
     NoteBegin("Loading RelaxNG schema from $uri");
@@ -203,7 +204,7 @@ sub scanExternal {
 sub getRelaxOp {
   my ($node) = @_;
   return unless $node->nodeType == XML_ELEMENT_NODE;
-  my $ns = $node->namespaceURI;
+  my $ns     = $node->namespaceURI;
   my $prefix = $ns && $RNGNSMAP{$ns};
   return ($prefix ? $prefix : "{$ns}") . ":" . $node->localname; }
 
@@ -266,7 +267,7 @@ sub scanPattern_element {
         $self->scanChildren($ns, @children)]); }
   else {
     my $namenode = shift(@children);
-    my @names = $self->scanNameClass($namenode, 0, $ns);
+    my @names    = $self->scanNameClass($namenode, 0, $ns);
     return map { ['element', $_, $self->scanChildren($ns, @children)] } @names; } }
 
 sub scanPattern_attribute {
@@ -278,7 +279,7 @@ sub scanPattern_attribute {
         $self->scanChildren($ns, @children)]); }
   else {
     my $namenode = shift(@children);
-    my @names = $self->scanNameClass($namenode, 1, $ns);
+    my @names    = $self->scanNameClass($namenode, 1, $ns);
     return map { ['attribute', $_, $self->scanChildren($ns, @children)] } @names; } }
 
 sub scanChildren {
@@ -293,18 +294,18 @@ sub scanGrammarItem {
   my ($self, $node, $inherit_ns) = @_;
   if (my $relaxop = getRelaxOp($node)) {
     my @children = getElements($node);
-    my $ns       = $node->getAttribute('ns') || $inherit_ns;   # Possibly bind new namespace
-                                                               # The start element's content is returned
+    my $ns       = $node->getAttribute('ns') || $inherit_ns;    # Possibly bind new namespace
+        # The start element's content is returned
     if ($relaxop eq 'rng:start') {
       return (['start', undef, $self->scanChildren($ns, @children)]); }
     elsif ($relaxop eq 'rng:define') {
       my $name = $node->getAttribute('name');
-      my $op = $node->getAttribute('combine') || '';
+      my $op   = $node->getAttribute('combine') || '';
       return (['def' . $op, $name, $self->scanChildren($ns, @children)]); }
     elsif ($relaxop eq 'rng:div') {
       return $self->scanGrammarContent($ns, @children); }
     elsif ($relaxop eq 'rng:include') {
-      my $name = $node->getAttribute('href');
+      my $name  = $node->getAttribute('href');
       my $paths = [@LaTeXML::Common::Model::RelaxNG::PATHS, @{ $STATE->lookupValue('SEARCHPATHS') }];
       if (my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name, searchpaths => $paths)) {
         local @LaTeXML::Common::Model::RelaxNG::PATHS
@@ -445,7 +446,7 @@ sub simplify {
       return (['ref', $qname]); }
     elsif ($op =~ /^def(choice|interleave|)$/) {
       my $combination = $1 || 'group';
-      my $qname = $binding . ":" . $name;
+      my $qname       = $binding . ":" . $name;
       $$self{usesname}{$qname}{$container} = 1 if $container;
       @args = $self->simplify_args($binding, $parentbinding, "pattern:$qname", @args);
 
@@ -512,12 +513,12 @@ sub showSchema {
   if (ref $item eq 'ARRAY') {
     my ($op, $name, @args) = @$item;
     if ($op eq 'doc') { $name = "..."; @args = (); }
-    print STDERR "" . (' ' x (2 * $level)) . $op . ($name ? " " . $name : '') . "\n";
+    Debug("" . (' ' x (2 * $level)) . $op . ($name ? " " . $name : ''));
 
     foreach my $arg (@args) {
       showSchema($arg, $level + 1); } }
   else {
-    print STDERR "" . (' ' x (2 * $level)) . $item . "\n"; }
+    Debug("" . (' ' x (2 * $level)) . $item); }
   return; }
 
 #======================================================================
@@ -533,8 +534,8 @@ sub documentModules {
   $$self{defined_patterns} = {};
   foreach my $module (@{ $$self{modules} }) {
     my ($op, $name, @content) = @$module;
-    next if $SKIP_SVG && $name =~ /:svg:/;    # !!!!
-    $name =~ s/^urn:x-LaTeXML:RelaxNG://;     # Remove the urn part.
+    next if $SKIP_SVG && $name =~ /:svg:/;                        # !!!!
+    $name =~ s/^urn:x-LaTeXML:RelaxNG://;                         # Remove the urn part.
     $docs = join("\n", $docs,
       "\\begin{schemamodule}{$name}",
       (map { $self->toTeX($_) } @content),
@@ -623,8 +624,8 @@ sub toTeX_def {
     return "\\patternadd{$name}{$docs}{$body}\n"; }
   #      elsif((scalar(@data)==1) && (ref $data[0] eq 'ARRAY') && ($data[0][0] eq 'grammar')){
   else {
-    $attr = '\item[\textit{Attributes:}] \textit{empty}' if !$attr && ($name =~ /\\_attributes/);
-    $content = '\textit{empty}' if !$content && ($name =~ /\\_model/);
+    $attr    = '\item[\textit{Attributes:}] \textit{empty}' if !$attr    && ($name =~ /\\_attributes/);
+    $content = '\textit{empty}'                             if !$content && ($name =~ /\\_model/);
     my $body = $attr;
     $body .= '\item[\textit{Content}:] ' . $content if $content;
     my ($xattr, $xcontent) = $self->toTeXBody($$self{defs}{$qname});

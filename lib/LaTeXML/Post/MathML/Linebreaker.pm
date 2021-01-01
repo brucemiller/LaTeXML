@@ -13,6 +13,7 @@ package LaTeXML::Post::MathML::Linebreaker;
 use strict;
 use warnings;
 use LaTeXML::Common::XML;
+use LaTeXML::Common::Error;
 use List::Util qw(min max);
 
 #======================================================================
@@ -48,7 +49,6 @@ use List::Util qw(min max);
 #######################################################################
 # Parameters
 #######################################################################
-my $DEBUG             = 0;           # [CONSTANT]
 my $NOBREAK           = 99999999;    # penalty=$NOBREAK means don't break at all. [CONSTANT]
 my $POORBREAK_FACTOR  = 20;          # to make breaks less desirable.[CONSTANT]
 my $BADBREAK_FACTOR   = 100;         # to make breaks much less desirable.[CONSTANT]
@@ -56,6 +56,7 @@ my $PENALTY_OK        = 5;           # [CONSTANT]
 my $PENALTY_LIMIT     = 1000;        # worst penalty we'll tolerate; prune anything above.[CONSTANT]
 my $CONVERSION_FACTOR = 2;           # to make breaks at converted ops less desirable[CONSTANT]
 
+DebuggableFeature('linebreaking', "MathML Linebreaking");
 # TODO: Integrate default operator dictionary, and recognize attributes
 # TODO: all addops, relops,
 # TODO: mult ops, but less desirable
@@ -76,7 +77,7 @@ my %CONVERTOPS = (                        # [CONSTANT]
   "\x{2062}" => UTF(0xD7),                # Invisible (discretionary) times
 );
 my %FENCEOPS = map { ($_ => 1) }          # [CONSTANT]
-  "(", ")", "[", "]", "{", "}", "|", "||", "|||",
+  "(",        ")",        "[",        "]",        "{",        "}",        "|", "||", "|||",
   "\x{2018}", "\x{2019}", "\x{201C}", "\x{201D}", "\x{2016}", "\x{2016}", "\x{2308}",
   "\x{2309}", "\x{230A}", "\x{230B}", "\x{2772}", "\x{2773}", "\x{27E6}", "\x{27E7}",
   "\x{27E8}", "\x{27E9}", "\x{27EA}", "\x{27EB}", "\x{27EC}", "\x{27ED}", "\x{27EE}",
@@ -93,7 +94,7 @@ my %SEPARATOROPS = map { ($_ => 1) }      # [CONSTANT]
 
 sub new {
   my ($class) = @_;
-  my $self = bless {}, $class;
+  my $self    = bless {}, $class;
   return $self; }
 
 sub fitToWidth {
@@ -111,10 +112,10 @@ sub fitToWidth {
     $LaTeXML::Post::MathML::Linebreaker::PUNCT = $n[1]; }
 
   # Compute the possible layouts
-  print STDERR "\nStarting layout of " . showNode($mml) . "\n" if $DEBUG;
+  Debug("Starting layout of " . showNode($mml)) if $LaTeXML::DEBUG{linebreaking};
   my $layouts = layout($mml, $width, 0, 1);
-  if ($DEBUG) {
-    print STDERR "Got " . scalar(@$layouts) . " layouts:\n";
+  if ($LaTeXML::DEBUG{linebreaking}) {
+    Debug("Got " . scalar(@$layouts) . " layouts:");
     map { showLayout($_) } @$layouts; }
 
   # Apply the best layout
@@ -125,7 +126,7 @@ sub fitToWidth {
   if ($LaTeXML::Post::MathML::Linebreaker::PUNCT) {
     $mml = ['m:mrow', {}, $mml, $LaTeXML::Post::MathML::Linebreaker::PUNCT]; }
 
-  Warn("Got width $$best{width} > $width") if $$best{width} > $width + 1;
+  layout_warn("Got width $$best{width} > $width") if $$best{width} > $width + 1;
   return $mml; }
 
 sub bestFitToWidth {
@@ -141,19 +142,19 @@ sub bestFitToWidth {
     $mml = $n[0]; }
 
   # Compute the possible layouts
-  print STDERR "\nStarting layout of " . showNode($mml) . "\n" if $DEBUG;
+  Debug("Starting layout of " . showNode($mml)) if $LaTeXML::DEBUG{linebreaking};
   my @layouts = @{ layout($mml, $width, 0, 1) };
 
   # Add a penalty for larger overall area.
   my ($maxarea, $minarea) = (0, 999999999);
   map { $$_{area} = $$_{width} * ($$_{depth} + $$_{height}) } @layouts;
-  map { $maxarea = max($maxarea, $$_{area}) } @layouts;
-  map { $minarea = min($minarea, $$_{area}) } @layouts;
+  map { $maxarea  = max($maxarea, $$_{area}) } @layouts;
+  map { $minarea  = min($minarea, $$_{area}) } @layouts;
   map { $$_{penalty} *= (1 + ($$_{area} - $minarea) / ($maxarea - $minarea)) } @layouts
     if $maxarea > $minarea;
 
-  if ($DEBUG) {
-    print STDERR "Got " . scalar(@layouts) . " layouts:\n";
+  if ($LaTeXML::DEBUG{linebreaking}) {
+    Debug("Got " . scalar(@layouts) . " layouts:");
     map { showLayout($_) } @layouts; }
 
   # Depending on the pruning algorithm & parameters used,
@@ -179,7 +180,7 @@ sub bestFitToWidth {
     @layouts;
   $best = $sorted[0];
 
-  Warn("Got width $$best{width} > $width") if $$best{width} > $width + 1;
+  layout_warn("Got width $$best{width} > $width") if $$best{width} > $width + 1;
   # Return the best layout
   return $best; }
 
@@ -201,14 +202,14 @@ sub applyLayout {
   return $mml; }
 
 # (only called during layout; not applying layout)
-sub Warn {
+sub layout_warn {
   my ($message) = @_;
   my $p = $LaTeXML::Post::MathML::Linebreaker::MATH;
   while ($p && !$p->hasAttribute('xml:id')) {
     $p = $p->parentNode; }
   my $id = $p && $p->getAttribute('xml:id') || '?';
   my $nm = $p && $p->getAttribute('refnum') || '';
-  LaTeXML::Post::Info('unexpected', 'toowide', "id=$id", $message);
+  Info('unexpected', 'toowide', "id=$id", $message);
   return; }
 
 #######################################################################
@@ -262,7 +263,6 @@ sub applyLayout_rec {
       applyLayout_rec($lastchild);
       # If the close was taken up by a child, remove it here.
       if (!grep { $_ eq $close } @LaTeXML::Post::MathML::Linebreaker::CLOSE) {
-        # print STDERR "MOVING CLOSE $close\n";
         pop(@$node); }
       else {
         shift(@LaTeXML::Post::MathML::Linebreaker::CLOSE); } }
@@ -412,9 +412,9 @@ sub describeLayouts {
   my @layouts = @$layouts;
   my $min     = $layouts[0];
   my $max     = $layouts[-1];
-  print STDERR "Layout " . scalar(@layouts) . " layout options\n"
-    . "  best = $$max{width} x ($$max{height} + $$max{depth}) penalty = $$max{penalty}\n"
-    . "  narrowest = $$min{width} x ($$min{height} + $$min{depth})  penalty = $$min{penalty}\n";
+  Debug("Layout " . scalar(@layouts) . " layout options\n"
+      . "  best = $$max{width} x ($$max{height} + $$max{depth}) penalty = $$max{penalty}\n"
+      . "  narrowest = $$min{width} x ($$min{height} + $$min{depth})  penalty = $$min{penalty}");
   showLayout($max);
   return; }
 
@@ -422,7 +422,7 @@ sub showLayout {
   my ($layout, $indent, $pos) = @_;
   $indent = 0 unless $indent;
   my $pre = (' ') x (2 * $indent) . (defined $pos ? "[$pos] " : "");
-  print STDERR $pre . layoutDescriptor($layout) . "\n";
+  Debug($pre . layoutDescriptor($layout));
   if ($$layout{children}) {
     my $p = 0;
     foreach my $child (@{ $$layout{children} }) {
@@ -517,7 +517,7 @@ sub layout {
   if (!$handler) {
     LaTeXML::Post::Fatal("unexpected", $name, $node,
       "Can't find layout handler for $name"); }
-  print STDERR "", ('  ' x $level), "layout $name: ", $node, "...\n" if $DEBUG > 1;
+  Debug(('  ' x $level), "layout $name: ", $node, "...") if $LaTeXML::DEBUG{linebreaking};
   # Get the handler to compute the layouts
   my $layouts  = &$handler($node, $target, $level, $demerits || 1);
   my $nlayouts = scalar(@$layouts);
@@ -525,11 +525,11 @@ sub layout {
   # Sort & prune the layouts
   my @layouts = prunesort($target, @$layouts);
   my $pruned  = scalar(@layouts);
-  print STDERR "", ('  ' x $level), "$name: $nlayouts layouts"
-    . ($pruned < $nlayouts ? " pruned to $pruned" : "")
-    . " " . layoutDescriptor($$layouts[0])
-    . ($nlayouts > 1 ? "..." . layoutDescriptor($$layouts[$nlayouts - 1]) : "")
-    . "\n" if $DEBUG > 1;
+  Debug(('  ' x $level), "$name: $nlayouts layouts"
+      . ($pruned < $nlayouts ? " pruned to $pruned" : "")
+      . " " . layoutDescriptor($$layouts[0])
+      . ($nlayouts > 1 ? "..." . layoutDescriptor($$layouts[$nlayouts - 1]) : "")
+  ) if $LaTeXML::DEBUG{linebreaking};
   return [@layouts]; }
 
 # Note that this sorts first by width, then penalty.
@@ -610,7 +610,7 @@ sub asRow {
     for (my $i = 1 ; $i < $n - 1 ; $i++) {
       my $child   = $children[$i];
       my $content = (nodeName($child) eq 'm:mo') && textContent($child);
-      if (!$content) { }
+      if    (!$content) { }
       elsif ($RELATIONOPS{$content}) {
         push(@breaks, [$i, $content, $demerits]) if $running > $pass_indent;
         if (!defined $lhs_pos) {
@@ -646,15 +646,15 @@ sub asRow {
   # and quit as soon as we get reasonable layouts; Pruning is _essential_!!!
   my $nbreaks    = scalar(@breaks);
   my $nbreaksets = 2**$nbreaks;
-  print STDERR "", ("  " x $level), $type, " ",
+  Debug(("  " x $level), $type, " ",
     join("x", map { scalar(@$_) } @child_layouts), " layouts",
     (@breaks
-    ? ", breaks@" . join(",", map { "[" . join(',', @$_) . "]" } @breaks)
-      . "(" . $nbreaksets . " sets;"
-      . product((map { scalar(@$_) } @child_layouts), $nbreaksets) . " combinations"
-      . ")"
-    : "") . "\n"
-    if $DEBUG > 1;
+      ? ", breaks@" . join(",", map { "[" . join(',', @$_) . "]" } @breaks)
+        . "(" . $nbreaksets . " sets;"
+        . product((map { scalar(@$_) } @child_layouts), $nbreaksets) . " combinations"
+        . ")"
+      : ""))
+    if $LaTeXML::DEBUG{linebreaking};
 
   my @layouts = ();
   # For each set of breaks within this row
@@ -665,7 +665,7 @@ sub asRow {
   my @children_layouts = multiplex(@child_layouts);
   my $breakpositions   = [];
 BREAKSET: while (1) {
-    my $breakset     = [map    { $breaks[$_] } @$breakpositions];
+    my $breakset     = [map { $breaks[$_] } @$breakpositions];
     my $breakpenalty = sum(map { $$_[2] } @$breakset);
     # PRUNE if we've gotten a reasonable layout or are getting too many breaks
     if (scalar(@$breakpositions) > 4) {
@@ -701,7 +701,7 @@ BREAKSET: while (1) {
           $h         = max($h,         $$child_layout{height});
           $d         = max($d,         $$child_layout{depth});
           $rowheight = max($rowheight, $$child_layout{rowheight} || $$child_layout{height});
-          $rowdepth  = max($rowdepth,  $$child_layout{rowdepth} || $$child_layout{depth});
+          $rowdepth  = max($rowdepth,  $$child_layout{rowdepth}  || $$child_layout{depth});
         }
         # Then combine the lines
         $width  = max($width, $w + $indent);
@@ -716,7 +716,7 @@ BREAKSET: while (1) {
           width       => $width, height => $height, depth => $depth,
           indentation => $indentation,
           rowheight   => ($hasfences ? 1.2 * $rowheight : $rowheight),
-          rowdepth    => ($hasfences ? 1.2 * $rowdepth : $rowdepth),
+          rowdepth    => ($hasfences ? 1.2 * $rowdepth  : $rowdepth),
           lhs_pos     => $lhs_pos,
           (scalar(@$breakset) ? (breakset => $breakset) : ()),
           hasbreak     => scalar(@$breakset) || scalar(grep { $$_{hasbreak} } @$children_layout),
@@ -737,7 +737,7 @@ BREAKSET: while (1) {
 ##  map { $$_{penalty} *= (1+($$_{area} -$minarea)/$maxarea) } @layouts if $maxarea > $minarea;
 
   @layouts = prunesort($target, @layouts);
-  Warn("Row (" . nodeName($node) . ") got no layouts!") unless @layouts;
+  layout_warn("Row (" . nodeName($node) . ") got no layouts!") unless @layouts;
   return [@layouts]; }
 
 sub split_row {
@@ -767,7 +767,7 @@ sub breakstepper {
     $$breaks[-1]++;    # increment last break point
     return $breaks; }
   else {
-    pop(@$breaks);     # Remove last break point.
+    pop(@$breaks);                                            # Remove last break point.
     $breaks = breakstepper($nbreaks, $breaks, $delta + 1);    # step the previous break point.
     return unless $breaks;
     my $prev = $$breaks[-1];
@@ -855,9 +855,9 @@ sub layout_mstyle {
   if (my $d = getAttribute($node, 'displaystyle')) {
     $LaTeXML::DISPLAYSTYLE = ($d eq 'true'); }
   if (my $s = getAttribute($node, 'scriptlevel')) {
-    if ($s =~ /^\+(\d+)$/) { $LaTeXML::SCRIPTLEVEL += $1; }
+    if    ($s =~ /^\+(\d+)$/) { $LaTeXML::SCRIPTLEVEL += $1; }
     elsif ($s =~ /^\-(\d+)$/) { $LaTeXML::SCRIPTLEVEL -= $1; }
-    elsif ($s =~ /^(\d+)$/) { $LaTeXML::SCRIPTLEVEL = $1; } }
+    elsif ($s =~ /^(\d+)$/)   { $LaTeXML::SCRIPTLEVEL = $1; } }
   return asRow($node, $target, $level, $demerits); }
 
 #======================================================================
@@ -928,8 +928,8 @@ sub layout_mtable {
     foreach my $col (nodeChildren($row)) {
       my $layout = layout($col, $target, $level + 1, $NOBREAK)->[0];
       $widths[$i] = max($widths[$i] || 0, $$layout{width});
-      $h = max($h, $$layout{height});
-      $d = max($d, $$layout{depth});
+      $h          = max($h,               $$layout{height});
+      $d          = max($d,               $$layout{depth});
       $i++; }
     push(@heights, $h); push(@depths, $d); }
   my $width = sum(@widths);
@@ -949,10 +949,10 @@ sub layout_mtable {
 
 sub tableVAlignment {
   my ($align, $height, $depth) = @_;
-  if    ($align eq 'top')    { $depth  = $height + $depth;       $height = 0; }
-  elsif ($align eq 'bottom') { $height = $height + $depth;       $depth  = 0; }
-  elsif ($align eq 'center') { $height = ($height + $depth) / 2; $depth  = $height; }
-  elsif ($align eq 'axis')   { $height = ($height + $depth) / 2; $depth  = $height; }
+  if    ($align eq 'top')      { $depth  = $height + $depth;       $height = 0; }
+  elsif ($align eq 'bottom')   { $height = $height + $depth;       $depth  = 0; }
+  elsif ($align eq 'center')   { $height = ($height + $depth) / 2; $depth  = $height; }
+  elsif ($align eq 'axis')     { $height = ($height + $depth) / 2; $depth  = $height; }
   elsif ($align eq 'baseline') { }
   return ($height, $depth); }
 
@@ -994,9 +994,9 @@ sub asScripts {
     while (@scripts) {
       my $sub = shift(@scripts);
       my $sup = shift(@scripts);
-      $width  += max($$sub{width}, $$sup{width});
-      $height += max($height,      $$sup{depth} + $$sup{height});    # Roughly..
-      $depth  += max($depth,       $$sub{depth} + $$sub{height});
+      $width   += max($$sub{width}, $$sup{width});
+      $height  += max($height,      $$sup{depth} + $$sup{height});    # Roughly..
+      $depth   += max($depth,       $$sub{depth} + $$sub{height});
       $penalty += $$sub{penalty} + $$sup{penalty}; }
     $penalty += $$base{penalty};
     if ($stacked) {

@@ -33,7 +33,7 @@ DefPrimitive('\use@@tikzlibrary{}', sub {
     foreach my $lib (split(/,/, $libs = ToString(Expand($libs)))) {
       $lib =~ s/^\s+//; $lib =~ s/\s+$//;
       if ($lib && !LookupDefinition(T_CS('\tikz@library@' . $lib . '@loaded'))) {
-        print STDERR "\nTIKZ LIBRARY $lib\n";
+        Message("\nTIKZ LIBRARY $lib");
         Let(T_CS('\tikz@library@' . $lib . '@loaded'), T_CS('\pgfutil@empty'));
         my $barcc = LookupCatcode('|');
         AssignCatcode('|', CC_OTHER);

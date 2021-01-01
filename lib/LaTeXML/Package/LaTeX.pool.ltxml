@@ -357,15 +357,6 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
     # It is common for unclosed { or even environments
     # and we want to at least compress & avoid unnecessary errors & warnings.
     my $nframes = $STATE->getFrameDepth;
-# Expect 0 frames, top with environment document.
-# print STDERR "\n\nEND DOCUMENT; $nframes frames\n";
-# for(my $i=0; $i <= $nframes; $i++){
-#   my $nonbox = $STATE->valueInFrame('groupNonBoxing',$i) || 0;
-#   my $tok = $STATE->valueInFrame('groupInitiator',        $i) || '<unknown>';
-#   my $loc = $STATE->valueInFrame('groupInitiatorLocator', $i) || '<unknown>';
-#   my $env = $STATE->isValueBound('current_environment', $i)
-#       && $STATE->valueInFrame('current_environment', $i);
-#   print STDERR "Frame $i: nonboxing=$nonbox; tok=".ToString($tok).' '.$loc." env=".($env||'none')."\n"; }
     my $ifstack;
     if ($STATE->isValueBound('current_environment', 0)
       && ($STATE->valueInFrame('current_environment', 0) eq 'document')
@@ -3865,14 +3856,13 @@ DefMacro('\lx@mung@bibliography{}', sub {
     my @tokens = ();
     # If we're in some sort of list environment, maybe we can recover
     if (($tag eq 'enumerate') || ($tag eq 'itemize') || ($tag eq 'description')) {
-      print STDERR "\nDamn! We're in a list {$tag}; try to close it!\n";
+      # nDamn! We're in a list {$tag}; try to close it!
       push(@tokens, Invocation('\end', $env),
         T_CS('\let'), T_CS('\end' . $tag), T_CS('\endthebibliography'),
         T_CS('\let'), T_CS('\end{' . $tag . '}'), T_CS('\end{thebibliography}')); }
     # else ? it probably isn't going to work??
-    print STDERR "Now, try to open {thebibliography}\n";
+    # Now, try to open {thebibliography}
     push(@tokens, Invocation('\begin', Tokenize('thebibliography'), Tokens()));
-    print STDERR "PATCHING with " . ToString(Tokens(@tokens)) . "\n";
     return Tokens(@tokens); });
 
 DefConstructorI('\lx@bibnewblock', undef, "<ltx:bibblock>");
@@ -4000,7 +3990,7 @@ DefConstructorI(T_CS("\\begin{filecontents}"), "Semiverbatim",
       while (defined($line = $gullet->readRawLine) && ($line ne '\end{filecontents}')) {
         push(@lines, $line); }
       AssignValue($filename . '_contents' => join("\n", @lines), 'global');
-      NoteProgress("[Cached filecontents for $filename (" . scalar(@lines) . " lines)]"); }]);
+      NoteStatus(1, "Cached filecontents for $filename (" . scalar(@lines) . " lines)"); }]);
 DefConstructorI(T_CS("\\begin{filecontents*}"), "Semiverbatim",
   '',
   reversion   => '',
@@ -4013,7 +4003,7 @@ DefConstructorI(T_CS("\\begin{filecontents*}"), "Semiverbatim",
       while (defined($line = $gullet->readRawLine) && ($line ne '\end{filecontents*}')) {
         push(@lines, $line); }
       AssignValue($filename . '_contents' => join("\n", @lines), 'global');
-      NoteProgress("[Cached filecontents* for $filename (" . scalar(@lines) . " lines)]"); }]);
+      NoteStatus(1, "Cached filecontents* for $filename (" . scalar(@lines) . " lines)"); }]);
 DefMacro('\endfilecontents', '');
 DefPrimitive('\listfiles', undef);
 
@@ -4220,7 +4210,7 @@ DefPrimitiveI('\makeglossary', undef, undef);
 
 DefPrimitive('\typeout{}', sub {
     my ($stomach, $stuff) = @_;
-    print STDERR ToString(Expand($stuff)) . "\n" if LookupValue('VERBOSITY') > -1;
+    Message(ToString(Expand($stuff))) if LookupValue('VERBOSITY') > -1;
     return; });
 
 DefPrimitive('\typein[]{}', undef);
@@ -5775,7 +5765,7 @@ DefPrimitive('\protected@write Number {}{}', sub {
       my $contents = LookupValue($handle);
       AssignValue($handle => $contents . UnTeX($tokens) . "\n", 'global'); }
     else {
-      print STDERR UnTeX($tokens) . "\n"; }
+      Message(UnTeX($tokens)); }
     $stomach->egroup;
     return @stuff; });
 

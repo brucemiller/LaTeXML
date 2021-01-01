@@ -130,8 +130,8 @@ sub assign_internal {
   my ($self, $table, $key, $value, $scope) = @_;
   $scope = ($$self{prefixes}{global} ? 'global' : 'local') unless defined $scope;
   if (exists $$self{tracing_definitions}{$key}) {
-    print STDERR "ASSIGN $key in $table " . ($scope ? "($scope)" : '') . " => " .
-      (ref $value ? $value->stringify : $value) . "\n"; }
+    Debug("ASSIGN $key in $table " . ($scope ? "($scope)" : '') . " => " .
+        (ref $value ? $value->stringify : $value)); }
   if ($scope eq 'global') {
     # Remove bindings made in all frames down-to & including the next lower locked frame
     my $frame;
@@ -152,7 +152,6 @@ sub assign_internal {
       $$self{undo}[0]{$table}{$key} = 1;
       unshift(@{ $$self{$table}{$key} }, $value); } }    # And push new binding.
   else {
-    # print STDERR "Assigning $key in stash $stash\n";
     assign_internal($self, 'stash', $scope, [], 'global') unless $$self{stash}{$scope}[0];
     push(@{ $$self{stash}{$scope}[0] }, [$table, $key, $value]);
     assign_internal($self, $table, $key, $value, 'local')

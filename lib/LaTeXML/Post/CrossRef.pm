@@ -15,6 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
+use LaTeXML::Common::Error;
 use charnames qw(:full);
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Processor);
@@ -233,7 +234,7 @@ sub fill_in_tocs {
       $lists = { toc => 1 };
       @list  = $self->gentoc_context($doc, $id, $show, $lists, $types); }
     $doc->addNodes($toc, ['ltx:toclist', {}, @list]) if @list; }
-  NoteProgressDetailed(" [Filled in $n TOCs]");
+  NoteStatus(2, "Filled in $n TOCs");
   return; }
 
 # generate TOC for $id & its children,
@@ -318,7 +319,7 @@ sub fill_in_frags {
       if (my $fragid = $entry->getValue('fragid')) {
         $n++;
         $node->parentNode->setAttribute(fragid => $fragid); } } }
-  NoteProgressDetailed(" [Filled in fragment $n ids]");
+  NoteStatus(2, "Filled in fragment $n ids");
   return; }
 
 # Fill in content text for any <... @idref..>'s or @labelref
@@ -360,7 +361,7 @@ sub fill_in_refs {
       if (my $entry = $$self{db}->lookup("ID:$id")) {
         $ref->setAttribute(stub => 1) if $entry->getValue('stub'); }
   } }
-  NoteProgressDetailed(" [Filled in $n refs]");
+  NoteStatus(2, "Filled in $n refs");
   return; }
 
 # similar sorta thing for RDF about & resource labels & ids
@@ -389,7 +390,7 @@ sub fill_in_RDFa_refs {
             $ref->setAttribute($key => '#' . $id); } }
   } } }
   set_RDFa_prefixes($doc->getDocument, {});    # what prefixes??
-  NoteProgressDetailed(" [Filled in $n RDFa refs]");
+  NoteStatus(2, "Filled in $n RDFa refs");
   return; }
 
 sub fill_in_mathlinks {
@@ -419,7 +420,7 @@ sub fill_in_mathlinks {
         if (my $tag = $entry->getValue('tag:short') || $entry->getValue('description')) {
           $sym->setAttribute(title => getTextContent($doc, $tag)); }
   } } }
-  NoteProgressDetailed(" [Filled in $n math links]");
+  NoteStatus(2, "Filled in $n math links");
   return; }
 
 # Given a declaration entry (ltx:declare, or ltx:mark or ...)
@@ -453,7 +454,7 @@ sub fill_in_bibrefs {
   foreach my $bibref ($doc->findnodes('descendant::ltx:bibref')) {
     $n++;
     $doc->replaceNode($bibref, $self->make_bibcite($doc, $bibref)); }
-  NoteProgressDetailed(" [Filled in $n bibrefs]");
+  NoteStatus(2, "Filled in $n bibrefs");
   return; }
 
 # Given a list of bibkeys, construct links to them.
@@ -593,7 +594,7 @@ sub make_bibcite {
             push(@r, $yysep, ' ', ['ltx:ref', $$next{attr}, @{ $$next{number} }]); }
           push(@stuff, ['ltx:sup', {}, @r]); }
         else {
-          print STDERR "CITE ignoring show key '$role'\n"; } }
+          Info('unexpected', $role, $doc, "CITE ignoring show key '$role'"); } }
       elsif ($show =~ s/^\{([^\}]*)\}//) {    # pass-thru literal, quoted with {}
         push(@stuff, $1) if $1; }
       elsif ($show =~ s/^~//) {               # Pass-thru spaces
@@ -863,7 +864,7 @@ sub fillInGlossaryRef {
     if (!$ref->textContent && !element_nodes($ref)) {
       $doc->addNodes($ref, $key);
       $doc->addClass($ref, 'ltx_missing'); } }
-  NoteProgressDetailed(" [Filled in $n glossaryrefs]");
+  NoteStatus(2, "Filled in $n glossaryrefs");
   return; }
 
 sub generateGlossaryRefTitle {

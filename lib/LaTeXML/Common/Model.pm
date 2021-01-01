@@ -429,13 +429,13 @@ sub isInSchemaClass {
 #**********************************************************************
 sub describeModel {
   my ($self) = @_;
-  print STDERR "Doctype\n";
+  Debug("Doctype");
   foreach my $tag (sort keys %{ $$self{tagprop} }) {
     if (my $model = $$self{tagprop}{$tag}{model}) {
       if (keys %$model) {
-        print STDERR "$tag can contain " . join(', ', sort keys %{ $$self{tagprop}{$tag}{model} }) . "\n"; } }
+        Debug("$tag can contain " . join(', ', sort keys %{ $$self{tagprop}{$tag}{model} })); } }
     else {
-      print STDERR "$tag is empty\n"; }
+      Debug("$tag is empty"); }
   }
   return; }
 

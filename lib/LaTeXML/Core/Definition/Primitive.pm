@@ -52,11 +52,11 @@ sub invoke {
   my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
   my $tracing  = $STATE->lookupValue('TRACINGCOMMANDS');
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
-  print STDERR '{' . $self->tracingCSName . "}\n"                if $tracing;
+  Message('{' . $self->tracingCSName . '}')                      if $tracing;
   my @result = ($self->executeBeforeDigest($stomach));
   my $parms  = $$self{parameters};
   my @args   = ($parms ? $parms->readArguments($stomach->getGullet, $self) : ());
-  print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
+  Message($self->tracingArgs(@args)) if $tracing && @args;
   push(@result,
     &{ $$self{replacement} }($stomach, @args),
     $self->executeAfterDigest($stomach));

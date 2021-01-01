@@ -31,9 +31,12 @@ use base qw(LaTeXML::Common::Object);
 sub new {
   my ($class, %options) = @_;
   return bless {
-    mouth => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
-    verbosity => $options{verbosity} || 0
+    mouth     => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
+    verbosity => $options{verbosity} || 0,
+    progress  => 0,
   }, $class; }
+
+our $TOKEN_PROGRESS_QUANTUM = 10000;
 
 #**********************************************************************
 # Start reading tokens from a new Mouth.
@@ -333,6 +336,7 @@ sub readXToken {
           push(@{ $$self{pending_comments} }, $token); }
         elsif ($cc == CC_MARKER) {
           $self->handleMarker($token); } } }
+    NoteProgress() if ($$self{progress}++ % $TOKEN_PROGRESS_QUANTUM) == 0;
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.

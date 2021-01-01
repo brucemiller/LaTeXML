@@ -54,7 +54,7 @@ sub new {
   # Parameters for separating the clipping box from the
   # desired padding between image edge and "ink"
   $$self{padding} = $options{padding} || 2;    # pixels
-        # amount of extra space (+padding) to put between object & rules for clipping
+      # amount of extra space (+padding) to put between object & rules for clipping
   $$self{clippingfudge} = 3;       # px
   $$self{clippingrule}  = 0.90;    # pixels (< 1 to avoid antialiasing..?)
 
@@ -181,8 +181,8 @@ sub cleanTeX {
   if ($tex =~ s/^\s*(\\displaystyle|\\textstyle|\\scriptstyle|\\scriptscriptstyle)\s*//) {
     $style = $1; }
   $tex =~ s/^(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*//; # Trim leading spacing (especially negative!)
-  $tex =~ s/(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*$//; # and trailing spacing
-       # Strip comments, but watchout for \% (or more exactly, an ODD number of \)
+  $tex =~ s/(?:\\\s*,|\\!\s*|\\>\s*|\\;\s*|\\:\s*|\\ \s*|\\\/\s*)*$//;    # and trailing spacing
+      # Strip comments, but watchout for \% (or more exactly, an ODD number of \)
   $tex =~ s/(?<!\\)((?:\\\\)*)\%[^\n]*\n/$1/gs;
   $tex = $style . ' ' . $tex if $style;    # Put back the style, if any
   return $tex; }
@@ -253,7 +253,7 @@ sub generateImages {
       next if -f pathname_absolute($1, $destdir); }
     push(@pending, $table{$key}); }
 
-  NoteProgress(" [$nuniq unique; " . scalar(@pending) . " new]");
+  NoteStatus(2, "LaTeXImages: $nuniq unique; " . scalar(@pending) . " new");
   if (@pending) {    # if any images need processing
         # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
     File::Temp->safe_level(File::Temp::HIGH);
@@ -345,7 +345,6 @@ sub generateImages {
           my $d = int(0.5 + ($dd || 0) + $$self{padding});
           if ((($w == 1) && ($ww > 1)) || (($h == 1) && ($hh > 1))) {
             Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!"); }
-#          print STDERR "\nFor key='$$entry{key}': Image[$index] '$dest' $$entry{tex} $ww x $hh + $dd ==> $w x $h \\ $d\n";
           $doc->cacheStore($$entry{key}, "$dest;$w;$h;$d"); }
       }
       else {
@@ -378,6 +377,7 @@ sub pre_preamble {
   my $dest            = $doc->getDestination;
   my $description     = ($dest ? "% Destination $dest" : "");
   my $pts_per_pixel   = 72.27 / $$self{dpi} / $$self{magnification};
+
   foreach my $pkgdata (@classdata) {
     my ($package, $package_options) = @$pkgdata;
     $package_options = "[$package_options]" if $package_options && ($package_options !~ /^\[.*\]$/);
@@ -469,16 +469,16 @@ sub convert_image {
   $image->Border(width => 1, height => 1, fill => $bg);
   $image->Trim(fuzz => '75%');    # Fuzzy, to trim the gray tabs, as well!!
   $image->Set(fuzz => '0%');      # But, be SURE to RESET fuzz!! (It is NOT an "argument"!!!)
-       # [Also, be CAREFULL of ImageMagick's Floodfill variants, they sometimes go wild]
+      # [Also, be CAREFULL of ImageMagick's Floodfill variants, they sometimes go wild]
 
   # Finally, shave off the rule & fudge padding.
   my $fudge = int(0.5 + $$self{clippingfudge} + $$self{clippingrule});
   $image->Shave(width => $fudge, height => $fudge);
 
   my ($w, $h) = $image->Get('width', 'height');    # Get final image size
-         # ImageMagick tries to manage a "virtual" image within the image data,
-         # (whatever that means)
-         # This resets it back to the origin which avoids confusion, all 'round!
+      # ImageMagick tries to manage a "virtual" image within the image data,
+      # (whatever that means)
+      # This resets it back to the origin which avoids confusion, all 'round!
   $image->Set(page => "${w}x${h}+0+0");
 
   # Ideally, we'd make the alpha exactly opposite the ink, rather than merely 1 bit
@@ -486,7 +486,7 @@ sub convert_image {
   #  $image = $image->Fx(expression=>'(3.0-r+g+b)/3.0', channel=>'alpha');
   $image->Transparent(color => $bg);
 
-  NoteProgressDetailed(" [Converting $src => $dest ($w x $h)]");
+  NoteStatus(2, "LaTeXImages: Converting $src => $dest ($w x $h)");
 
   # Workaround bad png detection(?) in ImageMagick 6.6.5 (???)
   if ($$self{imagetype} eq 'png') {

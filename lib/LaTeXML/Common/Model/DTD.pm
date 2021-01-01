@@ -105,20 +105,20 @@ sub loadSchema {
 sub readDTD {
   my ($self) = @_;
   LaTeXML::Common::XML::initialize_catalogs();
-
-  NoteBegin("Loading DTD for $$self{public_id} $$self{system_id}");
+  my $message = "Loading DTD for $$self{public_id} $$self{system_id}";
+  my $how;
+  NoteBegin($message);
   # NOTE: setting XML_DEBUG_CATALOG makes this Fail!!!
   my $dtd = XML::LibXML::Dtd->new($$self{public_id}, $$self{system_id});
   if ($dtd) {
-    NoteProgress(" via catalog "); }
+    $how = " via catalog "; }
   else {    # Couldn't find dtd in catalog, try finding the file. (search path?)
     my $dtdfile = pathname_find($$self{system_id},
       paths               => $STATE->lookupValue('SEARCHPATHS'),
       installation_subdir => 'resources/DTD');
     if ($dtdfile) {
-      NoteProgress(" from $dtdfile ");
       $dtd = XML::LibXML::Dtd->new($$self{public_id}, $dtdfile);
-      NoteProgress(" from $dtdfile ") if $dtd;
+      $how = " from $dtdfile ";
       Error('misdefined', $$self{system_id}, undef,
         "Parsing of DTD \"$$self{public_id}\" \"$$self{system_id}\" failed")
         unless $dtd;
@@ -126,6 +126,8 @@ sub readDTD {
     else {
       Error('missing_file', $$self{system_id}, undef,
         "Can't find DTD \"$$self{public_id}\" \"$$self{system_id}\""); } }
+  NoteEnd($message);
+  NoteStatus(1, "Read dtd $how") if $how && $dtd;
   return $dtd; }
 
 #======================================================================
