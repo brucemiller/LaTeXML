@@ -73,6 +73,7 @@ sub colorizeString {
 # only a little bit goes to STDERR (controllable by verbosity)
 # Is there a single DWIM strategy that puts the right things on each stream?
 our $LOG;
+our $LOG_PATH;
 # NOTE: since LaTeXML.pm (currently) repeatedly opens & closes the log,
 # and doesn't (YET) know whether there's already a log open,
 # this bit of hackery only keeps the outermost log open. Fix this!
@@ -85,6 +86,7 @@ sub OpenLog {
   $log_count++;
   return if $LOG or !$path;    # already opened?
   open($LOG, ($append ? '>>' : '>'), $path) or die "Cannot open log file $path for writing: $!";
+  $LOG_PATH = $path;
   binmode($LOG, ":encoding(UTF-8)");
   return; }
 
@@ -94,6 +96,8 @@ sub CloseLog {
   return if !$LOG || $log_count;
   close($LOG) or die "Cannot close log file: $!";
   $LOG = undef;
+  NoteStatus(0, "Please see $LOG_PATH for details")
+    if $IS_TERMINAL;    # TEMPORARY HACK until LaTeXML.pm is sorted.
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -723,6 +727,25 @@ C<LaTeXML::Common::Error> does some simple stack analysis to generate more infor
 error messages for LaTeXML.  Its routines are used by the error reporting methods
 from L<LaTeXML::Global>, namely C<Warn>, C<Error> and C<Fatal>.
 
+=head2 Log File
+
+Various kinds of messages for Errors, Warnings, progress, etc. are printed to both
+STDERR and a log file, if one has been opened.  The log file typically recieves complete information
+(as adjusted by the verbosity), whereas the output to STDERR tends to be breif.
+
+=over 4
+
+=item C<< OpenLog($path, $append) >>
+
+Opens a log file on the given path. If C<$append> is true, this file will be appended to,
+otherwise, it will be created initially empty.
+
+=item C<< CloseLog() >>
+
+Close the log file.
+
+=back
+
 =head2 Error Reporting
 
 The Error reporting functions all take a similar set of arguments,
@@ -769,15 +792,56 @@ the input context, unless verbosity is quiet.
 Prints an informational message along with a short indicator of
 the input context, unless verbosity is quiet.
 
-=item C<< NoteProgress($message); >>
+=back
 
-Prints C<$message> unless the verbosity level below 0.
-Typically just a short mark to indicate motion, but can be longer;
-provide your own newlines, if needed.
+=head2 Progress Reporting
 
-=item C<< NoteProgressDetailed($message); >>
+=over 4
 
-Like C<NoteProgress>, but for noiser progress, only prints when verbosity >= 1.
+=item C<< NoteStatus($level, $message); >>
+
+Note the status of some operation by printing the C<$message>, providing verbosity is above C<$level>.
+
+=item C<< NoteBegin($stage); >>
+
+Begin a processing stage, which will be ended with C<NoteEnd($stage)>;
+This prints a message to the log such as "(stage... runtime)", where runtime is the time required.
+In conjunction with C<NoteProgress()>, creates a progress spinner on STDERR.
+
+=item C<< NoteEnd($stage); >>
+
+End a processing stage bugin with C<NoteBegin($stage);>.
+
+=item C<< NoteProgress(); >>
+
+Steps a progress spinner on STDERR.
+
+=item C<< NoteProgressDetailed(); >>
+
+Obsolete, equivalent to C<NoteProgress()>.
+
+=back
+
+=head2 Debugging
+
+Debugging statements may be embedded throughout the program. These are associated with a
+feature keyword.  A given feature is enabled using the command-line option
+C<--debug=feature>.
+
+=over 4
+
+=item C<< Debug($message) if $LaTeXML::DEBUG{$feature} >>
+
+Prints C<$message> if debugging has been enabled for the given feature.
+
+=item C<< DebuggableFeature($feature,$description) >>
+
+Declare that C<$feature> is a known debuggable feature, and give a description of it.
+
+=item C<< CheckDebuggable() >>
+
+A untility to check and report if all requested debugging features actually have debugging messages
+declared.
 
 =back
 
