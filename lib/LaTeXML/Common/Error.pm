@@ -14,15 +14,22 @@ use strict;
 use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
+use LaTeXML::Util::Pathname;
 use Time::HiRes;
 use Term::ANSIColor 2.01 qw(colored colorstrip);
 
 use base qw(Exporter);
 our @EXPORT = (
+  # Log file support
+  qw(&OpenLog &CloseLog),
   # Error Reporting
   qw(&Fatal &Error &Warn &Info),
   # Progress reporting
-  qw(&NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
+  qw(&NoteStatus &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
+  # Debugging messages
+  qw(&DebuggableFeature &Debug &CheckDebuggable),
+  # TeX originated messages
+  qw(&Message),
   # Colored-logging related functions
   qw(&colorizeString),
   # stateless message generation
@@ -32,9 +39,17 @@ our @EXPORT = (
 );
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Terminal setup
+
+binmode(STDERR, ":encoding(UTF-8)");    # and accept UTF8
+###binmode(STDERR, ":unix");       # unbuffered
+select(STDERR); $| = 1; select(STDOUT);
+
 # Color setup
+# Possibly more dynamic?
 $Term::ANSIColor::AUTORESET = 1;
 our $COLORIZED_LOGGING = -t STDERR;
+our $IS_TERMINAL       = -t STDERR;
 
 our %color_scheme = (
   details => 'bold',
@@ -50,6 +65,126 @@ sub colorizeString {
   return ($COLORIZED_LOGGING && $color_scheme{$alias}
     ? colored($string, $color_scheme{$alias})
     : $string); }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Log file
+# Initially: possibility of a single log file, as well as STDERR
+# General idea: everything goes to the log file (if any)
+# only a little bit goes to STDERR (controllable by verbosity)
+# Is there a single DWIM strategy that puts the right things on each stream?
+our $LOG;
+# NOTE: since LaTeXML.pm (currently) repeatedly opens & closes the log,
+# and doesn't (YET) know whether there's already a log open,
+# this bit of hackery only keeps the outermost log open. Fix this!
+our $log_count = 0;
+# Where? Current directory? (probably) Source directory? (probably not)
+# Option for appending?
+# Note that the $path can be a reference to a string (which gets appended to)
+sub OpenLog {
+  my ($path, $append) = @_;
+  $log_count++;
+  return if $LOG or !$path;    # already opened?
+  open($LOG, ($append ? '>>' : '>'), $path) or die "Cannot open log file $path for writing: $!";
+  binmode($LOG, ":encoding(UTF-8)");
+  return; }
+
+# Should be sure it autocloses
+sub CloseLog {
+  $log_count--;
+  return if !$LOG || $log_count;
+  close($LOG) or die "Cannot close log file: $!";
+  $LOG = undef;
+  return; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Low-level I/O
+
+# print one (or more) lines to the Log and STDERR, according to $loglevel, $termlevel, respectively.
+# If verbosity == $termlevel, only prints the 1st line of the message.
+# Print to STDERR if verbosity is >= $level; only first line if verbosity is >= $shortlevel.
+# Starts a fresh line by pushing any Spinner line ahead.
+# ORRR should $level also apply to Logfile ???
+sub _printline {
+  my ($loglevel, $termlevel, $message) = @_;
+  my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
+  return if ($verbosity < $loglevel) && ($verbosity < $termlevel);
+  $message =~ s/^\n+//s;    # Strip newlines off ends.
+  $message =~ s/\n+$//s;
+  my $clean_message = ($LOG || !$IS_TERMINAL ? strip_ansi($message) : $message);
+  $message = $clean_message unless $IS_TERMINAL;
+  print $LOG _freshline($LOG), $clean_message, "\n" if $LOG && ($verbosity >= $loglevel);
+
+  _spinnerclear();
+  if ($verbosity > $termlevel) {
+    print STDERR _freshline(\*STDERR), $message, "\n"; }
+  elsif ($verbosity >= $termlevel) {
+    # Show only single line: first line plus including 2nd, if locator
+    my $short = ($message =~ /^\n?([^\n]*)(:?\n(\s*at\s+[^\n]*))/ ? $1 . ($2 ? '...' : '') . $3 : $message);
+    print STDERR _freshline(\*STDERR), $short, "\n"; }
+  _spinnerrestore();
+  return; }
+
+our %NEEDSFRESHLINE = ();
+
+sub _freshline {
+  my ($stream) = @_;
+  if ($stream && $NEEDSFRESHLINE{$stream}) {
+    $NEEDSFRESHLINE{$stream} = 0;
+    return "\n"; }
+  return ''; }
+
+sub strip_ansi {
+  my ($string) = @_;
+  $string =~ s/\e\[[0-9;]*[a-zA-Z]//g;
+  return $string; }
+
+#======================================================================
+# Spinner support
+# Stack of [stage,count,count_message]
+# Note: Would look prettier if we blank the cursor,
+# BUT we've got to be sure to restore it!!!!
+our @spinnerstack = ();
+##our @spinnerchar  = ('-', '/', '|', '\\');
+our @spinnerchar = map { colored($_, "bold red"); } ('-', '/', '|', '\\');
+
+sub _spinnerclear {    # Clear the spinner line (if any)
+  my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
+  if ($IS_TERMINAL && ($verbosity >= 0) && @spinnerstack) {
+    my ($stage, $count, $start) = @{ $spinnerstack[-1] };
+    print STDERR "\x1b[1G\x1b[0K"; }    # clear line
+  return; }
+
+sub _spinnerrestore {    # Restore the spinner line (if any)
+  my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
+  if ($IS_TERMINAL && ($verbosity >= 0) && @spinnerstack) {
+    my ($stage, $count, $start) = @{ $spinnerstack[-1] };
+    print STDERR $stage, ' ', $spinnerchar[$count]; }
+  return; }
+
+sub _spinnerstep {    # Increment stepper
+  my () = @_;
+  my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
+  if ($IS_TERMINAL && ($verbosity >= 0) && @spinnerstack) {
+    my ($stage, $count, $start) = @{ $spinnerstack[-1] };
+    $count = ($count + 1) % 4;
+    $spinnerstack[-1][1] = $count;
+    print STDERR "\x1b[1D\x1b[0K" . $spinnerchar[$count]; }    # Clear previous, print new
+  return; }
+
+sub _spinnerpush {    # New spinner level
+  my ($stage) = @_;
+  push(@spinnerstack, [$stage, 0, [Time::HiRes::gettimeofday]]);
+  return; }
+
+sub _spinnerpop {    # Finished with spinner level
+  my ($stage) = @_;
+  if (@spinnerstack && ($stage eq $spinnerstack[-1][0])) {
+    my ($stage, $count, $start) = @{ pop(@spinnerstack) };
+    return Time::HiRes::tv_interval($start, [Time::HiRes::gettimeofday]); }
+  else {             # What else to do about mis-matched begin/end ??
+    print STDERR "SPINNER is " . ((@spinnerstack && $spinnerstack[-1][0]) || 'undef') . " not $stage\n"; }
+  return; }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Error reporting
 # Public API
@@ -99,6 +234,8 @@ sub Fatal {
   }
   else {    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
+  # inhibit message to STDERR, since die will handle that
+  _printline(-9999, -9999, $message);
   # If inside an eval, this won't actually die, but WILL set $@ for caller's use.
   die $message; }
 
@@ -120,9 +257,9 @@ sub Error {
     Fatal($category, $object, $where, $message, @details); }
   else {
     $state && $state->noteStatus('error');
-    print STDERR generateMessage(colorizeString("Error:" . $category . ":" . ToString($object), 'error'),
-      $where, $message, 1, @details)
-      if $verbosity >= -2; }
+    my $formatted = generateMessage(colorizeString("Error:" . $category . ":" . ToString($object), 'error'),
+      $where, $message, 1, @details);
+    _printline(0, 0, $formatted); }
   # Note that "100" is hardwired into TeX, The Program!!!
   my $maxerrors = ($state ? $state->lookupValue('MAX_ERRORS') : 100);
   if ($state && (defined $maxerrors) && (($state->getStatus('error') || 0) > $maxerrors)) {
@@ -136,9 +273,9 @@ sub Warn {
   my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('warning');
-  print STDERR generateMessage(colorizeString("Warning:" . $category . ":" . ToString($object), 'warning'),
-    $where, $message, 0, @details)
-    if $verbosity >= -1;
+  my $formatted = generateMessage(colorizeString("Warning:" . $category . ":" . ToString($object), 'warning'),
+    $where, $message, 0, @details);
+  _printline(0, 0, $formatted);
   return; }
 
 # Informational message; results likely unaffected
@@ -149,48 +286,95 @@ sub Info {
   my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('info');
-  print STDERR generateMessage(colorizeString("Info:" . $category . ":" . ToString($object), 'info'),
-    $where, $message, -1, @details)
-    if $verbosity >= 0;
+  my $formatted = generateMessage(colorizeString("Info:" . $category . ":" . ToString($object), 'info'),
+    $where, $message, -1, @details);
+  _printline(0, 0, $formatted);
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Progress Reporting
 #**********************************************************************
+sub NoteStatus {
+  my ($level, @stuff) = @_;
+  _printline($level, $level, join('', @stuff));
+  return; }
+
 # Progress reporting.
-
+# Needs LOG/STDERR sorted out. Maybe some Term magic on STDERR? (rotating "-"?)
+# Possibly wants more explicit levels?
+# or at least a report-always level?
 sub NoteProgress {
-  my (@stuff)   = @_;
-  my $state     = $STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  print STDERR @stuff if $verbosity >= 0;
+  _spinnerstep();
   return; }
 
-sub NoteProgressDetailed {
-  my (@stuff)   = @_;
-  my $state     = $STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  print STDERR @stuff if $verbosity >= 1;
-  return; }
+sub NoteProgressDetailed {    # Obsolete!
+  NoteProgress(); }
 
 sub NoteBegin {
   my ($stage)   = @_;
   my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  if ($state && ($verbosity >= 0)) {
-    $state->assignMapping('NOTE_TIMERS', $stage, [Time::HiRes::gettimeofday]);
-    print STDERR "\n($stage..."; }
+  if ($verbosity >= 0) {
+    _spinnerclear();
+    _spinnerpush($stage);
+    _spinnerrestore();
+    my $message = "($stage...";
+    print $LOG _freshline($LOG), $message if $LOG;
+    $NEEDSFRESHLINE{$LOG} = 1 if $LOG;
+    if (!$IS_TERMINAL) {
+      print STDERR _freshline(\*STDERR), $message;
+      $NEEDSFRESHLINE{ \*STDERR } = 1; } }
   return; }
 
 sub NoteEnd {
   my ($stage)   = @_;
   my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  if (my $start = $state && $state->lookupMapping('NOTE_TIMERS', $stage)) {
-    $state->assignMapping('NOTE_TIMERS', $stage, undef);
-    if ($verbosity >= 0) {
-      my $elapsed = Time::HiRes::tv_interval($start, [Time::HiRes::gettimeofday]);
-      print STDERR sprintf(" %.2f sec)", $elapsed); } }
+  if ($verbosity >= 0) {
+    _spinnerclear();
+    my $elapsed = _spinnerpop($stage);
+    _spinnerrestore();
+    my $message = ($elapsed ? sprintf(" %.2f sec)", $elapsed) : '?');
+    print $LOG $message       if $LOG;
+    $NEEDSFRESHLINE{$LOG} = 1 if $LOG;
+    if (!$IS_TERMINAL) {
+      print STDERR $message;
+      $NEEDSFRESHLINE{ \*STDERR } = 1; } }
+  return; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Debugging support.
+# Short of real macros, here's a flexible, low-cost debug technique:
+#   Debug(message...) if $LaTeXML::DEBUG{feature};
+our %Debugbable = ();
+#  %LaTeXML::DEBUG      = {};
+
+sub DebuggableFeature {
+  my ($feature, $description) = @_;
+  $LaTeXML::Debuggable{$feature} = $description;
+  return; }
+
+sub Debug {
+  # Note: Could append source code location of the caller?
+  _printline(0, 0, join('', @_));
+  return; }
+
+# This only makes sense at end of run, after all needed modules have been loaded!
+sub CheckDebuggable {
+  my %unknown = ();
+  foreach my $feature (keys %LaTeXML::DEBUG) {
+    $unknown{$feature} = 1 unless $LaTeXML::Debuggable{$feature}; }
+  # Now report unknown; suggest similar spellings ?
+  if (keys %unknown) {
+    print STDERR _freshline(\*STDERR), "The debugging feature(s) " . join(', ', sort keys %unknown) . " were never declared\n";
+    print STDERR _freshline(\*STDERR), "Known debugging features: " . join(', ', sort keys %LaTeXML::Debuggable) . "\n"; }
+  return; }
+
+#======================================================================
+# TeX Messages: generated by TeX/LaTeX; \message,\errmessage, tracing, etc.
+# Similar to Debug, but appends a \n (possibly should prepend, as well?)
+sub Message {
+  _printline(0, 0, join('', @_));
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -354,7 +538,7 @@ sub generateMessage {
   } }
 
   # finally, join the result into a block of lines, indenting all but the 1st line.
-  return "\n" . join("\n\t", @lines) . "\n"; }
+  return join("\n\t", @lines); }
 
 sub MergeStatus {
   my ($external_state) = @_;
