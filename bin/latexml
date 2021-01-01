@@ -19,6 +19,7 @@ use Pod::Usage;
 use LaTeXML::Core;
 use LaTeXML;    # Currently, just for version information.
 use LaTeXML::Util::Pathname;
+use LaTeXML::Common::Error;
 use Encode;
 
 #**********************************************************************
@@ -49,7 +50,7 @@ GetOptions("destination=s" => \$destination,
   "inputencoding=s" => \$inputencoding,
   "comments!"       => \$comments,
   "VERSION"         => \$showversion,
-  "debug=s"         => sub { no strict 'refs'; ${ 'LaTeXML::' . $_[1] . '::DEBUG' } = 1; },
+  "debug=s"         => sub { no strict 'refs'; $LaTeXML::DEBUG{ lc($_[1]) } = 1; },
   "documentid=s"    => \$documentid,
   "help"            => \$help,
 ) or pod2usage(-message => $LaTeXML::IDENTITY,
@@ -63,12 +64,17 @@ my $source = $ARGV[0];
 
 #**********************************************************************
 # Set up the processing.
-print STDERR "$LaTeXML::IDENTITY\n"                     if $verbosity > -1;
-print STDERR "processing started " . localtime() . "\n" if $verbosity > -1;
-
 @paths = map { pathname_canonical($_) } @paths;
 if (my @baddirs = grep { !-d $_ } @paths) {
   warn "These path directories do not exist: " . join(', ', @baddirs) . "\n"; }
+
+if (!pathname_is_literaldata($source)) {
+  my ($dir, $name, $ext) = pathname_split($source);
+  if ($name) {
+    my $path = pathname_make(dir => pathname_cwd(), name => $name, type => 'lxlog');
+    OpenLog($path); } }
+NoteStatus(0, "$LaTeXML::IDENTITY");
+NoteStatus(1, "processing started " . localtime());    # Probably a NoteBegin???
 
 my $latexml = LaTeXML::Core->new(
   preload         => [@preload],
@@ -84,8 +90,6 @@ if ($destination) {
   $destination = pathname_canonical($destination);
   if (my $dir = pathname_directory($destination)) {
     pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; } }
-
-binmode(STDERR, ":encoding(UTF-8)");
 
 $mode = 'BibTeX' if !defined $mode && ($source =~ /\.bib$/);
 $mode = 'TeX' unless defined $mode;
@@ -122,11 +126,12 @@ eval {
     }); }
 };
 if ($@) {    # Fatal error?
-  print STDERR $@; }
+  Debug($@); }
 $latexml->showProfile();    # Show profile (if any)
 
-print STDERR "\nConversion complete: " . $latexml->getStatusMessage . ".\n";
-print STDERR "processing finished " . localtime() . "\n" if $verbosity > -1;
+NoteStatus(0, "Conversion complete: " . $latexml->getStatusMessage);
+NoteStatus(1, "processing finished " . localtime());                   # NoteEnd?
+CloseLog();
 
 if    (!$serialized) { }
 elsif ($destination) {
@@ -142,6 +147,8 @@ else {
 $latexml    = undef;
 $digested   = undef;
 $serialized = undef;
+
+CheckDebuggable();
 
 if ($@) {    # non-zero exit code for fatal conversions
   exit 1;
