@@ -166,7 +166,6 @@ sub _spinnerrestore {    # Restore the spinner line (if any)
   return; }
 
 sub _spinnerstep {    # Increment stepper
-  my () = @_;
   my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
   if ($IS_TERMINAL && ($verbosity >= 0) && @spinnerstack) {
     my ($stage, $count, $start) = @{ $spinnerstack[-1] };
