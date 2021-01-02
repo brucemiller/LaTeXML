@@ -45,8 +45,8 @@ DefMacro('\affiliation{}',  '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#
 DefMacro('\altaddress',     '\altaffiliation');
 DefMacro('\altaffiliation', '\affiliation');
 DefMacro('\andname',        'and');
-DefMacro('\collaboration', '');                # Should have a look at this too
-DefMacro('\noaffiliation', Tokens());
+DefMacro('\collaboration',  '');               # Should have a look at this too
+DefMacro('\noaffiliation',  Tokens());
 
 DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
 DefMacro('\email [] Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#2}}');
@@ -117,6 +117,7 @@ DefConstructor('\rotatebox{Number}{}', '#2');    # dummy defn, unless graphics l
 DefMacro('\pagesofar', '');
 
 # endnotes handled like footnotes
+NewCounter('endnote');
 DefConstructor('\endnote[]{}',
   "<ltx:note role='endnote' mark='#mark' xml:id='#id'>"
     . "#tags"
