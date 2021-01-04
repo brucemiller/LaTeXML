@@ -978,7 +978,12 @@ sub DefAutoload {
   $cs     = T_CS($csname)  unless ref $cs;
   if ($defnfile =~ /^(.*?)\.(pool|sty|cls)\.ltxml$/) {
     my ($name, $type) = ($1, $2);
-    if (!LookupValue($name . '.' . $type . '_loaded')) {    # if already loaded, DONT redefine!
+    # if already loaded, or set, DONT redefine!
+    if (!(
+        LookupValue($name . '.' . $type . '_loaded')       ||
+        LookupValue($name . '.' . $type . '.ltxml_loaded') ||
+        LookupMeaning($cs))) {
+
       DefMacroI($cs, undef, sub {
           $STATE->assign_internal('meaning', $csname => undef, 'global');    # UNDEFINE (no recurse)
           if    ($type eq 'pool') { LoadPool($name); }                       # Load appropriate definitions
