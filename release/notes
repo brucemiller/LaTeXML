@@ -90,6 +90,8 @@ Chocolatey: Ronald Tse <tse@ribose.com>
 
  * Modify ~/Macports/tex/LaTeXML/Portfile
   - Change version number
+  - regen portindex
+    cd ~/Macports ; portindex
   - recompute checksums
     (use port -v install and it suggests checksums for you to cut'n'paste!)
     (Be careful of cached tarballs: use port clean --all)
