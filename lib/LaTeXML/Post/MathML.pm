@@ -874,7 +874,7 @@ sub stylizeContent {
 # These are the strings that should be known as fences in a normal operator dictionary.
 my %fences = (                                                    # CONSTANT
   '('        => 1, ')' => 1, '[' => 1, ']' => 1, '{' => 1, '}' => 1, "\x{201C}" => 1, "\x{201D}" => 1,
-  "\`"       => 1, "'" => 1, "<" => 1, ">" => 1,
+  '`'        => 1, "'" => 1, "<" => 1, ">" => 1,
   "\x{2329}" => 1, "\x{232A}" => 1, # angle brackets; NOT mathematical, but balance in case they show up.
   "\x{27E8}" => 1, "\x{27E9}" => 1,    # angle brackets (preferred)
   "\x{230A}" => 1, "\x{230B}" => 1, "\x{2308}" => 1, "\x{2309}" => 1);
@@ -984,26 +984,23 @@ sub pmml_script_mid_layout {
       $base = pmml($base); }
     return $base; }
   else {
-    if (scalar(@$midscripts) > 1) {
-      Error("unexpected", 'multiple-mid-level-scripts', undef,
-        "Multiple mid-level (limit) scripts; extras are DROPPED!", "base: " . $base->toString(),
-        map { @$_ } @$midscripts); }
-    { local $LaTeXML::MathML::NOMOVABLELIMITS = 1;
-      ##### TRY this to block an extra mstyle
-      local $LaTeXML::MathML::STYLE = $base->getAttribute('mathstyle') || $LaTeXML::MathML::STYLE;
-      $base = pmml($base); }
+    local $LaTeXML::MathML::NOMOVABLELIMITS = 1;
+    ##### TRY this to block an extra mstyle
+    local $LaTeXML::MathML::STYLE = $base->getAttribute('mathstyle') || $LaTeXML::MathML::STYLE;
     # Get the (possibly padded) over & under scripts (if any)
-    my $under = (!defined $$midscripts[0][0] ? undef
-      : pmml_scriptsize_padded($$midscripts[0][0], $emb_left, $emb_right));
-    my $over = (!defined $$midscripts[0][1] ? undef
-      : pmml_scriptsize_padded($$midscripts[0][1], $emb_left, $emb_right));
-
-    if (!defined $over) {
-      return ['m:munder', {}, $base, $under]; }
-    elsif (!defined $under) {
-      return ['m:mover', {}, $base, $over]; }
-    else {
-      return ['m:munderover', {}, $base, $under, $over]; } } }
+    my $result = pmml($base);
+    for my $midscript (@$midscripts) {
+      my $under = (!defined $$midscript[0] ? undef
+        : pmml_scriptsize_padded($$midscript[0], $emb_left, $emb_right));
+      my $over = (!defined $$midscript[1] ? undef
+        : pmml_scriptsize_padded($$midscript[1], $emb_left, $emb_right));
+      if (!defined $over) {
+        $result = ['m:munder', {}, $result, $under]; }
+      elsif (!defined $under) {
+        $result = ['m:mover', {}, $result, $over]; }
+      else {
+        $result = ['m:munderover', {}, $result, $under, $over]; } }
+    return $result; } }
 
 # Convert an over or under script to scriptsize,
 # but pad by phantoms of the base's embellishments, if any.
