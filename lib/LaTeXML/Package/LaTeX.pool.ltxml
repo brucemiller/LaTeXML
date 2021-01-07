@@ -5040,8 +5040,11 @@ RawTeX(<<'EoTeX');
 \def\@cdr#1#2\@nil{#2}
 \def\@carcube#1#2#3#4\@nil{#1#2#3}
 \def\nfss@text#1{{\mbox{#1}}}
+\def\@sect#1#2#3#4#5#6[#7]#8{}
 EoTeX
 
+Let('\@begindocumenthook', '\@empty');
+DefMacroI('\@preamblecmds', undef, Tokens());
 DefMacro('\@ifdefinable DefToken {}', sub {
     my ($gullet, $token, $if) = @_;
     if (isDefinable($token)) {
