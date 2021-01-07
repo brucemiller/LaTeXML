@@ -1,0 +1,11 @@
+\newread\recipientfile
+\openin\recipientfile=toberead.txt
+
+\loop
+\read\recipientfile to\content
+(\content)%
+\unless\ifeof\recipientfile
+\repeat
+
+\closein\recipientfile
+\bye
