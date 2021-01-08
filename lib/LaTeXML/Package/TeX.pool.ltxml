@@ -3332,9 +3332,9 @@ DefConstructorI('\@@BEGINDISPLAYMATH', undef,
   reversion    => Tokens(T_MATH, T_MATH),
   beforeDigest => sub {
     $_[0]->beginMode('display_math');
-    if (my @everymath_toks = LookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
+    if (my @everymath_toks = $STATE->lookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
       $_[0]->getGullet->unread(@everymath_toks); }
-    if (my @everydisplay_toks = LookupDefinition(T_CS('\everydisplay'))->valueOf->unlist()) {
+    if (my @everydisplay_toks = $STATE->lookupDefinition(T_CS('\everydisplay'))->valueOf->unlist()) {
       $_[0]->getGullet->unread(@everydisplay_toks); }
     return; }, captureBody => 1);
 DefConstructorI('\@@ENDDISPLAYMATH', undef, "",
@@ -3350,7 +3350,7 @@ DefConstructorI('\@@BEGININLINEMATH', undef,
   reversion    => Tokens(T_MATH),
   beforeDigest => sub {
     $_[0]->beginMode('inline_math');
-    if (my @everymath_toks = LookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
+    if (my @everymath_toks = $STATE->lookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
       $_[0]->getGullet->unread(@everymath_toks); }
     return; }, captureBody => 1);
 DefConstructorI('\@@ENDINLINEMATH', undef, "",
