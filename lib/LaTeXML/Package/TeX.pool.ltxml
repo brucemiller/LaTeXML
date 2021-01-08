@@ -856,10 +856,13 @@ DefMacro('\meaning Token', sub {
         my $value         = $definition->valueOf;
         my $register_type = lc(ref $value);
         my $prefix        = '\count';
-        if ($register_type && $register_type =~ /glue/) {
-          $prefix = '\skip'; }
-        elsif ($register_type && $register_type =~ /dimension/) {
-          $prefix = '\dimen'; }
+        if ($register_type) {
+          if ($register_type =~ /glue/) {
+            $prefix = '\skip'; }
+          elsif ($register_type =~ /dimension/) {
+            $prefix = '\dimen'; }
+          elsif ($register_type =~ /tokens/) {
+            $prefix = '\toks'; } }
         my $literal_value = $register_type && $value->valueOf;
         # Should we be more careful to distinguish between latex and tex counters?
         $meaning = $prefix . $literal_value; }
@@ -3327,8 +3330,13 @@ DefConstructorI('\@@BEGINDISPLAYMATH', undef,
     . "</ltx:Math>"
     . "</ltx:equation>",
   reversion    => Tokens(T_MATH, T_MATH),
-  beforeDigest => sub { $_[0]->beginMode('display_math'); },
-  captureBody  => 1);
+  beforeDigest => sub {
+    $_[0]->beginMode('display_math');
+    if (my @everymath_toks = LookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
+      $_[0]->getGullet->unread(@everymath_toks); }
+    if (my @everydisplay_toks = LookupDefinition(T_CS('\everydisplay'))->valueOf->unlist()) {
+      $_[0]->getGullet->unread(@everydisplay_toks); }
+    return; }, captureBody => 1);
 DefConstructorI('\@@ENDDISPLAYMATH', undef, "",
   reversion    => Tokens(T_MATH, T_MATH),
   beforeDigest => sub { $_[0]->endMode('display_math'); });
@@ -3339,8 +3347,12 @@ DefConstructorI('\@@BEGININLINEMATH', undef,
     . "#body"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  reversion => Tokens(T_MATH),
-  beforeDigest => sub { $_[0]->beginMode('inline_math'); }, captureBody => 1);
+  reversion    => Tokens(T_MATH),
+  beforeDigest => sub {
+    $_[0]->beginMode('inline_math');
+    if (my @everymath_toks = LookupDefinition(T_CS('\everymath'))->valueOf->unlist()) {
+      $_[0]->getGullet->unread(@everymath_toks); }
+    return; }, captureBody => 1);
 DefConstructorI('\@@ENDINLINEMATH', undef, "",
   reversion    => Tokens(T_MATH),
   beforeDigest => sub { $_[0]->endMode('inline_math'); });
