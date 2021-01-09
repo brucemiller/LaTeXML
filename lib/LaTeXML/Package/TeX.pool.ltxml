@@ -3955,14 +3955,14 @@ sub scriptSizer {
 
 # NOTE: The When reverting these, the
 DefConstructor('\@@POSTSUPERSCRIPT InScriptStyle',
-  "<ltx:XMApp role='POSTSUPERSCRIPT' scriptpos='#scriptlevel'>"
+  "<ltx:XMApp role='POSTSUPERSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
     . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_SUPER, revertScript($_[1])); },
   sizer     => sub { scriptSizer($_[0]->getArg(1), $_[0]->getProperty('base'),
       $_[0]->getProperty('prevscript'), 'SUPERSCRIPT', 'post'); });
 DefConstructor('\@@POSTSUBSCRIPT InScriptStyle',
-  "<ltx:XMApp role='POSTSUBSCRIPT' scriptpos='#scriptlevel'>"
+  "<ltx:XMApp role='POSTSUBSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
     . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_SUB, revertScript($_[1])); },
@@ -3970,13 +3970,13 @@ DefConstructor('\@@POSTSUBSCRIPT InScriptStyle',
       $_[0]->getProperty('prevscript'),
       'SUBSCRIPT', 'post'); });
 DefConstructor('\@@FLOATINGSUPERSCRIPT InScriptStyle',
-  "<ltx:XMApp role='FLOATSUPERSCRIPT' scriptpos='#scriptlevel'>"
+  "<ltx:XMApp role='FLOATSUPERSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
     . "<ltx:XMArg rule='Superscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_BEGIN, T_END, T_SUPER, revertScript($_[1])); },
   sizer     => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUPERSCRIPT', 'post'); });
 DefConstructor('\@@FLOATINGSUBSCRIPT InScriptStyle',
-  "<ltx:XMApp role='FLOATSUBSCRIPT' scriptpos='#scriptlevel'>"
+  "<ltx:XMApp role='FLOATSUBSCRIPT' scriptpos='?#scriptpos(#scriptpos)(#scriptlevel)'>"
     . "<ltx:XMArg rule='Subscript'>#1</ltx:XMArg>"
     . "</ltx:XMApp>",
   reversion => sub { (T_BEGIN, T_END, T_SUB, revertScript($_[1])); },
@@ -5479,22 +5479,27 @@ DefMathI('\biguplus', undef, "\x{228E}",
   meaning   => 'symmetric-difference',
   mathstyle => \&doVariablesizeOp,
   font      => { size => 'Big' });
-DefConstructorI('\limits', undef, sub {
-    my $node = $_[0]->getElement;
-    $_[0]->setAttribute($_[0]->getLastChildElement($node) || $node, scriptpos => 'mid'); });
-DefConstructorI('\nolimits', undef, sub {
-    my $node = $_[0]->getElement;
-    $node = $_[0]->getLastChildElement($node) || $node;
-    $node->removeAttribute('scriptpos'); });    # default is 'post', so we can just remove the attrib.
-DefConstructorI('\displaylimits', undef, sub {
-    my ($document, %props) = @_;
-    my $node = $_[0]->getElement;
-    $node = $_[0]->getLastChildElement($node) || $node;
-    if (($props{mathstyle} || 'text') eq 'display') {
-      $document->setAttribute($node, scriptpos => 'mid'); }
-    else {
-      $node->removeAttribute('scriptpos'); } },
-  properties => sub { (mathstyle => LookupValue('font')->getMathstyle); });
+DefConstructorI('\limits', undef, '',
+  afterDigest => sub { mergeLimits('mid'); },
+  properties  => { isSpace => 1 });
+DefConstructorI('\nolimits', undef, '',
+  afterDigest => sub { mergeLimits('post'); },
+  properties  => { isSpace => 1 });
+DefConstructorI('\displaylimits', undef, '',
+  afterDigest => sub {
+    mergeLimits((($_[1]->getProperty('mathstyle') || '') eq 'display' ? 'mid' : 'post')); },
+  properties => { isSpace => 1 });
+
+sub mergeLimits {
+  my ($pos) = @_;
+  for (my $i = scalar(@LaTeXML::LIST) - 1 ; $i >= 0 ; $i--) {
+    my $box   = $LaTeXML::LIST[$i];
+    my $prev  = $box->getProperty('scriptpos') || '';
+    my $level = ($prev =~ /^\w*(\d+)$/ ? $1 : $STATE->getStomach->getScriptLevel || '');
+    $box->setProperty(scriptpos => $pos . $level);
+    last unless IsEmpty($box) || IsScript($box); }
+  return; }
+
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.4. Binary Operation Symbols, p.42
 #----------------------------------------------------------------------
