@@ -1,0 +1,39 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  standalone.sty                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Deyan Ginev <deyan.ginev@nist.gov>                          #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#**********************************************************************
+
+DefMacro('\@standalone@end@input', '\egroup\endinput');
+DefPrimitiveI(T_CS('\@standalone@start@input'), undef, sub {
+    AssignValue(inPreamble => 0);
+    return; });
+DefPrimitive('\@standalone@documentclass[]{}', sub {
+    my ($stomach, $packages) = @_;
+    $stomach->bgroup;
+    AssignValue(inPreamble => 1);
+    for my $package (split(",", ToString($packages))) {
+      RequirePackage($package);
+    }
+    Let(T_CS('\begin{document}'), T_CS('\@standalone@start@input'));
+    Let(T_CS('\end{document}'),   T_CS('\@standalone@end@input'));
+    return; });
+
+Let('\documentclass', '\@standalone@documentclass');
+
+#**********************************************************************
+
+1;
