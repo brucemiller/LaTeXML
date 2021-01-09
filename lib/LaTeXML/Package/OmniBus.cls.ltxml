@@ -179,8 +179,8 @@ DefMacroI(T_CS('\newproclaim'), undef, sub {
     RequirePackage('amsthm');
     return T_CS('\newtheorem'); });
 
-# \abstracts
-Let('\abst', '\abstract');
+Let('\abstracts', '\abstract');
+Let('\abst',      '\abstract');
 # \editors
 
 # Seems to come in different spellings and often misused!
