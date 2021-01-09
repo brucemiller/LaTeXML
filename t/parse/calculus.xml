@@ -171,9 +171,9 @@
       <Math mode="display" tex="\sum_{i=0}^{50}x^{i}" text="((sum _ (i = 0)) ^ 50)@(x ^ i)" xml:id="S0.Ex5.m1">
         <XMath>
           <XMApp>
-            <XMApp scriptpos="mid">
+            <XMApp>
               <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
-              <XMApp scriptpos="mid">
+              <XMApp>
                 <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                 <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                 <XMApp>
@@ -246,7 +246,7 @@
       <Math mode="display" tex="\sum_{\scriptstyle 0\leq i\leq m\atop\scriptstyle 0&lt;j&lt;n}P(i,j)" text="(sum _ ((0 &lt;= i &lt;= m) FRACOP (0 &lt; j &lt; n)))@(P * open-interval@(i, j))" xml:id="S0.Ex6.m1">
         <XMath>
           <XMApp>
-            <XMApp scriptpos="mid">
+            <XMApp>
               <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
               <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
               <XMApp>
@@ -297,9 +297,9 @@
       <Math mode="display" tex="\sum_{i=1}^{p}\sum_{j=1}^{q}\sum_{k=1}^{r}a_{ij}b_{jk}c_{ki}" text="((sum _ (i = 1)) ^ p)@(((sum _ (j = 1)) ^ q)@(((sum _ (k = 1)) ^ r)@(a _ (i * j) * b _ (j * k) * c _ (k * i))))" xml:id="S0.Ex7.m1">
         <XMath>
           <XMApp>
-            <XMApp scriptpos="mid">
+            <XMApp>
               <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
-              <XMApp scriptpos="mid">
+              <XMApp>
                 <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                 <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                 <XMApp>
@@ -311,9 +311,9 @@
               <XMTok font="italic" fontsize="70%" role="UNKNOWN">p</XMTok>
             </XMApp>
             <XMApp>
-              <XMApp scriptpos="mid">
+              <XMApp>
                 <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
-                <XMApp scriptpos="mid">
+                <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                   <XMApp>
@@ -325,9 +325,9 @@
                 <XMTok font="italic" fontsize="70%" role="UNKNOWN">q</XMTok>
               </XMApp>
               <XMApp>
-                <XMApp scriptpos="mid">
+                <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
-                  <XMApp scriptpos="mid">
+                  <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                     <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                     <XMApp>

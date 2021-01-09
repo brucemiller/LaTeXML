@@ -23,10 +23,10 @@
       </Math></p>
   </para>
   <para xml:id="p3">
-    <p>A<Math mode="inline" tex="{}^{c}_{d}" text="^ c absent _ d" xml:id="p3.m1">
+    <p>A<Math mode="inline" tex="{}^{c}_{d}" text="_ d ^ c absent" xml:id="p3.m1">
         <XMath>
           <XMApp>
-            <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+            <XMTok role="SUBSCRIPTOP" scriptpos="pre2"/>
             <XMApp>
               <XMTok role="SUPERSCRIPTOP" scriptpos="pre1"/>
               <XMTok meaning="absent"/>
@@ -38,10 +38,10 @@
       </Math></p>
   </para>
   <para xml:id="p4">
-    <p>A<Math mode="inline" tex="{}_{d}^{c}" text="_ d absent ^ c" xml:id="p4.m1">
+    <p>A<Math mode="inline" tex="{}_{d}^{c}" text="^ c _ d absent" xml:id="p4.m1">
         <XMath>
           <XMApp>
-            <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+            <XMTok role="SUPERSCRIPTOP" scriptpos="pre2"/>
             <XMApp>
               <XMTok role="SUBSCRIPTOP" scriptpos="pre1"/>
               <XMTok meaning="absent"/>
