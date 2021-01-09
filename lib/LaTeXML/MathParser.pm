@@ -1498,12 +1498,24 @@ sub NewScript {
   # Get "inner" (content) base, if the base is a dual it may be more relevant
   if (p_getQName($rbase) eq 'ltx:XMDual') {
     ($ibase) = p_element_nodes($rbase); }
-  my ($bx, $bl) = (p_getAttribute($base, 'scriptpos')
-      || p_getAttribute($ibase, 'scriptpos')
-      || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
+  elsif (p_getQName($rbase) eq 'ltx:XMApp') {
+    my ($op, $a1, @rest) = p_element_nodes($rbase);
+    if ((p_getQName($op) eq 'ltx:XMTok')
+      && ((p_getAttribute($op, 'role') || '') =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT(OP)?$/)) {
+      $ibase = $op; } }
+  my @bsp = grep { $_ } (p_getAttribute($rbase, 'scriptpos'),
+    p_getAttribute($rbase, 'scriptpos'),
+    p_getAttribute($ibase, 'scriptpos'),
+    'post');
+  my ($bx) = grep { $_ } map { /^(pre|mid|post)?(\d+)?$/ && $1; } @bsp;
+  my ($bl) = grep { $_ } map { /^(pre|mid|post)?(\d+)?$/ && $2; } @bsp;
   my ($sx, $sl) = (p_getAttribute($rscript, 'scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
+  $bl = ($sl || 1) unless $bl;
+  $sl = ($bl || 1) unless $sl;
+  $sx = ($bl == $sl ? $bx : 'post') unless $sx;
   my ($mode, $y) = p_getAttribute($rscript, 'role') =~ /^(FLOAT|POST)?(SUB|SUPER)SCRIPT$/;
-  my $x    = ($pos ? $pos : ($mode eq 'FLOAT' ? 'pre' : $bx || 'post'));
+  my $x = ($pos ? $pos : ($mode eq 'FLOAT' ? 'pre'
+      : ($bl == $sl ? $bx : $sx) || 'post'));
   my $lpad = ($x eq 'pre') && p_getAttribute($rscript, 'lpadding');
   my $rpad = ($x ne 'pre') && p_getAttribute($rscript, 'rpadding');
   my $t;
@@ -1522,7 +1534,6 @@ sub NewScript {
   # Record whether this script was a floating one
   $$app[1]{_wasfloat}  = 1     if $mode eq 'FLOAT';
   $$app[1]{_bumplevel} = $l    if $bumped;
-  $$app[1]{scriptpos}  = $bx   if $bx   && ($bx ne 'post');
   $$app[1]{lpadding}   = $lpad if $lpad && !$$app[1]{lpadding};    # better to add?
   $$app[1]{rpadding}   = $rpad if $rpad && !$$app[1]{rpadding};    # better to add?
   return $app; }
