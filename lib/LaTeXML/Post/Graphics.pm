@@ -48,20 +48,20 @@ use base qw(LaTeXML::Post::Processor);
 sub new {
   my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
-  $$self{dppt} = (($options{dpi} || 90) / 72.0);    # Dots per point.
+  $$self{dppt}            = (($options{dpi} || 90) / 72.0);    # Dots per point.
   $$self{ignore_options}  = $options{ignore_options}  || [];
   $$self{trivial_scaling} = $options{trivial_scaling} || 1;
   $$self{graphics_types}  = $options{graphics_types}
     || [qw(svg png gif jpg jpeg
-      eps ps ai pdf)];
+      eps ps postscript ai pdf)];
   $$self{type_properties} = $options{type_properties}
     || {
     ai => { destination_type => 'png',
       transparent => 1,
-      prescale    => 1, ncolors => '400%', quality => 90, unit => 'point' },
+      prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
     pdf => { destination_type => 'png',
       transparent => 1,
-      prescale    => 1, ncolors => '400%', quality => 90, unit => 'point' },
+      prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
     ps => { destination_type => 'png', transparent => 1,
       prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
     eps => { destination_type => 'png', transparent => 1,
@@ -122,7 +122,7 @@ sub findGraphicFile {
     # Find all acceptable image files, in order of search paths
     my ($dir, $name, $reqtype) = pathname_split($source);
     # Ignore the requested type? Or should it increase desirability?
-    my $file = pathname_concat($dir, $name);
+    my $file  = pathname_concat($dir, $name);
     my @paths = pathname_findall($file, paths => $LaTeXML::Post::Graphics::SEARCHPATHS,
       # accept empty type, incase bad type name, but actual file's content is known type.
       types => ['', $self->getGraphicsSourceTypes]);
@@ -130,8 +130,8 @@ sub findGraphicFile {
     # Now, find the first image that is either the correct type,
     # or has the most desirable type mapping
     foreach my $path (@paths) {
-      my $type  = pathname_type($path);
-      my $props = $$self{type_properties}{$type};
+      my $type         = pathname_type($path);
+      my $props        = $$self{type_properties}{$type};
       my $desirability = $$props{desirability} || ($type eq ($$props{destination_type} || 'notype') ? 10 : 0);
       if ($desirability > $best) {
         $best     = $desirability;
@@ -166,7 +166,7 @@ sub setGraphicSrc {
   # If we are on windows, the $src path will be used for a URI context from the 'imagesrc' attribute,
   # so we can already switch it to the canonical slashified form
   $node->setAttribute('imagesrc',    pathname_to_url($src));
-  $node->setAttribute('imagewidth',  $width) if defined $width;
+  $node->setAttribute('imagewidth',  $width)  if defined $width;
   $node->setAttribute('imageheight', $height) if defined $height;
   return; }
 
