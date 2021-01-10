@@ -32,7 +32,8 @@ DefPrimitive('\@standalone@documentclass[]{}', sub {
     Let(T_CS('\end{document}'),   T_CS('\@standalone@end@input'));
     return; });
 
-Let('\documentclass', '\@standalone@documentclass');
+AtBeginDocument(sub {
+    Let('\documentclass', '\@standalone@documentclass'); });
 
 #**********************************************************************
 
