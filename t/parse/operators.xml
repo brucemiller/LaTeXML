@@ -19,9 +19,9 @@
         <Math mode="display" tex="\sum_{a=0}^{\infty}f_{a}(c^{a})" text="((sum _ (a = 0)) ^ infinity)@((f _ a)@(c ^ a))" xml:id="S1.Ex1.m1">
           <XMath>
             <XMApp>
-              <XMApp scriptpos="mid">
+              <XMApp>
                 <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
-                <XMApp scriptpos="mid">
+                <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                   <XMApp>
@@ -62,9 +62,9 @@
         <Math mode="display" tex="\sum_{a=0}^{\infty}\sum_{b=-a}^{a}f_{a}(c^{a})g_{b}(c^{b})" text="((sum _ (a = 0)) ^ infinity)@(((sum _ (b = - a)) ^ a)@((f _ a)@(c ^ a) * (g _ b)@(c ^ b)))" xml:id="S1.Ex2.m1">
           <XMath>
             <XMApp>
-              <XMApp scriptpos="mid">
+              <XMApp>
                 <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
-                <XMApp scriptpos="mid">
+                <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                   <XMApp>
@@ -76,9 +76,9 @@
                 <XMTok fontsize="70%" meaning="infinity" name="infty" role="ID">∞</XMTok>
               </XMApp>
               <XMApp>
-                <XMApp scriptpos="mid">
+                <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
-                  <XMApp scriptpos="mid">
+                  <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                     <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                     <XMApp>
@@ -148,9 +148,9 @@
         <Math mode="display" tex="\sum_{a=0}^{\infty}\sum_{b=-a}^{a}\lim_{c\rightarrow 0}f_{a}(c^{a})g_{b}(c^{b})" text="((sum _ (a = 0)) ^ infinity)@(((sum _ (b = - a)) ^ a)@((limit _ (c rightarrow 0))@((f _ a)@(c ^ a) * (g _ b)@(c ^ b))))" xml:id="S1.Ex3.m1">
           <XMath>
             <XMApp>
-              <XMApp scriptpos="mid">
+              <XMApp>
                 <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
-                <XMApp scriptpos="mid">
+                <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                   <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                   <XMApp>
@@ -162,9 +162,9 @@
                 <XMTok fontsize="70%" meaning="infinity" name="infty" role="ID">∞</XMTok>
               </XMApp>
               <XMApp>
-                <XMApp scriptpos="mid">
+                <XMApp>
                   <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
-                  <XMApp scriptpos="mid">
+                  <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                     <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
                     <XMApp>
@@ -179,7 +179,7 @@
                   <XMTok font="italic" fontsize="70%" role="ID">a</XMTok>
                 </XMApp>
                 <XMApp>
-                  <XMApp scriptpos="mid">
+                  <XMApp>
                     <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                     <XMTok meaning="limit" role="LIMITOP" scriptpos="mid">lim</XMTok>
                     <XMApp>
