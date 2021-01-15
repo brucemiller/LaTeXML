@@ -24,8 +24,8 @@ use Encode;
 #**********************************************************************
 # Parse command line
 my ($verbosity, $strict, $comments, $noparse, $includestyles) = (0, 0, 1, 0, 0);
-my ($format, $destination, $help, $showversion) = ('xml', '');
-my ($preamble, $postamble) = (undef, undef);
+my ($format, $destination, $help, $showversion)               = ('xml', '');
+my ($preamble, $postamble)                                    = (undef, undef);
 my ($documentid);
 my $inputencoding;
 my $mode  = undef;
@@ -43,7 +43,7 @@ GetOptions("destination=s" => \$destination,
   "xml"             => sub { $format = 'xml'; },
   "tex"             => sub { $format = 'tex'; },
   "box"             => sub { $format = 'box'; },
-  "bibtex"          => sub { $mode = 'BibTeX'; },
+  "bibtex"          => sub { $mode   = 'BibTeX'; },
   "noparse"         => \$noparse,
   "includestyles"   => \$includestyles,
   "inputencoding=s" => \$inputencoding,
@@ -63,7 +63,7 @@ my $source = $ARGV[0];
 
 #**********************************************************************
 # Set up the processing.
-print STDERR "$LaTeXML::IDENTITY\n" if $verbosity > -1;
+print STDERR "$LaTeXML::IDENTITY\n"                     if $verbosity > -1;
 print STDERR "processing started " . localtime() . "\n" if $verbosity > -1;
 
 @paths = map { pathname_canonical($_) } @paths;
@@ -74,8 +74,8 @@ my $latexml = LaTeXML::Core->new(
   preload         => [@preload],
   searchpaths     => [grep { -d $_ } reverse(@paths)],
   graphicspaths   => ['.'],
-  verbosity       => $verbosity, strict => $strict,
-  includecomments => $comments, inputencoding => $inputencoding,
+  verbosity       => $verbosity, strict        => $strict,
+  includecomments => $comments,  inputencoding => $inputencoding,
   includestyles   => $includestyles,
   documentid      => $documentid,
   nomathparse     => $noparse);
@@ -128,7 +128,7 @@ $latexml->showProfile();    # Show profile (if any)
 print STDERR "\nConversion complete: " . $latexml->getStatusMessage . ".\n";
 print STDERR "processing finished " . localtime() . "\n" if $verbosity > -1;
 
-if (!$serialized) { }
+if    (!$serialized) { }
 elsif ($destination) {
   my $OUTPUT;
   open($OUTPUT, ">", $destination) or die "Couldn't open output file $destination: $!";
@@ -189,7 +189,7 @@ latexml [options] I<texfile>
  --help             shows this help message.
 
 If I<texfile> is '-', latexml reads the TeX source from standard input.
-If I<texfile> has an explicit extention of C<.bib>, it is processed
+If I<texfile> has an explicit extension of C<.bib>, it is processed
 as a BibTeX bibliography.
 
 =head1 OPTIONS AND ARGUMENTS
@@ -203,7 +203,7 @@ Specifies the destination file; by default the XML is written to stdout.
 =item C<--preload>=I<module>
 
 Requests the loading of an optional module or package.  This may be useful if the TeX code
-does not specificly require the module (eg. through input or usepackage).
+does not specifically require the module (eg. through input or usepackage).
 For example, use C<--preload=LaTeX.pool> to force LaTeX mode.
 
 =item C<--preamble>=I<file>, C<--postamble>=I<file>

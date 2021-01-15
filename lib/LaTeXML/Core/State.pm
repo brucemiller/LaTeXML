@@ -766,7 +766,7 @@ C<LaTeXML::Core::State> - stores the current state of processing.
 
 A C<LaTeXML::Core::State> object stores the current state of processing.
 It recording catcodes, variables values, definitions and so forth,
-as well as mimicing TeX's scoping rules.
+as well as mimicking TeX's scoping rules.
 
 =head2 Access to State and Processing
 
@@ -785,7 +785,7 @@ Returns the current Model representing the document model.
 =head2 Scoping
 
 The assignment methods, described below, generally take a C<$scope> argument, which
-determines how the assignment is made.  The allowed values and thier implications are:
+determines how the assignment is made.  The allowed values and their implications are:
 
  global   : global assignment.
  local    : local assignment, within the current grouping.
@@ -833,7 +833,7 @@ Assign $value to be associated with the the string C<$name>, according
 to the given scoping rule.
 
 Values are also used to specify most configuration parameters (which can
-therefor also be scoped).  The recognized configuration parameters are:
+therefore also be scoped).  The recognized configuration parameters are:
 
  VERBOSITY         : the level of verbosity for debugging
                      output, with 0 being default.

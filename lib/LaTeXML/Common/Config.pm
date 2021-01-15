@@ -22,8 +22,8 @@ use LaTeXML::Global;
 use LaTeXML::Common::Error;
 use Data::Dumper;
 our $PROFILES_DB = {};    # Class-wide, caches all profiles that get used while the server is alive
-our $is_bibtex  = qr/(^literal\:\s*\@)|(\.bib$)/;
-our $is_archive = qr/(^literal\:PK)|(\.zip$)/;
+our $is_bibtex   = qr/(^literal\:\s*\@)|(\.bib$)/;
+our $is_archive  = qr/(^literal\:PK)|(\.zip$)/;
 
 use base qw(Exporter);
 our @EXPORT = (qw(addMathFormat removeMathFormat maybeAddMathFormat));
@@ -40,8 +40,8 @@ sub new {
 ###########################################
 sub getopt_specification {
   my (%options) = @_;
-  my $opts = $options{options} || {};
-  my $spec = {
+  my $opts      = $options{options} || {};
+  my $spec      = {
     # Basics and Paths
     "output=s"        => \$$opts{destination},
     "destination=s"   => \$$opts{destination},
@@ -57,11 +57,11 @@ sub getopt_specification {
     "includestyles"   => \$$opts{includestyles},
     "inputencoding=s" => \$$opts{inputencoding},
     # Formats
-    "xml"     => sub { $$opts{format}    = 'xml'; },
-    "tex"     => sub { $$opts{format}    = 'tex'; },
-    "box"     => sub { $$opts{format}    = 'box'; },
-    "bibtex"  => sub { $$opts{type}      = 'BibTeX'; },
-    "noparse" => sub { $$opts{mathparse} = 'no'; },
+    "xml"      => sub { $$opts{format}    = 'xml'; },
+    "tex"      => sub { $$opts{format}    = 'tex'; },
+    "box"      => sub { $$opts{format}    = 'box'; },
+    "bibtex"   => sub { $$opts{type}      = 'BibTeX'; },
+    "noparse"  => sub { $$opts{mathparse} = 'no'; },
     "format=s" => \$$opts{format},
     "parse=s"  => \$$opts{mathparse},
     # Profiles
@@ -182,17 +182,17 @@ sub read {
   my ($self, $argref, %read_options) = @_;
   my $opts = $$self{opts};
   local @ARGV = @$argref;
-  my ($spec) = getopt_specification(options => $opts);
+  my ($spec)             = getopt_specification(options => $opts);
   my $silent             = %read_options && $read_options{silent};
   my $getOptions_success = GetOptions(%{$spec});
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   if (!$silent && $$opts{help}) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 99,
-      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', output => \*STDOUT);
   }
 
@@ -223,7 +223,7 @@ sub read_keyvals {
   while (my ($key, $value) = splice(@$conversion_options, 0, 2)) {
     # TODO: Is skipping over empty values ever harmful? Do we have non-empty defaults anywhere?
     next if (!length($value)) && (grep { /^$key\=/ } @GETOPT_KEYS);
-    $key = "--$key" unless $key =~ /^\-\-/;
+    $key   = "--$key" unless $key =~ /^\-\-/;
     $value = length($value) ? "=$value" : '';
     CORE::push @$cmdopts, "$key$value";
   }
@@ -238,7 +238,7 @@ sub scan_to_keyvals {
   my $getOptions_success = GetOptions(%$spec);
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   CORE::push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];
@@ -372,11 +372,11 @@ sub _prepare_options {
       else {
         ${ 'LaTeXML::' . $ltx_class . '::DEBUG' } = 1; } } }
 
-  $$opts{input_limit} = 100          unless defined $$opts{input_limit};   # 100 jobs until restart
-  $$opts{timeout}     = 600          unless defined $$opts{timeout};       # 10 minute timeout default
-  $$opts{expire}      = 600          unless defined $$opts{expire};        # 10 minute timeout default
-  $$opts{mathparse}   = 'RecDescent' unless defined $$opts{mathparse};
-  $$opts{inputencoding} = "utf-8" unless defined $$opts{inputencoding};
+  $$opts{input_limit}   = 100          unless defined $$opts{input_limit}; # 100 jobs until restart
+  $$opts{timeout}       = 600          unless defined $$opts{timeout};     # 10 minute timeout default
+  $$opts{expire}        = 600          unless defined $$opts{expire};      # 10 minute timeout default
+  $$opts{mathparse}     = 'RecDescent' unless defined $$opts{mathparse};
+  $$opts{inputencoding} = "utf-8"      unless defined $$opts{inputencoding};
   if ($$opts{mathparse} eq 'no') {
     $$opts{mathparse}   = 0;
     $$opts{nomathparse} = 1; }                                             #Backwards compatible
@@ -436,7 +436,7 @@ sub _prepare_options {
   #======================================================================
   # Any post switch implies post (TODO: whew, lots of those, add them all!):
   $$opts{math_formats} = [] unless defined $$opts{math_formats};
-  $$opts{post} = 1 if ((!defined $$opts{post}) &&
+  $$opts{post}         = 1 if ((!defined $$opts{post}) &&
     (scalar(@{ $$opts{math_formats} })
       || ($$opts{stylesheet})
       || $$opts{is_html}
@@ -449,11 +449,11 @@ sub _prepare_options {
 # $$opts{post}=0 if (defined $$opts{mathparse} && (! $$opts{mathparse})); # No-parse overrides post-processing
   if ($$opts{post}) {    # No need to bother if we're not post-processing
                          # Default: scan and crossref on, other advanced off
-    $$opts{prescan}  = undef unless defined $$opts{prescan};
-    $$opts{dbfile}   = undef unless defined $$opts{dbfile};
-    $$opts{scan}     = 1     unless defined $$opts{scan};
-    $$opts{index}    = 1     unless defined $$opts{index};
-    $$opts{crossref} = 1     unless defined $$opts{crossref};
+    $$opts{prescan}       = undef unless defined $$opts{prescan};
+    $$opts{dbfile}        = undef unless defined $$opts{dbfile};
+    $$opts{scan}          = 1     unless defined $$opts{scan};
+    $$opts{index}         = 1     unless defined $$opts{index};
+    $$opts{crossref}      = 1     unless defined $$opts{crossref};
     $$opts{sitedirectory} = defined $$opts{sitedirectory} ? $$opts{sitedirectory}
       : (defined $$opts{destination} ? pathname_directory($$opts{destination})
       : (defined $$opts{dbfile} ? pathname_directory($$opts{dbfile})
@@ -462,7 +462,7 @@ sub _prepare_options {
     $$opts{numbersections}  = 1     unless defined $$opts{numbersections};
     $$opts{navtoc}          = undef unless defined $$opts{numbersections};
     $$opts{navtocstyles} = { context => 1, normal => 1, none => 1 } unless defined $$opts{navtocstyles};
-    $$opts{navtoc} = lc($$opts{navtoc}) if defined $$opts{navtoc};
+    $$opts{navtoc}       = lc($$opts{navtoc}) if defined $$opts{navtoc};
     delete $$opts{navtoc} if ($$opts{navtoc} && ($$opts{navtoc} eq 'none'));
 
     if ($$opts{navtoc}) {
@@ -480,13 +480,13 @@ sub _prepare_options {
     if ((defined $$opts{destination}) || ($$opts{whatsout} =~ /^archive/)) {
       # We want the graphics enabled by default, but only when we have a destination
       $$opts{dographics} = 1 unless defined $$opts{dographics};
-      $$opts{picimages} = 1 if (($$opts{format} eq "html4") || ($$opts{format} eq "jats"))
+      $$opts{picimages}  = 1 if (($$opts{format} eq "html4") || ($$opts{format} eq "jats"))
         && !defined $$opts{picimages};
     }
     # Split sanity:
     if ($$opts{split}) {
-      $$opts{splitat}     = 'section' unless defined $$opts{splitat};
-      $$opts{splitnaming} = 'id'      unless defined $$opts{splitnaming};
+      $$opts{splitat}        = 'section' unless defined $$opts{splitat};
+      $$opts{splitnaming}    = 'id'      unless defined $$opts{splitnaming};
       $$opts{splitancestors} = {
         part          => [qw()],
         chapter       => [qw(part)],
@@ -551,7 +551,7 @@ sub _prepare_options {
       maybeAddMathFormat($opts, 'images');
     }
     $$opts{svg} = 1 unless defined $$opts{svg};      # If we're not making HTML, SVG is on by default
-          # PMML default if we're HTMLy and all else fails and no mathimages:
+        # PMML default if we're HTMLy and all else fails and no mathimages:
     if (((!defined $$opts{math_formats}) || (!scalar(@{ $$opts{math_formats} })))
       && ($$opts{is_html} || $$opts{is_xhtml} || ($$opts{format} eq 'jats'))) {
       CORE::push @{ $$opts{math_formats} }, 'pmml';
@@ -946,7 +946,7 @@ Enables debugging output for the named package. The package is given without the
 
 =item C<--base>=I<dir>
 
-Sepcifies the base working directory for the conversion server.
+Specifies the base working directory for the conversion server.
     Useful when converting sets of documents that use relative paths.
 
 =item C<--log>=I<file>
@@ -972,7 +972,7 @@ Specifies the destination file; by default the XML is written to STDOUT.
 =item C<--preload>=I<module>
 
 Requests the loading of an optional module or package.  This may be useful if the TeX code
-    does not specificly require the module (eg. through input or usepackage).
+    does not specifically require the module (eg. through input or usepackage).
     For example, use C<--preload=LaTeX.pool> to force LaTeX mode.
 
 =item C<--preamble>=I<file>
@@ -1259,7 +1259,7 @@ on the LaTeXML doctype.
 
 This option determines the way that URLs within the documents
 are formatted, depending on the way they are intended to be served.
-The default, C<server>, eliminates unneccessary
+The default, C<server>, eliminates unnecessary
 trailing C<index.html>.  With C<negotiated>, the trailing
 file extension (typically C<html> or C<xhtml>) are eliminated.
 The scheme C<file> preserves complete (but relative) urls

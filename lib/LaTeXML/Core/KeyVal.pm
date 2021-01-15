@@ -1,6 +1,6 @@
 # /=====================================================================\ #
 # |  LaTeXML::Core::KeyVal                                              | #
-# | Key-Value Defintions in LaTeXML                                     | #
+# | Key-Value Definitions in LaTeXML                                     | #
 # |=====================================================================| #
 # | Thanks to Tom Wiesing <tom.wiesing@gmail.com>                       | #
 # | Part of LaTeXML:                                                    | #
@@ -409,7 +409,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::KeyVal> - Key-Value Defintions in LaTeXML
+C<LaTeXML::Core::KeyVal> - Key-Value Definitions in LaTeXML
 
 =head1 DESCRIPTION
 

@@ -817,7 +817,7 @@ Binds STDERR to a "log" field in the $converter object
 =item C<< my $log = $converter->flush_log; >>
 
 Flushes out the accumulated conversion log into $log,
-         reseting STDERR to its usual stream.
+         resetting STDERR to its usual stream.
 
 =back
 
