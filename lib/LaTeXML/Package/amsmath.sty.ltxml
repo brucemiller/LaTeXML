@@ -152,8 +152,8 @@ sub extractXMArrayCells {
         my @nodes = element_nodes($arg);
         # Strip leading & trailing XMHint's from cells;
         # they're (presumably) only for positioning and interfere with interpretation of the whole.
-        if (@nodes && ($document->getNodeQName($nodes[0]) eq 'ltx:XMHint'))  { shift(@nodes); }
-        if (@nodes && ($document->getNodeQName($nodes[-1]) eq 'ltx:XMHint')) { pop(@nodes); }
+        while (@nodes && ($document->getNodeQName($nodes[0]) eq 'ltx:XMHint'))  { shift(@nodes); }
+        while (@nodes && ($document->getNodeQName($nodes[-1]) eq 'ltx:XMHint')) { pop(@nodes); }
         # Some cultures duplicate an operator at the end of one row and beginning of next
         # when we merge the cells together, this confuses the parser
         if (my $prev = $contents[-1]) {
