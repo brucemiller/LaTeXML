@@ -41,6 +41,7 @@ DefMacro('\@compatibilitytrue',  '');
 DefMacro('\@compatibilityfalse', '');
 
 Let('\@currentlabel', '\@empty');
+DefMacro('\@currdir', './');
 
 # Let's try just starting with this set (since we've loaded LaTeX)
 AssignValue(inPreamble => 1);    # \begin{document} will clear this.
@@ -4641,6 +4642,8 @@ DefEnvironment('{picture} Pair OptionalPair',
       picProperties(size => picScale($_[1]))); },
   afterDigest => \&after_picture);
 
+DefMacroI(T_CS('\Gin@driver'), undef, Tokens());
+
 DefMacro('\put Until:){}', '\lx@pic@put#1){#2\relax}');
 DefConstructor('\lx@pic@put Pair{}',
   "<ltx:g transform='#pos'>#2</ltx:g>",
@@ -5061,12 +5064,13 @@ DefMacro('\@rc@ifdefinable DefToken {}', sub {
     Let('\@ifdefinable', '\@@ifdefinable');
     return $if->unlist; });
 
-DefMacroI('\@notdefinable', undef,
-  '\@latex@error{%
-   Command \@backslashchar\reserved@a\space
-   already defined.
-   Or name \@backslashchar\@qend... illegal,
-   see p.192 of the manual}');
+DefMacroI('\@notdefinable', undef, <<'EOL');
+\@latex@error{%
+  Command \@backslashchar\reserved@a\space
+  already defined.
+  Or name \@backslashchar\@qend... illegal,
+  see p.192 of the manual}
+EOL
 
 DefMacroI('\@qend',   undef, Tokens(Explode('end')));
 DefMacroI('\@qrelax', undef, Tokens(Explode('relax')));
