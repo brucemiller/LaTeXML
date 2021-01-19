@@ -96,9 +96,9 @@ $tex =~ s/\s+$//;
 
 our $MATHENVS = 'math|displaymath|equation*?|eqnarray*?'
   . '|multline*?|align*?|falign*?|alignat*?|xalignat*?|xxalignat*?|gather*?';
-if    (($tex =~ /^\$/)                     && ($tex =~ /\$$/))          { }    # Wrapped in $'s
-elsif (($tex =~ /^\\\(/)                   && ($tex =~ /\\\)$/))        { }    # Wrapped in \(...\)
-elsif (($tex =~ /^\\\[/)                   && ($tex =~ /\\\]$/))        { }    # Wrapped in \[...\]
+if    (($tex =~ /^\$/) && ($tex =~ /\$$/))                              { }    # Wrapped in $'s
+elsif (($tex =~ /^\\\(/) && ($tex =~ /\\\)$/))                          { }    # Wrapped in \(...\)
+elsif (($tex =~ /^\\\[/) && ($tex =~ /\\\]$/))                          { }    # Wrapped in \[...\]
 elsif (($tex =~ /^\\begin\{($MATHENVS)\}/) && ($tex =~ /\\end\{$1\}$/)) { }
 else {
   $tex = '\[ ' . $tex . ' \]'; }
@@ -413,7 +413,7 @@ B<Note> that this conversion is only partially implemented.
 
 =item C<--XMath>=I<file>
 
-Requests convertion to LaTeXML's internal format.
+Requests conversion to LaTeXML's internal format.
 
 =back
 
@@ -424,7 +424,7 @@ Requests convertion to LaTeXML's internal format.
 =item C<--preload>=I<module>
 
 Requests the loading of an optional module or package.  This may be useful if the TeX code
-does not specificly require the module (eg. through input or usepackage).
+does not specifically require the module (eg. through input or usepackage).
 For example, use C<--preload=LaTeX.pool> to force LaTeX mode.
 
 =item C<--includestyles>

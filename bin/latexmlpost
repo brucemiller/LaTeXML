@@ -36,14 +36,14 @@ my ($numbersections) = (1);
 my ($stylesheet, $defaultcss, $defaultresources, $icon, @css, @javascript, @xsltparameters);
 my ($mathimagemag) = (1.75);
 my ($linelength, $plane1, $hackplane1) = (undef, undef, undef);
-my ($dographics, $svg,    $picimages)  = (undef, undef, undef);
+my ($dographics, $svg, $picimages)     = (undef, undef, undef);
 my @graphicsmaps = ();
 my ($split, $splitat, $splitpath, $splitnaming) = (undef, 'section', undef, 'id');
 my ($navtoc) = (undef);
 my %navtocstyles = (context => 1, normal => 1, none => 1);
 my ($prescan, $dbfile, $scan, $crossref, $sitedir, $resourcedir) = (undef, undef, 1, 1, undef, undef);
-my ($index, $permutedindex, $splitindex) = (1, undef, undef);
-my ($bibliography, $splitbibliography, @bibliographies) = (1, undef);
+my ($index, $permutedindex, $splitindex)                         = (1, undef, undef);
+my ($bibliography, $splitbibliography, @bibliographies)          = (1, undef);
 my ($timestamp)          = (undef);
 my @math_formats         = ();
 my %removed_math_formats = ();
@@ -103,8 +103,8 @@ GetOptions("quiet" => sub { $verbosity--; },
   "xsltparameter=s"   => \@xsltparameters,
   # Options for broader document set processing
   "split!"          => \$split,
-  "splitat=s"       => sub { $splitat = $_[1]; $split = 1 unless defined $split; },
-  "splitpath=s"     => sub { $splitpath = $_[1]; $split = 1 unless defined $split; },
+  "splitat=s"       => sub { $splitat     = $_[1]; $split = 1 unless defined $split; },
+  "splitpath=s"     => sub { $splitpath   = $_[1]; $split = 1 unless defined $split; },
   "splitnaming=s"   => sub { $splitnaming = $_[1]; $split = 1 unless defined $split; },
   "scan!"           => \$scan,
   "crossref!"       => \$crossref,
@@ -132,8 +132,8 @@ GetOptions("quiet" => sub { $verbosity--; },
   # So, need to separate multiple transformations from the combination.
   # However, IF combining, then will need to support a id/ref mechanism.
   #        "mathml|mml!"  =>\$mathml,
-  "mathimages"   => sub { addMathFormat('images'); },
-  "nomathimages" => sub { removeMathFormat('images'); },
+  "mathimages"                  => sub { addMathFormat('images'); },
+  "nomathimages"                => sub { removeMathFormat('images'); },
   "mathimagemagnification=s"    => \$mathimagemag,
   "mathsvg"                     => sub { addMathFormat('svg'); },
   "nomathsvg"                   => sub { removeMathFormat('svg'); },
@@ -206,7 +206,7 @@ if ($split && !defined $destination) {
 if ($split) {
   $splitnaming = checkOptionValue('--splitnaming', $splitnaming,
     qw(id idrelative label labelrelative));
-  $splitat = checkOptionValue('--splitat', $splitat, keys %$splitancestors);
+  $splitat   = checkOptionValue('--splitat', $splitat, keys %$splitancestors);
   $splitpath = make_splitpaths($splitat) unless defined $splitpath;
 }
 if ($prescan && !$scan) {
@@ -225,7 +225,7 @@ if (!$prescan && $bibliography && !($scan || defined $crossref)) {
   xError("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
 
 $navtoc = lc($navtoc) if defined $navtoc;
-$navtoc = undef if $navtoc && $navtoc eq 'none';
+$navtoc = undef       if $navtoc && $navtoc eq 'none';
 if ($navtoc) {
   if (!$navtocstyles{$navtoc}) {
     xError("$navtoc is not a recognized style of navigation TOC (--navigationtoc)"); }
@@ -234,7 +234,7 @@ if ($navtoc) {
 
 # Check format and complete math and image options
 $format = 'html5' if (defined $format) && ($format eq 'html');
-if (!defined $format) { }
+if    (!defined $format) { }
 elsif ($format eq 'html4') {
   $extension = 'html' unless defined $extension;
   xError("Default html4 stylesheet only supports math images, not " . join(', ', @math_formats))
@@ -289,8 +289,8 @@ else {
 if ((!defined $destination)
   && ($dographics || $picimages
     || checkMathFormat('images') || checkMathFormat('svg'))) {
-  LaTeXML::Post::Warn("expected","options", undef,
-    "must supply --destination to support auxilliary files disabling: --nomathimages --nographicimages --nopictureimages");
+  LaTeXML::Post::Warn("expected", "options", undef,
+"must supply --destination to support auxilliary files disabling: --nomathimages --nographicimages --nopictureimages");
   # default resources is sorta ok: we might not copy, but we'll still have the links/script/etc
   $dographics = $picimages = 0;
   removeMathFormat('images');
@@ -302,7 +302,7 @@ if ((!defined $destination)
 #======================================================================
 
 binmode(STDERR, ":encoding(UTF-8)");
-print STDERR "$LaTeXML::IDENTITY\n" if $verbosity > -1;
+print STDERR "$LaTeXML::IDENTITY\n"              if $verbosity > -1;
 print STDERR "processing started " . localtime() if $verbosity > -1;
 
 # Default options/parameters for each post processor
@@ -387,20 +387,20 @@ if (!$prescan) {
         require LaTeXML::Post::MathML::Presentation;
         push(@mprocs, LaTeXML::Post::MathML::Presentation->new(
             linelength => $linelength,
-            (defined $plane1 ? (plane1 => $plane1) : (plane1 => 1)),
-            ($hackplane1 ? (hackplane1 => 1) : ()),
+            (defined $plane1 ? (plane1     => $plane1) : (plane1 => 1)),
+            ($hackplane1     ? (hackplane1 => 1)       : ()),
             %OPTIONS)); }
       elsif ($fmt eq 'cmml') {
         require LaTeXML::Post::MathML::Content;
         push(@mprocs, LaTeXML::Post::MathML::Content->new(
-            (defined $plane1 ? (plane1 => $plane1) : (plane1 => 1)),
-            ($hackplane1 ? (hackplane1 => 1) : ()),
+            (defined $plane1 ? (plane1     => $plane1) : (plane1 => 1)),
+            ($hackplane1     ? (hackplane1 => 1)       : ()),
             %OPTIONS)); }
       elsif ($fmt eq 'om') {
         require LaTeXML::Post::OpenMath;
         push(@mprocs, LaTeXML::Post::OpenMath->new(
-            (defined $plane1 ? (plane1 => $plane1) : (plane1 => 1)),
-            ($hackplane1 ? (hackplane1 => 1) : ()),
+            (defined $plane1 ? (plane1     => $plane1) : (plane1 => 1)),
+            ($hackplane1     ? (hackplane1 => 1)       : ()),
             %OPTIONS)); }
       elsif ($fmt eq 'images') {
         require LaTeXML::Post::MathImages;
@@ -798,7 +798,7 @@ on the LaTeXML doctype.
 
 This option determines the way that URLs within the documents
 are formatted, depending on the way they are intended to be served.
-The default, C<server>, eliminates unneccessary
+The default, C<server>, eliminates unnecessary
 trailing C<index.html>.  With C<negotiated>, the trailing
 file extension (typically C<html> or C<xhtml>) are eliminated.
 The scheme C<file> preserves complete (but relative) urls

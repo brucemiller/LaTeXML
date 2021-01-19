@@ -255,7 +255,7 @@ defined as Constructors may leave TeX code in the value.
 =item C<< $boole = $object->equals($other); >>
 
 Returns whether $object and $other are equal.  Should perform
-a deep comparision, but the default implementation just compares
+a deep comparison, but the default implementation just compares
 for object identity.
 
 =item C<< $boole = $object->isaToken; >>

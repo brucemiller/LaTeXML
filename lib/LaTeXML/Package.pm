@@ -2870,7 +2870,7 @@ L</Macros>, which are expanded within the L<LaTeXML::Core::Gullet>;
 and L</Primitives>, which are digested within the L<LaTeXML::Core::Stomach>
 to produce L<LaTeXML::Core::Box>, L<LaTeXML::Core::List>.
 A key additional feature is the L</Constructors>:
-when digested they generate a L<LaTeXML::Core::Whatsit> which, upon absorbtion by
+when digested they generate a L<LaTeXML::Core::Whatsit> which, upon absorption by
 L<LaTeXML::Core::Document>, inserts text or XML fragments in the final document tree.
 
 
@@ -2891,7 +2891,7 @@ phases of LaTeX's imitation of TeX's digestive tract.
 
 =head3 Prototypes
 
-LaTeXML uses a more convienient method of specifying parameter patterns for
+LaTeXML uses a more convenient method of specifying parameter patterns for
 control sequences. The first argument to each of these defining forms
 (C<DefMacro>, C<DefPrimive>, etc) is a I<prototype> consisting of the control
 sequence being defined along with the specification of parameters required by the control sequence.
@@ -3303,9 +3303,9 @@ The Constructor is where LaTeXML really starts getting interesting;
 invoking the control sequence will generate an arbitrary XML
 fragment in the document tree.  More specifically: during digestion, the arguments
 will be read and digested, creating a L<LaTeXML::Core::Whatsit> to represent the object. During
-absorbtion by the L<LaTeXML::Core::Document>, the C<Whatsit> will generate the XML fragment according
+absorption by the L<LaTeXML::Core::Document>, the C<Whatsit> will generate the XML fragment according
 to I<replacement>. The I<replacement> can be C<I<code>($document,@args,%properties)>
-which is called during document absorbtion to create the appropriate XML
+which is called during document absorption to create the appropriate XML
 (See the methods of L<LaTeXML::Core::Document>).
 
 More conveniently, I<replacement> can be an pattern: simply a bit of XML as a string
@@ -3334,7 +3334,7 @@ were given.
 
 =item C<^>
 
-If the constuctor I<begins> with C<^>, the XML fragment is allowed to I<float up>
+If the constructor I<begins> with C<^>, the XML fragment is allowed to I<float up>
 to a parent node that is allowed to contain it, according to the Document Type.
 
 =back
@@ -3434,7 +3434,7 @@ This is used by environments and math.
 
 =item C<nargs=E<gt>I<nargs>>
 
-This gives a number of args for cases where it can't be infered directly
+This gives a number of args for cases where it can't be inferred directly
 from the I<prototype> (eg. when more args are explicitly read by hooks).
 
 =back
@@ -3612,7 +3612,7 @@ but it applies to the C<\end{environment}> control sequence.
 
 =item C<afterDigest=E<gt>I<code>($stomach,$whatsit)>
 
-This hook is simlar to C<DefConstructor>'s C<afterDigest>
+This hook is similar to C<DefConstructor>'s C<afterDigest>
 but it applies to the C<\end{environment}> control sequence.
 Note, however that the Whatsit is only for the ending control sequence,
 I<not> the Whatsit for the environment as a whole.
@@ -3856,7 +3856,7 @@ The 2nd argument can be a I<string> (which will be tokenized and expanded)
 or I<tokens> (which will be macro expanded), to provide the value for the option,
 or it can be a code reference which is treated as a primitive for side-effect.
 
-If a package or class wants to accomodate options, it should start
+If a package or class wants to accommodate options, it should start
 with one or more C<DeclareOptions>, followed by C<ProcessOptions()>.
 
 =item C<PassOptions(I<name>, I<ext>, I<@options>); >
@@ -3885,7 +3885,7 @@ X<AtBeginDocument>
 Arranges for I<@stuff> to be carried out after the preamble, at the beginning of the document.
 I<@stuff> should typically be macro-level stuff, but carried out for side effect;
 it should be tokens, tokens lists, strings (which will be tokenized),
-or C<I<code>($gullet)> which would yeild tokens to be expanded.
+or C<I<code>($gullet)> which would yield tokens to be expanded.
 
 This operation is useful for style files loaded with C<--preload> or document specific
 customization files (ie. ending with C<.latexml>); normally the contents would be executed
@@ -4337,7 +4337,7 @@ Assign $value to be associated with the the string C<$name>, according
 to the given scoping rule.
 
 Values are also used to specify most configuration parameters (which can
-therefor also be scoped).  The recognized configuration parameters are:
+therefore also be scoped).  The recognized configuration parameters are:
 
  VERBOSITY         : the level of verbosity for debugging
                      output, with 0 being default.

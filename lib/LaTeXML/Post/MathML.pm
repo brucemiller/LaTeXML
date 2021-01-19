@@ -1929,7 +1929,7 @@ token, followed by the arguments; all are C<XMath> elements.
 
 =item C<pmml_row(@items)>
 
-This wraps an C<m:mrow> around the already converted C<@items> if neeed;
+This wraps an C<m:mrow> around the already converted C<@items> if need;
 That is, if there is only a single item it is returned without the C<m:mrow>.
 
 =item C<pmml_unrow($pmml)>
