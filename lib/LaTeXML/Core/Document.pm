@@ -1964,9 +1964,12 @@ sub appendTree {
   foreach my $child (@data) {
     if (ref $child eq 'ARRAY') {
       my ($tag, $attributes, @children) = @$child;
-      my $new = $self->openElementAt($node, $tag, ($attributes ? %$attributes : ()));
-      $self->appendTree($new, @children);
-      $self->closeElementAt($new); }
+      if (!$tag && !$attributes) {
+        $self->appendTree($node, @children); }
+      else {
+        my $new = $self->openElementAt($node, $tag, ($attributes ? %$attributes : ()));
+        $self->appendTree($new, @children);
+        $self->closeElementAt($new); } }
     elsif ((ref $child) =~ /^XML::LibXML::/) {
       my $type = $child->nodeType;
       if ($type == XML_ELEMENT_NODE) {

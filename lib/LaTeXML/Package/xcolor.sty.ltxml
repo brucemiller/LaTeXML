@@ -137,7 +137,7 @@ DefColorModel('tHsb', 'hsb',
     my ($xn, $yn, $xn_1, $yn_1) = (0, 0, 0, 0);
     foreach (split(';', $rangetHsb)) {
       ($xn_1, $yn_1) = ($xn, $yn);
-      ($xn, $yn) = split(',', $_);
+      ($xn,   $yn)   = split(',', $_);
       last if $h <= $xn; }
     Color('hsb', ($yn_1 + (($yn - $yn_1) / ($xn - $xn_1)) * ($h - $xn_1)) / $H, $s, $b); },
   sub {    # hsb ==> tHsb
@@ -149,7 +149,7 @@ DefColorModel('tHsb', 'hsb',
     my ($xn, $yn, $xn_1, $yn_1) = (0, 0, 0, 0);
     foreach (split(';', $rangetHsb)) {
       ($xn_1, $yn_1) = ($xn, $yn);
-      ($xn, $yn) = split(',', $_);
+      ($xn,   $yn)   = split(',', $_);
       #     last if $h >= $yn_1 && $h <= $yn; }
       last if $h <= $yn; }
     Color('tHsb', $xn_1 + (($xn - $xn_1) / ($yn - $yn_1)) * ($h - $yn_1), $s, $b); });
@@ -174,13 +174,13 @@ DefColorModel('wave', 'hsb',
       my ($x) = @_;
       min(1, max(0, $x))**$g; };
     my ($h, $bb);
-    if ($lambda < 440) { $h = 4 + eta(($lambda - 440) / (-60)); }
+    if    ($lambda < 440) { $h = 4 + eta(($lambda - 440) / (-60)); }
     elsif ($lambda < 490) { $h = 4 - eta(($lambda - 440) / 50); }
     elsif ($lambda < 510) { $h = 2 + eta(($lambda - 510) / (-20)); }
     elsif ($lambda < 580) { $h = 2 - eta(($lambda - 510) / 70); }
     elsif ($lambda < 645) { $h = eta(($lambda - 645) / (-65)); }
     else                  { $h = 0; }
-    if ($lambda < 420) { $bb = eta(0.3 + 0.7 * ($lambda - 380) / 40); }
+    if    ($lambda < 420) { $bb = eta(0.3 + 0.7 * ($lambda - 380) / 40); }
     elsif ($lambda < 700) { $bb = 1; }
     else                  { $bb = eta(0.3 + 0.7 * ($lambda - 780) / (-80)); }
     Color('hsb', $h / 6, 1, $bb); },
@@ -258,8 +258,8 @@ sub ParseXColor {
 sub DecodeColor {
   my ($expression) = @_;
   $expression = ToString($expression);
-  my $prefix_re = qr/-/;    #
-                            # [ <name> = . ==> current color; <name> = '' ==> white]
+  my $prefix_re      = qr/-/;    #
+                                 # [ <name> = . ==> current color; <name> = '' ==> white]
   my $name_re        = qr/|[-]*\.|[-]*[a-zA-Z0-9@\*_]+|[a-zA-Z0-9@\*\-_]+/;
   my $ne_name_re     = qr/[-]*\.|[-]*[a-zA-Z0-9@\*_]+|[a-zA-Z0-9@\*\-_]+/;
   my $pct_re         = qr/(?:\d*\.?\d*|[+-]*\d+\.?\d*|[+-]*\d*\.?\d+)/;
@@ -292,10 +292,10 @@ sub DecodeColor {
   my $color;
   if ($expression =~ /^$color_re$/) {
     #DG: Dear reader, I present to you: maintenance hell:
-    my $prefix   = $2 || $10;
-    my $name     = $3 || $11;
-    my $mix_expr = $4 || $12;
-    my $postfix  = $5 || $13;
+    my $prefix     = $2 || $10;
+    my $name       = $3 || $11;
+    my $mix_expr   = $4 || $12;
+    my $postfix    = $5 || $13;
     my $core_model = $6;
     my $div        = $8;
     my $exprs      = $9;
@@ -664,8 +664,8 @@ DefPrimitive('\resetcolorseries Optional:\colorseriescycle {}', sub {
       my @f = $grad->components;
       my @b = $base->components;
       $step = Color($base->model, map { ($f[$_] - $b[$_]) / $div } 0 .. $#b); }
-    DefColor($name, $base, 'global');                                # Reset <name> to it's base value
-    AssignValue('color_series_' . $name . '_step' => $step, 'global');   # and set the current step size
+    DefColor($name, $base, 'global');                                  # Reset <name> to it's base value
+    AssignValue('color_series_' . $name . '_step' => $step, 'global'); # and set the current step size
 });
 
 # \colorseriescycle   Default number of steps in color series
@@ -754,6 +754,7 @@ DefConstructor('\@tabular@row@before@xcolor', sub {
           $whatsit->setFont(LookupValue('font'));
           $whatsit->setProperty(background => $bg); } } }
     return; },
+  reversion  => '',
   properties => { alignmentSkippable => 1 }
 );
 
@@ -783,7 +784,7 @@ DefPrimitive('\extractcolorspecs{}{}{}', sub {
     my @spec  = ($model eq 'HTML' ? $color->components
       : map { fixedpt($_) } $color->components);
     DefMacroI(ToString($modelcmd), undef, $model);
-    DefMacroI(ToString($speccmd), undef, '{' . join(',', @spec) . '}'); });
+    DefMacroI(ToString($speccmd),  undef, '{' . join(',', @spec) . '}'); });
 
 # \convertcolorspec{<model>}{<spec>}{<model/target>}{<cmd>}
 DefPrimitive('\convertcolorspec{}{}{}{}', sub {

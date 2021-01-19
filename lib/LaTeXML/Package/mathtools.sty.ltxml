@@ -584,7 +584,7 @@ DefPrimitiveI('\@end@multlined', undef, sub { $_[0]->egroup; });
 # Is currently ignore the shoving dimension
 DefMacro('\@MT@shove{}', sub {
     my ($gullet, $shove_dir) = @_;
-    my $cur_row_num  = LookupValue('Alignment')->currentRowNumber - 1;
+    my $cur_row_num  = LookupValue('Alignment')->currentRowNumber;
     my $rowalignment = LookupValue('MULTIROW_ALIGNMENT_RULE');
 
     $$rowalignment{$cur_row_num} = ToString($shove_dir);

@@ -20,8 +20,8 @@ use LaTeXML::Core::Tokens;
 
 sub new {
   my ($class, %data) = @_;
-  $data{columns} = [] unless $data{columns};
-  $data{repeating} = 1 if $data{repeating} || $data{repeated};
+  $data{columns}       = [] unless $data{columns};
+  $data{repeating}     = 1 if $data{repeating} || $data{repeated};
   $data{repeated}      = [] unless $data{repeated};
   $data{non_repeating} = scalar(@{ $data{columns} });
   $data{save_before}   = [] unless $data{save_before};
@@ -104,7 +104,7 @@ sub clone {
   foreach my $cell (@{ $$self{columns} }) {
     push(@dup, {%$cell}); }
   return bless { columns => [@dup],
-    repeated  => $$self{repeated}, non_repeating => $$self{non_repeating},
+    repeated => $$self{repeated}, non_repeating => $$self{non_repeating},
     repeating => $$self{repeating} }, ref $self; }
 
 sub show {
@@ -112,11 +112,11 @@ sub show {
   my @strings = ();
   push(@strings, "\nColumns:\n");
   foreach my $col (@{ $$self{columns} }) {
-    push(@strings, "\n{" . join(', ', map { "$_=>" . Stringify($$col{$_}) } keys %$col) . '}'); }
+    push(@strings, "\n{" . join(', ', map { "$_=>" . Stringify($$col{$_}) } sort keys %$col) . '}'); }
   if ($$self{repeating}) {
     push(@strings, "\nRepeated Columns:\n");
     foreach my $col (@{ $$self{repeated} }) {
-      push(@strings, "\n{" . join(', ', map { "$_=>" . Stringify($$col{$_}) } keys %$col) . '}'); } }
+      push(@strings, "\n{" . join(', ', map { "$_=>" . Stringify($$col{$_}) } sort keys %$col) . '}'); } }
   return join(', ', @strings); }
 
 sub column {

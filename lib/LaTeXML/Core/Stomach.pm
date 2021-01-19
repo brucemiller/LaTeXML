@@ -90,24 +90,22 @@ sub digestNextBody {
   my $token;
   local @LaTeXML::LIST = ();
   my $alignment = $STATE->lookupValue('Alignment');
-  print STDERR "START BODY IN ALIGNMENT\n" if $alignment && $LaTeXML::Core::Gullet::DEBUG_COLUMN;
-  my @aug=();
+  my @aug       = ();
+
   while (defined($token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
 ###    push(@LaTeXML::LIST, $self->invokeToken($token));
-    print STDERR "XToken ".Stringify($token)." = ".ToString($STATE->lookupDefinition($token))."\n" if $alignment && $LaTeXML::Core::Gullet::DEBUG_COLUMN;
-    my @r  =  $self->invokeToken($token);
+    my @r = $self->invokeToken($token);
     push(@LaTeXML::LIST, @r);
-    push(@aug,$token,@r);
+    push(@aug, $token, @r);
     last if $terminal and Equals($token, $terminal);
     last if $initdepth > scalar(@{ $$self{boxing} }); }           # if we've closed the initial mode.
   Warn('expected', $terminal, $self, "body should have ended with '" . ToString($terminal) . "'",
-       "current body started at " . ToString($startloc),
-#       "Got ".join("\n -- ",map { Stringify($_) } @LaTeXML::LIST)
-       "Got ".join("\n -- ",map { Stringify($_) } @aug)
-)
+    "current body started at " . ToString($startloc),
+    #       "Got ".join("\n -- ",map { Stringify($_) } @LaTeXML::LIST)
+    "Got " . join("\n -- ", map { Stringify($_) } @aug)
+    )
     if $terminal && !Equals($token, $terminal);
   push(@LaTeXML::LIST, Box()) unless $token;                      # Dummy `trailer' if none explicit.
-  print STDERR "==> ".ToString(List(@LaTeXML::LIST))."\n" if $alignment && $LaTeXML::Core::Gullet::DEBUG_COLUMN;
   return @LaTeXML::LIST; }
 
 # Digest a list of tokens independent from any current Gullet.

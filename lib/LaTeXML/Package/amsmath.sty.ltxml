@@ -80,16 +80,19 @@ DefMacro('\@ams@intertext{}',
 DefConstructor('\@@ams@intertext{}',
   "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode => 'text');
 
-DefMacroI('\@ams@newline', undef, sub {
-    my ($gullet) = @_;
-    readNewlineArgs($gullet);
-    $gullet->skipSpaces();
-    my $next = $gullet->readToken();
-    if ($next && $next->equals(T_CS('\intertext'))) {
-      ($next); }
-    else {
-      (T_CS('\@alignment@newline@noskip'), $next); } });
-
+# DefMacroI('\@ams@newline', undef, sub {
+#     my ($gullet) = @_;
+#     readNewlineArgs($gullet);
+#     $gullet->skipSpaces();
+# #    my $next = $gullet->readToken();
+# #    if ($next && $next->equals(T_CS('\intertext'))) {
+# #      ($next); }
+# #    else {
+# #      (T_CS('\@alignment@newline@noskip'), $next); } }
+#     (T_CS('\cr')); }
+#         );
+# NOTE: Need to fix this!!!
+Let('\@ams@newline', '\@alignment@newline');
 ##?????
 #DefMacroI('\@ams@newline', undef, '\cr');
 
@@ -119,7 +122,7 @@ sub amsalignBindings {
       closeRow    => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn  => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn => sub { $_[0]->closeElement('ltx:_Capture_'); },
-      properties => {%properties}));
+      properties  => {%properties}));
   Let("\\\\",         '\@ams@newline');
   Let('\@row@before', '\eqnarray@row@before');
   Let('\@row@after',  '\eqnarray@row@after');
@@ -275,7 +278,6 @@ DefPrimitiveI('\@ams@multirow@bindings', 'RequiredKeyVals:multirow OptionalKeyVa
 sub rearrangeAMSMultirow {
   my ($document, $whatsit, $array) = @_;
   my @rows = element_nodes($array);
-
   # Adjust alignment of rows
   if (defined(my $rowalignment = $whatsit->getProperty('MULTIROW_ALIGNMENT_RULE'))) {
     my %align_spec = %{$rowalignment};

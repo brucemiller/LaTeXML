@@ -128,7 +128,7 @@ sub revert {
       else {
         my $alias = $defn->getAlias;
         if (defined $alias) {
-          push(@tokens, T_CS($alias)) if $alias ne ''; }
+          push(@tokens, (ref $alias ? $alias : T_CS($alias))) if $alias ne ''; }
         else {
           push(@tokens, $defn->getCS); }
         if (my $parameters = $defn->getParameters) {
@@ -233,8 +233,7 @@ sub computeSize {
         my $arg = $1;
         push(@boxes, ($arg =~ /^\d+$/ ? $self->getArg($arg) : $$props{$arg})); } }
     else {
-      Warn('unexpected', $sizer, undef,
-        "Expected sizer to be a function, or arg or property specification, not '$sizer'"); }
+      push(@boxes, $sizer); }
     my $font = $$props{font};
     $options{width}   = $$props{width}   if $$props{width};
     $options{height}  = $$props{height}  if $$props{height};
