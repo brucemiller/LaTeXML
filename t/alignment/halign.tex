@@ -129,22 +129,55 @@ c&d\cr
 
 \section{Nested}
 
+\halign{[#]&[#]\cr
+  a&b\cr
+  \vbox{\halign{(#)&(#)\cr
+  a&b\cr}}
+  &
+  \vbox{\halign{\{#\}&\{#\}\cr  
+  a&b\cr}}
+\cr}
+
 \section{Complex}
 
+\def\foo#1{[[#1]]}
+\halign{[#]&\foo{#}&[#]\cr
+a&b&c\cr
+d&e&f\cr
+}
 
 \end{document}
 
-
-% Note: \\ is not defined as \cr with \halign!9
-\halign{[#]&[#]&[#]\cr
-a&b&c\\
-d&e&f\\
+\halign{[#]&\hbox to 1in {#}&[#]\cr
+a&b&c\cr
+d&e&f\cr
 }
 
-\documentclass{article}
-\begin{document}
+\def\ignore#1{}
+\def\amp{&}
+\def\return{\cr}
 
+%  a & b\cr
 
+\halign{[[#]]&((#))\cr
+  a \ignore& b\cr
+  a \ignore{&} b\cr
+}
+\halign{[[#]]&((#))\cr
+  a \amp b\cr
+  a \ignore\amp b\cr
+  a \ignore{\amp} b\cr
+}
+
+% 2nd line gives error: Runaway argument
+\halign{\ignore#&((#))\cr
+ a & b\cr
+% & b\cr
+}
+
+\halign{[[#]]&((#))\cr
+ a \amp b\return
+}
 
 
 \end{document}
