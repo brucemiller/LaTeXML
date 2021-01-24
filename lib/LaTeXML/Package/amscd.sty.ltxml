@@ -34,14 +34,9 @@ DefMacro('\lx@ams@CD RequiredKeyVals:lx@GEN',
   '\lx@gen@matrix@bindings{#1}\lx@ams@CD@bindings\lx@ams@matrix@{#1}\@start@alignment');
 DefMacro('\endCD', '\@finish@alignment\lx@end@gen@matrix');
 DefPrimitive('\lx@ams@CD@bindings', sub {
-    Let(T_ALIGN, '\@cd@invisible@align');
-    Let("\\\\",  '\@alignment@newline@noskip');
+    Let("\\\\", '\@alignment@newline@noskip');
     $STATE->assignMathcode('@' => 0x8000);
     Let('@', '\cd@'); });
-
-DefMacroI('\@cd@invisible@align', undef,
-  '\@close@inner@column\@close@column'
-    . '\@open@column\@open@inner@column');
 
 DefMacro('\cd@ Token', sub {
     my ($gullet, $token) = @_;
@@ -111,7 +106,7 @@ DefConstructor('\cd@stack Undigested {} ScriptStyle ScriptStyle', sub {
 DefConstructor('\cd@adjacent Undigested {} ScriptStyle ScriptStyle', sub {
     my ($document, $reversion, $op, $left, $right, %props) = @_;
     $document->openElement('ltx:XMWrap', role => 'ARROW');    # Role?
-    $document->insertElement('ltx:XMArg', $left)  if $left->unlist;
+    $document->insertElement('ltx:XMArg', $left) if $left->unlist;
     $document->insertElement('ltx:XMArg', $op);
     $document->insertElement('ltx:XMArg', $right) if $right->unlist;
     $document->closeElement('ltx:XMWrap'); },

@@ -142,21 +142,14 @@ sub nextColumn {
 
 sub lastColumn {
   my ($self) = @_;
-  return unless $$self{current_row};
   my $row = $$self{current_row};
-  $$self{current_column} = scalar @{ $$self{current_row}{columns} };
-  return $$self{current_row}->column($$self{current_column}); }
+  return unless $row;
+  $$self{current_column} = scalar @{ $$row{columns} };
+  return $row->column($$self{current_column}); }
 
 sub currentColumnNumber {
   my ($self) = @_;
   return $$self{current_column}; }
-
-#### TODO: Sort out noalign'd "pseudorow"s or alternatives
-## Here we have to ignore pseudorows when couting.
-## but we still have a problem with multirow and some cases of top/bottom borders becoming lost
-sub XXXcurrentRowNumber {
-  my ($self) = @_;
-  return scalar(@{ $$self{rows} }); }
 
 sub currentRowNumber {
   my ($self) = @_;
@@ -226,10 +219,6 @@ sub toString {
 sub stringify {
   my ($self) = @_;
   return "Alignment[]"; }
-
-sub XXXXXrevert {
-  my ($self) = @_;
-  return $self->getBody->revert; }
 
 sub revert {
   my ($self) = @_;
