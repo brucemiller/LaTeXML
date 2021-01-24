@@ -26,12 +26,12 @@ our @EXPORT = (
 
 sub Box {
   my ($string, $font, $locator, $tokens, %properties) = @_;
-  $font = $STATE->lookupValue('font') unless defined $font;
+  $font    = $STATE->lookupValue('font')               unless defined $font;
   $locator = $STATE->getStomach->getGullet->getLocator unless defined $locator;
-  $tokens = LaTeXML::Core::Token::T_OTHER($string) if $string && !defined $tokens;
+  $tokens  = LaTeXML::Core::Token::T_OTHER($string) if $string && !defined $tokens;
   my $state = $STATE;
   if ($state->lookupValue('IN_MATH')) {
-    my $attr = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
+    my $attr      = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
     my $usestring = ($attr && $$attr{replace}) || $string;
     return LaTeXML::Core::Box->new($usestring, $font->specialize($string), $locator, $tokens,
       mode => 'math', ($attr ? %$attr : ()), %properties); }
@@ -125,8 +125,8 @@ sub getProperty {
   my ($self, $key) = @_;
   if ($key eq 'isSpace') {
     return $$self{properties}{$key} if defined $$self{properties}{$key};
-    my $tex = LaTeXML::Core::Token::UnTeX($$self{tokens});    # !
-    return (defined $tex) && ($tex =~ /^\s*$/); }    # Check the TeX code, not (just) the string!
+    my $tex = LaTeXML::Core::Token::UnTeX($$self{tokens});  # !
+    return (defined $tex) && ($tex =~ /^\s*$/); }           # Check the TeX code, not (just) the string!
   else {
     return $$self{properties}{$key}; } }
 
@@ -205,6 +205,7 @@ sub setDepth {
 sub getSize {
   my ($self, %options) = @_;
   my $props = $self->getPropertiesRef;
+  no warnings 'recursion';
   $self->computeSize(%options)
     unless ((defined $$props{width}) or (defined $$props{cwidth}))
     && ((defined $$props{height}) or (defined $$props{cheight}))

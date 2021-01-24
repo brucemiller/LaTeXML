@@ -488,6 +488,7 @@ sub computeBoxesSize {
   my @lines    = ();
   my ($wd, $ht, $dp) = (0, 0, 0);
   my $vattach = $options{vattach} || 'baseline';
+  no warnings 'recursion';
   foreach my $box (@$boxes) {
     next unless defined $box;
     next if ref $box && !$box->can('getSize');    # Care!! Since we're asking ALL args/compoments
