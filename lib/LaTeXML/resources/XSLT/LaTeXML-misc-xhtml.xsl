@@ -179,13 +179,21 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
-      <!-- fallback text for user agents which do not accept
-            the aria-label -->
-      <xsl:if test="$description!=''">
-        <xsl:element name="{f:blockelement($context,'p')}" namespace="{$html_ns}">
+      <!-- fallback img for user agents which do not process
+           the object tag properly -->
+      <xsl:element name="img" namespace="{$html_ns}">
+        <xsl:attribute name="src"><xsl:value-of select="f:url(@imagesrc)"/></xsl:attribute>
+        <xsl:apply-templates select="." mode="graphics-attributes"/>
+        <xsl:attribute name='alt'>
           <xsl:value-of select="$description"/>
-        </xsl:element>
-      </xsl:if>
+        </xsl:attribute>
+        <xsl:apply-templates select="." mode="begin">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="." mode="end">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+      </xsl:element>
       <xsl:apply-templates select="." mode="end">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
