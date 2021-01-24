@@ -3307,29 +3307,17 @@ DefConstructor('\@@tabbing SkipSpaces DigestedBody',
   beforeDigest => sub { $_[0]->bgroup; },
   mode         => 'text');
 
-DefMacroI('\@tabbing@tabset', undef,
-  '\@close@inner@column\@close@column'
-    . '\@tabbing@tabset@marker'
-    . '\@open@column\@open@inner@column');
-DefConstructorI('\@tabbing@tabset@marker', undef, '', reversion => '\=');
-DefMacroI('\@tabbing@nexttab', undef,
-  '\@close@inner@column\@close@column'
-    . '\@tabbing@nexttab@marker'
-    . '\@open@column\@open@inner@column');
+DefMacroI('\@tabbing@tabset',  undef, '\@tabbing@tabset@marker&');
+DefMacroI('\@tabbing@nexttab', undef, '\@tabbing@nexttab@marker&');
+DefMacro('\@tabbing@newline OptionalMatch:* [Dimension]', '\@tabbing@newline@marker\cr');
+DefMacroI('\@tabbing@kill', undef, '\@tabbing@kill@marker\cr\@tabbing@start@tabs');
+
+DefConstructorI('\@tabbing@tabset@marker',  undef, '', reversion => '\=');
 DefConstructorI('\@tabbing@nexttab@marker', undef, '', reversion => '\>');
-
-DefMacro('\@tabbing@newline OptionalMatch:* [Dimension]',
-  '\@close@inner@column\@close@column\@close@row'
-    . '\@tabbing@newline@marker'
-    . '\@open@row\@open@column\@open@inner@column\@tabbing@start@tabs');
 DefConstructorI('\@tabbing@newline@marker', undef, '', reversion => Tokens(T_CS("\\\\"), T_CR));
-
-DefMacroI('\@tabbing@kill', undef,
-  '\@close@inner@column\@close@column\@close@row'
-    . '\@tabbing@kill@marker'
-    . '\@open@row\@open@column\@open@inner@column\@tabbing@start@tabs');
 DefConstructorI('\@tabbing@kill@marker', undef, '', reversion => '\kill',
   afterDigest => sub { LookupValue('Alignment')->removeRow; return; });
+
 AssignValue(tabbing_start_tabs => Tokens());
 DefMacroI('\@tabbing@start@tabs', undef, sub { LookupValue('tabbing_start_tabs')->unlist; });
 DefPrimitiveI('\@tabbing@increment', undef, sub {
@@ -3350,7 +3338,11 @@ DefPrimitiveI('\@tabbing@hfil',       undef, undef);
 DefPrimitiveI('\@tabbing@pushtabs', undef, undef);
 DefPrimitiveI('\@tabbing@poptabs',  undef, undef);
 
+DefMacro('\@tabbing@accent{}', sub { T_CS('\@tabbing@' . ToString($_[1])); });
+
 # Should there be some rowsep/colsep set here?
+# Note that {tabbign} really shouldn't be handled by a tabular AT ALL....
+# Should be recording accumulated widths and wrapping in ltx:text, with specified widths.
 sub tabbingBindings {
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
       template => LaTeXML::Core::Alignment::Template->new(
@@ -3361,18 +3353,20 @@ sub tabbingBindings {
       closeRow       => sub { $_[0]->closeElement('ltx:tr'); },
       openColumn     => sub { $_[0]->openElement('ltx:td', @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement('ltx:td'); }));
-
-  Let("\\=", '\@tabbing@tabset');
-  Let("\\>", '\@tabbing@nexttab');
-##  Let("\\\\",      '\@tabbing@newline');
-  Let('\kill',     '\@tabbing@kill');
-  Let("\\+",       '\@tabbing@increment');
-  Let("\\-",       '\@tabbing@decrement');
-  Let("\\<",       '\@tabbing@untab');
-  Let("\\'",       '\@tabbing@flushright');
-  Let("\\`",       '\@tabbing@hfil');
-  Let('\pushtabs', '\@tabbing@pushtabs');
-  Let('\poptabs',  '\@tabbing@poptabs');
+  Let("\\=",              '\@tabbing@tabset');
+  Let("\\>",              '\@tabbing@nexttab');
+  Let("\\\\",             '\@tabbing@newline');
+  Let('\kill',            '\@tabbing@kill');
+  Let("\\+",              '\@tabbing@increment');
+  Let("\\-",              '\@tabbing@decrement');
+  Let("\\<",              '\@tabbing@untab');
+  Let('\@tabbing@' . "'", "\\'");
+  Let('\@tabbing@' . "`", "\\`");
+  Let('\a',               '\@tabbing@accent');
+  Let("\\'",              '\@tabbing@flushright');
+  Let("\\`",              '\@tabbing@hfil');
+  Let('\pushtabs',        '\@tabbing@pushtabs');
+  Let('\poptabs',         '\@tabbing@poptabs');
   return; }
 
 DefMacroI('\pushtabs', undef, Tokens());
