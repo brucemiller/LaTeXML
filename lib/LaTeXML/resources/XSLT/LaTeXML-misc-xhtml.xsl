@@ -144,38 +144,10 @@
     <xsl:element name="img" namespace="{$html_ns}">
       <xsl:attribute name="src"><xsl:value-of select="f:url(@imagesrc)"/></xsl:attribute>
       <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-        <xsl:with-param name="extra_style">
-          <xsl:if test="@imagedepth">
-            <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px')"/>
-          </xsl:if>
-        </xsl:with-param>
-      </xsl:call-template>
-      <xsl:if test="@imagewidth">
-        <xsl:attribute name='width'>
-          <xsl:value-of select="@imagewidth"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:if test="@imageheight">
-        <xsl:attribute name='height'>
-          <xsl:value-of select="@imageheight"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:choose>
-        <xsl:when test="@description">
-          <xsl:attribute name='alt'>
-            <xsl:value-of select="@description"/>
-          </xsl:attribute>
-        </xsl:when>
-        <xsl:when test="ancestor::ltx:figure/ltx:caption">
-          <xsl:attribute name='alt'>
-            <xsl:value-of select="ancestor::ltx:figure/ltx:caption/text()"/>
-          </xsl:attribute>
-        </xsl:when>
-        <xsl:otherwise>
-          <xsl:attribute name='alt'></xsl:attribute> <!--required; what else? -->
-        </xsl:otherwise>
-      </xsl:choose>
+      <xsl:apply-templates select="." mode="graphics-attributes"/>
+      <xsl:attribute name='alt'>
+        <xsl:apply-templates select="." mode="graphics-description"/>
+      </xsl:attribute>
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
@@ -190,37 +162,13 @@
   <xsl:template match="ltx:graphics[f:ends-with(@imagesrc,'.svg')='true']">
     <xsl:param name="context"/>
     <xsl:variable name="description">
-      <xsl:choose>
-        <xsl:when test="@description">
-          <xsl:value-of select="@description"/>
-        </xsl:when>
-        <xsl:when test="ancestor::ltx:figure/ltx:caption">
-            <xsl:value-of select="ancestor::ltx:figure/ltx:caption/text()"/>
-        </xsl:when>
-        <xsl:otherwise/>
-      </xsl:choose>
+      <xsl:apply-templates select="." mode="graphics-description"/>
     </xsl:variable>
     <xsl:element name="object" namespace="{$html_ns}">
       <xsl:attribute name="type">image/svg+xml</xsl:attribute>
       <xsl:attribute name="data"><xsl:value-of select="f:url(@imagesrc)"/></xsl:attribute>
       <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes">
-        <xsl:with-param name="extra_style">
-          <xsl:if test="@imagedepth">
-            <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px')"/>
-          </xsl:if>
-        </xsl:with-param>
-      </xsl:call-template>
-      <xsl:if test="@imagewidth">
-        <xsl:attribute name='width'>
-          <xsl:value-of select="@imagewidth"/>
-        </xsl:attribute>
-      </xsl:if>
-      <xsl:if test="@imageheight">
-        <xsl:attribute name='height'>
-          <xsl:value-of select="@imageheight"/>
-        </xsl:attribute>
-      </xsl:if>
+      <xsl:apply-templates select="." mode="graphics-attributes"/>
       <!-- the object tag does not support alt, so use
            aria-label instead -->
       <xsl:if test="$description!=''">
@@ -231,8 +179,8 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
-      <!-- fallback text for screen reader/browser combinations
-           which do not accept the aria-label -->
+      <!-- fallback text for user agents which do not accept
+            the aria-label -->
       <xsl:if test="$description!=''">
         <xsl:element name="{f:blockelement($context,'p')}" namespace="{$html_ns}">
           <xsl:value-of select="$description"/>
@@ -242,6 +190,38 @@
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
     </xsl:element>
+  </xsl:template>
+
+  <xsl:template match="ltx:graphics" mode="graphics-attributes">
+    <xsl:call-template name="add_attributes">
+      <xsl:with-param name="extra_style">
+        <xsl:if test="@imagedepth">
+          <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px')"/>
+        </xsl:if>
+      </xsl:with-param>
+    </xsl:call-template>
+    <xsl:if test="@imagewidth">
+      <xsl:attribute name='width'>
+        <xsl:value-of select="@imagewidth"/>
+      </xsl:attribute>
+    </xsl:if>
+    <xsl:if test="@imageheight">
+      <xsl:attribute name='height'>
+        <xsl:value-of select="@imageheight"/>
+      </xsl:attribute>
+    </xsl:if>
+  </xsl:template>
+
+  <xsl:template match="ltx:graphics" mode="graphics-description">
+    <xsl:choose>
+      <xsl:when test="@description">
+        <xsl:value-of select="@description"/>
+      </xsl:when>
+      <xsl:when test="ancestor::ltx:figure/ltx:caption">
+          <xsl:value-of select="ancestor::ltx:figure/ltx:caption/text()"/>
+      </xsl:when>
+      <xsl:otherwise/>
+    </xsl:choose>
   </xsl:template>
 
   <!-- ======================================================================
