@@ -210,20 +210,19 @@
           <xsl:value-of select="@imageheight"/>
         </xsl:attribute>
       </xsl:if>
+      <!-- the object tag does not support alt, so use aria-label instead -->
       <xsl:choose>
         <xsl:when test="@description">
-          <xsl:attribute name='alt'>
+          <xsl:attribute name='aria-label'>
             <xsl:value-of select="@description"/>
           </xsl:attribute>
         </xsl:when>
         <xsl:when test="ancestor::ltx:figure/ltx:caption">
-          <xsl:attribute name='alt'>
+          <xsl:attribute name='aria-label'>
             <xsl:value-of select="ancestor::ltx:figure/ltx:caption/text()"/>
           </xsl:attribute>
         </xsl:when>
-        <xsl:otherwise>
-          <xsl:attribute name='alt'></xsl:attribute> <!--required; what else? -->
-        </xsl:otherwise>
+        <xsl:otherwise/>
       </xsl:choose>
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$context"/>
