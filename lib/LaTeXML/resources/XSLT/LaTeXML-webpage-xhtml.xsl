@@ -101,9 +101,9 @@
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="head" namespace="{$html_ns}">
       <xsl:apply-templates select="." mode="head-begin"/>
+      <xsl:apply-templates select="." mode="head-content-type"/>
       <xsl:apply-templates select="." mode="head-title"/>
       <xsl:apply-templates select="." mode="head-generator-identifier"/>
-      <xsl:apply-templates select="." mode="head-content-type"/>
       <xsl:apply-templates select="." mode="head-icon"/>
       <xsl:apply-templates select="." mode="head-resources"/>
       <xsl:apply-templates select="." mode="head-css"/>
