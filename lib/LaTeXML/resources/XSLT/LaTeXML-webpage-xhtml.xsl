@@ -423,14 +423,20 @@
   <!-- Generate a meta indicating the content-type -->
   <xsl:template match="/" mode="head-content-type">
     <xsl:text>&#x0A;</xsl:text>
-    <!-- Heuristically assume if we're using a namespace, we're xhtml -->
-    <xsl:element name="meta" namespace="{$html_ns}">
-      <xsl:attribute name="http-equiv">Content-Type</xsl:attribute>
-      <xsl:attribute name="content">
-        <xsl:value-of select="f:if($USE_NAMESPACES,'application/xhtml+xml','text/html')"/>
-        <xsl:text>; charset=UTF-8</xsl:text>
-      </xsl:attribute>
-    </xsl:element>
+    <xsl:choose>
+      <!-- HTML5 in XML syntax: content-type and charset not allowed -->
+      <xsl:when test="$USE_NAMESPACES='true' and $USE_HTML5='true'" />
+      <xsl:otherwise>
+        <xsl:element name="meta" namespace="{$html_ns}">
+          <!-- HTML(4|5) or XHTML1.1: content-type and charset -->
+          <xsl:attribute name="http-equiv">Content-Type</xsl:attribute>
+          <xsl:attribute name="content">
+            <xsl:value-of select="f:if($USE_NAMESPACES,'application/xhtml+xml','text/html')"/>
+            <xsl:text>; charset=UTF-8</xsl:text>
+          </xsl:attribute>
+        </xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <!-- Generate an "icon" link for the head -->
