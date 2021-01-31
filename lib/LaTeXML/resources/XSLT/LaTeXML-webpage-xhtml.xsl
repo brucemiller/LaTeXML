@@ -115,6 +115,11 @@
     </xsl:element>
   </xsl:template>
 
+  <!-- Note: if you override the head-begin template in a plain HTML5 (non-XML)
+       document, you must ensure that the content of the head-content-type
+       declaration appears in full within the first 1024 bytes of the document,
+       or the output will not comply with the HTML5 standard.
+      -->
   <xsl:template match="/" mode="head-begin"/>
   <xsl:template match="/" mode="head-end"/>
 
