@@ -8,7 +8,7 @@
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" tex="\begin{cases}{cc}d&amp;c\\&#10;b&amp;a\end{cases}" text="cases@(c * c * d, c, b, a)" xml:id="S0.Ex1.m1">
+      <Math mode="display" tex="\begin{cases}d&amp;c\\&#10;b&amp;a\end{cases}" text="cases@(d, c, b, a)" xml:id="S0.Ex1.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -23,12 +23,7 @@
               <XMArray>
                 <XMRow>
                   <XMCell align="left">
-                    <XMApp xml:id="S0.Ex1.m1.1">
-                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                      <XMTok font="italic" role="UNKNOWN">d</XMTok>
-                    </XMApp>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex1.m1.1">d</XMTok>
                   </XMCell>
                   <XMCell align="left">
                     <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex1.m1.2">c</XMTok>
@@ -149,7 +144,7 @@
   </para>
   <para xml:id="p5">
     <equation xml:id="S0.Ex5">
-      <Math mode="display" tex="\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}\begin{cases}{cc}d&amp;c\\&#10;b&amp;a\end{cases}" text="Array[[a, b], [c, d]] * cases@(c * c * d, c, b, a)" xml:id="S0.Ex5.m1">
+      <Math mode="display" tex="\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}\begin{cases}d&amp;c\\&#10;b&amp;a\end{cases}" text="Array[[a, b], [c, d]] * cases@(d, c, b, a)" xml:id="S0.Ex5.m1">
         <XMath>
           <XMApp>
             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -184,12 +179,7 @@
                 <XMArray>
                   <XMRow>
                     <XMCell align="left">
-                      <XMApp xml:id="S0.Ex5.m1.1">
-                        <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                        <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                        <XMTok font="italic" role="UNKNOWN">c</XMTok>
-                        <XMTok font="italic" role="UNKNOWN">d</XMTok>
-                      </XMApp>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex5.m1.1">d</XMTok>
                     </XMCell>
                     <XMCell align="left">
                       <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex5.m1.2">c</XMTok>
