@@ -2210,13 +2210,6 @@ DefMacroI('\eqnarray@row@before', undef, '\hidden@noalign{\eqnarray@row@before@}
 DefMacroI('\eqnarray@row@after',  undef, '\hidden@noalign{\eqnarray@row@after@}');
 
 sub eqnarrayBindings {
-# my $col1 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
-#   after => Tokens(T_CS('\@hidden@egroup'), T_MATH) };
-# my $col2 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
-#   after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
-# my $col3 = { before => Tokens(T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
-#   after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
-
   my $col1 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\displaystyle')),
     after => Tokens(T_MATH) };
   my $col2 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\displaystyle')),
@@ -3494,10 +3487,13 @@ DefConstructor('\@cline{}', '',
     my $alignment = LookupValue('Alignment');
     $alignment->addLine('t', @cols) if $alignment;
     return; },
+  sizer      => 0,
   properties => { isHorizontalRule => 1 });
 
 DefConstructorI('\vline', undef, "",    # ???
-  properties => { isVerticalRule => 1 },);
+  properties => { isVerticalRule => 1 },
+  sizer      => 0,
+);
 DefRegister('\lx@default@arraycolsep', Dimension('5pt'));
 DefRegister('\arraycolsep',            Dimension('5pt'));
 DefRegister('\arrayrulewidth',         Dimension('0.4pt'));
@@ -4301,8 +4297,12 @@ DefRegister('\fill', Glue(0, '1fill'));
 #======================================================================
 # C.13.2 Space
 #======================================================================
-DefMacro('\hspace  OptionalMatch:* {Dimension}',
-  '\ifmmode\@math@hskip #2\relax\else\@text@hskip #2\relax\fi');
+DefPrimitive('\hspace  OptionalMatch:* {Dimension}', sub {
+    my ($stomach, $star, $length) = @_;
+    my $s = DimensionToSpaces($length);
+    return unless defined $s;
+    Box($s, undef, undef, Invocation(T_CS('\hskip'), $length),
+      width => $length, isSpace => 1); });
 
 DefPrimitive('\vspace OptionalMatch:* {}', undef);
 DefPrimitive('\addvspace {}',              undef);
@@ -4438,7 +4438,7 @@ DefConstructor('\lx@parboxnewline[]', sub {
 
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring them, for now, though.
-DefConstructor('\parbox[][Dimension][]{Dimension}{}', sub {
+DefConstructor('\parbox[][Dimension][]{Dimension} VBoxContents', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
     insertBlock($document, $body,
       width   => $width,
@@ -4466,6 +4466,7 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
       vattach => $vattach,
       class   => 'ltx_minipage');
     return; },
+  sizer      => '#body',
   mode       => 'text',
   properties => sub { (
       width   => $_[4],

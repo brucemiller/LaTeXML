@@ -31,7 +31,7 @@ DefConstructor('\@@tabularx{Dimension}[] Undigested DigestedBody',
 
 # Like p, but w/o explicit width...
 DefColumnType('X', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN),
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),
       after => Tokens(T_END),
       align => 'justify'); return; });
 
