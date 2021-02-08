@@ -864,12 +864,17 @@ DefMacro('\meaning Token', sub {
         # Should we be more careful to distinguish between latex and tex counters?
         $meaning = $prefix . $literal_value; }
       elsif ($type =~ /expandable$/i) {
+# short-circuit some troublesome discrepancies with TeX, which end up macros on LaTeXML's end, but \meaning expects as primitives in the CTAN ecosystem.
+        my $cs = ToString($definition->getCSorAlias);
+        # These exceptions could be extended further, as we add more .sty/.cls support
+        return Explode($cs) if $cs =~ /^\\(?:(?:un)?expanded|detokenize)$/;
         my $expansion  = $definition->getExpansion;
         my $ltxps      = $definition->getParameters;
         my $arg_index  = 0;
         my @spec_parts = ();
         my @params     = $ltxps ? $ltxps->getParameters : ();
         my $p_trailer  = '';
+
         for my $param (@params) {
           my $p_spec = $$param{spec};
           if ($p_spec eq 'RequireBrace') {
