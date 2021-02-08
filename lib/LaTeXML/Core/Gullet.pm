@@ -202,45 +202,48 @@ our @CATCODE_HOLD = (
   0, 0, 1, 0,
   0, 1, 0, 0);
 
-sub ZZreadToken {
-  my ($self) = @_;
-  my $token;
-  my $cc;
-  # Check in pushback first....
-  while (($token = shift(@{ $$self{pushback} }))
-    && (($$token[1] != CC_SMUGGLE_THE) || ($token = $$token[2]))
-    && $CATCODE_HOLD[$cc = $$token[1]]) {
-    if ($cc == CC_COMMENT) {
-      push(@{ $$self{pending_comments} }, $token); }
-    elsif ($cc == CC_MARKER) {
-      LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
-  if (defined $token) {
-    return $token; }
-  # Not in pushback, use the current mouth
-  while (($token = $$self{mouth}->readToken()) && $CATCODE_HOLD[$cc = $$token[1]]) {
-    if ($cc == CC_COMMENT) {
-      push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
-    elsif ($cc == CC_MARKER) {
-      LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
-  return $token; }
-
 sub handleMarker {
   my ($self, $markertoken) = @_;
   my $arg = $$markertoken[0];
   #print STDERR "GULLET detected marker: ".Stringify($arg)."\n";
   if (ref $arg) {
     LaTeXML::Core::Definition::stopProfiling($markertoken, 'expand'); }
-  elsif ($arg eq 'before-column') {                     # Were in before-column template
+  elsif ($arg eq 'before-column') {    # Were in before-column template
     my $alignment = $STATE->lookupValue('Alignment');
-    print STDERR "Halign $alignment: COLUMN STATE $$alignment{in_column} => in-column\n" if $LaTeXML::halign::DEBUG;
-    $LaTeXML::NESTED_READ    = 0;
-    $$alignment{align_state} = 0;
-    $$alignment{in_column}   = 'in-column'; }           # switch to column proper!
-  elsif ($arg eq 'after-column') {                      # Were in before-column template
+    print STDERR "Halign $alignment: alignment state => 0\n" if $LaTeXML::halign::DEBUG;
+    $LaTeXML::ALIGN_STATE = 0; }       # switch to column proper!
+  elsif ($arg eq 'after-column') {     # Were in before-column template
     my $alignment = $STATE->lookupValue('Alignment');
-    print STDERR "Halign $alignment: COLUMN STATE $$alignment{in_column} => 0\n" if $LaTeXML::halign::DEBUG;
-    $$alignment{in_column} = 0; }                       # switch to column proper!
+    print STDERR "Halign $alignment: alignment state: after column\n" if $LaTeXML::halign::DEBUG;
+  }
   else { }
+  return; }
+
+sub handleTemplate {
+  my ($self, $alignment, $token) = @_;
+  print STDERR "Halign $alignment: ALIGNMENT Column ended at " . Stringify($token)
+    . "[" . Stringify($STATE->lookupMeaning($token)) . "]"
+    . "@ " . ToString($self->getLocator) . "\n"
+    if $LaTeXML::halign::DEBUG;
+  #  Append expansion to end!?!?!?!
+  local $LaTeXML::CURRENT_TOKEN = $token;
+  my $post = $alignment->getColumnAfter;
+  $LaTeXML::ALIGN_STATE = 1000000;
+  ### NOTE: Truly fishy smuggling w/ \hidden@cr
+  my $arg;
+  if (Equals($token, T_CS('\hidden@cr'))) {
+    $arg = $self->readArg(); }
+  print STDERR "Halign $alignment: column after " . ToString($post) . "\n" if $LaTeXML::halign::DEBUG;
+  if (($$token[1] != CC_ALIGN)
+    && !Equals($token, T_CS('\span'))
+    && !Equals($token, T_CS('\hidden@align'))
+    && $$alignment{in_row}
+    && !$alignment->currentRow->{pseudorow}) {
+    unshift(@{ $$self{pushback} }, T_CS('\@row@after')); }
+  if ($arg) {
+    unshift(@{ $$self{pushback} }, T_BEGIN, $arg->unlist, T_END); }
+  unshift(@{ $$self{pushback} }, $token);
+  unshift(@{ $$self{pushback} }, $post->unlist);
   return; }
 
 sub readToken {
@@ -248,30 +251,13 @@ sub readToken {
   #  my $token = shift(@{$$self{pushback}});
   my $token;
   my $cc;
-  my ($alignment, $column);
   while (1) {
-    # Check in pushback first....
-    # while (($token = shift(@{ $$self{pushback} })) && $CATCODE_HOLD[$cc = $$token[1]]) {
-    #   if ($cc == CC_COMMENT) {
-    #     push(@{ $$self{pending_comments} }, $token); }
-    #   elsif ($cc == CC_MARKER) {
-    #     $self->handleMarker($token); }
-    # }
-    # if (!defined $token) {
-    #   while (($token = $$self{mouth}->readToken()) && $CATCODE_HOLD[$cc = $$token[1]]) {
-    #     if ($cc == CC_COMMENT) {
-    #       push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
-    #     elsif ($cc == CC_MARKER) {
-    #       $self->handleMarker($token); }
-    # } }
-
     while (($token = shift(@{ $$self{pushback} }))
       && (($$token[1] != CC_SMUGGLE_THE) || ($token = $$token[2]))
       && $CATCODE_HOLD[$cc = $$token[1]]) {
       if ($cc == CC_COMMENT) {
         push(@{ $$self{pending_comments} }, $token); }
       elsif ($cc == CC_MARKER) {
-##        LaTeXML::Core::Definition::stopProfiling($token, 'expand');
         $self->handleMarker($token); } }
     # Not in pushback, use the current mouth
     if (!defined $token) {
@@ -279,72 +265,28 @@ sub readToken {
         if ($cc == CC_COMMENT) {
           push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
         elsif ($cc == CC_MARKER) {
-###        LaTeXML::Core::Definition::stopProfiling($token, 'expand');
           $self->handleMarker($token); } } }
-    # Wow!!!!!
+    # Wow!!!!! See TeX the Program \S 309
     if ((defined $token)
-###         && $toexpand
-      && ($alignment = $STATE->lookupValue('Alignment'))
-      && ($column    = $alignment->currentColumn)
-      && !$$alignment{align_state}
-###      && ($$alignment{level} == $STATE->getFrameDepth)
-      && !$LaTeXML::NESTED_READ
+      && !$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)
+      && $LaTeXML::READING_ALIGNMENT
       && (Equals($token, T_ALIGN)
-        || Equals($token, T_CS('\hidden@align'))
         || (($cc == CC_CS) && (Equals($token, T_CS('\cr'))
             || Equals($token, T_CS('\crcr'))
             || Equals($token, T_CS('\hidden@cr'))
             || Equals($token, T_CS('\hidden@crcr'))
             || Equals($token, T_CS('\span'))
-        )))) {
-
-      print STDERR "Halign $alignment: ALIGNMENT Column ended at " . Stringify($token)
-        . "[" . Stringify($STATE->lookupMeaning($token)) . "]"
-        . "@ " . ToString($self->getLocator) . "\n"
-        if $LaTeXML::halign::DEBUG;
-      print STDERR "Halign $alignment: level=" . $STATE->getFrameDepth . " vs alignment level=" . $$alignment{level} . "\n"
-        if $LaTeXML::halign::DEBUG;
-      #  Append expansion to end!?!?!?!
-      local $LaTeXML::CURRENT_TOKEN = $token;
-      my $repl = [$token];
-      my $post = $alignment->getColumnAfter;
-      $$alignment{in_column}   = 0;
-      $$alignment{align_state} = 1000000;
-      ### NOTE: Truly fishy smuggling w/ \hidden@cr
-      my $arg;
-      if (Equals($token, T_CS('\hidden@cr'))) {
-        $arg = $self->readArg(); }
-      print STDERR "Halign $alignment: column after " . ToString($post) . "\n" if $LaTeXML::halign::DEBUG;
-      if (($cc != CC_ALIGN)
-        && !$alignment->currentRow->{pseudorow}
-        && !Equals($token, T_CS('\hidden@align'))) {
-        unshift(@{ $$self{pushback} }, T_CS('\@row@after')); }
-      if ($arg) {
-        unshift(@{ $$self{pushback} }, T_BEGIN, $arg->unlist, T_END); }
-      unshift(@{ $$self{pushback} }, $token);
-      unshift(@{ $$self{pushback} }, $post->unlist); }
+            || Equals($token, T_CS('\hidden@align')))))) {
+      $self->handleTemplate($LaTeXML::READING_ALIGNMENT, $token); }
     else {
       last; }
   }
   return $token; }
 
-sub afterCellUnlist {
-  my ($tokens) = @_;
-  return () unless $tokens;
-  my @toks = $tokens->unlist;
-  my @new  = ();
-  while (my $t = pop(@toks)) {
-    if (Equals($t, T_MATH) && @toks && Equals($toks[-1], T_CS('\hfil'))) {
-      unshift(@new, pop(@toks)); push(@toks, $t); }
-    else {
-      unshift(@new, $t); } }
-  return @new; }
-
 # Unread tokens are assumed to be not-yet expanded.
 sub unread {
   my ($self, @tokens) = @_;
   my $r;
-###print STDERR "Halign $alignment: GULLET PUSHBACK ".join(',',map { Stringify($_); } @tokens)."\n" if  $LaTeXML::halign::DEBUG;
   unshift(@{ $$self{pushback} },
     map { (!defined $_ ? ()
         : (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
@@ -362,48 +304,43 @@ sub readXToken {
   my ($self, $toplevel, $commentsok) = @_;
   $toplevel = 1 unless defined $toplevel;
   return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
-  my ($token, $cc, $defn, $alignment, $column);
+  my ($token, $cc, $defn);
   while (1) {
-#######    $token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken();
-### If we do NOT call readToken, we'll need to copy(!) the alignment handling code here!
-    ### But we don't want to call readToken, because we need to recognize CC_SMUGGLE_THE!!!
-    # PRE-check pushback, so that we catch CC_SMUGGLE_THE (which are only in pushback)
-    while ($token = shift(@{ $$self{pushback} })) {
-######      && (($$token[1] != CC_SMUGGLE_THE) || ($token = $$token[2]))
-###      && $CATCODE_HOLD[$cc = $$token[1]]) {
-      if (($cc = $$token[1]) == CC_SMUGGLE_THE) {
-        return $LaTeXML::SMUGGLE_THE ? $token : $$token[2]; }
-##        return $token if $LaTeXML::SMUGGLE_THE; # Return as is, if smuggling
-##        unshift(@{ $$self{pushback} }, $$token[2]); } # Else put back the smuggled token
+    while ($token = shift(@{ $$self{pushback} })) {    # Check in pushback
+      if (($cc = $$token[1]) == CC_SMUGGLE_THE) {      # ONLY in pushback!
+        return $LaTeXML::SMUGGLE_THE ? $token : $$token[2]; }    # Expands to smuggled token
       elsif ($cc == CC_COMMENT) {
         return $token if $commentsok;
-        push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
+        push(@{ $$self{pending_comments} }, $token); }           # What to do with comments???
       elsif ($cc == CC_MARKER) {
-###        LaTeXML::Core::Definition::stopProfiling($token, 'expand');
         $self->handleMarker($token); }
       else {
-        unshift(@{ $$self{pushback} }, $token);    # PUT BACK the token, so readToken can handle &,\cr
         last; } }
-    $token = $self->readToken(1);                  ### unless $token;
+    if (!defined $token) {                                       # Else read from current mouth
+      while (($token = $$self{mouth}->readToken()) && $CATCODE_HOLD[$cc = $$token[1]]) {
+        if ($cc == CC_COMMENT) {
+          push(@{ $$self{pending_comments} }, $token); }         # What to do with comments???
+        elsif ($cc == CC_MARKER) {
+          $self->handleMarker($token); } } }
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
-      $self->closeMouth; }                         # Next input stream.
-##    elsif (($cc = $$token[1]) == CC_SMUGGLE_THE) {
-##      return $LaTeXML::SMUGGLE_THE ? $token : $$token[2]; }
-##    elsif ($cc == CC_COMMENT) {    # NOTE: Inlined ->getCatcode
-##      return $token if $commentsok;
-##      push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
-##    elsif ($cc == CC_MARKER) {
-##      LaTeXML::Core::Definition::stopProfiling($token, 'expand'); }
-###    elsif ($cc == CC_MARKER) {
-###      $self->handleMarker($token); }
-
-    elsif (my $unexpanded = $$token[2]) {          # Inline get_dont_expand
-      return $token; }                             # Defer expansion (recursion?)
-        # Note: special-purpose lookup in State, for efficiency
+      $self->closeMouth; }                                       # Next input stream.
+    elsif (my $unexpanded = $$token[2]) {                        # Inline get_dont_expand
+      return $token; }                                           # Defer expansion (recursion?)
+                                                                 # Wow!!!!! See TeX the Program \S 309
+    elsif (!$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)
+      && $LaTeXML::READING_ALIGNMENT
+      && (Equals($token, T_ALIGN)
+        || (($cc == CC_CS) && (Equals($token, T_CS('\cr'))
+            || Equals($token, T_CS('\crcr'))
+            || Equals($token, T_CS('\hidden@cr'))
+            || Equals($token, T_CS('\hidden@crcr'))
+            || Equals($token, T_CS('\span'))
+            || Equals($token, T_CS('\hidden@align')))))) {
+      $self->handleTemplate($LaTeXML::READING_ALIGNMENT, $token); } # Push column before template, and re-read
+    ## Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
-      # <<<<<<< HEAD
       my $invoked   = $defn->invoke($self) || [];
       my @expansion = ();
       for my $exp_t (@$invoked) {
@@ -427,17 +364,6 @@ sub readXToken {
         $$self{pushback_has_smuggled_the} = 1; }
       # add the newly expanded tokens back into the gullet stream, in the ordinary case.
       unshift(@{ $$self{pushback} }, @expansion); }
-# =======
-# if (my $r = $defn->invoke($self)) {
-#   print STDERR "Halign $alignment: GULLET EXPAND (level " . $STATE->getFrameDepth . ")" . Stringify($token) . " => " . ToString(Tokens(@$r)) . "\n"
-#     if $STATE->lookupValue('Alignment') && $LaTeXML::halign::DEBUG;
-#   unshift(@{ $$self{pushback} },
-#     map { (!defined $_ ? ()
-#         : (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
-#           : ($r eq 'LaTeXML::Core::Tokens' ? @$_
-#             : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))))) }
-#       @{$r}); } }
-#>>>>>>> bedfe431... Tentative changes to support TeX's \halign;
     elsif ($$token[1] == CC_CS && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
       $STATE->generateErrorStub($self, $token);
       return $token; }
@@ -526,7 +452,7 @@ our @CATCODE_BALANCED_INTERESTING = (
 
 sub readBalanced {
   my ($self, $expanded) = @_;
-  local $LaTeXML::NESTED_READ = 1;
+  local $LaTeXML::ALIGN_STATE = 1000000;
   my @tokens = ();
   my ($token, $level) = (undef, 1);
   my $startloc = ($$self{verbosity} > 0) && $self->getLocator;

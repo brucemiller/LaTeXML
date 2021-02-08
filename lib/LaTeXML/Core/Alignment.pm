@@ -36,7 +36,7 @@ our @EXPORT = (qw(
 #
 # An Alignment object is a sort of fake Whatsit;
 # It takes some magic to sneak it into the Digestion stream
-# (see TeX.pool \@open@alignment), but it needs to be created
+# (see TeX.pool \@start@alignment), but it needs to be created
 # BEFORE the contents of the alignment are digested,
 # since we stuff a lot of information into it
 # (row, column boxes, borders, spacing, etc...)
@@ -210,6 +210,51 @@ sub getColumnAfter {
     return Tokens(); } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Support for building an alignment's Rows & Columns
+
+sub startRow {
+  my ($self, $pseudorow) = @_;
+  $self->newRow;
+  $STATE->getStomach->bgroup;    # Grouping around ROW!
+  if ($pseudorow) {
+    $self->currentRow->{pseudorow} = 1; }
+  else {
+    push(@LaTeXML::LIST, LaTeXML::Package::Digest(T_CS('\@row@before'))); }
+  $$self{in_row} = 1;
+  LaTeXML::Package::AssignValue(alignmentStartColumn => 0);    # ???
+  return; }
+
+sub endRow {
+  my ($self) = @_;
+  return unless $$self{in_row};
+  $self->endColumn() if $$self{in_column};
+  $STATE->getStomach->egroup;                                  # Grouping around ROW!
+                                                               #  Digest(T_CS('\@row@after'));
+  $$self{in_row} = undef;
+  return; }
+
+sub startColumn {
+  my ($self, $pseudorow) = @_;
+  if (!$$self{in_row}) {
+    $self->startRow($pseudorow); }
+  elsif ($pseudorow) {
+    $self->currentRow->{pseudorow} = 1; }
+  $STATE->getStomach->bgroup;    # Grouping around CELL!
+                                 # Note: a VERY round-about way of tracking the column spanning!
+  LaTeXML::Package::AssignValue(alignmentStartColumn => $self->currentColumnNumber);
+  my $colspec = $self->nextColumn;
+  $LaTeXML::ALIGN_STATE = 1000000;
+  $$self{in_column} = 1;
+  return; }
+
+sub endColumn {
+  my ($self) = @_;
+  return unless $$self{in_column};
+  $STATE->getStomach->egroup;    # Grouping around CELL!
+  $$self{in_column} = undef;
+  return; }
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Making the Alignment act like a Whatsit
 sub toString {
   my ($self) = @_;
@@ -229,48 +274,10 @@ sub setReversion {
   $$self{reversion} = $tokens;
   return; }
 
-sub computeSize_internal {
+sub computeSize {
   my ($self) = @_;
   $self->normalizeAlignment;
-  my @rowheights = ();
-  my @colwidths  = ();
-  # add \baselineskip between rows? Or max the row heights with it ...
-  my $base = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->valueOf;
-  foreach my $row (@{ $$self{rows} }) {
-    # Do we need to account for any space in the $$row{before} or $$row{after}?
-    my @cols  = @{ $$row{columns} };
-    my $ncols = scalar(@cols);
-    if (my $short = $ncols - scalar(@colwidths)) {
-      push(@colwidths, map { 0 } 1 .. $short); }
-    my ($rowh, $rowd) = ($base * 0.7, $base * 0.3);
-    for (my $i = 0 ; $i < $ncols ; $i++) {
-      my $cell = $cols[$i];
-      next if $$cell{skipped};
-      next unless $$cell{boxes};
-      my ($w, $h, $d) = $$cell{boxes}->getSize(align => $$cell{align}, width => $$cell{width},
-        vattach => $$cell{vattach});
-      if (($$cell{colspan} || 1) == 1) {
-        $colwidths[$i] = max($colwidths[$i], $w->valueOf); }
-      else { }    # Could check afterwards that spanned columns are wide enough?
-      if (($$cell{rowspan} || 1) == 1) {
-        $rowh = max($rowh, $h->valueOf);
-        $rowd = max($rowd, $d->valueOf); }
-      else { }    # Ditto spanned rows
-    }
-    push(@rowheights, $rowh + $rowd + 0.5 * $base); }    # somehow our heights are way too short????
-  return ([@rowheights], [@colwidths]); }
-
-sub computeSize {
-  my ($self, %options)         = @_;
-  my ($rowheights, $colwidths) = $self->computeSize_internal();
-  my $props = $self->getPropertiesRef;
-  my $ww    = Dimension(sum(@$colwidths));
-  my $hh    = Dimension(sum(@$rowheights));
-  my $dd    = Dimension(0);
-  $$props{width}  = $ww unless defined $$props{width};
-  $$props{height} = $hh unless defined $$props{height};
-  $$props{depth}  = $dd unless defined $$props{depth};
-  return; }
+  return ($$self{cwidth}, $$self{cheight}, $$self{cdepth}); }
 
 #======================================================================
 # Constructing the XML for the alignment.
@@ -283,9 +290,16 @@ sub beAbsorbed {
   $self->normalizeAlignment;
   # We _should_ attach boxes to the alignment and rows,
   # but (ATM) we've only got sensible boxes for the cells.
-  &{ $$self{openContainer} }($document, ($attr ? %$attr : ()));
+  &{ $$self{openContainer} }($document, ($attr ? %$attr : ()),
+    cwidth => $$self{cwidth}, cheight => $$self{cheight}, cdepth => $$self{cdepth},
+  );
   foreach my $row (@{ $$self{rows} }) {
-    &{ $$self{openRow} }($document, 'xml:id' => $$row{id}, tags => $$row{tags});
+    &{ $$self{openRow} }($document,
+      'xml:id' => $$row{id}, tags => $$row{tags},
+      # Which properties do we expose to the constructor?
+      x => $$row{x}, y => $$row{y},
+      cwidth => $$row{cwidth}, cheight => $$row{cheight}, cdepth => $$row{cdepth},
+    );
     if (my $before = $$row{before}) {
       map { $document->absorb($_) } @$before; }
     foreach my $cell (@{ $$row{columns} }) {
@@ -293,7 +307,6 @@ sub beAbsorbed {
       # Normalize the border attribute
       my $border = join(' ', sort(map { split(/ */, $_) } $$cell{border} || ''));
       $border =~ s/(.) \1/$1$1/g;
-##      my $empty = !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
       my $empty = $$cell{empty} || !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
       $$cell{cell} = &{ $$self{openColumn} }($document,
         align => $$cell{align}, width => $$cell{width},
@@ -301,7 +314,11 @@ sub beAbsorbed {
         (($$cell{colspan} || 1) != 1 ? (colspan => $$cell{colspan})                         : ()),
         (($$cell{rowspan} || 1) != 1 ? (rowspan => $$cell{rowspan})                         : ()),
         ($border                     ? (border  => $border)                                 : ()),
-        ($$cell{thead}               ? (thead   => join(' ', sort keys %{ $$cell{thead} })) : ()));
+        ($$cell{thead}               ? (thead   => join(' ', sort keys %{ $$cell{thead} })) : ()),
+        # Which properties do we expose to the constructor?
+        x => $$cell{x}, y => $$cell{y},
+        cwidth => $$cell{cwidth}, cheight => $$cell{cheight}, cdepth => $$cell{cdepth},
+      );
       if (!$empty) {
         local $LaTeXML::BOX = $$cell{boxes};
         $document->openElement('ltx:XMArg', rule => 'Anything,') if $ismath;    # Hacky!
@@ -318,7 +335,6 @@ sub beAbsorbed {
   # [This should be an afterConstruct somewhere?]
   # If requested to guess headers & we're not nested inside another tabular
   if (!$document->findnodes("ancestor::ltx:tabular", $node)) {
-##    my $hashead = $document->findnodes('descendant::ltx:td[contains(@class,"thead")]', $node);
     my $hashead = $document->findnodes('descendant::ltx:td[@thead]', $node);
     # If requested && no cells are already marked as being thead, apply heuristic
     if ($self->getProperty('guess_headers') && !$hashead) {
@@ -352,10 +368,111 @@ sub beAbsorbed {
 sub normalizeAlignment {
   my ($self) = @_;
   return if $$self{normalized};
-  my $ismath   = $$self{isMath};
-  my $preserve = $$self{isMath} || $self->getProperty('preserve_structure');
-  my @rows     = @{ $$self{rows} };
-  # Mark any cells that are covered by rowspans
+  #======================================================================
+  # Note: Cell Sizes & empty will have been set by extractAlignmentColumn
+  $self->normalize_cell_sizes();
+  $self->normalize_mark_spans();
+  $self->normalize_prune_rows();
+  $self->normalize_prune_columns();
+  $self->normalize_sum_sizes();
+  #======================================================================
+  $$self{normalized} = 1;
+  return; }
+
+# Compute (approximate) sizes of all cells
+sub normalize_cell_sizes {
+  my ($self) = @_;
+  # Examines: boxes, align, vattach
+  # Sets: cwidth, cheight, cdepth (per cell) & empty
+  # Whatabout: cellspan, rowspan?
+  # Can we deal with those now, or only after other normalization???
+  my $base = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->valueOf;
+  foreach my $row (@{ $$self{rows} }) {
+    # Do we need to account for any space in the $$row{before} or $$row{after}?
+    foreach my $cell (@{ $$row{columns} }) {
+      if (my $boxes = $$cell{boxes}) {
+        my ($w, $h, $d, $cw, $ch, $cd)
+          = $boxes->getSize(align => $$cell{align}, width => $$cell{width},
+          vattach => $$cell{vattach});
+        my $empty =
+          ((!$cw) || $cw->valueOf < 1)
+          || (((!$ch) || $ch->valueOf < 1)
+          && ((!$cd) || $cd->valueOf < 1))
+          || !(grep { !$_->getProperty('isSpace'); } $boxes->unlist);
+        $$cell{cwidth}  = $cw;
+        $$cell{cheight} = $ch;                 # + 1/4 base ???
+        $$cell{cdepth}  = $cd;
+        $$cell{empty}   = $empty;
+        $$cell{align}   = undef if $empty; }
+      else {
+        $$cell{empty} = 1; }
+  } }
+  return; }
+
+sub normalize_sum_sizes {
+  my ($self)     = @_;
+  my @rowheights = ();
+  my @colwidths  = ();
+  # Uses cell's cwidth,cheight,cdepth
+  # Computes net row & column sizes & positions
+  # add \baselineskip between rows? Or max the row heights with it ...
+  my $base  = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->valueOf;
+  my @rows  = @{ $$self{rows} };
+  my $nrows = scalar(@rows);
+  for (my $i = 0 ; $i < $nrows ; $i++) {
+    my $row   = $rows[$i];
+    my @cols  = @{ $$row{columns} };
+    my $ncols = scalar(@cols);
+    if (my $short = $ncols - scalar(@colwidths)) {
+      push(@colwidths, map { 0 } 1 .. $short); }
+    my ($rowh, $rowd) = ($base * 0.7, $base * 0.3);
+    for (my $j = 0 ; $j < $ncols ; $j++) {
+      my $cell = $cols[$j];
+      next if $$cell{skipped};
+      next unless $$cell{boxes};
+      my $w = $$cell{cwidth};
+      my $h = $$cell{cheight};
+      my $d = $$cell{cdepth};
+      if (($$cell{colspan} || 1) == 1) {
+        $colwidths[$j] = max($colwidths[$j], $w->valueOf); }
+      if (($$cell{rowspan} || 1) == 1) {
+        $rowh = max($rowh, $h->valueOf);
+        $rowd = max($rowd, $d->valueOf); }
+      else { }    # Ditto spanned rows
+    }
+    $$row{height} = Dimension($rowh + 0.25 * $base);
+    $$row{depth}  = Dimension($rowd + 0.25 * $base);
+    # NOTE: Should be storing column widths to; individually, as well as per-column!
+    push(@rowheights, $rowh + $rowd + 0.5 * $base); }    # somehow our heights are way too short????
+  ## Now compute the positions
+  my @rowpos = ();
+  my @colpos = ();
+  my $y      = 0;
+  for (my $i = 0 ; $i < scalar(@rowheights) ; $i++) {
+    $rowpos[$i] = Dimension($y); $y += $rowheights[$i]; }
+  my $x = 0;
+  for (my $j = 0 ; $j < scalar(@colwidths) ; $j++) {
+    $colpos[$j] = Dimension($x); $x += $colwidths[$j]; }
+  $$self{cwidth}  = Dimension($x);
+  $$self{cheight} = Dimension($y);
+  $$self{cdepth}  = Dimension(0);
+  for (my $i = 0 ; $i < scalar(@rowheights) ; $i++) {
+    my $row   = $rows[$i];
+    my @cols  = @{ $$row{columns} };
+    my $ncols = scalar(@cols);
+    $$row{x}       = $colpos[0]; $$row{y} = $rowpos[$i];
+    $$row{cheight} = Dimension($rowheights[$i]);
+    for (my $j = 0 ; $j < $ncols ; $j++) {
+      my $cell = $cols[$j];
+      $$cell{x} = $colpos[$j]; $$cell{y} = $rowpos[$i]; } }
+  return; }
+
+# Mark any cells that are covered by rowspan or colspan
+sub normalize_mark_spans {
+  my ($self) = @_;
+  # Examines: rowspan, colspan, pseudorow, empty
+  # Sets: skipped, colspanned, rowspanned
+  my @rows = @{ $$self{rows} };
   for (my $i = 0 ; $i < scalar(@rows) ; $i++) {
     my $row = $rows[$i];
     my @row = @{ $$row{columns} };
@@ -408,16 +525,20 @@ sub normalizeAlignment {
               $sborder = $border unless $sborder; } }
           $$col{border} .= $sborder if $sborder; }
   } } }
+  return; }
 
-#  if (!$ismath) {                       # Best not to do this in math? At least not in equationgroups!
 # Now scan for and remove empty rows & columns
 # but copying borders and adjusting rowspan's & colspan's appropriately.
-# First, do rows.
+sub normalize_prune_rows {
+  my ($self) = @_;
+  # Examines: rowspan,rowspanned, border, pseudorow, empty
+  # Sets: border, rowspan
+  my $preserve = $$self{isMath} || $self->getProperty('preserve_structure');
+  # First, do rows.
+  my @rows     = @{ $$self{rows} };
   my @filtered = ();
   for (my $i = 0 ; $i < scalar(@rows) ; $i++) {
     my $row = $rows[$i];
-    foreach my $col (@{ $$row{columns} }) {    # Mark all empty columns
-      $$col{empty} = 1 unless $$col{boxes} && $$col{boxes}->unlist; }
     if (grep { !$$_{empty} } @{ $$row{columns} }) {    # Not empty! so keep it
       push(@filtered, $row); }
     elsif (my $next = $rows[$i + 1]) {    # Remove empty row, but copy top border to NEXT row
@@ -451,10 +572,15 @@ sub normalizeAlignment {
   }
   @rows = @filtered;
   $$self{rows} = [@filtered];
-  #return;
-  # Now columns.
+  return; }
+
+sub normalize_prune_columns {
+  my ($self) = @_;
+  my $preserve = $$self{isMath} || $self->getProperty('preserve_structure');
+  # Now prune empty columns.
   if (!$preserve) {    # Don't remove empty columns from math.
-    my $nc = 0;
+    my @rows = @{ $$self{rows} };
+    my $nc   = 0;
     foreach my $row (@rows) {
       my $n = scalar(@{ $$row{columns} });
       $nc = $n if $n > $nc; }
@@ -478,7 +604,6 @@ sub normalizeAlignment {
                   ? ($$prev{boxes}->unlist, @preserve) : @preserve); }
             }
             elsif (my $next = $$row{columns}[1]) {
-              #              my $border = $$col{border} || '';
               $border =~ s/[^rRlL]//g;                              # mask all but left & right border
               $border =~ s/r/l/g;                                   # but convert to left
               $border =~ s/R/L/g;                                   # but convert to left
@@ -490,7 +615,6 @@ sub normalizeAlignment {
             $$row{columns} = [grep { $_ ne $col } @{ $$row{columns} }];
     } } } }
   }
-  $$self{normalized} = 1;
   return; }
 
 sub show_row {
