@@ -146,14 +146,17 @@ sub collapseSVGSwitch {
   my ($doc, $node) = @_;
   my ($fo,  @rest) = element_nodes($node);
   return if !$fo || ($doc->getNodeQName($fo) ne 'svg:foreignObject')
-    || scalar(@rest);    # Expect single svg:foreignObject
+    ;    ####    || scalar(@rest);    # Expect single svg:foreignObject
   my @fo_c = element_nodes($fo);
   if (scalar(@fo_c) == 0) {    # Empty?
-    $doc->removeNode($node); }
-  # Else, single <p> element ?
+    if (scalar(@rest)) {       # Extra stuff after empty foreignObject?
+      $doc->replaceNode($node, @rest); }
+    else {
+      $doc->removeNode($node); } }    # Else just remove whole thing
+                                      # Else, single <p> element ?
   elsif ((scalar(@fo_c) == 1) && ($doc->getNodeQName($fo_c[0]) eq 'ltx:p')) {
     my @p_c = element_nodes($fo_c[0]);
-    if (scalar(@p_c) == 0) {    # or Empty <p/>?
+    if (scalar(@p_c) == 0) {          # or Empty <p/>?
       $doc->removeNode($node); }
     # Else, single ltx:picture or ltx:text ?
     elsif (scalar(@p_c) == 1) {
@@ -215,7 +218,11 @@ DefConstructor('\lxSVG@hskip Glue', sub {
     my ($doc, $skip) = @_;
     if (foreignObjectCheck($doc)) {
       $doc->openElement('ltx:text', 'xoffset' => $skip->pxValue . 'px'); } },
-  alias => '\hskip');
+  alias      => '\hskip',
+  properties => sub { (width => $_[1], isSpace => 1); });
+
+DefMacroI('\pgf@shift@baseline',         undef, '0pt');
+DefMacroI('\pgf@shift@baseline@smuggle', undef, '0pt');
 
 #=====================================================================#
 # 1. Beginning and ending a stream ===================================#
@@ -234,9 +241,6 @@ EoTeX
 DefMacro('\pgfsys@beginpicture', '');
 DefMacro('\pgfsys@endpicture',   '');
 
-# # Note that this is overly generous with svg:foreignObject.
-# # It is used to recursively contain svg:svg elements
-# # also simple strings end up there (they _could_ have exotic latexml attributes...)
 DefConstructor('\pgfsys@hbox{Number}', sub {
     my ($doc, $boxnumber, %prop) = @_;
     my $box = $prop{thebox};
@@ -250,29 +254,14 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
         # But if the box's height has been set to 0, still need adjustment; Use font?
     $y = $fh->add($fd)->pxValue if !$y && $font;    # Seemingly SHOULD have ->add($fd)
     $doc->openElement('svg:g',
-      transform => 'matrix(1 0 0 -1 0 ' . $y . ')',
-      class     => 'ltx_svg_fog');
-    my $strokeattr = $doc->findnode('ancestor-or-self::*[@stroke][1]/@stroke', $doc->getElement);
-    my $sw         = $doc->openElement('svg:switch');
-    my $H          = $h->add($d)->pxValue;
-    my $fo         = $doc->openElement('svg:foreignObject',
-      # often the size is set to 0, which inhibits display COMPLETELY!
-      # Using 100% works, though, and seems apparently best to use for height all the time(?)
-      width    => $w->pxValue || '100%',
-      height   => $H          || '100%',
-      overflow => 'visible',
-      color    => $strokeattr && $strokeattr->getValue);
-    my $p = $doc->openElement('ltx:p');
+      transform    => 'matrix(1 0 0 -1 0 ' . $y . ')',
+      _noautoclose => 1,
+      class        => 'ltx_svg_fog');
     $doc->absorb($box);
-    $doc->maybeCloseElement('ltx:text');
-    # If the nodes we just created are still there & open (see halign)
-    # then close them now.
-    $doc->maybeCloseElement('ltx:p');
-    if (my $n = $doc->isCloseable('svg:foreignObject')) {
-      if ($n->isSameNode($fo)) {
-        $doc->closeElement('svg:foreignObject');
-        $doc->closeElement('svg:switch');
-        $doc->closeElement('svg:g'); } } },
+    $doc->maybeCloseElement('ltx:g'); },
+  sizer => sub {
+    my $box = $_[0]->getProperty('thebox');
+    return $box && $box->getSize; },
   reversion => sub {
     my $box = $_[0]->getProperty('thebox');
     return ($box ? $box->revert : ()); },
@@ -337,8 +326,10 @@ DefConstructor('\pgfsys@rect{Dimension}{Dimension}{Dimension}{Dimension}', '',
     addToSVGPath('v', $h);
     addToSVGPath('h', $w->negate);
     addToSVGPath('Z'); },
-  sizer => 0);
-
+  #  sizer => 0);
+  sizer => sub {
+    my ($x, $y, $w, $h) = $_[0]->getArgs;
+    return ($w, $h, Dimension(0)); });
 # Close the current path. This results in joining the current point of
 # the path with the point specified by the last moveto
 # operation.
@@ -1043,153 +1034,73 @@ RawTeX('\def\pgfsys@begininvisible#1\pgfsys@endinvisible{}');    # well...
 # disappear in the svg (overflow=visible doesn't seem to help)
 
 DefConstructor('\lxSVG@halign BoxSpecification',
-  '#body',
-  reversion => '\halign #1{#2\cr#3}',
-  #  bounded     => 1,
+  "#alignment",
+  reversion   => '\halign #1{#2\cr#3}',
+  bounded     => 1,
+  sizer       => '#1',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    my $gullet = $stomach->getGullet;
-    my $t      = $gullet->readNonSpace;
-    if (!Equals($t, T_BEGIN)) {
-      Error('expected', '\bgroup', $stomach, "Missing \\halign box"); }
-    else {
-      Warn('unexpected', 'halign', $stomach, "HALIGN IN PGF!"); }
-    # Read the template up till something equivalent to \cr
-    my @template = ();
-    # Only expand certain things; See TeX book p.238
-    while (($t = $gullet->readToken) && !Equals($t, T_CS('\cr'))) {
-      if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
-        $gullet->readKeyword('=');
-        my $value = $gullet->readGlue; }     # Discard! In principle, should store in template!
-      elsif ($t->equals(T_CS('\span'))) {    # ex-span-ded next token.
-        $gullet->unread($gullet->readXToken(0)); }
-      else {
-        push(@template, $t); } }
-    # Convert the template
-    my $ismath  = $STATE->lookupValue('IN_MATH');
-    my $before  = 1;                                # true if we're before a # in current column
-    my @pre     = ();
-    my @post    = ();
-    my @cols    = ();
-    my @nonreps = ();
-    foreach my $t (@template, T_ALIGN) {            # put & at end, to save column!
-
-      if ($$t[1] == CC_ARG || $t->equals(T_PARAM)) {
-        $before = 0; }
-      elsif ($t->equals(T_ALIGN)) {
-        if ($before) { @nonreps = @cols; @cols = (); } # A & while we're before a column means Repeated columns
-        else {                                         # Finished column spec; add it
-              # Try some magic for math, so we can create a valid math matrix (maybe!)
-              # DAMN \halign can't be in math, anyway.
-              # So, to get a matrix, we'll have to rewrite the alignment!
-          if ($ismath) {
-            push(@pre, T_MATH); unshift(@post, T_MATH); }
-          push(@cols, { before => Tokens(stripDupMath(beforeCellUnlist(Tokens(@pre)))),
-              after => Tokens(stripDupMath(afterCellUnlist(Tokens(@post)))) });
-          @pre = @post = (); $before = 1; } }
-      elsif ($before) {
-        push(@pre, $t) if @pre || !$t->equals(T_SPACE); }
-      else {
-        push(@post, $t) if @post || !$t->equals(T_SPACE); } }
-
-    my $template = LaTeXML::Core::Alignment::Template->new((@nonreps ?
-          (columns => [@nonreps], repeated => [@cols])
-        : (columns => [@cols])));
-    # Now read & digest the body.
-    # Note that the body MUST end with a \cr, and that we've made Special Arrangments
-    # with \alignment@cr to recognize the end of the \halign
-    # and sneak a \@finish@alignment in!!!!!
-    # (otherwise none of the row/column/alignment constructors know when to end, as written)
-    my $spec = $whatsit->getArg(1);
+    $stomach->bgroup;    # This will be closed by the \halign's closing }  (or will it?)
+    my $template = parseHAlignTemplate($stomach->getGullet, $whatsit);
+    my $spec     = $whatsit->getArg(1);
+    # Parse the template and initialize the Alignment object.
     tikzAlignmentBindings($template, undef,
+      #    alignmentBindings($template, undef,
       attributes => {
         width => orNull(GetKeyVal($spec, 'to')) });
-    $stomach->bgroup;    # This will be closed by the \halign's closing }
-                         # but tikz is sticking in an extra \begingroup ????
-                         #    $stomach->begingroup;
-    $gullet->unread(T_CS('\@start@alignment'));
-    $whatsit->setBody($stomach->digestNextBody, undef);    # extra undef as dummy "trailer"
-    if (my $s = GetKeyVal($spec, 'spread')) {
-      $whatsit->setWidth($whatsit->getBody->getWidth->add($s)); }
+    digestAlignmentBody($stomach, $whatsit);
+    $stomach->egroup;
     return; });
 
 sub tikzAlignmentBindings {
-  my ($template, $mode) = @_;
+  my ($template, $mode, %properties) = @_;
   $mode = LookupValue('MODE') unless $mode;
-  #  my $ismath    = $mode =~ /math$/;
-  #  my $container = ($ismath ? 'ltx:XMArray' : 'ltx:tabular');
-  #  my $rowtype   = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
-  #  my $coltype   = ($ismath ? 'ltx:XMCell' : 'ltx:td');
+  my $ismath    = $mode =~ /math$/;
   my $container = 'svg:g';
   my $rowtype   = 'svg:g';
   my $coltype   = 'svg:g';
-  AssignValue(Alignment => LaTeXML::Core::Alignment->new(
-      template       => $template,
-      openContainer  => \&openTikzAlignment,
-      closeContainer => sub { $_[0]->closeElement($container); },
-      openRow        => \&openTikzAlignmentRow,
-      closeRow       => sub { $_[0]->closeElement($rowtype); },
-      openColumn     => \&openTikzAlignmentCol,
-      closeColumn    => sub { $_[0]->closeElement($coltype); }));
-  # These would MASK tikz own new bindings
-  # BUT it only seems sensible that we'll want to get tikz to call OUR bindings at some level!
-  Let(T_ALIGN,           '\lxSVG@alignment@align');
-  Let("\\\\",            '\lxSVG@alignment@newline');
-  Let('\tabularnewline', '\lxSVG@alignment@newline');
-  Let('\cr',             '\@alignment@cr');
-  Let('\crcr',           '\@alignment@cr');
-  Let('\hline',          '\@alignment@hline');
-  #  Let(T_MATH, ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
-  Let('\@open@row',  '\default@open@row');
-  Let('\@close@row', '\default@close@row');
-
+  my $alignment = LaTeXML::Core::Alignment->new(
+    template       => $template,
+    openContainer  => sub { openTikzAlignment($container, @_); },
+    closeContainer => sub { $_[0]->closeElement($container); },
+    openRow        => sub { openTikzAlignmentRow($rowtype, @_); },
+    closeRow       => sub { $_[0]->closeElement($rowtype); },
+    openColumn     => sub { openTikzAlignmentCol($coltype, @_); },
+    closeColumn    => sub { $_[0]->closeElement($coltype); },
+    isMath         => $ismath,
+    properties     => {%properties});
+  AssignValue(Alignment => $alignment);
+  Let('\hline', '\@alignment@hline');
+  Let(T_MATH,   ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
   return; }
 
 sub openTikzAlignment {
-  my ($doc, %props) = @_;
-  # If we've already got a foreignObject opened, close it.
-  if (my $fo = foreignObjectCheck($doc)) {
-    $doc->removeNode($fo);
-    my $x;
-    # SHOULD be wrapped in an svg:switch inside an svg:g; remove them both!
-    if (($x = $doc->getNode) && ($doc->getNodeQName($x) eq 'svg:switch')) {
-      $doc->removeNode($x); }
-    if (($x = $doc->getNode) && ($doc->getNodeQName($x) eq 'svg:g')
-      && (($x->getAttribute('class') || '') eq 'ltx_svg_fog')) {
-      $doc->removeNode($x); } }
-  #    $doc->closeNode($fo); }
-  return $doc->openElement('svg:g', class => 'ltx_tikzmatrix', %props); }
+  my ($tag, $doc, %props) = @_;
+  my $h = ($props{cheight} && -$props{cheight}->pxValue) || 0;
+  return $doc->openElement($tag, class => 'ltx_tikzmatrix',
+    _scopebegin => 1,
+    transform   => "matrix(1 0 0 -1 0 $h)",
+    %props); }
 
 sub openTikzAlignmentRow {
-  my ($doc, %props) = @_;
-  $props{class} = ($props{class} ? $props{class} . ' ' : '') . 'ltx_tikzmatrix_row';
-  return $doc->openElement('svg:g', class => 'ltx_tikzmatrix', %props); }
+  my ($tag, $doc, %props) = @_;
+  my $class = 'ltx_tikzmatrix_row' . ($props{class} ? ' ' . $props{class} : '');
+  my $y     = ($props{y}       && -$props{y}->pxValue)       || 0;
+  my $h     = ($props{cheight} && -$props{cheight}->pxValue) || 0;
+  my $yy    = $y + $h;
+  return $doc->openElement($tag, class => $class,
+    _scopebegin => 1,
+    transform   => "matrix(1 0 0 1 0 $yy)",
+  ); }
 
 sub openTikzAlignmentCol {
-  my ($doc, %props) = @_;
-  $props{class} = ($props{class} ? $props{class} . ' ' : '') . 'ltx_tikzmatrix_col';
-  if (my $align = $props{align}) {
-    delete $props{align};
-    $props{class} .= ' ltx_align_' . $align; }
-  return $doc->openElement('svg:g', class => 'ltx_tikzmatrix', %props); }
-
-# These may need to sneak in tikz' code somewhere?
-DefMacroI('\lxSVG@alignment@align', undef,
-  '\@close@inner@column\@close@column'
-    # nextcell will end up attached to inner@column@after
-    #    . '\pgfmatrixnextcell'
-    . '\@alignment@align@marker'
-    . '\@open@column\@open@inner@column');
-
-# \lxSVG@alignment@newline OptionalMatch:* [Dimension]
-DefMacro('\lxSVG@alignment@newline OptionalMatch:* []',
-  # almost works; except at the END of the \matrix !!!
-  '\pgfmatrixendrow'
-    . '\@close@inner@column\@close@column\@close@row'
-    . '\@alignment@newline@marker'
-    . '\@open@row\@open@column\@open@inner@column');
-#    .'\pgfutil@ifnextchar\egroup{}{\@open@row\@open@column\@open@inner@column}');
-#    .'\pgfutil@ifnextchar\egroup{\begingroup}{\@open@row\@open@column\@open@inner@column}');
+  my ($tag, $doc, %props) = @_;
+  my $class = 'ltx_tikzmatrix_col' . ($props{class} ? ' ' . $props{class} : '');
+  my $x     = ($props{x} && $props{x}->pxValue) || 0;
+  return $doc->openElement($tag, class => $class,
+    _scopebegin => 1,
+    transform   => "matrix(1 0 0 1 $x 0)",
+  ); }
 
 #=====================================================================
 # Dealing with quick commands
