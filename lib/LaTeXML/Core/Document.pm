@@ -20,6 +20,7 @@ use LaTeXML::Common::Error;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Radix;
 use Unicode::Normalize;
+use Scalar::Util qw(blessed);
 use base qw(LaTeXML::Common::Object);
 
 #**********************************************************************
@@ -28,6 +29,7 @@ use base qw(LaTeXML::Common::Object);
 
 our $FONT_ELEMENT_NAME = "ltx:text";
 our $MATH_TOKEN_NAME   = "ltx:XMTok";
+our $MATH_HINT_NAME    = "ltx:XMHint";
 #**********************************************************************
 
 # [could conceivable make more sense to let the Stomach create the Document?]
@@ -650,18 +652,21 @@ sub insertElement {
 sub insertMathToken {
   my ($self, $string, %attributes) = @_;
   $attributes{role} = 'UNKNOWN' unless $attributes{role};
+  my $qname     = ($attributes{isSpace} ? $MATH_HINT_NAME : $MATH_TOKEN_NAME);
   my $cur_qname = $$self{model}->getNodeQName($$self{node});
-  if ($cur_qname eq $MATH_TOKEN_NAME) {    # Already INSIDE a token!
+  if ($attributes{isSpace} && (defined $string) && ($string =~ /^\s*$/)) {
+    $string = undef; }    # Make empty hint, of only spaces
+  if (($qname eq $MATH_TOKEN_NAME) && ($cur_qname eq $qname)) {    # Already INSIDE a token!
     $self->openMathText_internal($string) if defined $string;
     return $$self{node}; }
   else {
-    my $node = $self->openElement($MATH_TOKEN_NAME, %attributes);
+    my $node = $self->openElement($qname, %attributes);
     my $box  = $attributes{_box} || $LaTeXML::BOX;
     my $font = $attributes{font} || $box->getFont;
     $self->setNodeFont($node, $font);
     $self->setNodeBox($node, $box);
     $self->openMathText_internal($string) if defined $string;
-    $self->closeNode_internal($node);      # Should be safe.
+    $self->closeNode_internal($node);                              # Should be safe.
     return $node; } }
 
 # Insert a new comment, or append to previous comment.
@@ -1328,6 +1333,7 @@ sub makeError {
 # [xml:id and namespaced attributes are always allowed]
 sub setAttribute {
   my ($self, $node, $key, $value) = @_;
+  return                       if (ref $value) && ((!blessed($value)) || !$value->can('toAttribute'));
   $value = $value->toAttribute if ref $value;
   if ((defined $value) && ($value ne '')) {    # Skip if `empty'; but 0 is OK!
     if ($key eq 'xml:id') {                    # If it's an ID attribute
