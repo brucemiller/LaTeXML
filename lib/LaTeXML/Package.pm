@@ -1157,8 +1157,9 @@ sub DefPrimitive {
 
 sub DefPrimitiveI {
   my ($cs, $paramlist, $replacement, %options) = @_;
-#####  $replacement = sub { (); } unless defined $replacement;
   my $string = $replacement;
+  Warn('misdefined', $cs, undef, "Option alias ignored if replacement is not string")
+    if ref $replacement && defined $options{alias};
   $replacement = sub { Box($string, undef, undef, Invocation($options{alias} || $cs, @_[1 .. $#_])); }
     unless ref $replacement;
   $cs = coerceCS($cs);
