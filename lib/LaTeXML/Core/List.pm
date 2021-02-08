@@ -94,17 +94,8 @@ sub beAbsorbed {
 
 sub computeSize {
   my ($self, %options) = @_;
-  no warnings 'recursion';
-  my $props = $self->getPropertiesRef;
-  $options{width}  = $$props{width}  if $$props{width};
-  $options{height} = $$props{height} if $$props{height};
-  $options{depth}  = $$props{depth}  if $$props{depth};
-  my ($w, $h, $d) = ($$props{font} || LaTeXML::Common::Font->textDefault)
-    ->computeBoxesSize($$self{boxes}, %options);
-  $$props{width}  = $w unless defined $$props{width};
-  $$props{height} = $h unless defined $$props{height};
-  $$props{depth}  = $d unless defined $$props{depth};
-  return; }
+  my $font = $self->getProperty('font') || LaTeXML::Common::Font->textDefault;
+  return $font->computeBoxesSize($$self{boxes}, %options); }
 
 #======================================================================
 1;

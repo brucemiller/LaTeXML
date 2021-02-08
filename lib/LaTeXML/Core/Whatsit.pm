@@ -213,19 +213,16 @@ sub beAbsorbed {
 sub computeSize {
   my ($self, %options) = @_;
   # Use #body, if any, else ALL args !?!?!
-  # Eventually, possibly options like sizeFrom, or computeSize or....
   my $defn  = $self->getDefinition;
   my $props = $self->getPropertiesRef;
   my $sizer = $defn->getSizer;
-  my ($width, $height, $depth);
-  # If sizer is a function, call it
-  if (ref $sizer) {
-    ($width, $height, $depth) = &$sizer($self); }
-  else {
+  if (ref $sizer) {    # If sizer is a function, call it
+    return &$sizer($self); }
+  else {               # Else collect up args/body/boxes which represent this thing
     my @boxes = ();
     if (!defined $sizer) {    # Nothing specified? use #body if any, else sum all box args
-      @boxes = ($$self{properties}{body}
-        ? ($$self{properties}{body})
+      @boxes = ($$props{body}
+        ? ($$props{body})
         : (map { ((ref $_) && ($_->isaBox) ? $_->unlist : ()) } @{ $$self{args} })); }
     elsif (($sizer eq '0') || ($sizer eq '')) { }   # 0 size!
     elsif ($sizer =~ /^(#\w+)*$/) {                 # Else if of form '#digit' or '#prop', combine sizes
@@ -234,18 +231,7 @@ sub computeSize {
         push(@boxes, ($arg =~ /^\d+$/ ? $self->getArg($arg) : $$props{$arg})); } }
     else {
       push(@boxes, $sizer); }
-    my $font = $$props{font};
-    $options{width}   = $$props{width}   if $$props{width};
-    $options{height}  = $$props{height}  if $$props{height};
-    $options{depth}   = $$props{depth}   if $$props{depth};
-    $options{vattach} = $$props{vattach} if $$props{vattach};
-    $options{layout}  = $$props{layout}  if $$props{layout};
-    ($width, $height, $depth) = $font->computeBoxesSize([@boxes], %options); }
-  # Now, only set the dimensions that weren't already set.
-  $$props{cwidth}  = $width  unless defined $$props{width};
-  $$props{cheight} = $height unless defined $$props{height};
-  $$props{cdepth}  = $depth  unless defined $$props{depth};
-  return; }
+    return $$props{font}->computeBoxesSize([@boxes], %options); } }
 
 #======================================================================
 1;

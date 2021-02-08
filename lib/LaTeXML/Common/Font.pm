@@ -447,7 +447,7 @@ our %mathstylesize = (display => 1, text => 1,
 # NOTE: that we assume the size has already been adjusted for mathstyle, if necessary.
 sub computeStringSize {
   my ($self, $string) = @_;
-  if ($self->getFamily eq 'nullfont') {
+  if ((!defined $string) || ($string eq '') || ($self->getFamily eq 'nullfont')) {
     return (Dimension(0), Dimension(0), Dimension(0)); }
   my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
   my $l    = (defined $string ? length($string) : 0);
