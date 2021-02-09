@@ -56,15 +56,15 @@ my $keyvals = $opts->scan_to_keyvals(\@ARGV);
 # Client-side options:
 my ($port, $address, $expire, $local) = map { $opts->get($_) } qw(port address expire);
 $address = '127.0.0.1' if !$address || ($address eq 'localhost');
-$address =~ s/^(\w+)\:\/\///;    # strip away any protocol
+$address =~ s/^(\w+)\:\/\///;     # strip away any protocol
 my $route = '/';
 if ($address =~ s/\/(.+)$//) {    # strip away route
   $route = '/' . $1;
 }
 # Local if peerhost is localhost:
-$local = ($expire && ($expire == -1)) || ($address eq '127.0.0.1');
+$local  = ($expire && ($expire == -1)) || ($address eq '127.0.0.1');
 $expire = -1 unless ((defined $expire) && $latexmls);
-$port = ($local ? 3334 : 80) unless $port;    #Fall back if all fails...
+$port   = ($local ? 3334 : 80) unless $port;    #Fall back if all fails...
 #***************************************************************************
 #Add some base, so that relative paths work
 my $cdir = abs_path(cwd());
@@ -137,7 +137,7 @@ if ((!$sock) && $local && ($expire == -1)) {
 ### Common treatment of output:
 
 # Special features for latexmls:
-my $whatsout = $opts->get('whatsout');
+my $whatsout   = $opts->get('whatsout');
 my $is_archive = $whatsout && ($whatsout =~ /^archive/);
 if ($log) {
   if ($opts->get('log')) {
@@ -168,6 +168,7 @@ if ($result) {
     print $output_handle $result;
     close $output_handle;
   } else {
+    binmode(STDOUT, ":encoding(UTF-8)");
     print STDOUT $result, "\n"; }    #Output to STDOUT
 }
 
@@ -177,7 +178,7 @@ if ($opts->get('destination')) {
   print STDERR summary($opts->get('destination'), $deststat);
 }
 
-if ($status =~ /fatal error/) {      # non-zero exit code for fatal conversions
+if ($status =~ /fatal error/) {    # non-zero exit code for fatal conversions
   exit 1;
 }
 
