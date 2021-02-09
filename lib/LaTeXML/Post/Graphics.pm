@@ -89,7 +89,7 @@ sub process {
   my ($self, $doc, @nodes) = @_;
   local $LaTeXML::Post::Graphics::SEARCHPATHS
     = [map { pathname_canonical($_) } $self->findGraphicsPaths($doc), $doc->getSearchPaths];
-  NoteStatus(2, " [Using graphicspaths: "
+  ProgressDetailed(" [Using graphicspaths: "
       . join(', ', @$LaTeXML::Post::Graphics::SEARCHPATHS) . "]");
   foreach my $node (@nodes) {
     $self->processGraphic($doc, $node); }
@@ -200,7 +200,7 @@ sub transformGraphic {
   my $type = $properties{destination_type} || $srctype;
   my $key  = (ref $self) . ':' . join('|', "$reldir$name.$srctype.$type",
     map { join(' ', @$_) } @$transform);
-  NoteStatus(1, "Processing $source as key=$key");
+  Progress("Processing $source as key=$key");
 
   my $dest = $self->desiredResourcePathname($doc, $node, $source, $type);
   if (my $prev = $doc->cacheLookup($key)) {                 # Image was processed on previous run?
@@ -212,7 +212,7 @@ sub transformGraphic {
       if ((!defined $dest) || ($cached eq $dest)) {
         my $absdest = pathname_absolute($cached, $doc->getDestinationDirectory);
         if (pathname_timestamp($source) <= pathname_timestamp($absdest)) {
-          NoteStatus(2, " [Reuse $cached @ " . ($width || '?') . " x " . ($height || '?') . "]");
+          ProgressDetailed(" [Reuse $cached @ " . ($width || '?') . " x " . ($height || '?') . "]");
           return ($cached, $width, $height); } } } }
   # Trivial scaling case: Use original image with (at most) different width & height.
   my $triv_scaling = $$self{trivial_scaling} && ($type eq $srctype)
@@ -254,7 +254,7 @@ sub transformGraphic {
       $dest    = $self->generateResourcePathname($doc, $node, $source, $type);
       $absdest = $doc->checkDestination($dest); }
 
-    NoteStatus(2, " [Destination $absdest]");
+    ProgressDetailed(" [Destination $absdest]");
     ($width, $height) = image_graphicx_trivial($source, $transform, ddpt => $$self{ddpt});
     if (!($width && $height)) {
       if (!image_can_image()) {
@@ -267,23 +267,23 @@ sub transformGraphic {
           "Couldn't get usable image size for $source"); } }
     pathname_copy($source, $absdest)
       or Warn('I/O', $absdest, undef, "Couldn't copy $source to $absdest", "Response was: $!");
-    NoteStatus(2, " [Copied to $dest @ " . ($width || '?') . " x " . ($height || '?') . "]"); }
+    ProgressDetailed(" [Copied to $dest @ " . ($width || '?') . " x " . ($height || '?') . "]"); }
   else {
     # With a complex transformation, we really needs a new name (well, don't we?)
     $dest = $self->generateResourcePathname($doc, $node, $source, $type) unless $dest;
     my $absdest = $doc->checkDestination($dest);
-    NoteStatus(2, " [Destination $absdest]");
+    ProgressDetailed(" [Destination $absdest]");
     ($image, $width, $height) = image_graphicx_complex($source, $transform,
       ddpt => $$self{ddpt}, background => $$self{background}, %properties);
     if (!($image && $width && $height)) {
       Warn('expected', 'image', undef,
         "Couldn't get usable image for $source");
       return; }
-    NoteStatus(2, " [Writing to $absdest]");
+    ProgressDetailed(" [Writing to $absdest]");
     image_write($image, $absdest) or return; }
 
   $doc->cacheStore($key, "$dest|" . ($width || '') . '|' . ($height || ''));
-  NoteStatus(2, " [done with $key]");
+  ProgressDetailed(" [done with $key]");
   return ($dest, $width, $height); }
 
 #======================================================================

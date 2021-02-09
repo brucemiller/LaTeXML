@@ -365,12 +365,11 @@ sub _prepare_options {
   #======================================================================
   # "safe" and semi-perlcrtic acceptable way to set DEBUG inside arbitrary modules.
   # Note: 'LaTeXML' refers to the top-level class
-  { no strict 'refs';
-    foreach my $ltx_class (@{ $$opts{debug} || [] }) {
-      if ($ltx_class eq 'LaTeXML') {
-        ${'LaTeXML::DEBUG'} = 1; }
-      else {
-        ${ 'LaTeXML::' . $ltx_class . '::DEBUG' } = 1; } } }
+  foreach my $ltx_class (@{ $$opts{debug} || [] }) {
+    if ($ltx_class eq 'LaTeXML') {
+      $LaTeXML::DEBUG{LaTeXML} = 1; }
+    else {
+      $LaTeXML::DEBUG{$ltx_class} = 1; } }
 
   $$opts{input_limit}   = 100          unless defined $$opts{input_limit}; # 100 jobs until restart
   $$opts{timeout}       = 600          unless defined $$opts{timeout};     # 10 minute timeout default
@@ -619,7 +618,7 @@ sub _read_options_file {
   my $opts = [];
   my $OPT;
 #### Now can we report status to right places before we've gotten configuration??? (verbosity, logfile...)
-####  NoteBegin("Loading profile $file");
+####  ProgressSpinup("Loading profile $file");
   unless (open($OPT, "<", $file)) {
     Error('expected', $file, "Could not open options file '$file'");
     return; }
@@ -660,7 +659,7 @@ sub _read_options_file {
         "Unrecognized configuration data '$line'"); }
   }
   close $OPT;
-####  NoteEnd("Loading profile $file");
+####  ProgressSpindown("Loading profile $file");
   return $opts; }
 
 1;

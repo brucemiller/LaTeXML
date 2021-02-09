@@ -135,7 +135,7 @@ sub digestFile {
   return
     $self->withState(sub {
       my ($state) = @_;
-      NoteBegin("Digesting $mode $name");
+      ProgressSpinup("Digesting $mode $name");
       $self->initializeState($mode . ".pool", @{ $$self{preload} || [] }) unless $options{noinitialize};
       $state->assignValue(SOURCEFILE      => $request) if (!pathname_is_literaldata($request));
       $state->assignValue(SOURCEDIRECTORY => $dir)     if defined $dir;
@@ -157,7 +157,7 @@ sub digestFile {
         my $bib = LaTeXML::Pre::BibTeX->newFromGullet($name, $state->getStomach->getGullet);
         LaTeXML::Package::InputContent("literal:" . $bib->toTeX); }
       my $list = $self->finishDigestion;
-      NoteEnd("Digesting $mode $name");
+      ProgressSpindown("Digesting $mode $name");
       return $list; });
 }
 
@@ -202,7 +202,7 @@ sub convertDocument {
       my $model    = $state->getModel;                       # The document model.
       my $document = LaTeXML::Core::Document->new($model);
       local $LaTeXML::DOCUMENT = $document;
-      NoteBegin("Building");
+      ProgressSpinup("Building");
       $model->loadSchema();                                  # If needed?
       if (my $paths = $state->lookupValue('SEARCHPATHS')) {
         if ($state->lookupValue('INCLUDE_PATH_PIS')) {
@@ -219,19 +219,19 @@ sub convertDocument {
           $document->insertPI('latexml', package => $preload, ($options ? (options => $options) : ())); } }
       { no warnings 'recursion';
         $document->absorb($digested); }
-      NoteEnd("Building");
+      ProgressSpindown("Building");
 
       if (my $rules = $state->lookupValue('DOCUMENT_REWRITE_RULES')) {
-        NoteBegin("Rewriting");
+        ProgressSpinup("Rewriting");
         $document->markXMNodeVisibility;
         foreach my $rule (@$rules) {
           $rule->rewrite($document, $document->getDocument->documentElement); }
-        NoteEnd("Rewriting"); }
+        ProgressSpindown("Rewriting"); }
 
       LaTeXML::MathParser->new(lexematize => $state->lookupValue('LEXEMATIZE_MATH'))->parseMath($document) unless $$self{nomathparse};
-      NoteBegin("Finalizing");
+      ProgressSpinup("Finalizing");
       my $xmldoc = $document->finalize();
-      NoteEnd("Finalizing");
+      ProgressSpindown("Finalizing");
       return $xmldoc; }); }
 
 sub withState {

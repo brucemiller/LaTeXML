@@ -53,14 +53,14 @@ my $NAME_re = qr/[a-zA-Z0-9\-\_\:]+/;    # [CONSTANT]
 sub loadSchema {
   my ($self) = @_;
   $$self{schema_loaded} = 1;
-  NoteBegin("Loading DTD " . $$self{public_id} || $$self{system_id});
+  ProgressSpinup("Loading DTD " . $$self{public_id} || $$self{system_id});
   my $model = $$self{model};
   $model->addTagContent('#Document', $$self{roottag}) if $$self{roottag};
   # Parse the DTD
   my $dtd = $self->readDTD;
   return unless $dtd;
 
-  NoteBegin("Analyzing DTD");
+  ProgressSpinup("Analyzing DTD");
   # Extract all possible namespace attributes
   foreach my $node ($dtd->childNodes()) {
     if ($node->nodeType() == XML_ATTRIBUTE_DECL) {
@@ -98,8 +98,8 @@ sub loadSchema {
             ($attr =~ /:/ ? $model->recodeDocumentQName($attr) : $attr));
     } } }
   }
-  NoteEnd("Analyzing DTD");    # Done analyzing
-  NoteEnd("Loading DTD " . $$self{public_id} || $$self{system_id});
+  ProgressSpinup("Analyzing DTD");    # Done analyzing
+  ProgressSpindown("Loading DTD " . $$self{public_id} || $$self{system_id});
   return; }
 
 sub readDTD {
@@ -107,7 +107,7 @@ sub readDTD {
   LaTeXML::Common::XML::initialize_catalogs();
   my $message = "Loading DTD for $$self{public_id} $$self{system_id}";
   my $how;
-  NoteBegin($message);
+  ProgressSpinup($message);
   # NOTE: setting XML_DEBUG_CATALOG makes this Fail!!!
   my $dtd = XML::LibXML::Dtd->new($$self{public_id}, $$self{system_id});
   if ($dtd) {
@@ -126,8 +126,8 @@ sub readDTD {
     else {
       Error('missing_file', $$self{system_id}, undef,
         "Can't find DTD \"$$self{public_id}\" \"$$self{system_id}\""); } }
-  NoteEnd($message);
-  NoteStatus(1, "Read dtd $how") if $how && $dtd;
+  ProgressSpindown($message);
+  Progress("Read dtd $how") if $how && $dtd;
   return $dtd; }
 
 #======================================================================

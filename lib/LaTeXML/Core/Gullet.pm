@@ -289,6 +289,7 @@ sub readToken {
           push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
         elsif ($cc == CC_MARKER) {
           $self->handleMarker($token); } } }
+    ProgressStep() if ($$self{progress}++ % $TOKEN_PROGRESS_QUANTUM) == 0;
     # Wow!!!!! See TeX the Program \S 309
     if ((defined $token)
       && !$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)
@@ -336,7 +337,7 @@ sub readXToken {
           push(@{ $$self{pending_comments} }, $token); }
         elsif ($cc == CC_MARKER) {
           $self->handleMarker($token); } } }
-    NoteProgress() if ($$self{progress}++ % $TOKEN_PROGRESS_QUANTUM) == 0;
+    ProgressStep() if ($$self{progress}++ % $TOKEN_PROGRESS_QUANTUM) == 0;
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.

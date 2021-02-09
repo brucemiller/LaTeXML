@@ -48,7 +48,7 @@ sub ProcessChain_internal {
   local $LaTeXML::Post::DOCUMENT = $doc;
 
   my @docs = ($doc);
-  NoteBegin("post-processing");
+  ProgressSpinup("post-processing");
 
   foreach my $processor (@postprocessors) {
     local $LaTeXML::Post::PROCESSOR = $processor;
@@ -60,13 +60,13 @@ sub ProcessChain_internal {
         my $msg = join(' ', $processor->getName || '',
           $doc->siteRelativeDestination || '',
           ($n > 1 ? "$n to process" : 'processing'));
-        NoteBegin($msg);
+        ProgressSpinup($msg);
         push(@newdocs, $processor->process($doc, @nodes));
-        NoteEnd($msg); }
+        ProgressSpindown($msg); }
       else {
         push(@newdocs, $doc); } }
     @docs = @newdocs; }
-  NoteEnd("post-processing");
+  ProgressSpindown("post-processing");
   return @docs; }
 
 ## HACK!!!
@@ -319,7 +319,7 @@ sub process {
       # Now do cross referencing
       $proc1->addCrossrefs($doc, $proc2);
       $proc2->addCrossrefs($doc, $proc1); } }
-  NoteStatus(2, "converted $n Maths");
+  ProgressDetailed("converted $n Maths");
   return $doc; }
 
 # Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),

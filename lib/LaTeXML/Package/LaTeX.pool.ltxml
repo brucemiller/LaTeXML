@@ -3990,7 +3990,7 @@ DefConstructorI(T_CS("\\begin{filecontents}"), "Semiverbatim",
       while (defined($line = $gullet->readRawLine) && ($line ne '\end{filecontents}')) {
         push(@lines, $line); }
       AssignValue($filename . '_contents' => join("\n", @lines), 'global');
-      NoteStatus(1, "Cached filecontents for $filename (" . scalar(@lines) . " lines)"); }]);
+      Progress("Cached filecontents for $filename (" . scalar(@lines) . " lines)"); }]);
 DefConstructorI(T_CS("\\begin{filecontents*}"), "Semiverbatim",
   '',
   reversion   => '',
@@ -4003,7 +4003,7 @@ DefConstructorI(T_CS("\\begin{filecontents*}"), "Semiverbatim",
       while (defined($line = $gullet->readRawLine) && ($line ne '\end{filecontents*}')) {
         push(@lines, $line); }
       AssignValue($filename . '_contents' => join("\n", @lines), 'global');
-      NoteStatus(1, "Cached filecontents* for $filename (" . scalar(@lines) . " lines)"); }]);
+      Progress("Cached filecontents* for $filename (" . scalar(@lines) . " lines)"); }]);
 DefMacro('\endfilecontents', '');
 DefPrimitive('\listfiles', undef);
 

@@ -50,7 +50,7 @@ sub addSchemaDeclaration {
 
 sub loadSchema {
   my ($self) = @_;
-  NoteBegin("Loading RelaxNG $$self{name}");
+  ProgressSpinup("Loading RelaxNG $$self{name}");
   # Scan the schema file(s), and extract the info
   my @schema = $self->scanExternal($$self{name});
   if ($LaTeXML::DEBUG{relaxng}) {
@@ -93,7 +93,7 @@ sub loadSchema {
       my $name = $1;
       my ($content, $attributes) = $self->extractContent($symbol, $$self{defs}{$symbol});
       $$self{model}->setSchemaClass($name, $content); } }
-  NoteEnd("Loading RelaxNG $$self{name}");
+  ProgressSpindown("Loading RelaxNG $$self{name}");
   return; }
 
 # Return two hashrefs for content & attributes
@@ -185,7 +185,7 @@ sub scanExternal {
   my $paths   = [@LaTeXML::Common::Model::RelaxNG::PATHS, @{ $STATE->lookupValue('SEARCHPATHS') }];
   if (my $schemadoc = LaTeXML::Common::XML::RelaxNG->new($name, searchpaths => $paths)) {
     my $uri = $schemadoc->URI;
-    NoteBegin("Loading RelaxNG schema from $uri");
+    ProgressSpinup("Loading RelaxNG schema from $uri");
     local @LaTeXML::Common::Model::RelaxNG::PATHS
       = (pathname_directory($schemadoc->URI), @LaTeXML::Common::Model::RelaxNG::PATHS);
     my $node = $schemadoc->documentElement;
@@ -195,7 +195,7 @@ sub scanExternal {
       next if $nsuri =~ m|^http://relaxng.org|;    # Ignore RelaxNG namespaces(!!)
       $$self{model}->registerDocumentNamespace($prefix, $nsuri); }
     my $mod = (['module', $modname, $self->scanPattern($node, $inherit_ns)]);
-    NoteEnd("Loading RelaxNG schema from $uri");
+    ProgressSpindown("Loading RelaxNG schema from $uri");
     return $mod; }
   else {
     Warn('expected', $name, undef, "Failed to find RelaxNG schema for name '$name'");

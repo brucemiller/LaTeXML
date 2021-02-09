@@ -25,7 +25,7 @@ our @EXPORT = (
   # Error Reporting
   qw(&Fatal &Error &Warn &Info),
   # Progress reporting
-  qw(&NoteStatus &NoteProgress &NoteProgressDetailed &NoteBegin &NoteEnd),
+  qw(&NoteStatus &Progress &ProgressDetailed &ProgressSpinup &ProgressSpindown &ProgressStep),
   # Debugging messages
   qw(&DebuggableFeature &Debug &CheckDebuggable),
   # TeX originated messages
@@ -96,7 +96,7 @@ sub CloseLog {
   return if !$LOG || $log_count;
   close($LOG) or die "Cannot close log file: $!";
   $LOG = undef;
-  NoteStatus(0, "Please see $LOG_PATH for details")
+  NoteStatus("Please see $LOG_PATH for details")
     if $IS_TERMINAL;    # TEMPORARY HACK until LaTeXML.pm is sorted.
   return; }
 
@@ -162,7 +162,8 @@ sub _spinnerrestore {    # Restore the spinner line (if any)
   my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
   if ($IS_TERMINAL && ($verbosity >= 0) && @spinnerstack) {
     my ($stage, $count, $start) = @{ $spinnerstack[-1] };
-    print STDERR $stage, ' ', $spinnerchar[$count]; }
+##    print STDERR $stage, ' ', $spinnerchar[$count]; }
+    print STDERR ' ', $spinnerchar[$count], ' ', $stage; }
   return; }
 
 sub _spinnerstep {    # Increment stepper
@@ -171,7 +172,8 @@ sub _spinnerstep {    # Increment stepper
     my ($stage, $count, $start) = @{ $spinnerstack[-1] };
     $count = ($count + 1) % 4;
     $spinnerstack[-1][1] = $count;
-    print STDERR "\x1b[1D\x1b[0K" . $spinnerchar[$count]; }    # Clear previous, print new
+##    print STDERR "\x1b[1D\x1b[0K" . $spinnerchar[$count]; }    # Clear previous, print new
+    print STDERR "\x1b[1G " . $spinnerchar[$count]; }    # Clear previous, print new
   return; }
 
 sub _spinnerpush {    # New spinner level
@@ -298,22 +300,29 @@ sub Info {
 # Progress Reporting
 #**********************************************************************
 sub NoteStatus {
+  my (@stuff) = @_;
+  _printline(0, 0, join('', @stuff));
+  return; }
+
+sub Progress {
   my ($level, @stuff) = @_;
-  _printline($level, $level, join('', @stuff));
+  _printline(1, 1, join('', @stuff));
+  return; }
+
+sub ProgressDetailed {
+  my (@stuff) = @_;
+  _printline(2, 2, join('', @stuff));
   return; }
 
 # Progress reporting.
 # Needs LOG/STDERR sorted out. Maybe some Term magic on STDERR? (rotating "-"?)
 # Possibly wants more explicit levels?
 # or at least a report-always level?
-sub NoteProgress {
+sub ProgressStep {
   _spinnerstep();
   return; }
 
-sub NoteProgressDetailed {    # Obsolete!
-  NoteProgress(); }
-
-sub NoteBegin {
+sub ProgressSpinup {
   my ($stage)   = @_;
   my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
@@ -329,7 +338,7 @@ sub NoteBegin {
       $NEEDSFRESHLINE{ \*STDERR } = 1; } }
   return; }
 
-sub NoteEnd {
+sub ProgressSpindown {
   my ($stage)   = @_;
   my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
@@ -797,27 +806,31 @@ the input context, unless verbosity is quiet.
 
 =over 4
 
-=item C<< NoteStatus($level, $message); >>
+=item C<< NoteStatus($message); >>
 
-Note the status of some operation by printing the C<$message>, providing verbosity is above C<$level>.
+General status message, printed whenever verbosity at or above 0.
 
-=item C<< NoteBegin($stage); >>
+=item C<< Progress($message); >>
 
-Begin a processing stage, which will be ended with C<NoteEnd($stage)>;
+A progress message, printed whenver verbosity at or above 1.
+
+=item C<< ProgressDetailed($message); >>
+
+A more detailed progress message, printed whenver verbosity at or above 2.
+
+=item C<< ProgressSpinup($stage); >>
+
+Begin a processing stage, which will be ended with C<ProgressSpindown($stage)>;
 This prints a message to the log such as "(stage... runtime)", where runtime is the time required.
-In conjunction with C<NoteProgress()>, creates a progress spinner on STDERR.
+In conjunction with C<ProgressStep()>, creates a progress spinner on STDERR.
 
-=item C<< NoteEnd($stage); >>
+=item C<< ProgressSpinup($stage); >>
 
-End a processing stage bugin with C<NoteBegin($stage);>.
+End a processing stage bugin with C<ProgressSpindown($stage);>.
 
-=item C<< NoteProgress(); >>
+=item C<< ProgressStep(); >>
 
 Steps a progress spinner on STDERR.
-
-=item C<< NoteProgressDetailed(); >>
-
-Obsolete, equivalent to C<NoteProgress()>.
 
 =back
 

@@ -64,25 +64,25 @@ sub parseMath {
   $self->cleanupScripts($document);
   if (my @math = $document->findnodes('descendant-or-self::ltx:XMath[not(ancestor::ltx:XMath)]')) {
     my $proc = "Math Parsing " . scalar(@math) . " formulae ...";
-    NoteBegin($proc);
+    ProgressSpinup($proc);
 #### SEGFAULT TEST
 ####    $document->doctest("before parse",1);
     foreach my $math (@math) {
       $self->parse($math, $document); }
-    NoteEnd($proc);
+    ProgressSpindown($proc);
 
-    NoteStatus(1, "Math parsing succeeded:"
+    Progress("Math parsing succeeded:"
         . join('', map { "\n   $_: "
             . colorizeString($$self{passed}{$_} . "/" . ($$self{passed}{$_} + $$self{failed}{$_}), ($$self{failed}{$_} == 0 ? 'success' : 'warning')) }
           grep { $$self{passed}{$_} + $$self{failed}{$_} }
           keys %{ $$self{passed} }));
     if (my @unk = keys %{ $$self{unknowns} }) {
-      NoteStatus(1, "Symbols assumed as simple identifiers (with # of occurences):\n   "
+      Progress("Symbols assumed as simple identifiers (with # of occurences):\n   "
           . join(', ', map { "'" . colorizeString("$_", 'warning') . "' ($$self{unknowns}{$_})" } sort @unk));
       if (!$STATE->lookupValue('MATHPARSER_SPECULATE')) {
-        NoteStatus(1, "Set MATHPARSER_SPECULATE to speculate on possible notations."); } }
+        Progress("Set MATHPARSER_SPECULATE to speculate on possible notations."); } }
     if (my @funcs = keys %{ $$self{maybe_functions} }) {
-      NoteStatus(1, "Possibly used as functions?\n  "
+      Progress("Possibly used as functions?\n  "
           . join(', ', map { "'$_' ($$self{maybe_functions}{$_}/$$self{unknowns}{$_} usages)" }
             sort @funcs)); }
   }
@@ -318,14 +318,14 @@ sub parse_rec {
   elsif (my $result = $self->parse_single($node, $document, $rule)) {
     $$self{passed}{$tag}++;
     if ($tag eq 'ltx:XMath') {    # Replace the content of XMath with parsed result
-      NoteProgress();
+      ProgressStep();
       map { $document->unRecordNodeIDs($_) } element_nodes($node);
       # unbindNode followed by (append|replace)Tree (which removes ID's) should be safe
       map { $_->unbindNode() } $node->childNodes;
       $document->appendTree($node, $result);
       $result = [element_nodes($node)]->[0]; }
     else {                        # Replace the whole node for XMArg, XMWrap; preserve some attributes
-      NoteProgress();
+      ProgressStep();
       # Copy all attributes
       my $resultid = p_getAttribute($result, 'xml:id');
       my %attr     = map { (getQName($_) => $_->getValue) }
@@ -363,7 +363,7 @@ sub parse_rec {
     return $result; }
   else {
     $self->parse_kludge($node, $document);
-    NoteProgress();
+    ProgressStep();
     $$self{failed}{$tag}++;
     return; } }
 

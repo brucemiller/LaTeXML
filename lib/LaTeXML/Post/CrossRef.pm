@@ -234,7 +234,7 @@ sub fill_in_tocs {
       $lists = { toc => 1 };
       @list  = $self->gentoc_context($doc, $id, $show, $lists, $types); }
     $doc->addNodes($toc, ['ltx:toclist', {}, @list]) if @list; }
-  NoteStatus(2, "Filled in $n TOCs");
+  ProgressDetailed("Filled in $n TOCs");
   return; }
 
 # generate TOC for $id & its children,
@@ -319,7 +319,7 @@ sub fill_in_frags {
       if (my $fragid = $entry->getValue('fragid')) {
         $n++;
         $node->parentNode->setAttribute(fragid => $fragid); } } }
-  NoteStatus(2, "Filled in fragment $n ids");
+  ProgressDetailed("Filled in fragment $n ids");
   return; }
 
 # Fill in content text for any <... @idref..>'s or @labelref
@@ -361,7 +361,7 @@ sub fill_in_refs {
       if (my $entry = $$self{db}->lookup("ID:$id")) {
         $ref->setAttribute(stub => 1) if $entry->getValue('stub'); }
   } }
-  NoteStatus(2, "Filled in $n refs");
+  ProgressDetailed("Filled in $n refs");
   return; }
 
 # similar sorta thing for RDF about & resource labels & ids
@@ -390,7 +390,7 @@ sub fill_in_RDFa_refs {
             $ref->setAttribute($key => '#' . $id); } }
   } } }
   set_RDFa_prefixes($doc->getDocument, {});    # what prefixes??
-  NoteStatus(2, "Filled in $n RDFa refs");
+  ProgressDetailed("Filled in $n RDFa refs");
   return; }
 
 sub fill_in_mathlinks {
@@ -420,7 +420,7 @@ sub fill_in_mathlinks {
         if (my $tag = $entry->getValue('tag:short') || $entry->getValue('description')) {
           $sym->setAttribute(title => getTextContent($doc, $tag)); }
   } } }
-  NoteStatus(2, "Filled in $n math links");
+  ProgressDetailed("Filled in $n math links");
   return; }
 
 # Given a declaration entry (ltx:declare, or ltx:mark or ...)
@@ -454,7 +454,7 @@ sub fill_in_bibrefs {
   foreach my $bibref ($doc->findnodes('descendant::ltx:bibref')) {
     $n++;
     $doc->replaceNode($bibref, $self->make_bibcite($doc, $bibref)); }
-  NoteStatus(2, "Filled in $n bibrefs");
+  ProgressDetailed("Filled in $n bibrefs");
   return; }
 
 # Given a list of bibkeys, construct links to them.
@@ -864,7 +864,7 @@ sub fillInGlossaryRef {
     if (!$ref->textContent && !element_nodes($ref)) {
       $doc->addNodes($ref, $key);
       $doc->addClass($ref, 'ltx_missing'); } }
-  NoteStatus(2, "Filled in $n glossaryrefs");
+  ProgressDetailed("Filled in $n glossaryrefs");
   return; }
 
 sub generateGlossaryRefTitle {

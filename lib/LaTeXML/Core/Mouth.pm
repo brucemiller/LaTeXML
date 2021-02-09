@@ -89,7 +89,7 @@ sub initialize {
     my $source = defined($$self{source}) ? ($$self{source} || 'Literal String') : 'Anonymous String';
     $$self{note_message} = "Processing " . ($$self{fordefinitions} ? "definitions" : "content")
       . " " . $source;
-    NoteBegin($$self{note_message}); }
+    ProgressSpinup($$self{note_message}); }
   if ($$self{fordefinitions}) {
     $$self{saved_at_cc}            = $STATE->lookupCatcode('@');
     $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
@@ -111,7 +111,7 @@ sub finish {
     $STATE->assignCatcode('@' => $$self{saved_at_cc});
     $STATE->assignValue(INCLUDE_COMMENTS => $$self{SAVED_INCLUDE_COMMENTS}); }
   if ($$self{notes}) {
-    NoteEnd($$self{note_message}); }
+    ProgressSpindown($$self{note_message}); }
   return; }
 
 # This is (hopefully) a platform independent way of splitting a string

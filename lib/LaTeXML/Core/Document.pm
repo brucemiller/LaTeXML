@@ -767,7 +767,7 @@ sub openText {
 #  When relativizing, should it depend on font attribute on element and/or DTD allowed attribute?
 sub openElement {
   my ($self, $qname, %attributes) = @_;
-  NoteProgress() if ($$self{progress}++ % $CONSTRUCTION_PROGRESS_QUANTUM) == 0;
+  ProgressStep() if ($$self{progress}++ % $CONSTRUCTION_PROGRESS_QUANTUM) == 0;
   Debug("openElement $qname at " . Stringify($$self{node})) if $LaTeXML::DEBUG{document};
   my $point = $self->find_insertion_point($qname);
   $attributes{_box} = $LaTeXML::BOX unless $attributes{_box};

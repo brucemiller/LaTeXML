@@ -175,7 +175,7 @@ if ($xmlfile ne '-') {
 
   my ($dir, $name, $ext) = pathname_split($xmlfile);
   if ($name) {
-    my $path = pathname_make(dir => pathname_cwd(), name => $name, type => 'lxlog');
+    my $path = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log');
     OpenLog($path, 1); } }
 
 if (@ARGV) {
@@ -308,8 +308,8 @@ if ((!defined $destination)
 # Do the processing.
 #======================================================================
 
-NoteStatus(0, "$LaTeXML::IDENTITY ????");
-NoteStatus(1, "processing started " . localtime());
+NoteStatus("$LaTeXML::IDENTITY ????");
+Progress("processing started " . localtime());
 
 # Default options/parameters for each post processor
 our %OPTIONS = ();
@@ -465,8 +465,8 @@ eval {
   $DB->finish; };
 Debug($@) if $@;
 my $code = $latexmlpost->getStatusCode;
-NoteStatus(0, "Postprocessing " . ($code == 3 ? 'failed' : 'complete') . ": " . $latexmlpost->getStatusMessage);
-NoteStatus(1, "processing " . ($code == 3 ? 'abandoned' : 'finished') . " " . localtime());
+NoteStatus("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . ": " . $latexmlpost->getStatusMessage);
+Progress("processing " . ($code == 3 ? 'abandoned' : 'finished') . " " . localtime());
 
 CloseLog();
 CheckDebuggable();

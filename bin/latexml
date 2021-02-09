@@ -71,10 +71,10 @@ if (my @baddirs = grep { !-d $_ } @paths) {
 if (!pathname_is_literaldata($source)) {
   my ($dir, $name, $ext) = pathname_split($source);
   if ($name) {
-    my $path = pathname_make(dir => pathname_cwd(), name => $name, type => 'lxlog');
+    my $path = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log');
     OpenLog($path); } }
-NoteStatus(0, "$LaTeXML::IDENTITY");
-NoteStatus(1, "processing started " . localtime());    # Probably a NoteBegin???
+NoteStatus("$LaTeXML::IDENTITY");
+Progress("processing started " . localtime());    # Probably a NoteBegin???
 
 my $latexml = LaTeXML::Core->new(
   preload         => [@preload],
@@ -129,8 +129,8 @@ if ($@) {    # Fatal error?
   Debug($@); }
 $latexml->showProfile();    # Show profile (if any)
 
-NoteStatus(0, "Conversion complete: " . $latexml->getStatusMessage);
-NoteStatus(1, "processing finished " . localtime());                   # NoteEnd?
+NoteStatus("Conversion complete: " . $latexml->getStatusMessage);
+Progress("processing finished " . localtime());    # NoteEnd?
 CloseLog();
 
 if    (!$serialized) { }

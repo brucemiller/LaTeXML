@@ -27,13 +27,13 @@ sub new {
   my ($class, $pathname) = @_;
   my ($dir, $name, $ext) = pathname_split($pathname);
   my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
-  NoteBegin("Loading $$self{source}");
+  ProgressSpinup("Loading $$self{source}");
   return $self; }
 
 sub finish {
   my ($self) = @_;
   return if $$self{finished};
-  NoteEnd("Loading $$self{source}");
+  ProgressSpindown("Loading $$self{source}");
   $$self{finished} = 1;
   return; }
 

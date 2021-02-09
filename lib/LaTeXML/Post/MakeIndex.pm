@@ -63,7 +63,7 @@ sub build_tree {
   my $defaultlistname = 'idx';
   my $listname        = 'idx';    # Eventually customizable for different indices?
   if (my @keys = grep { /^INDEX:/ } $$self{db}->getKeys) {
-    NoteStatus(2, "MakeIndex: " . scalar(@keys) . " entries");
+    ProgressDetailed("MakeIndex: " . scalar(@keys) . " entries");
 
     my $id         = $index->getAttribute('xml:id');
     my $allphrases = {};          # Keep a hash of all phrase textContent=>id encountered (for seealso)
