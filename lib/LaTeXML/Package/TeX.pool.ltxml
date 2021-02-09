@@ -3009,14 +3009,14 @@ sub trimColumnTemplate {
     . "  After : " . ToString(Tokens(@post)) . "\n"
 
     if $LaTeXML::halign::DEBUG;
-  while (@pre) {
+  while (scalar(@pre) && scalar(@tokens)) {
     my $t = shift(@pre);
     if ($t->equals($tokens[0])) {
       shift(@tokens);
       if ($t->equals(T_CS('\hidden@noalign'))) {
         @tokens = shiftArg(@tokens);
         @pre    = shiftArg(@pre); } } }
-  while (@post) {
+  while (scalar(@post) && scalar(@tokens)) {
     my $t = pop(@post);
     if ($t->equals($tokens[-1])) {
       pop(@tokens);
