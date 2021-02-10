@@ -31,7 +31,8 @@ AssignValue(PERL_INPUT_ENCODING => 'UTF8');
 
 DefPrimitive('\DeclareUnicodeCharacter {} {}', sub {
     my ($stomach, $hexcode, $expansion) = @_;
-    my $char = chr(hex($hexcode->toString()));
+    my $hex = $stomach->digest($hexcode);
+    my $char = chr(hex($hex->toString()));
     AssignCatcode($char, CC_ACTIVE);
     DefMacroI(T_ACTIVE($char), undef, $expansion); });
 
