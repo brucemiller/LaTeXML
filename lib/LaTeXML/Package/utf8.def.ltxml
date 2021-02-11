@@ -29,10 +29,9 @@ AssignValue(INPUT_ENCODING => undef);
 # And set the Mouth to simply pass-thru the utf8.
 AssignValue(PERL_INPUT_ENCODING => 'UTF8');
 
-DefPrimitive('\DeclareUnicodeCharacter {} {}', sub {
+DefPrimitive('\DeclareUnicodeCharacter Digested {}', sub {
     my ($stomach, $hexcode, $expansion) = @_;
-    my $hex = $stomach->digest($hexcode);
-    my $char = chr(hex($hex->toString()));
+    my $char = chr(hex($hexcode->toString()));
     AssignCatcode($char, CC_ACTIVE);
     DefMacroI(T_ACTIVE($char), undef, $expansion); });
 
