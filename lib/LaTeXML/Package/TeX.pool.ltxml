@@ -2360,7 +2360,6 @@ DefPrimitive('\immediate', undef);
 DefPrimitive('\special {}',     undef);
 DefPrimitive('\penalty Number', undef);
 DefPrimitive('\kern Dimension', undef);
-DefMacro('\mkern MuGlue', '\ifmmode\@math@mskip #1\relax\else\@text@mskip #1\relax\fi');
 DefPrimitiveI('\unpenalty', undef, undef);
 DefPrimitiveI('\unkern',    undef, undef);
 ## Worrisome, but...
@@ -2853,6 +2852,16 @@ DefMacroI('\@row@after',     undef, undef);
 DefMacroI('\@column@before', undef, undef);
 DefMacroI('\@column@after',  undef, undef);
 
+sub pRevert {
+  my ($arg) = @_;
+  local $LaTeXML::DUAL_BRANCH = 'presentation';
+  return Revert($arg); }
+
+sub cRevert {
+  my ($arg) = @_;
+  local $LaTeXML::DUAL_BRANCH = 'content';
+  return Revert($arg); }
+
 sub digestAlignmentBody {
   my ($stomach, $whatsit) = @_;
   my $gullet = $stomach->getGullet;
@@ -2869,8 +2878,9 @@ sub digestAlignmentBody {
   $whatsit->setProperty(alignment => $alignment);
   $alignment->setBody($whatsit);
   print STDERR "Halign $alignment: BODY Processing...\n" if $LaTeXML::halign::DEBUG;
-  my $lastwascr = undef;
-  my @reversion = ();
+  my $lastwascr  = undef;
+  my @reversion  = ();
+  my @creversion = ();
   while (1) {
     my ($cell, $next) = digestAlignmentColumn($stomach, $alignment, $lastwascr);
     print STDERR "Halign $alignment: BODY got CELL"
@@ -2879,7 +2889,9 @@ sub digestAlignmentBody {
     if (!$cell) {
       print STDERR "Halign $alignment: BODY DONE!\n" if $LaTeXML::halign::DEBUG;
       last; }
-    push(@reversion, trimColumnTemplate($alignment, $cell));
+    if ($cell) {
+      push(@reversion,  trimColumnTemplate($alignment, pRevert($cell)));
+      push(@creversion, trimColumnTemplate($alignment, cRevert($cell))); }
     extractAlignmentColumn($alignment, $cell);
     $lastwascr = undef;
     if (!$next
@@ -2889,17 +2901,20 @@ sub digestAlignmentBody {
       last; }
     elsif (Equals($next, T_ALIGN)) {                    # End column, prepare for next
       $alignment->endColumn();
-      push(@reversion, $next); }                        # and record the &
+      push(@reversion,  $next);                         # and record the &
+      push(@creversion, $next); }                       # and record the &
     elsif (Equals($next, T_CS('\hidden@align'))) {      # End column, prepare for next (no record)
       $alignment->endColumn(); }
     elsif (Equals($next, T_CS('\cr')) || Equals($next, T_CS('\crcr'))) {
       $alignment->endRow();
-      push(@reversion, $next);
+      push(@reversion,  $next);
+      push(@creversion, $next);
       $lastwascr = 1; }                                 # Note, in case next is \crcr
     elsif (Equals($next, T_CS('\hidden@cr'))) {
       $alignment->endRow();
-      my $arg = $gullet->readArg();
-      push(@reversion, Revert($stomach->digest($arg)));
+      my $arg = $stomach->digest($gullet->readArg());
+      push(@reversion,  pRevert($arg));
+      push(@creversion, cRevert($arg));
       $lastwascr = 1; }                                 # Note, in case next is \crcr
     elsif (Equals($next, T_CS('\hidden@crcr'))) {
       $alignment->endRow();
@@ -2908,6 +2923,7 @@ sub digestAlignmentBody {
       Error('unexpected', $next, $stomach, "Column ended with " . Stringify($next)); } }
   $alignment->endRow();
   $alignment->setReversion(Tokens(@reversion));
+  $alignment->setContentReversion(Tokens(@creversion));
   print STDERR "Halign $alignment: BODY DONE!\n"
     . "=> " . join(',', map { Stringify($_); } @reversion) . "\n" if $LaTeXML::halign::DEBUG;
   return; }
@@ -2929,7 +2945,8 @@ sub digestAlignmentColumn {
     ## Scan till we get something NOT \omit, \noalign
     while ($token = $gullet->readXToken(0)) {
       if ($token->equals(T_SPACE)    # Skip leading space.
-        || ($lastwascr &&            # Or \crcr following a \cr
+        || $token->equals(T_CS('\par'))    # Skip or blank line(?)
+        || ($lastwascr &&                  # Or \crcr following a \cr
           (Equals($token, T_CS('\crcr')) || Equals($token, T_CS('\hidden@crcr'))))) {
       }
       elsif (Equals($token, T_CS('\omit'))) {    # \omit removes template for this column.
@@ -2982,6 +2999,7 @@ sub digestAlignmentColumn {
         $spanning = 1;
         last; }                                            # next column, but continue accumulating
       else {    # Else, we're getting some actual content for the column
+##        print STDERR "Halign $alignment: PRECOLUMN ==> " . Stringify(List(@LaTeXML::LIST)) . "\n";
         push(@LaTeXML::LIST, $stomach->invokeToken($token));
         print STDERR "Halign $alignment: COLUMN ==> " . Stringify(List(@LaTeXML::LIST)) . "\n"
           if $LaTeXML::halign::DEBUG;
@@ -2997,9 +3015,7 @@ sub digestAlignmentColumn {
 # A better alternative might be based on sneaking some Marker tokens/boxes through
 # but they would likely interfere with the macros tehmselves.
 sub trimColumnTemplate {
-  my ($alignment, $cell) = @_;
-  return unless $cell;
-  my @tokens = Revert($cell);
+  my ($alignment, @tokens) = @_;
   return Tokens(@tokens) if $alignment->currentRow->{pseudorow};
   my @pre  = $alignment->getColumnBefore->unlist;
   my @post = $alignment->getColumnAfter->unlist;
@@ -3307,15 +3323,18 @@ DefPrimitiveI('\noboundary', undef, undef);
 DefPrimitive('\hskip Glue', sub {
     my ($stomach, $length) = @_;
     my $s = DimensionToSpaces($length);
-    return unless defined $s;
     Box($s, undef, undef, Invocation(T_CS('\hskip'), $length),
       width => $length, isSpace => 1); });
 
 DefPrimitive('\mskip MuGlue', sub {
     my ($stomach, $length) = @_;
     my $s = DimensionToSpaces($length);
-    return unless defined $s;
     Box($s, undef, undef, Invocation(T_CS('\mskip'), $length),
+      width => $length, isSpace => 1); });
+DefPrimitive('\mkern MuGlue', sub {
+    my ($stomach, $length) = @_;
+    my $s = DimensionToSpaces($length);
+    Box($s, undef, undef, Invocation(T_CS('\mkern'), $length),
       width => $length, isSpace => 1); });
 
 DefPrimitiveI('\hss',     undef, undef);
@@ -3703,6 +3722,7 @@ sub addColumnToMathFork {
       $txt->appendText($string);
       $document->closeElementAt($txt);
       $box = Box($string); }
+    elsif ($type eq '#Comment') { }
     else {
       Warn('unexpected', $type, $cell,
         "Don't know how to synthesize equation with $type in column"); }
@@ -3908,7 +3928,7 @@ sub scriptHandler {
     # and whether there are conflicting preceding scripts, which is an error
     # Parsing is too late!
     while (my $prev = pop(@LaTeXML::LIST)) {
-      if ((ref $prev eq 'LaTeXML::Core::Whatsit') && $prev->getProperty('isSpace')) {
+      if ($prev->getProperty('isSpace')) {
         $prevspace = 1;              # a space avoids double-scripts
         unshift(@putback, $prev);    # put back? assuming it will add rpadding to previous???
         next; }
@@ -4364,7 +4384,7 @@ foreach my $digit (qw(0 1 2 3 4 5 6 7 8 9)) {
 
 # Would probably be best to collapse all XMHint/spaces at the earliest stage.
 our %space_chars = (negthinspace => '', thinspace => "\x{2009}",
-  medspace => "\x{2005}", thickspace => "\x{2004}");
+  medspace => "\x{2005}", thickspace => "\x{2004}", space => ' ');
 
 # This is getting out-of-hand;
 # (1) this gets done after document build, so we query the document/node for language
@@ -5316,7 +5336,7 @@ Let('\:', '\>');
 
 DefPrimitiveI('\ ', undef, sub {
     Box(UTF(0xA0), undef, undef, T_CS('\ '),
-      isSpace => 1, width => Dimension('0.5em')); });
+      name => 'space', isSpace => 1, width => Dimension('0.5em')); });
 
 DefPrimitiveI("\\\t", undef, sub {
     Box(UTF(0xA0), undef, undef, T_CS("\\\t"),
@@ -6248,8 +6268,7 @@ DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
     my $align = ToString($kv->getValue('alignment')) || 'c';
     # We really should be using ReadAlignmentTemplate (LaTeXML::Core::Alignment)
     # but we'd have to convert it to a repeating spec somehow.
-    my @colspec = (before => Tokens(($align =~ /^(?:c|r)/ ? (T_CS('\hfil')) : ()),
-        Invocation(T_CS('\@hidden'), $style)),
+    my @colspec = (before => Tokens(($align =~ /^(?:c|r)/ ? (T_CS('\hfil')) : ()), $style),
       after => Tokens(($align =~ /^(?:c|l)/ ? (T_CS('\hfil')) : ())));
     my $ncols      = ToString($kv->getValue('ncolumns'));
     my %attributes = ();
@@ -6382,13 +6401,11 @@ DefPrimitive('\lx@gen@cases@bindings RequiredKeyVals:lx@GEN', sub {
     my $style = $kv->getValue('style') || T_CS('\textstyle');
     $style = T_CS($style) unless ref $style;
     my @mode = (ToString($kv->getValue('conditionmode')) eq 'text'
-      ? (Invocation(T_CS('\@hidden'), T_MATH)) : ());
+      ? (T_MATH) : ());
     my $condtext = ToString($kv->getValue('conditionmode')) eq 'text';
     alignmentBindings(LaTeXML::Core::Alignment::Template->new(
         columns => [
-###          { before => Invocation(T_CS('\@hidden'), $style), after => Tokens(T_CS('\hfil')) },
           { before => Tokens($style), after => Tokens(T_CS('\hfil')) },
-##          { before => Tokens(Invocation(T_CS('\@hidden'), $style),
           { before => Tokens($style,
               ($condtext ? (T_CS('\lx@cases@condition')) : ())),
             after => Tokens(T_CS('\@@eat@space'),
@@ -7088,12 +7105,6 @@ DefConstructor('\WildCard[]', "<_WildCard_>#1</_WildCard_>");
 DefConstructorI('\WildCardA', undef, "<_WildCard_/>");
 DefConstructorI('\WildCardB', undef, "<_WildCard_/>");
 DefConstructorI('\WildCardC', undef, "<_WildCard_/>");
-#**********************************************************************
-
-# This constructor allows you to stick things in expansions for effect
-# but their reversion disappears, so they don't appear in the tex attribute (eg).
-DefConstructor('\@hidden{}', '', reversion => '');
-
 #**********************************************************************
 # After all other rewrites have acted, a little cleanup
 

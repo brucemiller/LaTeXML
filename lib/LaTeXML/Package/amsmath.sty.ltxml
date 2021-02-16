@@ -76,7 +76,8 @@ DefMacro('\tag OptionalMatch:* {}',
 # latexml, however, can end up with 2, which end up incrementing coutners twice!
 # Of course, that means we're doing something quite wrong, but we've at least got to recover the effect!!!
 DefMacro('\@ams@intertext{}',
-  '\@ams@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@ams@newline');
+  '\hidden@crcr\noalign{\@@ams@intertext{#1}}');
+
 DefConstructor('\@@ams@intertext{}',
   "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode => 'text');
 

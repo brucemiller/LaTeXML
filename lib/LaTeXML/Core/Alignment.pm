@@ -267,11 +267,18 @@ sub stringify {
 
 sub revert {
   my ($self) = @_;
+  if ($LaTeXML::DUAL_BRANCH && ($LaTeXML::DUAL_BRANCH eq 'content') && $$self{content_reversion}) {
+    return $$self{content_reversion}->unlist; }
   return $$self{reversion}->unlist; }
 
 sub setReversion {
   my ($self, $tokens) = @_;
   $$self{reversion} = $tokens;
+  return; }
+
+sub setContentReversion {
+  my ($self, $tokens) = @_;
+  $$self{content_reversion} = $tokens;
   return; }
 
 sub computeSize {
@@ -406,6 +413,7 @@ sub normalize_cell_sizes {
         $$cell{align}   = undef if $empty; }
       else {
         $$cell{empty} = 1; }
+
   } }
   return; }
 
@@ -504,12 +512,14 @@ sub normalize_mark_spans {
               if (my $ccol = $$rrow{columns}[$jj]) {
                 if (!$$ccol{empty}) {
                   $rowempty = 0; } } } }
-          if (!$rrow || !$rowempty) {
+          if    (!$nrc) { }
+          elsif (!$rrow || !$rowempty) {
             # Prescan the columns to make sure they're empty!
+            my $oldnr = $nr;
             $nr  = $$col{rowspan} = $nr - $nrc;
             $nrc = 0;
             Info('unexpected', 'rowspan', undef,
-              "Rowspan in cell($i,$j) covers non-empty cells; truncating.to $nr"); }
+              "Rowspan $oldnr in cell($i,$j) covers non-empty cells; truncating.to $nr"); }
           elsif ($rrow) {
             for (my $jj = $j ; $jj < $j + $ncspan ; $jj++) {
               if (my $ccol = $$rrow{columns}[$jj]) {

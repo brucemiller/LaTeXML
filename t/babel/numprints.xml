@@ -424,18 +424,18 @@ vs.
                 </XMApp>
               </XMDual>
             </XMath>
-          </Math> vs.  <Math mode="inline" tex="\numprint[{}^{\prime\prime}]{6}" text="6 * ^prime2" xml:id="S2.SS0.SSS0.Px7.p1.m2">
+          </Math> vs.  <Math mode="inline" tex="\numprint[\!{}^{\prime\prime}]{6}" text="6 * ^prime2" xml:id="S2.SS0.SSS0.Px7.p1.m2">
             <XMath>
               <XMDual>
                 <XMApp>
                   <XMTok font="italic" meaning="times" role="MULOP">⁢</XMTok>
                   <XMTok font="italic" meaning="6" role="NUMBER">6</XMTok>
-                  <XMApp class="ltx_unit" role="FLOATSUPERSCRIPT" scriptpos="1">
+                  <XMApp class="ltx_unit" lpadding="-1.7pt" role="FLOATSUPERSCRIPT" scriptpos="1">
                     <XMTok fontsize="70%" name="prime2" role="SUPOP">′′</XMTok>
                   </XMApp>
                 </XMApp>
                 <XMWrap>
-                  <XMTok meaning="6" role="NUMBER" rpadding="1.7pt">6</XMTok>
+                  <XMTok meaning="6" role="NUMBER" rpadding="0.0pt">6</XMTok>
                   <XMApp class="ltx_unit" role="FLOATSUPERSCRIPT" scriptpos="2">
                     <XMTok fontsize="70%" name="prime2" role="SUPOP">′′</XMTok>
                   </XMApp>

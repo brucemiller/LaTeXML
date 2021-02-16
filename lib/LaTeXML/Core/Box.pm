@@ -115,7 +115,7 @@ sub beAbsorbed {
   my ($self, $document) = @_;
   my $string = $$self{string};
   my $mode   = $$self{properties}{mode} || 'text';
-  return ((defined $string) && ($string ne '')
+  return (((defined $string) && ($string ne '')) || $$self{properties}{width}    # ?
     ? ($mode eq 'math'
       ? $document->insertMathToken($string, %{ $$self{properties} })
       : $document->openText($string, $$self{properties}{font}))

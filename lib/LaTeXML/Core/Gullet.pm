@@ -311,7 +311,7 @@ sub readXToken {
         return $LaTeXML::SMUGGLE_THE ? $token : $$token[2]; }    # Expands to smuggled token
       elsif ($cc == CC_COMMENT) {
         return $token if $commentsok;
-        push(@{ $$self{pending_comments} }, $token); }           # What to do with comments???
+        push(@{ $$self{pending_comments} }, $token); }
       elsif ($cc == CC_MARKER) {
         $self->handleMarker($token); }
       else {
@@ -319,7 +319,8 @@ sub readXToken {
     if (!defined $token) {                                       # Else read from current mouth
       while (($token = $$self{mouth}->readToken()) && $CATCODE_HOLD[$cc = $$token[1]]) {
         if ($cc == CC_COMMENT) {
-          push(@{ $$self{pending_comments} }, $token); }         # What to do with comments???
+          return $token if $commentsok;
+          push(@{ $$self{pending_comments} }, $token); }
         elsif ($cc == CC_MARKER) {
           $self->handleMarker($token); } } }
     if (!defined $token) {
