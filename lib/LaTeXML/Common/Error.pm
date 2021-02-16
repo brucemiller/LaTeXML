@@ -64,7 +64,7 @@ sub Fatal {
 
   # We'll assume that if the DIE handler is bound (presumably to this function)
   # we're in the outermost call to Fatal; we'll clear the handler so that we don't nest calls.
-  die $message if $LaTeXML::IGNORE_ERRORS    # Short circuit, w/no formatting, if in probing eval
+  die $message if $LaTeXML::IGNORE_ERRORS        # Short circuit, w/no formatting, if in probing eval
     || (($SIG{__DIE__} eq 'DEFAULT') && $^S);    # Also missing class when parsing bindings(?!?!)
 
   # print STDERR "\nHANDLING FATAL:"
@@ -113,6 +113,7 @@ sub checkRecursiveError {
 # Should be fatal if strict is set, else warn.
 sub Error {
   my ($category, $object, $where, $message, @details) = @_;
+  return if $LaTeXML::IGNORE_ERRORS;
   my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if ($state && $state->lookupValue('STRICT')) {
@@ -131,6 +132,7 @@ sub Error {
 # Warning message; results may be OK, but somewhat unlikely
 sub Warn {
   my ($category, $object, $where, $message, @details) = @_;
+  return if $LaTeXML::IGNORE_ERRORS;
   my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('warning');
@@ -143,6 +145,7 @@ sub Warn {
 # but the message may give clues about subsequent warnings or errors
 sub Info {
   my ($category, $object, $where, $message, @details) = @_;
+  return if $LaTeXML::IGNORE_ERRORS;
   my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('info');
@@ -157,22 +160,22 @@ sub Info {
 # Progress reporting.
 
 sub NoteProgress {
-  my (@stuff) = @_;
-  my $state = $STATE;
+  my (@stuff)   = @_;
+  my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   print STDERR @stuff if $verbosity >= 0;
   return; }
 
 sub NoteProgressDetailed {
-  my (@stuff) = @_;
-  my $state = $STATE;
+  my (@stuff)   = @_;
+  my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   print STDERR @stuff if $verbosity >= 1;
   return; }
 
 sub NoteBegin {
-  my ($stage) = @_;
-  my $state = $STATE;
+  my ($stage)   = @_;
+  my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if ($state && ($verbosity >= 0)) {
     $state->assignMapping('NOTE_TIMERS', $stage, [Time::HiRes::gettimeofday]);
@@ -180,8 +183,8 @@ sub NoteBegin {
   return; }
 
 sub NoteEnd {
-  my ($stage) = @_;
-  my $state = $STATE;
+  my ($stage)   = @_;
+  my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if (my $start = $state && $state->lookupMapping('NOTE_TIMERS', $stage)) {
     $state->assignMapping('NOTE_TIMERS', $stage, undef);
@@ -325,7 +328,7 @@ sub generateMessage {
 
   # FIRST line of stack trace information ought to look at the $where
   my $wheretype = ref $where;
-  if ($detail <= 0) { }    # No extra context
+  if    ($detail <= 0) { }                 # No extra context
   elsif ($wheretype =~ /^XML::LibXML/) {
     push(@lines, "Node is " . Stringify($where)); }
   ## Hmm... if we're being verbose or level is high, we might do this:
@@ -345,9 +348,9 @@ sub generateMessage {
     my $nstack = ($detail > 1 ? undef : ($detail > 0 ? 4 : 1));
     if (my @objects = objectStack($nstack)) {
       my $top = shift(@objects);
-      push(@lines, "In " . trim(Stringify($$top[0])) . ' ' . Stringify($$top[1]));
+      push(@lines,   "In " . trim(Stringify($$top[0])) . ' ' . Stringify($$top[1]));
       push(@objects, ['...']) if @objects && defined $nstack;
-      push(@lines, join('', (map { ' <= ' . trim(Stringify($$_[0])) } @objects))) if @objects;
+      push(@lines,   join('', (map { ' <= ' . trim(Stringify($$_[0])) } @objects))) if @objects;
   } }
 
   # finally, join the result into a block of lines, indenting all but the 1st line.
