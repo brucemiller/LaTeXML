@@ -32,18 +32,11 @@ RequirePackage('amsmath');
 RequirePackage('amsfonts');
 RequirePackage('amssymb');
 RequirePackage('xcolor', options => ['dvipsnames', 'usenames']);
-RequirePackage('babel');
 # TODO: we need teubner.sty
 RequirePackage('eurosym');
 RequirePackage('cancel');
 
 DefMathI('\sgn', undef, "sgn", role => 'OPFUNCTION', meaning => 'sign');
-
-#======================================================================
-# texvc is primarily useful for translating INDIVIDUAL math expressions
-# So, apparently it isn't too bad to lose some normal latex markup.
-AssignCatcode('$' => CC_OTHER);
-AssignCatcode('%' => CC_OTHER);
 
 Let('\part', '\partial');    # Normally for sectioning
 Let('\and',  '\land');       # Normally for frontmatter
