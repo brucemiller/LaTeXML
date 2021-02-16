@@ -29,10 +29,13 @@ use LaTeXML::Package;
 # recognizes --- there is no regular LaTeX texvc.sty, that I am aware of.
 
 RequirePackage('amsmath');
+RequirePackage('amsfonts');
 RequirePackage('amssymb');
-RequirePackage('cancel');
+RequirePackage('xcolor', options => ['dvipsnames', 'usenames']);
+RequirePackage('babel');
+# TODO: we need teubner.sty
 RequirePackage('eurosym');
-RequirePackage('xcolor', options => ['dvipsnames']);
+RequirePackage('cancel');
 
 DefMathI('\sgn', undef, "sgn", role => 'OPFUNCTION', meaning => 'sign');
 
@@ -43,7 +46,7 @@ AssignCatcode('$' => CC_OTHER);
 AssignCatcode('%' => CC_OTHER);
 
 Let('\part', '\partial');    # Normally for sectioning
-DefMacroI('\and', undef, "and");    # Normally for frontmatter
+Let('\and',  '\land');       # Normally for frontmatter
 
 # Also, equation numbering appears to be turned off.
 #AssignValue(EQUATIONGROUP_NUMBER=>0);
@@ -66,6 +69,7 @@ DefMathI('\Kappa', undef, "\x{039A}");
 DefMathI('\Mu', undef, "\x{039C}");
 DefMathI('\Nu', undef, "\x{039D}");
 #DefMathI('\Xi',        undef,"\x{039E}");
+DefMath('\omicron', "\x{03BF}");
 DefMathI('\Omicron', undef, "\x{039F}");
 
 #DefMathI('\Pi',        undef,"\x{03A0}");
@@ -100,7 +104,73 @@ DefMathI('\sampi', undef, "\x{03E1}");       # GREEK SMALL LETTER SAMPI
 # Spanish sine
 DefMathI('\sen', undef, "sen", role => 'TRIGFUNCTION', meaning => 'sine');
 #======================================================================
-# Random
-Let('\exist', '\exists');
-#======================================================================
+
+# texvc.sty, 2015 by Moritz Schubotz
+
+# -- already in amssymb, ignore:
+# DefMacroI('\doublecup',undef,'\Cup');
+# DefMacroI('\gggtr',undef,'\ggg');
+# DefMacroI('\restriction', undef, '\upharpoonright');
+
+DefMacroI('\darr',      undef, '\downarrow');
+DefMacroI('\dArr',      undef, '\Downarrow');
+DefMacroI('\Darr',      undef, '\Downarrow');
+DefMacroI('\lang',      undef, '\langle');
+DefMacroI('\rang',      undef, '\rangle');
+DefMacroI('\uarr',      undef, '\uparrow');
+DefMacroI('\uArr',      undef, '\Uparrow');
+DefMacroI('\Uarr',      undef, '\Uparrow');
+DefMacroI('\H',         undef, '\mathbb{H}');
+DefMacroI('\N',         undef, '\mathbb{N}');
+DefMacroI('\Q',         undef, '\mathbb{Q}');
+DefMacroI('\R',         undef, '\mathbb{R}');
+DefMacroI('\Z',         undef, '\mathbb{Z}');
+DefMacroI('\alef',      undef, '\aleph');
+DefMacroI('\alefsym',   undef, '\aleph');
+DefMacroI('\ang',       undef, '\angle');
+DefMacroI('\bull',      undef, '\bullet');
+DefMacroI('\clubs',     undef, '\clubsuit');
+DefMacroI('\cnums',     undef, '\mathbb{C}');
+DefMacroI('\Complex',   undef, '\mathbb{C}');
+DefMacroI('\Dagger',    undef, '\ddagger');
+DefMacroI('\diamonds',  undef, '\diamondsuit');
+DefMacroI('\Doteq',     undef, '\doteqdot');
+DefMacroI('\doublecap', undef, '\Cap');
+DefMacroI('\empty',     undef, '\emptyset');
+DefMacroI('\exist',     undef, '\exists');
+DefMacroI('\ge',        undef, '\geq');
+DefMacroI('\hAar',      undef, '\Leftrightarrow');
+DefMacroI('\harr',      undef, '\leftrightarrow');
+DefMacroI('\Harr',      undef, '\Leftrightarrow');
+DefMacroI('\hearts',    undef, '\heartsuit');
+DefMacroI('\image',     undef, '\Im');
+DefMacroI('\infin',     undef, '\infty');
+DefMacroI('\isin',      undef, '\in');
+DefMacroI('\larr',      undef, '\leftarrow');
+DefMacroI('\Larr',      undef, '\Leftarrow');
+DefMacroI('\lArr',      undef, '\Leftarrow');
+DefMacroI('\le',        undef, '\leq');
+DefMacroI('\lrarr',     undef, '\leftrightarrow');
+DefMacroI('\Lrarr',     undef, '\Leftrightarrow');
+DefMacroI('\lrArr',     undef, '\Leftrightarrow');
+DefMacroI('\natnums',   undef, '\mathbb{N}');
+DefMacroI('\ne',        undef, '\neq');
+DefMacroI('\O',         undef, '\emptyset');
+DefMacroI('\plusmn',    undef, '\pm');
+DefMacroI('\rarr',      undef, '\rightarrow');
+DefMacroI('\Rarr',      undef, '\Rightarrow');
+DefMacroI('\rArr',      undef, '\Rightarrow');
+DefMacroI('\real',      undef, '\Re');
+DefMacroI('\reals',     undef, '\mathbb{R}');
+DefMacroI('\Reals',     undef, '\mathbb{R}');
+DefMacroI('\sdot',      undef, '\cdot');
+DefMacroI('\sect',      undef, '\S');
+DefMacroI('\spades',    undef, '\spadesuit');
+DefMacroI('\sub',       undef, '\subset');
+DefMacroI('\sube',      undef, '\subseteq');
+DefMacroI('\supe',      undef, '\supseteq');
+DefMacroI('\thetasym',  undef, '\vartheta');
+DefMacroI('\varcoppa',  undef, '\mbox{\coppa}');
+DefMacroI('\weierp',    undef, '\wp');
+
 1;
