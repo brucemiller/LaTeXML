@@ -215,21 +215,22 @@ sub getColumnAfter {
 sub startRow {
   my ($self, $pseudorow) = @_;
   $self->newRow;
-  $STATE->getStomach->bgroup;    # Grouping around ROW!
+  my $stomach = $STATE->getStomach;
+  $stomach->bgroup;    # Grouping around ROW!
   if ($pseudorow) {
     $self->currentRow->{pseudorow} = 1; }
   else {
-    push(@LaTeXML::LIST, LaTeXML::Package::Digest(T_CS('\@row@before'))); }
+    push(@LaTeXML::LIST, $stomach->digest(T_CS('\@row@before'))); }
   $$self{in_row} = 1;
-  LaTeXML::Package::AssignValue(alignmentStartColumn => 0);    # ???
+  $STATE->assignValue(alignmentStartColumn => 0);    # ???
   return; }
 
 sub endRow {
   my ($self) = @_;
   return unless $$self{in_row};
   $self->endColumn() if $$self{in_column};
-  $STATE->getStomach->egroup;                                  # Grouping around ROW!
-                                                               #  Digest(T_CS('\@row@after'));
+  $STATE->getStomach->egroup;                        # Grouping around ROW!
+                                                     #  Digest(T_CS('\@row@after'));
   $$self{in_row} = undef;
   return; }
 
@@ -241,7 +242,7 @@ sub startColumn {
     $self->currentRow->{pseudorow} = 1; }
   $STATE->getStomach->bgroup;    # Grouping around CELL!
                                  # Note: a VERY round-about way of tracking the column spanning!
-  LaTeXML::Package::AssignValue(alignmentStartColumn => $self->currentColumnNumber);
+  $STATE->assignValue(alignmentStartColumn => $self->currentColumnNumber);
   my $colspec = $self->nextColumn;
   $LaTeXML::ALIGN_STATE = 1000000;
   $$self{in_column} = 1;

@@ -3482,21 +3482,21 @@ sub cleanup_Math {
         . ' and local-name() != "XMHint"]', $mathnode)) {
     # So unwrap down to the contents of the XMText's.
     my @texts = ();
-    foreach my $child (map { $_->childNodes } $mathnode->childNodes) {
-      if ($document->getNodeQName($child) eq 'ltx:XMHint') {
-        if (my $width = $child->getAttribute('width')) {
+    foreach my $xmnode (map { $_->childNodes } $mathnode->childNodes) {
+      if ($document->getNodeQName($xmnode) eq 'ltx:XMHint') {
+        if (my $width = $xmnode->getAttribute('width')) {
           if (my $space = DimensionToSpaces(Dimension($width))) {
             push(@texts, $space); } } }
-      else {
-        foreach my $gchild ($child->childNodes) {
-          if ($gchild->nodeType != XML_ELEMENT_NODE) {    # Make sure we've got an element
-            push(@texts, ['ltx:text', { class => 'ltx_markedasmath' }, $gchild]); }
+      else {    # is XMText
+        foreach my $child ($xmnode->childNodes) {
+          if ($child->nodeType != XML_ELEMENT_NODE) {    # Make sure we've got an element
+            push(@texts, ['ltx:text', { class => 'ltx_markedasmath' }, $child]); }
           else {
-            $document->addClass($gchild, 'ltx_markedasmath');
-            push(@texts, $gchild); } } } }
+            $document->addClass($child, 'ltx_markedasmath');
+            push(@texts, $child); } } } }
     # and replace the whole Math with the pieces
     $document->replaceTree([undef, undef, @texts], $mathnode); }
-  else {                                                  # Cleanup any remaining XMTexts
+  else {                                                 # Cleanup any remaining XMTexts
     cleanup_XMText_outer($document, $mathnode); }
   return; }
 
@@ -6279,14 +6279,10 @@ DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
         ($ncols ? (columns => [map { { @colspec } } 1 .. $ncols])
           : (repeated => [{@colspec}]))),
       'math',
-      # <<<<<<< HEAD
       (keys %attributes ? (attributes => {%attributes}) : ()));    # });
-        # =======
-        #      attributes => { meaning => $kv->getValue('datameaning') });
     Let("\\\\", '\@alignment@newline');
-
 });
-#>>>>>>> bedfe431... Tentative changes to support TeX's \halign;
+
 DefPrimitive('\lx@end@gen@matrix', sub { $_[0]->egroup; });
 
 DefMacro('\lx@gen@plain@matrix{}{}',
@@ -6348,7 +6344,6 @@ DefConstructor('\lx@hack@bordermatrix{}', sub {
     if ($alignment) {
       my $arrayh = $alignment->getHeight->ptValue;
       my ($row0, $row1) = $alignment->rows;    # What's row 0 ?
-##      $h = $$row1{totalheight}->valueOf;
       $h = $$row1{y}->valueOf;
       $d = $h - $arrayh; }
     my $md = Dimension(-$d);

@@ -216,7 +216,6 @@ sub handleMarker {
     my $alignment = $STATE->lookupValue('Alignment');
     print STDERR "Halign $alignment: alignment state: after column\n" if $LaTeXML::halign::DEBUG;
   }
-  else { }
   return; }
 
 sub handleTemplate {

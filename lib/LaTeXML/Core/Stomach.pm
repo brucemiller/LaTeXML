@@ -93,7 +93,6 @@ sub digestNextBody {
   my @aug       = ();
 
   while (defined($token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
-###    push(@LaTeXML::LIST, $self->invokeToken($token));
     my @r = $self->invokeToken($token);
     push(@LaTeXML::LIST, @r);
     push(@aug, $token, @r);
@@ -101,9 +100,7 @@ sub digestNextBody {
     last if $initdepth > scalar(@{ $$self{boxing} }); }           # if we've closed the initial mode.
   Warn('expected', $terminal, $self, "body should have ended with '" . ToString($terminal) . "'",
     "current body started at " . ToString($startloc),
-    #       "Got ".join("\n -- ",map { Stringify($_) } @LaTeXML::LIST)
-    "Got " . join("\n -- ", map { Stringify($_) } @aug)
-    )
+    "Got " . join("\n -- ", map { Stringify($_) } @aug))
     if $terminal && !Equals($token, $terminal);
   push(@LaTeXML::LIST, Box()) unless $token;                      # Dummy `trailer' if none explicit.
   return @LaTeXML::LIST; }
