@@ -18,22 +18,23 @@ use LaTeXML::Package;
 #**********************************************************************
 # See amsldoc
 #**********************************************************************
+RequirePackage('amsgen');
 
 DefPrimitive('\DeclareMathOperator OptionalMatch:* {Token}{}', sub {
     my ($stomach, $star, $cs, $text) = @_;
     DefMathI($cs, undef, Invocation(T_CS('\operatorname'), $star, $text),
       scriptpos => ($star ? \&doScriptpos : 'post'),
       role => ($star ? 'OPERATOR' : 'OPFUNCTION'),    # or FUNCTION or TRIGFUNCTION or.. ?  but Something!
-      font       => { family => 'serif', series => 'medium', shape => 'upright' },
+      font      => { family => 'serif', series => 'medium', shape => 'upright' },
       revert_as => 'context'); });
 
 # See p.18
 # New functions (most are already in TeX)
 DefMath('\injlim', "inj lim",
-  role      => 'LIMITOP', meaning => 'injective-limit',
+  role => 'LIMITOP', meaning => 'injective-limit',
   scriptpos => \&doScriptpos);
 DefMath('\projlim', "proj lim",
-  role      => 'LIMITOP', meaning => 'projective-limit',
+  role => 'LIMITOP', meaning => 'projective-limit',
   scriptpos => \&doScriptpos);
 
 DefMath('\varlimsup', '\overline{\operatorname{lim}}',
@@ -49,11 +50,11 @@ DefMath('\varprojlim', '\underleftarrow{\operatorname{lim}}',
 DefConstructor('\operatorname OptionalMatch:* {}',
   "<ltx:XMWrap role='?#1(OPERATOR)(OPFUNCTION)' scriptpos='?#1(mid)(post)'>#2</ltx:XMWrap>",
   bounded => 1, requireMath => 1,
-  font    => { family => 'serif', series => 'medium', shape => 'upright' });
+  font => { family => 'serif', series => 'medium', shape => 'upright' });
 DefConstructor('\operatornamewithlimits {}',
   "<ltx:XMWrap role='OPERATOR' scriptpos='mid'>#1</ltx:XMWrap>",
   bounded => 1, requireMath => 1,
-  font    => { family => 'serif', series => 'medium', shape => 'upright' });
+  font => { family => 'serif', series => 'medium', shape => 'upright' });
 
 DefMacro('\nolimits@',     '\nolimits');
 DefMacro('\nmlimits@',     '\displaylimits');

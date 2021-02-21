@@ -17,8 +17,9 @@ use LaTeXML::Package;
 
 #**********************************************************************
 # See amsldoc
+RequirePackage('amsmath');
 
-DefMacro('\sphat', Tokens(T_SUPER, T_OTHER('^')));
+DefMacro('\sphat',   Tokens(T_SUPER, T_OTHER('^')));
 DefMacro('\spcheck', '^{\vee}');
 DefMacro('\sptilde', Tokens(T_SUPER, T_OTHER('~')));
 DefMacro('\spdot',   '^{\dot}');

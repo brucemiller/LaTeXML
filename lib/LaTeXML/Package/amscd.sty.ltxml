@@ -28,6 +28,7 @@ use LaTeXML::Package;
 # the commutative diagram in straight latexml math, w/o resorting to
 # the more general svg(-like) problems.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RequirePackage('amsgen');
 
 DefMacro('\CD', '\lx@ams@CD{name=CD,datameaning=commutative-diagram}');
 DefMacro('\lx@ams@CD RequiredKeyVals:lx@GEN',
