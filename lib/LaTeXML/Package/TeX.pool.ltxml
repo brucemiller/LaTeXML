@@ -2527,11 +2527,6 @@ sub readNewlineArgs {
   $gullet->unread($next) if $next;
   return ($star, $optional); }
 
-DefMacroI('\@alignment@newline@noskip', undef, sub {
-    my ($gullet) = @_;
-    readNewlineArgs($gullet);
-    (T_CS('\cr')); });
-
 # VERY tricky (and mostly Wrong).
 # The issue is for \\ to look ahead for * and [],
 # Eventually we'll expand into \cr (which should be preceded by the RHS of the template)
@@ -2541,41 +2536,40 @@ DefMacroI('\@alignment@newline@noskip', undef, sub {
 #   {\ifnum0='}
 # and possibly by proper tracking of a Master Counter !?!?!?
 # But we're not there (yet)
-DefMacro('\@alignment@newline', sub {
-    my ($gullet) = @_;
-    my $alignment = LookupValue('Alignment');
-    AssignValue(Alignment => undef);
-    my ($star, $optional) = readNewlineArgs($gullet);
-    AssignValue(Alignment => $alignment);
-    (T_CS('\cr')); });
-# TENTATIVE: See warning comments above.
-# This needs to be recognized like a \cr in gullet & alignment code!!!
-DefConstructor('\@alignment@newline OptionalMatch:* [Dimension]', "\n",
-  #               reversion=>"\\\\\n"
-  reversion => Tokens(T_CS('\\\\'), Token("\n", CC_SPACE))
-);
 
-####DefMacro('\@alignment@newline OptionalMatch:* [Dimension]',
-DefMacro('\@alignment@newline',
-##         '\hidden@cr\@alignment@newline@marker');
-##         '\hidden@cr');
-####  '\hidden@cr\hidden@noalign{\@alignment@newline@marker}');
-######  '\hidden@noalign{\@alignment@newline@marker}\hidden@cr');
-  '\hidden@cr{\@alignment@newline@marker}');
-
-DefMacroI('\@alignment@newline@noskip', undef, sub {
-    my ($gullet) = @_;
-    readNewlineArgs($gullet);
-    return (T_CS('\hidden@cr'), T_BEGIN, T_CS('\@alignment@newline@marker'), T_END); });
-#    (T_CS('\cr')); });
-
+# This is the internal macro for \\[dim] used by LaTeX for various arrays, tabular, etc
 DefMacroI('\@alignment@newline', undef, sub {
     my ($gullet) = @_;
-    readNewlineArgs($gullet, 1);
-    return (T_CS('\hidden@cr'), T_BEGIN, T_CS('\@alignment@newline@marker'), T_END); });
-#    (T_CS('\cr')); });
+    my ($star, $optional) = readNewlineArgs($gullet, 1);
+    return (T_CS('\hidden@cr'), T_BEGIN,
+      ($optional
+        ? (T_CS('\@alignment@newline@markertall'), T_BEGIN, $optional, T_END)
+        : T_CS('\@alignment@newline@marker')),
+      T_END); });
+# However, the above will skip spaces --AND a newline! -- looking for [],
+# which is kinda weird in math, since there may be a reasonable math [ in the 1st column!
+# AMS kindly avoids that, by using a special version of \\
+DefMacroI('\@alignment@newline@noskip', undef, sub {
+    my ($gullet) = @_;
+    my ($star, $optional) = readNewlineArgs($gullet);
+    return (T_CS('\hidden@cr'), T_BEGIN,
+      ($optional
+        ? (T_CS('\@alignment@newline@markertall'), T_BEGIN, $optional, T_END)
+        : T_CS('\@alignment@newline@marker')),
+      T_END); });
 
-DefConstructorI('\@alignment@newline@marker', undef, '', reversion => Tokens(T_CS("\\\\"), T_CR));
+# These are the markers that produce \\ in the reversion,
+# and (eventually will) add vertical space to the row!
+DefConstructor('\@alignment@newline@marker', '',
+  reversion => Tokens(T_CS("\\\\"), T_CR));
+# AND add the spacing to the alignment!!!
+DefConstructor('\@alignment@newline@markertall {Dimension}', '',
+  afterDigest => sub {
+    if (my $alignment = LookupValue('Alignment')) {
+      $alignment->currentRow->{padding} = $_[1]->getArg(1); }
+    return; },
+  reversion => sub {
+    Tokens(T_CS("\\\\"), T_OTHER('['), Revert($_[1]), T_OTHER(']'), T_CR); });
 
 DefMacroI('\tabularnewline', undef, '\cr');    # ???
 
@@ -2979,6 +2973,9 @@ sub digestAlignmentColumn {
     else {
       $alignment->startColumn(); }
     # Push before template,  Marker and put the token back
+    print STDERR "Halign $alignment: COLUMN preload at "
+      . Stringify(Tokens($alignment->getColumnBefore, T_MARKER('before-column'), $token)) . "\n"
+      if $LaTeXML::halign::DEBUG;
     $gullet->unread($alignment->getColumnBefore, T_MARKER('before-column'), $token);
     while ($token = $gullet->readXToken(0)) {
       if (Equals($token, T_ALIGN)
@@ -3000,8 +2997,10 @@ sub digestAlignmentColumn {
         last; }                                            # next column, but continue accumulating
       else {    # Else, we're getting some actual content for the column
 ##        print STDERR "Halign $alignment: PRECOLUMN ==> " . Stringify(List(@LaTeXML::LIST)) . "\n";
+        print STDERR "Halign $alignment: COLUMN invoking " . Stringify($token) . "\n"
+          if $LaTeXML::halign::DEBUG;
         push(@LaTeXML::LIST, $stomach->invokeToken($token));
-        print STDERR "Halign $alignment: COLUMN ==> " . Stringify(List(@LaTeXML::LIST)) . "\n"
+        print STDERR "Halign $alignment: COLUMN " . Stringify($token) . " ==> " . Stringify(List(@LaTeXML::LIST)) . "\n"
           if $LaTeXML::halign::DEBUG;
   } } }
   print STDERR "ALIGNMENT column DONE\n  => " . ToString(List(@LaTeXML::LIST)) . "\n"

@@ -302,6 +302,7 @@ sub beAbsorbed {
     cwidth => $$self{cwidth}, cheight => $$self{cheight}, cdepth => $$self{cdepth},
   );
   foreach my $row (@{ $$self{rows} }) {
+    my $vpad = $$row{padding};
     &{ $$self{openRow} }($document,
       'xml:id' => $$row{id}, tags => $$row{tags},
       # Which properties do we expose to the constructor?
@@ -319,10 +320,11 @@ sub beAbsorbed {
       $$cell{cell} = &{ $$self{openColumn} }($document,
         align => $$cell{align}, width => $$cell{width},
         vattach => $$cell{vattach},
-        (($$cell{colspan} || 1) != 1 ? (colspan => $$cell{colspan})                         : ()),
-        (($$cell{rowspan} || 1) != 1 ? (rowspan => $$cell{rowspan})                         : ()),
-        ($border                     ? (border  => $border)                                 : ()),
-        ($$cell{thead}               ? (thead   => join(' ', sort keys %{ $$cell{thead} })) : ()),
+        ($vpad                       ? (cssstyle => 'padding-bottom:' . ToString($vpad))     : ()),
+        (($$cell{colspan} || 1) != 1 ? (colspan  => $$cell{colspan})                         : ()),
+        (($$cell{rowspan} || 1) != 1 ? (rowspan  => $$cell{rowspan})                         : ()),
+        ($border                     ? (border   => $border)                                 : ()),
+        ($$cell{thead}               ? (thead    => join(' ', sort keys %{ $$cell{thead} })) : ()),
         # Which properties do we expose to the constructor?
         x => $$cell{x}, y => $$cell{y},
         cwidth => $$cell{cwidth}, cheight => $$cell{cheight}, cdepth => $$cell{cdepth},
@@ -443,10 +445,10 @@ sub normalize_sum_sizes {
       my $h = $$cell{cheight};
       my $d = $$cell{cdepth};
       if (($$cell{colspan} || 1) == 1) {
-        $colwidths[$j] = max($colwidths[$j], $w->valueOf); }
+        $colwidths[$j] = max($colwidths[$j], $w->valueOf) if $w; }
       if (($$cell{rowspan} || 1) == 1) {
-        $rowh = max($rowh, $h->valueOf);
-        $rowd = max($rowd, $d->valueOf); }
+        $rowh = max($rowh, $h->valueOf) if $h;
+        $rowd = max($rowd, $d->valueOf) if $d; }
       else { }    # Ditto spanned rows
     }
     $$row{height} = Dimension($rowh + 0.25 * $base);
