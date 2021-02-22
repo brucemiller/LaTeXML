@@ -2792,8 +2792,9 @@ sub parseHAlignTemplate {
       $gullet->unread($gullet->readXToken(0)); }
     elsif ($t->equals(T_PARAM)) {          # Found the template's column slot
       $before = 0; }
-    elsif ($t->equals(T_ALIGN) || $t->equals(T_CS('\cr'))) {    # End the column
-      if ($before) {                                            # Leading & ?
+    elsif ($t->equals(T_ALIGN)
+      || $t->equals(T_CS('\cr')) || $t->equals(T_CS('\crcr'))) {    # End the column
+      if ($before) {                                                # Leading & ?
         $repeated = 1;
         @nonreps  = @cols; @cols = (); }    # A & while we're before a column means Repeated columns
       else {                                # Finished column spec; add it
@@ -2802,7 +2803,7 @@ sub parseHAlignTemplate {
             before => Tokens(beforeCellUnlist(Tokens(@pre))),
             after  => Tokens(afterCellUnlist(Tokens(@post))) });
         @pre = @post = (); $before = 1; }
-      last if $t->equals(T_CS('\cr')); }
+      last unless $t->equals(T_ALIGN); }
     elsif ($before) {                       # Other random tokens go into the column's pre-template
       push(@pre, $t) if @pre || !$t->equals(T_SPACE); }
     else {                                  # Or the post-template
@@ -2836,7 +2837,7 @@ sub alignmentBindings {
     isMath         => $ismath,
     properties     => {%properties});
   AssignValue(Alignment => $alignment);
-  print STDERR "Halign $alignment: New " . $template->show . "\n" if $LaTeXML::halign::DEBUG;
+  print STDERR "\nHalign $alignment: New " . $template->show . "\n" if $LaTeXML::halign::DEBUG;
   Let('\hline', '\@alignment@hline');
   Let(T_MATH,   ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
   return; }
