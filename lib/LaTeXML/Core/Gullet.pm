@@ -219,9 +219,9 @@ sub handleMarker {
   return; }
 
 sub handleTemplate {
-  my ($self, $alignment, $token) = @_;
+  my ($self, $alignment, $token, $type, $hidden) = @_;
   print STDERR "Halign $alignment: ALIGNMENT Column ended at " . Stringify($token)
-    . "[" . Stringify($STATE->lookupMeaning($token)) . "]"
+    . " type $type [" . Stringify($STATE->lookupMeaning($token)) . "]"
     . "@ " . ToString($self->getLocator) . "\n"
     if $LaTeXML::halign::DEBUG;
   #  Append expansion to end!?!?!?!
@@ -230,14 +230,11 @@ sub handleTemplate {
   $LaTeXML::ALIGN_STATE = 1000000;
   ### NOTE: Truly fishy smuggling w/ \hidden@cr
   my $arg;
-  if (Equals($token, T_CS('\hidden@cr'))) {
+  if (($type eq 'cr') && $hidden) {    # \hidden@cr gets an argument as payload!!!!!
     $arg = $self->readArg(); }
   print STDERR "Halign $alignment: column after " . ToString($post) . "\n" if $LaTeXML::halign::DEBUG;
-  if (($$token[1] != CC_ALIGN)
-    && !Equals($token, T_CS('\span'))
-    && !Equals($token, T_CS('\hidden@align'))
-    && $$alignment{in_row}
-    && !$alignment->currentRow->{pseudorow}) {
+  if ((($type eq 'cr') || ($type eq 'crcr'))
+    && $$alignment{in_row} && !$alignment->currentRow->{pseudorow}) {
     unshift(@{ $$self{pushback} }, T_CS('\@row@after')); }
   if ($arg) {
     unshift(@{ $$self{pushback} }, T_BEGIN, $arg->unlist, T_END); }
@@ -245,11 +242,32 @@ sub handleTemplate {
   unshift(@{ $$self{pushback} }, $post->unlist);
   return; }
 
+# If it is a column ending token, Returns the token, a keyword and whether it is "hidden"
+our @column_ends = (
+  [T_ALIGN, 'align', 0],
+  [T_CS('\cr'),           'cr',     0],
+  [T_CS('\crcr'),         'crcr',   0],
+  [T_CS('\hidden@cr'),    'cr',     1],
+  [T_CS('\hidden@crcr'),  'crcr',   1],
+  [T_CS('\hidden@align'), 'insert', 1],
+  [T_CS('\span'),         'span',   0]);
+
+sub isColumnEnd {
+  my ($self, $token) = @_;
+  my $cc = $$token[1];
+  return unless ($cc == CC_ALIGN) || ($cc == CC_CS);
+  # Embedded version of Equals, knowing both are tokens
+  my $defn = $STATE->lookupMeaning($token) || $token;
+  foreach my $end (@column_ends) {
+    my $e = $$end[0];
+    # Would be nice to cache the defns, but don't know when they're present & constant!
+    return @$end if $defn->equals($STATE->lookupMeaning($e) || $e); }
+  return; }
+
 sub readToken {
   my ($self, $toexpand) = @_;
   #  my $token = shift(@{$$self{pushback}});
-  my $token;
-  my $cc;
+  my ($token, $cc, $atoken, $atype, $ahidden);
   while (1) {
     while (($token = shift(@{ $$self{pushback} }))
       && (($$token[1] != CC_SMUGGLE_THE) || ($token = $$token[2]))
@@ -269,17 +287,10 @@ sub readToken {
     if ((defined $token)
       && !$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)
       && $LaTeXML::READING_ALIGNMENT
-      && (Equals($token, T_ALIGN)
-        || (($cc == CC_CS) && (Equals($token, T_CS('\cr'))
-            || Equals($token, T_CS('\crcr'))
-            || Equals($token, T_CS('\hidden@cr'))
-            || Equals($token, T_CS('\hidden@crcr'))
-            || Equals($token, T_CS('\span'))
-            || Equals($token, T_CS('\hidden@align')))))) {
-      $self->handleTemplate($LaTeXML::READING_ALIGNMENT, $token); }
+      && (($atoken, $atype, $ahidden) = $self->isColumnEnd($token))) {
+      $self->handleTemplate($LaTeXML::READING_ALIGNMENT, $token, $atype, $ahidden); }
     else {
-      last; }
-  }
+      last; } }
   return $token; }
 
 # Unread tokens are assumed to be not-yet expanded.
@@ -303,7 +314,7 @@ sub readXToken {
   my ($self, $toplevel, $commentsok) = @_;
   $toplevel = 1 unless defined $toplevel;
   return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
-  my ($token, $cc, $defn);
+  my ($token, $cc, $defn, $atoken, $atype, $ahidden);
   while (1) {
     while ($token = shift(@{ $$self{pushback} })) {    # Check in pushback
       if (($cc = $$token[1]) == CC_SMUGGLE_THE) {      # ONLY in pushback!
@@ -330,14 +341,8 @@ sub readXToken {
                                                                  # Wow!!!!! See TeX the Program \S 309
     elsif (!$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)
       && $LaTeXML::READING_ALIGNMENT
-      && (Equals($token, T_ALIGN)
-        || (($cc == CC_CS) && (Equals($token, T_CS('\cr'))
-            || Equals($token, T_CS('\crcr'))
-            || Equals($token, T_CS('\hidden@cr'))
-            || Equals($token, T_CS('\hidden@crcr'))
-            || Equals($token, T_CS('\span'))
-            || Equals($token, T_CS('\hidden@align')))))) {
-      $self->handleTemplate($LaTeXML::READING_ALIGNMENT, $token); } # Push column before template, and re-read
+      && (($atoken, $atype, $ahidden) = $self->isColumnEnd($token))) {
+      $self->handleTemplate($LaTeXML::READING_ALIGNMENT, $token, $atype, $ahidden); }
     ## Note: special-purpose lookup in State, for efficiency
     elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
       local $LaTeXML::CURRENT_TOKEN = $token;
