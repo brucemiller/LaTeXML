@@ -20,6 +20,7 @@ use LaTeXML::Common::Error;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Radix;
 use Unicode::Normalize;
+use Scalar::Util qw(blessed);
 use base qw(LaTeXML::Common::Object);
 
 #**********************************************************************
@@ -28,6 +29,7 @@ use base qw(LaTeXML::Common::Object);
 
 our $FONT_ELEMENT_NAME = "ltx:text";
 our $MATH_TOKEN_NAME   = "ltx:XMTok";
+our $MATH_HINT_NAME    = "ltx:XMHint";
 #**********************************************************************
 
 # [could conceivable make more sense to let the Stomach create the Document?]
@@ -650,18 +652,21 @@ sub insertElement {
 sub insertMathToken {
   my ($self, $string, %attributes) = @_;
   $attributes{role} = 'UNKNOWN' unless $attributes{role};
+  my $qname     = ($attributes{isSpace} ? $MATH_HINT_NAME : $MATH_TOKEN_NAME);
   my $cur_qname = $$self{model}->getNodeQName($$self{node});
-  if ($cur_qname eq $MATH_TOKEN_NAME) {    # Already INSIDE a token!
+  if ($attributes{isSpace} && (defined $string) && ($string =~ /^\s*$/)) {
+    $string = undef; }    # Make empty hint, of only spaces
+  if (($qname eq $MATH_TOKEN_NAME) && ($cur_qname eq $qname)) {    # Already INSIDE a token!
     $self->openMathText_internal($string) if defined $string;
     return $$self{node}; }
   else {
-    my $node = $self->openElement($MATH_TOKEN_NAME, %attributes);
+    my $node = $self->openElement($qname, %attributes);
     my $box  = $attributes{_box} || $LaTeXML::BOX;
     my $font = $attributes{font} || $box->getFont;
     $self->setNodeFont($node, $font);
     $self->setNodeBox($node, $box);
     $self->openMathText_internal($string) if defined $string;
-    $self->closeNode_internal($node);      # Should be safe.
+    $self->closeNode_internal($node);                              # Should be safe.
     return $node; } }
 
 # Insert a new comment, or append to previous comment.
@@ -722,7 +727,7 @@ sub openText {
     (($t == XML_DOCUMENT_NODE)    # Ignore initial whitespace
     || (($t == XML_ELEMENT_NODE) && !$self->canContain($node, '#PCDATA')));
   return if $font->getFamily eq 'nullfont';
-  print STDERR "openText \"$text\" /" . Stringify($font) . " at " . Stringify($node) . "\n"
+  print STDERR "To openText \"$text\" /" . Stringify($font) . " at " . Stringify($node) . "\n"
     if $LaTeXML::Core::Document::DEBUG;
 
   # Get the desired font attributes, particularly the desired element
@@ -762,7 +767,7 @@ sub openText {
 sub openElement {
   my ($self, $qname, %attributes) = @_;
   NoteProgress('.') if ($$self{progress}++ % 25) == 0;
-  print STDERR "openElement $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
+  print STDERR "To openElement $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
   my $point = $self->find_insertion_point($qname);
   $attributes{_box} = $LaTeXML::BOX unless $attributes{_box};
   my $newnode = $self->openElementAt($point, $qname,
@@ -778,7 +783,7 @@ sub openElement {
 # This is kinda risky! Maybe we should try to request closing of specific nodes.
 sub closeElement {
   my ($self, $qname) = @_;
-  print STDERR "closeElement $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
+  print STDERR "To closeElement $qname at " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
   $self->closeText_internal();
   my ($node, @cant_close) = ($$self{node});
   while ($node->nodeType != XML_DOCUMENT_NODE) {
@@ -871,7 +876,7 @@ sub closeNode {
   my $model = $$self{model};
   my ($t, @cant_close) = ();
   my $n = $$self{node};
-  print STDERR "closeNode " . Stringify($node) . "\n" if $LaTeXML::Core::Document::DEBUG;
+  print STDERR "To closeNode " . Stringify($node) . "\n" if $LaTeXML::Core::Document::DEBUG;
   while ((($t = $n->getType) != XML_DOCUMENT_NODE) && !$n->isSameNode($node)) {
     push(@cant_close, $n) unless $self->canAutoClose($n);
     $n = $n->parentNode; }
@@ -939,6 +944,7 @@ sub find_insertion_point {
   # Else, if we can create an intermediate node that accepts $qname, we'll do that.
   elsif (($inter = $self->canContainIndirect($cur_qname, $qname))
     && ($inter ne $qname) && ($inter ne $cur_qname)) {
+    print STDERR "Need intermediate $inter to open $qname\n" if $LaTeXML::Core::Document::DEBUG;
     $self->openElement($inter, _autoopened => 1,
       font => $self->getNodeFont($$self{node}));
     return $self->find_insertion_point($qname, $inter); }    # And retry insertion (should work now).
@@ -1086,7 +1092,7 @@ sub openText_internal {
   my ($self, $text) = @_;
   my $qname;
   if ($$self{node}->nodeType == XML_TEXT_NODE) {    # current node already is a text node.
-    print STDERR "Appending text \"$text\" to " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
+    print STDERR "openText (int): Appending text \"$text\" to " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
     my $parent = $$self{node}->parentNode;
     if ($LaTeXML::BOX && $parent->getAttribute('_autoopened')) {
       $self->appendTextBox($parent, $LaTeXML::BOX); }
@@ -1097,7 +1103,7 @@ sub openText_internal {
     my $node  = $$self{document}->createTextNode($text);
     if ($point->getAttribute('_autoopened')) {
       $self->appendTextBox($point, $LaTeXML::BOX); }
-    print STDERR "Inserting text node for \"$text\" into " . Stringify($point) . "\n"
+    print STDERR "openText (int): Inserting text node for \"$text\" into " . Stringify($point) . "\n"
       if $LaTeXML::Core::Document::DEBUG;
     $point->appendChild($node);
     $self->setNode($node); }
@@ -1327,6 +1333,7 @@ sub makeError {
 # [xml:id and namespaced attributes are always allowed]
 sub setAttribute {
   my ($self, $node, $key, $value) = @_;
+  return                       if (ref $value) && ((!blessed($value)) || !$value->can('toAttribute'));
   $value = $value->toAttribute if ref $value;
   if ((defined $value) && ($value ne '')) {    # Skip if `empty'; but 0 is OK!
     if ($key eq 'xml:id') {                    # If it's an ID attribute
@@ -1725,7 +1732,7 @@ sub openElementAt {
   $self->setNodeBox($newnode, $box)       if $box;
   $self->appendElementBox($newnode, $box) if $box;
 
-  print STDERR "Inserting " . Stringify($newnode) . " into " . Stringify($point) . "\n" if $LaTeXML::Core::Document::DEBUG;
+  print STDERR "OpenElementAt Inserting " . Stringify($newnode) . " into " . Stringify($point) . "\n" if $LaTeXML::Core::Document::DEBUG;
 
   # Run afterOpen operations
   $self->afterOpen($newnode);
@@ -1964,9 +1971,12 @@ sub appendTree {
   foreach my $child (@data) {
     if (ref $child eq 'ARRAY') {
       my ($tag, $attributes, @children) = @$child;
-      my $new = $self->openElementAt($node, $tag, ($attributes ? %$attributes : ()));
-      $self->appendTree($new, @children);
-      $self->closeElementAt($new); }
+      if (!$tag && !$attributes) {
+        $self->appendTree($node, @children); }
+      else {
+        my $new = $self->openElementAt($node, $tag, ($attributes ? %$attributes : ()));
+        $self->appendTree($new, @children);
+        $self->closeElementAt($new); } }
     elsif ((ref $child) =~ /^XML::LibXML::/) {
       my $type = $child->nodeType;
       if ($type == XML_ELEMENT_NODE) {

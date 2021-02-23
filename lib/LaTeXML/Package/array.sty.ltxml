@@ -27,13 +27,13 @@ DefColumnType('<{}', sub { $LaTeXML::BUILD_TEMPLATE->addAfterColumn($_[1]->unlis
 # This is the same as p
 # but really needs to specify vertical alignment as centered
 DefColumnType('m{Dimension}', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN), #Tokens(T_BEGIN),
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),    #Tokens(T_BEGIN),
       after => Tokens(T_END),
       align => 'justify', width => $_[1], vattach => 'middle'); return; });
 # This is also the same as p
 # but really needs to specify vertical alignment as bottom
 DefColumnType('b{Dimension}', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN), #Tokens(T_BEGIN),
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vbox'), T_BEGIN),    #Tokens(T_BEGIN),
       after => Tokens(T_END),
       align => 'justify', width => $_[1], vattach => 'bottom'); return; });
 
@@ -50,8 +50,8 @@ DefColumnType('w{}{Dimension}', sub {
     my ($gullet, $align, $width) = @_;
     $align = ToString($align);
     my %alignments = (l => 'left', c => 'center', r => 'right');
-    my $alignment = $alignments{$align} || 'center';
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN),
+    my $alignment  = $alignments{$align} || 'center';
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),
       after => Tokens(T_END),
       align => $alignment, width => $width); return; });
 
@@ -59,8 +59,8 @@ DefColumnType('W{}{Dimension}', sub {
     my ($gullet, $align, $width) = @_;
     $align = ToString($align);
     my %alignments = (l => 'left', c => 'center', r => 'right');
-    my $alignment = $alignments{$align} || 'center';
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN),
+    my $alignment  = $alignments{$align} || 'center';
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),
       after => Tokens(T_END),
       align => $alignment, width => $width); return; });
 
@@ -68,7 +68,7 @@ DefColumnType('W{}{Dimension}', sub {
 DefPrimitive('\newcolumntype{}[Number][]{}', sub {
     my ($stomach, $char, $nargs, $opt, $replacement) = @_;
     DefMacroI(T_CS('\NC@rewrite@' . ToString($char)), convertLaTeXArgs($nargs, $opt), $replacement);
-    return AddToPreamble(T_CS('\newcolumntype'),$char, $nargs, $opt, $replacement); });
+    return AddToPreamble(T_CS('\newcolumntype'), $char, $nargs, $opt, $replacement); });
 
 Let('\arraybackslash', '\tabularnewline');
 1;

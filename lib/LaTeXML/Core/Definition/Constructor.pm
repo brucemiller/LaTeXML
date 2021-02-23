@@ -89,7 +89,7 @@ sub invoke {
   # Parse AND digest the arguments to the Constructor
   my $params = $self->getParameters;
   my @args   = ($params ? $params->readArgumentsAndDigest($stomach, $self) : ());
-  print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
+  print STDERR $self->tracingArgs(@args) . " [for ".Stringify($$self{cs})."]\n" if $tracing && @args;
   my $nargs = $self->getNumArgs;
   @args = @args[0 .. $nargs - 1];
 

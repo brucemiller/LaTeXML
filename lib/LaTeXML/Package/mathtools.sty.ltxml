@@ -584,7 +584,7 @@ DefPrimitiveI('\@end@multlined', undef, sub { $_[0]->egroup; });
 # Is currently ignore the shoving dimension
 DefMacro('\@MT@shove{}', sub {
     my ($gullet, $shove_dir) = @_;
-    my $cur_row_num  = LookupValue('Alignment')->currentRowNumber - 1;
+    my $cur_row_num  = LookupValue('Alignment')->currentRowNumber;
     my $rowalignment = LookupValue('MULTIROW_ALIGNMENT_RULE');
 
     $$rowalignment{$cur_row_num} = ToString($shove_dir);
@@ -798,9 +798,14 @@ DefConstructor('\@@newgathered@dummy DigestedBody',
 DefMacro('\newgathered{}{}{}{}', sub {
     my ($gullet, $name, $pre_line, $post_line, $after) = @_;
     $name = ToString($name);
-
-    DefMacroI('\\' . $name, undef, '\@ams@multirow@bindings{name=' . $name . '}[before_row=' . UnTeX($pre_line) . ',after_row=' . UnTeX($post_line) . ']\@@newgathered@dummy\@start@alignment');
-    DefMacroI('\end' . $name, undef, Tokens(T_CS('\@finish@alignment'), T_CS('\@end@gathered'), $after)); });
+    # Really should be making the pre/post_line into separate columns!!!
+    DefMacroI('\\' . $name, undef,
+      '\@ams@multirow@bindings{name=' . $name . '}['
+        . 'before_row=\hidden@noalign{' . UnTeX($pre_line) . '},'
+        . 'after_row=\hidden@noalign{' . UnTeX($post_line) . '}'
+        . ']\@@newgathered@dummy\@start@alignment');
+    DefMacroI('\end' . $name, undef,
+      Tokens(T_CS('\@finish@alignment'), T_CS('\@end@gathered'), $after)); });
 Let('\renewgathered', '\newgathered');
 
 ## 4.6

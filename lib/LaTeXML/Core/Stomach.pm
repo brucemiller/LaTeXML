@@ -89,12 +89,18 @@ sub digestNextBody {
   my $initdepth = scalar(@{ $$self{boxing} });
   my $token;
   local @LaTeXML::LIST = ();
+  my $alignment = $STATE->lookupValue('Alignment');
+  my @aug       = ();
+
   while (defined($token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
-    push(@LaTeXML::LIST, $self->invokeToken($token));
+    my @r = $self->invokeToken($token);
+    push(@LaTeXML::LIST, @r);
+    push(@aug, $token, @r);
     last if $terminal and Equals($token, $terminal);
     last if $initdepth > scalar(@{ $$self{boxing} }); }           # if we've closed the initial mode.
   Warn('expected', $terminal, $self, "body should have ended with '" . ToString($terminal) . "'",
-    "current body started at " . ToString($startloc))
+    "current body started at " . ToString($startloc),
+    "Got " . join("\n -- ", map { Stringify($_) } @aug))
     if $terminal && !Equals($token, $terminal);
   push(@LaTeXML::LIST, Box()) unless $token;                      # Dummy `trailer' if none explicit.
   return @LaTeXML::LIST; }
@@ -285,6 +291,11 @@ sub currentFrameMessage {
 sub bgroup {
   my ($self) = @_;
   pushStackFrame($self, 0);
+  # NOTE: This is WRONG; should really only track "scanned" (not digested) braces
+  # Alas, there're too many code structuring differences between TeX and LaTeXML
+  # to find all the places to manage it.
+  # So, let's try this for now...
+  $LaTeXML::ALIGN_STATE++;
   return; }
 
 sub egroup {
@@ -295,11 +306,13 @@ sub egroup {
       $self->currentFrameMessage); }
   else {                                        # Don't pop if there's an error; maybe we'll recover?
     popStackFrame($self, 0); }
+  $LaTeXML::ALIGN_STATE--;
   return; }
 
 sub begingroup {
   my ($self) = @_;
   pushStackFrame($self, 1);
+  $LaTeXML::ALIGN_STATE++;
   return; }
 
 sub endgroup {
@@ -310,6 +323,7 @@ sub endgroup {
       $self->currentFrameMessage); }
   else {                                         # Don't pop if there's an error; maybe we'll recover?
     popStackFrame($self, 1); }
+  $LaTeXML::ALIGN_STATE--;
   return; }
 
 #======================================================================

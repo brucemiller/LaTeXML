@@ -98,9 +98,6 @@ sub rotatedProperties {
     if    ($origin =~ /t/) { $y0 = $h; }
     elsif ($origin =~ /b/) { $y0 = -$d; }
     elsif ($origin =~ /B/) { $y0 = 0; } }
-##  print STDERR "ROTATE ".$width->ptValue." x ".$height->ptValue." + ".$depth->ptValue
-##    ." by $angle about ".Dimension($x0)->ptValue.", ".Dimension($y0)->ptValue."\n";
-
   my $H        = $h + $d;
   my $rad      = $angle * 3.1415926 / 180;      # close enough
   my $s        = sin($rad);
@@ -114,19 +111,14 @@ sub rotatedProperties {
   my $hp  = max(@cornerys);
   my $dp  = -min(@cornerys);
   my $xsh = Dimension(($wp - $w) / 2)->ptValue . 'pt';
-  #   my $ysh = Dimension(-($hp + $dp - $h - $d) / 2)->ptValue . 'pt';
-  #  my $ysh = Dimension(($h + $d - $hp + $dp) / 2)->ptValue . 'pt';
-  # Not sure about the geometry here!
   my $ysh = Dimension(($h - $hp + $dp) / 2 + $d)->ptValue . 'pt';
-  if ($options{smash}) {
-    #    $wp = $hp = $dp = 0; }
-    $wp = 0; }
   # Since $dp & $ysh both try to have the same effect
   # (& I don't think the CSS box really has a depth anymore)
   $hp += $dp; $dp = 0;
-  my $widthp  = Dimension($wp);
-  my $heightp = Dimension($hp);
-  my $depthp  = Dimension($dp);
+  my $cwidthp  = Dimension($wp);
+  my $cheightp = Dimension($hp);
+  my $cdepthp  = Dimension($dp);
+  my $widthp   = ($options{smash} ? Dimension(0) : $cwidthp);
 ##  print STDERR " => ".$widthp->ptValue." x ".$heightp->ptValue." + ".$depthp->ptValue." => ".$xsh.", ".$ysh."\n";
 
 ## print STDERR "\nROTATE $angle of ".ToString($box)."\n"
@@ -135,8 +127,11 @@ sub rotatedProperties {
   return (
     angle       => $angle,
     width       => $widthp,
-    height      => $heightp,
-    depth       => $depthp,
+    height      => $cheightp,
+    depth       => $cdepthp,
+    cwidth      => $cwidthp,
+    cheight     => $cheightp,
+    cdepth      => $cdepthp,
     innerwidth  => $width,
     innerheight => $height,
     innerdepth  => $depth,
@@ -211,7 +206,7 @@ DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim',
       @candidates = map { pathname_relative($_, $base) } @candidates; }
     (graphic => $graphic,
       candidates => join(',', @candidates),
-      options => $options); },
+      options    => $options); },
   alias => '\includegraphics');
 
 # Also unimplemented... probably nothing useful to pass thru anyway?

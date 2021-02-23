@@ -37,23 +37,27 @@ DeclareOption(undef, sub {
 
 ProcessOptions();
 LoadClass('article');
-RequirePackage('elsart_support');    # Hopefully, this covers elsart & elsarticle
+RequirePackage('elsart_support_core');    # Hopefully, this covers elsarticle
+# RequirePackage('geometry');
+RequirePackage('fleqn');
 RequirePackage('graphicx');
 RequirePackage('pifont');
 RequirePackage('natbib');
-DefMacro('\biboptions{}','\setcitestyle{#1}');
+RequirePackage('hyperref');
+# RequirePackage('endfloat');
+DefMacro('\biboptions{}', '\setcitestyle{#1}');
 
 # Redefine these, since in elsarticle, they two get optional arguments
 # (not even sure what the intended effect is)
 DefEnvironment('{enumerate}[]',
   "<ltx:enumerate  xml:id='#id'>#body</ltx:enumerate>",
-  properties => sub { beginItemize('enumerate', 'enum'); },
+  properties      => sub { beginItemize('enumerate', 'enum'); },
   beforeDigestEnd => sub { Digest('\par'); },
-  locked => 1, mode => 'text');
+  locked          => 1, mode => 'text');
 DefEnvironment('{itemize}[]',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
-  properties => sub { beginItemize('itemize', 'enum'); },
+  properties      => sub { beginItemize('itemize', 'enum'); },
   beforeDigestEnd => sub { Digest('\par'); },
-  locked => 1, mode => 'text');
+  locked          => 1, mode => 'text');
 
 1;

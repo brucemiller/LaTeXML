@@ -1,6 +1,11 @@
 \documentclass[a4paper]{book}
 \usepackage{amsmath}
 \begin{document}
+\begin{align*}
+A & B\\
+C &\left\{\begin{aligned}
+& D \end{aligned}\right.
+\end{align*}
 
 Equation with split; Ampersand before relation
 \begin{equation}
@@ -132,4 +137,23 @@ C =& -D + E + F + G + H\\
 &+I
 \end{split}
 \end{align}
+
+Aligned within math
+\[\begin{aligned}
+    A =& B
+  \end{aligned}
+\]
+Tendency to see the ampersand before aligned has started
+\[
+C =\left\{\begin{aligned}
+& D \end{aligned}\right.
+\]
+
+\begin{align}
+    A =& \left\{
+\begin{aligned}
+    B & \text{if}\\
+    C & \text{otherwise}
+  \end{aligned}\right.
+ \end{align}
 \end{document}

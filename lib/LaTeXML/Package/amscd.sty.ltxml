@@ -28,47 +28,43 @@ use LaTeXML::Package;
 # the commutative diagram in straight latexml math, w/o resorting to
 # the more general svg(-like) problems.
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+RequirePackage('amsgen');
 
 DefMacro('\CD', '\lx@ams@CD{name=CD,datameaning=commutative-diagram}');
 DefMacro('\lx@ams@CD RequiredKeyVals:lx@GEN',
   '\lx@gen@matrix@bindings{#1}\lx@ams@CD@bindings\lx@ams@matrix@{#1}\@start@alignment');
 DefMacro('\endCD', '\@finish@alignment\lx@end@gen@matrix');
 DefPrimitive('\lx@ams@CD@bindings', sub {
-    Let(T_ALIGN, '\@cd@invisible@align');
-    Let("\\\\",  '\@alignment@newline@noskip');
+    Let("\\\\", '\@alignment@newline@noskip');
     $STATE->assignMathcode('@' => 0x8000);
     Let('@', '\cd@'); });
-
-DefMacroI('\@cd@invisible@align', undef,
-  '\@close@inner@column\@close@column'
-    . '\@open@column\@open@inner@column');
 
 DefMacro('\cd@ Token', sub {
     my ($gullet, $token) = @_;
     (T_CS('@' . ToString($token))); });
 
 DefMacroI(T_CS('@>'), 'Until:> Until:>',
-  '&\cd@stack{>}{\rightarrowfill@}{#1}{#2}&');
+  '\hidden@align\cd@stack{>}{\rightarrowfill@}{#1}{#2}\hidden@align');
 DefMacroI(T_CS('@)'), 'Until:) Until:)',
-  '&\cd@stack{)}{\rightarrowfill@}{#1}{#2}&');
+  '\hidden@align\cd@stack{)}{\rightarrowfill@}{#1}{#2}\hidden@align');
 DefMacroI(T_CS('@<'), 'Until:< Until:<',
-  '&\cd@stack{<}{\leftarrowfill@}{#1}{#2}&');
+  '\hidden@align\cd@stack{<}{\leftarrowfill@}{#1}{#2}\hidden@align');
 DefMacroI(T_CS('@('), 'Until:( Until:(',
-  '&\cd@stack{(}{\leftarrowfill@}{#1}{#2}&');
+  '\hidden@align\cd@stack{(}{\leftarrowfill@}{#1}{#2}\hidden@align');
 
 DefMacroI(T_CS('@A'), 'Until:A Until:A',
-  '\cd@adjacent{A}{\Big\uparrow}{#1}{#2}&&');
+  '\cd@adjacent{A}{\Big\uparrow}{#1}{#2}\hidden@align\hidden@align');
 DefMacroI(T_CS('@V'), 'Until:V Until:V',
-  '\cd@adjacent{V}{\Big\downarrow}{#1}{#2}&&');
+  '\cd@adjacent{V}{\Big\downarrow}{#1}{#2}\hidden@align\hidden@align');
 
 DefMacroI(T_CS('@='), undef,
-  '&\@cd@equals@&');
+  '\hidden@align\@cd@equals@\hidden@align');
 DefMacroI(T_CS('@|'), undef,
-  '\Big\Vert&&');
+  '\Big\Vert\hidden@align\hidden@align');
 DefMacroI(T_CS('@\vert'), undef,
-  '\Big\Vert&&');
+  '\Big\Vert\hidden@align\hidden@align');
 DefMacroI(T_CS('@.'), undef,
-  '&&');
+  '\hidden@align\hidden@align');
 
 # Horizontal
 DefMath('\@cd@equals@', "=", role => 'ARROW', stretchy => 'true', reversion => '@=');
@@ -111,7 +107,7 @@ DefConstructor('\cd@stack Undigested {} ScriptStyle ScriptStyle', sub {
 DefConstructor('\cd@adjacent Undigested {} ScriptStyle ScriptStyle', sub {
     my ($document, $reversion, $op, $left, $right, %props) = @_;
     $document->openElement('ltx:XMWrap', role => 'ARROW');    # Role?
-    $document->insertElement('ltx:XMArg', $left)  if $left->unlist;
+    $document->insertElement('ltx:XMArg', $left) if $left->unlist;
     $document->insertElement('ltx:XMArg', $op);
     $document->insertElement('ltx:XMArg', $right) if $right->unlist;
     $document->closeElement('ltx:XMWrap'); },

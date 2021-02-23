@@ -283,13 +283,14 @@ EOTeX
 DefConstructor("\\\\ OptionalMatch:* [Glue]",
   "?#isMath(<ltx:XMHint name='newline'/>)(<ltx:break/>)",
   reversion => Tokens(T_CS("\\\\"), T_CR));
+
 DefConstructor('\newline',
   "?#isMath(<ltx:XMHint name='newline'/>)(<ltx:break/>)",
   reversion => Tokens(T_CS('\newline'), T_CR));
 Let('\@normalcr',      "\\\\");
 Let('\@normalnewline', '\newline');
-PushValue(TEXT_MODE_BINDINGS => [
-    T_CS("\\\\"), T_CS('\@normalcr'), T_CS('\newline'), T_CS('\@normalnewline')]);
+##PushValue(TEXT_MODE_BINDINGS => [
+##    T_CS("\\\\"), T_CS('\@normalcr'), T_CS('\newline'), T_CS('\@normalnewline')]);
 
 DefMacro('\@nolnerr', '');
 DefMacro('\@centercr', '\ifhmode\unskip\else\@nolnerr\fi'
@@ -422,8 +423,10 @@ Let(T_CS('\enddocument'), T_CS('\end{document}'), 'global');
 
 # Logos
 # \TeX is in TeX.pool.ltxml
-DefConstructorI('\LaTeX',  undef, 'LaTeX');
-DefConstructorI('\LaTeXe', undef, 'LaTeX2e');
+##DefConstructorI('\LaTeX',  undef, 'LaTeX');
+##DefConstructorI('\LaTeXe', undef, 'LaTeX2e');
+DefMacroI('\LaTeX',      undef, 'LaTeX');
+DefMacroI('\LaTeXe',     undef, 'LaTeX2e');
 DefMacroI('\fmtname',    undef, 'LaTeX2e');
 DefMacroI('\fmtversion', undef, '2018/12/01');
 
@@ -1789,18 +1792,16 @@ DefPrimitiveI('\@vobeyspaces', undef, sub {
     return });
 
 # WARNING: Need to be careful about what catcodes are active here
+# And clearly separate expansion from digestion
 DefMacroI('\verb', undef, sub {
     my ($gullet) = @_;
     StartSemiverbatim('%', '\\', '{', '}');
-    MergeFont(family => 'typewriter', series => 'medium', shape => 'upright');
     $STATE->assignCatcode(' ', CC_ACTIVE);    # Do NOT (necessarily) skip spaces after \verb!!!
-    Let(T_ACTIVE(' '), T_SPACE);
     my $init    = $gullet->readToken;
     my $starred = 0;
     if (T_OTHER('*')->equals($init)) {
       $starred = 1;
-      Let(T_ACTIVE(' '), T_OTHER("\x{2423}"));    # Visible space
-      $init = $gullet->readToken; }
+      $init    = $gullet->readToken; }
     if (!$init) {    # typically something read too far got \verb and the content is somewhere else..?
       Error('expected', 'delimiter', $gullet,
         "Verbatim argument lost", "Bindings for preceding code is probably broken");
@@ -2162,29 +2163,6 @@ DefPrimitive('\@equationgroup@numbering RequiredKeyVals', sub {
     my $kv = GetKeyVals($_[1]);
     prepareEquationCounter(map { ($_ => ToString($$kv{$_})) } keys %$kv); });
 
-# Alternate versions of alignment open/close@row that deal with numbering.
-# Depending on how an eqnarray ends, we might end up with an empty equation, which will be deleted.
-# If non-empty, we'll set an id, and perhaps a refnum.
-DefPrimitiveI('\@equationgroup@close@row', undef, sub { $_[0]->egroup; });
-DefConstructor('\@equationgroup@open@row SkipSpaces DigestedBody',
-  "",
-  reversion    => '#1',
-  beforeDigest => sub { $_[0]->bgroup;
-    LookupValue('Alignment')->newRow;
-    beforeEquation();
-    return; },
-  afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    #  if($whatsit->getArg(1)->unlist){ # If non-empty row, possibly we'll number
-    # The idea is to avoid numbering an empty rows.... or should we be avoiding the empty rows!?!?!
-    # Some confusion here; some cases latex DOES give you empty, numbered rows (end of ams' align),
-    # Others, it ignores the empty line (\\ optional/ignorable before ams' \intertext)
-    # So, I suspect we should unconditionally do this branch, but work harder at avoiding
-    # empty rows in the first place.
-    afterEquation();
-    return; });
-# Evolve the above to be a reusuable equationgroup numbering assistant!
-
 # ========================================
 # Some special kinds of rows...
 DefConditionalI('\if@in@firstcolumn', undef, sub {
@@ -2195,7 +2173,9 @@ DefConditionalI('\if@in@firstcolumn', undef, sub {
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
 '\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_eqn_lefteqn}\@@BEGININLINEMATH \displaystyle #1\@@ENDINLINEMATH\mbox{}}'
-    . '\@LTX@nonumber\@alignment@cr'
+###    . '\@LTX@nonumber\@alignment@cr'
+    . '\@LTX@nonumber\cr'
+###    . '\@LTX@nonumber'
     . '\else\rlap{\@@BEGININLINEMATH\displaystyle #1\@@ENDINLINEMATH}\fi');
 # \intertext (in amsmath)
 
@@ -2207,7 +2187,7 @@ DefMacroI('\eqnarray', undef,
     . '\@start@alignment',
   locked => 1);
 DefMacroI('\endeqnarray', undef,
-  '\@finish@alignment\end@eqnarray',
+  '\cr\@finish@alignment\end@eqnarray',
   locked => 1);
 DefMacro('\csname eqnarray*\endcsname',
   '\@eqnarray@bindings\@@eqnarray'
@@ -2221,13 +2201,21 @@ DefMacro('\csname endeqnarray*\endcsname',
 DefPrimitive('\@eqnarray@bindings', sub {
     eqnarrayBindings(); });
 
+DefPrimitiveI('\eqnarray@row@before', undef, sub { beforeEquation(); });
+DefPrimitiveI('\eqnarray@row@after',  undef, sub { afterEquation(); });
+
+DefPrimitiveI('\eqnarray@row@before@', undef, sub { beforeEquation(); });
+DefPrimitiveI('\eqnarray@row@after@',  undef, sub { afterEquation(); });
+DefMacroI('\eqnarray@row@before', undef, '\hidden@noalign{\eqnarray@row@before@}');
+DefMacroI('\eqnarray@row@after',  undef, '\hidden@noalign{\eqnarray@row@after@}');
+
 sub eqnarrayBindings {
-  my $col1 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
-    after => Tokens(T_CS('\@hidden@egroup'), T_MATH) };
-  my $col2 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
-    after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
-  my $col3 = { before => Tokens(T_MATH, T_CS('\@hidden@bgroup'), T_CS('\displaystyle')),
-    after => Tokens(T_CS('\@hidden@egroup'), T_MATH, T_CS('\hfil')) };
+  my $col1 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\displaystyle')),
+    after => Tokens(T_MATH) };
+  my $col2 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\displaystyle')),
+    after => Tokens(T_MATH, T_CS('\hfil')) };
+  my $col3 = { before => Tokens(T_MATH, T_CS('\displaystyle')),
+    after => Tokens(T_MATH, T_CS('\hfil')) };
 
   my %attributes = (
     'class'  => 'ltx_eqn_eqnarray',
@@ -2253,12 +2241,9 @@ sub eqnarrayBindings {
       closeColumn => sub { $_[0]->closeElement('ltx:_Capture_'); },
       properties  => { preserve_structure => 1, attributes => {%attributes} }));
 
-  Let(T_ALIGN,       '\@alignment@align');
-  Let("\\\\",        '\@alignment@newline');
-  Let('\cr',         '\@alignment@cr');
-  Let('\crcr',       '\@alignment@cr');
-  Let('\@open@row',  '\@equationgroup@open@row');
-  Let('\@close@row', '\@equationgroup@close@row');
+  Let("\\\\",         '\@alignment@newline');
+  Let('\@row@before', '\eqnarray@row@before');
+  Let('\@row@after',  '\eqnarray@row@after');
   return; }
 
 DefConstructor('\@@eqnarray SkipSpaces DigestedBody',
@@ -2343,7 +2328,7 @@ sub rearrangeEqnarray {
         $class = 'new'; }                       # Keep it as separate equation, even though missing LHS
       else {
         $class = 'continue'; } }                # Continues as multiequation
-    else {                                      # 1st & 2nd is empty
+    elsif ($$row{R}) {                          # 1st & 2nd is empty, non empty 3rd
       if (!scalar(@eqs)) {                      # But if no previous equation?
         $class = 'odd'; }
       elsif ($numbered && $$row{numbered}       # Separately numbered AND labeled?
@@ -2351,8 +2336,15 @@ sub rearrangeEqnarray {
         $class = 'odd'; }                       # must keep separate, but weird!
       else {
         $class = 'continue'; } }                # Else, continues RHS.
+    else {                                      # All columns empty
+          # Probably the trailling //, but who knows...
+          # Arguably: if it has a number &/or is labelled
+          # we should either prserve (as odd) or move info to previous line (if any)
+      $class = 'remove'; }
 
-    if (($class eq 'new') || ($class eq 'odd')) {
+    if ($class eq 'remove') {
+      $document->removeNode($$row{node}); }
+    elsif (($class eq 'new') || ($class eq 'odd')) {
       $numbered = $$row{numbered};
       push(@eqs, [$$row{node}]);
       $oddness++ if $class eq 'odd'; }
@@ -3308,29 +3300,17 @@ DefConstructor('\@@tabbing SkipSpaces DigestedBody',
   beforeDigest => sub { $_[0]->bgroup; },
   mode         => 'text');
 
-DefMacroI('\@tabbing@tabset', undef,
-  '\@close@inner@column\@close@column'
-    . '\@tabbing@tabset@marker'
-    . '\@open@column\@open@inner@column');
-DefConstructorI('\@tabbing@tabset@marker', undef, '', reversion => '\=');
-DefMacroI('\@tabbing@nexttab', undef,
-  '\@close@inner@column\@close@column'
-    . '\@tabbing@nexttab@marker'
-    . '\@open@column\@open@inner@column');
+DefMacroI('\@tabbing@tabset',  undef, '\@tabbing@tabset@marker&');
+DefMacroI('\@tabbing@nexttab', undef, '\@tabbing@nexttab@marker&');
+DefMacro('\@tabbing@newline OptionalMatch:* [Dimension]', '\@tabbing@newline@marker\cr');
+DefMacroI('\@tabbing@kill', undef, '\@tabbing@kill@marker\cr\@tabbing@start@tabs');
+
+DefConstructorI('\@tabbing@tabset@marker',  undef, '', reversion => '\=');
 DefConstructorI('\@tabbing@nexttab@marker', undef, '', reversion => '\>');
-
-DefMacro('\@tabbing@newline OptionalMatch:* [Dimension]',
-  '\@close@inner@column\@close@column\@close@row'
-    . '\@tabbing@newline@marker'
-    . '\@open@row\@open@column\@open@inner@column\@tabbing@start@tabs');
 DefConstructorI('\@tabbing@newline@marker', undef, '', reversion => Tokens(T_CS("\\\\"), T_CR));
-
-DefMacroI('\@tabbing@kill', undef,
-  '\@close@inner@column\@close@column\@close@row'
-    . '\@tabbing@kill@marker'
-    . '\@open@row\@open@column\@open@inner@column\@tabbing@start@tabs');
 DefConstructorI('\@tabbing@kill@marker', undef, '', reversion => '\kill',
   afterDigest => sub { LookupValue('Alignment')->removeRow; return; });
+
 AssignValue(tabbing_start_tabs => Tokens());
 DefMacroI('\@tabbing@start@tabs', undef, sub { LookupValue('tabbing_start_tabs')->unlist; });
 DefPrimitiveI('\@tabbing@increment', undef, sub {
@@ -3351,7 +3331,11 @@ DefPrimitiveI('\@tabbing@hfil',       undef, undef);
 DefPrimitiveI('\@tabbing@pushtabs', undef, undef);
 DefPrimitiveI('\@tabbing@poptabs',  undef, undef);
 
+DefMacro('\@tabbing@accent{}', sub { T_CS('\@tabbing@' . ToString($_[1])); });
+
 # Should there be some rowsep/colsep set here?
+# Note that {tabbign} really shouldn't be handled by a tabular AT ALL....
+# Should be recording accumulated widths and wrapping in ltx:text, with specified widths.
 sub tabbingBindings {
   AssignValue(Alignment => LaTeXML::Core::Alignment->new(
       template => LaTeXML::Core::Alignment::Template->new(
@@ -3362,22 +3346,20 @@ sub tabbingBindings {
       closeRow       => sub { $_[0]->closeElement('ltx:tr'); },
       openColumn     => sub { $_[0]->openElement('ltx:td', @_[1 .. $#_]); },
       closeColumn    => sub { $_[0]->closeElement('ltx:td'); }));
-
-  Let("\\=",       '\@tabbing@tabset');
-  Let("\\>",       '\@tabbing@nexttab');
-  Let("\\\\",      '\@tabbing@newline');
-  Let('\kill',     '\@tabbing@kill');
-  Let("\\+",       '\@tabbing@increment');
-  Let("\\-",       '\@tabbing@decrement');
-  Let("\\<",       '\@tabbing@untab');
-  Let("\\'",       '\@tabbing@flushright');
-  Let("\\`",       '\@tabbing@hfil');
-  Let('\pushtabs', '\@tabbing@pushtabs');
-  Let('\poptabs',  '\@tabbing@poptabs');
-  #  Let('\a',        '\@tabbing@accent');
-  Let('\@open@row',  '\default@open@row');
-  Let('\@close@row', '\default@close@row');
-
+  Let("\\=",              '\@tabbing@tabset');
+  Let("\\>",              '\@tabbing@nexttab');
+  Let("\\\\",             '\@tabbing@newline');
+  Let('\kill',            '\@tabbing@kill');
+  Let("\\+",              '\@tabbing@increment');
+  Let("\\-",              '\@tabbing@decrement');
+  Let("\\<",              '\@tabbing@untab');
+  Let('\@tabbing@' . "'", "\\'");
+  Let('\@tabbing@' . "`", "\\`");
+  Let('\a',               '\@tabbing@accent');
+  Let("\\'",              '\@tabbing@flushright');
+  Let("\\`",              '\@tabbing@hfil');
+  Let('\pushtabs',        '\@tabbing@pushtabs');
+  Let('\poptabs',         '\@tabbing@poptabs');
   return; }
 
 DefMacroI('\pushtabs', undef, Tokens());
@@ -3420,7 +3402,10 @@ sub tabularBindings {
     if ($str != 1) {
       $properties{attributes}{rowsep} = Dimension(($str - 1) . 'em'); } }
   alignmentBindings($template, 'text', %properties);
-  # Do like AddToMacro, but NOT global!
+  Let("\\\\",            '\@alignment@newline');
+  Let('\tabularnewline', "\\\\");
+  # NOTE: Fit this back in!!!!!!!
+  # # Do like AddToMacro, but NOT global!
   foreach my $name ('@row@before', '@row@after', '@column@before', '@column@after') {
     my $cs = '\\' . $name;
     DefMacroI($cs, undef,
@@ -3439,6 +3424,8 @@ DefPrimitive('\@tabular@bindings AlignmentTemplate OptionalKeyVals:tabular', sub
     tabularBindings($template, attributes => {%attr});
     return; });
 
+DefMacroI('\@tabular@before',        undef, '');
+DefMacroI('\@tabular@after',         undef, '');
 DefMacroI('\@tabular@row@before',    undef, '');
 DefMacroI('\@tabular@row@after',     undef, '');
 DefMacroI('\@tabular@column@before', undef, '');
@@ -3446,9 +3433,12 @@ DefMacroI('\@tabular@column@after',  undef, '');
 
 # The Core alignment support is in LaTeXML::Core::Alignment and in TeX.ltxml
 ##DefMacro('\tabular[]{}', '\@tabular@bindings{#2}\@@tabular[#1]{#2}\@start@alignment');
-DefMacro('\tabular[]{}', '\@tabular@bindings{#2}[vattach=#1]\@@tabular[#1]{#2}\@start@alignment');
-DefMacroI('\endtabular', undef, '\@finish@alignment\@end@tabular');
+DefMacro('\tabular[]{}',
+  '\@tabular@bindings{#2}[vattach=#1]\@@tabular[#1]{#2}\@start@alignment\@tabular@before');
+DefMacroI('\endtabular', undef,
+  '\@tabular@after\@finish@alignment\@end@tabular');
 DefPrimitiveI('\@end@tabular', undef, sub { $_[0]->egroup; });
+#DefMacroI('\@end@tabular', undef, undef);
 # Note that the pattern will already have been interpreted by \@tabular@bindings,
 # so make it Undigested here!
 
@@ -3484,7 +3474,9 @@ DefPrimitiveI('\hline', undef, undef);    # Redefined inside tabular
 # However, the really weird thing is the way this provides the } to close the argument
 DefMacroI('\@xhline', undef, '\ifnum0=`{\fi}');
 
-DefConstructor('\cline{}', '',
+#DefConstructor('\cline{}', '',
+DefMacro('\cline{}', '\noalign{\@cline{#1}}');
+DefConstructor('\@cline{}', '',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $cols = ToString($whatsit->getArg(1));
@@ -3495,17 +3487,21 @@ DefConstructor('\cline{}', '',
     my $alignment = LookupValue('Alignment');
     $alignment->addLine('t', @cols) if $alignment;
     return; },
+  sizer      => 0,
   properties => { isHorizontalRule => 1 });
 
 DefConstructorI('\vline', undef, "",    # ???
-  properties => { isVerticalRule => 1 },);
+  properties => { isVerticalRule => 1 },
+  sizer      => 0,
+);
 DefRegister('\lx@default@arraycolsep', Dimension('5pt'));
 DefRegister('\arraycolsep',            Dimension('5pt'));
 DefRegister('\arrayrulewidth',         Dimension('0.4pt'));
 DefRegister('\doublerulesep',          Dimension('2pt'));
 DefMacro('\extracolsep{}', Tokens());
-DefMacroI('\tabularnewline', undef, Tokens());
-
+#DefMacroI('\tabularnewline', undef, Tokens());
+#Let('\tabularnewline', '\cr');
+#DefMacroI('\tabularnewline', undef, '\cr'); # ???
 #======================================================================
 # Array and similar environments
 
@@ -3522,6 +3518,7 @@ DefPrimitive('\@array@bindings [] AlignmentTemplate', sub {
       $$attr{rowsep} = Dimension(($str - 1) . 'em'); }
     alignmentBindings($template, 'math', attributes => $attr);
     MergeFont(mathstyle => 'text');
+    Let("\\\\", '\@alignment@newline');
     return; });
 
 DefMacro('\array[]{}',
@@ -3533,7 +3530,14 @@ DefConstructor('\@@array[] Undigested DigestedBody',
   '#3',
   beforeDigest => sub { $_[0]->bgroup; },
   reversion    => '\begin{array}[#1]{#2}#3\end{array}');
-
+# reversion => sub {
+#   my($whatsit,$op,$pat,$body)=@_;
+#   print STDERR "REVERT ARRAY"
+#     ."  options: ".Stringify($op)."\n"
+#     ."  pattern: ".Stringify($pat)."\n"
+#     ."  body: ".Stringify($body)."\n";
+#   (); }
+#   );
 #**********************************************************************
 # C.11 Moving Information Around
 #**********************************************************************
@@ -4293,8 +4297,12 @@ DefRegister('\fill', Glue(0, '1fill'));
 #======================================================================
 # C.13.2 Space
 #======================================================================
-DefMacro('\hspace  OptionalMatch:* {Dimension}',
-  '\ifmmode\@math@hskip #2\relax\else\@text@hskip #2\relax\fi');
+DefPrimitive('\hspace  OptionalMatch:* {Dimension}', sub {
+    my ($stomach, $star, $length) = @_;
+    my $s = DimensionToSpaces($length);
+    return unless defined $s;
+    Box($s, undef, undef, Invocation(T_CS('\hskip'), $length),
+      width => $length, isSpace => 1); });
 
 DefPrimitive('\vspace OptionalMatch:* {}', undef);
 DefPrimitive('\addvspace {}',              undef);
@@ -4430,7 +4438,7 @@ DefConstructor('\lx@parboxnewline[]', sub {
 
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring them, for now, though.
-DefConstructor('\parbox[][Dimension][]{Dimension}{}', sub {
+DefConstructor('\parbox[][Dimension][]{Dimension} VBoxContents', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
     insertBlock($document, $body,
       width   => $width,
@@ -4458,6 +4466,7 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
       vattach => $vattach,
       class   => 'ltx_minipage');
     return; },
+  sizer      => '#body',
   mode       => 'text',
   properties => sub { (
       width   => $_[4],
@@ -5109,9 +5118,8 @@ DefMacro('\@thirdofthree{}{}{}', sub { $_[3]; });
 DefMacro('\@expandtwoargs{}{}{}', sub {
     ($_[1]->unlist, T_BEGIN, Expand($_[2])->unlist, T_END, T_BEGIN, Expand($_[3])->unlist, T_END); });
 DefMacro('\@makeother{}', sub {
-    my ($gullet, $char) = @_;
-    $char = ToString($char); $char =~ s/\\//;
-    AssignCatcode($char => CC_OTHER, 'local'); });
+    my $letter = ToString($_[1]); $letter =~ s/^\\//;
+    AssignCatcode($letter => CC_OTHER, 'local'); });
 
 RawTeX(<<'EoTeX');
 {\catcode`\^^M=13 \gdef\obeycr{\catcode`\^^M13 \def^^M{\\\relax}%

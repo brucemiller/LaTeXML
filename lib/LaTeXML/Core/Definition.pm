@@ -147,7 +147,7 @@ sub tracingArgToString {
 # $mode = expand | digest | absorb
 sub startProfiling {
   my ($cs, $mode) = @_;
-  my $name = $cs->getCSName;
+  my $name  = $cs->getCSName;
   my $entry = $STATE->lookupMapping('runtime_profile', $name);
   # [#calls, max_depth, inclusive_time, exclusive_time, #pending
   #   starts of pending calls...]
@@ -167,11 +167,13 @@ sub startProfiling {
 sub stopProfiling {
   my ($cs, $mode) = @_;
   $cs = $cs->getString if $cs->getCatcode == CC_MARKER;    # Special case for macros!!
+  return unless ref $cs;
   my $name      = $cs->getCSName;
   my $stack     = $STATE->lookupValue('runtime_stack');
   my $currdepth = scalar(@$stack);
   my $prevdepth = $STATE->lookupValue('runtime_maxdepth') || '0';
   $STATE->assignValue('runtime_maxdepth' => $currdepth, 'global') if $currdepth > $prevdepth;
+
   while (@{$stack}) {
     my ($top, $topmode, $t0, $entry) = @{ $$stack[-1] };
     if ((($top ne $name) || ($topmode ne $mode)) && ($topmode ne 'expand')) {
@@ -181,7 +183,7 @@ sub stopProfiling {
       return; }
     pop(@$stack);
     my $duration = Time::HiRes::tv_interval($t0, [Time::HiRes::gettimeofday]);
-    my $depth = $$entry[4];
+    my $depth    = $$entry[4];
     if ($depth > $$entry[1]) {
       $$entry[1] = $depth; }
     $$entry[2] += $duration if $depth == 1;    # add to inclusive time only in uppermost call
@@ -203,7 +205,7 @@ sub showProfile {
     my @cs    = keys %$profile;
     my $calls = 0;
     map { $calls += $$profile{$_}[0] } @cs;
-    my $depth = $STATE->lookupValue('runtime_maxdepth');
+    my $depth    = $STATE->lookupValue('runtime_maxdepth');
     my @frequent = sort { $$profile{$b}[0] <=> $$profile{$a}[0] } @cs;
     @frequent = @frequent[0 .. $MAX_PROFILE_ENTRIES];
     my @deepest = sort { $$profile{$b}[1] <=> $$profile{$a}[1] } @cs;

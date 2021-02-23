@@ -12,7 +12,7 @@
         <tag>(1)</tag>
         <tag role="refnum">1</tag>
       </tags>
-      <Math mode="display" tex="\begin{CD}S^{{\mathcal{W}}_{\Lambda}}\otimes T@&gt;{j}&gt;{}&gt;T\\&#10;@V{}V{}V@V{}V{\operatorname{End}P}V\\&#10;(S\otimes T)/I@=(Z\otimes T)/J\end{CD}" text="commutative-diagram@(Array[[S ^ (W _ Lambda) tensor-product T, rightarrowfill@ ^ j, T], [downarrow, absent, absent downarrow End@(P), absent, absent], [(S tensor-product T) / I, @cd@equals@, (Z tensor-product T) / J]])" xml:id="S0.E1.m1">
+      <Math mode="display" tex="\begin{CD}S^{{\mathcal{W}}_{\Lambda}}\otimes T@&gt;{j}&gt;{}&gt;T\\&#10;@V{}V{}V@V{}V{\operatorname{End}P}V\\&#10;(S\otimes T)/I@=(Z\otimes T)/J\end{CD}" text="commutative-diagram@(Array[[S ^ (W _ Lambda) tensor-product T, rightarrowfill@ ^ j, T], [downarrow, , absent downarrow End@(P), , ], [(S tensor-product T) / I, @cd@equals@, (Z tensor-product T) / J]])" xml:id="S0.E1.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -25,10 +25,10 @@
                   <XMApp>
                     <XMTok meaning="tensor-product" name="otimes" role="MULOP">⊗</XMTok>
                     <XMApp>
-                      <XMTok role="SUPERSCRIPTOP" scriptpos="post6"/>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post5"/>
                       <XMTok font="italic" role="UNKNOWN">S</XMTok>
                       <XMApp>
-                        <XMTok role="SUBSCRIPTOP" scriptpos="post7"/>
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post6"/>
                         <XMTok font="caligraphic" fontsize="70%" role="UNKNOWN">W</XMTok>
                         <XMTok fontsize="50%" name="Lambda" role="UNKNOWN">Λ</XMTok>
                       </XMApp>
@@ -38,7 +38,7 @@
                 </XMCell>
                 <XMCell align="center">
                   <XMApp>
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="mid6"/>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="mid5"/>
                     <XMTok name="rightarrowfill@" role="ARROW" stretchy="true">→</XMTok>
                     <XMTok font="italic" fontsize="70%" role="UNKNOWN">j</XMTok>
                   </XMApp>
@@ -51,9 +51,7 @@
                 <XMCell align="center">
                   <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
                 </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="absent"/>
-                </XMCell>
+                <XMCell/>
                 <XMCell align="center">
                   <XMApp role="ARROW">
                     <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
@@ -64,12 +62,8 @@
                     </XMApp>
                   </XMApp>
                 </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="absent"/>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="absent"/>
-                </XMCell>
+                <XMCell/>
+                <XMCell/>
               </XMRow>
               <XMRow>
                 <XMCell align="center">
@@ -122,7 +116,7 @@
         <tag>(2)</tag>
         <tag role="refnum">2</tag>
       </tags>
-      <Math mode="display" tex="\begin{CD}\operatorname{cov}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{K%&#10;})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{L})%&#10;\\&#10;@V{}V{}V@A{}A{}A@A{}A{}A@V{}V{}V\\&#10;\operatorname{add}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{add}(\mathcal{K})@&gt;{}&gt;{}&gt;%&#10;\operatorname{cov}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{L})\end{CD}" text="commutative-diagram@(Array[[cov@(L), rightarrowfill@, non@(K), rightarrowfill@, cf@(K), rightarrowfill@, cf@(L)], [downarrow, absent, uparrow, absent, uparrow, absent, downarrow, absent, absent], [add@(L), rightarrowfill@, add@(K), rightarrowfill@, cov@(K), rightarrowfill@, non@(L)]])" xml:id="S0.E2.m1">
+      <Math mode="display" tex="\begin{CD}\operatorname{cov}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{K%&#10;})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{cf}(\mathcal{L})%&#10;\\&#10;@V{}V{}V@A{}A{}A@A{}A{}A@V{}V{}V\\&#10;\operatorname{add}(\mathcal{L})@&gt;{}&gt;{}&gt;\operatorname{add}(\mathcal{K})@&gt;{}&gt;{}&gt;%&#10;\operatorname{cov}(\mathcal{K})@&gt;{}&gt;{}&gt;\operatorname{non}(\mathcal{L})\end{CD}" text="commutative-diagram@(Array[[cov@(L), rightarrowfill@, non@(K), rightarrowfill@, cf@(K), rightarrowfill@, cf@(L)], [downarrow, , uparrow, , uparrow, , downarrow, , ], [add@(L), rightarrowfill@, add@(K), rightarrowfill@, cov@(K), rightarrowfill@, non@(L)]])" xml:id="S0.E2.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -209,30 +203,20 @@
                 <XMCell align="center">
                   <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
                 </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="absent"/>
-                </XMCell>
+                <XMCell/>
                 <XMCell align="center">
                   <XMTok fontsize="160%" name="uparrow" role="ARROW">↑</XMTok>
                 </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="absent"/>
-                </XMCell>
+                <XMCell/>
                 <XMCell align="center">
                   <XMTok fontsize="160%" name="uparrow" role="ARROW">↑</XMTok>
                 </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="absent"/>
-                </XMCell>
+                <XMCell/>
                 <XMCell align="center">
                   <XMTok fontsize="160%" name="downarrow" role="ARROW">↓</XMTok>
                 </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="absent"/>
-                </XMCell>
-                <XMCell align="center">
-                  <XMTok meaning="absent"/>
-                </XMCell>
+                <XMCell/>
+                <XMCell/>
               </XMRow>
               <XMRow>
                 <XMCell align="center">

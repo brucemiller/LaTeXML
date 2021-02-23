@@ -60,7 +60,7 @@ DefConstructor('\ltx@math@@numprint@{}{}',
     . "<ltx:XMTok meaning='#value' role='NUMBER'>#value</ltx:XMTok>"
     . "<ltx:XMWrap>#2</ltx:XMWrap>"
     . "</ltx:XMDual>",
-  reversion => '\numprint{#1}',
+  reversion  => '\numprint{#1}',
   properties => sub { (value => ToString($_[1])); });
 DefConstructor('\ltx@math@@numprint@@{}{}{}{}',
   "<ltx:XMDual>"
@@ -71,7 +71,7 @@ DefConstructor('\ltx@math@@numprint@@{}{}{}{}',
     . "</ltx:XMApp>"
     . "<ltx:XMWrap>#4</ltx:XMWrap>"
     . "</ltx:XMDual>",
-  reversion => '\numprint[#1]{#2}',
+  reversion  => '\numprint[#1]{#2}',
   properties => sub { (value => ToString($_[2])); });
 
 # When printing the numbers in text, use (unicode) text symbols where possible
@@ -105,7 +105,7 @@ DefConstructor('\ltx@mark@units{}', sub {
       if (($node->nodeType == XML_ELEMENT_NODE)
         && (!($role = $node->getAttribute('role'))
           || ($role eq 'ID') || ($role eq 'UNKNOWN')
-          || ($role eq 'FLOATSUPERSCRIPT'))) {    # This covers things like primes(?)
+          || ($role eq 'FLOATSUPERSCRIPT'))) {         # This covers things like primes(?)
         $document->addClass($node, 'ltx_unit'); } } },
   reversion => '#1');
 
@@ -142,51 +142,5 @@ DefColumnType('n Optional:-1 Optional:-1 {}{}', sub {
         T_MATH, T_MATH),
       align => 'char:' . ToString(Digest(T_CS('\nprt@decimal'))));
     return; });
-
-# numprint wants to scan the tokens in the column ITSELF
-# until it encouters &,\tabularnewline or \endtabular
-# and that completely screws up LaTeXML's approach.
-RawTeX(<<'EOTeX');
-\def\nprt@getnexttok#1{%
-  \ifx\tabularnewline#1%
-    \let\nprt@next\tabularnewline
-  \else
-    \ifx\end#1%
-      \let\nprt@next\end
-    \else
-%%%      \ifx\nprt@end#1%
-%%%        \let\nprt@next\nprt@end
-      \ifx&#1%
-        \let\nprt@next&
-      \else
-%%%        \ifx\endtabular#1%
-%%%          \let\nprt@next\endtabular
-         \ifx\@@eat@space#1%
-            \let\nprt@next\@@eat@space
-        \else
-          \ifx\csname#1%
-            \let\nprt@next\csname
-          \else
-            \ifx\relax#1%
-              \let\nprt@next\relax
-            \else
-              \let\nprt@next\nprt@getnexttok
-              \nprt@IfCharInString{#1}{\nprt@allowedchars}{%
-                \nprt@numfoundtrue
-                \nprt@digittoks=\expandafter{\the\nprt@digittoks#1}%
-              }{%
-                \nprt@saveothertok{#1}%
-              }%
-            \fi % \relax
-          \fi % \csname
-        \fi % \endtabular
-      \fi % \nprt@end
-    \fi % \end
-  \fi % \tabularnewline
-  \nprt@next
-}
-% ALSO, Robust \npmakebox doesn't seem to work for us?
-\expandafter\let\expandafter\npmakebox\csname npmakebox \endcsname
-EOTeX
 
 1;
