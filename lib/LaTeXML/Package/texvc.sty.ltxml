@@ -56,7 +56,7 @@ DefPrimitive('\unicode[][]{}', sub {
       $code = hex $code }
     else {
       $code = int($code); }
-    my $code_char = chr($code);
+    my $code_char = UTF($code);
     return Box($code_char, undef, undef,
       T_OTHER($code_char)); });
 
