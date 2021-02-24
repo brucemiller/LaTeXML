@@ -36,6 +36,10 @@
   <xsl:param name="HEAD_TITLE_PREFIX"></xsl:param>
   <xsl:param name="HEAD_TITLE_SHOW_CONTEXT">true</xsl:param>
 
+  <!-- Use this string as meta viewport tag.
+       The tag is omitted if the string is empty. -->
+  <xsl:param name="META_VIEWPORT"></xsl:param>
+
   <!-- We don't really anticipate page structure appearing in inline contexts,
        so we pretty much ignore the $context switches.
        See the CONTEXT discussion in LaTeXML-common -->
@@ -106,6 +110,7 @@
       <xsl:apply-templates select="." mode="head-content-type"/>
       <xsl:apply-templates select="." mode="head-icon"/>
       <xsl:apply-templates select="." mode="head-resources"/>
+      <xsl:apply-templates select="." mode="head-viewport"/>
       <xsl:apply-templates select="." mode="head-css"/>
       <xsl:apply-templates select="." mode="head-javascript"/>
       <xsl:apply-templates select="." mode="head-links"/>
@@ -498,6 +503,18 @@
       <xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
       <xsl:apply-templates select="text()"/>
     </xsl:element>
+  </xsl:template>
+
+  <!-- Generate a meta configuring the viewport. -->
+  <xsl:template match="/" mode="head-viewport">
+    <xsl:if test="$META_VIEWPORT">
+      <xsl:element name="meta" namespace="{$html_ns}">
+        <xsl:attribute name="name">viewport</xsl:attribute>
+        <xsl:attribute name="content">
+          <xsl:value-of select="$META_VIEWPORT"/>
+        </xsl:attribute>
+      </xsl:element>
+    </xsl:if>
   </xsl:template>
 
   <!-- Generate CSS line & style entries for the head.
