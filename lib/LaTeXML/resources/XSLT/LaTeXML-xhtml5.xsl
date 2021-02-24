@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-/=====================================================================\ 
-|  LaTeXML-epub3.xsl                                                  |
-|  Stylesheet for converting LaTeXML documents to ePub3               |
+/=====================================================================\
+|  LaTeXML-xhtml5.xsl                                                 |
+|  Stylesheet for converting LaTeXML documents to html5 in XML syntax |
 |=====================================================================|
 | Part of LaTeXML:                                                    |
 |  Public domain software, produced as part of work done by the       |
@@ -21,30 +21,20 @@
   <!-- Include all LaTeXML to xhtml modules -->
   <xsl:import href="LaTeXML-all-xhtml.xsl"/>
 
-  <!-- Override the output method & parameters -->
-  <xsl:output
-      method = "xml"
-      encoding       = 'utf-8'
-      media-type     = 'application/xhtml+xml'/>
+  <xsl:output method     = "xml"
+              encoding   = "utf-8"
+              media-type = "application/xhtml+xml"/>
 
-  <!-- No namespaces; DO use HTML5 elements (include MathML & SVG) -->
   <xsl:param name="USE_NAMESPACES"  >true</xsl:param>
   <xsl:param name="USE_HTML5"       >true</xsl:param>
 
-  <!-- Do not copy the RDFa prefix, but proceed as usual -->
-  <xsl:template match="/">
-    <xsl:apply-templates select="." mode="doctype"/>
-    <xsl:element name="html" namespace="{$html_ns}">
-      <xsl:apply-templates select="." mode="begin"/>
-      <xsl:apply-templates select="." mode="head"/>
-      <xsl:apply-templates select="." mode="body"/>
-      <xsl:apply-templates select="." mode="end"/>
-      <xsl:text>&#x0A;</xsl:text>
-    </xsl:element>
-  </xsl:template>
+  <!-- Note: If you want namespace prefixes (eg. for MathML & SVG),
+       Redefine the root template ("/") and add prefixed namespace declarations
+       (eg.xmlns:m="http://www.w3.org/1998/Math/MathML") -->
 
-  <!-- RDFa is invalid in EPUB3, so just skip over it -->
-  <xsl:template match="ltx:rdf">
+  <!-- The doctype is optional and is supposed to be ignored by parsers -->
+  <xsl:template match="/" mode="doctype">
+    <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html></xsl:text>
   </xsl:template>
 
 </xsl:stylesheet>

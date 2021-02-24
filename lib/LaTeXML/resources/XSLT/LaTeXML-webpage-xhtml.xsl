@@ -105,9 +105,9 @@
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="head" namespace="{$html_ns}">
       <xsl:apply-templates select="." mode="head-begin"/>
+      <xsl:apply-templates select="." mode="head-content-type"/>
       <xsl:apply-templates select="." mode="head-title"/>
       <xsl:apply-templates select="." mode="head-generator-identifier"/>
-      <xsl:apply-templates select="." mode="head-content-type"/>
       <xsl:apply-templates select="." mode="head-icon"/>
       <xsl:apply-templates select="." mode="head-resources"/>
       <xsl:apply-templates select="." mode="head-viewport"/>
@@ -120,6 +120,11 @@
     </xsl:element>
   </xsl:template>
 
+  <!-- Note: if you override the head-begin template in a plain HTML5 (non-XML)
+       document, you must ensure that the content of the head-content-type
+       declaration appears in full within the first 1024 bytes of the document,
+       or the output will not comply with the HTML5 standard.
+      -->
   <xsl:template match="/" mode="head-begin"/>
   <xsl:template match="/" mode="head-end"/>
 
@@ -428,14 +433,20 @@
   <!-- Generate a meta indicating the content-type -->
   <xsl:template match="/" mode="head-content-type">
     <xsl:text>&#x0A;</xsl:text>
-    <!-- Heuristically assume if we're using a namespace, we're xhtml -->
-    <xsl:element name="meta" namespace="{$html_ns}">
-      <xsl:attribute name="http-equiv">Content-Type</xsl:attribute>
-      <xsl:attribute name="content">
-        <xsl:value-of select="f:if($USE_NAMESPACES,'application/xhtml+xml','text/html')"/>
-        <xsl:text>; charset=UTF-8</xsl:text>
-      </xsl:attribute>
-    </xsl:element>
+    <xsl:choose>
+      <!-- HTML5 in XML syntax: content-type and charset not allowed -->
+      <xsl:when test="$USE_NAMESPACES='true' and $USE_HTML5='true'" />
+      <xsl:otherwise>
+        <xsl:element name="meta" namespace="{$html_ns}">
+          <!-- HTML(4|5) or XHTML1.1: content-type and charset -->
+          <xsl:attribute name="http-equiv">Content-Type</xsl:attribute>
+          <xsl:attribute name="content">
+            <xsl:value-of select="f:if($USE_NAMESPACES,'application/xhtml+xml','text/html')"/>
+            <xsl:text>; charset=UTF-8</xsl:text>
+          </xsl:attribute>
+        </xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <!-- Generate an "icon" link for the head -->
