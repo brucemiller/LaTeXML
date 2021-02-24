@@ -50,9 +50,15 @@ Let('\@equationgroup@number', '\nonumber');
 # λ (\unicode{x00C5}) for λ (Å)
 # Documentation:
 # http://docs.mathjax.org/en/latest/input/tex/extensions/unicode.html
-DefMacro('\unicode[][]{}', sub {
-    my $code = hex ToString($_[3]);
-    return T_OTHER(chr($code)); });
+DefPrimitive('\unicode[][]{}', sub {
+    my $code = ToString($_[3]);
+    if ($code =~ /^x/) {
+      $code = hex $code }
+    else {
+      $code = int($code); }
+    my $code_char = chr($code);
+    return Box($code_char, undef, undef,
+      T_OTHER($code_char)); });
 
 #======================================================================
 # Uppercase Greek (the ones not already defined in TeX)
