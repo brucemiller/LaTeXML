@@ -232,6 +232,10 @@ sub handle_comment {
   $comment =~ s/^\s+//; $comment =~ s/\s+$//;
   my $include_comments = $STATE->lookupValue('INCLUDE_COMMENTS');
   return unless $include_comments;
+  # include_comments values are
+  #  0: drops comments unconditionally
+  #  1: return a comment token, or undef if empty "%\n"
+  #  2: marks up comments unconditionally, even if empty
   if ($include_comments == 1) {
     return $comment ? T_COMMENT($comment) : undef; }
   else {
