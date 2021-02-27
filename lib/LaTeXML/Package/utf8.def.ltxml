@@ -33,9 +33,13 @@ DefPrimitive('\DeclareUnicodeCharacter Expanded {}', sub {
     my ($stomach, $hexcode, $expansion) = @_;
     my $char = $hexcode->toString();
     if ($char =~ /^[0-9a-fA-F]+$/) {
-      $char = chr(hex($char));
-      AssignCatcode($char, CC_ACTIVE);
-      DefMacroI(T_ACTIVE($char), undef, $expansion); }
+      if ((my $cp = hex($char)) <= 0x10FFFF) {
+        $char = chr($cp);
+        AssignCatcode($char, CC_ACTIVE);
+        DefMacroI(T_ACTIVE($char), undef, $expansion); }
+      else {
+        Error('unexpected', $char, $stomach,
+          "$char too large for Unicode. Values between 0 and 10FFFF are permitted."); } }
     else {
       Error('unexpected', $char, $stomach,
         "'$char' is not a hexadecimal number."); } });
