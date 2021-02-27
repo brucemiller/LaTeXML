@@ -34,7 +34,7 @@ DefPrimitive('\DeclareUnicodeCharacter Expanded {}', sub {
     my $char = $hexcode->toString();
     if ($char =~ /^[0-9a-fA-F]+$/) {
       if ((my $cp = hex($char)) <= 0x10FFFF) {
-        $char = chr($cp);
+        $char = UTF($cp);
         AssignCatcode($char, CC_ACTIVE);
         DefMacroI(T_ACTIVE($char), undef, $expansion); }
       else {
