@@ -29,7 +29,7 @@ AssignValue(INPUT_ENCODING => undef);
 # And set the Mouth to simply pass-thru the utf8.
 AssignValue(PERL_INPUT_ENCODING => 'UTF8');
 
-DefPrimitive('\DeclareUnicodeCharacter Digested {}', sub {
+DefPrimitive('\DeclareUnicodeCharacter Expanded {}', sub {
     my ($stomach, $hexcode, $expansion) = @_;
     my $char = $hexcode->toString();
     if ($char =~ /^[0-9a-fA-F]+$/) {
