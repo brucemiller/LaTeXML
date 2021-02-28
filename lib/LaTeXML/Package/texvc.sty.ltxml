@@ -46,6 +46,20 @@ Let('\and',  '\land');       # Normally for frontmatter
 #AssignValue(EQUATIONROW_NUMBER=>0);
 Let('\@equationgroup@number', '\nonumber');
 
+# MathJax allows an explicit \unicode character specification, as seen in StackExchange:
+# λ (\unicode{x00C5}) for λ (Å)
+# Documentation:
+# http://docs.mathjax.org/en/latest/input/tex/extensions/unicode.html
+DefPrimitive('\unicode[][]{}', sub {
+    my $code = ToString($_[3]);
+    if ($code =~ /^x/) {
+      $code = hex $code }
+    else {
+      $code = int($code); }
+    my $code_char = UTF($code);
+    return Box($code_char, undef, undef,
+      T_OTHER($code_char)); });
+
 #======================================================================
 # Uppercase Greek (the ones not already defined in TeX)
 DefMathI('\Alpha', undef, "\x{0391}");
