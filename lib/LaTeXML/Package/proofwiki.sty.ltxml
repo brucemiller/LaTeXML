@@ -1,7 +1,20 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  proofwiki                                                          | #
+# | LaTeXML Bindings for simulating proofwiki.org's macros              | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+
 # Adapated from the MathJax-enabling preamble of proofwiki.org
 # so load texvc.sty.ltxml as a MathJax-approximating prerequisite
 RequirePackage('texvc');
