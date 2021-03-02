@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="fontenc" options="T1"?>
+<?latexml package="inputenc" options="utf8"?>
+<?latexml package="eurosym" options="official"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>The amount is 10<text font="bold">€</text> and 2 cents.</p>
+  </para>
+  <para xml:id="p2">
+    <p>A square root <Math mode="inline" tex="\sqrt{x^{2}+1}" text="square-root@(x ^ 2 + 1)" xml:id="p2.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="square-root"/>
+            <XMApp>
+              <XMTok meaning="plus" role="ADDOP">+</XMTok>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+              </XMApp>
+              <XMTok meaning="1" role="NUMBER">1</XMTok>
+            </XMApp>
+          </XMApp>
+        </XMath>
+      </Math>.</p>
+  </para>
+</document>
