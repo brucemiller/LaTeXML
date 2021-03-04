@@ -158,11 +158,25 @@ sub getIndexContentKey {
 # Should we keep unicode? (any compatibility issues there?0
 # Should we just strip to rfc spec?
 # Should we get the TeX for math?
+my %GREEK_ASCII_MAP = (
+  "\x{03B1}" => 'alpha',   "\x{03B2}" => 'beta',       "\x{03B3}" => 'gamma', "\x{03B4}" => 'delta',
+  "\x{03F5}" => 'epsilon', "\x{03B5}" => 'varepsilon', "\x{03B6}" => 'zeta',  "\x{03B7}" => 'eta',
+  "\x{03B8}" => 'theta',   "\x{03D1}" => 'vartheta',   "\x{03B9}" => 'iota',  "\x{03BA}" => 'kappa',
+  "\x{03BB}" => 'lambda',  "\x{03BC}" => 'mu',         "\x{03BD}" => 'nu',    "\x{03BE}" => 'xi',
+  "\x{03C0}" => 'pi',      "\x{03D6}" => 'varpi',      "\x{03C1}" => 'rho',   "\x{03F1}" => 'varrho',
+  "\x{03C3}" => 'sigma',   "\x{03C2}" => 'varsigma',   "\x{03C4}" => 'tau',   "\x{03C5}" => 'upsilon',
+  "\x{03D5}" => 'phi',     "\x{03C6}" => 'varphi',     "\x{03C7}" => 'chi',   "\x{03C8}" => 'psi',
+  "\x{03C9}" => 'omega',   "\x{0393}" => 'Gamma',      "\x{0394}" => 'Delta', "\x{0398}" => 'Theta',
+  "\x{039B}" => 'Lambda',  "\x{039E}" => 'Xi',         "\x{03A0}" => 'Pi',    "\x{03A3}" => 'Sigma',
+  "\x{03A5}" => 'Upsilon', "\x{03A6}" => 'Phi',        "\x{03A8}" => 'Psi',   "\x{03A9}" => 'Omega');
+my $GREEK_RE = '(' . join('|', sort keys %GREEK_ASCII_MAP) . ')';
+
 sub getIndexKeyID {
   my ($key) = @_;
   $key =~ s/^\s+//s; $key =~ s/\s+$//s;    # Trim leading/trailing, in any case
         # We don't want accented chars (do we?) but we need to decompose the accents!
   $key = NFD($key);
+  $key =~ s/$GREEK_RE/$GREEK_ASCII_MAP{$1}/eg;
   $key = unidecode($key);
   $key =~ s/[^a-zA-Z0-9]//g;
 ## Shouldn't be case insensitive?

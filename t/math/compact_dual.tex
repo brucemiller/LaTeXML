@@ -1,0 +1,19 @@
+\documentclass{article}
+\usepackage{latexml}
+\makeatletter
+\def\makeprimes#1{%
+  \@tempcnta=#1\relax  \loop \ifnum\@tempcnta>0 \prime \advance\@tempcnta\m@ne \repeat}
+\iflatexml
+\let\power\lx@power
+\def\derive#1#2{%
+  \lx@superscript[operator_meaning={derivative-implicit-variable}]{#2}{\lx@symbol[meaning=#1]{\makeprimes{#1}}}}
+\else
+\def\power#1#2{{#1}^{#2}}
+\def\derive#1#2{{#2}^{\makeprimes{#1}}}
+\fi
+\makeatother
+\begin{document}
+$\power{x}{2}+\power{y}{3}$
+
+$\derive2{f}+\derive3{g}$
+\end{document}

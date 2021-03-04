@@ -84,12 +84,12 @@ DefMacro('\LaTeXML',  '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 DefMacro('\lxDocumentID{}', '\def\thedocument@ID{#1}');
 
 # \LXMID{id}{math}  Associate the identifier id with the given math expression.
-DefMacro('\LXMID{}{}', '\@XMArg{#1}{#2}');
+DefMacro('\LXMID{}{}', '\lx@xmarg{#1}{#2}');
 
 # \LXRef{id} Refer to the math expression associated with id.
 # In presentation, this is similar to using a shorthand macro.
 # In content situations, an XMRef is generated.
-DefMacro('\LXMRef{}', '\@XMRef{#1}');
+DefMacro('\LXMRef{}', '\lx@xmref{#1}');
 
 #======================================================================
 # class related features
@@ -245,40 +245,71 @@ DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
     my ($name, $meaning, $cd, $role, $alias, $scope) =
       $params && map { $_ && ToString($_) } map { $params->getValue($_) }
       qw(name meaning cd role alias scope);
-    my $tag = $params->getValue('tag');
-    my $id  = ($tag ? next_declaration_id() : undef);
+    my $needsid = $params && ($params->getValue('tag') || $params->getValue('description'));
+    my $id = ($needsid ? next_declaration_id() : undef);
     DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
-      name  => $name,  meaning => $meaning, omcd => $cd, role => $role, alias => $alias,
-      scope => $scope, decl_id => $id,
-      hide_content_reversion => 1);
-    if ($tag) {    # Also provide for decl_id hook for definition links.
-      return Digest(Invocation('\@lxDefMathDeclare', $id, $tag)); }
+      name  => $name,  meaning => $meaning, omcd      => $cd, role => $role, alias => $alias,
+      scope => $scope, decl_id => $id,      revert_as => 'context');
+    if ($needsid) {    # Also provide for decl_id hook for definition links.
+      return Digest(Invocation('\@lxDefMathDeclare', $id, $params)); }
     else {
       return; }
 });
 
-DefConstructor('\@lxDefMathDeclare{}{}',
-  sub { my ($document, $id, $tag, %props) = @_;
+DefConstructor('\@lxDefMathDeclare{} RequiredKeyVals:XMath', sub {
+    my ($document, $id, $kv, %props) = @_;
     my $save = $document->floatToElement('ltx:declare');
     $document->openElement('ltx:declare', 'xml:id' => $id);
-    if (my $tag = $props{tag}) {
-      $document->insertElement('ltx:tag', $tag); }
-    if (my $text = $props{text}) {
-      $document->insertElement('ltx:text', $text); }
+    if ($props{term} || $props{short}) {
+      $document->openElement('ltx:tags');
+      $document->insertElement('ltx:tag', $props{term},  role => 'term')  if $props{term};
+      $document->insertElement('ltx:tag', $props{short}, role => 'short') if $props{short};
+      $document->closeElement('ltx:tags'); }
+    if (my $description = $props{description}) {
+      $document->insertElement('ltx:text', $description); }
     $document->closeElement('ltx:declare');
     $document->setNode($save); },
   mode        => 'text',
   afterDigest => sub { my ($stomach, $whatsit) = @_;
-    my ($id,     $tag)  = $whatsit->getArgs;
-    my ($newtag, $text) = splitDeclareTag($tag);
-    if ($text) {
-      $whatsit->setProperties(tag => $newtag, text => $text); }
-    else {
-      $whatsit->setProperties(tag => $tag); } },
+    my ($id, $kv) = $whatsit->getArgs;
+    normalizeDeclareKeys($kv, $whatsit);
+    return; },
   properties => { alignmentSkippable => 1 },
   reversion  => '');
 
-#DefKeyVal('XMath',name,string);
+# We're interested in getting some useful phrases for several contexts:
+#   Notations lists:  $term$ : description
+#   [where layout may require substituting some markup for the :, so we'll want to split them]
+#   tooltips: short (name), probably text preferred.
+# And we want to synthesize these out of two keyvals: tag,description.
+# If both are given tag is shortname, description is long form, possibly separating out the term
+# If only 1 given, and matches the math term: record it, and use remainder for name & description
+# Else use the given for name, description, with no term
+sub normalizeDeclareKeys {
+  my ($kv, $whatsit) = @_;
+  my $tag         = $kv->getValue('tag');
+  my $description = $kv->getValue('description');
+  my ($term, $short, $desc);
+  if (my $stuff = $description || $tag) {
+    ($term, $desc) = splitDeclareTag($stuff); }
+  $short = ($description ? $tag || $desc : undef);
+  $desc = $desc || $description || $tag;
+  $whatsit->setProperties(term => $term, short => $short, description => $desc);
+  return; }
+
+# Temporary(?) Hack for DLMF: Split an \lxDeclare tag of the form tag={math: description}
+sub splitDeclareTag {
+  my ($tag) = @_;
+  my @boxes = $tag->unlist;
+  my @tag   = ();
+  # Or should we collect initial math box?
+  while (@boxes && ($boxes[0]->getString ne ':')) {
+    push(@tag, shift(@boxes)); }
+  if (@boxes) {
+    shift(@boxes);
+    return (List(@tag), List(@boxes)); }
+  else {
+    return; } }
 
 #======================================================================
 # NOTE: I'm concerned about the order of applying these filters.
@@ -305,22 +336,25 @@ DefConstructor('\@lxDefMathDeclare{}{}',
 #   nodef : inhibits the marking of the current point as the `definition' of the expression.
 #          (a ref declaration would normally not be a def anyway)
 
-DefKeyVal('Declare', 'wrap',   '{}', 1);
 DefKeyVal('Declare', 'nowrap', '{}', 1);
 DefKeyVal('Declare', 'trace',  '{}', 1);
 DefKeyVal('Declare', 'replace', 'UndigestedKey');
 
-our $declare_keys = { scope => 1, role => 1, tag => 1, name => 1, meaning => 1,
-  trace => 1, wrap => 1, nowrap => 1, replace => 1, label => 1 };
-DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
-  sub { my ($document, $flag, $kv, $pattern, %props) = @_;
+our $declare_keys = { scope => 1, role => 1, tag => 1, description => 1, name => 1, meaning => 1,
+  trace => 1, nowrap => 1, replace => 1, label => 1 };
+# Most is same as above; merge into one!!!!!
+DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
+    my ($document, $flag, $kv, $pattern, %props) = @_;
     if (my $id = $props{id}) {
       my $save = $document->floatToElement('ltx:declare');
       $document->openElement('ltx:declare', 'xml:id' => $id);
-      if (my $tag = $kv->getValue('tag')) {
-        $document->insertElement('ltx:tag', $tag); }
-      if (my $text = $kv->getValue('text')) {
-        $document->insertElement('ltx:text', $text); }
+      if ($props{term} || $props{short}) {
+        $document->openElement('ltx:tags');
+        $document->insertElement('ltx:tag', $props{term},  role => 'term')  if $props{term};
+        $document->insertElement('ltx:tag', $props{short}, role => 'short') if $props{short};
+        $document->closeElement('ltx:tags'); }
+      if (my $description = $props{description}) {
+        $document->insertElement('ltx:text', $description); }
       $document->closeElement('ltx:declare');
       $document->setNode($save); } },
   mode => 'text',
@@ -329,38 +363,33 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
     AssignValue(mathfont => LaTeXML::Common::Font->mathDefault(), 'local');
     return; },
   afterDigest => sub { my ($stomach, $whatsit) = @_;
-    my ($star, $keys, $pattern) = $whatsit->getArgs;
-    return unless $keys;
-    CheckOptions("\\lxDeclare keys", $declare_keys, %{ $keys->getKeyVals });
+    my ($star, $kv, $pattern) = $whatsit->getArgs;
+    return unless $kv;
+    CheckOptions("\\lxDeclare keys", $declare_keys, %{ $kv->getKeyVals });
     foreach my $key (qw(role tag name meaning replace)) {
-      if (my $value = $keys->getValue($key)) {
+      if (my $value = $kv->getValue($key)) {
         Warn('unexpected', $key, $stomach,
           "Repeated $key: " . join('; ', map { Stringify($_) } @$value))
           if ref $value eq 'ARRAY'; } }
-    my $id = ($keys->getValue('tag') ? next_declaration_id() : undef);
+    my $id = ($kv->getValue('tag') || $kv->getValue('description') ? next_declaration_id() : undef);
     if ($id && LookupValue('InPreamble')) {
       Warn('unexpected', 'tag', $stomach,
         "Declaration with tag cannot appear in preamble"
           . Stringify($whatsit)); }
-    if (my $tag = $keys->getValue('tag')) {
-      if (!$keys->getValue('text')) {
-        my ($newtag, $text) = splitDeclareTag($tag);
-        if ($text) {
-          $keys->setValue(tag  => $newtag);
-          $keys->setValue(text => $text);
-    } } }
-    $whatsit->setProperties(scope => getDeclarationScope($keys),
-      role    => ToString($keys->getValue('role')),
-      name    => ToString($keys->getValue('name')),
-      meaning => ToString($keys->getValue('meaning')),
-      trace   => defined $keys->getValue('trace'),
-      wrap    => defined $keys->getValue('wrap'),
-      nowrap  => defined $keys->getValue('nowrap'),
+    # Temporary(?) Hack: If no description, bui tag is of form <math>: text
+    # make description = tag, and tag be only the shorter text part
+    $whatsit->setProperties(scope => getDeclarationScope($kv),
+      role    => ToString($kv->getValue('role')),
+      name    => ToString($kv->getValue('name')),
+      meaning => ToString($kv->getValue('meaning')),
+      trace   => defined $kv->getValue('trace'),
+      nowrap  => defined $kv->getValue('nowrap'),
       id      => $id,
       match   => $pattern,
-      replace => $keys->getValue('replace'));
+      replace => $kv->getValue('replace'));
+    normalizeDeclareKeys($kv, $whatsit);
 
-    if (my $label = ToString($keys->getValue('label'))) {
+    if (my $label = ToString($kv->getValue('label'))) {
       PushValue("Declaration_$label", $whatsit); }
     return; },
   afterConstruct => sub { my ($document, $whatsit) = @_;
@@ -368,19 +397,6 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}',
     createDeclarationRewrite($document, $scope, $whatsit); },
   properties => { alignmentSkippable => 1 },
   reversion  => '');
-
-# Temporary(?) Hack for DLMF: Split an \lxDeclare tag of the form tag={math: description}
-sub splitDeclareTag {
-  my ($tag) = @_;
-  my @boxes = $tag->unlist;
-  my @tag   = ();
-  while (@boxes && ($boxes[0]->getString ne ':')) {
-    push(@tag, shift(@boxes)); }
-  if (@tag) {
-    shift(@boxes);
-    return (List(@tag), List(@boxes)); }
-  else {
-    return ($tag, undef); } }
 
 DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
   afterDigest => sub { my ($stomach, $whatsit) = @_;
@@ -419,8 +435,8 @@ sub getDeclarationScope {
 sub createDeclarationRewrite {
   my ($document, $scope, $whatsit) = @_;
   my %props = $whatsit->getProperties;
-  my ($id, $match, $wrap, $nowrap, $role, $name, $meaning, $ref, $trace, $replace)
-    = map { $props{$_} } qw(id match wrap nowrap role name meaning ref trace replace);
+  my ($id, $match, $nowrap, $role, $name, $meaning, $ref, $trace, $replace)
+    = map { $props{$_} } qw(id match nowrap role name meaning ref trace replace);
   # Put this rule IN FRONT of other rules!
   UnshiftValue('DOCUMENT_REWRITE_RULES',
     LaTeXML::Core::Rewrite->new('math',
@@ -433,7 +449,6 @@ sub createDeclarationRewrite {
           ($name    ? (name    => $name)    : ()),
           ($meaning ? (meaning => $meaning) : ()),
           ($id      ? (decl_id => $id)      : ()),
-          ($wrap    ? (_wrap   => $wrap)    : ()),
           ($nowrap  ? (_nowrap => $nowrap)  : ()),
         }),
     ));

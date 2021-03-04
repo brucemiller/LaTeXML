@@ -45,7 +45,7 @@ displaymath, a single equation and both types of eqnarrays.
         <tag role="refnum">1</tag>
         <tag role="typerefnum">Theorem 1</tag>
       </tags>
-      <title class="ltx_outdent"><tag><text font="bold">1 Theorem</text></tag><text font="bold"> (Long Theorem)</text>:</title>
+      <title class="ltx_outdent"><tag><text font="bold">1 Theorem</text></tag><text font="bold"> (Long Theorem):</text></title>
       <para xml:id="ThmTheorem1.p1">
         <p><text font="slanted">The examples are put into this theorem environment.</text></p>
       </para>
@@ -105,9 +105,9 @@ displaymath, a single equation and both types of eqnarrays.
                       </XMApp>
                     </XMApp>
                     <XMApp>
-                      <XMApp scriptpos="mid">
+                      <XMApp>
                         <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
-                        <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid">∫</XMTok>
+                        <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid1">∫</XMTok>
                         <XMApp>
                           <XMTok fontsize="70%" meaning="partial-differential" name="partial" role="OPERATOR">∂</XMTok>
                           <XMTok font="italic" fontsize="70%" role="UNKNOWN">D</XMTok>
@@ -174,7 +174,7 @@ displaymath, a single equation and both types of eqnarrays.
           <tag role="refnum">α</tag>
           <tag role="typerefnum">Lemma α</tag>
         </tags>
-        <title><tag><text font="bold">α Lemma</text></tag><text font="bold"> (Display with array)</text>:</title>
+        <title><tag><text font="bold">α Lemma</text></tag><text font="bold"> (Display with array):</text></title>
         <para xml:id="ThmLemma1.p1">
           <p><text font="slanted">Lemmata are indented and numbered with greek symbols.
 Also for displayed arrays of this form, it looks good:</text></p>
@@ -246,7 +246,7 @@ Also for displayed arrays of this form, it looks good:</text></p>
           <tag role="refnum">β</tag>
           <tag role="typerefnum">Lemma β</tag>
         </tags>
-        <title><tag><text font="bold">β Lemma</text></tag><text font="bold"> (Equation)</text>:</title>
+        <title><tag><text font="bold">β Lemma</text></tag><text font="bold"> (Equation):</text></title>
         <para xml:id="ThmLemma2.p1">
           <p><text font="slanted">For <verbatim font="typewriter upright">equation</verbatim>s, we decided to put the endmark after the equation
 number, which is vertically centered.
@@ -357,7 +357,7 @@ written as</text></p>
           <tag role="refnum">γ</tag>
           <tag role="typerefnum">Lemma γ</tag>
         </tags>
-        <title><tag><text font="bold">γ Lemma</text></tag><text font="bold"> (Breakstyle)</text>:</title>
+        <title><tag><text font="bold">γ Lemma</text></tag><text font="bold"> (Breakstyle):</text></title>
         <para xml:id="ThmLemma3.p1">
           <p><text font="slanted">From the predefined styles, this is exactly the case for the break-styles.
 That’s no bug, it’s LaTeX-immanent.</text></p>
@@ -400,9 +400,9 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                           </XMApp>
                         </XMApp>
                         <XMApp>
-                          <XMApp scriptpos="mid">
-                            <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
-                            <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid">∫</XMTok>
+                          <XMApp>
+                            <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                            <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid1">∫</XMTok>
                             <XMApp>
                               <XMTok fontsize="70%" meaning="partial-differential" name="partial" role="OPERATOR">∂</XMTok>
                               <XMTok font="italic" fontsize="70%" role="UNKNOWN">D</XMTok>
@@ -478,9 +478,9 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                               </XMApp>
                             </XMApp>
                             <XMApp>
-                              <XMApp scriptpos="mid">
-                                <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
-                                <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid">∫</XMTok>
+                              <XMApp>
+                                <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                                <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid1">∫</XMTok>
                                 <XMApp>
                                   <XMTok fontsize="70%" meaning="partial-differential" name="partial" role="OPERATOR">∂</XMTok>
                                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">D</XMTok>
@@ -527,7 +527,7 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                 <tag role="refnum">3</tag>
               </tags>
               <MathFork>
-                <Math tex="\displaystyle=\frac{1}{2\pi}\int\limits_{0}^{2\pi}f(z_{0}+re^{it})dt" text="absent = (1 / (2 * pi)) * ((integral _ 0) ^ (2 * pi))@(f * (z _ 0 + r * e ^ (i * t)) * differential-d@(t))" xml:id="S1.E3.m4">
+                <Math tex="\displaystyle=\frac{1}{2\pi}\int\limits_{0}^{2\pi}f(z_{0}+re^{it})dt" text="absent = (1 / (2 * pi)) * ((integral _ 0) ^ (2 * pi))@(f * (z _ 0 + r * e ^ (i * t)) * differential-d@(t))" xml:id="S1.E3.m3">
                   <XMath>
                     <XMApp>
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -544,11 +544,11 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                           </XMApp>
                         </XMApp>
                         <XMApp>
-                          <XMApp scriptpos="mid">
-                            <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
-                            <XMApp scriptpos="mid">
-                              <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
-                              <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid">∫</XMTok>
+                          <XMApp>
+                            <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                            <XMApp>
+                              <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                              <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid1">∫</XMTok>
                               <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
                             </XMApp>
                             <XMApp>
@@ -561,13 +561,13 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok font="italic" role="UNKNOWN">f</XMTok>
                             <XMDual>
-                              <XMRef idref="S1.E3.m4.1"/>
+                              <XMRef idref="S1.E3.m3.1"/>
                               <XMWrap>
                                 <XMTok role="OPEN" stretchy="false">(</XMTok>
-                                <XMApp xml:id="S1.E3.m4.1">
+                                <XMApp xml:id="S1.E3.m3.1">
                                   <XMTok meaning="plus" role="ADDOP">+</XMTok>
                                   <XMApp>
-                                    <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                                    <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                                     <XMTok font="italic" role="UNKNOWN">z</XMTok>
                                     <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
                                   </XMApp>
@@ -575,7 +575,7 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                     <XMTok font="italic" role="UNKNOWN">r</XMTok>
                                     <XMApp>
-                                      <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                                      <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                                       <XMTok font="italic" role="UNKNOWN">e</XMTok>
                                       <XMApp>
                                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -600,13 +600,13 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                 </Math>
                 <MathBranch>
                   <tr>
-                    <td align="right"/>
-                    <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S1.E3.m2">
+                    <td/>
+                    <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S1.E3.m1">
                         <XMath>
                           <XMTok meaning="equals" role="RELOP">=</XMTok>
                         </XMath>
                       </Math></td>
-                    <td align="left"><Math mode="inline" tex="\displaystyle\frac{1}{2\pi}\int\limits_{0}^{2\pi}f(z_{0}+re^{it})dt" text="(1 / (2 * pi)) * ((integral _ 0) ^ (2 * pi))@(f * (z _ 0 + r * e ^ (i * t)) * differential-d@(t))" xml:id="S1.E3.m3">
+                    <td align="left"><Math mode="inline" tex="\displaystyle\frac{1}{2\pi}\int\limits_{0}^{2\pi}f(z_{0}+re^{it})dt" text="(1 / (2 * pi)) * ((integral _ 0) ^ (2 * pi))@(f * (z _ 0 + r * e ^ (i * t)) * differential-d@(t))" xml:id="S1.E3.m2">
                         <XMath>
                           <XMApp>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -620,11 +620,11 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                               </XMApp>
                             </XMApp>
                             <XMApp>
-                              <XMApp scriptpos="mid">
-                                <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
-                                <XMApp scriptpos="mid">
-                                  <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
-                                  <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid">∫</XMTok>
+                              <XMApp>
+                                <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                                <XMApp>
+                                  <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                                  <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid1">∫</XMTok>
                                   <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
                                 </XMApp>
                                 <XMApp>
@@ -637,13 +637,13 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                 <XMTok font="italic" role="UNKNOWN">f</XMTok>
                                 <XMDual>
-                                  <XMRef idref="S1.E3.m3.1"/>
+                                  <XMRef idref="S1.E3.m2.1"/>
                                   <XMWrap>
                                     <XMTok role="OPEN" stretchy="false">(</XMTok>
-                                    <XMApp xml:id="S1.E3.m3.1">
+                                    <XMApp xml:id="S1.E3.m2.1">
                                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
                                       <XMApp>
-                                        <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                                         <XMTok font="italic" role="UNKNOWN">z</XMTok>
                                         <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
                                       </XMApp>
@@ -651,7 +651,7 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                         <XMTok font="italic" role="UNKNOWN">r</XMTok>
                                         <XMApp>
-                                          <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                                          <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                                           <XMTok font="italic" role="UNKNOWN">e</XMTok>
                                           <XMApp>
                                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -695,7 +695,7 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
           <equationgroup class="ltx_eqn_eqnarray" xml:id="S1.EGx2">
             <equation xml:id="S1.Ex4">
               <MathFork>
-                <Math tex="\displaystyle f(z)=\frac{1}{2\pi i}\int\limits_{\partial D}\frac{f(\zeta)}{%&#10;\zeta-z}d\zeta=\frac{1}{2\pi}\int\limits_{0}^{2\pi}f(z_{0}+re^{it})dt" text="f * z = (1 / (2 * pi * i)) * (integral _ (partial-differential@(D)))@(((f * zeta) / (zeta - z)) * differential-d@(zeta)) = (1 / (2 * pi)) * ((integral _ 0) ^ (2 * pi))@(f * (z _ 0 + r * e ^ (i * t)) * differential-d@(t))" xml:id="S1.Ex4.m4">
+                <Math tex="\displaystyle f(z)=\frac{1}{2\pi i}\int\limits_{\partial D}\frac{f(\zeta)}{%&#10;\zeta-z}d\zeta=\frac{1}{2\pi}\int\limits_{0}^{2\pi}f(z_{0}+re^{it})dt" text="f * z = (1 / (2 * pi * i)) * (integral _ (partial-differential@(D)))@(((f * zeta) / (zeta - z)) * differential-d@(zeta)) = (1 / (2 * pi)) * ((integral _ 0) ^ (2 * pi))@(f * (z _ 0 + r * e ^ (i * t)) * differential-d@(t))" xml:id="S1.Ex4.m3">
                   <XMath>
                     <XMApp>
                       <XMTok meaning="multirelation"/>
@@ -703,10 +703,10 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                         <XMTok font="italic" role="UNKNOWN">f</XMTok>
                         <XMDual>
-                          <XMRef idref="S1.Ex4.m4.2"/>
+                          <XMRef idref="S1.Ex4.m3.2"/>
                           <XMWrap>
                             <XMTok role="OPEN" stretchy="false">(</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="S1.Ex4.m4.2">z</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="S1.Ex4.m3.2">z</XMTok>
                             <XMTok role="CLOSE" stretchy="false">)</XMTok>
                           </XMWrap>
                         </XMDual>
@@ -725,9 +725,9 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                           </XMApp>
                         </XMApp>
                         <XMApp>
-                          <XMApp scriptpos="mid">
-                            <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
-                            <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid">∫</XMTok>
+                          <XMApp>
+                            <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                            <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid1">∫</XMTok>
                             <XMApp>
                               <XMTok fontsize="70%" meaning="partial-differential" name="partial" role="OPERATOR">∂</XMTok>
                               <XMTok font="italic" fontsize="70%" role="UNKNOWN">D</XMTok>
@@ -741,10 +741,10 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                 <XMTok font="italic" role="UNKNOWN">f</XMTok>
                                 <XMDual>
-                                  <XMRef idref="S1.Ex4.m4.1"/>
+                                  <XMRef idref="S1.Ex4.m3.1"/>
                                   <XMWrap>
                                     <XMTok role="OPEN" stretchy="false">(</XMTok>
-                                    <XMTok font="italic" name="zeta" role="UNKNOWN" xml:id="S1.Ex4.m4.1">ζ</XMTok>
+                                    <XMTok font="italic" name="zeta" role="UNKNOWN" xml:id="S1.Ex4.m3.1">ζ</XMTok>
                                     <XMTok role="CLOSE" stretchy="false">)</XMTok>
                                   </XMWrap>
                                 </XMDual>
@@ -775,11 +775,11 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                           </XMApp>
                         </XMApp>
                         <XMApp>
-                          <XMApp scriptpos="mid">
-                            <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
-                            <XMApp scriptpos="mid">
-                              <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
-                              <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid">∫</XMTok>
+                          <XMApp>
+                            <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                            <XMApp>
+                              <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                              <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid1">∫</XMTok>
                               <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
                             </XMApp>
                             <XMApp>
@@ -792,13 +792,13 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
                             <XMTok font="italic" role="UNKNOWN">f</XMTok>
                             <XMDual>
-                              <XMRef idref="S1.Ex4.m4.3"/>
+                              <XMRef idref="S1.Ex4.m3.3"/>
                               <XMWrap>
                                 <XMTok role="OPEN" stretchy="false">(</XMTok>
-                                <XMApp xml:id="S1.Ex4.m4.3">
+                                <XMApp xml:id="S1.Ex4.m3.3">
                                   <XMTok meaning="plus" role="ADDOP">+</XMTok>
                                   <XMApp>
-                                    <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                                    <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                                     <XMTok font="italic" role="UNKNOWN">z</XMTok>
                                     <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
                                   </XMApp>
@@ -806,7 +806,7 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                                     <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                     <XMTok font="italic" role="UNKNOWN">r</XMTok>
                                     <XMApp>
-                                      <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                                      <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                                       <XMTok font="italic" role="UNKNOWN">e</XMTok>
                                       <XMApp>
                                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -867,9 +867,9 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                               </XMApp>
                             </XMApp>
                             <XMApp>
-                              <XMApp scriptpos="mid">
-                                <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
-                                <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid">∫</XMTok>
+                              <XMApp>
+                                <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                                <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid1">∫</XMTok>
                                 <XMApp>
                                   <XMTok fontsize="70%" meaning="partial-differential" name="partial" role="OPERATOR">∂</XMTok>
                                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">D</XMTok>
@@ -908,13 +908,13 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                       </Math></td>
                   </tr>
                   <tr>
-                    <td align="right"/>
-                    <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S1.Ex4.m2">
+                    <td/>
+                    <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S1.Ex4.m1">
                         <XMath>
                           <XMTok meaning="equals" role="RELOP">=</XMTok>
                         </XMath>
                       </Math></td>
-                    <td align="left"><Math mode="inline" tex="\displaystyle\frac{1}{2\pi}\int\limits_{0}^{2\pi}f(z_{0}+re^{it})dt" text="(1 / (2 * pi)) * ((integral _ 0) ^ (2 * pi))@(f * (z _ 0 + r * e ^ (i * t)) * differential-d@(t))" xml:id="S1.Ex4.m3">
+                    <td align="left"><Math mode="inline" tex="\displaystyle\frac{1}{2\pi}\int\limits_{0}^{2\pi}f(z_{0}+re^{it})dt" text="(1 / (2 * pi)) * ((integral _ 0) ^ (2 * pi))@(f * (z _ 0 + r * e ^ (i * t)) * differential-d@(t))" xml:id="S1.Ex4.m2">
                         <XMath>
                           <XMApp>
                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -928,11 +928,11 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                               </XMApp>
                             </XMApp>
                             <XMApp>
-                              <XMApp scriptpos="mid">
-                                <XMTok role="SUPERSCRIPTOP" scriptpos="mid2"/>
-                                <XMApp scriptpos="mid">
-                                  <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
-                                  <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid">∫</XMTok>
+                              <XMApp>
+                                <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                                <XMApp>
+                                  <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                                  <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid1">∫</XMTok>
                                   <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
                                 </XMApp>
                                 <XMApp>
@@ -945,13 +945,13 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                 <XMTok font="italic" role="UNKNOWN">f</XMTok>
                                 <XMDual>
-                                  <XMRef idref="S1.Ex4.m3.1"/>
+                                  <XMRef idref="S1.Ex4.m2.1"/>
                                   <XMWrap>
                                     <XMTok role="OPEN" stretchy="false">(</XMTok>
-                                    <XMApp xml:id="S1.Ex4.m3.1">
+                                    <XMApp xml:id="S1.Ex4.m2.1">
                                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
                                       <XMApp>
-                                        <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
                                         <XMTok font="italic" role="UNKNOWN">z</XMTok>
                                         <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
                                       </XMApp>
@@ -959,7 +959,7 @@ That’s no bug, it’s LaTeX-immanent.</text></p>
                                         <XMTok meaning="times" role="MULOP">⁢</XMTok>
                                         <XMTok font="italic" role="UNKNOWN">r</XMTok>
                                         <XMApp>
-                                          <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                                          <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
                                           <XMTok font="italic" role="UNKNOWN">e</XMTok>
                                           <XMApp>
                                             <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -1011,7 +1011,7 @@ the last one gets the endmark:</p>
         <tag role="refnum">1</tag>
         <tag role="typerefnum">Definition 1</tag>
       </tags>
-      <title class="ltx_runin"><tag><text font="bold">Definition 1</text></tag><text font="bold"> (With a list)</text>.</title>
+      <title class="ltx_runin"><tag><text font="bold">Definition 1</text></tag><text font="bold"> (With a list).</text></title>
       <para xml:id="ThmDefinition1.p1">
         <equation xml:id="S1.E4">
           <tags>
@@ -1142,7 +1142,7 @@ the last one gets the endmark:</p>
         <tag role="refnum">2</tag>
         <tag role="typerefnum">Corollary 2</tag>
       </tags>
-      <title><tag><text font="bold">2 Corollary</text></tag><text font="bold"> (Q.E.D.)</text>:</title>
+      <title><tag><text font="bold">2 Corollary</text></tag><text font="bold"> (Q.E.D.):</text></title>
       <para xml:id="ThmTheorem2.p1">
         <p><text font="slanted">And here is a trivial corollary, which is ended by
 <text class="ltx_align_floatright">q.e.d</text><text class="ltx_align_floatright"><Math mode="inline" tex="\spadesuit" text="spadesuit" xml:id="ThmTheorem2.p1.m1">
@@ -1204,9 +1204,9 @@ the last one gets the endmark:</p>
                     </XMApp>
                   </XMApp>
                   <XMApp>
-                    <XMApp scriptpos="mid">
+                    <XMApp>
                       <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
-                      <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid">∫</XMTok>
+                      <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" scriptpos="mid1">∫</XMTok>
                       <XMApp>
                         <XMTok fontsize="70%" meaning="partial-differential" name="partial" role="OPERATOR">∂</XMTok>
                         <XMTok font="italic" fontsize="70%" role="UNKNOWN">D</XMTok>
@@ -1299,7 +1299,7 @@ same line as the text ends.
         <tag role="refnum">3</tag>
         <tag role="typerefnum">Theorem 3</tag>
       </tags>
-      <title class="ltx_outdent"><tag><text font="bold">3 Theorem</text></tag>:</title>
+      <title class="ltx_outdent"><tag><text font="bold">3 Theorem</text></tag><text font="bold">:</text></title>
       <para xml:id="ThmTheorem3.p1">
         <p><text font="slanted">some text … but no end mark</text></p>
       </para>
@@ -1321,7 +1321,7 @@ name in the list of corollaries:</p>
         <tag role="refnum">4</tag>
         <tag role="typerefnum">Corollary 4</tag>
       </tags>
-      <title><tag><text font="bold">4 Corollary</text></tag><text font="bold"> (title in text)</text>:</title>
+      <title><tag><text font="bold">4 Corollary</text></tag><text font="bold"> (title in text):</text></title>
       <para xml:id="ThmTheorem4.p1">
         <p><text font="slanted">let’s do something weird:</text></p>
         <p align="center"><text font="slanted">It also works in the</text></p>
@@ -1340,7 +1340,7 @@ name in the list of corollaries:</p>
         <tag role="refnum">5</tag>
         <tag role="typerefnum">Theorem 5</tag>
       </tags>
-      <title class="ltx_outdent"><tag><text font="bold">5 Theorem</text></tag><text font="bold"> (Quote)</text>:</title>
+      <title class="ltx_outdent"><tag><text font="bold">5 Theorem</text></tag><text font="bold"> (Quote):</text></title>
       <para xml:id="ThmTheorem5.p1">
         <quote>
           <p><text font="slanted">In quote environments, the text is normally indented from left
@@ -1365,7 +1365,7 @@ manual handling:</p>
         <tag role="refnum">6</tag>
         <tag role="typerefnum">Theorem 6</tag>
       </tags>
-      <title class="ltx_outdent"><tag><text font="bold">6 Theorem</text></tag><text font="bold"> (Manual End Mark)</text>:</title>
+      <title class="ltx_outdent"><tag><text font="bold">6 Theorem</text></tag><text font="bold"> (Manual End Mark):</text></title>
       <para xml:id="ThmTheorem6.p1">
         <p><text font="slanted">a line of text with a manually set endmark  <text class="ltx_align_floatright"><Math mode="inline" tex="\diamondsuit" text="diamondsuit" xml:id="ThmTheorem6.p1.m1">
                 <XMath>
@@ -1399,7 +1399,7 @@ you can redefine it:</p>
         <tag role="refnum">4</tag>
         <tag role="typerefnum">Lemma 4</tag>
       </tags>
-      <title><tag><text font="bold">4 Lemma</text></tag>:</title>
+      <title><tag><text font="bold">4 Lemma</text></tag><text font="bold">:</text></title>
       <para xml:id="ThmLemma4.p1">
         <p><text font="slanted">another lemma, with arabic numbering … note that the numbering
 continues.</text></p>
@@ -1415,7 +1415,7 @@ eg. <verbatim font="typewriter">\Theoremname</verbatim></p>
         <tag role="refnum">7</tag>
         <tag role="typerefnum">Theorem 7</tag>
       </tags>
-      <title class="ltx_outdent"><tag><text font="bold">7 Theorem</text></tag><text font="bold"> (somename)</text>:</title>
+      <title class="ltx_outdent"><tag><text font="bold">7 Theorem</text></tag><text font="bold"> (somename):</text></title>
       <para xml:id="ThmTheorem7.p1">
         <p><text font="slanted">Obviously, we are in Theorem somename.</text></p>
       </para>
@@ -1448,7 +1448,7 @@ Note that we define a complex header text and a complex end mark.</p>
             <XMath>
               <XMTok font="medium italic" name="kappa" role="UNKNOWN">κ</XMTok>
             </XMath>
-          </Math>-Theorem)</text>:</title>
+          </Math>-Theorem):</text></title>
       <para xml:id="ThmTheorem8.p1">
         <p><text font="slanted">That’s the first Kappa-Theorem.</text></p>
       </para>
@@ -1480,7 +1480,7 @@ The first Kappa-Theorem has been given in <ref labelref="LABEL:kappatheorem1" sh
           <tag role="refnum">9</tag>
           <tag role="typerefnum">Theorem 9</tag>
         </tags>
-        <title><tag><text font="bold">Theorem 9</text></tag><text font="bold"> (Important Theorem)</text>:</title>
+        <title><tag><text font="bold">Theorem 9</text></tag><text font="bold"> (Important Theorem):</text></title>
         <para xml:id="ThmTheorem9.p1">
           <p><text font="slanted">This is an important theorem.</text></p>
         </para>
@@ -1491,7 +1491,7 @@ The first Kappa-Theorem has been given in <ref labelref="LABEL:kappatheorem1" sh
           <tag role="refnum">10</tag>
           <tag role="typerefnum">Theorem 10</tag>
         </tags>
-        <title><tag><text font="bold">Theorem 10</text></tag><text font="bold"> (More Important Theorem)</text>:</title>
+        <title><tag><text font="bold">Theorem 10</text></tag><text font="bold"> (More Important Theorem):</text></title>
         <para xml:id="ThmTheorem10.p1">
           <p><text font="slanted">This is a more important theorem.</text></p>
         </para>
@@ -1502,7 +1502,7 @@ The first Kappa-Theorem has been given in <ref labelref="LABEL:kappatheorem1" sh
           <tag role="refnum">11</tag>
           <tag role="typerefnum">Theorem 11</tag>
         </tags>
-        <title><tag><text font="bold">Theorem 11</text></tag><text font="bold"> (Even More Important Theorem)</text>:</title>
+        <title><tag><text font="bold">Theorem 11</text></tag><text font="bold"> (Even More Important Theorem):</text></title>
         <para xml:id="ThmTheorem11.p1">
           <p><text font="slanted">This is an even more important theorem.</text></p>
         </para>

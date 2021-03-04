@@ -56,6 +56,7 @@ Let('\at',      '\and');    # Actually this is different than \and, but...
 Let('\iand',    '\and');
 Let('\nand',    '\and');
 Let('\lastand', '\and');
+Let('\AND',     '\and');
 
 NewCounter('inst', 'document');
 DefMacro('\institute{}',
@@ -117,4 +118,3 @@ sub relocateInstitute {
   return; }
 
 1;
-

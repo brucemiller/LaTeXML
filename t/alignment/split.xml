@@ -6,13 +6,82 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-book.css" type="text/css"/>
   <para xml:id="p1">
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx1">
+      <equation xml:id="Ch0.Ex1">
+        <MathFork>
+          <Math tex="\displaystyle AB" text="A * B" xml:id="Ch0.Ex1.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                <XMTok font="italic" role="UNKNOWN">B</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.Ex1.m1">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle B" text="B" xml:id="Ch0.Ex1.m2">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.Ex2">
+        <MathFork>
+          <Math tex="\displaystyle C\left\{\begin{aligned} &amp;D\end{aligned}\right." xml:id="Ch0.Ex2.m3">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">C</XMTok>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="true">{</XMTok>
+                <XMArray colsep="0pt" name="aligned">
+                  <XMRow>
+                    <XMCell/>
+                    <XMCell align="left">
+                      <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                    </XMCell>
+                  </XMRow>
+                </XMArray>
+              </XMWrap>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="Ch0.Ex2.m1">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle\left\{\begin{aligned} &amp;D\end{aligned}\right." xml:id="Ch0.Ex2.m2">
+                <XMath>
+                  <XMTok role="OPEN" stretchy="true">{</XMTok>
+                  <XMArray colsep="0pt" name="aligned">
+                    <XMRow>
+                      <XMCell/>
+                      <XMCell align="left">
+                        <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                      </XMCell>
+                    </XMRow>
+                  </XMArray>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+  </para>
+  <para xml:id="p2">
     <p>Equation with split; Ampersand before relation</p>
     <equation xml:id="Ch0.E1">
       <tags>
         <tag>(1)</tag>
         <tag role="refnum">1</tag>
       </tags>
-      <Math mode="display" tex="\begin{split}\displaystyle C&amp;\displaystyle=D\\&#10;&amp;\displaystyle{}+E\end{split}" text="C = D + E" xml:id="Ch0.E1.m1">
+      <Math mode="display" tex="\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E1.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -57,7 +126,7 @@
         <tag>(2)</tag>
         <tag role="refnum">2</tag>
       </tags>
-      <Math mode="display" tex="\begin{split}\displaystyle C=&amp;\displaystyle D\\&#10;&amp;\displaystyle{}+E\end{split}" text="C = D + E" xml:id="Ch0.E2.m1">
+      <Math mode="display" tex="\begin{split}C=&amp;D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E2.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -97,9 +166,9 @@
       </Math>
     </equation>
   </para>
-  <para xml:id="p2">
+  <para xml:id="p3">
     <p>Gather with split</p>
-    <equationgroup class="ltx_eqn_gather" xml:id="Ch0.S0.EGx1">
+    <equationgroup class="ltx_eqn_gather" xml:id="Ch0.S0.EGx2">
       <equation xml:id="Ch0.E3">
         <tags>
           <tag>(3)</tag>
@@ -120,7 +189,7 @@
           <tag>(4)</tag>
           <tag role="refnum">4</tag>
         </tags>
-        <Math mode="display" tex="\displaystyle\begin{split}\displaystyle C&amp;\displaystyle=D\\&#10;&amp;\displaystyle{}+E\end{split}" text="C = D + E" xml:id="Ch0.E4.m1">
+        <Math mode="display" tex="\displaystyle\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E4.m1">
           <XMath>
             <XMDual>
               <XMApp>
@@ -176,10 +245,10 @@
       </equation>
     </equationgroup>
   </para>
-  <para xml:id="p3">
+  <para xml:id="p4">
     <p>Align with split.
 Notice that the split acts like a column pair in the align.</p>
-    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx2">
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx3">
       <equation xml:id="Ch0.E6">
         <tags>
           <tag>(6)</tag>
@@ -219,7 +288,7 @@ Notice that the split acts like a column pair in the align.</p>
           <tag role="refnum">7</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle\begin{split}\displaystyle C&amp;\displaystyle=D\\&#10;&amp;\displaystyle{}+E\end{split}" text="C = D + E" xml:id="Ch0.E7.m2">
+          <Math tex="\displaystyle\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E7.m2">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -258,7 +327,7 @@ Notice that the split acts like a column pair in the align.</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}\displaystyle C&amp;\displaystyle=D\\&#10;&amp;\displaystyle{}+E\end{split}" text="C = D + E" xml:id="Ch0.E7.m1">
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E7.m1">
                 <XMath>
                   <XMDual>
                     <XMApp>
@@ -367,9 +436,9 @@ Notice that the split acts like a column pair in the align.</p>
       </equation>
     </equationgroup>
   </para>
-  <para xml:id="p4">
+  <para xml:id="p5">
     <p>2-Column align, with missing columns</p>
-    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx3">
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx4">
       <equation xml:id="Ch0.E10">
         <tags>
           <tag>(10)</tag>
@@ -525,10 +594,10 @@ Notice that the split acts like a column pair in the align.</p>
       </equation>
     </equationgroup>
   </para>
-  <para xml:id="p5">
+  <para xml:id="p6">
     <p>2-Column align with split;
 Note that you should omit double slash from last line of split!</p>
-    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx4">
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx5">
       <equation xml:id="Ch0.E13">
         <tags>
           <tag>(13)</tag>
@@ -595,7 +664,7 @@ Note that you should omit double slash from last line of split!</p>
           <tag role="refnum">14</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle\begin{split}\displaystyle E&amp;\displaystyle=F\\&#10;&amp;\displaystyle{}+G\end{split}" text="E = F + G" xml:id="Ch0.E14.m2">
+          <Math tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E14.m2">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -634,7 +703,7 @@ Note that you should omit double slash from last line of split!</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}\displaystyle E&amp;\displaystyle=F\\&#10;&amp;\displaystyle{}+G\end{split}" text="E = F + G" xml:id="Ch0.E14.m1">
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E14.m1">
                 <XMath>
                   <XMDual>
                     <XMApp>
@@ -737,8 +806,8 @@ Note that you should omit double slash from last line of split!</p>
       </equation>
     </equationgroup>
   </para>
-  <para xml:id="p6">
-    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx5">
+  <para xml:id="p7">
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx6">
       <equation xml:id="Ch0.E16">
         <tags>
           <tag>(16)</tag>
@@ -832,7 +901,7 @@ Note that you should omit double slash from last line of split!</p>
           </MathBranch>
         </MathFork>
         <MathFork>
-          <Math tex="\displaystyle\begin{split}\displaystyle E&amp;\displaystyle=F\\&#10;&amp;\displaystyle{}+G\end{split}" text="E = F + G" xml:id="Ch0.E17.m5">
+          <Math tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E17.m5">
             <XMath>
               <XMDual>
                 <XMApp>
@@ -871,7 +940,7 @@ Note that you should omit double slash from last line of split!</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}\displaystyle E&amp;\displaystyle=F\\&#10;&amp;\displaystyle{}+G\end{split}" text="E = F + G" xml:id="Ch0.E17.m3">
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E17.m3">
                 <XMath>
                   <XMDual>
                     <XMApp>
@@ -978,7 +1047,7 @@ Note that you should omit double slash from last line of split!</p>
           <tag role="refnum">19</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle\begin{split}\displaystyle L&amp;\displaystyle=M\\&#10;&amp;\displaystyle{}+N\end{split}O" text="(L = M + N) * O" xml:id="Ch0.E19.m4">
+          <Math tex="\displaystyle\begin{split}L&amp;=M\\&#10;&amp;{}+N\end{split}O" text="(L = M + N) * O" xml:id="Ch0.E19.m4">
             <XMath>
               <XMApp>
                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -1021,7 +1090,7 @@ Note that you should omit double slash from last line of split!</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}\displaystyle L&amp;\displaystyle=M\\&#10;&amp;\displaystyle{}+N\end{split}" text="L = M + N" xml:id="Ch0.E19.m1">
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}L&amp;=M\\&#10;&amp;{}+N\end{split}" text="L = M + N" xml:id="Ch0.E19.m1">
                 <XMath>
                   <XMDual>
                     <XMApp>
@@ -1151,11 +1220,11 @@ Note that you should omit double slash from last line of split!</p>
       </equation>
     </equationgroup>
   </para>
-  <para xml:id="p7">
+  <para xml:id="p8">
     <p>Multiple splits in multicolumn align.
 Note how each split block contributes to a single row, but it is
 horizontally aligned as if it were a column pair in the align.</p>
-    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx6">
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx7">
       <equation xml:id="Ch0.E21">
         <tags>
           <tag>(21)</tag>
@@ -1234,7 +1303,7 @@ horizontally aligned as if it were a column pair in the align.</p>
           <tag role="refnum">22</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle\begin{split}\displaystyle E+e+f+g&amp;\displaystyle=F\\&#10;&amp;\displaystyle{}+G\end{split}\begin{split}\displaystyle L&amp;\displaystyle=M\\&#10;&amp;\displaystyle{}+N\\&#10;&amp;\displaystyle{}+Z\end{split}" text="(E + e + f + g = F + G) * (L = M + N + Z)" xml:id="Ch0.E22.m3">
+          <Math tex="\displaystyle\begin{split}E+e+f+g&amp;=F\\&#10;&amp;{}+G\end{split}\begin{split}L&amp;=M\\&#10;&amp;{}+N\\&#10;&amp;{}+Z\end{split}" text="(E + e + f + g = F + G) * (L = M + N + Z)" xml:id="Ch0.E22.m3">
             <XMath>
               <XMApp>
                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -1332,7 +1401,7 @@ horizontally aligned as if it were a column pair in the align.</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}\displaystyle E+e+f+g&amp;\displaystyle=F\\&#10;&amp;\displaystyle{}+G\end{split}" text="E + e + f + g = F + G" xml:id="Ch0.E22.m1">
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}E+e+f+g&amp;=F\\&#10;&amp;{}+G\end{split}" text="E + e + f + g = F + G" xml:id="Ch0.E22.m1">
                 <XMath>
                   <XMDual>
                     <XMApp>
@@ -1382,7 +1451,7 @@ horizontally aligned as if it were a column pair in the align.</p>
                   </XMDual>
                 </XMath>
               </Math></td>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}\displaystyle L&amp;\displaystyle=M\\&#10;&amp;\displaystyle{}+N\\&#10;&amp;\displaystyle{}+Z\end{split}" text="L = M + N + Z" xml:id="Ch0.E22.m2">
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}L&amp;=M\\&#10;&amp;{}+N\\&#10;&amp;{}+Z\end{split}" text="L = M + N + Z" xml:id="Ch0.E22.m2">
                 <XMath>
                   <XMDual>
                     <XMApp>

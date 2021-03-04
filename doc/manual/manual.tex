@@ -205,27 +205,30 @@ conversion to \HTML, processing images, conversion to \MathML\ and so on.
 \end{description}
 \noindent The usage of these commands can be as simple as
 \begin{lstlisting}[style=shell]
-latexml doc.tex | latexmlpost --dest=doc.html -
+latexmlc doc.tex --dest=doc.html
 \end{lstlisting}
 \noindent to convert a single document into \textsc{HTML5} document,
- or as complicated as
+Or if you want to examine the \XML, for some reason (I usually do)
 \begin{lstlisting}[style=shell]
-latexml --dest=1.xml ch1
-latexml --dest=2.xml ch2
+latexml --dest=doc.xml doc ; latexmlpost doc --dest=doc.html
+\end{lstlisting}
+Or can be as complicated as
+\begin{lstlisting}[style=shell]
+# Conversion
+latexml --dest=main.xml main.tex
+latexml --dest=A.xml    A
 @ \hbox{}\hspace{1in}$\vdots$ @
-latexml --dest=b.xml b
-latexml --dest=B.bib.xml B.bib
-latexmlpost --prescan --db=my.db --dest=1.html 1
-latexmlpost --prescan --db=my.db --dest=2.html 2
+# Scan
+latexmlpost --prescan --db=my.db --dest=/site/main.html main
+latexmlpost --prescan --db=my.db --dest=/site/A.html    A
 @ \hbox{}\hspace{1in}$\vdots$ @
-latexmlpost --prescan --db=my.db --dest=b.html b
-latexmlpost --noscan --db=my.db  --dest=1.html 1
-latexmlpost --noscan --db=my.db  --dest=2.html 2
+# Pagination
+latexmlpost --noscan --db=my.db --dest=/site/main.html main
+latexmlpost --noscan --db=my.db --dest=/site/A.html    A
 @ \hbox{}\hspace{1in}$\vdots$ @
-latexmlpost --noscan --db=my.db  --dest=b.html b
 \end{lstlisting}
 \noindent to convert a whole set of documents, including a bibliography,
-into a complete interconnected site.
+into a complete interconnected site.  See \ref{usage.site} for details.
 
 How best to use the commands depends, of course, on what you
 are trying to achieve.  In the next section, we'll describe
@@ -613,7 +616,7 @@ and a composite index and bibliography.
  \item[Scanning] Secondly, all \XML\ files must be split and scanned using
   the command
   \begin{lstlisting}[style=shell]
-   latexmlpost --prescan --dbfile=%DB% --dest=%i%.xhtml %i%
+   latexmlpost --prescan --dbfile=%DB% --dest=%i%.html %i%
   \end{lstlisting}
   where \varfile{DB} names a file in which to store the scanned data.
   Other conversions, including writing the output file, are skipped in this prescanning step.
@@ -621,11 +624,56 @@ and a composite index and bibliography.
  \item[Pagination] Finally, all \XML\ files are cross-referenced and converted into
    the final format using the command
    \begin{lstlisting}[style=shell]
-     latexmlpost --noscan --dbfile=%DB% --dest=%i%.xhtml %i%
+     latexmlpost --noscan --dbfile=%DB% --dest=%i%.html %i%
    \end{lstlisting}
    which skips the unnecessary scanning step.
 \end{description}
 
+For example, consider a set of nominally stand-alone \LaTeX\ documents:
+\texttt{main} (with title page, \verb|\tableofcontents|, etc),
+\texttt{A} (with a chapter),
+\texttt{Aa} (with a section),
+\texttt{B} (with a chapter),
+\ldots and \texttt{bib} (with a \verb|\bibliography|).
+Assume that the documents use \verb|\lxDocumentID| from  \verb|\usepackage{latexml}|
+to declare ids \verb|main|, \verb|main.A|, \verb|\main.A.a|, \verb|main.B|,
+\ldots \verb|bib|, respectively.
+And, of course, you'll have to arrange for appropriate counters to be initialized appropriately,
+if needed.
+
+Now, processing the documents with  the following commands
+\begin{lstlisting}[style=shell]
+# Conversion
+latexml --dest=main.xml main.tex
+latexml --dest=A.xml    A
+latexml --dest=Aa.xml   Aa
+latexml --dest=B.xml    B
+@ \hbox{}\hspace{1in}$\vdots$ @
+latexml --dest=bib.xml  bib
+# Scan
+latexmlpost --prescan --db=my.db --dest=/site/main.html main
+latexmlpost --prescan --db=my.db --dest=/site/A.html    A
+latexmlpost --prescan --db=my.db --dest=/site/Aa.html   Aa
+latexmlpost --prescan --db=my.db --dest=/site/B.html    B
+@ \hbox{}\hspace{1in}$\vdots$ @
+latexmlpost --prescan --db=my.db --dest=bib.html        bib
+# Pagination
+latexmlpost --noscan --db=my.db --dest=/site/main.html main
+latexmlpost --noscan --db=my.db --dest=/site/A.html    A
+latexmlpost --noscan --db=my.db --dest=/site/Aa.html   Aa
+latexmlpost --noscan --db=my.db --dest=/site/B.html    B
+@ \hbox{}\hspace{1in}$\vdots$ @
+latexmlpost --noscan --db=my.db --dest=bib.html        bib
+\end{lstlisting}
+This will result in a site built at \verb|/site/|, with the following implied structure:
+\begin{verbatim}
+main.html
+  A.html
+    Aa.html
+  B.html
+    ...
+  bib.html
+\end{verbatim}
 %%%----------------------------------------------------------------------
 \section{Individual Formula}\label{usage.latexmlmath}\index{latexmlmath!basic usage}
 For cases where you'd just like to convert a single formula to, say, \MathML,

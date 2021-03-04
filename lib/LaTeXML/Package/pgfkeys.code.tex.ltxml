@@ -50,12 +50,6 @@ sub pgfkeyLookup {
   my $kcs = pgfkeyCS($key);
   return (LookupDefinition($kcs) ? $kcs : ()); }
 
-# Expand like edef does (w.r.t \the)
-sub eExpand {
-  my ($tokens) = @_;
-  local $LaTeXML::NOEXPAND_THE = 1;
-  return Expand($tokens); }
-
 DefPrimitive('\pgfkeyssetvalue{}{}', sub {
     my ($stomach, $key, $value) = @_;
     $key = ToString(Expand($key));
@@ -266,7 +260,7 @@ sub pgfAssignKey {
   DefMacroI(T_CS('\pgfkeyscurrentvalue'), undef,
     ($value ? Tokens(map { ($_->getCatcode == CC_PARAM ? ($_, $_) : $_) } @value_toks)
       : ()));    # (or \pgfkeysnovalue ????
-  if (defined $value) { }                              # Got value? ok.
+  if    (defined $value) { }                           # Got value? ok.
   elsif (my $def = pgfkeyLookup($key . '/.@def')) {    # else if a default, let to it
     Let(T_CS('\pgfkeyscurrentvalue'), pgfkeyCS($key . '/.@def')); }
 
@@ -284,7 +278,7 @@ sub pgfAssignKey {
       if (IfCondition(T_CS('\ifpgfkeysfiltercontinue'))) {
         $filtered = 0; } }
     if ($filtered) { SetCondition(T_CS('\ifpgfkeysfiltercontinue'), 1); }
-    if (pgfkeyLookup($cmdkey = $key . '/.@cmd')) {    # Case 1
+    if (pgfkeyLookup($cmdkey = $key . '/.@cmd')) {                          # Case 1
       return if $filtered && testFilterPredicate($stomach, $key, 1);
       print STDERR "PROCESSING KEY $key (" . ($filtered ? 'filtered ' : '') . "case 1)\n" if $PGFKEYS_DEBUG;
       pgfHandleValue($stomach, $cmdkey); }
@@ -377,36 +371,36 @@ sub pgfHandleValue {
 our $PGF_1ARG = LaTeXML::Core::Parameters->new(
   LaTeXML::Core::Parameter->new('Until', 'Until:\pgfeov', extra => [T_CS('\pgfeov')]));
 
-DefMacro('\pgfkeysdef{}{}', sub {
-    my ($gullet, $key, $body) = @_;
+DefPrimitive('\pgfkeysdef{}{}', sub {
+    my ($stomach, $key, $body) = @_;
     $key = ToString(Expand($key));
     DefMacroI(pgfkeyCS($key . '/.@cmd'),  $PGF_1ARG, $body);
     DefMacroI(pgfkeyCS($key . '/.@body'), undef,     $body); },
   locked => 1);
 
-DefMacro('\pgfkeysedef{}{}', sub {
-    my ($gullet, $key, $body) = @_;
+DefPrimitive('\pgfkeysedef{}{}', sub {
+    my ($stomach, $key, $body) = @_;
     $key = ToString(Expand($key));
-    DefMacroI(pgfkeyCS($key . '/.@cmd'),  $PGF_1ARG, eExpand($body));
+    DefMacroI(pgfkeyCS($key . '/.@cmd'),  $PGF_1ARG, Expand($body));
     DefMacroI(pgfkeyCS($key . '/.@body'), undef,     $body); },
   locked => 1);
 
-DefMacro('\pgfkeysdefargs{}{}{}', sub {
-    my ($gullet, $key, $args, $body) = @_;
+DefPrimitive('\pgfkeysdefargs{}{}{}', sub {
+    my ($stomach, $key, $args, $body) = @_;
     $key = ToString(Expand($key));
     my $vargs = Tokens($args->unlist, T_CS('\pgfeov'));
-    DefMacroI(pgfkeyCS($key . '/.@cmd'), parseDefParameters("PGF Key $key", $vargs), $body);
-    DefMacroI(pgfkeyCS($key . '/.@args'), undef, $vargs);
-    DefMacroI(pgfkeyCS($key . '/.@body'), undef, $body); },
+    DefMacroI(pgfkeyCS($key . '/.@cmd'),  parseDefParameters("PGF Key $key", $vargs), $body);
+    DefMacroI(pgfkeyCS($key . '/.@args'), undef,                                      $vargs);
+    DefMacroI(pgfkeyCS($key . '/.@body'), undef,                                      $body); },
   locked => 1);
 
-DefMacro('\pgfkeysedefargs{}{}{}', sub {
-    my ($gullet, $key, $args, $body) = @_;
+DefPrimitive('\pgfkeysedefargs{}{}{}', sub {
+    my ($stomach, $key, $args, $body) = @_;
     $key = ToString(Expand($key));
     my $vargs = Tokens($args->unlist, T_CS('\pgfeov'));
-    DefMacroI(pgfkeyCS($key . '/.@cmd'), parseDefParameters("PGF Key $key", $vargs), eExpand($body));
-    DefMacroI(pgfkeyCS($key . '/.@args'), undef, $vargs);
-    DefMacroI(pgfkeyCS($key . '/.@body'), undef, $body); },
+    DefMacroI(pgfkeyCS($key . '/.@cmd'),  parseDefParameters("PGF Key $key", $vargs), Expand($body));
+    DefMacroI(pgfkeyCS($key . '/.@args'), undef,                                      $vargs);
+    DefMacroI(pgfkeyCS($key . '/.@body'), undef,                                      $body); },
   locked => 1);
 
 my $pgf_version_year = 2015;    # default toolchain expected
@@ -416,8 +410,8 @@ if (LookupDefinition(T_CS('\pgfversiondate'))) {
 
 # called by \pgfkeysdefnargs and \pgfkeysedefnargs
 if ($pgf_version_year >= 2018) {    # Latest tikz (in texlive 2018) has a fifth argument
-  DefMacro('\pgfkeysdefnargs@{}{}{}{}{}', sub {
-      my ($gullet, $key, $nargs, $body, $def, $body_macro) = @_;
+  DefPrimitive('\pgfkeysdefnargs@{}{}{}{}{}', sub {
+      my ($stomach, $key, $nargs, $body, $def, $body_macro) = @_;
       $key   = ToString(Expand($key));
       $nargs = ToString($nargs);
       $nargs =~ s/^#//;
@@ -426,18 +420,18 @@ if ($pgf_version_year >= 2018) {    # Latest tikz (in texlive 2018) has a fifth 
       DefMacroI(pgfkeyCS($key . '/.@args'), undef, $args);
       # (e-)Define $key/.@@body as if it were the normal macro with $n args
       DefMacroI(pgfkeyCS($key . '/.@@body'), parseDefParameters("PGF Key $key", $args),
-        (ToString($def) eq '\edef' ? eExpand($body) : $body));
+        (ToString($def) eq '\edef' ? Expand($body) : $body));
       # Define $key/.@cmd itself to indirectly call $key/.@@body
       DefMacroI(pgfkeyCS($key . '/.@cmd'), $PGF_1ARG, sub {
           (pgfkeyCS($key . '/.@@body'), $_[1]->unlist); });
       # Store the body
       # in texlive 2018, .@body needs to be expanded
       DefMacroI(pgfkeyCS($key . '/.@body'), undef,
-        (ToString($def) eq '\edef' ? eExpand($body) : $body)); },
+        (ToString($def) eq '\edef' ? Expand($body) : $body)); },
     locked => 1); }
 else {
-  DefMacro('\pgfkeysdefnargs@{}{}{}{}', sub {
-      my ($gullet, $key, $nargs, $body, $def) = @_;
+  DefPrimitive('\pgfkeysdefnargs@{}{}{}{}', sub {
+      my ($stomach, $key, $nargs, $body, $def) = @_;
       $key   = ToString(Expand($key));
       $nargs = ToString($nargs);
       $nargs =~ s/^#//;
@@ -446,7 +440,7 @@ else {
       DefMacroI(pgfkeyCS($key . '/.@args'), undef, $args);
       # (e-)Define $key/.@@body as if it were the normal macro with $n args
       DefMacroI(pgfkeyCS($key . '/.@@body'), parseDefParameters("PGF Key $key", $args),
-        (ToString($def) eq '\edef' ? eExpand($body) : $body));
+        (ToString($def) eq '\edef' ? Expand($body) : $body));
       # Define $key/.@cmd itself to indirectly call $key/.@@body
       DefMacroI(pgfkeyCS($key . '/.@cmd'), $PGF_1ARG, sub {
           (pgfkeyCS($key . '/.@@body'), $_[1]->unlist); });

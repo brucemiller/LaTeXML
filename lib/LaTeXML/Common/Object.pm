@@ -168,13 +168,13 @@ sub unlist {
 # What about Kern, Glue, Penalty ...
 
 # stubs to avoid "shallow" Fatal errors on broken documents
-sub multiply { return Dimension(0); }
-sub subtract { return Dimension(0); }
-sub add      { return Dimension(0); }
-sub negate   { return Dimension(0); }
-sub divide   { return Dimension(0); }
-sub getX     { return Dimension(0); }
-sub getY     { return Dimension(0); }
+sub multiply { return LaTeXML::Common::Dimension::Dimension(0); }
+sub subtract { return LaTeXML::Common::Dimension::Dimension(0); }
+sub add      { return LaTeXML::Common::Dimension::Dimension(0); }
+sub negate   { return LaTeXML::Common::Dimension::Dimension(0); }
+sub divide   { return LaTeXML::Common::Dimension::Dimension(0); }
+sub getX     { return LaTeXML::Common::Dimension::Dimension(0); }
+sub getY     { return LaTeXML::Common::Dimension::Dimension(0); }
 sub ptValue  { return 0.0; }
 sub valueOf  { return 0.0; }
 #**********************************************************************
@@ -255,7 +255,7 @@ defined as Constructors may leave TeX code in the value.
 =item C<< $boole = $object->equals($other); >>
 
 Returns whether $object and $other are equal.  Should perform
-a deep comparision, but the default implementation just compares
+a deep comparison, but the default implementation just compares
 for object identity.
 
 =item C<< $boole = $object->isaToken; >>

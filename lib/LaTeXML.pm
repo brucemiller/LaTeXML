@@ -30,7 +30,7 @@ use LaTeXML::Util::ObjectDB;
 use LaTeXML::Post::Scan;
 use vars qw($VERSION);
 # This is the main version of LaTeXML being claimed.
-use version; our $VERSION = version->declare("0.8.4");
+use version; our $VERSION = version->declare("0.8.5");
 use LaTeXML::Version;
 # Derived, more informative version numbers
 our $FULLVERSION = "LaTeXML version $LaTeXML::VERSION"
@@ -45,7 +45,6 @@ our $LOG_STACK = 0;
 
 # Switching to white-listing options that are important for new_latexml:
 our @COMPARABLE = qw(preload paths verbosity strict comments inputencoding includestyles documentid mathparse);
-our %DAEMON_DB = ();
 
 sub new {
   my ($class, $config) = @_;
@@ -63,12 +62,6 @@ sub new {
 
 sub prepare_session {
   my ($self, $config) = @_;
-  # TODO: The defaults feature was never used, do we really want it??
-  #0. Ensure all default keys are present:
-  # (always, as users can specify partial options that build on the defaults)
-  #foreach (keys %{$$self{defaults}}) {
-  #  $config->{$_} = $$self{defaults}->{$_} unless exists $config->{$_};
-  #}
   # 1. Ensure option "sanity"
   $self->bind_log;
   my $rv = eval { $config->check; };
@@ -192,7 +185,7 @@ sub convert {
   if ($$opts{whatsout} =~ /^archive/) {
     $$opts{archive_sitedirectory} = $$opts{sitedirectory};
     $$opts{archive_destination}   = $$opts{destination};
-    my $destination_name = $$opts{destination} ? pathname_name($$opts{destination}) : 'document';
+    my $destination_name  = $$opts{destination} ? pathname_name($$opts{destination}) : 'document';
     my $sandbox_directory = File::Temp->newdir(TMPDIR => 1);
     my $extension         = $$opts{format};
     $extension =~ s/\d+$//;
@@ -227,7 +220,7 @@ sub convert {
       my ($state) = @_;    # Sandbox state
       $$state{status} = {};
       $state->pushDaemonFrame;
-      $state->assignValue('_authlist', $$opts{authlist}, 'global');
+      $state->assignValue('_authlist',      $$opts{authlist}, 'global');
       $state->assignValue('REMOTE_REQUEST', (!$$opts{local}), 'global');
   });
 
@@ -300,7 +293,7 @@ sub convert {
 
     # Close and restore STDERR to original condition.
     my $log = $self->flush_log;
-    $serialized = $dom if ($$opts{format} eq 'dom');
+    $serialized = $dom           if ($$opts{format} eq 'dom');
     $serialized = $dom->toString if ($dom && (!defined $serialized));
     # Using the Core::Document::serialize_aux, so need an explicit encode into bytes
     $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
@@ -390,15 +383,34 @@ sub convert {
 ###########################################
 ####       Converter Management       #####
 ###########################################
+
+our %DAEMON_CACHE = ();
+our %CONFIG_CACHE = ();
+
 sub get_converter {
-  my ($self, $config) = @_;
-  # TODO: Make this more flexible via an admin interface later
-  my $key = $config->get('cache_key') || $config->get('profile') || 'custom';
-  my $d   = $DAEMON_DB{$key};
-  if (!defined $d) {
-    $d = LaTeXML->new($config->clone);
-    $DAEMON_DB{$key} = $d; }
-  return $d; }
+  my ($self, $config, $key) = @_;
+  # Default key, unless made explicit
+  if (!$key && $config) {
+    $key = $config->get('cache_key') || $config->get('profile'); }
+
+  my $converter = $key && $DAEMON_CACHE{$key};
+
+  if (!defined $converter) {
+    # Trading flexibility for performance:
+    # once a cache_key is used, it can not be redefined in the same session
+    # (and we never needed it redefine-able)
+    #
+    # Instead, once a cache_key is specified, (re)booting converter objects
+    # for that config set can be done without spending time examining options
+    # via the $CONFIG_CACHE
+    $config ||= $CONFIG_CACHE{$key};
+
+    $converter = LaTeXML->new($config->clone);
+    if ($key) {
+      # cache both converter and config, for self-contained reloading
+      $DAEMON_CACHE{$key} = $converter;
+      $CONFIG_CACHE{$key} = $config; } }
+  return $converter; }
 
 ###########################################
 ####       Helper routines            #####
@@ -460,10 +472,10 @@ sub convert_post {
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
       push(@procs, LaTeXML::Post::CrossRef->new(
-          db        => $DB, urlstyle => $$opts{urlstyle},
+          db => $DB, urlstyle => $$opts{urlstyle},
           extension => $$opts{extension},
-          ($$opts{numbersections} ? (number_sections => 1) : ()),
-          ($$opts{navtoc} ? (navigation_toc => $$opts{navtoc}) : ()),
+          ($$opts{numbersections} ? (number_sections => 1)              : ()),
+          ($$opts{navtoc}         ? (navigation_toc  => $$opts{navtoc}) : ()),
           %PostOPS)); }
     if ($$opts{picimages}) {
       require LaTeXML::Post::PictureImages;
@@ -493,20 +505,20 @@ sub convert_post {
           require LaTeXML::Post::MathML::Presentation;
           push(@mprocs, LaTeXML::Post::MathML::Presentation->new(
               linelength => $$opts{linelength},
-              (defined $$opts{plane1} ? (plane1 => $$opts{plane1}) : (plane1 => 1)),
-              ($$opts{hackplane1} ? (hackplane1 => 1) : ()),
+              (defined $$opts{plane1} ? (plane1     => $$opts{plane1}) : (plane1 => 1)),
+              ($$opts{hackplane1}     ? (hackplane1 => 1)              : ()),
               %PostOPS)); }
         elsif ($fmt eq 'cmml') {
           require LaTeXML::Post::MathML::Content;
           push(@mprocs, LaTeXML::Post::MathML::Content->new(
-              (defined $$opts{plane1} ? (plane1 => $$opts{plane1}) : (plane1 => 1)),
-              ($$opts{hackplane1} ? (hackplane1 => 1) : ()),
+              (defined $$opts{plane1} ? (plane1     => $$opts{plane1}) : (plane1 => 1)),
+              ($$opts{hackplane1}     ? (hackplane1 => 1)              : ()),
               %PostOPS)); }
         elsif ($fmt eq 'om') {
           require LaTeXML::Post::OpenMath;
           push(@mprocs, LaTeXML::Post::OpenMath->new(
-              (defined $$opts{plane1} ? (plane1 => $$opts{plane1}) : (plane1 => 1)),
-              ($$opts{hackplane1} ? (hackplane1 => 1) : ()),
+              (defined $$opts{plane1} ? (plane1     => $$opts{plane1}) : (plane1 => 1)),
+              ($$opts{hackplane1}     ? (hackplane1 => 1)              : ()),
               %PostOPS)); }
         elsif ($fmt eq 'images') {
           require LaTeXML::Post::MathImages;
@@ -652,15 +664,18 @@ sub new_latexml {
       push @pre, $pre;
     }
   }
+  my $includepathpis = !(exists $$opts{xsltparameters} &&
+    (grep { $_ eq 'LATEXML_VERSION:TEST' } @{ $$opts{xsltparameters} }));
   require LaTeXML;
   my $latexml = LaTeXML::Core->new(preload => [@pre], searchpaths => [@{ $$opts{paths} }],
     graphicspaths   => ['.'],
     verbosity       => $$opts{verbosity}, strict => $$opts{strict},
     includecomments => $$opts{comments},
+    includepathpis  => $includepathpis,
     inputencoding   => $$opts{inputencoding},
     includestyles   => $$opts{includestyles},
     documentid      => $$opts{documentid},
-    nomathparse     => $$opts{nomathparse},                           # Backwards compatibility
+    nomathparse     => $$opts{nomathparse},     # Backwards compatibility
     mathparse       => $$opts{mathparse});
 
   if (my @baddirs = grep { !-d $_ } @{ $$opts{paths} }) {
@@ -802,7 +817,7 @@ Binds STDERR to a "log" field in the $converter object
 =item C<< my $log = $converter->flush_log; >>
 
 Flushes out the accumulated conversion log into $log,
-         reseting STDERR to its usual stream.
+         resetting STDERR to its usual stream.
 
 =back
 

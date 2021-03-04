@@ -215,7 +215,8 @@ severity=4
 # I don't necessarily disagree with this policy,
 # but it seems to be itself buggy; it complains about $_->[0], eg.
 [-ValuesAndExpressions::ProhibitAccessOfPrivateData]
-
+# Ditto, seems buggy
+[-ValuesAndExpressions::ProhibitCommaSeparatedStatements]
 #======================================================================
 
 

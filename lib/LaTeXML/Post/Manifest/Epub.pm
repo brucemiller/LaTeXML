@@ -73,7 +73,8 @@ sub initialize {
   $package->setAttribute('version',           '3.0');
 
   # Metadata
-  my $document_metadata = $$self{db}->lookup("ID:" . $$self{db}{document_id});
+  my $rootentry         = $$self{db}->lookup('SITE_ROOT');
+  my $document_metadata = $$self{db}->lookup("ID:" . $rootentry->getValue('id'));
   my $document_title    = $document_metadata->getValue('title');
   $document_title = $document_title ? $document_title->textContent : 'No Title';
   my $document_authors = $document_metadata->getValue('authors') || [];

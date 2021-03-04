@@ -36,7 +36,7 @@ use base qw(LaTeXML::Common::Object);
 sub new {
   my ($class, %options) = @_;
   my $verbosity = defined $options{verbosity} ? $options{verbosity} : 0;
-  my $state = LaTeXML::Core::State->new(catcodes => 'standard',
+  my $state     = LaTeXML::Core::State->new(catcodes => 'standard',
     stomach => LaTeXML::Core::Stomach->new(verbosity => $verbosity),
     model   => $options{model} || LaTeXML::Common::Model->new());
   $state->assignValue(VERBOSITY => $verbosity,
@@ -45,6 +45,7 @@ sub new {
     'global');
   $state->assignValue(INCLUDE_COMMENTS => (defined $options{includecomments} ? $options{includecomments} : 1),
     'global');
+  $state->assignValue(INCLUDE_PATH_PIS => (defined $options{includepathpis} ? $options{includepathpis} : 1), 'global');
   $state->assignValue(DOCUMENTID => (defined $options{documentid} ? $options{documentid} : ''),
     'global');
   $state->assignValue(SEARCHPATHS => [map { pathname_absolute(pathname_canonical($_)) }
@@ -204,7 +205,7 @@ sub convertDocument {
       NoteBegin("Building");
       $model->loadSchema();                                  # If needed?
       if (my $paths = $state->lookupValue('SEARCHPATHS')) {
-        if ($state->lookupValue('INCLUDE_COMMENTS')) {
+        if ($state->lookupValue('INCLUDE_PATH_PIS')) {
           $document->insertPI('latexml', searchpaths => join(',', @$paths)); } }
       foreach my $preload_by_reference (@{ $$self{preload} }) {
         my $preload = $preload_by_reference; # copy preload value, as we want to preserve the hash as-is, for (potential) future daemon calls
@@ -258,7 +259,7 @@ sub initializeState {
   foreach my $preload (@files) {
     my ($options, $type);
     $options = $1 if $preload =~ s/^\[([^\]]*)\]//;
-    $type = ($preload =~ s/\.(\w+)$// ? $1 : 'sty');
+    $type    = ($preload =~ s/\.(\w+)$// ? $1 : 'sty');
     my $handleoptions = ($type eq 'sty') || ($type eq 'cls');
     if ($options) {
       if ($handleoptions) {

@@ -69,4 +69,191 @@
         </XMath>
       </Math></p>
   </para>
+  <para xml:id="p3">
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" tex="\mathop{A}\limits_{B}\limits^{C}\qquad\mathop{A}\limits^{C}\limits_{B}\qquad%&#10;\mathop{A}\nolimits_{B}\limits^{C}\qquad\mathop{A}\nolimits^{C}\limits_{B}" text="list@((A _ B) ^ C, (A ^ C) _ B, (A _ B) ^ C, (A ^ C) _ B)" xml:id="S0.Ex2.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="S0.Ex2.m1.1"/>
+              <XMRef idref="S0.Ex2.m1.2"/>
+              <XMRef idref="S0.Ex2.m1.3"/>
+              <XMRef idref="S0.Ex2.m1.4"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="S0.Ex2.m1.1">
+                <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="mid1">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+              </XMApp>
+              <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
+              <XMApp xml:id="S0.Ex2.m1.2">
+                <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="mid1">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+              </XMApp>
+              <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
+              <XMApp xml:id="S0.Ex2.m1.3">
+                <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="mid1">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+              </XMApp>
+              <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
+              <XMApp xml:id="S0.Ex2.m1.4">
+                <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="mid1">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex3">
+      <Math mode="display" tex="\mathop{A}\limits_{B}\nolimits^{C}\qquad\mathop{A}\limits^{C}\nolimits_{B}%&#10;\qquad\mathop{A}\nolimits_{B}\nolimits^{C}\qquad\mathop{A}\nolimits^{C}%&#10;\nolimits_{B}" text="list@((A _ B) ^ C, (A ^ C) _ B, (A _ B) ^ C, (A ^ C) _ B)" xml:id="S0.Ex3.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="S0.Ex3.m1.1"/>
+              <XMRef idref="S0.Ex3.m1.2"/>
+              <XMRef idref="S0.Ex3.m1.3"/>
+              <XMRef idref="S0.Ex3.m1.4"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="S0.Ex3.m1.1">
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="post1">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+              </XMApp>
+              <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
+              <XMApp xml:id="S0.Ex3.m1.2">
+                <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="post1">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+              </XMApp>
+              <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
+              <XMApp xml:id="S0.Ex3.m1.3">
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMApp>
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="post1">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+              </XMApp>
+              <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
+              <XMApp xml:id="S0.Ex3.m1.4">
+                <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="post1">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p4">
+    <equation xml:id="S0.Ex4">
+      <Math mode="display" tex="\mathop{\mathop{A}\limits_{B}}\limits^{C}\qquad\mathop{\mathop{A}\nolimits_{B}%&#10;}\limits^{C}\qquad\mathop{\mathop{A}\limits_{B}}\nolimits^{C}\qquad\mathop{%&#10;\mathop{A}\nolimits_{B}}\nolimits^{C}" text="list@((A _ B) ^ C, (A _ B) ^ C, (A _ B) ^ C, (A _ B) ^ C)" xml:id="S0.Ex4.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="list"/>
+              <XMRef idref="S0.Ex4.m1.1"/>
+              <XMRef idref="S0.Ex4.m1.2"/>
+              <XMRef idref="S0.Ex4.m1.3"/>
+              <XMRef idref="S0.Ex4.m1.4"/>
+            </XMApp>
+            <XMWrap>
+              <XMApp xml:id="S0.Ex4.m1.1">
+                <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                <XMApp role="BIGOP" scriptpos="mid1">
+                  <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="mid2">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+              </XMApp>
+              <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
+              <XMApp xml:id="S0.Ex4.m1.2">
+                <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+                <XMApp role="BIGOP" scriptpos="mid1">
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="post2">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+              </XMApp>
+              <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
+              <XMApp xml:id="S0.Ex4.m1.3">
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMApp role="BIGOP" scriptpos="post1">
+                  <XMTok role="SUBSCRIPTOP" scriptpos="mid2"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="mid2">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+              </XMApp>
+              <XMTok font="italic" name="qquad" role="PUNCT">  </XMTok>
+              <XMApp xml:id="S0.Ex4.m1.4">
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                <XMApp role="BIGOP" scriptpos="post1">
+                  <XMTok role="SUBSCRIPTOP" scriptpos="post2"/>
+                  <XMTok font="italic" role="BIGOP" scriptpos="post2">A</XMTok>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+                </XMApp>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+              </XMApp>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex5">
+      <Math mode="display" tex="\stackrel{{\scriptstyle C}}{{{\stackrel{{\scriptstyle B}}{{A}}}}}" text="A ^ B ^ C" xml:id="S0.Ex5.m1">
+        <XMath>
+          <XMApp role="RELOP">
+            <XMTok role="SUPERSCRIPTOP" scriptpos="mid1"/>
+            <XMApp role="RELOP">
+              <XMTok role="SUPERSCRIPTOP" scriptpos="mid3"/>
+              <XMTok font="italic" role="UNKNOWN">A</XMTok>
+              <XMTok font="italic" fontsize="70%" role="UNKNOWN">B</XMTok>
+            </XMApp>
+            <XMTok font="italic" fontsize="70%" role="UNKNOWN">C</XMTok>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
 </document>

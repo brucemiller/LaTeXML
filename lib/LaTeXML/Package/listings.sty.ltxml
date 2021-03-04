@@ -110,9 +110,9 @@ DefMacro('\ext@lstlisting', 'lol');
 AssignValue(LISTINGS_DATA_COUNTER => 0);
 
 # Defining new listing environments
-DefPrimitive('\lstnewenvironment {}[Number][]{}{}', sub {
+DefPrimitive('\lstnewenvironment {}[Number][] DefPlain DefPlain', sub {
     my ($stomach, $name, $n, $opt, $start, $end) = @_;
-    $name = ToString($name);
+    $name  = ToString($name);
     DefMacroI(T_CS("\\begin{$name}"), LaTeXML::Package::convertLaTeXArgs($n, $opt), sub {
         my ($gullet, @args) = @_;
         $STATE->getStomach->bgroup;
@@ -216,7 +216,7 @@ DefConstructor('\@@listings {}',
     . "</ltx:float>",
   properties   => sub { RefStepID('lstlisting'); },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
-  afterDigest => sub {
+  afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
     RescueCaptionCounters('lstlisting', $whatsit); });
 
@@ -252,7 +252,7 @@ sub listingsReadRawString {
     last if $until and $token->getString eq $until->getString;
     if ($mathescape && ($token->getString eq '$')) {
       if ($inmath) { $inmath = 0; $STATE = $EMPTY_CATTABLE; }
-      else { $inmath = 1; $STATE = $SAVESTATE; } }
+      else         { $inmath = 1; $STATE = $SAVESTATE; } }
     if ($inmath && $token->equals(T_BEGIN)) {
       push(@tokens, T_BEGIN, $gullet->readBalanced->unlist, T_END); }
     else {
@@ -296,7 +296,7 @@ our $lst_charmapping = { '#' => T_CS('\#'), '$' => T_CS('\textdollar'), '&' => T
   '<' => T_CS('\textless'),        '>' => T_CS('\textgreater'), '\\' => T_CS('\textbackslash'),
   '^' => T_CS('\textasciicircum'), '_' => T_CS('\textunderscore'),
   '`' => T_CS('\textquoteleft'),
-  '{' => T_CS('\textbraceleft'),   '}' => T_CS('\textbraceright'), '%' => T_CS('\%'),
+  '{' => T_CS('\textbraceleft'), '}' => T_CS('\textbraceright'), '%' => T_CS('\%'),
   '|' => T_CS('\textbar'),
   '~' => T_CS('\textasciitilde'),
 };
@@ -557,7 +557,7 @@ sub lstAddDelimiter {
     $class = $class . ToString($open) . ToString($close); # Create an artificial class for this delimiter.
     my $openTeX = ($styleTeX
       ? ($invisible ? $styleTeX : Tokens($styleTeX->unlist, $open))
-      : ($invisible ? () : $open));
+      : ($invisible ? ()        : $open));
     my $closeTeX = ($invisible ? () : $close);
     lstSetClassStyle($class, undef, begin => $openTeX, end => $closeTeX,
       class => $oldclass, cssclass => $cssclass);
@@ -582,14 +582,14 @@ sub lstDeleteDelimiterKind {
 # If type eq 'n', comments are allowed to nest!!!
 sub lst_splitDelimiters {
   my ($delims) = @_;
-  my @t  = grep { !Equals($_, T_BEGIN) } $delims->unlist;    # Remove any T_BEGIN
-  my @t1 = ();
+  my @t        = grep { !Equals($_, T_BEGIN) } $delims->unlist;    # Remove any T_BEGIN
+  my @t1       = ();
   if (scalar(@t) == 2) {
     @t1 = ($t[0]); @t = ($t[1]); }
   else {
     while (@t && !Equals($t[0], T_END)) { push(@t1, shift(@t)); }
-    @t = grep { !Equals($_, T_END) } @t; }                   # Remove any remaining T_END
-  return (Tokens(@t1), Tokens(@t)); }                        # return open & close
+    @t = grep { !Equals($_, T_END) } @t; }                         # Remove any remaining T_END
+  return (Tokens(@t1), Tokens(@t)); }                              # return open & close
 
 # Set character classes
 sub lstSetCharacterClass {
@@ -1032,7 +1032,7 @@ DefMacro('\lst@@escapeinside@ {} {} Until:\end', sub {
       $escape1 = lstDeslash($escape1);
       $escape2 = lstDeslash($escape2);
       LookupValue('LST_DELIMITERS')->{$escape1} = {
-        open => lstRegexp($escape1), close => lstRegexp($escape2),
+        open  => lstRegexp($escape1), close => lstRegexp($escape2),
         class => 'evaluate', escape => 1 };
       LookupValue('LST_CLASSES')->{evaluate}{eval} = 1; }
     return; });
@@ -1397,7 +1397,7 @@ sub TokenizeBalanced {
     elsif (T_END->equals($t))   { $level--; } }
   if ($level != 0) {    # Probably doesn't work all the time, but let's try
     my @toks = $tokens->unlist;
-    while ($level > 0) { push(@toks, T_END); $level--; }
+    while ($level > 0) { push(@toks, T_END);      $level--; }
     while ($level < 0) { unshift(@toks, T_BEGIN); $level--; }
     $tokens = Tokens(@toks); }
   return $tokens; }
@@ -1526,5 +1526,13 @@ sub lstLoadConfiguration {
 
 lstLoadConfiguration();
 
+# Also allow some internal macros which get used from sibling bindings e.g. cleveref
+DefMacro('\lst@UseHook{}','\csname\@lst hk@#1\endcsname');
+DefMacro('\lst@AddToHook{}{}',''); # ignore
+DefMacro('\lst@AddToHookExe{}{}',''); # ignore
+DefMacro('\lst@AddTo {}{}',
+    '\expandafter\gdef\expandafter#1\expandafter{#1#2}',
+    long=>1);
+DefMacro('\@lst','lst');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

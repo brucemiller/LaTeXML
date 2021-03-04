@@ -29,6 +29,21 @@ AssignValue(INPUT_ENCODING => undef);
 # And set the Mouth to simply pass-thru the utf8.
 AssignValue(PERL_INPUT_ENCODING => 'UTF8');
 
+DefPrimitive('\DeclareUnicodeCharacter Expanded {}', sub {
+    my ($stomach, $hexcode, $expansion) = @_;
+    my $char = $hexcode->toString();
+    if ($char =~ /^[0-9a-fA-F]+$/) {
+      if ((my $cp = hex($char)) <= 0x10FFFF) {
+        $char = UTF($cp);
+        AssignCatcode($char, CC_ACTIVE);
+        DefMacroI(T_ACTIVE($char), undef, $expansion); }
+      else {
+        Error('unexpected', $char, $stomach,
+          "$char too large for Unicode. Values between 0 and 10FFFF are permitted."); } }
+    else {
+      Error('unexpected', $char, $stomach,
+        "'$char' is not a hexadecimal number."); } });
+
 # Also add the uc and lc code definitions:
 our @PRECOMPUTED_UC_LC = (
   ["\x{00C1}",   193,  "\x{00E1}",   225],

@@ -32,6 +32,9 @@
   <xsl:param name="USE_NAMESPACES"  ></xsl:param>
   <xsl:param name="USE_HTML5"       >true</xsl:param>
 
+  <!-- Mobile-friendly default viewport setting. -->
+  <xsl:param name="META_VIEWPORT">width=device-width, initial-scale=1, shrink-to-fit=no</xsl:param>
+
   <xsl:template match="/" mode="doctype">
     <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html></xsl:text>
   </xsl:template>

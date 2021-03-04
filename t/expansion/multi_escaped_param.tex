@@ -1,0 +1,18 @@
+\def\firstoftwo#1#2{#1}
+\def\secondoftwo#1#2{#2}
+
+\protected\def\ifscanable#1{
+  \begingroup
+  \edef\resrvd{%
+    \def\noexpand\resrvd####1\detokenize{macro}:####2->####3&{%
+      ####1\def\string\resrvd####2{####3}}%
+    \edef\noexpand\resrvd{\noexpand\resrvd\meaning#1&}}%
+  \resrvd
+  \scantokens\expandafter{\resrvd}%
+  \expandafter\endgroup\ifx#1\resrvd
+    \expandafter\firstoftwo
+  \else
+    \expandafter\secondoftwo
+  \fi}
+test returns 1: \ifscanable\firstoftwo{1}{2}
+\bye

@@ -87,8 +87,8 @@ DefMacro('\appendices',
   '\lx@pp@appendix@begin'
     . '\if@dotoc@pp\addappheadtotoc\fi'
     . '\if@dopage@pp\appendixpage\fi'
-    . '\if@dotitle@pp\def\fnum@appendix{\lx@refnum@compose{\appendixname}{\lx@the@@{appendix}}\fi'
-    . '\if@dotitle@pp\def\fnum@toc@appendix{\lx@refnum@compose{\appendixname}{\lx@the@@{appendix}}\fi'
+    . '\if@dotitle@pp\def\fnum@appendix{\lx@refnum@compose{\appendixname}{\lx@the@@{appendix}}}\fi'
+    . '\if@dotitle@pp\def\fnum@toc@appendix{\lx@refnum@compose{\appendixname}{\lx@the@@{appendix}}}\fi'
 );
 
 # These must END appendices!!!!

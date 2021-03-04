@@ -21,6 +21,8 @@ use LaTeXML::Package;
 #   endmarks
 #   list of theorem (which should actually be covered in some postprocessor?)
 RequirePackage('amsthm');
+# but re-redefine from amsthm from LaTeX; use save note font as head font
+DefRegister('\thm@notefont' => Tokens(T_CS('\the'), T_CS('\thm@headfont')));
 
 # options....
 
@@ -113,23 +115,13 @@ DefMacro('\NoneSymbol',               'None');
 DefMacro('\NoneKeyword',              'None');
 DefRegister('\shadecolor' => Tokens());
 
-# amsthm includes headfont!
-# [and probably some others!]
-#AssignValue(THEOREM_PARAMETERS => [
-# AssignValue(THEOREM_PARAMETERS => { map { $_ => 1; }
-#       '\thm@headfont', '\thm@bodyfont', '\thm@headpunct',
-#     '\thm@styling',    '\thm@headstyling',
-#     'thm@swap',        '\thm@numbering',
-#     '\thm@prework',    '\thm@postwork',
-#     '\thm@symbol' });
-snapshotTheoremParameters(qw(
-    \thm@headfont \thm@notefont \thm@bodyfont \thm@headpunct
-    \thm@styling \thm@headstyling
-    thm@swap \thm@numbering
-    \thm@prework \thm@postwork \thm@symbol));
+# Include a few other theorem paramters in definitions
+setSavableTheoremParameters(qw(
+    \thm@headfont \thm@bodyfont \thm@headpunct
+    \thm@styling \thm@headstyling thm@swap
+    \thm@numbering \thm@prework \thm@postwork \thm@symbol));
 
 DefMacro('\theoremheaderfont{}', sub {
-    AssignValue('\thm@headfont' => $_[1]);
     AssignValue('\thm@headfont' => $_[1]); });
 
 DefMacro('\theoremseparator{}', sub {
@@ -231,7 +223,6 @@ DefPrimitive('\lx@ntheorem@newtheoremstyle{}{}{}{}{}{}', sub {
     saveTheoremStyle($name,
       '\thm@bodyfont'    => $bodyfont,
       '\thm@headfont'    => $headfont,
-      '\thm@notefont'    => $headfont,
       '\thm@headstyling' => $headstyle,
       'thm@swap'         => ToString($swap) eq 'S',
       '\thm@numbering'   => $numbering,

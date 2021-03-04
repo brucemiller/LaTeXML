@@ -124,10 +124,10 @@ DefMacro('\case{}{}', '{\textstyle\frac{#1}{#2}}');
 DefMath('\Tr', '\mathrm{Tr}', role => 'OPFUNCTION', meaning => 'trace');
 DefMath('\tr', '\mathrm{tr}', role => 'OPFUNCTION', meaning => 'trace');
 
-DefMath('\Or', '\mathrm{O}', role => "OPFUNCTION", meaning => 'Big-O');
-DefMath('\tdot Digested', "\x{2026}", operator_role => 'OVERACCENT');
-DefMath('\lshad',         "\x{27E6}", role          => 'OPEN');
-DefMath('\rshad',         "\x{27E7}", role          => 'CLOSE');
+DefMath('\Or',            '\mathrm{O}', role          => "OPFUNCTION", meaning => 'Big-O');
+DefMath('\tdot Digested', "\x{2026}",   operator_role => 'OVERACCENT');
+DefMath('\lshad',         "\x{27E6}",   role          => 'OPEN');
+DefMath('\rshad',         "\x{27E7}",   role          => 'CLOSE');
 
 DefMacroI('\dsty',  undef, '\displaystyle');
 DefMacroI('\tsty',  undef, '\textstyle');
@@ -137,7 +137,7 @@ DefMacroI('\sssty', undef, '\scriptscriptstyle');
 RawTeX('\def\pt(#1){({\it #1\/})}');
 
 # Can't really handle \llap in any sensible way...
-DefMacro('\lo',     '\llap{${}#1{}$}');
+DefMacro('\lo{}',   '\llap{${}#1{}$}');
 DefMacro('\eql',    '\llap{${}={}$}');
 DefMacro('\lsim',   '\llap{${}\sim{}$}');
 DefMacro('\lsimeq', '\llap{${}\simeq{}$}');
@@ -216,8 +216,10 @@ DefMacroI('\br', undef, '\hline');
 DefMacroI('\mr', undef, '\hline');
 
 DefMacro('\centre{}{}', '\multispan{#1}{\hfill #2\hfill}');
-DefMacro('\crule{}{}',  '\multispan{#1}{\hrulefill}');
-DefMacro('\fcrule{}',   '\multispan{#1}{\hrulefill}');        # ?
+DefMacro('\crule{}', '\multispan{#1}{\hspace*{\tabcolsep}\hrulefill
+  \hspace*{\tabcolsep}}');
+DefMacro('\fcrule{}', '\multispan{#1}{\hrulefill}');    # ?
+
 #?
 Let('\ms',         '\,');
 Let('\bs',         '\:');

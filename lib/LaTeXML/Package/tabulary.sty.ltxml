@@ -31,19 +31,19 @@ DefConstructor('\@@tabulary{Dimension}[] Undigested DigestedBody',
 
 # Like l,c,r,j, but set like p w/o explicit width...
 DefColumnType('L', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN),
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),
       after => Tokens(T_END),
       align => 'left'); return; });
 DefColumnType('C', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN),
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),
       after => Tokens(T_END),
       align => 'center'); return; });
 DefColumnType('R', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN),
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),
       after => Tokens(T_END),
       align => 'right'); return; });
 DefColumnType('J', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\tabularcell@hbox'), T_BEGIN),
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),
       after => Tokens(T_END),
       align => 'justify'); return; });
 

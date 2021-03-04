@@ -1,3 +1,33 @@
+0.8.5 2020-11-17
+      - Acknowledging his many contributions to LaTeXML,
+        Deyan Ginev is recognized as a co-developer.
+      - A large variety of robustness, fidelity and portability patches:
+        reduced errors & warnings, more consistent ids, formatting,
+      - Improved TeX fidelity, including l3kernel simulation,
+        while maintaining backwards compatibility (latex2, 2e).
+      - Enhanced declaration & preservation of math semantics,
+        improved tools for parallel markup
+        Enhanced semantics of siunitx, physics
+      - improved support for lists (enumitem), theorems, cleveref, listings, nicefrac,
+        multiple bibliographies, tikz/pgf, multiple bibliographies, JATS,
+        multi-document site generation; including supporting more options.
+      - "Raw" style files now processed by default when in source document's directory
+      - new bindings: aastex63.cls, aipproc.sty, physics.sty,
+        pgfmathcalc.code.tex, pgfutil-common.tex
+      - Experimental features:
+        * math lexemes: exports math as non-semantic tokens for data mining experiments;
+          simplfied format avoid introducing inferred semantics
+        * accessibility annotations
+
+      Thanks to Deyan Ginev and Tom Wiesing,
+      as well as reports and patches from: Alex Bobrikovich, Alf Eaton, Andrew Tonks,
+      Ben Firshman, Christoph Hauert, Clement Pit-Claudel, Corentin Cadiou, David Poole,
+      Evgeny Epifanovsky, Hans Olsson, Henrikt Tidefelt, HughP, Klaus Lang, Marcin Kardas,
+      Matteo Secli, Michael Kohlhase, Michael Petullo, Paolo Brasolin, Pavel Krivitsky,
+      Reini Urban, Scott Walter, Siefried Zoetzche, Slava, Stephen Kellat, Tim Prescott,
+      VB24, adhilton, ghost, giovanni111, goska, jakshotton, kmcnaught, linwaytin, luclaurent
+      matthuszagh, nennigb, pksweby, samurdhilbk, stef30360.
+
 0.8.4 2019-06-27
       - Various fidelity and robustness improvements, along with more test cases
       - Improved source locators for debugging and other purposes.

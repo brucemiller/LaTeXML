@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-/=====================================================================\ 
+/=====================================================================\
 |  LaTeXML-structure-xhtml.xsl                                        |
 |  Converting documents structure to xhtml                            |
 |=====================================================================|
@@ -107,7 +107,7 @@
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
       <xsl:if test="@name">
-        <xsl:element name="h6" namespace="{$html_ns}">  
+        <xsl:element name="h6" namespace="{$html_ns}">
           <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
           <xsl:attribute name="class">ltx_title ltx_title_abstract</xsl:attribute>
           <xsl:apply-templates select="@name">
@@ -136,7 +136,7 @@
       </xsl:apply-templates>
       <xsl:if test="@name">
         <xsl:text>&#x0A;</xsl:text>
-        <xsl:element name="h6" namespace="{$html_ns}">  
+        <xsl:element name="h6" namespace="{$html_ns}">
           <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
           <xsl:attribute name="class">ltx_title ltx_title_acknowledgements</xsl:attribute>
           <xsl:apply-templates select="@name">
@@ -256,7 +256,7 @@
       </xsl:choose>
     </func:result>
   </func:function>
-  
+
   <!-- Attempt computing level based on "known" structural elements -->
   <func:function name="f:seclev-aux">
     <xsl:param name="name"/>
@@ -304,7 +304,7 @@
   <xsl:template match="ltx:title">
     <xsl:param name="context"/>
     <!-- Skip title, if the parent has a titlepage, or if writing a cv! -->
-    <xsl:if test="not(parent::*/child::ltx:titlepage)">    
+    <xsl:if test="not(parent::*/child::ltx:titlepage)">
       <xsl:text>&#x0A;</xsl:text>
       <!-- In html5, could have wrapped in hgroup, but that was deprecated -->
       <xsl:call-template name="maketitle">
@@ -390,9 +390,10 @@
       <xsl:call-template name="authors">
         <xsl:with-param name="context" select="$context"/>
       </xsl:call-template>
-      <xsl:apply-templates select="../ltx:date" mode="intitle">
+      <xsl:call-template name="dates">
         <xsl:with-param name="context" select="$context"/>
-      </xsl:apply-templates>
+        <xsl:with-param name="dates" select="../ltx:date"/>
+      </xsl:call-template>
     </xsl:if>
     <xsl:apply-templates select="." mode="end">
       <xsl:with-param name="context" select="$context"/>
@@ -416,9 +417,10 @@
             </xsl:apply-templates>
           </xsl:element>
         </xsl:if>
-      <xsl:apply-templates select="ltx:date" mode="intitle">
+      <xsl:call-template name="dates">
         <xsl:with-param name="context" select="$context"/>
-      </xsl:apply-templates>
+        <xsl:with-param name="dates" select="ltx:date"/>
+      </xsl:call-template>
     </xsl:element>
   </xsl:template>
 
@@ -578,7 +580,7 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
-      <xsl:element name="a" namespace="{$html_ns}">      
+      <xsl:element name="a" namespace="{$html_ns}">
         <xsl:attribute name="href"><xsl:value-of select="concat('mailto:',text())"/></xsl:attribute>
         <xsl:apply-templates>
           <xsl:with-param name="context" select="$innercontext"/>
@@ -602,7 +604,7 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
-      <xsl:element name="a" namespace="{$html_ns}">      
+      <xsl:element name="a" namespace="{$html_ns}">
         <xsl:attribute name="href"><xsl:value-of select="text()"/></xsl:attribute>
         <xsl:apply-templates>
           <xsl:with-param name="context" select="$innercontext"/>
@@ -644,23 +646,36 @@
   <xsl:preserve-space elements="ltx:date"/>
   <xsl:template match="ltx:date"/>
 
+  <xsl:template name="dates">
+    <xsl:param name="context"/>
+    <xsl:param name="dates" select="ltx:date"/>
+    <xsl:if test="$dates and string($dates)">
+      <xsl:text>&#x0A;</xsl:text>
+      <!-- Originally, html5 seemed to suggest we might use h2 here, but that is retracted-->
+      <xsl:element name="div" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_dates</xsl:attribute>
+        <xsl:apply-templates select="." mode="begin">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:text>(</xsl:text>
+        <xsl:apply-templates select="$dates" mode="intitle">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:text>)</xsl:text>
+        <xsl:apply-templates select="." mode="end">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+      </xsl:element>
+    </xsl:if>
+  </xsl:template>
+
   <xsl:template match="ltx:date" mode="intitle">
     <xsl:param name="context"/>
-    <xsl:text>&#x0A;</xsl:text>
-    <!-- Originally, html5 seemed to suggest we might use h2 here, but that is retracted-->
-    <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes"/>
-      <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="//ltx:document/ltx:date/node()">
-        <xsl:with-param name="context" select="$context"/>
-      </xsl:apply-templates>
-      <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
-      </xsl:apply-templates>
-    </xsl:element>
+    <xsl:if test="@name"><xsl:value-of select="@name"/><xsl:text>: </xsl:text></xsl:if>
+    <xsl:apply-templates select="node()">
+      <xsl:with-param name="context" select="$context"/>
+    </xsl:apply-templates>
+    <xsl:if test="following-sibling::ltx:date"><xsl:text>; </xsl:text></xsl:if>
   </xsl:template>
 
   <xsl:preserve-space elements="ltx:subtitle"/>

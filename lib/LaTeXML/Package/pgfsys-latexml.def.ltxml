@@ -24,21 +24,14 @@ use LaTeXML::Util::Image;
 use List::Util qw(min max);
 #=====================================================================
 # TODO:
-# * Need to be consistent about when things like pgf_scopecount, etc are bumped
 # * ALL \pgfsys@<drivercmd> level commands should be Constructors
 #   or expand into Constructors, which must yeild the svg
 #   AND revert into the original \pgfsys@<drivercmd>
 #   so that image generation can work.
-# * Since \pgfsys@literal CAN defer the evaluation of its argument,
-#   (or even discard it?) any such counter maintenance has to be done outside of it.
+# * Note \pgfsys@literal CAN defer the evaluation of its argument,
+#   (or even discard?), so be VERY aware of expansion/digestion/ingestion timing
 #=====================================================================
 # Utilities
-sub addToCount {
-  my ($reg, $value, $option) = @_;
-  $option = 'local' if !$option;
-  AssignValue($reg => (LookupValue($reg) || 0) + $value, $option);
-  return; }
-
 sub SVGNextObject {
   my $n = (LookupValue('svg_objcount') || 0) + 1;
   AssignValue(svg_objcount => $n, 'global');
@@ -50,12 +43,11 @@ sub SVGNextObject {
 
 sub installPGFCommands {
   # Local definitions.
-  Let(T_CS('\hbox'),   T_CS('\lxSVG@hbox'));
-  Let(T_CS('\vbox'),   T_CS('\lxSVG@vbox'));
   Let(T_CS('\lower'),  T_CS('\lxSVG@lower'));
   Let(T_CS('\raise'),  T_CS('\lxSVG@raise'));
   Let(T_CS('\hskip'),  T_CS('\lxSVG@hskip'));
   Let(T_CS('\halign'), T_CS('\lxSVG@halign'));
+  Let('\ignorespaces', '\lx@inpgf@ignorespaces');    # Use local defn
   AssignValue(TEXT_MODE_BINDINGS => []);
   return; }
 
@@ -66,9 +58,8 @@ DefPrimitive('\lxSVG@installcommands', sub { installPGFCommands(); });
 DefPrimitive('\lx@inpgf@ignorespaces SkipSpaces', sub { (); });
 # Order might matter here
 DefMacro('\lxSVG@picture', sub {
-    Let('\ignorespaces', '\lx@inpgf@ignorespaces');    # Use local defn
-    AssignValue('pgf_SVGpath' => '', 'global');
-    (T_CS('\begingroup'), T_CS('\lxSVG@installcommands'),
+    (T_CS('\lxSVG@clearpath'),
+      T_CS('\begingroup'), T_CS('\lxSVG@installcommands'),
       #        T_CS('\pgfsysprotocol@setcurrentprotocol'), T_CS('\pgfutil@empty')
     ); });
 
@@ -94,8 +85,10 @@ DefConstructor('\lxSVG@insertpicture{}',
       viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
       overflow => "visible");
     $document->openElement('svg:g',
-      transform => "matrix(1 0 0 -1 0 $props{flipnmove})");
+      transform   => "matrix(1 0 0 -1 0 $props{flipnmove})",
+      _scopebegin => 1);
     $document->absorb($content);
+### Handled by \lxSVG@closegroups ???
     while ($document->maybeCloseElement('svg:g')) { }
     #                 $document->closeElement('svg:g');
     $document->closeElement('svg:svg');
@@ -110,7 +103,7 @@ DefConstructor('\lxSVG@insertpicture{}',
     my $miny   = LookupValue('\pgf@picminy')->subtract($margin);
     my $width  = LookupValue('\pgf@picmaxx')->add($margin2);
     my $height = LookupValue('\pgf@picmaxy')->add($margin2);
-    my $w      = max($width->pxValue, 1);
+    my $w      = max($width->pxValue,  1);
     my $h      = max($height->pxValue, 1);
     # Note viewbox is minx, miny, width, height (NOT maxx,maxy!)
     $whatsit->setProperty(minx      => $minx->pxValue);
@@ -140,11 +133,42 @@ DefParameterType('SVGMoveableBox', sub {
     Error(":expected:<box>  A <svghbox> was supposed to be here, got "
         . Stringify($box))
       unless $box && $box->isa('LaTeXML::Core::Whatsit')
-      && ($box->getDefinition->getCSName =~ /^(\\lxSVG\@hbox||)$/);
+      && ($box->getDefinition->getCSName =~ /^(\\hbox||)$/);
     $box; });
 
 # Try to avoid errors inserting random boxes (esp. ltx:text)(Is this safe?)
-Tag('svg:switch', autoOpen => 1, autoClose => 1);    # ?
+Tag('svg:switch', autoOpen => 1, autoClose => 1,
+  afterClose => \&collapseSVGSwitch);    # ?
+
+# Remove empty <svg:switch><svg:foreignObject> or those that contain only <p/>
+# Possibly could incorporate the collapse when it contains only svg elements?
+sub collapseSVGSwitch {
+  my ($doc, $node) = @_;
+  my ($fo,  @rest) = element_nodes($node);
+  return if !$fo || ($doc->getNodeQName($fo) ne 'svg:foreignObject')
+    ;    ####    || scalar(@rest);    # Expect single svg:foreignObject
+  my @fo_c = element_nodes($fo);
+  if (scalar(@fo_c) == 0) {    # Empty?
+    if (scalar(@rest)) {       # Extra stuff after empty foreignObject?
+      $doc->replaceNode($node, @rest); }
+    else {
+      $doc->removeNode($node); } }    # Else just remove whole thing
+                                      # Else, single <p> element ?
+  elsif ((scalar(@fo_c) == 1) && ($doc->getNodeQName($fo_c[0]) eq 'ltx:p')) {
+    my @p_c = element_nodes($fo_c[0]);
+    if (scalar(@p_c) == 0) {          # or Empty <p/>?
+      $doc->removeNode($node); }
+    # Else, single ltx:picture or ltx:text ?
+    elsif (scalar(@p_c) == 1) {
+      my $tag = $doc->getNodeQName($p_c[0]);
+      if (($tag eq 'ltx:picture') || ($tag eq 'ltx:text')) {
+        my @pic_c = element_nodes($p_c[0]);
+        # With single svg:svg ?
+        if ((scalar(@pic_c) == 1) && ($doc->getNodeQName($pic_c[0]) eq 'svg:svg')) {
+          $doc->replaceNode($node, element_nodes($pic_c[0])); } }
+  } }
+  return; }
+
 Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
   afterClose => sub {
     my ($document, $node, $whatsit) = @_;
@@ -152,7 +176,11 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
     if ($whatsit) {
       my ($w, $h, $d) = $whatsit->getSize;
       $node->setAttribute(width  => $w->toAttribute)          unless $node->hasAttribute('width');
-      $node->setAttribute(height => $h->add($d)->toAttribute) unless $node->hasAttribute('height'); } });
+      $node->setAttribute(height => $h->add($d)->toAttribute) unless $node->hasAttribute('height');
+      # Odd, sometimes needed, sometimes too much (vtop type situations?)
+      if ($d->ptValue < 10) {    # Random heuristic
+        $node->setAttribute(y => $d->negate->toAttribute) unless $node->hasAttribute('y'); }
+      $node->setAttribute(overflow => 'visible'); } });
 
 # Check whether a svg:foreignObject is open,
 # but don't check beyond an svg:svg node, in case we're nested.
@@ -161,7 +189,7 @@ sub foreignObjectCheck {
   my $node = $doc->getNode;
   while ($node) {
     my $n = $doc->getNodeQName($node);
-    return if $n eq 'svg:svg';
+    return       if $n eq 'svg:svg';
     return $node if $n eq 'svg:foreignObject';
     $node = $node->parentNode; }
   return; }
@@ -169,9 +197,7 @@ sub foreignObjectCheck {
 DefConstructor('\lxSVG@raise Dimension SVGMoveableBox', sub {
     my ($doc, $dim, $box) = @_;
     if (foreignObjectCheck($doc)) {
-      $doc->openElement('ltx:text',
-        yoffset      => $dim->negate->pxValue . 'px',
-        _noautoclose => '1');
+      $doc->openElement('ltx:text', yoffset => $dim->negate->pxValue . 'px');
       $doc->absorb($box);
       $doc->closeElement('ltx:text'); }
     else { $doc->absorb($box); } },
@@ -181,9 +207,7 @@ DefConstructor('\lxSVG@raise Dimension SVGMoveableBox', sub {
 DefConstructor('\lxSVG@lower Dimension SVGMoveableBox', sub {
     my ($doc, $dim, $box) = @_;
     if (foreignObjectCheck($doc)) {
-      $doc->openElement('ltx:text',
-        yoffset      => $dim->pxValue . 'px',
-        _noautoclose => '1');
+      $doc->openElement('ltx:text', yoffset => $dim->pxValue . 'px');
       $doc->absorb($box);
       $doc->closeElement('ltx:text'); }
     else { $doc->absorb($box); } },
@@ -193,42 +217,12 @@ DefConstructor('\lxSVG@lower Dimension SVGMoveableBox', sub {
 DefConstructor('\lxSVG@hskip Glue', sub {
     my ($doc, $skip) = @_;
     if (foreignObjectCheck($doc)) {
-      $doc->openElement('ltx:text',
-        'xoffset'      => $skip->pxValue . 'px',
-        '_noautoclose' => '0'); } },
-  alias => '\hskip');
+      $doc->openElement('ltx:text', 'xoffset' => $skip->pxValue . 'px'); } },
+  alias      => '\hskip',
+  properties => sub { (width => $_[1], isSpace => 1); });
 
-# Like regular \hbox, \vbox, but we don't want any extra element around it.
-DefConstructor('\lxSVG@hbox BoxSpecification HBoxContents', '#2',
-  mode => 'text', bounded => 1,
-  # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
-  # And also things like \centerline that will end up bumping up to block level!
-  sizer        => '#2',
-  alias        => '\hbox',
-  beforeDigest => sub { reenterTextMode(); },
-  afterDigest  => sub {
-    my ($stomach, $whatsit) = @_;
-    my $spec = $whatsit->getArg(1);
-    my $box  = $whatsit->getArg(2);
-    if (my $w = GetKeyVal($spec, 'to')) {
-      $whatsit->setWidth($w); }
-    elsif (my $s = GetKeyVal($spec, 'spread')) {
-      $whatsit->setWidth($box->getWidth->add($s)); }
-    return; });
-
-DefConstructor('\lxSVG@vbox BoxSpecification VBoxContents', '#2',
-  sizer       => '#2',
-  alias       => '\vbox',
-  afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $spec = $whatsit->getArg(1);
-    my $box  = $whatsit->getArg(2);
-    if (my $h = GetKeyVal($spec, 'to')) {
-      $whatsit->setHeight($h); }
-    elsif (my $s = GetKeyVal($spec, 'spread')) {
-      $whatsit->setHeight($box->getHeight->add($s)); }
-    return; },
-  mode => 'text');
+DefMacroI('\pgf@shift@baseline',         undef, '0pt');
+DefMacroI('\pgf@shift@baseline@smuggle', undef, '0pt');
 
 #=====================================================================#
 # 1. Beginning and ending a stream ===================================#
@@ -241,64 +235,33 @@ DefMacro('\pgfsys@typesetpicturebox{}', <<'EoTeX');
    \wd#1=\pgf@picmaxx%
    \dp#1=0pt%
    \leavevmode%\message{width: \the\pgf@picmaxx, height:\the\pgf@picmaxy}%%
-   \lxSVG@insertpicture{\box#1\lxSVG@endgroups}%
+   \lxSVG@insertpicture{\box#1\lxSVG@closescope}%
 EoTeX
 
 DefMacro('\pgfsys@beginpicture', '');
 DefMacro('\pgfsys@endpicture',   '');
 
-# # Note that this is overly generous with svg:foreignObject.
-# # It is used to recursively contain svg:svg elements
-# # also simple strings end up there (they _could_ have exotic latexml attributes...)
 DefConstructor('\pgfsys@hbox{Number}', sub {
     my ($doc, $boxnumber, %prop) = @_;
     my $box = $prop{thebox};
     return unless $box;
     my $font = $box->getFont;
-    my ($w, $h, $d) = $box->getSize;
+    my ($w,  $h,  $d)  = $box->getSize;
     my ($fw, $fh, $fd) = $font && $font->getNominalSize;
     # Fishing for the correct y position (maybe w/o the depth?)
     #    my $y = $h->pxValue;   # Seemingly should NOT have ->add($d)
     my $y = $h->add(($font ? $fd : $d))->pxValue;    # Seemingly should NOT have ->add($d)
-           # But if the box's height has been set to 0, still need adjustment; Use font?
+        # But if the box's height has been set to 0, still need adjustment; Use font?
     $y = $fh->add($fd)->pxValue if !$y && $font;    # Seemingly SHOULD have ->add($fd)
     $doc->openElement('svg:g',
-      transform => 'matrix(1 0 0 -1 0 ' . $y . ')',
-      class     => 'ltx_svg_fog');
-    my $strokeattr = $doc->findnode('ancestor-or-self::*[@stroke][1]/@stroke', $doc->getElement);
-    my $sw         = $doc->openElement('svg:switch');
-    my $H          = $h->add($d)->pxValue;
-    my $fo         = $doc->openElement('svg:foreignObject',
-      # often the size is set to 0, which inhibits display COMPLETELY!
-      # Using 100% works, though, and seems apparently best to use for height all the time(?)
-      width    => $w->pxValue || '100%',
-      height   => '100%',
-      overflow => 'visible',
-      color    => $strokeattr && $strokeattr->getValue);
-    my $p = $doc->openElement('ltx:p');
+      transform    => 'matrix(1 0 0 -1 0 ' . $y . ')',
+      _noautoclose => 1,
+      class        => 'ltx_svg_fog');
     $doc->absorb($box);
-    $doc->maybeCloseElement('ltx:text');
-    # If the nodes we just created are still there & open (see halign)
-    # then close them now.
-    $doc->maybeCloseElement('ltx:p');
-    if (my $n = $doc->isCloseable('svg:foreignObject')) {
-      if ($n->isSameNode($fo)) {
-        $doc->closeElement('svg:foreignObject');
-        $doc->closeElement('svg:switch');
-        $doc->closeElement('svg:g');
-        # Check the children of the inserted ltx:p
-        # We should at least try to denest svg ?
-        # If svg:switch/svg:foreignObject/ltx:p/ltx:picture/svg:svg/svg:g
-        # should be replaced by just the final svg:g !!! (?)
-        my @ch = element_nodes($p);
-        if ((scalar(@ch) == 1) && ($doc->getNodeQName($ch[0]) eq 'ltx:picture')) {
-          my @gch = element_nodes($ch[0]);
-          if ((scalar(@gch) == 1) && ($doc->getNodeQName($gch[0]) eq 'svg:svg')) {
-            my ($g) = element_nodes($gch[0]);
-            $doc->replaceNode($sw, $g);
-    } } } }
-    # Could conceivably be simplifying ltx:text ???
-  },
+    $doc->maybeCloseElement('ltx:g'); },
+  sizer => sub {
+    my $box = $_[0]->getProperty('thebox');
+    return $box && $box->getSize; },
   reversion => sub {
     my $box = $_[0]->getProperty('thebox');
     return ($box ? $box->revert : ()); },
@@ -324,24 +287,34 @@ sub addToSVGPath {
     AssignValue(pgf_SVGpath => $newPath, 'global'); }
   return; }
 
+DefPrimitive('\lxSVG@clearpath', sub {
+    AssignValue(pgf_SVGpath => '', 'global'); });
+DefPrimitive('\lxSVG@clearclip', sub {
+    AssignValue(pgf_clipnext => 0); });
+
 #=====================================================================
 # Implementation
+# These are listed as "protocolled", but actually only record the path
+# the path user (eg \pgfsys@stroke) is protocolled.
 
 # Start a path at a specific point (x,y) or to move the current point of the
 # current path to (x,yp) without drawing anything upon stroking (the current
 # path is 'interrupted'
 DefConstructor('\pgfsys@moveto{Dimension}{Dimension}', '',
-  afterDigest => sub { addToSVGPath('M', $_[1]->getArgs); });
+  afterDigest => sub { addToSVGPath('M', $_[1]->getArgs); },
+  sizer       => 0);
 
 # Continue the current path to (#1,#2) with a line.
 DefConstructor('\pgfsys@lineto{Dimension}{Dimension}', '',
-  afterDigest => sub { addToSVGPath('L', $_[1]->getArgs); });
+  afterDigest => sub { addToSVGPath('L', $_[1]->getArgs); },
+  sizer       => 0);
 
 # Continue the current path with a bezier curver to (#5,#6). The
 # control points of the curve are at (#1,#2) and (#3,#4).
 DefConstructor('\pgfsys@curveto{Dimension}{Dimension}{Dimension}'
     . '{Dimension}{Dimension}{Dimension}', '',
-  afterDigest => sub { addToSVGPath('C', $_[1]->getArgs); });
+  afterDigest => sub { addToSVGPath('C', $_[1]->getArgs); },
+  sizer       => 0);
 
 # Append a rectangle to the current path whose lower left corner is at
 # (#1,#2) and whose width/height is given by (#3,#4).
@@ -352,13 +325,17 @@ DefConstructor('\pgfsys@rect{Dimension}{Dimension}{Dimension}{Dimension}', '',
     addToSVGPath('h', $w);
     addToSVGPath('v', $h);
     addToSVGPath('h', $w->negate);
-    addToSVGPath('Z'); });
-
+    addToSVGPath('Z'); },
+  #  sizer => 0);
+  sizer => sub {
+    my ($x, $y, $w, $h) = $_[0]->getArgs;
+    return ($w, $h, Dimension(0)); });
 # Close the current path. This results in joining the current point of
 # the path with the point specified by the last moveto
 # operation.
 DefConstructor('\pgfsys@closepath', '',
-  afterDigest => sub { addToSVGPath('Z'); });
+  afterDigest => sub { addToSVGPath('Z'); },
+  sizer       => 0);
 
 #=====================================================================#
 #= 3. Canvas transformation ==========================================#
@@ -374,7 +351,8 @@ DefMacro('\pgfsys@transformcm {Float}{Float}{Float}{Float}{Dimension}{Dimension}
     . '\lxSVG@@transformcm{#1}{#2}{#3}{#4}{#5}{#6}');
 
 DefConstructor('\lxSVG@transformcm {Float}{Float}{Float}{Float}{Dimension}{Dimension}', '',
-  alias => '\pgfsys@transformcm');
+  alias => '\pgfsys@transformcm',
+  sizer => 0);
 
 DefMacro('\lxSVG@@transformcm {Float}{Float}{Float}{Float}{Dimension}{Dimension}', sub {
     my ($gullet, @args) = @_;
@@ -389,7 +367,8 @@ DefMacro('\lxSVG@@transformcm {Float}{Float}{Float}{Float}{Dimension}{Dimension}
 #=====================================================================#
 
 DefConstructor('\pgfsys@clipnext', '',
-  afterDigest => sub { AssignValue(pgf_clipnext => 1); });
+  afterDigest => sub { AssignValue(pgf_clipnext => 1); },
+  sizer       => 0);
 
 DefMacro('\pgfsys@stroke',     '\lxSVG@stroke\lxSVG@drawpath{fill:none}');
 DefMacro('\pgfsys@fill',       '\lxSVG@fill\lxSVG@drawpath{stroke:none}');
@@ -401,24 +380,25 @@ DefConstructor('\lxSVG@fillstroke', '', alias => '\pgfsys@fillstroke', sizer => 
 
 #======================================================================
 
-# Warning: assignments in Macro!!!
 DefMacro('\lxSVG@drawpath{}', sub {
     my ($gullet, $arg) = @_;
     my $path = LookupValue('pgf_SVGpath') || '';
-    AssignValue(pgf_SVGpath => '', 'global');
-    my $op;
     if (LookupValue('pgf_clipnext')) {
-      AssignValue(pgf_clipnext => 0);
-      addToCount('pgf_scopecount', 1, 'global');
-      $op = Invocation('\lxSVG@drawpath@clipped', $path, $arg); }
+      Tokens(
+        T_CS('\lxSVG@clearpath'),
+        T_CS('\lxSVG@clearclip'),
+        Invocation('\pgfsysprotocol@literal',
+          Invocation('\lxSVG@drawpath@clipped', $path, $arg))); }
     else {
-      $op = Invocation('\lxSVG@drawpath@unclipped', $path, $arg); }
-    Invocation('\pgfsysprotocol@literal', $op)->unlist; });
+      Tokens(
+        T_CS('\lxSVG@clearpath'),
+        Invocation('\pgfsysprotocol@literal',
+          Invocation('\lxSVG@drawpath@unclipped', $path, $arg))); } });
 
 # Seemingly can get called with no path, which is invalid
 DefConstructor('\lxSVG@drawpath@unclipped{}{}',
   '?#1(<svg:path d="#1" style="#2" />)()',
-  reversion => '');
+  reversion => '', sizer => 0);
 
 DefConstructor('\lxSVG@drawpath@clipped{}{}',
   '<svg:clipPath id="pgfcp#obj">'
@@ -426,20 +406,21 @@ DefConstructor('\lxSVG@drawpath@clipped{}{}',
     . '</svg:clipPath>'
     . '<svg:use xlink:href="##pgfpath#obj" style="#2" />'
     . '<svg:g clip-path="url(##pgfcp#obj)">',
-  reversion  => '',
+  reversion => '', sizer => 0,
   properties => { obj => sub { SVGNextObject(); } });
 
 # #======================================================================
 DefMacro('\pgfsys@discardpath', '\lxSVG@discardpath\lxSVG@@discardpath');
-DefConstructor('\lxSVG@discardpath', '', alias => '\pgfsys@discardpath', sizer => 0);
+DefConstructor('\lxSVG@discardpath', '',
+  alias => '\pgfsys@discardpath', sizer => 0);
 DefMacro('\lxSVG@@discardpath', sub {
     my $path = LookupValue('pgf_SVGpath') || '';
-    AssignValue(pgf_SVGpath => '', 'global');
     if (LookupValue('pgf_clipnext')) {
-      AssignValue(pgf_clipnext => 0);
-      addToCount('pgf_scopecount', 1, 'global');
-      Invocation('\pgfsysprotocol@literal',
-        Invocation(T_CS('\lxSVG@discardpath@clipped'), $path))->unlist; }
+      Tokens(
+        T_CS('\lxSVG@clearpath'),
+        T_CS('\lxSVG@clearclip'),
+        Invocation('\pgfsysprotocol@literal',
+          Invocation(T_CS('\lxSVG@discardpath@clipped'), $path))); }
     else {
       (); } });
 
@@ -448,7 +429,7 @@ DefConstructor('\lxSVG@discardpath@clipped{}',
     . '<svg:path d="#1" />'
     . '</svg:clipPath>'
     . '<svg:g clip-path="url(##pgfcp#obj)">',
-  reversion  => '', sizer => 0,
+  reversion => '', sizer => 0,
   properties => { obj => sub { SVGNextObject(); } });
 
 #=====================================================================#
@@ -456,52 +437,104 @@ DefConstructor('\lxSVG@discardpath@clipped{}',
 #=====================================================================#
 
 #=====================================================================
-# There's something fishy about counting <svg:g>'s.
-# They need to be kept track of consistently at the same level (macro, primitive..)
-DefPrimitive('\lxSVG@incrgroup{}', sub { addToCount('pgf_scopecount', +1, 'global'); });
-DefPrimitive('\lxSVG@decrgroup{}', sub { addToCount('pgf_scopecount', -1, 'global'); });
-
 # Open an <svg:g>, with some sort of options
-# keeping track of how many have been opened.
 # Note this is basically \pgf@sys@svg@gs
-# Note silliness if invoked outside picture.
+# but we mark the svg:g that initiates a "scope" using attribute _scopebegin
+# Since svg:g's always occur within a scope, the scope will handle closing them.
+# Note silliness of \ifpgfpicture if invoked outside picture(?)
+DefPrimitive('\lxSVG@stopexpansion', undef);
 DefMacro('\lxSVG@begingroup{}',
-  '\ifpgfpicture\lxSVG@incrgroup\pgfsysprotocol@literal{\lxSVG@begingroup@{#1}}\fi');
-
-DefMacro('\lxSVG@endgroup',
-  '\lxSVG@decrgroup\pgfsysprotocol@literal{\lxSVG@endgroup@}');
-
-DefMacro('\lxSVG@endgroups', sub {
-    map { T_CS('\lxSVG@endgroup') } 1 .. LookupValue('pgf_scopecount'); });
+  '\ifpgfpicture\pgfsysprotocol@literal{\lxSVG@begingroup@{#1}}\fi');
 
 DefConstructor('\lxSVG@begingroup@ RequiredKeyVals', sub {
     my ($doc, $kv) = @_;
-    my $g_attrs        = $kv->getKeyVals;
-    my @keys           = keys %$g_attrs;
-    my $this           = $doc->getElement;
-    my $orig_this_name = $doc->getNodeQName($this);
-    # Special case check: if we are in a latexml context, the parent svg:g is acceptable
-    if ($orig_this_name =~ /^ltx:/ && (my $g_ancestor = $doc->findnode("ancestor::svg:g", $this))) {
-      # Sometimes even when we have a parent g, there is an attribute conflict
-      #    and we need to open a new one. AND make it the current insertion point OR?!
-      my @needs_wrap = grep { $g_ancestor->hasAttribute($_) } @keys;
-      if (@needs_wrap) {    # incompatible, wrap with new g
-        $this = $doc->wrapNodes('svg:g', $g_ancestor->lastChild); }
-      else {                # compatible, reuse
-        $this = $g_ancestor; } }
-    else {                  # all other cases, just open a g.
-                            # TODO: Redundant g's get made, we can merge them on afterClose?
-      $this = $doc->openElement('svg:g'); }
-    # We have the _correct_ svg:g here, let's assign the attributes
-    foreach my $key (@keys) {
-      my $value = $kv->getValue($key);
-      $doc->setAttribute($this, $key, $value); } },
+    my $this = $doc->getElement;
+    # Special case check: if we are in a latexml context, move up to parent svg:g
+    if ($doc->getNodeQName($this) =~ /^ltx:/
+      && (my $g = $doc->findnode("ancestor::svg:g[position()=1]", $this))) {
+      $doc->openElement('svg:svg', _autoopened => 1); }
+    $doc->openElement('svg:g', $kv->getHash); },
   reversion => '', sizer => 0);
 
-DefConstructor('\lxSVG@endgroup@',
-###  '</svg:g>',
-  sub { $_[0]->maybeCloseElement('svg:g'); },
-  reversion => '', sizer => 0);
+# Collapse redundant svg:g nodes that have only certain
+# non-cummulative attributes
+Tag('svg:g', afterClose => \&collapseSVGGroup);
+my %collapsible_group_attributes = map { ($_ => 1); }
+  qw(fill fill-rule fill-opacity
+  stroke stroke-width stroke-linecap stroke-linejoin stroke-miterlimit
+  stroke-dasharray stroke-dashoffset stroke-opacity
+  color);
+
+# Collapse/remove/unwrap unneeded svg:g's to reduce depth of tree
+sub collapseSVGGroup {
+  my ($document, $node) = @_;
+  my ($nempty, $nredundant, $nmerged, $npopped, $npushed) = (0, 0, 0, 0, 0);
+  # Record the attributes on $node, for later use.
+  my %nodeattr = ();
+  foreach my $attr ($node->attributes) {
+    my $key = $attr->getName;
+    $nodeattr{$key} = $attr->getValue if ($key !~ /^_/); }
+  my @children = element_nodes($node);
+  # Remove empty svg:g children
+  foreach my $c (@children) {
+    if (($document->getNodeQName($c) eq 'svg:g') && !scalar(element_nodes($c))) {
+      $nempty++;
+      $document->removeNode($c); } }
+  @children = element_nodes($node) if $nempty;
+  # Move ahead, all leading children whose svg:g attributes completely mask $node's attributes.
+  # Could do same moving trailing children to back
+  my $c;
+  while (scalar(@children) && ($document->getNodeQName($c = $children[0]) eq 'svg:g')) {
+    my $nmasked = 0;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key !~ /^_/) && $collapsible_group_attributes{$key} && defined $nodeattr{$key}) {
+        $nmasked++; } }
+    last unless $nmasked == scalar(keys %nodeattr);              # child completely masks attr of node
+    $node->parentNode->insertBefore(shift(@children), $node);    # move it outside!
+    $npopped++; }
+  # Same story for trailing children, but move behind
+  while (scalar(@children) && ($document->getNodeQName($c = $children[-1]) eq 'svg:g')) {
+    my $nmasked = 0;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key !~ /^_/) && $collapsible_group_attributes{$key} && defined $nodeattr{$key}) {
+        $nmasked++; } }
+    last unless $nmasked == scalar(keys %nodeattr);              # child completely masks attr of node
+    $node->parentNode->insertAfter(pop(@children), $node);
+    $npushed++; }
+  # Now remove any redundant svg:g's (same attributes & values) [some left after above]
+  foreach my $c (@children) {
+    if ($c && ($document->getNodeQName($c) eq 'svg:g')) {        # for every nested svg:g
+      my $issame = 1;
+      foreach my $attr ($c->attributes) {
+        my $key = $attr->getName;
+        if (($key !~ /^_/) && ($attr->getValue ne ($nodeattr{$key} || ''))) {
+          $issame = 0; } }
+      if ($issame) {                                             # child is completely redundant.
+        $document->unwrapNodes($c);
+        $nredundant++; } } }
+  @children = element_nodes($node) if $nredundant;
+  # Could check if $node is empty now?
+  # Then if only one left, and it's attributes can be migrated to $node, unwrap it
+  if ((scalar(@children) == 1) && ($document->getNodeQName($c = $children[0]) eq 'svg:g')) {
+    my %av        = ();
+    my $mergeable = 1;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key =~ /^_/) || $collapsible_group_attributes{$key}) {
+        $av{$key} = $attr->getValue; }
+      else {
+        $mergeable = 0; } }
+    if ($mergeable) {
+      foreach my $key (sort keys %av) {
+        $nodeattr{$key} = $av{$key};
+        $node->setAttribute($key => $av{$key}); }
+      $nmerged++;
+      $document->unwrapNodes($c); } }
+###  Debug("COLLAPSE empty=$nempty, redundant=$nredundant, merged=$nmerged, popped=$npopped, pushed=$npushed")
+###    if ($nempty || $nredundant || $nmerged || $npopped || $npushed);
+  return; }
 
 #=====================================================================
 # Implementation
@@ -563,7 +596,7 @@ DefMacro('\pgfsys@color@rgb{}{}{}',
 DefMacro('\lxSVG@RGB{}{}{}',    sub { Explode(Color('rgb',  $_[1], $_[2], $_[3])->toHex); });
 DefMacro('\lxSVG@CMYK{}{}{}{}', sub { Explode(Color('cmyk', $_[1], $_[2], $_[3], $_[4])->toHex); });
 DefMacro('\lxSVG@CMY{}{}{}',    sub { Explode(Color('cmy',  $_[1], $_[2], $_[3])->toHex); });
-DefMacro('\lxSVG@GRAY{}', sub { Explode(Color('gray', $_[1])->toHex); });
+DefMacro('\lxSVG@GRAY{}',       sub { Explode(Color('gray', $_[1])->toHex); });
 
 DefMacro('\pgfsys@color@rgb@stroke{}{}{}',
   '\lxSVG@color@rgb@stroke{#1}{#2}{#3}\lxSVG@begingroup{stroke=\lxSVG@RGB{#1}{#2}{#3}}');
@@ -583,7 +616,7 @@ DefMacro('\pgfsys@color@gray@fill{}',
   '\lxSVG@color@gray@fill{#1}\lxSVG@begingroup{fill=\lxSVG@GRAY{#1}}');
 
 DefConstructor('\lxSVG@color@rgb@stroke{}{}{}', '', alias => '\pgfsys@color@rgb@stroke', sizer => 0);
-DefConstructor('\lxSVG@color@rgb@fill{}{}{}', '', alias => '\pgfsys@color@rgb@fill', sizer => 0);
+DefConstructor('\lxSVG@color@rgb@fill{}{}{}',   '', alias => '\pgfsys@color@rgb@fill', sizer => 0);
 DefConstructor('\lxSVG@color@cmyk@stroke{}{}{}{}', '', alias => '\pgfsys@color@cmyk@stroke', sizer => 0);
 DefConstructor('\lxSVG@color@cmyk@fill{}{}{}{}', '', alias => '\pgfsys@color@cmyk@fill', sizer => 0);
 DefConstructor('\lxSVG@color@cmy@stroke{}{}{}', '', alias => '\pgfsys@color@cmy@stroke', sizer => 0);
@@ -596,19 +629,22 @@ DefConstructor('\lxSVG@color@gray@fill{}',    '', alias => '\pgfsys@color@gray@f
 #====================================================================#
 
 # \pgfsys@declarepattern{name}{x1}{y1}{x2}{y2}{x step}{y step}{code}{ﬂag}
-DefMacro('\pgfsys@declarepattern{}'
-    . '{Dimension}{Dimension}{Dimension}{Dimension}{Dimension}{Dimension}'
-    . '{}{Number}', sub {
+DefMacro('\pgfsys@declarepattern{} {}{}{}{}{}{} {}{Number}', sub {
     my ($gullet, $name, $x1, $y1, $x2, $y2, $x_step, $y_step, $code, $flag) = @_;
+    my $op = ($flag->valueOf == 1 ? '\lxSVG@coloredpattern' : '\lxSVG@uncoloredpattern');
+    return Invocation('\pgfsysprotocol@literal',
+      Invocation('\lxSVG@setpattern', $x1, $y1, $x2, $y2, $x_step, $y_step),
+      Invocation($op, $name, $x_step, $y_step, $code)); });
+
+DefPrimitive('\lxSVG@setpattern {Dimension}{Dimension}{Dimension}{Dimension}{Dimension}{Dimension}', sub {
+    #    my ($gullet, $x1, $y1, $x2, $y2, $x_step, $y_step) = @_;
+    my ($stomach, $x1, $y1, $x2, $y2, $x_step, $y_step) = @_;
     AssignValue('\pgf@xa' => $x1);     AssignValue('\pgf@ya' => $y1);
     AssignValue('\pgf@xb' => $x2);     AssignValue('\pgf@yb' => $y2);
     AssignValue('\pgf@xc' => $x_step); AssignValue('\pgf@yc' => $y_step);
-    my $op = ($flag->valueOf == 1 ? '\lxSVG@coloredpattern' : '\lxSVG@uncoloredpattern');
-    return Invocation('\pgfsysprotocol@literal',
-      Invocation($op, $name, $x_step, $y_step, $code)); });
+    return; });
 
 DefMacro('\pgfsys@setpatternuncolored{}{}{}{}', sub {
-    addToCount('pgf_scopecount', 1, 'global');
     Invocation('\pgfsysprotocol@literal',
       Invocation('\lxSVG@setpatternuncolored@', @_[1 .. $#_])); });
 
@@ -624,7 +660,8 @@ DefConstructor('\lxSVG@coloredpattern{}{Dimension}{Dimension}{}',
     '</svg:pattern></svg:defs>',
   properties => {
     x_step => sub { $_[2]->pxValue; },
-    y_step => sub { $_[3]->pxValue; } });
+    y_step => sub { $_[3]->pxValue; } },
+  sizer => 0);
 
 DefConstructor('\lxSVG@uncoloredpattern{}{Dimension}{Dimension}{}',
   '<svg:defs>' .
@@ -636,7 +673,8 @@ DefConstructor('\lxSVG@uncoloredpattern{}{Dimension}{Dimension}{}',
     . '</svg:pattern></svg:defs>',
   properties => {
     x_step => sub { $_[2]->pxValue; },
-    y_step => sub { $_[3]->pxValue; } });
+    y_step => sub { $_[3]->pxValue; } },
+  sizer => 0);
 
 DefConstructor('\lxSVG@setpatternuncolored@{}{}{}{}',
   '<svg:defs><svg:pattern id="pgfupat#obj" xlink:href="##pgfpat#1">'
@@ -647,7 +685,8 @@ DefConstructor('\lxSVG@setpatternuncolored@{}{}{}{}',
     . '<svg:g fill="url(##pgfupat#obj)">',
   properties => {
     obj   => sub { SVGNextObject(); },
-    color => sub { Color('rgb', $_[2], $_[3], $_[4]); } });
+    color => sub { Color('rgb', $_[2], $_[3], $_[4]); } },
+  sizer => 0);
 
 #====================================================================#
 #= 8. Scoping =======================================================#
@@ -659,22 +698,30 @@ DefConstructor('\lxSVG@setpatternuncolored@{}{}{}{}',
 # the old values will be restored after endscope is used.
 
 # Do we really need an <svg:g> w/no attributes???
-DefMacro('\pgfsys@beginscope', '\lxSVG@beginscope\lxSVG@begingroup{}');
-DefMacro('\pgfsys@endscope',   '\lxSVG@endgroups\lxSVG@endscope');
+DefMacro('\pgfsys@beginscope',
+  '\lxSVG@beginscope\lxSVG@begingroup{_scopebegin=1}');
+DefMacro('\pgfsys@endscope',
+  '\pgfsysprotocol@literal{\lxSVG@closescope}\lxSVG@endscope');
+
+DefConstructor('\lxSVG@closescope', sub {
+    my ($doc, %props) = @_;
+    my $n = 0;
+    while (my $node = $doc->maybeCloseElement('svg:g')) {
+      $n++;
+      last if $node->getAttribute('_scopebegin'); }
+    return; },
+  sizer => 0);
 
 DefConstructor('\lxSVG@beginscope', '',
   afterDigest => sub {
     my ($stomach) = @_;
-    AssignValue(pgf_scopecount_save => LookupValue('pgf_scopecount') || 0);
-    AssignValue(pgf_scopecount      => 0, 'global');
     $stomach->begingroup; },
   alias => '\pgfsys@beginscope', sizer => 0);
 
 DefConstructor('\lxSVG@endscope', '',
   afterDigest => sub {
     my ($stomach) = @_;
-    $stomach->endgroup;
-    AssignValue(pgf_scopecount => LookupValue('pgf_scopecount_save') || 0, 'global'); },
+    $stomach->endgroup; },
   alias => '\pgfsys@endscope', sizer => 0);
 
 #=====================================================================#
@@ -733,7 +780,7 @@ DefMacro('\lxSVG@sh@create', sub {
       T_BEGIN, T_CS('\pgf@sys@shading@end@pos'), T_END,
       T_BEGIN, T_CS('\pgf@sys@shading@end@rgb'), T_END,
       T_BEGIN, T_CS('\pgf@sys@shading@end@rgb'), T_END,
-      T_END, T_BEGIN, T_END); });
+      T_END,   T_BEGIN, T_END); });
 
 DefPrimitive('\lxSVG@sh@color{Float}{Float}{Float}', sub {
     AssignValue(pgf_sh_color => Color('rgb', map { $_->valueOf } @_[1 .. $#_]));
@@ -750,7 +797,8 @@ DefConstructor('\lxSVG@sh@stop{Dimension}{Dimension}',
   properties => sub {
     my ($r, $g, $b) = LookupValue('pgf_sh_color')->rgb->components;
     (offset => $_[1]->pxValue / $_[2]->pxValue,
-      stopcolor => LookupValue('pgf_sh_color')); });
+      stopcolor => LookupValue('pgf_sh_color')); },
+  sizer => 0);
 
 DefMacro('\lxSVG@sh@interval{}{}{}{}', sub {
     (T_CS('\lxSVG@sh@color'), $_[3],
@@ -778,11 +826,13 @@ DefPrimitive('\lxSVG@sh@defstripes{}{Number}', sub {
             . ($flag->valueOf == 1 ? 'gradientTransform="rotate(90)"' : '') . '>'
             . '#stops'
             . '</svg:linearGradient></svg:defs>',
-          properties => { stops => $stops }
+          properties => { stops => $stops },
+          sizer      => 0
         );
         DefConstructor('\lxSVG@sh',
           '<svg:rect width="' . $x . '" height="' . $y . '" '
-            . 'style="fill:url(##pgfsh' . $objcount . ');stroke:none" />');
+            . 'style="fill:url(##pgfsh' . $objcount . ');stroke:none" />',
+          sizer => 0);
         DefMacro('\lxSVG@pos', sub { Invocation(T_CS('\pgfpoint'), $x, $y); });
         return; }, scope => 'global');
     return; });
@@ -801,11 +851,13 @@ DefPrimitive('\lxSVG@sh@defcircles{}', sub {
             . 'fx="' . $x . '" fy="' . $y . '">'
             . '#stops'
             . '</svg:radialGradient></svg:defs>',
-          properties => { stops => $stops }
+          properties => { stops => $stops },
+          sizer      => 0
         );
         DefConstructor('\lxSVG@sh',
           '<svg:circle cx="' . $endpos . '" cy="' . $endpos . '" r="' . $endpos . '" '
-            . 'style="fill:url(##pgfsh' . $objcount . ');stroke:none" />');
+            . 'style="fill:url(##pgfsh' . $objcount . ');stroke:none" />',
+          sizer => 0);
         DefMacro('\lxSVG@pos', sub {
             Invocation(T_CS('\pgfpoint'), 2 * $endpos, 2 * $endpos) });
         return; }, scope => 'global');
@@ -819,7 +871,8 @@ DefConstructor('\lxSVG@sh@insert{Dimension}{Dimension}{}',
 #### What's going on here? Why pt's instead of px ? (what are units?)
 ### (with px shading's way off)
     x => sub { $_[1]->ptValue; },
-    y => sub { $_[2]->ptValue; } });
+    y => sub { $_[2]->ptValue; } },
+  sizer => 0);
 
 # \lxSVG@process{Dimension}{Dimension}
 DefMacro('\lxSVG@process{}{}',
@@ -920,7 +973,7 @@ DefConstructor('\lxSVG@definemask', '', alias => '\pgfsys@definemask', sizer => 
 #= 12. Reusable objects ==============================================#
 #=====================================================================#
 
-DefConstructor('\pgfsys@invoke{}', '#1');
+DefConstructor('\pgfsys@invoke{}', '#1', sizer => 0);
 DefMacro('\pgfsys@markposition{}', '');
 
 #=====================================================================#
@@ -981,152 +1034,73 @@ RawTeX('\def\pgfsys@begininvisible#1\pgfsys@endinvisible{}');    # well...
 # disappear in the svg (overflow=visible doesn't seem to help)
 
 DefConstructor('\lxSVG@halign BoxSpecification',
-  '#body',
-  reversion => '\halign #1{#2\cr#3}',
-  #  bounded     => 1,
+  "#alignment",
+  reversion   => '\halign #1{#2\cr#3}',
+  bounded     => 1,
+  sizer       => '#1',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    my $gullet = $stomach->getGullet;
-    my $t      = $gullet->readNonSpace;
-    Error('expected', '\bgroup', $stomach, "Missing \\halign box") unless Equals($t, T_BEGIN);
-    print STDERR "\nHALIGN IN PGF!\n";
-    # Read the template up till something equivalent to \cr
-    my @template = ();
-    # Only expand certain things; See TeX book p.238
-    while (($t = $gullet->readToken) && !Equals($t, T_CS('\cr'))) {
-      if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
-        $gullet->readKeyword('=');
-        my $value = $gullet->readGlue; }     # Discard! In principle, should store in template!
-      elsif ($t->equals(T_CS('\span'))) {    # ex-span-ded next token.
-        $gullet->unread($gullet->readXToken(0)); }
-      else {
-        push(@template, $t); } }
-    # Convert the template
-    my $ismath  = $STATE->lookupValue('IN_MATH');
-    my $before  = 1;                                # true if we're before a # in current column
-    my @pre     = ();
-    my @post    = ();
-    my @cols    = ();
-    my @nonreps = ();
-    foreach my $t (@template, T_ALIGN) {            # put & at end, to save column!
-
-      if ($t->equals(T_PARAM)) {
-        $before = 0; }
-      elsif ($t->equals(T_ALIGN)) {
-        if ($before) { @nonreps = @cols; @cols = (); } # A & while we're before a column means Repeated columns
-        else {                                         # Finished column spec; add it
-              # Try some magic for math, so we can create a valid math matrix (maybe!)
-              # DAMN \halign can't be in math, anyway.
-              # So, to get a matrix, we'll have to rewrite the alignment!
-          if ($ismath) {
-            push(@pre, T_MATH); unshift(@post, T_MATH); }
-          push(@cols, { before => Tokens(stripDupMath(beforeCellUnlist(Tokens(@pre)))),
-              after => Tokens(stripDupMath(afterCellUnlist(Tokens(@post)))) });
-          @pre = @post = (); $before = 1; } }
-      elsif ($before) {
-        push(@pre, $t) if @pre || !$t->equals(T_SPACE); }
-      else {
-        push(@post, $t) if @post || !$t->equals(T_SPACE); } }
-
-    my $template = LaTeXML::Core::Alignment::Template->new((@nonreps ?
-          (columns => [@nonreps], repeated => [@cols])
-        : (columns => [@cols])));
-    #  print STDERR "Template = ".Stringify(Tokens(@template))."\n => ".$template->show."\n";
-    # Now read & digest the body.
-    # Note that the body MUST end with a \cr, and that we've made Special Arrangments
-    # with \alignment@cr to recognize the end of the \halign
-    # and sneak a \@finish@alignment in!!!!!
-    # (otherwise none of the row/column/alignment constructors know when to end, as written)
-    my $spec = $whatsit->getArg(1);
+    $stomach->bgroup;    # This will be closed by the \halign's closing }  (or will it?)
+    my $template = parseHAlignTemplate($stomach->getGullet, $whatsit);
+    my $spec     = $whatsit->getArg(1);
+    # Parse the template and initialize the Alignment object.
     tikzAlignmentBindings($template, undef,
+      #    alignmentBindings($template, undef,
       attributes => {
         width => orNull(GetKeyVal($spec, 'to')) });
-    $stomach->bgroup;    # This will be closed by the \halign's closing }
-                         # but tikz is sticking in an extra \begingroup ????
-                         #    $stomach->begingroup;
-    $gullet->unread(T_CS('\@start@alignment'));
-    $whatsit->setBody($stomach->digestNextBody, undef);    # extra undef as dummy "trailer"
-    if (my $s = GetKeyVal($spec, 'spread')) {
-      $whatsit->setWidth($whatsit->getBody->getWidth->add($s)); }
+    digestAlignmentBody($stomach, $whatsit);
+    $stomach->egroup;
     return; });
 
 sub tikzAlignmentBindings {
-  my ($template, $mode) = @_;
+  my ($template, $mode, %properties) = @_;
   $mode = LookupValue('MODE') unless $mode;
-  #  my $ismath    = $mode =~ /math$/;
-  #  my $container = ($ismath ? 'ltx:XMArray' : 'ltx:tabular');
-  #  my $rowtype   = ($ismath ? 'ltx:XMRow' : 'ltx:tr');
-  #  my $coltype   = ($ismath ? 'ltx:XMCell' : 'ltx:td');
+  my $ismath    = $mode =~ /math$/;
   my $container = 'svg:g';
   my $rowtype   = 'svg:g';
   my $coltype   = 'svg:g';
-  AssignValue(Alignment => LaTeXML::Core::Alignment->new(
-      template       => $template,
-      openContainer  => \&openTikzAlignment,
-      closeContainer => sub { $_[0]->closeElement($container); },
-      openRow        => \&openTikzAlignmentRow,
-      closeRow       => sub { $_[0]->closeElement($rowtype); },
-      openColumn     => \&openTikzAlignmentCol,
-      closeColumn    => sub { $_[0]->closeElement($coltype); }));
-  # These would MASK tikz own new bindings
-  # BUT it only seems sensible that we'll want to get tikz to call OUR bindings at some level!
-  Let(T_ALIGN,           '\lxSVG@alignment@align');
-  Let("\\\\",            '\lxSVG@alignment@newline');
-  Let('\tabularnewline', '\lxSVG@alignment@newline');
-  Let('\cr',             '\@alignment@cr');
-  Let('\crcr',           '\@alignment@cr');
-  Let('\hline',          '\@alignment@hline');
-  #  Let(T_MATH, ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
-  Let('\@open@row',  '\default@open@row');
-  Let('\@close@row', '\default@close@row');
-
+  my $alignment = LaTeXML::Core::Alignment->new(
+    template       => $template,
+    openContainer  => sub { openTikzAlignment($container, @_); },
+    closeContainer => sub { $_[0]->closeElement($container); },
+    openRow        => sub { openTikzAlignmentRow($rowtype, @_); },
+    closeRow       => sub { $_[0]->closeElement($rowtype); },
+    openColumn     => sub { openTikzAlignmentCol($coltype, @_); },
+    closeColumn    => sub { $_[0]->closeElement($coltype); },
+    isMath         => $ismath,
+    properties     => {%properties});
+  AssignValue(Alignment => $alignment);
+  Let('\hline', '\@alignment@hline');
+  Let(T_MATH,   ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
   return; }
 
 sub openTikzAlignment {
-  my ($doc, %props) = @_;
-  # If we've already got a foreignObject opened, close it.
-  if (my $fo = foreignObjectCheck($doc)) {
-    $doc->removeNode($fo);
-    my $x;
-    # SHOULD be wrapped in an svg:switch inside an svg:g; remove them both!
-    if (($x = $doc->getNode) && ($doc->getNodeQName($x) eq 'svg:switch')) {
-      $doc->removeNode($x); }
-    if (($x = $doc->getNode) && ($doc->getNodeQName($x) eq 'svg:g')
-      && (($x->getAttribute('class') || '') eq 'ltx_svg_fog')) {
-      $doc->removeNode($x); } }
-  #    $doc->closeNode($fo); }
-  return $doc->openElement('svg:g', class => 'ltx_tikzmatrix', %props); }
+  my ($tag, $doc, %props) = @_;
+  my $h = ($props{cheight} && -$props{cheight}->pxValue) || 0;
+  return $doc->openElement($tag, class => 'ltx_tikzmatrix',
+    _scopebegin => 1,
+    transform   => "matrix(1 0 0 -1 0 $h)",
+    %props); }
 
 sub openTikzAlignmentRow {
-  my ($doc, %props) = @_;
-  $props{class} = ($props{class} ? $props{class} . ' ' : '') . 'ltx_tikzmatrix_row';
-  return $doc->openElement('svg:g', class => 'ltx_tikzmatrix', %props); }
+  my ($tag, $doc, %props) = @_;
+  my $class = 'ltx_tikzmatrix_row' . ($props{class} ? ' ' . $props{class} : '');
+  my $y     = ($props{y}       && -$props{y}->pxValue)       || 0;
+  my $h     = ($props{cheight} && -$props{cheight}->pxValue) || 0;
+  my $yy    = $y + $h;
+  return $doc->openElement($tag, class => $class,
+    _scopebegin => 1,
+    transform   => "matrix(1 0 0 1 0 $yy)",
+  ); }
 
 sub openTikzAlignmentCol {
-  my ($doc, %props) = @_;
-  $props{class} = ($props{class} ? $props{class} . ' ' : '') . 'ltx_tikzmatrix_col';
-  if (my $align = $props{align}) {
-    delete $props{align};
-    $props{class} .= ' ltx_align_' . $align; }
-  return $doc->openElement('svg:g', class => 'ltx_tikzmatrix', %props); }
-
-# These may need to sneak in tikz' code somewhere?
-DefMacroI('\lxSVG@alignment@align', undef,
-  '\@close@inner@column\@close@column'
-    # nextcell will end up attached to inner@column@after
-    #    . '\pgfmatrixnextcell'
-    . '\@alignment@align@marker'
-    . '\@open@column\@open@inner@column');
-
-# \lxSVG@alignment@newline OptionalMatch:* [Dimension]
-DefMacro('\lxSVG@alignment@newline OptionalMatch:* []',
-  # almost works; except at the END of the \matrix !!!
-  '\pgfmatrixendrow'
-    . '\@close@inner@column\@close@column\@close@row'
-    . '\@alignment@newline@marker'
-    . '\@open@row\@open@column\@open@inner@column');
-#    .'\pgfutil@ifnextchar\egroup{}{\@open@row\@open@column\@open@inner@column}');
-#    .'\pgfutil@ifnextchar\egroup{\begingroup}{\@open@row\@open@column\@open@inner@column}');
+  my ($tag, $doc, %props) = @_;
+  my $class = 'ltx_tikzmatrix_col' . ($props{class} ? ' ' . $props{class} : '');
+  my $x     = ($props{x} && $props{x}->pxValue) || 0;
+  return $doc->openElement($tag, class => $class,
+    _scopebegin => 1,
+    transform   => "matrix(1 0 0 1 $x 0)",
+  ); }
 
 #=====================================================================
 # Dealing with quick commands

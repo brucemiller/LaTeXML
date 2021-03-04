@@ -9,6 +9,9 @@
 \DeclareSIQualifier\polymer{pol}
 \DeclareSIQualifier\catalyst{cat}
 \DeclareSIQualifier\isotropic{i} %?
+\newbox\slashbox
+\setbox\slashbox\hbox{\verb|\|}
+\def\Backslash{\copy\slashbox}
 
 \DeclareSIUnit\abbra{ a }
 \DeclareSIUnit\abbrb{ \abbra }  % abbreviation
@@ -23,6 +26,8 @@
 
 \usepackage{amsmath}
 \begin{document}
+%\ang{1.2e10;2 x 3;4}
+\ang{1.2;3;4}
 {
 \color{red}
 Some text \\
@@ -34,9 +39,11 @@ Still red here!
 Still red here!\\
 }
 
+Unsemantic:
 \si{m^2.s}\\
 \si{\mu m^2}\\
 
+Semantic again:
 \SI{0.094}{\pi . \milli\meter . \milli\radian}\\
 
 \SI{0.094}{\frac{1}{3} . \milli\meter . \milli\radian}\\
@@ -199,7 +206,7 @@ Pretty nonsensical stuff?
 \num[minimum-integer-digits = 3]{123} \\
 \num[minimum-integer-digits = 4]{123}\\
 
-\subsubsection{explicit-sign, retain-explicit-sign}
+\subsubsection{explicit-sign, retain-explicit-plus}
 \num{+345} \\
 \num[retain-explicit-plus]{+345} \\
 \num[explicit-sign = -]{345}\\
@@ -284,8 +291,7 @@ scientific-notation = fixed,
 \num[output-exponent-marker = \text{e}]{1e2} \\
 \num[output-exponent-marker = \ensuremath{\mathrm{E}}]{1e2}\\
 
-\subsubsection{separate-uncertainty,uncertainty-separator,output-open-uncertainty,output-close-uncertain
-ty}
+\subsubsection{separate-uncertainty,uncertainty-separator,output-open-uncertainty,output-close-uncertainty}
 {
 \num{1.234(5)} \\
 \num{1.234\pm 0.005} \\
@@ -361,6 +367,7 @@ ty}
 \subsection{Lists and ranges of numbers}
 \subsubsection{list-final-separator,list-pair-separator,list-separator}
 \numlist{0.1;0.2;0.3}\\
+\numlist[color=blue]{0.1;0.2;0.3}\\
 \numlist[list-separator = {; }]{0.1;0.2;0.3}\\
 \numlist[list-final-separator = {, }]{0.1;0.2;0.3} \\
 \numlist[
@@ -375,6 +382,7 @@ list-final-separator = { and finally }
 
 \numrange{5}{100} \\
 \numrange[range-phrase = --]{5}{100}\\
+\numrange[color=blue,range-phrase = --]{5}{100}\\
 
 \subsection{Angles}
 \subsubsection{number-angle-product}
@@ -406,13 +414,14 @@ list-final-separator = { and finally }
 \ang{;;-3}\\
 }
 \ang[add-arc-minute-zero,add-arc-second-zero]{45.697}\\
+\ang[color=blue,add-arc-minute-zero,add-arc-second-zero]{45.697}\\
 
 \subsubsection{angle-symbol-over-decimal}
 \ang{45.697} \\
 \ang{6;7;6.5} \\
 \ang[angle-symbol-over-decimal]{45.697} \\
-\ang[angle-symbol-over-decimal]{6;7;6.5}
-
+\ang[angle-symbol-over-decimal]{6;7;6.5}\\
+\ang[color=blue,angle-symbol-over-decimal]{6;7;6.5}
 % \ang{10}\\
 % \ang{12.3}\\
 % \ang{4,5}\\
@@ -423,7 +432,7 @@ list-final-separator = { and finally }
 
 
 \section{Units}
-\def\showunit#1{#1 & \texttt{$\backslash$#1} & \si{\csname#1\endcsname}}
+\def\showunit#1{#1 & \texttt{\Backslash#1} & \si{\csname#1\endcsname}}
 \begin{table}
 \caption{SI base units}
 \centering
@@ -512,12 +521,12 @@ Unit & Macro & Symbol \\\hline
 \end{tabular}
 \end{table}
 
-\def\showprefix#1{#1 & \texttt{$\backslash$#1} & \si{\csname#1\endcsname} & \si[prefixes-as-symbols=false]{\csname#1\endcsname}}
+\def\showprefix#1{#1 & \texttt{\Backslash#1} & \si{\csname#1\endcsname} & \si[prefixes-as-symbols=false]{\csname#1\endcsname}}
 \begin{table}
 \caption{Other non-SI units}
 \centering
 \begin{tabular}{llllllll}\hline\hline
-Unit & Macro & Symbol & Power
+Unit & Macro & Symbol & Power &
 Unit & Macro & Symbol & Power \\\hline
 \showprefix{yocto} & \showprefix{deca}\\
 \showprefix{zepto} & \showprefix{hecto}\\
@@ -693,9 +702,8 @@ Unit & Macro & Symbol & Power \\\hline
 
 \subsubsection{forbid-literal-units, inter-unit-product}
 \si{\farad\squared\lumen\candela} \\
-\si[inter-unit-product = \ensuremath{{}\cdot{}}]
-{\farad\squared\lumen\candela}\\
-
+\si[inter-unit-product = \ensuremath{{}\cdot{}}]{\farad\squared\lumen\candela}\\
+\si[color=blue,inter-unit-product = \ensuremath{{}\cdot{}}]{\farad\squared\lumen\candela}\\
 \subsubsection{per-mode, per-symbol, bracket-unit-denominator}
 \si{\joule\per\mole\per\kelvin} \\
 \si{\metre\per\second\squared} \\
@@ -725,6 +733,10 @@ Unit & Macro & Symbol & Power \\\hline
 \[
 \textstyle
 \si{\joule\per\mole\per\kelvin}
+\]
+\[
+\textstyle
+\si[color=blue]{\joule\per\mole\per\kelvin}
 \]
 }
 
@@ -781,7 +793,10 @@ Unit & Macro & Symbol & Power \\\hline
 \SI{2.67}{\farad} \\
 \SI[number-unit-product = \ ]{2.67}{\farad} \\
 \SI[number-unit-product = ]{2.67}{\farad}\\
-
+\SI[number-unit-product = \,]{2.67}{\farad}\\
+\SI[number-unit-product = \;]{2.67}{\farad}\\
+\SI[number-unit-product = $\times$]{2.67}{\farad}\\
+\SI[color=blue,number-unit-product = $\times$]{2.67}{\farad}\\
 \subsubsection{multi-part-units}
 {
 \sisetup{separate-uncertainty}%

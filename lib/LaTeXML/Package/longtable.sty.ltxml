@@ -82,26 +82,11 @@ sub longtableBindings {
 # These macros appear within the longtable, at the beginning.
 # They cut of the previous lines to be used as headers or footers.
 
-DefMacro('\@longtable@endfirsthead',
-  '\@close@inner@column\@close@column\@close@row'
-    . '\@longtable@grab{FIRSTHEAD}'
-    . '\@open@row\@open@column\@open@inner@column');
-DefMacro('\@longtable@endhead',
-  '\@close@inner@column\@close@column\@close@row'
-    . '\@longtable@grab{HEAD}'
-    . '\@open@row\@open@column\@open@inner@column');
-DefMacro('\@longtable@endfoot',
-  '\@close@inner@column\@close@column\@close@row'
-    . '\@longtable@grab{FOOT}'
-    . '\@open@row\@open@column\@open@inner@column');
-DefMacro('\@longtable@endlastfoot',
-  '\@close@inner@column\@close@column\@close@row'
-    . '\@longtable@grab{LASTFOOT}'
-    . '\@open@row\@open@column\@open@inner@column');
-DefMacro('\@longtable@kill',
-  '\@close@inner@column\@close@column\@close@row'
-    . '\@longtable@kill@marker'
-    . '\@open@row\@open@column\@open@inner@column');
+DefMacro('\@longtable@endfirsthead', '\crcr\noalign{\@longtable@grab{FIRSTHEAD}}');
+DefMacro('\@longtable@endhead',      '\crcr\noalign{\@longtable@grab{HEAD}}');
+DefMacro('\@longtable@endfoot',      '\crcr\noalign{\@longtable@grab{FOOT}}');
+DefMacro('\@longtable@endlastfoot',  '\crcr\noalign{\@longtable@grab{LASTFOOT}}');
+DefMacro('\@longtable@kill',         '\crcr\noalign{\@longtable@kill@marker}');
 
 DefPrimitive('\@longtable@grab{}', sub {
     my ($stomach, $name) = @_;

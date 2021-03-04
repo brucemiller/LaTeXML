@@ -44,5 +44,33 @@ DefMacro('\morecmidrules', '');
 # \specialrule{thickness}{above}{below}
 DefMacro('\specialrule{Dimension}{Dimension}{Dimension}', '\hline');
 
+RawTeX(<<'EoTeX');
+\newdimen\heavyrulewidth
+\newdimen\lightrulewidth
+\newdimen\cmidrulewidth
+\newdimen\belowrulesep
+\newdimen\belowbottomsep
+\newdimen\aboverulesep
+\newdimen\abovetopsep
+\newdimen\cmidrulesep
+\newdimen\cmidrulekern
+\newdimen\defaultaddspace
+\heavyrulewidth=.08em
+\lightrulewidth=.05em
+\cmidrulewidth=.03em
+\belowrulesep=.65ex
+\belowbottomsep=0pt
+\aboverulesep=.4ex
+\abovetopsep=0pt
+\cmidrulesep=\doublerulesep
+\cmidrulekern=.5em
+\defaultaddspace=.5em
+\newcount\@cmidla
+\newcount\@cmidlb
+\newdimen\@aboverulesep
+\newdimen\@belowrulesep
+\newcount\@thisruleclass
+\newcount\@lastruleclass
+EoTeX
 #======================================================================
 1;

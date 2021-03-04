@@ -35,7 +35,14 @@ foreach my $option (qw(fixamsmath donotfixamsmathbugs allowspaces disallowspaces
 DeclareOption(undef, sub {
     PassOptions('amsmath', 'sty', ToString(Expand(T_CS('\CurrentOption')))); });
 ProcessOptions();
+
+RequirePackage('keyval');
+RequirePackage('calc');
+# TODO: add support for mhsetup
+#RequirePackage('mhsetup');
 RequirePackage('amsmath', withoptions => 1);
+AtBeginDocument(sub {
+    RequirePackage('graphicx'); });
 
 ##########
 # Macros #
@@ -577,7 +584,7 @@ DefPrimitiveI('\@end@multlined', undef, sub { $_[0]->egroup; });
 # Is currently ignore the shoving dimension
 DefMacro('\@MT@shove{}', sub {
     my ($gullet, $shove_dir) = @_;
-    my $cur_row_num  = LookupValue('Alignment')->currentRowNumber - 1;
+    my $cur_row_num  = LookupValue('Alignment')->currentRowNumber;
     my $rowalignment = LookupValue('MULTIROW_ALIGNMENT_RULE');
 
     $$rowalignment{$cur_row_num} = ToString($shove_dir);
@@ -613,7 +620,7 @@ DefMacro('\csname enddrcases\endcsname',
   '\lx@end@ams@cases');
 
 DefMacro('\csname drcases*\endcsname',
-  '\lx@ams@cases{name=drcases*,meaning=cases,right=\@right\},style=\displaystyle,conditionmode=text}');
+'\lx@ams@cases{name=drcases*,meaning=cases,right=\@right\},style=\displaystyle,conditionmode=text}');
 DefMacro('\csname enddrcases*\endcsname',
   '\lx@end@ams@cases');
 
@@ -749,7 +756,7 @@ DefMacroI('\end{spreadlines}',   undef,         '\endgroup');
 DefConstructor('\@@lgathered DigestedBody',
   "#1",
   beforeDigest => sub { $_[0]->bgroup; },
-  afterDigest => sub {
+  afterDigest  => sub {
     $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'left' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   afterConstruct => sub {
@@ -762,7 +769,7 @@ DefMacroI('\endlgathered', undef, '\@finish@alignment\@end@gathered');
 DefConstructor('\@@rgathered DigestedBody',
   "#1",
   beforeDigest => sub { $_[0]->bgroup; },
-  afterDigest => sub {
+  afterDigest  => sub {
     $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'right' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   afterConstruct => sub {
@@ -774,7 +781,7 @@ DefMacroI('\endrgathered', undef, '\@finish@alignment\@end@gathered');
 
 DefConstructor('\@@newgathered@dummy DigestedBody',
   '#1',
-  beforeDigest => sub { $_[0]->bgroup; },
+  beforeDigest   => sub { $_[0]->bgroup; },
   afterConstruct => sub {
     my ($document) = @_;
     my $array = $document->getNode->lastChild;
@@ -791,9 +798,14 @@ DefConstructor('\@@newgathered@dummy DigestedBody',
 DefMacro('\newgathered{}{}{}{}', sub {
     my ($gullet, $name, $pre_line, $post_line, $after) = @_;
     $name = ToString($name);
-
-    DefMacroI('\\' . $name, undef, '\@ams@multirow@bindings{name=' . $name . '}[before_row=' . UnTeX($pre_line) . ',after_row=' . UnTeX($post_line) . ']\@@newgathered@dummy\@start@alignment');
-    DefMacroI('\end' . $name, undef, Tokens(T_CS('\@finish@alignment'), T_CS('\@end@gathered'), $after)); });
+    # Really should be making the pre/post_line into separate columns!!!
+    DefMacroI('\\' . $name, undef,
+      '\@ams@multirow@bindings{name=' . $name . '}['
+        . 'before_row=\hidden@noalign{' . UnTeX($pre_line) . '},'
+        . 'after_row=\hidden@noalign{' . UnTeX($post_line) . '}'
+        . ']\@@newgathered@dummy\@start@alignment');
+    DefMacroI('\end' . $name, undef,
+      Tokens(T_CS('\@finish@alignment'), T_CS('\@end@gathered'), $after)); });
 Let('\renewgathered', '\newgathered');
 
 ## 4.6

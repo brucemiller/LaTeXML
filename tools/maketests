@@ -18,6 +18,7 @@ use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Util::Test;
 use File::Copy;
 use File::Which;
 use File::Spec::Functions;
@@ -82,6 +83,7 @@ sub maketest_latexml {
   my $src_time = pathname_timestamp($source);
   my $xml_time = pathname_timestamp($xml_file);
   my $pdf_time = pathname_timestamp($pdf_file);
+
   if ($docompare) {
     (compare_xml($dir, $name) ? push(@FAIL, $name) : push(@PASS, $name)); }
   else {
@@ -173,10 +175,7 @@ sub compare_xml {
   my $test   = pathname_make(dir => $dir, name => $name, type => 'test.xml');
   #========================================
   # Generate the XML from the current latexml
-  system("$FindBin::RealBin/../blib/script/latexml", $source,
-    "--destination=" . $test,
-    "--nocomments", (map { "--verbose" } 1 .. $verbosity)) == 0
-    or die "Failed to convert $source: $!";
+  gen_xml($dir, $name, 1);
 
   #========================================
   # Do the comparison
@@ -237,18 +236,29 @@ sub stringifyDom {
   return [grep { /\S/ } split("\n", $string)]; }
 
 sub gen_xml {
-  my ($dir, $name) = @_;
+  my ($dir, $name, $for_comparison) = @_;
+  # Ensure a sandbox for the LaTeXML conversion by forking and working in the child.
+  my $pid = fork();
+  if ($pid) {
+    waitpid($pid, 0);
+    return; }
   my $source = pathname_make(dir => $dir, name => $name, type => 'tex');
-  my $xml    = pathname_make(dir => $dir, name => $name, type => 'xml');
+  my $xml = pathname_make(dir => $dir, name => $name, type => $for_comparison ? 'test.xml' : 'xml');
   if (-f "$xml") {
     rename("$xml", "$xml.bak"); }
   #========================================
   # Generate the XML from the current latexml
-  system("$FindBin::RealBin/../blib/script/latexml", $source,
-    "--destination=" . $xml,
-    "--nocomments", (map { "--verbose" } 1 .. $verbosity)) == 0
-    or die "Failed to convert $source: $!";
-  return; }
+  my $gen_xml_core_options = {%LaTeXML::Util::Test::CORE_OPTIONS_FOR_TESTS};
+  $$gen_xml_core_options{verbosity} = $verbosity || 0;
+  if (my $dom = convert_texfile_as_test(texpath => $source, name => $name, core_options => $gen_xml_core_options)) {
+    my $dom_str = $dom->toString(1);
+    open(my $test_fh, '>', $xml) or die "Couldn't open output file $xml: $!";
+    binmode($test_fh, ":encoding(UTF-8)");
+    print $test_fh $dom_str;
+    close $test_fh; }
+  else {
+    die "Failed to convert $source: $!"; }
+  exit; }
 
 sub gen_pdf {
   my ($dir, $name) = @_;
@@ -299,7 +309,7 @@ sub read_options {
 #======================================================================
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -455,7 +465,7 @@ Remember to add all three files to the SVN repository.
 
 =head2 Adding a Test Set
 
-To create a new set of tests, say I<newset>, create 
+To create a new set of tests, say I<newset>, create
 the directory I<t/newset> to contain the test cases
 and a driver program, I<t/##_newset.t>, (choose a number
 for I<##> to specifies when this test set will run in the sequence).
@@ -471,5 +481,3 @@ Remember to add the directory, driver and any tests
 to the SVN repository.
 
 =cut
-
-

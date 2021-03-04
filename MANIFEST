@@ -283,6 +283,7 @@ lib/LaTeXML/resources/XSLT/LaTeXML-structure-xhtml.xsl
 lib/LaTeXML/resources/XSLT/LaTeXML-tabular-xhtml.xsl
 lib/LaTeXML/resources/XSLT/LaTeXML-webpage-xhtml.xsl
 lib/LaTeXML/resources/XSLT/LaTeXML-xhtml.xsl
+lib/LaTeXML/resources/XSLT/LaTeXML-xhtml5.xsl
 lib/LaTeXML/resources/XSLT/LaTeXML-tei.xsl
 lib/LaTeXML/resources/CSS/LaTeXML-blue.css
 lib/LaTeXML/resources/CSS/LaTeXML-epub.css
@@ -342,6 +343,7 @@ lib/LaTeXML/Package/algc.sty.ltxml
 lib/LaTeXML/Package/algcompatible.sty.ltxml
 lib/LaTeXML/Package/aipcheck.tex.ltxml
 lib/LaTeXML/Package/aipproc.cls.ltxml
+lib/LaTeXML/Package/aipproc.sty.ltxml
 lib/LaTeXML/Package/algmatlab.sty.ltxml
 lib/LaTeXML/Package/algorithm.sty.ltxml
 lib/LaTeXML/Package/algorithm2e.sty.ltxml
@@ -431,6 +433,7 @@ lib/LaTeXML/Package/ellipsis.sty.ltxml
 lib/LaTeXML/Package/elsart.cls.ltxml
 lib/LaTeXML/Package/elsart.sty.ltxml
 lib/LaTeXML/Package/elsart_support.sty.ltxml
+lib/LaTeXML/Package/elsart_support_core.sty.ltxml
 lib/LaTeXML/Package/elsarticle.cls.ltxml
 lib/LaTeXML/Package/expl3.sty.ltxml
 lib/LaTeXML/Package/emulateapj.cls.ltxml
@@ -444,6 +447,7 @@ lib/LaTeXML/Package/epsf.tex.ltxml
 lib/LaTeXML/Package/epsfig.sty.ltxml
 lib/LaTeXML/Package/epstopdf.sty.ltxml
 lib/LaTeXML/Package/esint.sty.ltxml
+lib/LaTeXML/Package/espcrc.sty.ltxml
 lib/LaTeXML/Package/etex.sty.ltxml
 lib/LaTeXML/Package/etoolbox.sty.ltxml
 lib/LaTeXML/Package/eucal.sty.ltxml
@@ -455,6 +459,7 @@ lib/LaTeXML/Package/euscript.sty.ltxml
 lib/LaTeXML/Package/exscale.sty.ltxml
 lib/LaTeXML/Package/fancyhdr.sty.ltxml
 lib/LaTeXML/Package/fancyheadings.sty.ltxml
+lib/LaTeXML/Package/filehook.sty.ltxml
 lib/LaTeXML/Package/fix-cm.sty.ltxml
 lib/LaTeXML/Package/fixltx2e.sty.ltxml
 lib/LaTeXML/Package/flafter.sty.ltxml
@@ -485,6 +490,7 @@ lib/LaTeXML/Package/graphics.sty.ltxml
 lib/LaTeXML/Package/graphicx.sty.ltxml
 lib/LaTeXML/Package/grffile.sty.ltxml
 lib/LaTeXML/Package/helvet.sty.ltxml
+lib/LaTeXML/Package/hepunits.sty.ltxml
 lib/LaTeXML/Package/here.sty.ltxml
 lib/LaTeXML/Package/hhline.sty.ltxml
 lib/LaTeXML/Package/html.sty.ltxml
@@ -574,6 +580,7 @@ lib/LaTeXML/Package/pgfmathcalc.code.tex.ltxml
 lib/LaTeXML/Package/pgfplots.sty.ltxml
 lib/LaTeXML/Package/pgfsys-latexml.def.ltxml
 lib/LaTeXML/Package/pgfutil-common.tex.ltxml
+lib/LaTeXML/Package/physics.sty.ltxml
 lib/LaTeXML/Package/pifont.sty.ltxml
 lib/LaTeXML/Package/placeins.sty.ltxml
 lib/LaTeXML/Package/preview.sty.ltxml
@@ -608,11 +615,14 @@ lib/LaTeXML/Package/sectsty.sty.ltxml
 lib/LaTeXML/Package/setspace.sty.ltxml
 lib/LaTeXML/Package/showkeys.sty.ltxml
 lib/LaTeXML/Package/sidecap.sty.ltxml
+lib/LaTeXML/Package/SIunits.sty.ltxml
 lib/LaTeXML/Package/siunitx.sty.ltxml
 lib/LaTeXML/Package/slashed.sty.ltxml
 lib/LaTeXML/Package/slides.cls.ltxml
 lib/LaTeXML/Package/soul.sty.ltxml
 lib/LaTeXML/Package/srcltx.sty.ltxml
+lib/LaTeXML/Package/standalone.cls.ltxml
+lib/LaTeXML/Package/standalone.sty.ltxml
 lib/LaTeXML/Package/stfloats.sty.ltxml
 lib/LaTeXML/Package/stmaryrd.sty.ltxml
 lib/LaTeXML/Package/subcaption.sty.ltxml
@@ -775,6 +785,9 @@ t/alignment/split.xml
 t/alignment/supertabular.pdf
 t/alignment/supertabular.tex
 t/alignment/supertabular.xml
+t/alignment/tabbing.pdf
+t/alignment/tabbing.tex
+t/alignment/tabbing.xml
 t/alignment/tabtab.pdf
 t/alignment/tabtab.tex
 t/alignment/tabtab.xml
@@ -832,6 +845,9 @@ t/complex/aastex_test.xml
 t/complex/aliceblog.pdf
 t/complex/aliceblog.tex
 t/complex/aliceblog.xml
+t/complex/cleveref_minimal.pdf
+t/complex/cleveref_minimal.tex
+t/complex/cleveref_minimal.xml
 t/complex/equationnest.pdf
 t/complex/equationnest.tex
 t/complex/equationnest.xml
@@ -842,6 +858,9 @@ t/complex/labelled.pdf
 t/complex/labelled.tex
 t/complex/labelled.xml
 t/complex/labelled.latexml
+t/complex/physics.pdf
+t/complex/physics.tex
+t/complex/physics.xml
 t/complex/si.pdf
 t/complex/si.tex
 t/complex/si.xml
@@ -947,6 +966,10 @@ t/digestion/io.xml
 t/digestion/primes.pdf
 t/digestion/primes.tex
 t/digestion/primes.xml
+t/digestion/rebox.pdf
+t/digestion/rebox.tex
+t/digestion/rebox.latexml
+t/digestion/rebox.xml
 t/digestion/testctr.pdf
 t/digestion/testctr.tex
 t/digestion/testctr.xml
@@ -1028,6 +1051,9 @@ t/encoding/t2c.xml
 t/encoding/ts1.pdf
 t/encoding/ts1.tex
 t/encoding/ts1.xml
+t/encoding/utf8.pdf
+t/encoding/utf8.tex
+t/encoding/utf8.xml
 t/expansion/aftergroup.pdf
 t/expansion/aftergroup.tex
 t/expansion/aftergroup.xml
@@ -1051,6 +1077,9 @@ t/expansion/etex.xml
 t/expansion/etoolbox.pdf
 t/expansion/etoolbox.tex
 t/expansion/etoolbox.xml
+t/expansion/pass_param_toks_in_gen_macros.pdf
+t/expansion/pass_param_toks_in_gen_macros.tex
+t/expansion/pass_param_toks_in_gen_macros.xml
 t/expansion/for.pdf
 t/expansion/for.tex
 t/expansion/for.xml
@@ -1071,6 +1100,9 @@ t/expansion/lettercase.xml
 t/expansion/meaning.pdf
 t/expansion/meaning.tex
 t/expansion/meaning.xml
+t/expansion/multi_escaped_param.pdf
+t/expansion/multi_escaped_param.tex
+t/expansion/multi_escaped_param.xml
 t/expansion/noexpand.pdf
 t/expansion/noexpand.tex
 t/expansion/noexpand.xml
@@ -1083,6 +1115,9 @@ t/expansion/numexpr.xml
 t/expansion/parindent.pdf
 t/expansion/parindent.tex
 t/expansion/parindent.xml
+t/expansion/pdftex_expanded.pdf
+t/expansion/pdftex_expanded.tex
+t/expansion/pdftex_expanded.xml
 t/expansion/subdir/whichpkga.sty
 t/expansion/testchar.pdf
 t/expansion/testchar.tex
@@ -1312,6 +1347,9 @@ t/math/arrows.xml
 t/math/choose.pdf
 t/math/choose.tex
 t/math/choose.xml
+t/math/compact_dual.pdf
+t/math/compact_dual.xml
+t/math/compact_dual.tex
 t/math/declare.pdf
 t/math/declare.tex
 t/math/declare.xml

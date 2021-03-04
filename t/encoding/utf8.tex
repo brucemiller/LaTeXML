@@ -1,0 +1,15 @@
+\documentclass{article}
+
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage[official]{eurosym}
+
+\def\eurocodepoint{20AC}
+\DeclareUnicodeCharacter{\eurocodepoint}{\textbf\euro}
+\DeclareUnicodeCharacter{221A}{\sqrt}
+
+\begin{document}
+  The amount is 10€ and 2 cents.
+
+  A square root $√{x^2+1}$.
+\end{document}

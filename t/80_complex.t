@@ -5,5 +5,6 @@
 use LaTeXML::Util::Test;
 
 latexml_tests("t/complex",
-  requires => { si => 'siunitx.sty' });
-
+  requires => {
+     cleveref_minimal => 'cleveref.sty',
+     si => 'siunitx.sty' });

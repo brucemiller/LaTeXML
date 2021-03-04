@@ -89,12 +89,18 @@ sub digestNextBody {
   my $initdepth = scalar(@{ $$self{boxing} });
   my $token;
   local @LaTeXML::LIST = ();
+  my $alignment = $STATE->lookupValue('Alignment');
+  my @aug       = ();
+
   while (defined($token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
-    push(@LaTeXML::LIST, $self->invokeToken($token));
+    my @r = $self->invokeToken($token);
+    push(@LaTeXML::LIST, @r);
+    push(@aug, $token, @r);
     last if $terminal and Equals($token, $terminal);
     last if $initdepth > scalar(@{ $$self{boxing} }); }           # if we've closed the initial mode.
   Warn('expected', $terminal, $self, "body should have ended with '" . ToString($terminal) . "'",
-    "current body started at " . ToString($startloc))
+    "current body started at " . ToString($startloc),
+    "Got " . join("\n -- ", map { Stringify($_) } @aug))
     if $terminal && !Equals($token, $terminal);
   push(@LaTeXML::LIST, Box()) unless $token;                      # Dummy `trailer' if none explicit.
   return @LaTeXML::LIST; }
@@ -110,7 +116,7 @@ sub digest {
     $$self{gullet}->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
       my ($gullet) = @_;
       $gullet->unread($tokens);
-      $STATE->clearPrefixes;    # prefixes shouldn't apply here.
+      $STATE->clearPrefixes;                                             # prefixes shouldn't apply here.
       my $ismath    = $STATE->lookupValue('IN_MATH');
       my $initdepth = scalar(@{ $$self{boxing} });
       my $depth     = $initdepth;
@@ -136,8 +142,12 @@ sub digest {
 my $MAXSTACK = 200;    # [CONSTANT]
 
 # Overly complex, but want to avoid recursion/stack
-my @absorbable_cc = (    # [CONSTANT]
-  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 0, 1, 0);
+our @CATCODE_ABSORBABLE = (    # [CONSTANT]
+  0, 0, 0, 0,
+  0, 0, 0, 0,
+  0, 0, 1, 1,
+  1, 0, 1, 0,
+  0, 0, 0, 0);
 
 sub invokeToken {
   my ($self, $token) = @_;
@@ -158,7 +168,7 @@ INVOKE:
     my $cc = $meaning->getCatcode;
     if ($cc == CC_CS) {
       @result = $self->invokeToken_undefined($token); }
-    elsif ($absorbable_cc[$cc]) {
+    elsif ($CATCODE_ABSORBABLE[$cc]) {
       @result = $self->invokeToken_simple($token, $meaning); }
     else {
       Error('misdefined', $token, $self,
@@ -204,15 +214,15 @@ sub invokeToken_simple {
     if ($STATE->lookupValue('IN_MATH')) {    # (but in Preamble, OK ?)
       return (); }
     else {
-      return Box($meaning->getString, $font, $self->getGullet->getLocator, $meaning); } }
+      return Box($meaning->toString, $font, $self->getGullet->getLocator, $meaning); } }
   elsif ($cc == CC_COMMENT) {                # Note: Comments need char decoding as well!
-    my $comment = LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1);
+    my $comment = LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1);
     # However, spaces normally would have be digested away as positioning...
     my $badspace = pack('U', 0xA0) . "\x{0335}";    # This is at space's pos in OT1
     $comment =~ s/\Q$badspace\E/ /g;
     return LaTeXML::Core::Comment->new($comment); }
   else {
-    return Box(LaTeXML::Package::FontDecodeString($meaning->getString, undef, 1),
+    return Box(LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1),
       undef, undef, $meaning); } }
 
 # Regurgitate: steal the previously digested boxes from the current level.
@@ -281,6 +291,11 @@ sub currentFrameMessage {
 sub bgroup {
   my ($self) = @_;
   pushStackFrame($self, 0);
+  # NOTE: This is WRONG; should really only track "scanned" (not digested) braces
+  # Alas, there're too many code structuring differences between TeX and LaTeXML
+  # to find all the places to manage it.
+  # So, let's try this for now...
+  $LaTeXML::ALIGN_STATE++;
   return; }
 
 sub egroup {
@@ -291,11 +306,13 @@ sub egroup {
       $self->currentFrameMessage); }
   else {                                        # Don't pop if there's an error; maybe we'll recover?
     popStackFrame($self, 0); }
+  $LaTeXML::ALIGN_STATE--;
   return; }
 
 sub begingroup {
   my ($self) = @_;
   pushStackFrame($self, 1);
+  $LaTeXML::ALIGN_STATE++;
   return; }
 
 sub endgroup {
@@ -306,6 +323,7 @@ sub endgroup {
       $self->currentFrameMessage); }
   else {                                         # Don't pop if there's an error; maybe we'll recover?
     popStackFrame($self, 1); }
+  $LaTeXML::ALIGN_STATE--;
   return; }
 
 #======================================================================
@@ -322,7 +340,7 @@ sub setMode {
   $STATE->assignValue(MODE    => $mode,   'local');
   $STATE->assignValue(IN_MATH => $ismath, 'local');
   my $curfont = $STATE->lookupValue('font');
-  if ($mode eq $prevmode) { }
+  if    ($mode eq $prevmode) { }
   elsif ($ismath) {
     # When entering math mode, we set the font to the default math font,
     # and save the text font for any embedded text.
@@ -337,7 +355,7 @@ sub setMode {
     # but inherit color and size
     $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
         color => $curfont->getColor, background => $curfont->getBackground,
-        size  => $curfont->getSize), 'local'); }
+        size => $curfont->getSize), 'local'); }
   return; }
 
 sub beginMode {

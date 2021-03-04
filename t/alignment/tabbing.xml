@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <tabular>
+      <tr>
+        <td align="left">one</td>
+        <td align="left">two</td>
+        <td align="left">three</td>
+        <td align="left">four</td>
+      </tr>
+      <tr>
+        <td align="left">new tab</td>
+        <td align="left">two</td>
+        <td align="left">éè (accent commands)</td>
+      </tr>
+      <tr>
+        <td align="left">new tab</td>
+        <td align="left">two</td>
+        <td align="left">aeae</td>
+      </tr>
+      <tr>
+        <td align="left">one</td>
+        <td align="left">two</td>
+        <td align="left">three</td>
+        <td align="left">four</td>
+      </tr>
+    </tabular>
+  </para>
+  <para xml:id="p2">
+    <tabular>
+      <tr>
+        <td align="left">pc</td>
+        <td align="left">Pica = 12pt</td>
+        <td align="left"><text width="12.0pt"><rule height="4.0pt" width="0.4pt"/><rule height="4.0pt" width="0.4pt"/></text></td>
+      </tr>
+      <tr>
+        <td align="left">cc</td>
+        <td align="left">Cicero = 12dd</td>
+        <td align="left"><text width="12.8pt"><rule height="4.0pt" width="0.4pt"/><rule height="4.0pt" width="0.4pt"/></text></td>
+      </tr>
+      <tr>
+        <td align="left">cm</td>
+        <td align="left">Centimeter = 10mm</td>
+        <td align="left"><text width="28.5pt"><rule height="4.0pt" width="0.4pt"/><rule height="4.0pt" width="0.4pt"/></text></td>
+      </tr>
+    </tabular>
+  </para>
+  <para xml:id="p3">
+    <tabular>
+      <tr>
+        <td align="left"><text font="bold">program</text> test</td>
+        <td/>
+        <td/>
+        <td align="left"><text font="typewriter">some text here</text></td>
+      </tr>
+      <tr>
+        <td align="left"><text font="bold">var</text></td>
+      </tr>
+      <tr>
+        <td/>
+        <td align="left"><Math mode="inline" tex="i" text="i" xml:id="p3.m1">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">i</XMTok>
+            </XMath>
+          </Math> : <text font="bold">integer</text>;</td>
+        <td/>
+        <td align="left"><text font="typewriter">...</text></td>
+      </tr>
+      <tr>
+        <td/>
+        <td align="left"><Math mode="inline" tex="b" text="b" xml:id="p3.m2">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            </XMath>
+          </Math> : <text font="bold">boolean</text>;</td>
+      </tr>
+      <tr>
+        <td align="left"><text font="bold">begin</text></td>
+      </tr>
+      <tr>
+        <td/>
+        <td align="left"><Math mode="inline" tex="i:=1" text="i assign 1" xml:id="p3.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="assign" role="RELOP">:=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">i</XMTok>
+                <XMTok meaning="1" role="NUMBER">1</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>;</td>
+        <td/>
+        <td align="left"><text font="typewriter">...</text></td>
+      </tr>
+      <tr>
+        <td/>
+        <td align="left"><Math mode="inline" tex="b:=\texttt{true}" text="b assign [true]" xml:id="p3.m4">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="assign" role="RELOP">:=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMText><text font="typewriter">true</text></XMText>
+              </XMApp>
+            </XMath>
+          </Math>;</td>
+      </tr>
+      <tr>
+        <td/>
+        <td align="left"><text font="bold">while</text> <Math mode="inline" tex="i&lt;15" text="i &lt; 15" xml:id="p3.m5">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                <XMTok font="italic" role="UNKNOWN">i</XMTok>
+                <XMTok meaning="15" role="NUMBER">15</XMTok>
+              </XMApp>
+            </XMath>
+          </Math> <text font="bold">do</text></td>
+      </tr>
+      <tr>
+        <td/>
+        <td/>
+        <td align="left"><Math mode="inline" tex="i:=i+1" text="i assign i + 1" xml:id="p3.m6">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="assign" role="RELOP">:=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">i</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">i</XMTok>
+                  <XMTok meaning="1" role="NUMBER">1</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>;</td>
+      </tr>
+      <tr>
+        <td/>
+        <td/>
+        <td align="left"><Math mode="inline" tex="b:=\textbf{not}\ b" text="b assign [not] * b" xml:id="p3.m7">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="assign" role="RELOP">:=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMText rpadding="5.0pt"><text font="bold">not</text></XMText>
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>;</td>
+        <td align="left"><text font="typewriter">some text here</text></td>
+      </tr>
+      <tr>
+        <td/>
+        <td align="left"><text font="bold">od</text></td>
+      </tr>
+      <tr>
+        <td align="left"><text font="bold">end</text></td>
+      </tr>
+    </tabular>
+  </para>
+</document>

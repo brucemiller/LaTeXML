@@ -43,18 +43,18 @@ DefMacro('\newrobustcmd OptionalMatch:* DefToken [Number][]{}', sub {
         "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'")
         unless LookupValue(ToString($cs) . ':locked'); }
     else {
-      DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1); }
+      DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1, long => 1); }
     return Tokens(); });
 
 DefMacro('\renewrobustcmd OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
-    DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1);
+    DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1, long => 1);
     return Tokens(); });
 
 DefMacro('\providerobustcmd OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (isDefinable($cs)) {
-      DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1); }
+      DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1, long => 1); }
     return Tokens(); });
 
 RawTeX(<<'EoTeX');
@@ -1316,19 +1316,6 @@ DefMacro('\patchcmd [] DefToken {}{}{}{}', sub {
       Info('unexpected', 'patchcmd', $gullet, "Patchcmd is not supported on non-expandable definitions, will not patch " . ToString($cs));
       return $failure;
 } }, protected => 1);
-
-# DefMacro('\apptocmd DefToken {}{}{}{}', sub {
-#     my ($gullet, $cs, $code, $success, $failure) = @_;
-#     Info('unexpected', 'apptocmd', $gullet,
-#       "apptocmd is not yet implemented, cannot patch " . ToString($cs));
-#     return;},
-#     , protected=>1);
-# DefMacro('\pretocmd DefToken {}{}{}{}', sub {
-#     my ($gullet, $cs, $code, $success, $failure) = @_;
-#     Info('unexpected', 'pretocmd', $gullet,
-#       "pretocmd is not yet implemented, cannot patch " . ToString($cs));
-#     return; },
-#    , protected=>1);
 
 RawTeX(<<'EoTeX');
 \newcommand{\etb@patchcmd}[4][########1]{%

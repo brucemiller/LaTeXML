@@ -128,29 +128,29 @@ sub image_graphicx_parse {
     if (/^\s*(\w+)(?:=\s*(.*))?\s*$/) {
       $_ = $1; $v = $2 || '';
       my $op = $_;
-      if (grep { $op eq $_ } @ignore) { }    # Ignore this option
-      elsif (/^bb$/) { @bb = map { to_bp($_) } split(' ', $v); }
-      elsif (/^bb(?:ll|ur)(?:x|y)$/) { $bb[2 * /ur/ + /y/] = to_bp($v); }
+      if (grep { $op eq $_ } @ignore) { }                                           # Ignore this option
+      elsif (/^bb$/)                  { @bb = map { to_bp($_) } split(' ', $v); }
+      elsif (/^bb(?:ll|ur)(?:x|y)$/)  { $bb[2 * /ur/ + /y/] = to_bp($v); }
       elsif (/^nat(?:width|height)$/) { $bb[2 + /width/] = to_bp($v); }
-      elsif (/^viewport$/) { @vp = map { to_bp($_) } split(' ', $v); $trim = 0; }
-      elsif (/^trim$/)     { @vp = map { to_bp($_) } split(' ', $v); $trim = 1; }
-      elsif (/^clip$/)             { $clip   = !($v eq 'false'); }
-      elsif (/^keepaspectratio$/)  { $aspect = !($v eq 'false'); }
-      elsif (/^width$/)            { $width  = to_bp($v); }
-      elsif (/^(?:total)?height$/) { $height = to_bp($v); }
-      elsif (/^scale$/)            { $xscale = $yscale = $v; }
-      elsif (/^xscale$/)           { $xscale = $v; }
-      elsif (/^yscale$/)           { $yscale = $v; }
-      elsif (/^angle$/) { $angle = $v; $rotfirst = !($width || $height || $xscale || $yscale); }
-      elsif (/^origin$/)        { }              # ??
-                                                 # Non-standard option
+      elsif (/^viewport$/)            { @vp = map { to_bp($_) } split(' ', $v); $trim = 0; }
+      elsif (/^trim$/)                { @vp = map { to_bp($_) } split(' ', $v); $trim = 1; }
+      elsif (/^clip$/)                { $clip = !($v eq 'false'); }
+      elsif (/^keepaspectratio$/)     { $aspect = !($v eq 'false'); }
+      elsif (/^width$/)               { $width = to_bp($v); }
+      elsif (/^(?:total)?height$/)    { $height = to_bp($v); }
+      elsif (/^scale$/)               { $xscale = $yscale = $v; }
+      elsif (/^xscale$/)              { $xscale = $v; }
+      elsif (/^yscale$/)              { $yscale = $v; }
+      elsif (/^angle$/)  { $angle = $v; $rotfirst = !($width || $height || $xscale || $yscale); }
+      elsif (/^origin$/) { }                                                                        # ??
+          # Non-standard option
       elsif (/^magnification$/) { $mag = $v; }
-      else { push(@unknown, [$op, $v]); } }
-    else { } }                                   # ?
-      # --------------------------------------------------
-      # Now, compile the options into a sequence of `transformations'.
-      # Note: the order of rotation & scaling is significant,
-      # but the order of various clipping options w.r.t rotation or scaling is not.
+      else                      { push(@unknown, [$op, $v]); } }
+    else { } }    # ?
+   # --------------------------------------------------
+   # Now, compile the options into a sequence of `transformations'.
+   # Note: the order of rotation & scaling is significant,
+   # but the order of various clipping options w.r.t rotation or scaling is not.
   my @transform = ();
   # We ignore viewport & trim if clip isn't set, since in that case we shouldn't
   # actually remove anything from the image (and there's no way to have the image
@@ -158,19 +158,19 @@ sub image_graphicx_parse {
   push(@transform, [($trim ? 'trim' : 'clip'), @vp]) if (@vp && $clip);
   push(@transform, ['rotate', $angle]) if ($rotfirst && $angle);    # Rotate before scaling?
   if ($width && $height) { push(@transform, ['scale-to', $mag * $width, $mag * $height, $aspect]); }
-  elsif ($width)  { push(@transform, ['scale-to', $mag * $width, 999999,         1]); }
-  elsif ($height) { push(@transform, ['scale-to', 999999,        $mag * $height, 1]); }
+  elsif ($width)             { push(@transform, ['scale-to', $mag * $width, 999999, 1]); }
+  elsif ($height)            { push(@transform, ['scale-to', 999999, $mag * $height, 1]); }
   elsif ($xscale && $yscale) { push(@transform, ['scale', $mag * $xscale, $mag * $yscale]); }
-  elsif ($xscale)   { push(@transform, ['scale', $mag * $xscale, $mag]); }
-  elsif ($yscale)   { push(@transform, ['scale', $mag,           $mag * $yscale]); }
-  elsif ($mag != 1) { push(@transform, ['scale', $mag,           $mag]); }
+  elsif ($xscale)            { push(@transform, ['scale', $mag * $xscale, $mag]); }
+  elsif ($yscale)            { push(@transform, ['scale', $mag, $mag * $yscale]); }
+  elsif ($mag != 1)          { push(@transform, ['scale', $mag, $mag]); }
   push(@transform, ['rotate', $angle]) if (!$rotfirst && $angle);    # Rotate after scaling?
                                                                      #  ----------------------
   return [@transform, @unknown]; }
 
 my %BP_conversions = (                                               # CONSTANT
   pt => 72 / 72.27, pc => 12 / 72.27, in => 72, bp => 1,
-  cm => 72 / 2.54, mm => 72 / 25.4, dd => (72 / 72.27) * (1238 / 1157),
+  cm => 72 / 2.54,  mm => 72 / 25.4,  dd => (72 / 72.27) * (1238 / 1157),
   cc => 12 * (72 / 72.27) * (1238 / 1157), sp => 72 / 72.27 / 65536);
 
 sub to_bp {
@@ -198,7 +198,7 @@ sub image_graphicx_size {
       # $a1 => width (pts), $a2 => height (pts), $a3 => preserve aspect ratio.
       if ($a3) {             # If keeping aspect ratio, ignore the most extreme request
         if ($a1 / $w < $a2 / $h) { $a2 = $h * $a1 / $w; }
-        else { $a1 = $w * $a2 / $h; } }
+        else                     { $a1 = $w * $a2 / $h; } }
       ($w, $h) = (ceil($a1 * $dppt), ceil($a2 * $dppt)); }
     elsif ($op eq 'rotate') {
       my $rad = -$a1 * 3.1415926 / 180;    # close enough
@@ -224,13 +224,15 @@ sub image_graphicx_size {
 sub image_graphicx_sizer {
   my ($whatsit) = @_;
   if (my $candidates = $whatsit->getProperty('candidates')) {
-    my ($source) = split(/,/, $candidates);
-    if (!pathname_is_absolute($source)) {
-      if (my $base = $STATE->lookupValue('SOURCEDIRECTORY')) {
-        $source = pathname_concat($base, $source); } }
-    my $options = $whatsit->getProperty('options');
-    my ($w, $h) = image_graphicx_size($source, image_graphicx_parse($options));
-    return (Dimension($w / $DOTS_PER_POINT . 'pt'), Dimension($h / $DOTS_PER_POINT . 'pt'), Dimension(0)) if $w; }
+    foreach my $source (split(/,/, $candidates)) {
+      if (!pathname_is_absolute($source)) {
+        if (my $base = $STATE->lookupValue('SOURCEDIRECTORY')) {
+          $source = pathname_concat($base, $source); } }
+      # Skip anything that a lower level imgsize can't understand
+      my $options = $whatsit->getProperty('options');
+      local $LaTeXML::IGNORE_ERRORS = 1;
+      my ($w, $h) = image_graphicx_size($source, image_graphicx_parse($options));
+      return (Dimension($w / $DOTS_PER_POINT . 'pt'), Dimension($h / $DOTS_PER_POINT . 'pt'), Dimension(0)) if $w; } }
   return (Dimension(0), Dimension(0), Dimension(0)); }
 
 #======================================================================
@@ -263,7 +265,7 @@ sub image_graphicx_trivial {
     elsif ($op eq 'scale-to') {    # $a1 => width, $a2 => height, $a3 => preserve aspect ratio.
       if ($a3) {                   # If keeping aspect ratio, ignore the most extreme request
         if ($a1 / $w < $a2 / $h) { $a2 = $h * $a1 / $w; }
-        else { $a1 = $w * $a2 / $h; } }
+        else                     { $a1 = $w * $a2 / $h; } }
       ($w, $h) = (ceil($a1 * $dppt), ceil($a2 * $dppt)); } }
   return ($w, $h); }
 
@@ -274,7 +276,7 @@ sub image_graphicx_complex {
   my ($source, $transform, %properties) = @_;
   my $dppt       = $properties{dppt}       || $DOTS_PER_POINT;
   my $background = $properties{background} || $BACKGROUND;
-  my $image = image_read($source, antialias => 1) or return;
+  my $image      = image_read($source, antialias => 1) or return;
   # Get some defaults from the read-in image.
   my ($imagedpi) = image_getvalue($image, 'x-resolution');
   # image_setvalue($image,debug=>'exception');
@@ -306,7 +308,7 @@ sub image_graphicx_complex {
         # $a1 => width (pts), $a2 => height (pts), $a3 => preserve aspect ratio.
         if ($a3) {             # If keeping aspect ratio, ignore the most extreme request
           if ($a1 / $w < $a2 / $h) { $a2 = $h * $a1 / $w; }
-          else { $a1 = $w * $a2 / $h; } }
+          else                     { $a1 = $w * $a2 / $h; } }
         ($w, $h) = (ceil($a1 * $dppt), ceil($a2 * $dppt)); } }
     my $X = 4;                 # Expansion factor
     my ($dx, $dy) = (int($X * 72 * $w / $w0), int($X * 72 * $h / $h0));
@@ -331,7 +333,7 @@ sub image_graphicx_complex {
       # $a1 => width (pts), $a2 => height (pts), $a3 => preserve aspect ratio.
       if ($a3) {    # If keeping aspect ratio, ignore the most extreme request
         if ($a1 / $w < $a2 / $h) { $a2 = $h * $a1 / $w; }
-        else { $a1 = $w * $a2 / $h; } }
+        else                     { $a1 = $w * $a2 / $h; } }
       ($w, $h) = (ceil($a1 * $dppt), ceil($a2 * $dppt));
       $notes .= " scale-to $w x $h";
       image_internalop($image, 'Scale', width => $w, height => $h) or return; }

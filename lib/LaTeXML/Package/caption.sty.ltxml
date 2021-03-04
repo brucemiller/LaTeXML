@@ -75,7 +75,7 @@ DefMacro('\DeclareCaptionLabelSeparator{}{}', Tokens());
 DefMacro('\DeclareCaptionFont{}{}',          Tokens());
 DefMacro('\DeclareCaptionFormat{}{}',        Tokens());
 DefMacro('\DeclareCaptionJustification{}{}', Tokens());
-DefMacro('\DeclareCaptionOption{}{}',        Tokens());
+DefMacro('\DeclareCaptionOption{}[]{}',      Tokens());
 DefMacro('\DeclareCaptionPackage{}',         Tokens());
 
 DefMacro('\bothIfFirst{}{}', sub {

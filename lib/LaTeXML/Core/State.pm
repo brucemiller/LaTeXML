@@ -89,8 +89,8 @@ sub new {
   my ($class, %options) = @_;
   my $self = bless {    # table => {},
     value   => {}, meaning  => {}, stash  => {}, stash_active => {},
-    catcode => {}, mathcode => {}, sfcode => {}, lccode       => {}, uccode => {}, delcode => {},
-    undo => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
+    catcode => {}, mathcode => {}, sfcode => {}, lccode => {}, uccode => {}, delcode => {},
+    undo    => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
     stomach => $options{stomach}, model => $options{model} }, $class;
   # Note that "100" is hardwired into TeX, The Program!!!
   $$self{value}{MAX_ERRORS} = [100];
@@ -98,7 +98,7 @@ sub new {
   # Standard TeX units, in scaled points
   $$self{value}{UNITS} = [{
       pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
-      cm => 72.27 * 65536 / 2.54,     mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
+      cm => 72.27 * 65536 / 2.54, mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
       cc => 12 * 1238 * 65536 / 1157, sp => 1,
       px => 72.27 * 65536 / 72,    # Assume px=bp ?
   }];
@@ -107,9 +107,9 @@ sub new {
   if ($options{catcodes} =~ /^(standard|style)/) {
     # Setup default catcodes.
     my %std = ("\\" => CC_ESCAPE, "{" => CC_BEGIN, "}" => CC_END, "\$" => CC_MATH,
-      "\&" => CC_ALIGN, "\r" => CC_EOL,   "#"  => CC_PARAM, "^" => CC_SUPER,
-      "_"  => CC_SUB,   " "  => CC_SPACE, "\t" => CC_SPACE, "%" => CC_COMMENT,
-      "~" => CC_ACTIVE, chr(0) => CC_IGNORE, "\f" => CC_ACTIVE);
+      "&" => CC_ALIGN,  "\r"   => CC_EOL,    "#"  => CC_PARAM, "^" => CC_SUPER,
+      "_" => CC_SUB,    " "    => CC_SPACE,  "\t" => CC_SPACE, "%" => CC_COMMENT,
+      "~" => CC_ACTIVE, chr(0) => CC_ESCAPE, "\f" => CC_ACTIVE);
     map { $$self{catcode}{$_} = [$std{$_}] } keys %std;
     for (my $c = ord('A') ; $c <= ord('Z') ; $c++) {
       $$self{catcode}{ chr($c) } = [CC_LETTER];
@@ -320,27 +320,26 @@ sub assignDelcode {
 #======================================================================
 # Specialized versions of lookup & assign for dealing with definitions
 
-our @active_or_cs = (
+our @CATCODE_ACTIVE_OR_CS = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 1, 0, 0,
-  1, 0);
-our @letter_or_other = (
+  1, 0, 0, 0);
+our @CATCODE_LETTER_OR_OTHER = (
   0, 0, 0, 0,
   0, 0, 0, 0,
   0, 0, 0, 1,
   1, 0, 0, 0,
-  0, 0);
+  0, 0, 0, 0);
 
 # Get the `Meaning' of a token.  For active control sequence's
 # this may give the definition object (if defined) or another token (if \let) or undef
 # Any other token is returned as is.
 sub lookupMeaning {
   my ($self, $token) = @_;
-  my $e;
   if (my $cs = $token
-    && $active_or_cs[$$token[1]]
+    && $CATCODE_ACTIVE_OR_CS[$$token[1]]
     && !$$token[2]    # return token itself, if \noexpand
     && $$token[0]) {
     my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
@@ -359,13 +358,13 @@ sub assignMeaning {
 # nor cs let to executable tokens
 # This returns a definition object, or undef
 
-# merge of @executable_catcode & @PRIMITIVE_NAME
-our @executable_primitive_name = (    # [CONSTANT]
+# merge of @CATCODE_EXECUTABLE & @CATCODE_PRIMITIVE_NAME
+our @CATCODE_EXECUTABLE_PRIMITIVE_NAME = (    # [CONSTANT]
   undef,       'Begin', 'End', 'Math',
   'Align',     undef,   undef, 'Superscript',
   'Subscript', undef,   undef, undef,
   undef,       undef,   undef, undef,
-  undef,       undef);
+  undef,       undef,   undef, undef);
 
 sub lookupDefinition {
   my ($self, $token) = @_;
@@ -375,9 +374,9 @@ sub lookupDefinition {
   #  my $inmath = $self->lookupValue('IN_MATH');
   my $cc = $$token[1];
   my $lookupname =
-    ($active_or_cs[$cc]
+    ($CATCODE_ACTIVE_OR_CS[$cc]
     ? $$token[0]
-    : $executable_primitive_name[$cc]);
+    : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$cc]);
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
     && ($defn  = $$entry[0])
@@ -395,9 +394,9 @@ sub lookupConditional {
   #  my $inmath = $self->lookupValue('IN_MATH');
   my $cc = $$token[1];
   my $lookupname =
-    ($active_or_cs[$cc]
+    ($CATCODE_ACTIVE_OR_CS[$cc]
     ? $$token[0]
-    : $executable_primitive_name[$cc]);
+    : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$cc]);
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
     && ($defn  = $$entry[0])
@@ -415,9 +414,9 @@ sub lookupExpandable {
   #  my $inmath = $self->lookupValue('IN_MATH');
   my $cc = $$token[1];
   my $lookupname =
-    ($active_or_cs[$cc]
+    ($CATCODE_ACTIVE_OR_CS[$cc]
     ? $$token[0]
-    : $executable_primitive_name[$cc]);
+    : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$cc]);
   if ($lookupname
     && ($entry = $$self{meaning}{$lookupname})
     && ($defn  = $$entry[0])
@@ -442,18 +441,18 @@ sub lookupDigestableDefinition {
   my $cc   = $$token[1];
   my $name = $$token[0];
   my $lookupname =
-    (($active_or_cs[$cc]
-        || ($letter_or_other[$cc] && $self->lookupValue('IN_MATH')
+    (($CATCODE_ACTIVE_OR_CS[$cc]
+        || ($CATCODE_LETTER_OR_OTHER[$cc] && $self->lookupValue('IN_MATH')
         && (($self->lookupMathcode($name) || 0) == 0x8000)))
     ? $name
-    : $executable_primitive_name[$cc]);
+    : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$cc]);
   if ($lookupname && ($entry = $$self{meaning}{$lookupname})
     && ($defn = $$entry[0])) {
     # If a cs has been let to an executable token, lookup ITS defn.
     if (((ref $defn) eq 'LaTeXML::Core::Token')
       # If we're digesting an unexpanded, act like \relax
-      && ($lookupname = ($$defn[2] ? '\relax' : $executable_primitive_name[$$defn[1]]))
-      && ($entry = $$self{meaning}{$lookupname})) {
+      && ($lookupname = ($$defn[2] ? '\relax' : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$$defn[1]]))
+      && ($entry      = $$self{meaning}{$lookupname})) {
       $defn = $$entry[0]; }
     return $defn; }
   return $token; }
@@ -465,7 +464,7 @@ sub installDefinition {
   # Ignore attempts to (re)define $cs from tex sources
   #  my $cs = $definition->getCS->getCSName;
   my $token = $definition->getCS;
-  my $cs    = ($LaTeXML::Core::Token::PRIMITIVE_NAME[$$token[1]] || $$token[0]);
+  my $cs    = ($LaTeXML::Core::Token::CATCODE_PRIMITIVE_NAME[$$token[1]] || $$token[0]);
   if ($self->lookupValue("$cs:locked") && !$LaTeXML::Core::State::UNLOCKED) {
     my $s = $self->getStomach->getGullet->getSource;
     # report if the redefinition seems to come from document source
@@ -577,7 +576,7 @@ sub pushDaemonFrame {
         my $type  = ref $value;
         if (($type eq 'HASH') || ($type eq 'ARRAY')) {    # Only concerned with mutable perl data?
                                                           # Local assignment
-          $$frame{$table}{$key} = 1;                      # Note new value in this frame.
+          $$frame{$table}{$key} = 1;                                  # Note new value in this frame.
           unshift(@{ $$hash{$key} }, daemon_copy($value)); } } } }    # And push new binding.
       # Record the contents of LaTeXML::Package::Pool as preloaded
   my $pool_preloaded_hash = { map { $_ => 1 } keys %LaTeXML::Package::Pool:: };
@@ -647,7 +646,7 @@ sub activateScope {
         # Here we ALWAYS push the stashed values into the table
         # since they may be popped off by deactivateScope
         my ($table, $key, $value) = @$entry;
-        $$frame{$table}{$key}++;    # Note that this many values must be undone
+        $$frame{$table}{$key}++;                             # Note that this many values must be undone
         unshift(@{ $$self{$table}{$key} }, $value); } } }    # And push new binding.
   return; }
 
@@ -767,7 +766,7 @@ C<LaTeXML::Core::State> - stores the current state of processing.
 
 A C<LaTeXML::Core::State> object stores the current state of processing.
 It recording catcodes, variables values, definitions and so forth,
-as well as mimicing TeX's scoping rules.
+as well as mimicking TeX's scoping rules.
 
 =head2 Access to State and Processing
 
@@ -786,7 +785,7 @@ Returns the current Model representing the document model.
 =head2 Scoping
 
 The assignment methods, described below, generally take a C<$scope> argument, which
-determines how the assignment is made.  The allowed values and thier implications are:
+determines how the assignment is made.  The allowed values and their implications are:
 
  global   : global assignment.
  local    : local assignment, within the current grouping.
@@ -834,7 +833,7 @@ Assign $value to be associated with the the string C<$name>, according
 to the given scoping rule.
 
 Values are also used to specify most configuration parameters (which can
-therefor also be scoped).  The recognized configuration parameters are:
+therefore also be scoped).  The recognized configuration parameters are:
 
  VERBOSITY         : the level of verbosity for debugging
                      output, with 0 being default.

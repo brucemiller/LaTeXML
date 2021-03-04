@@ -88,13 +88,53 @@ sub process {
               . "but there's an apparent conflict with location '$loc' and previous '$prevloc'"); } } }
     $root->setAttribute('xml:id' => $id); }
 
-  $$self{db}->{document_id} = $id unless defined $$self{db}->{document_id};
+  # By default, 1st document processed is considered the root of the site
+  my $siteentry = $$self{db}->lookup('SITE_ROOT');
+  if (!$siteentry) {
+    $siteentry = $$self{db}->register('SITE_ROOT', id => $id); }
+  my $siteid = $siteentry->getValue('id');
+
   $self->scan($doc, $root, $$doc{parent_id});
+
+  # Set up interconnections on multidocument site.
+  $$self{db}->register("DOCUMENT:" . ($doc->siteRelativeDestination || ''), id => $id);
+
+  # Question: If (on multidoc sites) a doc contains a single node (say ltx:chapter)
+  # might it make sense to treat the doc as ONLY that node?
+  # Alternative: May be necessary to extract title from that child?
+
+  # Find a plausible parent doc, unless this is the root, or already has one
+  # Either by relative id's, destination location, or default to the site itself.
+  my $entry = $$self{db}->lookup("ID:$id");
+  if (($id ne $siteid) && !$entry->getValue('parent')) {
+    my $parent_id;
+    if (!$parent_id) {    # Look for parent assuming it's id is component of $id
+      my $upid = $id;
+      while ($upid =~ s/\.[^\.]+$//) {
+        if ($$self{db}->lookup("ID:$upid")) {
+          $parent_id = $upid; last; } } }
+    if (!$parent_id) {    # Look for parent as index.xml in a containing directory.
+      my $loc = $entry->getValue('location');
+      my $dir = $loc;
+      while (($dir) = pathname_split($dir)) {
+        if (my $pentry = $$self{db}->lookup("DOCUMENT:" . pathname_concat($dir, 'index.xml'))) {
+          my $pid = $pentry->getValue('id');
+          if ($pid && ($pid ne $id)) {
+            $parent_id = $pid; last; } } } }
+    if (!$parent_id) {    # Else default to the id of the site itself.
+      $parent_id = $siteid; }
+    if ($parent_id && ($parent_id ne $id)) {
+      $entry->setValues(parent => $parent_id);
+      # Children are added in the order that they were scanned
+      $self->addAsChild($id, $parent_id); }
+    else {
+      Info('expected', 'parent', undef, "No parent document found for '$id'"); } }
   NoteProgressDetailed(" [DBStatus: " . $$self{db}->status . "]");
   return $doc; }
 
 sub scan {
   my ($self, $doc, $node, $parent_id) = @_;
+  no warnings 'recursion';
   my $tag     = $doc->getQName($node);
   my $handler = $$self{handlers}{$tag} || \&default_handler;
   &$handler($self, $doc, $node, $tag, $parent_id);
@@ -102,6 +142,7 @@ sub scan {
 
 sub scanChildren {
   my ($self, $doc, $node, $parent_id) = @_;
+  no warnings 'recursion';
   foreach my $child ($node->childNodes) {
     if ($child->nodeType == XML_ELEMENT_NODE) {
       $self->scan($doc, $child, $parent_id); } }
@@ -139,7 +180,9 @@ sub inPageID {
         my ($bl) = split(' ', $baselabels);
         $bl =~ s/^LABEL://;
         $baseid = $bl; } } }
-  if ($baseid eq $id) {
+  if (!$id) {
+    return $id; }
+  elsif ($baseid eq $id) {
     return; }
   elsif ($baseid && ($id =~ /^\Q$baseid\E\.(.*)$/)) {
     return $1; }
@@ -227,6 +270,7 @@ sub addCommon {
 
 sub default_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
+  no warnings 'recursion';
   my $id = $node->getAttribute('xml:id');
   if ($id) {
     $$self{db}->register("ID:$id",
@@ -242,7 +286,7 @@ sub section_handler {
     $$self{db}->register("ID:$id",
       $self->addCommon($doc, $node, $tag, $parent_id),
       primary  => 1,
-      title    => orNull($self->cleanNode($doc, $doc->findnode('ltx:title', $node))),
+      title    => orNull($self->cleanNode($doc, $doc->findnode('ltx:title',    $node))),
       toctitle => orNull($self->cleanNode($doc, $doc->findnode('ltx:toctitle', $node))),
       children => [],
       stub     => orNull($node->getAttribute('stub')));
@@ -329,15 +373,16 @@ sub bibref_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   # Don't scan refs from 'cited' bibblock
   if (!$doc->findnodes('ancestor::ltx:bibblock[contains(@class,"ltx_bib_cited")]', $node)) {
-#####  if( ($node->getAttribute('class')||'') !~ /\bcitedby\b/){
     if (my $keys = $node->getAttribute('bibrefs')) {
-      my @lists = split(/\s+/, $node->getAttribute('inlist') || 'bibliography');
+      # Citation specifies main 'bibliography', as well as any specific others (eg. per chapter)
+      my $l     = $node->getAttribute('inlist');
+      my @lists = (($l ? split(/\s+/, $l) : ()), 'bibliography');
       foreach my $bibkey (split(',', $keys)) {
         if ($bibkey) {
-          $bibkey = lc($bibkey);    # NOW we downcase!
-          my $entry = $$self{db}->register("BIBLABEL:$bibkey");
-          map { $entry->noteAssociation(inlist => $_); } @lists;
-          $entry->noteAssociation(referrers => $parent_id); } } } }
+          $bibkey = lc($bibkey);         # NOW we downcase!
+          foreach my $list (@lists) {    # Records a *reference* to a bibkey! (for each list)
+            my $entry = $$self{db}->register("BIBLABEL:$list:$bibkey");
+            $entry->noteAssociation(referrers => $parent_id); } } } } }
   # Usually, a bibref will have, at most, some ltx:bibphrase's; should be scanned.
   $self->default_handler($doc, $node, $tag, $parent_id);
   return; }
@@ -351,7 +396,7 @@ sub indexmark_handler {
   # Do these need ->cleanNode ???
   my @phrases = $doc->findnodes('ltx:indexphrase', $node);
   my @seealso = $doc->findnodes('ltx:indexsee',    $node);
-  my $key = join(':', 'INDEX', map { $_->getAttribute('key') } @phrases);
+  my $key     = join(':', 'INDEX', map { $_->getAttribute('key') } @phrases);
   my $inlist;
   if (my $listnames = $node->getAttribute('inlist')) {
     $inlist = { map { ($_ => 1) } split(/\s/, $listnames) }; }
@@ -378,7 +423,7 @@ sub glossaryentry_handler {
   my @phrases = $doc->findnodes('ltx:glossaryphrase', $node);
   # Create an entry for EACH list (they could be distinct definitions)
   foreach my $list (split(/\s+/, $lists)) {
-    my $gkey = join(':', 'GLOSSARY', $list, $key);
+    my $gkey  = join(':', 'GLOSSARY', $list, $key);
     my $entry = $$self{db}->lookup($gkey) || $$self{db}->register($gkey);
     $entry->setValues(map { ('phrase:' . ($_->getAttribute('role') || 'label') => $_) } @phrases);
     $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal'));
@@ -398,9 +443,9 @@ sub glossaryentry_handler {
 #  <ltx:bibentry> is a semantic bibliographic entry,
 #     as generated from a BibTeX file.
 #  <ltx:bibitem> is a formatted bibliographic entry,
-#     as generated from an explicit thebibliography environment,
+#     as generated from an explicit thebibliography environment (eg. manually, or in a .bbl),
 #     or as formatted from a <ltx:bibentry> by MakeBibliography.
-# For a bibitem, we'll store the usual info in the DB.
+# For a bibitem, we'll store the bibliographic metadata in the DB, keyed by the ID of the item.
 sub bibitem_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
@@ -409,73 +454,76 @@ sub bibitem_handler {
     # BUT, we're going to index it in the ObjectDB by the downcased name!!!
     my $key = $node->getAttribute('key');
     $key = lc($key) if $key;
-    $$self{db}->register("BIBLABEL:$key", id => orNull($id)) if $key;
+    my $bib = $doc->findnode('ancestor-or-self::ltx:bibliography', $node);
+    # Probably should only be one list, but just in case?
+    my @lists = split(/\s+/, ($bib && $bib->getAttribute('lists')) || 'bibliography');
+    if ($key) {
+      foreach my $list (@lists) {    # BIBLABEL is for the reference to a biblio. item/entry
+        $$self{db}->register("BIBLABEL:$list:$key", id => orNull($id)); } }
+    # The actual bibliographic data is recorded keyed by the xml:id of the bibitem!
     # Do these need ->cleanNode ???
     $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id), bibkey => orNull($key),
       location    => orNull($doc->siteRelativeDestination),
       pageid      => orNull($self->pageID($doc)),
       fragid      => orNull($self->inPageID($doc, $node)),
-      authors     => orNull($doc->findnode('ltx:tags/ltx:tag[@role="authors"]', $node)),
+      authors     => orNull($doc->findnode('ltx:tags/ltx:tag[@role="authors"]',     $node)),
       fullauthors => orNull($doc->findnode('ltx:tags/ltx:tag[@role="fullauthors"]', $node)),
-      year        => orNull($doc->findnode('ltx:tags/ltx:tag[@role="year"]', $node)),
-      number      => orNull($doc->findnode('ltx:tags/ltx:tag[@role="number"]', $node)),
-      refnum      => orNull($doc->findnode('ltx:tags/ltx:tag[@role="refnum"]', $node)),
-      title       => orNull($doc->findnode('ltx:tags/ltx:tag[@role="title"]', $node)),
-      keytag      => orNull($doc->findnode('ltx:tags/ltx:tag[@role="key"]', $node)),
-      typetag     => orNull($doc->findnode('ltx:tags/ltx:tag[@role="bibtype"]', $node))); }
+      year        => orNull($doc->findnode('ltx:tags/ltx:tag[@role="year"]',        $node)),
+      number      => orNull($doc->findnode('ltx:tags/ltx:tag[@role="number"]',      $node)),
+      refnum      => orNull($doc->findnode('ltx:tags/ltx:tag[@role="refnum"]',      $node)),
+      title       => orNull($doc->findnode('ltx:tags/ltx:tag[@role="title"]',       $node)),
+      keytag      => orNull($doc->findnode('ltx:tags/ltx:tag[@role="key"]',         $node)),
+      typetag     => orNull($doc->findnode('ltx:tags/ltx:tag[@role="bibtype"]',     $node))); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
 
 # For a bibentry, we'll only store the citation key, so we know it's there.
 sub bibentry_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
-  my $id = $node->getAttribute('xml:id');
-  if ($id) {
-    if (my $key = $node->getAttribute('key')) {
-      $$self{db}->register('BIBLABEL:' . lc($key), id => orNull($id)); } }
-## No, let's not scan the content of the bibentry
-## until it gets formatted and re-scanned by MakeBibliography.
-##  $self->scanChildren($doc,$node,$id || $parent_id);
-
-## HOWEVER; this ultimately requires formatting the bibliography twice (for complex sites).
-## This needs to be reworked!
+  # The actual bibliographic data is recorded keyed by the xml:id of the bibitem
+  # AFTER the bibentry has been formatted into a bibitem by MakeBibliography!
+  # So, there's really nothing to do now.
+  ## HOWEVER; this ultimately requires formatting the bibliography twice (for complex sites).
+  ## This needs to be reworked!
   return; }
 
 sub declare_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   # See preprocess_symbols for the extraction of the "defined" symbol (if any)
   # Also recognize marks for definition, notation...
-  my $type     = $node->getAttribute('type');
-  my $sort     = $node->getAttribute('sortkey');
-  my $tagnode  = $self->cleanNode($doc, $doc->findnode('child::ltx:tag', $node));
-  my $textnode = $self->cleanNode($doc, $doc->findnode('child::ltx:text', $node));
-  if ($node->getAttribute('undefined')) { # This is a general purpose notation mark, which the parent does NOT define!
-    $parent_id = undef; }
+  my $type    = $node->getAttribute('type');
+  my $sort    = $node->getAttribute('sortkey');
+  my $decl_id = $node->getAttribute('xml:id');
+  my $term = $self->cleanNode($doc, $doc->findnode('child::ltx:tags/ltx:tag[@role="term"]', $node));
+  my $description = $self->cleanNode($doc, $doc->findnode('child::ltx:text', $node));
+  my $definiens   = $node->getAttribute('definiens');
   if (defined $type && ($type eq 'definition')) {
-    my (@syms) = $doc->findnodes('descendant-or-self::ltx:XMTok[@meaning]', $tagnode);
-    # We're probably not defining a relation, so put those first.
-    @syms = (grep(($_->getAttribute('role') || '') ne 'RELOP', @syms), @syms);
-    # HACK; remove apparent definitions to lists
-    # [these will have to be handled much more intentionally]
-    @syms = grep { $_->getAttribute('meaning') !~ /^delimited-/ } @syms;
-    if (my $name = $syms[0] && $syms[0]->getAttribute('meaning')) {
-      $$self{db}->register("DECLARATION:global:$name",
-        parent => $parent_id, tag => $tagnode, text => $textnode);
-  } }
+    if ((!defined $definiens) && (defined $term)) {
+      # Extract the definiens from the term nade
+      my (@syms) = $doc->findnodes('descendant-or-self::ltx:XMTok[@meaning]', $term);
+      # We're probably not defining a relation, so put non-relations first.
+      @syms = ((grep { ($_->getAttribute('role') || '') ne 'RELOP'; } @syms), @syms);
+      # HACK; remove apparent definitions to lists
+      # [these will have to be handled much more intentionally]
+      @syms      = grep { $_->getAttribute('meaning') !~ /^delimited-/ } @syms;
+      $definiens = $syms[0] && $syms[0]->getAttribute('meaning'); }
+    if (defined $definiens) {
+      $$self{db}->register("DECLARATION:global:$definiens",
+        $self->addCommon($doc, $node, $tag, $parent_id),
+        description => $description); } }
   elsif ((!$type) && $parent_id) {   # No type? Assume local definition. (or should be explicit scope?
-    if (my $tag = $doc->findnode('ltx:tag', $node)) {
-      if (my $decl_id = $node->getAttribute('xml:id')) {
-        $$self{db}->register("DECLARATION:local:$decl_id", id => $decl_id,
-          parent => $parent_id, tag => $tag, text => $textnode);
-  } } }
+    if ($decl_id && ($description || $doc->findnode('ltx:tags/ltx:tag', $node))) {
+      $$self{db}->register("DECLARATION:local:$decl_id",
+        $self->addCommon($doc, $node, $tag, $parent_id),
+        description => $description); } }
 
   if ($sort) {                       # It only goes into Notation tables/indices if a sortkey.
-    $$self{db}->register("NOTATION:" . $tagnode->cloneNode(1)->toString,
-      parent => $parent_id,
-      tag    => $tagnode, text => $textnode, sortkey => $sort); }
+    $$self{db}->register("NOTATION:" . ($definiens || $decl_id || $sort),
+      $self->addCommon($doc, $node, $tag, $parent_id),
+      sortkey => $sort, description => $description); }
   # No real benefit to scan the contents? (and makes it SLOW)
   #  $self->default_handler($doc,$node,$tag,$parent_id);
-}
+  return; }
 
 # I'm thinking we shouldn't acknowledge navigation data at all?
 sub navigation_handler {
@@ -504,4 +552,3 @@ sub orNull {
 
 # ================================================================================
 1;
-

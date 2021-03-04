@@ -20,7 +20,7 @@ use LaTeXML::Package;
 
 DefPrimitive('\Pisymbol{}{Number}', sub {
     my ($document, $pifont, $code) = @_;
-    return Box(FontDecode($code->valueOf, ToString($pifont)), undef, undef, Invocation(T_CS('\char'), $_[1])); });
+    return Box(FontDecode($code->valueOf, ToString($pifont)), undef, undef, Invocation(T_CS('\char'), $code)); });
 
 DefPrimitive('\lx@Picountersymbol{}{}{Number}', sub {
     my ($document, $pifont, $counter, $codebase) = @_;
@@ -32,7 +32,7 @@ DefMacro('\endPilist',  '\endlist');
 
 DefMacro('\lx@defpiautolabel{}{}', sub {
     my ($gullet, $font, $base) = @_;
-    my $level = (LookupValue('enumlevel') || 0) + 1;
+    my $level   = (LookupValue('enumlevel') || 0) + 1;
     my $postfix = ToString(Tokens(roman($level)));
     DefMacroI('\theenum' . $postfix, undef,
       '\lx@Picountersymbol{' . ToString($font) . '}{enum' . $postfix . '}{' . ToString($base) . '}');

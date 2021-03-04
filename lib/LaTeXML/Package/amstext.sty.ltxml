@@ -18,6 +18,7 @@ use LaTeXML::Package;
 #**********************************************************************
 # See amsldoc
 #**********************************************************************
+RequirePackage('amsgen');
 
 DefConstructor('\text{}', "<ltx:text _noautoclose='true'>#1</ltx:text>", mode => 'text');
 

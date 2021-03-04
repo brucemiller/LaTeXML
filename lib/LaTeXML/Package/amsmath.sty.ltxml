@@ -76,25 +76,30 @@ DefMacro('\tag OptionalMatch:* {}',
 # latexml, however, can end up with 2, which end up incrementing coutners twice!
 # Of course, that means we're doing something quite wrong, but we've at least got to recover the effect!!!
 DefMacro('\@ams@intertext{}',
-  '\@ams@newline\multicolumn{\@alignment@ncolumns}{l}{\@@ams@intertext{#1}}\nonumber\@ams@newline');
+  '\hidden@crcr\noalign{\@@ams@intertext{#1}}');
+
 DefConstructor('\@@ams@intertext{}',
   "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode => 'text');
-
-DefMacroI('\@ams@newline', undef, sub {
-    my ($gullet) = @_;
-    readNewlineArgs($gullet);
-    $gullet->skipSpaces();
-    my $next = $gullet->readToken();
-    if ($next && $next->equals(T_CS('\intertext'))) {
-      ($next); }
-    else {
-      (T_CS('\@alignment@newline@noskip'), $next); } });
 
 # Note that most of ams's alignment environments originate in AmSTeX.
 # To make \begin{foo}...\end{foo} also work as \foo...\endfoo within AmSTeX.pool,
 # we're wrapping an extra \@hidden@bgroup ... \@hidden@egroup around the
 # code imlementing these.
-sub amsalignBindings {
+
+# A utility for handling different alignment strategies centrally
+sub amsAlignmentBindings {
+  my ($template, %properties) = @_;
+
+  my $cur_jot = LookupDimension('\jot');
+  if ($cur_jot && ($cur_jot->valueOf != LookupDimension('\lx@default@jot')->valueOf)) {
+    $properties{rowsep} = $cur_jot; }
+  alignmentBindings($template, 'math', attributes => {%properties});
+  Let("\\\\", '\@alignment@newline@noskip');
+  return; }
+
+# This one is for alignment environments that can (and need to be) "rearranged"
+# to recognize a set of equations contained within
+sub amsRearrangeableBindings {
   my ($template, %properties) = @_;
 
   my $cur_jot = LookupDimension('\jot');
@@ -116,14 +121,15 @@ sub amsalignBindings {
       closeRow    => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn  => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn => sub { $_[0]->closeElement('ltx:_Capture_'); },
-      properties => {%properties}));
-  Let(T_ALIGN,       '\@alignment@align');
-  Let("\\\\",        '\@ams@newline');
-  Let('\cr',         '\@alignment@cr');
-  Let('\@open@row',  '\@equationgroup@open@row');
-  Let('\@close@row', '\@equationgroup@close@row');
-  Let('\intertext',  '\@ams@intertext');
+      properties  => {%properties}));
+  Let("\\\\",         '\@alignment@newline@noskip');
+  Let('\@row@before', '\eqnarray@row@before');
+  Let('\@row@after',  '\eqnarray@row@after');
+  Let('\intertext',   '\@ams@intertext');
   return; }
+
+DefPrimitive('\lx@ams@cr@binding', sub {
+    Let("\\\\", '\@alignment@newline@noskip'); });
 
 #======================================================================
 # Section 3.1 introduction
@@ -173,19 +179,6 @@ sub extractXMArrayCells {
   return @contents; }
 
 #======================================================================
-# A utility for handling different alignment strategies centrally
-sub amsAlignmentBindings {
-  my ($template, %properties) = @_;
-
-  my $cur_jot = LookupDimension('\jot');
-  if ($cur_jot && ($cur_jot->valueOf != LookupDimension('\lx@default@jot')->valueOf)) {
-    $properties{rowsep} = $cur_jot; }
-
-  alignmentBindings($template, undef, attributes => {%properties});
-  Let("\\\\", '\@alignment@newline@noskip');
-  return; }
-
-#======================================================================
 # Section 3.3 Split equations without alignment
 
 # Multiline is for SINGLE equations,
@@ -193,29 +186,49 @@ sub amsAlignmentBindings {
 # Justifies the 1st line left, last line right, and middle ones centered.
 # Useful when you are trying to fit a long equation into a known space,
 # This preserves the splits and semantics by constructing an XMDual.
+DefPrimitiveI('\@ams@multirow@bindings', 'RequiredKeyVals:multirow OptionalKeyVals', sub {
+    my ($stomach, $attributes, $options) = @_;
+    my %attr    = $attributes->getPairs;
+    my %options = ($options ? $options->getPairs : ());
+    if (my $va = $attr{vattach}) {
+      $attr{vattach} = translateAttachment($va) || ToString($va); }
+    if ($attr{width} && $attr{width}->valueOf == 0) {
+      delete $attr{width}; }
+    my $before = $options{before_row};
+    my $after  = $options{after_row};
+    my $col1   = {
+      before => Tokens(T_CS('\hfil'), T_CS('\displaystyle'),
+        ($before ? (T_CS('\text'), T_BEGIN, $before, T_END) : ())),
+      after => Tokens(($after ? (T_CS('\text'), T_BEGIN, $after, T_END) : ())) };
+    my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
+    amsAlignmentBindings($template, %attr);
+    return; });
+
 DefMacro('\multline',
-  '\ifmmode \@hidden@bgroup\@@AmS@multline\@start@alignment'
-    . '\else\@hidden@bgroup\@@multline\@start@alignment\fi');
-DefMacro('\endmultline',                   '\@finish@alignment\@end@multline\@hidden@egroup');
-DefMacro('\csname multline*\endcsname',    '\@hidden@bgroup\@@multlinestar\@start@alignment');
-DefMacro('\csname endmultline*\endcsname', '\@finish@alignment\@end@multline\@hidden@egroup');
+  '\ifmmode\@hidden@bgroup\@ams@multirow@bindings{name=multline}\@@AmS@multline\@start@alignment'
+    . '\else\@hidden@bgroup\@ams@multirow@bindings{name=multline}\@@multline\@start@alignment\fi');
+DefMacro('\endmultline',
+  '\hidden@cr{}\@finish@alignment\@end@multline\@hidden@egroup');
+DefMacro('\csname multline*\endcsname',
+  '\@hidden@bgroup\@ams@multirow@bindings{name=multline}\@@multlinestar\@start@alignment');
+DefMacro('\csname endmultline*\endcsname',
+  '\hidden@cr{}\@finish@alignment\@end@multline\@hidden@egroup');
 DefPrimitive('\@end@multline', sub { $_[0]->egroup; });
 
 DefConstructor('\@@multline DigestedBody',
   "<ltx:equation xml:id='#id'>"
     . "#tags"
     . "<ltx:Math mode='display'>"
-    . "<ltx:XMath>#body</ltx:XMath>"
+    . "<ltx:XMath>#1</ltx:XMath>"
     . "</ltx:Math>"
     . "</ltx:equation>",
   mode         => 'display_math',
   properties   => sub { RefStepCounter('equation') },
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    amsMultirowBindings({ name => 'multline' }); },
-  afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterDigest  => sub {                              # Nasty trick required to make "body" be the arg.
     $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left', '-1' => 'right' });
-    $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
+    $_[1]->setBody($_[1]->getArg(1)->unlist, undef);
+    return; },
   reversion      => '\begin{multline}#1\end{multline}',
   afterConstruct => sub {
     rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild->lastChild->lastChild->lastChild); });
@@ -227,10 +240,8 @@ DefConstructor('\@@multlinestar DigestedBody',
     . "</ltx:Math>"
     . "</ltx:equation>",
   mode         => 'display_math',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    amsMultirowBindings({ name => 'multline' }); },
-  afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterDigest  => sub {                     # Nasty trick required to make "body" be the arg.
     $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left', '-1' => 'right' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion      => '\begin{multline*}#1\end{multline*}',
@@ -241,10 +252,8 @@ DefConstructor('\@@multlinestar DigestedBody',
 DefConstructor('\@@AmS@multline DigestedBody',
   "#body",
   mode         => 'display_math',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    amsMultirowBindings({ name => 'multline' }); },
-  afterDigest => sub {    # Nasty trick required to make "body" be the arg.
+  beforeDigest => sub { $_[0]->bgroup; },
+  afterDigest  => sub {                     # Nasty trick required to make "body" be the arg.
     $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { '0' => 'left', '-1' => 'right' });
     $_[1]->setBody($_[1]->getArg(1)->unlist, undef); },
   reversion      => '\multline#1\endmultline',
@@ -256,22 +265,9 @@ DefConstructor('\@@AmS@multline DigestedBody',
 DefKeyVal('multirow', 'width',  'Dimension');
 DefKeyVal('multirow', 'rowsep', 'Dimension');
 
-DefPrimitiveI('\@ams@multirow@bindings', 'RequiredKeyVals:multirow OptionalKeyVals', sub {
-    my ($stomach, $attributes, $options) = @_;
-    my %attr = $attributes->getPairs;
-
-    if (my $va = $attr{vattach}) {
-      $attr{vattach} = translateAttachment($va) || ToString($va); }
-    if ($attr{width} && $attr{width}->valueOf == 0) {
-      delete $attr{width}; }
-
-    amsMultirowBindings(\%attr, ($options ? $options->getPairs : ()));
-    return; });
-
 sub rearrangeAMSMultirow {
   my ($document, $whatsit, $array) = @_;
   my @rows = element_nodes($array);
-
   # Adjust alignment of rows
   if (defined(my $rowalignment = $whatsit->getProperty('MULTIROW_ALIGNMENT_RULE'))) {
     my %align_spec = %{$rowalignment};
@@ -291,19 +287,6 @@ sub rearrangeAMSMultirow {
     $array);
   return; }
 
-sub amsMultirowBindings {
-  my ($properties, %options) = @_;
-  my $before = $options{before_row};
-  my $after  = $options{after_row};
-
-  my $col1 = { before => Tokens(T_CS('\hfil'),
-      T_CS('\displaystyle'),
-      ($before ? (T_CS('\text'), T_BEGIN, $before, T_END) : ())),
-    after => Tokens(($after ? (T_CS('\text'), T_BEGIN, $after, T_END) : ())) };
-
-  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1]);
-  amsAlignmentBindings($template, %{$properties});
-  return; }
 #======================================================================
 # Section 3.4 Split equations with alignment
 
@@ -330,7 +313,7 @@ sub amsMultirowBindings {
 # and the alignment structure.
 # (\intertext?)
 
-DefConditional('\if@inamsalign', sub {
+DefConditional('\if@in@ams@align', sub {
     grep { /^align/ } $STATE->lookupStackedValues('current_environment'); });
 
 DefConstructor('\lx@ams@marksplitinalign', sub {
@@ -339,19 +322,23 @@ DefConstructor('\lx@ams@marksplitinalign', sub {
     $capture->setAttribute(align   => 'center'); },
   # Skip a column (for left/right alignment)
   afterDigest => sub { LookupValue('Alignment')->nextColumn; return; },
-  reversion   => '', sizer => 0);
+  reversion => '', sizer => 0);
 
 DefMacro('\split',
-  '\if@inamsalign\lx@ams@marksplitinalign\fi'
-    . '\@hidden@bgroup\@@split\@start@alignment');
-DefMacro('\endsplit', '\@finish@alignment\@end@split\@hidden@egroup');
+  '\if@in@ams@align\lx@ams@marksplitinalign\fi'
+    . '\@hidden@bgroup\@ams@aligned@bindings\@@split\@start@alignment');
+
+DefMacro('\endsplit', '\hidden@cr{}\@finish@alignment\@end@split\@hidden@egroup');
 
 DefPrimitive('\@end@split', sub { $_[0]->egroup; });
 DefConstructor('\@@split DigestedBody',
   '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    amsAlignedBindings(); },
+  beforeDigest   => sub { $_[0]->bgroup; },
+  reversion      => '\begin{split}#1\end{split}',
+  afterConstruct => sub { rearrangeAMSSplit($_[0], $_[0]->getNode->lastChild); });
+
+DefConstructor('\@@@split DigestedBody',
+  '#1',
   reversion      => '\begin{split}#1\end{split}',
   afterConstruct => sub { rearrangeAMSSplit($_[0], $_[0]->getNode->lastChild); });
 
@@ -380,10 +367,10 @@ DefConstructor('\@@amsgather SkipSpaces DigestedBody',
 DefPrimitive('\end@amsgather', sub { $_[0]->egroup; });
 
 # Set up single centered column.
-DefPrimitive('\@amsgather@bindings', sub {
+DefPrimitive('\@ams@gather@bindings', sub {
     my $col = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\displaystyle')),
       after => Tokens(T_MATH, T_CS('\hfil')) };
-    amsalignBindings(LaTeXML::Core::Alignment::Template->new(columns => [$col]),
+    amsRearrangeableBindings(LaTeXML::Core::Alignment::Template->new(columns => [$col]),
       attributes => { class => 'ltx_eqn_gather' }); });
 
 # Each equation row (except intertext) consists of single equation.
@@ -411,18 +398,18 @@ sub rearrangeAMSGather {
 # So, we'll treat align as aligned in such cases.
 DefMacro('\gather',
   '\ifmmode\let\endgather\endgathered\gathered\else'
-    . '\@hidden@bgroup\@amsgather@bindings\@@amsgather'
+    . '\@hidden@bgroup\@ams@gather@bindings\@@amsgather'
     . '\@equationgroup@numbering{numbered=1,postset=1,grouped=1,aligned=1}'
     . '\@start@alignment\fi');
 DefMacro('\endgather',
-  '\@finish@alignment\end@amsgather\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsgather\@hidden@egroup');
 DefMacro('\csname gather*\endcsname',
   '\ifmmode\expandafter\let\csname endgather*\endcsname\endgathered\gathered\else'
-    . '\@hidden@bgroup\@amsgather@bindings\@@amsgather'
+    . '\@hidden@bgroup\@ams@gather@bindings\@@amsgather'
     . '\@equationgroup@numbering{numbered=0,postset=1,grouped=1,aligned=1}'
     . '\@start@alignment\fi');
 DefMacro('\csname endgather*\endcsname',
-  '\@finish@alignment\end@amsgather\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsgather\@hidden@egroup');
 
 #======================================================================
 # Section 3.6 Equation groups with mutual alignment
@@ -440,12 +427,12 @@ DefConstructor('\@@amsalign SkipSpaces DigestedBody',
 DefPrimitive('\end@amsalign', sub { $_[0]->egroup; });
 
 # Set up repeated pairs of columns.
-DefPrimitive('\@amsalign@bindings', sub {
+DefPrimitive('\@ams@align@bindings', sub {
     my $col1 = { before => Tokens(T_CS('\hfil'), T_MATH, T_CS('\displaystyle')),
       after => Tokens(T_MATH) };
     my $col2 = { before => Tokens(T_MATH, T_CS('\displaystyle')),
       after => Tokens(T_MATH, T_CS('\hfil')) };
-    amsalignBindings(LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]),
+    amsRearrangeableBindings(LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]),
       attributes => { class => 'ltx_eqn_align', colsep => '0pt' });
 });
 
@@ -471,76 +458,77 @@ sub rearrangeAMSAlign {
 # So, we'll treat align as aligned in such cases.
 DefMacro('\align',
   '\ifmmode\let\endalign\endaligned\aligned\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@hidden@bgroup\@ams@align@bindings\@@amsalign'
     . '\@equationgroup@numbering{numbered=1,postset=1,grouped=1,aligned=1}'
     . '\@start@alignment\fi');
+# Note the included \hidden@cr
 DefMacro('\endalign',
-  '\@finish@alignment\end@amsalign\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname align*\endcsname',
   '\ifmmode\expandafter\let\csname endalign*\endcsname\endaligned\aligned\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@hidden@bgroup\@ams@align@bindings\@@amsalign'
     . '\@equationgroup@numbering{numbered=0,postset=1,grouped=1,aligned=1}'
     . '\@start@alignment\fi');
 DefMacro('\csname endalign*\endcsname',
-  '\@finish@alignment\end@amsalign\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup');
 
 # flalign typesets in the full column width (seems perverse to me).
 # So, for the time being, it's treated exactly like align.
 DefMacro('\flalign',
   '\ifmmode\let\endfalign\endaligned\aligned\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@hidden@bgroup\@ams@align@bindings\@@amsalign'
     . '\@equationgroup@numbering{numbered=1,postset=1,grouped=1,aligned=1}'
     . '\@start@alignment\fi');
 DefMacro('\endflalign',
-  '\@finish@alignment\end@amsalign\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname flalign*\endcsname',
   '\ifmmode\expandafter\let\csname endfalign*\endcsname\endaligned\aligned\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@hidden@bgroup\@ams@align@bindings\@@amsalign'
     . '\@equationgroup@numbering{numbered=0,postset=1,grouped=1,aligned=1}'
     . '\@start@alignment\fi');
 DefMacro('\csname endflalign*\endcsname',
-  '\@finish@alignment\end@amsalign\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup');
 
 # alignat doesn't stretch the columns out as much (?)
 # and takes the number of column pairs (which we don't need?)
 # We'll ignore these distinctions for now.
 DefMacro('\alignat{}',
   '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@hidden@bgroup\@ams@align@bindings\@@amsalign'
     . '\@equationgroup@numbering{numbered=1,postset=1,grouped=1,aligned=1}'
     . '\@start@alignment\fi');
 DefMacro('\endalignat',
-  '\@finish@alignment\end@amsalign\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname alignat*\endcsname{}',
   '\ifmmode\expandafter\let\csname endalignat*\endcsname\endalignedat\alignedat{#1}\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@hidden@bgroup\@ams@align@bindings\@@amsalign'
     . '\@equationgroup@numbering{numbered=0,postset=1,grouped=1,aligned=1}'
     . '\@start@alignment\fi');
 DefMacro('\csname endalignat*\endcsname',
-  '\@finish@alignment\end@amsalign\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup');
 
 DefMacro('\xalignat{}',
   '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@hidden@bgroup\@ams@align@bindings\@@amsalign'
     . '\@equationgroup@numbering{numbered=1,postset=1,grouped=1,aligned=1}'
     . '\@start@alignment\fi');
 DefMacro('\endxalignat',
-  '\@finish@alignment\end@amsalign\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup');
 DefMacro('\csname xalignat*\endcsname{}',
   '\ifmmode\expandafter\let\csname endalignat*\endcsname\endalignedat\alignedat{#1}\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@hidden@bgroup\@ams@align@bindings\@@amsalign'
     . '\@equationgroup@numbering{numbered=0,postset=1,grouped=1,aligned=1}'
     . '\@start@alignment\fi');
 DefMacro('\csname endxalignat*\endcsname',
-  '\@finish@alignment\end@amsalign\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup');
 
 DefMacro('\xxalignat{}',
   '\ifmmode\let\endalignat\endalignedat\alignedat{#1}\else'
-    . '\@hidden@bgroup\@amsalign@bindings\@@amsalign'
+    . '\@hidden@bgroup\@ams@align@bindings\@@amsalign'
     . '\@equationgroup@numbering{numbered=1,post=1,grouped=1,aligned=1}'
     . '\@start@alignment\fi');
 DefMacro('\endxxalignat',
-  '\@finish@alignment\end@amsalign\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup');
 
 #======================================================================
 # Section 3.7. Alignment building blocks
@@ -554,38 +542,40 @@ DefMacro('\endxxalignat',
 #   On the other hand, we'll already be inside of a math environment, so delineating
 # these potentially separate equations will be awkward anyway!
 # We'll just create an XMDual to contain the whole results, and the aligned structure.
-DefMacro('\gathered[]', '\@hidden@bgroup\@ams@multirow@bindings{name=gathered,vattach=#1}\@@gathered\@start@alignment');
-DefMacro('\endgathered', '\@finish@alignment\@end@gathered\@hidden@egroup');
+DefMacro('\gathered[]',
+  '\@hidden@bgroup\@ams@multirow@bindings{name=gathered,vattach=#1}\@@gathered\@start@alignment');
+DefMacro('\endgathered',
+  '\hidden@cr{}\@finish@alignment\@end@gathered\@hidden@egroup');
 DefPrimitive('\@end@gathered', sub { $_[0]->egroup; });
 DefConstructor('\@@gathered DigestedBody',
   '#1',
   beforeDigest => sub { $_[0]->bgroup; },
   afterDigest  => sub { $_[1]->setProperty('MULTIROW_ALIGNMENT_RULE' => { 'default' => 'center' }); },
-  reversion      => '\begin{gathered}#1\end{gathered}',
+  reversion    => '\begin{gathered}#1\end{gathered}',
   afterConstruct => sub { rearrangeAMSMultirow($_[0], $_[1], $_[0]->getNode->lastChild); });
 
-DefMacro('\aligned[]',     '\@hidden@bgroup\@@amsaligned\@start@alignment');
-DefMacro('\endaligned',    '\@finish@alignment\@end@amsaligned\@hidden@egroup');
-DefMacro('\alignedat{}[]', '\@hidden@bgroup\@@amsaligned\@start@alignment');
-DefMacro('\endalignedat',  '\@finish@alignment\@end@amsaligned\@hidden@egroup');
+DefPrimitive('\@ams@aligned@bindings', sub {
+    my $col1 = { before => Tokens(T_CS('\hfil'),
+        T_CS('\displaystyle')) };
+    my $col2 = { before => Tokens(T_CS('\displaystyle')),
+      after => Tokens(T_CS('\hfil')) };
+    my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]);
+    amsAlignmentBindings($template, (name => 'aligned', colsep => '0pt'));
+    DefMacro('\@row@before', '');
+    DefMacro('\@row@after',  '');
+    return; });
+
+DefMacro('\aligned[]',     '\@hidden@bgroup\@ams@aligned@bindings\@@amsaligned\@start@alignment');
+DefMacro('\endaligned',    '\hidden@cr{}\@finish@alignment\@end@amsaligned\@hidden@egroup');
+DefMacro('\alignedat{}[]', '\@hidden@bgroup\@ams@aligned@bindings\@@amsaligned\@start@alignment');
+DefMacro('\endalignedat',  '\hidden@cr{}\@finish@alignment\@end@amsaligned\@hidden@egroup');
 
 DefPrimitive('\@end@amsaligned', sub { $_[0]->egroup; });
 DefConstructor('\@@amsaligned DigestedBody',
   '#1',
-  beforeDigest => sub {
-    $_[0]->bgroup;
-    amsAlignedBindings(); },
+  beforeDigest => sub { $_[0]->bgroup; },
   # note that mathtools fails in image generation, w/o this space in reversion!
   reversion => '\begin{aligned} #1\end{aligned}');
-
-sub amsAlignedBindings {
-  my $col1 = { before => Tokens(T_CS('\hfil'),
-      T_CS('\displaystyle')) };
-  my $col2 = { before => Tokens(T_CS('\displaystyle')),
-    after => Tokens(T_CS('\hfil')) };
-  my $template = LaTeXML::Core::Alignment::Template->new(repeated => [$col1, $col2]);
-  amsAlignmentBindings($template, (name => 'aligned', colsep => '0pt'));
-  return; }
 
 # If an aligned is the only child of an equation,
 # it seems better to rewrite the thing into an equationgroup/equation/MathFork construct!
@@ -647,9 +637,9 @@ sub rearrangeLoneAMSAligned {
 #  style : \textstyle or \displaystyle
 #  conditionmode : mode of 2nd column, text or math
 DefMacro('\lx@ams@cases{}',
-  '\lx@gen@cases@bindings{#1}\lx@ams@cases@{#1}\@start@alignment');
+  '\lx@gen@cases@bindings{#1}\lx@ams@cr@binding\lx@ams@cases@{#1}\@start@alignment');
 DefMacro('\lx@end@ams@cases',
-  '\@finish@alignment\lx@end@gen@cases');
+  '\hidden@cr{}\@finish@alignment\lx@end@gen@cases');
 
 # The logical structure for cases extracts the columns of the alignment
 # to give alternating value,condition (an empty condition is replaced by "otherwise" !?!?!)
@@ -701,7 +691,7 @@ DefConstructor('\intertext{}', "<ltx:p class='ltx_intertext'>#1</ltx:p>", mode =
 # Section 3.11.1 Numbering hierarchy
 DefPrimitive('\numberwithin[]{}{}', sub {
     my ($ignore, $format, $counter, $within) = @_;
-    $format = ($format ? ToString($format) : '\arabic');
+    $format  = ($format ? ToString($format) : '\arabic');
     $counter = ToString(Expand($counter)); $within = ToString(Expand($within));
     NewCounter($counter, $within);
     DefMacroI("\\the$counter", undef,
@@ -720,7 +710,6 @@ DefMacro('\endsubequations', '\lx@equationgroup@subnumbering@end');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 4: Miscellaneous mathematical features
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
 #======================================================================
 # Section 4.1 Matrices
 
@@ -729,13 +718,13 @@ DefMacro('\endsubequations', '\lx@equationgroup@subnumbering@end');
 # keys are
 #  name  : the name of the environment (for reversion)
 #  datameaning: the (presumed) meaning of the array construct
-#  opmeaning  : the meaning of an operator to be applied to the array (if any)
+#  delimitermeaning  : the operator meaning due to delimiters (eg. norm)(as applied to the array)
 #  style : (display|text|script|scriptscript)
 #  left  : TeX code for left of matrix
 #  right  : TeX code for right
 #  alignment: the alignment of the columnns (default "c")
 DefMacro('\lx@ams@matrix {}',
-  '\lx@gen@matrix@bindings{#1}\lx@ams@matrix@{#1}\@start@alignment');
+  '\lx@gen@matrix@bindings{#1}\lx@ams@cr@binding\lx@ams@matrix@{#1}\@start@alignment');
 DefMacro('\lx@end@ams@matrix',
   '\@finish@alignment\lx@end@gen@matrix');
 
@@ -746,18 +735,15 @@ DefMacro('\lx@end@ams@matrix',
 # HOWEVER, the delimeters may also signify an OPERATION on the matrix
 # in which case the application & meaning of that operator must be supplied.
 
-# Similar to \lx#gen@plain@matrix@, but for the body & reversion!
+# Essentially same as \lx#gen@plain@matrix@, but for the body & reversion!
 DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
   "?#needXMDual("
     . "<ltx:XMDual>"
-    . "?#delimitermeaning("
-    . "<ltx:XMApp>"
-    . "<ltx:XMTok meaning='#delimitermeaning'/>"
+    . "?#delimitermeaning(<ltx:XMApp><ltx:XMTok meaning='#delimitermeaning'/>)()"
+    . "?#datameaning(<ltx:XMApp><ltx:XMTok meaning='#datameaning'/>)()"
     . "<ltx:XMRef _xmkey='#xmkey'/>"
-    . "</ltx:XMApp>"
-    . ")("
-    . "<ltx:XMRef _xmkey='#xmkey'/>"
-    . ")"
+    . "?#delimitermeaning(</ltx:XMApp>)()"
+    . "?#datameaning(</ltx:XMApp>)()"
     . "<ltx:XMWrap>#left<ltx:XMArg _xmkey='#xmkey'>#2</ltx:XMArg>#right</ltx:XMWrap>"
     . "</ltx:XMDual>"
     . ")("
@@ -767,7 +753,7 @@ DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $kv = $whatsit->getArg(1);
-    if ($kv->getValue('left') || $kv->getValue('right')) {
+    if ($kv->getValue('datameaning') || $kv->getValue('delimitermeaning')) {
       $whatsit->setProperties(
         needXMDual => 1,
         xmkey      => LaTeXML::Package::getXMArgID()); }
@@ -776,10 +762,13 @@ DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
     my ($whatsit, $kv, $body) = @_;
     my $name  = $kv->getValue('name');
     my $align = $kv->getValue('alignment');
-    (T_CS('\begin'), T_BEGIN, Revert($name), T_END,
-      ($align && $align->unlist ? (T_OTHER('['), Revert($align), T_OTHER(']')) : ()),
+    (($name ? (T_CS('\begin'), T_BEGIN, Revert($name), T_END) : ()),
+      ($align && $align->unlist ?
+          ($kv->getValue('alignment-required')
+          ? (T_BEGIN, Revert($align), T_END) : (T_OTHER('['), Revert($align), T_OTHER(']')))
+        : ()),
       Revert($body),
-      T_CS('\end'), T_BEGIN, Revert($name), T_END); }
+      ($name ? (T_CS('\end'), T_BEGIN, Revert($name), T_END) : ())); }
 );
 
 # NOTE: Use \@left,\@right here, to avoid the hidden grouping (see TeX.pool, \@hidden@bgroup)
@@ -864,7 +853,7 @@ DefMacro('\hdotsfor Number', sub {
 # This currently doesn't see deeply enough into $after, eg. \boldsymbol{+}
 DefPrimitive('\lx@math@dots Digested', sub {
     my ($stomach, $after) = @_;
-    my $role = $after && $after->getProperty('role');
+    my $role   = $after && $after->getProperty('role');
     my %binops = (ADDOP => 1, BINOP => 1, MULOP => 1, RELOP => 1);
     return (Box(($role && $binops{$role} ? "\x{22EF}" : "\x{2026}"),
         undef, undef, T_CS('\dots'), mode => 'math', name => 'dots', role => 'ID'),
@@ -902,7 +891,7 @@ DefConstructor('\boxed@text{}',
     . "#1"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  mode         => 'math', bounded => 1,
+  mode => 'math', bounded => 1,
   beforeDigest => sub {
     Let("\\\\", '\@block@cr'); },
   alias => '\boxed');
@@ -1157,18 +1146,9 @@ DefMath('\pod{}', '(#1)', role => 'MODIFIER',   meaning => 'modulo');    # Well,
 #  \substack, \begin{subarray}
 # These make the combining operator be list, but often formulae would be better
 DefMacro('\substack{}', '\begin{subarray}{c}#1\end{subarray}');
-DefEnvironment('{subarray}{}',
-  "<ltx:XMArray mathstyle='script' name='list' class='ltx_align_#1' rowsep='#rowsep'>"
-    . "<ltx:XMRow><ltx:XMCell><ltx:XMArg>#body</ltx:XMArg></ltx:XMCell></ltx:XMRow>"
-    . "</ltx:XMArray>",
-  properties   => { rowsep => Dimension('0') },
-  beforeDigest => sub { DefConstructor("\\\\ OptionalMatch:* [Dimension]",
-      "</ltx:XMArg></ltx:XMCell></ltx:XMRow><ltx:XMRow><ltx:XMCell><ltx:XMArg>",
-      reversion => Tokens(T_CS("\\\\"), T_CR));
-    Let('\cr', "\\\\");
-    MergeFont(mathstyle => 'script');
-  });
-
+DefMacro('\subarray{}',
+'\lx@ams@matrix{name=subarray,style=\scriptsize,datameaning=list,rowsep=0pt,alignment=#1,alignment-required=true}');
+DefMacro('\endsubarray', '\lx@end@ams@matrix');
 #======================================================================
 # Section 7.2 the \sideset command
 
@@ -1194,7 +1174,8 @@ DefConstructor('\sideset{}{}{}', sub {
     my $ch   = $document->getFirstChildElement($node);
     my ($opx, $ignore)
       = ($ch && $ch->getAttribute('scriptpos') || 'post') =~ /^(pre|mid|post)?(\d+)?$/;
-    my $level = $props{level} || 0;
+    my $level0 = $props{scriptlevel} || 0;
+    my $level  = $level0;
     foreach my $script (reverse $pre->unlist) {
       # If it's a script, handle it (non-scripts dealt with above & below)
       if (my $scriptop = IsScript($script)) {
@@ -1209,7 +1190,7 @@ DefConstructor('\sideset{}{}{}', sub {
         $node = sidesetWrap($document, $node, 'post', $$scriptop[1], $level, $script); }
       else {
         push(@after, $script); } }                              # Save non-scripts
-    $document->setAttribute($node, scriptpos => $opx) if $opx;
+    $document->setAttribute($node, scriptpos => $opx . $level0) if $opx;
 
     # Put any garbage in the post-scripts AFTER
     foreach my $nonscript (@after) {

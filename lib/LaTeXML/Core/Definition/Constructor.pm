@@ -53,7 +53,7 @@ sub getReversionSpec {
   my ($self) = @_;
   my $spec = $$self{reversion};
   if ($spec && !ref $spec) {
-    $spec = $$self{reversion} = LaTeXML::Package::TokenizeInternal($spec); }
+    $spec = $$self{reversion} = LaTeXML::Package::TokenizeInternal($spec)->packParameters; }
   return $spec; }
 
 sub getSizer {
@@ -89,7 +89,7 @@ sub invoke {
   # Parse AND digest the arguments to the Constructor
   my $params = $self->getParameters;
   my @args   = ($params ? $params->readArgumentsAndDigest($stomach, $self) : ());
-  print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
+  print STDERR $self->tracingArgs(@args) . " [for ".Stringify($$self{cs})."]\n" if $tracing && @args;
   my $nargs = $self->getNumArgs;
   @args = @args[0 .. $nargs - 1];
 
@@ -102,11 +102,11 @@ sub invoke {
     my $value = $props{$key};
     if (ref $value eq 'CODE') {
       $props{$key} = &$value($stomach, @args); } }
-  $props{font}    = $font                           unless defined $props{font};
-  $props{locator} = $stomach->getGullet->getLocator unless defined $props{locator};
-  $props{isMath}  = $ismath                         unless defined $props{isMath};
-  $props{level}   = $stomach->getBoxingLevel;
-
+  $props{font}        = $font                           unless defined $props{font};
+  $props{locator}     = $stomach->getGullet->getLocator unless defined $props{locator};
+  $props{isMath}      = $ismath                         unless defined $props{isMath};
+  $props{level}       = $stomach->getBoxingLevel;
+  $props{scriptlevel} = $stomach->getScriptLevel if $ismath;
   # Now create the Whatsit, itself.
   my $whatsit = LaTeXML::Core::Whatsit->new($self, [@args], %props);
   # Call any 'After' code.
@@ -122,8 +122,8 @@ sub invoke {
 sub executeAfterDigestBody {
   my ($self, $stomach, @whatever) = @_;
   local $LaTeXML::Core::State::UNLOCKED = 1;
-  my $post = $$self{afterDigestBody};
-  return ($post ? map { &$_($stomach, @whatever) } @$post : ()); }
+  my @post = grep { defined } @{ $$self{afterDigestBody} || [] };
+  return (map { &$_($stomach, @whatever) } @post); }
 
 sub doAbsorbtion {
   my ($self, $document, $whatsit) = @_;
@@ -144,7 +144,7 @@ sub doAbsorbtion {
 
 __END__
 
-=pod 
+=pod
 
 =head1 NAME
 
@@ -154,7 +154,7 @@ C<LaTeXML::Core::Definition::Constructor>  - Control sequence definitions.
 
 
 This class represents control sequences that contribute arbitrary XML fragments
-to the document tree.  During digestion, a C<LaTeXML::Core::Definition::Constuctor> records the arguments 
+to the document tree.  During digestion, a C<LaTeXML::Core::Definition::Constuctor> records the arguments
 used in the invocation to produce a L<LaTeXML::Core::Whatsit>.  The resulting L<LaTeXML::Core::Whatsit>
 (usually) generates an XML document fragment when absorbed by an instance of L<LaTeXML::Core::Document>.
 Additionally, a C<LaTeXML::Core::Definition::Constructor> may have beforeDigest and afterDigest daemons

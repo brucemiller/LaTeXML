@@ -28,12 +28,12 @@ DefPrimitiveI('\protected', undef, sub {
 # \detokenize
 DefMacro('\detokenize GeneralText', sub { Explode(writableTokens($_[1])); });
 
-# \unexpanded
-# This is like \noexpand, but acts on <general text>
-# with the peculiarity of how <filler> is expanded beforehand!
-DefMacro('\unexpanded GeneralText', sub {
-    my ($gullet, $tokens) = @_;
-    return $gullet->neutralizeTokens($tokens->unlist); });
+# When building an expanded token list, the tokens resulting from the expansion
+# of \unexpanded are not expanded further (this is the same behaviour as is
+# exhibited by the tokens resulting from the expansion of
+# \the〈token variable〉in both TEX and ε-TEX).
+DefMacro('\unexpanded GeneralText', '#1');
+
 #======================================================================
 # 3.2. Provision for re-scanning already read text
 
@@ -45,6 +45,11 @@ DefMacro('\readline Number SkipKeyword:to SkipSpaces Token', sub {
       DefMacroI($token, undef, Tokens(Explode(($mouth->readRawLine || '') . "\r"))); }
     return; });
 
+# https://tex.loria.fr/moteurs/etex_ref.html#scantokens
+# TODO: "Parentheses and a single space representing the pseudo-file will be displayed
+#        if \tracingscantokens (q.v.) is positive and non-zero."
+#       We are currently missing a final trailing space in some uses
+#           c.f. t/tokenize/hashes.tex
 DefMacro('\scantokens GeneralText', sub {
     LaTeXML::Core::Mouth->new(writableTokens($_[1]))->readTokens; });
 
@@ -116,14 +121,18 @@ DefRegister('\interactionmode' => Number(0));
 DefPrimitive('\showgroups', undef);
 
 # \showtokens <generaltext>
-# NOTE Debugging aids are currently IGNORED!
-DefPrimitive('\showtokens GeneralText', undef);
+DefPrimitive('\showtokens GeneralText', sub {
+    print STDERR "\n> " . writableTokens($_[1]) . ".\n";
+    print STDERR $_[0]->getLocator->toString() . "\n\n";
+    return; });
 
 DefRegister('\tracingassigns'    => Number(0));    # ???
 DefRegister('\tracinggroups'     => Number(0));
 DefRegister('\tracingifs'        => Number(0));    # ???
 DefRegister('\tracingscantokens' => Number(0));
-
+DefRegister('\tracingnesting'    => Number(0));
+DefRegister('\savingvdiscards'   => Number(0));
+DefRegister('\savinghyphcodes'   => Number(0));
 #======================================================================
 # 3.7 Miscellaneous primitives
 
@@ -134,8 +143,8 @@ DefRegister('\everyeof', Tokens());
 DefConstructor('\middle Token', '#1',
   afterConstruct => sub {
     my ($document) = @_;
-    my $current = $document->getNode;
-    my $delim = $document->getLastChildElement($current) || $current;
+    my $current    = $document->getNode;
+    my $delim      = $document->getLastChildElement($current) || $current;
     $document->setAttribute($delim, role     => 'MIDDLE');
     $document->setAttribute($delim, stretchy => 'true');
     return; });

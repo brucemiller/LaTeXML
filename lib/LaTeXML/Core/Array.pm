@@ -27,9 +27,9 @@ use base qw(LaTeXML::Common::Object);
 sub new {
   my ($class, %options) = @_;
   return bless { type => $options{type},
-    open => $options{open}, close => $options{close}, separator => $options{separator},
+    open     => $options{open},     close     => $options{close}, separator => $options{separator},
     itemopen => $options{itemopen}, itemclose => $options{itemclose},
-    values => $options{values} }, $class; }
+    values   => $options{values} }, $class; }
 
 sub getValue {
   my ($self, $n) = @_;
@@ -62,7 +62,7 @@ sub revert {
     push(@tokens, Revert($item));
     push(@tokens, $$self{itemclose}->unlist) if $$self{itemclose}; }
   unshift(@tokens, $$self{open}->unlist) if $$self{open};
-  push(@tokens, $$self{close}->unlist) if $$self{close};
+  push(@tokens, $$self{close}->unlist)   if $$self{close};
   return @tokens; }
 
 sub unlist {
@@ -110,7 +110,7 @@ each can be undef
   close     the closing delimiter eg "}"
   separator the separator between items, eg ","
   itemopen  the opening delimiter for each item
-  itemclose the closeing delimiter for each item
+  itemclose the closing delimiter for each item
 
 =back
 

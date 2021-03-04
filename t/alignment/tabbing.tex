@@ -1,0 +1,36 @@
+\documentclass{article}
+\begin{document}
+\begin{tabbing}
+  First Tab Stop \= Second \= Third \= \kill
+  one \> two \> three \> four \\
+  new tab\ \= two \> \a'{e}\a`{e} \`(accent commands)\\
+  new tab\ \= two \> aeae \\
+  one \> two \> three \> four
+\end{tabbing}
+
+\newcommand\lenrule[1]{\makebox[#1]{%
+    \rule{.4pt}{4pt}\hrulefill\rule{.4pt}{4pt}}}
+\begin{tabbing}
+  dd\quad \= \hspace{.55\linewidth} \= \kill
+  pc \> Pica = 12pt \> \lenrule{1pc} \\
+  cc \> Cicero = 12dd \> \lenrule{1cc} \\
+  cm \> Centimeter = 10mm \> \lenrule{1cm} \\
+\end{tabbing}
+
+\begin{tabbing}
+    \quad \= \quad \= \quad \= \hspace{5cm} \= \kill
+    \textbf{program} test \> \> \> \> \texttt{some text here} \\
+    \textbf{var} \\
+    \> $i$ : \textbf{integer}; \> \> \> \texttt{...} \\
+    \> $b$ : \textbf{boolean}; \\
+    \textbf{begin} \\
+    \> $i:=1$; \> \> \> \texttt{...} \\
+    \> $b:=\texttt{true}$; \\
+    \> \textbf{while} $i<15$ \textbf{do} \\
+    \> \> $i:=i+1$; \\
+    \> \> $b:=\textbf{not}\ b$; \> \> \texttt{some text here} \\
+    \> \textbf{od} \\
+    \textbf{end}
+\end{tabbing}
+
+\end{document}

@@ -37,7 +37,12 @@ DefPrimitive('\use@@tikzlibrary{}', sub {
         Let(T_CS('\tikz@library@' . $lib . '@loaded'), T_CS('\pgfutil@empty'));
         my $barcc = LookupCatcode('|');
         AssignCatcode('|', CC_OTHER);
-        InputDefinitions('tikzlibrary' . $lib . '.code.tex');
+        if (InputDefinitions('tikzlibrary' . $lib . '.code.tex', noerror => 1)
+          || InputDefinitions('pgflibrary' . $lib . '.code.tex', noerror => 1)) { }
+        else {
+          Warn('missing_file', $lib, $STATE->getStomach->getGullet,
+            "Can't find tikz library '$lib' (neither pgf nor tikz)",
+            "Anticipate undefined macros or environments or keys"); }
         AssignCatcode('|', $barcc);
     } }
     return; });

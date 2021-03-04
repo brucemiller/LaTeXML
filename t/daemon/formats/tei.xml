@@ -176,13 +176,13 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
                     <!-- The element tags
             is currently not supported for the main body.
         -->
-                    <p xml:id="S1.I1.i2.i1.p1">one</p>
+                    <p xml:id="S1.I1.i2.I1.i1.p1">one</p>
                   </item>
                   <item>
                     <!-- The element tags
             is currently not supported for the main body.
         -->
-                    <p xml:id="S1.I1.i2.i2.p1">two</p>
+                    <p xml:id="S1.I1.i2.I1.i2.p1">two</p>
                   </item>
                 </list>
               </p>
@@ -208,13 +208,13 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
                     <!-- The element tags
             is currently not supported for the main body.
         -->
-                    <p xml:id="S1.I2.i2.i1.p1">one</p>
+                    <p xml:id="S1.I2.i2.I2.i1.p1">one</p>
                   </item>
                   <item>
                     <!-- The element tags
             is currently not supported for the main body.
         -->
-                    <p xml:id="S1.I2.i2.i2.p1">two</p>
+                    <p xml:id="S1.I2.i2.I2.i2.p1">two</p>
                   </item>
                 </list>
               </p>
@@ -274,7 +274,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </p>
         <p>
           <formula>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\begin{split}\displaystyle a&amp;\displaystyle=b+c-d\\&#10;&amp;\displaystyle\quad+e-f\\&#10;&amp;\displaystyle=g+h\\&#10;&amp;\displaystyle=i\end{split}" display="block">
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\begin{split}a&amp;=b+c-d\\&#10;&amp;\quad+e-f\\&#10;&amp;=g+h\\&#10;&amp;=i\end{split}" display="block">
               <m:mtable columnspacing="0pt" displaystyle="true" rowspacing="0pt">
                 <m:mtr>
                   <m:mtd columnalign="right">
@@ -339,7 +339,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </p>
         <p>
           <formula>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a+b+c+d+e+f\\&#10;\displaystyle+i+j+k+l+m+n" display="block">
+            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="a+b+c+d+e+f\\&#10;+i+j+k+l+m+n" display="block">
               <m:mtable displaystyle="true" rowspacing="0pt">
                 <m:mtr>
                   <m:mtd columnalign="left">
@@ -714,14 +714,18 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           <!-- The element tags
             is currently not supported for the main body.
         -->
-          <title>.</title>
+          <title>
+            <hi rend="italic">.</hi>
+          </title>
           <p xml:id="Thmcorollary1.p1">Whatever!</p>
         </note>
         <note>
           <!-- The element tags
             is currently not supported for the main body.
         -->
-          <title>.</title>
+          <title>
+            <hi rend="italic">.</hi>
+          </title>
           <p xml:id="Thmcorollaryx1.p1">And whatever.</p>
         </note>
         <p>

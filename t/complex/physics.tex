@@ -1,0 +1,349 @@
+\documentclass{article}
+\usepackage{parskip}
+\usepackage{physics}
+\usepackage{amssymb}
+\usepackage{array}
+\usepackage{longtable}
+\usepackage{multirow}
+
+\newcolumntype{M}{>{$\displaystyle}c<{$}}
+\newcolumntype{L}{>{$\displaystyle}l<{$}}
+
+\newcommand{\typical}{X}
+\newcommand{\tall}{X^Y}
+\newcommand{\grande}{\frac{X}{Y}}
+\newcommand{\venti}{\sum_{X=0}^N}
+
+% physics 1.30
+\title{The \texttt{physics} package}
+\begin{document}
+\section{List of commands}
+%======================================================================
+\subsection{Automatic bracing}
+\[
+\qty(\typical)
+\qquad \qty(\tall)
+\qquad\qty(\grande)
+\qquad\qty[\typical]
+\qquad\qty|\typical|
+\qquad\qty{\typical}
+\qquad\qty\big{x}
+\qquad\qty\Big{x}
+\qquad\qty\bigg{x}
+\qquad\qty\Bigg{x}
+\]
+\[
+  \qty(a^2(b)c_2)
+  \]
+\[
+\pqty{x}  
+\qquad\bqty{x}  
+\qquad\vqty{x}  
+\qquad\Bqty{x}  
+\]
+
+\[
+\abs{a}
+\qquad\abs\Big{a}
+\qquad \abs*{\grande}
+\qquad \norm{a}
+\qquad\norm\Big{a}
+\qquad\norm*{\grande}
+\]
+
+\[
+ \eval{x}_0^\infty
+\qquad \eval(x|_0^\infty
+\qquad \eval[x|_0^\infty
+\qquad \eval[\venti|_0^\infty
+\qquad \eval*[\venti|_0^\infty
+\]
+\[
+ \order{x^2}
+\qquad \order\Big{x^2}
+\qquad \order*{\grande}
+\qquad \comm{A}{B}
+\qquad \comm\Big{A}{B}
+\qquad \comm*{A}{\grande}
+\qquad \acomm{A}{B}
+\qquad \pb{A}{B}
+\]
+
+\subsection{Vector notation}
+\[ \vb{a}
+\qquad \vb*{a}
+\qquad \va{a}
+\qquad \va*{a}
+\qquad \vu{a}
+\qquad \vu*{a}
+\]
+\[
+ \vdot
+\qquad \cross
+\qquad \cp
+\]
+\[
+ \grad
+\qquad \grad{\Psi}
+\qquad \grad(\Psi+\tall)
+\qquad \grad[\Psi+\tall]
+\]
+\[
+ \div
+\qquad \div{\vb{a}}
+\qquad \div(\vb{a}+\tall)
+\qquad \div[\vb{a}+\tall]
+\]
+\[
+ \curl
+\qquad \curl{\vb{a}}
+\qquad \curl(\vb{a}+\tall)
+\qquad \curl[\vb{a}+\tall]
+\]
+\[
+ \laplacian
+\qquad \laplacian{\Psi}
+\qquad \laplacian(\Psi+\tall)
+\qquad \laplacian[\Psi+\tall]
+\]
+\subsection{Operators}
+\[
+ \sin(\grande)
+\qquad \sin[2](x)
+\qquad \sin x
+\]
+But
+\[
+\sin[\grande]
+\qquad \sin[x][\grande]
+\qquad \sin[x]{\grande}
+\qquad \sin\{\grande\}
+\qquad \sin[x]\{\grande\}
+ \]
+
+ \begin{tabular}{MMMM}
+\sin(x) & \sinh(x) & \arcsin(x) & \asin(x) \\
+\cos(x) & \cosh(x) & \arccos(x) & \acos(x) \\
+\tan(x) & \tanh(x) & \arctan(x) & \atan(x) \\
+\csc(x) & \csch(x) & \arccsc(x) & \acsc(x) \\
+\sec(x) & \sech(x) & \arcsec(x) & \asec(x) \\
+\cot(x) & \coth(x) & \arccot(x) & \acot(x)
+\end{tabular}
+
+% \begin{tabular}{llll}
+% \verb|\sine| & \verb|\hypsine| & \verb|\arcsine| & \verb|\asine| \\
+% \verb|\cosine| & \verb|\hypcosine| & \verb|\arccosine| & \verb|\acosine| \\
+% \verb|\tangent| & \verb|\hyptangent| & \verb|\arctangent| & \verb|\atangent| \\
+% \verb|\cosecant| & \verb|\hypcosecant| & \verb|\arccosecant| & \verb|\acosecant| \\
+% \verb|\secant| & \verb|\hypsecant| & \verb|\arcsecant| & \verb|\asecant| \\
+% \verb|\cotangent| & \verb|\hypcotangent| & \verb|\arccotangent| & \verb|\acotangent|
+% \end{tabular}
+
+\[
+  \exp(\tall)
+\qquad \log(\tall)
+\qquad\ln(\tall) 
+\qquad \det(\tall)
+\qquad \Pr(\tall)
+\]
+
+
+\[
+ \tr\rho
+\qquad \tr(\tall)
+\qquad \Tr\rho
+\qquad \rank M
+\qquad \erf(x)
+\qquad \Res[f(z)]
+\]
+\[
+\qquad \pv{\int f(z) \dd{z}}
+\qquad \PV{\int f(z) \dd{z}}
+\qquad \Re{z}
+\qquad \real
+\qquad \Im{z}
+\qquad \imaginary
+\]
+
+But
+  \[ \Re(\grande)
+    \qquad \Re[\grande]
+    \qquad \Im(\grande)
+    \qquad \Im[\grande]
+\]
+
+\subsection{Quick quad text}
+\[
+[\qq{word or phrase}]
+[\qq*{word or phrase}]
+\]
+
+\[
+  [\qcomma], [\qcc], [\qif],[\qthen], [\qelse], [\qotherwise], [\qunless], [\qgiven]
+\]
+\[
+  [\qusing],[\qassume], [\qsince], [\qlet], [\qfor], [\qall], [\qeven], [\qodd],
+\]
+\[
+  [\qinteger], [\qand], [\qor], [\qas], [\qin]
+\]
+
+\subsection{Derivatives}
+
+\[
+ \dd
+   \qquad \dd x
+   \qquad\dd{x}
+   \qquad \dd[3]{x}
+   \qquad \dd(\cos\theta)
+\]
+\[
+ \dv{x}
+ \qquad \dv{x} f
+   \qquad \dv{f}{x}
+   \qquad \dv[n]{f}{x}
+   \qquad \dv{x}(\grande)
+   \qquad \dv*{f}{x}
+\]
+\[
+ \pderivative{x}
+   \qquad \pderivative{x} f
+   \qquad \pdv{x}
+   \qquad \pdv{f}{x}
+   \qquad \pdv[n]{f}{x}
+   \qquad \pdv{x}(\grande)
+   \qquad \pdv*{f}{x}
+\]
+ \[
+ \var{F[g(x)]}
+   \qquad \var(E-TS)
+   \qquad \fdv{g}
+   \qquad \fdv{F}{g}
+   \qquad \fdv{V}(E-TS)
+   \qquad \fdv*{F}{x}
+\]
+But
+ \[
+ \dd[2][\grande]
+\]
+And multiple derivatives, sorta; But only for partial:
+\[
+   \pdv{f}{x}{y}
+   \qquad \pdv{f}{x}{y}{z}
+   \qquad \pdv[3]{f}{x}{y}{z}
+   \qquad \pdv{x}{y}(f)
+ \]
+\[
+   \qquad \dv{f}{x}{y}
+   \qquad \fdv{F}{f}{g}
+\]
+
+\subsection{Dirac bra-ket notation}
+\begin{displaymath}
+  \bra{\phi}\ket{\psi}  \qq{as opposed to} \bra{\phi} \ket{\psi}
+\end{displaymath}
+\begin{displaymath}
+ \bra{\phi}\dyad{\psi}{\xi}.
+ \qq{as opposed to}
+ \bra{\phi}\ket{\psi}\bra{\xi}
+\end{displaymath}
+
+\[
+ \ket{\tall}
+\qquad \ket*{\tall}
+\qquad \bra{\tall}
+\qquad \bra*{\tall}
+\]
+\[
+ \bra{\phi}\ket{\psi}
+\qquad \bra{\phi}\ket{\tall}
+\qquad \bra{\phi}\ket*{\tall}
+\qquad \bra*{\phi}\ket{\tall}
+\qquad \bra*{\phi}\ket*{\tall}
+\]
+\[
+ \braket{a}{b}
+\qquad \braket{a}
+\qquad \braket{a}{\tall}
+\qquad \braket*{a}{\tall}
+\]
+\[
+ \ip{a}{b}
+\qquad \dyad{a}{b}
+\qquad \dyad{a}
+\qquad \dyad{a}{\tall}
+\qquad \dyad*{a}{\tall}
+\qquad \ketbra{a}{b}
+\]
+\[
+ \op{a}{b}
+\qquad \expval{A}
+\qquad \expval{A}{\Psi}
+\qquad \ev{A}{\Psi}
+\qquad \ev{\grande}{\Psi}
+\qquad \ev*{\grande}{\tall}
+\qquad \ev**{\grande}{\Psi}
+\]
+\[
+ \matrixel{n}{A}{m}
+\qquad \mel{n}{A}{m}
+\qquad \mel{n}{\grande}{m}
+\qquad \mel*{n}{\grande}{\tall}
+\qquad \mel**{n}{\grande}{m}
+\]
+
+\subsection{Matrix macros}
+\[\begin{pmatrix}
+\imat{2} \\ a & b
+\end{pmatrix}
+\]
+
+\[
+\begin{pmatrix}
+\mqty{\imat{2}} & \mqty{a\\b} \\ \mqty{c & d} & e
+\end{pmatrix}
+\]
+
+\[
+\mqty(\mqty{\imat{2}} & \mqty{a\\b} \\ \mqty{c & d} & e)
+\]
+
+But, alignment is illusion
+\[
+  \begin{pmatrix}
+    \mqty{\imat{2}} & \mqty{\displaystyle\frac{x}{y}\\b} \\ \mqty{u+v+w+x+y+z & d} & e
+  \end{pmatrix}
+\]
+
+\[
+ \mqty{a & b \\ c & d}
+\qquad {\mqty(a & b \\ c & d)}
+\qquad {\mqty*(a & b \\ c & d)}
+\qquad {\mqty[a & b \\ c & d]}
+\qquad {\mqty|a & b \\ c & d|}
+\qquad \smqty{a & b \\ c & d} 
+\qquad {\mdet{a & b \\ c & d}}
+\qquad {\smdet{a & b \\ c & d}}
+\]
+\[
+ \smqty(\imat{3})
+\qquad \smqty(\xmat{1}{2}{3})
+\qquad \smqty(\xmat*{a}{3}{3})
+\qquad \smqty(\xmat*{a}{3}{1})
+\qquad \smqty(\xmat*{a}{1}{3})
+\qquad \smqty(\zmat{2}{2})
+\]
+\[
+ \smqty(\pmat{0})
+\qquad \smqty(\pmat{1})
+\qquad \smqty(\pmat{2})
+\qquad \smqty(\pmat{3})
+\]
+\[
+ \mqty(\dmat{1,2,3})
+\qquad \mqty(\dmat[0]{1,2})
+\qquad \mqty(\dmat{1,2&3\\4&5})
+\qquad \mqty(\admat{1,2,3})
+\]
+
+\end{document}

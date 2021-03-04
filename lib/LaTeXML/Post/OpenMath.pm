@@ -41,7 +41,7 @@ my $omMimeType = 'application/openmath+xml';            # CONSTANT
 sub preprocess {
   my ($self, $doc, @nodes) = @_;
   $$self{hackplane1} = 0 unless $$self{hackplane1};
-  $$self{plane1} = 1 if $$self{hackplane1} || !defined $$self{plane1};
+  $$self{plane1}     = 1 if $$self{hackplane1} || !defined $$self{plane1};
   $doc->adjust_latexml_doctype('OpenMath');             # Add OpenMath if LaTeXML dtd.
   $doc->addNamespace($omURI, 'om');
   return; }
@@ -73,14 +73,14 @@ sub combineParallel {
     elsif (my $xml = $$secondary{xml}) {    # Or some other XML object?
                                             # ORRRR should this be in other order?
       push(@attr,
-        ['om:OMS', { cd => "Alternate", name => $mimetype }],
+        ['om:OMS',       { cd => "Alternate", name => $mimetype }],
         ['om:OMFOREIGN', {}, $$secondary{processor}->outerWrapper($doc, $xmath, $xml)]); }
     # What do do with src?
 ##    elsif (my $src = $$secondary{src}) {         # something referred to by a file? Image, maybe?
 ##      push(@wsecondaries, ['m:annotation', { encoding => $mimetype, src => $src }]); }
     elsif (my $string = $$secondary{string}) {    # simple string data?
       push(@attr,
-        ['om:OMS', { cd => "Alternate", name => $mimetype }],
+        ['om:OMS',   { cd => "Alternate", name => $mimetype }],
         ['om:OMSTR', {}, $string]); }
     # anything else ignore?
   }
@@ -129,6 +129,9 @@ sub om_expr_aux {
     my ($content, $presentation) = element_nodes($node);
     return om_expr($content); }
   elsif ($tag eq 'ltx:XMApp') {
+    if (my $meaning = $node->getAttribute('meaning')) {
+      my $sub = lookupConverter('Token', $node->getAttribute('role'), $meaning);
+      return &$sub($node); }
     my ($op, @args) = element_nodes($node);
     return OMError("Missing Operator") unless $op;
     my $sub = lookupConverter('Apply', $op->getAttribute('role'), $op->getAttribute('meaning'));
@@ -142,7 +145,7 @@ sub om_expr_aux {
     if (scalar(element_nodes($node))) {    # If it has markup?
       return ['om:OMATTR', {},
         ['om:OMATP', {},
-          ['om:OMS', { cd => 'OMDoc', name => 'verbalizes' }],
+          ['om:OMS',       { cd       => 'OMDoc', name => 'verbalizes' }],
           ['om:OMFOREIGN', { encoding => 'mtext' },
             $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT, 0,
               $node->childNodes)]],
@@ -156,7 +159,7 @@ sub om_unparsed {
   my (@nodes) = @_;
   if (!@nodes) {
     return ['om:OME', {},
-      ['om:OMS', { name => 'unexpected', cd => 'moreerrors' }],
+      ['om:OMS',   { name => 'unexpected', cd => 'moreerrors' }],
       ['om:OMSTR', {}, "Missing Subexpression"]]; }
   else {
     my @om = ();

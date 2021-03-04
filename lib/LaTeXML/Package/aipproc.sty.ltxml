@@ -1,0 +1,31 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  aipproc.sty                                                        | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+#
+# Source: https://arxiv.org/ftp/physics/papers/macros/aipproc.sty
+# aipproc.sty, v1.0 <11 May 95>
+# tested against arXiv:cond-mat/0003014
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+RequirePackage('revtex3_support');
+RequirePackage('longtable');
+RequirePackage('psfig');
+
+DefMacro('\lefthead{}',  '');    # Obsolete form
+DefMacro('\righthead{}', '');    # Obsolete form
+
+1;

@@ -15,12 +15,13 @@ use warnings;
 use base qw(LaTeXML::Common::Object);
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
+use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 
 sub new {
   my ($class, %data) = @_;
-  $data{columns} = [] unless $data{columns};
-  $data{repeating} = 1 if $data{repeating} || $data{repeated};
+  $data{columns}       = [] unless $data{columns};
+  $data{repeating}     = 1 if $data{repeating} || $data{repeated};
   $data{repeated}      = [] unless $data{repeated};
   $data{non_repeating} = scalar(@{ $data{columns} });
   $data{save_before}   = [] unless $data{save_before};
@@ -52,9 +53,12 @@ sub addBeforeColumn {
   unshift(@{ $$self{save_before} }, @tokens);    # NOTE: goes all the way to front!
   return; }
 
+# NOTE: \@@eat@space should ONLY be added to LaTeX tabular style templates!!!!
+# NOT \halign style templates!
 sub addAfterColumn {
   my ($self, @tokens) = @_;
-  $$self{current_column}{after} = Tokens(@tokens, @{ $$self{current_column}{after} });
+  $$self{current_column}{after} = Tokens(T_CS('\@@eat@space'),
+    @tokens, @{ $$self{current_column}{after} });
   return; }
 
 # Or between this column & next...
@@ -74,13 +78,18 @@ sub addColumn {
   push(@before, @{ $$self{save_between} })   if $$self{save_between};
   push(@before, $properties{before}->unlist) if $properties{before};
   push(@before, @{ $$self{save_before} })    if $$self{save_before};
-  $$col{before}          = Tokens(@before);
-  $$col{after}           = Tokens() unless $properties{after};
+  $$col{before} = Tokens(@before);
+  my @after = ();
+  push(@after, T_CS('\@@eat@space'));
+  push(@after, $properties{after}->unlist) if $properties{after};
+  $$col{after} = Tokens(@after);
+###  $$col{after}           = Tokens() unless $properties{after};
   $$col{thead}           = $properties{thead};
   $$col{empty}           = 1;
   $$self{save_between}   = [];
   $$self{save_before}    = [];
   $$self{current_column} = $col;
+
   if ($$self{repeating}) {
     $$self{non_repeating} = scalar(@{ $$self{columns} });
     push(@{ $$self{repeated} }, $col); }
@@ -95,7 +104,7 @@ sub clone {
   foreach my $cell (@{ $$self{columns} }) {
     push(@dup, {%$cell}); }
   return bless { columns => [@dup],
-    repeated  => $$self{repeated}, non_repeating => $$self{non_repeating},
+    repeated => $$self{repeated}, non_repeating => $$self{non_repeating},
     repeating => $$self{repeating} }, ref $self; }
 
 sub show {
@@ -103,11 +112,11 @@ sub show {
   my @strings = ();
   push(@strings, "\nColumns:\n");
   foreach my $col (@{ $$self{columns} }) {
-    push(@strings, "\n{" . join(', ', map { "$_=>" . Stringify($$col{$_}) } keys %$col) . '}'); }
+    push(@strings, "\n{" . join(', ', map { "$_=>" . Stringify($$col{$_}) } sort keys %$col) . '}'); }
   if ($$self{repeating}) {
     push(@strings, "\nRepeated Columns:\n");
     foreach my $col (@{ $$self{repeated} }) {
-      push(@strings, "\n{" . join(', ', map { "$_=>" . Stringify($$col{$_}) } keys %$col) . '}'); } }
+      push(@strings, "\n{" . join(', ', map { "$_=>" . Stringify($$col{$_}) } sort keys %$col) . '}'); } }
   return join(', ', @strings); }
 
 sub column {
@@ -119,7 +128,7 @@ sub column {
       for (my $i = $N ; $i < $n ; $i++) {
         my %dup = %{ $rep[($i - $$self{non_repeating}) % $m] };
         push(@{ $$self{columns} }, {%dup}); } } }
-  return $$self{columns}->[$n - 1]; }
+  return ($n > 0 ? $$self{columns}->[$n - 1] : undef); }
 
 sub columns {
   my ($self) = @_;

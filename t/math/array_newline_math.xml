@@ -6,7 +6,7 @@
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
     <equation xml:id="S0.Ex1">
-      <Math mode="display" tex="\begin{array}[]{cp{4.5cm}}4&amp;\hbox{$x_{1}$ \newline&#10;$x_{2}$}\\&#10;\end{array}" text="Array[[4, [x1 x2]]]" xml:id="S0.Ex1.m1">
+      <Math mode="display" tex="\begin{array}[]{cp{4.5cm}}4&amp;$x_{1}$ \newline&#10;$x_{2}$\\&#10;\end{array}" text="Array[[4, [x1 x2]]]" xml:id="S0.Ex1.m1">
         <XMath>
           <XMArray role="ARRAY" vattach="middle">
             <XMRow>
@@ -14,7 +14,7 @@
                 <XMTok meaning="4" role="NUMBER">4</XMTok>
               </XMCell>
               <XMCell align="justify" width="128.0pt">
-                <XMText class="ltx_wrap"><Math mode="inline" tex="x_{1}" text="x _ 1" xml:id="S0.Ex1.m1.m1">
+                <XMText vattach="top"><Math mode="inline" tex="x_{1}" text="x _ 1" xml:id="S0.Ex1.m1.m1">
                     <XMath>
                       <XMApp>
                         <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>

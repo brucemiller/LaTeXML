@@ -1,0 +1,24 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  standalone.cls                                                     | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Deyan Ginev <deyan.ginev@gmail.com>                         #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#**********************************************************************
+
+InputDefinitions('standalone', type => 'cls', noltxml => 1, handleoptions => 1);
+
+#**********************************************************************
+
+1;

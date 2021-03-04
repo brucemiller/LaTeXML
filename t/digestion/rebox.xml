@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="latexml"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <title>Verify Reuse of Digested Boxes/Whatsits</title>
+  <para xml:id="p1">
+    <equation xml:id="S0.Ex1">
+      <Math mode="display" tex="\brackets{\parens{x}}" text="brackets@(parentheses@(x))" xml:id="S0.Ex1.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="brackets" role="UNKNOWN"/>
+              <XMRef idref="S0.Ex1.m1.1"/>
+            </XMApp>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="false">[</XMTok>
+              <XMDual xml:id="S0.Ex1.m1.1">
+                <XMApp>
+                  <XMTok meaning="parentheses" name="parens" role="UNKNOWN"/>
+                  <XMRef idref="S0.Ex1.m1.1.1"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex1.m1.1.1">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMTok role="CLOSE" stretchy="false">]</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+    <equation xml:id="S0.Ex2">
+      <Math mode="display" tex="\BoxDup{\brackets{\parens{x}}}" text="brackets@(parentheses@(x)) * brackets@(parentheses@(x))" xml:id="S0.Ex2.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="brackets" role="UNKNOWN"/>
+                <XMRef idref="S0.Ex2.m1.1"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">[</XMTok>
+                <XMDual xml:id="S0.Ex2.m1.1">
+                  <XMApp>
+                    <XMTok meaning="parentheses" name="parens" role="UNKNOWN"/>
+                    <XMRef idref="S0.Ex2.m1.1.1"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex2.m1.1.1">x</XMTok>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="CLOSE" stretchy="false">]</XMTok>
+              </XMWrap>
+            </XMDual>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="brackets" role="UNKNOWN"/>
+                <XMRef idref="S0.Ex2.m1.2"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">[</XMTok>
+                <XMDual xml:id="S0.Ex2.m1.2">
+                  <XMApp>
+                    <XMTok meaning="parentheses" name="parens" role="UNKNOWN"/>
+                    <XMRef idref="S0.Ex2.m1.2.1"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex2.m1.2.1">x</XMTok>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="CLOSE" stretchy="false">]</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p2">
+    <p><Math mode="inline" tex="\brackets{\parens{x}}" text="brackets@(parentheses@(x))" xml:id="p2.m1">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="brackets" role="UNKNOWN"/>
+              <XMRef idref="p2.m1.1"/>
+            </XMApp>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="false">[</XMTok>
+              <XMDual xml:id="p2.m1.1">
+                <XMApp>
+                  <XMTok meaning="parentheses" name="parens" role="UNKNOWN"/>
+                  <XMRef idref="p2.m1.1.1"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="p2.m1.1.1">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMTok role="CLOSE" stretchy="false">]</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math>
+<Math mode="inline" tex="\brackets{\parens{x}}" text="brackets@(parentheses@(x))" xml:id="p2.m2">
+        <XMath>
+          <XMDual>
+            <XMApp>
+              <XMTok meaning="brackets" role="UNKNOWN"/>
+              <XMRef idref="p2.m2.1"/>
+            </XMApp>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="false">[</XMTok>
+              <XMDual xml:id="p2.m2.1">
+                <XMApp>
+                  <XMTok meaning="parentheses" name="parens" role="UNKNOWN"/>
+                  <XMRef idref="p2.m2.1.1"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="p2.m2.1.1">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMTok role="CLOSE" stretchy="false">]</XMTok>
+            </XMWrap>
+          </XMDual>
+        </XMath>
+      </Math></p>
+  </para>
+</document>
