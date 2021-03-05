@@ -334,7 +334,14 @@ sub texlive_version {
   if ($ENV{"APPVEYOR"}) {
     # disabled under windows for now
     return 0; }
-  if (my $tex = which("tex")) {
+  my $tex;
+  # If kpsewhich specified, look for tex next to it
+  if (my $path = $ENV{LATEXML_KPSEWHICH}) {
+    if (($path =~ s/kpsewhich/tex/i) && (-X $path)) {
+      $tex = $path; } }
+  if (!$tex) {    # Else look for executable
+    $tex = which("tex"); }
+  if ($tex) {     # If we found one, hope it has TeX Live version in it's --version
     my $version_string = `$tex --version`;
     if ($version_string =~ /TeX Live (\d+)/) {
       $texlive_version = int($1); }
