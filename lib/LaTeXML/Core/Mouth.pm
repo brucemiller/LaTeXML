@@ -212,7 +212,7 @@ sub handle_EOL {
   # but it makes nicer XML with occasional \n. Hopefully, this is harmless?
   my $token = ($$self{colno} == 1
     ? T_CS('\par')
-    : (($STATE->lookupValue('PRESERVE_NEWLINES') || 0) == 1 ? Token("\n", CC_SPACE) : T_SPACE));
+    : ($STATE->lookupValue('PRESERVE_NEWLINES') ? Token("\n", CC_SPACE) : T_SPACE));
   $$self{colno} = $$self{nchars};    # Ignore any remaining characters after EOL
   return $token; }
 
