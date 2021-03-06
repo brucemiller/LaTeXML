@@ -2309,17 +2309,19 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
     if (my $mouth = LookupValue('input_file:' . $port)) {
       $stomach->bgroup;
       AssignValue(PRESERVE_NEWLINES => 2);
-      AssignValue(INCLUDE_COMMENTS  => 0);
-      my @tokens = ();
+      AssignValue(INCLUDE_COMMENTS  => 2);
+      my @tokens      = ();
+      my $seen_tokens = 0;
       my ($t, $level) = (undef, 0);
       while ($t = $mouth->readToken) {
         my $cc = $t->getCatcode;
-        push(@tokens, $t);
+        $seen_tokens++;
+        push(@tokens, $t) unless $cc == CC_COMMENT;
         $level++ if $cc == CC_BEGIN;
         $level-- if $cc == CC_END;
         last     if !$level && $mouth->isEOL; }
       $stomach->egroup;
-      @tokens = (T_CS('\par')) unless @tokens;    # trailing blank line
+      @tokens = (T_CS('\par')) unless $seen_tokens;    # trailing blank line
       DefMacroI($token, undef, Tokens(@tokens)); }
     return; });
 

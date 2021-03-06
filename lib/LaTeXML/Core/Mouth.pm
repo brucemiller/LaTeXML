@@ -55,7 +55,7 @@ sub new {
   my $self = bless { source => $options{source},
     shortsource    => $options{shortsource},
     fordefinitions => ($options{fordefinitions} ? 1 : 0),
-    notes          => ($options{notes} ? 1 : 0),
+    notes          => ($options{notes}          ? 1 : 0),
   }, $class;
   $self->openString($string);
   $self->initialize;
@@ -65,7 +65,7 @@ sub openString {
   my ($self, $string) = @_;
   #  if (0){
   if (defined $string) {
-    if (utf8::is_utf8($string)) { }    # If already utf7
+    if    (utf8::is_utf8($string)) { }                                    # If already utf7
     elsif (my $encoding = $STATE->lookupValue('PERL_INPUT_ENCODING')) {
      # Note that if chars in the input cannot be decoded, they are replaced by \x{FFFD}
      # I _think_ that for TeX's behaviour we actually should turn such un-decodeable chars in to space(?).
@@ -230,7 +230,16 @@ sub handle_comment {
   $$self{colno} = $$self{nchars};
   my $comment = join('', @{ $$self{chars} }[$n .. $$self{nchars} - 1]);
   $comment =~ s/^\s+//; $comment =~ s/\s+$//;
-  return ($comment && $STATE->lookupValue('INCLUDE_COMMENTS') ? T_COMMENT($comment) : undef); }
+  my $include_comments = $STATE->lookupValue('INCLUDE_COMMENTS');
+  return unless $include_comments;
+  # include_comments values are
+  #  0: drops comments unconditionally
+  #  1: return a comment token, or undef if empty "%\n"
+  #  2: marks up comments unconditionally, even if empty
+  if ($include_comments == 1) {
+    return $comment ? T_COMMENT($comment) : undef; }
+  else {
+    return T_COMMENT($comment); } }
 
 # These cache the (presumably small) set of distinct letters, etc
 # converted to Tokens.
@@ -246,21 +255,21 @@ my %ACTIVE = ();
 # Possibly want to think about caching (common) letters, etc to keep from
 # creating tokens like crazy... or making them more compact... or ???
 my @DISPATCH = (    # [CONSTANT]
-  \&handle_escape,    # T_ESCAPE
-  sub { ($_[1] eq '{' ? T_BEGIN : Token($_[1], CC_BEGIN)) },    # T_BEGIN
-  sub { ($_[1] eq '}' ? T_END   : Token($_[1], CC_END)) },      # T_END
-  sub { ($_[1] eq '$' ? T_MATH  : Token($_[1], CC_MATH)) },     # T_MATH
-  sub { ($_[1] eq '&' ? T_ALIGN : Token($_[1], CC_ALIGN)) },    # T_ALIGN
-  \&handle_EOL,                                                 # T_EOL
-  sub { ($_[1] eq '#' ? T_PARAM : Token($_[1], CC_PARAM)) },    # T_PARAM
-  sub { ($_[1] eq '^' ? T_SUPER : Token($_[1], CC_SUPER)) },    # T_SUPER
-  sub { ($_[1] eq '_' ? T_SUB   : Token($_[1], CC_SUB)) },      # T_SUB
-  sub { undef; },                                               # T_IGNORE (we'll read next token)
-  \&handle_space,                                               # T_SPACE
+  \&handle_escape,                                                      # T_ESCAPE
+  sub { ($_[1] eq '{' ? T_BEGIN : Token($_[1], CC_BEGIN)) },            # T_BEGIN
+  sub { ($_[1] eq '}' ? T_END   : Token($_[1], CC_END)) },              # T_END
+  sub { ($_[1] eq '$' ? T_MATH  : Token($_[1], CC_MATH)) },             # T_MATH
+  sub { ($_[1] eq '&' ? T_ALIGN : Token($_[1], CC_ALIGN)) },            # T_ALIGN
+  \&handle_EOL,                                                         # T_EOL
+  sub { ($_[1] eq '#' ? T_PARAM : Token($_[1], CC_PARAM)) },            # T_PARAM
+  sub { ($_[1] eq '^' ? T_SUPER : Token($_[1], CC_SUPER)) },            # T_SUPER
+  sub { ($_[1] eq '_' ? T_SUB   : Token($_[1], CC_SUB)) },              # T_SUB
+  sub { undef; },    # T_IGNORE (we'll read next token)
+  \&handle_space,    # T_SPACE
   sub { $LETTER{ $_[1] } || ($LETTER{ $_[1] } = T_LETTER($_[1])); },    # T_LETTER
   sub { $OTHER{ $_[1] }  || ($OTHER{ $_[1] }  = T_OTHER($_[1])); },     # T_OTHER
   sub { $ACTIVE{ $_[1] } || ($ACTIVE{ $_[1] } = T_ACTIVE($_[1])); },    # T_ACTIVE
-  \&handle_comment,                                                     # T_COMMENT
+  \&handle_comment,          # T_COMMENT
   sub { T_OTHER($_[1]); }    # T_INVALID (we could get unicode!)
 );
 
