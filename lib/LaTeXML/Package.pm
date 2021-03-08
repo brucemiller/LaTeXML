@@ -1940,7 +1940,8 @@ sub FindFile_aux {
   if (!$options{noltxml}) {
     if ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
       return $path; }
-    elsif ($path = FindFile_fallback($file, $ltxml_paths, %options)) {
+    elsif (!LookupValue('INTERPRETING_DEFINITIONS')
+      && ($path = FindFile_fallback($file, $ltxml_paths, %options))) {
       return $path; } }
   # If we're looking for TeX, look within our paths & installation first (faster than kpse)
   if (!$options{notex}
