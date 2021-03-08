@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>First paragraph ending with <verbatim font="typewriter">^^J</verbatim>,
+with text from the second line ending with <verbatim font="typewriter">^^M^^J</verbatim>,
+as well as the third one ending with <verbatim font="typewriter">^^M^^M^^J</verbatim>.</p>
+  </para>
+  <para xml:id="p2">
+    <p>Thus the fourth line must be in its own paragraph,
+and <verbatim font="typewriter">^^M</verbatim> after the comma is converted to a space.
+This is some text from an external file, ending with <verbatim font="typewriter">^^M^^M</verbatim>.</p>
+  </para>
+  <para xml:id="p3">
+    <p>Hence the final line must be a separate paragraph.</p>
+  </para>
+</document>

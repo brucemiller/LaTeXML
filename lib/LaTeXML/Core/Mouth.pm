@@ -114,8 +114,11 @@ sub finish {
 # Note that TeX considers newlines to be \r, ie CR, ie ^^M
 sub splitLines {
   my ($string) = @_;
-  $string =~ s/(?:\015\012|\015|\012)/\r/sg;    #  Normalize remaining
-  return split("\r", $string); }                # And split.
+  my @lines = split(/\r\n|\r|\n/s, $string, -1);
+  # split returns an extra empty string if $string ends with an EOL
+  # this must be removed
+  if (@lines && $lines[-1] eq '') { pop(@lines); }
+  return @lines; }
 
 # This is (hopefully) a correct way to split a line into "chars",
 # or what is probably more desired is "Grapheme clusters" (even "extended")
@@ -131,7 +134,7 @@ sub getNextLine {
   my ($self) = @_;
   return unless scalar(@{ $$self{buffer} });
   my $line = shift(@{ $$self{buffer} });
-  return (scalar(@{ $$self{buffer} }) ? $line . "\r" : $line); }    # No CR on last line!
+  return $line; }
 
 sub hasMoreInput {
   my ($self) = @_;
@@ -290,9 +293,9 @@ sub readToken {
         $$self{chars}  = [];
         $$self{nchars} = 0;
         return; }
-      # Remove trailing space, but NOT a control space!  End with CR (not \n) since this gets tokenized!
-      $line =~ s/((\\ )*)\s*$/$1/s;
-      # Then append the appropriaate \endlinechar, or "\r"
+      # Remove trailing spaces from external sources
+      if ($$self{source}) { $line =~ s/ *$//s; }
+      # Then append the appropriate \endlinechar, or "\r"
       if (my $eol = $STATE->lookupDefinition(T_CS('\endlinechar'))) {
         # \endlinechar<0 or >255 means no character is appended
         $eol = $eol->valueOf()->valueOf;
@@ -301,6 +304,7 @@ sub readToken {
         $line .= "\r"; }
       $$self{chars}  = splitChars($line);
       $$self{nchars} = scalar(@{ $$self{chars} });
+      # In state N, skip spaces
       while (($$self{colno} < $$self{nchars})
         # DIRECT ACCESS to $STATE's catcode table!!!
         && (($$STATE{catcode}{ $$self{chars}[$$self{colno}] }[0] || CC_OTHER) == CC_SPACE)) {
@@ -310,7 +314,7 @@ sub readToken {
       if ((($$self{lineno} % 25) == 0) && $STATE->lookupValue('INCLUDE_COMMENTS')) {
         return T_COMMENT("**** " . ($$self{shortsource} || 'String') . " Line $$self{lineno} ****"); }
     }
-    if ($$self{skipping_spaces}) {    # Skip spaces now
+    if ($$self{skipping_spaces}) {    # In state S, skip spaces
       my ($ch, $cc);
       while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_SPACE)) { }
       $$self{colno}-- if ($$self{colno} < $$self{nchars});
@@ -355,7 +359,8 @@ sub readRawLine {
   my $line;
   if ($$self{colno} < $$self{nchars}) {
     $line = join('', @{ $$self{chars} }[$$self{colno} .. $$self{nchars} - 1]);
-    # End lines with \n, not CR, since the result will be treated as strings
+    # strip the final carriage return, if it has been added back
+    $line =~ s/\r$//s;
     $$self{colno} = $$self{nchars}; }
   elsif ($noread) {
     $line = ''; }
@@ -365,11 +370,11 @@ sub readRawLine {
       $$self{at_eof} = 1;
       $$self{chars}  = []; $$self{nchars} = 0; $$self{colno} = 0; }
     else {
+      $line =~ s/ *$//s;
       $$self{lineno}++;
       $$self{chars}  = splitChars($line);
       $$self{nchars} = scalar(@{ $$self{chars} });
       $$self{colno}  = $$self{nchars}; } }
-  $line =~ s/\s*$//s if defined $line;    # Is this right?
   return $line; }
 
 sub isEOL {
