@@ -1932,21 +1932,28 @@ sub FindFile_aux {
   # (2) those MAY be present in kpsewhich's DB (although our searchpaths take precedence!)
   # (3) BUT we want to avoid kpsewhich if we can, since it's slower
   # (4) depending on switches we may EXCLUDE .ltxml OR raw tex OR allow both.
-  my $paths       = LookupValue('SEARCHPATHS');
-  my $urlbase     = LookupValue('URLBASE');
-  my $nopaths     = LookupValue('REMOTE_REQUEST');
-  my $ltxml_paths = $nopaths ? [] : $paths;
+  my $paths         = LookupValue('SEARCHPATHS');
+  my $urlbase       = LookupValue('URLBASE');
+  my $nopaths       = LookupValue('REMOTE_REQUEST');
+  my $ltxml_paths   = $nopaths ? [] : $paths;
+  my $interpretting = LookupValue('INTERPRETING_DEFINITIONS');
   # If we're looking for ltxml, look within our paths & installation first (faster than kpse)
-  if (!$options{noltxml}) {
-    if ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
-      return $path; }
-    elsif (!LookupValue('INTERPRETING_DEFINITIONS')
-      && ($path = FindFile_fallback($file, $ltxml_paths, %options))) {
-      return $path; } }
-  # If we're looking for TeX, look within our paths & installation first (faster than kpse)
-  if (!$options{notex}
+  if (!$options{noltxml}
+    && ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package'))) {
+    return $path; }
+  # Else if we're interpretting rawtex, and can find the file as is, take it.
+  elsif (!$options{notex} && $interpretting
     && ($path = pathname_find($file, paths => $paths))) {
     return $path; }
+  # Else, look for similar fallback ltxml bindings
+  elsif (!$options{noltxml}
+    && ($path = FindFile_fallback($file, $ltxml_paths, %options))) {
+    return $path; }
+  # Finally, look for raw tex in our paths, even if we're not interpretting(?) (faster than kpse)
+  elsif (!$options{notex} && !$interpretting
+    && ($path = pathname_find($file, paths => $paths))) {
+    return $path; }
+
   # Otherwise, pass on to kpsewhich
   # Depending on flags, maybe search for ltxml in texmf or for plain tex in ours!
   # The main point, though, is to we make only ONE (more) call.
@@ -2079,6 +2086,7 @@ sub loadLTXML {
     Error('misdefined', 'loadLTXML', $STATE->getStomach->getGullet,
       "You can't load LaTeXML binding using protocol $p");
     return; }
+  $pathname = pathname_absolute($pathname);
   my ($dir, $name, $type) = pathname_split($pathname);
   # Don't load if the requested path was loaded (with or without the .ltxml)
   # We want to check against the original request, but WITH the type
