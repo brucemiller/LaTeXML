@@ -782,27 +782,23 @@ DefMacro('\lxSVG@sh@create', sub {
       T_BEGIN, T_CS('\pgf@sys@shading@end@rgb'), T_END,
       T_END,   T_BEGIN, T_END); });
 
-DefPrimitive('\lxSVG@sh@color{Float}{Float}{Float}', sub {
-    AssignValue(pgf_sh_color => Color('rgb', map { $_->valueOf } @_[1 .. $#_]));
-    return; });
+DefMacro('\lxSVG@sh@interval@{}{}',
+  '\lxSVG@sh@stashstop{\lxSVG@sh@stop{#1}{\pgf@sys@shading@end@pos}#2}');
 
-DefMacro('\lxSVG@sh@interval@{}',
-  '\lxSVG@sh@stashstop{\lxSVG@sh@stop{#1}{\pgf@sys@shading@end@pos}}');
 DefPrimitive('\lxSVG@sh@stashstop{}', sub {
     PushValue('pgf_sh_stops' => Digest($_[1]));
     return; });
 
-DefConstructor('\lxSVG@sh@stop{Dimension}{Dimension}',
+DefConstructor('\lxSVG@sh@stop{Dimension}{Dimension}{Float}{Float}{Float}',
   "<svg:stop offset='#offset' stop-color='#stopcolor'/>",
   properties => sub {
-    my ($r, $g, $b) = LookupValue('pgf_sh_color')->rgb->components;
-    (offset => $_[1]->pxValue / $_[2]->pxValue,
-      stopcolor => LookupValue('pgf_sh_color')); },
+    my ($stomach, $start, $end, $r, $g, $b) = @_;
+    (offset => $start->pxValue / $end->pxValue,
+      stopcolor => Color('rgb', map { $_->valueOf } $r, $g, $b)); },
   sizer => 0);
 
 DefMacro('\lxSVG@sh@interval{}{}{}{}', sub {
-    (T_CS('\lxSVG@sh@color'), $_[3],
-      Invocation(T_CS('\lxSVG@sh@interval@'), $_[1])); });
+    Invocation(T_CS('\lxSVG@sh@interval@'), $_[1], $_[3]); });
 
 DefMacro('\lxSVG@sh@intervals{}', sub {
     my ($gullet, $point) = @_;
@@ -815,7 +811,7 @@ DefMacro('\lxSVG@sh@intervals{}', sub {
 DefPrimitive('\lxSVG@sh@defstripes{}{Number}', sub {
     my ($stomach, $name, $flag) = @_;
     my $stops = List(@{ LookupValue('pgf_sh_stops') });
-    AssignValue(pgf_sh_stops => []);
+    AssignValue(pgf_sh_stops => [], 'global');
     my $x = LookupValue('\pgf@x')->pxValue;
     my $y = LookupValue('\pgf@y')->pxValue;
 
@@ -840,7 +836,7 @@ DefPrimitive('\lxSVG@sh@defstripes{}{Number}', sub {
 DefPrimitive('\lxSVG@sh@defcircles{}', sub {
     my ($stomach, $name) = @_;
     my $stops = List(@{ LookupValue('pgf_sh_stops') });
-    AssignValue(pgf_sh_stops => []);
+    AssignValue(pgf_sh_stops => [], 'global');
     my $endpos = Dimension(ToString Expand T_CS '\pgf@sys@shading@end@pos')->pxValue;
     my $x      = LookupValue('\pgf@x')->pxValue * 8 / ($endpos * 16) + 0.5;
     my $y      = LookupValue('\pgf@y')->pxValue * 8 / ($endpos * 16) + 0.5;
