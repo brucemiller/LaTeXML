@@ -77,11 +77,14 @@ sub mouthIsOpen {
     || grep { $_ && ($$_[0] eq $mouth) } @{ $$self{mouthstack} }; }
 
 # This flushes a mouth so that it will be automatically closed, next time it's read
-# Corresponds (I think) to TeX's \endinput
+# Corresponds to TeX's \endinput
 sub flushMouth {
   my ($self) = @_;
-  $$self{mouth}->finish;     # but not close!
-  $$self{pushback}  = [];    # And don't read anytyhing more from it.
+  my $mouth = $$self{mouth};
+  # Put the remainder of Mouth's current line at the END of the pushback stack, to be read
+  while (!$mouth->isEOL) {
+    push(@{ $$self{pushback} }, $mouth->readToken); }
+  $mouth->finish;    # then finish the mouth (it'll get closed on next read)
   $$self{autoclose} = 1;
   return; }
 

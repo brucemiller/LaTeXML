@@ -979,17 +979,7 @@ DefMacro('\input TeXFileName', sub { Input($_[1]); });
 
 # Note that TeX doesn't actually close the mouth;
 # it just flushes it so that it will close the next time it's read!
-DefMacroI('\endinput', undef, sub {
-    my ($gullet) = @_;
-    my $mouth = $gullet->getMouth;
-    my $line;
-    if (!$mouth->isEOL) {
-      $line = $gullet->readRawLine; }
-    $gullet->flushMouth;
-    if ($line) {
-      $gullet->unread(Tokenize($line)); }
-    return;
-});
+DefMacroI('\endinput', undef, sub { $_[0]->flushMouth; });
 
 # \the<internal quantity>
 DefMacro('\the Register', sub {
