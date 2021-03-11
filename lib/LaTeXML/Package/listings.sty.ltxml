@@ -278,11 +278,6 @@ sub listingsReadRawString {
         push(@tokens, $token); } }
     while (@tokens && $tokens[-1]->getCatcode == CC_SPACE) {    # Remove trailing space
       pop(@tokens); } }
-  # print STDERR "\nINLINE:\n"
-  #   ."     ".join(',',map { Stringify($_); } @tokens)."\n"
-  #   ." vs '".ToString(Tokens(@tokens))."'\n"
-  #   ." vs '".UnTeX(Tokens(@tokens))."'\n";
-###  return ToString(Tokens(@tokens)); }
   return UnTeX(Tokens(@tokens)); }
 
 # Read raw strings for environment, until matching \end{$environment}
