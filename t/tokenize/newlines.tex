@@ -1,0 +1,9 @@
+\documentclass{article}
+\begin{document}
+First paragraph ending with \verb|^^J|,
+with text from the second line ending with \verb|^^M^^J|,
+as well as the third one ending with \verb|^^M^^M^^J|.
+Thus the fourth line must be in its own paragraph,and \verb|^^M| after the comma is converted to a space.
+\input{newlines-input}
+Hence the final line must be a separate paragraph.
+\end{document}

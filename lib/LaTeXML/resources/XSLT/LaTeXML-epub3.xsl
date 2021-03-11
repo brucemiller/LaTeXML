@@ -47,4 +47,8 @@
   <xsl:template match="ltx:rdf">
   </xsl:template>
 
+  <!-- Linking to a text/plain data URL is invalid in EPUB3,
+       so just skip over it -->
+  <xsl:template match="ltx:listing[@data]" mode="begin"/>
+
 </xsl:stylesheet>

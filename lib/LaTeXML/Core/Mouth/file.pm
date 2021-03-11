@@ -35,7 +35,7 @@ sub openFile {
     Fatal('I/O', 'unreadable', $self, "File $pathname is not readable."); }
   elsif ((!-z $pathname) && (-B $pathname)) {
     Fatal('invalid', 'binary', $self, "Input file $pathname appears to be binary."); }
-  open($IN, '<', $pathname)
+  open($IN, '<:raw', $pathname)
     || Fatal('I/O', 'open', $self, "Can't open $pathname for reading", $!);
   $$self{IN}     = $IN;
   $$self{buffer} = [];
@@ -75,7 +75,6 @@ sub getNextLine {
         Info('misdefined', $encoding, $self, "input isn't valid under encoding $encoding"); } } }
   else {
     $line = ''; }
-  $line .= "\r";                        # put line ending back!
 
   if (!($$self{lineno} % 25)) {
     NoteProgressDetailed("[#$$self{lineno}]"); }
