@@ -22,6 +22,33 @@ And also as an environment:
 \begin{lstinline}
 a_word
 \end{lstinline}; done.
+
+{
+\lstset{
+  mathescape=true,
+}
+Careful with spacing/math/macros: \lstinline!foo($\langle X \rangle$)!
+}
+\subsection{Shorthands}
+Normal: |@| and $x^y$
+\lstMakeShortInline[language=perl,basicstyle=\ttfamily]|
+\lstMakeShortInline[language=perl,basicstyle=\ttfamily]@
+\lstMakeShortInline[language=perl,basicstyle=\ttfamily]^
+
+Listing1:
+|$foo->baz(/^\s*/)";|
+
+Listing2:
+@$foo->baz(/^\s*/)";@
+
+Listing3:
+^xy^
+\lstDeleteShortInline|
+\lstDeleteShortInline@
+\lstDeleteShortInline^
+
+Normal again: |@| and $x^y$
+
 \section{An untyped Listing}
 No options, language, etc
 \begin{lstlisting}

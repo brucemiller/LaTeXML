@@ -64,6 +64,25 @@ DefMacro('\lstinline OptionalKeyVals:LST', sub {
       @{ LookupValue('LISTINGS_POSTAMBLE') },
       T_END); });                  # to balance ->bgroup
 
+DefPrimitive('\lstMakeShortInline [] Token', sub {
+    my ($stomach, $kv, $token) = @_;
+    my $ch = $token->getString;
+    AssignMapping('LST_SHORT_INLINE',
+      $ch => [LookupCatcode($ch) // CC_OTHER, $STATE->lookupMeaning($token)]);
+    AssignCatcode($ch, CC_ACTIVE);
+    DefMacro(T_ACTIVE($ch),
+      Tokens(T_CS('\lstinline'), T_OTHER('['), $kv, T_OTHER(']'), T_ACTIVE($ch)));
+    return; });
+
+DefPrimitive('\lstDeleteShortInline Token', sub {
+    my ($stomach, $token) = @_;
+    my $ch = $token->getString;
+    if (my $entry = LookupMapping('LST_SHORT_INLINE', $ch)) {
+      my ($cc, $defn) = @$entry;
+      AssignCatcode($ch, $cc);
+      $STATE->assignMeaning(Token($ch, $cc) => $defn); }
+    return; });
+
 # But it can also be used as an environment!
 DefMacroI(T_CS('\begin{lstinline}'), 'OptionalKeyVals:LST', sub {
     my ($gullet, $keyvals) = @_;
@@ -112,7 +131,7 @@ AssignValue(LISTINGS_DATA_COUNTER => 0);
 # Defining new listing environments
 DefPrimitive('\lstnewenvironment {}[Number][] DefPlain DefPlain', sub {
     my ($stomach, $name, $n, $opt, $start, $end) = @_;
-    $name  = ToString($name);
+    $name = ToString($name);
     DefMacroI(T_CS("\\begin{$name}"), LaTeXML::Package::convertLaTeXArgs($n, $opt), sub {
         my ($gullet, @args) = @_;
         $STATE->getStomach->bgroup;
@@ -245,31 +264,36 @@ sub listingsReadRawString {
   # I'd swear this is a bug that became a feature.
   my $SAVESTATE  = $STATE;
   my $mathescape = lstGetBoolean('mathescape');
-  local $STATE = $EMPTY_CATTABLE;
-  my $inmath = 0;
-  my @tokens = ();
-  while (defined(my $token = $gullet->readToken())) {
-    last if $until and $token->getString eq $until->getString;
-    if ($mathescape && ($token->getString eq '$')) {
-      if ($inmath) { $inmath = 0; $STATE = $EMPTY_CATTABLE; }
-      else         { $inmath = 1; $STATE = $SAVESTATE; } }
-    if ($inmath && $token->equals(T_BEGIN)) {
-      push(@tokens, T_BEGIN, $gullet->readBalanced->unlist, T_END); }
-    else {
-      push(@tokens, $token); } }
-  while (@tokens && $tokens[-1]->getCatcode == CC_SPACE) {    # Remove trailing space
-    pop(@tokens); }
-  return ToString(Tokens(@tokens)); }
+  my $inmath     = 0;
+  my @tokens     = ();
+  { local $STATE = $EMPTY_CATTABLE;
+    while (defined(my $token = $gullet->readToken())) {
+      last if $until and $token->getString eq $until->getString;
+      if ($mathescape && ($token->getString eq '$')) {
+        if ($inmath) { $inmath = 0; $STATE = $EMPTY_CATTABLE; }
+        else         { $inmath = 1; $STATE = $SAVESTATE; } }
+      if ($inmath && $token->equals(T_BEGIN)) {
+        push(@tokens, T_BEGIN, $gullet->readBalanced->unlist, T_END); }
+      else {
+        push(@tokens, $token); } }
+    while (@tokens && $tokens[-1]->getCatcode == CC_SPACE) {    # Remove trailing space
+      pop(@tokens); } }
+  # print STDERR "\nINLINE:\n"
+  #   ."     ".join(',',map { Stringify($_); } @tokens)."\n"
+  #   ." vs '".ToString(Tokens(@tokens))."'\n"
+  #   ." vs '".UnTeX(Tokens(@tokens))."'\n";
+###  return ToString(Tokens(@tokens)); }
+  return UnTeX(Tokens(@tokens)); }
 
 # Read raw strings for environment, until matching \end{$environment}
 sub listingsReadRawLines {
   my ($gullet, $environment) = @_;
   my @lines = ();
   my ($line);
-  $gullet->readRawLine;                                       # Ignore 1st line (following \begin{...}
+  $gullet->readRawLine;    # Ignore 1st line (following \begin{...}
   while (defined($line = $gullet->readRawLine)) {
     if ($line =~ /^\s*\\end\{\Q$environment\E\}(.*?)$/) {
-      $gullet->unread(Tokenize($1), T_CR);                    # put BACK what follows the \end{whatever}
+      $gullet->unread(Tokenize($1), T_CR);    # put BACK what follows the \end{whatever}
       last; }
     push(@lines, $line); }
   return join("\n", @lines); }
@@ -293,7 +317,7 @@ our $lst_charmapping = { '#' => T_CS('\#'), '$' => T_CS('\textdollar'), '&' => T
   "'" => T_CS('\textquoteright'),
   '*' => T_CS('\textasteriskcentered'),
   # ??  '-'=>$-$ ??
-  '<' => T_CS('\textless'),        '>' => T_CS('\textgreater'), '\\' => T_CS('\textbackslash'),
+  '<' => T_CS('\textless'), '>' => T_CS('\textgreater'), '\\' => T_CS('\textbackslash'),
   '^' => T_CS('\textasciicircum'), '_' => T_CS('\textunderscore'),
   '`' => T_CS('\textquoteleft'),
   '{' => T_CS('\textbraceleft'), '}' => T_CS('\textbraceright'), '%' => T_CS('\%'),
@@ -622,11 +646,11 @@ DefKeyVal('LST', 'boxpos',         '');            # b,c,t
 # 4.4 Printed range
 #======================================================================
 # Seemingly handled....
-DefKeyVal('LST', 'print', '', 'true');
+DefKeyVal('LST', 'print',      '', 'true');
 DefKeyVal('LST', 'firstline',  'Number');
 DefKeyVal('LST', 'lastline',   'Number');
 DefKeyVal('LST', 'showlines',  '', 'true');
-DefKeyVal('LST', 'emptylines', '');           # NOTE: NOT YET HANDLED.
+DefKeyVal('LST', 'emptylines', '');         # NOTE: NOT YET HANDLED.
 DefKeyVal('LST', 'gobble',     'Number');
 
 #======================================================================
@@ -837,7 +861,7 @@ DefMacro('\thelstnumber', '\arabic{lstnumber}');
 DefKeyVal('LST', 'title',   '');
 DefKeyVal('LST', 'caption', '');
 DefKeyVal('LST', 'label',   'Semiverbatim');
-DefKeyVal('LST', 'nolol',   '', 'true');       # Ignorable
+DefKeyVal('LST', 'nolol',   '', 'true');    # Ignorable
 
 DefMacroI('\lstlistlistingname', undef, 'Listings');
 DefConstructorI('\lstlistoflistings', undef,
@@ -985,7 +1009,7 @@ DefKeyVal('LST', 'columns',         '');
 DefKeyVal('LST', 'flexiblecolumns', '', 'true');
 DefKeyVal('LST', 'keepspaces',      '', 'true');
 #DefKeyVal('LST','basewidth','Dimension'); #  or 2 Dimensions!!!!
-DefKeyVal('LST', 'basewidth', '');            #  or 2 Dimensions!!!!
+DefKeyVal('LST', 'basewidth', '');    #  or 2 Dimensions!!!!
 DefKeyVal('LST', 'fontadjust', '', 'true');
 
 #======================================================================
@@ -1032,7 +1056,7 @@ DefMacro('\lst@@escapeinside@ {} {} Until:\end', sub {
       $escape1 = lstDeslash($escape1);
       $escape2 = lstDeslash($escape2);
       LookupValue('LST_DELIMITERS')->{$escape1} = {
-        open  => lstRegexp($escape1), close => lstRegexp($escape2),
+        open => lstRegexp($escape1), close => lstRegexp($escape2),
         class => 'evaluate', escape => 1 };
       LookupValue('LST_CLASSES')->{evaluate}{eval} = 1; }
     return; });
@@ -1049,7 +1073,7 @@ DefMacro('\lst@@escapeend Until:\end', sub {
 # 4.15 Interface to fancyvrb
 #======================================================================
 # NOTE: fancyvrb Not yet handled, probably won't be
-DefKeyVal('LST', 'fancyvrb', '', 'true');
+DefKeyVal('LST', 'fancyvrb',        '', 'true');
 DefKeyVal('LST', 'fvcmdparams',     '');
 DefKeyVal('LST', 'morefvcmdparams', '');
 
@@ -1085,7 +1109,7 @@ DefPrimitive('\lstalias []{} []{}', sub {
     return; });
 
 # keywords (keywordstyle in section 4.6)
-DefKeyVal('LST', 'keywordprefix', '');                         #  ???
+DefKeyVal('LST', 'keywordprefix', '');               #  ???
 DefKeyVal('LST', 'keywords',      'Semiverbatim');
 DefMacro('\lst@@keywords [Number] Until:\end', sub {
     lstSetClassWords(lstClassName('keywords', $_[1]), $_[2]); });
@@ -1227,7 +1251,7 @@ sub lstProcess {
   local $LaTeXML::ESCAPE_RE = join('|', map { $$delimiters{$_}{open} }
       grep { $$delimiters{$_}{escape} } sort keys %$delimiters);
   local $LaTeXML::QUOTED_RE = "\\\\\\\\";    # start w/ backslashed backslash?
-  local $LaTeXML::SPACE = (lstGetBoolean('showspaces') ? T_CS('\@lst@visible@space') : T_CS("~"));
+  local $LaTeXML::SPACE     = (lstGetBoolean('showspaces') ? T_CS('\@lst@visible@space') : T_CS("~"));
   local $LaTeXML::CASE_SENSITIVE = lstGetBoolean('sensitive');
   if (!$LaTeXML::CASE_SENSITIVE) {           # Clunky, but until know, we don't know
     foreach my $word (keys %$words) {
@@ -1330,11 +1354,11 @@ sub lstProcess_internal {
       lstProcessPush(lstClassEnd($classname)); }
     # Identifiers (possibly keywords, or other classes)
     elsif ($LaTeXML::ID_RE && $LaTeXML::listing =~ s/^($LaTeXML::ID_RE)//) {
-      $LaTeXML::colnum += length($1);    # ?
+      $LaTeXML::colnum += length($1);                                                         # ?
       my $word      = $1;
       my $lookup    = ($LaTeXML::CASE_SENSITIVE ? $word : uc($word));
-      my $classname = ($outerclass ? undef : $$words{$lookup}{class} || 'identifiers');
-      my @tokens    = map { lstRescan($_) } Explode($word);                               # rescan??
+      my $classname = ($outerclass              ? undef : $$words{$lookup}{class} || 'identifiers');
+      my @tokens    = map { lstRescan($_) } Explode($word);                                   # rescan??
       if (my $indexname = $$words{$lookup}{index} || lstClassProperty($classname, 'index')) { # Should be indexed?
         if (my $index = $indexname && $$classes{$indexname}) {
           lstProcessPush(lstRescan($$index{begin})->unlist, T_BEGIN, @tokens, T_END); } }
@@ -1351,8 +1375,8 @@ sub lstProcess_internal {
         lstProcessPush(Invocation(T_CS('\stepcounter'), T_OTHER('lstnumber')));
         $LaTeXML::linenum++;                       # Increment line number
         $LaTeXML::colnum = 0;                      # Reset column number
-          # NOTE: should ignore blank lines at end of listing, even if they aren't the last line of the code!
-          # NOTE: should handle showlines, emptylines keywords
+         # NOTE: should ignore blank lines at end of listing, even if they aren't the last line of the code!
+         # NOTE: should handle showlines, emptylines keywords
         while (($LaTeXML::listing ne '') && !&$LaTeXML::linetest($LaTeXML::linenum)) {   # Ignore next line?
           $LaTeXML::listing =~ s/^.*?(\n|$)//s;
           lstProcessPush(Invocation(T_CS('\stepcounter'), T_OTHER('lstnumber')));
@@ -1407,7 +1431,7 @@ DefConstructor('\@listingKeyword Semiverbatim {}',
   properties => { class => sub {
       my $classname = ToString($_[1]);
       my $class     = $classname && LookupValue('LST_CLASSES')->{$classname};
-      my $cssclass  = $class && $$class{cssclass};
+      my $cssclass  = $class     && $$class{cssclass};
       $cssclass; } });
 
 # It's conceivable that a group is INTENDED to carry over across lines?
@@ -1527,12 +1551,12 @@ sub lstLoadConfiguration {
 lstLoadConfiguration();
 
 # Also allow some internal macros which get used from sibling bindings e.g. cleveref
-DefMacro('\lst@UseHook{}','\csname\@lst hk@#1\endcsname');
-DefMacro('\lst@AddToHook{}{}',''); # ignore
-DefMacro('\lst@AddToHookExe{}{}',''); # ignore
+DefMacro('\lst@UseHook{}',        '\csname\@lst hk@#1\endcsname');
+DefMacro('\lst@AddToHook{}{}',    '');                               # ignore
+DefMacro('\lst@AddToHookExe{}{}', '');                               # ignore
 DefMacro('\lst@AddTo {}{}',
-    '\expandafter\gdef\expandafter#1\expandafter{#1#2}',
-    long=>1);
-DefMacro('\@lst','lst');
+  '\expandafter\gdef\expandafter#1\expandafter{#1#2}',
+  long => 1);
+DefMacro('\@lst', 'lst');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
