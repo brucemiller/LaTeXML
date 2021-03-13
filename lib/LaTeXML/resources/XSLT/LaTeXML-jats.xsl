@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-/=====================================================================\ 
+/=====================================================================\
 |  LaTeXML-jats.xsl                                                   |
 |  Stylesheet for converting LaTeXML documents to JATS/NLM            |
 |=====================================================================|
@@ -41,27 +41,27 @@
         <xsl:for-each select="./@*">
           <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
         </xsl:for-each>
-      </xsl:if> 
+      </xsl:if>
       is currently not supported for the main body.
     </xsl:message>
     <xsl:comment> The element <xsl:value-of select="name(.)"/> <xsl:if test="@*"> with attributes
         <xsl:for-each select="./@*">
           <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
         </xsl:for-each>
-      </xsl:if> 
+      </xsl:if>
       is currently not supported for the main body.
     </xsl:comment>
   </xsl:template>
 
   <xsl:template match="*" mode="math">
     <xsl:copy>
-      <xsl:apply-templates select="@*|node()" mode="math"/> 
+      <xsl:apply-templates select="@*|node()" mode="math"/>
     </xsl:copy>
   </xsl:template>
 
   <xsl:template match="@*" mode="math">
     <xsl:attribute name="{local-name()}"><xsl:value-of select="."/></xsl:attribute>
-  </xsl:template> 
+  </xsl:template>
 
   <xsl:template match="@xml:id" mode="math">
     <xsl:attribute name="id"><xsl:value-of select="."/></xsl:attribute>
@@ -72,14 +72,14 @@
         <xsl:for-each select="./@*">
           <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
         </xsl:for-each>
-      </xsl:if> 
+      </xsl:if>
       is currently not supported for the front matter.
     </xsl:message>
     <xsl:comment> The element <xsl:value-of select="name(.)"/> <xsl:if test="@*"> with attributes
         <xsl:for-each select="./@*">
           <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
         </xsl:for-each>
-      </xsl:if> 
+      </xsl:if>
       is currently not supported for the front matter.
     </xsl:comment>
   </xsl:template>
@@ -89,28 +89,28 @@
         <xsl:for-each select="./@*">
           <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
         </xsl:for-each>
-      </xsl:if> 
+      </xsl:if>
       is currently not supported for the back matter.
     </xsl:message>
     <xsl:comment> The element <xsl:value-of select="name(.)"/> <xsl:if test="@*"> with attributes
         <xsl:for-each select="./@*">
           <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
         </xsl:for-each>
-      </xsl:if> 
+      </xsl:if>
       is currently not supported for the back matter
     </xsl:comment>
   </xsl:template>
 
   <xsl:template match="ltx:ERROR">
-    An error in the conversion from LaTeX to XML has occurred here. 
+    An error in the conversion from LaTeX to XML has occurred here.
   </xsl:template>
 
   <xsl:template match="ltx:ERROR" mode="front">
-    An error in the conversion from LaTeX to XML has occurred here. 
+    An error in the conversion from LaTeX to XML has occurred here.
   </xsl:template>
 
   <xsl:template match="ltx:ERROR" mode="back">
-    An error in the conversion from LaTeX to XML has occurred here. 
+    An error in the conversion from LaTeX to XML has occurred here.
   </xsl:template>
 
   <xsl:template match="ltx:document">
@@ -130,13 +130,13 @@
       <body>
         <xsl:apply-templates select="@*|node()"/>
       </body>
-      <back> 
+      <back>
         <xsl:apply-templates select="@*|node()" mode="back"/>
         <app-group>
-          <xsl:apply-templates select="//ltx:appendix" mode="app"/> 
+          <xsl:apply-templates select="//ltx:appendix" mode="app"/>
         </app-group>
       </back>
-      
+
     </article>
   </xsl:template>
 
@@ -155,10 +155,10 @@
   </xsl:template>
 
   <xsl:template match="ltx:appendix" mode="app">
-    <app> 
+    <app>
       <xsl:apply-templates select="@*|node()"/>
-    </app> 
-  </xsl:template>        
+    </app>
+  </xsl:template>
 
   <xsl:template match="ltx:appendix/ltx:title">
     <title>
@@ -186,7 +186,7 @@
       <surname>
         <xsl:for-each select="str:tokenize(./text(),' ')">
           <xsl:if test="position()=last()">
-            <xsl:value-of select="."/> 
+            <xsl:value-of select="."/>
           </xsl:if>
         </xsl:for-each>
       </surname>
@@ -204,7 +204,7 @@
     <bold>
       <xsl:apply-templates mode="front" select="@*|node()"/>
     </bold>
-  </xsl:template> 
+  </xsl:template>
   <xsl:template match="ltx:abstract" mode="front">
     <abstract>
       <xsl:apply-templates select="@*|node()" />
@@ -229,9 +229,9 @@
 
   <xsl:template match="ltx:equationgroup" mode="front">
     <disp-formula-group>
-      <xsl:apply-templates select="@*|node()" mode="front"/> 
-    </disp-formula-group> 
-  </xsl:template> 
+      <xsl:apply-templates select="@*|node()" mode="front"/>
+    </disp-formula-group>
+  </xsl:template>
 
   <xsl:template match="ltx:equationgroup/ltx:equation" mode="front">
     <disp-formula>
@@ -249,7 +249,7 @@
       <disp-formula>
         <xsl:apply-templates select="@*|node()"/>
       </disp-formula>
-    </p>        
+    </p>
   </xsl:template>
 
   <xsl:template match="ltx:Math[@mode='inline']" mode="front">
@@ -266,7 +266,7 @@
       </xsl:if>
       <xsl:if test="not(./ltx:p)">
         <p>
-          <xsl:apply-templates select="@*|node()" mode="front"/> 
+          <xsl:apply-templates select="@*|node()" mode="front"/>
         </p>
       </xsl:if>
     </caption>
@@ -279,7 +279,7 @@
       </xsl:if>
       <xsl:if test="not(./ltx:p)">
         <p>
-          <xsl:apply-templates select="@*|node()" mode="back"/> 
+          <xsl:apply-templates select="@*|node()" mode="back"/>
         </p>
       </xsl:if>
     </caption>
@@ -292,7 +292,7 @@
       </xsl:if>
       <xsl:if test="not(./ltx:p)">
         <p>
-          <xsl:apply-templates select="@*|node()"/> 
+          <xsl:apply-templates select="@*|node()"/>
         </p>
       </xsl:if>
     </caption>
@@ -300,7 +300,7 @@
 
   <xsl:template match="ltx:float" mode="front">
     <boxed-text>
-      <xsl:apply-templates select="@*|node()" mode="front"/> 
+      <xsl:apply-templates select="@*|node()" mode="front"/>
     </boxed-text>
   </xsl:template>
 
@@ -316,7 +316,7 @@
         <xsl:apply-templates select="@*|node()"/>
       </xsl:if>
       <xsl:if test="not(./ltx:p)">
-        <p> 
+        <p>
           <xsl:apply-templates select="@*|node()"/>
         </p>
       </xsl:if>
@@ -326,7 +326,7 @@
   <xsl:template match="ltx:text[@font='italic']">
     <italic>
       <xsl:apply-templates select="@*|node()"/>
-    </italic> 
+    </italic>
   </xsl:template>
 
   <xsl:template match="ltx:table" mode="front"/>
@@ -335,15 +335,15 @@
   </xsl:template>
 
   <!-- End front matter section -->
-  <!-- Start back section --> 
+  <!-- Start back section -->
   <!-- This is essentially for bibliography and acknowledgements-->
   <!-- However I still need stuff to handle various other subcases that could come up in for example appendices or acknowledgements -->
 
   <xsl:template match="ltx:equationgroup" mode="back">
     <disp-formula-group>
-      <xsl:apply-templates select="@*|node()" mode="back"/> 
-    </disp-formula-group> 
-  </xsl:template> 
+      <xsl:apply-templates select="@*|node()" mode="back"/>
+    </disp-formula-group>
+  </xsl:template>
 
   <xsl:template match="ltx:equationgroup/ltx:equation" mode="back">
     <disp-formula>
@@ -378,7 +378,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:biblist" mode="back">
-    <xsl:apply-templates mode="back"/> 
+    <xsl:apply-templates mode="back"/>
   </xsl:template>
 
   <xsl:template match="ltx:bibitem" mode="back">
@@ -387,7 +387,7 @@
         <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
       </xsl:if>
       <mixed-citation>
-        <!-- Getting the reference type into the reference, if possible --> 
+        <!-- Getting the reference type into the reference, if possible -->
         <xsl:if test="./ltx:tags/ltx:tag[@class='ltx_bib_type']">
           <xsl:attribute name="publication-type"> <xsl:value-of select="./ltx:tag[@class='ltx_bib_type']/text()"/></xsl:attribute>
         </xsl:if>
@@ -436,13 +436,13 @@
 
   <xsl:template match="ltx:bib-part[@role='volume']" mode="back">
     <volume>
-      <xsl:apply-templates mode="back"/> 
-    </volume> 
+      <xsl:apply-templates mode="back"/>
+    </volume>
   </xsl:template>
 
   <xsl:template match="ltx:bib-part[@role='pages']" mode="back">
     <page-range>
-      <xsl:apply-templates/> 
+      <xsl:apply-templates/>
     </page-range>
   </xsl:template>
 
@@ -452,8 +452,8 @@
 
   <xsl:template match="ltx:bibitem/ltx:tags/ltx:tag[@role='title']" mode="back">
     <article-title>
-      <xsl:apply-templates mode="back"/> 
-    </article-title> 
+      <xsl:apply-templates mode="back"/>
+    </article-title>
   </xsl:template>
 
   <xsl:template match="ltx:bib-date[@role='publication']" mode="back"> <!-- We are making the assumption that this contains only the year of publication -->
@@ -461,7 +461,7 @@
       <year>
         <xsl:apply-templates mode="back"/>
       </year>
-    </date> 
+    </date>
   </xsl:template>
 
   <xsl:template match="ltx:bib-note[@role='annotation']" mode="back">
@@ -473,15 +473,15 @@
   </xsl:template>
 
   <xsl:template match="ltx:bibblock//ltx:bib-title" mode="back">
-    <xsl:apply-templates mode="back"/> 
+    <xsl:apply-templates mode="back"/>
   </xsl:template>
 
   <xsl:template match="ltx:bibblock//ltx:bib-type" mode="back">
-    <xsl:apply-templates mode="back"/> 
+    <xsl:apply-templates mode="back"/>
   </xsl:template>
 
   <xsl:template match="ltx:bibblock//ltx:bib-place" mode="back">
-    <xsl:apply-templates mode="back"/> 
+    <xsl:apply-templates mode="back"/>
   </xsl:template>
 
   <xsl:template match="ltx:bib-part[@role='number']" mode="back">
@@ -489,14 +489,14 @@
   </xsl:template>
 
   <xsl:template match="ltx:acknowledgements" mode="back">
-    <ack> 
+    <ack>
       <xsl:if test="not(./ltx:p)">
         <p>
           <xsl:apply-templates mode="back" select="@*|node()"/>
-        </p> 
+        </p>
       </xsl:if>
       <xsl:if test="./ltx:p">
-        <xsl:apply-templates mode="back" select="@*|node()"/> 
+        <xsl:apply-templates mode="back" select="@*|node()"/>
       </xsl:if>
     </ack>
   </xsl:template>
@@ -523,12 +523,12 @@
           </xsl:for-each>
         </surname>
         <xsl:if test="contains(./text(),' ')">
-          
+
           <given-names>
             <xsl:for-each select="str:tokenize(./text(),' ')">
               <xsl:if test="position()!=last()">
                 <xsl:value-of select="."/>&#160;
-              </xsl:if> 
+              </xsl:if>
             </xsl:for-each>
           </given-names>
         </xsl:if>
@@ -547,21 +547,21 @@
 
   <xsl:template match="ltx:table" mode="back"/>
   <xsl:template match="ltx:acknowledgements//ltx:table">
-    <xsl:message> There's a table in the acknowledgements. Deal with it </xsl:message> <!-- TODO, actually do this if you ever see this --> 
+    <xsl:message> There's a table in the acknowledgements. Deal with it </xsl:message> <!-- TODO, actually do this if you ever see this -->
   </xsl:template>
 
   <!-- End back section -->
-  <!-- Start main section --> 
+  <!-- Start main section -->
 
   <xsl:template match="ltx:note[@role='institutetext']" mode="back"/>
   <xsl:template match="ltx:note[@role='institutetext']"/>
-  <xsl:template match="ltx:note[@role='institutetext']" mode="front"/> 
+  <xsl:template match="ltx:note[@role='institutetext']" mode="front"/>
 
   <xsl:template match="ltx:note[@role='footnote']">
     <fn id="{generate-id(.)}">
       <xsl:if test="not(./ltx:p)">
         <p>
-          <xsl:apply-templates select="@*|node()"/> 
+          <xsl:apply-templates select="@*|node()"/>
         </p>
       </xsl:if>
       <xsl:if test="./ltx:p">
@@ -577,10 +577,10 @@
   <xsl:template match="ltx:equationgroup">
     <p>
       <disp-formula-group>
-        <xsl:apply-templates select="@*|node()"/> 
+        <xsl:apply-templates select="@*|node()"/>
       </disp-formula-group>
-    </p>        
-  </xsl:template> 
+    </p>
+  </xsl:template>
 
   <xsl:template match="ltx:equation">
     <p>
@@ -606,7 +606,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:inline-block">
-    <xsl:apply-templates select="@*|node()"/> 
+    <xsl:apply-templates select="@*|node()"/>
   </xsl:template>
 
   <xsl:template match="ltx:p">
@@ -618,22 +618,22 @@
   <xsl:template match="ltx:itemize">
     <p>
       <list list-type="bullet">
-        <xsl:apply-templates select="@*|node()"/> 
+        <xsl:apply-templates select="@*|node()"/>
       </list>
-    </p> 
+    </p>
   </xsl:template>
 
   <xsl:template match="ltx:enumerate">
     <p>
       <list list-type="order">
-        <xsl:apply-templates select="@*|node()"/> 
+        <xsl:apply-templates select="@*|node()"/>
       </list>
     </p>
   </xsl:template>
 
-  <xsl:template match="ltx:item"> 
+  <xsl:template match="ltx:item">
     <list-item>
-      <xsl:apply-templates select="@*|node()"/> 
+      <xsl:apply-templates select="@*|node()"/>
     </list-item>
   </xsl:template>
 
@@ -657,11 +657,11 @@
 
   <xsl:template match="ltx:proof">
     <statement>
-      <xsl:apply-templates select="@*|node()"/> 
+      <xsl:apply-templates select="@*|node()"/>
     </statement>
-  </xsl:template> 
+  </xsl:template>
 
-  <xsl:template match="ltx:proof/ltx:title">        
+  <xsl:template match="ltx:proof/ltx:title">
     <title>
       <xsl:apply-templates select="@*|node()"/>
     </title>
@@ -699,7 +699,7 @@
 
   <xsl:template match="ltx:float">
     <boxed-text>
-      <xsl:apply-templates select="@*|node()"/> 
+      <xsl:apply-templates select="@*|node()"/>
     </boxed-text>
   </xsl:template>
 
@@ -728,18 +728,18 @@
       </xsl:if>
       <xsl:if test="not(./ltx:p)">
         <p>
-          <xsl:apply-templates select="@*|node()"/> 
+          <xsl:apply-templates select="@*|node()"/>
         </p>
       </xsl:if>
     </caption>
   </xsl:template>
 
-  <xsl:template match="ltx:figure"> 
+  <xsl:template match="ltx:figure">
     <fig>
-      <xsl:apply-templates select="@*"/> 
-      <xsl:apply-templates select="ltx:caption"/> 
+      <xsl:apply-templates select="@*"/>
+      <xsl:apply-templates select="ltx:caption"/>
       <xsl:apply-templates select="*[not(self::ltx:caption)]"/>
-    </fig> 
+    </fig>
   </xsl:template>
 
   <xsl:template match="ltx:table">
@@ -771,13 +771,13 @@
   <xsl:template match="ltx:tabular">
     <xsl:if test="ancestor::ltx:table">
       <xsl:apply-imports>
-        <xsl:apply-templates select="@*"/> 
+        <xsl:apply-templates select="@*"/>
       </xsl:apply-imports>
-    </xsl:if> 
+    </xsl:if>
     <xsl:if test="not(ancestor::ltx:table)">
       <table-wrap>
         <xsl:apply-imports>
-          <xsl:apply-templates select="@*"/> 
+          <xsl:apply-templates select="@*"/>
         </xsl:apply-imports>
       </table-wrap>
     </xsl:if>
@@ -785,18 +785,18 @@
 
   <xsl:template match="ltx:table/ltx:caption">
     <caption>
-      <xsl:if test="./ltx:p">        
+      <xsl:if test="./ltx:p">
         <xsl:apply-templates select="@*|node()"/>
       </xsl:if>
       <xsl:if test="not(./ltx:p)">
         <p>
           <xsl:apply-templates select="@*|node()"/>
-        </p> 
+        </p>
       </xsl:if>
-    </caption> 
+    </caption>
   </xsl:template>
 
-  <xsl:template match="ltx:graphics"> 
+  <xsl:template match="ltx:graphics">
     <graphic xlink:href="{./@graphic}"> <!-- Probably could have made this an empty element, but I just wanted to go sure -->
       <xsl:apply-templates select="@*|node()"/>
     </graphic>
@@ -806,7 +806,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:note[@role='thanks']">
-    <p> 
+    <p>
       <xsl:apply-templates select="@*|node()" />
     </p>
   </xsl:template>
@@ -829,7 +829,7 @@
       <xsl:for-each select="str:tokenize(./ltx:bibref/@bibrefs,./ltx:bibref/@yyseparator)">
         <xref ref-type="bibr" rid="{.}"><xsl:apply-templates select="@*|node()"/></xref>
       </xsl:for-each>
-    </xsl:if> 
+    </xsl:if>
   </xsl:template>
 
   <xsl:template match="ltx:bibref">
@@ -840,7 +840,7 @@
     <xref rid="{./@idref}">
       <xsl:apply-templates select="@*|node()"/>
     </xref>
-  </xsl:template> 
+  </xsl:template>
 
   <xsl:template match="ltx:ref[@idref and ancestor::ltx:cite]">
     <xsl:apply-templates select="@*|node()" />
@@ -848,25 +848,25 @@
 
   <xsl:template match="ltx:ref[@labelref and not(@idref)]">
     <xref rid="{./@labelref}">
-      <xsl:apply-templates select="@*|node()"/> 
+      <xsl:apply-templates select="@*|node()"/>
     </xref>
   </xsl:template>
 
   <xsl:template match="ltx:ref[@class='ltx_url']">
-    <ext-link xlink:href="{./href}">        
-      <xsl:apply-templates select="@*|node()"/> 
+    <ext-link xlink:href="{./href}">
+      <xsl:apply-templates select="@*|node()"/>
     </ext-link>
   </xsl:template>
 
   <xsl:template match="ltx:ref[@class='ltx_url']" mode="front">
-    <ext-link xlink:href="{./href}">        
-      <xsl:apply-templates select="@*|node()" mode="front"/> 
+    <ext-link xlink:href="{./href}">
+      <xsl:apply-templates select="@*|node()" mode="front"/>
     </ext-link>
   </xsl:template>
 
   <xsl:template match="ltx:ref[@class='ltx_url']" mode="back">
-    <ext-link xlink:href="{./href}">        
-      <xsl:apply-templates select="@*|node()" mode="back"/> 
+    <ext-link xlink:href="{./href}">
+      <xsl:apply-templates select="@*|node()" mode="back"/>
     </ext-link>
   </xsl:template>
 
@@ -895,7 +895,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:ref[ancestor::ltx:bibblock]" mode="back">
-    <xsl:apply-templates mode="back"/> <!-- references are not allowed in mixed-citations --> 
+    <xsl:apply-templates mode="back"/> <!-- references are not allowed in mixed-citations -->
   </xsl:template>
 
   <xsl:template match="ltx:ref[@idref]" mode="front">
@@ -906,28 +906,28 @@
 
   <xsl:template match="ltx:float" mode="back">
     <boxed-text>
-      <xsl:apply-templates select="@*|node()" mode="back"/> 
+      <xsl:apply-templates select="@*|node()" mode="back"/>
     </boxed-text>
   </xsl:template>
 
   <xsl:template match="ltx:titlepage">
-    <xsl:apply-templates select="@*|node()"/> 
+    <xsl:apply-templates select="@*|node()"/>
   </xsl:template>
 
   <xsl:template match="ltx:description">
-    <list> 
-      <xsl:apply-templates select="@*|node()"/> 
+    <list>
+      <xsl:apply-templates select="@*|node()"/>
     </list>
   </xsl:template>
 
   <xsl:template match="ltx:verbatim">
     <preformat>
-      <xsl:apply-templates select="@*|node()"/> 
+      <xsl:apply-templates select="@*|node()"/>
     </preformat>
   </xsl:template>
-  
+
   <!-- End body section -->
-  <xsl:template match="ltx:document/ltx:title"/> 
+  <xsl:template match="ltx:document/ltx:title"/>
   <!-- This section is for elements that we aren't doing anything with and just removing from the document -->
   <xsl:template match="ltx:resource[@type='text/css']"/>
   <xsl:template match="ltx:creator[@role='author']"/>
@@ -937,14 +937,14 @@
   <xsl:template match="ltx:note[@role='thanks']" mode="front"/>
   <xsl:template match="ltx:contact[@role='thanks']" mode="front"/>
   <xsl:template match="ltx:section" mode="front"/>
-  <xsl:template match="ltx:acknowledgements"/> 
+  <xsl:template match="ltx:acknowledgements"/>
   <xsl:template match="ltx:acknowledgements" mode="front"/>
   <xsl:template match="ltx:bibliography"/>
   <xsl:template match="ltx:bibliography" mode="front"/>
   <xsl:template match="ltx:date[@role='creation']"/>
   <xsl:template match="ltx:tags"/>
   <xsl:template match="ltx:tag"/>
-  <xsl:template match="ltx:break"/> <!-- Break isn't really supposed to be used --> 
+  <xsl:template match="ltx:break"/> <!-- Break isn't really supposed to be used -->
   <xsl:template match="ltx:resource[@type='text/css']" mode="back"/>
   <xsl:template match="ltx:creator[@role='author']" mode="back"/>
   <xsl:template match="ltx:abstract" mode="back"/>
@@ -960,15 +960,15 @@
   <xsl:template match="ltx:classification" mode="back"/>
   <xsl:template match="ltx:classification" mode="front"/>
   <xsl:template match="ltx:note[@role='slugcomment']"/>
-  <xsl:template match="ltx:note[@role='slugcomment']" mode="front"/> 
+  <xsl:template match="ltx:note[@role='slugcomment']" mode="front"/>
   <xsl:template match="ltx:note[@role='slugcomment']" mode="back"/>
   <xsl:template match="ltx:pagination"/>
   <xsl:template match="ltx:pagination" mode="front"/>
   <xsl:template match="ltx:pagination" mode="back"/>
-  <xsl:template match="ltx:toctitle"/> 
-  <xsl:template match="ltx:toctitle" mode="front"/> 
+  <xsl:template match="ltx:toctitle"/>
+  <xsl:template match="ltx:toctitle" mode="front"/>
   <xsl:template match="ltx:toctitle" mode="back"/>
-  <xsl:template match="ltx:appendix" mode="front"/> 
+  <xsl:template match="ltx:appendix" mode="front"/>
   <xsl:template match="ltx:appendix" mode="back"/>
   <xsl:template match="ltx:appendix"/>
   <xsl:template match="ltx:contact[@role='emailmark']" mode="front"/>
@@ -980,39 +980,39 @@
   <xsl:template match="ltx:creator" mode="back"/>
   <xsl:template match="ltx:creator"/>
   <xsl:template match="ltx:contact[@role='affiliation']"/>
-  <xsl:template match="ltx:titlepage" mode="front"/> 
+  <xsl:template match="ltx:titlepage" mode="front"/>
   <xsl:template match="ltx:titlepage" mode="back"/>
   <xsl:template match="ltx:break" mode="front"/>
-  <xsl:template match="ltx:figure" mode="front"/> 
+  <xsl:template match="ltx:figure" mode="front"/>
   <xsl:template match="ltx:figure" mode="back"/>
   <xsl:template match="ltx:break" mode="back"/>
   <xsl:template match="ltx:contact[@role='dedicatory']" mode="front"/>
-  <xsl:template match="ltx:contact[@role='dedicatory']" mode="back"/>         
+  <xsl:template match="ltx:contact[@role='dedicatory']" mode="back"/>
   <xsl:template match="ltx:contact[@role='dedicatory']"/>
   <xsl:template match="ltx:TOC"/>
   <xsl:template match="ltx:TOC" mode="front"/>
   <xsl:template match="ltx:TOC" mode="back"/>
 
   <xsl:template match="ltx:abstract/ltx:figure" mode="front">
-    <xsl:message>figure in an abstract, fix this </xsl:message> <!-- TODO actualy fix it if it happens --> 
+    <xsl:message>figure in an abstract, fix this </xsl:message> <!-- TODO actualy fix it if it happens -->
   </xsl:template>
   <!-- hackish stuff for references -->
 
-  <xsl:template match="ltx:para/@xml:id"/> 
+  <xsl:template match="ltx:para/@xml:id"/>
   <xsl:template match="ltx:para[@xml:id]/ltx:p">
     <xsl:choose>
       <xsl:when test="not(preceding-sibling::ltx:p)">
         <p id="{../@xml:id}">
-          <xsl:apply-templates select="@*|node()"/> 
+          <xsl:apply-templates select="@*|node()"/>
         </p>
       </xsl:when>
       <xsl:otherwise>
         <p>
-          <xsl:apply-templates select="@*|node()"/> 
+          <xsl:apply-templates select="@*|node()"/>
         </p>
       </xsl:otherwise>
-    </xsl:choose> 
-    
+    </xsl:choose>
+
   </xsl:template>
   <xsl:template match="ltx:document/@xml:id"/>
   <xsl:template match="ltx:document/@xml:id" mode="front"/>
@@ -1025,17 +1025,17 @@
   <xsl:template match="ltx:para/@xml:id" mode="front"/>
   <xsl:template match="ltx:para[@xml:id]/ltx:p" mode="front">
     <p id="{../@xml:id}">
-      <xsl:apply-templates select="@*|node()" mode="back"/> 
+      <xsl:apply-templates select="@*|node()" mode="back"/>
     </p>
   </xsl:template>
   <xsl:template match="@xml:id" mode="front">
     <xsl:attribute name="id"><xsl:value-of select="."/></xsl:attribute>
   </xsl:template>
 
-  <xsl:template match="ltx:para/@xml:id" mode="back"/> 
+  <xsl:template match="ltx:para/@xml:id" mode="back"/>
   <xsl:template match="ltx:para[@xml:id]/ltx:p" mode="back">
     <p id="{../@xml:id}">
-      <xsl:apply-templates select="@*|node()" mode="back"/> 
+      <xsl:apply-templates select="@*|node()" mode="back"/>
     </p>
   </xsl:template>
   <xsl:template match="@xml:id" mode="back">
@@ -1045,20 +1045,20 @@
   <xsl:template match="@*"/>
   <xsl:template match="@*" mode="back"/>
   <xsl:template match="@*" mode="front"/>
-  <!-- end of hackish references stuff --> 
-  <!-- font section --> 
+  <!-- end of hackish references stuff -->
+  <!-- font section -->
   <xsl:template match="ltx:text[@font='bold']">
     <bold>
       <xsl:apply-templates select="@*|node()"/>
     </bold>
   </xsl:template>
-        
+
   <xsl:template match="ltx:text[@font='italic']">
     <italic>
-      <xsl:apply-templates select="@*|node()"/> 
+      <xsl:apply-templates select="@*|node()"/>
     </italic>
   </xsl:template>
-        
+
   <xsl:template match="ltx:text[@font='medium']">
     <xsl:apply-templates select="@*|node()"/>
   </xsl:template>
@@ -1072,7 +1072,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:text[@fontsize='90%']">
-    <xsl:apply-templates select="@*|node()"/> 
+    <xsl:apply-templates select="@*|node()"/>
   </xsl:template>
 
   <xsl:template match="ltx:text[@fontsize='80%']">
@@ -1080,7 +1080,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:text[@font='upright']">
-    <xsl:apply-templates select="@*|node()"/> 
+    <xsl:apply-templates select="@*|node()"/>
   </xsl:template>
 
   <xsl:template match="ltx:text[@font='smallcaps']">
@@ -1096,7 +1096,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:text[@class='ltx_markedasmath']">
-    <xsl:apply-templates select="@*|node()"/> 
+    <xsl:apply-templates select="@*|node()"/>
   </xsl:template>
 
   <xsl:template match="ltx:text[@font='sansserif']">
@@ -1182,69 +1182,69 @@
   </xsl:template>
 
   <xsl:template match="ltx:text" mode="back">
-    <xsl:apply-templates mode="back" select="@*|node()"/> 
+    <xsl:apply-templates mode="back" select="@*|node()"/>
   </xsl:template>
 
   <xsl:template match="ltx:text" mode="front">
-    <xsl:apply-templates mode="back" select="@*|node()"/> 
+    <xsl:apply-templates mode="back" select="@*|node()"/>
   </xsl:template>
-        
+
   <!-- text formatting -->
-        
+
   <xsl:template match="ltx:emph">
     <italic>
       <xsl:apply-templates select="@*|node()"/>
     </italic>
   </xsl:template>
-        
+
   <xsl:template match="ltx:emph" mode="front">
     <italic>
       <xsl:apply-templates select="@*|node()" mode="front"/>
     </italic>
   </xsl:template>
-        
+
   <xsl:template match="ltx:emph" mode="back">
     <italic>
       <xsl:apply-templates select="@*|node()" mode="back"/>
     </italic>
   </xsl:template>
-        
+
   <xsl:template match="ltx:sub">
     <sub>
       <xsl:apply-templates select="@*|node()"/>
     </sub>
   </xsl:template>
-        
+
   <xsl:template match="ltx:sub" mode="front">
     <sub>
       <xsl:apply-templates select="@*|node()" mode="front"/>
     </sub>
   </xsl:template>
-        
+
   <xsl:template match="ltx:sub" mode="back">
     <sub>
       <xsl:apply-templates select="@*|node()" mode="back"/>
     </sub>
   </xsl:template>
-        
+
   <xsl:template match="ltx:sup">
     <sup>
       <xsl:apply-templates select="@*|node()"/>
     </sup>
   </xsl:template>
-        
+
   <xsl:template match="ltx:sup" mode="front">
     <sup>
       <xsl:apply-templates select="@*|node()" mode="front"/>
     </sup>
   </xsl:template>
-        
+
   <xsl:template match="ltx:sup" mode="back">
     <sup>
       <xsl:apply-templates select="@*|node()" mode="back"/>
     </sup>
   </xsl:template>
-        
+
   <!-- Templates to make things more convenient -->
-</xsl:stylesheet> 
+</xsl:stylesheet>
 

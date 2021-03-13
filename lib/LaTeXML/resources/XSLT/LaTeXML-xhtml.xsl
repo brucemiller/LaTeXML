@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-/=====================================================================\ 
+/=====================================================================\
 |  LaTeXML-xhtml.xsl                                                  |
 |  Stylesheet for converting LaTeXML documents to xhtml               |
 |=====================================================================|
@@ -30,5 +30,5 @@
   <!-- Note: If you want namespace prefixes (eg. for MathML & SVG),
        Redefine the root template ("/") and add prefixed namespace declarations
        (eg.xmlns:m="http://www.w3.org/1998/Math/MathML") -->
-  
+
 </xsl:stylesheet>

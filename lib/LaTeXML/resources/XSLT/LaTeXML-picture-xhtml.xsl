@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-/=====================================================================\ 
+/=====================================================================\
 |  LaTeXML-picture-svg.xsl                                            |
 |  Converting pictures to SVG for xhtml                               |
 |=====================================================================|
@@ -81,7 +81,7 @@
     <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
-      </xsl:call-template>      
+      </xsl:call-template>
       <xsl:value-of select="@tex"/>
     </xsl:element>
   </xsl:template>
