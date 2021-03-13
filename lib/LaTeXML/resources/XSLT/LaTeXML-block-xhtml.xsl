@@ -550,10 +550,10 @@
                and any constraints within equations -->
           <xsl:variable name="nrows"
                         select="count(
-ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation/ltx:MathFork/ltx:MathBranch[1]/ltx:tr
-| ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation[ltx:MathFork/ltx:MathBranch[1]/ltx:td]
-| ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
-| ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation/ltx:constraint
+                                ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation/ltx:MathFork/ltx:MathBranch[1]/ltx:tr
+                                | ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation[ltx:MathFork/ltx:MathBranch[1]/ltx:td]
+                                | ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
+                                | ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation/ltx:constraint
                                 )"/>
           <xsl:text>&#x0A;</xsl:text>
           <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
