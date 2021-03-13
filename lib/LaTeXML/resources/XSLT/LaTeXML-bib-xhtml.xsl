@@ -33,12 +33,12 @@
        See the CONTEXT discussion in LaTeXML-common -->
 
   <xsl:preserve-space elements="ltx:surname ltx_givenname ltx:lineage
-				ltx:bib-title ltx:bib-subtitle ltx:bib-key
-				ltx:bib-type ltx:bib-date ltx:bib-publisher
-				ltx:bib-organization ltx:bib-place ltx:bib-part
-				ltx:bib-edition ltx:bib-status ltx:bib-identifier
-				ltx:bib-reviewe ltx:bib-links ltx:bib-language
-				ltx:bib-url ltx:bib-extract ltx:bib-note ltx:bib-data"/>
+                                ltx:bib-title ltx:bib-subtitle ltx:bib-key
+                                ltx:bib-type ltx:bib-date ltx:bib-publisher
+                                ltx:bib-organization ltx:bib-place ltx:bib-part
+                                ltx:bib-edition ltx:bib-status ltx:bib-identifier
+                                ltx:bib-reviewe ltx:bib-links ltx:bib-language
+                                ltx:bib-url ltx:bib-extract ltx:bib-note ltx:bib-data"/>
 
   <xsl:template match="ltx:biblist">
     <xsl:param name="context"/>
