@@ -284,7 +284,6 @@ sub gen_pdf {
   }
   close($IN);
   local $ENV{TEXINPUTS} = "$FindBin::RealBin/../lib/LaTeXML/texmf/::" . ($ENV{TEXINPUTS} || '');
-  print "Program:$program\n";
   system($program, '-interaction=batchmode', $name) == 0 or die "Couldn't run $program $name: $!";
   system($program, '-interaction=batchmode', $name) == 0 or die "Couldn't run $program $name: $!";
 
