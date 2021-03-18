@@ -277,9 +277,9 @@ sub gen_pdf {
     if (/documentclass/) {
         $program = 'pdflatex';
         last; }
-    # recognize %tex = "xelatex"  or %tex = xelatex in preamble
-    if (/^%\s*(la)*tex\s*=\s*\"*(\w+)\"*\s*/) {
-        $program = $2;
+    # recognize %%% TeX-engine: xelatex  or %%%tex-engine: "xelatex" in preamble
+    if (/^%%%\s*tex-engine:\s*"*(\w+)"*/i) {
+        $program = $1;
         last; }
   }
   close($IN);
