@@ -136,8 +136,14 @@ DefPrimitive('\lstnewenvironment {}[Number][] DefPlain DefPlain', sub {
         my ($gullet, @args) = @_;
         $STATE->getStomach->bgroup;
         lstPushValueLocally(LISTINGS_POSTAMBLE => $end->substituteParameters(@args));
-        # This will typically have \lstset, equivalent of lstActivate
-        Digest($start->substituteParameters(@args));
+        # $start will typically have \lstset, equivalent of lstActivate.
+        # We MUST digest it before the listing string is processed
+        # but it can also contain constructors affecting the listing's xml content.
+        # So, we contrive to treat the already digested material as preamble.
+        my $precs = T_CS('\lst@' . $name . '@preamble');
+        my $pre   = Digest($start->substituteParameters(@args));
+        DefPrimitiveI($precs, undef, sub { return $pre; });
+        lstPushValueLocally(LISTINGS_PREAMBLE => $precs);
         my $text = listingsReadRawLines($gullet, $name);
         return lstProcessDisplay(lstGetTokens('name'), $text); });
 });
@@ -896,8 +902,8 @@ our %frames = (none => undef, leftline => 'left', topline => 'top', bottomline =
 DefPrimitive('\lst@@frame Until:\end', sub {
     my $name = ToString(Digest($_[1]));
     AssignValue(LISTINGS_FRAME => $frames{$name});
-    lstPushValueLocally(LISTINGS_PREAMBLE => T_CS('\lst@@@set@frame'));
-});
+    lstPushValueLocally(LISTINGS_PREAMBLE => T_CS('\lst@@@set@frame')); });
+
 DefConstructor('\lst@@@set@frame', "^framed='#frame'",
   properties => { frame => sub { LookupValue('LISTINGS_FRAME'); } });
 

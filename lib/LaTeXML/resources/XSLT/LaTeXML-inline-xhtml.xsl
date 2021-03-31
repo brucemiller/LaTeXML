@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-/=====================================================================\ 
+/=====================================================================\
 |  LaTeXML-inline-xhtml.xsl                                           |
 |  Converting various inline-level elements to xhtml                  |
 |=====================================================================|
@@ -259,7 +259,7 @@
           </xsl:apply-templates>
         </xsl:element>
       </xsl:otherwise>
-    </xsl:choose>    
+    </xsl:choose>
   </xsl:template>
 
   <xsl:template match="ltx:ref//ltx:ref">
@@ -322,6 +322,6 @@
   </xsl:template>
 
   <!-- ltx:bibref not handled, since it is translated to ref in crossref module -->
-    
+
 </xsl:stylesheet>
 
