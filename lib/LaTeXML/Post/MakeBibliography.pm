@@ -326,7 +326,8 @@ sub getBibEntries {
         $sortnames = $names = $t->textContent; }
       my $date  = $doc->findnode('ltx:bib-date[@role="publication"] | ltx:bib-type', $bibentry);
       my $title = $doc->findnode('ltx:bib-title',                                    $bibentry);
-      $date            = ($date  ? $date->textContent  : '');
+      $date            = ($date ? $date->textContent : '');
+      $date            = $1 if $date && $date =~ /^(\d\d\d\d)/;
       $title           = ($title ? $title->textContent : '');
       $$entry{ay}      = "$names.$date";
       $$entry{initial} = $doc->initial($names, 1);

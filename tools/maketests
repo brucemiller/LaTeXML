@@ -274,7 +274,14 @@ sub gen_pdf {
   open($IN, '<', "$name.tex") or die "Cannot scanTeX file $name.tex: $!";
 
   while (<$IN>) {
-    $program = 'pdflatex' if /documentclass/; }
+    if (/documentclass/) {
+        $program = 'pdflatex';
+        last; }
+    # recognize %%% TeX-engine: xelatex  or %%%tex-engine: "xelatex" in preamble
+    if (/^%%%\s*tex-engine:\s*"*(\w+)"*/i) {
+        $program = $1;
+        last; }
+  }
   close($IN);
   local $ENV{TEXINPUTS} = "$FindBin::RealBin/../lib/LaTeXML/texmf/::" . ($ENV{TEXINPUTS} || '');
   system($program, '-interaction=batchmode', $name) == 0 or die "Couldn't run $program $name: $!";

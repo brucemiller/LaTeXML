@@ -853,37 +853,37 @@
   </xsl:template>
 
   <xsl:template match="ltx:ref[@class='ltx_url']">
-    <ext-link xlink:href="{./href}">
+    <ext-link xlink:href="{./@href}">
       <xsl:apply-templates select="@*|node()"/>
     </ext-link>
   </xsl:template>
 
   <xsl:template match="ltx:ref[@class='ltx_url']" mode="front">
-    <ext-link xlink:href="{./href}">
+    <ext-link xlink:href="{./@href}">
       <xsl:apply-templates select="@*|node()" mode="front"/>
     </ext-link>
   </xsl:template>
 
   <xsl:template match="ltx:ref[@class='ltx_url']" mode="back">
-    <ext-link xlink:href="{./href}">
+    <ext-link xlink:href="{./@href}">
       <xsl:apply-templates select="@*|node()" mode="back"/>
     </ext-link>
   </xsl:template>
 
   <xsl:template match="ltx:ref[not(./@idref or ./@labelref) and ./@href]">
-    <ext-link xlink:href="{./href}">
+    <ext-link xlink:href="{./@href}">
       <xsl:apply-templates select="@*|node()"/>
     </ext-link>
   </xsl:template>
 
   <xsl:template match="ltx:ref[not(./@idref or ./@labelref) and ./@href]" mode="front">
-    <ext-link xlink:href="{./href}">
+    <ext-link xlink:href="{./@href}">
       <xsl:apply-templates select="@*|node()"/>
     </ext-link>
   </xsl:template>
 
   <xsl:template match="ltx:ref[not(./@idref or ./@labelref) and ./@href]" mode="back">
-    <ext-link xlink:href="{./href}">
+    <ext-link xlink:href="{./@href}">
       <xsl:apply-templates select="@*|node()"/>
     </ext-link>
   </xsl:template>

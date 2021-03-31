@@ -1,0 +1,326 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  proofwiki                                                          | #
+# | LaTeXML Bindings for simulating proofwiki.org's macros              | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Adapated from the MathJax-enabling preamble of proofwiki.org
+# so load texvc.sty.ltxml as a MathJax-approximating prerequisite
+RequirePackage('texvc');
+
+# ProofWiki preference for this symbol
+DefMacro('\empty',     '\varnothing');
+DefMacro('\P',         '\unicode{xb6}');
+DefMacro('\Alpha',     '\unicode{x391}');
+DefMacro('\Beta',      '\unicode{x392}');
+DefMacro('\Epsilon',   '\unicode{x395}');
+DefMacro('\Zeta',      '\unicode{x396}');
+DefMacro('\Eta',       '\unicode{x397}');
+DefMacro('\Iota',      '\unicode{x399}');
+DefMacro('\Kappa',     '\unicode{x39a}');
+DefMacro('\Mu',        '\unicode{x39c}');
+DefMacro('\Nu',        '\unicode{x39d}');
+DefMacro('\Pi',        '\unicode{x3a0}');
+DefMacro('\Rho',       '\unicode{x3a1}');
+DefMacro('\Sigma',     '\unicode{x3a3}');
+DefMacro('\Tau',       '\unicode{x3a4}');
+DefMacro('\Chi',       '\unicode{x3a7}');
+DefMacro('\bsalpha',   '\boldsymbol \alpha');
+DefMacro('\bsbeta',    '\boldsymbol \beta');
+DefMacro('\bsgamma',   '\boldsymbol \gamma');
+DefMacro('\bsdelta',   '\boldsymbol \delta');
+DefMacro('\bsepsilon', '\boldsymbol \epsilon');
+DefMacro('\bszeta',    '\boldsymbol \zeta');
+DefMacro('\bseta',     '\boldsymbol \eta');
+DefMacro('\bstheta',   '\boldsymbol \theta');
+DefMacro('\bsiota',    '\boldsymbol \iota');
+DefMacro('\bskappa',   '\boldsymbol \kappa');
+DefMacro('\bslambda',  '\boldsymbol \lambda');
+DefMacro('\bsmu',      '\boldsymbol \mu');
+DefMacro('\bsnu',      '\boldsymbol \nu');
+DefMacro('\bsxi',      '\boldsymbol \xi');
+DefMacro('\bsomicron', '\boldsymbol \omicron');
+DefMacro('\bspi',      '\boldsymbol \pi');
+DefMacro('\bsrho',     '\boldsymbol \rho');
+DefMacro('\bssigma',   '\boldsymbol \sigma');
+DefMacro('\bstau',     '\boldsymbol \tau');
+DefMacro('\bsupsilon', '\boldsymbol \upsilon');
+DefMacro('\bsphi',     '\boldsymbol \phi');
+DefMacro('\bschi',     '\boldsymbol \chi');
+DefMacro('\bspsi',     '\boldsymbol \psi');
+DefMacro('\bsomega',   '\boldsymbol \omega');
+# the pound symbol unaccountably missing from mathjax
+DefMacro('\pounds', '{\it\unicode{xA3}}');
+# the complex numbers
+DefMacro('\C', '\mathbb C');
+# the natural numbers
+DefMacro('\N', '\mathbb N');
+# the rational numbers
+DefMacro('\Q', '\mathbb Q');
+# the real numbers
+DefMacro('\R', '\mathbb R');
+# the integer numbers
+DefMacro('\Z', '\mathbb Z');
+# the empty set
+DefMacro('\O', '\varnothing');
+
+# some extra macros for ease of use; these are non-standard!
+
+# true
+DefMacro('\T', '\mathrm T');
+# false
+DefMacro('\F', '\mathrm F');
+# Galois field
+DefMacro('\GF', '\mathbb F');
+# ring of Hamiltonians
+DefMacro('\H', '\mathbb H');
+# vector of zeros
+DefMacro('\bszero', '\boldsymbol 0');
+# vector of ones
+DefMacro('\bsone', '\boldsymbol 1');
+# a vector 't'
+DefMacro('\bst', '\boldsymbol t');
+# a vector 'v'
+DefMacro('\bsv', '\boldsymbol v');
+# a vector 'w'
+DefMacro('\bsw', '\boldsymbol w');
+# a vector 'x'
+DefMacro('\bsx', '\boldsymbol x');
+# a vector 'y'
+DefMacro('\bsy', '\boldsymbol y');
+# a vector 'z'
+DefMacro('\bsz', '\boldsymbol z');
+# a vector '\Delta'
+DefMacro('\bsDelta', '\boldsymbol \Delta');
+# the exponential
+DefMacro('\E', '\mathrm e');
+# roman d for use in integrals: $\int f(x) \rd x$
+DefMacro('\rd', '\,\mathrm d');
+# roman d for use in derivatives: $\dfrac \d{\d x}$
+DefMacro('\d', '\mathrm d');
+# delta operator for use in sums
+DefMacro('\rdelta', '\,\delta');
+# differential operator D
+DefMacro('\rD', '\mathrm D');
+
+# example from MathJax on how to define macros with parameters:
+DefMacro('\bold{}', '{\bf #1}');
+
+DefMacro('\AA', '\mathcal A');
+DefMacro('\BB', '\mathcal B');
+DefMacro('\CC', '\mathcal C');
+DefMacro('\DD', '\mathcal D');
+DefMacro('\EE', '\mathcal E');
+DefMacro('\FF', '\mathcal F');
+DefMacro('\GG', '\mathcal G');
+DefMacro('\HH', '\mathcal H');
+DefMacro('\II', '\mathcal I');
+DefMacro('\JJ', '\mathcal J');
+DefMacro('\KK', '\mathcal K');
+DefMacro('\LL', '\mathcal L');
+DefMacro('\MM', '\mathcal M');
+DefMacro('\NN', '\mathcal N');
+DefMacro('\OO', '\mathcal O');
+DefMacro('\PP', '\mathcal P');
+DefMacro('\QQ', '\mathcal Q');
+DefMacro('\RR', '\mathcal R');
+DefMacro('\SS', '\mathcal S');
+DefMacro('\TT', '\mathcal T');
+DefMacro('\UU', '\mathcal U');
+DefMacro('\VV', '\mathcal V');
+DefMacro('\WW', '\mathcal W');
+DefMacro('\XX', '\mathcal X');
+DefMacro('\YY', '\mathcal Y');
+DefMacro('\ZZ', '\mathcal Z');
+
+DefMacro('\lcm', '\operatorname{lcm}');
+
+# Otherwise undefined trigometrical and hyperbolic functions
+
+DefMacro('\cosec',  '\operatorname{cosec}');
+DefMacro('\sech',   '\operatorname{sech}');
+DefMacro('\csch',   '\operatorname{csch}');
+DefMacro('\arccot', '\operatorname{arccot}');
+DefMacro('\arccsc', '\operatorname{arccsc}');
+DefMacro('\arcsec', '\operatorname{arcsec}');
+DefMacro('\hav',    '\operatorname{hav}');
+DefMacro('\vers',   '\operatorname{vers}');
+DefMacro('\cis',    '\operatorname{cis}');
+DefMacro('\Ci',     '\operatorname{Ci}');
+DefMacro('\Si',     '\operatorname{Si}');
+DefMacro('\Li',     '\operatorname{Li}');
+DefMacro('\Ei',     '\operatorname{Ei}');
+DefMacro('\Sinh',   '\operatorname{Sinh}');
+DefMacro('\Cosh',   '\operatorname{Cosh}');
+DefMacro('\Sech',   '\operatorname{Sech}');
+DefMacro('\Csch',   '\operatorname{Csch}');
+DefMacro('\Tanh',   '\operatorname{Tanh}');
+DefMacro('\Coth',   '\operatorname{Coth}');
+DefMacro('\arsinh', '\operatorname{arsinh}');
+DefMacro('\arcosh', '\operatorname{arcosh}');
+DefMacro('\artanh', '\operatorname{artanh}');
+DefMacro('\arcoth', '\operatorname{arcoth}');
+DefMacro('\arsech', '\operatorname{arsech}');
+DefMacro('\arcsch', '\operatorname{arcsch}');
+DefMacro('\Arsinh', '\operatorname{Arsinh}');
+DefMacro('\Arcosh', '\operatorname{Arcosh}');
+DefMacro('\Artanh', '\operatorname{Artanh}');
+DefMacro('\Arcoth', '\operatorname{Arcoth}');
+DefMacro('\Arsech', '\operatorname{Arsech}');
+DefMacro('\Arcsch', '\operatorname{Arcsch}');
+DefMacro('\erf',    '\operatorname{erf}');
+DefMacro('\erfc',   '\operatorname{erfc}');
+
+# Bracketing constructs
+
+DefMacro('\paren{}',      '\left( #1 \right)');
+DefMacro('\leftparen{}',  '\left( #1 \right.');
+DefMacro('\rightparen{}', '\left. #1 \right)');
+DefMacro('\sqbrk{}',      '\left[ #1 \right]');
+
+DefMacro('\set{}',      '\left\lbrace #1 \right\rbrace');
+DefMacro('\leftset{}',  '\left\lbrace #1 \right.');
+DefMacro('\rightset{}', '\left. #1 \right\rbrace');
+DefMacro('\cmod{}',     '\left\lvert #1 \right\rvert');
+DefMacro('\polar{}',    '\left\langle #1 \right\rangle');
+DefMacro('\norm{}',     '\left\lVert #1 \right\rVert');
+DefMacro('\floor{}',    '\left\lfloor #1 \right\rfloor');
+DefMacro('\ceiling{}',  '\left\lceil #1 \right\rceil');
+DefMacro('\nint{}',     '\left\lfloor #1 \right\rceil');
+
+DefMacro('\closedint{}{}', '\left[ #1 \,.\,.\, #2 \right]');
+DefMacro('\openint{}{}',   '\left( #1 \,.\,.\, #2 \right)');
+DefMacro('\hointl{}{}',    '\left( #1 \,.\,.\, #2 \right]');
+DefMacro('\hointr{}{}',    '\left[ #1 \,.\,.\, #2 \right)');
+DefMacro('\horectl{}{}',   '\left(\left( #1 \,.\,.\, #2 \right]\right]');
+DefMacro('\horectr{}{}',   '\left[\left[ #1 \,.\,.\, #2 \right)\right)');
+DefMacro('\multiset{}',    '\left\lbrace\!\left\lbrace #1 \right\rbrace\!\right\rbrace');
+
+DefMacro('\tuple{}',       '\left( #1 \right)');
+DefMacro('\struct{}',      '\left( #1 \right)');
+DefMacro('\ideal{}',       '\left( #1 \right)');
+DefMacro('\sequence{}',    '\left\langle #1 \right\rangle');
+DefMacro('\family{}',      '\left\langle #1 \right\rangle');
+DefMacro('\innerprod{}{}', '\left\langle #1, #2 \right\rangle');
+DefMacro('\gen{}',         '{\left\langle #1 \right\rangle}');
+DefMacro('\eqclass{}{}',   '\left[\!\left[ #1 \right]\!\right]_{#2}');
+DefMacro('\index{}{}',     '\left[ #1 : #2 \right]');
+DefMacro('\order{}',       '\left\lvert #1 \right\rvert');
+DefMacro('\size{}',        '\left\lvert #1 \right\rvert');
+DefMacro('\bigsize{}',     '\bigl\lvert #1 \bigr\rvert');
+DefMacro('\card{}',        '\left\lvert #1 \right\rvert');
+DefMacro('\fractpart{}',   '\left\lbrace #1 \right\rbrace');
+DefMacro('\map{}{}',       '#1 \left( #2 \right)');
+DefMacro('\braket{}{}',    '{\left\langle #1 \, \middle \vert \, #2 \right\rangle{}}');
+
+DefMacro('\Syl{}{}',            '\mathrm{Syl}_{#1} \left( #2 \right)');
+DefMacro('\relcomp{}{}',        '\complement_{#1} \left( #2 \right)');
+DefMacro('\laptrans{}',         '\LL \left\lbrace #1 \right\rbrace');
+DefMacro('\invlaptrans{}',      '\LL^{-1} \left\lbrace #1 \right\rbrace');
+DefMacro('\powerset{}',         '\PP \left( #1 \right)');
+DefMacro('\intlimits{}{}{}',    '\left[ #1 \right]_{#2}^{#3}');
+DefMacro('\bigintlimits{}{}{}', '\Bigl[ #1 \Bigr]_{#2}^{#3}');
+DefMacro('\valueat{}{}',        '\left. #1 \right\rvert_{#2}');
+DefMacro('\bigvalueat{}{}',     '\Bigl. #1 \Bigr\rvert_{#2}');
+
+# Mathematical Logic
+
+DefMacro('\Add',  '\operatorname{Add}');
+DefMacro('\Mult', '\operatorname{Mult}');
+DefMacro('\Succ', '\operatorname{Succ}');
+DefMacro('\Zero', '\operatorname{Zero}');
+
+# Miscellaneous
+
+DefMacro('\hcf',                   '\operatorname{hcf}');
+DefMacro('\inj',                   '\operatorname{inj}');
+DefMacro('\rem',                   '\operatorname{rem}');
+DefMacro('\pr',                    '\operatorname{pr}');
+DefMacro('\proj',                  '\operatorname{proj}');
+DefMacro('\tr',                    '\operatorname{tr}');
+DefMacro('\len',                   '\operatorname{len}');
+DefMacro('\sgn',                   '\operatorname{sgn}');
+DefMacro('\grad',                  '\operatorname{grad}');
+DefMacro('\curl',                  '\operatorname{curl}');
+DefMacro('\dr{}',                  '\mathrm{dr} \left( #1 \right)');
+DefMacro('\cl',                    '\mathrm{cl}');
+DefMacro('\var{}',                 '\mathsf{var} \left( #1 \right)');
+DefMacro('\cov{}',                 '\mathsf{cov} \left( #1 \right)');
+DefMacro('\expect{}',              '\mathsf E \left( #1 \right)');
+DefMacro('\conjclass{}',           '\mathrm C_{#1}');
+DefMacro('\Log',                   '\operatorname{Log}');
+DefMacro('\Ln',                    '\operatorname{Ln}');
+DefMacro('\On',                    '\operatorname{On}');
+DefMacro('\Area',                  '\operatorname{Area}');
+DefMacro('\Card',                  '\operatorname{Card}');
+DefMacro('\Frob',                  '\operatorname{Frob}');
+DefMacro('\Bernoulli{}',           '\mathrm{Bern} \left( #1 \right)');
+DefMacro('\BetaDist{}{}',          '\mathrm{Beta} \left( #1, #2 \right)');
+DefMacro('\Binomial{}{}',          '\mathrm B \left( #1, #2 \right)');
+DefMacro('\Cauchy{}{}',            '\mathrm{Cauchy} \left( #1, #2 \right)');
+DefMacro('\NegativeBinomial{}{}',  '\mathrm{NB} \left( #1, #2 \right)');
+DefMacro('\Exponential{}',         '\mathrm{Exp} \left( #1 \right)');
+DefMacro('\Gaussian{}{}',          'N \left( #1, #2 \right)');
+DefMacro('\Geometric{}',           '\mathrm G_0 \left( #1 \right)');
+DefMacro('\ShiftedGeometric{}',    '\mathrm G_1 \left( #1 \right)');
+DefMacro('\Poisson{}',             '\mathrm{Poisson} \left( #1 \right)');
+DefMacro('\StudentT{}',            't_{#1}');
+DefMacro('\ContinuousUniform{}{}', '\mathrm U \left[ #1 \,.\,.\, #2 \right]');
+DefMacro('\DiscreteUniform{}',     '\mathrm U \left( #1 \right)');
+DefMacro('\condprob{}{}',          '\Pr \left( #1 \, \middle \vert \, #2 \right)');
+DefMacro('\Arg{}',                 '\mathrm{Arg} \left( #1 \right)');
+DefMacro('\domain{}',              '\mathrm{Dom} \left( #1 \right)');
+DefMacro('\cont{}',                '\mathrm{cont} \left( #1 \right)');
+DefMacro('\Dom{}',                 '\mathrm{Dom} \left( #1 \right)');
+DefMacro('\Cdm{}',                 '\mathrm{Cdm} \left( #1 \right)');
+DefMacro('\Rng{}',                 '\mathrm{Rng} \left( #1 \right)');
+DefMacro('\adj{}',                 '\mathrm{adj} \left( #1 \right)');
+DefMacro('\Img{}',                 '\mathrm{Img} \left( #1 \right)');
+DefMacro('\Preimg{}',              '\mathrm{Img}^{-1} \left( #1 \right)');
+DefMacro('\image{}',               '\Img #1 ');
+DefMacro('\Orb{}',                 '\mathrm{Orb} \left( #1 \right)');
+DefMacro('\Stab{}',                '\mathrm{Stab} \left( #1 \right)');
+DefMacro('\Dic{}',                 '\operatorname{Dic}_{#1}');
+DefMacro('\GL{}',                  '\mathrm{GL} \left( #1 \right)');
+DefMacro('\SL{}',                  '\mathrm{SL} \left (#1 \right)');
+DefMacro('\SU{}',                  '\operatorname{SU_{#1} }');
+DefMacro('\Aut{}',                 '\mathrm{Aut} \left( #1 \right)');
+DefMacro('\Out{}',                 '\mathrm{Out} \left( #1 \right)');
+DefMacro('\Gal{}',                 '\mathrm{Gal} \left( #1 \right)');
+DefMacro('\Inn{}',                 '\mathrm{Inn} \left( #1 \right)');
+DefMacro('\Fix{}',                 '\mathrm{Fix} \left( #1 \right)');
+DefMacro('\Char{}',                '\mathrm{Char} \left( #1 \right)');
+DefMacro('\Spec{}',                '\mathrm{Spec} \left( #1 \right)');
+DefMacro('\Nil{}',                 '\mathrm{Nil} \left( #1 \right)');
+DefMacro('\Ord{}',                 '\map{\mathrm{Ord} } #1');
+DefMacro('\Res{}{}',               '\mathrm{Res} \left( #1, #2 \right)');
+DefMacro('\Int{}',                 '\mathrm{Int} \left( #1 \right)');
+DefMacro('\Ext{}',                 '\mathrm{Ext} \left( #1 \right)');
+DefMacro('\Ber',                   '\mathrm{Ber}');
+DefMacro('\Bei',                   '\mathrm{Bei}');
+DefMacro('\Rad',                   '\mathrm{Rad}');
+DefMacro('\diam',                  '\mathrm{diam}');
+DefMacro('\stratgame{}{}{}',       '\left\langle #1, \sequence #2, \sequence #3 \right\rangle');
+DefMacro('\divides',               '\mathrel \backslash');
+DefMacro('\PV',                    '\mathrm{PV} \displaystyle \int');
+DefMacro('\leadstoandfrom',        '\mathrel \leftrightsquigarrow');
+DefMacro('\degrees',               '^\circ');
+DefMacro('\radians',               '\, \mathrm{rad}');
+DefMacro('\cels',                  '\, \degrees \mathrm C');
+DefMacro('\fahr',                  '\, \degrees \mathrm F');
+DefMacro('\Re',                    '\mathfrak{Re}');
+DefMacro('\Im',                    '\mathfrak{Im}');
+DefMacro('\ds',                    '\displaystyle');
+
+1;
