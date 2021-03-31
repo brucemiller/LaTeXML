@@ -81,7 +81,7 @@
     <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1]">
       <xsl:comment>
         <xsl:text>Document created on </xsl:text>
-        <xsl:value-of select='translate(//ltx:date/node(),"-","‐")'/>
+        <xsl:value-of select="translate(//ltx:date/node(),'-','‐')"/>
         <xsl:text>.</xsl:text>
       </xsl:comment>
       <xsl:text>&#x0A;</xsl:text>

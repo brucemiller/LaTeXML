@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-/=====================================================================\ 
+/=====================================================================\
 |  LaTeXML-block-xhtml.xsl                                            |
 |  Converting various block-level elements to xhtml                   |
 |=====================================================================|
@@ -208,7 +208,7 @@
       <xsl:attribute name="class">ltx_tag ltx_tag_<xsl:value-of select="local-name(../..)"/>
       <xsl:text> </xsl:text>
       <xsl:value-of select="f:if(ancestor-or-self::*[contains(@class,'ltx_leqno')],'ltx_align_left','ltx_align_right')"/></xsl:attribute>
-      <xsl:apply-templates>    
+      <xsl:apply-templates>
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
     </xsl:element>
@@ -326,7 +326,7 @@
         <!-- This should cover: ltx:Math, ltx:MathFork, ltx:text & Misc
              (ie. all of equation_model EXCEPT Meta & EquationMeta) -->
         <xsl:apply-templates select="ltx:Math | ltx:MathFork | ltx:text
-                                     | ltx:inline-block | ltx:verbatim | ltx:break 
+                                     | ltx:inline-block | ltx:verbatim | ltx:break
                                      | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-para
                                      | ltx:tabular | ltx:picture" >
           <xsl:with-param name="context" select="$context"/>
@@ -436,7 +436,7 @@
   </func:function>
 
   <func:function name="f:maxcolumns">
-    <xsl:param name="equations"/>    
+    <xsl:param name="equations"/>
     <xsl:for-each select="$equations">
       <xsl:sort select="f:countcolumns(.)" data-type="number" order="descending"/>
       <xsl:if test="position()=1">
@@ -454,7 +454,7 @@
 
   <xsl:template match="ltx:equationgroup" mode="aligned">
     <xsl:param name="context"/>
-    <xsl:param name="ncolumns" 
+    <xsl:param name="ncolumns"
                select="f:maxcolumns(ltx:equation | ltx:equationgroup/ltx:equation)"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="{f:blockelement($context,'table')}" namespace="{$html_ns}">
@@ -550,10 +550,10 @@
                and any constraints within equations -->
           <xsl:variable name="nrows"
                         select="count(
-ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation/ltx:MathFork/ltx:MathBranch[1]/ltx:tr
-| ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation[ltx:MathFork/ltx:MathBranch[1]/ltx:td]
-| ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
-| ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation/ltx:constraint
+                                ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation/ltx:MathFork/ltx:MathBranch[1]/ltx:tr
+                                | ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation[ltx:MathFork/ltx:MathBranch[1]/ltx:td]
+                                | ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
+                                | ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation/ltx:constraint
                                 )"/>
           <xsl:text>&#x0A;</xsl:text>
           <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
@@ -638,8 +638,8 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
     </xsl:call-template>
   </xsl:template>
 
-  <!-- ====================================================================== 
-       Synthesizing rows & columns out for aligned equations and equationgroups 
+  <!-- ======================================================================
+       Synthesizing rows & columns out for aligned equations and equationgroups
   -->
   <xsl:template match="*" mode="inalignment-begin">
     <xsl:param name="context"/>
@@ -791,12 +791,12 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
-          
+
   <!-- inside table, and id (if any) already handled -->
   <xsl:template match="ltx:equation" mode="ininalignment">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"/>
-    <xsl:param name="need_id"/>    
+    <xsl:param name="need_id"/>
     <xsl:param name="eqpos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:choose>
@@ -898,7 +898,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
                  This should cover: ltx:Math, ltx:text & Misc
                  (ie. all of equation_model EXCEPT Meta & EquationMeta) -->
             <xsl:apply-templates select="ltx:Math | ltx:text
-                                         | ltx:inline-block | ltx:verbatim | ltx:break 
+                                         | ltx:inline-block | ltx:verbatim | ltx:break
                                          | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-para
                                          | ltx:tabular | ltx:picture" >
               <xsl:with-param name="context" select="$context"/>
@@ -967,12 +967,12 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
       </xsl:if>
       <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="'ltx_eqn_cell'"/>
-	<xsl:with-param name="extra_style">
+        <xsl:with-param name="extra_style">
           <xsl:if test="ancestor::ltx:equationgroup/@rowsep">
               <xsl:value-of select="concat('padding-top:',f:half(ancestor::ltx:equationgroup/@rowsep),';')"/>
               <xsl:value-of select="concat('padding-bottom:',f:half(ancestor::ltx:equationgroup/@rowsep),';')"/>
             </xsl:if>
-	  </xsl:with-param>
+          </xsl:with-param>
       </xsl:call-template>
       <xsl:apply-templates>
         <xsl:with-param name="context" select="$context"/>
@@ -980,7 +980,7 @@ ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equa
       <xsl:if test="(self::* = ../ltx:td[position()=last()])
                     and (parent::* = ../../ltx:tr[position()=last()])
                     and ancestor::ltx:MathFork/following-sibling::*[position()=1][self::ltx:text]">
-        <!-- if we're the last td in the last tr in an equation followed by a text, 
+        <!-- if we're the last td in the last tr in an equation followed by a text,
              insert the text here!-->
         <xsl:apply-templates select="ancestor::ltx:MathFork/following-sibling::ltx:text[1]/node()">
           <xsl:with-param name="context" select="$context"/>

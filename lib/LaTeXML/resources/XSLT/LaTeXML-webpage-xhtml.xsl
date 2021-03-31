@@ -53,7 +53,7 @@
        <html>
          <head>...</head>
          <body>
-           <div class="ltx_page_navbar>...</div>
+           <div class="ltx_page_navbar">...</div>
            <div class="ltx_page_main">
              <div class="ltx_page_header">
                header navigation

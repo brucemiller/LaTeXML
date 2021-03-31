@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <!--
-/=====================================================================\ 
+/=====================================================================\
 |  LaTeXML-math-mathml.xsl                                            |
 |  copy MathML for xhtml                                              |
 |=====================================================================|
@@ -27,7 +27,7 @@
   <xsl:param name="USE_MathML">true</xsl:param>
   <!-- If NOT using MathML, should we avoid using images to represent pure numbers? -->
   <xsl:param name="USE_NUMBER_IMAGES"></xsl:param>
-   
+
   <!-- The namespace to use on MathML elements (typically MathML_NAMESPACE or none) -->
   <xsl:param name="mml_ns">
     <xsl:value-of select="f:if($USE_NAMESPACES,$MathML_NAMESPACE,'')"/>
@@ -100,7 +100,7 @@
     <xsl:element name="span" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
-      </xsl:call-template>      
+      </xsl:call-template>
       <xsl:value-of select="@tex"/>
     </xsl:element>
   </xsl:template>
@@ -128,7 +128,7 @@
       </xsl:for-each>
       <xsl:choose>
         <!-- If annotation-xml in a DIFFERENT namespace, copy as foreign markup -->
-        <xsl:when test="local-name()='annotation-xml'                              
+        <xsl:when test="local-name()='annotation-xml'
                         and not(namespace-uri(child::*) = $MathML_NAMESPACE)">
           <xsl:apply-templates mode='copy-foreign'/>
         </xsl:when>

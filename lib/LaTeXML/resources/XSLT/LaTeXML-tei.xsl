@@ -13,7 +13,7 @@
     <xsl:import href="LaTeXML-common.xsl"/>
 
     <xsl:strip-space elements="*"/>
-    <xsl:output 
+    <xsl:output
         method = "xml"
         indent = "yes"
         encoding = 'utf-8'/>
