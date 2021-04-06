@@ -5096,20 +5096,47 @@ Let('\@sptoken', T_SPACE);
 
 DefMacroI('\@uclclist', undef, '\oe\OE\o\O\ae\AE\dh\DH\dj\DJ\l\L\ng\NG\ss\SS\th\TH');
 
-DefMacro('\MakeUppercase{}', sub {
-    my @t = LookupDefinition(T_CS('\@uclclist'))->getExpansion->unlist;
-    my @x = (T_CS('\def'), T_CS('\i'), T_BEGIN, T_LETTER('I'), T_END,
-      T_CS('\def'), T_CS('\j'), T_BEGIN, T_LETTER('J'), T_END);
-    while (@t) { push(@x, T_CS('\let'), shift(@t), shift(@t)); }
-    my $arg = Expand(Tokens(T_BEGIN, @x, $_[1]->unlist, T_END));
-    (T_CS('\uppercase'), T_BEGIN, $arg->unlist, T_END); });
+sub ltx_adjust_case {
+  my ($arg, $flag_lower) = @_;
+  my @adjusted = ();
+  for my $token ($arg->unlist) {
+    if ($$token[1] == CC_OTHER) {
+      my $letter = $$token[0];
+      my $cased  = $flag_lower ? lc($letter) : uc($letter);
+      if ($letter ne $cased) {
+        push(@adjusted, T_OTHER($cased)); }
+      else {
+        push(@adjusted, $token); } }
+    else {
+      push(@adjusted, $token); } }
+  return @adjusted;
+}
+DefMacro('\ltx@uppercase Expanded', sub { return ltx_adjust_case($_[1], 0); });
+DefMacro('\ltx@lowercase Expanded', sub { return ltx_adjust_case($_[1], 1); });
 
-DefMacro('\MakeLowercase{}', sub {
-    my @t = LookupDefinition(T_CS('\@uclclist'))->getExpansion->unlist;
-    my @x = ();
-    while (@t) { my $y = shift(@t); push(@x, T_CS('\let'), shift(@t), $y); }
-    my $arg = Expand(Tokens(T_BEGIN, @x, $_[1]->unlist, T_END));
-    (T_CS('\lowercase'), T_BEGIN, $arg->unlist, T_END); });
+RawTeX(<<'EOL');
+\DeclareRobustCommand{\MakeUppercase}[1]{{%
+      \def\i{I}\def\j{J}%
+      \def\reserved@a##1##2{\let##1##2\reserved@a}%
+      \expandafter\reserved@a\@uclclist\reserved@b{\reserved@b\@gobble}%
+      \let\UTF@two@octets@noexpand\@empty
+      \let\UTF@three@octets@noexpand\@empty
+      \let\UTF@four@octets@noexpand\@empty
+      \protected@edef\reserved@a{\uppercase{#1}}%
+      \ltx@uppercase{\reserved@a}
+   }}
+\DeclareRobustCommand{\MakeLowercase}[1]{{%
+      \def\reserved@a##1##2{\let##2##1\reserved@a}%
+      \expandafter\reserved@a\@uclclist\reserved@b{\reserved@b\@gobble}%
+      \let\UTF@two@octets@noexpand\@empty
+      \let\UTF@three@octets@noexpand\@empty
+      \let\UTF@four@octets@noexpand\@empty
+      \protected@edef\reserved@a{\lowercase{#1}}%
+      \ltx@lowercase{\reserved@a}
+   }}
+\protected@edef\MakeUppercase#1{\MakeUppercase{#1}}
+\protected@edef\MakeLowercase#1{\MakeLowercase{#1}}
+EOL
 
 #======================================================================
 
