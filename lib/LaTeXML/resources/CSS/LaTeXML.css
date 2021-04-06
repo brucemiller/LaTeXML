@@ -251,9 +251,13 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 @media screen and (max-width: 80em){
   .ltx_page_columns {
      flex-direction: column; }
-  .ltx_page_column1 > ul {
+  .ltx_page_column1 > ul,
+  .ltx_page_column1 > ol,
+  .ltx_page_column1 > dl {
      margin-bottom: 0; }
-  .ltx_page_column2 > ul {
+  .ltx_page_column2 > ul,
+  .ltx_page_column2 > ol,
+  .ltx_page_column2 > dl {
      margin-top: 0; }
 }
 
