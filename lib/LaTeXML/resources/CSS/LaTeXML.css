@@ -57,11 +57,10 @@
 
 .ltx_outdent { margin-left: -2em; }
 
-/* .ltx_chapter_title, etc should be in ltx-article.css etc.
- */
-.ltx_page_main { margin:0px auto; max-width: 36em; max-width: 72ch;
+/* .ltx_chapter_title, etc should be in ltx-article.css etc. */
+.ltx_page_main { margin:0px auto;
     padding:1em 3em 1em 2em;
-    padding:min(1em,1.5%) min(3em,4.5%) min(1em,1.5%), min(2em, 3%); }
+    padding:min(1em,1.5%) min(3em,4.5%) min(1em,1.5%) min(2em, 3%); }
 .ltx_tocentry  { list-style-type:none; }
 
 /* support for common author block layouts.*/
@@ -244,16 +243,23 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 
 /*======================================================================
   Columns */
-.ltx_page_column1 {
-    width:44%; float:left; } /* IE uses % of wrong container*/
+.ltx_page_columns {
+    display: flex; }
+.ltx_page_column1,
 .ltx_page_column2 {
-    width:44%; float:right; }
-.ltx_page_columns > .ltx_page_column1 {
-    width:48%; float:left; }
-.ltx_page_columns > .ltx_page_column2 {
-    width:48%; float:right; }
-.ltx_page_columns:after {
-    content:"."; display:block; height:0; clear:both; visibility:hidden; }
+    flex:100%; }
+@media screen and (max-width: 80em){
+  .ltx_page_columns {
+     flex-direction: column; }
+  .ltx_page_column1 > ul,
+  .ltx_page_column1 > ol,
+  .ltx_page_column1 > dl {
+     margin-bottom: 0; }
+  .ltx_page_column2 > ul,
+  .ltx_page_column2 > ol,
+  .ltx_page_column2 > dl {
+     margin-top: 0; }
+}
 
 /*======================================================================
  Borders and such */
