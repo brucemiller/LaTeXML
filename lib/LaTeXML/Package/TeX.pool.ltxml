@@ -1232,7 +1232,8 @@ sub do_def {
   $params = parseDefParameters($cs, $params);
   # noprep=>1 : leave preparing the ##, #1-#9 tokens to the Def parameter types
   # to avoid carrying around the masks around and keep core code simple
-  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body, noprep => 1),
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body,
+      nopackParameters => 1),
     ($globally ? 'global' : undef));
   AfterAssignment();
   return; }
@@ -2251,6 +2252,7 @@ sub writableTokens {
     my $t  = ($$_[2] || $_);
     my $cc = $$t[1];
     if    ($cc == CC_CS)    { ($t, T_SPACE); }
+    elsif ($cc == CC_SPACE) { (T_SPACE); }
     elsif ($cc == CC_PARAM) { ($t, $t); }
     elsif ($cc == CC_ARG) {
       # B Book, 294. Reduce to param+integer
@@ -2308,7 +2310,7 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
         $level-- if $cc == CC_END;
         last     if !$level && $mouth->isEOL; }
       $stomach->egroup;
-      DefMacroI($token, undef, Tokens(@tokens)); }
+      DefMacroI($token, undef, Tokens(@tokens), nopackParameters => 1); }
     return; });
 
 DefConditional('\ifeof Number', sub {
