@@ -2,15 +2,9 @@
 
 \def\foo{\textbf{Foo!}}
 
-% Damn catcodes...
-%\def\showline macro:->#1\end{%
-\def\showline{%
-   \expandafter\showtheline\meaning\aline\end}
-\def\showtheline#1\end{%
-  Line: ``#1''\\}
-
+\def\lineprefix{Line: }
 \def\showline{
-  Line: ``\aline''\\}
+  \lineprefix``\aline''\\}
 
 \newwrite\file
 \def\findfile#1{
@@ -54,6 +48,11 @@
  \openin\file = #1
   \Ereadnext}
 
+\def\inputfile#1{
+  Inputting file #1:\\
+  \input{#1}
+  Closed!}
+
 \begin{document}
 \paragraph{Checking files}
 
@@ -61,13 +60,33 @@
 
 \findfile{missing.data}
 
+\paragraph{Inputting a file}
+
+\inputfile{exists.data}
+
 \paragraph{Reading a file}
 
 \readfile{exists.data}
 
-\paragraph{Reading a file w eTeX}
+\paragraph{Reading a file w No EOL}
+\begingroup
+\def\lineprefix{Line (no EOL): }
+\endlinechar-1\relax
+\readfile{exists.data}
+\endgroup
 
+\paragraph{Reading a file w Silly EOL}
+\begingroup
+\def\lineprefix{Line (EOL=0): }
+\endlinechar`\0\relax
+\readfile{exists.data}
+\endgroup
+
+\paragraph{Reading a file w eTeX}
+\begingroup
+\def\lineprefix{Line (eTeX): }
 \Ereadfile{exists.data}
+\endgroup
 
 \paragraph{Writing a file}
 Writing file generated.data
