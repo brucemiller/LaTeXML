@@ -584,7 +584,7 @@ sub DefColumnType {
 #======================================================================
 # This is modelled on LaTeX's counter mechanisms, but since it also
 # provides support for ID's, even where there is no visible reference number,
-# it is defined in genera.
+# it is defined in general.
 # These id's should be both unique, and parallel the visible reference numbers
 # (as much as possible).  Also, for consistency, we add id's to unnumbered
 # document elements (eg from \section*); this requires an additional counter
@@ -1015,8 +1015,9 @@ sub DefExpandable {
 # Define a Macro: Essentially an alias for DefExpandable
 # For convenience, the $expansion can be a string which will be tokenized.
 my $macro_options = {    # [CONSTANT]
-  scope     => 1, locked => 1, mathactive => 1,
-  protected => 1, outer  => 1, long       => 1 };
+  scope            => 1, locked => 1, mathactive => 1,
+  protected        => 1, outer  => 1, long       => 1,
+  nopackParameters => 1 };
 
 sub DefMacro {
   my ($proto, $expansion, %options) = @_;
@@ -2285,7 +2286,7 @@ sub AddToMacro {
   else {
     DefMacroI($cs, undef, Tokens(map { $_->unlist }
           map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
-      scope => 'global'); }
+      nopackParameters => 1, scope => 'global'); }
   return; }
 
 #======================================================================
