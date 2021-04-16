@@ -281,6 +281,8 @@ sub readToken {
   while (1) {    # Iterate till we find a token, or run out. (use return)
                  # ===== Get next line, if we need to.
     if ($$self{colno} >= $$self{nchars}) {
+      my $lastn   = $$self{nchars};
+      my $lastcol = $$self{colno};
       $$self{lineno}++;
       $$self{colno} = 0;
       my $line = $self->getNextLine;
@@ -312,7 +314,9 @@ sub readToken {
         # DIRECT ACCESS to $STATE's catcode table!!!
         && (($$STATE{catcode}{ $$self{chars}[$$self{colno}] }[0] || CC_OTHER) == CC_SPACE)) {
         $$self{colno}++; }
-      return T_MARKER('EOL') if $read_mode && ((!defined $eolch) || ($eolch ne "\r"));
+      # If upcoming line is empty, and there is no recognizable EOL, fake one
+      return T_MARKER('EOL') if $read_mode
+        && ($$self{colno} >= $$self{nchars}) && ((!defined $eolch) || ($eolch ne "\r"));
       # Sneak a comment out, every so often.
       if ((($$self{lineno} % 25) == 0) && $STATE->lookupValue('INCLUDE_COMMENTS')) {
         return T_COMMENT("**** " . ($$self{shortsource} || 'String') . " Line $$self{lineno} ****"); }
