@@ -281,8 +281,6 @@ sub readToken {
   while (1) {    # Iterate till we find a token, or run out. (use return)
                  # ===== Get next line, if we need to.
     if ($$self{colno} >= $$self{nchars}) {
-      my $lastn   = $$self{nchars};
-      my $lastcol = $$self{colno};
       $$self{lineno}++;
       $$self{colno} = 0;
       my $line = $self->getNextLine;
