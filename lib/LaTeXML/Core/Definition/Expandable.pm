@@ -30,7 +30,7 @@ sub new {
     Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
       "Expansion is " . ToString($expansion)) unless $expansion->isBalanced;
     # rescan for match tokens and unwrap dont_expand...
-    $expansion = $expansion->packParameters unless $traits{noprep};
+    $expansion = $expansion->packParameters unless $traits{nopackParameters};
   }
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
     locator      => $source->getLocator,
