@@ -2666,10 +2666,15 @@ DefPrimitive('\DeclareFontEncoding{}{}{}', sub {
       T_BEGIN, T_CS('\default@family'), T_END,
       T_BEGIN, T_CS('\default@series'), T_END,
       T_BEGIN, T_CS('\default@shape'),  T_END);
-    my $e = Expand($encoding);
-    DefMacroI('\LastDeclaredEncoding', undef, $e);
-    DefMacroI('\T@' . ToString($e),    undef, $x);
-    DefMacroI('\M@' . ToString($e),    undef, Tokens(T_CS('\default@M'), $y->unlist));
+    my $encoding_expanded = Expand($encoding);
+    my $encoding_str      = ToString($encoding_expanded);
+    DefMacroI('\LastDeclaredEncoding', undef, $encoding_expanded);
+    DefMacroI('\T@' . $encoding_str,   undef, $x);
+    DefMacroI('\M@' . $encoding_str,   undef, Tokens(T_CS('\default@M'), $y->unlist));
+    if (my $path = $encoding_str && FindFile(lc($encoding_str) . "enc", type => "dfu")) {
+      InputDefinitions($path);
+    }
+    return;
 });
 DefMacroI('\LastDeclaredEncoding', undef, '');
 DefPrimitive('\DeclareFontSubstitution{}{}{}{}', undef);
@@ -5096,24 +5101,6 @@ Let('\@sptoken', T_SPACE);
 
 DefMacroI('\@uclclist', undef, '\oe\OE\o\O\ae\AE\dh\DH\dj\DJ\l\L\ng\NG\ss\SS\th\TH');
 
-sub ltx_adjust_case {
-  my ($arg, $flag_lower) = @_;
-  my @adjusted = ();
-  for my $token ($arg->unlist) {
-    if ($$token[1] == CC_OTHER) {
-      my $letter = $$token[0];
-      my $cased  = $flag_lower ? lc($letter) : uc($letter);
-      if ($letter ne $cased) {
-        push(@adjusted, T_OTHER($cased)); }
-      else {
-        push(@adjusted, $token); } }
-    else {
-      push(@adjusted, $token); } }
-  return @adjusted;
-}
-DefMacro('\ltx@uppercase Expanded', sub { return ltx_adjust_case($_[1], 0); });
-DefMacro('\ltx@lowercase Expanded', sub { return ltx_adjust_case($_[1], 1); });
-
 RawTeX(<<'EOL');
 \DeclareRobustCommand{\MakeUppercase}[1]{{%
       \def\i{I}\def\j{J}%
@@ -5123,7 +5110,7 @@ RawTeX(<<'EOL');
       \let\UTF@three@octets@noexpand\@empty
       \let\UTF@four@octets@noexpand\@empty
       \protected@edef\reserved@a{\uppercase{#1}}%
-      \ltx@uppercase{\reserved@a}
+      \reserved@a
    }}
 \DeclareRobustCommand{\MakeLowercase}[1]{{%
       \def\reserved@a##1##2{\let##2##1\reserved@a}%
@@ -5132,7 +5119,7 @@ RawTeX(<<'EOL');
       \let\UTF@three@octets@noexpand\@empty
       \let\UTF@four@octets@noexpand\@empty
       \protected@edef\reserved@a{\lowercase{#1}}%
-      \ltx@lowercase{\reserved@a}
+      \reserved@a
    }}
 \protected@edef\MakeUppercase#1{\MakeUppercase{#1}}
 \protected@edef\MakeLowercase#1{\MakeLowercase{#1}}
@@ -5806,6 +5793,22 @@ DefConstructor('\textsubscript{}', "<ltx:sub>#1</ltx:sub>",
   mode => 'text');
 
 #**********************************************************************
+# We need this bit from utf8.def for textcomp
+DefPrimitive('\DeclareUnicodeCharacter Expanded {}', sub {
+    my ($stomach, $hexcode, $expansion) = @_;
+    my $char = $hexcode->toString();
+    if ($char =~ /^[0-9a-fA-F]+$/) {
+      if ((my $cp = hex($char)) <= 0x10FFFF) {
+        $char = UTF($cp);
+        AssignCatcode($char, CC_ACTIVE);
+        DefMacroI(T_ACTIVE($char), undef, $expansion); }
+      else {
+        Error('unexpected', $char, $stomach,
+          "$char too large for Unicode. Values between 0 and 10FFFF are permitted."); } }
+    else {
+      Error('unexpected', $char, $stomach,
+        "'$char' is not a hexadecimal number."); } });
+
 # LaTeX now includes textcomp by default.
 RequirePackage('textcomp');
 
