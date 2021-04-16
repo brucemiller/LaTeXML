@@ -1,15 +1,21 @@
 This file exists!
-line 2
+next line intentionally blank
 
 another line       spaces
 %oddchars # & \foo
+comment after%
 \foo
 
 $x'$
+non-macro followed by 5 spaces     
 macro followed by 5 spaces \foo     
+macro \foo      followed by spaces
+keyword = 1
 fake spaces^^20^^20^^20
 macro followed by fake spaces \foo^^20^^20^^20
 fake cr^^M apparently looses remainder of line
+face cr on next line
+^^M
 line { in brackets
 still } continues
 line with par \par inside.
