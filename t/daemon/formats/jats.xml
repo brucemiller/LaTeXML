@@ -15,7 +15,7 @@
             <addr-line>Somewhere, USA</addr-line>
           </address>
           <!-- The element contact with attributes
-        role=current_address 
+        role=current_address
       is currently not supported for the front matter.
     -->
           <email>joe@blow</email>
@@ -54,7 +54,7 @@
   </front>
   <body>
     <sec id="S1">
-      <title>Introduction</title>
+      <title>1. Introduction</title>
       <p id="S1.p1">As discussed in <xref ref-type="bibr" rid="bib.bib1">[AS64]</xref>,
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
       <p>
@@ -164,7 +164,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </list>
     </sec>
     <sec id="S2">
-      <title>A Math Section</title>
+      <title>2. A Math Section</title>
       <p id="S2.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
       <p id="S2.p2">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
       <p>
@@ -635,12 +635,14 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </p>
       <statement id="Thmcorollary1">
         <title>
+          <italic>Corollary 1</italic>
           <italic>.</italic>
         </title>
         <p id="Thmcorollary1.p1">Whatever!</p>
       </statement>
       <statement id="Thmcorollaryx1">
         <title>
+          <italic>Corollary</italic>
           <italic>.</italic>
         </title>
         <p id="Thmcorollaryx1.p1">And whatever.</p>
@@ -784,10 +786,10 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </disp-formula-group>
       </p>
       <sec id="S2.SS1">
-        <title>A subsection</title>
+        <title>2.1. A subsection</title>
         <p id="S2.SS1.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
         <sec id="S2.SS1.SSS1">
-          <title>A subsubsection</title>
+          <title>2.1.1. A subsubsection</title>
           <p id="S2.SS1.SSS1.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           <boxed-text id="S2.SS1.SSS1.Px1">
             <caption>
@@ -799,9 +801,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </sec>
     </sec>
     <sec id="S3">
-      <title>
-        <italic>Section with explicit font</italic>
-      </title>
+      <title>3. <italic>Section with explicit font</italic></title>
       <p id="S3.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
     </sec>
   </body>
