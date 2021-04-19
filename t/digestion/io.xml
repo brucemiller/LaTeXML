@@ -16,19 +16,63 @@ I couldn’t find the file missing.data.</p>
     </para>
   </paragraph>
   <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px2">
-    <title>Reading a file</title>
+    <title>Inputting a file</title>
     <para xml:id="S0.SS0.SSS0.Px2.p1">
+      <p>Inputting file exists.data:<break/>This file exists!
+next line intentionally blank</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px2.p2">
+      <p>another line spaces
+comment after<text font="bold">Foo!</text></p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px2.p3">
+      <p><Math mode="inline" tex="x^{\prime}" text="x ^ prime" xml:id="S0.SS0.SSS0.Px2.p3.m1">
+          <XMath>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>
+non-macro followed by 5 spaces
+macro followed by 5 spaces <text font="bold">Foo!</text>macro <text font="bold">Foo!</text>followed by spaces
+keyword = 1
+fake spaces macro followed by fake spaces <text font="bold">Foo!</text>fake cr
+face cr on next line</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px2.p4">
+      <p>line  in brackets
+still  continues
+line with par</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px2.p5">
+      <p>inside.</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px2.p6">
+      <p>par at beginning
+line ended by par</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px2.p7">
+      <p>last line.
+
+Closed!</p>
+    </para>
+  </paragraph>
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px3">
+    <title>Reading a file</title>
+    <para xml:id="S0.SS0.SSS0.Px3.p1">
       <p>Reading file exists.data:<break/>
 
 Line: “This file exists!
 ”<break/>
 
-Line: “line 2
+Line: “next line intentionally blank
 ”<break/>
 
 Line: “</p>
     </para>
-    <para xml:id="S0.SS0.SSS0.Px2.p2">
+    <para xml:id="S0.SS0.SSS0.Px3.p2">
       <p>”<break/>
 
 Line: “another line spaces
@@ -36,14 +80,16 @@ Line: “another line spaces
 
 Line: “”<break/>
 
+Line: “comment after”<break/>
+
 Line: “<text font="bold">Foo!</text>”<break/>
 
 Line: “</p>
     </para>
-    <para xml:id="S0.SS0.SSS0.Px2.p3">
+    <para xml:id="S0.SS0.SSS0.Px3.p3">
       <p>”<break/>
 
-Line: “<Math mode="inline" tex="x^{\prime}" text="x ^ prime" xml:id="S0.SS0.SSS0.Px2.p3.m1">
+Line: “<Math mode="inline" tex="x^{\prime}" text="x ^ prime" xml:id="S0.SS0.SSS0.Px3.p3.m1">
           <XMath>
             <XMApp>
               <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
@@ -54,7 +100,16 @@ Line: “<Math mode="inline" tex="x^{\prime}" text="x ^ prime" xml:id="S0.SS0.SS
         </Math>
 ”<break/>
 
+Line: “non-macro followed by 5 spaces
+”<break/>
+
 Line: “macro followed by 5 spaces <text font="bold">Foo!</text>”<break/>
+
+Line: “macro <text font="bold">Foo!</text>followed by spaces
+”<break/>
+
+Line: “keyword = 1
+”<break/>
 
 Line: “fake spaces ”<break/>
 
@@ -63,25 +118,33 @@ Line: “macro followed by fake spaces <text font="bold">Foo!</text>”<break/>
 Line: “fake cr
 ”<break/>
 
+Line: “face cr on next line
+”<break/>
+
+Line: “</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px3.p4">
+      <p>”<break/>
+
 Line: “line  in brackets
 still  continues
 ”<break/>
 
 Line: “line with par</p>
     </para>
-    <para xml:id="S0.SS0.SSS0.Px2.p4">
+    <para xml:id="S0.SS0.SSS0.Px3.p5">
       <p>inside.
 ”<break/>
 
 Line: “</p>
     </para>
-    <para xml:id="S0.SS0.SSS0.Px2.p5">
+    <para xml:id="S0.SS0.SSS0.Px3.p6">
       <p>par at beginning
 ”<break/>
 
 Line: “line ended by par</p>
     </para>
-    <para xml:id="S0.SS0.SSS0.Px2.p6">
+    <para xml:id="S0.SS0.SSS0.Px3.p7">
       <p>”<break/>
 
 Line: “last line.
@@ -89,62 +152,227 @@ Line: “last line.
 
 Line: “</p>
     </para>
-    <para xml:id="S0.SS0.SSS0.Px2.p7">
+    <para xml:id="S0.SS0.SSS0.Px3.p8">
       <p>”<break/>
 Closed!</p>
     </para>
   </paragraph>
-  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px3">
-    <title>Reading a file w eTeX</title>
-    <para xml:id="S0.SS0.SSS0.Px3.p1">
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px4">
+    <title>Reading a file w No EOL</title>
+    <para xml:id="S0.SS0.SSS0.Px4.p1">
       <p>Reading file exists.data:<break/>
 
-Line: “This file exists!ﬂ”<break/>
+Line (no EOL): “This file exists!”<break/>
 
-Line: “line 2ﬂ”<break/>
+Line (no EOL): “next line intentionally blank”<break/>
 
-Line: “ﬂ”<break/>
+Line (no EOL): “”<break/>
 
-Line: “another line       spacesﬂ”<break/>
+Line (no EOL): “another line spaces”<break/>
 
-Line: “%oddchars # &amp; “fooﬂ”<break/>
+Line (no EOL): “”<break/>
 
-Line: ““fooﬂ”<break/>
+Line (no EOL): “comment after”<break/>
 
-Line: “ﬂ”<break/>
+Line (no EOL): “<text font="bold">Foo!</text>”<break/>
 
-Line: “$x’$ﬂ”<break/>
+Line (no EOL): “”<break/>
 
-Line: “macro followed by 5 spaces “fooﬂ”<break/>
+Line (no EOL): “<Math mode="inline" tex="x^{\prime}" text="x ^ prime" xml:id="S0.SS0.SSS0.Px4.p1.m1">
+          <XMath>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>”<break/>
 
-Line: “fake spaces^^20^^20^^20ﬂ”<break/>
+Line (no EOL): “non-macro followed by 5 spaces”<break/>
 
-Line: “macro followed by fake spaces “foo^^20^^20^^20ﬂ”<break/>
+Line (no EOL): “macro followed by 5 spaces <text font="bold">Foo!</text>”<break/>
 
-Line: “fake cr^^M apparently looses remainder of lineﬂ”<break/>
+Line (no EOL): “macro <text font="bold">Foo!</text>followed by spaces”<break/>
 
-Line: “line – in bracketsﬂ”<break/>
+Line (no EOL): “keyword = 1”<break/>
 
-Line: “still ˝ continuesﬂ”<break/>
+Line (no EOL): “fake spaces ”<break/>
 
-Line: “line with par “par inside.ﬂ”<break/>
+Line (no EOL): “macro followed by fake spaces <text font="bold">Foo!</text>”<break/>
 
-Line: ““par par at beginningﬂ”<break/>
+Line (no EOL): “fake cr
+”<break/>
 
-Line: “line ended by par “parﬂ”<break/>
+Line (no EOL): “face cr on next line”<break/>
 
-Line: “last line.ﬂ”<break/>
+Line (no EOL): “</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px4.p2">
+      <p>”<break/>
 
-Line: “ﬂ”<break/>
+Line (no EOL): “line  in bracketsstill  continues”<break/>
+
+Line (no EOL): “line with par</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px4.p3">
+      <p>inside.”<break/>
+
+Line (no EOL): “</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px4.p4">
+      <p>par at beginning”<break/>
+
+Line (no EOL): “line ended by par</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px4.p5">
+      <p>”<break/>
+
+Line (no EOL): “last line.”<break/>
+
+Line (no EOL): “”<break/>
 Closed!</p>
     </para>
   </paragraph>
-  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px4">
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px5">
+    <title>Reading a file w Silly EOL</title>
+    <para xml:id="S0.SS0.SSS0.Px5.p1">
+      <p>Reading file exists.data:<break/>
+
+Line (EOL=0): “This file exists!0”<break/>
+
+Line (EOL=0): “next line intentionally blank0”<break/>
+
+Line (EOL=0): “0”<break/>
+
+Line (EOL=0): “another line spaces0”<break/>
+
+Line (EOL=0): “”<break/>
+
+Line (EOL=0): “comment after”<break/>
+
+Line (EOL=0): “<text font="bold">Foo!</text>0”<break/>
+
+Line (EOL=0): “0”<break/>
+
+Line (EOL=0): “<Math mode="inline" tex="x^{\prime}" text="x ^ prime" xml:id="S0.SS0.SSS0.Px5.p1.m1">
+          <XMath>
+            <XMApp>
+              <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              <XMTok fontsize="70%" name="prime" role="SUPOP">′</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>0”<break/>
+
+Line (EOL=0): “non-macro followed by 5 spaces0”<break/>
+
+Line (EOL=0): “macro followed by 5 spaces <text font="bold">Foo!</text>0”<break/>
+
+Line (EOL=0): “macro <text font="bold">Foo!</text>followed by spaces0”<break/>
+
+Line (EOL=0): “keyword = 10”<break/>
+
+Line (EOL=0): “fake spaces 0”<break/>
+
+Line (EOL=0): “macro followed by fake spaces <text font="bold">Foo!</text>0”<break/>
+
+Line (EOL=0): “fake cr
+”<break/>
+
+Line (EOL=0): “face cr on next line0”<break/>
+
+Line (EOL=0): “</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px5.p2">
+      <p>”<break/>
+
+Line (EOL=0): “line  in brackets0still  continues0”<break/>
+
+Line (EOL=0): “line with par</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px5.p3">
+      <p>inside.0”<break/>
+
+Line (EOL=0): “</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px5.p4">
+      <p>par at beginning0”<break/>
+
+Line (EOL=0): “line ended by par</p>
+    </para>
+    <para xml:id="S0.SS0.SSS0.Px5.p5">
+      <p>0”<break/>
+
+Line (EOL=0): “last line.0”<break/>
+
+Line (EOL=0): “0”<break/>
+Closed!
+00</p>
+    </para>
+  </paragraph>
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px6">
+    <title>Reading a file w eTeX</title>
+    <para xml:id="S0.SS0.SSS0.Px6.p1">
+      <p>Reading file exists.data:<break/>
+
+Line (eTeX): “This file exists!ﬂ”<break/>
+
+Line (eTeX): “next line intentionally blankﬂ”<break/>
+
+Line (eTeX): “ﬂ”<break/>
+
+Line (eTeX): “another line       spacesﬂ”<break/>
+
+Line (eTeX): “%oddchars # &amp; “fooﬂ”<break/>
+
+Line (eTeX): “comment after%ﬂ”<break/>
+
+Line (eTeX): ““fooﬂ”<break/>
+
+Line (eTeX): “ﬂ”<break/>
+
+Line (eTeX): “$x’$ﬂ”<break/>
+
+Line (eTeX): “non-macro followed by 5 spacesﬂ”<break/>
+
+Line (eTeX): “macro followed by 5 spaces “fooﬂ”<break/>
+
+Line (eTeX): “macro “foo      followed by spacesﬂ”<break/>
+
+Line (eTeX): “keyword = 1ﬂ”<break/>
+
+Line (eTeX): “fake spaces^^20^^20^^20ﬂ”<break/>
+
+Line (eTeX): “macro followed by fake spaces “foo^^20^^20^^20ﬂ”<break/>
+
+Line (eTeX): “fake cr^^M apparently looses remainder of lineﬂ”<break/>
+
+Line (eTeX): “face cr on next lineﬂ”<break/>
+
+Line (eTeX): “^^Mﬂ”<break/>
+
+Line (eTeX): “line – in bracketsﬂ”<break/>
+
+Line (eTeX): “still ˝ continuesﬂ”<break/>
+
+Line (eTeX): “line with par “par inside.ﬂ”<break/>
+
+Line (eTeX): ““par par at beginningﬂ”<break/>
+
+Line (eTeX): “line ended by par “parﬂ”<break/>
+
+Line (eTeX): “last line.ﬂ”<break/>
+
+Line (eTeX): “ﬂ”<break/>
+Closed!</p>
+    </para>
+  </paragraph>
+  <paragraph inlist="toc" xml:id="S0.SS0.SSS0.Px7">
     <title>Writing a file</title>
-    <para xml:id="S0.SS0.SSS0.Px4.p1">
+    <para xml:id="S0.SS0.SSS0.Px7.p1">
       <p>Writing file generated.data</p>
     </para>
-    <para xml:id="S0.SS0.SSS0.Px4.p2">
+    <para xml:id="S0.SS0.SSS0.Px7.p2">
       <p>Checking for file generated.data:
 I found the file generated.data.
 
@@ -165,7 +393,7 @@ Line: “Last line
 
 Line: “</p>
     </para>
-    <para xml:id="S0.SS0.SSS0.Px4.p3">
+    <para xml:id="S0.SS0.SSS0.Px7.p3">
       <p>”<break/>
 Closed!</p>
     </para>

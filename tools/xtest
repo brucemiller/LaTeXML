@@ -29,8 +29,8 @@ my $identity = "xtest";
 my ($verbosity, $force, $help) = (-1, 0, 0);    # start off quieter
 my ($timestamp) = (undef);
 GetOptions("force" => \$force,
-  "quiet"   => sub { $verbosity--; },
-  "verbose" => sub { $verbosity++; },
+  "quiet"       => sub { $verbosity--; },
+  "verbose"     => sub { $verbosity++; },
   "timestamp=s" => \$timestamp,
   "help"        => \$help,
 ) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
@@ -94,7 +94,7 @@ foreach my $set (@testsets) {
           "--format=$type",
           "--javascript=LaTeXML-maybeMathjax.js",
           (defined $timestamp ? ("--timestamp=$timestamp") : ()),
-          ($verbosity > 0 ? map { "--verbose" } 1 .. $verbosity
+          ($verbosity > 0     ? map { "--verbose" } 1 .. $verbosity
             : ($verbosity < 0 ? map { "--quiet" } 1 .. -$verbosity
               : ())),
           $srcxml)
@@ -120,8 +120,10 @@ sub copy {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 BEGIN {
   $HEADER = <<'EOHead';
+<!DOCTYPE html>
 <html>
 <head><title>LaTeXML Tests</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <style>
 th { font-weight:bold; }
 .testgroup { text-align:left; font-size:120%; font-style:italic; }

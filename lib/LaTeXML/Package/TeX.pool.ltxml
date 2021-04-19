@@ -1232,7 +1232,8 @@ sub do_def {
   $params = parseDefParameters($cs, $params);
   # noprep=>1 : leave preparing the ##, #1-#9 tokens to the Def parameter types
   # to avoid carrying around the masks around and keep core code simple
-  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body, noprep => 1),
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $params, $body,
+      nopackParameters => 1),
     ($globally ? 'global' : undef));
   AfterAssignment();
   return; }
@@ -2251,6 +2252,7 @@ sub writableTokens {
     my $t  = ($$_[2] || $_);
     my $cc = $$t[1];
     if    ($cc == CC_CS)    { ($t, T_SPACE); }
+    elsif ($cc == CC_SPACE) { (T_SPACE); }
     elsif ($cc == CC_PARAM) { ($t, $t); }
     elsif ($cc == CC_ARG) {
       # B Book, 294. Reduce to param+integer
@@ -2298,21 +2300,17 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
     $port = ToString($port);
     if (my $mouth = LookupValue('input_file:' . $port)) {
       $stomach->bgroup;
-      AssignValue(PRESERVE_NEWLINES => 2);
-      AssignValue(INCLUDE_COMMENTS  => 2);
-      my @tokens      = ();
-      my $seen_tokens = 0;
+      AssignValue(PRESERVE_NEWLINES => 2);    # Special EOL/EOF treatment for \read
+      my @tokens = ();
       my ($t, $level) = (undef, 0);
       while ($t = $mouth->readToken) {
         my $cc = $t->getCatcode;
-        $seen_tokens++;
-        push(@tokens, $t) unless $cc == CC_COMMENT;
+        push(@tokens, $t) unless $cc == CC_MARKER;    # End of line marker
         $level++ if $cc == CC_BEGIN;
         $level-- if $cc == CC_END;
         last     if !$level && $mouth->isEOL; }
       $stomach->egroup;
-      @tokens = (T_CS('\par')) unless $seen_tokens;    # trailing blank line
-      DefMacroI($token, undef, Tokens(@tokens)); }
+      DefMacroI($token, undef, Tokens(@tokens), nopackParameters => 1); }
     return; });
 
 DefConditional('\ifeof Number', sub {

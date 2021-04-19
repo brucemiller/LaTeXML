@@ -154,6 +154,12 @@
     </contrib>
   </xsl:template>
 
+  <xsl:template match="ltx:title/ltx:tag">
+    <xsl:value-of select="@open"/>
+    <xsl:apply-templates select="@*|node()"/>
+    <xsl:value-of select="@close"/>
+  </xsl:template>
+
   <xsl:template match="ltx:appendix" mode="app">
     <app>
       <xsl:apply-templates select="@*|node()"/>
