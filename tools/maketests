@@ -30,8 +30,8 @@ use Term::ANSIColor;
 #  make test TEST_FILES=t/sometestglob.t
 #======================================================================
 my $identity = "maketests (LaTeXML version $LaTeXML::VERSION)";
-my ($doxml,     $dopdf, $docompare)   = ();
-my ($verbosity, $help,  $showversion) = (0);
+my ($doxml, $dopdf, $docompare)      = ();
+my ($verbosity, $help, $showversion) = (0);
 my $whitespace = 1;    # keep whitespace;
 GetOptions("xml!" => \$doxml,
   "pdf!"        => \$dopdf,
@@ -233,7 +233,7 @@ sub stringifyDom {
   $parser->validation(0);
   $parser->keep_blanks(1);
   $string = $parser->parse_string($string)->toStringC14N(0);
-  return [grep { /\S/ } split("\n", $string)]; }
+  return [split("\n", $string)]; }
 
 sub gen_xml {
   my ($dir, $name, $for_comparison) = @_;
@@ -275,12 +275,12 @@ sub gen_pdf {
 
   while (<$IN>) {
     if (/documentclass/) {
-        $program = 'pdflatex';
-        last; }
+      $program = 'pdflatex';
+      last; }
     # recognize %%% TeX-engine: xelatex  or %%%tex-engine: "xelatex" in preamble
     if (/^%%%\s*tex-engine:\s*"*(\w+)"*/i) {
-        $program = $1;
-        last; }
+      $program = $1;
+      last; }
   }
   close($IN);
   local $ENV{TEXINPUTS} = "$FindBin::RealBin/../lib/LaTeXML/texmf/::" . ($ENV{TEXINPUTS} || '');
