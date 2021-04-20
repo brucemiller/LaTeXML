@@ -44,6 +44,9 @@ DeclareOption('noprofiling', sub { AssignValue('PROFILING' => 0, 'global'); });
 DeclareOption('mathparserspeculate',   sub { AssignValue('MATHPARSER_SPECULATE' => 1, 'global'); });
 DeclareOption('nomathparserspeculate', sub { AssignValue('MATHPARSER_SPECULATE' => 0, 'global'); });
 
+DeclareOption('guesstabularheaders',   sub { AssignValue(GUESS_TABULAR_HEADERS => 1, 'global'); });
+DeclareOption('noguesstabularheaders', sub { AssignValue(GUESS_TABULAR_HEADERS => 0, 'global'); });
+
 # 'nobibtex' intended to be used for arXiv-like build harnesses, where there
 # is explicit instruction to only use ".bbl" and that bibtex will not be ran.
 DeclareOption('bibtex',   sub { AssignValue('NO_BIBTEX' => 0, 'global'); });
@@ -58,7 +61,7 @@ DeclareOption('localrawstyles', sub { AssignValue('INCLUDE_STYLES'  => 'searchpa
 DeclareOption('norawstyles',    sub { AssignValue('INCLUDE_STYLES'  => 0,             'global'); });
 DeclareOption('rawclasses',     sub { AssignValue('INCLUDE_CLASSES' => 1,             'global'); });
 DeclareOption('localrawclasses', sub { AssignValue('INCLUDE_CLASSES' => 'searchpaths', 'global'); });
-DeclareOption('norawclasses', sub { AssignValue('INCLUDE_CLASSES' => 0, 'global'); });
+DeclareOption('norawclasses',    sub { AssignValue('INCLUDE_CLASSES' => 0, 'global'); });
 
 ProcessOptions();
 #======================================================================
@@ -246,10 +249,10 @@ DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
       $params && map { $_ && ToString($_) } map { $params->getValue($_) }
       qw(name meaning cd role alias scope);
     my $needsid = $params && ($params->getValue('tag') || $params->getValue('description'));
-    my $id = ($needsid ? next_declaration_id() : undef);
+    my $id      = ($needsid ? next_declaration_id() : undef);
     DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
-      name  => $name,  meaning => $meaning, omcd      => $cd, role => $role, alias => $alias,
-      scope => $scope, decl_id => $id,      revert_as => 'context');
+      name => $name, meaning => $meaning, omcd => $cd, role => $role, alias => $alias,
+      scope => $scope, decl_id => $id, revert_as => 'context');
     if ($needsid) {    # Also provide for decl_id hook for definition links.
       return Digest(Invocation('\@lxDefMathDeclare', $id, $params)); }
     else {
@@ -293,7 +296,7 @@ sub normalizeDeclareKeys {
   if (my $stuff = $description || $tag) {
     ($term, $desc) = splitDeclareTag($stuff); }
   $short = ($description ? $tag || $desc : undef);
-  $desc = $desc || $description || $tag;
+  $desc  = $desc || $description || $tag;
   $whatsit->setProperties(term => $term, short => $short, description => $desc);
   return; }
 
@@ -336,8 +339,8 @@ sub splitDeclareTag {
 #   nodef : inhibits the marking of the current point as the `definition' of the expression.
 #          (a ref declaration would normally not be a def anyway)
 
-DefKeyVal('Declare', 'nowrap', '{}', 1);
-DefKeyVal('Declare', 'trace',  '{}', 1);
+DefKeyVal('Declare', 'nowrap',  '{}', 1);
+DefKeyVal('Declare', 'trace',   '{}', 1);
 DefKeyVal('Declare', 'replace', 'UndigestedKey');
 
 our $declare_keys = { scope => 1, role => 1, tag => 1, description => 1, name => 1, meaning => 1,
