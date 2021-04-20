@@ -55,27 +55,27 @@ DefMathI('\leftslice',           undef, "\x{2aa6}",                            r
 DefMathI('\merge',               undef, "\x{2a07}",                            role => 'RELOP');
 DefMathI('\minuso',              undef, "\x{29b5}",                            role => 'RELOP');
 DefMathI('\moo',                 undef, '\lx@nounicode{\moo}');
-DefMathI('\obar',                undef, "\x{29B6}",                            role => 'RELOP');
-DefMathI('\oblong',              undef, "\x{2395}",                            role => 'RELOP');
-DefMathI('\obslash',             undef, "\x{29B8}",                            role => 'RELOP');
-DefMathI('\ogreaterthan',        undef, "\x{29C1}",                            role => 'RELOP');
-DefMathI('\olessthan',           undef, "\x{29C0}",                            role => 'RELOP');
-DefMathI('\ovee',                undef, "\x{2228}\x{20DD}",                    role => 'RELOP');
-DefMathI('\owedge',              undef, "\x{2227}\x{20DD}",                    role => 'RELOP');
-DefMathI('\rightslice',          undef, "\x{2aa7}",                            role => 'RELOP');
-DefMathI('\sslash',              undef, "\x{2AFD}",                            role => 'RELOP');
-DefMathI('\talloblong',          undef, "\x{2AFF}",                            role => 'RELOP');
-DefMathI('\varbigcirc',          undef, "\x{25EF}",                            role => 'MULOP');
-DefMathI('\varcurlyvee',         undef, "\x{22CE}",                            role => 'RELOP');
-DefMathI('\varcurlywedge',       undef, "\x{22CF}",                            role => 'RELOP');
-DefMathI('\varoast',             undef, "\x{229B}",                            role => 'MULOP');
-DefMathI('\varobar',             undef, "\x{29B6}",                            role => 'RELOP');
-DefMathI('\varobslash',          undef, "\x{29B8}",                            role => 'MULOP');
-DefMathI('\varocircle',          undef, "\x{229A}",                            role => 'MULOP');
-DefMathI('\varodot',             undef, "\x{2299}",                            role => 'MULOP');
-DefMathI('\varogreaterthan',     undef, "\x{29C1}",                            role => 'RELOP');
-DefMathI('\varolessthan',        undef, "\x{29C0}",                            role => 'RELOP');
-DefMathI('\varominus',           undef, "\x{2296}",                            role => 'ADDOP');
+DefMathI('\obar',                undef, "\x{29B6}",         role => 'RELOP');
+DefMathI('\oblong',              undef, "\x{2395}",         role => 'RELOP');
+DefMathI('\obslash',             undef, "\x{29B8}",         role => 'RELOP');
+DefMathI('\ogreaterthan',        undef, "\x{29C1}",         role => 'RELOP');
+DefMathI('\olessthan',           undef, "\x{29C0}",         role => 'RELOP');
+DefMathI('\ovee',                undef, "\x{2228}\x{20DD}", role => 'RELOP');
+DefMathI('\owedge',              undef, "\x{2227}\x{20DD}", role => 'RELOP');
+DefMathI('\rightslice',          undef, "\x{2aa7}",         role => 'RELOP');
+DefMathI('\sslash',              undef, "\x{2AFD}",         role => 'RELOP');
+DefMathI('\talloblong',          undef, "\x{2AFF}",         role => 'RELOP');
+DefMathI('\varbigcirc',          undef, "\x{25EF}",         role => 'MULOP');
+DefMathI('\varcurlyvee',         undef, "\x{22CE}",         role => 'RELOP');
+DefMathI('\varcurlywedge',       undef, "\x{22CF}",         role => 'RELOP');
+DefMathI('\varoast',             undef, "\x{229B}",         role => 'MULOP');
+DefMathI('\varobar',             undef, "\x{29B6}",         role => 'RELOP');
+DefMathI('\varobslash',          undef, "\x{29B8}",         role => 'MULOP');
+DefMathI('\varocircle',          undef, "\x{229A}",         role => 'MULOP');
+DefMathI('\varodot',             undef, "\x{2299}",         role => 'MULOP');
+DefMathI('\varogreaterthan',     undef, "\x{29C1}",         role => 'RELOP');
+DefMathI('\varolessthan',        undef, "\x{29C0}",         role => 'RELOP');
+DefMathI('\varominus',           undef, "\x{2296}",         role => 'ADDOP');
 DefMathI('\varoplus', undef, "\x{2295}", role => 'ADDOP',
   meaning => 'additive-disjunction');
 DefMathI('\varoslash', undef, "\x{2298}", role => 'RELOP');
@@ -85,14 +85,38 @@ DefMathI('\varovee',   undef, "\x{2228}\x{20DD}", role => 'RELOP');
 DefMathI('\varowedge', undef, "\x{2227}\x{20DD}", role => 'RELOP');
 DefMathI('\vartimes',  undef, UTF(0xD7),          role => 'MULOP');
 
-DefMathI('\bigbox',          undef, "\x{25a1}", font => { size => 'Big' }, role => 'BIGOP');
-DefMathI('\bigcurlywedge',   undef, "\x{22CF}", font => { size => 'Big' }, role => 'BIGOP');
-DefMathI('\bigcurlyvee',     undef, "\x{22CE}", font => { size => 'Big' }, role => 'BIGOP');
-DefMathI('\biginterleave',   undef, "\x{2AFC}", font => { size => 'Big' }, role => 'BIGOP');
-DefMathI('\bigparallel',     undef, "\x{2016}", font => { size => 'Big' }, role => 'BIGOP');
-DefMathI('\bigsqcap',        undef, "\x{2293}", font => { size => 'Big' }, role => 'BIGOP');
-DefMathI('\bigtriangledown', undef, "\x{25BD}", font => { size => 'Big' }, role => 'BIGOP');
-DefMathI('\bigtriangleup',   undef, "\x{25B3}", font => { size => 'Big' }, role => 'BIGOP');
+DefMathI('\bigbox', undef, "\x{25a1}", font => { size => 'Big' },
+  role      => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigcurlywedge', undef, "\x{22CF}", font => { size => 'Big' },
+  role      => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigcurlyvee', undef, "\x{22CE}", font => { size => 'Big' },
+  role      => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\biginterleave', undef, "\x{2AFC}",
+  role      => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigparallel', undef, "\x{2016}",
+  role      => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigsqcap', undef, "\x{2A05}",
+  role      => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigtriangledown', undef, "\x{25BD}", font => { size => 'Big' },
+  role      => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigtriangleup', undef, "\x{25B3}", font => { size => 'Big' },
+  role      => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  mathstyle => \&doVariablesizeOp);
 
 DefMathI('\inplus',                undef, "\x{2A2D}", role => 'RELOP');
 DefMathI('\niplus',                undef, "\x{2A2E}", role => 'RELOP');

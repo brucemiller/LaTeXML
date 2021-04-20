@@ -5478,59 +5478,50 @@ DefMathI('\oint', undef, "\x{222E}",
   role      => 'INTOP',
   meaning   => 'contour-integral',
   mathstyle => \&doVariablesizeOp);
-DefMathI('\bigcap', undef, "\x{22C2}",
+DefMathI('\bigcap', undef, "\x{22C2}",    # versus \x{2229}
   role      => 'SUMOP',
   scriptpos => \&doScriptpos,
   meaning   => 'intersection',
-  mathstyle => \&doVariablesizeOp,
-  font      => { size => 'Big' });
-DefMathI('\bigcup', undef, "\x{22C3}",
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigcup', undef, "\x{22C3}",    # versus \x{222A}
   role      => 'SUMOP',
   scriptpos => \&doScriptpos,
   meaning   => 'union',
-  mathstyle => \&doVariablesizeOp,
-  font      => { size => 'Big' });
-DefMathI('\bigsqcup', undef, "\x{2294}",
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigsqcup', undef, "\x{2A06}",    # versus \x{2294}
   role      => 'SUMOP',
   scriptpos => \&doScriptpos,
   meaning   => 'square-union',
-  mathstyle => \&doVariablesizeOp,
-  font      => { size => 'Big' });
-DefMathI('\bigvee', undef, "\x{22C1}",
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigvee', undef, "\x{22C1}",      # versus \x{2229}
   role      => 'SUMOP',
   scriptpos => \&doScriptpos,
   meaning   => 'or',
-  mathstyle => \&doVariablesizeOp,
-  font      => { size => 'Big' });
-DefMathI('\bigwedge', undef, "\x{22C0}",
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigwedge', undef, "\x{22C0}",    # versus \x{2227}
   role      => 'SUMOP',
   scriptpos => \&doScriptpos,
   meaning   => 'and',
-  mathstyle => \&doVariablesizeOp,
-  font      => { size => 'Big' });
-DefMathI('\bigodot', undef, "\x{2299}",
-  role      => 'SUMOP',              #meaning=> ?
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigodot', undef, "\x{2A00}",     # versus \x{2299}
+  role      => 'SUMOP',                     #meaning=> ?
   scriptpos => \&doScriptpos,
-  mathstyle => \&doVariablesizeOp,
-  font      => { size => 'Big' });
-DefMathI('\bigotimes', undef, "\x{2297}",
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigotimes', undef, "\x{2A02}",    # versus \x{2297}
   role      => 'SUMOP',
   scriptpos => \&doScriptpos,
   meaning   => 'tensor-product',
-  mathstyle => \&doVariablesizeOp,
-  font      => { size => 'Big' });
-DefMathI('\bigoplus', undef, "\x{2295}",
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigoplus', undef, "\x{2A01}",     # versus \x{2295}
   role      => 'SUMOP',
   scriptpos => \&doScriptpos,
   meaning   => 'direct-sum',
-  mathstyle => \&doVariablesizeOp,
-  font      => { size => 'Big' });
-DefMathI('\biguplus', undef, "\x{228E}",
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\biguplus', undef, "\x{2A04}",     # versus \x{228e}
   role      => 'SUMOP',
   scriptpos => \&doScriptpos,
   meaning   => 'symmetric-difference',
-  mathstyle => \&doVariablesizeOp,
-  font      => { size => 'Big' });
+  mathstyle => \&doVariablesizeOp);
 DefConstructorI('\limits', undef, '',
   afterDigest => sub { mergeLimits('mid'); },
   properties  => { isSpace => 1 });
