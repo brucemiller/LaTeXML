@@ -781,11 +781,11 @@
         </table>
     </xsl:template>
 
-    <xsl:template match="ltx:tabular/*">
+    <xsl:template match="ltx:tabular">
             <xsl:apply-templates select="@*|node()"/>
     </xsl:template>
 
-    <xsl:template match="ltx:tbody">
+    <xsl:template match="ltx:thead | ltx:tbody">
             <xsl:apply-templates select="@*|node()"/>
     </xsl:template>
 
