@@ -785,7 +785,7 @@
             <xsl:apply-templates select="@*|node()"/>
     </xsl:template>
 
-    <xsl:template match="ltx:thead | ltx:tbody">
+    <xsl:template match="ltx:thead | ltx:tbody | ltx:tfoot">
             <xsl:apply-templates select="@*|node()"/>
     </xsl:template>
 
