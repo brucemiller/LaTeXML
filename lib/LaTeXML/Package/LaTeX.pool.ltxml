@@ -3400,7 +3400,8 @@ DefRegister('\lx@default@tabcolsep', Dimension('6pt'));
 DefRegister('\tabcolsep',            Dimension('6pt'));
 DefMacroI('\arraystretch', undef, "1");
 
-AssignValue(GUESS_TABULAR_HEADERS => 1);    # Defaults to yes
+AssignValue(GUESS_TABULAR_HEADERS => 1)    # Defaults to yes
+  unless defined LookupValue('GUESS_TABULAR_HEADERS');
 
 sub tabularBindings {
   my ($template, %properties) = @_;
