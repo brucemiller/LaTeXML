@@ -29,7 +29,29 @@
   <xsl:import href="LaTeXML-tabular-xhtml.xsl"/>
   <xsl:import href="LaTeXML-common.xsl"/>
 
-  <xsl:strip-space elements="*"/>
+  <xsl:strip-space elements="ltx:document ltx:part ltx:chapter ltx:section ltx:subsection
+                             ltx:subsubsection ltx:paragraph ltx:subparagraph
+                             ltx:bibliography ltx:appendix ltx:index ltx:glossary
+                             ltx:slide ltx:sidebar"/>
+  <xsl:strip-space elements="ltx:TOC ltx:toclist ltx:tocentry"/>
+  <xsl:strip-space elements="ltx:titlepage"/>
+  <xsl:strip-space elements="ltx:creator ltx:contact"/>
+  <xsl:strip-space elements="ltx:indexlist ltx:indexentry"/>
+  <xsl:strip-space elements="ltx:glossarlist ltx:glossaryentry"/>
+  <xsl:strip-space elements="ltx:tabular ltx:thead ltx:tbody ltx:tfoot ltx:tr"/>
+  <xsl:strip-space elements="ltx:quote"/>
+  <xsl:strip-space elements="ltx:block"/>
+  <xsl:strip-space elements="ltx:listing"/>
+  <xsl:strip-space elements="ltx:equation ltx:equationgroup"/>
+  <xsl:strip-space elements="ltx:itemize ltx:enumerate ltx:description ltx:item
+                             ltx:inline-itemize ltx:inline-enumerate ltx:inline-description ltx:inline-item"/>
+  <xsl:strip-space elements="ltx:inline-block"/>
+  <xsl:strip-space elements="ltx:para ltx:inline-para"/>
+  <xsl:strip-space elements="ltx:theorem ltx:proof"/>
+  <xsl:strip-space elements="ltx:figure ltx:table ltx:float"/>
+  <xsl:strip-space elements="ltx:picture svg:*"/>
+  <xsl:strip-space elements="ltx:Math"/>
+
   <xsl:output method="xml" indent="yes"/>
 
   <xsl:variable name="footnotes" select="//ltx:note[@role='footnote']"/>
