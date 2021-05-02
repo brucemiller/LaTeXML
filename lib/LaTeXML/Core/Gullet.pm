@@ -268,7 +268,7 @@ sub isColumnEnd {
   return; }
 
 sub readToken {
-  my ($self, $toexpand) = @_;
+  my ($self) = @_;
   #  my $token = shift(@{$$self{pushback}});
   my ($token, $cc, $atoken, $atype, $ahidden);
   while (1) {
@@ -319,17 +319,14 @@ sub readXToken {
   return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
   my ($token, $cc, $defn, $atoken, $atype, $ahidden);
   while (1) {
-    while ($token = shift(@{ $$self{pushback} })) {    # Check in pushback
-      if (($cc = $$token[1]) == CC_SMUGGLE_THE) {      # ONLY in pushback!
-        return $LaTeXML::SMUGGLE_THE ? $token : $$token[2]; }    # Expands to smuggled token
-      elsif ($cc == CC_COMMENT) {
+    # NOTE: CC_SMUGGLE_THE should ONLY appear in pushback!
+    while (($token = shift(@{ $$self{pushback} })) && $CATCODE_HOLD[$cc = $$token[1]]) {
+      if ($cc == CC_COMMENT) {
         return $token if $commentsok;
         push(@{ $$self{pending_comments} }, $token); }
       elsif ($cc == CC_MARKER) {
-        $self->handleMarker($token); }
-      else {
-        last; } }
-    if (!defined $token) {                                       # Else read from current mouth
+        $self->handleMarker($token); } }
+    if (!defined $token) {    # Else read from current mouth
       while (($token = $$self{mouth}->readToken()) && $CATCODE_HOLD[$cc = $$token[1]]) {
         if ($cc == CC_COMMENT) {
           return $token if $commentsok;
@@ -338,47 +335,46 @@ sub readXToken {
           $self->handleMarker($token); } } }
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
-      $self->closeMouth; }                                       # Next input stream.
-    elsif (my $unexpanded = $$token[2]) {                        # Inline get_dont_expand
-      return $token; }                                           # Defer expansion (recursion?)
-                                                                 # Wow!!!!! See TeX the Program \S 309
+      $self->closeMouth; }    # Next input stream.
+        # Handle \noexpand and  smuggled tokens; either expand to $$token[2] or defer till later
+    elsif (my $unexpanded = $$token[2]) {    # Inline get_dont_expand
+      return ($cc != CC_SMUGGLE_THE) || $LaTeXML::SMUGGLE_THE ? $token : $unexpanded; }
+    ## Wow!!!!! See TeX the Program \S 309
     elsif (!$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)
       && $LaTeXML::READING_ALIGNMENT
       && (($atoken, $atype, $ahidden) = $self->isColumnEnd($token))) {
       $self->handleTemplate($LaTeXML::READING_ALIGNMENT, $token, $atype, $ahidden); }
-    ## Note: special-purpose lookup in State, for efficiency
-    elsif (defined($defn = LaTeXML::Core::State::lookupExpandable($STATE, $token, $toplevel))) {
+    ## Note: use general-purpose lookup, since we may reexamine $defn below
+    elsif (defined($defn = LaTeXML::Core::State::lookupMeaning($STATE, $token))
+      && ((ref $defn) ne 'LaTeXML::Core::Token')    # an actual definition
+      && $$defn{isExpandable}
+      && ($toplevel || !$$defn{isProtected})) {     # is this the right logic here? don't expand unless di
       local $LaTeXML::CURRENT_TOKEN = $token;
-      my $invoked   = $defn->invoke($self) || [];
-      my @expansion = ();
-      for my $exp_t (@$invoked) {
-        my $r = ref $exp_t;
-        if ($r eq 'LaTeXML::Core::Token') {
-          push @expansion, $exp_t; }
-        elsif ($r eq 'LaTeXML::Core::Tokens') {
-          push @expansion, @$exp_t; }
-        else {
-          Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)); } }
+      my $r;
+      my @expansion = map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
+          : ($r eq 'LaTeXML::Core::Tokens' ? @$_
+            : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_),
+              "in " . ToString($defn)))) }
+        $defn->invoke($self);
       next unless @expansion;
       if ($$LaTeXML::Core::Token::SMUGGLE_THE_COMMANDS{ $$defn{cs}[0] }) {
         # magic THE_TOKS handling, add to pushback with a single-use noexpand flag only valid
-        #    at the exact time
-        # the token leaves the pushback.
+        # at the exact time the token leaves the pushback.
         # This is *required to be different* from the noexpand flag, as per the B Book
-        @expansion = map { T_SMUGGLE_THE($_); } @expansion;
+        @expansion = map { ($LaTeXML::Core::Token::CATCODE_CAN_SMUGGLE_THE[$$_[1]] ? bless ["SMUGGLE_THE", CC_SMUGGLE_THE, $_], 'LaTeXML::Core::Token' : $_) } @expansion;
         # PERFORMANCE:
         #   explicitly flag that we've seen this case, so that higher levels know to
         #   unset the flag from the entire {pushback}
         $$self{pushback_has_smuggled_the} = 1; }
       # add the newly expanded tokens back into the gullet stream, in the ordinary case.
       unshift(@{ $$self{pushback} }, @expansion); }
-    elsif ($$token[1] == CC_CS && !(LaTeXML::Core::State::lookupMeaning($STATE, $token))) {
-      $STATE->generateErrorStub($self, $token);
+    elsif ($$token[1] == CC_CS && !(defined $defn)) {
+      $STATE->generateErrorStub($self, $token);    # cs SHOULD have defn by now; report early!
       return $token; }
     else {
-      return $token; }    # just return it
+      return $token; }                             # just return it
   }
-  return; }               # never get here.
+  return; }                                        # never get here.
 
 # Read the next raw line (string);
 # primarily to read from the Mouth, but keep any unread input!

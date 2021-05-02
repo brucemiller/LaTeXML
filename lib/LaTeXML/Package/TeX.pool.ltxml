@@ -2782,7 +2782,7 @@ sub parseHAlignTemplate {
   my $tabskip;         # Need to use this somehow!
   ## Only expand certain things; See TeX book p.238
   local $LaTeXML::ALIGN_STATE = 1000000;
-  while ($t = $gullet->readToken(0)) {
+  while ($t = $gullet->readToken) {
     if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
       $gullet->readKeyword('=');
       $tabskip = $gullet->readGlue; }
