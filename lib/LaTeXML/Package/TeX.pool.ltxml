@@ -953,8 +953,7 @@ DefMacro('\expandafter Token Token', sub {
       my @x = ();
       {
         local $LaTeXML::CURRENT_TOKEN = $xtok;
-        my $x = $defn->invoke($gullet, 1);
-        @x = @$x if $x;    # Expand $xtok ONCE ONLY!
+        @x = $defn->invoke($gullet, 1);    # Expand $xtok ONCE ONLY!
       }
       ($tok, @x); }
     elsif (!$STATE->lookupMeaning($xtok)) {

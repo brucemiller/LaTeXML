@@ -16,6 +16,7 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
 use base qw(LaTeXML::Core::Definition::Expandable);
 
 # Conditional control sequences; Expandable
@@ -35,8 +36,6 @@ sub getTest {
   my ($self) = @_;
   return $$self{test}; }
 
-# Note that although conditionals are Expandable,
-# they do NOT defined as macros, so they don't need to handle doInvocation,
 sub invoke {
   my ($self, $gullet) = @_;
   # A real conditional must have condition_type set
@@ -66,7 +65,7 @@ sub invoke_conditional {
   $$LaTeXML::IFFRAME{parsing} = 0;    # Now, we're done parsing the Test clause.
   my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
   print STDERR '{' . $self->tracingCSName . "} [#$ifid]\n" if $tracing;
-  print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
+  print STDERR $self->tracingArgs(@args) . "\n"            if $tracing && @args;
   if (my $test = $self->getTest) {
     my $result = &$test($gullet, @args);
     if ($result) {
@@ -126,7 +125,7 @@ sub skipConditionalBody {
       elsif (!--$level) {           # If no more nesting, we're done.
         shift(@$stack);             # Done with this frame
         return $t; } }              # AND Return the finishing token.
-    elsif ($level > 1) { }          # Ignore \else,\or nested in the body.
+    elsif ($level > 1) { }                                    # Ignore \else,\or nested in the body.
     elsif (($cond_type eq 'or') && (++$n_ors == $nskips)) {
       return $t; }
     elsif (($cond_type eq 'else') && $nskips
@@ -149,7 +148,7 @@ sub invoke_else {
         . " since we seem not to be in a conditional");
     return; }
   elsif ($$stack[0]{parsing}) {     # Defer expanding the \else if we're still parsing the test
-    return [T_CS('\relax'), $LaTeXML::CURRENT_TOKEN]; }
+    return Tokens(T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
   elsif ($$stack[0]{elses}) {       # Already seen an \else's at this level?
     Error('unexpected', $LaTeXML::CURRENT_TOKEN, $gullet,
       "Extra " . Stringify($LaTeXML::CURRENT_TOKEN),
@@ -173,7 +172,7 @@ sub invoke_fi {
         . " since we seem not to be in a conditional");
     return; }
   elsif ($$stack[0]{parsing}) {     # Defer expanding the \else if we're still parsing the test
-    return [T_CS('\relax'), $LaTeXML::CURRENT_TOKEN]; }
+    return Tokens(T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
   else {                            # "expand" by removing the stack entry for this level
     local $LaTeXML::IFFRAME = $$stack[0];
     $STATE->shiftValue('if_stack');    # Done with this frame
