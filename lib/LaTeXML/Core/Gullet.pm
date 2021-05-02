@@ -481,8 +481,7 @@ sub readBalanced {
     my $loc_message = $startloc ? ("Started at " . ToString($startloc)) : ("Ended at " . ToString($self->getLocator));
     Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.",
       $loc_message); }
-  ## Performance enhancement:
-  return (wantarray ? (Tokens(@tokens), $token) : Tokens(@tokens)); }
+  return Tokens(@tokens); }
 
 sub ifNext {
   my ($self, $token) = @_;
@@ -549,7 +548,7 @@ sub readUntil {
     push(@tokens, $token);
     $n++;
     if ($$token[1] == CC_BEGIN) {      # And if it's a BEGIN, copy till balanced END
-      push(@tokens, $self->readBalanced); } }
+      push(@tokens, $self->readBalanced, T_END); } }
   # Notice that IFF the arg looks like {balanced}, the outer braces are stripped
   # so that delimited arguments behave more similarly to simple, undelimited arguments.
   if (($n == 1) && ($tokens[0][1] == CC_BEGIN)) {
@@ -590,7 +589,7 @@ sub readArg {
   if (!defined $token) {
     return; }
   elsif ($$token[1] == CC_BEGIN) {    # Inline ->getCatcode!
-    return scalar($self->readBalanced(0)); }
+    return $self->readBalanced(0); }
   else {
     return Tokens($token); } }
 
@@ -644,7 +643,7 @@ sub readTokensValue {
   if (!defined $token) {
     return; }
   elsif ($$token[1] == CC_BEGIN) {             # Inline ->getCatcode!
-    return scalar($self->readBalanced); }
+    return $self->readBalanced; }
   elsif (my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token)) {
     if ($defn->isRegister eq 'Tokens') {
       return $defn->valueOf($defn->readArguments($self)); }

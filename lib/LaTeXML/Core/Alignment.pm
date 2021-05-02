@@ -676,7 +676,7 @@ sub ReadAlignmentTemplate {
       && $defn->isExpandable) {
       $gullet->unread($defn->invoke($gullet, 1)); }
     elsif ($op->equals(T_BEGIN)) {    # Wrong, but a safety valve
-      $gullet->unread($gullet->readBalanced->unlist); }
+      $gullet->unread($gullet->readBalanced); }
     else {
       Warn('unexpected', $op, $gullet, "Unrecognized tabular template '" . Stringify($op) . "'"); }
     last unless $nopens; }
