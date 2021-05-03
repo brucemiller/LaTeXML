@@ -2301,6 +2301,7 @@ DefPrimitive('\read Number SkipKeyword:to SkipSpaces Token', sub {
     if (my $mouth = LookupValue('input_file:' . $port)) {
       $stomach->bgroup;
       AssignValue(PRESERVE_NEWLINES => 2);    # Special EOL/EOF treatment for \read
+      AssignValue(INCLUDE_COMMENTS  => 0);
       my @tokens = ();
       my ($t, $level) = (undef, 0);
       while ($t = $mouth->readToken) {
