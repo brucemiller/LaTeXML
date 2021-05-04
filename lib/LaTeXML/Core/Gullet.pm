@@ -654,7 +654,8 @@ sub readRegisterValue {
   return unless defined $token;
   my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token);
   if ((defined $defn) && ($defn->isRegister eq $type)) {
-    return $defn->valueOf($defn->readArguments($self)); }
+    my $parms = $$defn{parameters};
+    return $defn->valueOf(($parms ? $parms->readArguments($self) : ())); }
   else {
     unshift(@{ $$self{pushback} }, $token);    # Unread
     return; } }
@@ -669,7 +670,8 @@ sub readTokensValue {
     return $self->readBalanced; }
   elsif (my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token)) {
     if ($defn->isRegister eq 'Tokens') {
-      return $defn->valueOf($defn->readArguments($self)); }
+      my $parms = $$defn{parameters};
+      return $defn->valueOf(($parms ? $parms->readArguments($self) : ())); }
     elsif ($defn->isExpandable) {
       if (my $x = $defn->invoke($self)) {
         $self->unread(@{$x}); }

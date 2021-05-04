@@ -89,15 +89,10 @@ sub getLocator {
 
 sub readArguments {
   my ($self, $gullet) = @_;
-  my $params = $self->getParameters;
-  return ($params ? $params->readArguments($gullet, $self) : ()); }
+  return ($$self{parameters} ? $$self{parameters}->readArguments($gullet, $self) : ()); }
 
 sub getParameters {
   my ($self) = @_;
-  # Allow defering these until the Definition is actually used.
-  if ((defined $$self{parameters}) && !ref $$self{parameters}) {
-    require LaTeXML::Package;
-    $$self{parameters} = LaTeXML::Package::parseParameters($$self{parameters}, $$self{cs}); }
   return $$self{parameters}; }
 
 #======================================================================
@@ -153,9 +148,9 @@ sub startProfiling {
   #   starts of pending calls...]
   if (!defined $entry) {
     $entry = [0, 0, 0, 0, 0]; $STATE->assignMapping('runtime_profile', $name, $entry); }
-  $$entry[0]++ unless $mode eq 'absorb';    # One more call.
-  $$entry[4]++;    # One more pending...
-                   #print STDERR "START PROFILE $mode of ".ToString($cs)."\n";
+  $$entry[0]++ unless $mode eq 'absorb';   # One more call.
+  $$entry[4]++;                            # One more pending...
+                                           #print STDERR "START PROFILE $mode of ".ToString($cs)."\n";
   $STATE->pushValue('runtime_stack', [$name, $mode, [Time::HiRes::gettimeofday], $entry]);
   return; }
 

@@ -60,8 +60,8 @@ sub invoke_conditional {
   local $LaTeXML::IFFRAME = { token => $LaTeXML::CURRENT_TOKEN, start => $gullet->getLocator,
     parsing => 1, elses => 0, ifid => $ifid };
   $STATE->unshiftValue(if_stack => $LaTeXML::IFFRAME);
-
-  my @args = $self->readArguments($gullet);
+  my $parms = $$self{parameters};
+  my @args  = ($parms ? $parms->readArguments($gullet) : ());
   $$LaTeXML::IFFRAME{parsing} = 0;    # Now, we're done parsing the Test clause.
   my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
   print STDERR '{' . $self->tracingCSName . "} [#$ifid]\n" if $tracing;

@@ -218,7 +218,8 @@ DefParameterType('XUntil', sub {
       elsif ($token->getCatcode == CC_BEGIN) {
         push(@tokens, $token, $gullet->readBalanced, T_END); }
       elsif (my $defn = LookupDefinition($token)) {
-        push(@tokens, Invocation($token, $defn->readArguments($gullet))); }
+        push(@tokens, Invocation($token,
+            ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ()))); }
       else {
         push(@tokens, $token); } }
     Tokens(@tokens); });
@@ -324,7 +325,7 @@ DefParameterType('Variable', sub {
     my $token    = $gullet->readXToken;
     my $defn     = $token && LookupDefinition($token);
     if ((defined $defn) && $defn->isRegister && !$defn->isReadonly) {
-      [$defn, $defn->readArguments($gullet)]; }
+      [$defn, ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ())]; }
     else {
       DefRegisterI($token, undef, Dimension(0));    # Don't really know what KIND of variable!
       if ($token && ($token->getCatcode == CC_CS)) {
@@ -350,7 +351,7 @@ DefParameterType('Register', sub {
     my $token    = $gullet->readXToken;
     my $defn     = $token && LookupDefinition($token);
     if ((defined $defn) && $defn->isRegister) {
-      [$defn, $defn->readArguments($gullet)]; }
+      [$defn, ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ())]; }
     else {
       if ($token && ($token->getCatcode == CC_CS)) {
         Error('expected', '<register>', $gullet,

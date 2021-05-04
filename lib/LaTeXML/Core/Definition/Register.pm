@@ -61,7 +61,8 @@ sub invoke {
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
   my $gullet = $stomach->getGullet;
-  my @args   = $self->readArguments($gullet);
+  my $parms  = $$self{parameters};
+  my @args   = ($parms ? $parms->readArguments($gullet) : ());
   $gullet->readKeyword('=');    # Ignore
   my $value = $gullet->readValue($self->isRegister);
   $self->setValue($value, @args);

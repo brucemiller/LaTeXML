@@ -54,7 +54,8 @@ sub invoke {
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
   print STDERR '{' . $self->tracingCSName . "}\n"                if $tracing;
   my @result = ($self->executeBeforeDigest($stomach));
-  my @args   = $self->readArguments($stomach->getGullet);
+  my $parms  = $$self{parameters};
+  my @args   = ($parms ? $parms->readArguments($stomach->getGullet, $self) : ());
   print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
   push(@result,
     &{ $$self{replacement} }($stomach, @args),

@@ -181,8 +181,7 @@ sub parsePrototype {
     Fatal('misdefined', $proto, $STATE->getStomach,
       "Definition prototype doesn't have proper control sequence: \"$proto\""); }
   $proto =~ s/^\s*//;
-####  return ($cs, parseParameters($proto, $cs)); }
-  return ($cs, $proto); }
+  return ($cs, parseParameters($proto, $cs)); }
 
 # If a ReadFoo function exists (accessible from LaTeXML::Package::Pool),
 # then the parameter spec:
@@ -572,8 +571,8 @@ sub DefColumnType {
     my $char = $1;
     $proto =~ s/^\s*//;
     # Defer
-    #    $proto = parseParameters($proto, $char);
     #    $expansion = TokenizeInternal($expansion) unless ref $expansion;
+    $proto = parseParameters($proto, $char);
     DefMacroI(T_CS('\NC@rewrite@' . $char), $proto, $expansion); }
   else {
     Warn('expected', 'character', undef, "Expected Column specifier"); }
@@ -1032,8 +1031,8 @@ sub DefMacroI {
   #  elsif (!ref $expansion)     { $expansion = TokenizeInternal($expansion); }
   if ((length($cs) == 1) && $options{mathactive}) {
     $STATE->assignMathcode($cs => 0x8000, $options{scope}); }
-  $cs = coerceCS($cs);
-###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+  $cs        = coerceCS($cs);
+  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, $expansion, %options),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1, 'global') if $options{locked};
@@ -1094,6 +1093,7 @@ sub DefConditionalI {
       Let($cs, T_CS('\iffalse')); }
     else {
       # For \ifcase, the parameter list better be a single Number !!
+      $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
       $STATE->installDefinition(LaTeXML::Core::Definition::Conditional->new($cs, $paramlist, $test,
           conditional_type => 'if', %options),
         $options{scope}); }
@@ -1163,8 +1163,8 @@ sub DefPrimitiveI {
     if ref $replacement && defined $options{alias};
   $replacement = sub { Box($string, undef, undef, Invocation($options{alias} || $cs, @_[1 .. $#_])); }
     unless ref $replacement;
-  $cs = coerceCS($cs);
-###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+  $cs        = coerceCS($cs);
+  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Core::Definition::Primitive
@@ -1204,8 +1204,8 @@ sub DefRegister {
 
 sub DefRegisterI {
   my ($cs, $paramlist, $value, %options) = @_;
-  $cs = coerceCS($cs);
-###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+  $cs        = coerceCS($cs);
+  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $type   = $register_types{ ref $value };
   my $name   = ToString($options{name} || $cs);
   my $getter = $options{getter}
@@ -1311,8 +1311,8 @@ sub DefConstructor {
 
 sub DefConstructorI {
   my ($cs, $paramlist, $replacement, %options) = @_;
-  $cs = coerceCS($cs);
-###  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
+  $cs        = coerceCS($cs);
+  $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
@@ -1460,8 +1460,7 @@ sub DefMath {
 
 sub DefMathI {
   my ($cs, $paramlist, $presentation, %options) = @_;
-  $cs = coerceCS($cs);
-  # Can't defer parsing parameters since we need to know number of args!
+  $cs        = coerceCS($cs);
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $nargs   = ($paramlist ? scalar($paramlist->getParameters) : 0);
   my $csname  = $cs->getString;
@@ -1720,21 +1719,17 @@ my $environment_options = {    # [CONSTANT]
 sub DefEnvironment {
   my ($proto, $replacement, %options) = @_;
   CheckOptions("DefEnvironment ($proto)", $environment_options, %options);
-##  $proto =~ s/^\{([^\}]+)\}\s*//; # Pull off the environment name as {name}
-##  my $paramlist=parseParameters($proto,"Environment $name");
-##  my $name = $1;
   my ($name, $paramlist) = Text::Balanced::extract_bracketed($proto, '{}');
   $name      =~ s/[\{\}]//g;
   $paramlist =~ s/^\s*//;
-##  $paramlist = parseParameters($paramlist, "Environment $name");
   DefEnvironmentI($name, $paramlist, $replacement, %options);
   return; }
 
 sub DefEnvironmentI {
   my ($name, $paramlist, $replacement, %options) = @_;
   my $mode = $options{mode};
-  $name = ToString($name) if ref $name;
-##  $paramlist = parseParameters($paramlist, $name) if defined $paramlist && !ref $paramlist;
+  $name      = ToString($name)                    if ref $name;
+  $paramlist = parseParameters($paramlist, $name) if defined $paramlist && !ref $paramlist;
   # This is for the common case where the environment is opened by \begin{env}
   my $sizer = inferSizer($options{sizer}, $options{reversion});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor

@@ -63,9 +63,11 @@ sub invoke {
   my $etype     = ref $expansion;
   my $iscode    = $etype eq 'CODE';
   my $result;
+  my $parms = $$self{parameters};
+
   if ($iscode) {
     # Harder to emulate \tracingmacros here.
-    my @args = $self->readArguments($gullet);
+    my @args = ($parms ? $parms->readArguments($gullet, $self) : ());
     LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
     $result = Tokens(&$expansion($gullet, @args));
     if ($tracing) {    # More involved...
@@ -87,7 +89,7 @@ sub invoke {
         $expansion = Tokens(); } }
     $result = $expansion; }
   else {
-    my @args = $self->readArguments($gullet);
+    my @args = ($parms ? $parms->readArguments($gullet, $self) : ());
     # for "real" macros, make sure all args are Tokens
     my $r;
     my @targs = map { ($_ && ($r = ref $_)

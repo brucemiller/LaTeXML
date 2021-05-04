@@ -87,9 +87,9 @@ sub invoke {
   my $font   = $STATE->lookupValue('font');
   my $ismath = $STATE->lookupValue('IN_MATH');
   # Parse AND digest the arguments to the Constructor
-  my $params = $self->getParameters;
-  my @args   = ($params ? $params->readArgumentsAndDigest($stomach, $self) : ());
-  print STDERR $self->tracingArgs(@args) . " [for ".Stringify($$self{cs})."]\n" if $tracing && @args;
+  my $parms = $$self{parameters};
+  my @args  = ($parms ? $parms->readArgumentsAndDigest($stomach, $self) : ());
+  print STDERR $self->tracingArgs(@args) . " [for " . Stringify($$self{cs}) . "]\n" if $tracing && @args;
   my $nargs = $self->getNumArgs;
   @args = @args[0 .. $nargs - 1];
 
