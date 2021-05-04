@@ -162,7 +162,9 @@ sub clear {
   $$self{n_parsed}        = 0;
   return; }
 
-our %EXCLUDED_PRETTYNAME_ATTRIBUTES = (fontsize => 1, opacity => 1);
+our %EXCLUDED_PRETTYNAME_ATTRIBUTES = (
+  fontsize => 1, opacity         => 1,
+  color    => 1, backgroundcolor => 1);
 
 sub token_prettyname {
   my ($node) = @_;
