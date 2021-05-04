@@ -588,20 +588,6 @@ sub readUntilBrace {
     push(@tokens, $token); }
   return Tokens(@tokens); }
 
-# Skipping over conditional branches is used heavily when processing raw TeX (eg. tikz).
-# Make this efficient! Note that since we're skipping tokens, we presumably neither
-# need to note profiling end markers, nor preserve comments in the skipped sections?
-sub readNextConditional {
-  my ($self) = @_;
-  my $token;
-  my $type;
-  while ($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken()) {
-    $token = $$token[2] if $$token[1] == CC_SMUGGLE_THE;
-    if ($LaTeXML::Core::State::CATCODE_ACTIVE_OR_CS[$$token[1]]
-      && ($type = $STATE->lookupConditional($token))) {
-      return ($token, $type); } }
-  return; }
-
 #**********************************************************************
 # Higher-level readers: Read various types of things from the input:
 #  tokens, non-expandable tokens, args, Numbers, ...

@@ -110,11 +110,16 @@ sub skipConditionalBody {
   my $level = 1;
   my $n_ors = 0;
   my $start = $gullet->getLocator;
-  # NOTE: Open-coded manipulation of if_stack!
+  # NOTE: Open-coded manipulation of if_stack!, Gullet and Token's
   # [we're only reading tokens & looking up, so State shouldn't change behind our backs]
   my $stack = $STATE->lookupValue('if_stack');
   while (1) {
-    my ($t, $cond_type) = $gullet->readNextConditional;
+    my ($t, $cond_type);
+    while ($t = shift(@{ $$gullet{pushback} }) || $$gullet{mouth}->readToken()) {
+      $t = $$t[2] if $$t[1] == CC_SMUGGLE_THE;
+      if ($LaTeXML::Core::State::CATCODE_ACTIVE_OR_CS[$$t[1]]
+        && ($cond_type = $STATE->lookupConditional($t))) {
+        last; } }
     last unless $cond_type;
     if ($cond_type eq 'if') {    #  Found a \ifxx of some sort
       $level++; }
