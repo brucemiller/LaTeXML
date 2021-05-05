@@ -4557,7 +4557,9 @@ sub ReadPair {
       $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
       return Pair(Dimension(0), Dimension(0)); }
     my $x = &$itemreader($gullet, $xarg);
-    $gullet->skipSpaces; $gullet->readUntil(T_OTHER(','), T_OTHER(';')); $gullet->skipSpaces;
+    # This had also recognized ";" as a possible separator; if needed, will need to generalize
+    # but we want to make readUntil accept only a single match
+    $gullet->skipSpaces; $gullet->readUntil(T_OTHER(',')); $gullet->skipSpaces;
     my $y = &$itemreader($gullet, $yarg);
     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
     return Pair($x, $y); }

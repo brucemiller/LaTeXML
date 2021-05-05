@@ -134,22 +134,6 @@ DefRegister('\pdfretval'               => Number(0));
 # \pdfximage [ image attr spec ] general text (h, v, m)
 # \pdfrefximage object number (h, v, m)
 # \pdfannot annot type spec (h, v, m)
-DefPrimitive('\pdfannot OpenAnnotSpecification', undef);
-
-# \pdfstartlink [ rule spec ] [ attr spec ] action spec (h, m)
-DefPrimitive('\pdfstartlink', undef);
-# \pdfendlink (h, m)
-DefPrimitive('\pdfendlink', undef);
-# \pdfoutline outline spec (h, v, m)
-# \pdfdest dest spec (h, v, m)
-# \pdfthread thread spec (h, v, m)
-# \pdfstartthread thread spec (v, m)
-# \pdfendthread (v, m)
-# \pdfsavepos (h, v, m)
-
-# See lxRDFa for ideas how this info might be used!
-DefMacro('\pdfinfo{}', '');
-
 # Ugh, what a mess of ugly syntax....
 DefParameterType('OpenActionSpecification', sub {
     my ($gullet) = @_;
@@ -175,6 +159,22 @@ DefParameterType('OpenAnnotSpecification', sub {
     my $discard_spec = &{ $$general_text_param{reader} }($gullet);
     return; }
   , optional => 1, undigested => 1);
+
+DefPrimitive('\pdfannot OpenAnnotSpecification', undef);
+
+# \pdfstartlink [ rule spec ] [ attr spec ] action spec (h, m)
+DefPrimitive('\pdfstartlink', undef);
+# \pdfendlink (h, m)
+DefPrimitive('\pdfendlink', undef);
+# \pdfoutline outline spec (h, v, m)
+# \pdfdest dest spec (h, v, m)
+# \pdfthread thread spec (h, v, m)
+# \pdfstartthread thread spec (v, m)
+# \pdfendthread (v, m)
+# \pdfsavepos (h, v, m)
+
+# See lxRDFa for ideas how this info might be used!
+DefMacro('\pdfinfo{}', '');
 
 DefMacro('\pdfcatalog{} OpenActionSpecification', '');
 DefMacro('\pdfnames{}',                           {});

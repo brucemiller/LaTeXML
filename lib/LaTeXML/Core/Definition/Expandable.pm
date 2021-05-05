@@ -57,78 +57,52 @@ sub getExpansion {
 sub invoke {
   my ($self, $gullet, $onceonly) = @_;
   # shortcut for "trivial" macros; but only if not tracing & profiling!!!!
-  my $expansion = (!$STATE->lookupValue('TRACINGMACROS') && !$$self{parameters} && $self->getExpansion);
-  if (ref $expansion eq 'LaTeXML::Core::Tokens') {
-    if (!$onceonly && recursion_check($$self{cs}, $expansion->unlist)) {
-      Error('recursion', $$self{cs}, $gullet,
-        "Token " . Stringify($$self{cs}) . " expands into itself!",
-        "defining as empty");
-      $expansion = Tokens(); }
-    return $expansion; }
-  else {
-    return $self->doInvocation($gullet, $self->readArguments($gullet)); } }
-
-sub doInvocation {
-  my ($self, $gullet, @args) = @_;
+  my $tracing   = $STATE->lookupValue('TRACINGMACROS');
+  my $profiled  = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
   my $expansion = $self->getExpansion;
-  my $r;
-  my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
-  LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
-  my @result;
-  if ($STATE->lookupValue('TRACINGMACROS')) {    # More involved...
-    if (ref $expansion eq 'CODE') {
-      # Harder to emulate \tracingmacros here.
-      @result = &$expansion($gullet, @args);
-      # CHECK @result HERE TOO!!!!
-      print STDERR "\n" . $self->tracingCSName . ' ==> ' . tracetoString(Tokens(@result)) . "\n";
-      print STDERR $self->tracingArgs(@args) . "\n" if @args; }
-    else {
-      # for "real" macros, make sure all args are Tokens
-      my @targs = map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Core::Tokens')
-          ? $_
-          : ($r && ($r eq 'LaTeXML::Core::Token')
-            ? Tokens($_)
-            : Tokens(Revert($_)))) }
-        @args;
-      print STDERR "\n" . $self->tracingCSName
-        . ' -> ' . tracetoString($expansion) . "\n";
-      print STDERR $self->tracingArgs(@targs) . "\n" if @args;
-      @result = $expansion->substituteParameters(@targs)->unlist; } }
-  else {
-    if (ref $expansion eq 'CODE') {
-      my $t;
-      # Check the result from code calls.
-      @result = map { (($t = ref $_) eq 'LaTeXML::Core::Token' ? $_
-          : ($t eq 'LaTeXML::Core::Tokens' ? @$_
-            : (Error('misdefined', $self, undef,
-                "Expected a Token in expansion of " . ToString($self),
-                "got " . Stringify($_)), ()))) }
-        &$expansion($gullet, @args); }
-    else {
-      # but for tokens, make sure args are proper Tokens (lists)
-      @result = $expansion->substituteParameters(
-        map { $_ && (($r = ref $_) && ($r eq 'LaTeXML::Core::Tokens')
-            ? $_
-            : ($r && ($r eq 'LaTeXML::Core::Token')
-              ? Tokens($_)
-              : Tokens(Revert($_)))) }
-          @args)->unlist; } }
-  # Avoid simplest case of infinite-loop expansion.
-  if ((ref $expansion ne 'CODE') && !scalar(@args) && recursion_check($$self{cs}, @result)) {
-    Error('recursion', $$self{cs}, $gullet,
-      "Token " . Stringify($$self{cs}) . " expands into itself!",
-      "defining as empty");
-    @result = (); }
-  # Getting exclusive requires dubious Gullet support!
-  push(@result, T_MARKER($profiled)) if $profiled;
-  return [@result]; }
+  my $etype     = ref $expansion;
+  my $iscode    = $etype eq 'CODE';
+  my $result;
+  my $parms = $$self{parameters};
 
-sub recursion_check {
-  my ($cs, @tokens) = @_;
-  # expect $expansion as Token, Tokens or [Token...] ! Argh !
-  return $cs &&
-    (($tokens[0] && $tokens[0]->equals($cs))
-    || ($tokens[1] && $tokens[1]->equals($cs) && $tokens[0]->equals(T_CS('\protect')))); }
+  if ($iscode) {
+    # Harder to emulate \tracingmacros here.
+    my @args = ($parms ? $parms->readArguments($gullet, $self) : ());
+    LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
+    $result = Tokens(&$expansion($gullet, @args));
+    if ($tracing) {    # More involved...
+      print STDERR "\n" . $self->tracingCSName . ' ==> ' . tracetoString($result) . "\n";
+      print STDERR $self->tracingArgs(@args) . "\n" if @args; } }
+  elsif (!$$self{parameters}) {    # Trivial macro
+    LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
+    if ($tracing) {                # More involved...
+      print STDERR "\n" . $self->tracingCSName . ' -> ' . tracetoString($expansion) . "\n"; }
+    # For trivial expansion, make sure we don't get \cs or \relax\cs direct recursion!
+    if (!$onceonly && $$self{cs}) {
+      my ($t0, $t1) = ($etype eq 'LaTeXML::Core::Tokens'
+        ? ($$expansion[0], $$expansion[1]) : ($expansion, undef));
+      if ($t0 && ($t0->equals($$self{cs})
+          || ($t1 && $t1->equals($$self{cs}) && $t0->equals(T_CS('\protect'))))) {
+        Error('recursion', $$self{cs}, $gullet,
+          "Token " . Stringify($$self{cs}) . " expands into itself!",
+          "defining as empty");
+        $expansion = Tokens(); } }
+    $result = $expansion; }
+  else {
+    my @args = ($parms ? $parms->readArguments($gullet, $self) : ());
+    # for "real" macros, make sure all args are Tokens
+    my $r;
+    my @targs = map { ($_ && ($r = ref $_)
+          && (($r eq 'LaTeXML::Core::Token') || ($r eq 'LaTeXML::Core::Tokens'))
+        ? $_ : Tokens(Revert($_))); } @args;
+    if ($tracing) {    # More involved...
+      print STDERR "\n" . $self->tracingCSName . ' -> ' . tracetoString($expansion) . "\n";
+      print STDERR $self->tracingArgs(@targs) . "\n" if @args; }
+    LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
+    $result = $expansion->substituteParameters(@targs); }
+  # Getting exclusive requires dubious Gullet support!
+  $result = Tokens($result, T_MARKER($profiled)) if $profiled;
+  return $result; }
 
 # print a string of tokens like TeX would when tracing.
 sub tracetoString {

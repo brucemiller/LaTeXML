@@ -674,16 +674,9 @@ sub ReadAlignmentTemplate {
       $gullet->unread($op); }
     elsif (defined($defn = $STATE->lookupDefinition(T_CS('\NC@rewrite@' . ToString($op))))
       && $defn->isExpandable) {
-      # A variation on $defn->invoke, so we can reconstruct the reversion
-      my @args = $defn->readArguments($gullet);
-      if (my $exp = $defn->doInvocation($gullet, @args)) {    # This just expanded into other stuff
-        $gullet->unread(@{$exp}); }
-      else {
-        push(@tokens, $op);
-        if (my $param = $defn->getParameters) {
-          push(@tokens, $param->revertArguments(@args)); } } }
-    elsif ($op->equals(T_BEGIN)) {                            # Wrong, but a safety valve
-      $gullet->unread($gullet->readBalanced->unlist); }
+      $gullet->unread($defn->invoke($gullet, 1)); }
+    elsif ($op->equals(T_BEGIN)) {    # Wrong, but a safety valve
+      $gullet->unread($gullet->readBalanced); }
     else {
       Warn('unexpected', $op, $gullet, "Unrecognized tabular template '" . Stringify($op) . "'"); }
     last unless $nopens; }

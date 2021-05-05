@@ -147,7 +147,7 @@ DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
     my $open = $gullet->readXToken;
     if ($open->equals(T_BEGIN)) {
-      return scalar($gullet->readBalanced); }
+      return $gullet->readBalanced; }
     else {
       Error('expected', '{', $gullet,
         "Expected <general text> here");
@@ -216,9 +216,10 @@ DefParameterType('XUntil', sub {
       if ($token->equals($until)) {
         last; }
       elsif ($token->getCatcode == CC_BEGIN) {
-        push(@tokens, $token, $gullet->readBalanced); }
+        push(@tokens, $token, $gullet->readBalanced, T_END); }
       elsif (my $defn = LookupDefinition($token)) {
-        push(@tokens, Invocation($token, $defn->readArguments($gullet))); }
+        push(@tokens, Invocation($token,
+            ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ()))); }
       else {
         push(@tokens, $token); } }
     Tokens(@tokens); });
@@ -264,7 +265,7 @@ DefParameterType('Match', sub { shift->readMatch(@_); });
 DefParameterType('Keyword', sub { shift->readKeyword(@_); });
 
 # Read balanced material (?)
-DefParameterType('Balanced', sub { scalar($_[0]->readBalanced); });
+DefParameterType('Balanced', sub { $_[0]->readBalanced; });
 
 # Read a Semiverbatim argument; ie w/ most catcodes neutralized.
 DefParameterType('Semiverbatim', sub { $_[0]->readArg; }, semiverbatim => 1,
@@ -324,7 +325,7 @@ DefParameterType('Variable', sub {
     my $token    = $gullet->readXToken;
     my $defn     = $token && LookupDefinition($token);
     if ((defined $defn) && $defn->isRegister && !$defn->isReadonly) {
-      [$defn, $defn->readArguments($gullet)]; }
+      [$defn, ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ())]; }
     else {
       DefRegisterI($token, undef, Dimension(0));    # Don't really know what KIND of variable!
       if ($token && ($token->getCatcode == CC_CS)) {
@@ -350,7 +351,7 @@ DefParameterType('Register', sub {
     my $token    = $gullet->readXToken;
     my $defn     = $token && LookupDefinition($token);
     if ((defined $defn) && $defn->isRegister) {
-      [$defn, $defn->readArguments($gullet)]; }
+      [$defn, ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ())]; }
     else {
       if ($token && ($token->getCatcode == CC_CS)) {
         Error('expected', '<register>', $gullet,
@@ -506,7 +507,7 @@ DefParameterType('CommaList', sub {
         elsif ($token->equals($comma)) {
           push(@items, Tokens(@tokens)); @tokens = (); }
         elsif ($token->equals(T_BEGIN)) {
-          push(@tokens, $token, $gullet->readBalanced); }
+          push(@tokens, $token, $gullet->readBalanced, T_END); }
         else {
           push(@tokens, $token); } }
       if ($typedef) {
@@ -953,8 +954,7 @@ DefMacro('\expandafter Token Token', sub {
       my @x = ();
       {
         local $LaTeXML::CURRENT_TOKEN = $xtok;
-        my $x = $defn->invoke($gullet, 1);
-        @x = @$x if $x;    # Expand $xtok ONCE ONLY!
+        @x = $defn->invoke($gullet, 1);    # Expand $xtok ONCE ONLY!
       }
       ($tok, @x); }
     elsif (!$STATE->lookupMeaning($xtok)) {
@@ -2783,7 +2783,7 @@ sub parseHAlignTemplate {
   my $tabskip;         # Need to use this somehow!
   ## Only expand certain things; See TeX book p.238
   local $LaTeXML::ALIGN_STATE = 1000000;
-  while ($t = $gullet->readToken(0)) {
+  while ($t = $gullet->readToken) {
     if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
       $gullet->readKeyword('=');
       $tabskip = $gullet->readGlue; }
@@ -3839,7 +3839,7 @@ DefMacroI('\eqno', undef, sub {
     # This is risky!!!
     while (my $t = $gullet->readXToken(0)) {
       if (Equals($t, T_BEGIN)) {
-        push(@stuff, $t, $gullet->readBalanced); }
+        push(@stuff, $t, $gullet->readBalanced, T_END); }
       # What do I need to explicitly list here!?!?!? UGGH!
       elsif (Equals($t, T_MATH) || Equals($t, T_CS('\]')) || Equals($t, T_CS('\@@ENDDISPLAYMATH'))
         || Equals($t, T_CS('\begingroup'))           # Totally wrong, but to catch expanded environments

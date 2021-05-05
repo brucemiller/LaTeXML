@@ -16,6 +16,7 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
 use base qw(LaTeXML::Core::Definition::Expandable);
 
 # Conditional control sequences; Expandable
@@ -35,8 +36,6 @@ sub getTest {
   my ($self) = @_;
   return $$self{test}; }
 
-# Note that although conditionals are Expandable,
-# they do NOT defined as macros, so they don't need to handle doInvocation,
 sub invoke {
   my ($self, $gullet) = @_;
   # A real conditional must have condition_type set
@@ -61,12 +60,12 @@ sub invoke_conditional {
   local $LaTeXML::IFFRAME = { token => $LaTeXML::CURRENT_TOKEN, start => $gullet->getLocator,
     parsing => 1, elses => 0, ifid => $ifid };
   $STATE->unshiftValue(if_stack => $LaTeXML::IFFRAME);
-
-  my @args = $self->readArguments($gullet);
+  my $parms = $$self{parameters};
+  my @args  = ($parms ? $parms->readArguments($gullet) : ());
   $$LaTeXML::IFFRAME{parsing} = 0;    # Now, we're done parsing the Test clause.
   my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
   print STDERR '{' . $self->tracingCSName . "} [#$ifid]\n" if $tracing;
-  print STDERR $self->tracingArgs(@args) . "\n" if $tracing && @args;
+  print STDERR $self->tracingArgs(@args) . "\n"            if $tracing && @args;
   if (my $test = $self->getTest) {
     my $result = &$test($gullet, @args);
     if ($result) {
@@ -111,11 +110,16 @@ sub skipConditionalBody {
   my $level = 1;
   my $n_ors = 0;
   my $start = $gullet->getLocator;
-  # NOTE: Open-coded manipulation of if_stack!
+  # NOTE: Open-coded manipulation of if_stack!, Gullet and Token's
   # [we're only reading tokens & looking up, so State shouldn't change behind our backs]
   my $stack = $STATE->lookupValue('if_stack');
   while (1) {
-    my ($t, $cond_type) = $gullet->readNextConditional;
+    my ($t, $cond_type);
+    while ($t = shift(@{ $$gullet{pushback} }) || $$gullet{mouth}->readToken()) {
+      $t = $$t[2] if $$t[1] == CC_SMUGGLE_THE;
+      if ($LaTeXML::Core::State::CATCODE_ACTIVE_OR_CS[$$t[1]]
+        && ($cond_type = $STATE->lookupConditional($t))) {
+        last; } }
     last unless $cond_type;
     if ($cond_type eq 'if') {    #  Found a \ifxx of some sort
       $level++; }
@@ -126,7 +130,7 @@ sub skipConditionalBody {
       elsif (!--$level) {           # If no more nesting, we're done.
         shift(@$stack);             # Done with this frame
         return $t; } }              # AND Return the finishing token.
-    elsif ($level > 1) { }          # Ignore \else,\or nested in the body.
+    elsif ($level > 1) { }                                    # Ignore \else,\or nested in the body.
     elsif (($cond_type eq 'or') && (++$n_ors == $nskips)) {
       return $t; }
     elsif (($cond_type eq 'else') && $nskips
@@ -149,7 +153,7 @@ sub invoke_else {
         . " since we seem not to be in a conditional");
     return; }
   elsif ($$stack[0]{parsing}) {     # Defer expanding the \else if we're still parsing the test
-    return [T_CS('\relax'), $LaTeXML::CURRENT_TOKEN]; }
+    return Tokens(T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
   elsif ($$stack[0]{elses}) {       # Already seen an \else's at this level?
     Error('unexpected', $LaTeXML::CURRENT_TOKEN, $gullet,
       "Extra " . Stringify($LaTeXML::CURRENT_TOKEN),
@@ -173,7 +177,7 @@ sub invoke_fi {
         . " since we seem not to be in a conditional");
     return; }
   elsif ($$stack[0]{parsing}) {     # Defer expanding the \else if we're still parsing the test
-    return [T_CS('\relax'), $LaTeXML::CURRENT_TOKEN]; }
+    return Tokens(T_CS('\relax'), $LaTeXML::CURRENT_TOKEN); }
   else {                            # "expand" by removing the stack entry for this level
     local $LaTeXML::IFFRAME = $$stack[0];
     $STATE->shiftValue('if_stack');    # Done with this frame

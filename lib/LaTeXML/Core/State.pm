@@ -391,14 +391,8 @@ sub lookupConditional {
   return unless $token;
   my $defn;
   my $entry;
-  #  my $inmath = $self->lookupValue('IN_MATH');
-  my $cc = $$token[1];
-  my $lookupname =
-    ($CATCODE_ACTIVE_OR_CS[$cc]
-    ? $$token[0]
-    : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$cc]);
-  if ($lookupname
-    && ($entry = $$self{meaning}{$lookupname})
+  if ($CATCODE_ACTIVE_OR_CS[$$token[1]]
+    && ($entry = $$self{meaning}{ $$token[0] })
     && ($defn  = $$entry[0])
     # Can only be a token or definition; we only want defns that have conditional_type
     && ((ref $defn) ne 'LaTeXML::Core::Token')) {
@@ -411,14 +405,8 @@ sub lookupExpandable {
   return unless $token;
   my $defn;
   my $entry;
-  #  my $inmath = $self->lookupValue('IN_MATH');
-  my $cc = $$token[1];
-  my $lookupname =
-    ($CATCODE_ACTIVE_OR_CS[$cc]
-    ? $$token[0]
-    : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$cc]);
-  if ($lookupname
-    && ($entry = $$self{meaning}{$lookupname})
+  if ($CATCODE_ACTIVE_OR_CS[$$token[1]]
+    && ($entry = $$self{meaning}{ $$token[0] })
     && ($defn  = $$entry[0])
     # Can only be a token or definition; we want defns!
     && ((ref $defn) ne 'LaTeXML::Core::Token')

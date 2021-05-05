@@ -33,13 +33,13 @@ sub new {
   if (!defined $descriptor) {
     if ($type =~ /^Optional(.+)$/) {
       my $basetype = $1;
-      if ($descriptor = $STATE->lookupMapping('PARAMETER_TYPES', $basetype)) { }
+      if    ($descriptor = $STATE->lookupMapping('PARAMETER_TYPES', $basetype)) { }
       elsif (my $reader = checkReaderFunction("Read$type") || checkReaderFunction("Read$basetype")) {
         $descriptor = { reader => $reader }; }
       $descriptor = { %$descriptor, optional => 1 } if $descriptor; }
     elsif ($type =~ /^Skip(.+)$/) {
       my $basetype = $1;
-      if ($descriptor = $STATE->lookupMapping('PARAMETER_TYPES', $basetype)) { }
+      if    ($descriptor = $STATE->lookupMapping('PARAMETER_TYPES', $basetype)) { }
       elsif (my $reader = checkReaderFunction($type) || checkReaderFunction("Read$basetype")) {
         $descriptor = { reader => $reader }; }
       $descriptor = { %$descriptor, novalue => 1, optional => 1 } if $descriptor; }
@@ -82,12 +82,15 @@ sub read {
   # (eg. \caption(...\label{badchars}}) where you really need to
   # cleanup after the fact!
   # Hmmm, seem to still need it...
-  $self->setupCatcodes;
+  if ($$self{semiverbatim}) {    # Open coded setupCatcodes
+    $STATE->beginSemiverbatim(@{ $$self{semiverbatim} }); }
+
   my $value = &{ $$self{reader} }($gullet, @{ $$self{extra} || [] });
   $value = $value->neutralize(@{ $$self{semiverbatim} }) if $$self{semiverbatim} && (ref $value)
     && $value->can('neutralize');
   $value = $value->packParameters if $value && $$self{packParameters};
-  $self->revertCatcodes;
+  if ($$self{semiverbatim}) {    # Open coded revertCatcodes
+    $STATE->endSemiverbatim(); }
   if ((!defined $value) && !$$self{optional}) {
     Error('expected', $self, $gullet,
       "Missing argument " . Stringify($self) . " for " . Stringify($fordefn),
