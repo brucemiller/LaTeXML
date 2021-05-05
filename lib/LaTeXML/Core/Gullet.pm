@@ -345,8 +345,8 @@ sub readXToken {
       && (($atoken, $atype, $ahidden) = $self->isColumnEnd($token))) {
       $self->handleTemplate($LaTeXML::READING_ALIGNMENT, $token, $atype, $ahidden); }
     ## Note: use general-purpose lookup, since we may reexamine $defn below
-    elsif ($LaTeXML::Core::State::CATCODE_ACTIVE_OR_CS[$$token[1]]
-      && defined($defn = LaTeXML::Core::State::lookupMeaning($STATE, $token))
+    elsif ($LaTeXML::Core::State::CATCODE_ACTIVE_OR_CS[$cc]
+      && defined($defn = $STATE->lookupMeaning($token))
       && ((ref $defn) ne 'LaTeXML::Core::Token')    # an actual definition
       && $$defn{isExpandable}
       && ($toplevel || !$$defn{isProtected})) {     # is this the right logic here? don't expand unless di
@@ -534,7 +534,6 @@ sub readKeyword {
 # Note that Braces on input hides the contents from matching,
 # so this assumes there wont be braces in $delim!
 # But, see readUntilBrace for that case.
-# NOTE: Add error handling, $token undef detection, etc!!!!!
 sub readUntil {
   my ($self, $delim) = @_;
   my @tokens = ();
@@ -638,7 +637,7 @@ sub readRegisterValue {
   my ($self, $type) = @_;
   my $token = $self->readXToken(0);
   return unless defined $token;
-  my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token);
+  my $defn = $STATE->lookupDefinition($token);
   if ((defined $defn) && ($defn->isRegister eq $type)) {
     my $parms = $$defn{parameters};
     return $defn->valueOf(($parms ? $parms->readArguments($self) : ())); }
@@ -654,7 +653,7 @@ sub readTokensValue {
     return; }
   elsif ($$token[1] == CC_BEGIN) {             # Inline ->getCatcode!
     return $self->readBalanced; }
-  elsif (my $defn = LaTeXML::Core::State::lookupDefinition($STATE, $token)) {
+  elsif (my $defn = $STATE->lookupDefinition($token)) {
     if ($defn->isRegister eq 'Tokens') {
       my $parms = $$defn{parameters};
       return $defn->valueOf(($parms ? $parms->readArguments($self) : ())); }
