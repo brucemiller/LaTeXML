@@ -201,12 +201,13 @@ sub process_xmlfile {
 sub process_htmlfile {
   my ($htmlpath, $name, $compare_kind) = @_;
   my $domstring = eval {
-    XML::LibXML->load_html(
+    my $dom = XML::LibXML->load_html(
       location => $htmlpath,
       # tags such as <article> or <math> are invalid?? ignore.
       suppress_errors => 1,
       recover         => 1,
-  )->toStringHTML(); };
+    );
+    $dom && $dom->toStringHTML(); };
   if (!$domstring) {
     do_fail($name, "Could not convert file $htmlpath to string: " . $@); return; }
   else {
