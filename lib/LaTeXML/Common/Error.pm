@@ -285,11 +285,6 @@ sub Fatal {
   else {    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0];
   }
-  # Now that we no longer die, we should also have a secondary backup timeout,
-  #   in which the Fatal cleanup stage is to complete in,
-  #  to avoid longtail edge cases where the execution gets stuck even after the
-  #  first timeout handler.
-  alarm(5);
   print STDERR $message if $verbosity >= -2;
   return; }
 
