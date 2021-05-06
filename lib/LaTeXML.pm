@@ -230,9 +230,6 @@ sub convert {
   # 2 Beginning Core conversion - digest the source:
   my ($digested, $dom, $serialized) = (undef, undef, undef);
   my $convert_eval_return = eval {
-    # Should be this, but is overridden by withState.
-    #local $SIG{'ALRM'} = sub { LaTeXML::Common::Error::Fatal('conversion','timeout',
-    # "Conversion timed out after " . $$opts{timeout} . " seconds!\n"); };
     alarm($$opts{timeout});
     my $mode = ($$opts{type} eq 'auto') ? 'TeX' : $$opts{type};
     $digested = $latexml->digestFile($source, preamble => $current_preamble,
@@ -253,14 +250,15 @@ sub convert {
     alarm(0);
     1;
   };
-  # 2.2 Bookkeeping in case fatal errors occurred
-  ### Note: this cause double counting if LaTeXML has already handled it.
-  ### But leaving it might might miss errors that sneak through (can that happen?)
-  ####  $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
-  local $@ = 'Fatal:conversion:unknown TeX to XML conversion failed! (Unknown Reason)' if ((!$convert_eval_return) && (!$@));
-  my $eval_report = $@;
   $$runtime{status}      = $latexml->getStatusMessage;
   $$runtime{status_code} = $latexml->getStatusCode;
+  # 2.2 Bookkeeping in case in-eval perl die() deaths occurred
+  my $eval_report = $@;
+  $eval_report = 'Fatal:conversion:unknown TeX to XML conversion failed! (Unknown Reason)' if ((!$convert_eval_return) && (!$eval_report));
+  if ($eval_report) {
+    $$runtime{status} .= "\n" . $eval_report . "\n";
+    $$runtime{status_code} = 3;
+  }
 
   # End daemon run, by popping frame:
   $latexml->withState(sub {
@@ -283,29 +281,8 @@ sub convert {
     $LaTeXML::UNSAFE_FATAL = 0;
     $$self{ready} = 0;
   }
-  if ($eval_report || ($$runtime{status_code} == 3)) {
-    # Terminate immediately on Fatal errors
-    $$runtime{status_code} = 3;
+  print STDERR "\nConversion complete: " . $$runtime{status} . ".\n";
 
-    NoteLog($eval_report) if $eval_report;
-    Note(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
-    NoteLog(($$opts{recursive} ? "recursive " : "") . "Status:conversion:" . ($$runtime{status_code} || '0'));
-    # If we just processed an archive, clean up sandbox directory.
-    if ($$opts{whatsin} =~ /^archive/) {
-      rmtree($$opts{sourcedirectory});
-      $$opts{sourcedirectory} = $$opts{archive_sourcedirectory}; }
-
-    # Close and restore STDERR to original condition.
-    $serialized = $dom           if ($$opts{format} eq 'dom');
-    $serialized = $dom->toString if ($dom && (!defined $serialized));
-    # Using the Core::Document::serialize_aux, so need an explicit encode into bytes
-    $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
-
-    return { result => $serialized, log => $self->flush_log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
-  else {
-    # Standard report, if we're not in a Fatal case
-    Note(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
-  }
   # 2.3 Clean up and exit if we only wanted the serialization of the core conversion
   if ($serialized) {
     # If serialized has been set, we are done with the job

@@ -17,8 +17,8 @@ use Config;
 use base qw(Exporter);
 #  @Test::More::EXPORT);
 our @EXPORT = (qw(&latexml_ok &latexml_tests),
-  qw(&process_domstring &process_xmlfile &is_strings
-    &convert_texfile_as_test &serialize_dom_as_test),
+  qw(&process_domstring &process_xmlfile &process_htmlfile &is_strings
+    &convert_texfile_as_test &serialize_dom_as_test get_filecontent),
   @Test::More::EXPORT);
 # Note that this is a singlet; the same Builder is shared.
 
@@ -195,6 +195,20 @@ sub process_xmlfile {
     $parser->parse_file($xmlpath)->toStringC14N(0); };
   if (!$domstring) {
     do_fail($name, "Could not convert file $xmlpath to string: " . $@); return; }
+  else {
+    return process_domstring($domstring, $name, $compare_kind); } }
+
+sub process_htmlfile {
+  my ($htmlpath, $name, $compare_kind) = @_;
+  my $domstring = eval {
+    XML::LibXML->load_html(
+      location => $htmlpath,
+      # tags such as <article> or <math> are invalid?? ignore.
+      suppress_errors => 1,
+      recover         => 1,
+  )->toStringHTML(); };
+  if (!$domstring) {
+    do_fail($name, "Could not convert file $htmlpath to string: " . $@); return; }
   else {
     return process_domstring($domstring, $name, $compare_kind); } }
 

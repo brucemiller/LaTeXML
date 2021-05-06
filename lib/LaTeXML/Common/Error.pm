@@ -15,6 +15,7 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Core::Token qw(T_CS);
 use Time::HiRes;
 use Term::ANSIColor 2.01 qw(colored colorstrip);
 
@@ -228,16 +229,30 @@ sub _spinnerpop {    # Finished with spinner level
 
 sub Fatal {
   my ($category, $object, $where, $message, @details) = @_;
-
 # Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
   if ((($category eq 'internal') && ($object eq '<recursion>')) ||
     ($category eq 'too_many_errors')) {
     $LaTeXML::UNSAFE_FATAL = 1; }
 
-  # We'll assume that if the DIE handler is bound (presumably to this function)
-  # we're in the outermost call to Fatal; we'll clear the handler so that we don't nest calls.
-  die $message if $LaTeXML::IGNORE_ERRORS        # Short circuit, w/no formatting, if in probing eval
-    || (($SIG{__DIE__} eq 'DEFAULT') && $^S);    # Also missing class when parsing bindings(?!?!)
+  # Ensure we have nothing else to do in the main processing.
+  my $state   = $STATE;
+  my $stomach = $$state{stomach};
+  $$stomach{token_stack} = [];
+  my $gullet = $$stomach{gullet};
+  # If we were in an infinite loop, disable any potential busy token.
+  my $relax_def = $$state{meaning}{"\\relax"}[0];
+  $state->assignMeaning($LaTeXML::CURRENT_TOKEN, $relax_def, 'global');
+  for my $token (@{ $$gullet{pushback} }) {
+    $state->assignMeaning($token, $relax_def, 'global');
+  }
+  # avoid looping at \end{document}, Fatal brings us back to the doc level
+  $state->assignValue('current_environment', 'document', 'global');
+  # then reset the gullet
+  $$gullet{pushback}         = [];
+  $$gullet{mouthstack}       = [];
+  $$gullet{pending_comments} = [];
+  $$gullet{mouth}            = LaTeXML::Core::Mouth->new();
+  $$state{boxes_to_absorb}   = [];
 
   # print STDERR "\nHANDLING FATAL:"
   #   ." ignore=".($LaTeXML::IGNORE_ERRORS || '<no>')
@@ -245,20 +260,20 @@ sub Fatal {
   #   ." parsing=".($^S||'<no>')
   #   ."\n";
   my $inhandler = !$SIG{__DIE__};
-  my $ineval    = 0;                # whether we're in an eval should no longer matter!
 
   # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
   # It should be safe so long as the caller has bound it and rebinds it if necessary.
   local $SIG{__DIE__} = 'DEFAULT';    # Avoid recursion while preparing the message.
   my $state = $STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
 
   if (!$inhandler) {
     local $LaTeXML::BAILOUT = $LaTeXML::BAILOUT;
     if (checkRecursiveError()) {
       $LaTeXML::BAILOUT = 1;
       push(@details, "Recursive Error!"); }
-    $state->noteStatus('fatal') if $state && !$ineval;
-    my $detail_level = (($VERBOSITY <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
+    $state->noteStatus('fatal') if $state;
+    my $detail_level = (($verbosity <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
     $message
       = generateMessage("Fatal:" . $category . ":" . ToString($object),
       $where, $message, $detail_level, @details);
@@ -266,15 +281,17 @@ sub Fatal {
     # This really should be handled by the top-level program,
     # after doing all processing within an eval
     # BIZARRE: Note that die adds the "at <file> <line>" stuff IFF the message doesn't end w/ CR!
-    $message .= $state->getStatusMessage . "\n" if $state && !$ineval;
-  }
+    $message .= $state->getStatusMessage . "\n" if $state; }
   else {    # If we ARE in a recursive call, the actual message is $details[0]
-    $message = $details[0] if $details[0]; }
-  # inhibit message to STDERR, since die will handle that
-  print $LOG _freshline($LOG), strip_ansi($message), "\n" if $LOG;
-
-  # If inside an eval, this won't actually die, but WILL set $@ for caller's use.
-  die $message; }
+    $message = $details[0] if $details[0];
+  }
+  # Now that we no longer die, we should also have a secondary backup timeout,
+  #   in which the Fatal cleanup stage is to complete in,
+  #  to avoid longtail edge cases where the execution gets stuck even after the
+  #  first timeout handler.
+  alarm(5);
+  print STDERR $message if $verbosity >= -2;
+  return; }
 
 sub checkRecursiveError {
   my @caller;

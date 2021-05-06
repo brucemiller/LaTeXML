@@ -562,15 +562,17 @@ sub serialize_attr {
 sub absorb {
   my ($self, $object, %props) = @_;
   no warnings 'recursion';
-  # Nothing? Skip it
-  my @boxes   = ($object);
+  # Record the boxes to absorb in the Document object, so that we can recover
+  # during Fatal errors by dropping the remaining ones.
+  $$STATE{boxes_to_absorb} = [$object];
+  my $boxes   = $$STATE{boxes_to_absorb};
   my @results = ();
-  while (@boxes) {
-    my $box = shift(@boxes);
+  while (@$boxes) {
+    my $box = shift(@$boxes);
     next unless defined $box;
     # Simply unwind Lists to avoid unneccessary recursion; This occurs quite frequently!
     if (((ref $box) || 'nothing') eq 'LaTeXML::Core::List') {
-      unshift(@boxes, $box->unlist);
+      unshift(@$boxes, $box->unlist);
       next; }
     # A Proper Box or Whatsit? It will handle it.
     if (ref $box) {
