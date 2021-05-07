@@ -56,4 +56,4 @@ jobs:
         shell: bash
         run: |
           source /usr/local/perlbrew/etc/bashrc
-          TEST_VERBOSE=1 make test TEST_FILES=t/96*
+          make test

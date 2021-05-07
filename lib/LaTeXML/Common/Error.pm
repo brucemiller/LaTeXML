@@ -241,7 +241,7 @@ sub Fatal {
   my $gullet = $$stomach{gullet};
   # If we were in an infinite loop, disable any potential busy token.
   my $relax_def = $$state{meaning}{"\\relax"}[0];
-  $state->assignMeaning($LaTeXML::CURRENT_TOKEN, $relax_def, 'global');
+  $state->assignMeaning($LaTeXML::CURRENT_TOKEN, $relax_def, 'global') if $LaTeXML::CURRENT_TOKEN;
   for my $token (@{ $$gullet{pushback} }) {
     $state->assignMeaning($token, $relax_def, 'global');
   }
