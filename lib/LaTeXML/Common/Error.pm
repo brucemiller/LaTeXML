@@ -245,6 +245,10 @@ sub Fatal {
   for my $token (@{ $$gullet{pushback} }) {
     $state->assignMeaning($token, $relax_def, 'global');
   }
+  if (@LaTeXML::LIST) {
+    $$stomach{rescued_boxes} = [@LaTeXML::LIST];
+    @LaTeXML::LIST = ();
+  }
   # avoid looping at \end{document}, Fatal brings us back to the doc level
   $state->assignValue('current_environment', 'document', 'global');
   # then reset the gullet

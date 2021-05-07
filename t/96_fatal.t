@@ -26,11 +26,7 @@ foreach my $broken_base (@broken_tex_files) {
   $invocation .= "$latexmlc $broken_base.tex --dest=$broken_base.test.html --format=html5 --nocomments ".
   "--nodefaultresources --timestamp=0 --xsltparameter=LATEXML_VERSION:TEST ";
   if ($broken_base =~ /timeout/) {
-    if ($ENV{"CI"}) {
-      $invocation .= ' --timeout=20 ';
-    } else {
-      $invocation .= ' --timeout=5 ';
-    }
+    $invocation .= ' --timeout=5 ';
   }
   $invocation .= "--log=/dev/null 2>/dev/null";
   my $exit_code = system($invocation);
