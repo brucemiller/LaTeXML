@@ -31,7 +31,7 @@ jobs:
             tex: texlive-2016
           - perl: 5.22.4
             tex: texlive-2015
-    
+
     steps:
       - uses: actions/checkout@v2
       - name: Print Program Versions
@@ -56,4 +56,4 @@ jobs:
         shell: bash
         run: |
           source /usr/local/perlbrew/etc/bashrc
-          make test
+          TEST_VERBOSE=1 make test TEST_FILES=t/96*
