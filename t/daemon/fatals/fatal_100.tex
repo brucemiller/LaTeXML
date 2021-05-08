@@ -1,0 +1,20 @@
+\documentclass{article}
+\begin{document}
+
+\section{Intro}
+
+Here we start an article that will execute a huge number of undefined macros.
+
+\section{Last heading here}
+% Any nonsence that generates errors would do,
+% let's just call \the on undefined macros in a loop:
+\makeatletter%
+\def\letters{a}%
+\def\letterloop{\edef\thisname{\csname\letters\endcsname} \the\thisname \g@addto@macro\letters{a} \letterloop}
+\letterloop
+
+\section{This should never be entered}
+
+or this.
+
+\end{document}
