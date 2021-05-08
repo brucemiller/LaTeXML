@@ -726,7 +726,7 @@ sub openText {
   my ($self, $text, $font) = @_;
   my $node = $$self{node};
   my $t    = $node->nodeType;
-  return if $text =~ /^\s+$/ &&
+  return if ((!defined $text) || $text =~ /^\s*$/) &&
     (($t == XML_DOCUMENT_NODE)    # Ignore initial whitespace
     || (($t == XML_ELEMENT_NODE) && !$self->canContain($node, '#PCDATA')));
   return if $font->getFamily eq 'nullfont';
@@ -1092,6 +1092,7 @@ sub floatToLabel {
 
 sub openText_internal {
   my ($self, $text) = @_;
+  return $$self{node} unless defined $text;
   my $qname;
   if ($$self{node}->nodeType == XML_TEXT_NODE) {    # current node already is a text node.
     Debug("Appending text \"$text\" to " . Stringify($$self{node})) if $LaTeXML::DEBUG{document};

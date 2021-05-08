@@ -250,13 +250,15 @@ sub Fatal {
     @LaTeXML::LIST = ();
   }
   # avoid looping at \end{document}, Fatal brings us back to the doc level
-  $state->assignValue('current_environment', 'document', 'global');
+  $state->assignValue('current_environment', undef, 'global');
   # then reset the gullet
   $$gullet{pushback}         = [];
   $$gullet{mouthstack}       = [];
   $$gullet{pending_comments} = [];
   $$gullet{mouth}            = LaTeXML::Core::Mouth->new();
   $$state{boxes_to_absorb}   = [];
+  # Ignore any errors after a Fatal, to avoid confusing users with follow-up cleanup clunkiness.
+  $LaTeXML::IGNORE_ERRORS = 1;
 
   # print STDERR "\nHANDLING FATAL:"
   #   ." ignore=".($LaTeXML::IGNORE_ERRORS || '<no>')
@@ -302,9 +304,10 @@ sub checkRecursiveError {
 
 # Should be fatal if strict is set, else warn.
 sub Error {
-  my ($category, $object, $where, $message, @details) = @_;
   return if $LaTeXML::IGNORE_ERRORS;
-  my $state = $STATE;
+  my ($category, $object, $where, $message, @details) = @_;
+  my $state     = $STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if ($state && $state->lookupValue('STRICT')) {
     Fatal($category, $object, $where, $message, @details); }
   else {
