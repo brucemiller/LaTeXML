@@ -228,6 +228,7 @@ sub _spinnerpop {    # Finished with spinner level
 # Public API
 
 sub Fatal {
+  return if $LaTeXML::IGNORE_ERRORS;
   my ($category, $object, $where, $message, @details) = @_;
 # Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
   if ((($category eq 'internal') && ($object eq '<recursion>')) ||
@@ -260,37 +261,19 @@ sub Fatal {
   # Ignore any errors after a Fatal, to avoid confusing users with follow-up cleanup clunkiness.
   $LaTeXML::IGNORE_ERRORS = 1;
 
-  # print STDERR "\nHANDLING FATAL:"
-  #   ." ignore=".($LaTeXML::IGNORE_ERRORS || '<no>')
-  #   ." handler=".($SIG{__DIE__}||'<none>')
-  #   ." parsing=".($^S||'<no>')
-  #   ."\n";
-  my $inhandler = !$SIG{__DIE__};
-
   # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
   # It should be safe so long as the caller has bound it and rebinds it if necessary.
   local $SIG{__DIE__} = 'DEFAULT';    # Avoid recursion while preparing the message.
   my $state = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
 
-  if (!$inhandler) {
-    local $LaTeXML::BAILOUT = $LaTeXML::BAILOUT;
-    if (checkRecursiveError()) {
-      $LaTeXML::BAILOUT = 1;
-      push(@details, "Recursive Error!"); }
-    $state->noteStatus('fatal') if $state;
-    my $detail_level = (($verbosity <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
-    $message
-      = generateMessage("Fatal:" . $category . ":" . ToString($object),
-      $where, $message, $detail_level, @details);
-    # If we're about to (really) DIE, we'll bypass the usual status message, so add it here.
-    # This really should be handled by the top-level program,
-    # after doing all processing within an eval
-    # BIZARRE: Note that die adds the "at <file> <line>" stuff IFF the message doesn't end w/ CR!
-    $message .= $state->getStatusMessage . "\n" if $state; }
-  else {    # If we ARE in a recursive call, the actual message is $details[0]
-    $message = $details[0] if $details[0];
-  }
+  $state->noteStatus('fatal') if $state;
+  my $detail_level = (($verbosity <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
+  $message
+    = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'),
+    $where, $message, $detail_level, @details);
+  $message .= $state->getStatusMessage . "\n" if $state;
+
   print STDERR $message if $verbosity >= -2;
   return; }
 
