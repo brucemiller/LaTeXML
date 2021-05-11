@@ -71,7 +71,7 @@ sub invoke {
     LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
     $result = Tokens(&$expansion($gullet, @args));
     if ($tracing) {    # More involved...
-      Message("\n" . $self->tracingCSName . ' ==> ' . tracetoString(Tokens(@result)));
+      Message("\n" . $self->tracingCSName . ' ==> ' . tracetoString($result));
       Message($self->tracingArgs(@args)) if @args; } }
   elsif (!$$self{parameters}) {    # Trivial macro
     LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
