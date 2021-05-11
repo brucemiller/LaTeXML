@@ -228,8 +228,11 @@ sub _spinnerpop {    # Finished with spinner level
 # Public API
 
 sub Fatal {
-  return if $LaTeXML::IGNORE_ERRORS;
   my ($category, $object, $where, $message, @details) = @_;
+  return if $LaTeXML::IGNORE_ERRORS;
+  # Ignore any errors after a Fatal, to avoid confusing users with follow-up cleanup clunkiness.
+  $LaTeXML::IGNORE_ERRORS = 1;
+
 # Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
   if ((($category eq 'internal') && ($object eq '<recursion>')) ||
     ($category eq 'too_many_errors')) {
@@ -238,8 +241,8 @@ sub Fatal {
   # Ensure we have nothing else to do in the main processing.
   my $state   = $STATE;
   my $stomach = $$state{stomach};
+  my $gullet  = $$stomach{gullet};
   $$stomach{token_stack} = [];
-  my $gullet = $$stomach{gullet};
   # If we were in an infinite loop, disable any potential busy token.
   my $relax_def = $$state{meaning}{"\\relax"}[0];
   $state->assignMeaning($LaTeXML::CURRENT_TOKEN, $relax_def, 'global') if $LaTeXML::CURRENT_TOKEN;
@@ -258,13 +261,10 @@ sub Fatal {
   $$gullet{pending_comments} = [];
   $$gullet{mouth}            = LaTeXML::Core::Mouth->new();
   $$state{boxes_to_absorb}   = [];
-  # Ignore any errors after a Fatal, to avoid confusing users with follow-up cleanup clunkiness.
-  $LaTeXML::IGNORE_ERRORS = 1;
 
   # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
   # It should be safe so long as the caller has bound it and rebinds it if necessary.
-  local $SIG{__DIE__} = 'DEFAULT';    # Avoid recursion while preparing the message.
-  my $state = $STATE;
+  #local $SIG{__DIE__} = 'DEFAULT';    # Avoid recursion while preparing the message.
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
 
   $state->noteStatus('fatal') if $state;
@@ -431,10 +431,7 @@ my $at_re         = qr/(at .*)/;                                                
 
 sub perl_die_handler {
   my (@line) = @_;
-  if ($LaTeXML::IGNORE_ERRORS    # Just get out now, if we're ignoring errors within an eval.
-    || (colorstrip($line[0]) =~ /^\s*Fatal:/)) {    # Or, we've already been through here.
-    local $SIG{__DIE__} = undef;
-    die @line; }
+  return if $LaTeXML::IGNORE_ERRORS;
   # We try to find a meaningful name for where the error occurred;
   # That's the thing that is "misdefined", after all.
   # Not completely sure we're looking in the right place up the stack, though.

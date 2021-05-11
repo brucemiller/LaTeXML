@@ -222,6 +222,8 @@ sub convert {
   $latexml->withState(sub {
       my ($state) = @_;    # Sandbox state
       $$state{status} = {};
+      my $stomach = $$state{stomach};
+      delete $$stomach{rescued_boxes} if $$stomach{rescued_boxes};
       $state->pushDaemonFrame;
       $state->assignValue('_authlist',      $$opts{authlist}, 'global');
       $state->assignValue('REMOTE_REQUEST', (!$$opts{local}), 'global');
@@ -229,15 +231,28 @@ sub convert {
 
   # 2 Beginning Core conversion - digest the source:
   my ($digested, $dom, $serialized) = (undef, undef, undef);
-  my $convert_eval_return = eval {
+  eval {
     alarm($$opts{timeout});
     my $mode = ($$opts{type} eq 'auto') ? 'TeX' : $$opts{type};
     $digested = $latexml->digestFile($source, preamble => $current_preamble,
       postamble    => $current_postamble,
       mode         => $mode,
       noinitialize => 1);
-    # 2.1 Now, convert to DOM and output, if desired.
-    if ($digested) {
+    alarm(0); };
+  my $eval_report = $@;
+  if (!$digested && $eval_report) {
+    # We can retry finishing digestion if hit a Fatal,
+    # sometimes there are leftover boxes we can accept.
+    eval {
+      alarm($$opts{timeout});
+      $digested = $latexml->withState(sub {
+          return $latexml->finishDigestion; });
+      alarm(0); };
+    $eval_report .= $@ if $@; }
+  # 2.1 Now, convert to DOM and output, if desired.
+  if ($digested) {
+    eval {
+      alarm($$opts{timeout});
       $latexml->withState(sub {
           if ($$opts{format} eq 'tex') {
             $serialized = LaTeXML::Core::Token::UnTeX($digested);
@@ -246,15 +261,14 @@ sub convert {
           } else {    # Default is XML
             $dom = $latexml->convertDocument($digested);
           }
-      }); }
-    alarm(0);
-    1;
-  };
+      });
+      alarm(0);
+    };
+  }
+  $eval_report .= $@ if $@;
   $$runtime{status}      = $latexml->getStatusMessage;
   $$runtime{status_code} = $latexml->getStatusCode;
   # 2.2 Bookkeeping in case in-eval perl die() deaths occurred
-  my $eval_report = $@;
-  $eval_report = 'Fatal:conversion:unknown TeX to XML conversion failed! (Unknown Reason)' if ((!$convert_eval_return) && (!$eval_report));
   if ($eval_report) {
     $$runtime{status} .= "\n" . $eval_report . "\n";
     $$runtime{status_code} = 3;
