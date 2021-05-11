@@ -954,7 +954,7 @@ sub textrec {
 
 sub textrec_apply {
   my ($name, $op, @args) = @_;
-  my $role = $op->getAttribute('role') || 'Unknown';
+  my $role = ((ref $op ne 'ARRAY') && $op->getAttribute('role')) || 'Unknown';
   if (($role =~ /^(SUB|SUPER)SCRIPTOP$/) && (($op->getAttribute('scriptpos') || '') =~ /^pre\d+$/)) {
     # Note that this will likely get parenthesized due to high bp
     return (5000, textrec($op) . " " . textrec($args[1]) . " " . textrec($args[0])); }
