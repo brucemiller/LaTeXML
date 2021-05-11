@@ -250,22 +250,29 @@ sub convert {
       alarm(0); };
     $eval_report .= $@ if $@; }
   # 2.1 Now, convert to DOM and output, if desired.
+  my $core_target = $$opts{format};
+  # Default Core target is XML
+  if ($core_target ne 'tex' and $core_target ne 'box') {
+    $core_target = 'xml'; }
   if ($digested) {
     eval {
       alarm($$opts{timeout});
       $latexml->withState(sub {
-          if ($$opts{format} eq 'tex') {
-            $serialized = LaTeXML::Core::Token::UnTeX($digested);
-          } elsif ($$opts{format} eq 'box') {
-            $serialized = ($$opts{verbosity} > 0 ? $digested->stringify : $digested->toString);
-          } else {    # Default is XML
-            $dom = $latexml->convertDocument($digested);
-          }
-      });
-      alarm(0);
-    };
-  }
-  $eval_report .= $@ if $@;
+          if ($core_target eq 'tex') {
+            $serialized = LaTeXML::Core::Token::UnTeX($digested); }
+          elsif ($core_target eq 'box') {
+            $serialized = ($$opts{verbosity} > 0 ? $digested->stringify : $digested->toString); }
+          elsif ($core_target eq 'xml') {
+            $dom = $latexml->convertDocument($digested); } });
+      alarm(0); };
+    $eval_report .= $@ if $@;
+    # Try to rescue the document if e.g. math parsing hit a Fatal error
+    if (!$dom && $@ && $core_target eq 'xml') {
+      $dom = $latexml->withState(sub {
+          my ($state) = @_;
+          my $rescued = $$state{rescued_document};
+          $rescued->finalize() if $rescued;
+          return $rescued; }); } }
   $$runtime{status}      = $latexml->getStatusMessage;
   $$runtime{status_code} = $latexml->getStatusCode;
   # 2.2 Bookkeeping in case in-eval perl die() deaths occurred

@@ -249,10 +249,13 @@ sub Fatal {
   for my $token (@{ $$gullet{pushback} }) {
     $state->assignMeaning($token, $relax_def, 'global');
   }
+  # Rescue data structures that may be serializable/resumable
   if (@LaTeXML::LIST) {
     $$stomach{rescued_boxes} = [@LaTeXML::LIST];
     @LaTeXML::LIST = ();
   }
+  if ($LaTeXML::DOCUMENT) {
+    $$state{rescued_document} = $LaTeXML::DOCUMENT; }
   # avoid looping at \end{document}, Fatal brings us back to the doc level
   $state->assignValue('current_environment', undef, 'global');
   # then reset the gullet
