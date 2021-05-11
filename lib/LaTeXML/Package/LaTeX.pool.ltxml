@@ -3631,7 +3631,9 @@ sub beginBibliography_clean {
   # Expecting something like \section*{sometext}
   my $bibtitle = undef;
   my $bs       = LookupDefinition(T_CS('\bibsection'));
-  if (my @t = $bs && $bs->getExpansion->unlist) {
+  # FIXED: Sometimes $bs may be a Primitive.
+  # Now guarding for that case or we get a perl:die for ->getExpansion
+  if (my @t = $bs && ($bs->isExpandable ? $bs->getExpansion->unlist : $bs)) {
     our %bibunitmap = (
       '\\part'          => 'ltx:part',          '\\chapter'    => 'ltx:chapter',
       '\\section'       => 'ltx:section',       '\\subsection' => 'ltx:subsection',
