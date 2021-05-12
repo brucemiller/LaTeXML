@@ -20,9 +20,9 @@
                 <addrLine>Somewhere, USA</addrLine>
               </address>
               <!-- The element contact with attributes
-            role=current_address
-            is currently not supported for the front matter.
-        -->
+    role=current_address
+  is currently not supported for the front matter.
+    -->
               <email>joe@blow</email>
             </author>
             <author>
@@ -66,13 +66,16 @@
     <body>
       <div>
         <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
         <head>Introduction</head>
         <p xml:id="S1.p1">As discussed in <ref type="bibr" target="bib.bib1">[AS64]</ref>,
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
         <p>
-          <formula>
+          <formula xml:id="S1.E1">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="a+b," display="block">
               <m:mrow>
                 <m:mrow>
@@ -86,7 +89,10 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </formula>
         </p>
         <p>
-          <formula>
+          <formula xml:id="S1.E2">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="c+d," display="block">
               <m:mrow>
                 <m:mrow>
@@ -102,14 +108,14 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         <figure>
           <head>A Figure</head>
           <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
           <p>A Figure</p>
         </figure>
         <table>
           <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
           <head>A Table</head>
           <row>
             <cell>Heading</cell>
@@ -119,14 +125,14 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           <row>
             <cell>a</cell>
             <cell>
-              <formula>
+              <formula xml:id="S1.T1.m1">
                 <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="x" display="inline">
                   <m:mi>x</m:mi>
                 </m:math>
               </formula>
             </cell>
             <cell>
-              <formula>
+              <formula xml:id="S1.T1.m2">
                 <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="x^{2}" display="inline">
                   <m:msup>
                     <m:mi>x</m:mi>
@@ -139,7 +145,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           <row>
             <cell>b</cell>
             <cell>
-              <formula>
+              <formula xml:id="S1.T1.m3">
                 <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="y^{2}" display="inline">
                   <m:msup>
                     <m:mi>y</m:mi>
@@ -149,7 +155,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
               </formula>
             </cell>
             <cell>
-              <formula>
+              <formula xml:id="S1.T1.m4">
                 <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="y" display="inline">
                   <m:mi>y</m:mi>
                 </m:math>
@@ -161,27 +167,27 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           <list rend="bulleted">
             <item>
               <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
               <p xml:id="S1.I1.i1.p1">one</p>
             </item>
             <item>
               <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
               <p xml:id="S1.I1.i2.p1">two</p>
               <p>
                 <list rend="bulleted">
                   <item>
                     <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
                     <p xml:id="S1.I1.i2.I1.i1.p1">one</p>
                   </item>
                   <item>
                     <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
                     <p xml:id="S1.I1.i2.I1.i2.p1">two</p>
                   </item>
                 </list>
@@ -193,27 +199,27 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           <list rend="numbered">
             <item>
               <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
               <p xml:id="S1.I2.i1.p1">one</p>
             </item>
             <item>
               <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
               <p xml:id="S1.I2.i2.p1">two</p>
               <p>
                 <list rend="numbered">
                   <item>
                     <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
                     <p xml:id="S1.I2.i2.I2.i1.p1">one</p>
                   </item>
                   <item>
                     <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
                     <p xml:id="S1.I2.i2.I2.i2.p1">two</p>
                   </item>
                 </list>
@@ -224,20 +230,20 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         <list>
           <item>
             <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
             <p xml:id="S1.I3.ix1.p1">with some descriptive text.</p>
           </item>
           <item>
             <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
             <p xml:id="S1.I3.ix2.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           </item>
           <item>
             <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
             <p xml:id="S1.I3.ix3.p1">blah, blah. Moreover
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           </item>
@@ -245,13 +251,13 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </div>
       <div>
         <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
         <head>A Math Section</head>
         <p xml:id="S2.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
         <p xml:id="S2.p2">Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
         <p>
-          <formula>
+          <formula xml:id="S2.Ex1">
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="a=b" display="block">
               <m:mrow>
                 <m:mi>a</m:mi>
@@ -262,7 +268,10 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </formula>
         </p>
         <p>
-          <formula>
+          <formula xml:id="S2.E1">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="a=b" display="block">
               <m:mrow>
                 <m:mi>a</m:mi>
@@ -273,7 +282,10 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </formula>
         </p>
         <p>
-          <formula>
+          <formula xml:id="S2.E2">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\begin{split}a&amp;=b+c-d\\&#10;&amp;\quad+e-f\\&#10;&amp;=g+h\\&#10;&amp;=i\end{split}" display="block">
               <m:mtable columnspacing="0pt" displaystyle="true" rowspacing="0pt">
                 <m:mtr>
@@ -338,7 +350,10 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
           </formula>
         </p>
         <p>
-          <formula>
+          <formula xml:id="S2.E3">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="a+b+c+d+e+f\\&#10;+i+j+k+l+m+n" display="block">
               <m:mtable displaystyle="true" rowspacing="0pt">
                 <m:mtr>
@@ -382,8 +397,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
             </m:math>
           </formula>
         </p>
-        <p>
-          <formula>
+        <p xml:id="S3.EGx1">
+          <formula xml:id="S2.E4">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{1}=b_{1}+c_{1}" display="block">
               <m:mrow>
                 <m:msub>
@@ -405,7 +423,10 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
               </m:mrow>
             </m:math>
           </formula>
-          <formula>
+          <formula xml:id="S2.E5">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" display="block">
               <m:mrow>
                 <m:msub>
@@ -442,8 +463,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
             </m:math>
           </formula>
         </p>
-        <p>
-          <formula>
+        <p xml:id="S3.EGx2">
+          <formula xml:id="S2.E6">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{1}=b_{1}+c_{1}" display="inline">
               <m:mrow>
                 <m:msub>
@@ -464,31 +488,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
                 </m:mrow>
               </m:mrow>
             </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{1}" display="inline">
-              <m:msub>
-                <m:mi>a</m:mi>
-                <m:mn>1</m:mn>
-              </m:msub>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{1}+c_{1}" display="inline">
-              <m:mrow>
-                <m:mi/>
-                <m:mo>=</m:mo>
-                <m:mrow>
-                  <m:msub>
-                    <m:mi>b</m:mi>
-                    <m:mn>1</m:mn>
-                  </m:msub>
-                  <m:mo>+</m:mo>
-                  <m:msub>
-                    <m:mi>c</m:mi>
-                    <m:mn>1</m:mn>
-                  </m:msub>
-                </m:mrow>
-              </m:mrow>
-            </m:math>
           </formula>
-          <formula>
+          <formula xml:id="S2.E7">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{2}=b_{2}+c_{2}-d_{2}+e_{2}" display="inline">
               <m:mrow>
                 <m:msub>
@@ -523,69 +527,19 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
                 </m:mrow>
               </m:mrow>
             </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{2}" display="inline">
-              <m:msub>
-                <m:mi>a</m:mi>
-                <m:mn>2</m:mn>
-              </m:msub>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{2}+c_{2}-d_{2}+e_{2}" display="inline">
-              <m:mrow>
-                <m:mi/>
-                <m:mo>=</m:mo>
-                <m:mrow>
-                  <m:mrow>
-                    <m:mrow>
-                      <m:msub>
-                        <m:mi>b</m:mi>
-                        <m:mn>2</m:mn>
-                      </m:msub>
-                      <m:mo>+</m:mo>
-                      <m:msub>
-                        <m:mi>c</m:mi>
-                        <m:mn>2</m:mn>
-                      </m:msub>
-                    </m:mrow>
-                    <m:mo>-</m:mo>
-                    <m:msub>
-                      <m:mi>d</m:mi>
-                      <m:mn>2</m:mn>
-                    </m:msub>
-                  </m:mrow>
-                  <m:mo>+</m:mo>
-                  <m:msub>
-                    <m:mi>e</m:mi>
-                    <m:mn>2</m:mn>
-                  </m:msub>
-                </m:mrow>
-              </m:mrow>
-            </m:math>
           </formula>
         </p>
-        <p>
-          <formula>
+        <p xml:id="S3.EGx3">
+          <formula xml:id="S2.E8">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{11}=b_{11}" display="inline">
               <m:mrow>
                 <m:msub>
                   <m:mi>a</m:mi>
                   <m:mn>11</m:mn>
                 </m:msub>
-                <m:mo>=</m:mo>
-                <m:msub>
-                  <m:mi>b</m:mi>
-                  <m:mn>11</m:mn>
-                </m:msub>
-              </m:mrow>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{11}" display="inline">
-              <m:msub>
-                <m:mi>a</m:mi>
-                <m:mn>11</m:mn>
-              </m:msub>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{11}" display="inline">
-              <m:mrow>
-                <m:mi/>
                 <m:mo>=</m:mo>
                 <m:msub>
                   <m:mi>b</m:mi>
@@ -606,24 +560,11 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
                 </m:msub>
               </m:mrow>
             </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{12}" display="inline">
-              <m:msub>
-                <m:mi>a</m:mi>
-                <m:mn>12</m:mn>
-              </m:msub>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{12}" display="inline">
-              <m:mrow>
-                <m:mi/>
-                <m:mo>=</m:mo>
-                <m:msub>
-                  <m:mi>b</m:mi>
-                  <m:mn>12</m:mn>
-                </m:msub>
-              </m:mrow>
-            </m:math>
           </formula>
-          <formula>
+          <formula xml:id="S2.E9">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{21}=b_{21}" display="inline">
               <m:mrow>
                 <m:msub>
@@ -637,51 +578,12 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
                 </m:msub>
               </m:mrow>
             </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{21}" display="inline">
-              <m:msub>
-                <m:mi>a</m:mi>
-                <m:mn>21</m:mn>
-              </m:msub>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{21}" display="inline">
-              <m:mrow>
-                <m:mi/>
-                <m:mo>=</m:mo>
-                <m:msub>
-                  <m:mi>b</m:mi>
-                  <m:mn>21</m:mn>
-                </m:msub>
-              </m:mrow>
-            </m:math>
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{22}=b_{22}+c_{22}" display="inline">
               <m:mrow>
                 <m:msub>
                   <m:mi>a</m:mi>
                   <m:mn>22</m:mn>
                 </m:msub>
-                <m:mo>=</m:mo>
-                <m:mrow>
-                  <m:msub>
-                    <m:mi>b</m:mi>
-                    <m:mn>22</m:mn>
-                  </m:msub>
-                  <m:mo>+</m:mo>
-                  <m:msub>
-                    <m:mi>c</m:mi>
-                    <m:mn>22</m:mn>
-                  </m:msub>
-                </m:mrow>
-              </m:mrow>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{22}" display="inline">
-              <m:msub>
-                <m:mi>a</m:mi>
-                <m:mn>22</m:mn>
-              </m:msub>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{22}+c_{22}" display="inline">
-              <m:mrow>
-                <m:mi/>
                 <m:mo>=</m:mo>
                 <m:mrow>
                   <m:msub>
@@ -700,7 +602,10 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </p>
         <p xml:id="S2.p10">Some text</p>
         <p>
-          <formula>
+          <formula xml:id="S2.E10">
+            <!-- The element tags
+  is currently not supported for the main body.
+    -->
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="a=\text{something}" display="block">
               <m:mrow>
                 <m:mi>a</m:mi>
@@ -712,8 +617,8 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </p>
         <note>
           <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
           <title>
             <hi rend="italic">.</hi>
           </title>
@@ -721,37 +626,21 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
         </note>
         <note>
           <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
           <title>
             <hi rend="italic">.</hi>
           </title>
           <p xml:id="Thmcorollaryx1.p1">And whatever.</p>
         </note>
-        <p>
-          <formula>
+        <p xml:id="S3.EGx4">
+          <formula xml:id="S2.Ex2">
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{11}=b_{11}" display="inline">
               <m:mrow>
                 <m:msub>
                   <m:mi>a</m:mi>
                   <m:mn>11</m:mn>
                 </m:msub>
-                <m:mo>=</m:mo>
-                <m:msub>
-                  <m:mi>b</m:mi>
-                  <m:mn>11</m:mn>
-                </m:msub>
-              </m:mrow>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{11}" display="inline">
-              <m:msub>
-                <m:mi>a</m:mi>
-                <m:mn>11</m:mn>
-              </m:msub>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{11}" display="inline">
-              <m:mrow>
-                <m:mi/>
                 <m:mo>=</m:mo>
                 <m:msub>
                   <m:mi>b</m:mi>
@@ -772,46 +661,14 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
                 </m:msub>
               </m:mrow>
             </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{12}" display="inline">
-              <m:msub>
-                <m:mi>a</m:mi>
-                <m:mn>12</m:mn>
-              </m:msub>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{12}" display="inline">
-              <m:mrow>
-                <m:mi/>
-                <m:mo>=</m:mo>
-                <m:msub>
-                  <m:mi>b</m:mi>
-                  <m:mn>12</m:mn>
-                </m:msub>
-              </m:mrow>
-            </m:math>
           </formula>
-          <formula>
+          <formula xml:id="S2.Ex3">
             <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{21}=b_{21}" display="inline">
               <m:mrow>
                 <m:msub>
                   <m:mi>a</m:mi>
                   <m:mn>21</m:mn>
                 </m:msub>
-                <m:mo>=</m:mo>
-                <m:msub>
-                  <m:mi>b</m:mi>
-                  <m:mn>21</m:mn>
-                </m:msub>
-              </m:mrow>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{21}" display="inline">
-              <m:msub>
-                <m:mi>a</m:mi>
-                <m:mn>21</m:mn>
-              </m:msub>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{21}" display="inline">
-              <m:mrow>
-                <m:mi/>
                 <m:mo>=</m:mo>
                 <m:msub>
                   <m:mi>b</m:mi>
@@ -839,41 +696,18 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
                 </m:mrow>
               </m:mrow>
             </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle a_{22}" display="inline">
-              <m:msub>
-                <m:mi>a</m:mi>
-                <m:mn>22</m:mn>
-              </m:msub>
-            </m:math>
-            <m:math xmlns:m="http://www.w3.org/1998/Math/MathML" alttext="\displaystyle=b_{22}+c_{22}" display="inline">
-              <m:mrow>
-                <m:mi/>
-                <m:mo>=</m:mo>
-                <m:mrow>
-                  <m:msub>
-                    <m:mi>b</m:mi>
-                    <m:mn>22</m:mn>
-                  </m:msub>
-                  <m:mo>+</m:mo>
-                  <m:msub>
-                    <m:mi>c</m:mi>
-                    <m:mn>22</m:mn>
-                  </m:msub>
-                </m:mrow>
-              </m:mrow>
-            </m:math>
           </formula>
         </p>
         <div>
           <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
           <head>A subsection</head>
           <p xml:id="S2.SS1.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
           <div>
             <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
             <head>A subsubsection</head>
             <p xml:id="S2.SS1.SSS1.p1">Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
             <boxed-text>
@@ -887,8 +721,8 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       </div>
       <div>
         <!-- The element tags
-            is currently not supported for the main body.
-        -->
+  is currently not supported for the main body.
+    -->
         <head>
           <hi rend="italic">Section with explicit font</hi>
         </head>
@@ -902,9 +736,7 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       <div type="references">
         <listBibl>
           <head>References</head>
-          <bibl xml:id="bib.bib1"><person-group person-group-type="author"><name><surname>Stegun</surname><given-names>Abramowitz 
-                            and 
-                            </given-names></name></person-group><year>1964</year><article-title>Handbook of mathematical functions with formulas, graphs, and mathematical tables</article-title>M. Abramowitz and I. A. Stegun (<date><year>1964</year></date>)Handbook of mathematical functions with formulas, graphs, and mathematical tables.ninth Dover printing, tenth GPO printing edition,  Dover, New York.Cited by: §1.</bibl>
+          <bibl xml:id="bib.bib1"><person-group person-group-type="author"><name><surname>Stegun</surname><given-names>Abramowitz and </given-names></name></person-group><year>1964</year><article-title>Handbook of mathematical functions with formulas, graphs, and mathematical tables</article-title>M. Abramowitz and I. A. Stegun (<date><year>1964</year></date>)Handbook of mathematical functions with formulas, graphs, and mathematical tables.ninth Dover printing, tenth GPO printing edition,  Dover, New York.Cited by: §1.</bibl>
         </listBibl>
       </div>
     </back>
