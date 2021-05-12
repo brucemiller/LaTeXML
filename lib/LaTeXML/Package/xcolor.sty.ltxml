@@ -725,7 +725,11 @@ RawTeX('\@rowcolorstrue');
 DefMacroI('\showrowcolors', undef, '\hidden@noalign{\global\@rowcolorstrue}');
 DefMacroI('\hiderowcolors', undef, '\hidden@noalign{\global\@rowcolorsfalse}');
 
-DefMacro('\rownum', sub { Explode(LookupValue('Alignment')->currentRowNumber); });
+DefMacro('\rownum', sub {
+    my $alignment = LookupValue('Alignment');
+    return $alignment ?
+      Explode($alignment->currentRowNumber) :
+      T_OTHER(0); });
 
 # This doesn't happen early enough to register \hiderowcolors|\showrowcolors in the same row!
 AddToMacro('\@tabular@row@before', '\@tabular@row@before@xcolor');
