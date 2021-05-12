@@ -4279,13 +4279,13 @@ DefPrimitive('\newlength DefToken', sub {
 DefPrimitive('\setlength {Variable}{Dimension}', sub {
     my ($stomach, $variable, $length) = @_;
     my ($defn, @params) = @$variable;
-    if ($defn) {
+    if (ref $defn) {
       $defn->setValue($length, @params); }
     return; });
 DefPrimitive('\addtolength {Variable}{Dimension}', sub {
     my ($stomach, $variable, $length) = @_;
     my ($defn, @params) = @$variable;
-    if ($defn) {
+    if (ref $defn) {
       my $oldlength = $defn->valueOf(@params);
       $defn->setValue($defn->valueOf(@params)->add($length), @params); }
     return; });
