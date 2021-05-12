@@ -253,7 +253,11 @@ DefParameterType('Expanded', sub {
 DefParameterType('DefExpanded', sub {
     my ($gullet) = @_;
     local $LaTeXML::SMUGGLE_THE = 1;
-    my $token    = $gullet->readXToken;
+    my $token = $gullet->readXToken;
+    if (!$token) {
+      Error('expected', 'defexpanded', $gullet,
+        "Expected <DefExpanded> here");
+      return $token; }
     my $expanded = ($token->getCatcode == CC_BEGIN ? $gullet->readBalanced(1) : $token);
     return $expanded; },
   packParameters => 1,
