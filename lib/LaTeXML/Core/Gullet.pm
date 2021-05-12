@@ -36,7 +36,7 @@ sub new {
     progress  => 0,
   }, $class; }
 
-our $TOKEN_PROGRESS_QUANTUM = 10000;
+our $TOKEN_PROGRESS_QUANTUM = 30000;
 
 #**********************************************************************
 # Start reading tokens from a new Mouth.

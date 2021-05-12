@@ -52,7 +52,7 @@ sub new {
     node_fonts => {}, node_boxes => {}, node_properties => {},
     pending    => [], progress   => 0 }, $class; }
 
-our $CONSTRUCTION_PROGRESS_QUANTUM = 50;
+our $CONSTRUCTION_PROGRESS_QUANTUM = 500;
 
 #**********************************************************************
 # Basic Accessors

@@ -53,7 +53,7 @@ sub initialize {
   $STATE->assignValue(mathfont => LaTeXML::Common::Font->mathDefault(), 'global');
   return; }
 
-our $DIGESTION_PROGRESS_QUANTUM = 10000;
+our $DIGESTION_PROGRESS_QUANTUM = 30000;
 
 #**********************************************************************
 sub getGullet {

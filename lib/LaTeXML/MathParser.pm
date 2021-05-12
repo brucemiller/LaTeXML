@@ -45,6 +45,7 @@ our %EXPORT_TAGS = (constructors
       &isMatchingClose &Fence)]);
 
 DebuggableFeature('recdescent', "Trace Parse::RecDescent");
+our $MATHPARSE_PROGRESS_QUANTUM = 100;
 
 # ================================================================================
 sub new {
@@ -163,6 +164,7 @@ sub clear {
   $$self{unknowns}        = {};
   $$self{maybe_functions} = {};
   $$self{n_parsed}        = 0;
+  $$self{progress}        = 0;
   return; }
 
 our %EXCLUDED_PRETTYNAME_ATTRIBUTES = (
@@ -318,14 +320,14 @@ sub parse_rec {
   elsif (my $result = $self->parse_single($node, $document, $rule)) {
     $$self{passed}{$tag}++;
     if ($tag eq 'ltx:XMath') {    # Replace the content of XMath with parsed result
-      ProgressStep();
+      ProgressStep() if ($$self{progress}++ % $MATHPARSE_PROGRESS_QUANTUM) == 0;
       map { $document->unRecordNodeIDs($_) } element_nodes($node);
       # unbindNode followed by (append|replace)Tree (which removes ID's) should be safe
       map { $_->unbindNode() } $node->childNodes;
       $document->appendTree($node, $result);
       $result = [element_nodes($node)]->[0]; }
     else {                        # Replace the whole node for XMArg, XMWrap; preserve some attributes
-      ProgressStep();
+      ProgressStep() if ($$self{progress}++ % $MATHPARSE_PROGRESS_QUANTUM) == 0;
       # Copy all attributes
       my $resultid = p_getAttribute($result, 'xml:id');
       my %attr     = map { (getQName($_) => $_->getValue) }
@@ -363,7 +365,7 @@ sub parse_rec {
     return $result; }
   else {
     $self->parse_kludge($node, $document);
-    ProgressStep();
+    ProgressStep() if ($$self{progress}++ % $MATHPARSE_PROGRESS_QUANTUM) == 0;
     $$self{failed}{$tag}++;
     return; } }
 

@@ -22,7 +22,7 @@ use LaTeXML::Util::Pathname;
 use Encode qw(decode);
 use base qw(LaTeXML::Common::Object);
 
-our $TOKEN_PROGRESS_QUANTUM = 25;
+our $READLINE_PROGRESS_QUANTUM = 25;
 
 # Factory method;
 # Create an appropriate Mouth
@@ -321,7 +321,7 @@ sub readToken {
       return T_MARKER('EOL') if $read_mode
         && ($$self{colno} >= $$self{nchars}) && ((!defined $eolch) || ($eolch ne "\r"));
       # Sneak a comment out, every so often.
-      if ((($$self{lineno} % $TOKEN_PROGRESS_QUANTUM) == 0) && $STATE->lookupValue('INCLUDE_COMMENTS')) {
+      if ((($$self{lineno} % $READLINE_PROGRESS_QUANTUM) == 0) && $STATE->lookupValue('INCLUDE_COMMENTS')) {
         return T_COMMENT("**** " . ($$self{shortsource} || 'String') . " Line $$self{lineno} ****"); }
     }
     if ($$self{skipping_spaces}) {    # In state S, skip spaces
