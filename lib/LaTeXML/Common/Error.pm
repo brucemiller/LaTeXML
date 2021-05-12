@@ -235,7 +235,8 @@ sub Fatal {
 
 # Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
   if ((($category eq 'internal') && ($object eq '<recursion>')) ||
-    ($category eq 'too_many_errors')) {
+    ($category eq 'too_many_errors') ||
+    ($object eq 'deep_recursion')) {
     $LaTeXML::UNSAFE_FATAL = 1; }
 
   # Ensure we have nothing else to do in the main processing.
@@ -267,7 +268,6 @@ sub Fatal {
 
   # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
   # It should be safe so long as the caller has bound it and rebinds it if necessary.
-  #local $SIG{__DIE__} = 'DEFAULT';    # Avoid recursion while preparing the message.
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
 
   $state->noteStatus('fatal') if $state;
@@ -277,6 +277,12 @@ sub Fatal {
     $where, $message, $detail_level, @details);
   $message .= $state->getStatusMessage . "\n" if $state;
 
+  if ($object eq 'deep_recursion') {
+    # Infinite recursion requires a hard yank
+    $LaTeXML::IGNORE_ERRORS = 0;
+    local $SIG{__DIE__} = 'DEFAULT';
+    die $message; }
+  # For all else, we can attempt to resume a level up in the Perl call stack.
   print STDERR $message if $verbosity >= -2;
   return; }
 
@@ -290,8 +296,8 @@ sub checkRecursiveError {
 
 # Should be fatal if strict is set, else warn.
 sub Error {
-  return if $LaTeXML::IGNORE_ERRORS;
   my ($category, $object, $where, $message, @details) = @_;
+  return if $LaTeXML::IGNORE_ERRORS;
   my $state     = $STATE;
   my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if ($state && $state->lookupValue('STRICT')) {
