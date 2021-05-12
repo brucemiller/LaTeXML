@@ -31,7 +31,9 @@ sub rgb {
   elsif ($i == 3) { return LaTeXML::Common::Color->new('rgb', $w, $v, $b); }
   elsif ($i == 4) { return LaTeXML::Common::Color->new('rgb', $u, $w, $b); }
   elsif ($i == 5) { return LaTeXML::Common::Color->new('rgb', $b, $w, $v); }
-  elsif ($i == 6) { return LaTeXML::Common::Color->new('rgb', $b, $w, $w); } }
+  elsif ($i == 6) { return LaTeXML::Common::Color->new('rgb', $b, $w, $w); }
+  # We need a fallback (e.g. pacify wild arXiv errors)
+  else { return LaTeXML::Common::Color->new('rgb', $b, $w, $w); } }
 
 sub cmy  { my ($self) = @_; return $self->rgb->cmy; }
 sub cmyk { my ($self) = @_; return $self->rgb->cmyk; }
