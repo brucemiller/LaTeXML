@@ -146,7 +146,7 @@ DefParameterType('Optional', sub {
 DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
     my $open = $gullet->readXToken;
-    if ($open->equals(T_BEGIN)) {
+    if ($open && $open->equals(T_BEGIN)) {
       return $gullet->readBalanced; }
     else {
       Error('expected', '{', $gullet,
