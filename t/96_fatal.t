@@ -26,9 +26,6 @@ foreach my $broken_base (@broken_tex_files) {
   my $invocation = $path_to_perl . " " . join(" ", map { ("-I", $_) } @INC) . " ";
   $invocation .= "$latexmlc $broken_base.tex --dest=$broken_base.test.html --format=html5 --nocomments ".
   "--nodefaultresources --timestamp=0 --xsltparameter=LATEXML_VERSION:TEST --log=/dev/null ";
-  if ($broken_base =~ /timeout/) {
-    $invocation .= ' --timeout=5 ';
-  }
   my $latexmlc_pid = open3(my $chld_in, my $chld_out, my $chld_err, $invocation);
   waitpid( $latexmlc_pid, 0 );
   my $exit_code = $? >> 8;
