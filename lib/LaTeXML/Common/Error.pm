@@ -40,9 +40,10 @@ our @EXPORT = (
 );
 
 our $VERBOSITY = 0;
+
 sub SetVerbosity {
   # Validate?
-  $VERBOSITY = $_[0]; }
+  return $VERBOSITY = $_[0]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Terminal setup
@@ -220,7 +221,7 @@ sub Fatal {
   # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
   # It should be safe so long as the caller has bound it and rebinds it if necessary.
   local $SIG{__DIE__} = 'DEFAULT';    # Avoid recursion while preparing the message.
-  my $state     = $STATE;
+  my $state = $STATE;
 
   if (!$inhandler) {
     local $LaTeXML::BAILOUT = $LaTeXML::BAILOUT;
@@ -257,7 +258,7 @@ sub checkRecursiveError {
 sub Error {
   my ($category, $object, $where, $message, @details) = @_;
   return if $LaTeXML::IGNORE_ERRORS;
-  my $state     = $STATE;
+  my $state = $STATE;
   if ($state && $state->lookupValue('STRICT')) {
     Fatal($category, $object, $where, $message, @details); }
   else {
@@ -275,7 +276,7 @@ sub Error {
 sub Warn {
   my ($category, $object, $where, $message, @details) = @_;
   return if $LaTeXML::IGNORE_ERRORS;
-  my $state     = $STATE;
+  my $state = $STATE;
   $state && $state->noteStatus('warning');
   my $formatted = generateMessage(colorizeString("Warning:" . $category . ":" . ToString($object), 'warning'),
     $where, $message, 0, @details);
@@ -287,7 +288,7 @@ sub Warn {
 sub Info {
   my ($category, $object, $where, $message, @details) = @_;
   return if $LaTeXML::IGNORE_ERRORS;
-  my $state     = $STATE;
+  my $state = $STATE;
   $state && $state->noteStatus('info');
   my $formatted = generateMessage(colorizeString("Info:" . $category . ":" . ToString($object), 'info'),
     $where, $message, -1, @details);
@@ -321,8 +322,8 @@ sub ProgressStep {
   return; }
 
 sub ProgressSpinup {
-  my ($stage)   = @_;
-  my $state     = $STATE;
+  my ($stage) = @_;
+  my $state = $STATE;
   if ($VERBOSITY >= 0) {
     _spinnerclear();
     _spinnerpush($stage);
@@ -336,8 +337,8 @@ sub ProgressSpinup {
   return; }
 
 sub ProgressSpindown {
-  my ($stage)   = @_;
-  my $state     = $STATE;
+  my ($stage) = @_;
+  my $state = $STATE;
   if ($VERBOSITY >= 0) {
     _spinnerclear();
     my $elapsed = _spinnerpop($stage);
