@@ -75,9 +75,6 @@ sub pgfmathfactorial {
 sub pgfmathresult {
   my ($value) = @_;
   $value = sprintf("%06f", $value);
-  #print STDERR "ASSIGNING result as $value\n";
-  #  my @v = ExplodeText($value);
-  #print STDERR " that is ".join(' ',map { Stringify($_) } @v)."\n";
   return Tokens(T_CS('\def'), T_CS('\pgfmathresult'), T_BEGIN, ExplodeText($value), T_END); }
 
 DefMacro('\@@@show@mathresult{}', sub {
@@ -335,7 +332,6 @@ sub pgfmathparse {
     $result = int($result) . '.'; }
   else {    # We don't want scientific notation output!!!
     $result = sprintf("%f", $result); }
-###  print STDERR "PGFPARSE: '$input' => '$result'\n" unless LookupValue('inPreamble');
   return $result; }
 
 DefMacro('\lx@pgfmath@parseX{}', sub {

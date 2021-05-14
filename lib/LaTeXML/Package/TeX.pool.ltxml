@@ -1852,7 +1852,6 @@ DefPrimitive('\setbox Number SkipMatch:=', sub {
     $STATE->clearPrefixes;    # before invoke, below; we've saved the only relevant one (global)
     my ($stuff, @rest) = $stomach->invokeToken($stomach->getGullet->readXToken);
     AssignValue('box' . $_[1]->valueOf => $stuff, $scope);
-##print STDERR "ASSIGN BOX ".$_[1]->valueOf." => ".Stringify($stuff)."\n";
     @rest; });
 
 DefPrimitive('\box Number', sub {
@@ -2174,9 +2173,8 @@ DefPrimitive('{', sub {
     my $open   = Box(undef, undef, undef, T_BEGIN);
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @body   = $stomach->digestNextBody();
-####print STDERR "BEGIN => ".join("\n--",map { Stringify($_); } @body)."\n";
     List($open, @body, mode => ($ismath ? 'math' : 'text')); });
-#DefConstructor('}',  '',    beforeDigest=>sub{$_[0]->egroup;});
+
 DefPrimitive('}', sub { my $f = LookupValue('font'); $_[0]->egroup; Box(undef, $f, undef, T_END); });
 
 # These are for those screwy cases where you need to create a group like box,
@@ -2263,7 +2261,6 @@ sub writableTokens {
 
 DefPrimitive('\message{}', sub {
     my ($stomach, $stuff) = @_;
-    return if LookupValue('VERBOSITY') <= -1;
     Message(writableTokens(Expand($stuff)));
     return; });
 
@@ -2345,7 +2342,7 @@ DefPrimitive('\write Number {}', sub {
       my $handle   = $filename . '_contents';
       my $contents = LookupValue($handle);
       AssignValue($handle => $contents . UnTeX(Expand($tokens)) . "\n", 'global'); }
-    elsif (LookupValue('VERBOSITY') > -1) {
+    else {
       Message(UnTeX(Expand($tokens))); }
     return; });
 
@@ -2671,7 +2668,6 @@ DefMacro('\@multicolumn {Number}  AlignmentTemplate {}', sub {
     my ($gullet, $span, $template, $tokens) = @_;
     my $column = $template->column(1);
     $span = $span->valueOf;
-####    print STDERR "ALIGNMENT MULTICOLUMN $span @ ".ToString($gullet->getLocator)."; ".ToString($$column{before})." THEN ".ToString($$column{after})."\n";
     # First part, like \multispan
     (T_CS('\omit'), (map { (T_CS('\span'), T_CS('\omit')) } 1 .. $span - 1),
       # Next part, just put the template in-line, since it's only used once.
@@ -2836,7 +2832,7 @@ sub alignmentBindings {
     isMath         => $ismath,
     properties     => {%properties});
   AssignValue(Alignment => $alignment);
-  print STDERR "\nHalign $alignment: New " . $template->show . "\n" if $LaTeXML::halign::DEBUG;
+  Debug("Halign $alignment: New " . $template->show) if $LaTeXML::DEBUG{halign};
   Let('\hline', '\@alignment@hline');
   Let(T_MATH,   ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
   return; }
@@ -2860,7 +2856,6 @@ sub digestAlignmentBody {
   my ($stomach, $whatsit) = @_;
   my $gullet = $stomach->getGullet;
   local $LaTeXML::ALIGN_STATE = 0;
-  #  print STDERR "Template = ".Stringify(Tokens(@template))."\n => ".$template->show."\n";
   # Now read & digest the body.
   # Note that the body MUST end with a \cr, and that we've made Special Arrangments
   # with \alignment@cr to recognize the end of the \halign
@@ -2871,17 +2866,17 @@ sub digestAlignmentBody {
     return; }
   $whatsit->setProperty(alignment => $alignment);
   $alignment->setBody($whatsit);
-  print STDERR "Halign $alignment: BODY Processing...\n" if $LaTeXML::halign::DEBUG;
+  Debug("Halign $alignment: BODY Processing...") if $LaTeXML::DEBUG{halign};
   my $lastwascr  = undef;
   my @reversion  = ();
   my @creversion = ();
   while (1) {
     my ($cell, $next, $type, $hidden) = digestAlignmentColumn($stomach, $alignment, $lastwascr);
-    print STDERR "Halign $alignment: BODY got CELL"
-      . "[" . $alignment->currentRowNumber . "," . $alignment->currentColumnNumber . "]"
-      . ToString($cell) . " ended at " . Stringify($next) . "\n" if $LaTeXML::halign::DEBUG;
+    Debug("Halign $alignment: BODY got CELL"
+        . "[" . $alignment->currentRowNumber . "," . $alignment->currentColumnNumber . "]"
+        . ToString($cell) . " ended at " . Stringify($next)) if $LaTeXML::DEBUG{halign};
     if (!$cell) {
-      print STDERR "Halign $alignment: BODY DONE!\n" if $LaTeXML::halign::DEBUG;
+      Debug("Halign $alignment: BODY DONE!") if $LaTeXML::DEBUG{halign};
       last; }
     if ($cell) {
       push(@reversion,  trimColumnTemplate($alignment, pRevert($cell)));
@@ -2916,8 +2911,8 @@ sub digestAlignmentBody {
   $alignment->endRow();
   $alignment->setReversion(Tokens(@reversion));
   $alignment->setContentReversion(Tokens(@creversion));
-  print STDERR "Halign $alignment: BODY DONE!\n"
-    . "=> " . join(',', map { Stringify($_); } @reversion) . "\n" if $LaTeXML::halign::DEBUG;
+  Debug("Halign $alignment: BODY DONE!\n"
+      . "=> " . join(',', map { Stringify($_); } @reversion)) if $LaTeXML::DEBUG{halign};
   return; }
 
 # Read & digest an alignment column's data,
@@ -2929,8 +2924,8 @@ sub digestAlignmentColumn {
   my $ismath = $STATE->lookupValue('IN_MATH');
   local @LaTeXML::LIST = ();
   # Scan for leading \omit, skipping over (& saving) \hline.
-  print STDERR "Halign $alignment: COLUMN starting scan "
-    . "(" . ($ismath ? " math" : " text") . ")\n" if $LaTeXML::halign::DEBUG;
+  Debug("Halign $alignment: COLUMN starting scan "
+      . "(" . ($ismath ? " math" : " text") . ")") if $LaTeXML::DEBUG{halign};
   my $token;
   my $spanning = 0;
   while (1) {    # Outer loop; collects 1 column (possibly multiple spans) return from within!
@@ -2942,26 +2937,23 @@ sub digestAlignmentColumn {
           (Equals($token, T_CS('\crcr')) || Equals($token, T_CS('\hidden@crcr'))))) {
       }
       elsif (Equals($token, T_CS('\omit'))) {    # \omit removes template for this column.
-        print STDERR "Halign $alignment: OMIT at " . Stringify($token) . "\n"
-          if $LaTeXML::halign::DEBUG;
+        Debug("Halign $alignment: OMIT at " . Stringify($token)) if $LaTeXML::DEBUG{halign};
         $alignment->startRow() unless $$alignment{in_row};
         $alignment->omitNextColumn; }
       elsif (Equals($token, T_CS('\noalign'))) {    # \puts something in vertical list
-        print STDERR "Halign $alignment: noalign at " . Stringify($token) . "\n"
-          if $LaTeXML::halign::DEBUG;
-        $alignment->endRow() if $$alignment{in_row};
+        Debug("Halign $alignment: noalign at " . Stringify($token)) if $LaTeXML::DEBUG{halign};
+        $alignment->endRow()                                        if $$alignment{in_row};
         $alignment->startColumn(1);
         $alignment->lastColumn;
         my $r = $stomach->digest($gullet->readArg);
         $alignment->endRow();
         return ($r, T_CS('\cr'), 'cr'), undef; }    # Pretend this is a whole row???
       elsif (Equals($token, T_CS('\hidden@noalign'))) {    # \puts something in vertical list
-        print STDERR "Halign $alignment: COLUMN invisible noalign\n" if $LaTeXML::halign::DEBUG;
+        Debug("Halign $alignment: COLUMN invisible noalign") if $LaTeXML::DEBUG{halign};
         $stomach->digest($gullet->readArg); }              # Purely for side effect!
       else {
         last; } }
-    print STDERR "Halign $alignment: COLUMN end scan at " . Stringify($token) . "\n"
-      if $LaTeXML::halign::DEBUG;
+    Debug("Halign $alignment: COLUMN end scan at " . Stringify($token)) if $LaTeXML::DEBUG{halign};
     if (!$token || Equals($token, T_END) || Equals($token, T_CS('\@close@alignment'))) {
       return (undef, $token, undef, undef); }
     # Next column, unless spanning (then combine columns)
@@ -2971,32 +2963,30 @@ sub digestAlignmentColumn {
     else {
       $alignment->startColumn(); }
     # Push before template,  Marker and put the token back
-    print STDERR "Halign $alignment: COLUMN preload at "
-      . Stringify(Tokens($alignment->getColumnBefore, T_MARKER('before-column'), $token)) . "\n"
-      if $LaTeXML::halign::DEBUG;
+    Debug("Halign $alignment: COLUMN preload at "
+        . Stringify(Tokens($alignment->getColumnBefore, T_MARKER('before-column'), $token)))
+      if $LaTeXML::DEBUG{halign};
     $gullet->unread($alignment->getColumnBefore, T_MARKER('before-column'), $token);
     while ($token = $gullet->readXToken(0)) {
       my ($atoken, $type, $hidden) = $gullet->isColumnEnd($token);
       if ($atoken) {
         if ($type eq 'span') {    # next column, but continue accumulating
-          print STDERR "Halign $alignment: COLUMN span\n" if $LaTeXML::halign::DEBUG;
+          Debug("Halign $alignment: COLUMN span") if $LaTeXML::DEBUG{halign};
           $spanning = 1;
           last; }
         else {
-          print STDERR "Halign $alignment: COLUMN ended with " . Stringify($token) . "\n"
-            . "  => " . ToString(List(@LaTeXML::LIST)) . "\n"
-            if $LaTeXML::halign::DEBUG;
+          Debug("Halign $alignment: COLUMN ended with " . Stringify($token) . "\n"
+              . "  => " . ToString(List(@LaTeXML::LIST))) if $LaTeXML::DEBUG{halign};
           return (List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text')),
             $token, $type, $hidden); } }
       elsif (Equals($token, T_CS('\hidden@noalign'))) {    # \puts something in vertical list
-        print STDERR "Halign $alignment: COLUMN invisible noalign\n" if $LaTeXML::halign::DEBUG;
+        Debug("Halign $alignment: COLUMN invisible noalign") if $LaTeXML::DEBUG{halign};
         $stomach->digest($gullet->readArg); }
       else {    # Else, we're getting some actual content for the column
-        print STDERR "Halign $alignment: COLUMN invoking " . Stringify($token) . "\n"
-          if $LaTeXML::halign::DEBUG;
+        Debug("Halign $alignment: COLUMN invoking " . Stringify($token)) if $LaTeXML::DEBUG{halign};
         push(@LaTeXML::LIST, $stomach->invokeToken($token));
-        print STDERR "Halign $alignment: COLUMN " . Stringify($token) . " ==> " . Stringify(List(@LaTeXML::LIST)) . "\n"
-          if $LaTeXML::halign::DEBUG;
+        Debug("Halign $alignment: COLUMN " . Stringify($token) . " ==> " . Stringify(List(@LaTeXML::LIST)))
+          if $LaTeXML::DEBUG{halign};
   } } }
   return; }
 
@@ -3011,12 +3001,10 @@ sub trimColumnTemplate {
   return Tokens(@tokens) if $alignment->currentRow->{pseudorow};
   my @pre  = $alignment->getColumnBefore->unlist;
   my @post = $alignment->getColumnAfter->unlist;
-  print STDERR "\nHalign $alignment: COLUMN Compare:\n"
-    . "  Column: " . ToString(Tokens(@tokens)) . "\n"
-    . "  Before: " . ToString(Tokens(@pre)) . "\n"
-    . "  After : " . ToString(Tokens(@post)) . "\n"
-
-    if $LaTeXML::halign::DEBUG;
+  Debug("Halign $alignment: COLUMN Compare:\n"
+      . "  Column: " . ToString(Tokens(@tokens)) . "\n"
+      . "  Before: " . ToString(Tokens(@pre)) . "\n"
+      . "  After : " . ToString(Tokens(@post)) . "\n") if $LaTeXML::DEBUG{halign};
   while (scalar(@pre) && scalar(@tokens)) {
     my $t = shift(@pre);
     if ($t->equals($tokens[0])) {
@@ -3033,8 +3021,7 @@ sub trimColumnTemplate {
 ##        @tokens = popArg(@tokens);
 ##        @post   = popArg(@post); }
   } }
-  print STDERR "  Trimmed: " . ToString(Tokens(@tokens)) . "\n"
-    if $LaTeXML::halign::DEBUG;
+  Debug("  Trimmed: " . ToString(Tokens(@tokens))) if $LaTeXML::DEBUG{halign};
   return Tokens(@tokens); }
 
 sub shiftArg {
@@ -3110,7 +3097,6 @@ sub extractAlignmentColumn {
       || IsEmpty($boxes[-1])) {
       unshift(@saveright, pop(@boxes)); }
     else {
-      #print STDERR "End right check at ".Stringify($boxes[0])."\n";
       last; } }
   delete $$colspec{width} unless $align eq 'justify';
   # Replacing boxes with the fil padding & vertical rules stripped off
@@ -3126,7 +3112,7 @@ sub extractAlignmentColumn {
   for (my $i = $n0 + 1 ; $i <= $n1 ; $i++) {
     my $c = $alignment->getColumn($i);
     $$c{skipped} = 1 if $c; }
-  print STDERR "Halign $alignment: INSTALL column " . join(',', map { $_ . "=" . ToString($$colspec{$_}); } sort keys %$colspec) . "\n" if $LaTeXML::halign::DEBUG;
+  Debug("Halign $alignment: INSTALL column " . join(',', map { $_ . "=" . ToString($$colspec{$_}); } sort keys %$colspec)) if $LaTeXML::DEBUG{halign};
   return $boxes; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

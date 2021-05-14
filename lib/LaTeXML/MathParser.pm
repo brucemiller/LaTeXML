@@ -850,7 +850,7 @@ my $FAILURE_POSTTOKENS = 1;    # [CONSTANT]
 
 sub failureReport {
   my ($self, $document, $mathnode, $rule, $unparsed, @nodes) = @_;
-  if ($LaTeXML::MathParser::STRICT || (($STATE->lookupValue('VERBOSITY') || 0) > 1)) {
+  if ($LaTeXML::MathParser::STRICT || (($LaTeXML::Common::Error::VERBOSITY || 0) > 1)) {
     my $loc = "";
     # If we haven't already done it for this formula, show the original TeX.
     if (!$LaTeXML::MathParser::WARNED) {

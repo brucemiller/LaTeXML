@@ -841,7 +841,7 @@ sub isCloseable {
 # Close $qname, if it is closeable.
 sub maybeCloseElement {
   my ($self, $qname) = @_;
-  print STDERR "maybeCloseNode(int) $qname\n" if $LaTeXML::Core::Document::DEBUG;
+  Debug("maybeCloseNode(int) $qname") if $LaTeXML::DEBUG{document};
   if (my $node = $self->isCloseable($qname)) {
     $self->closeNode_internal($node);
     return $node; } }
@@ -877,7 +877,7 @@ sub closeNode {
   my $model = $$self{model};
   my ($t, @cant_close) = ();
   my $n = $$self{node};
-  print STDERR "To closeNode " . Stringify($node) . "\n" if $LaTeXML::Core::Document::DEBUG;
+  Debug("To closeNode " . Stringify($node)) if $LaTeXML::DEBUG{document};
   while ((($t = $n->getType) != XML_DOCUMENT_NODE) && !$n->isSameNode($node)) {
     push(@cant_close, $n) unless $self->canAutoClose($n);
     $n = $n->parentNode; }
@@ -917,8 +917,7 @@ sub addAttribute {
 sub getInsertionContext {
   my ($self, $levels) = @_;
   if (!defined $levels) {    # Default depth is based on verbosity
-    my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
-    $levels = 5 if ($verbosity <= 1); }
+    $levels = 5 if ($LaTeXML::Common::Error::VERBOSITY <= 1); }
   my $node = $$self{node};
   my $type = $node->nodeType;
   if (($type != XML_TEXT_NODE) && ($type != XML_ELEMENT_NODE) && ($type != XML_DOCUMENT_NODE)) {
@@ -945,7 +944,7 @@ sub find_insertion_point {
   # Else, if we can create an intermediate node that accepts $qname, we'll do that.
   elsif (($inter = $self->canContainIndirect($cur_qname, $qname))
     && ($inter ne $qname) && ($inter ne $cur_qname)) {
-    print STDERR "Need intermediate $inter to open $qname\n" if $LaTeXML::Core::Document::DEBUG;
+    Debug("Need intermediate $inter to open $qname") if $LaTeXML::DEBUG{document};
     $self->openElement($inter, _autoopened => 1,
       font => $self->getNodeFont($$self{node}));
     return $self->find_insertion_point($qname, $inter); }    # And retry insertion (should work now).
@@ -1094,7 +1093,6 @@ sub openText_internal {
   my $qname;
   if ($$self{node}->nodeType == XML_TEXT_NODE) {    # current node already is a text node.
     Debug("Appending text \"$text\" to " . Stringify($$self{node})) if $LaTeXML::DEBUG{document};
-    print STDERR "Appending text \"$text\" to " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
     my $parent = $$self{node}->parentNode;
     if ($LaTeXML::BOX && $parent->getAttribute('_autoopened')) {
       $self->appendTextBox($parent, $LaTeXML::BOX); }
@@ -1219,7 +1217,7 @@ sub closeNode_internal {
     $self->autoCollapseChildren($n);
     last if $node->isSameNode($n);
     $n = $n->parentNode; }
-  print STDERR "closeNode(int) " . Stringify($$self{node}) . "\n" if $LaTeXML::Core::Document::DEBUG;
+  Debug("closeNode(int) " . Stringify($$self{node})) if $LaTeXML::DEBUG{document};
   $self->setNode($closeto);
   #  $self->autoCollapseChildren($node);
   return $$self{node}; }

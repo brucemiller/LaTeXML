@@ -94,7 +94,6 @@ sub new {
     stomach => $options{stomach}, model => $options{model} }, $class;
   # Note that "100" is hardwired into TeX, The Program!!!
   $$self{value}{MAX_ERRORS} = [100];
-  $$self{value}{VERBOSITY}  = [0];
   # Standard TeX units, in scaled points
   $$self{value}{UNITS} = [{
       pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
@@ -822,8 +821,6 @@ to the given scoping rule.
 Values are also used to specify most configuration parameters (which can
 therefore also be scoped).  The recognized configuration parameters are:
 
- VERBOSITY         : the level of verbosity for debugging
-                     output, with 0 being default.
  STRICT            : whether errors (eg. undefined macros)
                      are fatal.
  INCLUDE_COMMENTS  : whether to preserve comments in the

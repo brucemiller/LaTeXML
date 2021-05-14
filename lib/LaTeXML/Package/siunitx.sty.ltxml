@@ -1409,7 +1409,6 @@ DefPrimitive('\lx@si@column@end', '');
 
 DefMacro('\lx@SI@column@parse XUntil:\lx@si@column@end', sub {
     my ($gullet, $number) = @_;
-###print STDERR "COLUMN S [".ToString($kv)."] : ".ToString($number)."\n";
     my @tokens  = $number->unlist;
     my $doparse = six_getBool('parse-numbers');
     # Deal with recognizing "surrounding material"
@@ -1450,8 +1449,6 @@ DefMacro('\lx@SI@column@parse XUntil:\lx@si@column@end', sub {
 # similar to \si
 DefMacro('\lx@si@column@parse XUntil:\lx@si@column@end', sub {
     my ($gullet, $units) = @_;
-    #print STDERR "ATTEMPT ".Stringify($units)."\n";
-
     my @tokens = $units->unlist;
     my @pre    = ();
     my @post   = ();
@@ -1475,7 +1472,6 @@ DefMacro('\lx@si@column@parse XUntil:\lx@si@column@end', sub {
 ##      Info('unexpected', 'whatever', undef,
 ##           "Don't yet know how to parse non-macro unit expressions");
       $result = Tokens(@tokens); }
-    #print STDERR "==> ".Stringify($result)."\n";
     if ($color) {
       unshift(@pre, T_BEGIN, T_CS('\color'), T_BEGIN, $color, T_END);    # outside!!!
       push(@post, T_END); }

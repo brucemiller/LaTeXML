@@ -39,8 +39,7 @@ sub new {
   my $state     = LaTeXML::Core::State->new(catcodes => 'standard',
     stomach => LaTeXML::Core::Stomach->new(verbosity => $verbosity),
     model   => $options{model} || LaTeXML::Common::Model->new());
-  $state->assignValue(VERBOSITY => $verbosity,
-    'global');
+  SetVerbosity($verbosity);
   $state->assignValue(STRICT => (defined $options{strict} ? $options{strict} : 0),
     'global');
   $state->assignValue(INCLUDE_COMMENTS => (defined $options{includecomments} ? $options{includecomments} : 1),

@@ -3535,14 +3535,7 @@ DefConstructor('\@@array[] Undigested DigestedBody',
   '#3',
   beforeDigest => sub { $_[0]->bgroup; },
   reversion    => '\begin{array}[#1]{#2}#3\end{array}');
-# reversion => sub {
-#   my($whatsit,$op,$pat,$body)=@_;
-#   print STDERR "REVERT ARRAY"
-#     ."  options: ".Stringify($op)."\n"
-#     ."  pattern: ".Stringify($pat)."\n"
-#     ."  body: ".Stringify($body)."\n";
-#   (); }
-#   );
+
 #**********************************************************************
 # C.11 Moving Information Around
 #**********************************************************************
@@ -4210,7 +4203,7 @@ DefPrimitiveI('\makeglossary', undef, undef);
 
 DefPrimitive('\typeout{}', sub {
     my ($stomach, $stuff) = @_;
-    Message(ToString(Expand($stuff))) if LookupValue('VERBOSITY') > -1;
+    Message(ToString(Expand($stuff)));
     return; });
 
 DefPrimitive('\typein[]{}', undef);

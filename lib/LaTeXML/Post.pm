@@ -26,13 +26,12 @@ our @EXPORT = (@LaTeXML::Common::Error::EXPORT);
 sub new {
   my ($class, %options) = @_;
   my $self = bless { status => {}, %options }, $class;
-  $$self{verbosity} = 0 unless defined $$self{verbosity};
   # TEMPORARY HACK!!!!
   # Create a State object, essentially only to hold verbosity (for now)
   # so that Errors can be reported, managed and recorded
   # Eventually will be a "real" State (or other configuration object)
   $$self{state} = LaTeXML::Core::State->new();
-  $$self{state}->assignValue(VERBOSITY => $$self{verbosity});
+  SetVerbosity($$self{verbosity} // 0);
   return $self; }
 
 #======================================================================

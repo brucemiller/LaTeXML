@@ -20,6 +20,7 @@ use Term::ANSIColor 2.01 qw(colored colorstrip);
 
 use base qw(Exporter);
 our @EXPORT = (
+  qw(&SetVerbosity),
   # Log file support
   qw(&OpenLog &CloseLog),
   # Error Reporting
@@ -37,6 +38,11 @@ our @EXPORT = (
   # Status management
   qw(&MergeStatus),
 );
+
+our $VERBOSITY = 0;
+sub SetVerbosity {
+  # Validate?
+  $VERBOSITY = $_[0]; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Terminal setup
@@ -110,18 +116,17 @@ sub CloseLog {
 # ORRR should $level also apply to Logfile ???
 sub _printline {
   my ($loglevel, $termlevel, $message) = @_;
-  my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
-  return if ($verbosity < $loglevel) && ($verbosity < $termlevel);
+  return if ($VERBOSITY < $loglevel) && ($VERBOSITY < $termlevel);
   $message =~ s/^\n+//s;    # Strip newlines off ends.
   $message =~ s/\n+$//s;
   my $clean_message = ($LOG || !$IS_TERMINAL ? strip_ansi($message) : $message);
   $message = $clean_message unless $IS_TERMINAL;
-  print $LOG _freshline($LOG), $clean_message, "\n" if $LOG && ($verbosity >= $loglevel);
+  print $LOG _freshline($LOG), $clean_message, "\n" if $LOG && ($VERBOSITY >= $loglevel);
 
   _spinnerclear();
-  if ($verbosity > $termlevel) {
+  if ($VERBOSITY > $termlevel) {
     print STDERR _freshline(\*STDERR), $message, "\n"; }
-  elsif ($verbosity >= $termlevel) {
+  elsif ($VERBOSITY >= $termlevel) {
     # Show only single line: first line plus including 2nd, if locator
     my $short = ($message =~ /^\n?([^\n]*)(:?\n(\s*at\s+[^\n]*))/ ? $1 . ($2 ? '...' : '') . $3 : $message);
     print STDERR _freshline(\*STDERR), $short, "\n"; }
@@ -152,23 +157,20 @@ our @spinnerstack = ();
 our @spinnerchar = map { colored($_, "bold red"); } ('-', '/', '|', '\\');
 
 sub _spinnerclear {    # Clear the spinner line (if any)
-  my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
-  if ($IS_TERMINAL && ($verbosity >= 0) && @spinnerstack) {
+  if ($IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $count, $start) = @{ $spinnerstack[-1] };
     print STDERR "\x1b[1G\x1b[0K"; }    # clear line
   return; }
 
 sub _spinnerrestore {    # Restore the spinner line (if any)
-  my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
-  if ($IS_TERMINAL && ($verbosity >= 0) && @spinnerstack) {
+  if ($IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $count, $start) = @{ $spinnerstack[-1] };
 ##    print STDERR $stage, ' ', $spinnerchar[$count]; }
     print STDERR ' ', $spinnerchar[$count], ' ', $stage; }
   return; }
 
 sub _spinnerstep {    # Increment stepper
-  my $verbosity = $STATE && $STATE->lookupValue('VERBOSITY') || 0;
-  if ($IS_TERMINAL && ($verbosity >= 0) && @spinnerstack) {
+  if ($IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $count, $start) = @{ $spinnerstack[-1] };
     $count = ($count + 1) % 4;
     $spinnerstack[-1][1] = $count;
@@ -219,7 +221,6 @@ sub Fatal {
   # It should be safe so long as the caller has bound it and rebinds it if necessary.
   local $SIG{__DIE__} = 'DEFAULT';    # Avoid recursion while preparing the message.
   my $state     = $STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
 
   if (!$inhandler) {
     local $LaTeXML::BAILOUT = $LaTeXML::BAILOUT;
@@ -227,7 +228,7 @@ sub Fatal {
       $LaTeXML::BAILOUT = 1;
       push(@details, "Recursive Error!"); }
     $state->noteStatus('fatal') if $state && !$ineval;
-    my $detail_level = (($verbosity <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
+    my $detail_level = (($VERBOSITY <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
     $message
       = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'),
       $where, $message, $detail_level, @details);
@@ -257,7 +258,6 @@ sub Error {
   my ($category, $object, $where, $message, @details) = @_;
   return if $LaTeXML::IGNORE_ERRORS;
   my $state     = $STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   if ($state && $state->lookupValue('STRICT')) {
     Fatal($category, $object, $where, $message, @details); }
   else {
@@ -276,7 +276,6 @@ sub Warn {
   my ($category, $object, $where, $message, @details) = @_;
   return if $LaTeXML::IGNORE_ERRORS;
   my $state     = $STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('warning');
   my $formatted = generateMessage(colorizeString("Warning:" . $category . ":" . ToString($object), 'warning'),
     $where, $message, 0, @details);
@@ -289,7 +288,6 @@ sub Info {
   my ($category, $object, $where, $message, @details) = @_;
   return if $LaTeXML::IGNORE_ERRORS;
   my $state     = $STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
   $state && $state->noteStatus('info');
   my $formatted = generateMessage(colorizeString("Info:" . $category . ":" . ToString($object), 'info'),
     $where, $message, -1, @details);
@@ -325,8 +323,7 @@ sub ProgressStep {
 sub ProgressSpinup {
   my ($stage)   = @_;
   my $state     = $STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  if ($verbosity >= 0) {
+  if ($VERBOSITY >= 0) {
     _spinnerclear();
     _spinnerpush($stage);
     _spinnerrestore();
@@ -341,8 +338,7 @@ sub ProgressSpinup {
 sub ProgressSpindown {
   my ($stage)   = @_;
   my $state     = $STATE;
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-  if ($verbosity >= 0) {
+  if ($VERBOSITY >= 0) {
     _spinnerclear();
     my $elapsed = _spinnerpop($stage);
     _spinnerrestore();
@@ -517,10 +513,9 @@ sub generateMessage {
   #   showErrorContext() ?????
   $detail = 0 unless defined $detail;
   # Increment $detail if $verbosity > 0, unless $detail = -1,
-  my $verbosity = ($STATE && $STATE->lookupValue('VERBOSITY')) || 0;
-  if (($detail > -1) && ($verbosity > 0)) {
-    $detail = 0 if defined $verbosity && $verbosity < -1;
-    $detail++ if defined $verbosity && $verbosity > +1; }
+  if (($detail > -1) && ($VERBOSITY > 0)) {
+    $detail = 0 if defined $VERBOSITY && $VERBOSITY < -1;
+    $detail++ if defined $VERBOSITY && $VERBOSITY > +1; }
 
   # FIRST line of stack trace information ought to look at the $where
   my $wheretype = ref $where;
@@ -534,11 +529,11 @@ sub generateMessage {
   elsif ($wheretype =~ 'LaTeXML::Core::Stomach') {
     push(@lines,
       "Recently digested: " . join(' ', map { Stringify($_) } @LaTeXML::LIST))
-      if $verbosity > 1; }
+      if $VERBOSITY > 1; }
 
   #----------------------------------------
   # Add Stack Trace, if that seems worthwhile.
-  if (($detail > 1) && ($verbosity > 0)) {
+  if (($detail > 1) && ($VERBOSITY > 0)) {
     push(@lines, "Stack Trace:", stacktrace()); }
   elsif ($detail > -1) {
     my $nstack = ($detail > 1 ? undef : ($detail > 0 ? 4 : 1));
@@ -734,6 +729,16 @@ C<LaTeXML::Common::Error> - Error and Progress Reporting and Logging support.
 C<LaTeXML::Common::Error> does some simple stack analysis to generate more informative, readable,
 error messages for LaTeXML.  Its routines are used by the error reporting methods
 from L<LaTeXML::Global>, namely C<Warn>, C<Error> and C<Fatal>.
+
+=over 4
+
+=item C<< SetVerbosity($verbosity) >>
+
+Controls the verbosity of output to the terminal;
+default is 0, higher gives more information, lower gives less.
+
+=back
+
 
 =head2 Log File
 

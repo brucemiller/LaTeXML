@@ -194,10 +194,8 @@ sub getColumnBefore {
   my ($self) = @_;
   my $column;
   if (($column = $self->currentColumn) && !$$column{omitted}) {
-    #print STDERR "COLUMN FETCH BEFORE\n";
     return Tokens(T_CS('\@column@before'), @{ $$column{before} }); }
   else {
-    #print STDERR "COLUMN FETCH BEFORE Omitted\n";
     return Tokens(); } }
 
 sub getColumnAfter {
@@ -207,7 +205,6 @@ sub getColumnAfter {
     # Possible \@@eat@space ??? (if LaTeX style???)
     return Tokens(@{ $$column{after} }, T_CS('\@column@after')); }
   else {
-    #print STDERR "COLUMN FETCH AFTER Omitted\n";
     return Tokens(); } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -633,8 +630,8 @@ sub normalize_prune_columns {
 
 sub show_row {
   my ($i, $row) = @_;
-  print STDERR "\nRow[$i]:" . join(', ', map { $_ . '=' . ToString($$row{$_}); }
-      grep { $_ ne 'columns'; } sort keys %$row) . "\n";
+  Debug("\nRow[$i]:" . join(', ', map { $_ . '=' . ToString($$row{$_}); }
+        grep { $_ ne 'columns'; } sort keys %$row));
   my @c = @{ $$row{columns} };
   for (my $j = 1 ; @c ; $j++) {
     show_col($i, $j, shift(@c)); }
@@ -642,7 +639,7 @@ sub show_row {
 
 sub show_col {
   my ($i, $j, $col) = @_;
-  print STDERR "Column[$i,$j]:" . join(', ', map { $_ . '=' . ToString($$col{$_}); } sort keys %$col) . "\n";
+  Debug("Column[$i,$j]:" . join(', ', map { $_ . '=' . ToString($$col{$_}); } sort keys %$col));
   return; }
 
 sub preservedBoxes {
