@@ -287,7 +287,7 @@ sub convert {
 
     NoteStatus($eval_report) if $eval_report && ($$opts{verbosity} >= 0);
     NoteStatus(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status}) if ($$opts{verbosity} >= 0);
-    NoteStatus(($$opts{recursive} ? "recursive " : "") . "Status:conversion:" . ($$runtime{status_code} || '0')) if ($$opts{verbosity} >= 0);
+    NoteStatus(($$opts{recursive} ? "recursive " : "") . "Status:conversion:" . ($$runtime{status_code} || '0'));
 
     # If we just processed an archive, clean up sandbox directory.
     if ($$opts{whatsin} =~ /^archive/) {
@@ -378,7 +378,7 @@ sub convert {
   else { $serialized = $result; }
 
   # 5.2 Finalize logging and return a response containing the document result, log and status
-  NoteStatus("Status:conversion:" . ($$runtime{status_code} || '0')) if ($$opts{verbosity} >= 0);
+  NoteStatus("Status:conversion:" . ($$runtime{status_code} || '0'));
   my $log = $self->flush_log;
   return { result => $serialized, log => $log, status => $$runtime{status}, 'status_code' => $$runtime{status_code} };
 }
@@ -625,7 +625,7 @@ sub convert_post {
       NoteStatus(($$opts{recursive} ? "recursive " : "") . "Post-processing complete: " . $latexmlpost->getStatusMessage) if ($$opts{verbosity} >= 0);
       NoteStatus(($$opts{recursive} ? "recursive " : "") . "processing finished " . localtime()) if ($$opts{verbosity} >= 1);
       my $archive_log_status_code = max($$runtime{status_code}, $latexmlpost->getStatusCode);
-      NoteStatus("Status:conversion:" . $archive_log_status_code) if ($$opts{verbosity} >= 1);
+      NoteStatus("Status:conversion:" . $archive_log_status_code);
       open my $log_fh, '>', $log_file;
       print $log_fh $self->flush_log;
       close $log_fh;
