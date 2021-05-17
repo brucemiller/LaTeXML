@@ -130,6 +130,9 @@ sub _printline {
   $message = $clean_message unless $IS_TERMINAL;
   print $LOG _freshline($LOG), $clean_message, "\n" if $LOG && ($VERBOSITY >= $loglevel);
 
+  # Spinner logic only for terminal-enabled applications
+  return unless $IS_TERMINAL;
+
   _spinnerclear();
   if ($VERBOSITY > $termlevel) {
     print STDERR _freshline(\*STDERR), $message, "\n"; }
@@ -337,6 +340,7 @@ sub ProgressSpinup {
     my $message = "($stage...";
     print $LOG _freshline($LOG), $message if $LOG;
     $NEEDSFRESHLINE{$LOG} = 1 if $LOG;
+    # TODO: Is this dead code? We now only print to STDERR when IS_TERMINAL=1
     if (!$IS_TERMINAL) {
       print STDERR _freshline(\*STDERR), $message;
       $NEEDSFRESHLINE{ \*STDERR } = 1; } }
@@ -352,6 +356,7 @@ sub ProgressSpindown {
     my $message = ($elapsed ? sprintf(" %.2f sec)", $elapsed) : '?');
     print $LOG $message       if $LOG;
     $NEEDSFRESHLINE{$LOG} = 1 if $LOG;
+    # TODO: Is this dead code? We now only print to STDERR when IS_TERMINAL=1
     if (!$IS_TERMINAL) {
       print STDERR $message;
       $NEEDSFRESHLINE{ \*STDERR } = 1; } }

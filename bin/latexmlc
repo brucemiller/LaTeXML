@@ -114,6 +114,8 @@ if ((!$sock) && $local && ($expire == -1)) {
   my $response = $converter->convert($source);
   ($result, $status, $log) = map { $$response{$_} } qw(result status log) if defined $response;
 } else {
+  # TODO: May need to check the options even in the remote cases, e.g. to fish out "whatsout"
+  # $opts->check;
   my $message = q{};
   foreach my $entry (@$keyvals) {
     my ($key, $value) = ($$entry[0], $$entry[1]);
