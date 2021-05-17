@@ -187,12 +187,12 @@ sub read {
   my $getOptions_success = GetOptions(%{$spec});
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   if (!$silent && $$opts{help}) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 99,
-      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', output => \*STDOUT);
   }
 
@@ -238,7 +238,7 @@ sub scan_to_keyvals {
   my $getOptions_success = GetOptions(%$spec);
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   CORE::push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];
@@ -418,12 +418,13 @@ sub _prepare_options {
   if ($$opts{format}) {
     # Lower-case for sanity's sake
     $$opts{format} = lc($$opts{format});
-    $$opts{format} = 'html5' if $$opts{format} eq 'html';    # Default is 5
     if ($$opts{format} eq 'zip') {
       # Not encouraged! But try to produce something sensible anyway...
       $$opts{format}   = 'html5';
-      $$opts{whatsout} = 'archive';
-    }
+      $$opts{whatsout} = 'archive'; }
+    else {    # Default HTML is 5
+      $$opts{format} = 'html5' if $$opts{format} eq 'html'; }
+
     $$opts{is_html}  = ($$opts{format} =~ /^html/);
     $$opts{is_xhtml} = ($$opts{format} =~ /^(xhtml5?|epub|mobi)$/);
     $$opts{whatsout} = 'archive' if (($$opts{format} eq 'epub') || ($$opts{format} eq 'mobi'));
@@ -549,7 +550,7 @@ sub _prepare_options {
       $$opts{math_formats} = [];
       maybeAddMathFormat($opts, 'images');
     }
-    $$opts{svg} = 1 unless defined $$opts{svg};      # If we're not making HTML, SVG is on by default
+    $$opts{svg} = 1 unless defined $$opts{svg};    # If we're not making HTML, SVG is on by default
         # PMML default if we're HTMLy and all else fails and no mathimages:
     if (((!defined $$opts{math_formats}) || (!scalar(@{ $$opts{math_formats} })))
       && ($$opts{is_html} || $$opts{is_xhtml} || ($$opts{format} eq 'jats'))) {

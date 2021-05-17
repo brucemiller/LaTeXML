@@ -630,7 +630,8 @@ sub convert_post {
       print $log_fh $self->flush_log;
       close $log_fh;
       $self->bind_log; }
-    else { print STDERR "Error:I/O:log The target log file isn't contained in the destination directory!\n"; } }
+# TODO: This needs a bit of rethinking, likely a fallback.log file should be created and returned with the archive
+    else { Error("I/O", "log", "The target log file isn't contained in the destination directory!"); } }
   # Handle the output packaging
 
   my ($postdoc) = pack_collection(collection => [@postdocs], whatsout => $$opts{whatsout}, format => $format, %PostOPS);
