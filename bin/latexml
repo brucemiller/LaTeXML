@@ -20,6 +20,8 @@ use LaTeXML::Core;
 use LaTeXML;    # Currently, just for version information.
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::Error;
+AllowTerminalLogs();
+
 use Encode;
 
 #**********************************************************************

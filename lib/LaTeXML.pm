@@ -205,7 +205,7 @@ sub convert {
   #       to this time, where we can be certain if a user has run a local job without --dest
   if ((!$$opts{destination})
     && ($$opts{dographics} || $$opts{picimages} || grep { $_ eq 'images' or $_ eq 'svg' } @{ $$opts{math_formats} })) {
-    Debug(generateMessage(colorizeString("Warning:expected:options", 'warning'), undef,
+    Debug(generateMessage("Warning:expected:options", undef,
         "must supply --destination to support auxilliary files", 0,
         "  disabling: --nomathimages --nographicimages --nopictureimages"));
     # default resources is sorta ok: we might not copy, but we'll still have the links/script/etc
@@ -363,7 +363,7 @@ sub convert {
       if ($ref_result =~ /Document$/) {
         $serialized = $result->toString(1);
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
-      } else {                      # fragment case
+      } else {    # fragment case
         $serialized = $result->toString(1, 1);
     } }
     elsif ($$opts{format} =~ /^html/) {
@@ -371,7 +371,7 @@ sub convert {
         # Needs explicit encode call, toStringHTML returns Perl byte strings
         $serialized = $result->getDocument->toStringHTML;
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized; }
-      else {                        # fragment case
+      else {      # fragment case
         local $XML::LibXML::setTagCompression = 1;
         $serialized = $result->toString(1, 1); } } }
   # Compressed/archive/other case, just pass on
@@ -475,7 +475,7 @@ sub convert_post {
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
       push(@procs, LaTeXML::Post::CrossRef->new(
-          db => $DB, urlstyle => $$opts{urlstyle},
+          db        => $DB, urlstyle => $$opts{urlstyle},
           extension => $$opts{extension},
           ($$opts{numbersections} ? (number_sections => 1)              : ()),
           ($$opts{navtoc}         ? (navigation_toc  => $$opts{navtoc}) : ()),
@@ -699,45 +699,18 @@ sub new_latexml {
 
 sub bind_log {
   my ($self) = @_;
-  # HACK HACK HACK !!! Refactor with proplery scoped logging !!!
-  $LaTeXML::LOG_STACK++;    # May the modern Perl community forgive me for this hack...
+  $LaTeXML::LOG_STACK++;    # Only bind once
   return if $LaTeXML::LOG_STACK > 1;
-  # TODO: Move away from global file handles, they will inevitably end up causing problems..
-##  my ($destdir) = pathname_split($$self{opts}{destination});
-##  my $logfile              = pathname_absolute($$self{opts}{log}, $destdir);
-
-##print STDERR "Bind log\n";
-  if (!$LaTeXML::DEBUG{latexml}) {    # Debug will use STDERR for logs
-        #                                     # Tie STDERR to log:
-        #   my $log_handle;
-        #   open($log_handle, ">>", \$$self{log}) or croak "Can't redirect STDERR to log! Dying...";
-    OpenLog(\$$self{log}, 1);
-##print STDERR "Opening log\n";
-    #   *STDERR_SAVED = *STDERR;
-    #   *STDERR       = *$log_handle;
-    #   binmode(STDERR, ':encoding(UTF-8)');
-    #   $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR;
-    #   $$self{log_handle} = $log_handle;
-  }
+  OpenLog(\$$self{log}, 1);
   return; }
 
 sub flush_log {
   my ($self) = @_;
-  # HACK HACK HACK !!! Refactor with proplery scoped logging !!!
   $LaTeXML::LOG_STACK--;    # May the modern Perl community forgive me for this hack...
   return '' if $LaTeXML::LOG_STACK > 0;
-##  my ($destdir) = pathname_split($$self{opts}{destination});
-##  my $logfile              = pathname_absolute($$self{opts}{log}, $destdir);
-##print STDERR "Flush log\n";
-  # Close and restore STDERR to original condition.
-  if (!$LaTeXML::DEBUG{latexml}) {
-    #   close $$self{log_handle};
-    #   delete $$self{log_handle};
-    #   *STDERR                                    = *STDERR_SAVED;
-    #   $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR;
-##print STDERR "Closing log\n";
-    CloseLog();
-  }
+
+  CloseLog();
+
   my $log = $$self{log};
   $$self{log} = q{};
   return $log; }

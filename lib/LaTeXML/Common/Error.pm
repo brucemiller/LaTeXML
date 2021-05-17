@@ -20,7 +20,7 @@ use Term::ANSIColor 2.01 qw(colored colorstrip);
 
 use base qw(Exporter);
 our @EXPORT = (
-  qw(&SetVerbosity),
+  qw(&SetVerbosity &AllowTerminalLogs),
   # Log file support
   qw(&OpenLog &CloseLog),
   # Error Reporting
@@ -48,15 +48,23 @@ sub SetVerbosity {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Terminal setup
 
-binmode(STDERR, ":encoding(UTF-8)");    # and accept UTF8
-###binmode(STDERR, ":unix");       # unbuffered
-select(STDERR); $| = 1; select(STDOUT);
-
 # Color setup
 # Possibly more dynamic?
 $Term::ANSIColor::AUTORESET = 1;
 our $COLORIZED_LOGGING = -t STDERR;
-our $IS_TERMINAL       = -t STDERR;
+
+our $IS_TERMINAL = undef;
+
+# This should be invoked once per program run, by the main executable
+# that relies on LaTeXML.pm for conversions -- at the earliest possible init point
+sub AllowTerminalLogs {
+  $IS_TERMINAL = 1;
+  binmode(STDERR, ":encoding(UTF-8)");    # and accept UTF8
+      # See https://metacpan.org/pod/Perl::Critic::Policy::InputOutput::ProhibitOneArgSelect
+      # for why we need IO::Handle
+  use IO::Handle;
+  *STDERR->autoflush();
+  return; }
 
 our %color_scheme = (
   details => 'bold',
@@ -91,7 +99,7 @@ our $log_count = 0;
 sub OpenLog {
   my ($path, $append) = @_;
   $log_count++;
-  return if $LOG or !$path;    # already opened?
+  return if $LOG                            or not($path);    # already opened?
   open($LOG, ($append ? '>>' : '>'), $path) or die "Cannot open log file $path for writing: $!";
   $LOG_PATH = $path;
   binmode($LOG, ":encoding(UTF-8)");
@@ -103,8 +111,6 @@ sub CloseLog {
   return if !$LOG || $log_count;
   close($LOG) or die "Cannot close log file: $!";
   $LOG = undef;
-  NoteStatus("Please see $LOG_PATH for details")
-    if $IS_TERMINAL;    # TEMPORARY HACK until LaTeXML.pm is sorted.
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -127,7 +133,7 @@ sub _printline {
   _spinnerclear();
   if ($VERBOSITY > $termlevel) {
     print STDERR _freshline(\*STDERR), $message, "\n"; }
-  elsif ($VERBOSITY >= $termlevel) {
+  elsif ($VERBOSITY == $termlevel) {
     # Show only single line: first line plus including 2nd, if locator
     my $short = ($message =~ /^\n?([^\n]*)(:?\n(\s*at\s+[^\n]*))/ ? $1 . ($2 ? '...' : '') . $3 : $message);
     print STDERR _freshline(\*STDERR), $short, "\n"; }
@@ -231,7 +237,7 @@ sub Fatal {
     $state->noteStatus('fatal') if $state && !$ineval;
     my $detail_level = (($VERBOSITY <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
     $message
-      = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'),
+      = generateMessage("Fatal:" . $category . ":" . ToString($object),
       $where, $message, $detail_level, @details);
     # If we're about to (really) DIE, we'll bypass the usual status message, so add it here.
     # This really should be handled by the top-level program,
@@ -263,7 +269,7 @@ sub Error {
     Fatal($category, $object, $where, $message, @details); }
   else {
     $state && $state->noteStatus('error');
-    my $formatted = generateMessage(colorizeString("Error:" . $category . ":" . ToString($object), 'error'),
+    my $formatted = generateMessage("Error:" . $category . ":" . ToString($object),
       $where, $message, 1, @details);
     _printline(0, 0, $formatted); }
   # Note that "100" is hardwired into TeX, The Program!!!
@@ -278,7 +284,7 @@ sub Warn {
   return if $LaTeXML::IGNORE_ERRORS;
   my $state = $STATE;
   $state && $state->noteStatus('warning');
-  my $formatted = generateMessage(colorizeString("Warning:" . $category . ":" . ToString($object), 'warning'),
+  my $formatted = generateMessage("Warning:" . $category . ":" . ToString($object),
     $where, $message, 0, @details);
   _printline(0, 0, $formatted);
   return; }
@@ -290,7 +296,7 @@ sub Info {
   return if $LaTeXML::IGNORE_ERRORS;
   my $state = $STATE;
   $state && $state->noteStatus('info');
-  my $formatted = generateMessage(colorizeString("Info:" . $category . ":" . ToString($object), 'info'),
+  my $formatted = generateMessage("Info:" . $category . ":" . ToString($object),
     $where, $message, -1, @details);
   _printline(0, 0, $formatted);
   return; }
@@ -485,6 +491,12 @@ sub perl_terminate_handler {
 
 sub generateMessage {
   my ($errorcode, $where, $message, $detail, @extra) = @_;
+  # Colorize errorcode if appropriate
+  if ($IS_TERMINAL) {
+    $errorcode =~ /^(\w+)\:/;
+    my $errorkind = lc($1);
+    $errorcode = colorizeString($errorcode, $errorkind) if $errorkind; }
+
   #----------------------------------------
   # Generate location information; basic and for stack trace.
   # If we've been given an object $where, where the error occurred, use it.
@@ -667,11 +679,11 @@ sub caller_info {
 
 sub format_arg {
   my ($arg) = @_;
-  if    (not defined $arg) { $arg = 'undef'; }
-  elsif (ref $arg)         { $arg = Stringify($arg); }    # Allow overloaded stringify!
-  elsif ($arg =~ /^-?[\d.]+\z/) { }                       # Leave numbers alone.
-  else {                                                  # Otherwise, string, so quote
-    $arg =~ s/'/\\'/g;                                        # Slashify '
+  if    (not defined $arg)      { $arg = 'undef'; }
+  elsif (ref $arg)              { $arg = Stringify($arg); }    # Allow overloaded stringify!
+  elsif ($arg =~ /^-?[\d.]+\z/) { }                            # Leave numbers alone.
+  else {                                                       # Otherwise, string, so quote
+    $arg =~ s/'/\\'/g;                                         # Slashify '
     $arg =~ s/([[:cntrl:]])/ "\\".chr(ord($1)+ord('A'))/ge;
     $arg = "'$arg'" }
   return trim($arg); }

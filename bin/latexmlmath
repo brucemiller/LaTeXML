@@ -24,8 +24,9 @@ use File::Temp qw(tempfile);
 use LaTeXML::Post;
 use LaTeXML::Post::Scan;
 use LaTeXML::Post::CrossRef;
-#use LaTeXML::Post::Writer;
 use LaTeXML::Util::ObjectDB;
+use LaTeXML::Common::Error qw(AllowTerminalLogs);
+AllowTerminalLogs();
 
 #**********************************************************************
 # Parse command line
