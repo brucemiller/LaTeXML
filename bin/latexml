@@ -26,7 +26,7 @@ use Encode;
 # Parse command line
 my ($verbosity, $strict, $comments, $noparse, $includestyles) = (0, 0, 1, 0, 0);
 my ($format, $destination, $help, $showversion)               = ('xml', '');
-my ($preamble, $postamble)                                    = (undef, undef);
+my ($preamble, $postamble, $logfile)                          = (undef, undef, undef);
 my ($documentid);
 my $inputencoding;
 my $mode  = undef;
@@ -41,6 +41,7 @@ GetOptions("destination=s" => \$destination,
   "quiet"           => sub { $verbosity--; },
   "verbose"         => sub { $verbosity++; },
   "strict"          => \$strict,
+  "log=s"           => \$logfile,
   "xml"             => sub { $format = 'xml'; },
   "tex"             => sub { $format = 'tex'; },
   "box"             => sub { $format = 'box'; },
@@ -69,10 +70,11 @@ if (my @baddirs = grep { !-d $_ } @paths) {
   warn "These path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
 if (!pathname_is_literaldata($source)) {
-  my ($dir, $name, $ext) = pathname_split($source);
-  if ($name) {
-    my $path = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log');
-    OpenLog($path); } }
+  if (!$logfile) {
+    my ($dir, $name, $ext) = pathname_split($source);
+    if ($name) {
+      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); } }
+  OpenLog($logfile) if $logfile; }
 NoteStatus("$LaTeXML::IDENTITY");
 Progress("processing started " . localtime());    # Probably a NoteBegin???
 

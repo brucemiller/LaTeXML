@@ -30,7 +30,7 @@ use LaTeXML::Util::ObjectDB;
 #======================================================================
 # undef => unspecified; 0 = NO, 1 = YES
 my ($help, $showversion, $verbosity, $validate, $omit_doctype) = (0, 0, 0, 1, 0);
-my ($sourcedir, $destination) = (undef, undef);
+my ($sourcedir, $destination, $logfile) = (undef, undef, undef);
 my @paths = ();
 my ($format, $extension, $is_html, $urlstyle) = (undef, undef, undef, 'server');
 my ($numbersections) = (1);
@@ -78,6 +78,7 @@ GetOptions("quiet" => sub { $verbosity--; },
   "verbose" => sub { $verbosity++; },
   "VERSION" => \$showversion,
   "help|?"  => \$help,
+  "log=s"   => \$logfile,
   "debug=s" => sub { no strict 'refs'; $LaTeXML::DEBUG{ lc($_[1]) } = 1; },
   # Source Options
   "sourcedirectory=s" => \$sourcedir,
@@ -172,11 +173,13 @@ my $xmlfile = shift(@ARGV);
 if ($xmlfile ne '-') {
   $xmlfile .= '.xml'                                  unless -f $xmlfile;
   xError("The input file \"$xmlfile\" was not found") unless -f $xmlfile;
-
-  my ($dir, $name, $ext) = pathname_split($xmlfile);
-  if ($name) {
-    my $path = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log');
-    OpenLog($path, 1); } }
+  my $appendlog = 0;
+  if (!$logfile) {
+    my ($dir, $name, $ext) = pathname_split($xmlfile);
+    if ($name) {
+      $appendlog = 1;
+      $logfile   = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); } }
+  OpenLog($logfile, $appendlog); }
 
 if (@ARGV) {
   xError("Extra unrecognized arguments " . join(' ', @ARGV)); }
