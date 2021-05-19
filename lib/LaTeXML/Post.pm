@@ -914,6 +914,10 @@ sub stringify {
   my ($self) = @_;
   return 'Post::Document[' . $self->siteRelativeDestination . ']'; }
 
+sub getLocator {
+  my ($self) = @_;
+  return $$self{source}; }
+
 #======================================================================
 sub validate {
   my ($self) = @_;
