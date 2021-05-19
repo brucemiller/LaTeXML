@@ -20,7 +20,7 @@ use Term::ANSIColor 2.01 qw(colored colorstrip);
 
 use base qw(Exporter);
 our @EXPORT = (
-  qw(&SetVerbosity &AllowTerminalLogs),
+  qw(&SetVerbosity &EnableLogToSTDERR),
   # Log file support
   qw(&OpenLog &CloseLog),
   # Error Reporting
@@ -51,14 +51,14 @@ sub SetVerbosity {
 # Color setup
 # Possibly more dynamic?
 $Term::ANSIColor::AUTORESET = 1;
-our $COLORIZED_LOGGING = -t STDERR;
-
 our $IS_TERMINAL = undef;
+our $HAS_STDERR  = undef;
 
 # This should be invoked once per program run, by the main executable
 # that relies on LaTeXML.pm for conversions -- at the earliest possible init point
-sub AllowTerminalLogs {
-  $IS_TERMINAL = 1;
+sub EnableLogToSTDERR {
+  $HAS_STDERR  = 1;
+  $IS_TERMINAL = -t STDERR;
   binmode(STDERR, ":encoding(UTF-8)");    # and accept UTF8
       # See https://metacpan.org/pod/Perl::Critic::Policy::InputOutput::ProhibitOneArgSelect
       # for why we need IO::Handle
@@ -77,7 +77,7 @@ our %color_scheme = (
 
 sub colorizeString {
   my ($string, $alias) = @_;
-  return ($COLORIZED_LOGGING && $color_scheme{$alias}
+  return ($IS_TERMINAL && $color_scheme{$alias}
     ? colored($string, $color_scheme{$alias})
     : $string); }
 
@@ -109,6 +109,9 @@ sub OpenLog {
 sub CloseLog {
   $log_count--;
   return if !$LOG || $log_count;
+  # ensure trailing newline when flushing, since we may have
+  # multiple re-opens during the same conversion run (preamble, main, post ...)
+  print $LOG _freshline($LOG);
   close($LOG) or die "Cannot close log file: $!";
   $LOG = undef;
   return; }
@@ -131,7 +134,7 @@ sub _printline {
   print $LOG _freshline($LOG), $clean_message, "\n" if $LOG && ($VERBOSITY >= $loglevel);
 
   # Spinner logic only for terminal-enabled applications
-  return unless $IS_TERMINAL;
+  return unless $HAS_STDERR;
 
   _spinnerclear();
   if ($VERBOSITY > $termlevel) {
@@ -167,20 +170,20 @@ our @spinnerstack = ();
 our @spinnerchar = map { colored($_, "bold red"); } ('-', '/', '|', '\\');
 
 sub _spinnerclear {    # Clear the spinner line (if any)
-  if ($IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
+  if ($HAS_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $count, $start) = @{ $spinnerstack[-1] };
     print STDERR "\x1b[1G\x1b[0K"; }    # clear line
   return; }
 
 sub _spinnerrestore {    # Restore the spinner line (if any)
-  if ($IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
+  if ($HAS_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $count, $start) = @{ $spinnerstack[-1] };
 ##    print STDERR $stage, ' ', $spinnerchar[$count]; }
     print STDERR ' ', $spinnerchar[$count], ' ', $stage; }
   return; }
 
 sub _spinnerstep {    # Increment stepper
-  if ($IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
+  if ($HAS_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $count, $start) = @{ $spinnerstack[-1] };
     $count = ($count + 1) % 4;
     $spinnerstack[-1][1] = $count;
@@ -198,7 +201,7 @@ sub _spinnerpop {    # Finished with spinner level
   if (@spinnerstack && ($stage eq $spinnerstack[-1][0])) {
     my ($stage, $count, $start) = @{ pop(@spinnerstack) };
     return Time::HiRes::tv_interval($start, [Time::HiRes::gettimeofday]); }
-  else {             # What else to do about mis-matched begin/end ??
+  elsif ($HAS_STDERR) {    # What else to do about mis-matched begin/end ??
     print STDERR "SPINNER is " . ((@spinnerstack && $spinnerstack[-1][0]) || 'undef') . " not $stage\n"; }
   return; }
 
@@ -340,8 +343,7 @@ sub ProgressSpinup {
     my $message = "($stage...";
     print $LOG _freshline($LOG), $message if $LOG;
     $NEEDSFRESHLINE{$LOG} = 1 if $LOG;
-    # TODO: Is this dead code? We now only print to STDERR when IS_TERMINAL=1
-    if (!$IS_TERMINAL) {
+    if ($HAS_STDERR && !$IS_TERMINAL) {
       print STDERR _freshline(\*STDERR), $message;
       $NEEDSFRESHLINE{ \*STDERR } = 1; } }
   return; }
@@ -356,8 +358,7 @@ sub ProgressSpindown {
     my $message = ($elapsed ? sprintf(" %.2f sec)", $elapsed) : '?');
     print $LOG $message       if $LOG;
     $NEEDSFRESHLINE{$LOG} = 1 if $LOG;
-    # TODO: Is this dead code? We now only print to STDERR when IS_TERMINAL=1
-    if (!$IS_TERMINAL) {
+    if ($HAS_STDERR && !$IS_TERMINAL) {
       print STDERR $message;
       $NEEDSFRESHLINE{ \*STDERR } = 1; } }
   return; }
@@ -497,7 +498,7 @@ sub perl_terminate_handler {
 sub generateMessage {
   my ($errorcode, $where, $message, $detail, @extra) = @_;
   # Colorize errorcode if appropriate
-  if ($IS_TERMINAL) {
+  if ($HAS_STDERR && $IS_TERMINAL) {
     $errorcode =~ /^(\w+)\:/;
     my $errorkind = lc($1);
     $errorcode = colorizeString($errorcode, $errorkind) if $errorkind; }
@@ -754,6 +755,12 @@ from L<LaTeXML::Global>, namely C<Warn>, C<Error> and C<Fatal>.
 
 Controls the verbosity of output to the terminal;
 default is 0, higher gives more information, lower gives less.
+
+=item C<< EnableLogToSTDERR($verbosity) >>
+
+Enables the STDERR stream for logging. Needs to be set by all terminal/command-line applications, as early as possible at the initialization phase of the application.
+By default STDERR is not used by Error.pm as it was kept backwards compatible with 
+the LaTeXML.pm use patterns.
 
 =back
 
