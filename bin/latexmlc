@@ -106,8 +106,8 @@ my $sock = $latexmls && IO::Socket::INET->new(
 if ((!$sock) && $local && ($expire == -1)) {
   # Don't boot a server, single job requested:
   require LaTeXML;
-  use LaTeXML::Common::Error qw(AllowTerminalLogs);
-  AllowTerminalLogs();
+  use LaTeXML::Common::Error qw(EnableLogToSTDERR);
+  EnableLogToSTDERR();
   $opts->set('local', 1);
   my $converter = LaTeXML->get_converter($opts);
   $converter->prepare_session($opts);
