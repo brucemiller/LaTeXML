@@ -21,7 +21,6 @@ use File::Path qw(rmtree);
 use File::Spec;
 use List::Util qw(max);
 use LaTeXML::Common::Config;
-##use LaTeXML::Common::Error qw(generateMessage colorizeString);
 use LaTeXML::Common::Error;
 use LaTeXML::Core;
 use LaTeXML::Util::Pack;
@@ -205,9 +204,9 @@ sub convert {
   #       to this time, where we can be certain if a user has run a local job without --dest
   if ((!$$opts{destination})
     && ($$opts{dographics} || $$opts{picimages} || grep { $_ eq 'images' or $_ eq 'svg' } @{ $$opts{math_formats} })) {
-    Debug(generateMessage("Warning:expected:options", undef,
-        "must supply --destination to support auxilliary files", 0,
-        "  disabling: --nomathimages --nographicimages --nopictureimages"));
+    Warn("expected", "options", undef,
+      "must supply --destination to support auxilliary files",
+      "  disabling: --nomathimages --nographicimages --nopictureimages");
     # default resources is sorta ok: we might not copy, but we'll still have the links/script/etc
     $$opts{dographics} = 0;
     $$opts{picimages}  = 0;
