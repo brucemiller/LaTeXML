@@ -56,7 +56,7 @@ sub process {
     $self->addNavigation($tree, @nav) if @nav;
   }
   my $n = scalar(@docs);
-  ProgressDetailed(($n > 1 ? " [Split into in $n TOCs]" : "[not split]"));
+  NoteLog(($n > 1 ? " [Split into in $n TOCs]" : "[not split]"));
   return @docs; }
 
 # Get the nodes in the document that WILL BECOME separate "pages".

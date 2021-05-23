@@ -20,8 +20,6 @@ use LaTeXML::Core;
 use LaTeXML;    # Currently, just for version information.
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::Error;
-AllowTerminalLogs();
-
 use Encode;
 
 #**********************************************************************
@@ -67,6 +65,7 @@ my $source = $ARGV[0];
 
 #**********************************************************************
 # Set up the processing.
+OpenSTDERR();
 @paths = map { pathname_canonical($_) } @paths;
 if (my @baddirs = grep { !-d $_ } @paths) {
   warn "These path directories do not exist: " . join(', ', @baddirs) . "\n"; }
@@ -77,8 +76,8 @@ if (!pathname_is_literaldata($source)) {
     if ($name) {
       $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); } }
   OpenLog($logfile) if $logfile; }
-NoteStatus("$LaTeXML::IDENTITY");
-Progress("processing started " . localtime());    # Probably a NoteBegin???
+NoteLog("$LaTeXML::IDENTITY");
+Note("processing $source started " . localtime());    # Probably a NoteBegin???
 
 my $latexml = LaTeXML::Core->new(
   preload         => [@preload],
@@ -133,8 +132,8 @@ if ($@) {    # Fatal error?
   Debug($@); }
 $latexml->showProfile();    # Show profile (if any)
 
-NoteStatus("Conversion complete: " . $latexml->getStatusMessage);
-Progress("processing finished " . localtime());    # NoteEnd?
+Note("Conversion complete: " . $latexml->getStatusMessage);
+NoteLog("processing finished " . localtime());    # NoteEnd?
 CloseLog();
 
 if    (!$serialized) { }

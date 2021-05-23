@@ -253,7 +253,7 @@ sub generateImages {
       next if -f pathname_absolute($1, $destdir); }
     push(@pending, $table{$key}); }
 
-  ProgressDetailed("LaTeXImages: $nuniq unique; " . scalar(@pending) . " new");
+  Debug("LaTeXImages: $nuniq unique; " . scalar(@pending) . " new") if $LaTeXML::DEBUG{images};
   if (@pending) {    # if any images need processing
         # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
     File::Temp->safe_level(File::Temp::HIGH);
@@ -486,8 +486,7 @@ sub convert_image {
   #  $image = $image->Fx(expression=>'(3.0-r+g+b)/3.0', channel=>'alpha');
   $image->Transparent(color => $bg);
 
-  ProgressDetailed("LaTeXImages: Converting $src => $dest ($w x $h)");
-
+  Debug("LaTeXImages: Converting $src => $dest ($w x $h)") if $LaTeXML::DEBUG{images};
   # Workaround bad png detection(?) in ImageMagick 6.6.5 (???)
   if ($$self{imagetype} eq 'png') {
     $dest = "png32:$dest"; }

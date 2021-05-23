@@ -318,7 +318,7 @@ sub process {
       # Now do cross referencing
       $proc1->addCrossrefs($doc, $proc2);
       $proc2->addCrossrefs($doc, $proc1); } }
-  ProgressDetailed("converted $n Maths");
+  NoteLog("converted $n Maths");
   return $doc; }
 
 # Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),
@@ -412,7 +412,7 @@ sub convertNode {
 # Maybe the caller of this should check the namespaces, and call wrapper if needed?
 sub combineParallel {
   my ($self, $doc, $xmath, $primary, @secondaries) = @_;
-  LaTeXML::Post::Error('misdefined', (ref $self), undef,
+  Error('misdefined', (ref $self), undef,
     "Abstract package: combining parallel markup has not been defined for this MathProcessor",
     "dropping the extra markup from: " . join(',', map { $$_{processor} } @secondaries));
   return $primary; }
@@ -928,12 +928,12 @@ sub validate {
       $schema = $2; } }
   if ($schema) {    # Validate using rng
     my $rng = LaTeXML::Common::XML::RelaxNG->new($schema, searchpaths => [$self->getSearchPaths]);
-    LaTeXML::Post::Error('I/O', $schema, undef, "Failed to load RelaxNG schema $schema" . "Response was: $@")
+    Error('I/O', $schema, undef, "Failed to load RelaxNG schema $schema" . "Response was: $@")
       unless $rng;
     my $v = eval {
       local $LaTeXML::IGNORE_ERRORS = 1;
       $rng->validate($$self{document}); };
-    LaTeXML::Post::Error("malformed", 'document', undef,
+    Error("malformed", 'document', undef,
       "Document fails RelaxNG validation (" . $schema . ")",
       "Validation reports: " . $@,
       "(Jing may provide a more precise report; https://relaxng.org/jclark/jing.html)")
@@ -941,18 +941,18 @@ sub validate {
   elsif (my $decldtd = $$self{document}->internalSubset) {    # Else look for DTD Declaration
     my $dtd = XML::LibXML::Dtd->new($decldtd->publicId, $decldtd->systemId);
     if (!$dtd) {
-      LaTeXML::Post::Error("I/O", $decldtd->publicId, undef,
+      Error("I/O", $decldtd->publicId, undef,
         "Failed to load DTD " . $decldtd->publicId . " at " . $decldtd->systemId,
         "skipping validation"); }
     else {
       my $v = eval {
         local $LaTeXML::IGNORE_ERRORS = 1;
         $$self{document}->validate($dtd); };
-      LaTeXML::Post::Error("malformed", 'document', undef,
+      Error("malformed", 'document', undef,
         "Document failed DTD validation (" . $decldtd->systemId . ")",
         "Validation reports: " . $@) if $@ || !defined $v; } }
   else {    # Nothing found to validate with
-    LaTeXML::Post::Warn("expected", 'schema', undef,
+    Warn("expected", 'schema', undef,
       "No Schema or DTD found for this document"); }
   return; }
 
@@ -967,11 +967,11 @@ sub idcheck {
     $idcache{$id} = 1; }
   foreach my $id (keys %{ $$self{idcache} }) {
     $missing{$id} = 1 unless $idcache{$id}; }
-  LaTeXML::Post::Warn("unexpected", 'ids', undef,
+  Warn("unexpected", 'ids', undef,
     "IDs were duplicated in cache for " . $self->siteRelativeDestination,
     join(',', keys %dups))
     if keys %dups;
-  LaTeXML::Post::Warn("expected", 'ids', undef, "IDs were cached for " . $self->siteRelativeDestination
+  Warn("expected", 'ids', undef, "IDs were cached for " . $self->siteRelativeDestination
       . " but not in document",
     join(',', keys %missing))
     if keys %missing;
@@ -1061,7 +1061,7 @@ sub addNodes {
       else {
         my ($prefix, $localname) = $tag =~ /^(.*):(.*)$/;
         my $nsuri = $prefix && $$self{namespaces}{$prefix};
-        LaTeXML::Post::Warn('expected', 'namespace', undef, "No namespace on '$tag'") unless $nsuri;
+        Warn('expected', 'namespace', undef, "No namespace on '$tag'") unless $nsuri;
         my $new;
         if (ref $node eq 'LibXML::XML::Document') {
           $new = $node->createElementNS($nsuri, $localname);
@@ -1128,7 +1128,7 @@ sub addNodes {
         $node->appendTextNode($child->textContent); }
     }
     elsif (ref $child) {
-      LaTeXML::Post::Warn('misdefined', $child, undef, "Dont know how to add $child to $node; ignoring"); }
+      Warn('misdefined', $child, undef, "Dont know how to add $child to $node; ignoring"); }
     elsif (defined $child) {
       $node->appendTextNode($child); } }
   return; }

@@ -312,7 +312,8 @@ sub image_graphicx_complex {
         ($w, $h) = (ceil($a1 * $dppt), ceil($a2 * $dppt)); } }
     my $X = 4;                 # Expansion factor
     my ($dx, $dy) = (int($X * 72 * $w / $w0), int($X * 72 * $h / $h0));
-    ProgressDetailed("reloading $source to desired size $w x $h (density = $dx x $dy)");
+    Debug("reloading $source to desired size $w x $h (density = $dx x $dy)")
+      if $LaTeXML::DEBUG{images};
     $image = image_read($source, antialias => 1, density => $dx . 'x' . $dy) or return;
     image_internalop($image, 'Trim') or return if $properties{autocrop};
     #    image_setvalue($image, colorspace => 'RGB') or return;
@@ -394,7 +395,7 @@ sub image_graphicx_complex {
     $notes .= " quality=$quality";
     image_setvalue($image, quality => $properties{quality}) or return; }
 
-  ProgressDetailed("Transformed $source : $notes") if $notes;
+  Debug("Transformed $source : $notes") if $notes && $LaTeXML::DEBUG{images};
   return ($image, $w, $h); }
 
 # Wrap up ImageMagick's methods to give more useful & consistent error handling.

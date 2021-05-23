@@ -166,7 +166,7 @@ sub getBibliographies {
         $raw .= "%\n"; } }
     my $bibdoc = $self->convertBibliography($doc, $raw);
     push(@bibs, $bibdoc) if $bibdoc; }
-  Progress("MakeBibliography: using bibliographies "
+  NoteLog("MakeBibliography: using bibliographies "
       . join(',', map { (length($_) > 100 ? substr($_, 100) . '...' : $_) } @bibnames)
       . "]");
   return @bibs; }
@@ -201,7 +201,8 @@ sub convertBibliography {
     else {
       push(@preload, "$pkg.sty"); } }
   my $bibname = pathname_is_literaldata($bib) ? 'Anonymous Bib String' : $bib;
-  Progress("MakeBibliography: Converting bibliography $bibname ...");
+  my $stage   = "Recursive MakeBibliography $bibname";
+  ProgressSpinup($stage);
   my $bib_config = LaTeXML::Common::Config->new(
     recursive      => 1,
     verbosity      => $$self{verbosity},
@@ -238,13 +239,10 @@ sub convertBibliography {
 ###  print STDERR $biblog;
   MergeStatus($$bib_converter{latexml}{state});
 
-  # TODO: We need to handle the logging properly, it's a bit of a mess for nested ->convert() calls
+  ProgressSpindown($stage);
   if (my $bibdoc = $$response{result}) {
-    Progress("... converted!");
     return $doc->new($bibdoc, sourceDirectory => '.'); }
-  else {
-    Progress("... Failed!");
-    return; } }
+  return; }
 
 # ================================================================================
 # Get all cited bibentries from the requested bibliography files.
@@ -345,7 +343,7 @@ sub getBibEntries {
     my $bibkey = $$entry{bibkey};
     map { $entries{ normalizeBibKey($_) }{bibreferrers}{$bibkey} = 1 } @{ $$entry{citations} }; }
 
-  Progress("MakeBibliography: " . (scalar keys %entries) . " bibentries, " . (scalar keys %$included) . " cited");
+  NoteLog("MakeBibliography: " . (scalar keys %entries) . " bibentries, " . (scalar keys %$included) . " cited");
   Warn('expected', 'bibkeys', undef,
     "Missing bibkeys " . join(', ', sort keys %missing_keys)) if keys %missing_keys;
 

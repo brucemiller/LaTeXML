@@ -72,18 +72,18 @@ sub parseMath {
       $self->parse($math, $document); }
     ProgressSpindown($proc);
 
-    Progress("Math parsing succeeded:"
+    NoteLog("Math parsing succeeded:"
         . join('', map { "\n   $_: "
             . colorizeString($$self{passed}{$_} . "/" . ($$self{passed}{$_} + $$self{failed}{$_}), ($$self{failed}{$_} == 0 ? 'success' : 'warning')) }
           grep { $$self{passed}{$_} + $$self{failed}{$_} }
           keys %{ $$self{passed} }));
     if (my @unk = keys %{ $$self{unknowns} }) {
-      Progress("Symbols assumed as simple identifiers (with # of occurences):\n   "
+      NoteLog("Symbols assumed as simple identifiers (with # of occurences):\n   "
           . join(', ', map { "'" . colorizeString("$_", 'warning') . "' ($$self{unknowns}{$_})" } sort @unk));
       if (!$STATE->lookupValue('MATHPARSER_SPECULATE')) {
-        Progress("Set MATHPARSER_SPECULATE to speculate on possible notations."); } }
+        NoteLog("Set MATHPARSER_SPECULATE to speculate on possible notations."); } }
     if (my @funcs = keys %{ $$self{maybe_functions} }) {
-      Progress("Possibly used as functions?\n  "
+      NoteLog("Possibly used as functions?\n  "
           . join(', ', map { "'$_' ($$self{maybe_functions}{$_}/$$self{unknowns}{$_} usages)" }
             sort @funcs)); }
   }

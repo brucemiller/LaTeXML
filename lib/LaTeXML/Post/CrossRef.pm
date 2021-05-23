@@ -64,10 +64,8 @@ sub process {
       foreach my $type (sort keys %{ $LaTeXML::Post::CrossRef::MISSING{$severity} }) {
         my @items = keys %{ $LaTeXML::Post::CrossRef::MISSING{$severity}{$type} };
         $tempid ||= grep { $_ eq 'TEMPORARY_DOCUMENT_ID' } @items;
-        push(@msgs, $type . ": " . join(', ', @items)); }
-      if (@msgs) {
         my @args = ('expected', 'ids', undef,
-          "Missing items:\n  " . join(";\n  ", @msgs),
+          "Missing $type: " . join(',', @items),
           ($tempid ? "[Note TEMPORARY_DOCUMENT_ID is a stand-in ID for the main document.]" : ()));
         if    ($severity eq 'error') { Error(@args); }
         elsif ($severity eq 'warn')  { Warn(@args); }
@@ -234,7 +232,7 @@ sub fill_in_tocs {
       $lists = { toc => 1 };
       @list  = $self->gentoc_context($doc, $id, $show, $lists, $types); }
     $doc->addNodes($toc, ['ltx:toclist', {}, @list]) if @list; }
-  ProgressDetailed("Filled in $n TOCs");
+  Debug("Filled in $n TOCs") if $LaTeXML::DEBUG{crossref};
   return; }
 
 # generate TOC for $id & its children,
@@ -319,7 +317,7 @@ sub fill_in_frags {
       if (my $fragid = $entry->getValue('fragid')) {
         $n++;
         $node->parentNode->setAttribute(fragid => $fragid); } } }
-  ProgressDetailed("Filled in fragment $n ids");
+  Debug("Filled in fragment $n ids") if $LaTeXML::DEBUG{crossref};
   return; }
 
 # Fill in content text for any <... @idref..>'s or @labelref
@@ -361,7 +359,7 @@ sub fill_in_refs {
       if (my $entry = $$self{db}->lookup("ID:$id")) {
         $ref->setAttribute(stub => 1) if $entry->getValue('stub'); }
   } }
-  ProgressDetailed("Filled in $n refs");
+  Debug("Filled in $n refs") if $LaTeXML::DEBUG{crossref};
   return; }
 
 # similar sorta thing for RDF about & resource labels & ids
@@ -390,7 +388,7 @@ sub fill_in_RDFa_refs {
             $ref->setAttribute($key => '#' . $id); } }
   } } }
   set_RDFa_prefixes($doc->getDocument, {});    # what prefixes??
-  ProgressDetailed("Filled in $n RDFa refs");
+  Debug("Filled in $n RDFa refs") if $LaTeXML::DEBUG{crossref};
   return; }
 
 sub fill_in_mathlinks {
@@ -420,7 +418,7 @@ sub fill_in_mathlinks {
         if (my $tag = $entry->getValue('tag:short') || $entry->getValue('description')) {
           $sym->setAttribute(title => getTextContent($doc, $tag)); }
   } } }
-  ProgressDetailed("Filled in $n math links");
+  Debug("Filled in $n math links") if $LaTeXML::DEBUG{crossref};
   return; }
 
 # Given a declaration entry (ltx:declare, or ltx:mark or ...)
@@ -454,7 +452,7 @@ sub fill_in_bibrefs {
   foreach my $bibref ($doc->findnodes('descendant::ltx:bibref')) {
     $n++;
     $doc->replaceNode($bibref, $self->make_bibcite($doc, $bibref)); }
-  ProgressDetailed("Filled in $n bibrefs");
+  Debug("Filled in $n bibrefs") if $LaTeXML::DEBUG{crossref};
   return; }
 
 # Given a list of bibkeys, construct links to them.
@@ -864,7 +862,7 @@ sub fillInGlossaryRef {
     if (!$ref->textContent && !element_nodes($ref)) {
       $doc->addNodes($ref, $key);
       $doc->addClass($ref, 'ltx_missing'); } }
-  ProgressDetailed("Filled in $n glossaryrefs");
+  Debug("Filled in $n glossaryrefs") if $LaTeXML::DEBUG{crossref};
   return; }
 
 sub generateGlossaryRefTitle {

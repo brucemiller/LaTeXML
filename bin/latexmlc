@@ -63,7 +63,7 @@ if ($address =~ s/\/(.+)$//) {    # strip away route
 }
 # Local if peerhost is localhost:
 $local  = ($expire && ($expire == -1)) || ($address eq '127.0.0.1');
-$expire = -1                   unless ((defined $expire) && $latexmls);
+$expire = -1 unless ((defined $expire) && $latexmls);
 $port   = ($local ? 3334 : 80) unless $port;    #Fall back if all fails...
 #***************************************************************************
 #Add some base, so that relative paths work
@@ -106,8 +106,8 @@ my $sock = $latexmls && IO::Socket::INET->new(
 if ((!$sock) && $local && ($expire == -1)) {
   # Don't boot a server, single job requested:
   require LaTeXML;
-  use LaTeXML::Common::Error qw(EnableLogToSTDERR);
-  EnableLogToSTDERR();
+  use LaTeXML::Common::Error;
+  OpenSTDERR();
   $opts->set('local', 1);
   my $converter = LaTeXML->get_converter($opts);
   $converter->prepare_session($opts);

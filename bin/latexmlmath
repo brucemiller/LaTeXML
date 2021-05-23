@@ -25,8 +25,7 @@ use LaTeXML::Post;
 use LaTeXML::Post::Scan;
 use LaTeXML::Post::CrossRef;
 use LaTeXML::Util::ObjectDB;
-use LaTeXML::Common::Error qw(AllowTerminalLogs);
-AllowTerminalLogs();
+use LaTeXML::Common::Error;
 
 #**********************************************************************
 # Parse command line

@@ -2191,8 +2191,8 @@ DefPrimitive('\endgroup',   sub { $_[0]->endgroup; });
 # Debugging aids; Ignored!
 DefPrimitive('\show Token', sub {
     my $stuff = Invocation(T_CS('\meaning'), $_[1]);
-    Message("\n> " . ($_[1][1] == CC_CS ? ToString($_[1]) . '=' : '') . writableTokens(Expand($stuff)));
-    Message($_[0]->getLocator->toString() . "\n");
+    Note("> " . ($_[1][1] == CC_CS ? ToString($_[1]) . '=' : '') . writableTokens(Expand($stuff)));
+    Note($_[0]->getLocator->toString());
     return; });
 DefPrimitive('\showbox Number', undef);
 DefPrimitive('\showlists',      undef);
@@ -2261,13 +2261,13 @@ sub writableTokens {
 
 DefPrimitive('\message{}', sub {
     my ($stomach, $stuff) = @_;
-    Message(writableTokens(Expand($stuff)));
+    Note(writableTokens(Expand($stuff)));
     return; });
 
 DefRegister('\errhelp' => Tokens());
 DefPrimitive('\errmessage{}', sub {
     my ($stomach, $stuff) = @_;
-    Message(ToString(Expand($stuff)) . ": " . ToString(Expand(Tokens(T_CS('\the'), T_CS('\errhelp')))));
+    Note(ToString(Expand($stuff)) . ": " . ToString(Expand(Tokens(T_CS('\the'), T_CS('\errhelp')))));
     return; });
 
 # TeX I/O primitives
@@ -2343,7 +2343,7 @@ DefPrimitive('\write Number {}', sub {
       my $contents = LookupValue($handle);
       AssignValue($handle => $contents . UnTeX(Expand($tokens)) . "\n", 'global'); }
     else {
-      Message(UnTeX(Expand($tokens))); }
+      Note(UnTeX(Expand($tokens))); }
     return; });
 
 # Since we don't paginate, we're effectively always "shipping out",

@@ -89,15 +89,15 @@ sub new {
   my ($class, %options) = @_;
   my $self = bless {    # table => {},
     value   => {}, meaning  => {}, stash  => {}, stash_active => {},
-    catcode => {}, mathcode => {}, sfcode => {}, lccode       => {}, uccode => {}, delcode => {},
+    catcode => {}, mathcode => {}, sfcode => {}, lccode => {}, uccode => {}, delcode => {},
     undo    => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
-    stomach => $options{stomach},       model    => $options{model} }, $class;
+    stomach => $options{stomach}, model => $options{model} }, $class;
   # Note that "100" is hardwired into TeX, The Program!!!
   $$self{value}{MAX_ERRORS} = [100];
   # Standard TeX units, in scaled points
   $$self{value}{UNITS} = [{
-      pt => 65536,                    pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
-      cm => 72.27 * 65536 / 2.54,     mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
+      pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
+      cm => 72.27 * 65536 / 2.54, mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
       cc => 12 * 1238 * 65536 / 1157, sp => 1,
       px => 72.27 * 65536 / 72,    # Assume px=bp ?
   }];
@@ -734,7 +734,12 @@ sub getStatusMessage {
   push(@report, $undef_status)   if $undef_status;
   push(@report, $missing_status) if $missing_status;
 
-  return join('; ', @report) || $success_status; }
+  #  return join('; ', @report) || $success_status; }
+  my $message = join('; ', @report) || $success_status;
+  $message .= " (See $LaTeXML::Common::Error::LOG_PATH)"
+    if ($$status{fatal} || $$status{error} || $$status{warning})
+    && $LaTeXML::Common::Error::LOG && !ref $LaTeXML::Common::Error::LOG_PATH;
+  return $message; }
 
 sub getStatusCode {
   my ($self) = @_;

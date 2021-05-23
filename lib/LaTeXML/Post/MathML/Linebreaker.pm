@@ -515,7 +515,7 @@ sub layout {
     local $LaTeXML::IGNORE_ERRORS = 1;
     \&$handler; };
   if (!$handler) {
-    LaTeXML::Post::Fatal("unexpected", $name, $node,
+    Fatal("unexpected", $name, $node,
       "Can't find layout handler for $name"); }
   Debug(('  ' x $level), "layout $name: ", $node, "...") if $LaTeXML::DEBUG{linebreaking};
   # Get the handler to compute the layouts
@@ -575,7 +575,7 @@ sub asRow {
   my $type     = nodeName($node);
   my @children = nodeChildren($node);
   if (my (@invalid) = grep { ref $_ ne 'ARRAY' } @children) {
-    LaTeXML::Post::Fatal('unexpected', $invalid[0], $node,
+    Fatal('unexpected', $invalid[0], $node,
       "Math row has non-element: " . nodeName($node)); }
 
   # Since we can't vertically align independently on both sides of an mtable,

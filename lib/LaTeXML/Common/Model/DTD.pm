@@ -98,7 +98,7 @@ sub loadSchema {
             ($attr =~ /:/ ? $model->recodeDocumentQName($attr) : $attr));
     } } }
   }
-  ProgressSpinup("Analyzing DTD");    # Done analyzing
+  ProgressSpindown("Analyzing DTD");    # Done analyzing
   ProgressSpindown("Loading DTD " . $$self{public_id} || $$self{system_id});
   return; }
 
@@ -127,7 +127,7 @@ sub readDTD {
       Error('missing_file', $$self{system_id}, undef,
         "Can't find DTD \"$$self{public_id}\" \"$$self{system_id}\""); } }
   ProgressSpindown($message);
-  Progress("Read dtd $how") if $how && $dtd;
+  NoteLog("Read dtd $how") if $how && $dtd;
   return $dtd; }
 
 #======================================================================
