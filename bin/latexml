@@ -77,7 +77,8 @@ if (!pathname_is_literaldata($source)) {
       $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); } }
   OpenLog($logfile) if $logfile; }
 NoteLog("$LaTeXML::IDENTITY");
-Note("processing $source started " . localtime());    # Probably a NoteBegin???
+my $starttime = StartTime();
+NoteTerminal("$LaTeXML::IDENTITY processing $source ...");
 
 my $latexml = LaTeXML::Core->new(
   preload         => [@preload],
@@ -132,8 +133,10 @@ if ($@) {    # Fatal error?
   Debug($@); }
 $latexml->showProfile();    # Show profile (if any)
 
-Note("Conversion complete: " . $latexml->getStatusMessage);
-NoteLog("processing finished " . localtime());    # NoteEnd?
+my $status  = $latexml->getStatusMessage;
+my $runtime = RunTime($starttime);
+NoteLog("Conversion complete: " . $status);
+NoteTerminal("Conversion complete: " . $status . " (reqd. $runtime)");
 CloseLog();
 
 if    (!$serialized) { }

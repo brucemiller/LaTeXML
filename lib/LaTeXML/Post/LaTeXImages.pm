@@ -286,14 +286,15 @@ sub generateImages {
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
     # And sometimes it doesn't produce a dvi, even with 0 return code?
     if (($ltxerr != 0) || (!-f "$workdir/$jobname.dvi")) {
-      my $preserve = $$LaTeXML::POST{verbosity} > 0;    # preserve junk when verbosity high.
-      $workdir->unlink_on_destroy(0) if $preserve;
+      $workdir->unlink_on_destroy(0) if $LaTeXML::DEBUG{images};    # Preserve junk
       Error('shell', $LATEXCMD, undef,
         "LaTeX command '$ltxcommand' failed",
-        ($ltxerr == 0 ? "No dvi file generated"     : "returned code $ltxerr (!= 0): $@"),
-        ($preserve    ? "See $workdir/$jobname.log" : "Re-run with --verbose to see TeX log"));
+        ($ltxerr == 0 ? "No dvi file generated" : "returned code $ltxerr (!= 0): $@"),
+        ($LaTeXML::DEBUG{images}
+          ? "See $workdir/$jobname.log"
+          : "Re-run with --debug=images to see TeX log"));
       return $doc; }
-    $workdir->unlink_on_destroy(0) if $$LaTeXML::POST{verbosity} > 2;
+    ### $workdir->unlink_on_destroy(0) if $LaTeXML::DEBUG{images}; # preserve ALL junk!?!?!
 
     # Extract dimensions (width x height+depth) from each image from log file.
     my @dimensions = ();

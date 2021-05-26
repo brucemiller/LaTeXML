@@ -311,9 +311,8 @@ if ((!defined $destination)
 #======================================================================
 # Do the processing.
 #======================================================================
-
-NoteLog("$LaTeXML::IDENTITY");
-Note("processing started " . localtime());
+my $starttime = StartTime();
+Note($LaTeXML::IDENTITY . ($prescan ? " scanning " : " paginating ") . $xmlfile);
 
 # Default options/parameters for each post processor
 our %OPTIONS = ();
@@ -468,10 +467,11 @@ eval {
   $latexmlpost->ProcessChain($DOCUMENT, @procs);
   $DB->finish; };
 Debug($@) if $@;
-my $code = $latexmlpost->getStatusCode;
-Note("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . ": " . $latexmlpost->getStatusMessage);
-NoteLog("processing " . ($code == 3 ? 'abandoned' : 'finished') . " " . localtime());
-
+my $code    = $latexmlpost->getStatusCode;
+my $status  = $latexmlpost->getStatusMessage;
+my $runtime = RunTime($starttime);
+NoteLog("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . ": " . $status);
+NoteTerminal("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . " " . $status . " (reqd. $runtime)");
 CloseLog();
 CheckDebuggable();
 

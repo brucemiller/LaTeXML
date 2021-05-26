@@ -39,6 +39,8 @@ our @EXPORT = (
   qw(&generateMessage),
   # Status management
   qw(&MergeStatus),
+  # Run time reporting
+  qw(&StartTime &RunTime),
 );
 
 our $VERBOSITY = 0;
@@ -171,6 +173,18 @@ sub strip_ansi {
   my ($string) = @_;
   $string =~ s/\e\[[0-9;]*[a-zA-Z]//g;
   return $string; }
+
+#======================================================================
+sub StartTime {
+  return [Time::HiRes::gettimeofday]; }
+
+sub RunTime {
+  my ($starttime) = @_;
+  my $s = Time::HiRes::tv_interval($starttime, [Time::HiRes::gettimeofday]);
+  my ($h, $m);
+  $m = int($s / 60); $s -= 60 * $m;
+  $h = int($m / 60); $m -= 60 * $h;
+  return ($h ? $h . 'h ' : '') . ($m ? $m . 'm ' : '') . sprintf("%.2fs", $s); }
 
 #======================================================================
 # Spinner support
@@ -351,12 +365,6 @@ sub NoteTerminal {
 sub NoteLog {
   my (@stuff) = @_;
   print $LOG _freshline($LOG), strip_ansi(join('', @stuff)), "\n" if $LOG && ($VERBOSITY >= 0); # verbosity???
-  return; }
-
-# NOTE: Make this OBSOLETE!
-sub NoteStatus {
-  my (@stuff) = @_;
-  _printline(0, 0, join('', @stuff));
   return; }
 
 # Progress reporting.

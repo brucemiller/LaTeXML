@@ -27,11 +27,9 @@ sub new {
   my ($class, %options) = @_;
   my $self = bless { status => {}, %options }, $class;
   # TEMPORARY HACK!!!!
-  # Create a State object, essentially only to hold verbosity (for now)
-  # so that Errors can be reported, managed and recorded
-  # Eventually will be a "real" State (or other configuration object)
+  # Create a State object, for config & recursive conversions;
+  # Eventually should be managed higher up.
   $$self{state} = LaTeXML::Core::State->new();
-  SetVerbosity($$self{verbosity} // 0);
   return $self; }
 
 #======================================================================
@@ -156,7 +154,6 @@ use base qw(LaTeXML::Common::Object);
 sub new {
   my ($class, %options) = @_;
   my $self = bless {%options}, $class;
-  $$self{verbosity}          = 0 unless defined $$self{verbosity};
   $$self{resource_directory} = $options{resource_directory};
   $$self{resource_prefix}    = $options{resource_prefix};
   my $name = $class; $name =~ s/^LaTeXML::Post:://;

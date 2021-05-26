@@ -205,7 +205,6 @@ sub convertBibliography {
   ProgressSpinup($stage);
   my $bib_config = LaTeXML::Common::Config->new(
     recursive      => 1,
-    verbosity      => $$self{verbosity},
     cache_key      => 'BibTeX',
     type           => "BibTeX",
     post           => 0,

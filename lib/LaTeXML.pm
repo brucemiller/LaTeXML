@@ -422,9 +422,9 @@ sub convert_post {
   my $runtime = $$self{runtime};
   my ($xslt, $parallel, $math_formats, $format, $verbosity, $defaultresources, $embed) =
     map { $$opts{$_} } qw(stylesheet parallelmath math_formats format verbosity defaultresources embed);
-  $verbosity = $verbosity || 0;
-
-  my %PostOPS = (verbosity => $verbosity,
+##  $verbosity = $verbosity || 0;
+  SetVerbosity($verbosity) if defined $verbosity;
+  my %PostOPS = (    ####verbosity => $verbosity,
     validate           => $$opts{validate},
     sourceDirectory    => $$opts{sourcedirectory},
     siteDirectory      => $$opts{sitedirectory},
@@ -589,7 +589,8 @@ sub convert_post {
 
   # Do the actual post-processing:
   my @postdocs;
-  my $latexmlpost      = LaTeXML::Post->new(verbosity => $verbosity || 0);
+##  my $latexmlpost      = LaTeXML::Post->new(verbosity => $verbosity || 0);
+  my $latexmlpost      = LaTeXML::Post->new();
   my $post_eval_return = eval {
     local $SIG{'ALRM'} = sub { die "Fatal:conversion:post-processing timed out.\n" };
     alarm($$opts{timeout});
@@ -669,9 +670,10 @@ sub new_latexml {
   my $includepathpis = !(exists $$opts{xsltparameters} &&
     (grep { $_ eq 'LATEXML_VERSION:TEST' } @{ $$opts{xsltparameters} }));
   require LaTeXML;
+  SetVerbosity($$opts{verbosity}) if defined $$opts{verbosity};
   my $latexml = LaTeXML::Core->new(preload => [@pre], searchpaths => [@{ $$opts{paths} }],
-    graphicspaths   => ['.'],
-    verbosity       => $$opts{verbosity}, strict => $$opts{strict},
+    graphicspaths => ['.'],
+###    verbosity       => $$opts{verbosity}, strict => $$opts{strict},
     includecomments => $$opts{comments},
     includepathpis  => $includepathpis,
     inputencoding   => $$opts{inputencoding},
