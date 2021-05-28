@@ -216,7 +216,7 @@ sub _spinnerpush {    # New spinner level
 sub _spinnerpop {    # Finished with spinner level
   my ($stage) = @_;
   if (@spinnerstack && ($stage eq $spinnerstack[-1][0])) {
-    my ($stage, $short, $start) = @{ pop(@spinnerstack) };
+    my ($xstage, $short, $start) = @{ pop(@spinnerstack) };
     return Time::HiRes::tv_interval($start, [Time::HiRes::gettimeofday]); }
   elsif ($USE_STDERR && ($VERBOSITY >= 0)) {    # What else to do about mis-matched begin/end ??
     print STDERR "SPINNER is " . ((@spinnerstack && $spinnerstack[-1][0]) || 'undef') . " not $stage\n"; }
@@ -769,6 +769,7 @@ from L<LaTeXML::Global>, namely C<Warn>, C<Error> and C<Fatal>.
 The general idea is that a minimal amount should be printed to STDERR (possibly with
 colors, spinners, etc if it is a terminal), and more complete information is printed to
 a log file. Neither of these are enabled, by default; see below.
+
 =over 4
 
 =item C<< SetVerbosity($verbosity); >>
