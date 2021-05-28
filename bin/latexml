@@ -65,7 +65,8 @@ my $source = $ARGV[0];
 
 #**********************************************************************
 # Set up the processing.
-OpenSTDERR();
+SetVerbosity($verbosity);
+UseSTDERR();
 @paths = map { pathname_canonical($_) } @paths;
 if (my @baddirs = grep { !-d $_ } @paths) {
   warn "These path directories do not exist: " . join(', ', @baddirs) . "\n"; }
@@ -75,10 +76,10 @@ if (!pathname_is_literaldata($source)) {
     my ($dir, $name, $ext) = pathname_split($source);
     if ($name) {
       $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); } }
-  OpenLog($logfile) if $logfile; }
+  UseLog($logfile) if $logfile; }
 NoteLog("$LaTeXML::IDENTITY");
 my $starttime = StartTime();
-NoteTerminal("$LaTeXML::IDENTITY processing $source ...");
+NoteSTDERR("$LaTeXML::IDENTITY processing $source ...");
 
 my $latexml = LaTeXML::Core->new(
   preload         => [@preload],
@@ -136,8 +137,8 @@ $latexml->showProfile();    # Show profile (if any)
 my $status  = $latexml->getStatusMessage;
 my $runtime = RunTime($starttime);
 NoteLog("Conversion complete: " . $status);
-NoteTerminal("Conversion complete: " . $status . " (reqd. $runtime)");
-CloseLog();
+NoteSTDERR("Conversion complete: " . $status . " (reqd. $runtime)");
+UseLog(undef);
 
 if    (!$serialized) { }
 elsif ($destination) {

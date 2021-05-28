@@ -699,7 +699,7 @@ sub bind_log {
   my ($self) = @_;
   $LaTeXML::LOG_STACK++;    # Only bind once
   return if $LaTeXML::LOG_STACK > 1;
-  OpenLog(\$$self{log}, 1);
+  UseLog(\$$self{log}, 1);
   return; }
 
 sub flush_log {
@@ -707,7 +707,7 @@ sub flush_log {
   $LaTeXML::LOG_STACK--;    # May the modern Perl community forgive me for this hack...
   return '' if $LaTeXML::LOG_STACK > 0;
 
-  CloseLog();
+  UseLog(undef);
 
   my $log = $$self{log};
   $$self{log} = q{};

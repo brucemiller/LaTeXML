@@ -30,7 +30,7 @@ use LaTeXML::Common::Error;
 #**********************************************************************
 # Parse command line
 
-my ($verbosity, $strict, $noparse, $includestyles) = (-1, 0, 0, 0);
+my ($verbosity, $strict, $noparse, $includestyles, $logfile) = (-1, 0, 0, 0, undef);
 my ($destination, $help, $showversion) = ('', '');
 my ($documentid);
 my ($mathimage, $mathsvg, $mag) = (undef, undef, 1.75);
@@ -53,20 +53,19 @@ GetOptions(
   "contentmathml|cmml=s"      => \$cmml,
   "openmath|om=s"             => \$om,
   "XMath=s"                   => \$xmath,
-
-  "noparse" => \$noparse,
-
-  "preload=s"       => \@preload,
-  "includestyles"   => \$includestyles,
-  "inputencoding=s" => \$inputencoding,
-  "path=s"          => \@paths,
-  "quiet"           => sub { $verbosity--; },
-  "verbose"         => sub { $verbosity++; },
-  "strict"          => \$strict,
-  "VERSION"         => \$showversion,
-  "debug=s"         => sub { no strict 'refs'; ${ 'LaTeXML::' . $_[1] . '::DEBUG' } = 1; },
-  "documentid=s"    => \$documentid,
-  "help"            => \$help,
+  "noparse"                   => \$noparse,
+  "preload=s"                 => \@preload,
+  "includestyles"             => \$includestyles,
+  "inputencoding=s"           => \$inputencoding,
+  "path=s"                    => \@paths,
+  "quiet"                     => sub { $verbosity--; },
+  "verbose"                   => sub { $verbosity++; },
+  "log=s"                     => \$logfile,
+  "strict"                    => \$strict,
+  "VERSION"                   => \$showversion,
+  "debug=s"                   => sub { no strict 'refs'; ${ 'LaTeXML::' . $_[1] . '::DEBUG' } = 1; },
+  "documentid=s"              => \$documentid,
+  "help"                      => \$help,
 ) or pod2usage(-message => $LaTeXML::IDENTITY,
   -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 2, -output => \*STDOUT)
@@ -75,9 +74,6 @@ if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(0); }
 pod2usage(-message => "$LaTeXML::IDENTITY\nMissing input TeX file",
   -exitval => 1, -verbose => 0, -output => \*STDERR) unless @ARGV;
 
-binmode(STDERR, ":encoding(UTF-8)");
-print STDERR "$LaTeXML::IDENTITY\n" if $verbosity > -1;
-
 #======================================================================
 # TeX Source
 #======================================================================
@@ -85,6 +81,13 @@ print STDERR "$LaTeXML::IDENTITY\n" if $verbosity > -1;
 my $tex = join(' ', @ARGV);
 if ($tex eq '-') {
   { local $/ = undef; $tex = <>; } }
+
+SetVerbosity($verbosity);
+UseSTDERR();
+UseLog($logfile) if $logfile;    # None, by default
+NoteLog("$LaTeXML::IDENTITY");
+my $starttime = StartTime();
+NoteSTDERR("$LaTeXML::IDENTITY processing $tex ...");
 
 # We need to determine whether the TeX we're given needs to be wrapped in \[...\]
 # Does it have $'s around it? Does it have a display math environment?
@@ -236,7 +239,13 @@ if ($xmath) {
   my ($result) = $post->ProcessChain(cloneDoc($document));
   outputXML($result->findnode('//ltx:XMath'), $xmath); }
 
-print STDERR "\nConversion complete\n" if $verbosity > -1;
+my $status = $latexml->getStatusMessage;
+# Should be combined with $post's status!
+# But better approach will be to manage all through LaTeXML.pm!!
+my $runtime = RunTime($starttime);
+NoteLog("Conversion complete: " . $status);
+NoteSTDERR("Conversion complete: " . $status . " (reqd. $runtime)");
+UseLog(undef);
 
 #======================================================================
 # Helpers

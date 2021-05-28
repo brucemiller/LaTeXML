@@ -21,14 +21,12 @@ use Term::ANSIColor 2.01 qw(colored colorstrip);
 use base qw(Exporter);
 our @EXPORT = (
   qw(&SetVerbosity),
-  # Managing STDERR messages
-  qw(&OpenSTDERR &CloseSTDERR),
-  # Log file support
-  qw(&OpenLog &CloseLog),
+  # Managing STDERR and Logfile messages
+  qw(&UseSTDERR &UseLog),
   # Error Reporting
   qw(&Fatal &Error &Warn &Info),
   # General messages
-  qw(&Note &NoteTerminal &NoteLog),
+  qw(&Note &NoteSTDERR &NoteLog),
   # Progress Spinner
   qw(&ProgressSpinup &ProgressSpindown &ProgressStep),
   # Debugging messages
@@ -43,11 +41,12 @@ our @EXPORT = (
   qw(&StartTime &RunTime),
 );
 
-our $VERBOSITY = 0;
+our $VERBOSITY   = 0;
+our $IS_TERMINAL = undef;
+our $USE_STDERR  = undef;
 
 sub SetVerbosity {
-  # Validate?
-  return $VERBOSITY = $_[0]; }
+  return $VERBOSITY = $_[0] || 0; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Terminal setup
@@ -55,21 +54,18 @@ sub SetVerbosity {
 # Color setup
 # Possibly more dynamic?
 $Term::ANSIColor::AUTORESET = 1;
-our $IS_TERMINAL = undef;
-our $USE_STDERR  = undef;
 
 # Possibility of more terminal initialization & control?
-sub OpenSTDERR {
-  $USE_STDERR  = 1;
-  $IS_TERMINAL = -t STDERR;
-  binmode(STDERR, ":encoding(UTF-8)");
-  use IO::Handle;
-  *STDERR->autoflush();
-  return; }
-
-sub CloseSTDERR {
-  $USE_STDERR  = undef;
-  $IS_TERMINAL = undef;
+sub UseSTDERR {
+  if (scalar(@_) && !$_[0]) {    # Single false argument? Turn OFF
+    $USE_STDERR  = undef;
+    $IS_TERMINAL = undef; }
+  else {
+    $USE_STDERR  = 1;
+    $IS_TERMINAL = -t STDERR;
+    binmode(STDERR, ":encoding(UTF-8)");
+    use IO::Handle;
+    *STDERR->autoflush(); }
   return; }
 
 our %color_scheme = (
@@ -89,75 +85,61 @@ sub colorizeString {
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Log file
-# Initially: possibility of a single log file, as well as STDERR
-# General idea: everything goes to the log file (if any)
-# only a little bit goes to STDERR (controllable by verbosity)
-# Is there a single DWIM strategy that puts the right things on each stream?
 our $LOG;
 our $LOG_PATH;
 # NOTE: since LaTeXML.pm (currently) repeatedly opens & closes the log,
 # and doesn't (YET) know whether there's already a log open,
-# this bit of hackery only keeps the outermost log open. Fix this!
+# this bit of hackery only keeps the outermost log open. FIX THIS!
 our $log_count = 0;
 # Where? Current directory? (probably) Source directory? (probably not)
 # Option for appending?
 # Note that the $path can be a reference to a string (which gets appended to)
-sub OpenLog {
-  my ($path, $append) = @_;
-  $log_count++;
-  return if $LOG or not($path);                 # already opened?
-  pathname_mkdir(pathname_directory($path));    # and hopefully no errors! :>
-  open($LOG, ($append ? '>>' : '>'), $path) or die "Cannot open log file $path for writing: $!";
-  $LOG_PATH = $path;
-  binmode($LOG, ":encoding(UTF-8)");
-  return; }
 
-# Should be sure it autocloses
-sub CloseLog {
-  $log_count--;
-  return if !$LOG || $log_count;
-  # ensure trailing newline when flushing, since we may have
-  # multiple re-opens during the same conversion run (preamble, main, post ...)
-  print $LOG _freshline($LOG);
-  close($LOG) or die "Cannot close log file: $!";
-  $LOG = undef;
+sub UseLog {
+  my ($path, $append) = @_;
+  if (!$path) {    # Single false argument? Turn OFF and Close
+    $log_count--;
+    return if !$LOG || $log_count;
+    # ensure trailing newline when flushing, since we may have
+    # multiple re-opens during the same conversion run (preamble, main, post ...)
+    print $LOG _freshline($LOG);
+    close($LOG) or die "Cannot close log file: $!";
+    $LOG = undef; }
+  else {
+    $log_count++;
+    return if $LOG or not($path);                 # already opened?
+    pathname_mkdir(pathname_directory($path));    # and hopefully no errors! :>
+    open($LOG, ($append ? '>>' : '>'), $path) or die "Cannot open log file $path for writing: $!";
+    $LOG_PATH = $path;
+    binmode($LOG, ":encoding(UTF-8)"); }
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Low-level I/O
 
-# print one (or more) lines to the Log and STDERR, according to $loglevel, $termlevel, respectively.
-# If verbosity == $termlevel, only prints the 1st line of the message.
-# Print to STDERR if verbosity is >= $level; only first line if verbosity is >= $shortlevel.
+# print one (or more) lines to the Log, if opened
+# Print first line to STDERR if enabled & verbosity >= 0
 # Starts a fresh line by pushing any Spinner line ahead.
-# ORRR should $level also apply to Logfile ???
 sub _printline {
-  my ($loglevel, $termlevel, $message) = @_;
-  return if ($VERBOSITY < $loglevel) && ($VERBOSITY < $termlevel);
+  my ($message) = @_;
+  return if (!$LOG && !($USE_STDERR && ($VERBOSITY >= 0)));
   $message =~ s/^\n+//s;    # Strip newlines off ends.
   $message =~ s/\n+$//s;
   my $clean_message = ($LOG || !$IS_TERMINAL ? strip_ansi($message) : $message);
   $message = $clean_message unless $IS_TERMINAL;
-  # Don't really want this verbosity check, here, but tests fail!
-  print $LOG _freshline($LOG), $clean_message, "\n" if $LOG && ($VERBOSITY >= $loglevel);
-
+  if ($LOG) {
+    print $LOG _freshline($LOG), $clean_message, "\n"; }
   # Spinner logic only for terminal-enabled applications
-  return unless $USE_STDERR;
-
-  _spinnerclear();
-##  if ($VERBOSITY > $termlevel) {
-##    print STDERR _freshline(\*STDERR), $message, "\n"; }
-##  elsif ($VERBOSITY == $termlevel) {
-# Show only single line: first line plus including 2nd, if locator
-#  my $short = ($message =~ /^([^\n]*)(:?\n(\s*at\s+[^\n]*))?/s ? $1 . ($2 ? '...' . $3 : '') : $message);
-  my $short = $message;
-  if ($short =~ /^([^\n]*)(:?\n\s*(at\s+[^\n]*))?/s) {
-    my ($first, $more, $at) = ($1, $2, $3);
-    $at =~ s/\s+-\s+.*$// if $at;
-    $short = $first;
-    $short .= ' ' . $at if $at; }
-  print STDERR _freshline(\*STDERR), $short, "\n";    ##}
-  _spinnerrestore();
+  if ($USE_STDERR && ($VERBOSITY >= 0)) {
+    _spinnerclear();
+    my $short = $message;
+    if ($short =~ /^([^\n]*)(:?\n\s*(at\s+[^\n]*))?/s) {
+      my ($first, $more, $at) = ($1, $2, $3);
+      $at =~ s/\s+-\s+.*$// if $at;
+      $short = $first;
+      $short .= ' ' . $at if $at; }
+    print STDERR _freshline(\*STDERR), $short, "\n";    ##}
+    _spinnerrestore(); }
   return; }
 
 our %NEEDSFRESHLINE = ();
@@ -202,14 +184,12 @@ our $spinnerpost  = "\x1b[?7h";
 #   return; }
 
 sub _spinnerclear {    # Clear the spinner line (if any)
-##  if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
-  if ($USE_STDERR && $IS_TERMINAL && @spinnerstack) {
+  if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     print STDERR "\x1b[1G\x1b[0K"; }    # clear line
   return; }
 
 sub _spinnerrestore {    # Restore the spinner line (if any)
-##  if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
-  if ($USE_STDERR && $IS_TERMINAL && @spinnerstack) {
+  if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $short, $start) = @{ $spinnerstack[-1] };
     print STDERR join(' ', $spinnerpre, $spinnerchar[$spinnerpos],
       (map { $$_[1]; } @spinnerstack[0 .. $#spinnerstack - 1]), $stage), $spinnerpost; }
@@ -217,8 +197,7 @@ sub _spinnerrestore {    # Restore the spinner line (if any)
 
 sub _spinnerstep {    # Increment stepper
   my ($note) = @_;
-##  if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
-  if ($USE_STDERR && $IS_TERMINAL && @spinnerstack) {
+  if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $short, $start) = @{ $spinnerstack[-1] };
     $spinnerpos = ($spinnerpos + 1) % 4;
     if ($note) {      # If note, redraw whole line.
@@ -239,7 +218,7 @@ sub _spinnerpop {    # Finished with spinner level
   if (@spinnerstack && ($stage eq $spinnerstack[-1][0])) {
     my ($stage, $short, $start) = @{ pop(@spinnerstack) };
     return Time::HiRes::tv_interval($start, [Time::HiRes::gettimeofday]); }
-  elsif ($USE_STDERR) {    # What else to do about mis-matched begin/end ??
+  elsif ($USE_STDERR && ($VERBOSITY >= 0)) {    # What else to do about mis-matched begin/end ??
     print STDERR "SPINNER is " . ((@spinnerstack && $spinnerstack[-1][0]) || 'undef') . " not $stage\n"; }
   return; }
 
@@ -292,7 +271,8 @@ sub Fatal {
   else {    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
   # inhibit message to STDERR, since die will handle that
-  _printline(-9999, -9999, $message);
+  print $LOG _freshline($LOG), strip_ansi($message), "\n" if $LOG;
+
   # If inside an eval, this won't actually die, but WILL set $@ for caller's use.
   die $message; }
 
@@ -315,7 +295,7 @@ sub Error {
     $state && $state->noteStatus('error');
     my $formatted = generateMessage("Error:" . $category . ":" . ToString($object),
       $where, $message, 1, @details);
-    _printline(0, 0, $formatted); }
+    _printline($formatted); }
   # Note that "100" is hardwired into TeX, The Program!!!
   my $maxerrors = ($state ? $state->lookupValue('MAX_ERRORS') : 100);
   if ($state && (defined $maxerrors) && (($state->getStatus('error') || 0) > $maxerrors)) {
@@ -330,7 +310,7 @@ sub Warn {
   $state && $state->noteStatus('warning');
   my $formatted = generateMessage("Warning:" . $category . ":" . ToString($object),
     $where, $message, 0, @details);
-  _printline(0, 0, $formatted);
+  _printline($formatted);
   return; }
 
 # Informational message; results likely unaffected
@@ -342,7 +322,7 @@ sub Info {
   $state && $state->noteStatus('info');
   my $formatted = generateMessage("Info:" . $category . ":" . ToString($object),
     $where, $message, -1, @details);
-  _printline(0, 0, $formatted);
+  _printline($formatted);
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -350,21 +330,21 @@ sub Info {
 #**********************************************************************
 
 sub Note {
-  my (@stuff) = @_;
-  _printline(0, 0, join('', @stuff));
+  my ($message) = @_;
+  _printline($message);
   return; }
 
-sub NoteTerminal {
-  my (@stuff) = @_;
-  if ($USE_STDERR) {
+sub NoteSTDERR {
+  my ($message) = @_;
+  if ($USE_STDERR && ($VERBOSITY >= 0)) {
     _spinnerclear();
-    print STDERR _freshline(\*STDERR), @stuff, "\n";
+    print STDERR _freshline(\*STDERR), $message, "\n";
     _spinnerrestore(); }
   return; }
 
 sub NoteLog {
-  my (@stuff) = @_;
-  print $LOG _freshline($LOG), strip_ansi(join('', @stuff)), "\n" if $LOG && ($VERBOSITY >= 0); # verbosity???
+  my ($message) = @_;
+  print $LOG _freshline($LOG), strip_ansi($message), "\n" if $LOG;
   return; }
 
 # Progress reporting.
@@ -378,29 +358,29 @@ sub ProgressStep {
 
 sub ProgressSpinup {
   my ($stage) = @_;
-  if ($VERBOSITY >= 0) {
+  if ($LOG || ($USE_STDERR && ($VERBOSITY >= 0))) {
+    my $message = "($stage...";
     _spinnerclear();
     _spinnerpush($stage);
     _spinnerrestore();
-    my $message = "($stage...";
-    print $LOG _freshline($LOG), $message if $LOG && ($VERBOSITY >= 0);    # verbosity???
-    $NEEDSFRESHLINE{$LOG} = 1 if $LOG;
-## NOTE: Rethink this; possibly want something going to non-terminals, but this fouls tests
-    if ($USE_STDERR && !$IS_TERMINAL) {
+    if ($LOG) {
+      print $LOG _freshline($LOG), $message;
+      $NEEDSFRESHLINE{$LOG} = 1 if $LOG; }
+    if ($USE_STDERR && ($VERBOSITY >= 0) && !$IS_TERMINAL) {
       print STDERR _freshline(\*STDERR), $message;
       $NEEDSFRESHLINE{ \*STDERR } = 1; } }
   return; }
 
 sub ProgressSpindown {
   my ($stage) = @_;
-  if ($VERBOSITY >= 0) {
+  if ($LOG || ($USE_STDERR && ($VERBOSITY >= 0))) {
     _spinnerclear();
     my $elapsed = _spinnerpop($stage);
     _spinnerrestore();
     my $message = ($elapsed ? sprintf(" %.2f sec)", $elapsed) : '?');
-    print $LOG $message       if $LOG && ($VERBOSITY >= 0);    # verbosity???
+    print $LOG $message       if $LOG;
     $NEEDSFRESHLINE{$LOG} = 1 if $LOG;
-    if ($USE_STDERR && !$IS_TERMINAL) {
+    if ($USE_STDERR && ($VERBOSITY >= 0) && !$IS_TERMINAL) {
       print STDERR $message;
       $NEEDSFRESHLINE{ \*STDERR } = 1; } }
   return; }
@@ -418,8 +398,9 @@ sub DebuggableFeature {
   return; }
 
 sub Debug {
+  my ($message) = @_;
   # Note: Could append source code location of the caller?
-  _printline(0, 0, join('', @_));
+  _printline($message);
   return; }
 
 # This only makes sense at end of run, after all needed modules have been loaded!
@@ -521,6 +502,7 @@ sub perl_terminate_handler {
   $LaTeXML::UNSAFE_FATAL  = 1;
   Fatal('terminate', 'terminated', undef, "Conversion was terminated", @line);
   return; }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Internals
 # Synthesize an error message describing what happened, and where.
@@ -533,7 +515,7 @@ sub perl_terminate_handler {
 sub generateMessage {
   my ($errorcode, $where, $message, $detail, @extra) = @_;
   # Colorize errorcode if appropriate
-  if ($USE_STDERR && $IS_TERMINAL) {
+  if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0)) {
     $errorcode =~ /^(\w+)\:/;
     my $errorkind = lc($1);
     $errorcode = colorizeString($errorcode, $errorkind) if $errorkind; }
@@ -784,56 +766,30 @@ C<LaTeXML::Common::Error> does some simple stack analysis to generate more infor
 error messages for LaTeXML.  Its routines are used by the error reporting methods
 from L<LaTeXML::Global>, namely C<Warn>, C<Error> and C<Fatal>.
 
+The general idea is that a minimal amount should be printed to STDERR (possibly with
+colors, spinners, etc if it is a terminal), and more complete information is printed to
+a log file. Neither of these are enabled, by default; see below.
 =over 4
 
-=item C<< SetVerbosity($verbosity) >>
+=item C<< SetVerbosity($verbosity); >>
 
 Controls the verbosity of output to the terminal;
 default is 0, higher gives more information, lower gives less.
+A verbosity less than 0 inhibits all output to STDERR.
 
-=item C<< DisableSTDERR() >>
+=item C<< UseSTDERR(); ... UseSTDERR(undef); >>
 
-Disables use of the STDERR stream for logging. Should be set as early as possible
-by applications that wish to have no output to STDERR.
-
-=back
-
-=head2 STDERR
-
-A limited amount of information can be displayed on STDERR:
-short forms of messages for Errors, Warnings, progress, etc
-along with a status spinner indicating progress through various stages of processing.
-More complete information will be recorded to the log file (if any).
-
-=over 4
-
-=item C<< OpenSTDERR() >>
-
-Enables and initializes STDERR to accept messages.
+C<< UseSTDERR(); >> Enables and initializes STDERR to accept messages.
 If this is not called, there will be no output to STDERR.
+C<< UseSTDERR(undef); >> disables STDERR from further messages.
 
-=item C<< CloseLog() >>
+=item C<< UseLog($path, $append); ... UseLog(undef); >>
 
-Disables output to STDERR.
-
-=back
-
-=head2 Log File
-
-Various kinds of messages for Errors, Warnings, progress, etc. are printed to both
-STDERR and a log file, if one has been opened.  The log file typically recieves complete information
-(as adjusted by the verbosity), whereas the output to STDERR tends to be breif.
-
-=over 4
-
-=item C<< OpenLog($path, $append) >>
-
-Opens a log file on the given path. If C<$append> is true, this file will be appended to,
+C<< UseLog($path, $append); >> opens a log file on the given path.
+If C<$append> is true, this file will be appended to,
 otherwise, it will be created initially empty.
-
-=item C<< CloseLog() >>
-
-Close the log file.
+If this is not called, there will be no log file.
+C<< UseLog(undef); >> disables and closes the log file.
 
 =back
 
@@ -898,7 +854,7 @@ to both STDERR and the Log file (when enabled).
 
 Prints a status message to the Log file (when enabled).
 
-=item C<< NoteTerminal($message); >>
+=item C<< NoteSTDERR($message); >>
 
 Prints a status message to the terminal (STDERR) (when enabled).
 

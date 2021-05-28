@@ -167,7 +167,8 @@ GetOptions("quiet" => sub { $verbosity--; },
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 2, -output => \*STDOUT) if $help;
 if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(0); }
 
-OpenSTDERR();
+SetVerbosity($verbosity);
+UseSTDERR();
 # Get the requested XML file
 xError("Missing input xmlfile") unless @ARGV;
 my $xmlfile = shift(@ARGV);
@@ -180,7 +181,7 @@ if ($xmlfile ne '-') {
     if ($name) {
       $appendlog = 1;
       $logfile   = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); } }
-  OpenLog($logfile, $appendlog); }
+  UseLog($logfile, $appendlog); }
 
 if (@ARGV) {
   xError("Extra unrecognized arguments " . join(' ', @ARGV)); }
@@ -471,8 +472,8 @@ my $code    = $latexmlpost->getStatusCode;
 my $status  = $latexmlpost->getStatusMessage;
 my $runtime = RunTime($starttime);
 NoteLog("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . ": " . $status);
-NoteTerminal("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . " " . $status . " (reqd. $runtime)");
-CloseLog();
+NoteSTDERR("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . " " . $status . " (reqd. $runtime)");
+UseLog(undef);
 CheckDebuggable();
 
 #======================================================================

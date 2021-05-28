@@ -107,7 +107,8 @@ if ((!$sock) && $local && ($expire == -1)) {
   # Don't boot a server, single job requested:
   require LaTeXML;
   use LaTeXML::Common::Error;
-  OpenSTDERR();
+  SetVerbosity($$opts{verbosity});
+  UseSTDERR();
   $opts->set('local', 1);
   my $converter = LaTeXML->get_converter($opts);
   $converter->prepare_session($opts);

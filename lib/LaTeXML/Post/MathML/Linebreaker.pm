@@ -517,7 +517,7 @@ sub layout {
   if (!$handler) {
     Fatal("unexpected", $name, $node,
       "Can't find layout handler for $name"); }
-  Debug(('  ' x $level), "layout $name: ", $node, "...") if $LaTeXML::DEBUG{linebreaking};
+  Debug(('  ' x $level) . "layout $name: " . $node . "...") if $LaTeXML::DEBUG{linebreaking};
   # Get the handler to compute the layouts
   my $layouts  = &$handler($node, $target, $level, $demerits || 1);
   my $nlayouts = scalar(@$layouts);
@@ -525,7 +525,7 @@ sub layout {
   # Sort & prune the layouts
   my @layouts = prunesort($target, @$layouts);
   my $pruned  = scalar(@layouts);
-  Debug(('  ' x $level), "$name: $nlayouts layouts"
+  Debug(('  ' x $level) . "$name: $nlayouts layouts"
       . ($pruned < $nlayouts ? " pruned to $pruned" : "")
       . " " . layoutDescriptor($$layouts[0])
       . ($nlayouts > 1 ? "..." . layoutDescriptor($$layouts[$nlayouts - 1]) : "")
@@ -646,9 +646,9 @@ sub asRow {
   # and quit as soon as we get reasonable layouts; Pruning is _essential_!!!
   my $nbreaks    = scalar(@breaks);
   my $nbreaksets = 2**$nbreaks;
-  Debug(("  " x $level), $type, " ",
-    join("x", map { scalar(@$_) } @child_layouts), " layouts",
-    (@breaks
+  Debug(("  " x $level) . $type . " "
+      . join("x", map { scalar(@$_) } @child_layouts) . " layouts"
+      . (@breaks
       ? ", breaks@" . join(",", map { "[" . join(',', @$_) . "]" } @breaks)
         . "(" . $nbreaksets . " sets;"
         . product((map { scalar(@$_) } @child_layouts), $nbreaksets) . " combinations"
