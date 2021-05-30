@@ -175,13 +175,11 @@ my $xmlfile = shift(@ARGV);
 if ($xmlfile ne '-') {
   $xmlfile .= '.xml'                                  unless -f $xmlfile;
   xError("The input file \"$xmlfile\" was not found") unless -f $xmlfile;
-  my $appendlog = 0;
   if (!$logfile) {
     my ($dir, $name, $ext) = pathname_split($xmlfile);
     if ($name) {
-      $appendlog = 1;
-      $logfile   = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); } }
-  UseLog($logfile, $appendlog); }
+      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexmlpost.log'); } }
+  UseLog($logfile); }
 
 if (@ARGV) {
   xError("Extra unrecognized arguments " . join(' ', @ARGV)); }
