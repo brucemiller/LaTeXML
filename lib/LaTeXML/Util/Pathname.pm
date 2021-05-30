@@ -82,6 +82,7 @@ sub pathname_make {
 # If pathname is absolute, dir starts with volume or '/'
 sub pathname_split {
   my ($pathname) = @_;
+  return unless defined $pathname;
   $pathname = pathname_canonical($pathname);
   my ($vol, $dir, $name) = File::Spec->splitpath($pathname);
   # Hmm, for /, we get $dir = / but we want $vol='/'  ?????
@@ -99,6 +100,7 @@ use Carp;
 # AND, care about symbolic links and collapsing ../ !!!
 sub pathname_canonical {
   my ($pathname) = @_;
+  return unless defined $pathname;
   if ($pathname =~ /^($LITERAL_RE)/) {
     return $pathname; }
   # Don't call pathname_is_absolute, etc, here, cause THEY call US!
@@ -139,6 +141,7 @@ sub pathname_type {
 # Note that this returns ONLY recognized protocols!
 sub pathname_protocol {
   my ($pathname) = @_;
+  return unless defined $pathname;
   return ($pathname =~ /^($PROTOCOL_RE|$LITERAL_RE)/ ? $1 : 'file'); }
 
 #======================================================================
@@ -196,6 +199,7 @@ sub pathname_is_reloadable {
 # we _could_ make relative...
 sub pathname_relative {
   my ($pathname, $base) = @_;
+  return unless defined $pathname;
   $pathname = pathname_canonical($pathname);
   return ($base && pathname_is_absolute($pathname) && !pathname_is_url($pathname)
     ? File::Spec->abs2rel($pathname, pathname_canonical($base))
@@ -203,13 +207,16 @@ sub pathname_relative {
 
 sub pathname_absolute {
   my ($pathname, $base) = @_;
+  return unless defined $pathname;
   $pathname = pathname_canonical($pathname);
   return (!pathname_is_absolute($pathname) && !pathname_is_url($pathname)
     ? File::Spec->rel2abs($pathname, ($base ? pathname_canonical($base) : pathname_cwd()))
     : $pathname); }
 
 sub pathname_to_url {
-  my $relative_pathname = pathname_relative($_[0]);
+  my ($pathname) = @_;
+  return unless defined $pathname;
+  my $relative_pathname = pathname_relative($pathname);
   if ($SEP ne '/') {
     $relative_pathname = join('/', split(/\Q$SEP\E/, $relative_pathname)); }
   return $relative_pathname; }
