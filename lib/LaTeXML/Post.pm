@@ -679,12 +679,18 @@ sub new_internal {
 
 sub newFromFile {
   my ($class, $source, %options) = @_;
-  $options{source} = $source;
-  $source = pathname_find($source, paths => $$class{searchpaths}) if ref $class;
+  my $path = (ref $class
+    ? pathname_find($source, paths => $$class{searchpaths})
+    : $source);
+  if (!$path) {
+    Error('missing_file', $source, $class, "No XML document '$source' found",
+      (ref $class ? "search paths are " . join(', ', @{ $$class{searchpaths} }) : ()));
+    return; }
+  $options{source} = $path;
   if (!$options{sourceDirectory}) {
-    my ($dir, $name, $ext) = pathname_split($source);
+    my ($dir, $name, $ext) = pathname_split($path);
     $options{sourceDirectory} = $dir || '.'; }
-  my $doc = $class->new(LaTeXML::Common::XML::Parser->new()->parseFile($source), %options);
+  my $doc = $class->new(LaTeXML::Common::XML::Parser->new()->parseFile($path), %options);
   $doc->validate if $$doc{validate};
   return $doc; }
 
@@ -782,7 +788,8 @@ sub setDocument_internal {
     ### No, this ultimately can be the xml source, which may be the destination;
     ### adding this gets the wrong graphics (already processed!)
     ### push(@paths, pathname_absolute($$self{sourceDirectory})) if $$self{sourceDirectory};
-    $$self{searchpaths} = [@paths]; }
+    # But do add cwd after the document specified paths.
+    $$self{searchpaths} = [@paths, '.']; }
   elsif ($roottype eq 'XML::LibXML::Element') {
     $$self{document} = XML::LibXML::Document->new("1.0", "UTF-8");
     # Assume we've got any namespaces already ?
