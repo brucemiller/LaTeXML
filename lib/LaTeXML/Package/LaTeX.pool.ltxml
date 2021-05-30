@@ -1007,9 +1007,9 @@ Let(T_CS('\@leftmark'),  T_CS('\@firstoftwo'));
 Let(T_CS('\@rightmark'), T_CS('\@secondoftwo'));
 # In normal latex, these should \clearpage; at least we want new paragraph?
 # Optional arg is sortof a heading, but w/o any particular styling(?)
-DefMacro('\twocolumn[]', '\ifx.#1.\else\par\noindent#1\fi\par');
-DefMacro('\onecolumn',   '\par');
-
+DefMacro('\twocolumn[]',   '\ifx.#1.\else\par\noindent#1\fi\par');
+DefMacro('\onecolumn',     '\par');
+DefMacro('\@topnewpage{}', '#1');
 # Style parameters from Fig. C.3, p.182
 DefRegister('\paperheight'     => Dimension(0));
 DefRegister('\paperwidth'      => Dimension(0));
@@ -3146,8 +3146,10 @@ DefConditional('\iflx@donecaption');
 DefMacro('\caption',
 '\lx@donecaptiontrue\@ifundefined{@captype}{\@@generic@caption}{\expandafter\@caption\expandafter{\@captype}}');
 # First, check for trailing \label, move it into the caption as a standard position
+# NOTE: If one day we want to unlock \@caption, make sure to test against arXiv:cond-mat/0001395 for a passing build.
 DefMacro('\@caption{}[]{}',
-  '\@ifnext\label{\@caption@postlabel{#1}{#2}{#3}}{\@caption@{#1}{#2}{#3}}');
+  '\@ifnext\label{\@caption@postlabel{#1}{#2}{#3}}{\@caption@{#1}{#2}{#3}}', locked => 1);
+
 DefMacro('\@caption@postlabel{}{}{} SkipMatch:\label Semiverbatim',
   '\@caption@{#1}{#2}{#3\label{#4}}');
 
@@ -3316,6 +3318,12 @@ DefMacroI('\figurename',  undef, 'Figure');
 DefMacroI('\figuresname', undef, 'Figures');    # Never used?
 DefMacroI('\tablename',   undef, 'Table');
 DefMacroI('\tablesname',  undef, 'Tables');
+
+Let('\outer@nobreak', '\@empty');
+DefMacro('\@dbflt{}',           '#1');
+DefMacro('\@xdblfloat{}[]',     '\@xfloat{#1}[#2]');
+DefMacro('\@floatplacement',    '');
+DefMacro('\@dblfloatplacement', '');
 
 #======================================================================
 # C.9.2 Marginal Notes
