@@ -45,7 +45,7 @@ sub latexml_tests {
     plan tests => (1
         + scalar(@core_tests)
         + scalar(@post_tests)
-        + 3 * scalar(@daemon_tests) - ($directory =~ /runtimes/ ? 2 : 0));    # !!
+        + 2 * scalar(@daemon_tests) - ($directory =~ /runtimes/ ? 1 : 0));    # !!
     if (eval { use_ok("LaTeXML::Core"); }) {
     SKIP: {
         my $requires = $options{requires} || {};    # normally a hash: test=>[files...]
@@ -69,8 +69,8 @@ sub latexml_tests {
         foreach my $name (@daemon_tests) {
           my $test = "$directory/$name";
         SKIP: {
-            skip("No file $test.xml and/or $test.status", 1)
-              unless ((-f "$test.xml") && (-f "$test.status"));
+            skip("No file $test.xml", 1)
+              unless (-f "$test.xml");
             my $ntests = ($directory =~ /runtimes/ ? 1 : 3);
             next unless check_requirements($test, $ntests, $$requires{'*'}, $$requires{$name});
             daemon_ok($test, $directory, $options{generate});
@@ -91,7 +91,7 @@ sub check_requirements {
       @required_packages = @$reqmts; }
     elsif (ref $reqmts eq 'HASH') {
       @required_packages = (ref $$reqmts{packages} eq 'ARRAY' ? @{ $$reqmts{packages} } : $$reqmts{packages});
-      $texlive_min = $$reqmts{texlive_min} || 0; }
+      $texlive_min       = $$reqmts{texlive_min} || 0; }
     foreach my $reqmt (@required_packages) {
       if (pathname_kpsewhich($reqmt) || pathname_find($reqmt)) { }
       else {
@@ -260,7 +260,6 @@ sub daemon_ok {
     }
     $invocation .= "--" . $$opt[0] . (length($$opt[1]) ? ('="' . $$opt[1] . '" ') : (' '));
   }
-  $invocation .= " 2>$localname.test.status ";
   if (!$generate) {
     pathname_chdir($dir);
     my $exit_code = system($invocation);
@@ -273,13 +272,7 @@ sub daemon_ok {
     if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {
       if (my $xmlstrings = process_xmlfile("$base.xml", $base)) {
         is_strings($teststrings, $xmlstrings, $base); } }
-
-    # Compare the just generated $base.test.status to the previous $base.status
-    if (my $teststatus = get_filecontent("$base.test.status", $base)) {
-      if (my $status = get_filecontent("$base.status", $base)) {
-        is_strings($teststatus, $status, $base); } }
-    unlink "$base.test.xml"    if -e "$base.test.xml";
-    unlink "$base.test.status" if -e "$base.test.status";
+    unlink "$base.test.xml" if -e "$base.test.xml";
   }
   else {
     #TODO: Skip 3 tests
@@ -287,8 +280,7 @@ sub daemon_ok {
     pathname_chdir($dir);
     system($invocation);
     pathname_chdir($current_dir);
-    move("$base.test.xml",    "$base.xml")    if -e "$base.test.xml";
-    move("$base.test.status", "$base.status") if -e "$base.test.status";
+    move("$base.test.xml", "$base.xml") if -e "$base.test.xml";
   }
   return; }
 

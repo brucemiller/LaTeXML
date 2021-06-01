@@ -146,9 +146,9 @@ sub convert {
   my $opts    = $$self{opts};
   my $runtime = $$self{runtime};
   ($$runtime{status}, $$runtime{status_code}) = (undef, undef);
-  NoteLog("$LaTeXML::IDENTITY");
+  Note("$LaTeXML::IDENTITY");
   NoteLog("invoked as [$0 " . join(' ', @ARGV) . "]");
-  NoteLog(($$opts{recursive} ? "recursive " : "") . "processing started " . localtime());
+  Note(($$opts{recursive} ? "recursive " : "") . "processing started " . localtime());
 
   # 1.3 Prepare for What's IN:
   # We use a new temporary variable to avoid confusion with daemon caching
@@ -284,9 +284,8 @@ sub convert {
     $$runtime{status_code} = 3;
 
     NoteLog($eval_report) if $eval_report;
-    NoteLog(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
+    Note(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
     NoteLog(($$opts{recursive} ? "recursive " : "") . "Status:conversion:" . ($$runtime{status_code} || '0'));
-
     # If we just processed an archive, clean up sandbox directory.
     if ($$opts{whatsin} =~ /^archive/) {
       rmtree($$opts{sourcedirectory});
@@ -302,7 +301,7 @@ sub convert {
     return { result => $serialized, log => $log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
   else {
     # Standard report, if we're not in a Fatal case
-    NoteLog(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
+    Note(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
   }
   # 2.3 Clean up and exit if we only wanted the serialization of the core conversion
   if ($serialized) {
@@ -361,7 +360,7 @@ sub convert {
       if ($ref_result =~ /Document$/) {
         $serialized = $result->toString(1);
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
-      } else {                      # fragment case
+      } else {    # fragment case
         $serialized = $result->toString(1, 1);
     } }
     elsif ($$opts{format} =~ /^html/) {
@@ -369,7 +368,7 @@ sub convert {
         # Needs explicit encode call, toStringHTML returns Perl byte strings
         $serialized = $result->getDocument->toStringHTML;
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized; }
-      else {                        # fragment case
+      else {      # fragment case
         local $XML::LibXML::setTagCompression = 1;
         $serialized = $result->toString(1, 1); } } }
   # Compressed/archive/other case, just pass on
@@ -473,7 +472,7 @@ sub convert_post {
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
       push(@procs, LaTeXML::Post::CrossRef->new(
-          db => $DB, urlstyle => $$opts{urlstyle},
+          db        => $DB, urlstyle => $$opts{urlstyle},
           extension => $$opts{extension},
           ($$opts{numbersections} ? (number_sections => 1)              : ()),
           ($$opts{navtoc}         ? (navigation_toc  => $$opts{navtoc}) : ()),
@@ -645,7 +644,7 @@ sub convert_post {
   }
   $$runtime{status_code} = max($$runtime{status_code}, $latexmlpost->getStatusCode);
   ### HACKY END
-  NoteLog(($$opts{recursive} ? "recursive " : "") . "Post-processing complete: " . $latexmlpost->getStatusMessage);
+  Note(($$opts{recursive} ? "recursive " : "") . "Post-processing complete: " . $latexmlpost->getStatusMessage);
   NoteLog(($$opts{recursive} ? "recursive " : "") . "processing finished " . localtime());
 
   # Avoid writing the main file twice (non-archive documents):

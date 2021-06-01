@@ -34,12 +34,11 @@ use lib catdir($RealBin_safe, "..", "lib");
 #$ENV{PATH} = "$RealBin_safe:/usr/bin:/usr/local/bin:";
 use LaTeXML;
 use LaTeXML::Common::Config;
+use LaTeXML::Common::Error;
 use URI::Escape;
 use HTTP::Response;
 use HTTP::Request;
 use JSON::XS qw(decode_json);
-
-binmode(STDERR, ":encoding(UTF-8)");
 
 # Determine if a socket server is installed locally and obtain its pathname:
 my $latexmls;
@@ -52,6 +51,14 @@ my $opts = LaTeXML::Common::Config->new(input_limit => 100);
 # Parse and load command-line options
 $opts->read(\@ARGV);
 my $keyvals = $opts->scan_to_keyvals(\@ARGV);
+# Get the full source of interest
+my $source = $opts->get('source');
+$opts->delete('source');
+
+# Setup logging messages
+SetVerbosity($opts->get('verbosity'));
+UseSTDERR();    # setup for LaTeXML.pm to also use STDERR spinner messages.
+my $starttime = StartTime();
 
 # Client-side options:
 my ($port, $address, $expire, $local) = map { $opts->get($_) } qw(port address expire);
@@ -63,7 +70,7 @@ if ($address =~ s/\/(.+)$//) {    # strip away route
 }
 # Local if peerhost is localhost:
 $local  = ($expire && ($expire == -1)) || ($address eq '127.0.0.1');
-$expire = -1 unless ((defined $expire) && $latexmls);
+$expire = -1                   unless ((defined $expire) && $latexmls);
 $port   = ($local ? 3334 : 80) unless $port;    #Fall back if all fails...
 #***************************************************************************
 #Add some base, so that relative paths work
@@ -81,10 +88,7 @@ $deststat = 0 unless defined $deststat;
 push @$keyvals, ['path', $cdir];    #add current path, to ensure never empty
 push @{ $opts->get('paths') }, $cdir;
 
-# Get the full source of interest
-my $source = $opts->get('source');
-$opts->delete('source');
-if (!$source) { print STDERR "Input was empty.\n"; exit 1; }
+if (!$source) { die "Input was empty.\n"; }
 if ($source eq '-') {
   { local $/ = undef;
     $source = "literal:" . <STDIN>;
@@ -106,17 +110,12 @@ my $sock = $latexmls && IO::Socket::INET->new(
 if ((!$sock) && $local && ($expire == -1)) {
   # Don't boot a server, single job requested:
   require LaTeXML;
-  use LaTeXML::Common::Error;
-  SetVerbosity($$opts{verbosity});
-  UseSTDERR();
   $opts->set('local', 1);
   my $converter = LaTeXML->get_converter($opts);
   $converter->prepare_session($opts);
   my $response = $converter->convert($source);
   ($result, $status, $log) = map { $$response{$_} } qw(result status log) if defined $response;
 } else {
-  # TODO: May need to check the options even in the remote cases, e.g. to fish out "whatsout"
-  # $opts->check;
   my $message = q{};
   foreach my $entry (@$keyvals) {
     my ($key, $value) = ($$entry[0], $$entry[1]);
@@ -133,56 +132,43 @@ if ((!$sock) && $local && ($expire == -1)) {
     my $response = decode_json($http_response->content);
     ($result, $status, $log) = map { $$response{$_} } qw(result status log) if defined $response;
   } else {
-    print STDERR "Fatal:HTTP:" . $http_response->code() . " " . $http_response->message() . "\n"; exit 1;
+    die("Fatal:HTTP:" . $http_response->code() . " " . $http_response->message() . "\n");
   }
 }
 
 #***************************************************************************
 ### Common treatment of output:
+my $destination = $opts->get('destination');
 
-# Special features for latexmls:
+# Always write log to a file, either specified via --log or 'latexml.log'
+# with the exception of *archive* outputs, where the log is in the ZIP
 my $whatsout   = $opts->get('whatsout');
 my $is_archive = $whatsout && ($whatsout =~ /^archive/);
-if ($log) {
-  if ($opts->get('log')) {
-    if (!$is_archive) {    # archives only have the archive file
-      my $clog = $opts->get('log');
-      my $log_handle;
-      if (!open($log_handle, ">", $clog)) {
-        print STDERR "Fatal:I/O:forbidden Couldn't open log file $clog : $!\n";
-        exit 1;
-      }
-      print $log_handle $log;
-      close $log_handle;
-    }
-  } else { print STDERR "\n", $log, "\n"; }    #STDERR log otherwise
-}
+if (!$is_archive && $log) {
+  my $log_path = $opts->get('log') || 'latexml.log';
+  open(my $log_handle, ">", $log_path) or die("Fatal:I/O:forbidden Couldn't open log file $log_path : $!\n");
+  print $log_handle $log;
+  close $log_handle; }
 
 if ($result) {
   # NOTE that we are serializing the XML::LibXML::Document whose toString
   # has ALREADY encoded (in this case to utf8), so NO encode is needed!
-  if ($opts->get('destination')) {
+  if ($destination) {
     my $output_handle;
-    if (!open($output_handle, ">", $opts->get('destination'))) {
-      print STDERR "Fatal:I/O:forbidden Couldn't open output file " . $opts->get('destination') . ": $!";
-      exit 1; }
+    open($output_handle, ">", $destination) or die("Fatal:I/O:forbidden Couldn't open output file " . $destination . ": $!");
     if ($whatsout eq 'archive') {
       binmode($output_handle, ':raw');
     }
     print $output_handle $result;
     close $output_handle;
   } else {
-    print STDOUT $result, "\n"; }    #Output to STDOUT
-}
-
-# Print summary, if requested, to STDERR
-if ($opts->get('destination')) {
-  print STDERR $status;
-  print STDERR summary($opts->get('destination'), $deststat);
-}
+    binmode(STDOUT, ":encoding(UTF-8)");
+    print STDOUT "\n", $result, "\n"; } }
 
 if ($status =~ /fatal error/) {    # non-zero exit code for fatal conversions
   exit 1;
+} else {
+  exit 0;
 }
 
 # == Helpers ==
@@ -195,14 +181,11 @@ sub summary {
 sub process_local {
   my ($req_address, $req_port, $req_route, $req_message, $req_sock) = @_;
   #daemon is running, reconnect and feed in request
-  $req_sock = IO::Socket::INET->new(
+  $req_sock = $req_sock || IO::Socket::INET->new(
     PeerAddr => $req_address,
     PeerPort => $req_port,
     Proto    => 'tcp',
-  ) unless $req_sock;
-  if (!$req_sock) {
-    print STDERR "Fatal:perl:socket-create Could not create socket: $!\n";
-    exit 1; }
+  ) || die "Fatal:perl:socket-create Could not create socket: $!\n";
   my $req_message_length = length($req_message);
   $req_route = "$req_address:$req_port" unless $req_route;
   my $payload = <<"PAYLOADEND";
