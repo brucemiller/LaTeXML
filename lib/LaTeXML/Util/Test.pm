@@ -71,7 +71,7 @@ sub latexml_tests {
         SKIP: {
             skip("No file $test.xml", 1)
               unless (-f "$test.xml");
-            my $ntests = ($directory =~ /runtimes/ ? 1 : 3);
+            my $ntests = ($directory =~ /runtimes/ ? 1 : 2);
             next unless check_requirements($test, $ntests, $$requires{'*'}, $$requires{$name});
             daemon_ok($test, $directory, $options{generate});
           } } } }
