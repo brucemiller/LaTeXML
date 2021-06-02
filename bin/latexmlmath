@@ -245,7 +245,7 @@ my $status = $latexml->getStatusMessage;
 my $runtime = RunTime($starttime);
 NoteLog("Conversion complete: " . $status);
 NoteSTDERR("Conversion complete: " . $status . " (reqd. $runtime)");
-UseLog(undef);
+FinalizeLog();
 
 #======================================================================
 # Helpers

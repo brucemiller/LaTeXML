@@ -55,17 +55,22 @@ sub new {
   # Special check if the debug directive is on, just to neutralize the bind_log
   my $debug_directives = $$self{opts}->{debug};
   $LaTeXML::DEBUG{latexml} = 1 if (ref $debug_directives eq 'ARRAY') && (grep { /latexml/i } @$debug_directives);
-  $self->bind_log;
-  my $rv = eval { $config->check; };
-  $$self{log} .= $self->flush_log;
+  eval { $config->check; };
+  if ($@) {
+    $self->bind_log;
+    NoteLog($@);
+    $$self{log} .= $self->flush_log; }
+
   return $self; }
 
 sub prepare_session {
   my ($self, $config) = @_;
   # 1. Ensure option "sanity"
-  $self->bind_log;
-  my $rv = eval { $config->check; };
-  $$self{log} .= $self->flush_log;
+  eval { $config->check; };
+  if ($@) {
+    $self->bind_log;
+    NoteLog($@);
+    $$self{log} .= $self->flush_log; }
 
   my $opts                 = $config->options;
   my $opts_comparable      = { map { $_ => $$opts{$_} } @COMPARABLE };
@@ -138,8 +143,7 @@ sub convert {
   $$self{runtime} = {};
   $self->initialize_session unless $$self{ready};
   if (!$$self{ready}) {    # We can't initialize, return error:
-    return { result => undef, log => $$self{log}, status => "Initialization failed.", status_code => 3 };
-  }
+    return { result => undef, log => $self->flush_log, status => "Initialization failed.", status_code => 3 }; }
 
   $self->bind_log;
   # 1.2 Inform of identity, increase conversion counter
@@ -292,13 +296,12 @@ sub convert {
       $$opts{sourcedirectory} = $$opts{archive_sourcedirectory}; }
 
     # Close and restore STDERR to original condition.
-    my $log = $self->flush_log;
     $serialized = $dom           if ($$opts{format} eq 'dom');
     $serialized = $dom->toString if ($dom && (!defined $serialized));
     # Using the Core::Document::serialize_aux, so need an explicit encode into bytes
     $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
 
-    return { result => $serialized, log => $log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
+    return { result => $serialized, log => $self->flush_log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
   else {
     # Standard report, if we're not in a Fatal case
     Note(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
@@ -310,8 +313,7 @@ sub convert {
     if ($$opts{whatsin} =~ /^archive/) {
       rmtree($$opts{sourcedirectory});
       $$opts{sourcedirectory} = $$opts{archive_sourcedirectory}; }
-    my $log = $self->flush_log;
-    return { result => $serialized, log => $log, status => $$runtime{status}, status_code => $$runtime{status_code} };
+    return { result => $serialized, log => $self->flush_log, status => $$runtime{status}, status_code => $$runtime{status_code} };
   }
 
   # 3 If desired, post-process
@@ -376,8 +378,7 @@ sub convert {
 
   # 5.2 Finalize logging and return a response containing the document result, log and status
   Note("Status:conversion:" . ($$runtime{status_code} || '0'));
-  my $log = $self->flush_log;
-  return { result => $serialized, log => $log, status => $$runtime{status}, 'status_code' => $$runtime{status_code} };
+  return { result => $serialized, log => $self->flush_log, status => $$runtime{status}, 'status_code' => $$runtime{status_code} };
 }
 
 ###########################################
@@ -696,18 +697,30 @@ sub new_latexml {
 
 sub bind_log {
   my ($self) = @_;
-  $LaTeXML::LOG_STACK++;    # Only bind once
-  return if $LaTeXML::LOG_STACK > 1;
-  UseLog(\$$self{log}, 1);
+  my $opts = $$self{opts};
+  # For now --whatsout=archive just gets deferred back to the old code
+  # But this needs a streamlined refactor in the future.
+  # Something to consider:
+  # 1. Multiple latexml_workers are started in the same CWD by their harness
+  # 2. Before an archive job starts, they would be opening the same default
+  # "latexml.log" or "cortex.log" etc.
+  # 3. The final log destination is available only after the temp dir is setup
+  # ... So we may want to completely remodel the whatsout handling
+  #     but what is cleanest and least confusing?
+  if (my $logfile = $$opts{log}) {
+    my $whatsout = $$opts{whatsout};
+    if ($whatsout && ($whatsout !~ /^archive/)) {
+      UseLog($logfile, 1); }
+    else {
+      UseLog(\$$self{log}, 1);
+    }
+  } else {
+    UseLog(\$$self{log}, 1); }
   return; }
 
 sub flush_log {
   my ($self) = @_;
-  $LaTeXML::LOG_STACK--;    # May the modern Perl community forgive me for this hack...
-  return '' if $LaTeXML::LOG_STACK > 0;
-
-  UseLog(undef);
-
+  FinalizeLog();
   my $log = $$self{log};
   $$self{log} = q{};
   return $log; }

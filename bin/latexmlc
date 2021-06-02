@@ -35,6 +35,7 @@ use lib catdir($RealBin_safe, "..", "lib");
 use LaTeXML;
 use LaTeXML::Common::Config;
 use LaTeXML::Common::Error;
+use LaTeXML::Util::Pathname qw(pathname_is_literaldata);
 use URI::Escape;
 use HTTP::Response;
 use HTTP::Request;
@@ -80,6 +81,7 @@ if (!$opts->get('base')) {
   $opts->set('base', $cdir);
   push @$keyvals, ['base', $cdir];
 }
+
 # Record if destination exists, for summary
 my $deststat;
 $deststat = (stat($opts->get('destination')))[9] if $opts->get('destination');
@@ -96,6 +98,27 @@ if ($source eq '-') {
     @$keyvals = grep { $_->[0] !~ /source|tex/ } @$keyvals;
     push @$keyvals, $source;
   } }
+
+# Always create a .log file for tracking the conversion messages
+# Use $jobname.latexml.log or just latexml.log for logging by default
+#
+# In the local conversion case, this can be delegated to LaTeXML.pm
+my $logfile = $opts->get('log');
+if (!$logfile) {
+  if (!pathname_is_literaldata($source)) {
+    my ($dir, $name, $ext) = pathname_split($source);
+    if ($name) {
+      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); }
+    else {
+      $logfile = 'latexml.log';
+  } }
+  else {
+    $logfile = 'latexml.log'; }
+  $opts->set('log', $logfile); }
+# A bit special: Since LaTeXML.pm will always try to append to the log file
+# make sure the file is new before we start.
+unlink($logfile) if (-e $logfile);
+
 #***************************************************************************
 # Prepare output variables:
 my ($result, $status, $log);
@@ -122,6 +145,7 @@ if ((!$sock) && $local && ($expire == -1)) {
     $message .= uri_escape($key) . ($value ? '=' . uri_escape($value) : '') . '&';
   }
   chop $message;
+  ProgressSpinup("Calling out to latexmls");
   #Startup daemon and feed in args, if needed
   system($latexmls, "--port=$port",
     "--expire=$expire", "--autoflush=" . $opts->get('input_limit')) if !$sock && $local;
@@ -131,10 +155,11 @@ if ((!$sock) && $local && ($expire == -1)) {
   if ($http_response->is_success) {
     my $response = decode_json($http_response->content);
     ($result, $status, $log) = map { $$response{$_} } qw(result status log) if defined $response;
+    NoteSTDERR("Conversion complete: " . $$response{status});
   } else {
     die("Fatal:HTTP:" . $http_response->code() . " " . $http_response->message() . "\n");
   }
-}
+  ProgressSpindown("Calling out to latexmls"); }
 
 #***************************************************************************
 ### Common treatment of output:
@@ -144,11 +169,16 @@ my $destination = $opts->get('destination');
 # with the exception of *archive* outputs, where the log is in the ZIP
 my $whatsout   = $opts->get('whatsout');
 my $is_archive = $whatsout && ($whatsout =~ /^archive/);
-if (!$is_archive && $log) {
-  my $log_path = $opts->get('log') || 'latexml.log';
-  open(my $log_handle, ">", $log_path) or die("Fatal:I/O:forbidden Couldn't open log file $log_path : $!\n");
-  print $log_handle $log;
-  close $log_handle; }
+
+if ($log) {
+  chomp($log);
+  # If we get a log payload in the response, likely from a latexmls call
+  # we need to write it to file from within latexmlc itself:
+  my $logfile = $opts->get('log');
+  UseLog($logfile);
+  NoteLog($log);
+  FinalizeLog();
+  NoteSTDERR("full log written to $logfile."); }
 
 if ($result) {
   # NOTE that we are serializing the XML::LibXML::Document whose toString
@@ -165,6 +195,7 @@ if ($result) {
     binmode(STDOUT, ":encoding(UTF-8)");
     print STDOUT "\n", $result, "\n"; } }
 
+# == End of Program ==
 if ($status =~ /fatal error/) {    # non-zero exit code for fatal conversions
   exit 1;
 } else {

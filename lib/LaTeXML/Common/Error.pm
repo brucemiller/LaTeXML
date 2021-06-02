@@ -22,7 +22,7 @@ use base qw(Exporter);
 our @EXPORT = (
   qw(&SetVerbosity),
   # Managing STDERR and Logfile messages
-  qw(&UseSTDERR &UseLog),
+  qw(&UseSTDERR &UseLog &FinalizeLog),
   # Error Reporting
   qw(&Fatal &Error &Warn &Info),
   # General messages
@@ -98,13 +98,7 @@ our $log_count = 0;
 sub UseLog {
   my ($path, $append) = @_;
   if (!$path) {    # Single false argument? Turn OFF and Close
-    $log_count--;
-    return if !$LOG || $log_count;
-    # ensure trailing newline when flushing, since we may have
-    # multiple re-opens during the same conversion run (preamble, main, post ...)
-    print $LOG _freshline($LOG);
-    close($LOG) or die "Cannot close log file: $!";
-    $LOG = undef; }
+    FinalizeLog(); }
   else {
     $log_count++;
     return if $LOG or not($path);                 # already opened?
@@ -112,6 +106,16 @@ sub UseLog {
     open($LOG, ($append ? '>>' : '>'), $path) or die "Cannot open log file $path for writing: $!";
     $LOG_PATH = $path;
     binmode($LOG, ":encoding(UTF-8)"); }
+  return; }
+
+sub FinalizeLog {
+  $log_count--;
+  return if !$LOG || $log_count;
+  # ensure trailing newline when flushing, since we may have
+  # multiple re-opens during the same conversion run (preamble, main, post ...)
+  print $LOG _freshline($LOG);
+  close($LOG) or die "Cannot close log file: $!";
+  $LOG = undef;
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -200,10 +204,10 @@ sub _spinnerstep {    # Increment stepper
   if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $short, $start) = @{ $spinnerstack[-1] };
     $spinnerpos = ($spinnerpos + 1) % 4;
-    if ($note) {      # If note, redraw whole line.
+    if ($note) {    # If note, redraw whole line.
       print STDERR join(' ', $spinnerpre, $spinnerchar[$spinnerpos],
         (map { $$_[1]; } @spinnerstack), $note, "\x1b[0K"), $spinnerpost; }
-    else {            # overwrite previous spinner
+    else {          # overwrite previous spinner
       print STDERR $spinnerpre . ' ', $spinnerchar[$spinnerpos], $spinnerpost; } }
   return; }
 
@@ -702,11 +706,11 @@ sub caller_info {
 
 sub format_arg {
   my ($arg) = @_;
-  if    (not defined $arg) { $arg = 'undef'; }
-  elsif (ref $arg)         { $arg = Stringify($arg); }    # Allow overloaded stringify!
-  elsif ($arg =~ /^-?[\d.]+\z/) { }                       # Leave numbers alone.
-  else {                                                  # Otherwise, string, so quote
-    $arg =~ s/'/\\'/g;                                        # Slashify '
+  if    (not defined $arg)      { $arg = 'undef'; }
+  elsif (ref $arg)              { $arg = Stringify($arg); }    # Allow overloaded stringify!
+  elsif ($arg =~ /^-?[\d.]+\z/) { }                            # Leave numbers alone.
+  else {                                                       # Otherwise, string, so quote
+    $arg =~ s/'/\\'/g;                                         # Slashify '
     $arg =~ s/([[:cntrl:]])/ "\\".chr(ord($1)+ord('A'))/ge;
     $arg = "'$arg'" }
   return trim($arg); }
@@ -791,6 +795,10 @@ If C<$append> is true, this file will be appended to,
 otherwise, it will be created initially empty.
 If this is not called, there will be no log file.
 C<< UseLog(undef); >> disables and closes the log file.
+
+=item C<< FinalizeLog(); >>
+
+Disables and closes the current open log file, if any. Alias for C<< UseLog(undef); >>
 
 =back
 

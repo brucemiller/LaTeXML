@@ -71,12 +71,20 @@ UseSTDERR();
 if (my @baddirs = grep { !-d $_ } @paths) {
   warn "These path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
-if (!pathname_is_literaldata($source)) {
-  if (!$logfile) {
+# Always create a .log file for tracking the conversion messages
+# Use $jobname.latexml.log or just latexml.log for logging by default
+if (!$logfile) {
+  if (!pathname_is_literaldata($source)) {
     my ($dir, $name, $ext) = pathname_split($source);
     if ($name) {
-      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); } }
-  UseLog($logfile) if $logfile; }
+      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); }
+    else {
+      $logfile = 'latexml.log';
+  } }
+  else {
+    $logfile = 'latexml.log'; } }
+UseLog($logfile);
+
 NoteLog("$LaTeXML::IDENTITY");
 my $starttime = StartTime();
 NoteSTDERR("$LaTeXML::IDENTITY processing $source ...");
@@ -138,7 +146,7 @@ my $status  = $latexml->getStatusMessage;
 my $runtime = RunTime($starttime);
 NoteLog("Conversion complete: " . $status);
 NoteSTDERR("Conversion complete: " . $status . " (reqd. $runtime)");
-UseLog(undef);
+FinalizeLog();
 
 if    (!$serialized) { }
 elsif ($destination) {
