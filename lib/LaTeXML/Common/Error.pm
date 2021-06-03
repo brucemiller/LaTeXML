@@ -22,7 +22,7 @@ use base qw(Exporter);
 our @EXPORT = (
   qw(&SetVerbosity),
   # Managing STDERR and Logfile messages
-  qw(&UseSTDERR &UseLog &FinalizeLog),
+  qw(&UseSTDERR &UseLog),
   # Error Reporting
   qw(&Fatal &Error &Warn &Info),
   # General messages
@@ -98,7 +98,13 @@ our $log_count = 0;
 sub UseLog {
   my ($path, $append) = @_;
   if (!$path) {    # Single false argument? Turn OFF and Close
-    FinalizeLog(); }
+    $log_count--;
+    return if !$LOG || $log_count;
+    # ensure trailing newline when flushing, since we may have
+    # multiple re-opens during the same conversion run (preamble, main, post ...)
+    print $LOG _freshline($LOG);
+    close($LOG) or die "Cannot close log file: $!";
+    $LOG = undef; }
   else {
     $log_count++;
     return if $LOG or not($path);                 # already opened?
@@ -106,16 +112,6 @@ sub UseLog {
     open($LOG, ($append ? '>>' : '>'), $path) or die "Cannot open log file $path for writing: $!";
     $LOG_PATH = $path;
     binmode($LOG, ":encoding(UTF-8)"); }
-  return; }
-
-sub FinalizeLog {
-  $log_count--;
-  return if !$LOG || $log_count;
-  # ensure trailing newline when flushing, since we may have
-  # multiple re-opens during the same conversion run (preamble, main, post ...)
-  print $LOG _freshline($LOG);
-  close($LOG) or die "Cannot close log file: $!";
-  $LOG = undef;
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -795,10 +791,6 @@ If C<$append> is true, this file will be appended to,
 otherwise, it will be created initially empty.
 If this is not called, there will be no log file.
 C<< UseLog(undef); >> disables and closes the log file.
-
-=item C<< FinalizeLog(); >>
-
-Disables and closes the current open log file, if any. Alias for C<< UseLog(undef); >>
 
 =back
 

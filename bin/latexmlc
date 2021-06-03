@@ -177,7 +177,7 @@ if ($log) {
   my $logfile = $opts->get('log');
   UseLog($logfile);
   NoteLog($log);
-  FinalizeLog();
+  UseLog(undef);
   NoteSTDERR("full log written to $logfile."); }
 
 if ($result) {

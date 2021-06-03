@@ -471,7 +471,7 @@ my $status  = $latexmlpost->getStatusMessage;
 my $runtime = RunTime($starttime);
 NoteLog("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . ": " . $status);
 NoteSTDERR("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . " " . $status . " (reqd. $runtime)");
-FinalizeLog();
+UseLog(undef);
 CheckDebuggable();
 
 #======================================================================

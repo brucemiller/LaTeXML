@@ -720,7 +720,7 @@ sub bind_log {
 
 sub flush_log {
   my ($self) = @_;
-  FinalizeLog();
+  UseLog(undef);
   my $log = $$self{log};
   $$self{log} = q{};
   return $log; }
