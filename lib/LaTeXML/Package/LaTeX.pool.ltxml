@@ -993,7 +993,7 @@ DefPrimitive('\markboth{}{}',    undef);
 DefPrimitiveI('\leftmark',  undef, undef);
 DefPrimitiveI('\rightmark', undef, undef);
 DefPrimitive('\pagenumbering{}', undef);
-#DefMacro('\@mkboth', '\@gobbletwo');    # default, just in case
+DefMacro('\@mkboth', '\@gobbletwo');    # default, just in case
 DefMacro('\ps@empty',
   '\let\@mkboth\@gobbletwo\let\@oddhead\@empty\let\@oddfoot\@empty' .
     '\let\@evenhead\@empty\let\@evenfoot\@empty');
