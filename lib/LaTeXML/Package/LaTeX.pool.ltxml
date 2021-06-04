@@ -993,7 +993,7 @@ DefPrimitive('\markboth{}{}',    undef);
 DefPrimitiveI('\leftmark',  undef, undef);
 DefPrimitiveI('\rightmark', undef, undef);
 DefPrimitive('\pagenumbering{}', undef);
-DefMacro('\@mkboth', '\@gobbletwo');    # default, just in case
+#DefMacro('\@mkboth', '\@gobbletwo');    # default, just in case
 DefMacro('\ps@empty',
   '\let\@mkboth\@gobbletwo\let\@oddhead\@empty\let\@oddfoot\@empty' .
     '\let\@evenhead\@empty\let\@evenfoot\@empty');
@@ -3949,8 +3949,12 @@ Let('\@@input', '\input');    # Save TeX's version.
                               # LaTeX's \input is a bit different...
 DefMacroI('\input', undef, '\@ifnextchar\bgroup\@iinput\@@input');
 DefPrimitive('\@iinput {}', sub { Input(Expand($_[1])); });
-DefMacro('\@input{}',  '\IfFileExists{#1}{\@@input\@filef@und}{\typeout{No file #1.}}}');
+DefMacro('\@input{}',  '\IfFileExists{#1}{\@@input\@filef@und}{\typeout{No file #1.}}');
 DefMacro('\@input@{}', '\InputIfFileExists{#1}{}{\typeout{No file #1.}}');
+
+DefMacro('\quote@name{}',          '"\quote@@name#1\@gobble""');
+DefMacro('\quote@@name{} Match:"', '#1\quote@@name');
+DefMacro('\unquote@name{}',        '\quote@@name#1\@gobble"');
 
 # Note that even excluded files SHOULD have the effects of their inclusion
 # simulated by having read the corresponding aux file;
@@ -5613,19 +5617,19 @@ DefMacro('\IfFileExists{}{}{}', sub {
     my ($gullet, $file, $if, $else) = @_;
     my $file_string = ToString(Expand($file));
     if (FindFile($file_string)) {
-      DefMacroI('\@filef@und', undef, $file);
-      return $if->unlist; }
+      DefMacro('\@filef@und', '"' . $file_string . '" ');
+      return ($if->unlist); }
     else {
-      return $else->unlist; } });
+      return ($else->unlist); } });
 
 DefMacro('\InputIfFileExists{}{}{}', sub {
     my ($gullet, $file, $if, $else) = @_;
     my $file_string = ToString(Expand($file));
-    if (my $path = FindFile($file_string)) {
-      DefMacroI('\@filef@und', undef, $file);
-      Input($path);
-      $if->unlist; }
-    else { $else->unlist; } });
+    if (FindFile($file_string)) {
+      DefMacro('\@filef@und', '"' . $file_string . '" ');
+      Input($file_string);
+      return ($if->unlist); }
+    else { return ($else->unlist); } });
 
 #======================================================================
 # Hair
