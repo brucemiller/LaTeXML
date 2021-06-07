@@ -1180,18 +1180,25 @@ DefMacro('\format@title@abstract{}', '#1');
 # For now, we just give an info message
 DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
   beforeDigest => sub { Let('\centering', '\relax');
+    AddToMacro(T_CS('\maketitle'), T_CS('\unwind@titlepage'));
     DefEnvironment('{abstract}',
       '<ltx:abstract>#body</ltx:abstract>');
     Info('unexpected', 'titlepage', $_[0],
       "When using titlepage, Frontmatter will not be well-structured");
     return; },
-  beforeDigestEnd => sub { Digest(T_CS('\maybe@end@title')); },
+  beforeDigestEnd => sub { Digest(T_CS('\maybe@end@titlepage')); },
   locked          => 1, mode => 'text');
 
 Tag('ltx:titlepage', autoClose => 1);
-DefConstructorI('\maybe@end@title', undef, sub {
+DefConstructorI('\maybe@end@titlepage', undef, sub {
     my ($document) = @_;
     $document->maybeCloseElement('ltx:titlepage'); });
+DefConstructorI('\unwind@titlepage', undef, sub {
+    my ($document) = @_;
+    if (my $titlepage = $document->maybeCloseElement('ltx:titlepage')) {
+      $document->unwrapNodes($titlepage);
+    }
+});
 
 DefMacro('\sectionmark{}',       Tokens());
 DefMacro('\subsectionmark{}',    Tokens());
