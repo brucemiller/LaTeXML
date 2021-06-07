@@ -35,7 +35,7 @@ use lib catdir($RealBin_safe, "..", "lib");
 use LaTeXML;
 use LaTeXML::Common::Config;
 use LaTeXML::Common::Error;
-use LaTeXML::Util::Pathname qw(pathname_is_literaldata);
+use LaTeXML::Util::Pathname;
 use URI::Escape;
 use HTTP::Response;
 use HTTP::Request;
