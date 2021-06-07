@@ -55,17 +55,22 @@ sub new {
   # Special check if the debug directive is on, just to neutralize the bind_log
   my $debug_directives = $$self{opts}->{debug};
   $LaTeXML::DEBUG{latexml} = 1 if (ref $debug_directives eq 'ARRAY') && (grep { /latexml/i } @$debug_directives);
-  $self->bind_log;
-  my $rv = eval { $config->check; };
-  $$self{log} .= $self->flush_log;
+  eval { $config->check; };
+  if ($@) {
+    $self->bind_log;
+    NoteLog($@);
+    $$self{log} .= $self->flush_log; }
+
   return $self; }
 
 sub prepare_session {
   my ($self, $config) = @_;
   # 1. Ensure option "sanity"
-  $self->bind_log;
-  my $rv = eval { $config->check; };
-  $$self{log} .= $self->flush_log;
+  eval { $config->check; };
+  if ($@) {
+    $self->bind_log;
+    NoteLog($@);
+    $$self{log} .= $self->flush_log; }
 
   my $opts                 = $config->options;
   my $opts_comparable      = { map { $_ => $$opts{$_} } @COMPARABLE };
@@ -138,17 +143,16 @@ sub convert {
   $$self{runtime} = {};
   $self->initialize_session unless $$self{ready};
   if (!$$self{ready}) {    # We can't initialize, return error:
-    return { result => undef, log => $$self{log}, status => "Initialization failed.", status_code => 3 };
-  }
+    return { result => undef, log => $self->flush_log, status => "Initialization failed.", status_code => 3 }; }
 
   $self->bind_log;
   # 1.2 Inform of identity, increase conversion counter
   my $opts    = $$self{opts};
   my $runtime = $$self{runtime};
   ($$runtime{status}, $$runtime{status_code}) = (undef, undef);
-  NoteLog("$LaTeXML::IDENTITY");
+  Note("$LaTeXML::IDENTITY");
   NoteLog("invoked as [$0 " . join(' ', @ARGV) . "]");
-  NoteLog(($$opts{recursive} ? "recursive " : "") . "processing started " . localtime());
+  Note(($$opts{recursive} ? "recursive " : "") . "processing started " . localtime());
 
   # 1.3 Prepare for What's IN:
   # We use a new temporary variable to avoid confusion with daemon caching
@@ -284,25 +288,23 @@ sub convert {
     $$runtime{status_code} = 3;
 
     NoteLog($eval_report) if $eval_report;
-    NoteLog(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
+    Note(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
     NoteLog(($$opts{recursive} ? "recursive " : "") . "Status:conversion:" . ($$runtime{status_code} || '0'));
-
     # If we just processed an archive, clean up sandbox directory.
     if ($$opts{whatsin} =~ /^archive/) {
       rmtree($$opts{sourcedirectory});
       $$opts{sourcedirectory} = $$opts{archive_sourcedirectory}; }
 
     # Close and restore STDERR to original condition.
-    my $log = $self->flush_log;
     $serialized = $dom           if ($$opts{format} eq 'dom');
     $serialized = $dom->toString if ($dom && (!defined $serialized));
     # Using the Core::Document::serialize_aux, so need an explicit encode into bytes
     $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
 
-    return { result => $serialized, log => $log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
+    return { result => $serialized, log => $self->flush_log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
   else {
     # Standard report, if we're not in a Fatal case
-    NoteLog(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
+    Note(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
   }
   # 2.3 Clean up and exit if we only wanted the serialization of the core conversion
   if ($serialized) {
@@ -311,8 +313,7 @@ sub convert {
     if ($$opts{whatsin} =~ /^archive/) {
       rmtree($$opts{sourcedirectory});
       $$opts{sourcedirectory} = $$opts{archive_sourcedirectory}; }
-    my $log = $self->flush_log;
-    return { result => $serialized, log => $log, status => $$runtime{status}, status_code => $$runtime{status_code} };
+    return { result => $serialized, log => $self->flush_log, status => $$runtime{status}, status_code => $$runtime{status_code} };
   }
 
   # 3 If desired, post-process
@@ -361,7 +362,7 @@ sub convert {
       if ($ref_result =~ /Document$/) {
         $serialized = $result->toString(1);
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
-      } else {                      # fragment case
+      } else {    # fragment case
         $serialized = $result->toString(1, 1);
     } }
     elsif ($$opts{format} =~ /^html/) {
@@ -369,7 +370,7 @@ sub convert {
         # Needs explicit encode call, toStringHTML returns Perl byte strings
         $serialized = $result->getDocument->toStringHTML;
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized; }
-      else {                        # fragment case
+      else {      # fragment case
         local $XML::LibXML::setTagCompression = 1;
         $serialized = $result->toString(1, 1); } } }
   # Compressed/archive/other case, just pass on
@@ -377,8 +378,7 @@ sub convert {
 
   # 5.2 Finalize logging and return a response containing the document result, log and status
   Note("Status:conversion:" . ($$runtime{status_code} || '0'));
-  my $log = $self->flush_log;
-  return { result => $serialized, log => $log, status => $$runtime{status}, 'status_code' => $$runtime{status_code} };
+  return { result => $serialized, log => $self->flush_log, status => $$runtime{status}, 'status_code' => $$runtime{status_code} };
 }
 
 ###########################################
@@ -473,7 +473,7 @@ sub convert_post {
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
       push(@procs, LaTeXML::Post::CrossRef->new(
-          db => $DB, urlstyle => $$opts{urlstyle},
+          db        => $DB, urlstyle => $$opts{urlstyle},
           extension => $$opts{extension},
           ($$opts{numbersections} ? (number_sections => 1)              : ()),
           ($$opts{navtoc}         ? (navigation_toc  => $$opts{navtoc}) : ()),
@@ -645,7 +645,7 @@ sub convert_post {
   }
   $$runtime{status_code} = max($$runtime{status_code}, $latexmlpost->getStatusCode);
   ### HACKY END
-  NoteLog(($$opts{recursive} ? "recursive " : "") . "Post-processing complete: " . $latexmlpost->getStatusMessage);
+  Note(($$opts{recursive} ? "recursive " : "") . "Post-processing complete: " . $latexmlpost->getStatusMessage);
   NoteLog(($$opts{recursive} ? "recursive " : "") . "processing finished " . localtime());
 
   # Avoid writing the main file twice (non-archive documents):
@@ -697,18 +697,30 @@ sub new_latexml {
 
 sub bind_log {
   my ($self) = @_;
-  $LaTeXML::LOG_STACK++;    # Only bind once
-  return if $LaTeXML::LOG_STACK > 1;
-  UseLog(\$$self{log}, 1);
+  my $opts = $$self{opts};
+  # For now --whatsout=archive just gets deferred back to the old code
+  # But this needs a streamlined refactor in the future.
+  # Something to consider:
+  # 1. Multiple latexml_workers are started in the same CWD by their harness
+  # 2. Before an archive job starts, they would be opening the same default
+  # "latexml.log" or "cortex.log" etc.
+  # 3. The final log destination is available only after the temp dir is setup
+  # ... So we may want to completely remodel the whatsout handling
+  #     but what is cleanest and least confusing?
+  if (my $logfile = $$opts{log}) {
+    my $whatsout = $$opts{whatsout};
+    if ($whatsout && ($whatsout !~ /^archive/)) {
+      UseLog($logfile, 1); }
+    else {
+      UseLog(\$$self{log}, 1);
+    }
+  } else {
+    UseLog(\$$self{log}, 1); }
   return; }
 
 sub flush_log {
   my ($self) = @_;
-  $LaTeXML::LOG_STACK--;    # May the modern Perl community forgive me for this hack...
-  return '' if $LaTeXML::LOG_STACK > 0;
-
   UseLog(undef);
-
   my $log = $$self{log};
   $$self{log} = q{};
   return $log; }
