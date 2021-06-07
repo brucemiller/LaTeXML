@@ -200,10 +200,10 @@ sub _spinnerstep {    # Increment stepper
   if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $short, $start) = @{ $spinnerstack[-1] };
     $spinnerpos = ($spinnerpos + 1) % 4;
-    if ($note) {      # If note, redraw whole line.
+    if ($note) {    # If note, redraw whole line.
       print STDERR join(' ', $spinnerpre, $spinnerchar[$spinnerpos],
         (map { $$_[1]; } @spinnerstack), $note, "\x1b[0K"), $spinnerpost; }
-    else {            # overwrite previous spinner
+    else {          # overwrite previous spinner
       print STDERR $spinnerpre . ' ', $spinnerchar[$spinnerpos], $spinnerpost; } }
   return; }
 
@@ -702,11 +702,11 @@ sub caller_info {
 
 sub format_arg {
   my ($arg) = @_;
-  if    (not defined $arg) { $arg = 'undef'; }
-  elsif (ref $arg)         { $arg = Stringify($arg); }    # Allow overloaded stringify!
-  elsif ($arg =~ /^-?[\d.]+\z/) { }                       # Leave numbers alone.
-  else {                                                  # Otherwise, string, so quote
-    $arg =~ s/'/\\'/g;                                        # Slashify '
+  if    (not defined $arg)      { $arg = 'undef'; }
+  elsif (ref $arg)              { $arg = Stringify($arg); }    # Allow overloaded stringify!
+  elsif ($arg =~ /^-?[\d.]+\z/) { }                            # Leave numbers alone.
+  else {                                                       # Otherwise, string, so quote
+    $arg =~ s/'/\\'/g;                                         # Slashify '
     $arg =~ s/([[:cntrl:]])/ "\\".chr(ord($1)+ord('A'))/ge;
     $arg = "'$arg'" }
   return trim($arg); }
