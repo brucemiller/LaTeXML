@@ -1,0 +1,68 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  ifplatform                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |=====================================================================| #
+# | Thanks to Tom Wiesing <tom.wiesing@gmail.com>.                      | #
+# | Additional thanks to GitHub user "aivokalu" for part of the         | #
+# | original implementation.                                            | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Define the names for the common operating systems
+DefMacro('\windowsname',    'Windows');
+DefMacro('\notwindowsname', '*NIX');
+DefMacro('\linuxname',      'Linux');
+DefMacro('\macosxname',     'Mac\,OS\,X');
+DefMacro('\cygwinname',     'Cygwin');
+
+# internal 'if' being used to detect if shell escape is enabled.
+# The concept doesn't exist in LaTeXML the way it exists in pdflatex,
+# so we hardcode it as true.
+DefConditional('\ifshellescape', sub { 1; });
+
+# Do a check for the various operating systems
+# and store the result in appropriate variables
+my $isWindows = $^O eq "Win32";
+my $isLinux   = $^O eq "linux";
+my $isMacOSX  = $^O eq "darwin";
+my $isCygwin  = $^O eq "cygwin";
+
+# Check which platform we are on so that we can define the platformname macro.
+# Also define the '\unknownplatform' macro from the output of uname.
+my ($platformNameMacro, $unknownPlatformName) = ('', '[Unknown]');
+if ($isWindows) {
+  $platformNameMacro = '\windowsname'; }
+elsif ($isLinux) {
+  $platformNameMacro = '\linuxname'; }
+elsif ($isMacOSX) {
+  $platformNameMacro = '\macosxname'; }
+elsif ($isCygwin) {
+  $platformNameMacro = '\cygwinname'; }
+else {
+  $platformNameMacro = '\unknownplatform';
+  eval { require POSIX; } or last;
+  ($unknownPlatformName) = POSIX::uname(); }
+
+DefMacro('\unknownplatform', $unknownPlatformName);
+Let('\platformname', $platformNameMacro);
+
+# \newif s for the various operation systems.
+# In the original package these rely on 'shell escape' being enabled, and otherwise return false.
+# This is not emulated here, it is considered an implementation detail.
+DefConditional('\ifwindows', sub { $isWindows; });
+DefConditional('\iflinux',   sub { $isLinux; });
+DefConditional('\ifmacosx',  sub { $isMacOSX; });
+DefConditional('\ifcygwin',  sub { $isCygwin; });
+
+1;
