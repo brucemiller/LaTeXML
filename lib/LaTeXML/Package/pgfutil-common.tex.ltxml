@@ -33,7 +33,6 @@ DefConditional('\ifpgfutil@in@', sub {
     my $element = $$args[0];
     my $list    = $$args[1];
     my $test    = (index($list, $element) != -1);
-    # print STDERR "-- Is $element in $list ? Answer: $test\n";
     return $test; });
 
 1;

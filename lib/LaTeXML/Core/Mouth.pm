@@ -22,6 +22,8 @@ use LaTeXML::Util::Pathname;
 use Encode qw(decode);
 use base qw(LaTeXML::Common::Object);
 
+our $READLINE_PROGRESS_QUANTUM = 25;
+
 # Factory method;
 # Create an appropriate Mouth
 # options are
@@ -87,7 +89,7 @@ sub initialize {
     my $source = defined($$self{source}) ? ($$self{source} || 'Literal String') : 'Anonymous String';
     $$self{note_message} = "Processing " . ($$self{fordefinitions} ? "definitions" : "content")
       . " " . $source;
-    NoteBegin($$self{note_message}); }
+    ProgressSpinup($$self{note_message}); }
   if ($$self{fordefinitions}) {
     $$self{saved_at_cc}            = $STATE->lookupCatcode('@');
     $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
@@ -97,16 +99,19 @@ sub initialize {
 
 sub finish {
   my ($self) = @_;
-  $$self{buffer} = [];
-  $$self{lineno} = 0;
-  $$self{colno}  = 0;
-  $$self{chars}  = [];
-  $$self{nchars} = 0;
+  return if $$self{finished};
+  $$self{finished} = 1;
+  $$self{buffer}   = [];
+  $$self{lineno}   = 0;
+  $$self{colno}    = 0;
+  $$self{chars}    = [];
+  $$self{nchars}   = 0;
+
   if ($$self{fordefinitions}) {
     $STATE->assignCatcode('@' => $$self{saved_at_cc});
     $STATE->assignValue(INCLUDE_COMMENTS => $$self{SAVED_INCLUDE_COMMENTS}); }
   if ($$self{notes}) {
-    NoteEnd($$self{note_message}); }
+    ProgressSpindown($$self{note_message}); }
   return; }
 
 # This is (hopefully) a platform independent way of splitting a string
@@ -316,7 +321,7 @@ sub readToken {
       return T_MARKER('EOL') if $read_mode
         && ($$self{colno} >= $$self{nchars}) && ((!defined $eolch) || ($eolch ne "\r"));
       # Sneak a comment out, every so often.
-      if ((($$self{lineno} % 25) == 0) && $STATE->lookupValue('INCLUDE_COMMENTS')) {
+      if ((($$self{lineno} % $READLINE_PROGRESS_QUANTUM) == 0) && $STATE->lookupValue('INCLUDE_COMMENTS')) {
         return T_COMMENT("**** " . ($$self{shortsource} || 'String') . " Line $$self{lineno} ****"); }
     }
     if ($$self{skipping_spaces}) {    # In state S, skip spaces

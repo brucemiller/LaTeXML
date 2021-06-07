@@ -48,6 +48,7 @@ our @EXPORT = (qw(
 # because an Alignment currently doesn't know what CS created it (debugging!);
 # Also, it would better connect the things being constructed, reversion, etc.
 #======================================================================
+DebuggableFeature('alignment', "Debug guessing headers of alignments/tables");
 
 # Create a new Alignment.
 # %data can contain:
@@ -193,10 +194,8 @@ sub getColumnBefore {
   my ($self) = @_;
   my $column;
   if (($column = $self->currentColumn) && !$$column{omitted}) {
-    #print STDERR "COLUMN FETCH BEFORE\n";
     return Tokens(T_CS('\@column@before'), @{ $$column{before} }); }
   else {
-    #print STDERR "COLUMN FETCH BEFORE Omitted\n";
     return Tokens(); } }
 
 sub getColumnAfter {
@@ -206,7 +205,6 @@ sub getColumnAfter {
     # Possible \@@eat@space ??? (if LaTeX style???)
     return Tokens(@{ $$column{after} }, T_CS('\@column@after')); }
   else {
-    #print STDERR "COLUMN FETCH AFTER Omitted\n";
     return Tokens(); } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -632,8 +630,8 @@ sub normalize_prune_columns {
 
 sub show_row {
   my ($i, $row) = @_;
-  print STDERR "\nRow[$i]:" . join(', ', map { $_ . '=' . ToString($$row{$_}); }
-      grep { $_ ne 'columns'; } sort keys %$row) . "\n";
+  Debug("\nRow[$i]:" . join(', ', map { $_ . '=' . ToString($$row{$_}); }
+        grep { $_ ne 'columns'; } sort keys %$row));
   my @c = @{ $$row{columns} };
   for (my $j = 1 ; @c ; $j++) {
     show_col($i, $j, shift(@c)); }
@@ -641,7 +639,7 @@ sub show_row {
 
 sub show_col {
   my ($i, $j, $col) = @_;
-  print STDERR "Column[$i,$j]:" . join(', ', map { $_ . '=' . ToString($$col{$_}); } sort keys %$col) . "\n";
+  Debug("Column[$i,$j]:" . join(', ', map { $_ . '=' . ToString($$col{$_}); } sort keys %$col));
   return; }
 
 sub preservedBoxes {
@@ -710,9 +708,9 @@ sub guess_alignment_headers {
 
   my $tag = $document->getModel->getNodeQName($table);
   my $x;
-  print STDERR "\n" . ('=' x 50) . "\nGuessing alignment headers for "
-    . (($x = $document->findnode('ancestor-or-self::*[@xml:id]', $table)) ? $x->getAttribute('xml:id') : $tag) . "\n"
-    if $LaTeXML::Core::Alignment::DEBUG;
+  Debug(('=' x 50) . "\nGuessing alignment headers for "
+      . (($x = $document->findnode('ancestor-or-self::*[@xml:id]', $table)) ? $x->getAttribute('xml:id') : $tag))
+    if $LaTeXML::DEBUG{alignment};
 
   my $ismath = $tag eq 'ltx:XMArray';
   local $LaTeXML::TR = ($ismath ? 'ltx:XMRow'  : 'ltx:tr');
@@ -730,7 +728,7 @@ sub guess_alignment_headers {
   if (alignment_characterize_lines($document, 0, 0, @rows)) { }
   # This usually does something unpleasant
 ##  else {
-##    print STDERR "Retry characterizing lines in reverse\n" if $LaTeXML::Core::Alignment::DEBUG;
+##    Debug("Retry characterizing lines in reverse") if $LaTeXML::DEBUG{alignment};
 ##    $reversed=alignment_characterize_lines(0,1,reverse(@rows)); }
   alignment_characterize_lines($document, 1, 0, @cols);
   # Did we go overboard?
@@ -738,7 +736,7 @@ sub guess_alignment_headers {
   foreach my $r (@rows) {
     foreach my $c (@$r) {
       $n{ $$c{cell_type} }++; } }
-  print STDERR "$n{h} header, $n{d} data cells\n" if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("$n{h} header, $n{d} data cells") if $LaTeXML::DEBUG{alignment};
   if ($n{d} == 1) {    # Or any other heuristic?
     $n{h} = 0;
     foreach my $r (@rows) {
@@ -753,7 +751,7 @@ sub guess_alignment_headers {
     $document->addClass($table, 'ltx_guessed_headers'); }
 
   # Debugging report!
-  summarize_alignment([@rows], [@cols]) if $LaTeXML::Core::Alignment::DEBUG;
+  summarize_alignment([@rows], [@cols]) if $LaTeXML::DEBUG{alignment};
   return; }
 
 #======================================================================
@@ -871,19 +869,18 @@ sub collect_alignment_rows {
       $rows[$r][$c]{b} = $rows[$r + 1][$c]{t} if $rows[$r + 1][$c]{t};
       $rows[$r][$c]{l} = $rows[$r][$c - 1]{r} if $rows[$r][$c - 1]{r};
       $rows[$r][$c]{r} = $rows[$r][$c + 1]{l} if $rows[$r][$c + 1]{l}; } }
-  if ($LaTeXML::Core::Alignment::DEBUG) {
-    print STDERR "\nCell characterizations:\n";
+  if ($LaTeXML::DEBUG{alignment}) {
+    Debug("Cell characterizations:");
     for (my $r = 0 ; $r < $nrows ; $r++) {
       for (my $c = 0 ; $c < $ncols ; $c++) {
         my $col = $rows[$r][$c];
-        print STDERR "[$r,$c]=>" . ($$col{cell_type} || '?')
-          . ($$col{align} ? $ALIGNMENT_CODE{ $$col{align} } : ' ')
-          . ($$col{content_class} || '?')
-          . ' ' . $$col{content_length}
-          . ' ' . $$col{border} . "=>" . join('', grep { $$col{$_} } qw(t r b l))
-          . (($$col{rowspan} || 1) > 1 ? " rowspan=" . $$col{rowspan} : '')
-          . (($$col{colspan} || 1) > 1 ? " colspan=" . $$col{colspan} : '')
-          . "\n"; } } }
+        Debug("[$r,$c]=>" . ($$col{cell_type} || '?')
+            . ($$col{align} ? $ALIGNMENT_CODE{ $$col{align} } : ' ')
+            . ($$col{content_class} || '?')
+            . ' ' . $$col{content_length}
+            . ' ' . $$col{border} . "=>" . join('', grep { $$col{$_} } qw(t r b l))
+            . (($$col{rowspan} || 1) > 1 ? " rowspan=" . $$col{rowspan} : '')
+            . (($$col{colspan} || 1) > 1 ? " colspan=" . $$col{colspan} : '')); } } }
   return @rows; }
 
 # Return one of: i(nteger), t(ext), m(ath), ? (unknown) or '_' (empty) (or some combination)
@@ -944,8 +941,8 @@ sub alignment_characterize_lines {
   my $n = scalar(@lines);
   return if $n < 2;
   local @::TABLINES = @lines;
-  print STDERR "\nCharacterizing $n " . ($axis ? "columns" : "rows") . "\n   "
-    if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("Characterizing $n " . ($axis ? "columns" : "rows"))
+    if $LaTeXML::DEBUG{alignment};
 
   # Establish a scale of differences for the table.
   my ($diffhi, $difflo, $diffavg) = (0, 99999999, 0);
@@ -956,21 +953,21 @@ sub alignment_characterize_lines {
     $difflo = $d if $d < $difflo; }
   $diffavg = $diffavg / ($n - 1);
   if ($diffhi < 0.05) {    # virtually no differences.
-    print STDERR "Lines are almost identical => Fail\n" if $LaTeXML::Core::Alignment::DEBUG;
+    Debug("Lines are almost identical => Fail") if $LaTeXML::DEBUG{alignment};
     return; }
   if (($n > 2) && (($diffhi - $difflo) < $diffhi * 0.5)) { # differences too similar to establish pattern
-    print STDERR "Differences between lines are almost identical => Fail\n"
-      if $LaTeXML::Core::Alignment::DEBUG;
+    Debug("Differences between lines are almost identical => Fail")
+      if $LaTeXML::DEBUG{alignment};
     return; }
   #  local $::TAB_THRESHOLD = $difflo + 0.4*($diffhi-$difflo);
   local $::TAB_THRESHOLD = $difflo + 0.3 * ($diffhi - $difflo);
   #  local $::TAB_THRESHOLD = $difflo + 0.2*($diffhi-$difflo);
   #  local $::TAB_THRESHOLD = $diffavg;
   local $::TAB_AXIS = $axis;
-  print STDERR "\nDifferences $difflo -- $diffhi => threshold = $::TAB_THRESHOLD\n"
-    if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("Differences $difflo -- $diffhi => threshold = $::TAB_THRESHOLD")
+    if $LaTeXML::DEBUG{alignment};
   # Find the first hump in differences. These are candidates for header lines.
-  print STDERR "Scanning for headers\n   " if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("Scanning for headers") if $LaTeXML::DEBUG{alignment};
   my $diff;
   my ($minh, $maxh) = (1, 1);
   while (($diff = alignment_compare($axis, 1, $reversed, $maxh - 1, $maxh)) < $::TAB_THRESHOLD) {
@@ -979,8 +976,8 @@ sub alignment_characterize_lines {
       #  while( alignment_compare($axis,1,$reversed,$maxh,$maxh+1) > $difflo + ($diff-$difflo)/6){
   while (alignment_compare($axis, 1, $reversed, $maxh, $maxh + 1) > $::TAB_THRESHOLD) {
     $maxh++; }
-  $maxh = $MAX_ALIGNMENT_HEADER_LINES                          if $maxh > $MAX_ALIGNMENT_HEADER_LINES;
-  print STDERR "\nFound from $minh--$maxh potential headers\n" if $LaTeXML::Core::Alignment::DEBUG;
+  $maxh = $MAX_ALIGNMENT_HEADER_LINES                if $maxh > $MAX_ALIGNMENT_HEADER_LINES;
+  Debug("Found from $minh--$maxh potential headers") if $LaTeXML::DEBUG{alignment};
 
   my $nn = scalar(@{ $lines[0] }) - 1;
   # The sets of lines 1--$minh, .. 1--$maxh are potential headers.
@@ -1006,7 +1003,7 @@ sub alignment_characterize_lines {
 # Test whether $nhead lines makes a good fit for the headers
 sub alignment_test_headers {
   my ($nhead) = @_;
-  print STDERR "Testing $nhead headers\n" if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("Testing $nhead headers") if $LaTeXML::DEBUG{alignment};
   my ($headlength, $datalength) = (0, 0);
   my @heads = (0 .. $nhead - 1);    # The indices of heading lines.
   $headlength = alignment_max_content_length($headlength, 0, $nhead - 1);
@@ -1015,11 +1012,11 @@ sub alignment_test_headers {
   # Watch out for the assumed header being really data that is a repeated pattern.
   my $nrep = scalar(@::TABLINES) / $nhead;
   if (($nhead > 1) && ($nrep == int($nrep))) {
-    print STDERR "Check for apparent header repeated $nrep times\n" if $LaTeXML::Core::Alignment::DEBUG;
+    Debug("Check for apparent header repeated $nrep times") if $LaTeXML::DEBUG{alignment};
     my $matched = 1;
     for (my $r = 1 ; $r < $nrep ; $r++) {
       $matched &&= alignment_match_head(0, $r * $nhead, $nhead); }
-    print STDERR "Repeated headers: " . ($matched ? "Matched=> Fail" : "Nomatch => Succeed") . "\n" if $LaTeXML::Core::Alignment::DEBUG;
+    Debug("Repeated headers: " . ($matched ? "Matched=> Fail" : "Nomatch => Succeed")) if $LaTeXML::DEBUG{alignment};
     return if $matched; }
 
   # And find a following grouping of data lines.
@@ -1054,38 +1051,38 @@ sub alignment_test_headers {
       $nextline += $nd; }
     else { return; } }
   # Header content seems too large relative to data?
-  print STDERR "header content = $headlength; data content = $datalength\n"
-    if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("header content = $headlength; data content = $datalength")
+    if $LaTeXML::DEBUG{alignment};
 ##  if(($headlength > 10) && (0.3*$headlength > $datalength)){
   if (($headlength > 10) && (0.25 * $headlength > $datalength)) {
-    print STDERR "header content too much longer than data content\n"
-      if $LaTeXML::Core::Alignment::DEBUG;
+    Debug("header content too much longer than data content")
+      if $LaTeXML::DEBUG{alignment};
     return; }
   # Or if a header cell has "large" content?
   if ($headlength >= 1000) {    # Or if a header cell has "large" content?
-    print STDERR "header content too large\n"
-      if $LaTeXML::Core::Alignment::DEBUG;
+    Debug("header content too large")
+      if $LaTeXML::DEBUG{alignment};
     return; }
 
-  print STDERR "Succeeded with $nhead headers\n" if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("Succeeded with $nhead headers") if $LaTeXML::DEBUG{alignment};
   return @heads; }
 
 sub alignment_match_head {
   my ($p1, $p2, $nhead) = @_;
-  print STDERR "Try match $nhead header lines from $p1 to $p2\n   " if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("Try match $nhead header lines from $p1 to $p2") if $LaTeXML::DEBUG{alignment};
   my $nh = alignment_match_lines($p1, $p2, $nhead);
   my $ok = $nhead == $nh;
-  print STDERR "\nMatched $nh header lines => " . ($ok ? "Succeed" : "Failed") . "\n" if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("Matched $nh header lines => " . ($ok ? "Succeed" : "Failed")) if $LaTeXML::DEBUG{alignment};
   return ($ok ? $nhead : 0); }
 
 sub alignment_match_data {
   my ($p1, $p2, $ndata) = @_;
-  print STDERR "Try match $ndata data lines from $p1 to $p2\n   "
-    if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("Try match $ndata data lines from $p1 to $p2")
+    if $LaTeXML::DEBUG{alignment};
   my $nd = alignment_match_lines($p1, $p2, $ndata);
   my $ok = ($nd * 1.0) / $ndata > 0.66;
-  print STDERR "\nMatched $nd data lines => " . ($ok ? "Succeed" : "Failed") . "\n"
-    if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("Matched $nd data lines => " . ($ok ? "Succeed" : "Failed"))
+    if $LaTeXML::DEBUG{alignment};
   return ($ok ? $nd : 0); }
 
 # Match the $n lines starting at $i2 to those starting at $i1.
@@ -1101,8 +1098,8 @@ sub alignment_match_lines {
 # but also accept `continuation' data lines.
 sub alignment_skip_data {
   my ($i) = @_;
-  return 0                              if $i >= scalar(@::TABLINES);
-  print STDERR "Scanning for data\n   " if $LaTeXML::Core::Alignment::DEBUG;
+  return 0                   if $i >= scalar(@::TABLINES);
+  Debug("Scanning for data") if $LaTeXML::DEBUG{alignment};
   my $n = 1;
   while ($i + $n < scalar(@::TABLINES)) {
     last if (alignment_compare($::TAB_AXIS, 1, 0, $i + $n - 1, $i + $n) >= $::TAB_THRESHOLD)
@@ -1110,7 +1107,7 @@ sub alignment_skip_data {
       && (($n < 2)
       || (scalar(grep { $$_{content_class} eq '_' } @{ $::TABLINES[$i + $n] }) <= 0.4 * scalar($::TABLINES[0])));
     $n++; }
-  print STDERR "\nFound $n data lines at $i\n" if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("Found $n data lines at $i") if $LaTeXML::DEBUG{alignment};
   return ($n >= $MIN_ALIGNMENT_DATA_LINES ? $n : 0); }
 
 sub XXXalignment_max_content_length {
@@ -1189,7 +1186,7 @@ sub alignment_compare {
       $diff += 0.3 * scalar(grep { $$cell1{$_} != $$cell2{$_} } qw(r l t b)); }
   }
   $diff /= $ncells;
-  print STDERR "$p1-$p2 => $diff; " if $LaTeXML::Core::Alignment::DEBUG;
+  Debug("$p1-$p2 => $diff; ") if $LaTeXML::DEBUG{alignment};
   return $diff; }
 
 #======================================================================
@@ -1198,31 +1195,25 @@ sub summarize_alignment {
   my ($rows, $cols) = @_;
   my $r = 0;
   my ($nrows, $ncols) = (scalar(@$rows), scalar(@{ $$rows[0] }));
-  print STDERR "\n";
   foreach my $cell (@{ $$rows[0] }) {
-    print STDERR ' ' . ($$cell{t} ? ('-' x 6) : (' ' x 6)); }
-  print STDERR "\n";
+    Debug(' ' . ($$cell{t} ? ('-' x 6) : (' ' x 6))); }
   foreach my $row (@$rows) {
     my $maxb = 0;
-    print STDERR ($$row[0]{l} ? ('|' x $$row[0]{l}) : ' ');
+    Debug(($$row[0]{l} ? ('|' x $$row[0]{l}) : ' '));
     foreach my $cell (@$row) {
-      print STDERR sprintf(" %4s ",
-        ($$cell{cell_type} || '?')
-          . ($$cell{align} ? $ALIGNMENT_CODE{ $$cell{align} } : ' ')
-          . ($$cell{content_class} || '?')
-          . ($$cell{r} ? ('|' x $$cell{r}) : ' '));
+      Debug(sprintf(" %4s ",
+          ($$cell{cell_type} || '?')
+            . ($$cell{align} ? $ALIGNMENT_CODE{ $$cell{align} } : ' ')
+            . ($$cell{content_class} || '?')
+            . ($$cell{r} ? ('|' x $$cell{r}) : ' ')));
       $maxb = $$cell{b} if $$cell{b} > $maxb; }
-    #    print STDERR sprintf("%.3f",alignment_compare(0,1,$$rows[$r],$$rows[$r+1])) if ($r < $nrows-1);
-    print STDERR "\n";
+    #    Debug(sprintf("%.3f",alignment_compare(0,1,$$rows[$r],$$rows[$r+1])) if ($r < $nrows-1));
     for (my $b = 0 ; $b < $maxb ; $b++) {
       foreach my $cell (@$row) {
-        print STDERR ' ' . ($b < $$cell{b} ? ('-' x 6) : (' ' x 6)); }
-      print STDERR "\n"; }
+        Debug(' ' . ($b < $$cell{b} ? ('-' x 6) : (' ' x 6))); } }
     $r++; }
-  print STDERR "   ";
   #  for(my $c = 0; $c < $ncols-1; $c++){
-  #    print STDERR sprintf(" %.3f ",alignment_compare(1,1,$$cols[$c],$$cols[$c+1])); }
-  print STDERR "\n";
+  #    Debug(sprintf(" %.3f ",alignment_compare(1,1,$$cols[$c],$$cols[$c+1]))); }
   return; }
 
 #======================================================================

@@ -33,7 +33,7 @@ our ($KPSEV, $TEXMF);
 my ($texmfspec) = grep { /^TEXMF/ } @ARGV;
 if ($texmfspec && $texmfspec =~ /^TEXMF\s*=(.*)$/) {
   $TEXMF = $1;
-  @ARGV  = grep { $_ ne $texmfspec } @ARGV; }    # Remove so MakeMaker doesn't fret.
+  local @ARGV = grep { $_ ne $texmfspec } @ARGV; }    # Remove so MakeMaker doesn't fret.
 our @EXCLUSIONS     = ();
 our $MORE_MACROS    = {};
 our $MORE_MAKERULES = '';
@@ -63,6 +63,7 @@ WriteMakefile(NAME => 'LaTeXML',
     'Getopt::Long'      => 2.37,
     'Image::Size'       => 0,
     'IO::String'        => 0,
+    'IO::Handle'        => 0,
     'JSON::XS'          => 0,
     'LWP'               => 0,
     'MIME::Base64'      => 0,      # Core
@@ -84,7 +85,7 @@ WriteMakefile(NAME => 'LaTeXML',
     'XML::LibXSLT' => 1.58,
   },
   EXE_FILES => ['bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind', 'bin/latexmlmath', 'bin/latexmlc'],
-  macro => $MORE_MACROS,
+  macro     => $MORE_MACROS,
   # link to  github location to newer MakeMaker
   (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (META_MERGE => {
         'meta-spec' => { version => 2 },
@@ -93,8 +94,8 @@ WriteMakefile(NAME => 'LaTeXML',
             type => 'git',
             url  => 'https://github.com/brucemiller/LaTeXML.git',
             web  => 'https://github.com/brucemiller/LaTeXML' },
-         bugtracker => {
-             web => 'https://github.com/brucemiller/LaTeXML/issues' } } })
+          bugtracker => {
+            web => 'https://github.com/brucemiller/LaTeXML/issues' } } })
     : ()),
 );
 

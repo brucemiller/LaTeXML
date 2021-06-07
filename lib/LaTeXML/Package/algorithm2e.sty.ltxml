@@ -71,7 +71,7 @@ DefEnvironment('{algorithm}[]',
     Let('\strut',  '\lx@algo@strut');
     AssignCatcode("\r" => CC_SPACE);    # NOT CC_EOL, so newlines don't turn to \par!
                                         #    AssignCatcode("\r" => 13);
-         #    Let(T_ACTIVE("\r"), '\relax');    # More appropriate than \par, I think?
+        #    Let(T_ACTIVE("\r"), '\relax');    # More appropriate than \par, I think?
 
     #    Let('\vtop','\relax');      # ?
     DefMacro('\;', '\ifmmode\@mathsemicolon\else\@endalgoln\fi');
@@ -122,19 +122,9 @@ DefMacro('\@endalgocfline', '\algocf@endline\@marker{EOL}\lx@algo@par');
 # So, how to we assure that we end the line ONLY ONCE!
 DefMacro('\lx@strippar{}', sub {
     my ($gullet, $tokens) = @_;
-###print STDERR "\nCHECK PAR: ".ToString($tokens)."\n";
     my @tokens = $tokens->unlist;
     #      return (@tokens,T_CS('\lx@algo@parx'));
-    return (@tokens, T_CS('\lx@algo@parx'), T_CS('\lx@algo@parx'), T_CS('\lx@algo@parx'));
-##    pop(@tokens) if T_SPACE->equals($tokens[-1]);
-##    if    (T_CS('\;')->equals($tokens[-1]))   { }
-##    elsif (T_CS('\par')->equals($tokens[-1])) { }
-##    else {
-##      #        print STDERR "\nMissing par? " . join(' ', map { Stringify($_) } @tokens) . "\n";
-##      push(@tokens, T_CS('\lx@algo@parx')); }
-##    #   print STDERR "\nSTRIP FOUND NO PAR!\n"; }
-##    @tokens;
-});
+    return (@tokens, T_CS('\lx@algo@parx'), T_CS('\lx@algo@parx'), T_CS('\lx@algo@parx')); });
 #DefMacro('\algocf@@@block{}{}','#1\bgroup\lx@algo@startline#2\lx@algo@endline\egroup');
 #DefMacro('\algocf@@@block{}{}','BLOCK:#1ENDBLOCK END#2');
 #DefMacro('\algocf@group{}','#1\bgroup\typeout{Block:#1}\egroup');

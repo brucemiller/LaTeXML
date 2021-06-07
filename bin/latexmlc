@@ -56,15 +56,15 @@ my $keyvals = $opts->scan_to_keyvals(\@ARGV);
 # Client-side options:
 my ($port, $address, $expire, $local) = map { $opts->get($_) } qw(port address expire);
 $address = '127.0.0.1' if !$address || ($address eq 'localhost');
-$address =~ s/^(\w+)\:\/\///;    # strip away any protocol
+$address =~ s/^(\w+)\:\/\///;     # strip away any protocol
 my $route = '/';
 if ($address =~ s/\/(.+)$//) {    # strip away route
   $route = '/' . $1;
 }
 # Local if peerhost is localhost:
-$local = ($expire && ($expire == -1)) || ($address eq '127.0.0.1');
+$local  = ($expire && ($expire == -1)) || ($address eq '127.0.0.1');
 $expire = -1 unless ((defined $expire) && $latexmls);
-$port = ($local ? 3334 : 80) unless $port;    #Fall back if all fails...
+$port   = ($local ? 3334 : 80) unless $port;    #Fall back if all fails...
 #***************************************************************************
 #Add some base, so that relative paths work
 my $cdir = abs_path(cwd());
@@ -106,13 +106,17 @@ my $sock = $latexmls && IO::Socket::INET->new(
 if ((!$sock) && $local && ($expire == -1)) {
   # Don't boot a server, single job requested:
   require LaTeXML;
+  use LaTeXML::Common::Error;
+  SetVerbosity($$opts{verbosity});
+  UseSTDERR();
   $opts->set('local', 1);
-  $opts->push('debug', 'LaTeXML') unless $opts->get('log'); # If we don't request log, print to STDERR
   my $converter = LaTeXML->get_converter($opts);
   $converter->prepare_session($opts);
   my $response = $converter->convert($source);
   ($result, $status, $log) = map { $$response{$_} } qw(result status log) if defined $response;
 } else {
+  # TODO: May need to check the options even in the remote cases, e.g. to fish out "whatsout"
+  # $opts->check;
   my $message = q{};
   foreach my $entry (@$keyvals) {
     my ($key, $value) = ($$entry[0], $$entry[1]);
@@ -137,7 +141,7 @@ if ((!$sock) && $local && ($expire == -1)) {
 ### Common treatment of output:
 
 # Special features for latexmls:
-my $whatsout = $opts->get('whatsout');
+my $whatsout   = $opts->get('whatsout');
 my $is_archive = $whatsout && ($whatsout =~ /^archive/);
 if ($log) {
   if ($opts->get('log')) {
@@ -151,7 +155,7 @@ if ($log) {
       print $log_handle $log;
       close $log_handle;
     }
-  } else { print STDERR $log, "\n"; }    #STDERR log otherwise
+  } else { print STDERR "\n", $log, "\n"; }    #STDERR log otherwise
 }
 
 if ($result) {
@@ -177,7 +181,7 @@ if ($opts->get('destination')) {
   print STDERR summary($opts->get('destination'), $deststat);
 }
 
-if ($status =~ /fatal error/) {      # non-zero exit code for fatal conversions
+if ($status =~ /fatal error/) {    # non-zero exit code for fatal conversions
   exit 1;
 }
 
@@ -186,8 +190,7 @@ sub summary {
   my ($destination, $prior_stat) = @_;
   my $new_stat = (stat($destination))[9] || 0;
   return ($new_stat && ($prior_stat != $new_stat)) ? "\nWrote $destination\n" :
-    "\nError! Did not write file $destination\n";
-}
+    "\nError! Did not write file $destination\n"; }
 
 sub process_local {
   my ($req_address, $req_port, $req_route, $req_message, $req_sock) = @_;

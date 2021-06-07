@@ -119,11 +119,6 @@ sub rotatedProperties {
   my $cheightp = Dimension($hp);
   my $cdepthp  = Dimension($dp);
   my $widthp   = ($options{smash} ? Dimension(0) : $cwidthp);
-##  print STDERR " => ".$widthp->ptValue." x ".$heightp->ptValue." + ".$depthp->ptValue." => ".$xsh.", ".$ysh."\n";
-
-## print STDERR "\nROTATE $angle of ".ToString($box)."\n"
-##  ." == ".ToString($width).' x '.ToString($height).' + '.ToString($depth)."\n"
-##  ." => ".ToString($widthp).' x '.ToString($heightp).' + '.ToString($depthp)."\n";
   return (
     angle       => $angle,
     width       => $widthp,

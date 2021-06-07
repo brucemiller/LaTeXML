@@ -31,9 +31,12 @@ use base qw(LaTeXML::Common::Object);
 sub new {
   my ($class, %options) = @_;
   return bless {
-    mouth => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
-    verbosity => $options{verbosity} || 0
+    mouth     => undef, mouthstack => [], pushback => [], autoclose => 1, pending_comments => [],
+    verbosity => $options{verbosity} || 0,
+    progress  => 0,
   }, $class; }
+
+our $TOKEN_PROGRESS_QUANTUM = 30000;
 
 #**********************************************************************
 # Start reading tokens from a new Mouth.
@@ -208,25 +211,24 @@ our @CATCODE_HOLD = (
 sub handleMarker {
   my ($self, $markertoken) = @_;
   my $arg = $$markertoken[0];
-  #print STDERR "GULLET detected marker: ".Stringify($arg)."\n";
   if (ref $arg) {
     LaTeXML::Core::Definition::stopProfiling($markertoken, 'expand'); }
   elsif ($arg eq 'before-column') {    # Were in before-column template
     my $alignment = $STATE->lookupValue('Alignment');
-    print STDERR "Halign $alignment: alignment state => 0\n" if $LaTeXML::halign::DEBUG;
+    Debug("Halign $alignment: alignment state => 0") if $LaTeXML::DEBUG{halign};
     $LaTeXML::ALIGN_STATE = 0; }       # switch to column proper!
   elsif ($arg eq 'after-column') {     # Were in before-column template
     my $alignment = $STATE->lookupValue('Alignment');
-    print STDERR "Halign $alignment: alignment state: after column\n" if $LaTeXML::halign::DEBUG;
+    Debug("Halign $alignment: alignment state: after column") if $LaTeXML::DEBUG{halign};
   }
   return; }
 
 sub handleTemplate {
   my ($self, $alignment, $token, $type, $hidden) = @_;
-  print STDERR "Halign $alignment: ALIGNMENT Column ended at " . Stringify($token)
-    . " type $type [" . Stringify($STATE->lookupMeaning($token)) . "]"
-    . "@ " . ToString($self->getLocator) . "\n"
-    if $LaTeXML::halign::DEBUG;
+  Debug("Halign $alignment: ALIGNMENT Column ended at " . Stringify($token)
+      . " type $type [" . Stringify($STATE->lookupMeaning($token)) . "]"
+      . "@ " . ToString($self->getLocator))
+    if $LaTeXML::DEBUG{halign};
   #  Append expansion to end!?!?!?!
   local $LaTeXML::CURRENT_TOKEN = $token;
   my $post = $alignment->getColumnAfter;
@@ -235,7 +237,7 @@ sub handleTemplate {
   my $arg;
   if (($type eq 'cr') && $hidden) {    # \hidden@cr gets an argument as payload!!!!!
     $arg = $self->readArg(); }
-  print STDERR "Halign $alignment: column after " . ToString($post) . "\n" if $LaTeXML::halign::DEBUG;
+  Debug("Halign $alignment: column after " . ToString($post)) if $LaTeXML::DEBUG{halign};
   if ((($type eq 'cr') || ($type eq 'crcr'))
     && $$alignment{in_row} && !$alignment->currentRow->{pseudorow}) {
     unshift(@{ $$self{pushback} }, T_CS('\@row@after')); }
@@ -286,6 +288,7 @@ sub readToken {
           push(@{ $$self{pending_comments} }, $token); }    # What to do with comments???
         elsif ($cc == CC_MARKER) {
           $self->handleMarker($token); } } }
+    ProgressStep() if ($$self{progress}++ % $TOKEN_PROGRESS_QUANTUM) == 0;
     # Wow!!!!! See TeX the Program \S 309
     if ((defined $token)
       && !$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)
@@ -333,6 +336,7 @@ sub readXToken {
           push(@{ $$self{pending_comments} }, $token); }
         elsif ($cc == CC_MARKER) {
           $self->handleMarker($token); } } }
+    ProgressStep() if ($$self{progress}++ % $TOKEN_PROGRESS_QUANTUM) == 0;
     if (!defined $token) {
       return unless $$self{autoclose} && $toplevel && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.

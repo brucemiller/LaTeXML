@@ -41,6 +41,7 @@ sub initialize {
   my ($self) = @_;
   $$self{boxing}      = [];
   $$self{token_stack} = [];
+  $$self{progress}    = 0;
   $STATE->assignValue(MODE              => 'text',           'global');
   $STATE->assignValue(IN_MATH           => 0,                'global');
   $STATE->assignValue(PRESERVE_NEWLINES => 1,                'global');
@@ -51,6 +52,8 @@ sub initialize {
   $STATE->assignValue(font     => LaTeXML::Common::Font->textDefault(), 'global');
   $STATE->assignValue(mathfont => LaTeXML::Common::Font->mathDefault(), 'global');
   return; }
+
+our $DIGESTION_PROGRESS_QUANTUM = 30000;
 
 #**********************************************************************
 sub getGullet {
@@ -153,6 +156,7 @@ sub invokeToken {
   my ($self, $token) = @_;
   no warnings 'recursion';
 INVOKE:
+  ProgressStep() if ($$self{progress}++ % $DIGESTION_PROGRESS_QUANTUM) == 0;
   push(@{ $$self{token_stack} }, $token);
   if (scalar(@{ $$self{token_stack} }) > $MAXSTACK) {
     Fatal('internal', '<recursion>', $self,

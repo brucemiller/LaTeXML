@@ -108,6 +108,10 @@ sub maketest_daemon {
   my $opts = read_options($source, "$dir/$name");
   push @$opts, (['destination', "$name.test.xml"],
     ['log',                "/dev/null"],
+    ['quiet',              ''],
+    ['quiet',              ''],
+    ['quiet',              ''],
+    ['quiet',              ''],
     ['timeout',            5],
     ['autoflush',          1],
     ['timestamp',          '0'],

@@ -70,13 +70,13 @@ sub invoke {
     my @args = ($parms ? $parms->readArguments($gullet, $self) : ());
     LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
     $result = Tokens(&$expansion($gullet, @args));
-    if ($tracing) {    # More involved...
-      print STDERR "\n" . $self->tracingCSName . ' ==> ' . tracetoString($result) . "\n";
-      print STDERR $self->tracingArgs(@args) . "\n" if @args; } }
-  elsif (!$$self{parameters}) {    # Trivial macro
+    if ($tracing || $LaTeXML::DEBUG{tracing}) {    # More involved...
+      Debug($self->tracingCSName . ' ==> ' . tracetoString($result));
+      Debug($self->tracingArgs(@args)) if @args; } }
+  elsif (!$$self{parameters}) {                    # Trivial macro
     LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
-    if ($tracing) {                # More involved...
-      print STDERR "\n" . $self->tracingCSName . ' -> ' . tracetoString($expansion) . "\n"; }
+    Debug($self->tracingCSName . ' -> ' . tracetoString($expansion))
+      if $tracing || $LaTeXML::DEBUG{tracing};
     # For trivial expansion, make sure we don't get \cs or \relax\cs direct recursion!
     if (!$onceonly && $$self{cs}) {
       my ($t0, $t1) = ($etype eq 'LaTeXML::Core::Tokens'
@@ -95,9 +95,9 @@ sub invoke {
     my @targs = map { ($_ && ($r = ref $_)
           && (($r eq 'LaTeXML::Core::Token') || ($r eq 'LaTeXML::Core::Tokens'))
         ? $_ : Tokens(Revert($_))); } @args;
-    if ($tracing) {    # More involved...
-      print STDERR "\n" . $self->tracingCSName . ' -> ' . tracetoString($expansion) . "\n";
-      print STDERR $self->tracingArgs(@targs) . "\n" if @args; }
+    if ($tracing || $LaTeXML::DEBUG{tracing}) {    # More involved...
+      Debug($self->tracingCSName . ' -> ' . tracetoString($expansion));
+      Debug($self->tracingArgs(@targs)) if @args; }
     LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
     $result = $expansion->substituteParameters(@targs); }
   # Getting exclusive requires dubious Gullet support!

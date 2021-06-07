@@ -121,8 +121,8 @@ DefPrimitive('\showgroups', undef);
 
 # \showtokens <generaltext>
 DefPrimitive('\showtokens GeneralText', sub {
-    print STDERR "\n> " . writableTokens($_[1]) . ".\n";
-    print STDERR $_[0]->getLocator->toString() . "\n\n";
+    Note("> " . writableTokens($_[1]));
+    Note($_[0]->getLocator->toString());
     return; });
 
 DefRegister('\tracingassigns'    => Number(0));    # ???

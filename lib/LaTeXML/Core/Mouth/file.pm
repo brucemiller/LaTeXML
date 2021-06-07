@@ -75,9 +75,6 @@ sub getNextLine {
         Info('misdefined', $encoding, $self, "input isn't valid under encoding $encoding"); } } }
   else {
     $line = ''; }
-
-  if (!($$self{lineno} % 25)) {
-    NoteProgressDetailed("[#$$self{lineno}]"); }
   return $line; }
 
 sub stringify {

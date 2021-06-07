@@ -32,9 +32,9 @@ use Text::Balanced qw(extract_delimited extract_bracketed);
 # Column number is currently kinda flubbed up.
 #**********************************************************************
 my %default_macros = (    # [CONSTANT]
-  jan => "January",   feb => "February", mar => "March",    apr => "April",
-  may => "May",       jun => "June",     jul => "July",     aug => "August",
-  sep => "September", oct => "October",  nov => "November", dec => "December",
+  jan      => "January",   feb => "February", mar => "March",    apr => "April",
+  may      => "May",       jun => "June",     jul => "July",     aug => "August",
+  sep      => "September", oct => "October",  nov => "November", dec => "December",
   acmcs    => "ACM Computing Surveys",
   acta     => "Acta Informatica",
   cacm     => "Communications of the ACM",
@@ -138,7 +138,7 @@ sub getLocator {
 sub parseTopLevel {
   my ($self) = @_;
   my $note = "Preparsing Bibliography " . ($$self{source} || "<Unknown>");
-  NoteBegin($note);
+  ProgressSpinup($note);
   while ($self->skipJunk) {
     my $type = $self->parseEntryType;
     if    ($type eq 'preamble') { $self->parsePreamble; }
@@ -146,7 +146,7 @@ sub parseTopLevel {
     elsif ($type eq 'comment')  { $self->parseComment; }
     else                        { $self->parseEntry($type); }
   }
-  NoteEnd($note);
+  ProgressSpindown($note);
   $$self{parsed} = 1;
   return; }
 
@@ -256,20 +256,20 @@ sub parseString {
   if ($$self{line} =~ s/^\"//) {    # If opening " (and remove it!)
         # Note that BibTeX doesn't see a " if it is enclosed with {}, so can't use extract_delmited
     while ($$self{line} !~ s/^\"//) {    # Until we've found the closing "
-      if (!$$self{line}) { $self->extendLine; }
-      elsif ($$self{line} =~ /^\{/) {    # Starts with a brace! extract balanced {}
+      if    (!$$self{line}) { $self->extendLine; }
+      elsif ($$self{line} =~ /^\{/) {                # Starts with a brace! extract balanced {}
         $string .= $self->parseBalancedBraces; }
-      elsif ($$self{line} =~ s/^([^"\{]*)//) {    # else pull off everything except a brace or "
+      elsif ($$self{line} =~ s/^([^"\{]*)//) {       # else pull off everything except a brace or "
         $string .= $1; } }
   }
   elsif ($$self{line} =~ /^\{/) {
     $string = $self->parseBalancedBraces;
-    $string =~ s/^.//;                            # Remove the delimiters.
+    $string =~ s/^.//;                               # Remove the delimiters.
     $string =~ s/.$//; }
   else {
     Error('expected', '<delimitedstring>', undef,
       "Expected a string delimited by \"..\", (..) or {..}"); }
-  $string =~ s/^\s+//;                            # and trim
+  $string =~ s/^\s+//;                               # and trim
   $string =~ s/\s+$//;
   return $string; }
 
@@ -336,9 +336,9 @@ sub skipJunk {
   my ($self) = @_;
   $$self{line} ||= "";
   while (1) {
-    $$self{line} =~ s/^[^@%]*//;    # Skip till comment or @
-    return '@' if $$self{line} =~ s/^@//;    # Found @
-                                             # else line is empty, or a comment, so get next
+    $$self{line} =~ s/^[^@%]*//;                  # Skip till comment or @
+    return '@' if $$self{line} =~ s/^@//;         # Found @
+                                                  # else line is empty, or a comment, so get next
     my $nextline = shift(@{ $$self{lines} });
     $$self{line} = $nextline || "";
     $$self{lineno}++;

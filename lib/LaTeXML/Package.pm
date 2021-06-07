@@ -785,7 +785,6 @@ sub MaybeNoteLabel {
 
 sub deactivateCounterScope {
   my ($ctr) = @_;
-  #  print STDERR "Unusing scopes for $ctr\n";
   if (my $scopes = LookupValue('scopes_for_counter:' . $ctr)) {
     map { $STATE->deactivateScope($_) } @$scopes; }
   foreach my $inner_ctr (@{ LookupValue('nested_counters_' . $ctr) || [] }) {
@@ -1458,6 +1457,8 @@ sub DefMath {
   DefMathI(parsePrototype($proto), $presentation, %options);
   return; }
 
+DebuggableFeature('defmath', 'DefMath definitions');
+
 sub DefMathI {
   my ($cs, $paramlist, $presentation, %options) = @_;
   $cs        = coerceCS($cs);
@@ -1485,7 +1486,7 @@ sub DefMathI {
 
   # If single character, handle with a rewrite rule
   if (length($csname) == 1) {
-    ###print STDERR "Defining ".Stringify($cs)." as rewrite\n";
+    Debug("Defining " . Stringify($cs) . " as rewrite") if $LaTeXML::DEBUG{defmath};
     if ($csname ne ToString($presentation)) {
       $options{replace} = $presentation;
       delete $options{name}; }
@@ -1496,21 +1497,21 @@ sub DefMathI {
   elsif ((ref $presentation eq 'CODE')
     || ((ref $presentation)  && grep { $$_[1] == CC_ARG || $_->equals(T_PARAM) } $presentation->unlist)
     || (!(ref $presentation) && ($presentation =~ /\#\d|\\./))) {
-    ###print STDERR "Defining ".Stringify($cs)." as dual\n";
+    Debug("Defining " . Stringify($cs) . " as dual") if $LaTeXML::DEBUG{defmath};
     defmath_dual($cs, $paramlist, $presentation, %options); }
   # If no arguments, but the presentation involves macros, presumably with internal structure,
   # we'll wrap the presentation in ordet to capture the various semantic attributes
   elsif ((ref $presentation) && (grep { $_->isExecutable } $presentation->unlist)) {
-    ###print STDERR "Defining ".Stringify($cs)." as wrapped\n";
+    Debug("Defining " . Stringify($cs) . " as wrapped") if $LaTeXML::DEBUG{defmath};
     defmath_wrapped($cs, $presentation, %options); }
 
   # EXPERIMENT: Introduce an intermediate case for simple symbols
   # Define a primitive that will create a Box with the appropriate set of XMTok attributes.
   elsif (($nargs == 0) && !grep { !$$simpletoken_options{$_} } keys %options) {
-    ###print STDERR "Defining ".Stringify($cs)." as primitive\n";
+    Debug("Defining " . Stringify($cs) . " as primitive") if $LaTeXML::DEBUG{defmath};
     defmath_prim($cs, $paramlist, $presentation, %options); }
   else {
-    ###print STDERR "Defining ".Stringify($cs)." as constructor\n";
+    Debug("Defining " . Stringify($cs) . " as constructor") if $LaTeXML::DEBUG{defmath};
     defmath_cons($cs, $paramlist, $presentation, %options); }
   AssignValue($csname . ":locked" => 1) if $options{locked};
   return; }
@@ -2164,12 +2165,14 @@ sub loadTeXContent {
 # $code can be a sub (as a primitive), or a string to be expanded.
 # (effectively a macro)
 
+DebuggableFeature('packageoptions', 'Processing package & class options');
+
 sub DeclareOption {
   my ($option, $code) = @_;
   $option = ToString($option) if ref $option;
   PushValue('@declaredoptions', $option) if $option;
   my $cs = ($option ? '\ds@' . $option : '\default@ds');
-  # print STDERR "Declaring option: ".($option ? $option : '<default>')."\n";
+  Debug("Declaring option: " . ($option ? $option : '<default>')) if $LaTeXML::DEBUG{packageoptions};
   if ((!defined $code) || (ref $code eq 'CODE')) {
     DefPrimitiveI($cs, undef, $code); }
   else {
@@ -2181,7 +2184,7 @@ sub DeclareOption {
 sub PassOptions {
   my ($name, $ext, @options) = @_;
   PushValue('opt@' . $name . '.' . $ext, map { ToString($_) } @options);
-  # print STDERR "Passing to $name.$ext options: " . join(', ', @options) . "\n";
+  Debug("Passing to $name.$ext options: " . join(', ', @options)) if $LaTeXML::DEBUG{packageoptions};
   return; }
 
 # Process the options passed to the currently loading package or class.
@@ -2201,10 +2204,10 @@ sub ProcessOptions {
   my @curroptions     = @{ (defined($name) && defined($ext)
         && LookupValue('opt@' . $name . '.' . $ext)) || [] };
   my @classoptions = @{ LookupValue('class_options') || [] };
-  # print STDERR "\nProcessOptions for $name.$ext\n"
-  #   . "  declared: " . join(',', @declaredoptions) . "\n"
-  #   . "  provided: " . join(',', @curroptions) . "\n"
-  #   . "  class: " . join(',', @classoptions) . "\n";
+  Debug("ProcessOptions for $name.$ext\n"
+      . "  declared: " . join(',', @declaredoptions) . "\n"
+      . "  provided: " . join(',', @curroptions) . "\n"
+      . "  class: " . join(',', @classoptions)) if $LaTeXML::DEBUG{packageoptions};
 
   my $defaultcs = T_CS('\default@ds');
   # Execute options in declared order (unless \ProcessOptions*)
@@ -2233,7 +2236,7 @@ sub executeOption_internal {
   my ($option) = @_;
   my $cs = T_CS('\ds@' . $option);
   if ($STATE->lookupDefinition($cs)) {
-    # print STDERR "\nPROCESS OPTION $option\n";
+    Debug("PROCESS OPTION $option") if $LaTeXML::DEBUG{packageoptions};
     DefMacroI('\CurrentOption', undef, $option);
     AssignValue('@unusedoptionlist',
       [grep { $_ ne $option } @{ LookupValue('@unusedoptionlist') || [] }]);
@@ -2244,7 +2247,7 @@ sub executeOption_internal {
 
 sub executeDefaultOption_internal {
   my ($option) = @_;
-  # print STDERR "\nPROCESS DEFAULT OPTION $option\n";
+  Debug("PROCESS DEFAULT OPTION $option") if $LaTeXML::DEBUG{packageoptions};
   # presumably should NOT remove from @unusedoptionlist ?
   DefMacroI('\CurrentOption', undef, $option);
   Digest(T_CS('\default@ds'));
@@ -2626,7 +2629,6 @@ sub LookupColor {
 
 sub DefColor {
   my ($name, $color, $scope) = @_;
-  #print STDERR "DEFINE ".ToString($name)." => ".join(',',@$color)."\n";
   return unless ref $color;
   my ($model, @spec) = @$color;
   $scope = 'global' if $STATE->lookupDefinition(T_CS('\ifglobalcolors')) && IfCondition(T_CS('\ifglobalcolors'));
@@ -4345,8 +4347,6 @@ to the given scoping rule.
 Values are also used to specify most configuration parameters (which can
 therefore also be scoped).  The recognized configuration parameters are:
 
- VERBOSITY         : the level of verbosity for debugging
-                     output, with 0 being default.
  STRICT            : whether errors (eg. undefined macros)
                      are fatal.
  INCLUDE_COMMENTS  : whether to preserve comments in the

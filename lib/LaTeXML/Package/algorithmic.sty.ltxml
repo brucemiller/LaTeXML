@@ -64,5 +64,9 @@ NewCounter('algorithm', undef,       idprefix => 'alg');
 NewCounter('ALC@line',  'algorithm', idprefix => 'l');     # Assuming we're inside an {algorithm}!
 DefMacro('\fnum@ALC@line', '\ALC@lno');
 
+# Hopefully this will only get used for right justifying a comment;
+# the ltx:text should autoclose at end of line?
+DefConstructor('\lx@algorithmic@hfill',
+  "<ltx:text cssstyle='float:right'>");
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

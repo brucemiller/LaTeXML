@@ -18,6 +18,7 @@ use File::Spec;
 use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 use LaTeXML;    # Currently, just for version information.
+use LaTeXML::Common::Error;
 use LaTeXML::Post;
 use LaTeXML::Post::Writer;
 use LaTeXML::Post::Scan;
@@ -29,7 +30,7 @@ use LaTeXML::Util::ObjectDB;
 #======================================================================
 # undef => unspecified; 0 = NO, 1 = YES
 my ($help, $showversion, $verbosity, $validate, $omit_doctype) = (0, 0, 0, 1, 0);
-my ($sourcedir, $destination) = (undef, undef);
+my ($sourcedir, $destination, $logfile) = (undef, undef, undef);
 my @paths = ();
 my ($format, $extension, $is_html, $urlstyle) = (undef, undef, undef, 'server');
 my ($numbersections) = (1);
@@ -77,6 +78,8 @@ GetOptions("quiet" => sub { $verbosity--; },
   "verbose" => sub { $verbosity++; },
   "VERSION" => \$showversion,
   "help|?"  => \$help,
+  "log=s"   => \$logfile,
+  "debug=s" => sub { no strict 'refs'; $LaTeXML::DEBUG{ lc($_[1]) } = 1; },
   # Source Options
   "sourcedirectory=s" => \$sourcedir,
   "validate!"         => \$validate,
@@ -164,12 +167,19 @@ GetOptions("quiet" => sub { $verbosity--; },
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 2, -output => \*STDOUT) if $help;
 if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(0); }
 
+SetVerbosity($verbosity);
+UseSTDERR();
 # Get the requested XML file
 xError("Missing input xmlfile") unless @ARGV;
 my $xmlfile = shift(@ARGV);
 if ($xmlfile ne '-') {
-  $xmlfile .= '.xml' unless -f $xmlfile;
-  xError("The input file \"$xmlfile\" was not found") unless -f $xmlfile; }
+  $xmlfile .= '.xml'                                  unless -f $xmlfile;
+  xError("The input file \"$xmlfile\" was not found") unless -f $xmlfile;
+  if (!$logfile) {
+    my ($dir, $name, $ext) = pathname_split($xmlfile);
+    if ($name) {
+      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexmlpost.log'); } }
+  UseLog($logfile); }
 
 if (@ARGV) {
   xError("Extra unrecognized arguments " . join(' ', @ARGV)); }
@@ -289,7 +299,7 @@ else {
 if ((!defined $destination)
   && ($dographics || $picimages
     || checkMathFormat('images') || checkMathFormat('svg'))) {
-  LaTeXML::Post::Warn("expected", "options", undef,
+  Warn("expected", "options", undef,
 "must supply --destination to support auxilliary files disabling: --nomathimages --nographicimages --nopictureimages");
   # default resources is sorta ok: we might not copy, but we'll still have the links/script/etc
   $dographics = $picimages = 0;
@@ -300,10 +310,8 @@ if ((!defined $destination)
 #======================================================================
 # Do the processing.
 #======================================================================
-
-binmode(STDERR, ":encoding(UTF-8)");
-print STDERR "$LaTeXML::IDENTITY\n"              if $verbosity > -1;
-print STDERR "processing started " . localtime() if $verbosity > -1;
+my $starttime = StartTime();
+Note($LaTeXML::IDENTITY . ($prescan ? " scanning " : " paginating ") . $xmlfile);
 
 # Default options/parameters for each post processor
 our %OPTIONS = ();
@@ -457,10 +465,14 @@ my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
 eval {
   $latexmlpost->ProcessChain($DOCUMENT, @procs);
   $DB->finish; };
-print STDERR $@ if $@;
-my $code = $latexmlpost->getStatusCode;
-print STDERR "\nPostprocessing " . ($code == 3 ? 'failed' : 'complete') . ": " . $latexmlpost->getStatusMessage . "\n";
-print STDERR "processing " . ($code == 3 ? 'abandoned' : 'finished') . " " . localtime() . "\n" if $verbosity > -1;
+Debug($@) if $@;
+my $code    = $latexmlpost->getStatusCode;
+my $status  = $latexmlpost->getStatusMessage;
+my $runtime = RunTime($starttime);
+NoteLog("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . ": " . $status);
+NoteSTDERR("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . " " . $status . " (reqd. $runtime)");
+UseLog(undef);
+CheckDebuggable();
 
 #======================================================================
 # helpers

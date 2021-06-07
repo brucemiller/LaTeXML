@@ -21,7 +21,7 @@ use File::Path qw(rmtree);
 use File::Spec;
 use List::Util qw(max);
 use LaTeXML::Common::Config;
-use LaTeXML::Common::Error qw(generateMessage colorizeString);
+use LaTeXML::Common::Error;
 use LaTeXML::Core;
 use LaTeXML::Util::Pack;
 use LaTeXML::Util::Pathname;
@@ -54,7 +54,7 @@ sub new {
     latexml => undef }, $class;
   # Special check if the debug directive is on, just to neutralize the bind_log
   my $debug_directives = $$self{opts}->{debug};
-  $LaTeXML::DEBUG = 1 if (ref $debug_directives eq 'ARRAY') && (grep { /latexml/i } @$debug_directives);
+  $LaTeXML::DEBUG{latexml} = 1 if (ref $debug_directives eq 'ARRAY') && (grep { /latexml/i } @$debug_directives);
   $self->bind_log;
   my $rv = eval { $config->check; };
   $$self{log} .= $self->flush_log;
@@ -107,8 +107,8 @@ sub initialize_session {
   $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
   local $@ = 'Fatal:conversion:unknown Session initialization failed! (Unknown reason)' if ((!$init_eval_return) && (!$@));
   if ($@) {                                                   #Fatal occured!
-    print STDERR "$@\n";
-    print STDERR "\nInitialization complete: " . $latexml->getStatusMessage . ". Aborting.\n" if defined $latexml;
+    Debug($@);
+    Debug("Initialization complete: " . $latexml->getStatusMessage . ". Aborting.") if defined $latexml;
     # Close and restore STDERR to original condition.
     $$self{log} .= $self->flush_log;
     $$self{ready} = 0;
@@ -117,7 +117,7 @@ sub initialize_session {
     # Demand errorless initialization
     my $init_status = $latexml->getStatusMessage;
     if ($init_status =~ /error/i) {
-      print STDERR "\nInitialization complete: " . $init_status . ". Aborting.\n";
+      Debug("Initialization complete: " . $init_status . ". Aborting.");
       $$self{log} .= $self->flush_log;
       $$self{ready} = 0;
       return;
@@ -146,10 +146,9 @@ sub convert {
   my $opts    = $$self{opts};
   my $runtime = $$self{runtime};
   ($$runtime{status}, $$runtime{status_code}) = (undef, undef);
-  if ($$opts{verbosity} >= 0) {
-    print STDERR "$LaTeXML::IDENTITY\n";
-    print STDERR "invoked as [$0 " . join(' ', @ARGV) . "]\n" if $$opts{verbosity} >= 1;
-    print STDERR "processing started " . localtime() . "\n"; }
+  NoteLog("$LaTeXML::IDENTITY");
+  NoteLog("invoked as [$0 " . join(' ', @ARGV) . "]");
+  NoteLog(($$opts{recursive} ? "recursive " : "") . "processing started " . localtime());
 
   # 1.3 Prepare for What's IN:
   # We use a new temporary variable to avoid confusion with daemon caching
@@ -204,8 +203,8 @@ sub convert {
   #       to this time, where we can be certain if a user has run a local job without --dest
   if ((!$$opts{destination})
     && ($$opts{dographics} || $$opts{picimages} || grep { $_ eq 'images' or $_ eq 'svg' } @{ $$opts{math_formats} })) {
-    print STDERR generateMessage(colorizeString("Warning:expected:options", 'warning'), undef,
-      "must supply --destination to support auxilliary files", 0,
+    Warn("expected", "options", undef,
+      "must supply --destination to support auxilliary files",
       "  disabling: --nomathimages --nographicimages --nopictureimages");
     # default resources is sorta ok: we might not copy, but we'll still have the links/script/etc
     $$opts{dographics} = 0;
@@ -283,9 +282,11 @@ sub convert {
   if ($eval_report || ($$runtime{status_code} == 3)) {
     # Terminate immediately on Fatal errors
     $$runtime{status_code} = 3;
-    print STDERR $eval_report . "\n" if $eval_report;
-    print STDERR "\nConversion complete: " . $$runtime{status} . ".\n";
-    print STDERR "Status:conversion:" . ($$runtime{status_code} || '0') . "\n";
+
+    NoteLog($eval_report) if $eval_report;
+    NoteLog(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
+    NoteLog(($$opts{recursive} ? "recursive " : "") . "Status:conversion:" . ($$runtime{status_code} || '0'));
+
     # If we just processed an archive, clean up sandbox directory.
     if ($$opts{whatsin} =~ /^archive/) {
       rmtree($$opts{sourcedirectory});
@@ -301,8 +302,8 @@ sub convert {
     return { result => $serialized, log => $log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
   else {
     # Standard report, if we're not in a Fatal case
-    print STDERR "\nConversion complete: " . $$runtime{status} . ".\n"; }
-
+    NoteLog(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
+  }
   # 2.3 Clean up and exit if we only wanted the serialization of the core conversion
   if ($serialized) {
     # If serialized has been set, we are done with the job
@@ -375,7 +376,7 @@ sub convert {
   else { $serialized = $result; }
 
   # 5.2 Finalize logging and return a response containing the document result, log and status
-  print STDERR "Status:conversion:" . ($$runtime{status_code} || '0') . " \n";
+  Note("Status:conversion:" . ($$runtime{status_code} || '0'));
   my $log = $self->flush_log;
   return { result => $serialized, log => $log, status => $$runtime{status}, 'status_code' => $$runtime{status_code} };
 }
@@ -421,9 +422,9 @@ sub convert_post {
   my $runtime = $$self{runtime};
   my ($xslt, $parallel, $math_formats, $format, $verbosity, $defaultresources, $embed) =
     map { $$opts{$_} } qw(stylesheet parallelmath math_formats format verbosity defaultresources embed);
-  $verbosity = $verbosity || 0;
-
-  my %PostOPS = (verbosity => $verbosity,
+##  $verbosity = $verbosity || 0;
+  SetVerbosity($verbosity) if defined $verbosity;
+  my %PostOPS = (    ####verbosity => $verbosity,
     validate           => $$opts{validate},
     sourceDirectory    => $$opts{sourcedirectory},
     siteDirectory      => $$opts{sitedirectory},
@@ -588,7 +589,8 @@ sub convert_post {
 
   # Do the actual post-processing:
   my @postdocs;
-  my $latexmlpost      = LaTeXML::Post->new(verbosity => $verbosity || 0);
+##  my $latexmlpost      = LaTeXML::Post->new(verbosity => $verbosity || 0);
+  my $latexmlpost      = LaTeXML::Post->new();
   my $post_eval_return = eval {
     local $SIG{'ALRM'} = sub { die "Fatal:conversion:post-processing timed out.\n" };
     alarm($$opts{timeout});
@@ -602,7 +604,7 @@ sub convert_post {
   if ($@) {    #Fatal occured!
     $$runtime{status_code} = 3;
     local $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
-    print STDERR $@;
+    Debug($@);
     undef @postdocs;    # Empty document for fatals, for sanity's sake
   }
 
@@ -619,15 +621,16 @@ sub convert_post {
     my $destination_directory = $PostOPS{destinationDirectory};
     my $log_file              = pathname_absolute($$opts{log}, $destination_directory);
     if (pathname_is_contained($log_file, $destination_directory)) {
-      print STDERR "\nPost-processing complete: " . $latexmlpost->getStatusMessage . "\n";
-      print STDERR "processing finished " . localtime() . "\n" if $verbosity >= 0;
+      NoteLog(($$opts{recursive} ? "recursive " : "") . "Post-processing complete: " . $latexmlpost->getStatusMessage);
+      NoteLog(($$opts{recursive} ? "recursive " : "") . "processing finished " . localtime());
       my $archive_log_status_code = max($$runtime{status_code}, $latexmlpost->getStatusCode);
-      print STDERR "Status:conversion:" . $archive_log_status_code . " \n";
+      Note("Status:conversion:" . $archive_log_status_code);
       open my $log_fh, '>', $log_file;
       print $log_fh $self->flush_log;
       close $log_fh;
       $self->bind_log; }
-    else { print STDERR "Error:I/O:log The target log file isn't contained in the destination directory!\n"; } }
+# TODO: This needs a bit of rethinking, likely a fallback.log file should be created and returned with the archive
+    else { Error("I/O", "log", "The target log file isn't contained in the destination directory!"); } }
   # Handle the output packaging
 
   my ($postdoc) = pack_collection(collection => [@postdocs], whatsout => $$opts{whatsout}, format => $format, %PostOPS);
@@ -642,9 +645,9 @@ sub convert_post {
   }
   $$runtime{status_code} = max($$runtime{status_code}, $latexmlpost->getStatusCode);
   ### HACKY END
+  NoteLog(($$opts{recursive} ? "recursive " : "") . "Post-processing complete: " . $latexmlpost->getStatusMessage);
+  NoteLog(($$opts{recursive} ? "recursive " : "") . "processing finished " . localtime());
 
-  print STDERR "\nPost-processing complete: " . $latexmlpost->getStatusMessage . "\n";
-  print STDERR "processing finished " . localtime() . "\n" if $verbosity >= 0;
   # Avoid writing the main file twice (non-archive documents):
   if ($$opts{destination} && $$opts{local} && ($$opts{whatsout} eq 'document')) {
     undef $postdoc; }
@@ -667,9 +670,10 @@ sub new_latexml {
   my $includepathpis = !(exists $$opts{xsltparameters} &&
     (grep { $_ eq 'LATEXML_VERSION:TEST' } @{ $$opts{xsltparameters} }));
   require LaTeXML;
+  SetVerbosity($$opts{verbosity}) if defined $$opts{verbosity};
   my $latexml = LaTeXML::Core->new(preload => [@pre], searchpaths => [@{ $$opts{paths} }],
-    graphicspaths   => ['.'],
-    verbosity       => $$opts{verbosity}, strict => $$opts{strict},
+    graphicspaths => ['.'],
+###    verbosity       => $$opts{verbosity}, strict => $$opts{strict},
     includecomments => $$opts{comments},
     includepathpis  => $includepathpis,
     inputencoding   => $$opts{inputencoding},
@@ -688,42 +692,23 @@ sub new_latexml {
 
   # TODO: Do again, need to do this in a GOOD way as well:
   $latexml->digestFile($_, noinitialize => 1) foreach (@str_pre);
-  print STDERR "\n\n";    # Flush a pair of newlines to delimit the initalization
   return $latexml;
 }
 
 sub bind_log {
   my ($self) = @_;
-  # HACK HACK HACK !!! Refactor with proplery scoped logging !!!
-  $LaTeXML::LOG_STACK++;    # May the modern Perl community forgive me for this hack...
+  $LaTeXML::LOG_STACK++;    # Only bind once
   return if $LaTeXML::LOG_STACK > 1;
-  # TODO: Move away from global file handles, they will inevitably end up causing problems..
-
-  if (!$LaTeXML::DEBUG) {    # Debug will use STDERR for logs
-                             # Tie STDERR to log:
-    my $log_handle;
-    open($log_handle, ">>", \$$self{log}) or croak "Can't redirect STDERR to log! Dying...";
-    *STDERR_SAVED = *STDERR;
-    *STDERR       = *$log_handle;
-    binmode(STDERR, ':encoding(UTF-8)');
-    $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR;
-    $$self{log_handle} = $log_handle;
-  }
+  UseLog(\$$self{log}, 1);
   return; }
 
 sub flush_log {
   my ($self) = @_;
-  # HACK HACK HACK !!! Refactor with proplery scoped logging !!!
   $LaTeXML::LOG_STACK--;    # May the modern Perl community forgive me for this hack...
   return '' if $LaTeXML::LOG_STACK > 0;
 
-  # Close and restore STDERR to original condition.
-  if (!$LaTeXML::DEBUG) {
-    close $$self{log_handle};
-    delete $$self{log_handle};
-    *STDERR                                    = *STDERR_SAVED;
-    $LaTeXML::Common::Error::COLORIZED_LOGGING = -t STDERR;
-  }
+  UseLog(undef);
+
   my $log = $$self{log};
   $$self{log} = q{};
   return $log; }

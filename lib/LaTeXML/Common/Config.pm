@@ -365,12 +365,11 @@ sub _prepare_options {
   #======================================================================
   # "safe" and semi-perlcrtic acceptable way to set DEBUG inside arbitrary modules.
   # Note: 'LaTeXML' refers to the top-level class
-  { no strict 'refs';
-    foreach my $ltx_class (@{ $$opts{debug} || [] }) {
-      if ($ltx_class eq 'LaTeXML') {
-        ${'LaTeXML::DEBUG'} = 1; }
-      else {
-        ${ 'LaTeXML::' . $ltx_class . '::DEBUG' } = 1; } } }
+  foreach my $ltx_class (@{ $$opts{debug} || [] }) {
+    if ($ltx_class eq 'LaTeXML') {
+      $LaTeXML::DEBUG{LaTeXML} = 1; }
+    else {
+      $LaTeXML::DEBUG{$ltx_class} = 1; } }
 
   $$opts{input_limit}   = 100          unless defined $$opts{input_limit}; # 100 jobs until restart
   $$opts{timeout}       = 600          unless defined $$opts{timeout};     # 10 minute timeout default
@@ -380,9 +379,9 @@ sub _prepare_options {
   if ($$opts{mathparse} eq 'no') {
     $$opts{mathparse}   = 0;
     $$opts{nomathparse} = 1; }                                             #Backwards compatible
-  $$opts{verbosity} = 0     unless defined $$opts{verbosity};
-  $$opts{preload}   = []    unless defined $$opts{preload};
-  $$opts{paths}     = ['.'] unless defined $$opts{paths};
+##  $$opts{verbosity} = 0     unless defined $$opts{verbosity};
+  $$opts{preload} = []    unless defined $$opts{preload};
+  $$opts{paths}   = ['.'] unless defined $$opts{paths};
   @{ $$opts{paths} } = map { pathname_canonical($_) } @{ $$opts{paths} };
   foreach (('destination', 'dbfile', 'sourcedirectory', 'sitedirectory')) {
     $$opts{$_} = pathname_canonical($$opts{$_}) if defined $$opts{$_};
@@ -419,12 +418,13 @@ sub _prepare_options {
   if ($$opts{format}) {
     # Lower-case for sanity's sake
     $$opts{format} = lc($$opts{format});
-    $$opts{format} = 'html5' if $$opts{format} eq 'html';    # Default is 5
     if ($$opts{format} eq 'zip') {
       # Not encouraged! But try to produce something sensible anyway...
       $$opts{format}   = 'html5';
-      $$opts{whatsout} = 'archive';
-    }
+      $$opts{whatsout} = 'archive'; }
+    else {    # Default HTML is 5
+      $$opts{format} = 'html5' if $$opts{format} eq 'html'; }
+
     $$opts{is_html}  = ($$opts{format} =~ /^html/);
     $$opts{is_xhtml} = ($$opts{format} =~ /^(xhtml5?|epub|mobi)$/);
     $$opts{whatsout} = 'archive' if (($$opts{format} eq 'epub') || ($$opts{format} eq 'mobi'));
@@ -618,7 +618,8 @@ sub _read_options_file {
   my ($file) = @_;
   my $opts = [];
   my $OPT;
-  print STDERR "(Loading profile $file...";
+#### Now can we report status to right places before we've gotten configuration??? (verbosity, logfile...)
+####  ProgressSpinup("Loading profile $file");
   unless (open($OPT, "<", $file)) {
     Error('expected', $file, "Could not open options file '$file'");
     return; }
@@ -659,7 +660,7 @@ sub _read_options_file {
         "Unrecognized configuration data '$line'"); }
   }
   close $OPT;
-  print STDERR " )\n";
+####  ProgressSpindown("Loading profile $file");
   return $opts; }
 
 1;

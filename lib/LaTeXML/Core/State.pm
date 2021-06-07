@@ -94,7 +94,6 @@ sub new {
     stomach => $options{stomach}, model => $options{model} }, $class;
   # Note that "100" is hardwired into TeX, The Program!!!
   $$self{value}{MAX_ERRORS} = [100];
-  $$self{value}{VERBOSITY}  = [0];
   # Standard TeX units, in scaled points
   $$self{value}{UNITS} = [{
       pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
@@ -130,8 +129,8 @@ sub assign_internal {
   my ($self, $table, $key, $value, $scope) = @_;
   $scope = ($$self{prefixes}{global} ? 'global' : 'local') unless defined $scope;
   if (exists $$self{tracing_definitions}{$key}) {
-    print STDERR "ASSIGN $key in $table " . ($scope ? "($scope)" : '') . " => " .
-      (ref $value ? $value->stringify : $value) . "\n"; }
+    Debug("ASSIGN $key in $table " . ($scope ? "($scope)" : '') . " => " .
+        (ref $value ? $value->stringify : $value)); }
   if ($scope eq 'global') {
     # Remove bindings made in all frames down-to & including the next lower locked frame
     my $frame;
@@ -152,7 +151,6 @@ sub assign_internal {
       $$self{undo}[0]{$table}{$key} = 1;
       unshift(@{ $$self{$table}{$key} }, $value); } }    # And push new binding.
   else {
-    # print STDERR "Assigning $key in stash $stash\n";
     assign_internal($self, 'stash', $scope, [], 'global') unless $$self{stash}{$scope}[0];
     push(@{ $$self{stash}{$scope}[0] }, [$table, $key, $value]);
     assign_internal($self, $table, $key, $value, 'local')
@@ -705,26 +703,43 @@ sub getStatus {
   my ($self, $type) = @_;
   return $$self{status}{$type}; }
 
-sub getStatusMessage {
-  my ($self) = @_;
-  my $status = $$self{status};
-  my @report = ();
-  push(@report, colorizeString("$$status{warning} warning" . ($$status{warning} > 1 ? 's' : ''), 'warning'))
-    if $$status{warning};
-  push(@report, colorizeString("$$status{error} error" . ($$status{error} > 1 ? 's' : ''), 'error'))
-    if $$status{error};
-  push(@report, "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : ''))
+our $SUCCESS_MESSAGE = 'No obvious problems';
 
-    if $$status{fatal};
-  my @undef = ($$status{undefined} ? keys %{ $$status{undefined} } : ());
-  push(@report, colorizeString(scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
-        . "[" . join(', ', @undef) . "]", 'details'))
-    if @undef;
-  my @miss = ($$status{missing} ? keys %{ $$status{missing} } : ());
-  push(@report, colorizeString(scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
-        . "[" . join(', ', @miss) . "]", 'details'))
-    if @miss;
-  return join('; ', @report) || colorizeString('No obvious problems', 'success'); }
+sub getStatusMessage {
+  my ($self)         = @_;
+  my $status         = $$self{status};
+  my @report         = ();
+  my $warning_status = $$status{warning} && "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : '');
+  my $error_status = $$status{error} && "$$status{error} error" . ($$status{error} > 1 ? 's' : '');
+  my $fatal_status = $$status{fatal} && "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : '');
+  my @undef        = ($$status{undefined} ? keys %{ $$status{undefined} } : ());
+  my $undef_status = @undef && (scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
+    . "[" . join(', ', @undef) . "]");
+  my @miss           = ($$status{missing} ? keys %{ $$status{missing} } : ());
+  my $missing_status = @miss && (scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
+    . "[" . join(', ', @miss) . "]");
+
+  my $success_status = $SUCCESS_MESSAGE;
+  if ($LaTeXML::Common::Error::IS_TERMINAL) {
+    $warning_status = $warning_status && colorizeString($warning_status, 'warning');
+    $error_status   = $error_status   && colorizeString($error_status,   'error');
+    $fatal_status   = $fatal_status   && colorizeString($fatal_status,   'fatal');
+    $undef_status   = $undef_status   && colorizeString($undef_status,   'details');
+    $missing_status = $missing_status && colorizeString($missing_status, 'details');
+    $success_status = colorizeString($success_status, 'success'); }
+
+  push(@report, $warning_status) if $warning_status;
+  push(@report, $error_status)   if $error_status;
+  push(@report, $fatal_status)   if $fatal_status;
+  push(@report, $undef_status)   if $undef_status;
+  push(@report, $missing_status) if $missing_status;
+
+  #  return join('; ', @report) || $success_status; }
+  my $message = join('; ', @report) || $success_status;
+  $message .= " (See $LaTeXML::Common::Error::LOG_PATH)"
+    if ($$status{fatal} || $$status{error} || $$status{warning})
+    && $LaTeXML::Common::Error::LOG && !ref $LaTeXML::Common::Error::LOG_PATH;
+  return $message; }
 
 sub getStatusCode {
   my ($self) = @_;
@@ -823,8 +838,6 @@ to the given scoping rule.
 Values are also used to specify most configuration parameters (which can
 therefore also be scoped).  The recognized configuration parameters are:
 
- VERBOSITY         : the level of verbosity for debugging
-                     output, with 0 being default.
  STRICT            : whether errors (eg. undefined macros)
                      are fatal.
  INCLUDE_COMMENTS  : whether to preserve comments in the

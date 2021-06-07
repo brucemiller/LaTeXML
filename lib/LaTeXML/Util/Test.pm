@@ -237,6 +237,10 @@ sub daemon_ok {
   my $opts = read_options("$base.spec", $base);
   push @$opts, (['destination', "$localname.test.xml"],
     ['log',                "/dev/null"],
+    ['quiet',              ''],
+    ['quiet',              ''],
+    ['quiet',              ''],
+    ['quiet',              ''],
     ['timeout',            10],
     ['autoflush',          1],
     ['timestamp',          '0'],

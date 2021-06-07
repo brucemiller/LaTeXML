@@ -11,11 +11,13 @@ BEGIN { use_ok('LaTeXML::Core::Stomach'); }
 BEGIN { use_ok('LaTeXML::Common::Model'); }
 BEGIN { use_ok('LaTeXML::Global'); }
 BEGIN { use_ok('LaTeXML::Package'); }
+BEGIN { use_ok('LaTeXML::Common::Error'); }
 
 local $STATE = LaTeXML::Core::State->new(catcodes => 'standard',
     stomach => LaTeXML::Core::Stomach->new(),
     model   => LaTeXML::Common::Model->new());
-$STATE->assignValue("VERBOSITY", -2);
+
+SetVerbosity(-2);
 
 my @supported_filename_patterns = qw(
   amsmath2.sty amsmath3-1.sty amsmathv2.sty amsmath_v2.sty amsmath2019.sty amsmath_v2019.sty amsmath_2019.sty
