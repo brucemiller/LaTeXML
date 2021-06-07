@@ -283,7 +283,7 @@ sub Fatal {
     local $SIG{__DIE__} = 'DEFAULT';
     die $message; }
   # For all else, we can attempt to resume a level up in the Perl call stack.
-  print STDERR $message if $verbosity >= -2;
+  _printline($message) if $verbosity >= -2;
   return; }
 
 sub checkRecursiveError {

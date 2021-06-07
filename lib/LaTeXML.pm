@@ -302,7 +302,7 @@ sub convert {
     $LaTeXML::UNSAFE_FATAL = 0;
     $$self{ready} = 0;
   }
-  print STDERR "\nConversion complete: " . $$runtime{status} . ".\n";
+  Note(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
 
   # 2.3 Clean up and exit if we only wanted the serialization of the core conversion
   if ($serialized) {
