@@ -1193,9 +1193,6 @@ Tag('ltx:titlepage', autoClose => 1);
 DefConstructorI('\maybe@end@titlepage', undef, sub {
     my ($document) = @_;
     $document->maybeCloseElement('ltx:titlepage'); });
-DefConstructorI('\maybe@end@titlepage', undef, sub {
-    my ($document) = @_;
-    $document->maybeCloseElement('ltx:titlepage'); });
 DefConstructorI('\unwind@titlepage', undef, sub {
     my ($document) = @_;
     if (my $titlepage = $document->maybeCloseElement('ltx:titlepage')) {
