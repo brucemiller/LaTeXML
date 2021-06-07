@@ -31,11 +31,12 @@ RequirePackage('calc');
 
 DefMacroI('\ext@todo', undef, 'todo');
 NewCounter('todo');
-DefMacro('\todotyperefname', 'ToDo');
-DefMacro('\todo',            '\lx@note{todo}');
-DefMacro('\missingfigure{}', '[Missing Figure: #1]');
-DefMacro('todototoc',        '');
+DefMacro('\todotyperefname',   'ToDo');
+DefMacro('\todo',              '\lx@note{todo}');
+DefMacro('\missingfigure[]{}', '[Missing Figure: #2]');
+DefMacro('\todototoc',         '');
+DefMacro('\listoftodos',       '');
+DefMacro('\@todo[]{}',         '');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
-
