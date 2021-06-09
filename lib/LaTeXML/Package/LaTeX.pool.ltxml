@@ -364,7 +364,7 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
     else {
       my @lines = ();
       while (!$STATE->isValueBound('current_environment', 0)
-        || ($STATE->valueInFrame('current_environment', 0) ne 'document')) {
+        || ($STATE->valueInFrame('current_environment', 0) ne 'document') && !$$STATE{undo}[0]{_FRAME_LOCK_}) {
         # my $nonbox = $STATE->valueInFrame('groupNonBoxing',0) || 0;
         my $tok = $STATE->valueInFrame('groupInitiator',        0) || '<unknown>';
         my $loc = $STATE->valueInFrame('groupInitiatorLocator', 0);

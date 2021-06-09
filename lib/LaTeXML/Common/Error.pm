@@ -526,7 +526,7 @@ sub generateMessage {
   # Colorize errorcode if appropriate
   if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0)) {
     $errorcode =~ /^(\w+)\:/;
-    my $errorkind = lc($1);
+    my $errorkind = $1 && lc($1);
     $errorcode = colorizeString($errorcode, $errorkind) if $errorkind; }
 
   #----------------------------------------
