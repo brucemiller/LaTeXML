@@ -59,6 +59,7 @@ $Term::ANSIColor::AUTORESET = 1;
 # Possibility of more terminal initialization & control?
 sub UseSTDERR {
   if (scalar(@_) && !$_[0]) {    # Single false argument? Turn OFF
+    _spinnerclear() if $USE_STDERR && $IS_TERMINAL;
     $USE_STDERR  = undef;
     $IS_TERMINAL = undef; }
   else {

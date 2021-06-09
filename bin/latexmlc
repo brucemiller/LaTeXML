@@ -196,7 +196,9 @@ if ($result) {
     print STDOUT "\n", $result, "\n"; } }
 
 # == End of Program ==
-if ($status_code == 3 || ($status =~ /fatal error/)) {      # non-zero exit code for fatal conversions
+# cleanup STDERR e.g. in case of fatals
+UseSTDERR(undef);
+if ($status_code == 3 || ($status =~ /fatal error/)) {    # non-zero exit code for fatal conversions
   exit 1;
 } else {
   exit 0;
