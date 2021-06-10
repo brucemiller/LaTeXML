@@ -237,7 +237,7 @@ sub Fatal {
 # Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
   if ((($category eq 'internal') && ($object eq '<recursion>')) ||
     ($category eq 'too_many_errors') ||
-    ($object eq 'deep_recursion')) {
+    ($object eq 'deep_recursion')    || ($object eq 'die')) {
     $LaTeXML::UNSAFE_FATAL = 1; }
 
   # Ensure we have nothing else to do in the main processing.
@@ -278,7 +278,7 @@ sub Fatal {
     $where, $message, $detail_level, @details);
   $message .= $state->getStatusMessage . "\n" if $state;
 
-  if ($object eq 'deep_recursion') {
+  if ($object eq 'deep_recursion' or $object eq 'die') {
     # Infinite recursion requires a hard yank
     $LaTeXML::IGNORE_ERRORS = 0;
     local $SIG{__DIE__} = 'DEFAULT';
