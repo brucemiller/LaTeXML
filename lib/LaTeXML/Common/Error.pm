@@ -240,8 +240,20 @@ sub Fatal {
     ($object eq 'deep_recursion')    || ($object eq 'die')) {
     $LaTeXML::UNSAFE_FATAL = 1; }
 
+  # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
+  # It should be safe so long as the caller has bound it and rebinds it if necessary.
+  my $state     = $STATE;
+  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
+  $state->noteStatus('fatal') if $state;
+  my $detail_level = (($verbosity <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
+  $message
+    = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'),
+    $where, $message, $detail_level, @details);
+  $message .= $state->getStatusMessage . "\n" if $state;
+
   # Ensure we have nothing else to do in the main processing.
-  my $state   = $STATE;
+  # NOTE: this recovery procedure must always be run after all logging messages are generated,
+  #       as resetting the various stacks loses information (e.g. location is lost).
   my $stomach = $$state{stomach};
   my $gullet  = $$stomach{gullet};
   $$stomach{token_stack} = [];
@@ -267,19 +279,8 @@ sub Fatal {
   $$gullet{mouth}            = LaTeXML::Core::Mouth->new();
   $$state{boxes_to_absorb}   = [];
 
-  # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
-  # It should be safe so long as the caller has bound it and rebinds it if necessary.
-  my $verbosity = $state && $state->lookupValue('VERBOSITY') || 0;
-
-  $state->noteStatus('fatal') if $state;
-  my $detail_level = (($verbosity <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
-  $message
-    = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'),
-    $where, $message, $detail_level, @details);
-  $message .= $state->getStatusMessage . "\n" if $state;
-
+  # Infinite recursion, hard perl dies (others?) require a hard yank with "die"
   if ($object eq 'deep_recursion' or $object eq 'die') {
-    # Infinite recursion requires a hard yank
     $LaTeXML::IGNORE_ERRORS = 0;
     local $SIG{__DIE__} = 'DEFAULT';
     die $message; }
