@@ -21,6 +21,7 @@ InputDefinitions('expl3', type => 'sty', noltxml => 1);
 # Redefine aux macro to avoid reliance on argument ordering artefacts in latex.ltx
 # The purpose here was originally to set `\g_file_curr_name_str`,
 #  but I am unsure if it is used anywhere currently?
-DefMacroI('\@pushfilenameaux', undef, Tokens(), locked => 1);
+DefMacroI('\@pushfilenameaux',          undef, Tokens(), locked => 1);
+DefMacroI('\@expl@push@filename@aux@@', undef, Tokens(), locked => 1);
 
 1;
