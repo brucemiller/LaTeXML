@@ -90,7 +90,9 @@ sub prepare_session {
 
 sub initialize_session {
   my ($self) = @_;
-  $$self{runtime} = {};
+  # TTL = time-to-live, starting with the allotted timeout (or 0 for unlimited)
+  my $runtime = $$self{runtime};
+  $$runtime{TTL} = $$self{opts}{timeout} unless defined $$runtime{TTL};
   $self->bind_log;
   # Empty the package namespace
   foreach my $subname (keys %LaTeXML::Package::Pool::) {
@@ -101,19 +103,19 @@ sub initialize_session {
   my $init_eval_return = eval {
     # Prepare LaTeXML object
     local $SIG{'ALRM'} = sub { die "Fatal:conversion:init Failed to initialize LaTeXML state\n" };
-    alarm($$self{opts}{timeout});
+    alarm($$runtime{TTL});
 
     $latexml = new_latexml($$self{opts});
 
-    alarm(0);
+    $$runtime{TTL} = alarm(0);
     1;
   };
   ## NOTE: This will give double errors, if latexml has already handled it!
   $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
   local $@ = 'Fatal:conversion:unknown Session initialization failed! (Unknown reason)' if ((!$init_eval_return) && (!$@));
   if ($@) {                                                   #Fatal occured!
-    Debug($@);
-    Debug("Initialization complete: " . $latexml->getStatusMessage . ". Aborting.") if defined $latexml;
+    Note($@);
+    Note("Initialization complete: " . $latexml->getStatusMessage . ". Aborting.") if defined $latexml;
     # Close and restore STDERR to original condition.
     $$self{log} .= $self->flush_log;
     $$self{ready} = 0;
@@ -122,7 +124,7 @@ sub initialize_session {
     # Demand errorless initialization
     my $init_status = $latexml->getStatusMessage;
     if ($init_status =~ /error/i) {
-      Debug("Initialization complete: " . $init_status . ". Aborting.");
+      Note("Initialization complete: " . $init_status . ". Aborting.");
       $$self{log} .= $self->flush_log;
       $$self{ready} = 0;
       return;
@@ -140,15 +142,17 @@ sub convert {
   my ($self, $source) = @_;
   # 1 Prepare for conversion
   # 1.1 Initialize session if needed:
-  $$self{runtime} = {};
+  # TTL = time-to-live, starting with the allotted timeout
+  #       on each call to convert (or 0 for unlimited)
+  $$self{runtime} = { TTL => $$self{opts}{timeout} };
+  my $runtime = $$self{runtime};
   $self->initialize_session unless $$self{ready};
   if (!$$self{ready}) {    # We can't initialize, return error:
     return { result => undef, log => $self->flush_log, status => "Initialization failed.", status_code => 3 }; }
 
   $self->bind_log;
   # 1.2 Inform of identity, increase conversion counter
-  my $opts    = $$self{opts};
-  my $runtime = $$self{runtime};
+  my $opts = $$self{opts};
   ($$runtime{status}, $$runtime{status_code}) = (undef, undef);
   Note("$LaTeXML::IDENTITY");
   NoteLog("invoked as [$0 " . join(' ', @ARGV) . "]");
@@ -232,22 +236,22 @@ sub convert {
   # 2 Beginning Core conversion - digest the source:
   my ($digested, $dom, $serialized) = (undef, undef, undef);
   eval {
-    alarm($$opts{timeout});
+    alarm($$runtime{TTL});
     my $mode = ($$opts{type} eq 'auto') ? 'TeX' : $$opts{type};
     $digested = $latexml->digestFile($source, preamble => $current_preamble,
       postamble    => $current_postamble,
       mode         => $mode,
       noinitialize => 1);
-    alarm(0); };
+    $$runtime{TTL} = alarm(0); };
   my $eval_report = $@;
   if (!$digested && $eval_report) {
     # We can retry finishing digestion if hit a Fatal,
     # sometimes there are leftover boxes we can accept.
     eval {
-      alarm($$opts{timeout});
+      alarm($$runtime{TTL});
       $digested = $latexml->withState(sub {
           return $latexml->finishDigestion; });
-      alarm(0); };
+      $$runtime{TTL} = alarm(0); };
     $eval_report .= $@ if $@; }
   # 2.1 Now, convert to DOM and output, if desired.
   my $core_target = $$opts{format};
@@ -256,7 +260,7 @@ sub convert {
     $core_target = 'xml'; }
   if ($digested) {
     eval {
-      alarm($$opts{timeout});
+      alarm($$runtime{TTL});
       $latexml->withState(sub {
           if ($core_target eq 'tex') {
             $serialized = LaTeXML::Core::Token::UnTeX($digested); }
@@ -264,7 +268,7 @@ sub convert {
             $serialized = ($$opts{verbosity} > 0 ? $digested->stringify : $digested->toString); }
           elsif ($core_target eq 'xml') {
             $dom = $latexml->convertDocument($digested); } });
-      alarm(0); };
+      $$runtime{TTL} = alarm(0); };
     $eval_report .= $@ if $@;
     # Try to rescue the document if e.g. math parsing hit a Fatal error
     if (!$dom && $@ && $core_target eq 'xml') {
@@ -590,19 +594,17 @@ sub convert_post {
 ##  my $latexmlpost      = LaTeXML::Post->new(verbosity => $verbosity || 0);
   my $latexmlpost      = LaTeXML::Post->new();
   my $post_eval_return = eval {
-    local $SIG{'ALRM'} = sub { die "Fatal:conversion:post-processing timed out.\n" };
-    alarm($$opts{timeout});
+    alarm($$runtime{TTL});
     @postdocs = $latexmlpost->ProcessChain($DOCUMENT, @procs);
-    alarm(0);
-    1;
-  };
+    $$runtime{TTL} = alarm(0);
+    1; };
   # 3.1 Bookkeeping if a post-processing Fatal error occurred
   local $@ = 'Fatal:conversion:unknown Post-processing failed! (Unknown Reason)'
     if ((!$post_eval_return) && (!$@));
   if ($@) {    #Fatal occured!
     $$runtime{status_code} = 3;
     local $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
-    Debug($@);
+    Note($@);
     undef @postdocs;    # Empty document for fatals, for sanity's sake
   }
 

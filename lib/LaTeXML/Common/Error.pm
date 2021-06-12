@@ -259,9 +259,9 @@ sub Fatal {
   $$stomach{token_stack} = [];
   # If we were in an infinite loop, disable any potential busy token.
   my $relax_def = $$state{meaning}{"\\relax"}[0];
-  $state->assignMeaning($LaTeXML::CURRENT_TOKEN, $relax_def, 'global') if $LaTeXML::CURRENT_TOKEN;
+  $state && $state->assignMeaning($LaTeXML::CURRENT_TOKEN, $relax_def, 'global') if $LaTeXML::CURRENT_TOKEN;
   for my $token (@{ $$gullet{pushback} }) {
-    $state->assignMeaning($token, $relax_def, 'global');
+    $state && $state->assignMeaning($token, $relax_def, 'global');
   }
   # Rescue data structures that may be serializable/resumable
   if (@LaTeXML::LIST) {
@@ -271,7 +271,7 @@ sub Fatal {
   if ($LaTeXML::DOCUMENT) {
     $$state{rescued_document} = $LaTeXML::DOCUMENT; }
   # avoid looping at \end{document}, Fatal brings us back to the doc level
-  $state->assignValue('current_environment', undef, 'global');
+  $state && $state->assignValue('current_environment', undef, 'global');
   # then reset the gullet
   $$gullet{pushback}         = [];
   $$gullet{mouthstack}       = [];
@@ -280,8 +280,7 @@ sub Fatal {
   $$state{boxes_to_absorb}   = [];
 
   # Infinite recursion, hard perl dies (others?) require a hard yank with "die"
-  if ($object eq 'deep_recursion' or $object eq 'die') {
-    $LaTeXML::IGNORE_ERRORS = 0;
+  if ($object =~ /^(?:deep_recursion|die|timedout)$/) {
     local $SIG{__DIE__} = 'DEFAULT';
     die $message; }
   # For all else, we can attempt to resume a level up in the Perl call stack.
