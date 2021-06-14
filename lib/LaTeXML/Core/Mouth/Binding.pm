@@ -27,12 +27,14 @@ sub new {
   my ($class, $pathname) = @_;
   my ($dir, $name, $ext) = pathname_split($pathname);
   my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
-  NoteBegin("Loading $$self{source}");
+  ProgressSpinup("Loading $$self{source}");
   return $self; }
 
 sub finish {
   my ($self) = @_;
-  NoteEnd("Loading $$self{source}");
+  return if $$self{finished};
+  ProgressSpindown("Loading $$self{source}");
+  $$self{finished} = 1;
   return; }
 
 # Evolve to figure out if this gets dynamic location!

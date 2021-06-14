@@ -210,12 +210,12 @@ sub getSize {
     unless (defined $$props{cwidth})
     && (defined $$props{cheight})
     && (defined $$props{cdepth});
-  print STDERR "SIZE of $self"
-    . "\n opt:" . _showsize($options{width}, $options{height}, $options{depth})
-    . "\n set: " . _showsize($$props{width}, $$props{height}, $$props{depth})
-    . "\n calc: " . _showsize($$props{cwidth}, $$props{cheight}, $$props{cdepth})
-    . "\n =>: " . _showsize($$props{width} || $$props{cwidth}, $$props{height} || $$props{cheight}, $$props{depth} || $$props{cdepth})
-    . "\n   Of " . Stringify($self) . "\n" if $LaTeXML::size::DEBUG;
+  Debug("SIZE of $self"
+      . "\n opt:" . _showsize($options{width}, $options{height}, $options{depth})
+      . "\n set: " . _showsize($$props{width}, $$props{height}, $$props{depth})
+      . "\n calc: " . _showsize($$props{cwidth}, $$props{cheight}, $$props{cdepth})
+      . "\n =>: " . _showsize($$props{width} || $$props{cwidth}, $$props{height} || $$props{cheight}, $$props{depth} || $$props{cdepth})
+      . "\n   Of " . Stringify($self)) if $LaTeXML::DEBUG{size};
   return ($$props{width} || $$props{cwidth},
     $$props{height}  || $$props{cheight},
     $$props{depth}   || $$props{cdepth},

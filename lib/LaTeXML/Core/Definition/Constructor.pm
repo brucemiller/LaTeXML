@@ -77,19 +77,19 @@ sub invoke {
   my ($self, $stomach) = @_;
   # Call any `Before' code.
   my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
-  my $tracing  = $STATE->lookupValue('TRACINGCOMMANDS');
+  my $tracing  = $STATE->lookupValue('TRACINGCOMMANDS') || $LaTeXML::DEBUG{tracing};
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
   my @pre = $self->executeBeforeDigest($stomach);
 
-  print STDERR '{' . $self->tracingCSName . "}\n" if $tracing;
+  Debug('{' . $self->tracingCSName . '}') if $tracing;
   # Get some info before we process arguments...
   my $font   = $STATE->lookupValue('font');
   my $ismath = $STATE->lookupValue('IN_MATH');
   # Parse AND digest the arguments to the Constructor
-  my $params = $self->getParameters;
-  my @args   = ($params ? $params->readArgumentsAndDigest($stomach, $self) : ());
-  print STDERR $self->tracingArgs(@args) . " [for ".Stringify($$self{cs})."]\n" if $tracing && @args;
+  my $parms = $$self{parameters};
+  my @args  = ($parms ? $parms->readArgumentsAndDigest($stomach, $self) : ());
+  Debug($self->tracingArgs(@args)) if $tracing && @args;
   my $nargs = $self->getNumArgs;
   @args = @args[0 .. $nargs - 1];
 

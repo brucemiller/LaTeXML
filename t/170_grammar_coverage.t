@@ -21,7 +21,7 @@ if (!$ENV{"CI"}) {
 # Obtain the rule pairs from MathGrammar, which we want to exhaustively test:
 my %grammar_dependencies = obtain_dependencies();
 
-my $opts = LaTeXML::Common::Config->new(input_limit => 100);
+my $opts = LaTeXML::Common::Config->new(input_limit => 100, verbosity=>-2);
 
 my $converter = LaTeXML->get_converter($opts);
 $converter->prepare_session($opts);
@@ -31,8 +31,16 @@ my %tested_dependencies = ();
 my @core_tests = parser_test_filenames();
 for my $test (@core_tests) {
   note("grammar coverage $test...");
-  my $response = $converter->convert($test);
-  my $regularized_log = $response->{log};
+  my $regularized_log = '';
+  my $response;
+  my $log_handle;
+  open($log_handle, ">>", \$regularized_log) or croak("Can't redirect STDERR to log! Dying...");
+  {
+    local *STDERR       = *$log_handle;
+    binmode(STDERR, ':encoding(UTF-8)');
+    $response = $converter->convert($test);
+#  my $regularized_log = $response->{log};
+    }
   # Preprocess split lines back to single lines, e.g.
   # 2|AnythingAn|>>Matched subrule:                    |
   #  |          |[modifierFormulae]<< (return value:   |

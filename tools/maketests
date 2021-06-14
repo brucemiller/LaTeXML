@@ -30,8 +30,8 @@ use Term::ANSIColor;
 #  make test TEST_FILES=t/sometestglob.t
 #======================================================================
 my $identity = "maketests (LaTeXML version $LaTeXML::VERSION)";
-my ($doxml,     $dopdf, $docompare)   = ();
-my ($verbosity, $help,  $showversion) = (0);
+my ($doxml, $dopdf, $docompare)      = ();
+my ($verbosity, $help, $showversion) = (0);
 my $whitespace = 1;    # keep whitespace;
 GetOptions("xml!" => \$doxml,
   "pdf!"        => \$dopdf,
@@ -108,6 +108,10 @@ sub maketest_daemon {
   my $opts = read_options($source, "$dir/$name");
   push @$opts, (['destination', "$name.test.xml"],
     ['log',                "/dev/null"],
+    ['quiet',              ''],
+    ['quiet',              ''],
+    ['quiet',              ''],
+    ['quiet',              ''],
     ['timeout',            5],
     ['autoflush',          1],
     ['timestamp',          '0'],
@@ -123,20 +127,15 @@ sub maketest_daemon {
     }
     $invocation .= "--" . $$opt[0] . (length($$opt[1]) ? ('="' . $$opt[1] . '" ') : (' '));
   }
-  $invocation .= " 2>$name.test.status ";
   pathname_chdir($dir);
   if (system($invocation) != 0) {
-    unlink "$name.test.xml"    if -e "$name.test.xml";
-    unlink "$name.test.status" if -e "$name.test.status";
+    unlink "$name.test.xml" if -e "$name.test.xml";
     die "Failed to execute '$invocation': $!"; }
   if ($docompare) {
     my $ndiffs = 0;
     print STDERR "\n" . ("=" x 40) . "\nCompare Expected $dir/$name to current output XML:\n";
     $ndiffs += compareLines(readXML("$name.xml"), readXML("$name.test.xml"));
-    print STDERR "\n" . ("=" x 40) . "\nCompare Expected Status $dir/$name to current status:\n";
-    $ndiffs += compareLines(readText("$name.status"), readText("$name.test.status"));
-    unlink "$name.test.xml"    if -e "$name.test.xml";
-    unlink "$name.test.status" if -e "$name.test.status";
+    unlink "$name.test.xml" if -e "$name.test.xml";
     print STDERR "" . ("=" x 40) . "\n\n";
     ($ndiffs ? push(@FAIL, $name) : push(@PASS, $name)); }
   else {
@@ -145,9 +144,8 @@ sub maketest_daemon {
       my $xml_time = pathname_timestamp("$name.xml");
       $doxml = !(-f "$name.xml") || ($src_time > $xml_time); }
     if ($doxml) {
-      print STDERR "\n" . ("=" x 40) . "\nReplacing $dir/$name.xml and status.\n";
-      move("$name.test.xml",    "$name.xml")    if -e "$name.test.xml";
-      move("$name.test.status", "$name.status") if -e "$name.test.status"; } }
+      print STDERR "\n" . ("=" x 40) . "\nReplacing $dir/$name.xml\n";
+      move("$name.test.xml", "$name.xml") if -e "$name.test.xml"; } }
   pathname_chdir($cwd);
   return; }
 
@@ -233,7 +231,7 @@ sub stringifyDom {
   $parser->validation(0);
   $parser->keep_blanks(1);
   $string = $parser->parse_string($string)->toStringC14N(0);
-  return [grep { /\S/ } split("\n", $string)]; }
+  return [split("\n", $string)]; }
 
 sub gen_xml {
   my ($dir, $name, $for_comparison) = @_;
@@ -275,12 +273,12 @@ sub gen_pdf {
 
   while (<$IN>) {
     if (/documentclass/) {
-        $program = 'pdflatex';
-        last; }
+      $program = 'pdflatex';
+      last; }
     # recognize %%% TeX-engine: xelatex  or %%%tex-engine: "xelatex" in preamble
     if (/^%%%\s*tex-engine:\s*"*(\w+)"*/i) {
-        $program = $1;
-        last; }
+      $program = $1;
+      last; }
   }
   close($IN);
   local $ENV{TEXINPUTS} = "$FindBin::RealBin/../lib/LaTeXML/texmf/::" . ($ENV{TEXINPUTS} || '');

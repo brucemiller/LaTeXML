@@ -532,8 +532,8 @@ sub collapseSVGGroup {
         $node->setAttribute($key => $av{$key}); }
       $nmerged++;
       $document->unwrapNodes($c); } }
-###  Debug("COLLAPSE empty=$nempty, redundant=$nredundant, merged=$nmerged, popped=$npopped, pushed=$npushed")
-###    if ($nempty || $nredundant || $nmerged || $npopped || $npushed);
+##  Debug("COLLAPSE empty=$nempty, redundant=$nredundant, merged=$nmerged, popped=$npopped, pushed=$npushed")
+##    if ($nempty || $nredundant || $nmerged || $npopped || $npushed);
   return; }
 
 #=====================================================================

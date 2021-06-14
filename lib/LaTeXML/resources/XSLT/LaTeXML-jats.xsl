@@ -17,19 +17,42 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-   version     ="1.0"
-   xmlns:xsl   ="http://www.w3.org/1999/XSL/Transform"
-   xmlns:ltx   ="http://dlmf.nist.gov/LaTeXML"
-   xmlns:str   ="http://exslt.org/strings"
-   xmlns:m     ="http://www.w3.org/1998/Math/MathML"
-   xmlns:xlink ="http://www.w3.org/1999/xlink"
-   extension-element-prefixes="str"
-   exclude-result-prefixes="ltx str m xlink">
+    version     ="1.0"
+    xmlns:xsl   ="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx   ="http://dlmf.nist.gov/LaTeXML"
+    xmlns:str   ="http://exslt.org/strings"
+    xmlns:m     ="http://www.w3.org/1998/Math/MathML"
+    xmlns:svg   ="http://www.w3.org/2000/svg"
+    xmlns:xlink ="http://www.w3.org/1999/xlink"
+    extension-element-prefixes="str"
+    exclude-result-prefixes="ltx str m svg xlink">
 
   <xsl:import href="LaTeXML-tabular-xhtml.xsl"/>
   <xsl:import href="LaTeXML-common.xsl"/>
 
-  <xsl:strip-space elements="*"/>
+  <xsl:strip-space elements="ltx:document ltx:part ltx:chapter ltx:section ltx:subsection
+                             ltx:subsubsection ltx:paragraph ltx:subparagraph
+                             ltx:bibliography ltx:appendix ltx:index ltx:glossary
+                             ltx:slide ltx:sidebar"/>
+  <xsl:strip-space elements="ltx:TOC ltx:toclist ltx:tocentry"/>
+  <xsl:strip-space elements="ltx:titlepage"/>
+  <xsl:strip-space elements="ltx:creator ltx:contact"/>
+  <xsl:strip-space elements="ltx:indexlist ltx:indexentry"/>
+  <xsl:strip-space elements="ltx:glossarlist ltx:glossaryentry"/>
+  <xsl:strip-space elements="ltx:tabular ltx:thead ltx:tbody ltx:tfoot ltx:tr"/>
+  <xsl:strip-space elements="ltx:quote"/>
+  <xsl:strip-space elements="ltx:block"/>
+  <xsl:strip-space elements="ltx:listing"/>
+  <xsl:strip-space elements="ltx:equation ltx:equationgroup"/>
+  <xsl:strip-space elements="ltx:itemize ltx:enumerate ltx:description ltx:item
+                             ltx:inline-itemize ltx:inline-enumerate ltx:inline-description ltx:inline-item"/>
+  <xsl:strip-space elements="ltx:inline-block"/>
+  <xsl:strip-space elements="ltx:para ltx:inline-para"/>
+  <xsl:strip-space elements="ltx:theorem ltx:proof"/>
+  <xsl:strip-space elements="ltx:figure ltx:table ltx:float"/>
+  <xsl:strip-space elements="ltx:picture svg:*"/>
+  <xsl:strip-space elements="ltx:Math"/>
+
   <xsl:output method="xml" indent="yes"/>
 
   <xsl:variable name="footnotes" select="//ltx:note[@role='footnote']"/>
@@ -38,66 +61,79 @@
 
   <xsl:template match="*">
     <xsl:message> The element <xsl:value-of select="name(.)"/> <xsl:if test="@*"> with attributes
-        <xsl:for-each select="./@*">
-          <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
-        </xsl:for-each>
-      </xsl:if>
-      is currently not supported for the main body.
+    <xsl:for-each select="./@*">
+      <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
+    </xsl:for-each>
+  </xsl:if>
+  is currently not supported for the main body.
     </xsl:message>
     <xsl:comment> The element <xsl:value-of select="name(.)"/> <xsl:if test="@*"> with attributes
-        <xsl:for-each select="./@*">
-          <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
-        </xsl:for-each>
-      </xsl:if>
-      is currently not supported for the main body.
+    <xsl:for-each select="./@*">
+      <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
+    </xsl:for-each>
+  </xsl:if>
+  is currently not supported for the main body.
     </xsl:comment>
   </xsl:template>
 
-  <xsl:template match="*" mode="math">
-    <xsl:copy>
-      <xsl:apply-templates select="@*|node()" mode="math"/>
-    </xsl:copy>
+  <!-- Copy MathML as is, but use mml as namespace prefix,
+       since that's assumed by many non-XML aware JATS applications. -->
+  <xsl:template match="m:*">
+    <xsl:element name="mml:{local-name()}" namespace="http://www.w3.org/1998/Math/MathML">
+      <xsl:copy-of select="@*"/>
+      <xsl:apply-templates/>
+    </xsl:element>
   </xsl:template>
 
-  <xsl:template match="@*" mode="math">
-    <xsl:attribute name="{local-name()}"><xsl:value-of select="."/></xsl:attribute>
+  <xsl:template match="ltx:Math[@mode='inline']">
+    <inline-formula>
+      <xsl:if test="@xml:id">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates select="m:math"/>
+    </inline-formula>
   </xsl:template>
 
-  <xsl:template match="@xml:id" mode="math">
-    <xsl:attribute name="id"><xsl:value-of select="."/></xsl:attribute>
+  <!-- caller (ltx:equation) will wrap disp-formula, as needed -->
+  <xsl:template match="ltx:MathFork">
+    <xsl:apply-templates select="ltx:Math[1]/m:math"/>
+  </xsl:template>
+
+  <xsl:template match="ltx:Math">
+    <xsl:apply-templates select="m:math"/>
   </xsl:template>
 
   <xsl:template match="*" mode="front">
     <xsl:message> The element <xsl:value-of select="name(.)"/> <xsl:if test="@*"> with attributes
-        <xsl:for-each select="./@*">
-          <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
-        </xsl:for-each>
-      </xsl:if>
-      is currently not supported for the front matter.
+    <xsl:for-each select="./@*">
+      <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
+    </xsl:for-each>
+  </xsl:if>
+  is currently not supported for the front matter.
     </xsl:message>
     <xsl:comment> The element <xsl:value-of select="name(.)"/> <xsl:if test="@*"> with attributes
-        <xsl:for-each select="./@*">
-          <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
-        </xsl:for-each>
-      </xsl:if>
-      is currently not supported for the front matter.
+    <xsl:for-each select="./@*">
+      <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
+    </xsl:for-each>
+  </xsl:if>
+  is currently not supported for the front matter.
     </xsl:comment>
   </xsl:template>
 
   <xsl:template match="*" mode="back">
     <xsl:message> The element <xsl:value-of select="name(.)"/> <xsl:if test="@*"> with attributes
-        <xsl:for-each select="./@*">
-          <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
-        </xsl:for-each>
-      </xsl:if>
-      is currently not supported for the back matter.
+    <xsl:for-each select="./@*">
+      <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
+    </xsl:for-each>
+  </xsl:if>
+  is currently not supported for the back matter.
     </xsl:message>
     <xsl:comment> The element <xsl:value-of select="name(.)"/> <xsl:if test="@*"> with attributes
-        <xsl:for-each select="./@*">
-          <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
-        </xsl:for-each>
-      </xsl:if>
-      is currently not supported for the back matter
+    <xsl:for-each select="./@*">
+      <xsl:value-of select="name(.)"/>=<xsl:value-of select="."/>
+    </xsl:for-each>
+  </xsl:if>
+  is currently not supported for the back matter
     </xsl:comment>
   </xsl:template>
 
@@ -235,14 +271,19 @@
 
   <xsl:template match="ltx:equationgroup" mode="front">
     <disp-formula-group>
-      <xsl:apply-templates select="@*|node()" mode="front"/>
+      <xsl:if test="@xml:id">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates mode="front"/>
     </disp-formula-group>
   </xsl:template>
 
   <xsl:template match="ltx:equationgroup/ltx:equation" mode="front">
     <disp-formula>
-      <xsl:apply-templates select="@*" mode="front"/>
-      <xsl:for-each select=".//m:math"><xsl:copy-of select="."/></xsl:for-each>
+      <xsl:if test="@xml:id">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates mode="front"/>
     </disp-formula>
   </xsl:template>
 
@@ -253,16 +294,12 @@
   <xsl:template match="ltx:equation" mode="front">
     <p>
       <disp-formula>
-        <xsl:apply-templates select="@*|node()"/>
+        <xsl:if test="@xml:id">
+          <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+        </xsl:if>
+        <xsl:apply-templates mode="front"/>
       </disp-formula>
     </p>
-  </xsl:template>
-
-  <xsl:template match="ltx:Math[@mode='inline']" mode="front">
-    <inline-formula>
-      <xsl:apply-templates select="@*"/>
-      <xsl:for-each select=".//m:math"><xsl:copy-of select="."/></xsl:for-each>
-    </inline-formula>
   </xsl:template>
 
   <xsl:template match="ltx:caption" mode="front">
@@ -347,28 +384,31 @@
 
   <xsl:template match="ltx:equationgroup" mode="back">
     <disp-formula-group>
-      <xsl:apply-templates select="@*|node()" mode="back"/>
+      <xsl:if test="@xml:id">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates mode="back"/>
     </disp-formula-group>
   </xsl:template>
 
   <xsl:template match="ltx:equationgroup/ltx:equation" mode="back">
     <disp-formula>
-      <xsl:for-each select=".//m:math"><xsl:copy-of select="."/></xsl:for-each>
+      <xsl:if test="@xml:id">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates mode="back"/>
     </disp-formula>
   </xsl:template>
 
   <xsl:template match="ltx:equation" mode="back">
     <p>
       <disp-formula>
-        <xsl:for-each select=".//m:math"><xsl:copy-of select="."/></xsl:for-each>
+        <xsl:if test="@xml:id">
+          <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+        </xsl:if>
+        <xsl:apply-templates mode="back"/>
       </disp-formula>
     </p>
-  </xsl:template>
-
-  <xsl:template match="ltx:Math[@mode='inline']" mode="back">
-    <inline-formula>
-      <xsl:for-each select=".//m:math"><xsl:copy-of select="."/></xsl:for-each>
-    </inline-formula>
   </xsl:template>
 
   <xsl:template match="ltx:bibliography" mode="back">
@@ -397,12 +437,12 @@
         <xsl:if test="./ltx:tags/ltx:tag[@class='ltx_bib_type']">
           <xsl:attribute name="publication-type"> <xsl:value-of select="./ltx:tag[@class='ltx_bib_type']/text()"/></xsl:attribute>
         </xsl:if>
-<!-- Isn't this better?
-        <xsl:if test="@type">
-          <xsl:attribute name="publication-type"> <xsl:value-of select="@type"/></xsl:attribute>
-        </xsl:if>
--->
-<!--        <xsl:apply-templates select="node()" mode="back"/>-->
+        <!-- Isn't this better?
+             <xsl:if test="@type">
+             <xsl:attribute name="publication-type"> <xsl:value-of select="@type"/></xsl:attribute>
+             </xsl:if>
+        -->
+        <!--        <xsl:apply-templates select="node()" mode="back"/>-->
         <xsl:apply-templates mode="back"/>
       </mixed-citation>
     </ref>
@@ -517,6 +557,8 @@
     <hr/>
   </xsl:template>
 
+  <!-- This is really sad; we should have preserved structured data from bibentry,
+       rather than formatted data from bibitem -->
   <xsl:template match="ltx:bibitem/ltx:tags/ltx:tag[@role='authors']" mode="back">
     <person-group person-group-type="author">
       <name>
@@ -533,7 +575,7 @@
           <given-names>
             <xsl:for-each select="str:tokenize(./text(),' ')">
               <xsl:if test="position()!=last()">
-                <xsl:value-of select="."/>&#160;
+                <xsl:value-of select="."/><xsl:text> </xsl:text>
               </xsl:if>
             </xsl:for-each>
           </given-names>
@@ -544,10 +586,9 @@
 
   <xsl:template match="ltx:tag[@role='fullauthors']" mode="back"/>
   <xsl:template match="ltx:bibitem/ltx:tags/ltx:text[@font='bold']" mode="back">
-    <bold>
-      <xsl:apply-templates mode="back" select="@*|node()"/>
-    </bold>
+    <bold><xsl:apply-templates mode="back" select="@*|node()"/></bold>
   </xsl:template>
+
   <xsl:template match="ltx:tag[@role='refnum']" mode="back"/>
   <xsl:template match="ltx:tag[@role='number']" mode="back"/>
 
@@ -583,7 +624,10 @@
   <xsl:template match="ltx:equationgroup">
     <p>
       <disp-formula-group>
-        <xsl:apply-templates select="@*|node()"/>
+        <xsl:if test="@xml:id">
+          <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+        </xsl:if>
+        <xsl:apply-templates/>
       </disp-formula-group>
     </p>
   </xsl:template>
@@ -591,24 +635,21 @@
   <xsl:template match="ltx:equation">
     <p>
       <disp-formula>
-        <xsl:apply-templates select="@*"/>
-        <xsl:for-each select=".//m:math"><xsl:apply-templates select="." mode="math"/></xsl:for-each>
+        <xsl:if test="@xml:id">
+          <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+        </xsl:if>
+        <xsl:apply-templates/>
       </disp-formula>
     </p>
   </xsl:template>
 
   <xsl:template match="ltx:equationgroup/ltx:equation">
     <disp-formula>
-      <xsl:apply-templates select="@*"/>
-      <xsl:for-each select=".//m:math"><xsl:apply-templates select="." mode="math"/></xsl:for-each>
+      <xsl:if test="@xml:id">
+        <xsl:attribute name="id"><xsl:value-of select="@xml:id"/></xsl:attribute>
+      </xsl:if>
+      <xsl:apply-templates/>
     </disp-formula>
-  </xsl:template>
-
-  <xsl:template match="ltx:Math[@mode='inline']">
-    <inline-formula>
-      <xsl:apply-templates select="@*"/>
-      <xsl:for-each select=".//m:math"><xsl:apply-templates select="." mode="math"/></xsl:for-each>
-    </inline-formula>
   </xsl:template>
 
   <xsl:template match="ltx:inline-block">

@@ -34,7 +34,7 @@ use LaTeXML::Package;
 # __END__
 #
 #======================================================================
-my $PGFKEYS_DEBUG = 0;
+DebuggableFeature('pgfkeys', 'pgfkeys processing');
 
 # Basic accessors to keys
 sub pgfkeyCS {
@@ -274,18 +274,18 @@ sub pgfAssignKey {
       # \pgfkeys@cur@is@descendant@of@errors
       my $check = ($key =~ m|^/errors|);
       SetCondition(T_CS('\ifpgfkeysfiltercontinue'), $check);
-      print STDERR "[SPECIAL CHECK] '$key' is descendant of '/errors': " . ($check ? 'TRUE' : 'FALSE') . ".\n" if $PGFKEYS_DEBUG;
+      Debug("[SPECIAL CHECK] '$key' is descendant of '/errors': " . ($check ? 'TRUE' : 'FALSE')) if $LaTeXML::DEBUG{pgfkeys};
       if (IfCondition(T_CS('\ifpgfkeysfiltercontinue'))) {
         $filtered = 0; } }
     if ($filtered) { SetCondition(T_CS('\ifpgfkeysfiltercontinue'), 1); }
     if (pgfkeyLookup($cmdkey = $key . '/.@cmd')) {                          # Case 1
       return if $filtered && testFilterPredicate($stomach, $key, 1);
-      print STDERR "PROCESSING KEY $key (" . ($filtered ? 'filtered ' : '') . "case 1)\n" if $PGFKEYS_DEBUG;
+      Debug("PROCESSING KEY $key (" . ($filtered ? 'filtered ' : '') . "case 1)") if $LaTeXML::DEBUG{pgfkeys};
       pgfHandleValue($stomach, $cmdkey); }
     # Case 2: a normal value assignment.
     elsif (my $cs = pgfkeyLookup($key)) {
       return if $filtered && testFilterPredicate($stomach, $key, 2);
-      print STDERR "PROCESSING KEY $key (" . ($filtered ? 'filtered ' : '') . "case 2)\n" if $PGFKEYS_DEBUG;
+      Debug("PROCESSING KEY $key (" . ($filtered ? 'filtered ' : '') . "case 2)") if $LaTeXML::DEBUG{pgfkeys};
       # Case 2: "extern"
       if (XEquals(T_CS('\pgfkeyscurrentvalue'), T_CS('\pgfkeysnovalue@text'))) {    # value empty?
         $stomach->digest(pgfkeyCS($key)); }    # Just execute the STORED value!
@@ -304,28 +304,28 @@ sub pgfAssignKey {
             T_CS('\pgfkeys@ifexecutehandler@handlefullorexisting'))
           ? 'full'
           : 'all'));
-      print STDERR "PGF ASSIGN " . ToString($key) . " restricted=" . ($restricted ? 'true' : 'false')
-        . ", handle=$handle\n"
-        if $PGFKEYS_DEBUG && ($restricted || ($handle ne 'all'));
+      Debug("PGF ASSIGN " . ToString($key) . " restricted=" . ($restricted ? 'true' : 'false')
+          . ", handle=$handle")
+        if $LaTeXML::DEBUG{pgfkeys} && ($restricted || ($handle ne 'all'));
       if (pgfkeyLookup($cmdkey = '/handlers/' . $name . '/.@cmd')    # a command bound?
         && (!$restricted || ($handle eq 'all')
           || (($handle eq 'full') && !IfCondition(T_CS('\ifpgfkeysaddeddefaultpath')))
           || LookupDefinition(T_CS('\pgfkey@excpt@' . $name))
           || pgfkeyLookup($path) || pgfkeyLookup($path . '/.@cmd'))) {
         return if $filtered && testFilterPredicate($stomach, $key, 3);
-        print STDERR "PROCESSING KEY $key (" . ($filtered ? 'filtered ' : '') . "case 3)\n" if $PGFKEYS_DEBUG;
+        Debug("PROCESSING KEY $key (" . ($filtered ? 'filtered ' : '') . "case 3)") if $LaTeXML::DEBUG{pgfkeys};
         pgfHandleValue($stomach, $cmdkey); }
       else {                                                         # Handle unknown
         if ($restricted) {
           ($path, $name) = pgfReSplitPath($key);
-          print STDERR "RESPLIT '$key' => '$path' / '$name'\n" if $PGFKEYS_DEBUG; }
+          Debug("RESPLIT '$key' => '$path' / '$name'") if $LaTeXML::DEBUG{pgfkeys}; }
         return if $filtered && testFilterPredicate($stomach, $key, 0);
         # Else various handlers for unknown
         if (pgfkeyLookup($cmdkey = $path . '/.unknown/.@cmd')) {
-          print STDERR "PROCESSING KEY $key (case 0) for $cmdkey\n" if $PGFKEYS_DEBUG;
+          Debug("PROCESSING KEY $key (case 0) for $cmdkey") if $LaTeXML::DEBUG{pgfkeys};
           pgfHandleValue($stomach, $cmdkey); }
         elsif ($cmdkey = '/handlers/.unknown/.@cmd') {
-          print STDERR "PROCESSING KEY $key (case 0) for $cmdkey\n" if $PGFKEYS_DEBUG;
+          Debug("PROCESSING KEY $key (case 0) for $cmdkey") if $LaTeXML::DEBUG{pgfkeys};
           pgfHandleValue($stomach, $cmdkey); } }
   } }
   return; }
@@ -335,7 +335,7 @@ sub testFilterPredicate {
   DefMacroI('\pgfkeyscasenumber', undef, $case);
   $stomach->digest(T_CS('\pgfkeys@key@predicate'));
   if (!IfCondition(T_CS('\ifpgfkeysfiltercontinue'))) {
-    print STDERR "FILTERED OUT KEY $key (case $case)\n" if $PGFKEYS_DEBUG;
+    Debug("FILTERED OUT KEY $key (case $case)") if $LaTeXML::DEBUG{pgfkeys};
     $stomach->digest(T_CS('\pgfkeys@filtered@handler'));
     return 1; }
   return; }

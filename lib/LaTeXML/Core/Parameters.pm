@@ -60,10 +60,8 @@ sub readArguments {
   my ($self, $gullet, $fordefn) = @_;
   my @args = ();
   $gullet->setup_scan();
-  foreach my $parameter (@$self) {
-    my $value = $parameter->read($gullet, $fordefn);
-    push(@args, $value) unless $$parameter{novalue}; }
-  return @args; }
+  my ($p, $v);
+  return map { $p = $_; $v = $p->read($gullet, $fordefn); ($$p{novalue} ? () : $v); } @$self; }
 
 sub readArgumentsAndDigest {
   my ($self, $stomach, $fordefn) = @_;

@@ -26,13 +26,10 @@ our @EXPORT = (@LaTeXML::Common::Error::EXPORT);
 sub new {
   my ($class, %options) = @_;
   my $self = bless { status => {}, %options }, $class;
-  $$self{verbosity} = 0 unless defined $$self{verbosity};
   # TEMPORARY HACK!!!!
-  # Create a State object, essentially only to hold verbosity (for now)
-  # so that Errors can be reported, managed and recorded
-  # Eventually will be a "real" State (or other configuration object)
+  # Create a State object, for config & recursive conversions;
+  # Eventually should be managed higher up.
   $$self{state} = LaTeXML::Core::State->new();
-  $$self{state}->assignValue(VERBOSITY => $$self{verbosity});
   return $self; }
 
 #======================================================================
@@ -48,7 +45,7 @@ sub ProcessChain_internal {
   local $LaTeXML::Post::DOCUMENT = $doc;
 
   my @docs = ($doc);
-  NoteBegin("post-processing");
+  ProgressSpinup("post-processing");
 
   foreach my $processor (@postprocessors) {
     local $LaTeXML::Post::PROCESSOR = $processor;
@@ -60,13 +57,13 @@ sub ProcessChain_internal {
         my $msg = join(' ', $processor->getName || '',
           $doc->siteRelativeDestination || '',
           ($n > 1 ? "$n to process" : 'processing'));
-        NoteBegin($msg);
+        ProgressSpinup($msg);
         push(@newdocs, $processor->process($doc, @nodes));
-        NoteEnd($msg); }
+        ProgressSpindown($msg); }
       else {
         push(@newdocs, $doc); } }
     @docs = @newdocs; }
-  NoteEnd("post-processing");
+  ProgressSpindown("post-processing");
   return @docs; }
 
 ## HACK!!!
@@ -157,7 +154,6 @@ use base qw(LaTeXML::Common::Object);
 sub new {
   my ($class, %options) = @_;
   my $self = bless {%options}, $class;
-  $$self{verbosity}          = 0 unless defined $$self{verbosity};
   $$self{resource_directory} = $options{resource_directory};
   $$self{resource_prefix}    = $options{resource_prefix};
   my $name = $class; $name =~ s/^LaTeXML::Post:://;
@@ -319,7 +315,7 @@ sub process {
       # Now do cross referencing
       $proc1->addCrossrefs($doc, $proc2);
       $proc2->addCrossrefs($doc, $proc1); } }
-  NoteProgressDetailed(" [converted $n Maths]");
+  NoteLog("converted $n Maths");
   return $doc; }
 
 # Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),
@@ -413,7 +409,7 @@ sub convertNode {
 # Maybe the caller of this should check the namespaces, and call wrapper if needed?
 sub combineParallel {
   my ($self, $doc, $xmath, $primary, @secondaries) = @_;
-  LaTeXML::Post::Error('misdefined', (ref $self), undef,
+  Error('misdefined', (ref $self), undef,
     "Abstract package: combining parallel markup has not been defined for this MathProcessor",
     "dropping the extra markup from: " . join(',', map { $$_{processor} } @secondaries));
   return $primary; }
@@ -683,12 +679,18 @@ sub new_internal {
 
 sub newFromFile {
   my ($class, $source, %options) = @_;
-  $options{source} = $source;
-  $source = pathname_find($source, paths => $$class{searchpaths}) if ref $class;
+  my $path = (ref $class
+    ? pathname_find($source, paths => $$class{searchpaths})
+    : $source);
+  if (!$path) {
+    Error('missing_file', $source, $class, "No XML document '$source' found",
+      (ref $class ? "search paths are " . join(', ', @{ $$class{searchpaths} }) : ()));
+    return; }
+  $options{source} = $path;
   if (!$options{sourceDirectory}) {
-    my ($dir, $name, $ext) = pathname_split($source);
+    my ($dir, $name, $ext) = pathname_split($path);
     $options{sourceDirectory} = $dir || '.'; }
-  my $doc = $class->new(LaTeXML::Common::XML::Parser->new()->parseFile($source), %options);
+  my $doc = $class->new(LaTeXML::Common::XML::Parser->new()->parseFile($path), %options);
   $doc->validate if $$doc{validate};
   return $doc; }
 
@@ -786,7 +788,8 @@ sub setDocument_internal {
     ### No, this ultimately can be the xml source, which may be the destination;
     ### adding this gets the wrong graphics (already processed!)
     ### push(@paths, pathname_absolute($$self{sourceDirectory})) if $$self{sourceDirectory};
-    $$self{searchpaths} = [@paths]; }
+    # But do add cwd after the document specified paths.
+    $$self{searchpaths} = [@paths, '.']; }
   elsif ($roottype eq 'XML::LibXML::Element') {
     $$self{document} = XML::LibXML::Document->new("1.0", "UTF-8");
     # Assume we've got any namespaces already ?
@@ -915,6 +918,10 @@ sub stringify {
   my ($self) = @_;
   return 'Post::Document[' . $self->siteRelativeDestination . ']'; }
 
+sub getLocator {
+  my ($self) = @_;
+  return $$self{source}; }
+
 #======================================================================
 sub validate {
   my ($self) = @_;
@@ -925,12 +932,12 @@ sub validate {
       $schema = $2; } }
   if ($schema) {    # Validate using rng
     my $rng = LaTeXML::Common::XML::RelaxNG->new($schema, searchpaths => [$self->getSearchPaths]);
-    LaTeXML::Post::Error('I/O', $schema, undef, "Failed to load RelaxNG schema $schema" . "Response was: $@")
+    Error('I/O', $schema, undef, "Failed to load RelaxNG schema $schema" . "Response was: $@")
       unless $rng;
     my $v = eval {
       local $LaTeXML::IGNORE_ERRORS = 1;
       $rng->validate($$self{document}); };
-    LaTeXML::Post::Error("malformed", 'document', undef,
+    Error("malformed", 'document', undef,
       "Document fails RelaxNG validation (" . $schema . ")",
       "Validation reports: " . $@,
       "(Jing may provide a more precise report; https://relaxng.org/jclark/jing.html)")
@@ -938,18 +945,18 @@ sub validate {
   elsif (my $decldtd = $$self{document}->internalSubset) {    # Else look for DTD Declaration
     my $dtd = XML::LibXML::Dtd->new($decldtd->publicId, $decldtd->systemId);
     if (!$dtd) {
-      LaTeXML::Post::Error("I/O", $decldtd->publicId, undef,
+      Error("I/O", $decldtd->publicId, undef,
         "Failed to load DTD " . $decldtd->publicId . " at " . $decldtd->systemId,
         "skipping validation"); }
     else {
       my $v = eval {
         local $LaTeXML::IGNORE_ERRORS = 1;
         $$self{document}->validate($dtd); };
-      LaTeXML::Post::Error("malformed", 'document', undef,
+      Error("malformed", 'document', undef,
         "Document failed DTD validation (" . $decldtd->systemId . ")",
         "Validation reports: " . $@) if $@ || !defined $v; } }
   else {    # Nothing found to validate with
-    LaTeXML::Post::Warn("expected", 'schema', undef,
+    Warn("expected", 'schema', undef,
       "No Schema or DTD found for this document"); }
   return; }
 
@@ -964,11 +971,11 @@ sub idcheck {
     $idcache{$id} = 1; }
   foreach my $id (keys %{ $$self{idcache} }) {
     $missing{$id} = 1 unless $idcache{$id}; }
-  LaTeXML::Post::Warn("unexpected", 'ids', undef,
+  Warn("unexpected", 'ids', undef,
     "IDs were duplicated in cache for " . $self->siteRelativeDestination,
     join(',', keys %dups))
     if keys %dups;
-  LaTeXML::Post::Warn("expected", 'ids', undef, "IDs were cached for " . $self->siteRelativeDestination
+  Warn("expected", 'ids', undef, "IDs were cached for " . $self->siteRelativeDestination
       . " but not in document",
     join(',', keys %missing))
     if keys %missing;
@@ -1058,7 +1065,7 @@ sub addNodes {
       else {
         my ($prefix, $localname) = $tag =~ /^(.*):(.*)$/;
         my $nsuri = $prefix && $$self{namespaces}{$prefix};
-        LaTeXML::Post::Warn('expected', 'namespace', undef, "No namespace on '$tag'") unless $nsuri;
+        Warn('expected', 'namespace', undef, "No namespace on '$tag'") unless $nsuri;
         my $new;
         if (ref $node eq 'LibXML::XML::Document') {
           $new = $node->createElementNS($nsuri, $localname);
@@ -1125,7 +1132,7 @@ sub addNodes {
         $node->appendTextNode($child->textContent); }
     }
     elsif (ref $child) {
-      LaTeXML::Post::Warn('misdefined', $child, undef, "Dont know how to add $child to $node; ignoring"); }
+      Warn('misdefined', $child, undef, "Dont know how to add $child to $node; ignoring"); }
     elsif (defined $child) {
       $node->appendTextNode($child); } }
   return; }

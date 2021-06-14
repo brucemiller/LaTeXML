@@ -15,6 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Post;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Common::Error;
 use base qw(LaTeXML::Post::MathProcessor LaTeXML::Post::LaTeXImages);
 
 sub new {
@@ -72,7 +73,7 @@ sub convertNode {
     return { processor => $self, mimetype => $MIMETYPES{$type},
       src => $reldest, width => $width, height => $height, depth => $depth }; }
   else {
-    print STDERR "Couldn't find image for '$key'\n";
+    Warn('expected', 'image', $doc, "Couldn't find image for '$key'");
     return {}; } }
 
 # Definitions needed for processing inline & display math images

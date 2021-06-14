@@ -16,6 +16,8 @@ use warnings;
 use LaTeXML::Package;
 
 # See http://tex.loria.fr/moteurs/etex_ref.html
+# Or better yet, see the full manual
+# http://texdoc.net/texmf-dist/doc/etex/base/etex_man.pdf
 # Section 3. The new features
 
 #======================================================================
@@ -45,13 +47,10 @@ DefMacro('\readline Number SkipKeyword:to SkipSpaces Token', sub {
       DefMacroI($token, undef, Tokens(Explode(($mouth->readRawLine || '') . "\r"))); }
     return; });
 
-# https://tex.loria.fr/moteurs/etex_ref.html#scantokens
-# TODO: "Parentheses and a single space representing the pseudo-file will be displayed
-#        if \tracingscantokens (q.v.) is positive and non-zero."
-#       We are currently missing a final trailing space in some uses
-#           c.f. t/tokenize/hashes.tex
 DefMacro('\scantokens GeneralText', sub {
-    LaTeXML::Core::Mouth->new(writableTokens($_[1]))->readTokens; });
+    my ($gullet, $generaltext) = @_;
+    $gullet->openMouth(LaTeXML::Core::Mouth->new(writableTokens($generaltext)), 0);
+    return; });
 
 #======================================================================
 # 3.3 Environmental enquiries
@@ -122,8 +121,8 @@ DefPrimitive('\showgroups', undef);
 
 # \showtokens <generaltext>
 DefPrimitive('\showtokens GeneralText', sub {
-    print STDERR "\n> " . writableTokens($_[1]) . ".\n";
-    print STDERR $_[0]->getLocator->toString() . "\n\n";
+    Note("> " . writableTokens($_[1]));
+    Note($_[0]->getLocator->toString());
     return; });
 
 DefRegister('\tracingassigns'    => Number(0));    # ???

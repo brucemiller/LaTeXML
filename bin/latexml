@@ -19,13 +19,14 @@ use Pod::Usage;
 use LaTeXML::Core;
 use LaTeXML;    # Currently, just for version information.
 use LaTeXML::Util::Pathname;
+use LaTeXML::Common::Error;
 use Encode;
 
 #**********************************************************************
 # Parse command line
 my ($verbosity, $strict, $comments, $noparse, $includestyles) = (0, 0, 1, 0, 0);
 my ($format, $destination, $help, $showversion)               = ('xml', '');
-my ($preamble, $postamble)                                    = (undef, undef);
+my ($preamble, $postamble, $logfile)                          = (undef, undef, undef);
 my ($documentid);
 my $inputencoding;
 my $mode  = undef;
@@ -40,6 +41,7 @@ GetOptions("destination=s" => \$destination,
   "quiet"           => sub { $verbosity--; },
   "verbose"         => sub { $verbosity++; },
   "strict"          => \$strict,
+  "log=s"           => \$logfile,
   "xml"             => sub { $format = 'xml'; },
   "tex"             => sub { $format = 'tex'; },
   "box"             => sub { $format = 'box'; },
@@ -49,7 +51,7 @@ GetOptions("destination=s" => \$destination,
   "inputencoding=s" => \$inputencoding,
   "comments!"       => \$comments,
   "VERSION"         => \$showversion,
-  "debug=s"         => sub { no strict 'refs'; ${ 'LaTeXML::' . $_[1] . '::DEBUG' } = 1; },
+  "debug=s"         => sub { no strict 'refs'; $LaTeXML::DEBUG{ lc($_[1]) } = 1; },
   "documentid=s"    => \$documentid,
   "help"            => \$help,
 ) or pod2usage(-message => $LaTeXML::IDENTITY,
@@ -63,12 +65,29 @@ my $source = $ARGV[0];
 
 #**********************************************************************
 # Set up the processing.
-print STDERR "$LaTeXML::IDENTITY\n"                     if $verbosity > -1;
-print STDERR "processing started " . localtime() . "\n" if $verbosity > -1;
-
+SetVerbosity($verbosity);
+UseSTDERR();
 @paths = map { pathname_canonical($_) } @paths;
 if (my @baddirs = grep { !-d $_ } @paths) {
   warn "These path directories do not exist: " . join(', ', @baddirs) . "\n"; }
+
+# Always create a .log file for tracking the conversion messages
+# Use $jobname.latexml.log or just latexml.log for logging by default
+if (!$logfile) {
+  if (!pathname_is_literaldata($source)) {
+    my ($dir, $name, $ext) = pathname_split($source);
+    if ($name) {
+      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); }
+    else {
+      $logfile = 'latexml.log';
+  } }
+  else {
+    $logfile = 'latexml.log'; } }
+UseLog($logfile);
+
+NoteLog("$LaTeXML::IDENTITY");
+my $starttime = StartTime();
+NoteSTDERR("$LaTeXML::IDENTITY processing $source ...");
 
 my $latexml = LaTeXML::Core->new(
   preload         => [@preload],
@@ -84,8 +103,6 @@ if ($destination) {
   $destination = pathname_canonical($destination);
   if (my $dir = pathname_directory($destination)) {
     pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; } }
-
-binmode(STDERR, ":encoding(UTF-8)");
 
 $mode = 'BibTeX' if !defined $mode && ($source =~ /\.bib$/);
 $mode = 'TeX' unless defined $mode;
@@ -122,11 +139,14 @@ eval {
     }); }
 };
 if ($@) {    # Fatal error?
-  print STDERR $@; }
+  Debug($@); }
 $latexml->showProfile();    # Show profile (if any)
 
-print STDERR "\nConversion complete: " . $latexml->getStatusMessage . ".\n";
-print STDERR "processing finished " . localtime() . "\n" if $verbosity > -1;
+my $status  = $latexml->getStatusMessage;
+my $runtime = RunTime($starttime);
+NoteLog("Conversion complete: " . $status);
+NoteSTDERR("Conversion complete: " . $status . " (reqd. $runtime)");
+UseLog(undef);
 
 if    (!$serialized) { }
 elsif ($destination) {
@@ -142,6 +162,8 @@ else {
 $latexml    = undef;
 $digested   = undef;
 $serialized = undef;
+
+CheckDebuggable();
 
 if ($@) {    # non-zero exit code for fatal conversions
   exit 1;

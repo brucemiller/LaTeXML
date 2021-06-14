@@ -98,7 +98,7 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
     else {
       InputDefinitions('OmniBus', type => 'cls', noerror => 1,
         handleoptions => 1, options => $options,
-        after => Tokens(T_CS('\compat@loadpackages')));
+        after         => Tokens(T_CS('\compat@loadpackages')));
       RequirePackage($class, options => $options, as_class => 1); }
     return; });
 
@@ -357,15 +357,6 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
     # It is common for unclosed { or even environments
     # and we want to at least compress & avoid unnecessary errors & warnings.
     my $nframes = $STATE->getFrameDepth;
-# Expect 0 frames, top with environment document.
-# print STDERR "\n\nEND DOCUMENT; $nframes frames\n";
-# for(my $i=0; $i <= $nframes; $i++){
-#   my $nonbox = $STATE->valueInFrame('groupNonBoxing',$i) || 0;
-#   my $tok = $STATE->valueInFrame('groupInitiator',        $i) || '<unknown>';
-#   my $loc = $STATE->valueInFrame('groupInitiatorLocator', $i) || '<unknown>';
-#   my $env = $STATE->isValueBound('current_environment', $i)
-#       && $STATE->valueInFrame('current_environment', $i);
-#   print STDERR "Frame $i: nonboxing=$nonbox; tok=".ToString($tok).' '.$loc." env=".($env||'none')."\n"; }
     my $ifstack;
     if ($STATE->isValueBound('current_environment', 0)
       && ($STATE->valueInFrame('current_environment', 0) eq 'document')
@@ -481,7 +472,7 @@ sub makeNoteTags {
       tags => Digest(T_BEGIN,
         T_CS('\def'), T_CS('\the' . $counter), T_BEGIN, Revert($tag), T_END,
         T_CS('\def'), T_CS('\typerefnum@' . $counter),
-        T_BEGIN, T_CS('\\' . $counter . 'typerefname'), T_SPACE, Revert($tag), T_END,
+        T_BEGIN,      T_CS('\\' . $counter . 'typerefname'), T_SPACE, Revert($tag), T_END,
         Invocation(T_CS('\lx@make@tags'), T_OTHER($counter)),
         T_END)); }
   else {
@@ -616,11 +607,11 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
       || LookupValue('no_number_sections')) {
       # No number, but in TOC
       (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
-        T_BEGIN, $type->unlist, T_END,
+        T_BEGIN, $type->unlist,  T_END,
         T_BEGIN, T_OTHER('toc'), T_END); }
     else {          # Number and in TOC
       (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'),
-        T_BEGIN, $type->unlist, T_END,
+        T_BEGIN, $type->unlist,  T_END,
         T_BEGIN, T_OTHER('toc'), T_END); } });
 
 # Not sure if this is best, but if no explicit \section'ing...
@@ -1002,6 +993,7 @@ DefPrimitive('\markboth{}{}',    undef);
 DefPrimitiveI('\leftmark',  undef, undef);
 DefPrimitiveI('\rightmark', undef, undef);
 DefPrimitive('\pagenumbering{}', undef);
+DefMacro('\@mkboth', '\@gobbletwo');    # default, just in case
 DefMacro('\ps@empty',
   '\let\@mkboth\@gobbletwo\let\@oddhead\@empty\let\@oddfoot\@empty' .
     '\let\@evenhead\@empty\let\@evenfoot\@empty');
@@ -1051,7 +1043,7 @@ DefConstructor('\person@thanks{}', "^ <ltx:contact role='thanks'>#1</ltx:contact
   alias => '\thanks', mode => 'text');
 DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
   beforeDigest => sub { Let('\thanks', '\person@thanks'); },
-  bounded => 1, mode => 'text');
+  bounded      => 1, mode => 'text');
 
 DefConstructorI('\and', undef, " and ");
 
@@ -1188,18 +1180,25 @@ DefMacro('\format@title@abstract{}', '#1');
 # For now, we just give an info message
 DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
   beforeDigest => sub { Let('\centering', '\relax');
+    AddToMacro(T_CS('\maketitle'), T_CS('\unwind@titlepage'));
     DefEnvironment('{abstract}',
       '<ltx:abstract>#body</ltx:abstract>');
     Info('unexpected', 'titlepage', $_[0],
       "When using titlepage, Frontmatter will not be well-structured");
     return; },
-  beforeDigestEnd => sub { Digest(T_CS('\maybe@end@title')); },
-  locked => 1, mode => 'text');
+  beforeDigestEnd => sub { Digest(T_CS('\maybe@end@titlepage')); },
+  locked          => 1, mode => 'text');
 
 Tag('ltx:titlepage', autoClose => 1);
-DefConstructorI('\maybe@end@title', undef, sub {
+DefConstructorI('\maybe@end@titlepage', undef, sub {
     my ($document) = @_;
     $document->maybeCloseElement('ltx:titlepage'); });
+DefConstructorI('\unwind@titlepage', undef, sub {
+    my ($document) = @_;
+    if (my $titlepage = $document->maybeCloseElement('ltx:titlepage')) {
+      $document->unwrapNodes($titlepage);
+    }
+});
 
 DefMacro('\sectionmark{}',       Tokens());
 DefMacro('\subsectionmark{}',    Tokens());
@@ -1411,7 +1410,7 @@ sub RefStepItemCounter {
         T_CS('\let'), T_CS('\the' . $counter),   T_CS('\@empty'),
         T_CS('\def'), T_CS('\fnum@' . $counter), T_BEGIN, $formatter, T_BEGIN, Revert($tag), T_END, T_END,
         T_CS('\def'), T_CS('\typerefnum@' . $counter),
-        T_BEGIN, $typename, T_SPACE, Revert($tag), T_END,
+        T_BEGIN,      $typename, T_SPACE, Revert($tag), T_END,
         Invocation(T_CS('\lx@make@tags'), T_OTHER($counter)),
         T_END);
 
@@ -1738,7 +1737,7 @@ DefConstructorI('\lx@@verbatim', undef,
     my ($stomach) = @_;
     StartSemiverbatim('%', '\\', '{', '}');
     MergeFont(family => 'typewriter', series => 'medium', shape => 'upright');
-    $STATE->assignCatcode(' ', CC_ACTIVE);            # Do NOT (necessarily) skip spaces after \verb!!!
+    $STATE->assignCatcode(' ', CC_ACTIVE);    # Do NOT (necessarily) skip spaces after \verb!!!
     Let(T_ACTIVE(' '), T_SPACE); });
 DefConstructorI('\lx@end@verbatim', undef,
   "</ltx:verbatim>",
@@ -2642,7 +2641,7 @@ DefPrimitive('\DeclareFontFamily{}{}{}',      undef);
 DefPrimitive('\DeclareSizeFunction{}{}',      undef);
 
 my $symboltype_roles = {
-  '\mathord' => 'ID', '\mathop' => 'BIGOP', '\mathbin' => 'BINOP', '\mathrel' => 'RELOP',
+  '\mathord'  => 'ID',   '\mathop'    => 'BIGOP', '\mathbin'   => 'BINOP', '\mathrel' => 'RELOP',
   '\mathopen' => 'OPEN', '\mathclose' => 'CLOSE', '\mathpunct' => 'PUNCT' };
 DefPrimitive('\DeclareMathSymbol DefToken SkipSpaces DefToken {}{Number}', sub {
     my ($stomach, $cs, $type, $font, $code) = @_;
@@ -2662,7 +2661,7 @@ Let('\cdp@elt', '\relax');
 DefPrimitive('\DeclareFontEncoding{}{}{}', sub {
     my ($stomach, $encoding, $x, $y) = @_;
     AddToMacro(T_CS('\cdp@list'), T_CS('\cdp@elt'),
-      T_BEGIN, $_[1]->unlist, T_END,
+      T_BEGIN, $_[1]->unlist,           T_END,
       T_BEGIN, T_CS('\default@family'), T_END,
       T_BEGIN, T_CS('\default@series'), T_END,
       T_BEGIN, T_CS('\default@shape'),  T_END);
@@ -2891,7 +2890,7 @@ sub defineNewTheorem {
         $headformatter->unlist,
         T_BEGIN, ($type ? $type->unlist : ()), T_END,
         T_CS('\the' . $counter), T_BEGIN, Tokens(T_PARAM, T_OTHER('1')), T_END,
-        T_CS('\the'), T_CS('\thm@headpunct'))
+        T_CS('\the'),            T_CS('\thm@headpunct'))
       : '{\the\thm@headfont\lx@tag{\csname fnum@' . $thmset . '\endcsname}'
         . '{' . ($type ? '\ifx.#1.\else\space\the\thm@notefont(#1)\fi' : '#1') . '}'
         . '\the\thm@headpunct}'),
@@ -3400,7 +3399,8 @@ DefRegister('\lx@default@tabcolsep', Dimension('6pt'));
 DefRegister('\tabcolsep',            Dimension('6pt'));
 DefMacroI('\arraystretch', undef, "1");
 
-AssignValue(GUESS_TABULAR_HEADERS => 1);    # Defaults to yes
+AssignValue(GUESS_TABULAR_HEADERS => 1)    # Defaults to yes
+  unless defined LookupValue('GUESS_TABULAR_HEADERS');
 
 sub tabularBindings {
   my ($template, %properties) = @_;
@@ -3543,14 +3543,7 @@ DefConstructor('\@@array[] Undigested DigestedBody',
   '#3',
   beforeDigest => sub { $_[0]->bgroup; },
   reversion    => '\begin{array}[#1]{#2}#3\end{array}');
-# reversion => sub {
-#   my($whatsit,$op,$pat,$body)=@_;
-#   print STDERR "REVERT ARRAY"
-#     ."  options: ".Stringify($op)."\n"
-#     ."  pattern: ".Stringify($pat)."\n"
-#     ."  body: ".Stringify($body)."\n";
-#   (); }
-#   );
+
 #**********************************************************************
 # C.11 Moving Information Around
 #**********************************************************************
@@ -3864,14 +3857,13 @@ DefMacro('\lx@mung@bibliography{}', sub {
     my @tokens = ();
     # If we're in some sort of list environment, maybe we can recover
     if (($tag eq 'enumerate') || ($tag eq 'itemize') || ($tag eq 'description')) {
-      print STDERR "\nDamn! We're in a list {$tag}; try to close it!\n";
+      # nDamn! We're in a list {$tag}; try to close it!
       push(@tokens, Invocation('\end', $env),
-        T_CS('\let'), T_CS('\end' . $tag), T_CS('\endthebibliography'),
+        T_CS('\let'), T_CS('\end' . $tag),        T_CS('\endthebibliography'),
         T_CS('\let'), T_CS('\end{' . $tag . '}'), T_CS('\end{thebibliography}')); }
     # else ? it probably isn't going to work??
-    print STDERR "Now, try to open {thebibliography}\n";
+    # Now, try to open {thebibliography}
     push(@tokens, Invocation('\begin', Tokenize('thebibliography'), Tokens()));
-    print STDERR "PATCHING with " . ToString(Tokens(@tokens)) . "\n";
     return Tokens(@tokens); });
 
 DefConstructorI('\lx@bibnewblock', undef, "<ltx:bibblock>");
@@ -3964,6 +3956,12 @@ Let('\@@input', '\input');    # Save TeX's version.
                               # LaTeX's \input is a bit different...
 DefMacroI('\input', undef, '\@ifnextchar\bgroup\@iinput\@@input');
 DefPrimitive('\@iinput {}', sub { Input(Expand($_[1])); });
+DefMacro('\@input{}',  '\IfFileExists{#1}{\@@input\@filef@und}{\typeout{No file #1.}}');
+DefMacro('\@input@{}', '\InputIfFileExists{#1}{}{\typeout{No file #1.}}');
+
+DefMacro('\quote@name{}',          '"\quote@@name#1\@gobble""');
+DefMacro('\quote@@name{} Match:"', '#1\quote@@name');
+DefMacro('\unquote@name{}',        '\quote@@name#1\@gobble"');
 
 # Note that even excluded files SHOULD have the effects of their inclusion
 # simulated by having read the corresponding aux file;
@@ -3999,7 +3997,7 @@ DefConstructorI(T_CS("\\begin{filecontents}"), "Semiverbatim",
       while (defined($line = $gullet->readRawLine) && ($line ne '\end{filecontents}')) {
         push(@lines, $line); }
       AssignValue($filename . '_contents' => join("\n", @lines), 'global');
-      NoteProgress("[Cached filecontents for $filename (" . scalar(@lines) . " lines)]"); }]);
+      NoteLog("Cached filecontents for $filename (" . scalar(@lines) . " lines)"); }]);
 DefConstructorI(T_CS("\\begin{filecontents*}"), "Semiverbatim",
   '',
   reversion   => '',
@@ -4012,7 +4010,7 @@ DefConstructorI(T_CS("\\begin{filecontents*}"), "Semiverbatim",
       while (defined($line = $gullet->readRawLine) && ($line ne '\end{filecontents*}')) {
         push(@lines, $line); }
       AssignValue($filename . '_contents' => join("\n", @lines), 'global');
-      NoteProgress("[Cached filecontents* for $filename (" . scalar(@lines) . " lines)]"); }]);
+      NoteLog("Cached filecontents* for $filename (" . scalar(@lines) . " lines)"); }]);
 DefMacro('\endfilecontents', '');
 DefPrimitive('\listfiles', undef);
 
@@ -4219,7 +4217,7 @@ DefPrimitiveI('\makeglossary', undef, undef);
 
 DefPrimitive('\typeout{}', sub {
     my ($stomach, $stuff) = @_;
-    print STDERR ToString(Expand($stuff)) . "\n" if LookupValue('VERBOSITY') > -1;
+    Note(ToString(Expand($stuff)));
     return; });
 
 DefPrimitive('\typein[]{}', undef);
@@ -4371,7 +4369,7 @@ DefConstructor('\@framebox[Dimension][]{}',
     . "(<ltx:text ?#width(width='#width') ?#align(align='#align')"
     . " framed='rectangle' framecolor='#framecolor'"
     . " _noautoclose='1'>#3</ltx:text>)",
-  alias => '\framebox', sizer => '#3',
+  alias        => '\framebox', sizer => '#3',
   beforeDigest => sub {
     my ($stomach) = @_;
     my $wasmath = LookupValue('IN_MATH');
@@ -4463,7 +4461,7 @@ DefConstructor('\parbox[][Dimension][]{Dimension} VBoxContents', sub {
     (width => $_[4],
       vattach => translateAttachment($_[1]),
       height  => $_[2]); },
-  mode => 'text', bounded => 1,
+  mode         => 'text', bounded => 1,
   beforeDigest => sub {
     AssignValue('\hsize' => $_[4]);
     Let('\\\\', '\lx@parboxnewline'); });
@@ -4556,7 +4554,9 @@ sub ReadPair {
       $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
       return Pair(Dimension(0), Dimension(0)); }
     my $x = &$itemreader($gullet, $xarg);
-    $gullet->skipSpaces; $gullet->readUntil(T_OTHER(','), T_OTHER(';')); $gullet->skipSpaces;
+    # This had also recognized ";" as a possible separator; if needed, will need to generalize
+    # but we want to make readUntil accept only a single match
+    $gullet->skipSpaces; $gullet->readUntil(T_OTHER(',')); $gullet->skipSpaces;
     my $y = &$itemreader($gullet, $yarg);
     $gullet->skipSpaces; $gullet->readUntil(T_OTHER(')')); $gullet->skipSpaces;
     return Pair($x, $y); }
@@ -4870,12 +4870,18 @@ DefPrimitive('\selectfont', sub {
     my $family = ToString(Expand(T_CS('\f@family')));
     my $series = ToString(Expand(T_CS('\f@series')));
     my $shape  = ToString(Expand(T_CS('\f@shape')));
-    if (my $sh = LaTeXML::Common::Font::lookupFontFamily($family)) { MergeFont(%$sh); }
-    else { Info('unexpected', $family, $_[0], "Unrecognized font family '$family'."); }
-    if (my $sh = LaTeXML::Common::Font::lookupFontSeries($series)) { MergeFont(%$sh); }
-    else { Info('unexpected', $series, $_[0], "Unrecognized font series '$series'."); }
-    if (my $sh = LaTeXML::Common::Font::lookupFontShape($shape)) { MergeFont(%$sh); }
-    else { Info('unexpected', $shape, $_[0], "Unrecognized font shape '$shape'."); }
+    if    (my $sh = LaTeXML::Common::Font::lookupFontFamily($family)) { MergeFont(%$sh); }
+    elsif (!LookupValue("reported_unrecognized_font_family_$family")) {
+      AssignValue("reported_unrecognized_font_family_$family", 1, 'global');
+      Info('unexpected', $family, $_[0], "Unrecognized font family '$family'."); }
+    if    (my $sh = LaTeXML::Common::Font::lookupFontSeries($series)) { MergeFont(%$sh); }
+    elsif (!LookupValue("reported_unrecognized_font_series_$series")) {
+      AssignValue("reported_unrecognized_font_series_$series", 1, 'global');
+      Info('unexpected', $series, $_[0], "Unrecognized font series '$series'."); }
+    if    (my $sh = LaTeXML::Common::Font::lookupFontShape($shape)) { MergeFont(%$sh); }
+    elsif (!LookupValue("reported_unrecognized_font_shape_$shape")) {
+      AssignValue("reported_unrecognized_font_shape_$shape", 1, 'global');
+      Info('unexpected', $shape, $_[0], "Unrecognized font shape '$shape'."); }
     return; });
 
 DefMacro('\usefont{}{}{}{}',
@@ -4883,32 +4889,32 @@ DefMacro('\usefont{}{}{}{}',
 
 # If these series or shapes appear in math, they revert it to roman, medium, upright (?)
 DefConstructor('\textmd@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded => 1, font => { series => 'medium' }, alias => '\textmd',
+  bounded      => 1, font => { series => 'medium' }, alias => '\textmd',
   beforeDigest => sub { DefMacro('\f@series', 'm'); });
 DefConstructor('\textbf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded => 1, font => { series => 'bold' }, alias => '\textbf',
+  bounded      => 1, font => { series => 'bold' }, alias => '\textbf',
   beforeDigest => sub { DefMacro('\f@series', 'b'); });
 DefConstructor('\textrm@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded => 1, font => { family => 'serif' }, alias => '\textrm',
+  bounded      => 1, font => { family => 'serif' }, alias => '\textrm',
   beforeDigest => sub { DefMacro('\f@family', 'cm'); });
 DefConstructor('\textsf@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded => 1, font => { family => 'sansserif' }, alias => '\textsf',
+  bounded      => 1, font => { family => 'sansserif' }, alias => '\textsf',
   beforeDigest => sub { DefMacro('\f@family', 'cmss'); });
 DefConstructor('\texttt@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded => 1, font => { family => 'typewriter' }, alias => '\texttt',
+  bounded      => 1, font => { family => 'typewriter' }, alias => '\texttt',
   beforeDigest => sub { DefMacro('\f@family', 'cmtt'); });
 
 DefConstructor('\textup@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded => 1, font => { shape => 'upright' }, alias => '\textup',
+  bounded      => 1, font => { shape => 'upright' }, alias => '\textup',
   beforeDigest => sub { DefMacro('\f@shape', ''); });
 DefConstructor('\textit@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded => 1, font => { shape => 'italic' }, alias => '\textit',
+  bounded      => 1, font => { shape => 'italic' }, alias => '\textit',
   beforeDigest => sub { DefMacro('\f@shape', 'i'); });
 DefConstructor('\textsl@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded => 1, font => { shape => 'slanted' }, alias => '\textsl',
+  bounded      => 1, font => { shape => 'slanted' }, alias => '\textsl',
   beforeDigest => sub { DefMacro('\f@shape', 'sl'); });
 DefConstructor('\textsc@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
-  bounded => 1, font => { shape => 'smallcaps' }, alias => '\textsc',
+  bounded      => 1, font => { shape => 'smallcaps' }, alias => '\textsc',
   beforeDigest => sub { DefMacro('\f@shape', 'sc'); });
 DefConstructor('\textnormal@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
   bounded => 1, font => { family => 'serif', series => 'medium', shape => 'upright' }, alias => '\textnormal',
@@ -4931,7 +4937,7 @@ DefPrimitive('\DeclareTextFontCommand{}{}', sub {
     my ($stomach, $cmd, $font) = @_;
     DefConstructorI($cmd, "{}",
       "?#isMath(<ltx:text _noautoclose='1'>#1</ltx:text>)(#1)",
-      mode => 'text', bounded => 1,
+      mode         => 'text', bounded => 1,
       beforeDigest => sub { Digest($font); (); });
     return; });
 
@@ -5616,16 +5622,21 @@ EoTeX
 
 DefMacro('\IfFileExists{}{}{}', sub {
     my ($gullet, $file, $if, $else) = @_;
-    $file = ToString(Expand($file));
-    (FindFile($file) ? $if->unlist : $else->unlist); });
+    my $file_string = ToString(Expand($file));
+    if (FindFile($file_string)) {
+      DefMacro('\@filef@und', '"' . $file_string . '" ');
+      return ($if->unlist); }
+    else {
+      return ($else->unlist); } });
 
 DefMacro('\InputIfFileExists{}{}{}', sub {
     my ($gullet, $file, $if, $else) = @_;
-    $file = ToString(Expand($file));
-    if (FindFile($file)) {
-      Input($file);
-      $if->unlist; }
-    else { $else->unlist; } });
+    my $file_string = ToString(Expand($file));
+    if (FindFile($file_string)) {
+      DefMacro('\@filef@und', '"' . $file_string . '" ');
+      Input($file_string);
+      return ($if->unlist); }
+    else { return ($else->unlist); } });
 
 #======================================================================
 # Hair
@@ -5772,7 +5783,7 @@ DefPrimitive('\protected@write Number {}{}', sub {
       my $contents = LookupValue($handle);
       AssignValue($handle => $contents . UnTeX($tokens) . "\n", 'global'); }
     else {
-      print STDERR UnTeX($tokens) . "\n"; }
+      Note(UnTeX($tokens)); }
     $stomach->egroup;
     return @stuff; });
 

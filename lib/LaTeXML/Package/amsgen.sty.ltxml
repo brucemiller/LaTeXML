@@ -21,8 +21,6 @@ DefMacro('\@saveprimitive{}{}', '\let#2#1');
 Let('\@xp', '\expandafter');
 Let('\@nx', '\noexpand');
 DefRegister('\@emptytoks' => Tokens());
-DefMacro('\@oparg #1[#2]', '\@ifnextchar[{#1}{#1[#2]}');
-
 DefMacro('\@ifempty {}', '\@xifempty#1@@..\@nil');
 RawTeX(<<'EoTeX');
 \def\@oparg#1[#2]{\@ifnextchar[{#1}{#1[#2]}}

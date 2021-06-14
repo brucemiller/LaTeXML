@@ -109,8 +109,6 @@ sub revert {
 ##  elsif($alignment = $$self{properties}{alignment}) {
   elsif ((!$defn->getReversionSpec)
     && ($alignment = $$self{properties}{alignment})) {
-    print STDERR "REVERT ALIGNMENT for " . Stringify($defn)
-      . "(" . $defn->getReversionSpec . "): $alignment\n";
     return $alignment->revert; }
   else {
     my $props = $$self{properties};
