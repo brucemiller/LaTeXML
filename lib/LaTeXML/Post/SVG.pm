@@ -58,7 +58,7 @@ sub copy_attributes_except {
   my %excluded = map { ($_ => 1) } @attributes;
   foreach my $attr ($from->attributes) {
     my $key = $attr->getName;
-    next if $excluded{$key};
+    next                         if $excluded{$key};
     $from->removeAttribute($key) if $key eq 'xml:id';
     $to->setAttribute($key, $from->getAttribute($key)); }
   return; }
@@ -99,8 +99,8 @@ sub makeViewBox {
   my $hh = $maxy - $miny;
 ###  $node->setAttribute(viewBox=>"$minx $miny $w $h");
 
-  $node->setAttribute(width  => $ww) if $ww > $w;
-  $node->setAttribute(height => $hh) if $hh > $h;
+  $node->setAttribute(width   => $ww) if $ww > $w;
+  $node->setAttribute(height  => $hh) if $hh > $h;
   $node->setAttribute(viewBox => "$minx $miny $maxx $maxy");
 
   $node->setAttribute(overflow => 'visible') if (($node->getAttribute('clip') || '') ne 'true');
@@ -223,7 +223,7 @@ sub convertText {
   my $p = ((getQName($oldparent) || '') eq 'ltx:g' ? $oldparent->getAttribute('pos') || '' : 'bl');
   my $newNode = $parent->addNewChild($svgURI, 'text');
   $newNode->setAttribute('dominant-baseline' => 'middle');
-  $newNode->setAttribute('baseline-shift'    => 'sub') if $p =~ /t/;
+  $newNode->setAttribute('baseline-shift'    => 'sub')   if $p =~ /t/;
   $newNode->setAttribute('baseline-shift'    => 'super') if $p =~ /b/;
   if ($p =~ /l/) {
     $newNode->setAttribute('text-anchor' => 'start'); }
@@ -308,8 +308,8 @@ sub convertRect {
 
 sub convertBezier {
   my ($parent, $node) = @_;
-  my @p = explodeCoord($node->getAttribute('points') || '');
-  my $n = ($#p + 1) / 2; my $x0 = shift(@p); my $y0 = shift(@p);
+  my @p       = explodeCoord($node->getAttribute('points') || '');
+  my $n       = ($#p + 1) / 2; my $x0 = shift(@p); my $y0 = shift(@p);
   my %cmd     = (4 => 'C', 3 => 'Q');
   my $newNode = $parent->addNewChild($svgURI, 'path');
   $newNode->setAttribute(d => "M $x0,$y0 " . ($cmd{$n} || 'T') . ' ' . coordList(@p));
@@ -347,7 +347,7 @@ sub convertCircle {
 sub convertDots {
   my ($parent, $node) = @_;
   my $newNode = $parent->addNewChild($svgURI, 'g');
-  my @p = explodeCoord($node->getAttribute('points') || '');
+  my @p       = explodeCoord($node->getAttribute('points') || '');
   while (@p) {
     my ($x, $y) = (shift(@p), shift(@p));
     my $dot = $newNode->addNewChild($svgURI, 'circle');
@@ -518,14 +518,16 @@ sub arcPoints {
   return 'M ' . $pts if !$r && $pts;
   local *getP = sub {
     my ($x1, $y1, $x2, $y2) = @_;
-    my $dst = sqrt(($x1 - $x2)**2 + ($y1 - $y2)**2);
-    my $s = ($x2 - $x1) * ($y2 - $y1) >= 0 ? 1 : -1;
+    # TODO: Do we need a warning if $dst is zero?
+    #       Default to 0.01 since we'll use it as a denominator
+    my $dst = sqrt(($x1 - $x2)**2 + ($y1 - $y2)**2) || 0.01;
+    my $s   = ($x2 - $x1) * ($y2 - $y1) >= 0 ? 1 : -1;
     trunc(2, $s, $x1 + ($x2 - $x1) * $r / $dst, $y1 + ($y2 - $y1) * $r / $dst); };
   my @p = explodeCoord($pts); my $n = ($#p + 1) / 2;
   my $d = "M $p[0] $p[1] ";
   for (my $i = 1 ; $i < $n - 1 ; $i++) {
-    my ($x2, $y2) = ($p[2 * $i - 2], $p[2 * $i - 1]);
-    my ($x1, $y1) = ($p[2 * $i], $p[2 * $i + 1]);
+    my ($x2, $y2)      = ($p[2 * $i - 2], $p[2 * $i - 1]);
+    my ($x1, $y1)      = ($p[2 * $i], $p[2 * $i + 1]);
     my ($sa, $xa, $ya) = getP($x1, $y1, $x2, $y2);
     ($x2, $y2) = ($p[2 * $i + 2], $p[2 * $i + 3]);
     my ($sb, $xb, $yb) = getP($x1, $y1, $x2, $y2);
@@ -605,7 +607,7 @@ sub SVGObjectBoundary {
 sub combBoundary {
   my ($aa, $bb) = @_;
   return unless @$bb;
-  @$aa = @$bb and return unless @$aa;
+  @$aa    = @$bb and return unless @$aa;
   $$aa[0] = $$bb[0] if (!defined $$aa[0] || (defined $$bb[0] && $$aa[0] > $$bb[0]));
   $$aa[2] = $$bb[2] if (!defined $$aa[2] || (defined $$bb[2] && $$aa[2] > $$bb[2]));
   $$aa[1] = $$bb[1] if (!defined $$aa[1] || (defined $$bb[1] && $$aa[1] < $$bb[1]));

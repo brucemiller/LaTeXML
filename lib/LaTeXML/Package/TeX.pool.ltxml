@@ -146,7 +146,7 @@ DefParameterType('Optional', sub {
 DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
     my $open = $gullet->readXToken;
-    if ($open->equals(T_BEGIN)) {
+    if ($open && $open->equals(T_BEGIN)) {
       return $gullet->readBalanced; }
     else {
       Error('expected', '{', $gullet,
@@ -229,8 +229,12 @@ DefParameterType('XUntil', sub {
 # and maybe what we should be using for some Digested ??
 DefParameterType('Expanded', sub {
     my ($gullet) = @_;
-    my $token    = $gullet->readXToken(0);
-    my @tokens   = ();
+    my $token = $gullet->readXToken(0);
+    if (!$token) {
+      Error('expected', 'expanded', $gullet,
+        "Expected <Expanded> here");
+      return $token; }
+    my @tokens = ();
     if ($token->getCatcode == CC_BEGIN) {
       return scalar($gullet->readBalanced(1))->without_dont_expand; }
     else {
@@ -249,7 +253,11 @@ DefParameterType('Expanded', sub {
 DefParameterType('DefExpanded', sub {
     my ($gullet) = @_;
     local $LaTeXML::SMUGGLE_THE = 1;
-    my $token    = $gullet->readXToken;
+    my $token = $gullet->readXToken;
+    if (!$token) {
+      Error('expected', 'defexpanded', $gullet,
+        "Expected <DefExpanded> here");
+      return $token; }
     my $expanded = ($token->getCatcode == CC_BEGIN ? $gullet->readBalanced(1) : $token);
     return $expanded; },
   packParameters => 1,
@@ -274,7 +282,7 @@ DefParameterType('Semiverbatim', sub { $_[0]->readArg; }, semiverbatim => 1,
 # Read a LaTeX-style optional argument (ie. in []), but the contents read as Semiverbatim.
 DefParameterType('OptionalSemiverbatim', sub { $_[0]->readOptional; },
   semiverbatim => 1, optional => 1,
-  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  reversion    => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Be careful here: if % appears before the initial {, it's still a comment!
 # Also, note that non-typewriter fonts will mess up some chars on digestion!
@@ -299,7 +307,7 @@ DefParameterType('Undigested', sub { $_[0]->readArg; }, undigested => 1,
 # Read a LaTeX-style optional argument (ie. in []), but it will not be digested.
 DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
   undigested => 1, optional => 1,
-  reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  reversion  => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
@@ -1035,12 +1043,12 @@ DefRegister('\tracingcommands', Number(0),
     holdinginserts       => 0,     tracingonline       => 0, tracingstats  => 0,
     tracingparagraphs    => 0,     tracingpages        => 0, tracingoutput => 0,
     tracinglostchars     => 1,
-    tracingrestores      => 0, language   => 0, uchyph => 1, lefthyphenmin => 0,
+    tracingrestores      => 0, language   => 0, uchyph            => 1,        lefthyphenmin   => 0,
     righthyphenmin       => 0, globaldefs => 0, defaulthyphenchar => ord('-'), defaultskewchar => -1,
     escapechar => ord('\\'), endlinechar => ord("\r"), newlinechar => -1, maxdeadcycles => 0, hangafter => 0,
-    fam        => -1,    mag          => 1000, magnification     => 1000, delimiterfactor => 0,
-    time       => 0,     day          => 0,    month             => 0,    year            => 0,
-    showboxbreadth => 5, showboxdepth => 3,    errorcontextlines => 5);
+    fam        => -1,        mag         => 1000,      magnification     => 1000, delimiterfactor => 0,
+    time       => 0,         day         => 0,         month             => 0,    year            => 0,
+    showboxbreadth => 5, showboxdepth => 3,            errorcontextlines => 5);
 
   foreach my $p (keys %iparms) {
     DefRegister("\\$p", Number($iparms{$p})); }
@@ -1090,13 +1098,13 @@ sub today {
   my %dparms = (
     hfuzz              => '0.1pt', vfuzz => '0.1pt', overfullrule => '5pt',
     emergencystretch   => 0,
-    hsize              => '6.5in', vsize => '8.9in',
+    hsize              => '6.5in', vsize         => '8.9in',
     maxdepth           => '4pt',   splitmaxdepth => '16383.99999pt', boxmaxdepth => '16383.99999pt',
     lineskiplimit      => 0,
     delimitershortfall => '5pt', nulldelimiterspace => '1.2pt', scriptspace => '0.5pt',
     mathsurround       => 0,
     predisplaysize     => 0, displaywidth => 0, displayindent => 0, parindent => '20pt',
-    hangindent         => 0, hoffset => 0, voffset => 0,);
+    hangindent         => 0, hoffset      => 0, voffset       => 0,);
 
   foreach my $p (keys %dparms) {
     DefRegister("\\$p", Dimension($dparms{$p})); }
@@ -1112,8 +1120,8 @@ sub today {
 #    | \pagefillstretch | \pagefilllstretch | pageshrink | \pagedepth
 {
   my %sp_dparms = (
-    prevdepth => 0, pagegoal => 0, pagetotal => 0, pagestretch => 0, pagefilstretch => 0,
-    pagefillstretch => 0, pagefilllstretch => 0, pageshrink => 0, pagedepth => 0);
+    prevdepth       => 0, pagegoal         => 0, pagetotal  => 0, pagestretch => 0, pagefilstretch => 0,
+    pagefillstretch => 0, pagefilllstretch => 0, pageshrink => 0, pagedepth   => 0);
   foreach my $p (keys %sp_dparms) {
     DefRegister("\\$p", Dimension($sp_dparms{$p})); }
 }
@@ -1179,7 +1187,7 @@ sub parseDefParameters {
           last; }
         else {
           $n++; $t = shift(@tokens); } }
-      else {               # CC_ARG case, keep looking at this token
+      else {    # CC_ARG case, keep looking at this token
         $n++; }
       Fatal('expected', "#$n", $STATE->getStomach,
         "Parameters for '" . ToString($cs) . "' not in order in " . ToString($params))
@@ -1618,39 +1626,39 @@ DeclareFontMap('ASCII',
 # only when no other spacing point is available.]
 DeclareFontMap('OT1',
   ["\x{0393}", "\x{0394}", "\x{0398}", "\x{039B}", "\x{039E}", "\x{03A0}", "\x{03A3}", "\x{03A5}",
-    "\x{03A6}", "\x{03A8}", "\x{03A9}", "\x{FB00}", "\x{FB01}", "\x{FB02}", "\x{FB03}", "\x{FB04}",
-    "\x{0131}", "\x{0237}", UTF(0x60), UTF(0xB4), "\x{02C7}", "\x{02D8}", UTF(0xAF), "\x{02DA}",
-    UTF(0xB8), UTF(0xDF), UTF(0xE6), "\x{0153}", UTF(0xF8), UTF(0xC6), "\x{152}", UTF(0xD8),
-    UTF(0xA0) . "\x{0335}", '!', "\x{201D}", '#', '$', '%', '&', "\x{2019}",
-    '(',        ')', '*', '+',        ',', '-', '.', '/',
-    '0',        '1', '2', '3',        '4', '5', '6', '7',
-    '8',        '9', ':', ';',        UTF(0xA1), '=', UTF(0xBF), '?',
-    '@',        'A', 'B', 'C',        'D',        'E',        'F', 'G',
-    'H',        'I', 'J', 'K',        'L',        'M',        'N', 'O',
-    'P',        'Q', 'R', 'S',        'T',        'U',        'V', 'W',
-    'X',        'Y', 'Z', '[',        "\x{201C}", ']',        "^", "\x{02D9}",
-    "\x{2018}", 'a', 'b', 'c',        'd',        'e',        'f', 'g',
-    'h',        'i', 'j', 'k',        'l',        'm',        'n', 'o',
-    'p',        'q', 'r', 's',        't',        'u',        'v', 'w',
-    'x',        'y', 'z', "\x{2013}", "\x{2014}", "\x{02DD}", UTF(0x7E), UTF(0xA8)]);
+    "\x{03A6}", "\x{03A8}",      "\x{03A9}", "\x{FB00}", "\x{FB01}", "\x{FB02}", "\x{FB03}", "\x{FB04}",
+    "\x{0131}", "\x{0237}",      UTF(0x60),  UTF(0xB4),  "\x{02C7}", "\x{02D8}", UTF(0xAF),  "\x{02DA}",
+    UTF(0xB8),  UTF(0xDF),       UTF(0xE6),  "\x{0153}", UTF(0xF8),  UTF(0xC6),  "\x{152}",  UTF(0xD8),
+    UTF(0xA0) . "\x{0335}", '!', "\x{201D}", '#',        '$',        '%',        '&',       "\x{2019}",
+    '(',                    ')', '*',        '+',        ',',        '-',        '.',       '/',
+    '0',                    '1', '2',        '3',        '4',        '5',        '6',       '7',
+    '8',                    '9', ':',        ';',        UTF(0xA1),  '=',        UTF(0xBF), '?',
+    '@',                    'A', 'B',        'C',        'D',        'E',        'F',       'G',
+    'H',                    'I', 'J',        'K',        'L',        'M',        'N',       'O',
+    'P',                    'Q', 'R',        'S',        'T',        'U',        'V',       'W',
+    'X',                    'Y', 'Z',        '[',        "\x{201C}", ']',        "^",       "\x{02D9}",
+    "\x{2018}",             'a', 'b',        'c',        'd',        'e',        'f',       'g',
+    'h',                    'i', 'j',        'k',        'l',        'm',        'n',       'o',
+    'p',                    'q', 'r',        's',        't',        'u',        'v',       'w',
+    'x',                    'y', 'z',        "\x{2013}", "\x{2014}", "\x{02DD}", UTF(0x7E), UTF(0xA8)]);
 
 DeclareFontMap('OT1',
   ["\x{0393}", "\x{0394}", "\x{0398}", "\x{039B}", "\x{039E}", "\x{03A0}", "\x{03A3}", "\x{03A5}",
-    "\x{03A6}", "\x{03A8}", "\x{03A9}", "\x{2191}", "\x{2193}", "'", UTF(0xA1), UTF(0xBF),
-    "\x{0131}", "\x{0237}", UTF(0x60), UTF(0xB4), "\x{02C7}", "\x{02D8}", UTF(0xAF), "\x{02DA}",
-    UTF(0xB8), UTF(0xDF), UTF(0xE6), "\x{0153}", UTF(0xF8), UTF(0xC6), "\x{152}", UTF(0xD8),
-    "\x{2423}", '!', "\"", '#', '$',  '%', '&', "\x{2019}",
-    '(',        ')', '*',  '+', ',',  '-', '.', '/',
-    '0',        '1', '2',  '3', '4',  '5', '6', '7',
-    '8',        '9', ':',  ';', "<",  '=', ">", '?',
-    '@',        'A', 'B',  'C', 'D',  'E', 'F', 'G',
-    'H',        'I', 'J',  'K', 'L',  'M', 'N', 'O',
-    'P',        'Q', 'R',  'S', 'T',  'U', 'V', 'W',
-    'X',        'Y', 'Z',  '[', "\\", ']', "^", "_",
-    "\x{2018}", 'a', 'b',  'c', 'd',  'e', 'f', 'g',
-    'h',        'i', 'j',  'k', 'l',  'm', 'n', 'o',
-    'p',        'q', 'r',  's', 't',  'u', 'v', 'w',
-    'x',        'y', 'z',  "{", "|",  "}", "~", UTF(0xA8)],
+    "\x{03A6}", "\x{03A8}", "\x{03A9}", "\x{2191}", "\x{2193}", "'",        UTF(0xA1), UTF(0xBF),
+    "\x{0131}", "\x{0237}", UTF(0x60),  UTF(0xB4),  "\x{02C7}", "\x{02D8}", UTF(0xAF), "\x{02DA}",
+    UTF(0xB8),  UTF(0xDF),  UTF(0xE6),  "\x{0153}", UTF(0xF8),  UTF(0xC6),  "\x{152}", UTF(0xD8),
+    "\x{2423}", '!',        "\"",       '#',        '$',        '%',        '&',       "\x{2019}",
+    '(',        ')',        '*',        '+',        ',',        '-',        '.',       '/',
+    '0',        '1',        '2',        '3',        '4',        '5',        '6',       '7',
+    '8',        '9',        ':',        ';',        "<",        '=',        ">",       '?',
+    '@',        'A',        'B',        'C',        'D',        'E',        'F',       'G',
+    'H',        'I',        'J',        'K',        'L',        'M',        'N',       'O',
+    'P',        'Q',        'R',        'S',        'T',        'U',        'V',       'W',
+    'X',        'Y',        'Z',        '[',        "\\",       ']',        "^",       "_",
+    "\x{2018}", 'a',        'b',        'c',        'd',        'e',        'f',       'g',
+    'h',        'i',        'j',        'k',        'l',        'm',        'n',       'o',
+    'p',        'q',        'r',        's',        't',        'u',        'v',       'w',
+    'x',        'y',        'z',        "{",        "|",        "}",        "~",       UTF(0xA8)],
   family => 'typewriter');
 
 DeclareFontMap('OML',
@@ -1729,7 +1737,7 @@ DeclareFontMap('OMX',
     "(",        ")",        "(",        ")",        "[",        "]",        "\x{230A}", "\x{230B}",
     "\x{2308}", "\x{2309}", "{",        "}",        "\x{27E8}", "\x{27E9}", "/",        UTF(0x5C),
     "(",        ")",        "[",        "]",        "\x{230A}", "\x{230B}", "\x{2308}", "\x{2309}",
-    "{",        "}",        "\x{27E8}", "\x{27E9}", "/",        UTF(0x5C), "/", UTF(0x5C),
+    "{",        "}",        "\x{27E8}", "\x{27E9}", "/",        UTF(0x5C),  "/",        UTF(0x5C),
     # next two rows are just fragments
     # l.up.paren r.up.paren  l.up.brak   r.up.brak    l.bot.brak  r.bot.brak  l.brak.ext  r.brak.ext
     "\x{239B}", "\x{239E}", "\x{23A1}", "\x{23A4}", "\x{23A3}", "\x{23A6}", "\x{23A2}", "\x{23A5}",
@@ -1740,8 +1748,8 @@ DeclareFontMap('OMX',
     "\x{222E}", "\x{222E}", "\x{2299}", "\x{2299}", "\x{2295}", "\x{2295}", "\x{2297}", "\x{2297}",
     "\x{2211}", "\x{220F}", "\x{222B}", "\x{22C3}", "\x{22C2}", "\x{228C}", "\x{2227}", "\x{2228}",
     "\x{2211}", "\x{220F}", "\x{222B}", "\x{22C3}", "\x{22C2}", "\x{228C}", "\x{2227}", "\x{2228}",
-    "\x{2210}", "\x{2210}", UTF(0x5E), UTF(0x5E), UTF(0x5E), UTF(0x7E), UTF(0x7E), UTF(0x7E),
-    "[",        "]",        "\x{230A}", "\x{230B}", "\x{2308}", "\x{2309}", "{", "}",
+    "\x{2210}", "\x{2210}", UTF(0x5E),  UTF(0x5E),  UTF(0x5E),  UTF(0x7E),  UTF(0x7E),  UTF(0x7E),
+    "[",        "]",        "\x{230A}", "\x{230B}", "\x{2308}", "\x{2309}", "{",        "}",
 #                                                              [missing rad frags]     double arrow ext.
     "\x{23B7}", "\x{23B7}", "\x{23B7}", "\x{23B7}", "\x{23B7}", undef, undef, undef,
     #                        [missing tips for horizontal curly braces]
@@ -1952,7 +1960,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     else {
       $document->closeNode($node); }
   },
-  mode => 'text', bounded => 1,
+  mode  => 'text', bounded => 1,
   sizer => '#2',
   # Workaround for $ in alignment; an explicit \hbox gives us a normal $.
   # And also things like \centerline that will end up bumping up to block level!
@@ -2799,9 +2807,9 @@ sub parseHAlignTemplate {
             after  => Tokens(afterCellUnlist(Tokens(@post))) });
         @pre = @post = (); $before = 1; }
       last unless $t->equals(T_ALIGN); }
-    elsif ($before) {                       # Other random tokens go into the column's pre-template
+    elsif ($before) {    # Other random tokens go into the column's pre-template
       push(@pre, $t) if @pre || !$t->equals(T_SPACE); }
-    else {                                  # Or the post-template
+    else {               # Or the post-template
       push(@post, $t) if @post || !$t->equals(T_SPACE); } }
   # Now create & return the template object
   return LaTeXML::Core::Alignment::Template->new(
@@ -3137,7 +3145,7 @@ DefMacro('\oalign{}',
   '\@@oalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@oalign{}',
   '#1',
-  reversion => '\oalign{#1}', bounded => 1, mode => 'text',
+  reversion    => '\oalign{#1}', bounded => 1, mode => 'text',
   beforeDigest => sub { alignmentBindings('l'); });
 
 # This is actually different; the lines should lie ontop of each other.
@@ -3146,7 +3154,7 @@ DefMacro('\ooalign{}',
   '\@@ooalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@ooalign{}',
   '#1',
-  reversion => '\ooalign{#1}', bounded => 1, mode => 'text',
+  reversion    => '\ooalign{#1}', bounded => 1, mode => 'text',
   beforeDigest => sub { alignmentBindings('l'); });
 
 #----------------------------------------------------------------------
@@ -3483,7 +3491,7 @@ sub cleanup_Math {
             push(@texts, $child); } } } }
     # and replace the whole Math with the pieces
     $document->replaceTree([undef, undef, @texts], $mathnode); }
-  else {                                                 # Cleanup any remaining XMTexts
+  else {    # Cleanup any remaining XMTexts
     cleanup_XMText_outer($document, $mathnode); }
   return; }
 
@@ -4011,7 +4019,7 @@ sub scriptSizer {
   $pos = $base->getProperty('scriptpos') if !defined $pos && defined $base;
   $pos = 'post'                          if !defined $pos;
   if ($pos eq 'mid') {
-    $w = max(0, $ws - $wb);              # as if max width of base & script
+    $w = max(0, $ws - $wb);    # as if max width of base & script
     if ($op eq 'SUPERSCRIPT') {
       $h = $hb + $ds + $hs; }
     else {
@@ -5003,13 +5011,13 @@ sub removeEmptyElement {
 # \lx@tag[open][close]{stuff}
 DefConstructor('\lx@tag[][][]{}',
   "<ltx:tag open='#1' close='#2'>#4</ltx:tag>",
-  bounded => 1, mode => 'text',
+  bounded        => 1, mode => 'text',
   afterConstruct => \&removeEmptyElement);
 
 # \lx@tag@intags{role}{stuff}
 DefConstructor('\lx@tag@intags[]{}',
   "<ltx:tag role='#1'>#2</ltx:tag>",
-  bounded => 1, mode => 'text', beforeDigest => sub { reenterTextMode(); },
+  bounded        => 1, mode => 'text', beforeDigest => sub { reenterTextMode(); },
   afterConstruct => \&removeEmptyElement);
 
 DefConstructor('\lx@tags{}',
@@ -5262,7 +5270,7 @@ DefConstructor('\@math@daccent {}',
   "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>\x{22c5}</ltx:XMTok>"
     . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
     . "</ltx:XMApp>",
-  mode => 'text', alias => '\d',
+  mode        => 'text', alias => '\d',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);
@@ -5276,7 +5284,7 @@ DefConstructor('\@math@baccent {}',
   "<ltx:XMApp><ltx:XMTok role='UNDERACCENT'>" . UTF(0xAF) . "</ltx:XMTok>"
     . "?#textarg(<ltx:XMText>#textarg</ltx:XMText>)(<ltx:XMArg>#matharg</ltx:XMArg>)"
     . "</ltx:XMApp>",
-  mode => 'text', alias => '\b',
+  mode        => 'text', alias => '\b',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $arg = $whatsit->getArg(1);
@@ -5300,22 +5308,22 @@ Let('\sb', T_SUB);
 
 DefPrimitiveI('\,', undef, sub {
     Box("\x{2009}", undef, undef, T_CS('\,'),
-      name => 'thinspace', isSpace => 1,
+      name  => 'thinspace', isSpace => 1,
       width => LookupValue('\thinmuskip')); });
 
 DefPrimitiveI('\!', undef, sub {
     Box("\x{200B}", undef, undef, T_CS('\!'),    # zero width space
-      name => 'negthinspace', isSpace => 1,
+      name  => 'negthinspace', isSpace => 1,
       width => LookupValue('\thinmuskip')->negate); });
 
 DefPrimitiveI('\>', undef, sub {
     Box("\x{2005}", undef, undef, T_CS('\>'),
-      name => 'medspace', isSpace => 1,
+      name  => 'medspace', isSpace => 1,
       width => LookupValue('\medmuskip')); });
 
 DefPrimitiveI('\;', undef, sub {
     Box("\x{2004}", undef, undef, T_CS('\;'),
-      name => 'thickspace', isSpace => 1,
+      name  => 'thickspace', isSpace => 1,
       width => LookupValue('\thickmuskip')); });
 
 Let('\:', '\>');
@@ -5659,9 +5667,9 @@ DefRewrite(select => ["descendant-or-self::ltx:XMTok[text()='\x{FF0F}' and \@mea
     my $text = ($doc->getModel->getNodeQName($thing) eq 'ltx:XMTok')
       && $thing->textContent;
 
-    if ((!defined $text) || (length($text) != 1)) {      # Not simple char token.
+    if ((!defined $text) || (length($text) != 1)) {    # Not simple char token.
       my $box = $doc->getNodeBox($not);
-      $doc->openElement('ltx:XMApp', _box => $box);      # Wrap with a cancel op
+      $doc->openElement('ltx:XMApp', _box => $box);    # Wrap with a cancel op
       my $strike = $doc->insertMathToken(undef, role => 'ENCLOSE', enclose => 'updiagonalstrike',
         meaning => 'not', _box => $box);
       if (my $id = $not->getAttribute('xml:id')) {
@@ -5713,7 +5721,7 @@ DefPrimitiveI('\joinrel', undef, sub {
       (@stuff,
         LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@joinrel')), [$left, $right],
           locator => $gullet->getLocator,
-          font => $right->getFont, isMath => 1)); } });
+          font    => $right->getFont, isMath => 1)); } });
 
 DefConstructor('\@@joinrel{}{}', sub {
     my ($document, $left, $right) = @_;
@@ -5923,21 +5931,21 @@ DefMathI('\bracevert', undef, "|", font => { series => 'bold' }, role => 'VERTBA
 # This duplicates in slightly different way what DefMath has put together.
 our %DELIMITER_MAP =
   ('(' => { char => "(", lrole => 'OPEN', rrole => 'CLOSE' },
-  ')'          => { char => ")",        lrole => 'OPEN',  rrole => 'CLOSE' },
-  '['          => { char => "[",        lrole => 'OPEN',  rrole => 'CLOSE' },
-  ']'          => { char => "]",        lrole => 'OPEN',  rrole => 'CLOSE' },
-  '\{'         => { char => "{",        lrole => 'OPEN',  rrole => 'CLOSE' },
-  '\}'         => { char => "}",        lrole => 'OPEN',  rrole => 'CLOSE' },
-  '\lfloor'    => { char => "\x{230A}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'lfloor' },
-  '\rfloor'    => { char => "\x{230B}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rfloor' },
-  '\lceil'     => { char => "\x{2308}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'lceil' },
-  '\rceil'     => { char => "\x{2309}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rceil' },
-  '\langle'    => { char => "\x{27E8}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'langle' },
-  '\rangle'    => { char => "\x{27E9}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rangle' },
-  '<'          => { char => "\x{27E8}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'langle' },
-  '>'          => { char => "\x{27E9}", lrole => 'OPEN',  rrole => 'CLOSE', name => 'rangle' },
-  '/'          => { char => "/",        lrole => 'MULOP', rrole => 'MULOP' },
-  '\backslash' => { char => UTF(0x5C), lrole => 'MULOP', rrole => 'MULOP', name => 'backslash' },
+  ')'          => { char => ")",        lrole => 'OPEN',    rrole => 'CLOSE' },
+  '['          => { char => "[",        lrole => 'OPEN',    rrole => 'CLOSE' },
+  ']'          => { char => "]",        lrole => 'OPEN',    rrole => 'CLOSE' },
+  '\{'         => { char => "{",        lrole => 'OPEN',    rrole => 'CLOSE' },
+  '\}'         => { char => "}",        lrole => 'OPEN',    rrole => 'CLOSE' },
+  '\lfloor'    => { char => "\x{230A}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'lfloor' },
+  '\rfloor'    => { char => "\x{230B}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rfloor' },
+  '\lceil'     => { char => "\x{2308}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'lceil' },
+  '\rceil'     => { char => "\x{2309}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rceil' },
+  '\langle'    => { char => "\x{27E8}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'langle' },
+  '\rangle'    => { char => "\x{27E9}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rangle' },
+  '<'          => { char => "\x{27E8}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'langle' },
+  '>'          => { char => "\x{27E9}", lrole => 'OPEN',    rrole => 'CLOSE', name => 'rangle' },
+  '/'          => { char => "/",        lrole => 'MULOP',   rrole => 'MULOP' },
+  '\backslash' => { char => UTF(0x5C),  lrole => 'MULOP',   rrole => 'MULOP', name => 'backslash' },
   '|'          => { char => "|",        lrole => 'VERTBAR', rrole => 'VERTBAR' },
   '\|'         => { char => "\x{2225}", lrole => 'VERTBAR', rrole => 'VERTBAR' },
   '\uparrow'   => { char => "\x{2191}", lrole => 'OPEN', rrole => 'CLOSE', name => 'uparrow' },   # ??
@@ -6127,7 +6135,7 @@ DefConstructor('\vphantom{}',
 
 DefConstructor('\mathstrut', "?#isMath(<ltx:XMHint name='mathstrut'/>)()",
   properties => { isSpace => 1 });
-DefConstructor('\smash{}', "#1");                         # well, what?
+DefConstructor('\smash{}', "#1");    # well, what?
 
 #======================================================================
 # TeX Book, Appendix B. p. 361
@@ -6339,11 +6347,11 @@ DefConstructor('\lx@hack@bordermatrix{}', sub {
     $coln->setAttribute(rowspan => $n);
     $document->appendTree($col1,
       ['ltx:XMWrap', { depth => $d },
-        ['ltx:XMTok', { role => 'OPEN', height => 0, depth => $d, yoffset => $md }, '('],
-        ['ltx:XMTok', { height => $h, yoffset => $md }, ' ']]);    # Effectively, a strut
+        ['ltx:XMTok', { role   => 'OPEN', height  => 0, depth => $d, yoffset => $md }, '('],
+        ['ltx:XMTok', { height => $h,     yoffset => $md }, ' ']]);    # Effectively, a strut
     $document->appendTree($coln,
       ['ltx:XMWrap', {},
-        ['ltx:XMTok', { role => 'CLOSE', height => 0, depth => $d, yoffset => $md }, ')'],
+        ['ltx:XMTok', { role   => 'CLOSE', height => 0, depth => $d, yoffset => $md }, ')'],
         ['ltx:XMTok', { height => $h, yoffset => $md }, ' ']]);
     return; },
   reversion => '#1');
@@ -6429,7 +6437,7 @@ DefMacro('\eqalign{}',
   '\@@eqalign{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalign{}',
   '#1',
-  reversion => '\eqalign{#1}', bounded => 1,
+  reversion    => '\eqalign{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rl', 'math',
       attributes => { vattach => 'baseline' }); });
 
@@ -6437,7 +6445,7 @@ DefMacro('\eqalignno{}',
   '\@@eqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@eqalignno{}',
   '#1',
-  reversion => '\eqalignno{#1}', bounded => 1,
+  reversion    => '\eqalignno{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rll', 'math',
       attributes => { vattach => 'baseline' }); });
 
@@ -6445,7 +6453,7 @@ DefMacro('\leqalignno{}',
   '\@@leqalignno{\@start@alignment#1\@finish@alignment}');
 DefConstructor('\@@leqalignno{}',
   '#1',
-  reversion => '\leqalignno{#1}', bounded => 1,
+  reversion    => '\leqalignno{#1}', bounded => 1,
   beforeDigest => sub { alignmentBindings('rll', 'math',
       attributes => { vattach => 'baseline' }); });
 
@@ -6613,7 +6621,7 @@ DefLigature(qr{\x{2019}\x{2019}}, "\x{201D}",
   fontTest => sub { ($_[0]->getFamily ne 'typewriter')
       && (($_[0]->getEncoding || 'OT1') =~ /^(OT1|T1)$/); });
 DefPrimitiveI('\TeX', undef, 'TeX');
-DefPrimitiveI('\i',   undef, "\x{0131}");                        # LATIN SMALL LETTER DOTLESS I
+DefPrimitiveI('\i',   undef, "\x{0131}");    # LATIN SMALL LETTER DOTLESS I
 DefPrimitiveI('\j',   undef, "\x{0237}");
 
 DefConstructor('\buildrel Until:\over {}',
@@ -6884,7 +6892,7 @@ DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
                   ? $pr || Revert($p)
                   : $cr || Revert($c))))); }); }
     return; },
-  sizer => '#3');                                                     # size according to presentation
+  sizer => '#3');    # size according to presentation
 
 # These are used within XMDual
 # The XMDual represents both a content & presentation representation of some
