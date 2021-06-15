@@ -77,7 +77,7 @@ subtest "macro behaviour" => sub {
 };
 
 subtest "reading variable in non-context" => sub {
-  plan tests => 11;
+  plan tests => 16;
 
   # create a new context
   my $context = LaTeXML::Post::BiBTeX::Runtime::Context->new();
@@ -86,18 +86,26 @@ subtest "reading variable in non-context" => sub {
   is_deeply([$context->getVariable('example')], [undef, undef, undef], 'Getting an undefined variable');
   is_deeply($context->setVariable('example', ['INTEGER', 0, undef]), 1, 'Setting an undefined variable');
 
-  # defining a variable
-  is_deeply($context->defineVariable('example', 'GLOBAL_INTEGER'), 1, 'Defining a variable');
-  is_deeply($context->defineVariable('example', 'GLOBAL_INTEGER'), 0, 'Re-defining a variable');
+  # defining global integer variable
+  is_deeply($context->defineVariable('example', 'GLOBAL_INTEGER'), 1, 'Defining an integer variable');
+  is_deeply($context->defineVariable('example', 'GLOBAL_INTEGER'), 0, 'Re-defining an integer variable');
 
   # setting a value
-  is_deeply([$context->getVariable('example')], ['UNSET', undef, undef], 'Getting an unset variable');
-  is_deeply($context->setVariable('example', ['INTEGER', 0, undef]), 0, 'Setting a value');
-  is_deeply([$context->getVariable('example')], ['INTEGER', 0, undef], 'Getting a set variable');
+  is_deeply([$context->getVariable('example')], ['INTEGER', 0, undef], 'Getting an unset integer variable');
+  is_deeply($context->setVariable('example', ['INTEGER', 42, undef]), 0, 'Setting an integer value');
+  is_deeply([$context->getVariable('example')], ['INTEGER', 42, undef], 'Getting a set integer variable');
+
+  # defining global string variable
+  is_deeply($context->defineVariable('example2', 'GLOBAL_STRING'), 1, 'Defining a string variable');
+  is_deeply($context->defineVariable('example2', 'GLOBAL_STRING'), 0, 'Re-defining a string variable');
+
+  is_deeply([$context->getVariable('example2')], ['STRING', [""], [undef]], 'Getting an unset string variable');
+  is_deeply($context->setVariable('example2', ['STRING', ["abc"], [undef]]), 0, 'Setting a string value');
+  is_deeply([$context->getVariable('example2')], ['STRING', ["abc"], [undef]], 'Getting a set string variable');
 
   # reading entry variable
-  is_deeply([$context->getVariable('example2')], [undef, undef, undef], 'Getting an undefined entry variable');
-  is_deeply($context->defineVariable('example2', 'ENTRY_INTEGER'), 1, 'Defining an entry variable');
-  is_deeply([$context->getVariable('example2')], ['UNSET', undef, undef], 'Getting an entry variable in non-entry context');
-  is_deeply($context->setVariable('example2', ['INTEGER', 0, undef]), 2, 'Setting an entry variable');
+  is_deeply([$context->getVariable('example3')], [undef, undef, undef], 'Getting an undefined entry variable');
+  is_deeply($context->defineVariable('example3', 'ENTRY_INTEGER'), 1, 'Defining an entry variable');
+  is_deeply([$context->getVariable('example3')], ['UNSET', undef, undef], 'Getting an entry variable in non-entry context');
+  is_deeply($context->setVariable('example3', ['INTEGER', 0, undef]), 2, 'Setting an entry variable');
   }

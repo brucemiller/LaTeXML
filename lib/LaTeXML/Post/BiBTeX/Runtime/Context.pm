@@ -42,7 +42,7 @@ sub new {
     outputSource   => [],
     preambleString => [],
     preambleSource => [],
-    }, $class; }
+  }, $class; }
 
 ###
 ### Low-level stack access
@@ -174,8 +174,14 @@ sub defineVariable {
   return 0 if defined($$self{variableTypes}{$name});
   # store the type and set initial value if global
   $$self{variableTypes}{$name} = $type;
-  $$self{variables}{$name} = [('UNSET', undef, undef)]
-    unless startsWith($type, 'ENTRY_');
+  # if we don't have an entry variable, initialize them to sensible defaults here
+  unless (startsWith($type, 'ENTRY_')) {
+    if ($type eq 'GLOBAL_INTEGER') {
+      $$self{variables}{$name} = [('INTEGER', 0, undef)]; }
+    elsif ($type eq 'GLOBAL_STRING') {
+      $$self{variables}{$name} = [('STRING', [""], [undef])]; }
+    else {
+      $$self{variables}{$name} = [('UNSET', undef, undef)]; } }
   return 1; }
 
 # 'getVariable' gets a variable of the given name
@@ -302,7 +308,7 @@ sub buildEntryList {
     my ($entry) = @_;
     return $entry->getName, $$entry{entry}->getSource; }
   my (@warnings, @locations) = ();
-  my ($citeKey);    # current cite key the user requested
+  my ($citeKey);                       # current cite key the user requested
   my %citedKeys = ();                  # same as citeList, but key => 1 mapping
   my %related   = ();                  # resolved reference entries
   my @xrefed    = ();

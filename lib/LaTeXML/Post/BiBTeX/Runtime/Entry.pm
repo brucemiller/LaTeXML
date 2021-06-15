@@ -58,7 +58,7 @@ sub new {
     $value    = $field->getContent->getValue;
     # we need a key=value in this field
     unless (defined($valueKey)) {
-      push(@warnings, 'Missing key for value');
+      push(@warnings,  'Missing key for value');
       push(@locations, locationOf($name, $field->getContent));
       next; }
     $valueKey = lc $valueKey->getValue;
@@ -139,7 +139,7 @@ sub getType {
   return $$self{type}; }
 
 # gets the value of a given variable
-# get a variable (type, value, source) or undef if it doesn't exist
+# get a variable (type, value, source), silently define it when it doesn't exist yet
 sub getVariable {
   my ($self, $name) = @_;
   # lookup the type and return their value
@@ -154,7 +154,12 @@ sub getVariable {
       if defined($field);
     return 'MISSING', undef, [($$self{name}, $$self{key}, lc $name)]; }
   my $value = $$self{variables}{$name};
-  return 'UNSET', undef, undef unless defined($value);
+  # silently set default values
+  unless (defined($value)) {
+    return 'INTEGER', 0, undef if $type eq 'ENTRY_INTEGER';
+    return 'STRING', [""], [undef] if $type eq 'ENTRY_STRING';
+    # other types do not have a sensible default
+    return 'UNSET', undef, undef; }
   # else we can just push from our own internal value stack
   # we duplicate here, where needed
   my ($t, $v, $s) = @{$value};
