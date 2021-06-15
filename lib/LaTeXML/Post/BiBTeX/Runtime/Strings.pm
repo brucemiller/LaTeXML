@@ -606,12 +606,18 @@ sub textWidth {
 sub textSubstring {
   my ($string, $start, $length) = @_;
   # if we have a non-negative start, the indexes are straightforward
-  return substr($string, $start - 1, $length) if $start > 0;
+  return substrSafe($string, $start - 1, $length) if $start > 0;
   # else we have a substring of length  ending at index $start
   $start = length($string) + $start - $length + 1;
   if ($start < 0) {
     $length += $start;
     $start = 0; }
+  return substrSafe($string, $start, $length); }
+
+# a variant of substr which returns "" when start overruns the string
+sub substrSafe {
+  my ($string, $start, $length) = @_;
+  return "" if $start >= length($string);
   return substr($string, $start, $length); }
 
 ###
