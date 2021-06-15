@@ -175,6 +175,13 @@ INVOKE:
     elsif ($CATCODE_ABSORBABLE[$cc]) {
       @result = $self->invokeToken_simple($token, $meaning); }
     else {
+      # Special error guard for the align char "&":
+      # Locally deactivate to avoid a flurry of errors in the same table.
+      # Alert the end user once per table, allowing longer documents to not
+      # hit 100 errors too quickly.
+      $STATE->assignMeaning(T_ALIGN,
+        $STATE->lookupMeaning(T_CS('\relax')), 'local')
+        if Equals($token, T_ALIGN);
       Error('misdefined', $token, $self,
         "The token " . Stringify($token) . " should never reach Stomach!");
       @result = $self->invokeToken_simple($token, $meaning); } }
@@ -357,7 +364,7 @@ sub setMode {
     # but inherit color and size
     $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
         color => $curfont->getColor, background => $curfont->getBackground,
-        size => $curfont->getSize), 'local'); }
+        size  => $curfont->getSize), 'local'); }
   return; }
 
 sub beginMode {
