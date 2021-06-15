@@ -312,8 +312,6 @@ sub hardYankProcessing {
   $$gullet{mouthstack}       = [];
   $$gullet{pending_comments} = [];
   $$gullet{mouth}            = LaTeXML::Core::Mouth->new();
-  my $boxes_to_absorb = $$state{boxes_to_absorb};
-  @$boxes_to_absorb = () if ref $boxes_to_absorb eq 'ARRAY';
   return; }
 
 sub checkRecursiveError {
