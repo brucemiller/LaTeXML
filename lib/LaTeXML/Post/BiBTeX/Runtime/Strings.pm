@@ -77,7 +77,7 @@ sub splitLetters {
           shift(@letters) unless $hadLetter;
           shift(@levels)  unless $hadLetter;
           push(@letters, $buffer);
-          push(@levels, isSpecial($buffer) ? 0 : 1);
+          push(@levels,  isSpecial($buffer) ? 0 : 1);
           $hadLetter = 1;
           next; }
         unshift(@characters, $char) if defined($char);
@@ -158,7 +158,7 @@ sub splitSpecial {
     $command eq "l"  ||
     $command eq "L"  ||
     $command eq "ss"
-    ) {
+  ) {
   # We do not have a known command sequence, hence it should not change case and be a part of the 'head'
     ($command, $tail) = $tail =~ m/^([a-zA-Z]*[\s\{\}]*)(.*)$/;    # split off leading command sequence
     $head .= $command;
@@ -211,7 +211,7 @@ sub changeCase {
     $conversion_type eq 'u' ||
     $conversion_type eq 't');
 
-  my @chars = split(//, $string);    # array of characters (ex_buf in the original source)
+  my @chars    = split(//, $string);    # array of characters (ex_buf in the original source)
   my $char_ptr = 0;    # current index into the character array (ex_buf_ptr in the original source)
   my $chars_xptr = 0; # beginning of control sequence (not always set, ex_buf_xptr in the original source)
   my $chars_length = scalar(@chars);    # number of chars (ex_buf_len in the original source)
@@ -225,14 +225,14 @@ sub changeCase {
       # When opening a new brace the brace level increases and we need to consider accents and commands.
       # This large if statement checks that all the conditions for an 'accent' or 'command' are fullfilled
       if (
-        ($brace_level != 1) ||    # only on level 1!
+        ($brace_level != 1)                                                  ||    # only on level 1!
         (($char_ptr + 4 > $chars_length) || ($chars[$char_ptr + 1] ne '\\')) || # we don't have anything that could be a command
-              # in title case, we need to be at the beginning of the string or following a colon
+            # in title case, we need to be at the beginning of the string or following a colon
         (
           ($conversion_type eq 't') &&
           (($char_ptr == 0) || (($prev_colon) && ($chars[$char_ptr - 1] =~ /\s/)))
         )
-        ) {
+      ) {
         # In the original source this is handled with a goto ok_pascal_i_give_up.
         # To be slightly cleaner we inline the code.
         $prev_colon = 0;
@@ -322,7 +322,7 @@ sub changeCase {
         unless (
           ($char_ptr == 0) ||
           ($prev_colon) && ($chars[$char_ptr - 1] =~ /\s/)
-          ) {
+        ) {
           $chars[$char_ptr] = lc($chars[$char_ptr]); }
         # for the next iteration, we need to know if there was a ':'.
         if ($chars[$char_ptr] eq ':') {
@@ -652,7 +652,7 @@ sub textPurify {
           $command eq 'ae' ||
           $command eq 'AE' ||
           $command eq 'ss'
-          ) {
+        ) {
           $purified .= $command; }
         # else just use the first one
         else {
