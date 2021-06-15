@@ -168,6 +168,9 @@ sub finishDigestion {
   while ($stomach->getGullet->getMouth->hasMoreInput) {
     push(@stuff, $stomach->digestNextBody); }
   # Note that \end{document} will generally handle these cases as a Warning
+  if ($$stomach{rescued_boxes}) {
+    push(@stuff, @{ $$stomach{rescued_boxes} });
+  }
   if (my $env = $state->lookupValue('current_environment')) {
     Error('expected', "\\end{$env}", $stomach,
       "Input ended while environment $env was open"); }

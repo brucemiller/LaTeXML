@@ -221,14 +221,14 @@ sub computeIndirectModel_aux {
 sub canContainSomehow {
   my ($self, $tag, $child) = @_;
   my $model = $$self{model};
-  $tag   = $model->getNodeQName($tag)   if ref $tag;                   # In case tag is a node.
-  $child = $model->getNodeQName($child) if ref $child;                 # In case child is a node.
+  $tag   = $model->getNodeQName($tag)   if ref $tag;      # In case tag is a node.
+  $child = $model->getNodeQName($child) if ref $child;    # In case child is a node.
   return $model->canContain($tag, $child) || $self->canContainIndirect($tag, $child); }
 
 sub canHaveAttribute {
   my ($self, $tag, $attrib) = @_;
   my $model = $$self{model};
-  $tag = $model->getNodeQName($tag) if ref $tag;                       # In case tag is a node.
+  $tag = $model->getNodeQName($tag) if ref $tag;          # In case tag is a node.
   return $model->canHaveAttribute($tag, $attrib); }
 
 sub canAutoOpen {
@@ -257,7 +257,7 @@ sub canAutoClose {
 # get the actions that should be performed on afterOpen or afterClose
 sub getTagActionList {
   my ($self, $tag, $when) = @_;
-  $tag = $$self{model}->getNodeQName($tag) if ref $tag;       # In case tag is a node.
+  $tag = $$self{model}->getNodeQName($tag) if ref $tag;    # In case tag is a node.
   my ($p, $n) = (undef, $tag);
   if ($tag =~ /^([^:]+):(.+)$/) {
     ($p, $n) = ($1, $2); }
@@ -435,11 +435,11 @@ sub finalize_rec {
         # Add (or combine) attributes
         foreach my $attr (keys %pending_declaration) {
           my $value = $pending_declaration{$attr}{value};
-          if ($attr eq 'class') {              # Generalize?
+          if ($attr eq 'class') {    # Generalize?
             if (my $ovalue = $text->getAttribute('class')) {
               $value .= ' ' . $ovalue; } }
           $self->setAttribute($text, $attr => $value); }
-        $self->finalize_rec($text);            # Now have to clean up the new node!
+        $self->finalize_rec($text);    # Now have to clean up the new node!
       }
   } }
 
@@ -563,14 +563,18 @@ sub absorb {
   my ($self, $object, %props) = @_;
   no warnings 'recursion';
   # Nothing? Skip it
-  my @boxes   = ($object);
+  return unless $object;
+  # Record the boxes to absorb in the Document object, so that we can recover
+  # during Fatal errors by dropping the remaining ones.
+  $$STATE{boxes_to_absorb} = [$object];
+  my $boxes   = $$STATE{boxes_to_absorb};
   my @results = ();
-  while (@boxes) {
-    my $box = shift(@boxes);
+  while (@$boxes) {
+    my $box = shift(@$boxes);
     next unless defined $box;
     # Simply unwind Lists to avoid unneccessary recursion; This occurs quite frequently!
     if (((ref $box) || 'nothing') eq 'LaTeXML::Core::List') {
-      unshift(@boxes, $box->unlist);
+      unshift(@$boxes, $box->unlist);
       next; }
     # A Proper Box or Whatsit? It will handle it.
     if (ref $box) {
@@ -667,7 +671,7 @@ sub insertMathToken {
     $self->setNodeFont($node, $font);
     $self->setNodeBox($node, $box);
     $self->openMathText_internal($string) if defined $string;
-    $self->closeNode_internal($node);                              # Should be safe.
+    $self->closeNode_internal($node);    # Should be safe.
     return $node; } }
 
 # Insert a new comment, or append to previous comment.
@@ -1107,7 +1111,7 @@ sub openText_internal {
       if $LaTeXML::DEBUG{document};
     $point->appendChild($node);
     $self->setNode($node); }
-  return $$self{node}; }                                # return the text node (current)
+  return $$self{node}; }    # return the text node (current)
 
 # Since xml text nodes don't have attributes to record the origining box,
 # we need to manage the accumulation of autoOpen'ed boxes
@@ -1200,7 +1204,7 @@ sub closeText_internal {
         next if ($fonttest = $$ligature{fontTest}) && !&$fonttest($font);
         $string = &{ $$ligature{code} }($string); } }
     $node->setData($string) unless $string eq $ostring;
-    $self->setNode($parent);                 # Now, effectively Closed
+    $self->setNode($parent);    # Now, effectively Closed
     return $parent; }
   else {
     return $node; } }
@@ -1362,7 +1366,7 @@ sub setAttribute {
 sub addSSValues {
   my ($self, $node, $key, $values) = @_;
   $values = $values->toAttribute if ref $values;
-  if ((defined $values) && ($values ne '')) {          # Skip if `empty'; but 0 is OK!
+  if ((defined $values) && ($values ne '')) {    # Skip if `empty'; but 0 is OK!
     my @values = split(/\s/, $values);
     if (my $oldvalues = $node->getAttribute($key)) {    # previous values?
       my @old = split(/\s/, $oldvalues);
@@ -1573,7 +1577,7 @@ sub collapseXMDual {
   # The other branch is not visible, nor referenced,
   # but the dual may have an id and be referenced
   if (my $dualid = $dual->getAttribute('xml:id')) {
-    $self->unRecordID($dualid);                              # We'll move or remove the ID from the dual
+    $self->unRecordID($dualid);    # We'll move or remove the ID from the dual
     if (my $branchid = $branch->getAttribute('xml:id')) {    # branch has id too!
       foreach my $ref ($self->findnodes("//*[\@idref='$dualid']")) {
         $ref->setAttribute(idref => $branchid); } }          # Change dualid refs to branchid
@@ -1663,7 +1667,7 @@ sub removeNode {
 sub removeNode_aux {
   my ($self, $node) = @_;
   my $chopped = $$self{node}->isSameNode($node);
-  if ($node->nodeType == XML_ELEMENT_NODE) {          # If an element, do ID bookkeeping.
+  if ($node->nodeType == XML_ELEMENT_NODE) {    # If an element, do ID bookkeeping.
     if (my $id = $node->getAttribute('xml:id')) {
       $self->unRecordID($id); }
     $chopped ||= grep { $self->removeNode_aux($_) } $node->childNodes; }
