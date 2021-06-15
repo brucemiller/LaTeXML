@@ -15,6 +15,7 @@ use warnings;
 use Getopt::Long qw(GetOptionsFromArray);
 
 use LaTeXML::Post::BiBTeX::Runner;
+use LaTeXML::Post::BiBTeX::Common::StreamReader;
 use LaTeXML::Post::BiBTeX::Common::Utils qw(slurp);
 use LaTeXML::Post::BiBTeX::Runtime::Utils qw(fmtLogMessage);
 
