@@ -277,7 +277,8 @@ sub Fatal {
   $$gullet{mouthstack}       = [];
   $$gullet{pending_comments} = [];
   $$gullet{mouth}            = LaTeXML::Core::Mouth->new();
-  $$state{boxes_to_absorb}   = [];
+  my $boxes_to_absorb = $$STATE{boxes_to_absorb};
+  @$boxes_to_absorb = () if ref $boxes_to_absorb eq 'ARRAY';
 
   # Infinite recursion, hard perl dies (others?) require a hard yank with "die"
   if ($object =~ /^(?:deep_recursion|die|timedout)$/) {
