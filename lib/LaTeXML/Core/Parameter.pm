@@ -46,7 +46,7 @@ sub new {
     else {
       my $reader = checkReaderFunction("Read$type");
       $descriptor = { reader => $reader } if $reader; } }
-  Fatal('misdefined', $type, undef, "Unrecognized parameter type in \"$spec\"") unless $descriptor;
+  Fatal('misdefined', $type || 'no_type', undef, "Unrecognized parameter type in \"$spec\"") unless $descriptor;
   # Convert semiverbatim to list of extra SPECIALS.
   my %data = (%{$descriptor}, %options);
   $data{semiverbatim} = [] if $data{semiverbatim} && (ref $data{semiverbatim} ne 'ARRAY');

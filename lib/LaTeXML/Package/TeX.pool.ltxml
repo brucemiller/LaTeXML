@@ -146,7 +146,7 @@ DefParameterType('Optional', sub {
 DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
     my $open = $gullet->readXToken;
-    if ($open->equals(T_BEGIN)) {
+    if ($open && $open->equals(T_BEGIN)) {
       return $gullet->readBalanced; }
     else {
       Error('expected', '{', $gullet,
@@ -229,8 +229,12 @@ DefParameterType('XUntil', sub {
 # and maybe what we should be using for some Digested ??
 DefParameterType('Expanded', sub {
     my ($gullet) = @_;
-    my $token    = $gullet->readXToken(0);
-    my @tokens   = ();
+    my $token = $gullet->readXToken(0);
+    if (!$token) {
+      Error('expected', 'expanded', $gullet,
+        "Expected <Expanded> here");
+      return $token; }
+    my @tokens = ();
     if ($token->getCatcode == CC_BEGIN) {
       return scalar($gullet->readBalanced(1))->without_dont_expand; }
     else {
@@ -249,7 +253,11 @@ DefParameterType('Expanded', sub {
 DefParameterType('DefExpanded', sub {
     my ($gullet) = @_;
     local $LaTeXML::SMUGGLE_THE = 1;
-    my $token    = $gullet->readXToken;
+    my $token = $gullet->readXToken;
+    if (!$token) {
+      Error('expected', 'defexpanded', $gullet,
+        "Expected <DefExpanded> here");
+      return $token; }
     my $expanded = ($token->getCatcode == CC_BEGIN ? $gullet->readBalanced(1) : $token);
     return $expanded; },
   packParameters => 1,

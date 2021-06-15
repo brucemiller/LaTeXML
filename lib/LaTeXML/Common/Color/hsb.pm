@@ -14,6 +14,7 @@ use strict;
 use warnings;
 use base qw(LaTeXML::Common::Color);
 use LaTeXML::Global;
+use LaTeXML::Common::Error;
 
 sub hsb { my ($self) = @_; return $self; }
 
@@ -31,7 +32,10 @@ sub rgb {
   elsif ($i == 3) { return LaTeXML::Common::Color->new('rgb', $w, $v, $b); }
   elsif ($i == 4) { return LaTeXML::Common::Color->new('rgb', $u, $w, $b); }
   elsif ($i == 5) { return LaTeXML::Common::Color->new('rgb', $b, $w, $v); }
-  elsif ($i == 6) { return LaTeXML::Common::Color->new('rgb', $b, $w, $w); } }
+  elsif ($i == 6) { return LaTeXML::Common::Color->new('rgb', $b, $w, $w); }
+  else {    # We need a fallback (e.g. pacify wild arXiv errors)
+    Error('misdefined', 'hsb', undef, "Expected h between 0 and 1 in conversion to rgb, got h $h");
+    return LaTeXML::Common::Color->new('rgb', $b, $w, $w); } }
 
 sub cmy  { my ($self) = @_; return $self->rgb->cmy; }
 sub cmyk { my ($self) = @_; return $self->rgb->cmyk; }

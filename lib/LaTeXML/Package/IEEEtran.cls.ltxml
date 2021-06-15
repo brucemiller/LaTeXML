@@ -211,7 +211,8 @@ DefEnvironment('{IEEEproof} OptionalUndigested',
   },
   properties => sub {
     my $title     = Digest(TokenizeInternal('\textbf{\textit{Proof:}}'));
-    my $titlefont = [$title->unlist]->[1]->getFont;
+    my $titlefont = [$title->unlist]->[1];
+    $titlefont = $titlefont->getFont if $titlefont;
     (title => $title,
       titlefont  => $titlefont,
       class      => undef,

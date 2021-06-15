@@ -349,7 +349,7 @@ sub parse_rec {
       foreach my $key (keys %attr) {
         next unless ($key =~ /^_/) || $document->canHaveAttribute($rtag, $key);
         my $value = $attr{$key};
-        if ($key eq 'xml:id') {     # Since we're moving the id...bookkeeping
+        if ($key eq 'xml:id') {    # Since we're moving the id...bookkeeping
           $document->unRecordID($value);
           $node->removeAttribute('xml:id'); }
         if ($isarr) { $$result[1]{$key} = $value; }
@@ -440,7 +440,7 @@ sub filter_hints {
             my $p = $prev->getAttribute('_phantom');
             $prev->setAttribute(_space   => $s + $pts);
             $prev->setAttribute(_phantom => $p || $ph); }
-          else {                                 # Else save it for the next token.
+          else {    # Else save it for the next token.
             $pending_space += $pts;
             $pending_phantom = $ph; } } }
       # If XMHint is referenced??
@@ -954,7 +954,7 @@ sub textrec {
 
 sub textrec_apply {
   my ($name, $op, @args) = @_;
-  my $role = $op->getAttribute('role') || 'Unknown';
+  my $role = ((ref $op ne 'ARRAY') && $op->getAttribute('role')) || 'Unknown';
   if (($role =~ /^(SUB|SUPER)SCRIPTOP$/) && (($op->getAttribute('scriptpos') || '') =~ /^pre\d+$/)) {
     # Note that this will likely get parenthesized due to high bp
     return (5000, textrec($op) . " " . textrec($args[1]) . " " . textrec($args[0])); }
@@ -1039,7 +1039,7 @@ sub p_getValue {
       return $$node[1]{name}; } }
   elsif (ref $node eq 'XML::LibXML::Text') {
     return $node->textContent; }
-  else {                                            # ????
+  else {    # ????
     return $node; } }
 
 sub p_getTokenMeaning {
@@ -1305,7 +1305,7 @@ sub Fence {
   my $n  = int(($nargs - 2 + 1) / 2);
   my @p  = map { p_getValue(realizeXMNode(@stuff[2 * $_])) } 1 .. $n - 1;
   my $op = ($n == 0
-    ? 'list'                                    # ?
+    ? 'list'    # ?
     : ($n == 1
       ? $enclose1{ $o . '@' . $c }
       : ($n == 2
