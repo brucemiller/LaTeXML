@@ -285,6 +285,8 @@ sub Fatal {
 
 sub hardYankProcessing {
   my $state = $STATE;
+  # Nothing we can do if we are called without a global $STATE bound
+  return unless $state;
   # Ensure we have nothing else to do in the main processing.
   # NOTE: this recovery procedure must always be run after all logging messages are generated,
   #       as resetting the various stacks loses information (e.g. location is lost).
@@ -293,9 +295,9 @@ sub hardYankProcessing {
   $$stomach{token_stack} = [];
   # If we were in an infinite loop, disable any potential busy token.
   my $relax_def = $$state{meaning}{"\\relax"}[0];
-  $state && $state->assignMeaning($LaTeXML::CURRENT_TOKEN, $relax_def, 'global') if $LaTeXML::CURRENT_TOKEN;
+  $state->assignMeaning($LaTeXML::CURRENT_TOKEN, $relax_def, 'global') if $LaTeXML::CURRENT_TOKEN;
   for my $token (@{ $$gullet{pushback} }) {
-    $state && $state->assignMeaning($token, $relax_def, 'global'); }
+    $state->assignMeaning($token, $relax_def, 'global'); }
   # Rescue data structures that may be serializable/resumable
   if (@LaTeXML::LIST) {
     $$stomach{rescued_boxes} = [@LaTeXML::LIST];
@@ -304,7 +306,7 @@ sub hardYankProcessing {
   if ($LaTeXML::DOCUMENT) {
     $$state{rescued_document} = $LaTeXML::DOCUMENT; }
   # avoid looping at \end{document}, Fatal brings us back to the doc level
-  $state && $state->assignValue('current_environment', undef, 'global');
+  $state->assignValue('current_environment', undef, 'global');
   # then reset the gullet
   $$gullet{pushback}         = [];
   $$gullet{mouthstack}       = [];
