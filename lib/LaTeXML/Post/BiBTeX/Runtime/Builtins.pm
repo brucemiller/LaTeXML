@@ -171,25 +171,25 @@ sub builtinZcZe {
       'WARN',
       "Can not set $name: Does not exist. ",
       $config->location($source)
-      ); }
+    ); }
   elsif ($asr eq 2) {
     $config->log(
       'WARN',
       "Can not set $name: Not in an entry context. ",
       $config->location($source)
-      ); }
+    ); }
   elsif ($asr eq 4) {
     $config->log(
       'WARN',
       "Can not set $name: Read-only. ",
       $config->location($source)
-      ); }
+    ); }
   elsif ($asr eq 4) {
     $config->log(
       'WARN',
       "Can not set $name: Unknown type. ",
       $config->location($source)
-      ); } }
+    ); } }
 
 # builtin function add.period$
 # pops a string from the stack and adds a period to it when it does not already end with a
@@ -311,7 +311,7 @@ sub builtinCite {
     'STRING',
     [$entry->getKey],
     [[$entry->getName, $entry->getKey, '']]
-    ); }
+  ); }
 
 # builtin function duplicate$
 # duplicates the topmost stack entry, or complains if there is none.
@@ -321,7 +321,7 @@ sub builtinDuplicate {
     'WARN',
     'Attempted to duplicate the empty stack',
     $config->location($source)
-    ) unless $context->duplicateStack; }
+  ) unless $context->duplicateStack; }
 
 # builtin function empty$
 # pops the top literal from the stack.
@@ -380,7 +380,7 @@ sub builtinFormatName {
     $strings, $sources,
     sub {
       my @names = splitNames($_[0] . '');
-      my $name = $names[$integer - 1] || '';    # TODO: Warn if missing
+      my $name  = $names[$integer - 1] || '';    # TODO: Warn if missing
       my ($fname, $error) = formatName("$name", $fstrings);
       $config->log(
         'WARN',
@@ -483,7 +483,7 @@ sub builtinPop {
       'WARN',
       "Unable to pop empty stack",
       $config->location($source)
-      ); } }
+    ); } }
 
 # builtin function preamble$
 # pushes the concatination of all preambles onto the stack
@@ -552,9 +552,7 @@ sub builtinSubstring {
   # add the text prefix and push it to the stack
   my ($newStrings, $newSources) = applyPatch(
     $strings, $sources,
-    sub {
-      return textSubstring($_[0] . '', $i2, $i1);
-    },
+    sub { return textSubstring($_[0] . '', $i2, $i1); },
     'inplace'
   );
   $context->pushStack('STRING', $newStrings, $newSources); }
@@ -567,7 +565,7 @@ sub builtinSwap {
     'WARN',
     'Need at least two elements on the stack to swap. ',
     $config->location($source)
-    ) unless $context->swapStack; }
+  ) unless $context->swapStack; }
 
 # builtin function text.length$
 # pops a string from the top of the stack, and then pushes it's length.
@@ -603,9 +601,8 @@ sub builtinTextPrefix {
   # add the text prefix and push it to the stack
   my ($newStrings, $newSources) = applyPatch(
     $strings, $sources,
-    sub {
-      return textPrefix($_ . '', $integer, 'inplace');
-      }
+    sub { return textPrefix($_[0] . '', $integer); },
+    'inplace'
   );
   $context->pushStack('STRING', $newStrings, $newSources); }
 
@@ -621,7 +618,7 @@ sub builtinTop {
       'WARN',
       "Unable to pop empty stack",
       $config->location($source)
-      ); } }
+    ); } }
 
 # builtin function type$
 # pushes the type of the current entry onto the stack.
