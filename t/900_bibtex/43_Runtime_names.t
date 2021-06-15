@@ -22,13 +22,14 @@ subtest "abbrevName" => sub {
 };
 
 subtest "splitNames" => sub {
-  plan tests => 7;
+  plan tests => 8;
 
   sub isSplitNames {
     my ($input, $expected) = @_;
     is_deeply([splitNames($input)], $expected, $input);
   }
 
+  isSplitNames("", []);
   isSplitNames("tom and jerry", ["tom", "jerry"]);
   isSplitNames("and jerry", ["and jerry"]);
   isSplitNames("tom { and { and } } jerry",           ["tom { and { and } } jerry"]);
@@ -39,13 +40,14 @@ subtest "splitNames" => sub {
 };
 
 subtest "numNames" => sub {
-  plan tests => 7;
+  plan tests => 8;
 
   sub isNumNames {
     my ($input, $expected) = @_;
     is(numNames($input), $expected, $input);
   }
 
+  isNumNames("", 0);
   isNumNames("tom and jerry",                                           2);
   isNumNames("and jerry",                                               1);
   isNumNames("tom { and { and } } jerry",                               1);

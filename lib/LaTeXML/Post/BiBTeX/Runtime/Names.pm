@@ -29,9 +29,11 @@ our @EXPORT = qw(
 # Multiple names are seperated by 'and's at brace level 0.
 sub splitNames {
   my ($string) = @_;
-  my $level    = 0;
-  my $buffer   = '';
-  my @result   = ('');
+  # if there is an empty string, return the empty array!
+  return () if ($string eq '');
+  my $level  = 0;
+  my $buffer = '';
+  my @result = ('');
   my @cache;
   my $character;
   # accumalate entries inside of a buffer
@@ -64,7 +66,7 @@ sub splitNames {
 # 'numNames' counts the number of names in a given string and implements num.names$
 # This corresponds to the number of times the word 'and' surrounded by spaces occors at brace level 0
 sub numNames {
-  return scalar(splitNames(@_)); }
+  return scalar(splitNames(@_)) || 0; }
 
 ###
 ### Splitting a single name
@@ -357,7 +359,7 @@ sub formatName {
     else {
       # at the outer brace level, we insert characters unconditionally
       $result .= $character;
-    } }
+  } }
   return $result; }
 
 1;
