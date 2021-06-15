@@ -121,7 +121,7 @@ unlink($logfile) if (-e $logfile);
 
 #***************************************************************************
 # Prepare output variables:
-my ($result, $status, $log);
+my ($result, $status, $status_code, $log);
 
 # TODO: Talk to the web service via HTTP
 #Setup client and communicate
@@ -137,7 +137,7 @@ if ((!$sock) && $local && ($expire == -1)) {
   my $converter = LaTeXML->get_converter($opts);
   $converter->prepare_session($opts);
   my $response = $converter->convert($source);
-  ($result, $status, $log) = map { $$response{$_} } qw(result status log) if defined $response;
+  ($result, $status, $status_code, $log) = map { $$response{$_} } qw(result status status_code log) if defined $response;
 } else {
   my $message = q{};
   foreach my $entry (@$keyvals) {
@@ -196,7 +196,9 @@ if ($result) {
     print STDOUT "\n", $result, "\n"; } }
 
 # == End of Program ==
-if ($status =~ /fatal error/) {    # non-zero exit code for fatal conversions
+# cleanup STDERR e.g. in case of fatals
+UseSTDERR(undef);
+if ($status_code == 3 || ($status =~ /fatal error/)) {    # non-zero exit code for fatal conversions
   exit 1;
 } else {
   exit 0;
