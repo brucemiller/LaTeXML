@@ -247,7 +247,9 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
     display: flex; }
 .ltx_page_column1,
 .ltx_page_column2 {
-    flex:100%; }
+    flex:100%;
+    margin: 0 20px;
+ }
 @media screen and (max-width: 60em){
   .ltx_page_columns {
      flex-direction: column; }
