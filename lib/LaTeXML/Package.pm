@@ -103,7 +103,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
     &LookupLCcode &AssignLCcode
     &LookupUCcode &AssignUCcode
     &LookupDelcode &AssignDelcode
-  ),
+    ),
 
   # Random low-level token or string operations.
   qw(&CleanID &CleanLabel &CleanIndexKey  &CleanClassName &CleanBibKey &NormalizeBibKey &CleanURL
@@ -178,8 +178,9 @@ sub parsePrototype {
   elsif ($proto =~ s/^(.)//) {               # Match an active char
     ($cs) = TokenizeInternal($1)->unlist; }
   else {
-    Fatal('misdefined', $proto, $STATE->getStomach,
-      "Definition prototype doesn't have proper control sequence: \"$proto\""); }
+    Error('misdefined', $proto, $STATE->getStomach,
+      "Definition prototype doesn't have proper control sequence: \"$proto\"");
+    $proto = ''; }
   $proto =~ s/^\s*//;
   return ($cs, parseParameters($proto, $cs)); }
 
@@ -222,7 +223,7 @@ sub parseParameters {
       my @extra = map { TokenizeInternal($_) } split('\|', $extra || '');
       push(@params, LaTeXML::Core::Parameter->new($type, $spec, extra => [@extra])); }
     else {
-      Fatal('misdefined', $for, undef, "Unrecognized parameter specification at \"$proto\""); } }
+      Error('misdefined', $for, undef, "Unrecognized parameter specification at \"$proto\""); } }
   return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
 
 # Convert a LaTeX-style argument spec to our Package form.
@@ -443,7 +444,7 @@ sub roman_aux {
   while ($n %= $div) {
     $div /= 10;
     my $d = int($n / $div);
-    if ($d % 5 == 4) { $s .= $rmletters[$p]; $d++; }
+    if ($d % 5 == 4) { $s .= $rmletters[$p];               $d++; }
     if ($d > 4)      { $s .= $rmletters[$p + int($d / 5)]; $d %= 5; }
     if ($d)          { $s .= $rmletters[$p] x $d; }
     $p -= 2; }
@@ -544,8 +545,8 @@ sub ComposeURL {
   $fragid = ToString($fragid);
   return CleanURL(join('',
       ($base ?
-          ($url =~ /^\w+:/ ? ''    # already has protocol, so is absolute url
-          : $base . ($url =~ /^\// ? '' : '/'))    # else start w/base, possibly /
+          ($url =~ /^\w+:/ ? ''                            # already has protocol, so is absolute url
+          : $base . ($url =~ /^\// ? '' : '/'))            # else start w/base, possibly /
         : ''),
       $url,
       ($fragid ? '#' . CleanID($fragid) : ''))); }
@@ -2065,7 +2066,7 @@ sub Input {
       loadTeXDefinitions($request, $path); }
     else {
       loadTeXContent($path); } }
-  else {    # Couldn't find anything?
+  else {                                     # Couldn't find anything?
     $STATE->noteStatus(missing => $request);
     # We presumably are trying to input Content; an error if we can't find it (contrast to Definitions)
     Error('missing_file', $request, $STATE->getStomach->getGullet,
@@ -2133,7 +2134,7 @@ sub loadTeXDefinitions {
   $stomach->getGullet->readingFromMouth(
     LaTeXML::Core::Mouth->create($pathname,
       fordefinitions => 1, notes => 1,
-      content        => LookupValue($pathname . '_contents')),
+      content => LookupValue($pathname . '_contents')),
     sub {
       my ($gullet) = @_;
       my $token;
@@ -2290,7 +2291,7 @@ sub AddToMacro {
 #======================================================================
 my $inputdefinitions_options = {    # [CONSTANT]
   options          => 1, withoptions => 1, handleoptions => 1,
-  type             => 1, as_class    => 1, noltxml       => 1, notex => 1, noerror => 1, after => 1,
+  type             => 1, as_class    => 1, noltxml => 1, notex => 1, noerror => 1, after => 1,
   searchpaths_only => 1 };
 #   options=>[options...]
 #   withoptions=>boolean : pass options from calling class/package
@@ -2395,7 +2396,7 @@ sub InputDefinitions {
 
 my $require_options = {    # [CONSTANT]
   options => 1, withoptions => 1, type => 1, as_class => 1,
-  noltxml => 1, notex       => 1, raw  => 1, after    => 1, searchpaths_only => 1 };
+  noltxml => 1, notex => 1, raw => 1, after => 1, searchpaths_only => 1 };
 # This (& FindFile) needs to evolve a bit to support reading raw .sty (.def, etc) files from
 # the standard texmf directories.  Maybe even use kpsewhich itself (INSTEAD of pathname_find ???)
 # Another potentially useful option might be that if we are reading a raw file,
@@ -2466,7 +2467,7 @@ sub LoadPool {
   if (my $success = InputDefinitions($pool, type => 'pool', notex => 1, noerror => 1)) {
     return $success; }
   else {
-    Fatal('missing_file', "$pool.pool.ltxml", $STATE->getStomach->getGullet,
+    Error('missing_file', "$pool.pool.ltxml", $STATE->getStomach->getGullet,
       "Can't find binding for pool $pool (installation error)",
       maybeReportSearchPaths());
     return; } }
