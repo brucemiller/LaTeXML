@@ -32,11 +32,12 @@ sub openFile {
   my ($self, $pathname) = @_;
   my $IN;
   if (!-r $pathname) {
-    Fatal('I/O', 'unreadable', $self, "File $pathname is not readable."); }
+    Error('I/O', 'unreadable', $self, "File $pathname is not readable. Ignoring."); }
   elsif ((!-z $pathname) && (-B $pathname)) {
-    Fatal('invalid', 'binary', $self, "Input file $pathname appears to be binary."); }
-  open($IN, '<:raw', $pathname)
-    || Fatal('I/O', 'open', $self, "Can't open $pathname for reading", $!);
+    Error('invalid', 'binary', $self, "Input file $pathname appears to be binary. Ignoring."); }
+  elsif (open($IN, '<:raw', $pathname)) { }
+  else {
+    Error('I/O', 'open', $self, "Can't open $pathname for reading", $!); }
   $$self{IN}     = $IN;
   $$self{buffer} = [];
   return; }
