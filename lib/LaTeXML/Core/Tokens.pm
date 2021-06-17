@@ -32,7 +32,7 @@ sub Tokens {
   # faster than foreach
   @tokens = map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
       : ($r eq 'LaTeXML::Core::Tokens' ? @$_
-        : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)))) }
+        : Error('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)) || T_OTHER(Stringify($_)))) }
     @tokens;
   return bless [@tokens], 'LaTeXML::Core::Tokens'; }
 

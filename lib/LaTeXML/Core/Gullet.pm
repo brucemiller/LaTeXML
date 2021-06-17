@@ -307,7 +307,7 @@ sub unread {
     map { (!defined $_ ? ()
         : (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
           : ($r eq 'LaTeXML::Core::Tokens' ? @$_
-            : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_))))) }
+            : Error('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)) || T_OTHER(Stringify($_))))) }
       @tokens);
   return; }
 
@@ -358,8 +358,8 @@ sub readXToken {
       my $r;
       my @expansion = map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
           : ($r eq 'LaTeXML::Core::Tokens' ? @$_
-            : Fatal('misdefined', $r, undef, "Expected a Token, got " . Stringify($_),
-              "in " . ToString($defn)))) }
+            : Error('misdefined', $r, undef, "Expected a Token, got " . Stringify($_),
+              "in " . ToString($defn)) || T_OTHER(Stringify($_)))) }
         $defn->invoke($self);
       next unless @expansion;
       if ($$LaTeXML::Core::Token::SMUGGLE_THE_COMMANDS{ $$defn{cs}[0] }) {
