@@ -706,18 +706,18 @@ sub getStatus {
 our $SUCCESS_MESSAGE = 'No obvious problems';
 
 sub getStatusMessage {
-  my ($self)         = @_;
-  my $status         = $$self{status};
-  my @report         = ();
-  my $warning_status = $$status{warning} && "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : '');
-  my $error_status = $$status{error} && "$$status{error} error" . ($$status{error} > 1 ? 's' : '');
-  my $fatal_status = $$status{fatal} && "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : '');
+  my ($self) = @_;
+  my $status = $$self{status};
+  my @report = ();
+  my $warning_status = $$status{warning} && colorizeString("$$status{warning} warning" . ($$status{warning} > 1 ? 's' : ''), 'warning');
+  my $error_status = $$status{error} && colorizeString("$$status{error} error" . ($$status{error} > 1 ? 's' : ''), 'error');
+  my $fatal_status = $$status{fatal} && colorizeString("$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : ''), 'fatal');
   my @undef        = ($$status{undefined} ? keys %{ $$status{undefined} } : ());
-  my $undef_status = @undef && (scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
-    . "[" . join(', ', @undef) . "]");
+  my $undef_status = @undef && colorizeString(scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
+      . "[" . join(', ', @undef) . "]", 'details');
   my @miss           = ($$status{missing} ? keys %{ $$status{missing} } : ());
-  my $missing_status = @miss && (scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
-    . "[" . join(', ', @miss) . "]");
+  my $missing_status = @miss && colorizeString(scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
+      . "[" . join(', ', @miss) . "]", 'details');
 
   my $success_status = $SUCCESS_MESSAGE;
   if ($LaTeXML::Common::Error::IS_TERMINAL) {

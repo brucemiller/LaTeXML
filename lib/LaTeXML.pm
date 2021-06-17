@@ -90,7 +90,10 @@ sub prepare_session {
 
 sub initialize_session {
   my ($self) = @_;
-  $$self{runtime} = {};
+  $$self{runtime} = {} unless $$self{runtime};
+  # TTL = time-to-live, starting with the allotted timeout (or 0 for unlimited)
+  my $runtime = $$self{runtime};
+  $$runtime{TTL} = $$self{opts}{timeout} unless defined $$runtime{TTL};
   $self->bind_log;
   # Empty the package namespace
   foreach my $subname (keys %LaTeXML::Package::Pool::) {
@@ -98,22 +101,21 @@ sub initialize_session {
   }
 
   my $latexml;
-  my $init_eval_return = eval {
+  eval {
     # Prepare LaTeXML object
     local $SIG{'ALRM'} = sub { die "Fatal:conversion:init Failed to initialize LaTeXML state\n" };
-    alarm($$self{opts}{timeout});
+    alarm($$runtime{TTL});
 
     $latexml = new_latexml($$self{opts});
 
-    alarm(0);
+    $$runtime{TTL} = alarm(0);
     1;
   };
   ## NOTE: This will give double errors, if latexml has already handled it!
   $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
-  local $@ = 'Fatal:conversion:unknown Session initialization failed! (Unknown reason)' if ((!$init_eval_return) && (!$@));
   if ($@) {                                                   #Fatal occured!
-    Debug($@);
-    Debug("Initialization complete: " . $latexml->getStatusMessage . ". Aborting.") if defined $latexml;
+    Note($@);
+    Note("Initialization complete: " . $latexml->getStatusMessage . ". Aborting.") if defined $latexml;
     # Close and restore STDERR to original condition.
     $$self{log} .= $self->flush_log;
     $$self{ready} = 0;
@@ -122,7 +124,7 @@ sub initialize_session {
     # Demand errorless initialization
     my $init_status = $latexml->getStatusMessage;
     if ($init_status =~ /error/i) {
-      Debug("Initialization complete: " . $init_status . ". Aborting.");
+      Note("Initialization complete: " . $init_status . ". Aborting.");
       $$self{log} .= $self->flush_log;
       $$self{ready} = 0;
       return;
@@ -140,15 +142,17 @@ sub convert {
   my ($self, $source) = @_;
   # 1 Prepare for conversion
   # 1.1 Initialize session if needed:
-  $$self{runtime} = {};
+  # TTL = time-to-live, starting with the allotted timeout
+  #       on each call to convert (or 0 for unlimited)
+  $$self{runtime} = { TTL => $$self{opts}{timeout} };
+  my $runtime = $$self{runtime};
   $self->initialize_session unless $$self{ready};
   if (!$$self{ready}) {    # We can't initialize, return error:
     return { result => undef, log => $self->flush_log, status => "Initialization failed.", status_code => 3 }; }
 
   $self->bind_log;
   # 1.2 Inform of identity, increase conversion counter
-  my $opts    = $$self{opts};
-  my $runtime = $$self{runtime};
+  my $opts = $$self{opts};
   ($$runtime{status}, $$runtime{status_code}) = (undef, undef);
   Note("$LaTeXML::IDENTITY");
   NoteLog("invoked as [$0 " . join(' ', @ARGV) . "]");
@@ -200,8 +204,7 @@ sub convert {
       $$opts{resource_directory} = File::Spec->catdir($sandbox_directory, 'OPS');
       $$opts{destination} = pathname_concat(File::Spec->catdir($sandbox_directory, 'OPS'), $sandbox_destination); }
     else {
-      $$opts{destination} = pathname_concat($sandbox_directory, $sandbox_destination); }
-  }
+      $$opts{destination} = pathname_concat($sandbox_directory, $sandbox_destination); } }
   # 1.4.1 Since we can allow "virtual" destinations for archives / webservice APIs,
   #       we postpone the auxiliary resource sanity check (logically of LaTeXML::Config)
   #       to this time, where we can be certain if a user has run a local job without --dest
@@ -222,6 +225,8 @@ sub convert {
   $latexml->withState(sub {
       my ($state) = @_;    # Sandbox state
       $$state{status} = {};
+      my $stomach = $$state{stomach};
+      delete $$stomach{rescued_boxes} if $$stomach{rescued_boxes};
       $state->pushDaemonFrame;
       $state->assignValue('_authlist',      $$opts{authlist}, 'global');
       $state->assignValue('REMOTE_REQUEST', (!$$opts{local}), 'global');
@@ -229,38 +234,54 @@ sub convert {
 
   # 2 Beginning Core conversion - digest the source:
   my ($digested, $dom, $serialized) = (undef, undef, undef);
-  my $convert_eval_return = eval {
-    # Should be this, but is overridden by withState.
-    #local $SIG{'ALRM'} = sub { LaTeXML::Common::Error::Fatal('conversion','timeout',
-    # "Conversion timed out after " . $$opts{timeout} . " seconds!\n"); };
-    alarm($$opts{timeout});
+  eval {
+    alarm($$runtime{TTL});
     my $mode = ($$opts{type} eq 'auto') ? 'TeX' : $$opts{type};
     $digested = $latexml->digestFile($source, preamble => $current_preamble,
       postamble    => $current_postamble,
       mode         => $mode,
       noinitialize => 1);
-    # 2.1 Now, convert to DOM and output, if desired.
-    if ($digested) {
-      $latexml->withState(sub {
-          if ($$opts{format} eq 'tex') {
-            $serialized = LaTeXML::Core::Token::UnTeX($digested);
-          } elsif ($$opts{format} eq 'box') {
-            $serialized = ($$opts{verbosity} > 0 ? $digested->stringify : $digested->toString);
-          } else {    # Default is XML
-            $dom = $latexml->convertDocument($digested);
-          }
-      }); }
-    alarm(0);
-    1;
-  };
-  # 2.2 Bookkeeping in case fatal errors occurred
-  ### Note: this cause double counting if LaTeXML has already handled it.
-  ### But leaving it might might miss errors that sneak through (can that happen?)
-  ####  $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
-  local $@ = 'Fatal:conversion:unknown TeX to XML conversion failed! (Unknown Reason)' if ((!$convert_eval_return) && (!$@));
+    $$runtime{TTL} = alarm(0); };
   my $eval_report = $@;
+  if (!$digested && $eval_report) {
+    # We can retry finishing digestion if hit a Fatal,
+    # sometimes there are leftover boxes we can accept.
+    eval {
+      alarm($$runtime{TTL});
+      $digested = $latexml->withState(sub {
+          return $latexml->finishDigestion; });
+      $$runtime{TTL} = alarm(0); };
+    $eval_report .= $@ if $@; }
+  # 2.1 Now, convert to DOM and output, if desired.
+  my $core_target = $$opts{format};
+  # Default Core target is XML
+  if ($core_target ne 'tex' and $core_target ne 'box') {
+    $core_target = 'xml'; }
+  if ($digested) {
+    eval {
+      alarm($$runtime{TTL});
+      $latexml->withState(sub {
+          if ($core_target eq 'tex') {
+            $serialized = LaTeXML::Core::Token::UnTeX($digested); }
+          elsif ($core_target eq 'box') {
+            $serialized = ($$opts{verbosity} > 0 ? $digested->stringify : $digested->toString); }
+          elsif ($core_target eq 'xml') {
+            $dom = $latexml->convertDocument($digested); } });
+      $$runtime{TTL} = alarm(0); };
+    $eval_report .= $@ if $@;
+    # Try to rescue the document if e.g. math parsing hit a Fatal error
+    if (!$dom && $@ && $core_target eq 'xml') {
+      $dom = $latexml->withState(sub {
+          my ($state) = @_;
+          my $rescued = $$state{rescued_document};
+          $rescued->finalize() if $rescued;
+          return $rescued; }); } }
   $$runtime{status}      = $latexml->getStatusMessage;
   $$runtime{status_code} = $latexml->getStatusCode;
+  # 2.2 Bookkeeping in case in-eval perl die() deaths occurred
+  if ($eval_report) {
+    $$runtime{status} .= "\n" . $eval_report . "\n";
+    $$runtime{status_code} = 3; }
 
   # End daemon run, by popping frame:
   $latexml->withState(sub {
@@ -283,29 +304,8 @@ sub convert {
     $LaTeXML::UNSAFE_FATAL = 0;
     $$self{ready} = 0;
   }
-  if ($eval_report || ($$runtime{status_code} == 3)) {
-    # Terminate immediately on Fatal errors
-    $$runtime{status_code} = 3;
+  Note(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
 
-    NoteLog($eval_report) if $eval_report;
-    Note(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
-    NoteLog(($$opts{recursive} ? "recursive " : "") . "Status:conversion:" . ($$runtime{status_code} || '0'));
-    # If we just processed an archive, clean up sandbox directory.
-    if ($$opts{whatsin} =~ /^archive/) {
-      rmtree($$opts{sourcedirectory});
-      $$opts{sourcedirectory} = $$opts{archive_sourcedirectory}; }
-
-    # Close and restore STDERR to original condition.
-    $serialized = $dom           if ($$opts{format} eq 'dom');
-    $serialized = $dom->toString if ($dom && (!defined $serialized));
-    # Using the Core::Document::serialize_aux, so need an explicit encode into bytes
-    $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
-
-    return { result => $serialized, log => $self->flush_log, status => $$runtime{status}, status_code => $$runtime{status_code} }; }
-  else {
-    # Standard report, if we're not in a Fatal case
-    Note(($$opts{recursive} ? "recursive " : "") . "Conversion complete: " . $$runtime{status});
-  }
   # 2.3 Clean up and exit if we only wanted the serialization of the core conversion
   if ($serialized) {
     # If serialized has been set, we are done with the job
@@ -590,23 +590,17 @@ sub convert_post {
   # Do the actual post-processing:
   my @postdocs;
 ##  my $latexmlpost      = LaTeXML::Post->new(verbosity => $verbosity || 0);
-  my $latexmlpost      = LaTeXML::Post->new();
-  my $post_eval_return = eval {
-    local $SIG{'ALRM'} = sub { die "Fatal:conversion:post-processing timed out.\n" };
-    alarm($$opts{timeout});
+  my $latexmlpost = LaTeXML::Post->new();
+  eval {
+    alarm($$runtime{TTL});
     @postdocs = $latexmlpost->ProcessChain($DOCUMENT, @procs);
-    alarm(0);
-    1;
-  };
+    $$runtime{TTL} = alarm(0);
+    1; };
   # 3.1 Bookkeeping if a post-processing Fatal error occurred
-  local $@ = 'Fatal:conversion:unknown Post-processing failed! (Unknown Reason)'
-    if ((!$post_eval_return) && (!$@));
   if ($@) {    #Fatal occured!
     $$runtime{status_code} = 3;
     local $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
-    Debug($@);
-    undef @postdocs;    # Empty document for fatals, for sanity's sake
-  }
+    Note($@); }
 
   # Finalize by arranging any manifests and packaging the output.
   # If our format requires a manifest, create one

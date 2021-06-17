@@ -128,7 +128,7 @@ sub maketest_daemon {
     $invocation .= "--" . $$opt[0] . (length($$opt[1]) ? ('="' . $$opt[1] . '" ') : (' '));
   }
   pathname_chdir($dir);
-  if (system($invocation) != 0) {
+  if (system($invocation) != 0 and ($name !~ /fatal/)) {
     unlink "$name.test.xml" if -e "$name.test.xml";
     die "Failed to execute '$invocation': $!"; }
   if ($docompare) {
