@@ -64,17 +64,17 @@ DefMacro('\lstinline OptionalKeyVals:LST', sub {
       @{ LookupValue('LISTINGS_POSTAMBLE') },
       T_END); });                  # to balance ->bgroup
 
-DefPrimitive('\lstMakeShortInline [] Token', sub {
+DefPrimitive('\lstMakeShortInline [] DefToken', sub {
     my ($stomach, $kv, $token) = @_;
     my $ch = $token->getString;
     AssignMapping('LST_SHORT_INLINE',
       $ch => [LookupCatcode($ch) // CC_OTHER, $STATE->lookupMeaning($token)]);
     AssignCatcode($ch, CC_ACTIVE);
     DefMacro(T_ACTIVE($ch),
-      Tokens(T_CS('\lstinline'), T_OTHER('['), $kv, T_OTHER(']'), T_ACTIVE($ch)));
+      Tokens(T_CS('\lstinline'), ($kv ? (T_OTHER('['), $kv, T_OTHER(']')) : ()), T_ACTIVE($ch)));
     return; });
 
-DefPrimitive('\lstDeleteShortInline Token', sub {
+DefPrimitive('\lstDeleteShortInline DefToken', sub {
     my ($stomach, $token) = @_;
     my $ch = $token->getString;
     if (my $entry = LookupMapping('LST_SHORT_INLINE', $ch)) {
