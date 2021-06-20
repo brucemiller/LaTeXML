@@ -48,7 +48,7 @@ sub auth_get {
         $req->authorization_basic($uname, $pass);
         $response = $browser->request($req); } } }
   return auth_get("$url.tex", $authlist) if ((!$response->is_success) && $url !~ /\.tex$/);
-  Fatal('www', 'get', $url, 'HTTP GET failed with: "' . $response->message . '"') unless ($response->is_success);
+  Error('www', 'get', $url, 'HTTP GET failed with: "' . $response->message . '"') unless ($response->is_success);
   return $response->content; }
 
 sub url_find {
