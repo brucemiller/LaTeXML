@@ -121,14 +121,14 @@ sub rows {
 
 sub addLine {
   my ($self, $border, @cols) = @_;
-  my $row = $$self{current_row};
-  if (@cols) {
-    foreach my $c (@cols) {
-      my $colspec = $row->column($c);
-      $$colspec{border} .= $border; } }
-  else {
-    foreach my $colspec (@{ $$row{columns} }) {
-      $$colspec{border} .= $border; } }
+  if (my $row = $$self{current_row}) {
+    if (@cols) {
+      foreach my $c (@cols) {
+        my $colspec = $row->column($c);
+        $$colspec{border} .= $border; } }
+    else {
+      foreach my $colspec (@{ $$row{columns} }) {
+        $$colspec{border} .= $border; } } }
   return; }
 
 sub nextColumn {
