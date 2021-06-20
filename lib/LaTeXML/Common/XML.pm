@@ -91,19 +91,19 @@ our $XML_NS   = 'http://www.w3.org/XML/1998/namespace';    # [CONSTANT]
 # XML Utilities
 sub element_nodes {
   my ($node) = @_;
-  return grep { $_->nodeType == XML_ELEMENT_NODE } $node->childNodes; }
+  return ($node ? grep { $_->nodeType == XML_ELEMENT_NODE } $node->childNodes : ()); }
 
 sub text_in_node {
   my ($node) = @_;
-  return join("\n", map { $_->data } grep { $_->nodeType == XML_TEXT_NODE } $node->childNodes); }
+  return ($node ? join("\n", map { $_->data } grep { $_->nodeType == XML_TEXT_NODE } $node->childNodes) : ''); }
 
 sub isTextNode {
   my ($node) = @_;
-  return $node->nodeType == XML_TEXT_NODE; }
+  return ($node ? $node->nodeType == XML_TEXT_NODE : 0); }
 
 sub isElementNode {
   my ($node) = @_;
-  return $node->nodeType == XML_ELEMENT_NODE; }
+  return ($node ? $node->nodeType == XML_ELEMENT_NODE : 0); }
 
 # Is $child a child of $parent?
 sub isChild {
