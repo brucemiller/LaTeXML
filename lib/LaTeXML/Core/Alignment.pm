@@ -704,7 +704,7 @@ sub guess_alignment_headers {
   my ($document, $table, $alignment) = @_;
   # Assume that headers don't make sense for nested tables.
   # OR Maybe we should only do this within table environments???
-  return if $document->findnodes("ancestor::ltx:tabular", $table);
+  return if !$table || $document->findnodes("ancestor::ltx:tabular", $table);
 
   my $tag = $document->getModel->getNodeQName($table);
   my $x;
