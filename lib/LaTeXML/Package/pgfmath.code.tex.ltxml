@@ -230,6 +230,15 @@ DefMacro('\pgfmathfactorial@', sub {
 DefMacro('\pgfmathreciprocal@ pgfNumber', sub {
     return pgfmathresult(1 / pgfmath_divisor($_[1])); });
 
+# Stuff for computability with the calc package .
+DefMacro('\pgfmath@calc@real {}',     '#1');
+DefMacro('\pgfmath@calc@minof {}{}',  'min(#1,#2)');
+DefMacro('\pgfmath@calc@maxof {}{}',  'max(#1,#2)');
+DefMacro('\pgfmath@calc@ratio {}{}',  '#1/#2');
+DefMacro('\pgfmath@calc@widthof {}',  'width("#1")');
+DefMacro('\pgfmath@calc@heightof {}', 'height("#1")');
+DefMacro('\pgfmath@calc@depthof {}',  'depth("#1")');
+
 sub pgfmath_divisor {
   my $divisor = 0.0 + $_[0];
   if (!$divisor) {
@@ -292,8 +301,16 @@ sub pgfmathparse {
   my ($gullet, $tokens) = @_;
   SetCondition(T_CS('\ifpgfmathunitsdeclared'),     0, 'global');
   SetCondition(T_CS('\ifpgfmathmathunitsdeclared'), 0, 'global');
+  # Stuff for calc compatibility.
+  Let('\real',     '\pgfmath@calc@real');
+  Let('\minof',    '\pgfmath@calc@minof');
+  Let('\maxof',    '\pgfmath@calc@maxof');
+  Let('\ratio',    '\pgfmath@calc@ratio');
+  Let('\widthof',  '\pgfmath@calc@widthof');
+  Let('\heightof', '\pgfmath@calc@heightof');
+  Let('\depthof',  '\pgfmath@calc@depthof');
   my $string = (ref $tokens ? ToString(Expand($tokens)->stripBraces) : $tokens);
-  $string =~ s/^\s+//; $string =~ s/\s+$//;
+  $string =~ s/^\s+//; $string =~ s/\s+$//; $string =~ s/\s+/ /gs;
   my $input = $string;
   my $result;
   $PGMATH_UNITS_REGEXP
@@ -319,6 +336,7 @@ sub pgfmathparse {
     $result         = $PGFMATHGrammar->expr(\$string); }
 
   $result = $result || 0.0;
+  $string =~ s/^[\)\]]+$//;    # Forgive excess trailing ) !?!?!?!?!
   if ($string) {
     Error('pgfparse', 'pgfparse', $gullet,
       "Parse of '$input' failed",
@@ -330,7 +348,7 @@ sub pgfmathparse {
   # NOT really correct, but would like to use an internal to distinguish 1.0 from int(1.0)!!!
   elsif ($result == int($result)) {
     $result = int($result) . '.'; }
-  else {    # We don't want scientific notation output!!!
+  else {                       # We don't want scientific notation output!!!
     $result = sprintf("%f", $result); }
   return $result; }
 
@@ -510,13 +528,14 @@ BEGIN {
     asin       => sub { rad2deg(asin($_[0])); },
     atan       => sub { rad2deg(atan($_[0])); },
     atan2      => sub { rad2deg(atan2($_[0], $_[1])); },
-    #    bin   => sub { },
-    ceil  => sub { ceil($_[0]); },
-    cos   => sub { cos(pgfmathargradians($_[0])); },
-    cosec => sub { cosec(pgfmathargradians($_[0])); },
-    cosh  => sub { cosh($_[0]); },
-    cot   => sub { cot(pgfmathargradians($_[0])); },
-    deg   => sub { rad2deg($_[0]); },
+    angle      => sub { rad2deg(atan2($_[0], $_[1])); },    # Assume same? Where's documentation?
+                                                            #    bin   => sub { },
+    ceil       => sub { ceil($_[0]); },
+    cos        => sub { cos(pgfmathargradians($_[0])); },
+    cosec      => sub { cosec(pgfmathargradians($_[0])); },
+    cosh       => sub { cosh($_[0]); },
+    cot        => sub { cot(pgfmathargradians($_[0])); },
+    deg        => sub { rad2deg($_[0]); },
     #    depth => sub { },
     exp       => sub { exp($_[0]); },
     factorial => sub { pgfmathfactorial($_[0]); },
@@ -629,7 +648,7 @@ expr :
     FUNCTION0 : /(?:e|pi|false|rand|rnd|true)/
         | /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserconstant($item[1]); }
 
-    FUNCTION : /(?:abs|acos|asin|atan2|atan|bin|ceil|cos|cosec|cosh|cot|deg|exp|factorial|floor|frac|hex|Hex|int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|rad|real|round|sec|sign|sin|sinh|sqrt|tan|tanh|add|and|divide|div|equal|gcd|greater|less|max|min|mod|Mod|multiply|notequal|notgreater|notless|or|pow|random|subtract|ifthenelse|veclen)/
+    FUNCTION : /(?:abs|acos|asin|atan2|atan|angle|bin|ceil|cos|cosec|cosh|cot|deg|exp|factorial|floor|frac|hex|Hex|int|iseven|isodd|isprime|ln|log10|log2|neg|not|oct|rad|real|round|sec|sign|sin|sinh|sqrt|tan|tanh|add|and|divide|div|equal|gcd|greater|less|max|min|mod|Mod|multiply|notequal|notgreater|notless|or|pow|random|subtract|ifthenelse|veclen)/
         | /([a-zA-Z][a-zA-Z0-9]*)/ { LaTeXML::Package::Pool::pgfmath_checkuserfunction($item[1]); }
 # ? array|scalar
 # These take boxes!  depth|height|width
