@@ -556,11 +556,11 @@ sub readUntil {
         $nbraces++;
         push(@tokens, $self->readBalanced, T_END); } } }
   else {
+
     my @ring = ();
     while (1) {
       # prefill the required number of tokens
-      while (scalar(@ring) < $ntomatch) {
-        $token = $self->readToken;
+      while ((scalar(@ring) < $ntomatch) && ($token = $self->readToken)) {
         if ($$token[1] == CC_BEGIN) {    # read balanced, and refill ring.
           $nbraces++;
           push(@tokens, @ring, $token, $self->readBalanced, T_END);    # Copy directly to result
@@ -568,11 +568,12 @@ sub readUntil {
         else {
           push(@ring, $token); } }
       my $i;
-      for ($i = 0 ; ($i < $ntomatch) && ($ring[$i]->equals($want[$i])) ; $i++) { }    # Test match
-      last if $i >= $ntomatch;                                                        # Matched all!
+      for ($i = 0 ; ($i < $ntomatch) && $ring[$i] && ($ring[$i]->equals($want[$i])) ; $i++) { } # Test match
+      last if $i >= $ntomatch;    # Matched all!
+      last unless $token;
       push(@tokens, shift(@ring)); } }
-  if (!defined $token) {                                                              # Ran out!
-    $self->unread(@tokens);    # Not more correct, but maybe less confusing?
+  if (!defined $token) {          # Ran out!
+    $self->unread(@tokens);       # Not more correct, but maybe less confusing?
     return; }
   # Notice that IFF the arg looks like {balanced}, the outer braces are stripped
   # so that delimited arguments behave more similarly to simple, undelimited arguments.

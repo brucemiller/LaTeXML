@@ -61,7 +61,7 @@ sub readArguments {
   my @args = ();
   $gullet->setup_scan();
   my ($p, $v);
-  return map { $p = $_; $v = $p->read($gullet, $fordefn); ($$p{novalue} ? () : $v); } @$self; }
+  return map { $p = $_; $v = $p && $p->read($gullet, $fordefn); ($$p{novalue} ? () : $v); } @$self; }
 
 sub readArgumentsAndDigest {
   my ($self, $stomach, $fordefn) = @_;

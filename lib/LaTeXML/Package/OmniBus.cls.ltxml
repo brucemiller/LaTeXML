@@ -133,14 +133,15 @@ DefEnvironment('{keywords}', '',
     return; });
 # Extend to be callable as \keywords{} or \begin{keywords}...
 # Probably want to use this trick more often?
+Let('\lx@begin@keywords', '\keywords');
 DefMacro('\keywords', sub {
     my ($gullet) = @_;
     ($gullet->ifNext(T_BEGIN)
       ? (T_CS('\keywords@onearg'))
       : (T_CS('\g@addto@macro'), T_CS('\@startsection@hook'), T_CS('\maybe@end@keywords'),
-        T_CS('\begin{keywords}'))); });
+        T_CS('\lx@begin@keywords'))); });
 DefMacro('\keywords@onearg{}', '\begin{keywords}#1\end{keywords}\let\endkeywords\relax');
-DefMacroI('\maybe@end@keywords', undef, '\endkeywords');
+DefMacroI('\maybe@end@keywords', undef, '\endkeywords\let\maybe@end@keywords\relax');
 
 DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
 DefMacro('\pacs{}',           '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');

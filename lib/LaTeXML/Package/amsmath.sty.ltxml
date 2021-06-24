@@ -70,7 +70,9 @@ Let('\notag', '\nonumber');
 
 DefMacro('\tag OptionalMatch:* {}',
   # expand \theequation, but in text mode! undo formatting if *
-'\lx@equation@settag{\ifx#1*\let\fnum@equation\relax\fi\edef\theequation{#2}\lx@make@tags{equation}}');
+  '\lx@equation@settag{\ifx#1*\let\fnum@equation\relax\fi'
+    . '\expandafter\def\expandafter\theequation\expandafter{#2}'
+    . '\lx@make@tags{equation}}');
 
 # Note that \intertext may or may not be preceded by an explicit \\, with no apparent difference in TeX.
 # latexml, however, can end up with 2, which end up incrementing coutners twice!

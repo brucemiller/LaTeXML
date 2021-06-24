@@ -121,14 +121,14 @@ sub rows {
 
 sub addLine {
   my ($self, $border, @cols) = @_;
-  my $row = $$self{current_row};
-  if (@cols) {
-    foreach my $c (@cols) {
-      my $colspec = $row->column($c);
-      $$colspec{border} .= $border; } }
-  else {
-    foreach my $colspec (@{ $$row{columns} }) {
-      $$colspec{border} .= $border; } }
+  if (my $row = $$self{current_row}) {
+    if (@cols) {
+      foreach my $c (@cols) {
+        my $colspec = $row->column($c);
+        $$colspec{border} .= $border; } }
+    else {
+      foreach my $colspec (@{ $$row{columns} }) {
+        $$colspec{border} .= $border; } } }
   return; }
 
 sub nextColumn {
@@ -704,7 +704,7 @@ sub guess_alignment_headers {
   my ($document, $table, $alignment) = @_;
   # Assume that headers don't make sense for nested tables.
   # OR Maybe we should only do this within table environments???
-  return if $document->findnodes("ancestor::ltx:tabular", $table);
+  return if !$table || $document->findnodes("ancestor::ltx:tabular", $table);
 
   my $tag = $document->getModel->getNodeQName($table);
   my $x;
