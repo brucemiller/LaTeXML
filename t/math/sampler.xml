@@ -264,7 +264,7 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
           <tag>(6)</tag>
           <tag role="refnum">6</tag>
         </tags>
-        <Math mode="display" tex="\left(a^{b}\middle|x\right),\qquad\left(a^{b^{c}}\middle|x\right),\qquad\left(%&#10;a^{b^{c^{d}}}\middle|x\right)" xml:id="S1.E6.m1">
+        <Math mode="display" tex="\left(a^{b}\middle|x\right),\qquad\left(a^{b^{c}}\middle|x\right),\qquad\left(%&#10;a^{b^{c^{d}}}\middle|x\right)\left(a^{\left(b^{c^{d}}\right)}\middle|x\right)" xml:id="S1.E6.m1">
           <XMath>
             <XMWrap>
               <XMTok role="OPEN" stretchy="true">(</XMTok>
@@ -308,6 +308,32 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
                     <XMTok font="italic" fontsize="50%" role="UNKNOWN">d</XMTok>
                   </XMApp>
                 </XMApp>
+              </XMApp>
+              <XMTok role="MIDDLE" stretchy="true">|</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              <XMTok role="CLOSE" stretchy="true">)</XMTok>
+            </XMWrap>
+            <XMWrap>
+              <XMTok role="OPEN" stretchy="true">(</XMTok>
+              <XMApp>
+                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMDual>
+                  <XMRef idref="S1.E6.m1.1"/>
+                  <XMWrap>
+                    <XMTok fontsize="70%" role="OPEN" stretchy="true">(</XMTok>
+                    <XMApp xml:id="S1.E6.m1.1">
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                      <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                      <XMApp>
+                        <XMTok role="SUPERSCRIPTOP" scriptpos="post5"/>
+                        <XMTok font="italic" fontsize="50%" role="UNKNOWN">c</XMTok>
+                        <XMTok font="italic" fontsize="50%" role="UNKNOWN">d</XMTok>
+                      </XMApp>
+                    </XMApp>
+                    <XMTok fontsize="70%" role="CLOSE" stretchy="true">)</XMTok>
+                  </XMWrap>
+                </XMDual>
               </XMApp>
               <XMTok role="MIDDLE" stretchy="true">|</XMTok>
               <XMTok font="italic" role="UNKNOWN">x</XMTok>
