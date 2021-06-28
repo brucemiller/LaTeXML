@@ -212,4 +212,78 @@
         </XMath>
       </Math></p>
   </para>
+  <para xml:id="p16">
+    <p><Math mode="inline" tex="a^{(1)}" text="a ^ 1" xml:id="p16.m1">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMDual>
+              <XMRef idref="p16.m1.1"/>
+              <XMWrap>
+                <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
+                <XMTok fontsize="70%" meaning="1" role="NUMBER" xml:id="p16.m1.1">1</XMTok>
+                <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math>
+<Math mode="inline" tex="a_{(g)}" text="a _ g" xml:id="p16.m2">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMDual>
+              <XMRef idref="p16.m2.1"/>
+              <XMWrap>
+                <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p16.m2.1">g</XMTok>
+                <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math>
+<Math mode="inline" tex="a^{(\neq 0)}" text="a ^ (absent not-equals 0)" xml:id="p16.m3">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMDual>
+              <XMRef idref="p16.m3.1"/>
+              <XMWrap>
+                <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
+                <XMApp xml:id="p16.m3.1">
+                  <XMTok fontsize="70%" meaning="not-equals" name="neq" role="RELOP">≠</XMTok>
+                  <XMTok meaning="absent"/>
+                  <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
+                </XMApp>
+                <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math>
+<Math mode="inline" tex="a_{(&gt;0)}" text="a _ (absent &gt; 0)" xml:id="p16.m4">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMDual>
+              <XMRef idref="p16.m4.1"/>
+              <XMWrap>
+                <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
+                <XMApp xml:id="p16.m4.1">
+                  <XMTok fontsize="70%" meaning="greater-than" role="RELOP">&gt;</XMTok>
+                  <XMTok meaning="absent"/>
+                  <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
+                </XMApp>
+                <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
 </document>
