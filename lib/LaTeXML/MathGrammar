@@ -95,12 +95,14 @@ aSubscript :
           Formulae
         | AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
         | AnyOp
+        | OPEN Formulae CLOSE            { Fence($item[1],$item[2],$item[3]); }
 
 aSuperscript :
           supops
         | Formulae
         | AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
         | AnyOp
+        | OPEN Formulae CLOSE            { Fence($item[1],$item[2],$item[3]); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Formulae  (relations or grouping of expressions or relations)
