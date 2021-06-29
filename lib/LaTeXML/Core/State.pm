@@ -492,7 +492,8 @@ sub generateErrorStub {
     Error('undefined', $token, $caller, "The token " . $token->stringify . " is not defined.",
       "Defining it now as <ltx:ERROR/>");
     $self->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, $params,
-        sub { $_[0]->makeError('undefined', $cs); }),
+        sub { $_[0]->makeError('undefined', $cs); },
+        sizer => 'X'),
       'global'); }
   return $token; }
 
@@ -715,7 +716,7 @@ sub getStatusMessage {
   my @undef        = ($$status{undefined} ? keys %{ $$status{undefined} } : ());
   my $undef_status = @undef && colorizeString(scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
       . "[" . join(', ', @undef) . "]", 'details');
-  my @miss           = ($$status{missing} ? keys %{ $$status{missing} } : ());
+  my @miss = ($$status{missing} ? keys %{ $$status{missing} } : ());
   my $missing_status = @miss && colorizeString(scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
       . "[" . join(', ', @miss) . "]", 'details');
 
