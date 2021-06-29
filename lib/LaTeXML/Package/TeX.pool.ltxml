@@ -1816,7 +1816,7 @@ DefPrimitive('\mathchardef Token SkipMatch:=', sub {
     my $value  = $stomach->getGullet->readNumber();
     my $csname = $newcs->getCSName;
     my ($role, $glyph) = decodeMathChar($value->valueOf);
-    my $internalcs = $glyph && T_CS('\@mathchardef@' . $csname);
+    my $internalcs = (defined $glyph) && T_CS('\@mathchardef@' . $csname);
     DefConstructorI($internalcs, undef, "<ltx:XMTok role='#role'>#glyph</ltx:XMTok>",
       sizer      => '#1',
       properties => { role => $role, glyph => $glyph,
