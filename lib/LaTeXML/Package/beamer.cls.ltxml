@@ -1,0 +1,150 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  article                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use XML::LibXML;
+
+RawTeX(<<'EoTeX');
+\ProvidesClass{beamer}[2021/03/19 v3.62 A class for typesetting presentations]
+EoTeX
+
+#**********************************************************************
+# Preamble: Load beamer{article,}.cls shared preload
+#**********************************************************************
+
+LoadPool('LaTeX');
+RequirePackage('beamer_support_preload');
+
+#**********************************************************************
+# Process Package Options
+#**********************************************************************
+
+# TODO: Implement me!
+
+#**********************************************************************
+# Postamble: Load beamer{article,}.cls shared postamble
+#**********************************************************************
+
+RequirePackage('beamer_support_postload');
+
+#**********************************************************************
+# beamer.cls specific stuff!
+#**********************************************************************
+
+#**********************************************************************
+# Dependencies
+#**********************************************************************
+
+RequirePackage('hyperref', options => ['bookmarks=true', 'bookmarksopen=true', 'pdfborder={0 0 0}', 'pdfhighlight={/N}', 'linkbordercolor={.5 .5 .5}']);
+
+
+#**********************************************************************
+# All the extra commands with <> arguments
+#**********************************************************************
+
+# AddBeamerWrapper adds a beamer overlay argument to a command.
+sub AddBeamerWrapper {
+  my ($command, $args, $wrapper) = @_;
+  $wrapper = '\only' unless defined($wrapper);
+  # build tex code to pass the arguments!
+  my ($count) = 0;
+  my ($tex) = '';
+  while ($count < $args) {
+    $count++;
+    $tex .= '{#' . $count . '}'; }
+  if ($args == 0) {
+    $args = ''; }
+  else {
+    $args = '[' . $args . ']'; }
+  $count++;
+  # build and run the tex code!
+  $tex = '\renewcommand<>{' . $command . '}' . $args. '{' .
+      $wrapper . '#' . $count . '{' . 
+      '\beameroriginal{' .  $command . '}' . $tex . 
+    '}' .
+  '}';
+  RawTeX($tex); }
+
+# Add wrappers to all these commands
+our %BEAMER_WRAPPED = (
+  '\textbf' => 0, '\textit' => 0, '\textmd' => 0, 
+  '\textnormal' => 0, '\textrm' => 0, '\textsc' => 0, 
+  '\textsf' => 0, '\textsl' => 0, '\texttt' => 0, 
+  '\textup' => 0,
+
+  '\hypertarget' => 2, '\hyperlink' => 2,
+
+  '\color' => 0,
+);
+foreach my $command (keys %BEAMER_WRAPPED) {
+  AddBeamerWrapper($command, $BEAMER_WRAPPED{$command}, undef); }
+
+#**********************************************************************
+# Document structure.
+RelaxNGSchema("LaTeXML");
+# RequireResource('ltx-article.css');
+
+# ignore all the styling
+DefMacro('\setbeamertemplate{}[] Optional {}', undef);
+DefMacro('\setbeamercolor{}{}', undef);
+DefMacro('\setbeamerfont{}{}', undef);
+
+#**********************************************************************
+# Core sectioning support, stolen from article.cls!
+SetCounter('secnumdepth', Number(3));
+NewCounter('part',          'document',      idprefix => 'Pt',  nested => ['section']);
+NewCounter('section',       'document',      idprefix => 'S',   nested => ['subsection']);
+NewCounter('subsection',    'section',       idprefix => 'SS',  nested => ['subsubsection']);
+NewCounter('subsubsection', 'subsection',    idprefix => 'SSS', nested => ['paragraph']);
+NewCounter('paragraph',     'subsubsection', idprefix => 'P',   nested => ['subparagraph']);
+NewCounter('subparagraph', 'paragraph', idprefix => 'SP', nested => ['equation', 'figure', 'table']);
+
+DefMacro('\thepart',          '\Roman{part}');
+DefMacro('\thesection',       '\arabic{section}');
+DefMacro('\thesubsection',    '\thesection.\arabic{subsection}');
+DefMacro('\thesubsubsection', '\thesubsection.\arabic{subsubsection}');
+DefMacro('\theparagraph',     '\thesubsubsection.\arabic{paragraph}');
+DefMacro('\thesubparagraph',  '\theparagraph.\arabic{subparagraph}');
+SetCounter(tocdepth => Number(3));
+
+NewCounter('equation',       'document', idprefix => 'E',  idwithin => 'section');
+NewCounter('@equationgroup', 'document', idprefix => 'EG', idwithin => 'section');
+NewCounter('figure',         'document', idprefix => 'F',  idwithin => 'section');
+NewCounter('table',          'document', idprefix => 'T',  idwithin => 'section');
+
+DefMacro('\theequation', '\arabic{equation}');
+DefMacro('\thefigure',   '\arabic{figure}');
+DefMacro('\thetable',    '\arabic{table}');
+
+NewCounter('enumi',   undef, idwithin => '@itemizei', idprefix => 'i');
+NewCounter('enumii',  undef, idwithin => 'enumi',     idprefix => 'i');
+NewCounter('enumiii', undef, idwithin => 'enumii',    idprefix => 'i');
+NewCounter('enumiv',  undef, idwithin => 'enumiii',   idprefix => 'i');
+DefMacro('\theenumi',   '\arabic{enumi}');
+DefMacro('\theenumii',  '\alph{enumii}');
+DefMacro('\theenumiii', '\roman{enumiii}');
+DefMacro('\theenumiv',  '\Alph{enumiv}');
+
+DefMacro('\refname', 'References');
+
+AssignMapping('BACKMATTER_ELEMENT', 'ltx:bibliography' => 'ltx:section');
+
+Tag('ltx:appendix', autoClose => 1);
+DefMacro('\appendix', '\@appendix');
+# Actually we should be using section counter
+DefPrimitive('\@appendix', sub { startAppendices('section'); });
+
+#**********************************************************************
+1;

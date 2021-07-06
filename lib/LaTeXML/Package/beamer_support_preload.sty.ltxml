@@ -1,0 +1,482 @@
+# /=====================================================================\ #
+# |  beamer_support_preload.sty                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# This package is virtual and contains support code for beamer.
+# It's loaded by  beamer{article,}.cls *before* options are read.
+
+sub beamerTODO {
+  my ($feature) = @_;
+  Warn('todo', $feature, "beamer feature $feature is not yet supported; binding requires more development"); }
+
+#**********************************************************************
+# Custom Beamer Arguments
+#**********************************************************************
+
+# The 'Angled' (and corresponding 'OptionalAngled') parameter types are arguments in angle brackets.
+# The 'Angled' argument type is a literal argument type, meaning is not digested by default.
+# Example: <value>
+DefParameterType('Angled',         \&readAngled, reversion => \&revertAngled);
+DefParameterType('OptionalAngled', \&readAngled, reversion => \&revertAngled, optional => 1);
+
+sub readAngled {
+   my ($gullet) = @_;
+   my $tok = $gullet->readXToken;
+  if (ref $tok && ToString($tok) eq '<') {
+    $gullet->readUntil(T_OTHER('>')); } 
+  else {
+    $gullet->unread($tok) if ref $tok;
+    undef; } }
+
+sub revertAngled {
+  return () unless defined($_[0]);
+  (T_OTHER('<'), $_[0]->revert, T_OTHER('>')); }
+
+# The 'SquareAngled' parameter type is a variant of the 'OptionalAngled' type that requires both square and angle brackets.
+# It is always optional. 
+# Example: [<value>]
+DefParameterType('SquareAngled', \&readBracketAngled, reversion => \&revertBracketAngled, optional => 1);
+sub readBracketAngled {
+  my ($gullet) = @_;  
+  # opening '['
+  my $openSquared = $gullet->readXToken;
+  unless (ref $openSquared && ToString($openSquared) eq '[') {
+    $gullet->unread($openSquared) if ref $openSquared; 
+    return undef; }
+  # opening '<'
+  my $openArrow = $gullet->readXToken;
+  unless (ref $openArrow && ToString($openArrow) eq '<') {
+    $gullet->unread($openArrow) if ref $openArrow;
+    $gullet->unread($openSquared) if ref $openSquared;
+    return undef; } 
+  my $value = $gullet->readUntil(T_OTHER('>'));
+  # closing ']'
+  my $close = $gullet->readXToken;
+  unless (ref $close && ToString($close) eq ']') {
+    Error('expected', ']', $gullet,
+        "Missing close parenthesis in SquaredAngled expr.", "Got " . ToString($close)); 
+    return undef; }
+  $value }
+
+sub revertBracketAngled {
+    return () unless defined($_[0]);
+    (T_OTHER('['), T_OTHER('<'), $_[0]->revert, T_OTHER('>'), T_OTHER('[')); }
+
+# The LiteralBalanced parameter type is like the built-in 'Balanced' type, except that it must start with a '{'.
+# It is optional by default.
+# Example: {value}
+DefParameterType('LiteralBalanced', \&readLiteralBalanced, optional => 1);
+sub readLiteralBalanced {
+  my ($gullet) = @_;
+  my $tok = $gullet->readXToken;
+  $gullet->unread($tok);
+  return undef unless (ref $tok && ToString($tok) eq '{');
+  return $gullet->readArg; }
+
+#**********************************************************************
+# beamerbasedecode.sty
+#**********************************************************************
+
+# The decoding macro does decoding using tex, we do it with perl!
+# Doesn't have a user-facing interface.
+
+# this grammar defines what an (alert|overlay|mode) specification is!
+our $BEAMER_SPECIFICATION = Parse::RecDescent->new(<<'EOGRAMMAR');
+# a mode specification
+mode_spec:
+  MODE(s /|/)
+
+# an overlay specification
+overlay_spec:
+  mode_and_frame(s /\|/)
+
+# an action specification
+action_spec:
+  mode_and_action_and_frame(s /\|/)
+
+mode_and_frame :
+    MODE ':' frames     { $return = [ "mode" => $item[1],    "spec" => [ "frames" => $item[3] ] ] }
+  | frames              { $return = [ "mode" => undef,       "spec" => [ "frames" => $item[1] ] ] }
+
+mode_and_action_and_frame :
+    MODE ':' action_and_frames    { $return = [ "mode" => $item[1], "spec" => $item[3] ] }
+  | action_and_frames             { $return = [ "mode" => undef,    "spec" => $item[1] ] }
+
+action_and_frames : 
+      ACTION '@' frames     { $return = [ "action" => $item[1], "frames" => $item[3] ] }
+    | ACTION                { $return = [ "action" => $item[1], "frames" => undef    ] }
+    | frames                { $return = [ "action" => undef,    "frames" => $item[1] ] }
+
+frames:
+  framespec(s /,/)
+
+framespec : 
+      frameno '-' frameno     { $return = [ "kind" => "range", "from"   => $item[1], "to" => $item[3] ] }
+    | '-' frameno             { $return = [ "kind" => "range", "from"   => undef,    "to" => $item[2] ] }
+    | frameno '-'             { $return = [ "kind" => "range", "from"   => $item[1], "to" => undef    ] }
+    | frameno                 { $return = [ "kind" => "point", "value"  => $item[1]                   ] }
+    | STAR                    { $return = [ "kind" => "range", "from"   => undef,    "to" => undef    ] }
+
+frameno : 
+      relative_frameno  { $return = [ "kind" => "relative", "value" => $item[1] ] }
+    | POSINT            { $return = [ "kind" => "absolute", "value" => $item[1] ] }
+
+relative_frameno : 
+      MODIFIER '(' INT ')' { $return = [ "modifier" => $item[1], "offset" => $item[3] ] }
+    | MODIFIER             { $return = [ "modifier" => $item[1], "offset" => undef    ] }
+
+ACTION    : 'alert' | 'uncover' | 'only' | 'visible' | 'invisible'
+MODE      : 'all' | 'presentation' | 'article' | 'beamer' | 'second' | 'handout' | 'trans'
+
+INT       : /-?[0-9]+/      { $return = $item[1] + 0 }
+POSINT    : /[1-9][0-9]*/   { $return = $item[1] + 0 }
+
+MODIFIER  : '.' | '+'
+STAR      : '*'
+
+EOGRAMMAR
+
+# processBeamerSpec is the main function for processing alert and overlay specifications.
+# This takes place in three steps:
+#
+# 1. Process the AST
+# 2. Filter out non-matching modes
+# 3. Evaluate '+'s and perform actions
+#
+# This function takes the following arguments:
+# $spec - The specification to parse (a string)
+# $mode - The current (actual) mode to process the specification in.
+# $allowActions - when true, process an action specification, else an overlay specification.
+# $beamerPauses - The value of plus that was encountered. This is used to process relative frame numbers.
+#
+# The function returns a pair ([@actions], $newBeamerPauses).
+# $newBeamerPauses - The new last plus encountered.
+# @actions - an array containing a list of frames and the corresponding actions to perform.
+#
+# When parsing fails, returns (undef, $beamerPauses).
+#
+# Each $action in @actions is a hash with the following keys:
+# 'action' => The action to perform (in the case of an overlay specification this is undef, in alert specifications, this might be undef or the action itself).
+# 'frames' => an array of hashes with the following keys:
+#
+# 'from' => The absolute slide number this action should start at, may be undef to indiciate the first slide.
+# 'to' => The absolute slide number this action should end at (inclusive), may be undef to indiciate the last slide.
+sub processBeamerSpec {
+  my ($spec, $allowActions, $mode, $beamerPauses) = @_;
+  # process the specification into an ast!
+  $spec =~ s/\s+//g;
+  # process an overlay or alert, depending on if $allowActions is true
+  # FIXME: action_spec only parses first one
+  my ($ast);
+  if ($allowActions) {
+    $ast = $BEAMER_SPECIFICATION->action_spec($spec); }
+  else {
+    $ast = $BEAMER_SPECIFICATION->overlay_spec($spec); }
+  return $beamerPauses, undef unless defined($ast);
+  # prepare the returned list of actions
+  my (@actions) = ();
+  my ($action, $start, $end) = ();
+  my (@frames, %actionspec, %framespec);
+  foreach my $data (@$ast) {
+    %actionspec = @{$data};
+    next if defined($actionspec{'mode'}) && !matchesMode($actionspec{'mode'}, $mode); # wrong mode!
+    %actionspec = @{$actionspec{'spec'}};
+    $action = $actionspec{'action'} if $allowActions;
+    # no set of frames defined
+    unless(defined($actionspec{'frames'})){
+      push(@actions, [ action => $action, frames => [()] ]);
+      next; }
+    # iterate over each of the frames defined
+    (@frames) = ();
+    foreach my $framedata (@{$actionspec{'frames'}}) {
+      %framespec = @{$framedata};
+      if ($framespec{'kind'} eq 'point') {
+          ($start, $beamerPauses) = processFrameNo($framespec{'value'}, $beamerPauses);
+          $end = $start; }
+      else {
+          ($start, $beamerPauses) = processFrameNo($framespec{'from'}, $beamerPauses);
+          ($end, $beamerPauses) = processFrameNo($framespec{'to'}, $beamerPauses); }
+      push(@frames, [ from => $start, to => $end ]); }
+    push(@actions, [ action => $action, frames => [@frames] ]); }
+  # return the accumulated actions and the new beamer pauses!
+  ([ @actions ], $beamerPauses); }
+
+# matchesModeSpec checks if $spec matches the current mode $mode and returns 1 or 0.
+# When $mode fails to parse, returns undef.
+sub matchesModeSpec {
+    my ($spec, $mode) = @_;
+    # process the specification into a list of modes!
+    $spec =~ s/\s//g;
+    my $haystacks = $BEAMER_SPECIFICATION->mode_spec($spec);
+    return undef unless defined($haystacks);
+    # iterate over the list of modes, and check if at least one of them matches
+    foreach my $haystack (@{$haystacks}) {
+        return 1 if matchesMode($haystack, $mode); }
+    return 0; }
+
+# process a single frame number, which might be undef, relative, or absolute.
+sub processFrameNo {
+  my ($frameNo, $beamerPauses) = @_;
+  return undef, $beamerPauses unless defined($frameNo); # no point defined
+  my %data = @$frameNo;
+  return $data{'value'}, $beamerPauses if $data{'kind'} eq 'absolute';
+  my %values = @{$data{'value'}};
+  my ($modifier, $offset) = ($values{'modifier'}, $values{'offset'});
+  if ($modifier eq '.') { # use, but don't increment
+    $offset = 0 unless defined($offset);
+    return $beamerPauses + $offset, $beamerPauses; } 
+  else { # use and increment
+    $offset = 1 unless defined($offset);
+    my $oldBeamerPauses = $beamerPauses;
+    $beamerPauses = $beamerPauses + $offset;
+    return $oldBeamerPauses, $beamerPauses; } }
+
+# getSlideActions processes $actions, and returns an ordered list with the following items:
+# $action: the action to be performed, or undef if none provided.
+# $overlay: a string describing the overlay specification for the provided action.
+sub getSlideActions {
+  my ($actions) = @_;
+  my (@actions, @spec) = ();
+  my (%action, %frame);
+  my ($from, $to);
+  foreach my $data (@{$actions}) {
+    %action = @{$data};
+    @spec = ();
+    foreach my $framedata (@{$action{'frames'}}) {
+      %frame = @{$framedata};
+      $from = $frame{'from'};
+      $from = '' unless defined($from);
+      $to = $frame{'to'};
+      $to = '' unless defined($to);
+      if ($from eq $to) {
+        push(@spec, "$from"); }
+      else {
+        push(@spec, "$from-$to"); } }
+    push(@actions, [(
+      'action' => $action{'action'},
+      'spec' => join(',', @spec), )]); }
+  [@actions]; }
+
+# getTemporalSlide checks where a slide number temporally occurs.
+# Returns 0 if it is any of the actions, -1 if it occurs before, and 1 if it occurs afterwards.
+sub getTemporalSlide {
+  my ($actions, $no) = @_;
+  my ($all_after, $where) = (1, 0);
+  my (%action) = ();
+  foreach my $data (@{$actions}) {
+    %action = @{$data};
+    foreach my $framedata (@{$action{'frames'}}) {
+      $where = getTemporalSlide_helper($no, @{$framedata});
+      return 0 if ($where == 0);
+      $all_after = 0 if ($where == -1); } }
+  return 1 if $all_after;
+  -1; }
+
+# helper function for getTemporalSlide, that checks a single frame.
+sub getTemporalSlide_helper {
+  my ($no, %frame) = @_;
+  my $from = $frame{'from'};
+  return -1 if defined($from) && $no < $from;
+  my $to = $frame{'to'};
+  return 1 if defined($to) && $no > $to;
+  0; }
+
+# getMaxSlideNumber returns the maximal slide number that occurs in $actions.
+# Optionally takes an accumulator with an existing maximal value, for chaining calls.
+sub getMaxSlideNumber {
+  my ($actions, $max) = @_;
+  $max = 1 if (!defined($max) || $max < 1);
+  my (%action, %frame) = ();
+  my ($from, $to);
+  foreach my $data (@{$actions}) {
+    %action = @{$data};
+    foreach my $framedata (@{$action{'frames'}}) {
+      %frame = @{$framedata};
+      # check if the from value is bigger
+      $from = $frame{'from'};
+      $max = $from if (defined($from) && $from > $max);
+      # check if the to value is bigger
+      $to = $frame{'to'};
+      $max = $to if (defined($to) && $to > $max); } }
+  return $max; }
+
+# getNextSlide returns the next slide number following a given number.
+# When $no is undefined,  returns the first slide number.
+# When we don't have another slide in $actions, returns undef
+sub getNextSlide {
+  my ($actions, $no) = @_;
+  $no = 0 unless defined($no); # if undef, $no++ should return the first number.
+  my $temporal = -1;
+  while($temporal == -1) {
+    $no++;
+    $temporal = getTemporalSlide($actions, $no); }
+  return undef if ($temporal == 1); # we don't have another slide!
+  $no; }
+
+#**********************************************************************
+# Digesting Beamer Specifications
+#**********************************************************************
+
+NewCounter('beamer@slideinframe');  # the current slide number in the frame
+NewCounter('beamerpauses'); # overlay we are on, i.e. the last '+' value encounted.
+NewCounter('beamer@lastslideinframe'); # the last known slide in a frame
+
+# digestBeamerSpec digests an alert or overlay specification.
+# It returns the actions contained in it. 
+sub digestBeamerSpec {
+  my ($spec, $allowActions) = @_;
+  my ($actions);
+  # get current state
+  my $theMode = getCurrentMode();
+  my $thePauses = CounterValue('beamerpauses')->valueOf;
+  # process it, and write back the state!
+  ($actions, $thePauses) = processBeamerSpec($spec, $allowActions, $theMode, $thePauses);
+  SetCounter('beamerpauses', Number($thePauses));
+  # update the max slide number
+  my $theMaxSlide = CounterValue('beamer@lastslideinframe')->valueOf;
+  $theMaxSlide = getMaxSlideNumber($actions, $theMaxSlide);
+  SetCounter('beamer@lastslideinframe' => Number($theMaxSlide));
+  # check if we have another slide!
+  my $theSlide = CounterValue('beamer@slideinframe')->valueOf;
+  AssignValue('beamer@anotherslide' => $theSlide < $theMaxSlide, 'global') unless ($theSlide == 0);
+  # return the parsed actions!
+  $actions; }
+
+# digestOverlaySpec digests an overlay specification.
+# It returns where the current slide is located temporally to the overlay.
+# See getTemporalSlide for return values.
+sub digestOverlaySpec {
+  my ($spec) = @_;
+  return undef unless defined($spec);
+  $spec = ToString(Expand($spec)); # TODO: Should this be done ealier? Perhaps in the argument type?
+  # get the action
+  my $action = digestBeamerSpec($spec, 0);
+  unless(defined($action)) {
+    Warn('unexpected', '<overlay>', $spec, 'Missing overlay specification, treated as matching');
+    return 0; }
+  return undef unless defined($action);
+  # check if we need to do anything
+  my $theSlide = CounterValue('beamer@slideinframe')->valueOf;
+  # for debugging!
+  # Info('expected', 'overlay', $spec, "spec = <$spec> slide = $theSlide value = " . getTemporalSlide($action, $theSlide));
+  getTemporalSlide($action, $theSlide); }
+
+# digestActionSpec digests an overlay specification.
+# It returns the processed actions.
+# See getSlideActions for return values.
+sub digestActionSpec {
+  my ($spec) = @_;
+  return undef unless defined($spec);
+  $spec = ToString(Expand($spec)); # TODO: Should this be done ealier? Perhaps in the argument type?
+  # get the action
+  my $action = digestBeamerSpec($spec, 1);
+  unless(defined($action)) {
+    Warn('unexpected', '<overlay>', $spec, 'Missing overlay specification, treated as matching');
+    return 0; }
+  return undef unless defined($action);
+  # check if we need to do anything
+  getSlideActions($action); }
+
+#**********************************************************************
+# beamerbasemodes.sty
+#**********************************************************************
+
+RequirePackage('etoolbox');
+
+DefMacro('\jobnamebeamerversion{}', sub { beamerTODO('jobnamebeamerversion') });
+DefMacro('\includeslide{}', sub { beamerTODO('includeslide') });
+DefMacro('\setjobnamebeamerversion', sub { beamerTODO('setjobnamebeamerversion')});
+
+
+# Beamer has five modes: beamer, second, handout, trans, article.
+# The beamer@mode macro stores the current mode.
+# TODO: Let the user set the actual mode!
+DefMacro('\beamer@mode', 'beamer');
+
+sub getCurrentMode {
+  return ToString(LookupDefinition(T_CS('\beamer@mode'))->getExpansion); }
+
+# Beamer mode specifications (see Overlay Specification below) can additionally specificy two special modes:
+# 'all' (any mode) and 'presentation' (anything except)
+# It can also take the 'all' argument (stuff visible in any mode) or 'presentation' (anything except article).
+
+# matchesMode checks if the mode $needle is contained in $haystack.
+# $needle must be one of the five existing modes.
+sub matchesMode {
+    my ($haystack, $needle) = @_;
+    return 1 if $needle eq $haystack;
+    return 1 if $haystack eq 'all';
+    return 1 if $haystack eq 'handout' && !($needle eq 'article');
+    return 0; }
+
+# like matchesMode, but uses the currentMode as $needle.
+sub matchesCurrentMode {
+  my ($haystack) = @_;
+  matchesMode(ToString($haystack), getCurrentMode()); }
+
+# The '\mode' command exists in three variants:
+# \mode*                   => \beamer@modeoutsideframe
+# \mode<modespec>{stuff}   => \beamer@modeinline<modespec>{stuff}
+# \mode<modespec>          => \beamer@switchmode<modespec>
+DefMacro('\mode', '\@ifstar{\beamer@modeoutsideframe}{\beamer@mode@}');
+DefMacro('\beamer@mode@ Angled', '\@ifnextchar\{{\beamer@modeinline}{\beamer@switchmode}<#1>');
+
+# \mode*
+# ignores all text outside of frames
+# TODO: We don't support this at the moment, perhaps make it a postprocessing option?
+DefMacro('\beamer@modeoutsideframe', '');
+
+# \mode<modespec>{stuff}
+# only do stuff if we are in the provided mode.
+DefMacro('\beamer@modeinline Angled {}', sub {
+  my ($gullet, $spec, $body) = @_;
+  if(matchesCurrentMode(ToString($spec))) {
+    $body->revert; }
+  else {
+    (); } });
+
+# \mode<modespec>
+# if modespec matches, do nothing.
+# else gobble everything until the next \mode (or related command).
+DefMacro('\beamer@switchmode Angled', sub {
+  my ($gullet, $spec) = @_;
+  if(matchesCurrentMode(ToString($spec))) {
+    (); }
+  else {
+    (T_CS('\beamer@processline')); } });
+
+# stop tokens adapted from beamerbasemodes.sty
+my @BEAMER_PROCESSLINE_MARKS = (
+  '\mode', '\mode*',
+  '\article', '\presentation', '\common',
+  '\end{document}', '\begin{document}',
+);
+# skip everything until that token
+DefConstructorI(T_CS('\beamer@processline'), undef, '', reversion => '',
+  afterDigest => [sub {
+      my ($stomach, $whatsit) = @_;
+      my $gullet = $stomach->getGullet;
+      $gullet->readRawLine;
+      my ($unused, $line) = readRawUntilMatch($gullet, @BEAMER_PROCESSLINE_MARKS);
+      # put the stop token back (if we saw it!)
+      $gullet->unread(T_CS($line)) if defined($line); }]);
+
+# ways of setting the current mode!
+DefMacro('\presentation', '\mode<presentation>');
+DefMacro('\article', '\mode<article>');
+DefMacro('\common', '\mode<all>');
+
+#**********************************************************************
+1;

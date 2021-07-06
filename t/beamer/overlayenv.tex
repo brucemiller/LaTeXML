@@ -1,0 +1,55 @@
+\documentclass{beamer}
+
+\begin{document}
+
+\begin{frame}
+    This
+    \begin{altenv}<2>{(}{)}{[}{]}
+        word
+    \end{altenv}
+    is in round brackets on slide 2 and in square brackets on slide 1.
+\end{frame}
+
+\begin{frame}
+    We are on slide 1 or 2. 
+    \begin{onlyenv}<2>
+        We are on slide 2.
+    \end{onlyenv}
+\end{frame}
+
+\begin{frame}
+    \begin{uncoverenv}<2>
+        I'm uncovered on slide 2
+    \end{uncoverenv}
+\end{frame}
+
+\begin{frame}
+    \begin{alertenv}<2>
+        I'm alerted on slide 2
+    \end{alertenv}
+\end{frame}
+
+\begin{frame}
+    \begin{uncoverenv}<2->
+        \begin{alertenv}<3-4,6>
+            This text is shown the same way as the text above.
+        \end{alertenv}
+    \end{uncoverenv}
+\end{frame}
+
+\begin{frame}
+    \begin{actionenv}<3-|alert@3-4,6>
+        This text is shown the same way as the text below.
+    \end{actionenv}
+\end{frame}
+
+\begin{frame}
+    \begin{itemize}
+        \item First
+        \item<2-|alert@3>Second
+        \item Third
+    \end{itemize}
+\end{frame}
+
+
+\end{document}
