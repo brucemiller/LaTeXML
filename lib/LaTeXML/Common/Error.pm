@@ -160,6 +160,23 @@ sub _printline {
     _spinnerrestore(); }
   return; }
 
+# Similar, but print ALL lines to STDERR as well.
+sub _printlines {
+  my ($message) = @_;
+  return if (!$LOG && !($USE_STDERR && ($VERBOSITY >= 0)));
+  $message =~ s/^\n+//s;                                # Strip newlines off ends.
+  $message =~ s/\n+$//s;
+  my $clean_message = ($LOG || !$IS_TERMINAL ? strip_ansi($message) : $message);
+  $message = $clean_message unless $IS_TERMINAL;
+  if ($LOG) {
+    print $LOG _freshline($LOG), $clean_message, "\n"; }
+  # Spinner logic only for terminal-enabled applications
+  if ($USE_STDERR && ($VERBOSITY >= 0)) {
+    _spinnerclear();
+    print STDERR _freshline(\*STDERR), $message, "\n";    ##}
+    _spinnerrestore(); }
+  return; }
+
 our %NEEDSFRESHLINE = ();
 
 sub _freshline {
@@ -454,7 +471,7 @@ sub DebuggableFeature {
 sub Debug {
   my ($message) = @_;
   # Note: Could append source code location of the caller?
-  _printline($message);
+  _printlines($message);
   return; }
 
 # This only makes sense at end of run, after all needed modules have been loaded!
@@ -756,11 +773,11 @@ sub caller_info {
 
 sub format_arg {
   my ($arg) = @_;
-  if    (not defined $arg)      { $arg = 'undef'; }
-  elsif (ref $arg)              { $arg = Stringify($arg); }    # Allow overloaded stringify!
-  elsif ($arg =~ /^-?[\d.]+\z/) { }                            # Leave numbers alone.
-  else {                                                       # Otherwise, string, so quote
-    $arg =~ s/'/\\'/g;                                         # Slashify '
+  if    (not defined $arg) { $arg = 'undef'; }
+  elsif (ref $arg)         { $arg = Stringify($arg); }    # Allow overloaded stringify!
+  elsif ($arg =~ /^-?[\d.]+\z/) { }                       # Leave numbers alone.
+  else {                                                  # Otherwise, string, so quote
+    $arg =~ s/'/\\'/g;                                        # Slashify '
     $arg =~ s/([[:cntrl:]])/ "\\".chr(ord($1)+ord('A'))/ge;
     $arg = "'$arg'" }
   return trim($arg); }

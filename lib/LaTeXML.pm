@@ -114,7 +114,7 @@ sub initialize_session {
   ## NOTE: This will give double errors, if latexml has already handled it!
   $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
   if ($@) {                                                   #Fatal occured!
-    Note($@);
+    Debug($@);
     Note("Initialization complete: " . $latexml->getStatusMessage . ". Aborting.") if defined $latexml;
     # Close and restore STDERR to original condition.
     $$self{log} .= $self->flush_log;
@@ -362,7 +362,7 @@ sub convert {
       if ($ref_result =~ /Document$/) {
         $serialized = $result->toString(1);
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
-      } else {    # fragment case
+      } else {                      # fragment case
         $serialized = $result->toString(1, 1);
     } }
     elsif ($$opts{format} =~ /^html/) {
@@ -370,7 +370,7 @@ sub convert {
         # Needs explicit encode call, toStringHTML returns Perl byte strings
         $serialized = $result->getDocument->toStringHTML;
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized; }
-      else {      # fragment case
+      else {                        # fragment case
         local $XML::LibXML::setTagCompression = 1;
         $serialized = $result->toString(1, 1); } } }
   # Compressed/archive/other case, just pass on
@@ -473,7 +473,7 @@ sub convert_post {
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
       push(@procs, LaTeXML::Post::CrossRef->new(
-          db        => $DB, urlstyle => $$opts{urlstyle},
+          db => $DB, urlstyle => $$opts{urlstyle},
           extension => $$opts{extension},
           ($$opts{numbersections} ? (number_sections => 1)              : ()),
           ($$opts{navtoc}         ? (navigation_toc  => $$opts{navtoc}) : ()),
@@ -600,7 +600,7 @@ sub convert_post {
   if ($@) {    #Fatal occured!
     $$runtime{status_code} = 3;
     local $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
-    Note($@); }
+    Debug($@); }
 
   # Finalize by arranging any manifests and packaging the output.
   # If our format requires a manifest, create one
