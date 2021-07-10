@@ -95,13 +95,16 @@ sub makeViewBox {
   if ($w =~ /^($NR)([a-z]{2})$/) { $w = $1; }
   if ($h =~ /^($NR)([a-z]{2})$/) { $h = $1; }
   my ($minx, $maxx, $miny, $maxy) = map { $_ || 0 } @{ getSVGBounds($node) };
+  $minx = $node->getAttribute('origin-x') || 0; $minx =~ s/pt$//;
+  $miny = $node->getAttribute('origin-y') || 0; $miny =~ s/pt$//;
   my $ww = $maxx - $minx;
   my $hh = $maxy - $miny;
-###  $node->setAttribute(viewBox=>"$minx $miny $w $h");
-
-  $node->setAttribute(width   => $ww) if $ww > $w;
-  $node->setAttribute(height  => $hh) if $hh > $h;
-  $node->setAttribute(viewBox => "$minx $miny $maxx $maxy");
+  $node->setAttribute(width  => $ww . "pt") if $ww > $w;
+  $node->setAttribute(height => $hh . "pt") if $hh > $h;
+  $maxx = $w if $ww < 1;
+  $maxy = $h if $hh < 1;
+  # use 0,0 for origin, not minx,miny
+  $node->setAttribute(viewBox => "0 0 $maxx $maxy");
 
   $node->setAttribute(overflow => 'visible') if (($node->getAttribute('clip') || '') ne 'true');
   $node->removeAttribute('clip');
@@ -133,13 +136,13 @@ sub simplifyGroups {
 # Converting specific tags.
 #======================================================================
 my %converters = (    # CONSTANT
-  'ltx:picture'      => \&convertPicture, 'ltx:path'   => \&convertPath,
-  'ltx:g'            => \&convertG,       'ltx:text'   => \&convertText,
-  'ltx:polygon'      => \&convertPolygon, 'ltx:line'   => \&convertLine,
-  'ltx:rect'         => \&convertRect,    'ltx:bezier' => \&convertBezier,
-  'ltx:inline-block' => \&convertVbox,    'ltx:circle' => \&convertCircle,
-  'ltx:ellipse'      => \&convertEllipse, 'ltx:wedge'  => \&convertWedge,
-  'ltx:arc'          => \&convertArc,     'ltx:dots'   => \&convertDots);
+  'ltx:picture' => \&convertPicture, 'ltx:path'   => \&convertPath,
+  'ltx:g'       => \&convertG,       'ltx:text'   => \&convertText,
+  'ltx:polygon' => \&convertPolygon, 'ltx:line'   => \&convertLine,
+  'ltx:rect'    => \&convertRect,    'ltx:bezier' => \&convertBezier,
+  'ltx:circle'  => \&convertCircle,
+  'ltx:ellipse' => \&convertEllipse, 'ltx:wedge' => \&convertWedge,
+  'ltx:arc'     => \&convertArc,     'ltx:dots'  => \&convertDots);
 
 sub convertNode {
   my ($parent, $node) = @_;
@@ -152,13 +155,15 @@ sub convertNode {
     # my $new = $parent->addNewChild($svgURI,'foreignObject');
     # $new->appendChild($node); }}
     my $g = $parent->addNewChild($svgURI, 'g');
-    $g->setAttribute(transform => "scale(1 -1) translate(-5,-10)");    # AD HOC
+    $g->setAttribute(transform => "scale(1 -1)");
     my $new = $g->addNewChild($svgURI, 'foreignObject');
     # Totally wrong, but until we properly size things, we HAVE to give it SOME size!
     # Once we move to generate real svg:svg directly in LaTeX.pool,
     # we'll be in a position to do this more correctly...
-    my $width  = 50;
-    my $height = 20;
+    my $width  = $node->getAttribute('innerwidth');     # $width  =~ s/pt$// if defined $width;
+    my $height = $node->getAttribute('innerheight');    #$height =~ s/pt$// if defined $height;
+    $width  = "50pt" unless defined $width;
+    $height = "20pt" unless defined $height;
     # Just in case it's a graphic!
     if (my $w = $node->getAttribute('imagewidth')) {
       $width = $w; }
@@ -581,7 +586,11 @@ sub SVGObjectBoundary {
       elsif (($mode eq 'xy' && $data =~ s/^\s*($NR)\s+($NR)\s*//) ||
         ($mode eq 'i5xy' && $data =~ s/^\s*$NR\s+$NR\s+$NR
          \s+$NR\s+$NR\s+($NR)\s+($NR)\s*//x)) {
-        push(@xs, $1); push(@ys, $2); } } }
+        push(@xs, $1); push(@ys, $2); }
+      else {
+        Error('unexpected', 'path', undef,
+          "Unrecognized svg path in '" . $node->getAttribute('d') . "' at '$data'");
+        last; } } }
   elsif ($tag eq 'svg:rect') {
     my ($x, $y, $w, $h) = get_attr($node, qw(x y width height));
     if (defined $x && defined $y && defined $w && defined $h) {
@@ -592,6 +601,8 @@ sub SVGObjectBoundary {
     push(@xs, $ex - $rx, $ex + $rx); push(@ys, $ey - $ry, $ey + $ry); }
   elsif ($tag eq 'svg:foreignObject') {
     my ($w, $h) = get_attr($node, qw (width height));
+    $w =~ s/pt$//;
+    $h =~ s/pt$//;
     push(@xs, 0, $w); push(@ys, 0, $h); }
 
   @xs = grep { defined $_ } @xs;
