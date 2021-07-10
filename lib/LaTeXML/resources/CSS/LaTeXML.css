@@ -377,19 +377,9 @@ cite                 { font-style: normal; }
 /* Dubious stuff */
 .ltx_hflipped {
     display:inline-block;
-    -moz-transform: scaleX(-1);
-    -o-transform: scaleX(-1);
-    -webkit-transform: scaleX(-1);
-    transform: scaleX(-1);
-    filter: FlipH;
-    -ms-fliter: "FlipH"; }
+    transform: scaleX(-1); }
 .ltx_vflipped {
     display:inline-block;
-    -moz-transform: scaleY(-1);
-    -o-transform: scaleY(-1);
-    -webkit-transform: scaleY(-1);
-    transform: scaleY(-1);
-    filter: FlipV;
-    -ms-fliter: "FlipV"; }
+    transform: scaleY(-1); }
 
 /* .ltx_phantom handled in xslt */
