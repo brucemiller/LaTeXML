@@ -1,4 +1,5 @@
 \documentclass{article}
+\usepackage{xcolor}
 \usepackage{diagbox}
 \begin{document}
 
@@ -42,6 +43,19 @@ Slashbox compatibility
 & A & B \\\hline
 1 & A1 & B1 \\\hline
 2 & A2 & B2 \\\hline
+\end{tabular}
+
+More exotic options
+\par\noindent
+\begin{tabular}{l|c|}
+  \hline
+\diagbox[dir=NW,width=1in,height=1in,linewidth=2pt,linecolor=blue,font=\itshape]{Head\\A}{Head\\B} & B\\\hline
+A & AB
+\end{tabular}
+\begin{tabular}{l|c|}
+  \hline
+\diagbox[dir=NW,innerwidth=1in,linewidth=2pt,linecolor=blue,font=\itshape]{Head\\A}{Head\\B} & B\\\hline
+A & AB
 \end{tabular}
 
 \end{document}

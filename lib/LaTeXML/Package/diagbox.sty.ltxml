@@ -15,28 +15,24 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 #======================================================================
-# \diagbox[kv]{}{}
-#  OR
-# \diagbox[kv]{}{}{}    !!!!
-# Sniff for { ?
+DefKeyVal('diagbox', 'dir',           '');
+DefKeyVal('diagbox', 'width',         'Dimension');
+DefKeyVal('diagbox', 'height',        'Dimension');
+DefKeyVal('diagbox', 'innerwidth',    'Dimension');
+DefKeyVal('diagbox', 'innerleftsep',  'Dimension');    # ignored
+DefKeyVal('diagbox', 'innerrightsep', 'Dimension');    # ignored
+DefKeyVal('diagbox', 'outerleftsep',  'Dimension');    # ignored
+DefKeyVal('diagbox', 'outerrightsep', 'Dimension');    # ignored
+DefKeyVal('diagbox', 'leftsep',       'Dimension');    # ignored
+DefKeyVal('diagbox', 'rightsep',      'Dimension');    # ignored
+DefKeyVal('diagbox', 'trim',          '');             # ignored
+DefKeyVal('diagbox', 'font',          '');
+DefKeyVal('diagbox', 'linewidth',     '');
+DefKeyVal('diagbox', 'linecolor',     '');
 
-# keywords:
-#  dir = NW SE, SW NE
-
-# Ignoring most keywords, for now:
-#   width, height
-#    (with \line bound to line height)
-#  innerwidth
-#  innerleftsep, innerrightsep
-#  outerleftsep, outerrightsep
-#  leftsep,rightsep
-#  trim=l,r,lr,rl
-#  font
-#  linewidth
-#  linecolor
-
+# NOTE that this macro SNIFFS out an optional 3rd argument!!!
 # Possibly should turn off guess headers in containing alignment?
-DefMacro('\diagbox OptionalKeyVals {}{}', sub {
+DefMacro('\diagbox OptionalKeyVals:diagbox {}{}', sub {
     my ($gullet, $kv, $A, $B) = @_;
     my $M;
     if ($gullet->ifNext(T_BEGIN)) {
@@ -44,21 +40,19 @@ DefMacro('\diagbox OptionalKeyVals {}{}', sub {
     my $dir = $kv && ToString($kv->getValue('dir')) || 'NW';
     if ($dir) {
     }
+    my $font = $kv->getValue('font');
     return Invocation(T_CS('\lx@diagbox'),
       $kv,
-      Invocation(T_CS('\lx@diagbox@head'), T_LETTER('l'), $A),
-      $M && Invocation(T_CS('\lx@diagbox@head'), T_LETTER(($dir =~ /W/ ? 'l' : 'r')), $M),
-      Invocation(T_CS('\lx@diagbox@head'), T_LETTER('r'), $B)); });
+      Invocation(T_CS('\lx@diagbox@head'), T_LETTER('l'), $font, $A),
+      $M && Invocation(T_CS('\lx@diagbox@head'), T_LETTER(($dir =~ /W/ ? 'l' : 'r')), $font, $M),
+      Invocation(T_CS('\lx@diagbox@head'), T_LETTER('r'), $font, $B)); });
 
-DefMacro('\theheadfont', '');    # eventually from kv
-DefMacro('\lx@diagbox@head{}{}',
-  #  '{\theadfont\begin{tabular}{#1}#2\end{tabular}}');
-  '{\theheadfont\shortstack[#1]{#2}}');
+DefMacro('\lx@diagbox@head{}{}{}', '{#2\shortstack[#1]{#3}}');
 
-DefConstructor('\lx@diagbox RequiredKeyVals {}[]{}',
+DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
   "<ltx:picture width='#width' height='#height' unitlength='1.0pt'>"
-    . "?#line1(<ltx:line points='#line1' stroke='black' stroke-width='0.4'/>)()"
-    . "?#line2(<ltx:line points='#line2' stroke='black' stroke-width='0.4'/>)()"
+    . "?#line1(<ltx:line points='#line1' stroke='#linecolor' stroke-width='#linewidth'/>)()"
+    . "?#line2(<ltx:line points='#line2' stroke='#linecolor' stroke-width='#linewidth'/>)()"
     . "<ltx:g transform='translate(#Ax,#Ay)' class='ltx_svg_fog'>"
     . "<ltx:inline-block innerwidth='#Aw' innerheight='#Ah'>#A</ltx:inline-block>"
     . "</ltx:g>"
@@ -79,12 +73,12 @@ DefConstructor('\lx@diagbox RequiredKeyVals {}[]{}',
     my ($Mw, $Mh, $Md) = $M && $M->getSize; $Mh = $Mh->add($Md) if $Mh;
     my $maxw = $Aw->larger($Bw);
     my $maxh = $Ah->larger($Bh);
-    my $w    = $Aw->add($Bw)->add($maxw);
-    my $h    = $Ah->add($Bh)->add($maxh);
-    my ($ww, $hh)   = ($w->ptValue, $h->ptValue);
-    my ($wwm, $hhm) = ($w->divide(2)->ptValue, $h->divide(2)->ptValue);
+    my $w    = $kv->getValue('width')  || $kv->getValue('innerwidth') || $Aw->add($Bw)->add($maxw);
+    my $h    = $kv->getValue('height') || $Ah->add($Bh)->add($maxh);
+    my ($ww,    $hh)  = ($w->ptValue, $h->ptValue);
+    my ($wwm,   $hhm) = ($w->divide(2)->ptValue, $h->divide(2)->ptValue);
     my ($line1, $line2);
-    my ($Ax, $Ay, $Bx, $By, $Mx, $My) = (0, 0, 0, 0, 0, 0);
+    my ($Ax,    $Ay, $Bx, $By, $Mx, $My) = (0, 0, 0, 0, 0, 0);
 
     if ($M) {
       if ($dir eq 'NW') {
@@ -129,10 +123,12 @@ DefConstructor('\lx@diagbox RequiredKeyVals {}[]{}',
         $By    = $Bh->ptValue;
         $line1 = "0,0, $ww,$hh"; } }
     $whatsit->setProperties(width => $w, height => $h,
-      A     => $A,     Ax    => $Ax, Ay => $Ay, Aw => $Aw, Ah => $Ah,
-      B     => $B,     Bx    => $Bx, By => $By, Bw => $Bw, Bh => $Bh,
-      M     => $M,     Mx    => $Mx, My => $My, Mw => $Bw, Mh => $Mh,
-      line1 => $line1, line2 => $line2); }
+      A         => $A,     Ax    => $Ax, Ay => $Ay, Aw => $Aw, Ah => $Ah,
+      B         => $B,     Bx    => $Bx, By => $By, Bw => $Bw, Bh => $Bh,
+      M         => $M,     Mx    => $Mx, My => $My, Mw => $Bw, Mh => $Mh,
+      line1     => $line1, line2 => $line2,
+      linewidth => $kv->getValue('linewidth') || '0.4',
+      linecolor => $kv->getValue('linecolor') || 'black'); }
 );
 
 # slashbox compatibility
