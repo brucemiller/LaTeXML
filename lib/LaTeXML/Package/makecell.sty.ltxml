@@ -68,8 +68,8 @@ DefConstructor('\lx@diagheads {}{} {}{}{}',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($diagH, $diagV, $space, $A, $B) = $whatsit->getArgs;
-    $diagH = ToString($diagH);
-    $diagV = ToString($diagV);
+    $diagH = ToString($diagH) || 1;
+    $diagV = ToString($diagV) || 1;
     my $flip = ($diagH < 0) ^ ($diagV < 0);
     my ($Aw, $Ah, $Ad) = $A->getSize; $Ah = $Ah->add($Ad);
     my ($Bw, $Bh, $Bd) = $B->getSize; $Bh = $Bh->add($Bd);
