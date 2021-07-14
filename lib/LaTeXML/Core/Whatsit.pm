@@ -226,7 +226,11 @@ sub computeSize {
     elsif ($sizer =~ /^(#\w+)*$/) {                 # Else if of form '#digit' or '#prop', combine sizes
       while ($sizer =~ s/^#(\w+)//) {
         my $arg = $1;
-        push(@boxes, ($arg =~ /^\d+$/ ? $self->getArg($arg) : $$props{$arg})); } }
+        push(@boxes, ($arg =~ /^\d+$/ ? $self->getArg($arg) : $$props{$arg})); }
+      # Special case: If only a single object to be sized and it is a List, unlist it.
+      # This is so that whatsit's layout properties will be applied to the sequence
+      if ((scalar(@boxes) == 1) && ((ref $boxes[0]) eq 'LaTeXML::Core::List')) {
+        @boxes = $boxes[0]->unlist; } }
     else {
       push(@boxes, $sizer); }
     return $$props{font}->computeBoxesSize([@boxes], %options); } }

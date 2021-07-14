@@ -16,11 +16,13 @@ use LaTeXML::Global;
 use LaTeXML::Common::Dimension qw(Dimension);
 use LaTeXML::Common::Object;
 use base qw(LaTeXML::Common::Object);
+use LaTeXML::Common::Error;
 use base qw(Exporter);
 our @EXPORT = (
   qw( &Box ),
 );
 
+DebuggableFeature('size', "Box sizing");
 #======================================================================
 # Exported constructors
 
@@ -211,9 +213,9 @@ sub getSize {
     && (defined $$props{cheight})
     && (defined $$props{cdepth});
   Debug("SIZE of $self"
-      . "\n opt:" . _showsize($options{width}, $options{height}, $options{depth})
-      . "\n set: " . _showsize($$props{width}, $$props{height}, $$props{depth})
-      . "\n calc: " . _showsize($$props{cwidth}, $$props{cheight}, $$props{cdepth})
+      . "\n options   :" . _showsize($options{width}, $options{height}, $options{depth})
+      . "\n assigned : " . _showsize($$props{width},  $$props{height},  $$props{depth})
+      . "\n calculated: " . _showsize($$props{cwidth}, $$props{cheight}, $$props{cdepth})
       . "\n =>: " . _showsize($$props{width} || $$props{cwidth}, $$props{height} || $$props{cheight}, $$props{depth} || $$props{cdepth})
       . "\n   Of " . Stringify($self)) if $LaTeXML::DEBUG{size};
   return ($$props{width} || $$props{cwidth},
@@ -225,7 +227,7 @@ sub getSize {
 
 sub _showsize {
   my ($w, $h, $d) = @_;
-  return ToString($w) . " x " . ToString($h) . " + " . ToString($d); }
+  return ($w ? ToString($w) : '<none>') . " x " . ($h ? ToString($h) : '<none>') . " + " . ($d ? ToString($d) : '<none>'); }
 
 # for debugging....
 sub showSize {

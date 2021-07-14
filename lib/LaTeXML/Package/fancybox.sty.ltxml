@@ -1,0 +1,49 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  fancybox                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# These could be made to depend on \fboxsep, \fboxrule, \cornersize
+DefMacro('\cornersize OptionalMatch:* {}', '');
+our $fancybox_border = 'border:1px solid black;';
+our $fancybox_shadow = 'border:1px solid black; box-shadow: 5px 5px 10px black;';
+our $fancybox_double = 'border:3px double black;';
+our $fancybox_oval   = $fancybox_border . 'border-radius:5px;';
+our $fancybox_Oval   = 'border:2px solid black;' . 'border-radius:5px;';
+DefConstructor('\shadowbox MoveableBox',
+  "<ltx:text cssstyle='$fancybox_shadow'>#1</ltx:text>",
+  mode => 'text');
+DefConstructor('\doublebox MoveableBox',
+  "<ltx:text cssstyle='$fancybox_double'>#1</ltx:text>",
+  mode => 'text');
+DefConstructor('\ovalbox MoveableBox',
+  "<ltx:text cssstyle='$fancybox_oval'>#1</ltx:text>",
+  mode => 'text');
+DefConstructor('\Ovalbox MoveableBox',
+  "<ltx:text cssstyle='$fancybox_Oval'>#1</ltx:text>",
+  mode => 'text');
+
+DefEnvironment('{Sbox}', '',
+  afterDigestBody => sub {
+    my ($stomach, $whatsit) = @_;
+    AssignValue('Sbox' => $whatsit->getBody, 'global'); });
+
+DefPrimitive('\TheSbox', sub {
+    my $stuff = LookupValue('Sbox');
+    AssignValue(Sbox => undef, 'global');
+    $stuff; });
+
+#======================================================================
+1;

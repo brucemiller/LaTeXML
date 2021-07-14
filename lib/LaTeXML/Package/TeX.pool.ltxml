@@ -1816,7 +1816,7 @@ DefPrimitive('\mathchardef Token SkipMatch:=', sub {
     my $value  = $stomach->getGullet->readNumber();
     my $csname = $newcs->getCSName;
     my ($role, $glyph) = decodeMathChar($value->valueOf);
-    my $internalcs = $glyph && T_CS('\@mathchardef@' . $csname);
+    my $internalcs = (defined $glyph) && T_CS('\@mathchardef@' . $csname);
     DefConstructorI($internalcs, undef, "<ltx:XMTok role='#role'>#glyph</ltx:XMTok>",
       sizer      => '#1',
       properties => { role => $role, glyph => $glyph,
@@ -2434,7 +2434,7 @@ DefConstructor('\vskip Glue', sub {
       elsif ($document->isOpenable('ltx:break')) {
         $document->insertElement('ltx:break'); } }
     return; },
-  properties => sub { (height => $_[1], isSpace => 1, isVerticalSpace => 1); });
+  properties => sub { (height => $_[1], isSpace => 1, isVerticalSpace => 1, isBreak => 1); });
 
 #======================================================================
 # Basic alignment support needed by most environments & commands.
@@ -3234,7 +3234,9 @@ Let('\par', '\normal@par');
 DefConstructorI('\inner@par', undef, sub {
     if    ($_[0]->maybeCloseElement('ltx:p')) { }
     elsif ($_[0]->canContain($_[0]->getNode, 'ltx:break')) {
-      $_[0]->insertElement('ltx:break'); } });
+      $_[0]->insertElement('ltx:break'); } },
+  properties => { isBreak => 1 },
+  reversion  => Tokens(T_CS("\\\\"), T_CR));
 
 Tag('ltx:para', autoClose => 1, autoOpen => 1, afterClose => \&pruneEmpty);
 
@@ -4717,7 +4719,7 @@ DefPrimitiveI('\obeylines', undef, sub {
     Let(T_ACTIVE("\r"), '\@break');    # More appropriate than \par, I think?
     return });
 
-DefConstructor('\@break', "<ltx:break/>");
+DefConstructor('\@break', "<ltx:break/>", properties => { isBreak => 1 });
 
 RawTeX(<<'EoTeX');
 \def\loop#1\repeat{\def\body{#1}\iterate}

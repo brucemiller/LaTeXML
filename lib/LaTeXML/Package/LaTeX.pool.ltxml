@@ -4656,7 +4656,8 @@ Tag('ltx:picture', autoOpen => 0.5, autoClose => 1,
 #  but that is currently handled in the SVG postprocessing module]
 DefEnvironment('{picture} Pair OptionalPair',
   "<ltx:picture %&SimplePairAttr(#size,width,height)"
-    . " fill='black' stroke='black' unitlength='#unitlength'>"
+    . " %&SimplePairAttr(#origin,origin-x,origin-y)"
+    . " fill='none' stroke='none' unitlength='#unitlength'>"
     . "?#pos(<ltx:g transform='#pos'>#body</ltx:g>)(#body)"
     . "</ltx:picture>",
   mode         => 'text',
@@ -4664,7 +4665,7 @@ DefEnvironment('{picture} Pair OptionalPair',
 
   properties => sub { (unitlength => LookupValue('\unitlength'),
       ($_[2] ? (pos => 'translate(' . ptValue(picScale($_[2]->negate)) . ')') : ()),
-      picProperties(size => picScale($_[1]))); },
+      picProperties(size => picScale($_[1]), ($_[2] ? (origin => picScale($_[2])) : ()))); },
   afterDigest => \&after_picture);
 
 DefMacroI(T_CS('\Gin@driver'), undef, Tokens());
@@ -4672,19 +4673,27 @@ DefMacroI(T_CS('\Gin@driver'), undef, Tokens());
 DefMacro('\put Until:){}', '\lx@pic@put#1){#2\relax}');
 DefConstructor('\lx@pic@put Pair{}',
   "<ltx:g transform='#pos'>#2</ltx:g>",
-  properties => sub { pos => 'translate(' . ptValue(picScale($_[1])) . ')'; },
-  alias      => '\put',
-  mode       => 'text');
+  properties     => sub { pos => 'translate(' . ptValue(picScale($_[1])) . ')'; },
+  afterConstruct => sub {
+    my ($document, $whatsit) = @_;
+    my $inner = $document->getNode->lastChild->lastChild;
+    my $tag   = $inner && $document->getNodeQName($inner);
+    if ($tag && ($tag !~ /^ltx:(path|g|polygon|line|rect|bezier|circle|ellipse|wedge|arc|dots)$/)) {
+      my ($w, $h, $d) = $whatsit->getSize;
+      $inner->setAttribute(width  => $w->toString);
+      $inner->setAttribute(height => $h->add($d)->toString); } },
+  alias => '\put',
+  mode  => 'text');
 
 #DefConstructor('\pic@line Pair:Number {Float}',
 DefConstructor('\line Pair:Number {Float}',
-  "<ltx:line points='#points' stroke-width='#thick'/>",
+  "<ltx:line points='#points' stroke='black' stroke-width='#thick'/>",
   alias      => '\line',
   properties => sub { picProperties(points => '0,0 ' . slopeToPicCoord($_[1], $_[2])->ptValue()); });
 
 #DefConstructor('\pic@vector Pair:Number {Float}',
 DefConstructor('\vector Pair:Number {Float}',
-  "<ltx:line points='#points' stroke-width='#thick' terminators='->'"
+  "<ltx:line points='#points' stroke='black' stroke-width='#thick' terminators='->'"
     . " arrowlength='#arrowlength'/>",
   alias      => '\vector',
   properties => sub { picProperties(points => '0,0 ' . slopeToPicCoord($_[1], $_[2])->ptValue()); });
@@ -4699,12 +4708,12 @@ DefConstructor('\circle OptionalMatch:* {Float}',
     $dia = picScale($dia);
     $dia = $dia->add(LookupValue('\@wholewidth')) unless $filled;
     picProperties(radius => $dia->multiply(0.5),
-      ($filled ? 'stroke' : 'fill') => 'none'); });
+      ($filled ? 'fill' : 'stroke') => 'black'); });
 
 ##DefConstructor('\pic@oval [Float] Pair []',
 DefConstructor('\oval [Float] Pair []',
   "<ltx:rect %&PairAttr(#pos,x,y) %&PairAttr(#size,width,height) rx='&ptValue(#radius)'"
-    . "  fill='none' part='#3' stroke-width='#thick'/>",
+    . "  stroke='black' fill='none' part='#3' stroke-width='#thick'/>",
   alias      => '\oval',
   properties => sub {
     my ($stomach, $r, $size, $part) = @_;
@@ -4718,7 +4727,7 @@ DefConstructor('\oval [Float] Pair []',
 
 ##DefConstructor('\pic@qbezier [Number] Pair Pair Pair',
 DefConstructor('\qbezier [Number] Pair Pair Pair',
-  "<ltx:bezier ?#1(displayedpoints='#1') points='&ptValue(#pt)' stroke-width='#thick' />",
+"<ltx:bezier ?#1(displayedpoints='#1') points='&ptValue(#pt)' stroke='black' stroke-width='#thick' />",
   alias      => '\qbezier',
   properties => sub {
     picProperties(pt => PairList(picScale($_[2]), picScale($_[3]), picScale($_[4]))); });
@@ -4730,7 +4739,7 @@ DefConstructor('\lx@pic@bezier {Number} Pair Pair Pair',
     picProperties(pt => PairList(picScale($_[2]), picScale($_[3]), picScale($_[4]))); });
 
 DefConstructor('\pic@makebox Pair []{}',
-  "<ltx:g %&PairAttr(#size,width,height) pos='#2'>#3</ltx:g>",
+  "<ltx:g %&PairAttr(#size,width,height) pos='#2'><ltx:inline-block>#3</ltx:inline-block></ltx:g>",
   alias        => '\makebox',
   beforeDigest => sub { reenterTextMode(); },
   properties   => sub { picProperties(size => picScale($_[1])); });
@@ -4745,7 +4754,7 @@ DefConstructor('\pic@raisebox{Dimension}[Dimension][Dimension]{}',
   alias => '\raisebox');
 
 DefConstructor('\pic@framebox Pair []{}',
-  "<ltx:rect x='0' y='0' %&PairAttr(#size,width,height) stroke-width='#thick' fill='none'/>"
+"<ltx:rect x='0' y='0' %&PairAttr(#size,width,height) stroke='black' stroke-width='#thick' fill='none'/>"
     . "<ltx:g %&PairAttr(#size,width,height) pos='#2'>#3</ltx:g>",
   alias        => '\framebox',
   beforeDigest => sub { reenterTextMode(); },
@@ -4754,7 +4763,7 @@ DefConstructor('\pic@framebox Pair []{}',
 DefMacro('\dashbox Until:(', '\ifx.#1.\lx@pic@dashbox{0}(\else\lx@pic@dashbox{#1}(\fi');
 DefConstructor('\lx@pic@dashbox {Float} Pair [] {}',
   "<ltx:rect x='0' y='0' %&PairAttr(#size,width,height)"
-    . " stroke-width='#thick' stroke-dasharray='&ptValue(#dash)' fill='none'/>" .
+    . " stroke='black' stroke-width='#thick' stroke-dasharray='&ptValue(#dash)' fill='none'/>" .
     "<ltx:g %&PairAttr(#size,width,height) pos='#3'>#4</ltx:g>",
   alias      => '\dashbox',
   properties => sub { picProperties(dash => picScale($_[1]), size => picScale($_[2])); });
@@ -4765,10 +4774,20 @@ DefConstructor('\frame{}',
   alias      => '\frame',
   properties => sub { picProperties(); });
 
+DefConstructor('\frame{}',
+"<ltx:rect x='0' y='0' width='#widthpt' height='#heightpt' stroke='black' stroke-width='#thick' fill='none'/>"
+    . "<ltx:g  width='#widthpt' height='#heightpt'>#1</ltx:g>",
+  alias      => '\frame',
+  properties => sub {
+    my $box = $_[1];
+    (widthpt => $box->getWidth->ptValue, heightpt => $box->getTotalHeight->ptValue,
+      picProperties()); });
+
 our %alignments = (l => 'left', c => 'center', r => 'right');
 # Not sure that ltx:p is the best to use here, but ... (see also \vbox, \vtop)
 DefConstructor('\@shortstack@cr',
   "</ltx:p><ltx:p>",
+  properties   => { isBreak => 1 },
   reversion    => Tokens(T_CS("\\\\"), T_CR),
   beforeDigest => sub { $_[0]->egroup; },
   afterDigest  => sub { $_[0]->bgroup; });
@@ -4776,13 +4795,16 @@ DefConstructor('\@shortstack@cr',
 DefConstructor('\shortstack[]{}  OptionalMatch:* [Dimension]',
   "<ltx:inline-block align='#align'><ltx:p>#2</ltx:p></ltx:inline-block>",
   bounded      => 1,
+  sizer        => '#2',
   beforeDigest => sub { reenterTextMode();
     # then RE-RE-define this one!!!
     Let("\\\\", '\@shortstack@cr');
     $_[0]->bgroup; },
   afterDigest => sub { $_[0]->egroup; },
-  properties  => { align => sub { ($_[1] ? $alignments{ ToString($_[0]) } : undef); } },
-  mode        => 'text');
+  # Note: does not get layout=vertical, since linebreaks are explicit
+  properties => { align => sub { ($_[1] ? $alignments{ ToString($_[1]) } : undef); },
+    vattach => 'top' },    # for size computation
+  mode => 'text');
 
 DefMacro('\multiput Pair Pair {}{}', sub {
     my ($gullet, $pos, $d, $nt, $body) = @_;

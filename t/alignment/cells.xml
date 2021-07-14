@@ -362,43 +362,25 @@
       <tabular vattach="middle">
         <thead>
           <tr>
-            <td align="left" border="l r t" thead="column row"><tabular vattach="middle">
-                <tr>
-                  <td align="center" thead="column row"><picture fill="black" height="32.1pt" stroke="black" tex="\begin{picture}(131.50158,32.07538)(0.0,0.8)\put(0.0,32.87538){\makebox(0.0,0.%&#10;0)[tl]{\line(4,1){131.50158}}}&#10;\put(0.0,0.0){\makebox(0.0,0.0)[tl]{\color[rgb]{1,0,0}\noindent\hbox{}{{\hbox{%&#10;\begin{tabular}[t]{@{}l@{}}Diag Column\\&#10;Head II\end{tabular}}}}\hfill\hbox{}}}&#10;\put(0.0,0.0){\makebox(0.0,0.0)[br]{\color[rgb]{1,0,0}{\noindent\hbox{}\hfill{%&#10;{\hbox{\begin{tabular}[b]{@{}r@{}}Diag\\&#10;Column Head I\end{tabular}}}}\hbox{}}}}&#10;\end{picture}" unitlength="1.0pt" width="131.5pt" xml:id="S10.p1.pic1">
-                      <g transform="translate(0,-0.8)">
-                        <g transform="translate(0,32.88)">
-                          <g height="0" pos="tl" width="0">
-                            <line points="0,0 131.5,32.88" stroke-width="0.4"/>
-                          </g>
-                        </g>
-                        <g transform="translate(0,0)">
-                          <g height="0" pos="tl" width="0">
-                            <text color="#FF0000" font="bold"><tabular rowsep="-1.5pt" vattach="top">
-                                <tr>
-                                  <td align="left">Diag Column</td>
-                                </tr>
-                                <tr>
-                                  <td align="left">Head II</td>
-                                </tr>
-                              </tabular></text>
-                          </g>
-                        </g>
-                        <g transform="translate(0,0)">
-                          <g height="0" pos="br" width="0">
-                            <text color="#FF0000" font="bold"><tabular rowsep="-1.5pt" vattach="bottom">
-                                <tr>
-                                  <td align="right">Diag</td>
-                                </tr>
-                                <tr>
-                                  <td align="right">Column Head I</td>
-                                </tr>
-                              </tabular></text>
-                          </g>
-                        </g>
-                      </g>
-                    </picture></td>
-                </tr>
-              </tabular></td>
+            <td align="left" border="l r t" thead="column row"><picture height="29.9pt" tex="\diaghead(4,1){\hskip 119.501575pt}{{\color[rgb]{1,0,0}\shortstack[r]{Diag \\&#10;Column Head I}}}{{\color[rgb]{1,0,0}\shortstack[l]{Diag Column \\&#10;Head II}}}" unitlength="1.0pt" width="119.5pt" xml:id="S10.p1.pic1">
+                <line points="0,0, 119.5,29.88" stroke="black" stroke-width="0.4"/>
+                <g transform="translate(22,18)">
+                  <inline-block innerheight="18.0pt" innerwidth="97.5pt">
+                    <inline-block align="right">
+                      <p><text color="#FF0000" font="bold">Diag</text></p>
+                      <p><text color="#FF0000" font="bold">Column Head I</text></p>
+                    </inline-block>
+                  </inline-block>
+                </g>
+                <g transform="translate(0,29.88)">
+                  <inline-block innerheight="18.0pt" innerwidth="90.0pt">
+                    <inline-block align="left">
+                      <p><text color="#FF0000" font="bold">Diag Column</text></p>
+                      <p><text color="#FF0000" font="bold">Head II</text></p>
+                    </inline-block>
+                  </inline-block>
+                </g>
+              </picture></td>
             <td align="center" border="r t" thead="column row"> <tabular rowsep="-1.5pt" vattach="middle">
                 <tr>
                   <td align="center"><text color="#FF0000" font="bold">Second</text></td>

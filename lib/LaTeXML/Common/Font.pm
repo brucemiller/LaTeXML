@@ -25,6 +25,7 @@ use base qw(LaTeXML::Common::Object);
 # including basic font information, color & background color
 # as well as encoding and language information.
 
+DebuggableFeature('size-detailed', "Show sizing of boxes in detail");
 # NOTE: This is now in Common that it may evolve to be useful in Post processing...
 
 my $DEFFAMILY     = 'serif';      # [CONSTANT]
@@ -491,7 +492,8 @@ sub computeBoxesSize {
   foreach my $box (@$boxes) {
     next unless defined $box;
     next if ref $box && !$box->can('getSize');    # Care!! Since we're asking ALL args/compoments
-    my ($w, $h, $d) = (ref $box ? $box->getSize(%options) : $font->computeStringSize($box));
+    ## Should any %options be inherited by the contained boxes?
+    my ($w, $h, $d) = (ref $box ? $box->getSize() : $font->computeStringSize($box));
     if (ref $w) {
       $wd += $w->valueOf; }
     else {
@@ -508,19 +510,11 @@ sub computeBoxesSize {
       Warn('expected', 'Dimension', undef,
         "Depth of " . Stringify($box) . " yielded a non-dimension: " . Stringify($d)); }
     if ((($options{layout} || '') eq 'vertical')    # EVERY box is a row?
-                                                    # || $box is a <ltx:break> (or similar)!!!!
-    ) {
+      || ((ref $box) && $box->getProperty('isBreak'))) {    # || $box is a linebreak
       push(@lines, [$wd, $ht, $dp]); $wd = $ht = $dp = 0; }
-    elsif ((defined $maxwidth) && ($wd >= $maxwidth)) {    # or we've reached the requested width
-          # Compounding errors with wild abandon.
-          # If an underlying box is too wide, we'll split it up into multiple rows
-          # [Rather than correctly break it?]
-          # BUT How do we know if it should break at alL!?!?!?!?!
-##     while ($wd >= $maxwidth) {
-##       push(@lines, [$maxwidth, $ht, $dp]); $wd = $wd - $maxwidth; }
-##      $ht = $h->valueOf; $dp = $d->valueOf;     # continue with the leftover
-      push(@lines, [$wd, $ht, $dp]); $wd = $ht = $dp = 0;
-    }
+    elsif ((defined $maxwidth) && ($wd >= $maxwidth)) {     # or we've reached the requested width
+          # Instead of a real linebreaking algorithm, just break off if too wide.
+      push(@lines, [$wd, $ht, $dp]); $wd = $ht = $dp = 0; }
   }
   if ($wd) {    # be sure to get last line
     push(@lines, [$wd, $ht, $dp]); }
@@ -548,7 +542,15 @@ sub computeBoxesSize {
       $dp = $ht + $dp - $h; $ht = $h; } }
   #print "BOXES SIZE ".($wd/65536)." x ".($ht/65536)." + ".($dp/65336)." for "
   #  .join(' ',grep {$_} map { Stringify($_) } @$boxes)."\n";
+  Debug("Size boxes " . join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options) . "\n"
+      . "  Boxes: " . join(',',  map { '[[' . ToString($_) . ']]'; } @$boxes) . "\n"
+      . "  Sizes: " . join("\n", map { _showsize(@$_); } @lines) . "\n"
+      . "  => " . _showsize($wd, $ht, $dp)) if $LaTeXML::DEBUG{'size-detailed'};
   return (Dimension($wd), Dimension($ht), Dimension($dp)); }
+
+sub _showsize {
+  my ($wd, $ht, $dp) = @_;
+  return ($wd / 65536) . " x " . ($ht / 65536) . " + " . ($dp / 65336); }
 
 sub isSticky {
   my ($self) = @_;

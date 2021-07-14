@@ -1,0 +1,811 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | mathabx.sty                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#======================================================================
+# Specials  (matha/mathb)
+# These are intended to overlay to show negation,
+# but they're not going to work well for that.
+DefMath('\notsign',    '|', role => 'OPERATOR', meaning => 'not');
+DefMath('\varnotsign', '/', role => 'OPERATOR', meaning => 'not');
+DefPrimitive('\changenotsign', sub {
+    Info('unexpected', '\\changenotsign', $_[0],
+      "The \\changenotsign operation of mathabx is not implemented."); });
+# \cdotp
+
+#======================================================================
+# Usual binary operators (matha)
+#   +, -
+#   \times, \div
+#   \cdot, \circ
+#   *, \ast
+DefMath('\asterisk', "\x{2217}", role => 'MULOP');
+# DefMath('\coasterisk',Tokens());
+DefMath('\ltimes', "\x{22C9}", role => 'MULOP', meaning => 'left-normal-factor-semidirect-product');
+DefMath('\rtimes', "\x{22CA}", role => 'MULOP', meaning => 'right-normal-factor-semidirect-product');
+#   \diamond, \bullet
+#   \star
+DefMathI('\varstar', undef, "\x{2736}", role => 'MULOP');
+# Next two probably text style or small size?
+DefMathI('\ssum',  undef, "\x{2211}", role => 'SUMOP', meaning => 'sum');
+DefMathI('\sprod', undef, "\x{220F}", role => 'SUMOP', meaning => 'product');
+#   \amalg
+
+#======================================================================
+# Unusual binary operators (mathb)
+DefMath('\dotplus',  "\x{2214}", role => 'ADDOP');
+DefMath('\dotdiv',   "\x{2238}", role => 'MULOP');
+DefMath('\dottimes', "\x{2A30}", role => 'MULOP');
+DefMath('\divdot',   "\x{2A2A}", role => 'MULOP');
+DefMath('\udot',     "\x{22C5}", role => 'MULOP');    # Same as \cdot, but should shift to left
+DefMath('\square',   "\x{25A1}", role => 'MULOP');
+DefMath('\Asterisk', "\x{273D}", role => 'MULOP');
+DefMath('\bigast',   "\x{273D}", role => 'MULOP');
+# DefMath('\coAsterisk',Tokens());
+# DefMath('\bigcoast',Tokens());
+DefMath('\circplus',      "\x{2A22}",  role => 'MULOP');
+DefMath('\pluscirc',      "\x{2295}",  role => 'MULOP');    # Not quite right glyph
+DefMath('\convolution',   "\x{2733}",  role => 'MULOP');
+DefMath('\divideontimes', "\x{22C7}",  role => 'MULOP');
+DefMath('\blackdiamond',  "\x{25C6}",  role => 'MULOP');
+DefMath('\sqbullet',      "\x{2BC0}",  role => 'MULOP');
+DefMath('\bigstar',       "\x{1F7CA}", role => 'MULOP');
+DefMath('\bigvarstar',    "\x{1F7CC}", role => 'MULOP');
+
+#======================================================================
+# Usual relations (matha)
+#   =, \equiv
+#   \sim, \approx
+#   \simeq, \cong
+#   \asymp
+DefMath('\divides', "\x{2223}", role => 'RELOP');
+#   \neq, \ne,
+DefMath('\nequiv', "\x{2262}", meaning => 'not-equivalent-to', role => 'RELOP');
+Let('\notequiv', '\nequiv');
+DefMath('\nsim', "\x{2241}", role => 'RELOP',
+  meaning => 'not-similar-to');    # NOTE TILDE
+DefMath('\napprox', "\x{2249}", meaning => 'not-approximately-equals', role => 'RELOP');
+DefMath('\nsimeq', "\x{2243}\x{0338}", role => 'RELOP',
+  meaning => 'not-equivalent-to-nor-equals');
+DefMath('\ncong', "\x{2247}", role => 'RELOP',
+  meaning => 'not-approximately-equals');
+DefMath('\notasymp',   "\x{226D}", meaning => 'not-equivalent-to', role    => 'RELOP');
+DefMath('\notdivides', "\x{2224}", role    => 'RELOP',             meaning => 'does-not-divide');
+
+#======================================================================
+# Unuual relations (mathb)
+DefMath('\topdoteq', "=\x{0307}", role => 'RELOP');    # = combining dot
+DefMath('\botdoteq', "\x{2A66}",  role => 'RELOP');
+DefMath('\doteqdot', "\x{2251}",  role => 'RELOP', meaning => 'geometrically-equals');
+Let('\dotseq', '\doteqdot');
+Let('\Doteq',  '\doteqdot');
+DefMath('\risingdotseq', "\x{2253}", role => 'RELOP', meaning => 'image-of-or-approximately-equals');
+DefMath('\fallingdotseq', "\x{2252}", role => 'RELOP', meaning => 'approximately-equals-or-image-of');
+DefMath('\coloneq',       "\x{2254}", role => 'RELOP');
+DefMath('\eqcolon',       "\x{2255}", role => 'RELOP');
+DefMath('\bumpedeq',      "\x{224F}", role => 'RELOP', meaning => 'difference-between');
+# DefMath('\eqbumped',Tokens());
+DefMath('\Bumpedeq',    "\x{224E}", role => 'RELOP', meaning => 'geometrically-equals');
+DefMath('\circeq',      "\x{2257}", role => 'RELOP');
+DefMath('\eqcirc',      "\x{2256}", role => 'RELOP');
+DefMath('\triangleq',   "\x{225C}", role => 'RELOP');
+DefMath('\corresponds', "\x{2258}", role => 'RELOP', meaning => 'corresponds-to');
+
+#======================================================================
+# Miscellaneous (matha)
+#   \neq, \lnot, \ll
+#   \gg,
+DefMath('\hash', "#", role => 'RELOP');
+#  \vdash, \dashv
+DefMath('\nvdash', "\x{22AC}",         role => 'RELOP');
+DefMath('\ndashv', "\x{22A3}\x{0338}", role => 'RELOP');
+DefMath('\vDash',  "\x{22A8}",         role => 'RELOP');
+DefMath('\Dashv',  "\x{2AE4}",         role => 'RELOP');
+DefMath('\nvDash', "\x{22AD}",         role => 'RELOP');
+DefMath('\nDashv', "\x{2AE4}\x{0338}", role => 'RELOP');
+DefMath('\Vdash',  "\x{22A9}",         role => 'RELOP', meaning => 'forces');
+DefMath('\dashV',  "\x{2AE3}",         role => 'RELOP');
+DefMath('\nVdash', "\x{22AE}",         role => 'RELOP', meaning => 'not-forces');
+DefMath('\ndashV', "\x{2AE3}\x{0338}", role => 'RELOP');
+DefMath('\degree', UTF(0xB0),          role => 'RELOP');
+#   \prime
+DefMath('\second', "\x{02BA}", role => 'RELOP');
+DefMath('\third',  "\x{2034}", role => 'RELOP');
+DefMath('\fourth', "\x{2057}", role => 'RELOP');
+#   \flat
+#   \natural, \sharp
+#   \infty, \propto
+#   \dagger, \ddagger
+
+#======================================================================
+# Miscellaneous (mathb)
+DefMath('\between', "\x{226C}", role => 'RELOP', meaning => 'between');
+#   \smile
+#   \frown
+DefMath('\varhash',         "#",        role => 'RELOP');
+DefMath('\leftthreetimes',  "\x{22CB}", role => 'MULOP', meaning => 'left-semidirect-product');
+DefMath('\rightthreetimes', "\x{22CC}", role => 'MULOP', meaning => 'right-semidirect-product');
+DefMath('\pitchfork',       "\x{22D4}", role => 'RELOP', meaning => 'proper-intersection');
+#  \bowtie, \Join
+DefMath('\VDash',  "\x{22AB}",         role => 'RELOP');
+DefMath('\DashV',  "\x{2AE5}",         role => 'RELOP');
+DefMath('\nVDash', "\x{22AF}",         role => 'RELOP');
+DefMath('\nDashV', "\x{2AE5}\x{0338}", role => 'RELOP');
+DefMath('\Vvdash', "\x{22AA}",         role => 'RELOP');
+# Note that the above can be mirrored, but that doesn't quite help \dashVv!
+#DefMath('\dashVv', "\x{202E}\x{22AA}\x{202E}", role => 'RELOP');
+#DefMath('\dashVv', "\x{200F}\x{22AA}\x{200E}", role => 'RELOP');
+#DefMath('\dashVv', "\x{2067}\x{22AA}\x{2069}", role => 'RELOP');
+DefMath('\nVvash', "\x{22AA}\x{0338}", role => 'RELOP');
+# DefMath('\ndashVv',Tokens());
+DefMath('\therefore', "\x{2234}", role => 'METARELOP', meaning => 'therefore');
+DefMath('\because',   "\x{2235}", role => 'METARELOP', meaning => 'because');
+DefMath('\ring{}',    "\x{030A}", operator_role => 'OVERACCENT');
+#   \dot
+#   \ddot,
+DefMath('\dddot{}',  "\x{02D9}\x{02D9}\x{02D9}",         operator_role => 'OVERACCENT');
+DefMath('\ddddot{}', "\x{02D9}\x{02D9}\x{02D9}\x{02D9}", operator_role => 'OVERACCENT');
+#   \angle
+DefMath('\measuredangle',  "\x{2221}");
+DefMath('\sphericalangle', "\x{2222}");
+DefMath('\rip',            "\x{26FC}");    # Not quite the right glyph
+
+#======================================================================
+# Delimiters as symbols (matha)
+# (,)
+# [,]
+# \setminus, /
+# |, \mid
+
+#======================================================================
+# Delimiters as symbols (mathb)
+# DefMath('\lcorners',Tokens());
+# DefMath('\rcorners',Tokens());
+DefMath('\ulcorner', "\x{231C}");
+DefMath('\urcorner', "\x{231D}");
+DefMath('\llcorner', "\x{231E}");
+DefMath('\lrcorner', "\x{231F}");
+
+#======================================================================
+# Astronomical Symbols (mathbb)
+DefPrimitive('\Sun',         "\x{2609}");
+DefPrimitive('\Mercury',     "\x{263F}");
+DefPrimitive('\Venus',       "\x{2640}");
+DefPrimitive('\Earth',       "\x{2641}");    # wants circled + ???
+DefPrimitive('\Mars',        "\x{2642}");
+DefPrimitive('\Jupiter',     "\x{2643}");
+DefPrimitive('\Saturn',      "\x{2644}");
+DefPrimitive('\Uranus',      "\x{2645}");
+DefPrimitive('\Neptune',     "\x{2646}");
+DefPrimitive('\Pluto',       "\x{2647}");
+DefPrimitive('\varEarth',    "\x{2641}");
+DefPrimitive('\leftmoon',    "\x{263E}");
+DefPrimitive('\rightmoon',   "\x{263D}");
+DefPrimitive('\fullmoon',    "\x{25CB}");    # actually just white circle
+DefPrimitive('\newmoon',     "\x{25CF}");    # actually just black circle
+DefPrimitive('\Aries',       "\x{2648}");
+DefPrimitive('\Taurus',      "\x{2649}");
+DefPrimitive('\Gemini',      "\x{264A}");
+DefPrimitive('\Cancer',      "\x{264B}");
+DefPrimitive('\Leo',         "\x{264C}");
+DefPrimitive('\Virgo',       "\x{264D}");
+DefPrimitive('\Libra',       "\x{264E}");
+DefPrimitive('\Scorpio',     "\x{264F}");
+DefPrimitive('\Sagittarius', "\x{2650}");
+DefPrimitive('\Capricorn',   "\x{2651}");
+DefPrimitive('\Aquarius',    "\x{2652}");
+DefPrimitive('\Pisces',      "\x{2653}");
+
+#======================================================================
+# Letter-like symbols (matha)
+#  \forall,
+DefMath('\complement', "\x{2201}", meaning => 'complement');
+#  \partial
+DefMath('\partialslash', "\x{2202}\x{0338}", role => 'OPERATOR');
+#  \exists,
+DefMath('\nexists', "\x{2204}", role => 'FUNCTION', meaning => 'not-exists');
+DefMath('\Finv',    "\x{2132}");
+DefMath('\Game',    "\x{2141}");
+#   \emptyset,
+DefMath('\diameter', "\x{2300}");
+#   \top, \bot
+#   \perp,
+DefMath('\nottop',     "\x{22A4}\x{0338}", role => 'ADDOP', meaning => 'not-top');
+DefMath('\notbot',     "\x{22A5}\x{0338}", role => 'ADDOP', meaning => 'not-bottom');
+DefMath('\notperp',    "\x{27C2}\x{0338}", role => 'RELOP', meaning => 'not-perpendicular-to');
+DefMath('\curlywedge', "\x{22CF}",         role => 'ADDOP', meaning => 'and');
+DefMath('\curlyvee',   "\x{22CE}",         role => 'ADDOP', meaning => 'or');
+#   \in, \owns
+#   \notin
+DefMath('\notowner', "\x{220C}", meaning => 'not-contains', role => 'RELOP');
+Let('\notni',       '\notowner');
+Let('\notowns',     '\notowner');
+Let('\varnotin',    '\notin');
+Let('\varnotowner', '\notowner');
+DefMath('\barin',   "\x{22F6}", role => 'ADDOP', meaning => 'element-of-with-overbar');
+DefMath('\ownsbar', "\x{22F8}", role => 'ADDOP', meaning => 'element-of-with-underbar');
+#  \cap, \cup
+#  \uplus, \sqcap
+#  \sqcup, \squplus
+#  \wedge, \and, \vee, \lor
+
+#======================================================================
+# Letter-like symbols (mathb)
+DefMath('\barwedge',       "\x{22BC}", role => 'ADDOP', meaning => 'not-and');
+DefMath('\veebar',         "\x{22BB}", role => 'ADDOP', meaning => 'exclusive-or');
+DefMath('\doublebarwedge', "\x{2A5E}", role => 'ADDOP');
+DefMath('\veedoublebar',   "\x{2A63}", role => 'ADDOP');
+DefMath('\doublecap',      "\x{22D2}", role => 'ADDOP', meaning => 'double-intersection');
+DefMath('\doublecup',      "\x{22D3}", role => 'ADDOP', meaning => 'double-union');
+DefMath('\sqdoublecap',    "\x{2A4E}", role => 'ADDOP', meaning => 'double-square-intersection');
+DefMath('\sqdoublecup',    "\x{2A4F}", role => 'ADDOP', meaning => 'double-square-union');
+
+#======================================================================
+#  Subset's and superset's signs (matha)
+#  \subset, \supset
+DefMath('\nsubset', "\x{2284}", meaning => 'not-subset-of',   role => 'RELOP');
+DefMath('\nsupset', "\x{2285}", meaning => 'not-superset-of', role => 'RELOP');
+#  \subseteq, \supseteq
+DefMath('\nsubseteq',    "\x{2288}", role => 'RELOP', meaning => 'not-subset-of-nor-equals');
+DefMath('\nsupseteq',    "\x{2289}", role => 'RELOP', meaning => 'not-superset-of-nor-equals');
+DefMath('\subsetneq',    "\x{228A}", role => 'RELOP', meaning => 'subset-of-and-not-equals');
+DefMath('\supsetneq',    "\x{228B}", role => 'RELOP', meaning => 'superset-of-and-not-equals');
+DefMath('\varsubsetneq', "\x{228A}", role => 'RELOP', meaning => 'subset-of-and-not-equals');
+DefMath('\varsupsetneq', "\x{228B}", role => 'RELOP', meaning => 'subset-of-and-not-equals');
+DefMath('\subseteqq',    "\x{2AC5}", role => 'RELOP', meaning => 'subset-of-or-equals');
+DefMath('\supseteqq',    "\x{2AC6}", role => 'RELOP', meaning => 'superset-of-or-equals');
+DefMath('\nsubseteqq', "\x{2AC5}\x{0338}", role => 'RELOP', meaning => 'not-subset-of-nor-equals');
+DefMath('\nsupseteqq', "\x{2AC6}\x{0338}", role => 'RELOP', meaning => 'not-superset-of-nor-equals');
+DefMath('\subsetneqq',    "\x{2ACB}", role => 'RELOP', meaning => 'subset-of-and-not-equals');
+DefMath('\supsetneqq',    "\x{2ACC}", role => 'RELOP', meaning => 'superset-of-and-not-equals');
+DefMath('\varsubsetneqq', "\x{2ACB}", role => 'RELOP', meaning => 'subset-of-and-not-equals');
+DefMath('\varsupsetneqq', "\x{2ACC}", role => 'RELOP', meaning => 'superset-of-and-not-equals');
+DefMath('\Subset',        "\x{22D0}", role => 'RELOP', meaning => 'double-subset-of');
+DefMath('\Supset',        "\x{22D1}", role => 'RELOP', meaning => 'double-superset-of');
+DefMath('\nSubset',       "\x{22D0}\x{0338}", role => 'RELOP', meaning => 'not-double-subset-of');
+DefMath('\nSupset',       "\x{22D1}\x{0338}", role => 'RELOP', meaning => 'not-double-superset-of');
+
+#======================================================================
+# Square Subset's and superset's signs (mathb)
+#  \sqsubset, \sqsupset
+DefMath('\nsqsubset', "\x{228F}\x{0338}", role => 'RELOP', meaning => 'not-square-image-of');
+DefMath('\nsqsupset', "\x{2290}\x{0338}", role => 'RELOP', meaning => 'not-square-original-of');
+#  \sqsubseteq, \sqsupseteq
+DefMath('\nsqsubseteq', "\x{22E2}", role => 'RELOP', meaning => 'not-square-image-of-nor-equals');
+DefMath('\nsqsupseteq', "\x{22E3}", role => 'RELOP', meaning => 'not-square-original-of-nor-equals');
+DefMath('\sqsubsetneq', "\x{22E4}", role => 'RELOP', meaning => 'square-image-of-or-not-equals');
+DefMath('\sqsupsetneq', "\x{22E5}", role => 'RELOP', meaning => 'square-original-of-or-not-equals');
+Let('\varsqsubsetneq', '\sqsubsetneq');
+Let('\varsqsupsetneq', '\sqsupsetneq');
+# Pretty crummy, using underline
+DefMath('\sqsubseteqq', "\x{228F}\x{0333}", role => 'RELOP', meaning => 'square-image-of-or-equals');
+DefMath('\sqsupseteqq', "\x{2290}\x{0333}", role => 'RELOP', meaning => 'square-original-of-or-equals');
+DefMath('\nsqsubseteqq', "\x{228F}\x{0333}\x{0338}", role => 'RELOP', meaning => 'not-square-image-of-nor-equals');
+DefMath('\nsqsupseteqq', "\x{2290}\x{0333}\x{0338}", role => 'RELOP', meaning => 'not-square-original-of-nor-equals');
+# DefMath('\nsqsubseteqq',Tokens());
+# DefMath('\nsqsupseteqq',Tokens());
+# DefMath('\sqsubsetneqq',Tokens());
+# DefMath('\sqsupsetneqq',Tokens());
+# DefMath('\varsqsubsetneqq',Tokens());
+# DefMath('\varsqsupsetneqq',Tokens());
+# DefMath('\nsqSubset',Tokens());
+# DefMath('\nsqSupset',Tokens());
+# DefMath('\sqSubset',Tokens());
+# DefMath('\sqSupset',Tokens());
+
+#======================================================================
+# Triangles as relations (matha)
+#  \triangleleft,
+DefMath('\vartriangleleft', "\x{22B2}");    # NORMAL SUBGROUP OF (\lhd)
+# \triangleright
+DefMath('\vartriangleright', "\x{22B3}");    # CONTAINS AS NORMAL SUBGROUP (\rhd)
+DefMath('\ntriangleleft',    "\x{22EA}", role => 'RELOP', meaning => 'not-subgroup-of');
+DefMath('\ntriangleright',   "\x{22EB}", role => 'RELOP', meaning => 'not-contains');
+DefMath('\trianglelefteq',   "\x{22B4}");    # NORMAL SUBGROUP OF OR EQUAL TO (\unlhd)
+DefMath('\trianglerighteq',  "\x{22B5}");    # CONTAINS AS NORMAL SUBGROUP OR EQUAL TO (\unrhd)
+DefMath('\ntrianglelefteq',  "\x{22EC}", role => 'RELOP', meaning => 'not-subgroup-of-nor-equals');
+DefMath('\ntrianglerighteq', "\x{22ED}", role => 'RELOP', meaning => 'not-contains-nor-equals');
+
+#======================================================================
+# Triangles as binary operators (mathb)
+DefMath('\smalltriangleup',    "\x{25B5}", role => 'RELOP');
+DefMath('\smalltriangledown',  "\x{25BF}", role => 'RELOP');
+DefMath('\smalltriangleleft',  "\x{25C3}", role => 'RELOP');
+DefMath('\smalltriangleright', "\x{25B9}", role => 'RELOP');
+DefMath('\blacktriangleup',    "\x{25B4}", role => 'RELOP');
+DefMath('\blacktriangledown',  "\x{25BE}", role => 'RELOP');
+DefMath('\blacktriangleleft',  "\x{25C2}", role => 'RELOP');
+DefMath('\blacktriangleright', "\x{25B8}", role => 'RELOP');
+
+#======================================================================
+# Inequalities (matha)
+#  <, >
+DefMath('\nless', "\x{226E}", role => 'RELOP', meaning => 'not-less-than');
+DefMath('\ngtr',  "\x{226F}", role => 'RELOP', meaning => 'not-greater-than');
+#   \leq, \geq (\leqslant, \qeqslant)
+DefMath('\nleq', "\x{2270}", role => 'RELOP', meaning => 'not-less-than-nor-greater-than');
+DefMath('\ngeq', "\x{2271}", role => 'RELOP', meaning => 'not-greater-than-nor-equals');
+Let('\varleq',  '\leq');
+Let('\vargeq',  '\geq');
+Let('\nvarleq', '\nleq');
+Let('\nvargeq', '\ngeq');
+DefMath('\lneq',  "\x{2A87}",         role => 'RELOP', meaning => 'less-than-and-not-equals');
+DefMath('\gneq',  "\x{2A88}",         role => 'RELOP', meaning => 'greater-than-and-not-equals');
+DefMath('\leqq',  "\x{2266}",         role => 'RELOP', meaning => 'less-than-or-equals');
+DefMath('\geqq',  "\x{2267}",         role => 'RELOP', meaning => 'greater-than-or-equals');
+DefMath('\nleqq', "\x{2266}\x{0338}", role => 'RELOP', meaning => 'not-less-than-nor-equals');
+DefMath('\ngeqq', "\x{2267}\x{0338}", role => 'RELOP', meaning => 'not-greater-than-nor-equals');
+DefMath('\lneqq', "\x{2268}",         role => 'RELOP', meaning => 'less-than-and-not-equals');
+DefMath('\gneqq', "\x{2269}",         role => 'RELOP', meaning => 'greater-than-and-not-equals');
+DefMath('\lvertneqq',    "\x{2268}",  role => 'RELOP', meaning => 'less-than-and-not-equals');
+DefMath('\gvertneqq',    "\x{2269}",  role => 'RELOP', meaning => 'greater-than-and-not-equals');
+DefMath('\eqslantless',  "\x{2A95}",  role => 'RELOP', meaning => 'less-than-or-equals');
+DefMath('\eqslantgtr',   "\x{2A96}",  role => 'RELOP', meaning => 'greater-than-or-equals');
+DefMath('\neqslantless', "\x{2A95}\x{0338}", role => 'RELOP', meaning => 'not-less-than-nor-equals');
+DefMath('\neqslantgtr', "\x{2A96}\x{0338}", role => 'RELOP', meaning => 'not-greater-than-nor-equals');
+DefMath('\lessgtr',     "\x{2276}", role => 'RELOP', meaning => 'less-than-or-greater-than');
+DefMath('\gtrless',     "\x{2277}", role => 'RELOP', meaning => 'greater-than-or-less-than');
+DefMath('\lesseqgtr', "\x{22DA}", role => 'RELOP', meaning => 'less-than-or-equals-or-greater-than');
+DefMath('\gtreqless', "\x{22DB}", role => 'RELOP', meaning => 'greater-than-or-equals-or-less-than');
+DefMath('\lesseqqgtr', "\x{2A8B}", role => 'RELOP', meaning => 'less-than-or-equals-or-greater-than');
+DefMath('\gtreqqless', "\x{2A8C}", role => 'RELOP', meaning => 'greater-than-or-equals-or-less-than');
+DefMath('\lesssim',    "\x{2272}", role => 'RELOP', meaning => 'less-than-or-similar-to');
+DefMath('\gtrsim',     "\x{2273}", role => 'RELOP', meaning => 'greater-than-or-equivalent-to');
+DefMath('\nlesssim', "\x{2272}\x{0338}", role => 'RELOP', meaning => 'not-less-than-nor-similar-to');
+DefMath('\ngtrsim', "\x{2273}\x{0338}", role => 'RELOP', meaning => 'not-greater-than-nor-equivalent-to');
+DefMath('\lnsim', "\x{22E6}", role => 'RELOP', meaning => 'less-than-and-not-equivalent-to');
+DefMath('\gnsim', "\x{22E7}", role => 'RELOP', meaning => 'greater-than-and-not-equivalent-to');
+DefMath('\lessapprox', "\x{2A85}", role => 'RELOP', meaning => 'less-than-or-approximately-equals');
+DefMath('\gtrapprox', "\x{2A86}", role => 'RELOP', meaning => 'greater-than-or-approximately-equals');
+DefMath('\nlessapprox', "\x{2A85}\x{0338}", role => 'RELOP', meaning => 'not-less-than-nor-approximately-equals');
+DefMath('\ngtrapprox', "\x{2A86}\x{0338}", role => 'RELOP', meaning => 'not-greater-than-nor-approximately-equals');
+DefMath('\lnapprox', "\x{2A89}", role => 'RELOP', meaning => 'less-than-and-not-approximately-equals');
+DefMath('\gnapprox', "\x{2A8A}", role => 'RELOP', meaning => 'greater-than-and-not-approximately-equals');
+DefMath('\lessdot', "\x{22D6}", role => 'RELOP');
+DefMath('\gtrdot',  "\x{22D7}", role => 'RELOP');
+DefMath('\lll',     "\x{22D8}", role => 'RELOP', meaning => 'very-much-less-than');
+DefMath('\ggg',     "\x{22D9}", role => 'RELOP', meaning => 'very-much-greater-than');
+DefMath('\precdot', "\x{22D6}", role => 'RELOP');    # glyph is for less with dot!
+DefMath('\succdot', "\x{22D7}", role => 'RELOP');    # gtr with dot!
+
+#======================================================================
+# Inequalities (mathb)
+# Sometimes using \x{0338} to negate (which is slash, but should use vertical?)
+#  \prec, \succ
+DefMath('\nprec',        "\x{2280}",         role => 'RELOP', meaning => 'not-precedes');
+DefMath('\nsucc',        "\x{2281}",         role => 'RELOP', meaning => 'not-succeeds');
+DefMath('\preccurlyeq',  "\x{227C}",         role => 'RELOP', meaning => 'precedes-or-equals');
+DefMath('\succcurlyeq',  "\x{227D}",         role => 'RELOP', meaning => 'succeeds-or-equals');
+DefMath('\npreccurlyeq', "\x{227C}\x{0338}", role => 'RELOP', meaning => 'not-precedes-nor-equals');
+DefMath('\nsucccurlyeq', "\x{227D}\x{0338}", role => 'RELOP', meaning => 'not-succeeds-nor-equals');
+#  \preceq, succeq
+DefMath('\npreceq', "\x{22E0}", role => 'RELOP', meaning => 'not-precedes-nor-equals'); # Using slant equals?
+DefMath('\nsucceq',      "\x{22E1}",         role => 'RELOP', meaning => 'not-succeeds-nor-equals');
+DefMath('\precneq',      "\x{22E8}",         role => 'RELOP', meaning => 'precedes-not-equals');
+DefMath('\succneq',      "\x{22E9}",         role => 'RELOP', meaning => 'succeeds-not-equals');
+DefMath('\curlyeqprec',  "\x{22DE}",         role => 'RELOP', meaning => 'equals-or-preceeds');
+DefMath('\curlyeqsucc',  "\x{22DF}",         role => 'RELOP', meaning => 'equals-or-succeeds');
+DefMath('\ncurlyeqprec', "\x{22DE}\x{0338}", role => 'RELOP', meaning => 'not-equals-nor-preceeds');
+DefMath('\ncurlyeqsucc', "\x{22DF}\x{0338}", role => 'RELOP', meaning => 'not-equals-nor-succeeds');
+DefMath('\precsim',      "\x{227E}",     role => 'RELOP', meaning => 'precedes-or-equivalent-to');
+DefMath('\succsim',      "\x{227F}",     role => 'RELOP', meaning => 'succeeds-or-equivalent-to');
+DefMath('\nprecsim', "\x{227E}\x{0338}", role => 'RELOP', meaning => 'not-precedes-nor-equivalent-to');
+DefMath('\nsuccsim', "\x{227F}\x{0338}", role => 'RELOP', meaning => 'not-succeeds-nor-equivalent-to');
+DefMath('\precnsim',   "\x{22E8}", role => 'RELOP', meaning => 'precedes-and-not-equivalent-to');
+DefMath('\succnsim',   "\x{22E9}", role => 'RELOP', meaning => 'succeeds-and-not-equivalent-to');
+DefMath('\precapprox', "\x{2AB7}", role => 'RELOP', meaning => 'precedes-or-approximately-equals');
+DefMath('\succapprox', "\x{2AB8}", role => 'RELOP', meaning => 'succeeds-or-approximately-equals');
+DefMath('\nprecapprox', "\x{2AB7}\x{0338}", meaning => 'not-precedes-nor-approximately-equals', role => 'RELOP');
+DefMath('\nsuccapprox', "\x{2AB8}\x{0338}", role => 'RELOP', meaning => 'not-succeeds-nor-approximately-equals');
+DefMath('\precnapprox', "\x{2AB9}", role => 'RELOP', meaning => 'precedes-and-not-approximately-equals');
+DefMath('\succnapprox', "\x{2ABA}", role => 'RELOP', meaning => 'succeeds-and-not-approximately-equals');
+DefMath('\llcurly', "\x{2ABB}", role => 'RELOP', meaning => 'double-precedes');
+DefMath('\ggcurly', "\x{2ABC}", role => 'RELOP', meaning => 'double-succeeds');
+
+#======================================================================
+# Arrows and Harppons (matha)
+#  \leftarrow, \gets \rightarrow, \to
+#  \nwarrow, \nearrow
+#  \swarrow, \searrow
+#  \leftrightarrow
+DefMath('\nleftarrow',      "\x{219A}", role => 'ARROW');
+DefMath('\nrightarrow',     "\x{219B}", role => 'ARROW');
+DefMath('\nleftrightarrow', "\x{21AE}", role => 'ARROW');    # LEFT RIGHT ARROW WITH STROKE
+#  \relbar
+#  \mapstochar
+DefMath('\mapsfromchar', '|', role => 'RELOP');
+#  \leftharpoonup
+#  \rightharpoonup, \leftharpoondown
+#  \rightharpoondown,
+DefMath('\upharpoonleft',     "\x{21BF}", role => 'ARROW');
+DefMath('\downharpoonleft',   "\x{21C3}", role => 'ARROW');
+DefMath('\upharpoonright',    "\x{21BE}", role => 'ARROW');
+DefMath('\restriction',       "\x{21BE}", role => 'ARROW');
+DefMath('\downharpoonright',  "\x{21C2}", role => 'ARROW');
+DefMath('\leftrightharpoons', "\x{21CB}", role => 'ARROW');
+#  \rightleftharpoons
+DefMath('\updownharpoons', "\x{296E}", role => 'ARROW');
+DefMath('\downupharpoons', "\x{296F}", role => 'ARROW');
+#  \Leftarrow, \Rightarrow
+#  \Leftrightarrow,
+DefMath('\nLeftarrow',      "\x{21CD}", role => 'ARROW');
+DefMath('\nRightarrow',     "\x{21CF}", role => 'ARROW');
+DefMath('\nLeftrightarrow', "\x{21CE}", role => 'ARROW');
+#  \Relbar
+DefMath('\Mapstochar',   '|', role => 'RELOP');
+DefMath('\Mapsfromchar', '|', role => 'RELOP');
+
+#======================================================================
+# Arrows and Harppons (mathb)
+DefMath('\leftleftarrows',     "\x{21C7}", role => 'ARROW');
+DefMath('\rightrightarrows',   "\x{21C9}", role => 'ARROW');
+DefMath('\upuparrows',         "\x{21C8}", role => 'ARROW');
+DefMath('\downdownarrows',     "\x{21CA}", role => 'ARROW');
+DefMath('\leftrightarrows',    "\x{21C6}", role => 'ARROW');
+DefMath('\rightleftarrows',    "\x{21C4}", role => 'ARROW');
+DefMath('\updownarrows',       "\x{21C5}", role => 'ARROW');
+DefMath('\downuparrows',       "\x{21F5}", role => 'ARROW');
+DefMath('\leftleftharpoons',   "\x{2962}", role => 'ARROW');
+DefMath('\rightrightharpoons', "\x{2964}", role => 'ARROW');
+DefMath('\upupharpoons',       "\x{2963}", role => 'ARROW');
+DefMath('\downdownharpoons',   "\x{2965}", role => 'ARROW');
+DefMath('\leftbarharpoon',     "\x{296A}", role => 'ARROW');
+DefMath('\rightbarharpoon',    "\x{296C}", role => 'ARROW');
+DefMath('\barleftharpoon',     "\x{296B}", role => 'ARROW');
+DefMath('\barrightharpoon',    "\x{296D}", role => 'ARROW');
+DefMath('\leftrightharpoon',   "\x{294A}", role => 'ARROW');
+DefMath('\rightleftharpoon',   "\x{294B}", role => 'ARROW');
+#  \rhook, \lhook
+DefMath('\diagup',         "\x{2571}");
+DefMath('\diagdown',       "\x{2572}");
+DefMath('\Lsh',            "\x{21B0}", role => 'ARROW');
+DefMath('\Rsh',            "\x{21B1}", role => 'ARROW');
+DefMath('\dlsh',           "\x{21B2}", role => 'ARROW');
+DefMath('\drsh',           "\x{21B3}", role => 'ARROW');
+DefMath('\looparrowleft',  "\x{21AB}", role => 'ARROW');
+DefMath('\looparrowright', "\x{21AC}", role => 'ARROW');
+# DefMath('\looparrowdownleft',Tokens());
+# DefMath('\looparrowdownright',Tokens());
+DefMath('\curvearrowleft',  "\x{21B6}", role => 'ARROW');
+DefMath('\curvearrowright', "\x{21B7}", role => 'ARROW');
+# DefMath('\curvearrowleftright',Tokens()); \curvearrowtopleftright
+# DefMath('\curvearrowbotleft',Tokens());
+DefMath('\curvearrowbotright', "\x{293B}", role => 'ARROW');
+# DefMath('\curvearrowbotleftright',Tokens());
+DefMath('\circlearrowleft',     "\x{21BA}", role => 'ARROW');
+DefMath('\circlearrowright',    "\x{21BB}", role => 'ARROW');
+DefMath('\leftsquigarrow',      "\x{21DC}", role => 'RELOP');
+DefMath('\rightsquigarrow',     "\x{219D}", role => 'ARROW');
+DefMath('\leftrightsquigarrow', "\x{21AD}", role => 'ARROW');
+DefMath('\lefttorightarrow',    "\x{2B8E}", role => 'ARROW');
+DefMath('\righttoleftarrow',    "\x{2B8C}", role => 'ARROW');
+DefMath('\uptodownarrow',       "\x{2B8F}", role => 'ARROW');
+DefMath('\downtouparrow',       "\x{2B8D}", role => 'ARROW');
+
+#======================================================================
+# Circles (matha)
+#   Using combining circle \x{20DD} for missing cases, but positioning is bad
+#  \oplus, \ominus (\circleddash)
+#  \otimes
+DefMath('\odiv', UTF(0xF7) . "\x{20DD}", role => 'ADDOP');
+#  \odot
+DefMath('\ocirc', "\x{229A}");
+DefMath('\oasterisk', "\x{229B}", role => 'MULOP');
+# DefMath('\ocoasterisk',Tokens());
+DefMath('\oleft',  "\x{22A3}\x{20DD}", role => 'ADDOP');
+DefMath('\oright', "\x{22A2}\x{20DD}", role => 'ADDOP');
+DefMath('\otop',   "\x{22A4}\x{20DD}", role => 'ADDOP');
+DefMath('\obot',   "\x{29BA}");
+DefMath('\ovoid',  "\x{25CB}");
+#  \oslash
+DefMath('\obackslash', "\x{29B8}");
+DefMath('\otriangleup', "\x{25B3}\x{20DD}", role => 'ADDOP');
+
+#======================================================================
+# Boxes (mathb)
+#   Using combining square \x{20DE} for missing cases, but positioning is bad
+DefMath('\boxplus',     "\x{229E}",             role => 'ADDOP');
+DefMath('\boxminus',    "\x{229F}",             role => 'ADDOP');
+DefMath('\boxtimes',    "\x{22A0}",             role => 'MULOP');
+DefMath('\boxdiv',      UTF(0xF7) . "\x{20DE}", role => 'ADDOP');
+DefMath('\boxdot',      "\x{22A1}",             role => 'MULOP');
+DefMath('\boxcirc',     "\x{2218}\x{20DE}",     role => 'ADDOP');
+DefMath('\boxasterisk', "\x{29C6}");
+# DefMath('\boxcoasterisk',Tokens());
+DefMath('\boxleft',  "\x{22A3}\x{20DE}", role => 'ADDOP');
+DefMath('\boxright', "\x{22A2}\x{20DE}", role => 'ADDOP');
+DefMath('\boxtop',   "\x{22A4}\x{20DE}", role => 'ADDOP');
+DefMath('\boxbot',   "\x{22A5}\x{20DE}", role => 'ADDOP');
+DefMath('\boxvoid',  "\x{25A1}");
+#  \Box
+DefMath('\boxslash',      "\x{29C5}");
+DefMath('\boxbackslash',  "\x{29C4}");
+DefMath('\boxtriangleup', "\x{25B3}\x{20DE}", role => 'ADDOP');
+
+#======================================================================
+# Mayan numerals
+
+#======================================================================
+# Large operators (mathx)
+#  \sum, \prod
+#  \coprod, \intop
+DefMath('\iintop', "\x{222C}", meaning => 'double-integral', role => 'INTOP',
+  mathstyle => \&doVariablesizeOp);
+DefMath('\iiintop', "\x{222D}", meaning => 'triple-integral', role => 'INTOP',
+  mathstyle => \&doVariablesizeOp);
+#  \ointop, \oint
+DefMath('\oiintop', "\x{222F}", meaning => 'double-contour-integral', role => 'INTOP',
+  scriptpos => 'mid', mathstyle => \&doVariablesizeOp);
+DefMath('\bigplus', "+", font => { size => 'large' },
+  meaning   => 'nary-plus', role      => 'BIGOP',
+  scriptpos => 'mid',       mathstyle => \&doVariablesizeOp);
+DefMath('\bigtimes', "\x{2A09}",
+  meaning   => 'nary-times', role      => 'BIGOP',
+  scriptpos => 'mid',        mathstyle => \&doVariablesizeOp);
+DefMath('\bigcomplementop', "\x{2201}",
+  meaning   => 'nary-complement', role      => 'BIGOP',
+  scriptpos => 'mid',             mathstyle => \&doVariablesizeOp);
+#  \bigcap
+#  \bigcup, \buguplus
+DefMathI('\bigsqcap', undef, "\x{2A05}",
+  role      => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  mathstyle => \&doVariablesizeOp);
+#  \bigsqcup
+# DefMath('\bigsquplus',Tokens());
+#  \bigwedge
+#  \bigvee
+DefMathI('\bigcurlywedge', undef, "\x{22CF}", font => { size => 'Big' },
+  role      => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  mathstyle => \&doVariablesizeOp);
+DefMathI('\bigcurlyvee', undef, "\x{22CE}", font => { size => 'Big' },
+  role      => 'SUMOP',
+  scriptpos => \&doScriptpos,
+  mathstyle => \&doVariablesizeOp);
+
+#======================================================================
+# Big circles (mathx)
+#  \bigoplus
+#  \bigotimes
+DefMath('\bigominus', "\x{2296}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigodiv', UTF(0xF7) . "\x{20DD}", role => 'ADDOP',
+  font => { size => 'large' });
+#  \bigodot
+DefMath('\bigocirc', "\x{229A}",
+  font => { size => 'large' });
+DefMath('\bigoasterisk', "\x{229B}", role => 'MULOP',
+  font => { size => 'large' });
+# DefMath('\ocoasterisk',Tokens());
+DefMath('\bigoleft', "\x{22A3}\x{20DD}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigoright', "\x{22A2}\x{20DD}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigotop', "\x{22A4}\x{20DD}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigobot', "\x{29BA}",
+  font => { size => 'large' });
+DefMath('\bigovoid', "\x{25CB}",
+  font => { size => 'large' });
+DefMath('\bigoslash', "\x{2298}", role => 'MULOP',
+  font => { size => 'large' });
+DefMath('\bigobackslash', "\x{29B8}",
+  font => { size => 'large' });
+DefMath('\bigotriangleup', "\x{25B3}\x{20DD}", role => 'ADDOP',
+  font => { size => 'large' });
+
+#======================================================================
+# Big boxes (mathx)
+# DefMath('\bigboxplus',Tokens());
+# DefMath('\bigboxminus',Tokens());
+# DefMath('\bigboxtimes',Tokens());
+# DefMath('\bigboxdiv',Tokens());
+# DefMath('\bigboxdot',Tokens());
+# DefMath('\bigboxcirc',Tokens());
+# DefMath('\bigboxasterisk',Tokens());
+# DefMath('\bigboxcoasterisk',Tokens());
+# DefMath('\bigboxleft',Tokens());
+# DefMath('\bigboxright',Tokens());
+# DefMath('\bigboxtop',Tokens());
+# DefMath('\bigboxbot',Tokens());
+# DefMath('\bigboxvoid',Tokens());
+# DefMath('\bigboxslash',Tokens());
+# DefMath('\bigboxbackslash',Tokens());
+# DefMath('\bigboxtriangleup',Tokens());
+
+DefMath('\bigboxplus', "\x{229E}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigboxminus', "\x{229F}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigboxtimes', "\x{22A0}", role => 'MULOP',
+  font => { size => 'large' });
+DefMath('\bigboxdiv', UTF(0xF7) . "\x{20DE}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigboxdot', "\x{22A1}", role => 'MULOP',
+  font => { size => 'large' });
+DefMath('\bigboxcirc', "\x{2218}\x{20DE}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigboxasterisk', "\x{29C6}",
+  font => { size => 'large' });
+# DefMath('\boxcoasterisk',Tokens());
+DefMath('\bigboxleft', "\x{22A3}\x{20DE}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigboxright', "\x{22A2}\x{20DE}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigboxtop', "\x{22A4}\x{20DE}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigboxbot', "\x{22A5}\x{20DE}", role => 'ADDOP',
+  font => { size => 'large' });
+DefMath('\bigboxvoid', "\x{25A1}",
+  font => { size => 'large' });
+#  \Box
+DefMath('\bigboxslash', "\x{29C5}",
+  font => { size => 'large' });
+DefMath('\bigboxbackslash', "\x{29C4}",
+  font => { size => 'large' });
+DefMath('\bigboxtriangleup', "\x{25B3}\x{20DE}", role => 'ADDOP',
+  font => { size => 'large' });
+
+#======================================================================
+# Delimiters (matha/mathx)
+# (,)
+# [,]
+# \lbrace, \{, \rbrace,\}
+DefMath('\ldbrack', "\x{27e6}", role => 'OPEN',  stretchy => 'false');
+DefMath('\rdbrack', "\x{27e7}", role => 'CLOSE', stretchy => 'false');
+#  \langle, \rangle
+#  \backslash, /
+# \vert, |
+# \Vert
+DefMath('\vvvert', "\x{2980}", role => 'MID', stretchy => 'false');
+# \uparrow, \downarrow
+# \updownarrow, \Uparrow
+# \Downarrow, \Updownarrow
+
+#======================================================================
+# Delimiters (mathb/mathx)
+#  \lgroup, \rgroup
+#  \lceil, \rceil
+#  \lfloor, \rfloor
+DefMath('\thickvert', "\x{2759}", role => 'MID', stretchy => 'false');
+
+#======================================================================
+# Delimiters (mathx/mathx)
+# DefMath('\lfilet',Tokens());
+# DefMath('\rfilet',Tokens());
+
+#======================================================================
+# Pieces for over-under-braces and such (mathx)
+# ?? \braceld, \bracemd
+# ?? \bracerd,
+# DefMath('\bracexd',Tokens());
+# ?? \bracelu
+# DefMath('\bracemu',Tokens());
+# ?? \braceru
+# DefMath('\bracexu',Tokens());
+
+# DefMath('\braceexwd',Tokens());
+# DefMath('\bracefill',Tokens());
+# DefMath('\bracemd',Tokens());
+# DefMath('\bracevkern',Tokens());
+
+#======================================================================
+# Extensible accents (mathx)
+#  \overbrace, \underbrace
+DefMath('\overgroup Digested',  "\x{23DC}", operator_role => 'OVERACCENT');
+DefMath('\undergroup Digested', "\x{23DD}", operator_role => 'UNDERACCENT');
+
+#   \overrightarrow, \overleftarrow
+DefMath('\overleftrightarrow{}',  "\x{2194}", operator_role => 'OVERACCENT');
+DefMath('\underrightarrow{}',     "\x{2192}", operator_role => 'UNDERACCENT');
+DefMath('\underleftarrow{}',      "\x{2190}", operator_role => 'UNDERACCENT');
+DefMath('\underleftrightarrow{}', "\x{2194}", operator_role => 'UNDERACCENT');
+DefMath('\overRightarrow{}',      "\x{21D2}", operator_role => 'OVERACCENT');
+DefMath('\overLeftarrow{}',       "\x{21D0}", operator_role => 'OVERACCENT');
+DefMath('\overLeftRightarrow{}',  "\x{21D4}", operator_role => 'OVERACCENT');
+DefMath('\underRightarrow{}',     "\x{21D2}", operator_role => 'UNDERACCENT');
+DefMath('\underLeftarrow{}',      "\x{21D0}", operator_role => 'UNDERACCENT');
+DefMath('\underLeftRightarrow{}', "\x{21D4}", operator_role => 'UNDERACCENT');
+#  \widehat
+DefMath('\widecheck Digested', "\x{02C7}", operator_role => 'OVERACCENT');
+# \widetilde
+DefMath('\widebar Digested',   UTF(0xAF),  operator_role => 'OVERACCENT');
+DefMath('\widearrow Digested', "\x{2192}", operator_role => 'OVERACCENT');
+DefMath('\wideparen Digested', "\x{23DC}", operator_role => 'OVERACCENT');
+DefMath('\ring Digested',      "\x{030A}", operator_role => 'OVERACCENT');
+DefMacro('\widering{}',   '\ring{\wideparen{#1}}');
+DefMacro('\widedot{}',    '\dot{\wideparen{#1}}');
+DefMacro('\wideddot{}',   '\ddot{\wideparen{#1}}');
+DefMacro('\widedddot{}',  '\dddot{\wideparen{#1}}');
+DefMacro('\wideddddot{}', '\ddddot{\wideparen{#1}}');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Special constructions
+
+# DefMath('\bigcomplement',Tokens());
+# \surd
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+#======================================================================
+
+#  /--------------------------------------------------------------------\
+# | INCOMPLETE IMPLEMENTATION                                            |
+# | remove this comment, when done.                                      |
+# | Drafted by texscan --stub mathabx.sty                                |
+#  \--------------------------------------------------------------------/
+
+# DefMath('\varnot',Tokens());
+# DefMath('\changenotsign',Tokens());
+
+# DefMath('\ayin',Tokens());
+# DefMath('\beth',Tokens());
+# DefMath('\dalet',Tokens());
+# DefMath('\finalkaf',Tokens());
+# DefMath('\finalmem',Tokens());
+# DefMath('\finalnun',Tokens());
+# DefMath('\finalpe',Tokens());
+# DefMath('\finaltzadik',Tokens());
+# DefMath('\gimmel',Tokens());
+# DefMath('\he',Tokens());
+# DefMath('\het',Tokens());
+# DefMath('\kaf',Tokens());
+# DefMath('\lamed',Tokens());
+# DefMath('\mem',Tokens());
+# DefMath('\nun',Tokens());
+# DefMath('\pe',Tokens());
+# DefMath('\qof',Tokens());
+# DefMath('\resh',Tokens());
+# DefMath('\samekh',Tokens());
+# DefMath('\shin',Tokens());
+# DefMath('\tav',Tokens());
+# DefMath('\tet',Tokens());
+# DefMath('\truc',Tokens());
+# DefMath('\tzadik',Tokens());
+# DefMath('\vav',Tokens());
+# DefMath('\yod',Tokens());
+# DefMath('\zayin',Tokens());
+
+# DefMath('\boldZ',Tokens());
+# DefMath('\bigboldZ',Tokens());
+
+# DefMath('\boldcap',Tokens());
+# DefMath('\boldcomplement',Tokens());
+# DefMath('\boldcup',Tokens());
+
+# DefMath('\complement',Tokens());
+# DefMath('\curt',Tokens());
+# DefMath('\smallcoprod',Tokens());
+# DefMath('\smallprod',Tokens());
+# DefMath('\smallsum',Tokens());
+# DefMath('\squplus',Tokens());
+# DefMath('\varhash',Tokens());
+
+# DefMath('\maya',Tokens());
+# DefMath('\mayacnta',Tokens());
+# DefMath('\mayacntb',Tokens());
+# DefMath('\mayacntc',Tokens());
+# DefMath('\mayacnter',Tokens());
+# DefMath('\mayadelimiters',Tokens());
+# DefMath('\mayadigit',Tokens());
+# DefMath('\mayaexpansion',Tokens());
+# DefMath('\mayarecurse',Tokens());
+# DefMath('\mayawidth',Tokens());
+
+#======================================================================
+1;
