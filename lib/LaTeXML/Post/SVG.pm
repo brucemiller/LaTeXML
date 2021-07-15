@@ -152,23 +152,23 @@ sub convertNode {
   elsif (my $converter = $converters{$tag}) {
     &$converter($parent, $node); }
   else {
-    # my $new = $parent->addNewChild($svgURI,'foreignObject');
-    # $new->appendChild($node); }}
+    # Node is random LaTeXML element, and so will need an svg:foreignObject wrapper.
+    # Moreover, svg will want to know the size of the foreign thing.
+    # Hopefully, this will have been recorded on a containing ltx:g, using innerwidth/innerheight.
     my $g = $parent->addNewChild($svgURI, 'g');
     $g->setAttribute(transform => "scale(1 -1)");
-    my $new = $g->addNewChild($svgURI, 'foreignObject');
-    # Totally wrong, but until we properly size things, we HAVE to give it SOME size!
-    # Once we move to generate real svg:svg directly in LaTeX.pool,
-    # we'll be in a position to do this more correctly...
-    my $width  = $node->getAttribute('innerwidth');     # $width  =~ s/pt$// if defined $width;
-    my $height = $node->getAttribute('innerheight');    #$height =~ s/pt$// if defined $height;
+    my $new       = $g->addNewChild($svgURI, 'foreignObject');
+    my $oldparent = $node->parentNode;
+    my $width     = $node->getAttribute('width')                 # Use node's own width, if any
+      || $node->getAttribute('imagewidth')                       # or if an image
+      || $oldparent->getAttribute('innerwidth')                  # else hopefully from containing ltx:g
+      || $oldparent->getAttribute('width');
+    my $height = $node->getAttribute('height')
+      || $node->getAttribute('imageheight')
+      || $oldparent->getAttribute('innerheight')
+      || $oldparent->getAttribute('height');
     $width  = "50pt" unless defined $width;
     $height = "20pt" unless defined $height;
-    # Just in case it's a graphic!
-    if (my $w = $node->getAttribute('imagewidth')) {
-      $width = $w; }
-    if (my $h = $node->getAttribute('imageheight')) {
-      $height = $h; }
     $new->setAttribute(width    => $width);
     $new->setAttribute(height   => $height);
     $new->setAttribute(overflow => 'visible');
@@ -498,6 +498,8 @@ sub boxContentPos {
   my ($node) = @_;
   my ($nw, $nh, $npos) = get_attr($node, qw(width height pos));
   return (0, 0) unless defined $nw && defined $nh;
+  $nw =~ s/pt$//;
+  $nh =~ s/pt$//;
   if (!$npos) {
     return ($nw / 2, $nh / 2); }
   elsif ($npos eq 't') {
