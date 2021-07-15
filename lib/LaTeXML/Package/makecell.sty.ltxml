@@ -57,11 +57,11 @@ DefMacro('\lx@diag@head{}{}',
 DefConstructor('\lx@diagheads {}{} {}{}{}',
   "<ltx:picture width='#width' height='#height' unitlength='1.0pt'>"
     . "<ltx:line points='#line' stroke='black' stroke-width='0.4'/>"
-    . "<ltx:g transform='translate(#Ax,#Ay)'>"
-    . "<ltx:inline-block innerwidth='#Aw' innerheight='#Ah'>#A</ltx:inline-block>"
+    . "<ltx:g transform='translate(#Ax,#Ay)' innerwidth='#Aw' innerheight='#Ah'>"
+    . "<ltx:inline-block>#A</ltx:inline-block>"
     . "</ltx:g>"
-    . "<ltx:g transform='translate(#Bx,#By)'>"
-    . "<ltx:inline-block innerwidth='#Bw' innerheight='#Bh'>#B</ltx:inline-block>"
+    . "<ltx:g transform='translate(#Bx,#By)' innerwidth='#Bw' innerheight='#Bh'>"
+    . "<ltx:inline-block>#B</ltx:inline-block>"
     . "</ltx:g>"
     . "</ltx:picture>",
   reversion   => '\diaghead(#1,#2){#3}{#4}{#5}',
