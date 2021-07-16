@@ -99,7 +99,7 @@ g =
 element g { g_attributes, g_model }
 
 ## Attributes for \elementref{g}.
-g_attributes = Common.attributes, Picture.attributes, PictureGroup.attributes
+g_attributes = Common.attributes, Transformable.attributes, Picture.attributes, PictureGroup.attributes
 
 ## Content model for \elementref{g}.
 g_model = (Picture.class | Inline.class | Misc.class | Meta.class)*

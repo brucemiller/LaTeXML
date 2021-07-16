@@ -4672,16 +4672,15 @@ DefMacroI(T_CS('\Gin@driver'), undef, Tokens());
 
 DefMacro('\put Until:){}', '\lx@pic@put#1){#2\relax}');
 DefConstructor('\lx@pic@put Pair{}',
-  "<ltx:g transform='#pos'>#2</ltx:g>",
-  properties     => sub { pos => 'translate(' . ptValue(picScale($_[1])) . ')'; },
-  afterConstruct => sub {
-    my ($document, $whatsit) = @_;
-    my $inner = $document->getNode->lastChild->lastChild;
-    my $tag   = $inner && $document->getNodeQName($inner);
-    if ($tag && ($tag !~ /^ltx:(path|g|polygon|line|rect|bezier|circle|ellipse|wedge|arc|dots)$/)) {
-      my ($w, $h, $d) = $whatsit->getSize;
-      $inner->setAttribute(width  => $w->toString);
-      $inner->setAttribute(height => $h->add($d)->toString); } },
+  "<ltx:g transform='#pos' innerwidth='#innerwidth' innerheight='#innerheight'>#2</ltx:g>",
+  properties => sub {
+    my ($w, $h, $d) = $_[2]->getSize;
+    if ($h) {
+      $h = $h->add($d);
+      $h = undef if $h->ptValue == 0; }    # Omit if 0?
+    $w = undef if $w && ($w->ptValue == 0);
+    (pos => 'translate(' . ptValue(picScale($_[1])) . ')',
+      innerwidth => $w, innerheight => $h); },
   alias => '\put',
   mode  => 'text');
 
@@ -5527,12 +5526,12 @@ RawTeX(<<'EOTeX');
 \def\glb@settings{}%
 EOTeX
 
-DefMacroI('\@height', undef, 'height');
-DefMacroI('\@width',  undef, 'width');
-DefMacroI('\@depth',  undef, 'depth');
-DefMacroI('\@minus',  undef, 'minus');
-DefMacroI('\@plus',   undef, 'plus');
-
+DefMacroI('\@height',      undef, 'height');
+DefMacroI('\@width',       undef, 'width');
+DefMacroI('\@depth',       undef, 'depth');
+DefMacroI('\@minus',       undef, 'minus');
+DefMacroI('\@plus',        undef, 'plus');
+DefMacroI('\hb@xt@',       undef, '\hbox to');
 DefMacroI('\hmode@bgroup', undef, '\leavevmode\bgroup');
 
 DefMacroI('\@backslashchar', undef, T_OTHER('\\'));
