@@ -24,14 +24,17 @@ use LaTeXML::Util::Image;
 
 DefParameterType('GraphixDimension', sub {
     my ($gullet) = @_;
-    if ($gullet->ifNext(T_OTHER('!'))) {
-      $gullet->readToken();
+    $gullet->skipSpaces;
+    my $next = $gullet->readXToken;
+    # Wrong !?!?!
+    if (!$next || ($next->equals(T_OTHER('!')))) {
       undef; }    # essentially: let other dimensions determine size.
     else {
+      $gullet->unread($next);
       $gullet->readDimension; } },
   optional => 1);
 
-DefConstructor('\scalebox{}[] Digested',
+DefConstructor('\Gscale@box{}[] Digested',
   "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
     . " xscale='#xscale' yscale='#yscale'"
@@ -42,6 +45,8 @@ DefConstructor('\scalebox{}[] Digested',
     my ($stomach, $xscale, $yscale, $box) = @_;
     $xscale = ToString($xscale);
     $yscale = ($yscale ? ToString($yscale) : $xscale);
+    if    ($xscale eq '!') { $xscale = $yscale; }
+    elsif ($yscale eq '!') { $yscale = $xscale; }
     my ($w, $h, $d) = $box->getSize;
     return () unless $w;
     (width => $w->multiply($xscale),
@@ -52,19 +57,21 @@ DefConstructor('\scalebox{}[] Digested',
       xtranslate => $w->multiply(($xscale - 1) / 2),
       ytranslate => $h->add($d)->multiply(($yscale - 1) / 2)); },
   mode => 'text');
+Let('\scalebox', '\Gscale@box');
 
-DefConstructor('\resizebox OptionalMatch:* {GraphixDimension}{GraphixDimension} Digested', sub {
-    my ($document, $star, $width, $height, $box, %props) = @_;
+DefConstructor('\Gscale@@box OptionalMatch:* {GraphixDimension}{GraphixDimension} Digested', sub {
+    my ($document, $heighttype, $width, $height, $box, %props) = @_;
     insertBlock($document, $box,
       width  => $props{width},
       height => $props{height},
       depth  => $props{depth}); },    # ?
   properties => sub {
-    my ($stomach, $star, $width, $height, $box) = @_;
+    my ($stomach, $heighttype, $width, $height, $box) = @_;
     (($width ? (width => $width) : ()),
       ($height ? (height => $height) : ()),
       depth => Dimension(0)); },      # ?
   mode => 'text');
+DefMacro('\resizebox', '\leavevmode\@ifstar{\Gscale@@box\totalheight}{\Gscale@@box\height}');
 
 # TeX wants to rotate CCW, by default, about the left baseline,
 # but some macros allow you to specify the point or corner about which to rotate.
@@ -208,6 +215,33 @@ DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim',
 DefConstructor('\DeclareGraphicsExtensions{}',          '');
 DefConstructor('\DeclareGraphicsRule{}{}{} Undigested', '');
 # Nothing done about the keyval package...
+
+# Random other defns
+RawTeX(<<'EoTeX');
+\let\Gin@decode\@empty
+\def\Gin@exclamation{!}
+\let\Gin@page\@empty
+\def\Gin@pagebox{cropbox}
+\newif\ifGin@interpolate
+\let\Gin@log\wlog
+\let\Gin@req@sizes\relax
+\def\Gin@scalex{1}%
+\let\Gin@scaley\Gin@exclamation
+\let\Gin@req@height\Gin@nat@height
+\let\Gin@req@width\Gin@nat@width
+\let\Gin@viewport@code\relax
+EoTeX
+
+DefConditional('\ifGin@clip');
+DefMacro('\Gin@i [][]{}', '');    # ?
+# \Gscale@div{\cs}{\dima}{\dimb}  :  \cs = \dima / \dimb
+DefPrimitive('\Gscale@div DefToken {}{}', sub {
+    my ($stomach, $cs, $num, $denom) = @_;
+    my $n = $num->valueOf;
+    my $d = $denom->valueOf;
+    DefMacro($cs, Explode(($n == 0 ? 1 : int($n / $d))));
+    return; });
+
 #======================================================================
 1;
 
