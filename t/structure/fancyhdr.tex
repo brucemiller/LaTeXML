@@ -3,12 +3,12 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 
-\lhead{}
-\chead{}
-\rhead{\bfseries The story of something}
-\lfoot{From: J. K. Paddling}
-\cfoot{To: J. J. A. Smith}
-\rfoot{\thepage}
+\lhead[]{}
+\chead[]{}
+\rhead[\bfseries The story of something]{\bfseries The story of something}
+\lfoot[From: J. K. Paddling]{From: J. K. Paddling}
+\cfoot[To: J. J. A. Smith]{To: J. J. A. Smith}
+\rfoot[\thepage]{\thepage}
 
 \fancyhead{}
 \fancyhead[RO,LE]{\bfseries The story of something}
@@ -20,8 +20,12 @@
 \renewcommand{\headrulewidth}{0.4pt}
 \renewcommand{\footrulewidth}{0.4pt}
 
-\fancypagestyle{plain}{%
-  \fancyhf{}
+\fancyhfinit{\sffamily}
+\fancyheadinit{\sffamily}
+\fancyfootinit{\ttfamily}
+
+\fancypagestyle{plain}[fancydefault]{%
+  \fancyhf[]{}
   \fancyfoot[C]{\bfseries \thepage}
   \renewcommand{\headrulewidth}{0pt}
   \renewcommand{\footrulewidth}{0pt}
@@ -40,11 +44,7 @@
 
 \newpage
 
-\iffootnote
-...
-\else
-hay\footnote{haha \iffootnote !!\fi}
-\fi
+\iffootnote{...}{hay\footnote{haha \iffootnote{!!}{}}}
 
 \iffloatpage{fu}{bar}
 
