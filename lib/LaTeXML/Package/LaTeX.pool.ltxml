@@ -613,7 +613,8 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
     else {          # Number and in TOC
       (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'),
         T_BEGIN, $type->unlist, T_END,
-        T_BEGIN, T_OTHER('toc'), T_END); } });
+        T_BEGIN, T_OTHER('toc'), T_END); } },
+  locked => 1);
 
 # Not sure if this is best, but if no explicit \section'ing...
 #### Tag('ltx:section',autoOpen=>1);
@@ -3181,7 +3182,8 @@ DefEnvironment('{figure}[]',
     . "</ltx:figure>",
   properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest  => sub { RescueCaptionCounters('figure', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('figure', $_[1]); },
+  locked       => 1);
 DefEnvironment('{figure*}[]',
   "<ltx:figure xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
@@ -3189,7 +3191,8 @@ DefEnvironment('{figure*}[]',
     . "</ltx:figure>",
   properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest  => sub { RescueCaptionCounters('figure', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('figure', $_[1]); },
+  locked       => 1);
 DefEnvironment('{table}[]',
   "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
@@ -3197,7 +3200,8 @@ DefEnvironment('{table}[]',
     . "</ltx:table>",
   properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest  => sub { RescueCaptionCounters('table', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('table', $_[1]); },
+  locked       => 1);
 DefEnvironment('{table*}[]',
   "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
@@ -3205,7 +3209,8 @@ DefEnvironment('{table*}[]',
     . "</ltx:table>",
   properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest  => sub { RescueCaptionCounters('table', $_[1]); });
+  afterDigest  => sub { RescueCaptionCounters('table', $_[1]); },
+  locked       => 1);
 
 # There are some floating figure/table packages that define environments
 # to allow the figure to float left or right.  It APPEARS that they allow
@@ -3448,9 +3453,11 @@ DefMacroI('\@tabular@column@after',  undef, '');
 # The Core alignment support is in LaTeXML::Core::Alignment and in TeX.ltxml
 ##DefMacro('\tabular[]{}', '\@tabular@bindings{#2}\@@tabular[#1]{#2}\@start@alignment');
 DefMacro('\tabular[]{}',
-  '\@tabular@bindings{#2}[vattach=#1]\@@tabular[#1]{#2}\@start@alignment\@tabular@before');
+  '\@tabular@bindings{#2}[vattach=#1]\@@tabular[#1]{#2}\@start@alignment\@tabular@before',
+  locked => 1);
 DefMacroI('\endtabular', undef,
-  '\@tabular@after\@finish@alignment\@end@tabular');
+  '\@tabular@after\@finish@alignment\@end@tabular',
+  locked => 1);
 DefPrimitiveI('\@end@tabular', undef, sub { $_[0]->egroup; });
 #DefMacroI('\@end@tabular', undef, undef);
 # Note that the pattern will already have been interpreted by \@tabular@bindings,
@@ -3545,6 +3552,7 @@ DefConstructor('\@@array[] Undigested DigestedBody',
   beforeDigest => sub { $_[0]->bgroup; },
   reversion    => '\begin{array}[#1]{#2}#3\end{array}');
 
+DefMacro('\@tabarray', '\m@th\@@array[c]');
 #**********************************************************************
 # C.11 Moving Information Around
 #**********************************************************************
