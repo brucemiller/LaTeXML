@@ -1,0 +1,40 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  actuarialangle                                                     | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+InputDefinitions('actuarialangle', type => 'sty', noltxml => 1);
+
+DefConstructor('\actuarialangle{}',
+  "<ltx:XMApp>"
+    . "<ltx:XMTok role='ENCLOSE' enclose='actuarial' meaning='actuarialangle' />"
+    . "<ltx:XMWrap>#1</ltx:XMWrap>"
+    . "</ltx:XMApp>");
+
+# define \overanglebracket, unless the nobracket option is passed
+if (IfCondition('\ifacta@bracket')) {
+  DefMath('\overanglebracket{}', "\x{23E0}", operator_role => 'OVERACCENT'); # TOP TORTOISE SHELL BRACKET
+  DefMath('\group{}', '\overanglebracket{#1}');
+}
+
+# preserve reversion
+Let('\lx@actuarialangle@angl', '\angl');
+DefMath('\angl{}', '\lx@actuarialangle@angl{#1}');
+
+DefMath('\angln', '\angl{n}');
+DefMath('\anglr', '\angl{r}');
+DefMath('\anglk', '\angl{k}');
+
+1;
