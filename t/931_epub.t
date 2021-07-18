@@ -21,11 +21,11 @@ my $log_filename = "931_test.log";
 my $latexmlc = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc');
 
 my $path_to_perl = $Config{perlpath};
-my $invocation = $path_to_perl . " " . join(" ", map { ("-I", $_) } @INC) . " ";
-$invocation .= $latexmlc . " --css=LaTeXML-epub.css --dest=$epub_filename --log=$log_filename literal:test ";
+my @invocation = $path_to_perl, map { ('-I', $_) } @INC;
+push(@invocation, $latexmlc, '--css=LaTeXML-epub.css', "--dest=$epub_filename", "--log=$log_filename", 'literal:test');
 
 my ($writer_discard, $reader_discard, $error_discard);
-my $pid = open3($writer_discard, $reader_discard, $error_discard, $invocation);
+my $pid = open3($writer_discard, $reader_discard, $error_discard, @invocation);
 ok(waitpid( $pid, 0 ), "latexmlc invocation for test 931_epub.t : $!");
 
 ok(-f $epub_filename, 'epub file generated');
