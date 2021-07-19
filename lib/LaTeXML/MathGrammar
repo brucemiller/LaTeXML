@@ -462,7 +462,8 @@ factorOpen :
         | balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1])]
         # Sequence starting  with an operator ?
         | AnyOp factorOpenExpr[$arg[0],$item[1]]
-
+        # Simple modified factors P(x=0), P(a<b<c) etc.
+        | Formula balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item[2])] # For (x>1)
 # factorOpenExpr[$open,$expr];  Try to recognize various things that start
 #   this way. Need some extra productions for sets (w/possible middle '|' )
 #   and vectors; all n-ary.

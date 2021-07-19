@@ -195,4 +195,51 @@
         </XMath>
       </Math></p>
   </para>
+  <para xml:id="p12">
+    <p><Math mode="inline" tex="P(x=0)" text="P * (x = 0)" xml:id="p12.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMTok font="italic" role="UNKNOWN">P</XMTok>
+            <XMDual>
+              <XMRef idref="p12.m1.1"/>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                <XMApp xml:id="p12.m1.1">
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  <XMTok meaning="0" role="NUMBER">0</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p13">
+    <p><Math mode="inline" tex="P(a&lt;b&lt;c)" text="P * (a &lt; b &lt; c)" xml:id="p13.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMTok font="italic" role="UNKNOWN">P</XMTok>
+            <XMDual>
+              <XMRef idref="p13.m1.1"/>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                <XMApp xml:id="p13.m1.1">
+                  <XMTok meaning="multirelation"/>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                  <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                </XMApp>
+                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
 </document>
