@@ -23,8 +23,8 @@ InputDefinitions('keyval', type => 'sty', noltxml => 1)
 DefPrimitive('\define@key{}{}[]{}', sub {
     my ($stomach, $keyset, $key, $default, $code) = @_;
 
-    $keyset = ToString($keyset);
-    $key    = ToString($key);
+    $keyset = ToString(Expand($keyset));
+    $key    = ToString(Expand($key));
 
     DefKeyVal($keyset, $key, '', ToString($default), code => $code);
 
@@ -33,7 +33,7 @@ DefPrimitive('\define@key{}{}[]{}', sub {
 # \setkeys{keyset}{keyvals}
 DefMacro('\setkeys{}', sub {
     my ($gullet, $keyset) = @_;
-    my ($values) = ReadParameters($gullet, 'RequiredKeyVals:' . ToString($keyset));
+    my ($values) = ReadParameters($gullet, 'RequiredKeyVals:' . ToString(Expand($keyset)));
     $values->setKeysExpansion; });
 
 #======================================================================

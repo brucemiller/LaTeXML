@@ -20,16 +20,17 @@ use LaTeXML::Util::Pathname qw(pathname_split);
 ###
 ### Basic \setkeys
 ###
+AssignValue('keyval.sty_loaded' => 1, 'global');    # pretend keyval loaded too.
 
 # \setkeys[prefix]{keyset}[na]{keyvals}
 DefMacro('\setkeys OptionalMatch:* OptionalMatch:+ []{}[]', sub {
     my ($gullet, $star, $plus, $prefix, $keysets, $skip) = @_;
 
-    $skip = defined($skip) ? ToString($skip) : undef;
-    $star = defined($star) ? T_CS('\XKV@rm') : undef;
-
-    my $keyvals = LaTeXML::Core::KeyVals->new(
-      $prefix, $keysets,
+    $skip    = defined($skip) ? ToString($skip) : undef;
+    $star    = defined($star) ? T_CS('\XKV@rm') : undef;
+    $prefix  = ToString(Expand($prefix))  if defined $prefix;
+    $keysets = ToString(Expand($keysets)) if defined $keysets;
+    my $keyvals = LaTeXML::Core::KeyVals->new($prefix, $keysets,
       setAll => defined($plus), setInternals => 1,
       skip => $skip, skipMissing => $star);
     $keyvals->readFrom($gullet, T_END);
@@ -46,10 +47,10 @@ DefMacro('\setrmkeys OptionalMatch:* []{}[]', sub {
     my @tokens = ();
     push(@tokens, T_CS('\setkeys'));
     push(@tokens, $star) if defined($star);
-    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
-    push(@tokens, T_BEGIN, $keysets, T_END);
-    push(@tokens, T_OTHER('['), $na, T_OTHER(']')) if defined($na);
-    push(@tokens, T_BEGIN, @keyvals, T_END);
+    push(@tokens, T_OTHER('['), $prefix,  T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN,      $keysets, T_END);
+    push(@tokens, T_OTHER('['), $na,      T_OTHER(']')) if defined($na);
+    push(@tokens, T_BEGIN,      @keyvals, T_END);
     @tokens; });
 
 ## ------------
@@ -60,11 +61,10 @@ DefMacro('\setrmkeys OptionalMatch:* []{}[]', sub {
 DefPrimitive('\define@key[]{}{}[]{}', sub {
     my ($stomach, $prefix, $keyset, $key, $default, $code) = @_;
 
-    $prefix  = defined($prefix)  ? ToString($prefix)  : undef;
-    $default = defined($default) ? ToString($default) : undef;
-    $keyset  = ToString($keyset);
-    $key     = ToString($key);
-
+    $prefix  = $prefix           ? ToString(Expand($prefix)) : undef;
+    $default = defined($default) ? ToString($default)        : undef;
+    $keyset  = ToString(Expand($keyset));
+    $key     = ToString(Expand($key));
     DefKeyVal($keyset, $key, '', $default, prefix => $prefix, code => $code);
 
     return; });
@@ -77,12 +77,13 @@ DefPrimitive('\define@key[]{}{}[]{}', sub {
 DefPrimitive('\define@cmdkey[]{}[]{}[]{}', sub {
     my ($stomach, $prefix, $keyset, $macroprefix, $key, $default, $code) = @_;
 
-    $prefix      = defined($prefix)      ? ToString($prefix)      : undef;
-    $macroprefix = defined($macroprefix) ? ToString($macroprefix) : undef;
+    $prefix      = defined($prefix)      ? ToString(Expand($prefix))      : undef;
+    $macroprefix = defined($macroprefix) ? ToString(Expand($macroprefix)) : undef;
 
-    DefKeyVal(ToString($keyset), ToString($key), '', ToString($default), prefix => $prefix,
-      kind => 'command', macroprefix => $macroprefix,
-      code => $code);
+    DefKeyVal(ToString(Expand($keyset)), ToString(Expand($key)), '', ToString($default),
+      prefix => $prefix,
+      kind   => 'command', macroprefix => $macroprefix,
+      code   => $code);
 
     return; });
 
@@ -90,10 +91,10 @@ DefPrimitive('\define@cmdkey[]{}[]{}[]{}', sub {
 DefPrimitive('\define@cmdkeys[]{}[]{}[]', sub {
     my ($stomach, $prefix, $keyset, $macroprefix, $keys, $default) = @_;
 
-    $prefix      = defined($prefix) ? ToString($prefix) : undef;
-    $keyset      = ToString($keyset);
-    $macroprefix = defined($macroprefix) ? ToString($macroprefix) : undef;
-    $default     = defined($default) ? ToString($default) : undef;
+    $prefix      = defined($prefix) ? ToString(Expand($prefix)) : undef;
+    $keyset      = ToString(Expand($keyset));
+    $macroprefix = defined($macroprefix) ? ToString(Expand($macroprefix)) : undef;
+    $default     = defined($default)     ? ToString($default)             : undef;
 
     foreach my $key (split(',', ToString($keys))) {
       DefKeyVal($keyset, $key, '', $default, prefix => $prefix,
@@ -114,12 +115,12 @@ DefMacro('\define@choicekey OptionalMatch:* OptionalMatch:+ []{}{}[]{}[]{}', sub
     push(@tokens, $star) if defined($star);
     push(@tokens, $plus) if defined($plus);
     push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
-    push(@tokens, T_BEGIN, $keyset, T_END);
-    push(@tokens, T_BEGIN, $key,    T_END);
-    push(@tokens, T_OTHER('['), $bin, T_OTHER(']')) if defined($bin);
-    push(@tokens, T_BEGIN, $choices, T_END);
+    push(@tokens, T_BEGIN,      $keyset,  T_END);
+    push(@tokens, T_BEGIN,      $key,     T_END);
+    push(@tokens, T_OTHER('['), $bin,     T_OTHER(']')) if defined($bin);
+    push(@tokens, T_BEGIN,      $choices, T_END);
     push(@tokens, T_OTHER('['), $default, T_OTHER(']')) if defined($default);
-    push(@tokens, T_BEGIN, $code, T_END);
+    push(@tokens, T_BEGIN,      $code,    T_END);
     # handle the optional mismatch (for the not-plus case)
     push(@tokens, T_BEGIN, T_END) unless defined($plus);
     @tokens; });
@@ -127,11 +128,11 @@ DefMacro('\define@choicekey OptionalMatch:* OptionalMatch:+ []{}{}[]{}[]{}', sub
 DefPrimitive('\ltx@define@choicekey@int OptionalMatch:* OptionalMatch:+ []{}{}[]{}[]{}{}', sub {
     my ($stomach, $star, $plus, $prefix, $keyset, $key, $bin, $choices, $default, $code, $mismatch) = @_;
 
-    $prefix  = defined($prefix)  ? ToString($prefix)  : undef;
-    $default = defined($default) ? ToString($default) : undef;
+    $prefix  = defined($prefix)  ? ToString(Expand($prefix)) : undef;
+    $default = defined($default) ? ToString($default)        : undef;
     my @thechoices = split(',', ToString($choices));
 
-    DefKeyVal(ToString($keyset), ToString($key), '', $default, prefix => $prefix,
+    DefKeyVal(ToString(Expand($keyset)), ToString(Expand($key)), '', $default, prefix => $prefix,
       kind => 'choice', normalize => defined($star), choices => [@thechoices],
       bin => $bin, code => $code, mismatch => $mismatch);
 
@@ -148,8 +149,8 @@ DefMacro('\define@boolkey OptionalMatch:+ []{}[]{}[]{}', sub {
     my @tokens = ();
     push(@tokens, T_CS('\\define@boolkey@int'));
     push(@tokens, $plus) if defined($plus);
-    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
-    push(@tokens, T_BEGIN, $keyset, T_END);
+    push(@tokens, T_OTHER('['), $prefix,      T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN,      $keyset,      T_END);
     push(@tokens, T_OTHER('['), $macroprefix, T_OTHER(']')) if defined($macroprefix);
     push(@tokens, T_BEGIN,      $key,         T_END);
     push(@tokens, T_OTHER('['), $default,     T_OTHER(']')) if defined($default);
@@ -161,11 +162,11 @@ DefMacro('\define@boolkey OptionalMatch:+ []{}[]{}[]{}', sub {
 DefPrimitive('\define@boolkey@int OptionalMatch:+ []{}[]{}[]{}{}', sub {
     my ($stomach, $plus, $prefix, $keyset, $macroprefix, $key, $default, $code, $mismatch) = @_;
 
-    $prefix      = defined($prefix)      ? ToString($prefix)      : undef;
-    $macroprefix = defined($macroprefix) ? ToString($macroprefix) : undef;
-    $default     = defined($default)     ? ToString($default)     : undef;
+    $prefix      = defined($prefix)      ? ToString(Expand($prefix))      : undef;
+    $macroprefix = defined($macroprefix) ? ToString(Expand($macroprefix)) : undef;
+    $default     = defined($default)     ? ToString($default)             : undef;
 
-    DefKeyVal(ToString($keyset), ToString($key), '', $default, prefix => $prefix,
+    DefKeyVal(ToString(Expand($keyset)), ToString(Expand($key)), '', $default, prefix => $prefix,
       kind => 'boolean', macroprefix => $macroprefix,
       code => $code, mismatch => $mismatch);
 
@@ -175,12 +176,12 @@ DefPrimitive('\define@boolkey@int OptionalMatch:+ []{}[]{}[]{}{}', sub {
 DefPrimitive('\define@boolkeys[]{}[]{}[]', sub {
     my ($stomach, $prefix, $keyset, $macroprefix, $keys, $default) = @_;
 
-    $prefix      = defined($prefix) ? ToString($prefix) : undef;
-    $keyset      = ToString($keyset);
-    $macroprefix = defined($macroprefix) ? ToString($macroprefix) : undef;
-    $default     = defined($default) ? ToString($default) : undef;
+    $prefix      = defined($prefix) ? ToString(Expand($prefix)) : undef;
+    $keyset      = ToString(Expand($keyset));
+    $macroprefix = defined($macroprefix) ? ToString(Expand($macroprefix)) : undef;
+    $default     = defined($default)     ? ToString($default)             : undef;
 
-    foreach my $key (split(',', ToString($keys))) {
+    foreach my $key (split(',', ToString(Expand($keys)))) {
       DefKeyVal($keyset, $key, '', $default, prefix => $prefix,
         kind => 'boolean', macroprefix => $macroprefix, code => Tokens()); }
 
@@ -192,9 +193,9 @@ DefPrimitive('\define@boolkeys[]{}[]{}[]', sub {
 DefMacro('\key@ifundefined[]{}{}{}{}', sub {
     my ($gullet, $prefix, $keysets, $key, $undefined, $defined) = @_;
 
-    my $sprefix = defined($prefix) ? ToString($prefix) : undef;
-    my @skeysets = split(',', ToString($keysets));
-    my $skey = ToString($key);
+    my $sprefix  = defined($prefix) ? ToString(Expand($prefix)) : undef;
+    my @skeysets = split(',', ToString(Expand($keysets)));
+    my $skey     = ToString(Expand($key));
 
     # if one of the keys exists, we return
     foreach my $skeyset (@skeysets) {
@@ -210,9 +211,9 @@ DefMacro('\key@ifundefined[]{}{}{}{}', sub {
 DefMacro('\disable@keys[]{}{}', sub {
     my ($gullet, $prefix, $keyset, $keys) = @_;
 
-    my $sprefix = defined($prefix) ? ToString($prefix) : undef;
-    my $skeyset = ToString($keyset);
-    my @skeys   = split(',', ToString($keys));
+    my $sprefix = defined($prefix) ? ToString(Expand($prefix)) : undef;
+    my $skeyset = ToString(Expand($keyset));
+    my @skeys   = split(',', ToString(Expand($keys)));
 
     # if one of the keys exists, we return
     foreach my $skey (@skeys) { DisableKeyVal($sprefix, $skeyset, $skey); }
@@ -295,12 +296,12 @@ DefMacro('\DeclareOptionX@int@normal [] OptionalAngle {}[]{}', sub {
 
     my @tokens = ();
     push(@tokens, T_CS('\\define@key'));
-    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
-    push(@tokens, T_BEGIN, Tokens(Explode(xkeyval_getFileName)), T_END) unless defined($keyset);
-    push(@tokens, T_BEGIN, $keyset, T_END) if defined($keyset);
-    push(@tokens, T_BEGIN,      $key,      T_END);
-    push(@tokens, T_OTHER('['), @defaults, T_OTHER(']'));
-    push(@tokens, T_BEGIN,      $code,     T_END);
+    push(@tokens, T_OTHER('['), $prefix,                              T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN,      Tokens(Explode(xkeyval_getFileName)), T_END) unless defined($keyset);
+    push(@tokens, T_BEGIN,      $keyset,                              T_END) if defined($keyset);
+    push(@tokens, T_BEGIN,      $key,                                 T_END);
+    push(@tokens, T_OTHER('['), @defaults,                            T_OTHER(']'));
+    push(@tokens, T_BEGIN,      $code,                                T_END);
     @tokens; });
 
 ## ------------
@@ -313,10 +314,10 @@ DefMacro('\ExecuteOptionsX [] OptionalAngle []', sub {
 
     my @tokens = ();
     push(@tokens, T_CS('\\setkeys'));
-    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
-    push(@tokens, T_BEGIN, Tokens(Explode(xkeyval_getFileName)), T_END) unless defined($keyset);
-    push(@tokens, T_BEGIN, $keyset, T_END) if defined($keyset);
-    push(@tokens, T_OTHER('['), $na, T_OTHER(']')) if defined($na);
+    push(@tokens, T_OTHER('['), $prefix,                              T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN,      Tokens(Explode(xkeyval_getFileName)), T_END) unless defined($keyset);
+    push(@tokens, T_BEGIN,      $keyset,                              T_END)        if defined($keyset);
+    push(@tokens, T_OTHER('['), $na,                                  T_OTHER(']')) if defined($na);
     return @tokens; });
 
 ## ------------
@@ -338,11 +339,11 @@ DefMacro('\ProcessOptionsX OptionalMatch:* [] OptionalAngle []', sub {
     my @tokens = ();
     push(@tokens, T_CS('\\ProcessOptionsX@int'));
     push(@tokens, $star) if defined($star);
-    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
-    push(@tokens, T_BEGIN, $keysets, T_END) if defined($keysets);
-    push(@tokens, T_OTHER('['), $skip, T_OTHER(']')) if defined($skip);
-    push(@tokens, T_BEGIN, Expand(T_CS('\XKV@classoptionslist'))->unlist, T_END) if defined($star);
-    push(@tokens, T_BEGIN, @options, T_END);
+    push(@tokens, T_OTHER('['), $prefix,  T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_BEGIN,      $keysets, T_END)        if defined($keysets);
+    push(@tokens, T_OTHER('['), $skip,    T_OTHER(']')) if defined($skip);
+    push(@tokens, T_BEGIN,      Expand(T_CS('\XKV@classoptionslist'))->unlist, T_END) if defined($star);
+    push(@tokens, T_BEGIN,      @options,                                      T_END);
     return @tokens; });
 
 # \ExecuteOptionsX[*] [prefix]{}[na]{classoptions}{packageoptions}
@@ -360,8 +361,8 @@ DefMacro('\ProcessOptionsX@int OptionalMatch:* [] {} []', sub {
     # we want to read keyvals options
     my $keyvals = LaTeXML::Core::KeyVals->new(
       $prefix, $keysets,
-      setAll => 0, setInternals => 1,
-      skip => $skip, skipMissing => defined($hookMissing),
+      setAll      => 0, setInternals => 1,
+      skip        => $skip, skipMissing => defined($hookMissing),
       hookMissing => $hookMissing
     );
 
