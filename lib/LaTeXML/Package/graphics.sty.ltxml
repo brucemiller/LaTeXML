@@ -34,6 +34,8 @@ DefParameterType('GraphixDimension', sub {
       $gullet->readDimension; } },
   optional => 1);
 
+# Should probably be more clever about whether to create an ltx:inline-block vs just ltx:text
+# perhaps somethinb based on modes?
 DefConstructor('\Gscale@box{}[] Digested',
   "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
@@ -49,6 +51,7 @@ DefConstructor('\Gscale@box{}[] Digested',
     elsif ($yscale eq '!') { $yscale = $xscale; }
     my ($w, $h, $d) = $box->getSize;
     return () unless $w;
+    # Some issue with double scaling if BOTH size & scales are given!?!?
     (width => $w->multiply($xscale),
       height     => $h->multiply($yscale),
       depth      => $d->multiply($yscale),
@@ -235,11 +238,11 @@ EoTeX
 DefConditional('\ifGin@clip');
 DefMacro('\Gin@i [][]{}', '');    # ?
 # \Gscale@div{\cs}{\dima}{\dimb}  :  \cs = \dima / \dimb
-DefPrimitive('\Gscale@div DefToken {}{}', sub {
+DefPrimitive('\Gscale@div DefToken Dimension Dimension', sub {
     my ($stomach, $cs, $num, $denom) = @_;
     my $n = $num->valueOf;
     my $d = $denom->valueOf;
-    DefMacro($cs, Explode(($n == 0 ? 1 : int($n / $d))));
+    DefMacro($cs, Tokens(Explode(($n == 0 ? 1 : $n / $d))));
     return; });
 
 #======================================================================
