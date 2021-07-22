@@ -21,10 +21,17 @@ use LaTeXML::Util::Image;
 # Provides alternative argument syntax.
 RequirePackage('graphics');
 
+DefMacro('\Gin@ewidth',  '');
+DefMacro('\Gin@eheight', '');
+DefMacro('\Gin@eresize', '');
+#DefKeyVal('Gin', 'width',           'Dimension', '', code=>sub { DefMacro('\Gin@ewidth',$_[1]); });
 DefKeyVal('Gin', 'width',           'Dimension');
 DefKeyVal('Gin', 'height',          'Dimension');
+DefKeyVal('Gin', 'totalheight',     'Dimension');
 DefKeyVal('Gin', 'keepaspectratio', '', 'true');
 DefKeyVal('Gin', 'clip',            '', 'true');
+DefKeyVal('Gin', 'scale',           '');
+DefKeyVal('Gin', 'rotate',          '');
 
 DefKeyVal('Gin', 'vrml', 'Semiverbatim');
 DefKeyVal('Gin', 'magnifiable', '', 'true');
@@ -50,7 +57,7 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
     $options .= ',clip=true' if $starred;
     (path => $path,
       candidates => join(',', @candidates),
-      options => $options); },
+      options    => $options); },
   mode => 'text');    # Hopefully only to affect reading of arguments
 
 #**********************************************************************

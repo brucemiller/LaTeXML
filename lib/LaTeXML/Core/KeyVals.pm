@@ -17,6 +17,7 @@ use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
+use LaTeXML::Core::KeyVal;
 use base qw(LaTeXML::Common::Object);
 
 our @EXPORT = (
@@ -28,12 +29,12 @@ our @EXPORT = (
 #======================================================================
 
 sub GetKeyVal {
-  my ($keyval, $key) = @_;
-  return (defined $keyval) && $keyval->getValue($key); }
+  my ($keyvals, $key) = @_;
+  return (defined $keyvals) && $keyvals->getValue($key); }
 
 sub GetKeyVals {
-  my ($keyval) = @_;
-  return (defined $keyval ? $keyval->getKeyVals : {}); }
+  my ($keyvals) = @_;
+  return (defined $keyvals ? $keyvals->getKeyVals : {}); }
 
 #======================================================================
 # The KeyVals constructor
@@ -68,121 +69,49 @@ sub new {
     elsif ($skipMissing eq '1') { $skipMissing = 1; }
     # may be a string (= store all the missing keys there)
     else { $skipMissing = T_CS($skipMissing); } }
-  my %hash = ();
   my $self = bless {
     # which KeyVals are we parsing and how do we behave?
     prefix      => $prefix,      keysets     => $keysets,
     skip        => $skip,        setAll      => $setAll, setInternals => $setInternals,
     skipMissing => $skipMissing, hookMissing => $hookMissing,
-
     # all the internal representations
-    tuples => [], cachedPairs => [()], cachedHash => \%hash,
-
-    # all the character tokens we used
-    punct => $options{punct}, assign => $options{assign} },
-
+    tuples => [], cachedPairs => [()], cachedHash => {} },
     $class;
+  if (my $tuples = $options{tuples}) {
+    $$self{tuples} = $tuples;
+    $self->rebuild; }
   return $self; }
-
-#======================================================================
-# Accessors for internal usage
-#======================================================================
-
-sub getPrefix {
-  my ($self) = @_;
-  return $$self{prefix}; }
-
-sub getKeySets {
-  my ($self) = @_;
-  return @{ $$self{keysets} }; }
-
-sub getSetAll {
-  my ($self) = @_;
-  return $$self{setAll}; }
-
-sub getSetInternals {
-  my ($self) = @_;
-  return $$self{setInternals}; }
-
-sub getTuples {
-  my ($self) = @_;
-  return @{ $$self{tuples}; } }
-
-sub setTuples {
-  my ($self, @tuples) = @_;
-  $$self{tuples} = [@tuples];
-  # we need to build all the caches
-  $self->rebuild;
-  return; }
-
-sub getCachedPairs {
-  my ($self) = @_;
-  return @{ $$self{cachedPairs}; } }
-
-sub getCachedHash {
-  my ($self) = @_;
-  return %{ $$self{cachedHash} }; }
-
-sub getSkip {
-  my ($self) = @_;
-  return @{ $$self{skip} }; }
-
-sub getSkipMissing {
-  my ($self) = @_;
-  return $$self{skipMissing}; }
-
-sub getHookMissing {
-  my ($self) = @_;
-  return $$self{hookMissing}; }
 
 #======================================================================
 # Resolution to KeySets
 #======================================================================
-
+# Return a list of the keysets in which this key is defined
 sub resolveKeyValFor {
   my ($self, $key) = @_;
-
-  my $prefix  = $self->getPrefix;
-  my @keysets = $self->getKeySets;
-  my @sets    = ();
-
-  # iterate over the keysets
-  foreach my $keyset (@keysets) {
-    my $bkeyval = LaTeXML::Core::KeyVal->new($prefix, $keyset, $key);
-    push(@sets, $bkeyval) if $bkeyval->isDefined(1); }
-
+  my $prefix     = $$self{prefix};
+  my @allkeysets = @{ $$self{keysets} };
+  my @keysets    = grep { HasKeyVal($prefix, $_, $key); } @{ $$self{keysets} };
   # throw an error, unless we record the missing macros
-  if (scalar @sets == 0) {
-    Error(
-      'undefined', 'Encountered unknown KeyVals key',
-      "'$key' with prefix '$prefix' not defined in '" . join(",", @keysets) . "', " .
-        'were you perhaps using \setkeys instead of \setkeys*?') unless defined($self->getSkipMissing);
+  if (scalar @keysets == 0) {
+    Error('undefined', 'Encountered unknown KeyVals key',
+      "'$key' with prefix '$prefix' not defined in '" . join(",", @allkeysets) . "', " .
+        'were you perhaps using \setkeys instead of \setkeys*?') unless defined($$self{skipMissing});
     return; }
-
-  # return either the first or all of the elements
-  return ($sets[0]) unless $self->getSetAll;
-  return @sets; }
+  # return either the first or all of the KeyVal objects
+  return ($$self{setAll} ? @keysets : ($keysets[0])); }
 
 sub canResolveKeyValFor {
   my ($self, $key) = @_;
-  my $prefix  = $self->getPrefix;
-  my @keysets = $self->getKeySets;
-
+  my $prefix = $$self{prefix};
   # iterate over the keysets
-  foreach my $keyset (@keysets) {
-    my $bkeyval = LaTeXML::Core::KeyVal->new($prefix, $keyset, $key);
-    return 1 if $bkeyval->isDefined(1); }
-
+  foreach my $keyset (@{ $$self{keysets} }) {
+    return 1 if HasKeyVal($prefix, $keyset, $key); }
   return 0; }
 
+# Return the 1st of the keysets, or the 1st one of the KeyVals itself
 sub getPrimaryKeyValOf {
   my ($self, $key, @keysets) = @_;
-
-  if (scalar @keysets == 0) {
-    my $prefix   = $self->getPrefix;
-    my @headsets = $self->getKeySets;
-    return LaTeXML::Core::KeyVal->new($prefix, $headsets[0], $key); }
-  else { return $keysets[0] } }
+  return (@keysets ? $keysets[0] : $$self{keysets}[0]); }
 
 #======================================================================
 # Changing contained values
@@ -193,73 +122,62 @@ sub addValue {
 
   # figure out the keyset(s) for the key to be added
   my @keysets = $self->resolveKeyValFor($key);
-  my $headset = $self->getPrimaryKeyValOf($key, @keysets);
+  my $pkeyset = $self->getPrimaryKeyValOf($key, @keysets);
 
   # and add the new tuple to the set of tuples
   push(@{ $$self{tuples} },
-    [$key, ($useDefault ? $headset->getDefault : $value), $useDefault, [@keysets], $headset]);
+    [$key, ($useDefault ? keyval_get(keyval_qname($$self{prefix}, $pkeyset, $key), 'default') : $value),
+      $useDefault, $pkeyset, [@keysets]]);
 
   # we now need to rebuild, unless we were asked not to
   # TODO: Maybe only update the last element?
   $self->rebuild unless $noRebuild;
-
   return; }
 
 sub setValue {
   my ($self, $key, $value, $useDefault) = @_;
-
-  # delete the existing values by skipping key
+  # delete the existing values by skipping key;
   $self->rebuild($key);
 
   # if we have an array, we need to push all of them
   if (ref $value eq 'ARRAY') {
     foreach my $val (@{$value}) {
       $self->addValue($key, $val, $useDefault, 1); }
-
-    $self->rebuild();
-    return; }
-
+    $self->rebuild(); }
   # if we have a single value, set it normally
   elsif (defined($value)) {
     $self->addValue($key, $value, $useDefault); }
-
   return; }
 
 sub rebuild {
   my ($self, $skip) = @_;
-
   # the new data structures to create
   my @newtuples = ();
   my @pairs     = ();
   my %hash      = ();
-
   foreach my $tuple (@{ $$self{tuples} }) {
     # take all the elements we need from the stack
-    my ($key, $value, $useDefault, $resolution, $keyval) = @$tuple;
-
+    my ($key, $value, $useDefault, $keyset, $keysets) = @$tuple;
     # if we want to skip some values, we need to store new tuples
     if (defined($skip)) {
       next if $key eq $skip;
-      push(@newtuples, [$key, $value, $useDefault, $resolution, $keyval]) if defined($skip); }
-
+      push(@newtuples, [$key, $value, $useDefault, $keyset, $keysets]) if defined($skip); }
     # push key / value into the pair
     push(@pairs, $key, $value);
-
     # if we do not have a value yet, set it
-    if (!defined $hash{$key}) { $hash{$key} = $value; }
-
+    if (!defined $hash{$key}) {
+      $hash{$key} = $value; }
     # If we get a third value, push into an array
     # This is unlikely to be what the caller expects!! But what else?
-    elsif (ref $hash{$key} eq 'ARRAY') { push(@{ $hash{$key} }, $value); }
-
+    elsif (ref $hash{$key} eq 'ARRAY') {
+      push(@{ $hash{$key} }, $value); }
     # If we get a second value, make an array
-    else { $hash{$key} = [$hash{$key}, $value]; } }
-
+    else {
+      $hash{$key} = [$hash{$key}, $value]; } }
   # store all of the values
   $$self{cachedPairs} = [@pairs];
   $$self{cachedHash}  = \%hash;
   $$self{tuples}      = [@newtuples] if defined($skip);
-
   return; }
 
 #======================================================================
@@ -277,9 +195,8 @@ sub readFrom {
 
   # if we want to force skipMissing keys, we set it up here
   my $silenceMissing = $options{silenceMissing} ? 1 : 0;
-
-  my $skipMissing = $self->getSkipMissing;
-  my $hookMissing = $self->getHookMissing;
+  my $skipMissing    = $$self{skipMissing};
+  my $hookMissing    = $$self{hookMissing};
 
   # if we want to silence all missing errors, store them in a hook
   if ($silenceMissing) {
@@ -288,21 +205,14 @@ sub readFrom {
 
   # read the opening token and figure out where we are
   my $startloc = $gullet->getLocator;
-
   # set and read tokens
   my $open = $gullet->readToken;
-  $$self{assign} = T_OTHER('=');
-  $$self{punct}  = T_OTHER(',');
-  my ($punct, $assign) = ($$self{punct}, $$self{assign});
-
   # create arrays for key-value pairs and explicit values
   my @kv        = ();
   my @explicits = ();
-
   # iterate over all the key-value pairs to read
   while (1) {
-
-    # gobble spaces
+    # gobble leading spaces
     $gullet->skipSpaces;
     if ($gullet->ifNext(T_BEGIN)) {    # Protect against redundant {} wrapping
       $gullet->readToken;
@@ -317,39 +227,32 @@ sub readFrom {
       "key started at " . ToString($startloc))
       unless $delim;
 
-    # turn the key tokens into a string and normalize
-    my $key = ToString($ktoks); $key =~ s/\s//g;
+    # turn the key tokens into a string and trim whitespace
+    my $key = ToString($ktoks); $key =~ s/^\s+//; $key =~ s/\s+$//;
     # if we have a non-empty key
     if ($key) {
-
       my $value;
       my $isDefault;
-
       # if we have an '=', we explcity assign a value
-      if ($delim->equals($assign)) {
+      if ($delim->equals(T_OTHER('='))) {
         $isDefault = 0;
-
         # setup the key-codes to properly read
-        my $keyval = $self->getPrimaryKeyValOf($key, $self->resolveKeyValFor($key));
-        my $keydef = $keyval->getType();
-        $keydef->setupCatcodes if $keydef;
-
-        # read until $punct
+        my $keyset  = $self->getPrimaryKeyValOf($key, $self->resolveKeyValFor($key));
+        my $keytype = keyval_get(keyval_qname($$self{prefix}, $keyset, $key), 'type');
+        $keytype->setupCatcodes if $keytype;
+        # read until comma
         my ($tok, @toks) = ();
-        while ((!defined($delim = $gullet->readMatch($punct, $until)))
+        while ((!defined($delim = $gullet->readMatch(T_OTHER(','), $until)))
           && (defined($tok = $gullet->readToken()))) {    # Copy next token to args
           push(@toks, $tok,
             ($tok->getCatcode == CC_BEGIN ? ($gullet->readBalanced, T_END) : ())); }
         # reparse (and expand) the tokens representing the value
         $value = Tokens(@toks)->stripBraces;
-        $value = $keydef->reparse($gullet, $value) if $keydef && $value;
-
+        $value = $keytype->reparse($gullet, $value) if $keytype && $value;
         # and cleanup
-        $keydef->revertCatcodes if $keydef; }
-
+        $keytype->revertCatcodes if $keytype; }
       # we did not get an '=', and thus need to read the default value
       else { $isDefault = 1; }
-
       # and store our value please
       $self->addValue($key, $value, $isDefault, 0) if (!$silenceMissing || $self->canResolveKeyValFor($key)); }
 
@@ -368,29 +271,16 @@ sub readFrom {
 
 sub readKeyWordFrom {
   my ($self, $gullet, $close) = @_;
-
-  # set of tokens we will expand
   my @tokens = ();
-
-  # set of delimiters we want to ignore
-  my @delim = ($close, $$self{punct}, $$self{assign});
-
-  # we do not want any spaces
-  $gullet->skipSpaces;
-
-  # read tokens one-by-one
+  my @delim  = ($close, T_OTHER(','), T_OTHER('='));
+  $gullet->skipSpaces;    # Skip leasding spaces
   my $token;
   while ($token = $gullet->readXToken) {
     # skip to the next iteration if we have a paragraph
     next if $token->equals(T_CS('\par'));
-
     # if we have one of out delimiters, we end
     last if grep { $token->equals($_) } @delim;
-
-    # push a token unless we have a space
-    # TODO: remove or normalize
-    push(@tokens, $token) unless $$token[1] == CC_SPACE; }
-
+    push(@tokens, $token); }
   # return the tokens and the last token
   return (Tokens(@tokens), $token); }
 
@@ -402,7 +292,7 @@ sub readKeyWordFrom {
 # return the value of a given key. If multiple values are given, return the last one.
 sub getValue {
   my ($self, $key) = @_;
-  my %hash  = $self->getCachedHash;
+  my %hash  = %{ $$self{cachedHash} };
   my $value = $hash{$key};
   # Since we (by default) accumulate lists of values when repeated,
   # we need to provide the "common" thing: return the last value given.
@@ -411,92 +301,103 @@ sub getValue {
 # return a list of values for a given key
 sub getValues {
   my ($self, $key) = @_;
-  my %hash  = $self->getCachedHash;
+  my %hash  = %{ $$self{cachedHash} };
   my $value = $hash{$key};
   return (!defined $value ? () : (ref $value eq 'ARRAY' ? @$value : ($value))); }
 
 # return the set of key-value pairs
 sub getPairs {
   my ($self) = @_;
-  return $self->getCachedPairs; }
+  return @{ $$self{cachedPairs} }; }
 
 # returns a key => ToString(value)
 sub getHash {
   my ($self) = @_;
-  my %hash = $self->getCachedHash;
-  return map { ($_ => ToString($hash{$_})) } keys %hash; }
+  return %{ $$self{cachedHash} }; }
 
 # return a hash of key-value pairs
 sub getKeyVals {
   my ($self) = @_;
-  my %hash = $self->getCachedHash;
-  return \%hash; }
+  my %hash = %{ $$self{cachedHash} };
+  return \%hash; }    # A COPY ??? or can it be the real hash?
 
 # checks if the value for a given key exists
 sub hasKey {
   my ($self, $key) = @_;
-  my %hash = $self->getCachedHash;
-  return exists $hash{$key}; }
+  return exists $$self{cachedHash}{$key}; }
 
 #======================================================================
 # Value Related Reversion
 #======================================================================
 
+# This apparently means "the expansion of \setkeys"
 sub setKeysExpansion {
   my ($self)       = @_;
-  my @skip         = $self->getSkip;
-  my $setInternals = $self->getSetInternals;
-
-  my ($punct, $assign) = ($$self{punct}, $$self{assign});
-
+  my @skipkeys     = @{ $$self{skip} };
+  my $setInternals = $$self{setInternals};
+  my $prefix       = $$self{prefix};
   # we might have to store values in a seperate token
-  my $rmmacro     = $self->getSkipMissing;
-  my $hookMissing = $self->getHookMissing;
-  my $definedrm   = ref($rmmacro) ? 1 : 0;
+  my $rmmacro     = (ref $$self{skipMissing} ? $$self{skipMissing} : undef);
+  my $hookMissing = $$self{hookMissing};
   my @rmtokens    = ();
-
   # read in existing tokens (if they are defined)
-  if ($definedrm && $STATE->lookupMeaning($rmmacro)) {
+  if ($rmmacro && $STATE->lookupMeaning($rmmacro)) {
     @rmtokens = LaTeXML::Package::Expand($rmmacro)->unlist; }
-
   # define some xkeyval internals
-  my @tokens = $setInternals ? (
-    T_CS('\def'), T_CS('\XKV@fams'), T_BEGIN, Explode(join(',', $self->getKeySets)), T_END,
-    T_CS('\def'), T_CS('\XKV@na'), T_BEGIN, Explode(join(',', @skip)), T_END
-  ) : ();
+  my @tokens = ();
+  push(@tokens,
+    T_CS('\def'), T_CS('\XKV@fams'), T_BEGIN, Explode(join(',', @{ $$self{keysets} })), T_END,
+    T_CS('\def'), T_CS('\XKV@na'), T_BEGIN, Explode(join(',', @skipkeys)), T_END)
+    if $setInternals;
 
   # iterate over the key-value pairs
   foreach my $tuple (@{ $$self{tuples} }) {
-    my ($key, $value, $useDefault, $resolution, $keyval) = @$tuple;
-    my @keyvals = @{$resolution};
-
-    # we might want to skip to the next iteration if key is to be omitted
-    next if (grep { $_ eq $key } @skip);
-
+    my ($key, $value, $useDefault, $keyset, $keysets) = @$tuple;
+    next if (grep { $_ eq $key } @skipkeys);    # Skip these keys
+    my @keysets = @{$keysets};
     # we might need to save the macros that weren't saved
-    if (scalar @keyvals == 0) {
-      if ($definedrm) {
-        push(@rmtokens, $self->revertKeyVal($keyval, $value, $useDefault, (@rmtokens ? 0 : 1),
-            1, $punct, $assign)); }
-      my @reversion = $self->revertKeyVal($keyval, $value, $useDefault, 1, 1, $punct, $assign);
-      push(@tokens, $hookMissing, T_BEGIN, $self->revertKeyVal($keyval, $value, $useDefault, 1, 1, $punct, $assign), T_END) if $hookMissing;
+    if (scalar @keysets == 0) {
+      if ($rmmacro) {
+        push(@rmtokens, $self->revertKeyVal($key, $keyset, $value, $useDefault, (@rmtokens ? 0 : 1))); }
+      my @reversion = $self->revertKeyVal($key, $keyset, $value, $useDefault);
+      push(@tokens, $hookMissing, T_BEGIN, $self->revertKeyVal($key, $keyset, $value, $useDefault, 1), T_END) if $hookMissing;
       next; }
 
     # and iterate over all valid keysets
-    foreach my $keyset (@keyvals) {
-      my $expansion = $keyset->setKeysExpansion($value, $useDefault, 1, 1, $setInternals);
-      next unless defined($expansion);
-      push(@tokens, $expansion->unlist); } }
+    foreach my $keyset (@keysets) {
+      my $qname = keyval_qname($prefix, $keyset, $key);
+      if (!HasKeyVal($prefix, $keyset, $key)) {
+        Error('undefined', 'Encountered unknown KeyVals key',
+          "'" . $key . "' with prefix '" . $prefix
+            . "' not defined in '" . join(",", $keyset) . "'"); }
+      elsif (keyval_get($qname, 'disabled')) {    # if we are disabled, return an empty tokens
+        Warn('undefined', "`" . $key . "' has been disabled. "); }
+      else {
+        push(@tokens,                             # definition of 'xkeyval' internals (if applicable)
+          T_CS('\def'), T_CS('\XKV@prefix'), T_BEGIN, Explode($prefix . '@'), T_END,
+          T_CS('\def'), T_CS('\XKV@tfam'),   T_BEGIN, Explode($keyset), T_END,
+          T_CS('\def'), T_CS('\XKV@header'), T_BEGIN, Explode($prefix . '@' . $keyset . '@'), T_END,
+          T_CS('\def'), T_CS('\XKV@tkey'),   T_BEGIN, Explode($key), T_END
+        ) if $setInternals;
+        if ($useDefault) {                        # if it was not given explicitly, call the default macro
+          push(@tokens, T_CS('\\' . $qname . '@default')); }
+        else {    # we have a value given, call the appropriate macro with it
+          push(@tokens, T_CS('\\' . $qname), T_BEGIN, Revert($value), T_END); }
+        # and reset the internals (if applicable)
+        push(@tokens,
+          T_CS('\def'), T_CS('\XKV@prefix'), T_BEGIN, T_END,
+          T_CS('\def'), T_CS('\XKV@tfam'),   T_BEGIN, T_END,
+          T_CS('\def'), T_CS('\XKV@header'), T_BEGIN, T_END,
+          T_CS('\def'), T_CS('\XKV@tkey'),   T_BEGIN, T_END) if $setInternals;
+  } } }
 
-  # and assign the macro with the other keys
-  push(@tokens, T_CS('\def'), $rmmacro, T_BEGIN, @rmtokens, T_END) if $definedrm;
-
+  # and assign the skipmissing macro with the other keys
+  push(@tokens, T_CS('\def'), $rmmacro, T_BEGIN, @rmtokens, T_END) if $rmmacro;
   # reset all the internals (if applicable)
   push(@tokens,
     T_CS('\def'), T_CS('\XKV@fams'), T_BEGIN, T_END,
     T_CS('\def'), T_CS('\XKV@na'),   T_BEGIN, T_END) if $setInternals;
 
-  # and return the list of tokens
   return Tokens(@tokens); }
 
 sub beDigested {
@@ -508,53 +409,36 @@ sub beDigested {
   else {
     $stomach->digest($self->setKeysExpansion); }
 
-  # new tuples we want to create
+  # iterate over the tuples, digesting the values
   my @newtuples = ();
-
-  # iterate over them
   foreach my $tuple (@{ $$self{tuples} }) {
-    my ($key, $value, $useDefault, $resolution, $keyval) = @$tuple;
-    # digest a single token
-    my $keydef = $keyval->getType();
-    my $v      = (defined $value ?
-        ($keydef ? $keydef->digest($stomach, $value, undef) : $value->beDigested($stomach))
+    my ($key, $value, $useDefault, $keyset, $keysets) = @$tuple;
+    my $keytype = keyval_get(keyval_qname($$self{prefix}, $keyset, $key), 'type');
+    my $v       = (defined $value ?
+        ($keytype ? $keytype->digest($stomach, $value, undef) : $value->beDigested($stomach))
       : undef);
-    push(@newtuples, [$key, $v, $useDefault, $resolution, $keyval]); }
+    push(@newtuples, [$key, $v, $useDefault, $keyset, $keysets]); }
 
-  # read all our current state
-  my $prefix       = $self->getPrefix;
-  my $keysets      = $self->getKeySets;
-  my $setAll       = $self->getSetAll;
-  my $skip         = $self->getSkip;
-  my $setInternals = $self->getSetInternals;
-  my $skipMissing  = $self->getSkipMissing;
-  my $hookMissing  = $self->getHookMissing;
-  my ($punct, $assign) = ($$self{punct}, $$self{assign});
-
-  # then re-create the current object
+  # then Copy the current object
   my $new = LaTeXML::Core::KeyVals->new(
-    $prefix, $keysets,
-    setAll       => $setAll, setInternals => $setInternals,
-    skip         => $skip,   skipMissing  => $skipMissing, hookMissing => $hookMissing,
+    $$self{prefix}, $$self{keysets},
+    setAll       => $$self{setAll}, setInternals => $$self{setInternals},
+    skip         => $$self{skip},   skipMissing  => $$self{skipMissing},
+    hookMissing  => $$self{hookMissing},
     was_digested => 1,
-    punct        => $punct, assign => $assign);
-  $new->setTuples(@newtuples);
+    tuples       => [@newtuples]);
   return $new; }
 
 sub revert {
   my ($self) = @_;
-
   # read values from class
-  my ($punct, $assign) = ($$self{punct}, $$self{assign});
-
   my @tokens = ();
-
   # iterate over the key-value pairs
   foreach my $tuple (@{ $$self{tuples} }) {
-    my ($key, $value, $useDefault, $resolution, $keyval) = @$tuple;
+    my ($key, $value, $useDefault, $keyset, $keysets) = @$tuple;
     # revert a single token
-    if ($keyval) {    # when is this undef?
-      push(@tokens, $self->revertKeyVal($keyval, $value, $useDefault, (@tokens ? 0 : 1), 0, $punct, $assign)); } }
+    if ($keyset) {    # when is this undef?
+      push(@tokens, $self->revertKeyVal($key, $keyset, $value, $useDefault, (@tokens ? 0 : 1))); } }
 
   # and return the list of tokens
   return Tokens(@tokens); }
@@ -562,37 +446,26 @@ sub revert {
 # turns this object into a string
 sub toString {
   my ($self) = @_;
-
-  my @kv = $self->getPairs;
-  my ($punct, $assign) = ($$self{punct} || '', $$self{assign} || ' ');
-
+  my @kv     = $self->getPairs;
   my $string = '';
-
   while (@kv) {
     my ($key, $value) = (shift(@kv), shift(@kv));
-    $string .= ToString($punct) . ' ' if $string;
-    $string .= $key . ToString($assign) . ToString($value); }
+    $string .= ',' if $string;
+    $string .= $key . '=' . ToString($value); }
   return $string; }
 
 sub revertKeyVal {
-  my ($self, $keyval, $value, $useDefault, $isFirst, $compact, $punct, $assign) = @_;
-
+  my ($self, $key, $keyset, $value, $useDefault, $isFirst) = @_;
   # get the key-value definition
-  my $keydef = $keyval->getType();
-
+  my $keytype = keyval_get(keyval_qname($$self{prefix}, $keyset, $key), 'type');
   # define the tokens
   my @tokens = ();
-
   # write comma and key, unless in the first iteration
-  push(@tokens, $punct)  if $punct    && !$isFirst;
-  push(@tokens, T_SPACE) if !$isFirst && !$compact;
-  push(@tokens, Explode($keyval->getKey));
-
+  push(@tokens, T_OTHER(',')) if !$isFirst;
+  push(@tokens, Explode($key));
   # write the default (if applicable)
   if (!$useDefault && $value) {
-    push(@tokens, ($assign || T_SPACE));
-    push(@tokens, ($keydef ? $keydef->revert($value) : Revert($value))); }
-
+    push(@tokens, T_OTHER('='), ($keytype ? $keytype->revert($value) : Revert($value))); }
   return @tokens; }
 
 # TODO: ????
@@ -655,8 +528,7 @@ This argument defaults to C<'_anonymous_'>.
 
 Furthermore, the KeyVals constructor accepts a variety of options that can
 be used to customize its behaviour. These are I<setAll>, I<setInternals>, 
-I<skip>, I<skipMissing>, I<hookMissing>, I<open>, I<close>,
-I<punct> and I<assign>. 
+I<skip>, I<skipMissing>, I<hookMissing>, I<open>, I<close>.
 
 I<setAll> is a flag that, if set, ensures that keys will be set in all existing
 keysets, instad of only in the first one. 
@@ -677,46 +549,11 @@ undefined keys.
 I<hookMissing> allows to call a specific macro if a single key is unknown during
 key digestion. 
 
-The options I<open>, I<close>, I<punct> and I<assign> optionally contain the 
-tokens used for the respective meanings. 
-
 =back
 
 =head2 KeyVals Accessors (intended for internal usage)
 
 =over 4
-
-=item C<< my $prefix = $keyvals->getPrefix() >>
-
-Returns the I<Prefix> property. 
-
-=item C<< my @keysets = $keyvals->getKeySets() >>
-
-Returns the I<KeySets> property. 
-
-=item C<< my $setall = $keyvals->getSetAll() >>
-
-Returns the I<SetAll> property. 
-
-=item C<< my $setinternals = $keyvals->getSetInternals() >>
-
-Returns the I<SetInternals> property. 
-
-=item C<< my @skip = $keyvals->getSkip() >>
-
-Returns the I<Skip> property. 
-
-=item C<< my $skipmissing = $keyvals->getSkipMissing() >>
-
-Returns the I<SkipMissing> property. 
-
-=item C<< my $hookmissing = $keyvals->getHookMissing() >>
-
-Returns the I<HookMissing> property. 
-
-=item C<< my @tuples = $keyvals->getTuples() >>
-
-Returns the I<Tuples> property representing
 
 =item C<< $keyvals->setTuples(@tuples) >>
 
@@ -726,14 +563,6 @@ function on details of the structure of this list.
 I<rebuild> is called automatically to populate the other caches. 
 Typically, the tuples is set by I<readFrom>.
 
-=item C<< my @cachedpairs = $keyvals->getCachedPairs() >>
-
-Returns the I<CachedPairs> property. 
-
-=item C<< my %cachedhash = $keyvals->getCachedHash() >>
-
-Returns the I<CachedHash> property. 
-
 =back
 
 =head2 Resolution to KeySets
@@ -742,10 +571,10 @@ Returns the I<CachedHash> property.
 
 =item C<< my @keysets = $keyvals->resolveKeyValFor($key) >>
 
-Finds all I<KeyVal> objects that should be used for interacting with the given
+Finds all keysets that should be used for interacting with the given
 I<key>. May return C<undef> if no matching keysets are found. Use the parameters
  I<keysets>, I<setAll> and I<skipMissing> to customize the exact behaviour of
-this function. 
+this function.
 
 =item C<< my $canResolveKeyVal = $keyvals->canResolveKeyValFor($key) >>
 
@@ -754,9 +583,8 @@ I<setAll> and I<skipMissing> parameters.
 
 =item C<< my $keyval = $keyvals->getPrimaryKeyValOf($key, @keysets) >>
 
-Gets a single I<KeyVal> parameter to be used for interacting a a single I<key>, 
-given that it resolves to I<keysets>. Always returns a single I<KeyVal> object, 
-even if no keysets are found. 
+Gets the primary keyset to be used for interacting a a single I<key>,
+given that it resolves to I<keysets>. Defaults to first keyset in KeyVals, if none given.
 
 =back
 

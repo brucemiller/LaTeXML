@@ -1161,7 +1161,9 @@ sub DefPrimitiveI {
   my $string = $replacement;
   Warn('misdefined', $cs, undef, "Option alias ignored if replacement is not string")
     if ref $replacement && defined $options{alias};
-  $replacement = sub { Box($string, undef, undef, Invocation($options{alias} || $cs, @_[1 .. $#_])); }
+  $replacement = sub { Box($string, undef, undef,
+      Invocation($options{alias} || $cs, @_[1 .. $#_]),
+      (defined $string ? () : (isEmpty => 1))); }    # Just marker for reversion?
     unless ref $replacement;
   $cs        = coerceCS($cs);
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
@@ -2101,6 +2103,7 @@ sub loadLTXML {
       # If we've opened anything, we should read it in completely.
       # But we'll assume that anything opened has already been processed by loadTeXDefinitions.
   });
+  Let(T_CS('\ver@' . $trequest), T_CS('\fmtversion'), 'global');
   return; }
 
 sub loadTeXDefinitions {
@@ -2143,6 +2146,7 @@ sub loadTeXDefinitions {
         $stomach->invokeToken($token); } });
   AssignValue('INTERPRETING_DEFINITIONS' => $was_interpreting);
   AssignValue('INCLUDE_STYLES'           => $was_including_styles);
+  Let(T_CS('\ver@' . $request), T_CS('\fmtversion'), 'global');
   return; }
 
 sub loadTeXContent {

@@ -555,12 +555,6 @@
         <xsl:text>transform:</xsl:text>
         <xsl:apply-templates select='.' mode="transformable-transform"/>
         <xsl:text>;</xsl:text>
-        <xsl:text>-webkit-transform:</xsl:text>
-        <xsl:apply-templates select='.' mode="transformable-transform"/>
-        <xsl:text>;</xsl:text>
-        <xsl:text>-ms-transform:</xsl:text>
-        <xsl:apply-templates select='.' mode="transformable-transform"/>
-        <xsl:text>;</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
   </xsl:template>

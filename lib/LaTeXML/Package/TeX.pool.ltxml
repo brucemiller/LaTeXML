@@ -433,27 +433,32 @@ DefParameterType('BalancedParen', sub {
     (T_OTHER('('), Revert($_[0]), T_OTHER(')')); });
 
 # Read a digested argument.
-# The usual parameter (generally written as {}) gets
-# tokenized and digested in separate stages (like TeX),
+# The usual macro parameter (generally written as {}) gets
+# tokenized and digested in separate stages,
 # and so it is tokenized w/o recognizing any special macros within (eg. \url).
-# This parameter gets digested until the (required) opening { is balanced.
+# Rarely, you need a parameter that gets digested as it's read until
+# the (typically required) opening { is balanced.
 # It is useful when the content would usually need to have been \protect'd
 # in order to correctly deal with catcodes.
+# We also must read some sort of Box content, so we ignore random "empty"
+# things like \relax, \leavevmode...
 DefParameterType('Digested', sub {
     my ($gullet) = @_;
     $gullet->skipSpaces;
     my $ismath = $STATE->lookupValue('IN_MATH');
+    my @list   = ();
     my $token;
-    do { $token = $gullet->readXToken(0);
-    } while (defined $token && $token->getCatcode == CC_SPACE);
-    my @list = ();
-    if    (!defined $token) { }
-    elsif ($token->equals(T_BEGIN)) {
-      Digest($token);
-      @list = $STATE->getStomach->digestNextBody(); pop(@list); }
-    else {
-      @list = $STATE->getStomach->invokeToken($token); }
-    # In most (all?) cases, we're really looking for a single Whatsit here...
+    while (1) {
+      do { $token = $gullet->readXToken(0);
+      } while (defined $token && $token->getCatcode == CC_SPACE);
+      if    (!defined $token) { last; }
+      elsif ($token->equals(T_BEGIN)) {
+        Digest($token);
+        push(@list, $STATE->getStomach->digestNextBody()); pop(@list); }
+      else {
+        push(@list, $STATE->getStomach->invokeToken($token)); }
+      # In most (all?) cases, we're really looking for a single Whatsit here...
+      last if grep { !$_->getProperty('isEmpty'); } @list; }
     @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
     List(@list, mode => ($ismath ? 'math' : 'text')); },
   undigested => 1,                                           # since _already_ digested.
@@ -1889,6 +1894,14 @@ DefParameterType('BoxSpecification', sub {
       my $keyvals = LaTeXML::Core::KeyVals->new(undef, undef, skipMissing => 1);
       $keyvals->setValue($key, $gullet->readDimension);
       $keyvals; } },
+  reversion => sub {
+    my ($spec) = @_;
+    if (my $to = $spec && $spec->getValue('to')) {
+      return Tokens(Tokenize('to'), T_SPACE, Revert($to)); }
+    elsif (my $spread = $spec && $spec->getValue('spread')) {
+      return Tokens(Tokenize('spread'), T_SPACE, Revert($spread)); }
+    else {
+      return; } },
   optional => 1, undigested => 1);
 
 # Risky: I think this needs to be digested as a body to work like TeX (?)
@@ -3890,7 +3903,8 @@ sub IsEmpty {
   my $ref = ref $box;
   if    (!$box)                            { return 1; }
   elsif ($ref eq 'LaTeXML::Core::Comment') { return 1; }
-  elsif ($box->getProperty('isSpace')) {    # A space-like thing
+  elsif ($box->getProperty('isEmpty')
+    || $box->getProperty('isSpace')) {    # A space-like thing
     return 1; }
   elsif ($ref eq 'LaTeXML::Core::Box') {
     my $s = $box->getString;
@@ -5154,7 +5168,6 @@ DefPrimitiveI('\raggedright',   undef, undef);
 DefPrimitiveI('\raggedleft',    undef, undef);    # this is actually LaTeX
 DefPrimitiveI('\ttraggedright', undef, undef);
 DefPrimitiveI('\leavevmode',    undef, undef);
-
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.2. Non-English Symbols, p.39
 
