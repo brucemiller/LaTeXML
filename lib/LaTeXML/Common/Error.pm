@@ -67,7 +67,23 @@ sub UseSTDERR {
     $IS_TERMINAL = -t STDERR;
     binmode(STDERR, ":encoding(UTF-8)");
     use IO::Handle;
-    *STDERR->autoflush(); }
+    *STDERR->autoflush();
+
+    # Win32 console handling
+    if (eval { require Win32::Console; }) {
+      # set utf-8 codepage
+      # CP_UTF8 = 65001
+      Win32::Console::OutputCP(65001);
+
+      # get standard error console
+      our $W32_STDERR = Win32::Console->new(&Win32::Console::STD_ERROR_HANDLE());
+
+      # enable VT100 emulation or fall back to ANSI if unsuccessful
+      # ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004 (not exported by Win32::Console)
+      my $mode = $W32_STDERR->Mode();
+      unless ($W32_STDERR->Mode($mode | 0x0004) && $W32_STDERR->Mode() & 0x0004) {
+        require Win32::Console::ANSI; } } }
+
   return; }
 
 our %color_scheme = (
@@ -202,10 +218,10 @@ sub _spinnerstep {    # Increment stepper
   if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $short, $start) = @{ $spinnerstack[-1] };
     $spinnerpos = ($spinnerpos + 1) % 4;
-    if ($note) {    # If note, redraw whole line.
+    if ($note) {      # If note, redraw whole line.
       print STDERR join(' ', $spinnerpre, $spinnerchar[$spinnerpos],
         (map { $$_[1]; } @spinnerstack), $note, "\x1b[0K"), $spinnerpost; }
-    else {          # overwrite previous spinner
+    else {            # overwrite previous spinner
       print STDERR $spinnerpre . ' ', $spinnerchar[$spinnerpos], $spinnerpost; } }
   return; }
 
