@@ -92,7 +92,7 @@ sub check_requirements {
       @required_packages = @$reqmts; }
     elsif (ref $reqmts eq 'HASH') {
       @required_packages = (ref $$reqmts{packages} eq 'ARRAY' ? @{ $$reqmts{packages} } : $$reqmts{packages});
-      $texlive_min       = $$reqmts{texlive_min} || 0; }
+      $texlive_min = $$reqmts{texlive_min} || 0; }
     foreach my $reqmt (@required_packages) {
       if (pathname_kpsewhich($reqmt) || pathname_find($reqmt)) { }
       else {
@@ -268,22 +268,22 @@ sub daemon_ok {
   $latexmlc =~ s/^\.\///;
   my $path_to_perl = $Config{perlpath};
 
-  my $invocation = $path_to_perl . " " . join(" ", map { ("-I", $_) } @INC) . " " . $latexmlc . ' ';
+  my @invocation = ($path_to_perl, (map { ('-I', $_) } @INC), $latexmlc);
   my $timed      = undef;
   foreach my $opt (@$opts) {
     if ($$opt[0] eq 'timeout') {    # Ensure .opt timeout takes precedence
       if ($timed) { next; } else { $timed = 1; }
     }
-    $invocation .= "--" . $$opt[0] . (length($$opt[1]) ? ('="' . $$opt[1] . '" ') : (' '));
+    push(@invocation, '--' . $$opt[0] . (length($$opt[1]) ? ('=' . $$opt[1]) : ''));
   }
   if (!$generate) {
     pathname_chdir($dir);
-    my $exit_code = system($invocation);
+    my $exit_code = system(@invocation);
     if ($exit_code != 0) {
       $exit_code = $exit_code >> 8;
     }
     my $target_code = $localname =~ /fatal/ ? 1 : 0;
-    is($exit_code, $target_code, "latexmlc invocation for test $localname yielded $! . \nInvocation: $invocation");
+    is($exit_code, $target_code, "latexmlc invocation for test $localname yielded $! . \nInvocation: \"" . join('" "', @invocation) . '"');
     pathname_chdir($current_dir);
     # Compare the just generated $base.test.xml to the previous $base.xml
     if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {
@@ -293,9 +293,9 @@ sub daemon_ok {
   }
   else {
     #TODO: Skip 3 tests
-    print STDERR "$invocation\n";
+    print STDERR ('"' . join('" "', @invocation) . "\"\n");
     pathname_chdir($dir);
-    system($invocation);
+    system(@invocation);
     pathname_chdir($current_dir);
     move("$base.test.xml", "$base.xml") if -e "$base.test.xml";
   }
