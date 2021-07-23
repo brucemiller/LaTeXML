@@ -70,7 +70,7 @@ sub UseSTDERR {
     *STDERR->autoflush();
 
     # Win32 console handling
-    if (eval { require Win32::Console; }) {
+    if ($IS_TERMINAL && eval { require Win32::Console; }) {
       # set utf-8 codepage
       # CP_UTF8 = 65001
       Win32::Console::OutputCP(65001);
@@ -78,7 +78,7 @@ sub UseSTDERR {
       # get standard error console
       our $W32_STDERR = Win32::Console->new(&Win32::Console::STD_ERROR_HANDLE());
 
-      # enable VT100 emulation or fall back to ANSI if unsuccessful
+      # enable VT100 emulation or fall back to ANSI emulation if unsuccessful
       # ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004 (not exported by Win32::Console)
       my $mode = $W32_STDERR->Mode();
       unless ($W32_STDERR->Mode($mode | 0x0004) && $W32_STDERR->Mode() & 0x0004) {
