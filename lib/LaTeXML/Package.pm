@@ -1930,25 +1930,29 @@ sub FindFile_aux {
   # (2) those MAY be present in kpsewhich's DB (although our searchpaths take precedence!)
   # (3) BUT we want to avoid kpsewhich if we can, since it's slower
   # (4) depending on switches we may EXCLUDE .ltxml OR raw tex OR allow both.
+  # (5) we may allow interpreting raw TeX/sty/whatever files individually or broadly
+  # (6) but we may also want to override an apparently "versioned" file, preferring the ltxml
   my $paths         = LookupValue('SEARCHPATHS');
   my $urlbase       = LookupValue('URLBASE');
   my $nopaths       = LookupValue('REMOTE_REQUEST');
   my $ltxml_paths   = $nopaths ? [] : $paths;
-  my $interpretting = LookupValue('INTERPRETING_DEFINITIONS');
-  # If we're looking for ltxml, look within our paths & installation first (faster than kpse)
+  my $interpreting  = LookupValue('INTERPRETING_DEFINITIONS');    # Globally allow interpretation
+  my $interpretable = LookupValue('INTERPRETABLE_DEFINITIONS_' . $file);    # Specifically allow
+      # If we're looking for ltxml, look within our paths & installation first (faster than kpse)
+
   if (!$options{noltxml}
     && ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package'))) {
     return $path; }
-  # Else if we're interpretting rawtex, and can find the file as is, take it.
-  elsif (!$options{notex} && $interpretting
+  # Else if we're interpreting rawtex, and can find the file as is, take it.
+  elsif (!$options{notex} && ($interpreting || $interpretable)
     && ($path = pathname_find($file, paths => $paths))) {
     return $path; }
   # Else, look for similar fallback ltxml bindings
-  elsif (!$options{noltxml}
+  elsif (!$options{noltxml} && !$interpretable
     && ($path = FindFile_fallback($file, $ltxml_paths, %options))) {
     return $path; }
-  # Finally, look for raw tex in our paths, even if we're not interpretting(?) (faster than kpse)
-  elsif (!$options{notex} && !$interpretting
+  # Finally, look for raw tex in our paths, even if we're not interpreting(?) (faster than kpse)
+  elsif (!$options{notex} && !$interpreting
     && ($path = pathname_find($file, paths => $paths))) {
     return $path; }
 
@@ -1969,6 +1973,7 @@ sub FindFile_aux {
 
 sub FindFile_fallback {
   my ($file, $ltxml_paths, %options) = @_;
+
   # Supported:
   # Numeric suffixes (version nums, dates) with optional separators
   my $fallback_file = $file;
