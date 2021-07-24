@@ -387,8 +387,6 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
     # ???? don't push? or what
     #    if (my $ops = LookupValue('@after@end@document')) {
     #      push(@boxes, Digest(Tokens(@$ops))); }
-    # NOTE: Don't flush gullet (tempting);
-    # Babel's expecting \bbl@pop@language
     $stomach->getGullet->flush;
     return @boxes; });
 
