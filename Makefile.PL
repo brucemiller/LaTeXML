@@ -85,7 +85,7 @@ WriteMakefile(NAME => 'LaTeXML',
     'XML::LibXSLT' => 1.58,
   },
   EXE_FILES => ['bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind', 'bin/latexmlmath', 'bin/latexmlc'],
-  macro     => $MORE_MACROS,
+  macro => $MORE_MACROS,
   # link to  github location to newer MakeMaker
   (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (META_MERGE => {
         'meta-spec' => { version => 2 },
@@ -165,7 +165,7 @@ pure_all :: $(INST_LIBDIR)/LaTeXML/MathGrammar.pm
 
 $(INST_LIBDIR)/LaTeXML/MathGrammar.pm: lib/LaTeXML/MathGrammar
 	$(PERLRUN) -MParse::RecDescent - lib/LaTeXML/MathGrammar LaTeXML::MathGrammar Parse::RecDescent
-	@$(PERLRUN) -e 'exit(1) unless -e "MathGrammar.pm";' || \
+	@$(PERLRUN) -e "exit(1) unless -e 'MathGrammar.pm';" || \
 		(echo "Parse::RecDescent failed to created parser, trying to use old implementation. " && \
 		$(PERLRUN) -MParse::RecDescent - lib/LaTeXML/MathGrammar LaTeXML::MathGrammar)
 	$(NOECHO) $(MKPATH) $(INST_LIBDIR)/LaTeXML
