@@ -1936,10 +1936,10 @@ sub FindFile_aux {
   my $urlbase       = LookupValue('URLBASE');
   my $nopaths       = LookupValue('REMOTE_REQUEST');
   my $ltxml_paths   = $nopaths ? [] : $paths;
-  my $interpreting  = LookupValue('INTERPRETING_DEFINITIONS');    # Globally allow interpretation
-  my $interpretable = LookupValue('INTERPRETABLE_DEFINITIONS_' . $file);    # Specifically allow
-      # If we're looking for ltxml, look within our paths & installation first (faster than kpse)
+  my $interpreting  = LookupValue('INTERPRETING_DEFINITIONS');         # Globally allow interpretation
+  my $interpretable = LookupMapping('INTERPRETABLE_SOURCES', $file);   # Specifically allow
 
+  # If we're looking for ltxml, look within our paths & installation first (faster than kpse)
   if (!$options{noltxml}
     && ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package'))) {
     return $path; }
