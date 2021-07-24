@@ -347,7 +347,6 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
     $document->closeElement('ltx:document'); },
   beforeDigest => sub {
     my ($stomach) = @_;
-    $stomach->getGullet->flush;
     my @boxes = ();
     if (my $ops = LookupValue('@at@end@document')) {
       push(@boxes, Digest(Tokens(@$ops))); }
@@ -388,8 +387,7 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
     # ???? don't push? or what
     #    if (my $ops = LookupValue('@after@end@document')) {
     #      push(@boxes, Digest(Tokens(@$ops))); }
-    # NOTE: Don't flush gullet (tempting);
-    # Babel's expecting \bbl@pop@language
+    $stomach->getGullet->flush;
     return @boxes; });
 
 # \enddocument is used directly in e.g. standalone.cls
@@ -5347,6 +5345,7 @@ RawTeX(<<'EOTeX');
   \mathchardef\@Mii=10002
   \mathchardef\@Miii=10003
   \mathchardef\@Miv=10004
+  \def\@fontenc@load@list{\@elt{T1,OT1}}
 EOTeX
 DefMacroI('\@vpt',    undef, '5');
 DefMacroI('\@vipt',   undef, '6');
@@ -5854,6 +5853,15 @@ DefPrimitive('\DeclareUnicodeCharacter Expanded {}', sub {
 
 # LaTeX now includes textcomp by default.
 RequirePackage('textcomp');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Expl3 "Experimental LaTeX 3" is no longer Experimental!
+# It is beginning to be built into latex.ltx
+# We WILL need a new strategy to keep up; probably based in some form
+# of pre-read/pre-processed latex.ltx !
+#
+# For now, a few macros required by other packages will be included:
+DefMacroI(T_CS('\hook_gput_code:nnn'), '{}{}{}', '');
 
 #**********************************************************************
 1;
