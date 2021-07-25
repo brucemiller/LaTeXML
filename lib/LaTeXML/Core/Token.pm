@@ -136,7 +136,9 @@ my $UNTEX_LINELENGTH = 78;    # [CONSTANT]
 sub UnTeX {
   my ($thing, $suppress_linebreak) = @_;
   return unless defined $thing;
-  my @tokens = (ref $thing ? $thing->revert : Explode($thing));
+  my @tokens = ref $thing ?
+    map { ref $_ eq 'LaTeXML::Core::Tokens' ? $_->unlist : $_ } $thing->revert :
+    Explode($thing);
   my $string = '';
   my $length = 0;
   my $level  = 0;
