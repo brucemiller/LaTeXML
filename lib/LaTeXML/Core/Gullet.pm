@@ -63,10 +63,8 @@ sub closeMouth {
   if (@{ $$self{mouthstack} }) {
     ($$self{mouth}, $$self{pushback}, $$self{autoclose}) = @{ shift(@{ $$self{mouthstack} }) }; }
   else {
-    $$self{pushback} = [];
-##    $$self{mouth}=Tokens();
-    $$self{mouth} = LaTeXML::Core::Mouth->new();
-####    $$self{mouth}=undef;
+    $$self{pushback}  = [];
+    $$self{mouth}     = LaTeXML::Core::Mouth->new();
     $$self{autoclose} = 1; }
   return; }
 
@@ -88,7 +86,6 @@ sub flushMouth {
   while (!$mouth->isEOL) {
     push(@{ $$self{pushback} }, $mouth->readToken); }
   $mouth->finish;    # then finish the mouth (it'll get closed on next read)
-  $$self{autoclose} = 1;
   return; }
 
 # Obscure, but the only way I can think of to End!! (see \bye or \end{document})
@@ -99,11 +96,8 @@ sub flush {
   while (@{ $$self{mouthstack} }) {
     my $entry = shift @{ $$self{mouthstack} };
     $$entry[0]->finish; }
-  $$self{pushback} = [];
-##  $$self{mouth}=Tokens();
-  $$self{mouth} = LaTeXML::Core::Mouth->new();
-####    $$self{mouth}=undef;
-  $$self{autoclose}  = 1;
+  $$self{pushback}   = [];
+  $$self{mouth}      = LaTeXML::Core::Mouth->new();
   $$self{mouthstack} = [];
   return; }
 
