@@ -40,7 +40,7 @@ DefMacro('\diagbox OptionalKeyVals:diagbox {}{}', sub {
     my $dir = $kv && ToString($kv->getValue('dir')) || 'NW';
     if ($dir) {
     }
-    my $font = $kv->getValue('font');
+    my $font = $kv && $kv->getValue('font');
     return Invocation(T_CS('\lx@diagbox'),
       $kv,
       Invocation(T_CS('\lx@diagbox@head'), T_LETTER('l'), $font, $A),
@@ -73,8 +73,8 @@ DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
     my ($Mw, $Mh, $Md) = $M && $M->getSize; $Mh = $Mh->add($Md) if $Mh;
     my $maxw = $Aw->larger($Bw);
     my $maxh = $Ah->larger($Bh);
-    my $w    = $kv->getValue('width')  || $kv->getValue('innerwidth') || $Aw->add($Bw)->add($maxw);
-    my $h    = $kv->getValue('height') || $Ah->add($Bh)->add($maxh);
+    my $w = ($kv && ($kv->getValue('width') || $kv->getValue('innerwidth'))) || $Aw->add($Bw)->add($maxw);
+    my $h = ($kv && $kv->getValue('height')) || $Ah->add($Bh)->add($maxh);
     my ($ww,    $hh)  = ($w->ptValue, $h->ptValue);
     my ($wwm,   $hhm) = ($w->divide(2)->ptValue, $h->divide(2)->ptValue);
     my ($line1, $line2);
@@ -127,8 +127,8 @@ DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
       B         => $B,     Bx    => $Bx, By => $By, Bw => $Bw, Bh => $Bh,
       M         => $M,     Mx    => $Mx, My => $My, Mw => $Bw, Mh => $Mh,
       line1     => $line1, line2 => $line2,
-      linewidth => $kv->getValue('linewidth') || '0.4',
-      linecolor => $kv->getValue('linecolor') || 'black'); }
+      linewidth => ($kv && $kv->getValue('linewidth')) || '0.4',
+      linecolor => ($kv && $kv->getValue('linecolor')) || 'black'); }
 );
 
 # slashbox compatibility
