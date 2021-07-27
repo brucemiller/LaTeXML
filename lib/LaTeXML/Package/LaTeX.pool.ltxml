@@ -153,7 +153,7 @@ sub onlyPreamble {
 AssignValue(current_environment => '', 'global');
 DefMacro('\@currenvir', '');
 DefPrimitive('\lx@setcurrenvir{}', sub {
-    DefMacro('\@currenvir', $_[1]);
+    DefMacroI('\@currenvir', undef, $_[1]);
     AssignValue(current_environment => ToString($_[1])); });
 Let('\@currenvline', '\@empty');
 
@@ -325,7 +325,7 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     $stomach->beginMode('text');
-    DefMacro('\@currenvir', 'document');
+    DefMacroI('\@currenvir', undef, 'document');
     AssignValue(current_environment => 'document');
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
     my @boxes = ();
@@ -429,8 +429,8 @@ DefConstructor('\emph{}',
   mode           => 'text', bounded => 1, font => { emph => 1 }, alias => '\emph',
   afterConstruct => sub { $_[0]->maybeCloseElement('ltx:emph'); },
   beforeDigest   => sub {
-    DefMacro('\f@shape', (ToString(Tokens(Expand(T_CS('\f@shape')))) eq 'it' ? 'n' : 'it')); },
-);
+    DefMacroI('\f@shape', undef,
+      (ToString(Tokens(Expand(T_CS('\f@shape')))) eq 'it' ? 'n' : 'it')); });
 Tag('ltx:emph', autoClose => 1);
 
 #======================================================================
@@ -1181,7 +1181,7 @@ DefMacro('\format@title@abstract{}', '#1');
 DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
   beforeDigest => sub { Let('\centering', '\relax');
     AddToMacro(T_CS('\maketitle'), T_CS('\unwind@titlepage'));
-    DefEnvironment('{abstract}',
+    DefEnvironmentI('abstract', undef,
       '<ltx:abstract>#body</ltx:abstract>');
     Info('unexpected', 'titlepage', $_[0],
       "When using titlepage, Frontmatter will not be well-structured");
@@ -2114,8 +2114,8 @@ DefConstructor('\lx@equationgroup@subnumbering@begin',
     AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
     $whatsit->setProperties(%eqn);
     ResetCounter('equation');
-    DefMacro('\theequation',    UnTeX($eqnum) . '\alph{equation}');
-    DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID'); });
+    DefMacroI('\theequation',    undef, UnTeX($eqnum) . '\alph{equation}');
+    DefMacroI('\theequation@ID', undef, UnTeX($eqn{id}) . '.\@equation@ID'); });
 Tag('ltx:equationgroup', autoClose => 1);
 DefConstructor('\lx@equationgroup@subnumbering@end', sub {
     $_[0]->maybeCloseElement('ltx:equationgroup'); },
@@ -2849,7 +2849,7 @@ sub defineNewTheorem {
   $counter =~ s/\s+/./;    # convert spaces to period?
   if ($counter ne $thmset) {
     AssignMapping('counter_for_type', $thmset => $counter);
-    DefMacro(T_CS('\the' . $thmset), T_CS('\the' . $counter), scope => 'global');
+    DefMacroI(T_CS('\the' . $thmset), undef, T_CS('\the' . $counter), scope => 'global');
   }
   my $style     = ToString(LookupValue('\thm@style'));        # The name of the style
   my $numbering = ToString(LookupValue('\thm@numbering'));    # The number style macro
@@ -2897,7 +2897,7 @@ sub defineNewTheorem {
 
     scope => 'global');
 
-  DefEnvironment("{$thmset} OptionalUndigested",
+  DefEnvironmentI($thmset, "OptionalUndigested",
     "<ltx:theorem xml:id='#id' inlist='thm $listname' class='ltx_theorem_$classname'>"
       . "#tags"
       . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
@@ -3093,7 +3093,7 @@ DefMacro('\format@title@font@table',  '\format@title@font@float');
 
 # stubs for the latex float internals
 for my $float (qw(@float @dblfloat)) {
-  DefEnvironment('{' . $float . '}[]{}',
+  DefEnvironmentI($float, '[]{}',
     "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
       . "#body"
       . "</ltx:float>",

@@ -36,9 +36,9 @@ DefPrimitive('\newsubfloat[]{}', sub {
     NewCounter('sub' . $name, $name, idprefix => 'sf', idwithin => $name);
     NewCounter('sub' . $name . '@save');
     Let('\ext@sub' . $name, '\ext@' . $name);
-    DefMacro('\thesub' . $name,   '\alph{sub' . $name . '}');
-    DefMacro('\fnum@sub' . $name, '(\thesub' . $name . ')');
-    DefMacro('\p@sub' . $name,    '\the' . $name);
+    DefMacroI('\thesub' . $name,   undef, '\alph{sub' . $name . '}');
+    DefMacroI('\fnum@sub' . $name, undef, '(\thesub' . $name . ')');
+    DefMacroI('\p@sub' . $name,    undef, '\the' . $name);
     # subcaption above or below?
     # Crazy stuff; if the outer float hasn't seen it's caption yet,
     # we've got to temporarily step it's counter, WITHOUT resetting the subcounter!
@@ -49,7 +49,7 @@ DefPrimitive('\newsubfloat[]{}', sub {
         . '\iflx@donecaption\else\addtocounter{\@captype}{\m@ne}\fi');
     # \ext@sub<name>, \l@sub<name>, \c@lofdepth,
     # Let these float, since subfigures tend to get wrapped with weird positioning.
-    DefEnvironment('{lx@subfloat@@' . $name . '}',
+    DefEnvironmentI('lx@subfloat@@' . $name, undef,
       "^<$type xml:id='#id'>"
         . "#tags"
         . "#body"

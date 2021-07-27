@@ -191,7 +191,7 @@ DefPrimitive('\newlist{}{}{}', sub {
     Let(T_CS('\\' . $listname . '@item'),
       T_CS('\\' . ($inline ? 'inline@' : '') . $basetype . '@item'),
       'global');
-    DefEnvironment("{$listname} OptionalKeyVals:enumitem",
+    DefEnvironmentI($listname, "OptionalKeyVals:enumitem",
       "<ltx:$elementname xml:id='#id'>#body</ltx:$elementname>",
       properties      => sub { beginEnumItemize($listname, $listname, $_[1]); },
       beforeDigestEnd => sub { Digest('\par'); },
