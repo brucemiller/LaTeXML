@@ -324,7 +324,7 @@ DefMacro('\Refsname', 'References');
 DefConstructor('\cite Semiverbatim', "<ltx:cite>[<ltx:bibref show='refnum' bibrefs='#1'/>]</ltx:cite>");
 
 # arg or no arg?
-DefMacro('\thebibliography@ID', '\ifx#\thedocument@id#\thedocument@id.bib\else bib\fi');
+DefMacro('\thebibliography@ID', '\ifx.\thedocument@id.\thedocument@id.bib\else bib\fi');
 
 DefMacro('\@auto@Refs', '\Refs');
 DefMacro('\Refs',       '\@Refs\def\@auto@Refs{}');
@@ -379,9 +379,9 @@ DefMacro('\@fill@bibitem', sub {
     push(@body, ppunbox(undef, undef, 'authors'));
     if (LookupValue('amsbibitem@book')) {    # Case 1: Book, etc
       push(@body, commaunbox('book'), commaunbox('bookinfo'),
-        ppunbox(undef, '\space(', 'proceedingsinfo', ')'),
-        ppunbox(',', '\space vol.~', 'volume'),
-        ppunbox(undef, '\space(', 'editors', ', \edtext)'),
+        ppunbox(undef, '\space(',      'proceedingsinfo', ')'),
+        ppunbox(',',   '\space vol.~', 'volume'),
+        ppunbox(undef, '\space(',      'editors', ', \edtext)'),
         commaunbox('publisher'), commaunbox('publisheraddr'), commaunbox('year'),
         ppunbox(',', '\space\pagestext~', 'pages')); }
     else {                                   # Case 2, paper in book
