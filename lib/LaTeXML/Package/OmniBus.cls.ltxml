@@ -93,6 +93,7 @@ DefConstructor('\altaffiltext{}{}',
 DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
 DefMacro('\address[]{}',   '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
 DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
+DefRegister('\affilskip' => Dimension(0));
 
 # some rarer name macros that are functionally no-ops for latexml
 DefMacro('\prefix{}',         '#1');
@@ -196,10 +197,11 @@ Let('\endacknowledgements',   '\endacknowledgments');
 Let('\theacknowledgments',    '\acknowledgments');
 Let('\endtheacknowledgments', '\endacknowledgments');
 
+DefMacro('\editors{}',      '\@add@frontmatter{ltx:note}[role=editors]{#1}');
 DefMacro('\received{}',     '\@add@frontmatter{ltx:date}[role=received]{#1}');
 DefMacro('\revised{}',      '\@add@frontmatter{ltx:date}[role=revised]{#1}');
 DefMacro('\accepted{}',     '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
-DefMacro('\pubyear',        '\@add@frontmatter{ltx:date}[role=publication]{#1}');
+DefMacro('\pubyear{}',      '\@add@frontmatter{ltx:date}[role=publication]{#1}');
 DefMacro('\preprint{}',     '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
 DefMacro('\communicated{}', '\@add@frontmatter{ltx:date}[role=communicated]{#1}');
 DefMacro('\dedicated{}',    '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
@@ -207,8 +209,8 @@ DefMacro('\presented{}',    '\@add@frontmatter{ltx:date}[role=presented]{#1}');
 DefMacro('\articletype{}',  '\@add@frontmatter{ltx:note}[role=articletype]{#1}');
 DefMacro('\issue{}',        '\@add@frontmatter{ltx:note}[role=issue]{#1}');
 DefMacro('\journal{}',      '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\volume',         '\@add@frontmatter{ltx:note}[role=volume]{#1}');
-DefMacro('\pubyear',        '\@add@frontmatter{ltx:date}[role=publication]{#1}');
+DefMacro('\jname{}',        '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\volume{}',       '\@add@frontmatter{ltx:note}[role=volume]{#1}');
 
 # work as environment or not...
 DefConstructor('\references',
@@ -225,5 +227,7 @@ DefConstructor('\endreferences',
 
 Let('\reference', '\bibitem');
 
-DefMacro('\comment{}', '');
+DefMacro('\comment{}',    '');
+DefMacro('\etal',         '\textit{et al.}');
+DefMacro('\firstsection', '');
 1;
