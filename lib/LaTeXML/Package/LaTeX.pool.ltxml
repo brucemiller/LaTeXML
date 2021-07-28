@@ -4458,7 +4458,7 @@ DefConstructor('\lx@parboxnewline[]', sub {
 
 # NOTE: There are 2 extra arguments (See LaTeX Companion, p.866)
 # for height and inner-pos.  We're ignoring them, for now, though.
-DefConstructor('\parbox[][Dimension][]{Dimension} VBoxContents', sub {
+DefConstructor('\parbox[] OptionalUndigested OptionalUndigested {Dimension} VBoxContents', sub {
     my ($document, $attachment, $b, $c, $width, $body, %props) = @_;
     insertBlock($document, $body,
       width   => $width,
