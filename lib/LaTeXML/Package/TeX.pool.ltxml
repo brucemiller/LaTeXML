@@ -2412,7 +2412,7 @@ DefPrimitive('\vadjust {}', sub { PushValue('vAdjust', $_[1]->unlist); });
 # Stuff to ignore for now...
 foreach my $op ('\vfil', '\vfill', '\vss', '\vfilneg',
   '\leaders', '\cleaders', '\xleaders') {
-  DefPrimitive($op, undef); }
+  DefPrimitiveI($op, undef, undef); }
 
 # \moveleft<dimen><box>, \moveright<dimen><box>
 DefConstructor('\moveleft Dimension MoveableBox',
@@ -5234,7 +5234,7 @@ sub DefAccent {
   # Used for converting a char used as an above-accent to a combining char (See \accent)
   AssignMapping('accent_combiner_above', $standalonechar => $combiningchar) if $options{above};
   AssignMapping('accent_combiner_below', $standalonechar => $combiningchar) unless $options{above};
-  DefPrimitive($accent . "{}", sub {
+  DefPrimitiveI($accent, "{}", sub {
       my ($stomach, $letter) = @_;
       applyAccent($stomach, $letter, $combiningchar, $standalonechar, Invocation($accent, $letter)); },
     mode => 'text');
@@ -5320,7 +5320,7 @@ DefConstructor('\@math@baccent {}',
 
 foreach my $op ('\hrulefill', '\dotfill', '\rightarrowfill', '\leftarrowfill',
   '\upbracefill', '\downbracefill') {
-  DefPrimitive($op, undef); }
+  DefPrimitiveI($op, undef, undef); }
 
 Let('\bye', '\end');
 

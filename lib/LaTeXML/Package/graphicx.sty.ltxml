@@ -25,9 +25,9 @@ DefMacro('\Gin@ewidth',  '');
 DefMacro('\Gin@eheight', '');
 DefMacro('\Gin@eresize', '');
 #DefKeyVal('Gin', 'width',           'Dimension', '', code=>sub { DefMacro('\Gin@ewidth',$_[1]); });
-DefKeyVal('Gin', 'width',           'Dimension');
-DefKeyVal('Gin', 'height',          'Dimension');
-DefKeyVal('Gin', 'totalheight',     'Dimension');
+DefKeyVal('Gin', 'width',           'GraphixDimension');
+DefKeyVal('Gin', 'height',          'GraphixDimension');
+DefKeyVal('Gin', 'totalheight',     'GraphixDimension');
 DefKeyVal('Gin', 'keepaspectratio', '', 'true');
 DefKeyVal('Gin', 'clip',            '', 'true');
 DefKeyVal('Gin', 'scale',           '');
@@ -41,7 +41,7 @@ DefMacro('\includegraphics OptionalMatch:* []',
   '\@ifnextchar[{\@includegraphics#1[#2]}{\@includegraphicx#1[#2]}');
 
 DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbatim',
-  "<ltx:graphics graphic='#path' candidates='#candidates' options='#2?#1(,clip=true)'/>",
+  "<ltx:graphics graphic='#path' candidates='#candidates' options='#options'/>",
   alias      => '\includegraphics',
   sizer      => \&image_graphicx_sizer,
   properties => sub {
@@ -55,6 +55,12 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
       @candidates = map { pathname_relative($_, $base) } @candidates; }
     my $options = ToString($kv);
     $options .= ',clip=true' if $starred;
+    my $keepaspect;
+    $options .= ',';
+    $keepaspect = 1 if $options =~ s/width=,//;
+    $keepaspect = 1 if $options =~ s/height=,//;
+    if ($keepaspect) { $options .= 'keepaspectratio=true'; }
+    else             { $options =~ s/,$//; }
     (path => $path,
       candidates => join(',', @candidates),
       options    => $options); },

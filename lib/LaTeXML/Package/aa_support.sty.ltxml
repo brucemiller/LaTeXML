@@ -45,6 +45,23 @@ ExecuteOptions(qw(a4paper twocolumn utf8 hideoverfull bibauthoryear));
 ProcessOptions();
 
 RequirePackage('inst_support');
+RequirePackage('calc');
+RequirePackage('etex');
+RequirePackage('fontenc');
+RequirePackage('geometry');
+RequirePackage('setspace');
+RequirePackage('fancyhdr');
+#RequirePackage('cuted');
+RequirePackage('amsmath');
+RequirePackage('amssymb');
+RequirePackage('xcolor');
+RequirePackage('url');
+RequirePackage('enumerate');
+RequirePackage('longtable');
+RequirePackage('xspace');
+RequirePackage('babel');
+RequirePackage('rotating');
+#RequirePackage('answers');
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # The Manuscript Header
@@ -282,7 +299,7 @@ DefConstructor('\aas@@fstack{}',
     . "<ltx:XMWrap>#1</ltx:XMWrap>"
     . "</ltx:XMApp>",
   properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } },
-  mode       => 'math', bounded => 1);
+  mode => 'math', bounded => 1);
 DefMacro('\aas@fstack{}', '\ensuremath{\aas@@fstack{#1}}');
 DefMacro('\fd',           '\aas@fstack{d}');
 DefMacro('\fh',           '\aas@fstack{h}');
