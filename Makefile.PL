@@ -124,12 +124,12 @@ sub record_revision {
   ## This command is appropriate for svn
   ##  $$MORE_MACROS{REVISION} = '$(shell svnversion $(REVISION_BASE))';
   ## This command is appropriate for git (I think)
-  if ((-d '.git') && (system("git --version") == 0)) {    # If a git checkout & can run git?
+  if ((-e '.git') && (system("git --version") == 0)) {    # If a git checkout & can run git?
     print STDERR "\n";                                    # space out messages
     $$MORE_MACROS{REVISION} = '$(shell git log --max-count=1 --abbrev-commit --pretty="%h")'; }
   # Extract the previously recorded revision from the revision file (awkward)
   $$MORE_MACROS{OLD_REVISION}
-    = '`$(PERLRUN) -ne \'chomp;if(s/.*?REVISION\\s*=\\s*\\"// && s/\\".*//){print;}\' < $(REVISION_FILE)`';
+    = '$(shell $(PERLRUN) -ne "chomp;if(s/.*?REVISION\s*=\s*\'// && s/\s*\'.*//){print;}" < $(REVISION_FILE))';
   # Substitute the revision into the revision template
   $$MORE_MACROS{RECORD_REVISION} = '$(PERLRUN) -pe "s@__REVISION__@$(REVISION)@" ';
 
@@ -149,7 +149,7 @@ $(REVISION_FILE): lib/LaTeXML/Version.in
 # update version if stored revision if not current
 update_revision:
 	$(NOECHO) $(MKPATH) $(INST_LIBDIR)/LaTeXML
-	- $(NOECHO) test $(REVISION) = $(OLD_REVISION) \
+	- $(NOECHO) $(PERLRUN) -e "exit(1) unless '$(REVISION)' eq '$(OLD_REVISION)';" \
 	|| $(RECORD_REVISION) lib/LaTeXML/Version.in > $(REVISION_FILE)
 
 RecordRevision
