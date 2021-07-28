@@ -132,7 +132,16 @@ DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
 );
 
 # slashbox compatibility
-DefMacro('\slashbox[][]{}{}',     '\diagbox[dir=SW,width={#1},trim={#2}]{#3}{#4}');
-DefMacro('\backslashbox[][]{}{}', '\diagbox[dir=NW,width={#1},trim={#2}]{#3}{#4}');
+DefMacro('\slashbox[][]{}{}',
+  '\def\@tempa{dir=SW}'
+    . '\ifx.#1.\else\edef\@tempa{\@tempa,width={#1}}\fi'
+    . '\ifx.#2.\else\edef\@tempa{\@tempa,trim={#2}}\fi'
+    . '\diagbox[\@tempa]{#3}{#4}');
+DefMacro('\backslashbox[][]{}{}',
+  '\def\@tempa{dir=NW}'
+    . '\ifx.#1.\else\edef\@tempa{\@tempa,width={#1}}\fi'
+    . '\ifx.#2.\else\edef\@tempa{\@tempa,trim={#2}}\fi'
+    . '\diagbox[\@tempa]{#3}{#4}');
+
 #======================================================================
 1;
