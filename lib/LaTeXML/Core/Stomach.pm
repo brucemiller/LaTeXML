@@ -172,7 +172,7 @@ INVOKE:
       # Locally deactivate to avoid a flurry of errors in the same table.
       # Alert the end user once per table, allowing longer documents to not
       # hit 100 errors too quickly.
-      $STATE->assignMeaning(T_ALIGN,
+      $STATE->assignMeaning($token,
         $STATE->lookupMeaning(T_CS('\relax')), 'local')
         if Equals($token, T_ALIGN);
       Error('misdefined', $token, $self,
@@ -365,7 +365,7 @@ sub setMode {
     # but inherit color and size
     $STATE->assignValue(font => $STATE->lookupValue('savedfont')->merge(
         color => $curfont->getColor, background => $curfont->getBackground,
-        size => $curfont->getSize), 'local'); }
+        size  => $curfont->getSize), 'local'); }
   return; }
 
 sub beginMode {
