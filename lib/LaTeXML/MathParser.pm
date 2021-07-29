@@ -1236,6 +1236,7 @@ sub extract_separators {
         . p_getValue($p)
         . spacingToString(getXMHintSpacing(p_getAttribute($p, 'rpadding')));
       push(@args, shift(@stuff)); } }    # Collect the next expression.
+  @args = grep { $_ } @args;    # drop all undef args, trailing punct could have added an undef
   return ($punct, @args); }
 
 # ================================================================================
@@ -1363,6 +1364,9 @@ sub NewFormula {
 
 sub NewList {
   my (@stuff) = @_;
+  # drop placeholder token for missing trailing punct, if any
+  if (scalar(@stuff) > 1 && (p_getTokenMeaning($stuff[-1]) eq 'absent')) {
+    pop(@stuff); }
   if (@stuff == 1) {
     return $stuff[0]; }
   else {

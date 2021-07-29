@@ -90,6 +90,10 @@ delete $grammar_dependencies{'argPunct'}{'VERTBAR'};
 delete $grammar_dependencies{'Expression'}{'punctExpr'}; # Unreachable, due to Formula -> punctExpr
 delete $grammar_dependencies{'aSuperscri'}{'AnyOp'};
 delete $grammar_dependencies{'aSuperscri'}{'Expression'};
+# These are odd to have been recorded, since at least the intention is that they are preceded by
+# aSubscript/aSuperscript. We have explicit tests for the relevant cases.
+delete $grammar_dependencies{'Superscrip'}{'endPunct'};
+delete $grammar_dependencies{'Subscript'}{'endPunct'};
 # forbid rules should never match, don't check them here.
 # TODO: We need tests for the always-failing productions!
 delete $grammar_dependencies{'doubtArgs'}{'forbidArgs'};
