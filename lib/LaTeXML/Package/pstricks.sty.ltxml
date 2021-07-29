@@ -522,7 +522,7 @@ sub DefPSConstructor {
       push(@exp, T_OTHER('*')) if $_[1];
       @exp; });
   if ($options{attributes}) { $PSobjAttributes{$cmd} = $options{attributes}; delete $options{attributes}; }
-  DefConstructorI($cmd, '@ OptionalMatch:* ' . $args, $replacement, alias => $cmd, %options);
+  DefConstructorI($cmd . '@', ' OptionalMatch:* ' . $args, $replacement, alias => $cmd, %options);
   return; }
 
 sub DefSimplePSConstructor {
