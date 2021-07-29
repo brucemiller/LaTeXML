@@ -1365,6 +1365,9 @@ sub NewFormula {
 
 sub NewList {
   my (@stuff) = @_;
+  # drop trailing missing trailing puncts
+  if (scalar(@stuff) > 1 && (p_getTokenMeaning($stuff[-1]) eq 'absent')) {
+    pop(@stuff); }
   if (@stuff == 1) {
     return $stuff[0]; }
   else {
