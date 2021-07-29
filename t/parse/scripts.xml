@@ -149,6 +149,7 @@
                   <XMTok meaning="absent"/>
                   <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
                 </XMApp>
+                <XMTok role="PUNCT">⁣</XMTok>
               </XMWrap>
             </XMDual>
           </XMApp>
@@ -156,10 +157,19 @@
       </Math></p>
   </para>
   <para xml:id="p11">
-    <p><Math mode="inline" tex="{}^{\prime\prime\prime}" text="^prime3" xml:id="p11.m1">
+    <p><Math mode="inline" tex="{}^{\prime\prime\prime}" text="^list@(prime3)" xml:id="p11.m1">
         <XMath>
           <XMApp role="FLOATSUPERSCRIPT" scriptpos="1">
-            <XMTok fontsize="70%" name="prime3" role="SUPOP">′′′</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p11.m1.1"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok name="prime3" role="SUPOP" xml:id="p11.m1.1">′′′</XMTok>
+                <XMTok role="PUNCT">⁣</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMApp>
         </XMath>
       </Math></p>
@@ -176,12 +186,21 @@
       </Math></p>
   </para>
   <para xml:id="p13">
-    <p><Math mode="inline" tex="\psi^{\prime\prime}" text="psi ^ prime2" xml:id="p13.m1">
+    <p><Math mode="inline" tex="\psi^{\prime\prime}" text="psi ^ (list@(prime2))" xml:id="p13.m1">
         <XMath>
           <XMApp>
             <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
             <XMTok font="italic" name="psi" role="UNKNOWN">ψ</XMTok>
-            <XMTok fontsize="70%" name="prime2" role="SUPOP">′′</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p13.m1.1"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok name="prime2" role="SUPOP" xml:id="p13.m1.1">′′</XMTok>
+                <XMTok role="PUNCT">⁣</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMApp>
         </XMath>
       </Math></p>
@@ -198,88 +217,264 @@
       </Math></p>
   </para>
   <para xml:id="p15">
-    <p><Math mode="inline" tex="a^{=x}" text="a ^ (absent = x)" xml:id="p15.m1">
+    <p><Math mode="inline" tex="a^{=x}" text="a ^ (list@(absent = x))" xml:id="p15.m1">
         <XMath>
           <XMApp>
             <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
             <XMTok font="italic" role="UNKNOWN">a</XMTok>
-            <XMApp>
-              <XMTok fontsize="70%" meaning="equals" role="RELOP">=</XMTok>
-              <XMTok meaning="absent"/>
-              <XMTok font="italic" fontsize="70%" role="UNKNOWN">x</XMTok>
-            </XMApp>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p15.m1.1"/>
+              </XMApp>
+              <XMWrap>
+                <XMApp xml:id="p15.m1.1">
+                  <XMTok fontsize="70%" meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok meaning="absent"/>
+                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">x</XMTok>
+                </XMApp>
+                <XMTok role="PUNCT">⁣</XMTok>
+              </XMWrap>
+            </XMDual>
           </XMApp>
         </XMath>
       </Math></p>
   </para>
   <para xml:id="p16">
-    <p><Math mode="inline" tex="a^{(1)}" text="a ^ 1" xml:id="p16.m1">
+    <p><Math mode="inline" tex="a^{(1)}" text="a ^ (list@(1))" xml:id="p16.m1">
         <XMath>
           <XMApp>
             <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
             <XMTok font="italic" role="UNKNOWN">a</XMTok>
             <XMDual>
-              <XMRef idref="p16.m1.1"/>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p16.m1.2"/>
+              </XMApp>
               <XMWrap>
-                <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
-                <XMTok fontsize="70%" meaning="1" role="NUMBER" xml:id="p16.m1.1">1</XMTok>
-                <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+                <XMDual xml:id="p16.m1.2">
+                  <XMRef idref="p16.m1.1"/>
+                  <XMWrap>
+                    <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok fontsize="70%" meaning="1" role="NUMBER" xml:id="p16.m1.1">1</XMTok>
+                    <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="PUNCT">⁣</XMTok>
               </XMWrap>
             </XMDual>
           </XMApp>
         </XMath>
       </Math>
-<Math mode="inline" tex="a_{(g)}" text="a _ g" xml:id="p16.m2">
+<Math mode="inline" tex="a_{(g)}" text="a _ (list@(g))" xml:id="p16.m2">
         <XMath>
           <XMApp>
             <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
             <XMTok font="italic" role="UNKNOWN">a</XMTok>
             <XMDual>
-              <XMRef idref="p16.m2.1"/>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p16.m2.2"/>
+              </XMApp>
               <XMWrap>
-                <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
-                <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p16.m2.1">g</XMTok>
-                <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+                <XMDual xml:id="p16.m2.2">
+                  <XMRef idref="p16.m2.1"/>
+                  <XMWrap>
+                    <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p16.m2.1">g</XMTok>
+                    <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="PUNCT">⁣</XMTok>
               </XMWrap>
             </XMDual>
           </XMApp>
         </XMath>
       </Math>
-<Math mode="inline" tex="a^{(\neq 0)}" text="a ^ (absent not-equals 0)" xml:id="p16.m3">
+<Math mode="inline" tex="a^{(\neq 0)}" text="a ^ (list@(absent not-equals 0))" xml:id="p16.m3">
         <XMath>
           <XMApp>
             <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
             <XMTok font="italic" role="UNKNOWN">a</XMTok>
             <XMDual>
-              <XMRef idref="p16.m3.1"/>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p16.m3.1"/>
+              </XMApp>
               <XMWrap>
-                <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
-                <XMApp xml:id="p16.m3.1">
-                  <XMTok fontsize="70%" meaning="not-equals" name="neq" role="RELOP">≠</XMTok>
-                  <XMTok meaning="absent"/>
-                  <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
-                </XMApp>
-                <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+                <XMDual xml:id="p16.m3.1">
+                  <XMRef idref="p16.m3.1.1"/>
+                  <XMWrap>
+                    <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
+                    <XMApp xml:id="p16.m3.1.1">
+                      <XMTok fontsize="70%" meaning="not-equals" name="neq" role="RELOP">≠</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
+                    </XMApp>
+                    <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="PUNCT">⁣</XMTok>
               </XMWrap>
             </XMDual>
           </XMApp>
         </XMath>
       </Math>
-<Math mode="inline" tex="a_{(&gt;0)}" text="a _ (absent &gt; 0)" xml:id="p16.m4">
+<Math mode="inline" tex="a_{(&gt;0)}" text="a _ (list@(absent &gt; 0))" xml:id="p16.m4">
         <XMath>
           <XMApp>
             <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
             <XMTok font="italic" role="UNKNOWN">a</XMTok>
             <XMDual>
-              <XMRef idref="p16.m4.1"/>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p16.m4.1"/>
+              </XMApp>
               <XMWrap>
-                <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
-                <XMApp xml:id="p16.m4.1">
-                  <XMTok fontsize="70%" meaning="greater-than" role="RELOP">&gt;</XMTok>
-                  <XMTok meaning="absent"/>
-                  <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
-                </XMApp>
-                <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+                <XMDual xml:id="p16.m4.1">
+                  <XMRef idref="p16.m4.1.1"/>
+                  <XMWrap>
+                    <XMTok fontsize="70%" role="OPEN" stretchy="false">(</XMTok>
+                    <XMApp xml:id="p16.m4.1.1">
+                      <XMTok fontsize="70%" meaning="greater-than" role="RELOP">&gt;</XMTok>
+                      <XMTok meaning="absent"/>
+                      <XMTok fontsize="70%" meaning="0" role="NUMBER">0</XMTok>
+                    </XMApp>
+                    <XMTok fontsize="70%" role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok role="PUNCT">⁣</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math></p>
+  </para>
+  <para xml:id="p17">
+    <p><Math mode="inline" tex="a_{n.n.n.}" text="a _ (list@(formulae@(n, n, n)))" xml:id="p17.m1">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p17.m1.4"/>
+              </XMApp>
+              <XMWrap>
+                <XMDual xml:id="p17.m1.4">
+                  <XMApp>
+                    <XMTok meaning="formulae"/>
+                    <XMRef idref="p17.m1.1"/>
+                    <XMRef idref="p17.m1.2"/>
+                    <XMRef idref="p17.m1.3"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p17.m1.1">n</XMTok>
+                    <XMTok fontsize="70%" role="PERIOD">.</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p17.m1.2">n</XMTok>
+                    <XMTok fontsize="70%" role="PERIOD">.</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p17.m1.3">n</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok fontsize="70%" role="PERIOD">.</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math>
+<Math mode="inline" tex="b^{n.n.n.}" text="b ^ (list@(formulae@(n, n, n)))" xml:id="p17.m2">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p17.m2.4"/>
+              </XMApp>
+              <XMWrap>
+                <XMDual xml:id="p17.m2.4">
+                  <XMApp>
+                    <XMTok meaning="formulae"/>
+                    <XMRef idref="p17.m2.1"/>
+                    <XMRef idref="p17.m2.2"/>
+                    <XMRef idref="p17.m2.3"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p17.m2.1">n</XMTok>
+                    <XMTok fontsize="70%" role="PERIOD">.</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p17.m2.2">n</XMTok>
+                    <XMTok fontsize="70%" role="PERIOD">.</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p17.m2.3">n</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok fontsize="70%" role="PERIOD">.</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math>
+<Math mode="inline" tex="a_{i,j,}" text="a _ (list@(list@(i, j)))" xml:id="p17.m3">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p17.m3.3"/>
+              </XMApp>
+              <XMWrap>
+                <XMDual xml:id="p17.m3.3">
+                  <XMApp>
+                    <XMTok meaning="list"/>
+                    <XMRef idref="p17.m3.1"/>
+                    <XMRef idref="p17.m3.2"/>
+                  </XMApp>
+                  <XMWrap>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p17.m3.1">i</XMTok>
+                    <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p17.m3.2">j</XMTok>
+                  </XMWrap>
+                </XMDual>
+                <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math>
+<Math mode="inline" tex="b^{-,}" text="b ^ (list@(-))" xml:id="p17.m4">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+            <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p17.m4.1"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok fontsize="70%" meaning="minus" role="ADDOP" xml:id="p17.m4.1">-</XMTok>
+                <XMTok fontsize="70%" role="PUNCT">,</XMTok>
+              </XMWrap>
+            </XMDual>
+          </XMApp>
+        </XMath>
+      </Math>
+<Math mode="inline" tex="a_{k,}" text="a _ (list@(k))" xml:id="p17.m5">
+        <XMath>
+          <XMApp>
+            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMDual>
+              <XMApp>
+                <XMTok meaning="list"/>
+                <XMRef idref="p17.m5.1"/>
+              </XMApp>
+              <XMWrap>
+                <XMTok font="italic" fontsize="70%" role="UNKNOWN" xml:id="p17.m5.1">k</XMTok>
+                <XMTok fontsize="70%" role="PUNCT">,</XMTok>
               </XMWrap>
             </XMDual>
           </XMApp>

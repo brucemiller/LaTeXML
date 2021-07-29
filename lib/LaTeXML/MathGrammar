@@ -83,13 +83,13 @@ AnythingAny :
 # a top level rule for sub and superscripts that can accept all sorts of junk.
 Subscript : <rulevar: local $MaxAbsDepth = $LaTeXML::MathParser::MAX_ABS_DEPTH>
 Subscript :
-          aSubscript   (PUNCT(?) aSubscript {[$item[1]->[0] || InvisibleComma(),$item[2]]; })(s?)
-                 { NewList($item[1],map(@$_,@{$item[2]})); }
+          aSubscript   (PUNCT(?) aSubscript {[$item[1]->[0] || InvisibleComma(),$item[2]]; })(s?) endPunct(?)
+                 { NewList($item[1],map(@$_,@{$item[2]}),$item[3]->[0]||InvisibleComma()); }
 
 Superscript : <rulevar: local $MaxAbsDepth = $LaTeXML::MathParser::MAX_ABS_DEPTH>
 Superscript :
-          aSuperscript (PUNCT(?) aSuperscript {[$item[1]->[0] || InvisibleComma(),$item[2]]; })(s?)
-                 { NewList($item[1],map(@$_,@{$item[2]})); }
+          aSuperscript (PUNCT(?) aSuperscript {[$item[1]->[0] || InvisibleComma(),$item[2]]; })(s?) endPunct(?)
+                 { NewList($item[1],map(@$_,@{$item[2]}),$item[3]->[0]||InvisibleComma()); }
 
 aSubscript :
           Formulae

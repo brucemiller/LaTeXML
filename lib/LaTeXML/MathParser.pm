@@ -1236,6 +1236,8 @@ sub extract_separators {
         . p_getValue($p)
         . spacingToString(getXMHintSpacing(p_getAttribute($p, 'rpadding')));
       push(@args, shift(@stuff)); } }    # Collect the next expression.
+      # it is possible we had a trailing puncts, drop all undef args:
+  @args = grep { $_ } @args;
   return ($punct, @args); }
 
 # ================================================================================
