@@ -515,14 +515,14 @@ sub DefPSConstructor {
     $args = 'Arrows ' . $args; }
   push(@after, \&afterPSObject);
   $options{afterDigest} = \@after;
-  DefMacro($cmd . ' OptionalMatch:* []', sub {
+  DefMacroI($cmd, 'OptionalMatch:* []', sub {
       my @exp = (T_BEGIN);
       push(@exp, T_CS('\psset'), T_BEGIN, $_[2]->unlist, T_END) if $_[2];
       push(@exp, T_CS($cmd . '@'));
       push(@exp, T_OTHER('*')) if $_[1];
       @exp; });
   if ($options{attributes}) { $PSobjAttributes{$cmd} = $options{attributes}; delete $options{attributes}; }
-  DefConstructorI($cmd, '@ OptionalMatch:* ' . $args, $replacement, alias => $cmd, %options);
+  DefConstructorI($cmd . '@', 'OptionalMatch:* ' . $args, $replacement, alias => $cmd, %options);
   return; }
 
 sub DefSimplePSConstructor {
