@@ -6,31 +6,31 @@ jobs:
   ci:
     runs-on: ubuntu-latest
     container:
-      image: latexml/latexml-test-runtime:${{ matrix.perl }}_${{ matrix.tex }}
+      image: ghcr.io/tkw1536/latexml-test-runtime:${{ matrix.texlive }}-${{ matrix.perl }}
       env:
         CI: true
       options: --entrypoint ""
 
-    name: Continuous Integration
+    name: TexLive ${{ matrix.texlive }} / Perl ${{ matrix.perl }}
     strategy:
       matrix:
         include:
-          - perl: 5.28.0
-            tex: none
-          - perl: 5.26.2
-            tex: none
-          - perl: 5.24.4
-            tex: none
-          - perl: 5.20.3
-            tex: none
-          - perl: 5.14.4
-            tex: none
-          - perl: 5.28.0
-            tex: texlive-2018
-          - perl: 5.26.2
-            tex: texlive-2016
-          - perl: 5.22.4
-            tex: texlive-2015
+          - perl: "5.28"
+            texlive: none
+          - perl: "5.26"
+            texlive: none
+          - perl: "5.24"
+            texlive: none
+          - perl: "5.20"
+            texlive: none
+          - perl: "5.14"
+            texlive: none
+          - perl: "5.28"
+            texlive: "2018"
+          - perl: "5.24"
+            texlive: "2016"
+          - perl: "5.22"
+            texlive: "2015"
     
     steps:
       - uses: actions/checkout@v2
