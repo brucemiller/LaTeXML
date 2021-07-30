@@ -5,6 +5,7 @@ on: [push, pull_request]
 jobs:
   ci:
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.allow_failure }}
     container:
       image: ghcr.io/tkw1536/latexml-test-runtime:${{ matrix.texlive }}-${{ matrix.perl }}
       env:
@@ -15,22 +16,33 @@ jobs:
     strategy:
       matrix:
         include:
+          - perl: "5.34"
+            texlive: none
+            allow_failure: false
+          - perl: "5.32"
+            texlive: none
+            allow_failure: false
+          - perl: "5.30"
+            texlive: none
+            allow_failure: false
           - perl: "5.28"
             texlive: none
+            allow_failure: false
           - perl: "5.26"
             texlive: none
-          - perl: "5.24"
-            texlive: none
-          - perl: "5.20"
-            texlive: none
-          - perl: "5.14"
-            texlive: none
+            allow_failure: false
+          - perl: "5.34"
+            texlive: "2021"
+            allow_failure: true
+          - perl: "5.32"
+            texlive: "2020"
+            allow_failure: true
+          - perl: "5.30"
+            texlive: "2019"
+            allow_failure: true
           - perl: "5.28"
             texlive: "2018"
-          - perl: "5.24"
-            texlive: "2016"
-          - perl: "5.22"
-            texlive: "2015"
+            allow_failure: true
     
     steps:
       - uses: actions/checkout@v2
