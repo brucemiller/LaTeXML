@@ -354,8 +354,10 @@ sub texlive_version {
       $tex = $path; } }
   if (!$tex) {    # Else look for executable
     $tex = which("tex"); }
-  if ($tex) {     # If we found one, hope it has TeX Live version in it's --version
-    my $version_string = `$tex --version`;
+  if ($tex && open(my $texfh, '-|', $tex, '--version')) { # If we found one, hope it has TeX Live version in it's --version
+    my $version_string;
+    { local $/; $version_string = <$texfh>; }
+    close($texfh);
     if ($version_string =~ /TeX Live (\d+)/) {
       $texlive_version = int($1); }
     else {
