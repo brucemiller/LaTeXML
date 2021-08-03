@@ -89,15 +89,15 @@ sub new {
   my ($class, %options) = @_;
   my $self = bless {    # table => {},
     value   => {}, meaning  => {}, stash  => {}, stash_active => {},
-    catcode => {}, mathcode => {}, sfcode => {}, lccode => {}, uccode => {}, delcode => {},
+    catcode => {}, mathcode => {}, sfcode => {}, lccode       => {}, uccode => {}, delcode => {},
     undo    => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
-    stomach => $options{stomach}, model => $options{model} }, $class;
+    stomach => $options{stomach},       model    => $options{model} }, $class;
   # Note that "100" is hardwired into TeX, The Program!!!
   $$self{value}{MAX_ERRORS} = [100];
   # Standard TeX units, in scaled points
   $$self{value}{UNITS} = [{
-      pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
-      cm => 72.27 * 65536 / 2.54, mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
+      pt => 65536,                    pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
+      cm => 72.27 * 65536 / 2.54,     mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
       cc => 12 * 1238 * 65536 / 1157, sp => 1,
       px => 72.27 * 65536 / 72,    # Assume px=bp ?
   }];
@@ -127,6 +127,15 @@ sub new {
 
 sub assign_internal {
   my ($self, $table, $key, $value, $scope) = @_;
+  # hotcode lookupDefinition for \globaldefs,
+  # since this is called extremely often and should be highly standardized
+  if (my $globaldefs = $$self{value}{'\globaldefs'}) {
+    if (my $global_value = $$globaldefs[0][0]) {
+      # magic TeX register override: \globaldefs
+      if ($global_value == 1) {
+        $scope = 'global'; }
+      elsif ($global_value == -1) {
+        $scope = 'local'; } } }
   $scope = ($$self{prefixes}{global} ? 'global' : 'local') unless defined $scope;
   if (exists $$self{tracing_definitions}{$key}) {
     Debug("ASSIGN $key in $table " . ($scope ? "($scope)" : '') . " => " .
@@ -716,7 +725,7 @@ sub getStatusMessage {
   my @undef        = ($$status{undefined} ? keys %{ $$status{undefined} } : ());
   my $undef_status = @undef && colorizeString(scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
       . "[" . join(', ', @undef) . "]", 'details');
-  my @miss = ($$status{missing} ? keys %{ $$status{missing} } : ());
+  my @miss           = ($$status{missing} ? keys %{ $$status{missing} } : ());
   my $missing_status = @miss && colorizeString(scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
       . "[" . join(', ', @miss) . "]", 'details');
 
