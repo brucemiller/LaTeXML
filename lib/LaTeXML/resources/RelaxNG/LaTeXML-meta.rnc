@@ -197,6 +197,10 @@ element resource { resource_attributes, resource_model }
 resource_attributes = 
   Common.attributes,
 
+  ## the role of this resource
+  ## (does it carry essential semantics ?)
+  attribute role { "semantic" | text }?,
+
   ## the source url to the resource
   attribute src { text }?,
 

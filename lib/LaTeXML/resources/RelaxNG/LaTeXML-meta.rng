@@ -287,6 +287,16 @@ used to crossreference.</a:documentation>
     <a:documentation>Attributes for \elementref{resource}.</a:documentation>
     <ref name="Common.attributes"/>
     <optional>
+      <attribute name="role">
+        <a:documentation>the role of this resource
+(does it carry essential semantics ?)</a:documentation>
+        <choice>
+          <value>semantic</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
       <attribute name="src">
         <a:documentation>the source url to the resource</a:documentation>
       </attribute>

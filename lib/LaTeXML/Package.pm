@@ -2760,10 +2760,11 @@ sub DefMathLigature {
 # Support for requiring "Resources", ie CSS, Javascript, whatever
 
 my $resource_options = {    # [CONSTANT]
-  type => 1, media => 1, content => 1 };
+  type => 1, media => 1, content => 1, role => 1 };
 my $resource_types = {      # [CONSTANT]
   css => 'text/css', js => 'text/javascript' };
-
+my $resource_roles = {    # [CONSTANT]
+  semantic => 1 };
 sub RequireResource {
   my ($resource, %options) = @_;
   CheckOptions("RequireResource", $resource_options, %options);
@@ -2777,7 +2778,8 @@ sub RequireResource {
     my $ext = $resource && pathname_type($resource);
     my $t   = $ext      && $$resource_types{$ext};
     Warn('expected', 'type', undef, "Resource must have a mime-type; skipping"); return; }
-
+  my ($role) = $options{role};
+  Warn('unexpected', 'resource', undef, "Resource of unknown role $role") if (defined($role) && !$$resource_roles{$role});
   if ($LaTeXML::DOCUMENT) {    # If we've got a document, go ahead & put the resource in.
     addResource($LaTeXML::DOCUMENT, $resource, %options); }
   else {
@@ -2790,7 +2792,7 @@ sub addResource {
   my ($document, $resource, %options) = @_;
   my $savenode = $document->floatToElement('ltx:resource');
   $document->insertElement('ltx:resource', $options{content},
-    src => $resource, type => $options{type}, media => $options{media});
+    src => $resource, type => $options{type}, media => $options{media}, role => $options{role});
   $document->setNode($savenode) if $savenode;
   return; }
 
