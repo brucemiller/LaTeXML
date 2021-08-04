@@ -22,7 +22,7 @@ use LaTeXML::Package;
 #**********************************************************************
 # Seems to be equivalent.
 LoadClass('aastex', withoptions => 1);
-RequireResource('ltx-apj.css');
+RequireResource('ltx-apj.css', role => 'semantic');
 # ... Well, almost...
 DefMacroI('\LongTables', undef, '');
 Let('\begin{deluxetable*}', '\begin{deluxetable}');

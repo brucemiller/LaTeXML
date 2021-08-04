@@ -29,7 +29,7 @@ foreach my $option (qw(10pt 11pt 12pt
   DeclareOption($option, undef); }
 
 DeclareOption('openbib', sub {
-    RequireResource(undef, type => 'text/css', content => '.ltx_bibblock{display:block;}'); });
+    RequireResource(undef, type => 'text/css', content => '.ltx_bibblock{display:block;}', role => 'semantic'); });
 DeclareOption('leqno', sub { AssignMapping('DOCUMENT_CLASSES', ltx_leqno => 1); });
 DeclareOption('fleqn', sub { AssignMapping('DOCUMENT_CLASSES', ltx_fleqn => 1); });
 

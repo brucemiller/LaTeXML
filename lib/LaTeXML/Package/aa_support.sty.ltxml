@@ -33,7 +33,7 @@ foreach my $option (qw(10pt 11pt 12pt twoside onecolumn twocolumn
   letter)) {
   DeclareOption($option, undef); }
 DeclareOption('openbib', sub {
-    RequireResource(undef, type => 'text/css', content => '.ltx_bibblock{display:block;}'); });
+    RequireResource(undef, type => 'text/css', content => '.ltx_bibblock{display:block;}', role => 'semantic'); });
 
 DeclareOption('cm',            sub { RequirePackage('textcomp'); });
 DeclareOption('bibnumber',     sub { RequirePackage('natbib'); });

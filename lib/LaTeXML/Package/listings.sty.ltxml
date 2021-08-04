@@ -29,7 +29,7 @@ use Encode qw(is_utf8 encode);
 #  HTML, XML comments & CDATA sections not recognized.
 #  Perl, Visual Basic, Java, tcl; something (comments?) is not recognized, but what?
 
-RequireResource('ltx-listings.css');
+RequireResource('ltx-listings.css', role => 'semantic');
 RequirePackage('textcomp');
 #======================================================================
 # Top-level listings commands

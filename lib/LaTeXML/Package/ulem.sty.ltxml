@@ -15,7 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-RequireResource('ltx-ulem.css');
+RequireResource('ltx-ulem.css', role => 'semantic');
 
 #======================================================================
 DefConstructor('\uline{}',
