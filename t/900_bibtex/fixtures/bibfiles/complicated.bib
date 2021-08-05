@@ -1,0 +1,36 @@
+@PREAMBLE{
+  "\newcommand{\noopsort}[1]{} "
+  # "\newcommand{\singleletter}[1]{#1} " 
+}
+
+@string { 
+  me = "Bart Kiers" 
+}
+
+@ComMENt{some comments here}
+
+% or some comments here
+
+@article{MRx05,
+  auTHor = me # "Mr. X",
+  Title = {Something Great}, 
+  publisher = "nob" # "ody",
+  YEAR = 2005,
+  x = {{Bib}\TeX},
+  y = "{Bib}\TeX",
+  z = "{Bib}" # "\TeX",
+},
+
+@misc{ patashnik-bibtexing,
+       author = "Oren Patashnik",
+       title = "BIBTEXing",
+       year = "1988"
+} % no comma here
+
+@techreport{presstudy2002,
+    author      = "Dr. Diessen, van R. J. and Drs. Steenbergen, J. F.",
+    title       = "Long {T}erm {P}reservation {S}tudy of the {DNEP} {P}roject",
+    institution = "IBM, National Library of the Netherlands",
+    year        = "2002",
+    month       = "December",
+}

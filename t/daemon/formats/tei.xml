@@ -69,7 +69,7 @@
   is currently not supported for the main body.
     -->
         <head>Introduction</head>
-        <p xml:id="S1.p1">As discussed in <ref type="bibr" target="bib.bib1">[AS64]</ref>,
+        <p xml:id="S1.p1">As discussed in <ref type="bibr" target="bib.L1.bib.bibx1">[AS64]</ref>,
 Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
         <p>
           <formula xml:id="S1.E1">
@@ -736,7 +736,12 @@ Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor 
       <div type="references">
         <listBibl>
           <head>References</head>
-          <bibl xml:id="bib.bib1"><person-group person-group-type="author"><name><surname>Stegun</surname><given-names>Abramowitz and </given-names></name></person-group><year>1964</year><article-title>Handbook of mathematical functions with formulas, graphs, and mathematical tables</article-title>M. Abramowitz and I. A. Stegun (<date><year>1964</year></date>)Handbook of mathematical functions with formulas, graphs, and mathematical tables.ninth Dover printing, tenth GPO printing edition,  Dover, New York.Cited by: §1.</bibl>
+          <bibl xml:id="bib.L1.bib.bibx1"><!-- The element tag
+            is currently not supported for the back matter
+        -->Milton Abramowitz and Irene A. Stegun.
+Handbook of Mathematical Functions with Formulas, Graphs, and Mathematical Tables.
+Dover, New York, ninth dover printing, tenth gpo printing edition, 1964.
+</bibl>
         </listBibl>
       </div>
     </back>

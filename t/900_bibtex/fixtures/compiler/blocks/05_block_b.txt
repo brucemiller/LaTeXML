@@ -1,0 +1,9 @@
+pushFunction($context, $config, sub { 
+  my ($context, $config) = @_; 
+  pushString($context, $config, 'outer', StyString('QUOTE', 'outer', [(undef, 1, 1, 1, 7)])); 
+  pushFunction($context, $config, sub { 
+    my ($context, $config) = @_; 
+    pushString($context, $config, 'inner', StyString('QUOTE', 'inner', [(undef, 2, 2, 2, 7)])); 
+  }, StyString('BLOCK', [(StyString('QUOTE', 'inner', [(undef, 2, 2, 2, 7)]))], [(undef, 2, 1, 2, 8)])); 
+  pushString($context, $config, 'outer', StyString('QUOTE', 'outer', [(undef, 3, 1, 3, 7)])); 
+}, StyString('BLOCK', [(StyString('QUOTE', 'outer', [(undef, 1, 1, 1, 7)]), StyString('BLOCK', [(StyString('QUOTE', 'inner', [(undef, 2, 2, 2, 7)]))], [(undef, 2, 1, 2, 8)]), StyString('QUOTE', 'outer', [(undef, 3, 1, 3, 7)]))], [(undef, 1, 4, 3, 8)])); 

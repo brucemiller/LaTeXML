@@ -1,0 +1,21 @@
+#!/usr/bin/env perl
+# /=====================================================================\ #
+# |  runtest                                                            | #
+# | Tool to run an integration test                                     | #
+# |=====================================================================| #
+# | Part of LaTeXML                                                     | #
+# |---------------------------------------------------------------------| #
+# | Tom Wiesing <tom.wiesing@gmail.com>                                 | #
+# \=====================================================================/ #
+
+use strict;
+use warnings;
+
+use FindBin;
+use lib "$FindBin::Bin/../lib";
+
+use LaTeXML::Post::BiBTeX::Cmd::runbibtest;
+my $exitcode = LaTeXML::Post::BiBTeX::Cmd::runbibtest->main(@ARGV);
+exit $exitcode;
+
+1;

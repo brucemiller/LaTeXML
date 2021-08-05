@@ -1,0 +1,202 @@
+% format.name$ BiBTeX integration testcases
+@testcase{001, 
+  name     = {Charles Louis Xavier Joseph de la Vall{\`e}e Poussin},
+  format   = {{vv~}{ll}{, jj}{, f}?},
+  expected = {^de~la Vall{\`e}e~Poussin, C. L. X.~J?$}
+}
+@testcase{002, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll}},
+  expected = {^Le~Clerc De La~Herverie$}
+}
+@testcase{003, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll/}},
+  expected = {^Le~Clerc De La~Herverie/$}
+}
+@testcase{004, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll/,}},
+  expected = {^Le~Clerc De La~Herverie/,$}
+}
+@testcase{005, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll{/},}},
+  expected = {^Le/Clerc/De/La/Herverie,$}
+}
+@testcase{006, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll{},}},
+  expected = {^LeClercDeLaHerverie,$}
+}
+@testcase{007, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll~}},
+  expected = {^Le~Clerc De La~Herverie $}
+}
+@testcase{008, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll~~}},
+  expected = {^Le~Clerc De La~Herverie~$}
+}
+@testcase{009, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll{~}~}},
+  expected = {^Le~Clerc~De~La~Herverie $}
+}
+@testcase{010, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll{~}~~}},
+  expected = {^Le~Clerc~De~La~Herverie~$}
+}
+@testcase{011, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll{/},~}},
+  expected = {^Le/Clerc/De/La/Herverie, $}
+}
+@testcase{012, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll{/}~,~}},
+  expected = {^Le/Clerc/De/La/Herverie~, $}
+}
+@testcase{013, 
+  name     = {von Le Clerc De La Herverie},
+  format   = {{ll{/}~~,~~}},
+  expected = {^Le/Clerc/De/La/Herverie~~,~$}
+}
+@testcase{014, 
+  name     = {von Zeb Chillicothe Mantey},
+  format   = {{ll}},
+  expected = {^Zeb Chillicothe~Mantey$}
+}
+@testcase{015, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f}},
+  expected = {^J.-M.-G.-A$}
+}
+@testcase{016, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f/}},
+  expected = {^J.-M.-G.-A/$}
+}
+@testcase{017, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f/,}},
+  expected = {^J.-M.-G.-A/,$}
+}
+@testcase{018, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f{/},}},
+  expected = {^J/M/G/A,$}
+}
+@testcase{019, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f{},}},
+  expected = {^JMGA,$}
+}
+@testcase{020, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f~}},
+  expected = {^J.-M.-G.-A $}
+}
+@testcase{021, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f~~}},
+  expected = {^J.-M.-G.-A~$}
+}
+@testcase{022, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f{~}~}},
+  expected = {^J~M~G~A $}
+}
+@testcase{023, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f{~}~~}},
+  expected = {^J~M~G~A~$}
+}
+@testcase{024, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f{/},~}},
+  expected = {^J/M/G/A, $}
+}
+@testcase{025, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f{/}~,~}},
+  expected = {^J/M/G/A~, $}
+}
+@testcase{026, 
+  name     = {Jean-Michel-Georges-Albert Lastname},
+  format   = {{f{/}~~,~~}},
+  expected = {^J/M/G/A~~,~$}
+}
+@testcase{027, 
+  name     = {Ja Christopher John Robert Smith},
+  format   = {{ff}},
+  expected = {^Ja~Christopher John~Robert$}
+}
+@testcase{028, 
+  name     = {Dr. Ja Christopher John Robert Smith},
+  format   = {{ff}},
+  expected = {^Dr. Ja Christopher John~Robert$}
+}
+@testcase{029, 
+  name     = {Dr Ja Christopher John Robert Smith},
+  format   = {{ff}},
+  expected = {^Dr~Ja Christopher John~Robert$}
+}
+@testcase{030, 
+  name     = {D. Ja Christopher John Robert Smith},
+  format   = {{ff}},
+  expected = {^D.~Ja Christopher John~Robert$}
+}
+
+@testcase{031, 
+  name     = {Ja John Robert Smith},
+  format   = {{ff}},
+  expected = {^Ja~John~Robert$}
+}
+@testcase{032, 
+  name     = {Dr. Ja John Robert Smith},
+  format   = {{ff}},
+  expected = {^Dr. Ja John~Robert$}
+}
+@testcase{033, 
+  name     = {Dr Ja John Robert Smith},
+  format   = {{ff}},
+  expected = {^Dr~Ja John~Robert$}
+}
+@testcase{034, 
+  name     = {D. Ja John Robert Smith},
+  format   = {{ff}},
+  expected = {^D.~Ja John~Robert$}
+}
+@testcase{035, 
+  name     = {Family, G},
+  format   = {{ff.~}{ll}},
+  expected = {^G.~Family$}
+}
+@testcase{036, 
+  name     = {Family, Gi},
+  format   = {{ff.~}{ll}},
+  expected = {^Gi. Family$}
+}
+@testcase{037, 
+  name     = {Family, Giv},
+  format   = {{ff.~}{ll}},
+  expected = {^Giv. Family$}
+}
+@testcase{038, 
+  name     = {Augustus J. E. M. Janssen},
+  format   = {{f.~}{ll}},
+  expected = {^A.~J. E.~M. Janssen$}
+}
+@testcase{039, 
+  name     = {Charles Louis Xavier Joseph de la Vall{\`e}e Poussin},
+  format   = {{f}},
+  expected = {^C.~L. X.~J$}
+}
+@testcase{040, 
+  name     = {Charles Louis Xavier Joseph de la Vall{\`e}e Poussin},
+  format   = {{ f}},
+  expected = {^ C. L. X.~J$}
+}
