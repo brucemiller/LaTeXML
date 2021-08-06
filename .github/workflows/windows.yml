@@ -1,0 +1,38 @@
+name: Windows
+
+on: [push, pull_request]
+
+jobs:
+  winci:
+    runs-on: windows-latest
+
+    name: Strawberry Perl ${{ matrix.perl }}
+    strategy:
+      matrix:
+        include:
+          - perl: 5.32.1.1
+          - perl: 5.30.3.1
+          - perl: 5.28.2.1
+          - perl: 5.26.3.1
+    
+    steps:
+      - uses: actions/checkout@v2
+      - name: Install Strawberry Perl
+        # GitHub's CI environment comes with a preinstalled version of Strawberry Perl.
+        # So first uninstall that one, then pick the version we want.
+        run: |
+          cuninst -y strawberryperl
+          cinst -y strawberryperl --version ${{ matrix.perl }}
+      - name: Print Program Versions
+        run: |
+          perl --version
+          cpanm --version
+      - name: Install Dependencies
+        run: |
+          cpanm -v --installdeps --notest .
+      - name: Run 'make'
+        run: |
+          perl Makefile.PL
+          make
+      - name: Run 'make test'
+        run: make test
