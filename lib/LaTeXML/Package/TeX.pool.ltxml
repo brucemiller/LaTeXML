@@ -2522,38 +2522,26 @@ DefConstructorI('\hidden@align', undef, "",   alias => '');
 DefPrimitiveI('\noalign', undef, sub {
     $_[0]->bgroup;
     Error('unexpected', '\noalign', $_[0], "\\noalign cannot be used here");
-    $STATE->assignMeaning(T_ALIGN,
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
-    $STATE->assignMeaning(T_CS('\noalign'),
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
-    $STATE->assignMeaning(T_CS('\omit'),
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
-    $STATE->assignMeaning(T_CS('\span'),
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
+    Let(T_ALIGN,          T_CS('\relax'));
+    Let(T_CS('\noalign'), T_CS('\relax'));
+    Let(T_CS('\omit'),    T_CS('\relax'));
+    Let(T_CS('\span'),    T_CS('\relax'));
     return; });
 DefPrimitiveI('\omit', undef, sub {
     Error('unexpected', '\omit', $_[0], "\\omit cannot be used here");
     $_[0]->bgroup;
-    $STATE->assignMeaning(T_ALIGN,
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
-    $STATE->assignMeaning(T_CS('\noalign'),
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
-    $STATE->assignMeaning(T_CS('\omit'),
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
-    $STATE->assignMeaning(T_CS('\span'),
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
+    Let(T_ALIGN,          T_CS('\relax'));
+    Let(T_CS('\noalign'), T_CS('\relax'));
+    Let(T_CS('\omit'),    T_CS('\relax'));
+    Let(T_CS('\span'),    T_CS('\relax'));
     return; });
 DefPrimitiveI('\span', undef, sub {
     $_[0]->bgroup;
     Error('unexpected', '\span', $_[0], "\\span cannot be used here");
-    $STATE->assignMeaning(T_ALIGN,
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
-    $STATE->assignMeaning(T_CS('\noalign'),
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
-    $STATE->assignMeaning(T_CS('\omit'),
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
-    $STATE->assignMeaning(T_CS('\span'),
-      $STATE->lookupMeaning(T_CS('\relax')), 'local');
+    Let(T_ALIGN,          T_CS('\relax'));
+    Let(T_CS('\noalign'), T_CS('\relax'));
+    Let(T_CS('\omit'),    T_CS('\relax'));
+    Let(T_CS('\span'),    T_CS('\relax'));
     return; });
 
 #########
@@ -6932,11 +6920,11 @@ DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
 
     if (!defined $props{reversion}) {
       $whatsit->setProperty(reversion => sub {
-          my ($self, $kv, $c, $p) = @_;
+          my ($self, $kvs, $c, $p) = @_;
           ($r eq 'content' ? $cr || Revert($c)
             : ($r eq 'presentation' ? $pr || Revert($p)
               : ($r eq 'dual'
-                ? Tokens(T_CS('\lx@dual'), I_keyvals($kv),
+                ? Tokens(T_CS('\lx@dual'), I_keyvals($kvs),
                   T_BEGIN, ($cr || Revert($c)), T_END,
                   T_BEGIN, ($pr || Revert($p)), T_END)
                 : (($LaTeXML::DUAL_BRANCH || '') eq 'presentation'    # Context dependent reversion
