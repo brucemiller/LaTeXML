@@ -26,6 +26,8 @@ push(@invocation, $latexmlc, '--css=LaTeXML-epub.css', "--dest=$epub_filename", 
 
 my ($writer_discard, $reader_discard, $error_discard);
 my $pid = open3($writer_discard, $reader_discard, $error_discard, @invocation);
+{ local $/; <$reader_discard>; } # consume all output
+close($reader_discard);
 ok(waitpid( $pid, 0 ), "latexmlc invocation for test 931_epub.t : $!");
 
 ok(-f $epub_filename, 'epub file generated');
