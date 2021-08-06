@@ -9,5 +9,5 @@ latexml_tests("t/structure",
     amsarticle => 'amsart.cls',
     csquotes   => 'csquotes.sty',
     glossary   => {
-      texlive_min => 2014,
+      texlive_min => 2016,
       packages    => 'glossaries.sty' } });
