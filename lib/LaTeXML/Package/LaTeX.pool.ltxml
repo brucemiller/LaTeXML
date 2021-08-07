@@ -3402,7 +3402,7 @@ DefPrimitiveI('\@tabbing@bindings', undef, sub {
 DefRegister('\lx@default@tabcolsep', Dimension('6pt'));
 DefRegister('\tabcolsep',            Dimension('6pt'));
 DefMacroI('\arraystretch', undef, "1");
-
+Let('\@tabularcr', '\@alignment@newline');
 AssignValue(GUESS_TABULAR_HEADERS => 1)    # Defaults to yes
   unless defined LookupValue('GUESS_TABULAR_HEADERS');
 
@@ -3419,7 +3419,7 @@ sub tabularBindings {
     if ($str != 1) {
       $properties{attributes}{rowsep} = Dimension(($str - 1) . 'em'); } }
   alignmentBindings($template, 'text', %properties);
-  Let("\\\\",            '\@alignment@newline');
+  Let("\\\\",            '\@tabularcr');
   Let('\tabularnewline', "\\\\");
   # NOTE: Fit this back in!!!!!!!
   # # Do like AddToMacro, but NOT global!
