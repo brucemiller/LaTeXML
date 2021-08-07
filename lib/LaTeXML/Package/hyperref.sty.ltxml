@@ -330,7 +330,9 @@ DefMacro('\Acrobatmenu{}{}', '[#1 Button: #2]');
 # Note that hyperref uses keyval + kvoptions
 if (my $options = LookupValue('opt@hyperref.sty')) {
   foreach my $option (@$options) {
-    if (my ($key, $value) = $option =~ /^(.*?)\s*=\s*(.*?)$/) {
+    if ($option eq 'colorlinks') {
+      RequirePackage('color'); }
+    elsif (my ($key, $value) = $option =~ /^(.*?)\s*=\s*(.*?)$/) {
       hyperref_setoption($key, $value); } } }
 
 RawTeX(<<'EoTeX');
