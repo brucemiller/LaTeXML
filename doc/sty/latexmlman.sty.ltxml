@@ -53,7 +53,7 @@ DefConstructor('\pod[] Semiverbatim', "<ltx:ref href='#href' labelref='#ref'>#te
       $_[1]->setProperty(text => $text || $name); }
     else {
       $name =~ s/::/%3A%3A/g;
-      my $url = "http://search.cpan.org/search?query=$name&mode=module";
+      my $url = "https://search.cpan.org/search?query=$name&mode=module";
       $_[1]->setProperty(href => $url); }
     return; });
 
