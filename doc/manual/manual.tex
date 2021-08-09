@@ -50,6 +50,7 @@
 \title{\LaTeXML\ \emph{The Manual}}
 \subtitle{A \LaTeX\ to \XML/\HTML/\MathML\ Converter;\\ Version \emph{\CurrentVersion}}
 \author{Bruce R.~Miller}
+\date{\today}
 \lxKeywords{LaTeXML, LaTeX to XML, LaTeX to HTML, LaTeX to MathML, LaTeX to ePub, converter}
 %============================================================
 \begin{lxNavbar}
@@ -836,7 +837,7 @@ See \ref{customization.latexml.rewriting} for how to define rewrite rules.
 
 %%%----------------------------------------------------------------------
 \paragraph{MathParsing}\label{architecture.latexml.mathparsing}
-\index{MathParser (LaTeXML::)!architecture}%
+\index{MathParser(LaTeXML::)@{\ttfamily MathParser(LaTeXML::)}!architecture}%
 After rewriting, a grammar based parser is applied to the mathematical
 nodes in order to infer, at least, the structure of the expressions,
 if not the meaning.
@@ -848,7 +849,7 @@ Here, we simple convert the DOM into string form, and output it.
 
 %%%----------------------------------------------------------------------
 \section{latexmlpost architecture}\label{architecture.latexmlpost}
-\index{Post (LaTeXML::)!architecture}%
+\index{Post(LaTeXML::)@{\ttfamily Post(LaTeXML::)}!architecture}%
 \LaTeXML's postprocessor is primarily for format conversion.
 It operates by applying a sequence of filters responsible for
 transforming or splitting documents, or their parts, from one format to another.
@@ -2251,6 +2252,7 @@ Bindings for the following classes and packages are supplied with the distributi
 \input{pods/LaTeXML_Util_WWW}
 \input{pods/LaTeXML_Util_ObjectDB}
 \input{pods/LaTeXML_Util_Pack}
+\input{pods/LaTeXML_Util_Radix}
 
 %%%======================================================================
 \section[Preprocessing Modules]{Preprocessing Modules Documentation}\label{modules.pre}
