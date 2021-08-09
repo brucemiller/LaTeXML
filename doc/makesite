@@ -22,8 +22,8 @@ $ENV{PATH} = "$LATEXMLDIR/blib/script:$ENV{PATH}";
 my $WEBDIR = "/local/www/site/htdocs/LaTeXML";
 
 my $identity = "makesite (part of LaTeXML)";
-my ($force,  $help,       $verbosity) = (0, 0, 0);
-my ($dosite, $doexamples, $domanual)  = (1, 1, 1);
+my ($force, $help, $verbosity) = (0, 0, 0);
+my ($dosite, $doexamples, $domanual, $dopdf) = (1, 1, 1, 1);
 GetOptions("force!" => \$force,
   "help"      => \$help,
   verbose     => sub { $verbosity++; },
@@ -32,6 +32,7 @@ GetOptions("force!" => \$force,
   "examples!" => \$doexamples,
   "manual!"   => \$domanual,
   "webdir=s"  => \$WEBDIR,
+  "pdf!"      => \$dopdf,
 ) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 
@@ -63,6 +64,7 @@ if ($dosite) {
       "--splitnaming=labelrelative",
       "--icon=favicon.ico",
       "--javascript=LaTeXML-maybeMathjax.js",
+      "--path=$DOCDIR",
     ],
     force => $force);
 }
@@ -76,19 +78,21 @@ if ($doexamples) {
     my $destname = "$WEBDIR/examples/$example/$example";
     copy($source, "$destname.tex");
     latexml($source, "$destname.html", force => $force);
-    pdflatex($source, force => $force);
-    copy("$DOCDIR/site/examples/$example/$example.pdf", "$destname.pdf"); }
+    if ($dopdf) {
+      pdflatex($source, force => $force);
+      copy("$DOCDIR/site/examples/$example/$example.pdf", "$destname.pdf"); } }
 }
 
 # Make the manual (if not already done)
 if ($domanual) {
   system("$DOCDIR/makemanual",
     "--webdir", $WEBDIR,
-    ($force ? ("--force") : ()),
+    ($force          ? ("--force") : ()),
     ($verbosity == 0 ? ()
       : ($verbosity > 0
         ? (map { ("--verbose") } 1 .. $verbosity)
-        : (map { ("--quiet") } 1 .. (-$verbosity))))
+        : (map { ("--quiet") } 1 .. (-$verbosity)))),
+    ($dopdf ? "--pdf" : "--nopdf")
   ) == 0 or die "Failed to make manual";
 }
 # How much of "Making a new Release" should be incorporated? Where?
