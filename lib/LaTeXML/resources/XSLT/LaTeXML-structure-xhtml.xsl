@@ -173,7 +173,7 @@
           <xsl:apply-templates select="@name">
             <xsl:with-param name="context" select="$innercontext"/>
           </xsl:apply-templates>
-          <xsl:text>:</xsl:text>
+          <xsl:text>: </xsl:text>
         </xsl:element>
       </xsl:if>
       <xsl:apply-templates>
