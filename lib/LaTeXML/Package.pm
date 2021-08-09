@@ -3648,7 +3648,7 @@ These options are the same as for L</Primitives>
 
 =item C<nargs=E<gt>I<nargs>>
 
-These options are the same as for L</DefConstructor>
+These options are the same as for L</Constructors>
 
 =item C<beforeDigest=E<gt>I<code>($stomach)>
 
