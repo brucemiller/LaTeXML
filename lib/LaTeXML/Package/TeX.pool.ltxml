@@ -1089,7 +1089,7 @@ sub today {
 
 # Read-only Integer registers
 {
-  my %ro_iparms = (lastpenalty => 0, inputlineno => 0, badness => 0);
+  my %ro_iparms = (lastpenalty => 0, badness => 0);
   foreach my $p (keys %ro_iparms) {
     DefRegister("\\$p", Number($ro_iparms{$p}), readonly => 1); }
 }
@@ -1424,9 +1424,11 @@ DefPrimitive('\parshape SkipMatch:= Number', sub {
     # we _could_ conceivably store this somewhere for some attempt at stylistic purpose...
     return; });
 
-#DefRegister('\inputlineno',Number(0),
-#            readonly=>1,
-#            getter=>{ Number($stomach->getGullet->????? ->lineno); });
+DefRegister('\inputlineno', Number(0),
+  getter => sub {
+    my $locator = $STATE->getStomach->getGullet->getLocator();
+    Number($locator ? $$locator{fromLine} : 0); },
+  readonly => 1);
 
 DefRegister('\badness', Number(0), readonly => 1);
 

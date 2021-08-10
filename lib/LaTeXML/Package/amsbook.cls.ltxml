@@ -57,5 +57,18 @@ DefPrimitive('\backmatter', undef);
 # commands for bibliography, indices
 # \end{document}
 
+# Couple of internals that get used in arXiv:
+DefMacro('\@listI', '\leftmargin\leftmargini \parsep\z@skip
+  \topsep\listisep \itemsep\z@skip
+  \listparindent\normalparindent');
+Let('\@listi',         '\@listI');
+Let('\enddescription', '\endlist');
+Let('\upn',            '\textup');
+
+RawTeX(<<'EOL');
+\newskip\listisep
+\listisep\smallskipamount
+EOL
+
 # #======================================================================
 1;
