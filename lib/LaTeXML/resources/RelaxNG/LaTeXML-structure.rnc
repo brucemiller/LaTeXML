@@ -21,7 +21,7 @@ element document { document_attributes, document_model }
 
 ## The content allowable as the main body of the document.
 document.body.class = Para.model | paragraph | subsubsection
-  | subsection | section | chapter | part | slide | sidebar
+  | subsection | section | chapter | part | frame | sidebar
 
 ## Attributes for \elementref{document}.
 document_attributes = Sectional.attributes
@@ -40,7 +40,7 @@ element part { part_attributes, part_model }
 
 ## The content allowable as the main body of a part.
 part.body.class = Para.model |  subparagraph | paragraph
-   | subsubsection | subsection | section | chapter  | slide | sidebar
+   | subsubsection | subsection | section | chapter  | frame | sidebar
 
 ## Attributes for \elementref{part}.
 part_attributes = Sectional.attributes
@@ -56,7 +56,7 @@ element chapter { chapter_attributes, chapter_model }
 
 ## The content allowable as the main body of a chapter.
 chapter.body.class = Para.model | subparagraph | paragraph
-   | subsubsection | subsection | section | slide | sidebar
+   | subsubsection | subsection | section | frame | sidebar
 
 ## Attributes for \elementref{chapter}.
 chapter_attributes = Sectional.attributes
@@ -72,7 +72,7 @@ element section { section_attributes, section_model }
 
 ## The content allowable as the main body of a section.
 section.body.class = Para.model | subparagraph | paragraph
-   | subsubsection | subsection  | slide | sidebar
+   | subsubsection | subsection  | frame | sidebar
 
 ## Attributes for \elementref{section}.
 section_attributes = Sectional.attributes
@@ -87,7 +87,7 @@ subsection =
 element subsection { subsection_attributes, subsection_model }
   
 ## The content allowable as the main body of a subsection.
-subsection.body.class = Para.model | subparagraph | paragraph | subsubsection | slide | sidebar
+subsection.body.class = Para.model | subparagraph | paragraph | subsubsection | frame | sidebar
 
 ## Attributes for \elementref{subsection}.
 subsection_attributes = Sectional.attributes
@@ -102,7 +102,7 @@ subsubsection =
 element subsubsection { subsubsection_attributes, subsubsection_model }
 
 ## The content allowable as the main body of a subsubsection.
-subsubsection.body.class = Para.model | subparagraph | paragraph | slide | sidebar
+subsubsection.body.class = Para.model | subparagraph | paragraph | frame | sidebar
 
 ## Attributes for \elementref{subsubsection}.
 subsubsection_attributes = Sectional.attributes
@@ -118,7 +118,7 @@ paragraph =
 element paragraph { paragraph_attributes, paragraph_model }
 
 ## The content allowable as the main body of a paragraph.
-paragraph.body.class = Para.model | subparagraph | slide | sidebar
+paragraph.body.class = Para.model | subparagraph | frame | sidebar
 
 ## Attributes for \elementref{paragraph}.
 paragraph_attributes = Sectional.attributes
@@ -134,7 +134,7 @@ subparagraph =
 element subparagraph { subparagraph_attributes, subparagraph_model }
 
 ## The content allowable as the main body of a subparagraph.
-subparagraph.body.class = Para.model | slide | sidebar
+subparagraph.body.class = Para.model | frame | sidebar
 
 ## Attributes for \elementref{subparagraph}.
 subparagraph_attributes = Sectional.attributes
@@ -144,21 +144,39 @@ subparagraph_model = SectionalFrontMatter.class*, (subparagraph.body.class | Bac
 
 #======================================================================
 
+frame =
+## A frame within a slideshow.
+## Each frame contains a set slides, typically those that are revealed constructively. 
+element frame { frame_attributes, frame_model }
+
+## The content allowable as the main body of a \elementref{frame}.
+frame.body.class = slide
+
+## Attributes for \elementref{frame}.
+frame_attributes = Sectional.attributes
+
+# A frame *must* contain a group of slides.
+frame_model = slide*
+
+#----------------------------------------------------------------------
+
 slide =
-## A Slide within a slideshow.
-## The model currently doesn't enforce this, but the idea is that
-## a slideshow document can contain section headings, but all
-## real content should be confined to slides.
+## A Slide within a slideshow, that must be contained within a frame.
 element slide { slide_attributes, slide_model }
 
 ## The content allowable as the main body of a \elementref{slide}.
 slide.body.class = Para.model
 
 ## Attributes for \elementref{slide}.
-slide_attributes = Sectional.attributes
+slide_attributes = 
+  Sectional.attributes,
+
+  ## \attr{overlay} is the number of the current overlay.
+  ## This is reset at the beginning of each frame, and must be unique.
+  attribute overlay { Integer.datatype }
 
 ## Content model for \elementref{slide}.
-slide_model = SectionalFrontMatter.class*, (slide.body.class | BackMatter.class)*
+slide_model = (SectionalFrontMatter.class | subtitle )*, (slide.body.class | BackMatter.class)*
 
 #======================================================================
 

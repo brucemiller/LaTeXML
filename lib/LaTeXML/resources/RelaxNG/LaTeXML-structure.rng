@@ -31,7 +31,7 @@
       <ref name="section"/>
       <ref name="chapter"/>
       <ref name="part"/>
-      <ref name="slide"/>
+      <ref name="frame"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -74,7 +74,7 @@
       <ref name="subsection"/>
       <ref name="section"/>
       <ref name="chapter"/>
-      <ref name="slide"/>
+      <ref name="frame"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -111,7 +111,7 @@
       <ref name="subsubsection"/>
       <ref name="subsection"/>
       <ref name="section"/>
-      <ref name="slide"/>
+      <ref name="frame"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -147,7 +147,7 @@
       <ref name="paragraph"/>
       <ref name="subsubsection"/>
       <ref name="subsection"/>
-      <ref name="slide"/>
+      <ref name="frame"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -182,7 +182,7 @@
       <ref name="subparagraph"/>
       <ref name="paragraph"/>
       <ref name="subsubsection"/>
-      <ref name="slide"/>
+      <ref name="frame"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -216,7 +216,7 @@
       <ref name="Para.model"/>
       <ref name="subparagraph"/>
       <ref name="paragraph"/>
-      <ref name="slide"/>
+      <ref name="frame"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -250,7 +250,7 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
     <choice>
       <ref name="Para.model"/>
       <ref name="subparagraph"/>
-      <ref name="slide"/>
+      <ref name="frame"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -282,7 +282,7 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
     <a:documentation>The content allowable as the main body of a subparagraph.</a:documentation>
     <choice>
       <ref name="Para.model"/>
-      <ref name="slide"/>
+      <ref name="frame"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -303,12 +303,32 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
+  <define name="frame">
+    <element name="frame">
+      <a:documentation>A frame within a slideshow.
+Each frame contains a set slides, typically those that are revealed constructively. </a:documentation>
+      <ref name="frame_attributes"/>
+      <ref name="frame_model"/>
+    </element>
+  </define>
+  <define name="frame.body.class">
+    <a:documentation>The content allowable as the main body of a \elementref{frame}.</a:documentation>
+    <ref name="slide"/>
+  </define>
+  <define name="frame_attributes">
+    <a:documentation>Attributes for \elementref{frame}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <!-- A frame *must* contain a group of slides. -->
+  <define name="frame_model">
+    <zeroOrMore>
+      <ref name="slide"/>
+    </zeroOrMore>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="slide">
     <element name="slide">
-      <a:documentation>A Slide within a slideshow.
-The model currently doesn't enforce this, but the idea is that
-a slideshow document can contain section headings, but all
-real content should be confined to slides.</a:documentation>
+      <a:documentation>A Slide within a slideshow, that must be contained within a frame.</a:documentation>
       <ref name="slide_attributes"/>
       <ref name="slide_model"/>
     </element>
@@ -320,11 +340,19 @@ real content should be confined to slides.</a:documentation>
   <define name="slide_attributes">
     <a:documentation>Attributes for \elementref{slide}.</a:documentation>
     <ref name="Sectional.attributes"/>
+    <attribute name="overlay">
+      <a:documentation>\attr{overlay} is the number of the current overlay.
+This is reset at the beginning of each frame, and must be unique.</a:documentation>
+      <ref name="Integer.datatype"/>
+    </attribute>
   </define>
   <define name="slide_model">
     <a:documentation>Content model for \elementref{slide}.</a:documentation>
     <zeroOrMore>
-      <ref name="SectionalFrontMatter.class"/>
+      <choice>
+        <ref name="SectionalFrontMatter.class"/>
+        <ref name="subtitle"/>
+      </choice>
     </zeroOrMore>
     <zeroOrMore>
       <choice>
