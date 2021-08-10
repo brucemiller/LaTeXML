@@ -231,9 +231,10 @@ Let('\footref', '\ref');    # ?
 # This only approximates the "contextual label" that should precede the number,
 # and ignores the user-definable macros.
 # But, we normally defer such bookkeeping until postprocessing....sigh
-DefConstructor('\autoref Semiverbatim',
+# TODO: The star forms prevent nested double links.
+DefConstructor('\autoref OptionalMatch:* Semiverbatim',
   "<ltx:ref class='ltx_refmacro_autoref' show='autoref' labelref='#label' _force_font='true'/>",
-  properties => sub { (label => CleanLabel($_[1])); });
+  properties => sub { (label => CleanLabel($_[2])); });
 
 DefMacro('\lx@autorefnum@@{}', sub {
     my ($gullet, $type) = @_;
