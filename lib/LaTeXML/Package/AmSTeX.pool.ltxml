@@ -41,7 +41,7 @@ DefPrimitive('\define SkipSpaces Token UntilBrace {}', sub {
     $params = parseDefParameters($cs, $params);    # in TeX.pool
     if (LookupDefinition($cs)) {
       Info('ignore', $cs, $stomach,
-        "Ignoring redefinition (\\define) of '" . Stringify($cs) . "'");
+        "Ignoring redefinition (\\define) of '" . ToString($cs) . "'");
       return; }
     DefMacroI($cs, $params, $body);
     return; });
@@ -322,7 +322,7 @@ DefConstructor('\lx@ams@boldsymbol@{}', '#1',
 
 DefMacro('\boldsymbol DefToken', sub {
     my ($gullet, $token) = @_;
-    my $name = ToString($token); $name =~ s/^\\//;
+    my $name   = ToString($token); $name =~ s/^\\//;
     my $btoken = T_CS('\lx@ams@boldsymbol@' . $name);
     return (IsDefined($btoken) ? ($btoken) : (T_CS('\lx@ams@boldsymbol@'), $token)); });
 
