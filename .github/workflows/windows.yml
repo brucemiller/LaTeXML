@@ -89,6 +89,8 @@ jobs:
           Invoke-WebRequest -Uri "https://github.com/tkw1536/execsilent/releases/download/v0.0.2/execsilent-windows-amd64.exe" -OutFile C:\execsilent.exe
           echo "EXECSILENT_EXE=kpsewhich" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "LATEXML_KPSEWHICH=C:\execsilent.exe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "LATEXML_KPSEWHICH_MIKTEX_ADMIN=1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "LATEXML_TEST_TEXLIVE=0" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       # ====================
       # Prepare Dependencies
