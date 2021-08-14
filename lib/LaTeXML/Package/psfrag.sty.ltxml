@@ -1,0 +1,51 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  psfrag                                                             | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use LaTeXML::Util::Image;
+
+#**********************************************************************
+# STUB BINDING!
+#   Basically a NO-OP binding to avoid errors in olrder arXiv docs.
+# psfrag is a cool hack that allows the author to enhance thier graphics
+# by REPLACING bits of postscript figures with TeX formatted stuff.
+# The big question for LaTeXML is:
+#   What is the Web or XML analog or simulation of that?
+# There are several, unappealing options to simulate:
+#  * Contrive an svg overlay of the graphic
+#    IFF we knew the desired positions of the fragments
+#  * Do surgery on the postscript (embedding what?) and
+#    then rasterizing the image to png, losing all XML/MathML/semantics...
+#  other?
+# Or, we could simply fudge them:
+#  * Ignore the fragments (with warning).
+#  * Add a footnote, or better, add to a figure caption, or ...
+
+#
+# For now, just warn and go.
+DefMacro('\psfrag@warning', sub {
+    my ($gullet) = @_;
+    Warn('psfrag', 'psfrag', $gullet, "PSFrag fragments are being converted to footnotes.");
+    return; });
+
+# This would be much nicer if we could at least tell which figures were affected
+# and add the notes to the captions!
+DefMacro('\psfrag OptionalMatch:* {}[][][][]{}',
+  '\psfrag@warning\global\let\psfrag@warning\relax'
+    . '\footnote{A PSFrag replacing \texttt{#2} by #7 was dropped.}');
+
+#**********************************************************************
+1;
+

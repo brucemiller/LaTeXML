@@ -392,14 +392,19 @@ sub pathname_kpsewhich {
       return $result; } }
   # If we've failed to read the cache, try directly calling kpsewhich
   # For multiple calls, this is slower in general. But MiKTeX, eg., doesn't use texmf ls-R files!
-  my $files = join(' ', @candidates);
-  if ($kpsewhich && (my $result = `"$kpsewhich" $files $kpse_toolchain`)) {
-    if ($result =~ /^\s*(.+?)\s*\n/s) {
-      return $1; } }
+  if ($kpse_toolchain) {
+    push(@candidates, $kpse_toolchain); }
+  if ($kpsewhich && open(my $resfh, '-|', $kpsewhich, @candidates)) {
+    my $result = <$resfh>;     # we only need the first line
+    { local $/; <$resfh>; }    # discard the rest of the output
+    close($resfh);             # ignore exit status (only one of @candidates exists, usually)
+    if ($result) {
+      chomp $result;
+      return $result; } }
   return; }
 
 sub build_kpse_cache {
-  $kpse_cache = {};    # At least we've tried.
+  $kpse_cache = {};            # At least we've tried.
   return unless $kpsewhich;
   # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
   if ($ENV{"APPVEYOR"}) {

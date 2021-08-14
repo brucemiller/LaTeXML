@@ -46,8 +46,8 @@ DefKeyVal('Gin', 'svgpath', '', '');
 #       my $path = pathname_absolute(pathname_canonical(ToString($dir)));
 #       $document->insertPI('latexml', graphicspath => $path); } });
 
-DefMacro('lx@svg@options', '');
-DefMacro('\setsvg{}',      '\gdef\lx@svg@options{#1}');
+DefMacro('\lx@svg@options', '');
+DefMacro('\setsvg{}',       '\gdef\lx@svg@options{#1}');
 
 # Note that various sizing & rescaling are not yet supported by the Post::Graphics,
 # although it oughtn't to be so hard; just adjust the attributes on the outer svg:svg?

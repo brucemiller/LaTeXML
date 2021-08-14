@@ -24,45 +24,55 @@ use LaTeXML::Package;
 
 ######################################################
 
-DefMacroI('\lhead', '{}', '');
-DefMacroI('\chead', '{}', '');
-DefMacroI('\rhead', '{}', '');
-
-DefMacroI('\lfoot', '{}', '');
-DefMacroI('\cfoot', '{}', '');
-DefMacroI('\rfoot', '{}', '');
-
 DefMacroI('\fancyhead', '[]{}', '');
 DefMacroI('\fancyfoot', '[]{}', '');
-
-DefMacroI('\fancypagestyle', '{}{}', '');
-DefMacroI('\fancyhf',        '[]',   '');
+DefMacroI('\fancyhf',   '[]{}', '');
 
 DefMacroI('\fancyheadoffset', '[]{}', '');
 DefMacroI('\fancyfootoffset', '[]{}', '');
 DefMacroI('\fancyhfoffset',   '[]{}', '');
 
-DefMacroI('\iffloatpage', '{}{}', '');
-DefMacroI('\iftopfloat',  '{}{}', '');
-DefMacroI('\ifbotfloat',  '{}{}', '');
+DefMacroI('\headrulewidth', undef, '0.4pt');
+DefMacroI('\footrulewidth', undef, '0pt');
+DefMacroI('\headruleskip',  undef, '0pt');                     # since 4.0
+DefMacroI('\footruleskip',  undef, '.3\normalbaselineskip');
+DefMacroI('\headrule',      undef, '');
+DefMacroI('\footrule',      undef, '');
+DefRegister('\headwidth' => Dimension(0));                     # maybe need some other value here?
 
-DefConditional('\iffootnote', undef);
+DefMacroI('\fancyheadinit', '{}', '');                         # since 4.0
+DefMacroI('\fancyfootinit', '{}', '');                         # since 4.0
+DefMacroI('\fancyhfinit',   '{}', '');                         # since 4.0
 
-DefMacroI('\headrulewidth',      undef, '0.4pt');
-DefMacroI('\footrulewidth',      undef, '0pt');
+# not implemented yet: \fancycenter[][]{}{}{}, since 4.0
+
+# always false as LaTeXML does not paginate
+DefMacroI('\iffloatpage', '{}{}', '#2');
+DefMacroI('\iftopfloat',  '{}{}', '#2');
+DefMacroI('\ifbotfloat',  '{}{}', '#2');
+DefMacroI('\iffootnote',  '{}{}', '#2');    # since 3.8
+# DefConditional('\iffootnote', undef);     # pre-3.8 implementation
+
+DefMacroI('\fancypagestyle', '{}[]{}', '');
+
+# extramarks.sty not implemented, as its commands can only be used in headers and footers
+
+# not defined outside of headers and footers
+# DefMacroI('\nouppercase', undef, '');
+
+# deprecated commands
+DefMacroI('\lhead', '[]{}', '');
+DefMacroI('\chead', '[]{}', '');
+DefMacroI('\rhead', '[]{}', '');
+
+DefMacroI('\lfoot', '[]{}', '');
+DefMacroI('\cfoot', '[]{}', '');
+DefMacroI('\rfoot', '[]{}', '');
+
+DefMacroI('\fancyplain', '{}{}', '');
+
 DefMacroI('\plainheadrulewidth', undef, '0pt');
 DefMacroI('\plainfootrulewidth', undef, '0pt');
-DefMacroI('\footruleskip',       undef, '.3\normalbaselineskip');
-
-DefRegister('\headwidth' => Dimension(0));    # maybe need some other value here?
-
-DefMacroI('\headrule', undef, '');
-DefMacroI('\footrule', undef, '');
-
-DefMacroI('\nouppercase', undef, '');
-
-# for compatibility reasons (should not be used anymore)
-DefMacroI('\fancyplain', '{}{}', '');
 
 ######################################################
 

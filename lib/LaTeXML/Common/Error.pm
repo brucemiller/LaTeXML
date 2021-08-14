@@ -15,6 +15,7 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Util::Pathname;
+use LaTeXML::Core::Token qw(T_CS);
 use Time::HiRes;
 use Term::ANSIColor 2.01 qw(colored colorstrip);
 
@@ -58,6 +59,7 @@ $Term::ANSIColor::AUTORESET = 1;
 # Possibility of more terminal initialization & control?
 sub UseSTDERR {
   if (scalar(@_) && !$_[0]) {    # Single false argument? Turn OFF
+    _spinnerclear() if $USE_STDERR && $IS_TERMINAL;
     $USE_STDERR  = undef;
     $IS_TERMINAL = undef; }
   else {
@@ -65,7 +67,23 @@ sub UseSTDERR {
     $IS_TERMINAL = -t STDERR;
     binmode(STDERR, ":encoding(UTF-8)");
     use IO::Handle;
-    *STDERR->autoflush(); }
+    *STDERR->autoflush();
+
+    # Win32 console handling
+    if ($IS_TERMINAL && eval { require Win32::Console; }) {
+      # set utf-8 codepage
+      # CP_UTF8 = 65001
+      Win32::Console::OutputCP(65001);
+
+      # get standard error console
+      our $W32_STDERR = Win32::Console->new(&Win32::Console::STD_ERROR_HANDLE());
+
+      # enable VT100 emulation or fall back to ANSI emulation if unsuccessful
+      # ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004 (not exported by Win32::Console)
+      my $mode = $W32_STDERR->Mode();
+      unless ($W32_STDERR->Mode($mode | 0x0004) && $W32_STDERR->Mode() & 0x0004) {
+        require Win32::Console::ANSI; } } }
+
   return; }
 
 our %color_scheme = (
@@ -200,10 +218,10 @@ sub _spinnerstep {    # Increment stepper
   if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $short, $start) = @{ $spinnerstack[-1] };
     $spinnerpos = ($spinnerpos + 1) % 4;
-    if ($note) {    # If note, redraw whole line.
+    if ($note) {      # If note, redraw whole line.
       print STDERR join(' ', $spinnerpre, $spinnerchar[$spinnerpos],
         (map { $$_[1]; } @spinnerstack), $note, "\x1b[0K"), $spinnerpost; }
-    else {          # overwrite previous spinner
+    else {            # overwrite previous spinner
       print STDERR $spinnerpre . ' ', $spinnerchar[$spinnerpos], $spinnerpost; } }
   return; }
 
@@ -231,7 +249,8 @@ sub Fatal {
 
 # Check if this is a known unsafe fatal and flag it if so (so that we reinitialize in daemon contexts)
   if ((($category eq 'internal') && ($object eq '<recursion>')) ||
-    ($category eq 'too_many_errors')) {
+    ($category eq 'too_many_errors') ||
+    ($object eq 'deep_recursion')    || ($object eq 'die')) {
     $LaTeXML::UNSAFE_FATAL = 1; }
 
   # We'll assume that if the DIE handler is bound (presumably to this function)
@@ -260,7 +279,7 @@ sub Fatal {
     $state->noteStatus('fatal') if $state && !$ineval;
     my $detail_level = (($VERBOSITY <= 1) && ($category =~ /^(?:timeout|too_many_errors)$/)) ? 0 : 2;
     $message
-      = generateMessage("Fatal:" . $category . ":" . ToString($object),
+      = generateMessage(colorizeString("Fatal:" . $category . ":" . ToString($object), 'fatal'),
       $where, $message, $detail_level, @details);
     # If we're about to (really) DIE, we'll bypass the usual status message, so add it here.
     # This really should be handled by the top-level program,
@@ -273,8 +292,43 @@ sub Fatal {
   # inhibit message to STDERR, since die will handle that
   print $LOG _freshline($LOG), strip_ansi($message), "\n" if $LOG;
 
+  hardYankProcessing();
+  # Now that we have yanked the processing state, ignore any following errors
+  $LaTeXML::IGNORE_ERRORS = 1;
+
   # If inside an eval, this won't actually die, but WILL set $@ for caller's use.
   die $message; }
+
+sub hardYankProcessing {
+  my $state = $STATE;
+  # Nothing we can do if we are called without a global $STATE bound
+  return unless $state;
+  # Ensure we have nothing else to do in the main processing.
+  # NOTE: this recovery procedure must always be run after all logging messages are generated,
+  #       as resetting the various stacks loses information (e.g. location is lost).
+  my $stomach = $$state{stomach};
+  my $gullet  = $$stomach{gullet};
+  $$stomach{token_stack} = [];
+  # If we were in an infinite loop, disable any potential busy token.
+  my $relax_def = $$state{meaning}{"\\relax"}[0];
+  $state->assignMeaning($LaTeXML::CURRENT_TOKEN, $relax_def, 'global') if $LaTeXML::CURRENT_TOKEN;
+  for my $token (@{ $$gullet{pushback} }) {
+    $state->assignMeaning($token, $relax_def, 'global'); }
+  # Rescue data structures that may be serializable/resumable
+  if (@LaTeXML::LIST) {
+    $$stomach{rescued_boxes} = [@LaTeXML::LIST];
+    @LaTeXML::LIST = ();
+  }
+  if ($LaTeXML::DOCUMENT) {
+    $$state{rescued_document} = $LaTeXML::DOCUMENT; }
+  # avoid looping at \end{document}, Fatal brings us back to the doc level
+  $state->assignValue('current_environment', undef, 'global');
+  # then reset the gullet
+  $$gullet{pushback}         = [];
+  $$gullet{mouthstack}       = [];
+  $$gullet{pending_comments} = [];
+  $$gullet{mouth}            = LaTeXML::Core::Mouth->new();
+  return; }
 
 sub checkRecursiveError {
   my @caller;
@@ -517,7 +571,7 @@ sub generateMessage {
   # Colorize errorcode if appropriate
   if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0)) {
     $errorcode =~ /^(\w+)\:/;
-    my $errorkind = lc($1);
+    my $errorkind = $1 && lc($1);
     $errorcode = colorizeString($errorcode, $errorkind) if $errorkind; }
 
   #----------------------------------------

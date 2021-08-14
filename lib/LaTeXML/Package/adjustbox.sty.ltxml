@@ -1,0 +1,50 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  adjustbox                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+InputDefinitions('adjustbox', type => 'sty', noltxml => 1);
+
+# Some strategic redefinitions
+# (undoubtedly more needed)
+# and, of course, not all directives have an effect...
+
+# Some Issues:
+#  * some resizing combos set BOTH size & scale; does that double the effect?
+#  * some constructs are creating ltx:inline-block,
+#    when *sometimes* they should just create ltx:text;  Can we detect when???
+
+# collectbox's approach to starting a block for environments isn't quite working; Force a \par
+Let('\lx@save@@adjustbox', '\@adjustbox');
+DefMacro('\@adjustbox', '\ifcollectboxenv\par\fi\lx@save@@adjustbox');
+
+# Redefined so the frame contains \BOXCONTENT, rather than (attempted) \hskip overlap
+# \adjbox@@frame{setframecolor}{fboxrule}{fboxsep}{???}
+DefMacro('\adjbox@@frame{}{}{}{}',
+  '\ifx\@nnil#2\@nnil\else\adjsetlength\fboxrule{#2}\fi'
+    . '\ifx\@nnil#3\@nnil\else\adjsetlength\fboxsep{#3}\fi'
+    . '\@framebox{\BOXCONTENT}');
+
+# Since adjustbox is adapting the already digested content in \BOXCONTENT,
+# and we encode color & bgcolor in the font, which is already incorporated into the box
+# we need to RE-digest the box, to apply the changed color!
+DefMacro('\@bgcolorbox{}', '{\let\color\pagecolor\hbox{#1\lx@RE@BOXCONTENT}}');
+DefPrimitive('\lx@RE@BOXCONTENT', sub {
+    if (my $cbox = LookupRegister(T_CS('\collectedbox'))) {
+      if (my $box = LookupValue('box' . $cbox->valueOf)) {
+        return Digest(Tokens(Revert($box))); } }
+    return; });
+
+1;

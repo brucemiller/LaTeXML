@@ -775,6 +775,7 @@ sub stylizeContent {
   my $opacity = ($iselement ? $item->getAttribute('opacity') : $attr{opacity})
     || $LaTeXML::MathML::OPACITY;
   my $class    = ($iselement ? $item->getAttribute('class')    : $attr{class});
+  my $cssstyle = ($iselement ? $item->getAttribute('cssstyle') : $attr{ccsstyle});
   my $text     = (ref $item  ? $item->textContent              : $item);
   my $variant  = ($font      ? mathvariantForFont($font)       : '');
   my $stretchy = ($iselement ? $item->getAttribute('stretchy') : $attr{stretchy});
@@ -817,7 +818,8 @@ sub stylizeContent {
     else {
       $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $role : '?');
       $color = 'red'; } }
-
+  if ($opacity) {
+    $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "opacity:$opacity"; }
   if ($font && !$variant) {
     Warn('unexpected', $font, undef, "Unrecognized font variant '$font'"); $variant = ''; }
   # Special case for single char identifiers?
@@ -862,17 +864,17 @@ sub stylizeContent {
         ? (minsize => $size, maxsize => $size)
         : (mathsize => $size))
       : ()),
-    ($color    ? (mathcolor      => $color)             : ()),
-    ($bgcolor  ? (mathbackground => $bgcolor)           : ()),
-    ($opacity  ? (style          => "opacity:$opacity") : ()),    # ???
-    ($stretchy ? (stretchy       => $stretchy)          : ()),
-    ($class    ? (class          => $class)             : ()),
-    ($href     ? (href           => $href)              : ()),
-    ($title    ? (title          => $title)             : ()),
+    ($color    ? (mathcolor      => $color)    : ()),
+    ($bgcolor  ? (mathbackground => $bgcolor)  : ()),
+    ($cssstyle ? (style          => $cssstyle) : ()),
+    ($stretchy ? (stretchy       => $stretchy) : ()),
+    ($class    ? (class          => $class)    : ()),
+    ($href     ? (href           => $href)     : ()),
+    ($title    ? (title          => $title)    : ()),
   ); }
 
 # These are the strings that should be known as fences in a normal operator dictionary.
-my %fences = (                                                    # CONSTANT
+my %fences = (    # CONSTANT
   '('        => 1, ')' => 1, '[' => 1, ']' => 1, '{' => 1, '}' => 1, "\x{201C}" => 1, "\x{201D}" => 1,
   '`'        => 1, "'" => 1, "<" => 1, ">" => 1,
   "\x{2329}" => 1, "\x{232A}" => 1, # angle brackets; NOT mathematical, but balance in case they show up.

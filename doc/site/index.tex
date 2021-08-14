@@ -35,7 +35,7 @@
 \emph{Now available}:  \htmlref{\LaTeXML\ \CurrentVersion}{get}!
 
 In the process of developing the
-\href{http://dlmf.nist.gov/}{Digital Library of Mathematical Functions},
+\href{https://dlmf.nist.gov/}{Digital Library of Mathematical Functions},
 we needed a means of transforming
 the \LaTeX\ sources of our material into XML which would be used
 for further manipulations, rearrangements and construction of the web site.
@@ -64,7 +64,7 @@ are invited to try it out, give feedback and even to help out.
 %============================================================
 \section{Examples}\label{examples}\index{examples}
 At the moment, the best example of \LaTeXML's output is 
-the \href{http://dlmf.nist.gov/}{DLMF} itself.
+the \href{https://dlmf.nist.gov/}{DLMF} itself.
 There is, of course, a fair amount of insider, special case,
 code, but it shows what can be done.
 
@@ -74,14 +74,14 @@ Some highlights:
     from the \LaTeX\ manual, p.205.
     (\href{examples/tabular/tabular.tex}{\TeX},
      \href{examples/tabular/tabular.pdf}{\PDFIcon})
-\item[\url{http://latexml.mathweb.org/editor}] an online editor/showcase
+\item[\url{https://latexml.mathweb.org/editor}] an online editor/showcase
   of things that \LaTeXML\ can do.
-\item[\url{http://arxmliv.kwarc.info}] An experiment processing
-  the entire \url{http://arXiv.org}.
+\item[\url{https://arxmliv.kwarc.info}] An experiment processing
+  the entire \url{https://arXiv.org}.
 \end{description}
 And, of course
 \begin{description}
-\item[\href{http://dlmf.nist.gov/}{DLMF}]
+\item[\href{https://dlmf.nist.gov/}{DLMF}]
    The Digital Library of Mathematical Functions was the
    primary instigator for this project.
 \item[\href{manual/}{\LaTeXML\ Manual}]
@@ -92,9 +92,9 @@ And, of course
 %============================================================
 \section{Get \LaTeXML}\label{get}\index{get}
 \def\GitHub{\href{https://github.com/}{GitHub}}
-\def\MacPorts{\href{http://www.macports.org}{MacPorts}}
-\def\MacTeX{\href{http://tug.org/mactex/}{MacTeX}}
-\def\Chocolatey{\href{http://chocolatey.org}{Chocolatey}}
+\def\MacPorts{\href{https://www.macports.org}{MacPorts}}
+\def\MacTeX{\href{https://tug.org/mactex/}{MacTeX}}
+\def\Chocolatey{\href{https://chocolatey.org}{Chocolatey}}
 \def\MikTeX{\href{https://MiKTeX.org}{MikTeX}}
 
 
@@ -166,7 +166,7 @@ choco install latexml
 \end{lstlisting}
   & \TeX, if desired
   & \htmlref{Notes}{get.windows.chocolatey}\\
-& \href{http://strawberryperl.com}{Strawberry Perl}
+& \href{https://strawberryperl.com}{Strawberry Perl}
   & \begin{lstlisting}[style=shell]
 cpan LaTeXML
 \end{lstlisting}
@@ -286,8 +286,8 @@ Please do \emph{not} try to install \texttt{Image::Magick} from CPAN, however:
 the module there seldom matches the underlying \texttt{ImageMagick} library.
 It is recommended to install the Perl binding for \texttt{Image::Magick} from
 the same source as the library was obtained, either from your system's repository,
-or from the \href{http://www.imagemagick.org/}{ImageMagick} site, itself.
-In the latter case, follow the instructions at \href{http://www.imagemagick.org/}{ImageMagick}
+or from the \href{https://www.imagemagick.org/}{ImageMagick} site, itself.
+In the latter case, follow the instructions at \href{https://www.imagemagick.org/}{ImageMagick}
 to download and install the latest version of ImageMagick being sure to enable
 and build the Perl binding along with it.
 
@@ -381,8 +381,8 @@ sudo pacman -S db imagemagick perl perl-algorithm-diff \
    perl-parse-recdescent perl-xml-libxml perl-xml-libxslt \
    texlive-core
 \end{lstlisting}
-Additionally, install the \href{https://aur.archlinux.org/packages/perl-text-unidecode/}{perl-text-unidecode}
-AUR package. 
+Additionally, install the \href{https://archlinux.org/packages/community/x86_64/perl-text-unidecode/}{perl-text-unidecode}
+community package. 
 
 \subsection{MacOS}\label{get.macos}\index{Apple Macintosh}
 
@@ -444,14 +444,14 @@ choco install latexml
 \end{lstlisting}
 
 \subsubsection{Windows using Strawberry Perl}\label{get.windows.strawberry}
-\href{http://strawberryperl.com}{Strawberry Perl},
+\href{https://strawberryperl.com}{Strawberry Perl},
 comes with \emph{many} of our prerequisites pre-installed,
 and provides other needed commands (\texttt{perl}, \texttt{cpan}, \texttt{dmake}).
 
 \paragraph*{Installing prebuilt}\label{get.windows.strawberry}
 There is currently no prebuilt \LaTeXML\ for Windows,
 but it should install cleanly using the CPAN tool that comes with
-\href{http://strawberryperl.com}{Strawberry Perl}.
+\href{https://strawberryperl.com}{Strawberry Perl}.
 Install the \TeX-system of your choice (if desired),
 ImageMagick (see \ref{get.windows.imagemagick})
 and then install LaTeXML using:
@@ -461,11 +461,11 @@ cpan LaTeXML
 
 Installing the optional package \texttt{Image::Magick} on Windows seems to be problematic,
 so we have omitted it from these instructions.
-You may want to try \href{ImageMagick}, but
+You may want to try \href{https://www.imagemagick.org/}{ImageMagick}, but
 you're on your own, there!  You may  have better luck with \texttt{Graphics::Magick}.
 
 \paragraph*{Installing \emph{only} prerequisites  under Strawberry}\label{get.windows.strawberry.prereq}\\
-Install \href{http://strawberryperl.com}{Strawberry Perl}, and
+Install \href{https://strawberryperl.com}{Strawberry Perl}, and
 the \TeX-system of your choice (if desired), 
 ImageMagick (if you want to try; see \ref{get.windows.imagemagick}),
 and then install the additional prerequisites as
@@ -480,9 +480,9 @@ CPAN version seldom matches the binary or fails for other reasons.  What
 should work the following:
 
 Download and install the main ImageMagick binary appropriate for your Windows system
-from \href{http://imagemagick.org/script/binary-releases.php#windows}{ImageMagick}.
+from \href{https://imagemagick.org/script/binary-releases.php#windows}{ImageMagick}.
 Then fetch the \texttt{PerlMagick} tarball \emph{with the same version} from
-\href{http://imagemagick.com/download/perl/}{ImageMagick/perl}.
+\href{https://imagemagick.com/download/perl/}{ImageMagick/perl}.
 Use the following commands to compile and install the PerlMagick,
 with X.XX being the version you downloaded:
 \begin{lstlisting}[style=shell]
@@ -524,7 +524,7 @@ dependencies into the home directory using a tool called
 \paragraph*{Bootstrapping cpanminus} Configuring and setting up \texttt{cpanminus} can be achieved using the following commands
 \begin{lstlisting}[style=shell]
     # Download and install cpanminus
-    curl -L http://cpanmin.us | perl - App::cpanminus
+    curl -L https://cpanmin.us | perl - App::cpanminus
     
     # Setup a directory in ~/perl5 to contain all perl dependencies
     ~/perl5/bin/cpanm --local-lib=~/perl5 local::lib && eval $(perl -I ~/perl5/lib/perl5/ -Mlocal::lib)
@@ -566,7 +566,7 @@ If you're not so lucky, or want to get fancy, well \ldots dig deeper:
 \end{description}
 
 % Possibly, eventually, want to expose:
-%   http://www.mathweb.org/wiki/????
+%   https://www.mathweb.org/wiki/????
 % But, it doesn't have anything in it yet.
 
 %============================================================
@@ -574,7 +574,7 @@ If you're not so lucky, or want to get fancy, well \ldots dig deeper:
 
 \paragraph{Mailing List}\label{contact.list}
 There is a low-volume mailing list for questions, support and comments.
-See \href{http://lists.informatik.uni-erlangen.de/mailman/listinfo/latexml}{\texttt{latexml-project}} for subscription information.
+See \href{https://lists.informatik.uni-erlangen.de/mailman/listinfo/latexml}{\texttt{latexml-project}} for subscription information.
 
 \paragraph{Bug-Tracker}\label{contact.git}
 We are using the git repository hosted at
@@ -589,13 +589,13 @@ file bug reports or feature requests.
 
 % To report bugs, please:
 % \begin{itemize}
-% \item \href{http://trac.mathweb.org/register/register}{Register} a Trac account
+% \item \href{https://trac.mathweb.org/register/register}{Register} a Trac account
 %   (preferably give an email so that you'll get notifications about activity regarding the bug).
-% \item \href{http://trac.mathweb.org/LaTeXML/newticket}{Create a ticket}
+% \item \href{https://trac.mathweb.org/LaTeXML/newticket}{Create a ticket}
 % \end{itemize} 
 
 \paragraph{Thanks} to our friends at
-the \href{http://kwarc.info}{KWARC Research Group}
+the \href{https://kwarc.info}{KWARC Research Group}
 for hosting the mailing list, the original Trac system and svn repository,
 as well as general moral support.
 
@@ -616,10 +616,10 @@ To the extent that any copyright protections may be considered to be held
 by the authors of this sofware in some jurisdiction outside the United
 States, the authors hereby waive those copyright protections and dedicate
 the software to the public domain. Thus, this license may be considered equivalent to
-\href{http://creativecommons.org/about/cc0}{Creative Commons 0: "No Rights Reserved"}.
+\href{https://creativecommons.org/about/cc0}{Creative Commons 0: "No Rights Reserved"}.
 
 Note that, according to
-\href{http://www.gnu.org/licences/license-list.html#PublicDomain}{Gnu.org},
+\href{https://www.gnu.org/licences/license-list.html#PublicDomain}{Gnu.org},
 public domain is compatible with GPL.
 
 We would appreciate acknowledgement if the software is used.
@@ -657,7 +657,7 @@ any situation where a failure could cause risk of injury or damage to
 property.
 
 \paragraph{Privacy Notice}
-We adhere to \href{http://www.nist.gov/public_affairs/privacy.cfm}{NIST's Privacy, Security and Accessibility Policy}.
+We adhere to \href{https://www.nist.gov/public_affairs/privacy.cfm}{NIST's Privacy, Security and Accessibility Policy}.
 %============================================================
 
 \end{document}

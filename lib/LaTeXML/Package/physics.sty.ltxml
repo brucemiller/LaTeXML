@@ -50,13 +50,13 @@ our %physics_delimiters = (
 sub phys_readSize {
   my ($gullet) = @_;
   my $size     = 1;
-  my $next     = $gullet->readToken();    # or XToken ?
-  if ($next->equals(T_OTHER('*'))) {      # No stretch
+  my $next     = $gullet->readToken();           # or XToken ?
+  if ($next && $next->equals(T_OTHER('*'))) {    # No stretch
     $size = 0;
-    $next = $gullet->readToken(); }       # or XToken ?
-  if (ToString($next) =~ /^\\(b|B)igg?/) {    # \big,\Big,\bigg,\Bigg
+    $next = $gullet->readToken(); }              # or XToken ?
+  if ($next && (ToString($next) =~ /^\\(b|B)igg?/)) {    # \big,\Big,\bigg,\Bigg
     $size = $next;
-    $next = $gullet->readToken(); }           # or XToken ?
+    $next = $gullet->readToken(); }                      # or XToken ?
   $gullet->unread($next);
   return $size; }
 
@@ -88,7 +88,7 @@ sub phys_close {
 sub phys_readArg {
   my ($gullet, $required, %delimiters) = @_;
   my ($arg, $open, $close);
-  my $next = $gullet->readToken();    # or XToken ?
+  my $next = $gullet->readToken();          # or XToken ?
   if ($next && $next->equals(T_BEGIN)) {    # Read regular arg, use default delimiters
     $gullet->unread($next);
     $arg = $gullet->readArg(); }
@@ -312,7 +312,7 @@ while (@operators) {
   my ($shortname, $longname, $meaning) = @{ shift(@operators) };
   $meaning ||= $longname;
   Let('\\' . $longname, '\\' . $shortname);
-  DefMacro('\\' . $shortname,
+  DefMacroI('\\' . $shortname, undef,
     "\\lx\@physics\@operatorP{\\$shortname}{$meaning}{\\operatorname{$shortname}}"); }
 
 # New operators
@@ -359,7 +359,7 @@ DefMacro('\qcomma',                    ',\quad');
 DefMacro('\qcc OptionalMatch:*',       '\mbox{\ifx.#1.\quad\fi c.c.\quad}');
 foreach my $word (qw ( if  then else otherwise unless given using assume since
   let for all even odd integer and or as in )) {
-  DefMacro('\q' . $word . ' OptionalMatch:*', '\mbox{\ifx.#1.\quad\fi ' . $word . '\quad}'); }
+  DefMacroI('\q' . $word, 'OptionalMatch:*', '\mbox{\ifx.#1.\quad\fi ' . $word . '\quad}'); }
 Let('\qq', '\qqtext');
 Let('\qc', '\qcomma');
 
@@ -370,7 +370,7 @@ Let('\flatfrac', '\ifrac');
 #  => (differential var [degree])
 DefMacro('\lx@physics@diff{}{}{}', sub {
     my ($gullet, $cs, $semantic, $diff) = @_;
-    my $cfunc = I_symbol({ meaning => $semantic });
+    my $cfunc  = I_symbol({ meaning => $semantic });
     my $pfunc  = I_wrap({ role => 'DIFFOP' }, $diff);
     my $degree = $gullet->readOptional;
     my ($arg, $open, $close) = phys_readArg($gullet, 0, '(' => T_OTHER(')'));
@@ -378,7 +378,7 @@ DefMacro('\lx@physics@diff{}{}{}', sub {
       { ($arg ? () : (role => 'DIFFOP')),
         reversion => Tokens($cs,
           ($degree ? (T_OTHER('['), I_arg(2), T_OTHER(']')) : ()),
-          ($arg ? phys_revArg(I_arg(1), $open, $close) : ())) },
+          ($arg    ? phys_revArg(I_arg(1), $open, $close)   : ())) },
       ($arg
         ? I_apply({}, $cfunc, I_arg(1), ($degree ? I_arg(2) : ()))
         : ($degree
@@ -435,7 +435,7 @@ DefMacro('\lx@physics@deriv{}{}{}', sub {
         ($expr ? I_apply({}, $op, I_arg(1)) : $op),
         Invocation(($inline ? T_CS('\ifrac') : T_CS('\frac')),
           Tokens(I_superscript({ role => 'DIFFOP' }, $pfunc, T_OTHER(2)), ($expr ? I_arg(1) : ())),
-          Tokens(I_apply({}, $pfunc, I_arg(2)), I_apply({}, $pfunc, I_arg(3)))),
+          Tokens(I_apply({}, $pfunc, I_arg(2)),                           I_apply({}, $pfunc, I_arg(3)))),
         $expr, $var, $var2); }
     else {
       my $op = I_apply({}, $cfunc, I_arg(2), ($degree ? I_arg(3) : ()));
@@ -491,8 +491,8 @@ DefMacro('\ket', sub {
 
 DefMacro('\bra', sub {
     my ($gullet) = @_;
-    my $size = ($gullet->readMatch(T_OTHER('*')) ? 0 : 1);
-    my $arg  = $gullet->readArg();
+    my $size     = ($gullet->readMatch(T_OTHER('*')) ? 0 : 1);
+    my $arg      = $gullet->readArg();
     if ($gullet->readMatch(T_CS('\ket'))) {    # join to make braket!
       $size = 0 if $gullet->readMatch(T_OTHER('*'));    # star here, too
       my $arg2 = $gullet->readArg();
@@ -514,10 +514,10 @@ DefMacro('\bra', sub {
 DefMacro('\lx@physics@qm@product{}{}{}{}{}', sub {
     my ($gullet, $cs, $semantic, $open, $middle, $close) = @_;
     my $cfunc = I_symbol({ meaning => $semantic });
-    my $size = ($gullet->readMatch(T_OTHER('*')) ? 0 : 1);
-    my $arg0 = $gullet->readArg();
-    my $argx = phys_readArg($gullet);
-    my $arg1 = $argx || $arg0;
+    my $size  = ($gullet->readMatch(T_OTHER('*')) ? 0 : 1);
+    my $arg0  = $gullet->readArg();
+    my $argx  = phys_readArg($gullet);
+    my $arg1  = $argx || $arg0;
     return I_dual(
       { reversion => Tokens($cs, phys_revSize($size),
           phys_revArg(I_arg(1)), phys_revArg(I_arg(2))) },
@@ -533,8 +533,8 @@ DefMacro('\outerproduct',
 
 DefMacro('\expectationvalue', sub {
     my ($gullet) = @_;
-    my $cfunc = I_symbol({ meaning => 'expectation-value' });
-    my $size  = ($gullet->readMatch(T_OTHER('*'))
+    my $cfunc    = I_symbol({ meaning => 'expectation-value' });
+    my $size     = ($gullet->readMatch(T_OTHER('*'))
       ? ($gullet->readMatch(T_OTHER('*')) ? 1 : 0)
       : 1);
     my ($open, $middle, $close) =
@@ -558,8 +558,8 @@ DefMacro('\expectationvalue', sub {
 
 DefMacro('\matrixelement', sub {
     my ($gullet) = @_;
-    my $cfunc = I_symbol({ meaning => 'expectation-value' });
-    my $size  = ($gullet->readMatch(T_OTHER('*'))
+    my $cfunc    = I_symbol({ meaning => 'expectation-value' });
+    my $size     = ($gullet->readMatch(T_OTHER('*'))
       ? ($gullet->readMatch(T_OTHER('*')) ? 1 : 0)
       : 1);
     my ($open, $middle, $close) =
@@ -698,11 +698,11 @@ DefMacro('\endlx@physics@matrix',      '\lx@end@ams@matrix');
 DefMacro('\lx@physics@smallmatrix',    '\lx@ams@matrix{datameaning=matrix,style=\scriptsize}');
 DefMacro('\endlx@physics@smallmatrix', '\lx@end@ams@matrix');
 
-DefMacro('\matrixquantity', '\lx@physics@mat{\matrixquantity}{}{lx@physics@matrix}{}{}');
-DefMacro('\pmqty{}',        '\lx@physics@mat{\pmqty}{}{lx@physics@matrix}{(}{)}');
-DefMacro('\Pmqty{}',        '\lx@physics@mat{\Pmqty}{}{lx@physics@matrix}{(}{)}');
-DefMacro('\bmqty{}',        '\lx@physics@mat{\bmqty}{}{lx@physics@matrix}{[}{]}');
-DefMacro('\vmqty{}',        '\lx@physics@mat{\vmqty}{}{lx@physics@matrix}{\vert}{\vert}');
+DefMacro('\matrixquantity',      '\lx@physics@mat{\matrixquantity}{}{lx@physics@matrix}{}{}');
+DefMacro('\pmqty{}',             '\lx@physics@mat{\pmqty}{}{lx@physics@matrix}{(}{)}');
+DefMacro('\Pmqty{}',             '\lx@physics@mat{\Pmqty}{}{lx@physics@matrix}{(}{)}');
+DefMacro('\bmqty{}',             '\lx@physics@mat{\bmqty}{}{lx@physics@matrix}{[}{]}');
+DefMacro('\vmqty{}',             '\lx@physics@mat{\vmqty}{}{lx@physics@matrix}{\vert}{\vert}');
 DefMacro('\smallmatrixquantity', '\lx@physics@mat{\smallmatrixquantity}{}{lx@physics@smallmatrix}{}{}');
 DefMacro('\spmqty{}', '\lx@physics@mat{\spmqty}{}{lx@physics@smallmatrix}{(}{)}');
 DefMacro('\sPmqty{}', '\lx@physics@mat{\sPmqty}{}{lx@physics@smallmatrix(}{)}');

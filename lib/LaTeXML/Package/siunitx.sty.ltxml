@@ -868,7 +868,7 @@ DefMacro('\ang OptionalKeyVals:SIX {}', sub {
 # Unit processing macros
 sub six_peel_group {
   my (@tokens) = @_;
-  if ($tokens[0]->getCatcode == CC_BEGIN) {
+  if (@tokens && $tokens[0]->getCatcode == CC_BEGIN) {
     shift(@tokens);
     my @result = ();
     my $level  = 1;

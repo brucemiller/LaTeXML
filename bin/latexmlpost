@@ -473,6 +473,7 @@ NoteLog("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . ": " . $statu
 NoteSTDERR("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . " " . $status . " (reqd. $runtime)");
 UseLog(undef);
 CheckDebuggable();
+UseSTDERR(undef);
 
 #======================================================================
 # helpers

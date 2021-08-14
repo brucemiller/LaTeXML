@@ -61,20 +61,20 @@ DefPrimitive('\DeclareFloatingEnvironment OptionalKeyVals {}', sub {
 
     # Do we need any \the, \fnum@, \format@title, etc?
 
-    DefEnvironment("{$type}[]",
+    DefEnvironmentI($type, "[]",
       "<ltx:float xml:id='#id' ?#1(placement='#1') inlist='#inlist' class='ltx_float_$type'>"
         . "#tags"
         . "#body"
         . "</ltx:float>",
       beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
-      afterDigest => sub { RescueCaptionCounters($type, $_[1]); });
-    DefEnvironment("{$type*}[]",
+      afterDigest  => sub { RescueCaptionCounters($type, $_[1]); });
+    DefEnvironmentI("$type*", "[]",
       "<ltx:float xml:id='#id' ?#1(placement='#1') inlist='#inlist' class='ltx_float_$type'>"
         . "#tags"
         . "#body"
         . "</ltx:float>",
       beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
-      afterDigest => sub { RescueCaptionCounters($type, $_[1]); });
+      afterDigest  => sub { RescueCaptionCounters($type, $_[1]); });
 });
 
 # \ForEachFloatingEnvironment{code{#1}}

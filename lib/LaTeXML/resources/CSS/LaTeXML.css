@@ -247,8 +247,10 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
     display: flex; }
 .ltx_page_column1,
 .ltx_page_column2 {
-    flex:100%; }
-@media screen and (max-width: 80em){
+    flex:100%;
+    margin: 0 20px;
+ }
+@media screen and (max-width: 60em){
   .ltx_page_columns {
      flex-direction: column; }
   .ltx_page_column1 > ul,
@@ -353,12 +355,7 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 .ltx_font_upright    { font-style: normal; font-variant:normal; }
 .ltx_font_slanted    { font-style: oblique; font-variant:normal; }
 .ltx_font_smallcaps  { font-variant: small-caps; font-style:normal; }
-.ltx_font_oldstyle   { font-variant: oldstyle-nums;  /* experimental css3 ? Doesn't seem to work!*/
-                       font-style:normal;
-                       -moz-font-feature-settings: "onum";
-                       -ms-font-feature-settings: "onum";
-                       -webkit-font-feature-settings: "onum";
-                       font-variant-numeric: oldstyle-nums; }
+.ltx_font_oldstyle   { font-variant-numeric: oldstyle-nums; }
 .ltx_font_mathcaligraphic { font-family: "Lucida Calligraphy", "Zapf Chancery","URW Chancery L"; }
 /*
 
@@ -375,19 +372,9 @@ cite                 { font-style: normal; }
 /* Dubious stuff */
 .ltx_hflipped {
     display:inline-block;
-    -moz-transform: scaleX(-1);
-    -o-transform: scaleX(-1);
-    -webkit-transform: scaleX(-1);
-    transform: scaleX(-1);
-    filter: FlipH;
-    -ms-fliter: "FlipH"; }
+    transform: scaleX(-1); }
 .ltx_vflipped {
     display:inline-block;
-    -moz-transform: scaleY(-1);
-    -o-transform: scaleY(-1);
-    -webkit-transform: scaleY(-1);
-    transform: scaleY(-1);
-    filter: FlipV;
-    -ms-fliter: "FlipV"; }
+    transform: scaleY(-1); }
 
 /* .ltx_phantom handled in xslt */

@@ -26,7 +26,7 @@ DefMacro('\DefineNamedColor{}{}{}{}', sub {
       ($spec =~ /,/ ? split(/\s*,\s*/, $spec) : split(/\s+/, $spec)))->toCore;
     DefColor($name, $color, 'global');
     DefPrimitive('\\text' . $name, sub { MergeFont(color => $color); }, scope => 'global');
-    DefMacro('\\' . $name . '{}', '{\text' . $name . ' #1}', scope => 'global');
+    DefMacroI('\\' . $name, '{}', '{\text' . $name . ' #1}', scope => 'global');
     return; });
 
 #======================================================================

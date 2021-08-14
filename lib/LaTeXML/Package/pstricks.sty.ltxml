@@ -81,8 +81,8 @@ sub ReadOptionalBracketed {
   $gullet->skipSpaces;
   if ($gullet->ifNext(T_BEGIN)) {
     my $itemreader;
-    if (!$itemtype) { $itemreader = sub { scalar($gullet->readBalanced); }; }
-    else            { $itemreader = ResolveReader($itemtype); }
+    if   (!$itemtype) { $itemreader = sub { scalar($gullet->readBalanced); }; }
+    else              { $itemreader = ResolveReader($itemtype); }
     if (!$itemreader) {
       Error('misdefined', $itemtype, $gullet,
         "Can't find reader for optional curly-bracketed argument from '$itemtype'"); }
@@ -145,8 +145,8 @@ sub ZeroPair {
 # also return the default arrows ('\psarrows') if no argument found
 sub ReadArrows {
   my ($gullet) = @_;
-  my $ar = ReadOptionalBracketed($gullet);
-  my $st = $ar && ToString($ar);
+  my $ar       = ReadOptionalBracketed($gullet);
+  my $st       = $ar && ToString($ar);
   if ($ar && ($st =~ /[^\(\)\s\-\>\<\|cCo\*\[\]]/ || $st !~ /\-/)) {
     $gullet->unread(T_BEGIN, $ar->unlist, T_END);
     $ar = undef; }
@@ -170,7 +170,7 @@ DefParameterType('Arrows', \&ReadArrows,
   use base qw(LaTeXML::Common::Object);
 
   our %angleVals = (N => 0, W => 90, S => 180, E => 270, U => 0, L => 90, D => 180, R => 270,
-    r  => 0,  u  => 90,  l  => 180, d  => 270, ur => 45, ul => 135, dl => 225, dr => 315,
+    r => 0, u => 90, l => 180, d => 270, ur => 45, ul => 135, dl => 225, dr => 315,
     ru => 45, lu => 135, ld => 225, rd => 315);
 
   sub new {
@@ -327,8 +327,8 @@ $PSArrow = "terminators='#terminators' arrowlength='#arrowlength'";
 
 # when storing in memory, store as token, not as string:
 %KeyAsValue = (linewidth => 1, linearc => 1, framearc => 1, framesep => 1, labelsep => 1,
-  unit    => 1, xunit  => 1, yunit  => 1, runit => 1, arcsep    => 1, arcsepA   => 1,
-  arcsepB => 1, arrows => 1, origin => 1, dash  => 1, doublesep => 1, arrowsize => 1,
+  unit       => 1, xunit       => 1, yunit    => 1, runit     => 1, arcsep    => 1, arcsepA   => 1,
+  arcsepB    => 1, arrows      => 1, origin   => 1, dash      => 1, doublesep => 1, arrowsize => 1,
   arrowinset => 1, arrowlength => 1, dotsize  => 1, tbarsize  => 1, dotangle  => 1,
   angleA     => 1, angleB      => 1, arcangle => 1, arcangleA => 1, arcangleB => 1,
   dotsep     => 1);
@@ -340,8 +340,8 @@ sub setGraphParams {
   if (my $style = $params{'style'}) {
     delete $params{'style'};
     if (((ref $style) || '') eq 'ARRAY') { $style = ${$style}[$#{$style}]; }
-    $style = LookupValue('psstyle_' . ToString($style)) if $style;
-    %params = (%params, %{$style}) if $style; }
+    $style  = LookupValue('psstyle_' . ToString($style)) if $style;
+    %params = (%params, %{$style})                       if $style; }
 
   while (my ($_key, $value) = each %params) {
     if (((ref $value) || '') eq 'ARRAY') { $value = ${$value}[$#{$value}]; }
@@ -515,21 +515,21 @@ sub DefPSConstructor {
     $args = 'Arrows ' . $args; }
   push(@after, \&afterPSObject);
   $options{afterDigest} = \@after;
-  DefMacro($cmd . ' OptionalMatch:* []', sub {
+  DefMacroI($cmd, 'OptionalMatch:* []', sub {
       my @exp = (T_BEGIN);
       push(@exp, T_CS('\psset'), T_BEGIN, $_[2]->unlist, T_END) if $_[2];
       push(@exp, T_CS($cmd . '@'));
       push(@exp, T_OTHER('*')) if $_[1];
       @exp; });
   if ($options{attributes}) { $PSobjAttributes{$cmd} = $options{attributes}; delete $options{attributes}; }
-  DefConstructor($cmd . '@ OptionalMatch:* ' . $args, $replacement, alias => $cmd, %options);
+  DefConstructorI($cmd . '@', 'OptionalMatch:* ' . $args, $replacement, alias => $cmd, %options);
   return; }
 
 sub DefSimplePSConstructor {
   my ($cmd, $arg, $replacement, %options) = @_;
   my @after = $options{afterDigest} ? ($options{afterDigest}, \&psDefaultParameters) : (\&psDefaultParameters);
   if ($options{attributes}) { $PSobjAttributes{$cmd} = $options{attributes}; delete $options{attributes}; }
-  DefConstructor($cmd . ' ' . $arg, $replacement, %options);
+  DefConstructorI($cmd, $arg, $replacement, %options);
   return; }
 
 ####################################################################################
@@ -544,7 +544,7 @@ DefEnvironment('{pspicture} [Float] PSCoord OptionalPSCoord',
     . "</ltx:picture>",
   afterDigestBegin => sub {
     my ($stomach, $whatsit) = @_;
-    my ($c0, $c1) = ($whatsit->getArg(2), $whatsit->getArg(3));
+    my ($c0,      $c1)      = ($whatsit->getArg(2), $whatsit->getArg(3));
     if (!$c1) {    # Note: the FIRST coord is optional! so if 2nd missing, swap.
       $c1 = $c0; $c0 = ZeroPair(); }
     $whatsit->setProperty(c0 => $c0);
@@ -567,7 +567,7 @@ DefEnvironment('{pspicture*} [Float] PSCoord PSCoord',
     . "</ltx:picture>",
   afterDigestBegin => sub {
     my ($stomach, $whatsit) = @_;
-    my ($c0, $c1) = ($whatsit->getArg(2), $whatsit->getArg(3));
+    my ($c0,      $c1)      = ($whatsit->getArg(2), $whatsit->getArg(3));
     $whatsit->setProperty(c0 => $c0);
     $whatsit->setProperty(c1 => $c1 ? Pair($c1->getX->subtract($c0->getX),
         $c1->getY->subtract($c0->getY)) : $c0);
@@ -627,7 +627,7 @@ DefKeyVal('pstricks', 'runit', 'PSDimension');
 # ------- trick to get automatic grouping of transforms -------
 # ------- for coordinate changing parameters            -------
 
-AssignValue('\psorigin', Pair(Dimension(0), Dimension(0)));
+AssignValue('\psorigin',   Pair(Dimension(0), Dimension(0)));
 AssignValue('\psswapaxes', 'false');
 
 sub getNecessaryTransform {
@@ -666,8 +666,8 @@ DefPrimitive('\psaddtolength{Token}{PSDimension}', sub {
     my $register = LookupDefinition($cmd);
     $register->setValue($register->valueOf->add($dimen)); });
 
-Let('\pssetlength','\setlength');
-Let('\psaddtolength','\addtolength');
+Let('\pssetlength',   '\setlength');
+Let('\psaddtolength', '\addtolength');
 
 DefPrimitive('\degrees [Float]', sub { AssignValue('\degrees', $_[1]); });
 DefPrimitive('\radians',         sub { AssignValue('\degrees', Float(6.28319)); });
@@ -732,7 +732,7 @@ DefPSConstructor('\psellipse', 'PSCoord PSCoord',
   afterDigest => sub {
     my $c = $_[1]->getArg(2);
     my $r = $_[1]->getArg(3);
-    $c ? $_[1]->setProperties(center => $c, radii => $r)
+    $c  ? $_[1]->setProperties(center => $c, radii => $r)
       :   $_[1]->setProperties(center => ZeroPair, radii => $r); });
 
 DefPSConstructor('\psarc', 'ZeroPSCoord {PSDimension} {PSAngle} {PSAngle}',
@@ -829,9 +829,9 @@ DefSimplePSConstructor('\psgrid', 'PSCoord PSCoord PSCoord',
 
 DefMacro('\newpsobject {} {} {}', sub {
     my ($newname, $oldName, $keyval) = ("\\" . ToString($_[1]), "\\" . ToString($_[2]), ToString($_[3]));
-    DefMacro($newname . ' OptionalMatch:* []', sub {
+    DefMacroI($newname, ' OptionalMatch:* []', sub {
         my ($name, $thiskey) = ($newname, $_[2]);
-        my ($old, $key) = map { LookupValue('psobject_' . $name . $_) } qw(old key);
+        my ($old,  $key)     = map { LookupValue('psobject_' . $name . $_) } qw(old key);
         $thiskey = $thiskey ? ToString($thiskey) : '';
         $key .= ',' if $key && $thiskey; $key .= $thiskey;
         my @exp = (T_CS($old)); push(@exp, T_OTHER('*')) if $_[1];
@@ -901,7 +901,7 @@ DefMacro('\Rput OptionalMatch:* OptionalBracketed [] OptionalBracketed ZeroPSCoo
     if ($refangle) { $refangle = $rput2uput{ ToString($refangle) }; }
     my @exp = (T_CS('\uput'), $star ? T_OTHER('*') : (), $labelsep ? (T_BEGIN, $labelsep->unlist, T_END) : (),
       $refangle ? (T_OTHER('['), Explode($refangle), T_OTHER(']')) : ());
-    push(@exp, T_BEGIN, $rotation->unlist, T_END) if $rotation;
+    push(@exp, T_BEGIN,      $rotation->unlist,       T_END) if $rotation;
     push(@exp, T_OTHER('('), Explode(ToString($pos)), T_OTHER(')'));
     @exp; });
 
@@ -918,14 +918,14 @@ DefMacro('\multirput OptionalMatch:* [] OptionalBracketed PSCoord PSCoord {Numbe
     push(@rp, T_OTHER('['), $_[2]->unlist, T_OTHER(']')) if $_[2];
     push(@rp, T_BEGIN,      $_[3]->unlist, T_END)        if $_[3];
     my ($no, $body) = ($_[6]->valueOf, $_[7]);
-    my ($st, $dt) = $_[5] ? ($_[4], $_[5]) : (ZeroPair, $_[4]);
+    my ($st, $dt)   = $_[5] ? ($_[4], $_[5]) : (ZeroPair, $_[4]);
     getPutExp($st, $dt, $no, $body, @rp); });
 
 DefMacro('\multips OptionalBracketed PSCoord PSCoord {Number} {}', sub {
     my @rp = (T_CS('\rput'));
     push(@rp, T_BEGIN, $_[1]->unlist, T_END) if $_[1];
     my ($no, $body) = ($_[4]->valueOf, $_[5]);
-    my ($st, $dt) = $_[3] ? ($_[2], $_[3]) : (ZeroPair, $_[2]);
+    my ($st, $dt)   = $_[3] ? ($_[2], $_[3]) : (ZeroPair, $_[2]);
     getPutExp($st, $dt, $no, $body, @rp); });
 
 ##########################################################################################

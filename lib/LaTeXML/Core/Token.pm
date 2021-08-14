@@ -59,9 +59,9 @@ use constant CC_ACTIVE  => 13;
 use constant CC_COMMENT => 14;
 use constant CC_INVALID => 15;
 # Extended Catcodes for expanded output.
-use constant CC_CS        => 16;
-use constant CC_MARKER    => 17;    # non TeX extension!
-use constant CC_ARG       => 18;    # "out_param" in B Book
+use constant CC_CS          => 16;
+use constant CC_MARKER      => 17;    # non TeX extension!
+use constant CC_ARG         => 18;    # "out_param" in B Book
 use constant CC_SMUGGLE_THE => 19;    # defered expansion once
 
 # [The documentation for constant is a bit confusing about subs,
@@ -76,11 +76,11 @@ use constant T_SUPER => bless ['^',  CC_SUPER], 'LaTeXML::Core::Token';
 use constant T_SUB   => bless ['_',  CC_SUB],   'LaTeXML::Core::Token';
 use constant T_SPACE => bless [' ',  CC_SPACE], 'LaTeXML::Core::Token';
 use constant T_CR    => bless ["\n", CC_SPACE], 'LaTeXML::Core::Token';
-sub T_LETTER { my ($c) = @_; return bless [$c, CC_LETTER], 'LaTeXML::Core::Token'; }
-sub T_OTHER  { my ($c) = @_; return bless [$c, CC_OTHER],  'LaTeXML::Core::Token'; }
-sub T_ACTIVE { my ($c) = @_; return bless [$c, CC_ACTIVE], 'LaTeXML::Core::Token'; }
+sub T_LETTER  { my ($c) = @_; return bless [$c, CC_LETTER], 'LaTeXML::Core::Token'; }
+sub T_OTHER   { my ($c) = @_; return bless [$c, CC_OTHER],  'LaTeXML::Core::Token'; }
+sub T_ACTIVE  { my ($c) = @_; return bless [$c, CC_ACTIVE], 'LaTeXML::Core::Token'; }
 sub T_COMMENT { my ($c) = @_; return bless ['%' . ($c || ''), CC_COMMENT], 'LaTeXML::Core::Token'; }
-sub T_CS { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
+sub T_CS      { my ($c) = @_; return bless [$c, CC_CS], 'LaTeXML::Core::Token'; }
 # Illegal: don't use unless you know...
 sub T_MARKER { my ($t) = @_; return bless [$t, CC_MARKER], 'LaTeXML::Core::Token'; }
 
@@ -136,11 +136,14 @@ my $UNTEX_LINELENGTH = 78;    # [CONSTANT]
 sub UnTeX {
   my ($thing, $suppress_linebreak) = @_;
   return unless defined $thing;
-  my @tokens = (ref $thing ? $thing->revert : Explode($thing));
+  my @tokens = ref $thing ?
+    map { ref $_ eq 'LaTeXML::Core::Tokens' ? $_->unlist : $_ } $thing->revert :
+    Explode($thing);
   my $string = '';
   my $length = 0;
   my $level  = 0;
   my ($prevs, $prevcc) = ('', CC_COMMENT);
+
   while (@tokens) {
     my $token = shift(@tokens);
     my $cc    = $token->getCatcode;
@@ -310,10 +313,7 @@ sub with_dont_expand {
   if ($cc == CC_SMUGGLE_THE) {
     # LaTeXML Bug, we haven't correctly emulated scan_toks! Offending token was:
     Fatal('unexpected', 'CC_SMUGGLE_THE', 'We are marking as \noexpand a masked \the-produced token, this must Never happen.', "Illegal: " . $self->stringify); }
-  return ((($cc == CC_CS) || ($cc == CC_ACTIVE))
-    # AND it is either undefined, or is expandable!
-      && (!defined($STATE->lookupDefinition($self))
-      || defined($STATE->lookupExpandable($self))))
+  return ((($cc == CC_CS) || ($cc == CC_ACTIVE)) && $STATE->isDontExpandable($self))
     ? bless ['\relax', CC_CS, $self], 'LaTeXML::Core::Token'
     : $self; }
 

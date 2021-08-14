@@ -15,6 +15,14 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+# Newer versions of xparse *may* want to defer to one of these versioned files
+# They are also acceptable for interpretation, but must avoid the de-versioning hack/fallback.
+AssignMapping('INTERPRETABLE_SOURCES', 'xparse-2018-04-12.sty' => 1);
+AssignMapping('INTERPRETABLE_SOURCES', 'xparse-2020-10-01.sty' => 1);
+
 # Should just work?
 InputDefinitions('xparse', type => 'sty', noltxml => 1);
+
+# Presumably we'll want our own k3backend_latexml !?!?!?!
+
 1;

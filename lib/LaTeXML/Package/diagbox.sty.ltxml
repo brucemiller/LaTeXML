@@ -1,0 +1,147 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  diagbox                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+#======================================================================
+DefKeyVal('diagbox', 'dir',           '');
+DefKeyVal('diagbox', 'width',         'Dimension');
+DefKeyVal('diagbox', 'height',        'Dimension');
+DefKeyVal('diagbox', 'innerwidth',    'Dimension');
+DefKeyVal('diagbox', 'innerleftsep',  'Dimension');    # ignored
+DefKeyVal('diagbox', 'innerrightsep', 'Dimension');    # ignored
+DefKeyVal('diagbox', 'outerleftsep',  'Dimension');    # ignored
+DefKeyVal('diagbox', 'outerrightsep', 'Dimension');    # ignored
+DefKeyVal('diagbox', 'leftsep',       'Dimension');    # ignored
+DefKeyVal('diagbox', 'rightsep',      'Dimension');    # ignored
+DefKeyVal('diagbox', 'trim',          '');             # ignored
+DefKeyVal('diagbox', 'font',          '');
+DefKeyVal('diagbox', 'linewidth',     '');
+DefKeyVal('diagbox', 'linecolor',     '');
+
+# NOTE that this macro SNIFFS out an optional 3rd argument!!!
+# Possibly should turn off guess headers in containing alignment?
+DefMacro('\diagbox OptionalKeyVals:diagbox {}{}', sub {
+    my ($gullet, $kv, $A, $B) = @_;
+    my $M;
+    if ($gullet->ifNext(T_BEGIN)) {
+      $M = $B; $B = $gullet->readArg; }
+    my $dir = $kv && ToString($kv->getValue('dir')) || 'NW';
+    if ($dir) {
+    }
+    my $font = $kv && $kv->getValue('font');
+    return Invocation(T_CS('\lx@diagbox'),
+      $kv,
+      Invocation(T_CS('\lx@diagbox@head'), T_LETTER('l'), $font, $A),
+      $M && Invocation(T_CS('\lx@diagbox@head'), T_LETTER(($dir =~ /W/ ? 'l' : 'r')), $font, $M),
+      Invocation(T_CS('\lx@diagbox@head'), T_LETTER('r'), $font, $B)); });
+
+DefMacro('\lx@diagbox@head{}{}{}', '{#2\shortstack[#1]{#3}}');
+
+DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
+  "<ltx:picture width='#width' height='#height' unitlength='1.0pt'>"
+    . "?#line1(<ltx:line points='#line1' stroke='#linecolor' stroke-width='#linewidth'/>)()"
+    . "?#line2(<ltx:line points='#line2' stroke='#linecolor' stroke-width='#linewidth'/>)()"
+    . "<ltx:g transform='translate(#Ax,#Ay)' innerwidth='#Aw' innerheight='#Ah' class='ltx_svg_fog'>"
+    . "<ltx:inline-block>#A</ltx:inline-block>"
+    . "</ltx:g>"
+    . "<ltx:g transform='translate(#Bx,#By)' innerwidth='#Bw' innerheight='#Bh' class='ltx_svg_fog'>"
+    . "<ltx:inline-block>#B</ltx:inline-block>"
+    . "</ltx:g>"
+    . "?#M(<ltx:g transform='translate(#Mx,#My)' innerwidth='#Mw' innerheight='#Mh' class='ltx_svg_fog'>"
+    . "<ltx:inline-block>#M</ltx:inline-block>"
+    . "</ltx:g>)()"
+    . "</ltx:picture>",
+  reversion   => '\diagbox[#1]{#2}{#4}{#3}',    # Wrong!
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($kv, $A, $M, $B) = $whatsit->getArgs;
+    my $dir = $kv && ToString($kv->getValue('dir')) || 'NW';
+    my ($Aw, $Ah, $Ad) = $A->getSize;       $Ah = $Ah->add($Ad);
+    my ($Bw, $Bh, $Bd) = $B->getSize;       $Bh = $Bh->add($Bd);
+    my ($Mw, $Mh, $Md) = $M && $M->getSize; $Mh = $Mh->add($Md) if $Mh;
+    my $maxw = $Aw->larger($Bw);
+    my $maxh = $Ah->larger($Bh);
+    my $w = ($kv && ($kv->getValue('width') || $kv->getValue('innerwidth'))) || $Aw->add($Bw)->add($maxw);
+    my $h = ($kv && $kv->getValue('height')) || $Ah->add($Bh)->add($maxh);
+    my ($ww,    $hh)  = ($w->ptValue, $h->ptValue);
+    my ($wwm,   $hhm) = ($w->divide(2)->ptValue, $h->divide(2)->ptValue);
+    my ($line1, $line2);
+    my ($Ax,    $Ay, $Bx, $By, $Mx, $My) = (0, 0, 0, 0, 0, 0);
+
+    if ($M) {
+      if ($dir eq 'NW') {
+        $Ay    = $Ah->ptValue;
+        $My    = $h->ptValue;
+        $Bx    = $w->subtract($Bw)->ptValue;
+        $By    = $h->ptValue;
+        $line1 = "$wwm,$hh $ww,0";
+        $line2 = "0,$hhm $ww,0"; }
+      elsif ($dir eq 'SE') {
+        $Ay    = $Ah->ptValue;
+        $Mx    = $w->subtract($Mw)->ptValue;
+        $My    = $Mh->ptValue;
+        $Bx    = $w->subtract($Bw)->ptValue;
+        $By    = $h->ptValue;
+        $line1 = "0,$hh $ww,$hhm";
+        $line2 = "0,$hh $wwm,0"; }
+      elsif ($dir eq 'SW') {
+        $Ay    = $h->ptValue;
+        $My    = $Mh->ptValue;
+        $Bx    = $w->subtract($Bw)->ptValue;
+        $By    = $Bh->ptValue;
+        $line1 = "0,$hhm $ww,$hh";
+        $line2 = "$wwm,0 $ww,$hh"; }
+      elsif ($dir eq 'NE') {
+        $Ay    = $h->ptValue;
+        $Mx    = $w->subtract($Mw)->ptValue;
+        $My    = $h->ptValue;
+        $Bx    = $w->subtract($Bw)->ptValue;
+        $By    = $Bh->ptValue;
+        $line1 = "0,0 $wwm,$hh";
+        $line2 = "0,0 $ww,$hhm"; } }
+    else {
+      $Ax = 0;
+      $Bx = $w->subtract($Bw)->ptValue;
+      if (($dir eq 'NW') || ($dir eq 'SE')) {
+        $Ay    = $Ah->ptValue;
+        $By    = $h->ptValue;
+        $line1 = "0,$hh $ww,0"; }
+      else {
+        $Ay    = $h->ptValue;
+        $By    = $Bh->ptValue;
+        $line1 = "0,0, $ww,$hh"; } }
+    $whatsit->setProperties(width => $w, height => $h,
+      A         => $A,     Ax    => $Ax, Ay => $Ay, Aw => $Aw, Ah => $Ah,
+      B         => $B,     Bx    => $Bx, By => $By, Bw => $Bw, Bh => $Bh,
+      M         => $M,     Mx    => $Mx, My => $My, Mw => $Bw, Mh => $Mh,
+      line1     => $line1, line2 => $line2,
+      linewidth => ($kv && $kv->getValue('linewidth')) || '0.4',
+      linecolor => ($kv && $kv->getValue('linecolor')) || 'black'); }
+);
+
+# slashbox compatibility
+DefMacro('\slashbox[][]{}{}',
+  '\def\@tempa{dir=SW}'
+    . '\ifx.#1.\else\edef\@tempa{\@tempa,width={#1}}\fi'
+    . '\ifx.#2.\else\edef\@tempa{\@tempa,trim={#2}}\fi'
+    . '\diagbox[\@tempa]{#3}{#4}');
+DefMacro('\backslashbox[][]{}{}',
+  '\def\@tempa{dir=NW}'
+    . '\ifx.#1.\else\edef\@tempa{\@tempa,width={#1}}\fi'
+    . '\ifx.#2.\else\edef\@tempa{\@tempa,trim={#2}}\fi'
+    . '\diagbox[\@tempa]{#3}{#4}');
+
+#======================================================================
+1;

@@ -178,8 +178,9 @@ sub parsePrototype {
   elsif ($proto =~ s/^(.)//) {               # Match an active char
     ($cs) = TokenizeInternal($1)->unlist; }
   else {
-    Fatal('misdefined', $proto, $STATE->getStomach,
-      "Definition prototype doesn't have proper control sequence: \"$proto\""); }
+    Error('misdefined', $proto, $STATE->getStomach,
+      "Definition prototype doesn't have proper control sequence: \"$proto\"");
+    $proto = ''; }
   $proto =~ s/^\s*//;
   return ($cs, parseParameters($proto, $cs)); }
 
@@ -222,7 +223,7 @@ sub parseParameters {
       my @extra = map { TokenizeInternal($_) } split('\|', $extra || '');
       push(@params, LaTeXML::Core::Parameter->new($type, $spec, extra => [@extra])); }
     else {
-      Fatal('misdefined', $for, undef, "Unrecognized parameter specification at \"$proto\""); } }
+      Error('misdefined', $for, undef, "Unrecognized parameter specification at \"$proto\""); } }
   return (@params ? LaTeXML::Core::Parameters->new(@params) : undef); }
 
 # Convert a LaTeX-style argument spec to our Package form.
@@ -1160,7 +1161,9 @@ sub DefPrimitiveI {
   my $string = $replacement;
   Warn('misdefined', $cs, undef, "Option alias ignored if replacement is not string")
     if ref $replacement && defined $options{alias};
-  $replacement = sub { Box($string, undef, undef, Invocation($options{alias} || $cs, @_[1 .. $#_])); }
+  $replacement = sub { Box($string, undef, undef,
+      Invocation($options{alias} || $cs, @_[1 .. $#_]),
+      (defined $string ? () : (isEmpty => 1))); }    # Just marker for reversion?
     unless ref $replacement;
   $cs        = coerceCS($cs);
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
@@ -1929,25 +1932,29 @@ sub FindFile_aux {
   # (2) those MAY be present in kpsewhich's DB (although our searchpaths take precedence!)
   # (3) BUT we want to avoid kpsewhich if we can, since it's slower
   # (4) depending on switches we may EXCLUDE .ltxml OR raw tex OR allow both.
+  # (5) we may allow interpreting raw TeX/sty/whatever files individually or broadly
+  # (6) but we may also want to override an apparently "versioned" file, preferring the ltxml
   my $paths         = LookupValue('SEARCHPATHS');
   my $urlbase       = LookupValue('URLBASE');
   my $nopaths       = LookupValue('REMOTE_REQUEST');
   my $ltxml_paths   = $nopaths ? [] : $paths;
-  my $interpretting = LookupValue('INTERPRETING_DEFINITIONS');
+  my $interpreting  = LookupValue('INTERPRETING_DEFINITIONS');         # Globally allow interpretation
+  my $interpretable = LookupMapping('INTERPRETABLE_SOURCES', $file);   # Specifically allow
+
   # If we're looking for ltxml, look within our paths & installation first (faster than kpse)
   if (!$options{noltxml}
     && ($path = pathname_find("$file.ltxml", paths => $ltxml_paths, installation_subdir => 'Package'))) {
     return $path; }
-  # Else if we're interpretting rawtex, and can find the file as is, take it.
-  elsif (!$options{notex} && $interpretting
+  # Else if we're interpreting rawtex, and can find the file as is, take it.
+  elsif (!$options{notex} && ($interpreting || $interpretable)
     && ($path = pathname_find($file, paths => $paths))) {
     return $path; }
   # Else, look for similar fallback ltxml bindings
-  elsif (!$options{noltxml}
+  elsif (!$options{noltxml} && !$interpretable
     && ($path = FindFile_fallback($file, $ltxml_paths, %options))) {
     return $path; }
-  # Finally, look for raw tex in our paths, even if we're not interpretting(?) (faster than kpse)
-  elsif (!$options{notex} && !$interpretting
+  # Finally, look for raw tex in our paths, even if we're not interpreting(?) (faster than kpse)
+  elsif (!$options{notex} && !$interpreting
     && ($path = pathname_find($file, paths => $paths))) {
     return $path; }
 
@@ -1968,6 +1975,7 @@ sub FindFile_aux {
 
 sub FindFile_fallback {
   my ($file, $ltxml_paths, %options) = @_;
+
   # Supported:
   # Numeric suffixes (version nums, dates) with optional separators
   my $fallback_file = $file;
@@ -2100,6 +2108,7 @@ sub loadLTXML {
       # If we've opened anything, we should read it in completely.
       # But we'll assume that anything opened has already been processed by loadTeXDefinitions.
   });
+  Let(T_CS('\ver@' . $trequest), T_CS('\fmtversion'), 'global');
   return; }
 
 sub loadTeXDefinitions {
@@ -2142,6 +2151,7 @@ sub loadTeXDefinitions {
         $stomach->invokeToken($token); } });
   AssignValue('INTERPRETING_DEFINITIONS' => $was_interpreting);
   AssignValue('INCLUDE_STYLES'           => $was_including_styles);
+  Let(T_CS('\ver@' . $request), T_CS('\fmtversion'), 'global');
   return; }
 
 sub loadTeXContent {
@@ -2330,6 +2340,7 @@ sub InputDefinitions {
   if (my $file = FindFile($filename, type => $options{type},
       notex => $options{notex}, noltxml => $options{noltxml}, searchpaths_only => $options{searchpaths_only})) {
     if ($options{handleoptions}) {
+# Note: this is trying to emulate the LaTeX 2 (latex.ltx) use of \@pushfilename. For expl3, see expl3.sty.ltxml
       Digest(T_CS('\@pushfilename'));
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
       if (my $passoptions = $options{withoptions} && $prevname
@@ -2465,7 +2476,7 @@ sub LoadPool {
   if (my $success = InputDefinitions($pool, type => 'pool', notex => 1, noerror => 1)) {
     return $success; }
   else {
-    Fatal('missing_file', "$pool.pool.ltxml", $STATE->getStomach->getGullet,
+    Error('missing_file', "$pool.pool.ltxml", $STATE->getStomach->getGullet,
       "Can't find binding for pool $pool (installation error)",
       maybeReportSearchPaths());
     return; } }

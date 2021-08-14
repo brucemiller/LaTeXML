@@ -165,6 +165,7 @@ $serialized = undef;
 
 CheckDebuggable();
 
+UseSTDERR(undef);
 if ($@) {    # non-zero exit code for fatal conversions
   exit 1;
 }

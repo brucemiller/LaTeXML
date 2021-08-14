@@ -15,8 +15,32 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-RequirePackage('url');
+# Some of the requirements not yet applicable/supported in latexml
+#RequirePackage('ltxcmds');
+#RequirePackage('iftex');
+#RequirePackage('pdftexcmds');
+#RequirePackage('infwarerr');
+
+# This is actually important in practice (arXiv), and its location is sensitive
+# in a complex document the order between loading keyval.sty and xkeyval.sty
+# determines the argument patterns to some macros, e.g. \setkeys
+# so emulating the exact raw .sty order of loading is the only way to ensure
+# robust conversions in latexml for all files that succeed in pdflatex
+RequirePackage('keyval');
+
+#RequirePackage('kvsetkeys');
+#RequirePackage('kvdefinekeys');
+#RequirePackage('pdfescape');
+#RequirePackage('hycolor');
+#RequirePackage('letltxmacro');
+#RequirePackage('auxhook');
+#RequirePackage('kvoptions');
+#RequirePackage('intcalc');
+#RequirePackage('etexcmds');
 RequirePackage('nameref');
+RequirePackage('url');
+#RequirePackage('bitset');
+#RequirePackage('atbegshi');
 
 # Can we load hyperref, to get all it's random sundry definitions?
 # No, too many weird extra packages loaded.
@@ -306,7 +330,9 @@ DefMacro('\Acrobatmenu{}{}', '[#1 Button: #2]');
 # Note that hyperref uses keyval + kvoptions
 if (my $options = LookupValue('opt@hyperref.sty')) {
   foreach my $option (@$options) {
-    if (my ($key, $value) = $option =~ /^(.*?)\s*=\s*(.*?)$/) {
+    if ($option eq 'colorlinks') {
+      RequirePackage('color'); }
+    elsif (my ($key, $value) = $option =~ /^(.*?)\s*=\s*(.*?)$/) {
       hyperref_setoption($key, $value); } } }
 
 RawTeX(<<'EoTeX');

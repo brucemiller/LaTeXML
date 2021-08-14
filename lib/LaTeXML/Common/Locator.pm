@@ -52,7 +52,7 @@ sub getShortSource {
   my ($self, $stringSource) = @_;
   my $source = $$self{source};
   return ($stringSource || 'String') unless ((defined $source) && $source);
-  if (index($source, ':') != -1) {
+  if (index($source, ':') > 1) {    # assuming legit protocols are more than 1 char (NOT windows C:/)
     my ($path, $base, $ext) = url_split($source);
     return "$base.$ext"; }
   else {
@@ -69,13 +69,13 @@ sub toString {
   return $loc; }
 
 sub stringify {
-  my ($self) = @_;
-  my $loc = defined $$self{source} ? ($$self{source} || 'Literal String') : 'Anonymous String';
-  my $rangeFrom = $self->isRange ? ' from' : '';
+  my ($self)    = @_;
+  my $loc       = defined $$self{source} ? ($$self{source} || 'Literal String') : 'Anonymous String';
+  my $rangeFrom = $self->isRange         ? ' from'                              : '';
   $loc .= ";$rangeFrom line $$self{fromLine}" if defined($$self{fromLine});
-  $loc .= " col $$self{fromCol}" if defined($$self{fromLine}) && defined($$self{fromCol});
+  $loc .= " col $$self{fromCol}"    if defined($$self{fromLine}) && defined($$self{fromCol});
   $loc .= " to line $$self{toLine}" if defined($$self{toLine});
-  $loc .= " col $$self{toCol}" if defined($$self{toLine}) && defined($$self{toCol});
+  $loc .= " col $$self{toCol}"      if defined($$self{toLine}) && defined($$self{toCol});
   return $loc; }
 
 sub toAttribute {

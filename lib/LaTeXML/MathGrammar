@@ -83,24 +83,26 @@ AnythingAny :
 # a top level rule for sub and superscripts that can accept all sorts of junk.
 Subscript : <rulevar: local $MaxAbsDepth = $LaTeXML::MathParser::MAX_ABS_DEPTH>
 Subscript :
-          aSubscript   (PUNCT(?) aSubscript {[$item[1]->[0] || InvisibleComma(),$item[2]]; })(s?)
-                 { NewList($item[1],map(@$_,@{$item[2]})); }
+          aSubscript   (PUNCT(?) aSubscript {[$item[1]->[0] || InvisibleComma(),$item[2]]; })(s?) endPunct(?)
+                 { NewList($item[1],map(@$_,@{$item[2]}),$item[3]->[0]||Absent()); }
 
 Superscript : <rulevar: local $MaxAbsDepth = $LaTeXML::MathParser::MAX_ABS_DEPTH>
 Superscript :
-          aSuperscript (PUNCT(?) aSuperscript {[$item[1]->[0] || InvisibleComma(),$item[2]]; })(s?)
-                 { NewList($item[1],map(@$_,@{$item[2]})); }
+          aSuperscript (PUNCT(?) aSuperscript {[$item[1]->[0] || InvisibleComma(),$item[2]]; })(s?) endPunct(?)
+                 { NewList($item[1],map(@$_,@{$item[2]}),$item[3]->[0]||Absent()); }
 
 aSubscript :
           Formulae
         | AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
         | AnyOp
+        | OPEN aSubscript CLOSE          { Fence($item[1],$item[2],$item[3]); }
 
 aSuperscript :
           supops
         | Formulae
         | AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
         | AnyOp
+        | OPEN aSuperscript CLOSE        { Fence($item[1],$item[2],$item[3]); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Formulae  (relations or grouping of expressions or relations)
@@ -460,7 +462,8 @@ factorOpen :
         | balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1])]
         # Sequence starting  with an operator ?
         | AnyOp factorOpenExpr[$arg[0],$item[1]]
-
+        # Simple modified factors P(x=0), P(a<b<c) etc.
+        | Formula balancedClose[$arg[0]] addScripts[Fence($arg[0],$item[1],$item[2])] # For (x>1)
 # factorOpenExpr[$open,$expr];  Try to recognize various things that start
 #   this way. Need some extra productions for sets (w/possible middle '|' )
 #   and vectors; all n-ary.

@@ -17,7 +17,8 @@ use Config;
 use base qw(Exporter);
 #  @Test::More::EXPORT);
 our @EXPORT = (qw(&latexml_ok &latexml_tests),
-  qw(&process_domstring &process_xmlfile &is_strings
+  qw(&process_domstring &process_xmlfile &process_htmlfile
+    &is_strings &get_filecontent
     &convert_texfile_as_test &serialize_dom_as_test),
   @Test::More::EXPORT);
 # Note that this is a singlet; the same Builder is shared.
@@ -91,7 +92,7 @@ sub check_requirements {
       @required_packages = @$reqmts; }
     elsif (ref $reqmts eq 'HASH') {
       @required_packages = (ref $$reqmts{packages} eq 'ARRAY' ? @{ $$reqmts{packages} } : $$reqmts{packages});
-      $texlive_min       = $$reqmts{texlive_min} || 0; }
+      $texlive_min = $$reqmts{texlive_min} || 0; }
     foreach my $reqmt (@required_packages) {
       if (pathname_kpsewhich($reqmt) || pathname_find($reqmt)) { }
       else {
@@ -198,6 +199,21 @@ sub process_xmlfile {
   else {
     return process_domstring($domstring, $name, $compare_kind); } }
 
+sub process_htmlfile {
+  my ($htmlpath, $name, $compare_kind) = @_;
+  my $domstring = eval {
+    my $dom = XML::LibXML->load_html(
+      location => $htmlpath,
+      # tags such as <article> or <math> are invalid?? ignore.
+      suppress_errors => 1,
+      recover         => 1,
+    );
+    $dom && $dom->toStringHTML(); };
+  if (!$domstring) {
+    do_fail($name, "Could not convert file $htmlpath to string: " . $@); return; }
+  else {
+    return process_domstring($domstring, $name, $compare_kind); } }
+
 sub process_domstring {
   my ($domstring, $name, $compare_kind) = @_;
   if ($compare_kind && $compare_kind eq 'words') {    # words
@@ -252,21 +268,22 @@ sub daemon_ok {
   $latexmlc =~ s/^\.\///;
   my $path_to_perl = $Config{perlpath};
 
-  my $invocation = $path_to_perl . " " . join(" ", map { ("-I", $_) } @INC) . " " . $latexmlc . ' ';
+  my @invocation = ($path_to_perl, (map { ('-I', $_) } @INC), $latexmlc);
   my $timed      = undef;
   foreach my $opt (@$opts) {
     if ($$opt[0] eq 'timeout') {    # Ensure .opt timeout takes precedence
       if ($timed) { next; } else { $timed = 1; }
     }
-    $invocation .= "--" . $$opt[0] . (length($$opt[1]) ? ('="' . $$opt[1] . '" ') : (' '));
+    push(@invocation, '--' . $$opt[0] . (length($$opt[1]) ? ('=' . $$opt[1]) : ''));
   }
   if (!$generate) {
     pathname_chdir($dir);
-    my $exit_code = system($invocation);
+    my $exit_code = system(@invocation);
     if ($exit_code != 0) {
       $exit_code = $exit_code >> 8;
     }
-    is($exit_code, 0, "latexmlc invocation for test $localname: $invocation yielded $!");
+    my $target_code = $localname =~ /fatal/ ? 1 : 0;
+    is($exit_code, $target_code, "latexmlc invocation for test $localname yielded $! . \nInvocation: \"" . join('" "', @invocation) . '"');
     pathname_chdir($current_dir);
     # Compare the just generated $base.test.xml to the previous $base.xml
     if (my $teststrings = process_xmlfile("$base.test.xml", $base)) {
@@ -276,9 +293,9 @@ sub daemon_ok {
   }
   else {
     #TODO: Skip 3 tests
-    print STDERR "$invocation\n";
+    print STDERR ('"' . join('" "', @invocation) . "\"\n");
     pathname_chdir($dir);
-    system($invocation);
+    system(@invocation);
     pathname_chdir($current_dir);
     move("$base.test.xml", "$base.xml") if -e "$base.test.xml";
   }
@@ -337,8 +354,10 @@ sub texlive_version {
       $tex = $path; } }
   if (!$tex) {    # Else look for executable
     $tex = which("tex"); }
-  if ($tex) {     # If we found one, hope it has TeX Live version in it's --version
-    my $version_string = `$tex --version`;
+  if ($tex && open(my $texfh, '-|', $tex, '--version')) { # If we found one, hope it has TeX Live version in it's --version
+    my $version_string;
+    { local $/; $version_string = <$texfh>; }
+    close($texfh);
     if ($version_string =~ /TeX Live (\d+)/) {
       $texlive_version = int($1); }
     else {

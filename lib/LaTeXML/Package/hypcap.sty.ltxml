@@ -1,0 +1,26 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  hypcap.sty                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# This package fixes up caption links for pdf using hyperref
+# LaTeXML shouldn't have an issue with those, so we don't need to do anything.
+
+DefMacro('\capstart',      '');
+DefMacro('\hyecapspace',   '0.5\baselineskip');
+DefMacro('\hypcapredef{}', '');
+DefConditional('\ifcapstart');
+
+1;

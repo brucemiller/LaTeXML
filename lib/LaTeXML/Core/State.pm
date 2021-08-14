@@ -89,15 +89,15 @@ sub new {
   my ($class, %options) = @_;
   my $self = bless {    # table => {},
     value   => {}, meaning  => {}, stash  => {}, stash_active => {},
-    catcode => {}, mathcode => {}, sfcode => {}, lccode       => {}, uccode => {}, delcode => {},
+    catcode => {}, mathcode => {}, sfcode => {}, lccode => {}, uccode => {}, delcode => {},
     undo    => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
-    stomach => $options{stomach},       model    => $options{model} }, $class;
+    stomach => $options{stomach}, model => $options{model} }, $class;
   # Note that "100" is hardwired into TeX, The Program!!!
   $$self{value}{MAX_ERRORS} = [100];
   # Standard TeX units, in scaled points
   $$self{value}{UNITS} = [{
-      pt => 65536,                    pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
-      cm => 72.27 * 65536 / 2.54,     mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
+      pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
+      cm => 72.27 * 65536 / 2.54, mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
       cc => 12 * 1238 * 65536 / 1157, sp => 1,
       px => 72.27 * 65536 / 72,    # Assume px=bp ?
   }];
@@ -127,6 +127,15 @@ sub new {
 
 sub assign_internal {
   my ($self, $table, $key, $value, $scope) = @_;
+  # hotcode lookupDefinition for \globaldefs,
+  # since this is called extremely often and should be highly standardized
+  if (my $globaldefs = $$self{value}{'\globaldefs'}) {
+    if (my $global_value = $$globaldefs[0][0]) {
+      # magic TeX register override: \globaldefs
+      if ($global_value == 1) {
+        $scope = 'global'; }
+      elsif ($global_value == -1) {
+        $scope = 'local'; } } }
   $scope = ($$self{prefixes}{global} ? 'global' : 'local') unless defined $scope;
   if (exists $$self{tracing_definitions}{$key}) {
     Debug("ASSIGN $key in $table " . ($scope ? "($scope)" : '') . " => " .
@@ -413,6 +422,26 @@ sub lookupExpandable {
     return $defn; }
   return; }
 
+# Whether token must be wrapped as dont_expand
+sub isDontExpandable {
+  my ($self, $token) = @_;
+  # Basically: a CS or Active token that is either not defined, or is expandable
+  # (but not \let to a token)
+  return unless $token;
+  my $defn;
+  my $entry;
+  #  my $inmath = $self->lookupValue('IN_MATH');
+  my $cc = $$token[1];
+  if ($CATCODE_ACTIVE_OR_CS[$cc]) {
+    my $lookupname = $$token[0];
+    if ($lookupname
+      && ($entry = $$self{meaning}{$lookupname})
+      && ($defn  = $$entry[0])) {
+      return ((ref $defn) ne 'LaTeXML::Core::Token') && $$defn{isExpandable}; }
+    else {
+      return 1; } }
+  return; }
+
 # used for digestion
 # This recognizes mathactive tokens in math mode
 # and also looks for cs that have been let to other `executable' tokens
@@ -492,7 +521,8 @@ sub generateErrorStub {
     Error('undefined', $token, $caller, "The token " . $token->stringify . " is not defined.",
       "Defining it now as <ltx:ERROR/>");
     $self->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, $params,
-        sub { $_[0]->makeError('undefined', $cs); }),
+        sub { $_[0]->makeError('undefined', $cs); },
+        sizer => 'X'),
       'global'); }
   return $token; }
 
@@ -507,7 +537,7 @@ sub pushFrame {
 sub popFrame {
   my ($self) = @_;
   if ($$self{undo}[0]{_FRAME_LOCK_}) {
-    Fatal('unexpected', '<endgroup>', $self->getStomach,
+    Error('unexpected', '<endgroup>', $self->getStomach,
       "Attempt to pop last locked stack frame"); }
   else {
     my $undo = shift(@{ $$self{undo} });
@@ -706,18 +736,18 @@ sub getStatus {
 our $SUCCESS_MESSAGE = 'No obvious problems';
 
 sub getStatusMessage {
-  my ($self)         = @_;
-  my $status         = $$self{status};
-  my @report         = ();
-  my $warning_status = $$status{warning} && "$$status{warning} warning" . ($$status{warning} > 1 ? 's' : '');
-  my $error_status = $$status{error} && "$$status{error} error" . ($$status{error} > 1 ? 's' : '');
-  my $fatal_status = $$status{fatal} && "$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : '');
+  my ($self) = @_;
+  my $status = $$self{status};
+  my @report = ();
+  my $warning_status = $$status{warning} && colorizeString("$$status{warning} warning" . ($$status{warning} > 1 ? 's' : ''), 'warning');
+  my $error_status = $$status{error} && colorizeString("$$status{error} error" . ($$status{error} > 1 ? 's' : ''), 'error');
+  my $fatal_status = $$status{fatal} && colorizeString("$$status{fatal} fatal error" . ($$status{fatal} > 1 ? 's' : ''), 'fatal');
   my @undef        = ($$status{undefined} ? keys %{ $$status{undefined} } : ());
-  my $undef_status = @undef && (scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
-    . "[" . join(', ', @undef) . "]");
-  my @miss           = ($$status{missing} ? keys %{ $$status{missing} } : ());
-  my $missing_status = @miss && (scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
-    . "[" . join(', ', @miss) . "]");
+  my $undef_status = @undef && colorizeString(scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
+      . "[" . join(', ', @undef) . "]", 'details');
+  my @miss = ($$status{missing} ? keys %{ $$status{missing} } : ());
+  my $missing_status = @miss && colorizeString(scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
+      . "[" . join(', ', @miss) . "]", 'details');
 
   my $success_status = $SUCCESS_MESSAGE;
   if ($LaTeXML::Common::Error::IS_TERMINAL) {

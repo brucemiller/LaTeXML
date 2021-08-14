@@ -313,7 +313,7 @@ sub DecodeColor {
       $div = $dectot unless $div;
       foreach my $cp (@pallete) {
         $color = $color->add($$cp[0]->scale($$cp[1] / $div)); } }
-    else {                               # Standard Color Expression: <prefix><name><mix_expr><postfix>
+    else {    # Standard Color Expression: <prefix><name><mix_expr><postfix>
       $color = ($postfix && ($postfix =~ /!!\[(\d+)\]/)    # Note "out-of-order" effect!
         ? indexColorSeries($name, $1)
         : LookupXColor($name));
@@ -326,8 +326,8 @@ sub DecodeColor {
           $color = $color->mix(LookupXColor($nm), max(0, min(100, $pct)) / 100); } }
       $color = $color->complement if $prefix && (length($prefix) % 2);
       if ($postfix && ($postfix =~ /^!!(\++)$/)) {
-        stepColorSeries($name, length($1)); } }            # Step the series, but no effect on color
-        # Now apply any function expressions to the result.
+        stepColorSeries($name, length($1)); } }    # Step the series, but no effect on color
+                                                   # Now apply any function expressions to the result.
     if ($func_expr) {
       while ($func_expr =~ s/>(wheel|twheel),$pct_capture_re(,$div_capture_re)?//) {
         my ($func, $angle, $full) = ($1, $2, $4);
@@ -725,7 +725,11 @@ RawTeX('\@rowcolorstrue');
 DefMacroI('\showrowcolors', undef, '\hidden@noalign{\global\@rowcolorstrue}');
 DefMacroI('\hiderowcolors', undef, '\hidden@noalign{\global\@rowcolorsfalse}');
 
-DefMacro('\rownum', sub { Explode(LookupValue('Alignment')->currentRowNumber); });
+DefMacro('\rownum', sub {
+    my $alignment = LookupValue('Alignment');
+    return $alignment ?
+      Explode($alignment->currentRowNumber) :
+      T_OTHER(0); });
 
 # This doesn't happen early enough to register \hiderowcolors|\showrowcolors in the same row!
 AddToMacro('\@tabular@row@before', '\@tabular@row@before@xcolor');

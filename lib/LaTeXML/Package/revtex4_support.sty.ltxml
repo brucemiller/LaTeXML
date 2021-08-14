@@ -158,7 +158,7 @@ DefConstructor('\endnotetext[]{}',
 # Extra stuff
 Let('\case',      '\frac');
 Let('\slantfrac', '\frac');
-DefConstructor('\text{}', "<ltx:text>#1</ltx:text>", mode => 'text');
+DefConstructor('\text{}', "<ltx:text _noautoclose='true'>#1</ltx:text>", mode => 'text', locked => 1);
 
 # RevTeX3 (obsolete in RevTeX4)
 DefConstructor('\bm{}',   '#1', bounded => 1, requireMath => 1, font => { forcebold => 1 });
@@ -166,7 +166,7 @@ DefConstructor('\bbox{}', '#1', bounded => 1, requireMath => 1, font => { forceb
 DefConstructor('\pmb{}', '#1', bounded => 1, requireMath => 1,
   font => { forcebold => 1, family => 'blackboard',
     series => 'medium', shape => 'upright' });
-DefMacro('\eqnum {}', '\lx@equation@settag{\edef\theequation{#2}\lx@make@tags{equation}}');
+DefMacro('\eqnum {}', '\lx@equation@settag{\edef\theequation{#2}\lx@make@tags{equation}}', locked => 1);
 
 # Redefined in revtex3_support
 DefMacro('\mathletters',    '');
@@ -192,10 +192,10 @@ DefConstructor('\references',
     . "<ltx:biblist>",
   beforeDigest => sub {
     beforeDigestBibliography(); },
-  afterDigest => sub { beginBibliography($_[1]); });
+  afterDigest => sub { beginBibliography($_[1]); }, locked => 1);
 
 DefConstructor('\endreferences',
-  "</ltx:biblist></ltx:bibliography>");
+  "</ltx:biblist></ltx:bibliography>", locked => 1);
 # bibliography and biblist are already set as autoClose.
 
 #======================================================================
@@ -360,4 +360,63 @@ DefMacro('\sjqe',  'Sov.~J.~Quantum Elecron.~');
 DefMacro('\vr',    'Vision Res.~');
 
 #======================================================================
+
+# Some internal macros used in arXiv
+DefMacro('\@revmess{}{}', '\typeout{REVTeX #1: #2}');
+DefMacroI('\@ptsize',      undef, '0');
+DefMacroI('\ds@preprint',  undef, '\global\preprintstytrue \def\@ptsize{2}');
+DefMacroI('\ds@twoside',   undef, '\@twosidetrue \@mparswitchtrue');
+DefMacroI('\ds@draft',     undef, '\overfullrule 5\p@');
+DefMacroI('\ds@amsfonts',  undef, '\@amsfontstrue');
+DefMacroI('\ds@amssymb',   undef, '\@amssymbolstrue');
+DefMacroI('\ds@titlepage', undef, '\@titlepagefalse');
+DefMacroI('\ds@twocolumn', undef, '\@twocolumntrue');
+DefMacroI('\ds@tighten',   undef, '\@tightenlinestrue');
+DefMacroI('\ds@floats',    undef, '\@floatstrue');
+DefMacroI('\ds@eqsecnum',  undef, '\global\secnumberstrue');
+
+DefMacroI('\@journal', undef, 'pra');
+DefMacroI('\ds@pra',   undef, '\def\@journal{pra}');
+DefMacroI('\ds@prb',   undef, '\def\@journal{prb}');
+DefMacroI('\ds@prc',   undef, '\def\@journal{prc}');
+DefMacroI('\ds@prd',   undef, '\def\@journal{prd}');
+DefMacroI('\ds@pre',   undef, '\def\@journal{pre}');
+DefMacroI('\ds@prl',   undef, '\def\@journal{prl}');
+DefMacroI('\ds@josaa', undef, '\def\@journal{josaa}');
+DefMacroI('\ds@josab', undef, '\def\@journal{josab}');
+DefMacroI('\ds@aplop', undef, '\def\@journal{aplop}');
+
+Let('\ds@manuscript', '\ds@preprint');
+
+RawTeX(<<'EOL');
+\@namedef{ds@11pt}{\def\@ptsize{1}}
+\@namedef{ds@12pt}{\def\@ptsize{2}}
+\newif\ifpreprintsty \global\preprintstyfalse
+\@namedef{ds@aps}{\def\@society{aps}}
+\@namedef{ds@osa}{\def\@society{osa}}
+
+\newif\if@amsfonts  \@amsfontsfalse
+\newif\if@amssymbols  \@amssymbolsfalse
+\newif\if@titlepage  \@titlepagefalse
+\newif\if@tightenlines \@tightenlinesfalse
+\newif\if@floats \@floatsfalse
+\newif\ifsecnumbers \global\secnumbersfalse
+\newif\if@amsfonts  \@amsfontsfalse
+\newif\if@amssymbols  \@amssymbolsfalse
+\newif\if@titlepage  \@titlepagefalse
+\newif\if@tightenlines \@tightenlinesfalse
+\newif\if@floats \@floatsfalse
+\newif\ifsecnumbers \global\secnumbersfalse
+EOL
+
+DefMacroI('\ds@amsfonts',  undef, '\@amsfontstrue');
+DefMacroI('\ds@amssymb',   undef, '\@amssymbolstrue');
+DefMacroI('\ds@titlepage', undef, '\@titlepagefalse');
+DefMacroI('\ds@twocolumn', undef, '\@twocolumntrue');
+DefMacroI('\ds@tighten',   undef, '\@tightenlinestrue');
+DefMacroI('\ds@floats',    undef, '\@floatstrue');
+DefMacroI('\ds@eqsecnum',  undef, '\global\secnumberstrue');
+
+#======================================================================
+
 1;

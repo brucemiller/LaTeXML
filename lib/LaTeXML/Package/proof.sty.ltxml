@@ -1,0 +1,82 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  proof.sty                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# The premises can be separated by "&" (which is NOT being used for alignment!)
+DefMath('\lx@proof@logical@and', "\x{2003}", meaning => 'and', role => 'ADDOP');
+DefMacro('\lx@proof@split@and{}', sub {
+    my ($gullet, $tokens) = @_;
+    my @clauses = SplitTokens($tokens, T_ALIGN);
+    if (!@clauses) {
+      return; }
+    elsif (scalar(@clauses) == 1) {
+      return Tokens(@{ $clauses[0] }); }
+    else {
+      return I_apply(undef, T_CS('\lx@proof@logical@and'), map { Tokens(@$_); } @clauses); } });
+
+# An extremely contrived stack of premises and conclusion.
+# The mess is since they can be separated by a single or double bar, or \vdots or even a label
+# the bars should be stretched to the full width.
+# The label can also be to the side.
+# Args are $top, $middle (if any), $bottom, $sidelabel (if any)
+DefConstructor('\lx@proof@stack{}{}{}{}',
+  "<ltx:XMArray vattach='bottom'>"
+    . "<ltx:XMRow><ltx:XMCell>#1</ltx:XMCell>"
+    . "?#4(<ltx:XMCell rowspan='3'>#4</ltx:XMCell>)()"    # Should vertically center
+    . "</ltx:XMRow>"
+    . "?#2(<ltx:XMRow><ltx:XMCell>#2</ltx:XMCell></ltx:XMRow>)()"
+    . "<ltx:XMRow><ltx:XMCell>#3</ltx:XMCell>"
+    . "</ltx:XMRow>"
+    . "</ltx:XMArray>",
+  afterDigest => sub {
+    my ($doc, $whatsit) = @_;
+    my ($top, $op, $bot) = $whatsit->getArgs;
+    if ($top->getWidth->valueOf > $bot->getWidth->valueOf) {
+      $bot->setProperty(stretchto => $top->getWidth); }
+    return; });
+
+# Put 1 or 2 bars over the conclusion (possibly stretched)
+DefConstructor('\lx@proof@bars OptionalMatch:= {}',
+  "<ltx:XMApp><ltx:XMTok role='OVERACCENT'>\x{203E}</ltx:XMTok>"
+    . "?#1(<ltx:XMApp><ltx:XMTok role='OVERACCENT'>\x{203E}</ltx:XMTok>)()"
+    . "<ltx:XMWrap width='#stretchto'>#2</ltx:XMWrap>"
+    . "?#1(</ltx:XMApp>)()"
+    . "</ltx:XMApp>");
+
+# \infer (* or =) [label] {lower}{uppers}
+DefMacro('\infer OptionalMatch:* OptionalMatch:= [] {}{}', sub {
+    my ($gullet, $multistep, $double, $label, $lower, $uppers) = @_;
+    my $meaning = ($multistep ? "multistep-infer" : "infer");
+    my $cmd     = I_dual({},
+      I_apply({}, I_symbol({ meaning => $meaning }), I_arg(1), I_arg(2)),
+      ($multistep
+        ? Invocation(T_CS('\lx@proof@stack'), I_arg(2), T_CS('\vdots'), I_arg(1), I_arg(3))
+        : Invocation(T_CS('\lx@proof@stack'), I_arg(2), undef,
+          Invocation(T_CS('\lx@proof@bars'), $double, I_arg(1)),
+          I_arg(3))),
+      $lower, Invocation(T_CS('\lx@proof@split@and'), $uppers), $label);
+    return (LookupValue('IN_MATH') ? $cmd : Tokens(T_MATH, $cmd, T_MATH)); });
+
+# Similar, no bars, label (if any) replaces the bars
+DefMacro('\deduce [] {}{}', sub {
+    my ($gullet, $label, $lower, $uppers) = @_;
+    my $meaning = "deduce";
+    my $cmd     = I_dual({},
+      I_apply({}, I_symbol({ meaning => $meaning }), I_arg(1), I_arg(2)),
+      Invocation(T_CS('\lx@proof@stack'), I_arg(2), $label, I_arg(1)),
+      $lower, Invocation(T_CS('\lx@proof@split@and'), $uppers));
+    return (LookupValue('IN_MATH') ? $cmd : Tokens(T_MATH, $cmd, T_MATH)); });
+1;

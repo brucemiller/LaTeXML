@@ -101,4 +101,14 @@ False: \def\clause{TT}\if Y\innerif True\else False\fi
 
 True: \def\clause{TF}\if Y\innerif True\else False\fi
 
+% TeXbook, exercise 20.11, test \if with \let
+\def\a{*}
+\let\b=*
+\def\c{/}
+
+Expecting (True True False):
+\if*\a True \else False \fi
+\if\a\b True \else False \fi
+\if\a\c True \else False \fi
+
 \end{document}

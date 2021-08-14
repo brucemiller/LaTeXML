@@ -253,7 +253,7 @@ sub encodeQName {
 # NOTE: Reconsider how _Capture_ & _WildCard_ should be integrated!?!
 sub getNodeQName {
   my ($self, $node) = @_;
-  my $type = $node->nodeType;
+  my $type = ($node ? $node->nodeType : -1);
   if ($type == XML_TEXT_NODE) {
     return '#PCDATA'; }
   elsif ($type == XML_DOCUMENT_NODE) {

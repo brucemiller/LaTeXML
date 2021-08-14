@@ -1,0 +1,61 @@
+\documentclass{article}
+\usepackage{xcolor}
+\usepackage{diagbox}
+\begin{document}
+
+\par\noindent
+\begin{tabular}{l|c|}
+  \hline
+NW & \diagbox[dir=NW]{A}{B} \\\hline
+SE & \diagbox[dir=SE]{A}{B} \\\hline
+SW & \diagbox[dir=SW]{A}{B} \\\hline
+NE & \diagbox[dir=NE]{A}{B} \\\hline
+\end{tabular}
+\par\noindent
+\begin{tabular}{l|c|}
+  \hline
+NW & \diagbox[dir=NW]{A}{M}{B} \\\hline
+SE & \diagbox[dir=SE]{A}{M}{B} \\\hline
+SW & \diagbox[dir=SW]{A}{M}{B} \\\hline
+NE & \diagbox[dir=NE]{A}{M}{B} \\\hline
+\end{tabular}
+
+\par\noindent
+\begin{tabular}{l|c|}
+  \hline
+NW & \diagbox[dir=NW]{Word\\A}{Word\\M}{Word\\B} \\\hline
+SE & \diagbox[dir=SE]{Word\\A}{Word\\M}{Word\\B} \\\hline
+SW & \diagbox[dir=SW]{Word\\A}{Word\\M}{Word\\B} \\\hline
+NE & \diagbox[dir=NE]{Word\\A}{Word\\M}{Word\\B} \\\hline
+\end{tabular}
+
+Slashbox compatibility
+\par\noindent
+\begin{tabular}{|c|c|c|} \hline
+\slashbox[2cm]{num}{alpha}
+& A & B \\\hline
+1 & A1 & B1 \\\hline
+2 & A2 & B2 \\\hline
+\end{tabular}
+\par\noindent
+\begin{tabular}{|c|c|c|} \hline
+\backslashbox[2cm]{num}{alpha}
+& A & B \\\hline
+1 & A1 & B1 \\\hline
+2 & A2 & B2 \\\hline
+\end{tabular}
+
+More exotic options
+\par\noindent
+\begin{tabular}{l|c|}
+  \hline
+\diagbox[dir=NW,width=1in,height=1in,linewidth=2pt,linecolor=blue,font=\itshape]{Head\\A}{Head\\B} & B\\\hline
+A & AB
+\end{tabular}
+\begin{tabular}{l|c|}
+  \hline
+\diagbox[dir=NW,innerwidth=1in,linewidth=2pt,linecolor=blue,font=\itshape]{Head\\A}{Head\\B} & B\\\hline
+A & AB
+\end{tabular}
+
+\end{document}

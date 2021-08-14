@@ -87,4 +87,38 @@ INVERT False \unless\ifalwaysfalse should never be true \else is always false\fi
 
 % You cannot use \unless before \ifcase!
 % You cannot use \unless before a macro (even if it expands to \if...)
+
+\section{Registers}
+\newbox\mybox
+\newdimen\mydima
+\newdimen\mydimb
+\def\mywidth{\wd\mybox}
+\protected\def\protectedmywidth{\wd\mybox}
+\setbox\mybox\hbox{Some Text}
+\the\mywidth
+
+\mydima\mywidth
+Width:\the\mydima
+
+\mydimb\protectedmywidth
+Width:\the\mydimb
+
+\input{etex-mydim}\mywidth
+Width:\the\mydima
+
+\def\mypts{pt}
+\def\myminus{-}
+\def\myone{1}
+\def\mytwo{2}
+\mydima\myminus\myone\mytwo\mypts\relax
+Width:\the\mydima
+
+\protected\def\protectedmypts{pt}
+\protected\def\protectedmyminus{-}
+\protected\def\protectedmyone{1}
+\protected\def\protectedmytwo{2}
+\mydima\protectedmyminus\protectedmyone\protectedmytwo\protectedmypts\relax
+Width:\the\mydima
+
+\end{document}
 \end{document}

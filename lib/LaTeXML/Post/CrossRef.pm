@@ -657,12 +657,12 @@ sub generateRef {
         $pending = $$self{ref_join}; } # inside/outside this brace determines if text can START with the join.
       $id = $entry->getValue('parent'); } }
   if (!@stuff) {                       # Try first child for a title-less document?
-    my $entry = $$self{db}->lookup("ID:$reqid");
-    if (($entry->getValue('type') || '') eq 'ltx:document') {
-      foreach my $c (@{ $entry->getValue('children') }) {
-        if (my $centry = $$self{db}->lookup("ID:$c")) {
-          if (my @s = $self->generateRef_aux($doc, $centry, $reqshow)) {
-            push(@stuff, @s); last; } } } } }
+    if (my $entry = $$self{db}->lookup("ID:$reqid")) {
+      if (($entry->getValue('type') || '') eq 'ltx:document') {
+        foreach my $c (@{ $entry->getValue('children') }) {
+          if (my $centry = $$self{db}->lookup("ID:$c")) {
+            if (my @s = $self->generateRef_aux($doc, $centry, $reqshow)) {
+              push(@stuff, @s); last; } } } } } }
   if (@stuff) {
     return @stuff; }
   else {
