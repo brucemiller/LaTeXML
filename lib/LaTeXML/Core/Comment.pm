@@ -28,7 +28,7 @@ sub getWidth       { return Dimension(0); }
 sub getHeight      { return Dimension(0); }
 sub getTotalHeight { return Dimension(0); }
 sub getDepth       { return Dimension(0); }
-sub getSize        { return (Dimension(0), Dimension(0), Dimension(0)); }
+sub getSize { return (Dimension(0), Dimension(0), Dimension(0), Dimension(0), Dimension(0), Dimension(0)); }
 
 #======================================================================
 1;
