@@ -1160,6 +1160,31 @@ DefEnvironment('{abstract}', '',
         @LaTeXML::LIST]);
     DefMacroI('\maybe@end@abstract', undef, Tokens(), scope => 'global');
     return; },
+  afterConstruct => sub {
+    my ($document) = @_;
+    my $pre_element = $document->getNode->lastChild;
+    if ($pre_element &&
+        $document->getNodeQName($pre_element) eq 'ltx:para' &&
+        $pre_element->getAttribute('align') eq 'center') {
+      # if there is a centered ltx_para at the current doc insertion point,
+      # we appear to be in a classic titlepage with raw presentation boxes
+      # for the frontmatter
+      #
+      # for now do the minimal partial patch: 
+      #    move the abstract after the nicely centered paragraph
+      #    to avoid abstracts appearing before titles and authors.
+      my $maybe_abstract=$pre_element;
+      while ($maybe_abstract = $maybe_abstract->previousSibling) {
+        if ($maybe_abstract->nodeType == XML_ELEMENT_NODE) {
+          # TODO: Each of the element nodes that we skip over here
+          #       would be a good candidate for structured metadata recovery
+          #       title, author, affiliation, ... usually all before abstract
+          last if $document->getNodeQName($maybe_abstract) eq 'ltx:abstract'; } }
+      # If we found the abstract, flush it to the current doc end.
+      if ($maybe_abstract) {
+        $maybe_abstract->unbindNode;
+        $pre_element->addSibling($maybe_abstract); } }
+    return; },
   locked => 1, mode => 'text');
 # If we get a plain \abstract, instead of an environment, look for \abstract{the abstract}
 AssignValue('\abstract:locked' => 0);    # REDEFINE the above locked definition!
