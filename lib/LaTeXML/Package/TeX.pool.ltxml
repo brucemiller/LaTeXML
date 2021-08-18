@@ -3262,7 +3262,8 @@ DefConstructorI('\normal@par', undef, sub {
 Let('\par', '\normal@par');
 # OTOH, sometimes \par is just a minimalistic "start a new line"
 # This should be closer for those cases.
-DefConstructorI('\inner@par', undef, sub {
+# BUT! In the cases where an elaborate \\[0.4cm] or such sneaks in, gracefully ignore its args.
+DefConstructor('\inner@par OptionalMatch:* [Glue]', sub {
     if    ($_[0]->maybeCloseElement('ltx:p')) { }
     elsif ($_[0]->canContain($_[0]->getNode, 'ltx:break')) {
       $_[0]->insertElement('ltx:break'); } },
