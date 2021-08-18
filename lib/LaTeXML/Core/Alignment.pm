@@ -294,17 +294,21 @@ sub beAbsorbed {
   my $body   = $self->getBody;
   my $ismath = $$self{isMath};
   $self->normalizeAlignment;
+  my @rows = @{ $$self{rows} };
+  return unless @rows;
   # We _should_ attach boxes to the alignment and rows,
   # but (ATM) we've only got sensible boxes for the cells.
   &{ $$self{openContainer} }($document, ($attr ? %$attr : ()),
-    cwidth => $$self{cwidth}, cheight => $$self{cheight}, cdepth => $$self{cdepth},
+    cwidth       => $$self{cwidth}, cheight => $$self{cheight}, cdepth => $$self{cdepth},
+    rowheights   => $$self{rowheights},
+    columnwidths => $$self{columnwidths},
   );
-  foreach my $row (@{ $$self{rows} }) {
+  foreach my $row (@rows) {
     my $vpad = $$row{padding};
     &{ $$self{openRow} }($document,
       'xml:id' => $$row{id}, tags => $$row{tags},
       # Which properties do we expose to the constructor?
-      x => $$row{x}, y => $$row{y},
+      x      => $$row{x}, y => $$row{y},
       cwidth => $$row{cwidth}, cheight => $$row{cheight}, cdepth => $$row{cdepth},
     );
     if (my $before = $$row{before}) {
@@ -316,7 +320,7 @@ sub beAbsorbed {
       $border =~ s/(.) \1/$1$1/g;
       my $empty = $$cell{empty} || !$$cell{boxes} || !scalar($$cell{boxes}->unlist);
       $$cell{cell} = &{ $$self{openColumn} }($document,
-        align => $$cell{align}, width => $$cell{width},
+        align   => $$cell{align}, width => $$cell{width},
         vattach => $$cell{vattach},
         ($vpad                       ? (cssstyle => 'padding-bottom:' . ToString($vpad))     : ()),
         (($$cell{colspan} || 1) != 1 ? (colspan  => $$cell{colspan})                         : ()),
@@ -324,7 +328,7 @@ sub beAbsorbed {
         ($border                     ? (border   => $border)                                 : ()),
         ($$cell{thead}               ? (thead    => join(' ', sort keys %{ $$cell{thead} })) : ()),
         # Which properties do we expose to the constructor?
-        x => $$cell{x}, y => $$cell{y},
+        x      => $$cell{x}, y => $$cell{y},
         cwidth => $$cell{cwidth}, cheight => $$cell{cheight}, cdepth => $$cell{cdepth},
       );
       if (!$empty) {
@@ -402,21 +406,27 @@ sub normalize_cell_sizes {
         my ($w, $h, $d, $cw, $ch, $cd)
           = $boxes->getSize(align => $$cell{align}, width => $$cell{width},
           vattach => $$cell{vattach});
+        Debug("CELL (" . join(',', map { $_ . "=" . ToString($$cell{$_}); } qw(align width vattach))
+            . ") size " . showSize($cw, $ch, $cd)
+            . " Boxes=" . ToString($boxes)) if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
         my $empty =
           ((!$cw) || $cw->valueOf < 1)
           || (((!$ch) || $ch->valueOf < 1)
           && ((!$cd) || $cd->valueOf < 1))
           || !(grep { !$_->getProperty('isSpace'); } $boxes->unlist);
         $$cell{cwidth}  = $cw;
-        $$cell{cheight} = $ch;                 # + 1/4 base ???
+        $$cell{cheight} = $ch;
         $$cell{cdepth}  = $cd;
         $$cell{empty}   = $empty;
         $$cell{align}   = undef if $empty; }
       else {
         $$cell{empty} = 1; }
-
   } }
   return; }
+
+sub showSize {
+  my ($self) = @_;
+  return '[' . ToString($self->getWidth) . ' x ' . ToString($self->getHeight) . ' + ' . ToString($self->getDepth) . ']'; }
 
 sub normalize_sum_sizes {
   my ($self)     = @_;
@@ -473,7 +483,15 @@ sub normalize_sum_sizes {
     $$row{cheight} = Dimension($rowheights[$i]);
     for (my $j = 0 ; $j < $ncols ; $j++) {
       my $cell = $cols[$j];
-      $$cell{x} = $colpos[$j]; $$cell{y} = $rowpos[$i]; } }
+      $$cell{x} = $colpos[$j]; $$cell{y} = $rowpos[$i];
+      Debug("CELL[$j,$i] " . showSize($$cell{cwidth}, $$cell{cheight}, $$cell{cdepth})
+          . " @ " . ToString($$cell{x}) . "," . ToString($$cell{y}))
+        if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
+  } }
+  $$self{columnwidths} = [map { Dimension($_); } @colwidths];
+  $$self{rowheights}   = [map { Dimension($_); } @rowheights];
+  Debug("ALIGNMENT " . showSize($$self{cwidth}, $$self{cheight}, $$self{cdepth}))
+    if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
   return; }
 
 # Mark any cells that are covered by rowspan or colspan
@@ -1016,7 +1034,8 @@ sub alignment_test_headers {
     my $matched = 1;
     for (my $r = 1 ; $r < $nrep ; $r++) {
       $matched &&= alignment_match_head(0, $r * $nhead, $nhead); }
-    Debug("Repeated headers: " . ($matched ? "Matched=> Fail" : "Nomatch => Succeed")) if $LaTeXML::DEBUG{alignment};
+    Debug("Repeated headers: " . ($matched ? "Matched=> Fail" : "Nomatch => Succeed"))
+      if $LaTeXML::DEBUG{alignment};
     return if $matched; }
 
   # And find a following grouping of data lines.
