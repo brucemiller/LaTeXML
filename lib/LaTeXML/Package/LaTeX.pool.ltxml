@@ -4642,8 +4642,6 @@ sub before_picture {
 sub after_picture {
   return; }
 
-# Since these ultimately generate external resources, it can be useful to have a handle on them.
-Tag('ltx:graphics', afterOpen => sub { GenerateID(@_, 'g'); });
 # Ugh... Is this safe?  Apparently, picture stuff is allowed w/o a {picture} environment???
 Tag('ltx:picture', autoOpen => 0.5, autoClose => 1,
   afterOpen  => sub { GenerateID(@_, 'pic'); },
