@@ -2162,7 +2162,7 @@ DefConstructor('\hrule RuleSpecification',
     my $depth  = GetKeyVal($dims, 'depth');
     $whatsit->setProperties(width  => $width,  cwidth  => $width)  if $width;
     $whatsit->setProperties(height => $height, cheight => $height) if $height;
-    $whatsit->setProperties(depth  => $depth,  dcepth  => $depth)  if $depth;
+    $whatsit->setProperties(depth  => $depth,  cdepth  => $depth)  if $depth;
     my $w = ($width  ? $width->ptValue  : undef);
     my $h = ($height ? $height->ptValue : undef);
     my $d = ($depth  ? $depth->ptValue  : undef);
@@ -2795,9 +2795,15 @@ sub afterCellUnlist {
 #======================================================================
 DefConstructor('\halign BoxSpecification',
   "#alignment",
-  reversion   => '\halign #1{#2\cr#3}',
-  bounded     => 1,
-  sizer       => '#1',
+  reversion => sub {
+    my ($whatsit, $spec) = @_;
+    my $template  = $whatsit->getProperty('template');
+    my $alignment = $whatsit->getProperty('alignment');
+    Tokens(T_CS('\halign'), Revert($spec), T_BEGIN, Revert($template), T_CS('\cr'),
+      Revert($alignment), T_END); },
+  bounded => 1,
+  #  sizer       => '#1',
+  sizer       => sub { $_[0]->getProperty('alignment')->getSize; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     $stomach->bgroup;    # This will be closed by the \halign's closing }  (or will it?)
@@ -2821,16 +2827,19 @@ sub parseHAlignTemplate {
   my $repeated = 0;
   my @nonreps  = ();
   my $tabskip;         # Need to use this somehow!
+  my @tokens = ();
   ## Only expand certain things; See TeX book p.238
   local $LaTeXML::ALIGN_STATE = 1000000;
   while ($t = $gullet->readToken) {
     if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
       $gullet->readKeyword('=');
-      $tabskip = $gullet->readGlue; }
+      $tabskip = $gullet->readGlue;
+      push(@tokens, $t, $tabskip); }
     elsif ($t->equals(T_CS('\span'))) {    # ex-span-ded next token.
       $gullet->unread($gullet->readXToken(0)); }
     elsif ($t->equals(T_PARAM)) {          # Found the template's column slot
-      $before = 0; }
+      $before = 0;
+      push(@tokens, $t); }
     elsif ($t->equals(T_ALIGN)
       || $t->equals(T_CS('\cr')) || $t->equals(T_CS('\crcr'))) {    # End the column
       if ($before) {                                                # Leading & ?
@@ -2842,16 +2851,22 @@ sub parseHAlignTemplate {
             before => Tokens(beforeCellUnlist(Tokens(@pre))),
             after  => Tokens(afterCellUnlist(Tokens(@post))) });
         @pre = @post = (); $before = 1; }
-      last unless $t->equals(T_ALIGN); }
+      last unless $t->equals(T_ALIGN);
+      push(@tokens, $t); }
     elsif ($before) {    # Other random tokens go into the column's pre-template
-      push(@pre, $t) if @pre || !$t->equals(T_SPACE); }
+      push(@pre,    $t) if @pre || !$t->equals(T_SPACE);
+      push(@tokens, $t); }
     else {               # Or the post-template
-      push(@post, $t) if @post || !$t->equals(T_SPACE); } }
+      push(@post,   $t) if @post || !$t->equals(T_SPACE);
+      push(@tokens, $t); } }
   # Now create & return the template object
-  return LaTeXML::Core::Alignment::Template->new(
+  my $template = LaTeXML::Core::Alignment::Template->new(
     ($repeated
       ? (columns => [@nonreps], repeated => [@cols])
-      : (columns => [@cols]))); }
+      : (columns => [@cols])),
+    tokens => [@tokens]);
+  $whatsit->setProperty(template => $template);
+  return $template; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # And the general alignment processing.
