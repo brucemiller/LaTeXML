@@ -217,7 +217,7 @@ sub getSize {
       . "\n assigned : " . _showsize($$props{width},  $$props{height},  $$props{depth})
       . "\n calculated: " . _showsize($$props{cwidth}, $$props{cheight}, $$props{cdepth})
       . "\n =>: " . _showsize($$props{width} || $$props{cwidth}, $$props{height} || $$props{cheight}, $$props{depth} || $$props{cdepth})
-      . "\n   Of " . Stringify($self)) if $LaTeXML::DEBUG{size};
+      . "\n   Of " . ToString($self)) if $LaTeXML::DEBUG{size};
   return ($$props{width} || $$props{cwidth},
     $$props{height}  || $$props{cheight},
     $$props{depth}   || $$props{cdepth},
