@@ -19,12 +19,10 @@ use LaTeXML::Package;
 #======================================================================
 
 # load the original xkeyval
-InputDefinitions('xkeyval', type => 'sty', noltxml => 1)
-  || Warn(":missing:xkeyval.sty Couldn't find xkeyval.sty");
+InputDefinitions('xkeyval', type => 'sty', noltxml => 1);
 
 # load the xkvview style file
-InputDefinitions('xkvview', type => 'sty', noltxml => 1)
-  || Warn(":missing:xkvview.sty Couldn't find xkvview.sty");
+InputDefinitions('xkvview', type => 'sty', noltxml => 1);
 
 # and hook all the things
 
@@ -142,7 +140,7 @@ DefMacro('\define@boolkey OptionalMatch:+ []{}[]{}[]{}', sub {
     my @tokens = ();
     push(@tokens, T_CS('\\ltx@orig@define@boolkey'));
     push(@tokens, $plus) if defined($plus);
-    push(@tokens, T_OTHER('['), $prefix, T_OTHER(']')) if defined($prefix);
+    push(@tokens, T_OTHER('['), $prefix,      T_OTHER(']')) if defined($prefix);
     push(@tokens, T_BEGIN,      $keyset,      T_END);
     push(@tokens, T_OTHER('['), $macroprefix, T_OTHER(']')) if defined($macroprefix);
     push(@tokens, T_BEGIN,      $key,         T_END);

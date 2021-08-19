@@ -26,9 +26,7 @@ use LaTeXML::Package;
 # I _think_ this implementation fairly completely captures pgfkeys logic.
 #======================================================================
 # To disable the LaTeXML binding, uncomment the following bit of code
-InputDefinitions('pgfkeys.code', type => 'tex', noltxml => 1)
-  || Warn(":missing:pgfkeys.code.tex Couldn't find pgfkeys.code.tex");
-###Info('latexml', 'pgfkeys', undef, "Skipping LaTeXML binding for pgfkeys");
+InputDefinitions('pgfkeys.code', type => 'tex', noltxml => 1);
 1;
 
  __END__

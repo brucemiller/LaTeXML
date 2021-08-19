@@ -19,8 +19,7 @@ use warnings;
 
 #======================================================================
 # Load pgf's TeX code for util-common, first
-InputDefinitions('pgfutil-common', type => 'tex', noltxml => 1)
-  || Warn(":missing:pgfutil-common.tex Couldn't find pgfutil-common.tex");
+InputDefinitions('pgfutil-common', type => 'tex', noltxml => 1);
 
 # Overwrite macros of interest
 
