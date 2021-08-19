@@ -16,7 +16,8 @@ use warnings;
 use LaTeXML::Package;
 
 #======================================================================
-InputDefinitions('pgfplotstable', type => 'sty', noltxml => 1)
-  || Warn(":missing:pgfplotstable.sty Couldn't find pgfplotstable.sty");
+InputDefinitions('pgfplotstable', type => 'sty', noltxml => 1);
+# Avoid warning...
+RawTeX('\pgfplotsset{compat=1.17}');
 
 1;
