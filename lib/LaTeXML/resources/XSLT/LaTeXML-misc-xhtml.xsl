@@ -161,15 +161,15 @@
           <xsl:value-of select="@imageheight"/>
         </xsl:attribute>
       </xsl:if>
+      <xsl:if test="ancestor::ltx:figure/ltx:caption">
+        <xsl:attribute name="aria-labelledby">
+          <xsl:value-of select="ancestor::ltx:figure/ltx:caption/@fragid"/>
+        </xsl:attribute>
+      </xsl:if>
       <xsl:choose>
         <xsl:when test="@description">
           <xsl:attribute name='alt'>
             <xsl:value-of select="@description"/>
-          </xsl:attribute>
-        </xsl:when>
-        <xsl:when test="ancestor::ltx:figure/ltx:caption">
-          <xsl:attribute name='alt'>
-            <xsl:value-of select="ancestor::ltx:figure/ltx:caption/text()"/>
           </xsl:attribute>
         </xsl:when>
         <xsl:otherwise>
@@ -189,17 +189,6 @@
        to preserve any interactivity. -->
   <xsl:template match="ltx:graphics[f:ends-with(@imagesrc,'.svg')='true']">
     <xsl:param name="context"/>
-    <xsl:variable name="description">
-      <xsl:choose>
-        <xsl:when test="@description">
-          <xsl:value-of select="@description"/>
-        </xsl:when>
-        <xsl:when test="ancestor::ltx:figure/ltx:caption">
-            <xsl:value-of select="ancestor::ltx:figure/ltx:caption/text()"/>
-        </xsl:when>
-        <xsl:otherwise/>
-      </xsl:choose>
-    </xsl:variable>
     <xsl:element name="object" namespace="{$html_ns}">
       <xsl:attribute name="type">image/svg+xml</xsl:attribute>
       <xsl:attribute name="data"><xsl:value-of select="f:url(@imagesrc)"/></xsl:attribute>
@@ -221,23 +210,24 @@
           <xsl:value-of select="@imageheight"/>
         </xsl:attribute>
       </xsl:if>
-      <!-- the object tag does not support alt, so use
-           aria-label instead -->
-      <xsl:if test="$description!=''">
-        <xsl:attribute name='aria-label'>
-          <xsl:value-of select="$description"/>
-        </xsl:attribute>
-      </xsl:if>
+      <xsl:choose>
+        <xsl:when test="@description">
+          <xsl:attribute name="aria-label">
+            <xsl:value-of select="@description"/>
+          </xsl:attribute>
+        </xsl:when>
+        <xsl:when test="ancestor::ltx:figure/ltx:caption">
+          <xsl:attribute name="aria-labelledby">
+            <xsl:value-of select="ancestor::ltx:figure/ltx:caption/@fragid"/>
+          </xsl:attribute>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:attribute name="aria-label"></xsl:attribute> <!--required; what else? -->
+        </xsl:otherwise>
+      </xsl:choose>
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
-      <!-- fallback text for screen reader/browser combinations
-           which do not accept the aria-label -->
-      <xsl:if test="$description!=''">
-        <xsl:element name="{f:blockelement($context,'p')}" namespace="{$html_ns}">
-          <xsl:value-of select="$description"/>
-        </xsl:element>
-      </xsl:if>
       <xsl:apply-templates select="." mode="end">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>

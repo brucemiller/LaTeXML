@@ -3166,6 +3166,8 @@ DefConstructor('\@@generic@caption[]{}', "<ltx:text class='ltx_caption'>#2</ltx:
 Tag('ltx:figure', afterClose => sub { GenerateID(@_, 'fig'); });
 Tag('ltx:table',  afterClose => sub { GenerateID(@_, 'tab'); });
 Tag('ltx:float',  afterClose => sub { GenerateID(@_, 'tab'); });
+# Assign an id to the captions for use with aria-labelledby
+Tag('ltx:caption', afterOpen => sub { GenerateID(@_, 'cap'); });
 
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
