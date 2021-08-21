@@ -2294,7 +2294,7 @@ sub AddToMacro {
   else {
     DefMacroI($cs, undef, Tokens(map { $_->unlist }
           map { (blessed $_ ? $_ : TokenizeInternal($_)) } ($defn->getExpansion, @tokens)),
-      nopackParameters => 1, scope => 'global'); }
+      nopackParameters => 1, scope => 'global', locked => $$defn{locked}); }
   return; }
 
 #======================================================================
