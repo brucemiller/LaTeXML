@@ -385,7 +385,7 @@ our $kpse_toolchain = "";
 
 sub pathname_kpsewhich {
   my (@candidates) = @_;
-  return             unless $kpsewhich;
+  return             unless $kpsewhich && @candidates;
   build_kpse_cache() unless $kpse_cache;
   foreach my $file (@candidates) {
     if (my $result = $$kpse_cache{$file}) {
