@@ -82,14 +82,12 @@ DefConstructor('\lxSVG@insertpicture{}',
   sub {
     my ($document, $content, %props) = @_;
     my $current = $document->getNode();
-    if (0 && $document->getNodeQName($current) =~ /^svg:/) {    # Already in svg:svg ?
-          # Possibly needs an svg:g with positioning ?
-          # Aparently these attributes not allowed on svg:g (in the schema we have?)
-          # Not yet ready for primetime...
+    if ($document->getNodeQName($current) =~ /^svg:/) {    # Already in svg:svg ?
+          # Seemingly this positioning is correct; otherwise inherit from context
+      my ($x, $y) = (-$props{minx}, -$props{miny});
       my $gnode = $document->openElement('svg:g',
-        width    => $props{pxwidth}, height => $props{pxheight},
-        viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
-        overflow => "visible");
+        transform   => "matrix(1 0 0 1 $x $y)",
+        _scopebegin => 1, class => 'ltx_nestedsvg');
       $document->absorb($content);
       $document->closeElement('svg:g'); }
     else {
