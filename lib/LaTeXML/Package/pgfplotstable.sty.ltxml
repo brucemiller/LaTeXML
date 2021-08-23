@@ -17,7 +17,9 @@ use LaTeXML::Package;
 
 #======================================================================
 InputDefinitions('pgfplotstable', type => 'sty', noltxml => 1);
-# Avoid warning...
-RawTeX('\pgfplotsset{compat=1.17}');
-
+# Avoid generic warnings:
+my $compat_cs  = T_CS('\pgfk@/pgfplots/compat/current');
+my $compat_val = IsDefined($compat_cs) && ToString(Expand($compat_cs));
+if (!$compat_val || $compat_val eq 'default') {
+  RawTeX('\pgfplotsset{compat=1.17}'); }
 1;
