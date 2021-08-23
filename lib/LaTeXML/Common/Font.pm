@@ -492,21 +492,12 @@ sub computeBoxesSize {
   no warnings 'recursion';
   # Flatten top-level Lists (orrr pass-thru $fillwidth ???)
   my @boxes = map { (ref $_ eq 'LaTeXML::Core::List' ? $_->unlist : $_); } @$boxes;
-  #  foreach my $box (@$boxes) {
   foreach my $box (@boxes) {
     next unless defined $box;
     next if ref $box && !$box->can('getSize');    # Care!! Since we're asking ALL args/compoments
     ## Should any %options be inherited by the contained boxes?
-    my ($w, $h, $d);
-    if (ref $box) {
-      my ($rw, $rh, $rd);
-      ($rw, $rh, $rd, $w, $h, $d) = $box->getSize(); }
-    else {
-      ($w, $h, $d) = $font->computeStringSize($box); }
-    if ((ref $box) && $box->getProperty('isOverlay')) {
-      # An overlay doesn't take space inline, but requires total space (!?!?!)
-      $minwd = max($minwd, $w); $minht = max($minht, $h); $mindp = max($mindp, $d); }
-    elsif (ref $w) {
+    my ($w, $h, $d) = (ref $box ? $box->getSize() : $font->computeStringSize($box));
+    if (ref $w) {
       $wd += $w->valueOf; }
     else {
       Warn('expected', 'Dimension', undef,
