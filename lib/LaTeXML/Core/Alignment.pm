@@ -381,7 +381,6 @@ sub normalizeAlignment {
   my ($self) = @_;
   return if $$self{normalized};
   #======================================================================
-  # Note: Cell Sizes & empty will have been set by extractAlignmentColumn
   $self->normalize_cell_sizes();
   $self->normalize_mark_spans();
   $self->normalize_prune_rows();
@@ -396,9 +395,6 @@ sub normalize_cell_sizes {
   my ($self) = @_;
   # Examines: boxes, align, vattach
   # Sets: cwidth, cheight, cdepth (per cell) & empty
-  # Whatabout: cellspan, rowspan?
-  # Can we deal with those now, or only after other normalization???
-  my $base = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->valueOf;
   foreach my $row (@{ $$self{rows} }) {
     # Do we need to account for any space in the $$row{before} or $$row{after}?
     foreach my $cell (@{ $$row{columns} }) {
@@ -414,9 +410,9 @@ sub normalize_cell_sizes {
           || (((!$ch) || $ch->valueOf < 1)
           && ((!$cd) || $cd->valueOf < 1))
           || !(grep { !$_->getProperty('isSpace'); } $boxes->unlist);
-        $$cell{cwidth}  = $cw;
-        $$cell{cheight} = $ch;
-        $$cell{cdepth}  = $cd;
+        $$cell{cwidth}  = $w || Dimension(0);
+        $$cell{cheight} = $h || Dimension(0);
+        $$cell{cdepth}  = $d || Dimension(0);
         $$cell{empty}   = $empty;
         $$cell{align}   = undef if $empty; }
       else {
@@ -425,13 +421,15 @@ sub normalize_cell_sizes {
   return; }
 
 sub showSize {
-  my ($self) = @_;
-  return '[' . ToString($self->getWidth) . ' x ' . ToString($self->getHeight) . ' + ' . ToString($self->getDepth) . ']'; }
+  my ($w, $h, $d) = @_;
+  return '[' . ToString($w) . ' x ' . ToString($h) . ' + ' . ToString($d) . ']'; }
 
 sub normalize_sum_sizes {
   my ($self)     = @_;
   my @rowheights = ();
   my @colwidths  = ();
+  my @colrights  = ();
+  my @collefts   = ();
   # Uses cell's cwidth,cheight,cdepth
   # Computes net row & column sizes & positions
   # add \baselineskip between rows? Or max the row heights with it ...
@@ -442,9 +440,13 @@ sub normalize_sum_sizes {
     my $row   = $rows[$i];
     my @cols  = @{ $$row{columns} };
     my $ncols = scalar(@cols);
-    if (my $short = $ncols - scalar(@colwidths)) {
-      push(@colwidths, map { 0 } 1 .. $short); }
-    my ($rowh, $rowd) = ($base * 0.7, $base * 0.3);
+    if (my $short = $ncols - scalar(@colwidths)) {    # Extend column arrays, if needed
+      push(@colwidths, map { 0 } 1 .. $short);
+      push(@collefts,  map { 0 } 1 .. $short);
+      push(@colrights, map { 0 } 1 .. $short); }
+    my ($rowh, $rowd) = (0, 0);
+    my ($rowt, $rowb) = (($$row{tpadding} ? $$row{tpadding}->valueOf : $base / 2),
+      ($$row{bpadding} ? $$row{bpadding}->valueOf : $base / 2));
     for (my $j = 0 ; $j < $ncols ; $j++) {
       my $cell = $cols[$j];
       next if $$cell{skipped};
@@ -452,35 +454,55 @@ sub normalize_sum_sizes {
       my $w = $$cell{cwidth};
       my $h = $$cell{cheight};
       my $d = $$cell{cdepth};
+      my $t = $$cell{tpadding};
+      my $b = $$cell{bpadding};
+      my $r = $$cell{rpadding};
+      my $l = $$cell{lpadding};
+
       if (($$cell{colspan} || 1) == 1) {
-        $colwidths[$j] = max($colwidths[$j], $w->valueOf) if $w; }
+        $colwidths[$j] = max($colwidths[$j], $w->valueOf) if $w;
+        $collefts[$j]  = max($collefts[$j],  $l->valueOf) if $l;
+        $colrights[$j] = max($colrights[$j], $r->valueOf) if $r; }
       if (($$cell{rowspan} || 1) == 1) {
         $rowh = max($rowh, $h->valueOf) if $h;
-        $rowd = max($rowd, $d->valueOf) if $d; }
+        $rowd = max($rowd, $d->valueOf) if $d;
+        $rowt = max($rowt, $t->valueOf) if $t;
+        $rowb = max($rowb, $b->valueOf) if $b; }
       else { }    # Ditto spanned rows
     }
-    $$row{height} = Dimension($rowh + 0.25 * $base);
-    $$row{depth}  = Dimension($rowd + 0.25 * $base);
+    $$row{cheight}  = Dimension($rowh);
+    $$row{cdepth}   = Dimension($rowd);
+    $$row{tpadding} = Dimension($rowt);
+    $$row{bpadding} = Dimension($rowb);
     # NOTE: Should be storing column widths to; individually, as well as per-column!
-    push(@rowheights, $rowh + $rowd + 0.5 * $base); }    # somehow our heights are way too short????
+    push(@rowheights, $rowh + $rowd); }    # somehow our heights are way too short????
   ## Now compute the positions
   my @rowpos = ();
   my @colpos = ();
   my $y      = 0;
+  # Row & column positions: left,top
   for (my $i = 0 ; $i < scalar(@rowheights) ; $i++) {
-    $rowpos[$i] = Dimension($y); $y += $rowheights[$i]; }
+    my $row = $rows[$i];
+    $y += $$row{tpadding}->valueOf if $$row{tpadding};
+    $rowpos[$i] = Dimension($y);
+    $y += $$row{cheight}->valueOf  if $$row{cheight};
+    $y += $$row{cdepth}->valueOf   if $$row{cdepth};
+    $y += $$row{bpadding}->valueOf if $$row{bpadding}; }
   my $x = 0;
   for (my $j = 0 ; $j < scalar(@colwidths) ; $j++) {
-    $colpos[$j] = Dimension($x); $x += $colwidths[$j]; }
+    $x += $collefts[$j];
+    $colpos[$j] = Dimension($x);
+    $x += $colwidths[$j];
+    $x += $colrights[$j]; }
   $$self{cwidth}  = Dimension($x);
-  $$self{cheight} = Dimension($y);
+  $$self{cheight} = Dimension($y);    # or account for vertical position of array as a whole?
   $$self{cdepth}  = Dimension(0);
   for (my $i = 0 ; $i < scalar(@rowheights) ; $i++) {
     my $row   = $rows[$i];
     my @cols  = @{ $$row{columns} };
     my $ncols = scalar(@cols);
-    $$row{x}       = $colpos[0]; $$row{y} = $rowpos[$i];
-    $$row{cheight} = Dimension($rowheights[$i]);
+    $$row{x}      = $colpos[0]; $$row{y} = $rowpos[$i];
+    $$row{cwidth} = Dimension($x);
     for (my $j = 0 ; $j < $ncols ; $j++) {
       my $cell = $cols[$j];
       $$cell{x} = $colpos[$j]; $$cell{y} = $rowpos[$i];
@@ -572,22 +594,30 @@ sub normalize_prune_rows {
       push(@filtered, $row); }
     elsif (my $next = $rows[$i + 1]) {    # Remove empty row, but copy top border to NEXT row
       if ($preserve) {
-        push(@filtered, $row); next; }    # don't remove inner rows from math
+        push(@filtered, $row); next; }    # don't remove inner rows from math EXCEPT last row!!
       my $nc = scalar(@{ $$row{columns} });
+      my ($pruneh, $pruned) = (0, 0);
       for (my $j = 0 ; $j < $nc ; $j++) {
         my $col = $$row{columns}[$j];
+        $pruneh = max($pruneh, $$col{cheight}->valueOf) if $$col{cheight};
+        $pruned = max($pruned, $$col{cdepth}->valueOf)  if $$col{cdepth};
         if (!$$row{pseudorow} && defined $$col{rowspanned}) {
           $rows[$$col{rowspanned}]{columns}[$j]{rowspan}--; }    # Decrement rowspan of spanning column
         my $border = $$col{border} || '';
         $border =~ s/[^tTbB]//g;                                 # mask all but top & bottom border
         $border =~ s/b/t/g;                                      # but convert to top
         $border =~ s/B/T/g;                                      # but convert to top
-        $$next{columns}[$j]{border} .= $border; } }              # add to next row
+        $$next{columns}[$j]{border} .= $border; }                # add to NEXT row
+          # This tpadding should be combined w/any extra rowspacing from \\[dim] !
+      $$next{tpadding} = Dimension($pruneh + $pruned) if $pruneh + $pruned; }    # And save padding.
     else {    # Remove empty last row, but copy top border to bottom of prev.
       my $prev = $filtered[-1];
       my $nc   = scalar(@{ $$row{columns} });
+      my ($pruneh, $pruned) = (0, 0);
       for (my $j = 0 ; $j < $nc ; $j++) {
         my $col = $$row{columns}[$j];
+        $pruneh = max($pruneh, $$col{cheight}->valueOf) if $$col{cheight};
+        $pruned = max($pruned, $$col{cdepth}->valueOf)  if $$col{cdepth};
         if (!$$row{pseudorow} && defined $$col{rowspanned}) {
           $rows[$$col{rowspanned}]{columns}[$j]{rowspan}--; }    # Decrement rowspan of spanning column
         my $border = $$col{border} || '';
@@ -597,7 +627,9 @@ sub normalize_prune_rows {
         my $ccol = $$prev{columns}[$j];
         if (defined $$ccol{rowspanned}) {                        # skip to spanning column if rowspanned!
           $ccol = $rows[$$ccol{rowspanned}]{columns}[$j]; }
-        $$ccol{border} .= $border; } }                           # add to previous row.
+        $$ccol{border} .= $border; }                             # add to PREVIOUS row.
+      Debug("PRUNING ROW (last) $pruneh + $pruned");
+      $$prev{bpadding} = Dimension($pruneh + $pruned) if $pruneh + $pruned; }    # And save padding.
   }
   @rows = @filtered;
   $$self{rows} = [@filtered];
@@ -613,12 +645,14 @@ sub normalize_prune_columns {
     foreach my $row (@rows) {
       my $n = scalar(@{ $$row{columns} });
       $nc = $n if $n > $nc; }
-    for (my $j = $nc - 1 ; $j >= 0 ; $j--) {
+    for (my $j = $nc - 1 ; $j >= 0 ; $j--) {    # Prune from RIGHT!
       if (!grep { (defined $$_{columns}[$j]) && !$$_{columns}[$j]{empty} } @rows) {    # Empty!
+        my $prunew = 0;
         foreach my $row (@rows) {
           if (my $col = $$row{columns}[$j]) {
             if (defined $$col{colspanned}) {
               $$row{columns}[$$col{colspanned}]{colspan}--; }    # Decrement colspan of spanning column
+            $prunew = max($prunew, $$col{cwidth}) if $$col{cwidth};
             my $border = $$col{border} || '';
             if ($j > 0) {
               my $prev = $$row{columns}[$j - 1];
@@ -642,8 +676,16 @@ sub normalize_prune_columns {
                   ? (@preserve, $$next{boxes}->unlist) : @preserve); }
             }    # Now, remove the column
             $$row{columns} = [grep { $_ ne $col } @{ $$row{columns} }];
-    } } } }
-  }
+        } }
+        if ($j) {    # If not 1st row, add right padding to previous column
+          foreach my $row (@rows) {
+            if (my $col = $$row{columns}[$j - 1]) {
+              $$col{rpadding} = Dimension($prunew); } } }
+        else {       # Else add left padding to (newly) first column
+          foreach my $row (@rows) {    # And add the padding to previous column
+            if (my $col = $$row{columns}[0]) {
+              $$col{lpadding} = Dimension($prunew); } } }
+  } } }
   return; }
 
 sub show_row {
