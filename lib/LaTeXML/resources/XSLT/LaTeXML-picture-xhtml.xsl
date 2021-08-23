@@ -90,9 +90,10 @@
        If ltx:picture/svg:svg had any of those, they got lost! -->
   <xsl:template match="ltx:picture" mode="as-svg">
     <xsl:element name="svg" namespace="{$svg_ns}">
-      <!-- copy id, class, style from parent ltx:picture -->
+      <!-- copy id, class from parent ltx:picture, but do NOT derive css style from size -->
       <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes"/>
+      <xsl:call-template name="add_classes"/>
+      <xsl:apply-templates select="." mode="add_RDFa"/>
       <!-- but copy other svg:svg attributes -->
       <xsl:for-each select="svg:svg/@*">
         <xsl:apply-templates select="." mode="copy-attribute"/>
