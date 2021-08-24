@@ -651,7 +651,7 @@
   <xsl:template name="dates">
     <xsl:param name="context"/>
     <xsl:param name="dates" select="ltx:date"/>
-    <xsl:if test="$dates and string($dates)">
+    <xsl:if test="$dates and normalize-space(string($dates))">
       <xsl:text>&#x0A;</xsl:text>
       <!-- Originally, html5 seemed to suggest we might use h2 here, but that is retracted-->
       <xsl:element name="div" namespace="{$html_ns}">
