@@ -474,6 +474,7 @@ NoteSTDERR("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . " " . $sta
 UseLog(undef);
 CheckDebuggable();
 UseSTDERR(undef);
+exit $code == 3 ? 1 : 0;
 
 #======================================================================
 # helpers
