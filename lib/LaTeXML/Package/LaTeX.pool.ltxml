@@ -1047,6 +1047,25 @@ DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
   beforeDigest => sub { Let('\thanks', '\person@thanks'); },
   bounded      => 1, mode => 'text');
 
+# Sanitize person names for (obvious) punctuation abuse at start+end
+Tag('ltx:personname', afterClose => sub {
+  my ($document, $node) = @_;
+  if (my $first = $node->firstChild) {
+    if ($first->nodeType == XML_TEXT_NODE) {
+      my $first_text = $first->data;
+      my $new_text   = $first_text;
+      $new_text =~ s/^\W+//;
+      if ($first_text ne $new_text) {
+        $first->setData($new_text); } } }
+  if (my $last = $node->lastChild) {
+    if ($last->nodeType == XML_TEXT_NODE) {
+      my $last_text = $last->data;
+      my $new_text  = $last_text;
+      $new_text =~ s/\W+$//;
+      if ($last_text ne $new_text) {
+        $last->setData($new_text); } } }
+  return; });
+
 DefConstructorI('\and', undef, " and ");
 
 AssignValue(NUMBER_OF_AUTHORS => 0);
@@ -1075,7 +1094,7 @@ DefConstructor('\lx@author@prefix', sub {
 });
 
 DefMacro('\@author',                 '\@empty');
-DefMacro('\author{}',                '\def\@author{#1}\lx@make@authors@anded{#1}', locked => 1);
+DefMacro('\author[]{}',              '\def\@author{#2}\lx@make@authors@anded{#2}', locked => 1);
 DefMacro('\lx@make@authors@anded{}', sub { andSplit(T_CS('\lx@author'), $_[1]); });
 DefPrimitive('\ltx@authors@oneline', sub {
     AssignMapping('DOCUMENT_CLASSES', ltx_authors_1line => 1);
@@ -1100,7 +1119,7 @@ DefMacroI('\maketitle', undef,
     . '\global\let\title\relax'
     . '\global\let\author\relax'
     . '\global\let\date\relax'
-    . '\global\let\and\relax');
+    . '\global\let\and\relax', locked=>1);
 
 DefMacro('\@thanks',  '\@empty');
 DefMacro('\thanks{}', '\def\@thanks{#1}\lx@make@thanks{#1}');
