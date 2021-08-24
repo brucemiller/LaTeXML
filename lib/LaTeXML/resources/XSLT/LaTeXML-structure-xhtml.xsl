@@ -673,7 +673,7 @@
 
   <xsl:template match="ltx:date" mode="intitle">
     <xsl:param name="context"/>
-    <xsl:if test="@name"><xsl:value-of select="@name"/><xsl:text>: </xsl:text></xsl:if>
+    <xsl:if test="@name"><xsl:value-of select="@name"/><xsl:text> </xsl:text></xsl:if>
     <xsl:apply-templates select="node()">
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
