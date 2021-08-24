@@ -1089,7 +1089,7 @@ sub today {
 
 # Read-only Integer registers
 {
-  my %ro_iparms = (lastpenalty => 0, inputlineno => 0, badness => 0);
+  my %ro_iparms = (lastpenalty => 0, badness => 0);
   foreach my $p (keys %ro_iparms) {
     DefRegister("\\$p", Number($ro_iparms{$p}), readonly => 1); }
 }
@@ -1424,9 +1424,11 @@ DefPrimitive('\parshape SkipMatch:= Number', sub {
     # we _could_ conceivably store this somewhere for some attempt at stylistic purpose...
     return; });
 
-#DefRegister('\inputlineno',Number(0),
-#            readonly=>1,
-#            getter=>{ Number($stomach->getGullet->????? ->lineno); });
+DefRegister('\inputlineno', Number(0),
+  getter => sub {
+    my $locator = $STATE->getStomach->getGullet->getLocator();
+    Number($locator ? $$locator{fromLine} : 0); },
+  readonly => 1);
 
 DefRegister('\badness', Number(0), readonly => 1);
 
@@ -2379,7 +2381,33 @@ DefPrimitive('\immediate', undef);
 #======================================================================
 # Remaining semi- Vertical Mode primitives in Ch.24, pp.280--281
 
-DefPrimitive('\special {}',     undef);
+DefPrimitive('\special {}', sub {
+    my ($stomach, $arg) = @_;
+    my $special_str = ToString($arg);
+    # recognize one special graphics inclusion case
+    if ($special_str =~ /\bpsfile=(.+?)(?:\s|\})/) {
+      my $graphic = $1;
+      RequirePackage('graphicx', searchpaths_only => 1);
+      $stomach->getGullet->unread(
+        Invocation(T_CS('\ltx@special@graphics'), T_OTHER($graphic))->unlist); }
+    return; });
+# adapted from graphicx.sty.ltxml
+DefConstructor('\ltx@special@graphics Semiverbatim',
+  "<ltx:graphics graphic='#path' candidates='#candidates'/>",
+  sizer      => \&image_graphicx_sizer,
+  properties => sub {
+    my ($stomach, $path) = @_;
+    $path = ToString($path); $path =~ s/^\s+//; $path =~ s/\s+$//;
+    my $searchpaths = LookupValue('GRAPHICSPATHS');
+    my @candidates  = pathname_findall($path, types => ['*'], paths => $searchpaths);
+    if (my $base = LookupValue('SOURCEDIRECTORY')) {
+      @candidates = map { pathname_relative($_, $base) } @candidates; }
+    (path => $path,
+      candidates => join(',', @candidates)); },
+  mode => 'text');
+# Since these ultimately generate external resources, it can be useful to have a handle on them.
+Tag('ltx:graphics', afterOpen => sub { GenerateID(@_, 'g'); });
+
 DefPrimitive('\penalty Number', undef);
 DefPrimitive('\kern Dimension', undef);
 DefPrimitiveI('\unpenalty', undef, undef);

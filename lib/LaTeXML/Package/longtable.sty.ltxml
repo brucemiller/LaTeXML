@@ -131,6 +131,6 @@ DefRegister('\LTPre'       => Glue(0));
 DefRegister('\LTPost'      => Glue(0));
 DefRegister('\LTcapwidth'  => Glue(0));
 DefRegister('\LTchunksize' => Number(20));
-
+Let('\setlongtables', '\relax');
 #======================================================================
 1;

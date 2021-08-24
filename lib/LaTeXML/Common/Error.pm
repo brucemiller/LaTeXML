@@ -218,10 +218,10 @@ sub _spinnerstep {    # Increment stepper
   if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $short, $start) = @{ $spinnerstack[-1] };
     $spinnerpos = ($spinnerpos + 1) % 4;
-    if ($note) {      # If note, redraw whole line.
+    if ($note) {    # If note, redraw whole line.
       print STDERR join(' ', $spinnerpre, $spinnerchar[$spinnerpos],
         (map { $$_[1]; } @spinnerstack), $note, "\x1b[0K"), $spinnerpost; }
-    else {            # overwrite previous spinner
+    else {          # overwrite previous spinner
       print STDERR $spinnerpre . ' ', $spinnerchar[$spinnerpos], $spinnerpost; } }
   return; }
 
@@ -529,7 +529,7 @@ sub perl_warn_handler {
     my ($warning, $where) = ($1, $2);
     Warn('perl', 'warn', undef, $warning, $where, @line[1 .. $#line]); }
   else {
-    Warn('perl', 'warn', undef, "Perl warning", @line); }
+    Warn('perl', 'warn', undef, @line); }
   return; }
 
 # The following handlers SHOULD report the problem,

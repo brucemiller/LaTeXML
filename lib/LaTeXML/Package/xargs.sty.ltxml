@@ -96,7 +96,7 @@ DefPrimitive('\newcommandx OptionalMatch:* DefToken [] OptionalKeyVals:xargs {}'
     my ($stomach, $star, $cs, $nargs, $defaults, $body) = @_;
     if (!isDefinable($cs)) {
       Info('ignore', $cs, $stomach,
-        "Ignoring redefinition (\\newcommandx) of '" . Stringify($cs) . "'");
+        "Ignoring redefinition (\\newcommandx) of '" . ToString($cs) . "'");
       return; }
     DefMacroI($cs, convertXArgsArgs($nargs, $defaults), $body, (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ())); });
 
@@ -111,10 +111,10 @@ DefPrimitive('\providecommandx OptionalMatch:* DefToken [] OptionalKeyVals:xargs
 
 DefPrimitive('\DeclareRobustCommandx OptionalMatch:* DefToken [] OptionalKeyVals:xargs {}', sub {
     my ($stomach, $star, $cs, $nargs, $defaults, $body) = @_;
-    my @scope = (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ());
+    my @scope    = (getXArgsIsGlobal($star, $defaults) ? (scope => 'global') : ());
     my $mungedcs = T_CS($cs->getString . ' ');
     DefMacroI($mungedcs, convertLaTeXArgs($nargs, $defaults), $body, @scope);
-    DefMacroI($cs, undef, Tokens(T_CS('\protect'), $mungedcs), @scope); });
+    DefMacroI($cs,       undef, Tokens(T_CS('\protect'), $mungedcs), @scope); });
 
 DefPrimitive('\newenvironmentx OptionalMatch:* {} [] OptionalKeyVals:xargs {}{}', sub {
     my ($stomach, $star, $cs, $nargs, $defaults, $preamble, $postamble) = @_;

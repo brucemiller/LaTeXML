@@ -40,7 +40,7 @@ DefMacro('\newrobustcmd OptionalMatch:* DefToken [Number][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (!isDefinable($cs)) {
       Info('ignore', $cs, $stomach,
-        "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'")
+        "Ignoring redefinition (\\newcommand) of '" . ToString($cs) . "'")
         unless LookupValue(ToString($cs) . ':locked'); }
     else {
       DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body, protected => 1, long => 1); }

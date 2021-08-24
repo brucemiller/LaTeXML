@@ -332,12 +332,12 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     $_[1]->setProperty(id => Expand(T_CS('\thedocument@ID')));
     my @boxes = ();
     if (my $ops = LookupValue('@document@preamble@atend')) {
-      push(@boxes, Digest(Tokens(@$ops))); }
+      push(@boxes, $stomach->digest(Tokens(@$ops))); }
     if (my $ops = LookupValue('@at@begin@document')) {
-      push(@boxes, Digest(Tokens(@$ops))); }
+      push(@boxes, $stomach->digest(Tokens(@$ops))); }
     AssignValue(inPreamble => 0);    # atbegin is still (sorta) preamble
     if (my $ops = LookupValue('@document@preamble@afterend')) {
-      push(@boxes, Digest(Tokens(@$ops))); }
+      push(@boxes, $stomach->digest(Tokens(@$ops))); }
     $_[1]->setFont(LookupValue('font'));    # Start w/ whatever font was last selected.
     return @boxes; });
 
@@ -351,9 +351,9 @@ DefConstructorI(T_CS('\end{document}'), undef, sub {
     my ($stomach) = @_;
     my @boxes = ();
     if (my $ops = LookupValue('@at@end@document')) {
-      push(@boxes, Digest(Tokens(@$ops))); }
+      push(@boxes, $stomach->digest(Tokens(@$ops))); }
     # Should we try to indent the last paragraph? If so, it goes like this:
-    push(@boxes, Digest(T_CS('\normal@par')));
+    push(@boxes, $stomach->digest(T_CS('\normal@par')));
     # Now we check whether we're down to the last stack frame.
     # It is common for unclosed { or even environments
     # and we want to at least compress & avoid unnecessary errors & warnings.
@@ -2471,7 +2471,7 @@ DefPrimitive('\newcommand OptionalMatch:* SkipSpaces DefToken [Number][]{}', sub
     my ($stomach, $star, $cs, $nargs, $opt, $body) = @_;
     if (!isDefinable($cs)) {
       Info('ignore', $cs, $stomach,
-        "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'")
+        "Ignoring redefinition (\\newcommand) of '" . ToString($cs) . "'")
         unless LookupValue(ToString($cs) . ':locked');
       return; }
     DefMacroI($cs, convertLaTeXArgs($nargs, $opt), $body); });
@@ -4652,8 +4652,6 @@ sub before_picture {
 sub after_picture {
   return; }
 
-# Since these ultimately generate external resources, it can be useful to have a handle on them.
-Tag('ltx:graphics', afterOpen => sub { GenerateID(@_, 'g'); });
 # Ugh... Is this safe?  Apparently, picture stuff is allowed w/o a {picture} environment???
 Tag('ltx:picture', autoOpen => 0.5, autoClose => 1,
   afterOpen  => sub { GenerateID(@_, 'pic'); },
@@ -5337,6 +5335,7 @@ RawTeX(<<'EoTeX');
 EoTeX
 
 DefPrimitive('\@setsize{}{}{}{}', undef);
+DefMacro('\on@line', ' on input line \the\inputlineno');
 Let('\@warning',  '\@latex@warning');
 Let('\@@warning', '\@latex@warning@no@line');
 

@@ -40,6 +40,11 @@ setSavableTheoremParameters(qw(
     \thm@headfont \thm@bodyfont \thm@headpunct
     \thm@styling \thm@headstyling \thm@headformatter thm@swap));
 
+# extra stubs (for now?) for internals that show up in arXiv:
+DefRegisterI('\thm@preskip',  undef, Glue(0));
+DefRegisterI('\thm@postskip', undef, Glue(0));
+DefMacro('\thm@space@setup', '\thm@preskip=\topsep \thm@postskip=\thm@preskip');
+
 # activate a certain theorem style
 DefPrimitive('\theoremstyle{}', sub {
     my $style = ToString($_[1]);
