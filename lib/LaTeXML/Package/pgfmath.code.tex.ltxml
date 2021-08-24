@@ -30,8 +30,7 @@ use POSIX qw(floor ceil);
 
 #======================================================================
 # Load pgf's TeX code for math, first
-InputDefinitions('pgfmath.code', type => 'tex', noltxml => 1)
-  || Warn(":missing:pgfmath.code.tex Couldn't find pgfmath.code.tex");
+InputDefinitions('pgfmath.code', type => 'tex', noltxml => 1);
 
 #======================================================================
 # Then redefine math operations to be done directly in Perl.
@@ -116,7 +115,7 @@ DefParameterType('pgfNumbers', sub {
         if ($cc == CC_END) {
           $level--;
           last unless $level;
-          if ($level == 1) {                               # Next number
+          if ($level == 1) {    # Next number
             push(@results, $result); $result = ''; $char = ''; } }
         elsif ($cc == CC_BEGIN) {
           if ($level == 1) { $char = ''; }

@@ -486,10 +486,13 @@ sub computeBoxesSize {
     $fillwidth = $fillwidth->valueOf; }    # get register
   my $maxwidth = $fillwidth && $fillwidth->valueOf;
   my @lines    = ();
-  my ($wd, $ht, $dp) = (0, 0, 0);
+  my ($wd, $ht, $dp)          = (0, 0, 0);
+  my ($minwd, $minht, $mindp) = (0, 0, 0);
   my $vattach = $options{vattach} || 'baseline';
   no warnings 'recursion';
-  foreach my $box (@$boxes) {
+  # Flatten top-level Lists (orrr pass-thru $fillwidth ???)
+  my @boxes = map { (ref $_ eq 'LaTeXML::Core::List' ? $_->unlist : $_); } @$boxes;
+  foreach my $box (@boxes) {
     next unless defined $box;
     next if ref $box && !$box->can('getSize');    # Care!! Since we're asking ALL args/compoments
     ## Should any %options be inherited by the contained boxes?
@@ -540,6 +543,7 @@ sub computeBoxesSize {
     else {                            # default is baseline (of the 1st line)
       my $h = $lines[0][1];
       $dp = $ht + $dp - $h; $ht = $h; } }
+  $wd = max($minwd, $wd); $ht = max($minht, $ht); $dp = max($mindp, $dp);
   #print "BOXES SIZE ".($wd/65536)." x ".($ht/65536)." + ".($dp/65336)." for "
   #  .join(' ',grep {$_} map { Stringify($_) } @$boxes)."\n";
   Debug("Size boxes " . join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options) . "\n"
@@ -670,7 +674,7 @@ sub specialize {
     $shape  = $defshape;                                                    # defaults, always.
     if ($series && ($series ne $DEFSERIES)) { $series = $defseries; } }
   return (ref $self)->new_internal($family, $series, $shape, $size,
-    $color, $bg, $opacity,
+    $color,    $bg, $opacity,
     $encoding, $language, $mathstyle, $flags); }
 
 # A special form of merge when copying/moving nodes to a new context,

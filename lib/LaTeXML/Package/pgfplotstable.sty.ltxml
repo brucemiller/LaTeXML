@@ -1,37 +1,25 @@
 # -*- mode: Perl -*-
 # /=====================================================================\ #
-# |  pgfutils latexml driver                                            | #
+# |  pgfplotstable.sty                                                  | #
 # | Implementation for LaTeXML                                          | #
-# |=====================================================================| #
+# |---------------------------------------------------------------------| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Released to the Public Domain                                       | #
-# |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
-
 package LaTeXML::Package::Pool;
 use strict;
 use warnings;
+use LaTeXML::Package;
 
 #======================================================================
-# Load pgf's TeX code for util-common, first
-InputDefinitions('pgfutil-common', type => 'tex', noltxml => 1);
-
-# Overwrite macros of interest
-
-DefPrimitive('\pgfutil@in@{}{}', sub {
-    AssignValue('pgfutilin_args', [ToString($_[1]), ToString($_[2])]);
-    return; });
-
-DefConditional('\ifpgfutil@in@', sub {
-    my $args    = LookupValue('pgfutilin_args') || ['', ''];
-    my $element = $$args[0];
-    my $list    = $$args[1];
-    my $test    = (index($list, $element) != -1);
-    return $test; });
-
+InputDefinitions('pgfplotstable', type => 'sty', noltxml => 1);
+# Avoid generic warnings:
+my $compat_cs  = T_CS('\pgfk@/pgfplots/compat/current');
+my $compat_val = IsDefined($compat_cs) && ToString(Expand($compat_cs));
+if (!$compat_val || $compat_val eq 'default') {
+  RawTeX('\pgfplotsset{compat=1.17}'); }
 1;

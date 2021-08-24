@@ -234,7 +234,7 @@ sub canHaveAttribute {
 sub canAutoOpen {
   my ($self, $tag) = @_;
   if (my $props = $STATE->lookupMapping('TAG_PROPERTIES', $tag)) {
-    return $$props{autoClose}; } }
+    return $$props{autoOpen}; } }
 
 # Dirty little secrets:
 #  You can generically allow an element to autoClose using Tag.

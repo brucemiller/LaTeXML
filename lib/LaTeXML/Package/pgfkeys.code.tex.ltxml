@@ -26,13 +26,13 @@ use LaTeXML::Package;
 # I _think_ this implementation fairly completely captures pgfkeys logic.
 #======================================================================
 # To disable the LaTeXML binding, uncomment the following bit of code
-# InputDefinitions('pgfkeys.code', type => 'tex', noltxml => 1)
-#   || Warn(":missing:pgfkeys.code.tex Couldn't find pgfkeys.code.tex");
-# Info('latexml', 'pgfkeys', undef, "Skipping LaTeXML binding for pgfkeys");
-# 1;
-#
-# __END__
-#
+InputDefinitions('pgfkeys.code', type => 'tex', noltxml => 1);
+1;
+
+ __END__
+
+# To enable using the LaTeXML binding, comment out the preceding bit of code.
+# Note that the following code is faster and gets close, but NOT quite right or complete!
 #======================================================================
 DebuggableFeature('pgfkeys', 'pgfkeys processing');
 
