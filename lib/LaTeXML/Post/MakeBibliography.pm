@@ -99,6 +99,7 @@ sub normalizeBibKey {
 sub getBibliographies {
   my ($self, $doc) = @_;
   my @bibnames = ();
+  my $fromBibliography = 0; # coming from an 'ltx:bibliography'
   # use the commandline bibliographies, if explicitly given.
   if ($$self{bibliographies} && scalar(@{ $$self{bibliographies} })) {
     @bibnames = @{ $$self{bibliographies} }; }
@@ -107,7 +108,8 @@ sub getBibliographies {
     if (my $files = $bibnode->getAttribute('files')
       || $bibnode->parentNode->getAttribute('files')    # !!!!!
     ) {
-      @bibnames = map { $_ . '.bib' } split(',', $files); } }
+      $fromBibliography = 1;
+      @bibnames = split(',', $files); } }
   my @paths   = $doc->getSearchPaths;
   my @bibs    = ();
   my @rawbibs = ();
@@ -127,11 +129,12 @@ sub getBibliographies {
       next; }
     elsif ($bib =~ /\.xml$/) {
       $bibdoc = $doc->newFromFile($bib); }                 # doc will do the searching...
-    elsif ($bib =~ /\.bib(?:\.xml)?$/) {
-      my $name = $1;
+    elsif ($bib =~ /\.bib(?:\.xml)?$/ || $fromBibliography) {
       # NOTE: We should also use kpsewhich to get the effects of $BIBINPUTS?
       # NOTE: When better integrated with Core, should also check for cached bib documents.
-      if (my $xmlpath = pathname_find($bib, paths => [@paths], types => ['xml'])) {
+      my $xmlbib = $bib;
+      $xmlbib .= '.bib' if $fromBibliography && !($xmlbib =~ /\.bib$/);
+      if (my $xmlpath = pathname_find($xmlbib, paths => [@paths], types => ['xml'])) {
         $bibdoc = $doc->newFromFile($xmlpath); }    # doc will do the searching...
       elsif (my $bibpath = pathname_find($bib, paths => [@paths], types => ['bib'])
         || pathname_kpsewhich($bib)) {
