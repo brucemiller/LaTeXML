@@ -390,10 +390,12 @@
       <xsl:call-template name="authors">
         <xsl:with-param name="context" select="$context"/>
       </xsl:call-template>
-      <xsl:call-template name="dates">
-        <xsl:with-param name="context" select="$context"/>
-        <xsl:with-param name="dates" select="../ltx:date"/>
-      </xsl:call-template>
+      <xsl:if test="not(//ltx:navigation/ltx:ref[@rel='up'])">
+        <xsl:call-template name="dates">
+          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="dates" select="../ltx:date"/>
+        </xsl:call-template>
+      </xsl:if>
     </xsl:if>
     <xsl:apply-templates select="." mode="end">
       <xsl:with-param name="context" select="$context"/>
