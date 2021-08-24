@@ -2634,8 +2634,15 @@ DefPrimitive('\DeclareSymbolFontAlphabet{}{}', sub {
 DefPrimitive('\DeclareMathSizes{}{}{}{}', undef);
 DefPrimitive('\DeclareMathAlphabet{}{}{}{}{}', sub {
     my ($stomach, $cs, $enc, $family, $series, $shape) = @_;
-    my %font = LaTeXML::Common::Font::lookupTeXFont($family, $series, $shape);
-    DefPrimitiveI(T_CS(ToString($cs)), undef, undef, font => {%font}); });
+    my $csname = ToString($cs);
+    # We won't override this, e.g. \mathrm by fouriernc.sty
+    if (IsDefined($csname)) {
+      Info('ignore', $csname, $stomach,
+        "Ignoring redefinition (\\DeclareMathAlphabet) of '" . $csname . "'"); }
+    else {
+      my %font = LaTeXML::Common::Font::lookupTeXFont($family, $series, $shape);
+      DefPrimitiveI(T_CS($csname), undef, undef, font => {%font}); }
+    return; });
 
 DefMacro('\newmathalphabet{}{}{}', Tokens());    # or expand int DeclareMathAlphabet?
 DefPrimitive('\DeclareFontShape{}{}{}{}{}{}', undef);
