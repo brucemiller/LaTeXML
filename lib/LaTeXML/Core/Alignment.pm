@@ -628,7 +628,6 @@ sub normalize_prune_rows {
         if (defined $$ccol{rowspanned}) {                        # skip to spanning column if rowspanned!
           $ccol = $rows[$$ccol{rowspanned}]{columns}[$j]; }
         $$ccol{border} .= $border; }                             # add to PREVIOUS row.
-      Debug("PRUNING ROW (last) $pruneh + $pruned");
       $$prev{bpadding} = Dimension($pruneh + $pruned) if $pruneh + $pruned; }    # And save padding.
   }
   @rows = @filtered;
