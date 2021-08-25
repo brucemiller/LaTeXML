@@ -1154,10 +1154,9 @@ sub today {
 #======================================================================
 # MuGlue registers; TeXBook p.274
 {
-  my %mparms = (
-    thinmuskip => '3mu', medmuskip => '4mu plus 2mu minus 4mu', thickmuskip => '5mu plus 5mu');
-  foreach my $p (keys %mparms) {
-    DefRegister("\\$p", Glue($mparms{$p})); }
+  DefRegister('\thinmuskip'  => MuGlue("3mu"));
+  DefRegister('\medmuskip'   => MuGlue("4mu plus 2mu minus 4mu"));
+  DefRegister('\thickmuskip' => MuGlue("5mu plus 5mu"));
 }
 #======================================================================
 # Token registers; TeXBook p.275
@@ -3562,7 +3561,7 @@ sub cleanup_Math {
     foreach my $xmnode (map { $_->childNodes } $mathnode->childNodes) {
       if ($document->getNodeQName($xmnode) eq 'ltx:XMHint') {
         if (my $width = $xmnode->getAttribute('width')) {
-          if (my $space = DimensionToSpaces(Dimension($width))) {
+          if (my $space = DimensionToSpaces(Glue($width))) {
             push(@texts, $space); } } }
       else {    # is XMText
         foreach my $child ($xmnode->childNodes) {
@@ -4669,9 +4668,9 @@ DefPrimitive('\newif DefToken', sub {
 # See the section Registers & Parameters, above for setting default values.
 
 # These are originally defined with \newskip, etc
-DefRegister('\smallskipamount'          => Glue('3pt plus1pt minus1pt'));
-DefRegister('\medskipamount'            => Glue('6pt plus2pt minus2pt'));
-DefRegister('\bigskipamount'            => Glue('12pt plus4pt minus4pt'));
+DefRegister('\smallskipamount'          => Glue('3pt plus 1pt minus 1pt'));
+DefRegister('\medskipamount'            => Glue('6pt plus 2pt minus 2pt'));
+DefRegister('\bigskipamount'            => Glue('12pt plus 4pt minus 4pt'));
 DefRegister('\normalbaselineskip'       => Glue('12pt'));
 DefRegister('\normallineskip'           => Glue('1pt'));
 DefRegister('\normallineskiplimit'      => Dimension('0pt'));
@@ -5430,11 +5429,6 @@ DefPrimitiveI("\\\t", undef, sub {
 DefPrimitiveI('\/', undef, sub {
     Box("", undef, undef, T_CS('\/'),
       isSpace => 1, name => 'italiccorr', width => Dimension('0em')); });
-
-# What kind of magic might allow \mskip to translate these back into the above?
-DefRegister('\thinmuskip'  => MuGlue("3mu"));
-DefRegister('\medmuskip'   => MuGlue("4mu plus 2mu minus 4mu"));
-DefRegister('\thickmuskip' => MuGlue("5mu plus 5mu"));
 
 #======================================================================
 # TeX Book, Appendix B. p. 358
