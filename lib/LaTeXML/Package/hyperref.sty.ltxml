@@ -233,7 +233,8 @@ Let('\footref', '\ref');    # ?
 # But, we normally defer such bookkeeping until postprocessing....sigh
 # TODO: The star forms prevent nested double links.
 DefConstructor('\autoref OptionalMatch:* Semiverbatim',
-  "<ltx:ref class='ltx_refmacro_autoref' show='autoref' labelref='#label' _force_font='true'/>",
+  "<ltx:ref ?#1(class='ltx_refmacro_autoref ltx_nolink')(class='ltx_refmacro_autoref')
+    show='autoref' labelref='#label' _force_font='true'/>",
   properties => sub { (label => CleanLabel($_[2])); });
 
 DefMacro('\lx@autorefnum@@{}', sub {
