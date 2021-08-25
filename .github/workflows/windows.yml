@@ -13,7 +13,7 @@ name: Windows
 # Something like the output of `date | md5` usually works well.
 env:
   PERL_CACHE_HASH: 79d1fcba0f256b853d8daa7f3d973852
-  MIKTEX_CACHE_HASH: f5c953006e7ae02e8247718cbb71c5f3
+  MIKTEX_CACHE_HASH: 618f448423191db4b246ef5de4d5ff88
 
 on: [push, pull_request]
 
@@ -83,14 +83,14 @@ jobs:
       - name: Install & Configure MiKTeX
         if: matrix.miktex != 'none'
         run: |
-          cinst -y miktex --version ${{ matrix.miktex }} --params '"/Set:basic /RepoPath:""C:\miktex-repo"" /Mirror:https://mirrors.rit.edu/CTAN/systems/win32/miktex/tm/packages/"'
+          cinst -y miktex --version ${{ matrix.miktex }} --params '"/Set:complete /RepoPath:""C:\miktex-repo"" /Mirror:https://mirrors.rit.edu/CTAN/systems/win32/miktex/tm/packages/"'
           echo "C:\Program Files\MiKTeX/miktex/bin/x64/" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
           Invoke-WebRequest -Uri "https://github.com/tkw1536/execsilent/releases/download/v0.0.2/execsilent-windows-amd64.exe" -OutFile C:\execsilent.exe
           echo "EXECSILENT_EXE=kpsewhich" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "LATEXML_KPSEWHICH=C:\execsilent.exe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
           echo "LATEXML_KPSEWHICH_MIKTEX_ADMIN=1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
-          echo "LATEXML_TEST_TEXLIVE=0" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "LATEXML_TEST_TEXLIVE=2021" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       # ====================
       # Prepare Dependencies
