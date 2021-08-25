@@ -1049,22 +1049,22 @@ DefConstructor('\@personname{}', "<ltx:personname>#1</ltx:personname>",
 
 # Sanitize person names for (obvious) punctuation abuse at start+end
 Tag('ltx:personname', afterClose => sub {
-  my ($document, $node) = @_;
-  if (my $first = $node->firstChild) {
-    if ($first->nodeType == XML_TEXT_NODE) {
-      my $first_text = $first->data;
-      my $new_text   = $first_text;
-      $new_text =~ s/^\W+//;
-      if ($first_text ne $new_text) {
-        $first->setData($new_text); } } }
-  if (my $last = $node->lastChild) {
-    if ($last->nodeType == XML_TEXT_NODE) {
-      my $last_text = $last->data;
-      my $new_text  = $last_text;
-      $new_text =~ s/\W+$//;
-      if ($last_text ne $new_text) {
-        $last->setData($new_text); } } }
-  return; });
+    my ($document, $node) = @_;
+    if (my $first = $node->firstChild) {
+      if ($first->nodeType == XML_TEXT_NODE) {
+        my $first_text = $first->data;
+        my $new_text   = $first_text;
+        $new_text =~ s/^\W+//;
+        if ($first_text ne $new_text) {
+          $first->setData($new_text); } } }
+    if (my $last = $node->lastChild) {
+      if ($last->nodeType == XML_TEXT_NODE) {
+        my $last_text = $last->data;
+        my $new_text  = $last_text;
+        $new_text =~ s/\W+$//;
+        if ($last_text ne $new_text) {
+          $last->setData($new_text); } } }
+    return; });
 
 DefConstructorI('\and', undef, " and ");
 
@@ -1119,7 +1119,7 @@ DefMacroI('\maketitle', undef,
     . '\global\let\title\relax'
     . '\global\let\author\relax'
     . '\global\let\date\relax'
-    . '\global\let\and\relax', locked=>1);
+    . '\global\let\and\relax', locked => 1);
 
 DefMacro('\@thanks',  '\@empty');
 DefMacro('\thanks{}', '\def\@thanks{#1}\lx@make@thanks{#1}');
@@ -2201,9 +2201,6 @@ DefConditionalI('\if@in@firstcolumn', undef, sub {
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
 '\if@in@firstcolumn\multicolumn{3}{l}{\@ADDCLASS{ltx_eqn_lefteqn}\@@BEGININLINEMATH \displaystyle #1\@@ENDINLINEMATH\mbox{}}'
-###    . '\@LTX@nonumber\@alignment@cr'
-    . '\@LTX@nonumber\cr'
-###    . '\@LTX@nonumber'
     . '\else\rlap{\@@BEGININLINEMATH\displaystyle #1\@@ENDINLINEMATH}\fi');
 # \intertext (in amsmath)
 
@@ -2269,10 +2266,16 @@ sub eqnarrayBindings {
       closeColumn => sub { $_[0]->closeElement('ltx:_Capture_'); },
       properties  => { preserve_structure => 1, attributes => {%attributes} }));
 
-  Let("\\\\",         '\@alignment@newline');
-  Let('\@row@before', '\eqnarray@row@before');
-  Let('\@row@after',  '\eqnarray@row@after');
+  Let("\\\\",                    '\@alignment@newline');
+  Let('\@row@before',            '\eqnarray@row@before');
+  Let('\@row@after',             '\eqnarray@row@after');
+  Let('\lx@eqnarray@save@label', '\label');
+  Let('\label',                  '\lx@eqnarray@label');
   return; }
+
+# A \label preceding \lefteqn throws of the implied \omit,e tc; so wrap in \hidden@align
+DefMacro('\lx@eqnarray@label Semiverbatim',
+'\ifnum1>\@alignment@column\hidden@noalign{\lx@eqnarray@save@label{#1}}\else\lx@eqnarray@save@label{#1}\fi');
 
 DefConstructor('\@@eqnarray SkipSpaces DigestedBody',
   '#1',
@@ -3147,14 +3150,15 @@ DefMacro('\@caption{}[]{}',
 DefMacro('\@caption@postlabel{}{}{} SkipMatch:\label Semiverbatim',
   '\@caption@{#1}{#2}{#3\label{#4}}');
 
-# Now, check for label inside to (potentially) record it.
-DefMacro('\@caption@{}{}{}', '\@hack@caption@{#1}{#2}#3\label\endcaption');
-DefMacro('\@hack@caption@{}{} Until:\label Until:\endcaption',
-  '\ifx.#4.\@caption@@@{#1}{#2}{#3}'    # No label
-    . '\else\@@@hack@caption@{#1}{#2}{#3}#4\fi');
-DefMacro('\@@@hack@caption@{}{}{}{} Until:\label',
+# Now, check for \label(s) inside to (potentially) record them.
+DefMacro('\@caption@{}{}{}',
+  '\@hack@caption@{#1}{#2}{}#3\label\endcaption');
+DefMacro('\@hack@caption@{}{}{} Until:\label Until:\endcaption',
+  '\ifx.#5.\@caption@@@{#1}{#2}{#3#4}'    # No more labels
+    . '\else\@@@hack@caption@{#1}{#2}{#3#4}#5\endcaption\fi');
+DefMacro('\@@@hack@caption@{}{}{} Semiverbatim Until:\label Until:\endcaption',
   '\lx@note@caption@label{#4}' .
-    '\@caption@@@{#1}{#2}{#3\label{#4}#5}');
+    '\@hack@caption@{#1}{#2}{#3\label{#4}#5}\label#6\endcaption');
 
 DefPrimitive('\lx@note@caption@label{}', sub { MaybeNoteLabel($_[1]); });
 
