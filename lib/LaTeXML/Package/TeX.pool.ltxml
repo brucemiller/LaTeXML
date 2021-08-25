@@ -4970,7 +4970,11 @@ DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
       $$entry[1] = { $attr->beDigested($stomach)->getHash }; }
     $$entry[2] = Digest(Tokens(T_BEGIN, $tokens, T_END));
     AssignValue(inPreamble => $inpreamble);
-    return; });
+    return; },
+  beforeDigest => sub {
+    $_[0]->bgroup; },
+  afterDigest => sub {
+    $_[0]->egroup; });
 
 # Append a piece of data to an existing frontmatter item that is contained in <$tag>
 # If $label is given, look for an item which has label=>$label,
@@ -4998,7 +5002,11 @@ DefPrimitive('\@add@to@frontmatter {} [] {}', sub {
       push(@{ $$list[-1] }, $datum);
       return; }
     push(@{ $$frontmatter{$tag} }, [$tag, ($label ? { label => $label } : undef), $datum]);
-    return; });
+    return; },
+  beforeDigest => sub {
+    $_[0]->bgroup; },
+  afterDigest => sub {
+    $_[0]->egroup; });
 
 # This is called by afterOpen (by default on <ltx:document>) to
 # output any frontmatter that was accumulated.
