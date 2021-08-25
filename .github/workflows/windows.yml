@@ -20,6 +20,7 @@ on: [push, pull_request]
 jobs:
   winci:
     runs-on: windows-latest
+    continue-on-error: ${{ matrix.allow_failure }}
 
     name: MiKTeX ${{ matrix.miktex }} / Strawberry Perl ${{ matrix.perl }}
     strategy:
@@ -27,14 +28,19 @@ jobs:
         include:
           - perl: 5.32.1.1
             miktex: none
+            allow_failure: false
           - perl: 5.32.1.1
             miktex: 21.6.28
+            allow_failure: true
           - perl: 5.30.3.1
             miktex: none
+            allow_failure: false
           - perl: 5.28.2.1
             miktex: none
+            allow_failure: false
           - perl: 5.26.3.1
             miktex: none
+            allow_failure: false
     
     steps:
 
