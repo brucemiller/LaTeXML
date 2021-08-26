@@ -749,6 +749,7 @@ DefConstructor('\addcontentsline{}{}{}', sub {
     if (my $savenode = $document->floatToLabel) {
       my $node  = $document->getNode;
       my $lists = $node->getAttribute('inlist');
+      $inlist = ToString($inlist);
       $document->setAttribute($node, inlist => ($lists ? $lists . ' ' . $inlist : $inlist));
       $document->setNode($savenode); } });
 
