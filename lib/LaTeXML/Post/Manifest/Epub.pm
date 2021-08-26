@@ -190,7 +190,7 @@ sub finalize {
         my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
         if ($OPS_pathname =~ /\.css$/) {
           push(@styles, $OPS_pathname); }
-        elsif ($OPS_pathname =~ /\.(?:png|svg)$/) {
+        elsif ($OPS_pathname =~ /\.(?:png|jpe?g|svg)$/i) {
           push(@images, $OPS_pathname); }
         else { }    # skip any other resources
   } }, $OPS_directory);
