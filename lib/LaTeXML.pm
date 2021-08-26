@@ -609,6 +609,8 @@ sub convert_post {
     my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, log => $$opts{log}, %PostOPS);
     $manifest_maker->process(@postdocs); }
   # Archives: when a relative --log is requested, write to sandbox prior packing
+  #     TODO: This can be enhanced, as any path can be relativized. 
+  #     TODO: ALSO, we now always have a log file, so maybe always add it as default?
   if ($$opts{log} && ($$opts{whatsout} =~ /^archive/) && (!pathname_is_absolute($$opts{log}))) {
     ### We can't rely on the ->getDestinationDirectory method, as Fatal post-processing jobs have UNDEF @postdocs !!!
     ### my $destination_directory = $postdocs[0]->getDestinationDirectory();
