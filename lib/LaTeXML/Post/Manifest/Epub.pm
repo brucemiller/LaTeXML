@@ -190,7 +190,7 @@ sub finalize {
         my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
         if ($OPS_pathname =~ /\.css$/) {
           push(@styles, $OPS_pathname); }
-        elsif ($OPS_pathname =~ /\.png$/) {
+        elsif ($OPS_pathname =~ /\.(?:png|jpe?g|svg)$/i) {
           push(@images, $OPS_pathname); }
         else { }    # skip any other resources
   } }, $OPS_directory);
@@ -208,13 +208,19 @@ sub finalize {
     my $image_id = $image;
     $image_id =~ s|/|-|g;    # NCName required for id; no slashes
     my $image_item = $manifest->addNewChild(undef, 'item');
-    $image_item->setAttribute('id',         "$image_id");
-    $image_item->setAttribute('href',       "$image");
-    $image_item->setAttribute('media-type', 'image/png'); }
-
-  if ($$self{log}) {
+    $image_item->setAttribute('id',   "$image_id");
+    $image_item->setAttribute('href', "$image");
+    if ($image =~ /\.png$/i) {
+      $image_item->setAttribute('media-type', 'image/png'); }
+    elsif ($image =~ /\.jpe?g$/i) {
+      $image_item->setAttribute('media-type', 'image/jpeg'); }
+    elsif ($image =~ /\.svg$/i) {
+      $image_item->setAttribute('media-type', 'image/svg+xml'); } }
+  # We only respect relative --log paths for now in LaTeXML.pm, sync that here.
+  if ($$self{log} && !pathname_is_absolute($$self{log})) {
     my $log_id = $$self{log};
-    $log_id =~ s|/|-|g;      # NCName required for id; no slashes
+    $log_id =~ s|/|-|g;    # NCName required for id; no slashes
+    $log_id =~ s|^-||g;    # no leading dashes
     my $log_item = $manifest->addNewChild(undef, 'item');
     $log_item->setAttribute('id',         "$log_id");
     $log_item->setAttribute('href',       $$self{log});
