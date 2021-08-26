@@ -223,7 +223,7 @@
   <xsl:template match="ltx:ref">
     <xsl:param name="context"/>
     <xsl:choose>
-      <xsl:when test="not(@href) or @href=''">
+      <xsl:when test="not(@href) or @href='' or contains(@class,'ltx_nolink')">
         <xsl:element name="span" namespace="{$html_ns}">
           <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
           <xsl:call-template name="add_id"/>
@@ -324,4 +324,3 @@
   <!-- ltx:bibref not handled, since it is translated to ref in crossref module -->
 
 </xsl:stylesheet>
-

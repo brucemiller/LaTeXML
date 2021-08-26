@@ -355,7 +355,8 @@ sub fill_in_refs {
           $ref->setAttribute(title => $titlestring); } }
       if (!$ref->textContent && !element_nodes($ref)
         && !(($tag eq 'ltx:graphics') || ($tag eq 'ltx:picture'))) {
-        $doc->addNodes($ref, $self->generateRef($doc, $id, $show)); }
+        my $is_nameref = ($ref->getAttribute('class')||'') =~ 'ltx_refmacro_nameref';
+        $doc->addNodes($ref, $self->generateRef($doc, $id, $show, $is_nameref)); }
       if (my $entry = $$self{db}->lookup("ID:$id")) {
         $ref->setAttribute(stub => 1) if $entry->getValue('stub'); }
   } }
@@ -642,7 +643,7 @@ sub generateURL {
 # (standing for the type prefix, refnum and title of the id'd object)
 # and any other random characters; the
 sub generateRef {
-  my ($self, $doc, $reqid, $reqshow) = @_;
+  my ($self, $doc, $reqid, $reqshow, $is_nameref) = @_;
   my $pending = '';
   my @stuff;
   # Try the requested show pattern, and if it fails, try a fallback of just the title or refnum
@@ -650,7 +651,7 @@ sub generateRef {
     my $id = $reqid;
     # Start with requested ID, add some from parent(s), if needed/until to make "useful" link content
     while (my $entry = $id && $$self{db}->lookup("ID:$id")) {
-      if (my @s = $self->generateRef_aux($doc, $entry, $show)) {
+      if (my @s = $self->generateRef_aux($doc, $entry, $show, $is_nameref)) {
         push(@stuff, $pending) if $pending;
         push(@stuff, @s);
         return @stuff if $self->checkRefContent($doc, @stuff);
@@ -661,7 +662,7 @@ sub generateRef {
       if (($entry->getValue('type') || '') eq 'ltx:document') {
         foreach my $c (@{ $entry->getValue('children') }) {
           if (my $centry = $$self{db}->lookup("ID:$c")) {
-            if (my @s = $self->generateRef_aux($doc, $centry, $reqshow)) {
+            if (my @s = $self->generateRef_aux($doc, $centry, $reqshow, $is_nameref)) {
               push(@stuff, @s); last; } } } } } }
   if (@stuff) {
     return @stuff; }
@@ -721,7 +722,7 @@ my %ref_fallbacks = (    # Alternative fields, when not found
 # The keywords are things like refnum, title, caption, etc
 # (possibly coming from ltx:tag or other data; see Scan)
 sub generateRef_aux {
-  my ($self, $doc, $entry, $show) = @_;
+  my ($self, $doc, $entry, $show, $is_nameref) = @_;
   my @stuff = ();
   my $OK    = 0;
   while ($show) {
@@ -736,6 +737,10 @@ sub generateRef_aux {
         last if $value; }
       if ($value) {
         $OK = 1;
+        if ($is_nameref) {
+          # yank out the tag if this is nameref
+          my ($first_child) = element_nodes($value);
+          $first_child->unbindNode if $first_child && ($doc->getQName($first_child) eq 'ltx:tag'); }
         push(@stuff, ['ltx:text', { class => $class }, $self->prepRefText($doc, $value)]); } }
     elsif ($show =~ s/^\{([^\}]*)\}//) {    # pass-thru literal, quoted with {}
       push(@stuff, $1) if $1; }
