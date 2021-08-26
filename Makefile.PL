@@ -205,8 +205,7 @@ MakeGrammar
 #    embedded spaces.
 sub install_TeXStyles {
   if (!$TEXMF) {
-    if ($ENV{"APPVEYOR"}) {    # assume miktex admin on windows CI
-      $KPSE_TOOLCHAIN = "--miktex-admin"; }
+    $KPSE_TOOLCHAIN = "--miktex-admin" if ($ENV{"LATEXML_KPSEWHICH_MIKTEX_ADMIN"});    # assume miktex admin on windows CI
     if (system("kpsewhich --version $KPSE_TOOLCHAIN") == 0) {    # can run kpsewhich?
       $TEXMF = `kpsewhich --expand-var='\$TEXMFLOCAL' $KPSE_TOOLCHAIN`;
       # Strip the quotes (they appear in windows, when spaces in pathnames(?))

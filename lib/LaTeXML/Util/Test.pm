@@ -344,9 +344,8 @@ sub texlive_version {
   if (defined $texlive_version) {
     return $texlive_version; }
   my $extra_flag = '';
-  if ($ENV{"APPVEYOR"}) {
-    # disabled under windows for now
-    return 0; }
+  if (defined $ENV{"LATEXML_TEST_TEXLIVE"}) {
+    return $ENV{"LATEXML_TEST_TEXLIVE"} + 0; }
   my $tex;
   # If kpsewhich specified, look for tex next to it
   if (my $path = $ENV{LATEXML_KPSEWHICH}) {

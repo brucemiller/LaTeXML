@@ -494,6 +494,26 @@ dmake test
 dmake install
 \end{lstlisting}
 
+
+\subsubsection*{Failing Installation with MiKTeX and administrative rights}\label{get.windows.miktexbug}
+
+Note that when trying to install with administrative rights rights on Windows, a 
+MikTeX warning sometimes causes a test to fail with an error
+``kpsewhich: warning: running with administrator privileges''.
+This warning is something LaTeXML has no control over, and is specific to the MikTeX toolchain.
+To workaround the problem, you can set the \lstinline{LATEXML_KPSEWHICH_MIKTEX_ADMIN}
+and \lstinline{LATEXML_TEST_TEXLIVE} environment variables and try to force an installation.
+
+\paragraph*{Using Chocolatey}
+\begin{lstlisting}[style=shell]
+$Env:LATEXML_KPSEWHICH_MIKTEX_ADMIN=true ; $Env:LATEXML_TEST_TEXLIVE="0"; choco install latexml
+\end{lstlisting}
+
+\paragraph*{Using CPAN}
+\begin{lstlisting}[style=shell]
+$Env:LATEXML_KPSEWHICH_MIKTEX_ADMIN=true ; $Env:LATEXML_TEST_TEXLIVE="0"; cpan latexml
+\end{lstlisting}
+
 \subsection{CPAN installation}\label{get.cpan}
 The following command will install \LaTeXML\ and its Perl prerequisites,
 but you may need to pre-install \texttt{libxml2} and  \texttt{libxslt} (See \ref{get.prerequisites}).
