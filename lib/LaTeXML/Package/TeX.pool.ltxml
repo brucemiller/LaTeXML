@@ -4482,14 +4482,16 @@ DefMathLigature(matcher => sub { my ($document, $node) = @_;
     my $decrole = ($dec eq '.' ? 'PERIOD' : '');
     # my $skip  = Dimension('5mu')->valueOf;
     my @chars = ();
-    my ($n, $string, $number, $w) = (0, '', '', 0);
+    my ($n, $string, $number, $w, $font) = (0, '', '', 0, undef);
     # NOTE: We're scanning chars from END!
     while ($node) {
       my $qn = $document->getModel->getNodeQName($node);
       if ($qn =~ /^(ltx:XMTok|ltx:XMWrap)$/) {
         my $r    = ($node->getAttribute('role') || '');
+        my $f    = $document->getNodeFont($node);
         my $text = $node->textContent;
-        if ($r eq 'NUMBER') {
+        if (($r eq 'NUMBER') && (!$font || ($f->equals($font)))) {    # A number in same font?
+          $font   = $f;
           $string = $text . $string;
           $number = $node->getAttribute('meaning') . $number; }
         elsif (!$n) {    # any following cases are not allowed as LAST char
