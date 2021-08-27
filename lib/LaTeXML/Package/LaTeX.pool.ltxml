@@ -5273,15 +5273,15 @@ DefMacroI('\ltx@hard@MessageBreak', undef, '^^J');
 sub make_message {
   my ($cmd, @args) = @_;
   my $stomach = $STATE->getStomach;
+  my $type    = ToString(shift(@args)) || $cmd;
   $stomach->bgroup;
-  Let('\protect',      '\string');
-  Let('\MessageBreak', '\ltx@hard@MessageBreak');    # tricky, we need Expand() to execute it
-  my $message = join("", map { ToString(Expand($_, T_CS('\MessageBreak'))) } @args);
+  Let('\protect', '\string');
+  my $message = join(" ", map { ToString(Expand($_)) } @args);
   $stomach->egroup;
-  return ('latex', $cmd, $stomach, $message); }
+  return ('latex', $type, $stomach, $message); }
 
 DefPrimitive('\@onlypreamble{}', sub { onlyPreamble('\@onlypreamble'); }); # Don't bother enforcing this.
-DefPrimitive('\GenericError{}{}{}{}', sub { Error(make_message('\GenericError', $_[2], $_[3], $_[4])); });
+DefPrimitive('\GenericError{}{}{}{}', sub { Error(make_message('\GenericError', $_[1], $_[2], $_[3], $_[4])); });
 DefPrimitive('\GenericWarning{}{}', sub { Warn(make_message('\GenericWarning', $_[1], $_[2])); });
 DefPrimitive('\GenericInfo{}{}',    sub { Info(make_message('\GenericInfo',    $_[1], $_[2])); });
 
