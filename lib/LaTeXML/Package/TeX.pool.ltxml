@@ -5020,7 +5020,16 @@ my %frontmatter_elements = map { ($_ => 1) } @frontmatter_elements;
 sub insertFrontMatter {
   my ($document) = @_;
   my $frontmatter = LookupValue('frontmatter');
-  foreach my $key (@frontmatter_elements, grep { !$frontmatter_elements{$_} } keys %$frontmatter) {
+  my @set_keys = $frontmatter ? (keys %$frontmatter) : ();
+  # if doc only has a solo abstract as frontmatter,
+  #    don't deposit here but mark to be placed as-is.
+  if ((scalar(@set_keys) == 1) && ($set_keys[0] eq 'ltx:abstract') &&
+    # Avoid cargo cult: allow this sub to be called twice with solo abstract,
+    #                   where 2nd call is at the right location for insertion.
+    !LookupValue('standalone_abstract_in_frontmatter')) {
+    AssignValue('standalone_abstract_in_frontmatter', 1, 'global');
+    return; }
+  foreach my $key (@frontmatter_elements, grep { !$frontmatter_elements{$_} } @set_keys) {
     if (my $list = $$frontmatter{$key}) {
       # Dubious, but assures that frontmatter appears in text mode...
       local $LaTeXML::BOX = Box('', $STATE->lookupValue('font'), '', T_SPACE);
