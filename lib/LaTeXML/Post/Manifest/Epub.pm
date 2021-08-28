@@ -227,21 +227,27 @@ sub finalize {
     $log_item->setAttribute('media-type', 'text/plain'); }
 
   # Write the content.opf file to disk
-  my $directory = $$self{siteDirectory};
-  my $OPF_FH;
+  my $directory    = $$self{siteDirectory};
   my $content_path = pathname_concat($OPS_directory, 'content.opf');
-  open($OPF_FH, ">", $content_path)
-    or Fatal('I/O', 'content.opf', undef, "Couldn't open '$content_path' for writing: $_");
-  print $OPF_FH $$self{opf}->toString(1);
-  close $OPF_FH;
+  if (-f $content_path) {
+    Info('note', 'content.opf', undef, 'using the manifest supplied by the user'); }
+  else {
+    my $OPF_FH;
+    open($OPF_FH, ">", $content_path)
+      or Fatal('I/O', 'content.opf', undef, "Couldn't open '$content_path' for writing: $_");
+    print $OPF_FH $$self{opf}->toString(1);
+    close $OPF_FH; }
 
   # Write toc.ncx file to disk
-  my $NAV_FH;
   my $nav_path = pathname_concat($OPS_directory, 'nav.xhtml');
-  open($NAV_FH, ">", $nav_path)
-    or Fatal('I/O', 'nav.xhtml', undef, "Couldn't open '$nav_path' for writing: $!");
-  print $NAV_FH $$self{nav}->toString(1);
-  close $NAV_FH;
+  if (-f $nav_path) {
+    Info('note', 'nav.xhtml', undef, 'using the navigation document supplied by the user'); }
+  else {
+    my $NAV_FH;
+    open($NAV_FH, ">", $nav_path)
+      or Fatal('I/O', 'nav.xhtml', undef, "Couldn't open '$nav_path' for writing: $!");
+    print $NAV_FH $$self{nav}->toString(1);
+    close $NAV_FH; }
 
   return (); }
 
