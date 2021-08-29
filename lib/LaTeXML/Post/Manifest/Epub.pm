@@ -167,7 +167,7 @@ sub initialize {
   $$self{nav_map}       = $nav_map;
   return; }
 
-sub file_id {
+sub url_id {
   my ($name) = @_;
   # convert file name to valid NCName for use as id
   # any invalid character, and -, are converted to -xN- where N is the hex codepoint
@@ -190,9 +190,10 @@ sub process {
       # Add to manifest
       my $manifest = $$self{opf_manifest};
       my $item     = $manifest->addNewChild(undef, 'item');
-      my $item_id  = file_id($relative_destination);
+      my $item_url = URI::file->new($relative_destination);
+      my $item_id  = url_id($item_url);
       $item->setAttribute('id',         $item_id);
-      $item->setAttribute('href',       URI::file->new($relative_destination));
+      $item->setAttribute('href',       $item_url);
       $item->setAttribute('media-type', "application/xhtml+xml");
       my @properties;
       push @properties, 'mathml' if $doc->findnode('//*[local-name() = "math"]');
@@ -238,8 +239,9 @@ sub finalize {
       $file_type = 'application/octet-stream'; }
 
     my $file_item = $manifest->addNewChild(undef, 'item');
-    $file_item->setAttribute('id',         file_id($file));
-    $file_item->setAttribute('href',       URI::file->new($file));
+    my $file_url  = URI::file->new($file);
+    $file_item->setAttribute('id',         url_id($file_url));
+    $file_item->setAttribute('href',       $file_url);
     $file_item->setAttribute('media-type', $file_type); }
 
   # Write the content.opf file to disk
