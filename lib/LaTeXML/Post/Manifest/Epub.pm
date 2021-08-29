@@ -37,6 +37,29 @@ our $container_content = <<'EOL';
 </container>
 EOL
 
+# Core Media Types as per EPUB 3.2 spec
+our %CORE_MEDIA_TYPES = (
+  'gif'   => 'image/gif',
+  'jpg'   => 'image/jpeg',
+  'jpeg'  => 'image/jpeg',
+  'png'   => 'image/png',
+  'svg'   => 'image/svg+xml',
+  'mp3'   => 'audio/mpeg',                 # only mp3 is supported
+  'mp4'   => 'audio/mp4',                  # only mp4 *audio* is core
+  'mpg4'  => 'audio/mp4',
+  'css'   => 'text/css',
+  'ttf'   => 'font/ttf',
+  'otf'   => 'font/otf',
+  'woff'  => 'font/woff',
+  'woff2' => 'font/woff2',
+  'xhtml' => 'application/xhtml+xml',
+  'js'    => 'text/javascript',
+  'ncx'   => 'application/x-dtbncx+xml',
+  'smi'   => 'application/smil+xml',
+  'smil'  => 'application/smil+xml',
+  'pls'   => 'application/pls+xml'
+);
+
 sub new {
   my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
@@ -181,50 +204,37 @@ sub process {
 
 sub finalize {
   my ($self) = @_;
-  #Index all CSS files (written already)
+  # index all resources that got written to file
+  # TODO: recover resources and mime types directly from the documents
   my $OPS_directory = $$self{OPS_directory};
-  my @styles        = ();
-  my @images        = ();
-  find({ no_chdir => 1, wanted => sub {
+  my @content       = ();
+  find({ no_chdir => 1, preprocess => sub { sort @_; },    # sort files for reproducbility
+      wanted => sub {
         my $OPS_abspath  = $_;
         my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
-        if ($OPS_pathname =~ /\.css$/) {
-          push(@styles, $OPS_pathname); }
-        elsif ($OPS_pathname =~ /\.(?:png|jpe?g|svg)$/i) {
-          push(@images, $OPS_pathname); }
-        else { }    # skip any other resources
-  } }, $OPS_directory);
+        if (-f $OPS_abspath && $OPS_pathname !~ /\.xhtml$|^LaTeXML\.cache$/) {
+          push(@content, $OPS_pathname); }
+      } }, $OPS_directory);
 
   my $manifest = $$self{opf_manifest};
-  # TODO: Other externals are future work
-  foreach my $style (@styles) {
-    my $style_id = $style;
-    $style_id =~ s|/|-|g;    # NCName required for id; no slashes
-    my $style_item = $manifest->addNewChild(undef, 'item');
-    $style_item->setAttribute('id',         "$style_id");
-    $style_item->setAttribute('href',       "$style");
-    $style_item->setAttribute('media-type', 'text/css'); }
-  foreach my $image (@images) {
-    my $image_id = $image;
-    $image_id =~ s|/|-|g;    # NCName required for id; no slashes
-    my $image_item = $manifest->addNewChild(undef, 'item');
-    $image_item->setAttribute('id',   "$image_id");
-    $image_item->setAttribute('href', "$image");
-    if ($image =~ /\.png$/i) {
-      $image_item->setAttribute('media-type', 'image/png'); }
-    elsif ($image =~ /\.jpe?g$/i) {
-      $image_item->setAttribute('media-type', 'image/jpeg'); }
-    elsif ($image =~ /\.svg$/i) {
-      $image_item->setAttribute('media-type', 'image/svg+xml'); } }
-  # We only respect relative --log paths for now in LaTeXML.pm, sync that here.
-  if ($$self{log} && !pathname_is_absolute($$self{log})) {
-    my $log_id = $$self{log};
-    $log_id =~ s|/|-|g;    # NCName required for id; no slashes
-    $log_id =~ s|^-||g;    # no leading dashes
-    my $log_item = $manifest->addNewChild(undef, 'item');
-    $log_item->setAttribute('id',         "$log_id");
-    $log_item->setAttribute('href',       $$self{log});
-    $log_item->setAttribute('media-type', 'text/plain'); }
+  foreach my $file (@content) {
+    my $file_id = $file;
+
+    # convert file name to valid NCName for use as id
+    # TODO: keep track of id's to prevent collisions
+    $file_id =~ s/[^A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]/_/g;
+    $file_id =~ s/^([-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}])/_$1/;
+
+    my (undef, undef, $ext) = pathname_split($file);
+    my $file_type = $CORE_MEDIA_TYPES{ lc($ext) };
+    if (!defined $file_type) {
+      Info('unexpected', lc($ext), undef, "resource '$file' is not of a core media type, assigning type application/octet-stream");
+      $file_type = 'application/octet-stream'; }
+
+    my $file_item = $manifest->addNewChild(undef, 'item');
+    $file_item->setAttribute('id',         $file_id);
+    $file_item->setAttribute('href',       $file);
+    $file_item->setAttribute('media-type', $file_type); }
 
   # Write the content.opf file to disk
   my $directory    = $$self{siteDirectory};
