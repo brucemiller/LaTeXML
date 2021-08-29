@@ -167,6 +167,16 @@ sub initialize {
   $$self{nav_map}       = $nav_map;
   return; }
 
+sub file_id {
+  my ($name) = @_;
+  # convert file name to valid NCName for use as id
+  # any invalid character, and -, are converted to -xN- where N is the hex codepoint
+  $name =~ s/([^A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}])/-x${\(sprintf("%X", ord($1)))}-/g;
+  # ensure the starting char is valid and prevent collisions with the other id's
+  $name = 'file-' . $name;
+  return $name;
+}
+
 sub process {
   my ($self, @docs) = @_;
   $self->initialize($docs[0]);
@@ -180,7 +190,8 @@ sub process {
       # Add to manifest
       my $manifest = $$self{opf_manifest};
       my $item     = $manifest->addNewChild(undef, 'item');
-      $item->setAttribute('id',         $file);
+      my $item_id  = file_id($relative_destination);
+      $item->setAttribute('id',         $item_id);
       $item->setAttribute('href',       URI::file->new($relative_destination));
       $item->setAttribute('media-type', "application/xhtml+xml");
       my @properties;
@@ -192,7 +203,7 @@ sub process {
       # Add to spine
       my $spine   = $$self{opf_spine};
       my $itemref = $spine->addNewChild(undef, 'itemref');
-      $itemref->setAttribute('idref', $file);
+      $itemref->setAttribute('idref', $item_id);
 
       # Add to navigation
       my $nav_map = $$self{nav_map};
@@ -213,19 +224,13 @@ sub finalize {
       wanted => sub {
         my $OPS_abspath  = $_;
         my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
-        if (-f $OPS_abspath && $OPS_pathname !~ /\.xhtml$|^LaTeXML\.cache$/) {
+        my (undef, $name, $ext) = pathname_split($OPS_pathname);
+        if (-f $OPS_abspath && $ext ne 'xhtml' && "$name.$ext" ne 'LaTeXML.cache') {
           push(@content, $OPS_pathname); }
       } }, $OPS_directory);
 
   my $manifest = $$self{opf_manifest};
   foreach my $file (@content) {
-    my $file_id = $file;
-
-    # convert file name to valid NCName for use as id
-    # TODO: keep track of id's to prevent collisions
-    $file_id =~ s/[^A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}]/_/g;
-    $file_id =~ s/^([-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}])/_$1/;
-
     my (undef, undef, $ext) = pathname_split($file);
     my $file_type = $CORE_MEDIA_TYPES{ lc($ext) };
     if (!defined $file_type) {
@@ -233,7 +238,7 @@ sub finalize {
       $file_type = 'application/octet-stream'; }
 
     my $file_item = $manifest->addNewChild(undef, 'item');
-    $file_item->setAttribute('id',         $file_id);
+    $file_item->setAttribute('id',         file_id($file));
     $file_item->setAttribute('href',       URI::file->new($file));
     $file_item->setAttribute('media-type', $file_type); }
 
