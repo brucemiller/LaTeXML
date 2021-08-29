@@ -81,19 +81,14 @@ sub new {
   #  my $fmt = ($^O eq 'MSWin32' ? '%%' : '%');
   my $fmt = '%';
   if ($$self{use_dvisvgm}) {
-    # img name uses 2 digits for page; what happens at 100?
     ##    $$self{dvicmd}             = "dvisvgm --page=1- --bbox=min --mag=$mag -o imgx-${fmt}p";
     # dvisvgm currently creates glyph descriptions w/ unicode attribute having the wrong codepoint
     # firefox, chromium use this codepoint instead of the glyph "drawing"
     # a later version of dvisvgm should do better at synthesizing the unicode?
     # but for now, we'll use --no-fonts, which creates glyph drawings rather than "glyphs"
     # Also, increase the bounding box from min by 1pt
-    # Also, note incompatible change in the -o option after version 1.6;
-    # it now can take a number of digits (%3p) for pages, BUT old version produces imgx-%3p.svg!!
-    # So, simply use %p, let new version do 1,..,9,10,...
-    # Recovery code below!
-    $$self{dvicmd} = "dvisvgm --page=1- --bbox=1pt --scale=$$self{magnification} --no-fonts -o imgx-${fmt}p";
-    $$self{dvicmd_output_name} = 'imgx-%02d.svg';
+    $$self{dvicmd} = "dvisvgm --page=1- --bbox=1pt --scale=$$self{magnification} --no-fonts -o imgx-${fmt}3p";
+    $$self{dvicmd_output_name} = 'imgx-%03d.svg';
     $$self{dvicmd_output_type} = 'svg';
     $$self{frame_output}       = 0; }
   elsif ($$self{use_dvipng}) {
@@ -325,10 +320,6 @@ sub generateImages {
     my ($index, $ndigits) = (0, 1 + int(log($doc->cacheLookup((ref $self) . ':_max_image_') || 1) / log(10)));
     foreach my $entry (@pending) {
       my $src = "$workdir/" . sprintf($$self{dvicmd_output_name}, ++$index);
-      # Recovery patchup for incompatible change to dvisvgm!
-      if (($index == 1) && (!-f $src) && (-f "$workdir/imgx-1.svg")) {
-        $$self{dvicmd_output_name} = 'imgx-%d.svg';
-        $src = "$workdir/imgx-1.svg"; }
       if (-f $src) {
         my @dests = @{ $$entry{dest} };
         push(@dests, $self->generateResourcePathname($doc, $$entry{nodes}[0], undef, $$self{imagetype}))
