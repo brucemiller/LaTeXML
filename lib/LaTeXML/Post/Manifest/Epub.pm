@@ -198,7 +198,7 @@ sub process {
       my $nav_map = $$self{nav_map};
       my $nav_li  = $nav_map->addNewChild(undef, 'li');
       my $nav_a   = $nav_li->addNewChild(undef, 'a');
-      $nav_a->setAttribute('href', URI::file->new($file));
+      $nav_a->setAttribute('href', URI::file->new($relative_destination));
       $nav_a->appendText($file); } }
   $self->finalize;
   return; }
