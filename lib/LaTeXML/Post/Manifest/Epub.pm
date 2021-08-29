@@ -13,6 +13,7 @@ package LaTeXML::Post::Manifest::Epub;
 use strict;
 use warnings;
 use File::Find qw(find);
+use URI::file;
 
 our $uuid_tiny_installed;
 
@@ -180,7 +181,7 @@ sub process {
       my $manifest = $$self{opf_manifest};
       my $item     = $manifest->addNewChild(undef, 'item');
       $item->setAttribute('id',         $file);
-      $item->setAttribute('href',       $relative_destination);
+      $item->setAttribute('href',       URI::file->new($relative_destination));
       $item->setAttribute('media-type', "application/xhtml+xml");
       my @properties;
       push @properties, 'mathml' if $doc->findnode('//*[local-name() = "math"]');
@@ -197,7 +198,7 @@ sub process {
       my $nav_map = $$self{nav_map};
       my $nav_li  = $nav_map->addNewChild(undef, 'li');
       my $nav_a   = $nav_li->addNewChild(undef, 'a');
-      $nav_a->setAttribute('href', $file);
+      $nav_a->setAttribute('href', URI::file->new($file));
       $nav_a->appendText($file); } }
   $self->finalize;
   return; }
@@ -233,7 +234,7 @@ sub finalize {
 
     my $file_item = $manifest->addNewChild(undef, 'item');
     $file_item->setAttribute('id',         $file_id);
-    $file_item->setAttribute('href',       $file);
+    $file_item->setAttribute('href',       URI::file->new($file));
     $file_item->setAttribute('media-type', $file_type); }
 
   # Write the content.opf file to disk
