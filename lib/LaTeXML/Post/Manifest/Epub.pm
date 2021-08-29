@@ -169,11 +169,13 @@ sub initialize {
 
 sub url_id {
   my ($name) = @_;
-  # convert file name to valid NCName for use as id
-  # any invalid character, and -, are converted to -xN- where N is the hex codepoint
-  $name =~ s/([^A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}])/-x${\(sprintf("%X", ord($1)))}-/g;
-  # ensure the starting char is valid and prevent collisions with the other id's
-  $name = 'file-' . $name;
+  # convert a relative url to a valid NCName for use as id
+  # any invalid character is encoded as _xN_ where N is its uppercase hex codepoint
+  # underscores starting a sequence of the form _xN_ are encoded as _x5F_
+  $name =~ s/_(x[0-9A-F]+)(?=_)/_x5F_$1/g;
+  $name =~ s/([^A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}])/_x${\(sprintf("%X", ord($1)))}_/g;
+  # ensure the starting char is valid and prevent collisions with the other id's below
+  $name = '_' . $name;
   return $name;
 }
 
