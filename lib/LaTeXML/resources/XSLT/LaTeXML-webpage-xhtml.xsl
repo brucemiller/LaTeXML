@@ -151,7 +151,7 @@
           </xsl:choose>
           <xsl:if test="$HEAD_TITLE_SHOW_CONTEXT">
             <xsl:for-each select="//ltx:navigation/ltx:ref[@rel='up']">
-              <xsl:text>&#x2023; </xsl:text>
+              <xsl:text> &#x2023; </xsl:text>
               <xsl:value-of select="@title"/>
             </xsl:for-each>
           </xsl:if>
