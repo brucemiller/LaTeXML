@@ -15,8 +15,9 @@ use warnings;
 use File::Find qw(find);
 use URI::file;
 
-# ensure that we can use xhtml: in the xpath queries below
+# ensure that we can use xhtml: and epub: in the xpath queries below
 $LaTeXML::Post::Document::XPATH->registerNS('xhtml' => 'http://www.w3.org/1999/xhtml');
+$LaTeXML::Post::Document::XPATH->registerNS('epub'  => 'http://www.idpf.org/2007/ops');
 
 our $uuid_tiny_installed;
 
@@ -141,26 +142,26 @@ sub initialize {
   $identifier->appendText($$self{'unique-identifier'});
   # Manifest
   my $manifest = $package->addNewChild(undef, 'manifest');
-  my $nav_item = $manifest->addNewChild(undef, 'item');
-  $nav_item->setAttribute('id',         'nav');
-  $nav_item->setAttribute('href',       'nav.xhtml');
-  $nav_item->setAttribute('properties', 'nav');
-  $nav_item->setAttribute('media-type', 'application/xhtml+xml');
   # Spine
   my $spine = $package->addNewChild(undef, 'spine');
-  # 3.2 OPS/nav.xhtml
-  my $nav      = XML::LibXML::Document->new('1.0', 'UTF-8');
-  my $nav_html = $opf->createElementNS("http://www.w3.org/1999/xhtml", 'html');
-  $nav->setDocumentElement($nav_html);
-  $nav_html->setNamespace("http://www.idpf.org/2007/ops", "epub", 0);
-  my $nav_head  = $nav_html->addNewChild(undef, 'head');
-  my $nav_title = $nav_head->addNewChild(undef, 'title');
-  $nav_title->appendText($document_title);
-  my $nav_body = $nav_html->addNewChild(undef, 'body');
-  my $nav_nav  = $nav_body->addNewChild(undef, 'nav');
-  $nav_nav->setAttribute('epub:type', 'toc');
-  $nav_nav->setAttribute('id',        'toc');
-  my $nav_map = $nav_nav->addNewChild(undef, 'ol');
+  # 3.2 OPS/nav.xhtml - default navigation document
+  my $nav_path = pathname_concat($OPS_directory, 'nav.xhtml');
+  my ($nav, $nav_map) = (undef, undef);
+  if (-f $nav_path) {
+    Info('note', 'nav.xhtml', undef, 'using the navigation document supplied by the user'); }
+  else {
+    $nav = XML::LibXML::Document->new('1.0', 'UTF-8');
+    my $nav_html = $opf->createElementNS("http://www.w3.org/1999/xhtml", 'html');
+    $nav->setDocumentElement($nav_html);
+    $nav_html->setNamespace("http://www.idpf.org/2007/ops", "epub", 0);
+    my $nav_head  = $nav_html->addNewChild(undef, 'head');
+    my $nav_title = $nav_head->addNewChild(undef, 'title');
+    $nav_title->appendText($document_title);
+    my $nav_body = $nav_html->addNewChild(undef, 'body');
+    my $nav_nav  = $nav_body->addNewChild(undef, 'nav');
+    $nav_nav->setAttribute('epub:type', 'toc');
+    $nav_nav->setAttribute('id',        'toc');
+    $nav_map = $nav_nav->addNewChild(undef, 'ol'); }
 
   $$self{OPS_directory} = $OPS_directory;
   $$self{opf}           = $opf;
@@ -168,6 +169,7 @@ sub initialize {
   $$self{opf_manifest}  = $manifest;
   $$self{nav}           = $nav;
   $$self{nav_map}       = $nav_map;
+  $$self{nav_path}      = $nav_path;
   return; }
 
 sub url_id {
@@ -184,7 +186,10 @@ sub url_id {
 
 sub process {
   my ($self, @docs) = @_;
+  my $tocfound = 0;
   $self->initialize($docs[0]);
+  my $nav_map   = $$self{nav_map};
+  my $nav_xhtml = !defined $nav_map;
   foreach my $doc (@docs) {
     # Add each document to the spine manifest
     if (my $destination = $doc->getDestination) {
@@ -203,6 +208,11 @@ sub process {
       my @properties;
       push @properties, 'mathml' if $doc->findnode('//*[local-name() = "math"]');
       push @properties, 'svg'    if $doc->findnode('//*[local-name() = "svg"]');
+      # check if the document contains a toc nav element
+      if (!$nav_xhtml && !$tocfound && $doc->findnode('//xhtml:nav[@epub:type = "toc"]')) {
+        Info('note', 'tocnav', undef, "found <nav epub:type=\"toc\">, using " . $relative_destination . " as navigation document");
+        push @properties, 'nav';
+        $tocfound = 1; }
       my $properties = join(" ", @properties);
       $item->setAttribute('properties', $properties) if $properties;
 
@@ -211,13 +221,25 @@ sub process {
       my $itemref = $spine->addNewChild(undef, 'itemref');
       $itemref->setAttribute('idref', $item_id);
 
-      # Add to navigation
-      my $nav_map = $$self{nav_map};
-      my $nav_li  = $nav_map->addNewChild(undef, 'li');
-      my $nav_a   = $nav_li->addNewChild(undef, 'a');
-      $nav_a->setAttribute('href', URI::file->new($relative_destination));
-      map { $nav_a->appendChild($_->cloneNode(1)) }
-        $doc->findnodes('/xhtml:html/xhtml:head/xhtml:title/node()'); } }
+      # Add to default navigation document
+      if (!$nav_xhtml && !$tocfound) {
+        my $nav_li = $nav_map->addNewChild(undef, 'li');
+        my $nav_a  = $nav_li->addNewChild(undef, 'a');
+        $nav_a->setAttribute('href', URI::file->new($relative_destination));
+        map { $nav_a->appendChild($_->cloneNode(1)) }
+        $doc->findnodes('/xhtml:html/xhtml:head/xhtml:title/node()'); } } }
+
+  if ($tocfound) {
+    # Delete default navigation document
+    $$self{nav} = undef; }
+  else {
+    # Add default navigation document to the manifest
+    my $nav_item = $$self{opf_manifest}->addNewChild(undef, 'item');
+    $nav_item->setAttribute('id',         'nav');
+    $nav_item->setAttribute('href',       'nav.xhtml');
+    $nav_item->setAttribute('properties', 'nav');
+    $nav_item->setAttribute('media-type', 'application/xhtml+xml'); }
+
   $self->finalize;
   return; }
 
@@ -262,15 +284,13 @@ sub finalize {
     print $OPF_FH $$self{opf}->toString(1);
     close $OPF_FH; }
 
-  # Write toc.ncx file to disk
-  my $nav_path = pathname_concat($OPS_directory, 'nav.xhtml');
-  if (-f $nav_path) {
-    Info('note', 'nav.xhtml', undef, 'using the navigation document supplied by the user'); }
-  else {
+  # If present, write the default navigation document to disk
+  if (my $nav = $$self{nav}) {
+    my $nav_path = $$self{nav_path};
     my $NAV_FH;
     open($NAV_FH, ">", $nav_path)
       or Fatal('I/O', 'nav.xhtml', undef, "Couldn't open '$nav_path' for writing: $!");
-    print $NAV_FH $$self{nav}->toString(1);
+    print $NAV_FH $nav->toString(1);
     close $NAV_FH; }
 
   return (); }
