@@ -154,6 +154,7 @@ sub initialize {
     my $nav_html = $opf->createElementNS("http://www.w3.org/1999/xhtml", 'html');
     $nav->setDocumentElement($nav_html);
     $nav_html->setNamespace("http://www.idpf.org/2007/ops", "epub", 0);
+    $nav_html->setAttribute('xml:lang', $document_language);
     my $nav_head  = $nav_html->addNewChild(undef, 'head');
     my $nav_title = $nav_head->addNewChild(undef, 'title');
     $nav_title->appendText($document_title);
