@@ -705,9 +705,20 @@ DefMath('\thickvert', "\x{2759}", role => 'MID', stretchy => 'false');
 
 #======================================================================
 # Extensible accents (mathx)
+
+# The way these are defined recognizes Digested style parameter type
+#  \widehat
+DefMath('\widecheck Digested', "\x{02C7}", operator_role => 'OVERACCENT');
+# \widetilde
+DefMath('\widebar Digested',   UTF(0xAF),  operator_role => 'OVERACCENT');
+DefMath('\widearrow Digested', "\x{2192}", operator_role => 'OVERACCENT');
+DefMath('\wideparen Digested', "\x{23DC}", operator_role => 'OVERACCENT');
+DefMath('\ring Digested',      "\x{030A}", operator_role => 'OVERACCENT');
+
+# The remaining macros in this group only accept traditional style {} argument
 #  \overbrace, \underbrace
-DefMath('\overgroup Digested',  "\x{23DC}", operator_role => 'OVERACCENT');
-DefMath('\undergroup Digested', "\x{23DD}", operator_role => 'UNDERACCENT');
+DefMath('\overgroup {}',  "\x{23DC}", operator_role => 'OVERACCENT');
+DefMath('\undergroup {}', "\x{23DD}", operator_role => 'UNDERACCENT');
 
 #   \overrightarrow, \overleftarrow
 DefMath('\overleftrightarrow{}',  "\x{2194}", operator_role => 'OVERACCENT');
@@ -720,13 +731,6 @@ DefMath('\overLeftRightarrow{}',  "\x{21D4}", operator_role => 'OVERACCENT');
 DefMath('\underRightarrow{}',     "\x{21D2}", operator_role => 'UNDERACCENT');
 DefMath('\underLeftarrow{}',      "\x{21D0}", operator_role => 'UNDERACCENT');
 DefMath('\underLeftRightarrow{}', "\x{21D4}", operator_role => 'UNDERACCENT');
-#  \widehat
-DefMath('\widecheck Digested', "\x{02C7}", operator_role => 'OVERACCENT');
-# \widetilde
-DefMath('\widebar Digested',   UTF(0xAF),  operator_role => 'OVERACCENT');
-DefMath('\widearrow Digested', "\x{2192}", operator_role => 'OVERACCENT');
-DefMath('\wideparen Digested', "\x{23DC}", operator_role => 'OVERACCENT');
-DefMath('\ring Digested',      "\x{030A}", operator_role => 'OVERACCENT');
 DefMacro('\widering{}',   '\ring{\wideparen{#1}}');
 DefMacro('\widedot{}',    '\dot{\wideparen{#1}}');
 DefMacro('\wideddot{}',   '\ddot{\wideparen{#1}}');
