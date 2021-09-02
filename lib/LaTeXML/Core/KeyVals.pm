@@ -91,9 +91,10 @@ sub resolveKeyValFor {
   my $prefix     = $$self{prefix};
   my @allkeysets = @{ $$self{keysets} };
   my @keysets    = grep { HasKeyVal($prefix, $_, $key); } @{ $$self{keysets} };
-  # throw an error, unless we record the missing macros
+  # throw an error (not really), unless we record the missing macros
+  # Since we're not as obsessive about declaring ALL keys, we'll soften the blow
   if (scalar @keysets == 0) {
-    Error('undefined', 'Encountered unknown KeyVals key',
+    Info('undefined', 'Encountered unknown KeyVals key',
       "'$key' with prefix '$prefix' not defined in '" . join(",", @allkeysets) . "', " .
         'were you perhaps using \setkeys instead of \setkeys*?') unless defined($$self{skipMissing});
     return; }
@@ -347,7 +348,7 @@ sub setKeysExpansion {
   my @tokens = ();
   push(@tokens,
     T_CS('\def'), T_CS('\XKV@fams'), T_BEGIN, Explode(join(',', @{ $$self{keysets} })), T_END,
-    T_CS('\def'), T_CS('\XKV@na'), T_BEGIN, Explode(join(',', @skipkeys)), T_END)
+    T_CS('\def'), T_CS('\XKV@na'),   T_BEGIN, Explode(join(',', @skipkeys)),            T_END)
     if $setInternals;
 
   # iterate over the key-value pairs
@@ -367,17 +368,17 @@ sub setKeysExpansion {
     foreach my $keyset (@keysets) {
       my $qname = keyval_qname($prefix, $keyset, $key);
       if (!HasKeyVal($prefix, $keyset, $key)) {
-        Error('undefined', 'Encountered unknown KeyVals key',
+        Info('undefined', 'Encountered unknown KeyVals key',
           "'" . $key . "' with prefix '" . $prefix
             . "' not defined in '" . join(",", $keyset) . "'"); }
       elsif (keyval_get($qname, 'disabled')) {    # if we are disabled, return an empty tokens
         Warn('undefined', "`" . $key . "' has been disabled. "); }
       else {
         push(@tokens,                             # definition of 'xkeyval' internals (if applicable)
-          T_CS('\def'), T_CS('\XKV@prefix'), T_BEGIN, Explode($prefix . '@'), T_END,
-          T_CS('\def'), T_CS('\XKV@tfam'),   T_BEGIN, Explode($keyset), T_END,
+          T_CS('\def'), T_CS('\XKV@prefix'), T_BEGIN, Explode($prefix . '@'),                 T_END,
+          T_CS('\def'), T_CS('\XKV@tfam'),   T_BEGIN, Explode($keyset),                       T_END,
           T_CS('\def'), T_CS('\XKV@header'), T_BEGIN, Explode($prefix . '@' . $keyset . '@'), T_END,
-          T_CS('\def'), T_CS('\XKV@tkey'),   T_BEGIN, Explode($key), T_END
+          T_CS('\def'), T_CS('\XKV@tkey'),   T_BEGIN, Explode($key),                          T_END
         ) if $setInternals;
         if ($useDefault) {                        # if it was not given explicitly, call the default macro
           push(@tokens, T_CS('\\' . $qname . '@default')); }
