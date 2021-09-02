@@ -31,8 +31,13 @@ DefKeyVal('Gin', 'totalheight',     'GraphixDimension');
 DefKeyVal('Gin', 'keepaspectratio', '', 'true');
 DefKeyVal('Gin', 'clip',            '', 'true');
 DefKeyVal('Gin', 'scale',           '');
-DefKeyVal('Gin', 'rotate',          '');
+DefKeyVal('Gin', 'angle',           '');
+# NOTE: graphicx defines @angle to actually carry out the rotation (on \box\z@) w/\Gin@erotate
+# rather than to simply record the angle for later use. (also origin redefines)
+# This is used by adjustbox.
+# See \Gin@erotate, \Grot@box
 
+# LaTeXML extensions:
 DefKeyVal('Gin', 'vrml', 'Semiverbatim');
 DefKeyVal('Gin', 'magnifiable', '', 'true');
 
