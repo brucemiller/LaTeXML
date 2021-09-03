@@ -980,7 +980,10 @@ DefMacro('\expandafter Token Token', sub {
       ($tok, $xtok); } });
 
 # Replace the next token with it's not-expanded variant
-DefMacro('\noexpand Token', sub { $_[1]->with_dont_expand; });
+DefMacroI('\noexpand', undef, sub {
+    my $token = $_[0]->readToken;
+    # Missing token likely the result of "{\noexpand}" for which TeX would be unperturbed
+    return ($token ? $token->with_dont_expand : ()); });
 
 DefMacroI('\topmark',        undef, Tokens());
 DefMacroI('\firstmark',      undef, Tokens());
