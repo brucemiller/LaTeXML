@@ -31,6 +31,9 @@
   <xsl:param name="USE_NAMESPACES"  >true</xsl:param>
   <xsl:param name="USE_HTML5"       >true</xsl:param>
 
+  <!-- Remove context from head title -->
+  <xsl:param name="HEAD_TITLE_SHOW_CONTEXT"/>
+
   <!-- Do not copy the RDFa prefix, but proceed as usual -->
   <xsl:template match="/">
     <xsl:apply-templates select="." mode="doctype"/>

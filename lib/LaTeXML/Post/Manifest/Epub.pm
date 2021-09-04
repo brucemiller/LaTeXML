@@ -15,6 +15,9 @@ use warnings;
 use File::Find qw(find);
 use URI::file;
 
+# ensure that we can use xhtml: in the xpath queries below
+$LaTeXML::Post::Document::XPATH->registerNS('xhtml' => 'http://www.w3.org/1999/xhtml');
+
 our $uuid_tiny_installed;
 
 BEGIN {
@@ -213,7 +216,8 @@ sub process {
       my $nav_li  = $nav_map->addNewChild(undef, 'li');
       my $nav_a   = $nav_li->addNewChild(undef, 'a');
       $nav_a->setAttribute('href', URI::file->new($relative_destination));
-      $nav_a->appendText($file); } }
+      map { $nav_a->appendChild($_->cloneNode(1)) }
+        $doc->findnodes('/xhtml:html/xhtml:head/xhtml:title/node()'); } }
   $self->finalize;
   return; }
 
