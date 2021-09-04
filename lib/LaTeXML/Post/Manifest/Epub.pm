@@ -101,7 +101,8 @@ sub initialize {
 
   # Metadata
   my $rootentry         = $$self{db}->lookup('SITE_ROOT');
-  my $document_metadata = $$self{db}->lookup("ID:" . $rootentry->getValue('id'));
+  my $root_id           = $rootentry->getValue('id');
+  my $document_metadata = $$self{db}->lookup("ID:" . $root_id);
   my $document_title    = $document_metadata->getValue('title');
   $document_title = $document_title ? $document_title->textContent : 'No Title';
   my $document_authors = $document_metadata->getValue('authors') || [];
@@ -167,6 +168,7 @@ sub initialize {
   $$self{opf_spine}     = $spine;
   $$self{opf_manifest}  = $manifest;
   $$self{nav}           = $nav;
+  $$self{root_id}       = $root_id;
   $$self{nav_map}       = $nav_map;
   return; }
 
@@ -185,6 +187,9 @@ sub url_id {
 sub process {
   my ($self, @docs) = @_;
   $self->initialize($docs[0]);
+  my $root_id  = $$self{root_id};
+  my %nav_maps = ($root_id => $$self{nav_map});
+  my $nav_li   = undef;
   foreach my $doc (@docs) {
     # Add each document to the spine manifest
     if (my $destination = $doc->getDestination) {
@@ -212,9 +217,20 @@ sub process {
       $itemref->setAttribute('idref', $item_id);
 
       # Add to navigation
-      my $nav_map = $$self{nav_map};
-      my $nav_li  = $nav_map->addNewChild(undef, 'li');
-      my $nav_a   = $nav_li->addNewChild(undef, 'a');
+      my $nav_map = undef;
+      if (!exists $$doc{parent_id}) {
+        # root document, use topmost <ol>
+        $nav_map = $nav_maps{$root_id}; }
+      elsif (exists $nav_maps{ $$doc{parent_id} }) {
+        # use parent <ol>
+        $nav_map = $nav_maps{ $$doc{parent_id} }; }
+      else {
+        # previous entry is the parent, create new <ol> in its <li>
+        my $new_map = $nav_li->addNewChild(undef, 'ol');
+        $nav_map = $new_map;
+        $nav_maps{ $$doc{parent_id} } = $nav_map; }
+      $nav_li = $nav_map->addNewChild(undef, 'li');
+      my $nav_a = $nav_li->addNewChild(undef, 'a');
       $nav_a->setAttribute('href', URI::file->new($relative_destination));
       map { $nav_a->appendChild($_->cloneNode(1)) }
         $doc->findnodes('/xhtml:html/xhtml:head/xhtml:title/node()'); } }
