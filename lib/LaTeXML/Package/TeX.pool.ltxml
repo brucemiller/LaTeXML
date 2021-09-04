@@ -432,33 +432,28 @@ DefParameterType('BalancedParen', sub {
   reversion => sub {
     (T_OTHER('('), Revert($_[0]), T_OTHER(')')); });
 
-# Read a digested argument.
-# The usual macro parameter (generally written as {}) gets
-# tokenized and digested in separate stages,
-# and so it is tokenized w/o recognizing any special macros within (eg. \url).
-# Rarely, you need a parameter that gets digested as it's read until
-# the (typically required) opening { is balanced.
+# Read a digested argument, digesting as it is being read.
+# The usual macro parameter (generally written as {}) gets tokenized and digested
+# in separate stages, w/o recognizing any special macros or catcode changes within (eg. \url).
+# Rarely, you need a parameter that gets digested AS IT'S READ until ending }.
+# Note that this also recognizes args as \bgroup ... \engroup
 # It is useful when the content would usually need to have been \protect'd
 # in order to correctly deal with catcodes.
-# We also must read some sort of Box content, so we ignore random "empty"
-# things like \relax, \leavevmode...
+# BEWARE: This is NOT a shorthand for a simple digested {}!
 DefParameterType('Digested', sub {
     my ($gullet) = @_;
     $gullet->skipSpaces;
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @list   = ();
     my $token;
-    while (1) {
-      do { $token = $gullet->readXToken(0);
-      } while (defined $token && $token->getCatcode == CC_SPACE);
-      if    (!defined $token) { last; }
-      elsif ($token->equals(T_BEGIN)) {
-        Digest($token);
-        push(@list, $STATE->getStomach->digestNextBody()); pop(@list); }
-      else {
-        push(@list, $STATE->getStomach->invokeToken($token)); }
-      # In most (all?) cases, we're really looking for a single Whatsit here...
-      last if grep { !$_->getProperty('isEmpty'); } @list; }
+    do { $token = $gullet->readXToken(0);
+    } while (defined $token && (($token->getCatcode == CC_SPACE) || $token->equals(T_CS('\relax'))));
+    if    (!defined $token) { }
+    elsif ($token->equals(T_BEGIN)) {
+      Digest($token);
+      push(@list, $STATE->getStomach->digestNextBody()); pop(@list); }    # content w/o the braces
+    else {
+      push(@list, $STATE->getStomach->invokeToken($token)); }
     @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
     List(@list, mode => ($ismath ? 'math' : 'text')); },
   undigested => 1,                                           # since _already_ digested.
@@ -985,7 +980,10 @@ DefMacro('\expandafter Token Token', sub {
       ($tok, $xtok); } });
 
 # Replace the next token with it's not-expanded variant
-DefMacro('\noexpand Token', sub { $_[1]->with_dont_expand; });
+DefMacroI('\noexpand', undef, sub {
+    my $token = $_[0]->readToken;
+    # Missing token likely the result of "{\noexpand}" for which TeX would be unperturbed
+    return ($token ? $token->with_dont_expand : ()); });
 
 DefMacroI('\topmark',        undef, Tokens());
 DefMacroI('\firstmark',      undef, Tokens());
@@ -5018,9 +5016,9 @@ my @frontmatter_elements = (qw(ltx:title ltx:toctitle ltx:subtitle
 my %frontmatter_elements = map { ($_ => 1) } @frontmatter_elements;
 
 sub insertFrontMatter {
-  my ($document) = @_;
+  my ($document)  = @_;
   my $frontmatter = LookupValue('frontmatter');
-  my @set_keys = $frontmatter ? (keys %$frontmatter) : ();
+  my @set_keys    = $frontmatter ? (keys %$frontmatter) : ();
   # if doc only has a solo abstract as frontmatter,
   #    don't deposit here but mark to be placed as-is.
   if ((scalar(@set_keys) == 1) && ($set_keys[0] eq 'ltx:abstract') &&
@@ -5956,11 +5954,12 @@ DefMath('\vec Digested', "\x{2192}",
 DefMath('\dot Digested',      "\x{02D9}", operator_role => 'OVERACCENT');    # DOT ABOVE
 DefMath('\ddot Digested',     UTF(0xA8),  operator_role => 'OVERACCENT');    # DIAERESIS
 DefMath('\overline Digested', UTF(0xAF),  operator_role => 'OVERACCENT');    # MACRON
-DefMath('\overbrace Digested', "\x{23DE}", operator_role => 'OVERACCENT',    # TOP CURLY BRACKET
-  scriptpos => 'mid');
 DefMath('\widehat Digested', UTF(0x5E), operator_role => 'OVERACCENT'); # CIRCUMFLEX ACCENT [plain? also amsfonts]
 DefMath('\widetilde Digested', UTF(0x7E), operator_role => 'OVERACCENT'); # TILDE [plain? also amsfonts]
-DefMath('\underbrace Digested', "\x{23DF}", operator_role => 'UNDERACCENT',   # BOTTOM CURLY BRACKET
+# These aren't handled as simple accents by TeX, so no Digested
+DefMath('\overbrace {}', "\x{23DE}", operator_role => 'OVERACCENT',       # TOP CURLY BRACKET
+  scriptpos => 'mid');
+DefMath('\underbrace {}', "\x{23DF}", operator_role => 'UNDERACCENT',     # BOTTOM CURLY BRACKET
   scriptpos => 'mid');
 
 # NOTE that all the above accents REQUIRE math mode

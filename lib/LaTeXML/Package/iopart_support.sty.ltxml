@@ -56,7 +56,6 @@ DefMacro('\ead Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}'
 DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
 Let('\mailto', '\ead');
 
-#DefMacro('\eads DigestedBody','#1');
 DefMacro('\eads {}', '#1');
 
 DefMacro('\pacno{}', '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
@@ -124,10 +123,10 @@ DefMacro('\case{}{}', '{\textstyle\frac{#1}{#2}}');
 DefMath('\Tr', '\mathrm{Tr}', role => 'OPFUNCTION', meaning => 'trace');
 DefMath('\tr', '\mathrm{tr}', role => 'OPFUNCTION', meaning => 'trace');
 
-DefMath('\Or',            '\mathrm{O}', role          => "OPFUNCTION", meaning => 'Big-O');
-DefMath('\tdot Digested', "\x{2026}",   operator_role => 'OVERACCENT');
-DefMath('\lshad',         "\x{27E6}",   role          => 'OPEN');
-DefMath('\rshad',         "\x{27E7}",   role          => 'CLOSE');
+DefMath('\Or',      '\mathrm{O}', role          => "OPFUNCTION", meaning => 'Big-O');
+DefMath('\tdot {}', "\x{2026}",   operator_role => 'OVERACCENT');
+DefMath('\lshad',   "\x{27E6}",   role          => 'OPEN');
+DefMath('\rshad',   "\x{27E7}",   role          => 'CLOSE');
 
 DefMacroI('\dsty',  undef, '\displaystyle');
 DefMacroI('\tsty',  undef, '\textstyle');

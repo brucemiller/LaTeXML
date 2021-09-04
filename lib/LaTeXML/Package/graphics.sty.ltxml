@@ -36,43 +36,78 @@ DefParameterType('GraphixDimension', sub {
 
 # Should probably be more clever about whether to create an ltx:inline-block vs just ltx:text
 # perhaps somethinb based on modes?
-DefConstructor('\Gscale@box{}[] Digested',
-  "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
-    . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
-    . " xscale='#xscale' yscale='#yscale'"
-    . " xtranslate='#xtranslate' ytranslate='#ytranslate'>"
-    . "#3"
-    . "</ltx:inline-block>",
+# NOTE: Need to arrange for \width,\height,\depth,\totalheight to be bound!!!
+# Record the box in \@tempboxa ???
+sub graphics_scaledbox_props {
+  my ($box, $xscale, $yscale) = @_;
+  #  my ($w,   $h,      $d)      = $box->getSize;
+  my ($rw, $rh, $rd, $w, $h, $d) = $box->getSize;
+  my ($sw, $sh, $sd) =
+    ($w && $w->multiply($xscale), $h && $h->multiply($yscale), $d && $d->multiply($yscale));
+  return (
+    box         => $box,
+    xscale      => $xscale, yscale => $yscale,
+    innerwidth  => $w,
+    innerheight => $h,
+    innerdepth  => $d,
+    width       => $sw,
+    height      => $sh,
+    depth       => $sd,
+    totalheight => $h  && ($d ? $h->add($d) : $h)->multiply($yscale),
+    xtranslate  => $sw && $w && $sw->subtract($w)->multiply(+0.5),
+    ytranslate  => $sh && $h && $sh->subtract($h)->multiply(-0.5),
+  ); }
+
+sub graphics_scaledbox_insert {
+  my ($document, %props) = @_;
+  $document->openElement('ltx:inline-block',
+    xscale     => $props{xscale},     yscale     => $props{yscale},
+    width      => $props{width},      height     => $props{height}, depth => $props{depth},
+    xtranslate => $props{xtranslate}, ytranslate => $props{ytranslate});
+  $document->absorb($props{box});
+  $document->closeElement('ltx:inline-block');
+  return; }
+
+DefConstructor('\Gscale@box {Float} [Float] {}', sub {
+    my ($document, $scale, $yscale, $box, %props) = @_;
+    graphics_scaledbox_insert($document, %props); },
   properties => sub {
     my ($stomach, $xscale, $yscale, $box) = @_;
-    $xscale = ToString($xscale);
-    $yscale = ($yscale ? ToString($yscale) : $xscale);
-    if    ($xscale eq '!') { $xscale = $yscale; }
-    elsif ($yscale eq '!') { $yscale = $xscale; }
-    my ($w, $h, $d) = $box->getSize;
-    return () unless $w;
-    # Some issue with double scaling if BOTH size & scales are given!?!?
-    (width => $w->multiply($xscale),
-      height     => $h->multiply($yscale),
-      depth      => $d->multiply($yscale),
-      xscale     => $xscale,
-      yscale     => $yscale,
-      xtranslate => $w->multiply(($xscale - 1) / 2),
-      ytranslate => $h->add($d)->multiply(($yscale - 1) / 2)); },
+    graphics_scaledbox_props($box, $xscale, $yscale || $xscale); },
   mode => 'text');
 Let('\scalebox', '\Gscale@box');
 
-DefConstructor('\Gscale@@box OptionalMatch:* {GraphixDimension}{GraphixDimension} Digested', sub {
+DefConstructor('\Gscale@box@dd {Dimension}{Dimension} {}', sub {
+    my ($document, $num, $denum, $box, %props) = @_;
+    graphics_scaledbox_insert($document, %props); },
+  properties => sub {
+    my ($stomach, $num, $denom, $box) = @_;
+    my $scale = $num->valueOf / $denom->valueOf;
+    graphics_scaledbox_props($box, $scale, $scale); },
+  mode => 'text');
+
+DefConstructor('\Gscale@box@dddd {Dimension}{Dimension}{Dimension}{Dimension} {}', sub {
+    my ($document, $xnum, $xdenom, $ynum, $ydenom, $box, %props) = @_;
+    graphics_scaledbox_insert($document, %props); },
+  properties => sub {
+    my ($stomach, $xn, $xd, $yn, $yd, $box) = @_;
+    graphics_scaledbox_props($box, $xn->valueOf / $xd->valueOf, $yn->valueOf / $yd->valueOf); },
+  mode => 'text');
+
+# 1st arg: \totalheight or \height
+DefConstructor('\Gscale@@box {} {GraphixDimension}{GraphixDimension} {}', sub {
     my ($document, $heighttype, $width, $height, $box, %props) = @_;
-    insertBlock($document, $box,
-      width  => $props{width},
-      height => $props{height},
-      depth  => $props{depth}); },    # ?
+    graphics_scaledbox_insert($document, %props); },
   properties => sub {
     my ($stomach, $heighttype, $width, $height, $box) = @_;
-    (($width ? (width => $width) : ()),
-      ($height ? (height => $height) : ()),
-      depth => Dimension(0)); },      # ?
+    my ($xscale, $yscale)                             = (1, 1);
+    my ($w, $h, $d)                                   = $box->getSize;
+    $h = $h->advance($d) if T_CS('\totalheight')->equals($heighttype);
+    if ($width)             { $xscale = $width->valueOf / $w->valueOf; }
+    if ($height)            { $yscale = $height->valueOf / $h->valueOf; }
+    if ($width && !$height) { $yscale = $xscale; }
+    if ($height && !$width) { $xscale = $yscale; }
+    graphics_scaledbox_props($box, $xscale, $yscale); },
   mode => 'text');
 DefMacro('\resizebox', '\leavevmode\@ifstar{\Gscale@@box\totalheight}{\Gscale@@box\height}');
 
@@ -150,7 +185,7 @@ DefKeyVal('Grot', 'origin', '');            # c,l,r,t,b,B
 DefKeyVal('Grot', 'x',      'Dimension');
 DefKeyVal('Grot', 'y',      'Dimension');
 DefKeyVal('Grot', 'units',  '');
-DefConstructor('\rotatebox OptionalKeyVals:Grot {Float} Digested',
+DefConstructor('\rotatebox OptionalKeyVals:Grot {Float} {}',
   "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
     . " xscale='#xscale' yscale='#yscale'"
@@ -161,8 +196,10 @@ DefConstructor('\rotatebox OptionalKeyVals:Grot {Float} Digested',
     my ($stomach, $whatsit) = @_;
     my ($kv, $angle, $box) = $whatsit->getArgs();
     $whatsit->setProperties(rotatedProperties($box, $angle, ($kv ? $kv->getHash : ()))); });
+# Backwards!
+DefMacro('\Grot@erotate', '\rotatebox[]');
 
-DefConstructor('\reflectbox Digested',
+DefConstructor('\reflectbox {}',
   "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'"
     . " xscale='#xscale' yscale='#yscale'"

@@ -16,6 +16,7 @@ use warnings;
 use LaTeXML::Package;
 
 #======================================================================
-DefMath('\utilde Digested', UTF(0x7E), operator_role => 'UNDERACCENT');
+# Obsolete package, but...
+DefMath('\utilde {}', UTF(0x7E), operator_role => 'UNDERACCENT');
 #======================================================================
 1;

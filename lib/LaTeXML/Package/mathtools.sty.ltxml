@@ -210,8 +210,8 @@ sub defMTTagForm {
     Tokens(T_BEGIN, $open->unlist,
       ($style ? $style->unlist : ()), T_BEGIN,
       #T_OTHER('*'),
-      T_CS('\ref'), T_BEGIN, T_PARAM, T_OTHER(1), T_END,
-      T_END, $close->unlist, T_END),
+      T_CS('\ref'), T_BEGIN,        T_PARAM, T_OTHER(1), T_END,
+      T_END,        $close->unlist, T_END),
     scope => 'global');
   DefMacroI($cs, undef, sub {
       DefMacroI('\fnum@equation', undef, T_CS('\fnum@equation@MT@' . $name), scope => 'global');
@@ -464,11 +464,12 @@ DefConstructor('\xleftrightharpoons[]{}',
     . ")",
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
 
-DefMacro('\overbracket [] [] {}', '\@overbracket {#3}'); # args: [<rule thickness>] [<bracket height>] {<arg>}
-DefMacro('\underbracket [] [] {}', '\@underbracket {#3}');
-DefMath('\@overbracket Digested', "\x{FE48}", operator_role => 'OVERACCENT', scriptpos => 'mid',
+# args: [<rule thickness>] [<bracket height>] {<arg>}
+DefMacro('\overbracket [] [] {}',  '\lx@mt@overbracket {#3}');
+DefMacro('\underbracket [] [] {}', '\lx@mt@underbracket {#3}');
+DefMath('\lx@mt@overbracket {}', "\x{FE47}", operator_role => 'OVERACCENT', scriptpos => 'mid',
   alias => '\overbracket');
-DefMath('\@underbracket Digested', "\x{FE47}", operator_role => 'UNDERACCENT', scriptpos => 'mid',
+DefMath('\lx@mt@underbracket {}', "\x{FE48}", operator_role => 'UNDERACCENT', scriptpos => 'mid',
   alias => '\underbracket');
 Let('\LaTeXunderbrace', '\underbrace');
 Let('\LaTeXoverbrace',  '\overbrace');

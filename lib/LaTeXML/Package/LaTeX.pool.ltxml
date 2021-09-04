@@ -5280,7 +5280,11 @@ sub make_message {
   my $type    = ToString(shift(@args)) || $cmd;
   $stomach->bgroup;
   Let('\protect', '\string');
+  # Note that the arg really should be digested to get to the underlying text,
+  # but why tempt fate, when we're already making an error message?
   my $message = join(" ", map { ToString(Expand($_)) } @args);
+  $type    =~ s/(?:\\\@spaces?)+/ /g;
+  $message =~ s/(?:\\\@spaces?)+/ /g;
   $stomach->egroup;
   return ('latex', $type, $stomach, $message); }
 

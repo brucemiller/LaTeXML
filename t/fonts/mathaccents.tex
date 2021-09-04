@@ -16,4 +16,35 @@ $\vec{a}$   & $\mathaccent"017E{a}$ & $\vec{abc}$\\
 $\widetilde{aaa}$   & $\mathaccent"0365{aaa}$ \\
 $\widehat{aaa}$     & $\mathaccent"0362{aaa}$ \\
 \end{tabular}
+
+\def\abc{ABC}
+\def\nothing{}
+Test what arguments hat accepts
+(should be same with check, breve, acute, grave, tilde, bar, vec,
+dot, ddot, overline, widehat, widetilde)
+\def\testmacro{\hat}
+\[ [\testmacro A] \quad
+ [\testmacro{}] \quad
+ [\testmacro{A}] \quad
+ [\testmacro{ABC}] \quad
+ [\testmacro\nothing A] \quad
+ [\testmacro\relax A] \quad
+ [\testmacro{\verb+$+}] \quad
+ [\testmacro\bgroup A \egroup] \quad
+ [\testmacro\bgroup \verb+$+ \egroup] \]
+Note that this only accents the A
+\[ [\testmacro\abc] \]
+
+Other accent-like macros (underbrace, overbrace) only accept regular style arguments
+\def\testmacro{\underbrace}
+\[ [\testmacro A] \quad
+ [\testmacro{}] \quad
+ [\testmacro{A}] \quad
+ [\testmacro{ABC}] \quad
+ [\testmacro\abc] \]
+But note that while these don't fail, they accent nothing
+\[ [\testmacro\nothing A] \quad
+ [\testmacro\relax A] \quad 
+ [\testmacro\leavevmode A] \]
+
 \end{document}
