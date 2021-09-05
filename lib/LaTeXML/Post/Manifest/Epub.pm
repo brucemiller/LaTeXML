@@ -142,11 +142,6 @@ sub initialize {
   $identifier->appendText($$self{'unique-identifier'});
   # Manifest
   my $manifest = $package->addNewChild(undef, 'manifest');
-  my $nav_item = $manifest->addNewChild(undef, 'item');
-  $nav_item->setAttribute('id',         'nav');
-  $nav_item->setAttribute('href',       'nav.xhtml');
-  $nav_item->setAttribute('properties', 'nav');
-  $nav_item->setAttribute('media-type', 'application/xhtml+xml');
   # Spine
   my $spine = $package->addNewChild(undef, 'spine');
   # 3.2 OPS/nav.xhtml
@@ -266,6 +261,25 @@ sub finalize {
     $file_item->setAttribute('href',       $file_url);
     $file_item->setAttribute('media-type', $file_type); }
 
+  # Write toc.ncx file to disk
+  my $nav_count = 0;
+  my $nav_name  = 'nav.xhtml';
+  my $nav_path  = pathname_concat($OPS_directory, $nav_name);
+  while (-f $nav_path) {    # do not overwrite existing files
+    $nav_count += 1;
+    $nav_name = "nav-$nav_count.xhtml";
+    $nav_path = pathname_concat($OPS_directory, $nav_name); }
+  my $NAV_FH;
+  open($NAV_FH, ">", $nav_path)
+    or Fatal('I/O', $nav_path, undef, "Couldn't open '$nav_path' for writing: $!");
+  print $NAV_FH $$self{nav}->toString(1);
+  close $NAV_FH;
+  my $nav_item = $manifest->addNewChild(undef, 'item');
+  $nav_item->setAttribute('id',         'nav');
+  $nav_item->setAttribute('href',       $nav_name);
+  $nav_item->setAttribute('properties', 'nav');
+  $nav_item->setAttribute('media-type', 'application/xhtml+xml');
+
   # Write the content.opf file to disk
   my $directory    = $$self{siteDirectory};
   my $content_path = pathname_concat($OPS_directory, 'content.opf');
@@ -277,17 +291,6 @@ sub finalize {
       or Fatal('I/O', 'content.opf', undef, "Couldn't open '$content_path' for writing: $_");
     print $OPF_FH $$self{opf}->toString(1);
     close $OPF_FH; }
-
-  # Write toc.ncx file to disk
-  my $nav_path = pathname_concat($OPS_directory, 'nav.xhtml');
-  if (-f $nav_path) {
-    Info('note', 'nav.xhtml', undef, 'using the navigation document supplied by the user'); }
-  else {
-    my $NAV_FH;
-    open($NAV_FH, ">", $nav_path)
-      or Fatal('I/O', 'nav.xhtml', undef, "Couldn't open '$nav_path' for writing: $!");
-    print $NAV_FH $$self{nav}->toString(1);
-    close $NAV_FH; }
 
   return (); }
 
