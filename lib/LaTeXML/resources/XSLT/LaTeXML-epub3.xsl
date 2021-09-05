@@ -34,6 +34,17 @@
   <!-- Remove context from head title -->
   <xsl:param name="HEAD_TITLE_SHOW_CONTEXT"/>
 
+  <!-- Navigation is already handled by the navigation document -->
+  <xsl:template match="/" mode="header"/>
+  <xsl:template match="/" mode="footer-navigation"/>
+
+  <!-- Generator footer on front page only -->
+  <xsl:template match="/" mode="footer">
+    <xsl:if test="not(//ltx:navigation/ltx:ref[@rel='up'])">
+      <xsl:apply-imports/>
+    </xsl:if>
+  </xsl:template>
+
   <!-- Do not copy the RDFa prefix, but proceed as usual -->
   <xsl:template match="/">
     <xsl:apply-templates select="." mode="doctype"/>
