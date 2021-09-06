@@ -5958,9 +5958,9 @@ DefMath('\widehat Digested', UTF(0x5E), operator_role => 'OVERACCENT'); # CIRCUM
 DefMath('\widetilde Digested', UTF(0x7E), operator_role => 'OVERACCENT'); # TILDE [plain? also amsfonts]
 # These aren't handled as simple accents by TeX, so no Digested
 DefMath('\overbrace {}', "\x{23DE}", operator_role => 'OVERACCENT',       # TOP CURLY BRACKET
-  scriptpos => 'mid');
+  scriptpos => 'mid', robust => 1);
 DefMath('\underbrace {}', "\x{23DF}", operator_role => 'UNDERACCENT',     # BOTTOM CURLY BRACKET
-  scriptpos => 'mid');
+  scriptpos => 'mid', robust => 1);
 
 # NOTE that all the above accents REQUIRE math mode
 # EXCEPT underline, overrightarrow and overleftarrow!
