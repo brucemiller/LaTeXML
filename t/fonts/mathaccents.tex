@@ -22,13 +22,14 @@ $\widehat{aaa}$     & $\mathaccent"0362{aaa}$ \\
 Test what arguments hat accepts
 (should be same with check, breve, acute, grave, tilde, bar, vec,
 dot, ddot, overline, widehat, widetilde)
-\def\testmacro{\hat}
+\let\testmacro\hat
 \[ [\testmacro A] \quad
  [\testmacro{}] \quad
  [\testmacro{A}] \quad
  [\testmacro{ABC}] \quad
  [\testmacro\nothing A] \quad
  [\testmacro\relax A] \quad
+ [\testmacro\noexpand\relax A] \quad
  [\testmacro{\verb+$+}] \quad
  [\testmacro\bgroup A \egroup] \quad
  [\testmacro\bgroup \verb+$+ \egroup] \]
@@ -36,7 +37,7 @@ Note that this only accents the A
 \[ [\testmacro\abc] \]
 
 Other accent-like macros (underbrace, overbrace) only accept regular style arguments
-\def\testmacro{\underbrace}
+\let\testmacro\underbrace
 \[ [\testmacro A] \quad
  [\testmacro{}] \quad
  [\testmacro{A}] \quad
@@ -44,7 +45,10 @@ Other accent-like macros (underbrace, overbrace) only accept regular style argum
  [\testmacro\abc] \]
 But note that while these don't fail, they accent nothing
 \[ [\testmacro\nothing A] \quad
- [\testmacro\relax A] \quad 
+   [\testmacro\relax A] \quad 
+ [\testmacro\noexpand\relax A] \quad 
  [\testmacro\leavevmode A] \]
+And a peculiar case
+\[ \expandafter\testmacro\testmacro foo \]
 
 \end{document}

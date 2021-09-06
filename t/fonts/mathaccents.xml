@@ -413,12 +413,11 @@
 (should be same with check, breve, acute, grave, tilde, bar, vec,
 dot, ddot, overline, widehat, widetilde)</p>
     <equation xml:id="S0.Ex1">
-      <Math mode="display" tex="[\hat{A}]\quad[\hat{}]\quad[\hat{A}]\quad[\hat{ABC}]\quad[\hat{A}]\quad[\hat{A%&#10;}]\quad[\hat{\verb+$+}]\quad[\hat{{A}}]\quad[\hat{{\verb+$+}}]" text="list@(delimited-[]@(hat@(A)), delimited-[]@(hat@(absent)), delimited-[]@(hat@(A)), delimited-[]@(hat@(A * B * C)), delimited-[]@(hat@(A)), delimited-[]@(hat@(A)), delimited-[]@(hat@($)), delimited-[]@(hat@(A)), delimited-[]@(hat@($)))" xml:id="S0.Ex1.m1">
+      <Math mode="display" tex="[\hat{A}]\quad[\hat{}]\quad[\hat{A}]\quad[\hat{ABC}]\quad[\hat{A}]\quad[\hat{A%&#10;}]\quad[\hat{A}]\quad[\hat{\verb+$+}]\quad[\hat{{A}}]\quad[\hat{{\verb+$+}}]" text="list@(delimited-[]@(hat@(A)), delimited-[]@(hat@(absent)), delimited-[]@(hat@(A)), delimited-[]@(hat@(A * B * C)), delimited-[]@(hat@(A)), delimited-[]@(hat@(A)), delimited-[]@(hat@(A)), delimited-[]@(hat@($)), delimited-[]@(hat@(A)), delimited-[]@(hat@($)))" xml:id="S0.Ex1.m1">
         <XMath>
           <XMDual>
             <XMApp>
               <XMTok meaning="list"/>
-              <XMRef idref="S0.Ex1.m1.10"/>
               <XMRef idref="S0.Ex1.m1.11"/>
               <XMRef idref="S0.Ex1.m1.12"/>
               <XMRef idref="S0.Ex1.m1.13"/>
@@ -427,9 +426,11 @@ dot, ddot, overline, widehat, widetilde)</p>
               <XMRef idref="S0.Ex1.m1.16"/>
               <XMRef idref="S0.Ex1.m1.17"/>
               <XMRef idref="S0.Ex1.m1.18"/>
+              <XMRef idref="S0.Ex1.m1.19"/>
+              <XMRef idref="S0.Ex1.m1.20"/>
             </XMApp>
             <XMWrap>
-              <XMDual xml:id="S0.Ex1.m1.10">
+              <XMDual xml:id="S0.Ex1.m1.11">
                 <XMApp>
                   <XMTok meaning="delimited-[]"/>
                   <XMRef idref="S0.Ex1.m1.1"/>
@@ -444,7 +445,7 @@ dot, ddot, overline, widehat, widetilde)</p>
                 </XMWrap>
               </XMDual>
               <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
-              <XMDual xml:id="S0.Ex1.m1.11">
+              <XMDual xml:id="S0.Ex1.m1.12">
                 <XMApp>
                   <XMTok meaning="delimited-[]"/>
                   <XMRef idref="S0.Ex1.m1.2"/>
@@ -459,7 +460,7 @@ dot, ddot, overline, widehat, widetilde)</p>
                 </XMWrap>
               </XMDual>
               <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
-              <XMDual xml:id="S0.Ex1.m1.12">
+              <XMDual xml:id="S0.Ex1.m1.13">
                 <XMApp>
                   <XMTok meaning="delimited-[]"/>
                   <XMRef idref="S0.Ex1.m1.3"/>
@@ -474,7 +475,7 @@ dot, ddot, overline, widehat, widetilde)</p>
                 </XMWrap>
               </XMDual>
               <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
-              <XMDual xml:id="S0.Ex1.m1.13">
+              <XMDual xml:id="S0.Ex1.m1.14">
                 <XMApp>
                   <XMTok meaning="delimited-[]"/>
                   <XMRef idref="S0.Ex1.m1.4"/>
@@ -494,7 +495,7 @@ dot, ddot, overline, widehat, widetilde)</p>
                 </XMWrap>
               </XMDual>
               <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
-              <XMDual xml:id="S0.Ex1.m1.14">
+              <XMDual xml:id="S0.Ex1.m1.15">
                 <XMApp>
                   <XMTok meaning="delimited-[]"/>
                   <XMRef idref="S0.Ex1.m1.5"/>
@@ -509,7 +510,7 @@ dot, ddot, overline, widehat, widetilde)</p>
                 </XMWrap>
               </XMDual>
               <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
-              <XMDual xml:id="S0.Ex1.m1.15">
+              <XMDual xml:id="S0.Ex1.m1.16">
                 <XMApp>
                   <XMTok meaning="delimited-[]"/>
                   <XMRef idref="S0.Ex1.m1.6"/>
@@ -524,7 +525,7 @@ dot, ddot, overline, widehat, widetilde)</p>
                 </XMWrap>
               </XMDual>
               <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
-              <XMDual xml:id="S0.Ex1.m1.16">
+              <XMDual xml:id="S0.Ex1.m1.17">
                 <XMApp>
                   <XMTok meaning="delimited-[]"/>
                   <XMRef idref="S0.Ex1.m1.7"/>
@@ -532,21 +533,6 @@ dot, ddot, overline, widehat, widetilde)</p>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">[</XMTok>
                   <XMApp xml:id="S0.Ex1.m1.7">
-                    <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
-                    <XMTok font="typewriter">$</XMTok>
-                  </XMApp>
-                  <XMTok role="CLOSE" stretchy="false">]</XMTok>
-                </XMWrap>
-              </XMDual>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
-              <XMDual xml:id="S0.Ex1.m1.17">
-                <XMApp>
-                  <XMTok meaning="delimited-[]"/>
-                  <XMRef idref="S0.Ex1.m1.8"/>
-                </XMApp>
-                <XMWrap>
-                  <XMTok role="OPEN" stretchy="false">[</XMTok>
-                  <XMApp xml:id="S0.Ex1.m1.8">
                     <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
                     <XMTok font="italic" role="UNKNOWN">A</XMTok>
                   </XMApp>
@@ -557,11 +543,41 @@ dot, ddot, overline, widehat, widetilde)</p>
               <XMDual xml:id="S0.Ex1.m1.18">
                 <XMApp>
                   <XMTok meaning="delimited-[]"/>
+                  <XMRef idref="S0.Ex1.m1.8"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">[</XMTok>
+                  <XMApp xml:id="S0.Ex1.m1.8">
+                    <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
+                    <XMTok font="typewriter">$</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMDual xml:id="S0.Ex1.m1.19">
+                <XMApp>
+                  <XMTok meaning="delimited-[]"/>
                   <XMRef idref="S0.Ex1.m1.9"/>
                 </XMApp>
                 <XMWrap>
                   <XMTok role="OPEN" stretchy="false">[</XMTok>
                   <XMApp xml:id="S0.Ex1.m1.9">
+                    <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                </XMWrap>
+              </XMDual>
+              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMDual xml:id="S0.Ex1.m1.20">
+                <XMApp>
+                  <XMTok meaning="delimited-[]"/>
+                  <XMRef idref="S0.Ex1.m1.10"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">[</XMTok>
+                  <XMApp xml:id="S0.Ex1.m1.10">
                     <XMTok name="hat" role="OVERACCENT" stretchy="false">^</XMTok>
                     <XMTok font="typewriter">$</XMTok>
                   </XMApp>
@@ -706,7 +722,7 @@ dot, ddot, overline, widehat, widetilde)</p>
     </equation>
     <p>But note that while these don’t fail, they accent nothing</p>
     <equation xml:id="S0.Ex4">
-      <Math mode="display" tex="[\underbrace{}A]\quad[\underbrace{}A]\quad[\underbrace{\leavevmode}A]" text="list@(delimited-[]@(underbrace@(absent) * A), delimited-[]@(underbrace@(absent) * A), delimited-[]@(underbrace@(absent) * A))" xml:id="S0.Ex4.m1">
+      <Math mode="display" tex="[\underbrace{}A]\quad[\underbrace{}A]\quad[\underbrace{}A]\quad[\underbrace{%&#10;\leavevmode}A]" text="list@(delimited-[]@(underbrace@(absent) * A), delimited-[]@(underbrace@(absent) * A), delimited-[]@(underbrace@(absent) * A), delimited-[]@(underbrace@(absent) * A))" xml:id="S0.Ex4.m1">
         <XMath>
           <XMDual>
             <XMApp>
@@ -714,6 +730,7 @@ dot, ddot, overline, widehat, widetilde)</p>
               <XMRef idref="S0.Ex4.m1.1"/>
               <XMRef idref="S0.Ex4.m1.2"/>
               <XMRef idref="S0.Ex4.m1.3"/>
+              <XMRef idref="S0.Ex4.m1.4"/>
             </XMApp>
             <XMWrap>
               <XMDual xml:id="S0.Ex4.m1.1">
@@ -772,8 +789,47 @@ dot, ddot, overline, widehat, widetilde)</p>
                   <XMTok role="CLOSE" stretchy="false">]</XMTok>
                 </XMWrap>
               </XMDual>
+              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMDual xml:id="S0.Ex4.m1.4">
+                <XMApp>
+                  <XMTok meaning="delimited-[]"/>
+                  <XMRef idref="S0.Ex4.m1.4.1"/>
+                </XMApp>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">[</XMTok>
+                  <XMApp xml:id="S0.Ex4.m1.4.1">
+                    <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                    <XMApp scriptpos="mid">
+                      <XMTok name="underbrace" role="UNDERACCENT">⏟</XMTok>
+                      <XMTok meaning="absent"/>
+                    </XMApp>
+                    <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                  </XMApp>
+                  <XMTok role="CLOSE" stretchy="false">]</XMTok>
+                </XMWrap>
+              </XMDual>
             </XMWrap>
           </XMDual>
+        </XMath>
+      </Math>
+    </equation>
+    <p>And a peculiar case</p>
+    <equation xml:id="S0.Ex5">
+      <Math mode="display" tex="\underbrace{}\underbrace{f}oo" text="underbrace@(absent) * underbrace@(f) * o * o" xml:id="S0.Ex5.m1">
+        <XMath>
+          <XMApp>
+            <XMTok meaning="times" role="MULOP">⁢</XMTok>
+            <XMApp scriptpos="mid">
+              <XMTok name="underbrace" role="UNDERACCENT">⏟</XMTok>
+              <XMTok meaning="absent"/>
+            </XMApp>
+            <XMApp scriptpos="mid">
+              <XMTok name="underbrace" role="UNDERACCENT">⏟</XMTok>
+              <XMTok font="italic" role="UNKNOWN">f</XMTok>
+            </XMApp>
+            <XMTok font="italic" role="UNKNOWN">o</XMTok>
+            <XMTok font="italic" role="UNKNOWN">o</XMTok>
+          </XMApp>
         </XMath>
       </Math>
     </equation>
