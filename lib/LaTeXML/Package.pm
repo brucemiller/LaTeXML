@@ -103,7 +103,7 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
     &LookupLCcode &AssignLCcode
     &LookupUCcode &AssignUCcode
     &LookupDelcode &AssignDelcode
-    ),
+  ),
 
   # Random low-level token or string operations.
   qw(&CleanID &CleanLabel &CleanIndexKey  &CleanClassName &CleanBibKey &NormalizeBibKey &CleanURL
@@ -444,7 +444,7 @@ sub roman_aux {
   while ($n %= $div) {
     $div /= 10;
     my $d = int($n / $div);
-    if ($d % 5 == 4) { $s .= $rmletters[$p];               $d++; }
+    if ($d % 5 == 4) { $s .= $rmletters[$p]; $d++; }
     if ($d > 4)      { $s .= $rmletters[$p + int($d / 5)]; $d %= 5; }
     if ($d)          { $s .= $rmletters[$p] x $d; }
     $p -= 2; }
@@ -545,8 +545,8 @@ sub ComposeURL {
   $fragid = ToString($fragid);
   return CleanURL(join('',
       ($base ?
-          ($url =~ /^\w+:/ ? ''                            # already has protocol, so is absolute url
-          : $base . ($url =~ /^\// ? '' : '/'))            # else start w/base, possibly /
+          ($url =~ /^\w+:/ ? ''    # already has protocol, so is absolute url
+          : $base . ($url =~ /^\// ? '' : '/'))    # else start w/base, possibly /
         : ''),
       $url,
       ($fragid ? '#' . CleanID($fragid) : ''))); }
@@ -1015,8 +1015,17 @@ sub DefExpandable {
 # For convenience, the $expansion can be a string which will be tokenized.
 my $macro_options = {    # [CONSTANT]
   scope            => 1, locked => 1, mathactive => 1,
-  protected        => 1, outer  => 1, long       => 1,
+  protected        => 1, robust => 1, outer      => 1, long => 1,
   nopackParameters => 1 };
+
+# Defines $cs as protected call to the mangled name "\cs ", which it returns
+sub defRobustCS {
+  my ($cs, %options) = @_;
+  my $defcs = T_CS($_[0]->getString . ' ');
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, undef,
+      Tokens(T_CS('\protect'), $defcs), locked => $options{locked}),
+    $options{scope});    # should be \x@protect?
+  return $defcs; }
 
 sub DefMacro {
   my ($proto, $expansion, %options) = @_;
@@ -1033,7 +1042,8 @@ sub DefMacroI {
     $STATE->assignMathcode($cs => 0x8000, $options{scope}); }
   $cs        = coerceCS($cs);
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
-  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, $expansion, %options),
+  my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($defcs, $paramlist, $expansion, %options),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1, 'global') if $options{locked};
   return; }
@@ -1147,7 +1157,7 @@ my $primitive_options = {    # [CONSTANT]
   isPrefix     => 1, scope       => 1, mode => 1, font => 1,
   requireMath  => 1, forbidMath  => 1,
   beforeDigest => 1, afterDigest => 1,
-  bounded      => 1, locked      => 1, alias => 1,
+  bounded      => 1, locked      => 1, alias => 1, robust => 1,
   outer        => 1, long        => 1 };
 
 sub DefPrimitive {
@@ -1169,8 +1179,10 @@ sub DefPrimitiveI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
+  # Not sure robust entirely makes sense for Primitives, other than LaTeXML vs LaTeX mismatch
+  my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   $STATE->installDefinition(LaTeXML::Core::Definition::Primitive
-      ->new($cs, $paramlist, $replacement,
+      ->new($defcs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($cs); }) : ()),
         ($mode                ? (sub { $_[0]->beginMode($mode); })
@@ -1297,7 +1309,7 @@ my $constructor_options = {    # [CONSTANT]
   nargs        => 1,
   beforeDigest => 1, afterDigest => 1, beforeConstruct => 1, afterConstruct => 1,
   captureBody  => 1, scope       => 1, bounded         => 1, locked         => 1,
-  outer        => 1, long        => 1 };
+  outer        => 1, long        => 1, robust          => 1 };
 
 sub inferSizer {
   my ($sizer, $reversion) = @_;
@@ -1317,8 +1329,10 @@ sub DefConstructorI {
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
+  # Not sure robust entirely makes sense for Constructors, other than LaTeXML vs LaTeX mismatch
+  my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
-      ->new($cs, $paramlist, $replacement,
+      ->new($defcs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($cs); }) : ()),
         ($mode                ? (sub { $_[0]->beginMode($mode); })
@@ -1331,13 +1345,14 @@ sub DefConstructorI {
       beforeConstruct => flatten($options{beforeConstruct}),
       afterConstruct  => flatten($options{afterConstruct}),
       nargs           => $options{nargs},
-      alias           => $options{alias},
-      reversion       => $options{reversion},
-      sizer           => inferSizer($options{sizer}, $options{reversion}),
-      captureBody     => $options{captureBody},
-      properties      => $options{properties} || {},
-      outer           => $options{outer},
-      long            => $options{long}),
+      alias           => (defined $options{alias} ? $options{alias}
+        : ($options{robust} ? $cs : undef)),
+      reversion   => $options{reversion},
+      sizer       => inferSizer($options{sizer}, $options{reversion}),
+      captureBody => $options{captureBody},
+      properties  => $options{properties} || {},
+      outer       => $options{outer},
+      long        => $options{long}),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
@@ -1446,13 +1461,16 @@ my $math_options = {    # [CONSTANT]
   scriptpos              => 1, operator_scriptpos => 1,
   stretchy               => 1, operator_stretchy  => 1,
   lpadding               => 1, rpadding           => 1,
-  beforeDigest           => 1, afterDigest        => 1, scope => 1, nogroup => 1, locked => 1,
+  beforeDigest           => 1, afterDigest        => 1,
+  scope                  => 1, nogroup            => 1, locked => 1,
+  protected              => 1, robust             => 1,
   revert_as              => 1,
   hide_content_reversion => 1 };    # DEPRECATE!
 my $simpletoken_options = {         # [CONSTANT]
-  name     => 1, meaning   => 1, omcd => 1, role => 1, mathstyle => 1,
-  lpadding => 1, rpadding  => 1,
-  font     => 1, scriptpos => 1, scope => 1, locked => 1 };
+  name      => 1, meaning   => 1, omcd => 1, role => 1, mathstyle => 1,
+  protected => 1, robust    => 1,
+  lpadding  => 1, rpadding  => 1,
+  font      => 1, scriptpos => 1, scope => 1, locked => 1 };
 
 sub DefMath {
   my ($proto, $presentation, %options) = @_;
@@ -1592,8 +1610,9 @@ sub defmath_dual {
   my $csname  = $cs->getString;
   my $cont_cs = T_CS($csname . "\@content");
   my $pres_cs = T_CS($csname . "\@presentation");
+  my $defcs   = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   # Make the original CS expand into a DUAL invoking a presentation macro and content constructor
-  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, $paramlist, sub {
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($defcs, $paramlist, sub {
         my ($self,  @args)  = @_;
         my ($cargs, $pargs) = dualize_arglist($presentation, @args);
         Invocation(T_CS('\lx@dual'),
@@ -1604,11 +1623,14 @@ sub defmath_dual {
             ($options{revert_as}
               ? (T_OTHER('revert_as'), T_OTHER('='), T_OTHER($options{revert_as})) : ())),
           Invocation($cont_cs, @$cargs),
-          Invocation($pres_cs, @$pargs))->unlist; }),
+          Invocation($pres_cs, @$pargs))->unlist; },
+      protected => $options{protected}),
     $options{scope});
   # Make the presentation macro.
   $presentation = TokenizeInternal($presentation) unless ref $presentation;
-  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, $paramlist, $presentation),
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, $paramlist,
+      $presentation,
+      protected => $options{protected}),
     $options{scope});
   my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle' lpadding='#lpadding' rpadding='#rpadding'";
@@ -1631,13 +1653,17 @@ sub defmath_wrapped {
   my $csname  = $cs->getString;
   my $wrap_cs = T_CS($csname . "\@wrapper");
   my $pres_cs = T_CS($csname . "\@presentation");
+  my $defcs   = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   # Make the original CS expand into a wrapper constructor invoking a presentation
-  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, undef,
-      Tokens($wrap_cs, T_BEGIN, $pres_cs, T_END)),
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($defcs, undef,
+      Tokens($wrap_cs, T_BEGIN, $pres_cs, T_END),
+      protected => $options{protected}),
     $options{scope});
   # Make the presentation macro.
   $presentation = TokenizeInternal($presentation) unless ref $presentation;
-  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, undef, $presentation),
+  $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($pres_cs, undef,
+      $presentation,
+      protected => $options{protected}),
     $options{scope});
   # Make the wrapper constructor
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle' lpadding='#lpadding' rpadding='#rpadding'";
@@ -1680,14 +1706,15 @@ sub defmath_cons {
   $qpresentation =~ s/(\#|\&|\?|\\|<|>)/\\$1/g if $presentation;
   my $end_tok = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle' lpadding='#lpadding' rpadding='#rpadding'";
-  my $nargs = ($paramlist ? scalar($paramlist->getParameters) : 0);
+  my $nargs = ($paramlist       ? scalar($paramlist->getParameters) : 0);
+  my $defcs = ($options{robust} ? defRobustCS($cs, %options)        : $cs);
   if ((!defined $options{reversion}) && !$nargs && !(defined $options{alias})) {
     $options{reversion} = sub {
       (!$options{revert_as}
           || ($options{revert_as} eq 'content')
           || (($options{revert_as} eq 'context') && (($LaTeXML::DUAL_BRANCH || 'content') eq 'content'))
         ? $cs : $presentation->unlist); }; }
-  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($cs, $paramlist,
+  $STATE->installDefinition(LaTeXML::Core::Definition::Constructor->new($defcs, $paramlist,
       ($nargs == 0
           # If trivial presentation, allow it in Text
         ? ($presentation !~ /(?:\(|\)|\\)/
@@ -2073,7 +2100,7 @@ sub Input {
       loadTeXDefinitions($request, $path); }
     else {
       loadTeXContent($path); } }
-  else {                                     # Couldn't find anything?
+  else {    # Couldn't find anything?
     $STATE->noteStatus(missing => $request);
     # We presumably are trying to input Content; an error if we can't find it (contrast to Definitions)
     Error('missing_file', $request, $STATE->getStomach->getGullet,
@@ -2142,7 +2169,7 @@ sub loadTeXDefinitions {
   $stomach->getGullet->readingFromMouth(
     LaTeXML::Core::Mouth->create($pathname,
       fordefinitions => 1, notes => 1,
-      content => LookupValue($pathname . '_contents')),
+      content        => LookupValue($pathname . '_contents')),
     sub {
       my ($gullet) = @_;
       my $token;
@@ -2300,7 +2327,7 @@ sub AddToMacro {
 #======================================================================
 my $inputdefinitions_options = {    # [CONSTANT]
   options          => 1, withoptions => 1, handleoptions => 1,
-  type             => 1, as_class    => 1, noltxml => 1, notex => 1, noerror => 1, after => 1,
+  type             => 1, as_class    => 1, noltxml       => 1, notex => 1, noerror => 1, after => 1,
   searchpaths_only => 1 };
 #   options=>[options...]
 #   withoptions=>boolean : pass options from calling class/package
@@ -2405,7 +2432,7 @@ sub InputDefinitions {
 
 my $require_options = {    # [CONSTANT]
   options => 1, withoptions => 1, type => 1, as_class => 1,
-  noltxml => 1, notex => 1, raw => 1, after => 1, searchpaths_only => 1 };
+  noltxml => 1, notex       => 1, raw  => 1, after    => 1, searchpaths_only => 1 };
 # This (& FindFile) needs to evolve a bit to support reading raw .sty (.def, etc) files from
 # the standard texmf directories.  Maybe even use kpsewhich itself (INSTEAD of pathname_find ???)
 # Another potentially useful option might be that if we are reading a raw file,
@@ -3070,6 +3097,19 @@ and will be deactivated when that section ends.
 This option controls whether this definition is locked from further
 changes in the TeX sources; this keeps local 'customizations' by an author
 from overriding important LaTeXML definitions and breaking the conversion.
+
+=item C<protected=E<gt>I<boolean>>
+
+Makes a definition "protected", in the sense of eTeX's C<\protected> directive.
+This inhibits expansion under certain circumstances.
+
+=item C<robust=E<gt>I<boolean>>
+
+Makes a definition "robust", in the sense of LaTeX's C<\DeclareRobustCommand>.
+This essentially creates an indirect macro definition which is preceded by C<\protect>.
+This inhibits expansion (and argument processing!) under certain circumstances.
+It usually only makes sense for macros, but may be useful for Primitives, Constructors
+and DefMath in cases where LaTeX would normally have created a macro that needs protection.
 
 =back
 
