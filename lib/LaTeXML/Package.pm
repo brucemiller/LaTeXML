@@ -1020,10 +1020,11 @@ my $macro_options = {    # [CONSTANT]
 
 # Defines $cs as protected call to the mangled name "\cs ", which it returns
 sub defRobustCS {
-  my ($cs, $scope) = @_;
+  my ($cs, %options) = @_;
   my $defcs = T_CS($_[0]->getString . ' ');
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($cs, undef,
-      Tokens(T_CS('\protect'), $defcs)), $scope);    # should be \x@protect?
+      Tokens(T_CS('\protect'), $defcs), locked => $options{locked}),
+    $options{scope});    # should be \x@protect?
   return $defcs; }
 
 sub DefMacro {
@@ -1041,7 +1042,7 @@ sub DefMacroI {
     $STATE->assignMathcode($cs => 0x8000, $options{scope}); }
   $cs        = coerceCS($cs);
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
-  my $defcs = ($options{robust} ? defRobustCS($cs, $options{scope}) : $cs);
+  my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($defcs, $paramlist, $expansion, %options),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1, 'global') if $options{locked};
@@ -1179,7 +1180,7 @@ sub DefPrimitiveI {
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
   # Not sure robust entirely makes sense for Primitives, other than LaTeXML vs LaTeX mismatch
-  my $defcs = ($options{robust} ? defRobustCS($cs, $options{scope}) : $cs);
+  my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   $STATE->installDefinition(LaTeXML::Core::Definition::Primitive
       ->new($defcs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
@@ -1329,7 +1330,7 @@ sub DefConstructorI {
   my $mode    = $options{mode};
   my $bounded = $options{bounded};
   # Not sure robust entirely makes sense for Constructors, other than LaTeXML vs LaTeX mismatch
-  my $defcs = ($options{robust} ? defRobustCS($cs, $options{scope}) : $cs);
+  my $defcs = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
       ->new($defcs, $paramlist, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($cs); }) : ()),
@@ -1609,7 +1610,7 @@ sub defmath_dual {
   my $csname  = $cs->getString;
   my $cont_cs = T_CS($csname . "\@content");
   my $pres_cs = T_CS($csname . "\@presentation");
-  my $defcs   = ($options{robust} ? defRobustCS($cs, $options{scope}) : $cs);
+  my $defcs   = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   # Make the original CS expand into a DUAL invoking a presentation macro and content constructor
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($defcs, $paramlist, sub {
         my ($self,  @args)  = @_;
@@ -1652,7 +1653,7 @@ sub defmath_wrapped {
   my $csname  = $cs->getString;
   my $wrap_cs = T_CS($csname . "\@wrapper");
   my $pres_cs = T_CS($csname . "\@presentation");
-  my $defcs   = ($options{robust} ? defRobustCS($cs, $options{scope}) : $cs);
+  my $defcs   = ($options{robust} ? defRobustCS($cs, %options) : $cs);
   # Make the original CS expand into a wrapper constructor invoking a presentation
   $STATE->installDefinition(LaTeXML::Core::Definition::Expandable->new($defcs, undef,
       Tokens($wrap_cs, T_BEGIN, $pres_cs, T_END),
@@ -1706,7 +1707,7 @@ sub defmath_cons {
   my $end_tok = (defined $presentation ? '>' . $qpresentation . '</ltx:XMTok>' : "/>");
   my $cons_attr = "name='#name' meaning='#meaning' omcd='#omcd' decl_id='#decl_id' mathstyle='#mathstyle' lpadding='#lpadding' rpadding='#rpadding'";
   my $nargs = ($paramlist       ? scalar($paramlist->getParameters) : 0);
-  my $defcs = ($options{robust} ? defRobustCS($cs, $options{scope}) : $cs);
+  my $defcs = ($options{robust} ? defRobustCS($cs, %options)        : $cs);
   if ((!defined $options{reversion}) && !$nargs && !(defined $options{alias})) {
     $options{reversion} = sub {
       (!$options{revert_as}
