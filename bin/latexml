@@ -144,7 +144,7 @@ CheckDebuggable();
 UseSTDERR(undef);
 
 if ($exit_message) {    # non-zero exit code for fatal conversions
-  exit 1;
+  exit(1);
 }
 
 #======================================================================
@@ -171,7 +171,7 @@ sub validate_args {
       $mode   = 'TeX' unless defined $mode; } }    # Or sniff for bibtex data?
   elsif (pathname_is_literaldata($source)) {
   }
-  elsif (!($pathname = pathname_find($source, types => ['tex', 'bib', ''], paths => [@paths]))
+  elsif (!($pathname = pathname_find($source, types => ['tex', 'bib', ''], paths => ['.', @paths]))
     || !-r $pathname) {
     push(@fails, "Input file '$source' not readable"); }
   else {

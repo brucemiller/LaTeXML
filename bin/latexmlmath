@@ -240,14 +240,14 @@ if ($xmath) {
   outputXML($result->findnode('//ltx:XMath'), $xmath); }
 
 my $status = $latexml->getStatusMessage;
-my $code = $latexml->getStatusCode;
+my $code   = $latexml->getStatusCode;
 # Should be combined with $post's status!
 # But better approach will be to manage all through LaTeXML.pm!!
 my $runtime = RunTime($starttime);
 NoteLog("Conversion complete: " . $status);
 NoteSTDERR("Conversion complete: " . $status . " (reqd. $runtime)");
 UseLog(undef);
-exit $code == 3 ? 1 : 0;
+exit($code == 3 ? 1 : 0);
 
 #======================================================================
 # Helpers
