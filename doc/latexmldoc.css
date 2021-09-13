@@ -74,6 +74,8 @@ body { margin:0; background:#cfd2e6; color:#000000; }
    margin:5px; padding:5px 10px;
    border: 1px solid #B0B0B0;
 }
+.ltx_subparagraph .ltx_title {
+    font-weight: normal; }
 
 .ltx_tabular .ltx_lstlisting {
     margin: 0.1ex 1em 0.1ex 0em;
@@ -84,6 +86,7 @@ body { margin:0; background:#cfd2e6; color:#000000; }
    border: 2px solid #B0B0B0;
    min-width:35em; 
 }
+.ltx_listingline { display:block; }
 
 a[rel~="up"]:before { content:"\261D "; }
 a[rel~="next"]:after { content:" \261E"; }
