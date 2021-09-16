@@ -355,7 +355,7 @@ sub fill_in_refs {
           $ref->setAttribute(title => $titlestring); } }
       if (!$ref->textContent && !element_nodes($ref)
         && !(($tag eq 'ltx:graphics') || ($tag eq 'ltx:picture'))) {
-        my $is_nameref = ($ref->getAttribute('class')||'') =~ 'ltx_refmacro_nameref';
+        my $is_nameref = ($ref->getAttribute('class') || '') =~ 'ltx_refmacro_nameref';
         $doc->addNodes($ref, $self->generateRef($doc, $id, $show, $is_nameref)); }
       if (my $entry = $$self{db}->lookup("ID:$id")) {
         $ref->setAttribute(stub => 1) if $entry->getValue('stub'); }
@@ -631,7 +631,7 @@ sub generateURL {
         $url .= '#' . $fragid; }
       elsif ($location eq $doclocation) {
         $url = ''; }
-      return $url; }
+      return pathname_to_url($url); }
     else {
       $self->note_missing('warn', 'File location for ID', $id); } }
   else {

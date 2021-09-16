@@ -240,6 +240,7 @@ sub find_preambles {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Post::MathProcessor;
 use strict;
+use LaTeXML::Util::Pathname;
 use LaTeXML::Post;
 use LaTeXML::Common::Error;
 use base qw(LaTeXML::Post::Processor);
@@ -382,7 +383,7 @@ sub maybeSetMathImage {
   if ((($$conversion{mimetype} || '') =~ /^image\//)    # Got an image?
     && !$math->getAttribute('imagesrc')) {              # and it's the first one
     if (my $src = $$conversion{src}) {
-      $math->setAttribute(imagesrc    => $src);
+      $math->setAttribute(imagesrc    => pathname_to_url($src));
       $math->setAttribute(imagewidth  => $$conversion{width});
       $math->setAttribute(imageheight => $$conversion{height});
       $math->setAttribute(imagedepth  => $$conversion{depth}); } }
