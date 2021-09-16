@@ -119,7 +119,8 @@ sub pathname_canonical {
   $pathname =~ s|/\./|/|g;
   # Collapse any foo/.. patterns, but not ../..
   while ($pathname =~ s|/(?!\.\./)[^/]+/\.\.(/\|$)|$1|) { }
-  $pathname =~ s|^\./||;
+  # Reduce ./foo to foo, but preserve ./
+  $pathname =~ s|^\./(.)|$1|;
   return (defined $urlprefix ? $urlprefix . $pathname : $pathname); }
 
 # Convenient extractors;
