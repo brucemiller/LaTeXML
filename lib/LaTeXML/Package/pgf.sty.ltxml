@@ -28,6 +28,8 @@ DefMacro('\pgfsysdriver', 'pgfsys-latexml.def');    # and we'll load the .ltxml!
 #   (we should turn off @)#@# comments while we're at it!)
 InputDefinitions('pgf', type => 'sty', noltxml => 1);
 
+Let('\pgfutil@IfFileExists', '\IfFileExists');    # Since used for binaries...
+
 # This is very probably the wrong way to do this,
 # but it seems that pgfstrokecolor is the color used for default drawing, text, etc.
 Let('\pgfsetcolor@orig', '\pgfsetcolor');
