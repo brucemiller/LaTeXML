@@ -55,36 +55,38 @@ DefMacro('\lx@diag@head{}{}',
   '{\theadfont\shortstack[#1]{#2}}');
 
 DefConstructor('\lx@diagheads {}{} {}{}{}',
-  "<ltx:picture width='#width' height='#height' unitlength='1.0pt'>"
+  "<ltx:picture width='&pxValue(#width)' height='&pxValue(#height)'>"
     . "<ltx:line points='#line' stroke='black' stroke-width='0.4'/>"
-    . "<ltx:g transform='translate(#Ax,#Ay)' innerwidth='#Aw' innerheight='#Ah'>"
+    . "<ltx:g transform='translate(#Ax,#Ay)' innerwidth='#Aw' innerheight='#Ah' innerdepth='#Ad'>"
     . "<ltx:inline-block>#A</ltx:inline-block>"
     . "</ltx:g>"
-    . "<ltx:g transform='translate(#Bx,#By)' innerwidth='#Bw' innerheight='#Bh'>"
+    . "<ltx:g transform='translate(#Bx,#By)' innerwidth='#Bw' innerheight='#Bh' innerdepth='#Bd'>"
     . "<ltx:inline-block>#B</ltx:inline-block>"
     . "</ltx:g>"
     . "</ltx:picture>",
-  reversion   => '\diaghead(#1,#2){#3}{#4}{#5}',
-  afterDigest => sub {
+  reversion      => '\diaghead(#1,#2){#3}{#4}{#5}',
+  afterConstruct => sub { $_[0]->addClass($_[0]->getNode, 'ltx_nopad'); },
+  afterDigest    => sub {
     my ($stomach, $whatsit) = @_;
     my ($diagH, $diagV, $space, $A, $B) = $whatsit->getArgs;
     $diagH = ToString($diagH) || 1;
     $diagV = ToString($diagV) || 1;
     my $flip = ($diagH < 0) ^ ($diagV < 0);
-    my ($Aw, $Ah, $Ad) = $A->getSize; $Ah = $Ah->add($Ad);
-    my ($Bw, $Bh, $Bd) = $B->getSize; $Bh = $Bh->add($Bd);
-    my $w = $space->getWidth;                            # + tabcolsep
-    my $h = $w->multiply(Float(abs($diagV / $diagH)));
-    my ($ww, $hh) = ($w->ptValue, $h->ptValue);
-    my $line = ($flip ? "0,$hh $ww,0" : "0,0, $ww,$hh");
-    my $Ax   = ($flip ? 0             : $w->subtract($Aw)->ptValue);
-    my $Ay   = $Ah->ptValue;
-    my $Bx   = ($flip ? $w->subtract($Bw)->ptValue : 0);
-    my $By   = $h->ptValue;
-    $whatsit->setProperties(width => $w, height => $h,
-      A    => $A, Ax => $Ax, Ay => $Ay, Aw => $Aw, Ah => $Ah,
-      B    => $B, Bx => $Bx, By => $By, Bw => $Bw, Bh => $Bh,
-      line => $line); }
+    my ($Aw, $Ah, $Ad) = map { $_->pxValue } $A->getSize; $Ah += $Ad;
+    my ($Bw, $Bh, $Bd) = map { $_->pxValue } $B->getSize; $Bh += $Bd;
+    my $w     = $space->getWidth->pxValue;    # + tabcolsep
+    my $h     = $w * abs($diagV / $diagH);
+    my $line  = ($flip ? "0,$h $w,0" : "0,0, $w,$h");
+    my $Ax    = ($flip ? 0           : $w - $Aw);
+    my $Ay    = 0;
+    my $Bx    = ($flip ? $w - $Bw : 0);
+    my $By    = $h - $Bh;
+    my $pxppt = Dimension('1pt')->pxValue(10);
+    $whatsit->setProperties(
+      width => Dimension($w / $pxppt . 'pt'), height => Dimension($h / $pxppt . 'pt'),
+      A     => $A, Ax => $Ax, Ay => $Ay, Aw => $Aw, Ah => $Ah,
+      B     => $B, Bx => $Bx, By => $By, Bw => $Bw, Bh => $Bh,
+      line  => $line); }
 );
 #======================================================================
 1;

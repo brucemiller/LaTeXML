@@ -50,79 +50,92 @@ DefMacro('\diagbox OptionalKeyVals:diagbox {}{}', sub {
 DefMacro('\lx@diagbox@head{}{}{}', '{#2\shortstack[#1]{#3}}');
 
 DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
-  "<ltx:picture width='#width' height='#height' unitlength='1.0pt'>"
+  "<ltx:picture width='&pxValue(#width)' height='&pxValue(#height)'>"
     . "?#line1(<ltx:line points='#line1' stroke='#linecolor' stroke-width='#linewidth'/>)()"
     . "?#line2(<ltx:line points='#line2' stroke='#linecolor' stroke-width='#linewidth'/>)()"
-    . "<ltx:g transform='translate(#Ax,#Ay)' innerwidth='#Aw' innerheight='#Ah' class='ltx_svg_fog'>"
+    . "<ltx:g transform='translate(#Ax,#Ay)'"
+    . " innerwidth='#Aw' innerheight='#Ah' innerdepth='#Ad' class='ltx_svg_fog'>"
     . "<ltx:inline-block>#A</ltx:inline-block>"
     . "</ltx:g>"
-    . "<ltx:g transform='translate(#Bx,#By)' innerwidth='#Bw' innerheight='#Bh' class='ltx_svg_fog'>"
+    . "<ltx:g transform='translate(#Bx,#By)'"
+    . " innerwidth='#Bw' innerheight='#Bh' innerdepth='#Bd' class='ltx_svg_fog'>"
     . "<ltx:inline-block>#B</ltx:inline-block>"
     . "</ltx:g>"
-    . "?#M(<ltx:g transform='translate(#Mx,#My)' innerwidth='#Mw' innerheight='#Mh' class='ltx_svg_fog'>"
+    . "?#M(<ltx:g transform='translate(#Mx,#My)'"
+    . " innerwidth='#Mw' innerheight='#Mh' innerdepth='#Md' class='ltx_svg_fog'>"
     . "<ltx:inline-block>#M</ltx:inline-block>"
     . "</ltx:g>)()"
     . "</ltx:picture>",
-  reversion   => '\diagbox[#1]{#2}{#4}{#3}',    # Wrong!
-  afterDigest => sub {
+  afterConstruct => sub { $_[0]->addClass($_[0]->getNode, 'ltx_nopad'); },
+  reversion      => '\diagbox[#1]{#2}{#4}{#3}',                              # Wrong!
+  afterDigest    => sub {
     my ($stomach, $whatsit) = @_;
+    # Annoying: All svg units, and computations, are in pixels!
     my ($kv, $A, $M, $B) = $whatsit->getArgs;
     my $dir = $kv && ToString($kv->getValue('dir')) || 'NW';
-    my ($Aw, $Ah, $Ad) = $A->getSize;       $Ah = $Ah->add($Ad);
-    my ($Bw, $Bh, $Bd) = $B->getSize;       $Bh = $Bh->add($Bd);
-    my ($Mw, $Mh, $Md) = $M && $M->getSize; $Mh = $Mh->add($Md) if $Mh;
-    my $maxw = $Aw->larger($Bw);
-    my $maxh = $Ah->larger($Bh);
-    my $w = ($kv && ($kv->getValue('width') || $kv->getValue('innerwidth'))) || $Aw->add($Bw)->add($maxw);
-    my $h = ($kv && $kv->getValue('height')) || $Ah->add($Bh)->add($maxh);
-    my ($ww,    $hh)  = ($w->ptValue, $h->ptValue);
-    my ($wwm,   $hhm) = ($w->divide(2)->ptValue, $h->divide(2)->ptValue);
+    my ($Aw, $Ah, $Ad) = map       { $_->pxValue } $A->getSize; $Ah += $Ad;
+    my ($Bw, $Bh, $Bd) = map       { $_->pxValue } $B->getSize; $Bh += $Bd;
+    my ($Mw, $Mh, $Md) = $M && map { $_->pxValue } $M->getSize; $Mh += $Md if $Mh;
+    my $maxw = max($Aw, $Bw);
+    my $maxh = max($Ah, $Bh);
+    my $w    = $kv && ($kv->getValue('width') || $kv->getValue('innerwidth'));
+    my $h    = $kv && $kv->getValue('height');
     my ($line1, $line2);
-    my ($Ax,    $Ay, $Bx, $By, $Mx, $My) = (0, 0, 0, 0, 0, 0);
-
+    my ($Ax, $Ay, $Bx, $By, $Mx, $My) = (0, 0, 0, 0, 0, 0);
+    $w = $w->pxValue if $w;
+    $h = $h->pxValue if $h;
+    ## See diagbox.pdf under Implementation
     if ($M) {
+      if (!($w && $h)) {    # size given, no need for fancy calculations
+        my $t     = $Ah + $Mh;
+        my $s     = $Bw + $Mw;
+        my $v     = $s * $t - $Aw * $Bh;
+        my $u     = $Aw * $Mh - $Mw * $Bh;
+        my $delta = ($u + $v) * ($u + $v) + 4 * $Aw * ($t - $Bh) * ($Mw * ($Bh - $Mh) - $Bw * $Mh);
+        $w = (($Bh < $t) && ($delta >= 0)
+          ? ($u + $v + sqrt($delta)) / ($t - $Bh) / 2
+          : 2 * (max($Aw, $Bw) + $Mw)) unless $w;
+        $h = (($Aw < $s) && ($delta >= 0)
+          ? ($u - $v - sqrt($delta)) / ($Aw - $s) / 2
+          : 2 * (max($Ah, $Bh) + $Mh)) unless $h; }
+      my ($wm, $hm) = ($w * 0.5, $h * 0.5);
       if ($dir eq 'NW') {
-        $Ay    = $Ah->ptValue;
-        $My    = $h->ptValue;
-        $Bx    = $w->subtract($Bw)->ptValue;
-        $By    = $h->ptValue;
-        $line1 = "$wwm,$hh $ww,0";
-        $line2 = "0,$hhm $ww,0"; }
+        $My    = $h - $Mh;
+        $Bx    = $w - $Bw;
+        $By    = $h - $Bh;
+        $line1 = "$wm,$h $w,0";
+        $line2 = "0,$hm $w,0"; }
       elsif ($dir eq 'SE') {
-        $Ay    = $Ah->ptValue;
-        $Mx    = $w->subtract($Mw)->ptValue;
-        $My    = $Mh->ptValue;
-        $Bx    = $w->subtract($Bw)->ptValue;
-        $By    = $h->ptValue;
-        $line1 = "0,$hh $ww,$hhm";
-        $line2 = "0,$hh $wwm,0"; }
+        $Mx    = $w - $Mw;
+        $Bx    = $w - $Bw;
+        $By    = $h - $Bh;
+        $line1 = "0,$h $w,$hm"; +
+          $line2 = "0,$h $wm,0"; }
       elsif ($dir eq 'SW') {
-        $Ay    = $h->ptValue;
-        $My    = $Mh->ptValue;
-        $Bx    = $w->subtract($Bw)->ptValue;
-        $By    = $Bh->ptValue;
-        $line1 = "0,$hhm $ww,$hh";
-        $line2 = "$wwm,0 $ww,$hh"; }
+        $Ay    = $h - $Ah;
+        $Bx    = $w - $Bw;
+        $line1 = "0,$hm $w,$h";
+        $line2 = "$wm,0 $w,$h"; }
       elsif ($dir eq 'NE') {
-        $Ay    = $h->ptValue;
-        $Mx    = $w->subtract($Mw)->ptValue;
-        $My    = $h->ptValue;
-        $Bx    = $w->subtract($Bw)->ptValue;
-        $By    = $Bh->ptValue;
-        $line1 = "0,0 $wwm,$hh";
-        $line2 = "0,0 $ww,$hhm"; } }
+        $Ay    = $h - $Ah;
+        $Mx    = $w - $Mw;
+        $My    = $h - $Mh;
+        $Bx    = $w - $Bw;
+        $line1 = "0,0 $wm,$h";
+        $line2 = "0,0 $w,$hm"; } }
     else {
-      $Ax = 0;
-      $Bx = $w->subtract($Bw)->ptValue;
+      $w  = 2 * $maxw unless $w;
+      $h  = $Ah + $Bh unless $h;
+      $Bx = $w - $Bw;
       if (($dir eq 'NW') || ($dir eq 'SE')) {
-        $Ay    = $Ah->ptValue;
-        $By    = $h->ptValue;
-        $line1 = "0,$hh $ww,0"; }
+        $By    = $h - $Bh;
+        $line1 = "0,$h $w,0"; }
       else {
-        $Ay    = $h->ptValue;
-        $By    = $Bh->ptValue;
-        $line1 = "0,0, $ww,$hh"; } }
-    $whatsit->setProperties(width => $w, height => $h,
+        $Ay    = $h - $Ah;
+        $line1 = "0,0, $w,$h"; } }
+    my $pxppt = Dimension('1pt')->pxValue(10);
+    $whatsit->setProperties(
+      width     => Dimension($w / $pxppt . 'pt'), height => Dimension($h / $pxppt . 'pt'),
       A         => $A,     Ax    => $Ax, Ay => $Ay, Aw => $Aw, Ah => $Ah,
       B         => $B,     Bx    => $Bx, By => $By, Bw => $Bw, Bh => $Bh,
       M         => $M,     Mx    => $Mx, My => $My, Mw => $Bw, Mh => $Mh,
