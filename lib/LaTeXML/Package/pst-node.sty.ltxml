@@ -41,7 +41,7 @@ sub ReadRoundParenFloat {
 
 DefParameterType('RoundParenFloat', \&ReadRoundParenFloat,
   reversion => sub { ($_[0] ? (T_OTHER('('), Revert($_[0]), T_OTHER(')')) : ()); },
-  optional => 1);
+  optional  => 1);
 
 ###########################################################################
 ## Functions for node positions storage / retrieval
@@ -180,39 +180,46 @@ DefMacro('\Rnode PSCoord', sub {
     (T_CS('\@Rnode'), T_OTHER('('), Explode($coord), T_OTHER(')')); });
 
 DefConstructor('\@Rnode PSCoord {} {}', '#3',
-  alias => '\Rnode',
+  alias       => '\Rnode',
   afterDigest => sub { storeNode($_[1]->getArg(2), $_[1]->getArg(1)); });
 
 DefConstructor('\pnode ZeroPSCoord {}', '',
   afterDigest => sub { storeNode($_[1]->getArg(2), $_[1]->getArg(1)); });
 
 DefPSConstructor('\cnode', 'ZeroPSCoord {PSDimension} {}',
-  "<ltx:circle " . $PSLineAttr . "%&PairAttr(#2,x,y) r='&ptValue(#3)' fill='#fill' />",
-  attributes => [qw(fill linecolor linewidth dash)],
-  afterDigest => sub { storeNode($_[1]->getArg(4), $_[1]->getArg(2)); });
+  "<ltx:circle " . $PSLineAttr . "x='#x' y='#y' r='&pxValue(#3)' fill='#fill' />",
+  attributes  => [qw(fill linecolor linewidth dash)],
+  afterDigest => sub { storeNode($_[1]->getArg(4), $_[1]->getArg(2)); },
+  properties  => sub {
+    (x => $_[2]->getX->pxValue, y => $_[2]->getY->pxValue); });
 
 DefPSConstructor('\Cnode', 'ZeroPSCoord {}',
-  "<ltx:circle " . $PSLineAttr . "%&PairAttr(#2,x,y) r='&ptValue(#radius)' fill='#fill' />",
-  attributes => [qw(fill linecolor linewidth dash radius)],
-  afterDigest => sub { storeNode($_[1]->getArg(4), $_[1]->getArg(2)); });
+  "<ltx:circle " . $PSLineAttr . "x='#x' y='#y' r='&pxValue(#radius)' fill='#fill' />",
+  attributes  => [qw(fill linecolor linewidth dash radius)],
+  afterDigest => sub { storeNode($_[1]->getArg(4), $_[1]->getArg(2)); },
+  properties  => sub {
+    (x => $_[2]->getX->pxValue, y => $_[2]->getY->pxValue); });
 
 DefPSConstructor('\circlenode', '{} {}',
   "<ltx:g framed='true' fillframe='true' frametype='circle'"
     . "  fill='#fillcolor' ?#1(stroke='#fillcolor')(stroke='#linecolor')> #3 </ltx:g>",
-  attributes => [qw(linecolor fillcolor)],
+  attributes  => [qw(linecolor fillcolor)],
   afterDigest => sub { storeNode($_[1]->getArg(2)); });
 
 DefPSConstructor('\fnode', 'ZeroPSCoord {}',
-  "<ltx:rect $PSLineAttr %&PairAttr(#pz,x,y) %&PairAttr(#framesize,width,height)"
+  "<ltx:rect $PSLineAttr x='#x' y='#y' width='#framewidth' height='#frameheight'"
     . " rx='#arcval' fill='#fill' />",
   attributes  => [qw(fill linecolor linewidth dash framesize)],
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
-    my $fs = LookupValue('\psframesize'); my $dt = $fs->multiply(-0.5);
+    my $fs = LookupValue('\psframesize');
+    my $dt = $fs->multiply(-0.5);
     my $pz = Pair($whatsit->getArg(2)->getX->add($dt->getX),
       $whatsit->getArg(2)->getY->add($dt->getY));
     storeNode($whatsit->getArg(3), $whatsit->getArg(2));
-    $whatsit->setProperties(pz => $pz, arcval => arcValue($fs)); });
+    $whatsit->setProperties(pz => $pz, arcval => arcValue($fs),
+      x          => $pz->getX->pxValue, y           => $pz->getY->pxValue,
+      framewidth => $fs->getX->pxValue, frameheight => $fs->getY->pxValue); });
 
 DefMacro('\cnodeput OptionalMatch:* [] OptionalBracketed ZeroPSCoord {} {}', sub {
     my ($gullet, $star, $par, $angle, $coord, $name, $body) = @_;
@@ -227,39 +234,39 @@ DefMacro('\cnodeput OptionalMatch:* [] OptionalBracketed ZeroPSCoord {} {}', sub
 DefPSConstructor('\ovalnode', '{} {}',
   "<ltx:g framed='true' fillframe='true' frametype='oval'"
     . " fill='#fillcolor' ?#1(stroke='#fillcolor')(stroke='#linecolor')> #3 </ltx:g>",
-  attributes => [qw(linecolor fillcolor)],
+  attributes  => [qw(linecolor fillcolor)],
   afterDigest => sub { storeNode($_[1]->getArg(2)); });
 
 DefPSConstructor('\ncline', '{} {}',
-  "<ltx:line $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+  "<ltx:line $PSLineAttr #!ARROWS points='&pxValue(#points)' fill='#fill' />",
   attributes => [qw(fill linecolor linewidth dash showpoints)],
   properties => { points => sub { nodeConnection(getANode($_[3]), getBNode($_[4])); } });
 
 DefPSConstructor('\pcline', 'PSCoord PSCoord',
-  "<ltx:line $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+  "<ltx:line $PSLineAttr #!ARROWS points='&pxValue(#points)' fill='#fill' />",
   attributes => [qw(fill linecolor linewidth dash showpoints)],
   properties => { points => sub { nodeConnection($_[3], $_[4]); } });
 
 DefPSConstructor('\ncLine', '{} {}',
-  "<ltx:line $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+  "<ltx:line $PSLineAttr #!ARROWS points='&pxValue(#points)' fill='#fill' />",
   attributes => [qw(fill linecolor linewidth dash showpoints)],
   properties => { points => sub { nodeConnection(getANode($_[3]), getBNode($_[4])); } });
 
 sub curvePoints {
   my ($A, $B) = @_;
   my ($na, $nb, $aa, $ab) = map { LookupValue($_) } qw(\psncurvA \psncurvB \psangleA \psangleB);
-  my $d = pointPointDist($A, $B);
+  my $d  = pointPointDist($A, $B);
   my $A1 = nodeExt($A, Dimension($d * $na * 0.5), $aa);
   my $B1 = nodeExt($B, Dimension($d * $nb * 0.5), $ab);
   return ($A, $A1, $B1, $B); }
 
 DefPSConstructor('\nccurve', '{} {}',
-  "<ltx:bezier $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+  "<ltx:bezier $PSLineAttr #!ARROWS points='&pxValue(#points)' fill='#fill' />",
   attributes => [qw(fill linecolor linewidth dash)],
   properties => { points => sub { nodeConnection(curvePoints(getANode($_[3]), getBNode($_[4]))); } });
 
 DefPSConstructor('\pccurve', 'PSCoord PSCoord',
-  "<ltx:bezier $PSLineAttr #!ARROWS points='&ptValue(#points)'"
+  "<ltx:bezier $PSLineAttr #!ARROWS points='&pxValue(#points)'"
     . " angleA='#angleA' angleB='#angleB' fill='#fill' />",
   attributes => [qw(fill linecolor linewidth dash nodesep offset ncurv angleA angleB)],
   properties => { points => sub { nodeConnection(curvePoints($_[3], $_[4])); } });
@@ -267,25 +274,25 @@ DefPSConstructor('\pccurve', 'PSCoord PSCoord',
 sub carcPoints {
   my ($A, $B) = @_;
   my ($na, $nb, $aa, $ab) = map { LookupValue($_) } qw(\psncurvA \psncurvB \psarcangleA \psarcangleB);
-  my $d = pointPointDist($A, $B); my $a = lineAngle($A, $B);
+  my $d  = pointPointDist($A, $B); my $a = lineAngle($A, $B);
   my $A1 = nodeExt($A, Dimension($d * $na * 0.5), $a + $aa);
   my $B1 = nodeExt($B, Dimension($d * $nb * 0.5), $a + 180 - $ab);
   return ($A, $A1, $B1, $B); }
 
 DefPSConstructor('\ncarc', '{} {}',
-  "<ltx:bezier $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+  "<ltx:bezier $PSLineAttr #!ARROWS points='&pxValue(#points)' fill='#fill' />",
   attributes => [qw(fill linecolor linewidth dash)],
   properties => { points => sub { nodeConnection(carcPoints(getANode($_[3]), getBNode($_[4]))); } });
 
 DefPSConstructor('\pcarc', 'PSCoord PSCoord',
-  "<ltx:bezier $PSLineAttr #!ARROWS points='&ptValue(#points)' fill='#fill' />",
+  "<ltx:bezier $PSLineAttr #!ARROWS points='&pxValue(#points)' fill='#fill' />",
   attributes => [qw(fill linecolor linewidth dash)],
   properties => { points => sub { nodeConnection(carcPoints($_[3], $_[4])); } });
 
 sub after_ncbar {
-  my ($A, $B) = @_;
+  my ($A, $B)               = @_;
   my ($armA, $armB, $angle) = map { LookupValue($_) } qw(\psarmA \psarmB \psangleA);
-  my ($A1, $B1) = (nodeExt($A, $armA, $angle), nodeExt($B, $armB, $angle));
+  my ($A1, $B1)             = (nodeExt($A, $armA, $angle), nodeExt($B, $armB, $angle));
   my (@l1, @l2);
   @l1 = lineParams($A1, $angle); @l2 = lineParams($B1, $angle, 1);
   my $A1E = lineIntersect(\@l1, \@l2);
@@ -299,41 +306,41 @@ sub after_ncbar {
   return nodeConnection($A, $A1, $B1, $B); }
 
 DefPSConstructor('\ncbar', '{} {}',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { after_ncbar(getANode($_[3]), getBNode($_[4])); } });
 
 DefPSConstructor('\pcbar', 'PSCoord PSCoord',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { after_ncbar($_[3], $_[4]); } });
 
 DefPSConstructor('\ncdiag', '{} {}',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { my ($A, $B) = (getANode($_[3]), getBNode($_[4]));
       nodeConnection($A, nodeExtA($A), nodeExtB($B), $B); } });
 
 DefPSConstructor('\pcdiag', 'PSCoord PSCoord',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { my ($A, $B) = ($_[3], $_[4]);
       nodeConnection($A, nodeExtA($A), nodeExtB($B), $B); } });
 
 DefPSConstructor('\ncdiagg', '{} {}',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { my ($A, $B) = (getANode($_[3]), getBNode($_[4]));
       nodeConnection($A, nodeExtA($A), $B); } });
 
 DefPSConstructor('\pcdiagg', 'PSCoord PSCoord',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { my ($A, $B) = ($_[3], $_[4]);
       nodeConnection($A, nodeExtA($A), $B); } });
@@ -341,18 +348,18 @@ DefPSConstructor('\pcdiagg', 'PSCoord PSCoord',
 sub after_ncangle {
   my ($A, $B) = @_;
   my $angleA = LookupValue('\psangleA'); my $B1 = nodeExtB($B);
-  my @l1 = lineParams($A, $angleA); my @l2 = lineParams($B1, $angleA, 1);
+  my @l1     = lineParams($A, $angleA);  my @l2 = lineParams($B1, $angleA, 1);
   return nodeConnection($B, $B1, lineIntersect(\@l1, \@l2), $A); }
 
 DefPSConstructor('\ncangle', '{} {}',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { after_ncangle(getANode($_[3]), getBNode($_[4])); } });
 
 DefPSConstructor('\pcangle', 'PSCoord PSCoord',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { after_ncangle($_[3], $_[4]); } });
 
@@ -363,25 +370,25 @@ sub after_ncangles {
   return nodeConnection($B, $B1, lineIntersect(\@l1, \@l2), $A1, $A); }
 
 DefPSConstructor('\ncangles', '{} {}',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { after_ncangles(getANode($_[3]), getBNode($_[4])); } });
 
 DefPSConstructor('\pcangles', 'PSCoord PSCoord',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { after_ncangles($_[3], $_[4]); } });
 
 sub after_ncloop {
-  my ($A,      $B)    = @_;
+  my ($A, $B)         = @_;
   my ($angleA, $loop) = map { LookupValue($_) } qw(\psangleA \psloopsize);
-  my ($A1,     $B1)   = (nodeExtA($A), nodeExtB($B));
+  my ($A1, $B1)       = (nodeExtA($A), nodeExtB($B));
   my @l1 = lineParams($A1, $angleA, 1);
   my ($x0, $y0) = ($A1->getX->valueOf, $A1->getY->valueOf); my $absq = $l1[0]**2 + $l1[1]**2;
   my $sgn = ($angleA > 270 || $angleA <= 90) ? 1 : -1;
-  my $D = $sgn * sqrt($absq * ($loop->valueOf()**2) - ($l1[0] * $x0 + $l1[1] * $y0 + $l1[2])**2);
+  my $D   = $sgn * sqrt($absq * ($loop->valueOf()**2) - ($l1[0] * $x0 + $l1[1] * $y0 + $l1[2])**2);
   $absq = 1 / $absq;
   my $L = Pair(Dimension($absq * ($l1[1]**2 * $x0 - $l1[0] * ($l1[2] + $l1[1] * $y0) - $l1[1] * $D)),
     Dimension($absq * ($l1[0]**2 * $y0 - $l1[1] * ($l1[2] + $l1[0] * $x0) + $l1[0] * $D)));
@@ -389,23 +396,26 @@ sub after_ncloop {
   return nodeConnection($A, $A1, $L, lineIntersect(\@l1, \@l2), $B1, $B); }
 
 DefPSConstructor('\ncloop', '{} {}',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { after_ncloop(getANode($_[3]), getBNode($_[4])); } });
 
 DefPSConstructor('\pcloop', 'PSCoord PSCoord',
-  "<ltx:line $PSLineAttr #!ARROWS arc='&ptValue(#linearc)'"
-    . " points='&ptValue(#points)' fill='#fill'/>",
+  "<ltx:line $PSLineAttr #!ARROWS arc='&pxValue(#linearc)'"
+    . " points='&pxValue(#points)' fill='#fill'/>",
   attributes => [qw(fill linecolor linewidth dash showpoints linearc)],
   properties => { points => sub { after_ncloop($_[3], $_[4]); } });
 
 DefPSConstructor('\nccircle', '{} {PSDimension}',
-  "<ltx:arc $PSLineAttr #!ARROWS %&PairAttr(#pz,x,y)"
-    . " r='&ptValue(#4)' angle1='&trunc2(#angleA)' " .
+  "<ltx:arc $PSLineAttr #!ARROWS x='#x' y='#y'"
+    . " r='&pxValue(#4)' angle1='&trunc2(#angleA)' " .
     "angle2='360' fill='#fill' />",
   attributes => [qw(linecolor linewidth dash angleA)],
-  properties => { pz => sub { my $nd = getNode($_[3]); nodeConnection($nd); $nd; } });
+  properties => sub {
+    my $pz = getNode($_[3]);
+    nodeConnection($pz);
+    (pz => $pz, x => $pz->getX->pxValue, y => $pz->getY->pxValue); });
 
 ############################################################
 ## Positioning macros
@@ -416,7 +426,7 @@ sub computeLabelPos {
   my ($lp, $nc) = ($pos ? $pos->valueOf : getDefaultLabelPos(), getLastConnection());
   my ($n, $s) = ($nc->getCount(), int($lp)); my $f = $lp - $s; my $p;
   if ($n == 1) { $p = $nc->getPair(0); }
-  else { $s = $n - 2 if $s + 1 >= $n;
+  else         { $s = $n - 2 if $s + 1 >= $n;
     my ($na, $nb) = ($nc->getPair($s), $nc->getPair($s + 1));
     my $dx = $nb->getX->subtract($na->getX)->multiply($f);
     my $dy = $nb->getY->subtract($na->getY)->multiply($f);
@@ -426,104 +436,104 @@ sub computeLabelPos {
 DefMacro('\lput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
     (    ## T_BEGIN,
       T_CS('\lput@start'),
-      $_[1] ? T_OTHER('*') : (),
-      $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
-      $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (),
+      $_[1] ? T_OTHER('*')                                           : (),
+      $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']'))          : (),
+      $_[3] ? (T_BEGIN, $_[3]->unlist, T_END)                        : (),
       $_[4] ? (T_OTHER('('), Explode(ToString($_[4])), T_OTHER(')')) : (),
       T_CS('\put@end')); });
 
 DefConstructor('\lput@start OptionalMatch:* [] BracketedPSAngle RoundParenFloat',
-  "<ltx:g transform='&ptValue(#transform)' pos='#2'"
+  "<ltx:g transform='#transform' pos='#2'"
     . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
   afterDigest => sub { finishLabelPut($_[1], $_[1]->getArg(3), computeLabelPos($_[1]->getArg(4))); },
-  alias => '\lput');
+  alias       => '\lput');
 
 DefMacro('\aput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
     (    ## T_BEGIN,
       T_CS('\aput@start'),
-      $_[1] ? T_OTHER('*') : (),
-      $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
-      $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (),
+      $_[1] ? T_OTHER('*')                                           : (),
+      $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']'))          : (),
+      $_[3] ? (T_BEGIN, $_[3]->unlist, T_END)                        : (),
       $_[4] ? (T_OTHER('('), Explode(ToString($_[4])), T_OTHER(')')) : (),
       T_CS('\put@end')); });
 
 DefConstructor('\aput@start OptionalMatch:* [PSDimension] BracketedPSAngle RoundParenFloat',
-  "<ltx:g transform='&ptValue(#transform)'"
+  "<ltx:g transform='#transform'"
     . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
   afterDigest => sub {
     my ($whatsit, $labelsep, $angle, $pos) = ($_[1], map { $_[1]->getArg($_) } 2, 3, 4);
     my $p = computeLabelPos($pos);
     $labelsep = $labelsep || LookupValue('\pslabelsep');
-    $p = Pair($p->getX->add($labelsep), $p->getY->add($labelsep));
+    $p        = Pair($p->getX->add($labelsep), $p->getY->add($labelsep));
     finishLabelPut($whatsit, $angle, $p); },
   alias => '\aput');
 
 DefMacro('\bput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
     (    ## T_BEGIN,
       T_CS('\bput@start'),
-      $_[1] ? T_OTHER('*') : (),
-      $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
-      $_[3] ? (T_BEGIN, $_[3]->unlist, T_END) : (),
+      $_[1] ? T_OTHER('*')                                           : (),
+      $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']'))          : (),
+      $_[3] ? (T_BEGIN, $_[3]->unlist, T_END)                        : (),
       $_[4] ? (T_OTHER('('), Explode(ToString($_[4])), T_OTHER(')')) : (),
       T_CS('\put@end')); });
 
 DefConstructor('\bput@start OptionalMatch:* [PSDimension] BracketedPSAngle RoundParenFloat',
-  "<ltx:g transform='&ptValue(#transform)'"
+  "<ltx:g transform='#transform'"
     . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
   afterDigest => sub {
     my ($whatsit, $labelsep, $angle, $pos) = ($_[1], map { $_[1]->getArg($_) } 2, 3, 4);
     my $p = computeLabelPos($pos);
     $labelsep = $labelsep || LookupValue('\pslabelsep');
-    $p = Pair($p->getX->subtract($labelsep), $p->getY->subtract($labelsep));
+    $p        = Pair($p->getX->subtract($labelsep), $p->getY->subtract($labelsep));
     finishLabelPut($whatsit, $angle, $p); },
   alias => '\bput');
 
 DefMacro('\mput OptionalMatch:* []', sub {
     (    ##T_BEGIN,
       T_CS('\mput@start'),
-      $_[1] ? T_OTHER('*') : (),
+      $_[1] ? T_OTHER('*')                                  : (),
       $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
       T_CS('\put@end')); });
 
 DefConstructor('\mput@start OptionalMatch:* []',
-  "<ltx:g transform='&ptValue(#transform)' pos='#2'"
+  "<ltx:g transform='#transform' pos='#2'"
     . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
   afterDigest => sub { finishLabelPut($_[1], undef, computeLabelPos()); },
-  alias => '\mput');
+  alias       => '\mput');
 
 DefMacro('\Aput OptionalMatch:* []', sub {
     (    ##T_BEGIN,
       T_CS('\Aput@start'),
-      $_[1] ? T_OTHER('*') : (),
+      $_[1] ? T_OTHER('*')                                  : (),
       $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
       T_CS('\put@end')); });
 
 DefConstructor('\Aput@start OptionalMatch:* [PSDimension]',
-  "<ltx:g transform='&ptValue(#transform)'"
+  "<ltx:g transform='#transform'"
     . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
   afterDigest => sub {
     my ($stomach, $whatsit, $labelsep) = @_;
     my $p = computeLabelPos();
     $labelsep = $labelsep || LookupValue('\pslabelsep');
-    $p = Pair($p->getX->add($labelsep), $p->getY->add($labelsep));
+    $p        = Pair($p->getX->add($labelsep), $p->getY->add($labelsep));
     finishLabelPut($whatsit, undef, $p); },
   alias => '\Aput');
 
 DefMacro('\Bput OptionalMatch:* []', sub {
     (    ##T_BEGIN,
       T_CS('\Bput@start'),
-      $_[1] ? T_OTHER('*') : (),
+      $_[1] ? T_OTHER('*')                                  : (),
       $_[2] ? (T_OTHER('['), $_[2]->unlist(), T_OTHER(']')) : (),
       T_CS('\put@end')); });
 
 DefConstructor('\Bput@start OptionalMatch:* [PSDimension]',
-  "<ltx:g transform='&ptValue(#transform)'"
+  "<ltx:g transform='#transform'"
     . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
   afterDigest => sub {
     my ($stomach, $whatsit, $labelsep) = @_;
     my $p = computeLabelPos();
     $labelsep = $labelsep || LookupValue('\pslabelsep');
-    $p = Pair($p->getX->subtract($labelsep), $p->getY->subtract($labelsep));
+    $p        = Pair($p->getX->subtract($labelsep), $p->getY->subtract($labelsep));
     finishLabelPut($whatsit, undef, $p); },
   alias => '\Bput');
 
@@ -533,8 +543,8 @@ DefConstructor('\Bput@start OptionalMatch:* [PSDimension]',
 DefMacro('\Lput OptionalMatch:* OptionalBracketed [] OptionalBracketed RoundParenFloat {}', sub {
     my ($gullet, $star, $labelsep, $refpoint, $rotation, $pos, $stuff) = @_;
     (T_CS('\lput'),
-      $star ? T_OTHER('*') : (),
-      $pos ? (T_OTHER('('), Explode(ToString($pos)), T_OTHER(')')) : (),
+      $star ? T_OTHER('*')                                          : (),
+      $pos  ? (T_OTHER('('), Explode(ToString($pos)), T_OTHER(')')) : (),
       T_BEGIN, T_CS('\Rput'),
       $labelsep ? (T_BEGIN, $labelsep->unlist, T_END) : (),
       $refpoint ? (T_OTHER('['), $refpoint->unlist, T_OTHER(']')) : (),
