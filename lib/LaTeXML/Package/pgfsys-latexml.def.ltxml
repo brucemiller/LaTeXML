@@ -25,6 +25,10 @@ use List::Util qw(min max);
 
 DebuggableFeature('pgf', "Debug pgf processing");
 
+DefMacroI('\pgfsys@imagesuffixlist', undef,
+  join('', map { '.' . $_ . ':' }
+      qw(svg png gif jpg jpeg eps ps postscript ai pdf)));
+
 #=====================================================================
 # TODO:
 # * ALL \pgfsys@<drivercmd> level commands should be Constructors
@@ -93,12 +97,14 @@ DefConstructor('\lxSVG@insertpicture{}',
     else {
       $document->openElement('ltx:picture');
       $document->openElement('svg:svg',
-        version  => "1.1",
-        width    => $props{pxwidth}, height => $props{pxheight},
-        viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
+        version => "1.1",
+        width   => $props{pxwidth}, height => $props{pxheight},
+####        viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
         overflow => "visible");
+      my $x0 = $props{minx}; $x0 = '-' . $x0 unless $x0 =~ s/^-//;
+      my $y0 = $props{miny}; $y0 = '-' . $y0 unless $y0 =~ s/^-//;
       $document->openElement('svg:g',
-        transform   => "matrix(1 0 0 -1 0 $props{flipnmove})",
+        transform   => "translate($x0,$y0) matrix(1 0 0 -1 0 $props{flipnmove})",
         _scopebegin => 1);
       $document->insertElement('svg:rect', undef,
         x    => $props{minx}, y      => $props{miny}, width => $props{width}, height => $props{height},
@@ -205,11 +211,12 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
       $y = $fh->add($fd)->pxValue if !$y && $font;    # Seemingly SHOULD have ->add($fd)
 
       my $ht = $h->add($d);
+      # For some reason, these want to be in pts, not px ???
       $node->setAttribute(width  => $w->toAttribute)  unless $node->hasAttribute('width');
       $node->setAttribute(height => $ht->toAttribute) unless $node->hasAttribute('height');
       # Odd, sometimes needed, sometimes too much (vtop type situations?)
       if ($d->ptValue < 10) {                         # Random heuristic
-        $node->setAttribute(y => $d->negate->toAttribute) unless $node->hasAttribute('y'); }
+        $node->setAttribute(y => $d->negate->pxValue) unless $node->hasAttribute('y'); }
       $node->setAttribute(transform => "matrix(1 0 0 -1 0 $y)");
       $node->setAttribute(overflow  => 'visible'); } });
 
@@ -278,17 +285,7 @@ DefMacro('\pgfsys@endpicture',   '');
 
 DefConstructor('\pgfsys@hbox{Number}', sub {
     my ($doc, $boxnumber, %prop) = @_;
-    my $box = $prop{thebox};
-    return unless $box;
-    # my $font = $box->getFont;
-    # my ($w,  $h,  $d)  = $box->getSize;
-    # my ($fw, $fh, $fd) = $font && $font->getNominalSize;
-    # # Fishing for the correct y position (maybe w/o the depth?)
-    # #    my $y = $h->pxValue;   # Seemingly should NOT have ->add($d)
-    # my $y = $h->add(($font ? $fd : $d))->pxValue;    # Seemingly should NOT have ->add($d)
-    #     # But if the box's height has been set to 0, still need adjustment; Use font?
-    # $y = $fh->add($fd)->pxValue if !$y && $font;    # Seemingly SHOULD have ->add($fd)
-    $doc->absorb($box); },
+    $doc->absorb($prop{thebox}) if $prop{thebox}; },
   sizer => sub {
     my $box = $_[0]->getProperty('thebox');
     return $box && $box->getSize; },
@@ -841,8 +838,7 @@ DefPrimitive('\lxSVG@sh@defstripes{}{Number}', sub {
     AssignValue(pgf_sh_stops => [], 'global');
     my $x = LookupValue('\pgf@x')->pxValue;
     my $y = LookupValue('\pgf@y')->pxValue;
-
-    DefPrimitiveI('\@pgfshading' . $name->ToString . '!', undef, sub {
+    DefPrimitiveI('\@pgfshading' . ToString($name) . '!', undef, sub {
         my $objcount = SVGNextObject();
         DefConstructor('\lxSVG@sh@defs',
           '<svg:defs><svg:linearGradient id="pgfsh' . $objcount . '" '
@@ -864,22 +860,21 @@ DefPrimitive('\lxSVG@sh@defcircles{}', sub {
     my ($stomach, $name) = @_;
     my $stops = List(@{ LookupValue('pgf_sh_stops') });
     AssignValue(pgf_sh_stops => [], 'global');
-    my $endpos = Dimension(ToString Expand T_CS '\pgf@sys@shading@end@pos')->pxValue;
+    my $endpos = Dimension(ToString(Expand(T_CS('\pgf@sys@shading@end@pos'))))->pxValue;
     my $x      = LookupValue('\pgf@x')->pxValue * 8 / ($endpos * 16) + 0.5;
     my $y      = LookupValue('\pgf@y')->pxValue * 8 / ($endpos * 16) + 0.5;
-    DefPrimitiveI('\@pgfshading' . $name->ToString . '!', undef, sub {
+    DefPrimitiveI('\@pgfshading' . ToString($name) . '!', undef, sub {
         my $objcount = SVGNextObject();
         DefConstructor('\lxSVG@sh@defs',
-          '<svg:defs><svg:radialGradient id="pgfsh' . $objcount . '" '
-            . 'fx="' . $x . '" fy="' . $y . '">'
+          "<svg:defs><svg:radialGradient id='pgfsh$objcount' fx='$x' fy='$y'>"
             . '#stops'
             . '</svg:radialGradient></svg:defs>',
           properties => { stops => $stops },
           sizer      => 0
         );
         DefConstructor('\lxSVG@sh',
-          '<svg:circle cx="' . $endpos . '" cy="' . $endpos . '" r="' . $endpos . '" '
-            . 'style="fill:url(##pgfsh' . $objcount . ');stroke:none" />',
+          "<svg:circle cx='$endpos' cy='$endpos' r='$endpos'"
+            . " style='fill:url(##pgfsh$objcount);stroke:none'/>",
           sizer => 0);
         DefMacro('\lxSVG@pos', sub {
             Invocation(T_CS('\pgfpoint'), 2 * $endpos, 2 * $endpos) });
@@ -889,10 +884,9 @@ DefPrimitive('\lxSVG@sh@defcircles{}', sub {
 DefConstructor('\lxSVG@sh@insert{Dimension}{Dimension}{}',
   '<svg:g transform="translate(#x #y)">#3</svg:g>',
   properties => {
-    #    x => sub { $_[1]->pxValue; },
-    #    y => sub { $_[2]->pxValue; } });
-#### What's going on here? Why pt's instead of px ? (what are units?)
-### (with px shading's way off)
+## Something odd with scales here; these SHOULD be pixels!
+##    x => sub { $_[1]->pxValue; },
+##    y => sub { $_[2]->pxValue; } },
     x => sub { $_[1]->ptValue; },
     y => sub { $_[2]->ptValue; } },
   sizer => 0);
