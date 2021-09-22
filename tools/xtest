@@ -18,6 +18,7 @@ use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 
 our $htmldest = '/local/www/site/htdocs/latexmltest';
+our $logdir   = '/tmp/xtest';
 our $testdir  = "$FindBin::RealBin/../t";
 our $bindir   = "$FindBin::RealBin/../blib/script";
 our @TYPES    = ("html4", "xhtml", "html5");
@@ -90,10 +91,11 @@ foreach my $set (@testsets) {
       my $dest = "$htmldest/$set/$type/$test.$ext";
       push(@links, "<td class='$type'><a href='$set/$type/$test.$ext'>$type</a></td>");
       if ($force || (!-f $dest) || ((-M $srcxml) < (-M $dest))) {
-        print STDERR "\nConverting test case $set/$test ($type)" . ($usesdtd ? " [dtd]" : "");
+        print STDERR "Converting test case $set/$test ($type)" . ($usesdtd ? " [dtd]" : "") . "\n";
         system("$bindir/latexmlpost",
           ($usesdtd ? ("--novalidate") : ()),
           "--dest=$dest",
+          "--log=$logdir/$set-$test-$type.log",
           "--format=$type",
           "--javascript=LaTeXML-maybeMathjax.js",
           (defined $timestamp ? ("--timestamp=$timestamp") : ()),
