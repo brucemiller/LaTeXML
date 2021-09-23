@@ -3,6 +3,7 @@
 \usepackage{hyperref}
 %\usepackage{../sty/latexmldoc}
 \usepackage{latexmldoc}
+\input{latexmlreleases}
 \usepackage{listings}
 % Should the additional keywords be indexed?
 \lstdefinestyle{shell}{language=bash,escapechar=@,
@@ -12,7 +13,6 @@
    morekeywords={latexml,latexmlpost,latexmlmath},
    moredelim=[is][\itshape]{\%}{\%}}
 
-\input{releases.tex}
 \newcommand{\PDFIcon}{\includegraphics{pdf}}
 
 \title{\LaTeXML\ \emph{A \LaTeX\ to XML/HTML/MathML Converter}}
@@ -33,7 +33,7 @@
 \maketitle
 
 %============================================================
-\emph{Now available}:  \htmlref{\LaTeXML\ \CurrentVersion}{get}!
+\emph{Now available}:  \htmlref{\LaTeXML\ \CurrentRelease}{get}!
 
 In the process of developing the
 \href{https://dlmf.nist.gov/}{Digital Library of Mathematical Functions},
@@ -182,7 +182,7 @@ If you want to dig deeper:
 
 \subsection{Quick Start}\label{get.quick}
 \subsubsection{Current Release}\label{get.current}
-The current release is \textbf{\CurrentVersion}. (see the \href{Changes}{Change Log}).
+The current release is \textbf{\CurrentDownload}. (see the \href{Changes}{Change Log}).
 \emph{Prebuilt packages sometimes lag behind the latest release.}
 
 Most people will want to install a prebuilt release,
@@ -317,7 +317,7 @@ and unpacked:
 unzip LaTeXML-master.zip
 cd LaTeXML-master
 \end{lstlisting}
-\subparagraph{or, a tarball} can be downloaded from \CurrentTarball, and unpacked:
+\subparagraph{or, a tarball} can be downloaded from \CurrentDownload, and unpacked:
 \begin{lstlisting}[style=shell]
 tar zxvf LaTeXML-@\CurrentVersion@.tar.gz
 cd LaTeXML-@\CurrentVersion@
@@ -649,9 +649,10 @@ which inhibited processing of pdf files; the problem appears to be fixed recent 
 If you see \texttt{operation not allowed by the security policy}, see the discussion
 at \href{https://stackoverflow.com/a/53180170}{stackoverflow}.
 
+\expandafter\ifx\expandafter#\AllReleases#\else
 \subsection{Archived Releases:}\label{get.archive}
 \AllReleases.
-
+\fi
 %============================================================
 \section{Contacts \& Support}\label{contact}
 

@@ -9,9 +9,11 @@ use FindBin;
 use base qw(Exporter);
 our @EXPORT = (qw(&setVerbosity &heading &subheading &message
     &copy &pdflatex &latexml
-    &slurpfile &saveData));
+    &slurpfile &saveData
+    &getReleaseInfo));
 
-our $DOCDIR = $FindBin::RealBin;
+our $DOCDIR     = $FindBin::RealBin;
+our $LATEXMLDIR = "$DOCDIR/..";        # Assumed under top-level LaTeXML
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Noise.
@@ -118,6 +120,7 @@ sub pdflatex {
     do {
       $pass++; $changed = 0;
       subheading("Running pdflatex for $name (pass $pass)");
+      $ENV{TEXINPUTS} = "$DOCDIR/sty::";
       monitor_command("pdflatex $name",
         qr{! Undefined control sequence.} => sub { $error = 1; },
         qr{<to be read again>}            => sub { $error = 1; },
@@ -182,5 +185,57 @@ sub System {
   print "\$  " . join(' ', $command, @args) . "\n" if $VERBOSITY;
   return system($command, @args); }
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+sub getReleaseInfo {
+  my ($releasedir) = @_;
+  my $macros = '';
+  # Get current executable's version
+  my $version;
+  { use LaTeXML;
+    $macros .= "\\def\\CurrentVersion{" . sanitize($LaTeXML::VERSION) . "}\n"; }
+  # Scan the releases directory (if any) for all released versions.
+  if ((!defined $releasedir) || !(-d "$releasedir")) {    # If  a release directory available.
+    warn "No archived releases found in " . ($releasedir || '<none-given>');
+    $macros .= "\\let\\CurrentRelease\\CurrentVersion\n";
+    $macros .= "\\let\\CurrentDownload\\CurrentVersion\n";
+    $macros .= "\\def\\AllReleases{}\n"; }
+  else {
+    opendir(REL, "$releasedir") or die "Couldn't read directory $releasedir: $!";
+    my @files = readdir(REL);
+    closedir(REL);
+    my %tarballs = ();
+    foreach my $file (@files) {
+      if ($file =~ /^LaTeXML-(.*?)\.tar\.gz$/) {
+        $tarballs{$1} = "\\href{releases/$file}{" . sanitize($1) . "\\nobreakspace(tar.gz)}"; } }
+    my @versions = reverse sort keys %tarballs;
+    $macros .= "\\def\\CurrentRelease{$versions[0]}\n";
+    $macros .= "\\def\\CurrentDownload{" . $tarballs{ $versions[0] } . "}\n";
+    $macros .= "\\def\\AllReleases{" . join(";\n", map { $tarballs{$_}; } @versions) . "}\n";
+  }
+
+  # Collect all bindings for classes and packages.
+  if (!-r "$LATEXMLDIR/MANIFEST") {
+    warn "No MANIFEST found";
+    $macros .= "\\def\\CurrentClasses{}\n";
+    $macros .= "\\def\\CurrentPackages{}\n"; }
+  else {
+    my %bindings = ();
+    my $MF;
+    open($MF, '<', "$LATEXMLDIR/MANIFEST") or die "Couldn't read MANIFEST: $!";
+    while (<$MF>) {
+      if (m@^\s*lib/LaTeXML/Package/(.+?)\.(cls|sty)\.ltxml\s*$@) {
+        $bindings{$2}{ sanitize($1) } = 1; } }
+    close($MF);
+    $macros .= "\\def\\CurrentClasses{" . join(', ', sort keys %{ $bindings{cls} }) . "}\n";
+    $macros .= "\\def\\CurrentPackages{" . join(', ', sort keys %{ $bindings{sty} }) . "}\n"; }
+
+  saveData("$DOCDIR/sty/latexmlreleases.tex", $macros);
+  return; }
+
+sub sanitize {
+  my ($string) = @_;
+  $string =~ s/\\/\\\\/g;
+  $string =~ s/_/\\_/g;
+  return $string; }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
