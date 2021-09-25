@@ -85,7 +85,7 @@ WriteMakefile(NAME => 'LaTeXML',
     'XML::LibXSLT' => 1.58,
   },
   EXE_FILES => ['bin/latexml', 'bin/latexmlpost', 'bin/latexmlfind', 'bin/latexmlmath', 'bin/latexmlc'],
-  macro => $MORE_MACROS,
+  macro     => $MORE_MACROS,
   # link to  github location to newer MakeMaker
   (eval { ExtUtils::MakeMaker->VERSION(6.46) } ? (META_MERGE => {
         'meta-spec' => { version => 2 },
@@ -110,7 +110,7 @@ print STDERR ('=' x 55), "\n",
 #**********************************************************************
 
 #======================================================================
-# Record the current (svn) repository revision number
+# Record the current git revision (last commit)
 sub record_revision {
   # Don't copy the Version template to the installation; it's not needed
   push(@EXCLUSIONS, 'blib/lib/LaTeXML/Version.in');
@@ -118,42 +118,49 @@ sub record_revision {
   $$MORE_MACROS{REVISION_BASE} = $FindBin::RealBin;
   # This is where the REVISION gets stored (along with VERSION, etc)
   $$MORE_MACROS{REVISION_FILE} = '$(INST_LIBDIR)/LaTeXML/Version.pm';
-  # Get the current revision
-  # This should be done SAFELY; and work even if svnversion isn't available (esp, windows, mac...)
-  # (When it isn't there's an error, but REVISION ends up "" ... exactly right, I think?)
-  ## This command is appropriate for svn
-  ##  $$MORE_MACROS{REVISION} = '$(shell svnversion $(REVISION_BASE))';
-  ## This command is appropriate for git (I think)
-  if ((-e '.git') && (system("git --version") == 0)) {    # If a git checkout & can run git?
-    print STDERR "\n";                                    # space out messages
-    $$MORE_MACROS{REVISION} = '$(shell git log --max-count=1 --abbrev-commit --pretty="%h")'; }
-  # Extract the previously recorded revision from the revision file (awkward)
-  $$MORE_MACROS{OLD_REVISION}
-    = '$(shell $(PERLRUN) -ne "chomp;if(s/.*?REVISION\s*=\s*\'// && s/\s*\'.*//){print;}" < $(REVISION_FILE))';
+  # Get the current revision --- SAFELY !!!!
+  # Don't do anything extra unless we appear to be a git clone.
+  # We'll assume such systems have a better make supporting $(shell ... ????
+  my $is_gitclone = (-e '.git') && (system("git --version") == 0);
+  if ($is_gitclone) {    # If a git checkout & can run git?
+    print STDERR "\n";    # space out messages
+    $$MORE_MACROS{REVISION} = '$(shell git log --max-count=1 --abbrev-commit --pretty="%h")';
+    # Extract the previously recorded revision from the revision file (awkward)
+    $$MORE_MACROS{OLD_REVISION}
+      = '$(shell $(PERLRUN) -ne "chomp;if(s/.*?REVISION\s*=\s*\'// && s/\s*\'.*//){print;}" < $(REVISION_FILE))'; }
   # Substitute the revision into the revision template
   $$MORE_MACROS{RECORD_REVISION} = '$(PERLRUN) -pe "s@__REVISION__@$(REVISION)@" ';
 
-  # Have concerns about the $(noecho), but otherwise, it's annoying!
-  # it prints _every_ time you make, even if it doesn't update!
-
+  # This is for all systems, copies Version.in to Version.pm
   $MORE_MAKERULES .= <<'RecordRevision';
 
-# Record the svn revision in the Version module, for more informative diagnostics
-pure_all :: $(REVISION_FILE) update_revision
+# Always set revision if version module template is newer
 
-# Always set version if version module template is newer
+pure_all :: $(REVISION_FILE)
+
 $(REVISION_FILE): lib/LaTeXML/Version.in
 	$(NOECHO) $(MKPATH) $(INST_LIBDIR)/LaTeXML
 	$(RECORD_REVISION) lib/LaTeXML/Version.in > $(REVISION_FILE)
 
-# update version if stored revision if not current
+RecordRevision
+
+  # This is for git clones only, and updates revision to last commit
+  if ($is_gitclone) {
+    $MORE_MAKERULES .= <<'UpdateRevision';
+
+# For git clones, record the git revision in the Version module
+
+pure_all :: update_revision
+
 update_revision:
 	$(NOECHO) $(MKPATH) $(INST_LIBDIR)/LaTeXML
 	- $(NOECHO) $(PERLRUN) -e "exit(1) unless '$(REVISION)' eq '$(OLD_REVISION)';" \
 	|| $(RECORD_REVISION) lib/LaTeXML/Version.in > $(REVISION_FILE)
 
-RecordRevision
+UpdateRevision
+  }
   return; }
+
 #======================================================================
 # We'll compile the RecDescent grammar during make; don't need to install grammar.
 sub compile_MathGrammar {
@@ -205,8 +212,8 @@ MakeGrammar
 #    embedded spaces.
 sub install_TeXStyles {
   if (!$TEXMF) {
-    $KPSE_TOOLCHAIN = "--miktex-admin" if ($ENV{"LATEXML_KPSEWHICH_MIKTEX_ADMIN"});    # assume miktex admin on windows CI
-    if (system("kpsewhich --version $KPSE_TOOLCHAIN") == 0) {    # can run kpsewhich?
+    $KPSE_TOOLCHAIN = "--miktex-admin" if ($ENV{"LATEXML_KPSEWHICH_MIKTEX_ADMIN"}); # assume miktex admin on windows CI
+    if (system("kpsewhich --version $KPSE_TOOLCHAIN") == 0) {                       # can run kpsewhich?
       $TEXMF = `kpsewhich --expand-var='\$TEXMFLOCAL' $KPSE_TOOLCHAIN`;
       # Strip the quotes (they appear in windows, when spaces in pathnames(?))
       # These quotes inhibit pasting pathnames togheter,
