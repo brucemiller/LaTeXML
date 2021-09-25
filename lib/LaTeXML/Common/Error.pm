@@ -17,7 +17,7 @@ use LaTeXML::Common::Object;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Core::Token qw(T_CS);
 use Time::HiRes;
-use Term::ANSIColor 2.01 qw(colored colorstrip);
+use Term::ANSIColor qw(colored colorstrip);
 
 use base qw(Exporter);
 our @EXPORT = (
