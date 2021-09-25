@@ -17,7 +17,7 @@ use LaTeXML::Common::Object;
 use LaTeXML::Core::Token;
 use base qw(LaTeXML::Common::Object);
 use base qw(Exporter);
-our @EXPORT = (qw(&Number));
+our @EXPORT = (qw(&Number &roundto));
 
 #======================================================================
 # Exported constructor.
