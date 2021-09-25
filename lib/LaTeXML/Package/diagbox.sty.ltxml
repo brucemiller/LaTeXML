@@ -73,9 +73,9 @@ DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
     # Annoying: All svg units, and computations, are in pixels!
     my ($kv, $A, $M, $B) = $whatsit->getArgs;
     my $dir = $kv && ToString($kv->getValue('dir')) || 'NW';
-    my ($Aw, $Ah, $Ad) = map       { $_->pxValue } $A->getSize; $Ah += $Ad;
-    my ($Bw, $Bh, $Bd) = map       { $_->pxValue } $B->getSize; $Bh += $Bd;
-    my ($Mw, $Mh, $Md) = $M && map { $_->pxValue } $M->getSize; $Mh += $Md if $Mh;
+    my ($Aw, $Ah, $Ad) = map       { roundto($_->pxValue) } $A->getSize; $Ah += $Ad;
+    my ($Bw, $Bh, $Bd) = map       { roundto($_->pxValue) } $B->getSize; $Bh += $Bd;
+    my ($Mw, $Mh, $Md) = $M && map { roundto($_->pxValue) } $M->getSize; $Mh += $Md if $Mh;
     my $maxw = max($Aw, $Bw);
     my $maxh = max($Ah, $Bh);
     my $w    = $kv && ($kv->getValue('width') || $kv->getValue('innerwidth'));
@@ -98,6 +98,8 @@ DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
         $h = (($Aw < $s) && ($delta >= 0)
           ? ($u - $v - sqrt($delta)) / ($Aw - $s) / 2
           : 2 * (max($Ah, $Bh) + $Mh)) unless $h; }
+      $w = roundto($w);
+      $h = roundto($h);
       my ($wm, $hm) = ($w * 0.5, $h * 0.5);
       if ($dir eq 'NW') {
         $My    = $h - $Mh;
@@ -126,6 +128,8 @@ DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
     else {
       $w  = 2 * $maxw unless $w;
       $h  = $Ah + $Bh unless $h;
+      $w  = roundto($w);
+      $h  = roundto($h);
       $Bx = $w - $Bw;
       if (($dir eq 'NW') || ($dir eq 'SE')) {
         $By    = $h - $Bh;
