@@ -522,6 +522,12 @@
   <xsl:template match="*" mode="aligned-begin"/>
   <xsl:template match="*" mode="aligned-end"/>
 
+  <!-- when an equationgroup has tags, but there are no further tags below, the equation number comes from the group -->
+  <func:function name="f:has-group-eqno">
+    <xsl:param name="node" select="."/>
+    <func:result select="ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags][not(descendant::ltx:equationgroup/ltx:tags | descendant::ltx:equation/ltx:tags)]"/>
+  </func:function>
+
   <!-- ======================================================================
        Generate the padding column (td) for a (potentially) numbered row
        in an aligned equationgroup|equation.
@@ -540,8 +546,8 @@
     <xsl:choose>
       <!-- Wrong side: Nothing -->
       <xsl:when test="$eqnopos != $side"/>
-      <!-- equationgroup is numbered, but NOT equations! -->
-      <xsl:when test="ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags][not(descendant::ltx:equation[ltx:tags])]">
+      <!-- emit the equation number spanning all subequations in the group -->
+      <xsl:when test="f:has-group-eqno()">
         <!-- place number only for 1st row -->
         <xsl:if test="(ancestor-or-self::ltx:tr and not(preceding-sibling::ltx:tr))
                       or (not(ancestor-or-self::ltx:tr) and not(preceding-sibling::ltx:equation))">
@@ -656,8 +662,7 @@
     <xsl:param name="ncolumns"/>
     <xsl:param name="eqpos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
-    <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+    <xsl:variable name="content">
       <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
         <xsl:attribute name="class">ltx_eqn_row ltx_align_baseline</xsl:attribute>
         <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
@@ -685,7 +690,20 @@
           </xsl:apply-templates>
         </xsl:element>
       </xsl:element>
-    </xsl:element>
+    </xsl:variable>
+    <xsl:text>&#x0A;</xsl:text>
+    <xsl:choose>
+      <!-- The outer equationgroup has tags, but no subequation does.
+           No tbody, else it will interfere with the group's rowspanned equation number -->
+      <xsl:when test="f:has-group-eqno()">
+        <xsl:copy-of select="$content"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+          <xsl:copy-of select="$content"/>
+        </xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <!-- Hopefully we can deal with nested equationgroups, but we've got to attach the id somewhere!
@@ -695,14 +713,24 @@
   <xsl:template match="ltx:equationgroup" mode="inalignment">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"/>
+    <xsl:variable name="content">
+      <xsl:apply-templates select="." mode="ininalignment">
+        <xsl:with-param name="ncolumns" select="$ncolumns"/>
+        <xsl:with-param name="context" select="$context"/>
+      </xsl:apply-templates>
+    </xsl:variable>
     <!-- This is pretty lame, but if there's an id, we better put it SOMEPLACE! -->
     <xsl:choose>
+      <!-- nested equationgroup with equation number spanning its subequations: must emit tbody here -->
+      <xsl:when test="parent::ltx:equationgroup and f:has-group-eqno()">
+        <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+          <xsl:call-template name="add_id"/>
+          <xsl:copy-of select="$content"/>
+        </xsl:element>
+      </xsl:when>
       <!-- easy case: no id, or already on table (since this is outer equationgroup)-->
       <xsl:when test="not(@fragid) or not(parent::ltx:equationgroup)">
-        <xsl:apply-templates select="." mode="ininalignment">
-          <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
+        <xsl:copy-of select="$content"/>
       </xsl:when>
       <!-- Nested equationgroup, with id.  The alignment will be handled by the table
            for the outer equationgroup (hopefully consistently).
@@ -722,10 +750,7 @@
             </xsl:element>
           </xsl:element>
         </xsl:element>
-        <xsl:apply-templates select="." mode="ininalignment">
-          <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
+        <xsl:copy-of select="$content"/>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
@@ -768,9 +793,9 @@
           <xsl:with-param name="need_id" select="false()"/>
         </xsl:apply-templates>
       </xsl:when>
-      <!-- This equation has no tags, but outer equationgroup does.
+      <!-- The outer equationgroup has tags, but no subequation does.
            No tbody, else it will interfere with the group's rowspanned equation number -->
-      <xsl:when test="not(ltx:tags) and parent::ltx:equationgroup/ltx:tags">
+      <xsl:when test="f:has-group-eqno()">
         <xsl:apply-templates select="." mode="ininalignment">
           <xsl:with-param name="ncolumns" select="$ncolumns"/>
           <xsl:with-param name="context" select="$context"/>
