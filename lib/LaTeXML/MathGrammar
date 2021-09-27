@@ -675,6 +675,7 @@ nestOperators :
 AnyOp   : relop | METARELOP | ARROW | AddOp | MulOp | MODIFIEROP
         | preScripted['bigop']
         | OPERATOR addScripts[$item[1]]
+        | VERTBAR addScripts[$item[1]]
 
 # Sub or superscripts on operators;
 # we recognize the structure, not necessarily the meaning
