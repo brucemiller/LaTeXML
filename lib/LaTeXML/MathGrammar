@@ -79,6 +79,7 @@ AnythingAny :
         | FLOATSUPERSCRIPT                { NewScript(Absent(),$item[1]); }
         | FLOATSUBSCRIPT                  { NewScript(Absent(),$item[1]); }
         | AnyOp Expression                { Apply($item[1],Absent(),$item[2]);}
+        | VERTBAR addScripts[$item[1]]    # vertbar can confuse parsing if part of AnyOp, so hardcode at the end here.
 
 # a top level rule for sub and superscripts that can accept all sorts of junk.
 Subscript : <rulevar: local $MaxAbsDepth = $LaTeXML::MathParser::MAX_ABS_DEPTH>
@@ -96,6 +97,7 @@ aSubscript :
         | AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
         | AnyOp
         | OPEN aSubscript CLOSE          { Fence($item[1],$item[2],$item[3]); }
+        | VERTBAR addScripts[$item[1]]    # vertbar can confuse parsing if part of AnyOp, so hardcode at the end here.
 
 aSuperscript :
           supops
@@ -103,6 +105,7 @@ aSuperscript :
         | AnyOp Expression               { Apply($item[1],Absent(),$item[2]);}
         | AnyOp
         | OPEN aSuperscript CLOSE        { Fence($item[1],$item[2],$item[3]); }
+        | VERTBAR addScripts[$item[1]]    # vertbar can confuse parsing if part of AnyOp, so hardcode at the end here.
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Formulae  (relations or grouping of expressions or relations)
@@ -675,7 +678,6 @@ nestOperators :
 AnyOp   : relop | METARELOP | ARROW | AddOp | MulOp | MODIFIEROP
         | preScripted['bigop']
         | OPERATOR addScripts[$item[1]]
-        | VERTBAR addScripts[$item[1]]
 
 # Sub or superscripts on operators;
 # we recognize the structure, not necessarily the meaning
