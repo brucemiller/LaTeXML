@@ -153,13 +153,10 @@ sub rotatedProperties {
     (-$d - $y0) * $c + ($w - $x0) * $s + $y0,     # bottom right
     (+$h - $y0) * $c + ($w - $x0) * $s + $y0,     # top right
     (+$h - $y0) * $c + (+0 - $x0) * $s + $y0);    # top left
-  my $hp  = max(@cornerys);
-  my $dp  = -min(@cornerys);
-  my $xsh = Dimension(($wp - $w) / 2)->ptValue . 'pt';
-  my $ysh = Dimension(($h - $hp + $dp) / 2 + $d)->ptValue . 'pt';
-  # Since $dp & $ysh both try to have the same effect
-  # (& I don't think the CSS box really has a depth anymore)
-  $hp += $dp; $dp = 0;
+  my $hp       = max(@cornerys);
+  my $dp       = -min(@cornerys);
+  my $xsh      = Dimension(($wp - $w) / 2)->ptValue . 'pt';
+  my $ysh      = Dimension(($s < 0 ? -1 : +1) * ($h - $hp + $dp) / 2 + $d)->ptValue . 'pt';
   my $cwidthp  = Dimension($wp);
   my $cheightp = Dimension($hp);
   my $cdepthp  = Dimension($dp);
