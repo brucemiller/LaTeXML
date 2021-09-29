@@ -432,10 +432,13 @@ sub normalize_sum_sizes {
   my @collefts   = ();
   # Uses cell's cwidth,cheight,cdepth
   # Computes net row & column sizes & positions
-  # add \baselineskip between rows? Or max the row heights with it ...
-  my $base  = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->valueOf;
+  # add spacing between rows? Or only from \\[..] ?
+  my $strut = $self->getProperty('strut') || Dimension(0);
+  my $hs    = $strut->multiply(0.7);
+  my $ds    = $strut->multiply(0.3);
   my @rows  = @{ $$self{rows} };
   my $nrows = scalar(@rows);
+
   for (my $i = 0 ; $i < $nrows ; $i++) {
     my $row   = $rows[$i];
     my @cols  = @{ $$row{columns} };
@@ -445,8 +448,8 @@ sub normalize_sum_sizes {
       push(@collefts,  map { 0 } 1 .. $short);
       push(@colrights, map { 0 } 1 .. $short); }
     my ($rowh, $rowd) = (0, 0);
-    my ($rowt, $rowb) = (($$row{tpadding} ? $$row{tpadding}->valueOf : $base / 2),
-      ($$row{bpadding} ? $$row{bpadding}->valueOf : $base / 2));
+    my ($rowt, $rowb) = (($$row{tpadding} ? $$row{tpadding}->valueOf : 0),
+      ($$row{bpadding} ? $$row{bpadding}->valueOf : 0));
     for (my $j = 0 ; $j < $ncols ; $j++) {
       my $cell = $cols[$j];
       next if $$cell{skipped};
@@ -470,8 +473,8 @@ sub normalize_sum_sizes {
         $rowb = max($rowb, $b->valueOf) if $b; }
       else { }    # Ditto spanned rows
     }
-    $$row{cheight}  = Dimension($rowh);
-    $$row{cdepth}   = Dimension($rowd);
+    $$row{cheight}  = Dimension($rowh)->larger($hs);
+    $$row{cdepth}   = Dimension($rowd)->larger($ds);
     $$row{tpadding} = Dimension($rowt);
     $$row{bpadding} = Dimension($rowb);
     # NOTE: Should be storing column widths to; individually, as well as per-column!
@@ -505,9 +508,13 @@ sub normalize_sum_sizes {
     $$row{cwidth} = Dimension($x);
     for (my $j = 0 ; $j < $ncols ; $j++) {
       my $cell = $cols[$j];
+      ## NOTE Should do some further positioning (depending on align!!)
+      ## my $dx = Dimension($colwidths[$j])->subtract($$cell{cwidth})->divide(2);
       $$cell{x} = $colpos[$j]; $$cell{y} = $rowpos[$i];
       Debug("CELL[$j,$i] " . showSize($$cell{cwidth}, $$cell{cheight}, $$cell{cdepth})
-          . " @ " . ToString($$cell{x}) . "," . ToString($$cell{y}))
+          . " @ " . ToString($$cell{x}) . "," . ToString($$cell{y})
+          . " w/ " . join(',', map { $_ . '=' . ToString($$cell{$_}); }
+            (qw(align vattach skipped colspan rowspan))))
         if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
   } }
   $$self{columnwidths} = [map { Dimension($_); } @colwidths];
