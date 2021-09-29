@@ -18,6 +18,7 @@ use Getopt::Long qw(:config no_ignore_case);
 use Pod::Usage;
 
 our $htmldest = '/local/www/site/htdocs/latexmltest';
+our $logdir   = '/tmp/xtest';
 our $testdir  = "$FindBin::RealBin/../t";
 our $bindir   = "$FindBin::RealBin/../blib/script";
 our @TYPES    = ("html4", "xhtml", "html5");
@@ -60,7 +61,9 @@ our $htmldata = '';
 
 foreach my $set (@testsets) {
   print STDERR "Looking at directory $testdir/$set\n" if $verbosity >= 0;
-  opendir(DIR, "$testdir/$set") or die "Couldn't read test directory $testdir/$set: $!";
+  if (!opendir(DIR, "$testdir/$set")) {
+    warn "Couldn't read test directory $testdir/$set: $!\nSkipping set $set";
+    next; }
   my $p;
   my @tests = sort grep { -f "$testdir/$set/$_.xml" }
     map { (($p = $_) =~ s/\.pdf$// ? ($p) : ()) } readdir(DIR);
@@ -70,7 +73,8 @@ foreach my $set (@testsets) {
 
   if (!-d "$htmldest/$set") {
     print STDERR "Creating $htmldest/$set\n" if $verbosity >= 0;
-    mkdir("$htmldest/$set") or die "Couldn't create destination directory $htmldest: $!"; }
+    if (!mkdir("$htmldest/$set")) {
+      warn "Couldn't create destination directory $htmldest: $!\nSkipping $set"; } }
 
   $htmldata .= "<tr><th colspan='5' class='testgroup'>$set</th></tr>\n";
 
@@ -87,10 +91,11 @@ foreach my $set (@testsets) {
       my $dest = "$htmldest/$set/$type/$test.$ext";
       push(@links, "<td class='$type'><a href='$set/$type/$test.$ext'>$type</a></td>");
       if ($force || (!-f $dest) || ((-M $srcxml) < (-M $dest))) {
-        print STDERR "\nConverting test case $set/$test ($type)" . ($usesdtd ? " [dtd]" : "");
+        print STDERR "Converting test case $set/$test ($type)" . ($usesdtd ? " [dtd]" : "") . "\n";
         system("$bindir/latexmlpost",
           ($usesdtd ? ("--novalidate") : ()),
           "--dest=$dest",
+          "--log=$logdir/$set-$test-$type.log",
           "--format=$type",
           "--javascript=LaTeXML-maybeMathjax.js",
           (defined $timestamp ? ("--timestamp=$timestamp") : ()),
@@ -98,7 +103,7 @@ foreach my $set (@testsets) {
             : ($verbosity < 0 ? map { "--quiet" } 1 .. -$verbosity
               : ())),
           $srcxml)
-          == 0 or die "Couldn't transform test case $testdir/$set/$type/$test: $!"; } }
+          == 0 or warn "Couldn't transform test case $testdir/$set/$type/$test: $!\nSkpping $set/$type/$test"; } }
     $htmldata .= "<tr><td class='testcase'>$test</td> " . join('', @links) . ".</tr>\n"; }
 }
 
@@ -114,7 +119,7 @@ sub copy {
   my ($src, $dst) = @_;
   if ($force || (!-f $dst) || ((-M $src) < (-M $dst))) {
     print STDERR "Copying $src to $dst\n" if $verbosity >= 0;
-    system('cp', $src, $dst) == 0 or die "Couldn't copy $src to $dst: $!"; }
+    system('cp', $src, $dst) == 0 or warn "Couldn't copy $src to $dst: $!"; }
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

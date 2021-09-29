@@ -15,7 +15,7 @@ use strict;
 use warnings;
 use base qw(LaTeXML::Common::Number);
 use base qw(Exporter);
-our @EXPORT = (qw(&Float));
+our @EXPORT = (qw(&Float floatformat));
 
 #======================================================================
 # Exported constructor.

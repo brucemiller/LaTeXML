@@ -127,7 +127,8 @@ td.ltx_subfloat { width:50%; }
 
 /* avoid padding when aligning adjacent columns, e.g. for split decimals */
 .ltx_norightpad { padding-right:0!important; }
-.ltx_noleftpad { padding-left:0!important; }
+.ltx_noleftpad  { padding-left:0!important; }
+.ltx_nopad      { padding:0!important; }
 
 /* equations in non-aligned mode (not normally used) */
 .ltx_eqn_div { display:block; width:95%; text-align:center; }

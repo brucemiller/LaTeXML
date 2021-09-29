@@ -106,11 +106,13 @@
     <xsl:element name="{local-name()}" namespace="{$svg_ns}">
       <xsl:for-each select="@*">
         <xsl:choose>
+          <!--  Apparently no "xml:" is OK, and preferred in ePub ?
           <xsl:when test="local-name() = 'id'">
             <xsl:attribute name="{f:if($USE_NAMESPACES,'xml:id','id')}">
               <xsl:value-of select="."/>
             </xsl:attribute>
           </xsl:when>
+          -->
           <!-- are these the attributes to watch for in svg? (urls)-->
           <xsl:when test="name() = 'href' or name() = 'src'">
             <xsl:attribute name="{local-name()}">

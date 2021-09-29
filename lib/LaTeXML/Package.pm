@@ -199,6 +199,7 @@ sub parseParameters {
   my ($proto, $for) = @_;
   my $p      = $proto;
   my @params = ();
+  $p =~ s/^\s+//; $p =~ s/\s+$//;
   while ($p) {
     # Handle possibly nested cases, such as {Number}
     if ($p =~ s/^(\{([^\}]*)\})\s*//) {
