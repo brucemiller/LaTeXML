@@ -5278,14 +5278,16 @@ DefMacroI('\ltx@hard@MessageBreak', undef, '^^J');
 sub make_message {
   my ($cmd, @args) = @_;
   my $stomach = $STATE->getStomach;
-  my $type    = ToString(shift(@args)) || $cmd;
+  my $lead_arg = ToString(shift(@args)) || '';
+  $lead_arg =~ s/(?:\\\@?spaces?)+//g;
+  my $type    = $lead_arg || $cmd;
   $stomach->bgroup;
   Let('\protect', '\string');
   # Note that the arg really should be digested to get to the underlying text,
   # but why tempt fate, when we're already making an error message?
   my $message = join(" ", map { ToString(Expand($_)) } @args);
-  $type    =~ s/(?:\\\@spaces?)+/ /g;
-  $message =~ s/(?:\\\@spaces?)+/ /g;
+  $type    =~ s/(?:\\\@?spaces?)+/ /g;
+  $message =~ s/(?:\\\@?spaces?)+/ /g;
   $stomach->egroup;
   return ('latex', $type, $stomach, $message); }
 
