@@ -228,29 +228,49 @@
        [hopefully only see units of px or pt?
   -->
 
+  <func:function name="f:dimunit">
+    <xsl:param name="value"/>
+    <func:result>
+      <xsl:choose>
+        <xsl:when test="contains($value,'px')">px</xsl:when>
+        <xsl:when test="contains($value,'pt')">pt</xsl:when>
+        <xsl:otherwise></xsl:otherwise>
+      </xsl:choose>
+    </func:result>
+  </func:function>
+
+  <func:function name="f:dimvalue">
+    <xsl:param name="value"/>
+    <xsl:variable name="unit"><xsl:value-of select="f:dimunit($value)"/></xsl:variable>
+    <func:result>
+      <xsl:value-of select="number(substring-before($value,$unit))"/>
+    </func:result>
+  </func:function>
+
   <func:function name="f:adddim">
     <xsl:param name="value1"/>
     <xsl:param name="value2"/>
+    <xsl:variable name="unit1"><xsl:value-of select="f:dimunit($value1)"/></xsl:variable>
+    <xsl:variable name="unit2"><xsl:value-of select="f:dimunit($value2)"/></xsl:variable>
     <func:result>
-      <xsl:value-of select="concat(f:dimpx($value1)+f:dimpx($value2),'px')"/>
-      </func:result>
-  </func:function>
-
-  <func:function name="f:halfdiff">
-    <xsl:param name="value1"/>
-    <xsl:param name="value2"/>
-    <func:result>
-      <xsl:value-of select="concat((f:dimpx($value1)-f:dimpx($value2)) div 2,'px')"/>
-      </func:result>
+      <xsl:choose>
+        <xsl:when test="$unit1 = $unit2">
+          <xsl:value-of select="concat(f:dimvalue($value1)+f:dimvalue($value2),$unit1)"/>
+        </xsl:when>
+        <xsl:otherwise>
+          <xsl:value-of select="concat(f:dimpx($value1)+f:dimpx($value2),'px')"/>
+        </xsl:otherwise>
+      </xsl:choose>
+    </func:result>
   </func:function>
 
   <func:function name="f:half">
     <xsl:param name="value"/>
+    <xsl:variable name="unit"><xsl:value-of select="f:dimunit($value)"/></xsl:variable>
     <func:result>
-      <xsl:value-of select="concat(f:dimpx($value) div 2,'px')"/>
+      <xsl:value-of select="concat(f:dimvalue($value) div 2,$unit)"/>
       </func:result>
   </func:function>
-
 
   <func:function name="f:dimpx">
     <xsl:param name="value"/>
