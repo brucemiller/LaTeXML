@@ -413,7 +413,10 @@ Initialize XML::LibXML to recognize the catalogs given in LaTeXML.catalogs.
 
 =item C<set_RDFa_prefixes($document,$map)>
 
-This needs an explanation.
+This method scans the document's RDFa attributes, extracting the prefixes used.
+These prefixes are then filtered through a C<$map> of known RDFa prefixes
+and the ones allowed are declared globally for the document
+via the C<prefix> attribute of its root element.
 
 =back
 
