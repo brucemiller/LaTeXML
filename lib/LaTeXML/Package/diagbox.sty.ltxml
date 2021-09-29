@@ -111,8 +111,8 @@ DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
         $Mx    = $w - $Mw;
         $Bx    = $w - $Bw;
         $By    = $h - $Bh;
-        $line1 = "0,$h $w,$hm"; +
-          $line2 = "0,$h $wm,0"; }
+        $line1 = "0,$h $w,$hm";
+        $line2 = "0,$h $wm,0"; }
       elsif ($dir eq 'SW') {
         $Ay    = $h - $Ah;
         $Bx    = $w - $Bw;
