@@ -167,12 +167,12 @@ sub getPageName {
   if (!$name) {
     if (($attr eq 'labels') && ($name = $page->getAttribute('xml:id'))) {
       Info('expected', $attr, $doc->getQName($page),
-        "Expected attribute '$attr' to create page pathname", "using id=$name");
+        "Using '$name' to create page pathname, instead of missing '$attr'");
       $attr = 'xml:id'; }
     else {
       $name = $self->generateUnnamedPageName;
       Info('expected', $attr, $doc->getQName($page),
-        "Expected attribute '$attr' to create page pathname", "using id=$name"); } }
+        "Using '$name' to create page pathname, instead of missing '$attr'"); } }
   if ($naming =~ /relative$/) {
     my $pname = $parent->getAttribute($attr);
     $pname =~ s/\s+.*//   if $pname;    # Truncate in case multiple labels.

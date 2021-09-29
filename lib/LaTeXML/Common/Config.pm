@@ -187,12 +187,12 @@ sub read {
   my $getOptions_success = GetOptions(%{$spec});
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   if (!$silent && $$opts{help}) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 99,
-      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', output => \*STDOUT);
   }
 
@@ -238,7 +238,7 @@ sub scan_to_keyvals {
   my $getOptions_success = GetOptions(%$spec);
   if (!$getOptions_success && !$silent) {
     pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 1, -verbose => 99,
-      -input => pod_where({ -inc => 1 }, __PACKAGE__),
+      -input    => pod_where({ -inc => 1 }, __PACKAGE__),
       -sections => 'OPTION SYNOPSIS', -output => \*STDERR);
   }
   CORE::push @$keyvals, ['source', $ARGV[0]] if $ARGV[0];
@@ -550,7 +550,7 @@ sub _prepare_options {
       $$opts{math_formats} = [];
       maybeAddMathFormat($opts, 'images');
     }
-    $$opts{svg} = 1 unless defined $$opts{svg};      # If we're not making HTML, SVG is on by default
+    $$opts{svg} = 1 unless defined $$opts{svg};    # If we're not making HTML, SVG is on by default
         # PMML default if we're HTMLy and all else fails and no mathimages:
     if (((!defined $$opts{math_formats}) || (!scalar(@{ $$opts{math_formats} })))
       && ($$opts{is_html} || $$opts{is_xhtml} || ($$opts{format} eq 'jats'))) {
@@ -1109,7 +1109,8 @@ graphics will be converted to web-friendly formats and/or copied to the
 destination directory. If you simply specify C<html>, it will treat that as C<html5>.
 
 For the default, C<xml>, the output is left in LaTeXML's internal xml,
-but the math is parsed and converted to presentation MathML.
+although the math can be converted by enabling one of the math postprocessors,
+such as --pmml to obtain presentation MathML.
 For html, html5 and xhtml, a default stylesheet is provided, but see
 the C<--stylesheet> option.
 

@@ -212,7 +212,7 @@ Note("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . " " . $status . 
 UseLog(undef);
 CheckDebuggable();
 UseSTDERR(undef);
-exit $code == 3 ? 1 : 0;
+exit($code == 3 ? 1 : 0);
 
 #======================================================================
 # helpers
@@ -234,7 +234,7 @@ sub validate_args {
     push(@fails, "No input file given"); }
   elsif ($xmlfile eq '-') {    # Any sense in pre-reading it here??
   }
-  elsif (!($pathname = pathname_find($xmlfile, types => ['xml', ''], paths => [@paths]))
+  elsif (!($pathname = pathname_find($xmlfile, types => ['xml', ''], paths => ['.', @paths]))
     || !-r $pathname) {
     push(@fails, "Input file '$xmlfile' not readable"); }
   else {
@@ -691,7 +691,8 @@ graphics will be converted to web-friendly formats and/or copied to the
 destination directory. If you simply specify C<html>, it will treat that as C<html5>.
 
 For the default, C<xml>, the output is left in LaTeXML's internal xml,
-but the math is parsed and converted to presentation MathML.
+although the math can be converted by enabling one of the math postprocessors,
+such as --pmml to obtain presentation MathML.
 For html, html5 and xhtml, a default stylesheet is provided, but see
 the C<--stylesheet> option.
 

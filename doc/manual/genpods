@@ -23,7 +23,7 @@ GetOptions("force!" => \$force,
 pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 
 #======================================================================
-my @exes = (qw(latexml latexmlpost latexmlmath));
+my @exes = (qw(latexml latexmlpost latexmlc latexmlmath));
 # would be nice to automatically discover documentable modules
 # Actually, we Can, by looking in ../blib/man1 and ../blib/man3
 # However, we'd still need to manually add them (in desired order) to the appropriate Appendx!
@@ -91,19 +91,20 @@ my @modules = (
 
     LaTeXML::MathParser
     LaTeXML::Pre::BibTeX
-    ),
+  ),
 
   # Utility
   qw(LaTeXML::Util::Pathname
     LaTeXML::Util::WWW
     LaTeXML::Util::ObjectDB
     LaTeXML::Util::Pack
-    ),
+    LaTeXML::Util::Radix
+  ),
   # Postprocessing
   qw(LaTeXML::Post
     LaTeXML::Post::MathML
     LaTeXML::Post::OpenMath
-    ),
+  ),
 );
 
 if (!-d $GENDIR) {

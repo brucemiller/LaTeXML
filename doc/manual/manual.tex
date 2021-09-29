@@ -3,7 +3,8 @@
 \emergencystretch 1em\relax
 \hfuzz .2pt\relax
 \usepackage{latexml}
-\usepackage{../sty/latexmlman}
+\usepackage{latexmlman}
+\input{latexmlreleases}
 \usepackage{times}
 \usepackage{makeidx}
 \usepackage{listings}
@@ -11,7 +12,7 @@
 \usepackage{wrapfig}
 % Should the additional keywords be indexed?
 \lstdefinestyle{shell}{language=bash,escapechar=@,basicstyle=\ttfamily\iflatexml\else\small\fi,%
-   morekeywords={latexml,latexmlpost,latexmlmath},
+   morekeywords={latexml,latexmlpost,latexmlc,latexmlmath},
    moredelim=[is][\itshape]{\%}{\%}}
 \lstdefinestyle{latexml}{basicstyle=\ttfamily\iflatexml\else\small\fi,language=Perl,%
    morekeywords={CC_ESCAPE,CC_BEGIN,CC_END,CC_MATH,CC_ALIGN,CC_EOL,CC_PARAM,CC_SUPER,%
@@ -44,12 +45,12 @@
 \newcommand{\perlcode}{\lstinline[style=Perl]}
 \newcommand{\xmlcode}{\lstinline[style=xml]}
 
-\input{release.tex}
 \makeindex
 
 \title{\LaTeXML\ \emph{The Manual}}
 \subtitle{A \LaTeX\ to \XML/\HTML/\MathML\ Converter;\\ Version \emph{\CurrentVersion}}
 \author{Bruce R.~Miller}
+\date{\today}
 \lxKeywords{LaTeXML, LaTeX to XML, LaTeX to HTML, LaTeX to MathML, LaTeX to ePub, converter}
 %============================================================
 \begin{lxNavbar}
@@ -99,13 +100,6 @@
 % \part{Basics}
 %%%======================================================================
 \chapter{Introduction}\label{intro}
-\begin{advanced}
-\paragraph{Note:}\label{intro.note}
-Some of the more detailed portions of this manual have
-not kept uptodate with the evolution of the code and style of \LaTeXML,
-but rather than delay release, we'll improve the documentation in a later update.
-\end{advanced}
-
 For many, \LaTeX\ is the preferred format for document authoring, particularly those
 involving significant mathematical content and where quality typesetting is desired.
 On the other hand, content-oriented \XML\ is an extremely useful representation for documents,
@@ -203,6 +197,8 @@ The main commands provided by the \LaTeXML\ system are
 \item[\ltxcmd{latexml}] for converting \TeX\ and \BibTeX\ sources to \XML.
 \item[\ltxcmd{latexmlpost}] for various postprocessing tasks including
 conversion to \HTML, processing images, conversion to \MathML\ and so on.
+\item[\ltxcmd{latexmlc}] combines both \ltxcmd{latexml} and \ltxcmd{latexmlpost}
+  into a single command, with some extra functionality.
 \end{description}
 \noindent The usage of these commands can be as simple as
 \begin{lstlisting}[style=shell]
@@ -239,6 +235,11 @@ successively more complicated postprocessing situations,
 using \ltxcmd{latexmlpost},
 by which one or more \TeX\ sources can be converted into
 one or more web documents or a complete site.
+
+The command \ltxcmd{latexmlc} can also create ePub documents:
+\begin{lstlisting}[style=shell]
+latexmlc --dest=doc.epub doc
+\end{lstlisting}
 
 Additionally, there is a convenience command \ltxcmd{latexmlmath}
 for converting individual formula into various formats.
@@ -836,7 +837,7 @@ See \ref{customization.latexml.rewriting} for how to define rewrite rules.
 
 %%%----------------------------------------------------------------------
 \paragraph{MathParsing}\label{architecture.latexml.mathparsing}
-\index{MathParser (LaTeXML::)!architecture}%
+\index{MathParser(LaTeXML::)@{\ttfamily MathParser(LaTeXML::)}!architecture}%
 After rewriting, a grammar based parser is applied to the mathematical
 nodes in order to infer, at least, the structure of the expressions,
 if not the meaning.
@@ -848,7 +849,7 @@ Here, we simple convert the DOM into string form, and output it.
 
 %%%----------------------------------------------------------------------
 \section{latexmlpost architecture}\label{architecture.latexmlpost}
-\index{Post (LaTeXML::)!architecture}%
+\index{Post(LaTeXML::)@{\ttfamily Post(LaTeXML::)}!architecture}%
 \LaTeXML's postprocessor is primarily for format conversion.
 It operates by applying a sequence of filters responsible for
 transforming or splitting documents, or their parts, from one format to another.
@@ -1498,7 +1499,7 @@ for customizing the transform involves making a copy of the standard
 base stylesheets, \texttt{LaTeXML-xhtml.xsl},
 \texttt{LaTeXML-html.xsl} and
 \texttt{LaTeXML-html5.xsl},  found at
-\textit{installationdir}\texttt{/LaTeXML/style/}
+\textit{installationdir}\texttt{/LaTeXML/resources/XSLT/}
 --- they're short, consisting mainly of an \texttt{xsl:include}
 and setting appropriate parameters and output method;
 thus modifying the parameters and and adding your own rules,
@@ -1540,7 +1541,7 @@ the \texttt{LaTeXML.catalog}:
 be included in the generated documents in addition to, or as a
 replacement for, the standard stylesheet \texttt{LaTeXML.css}.
 See the directory
-\textit{installationdir}\texttt{/LaTeXML/style/}
+\textit{installationdir}\texttt{/LaTeXML/resources/CSS/}
 for samples.
 
 To best take advantage of this capability so as to design
@@ -2174,6 +2175,7 @@ developer.
 \makeatletter\def\verbatim@font{\small\normalfont\ttfamily}\makeatother
 \input{pods/latexml}
 \input{pods/latexmlpost}
+\input{pods/latexmlc}
 \input{pods/latexmlmath}
 
 %%%======================================================================
@@ -2251,6 +2253,7 @@ Bindings for the following classes and packages are supplied with the distributi
 \input{pods/LaTeXML_Util_WWW}
 \input{pods/LaTeXML_Util_ObjectDB}
 \input{pods/LaTeXML_Util_Pack}
+\input{pods/LaTeXML_Util_Radix}
 
 %%%======================================================================
 \section[Preprocessing Modules]{Preprocessing Modules Documentation}\label{modules.pre}

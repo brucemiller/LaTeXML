@@ -328,3 +328,106 @@ BEGIN {
 
 #======================================================================
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+C<LaTeXML::Common::XML> - XML utilities
+
+=head1 DESCRIPTION
+
+This module provides utilities for accessing XML,
+along with some patches to XML::LibXML.
+
+
+=over 4
+
+=item C<element_nodes($node)>
+
+Returns a list of the element children of C<$node>.
+
+=item C<text_in_node($node)>
+
+Returns the string combining the text nodes within C<$node>.
+
+=item C<isTeXtNode($node)>
+
+Checks whether C<$node> is a text node.
+
+=item C<isElementNode($node)>
+
+Checks whether C<$node> is a element node.
+
+=item C<isChild($child,$parent)>
+
+Checks whether C<$child> is a child of C<$parent>.
+
+=item C<isDecscendant($child,$parent)>
+
+Checks whether C<$child> is a descendant of C<$parent>.
+
+=item C<isDecscendantOrSelf($child,$parent)>
+
+Checks whether C<$child> is a descendant of, or the same as, C<$parent>.
+
+=item C<new_node($nsURI,$tag,$children,%attributes)>
+
+Creates a new element node with tag C<$tag> (in the namespace C<$nsURI>),
+with the children in the array ref C<$children> (if any) and assigning the
+given attributes.
+
+=item C<append_nodes($node,@children)>
+
+Appends the given children to C<$node>.
+
+=item C<clear_node($node)>
+
+Removes all element and text children from C<$node>.
+
+=item C<maybe_clone($node)>
+
+Clones C<$node> if it has a parent, otherwise returns it.
+
+=item C<copy_attributes($to,$from)>
+
+Copy all attributes from C<$from> to C<$to>.
+
+=item C<rename_attribute($node,$from,$to)>
+
+Rename the attribute C<$from> to C<$to> on the node C<$node>.
+
+=item C<remove_attr($node,@attr)>
+
+Remove the given attributes from C<$node>.
+
+=item C<get_attr($node,@attr)>
+
+Returns the list of values for the given attributes on C<$node>
+
+=item C<initialize_catalogs()>
+
+Initialize XML::LibXML to recognize the catalogs given in LaTeXML.catalogs.
+
+=item C<set_RDFa_prefixes($document,$map)>
+
+This method scans the document's RDFa attributes, extracting the prefixes used.
+These prefixes are then filtered through a C<$map> of known RDFa prefixes
+and the ones allowed are declared globally for the document
+via the C<prefix> attribute of its root element.
+
+=back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>,
+Deyan Ginev <deyan.ginev@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut

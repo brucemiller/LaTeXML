@@ -15,6 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
+use LaTeXML::Common::Error;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Processor);
 
@@ -86,9 +87,9 @@ my $RESOURCE_INFO = {    # [CONSTANT]
 # (in case it has been adjusted to be local to the destination document)
 sub copyResource {
   my ($self, $doc, $reqsrc, $type) = @_;
-  my $ext    = $type && $$RESOURCE_INFO{$type}{extension};
-  my $resdir = $type && $$RESOURCE_INFO{$type}{subdir};
-  my @searchpaths => $doc->getSearchPaths;
+  my $ext         = $type && $$RESOURCE_INFO{$type}{extension};
+  my $resdir      = $type && $$RESOURCE_INFO{$type}{subdir};
+  my @searchpaths = ($doc->getSearchPaths, ($$self{searchpaths} ? @{ $$self{searchpaths} } : ()));
   # If the $reqsrc is a URL, no need to copy the resource, or modify the path to it.
   if (pathname_is_url($reqsrc)) {
     return $reqsrc; }
@@ -118,7 +119,8 @@ sub copyResource {
     # and return the relative path from the dest doc to the resource
     return pathname_relative($dest, $doc->getDestinationDirectory); }
   else {
-    warn "Couldn't find resource file $reqsrc in paths " . join(',', @searchpaths) . "\n";
+    Warn('missing_file', $reqsrc, $self,
+      "Couldn't find resource file $reqsrc in paths " . join(',', @searchpaths));
     return $reqsrc; } }
 
 # ================================================================================

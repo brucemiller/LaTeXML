@@ -88,6 +88,7 @@
 \def\@@pkgprefix#1::#2\end{#1}
 \def\@@latexmlcmd{latexml}
 \def\@@latexmlpostcmd{latexmlpost}
+\def\@@latexmlccmd{latexmlc}
 \def\@@latexmlmathcmd{latexmlmath}
 \newcommand{\pod}[1]{%
   {\edef\@prefix{\@@pkgprefix#1::\end}
@@ -98,11 +99,13 @@
      \htmlref{{\perlfont #1}}{#1}%
   \else\ifx\@podcmd\@@latexmlpostcmd
      \htmlref{{\perlfont #1}}{#1}%
+  \else\ifx\@podcmd\@@latexmlccmd
+     \htmlref{{\perlfont #1}}{#1}%
   \else\ifx\@podcmd\@@latexmlmathcmd
      \htmlref{{\perlfont #1}}{#1}%
   \else
      \href{https://search.cpan.org/search?query=#1&mode=module}{{\perlfont #1}}%
-  \fi\fi\fi\fi}}
+  \fi\fi\fi\fi\fi}}
 
 
 \newcommand{\ltxcmd}[1]{\htmlref{{\latexfont #1}}{#1}}
