@@ -101,14 +101,15 @@ DefConstructor('\lxSVG@insertpicture{}',
         width   => $props{pxwidth}, height => $props{pxheight},
 ####        viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
         overflow => "visible");
-      my $x0 = $props{minx}; $x0 = '-' . $x0 unless $x0 =~ s/^-//;
-      my $y0 = $props{miny}; $y0 = '-' . $y0 unless $y0 =~ s/^-//;
+      my $x0 = -(0 + $props{minx});
+      my $y0 = -(0 + $props{miny});
       $document->openElement('svg:g',
         transform   => "translate($x0,$y0) matrix(1 0 0 -1 0 $props{flipnmove})",
         _scopebegin => 1);
       $document->insertElement('svg:rect', undef,
-        x    => $props{minx}, y      => $props{miny}, width => $props{width}, height => $props{height},
-        fill => 'none',       stroke => '#FF00FF') if $LaTeXML::DEBUG{pgf};
+        x     => $props{minx} - 6,            y      => $props{miny} - 6,
+        width => $props{width}->pxValue + 12, height => $props{height}->pxValue + 12,
+        fill  => 'none',                      stroke => '#FF00FF') if $LaTeXML::DEBUG{pgf};
       $document->absorb($content);
 ### Handled by \lxSVG@closegroups ???
       while ($document->maybeCloseElement('svg:g')) { }
@@ -140,7 +141,7 @@ DefConstructor('\lxSVG@insertpicture{}',
     $whatsit->setProperty(depth     => Dimension(0));
     $whatsit->setProperty(pxwidth   => $w);
     $whatsit->setProperty(pxheight  => $h);
-    $whatsit->setProperty(flipnmove => $h + 2 * $miny->pxValue);
+    $whatsit->setProperty(flipnmove => floatformat($h + 2 * $miny->pxValue));
     # or tikz macro (see corescopes)
     return; },
   # \pgfpicture seems to make a 0 sized box, which throws off our postprocessor
@@ -254,6 +255,7 @@ DefConstructor('\lxSVG@lower Dimension SVGMoveableBox', sub {
 
 DefConstructor('\lxSVG@hskip Glue', sub {
     my ($doc, $skip) = @_;
+    # but ignored outside of foreighObject doesn't seem right
     if (foreignObjectCheck($doc)) {
       $doc->openElement('ltx:text', 'xoffset' => $skip->pxValue . 'px'); } },
   alias      => '\hskip', sizer => '#1',
@@ -384,7 +386,7 @@ DefMacro('\lxSVG@@transformcm {Float}{Float}{Float}{Float}{Dimension}{Dimension}
     my ($gullet, @args) = @_;
     my $transform = 'transform=matrix('
       . join(' ',
-      (map { $_->valueOf } @args[0 .. 3]),
+      (map { floatformat($_->valueOf, 5) } @args[0 .. 3]),
       (map { $_->pxValue } @args[4 .. 5])) . ')';
     Invocation('\lxSVG@begingroup', TokenizeInternal($transform)); });
 
@@ -817,7 +819,7 @@ DefConstructor('\lxSVG@sh@stop{Dimension}{Dimension}{Float}{Float}{Float}',
   "<svg:stop offset='#offset' stop-color='#stopcolor'/>",
   properties => sub {
     my ($stomach, $start, $end, $r, $g, $b) = @_;
-    (offset => $start->pxValue / $end->pxValue,
+    (offset => floatformat($start->pxValue / $end->pxValue, 5),
       stopcolor => Color('rgb', map { $_->valueOf } $r, $g, $b)); },
   sizer => 0);
 
@@ -861,8 +863,8 @@ DefPrimitive('\lxSVG@sh@defcircles{}', sub {
     my $stops = List(@{ LookupValue('pgf_sh_stops') });
     AssignValue(pgf_sh_stops => [], 'global');
     my $endpos = Dimension(ToString(Expand(T_CS('\pgf@sys@shading@end@pos'))))->pxValue;
-    my $x      = LookupValue('\pgf@x')->pxValue * 8 / ($endpos * 16) + 0.5;
-    my $y      = LookupValue('\pgf@y')->pxValue * 8 / ($endpos * 16) + 0.5;
+    my $x      = floatformat(LookupValue('\pgf@x')->pxValue * 8 / ($endpos * 16) + 0.5, 5);
+    my $y      = floatformat(LookupValue('\pgf@y')->pxValue * 8 / ($endpos * 16) + 0.5, 5);
     DefPrimitiveI('\@pgfshading' . ToString($name) . '!', undef, sub {
         my $objcount = SVGNextObject();
         DefConstructor('\lxSVG@sh@defs',
@@ -1087,11 +1089,11 @@ sub tikzAlignmentBindings {
   my $alignment = LaTeXML::Core::Alignment->new(
     template       => $template,
     openContainer  => sub { openTikzAlignment($container, @_); },
-    closeContainer => sub { $_[0]->closeElement($container); },
+    closeContainer => sub { closeTikzAlignmentElement($container, @_); },
     openRow        => sub { openTikzAlignmentRow($rowtype, @_); },
-    closeRow       => sub { $_[0]->closeElement($rowtype); },
+    closeRow       => sub { closeTikzAlignmentElement($container, @_); },
     openColumn     => sub { openTikzAlignmentCol($coltype, @_); },
-    closeColumn    => sub { $_[0]->closeElement($coltype); },
+    closeColumn    => sub { closeTikzAlignmentElement($container, @_); },
     isMath         => $ismath,
     properties     => {%properties});
   AssignValue(Alignment => $alignment);
@@ -1113,7 +1115,8 @@ sub openTikzAlignment {
   my @rowheights = ($props{rowheights}   ? @{ $props{rowheights} }   : (Dimension(0)));
   my @colwidths  = ($props{columnwidths} ? @{ $props{columnwidths} } : (Dimension(0)));
   my $x          = $colwidths[0]->pxValue / 2;
-  my $y          = ($h + $d) - $rowheights[0]->pxValue;
+##  my $y          = ($h + $d) - $rowheights[0]->pxValue;
+  my $y = ($h + $d) - $rowheights[-1]->pxValue / 2;    # HEURISTIC adjustment! half of LAST row!?
   Debug("TIKZ Alignment size $w x $h + $d"
       . "  rows: " . join(',', map { $_->pxValue; } @rowheights)
       . "  cols: " . join(',', map { $_->pxValue; } @colwidths)
@@ -1122,10 +1125,19 @@ sub openTikzAlignment {
     _scopebegin => 1,
     transform   => "matrix(1 0 0 -1 $x $y)",
     %props);
-  $doc->insertElement('svg:rect', undef,
-    x => -4, y => -4, width => $w + 8, height => $h + 8, stroke => '#FF0000', fill => 'none')
+  $doc->insertElement('svg:rect', undef, class => 'ltx_debug',
+    x => -4, y => -4, width => $w + 8, height => $h + $d + 8, stroke => '#FF0000', fill => 'none')
     if $LaTeXML::DEBUG{pgf};
   return $array; }
+
+sub closeTikzAlignmentElement {
+  my ($tag, $document) = @_;
+  my $node = $document->closeElement($tag);
+  if ($LaTeXML::DEBUG{pgf} && $node && (($node->getAttribute('class') || '') eq 'ltx_debug')) {
+    my $rect = $node->firstChild;    # Move the rectangle to the end, so it overlays
+    $node->removeChild($rect);
+    $node->appendChild($rect); }
+  return $node; }
 
 sub openTikzAlignmentRow {
   my ($tag, $doc, %props) = @_;
@@ -1148,19 +1160,30 @@ sub openTikzAlignmentRow {
 sub openTikzAlignmentCol {
   my ($tag, $doc, %props) = @_;
   my $class = 'ltx_tikzmatrix_col' . ($props{class} ? ' ' . $props{class} : '');
-  my $w     = ($props{cwidth}  && $props{cwidth}->pxValue)  || 0;
-  my $h     = ($props{cheight} && $props{cheight}->pxValue) || 0;
-  my $d     = ($props{cdepth}  && $props{cdepth}->pxValue)  || 0;
-  my $x     = ($props{x}       && $props{x}->pxValue)       || 0;
-  my $xpos  = $x + $w;
-  my $ypos  = 0;         #-$h;
-  Debug("TIKZ alignment Cell ($w x $h + $d); x=$x") if $LaTeXML::DEBUG{pgf};
+  # MYSTERIOUSLY, $w seems to be HALF the "proper" width...
+  # AND assumes an equivalent \hspace in front !?!?!
+  # HOWEVER, this isn't getting accounted in Alignment.pm, for size/position/whatever
+  # so that anchors (for arrows) still aren't properly positioned!!!
+  # Moreover, the cell's horizontal position should be set according to alignment
+  # which also isn't yet done in Alignment.pm,
+  # and also it is not clear how that gets recognized by TikZ's anchors!
+  my $hw = ($props{cwidth} && $props{cwidth}->pxValue) || 0;
+  my $w  = 2 * $hw;
+  my $h  = ($props{cheight} && $props{cheight}->pxValue) || 0;
+  my $d  = ($props{cdepth}  && $props{cdepth}->pxValue)  || 0;
+  my $x  = ($props{x}       && $props{x}->pxValue)       || 0;
+
+  my $xpos = $x + $hw;
+##  my $xpos  = $x;
+  my $ypos = 0;    #-$h;
+  Debug("TIKZ alignment Cell ($w x $h + $d); x=$x"
+      . join(',', map { $_ . "=" . ToString($props{$_}); } sort keys %props)) if $LaTeXML::DEBUG{pgf};
   my $col = $doc->openElement($tag, class => $class,
     _scopebegin => 1,
-    transform   => "matrix(1 0 0 -1 $xpos $ypos)",
+    transform   => "matrix(1 0 0 -1 $xpos $ypos)",    # NOTE: Flip!!!
   );
   $doc->insertElement('svg:rect', undef,
-    x => -$w, y => -$h, width => $w, height => $h + $d, stroke => '#0000FF', fill => 'none')
+    x => -$hw - 1, y => -$h - 1, width => $w + 2, height => $h + $d + 2, stroke => '#0000FF', fill => 'none')
     if $LaTeXML::DEBUG{pgf};
   return $col; }
 
