@@ -542,7 +542,7 @@ You may want to try \href{https://www.imagemagick.org/}{ImageMagick}, but
 you're on your own, there!  You may  have better luck with \texttt{Graphics::Magick}.
 
 \paragraph*{Installi \emph{only} prerequisites  under Strawberry,}\label{get.windows.strawberry.prereq}
-except for \TeX, and ImageMagic (see \ref{get.windows.imagemagick}),
+except for \TeX, and ImageMagick (see \ref{get.windows.imagemagick}),
 using:
 \begin{lstlisting}[style=shell]
 cpan Image::Size Parse::RecDescent UUID::Tiny
@@ -570,13 +570,13 @@ $Env:LATEXML_KPSEWHICH_MIKTEX_ADMIN=true ; $Env:LATEXML_TEST_TEXLIVE="0"; cpan l
 \subsection{CPAN installation}\label{get.cpan}
 The following command will install \LaTeXML\ and its Perl prerequisites,
 but you may need to pre-install \texttt{libxml2} and  \texttt{libxslt} (See \ref{get.prerequisites}),
-as well as optionally \TeX\, ImageMagic, if desired.
+as well as optionally \TeX\, ImageMagick, if desired.
 \begin{lstlisting}[style=shell]
 cpan LaTeXML
 \end{lstlisting}
 
 \paragraph*{Install \emph{only}  prerequisites}\label{get.cpan.prereq}
-(excluding  \texttt{libxml2},  \texttt{libxslt}, \TeX, ImageMagic)
+(excluding  \texttt{libxml2},  \texttt{libxslt}, \TeX, ImageMagick)
 using:
 \begin{lstlisting}[style=shell]
 cpan Archive::Zip DB_File File::Which Getopt::Long Image::Size \
@@ -603,7 +603,7 @@ curl -L https://cpanmin.us | perl - App::cpanminus
 \end{lstlisting}
 
 \paragraph*{Install prerequisites}
-(excluding  \texttt{libxml2},  \texttt{libxslt}, \TeX, ImageMagic)
+(excluding  \texttt{libxml2},  \texttt{libxslt}, \TeX, ImageMagick)
 using:
 \begin{lstlisting}[style=shell]
 cpanm git://github.com/brucemiller/LaTeXML.git
@@ -618,7 +618,7 @@ and when used in conjunction with Ghostscript.
 
 \paragraph*{ImageMagick Versions} for the ImageMagick binaries and the Perl binding must match;
 often those available from CPAN are out-of-sync.
-Ideally, you should install the current versions of both ImageMagic and the perl binding
+Ideally, you should install the current versions of both ImageMagick and the perl binding
 from your OS/platform distribution, if available.
 Next best solution is to get the same versions from the same source
 following the instructions at \href{https://www.imagemagick.org/}{ImageMagick}
@@ -644,7 +644,7 @@ dmake install
 
 \paragraph*{ImageMagick Security} is also an issue, due to the possibility of embadding
 malicious code in postscript, pdf and other image formats.
-For a certain range of versions of ImageMagic and Ghostscript, a security policy was set
+For a certain range of versions of ImageMagick and Ghostscript, a security policy was set
 which inhibited processing of pdf files; the problem appears to be fixed recent versions.
 If you see \texttt{operation not allowed by the security policy}, see the discussion
 at \href{https://stackoverflow.com/a/53180170}{stackoverflow}.
