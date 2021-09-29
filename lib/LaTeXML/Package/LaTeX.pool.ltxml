@@ -3443,6 +3443,7 @@ DefPrimitiveI('\@tabbing@bindings', undef, sub {
 # attributes to all cells.  For HTML, CSS will be necessary to display them.
 # [We'll ignore HTML's frame, rules and colgroup mechanisms.]
 
+DefRegister('\lx@arstrut',           Dimension('0pt'));
 DefRegister('\lx@default@tabcolsep', Dimension('6pt'));
 DefRegister('\tabcolsep',            Dimension('6pt'));
 DefMacroI('\arraystretch', undef, "1");
@@ -3462,6 +3463,8 @@ sub tabularBindings {
     my $str = ToString(Expand(T_CS('\arraystretch')));
     if ($str != 1) {
       $properties{attributes}{rowsep} = Dimension(($str - 1) . 'em'); } }
+  if (!defined $properties{strut}) {
+    $properties{strut} = LookupRegister('\baselineskip')->multiply(1.5); }    # Account for html space
   alignmentBindings($template, 'text', %properties);
   Let("\\\\",            '\@tabularcr');
   Let('\tabularnewline', "\\\\");
