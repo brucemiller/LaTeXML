@@ -42,7 +42,7 @@ sub process {
     $$self{model}->setRelaxNGSchema("LaTeXML");
     $$self{model}->loadSchema(); }
   $doc->addNamespace($svgURI, 'svg');
-  map { ProcessSVG($self, $_) } @svg;
+  map { $self->ProcessSVG($_) } @svg;
   $doc->adjust_latexml_doctype('SVG');    # Add SVG if LaTeXML dtd.
   return $doc; }
 
@@ -184,13 +184,6 @@ sub convertPath {
   my ($self, $parent, $node) = @_;
   my $newNode = $parent->addNewChild($svgURI, 'path');
   $self->copy_valid_attributes($newNode, $node);
-  map { convertNode($self, $newNode, $_) } element_nodes($node);
-  return $newNode; }
-
-sub XXXconvertPicture {
-  my ($self, $parent, $node) = @_;
-  my $newNode = $parent->addNewChild($svgURI, 'g');
-  $newNode->setAttribute(transform => 'scale(1, -1)');
   map { convertNode($self, $newNode, $_) } element_nodes($node);
   return $newNode; }
 
