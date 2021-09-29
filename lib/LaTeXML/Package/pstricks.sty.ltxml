@@ -844,9 +844,9 @@ DefSimplePSConstructor('\psgrid', 'PSCoord PSCoord PSCoord',
     elsif (!$p1 && $p0) { $p2 = $p0; $p0 = ZeroPair; $p1 = $p0; }
     elsif (!$p2 && $p1) { $p2 = $p1; $p1 = $p0; }
     $_[1]->setProperties(p0 => $p0, p1 => $p1, p2 => $p2,
-      x0 => $p0->getX->pxValue, y0 => $p0->getX->pxValue,
-      x1 => $p1->getX->pxValue, y1 => $p1->getX->pxValue,
-      x2 => $p2->getX->pxValue, y2 => $p2->getX->pxValue); });
+      x0 => $p0->getX->pxValue, y0 => $p0->getY->pxValue,
+      x1 => $p1->getX->pxValue, y1 => $p1->getY->pxValue,
+      x2 => $p2->getX->pxValue, y2 => $p2->getY->pxValue); });
 
 ##########################################################################################
 ## 16 Custom styles
