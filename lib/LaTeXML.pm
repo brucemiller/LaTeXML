@@ -30,7 +30,7 @@ use LaTeXML::Util::ObjectDB;
 use LaTeXML::Post::Scan;
 use vars qw($VERSION);
 # This is the main version of LaTeXML being claimed.
-use version; our $VERSION = version->declare("0.8.5");
+use version; our $VERSION = version->declare("0.8.6");
 use LaTeXML::Version;
 # Derived, more informative version numbers
 our $FULLVERSION = "LaTeXML version $LaTeXML::VERSION"
@@ -362,7 +362,7 @@ sub convert {
       if ($ref_result =~ /Document$/) {
         $serialized = $result->toString(1);
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
-      } else {                      # fragment case
+      } else {    # fragment case
         $serialized = $result->toString(1, 1);
     } }
     elsif ($$opts{format} =~ /^html/) {
@@ -370,7 +370,7 @@ sub convert {
         # Needs explicit encode call, toStringHTML returns Perl byte strings
         $serialized = $result->getDocument->toStringHTML;
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized; }
-      else {                        # fragment case
+      else {      # fragment case
         local $XML::LibXML::setTagCompression = 1;
         $serialized = $result->toString(1, 1); } } }
   # Compressed/archive/other case, just pass on
@@ -473,7 +473,7 @@ sub convert_post {
     if ($$opts{crossref}) {
       require LaTeXML::Post::CrossRef;
       push(@procs, LaTeXML::Post::CrossRef->new(
-          db => $DB, urlstyle => $$opts{urlstyle},
+          db        => $DB, urlstyle => $$opts{urlstyle},
           extension => $$opts{extension},
           ($$opts{numbersections} ? (number_sections => 1)              : ()),
           ($$opts{navtoc}         ? (navigation_toc  => $$opts{navtoc}) : ()),
@@ -609,7 +609,7 @@ sub convert_post {
     my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, log => $$opts{log}, %PostOPS);
     $manifest_maker->process(@postdocs); }
   # Archives: when a relative --log is requested, write to sandbox prior packing
-  #     TODO: This can be enhanced, as any path can be relativized. 
+  #     TODO: This can be enhanced, as any path can be relativized.
   #     TODO: ALSO, we now always have a log file, so maybe always add it as default?
   if ($$opts{log} && ($$opts{whatsout} =~ /^archive/) && (!pathname_is_absolute($$opts{log}))) {
     ### We can't rely on the ->getDestinationDirectory method, as Fatal post-processing jobs have UNDEF @postdocs !!!
