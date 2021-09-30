@@ -1,0 +1,27 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  ifsym.sty                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Deyan Ginev <deyan.ginev@nist.gov>                          #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#**********************************************************************
+
+DefMacro('\Letter', "\x{2709}");
+
+Warn('missing_file', "ifsym", $STATE->getStomach->getGullet,
+  "Only partial binding is available. Anticipate undefined macros or environments");
+
+#**********************************************************************
+
+1;

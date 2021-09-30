@@ -85,6 +85,13 @@ DefMath('\gid',    "\x{2267}", role => 'RELOP', meaning => 'greater-than-or-equa
 DefMath('\grole',  "\x{2277}", role => 'RELOP', meaning => 'greater-than-or-less-than');
 Let('\qedsymbol', '\qed');
 
+#  special signs and characters
+DefMacro('\D', '\mathrm{d}');
+DefMacro('\E', '\mathrm{e}');
+Let('\eul', '\E');
+DefMacro('\I', '{\rm i}');
+Let('\imag', '\I');
+
 DefMacro('\partsize',    '\Large');
 DefMacro('\partstyle',   '\bfseries\boldmath');
 DefMacro('\chapsize',    '\Large');
