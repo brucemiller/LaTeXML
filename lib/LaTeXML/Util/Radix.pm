@@ -79,14 +79,14 @@ my @rmletters = ('i', 'v', 'x', 'l', 'c', 'd', 'm');    # [CONSTANT]
 sub radix_roman {
   my ($n) = @_;
   my $div = 1000;
-  my $s = ($n > $div ? ('m' x int($n / $div)) : '');
-  my $p = 4;
+  my $s   = ($n > $div ? ('m' x int($n / $div)) : '');
+  my $p   = 4;
   while ($n %= $div) {
     $div /= 10;
     my $d = int($n / $div);
     if ($d % 5 == 4) { $s .= $rmletters[$p]; $d++; }
-    if ($d > 4) { $s .= $rmletters[$p + int($d / 5)]; $d %= 5; }
-    if ($d) { $s .= $rmletters[$p] x $d; }
+    if ($d > 4)      { $s .= $rmletters[$p + int($d / 5)]; $d %= 5; }
+    if ($d)          { $s .= $rmletters[$p] x $d; }
     $p -= 2; }
   return $s; }
 
@@ -140,7 +140,7 @@ Converts the number as a uppercase roman numeral
 
 (Internal) Converts the number into one or symbols taken from C<symbols>.
 
-==back
+=back
 
 =head1 AUTHOR
 

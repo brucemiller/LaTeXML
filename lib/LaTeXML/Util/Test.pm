@@ -92,7 +92,7 @@ sub check_requirements {
       @required_packages = @$reqmts; }
     elsif (ref $reqmts eq 'HASH') {
       @required_packages = (ref $$reqmts{packages} eq 'ARRAY' ? @{ $$reqmts{packages} } : $$reqmts{packages});
-      $texlive_min = $$reqmts{texlive_min} || 0; }
+      $texlive_min       = $$reqmts{texlive_min} || 0; }
     foreach my $reqmt (@required_packages) {
       if (pathname_kpsewhich($reqmt) || pathname_find($reqmt)) { }
       else {
@@ -257,12 +257,12 @@ sub daemon_ok {
     ['quiet',              ''],
     ['quiet',              ''],
     ['quiet',              ''],
-    ['timeout',            10],
     ['autoflush',          1],
     ['timestamp',          '0'],
     ['nodefaultresources', ''],
     ['xsltparameter',      'LATEXML_VERSION:TEST'],
     ['nocomments',         '']);
+####    ['timeout',            10],
 
   my $latexmlc = catfile($FindBin::Bin, '..', 'blib', 'script', 'latexmlc');
   $latexmlc =~ s/^\.\///;
