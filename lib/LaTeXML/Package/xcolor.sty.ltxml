@@ -278,8 +278,8 @@ sub DecodeColor {
   my $dec_re         = qr/[+-]*(?:\d*\.?\d*)/;
   # <ext_expr>     : <core_model>,<div>:<expr1><dec1>;...;<exprk><deck>
   #                     | <core_model>:<expr1><dec1>;...;<exprk><deck>
-  my $ext_expr_re = qr/($core_model_re)(,($div_re))?:
-                       (($expr_re|$name_re),$dec_re(?:;(?:$expr_re|$name_re),$dec_re)*)/x;
+  my $ext_expr_re = qr/($core_model_re)(,($div_re))?:\s*
+                       (($expr_re|$name_re),$dec_re(?:;\s*(?:$expr_re|$name_re),$dec_re)*)/x;
   # <color_expr>   : <name> | <expr> | <ext_expt>
   my $color_expr_re = qr/$expr_re|$ext_expr_re/;
   my $function_re   = qr/wheel|twheel/;
