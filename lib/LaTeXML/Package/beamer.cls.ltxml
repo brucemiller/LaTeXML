@@ -57,36 +57,6 @@ sub revertAngled {
   return () unless defined($_[0]);
   (T_OTHER('<'), $_[0]->revert, T_OTHER('>')); }
 
-# The 'SquareAngled' parameter type is a variant of the 'OptionalAngled' type that requires both square and angle brackets.
-# It is always optional. 
-# Example: [<value>]
-DefParameterType('SquareAngled', \&readBracketAngled, reversion => \&revertBracketAngled, optional => 1);
-sub readBracketAngled {
-  my ($gullet) = @_;  
-  # opening '['
-  my $openSquared = $gullet->readXToken;
-  unless (ref $openSquared && ToString($openSquared) eq '[') {
-    $gullet->unread($openSquared) if ref $openSquared; 
-    return undef; }
-  # opening '<'
-  my $openArrow = $gullet->readXToken;
-  unless (ref $openArrow && ToString($openArrow) eq '<') {
-    $gullet->unread($openArrow) if ref $openArrow;
-    $gullet->unread($openSquared) if ref $openSquared;
-    return undef; } 
-  my $value = $gullet->readUntil(T_OTHER('>'));
-  # closing ']'
-  my $close = $gullet->readXToken;
-  unless (ref $close && ToString($close) eq ']') {
-    Error('expected', ']', $gullet,
-        "Missing close parenthesis in SquaredAngled expr.", "Got " . ToString($close)); 
-    return undef; }
-  $value }
-
-sub revertBracketAngled {
-    return () unless defined($_[0]);
-    (T_OTHER('['), T_OTHER('<'), $_[0]->revert, T_OTHER('>'), T_OTHER('[')); }
-
 # The LiteralBalanced parameter type is like the built-in 'Balanced' type, except that it must start with a '{'.
 # It is optional by default.
 # Example: {value}
@@ -855,7 +825,7 @@ DefKeyVal('beamerframe', 'fragile', '', '');
 # To render a frame, we need to render all the overlay(s) contained in it.
 # To achieve this, we first record the content of the frame environment into a macro - so we can replace it multiple times.
 DefMacro(T_CS('\begin{frame}'), '\frame@');
-DefMacro('\frame@ OptionalAngled SquareAngled OptionalKeyVals:beamerframe LiteralBalanced LiteralBalanced', sub {
+DefMacro('\frame@ OptionalAngled [Angled] OptionalKeyVals:beamerframe LiteralBalanced LiteralBalanced', sub {
   my ($gullet, $overlay, $defaultOverlay, $opts, $title, $subtitle) = @_;
   # store the default overlay (which may be undef)
   AssignValue('beamer@action@default@local' => $defaultOverlay);
@@ -1153,21 +1123,21 @@ DefMacro('\beamer@item@before Angled []', sub {
 # Hook into all the {enumerate} {itemize} {description}
 
 # from LaTeX.Pool
-DefEnvironment('{itemize} SquareAngled',
+DefEnvironment('{itemize} [Angled]',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
   properties      => sub { beginBeamerItemize($_[1], 'itemize', '@item'); },
   beforeDigestEnd => sub { Digest('\par'); Digest('\beamer@closeitem'); },
   locked          => 1, mode => 'text');
 
 # from enumitem package, because of the second arg!
-DefEnvironment('{enumerate} SquareAngled OptionalUndigested',
+DefEnvironment('{enumerate} ][ OptionalUndigested',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
   properties       => sub { beginBeamerItemize($_[1], 'enumerate', 'enum'); },
   beforeDigestEnd => sub { Digest('\par'); Digest('\beamer@closeitem'); },
   afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(2)); });
 
 # from LaTeX.Pool
-DefEnvironment('{description} SquareAngled',
+DefEnvironment('{description} [Angled]',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
   beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
   properties      => sub { beginBeamerItemize($_[1], 'description', '@desc'); },
