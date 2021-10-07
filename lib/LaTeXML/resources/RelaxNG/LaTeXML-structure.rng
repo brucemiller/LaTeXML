@@ -31,7 +31,7 @@
       <ref name="section"/>
       <ref name="chapter"/>
       <ref name="part"/>
-      <ref name="frame"/>
+      <ref name="slideorsequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -74,7 +74,7 @@
       <ref name="subsection"/>
       <ref name="section"/>
       <ref name="chapter"/>
-      <ref name="frame"/>
+      <ref name="slideorsequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -111,7 +111,7 @@
       <ref name="subsubsection"/>
       <ref name="subsection"/>
       <ref name="section"/>
-      <ref name="frame"/>
+      <ref name="slideorsequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -147,7 +147,7 @@
       <ref name="paragraph"/>
       <ref name="subsubsection"/>
       <ref name="subsection"/>
-      <ref name="frame"/>
+      <ref name="slideorsequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -182,7 +182,7 @@
       <ref name="subparagraph"/>
       <ref name="paragraph"/>
       <ref name="subsubsection"/>
-      <ref name="frame"/>
+      <ref name="slideorsequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -216,7 +216,7 @@
       <ref name="Para.model"/>
       <ref name="subparagraph"/>
       <ref name="paragraph"/>
-      <ref name="frame"/>
+      <ref name="slideorsequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -250,7 +250,7 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
     <choice>
       <ref name="Para.model"/>
       <ref name="subparagraph"/>
-      <ref name="frame"/>
+      <ref name="slideorsequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -282,7 +282,7 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
     <a:documentation>The content allowable as the main body of a subparagraph.</a:documentation>
     <choice>
       <ref name="Para.model"/>
-      <ref name="frame"/>
+      <ref name="slideorsequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -303,24 +303,33 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
-  <define name="frame">
-    <element name="frame">
-      <a:documentation>A frame within a slideshow.
-Each frame contains a set slides, typically those that are revealed constructively. </a:documentation>
-      <ref name="frame_attributes"/>
-      <ref name="frame_model"/>
+  <define name="slideorsequence">
+    <choice>
+      <ref name="slide">
+        <a:documentation>A single slide or a sequence of slides.</a:documentation>
+      </ref>
+      <ref name="slidesequence"/>
+    </choice>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
+  <define name="slidesequence">
+    <element name="slidesequence">
+      <a:documentation>A slidesequence within a slideshow.
+Each slide contains a set slides, typically those that are revealed constructively. </a:documentation>
+      <ref name="slidesequence_attributes"/>
+      <ref name="slidesequence_model"/>
     </element>
   </define>
-  <define name="frame.body.class">
-    <a:documentation>The content allowable as the main body of a \elementref{frame}.</a:documentation>
+  <define name="slidesequence.body.class">
+    <a:documentation>The content allowable as the main body of a \elementref{slidesequence}.</a:documentation>
     <ref name="slide"/>
   </define>
-  <define name="frame_attributes">
-    <a:documentation>Attributes for \elementref{frame}.</a:documentation>
+  <define name="slidesequence_attributes">
+    <a:documentation>Attributes for \elementref{slidesequence}.</a:documentation>
     <ref name="Sectional.attributes"/>
   </define>
-  <!-- A frame *must* contain a group of slides. -->
-  <define name="frame_model">
+  <!-- A slidesequence *must* contain a group of slides. -->
+  <define name="slidesequence_model">
     <zeroOrMore>
       <ref name="slide"/>
     </zeroOrMore>
@@ -328,7 +337,7 @@ Each frame contains a set slides, typically those that are revealed constructive
   <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="slide">
     <element name="slide">
-      <a:documentation>A Slide within a slideshow, that must be contained within a frame.</a:documentation>
+      <a:documentation>A Slide within a slideshow, that may or may not be contained within a slidesequence.</a:documentation>
       <ref name="slide_attributes"/>
       <ref name="slide_model"/>
     </element>
@@ -340,11 +349,14 @@ Each frame contains a set slides, typically those that are revealed constructive
   <define name="slide_attributes">
     <a:documentation>Attributes for \elementref{slide}.</a:documentation>
     <ref name="Sectional.attributes"/>
-    <attribute name="overlay">
-      <a:documentation>\attr{overlay} is the number of the current overlay.
-This is reset at the beginning of each frame, and must be unique.</a:documentation>
-      <ref name="Integer.datatype"/>
-    </attribute>
+    <optional>
+      <attribute name="overlay">
+        <a:documentation>\attr{overlay} is the number of the current overlay.
+This must be specified when part of a slidesequence, else it may be omitted.
+Should be unique and rising within a slidesequence.</a:documentation>
+        <ref name="Integer.datatype"/>
+      </attribute>
+    </optional>
   </define>
   <define name="slide_model">
     <a:documentation>Content model for \elementref{slide}.</a:documentation>

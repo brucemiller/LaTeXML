@@ -6,14 +6,14 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <resource src="ltx-listings.css" type="text/css"/>
-  <frame xml:id="frame1">
+  <slidesequence xml:id="frame1">
     <slide overlay="1" xml:id="frame1.slide1">
       <para xml:id="frame1.slide1.p1">
         <p>This frame has exactly one slide.</p>
       </para>
     </slide>
-  </frame>
-  <frame xml:id="frame2">
+  </slidesequence>
+  <slidesequence xml:id="frame2">
     <slide overlay="1" xml:id="frame2.slide1">
       <para xml:id="frame2.slide1.p1">
         <listing class="ltx_lstlisting" data="ClxiZWdpbntmcmFtZX0KICAgIFxvbmx5e1RoaXMgaXMgb24gZXZlcnkgc2xpZGUuIH0KICAgIFxvbmx5PDI+e1RoaXMgaXMgb24gdGhlIHNlY29uZCBzbGlkZS4gfQpcZW5ke2ZyYW1lfQoKXGJlZ2lue2ZyYW1lfQogICAgXHRlbXBvcmFsPDI+e0JlZm9yZSBzZWNvbmQgc2xpZGV9e29uIHNlY29uZCBzbGlkZX17YWZ0ZXIgc2Vjb25kIHNsaWRlfQoKICAgIFxvbmx5PDEsMz57T24gc2xpZGVzIDEgYW5kIDN9CgogICAgXG9ubHk8Mi0+e09uIHNsaWRlIDIgb253YXJkc30KXGVuZHtmcmFtZX0KClxlbmR7ZG9jdW1lbnR9" dataencoding="base64" datamimetype="text/plain">
@@ -35,5 +35,5 @@
         </listing>
       </para>
     </slide>
-  </frame>
+  </slidesequence>
 </document>

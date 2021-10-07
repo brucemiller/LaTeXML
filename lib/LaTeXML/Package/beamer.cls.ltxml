@@ -902,11 +902,11 @@ NewCounter('beamer@pagenumber'); # fake page number counter, in real tex this us
 NewCounter('beamer@slidenumber'); # fake slide number counter, in real tex this uses math
 
 # Environments that create the real xml for frames and slides!
-DefEnvironment('{beamer@frame}', "<ltx:frame>#body</ltx:frame>", 
+DefEnvironment('{beamer@frame}', "<ltx:slidesequence>#body</ltx:slidesequence>", 
   beforeDigest => sub { 
     StepCounter('framenumber');
     ResetCounter('beamer@slidenumber'); });
-Tag('ltx:frame', afterOpen => sub { GenerateID(@_,'frame'); });
+Tag('ltx:slidesequence', afterOpen => sub { GenerateID(@_,'frame'); });
 
 DefEnvironment('{beamer@frame@slide} Number', "<ltx:slide overlay='#overlay'>#body</ltx:slide>", 
   # HACK: we use properties to be able to access $overlayno.

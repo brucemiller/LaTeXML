@@ -4,7 +4,7 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <frame xml:id="frame1">
+  <slidesequence xml:id="frame1">
     <slide overlay="1" xml:id="frame1.slide1">
       <para xml:id="frame1.slide1.p1">
         <p>This
@@ -23,8 +23,8 @@ word
 is in round brackets on slide 2 and in square brackets on slide 1.</p>
       </para>
     </slide>
-  </frame>
-  <frame xml:id="frame2">
+  </slidesequence>
+  <slidesequence xml:id="frame2">
     <slide overlay="1" xml:id="frame2.slide1">
       <para xml:id="frame2.slide1.p1">
         <p>We are on slide 1 or 2.</p>
@@ -37,8 +37,8 @@ is in round brackets on slide 2 and in square brackets on slide 1.</p>
 We are on slide 2.</p>
       </para>
     </slide>
-  </frame>
-  <frame xml:id="frame3">
+  </slidesequence>
+  <slidesequence xml:id="frame3">
     <slide overlay="1" xml:id="frame3.slide1">
       <para xml:id="frame3.slide1.p1">
         <inline-block class="ltx_covered">
@@ -53,8 +53,8 @@ We are on slide 2.</p>
         </inline-block>
       </para>
     </slide>
-  </frame>
-  <frame xml:id="frame4">
+  </slidesequence>
+  <slidesequence xml:id="frame4">
     <slide overlay="1" xml:id="frame4.slide1">
       <para xml:id="frame4.slide1.p1">
         <p>I’m alerted on slide 2</p>
@@ -67,8 +67,8 @@ We are on slide 2.</p>
         </inline-block>
       </para>
     </slide>
-  </frame>
-  <frame xml:id="frame5">
+  </slidesequence>
+  <slidesequence xml:id="frame5">
     <slide overlay="1" xml:id="frame5.slide1">
       <para xml:id="frame5.slide1.p1">
         <inline-block class="ltx_covered">
@@ -117,8 +117,8 @@ We are on slide 2.</p>
         </inline-block>
       </para>
     </slide>
-  </frame>
-  <frame xml:id="frame6">
+  </slidesequence>
+  <slidesequence xml:id="frame6">
     <slide overlay="1" xml:id="frame6.slide1">
       <para xml:id="frame6.slide1.p1">
         <inline-block class="ltx_covered">
@@ -167,8 +167,8 @@ We are on slide 2.</p>
         </inline-block>
       </para>
     </slide>
-  </frame>
-  <frame xml:id="frame7">
+  </slidesequence>
+  <slidesequence xml:id="frame7">
     <slide overlay="1" xml:id="frame7.slide1">
       <para xml:id="frame7.slide1.p1">
         <itemize xml:id="S0.I1">
@@ -285,5 +285,5 @@ We are on slide 2.</p>
         </itemize>
       </para>
     </slide>
-  </frame>
+  </slidesequence>
 </document>
