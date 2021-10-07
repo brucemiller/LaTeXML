@@ -58,10 +58,10 @@ sub new {
     || {
     ai => { destination_type => 'png',
       transparent => 1,
-      prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
+      prescale    => 1, ncolors => '400%', quality => 90, unit => 'point' },
     pdf => { destination_type => 'png',
-      transparent => 1,
-      prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
+      transparent => 1, autocrop => 1,
+      prescale    => 1, ncolors  => '400%', quality => 90, unit => 'point' },
     ps => { destination_type => 'png', transparent => 1,
       prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
     eps => { destination_type => 'png', transparent => 1,

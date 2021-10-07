@@ -74,7 +74,7 @@ sub image_size {
     return image_getvalue($image, 'width', 'height'); } }
 
 # This will be set once we've found an Image processing library to use [Daemon safe]
-our $IMAGECLASS;              # cached class if we found one that works. [CONFIGURABLE?]
+our $IMAGECLASS;    # cached class if we found one that works. [CONFIGURABLE?]
 my @MagickClasses = (qw(Graphics::Magick Image::Magick));    # CONSTANT
 
 sub image_classes {
@@ -128,25 +128,25 @@ sub image_graphicx_parse {
     if (/^\s*(\w+)(?:=\s*(.*))?\s*$/) {
       $_ = $1; $v = $2 || '';
       my $op = $_;
-      if (grep { $op eq $_ } @ignore) { }                                           # Ignore this option
-      elsif (/^bb$/)                  { @bb = map { to_bp($_) } split(' ', $v); }
+      if (grep { $op eq $_ } @ignore) { }                          # Ignore this option
+      elsif (/^bb$/)                  { @bb                 = map { to_bp($_) } split(' ', $v); }
       elsif (/^bb(?:ll|ur)(?:x|y)$/)  { $bb[2 * /ur/ + /y/] = to_bp($v); }
-      elsif (/^nat(?:width|height)$/) { $bb[2 + /width/] = to_bp($v); }
+      elsif (/^nat(?:width|height)$/) { $bb[2 + /width/]    = to_bp($v); }
       elsif (/^viewport$/)            { @vp = map { to_bp($_) } split(' ', $v); $trim = 0; }
       elsif (/^trim$/)                { @vp = map { to_bp($_) } split(' ', $v); $trim = 1; }
-      elsif (/^clip$/)                { $clip = !($v eq 'false'); }
+      elsif (/^clip$/)                { $clip   = !($v eq 'false'); }
       elsif (/^keepaspectratio$/)     { $aspect = !($v eq 'false'); }
-      elsif (/^width$/)               { $width = to_bp($v); }
+      elsif (/^width$/)               { $width  = to_bp($v); }
       elsif (/^(?:total)?height$/)    { $height = to_bp($v); }
       elsif (/^scale$/)               { $xscale = $yscale = $v; }
       elsif (/^xscale$/)              { $xscale = $v; }
       elsif (/^yscale$/)              { $yscale = $v; }
-      elsif (/^angle$/)  { $angle = $v; $rotfirst = !($width || $height || $xscale || $yscale); }
-      elsif (/^origin$/) { }                                                                        # ??
-          # Non-standard option
+      elsif (/^angle$/)         { $angle = $v; $rotfirst = !($width || $height || $xscale || $yscale); }
+      elsif (/^origin$/)        { }                                # ??
+                                                                   # Non-standard option
       elsif (/^magnification$/) { $mag = $v; }
       else                      { push(@unknown, [$op, $v]); } }
-    else { } }    # ?
+    else { } }                                                     # ?
    # --------------------------------------------------
    # Now, compile the options into a sequence of `transformations'.
    # Note: the order of rotation & scaling is significant,
@@ -158,8 +158,8 @@ sub image_graphicx_parse {
   push(@transform, [($trim ? 'trim' : 'clip'), @vp]) if (@vp && $clip);
   push(@transform, ['rotate', $angle]) if ($rotfirst && $angle);    # Rotate before scaling?
   if ($width && $height) { push(@transform, ['scale-to', $mag * $width, $mag * $height, $aspect]); }
-  elsif ($width)             { push(@transform, ['scale-to', $mag * $width, 999999, 1]); }
-  elsif ($height)            { push(@transform, ['scale-to', 999999, $mag * $height, 1]); }
+  elsif ($width)         { push(@transform, ['scale-to', $mag * $width, 999999, 1]); }
+  elsif ($height)        { push(@transform, ['scale-to', 999999, $mag * $height, 1]); }
   elsif ($xscale && $yscale) { push(@transform, ['scale', $mag * $xscale, $mag * $yscale]); }
   elsif ($xscale)            { push(@transform, ['scale', $mag * $xscale, $mag]); }
   elsif ($yscale)            { push(@transform, ['scale', $mag, $mag * $yscale]); }
@@ -178,7 +178,7 @@ sub to_bp {
   if ($x =~ /^\s*([+-]?[\d\.]+)(\w*)\s*$/) {
     my ($v, $u) = ($1, $2);
     $u =~ s/^true//;
-    return $v * ($u ? $BP_conversions{$u} : 1); }
+    return $v * (($u && $BP_conversions{$u}) || 1); }
   else {
     return 1; } }
 
