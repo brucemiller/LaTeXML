@@ -26,9 +26,6 @@ EoTeX
 
 LoadPool('LaTeX');
 
-# TODO: not really, but it works!
-RequirePackage('article.cls');
-
 # for things that aren't implemented
 sub beamerTODO {
   my ($feature) = @_;
@@ -1130,7 +1127,7 @@ DefEnvironment('{itemize} [Angled]',
   locked          => 1, mode => 'text');
 
 # from enumitem package, because of the second arg!
-DefEnvironment('{enumerate} ][ OptionalUndigested',
+DefEnvironment('{enumerate} [Angled] OptionalUndigested',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
   properties       => sub { beginBeamerItemize($_[1], 'enumerate', 'enum'); },
   beforeDigestEnd => sub { Digest('\par'); Digest('\beamer@closeitem'); },
@@ -1316,6 +1313,11 @@ our %BEAMER_WRAPPED = (
 );
 foreach my $command (keys %BEAMER_WRAPPED) {
   AddBeamerWrapper($command, $BEAMER_WRAPPED{$command}, undef); }
+
+#**********************************************************************
+
+# TODO: not really, but it works!
+LoadClass('article');
 
 #**********************************************************************
 1;

@@ -4,6 +4,7 @@
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
   <resource src="ltx-listings.css" type="text/css"/>
   <frame xml:id="frame1">
     <slide overlay="1" xml:id="frame1.slide1">
@@ -15,51 +16,23 @@
   <frame xml:id="frame2">
     <slide overlay="1" xml:id="frame2.slide1">
       <para xml:id="frame2.slide1.p1">
-        <listing class="ltx_lstlisting" data="ICAgICAgICBJIGNoYW5nZWQgc29tZSBjYXRjb2RlcyBhcm91bmQgYW5kIHN0aWxsIHdvcmsh" dataencoding="base64" datamimetype="text/plain">
-          <listingline xml:id="lstnumberx1"><text class="ltx_lst_space">        </text><text class="ltx_lst_identifier">I</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">changed</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">some</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">catcodes</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">around</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">and</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">still</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">work</text>!</listingline>
+        <listing class="ltx_lstlisting" data="ClxiZWdpbntmcmFtZX0KICAgIFxvbmx5e1RoaXMgaXMgb24gZXZlcnkgc2xpZGUuIH0KICAgIFxvbmx5PDI+e1RoaXMgaXMgb24gdGhlIHNlY29uZCBzbGlkZS4gfQpcZW5ke2ZyYW1lfQoKXGJlZ2lue2ZyYW1lfQogICAgXHRlbXBvcmFsPDI+e0JlZm9yZSBzZWNvbmQgc2xpZGV9e29uIHNlY29uZCBzbGlkZX17YWZ0ZXIgc2Vjb25kIHNsaWRlfQoKICAgIFxvbmx5PDEsMz57T24gc2xpZGVzIDEgYW5kIDN9CgogICAgXG9ubHk8Mi0+e09uIHNsaWRlIDIgb253YXJkc30KXGVuZHtmcmFtZX0KClxlbmR7ZG9jdW1lbnR9" dataencoding="base64" datamimetype="text/plain">
+          <listingline xml:id="lstnumberx1"/>
+          <listingline xml:id="lstnumberx2">\<text class="ltx_lst_identifier">begin</text>{<text class="ltx_lst_identifier">frame</text>}</listingline>
+          <listingline xml:id="lstnumberx3"><text class="ltx_lst_space">    </text>\<text class="ltx_lst_identifier">only</text>{<text class="ltx_lst_identifier">This</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">is</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">on</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">every</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">slide</text>.<text class="ltx_lst_space"> </text>}</listingline>
+          <listingline xml:id="lstnumberx4"><text class="ltx_lst_space">    </text>\<text class="ltx_lst_identifier">only</text>&lt;2&gt;{<text class="ltx_lst_identifier">This</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">is</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">on</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">the</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">second</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">slide</text>.<text class="ltx_lst_space"> </text>}</listingline>
+          <listingline xml:id="lstnumberx5">\<text class="ltx_lst_identifier">end</text>{<text class="ltx_lst_identifier">frame</text>}</listingline>
+          <listingline xml:id="lstnumberx6"/>
+          <listingline xml:id="lstnumberx7">\<text class="ltx_lst_identifier">begin</text>{<text class="ltx_lst_identifier">frame</text>}</listingline>
+          <listingline xml:id="lstnumberx8"><text class="ltx_lst_space">    </text>\<text class="ltx_lst_identifier">temporal</text>&lt;2&gt;{<text class="ltx_lst_identifier">Before</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">second</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">slide</text>}{<text class="ltx_lst_identifier">on</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">second</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">slide</text>}{<text class="ltx_lst_identifier">after</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">second</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">slide</text>}</listingline>
+          <listingline xml:id="lstnumberx9"/>
+          <listingline xml:id="lstnumberx10"><text class="ltx_lst_space">    </text>\<text class="ltx_lst_identifier">only</text>&lt;1,3&gt;{<text class="ltx_lst_identifier">On</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">slides</text><text class="ltx_lst_space"> </text>1<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">and</text><text class="ltx_lst_space"> </text>3}</listingline>
+          <listingline xml:id="lstnumberx11"/>
+          <listingline xml:id="lstnumberx12"><text class="ltx_lst_space">    </text>\<text class="ltx_lst_identifier">only</text>&lt;2-&gt;{<text class="ltx_lst_identifier">On</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">slide</text><text class="ltx_lst_space"> </text>2<text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">onwards</text>}</listingline>
+          <listingline xml:id="lstnumberx13">\<text class="ltx_lst_identifier">end</text>{<text class="ltx_lst_identifier">frame</text>}</listingline>
+          <listingline xml:id="lstnumberx14"/>
+          <listingline xml:id="lstnumberx15">\<text class="ltx_lst_identifier">end</text>{<text class="ltx_lst_identifier">document</text>}</listingline>
         </listing>
-      </para>
-    </slide>
-  </frame>
-  <frame xml:id="frame3">
-    <slide overlay="1" xml:id="frame3.slide1">
-      <para xml:id="frame3.slide1.p1">
-        <p>This is on every slide.</p>
-      </para>
-    </slide>
-    <slide overlay="2" xml:id="frame3.slide2">
-      <para xml:id="frame3.slide2.p1">
-        <p>This is on every slide. 
-This is on the second slide.</p>
-      </para>
-    </slide>
-  </frame>
-  <frame xml:id="frame4">
-    <slide overlay="1" xml:id="frame4.slide1">
-      <para xml:id="frame4.slide1.p1">
-        <p>Before second slide</p>
-      </para>
-      <para xml:id="frame4.slide1.p2">
-        <p>On slides 1 and 3</p>
-      </para>
-    </slide>
-    <slide overlay="2" xml:id="frame4.slide2">
-      <para xml:id="frame4.slide2.p1">
-        <p>on second slide</p>
-      </para>
-      <para xml:id="frame4.slide2.p2">
-        <p>On slide 2 onwards</p>
-      </para>
-    </slide>
-    <slide overlay="3" xml:id="frame4.slide3">
-      <para xml:id="frame4.slide3.p1">
-        <p>after second slide</p>
-      </para>
-      <para xml:id="frame4.slide3.p2">
-        <p>On slides 1 and 3</p>
-      </para>
-      <para xml:id="frame4.slide3.p3">
-        <p>On slide 2 onwards</p>
       </para>
     </slide>
   </frame>
