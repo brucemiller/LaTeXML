@@ -16,7 +16,7 @@ use Carp;
 use Encode;
 use Data::Dumper;
 use File::Temp;
-File::Temp->safe_level(File::Temp::HIGH);
+File::Temp->safe_level(File::Temp::MEDIUM);
 use File::Path qw(rmtree);
 use File::Spec;
 use List::Util qw(max);

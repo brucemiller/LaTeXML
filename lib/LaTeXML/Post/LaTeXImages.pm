@@ -251,7 +251,7 @@ sub generateImages {
   Debug("LaTeXImages: $nuniq unique; " . scalar(@pending) . " new") if $LaTeXML::DEBUG{images};
   if (@pending) {    # if any images need processing
         # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
-    File::Temp->safe_level(File::Temp::HIGH);
+    File::Temp->safe_level(File::Temp::MEDIUM);
     my $workdir = File::Temp->newdir("LaTeXMLXXXXXX", TMPDIR => 1);
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir => $workdir, name => $jobname, type => 'tex');
