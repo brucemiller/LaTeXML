@@ -4945,8 +4945,8 @@ DefPrimitive('\selectfont', sub {
     my $series = ToString(Expand(T_CS('\f@series')));
     my $shape  = ToString(Expand(T_CS('\f@shape')));
     if    (my $sh = LaTeXML::Common::Font::lookupFontFamily($family)) { MergeFont(%$sh); }
-    elsif ((LookupValue('font')->getEncoding eq 'U') && LoadFontMap($family)) {
-      # Special case hack: If encoding is U, tentatively treat family as the encoding!
+    elsif (LoadFontMap($family)) {
+      # Special case hack: Tentatively treat family as the encoding! (typically "U" encoding)
       MergeFont(encoding => $family); }
     elsif (!LookupValue("reported_unrecognized_font_family_$family")) {
       AssignValue("reported_unrecognized_font_family_$family", 1, 'global');
