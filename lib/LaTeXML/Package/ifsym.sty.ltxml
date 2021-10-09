@@ -1,0 +1,155 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  AMSA font encoding                                                 | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+InputDefinitions('ifsym', type => 'sty', noltxml => 1);
+
+# Note that we're defining encodings for the font families!
+DeclareFontMap('ifclk', [
+    # 12:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f55b}", undef, undef, undef, undef, undef,
+    "\x{1f567}", undef, undef, undef, undef, undef,
+    # 1:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f550}", undef, undef, undef, undef, undef,
+    "\x{1f55c}", undef, undef, undef, undef, undef,
+    # 2:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f551}", undef, undef, undef, undef, undef,
+    "\x{1f55d}", undef, undef, undef, undef, undef,
+    # 3:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f552}", undef, undef, undef, undef, undef,
+    "\x{1f55e}", undef, undef, undef, undef, undef,
+    # 4:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f553}", undef, undef, undef, undef, undef,
+    "\x{1f55f}", undef, undef, undef, undef, undef,
+    # 5:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f554}", undef, undef, undef, undef, undef,
+    "\x{1f560}", undef, undef, undef, undef, undef,
+    # 6:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f555}", undef, undef, undef, undef, undef,
+    "\x{1f561}", undef, undef, undef, undef, undef,
+    # 7:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f556}", undef, undef, undef, undef, undef,
+    "\x{1f562}", undef, undef, undef, undef, undef,
+    # 8:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f557}", undef, undef, undef, undef, undef,
+    "\x{1f563}", undef, undef, undef, undef, undef,
+    # 9:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f558}", undef, undef, undef, undef, undef,
+    "\x{1f564}", undef, undef, undef, undef, undef,
+    # 10:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f559}", undef, undef, undef, undef, undef,
+    "\x{1f565}", undef, undef, undef, undef, undef,
+    # 11:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f55A}", undef, undef, undef, undef, undef,
+    "\x{1f566}", undef, undef, undef, undef, undef,
+    # random clocks
+    undef,      undef, undef,      undef,
+    "\x{231A}", undef, "\x{231A}", "\x{23F1}",
+    "\x{23F1}", undef, "\x{23f0}", undef,
+    undef,      undef, undef,      undef,
+]);
+
+# Various missing mountain symbols
+DeclareFontMap('ifsym', [
+    "\x{2709}",  undef,      "\x{2756}",  "\x{1f5b9}",
+    undef,       "\x{2680}", "\x{2681}",  "\x{2682}",
+    "\x{2683}",  "\x{2684}", "\x{2685}",  "\x{274c}",
+    "\x{1f525}", undef,      "\x{2622}",  undef,
+    undef,       undef,      "\x{1f6d6}", "\x{1f6d6}",
+    undef,       "\x{26f0}", "\x{1f3d4}", "\x{26f0}",
+    "\x{26f0}",  undef,      undef,       "\x{1f6a9}",
+    "\x{26fa}",  "\x{2691}", undef,       "\x{1f6d6}",
+###    row 2,       0-- 7 : stairstep, pulse,       etc ... \x{238d}
+    undef,       undef,       undef,       undef, undef, undef, undef, undef,
+    "\x{260e}",  "\x{1f805}", "\x{1f807}", undef,
+    undef,       "-",         undef,       undef,
+    "\x{1fbf0}", "\x{1fbf1}", "\x{1fbf2}", "\x{1fbf3}",
+    "\x{1fbf4}", "\x{1fbf5}", "\x{1fbf6}", "\x{1fbf7}",
+    "\x{1fbf8}", "\x{1fbf9}", "\x{1d377}", "\x{1d378}",
+    # and some random horizontal & vertical bars???
+]);
+
+DeclareFontMap('ifgeo', [
+    "\x{274f}", "\x{274f}", "\x{274f}", "\x{274f}",    # same?
+    "\x{274f}", undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      "\x{274c}", "\x{274c}", "\x{274c}",    # 3 sizes?
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      "\x{2014}", "\x{2013}",
+    "\x{2012}", "\x{fe31}", "\x{fe32}", undef,
+    "\x{25a1}", "\x{25b3}", "\x{25C1}", "\x{25bd}",    # large, white
+    "\x{25b7}", "\x{25ef}", "\x{25c7}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b17}",
+    "\x{25a1}", "\x{25b3}", "\x{25C1}", "\x{25bd}",    # medium, white
+    "\x{25b7}", "\x{25cb}", "\x{2b25}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b17}",
+    "\x{25ab}", "\x{25b5}", "\x{25C3}", "\x{25bf}",    # small, white
+    "\x{25b9}", "\x{25cb}", "\x{2b2a}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b17}",
+    "\x{25a0}", "\x{25b2}", "\x{25C0}", "\x{25bc}",    # large, black
+    "\x{25b6}", "\x{25cf}", "\x{25c6}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b19}",
+    "\x{25fc}", "\x{25b2}", "\x{25C0}", "\x{25bc}",    # medium, black
+    "\x{25b6}", "\x{25cf}", "\x{2b26}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b19}",
+    "\x{25aa}", "\x{25b4}", "\x{25C2}", "\x{25be}",    # small, black
+    "\x{25b8}", "\x{25cf}", "\x{2b2b}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b19}",
+]);
+DeclareFontMap('ifwea', [
+    "\x{25cb}",  "\x{25d4}",  "\x{25d3}",  "\x{25d3}",
+    "\x{25cf}",  "\x{1f321}", "\x{1f321}", "\x{1f321}",    # all thermometers are the same!
+    "\x{1f321}", "\x{1f321}", "\x{1f321}", "\x{1f321}",
+    undef,       undef,       undef,       undef,
+    "\x{1f323}", undef,       undef,       "\x{1f32b}",
+    "\x{1f32b}", "\x{26c6}",  "\x{26c6}",  undef,
+    undef,       "\x{2744}",  "\x{1f5f2}", "\x{2601}",
+    "\x{1f327}", "\x{1f327}", "\x{1f324}", "\x{1f328}",
+    "\x{2601}",  "\x{1f327}", "\x{1f327}", "\x{1f324}",    # Should be black?
+    "\x{1f328}", undef,       undef,       undef,
+    undef,       undef,       undef,       undef,
+    undef,       undef,       undef,       undef,
+    undef,       undef,       undef,       undef,          # and some sort of mucical flags?
+    undef,       undef,       undef,       undef,
+    undef,       undef,       undef,       undef,
+]);
+
+DeclareFontMap('ifblk', [
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      "\x{2598}", "\x{259d}", "\x{2580}",
+    undef,      "\x{2590}", "\x{259c}", "\x{2584}",
+    "\x{2599}", "\x{259f}", "\x{2588}", undef,
+]);
+
+1;
