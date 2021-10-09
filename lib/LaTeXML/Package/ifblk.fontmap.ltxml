@@ -1,0 +1,35 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | ifblk font encoding                                                 | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+# Note that we're defining encodings for the font families!
+DeclareFontMap('ifblk', [
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      "\x{2598}", "\x{259d}", "\x{2580}",
+    undef,      "\x{2590}", "\x{259c}", "\x{2584}",
+    "\x{2599}", "\x{259f}", "\x{2588}", undef,
+]);
+1;

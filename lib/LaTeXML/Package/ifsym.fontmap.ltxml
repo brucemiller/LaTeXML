@@ -1,0 +1,37 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | ifsym font encoding                                                 | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+# Note that we're defining encodings for the font families!
+# Various missing mountain symbols
+DeclareFontMap('ifsym', [
+    "\x{2709}",  undef,      "\x{2756}",  "\x{1f5b9}",
+    undef,       "\x{2680}", "\x{2681}",  "\x{2682}",
+    "\x{2683}",  "\x{2684}", "\x{2685}",  "\x{274c}",
+    "\x{1f525}", undef,      "\x{2622}",  undef,
+    undef,       undef,      "\x{1f6d6}", "\x{1f6d6}",
+    undef,       "\x{26f0}", "\x{1f3d4}", "\x{26f0}",
+    "\x{26f0}",  undef,      undef,       "\x{1f6a9}",
+    "\x{26fa}",  "\x{2691}", undef,       "\x{1f6d6}",
+###    row 2,       0-- 7 : stairstep, pulse,       etc ... \x{238d}
+    undef,       undef,       undef,       undef, undef, undef, undef, undef,
+    "\x{260e}",  "\x{1f805}", "\x{1f807}", undef,
+    undef,       "-",         undef,       undef,
+    "\x{1fbf0}", "\x{1fbf1}", "\x{1fbf2}", "\x{1fbf3}",
+    "\x{1fbf4}", "\x{1fbf5}", "\x{1fbf6}", "\x{1fbf7}",
+    "\x{1fbf8}", "\x{1fbf9}", "\x{1d377}", "\x{1d378}",
+    # and some random horizontal & vertical bars???
+]);
+1;
