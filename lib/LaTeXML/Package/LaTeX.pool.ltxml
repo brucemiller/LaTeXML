@@ -4945,6 +4945,9 @@ DefPrimitive('\selectfont', sub {
     my $series = ToString(Expand(T_CS('\f@series')));
     my $shape  = ToString(Expand(T_CS('\f@shape')));
     if    (my $sh = LaTeXML::Common::Font::lookupFontFamily($family)) { MergeFont(%$sh); }
+    elsif ((LookupValue('font')->getEncoding eq 'U') && LoadFontMap($family)) {
+      # Special case hack: If encoding is U, tentatively treat family as the encoding!
+      MergeFont(encoding => $family); }
     elsif (!LookupValue("reported_unrecognized_font_family_$family")) {
       AssignValue("reported_unrecognized_font_family_$family", 1, 'global');
       Info('unexpected', $family, $_[0], "Unrecognized font family '$family'."); }
@@ -5276,10 +5279,10 @@ DefMacroI('\ltx@hard@MessageBreak', undef, '^^J');
 
 sub make_message {
   my ($cmd, @args) = @_;
-  my $stomach = $STATE->getStomach;
+  my $stomach  = $STATE->getStomach;
   my $lead_arg = ToString(shift(@args)) || '';
   $lead_arg =~ s/(?:\\\@?spaces?)+//g;
-  my $type    = $lead_arg || $cmd;
+  my $type = $lead_arg || $cmd;
   $stomach->bgroup;
   Let('\protect', '\string');
   # Note that the arg really should be digested to get to the underlying text,
