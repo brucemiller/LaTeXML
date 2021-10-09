@@ -1595,13 +1595,12 @@ DefPrimitive('\@@@fontencoding{}', sub {
     $encoding = ToString(Expand($encoding));
     if (LoadFontMap($encoding)) {
       MergeFont(encoding => $encoding); }
+    else {
+      MergeFont(encoding => 'OT1'); }    # Default to OT1 encoding if no map found
     return; });
 
 DefMacroI('\f@encoding',  undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
 DefMacroI('\cf@encoding', undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
-
-## Defined since we "expect" it; Empty since we know nothing about it.
-DeclareFontMap('U', []);
 
 # Used for SemiVerbatim text
 DeclareFontMap('ASCII',
