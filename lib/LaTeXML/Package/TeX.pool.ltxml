@@ -1600,6 +1600,9 @@ DefPrimitive('\@@@fontencoding{}', sub {
 DefMacroI('\f@encoding',  undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
 DefMacroI('\cf@encoding', undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
 
+## Defined since we "expect" it; Empty since we know nothing about it.
+DeclareFontMap('U', []);
+
 # Used for SemiVerbatim text
 DeclareFontMap('ASCII',
   [undef, undef, undef, undef, undef, undef, undef, undef,
