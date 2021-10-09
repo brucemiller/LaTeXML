@@ -1595,6 +1595,8 @@ DefPrimitive('\@@@fontencoding{}', sub {
     $encoding = ToString(Expand($encoding));
     if (LoadFontMap($encoding)) {
       MergeFont(encoding => $encoding); }
+    else {
+      MergeFont(encoding => 'OT1'); }    # Default to OT1 encoding if no map found
     return; });
 
 DefMacroI('\f@encoding',  undef, sub { ExplodeText(LookupValue('font')->getEncoding); });

@@ -2649,7 +2649,7 @@ sub LoadFontMap {
   my $map = LookupValue($encoding . '_fontmap');
   if (!$map && !LookupValue($encoding . '_fontmap_failed_to_load')) {
     AssignValue($encoding . '_fontmap_failed_to_load' => 1);    # Stop recursion?
-    RequirePackage(lc($encoding), type => 'fontmap');
+    InputDefinitions(lc($encoding), type => 'fontmap', noerror => 1);
     if ($map = LookupValue($encoding . '_fontmap')) {           # Got map?
       AssignValue($encoding . '_fontmap_failed_to_load' => 0); }
     else {

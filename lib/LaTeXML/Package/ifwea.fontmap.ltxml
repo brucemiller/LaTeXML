@@ -1,0 +1,36 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | ifwea font encoding                                                 | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+# Note that we're defining encodings for the font families!
+DeclareFontMap('ifwea', [
+    "\x{25cb}",  "\x{25d4}",  "\x{25d3}",  "\x{25d3}",
+    "\x{25cf}",  "\x{1f321}", "\x{1f321}", "\x{1f321}",    # all thermometers are the same!
+    "\x{1f321}", "\x{1f321}", "\x{1f321}", "\x{1f321}",
+    undef,       undef,       undef,       undef,
+    "\x{1f323}", undef,       undef,       "\x{1f32b}",
+    "\x{1f32b}", "\x{26c6}",  "\x{26c6}",  undef,
+    undef,       "\x{2744}",  "\x{1f5f2}", "\x{2601}",
+    "\x{1f327}", "\x{1f327}", "\x{1f324}", "\x{1f328}",
+    "\x{2601}",  "\x{1f327}", "\x{1f327}", "\x{1f324}",    # Should be black?
+    "\x{1f328}", undef,       undef,       undef,
+    undef,       undef,       undef,       undef,
+    undef,       undef,       undef,       undef,
+    undef,       undef,       undef,       undef,          # and some sort of mucical flags?
+    undef,       undef,       undef,       undef,
+    undef,       undef,       undef,       undef,
+]);
+
+1;
