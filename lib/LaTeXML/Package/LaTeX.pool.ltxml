@@ -518,6 +518,7 @@ DefConstructor('\lx@notetext[]{}[]{}',
 DefMacro('\footnote',     '\lx@note{footnote}');
 DefMacro('\footnotemark', '\lx@notemark{footnote}');
 DefMacro('\footnotetext', '\lx@notetext{footnote}');
+DefMacro('\@footnotetext', '\lx@notetext{footnote}');
 
 Tag('ltx:note', afterClose => \&relocateFootnote);
 
