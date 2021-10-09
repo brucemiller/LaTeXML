@@ -310,8 +310,9 @@ sub image_graphicx_complex {
           if ($a1 / $w < $a2 / $h) { $a2 = $h * $a1 / $w; }
           else                     { $a1 = $w * $a2 / $h; } }
         ($w, $h) = (ceil($a1 * $dppt), ceil($a2 * $dppt)); } }
-    my $X = 4;                 # Expansion factor
-    my ($dx, $dy) = (int($X * 3 * 72 * $w / $w0), int($X * 3 * 72 * $h / $h0));
+    my $X = 4;    # Expansion factor
+    my $F = 3;    # Density upscale factor
+    my ($dx, $dy) = (int($X * $F * 72 * $w / $w0), int($X * $F * 72 * $h / $h0));
     Debug("reloading $source to desired size $w x $h (density = $dx x $dy)")
       if $LaTeXML::DEBUG{images};
     $image = image_read($source, antialias => 1, density => $dx . 'x' . $dy) or return;
