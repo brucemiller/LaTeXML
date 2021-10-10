@@ -37,11 +37,11 @@ DefMacro('\lx@ab@author[]{}',
     . '{\@personname{#2}\lx@authormark{\if.#1.\the@affil\else#1\fi}}');
 
 DefConstructor('\lx@authormark{}',
-  "^<ltx:contact role='affiliationmark' _mark='#mark'></ltx:contact>",
+  "?#mark(^<ltx:contact role='affiliationmark' _mark='#mark'></ltx:contact>)()",
   properties => sub { (mark => ToString($_[1])); });
 
 DefConstructor('\affil[]{}',
-  "^ <ltx:note mark='#mark' role='affiliationtext'>#2</ltx:note>",
+  "?#2(^ <ltx:note mark='#mark' role='affiliationtext'>#2</ltx:note>)()",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $mark = $whatsit->getArg(1);
@@ -51,7 +51,8 @@ DefConstructor('\affil[]{}',
     $whatsit->setProperty(mark => ToString($mark));
     return; });
 
-Tag('ltx:note', afterClose => \&authblkRelocateAffil);
+Tag('ltx:note',     afterClose => \&authblkRelocateAffil);
+Tag('ltx:document', afterClose => \&pruneEmptyAffil);
 
 sub authblkRelocateAffil {
   my ($document, $affilnode) = @_;
@@ -63,6 +64,13 @@ sub authblkRelocateAffil {
         $document->appendClone($author, $affilnode->childNodes);
         $author->setAttribute(role => 'affiliation'); }
       $affilnode->parentNode->removeChild($affilnode); } }
+  return; }
+
+sub pruneEmptyAffil {
+  my ($document) = @_;
+  # Some affiliations never get filled, prune them.
+  for my $empty_node ($document->findnodes(".//ltx:contact[\@role='affiliationmark' and not(node()) and not(text())]")) {
+    $document->removeNode($empty_node); }
   return; }
 
 #======================================================================

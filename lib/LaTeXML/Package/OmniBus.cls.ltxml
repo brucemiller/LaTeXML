@@ -86,9 +86,9 @@ DefMacro('\altaffilmark{}', sub {
     my ($gullet, $marks) = @_;
     map { (T_CS('\@altaffilmark'), T_BEGIN, @$_, T_END) } SplitTokens($marks, T_OTHER(',')); });
 DefConstructor('\@altaffilmark{}',
-  "<ltx:note role='affiliationmark' mark='#1'/> ");
+  "?#1(<ltx:note role='affiliationmark' mark='#1'/> )()");
 DefConstructor('\altaffiltext{}{}',
-  "<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>");
+  "?#2(<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>)()");
 
 DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
 DefMacro('\address[]{}',   '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
