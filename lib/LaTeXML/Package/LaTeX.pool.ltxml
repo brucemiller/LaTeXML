@@ -515,9 +515,9 @@ DefConstructor('\lx@notetext[]{}[]{}',
     (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || Digest(T_CS('\the' . $type)))); },
   reversion => '');
 
-DefMacro('\footnote',     '\lx@note{footnote}');
-DefMacro('\footnotemark', '\lx@notemark{footnote}');
-DefMacro('\footnotetext', '\lx@notetext{footnote}');
+DefMacro('\footnote',      '\lx@note{footnote}');
+DefMacro('\footnotemark',  '\lx@notemark{footnote}');
+DefMacro('\footnotetext',  '\lx@notetext{footnote}');
 DefMacro('\@footnotetext', '\lx@notetext{footnote}');
 
 Tag('ltx:note', afterClose => \&relocateFootnote);
@@ -536,6 +536,30 @@ sub relocateFootnote {
     if (my $mark = $node->getAttribute('mark')) {
       foreach my $textnote ($document->findnodes(".//ltx:note[\@role='${notetype}text'][\@mark='$mark']")) {
         relocateFootnote_aux($document, $notetype, $node, $textnote); } } }
+  ### Separately: if this footnote is located in the main article, or in a div element,
+  ###   and also has a previous inline sibling, notably <h1>,...,<h6>,<p> or <span>,
+  ###   then tuck it into the inline sibling
+  my $parent = $node->parentNode;
+  return unless $parent->nodeType == XML_ELEMENT_NODE;
+  my $parent_qname = $document->getNodeQName($parent);
+  if ($parent_qname eq "ltx:abstract" or $parent_qname eq "ltx:document") {
+    if (my $previous_sibling = $node->previousSibling) {
+      if ($previous_sibling->nodeType == XML_ELEMENT_NODE) {
+        my $sibling_qname = $document->getNodeQName($previous_sibling);
+        if ($sibling_qname eq 'ltx:abstract') {
+          # try to tuck into the last abstract paragraph
+          my @abstract_children = element_nodes($previous_sibling);
+          $previous_sibling = pop(@abstract_children);
+          $sibling_qname    = $document->getNodeQName($previous_sibling); }
+        if ($sibling_qname eq 'ltx:p' or $sibling_qname eq 'ltx:text' or $sibling_qname =~ /^ltx:h\d/) {
+          $document->removeNode($node);
+          # usually there is a single runaway footnote of this type,
+          # so the clone is fine, worth the convenience
+          $document->appendClone($previous_sibling, $node);
+        }
+      }
+    }
+  }
   return; }
 
 # Move the contents of the $textnote to the $marknote, remove $textnote.
