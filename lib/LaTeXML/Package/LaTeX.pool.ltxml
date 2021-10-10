@@ -546,16 +546,16 @@ sub relocateFootnote {
     if (my $previous_sibling = $node->previousSibling) {
       if ($previous_sibling->nodeType == XML_ELEMENT_NODE) {
         my $sibling_qname = $document->getNodeQName($previous_sibling);
-        if ($sibling_qname eq 'ltx:abstract') {
-          # try to tuck into the last abstract paragraph
+        if ($sibling_qname =~ /^ltx:(?:abstract|creator|para)/) {
+          # if the parent is an expected logical-level element,
+          #   try to tuck into its last inline-allowing child
           my @abstract_children = element_nodes($previous_sibling);
           $previous_sibling = pop(@abstract_children);
           $sibling_qname    = $document->getNodeQName($previous_sibling); }
-        if ($sibling_qname eq 'ltx:p' or $sibling_qname eq 'ltx:text' or $sibling_qname =~ /^ltx:h\d/) {
-          $document->removeNode($node);
-          # usually there is a single runaway footnote of this type,
-          # so the clone is fine, worth the convenience
-          $document->appendClone($previous_sibling, $node);
+        # Is the previous sibling appropriate for containing a note?
+        if ($sibling_qname =~ /^ltx:(?:p|classification|keywords|personname|contact|date|subtitle)/) {
+          $node->unbindNode;
+          $previous_sibling->appendChild($node);
         }
       }
     }

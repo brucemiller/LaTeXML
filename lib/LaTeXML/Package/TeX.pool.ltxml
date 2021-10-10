@@ -5039,7 +5039,14 @@ sub insertFrontMatter {
           (scalar(@stuff) && $document->canHaveAttribute($tag, 'font')
             ? (font => $stuff[0]->getFont, _force_font => 'true') : ()));
         map { $document->absorb($_) } @stuff;
-        $document->closeElement($tag); } } }
+        my $completed_node = $document->closeElement($tag);
+        # At this time, the frontmatter element should really carry the actual literal values intended.
+        # Thus, if we see an empty element, something went wrong -- including our bindings are too verbose,
+        # as e.g. \preprint{} always generates a ltx:note element.
+        #
+        # To solve this in a single location: prune here!
+        if (($tag ne "ltx:rdf") && !scalar($completed_node->childNodes)) {
+          $document->removeNode($completed_node); } } } }
   return; }
 
 Tag('ltx:document', 'afterOpen:late' => \&insertFrontMatter);
