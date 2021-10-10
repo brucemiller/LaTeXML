@@ -151,10 +151,10 @@ DefMacro('\IEEEauthorblockA{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliati
 
 DefMacro(T_CS('\begin{IEEEkeywords}'), '\@IEEEkeywords');
 DefMacro(T_CS('\end{IEEEkeywords}'),   '\@endIEEEkeywords');
-Let('\@endIEEEkeywords', '\relax');                             # stub
-DefMacro('\@IEEEkeywords XUntil:\@endIEEEkeywords', '\@add@frontmatter{ltx:keywords}{#1}');
-DefMacro('\IEEEraisesectionheading{}',              '#1');
-DefMacro('\IEEEPARstart{}{}',                       '#1#2');    # Eventually, dropcap?
+Let('\@endIEEEkeywords', '\relax');                # stub
+DefMacro('\@IEEEkeywords XUntil:\@endIEEEkeywords', '\@add@frontmatter{ltx:keywords}[name={\IEEEkeywordsname}]{#1}');
+DefMacro('\IEEEraisesectionheading{}', '#1');
+DefMacro('\IEEEPARstart{}{}',          '#1#2');    # Eventually, dropcap?
 
 DefMacro('\IEEEcompsocitemizethanks{}', '\thanks{#1}');
 DefMacro('\IEEEcompsocthanksitem[]',    '');
@@ -355,6 +355,21 @@ DefEnvironment('{IEEEdescription}',
   beforeDigestEnd => sub { Digest('\par'); },
   locked          => 1, mode => 'text');
 
+# V1.7 provide string macros as article.cls does
+DefMacro('\contentsname',     'Contents');
+DefMacro('\listfigurename',   'List of Figures');
+DefMacro('\listtablename',    'List of Tables');
+DefMacro('\refname',          'References');
+DefMacro('\indexname',        'Index');
+DefMacro('\figurename',       'Fig.');
+DefMacro('\tablename',        'TABLE');
+DefMacro('\figurename',       'Figure');
+DefMacro('\partname',         'Part');
+DefMacro('\appendixname',     'Appendix');
+DefMacro('\abstractname',     'Abstract');
+DefMacro('\IEEEkeywordsname', 'Index Terms');
+DefMacro('\IEEEproofname',    'Proof');
+
 # V1.8a no more support for these legacy commands
 Let('\authorblockA',       '\IEEEauthorblockA');
 Let('\authorblockN',       '\IEEEauthorblockN');
@@ -366,7 +381,6 @@ Let('\specialpapernotice', '\IEEEspecialpapernotice');
 # and environments
 DefMacro(T_CS('\begin{keywords}'), '\@IEEEkeywords');
 DefMacro(T_CS('\end{keywords}'),   '\@endIEEEkeywords');
-
 DefMacro('\keywords', sub {
     my ($gullet) = @_;
     ($gullet->ifNext(T_BEGIN)
