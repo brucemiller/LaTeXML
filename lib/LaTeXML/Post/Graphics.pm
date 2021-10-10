@@ -39,6 +39,8 @@ use base qw(LaTeXML::Post::Processor);
 #                         This is useful for getting the best antialiasing for postscript, eg.
 #          unit= (pixel|point) :  What unit the image size is given in.
 #          autocrop     : if the image should be cropped (trimmed) when loaded.
+#                         This option is sometimes needed for page-oriented formats like pdf,
+#                         where the image size appears to be padded out to page dimensions.
 #          desirability : a number indicating how good of a mapping this entry is.
 #                         This helps choose between two sources that can map to the
 #                         same destination type.
@@ -62,9 +64,9 @@ sub new {
     pdf => { destination_type => 'png',
       transparent => 1, autocrop => 1,
       prescale    => 1, ncolors  => '400%', quality => 90, unit => 'point' },
-    ps => { destination_type => 'png', transparent => 1,
+    ps => { destination_type => 'png', transparent => 1, autocrop => 1,
       prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
-    eps => { destination_type => 'png', transparent => 1,
+    eps => { destination_type => 'png', transparent => 1, autocrop => 1,
       prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
     jpg => { destination_type => 'jpg',
       ncolors => '400%', unit => 'pixel' },
