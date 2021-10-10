@@ -125,7 +125,7 @@ DefMacro('\altaffilmark{}', sub {
 DefConstructor('\@altaffilmark{}',
   "?#1(<ltx:note role='affiliationmark' mark='#1'/> )()");
 DefConstructor('\altaffiltext{}{}',
-  "?#2(<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>)");
+  "?#2(<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>)()");
 
 DefMacro('\software{}',      '\@add@frontmatter{ltx:note}[role=software]{#1}');
 DefMacro('\submitjournal{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
