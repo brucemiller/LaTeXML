@@ -322,11 +322,11 @@ sub image_graphicx_complex {
       $X = 1;
       my $scale0 = 1;
       if (!$CAN_SCALE_DOWN) {
-        if ($h0 > $w0) { $scale0 = $h0 / $dy; }
-        else           { $scale0 = $w0 / $dx; } }
+        if ($h0 > $w0 && $dy < $h0) { $scale0 = $h0 / $dy; }
+        else                        { $scale0 = $w0 / $dx; } }
       if (!$CAN_SCALE_UP) {
-        if ($h0 < $w0) { $scale0 = $h0 / $dy; }
-        else           { $scale0 = $w0 / $dx; } }
+        if ($h0 < $w0 && $dy > $h0) { $scale0 = $h0 / $dy; }
+        else                        { $scale0 = $w0 / $dx; } }
       Debug("reset: $scale0; w0=$w0; h0=$h0; dx=$dx; dy=$dy;");
       $dy = ceil($dy * $scale0);
       $dx = ceil($dx * $scale0); }
