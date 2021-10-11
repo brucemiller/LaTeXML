@@ -38,7 +38,10 @@ our $DPI            = 90;               # [CONSTANT]
 our $DOTS_PER_POINT = ($DPI / 72.0);    # [CONSTANT] Dots per point.
 our $BACKGROUND     = "#FFFFFF";        # [CONSTANT]
 
-# These environment variables can be used to limit the amount
+our $CAN_SCALE_DOWN = 1;
+our $CAN_SCALE_UP   = 1;
+
+# The below environment variables can be used to limit the amount
 # of time & space used by ImageMagick.  They are particularly useful
 # when ghostscript becomes involved in converting postscript or pdf.
 # HOWEVER, there are indications that the time limit (at least)
@@ -312,12 +315,29 @@ sub image_graphicx_complex {
         ($w, $h) = (ceil($a1 * $dppt), ceil($a2 * $dppt)); } }
     my $X = 4;                 # Expansion factor
     my ($dx, $dy) = (int($X * 72 * $w / $w0), int($X * 72 * $h / $h0));
+    if ((!$CAN_SCALE_DOWN && (
+          ($dx < $w0) || ($dy < $h0))) ||
+      (!$CAN_SCALE_UP && (
+          ($dx > $w0) || ($dy > $h0)))) {
+      $X = 1;
+      my $scale0 = 1;
+      if (!$CAN_SCALE_DOWN) {
+        if ($h0 > $w0) { $scale0 = $h0 / $dy; }
+        else           { $scale0 = $w0 / $dx; } }
+      if (!$CAN_SCALE_UP) {
+        if ($h0 < $w0) { $scale0 = $h0 / $dy; }
+        else           { $scale0 = $w0 / $dx; } }
+      Debug("reset: $scale0; w0=$w0; h0=$h0; dx=$dx; dy=$dy;");
+      $dy = ceil($dy * $scale0);
+      $dx = ceil($dx * $scale0); }
     Debug("reloading $source to desired size $w x $h (density = $dx x $dy)")
       if $LaTeXML::DEBUG{images};
     $image = image_read($source, antialias => 1, density => $dx . 'x' . $dy) or return;
     image_internalop($image, 'Trim') or return if $properties{autocrop};
     #    image_setvalue($image, colorspace => 'RGB') or return;
-    image_internalop($image, 'Scale', geometry => int(100 / $X) . "%") or return;    # Now downscale.
+    if ($X != 1) {
+      # Now downscale back.
+      image_internalop($image, 'Scale', geometry => int(100 / $X) . "%") or return; }
     ($w, $h) = image_getvalue($image, 'width', 'height');
     return unless $w && $h; }
 
@@ -325,7 +345,7 @@ sub image_graphicx_complex {
   foreach my $trans (@transform) {
     my ($op, $a1, $a2, $a3, $a4) = @$trans;
     return unless $w && $h;
-    if ($op eq 'scale') {                                                            # $a1 => scale
+    if ($op eq 'scale') {    # $a1 => scale
       ($w, $h) = (ceil($w * $a1), ceil($h * ($a2 || $a1)));
       return unless $w && $h;
       $notes .= " scale to $w x $h";

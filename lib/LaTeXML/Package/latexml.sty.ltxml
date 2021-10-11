@@ -14,6 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+use LaTeXML::Util::Image;
 no warnings 'redefine';    # ????
 
 #======================================================================
@@ -54,6 +55,13 @@ DeclareOption('nobibtex', sub { AssignValue('NO_BIBTEX' => 1, 'global'); });
 
 # Lexeme serialization for math formulas
 DeclareOption('mathlexemes', sub { AssignValue('LEXEMATIZE_MATH' => 1, 'global'); });
+
+# Image conversion fine-tuning
+# EXPERIMENTAL! Currently doing proof-of-concept experiments in working towards v0.8.7
+DeclareOption('scaledown',   sub { $LaTeXML::Util::Image::CAN_SCALE_DOWN = 1; return; });
+DeclareOption('noscaledown', sub { $LaTeXML::Util::Image::CAN_SCALE_DOWN = 0; return; });
+DeclareOption('scaleup',     sub { $LaTeXML::Util::Image::CAN_SCALE_UP   = 1; return; });
+DeclareOption('noscaleup',   sub { $LaTeXML::Util::Image::CAN_SCALE_UP   = 0; return; });
 
 # Finer control over which (if any) raw .sty/.cls files to include
 DeclareOption('rawstyles',      sub { AssignValue('INCLUDE_STYLES'  => 1,             'global'); });
@@ -251,8 +259,8 @@ DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
     my $needsid = $params && ($params->getValue('tag') || $params->getValue('description'));
     my $id      = ($needsid ? next_declaration_id() : undef);
     DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
-      name => $name, meaning => $meaning, omcd => $cd, role => $role, alias => $alias,
-      scope => $scope, decl_id => $id, revert_as => 'context');
+      name  => $name,  meaning => $meaning, omcd      => $cd, role => $role, alias => $alias,
+      scope => $scope, decl_id => $id,      revert_as => 'context');
     if ($needsid) {    # Also provide for decl_id hook for definition links.
       return Digest(Invocation('\@lxDefMathDeclare', $id, $params)); }
     else {
