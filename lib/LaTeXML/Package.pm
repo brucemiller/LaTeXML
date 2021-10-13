@@ -2231,7 +2231,7 @@ sub PassOptions {
 # Unless noundefine=>1 (like for \ExecuteOptions), all option definitions
 # undefined after execution.
 my $processoptions_options = {    # [CONSTANT]
-  inorder => 1 };
+  inorder => 1, keysets => 1 };
 
 sub ProcessOptions {
   my (%options) = @_;
@@ -2252,16 +2252,16 @@ sub ProcessOptions {
 
   if ($options{inorder}) {    # Execute options in the order passed in (eg. \ProcessOptions*)
     foreach my $option (@classoptions) {    # process global options, but no error
-      if (executeOption_internal($option)) { } }
+      if (executeOption_internal($option, %options)) { } }
 
     foreach my $option (@curroptions) {
-      if    (executeOption_internal($option))        { }
-      elsif (executeDefaultOption_internal($option)) { } } }
+      if    (executeOption_internal($option, %options)) { }
+      elsif (executeDefaultOption_internal($option))    { } } }
   else {                                    # Execute options in declared order (eg. \ProcessOptions)
     foreach my $option (@declaredoptions) {
       if (grep { $option eq $_ } @curroptions, @classoptions) {
         @curroptions = grep { $option ne $_ } @curroptions;    # Remove it, since it's been handled.
-        executeOption_internal($option); } }
+        executeOption_internal($option, %options); } }
     # Now handle any remaining options (eg. default options), in the given order.
     foreach my $option (@curroptions) {
       executeDefaultOption_internal($option); } }
@@ -2271,8 +2271,18 @@ sub ProcessOptions {
   return; }
 
 sub executeOption_internal {
-  my ($option) = @_;
+  my ($option, %options) = @_;
   my $cs = T_CS('\ds@' . $option);
+  # Simplified keyval options for classes & packages
+  # Note that the option is a string with an "=" at this point.
+  if ($options{keysets} && ($option =~ /^(.*)=(.*)$/)) {
+    my ($key, $value) = ($1, $2);
+    foreach my $keyset (@{ $options{keysets} }) {
+      my $qname = keyval_qname('KV', $keyset, $key);
+      if (my $keytype = keyval_get($qname, 'type')) {
+        Debug("PROCESS KeyVal OPTION $key => $value") if $LaTeXML::DEBUG{packageoptions};
+        Digest(Tokens(T_CS('\\' . $qname), T_BEGIN, Revert($value), T_END));
+        return 1; } } }
   if ($STATE->lookupDefinition($cs)) {
     Debug("PROCESS OPTION $option") if $LaTeXML::DEBUG{packageoptions};
     DefMacroI('\CurrentOption', undef, $option);
@@ -3933,6 +3943,9 @@ Processes the options that have been passed to the current package
 or class in a fashion similar to LaTeX.  The only option (to C<ProcessOptions>
 is C<inorder=E<gt>I<boolean>> indicating whehter the (package) options are processed in the
 order they were used, like C<ProcessOptions*>.
+
+This will also process a limited form of keyval class and package options,
+if option C<keysets> provides a list of keyval set names, and option C<inorder> is true.
 
 =item C<ExecuteOptions(I<@options>);>
 

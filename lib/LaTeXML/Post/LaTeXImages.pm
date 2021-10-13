@@ -39,7 +39,7 @@ our $LATEXCMD = 'latex';    #(or elatex) [ CONFIGURABLE? Encoded in PI?]
 #   source         : (dir)
 #   magnification  : typically something like 1.33333, but you may want bigger
 #   maxwidth       : maximum page width, in pixels (whenever line breaking is possible)
-#   dpi            : assumed DPI for the target medium (default 96)
+#   DPI            : assumed DPI for the target medium (default 100)
 #   background     : color of background (for anti-aliasing, since it is made transparent)
 #   imagetype      : typically 'png' or 'gif'.
 sub new {
@@ -47,7 +47,7 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{magnification} = $options{magnification} || 1.33333;
   $$self{maxwidth}      = $options{maxwidth}      || 800;
-  $$self{dpi}           = $options{dpi}           || 96;
+  $$self{DPI}           = $options{DPI}           || 100;
   $$self{background}    = $options{background}    || "#FFFFFF";
   $$self{imagetype}     = $options{imagetype}     || 'png';
 
@@ -73,7 +73,7 @@ sub new {
 
   # Parameterize according to the selected dvi-to-whatever processor.
   my $mag = int($$self{magnification} * 1000);
-  my $dpi = int($$self{dpi} * $$self{magnification});
+  my $dpi = int($$self{DPI} * $$self{magnification});
   # Unfortunately, each command has incompatible -o option to name the output file.
   # Note that the formatting char used, '%', has to be doubled on Windows!!
   # Maybe that's only true when it looks like an environment variable?
@@ -316,7 +316,7 @@ sub generateImages {
         "Response was: $!");
       return $doc; }
     # === Convert each image to appropriate type and put in place.
-    my $pixels_per_pt = $$self{magnification} * $$self{dpi} / 72.27;
+    my $pixels_per_pt = $$self{magnification} * $$self{DPI} / 72.27;
     my ($index, $ndigits) = (0, 1 + int(log($doc->cacheLookup((ref $self) . ':_max_image_') || 1) / log(10)));
     foreach my $entry (@pending) {
       my $src = "$workdir/" . sprintf($$self{dvicmd_output_name}, ++$index);
@@ -368,7 +368,7 @@ sub pre_preamble {
   my $packages        = '';
   my $dest            = $doc->getDestination;
   my $description     = ($dest ? "% Destination $dest" : "");
-  my $pts_per_pixel   = 72.27 / $$self{dpi} / $$self{magnification};
+  my $pts_per_pixel   = 72.27 / $$self{DPI} / $$self{magnification};
 
   foreach my $pkgdata (@classdata) {
     my ($package, $package_options) = @$pkgdata;
@@ -446,7 +446,7 @@ sub convert_image {
   my ($self, $doc, $src, $dest) = @_;
   my ($bg, $fg) = ($$self{background}, 'black');
 
-  my $image = image_object(antialias => 'True', background => $bg, density => $$self{dpi});
+  my $image = image_object(antialias => 'True', background => $bg, density => $$self{DPI});
   my $err   = $image->Read($$self{dvicmd_output_type} . ':' . $src);
   if ($err) {
     Warn('imageprocessing', 'read', undef,
