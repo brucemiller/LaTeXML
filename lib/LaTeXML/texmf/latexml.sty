@@ -24,6 +24,8 @@
 \DeclareOption{nomathparserspeculate}{}
 \DeclareOption{guesstabularheaders}{}
 \DeclareOption{noguesstabularheaders}{}
+% Just ignore unknown options, so that binding can evolve more easily.
+\DeclareOption*{\PackageWarning{latexml}{option  \CurrentOption\space ignored}}
 \ProcessOptions
 %======================================================================
 % NOTE: Figure out where this should go.
