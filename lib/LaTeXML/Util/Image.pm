@@ -154,7 +154,7 @@ sub image_graphicx_parse {
   # We ignore viewport & trim if clip isn't set, since in that case we shouldn't
   # actually remove anything from the image (and there's no way to have the image
   # overlap neighboring text, etc, in current HTML).
-  push(@transform, [($trim ? 'trim' : 'clip'), @vp]) if (@vp && $clip);
+  #push(@transform, [($trim ? 'trim' : 'clip'), @vp]) if (@vp && $clip);
   push(@transform, ['rotate', $angle]) if ($rotfirst && $angle);    # Rotate before scaling?
   if ($width && $height) { push(@transform, ['scale-to', $mag * $width, $mag * $height, $aspect]); }
   elsif ($width)         { push(@transform, ['scale-to', $mag * $width, 999999, 1]); }
