@@ -1,0 +1,56 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | ding font encoding                                                 | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+# Note that we're defining encodings for the font families!
+DeclareFontMap('ding', [
+    # not in unicode: left-directed scissors
+    "\x{2701}", "\x{2702}", "\x{2703}", "\x{2701}", "\x{2702}", "\x{2703}",
+    "\x{2704}", "\x{2704}", "\x{260E}", "\x{2706}", "\x{2707}", "\x{2708}",
+    # not in unicode: handcuff right/left-up
+    # not in unicode: hand right/left-up
+    "\x{2709}",  "\x{261B}",  "\x{261A}",  "\x{261B}", "\x{261A}",
+    "\x{1F599}", "\x{1F598}", "\x{1F599}", "\x{1F598}",
+    "\x{270C}",  "\x{270D}",  "\x{270F}",  "\x{1F589}", "\x{2710}", "\x{1F589}",
+    # only lower-left pencil in unicode
+    "\x{270E}", "\x{1F589}", "\x{2711}", "\x{2711}", "\x{2712}", "\x{2712}",
+    # only right nib in unicode
+    "\x{2713}", "\x{2714}", "\x{2715}", "\x{2716}", "\x{2717}", "\x{2719}",
+    # no "bold outline" cross in unicode
+    "\x{271A}", "\x{271C}", "\x{271B}", "\x{271D}", "\x{271E}", "\x{271F}",
+    "\x{271F}", "\x{2720}", "\x{2736}", "\x{2721}", "\x{2722}", "\x{2723}",
+    "\x{2724}", "\x{2725}", "\x{2726}", "\x{2727}", "\x{26E4}", "\x{2605}",
+    "\x{2606}", "\x{272A}", "\x{272B}", "\x{272C}", "\x{272D}", "\x{272E}",
+    # no asterisk thin-center-open
+    "\x{272F}", "\x{2730}", "\x{2731}", "\x{2732}", "\x{2733}", "\x{2733}",
+    "\x{2734}", "\x{2735}", "\x{2736}", "\x{2737}", "\x{2738}", "\x{2739}",
+    "\x{273A}", "\x{273B}", "\x{273C}", "\x{273D}", "\x{273E}", "\x{273F}",
+    "\x{273E}",                  # \SixFlowerPetalDotted not in unicode
+    "\x{2740}",  "\x{2741}", "\x{2742}", "\x{2743}",
+    "\x{1F340}", "\x{1F340}",    # \FourClowerOpen,\FourClowerSolid not in unicode
+    "\x{2749}",  "\x{274A}", "\x{274B}",
+    "\x{273E}",                  # \SixFlowerRemovedOpenPetal not in unicode
+    "\x{2748}", "\x{2747}", "\x{2744}", "\x{2746}", "\x{2745}", "\x{25CF}",
+    "\x{2B2D}", "\x{2B2C}", "\x{274D}",
+    "\x{2B2D}",                  #  \EllipseShadow not in unicode
+    "\x{25A1}", "\x{25A0}", "\x{274F}", "\x{2750}",
+    "\x{2750}",                  # \SquareShadowTopLeft not in unicode
+    "\x{2751}", "\x{2752}",
+    "\x{2750}",                  # \SquareCastShadowTopLeft not in unicode
+    "\x{25B2}", "\x{25BC}", "\x{25C6}", "\x{2756}", "\x{25D7}", "\x{25D6}",
+    "\x{2758}", "\x{2759}", "\x{275A}", "\x{279F}", "\x{27A6}", "\x{27A5}",
+    "\x{27A7}", "\x{27B2}"
+]);
+1;
