@@ -105,7 +105,7 @@ sub getDPI {
   my ($self, $doc) = @_;
   my $dpi;
   foreach my $pi (@{ $$doc{processingInstructions} }) {
-    if ($pi =~ /^\s*DPI\s*=\s*([\"\'])(.*?)\2\s*$/) {
+    if ($pi =~ /^\s*DPI\s*=\s*([\"\'])(.*?)\1\s*$/) {
       $dpi = $2; }
     elsif ($pi =~ /^\s*package\s*=\s*([\"\'])latexml\1\s*options\s*=\s*([\"\'])(.*?)\2\s*$/) {
       my $options = $3;
