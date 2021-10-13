@@ -70,7 +70,7 @@ sub copy_position {
 
 sub to_px {
   my ($pt) = @_;
-  return ($pt =~ s/pt$// ? $pt * $LaTeXML::Util::Image::DOTS_PER_POINT : $pt); }
+  return ($pt =~ s/pt$// ? $pt * $LaTeXML::Util::Image::DPI / 72.27 : $pt); }
 
 ####################################
 ## fixes an svg node

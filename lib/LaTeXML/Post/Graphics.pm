@@ -22,7 +22,7 @@ use base qw(LaTeXML::Post::Processor);
 
 #======================================================================
 # Options:
-#   dpi : dots per inch for target medium.
+#   DPI : dots per inch for target medium.
 #   ignore_options  : list of graphicx options to be ignored.
 #   warn_options    : list of graphicx options to cause warning if used.
 #   trivial_scaling : If true, web images that only need scaling will be used as-is
@@ -50,7 +50,7 @@ use base qw(LaTeXML::Post::Processor);
 sub new {
   my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
-  $$self{dppt}            = (($options{dpi} || 90) / 72.0);    # Dots per point.
+  $$self{DPI}             = $options{DPI};
   $$self{ignore_options}  = $options{ignore_options}  || [];
   $$self{trivial_scaling} = $options{trivial_scaling} || 1;
   $$self{graphics_types}  = $options{graphics_types}
@@ -97,6 +97,21 @@ sub process {
     $self->processGraphic($doc, $node); }
   $doc->closeCache;    # If opened.
   return $doc; }
+
+# Need a proper API to query PI's, probably in Post
+# But Core isn't respecting @at@document@begin from preloaded packages,
+# so here we're testing BOTH a straight DPI PI and the options from latexml.sty (ugh)
+sub getDPI {
+  my ($self, $doc) = @_;
+  my $dpi;
+  foreach my $pi (@{ $$doc{processingInstructions} }) {
+    if ($pi =~ /^\s*DPI\s*=\s*([\"\'])(.*?)\2\s*$/) {
+      $dpi = $2; }
+    elsif ($pi =~ /^\s*package\s*=\s*([\"\'])latexml\1\s*options\s*=\s*([\"\'])(.*?)\2\s*$/) {
+      my $options = $3;
+      if ($options =~ /\bdpi\s*=\s*(\d+)\b/) {
+        $dpi = $1; } } }
+  return $dpi || $$self{DPI} || $LaTeXML::Util::Image::DPI; }
 
 #======================================================================
 # Potentially customizable operations.
@@ -192,6 +207,7 @@ sub processGraphic {
 
 sub transformGraphic {
   my ($self, $doc, $node, $source, $transform) = @_;
+  my $dpi       = $self->getDPI($doc);
   my $sourcedir = $doc->getSourceDirectory;
   ($sourcedir) = $doc->getSearchPaths unless $sourcedir;    # Fishing...
   my ($reldir, $name, $srctype)
@@ -258,7 +274,7 @@ sub transformGraphic {
       $absdest = $doc->checkDestination($dest); }
 
     Debug(" [Destination $absdest]") if $LaTeXML::DEBUG{images};
-    ($width, $height) = image_graphicx_trivial($source, $transform, ddpt => $$self{ddpt});
+    ($width, $height) = image_graphicx_trivial($source, $transform, DPI => $dpi);
     if (!($width && $height)) {
       if (!image_can_image()) {
         Warn('imageprocessing', 'imagesize', undef,
@@ -278,7 +294,7 @@ sub transformGraphic {
     my $absdest = $doc->checkDestination($dest);
     Debug(" [Destination $absdest]") if $LaTeXML::DEBUG{images};
     ($image, $width, $height) = image_graphicx_complex($source, $transform,
-      ddpt => $$self{ddpt}, background => $$self{background}, %properties);
+      DPI => $dpi, background => $$self{background}, %properties);
     if (!($image && $width && $height)) {
       Warn('expected', 'image', undef,
         "Couldn't get usable image for $source");
