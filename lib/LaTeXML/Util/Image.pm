@@ -34,9 +34,8 @@ our @EXPORT = (
 # difficult to port, or has mismatched versions or whatever.
 # We do, at least, need to be able to get image size.....
 
-our $DPI            = 90;               # [CONSTANT]
-our $DOTS_PER_POINT = ($DPI / 72.0);    # [CONSTANT] Dots per point.
-our $BACKGROUND     = "#FFFFFF";        # [CONSTANT]
+our $DPI        = 100;          # [CONSTANT]
+our $BACKGROUND = "#FFFFFF";    # [CONSTANT]
 
 # These environment variables can be used to limit the amount
 # of time & space used by ImageMagick.  They are particularly useful
@@ -187,7 +186,7 @@ sub to_bp {
 # [this is a simplification of image_graphicx_complex]
 sub image_graphicx_size {
   my ($source, $transform, %properties) = @_;
-  my $dppt = $properties{dppt} || $DOTS_PER_POINT;
+  my $dppt = ($properties{DPI} || $DPI) / 72.27;
   my ($w, $h) = image_size($source);
   return unless $w && $h;
   foreach my $trans (@$transform) {
@@ -224,6 +223,7 @@ sub image_graphicx_size {
 sub image_graphicx_sizer {
   my ($whatsit) = @_;
   if (my $candidates = $whatsit->getProperty('candidates')) {
+    my $dppt = (($STATE && $STATE->lookupValue('DPI')) || $DPI) / 72.27;
     foreach my $source (split(/,/, $candidates)) {
       if (!pathname_is_absolute($source)) {
         if (my $base = $STATE->lookupValue('SOURCEDIRECTORY')) {
@@ -232,7 +232,7 @@ sub image_graphicx_sizer {
       my $options = $whatsit->getProperty('options');
       local $LaTeXML::IGNORE_ERRORS = 1;
       my ($w, $h) = image_graphicx_size($source, image_graphicx_parse($options));
-      return (Dimension($w / $DOTS_PER_POINT . 'pt'), Dimension($h / $DOTS_PER_POINT . 'pt'), Dimension(0)) if $w; } }
+      return (Dimension($w / $dppt . 'pt'), Dimension($h / $dppt . 'pt'), Dimension(0)) if $w; } }
   return (Dimension(0), Dimension(0), Dimension(0)); }
 
 #======================================================================
@@ -257,7 +257,7 @@ sub image_graphicx_trivial {
   my ($source, $transform, %properties) = @_;
   my ($w, $h) = image_size($source);
   return unless $w && $h;
-  my $dppt = $properties{dppt} || $DOTS_PER_POINT;
+  my $dppt = ($properties{DPI} || $DPI) / 72.27;
   foreach my $trans (@$transform) {
     my ($op, $a1, $a2, $a3, $a4) = @$trans;
     if ($op eq 'scale') {    # $a1 => scale
@@ -274,7 +274,7 @@ sub image_graphicx_trivial {
 # sub complex_transform {
 sub image_graphicx_complex {
   my ($source, $transform, %properties) = @_;
-  my $dppt       = $properties{dppt}       || $DOTS_PER_POINT;
+  my $dppt       = ($properties{DPI} || $DPI) / 72.27;
   my $background = $properties{background} || $BACKGROUND;
   my $image      = image_read($source, antialias => 1) or return;
   # Get some defaults from the read-in image.
