@@ -63,7 +63,11 @@ DeclareOption('rawclasses',     sub { AssignValue('INCLUDE_CLASSES' => 1,       
 DeclareOption('localrawclasses', sub { AssignValue('INCLUDE_CLASSES' => 'searchpaths', 'global'); });
 DeclareOption('norawclasses',    sub { AssignValue('INCLUDE_CLASSES' => 0, 'global'); });
 
-ProcessOptions();
+DefConstructor('\lx@save@DPI{Number}', sub { $_[0]->insertPI('latexml', DPI => $_[1]); });
+DefKeyVal('LTXML', 'dpi', 'Number', '', code => sub {
+    AtBeginDocument(Tokens(T_CS('\lx@save@DPI'), T_BEGIN, $_[1], T_END)); });
+
+ProcessOptions(inorder => 1, keysets => ['LTXML']);
 #======================================================================
 # From latexml.sty
 # [does this really belong here? or should this be disableable?]
@@ -251,8 +255,8 @@ DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
     my $needsid = $params && ($params->getValue('tag') || $params->getValue('description'));
     my $id      = ($needsid ? next_declaration_id() : undef);
     DefMathI($cs, convertLaTeXArgs($nargs, $opt), $presentation,
-      name => $name, meaning => $meaning, omcd => $cd, role => $role, alias => $alias,
-      scope => $scope, decl_id => $id, revert_as => 'context');
+      name  => $name,  meaning => $meaning, omcd      => $cd, role => $role, alias => $alias,
+      scope => $scope, decl_id => $id,      revert_as => 'context');
     if ($needsid) {    # Also provide for decl_id hook for definition links.
       return Digest(Invocation('\@lxDefMathDeclare', $id, $params)); }
     else {
