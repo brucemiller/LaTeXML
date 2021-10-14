@@ -157,23 +157,21 @@
                                      | following-sibling::ltx:graphics]">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
-        <xsl:element name="table" namespace="{$html_ns}">
+        <xsl:element name="div" namespace="{$html_ns}">
           <!-- maybe even more, like display:table ? or some class ? -->
-          <xsl:attribute name="style">width:100%;</xsl:attribute>
+          <xsl:attribute name="class">ltx_multi_grid</xsl:attribute>
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:element name="tr" namespace="{$html_ns}">
-            <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:graphics">
-              <xsl:text>&#x0A;</xsl:text>
-              <xsl:element name="td" namespace="{$html_ns}">
-                <xsl:attribute name="class">
-                  <xsl:value-of select="concat('ltx_sub',local-name(.))"/>
-                </xsl:attribute>
-                <xsl:apply-templates select=".">
-                  <xsl:with-param name="context" select="$context"/>
-                </xsl:apply-templates>
-              </xsl:element>
-            </xsl:for-each>
-          </xsl:element>
+          <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:graphics">
+            <xsl:text>&#x0A;</xsl:text>
+            <xsl:element name="div" namespace="{$html_ns}">
+              <xsl:attribute name="class">
+                <xsl:value-of select="concat('ltx_sub',local-name(.))"/>
+              </xsl:attribute>
+              <xsl:apply-templates select=".">
+                <xsl:with-param name="context" select="$context"/>
+              </xsl:apply-templates>
+            </xsl:element>
+          </xsl:for-each>
           <xsl:text>&#x0A;</xsl:text>
         </xsl:element>
         <xsl:apply-templates select="ltx:caption[preceding-sibling::ltx:figure
