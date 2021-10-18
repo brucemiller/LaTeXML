@@ -229,7 +229,7 @@ sub image_graphicx_size {
 sub image_graphicx_sizer {
   my ($whatsit) = @_;
   if (my $candidates = $whatsit->getProperty('candidates')) {
-    my $dppt = (($STATE && $STATE->lookupValue('DPI')) || $DPI) / 72.27;
+    my $dpi = ($STATE && $STATE->lookupValue('DPI')) || $DPI;
     foreach my $source (split(/,/, $candidates)) {
       if (!pathname_is_absolute($source)) {
         if (my $base = $STATE->lookupValue('SOURCEDIRECTORY')) {
@@ -237,8 +237,8 @@ sub image_graphicx_sizer {
       # Skip anything that a lower level imgsize can't understand
       my $options = $whatsit->getProperty('options');
       local $LaTeXML::IGNORE_ERRORS = 1;
-      my ($w, $h) = image_graphicx_size($source, image_graphicx_parse($options));
-      return (Dimension($w / $dppt . 'pt'), Dimension($h / $dppt . 'pt'), Dimension(0)) if $w; } }
+      my ($w, $h) = image_graphicx_size($source, image_graphicx_parse($options), DPI => $dpi);
+      return (Dimension($w * 72.27 / $dpi . 'pt'), Dimension($h * 72.27 / $dpi . 'pt'), Dimension(0)) if $w; } }
   return (Dimension(0), Dimension(0), Dimension(0)); }
 
 #======================================================================
@@ -308,7 +308,7 @@ sub image_graphicx_complex {
           else                       { $a1 = $w0 * $a2 / $h0; } }
         $xprescale *= $a1 * $dpi / $w0 / 72.27; $yprescale *= $a2 * $dpi / $h0 / 72.27; } }
     Debug("Prescaling factors $xprescale x $yprescale") if $LaTeXML::DEBUG{images}; }
-  # At this point, we conceivably could clamp the resolution to limii
+  # At this point, we conceivably could clamp the resolution to limit
   # to a maximum (or minimum) size, either for display or to reduce needed resources.
   # We'd presumably want to adjust (one of) the scaling factors.
   $dpi *= $magnify * $upsample;
@@ -425,7 +425,7 @@ sub image_read {
   return unless $source;
   my $image = image_object();
   # Just in case this is pdf, set this option; ImageMagick defaults to MediaBox (Wrong!!!)
-  image_internalop($image, 'Set',, option => 'pdf:use-cropbox=true') or return;
+  image_internalop($image, 'Set',  option => 'pdf:use-cropbox=true') or return;
   image_internalop($image, 'Set',  @args)                            or return;
   image_internalop($image, 'Read', $source)                          or return;
   return $image; }
