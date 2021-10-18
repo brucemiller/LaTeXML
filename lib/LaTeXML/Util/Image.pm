@@ -66,6 +66,11 @@ sub image_type {
 
 sub image_size {
   my ($pathname) = @_;
+  # Annoyingly, ImageMagick uses the MediaBox instead of CropBox (as does graphics.sty) for pdfs.
+  # Worse, imgsize delegates to ImageMagick, w/o ability to add options
+  if (($pathname =~ /\.pdf$/i) && image_can_image()) {
+    my $image = image_read($pathname) or return;
+    return image_getvalue($image, 'width', 'height'); }
   my ($w, $h, $t) = imgsize($pathname);
   return ($w, $h) if $w && $h;
   if (image_can_image()) {    # try harder!
@@ -184,6 +189,7 @@ sub to_bp {
 #======================================================================
 # Compute the effective size of a graphic transformed in graphicx style.
 # [this is a simplification of image_graphicx_complex]
+# Note: This is not (yet) using any of the magnify/upscale parameters; Should it?
 sub image_graphicx_size {
   my ($source, $transform, %properties) = @_;
   my $dppt = ($properties{DPI} || $DPI) / 72.27;
@@ -274,92 +280,98 @@ sub image_graphicx_trivial {
 # sub complex_transform {
 sub image_graphicx_complex {
   my ($source, $transform, %properties) = @_;
-  my $dppt       = ($properties{DPI} || $DPI) / 72.27;
+  my $dpi      = ($properties{DPI} || $DPI);
+  my $magnify  = $properties{magnify}  || 1;
+  my $upsample = $properties{upsample} || 2;
+  my $zoomout  = $properties{zoomout}  || 1;
+  my ($xprescale, $yprescale) = (1, 1);
+
+  # # Wastefully preread the image to get it's initial size
+  my ($w0, $h0) = image_size($source);
+  Debug("Processing $source initially $w0 x $h0,"
+      . "w/ DPI=$dpi, magnify=$magnify, upsample=$upsample, zoomout=$zoomout") if $LaTeXML::DEBUG{images};
+  my @transform = @$transform;
+  # Establish the scaling necessary to carry out the transformation w/o loosing resolution
+  # This is particularly for vector formats before rasterizing.
+  # If image is vector & transform starts with scaling, rasterize at at least desired size
+  # We REALLY should go through the ENTIRE transformation detecting the scaling,
+  # but it's tricky to account for the prescale when carrying out the actual transformation!
+  if ($properties{prescale}) {
+    while (@transform && ($transform[0]->[0] =~ /^scale/)) {
+      my ($op, $a1, $a2, $a3, $a4) = @{ shift(@transform) };
+      if ($op eq 'scale') {    # $a1 => scale
+        $xprescale *= $a1; $yprescale *= ($a2 || $a1); }
+      elsif ($op eq 'scale-to') {
+        # $a1 => width (pts), $a2 => height (pts), $a3 => preserve aspect ratio.
+        if ($a3) {             # If keeping aspect ratio, ignore the most extreme request
+          if ($a1 / $w0 < $a2 / $h0) { $a2 = $h0 * $a1 / $w0; }
+          else                       { $a1 = $w0 * $a2 / $h0; } }
+        $xprescale *= $a1 * $dpi / $w0 / 72.27; $yprescale *= $a2 * $dpi / $h0 / 72.27; } }
+    Debug("Prescaling factors $xprescale x $yprescale") if $LaTeXML::DEBUG{images}; }
+  # At this point, we conceivably could clamp the resolution to limii
+  # to a maximum (or minimum) size, either for display or to reduce needed resources.
+  # We'd presumably want to adjust (one of) the scaling factors.
+  $dpi *= $magnify * $upsample;
   my $background = $properties{background} || $BACKGROUND;
-  my $image      = image_read($source, antialias => 1) or return;
+  my $image      = image_read($source, antialias => 1,
+    density => $dpi * $xprescale . 'x' . $dpi * $yprescale,
+  ) or return;
+  my ($w, $h) = image_getvalue($image, 'width', 'height');
   # Get some defaults from the read-in image.
   my ($imagedpi) = image_getvalue($image, 'x-resolution');
   # image_setvalue($image,debug=>'exception');
   my ($bg) = image_getvalue($image, 'transparent-color');
   $background = "rgba($bg)" if $bg;    # Use background from image, if any.
   my ($hasalpha) = image_getvalue($image, 'matte');
+  Debug("Read $source to $w x $h") if $LaTeXML::DEBUG{images};
 
-  image_internalop($image, 'Trim') or return if $properties{autocrop};
-  my $orig_ncolors = image_getvalue($image, 'colors');
-  return unless $orig_ncolors;
-  my ($w, $h) = image_getvalue($image, 'width', 'height');
-  return unless $w && $h;
-  my @transform = @$transform;
-  # If native unit is points, we at least need to scale by dots/point.
-  # [tho' other scalings may override this]
-  if (($properties{unit} || 'pixel') eq 'point') {
-    push(@transform, ['scale', $dppt, $dppt]); }
-
-  # For prescaling, compute the desired size and re-read the image into that size,
-  # with an appropriate density set.  This will give much better anti-aliasing.
-  # Actually, we'll set the density & size up a further factor of $F, and then downscale.
-  if ($properties{prescale}) {
-    my ($w0, $h0) = ($w, $h);
-    while (@transform && ($transform[0]->[0] =~ /^scale/)) {
-      my ($op, $a1, $a2, $a3, $a4) = @{ shift(@transform) };
-      if ($op eq 'scale') {    # $a1 => scale
-        ($w, $h) = (ceil($w * $a1), ceil($h * ($a2 || $a1))); }
-      elsif ($op eq 'scale-to') {
-        # $a1 => width (pts), $a2 => height (pts), $a3 => preserve aspect ratio.
-        if ($a3) {             # If keeping aspect ratio, ignore the most extreme request
-          if ($a1 / $w < $a2 / $h) { $a2 = $h * $a1 / $w; }
-          else                     { $a1 = $w * $a2 / $h; } }
-        ($w, $h) = (ceil($a1 * $dppt), ceil($a2 * $dppt)); } }
-    my $X = 4;                 # Expansion factor
-    my ($dx, $dy) = (int($X * 72 * $w / $w0), int($X * 72 * $h / $h0));
-    Debug("reloading $source to desired size $w x $h (density = $dx x $dy)")
-      if $LaTeXML::DEBUG{images};
-    $image = image_read($source, antialias => 1, density => $dx . 'x' . $dy) or return;
-    image_internalop($image, 'Trim') or return if $properties{autocrop};
-    #    image_setvalue($image, colorspace => 'RGB') or return;
-    image_internalop($image, 'Scale', geometry => int(100 / $X) . "%") or return;    # Now downscale.
+  if ($properties{autocrop}) {
+    image_internalop($image, 'Trim') or return;
     ($w, $h) = image_getvalue($image, 'width', 'height');
-    return unless $w && $h; }
+    Debug("  Autocrop to $w x $h") if $LaTeXML::DEBUG{images}; }
 
-  my $notes = '';
+  my $orig_ncolors = image_getvalue($image, 'colors');
+
+  if (!$orig_ncolors || !($w && $h)) {
+    Debug("  Image is now empty; skipping") if $LaTeXML::DEBUG{images};
+    return; }
+
   foreach my $trans (@transform) {
     my ($op, $a1, $a2, $a3, $a4) = @$trans;
     return unless $w && $h;
-    if ($op eq 'scale') {                                                            # $a1 => scale
+    if ($op eq 'scale') {    # $a1 => scale
       ($w, $h) = (ceil($w * $a1), ceil($h * ($a2 || $a1)));
       return unless $w && $h;
-      $notes .= " scale to $w x $h";
-      image_internalop($image, 'Scale', width => $w, height => $h) or return; }
+      image_internalop($image, 'Scale', width => $w, height => $h) or return;
+      Debug("  Scale by $a1 " . ($a2 ? " x $a2" : '') . " => $w x $h") if $LaTeXML::DEBUG{images}; }
     elsif ($op eq 'scale-to') {
       # $a1 => width (pts), $a2 => height (pts), $a3 => preserve aspect ratio.
       if ($a3) {    # If keeping aspect ratio, ignore the most extreme request
         if ($a1 / $w < $a2 / $h) { $a2 = $h * $a1 / $w; }
         else                     { $a1 = $w * $a2 / $h; } }
-      ($w, $h) = (ceil($a1 * $dppt), ceil($a2 * $dppt));
-      $notes .= " scale-to $w x $h";
-      image_internalop($image, 'Scale', width => $w, height => $h) or return; }
+      ($w, $h) = (ceil($a1 * $dpi / 72.27), ceil($a2 * $dpi / 72.27));
+      image_internalop($image, 'Scale', width => $w, height => $h) or return;
+      Debug("  Scale to $w x $h") if $LaTeXML::DEBUG{images}; }
     elsif ($op eq 'rotate') {
       image_internalop($image, 'Rotate', degrees => -$a1, background => $background) or return;
       ($w, $h) = image_getvalue($image, 'width', 'height');
       return unless $w && $h;
-      $notes .= " rotate $a1 to $w x $h"; }
+      Debug("  Rotate by $a1 => $w x $h") if $LaTeXML::DEBUG{images}; }
     elsif ($op eq 'reflect') {
       image_internalop($image, 'Flop') or return;
-      $notes .= " reflected"; }
+      Debug("  Reflext image => $w x $h") if $LaTeXML::DEBUG{images}; }
     # In the following two, note that TeX's coordinates are relative to lower left corner,
     # but ImageMagick's coordinates are relative to upper left.
     elsif (($op eq 'trim') || ($op eq 'clip')) {
       my ($x0, $y0, $ww, $hh);
       # Use the image's dpi for trim & clip!
-      my $idppt = (defined $imagedpi ? ($imagedpi / 72.0) : $dppt);
+      my $idppt = (defined $imagedpi ? $imagedpi : $dpi) / 72.27;
       if ($op eq 'trim') {    # Amount to trim: a1=left, a2=bottom, a3=right, a4=top
         ($x0, $y0, $ww, $hh) = (floor($a1 * $idppt), floor($a4 * $idppt),
-          ceil($w - ($a1 + $a3) * $idppt), ceil($h - ($a4 + $a2) * $idppt));
-        $notes .= " trim to $ww x $hh @ $x0,$y0"; }
+          ceil($w - ($a1 + $a3) * $idppt), ceil($h - ($a4 + $a2) * $idppt)); }
       else {                  # BBox: a1=left, a2=bottom, a3=right, a4=top
         ($x0, $y0, $ww, $hh) = (floor($a1 * $idppt), floor($h - $a4 * $idppt),
-          ceil(($a3 - $a1) * $idppt), ceil(($a4 - $a2) * $idppt));
-        $notes .= " clip to $ww x $hh @ $x0,$y0"; }
+          ceil(($a3 - $a1) * $idppt), ceil(($a4 - $a2) * $idppt)); }
 
       if (($x0 > 0) || ($y0 > 0) || ($x0 + $ww < $w) || ($y0 + $hh < $h)) {
         my $x0p = max($x0, 0); $x0 = min($x0, 0);
@@ -368,7 +380,7 @@ sub image_graphicx_complex {
           y => $y0p, height => min($hh, $h - $y0p)) or return;
         $w = min($ww + $x0, $w - $x0p);
         $h = min($hh + $y0, $h - $y0p);
-        $notes .= " crop $w x $h @ $x0p,$y0p"; }
+        Debug("  Trim/Clip to $w x $h @ $x0p, $y0p") if $LaTeXML::DEBUG{images}; }
       # No direct `padding' operation in ImageMagick
       # BUT, trim & clip really shouldn't need to pad???
       # And besides, this composition seems to mangle the colormap (depending on background)
@@ -381,22 +393,25 @@ sub image_graphicx_complex {
   } }
 
   if ($properties{transparent} && !$hasalpha) {
-    $notes .= " transparent=$background";
     image_internalop($image, 'Transparent', $background) or return; }
 
   if (my $curr_ncolors = image_getvalue($image, 'colors')) {
     if (my $req_ncolors = $properties{ncolors}) {
       $req_ncolors = int($orig_ncolors * $1 / 100) if $req_ncolors =~ /^([\d]*)\%$/;
       if ($req_ncolors < $curr_ncolors) {
-        $notes .= " quantize $orig_ncolors => $req_ncolors";
         image_internalop($image, 'Quantize', colors => $req_ncolors) or return; } } }
 
   if (my $quality = $properties{quality}) {
-    $notes .= " quality=$quality";
     image_setvalue($image, quality => $properties{quality}) or return; }
 
-  Debug("Transformed $source : $notes") if $notes && $LaTeXML::DEBUG{images};
-  return ($image, $w, $h); }
+  if ($upsample != 1) {    # Now downsample
+    image_internalop($image, 'Scale', geometry => $w / $upsample . 'x' . $h / $upsample) or return;
+    ($w, $h) = image_getvalue($image, 'width', 'height');
+    Debug("  Downsampled to $w x $h") if $LaTeXML::DEBUG{images}; }
+
+  my ($watt, $hatt) = ($w / $zoomout, $h = $h / $zoomout);
+  Debug("Transformed $source final size $w x $h, displayed as $watt x $hatt") if $LaTeXML::DEBUG{images};
+  return ($image, $watt, $hatt); }
 
 # Wrap up ImageMagick's methods to give more useful & consistent error handling.
 # These all return non-zero on success!
@@ -409,8 +424,10 @@ sub image_read {
     Error('imageprocessing', 'read', undef, "No image source given"); return; }
   return unless $source;
   my $image = image_object();
-  image_internalop($image, 'Set',  @args)   or return;
-  image_internalop($image, 'Read', $source) or return;
+  # Just in case this is pdf, set this option; ImageMagick defaults to MediaBox (Wrong!!!)
+  image_internalop($image, 'Set',, option => 'pdf:use-cropbox=true') or return;
+  image_internalop($image, 'Set',  @args)                            or return;
+  image_internalop($image, 'Read', $source)                          or return;
   return $image; }
 
 sub image_write {
