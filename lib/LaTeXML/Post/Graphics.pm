@@ -39,8 +39,6 @@ use base qw(LaTeXML::Post::Processor);
 #                         This is useful for getting the best antialiasing for postscript, eg.
 #          unit= (pixel|point) :  What unit the image size is given in.
 #          autocrop     : if the image should be cropped (trimmed) when loaded.
-#                         This option is sometimes needed for page-oriented formats like pdf,
-#                         where the image size appears to be padded out to page dimensions.
 #          desirability : a number indicating how good of a mapping this entry is.
 #                         This helps choose between two sources that can map to the
 #                         same destination type.
@@ -62,11 +60,11 @@ sub new {
       transparent => 1,
       prescale    => 1, ncolors => '400%', quality => 90, unit => 'point' },
     pdf => { destination_type => 'png',
-      transparent => 1, autocrop => 1,
-      prescale    => 1, ncolors  => '400%', quality => 90, unit => 'point' },
-    ps => { destination_type => 'png', transparent => 1, autocrop => 1,
+      transparent => 1,
+      prescale    => 1, ncolors => '400%', quality => 90, unit => 'point' },
+    ps => { destination_type => 'png', transparent => 1,
       prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
-    eps => { destination_type => 'png', transparent => 1, autocrop => 1,
+    eps => { destination_type => 'png', transparent => 1,
       prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
     jpg => { destination_type => 'jpg',
       ncolors => '400%', unit => 'pixel' },
@@ -101,17 +99,17 @@ sub process {
 # Need a proper API to query PI's, probably in Post
 # But Core isn't respecting @at@document@begin from preloaded packages,
 # so here we're testing BOTH a straight DPI PI and the options from latexml.sty (ugh)
-sub getDPI {
-  my ($self, $doc) = @_;
-  my $dpi;
+sub getParameter {
+  my ($self, $doc, $parameter) = @_;
+  my $value;
   foreach my $pi (@{ $$doc{processingInstructions} }) {
-    if ($pi =~ /^\s*DPI\s*=\s*([\"\'])(.*?)\1\s*$/) {
-      $dpi = $2; }
-    elsif ($pi =~ /^\s*package\s*=\s*([\"\'])latexml\1\s*options\s*=\s*([\"\'])(.*?)\2\s*$/) {
+    if ($pi =~ /^\s*$parameter\s*=\s*([\"\'])(.*?)\1\s*$/) {
+      $value = $2; }
+    elsif ($pi =~ /^\s*package\s*=\s*([\"\'])latexml\1\s*options\s*=\s*([\"\'])(.*?)\2\s*$/i) {
       my $options = $3;
-      if ($options =~ /\bdpi\s*=\s*(\d+)\b/) {
-        $dpi = $1; } } }
-  return $dpi || $$self{DPI} || $LaTeXML::Util::Image::DPI; }
+      if ($options =~ /\b$parameter\s*=\s*(\d+)\b/i) {
+        $value = $1; } } }
+  return $value || $$self{$parameter}; }
 
 #======================================================================
 # Potentially customizable operations.
@@ -207,7 +205,11 @@ sub processGraphic {
 
 sub transformGraphic {
   my ($self, $doc, $node, $source, $transform) = @_;
-  my $dpi       = $self->getDPI($doc);
+  my @parameters = (
+    DPI      => $self->getParameter($doc, 'DPI') || $LaTeXML::Util::Image::DPI,
+    magnify  => $self->getParameter($doc, 'magnify'),
+    upsample => $self->getParameter($doc, 'upsample'),
+    zoomout  => $self->getParameter($doc, 'zoomout'));
   my $sourcedir = $doc->getSourceDirectory;
   ($sourcedir) = $doc->getSearchPaths unless $sourcedir;    # Fishing...
   my ($reldir, $name, $srctype)
@@ -274,7 +276,7 @@ sub transformGraphic {
       $absdest = $doc->checkDestination($dest); }
 
     Debug(" [Destination $absdest]") if $LaTeXML::DEBUG{images};
-    ($width, $height) = image_graphicx_trivial($source, $transform, DPI => $dpi);
+    ($width, $height) = image_graphicx_trivial($source, $transform, @parameters);
     if (!($width && $height)) {
       if (!image_can_image()) {
         Warn('imageprocessing', 'imagesize', undef,
@@ -294,7 +296,7 @@ sub transformGraphic {
     my $absdest = $doc->checkDestination($dest);
     Debug(" [Destination $absdest]") if $LaTeXML::DEBUG{images};
     ($image, $width, $height) = image_graphicx_complex($source, $transform,
-      DPI => $dpi, background => $$self{background}, %properties);
+      @parameters, background => $$self{background}, %properties);
     if (!($image && $width && $height)) {
       Warn('expected', 'image', undef,
         "Couldn't get usable image for $source");
