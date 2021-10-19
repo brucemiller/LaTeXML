@@ -66,7 +66,7 @@ DeclareOption('norawclasses',    sub { AssignValue('INCLUDE_CLASSES' => 0, 'glob
 DefConstructor('\lx@save@parameter{}{}', sub {
     $_[0]->insertPI('latexml', ToString($_[1]) => $_[2]); });
 DefKeyVal('LTXML', 'dpi', 'Number', '', code => sub {
-    $STATE->assignValue(DPI => $_[1]);
+    $STATE->assignValue(DPI => ToString($_[1]));
     AtBeginDocument(Tokens(T_CS('\lx@save@parameter'), T_OTHER('DPI'), T_BEGIN, $_[1], T_END)); });
 DefKeyVal('LTXML', 'magnify', 'Number', '', code => sub {
     AtBeginDocument(Tokens(T_CS('\lx@save@parameter'), T_OTHER('magnifiy'), T_BEGIN, $_[1], T_END)); });
