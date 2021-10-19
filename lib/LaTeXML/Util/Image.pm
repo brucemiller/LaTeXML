@@ -151,16 +151,18 @@ sub image_graphicx_parse {
       elsif (/^magnification$/) { $mag = $v; }
       else                      { push(@unknown, [$op, $v]); } }
     else { } }                                                     # ?
-   # --------------------------------------------------
-   # Now, compile the options into a sequence of `transformations'.
-   # Note: the order of rotation & scaling is significant,
-   # but the order of various clipping options w.r.t rotation or scaling is not.
+      # --------------------------------------------------
+      # Now, compile the options into a sequence of `transformations'.
+      # Note: the order of rotation & scaling is significant,
+      # but the order of various clipping options w.r.t rotation or scaling is not.
   my @transform = ();
-  # We ignore viewport & trim if clip isn't set, since in that case we shouldn't
-  # actually remove anything from the image (and there's no way to have the image
-  # overlap neighboring text, etc, in current HTML).
-  push(@transform, [($trim ? 'trim' : 'clip'), @vp]) if (@vp && $clip);
-  push(@transform, ['rotate', $angle]) if ($rotfirst && $angle);    # Rotate before scaling?
+  # If clip is set, viewport and trim will clip the image to that box,
+  # but if not, they should ONLY affect the apparent size of the image.
+  # Anything outside the box will *overlap* any adjacent material.
+  # That's tricky to do in html, but possible with some fancy, brittle, CSS ....
+  # For now, I guess we'll just clip in all cases.
+  push(@transform, [($trim ? 'trim' : 'clip'), @vp]) if @vp;
+  push(@transform, ['rotate', $angle]) if ($rotfirst && $angle);     # Rotate before scaling?
   if ($width && $height) { push(@transform, ['scale-to', $mag * $width, $mag * $height, $aspect]); }
   elsif ($width)         { push(@transform, ['scale-to', $mag * $width, 999999, 1]); }
   elsif ($height)        { push(@transform, ['scale-to', 999999, $mag * $height, 1]); }
@@ -238,6 +240,8 @@ sub image_graphicx_sizer {
       my $options = $whatsit->getProperty('options');
       local $LaTeXML::IGNORE_ERRORS = 1;
       my ($w, $h) = image_graphicx_size($source, image_graphicx_parse($options), DPI => $dpi);
+      Debug("IMAGE SIZE $source => $w x $h; dpi=$dpi") if $w;
+
       return (Dimension($w * 72.27 / $dpi . 'pt'), Dimension($h * 72.27 / $dpi . 'pt'), Dimension(0)) if $w; } }
   return (Dimension(0), Dimension(0), Dimension(0)); }
 
