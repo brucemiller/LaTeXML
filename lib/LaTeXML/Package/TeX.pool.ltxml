@@ -4965,11 +4965,12 @@ DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
       $$frontmatter{$tag} = []; }                                      # Remove previous entries
     if ($keys && $keys->hasKey('ifnew') && $$frontmatter{$tag}) {      # if ifnew and previous entries
       return; }                                                        # Skip this one.
-    my $entry = [$tag, undef, 'to-be-filled-in'];
-    push(@{ $$frontmatter{$tag} }, $entry);
-    if ($attr) {
-      $$entry[1] = { $attr->beDigested($stomach)->getHash }; }
-    $$entry[2] = Digest(Tokens(T_BEGIN, $tokens, T_END));
+    if ($tokens->unlist) {                                             # Add an entry, if non-empty
+      my $entry = [$tag, undef, 'to-be-filled-in'];
+      push(@{ $$frontmatter{$tag} }, $entry);
+      if ($attr) {
+        $$entry[1] = { $attr->beDigested($stomach)->getHash }; }
+      $$entry[2] = Digest(Tokens(T_BEGIN, $tokens, T_END)); }
     AssignValue(inPreamble => $inpreamble);
     return; },
   beforeDigest => sub {
