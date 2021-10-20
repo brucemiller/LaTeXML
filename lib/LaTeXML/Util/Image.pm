@@ -240,8 +240,6 @@ sub image_graphicx_sizer {
       my $options = $whatsit->getProperty('options');
       local $LaTeXML::IGNORE_ERRORS = 1;
       my ($w, $h) = image_graphicx_size($source, image_graphicx_parse($options), DPI => $dpi);
-      Debug("IMAGE SIZE $source => $w x $h; dpi=$dpi") if $w;
-
       return (Dimension($w * 72.27 / $dpi . 'pt'), Dimension($h * 72.27 / $dpi . 'pt'), Dimension(0)) if $w; } }
   return (Dimension(0), Dimension(0), Dimension(0)); }
 
