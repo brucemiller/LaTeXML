@@ -16,7 +16,7 @@ use Carp;
 use Encode;
 use Data::Dumper;
 use File::Temp;
-File::Temp->safe_level(File::Temp::HIGH);
+File::Temp->safe_level(File::Temp::MEDIUM);
 use File::Path qw(rmtree);
 use File::Spec;
 use List::Util qw(max);
@@ -30,7 +30,7 @@ use LaTeXML::Util::ObjectDB;
 use LaTeXML::Post::Scan;
 use vars qw($VERSION);
 # This is the main version of LaTeXML being claimed.
-use version; our $VERSION = version->declare("0.8.5");
+use version; our $VERSION = version->declare("0.8.6");
 use LaTeXML::Version;
 # Derived, more informative version numbers
 our $FULLVERSION = "LaTeXML version $LaTeXML::VERSION"
@@ -114,7 +114,7 @@ sub initialize_session {
   ## NOTE: This will give double errors, if latexml has already handled it!
   $$latexml{state}->noteStatus('fatal') if $latexml && $@;    # Fatal Error?
   if ($@) {                                                   #Fatal occured!
-    Note($@);
+    Debug($@);
     Note("Initialization complete: " . $latexml->getStatusMessage . ". Aborting.") if defined $latexml;
     # Close and restore STDERR to original condition.
     $$self{log} .= $self->flush_log;
@@ -600,7 +600,7 @@ sub convert_post {
   if ($@) {    #Fatal occured!
     $$runtime{status_code} = 3;
     local $@ = 'Fatal:conversion:unknown ' . $@ unless $@ =~ /^\n?\S*Fatal:/s;
-    Note($@); }
+    Debug($@); }
 
   # Finalize by arranging any manifests and packaging the output.
   # If our format requires a manifest, create one
@@ -609,6 +609,8 @@ sub convert_post {
     my $manifest_maker = LaTeXML::Post::Manifest->new(db => $DB, format => $format, log => $$opts{log}, %PostOPS);
     $manifest_maker->process(@postdocs); }
   # Archives: when a relative --log is requested, write to sandbox prior packing
+  #     TODO: This can be enhanced, as any path can be relativized.
+  #     TODO: ALSO, we now always have a log file, so maybe always add it as default?
   if ($$opts{log} && ($$opts{whatsout} =~ /^archive/) && (!pathname_is_absolute($$opts{log}))) {
     ### We can't rely on the ->getDestinationDirectory method, as Fatal post-processing jobs have UNDEF @postdocs !!!
     ### my $destination_directory = $postdocs[0]->getDestinationDirectory();

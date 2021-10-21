@@ -18,8 +18,8 @@ $ENV{PATH}      = "$LATEXMLDIR/blib/script:$ENV{PATH}";
 $ENV{TEXINPUTS} = "$LATEXMLDIR/blib/lib/LaTeXML/texmf"
   . ($ENV{TEXINPUTS} ? ":" . $ENV{TEXINPUTS} : '')
   . "::";
-my $MANDIR  = "$DOCDIR/manual";
-my $WEBDEST = "/local/www/site/htdocs/LaTeXML";
+my $MANDIR = "$DOCDIR/manual";
+my $WEBDIR = "/local/www/site/htdocs/LaTeXML";
 
 my $identity = "makemanual (part of LaTeXML)";
 my ($force, $help, $validate, $verbosity) = (0, 0, 1, 0);
@@ -30,13 +30,13 @@ GetOptions("force!" => \$force,
   "html!"     => \$dohtml,
   "xhtml!"    => \$dohtml,
   "validate!" => \$validate,
-  "webdir=s"  => \$WEBDEST,
+  "webdir=s"  => \$WEBDIR,
   verbose     => sub { $verbosity++; },
   quiet       => sub { $verbosity--; },
 ) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 
-$WEBDEST = pathname_absolute($WEBDEST);
+$WEBDIR = pathname_absolute($WEBDIR);
 
 BEGIN { $SIG{__DIE__} = \&confess; }
 
@@ -47,37 +47,26 @@ elsif (!defined $dopdf) {
 elsif (!defined $dohtml) {
   $dohtml = 1 if defined $dopdf && !$dopdf; }
 
+# Sanity check
+if (!($dopdf || $dohtml)) {
+  heading("Nothing to do... (see --help)");
+  exit(0); }
+
+my $tmp;
+if (!(($tmp = pathname_mkdir($WEBDIR)) && -w $tmp)) {
+  die "Destination '$WEBDIR' is not writable; please set --webdir (see --help):\n  $!"; }
+
 #======================================================================
 # Generate Appendices from PODS, Schema, etc
 #======================================================================
 setVerbosity($verbosity);
 
-heading("Extracting Appendices");
+heading("Extracting Release, PODS and Schema info");
+getReleaseInfo("$WEBDIR/releases");
 system("$MANDIR/genpods" . ($force ? " --force" : "")) == 0
   or warn "Failed to generate pods?";
 system("$MANDIR/genschema" . ($force ? " --force" : "")) == 0
   or warn "Failed to generate schema documentation?";
-my $version;
-{ use LaTeXML;
-  $version = $LaTeXML::VERSION; }
-
-my $DIR;
-opendir($DIR, "$LATEXMLDIR/lib/LaTeXML/Package") or die "Couldn't read Packages: $!";
-my @bindings = sort grep { !/(?:_support\.|_core\.|\#)/ } grep { $_ }
-  map { s/.ltxml$// && $_ } readdir($DIR);
-closedir($DIR);
-
-my $classes = join(', ', grep { $_ } map { s/\.cls$// && $_ } @bindings);
-$classes =~ s/(_)/\\_/gs;
-my $packages = join(', ', grep { $_ } map { s/\.sty$// && $_ } @bindings);
-$packages =~ s/(_)/\\_/gs;
-
-my $texversion = $version;
-$texversion =~ s/\_/\\_/g;
-saveData("$MANDIR/release.tex",
-  "\\def\\CurrentVersion{$texversion}\n"
-    . "\\def\\CurrentClasses{$classes}\n"
-    . "\\def\\CurrentPackages{$packages}\n");
 
 #======================================================================
 # Now generate the manual
@@ -85,32 +74,32 @@ saveData("$MANDIR/release.tex",
 if ($dopdf) {
   heading("Generating pdf of manual");
   pdflatex("$MANDIR/manual.tex",
-    dependencies => ["$DOCDIR/sty/latexmldoc.sty", "$MANDIR/release.tex",
+    dependencies => ["$DOCDIR/sty/latexmldoc.sty", "$DOCDIR/sty/latexmlreleases.tex",
       "$MANDIR/schema.tex", "$MANDIR/pods"],
     indexoptions => [],
     force        => $force);
   copy("$MANDIR/manual.pdf", "$LATEXMLDIR/manual.pdf");
-  copy("$MANDIR/manual.pdf", "$WEBDEST/manual.pdf");
+  copy("$MANDIR/manual.pdf", "$WEBDIR/manual.pdf");
 }
 
 if ($dohtml) {
   heading("Generating html of manual");
-  latexml("$MANDIR/manual.tex" => "$WEBDEST/manual/index.html",
-    dependencies => ["$DOCDIR/sty/latexmldoc.sty.ltxml", "$MANDIR/release.tex",
+  latexml("$MANDIR/manual.tex" => "$WEBDIR/manual/index.html",
+    dependencies => ["$DOCDIR/sty/latexmldoc.sty.ltxml", "$DOCDIR/sty/latexmlreleases.tex",
       "$MANDIR/schema.tex", "$MANDIR/pods"],
     postoptions => [
       "--format=html5",
       "--split", "--splitnaming=labelrelative", "--splitat=subsection",
       "--sourcedir=$MANDIR",
       "--urlstyle=server",
-      "--sitedirectory=$WEBDEST",
+      "--sitedirectory=$WEBDIR",
       "--css=$DOCDIR/latexmldoc.css",
       "--javascript=LaTeXML-maybeMathjax.js",
       ($validate ? () : ("--novalidate")),
       "--icon=$DOCDIR/favicon.ico"],
     force => $force);
   # but if only css needs updating...
-  copy("$MANDIR/../latexmldoc.css", "$WEBDEST/latexmldoc.css");
+  copy("$MANDIR/../latexmldoc.css", "$WEBDIR/latexmldoc.css");
 }
 #======================================================================
 

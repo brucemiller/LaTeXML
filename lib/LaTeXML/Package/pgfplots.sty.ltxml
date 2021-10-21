@@ -23,5 +23,12 @@ use LaTeXML::Package;
 
 DefMacroI('\pgfplots@iffileexists', undef, '\IfFileExists', locked => 1);
 InputDefinitions('pgfplots', type => 'sty', noltxml => 1);
-
+# Avoid generic warnings:
+my $compat_cs  = T_CS('\pgfk@/pgfplots/compat/current');
+my $compat_val = IsDefined($compat_cs) && ToString(Expand($compat_cs));
+if (!$compat_val || $compat_val eq 'default') {
+  my $recent_cs  = T_CS('\pgfk@/pgfplots/compat/mostrecent');
+  my $recent_val = IsDefined($recent_cs) && ToString(Expand($recent_cs));
+  if ($recent_val && $recent_val ne 'default') {
+    RawTeX('\pgfplotsset{compat=' . $recent_val . '}'); } }
 1;

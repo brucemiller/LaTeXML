@@ -17,8 +17,7 @@ use LaTeXML::Package;
 
 #======================================================================
 # Load pgf's TeX code for math, first
-InputDefinitions('pgfmathcalc.code', type => 'tex', noltxml => 1)
-  || Warn(":missing:pgfmathcalc.code.tex Couldn't find pgfmath.code.tex");
+InputDefinitions('pgfmathcalc.code', type => 'tex', noltxml => 1);
 
 # \pgfmathsetmacro
 # \edef#1 as the result of evaluating #2.

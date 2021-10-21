@@ -385,7 +385,7 @@ our $kpse_toolchain = "";
 
 sub pathname_kpsewhich {
   my (@candidates) = @_;
-  return             unless $kpsewhich;
+  return             unless $kpsewhich && @candidates;
   build_kpse_cache() unless $kpse_cache;
   foreach my $file (@candidates) {
     if (my $result = $$kpse_cache{$file}) {
@@ -407,9 +407,7 @@ sub build_kpse_cache {
   $kpse_cache = {};            # At least we've tried.
   return unless $kpsewhich;
   # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
-  if ($ENV{"APPVEYOR"}) {
-    $kpse_toolchain = "--miktex-admin";
-  }
+  $kpse_toolchain = "--miktex-admin" if ($ENV{"LATEXML_KPSEWHICH_MIKTEX_ADMIN"});
   my $texmf = `"$kpsewhich" --expand-var \'\\\$TEXMF\' $kpse_toolchain`; chomp($texmf);
   # These are directories which contain the tex related files we're interested in.
   # (but they're typically below where the ls-R indexes are!)

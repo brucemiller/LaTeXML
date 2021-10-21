@@ -37,7 +37,7 @@ DefPrimitive('\newcommandtwoopt OptionalMatch:* DefToken [Number][][]{}', sub {
     my ($stomach, $star, $cs, $nargs, $opt1, $opt2, $body) = @_;
     if (!isDefinable($cs)) {
       Info('ignore', $cs, $stomach,
-        "Ignoring redefinition (\\newcommand) of '" . Stringify($cs) . "'")
+        "Ignoring redefinition (\\newcommand) of '" . ToString($cs) . "'")
         unless LookupValue(ToString($cs) . ':locked');
       return; }
     DefMacroI($cs, convert2optArgs($nargs, $opt1, $opt2), $body); });

@@ -40,7 +40,7 @@ sub unpack_source {
   foreach my $member ($zip_handle->memberNames()) {
     $zip_handle->extractMember($member, catfile($sandbox_directory, $member)); }
   # Set $source to point to the main TeX file in that directory
-  my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.tex$');
+  my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.[tT][eE][xX]$');
   if (!@TeX_file_members) {    # No .tex file? Try files with no, or unusually long, extensions
     @TeX_file_members = grep { !/\./ || /\.[^.]{4,}$/ } map { $_->fileName() } $zip_handle->members();
   }

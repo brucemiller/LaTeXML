@@ -62,7 +62,7 @@ DefMacro('\lstinline OptionalKeyVals:LST', sub {
       @{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
       lstProcessInline($body),
       @{ LookupValue('LISTINGS_POSTAMBLE') },
-      T_END); });                  # to balance ->bgroup
+      T_END); });    # to balance ->bgroup
 
 DefPrimitive('\lstMakeShortInline [] DefToken', sub {
     my ($stomach, $kv, $token) = @_;
@@ -318,7 +318,7 @@ our $lst_charmapping = { '#' => T_CS('\#'), '$' => T_CS('\textdollar'), '&' => T
   "'" => T_CS('\textquoteright'),
   '*' => T_CS('\textasteriskcentered'),
   # ??  '-'=>$-$ ??
-  '<' => T_CS('\textless'), '>' => T_CS('\textgreater'), '\\' => T_CS('\textbackslash'),
+  '<' => T_CS('\textless'),        '>' => T_CS('\textgreater'), '\\' => T_CS('\textbackslash'),
   '^' => T_CS('\textasciicircum'), '_' => T_CS('\textunderscore'),
   '`' => T_CS('\textquoteleft'),
   '{' => T_CS('\textbraceleft'), '}' => T_CS('\textbraceright'), '%' => T_CS('\%'),
@@ -1057,8 +1057,8 @@ DefMacro('\lst@@escapeinside@ {} {} Until:\end', sub {
       $escape1 = lstDeslash($escape1);
       $escape2 = lstDeslash($escape2);
       LookupValue('LST_DELIMITERS')->{$escape1} = {
-        open => lstRegexp($escape1), close => lstRegexp($escape2),
-        class => 'evaluate', escape => 1 };
+        open  => lstRegexp($escape1), close  => lstRegexp($escape2),
+        class => 'evaluate',          escape => 1 };
       LookupValue('LST_CLASSES')->{evaluate}{eval} = 1; }
     return; });
 DefKeyVal('LST', 'escapebegin', '');
@@ -1210,7 +1210,7 @@ sub lstProcess {
   my ($mode, $text) = @_;
 
   # === Return nothing if print is false
-  return Tokens() unless $text && lstGetBoolean('print');
+  return Tokens() unless (defined $text) && lstGetBoolean('print');
 
 # === Possibly strip trailing blank lines.
 # NOTE: Not sure if this is supposed to trim from the whole listing, or the requested subset(s) of lines!
@@ -1285,7 +1285,7 @@ sub lstProcess {
     lstProcessEndLine(); }
 
   # === Save line number for possible later use.
-  AssignValue('LISTINGS_LAST_NUMBER' => CounterValue('lstnumber')->valueOf, 'global');
+  AssignValue('LISTINGS_LAST_NUMBER'          => CounterValue('lstnumber')->valueOf, 'global');
   AssignValue('LISTINGS_LAST_NUMBER_' . $name => CounterValue('lstnumber')->valueOf, 'global') if $name;
   # Remove empty trailing lines, if any (GACK!)
   @LaTeXML::lsttokens = @LaTeXML::lsttokens[0 .. $LaTeXML::emptyfrom - 1] if $LaTeXML::emptyfrom;
@@ -1374,8 +1374,8 @@ sub lstProcess_internal {
       if ($LaTeXML::mode ne 'inline') {
         lstProcessEndLine();
         lstProcessPush(Invocation(T_CS('\stepcounter'), T_OTHER('lstnumber')));
-        $LaTeXML::linenum++;                       # Increment line number
-        $LaTeXML::colnum = 0;                      # Reset column number
+        $LaTeXML::linenum++;     # Increment line number
+        $LaTeXML::colnum = 0;    # Reset column number
          # NOTE: should ignore blank lines at end of listing, even if they aren't the last line of the code!
          # NOTE: should handle showlines, emptylines keywords
         while (($LaTeXML::listing ne '') && !&$LaTeXML::linetest($LaTeXML::linenum)) {   # Ignore next line?
@@ -1387,10 +1387,10 @@ sub lstProcess_internal {
       my $gobble = lstGetNumber('gobble');
       (map { $LaTeXML::listing =~ s/^.// } 1 .. $gobble) if $gobble;
     }
-    elsif ($LaTeXML::listing =~ s/^\f//s) {                                              # Formfeed
+    elsif ($LaTeXML::listing =~ s/^\f//s) {    # Formfeed
       lstProcessPush(lstGetTokens('formfeed')->unlist);
       $LaTeXML::colnum++; }
-    elsif ($LaTeXML::listing =~ s/^([\t\s]+)//s) {                                       # Tab expansion
+    elsif ($LaTeXML::listing =~ s/^([\t\s]+)//s) {    # Tab expansion
       my $s       = $1;
       my $n       = 0;
       my $tabsize = lstGetNumber('tabsize') || 1;

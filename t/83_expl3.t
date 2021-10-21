@@ -10,6 +10,6 @@ latexml_tests("t/expl3",
       texlive_min => 2018,
       packages    => 'expl3.sty' },
     xparse => {
-      texlive_min => 2018,
+      texlive_min => 2019,
       packages    => ['expl3.sty', 'xparse.sty']
     } });

@@ -39,7 +39,7 @@ our $LATEXCMD = 'latex';    #(or elatex) [ CONFIGURABLE? Encoded in PI?]
 #   source         : (dir)
 #   magnification  : typically something like 1.33333, but you may want bigger
 #   maxwidth       : maximum page width, in pixels (whenever line breaking is possible)
-#   dpi            : assumed DPI for the target medium (default 96)
+#   DPI            : assumed DPI for the target medium (default 100)
 #   background     : color of background (for anti-aliasing, since it is made transparent)
 #   imagetype      : typically 'png' or 'gif'.
 sub new {
@@ -47,7 +47,7 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{magnification} = $options{magnification} || 1.33333;
   $$self{maxwidth}      = $options{maxwidth}      || 800;
-  $$self{dpi}           = $options{dpi}           || 96;
+  $$self{DPI}           = $options{DPI}           || 100;
   $$self{background}    = $options{background}    || "#FFFFFF";
   $$self{imagetype}     = $options{imagetype}     || 'png';
 
@@ -73,7 +73,7 @@ sub new {
 
   # Parameterize according to the selected dvi-to-whatever processor.
   my $mag = int($$self{magnification} * 1000);
-  my $dpi = int($$self{dpi} * $$self{magnification});
+  my $dpi = int($$self{DPI} * $$self{magnification});
   # Unfortunately, each command has incompatible -o option to name the output file.
   # Note that the formatting char used, '%', has to be doubled on Windows!!
   # Maybe that's only true when it looks like an environment variable?
@@ -81,19 +81,14 @@ sub new {
   #  my $fmt = ($^O eq 'MSWin32' ? '%%' : '%');
   my $fmt = '%';
   if ($$self{use_dvisvgm}) {
-    # img name uses 2 digits for page; what happens at 100?
     ##    $$self{dvicmd}             = "dvisvgm --page=1- --bbox=min --mag=$mag -o imgx-${fmt}p";
     # dvisvgm currently creates glyph descriptions w/ unicode attribute having the wrong codepoint
     # firefox, chromium use this codepoint instead of the glyph "drawing"
     # a later version of dvisvgm should do better at synthesizing the unicode?
     # but for now, we'll use --no-fonts, which creates glyph drawings rather than "glyphs"
     # Also, increase the bounding box from min by 1pt
-    # Also, note incompatible change in the -o option after version 1.6;
-    # it now can take a number of digits (%3p) for pages, BUT old version produces imgx-%3p.svg!!
-    # So, simply use %p, let new version do 1,..,9,10,...
-    # Recovery code below!
-    $$self{dvicmd} = "dvisvgm --page=1- --bbox=1pt --scale=$$self{magnification} --no-fonts -o imgx-${fmt}p";
-    $$self{dvicmd_output_name} = 'imgx-%02d.svg';
+    $$self{dvicmd} = "dvisvgm --page=1- --bbox=1pt --scale=$$self{magnification} --no-fonts -o imgx-${fmt}3p";
+    $$self{dvicmd_output_name} = 'imgx-%03d.svg';
     $$self{dvicmd_output_type} = 'svg';
     $$self{frame_output}       = 0; }
   elsif ($$self{use_dvipng}) {
@@ -256,7 +251,7 @@ sub generateImages {
   Debug("LaTeXImages: $nuniq unique; " . scalar(@pending) . " new") if $LaTeXML::DEBUG{images};
   if (@pending) {    # if any images need processing
         # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
-    File::Temp->safe_level(File::Temp::HIGH);
+    File::Temp->safe_level(File::Temp::MEDIUM);
     my $workdir = File::Temp->newdir("LaTeXMLXXXXXX", TMPDIR => 1);
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir => $workdir, name => $jobname, type => 'tex');
@@ -321,14 +316,10 @@ sub generateImages {
         "Response was: $!");
       return $doc; }
     # === Convert each image to appropriate type and put in place.
-    my $pixels_per_pt = $$self{magnification} * $$self{dpi} / 72.27;
+    my $pixels_per_pt = $$self{magnification} * $$self{DPI} / 72.27;
     my ($index, $ndigits) = (0, 1 + int(log($doc->cacheLookup((ref $self) . ':_max_image_') || 1) / log(10)));
     foreach my $entry (@pending) {
       my $src = "$workdir/" . sprintf($$self{dvicmd_output_name}, ++$index);
-      # Recovery patchup for incompatible change to dvisvgm!
-      if (($index == 1) && (!-f $src) && (-f "$workdir/imgx-1.svg")) {
-        $$self{dvicmd_output_name} = 'imgx-%d.svg';
-        $src = "$workdir/imgx-1.svg"; }
       if (-f $src) {
         my @dests = @{ $$entry{dest} };
         push(@dests, $self->generateResourcePathname($doc, $$entry{nodes}[0], undef, $$self{imagetype}))
@@ -377,7 +368,7 @@ sub pre_preamble {
   my $packages        = '';
   my $dest            = $doc->getDestination;
   my $description     = ($dest ? "% Destination $dest" : "");
-  my $pts_per_pixel   = 72.27 / $$self{dpi} / $$self{magnification};
+  my $pts_per_pixel   = 72.27 / $$self{DPI} / $$self{magnification};
 
   foreach my $pkgdata (@classdata) {
     my ($package, $package_options) = @$pkgdata;
@@ -455,7 +446,7 @@ sub convert_image {
   my ($self, $doc, $src, $dest) = @_;
   my ($bg, $fg) = ($$self{background}, 'black');
 
-  my $image = image_object(antialias => 'True', background => $bg, density => $$self{dpi});
+  my $image = image_object(antialias => 'True', background => $bg, density => $$self{DPI});
   my $err   = $image->Read($$self{dvicmd_output_type} . ':' . $src);
   if ($err) {
     Warn('imageprocessing', 'read', undef,

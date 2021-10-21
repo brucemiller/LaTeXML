@@ -13,6 +13,7 @@ package LaTeXML::Post::Manifest::Epub;
 use strict;
 use warnings;
 use File::Find qw(find);
+use URI::file;
 
 our $uuid_tiny_installed;
 
@@ -36,6 +37,29 @@ our $container_content = <<'EOL';
    </rootfiles>
 </container>
 EOL
+
+# Core Media Types as per EPUB 3.2 spec
+our %CORE_MEDIA_TYPES = (
+  'gif'   => 'image/gif',
+  'jpg'   => 'image/jpeg',
+  'jpeg'  => 'image/jpeg',
+  'png'   => 'image/png',
+  'svg'   => 'image/svg+xml',
+  'mp3'   => 'audio/mpeg',                 # only mp3 is supported
+  'mp4'   => 'audio/mp4',                  # only mp4 *audio* is core
+  'mpg4'  => 'audio/mp4',
+  'css'   => 'text/css',
+  'ttf'   => 'font/ttf',
+  'otf'   => 'font/otf',
+  'woff'  => 'font/woff',
+  'woff2' => 'font/woff2',
+  'xhtml' => 'application/xhtml+xml',
+  'js'    => 'text/javascript',
+  'ncx'   => 'application/x-dtbncx+xml',
+  'smi'   => 'application/smil+xml',
+  'smil'  => 'application/smil+xml',
+  'pls'   => 'application/pls+xml'
+);
 
 sub new {
   my ($class, %options) = @_;
@@ -143,6 +167,18 @@ sub initialize {
   $$self{nav_map}       = $nav_map;
   return; }
 
+sub url_id {
+  my ($name) = @_;
+  # convert a relative url to a valid NCName for use as id
+  # any invalid character is encoded as _xN_ where N is its uppercase hex codepoint
+  # underscores starting a sequence of the form _xN_ are encoded as _x5F_
+  $name =~ s/_(x[0-9A-F]+)(?=_)/_x5F_$1/g;
+  $name =~ s/([^A-Z_a-z\x{C0}-\x{D6}\x{D8}-\x{F6}\x{F8}-\x{2FF}\x{370}-\x{37D}\x{37F}-\x{1FFF}\x{200C}-\x{200D}\x{2070}-\x{218F}\x{2C00}-\x{2FEF}\x{3001}-\x{D7FF}\x{F900}-\x{FDCF}\x{FDF0}-\x{FFFD}\x{10000}-\x{EFFFF}\-.0-9\x{B7}\x{0300}-\x{036F}\x{203F}-\x{2040}])/_x${\(sprintf("%X", ord($1)))}_/g;
+  # ensure the starting char is valid and prevent collisions with the other id's below
+  $name = '_' . $name;
+  return $name;
+}
+
 sub process {
   my ($self, @docs) = @_;
   $self->initialize($docs[0]);
@@ -156,8 +192,10 @@ sub process {
       # Add to manifest
       my $manifest = $$self{opf_manifest};
       my $item     = $manifest->addNewChild(undef, 'item');
-      $item->setAttribute('id',         $file);
-      $item->setAttribute('href',       $relative_destination);
+      my $item_url = URI::file->new($relative_destination);
+      my $item_id  = url_id($item_url);
+      $item->setAttribute('id',         $item_id);
+      $item->setAttribute('href',       $item_url);
       $item->setAttribute('media-type', "application/xhtml+xml");
       my @properties;
       push @properties, 'mathml' if $doc->findnode('//*[local-name() = "math"]');
@@ -168,74 +206,68 @@ sub process {
       # Add to spine
       my $spine   = $$self{opf_spine};
       my $itemref = $spine->addNewChild(undef, 'itemref');
-      $itemref->setAttribute('idref', $file);
+      $itemref->setAttribute('idref', $item_id);
 
       # Add to navigation
       my $nav_map = $$self{nav_map};
       my $nav_li  = $nav_map->addNewChild(undef, 'li');
       my $nav_a   = $nav_li->addNewChild(undef, 'a');
-      $nav_a->setAttribute('href', $file);
+      $nav_a->setAttribute('href', URI::file->new($relative_destination));
       $nav_a->appendText($file); } }
   $self->finalize;
   return; }
 
 sub finalize {
   my ($self) = @_;
-  #Index all CSS files (written already)
+  # index all resources that got written to file
+  # TODO: recover resources and mime types directly from the documents
   my $OPS_directory = $$self{OPS_directory};
-  my @styles        = ();
-  my @images        = ();
-  find({ no_chdir => 1, wanted => sub {
+  my @content       = ();
+  find({ no_chdir => 1, preprocess => sub { sort @_; },    # sort files for reproducbility
+      wanted => sub {
         my $OPS_abspath  = $_;
         my $OPS_pathname = pathname_relative($OPS_abspath, $OPS_directory);
-        if ($OPS_pathname =~ /\.css$/) {
-          push(@styles, $OPS_pathname); }
-        elsif ($OPS_pathname =~ /\.png$/) {
-          push(@images, $OPS_pathname); }
-        else { }    # skip any other resources
-  } }, $OPS_directory);
+        my (undef, $name, $ext) = pathname_split($OPS_pathname);
+        if (-f $OPS_abspath && $ext ne 'xhtml' && "$name.$ext" ne 'LaTeXML.cache' && $OPS_abspath ne 'content.opf') {
+          push(@content, $OPS_pathname); }
+      } }, $OPS_directory);
 
   my $manifest = $$self{opf_manifest};
-  # TODO: Other externals are future work
-  foreach my $style (@styles) {
-    my $style_id = $style;
-    $style_id =~ s|/|-|g;    # NCName required for id; no slashes
-    my $style_item = $manifest->addNewChild(undef, 'item');
-    $style_item->setAttribute('id',         "$style_id");
-    $style_item->setAttribute('href',       "$style");
-    $style_item->setAttribute('media-type', 'text/css'); }
-  foreach my $image (@images) {
-    my $image_id = $image;
-    $image_id =~ s|/|-|g;    # NCName required for id; no slashes
-    my $image_item = $manifest->addNewChild(undef, 'item');
-    $image_item->setAttribute('id',         "$image_id");
-    $image_item->setAttribute('href',       "$image");
-    $image_item->setAttribute('media-type', 'image/png'); }
+  foreach my $file (@content) {
+    my (undef, undef, $ext) = pathname_split($file);
+    my $file_type = $CORE_MEDIA_TYPES{ lc($ext) };
+    if (!defined $file_type) {
+      Info('unexpected', lc($ext), undef, "resource '$file' is not of a core media type, assigning type application/octet-stream");
+      $file_type = 'application/octet-stream'; }
 
-  if ($$self{log}) {
-    my $log_id = $$self{log};
-    $log_id =~ s|/|-|g;      # NCName required for id; no slashes
-    my $log_item = $manifest->addNewChild(undef, 'item');
-    $log_item->setAttribute('id',         "$log_id");
-    $log_item->setAttribute('href',       $$self{log});
-    $log_item->setAttribute('media-type', 'text/plain'); }
+    my $file_item = $manifest->addNewChild(undef, 'item');
+    my $file_url  = URI::file->new($file);
+    $file_item->setAttribute('id',         url_id($file_url));
+    $file_item->setAttribute('href',       $file_url);
+    $file_item->setAttribute('media-type', $file_type); }
 
   # Write the content.opf file to disk
-  my $directory = $$self{siteDirectory};
-  my $OPF_FH;
+  my $directory    = $$self{siteDirectory};
   my $content_path = pathname_concat($OPS_directory, 'content.opf');
-  open($OPF_FH, ">", $content_path)
-    or Fatal('I/O', 'content.opf', undef, "Couldn't open '$content_path' for writing: $_");
-  print $OPF_FH $$self{opf}->toString(1);
-  close $OPF_FH;
+  if (-f $content_path) {
+    Info('note', 'content.opf', undef, 'using the manifest supplied by the user'); }
+  else {
+    my $OPF_FH;
+    open($OPF_FH, ">", $content_path)
+      or Fatal('I/O', 'content.opf', undef, "Couldn't open '$content_path' for writing: $_");
+    print $OPF_FH $$self{opf}->toString(1);
+    close $OPF_FH; }
 
   # Write toc.ncx file to disk
-  my $NAV_FH;
   my $nav_path = pathname_concat($OPS_directory, 'nav.xhtml');
-  open($NAV_FH, ">", $nav_path)
-    or Fatal('I/O', 'nav.xhtml', undef, "Couldn't open '$nav_path' for writing: $!");
-  print $NAV_FH $$self{nav}->toString(1);
-  close $NAV_FH;
+  if (-f $nav_path) {
+    Info('note', 'nav.xhtml', undef, 'using the navigation document supplied by the user'); }
+  else {
+    my $NAV_FH;
+    open($NAV_FH, ">", $nav_path)
+      or Fatal('I/O', 'nav.xhtml', undef, "Couldn't open '$nav_path' for writing: $!");
+    print $NAV_FH $$self{nav}->toString(1);
+    close $NAV_FH; }
 
   return (); }
 

@@ -72,6 +72,7 @@ sub getNode { my ($self) = @_; return $$self{node}; }
 
 sub setNode {
   my ($self, $node) = @_;
+  $self->closeText_internal;                # Close any open text node, so ligatures run.
   my $type = $node->nodeType;
   if ($type == XML_DOCUMENT_FRAG_NODE) {    # Whoops
     my @n = $node->childNodes;
@@ -234,7 +235,7 @@ sub canHaveAttribute {
 sub canAutoOpen {
   my ($self, $tag) = @_;
   if (my $props = $STATE->lookupMapping('TAG_PROPERTIES', $tag)) {
-    return $$props{autoClose}; } }
+    return $$props{autoOpen}; } }
 
 # Dirty little secrets:
 #  You can generically allow an element to autoClose using Tag.
@@ -1201,7 +1202,7 @@ sub closeText_internal {
         next if ($fonttest = $$ligature{fontTest}) && !&$fonttest($font);
         $string = &{ $$ligature{code} }($string); } }
     $node->setData($string) unless $string eq $ostring;
-    $self->setNode($parent);    # Now, effectively Closed
+    $$self{node} = $parent;    # Effectively closed (->setNode, but don't recurse)
     return $parent; }
   else {
     return $node; } }

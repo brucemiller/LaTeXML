@@ -1,0 +1,53 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | ifgeo font encoding                                                 | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+# Note that we're defining encodings for the font families!
+
+DeclareFontMap('ifgeo', [
+    "\x{274f}", "\x{274f}", "\x{274f}", "\x{274f}",    # same?
+    "\x{274f}", undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      "\x{274c}", "\x{274c}", "\x{274c}",    # 3 sizes?
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      "\x{2014}", "\x{2013}",
+    "\x{2012}", "\x{fe31}", "\x{fe32}", undef,
+    "\x{25a1}", "\x{25b3}", "\x{25C1}", "\x{25bd}",    # large, white
+    "\x{25b7}", "\x{25ef}", "\x{25c7}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b17}",
+    "\x{25a1}", "\x{25b3}", "\x{25C1}", "\x{25bd}",    # medium, white
+    "\x{25b7}", "\x{25cb}", "\x{2b25}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b17}",
+    "\x{25ab}", "\x{25b5}", "\x{25C3}", "\x{25bf}",    # small, white
+    "\x{25b9}", "\x{25cb}", "\x{2b2a}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b17}",
+    "\x{25a0}", "\x{25b2}", "\x{25C0}", "\x{25bc}",    # large, black
+    "\x{25b6}", "\x{25cf}", "\x{25c6}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b19}",
+    "\x{25fc}", "\x{25b2}", "\x{25C0}", "\x{25bc}",    # medium, black
+    "\x{25b6}", "\x{25cf}", "\x{2b26}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b19}",
+    "\x{25aa}", "\x{25b4}", "\x{25C2}", "\x{25be}",    # small, black
+    "\x{25b8}", "\x{25cf}", "\x{2b2b}", undef,
+    undef,      undef,      undef,      undef,
+    undef,      undef,      undef,      "\x{2b19}",
+]);
+1;

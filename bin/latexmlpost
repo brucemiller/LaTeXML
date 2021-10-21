@@ -34,7 +34,7 @@ my ($sourcedir, $destination, $logfile) = (undef, undef, undef);
 my @paths = ();
 my ($format, $extension, $is_html, $urlstyle) = (undef, undef, undef, 'server');
 my ($numbersections) = (1);
-my ($stylesheet, $defaultcss, $defaultresources, $icon, @css, @javascript, @xsltparameters);
+my ($stylesheet, $defaultresources, $icon, @css, @javascript, @xsltparameters);
 my ($mathimagemag) = (1.75);
 my ($linelength, $plane1, $hackplane1) = (undef, undef, undef);
 my ($dographics, $svg, $picimages)     = (undef, undef, undef);
@@ -55,23 +55,6 @@ my $splitancestors       = {
   subsection    => [qw(part chapter section)],
   subsubsection => [qw(part chapter section subsection)] };
 my $splitback = [qw(bibliography appendix index)];
-
-# Contrived xpath, since backmatter can now be at any level!
-sub make_splitpaths {
-  my ($splitat) = @_;
-  my @paths     = ();
-  my $anc       = $$splitancestors{$splitat};
-  foreach my $unit ($splitat, ($anc ? @$anc : ())) {
-    push(@paths, "//ltx:$unit");
-    foreach my $back (@$splitback) {
-      push(@paths, "//ltx:$back\["
-          . join(' or ', "preceding-sibling::ltx:$unit",
-          map { "parent::ltx:$_"; } @{ $$splitancestors{$unit} })
-          . "]"); } }
-  return join(' | ', @paths); }
-
-# Obsolete...
-my $parallelmath;
 
 # Get the command line arguments.
 GetOptions("quiet" => sub { $verbosity--; },
@@ -98,7 +81,6 @@ GetOptions("quiet" => sub { $verbosity--; },
   # Some general XSLT/CSS options.
   "stylesheet=s"      => \$stylesheet,
   "timestamp=s"       => \$timestamp,
-  "defaultcss!"       => \$defaultcss,
   "defaultresources!" => \$defaultresources,
   "css=s"             => \@css,
   "javascript=s"      => \@javascript,
@@ -149,7 +131,6 @@ GetOptions("quiet" => sub { $verbosity--; },
   "nopresentationmathml|nopmml" => sub { removeMathFormat('pmml'); },
   "nocontentmathml|nocmml"      => sub { removeMathFormat('cmml'); },
   "noopenmath|noom"             => sub { removeMathFormat('om'); },
-  "parallelmath!"               => \$parallelmath,
   "keepXMath"                   => sub { addMathFormat('XMath'); },
   "nokeepXMath"                 => sub { removeMathFormat('XMath'); },
   "mathtex"                     => sub { addMathFormat('mathtex'); },
@@ -166,323 +147,216 @@ GetOptions("quiet" => sub { $verbosity--; },
   -exitval => 1, -verbose => 0, -output => \*STDERR);
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 2, -output => \*STDOUT) if $help;
 if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(0); }
+my $xmlfile = shift(@ARGV);
 
+#======================================================================
+# Validate command line before any actual processing
 SetVerbosity($verbosity);
 UseSTDERR();
-# Get the requested XML file
-xError("Missing input xmlfile") unless @ARGV;
-my $xmlfile = shift(@ARGV);
-if ($xmlfile ne '-') {
-  $xmlfile .= '.xml'                                  unless -f $xmlfile;
-  xError("The input file \"$xmlfile\" was not found") unless -f $xmlfile;
-  if (!$logfile) {
-    my ($dir, $name, $ext) = pathname_split($xmlfile);
-    if ($name) {
-      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexmlpost.log'); } }
-  UseLog($logfile); }
 
-if (@ARGV) {
-  xError("Extra unrecognized arguments " . join(' ', @ARGV)); }
+if (my @fails = validate_args()) {
+  print STDERR join("\n", $LaTeXML::IDENTITY, (map { colorizeString($_, 'error'); } @fails),
+    "use option --help for details", "Postprocessing failed", '');
+  exit(1); }
 
-if (defined $defaultcss) {    # must have been unset
-  warn "--defaultcss & --nodefaultcss are obsolete;"
-    . " use --defaultresources or --nodefaultresources intead";
-  $defaultresources = $defaultcss unless defined $defaultresources; }
-
-#======================================================================
-# Sanity check and Completion of options.
-#======================================================================
-
-#$sourcedir   = $sourcedir   && pathname_canonical($sourcedir);
-#$destination = $destination && pathname_canonical($destination);
-#$sitedir     = $sitedir     && pathname_canonical($sitedir);
-
-$sourcedir   = $sourcedir   && pathname_absolute($sourcedir,   pathname_cwd());
-$destination = $destination && pathname_absolute($destination, pathname_cwd());
-$sitedir     = $sitedir     && pathname_absolute($sitedir,     pathname_cwd());
-$dbfile      = $dbfile      && pathname_absolute($dbfile,      pathname_cwd());
-
-@paths = map { pathname_canonical($_) } @paths;
-if (my @baddirs = grep { !-d $_ } @paths) {
-  warn "These path directories do not exist: " . join(', ', @baddirs) . "\n"; }
-
-if (defined $parallelmath) {
-  warn "The --parallelmath option is obsolete; Parallel markup will be generated"
-    . " whenever you specify more than one math format."; }
-
-# Check for appropriate combination of split, scan, prescan, dbfile, crossref
-if ($split && !defined $destination) {
-  xError("Must supply --destination when using --split"); }
-if ($split) {
-  $splitnaming = checkOptionValue('--splitnaming', $splitnaming,
-    qw(id idrelative label labelrelative));
-  $splitat   = checkOptionValue('--splitat', $splitat, keys %$splitancestors);
-  $splitpath = make_splitpaths($splitat) unless defined $splitpath;
-}
-if ($prescan && !$scan) {
-  xError("Makes no sense to --prescan with scanning disabled (--noscan)"); }
-if ($prescan && (!defined $dbfile)) {
-  xError("Cannot prescan documents (--prescan) without specifying --dbfile"); }
-if (!$prescan && $crossref && !($scan || (defined $dbfile))) {
-  xError("Cannot cross-reference (--crossref) without --scan or --dbfile "); }
-if ($crossref) {
-  $urlstyle = checkOptionValue('--urlstyle', $urlstyle, qw(server negotiated file)); }
-if (($permutedindex || $splitindex) && (!defined $index)) {
-  $index = 1; }
-if (!$prescan && $index && !($scan || defined $crossref)) {
-  xError("Cannot generate index (--index) without --scan or --dbfile"); }
-if (!$prescan && $bibliography && !($scan || defined $crossref)) {
-  xError("Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
-
-$navtoc = lc($navtoc) if defined $navtoc;
-$navtoc = undef       if $navtoc && $navtoc eq 'none';
-if ($navtoc) {
-  if (!$navtocstyles{$navtoc}) {
-    xError("$navtoc is not a recognized style of navigation TOC (--navigationtoc)"); }
-  if (!$crossref) {
-    xError("Cannot use --navigationtoc=$navtoc without --crossref"); } }
-
-# Check format and complete math and image options
-$format = 'html5' if (defined $format) && ($format eq 'html');
-if    (!defined $format) { }
-elsif ($format eq 'html4') {
-  $extension = 'html' unless defined $extension;
-  xError("Default html4 stylesheet only supports math images, not " . join(', ', @math_formats))
-    if (!defined $stylesheet) && scalar(grep { $_ ne 'images' } @math_formats);
-  xError("Default html4 stylesheet does not support --svg") if $svg;
-  maybeAddMathFormat('images');
-  $dographics = 1 unless defined $dographics;
-  $picimages  = 1 unless defined $picimages;
-  $is_html    = 1;
-  $stylesheet = "LaTeXML-html4.xsl" if !defined $stylesheet; }
-elsif ($format eq 'html5') {
-  $extension = 'html' unless defined $extension;
-  # In principle, should only have pMML and possibly MathImages (for altimg);
-  # but I guess we can allow people to try...
-  maybeAddMathFormat('pmml');
-  $svg        = 1 unless defined $svg;
-  $dographics = 1 unless defined $dographics;
-  $is_html    = 1;
-  $stylesheet = "LaTeXML-html5.xsl" if !defined $stylesheet; }
-elsif ($format eq 'xhtml') {
-  $extension = 'xhtml' unless defined $extension;
-  # Add pMML FIRST, unless already there, or was disabled.
-  # note that MathImages can supply altimg attributes
-  maybeAddMathFormat('pmml');
-  $svg        = 1 unless defined $svg;
-  $dographics = 1 unless defined $dographics;
-  $is_html    = 0;
-  $stylesheet = "LaTeXML-xhtml.xsl" if !defined $stylesheet; }
-elsif ($format eq 'jats') {
-  $extension = 'xml' unless defined $extension;
-  # Add pMML FIRST, unless already there, or was disabled.
-  # note that MathImages can supply altimg attributes
-  maybeAddMathFormat('pmml');
-  $dographics = 1 unless defined $dographics;
-  $picimages  = 1 unless defined $picimages;
-  $is_html    = 0;
-  $stylesheet = "LaTeXML-jats.xsl" if !defined $stylesheet; }
-elsif ($format eq 'tei') {
-  $extension = 'xml' unless defined $extension;
-  # Add pMML FIRST, unless already there, or was disabled.
-  # note that MathImages can supply altimg attributes
-  maybeAddMathFormat('pmml');
-  $dographics = 1 unless defined $dographics;
-  $picimages  = 1 unless defined $picimages;
-  $is_html    = 0;
-  $stylesheet = "LaTeXML-tei.xsl" if !defined $stylesheet; }
-elsif ($format eq 'xml') {
-  $extension = 'xml' unless defined $extension; }
-else {
-  xError("Unrecognized target format: $format"); }
-
-if ((!defined $destination)
-  && ($dographics || $picimages
-    || checkMathFormat('images') || checkMathFormat('svg'))) {
-  Warn("expected", "options", undef,
-"must supply --destination to support auxilliary files disabling: --nomathimages --nographicimages --nopictureimages");
-  # default resources is sorta ok: we might not copy, but we'll still have the links/script/etc
-  $dographics = $picimages = 0;
-  removeMathFormat('images');
-  removeMathFormat('svg');
-  maybeAddMathFormat('pmml'); }
-
-#======================================================================
-# Do the processing.
 #======================================================================
 my $starttime = StartTime();
-Note($LaTeXML::IDENTITY . ($prescan ? " scanning " : " paginating ") . $xmlfile);
+my $latexmlpost;
+eval {    # Catch errors
+  UseLog($logfile);
+  Note($LaTeXML::IDENTITY . ($prescan ? " scanning " : " paginating ") . $xmlfile);
 
-# Default options/parameters for each post processor
-our %OPTIONS = ();
-# Default options/parameters for document
-our %DOC_OPTIONS = (validate => $validate,
-  sourceDirectory => $sourcedir,
-  destination     => $destination,
-  # Is this the right default?
-  siteDirectory => (defined $sitedir ? $sitedir
-    : (defined $destination ? pathname_directory($destination)
-      : (defined $dbfile ? pathname_directory($dbfile)
-        : "."))));
+  $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
+  $latexmlpost->withState(sub {
+      # Default options/parameters for document
+      our %DOC_OPTIONS = (validate => $validate,
+        sourceDirectory => $sourcedir,
+        destination     => $destination,
+        # Is this the right default?
+        siteDirectory => (defined $sitedir ? $sitedir
+          : (defined $destination ? pathname_directory($destination)
+            : (defined $dbfile ? pathname_directory($dbfile)
+              : "."))));
 
-if (defined $dbfile && !-f $dbfile) {
-  if (my $dbdir = pathname_directory($dbfile)) {
-    pathname_mkdir($dbdir); } }
-my $DB = LaTeXML::Util::ObjectDB->new(dbfile => $dbfile, %OPTIONS);
+      # Create the Source Document
+      my $DOCUMENT = ($xmlfile eq '-'
+        ? LaTeXML::Post::Document->newFromSTDIN(%DOC_OPTIONS)
+        : LaTeXML::Post::Document->newFromFile($xmlfile, %DOC_OPTIONS));
 
-# Create the Source Document
-my $DOCUMENT = ($xmlfile eq '-'
-  ? LaTeXML::Post::Document->newFromSTDIN(%DOC_OPTIONS)
-  : LaTeXML::Post::Document->newFromFile($xmlfile, %DOC_OPTIONS));
+      # Default options/parameters for each post processor
+      our %OPTIONS = (
+        searchpaths => ['.', @paths, $DOCUMENT->getSearchPaths],
+      );
+      if (defined $dbfile && !-f $dbfile) {
+        if (my $dbdir = pathname_directory($dbfile)) {
+          pathname_mkdir($dbdir); } }
+      my $DB = LaTeXML::Util::ObjectDB->new(dbfile => $dbfile, %OPTIONS);
 
-# Create the processors:
-my @procs = ();
-if ($split) {
-  require LaTeXML::Post::Split;
-  push(@procs, LaTeXML::Post::Split->new(split_xpath => $splitpath, splitnaming => $splitnaming,
-      db => $DB, %OPTIONS)); }
+      # Create the processors:
+      my @procs = assemble_postprocessors($DB, %OPTIONS);
 
-our $scanner = ($scan || $DB) && LaTeXML::Post::Scan->new(db => $DB,
-  ($splitnaming && ($splitnaming =~ /^label/) ? (labelids => 1) : ()),
-  %OPTIONS);
+      # Figure how to define a Reader processor (?)
+      # that initialize the thing by reading several files (the rest of the command line).
+      eval {
+        $latexmlpost->ProcessChain($DOCUMENT, @procs);
+        $DB->finish; };
+  }); };
+#======================================================================
+my $exit_message = $@;
+Debug($@) if $@ ne $LaTeXML::Common::Error::DIE_MESSAGE;
 
-if ($scan) {
-  push(@procs, $scanner); }
-
-if (!$prescan) {
-  if ($index) {
-    require LaTeXML::Post::MakeIndex;
-    push(@procs, LaTeXML::Post::MakeIndex->new(db => $DB, permuted => $permutedindex,
-        split => $splitindex, scanner => $scanner,
-        %OPTIONS)); }
-  if ($bibliography) {
-    require LaTeXML::Post::MakeBibliography;
-    push(@procs, LaTeXML::Post::MakeBibliography->new(db => $DB, bibliographies => [@bibliographies],
-        split => $splitbibliography, scanner => $scanner,
-        %OPTIONS)); }
-  if ($crossref) {
-    require LaTeXML::Post::CrossRef;
-    push(@procs, LaTeXML::Post::CrossRef->new(
-        db        => $DB,
-        urlstyle  => $urlstyle,
-        extension => $extension,
-        ($numbersections ? (number_sections => 1)       : ()),
-        ($navtoc         ? (navigation_toc  => $navtoc) : ()),
-        %OPTIONS)); }
-
-  if ($picimages) {
-    require LaTeXML::Post::PictureImages;
-    push(@procs, LaTeXML::Post::PictureImages->new(%OPTIONS)); }
-  if ($dographics) {
-    require LaTeXML::Post::Graphics;
-    my @g_options = ();
-    if (@graphicsmaps) {
-      my @maps = map { [split(/\./, $_)] } @graphicsmaps;
-      push(@g_options, (graphics_types => [map { $$_[0] } @maps],
-          type_properties => { map { ($$_[0] => { destination_type => ($$_[1] || $$_[0]) }) } @maps })); }
-    push(@procs, LaTeXML::Post::Graphics->new(@g_options, %OPTIONS)); }
-  if ($svg) {
-    require LaTeXML::Post::SVG;
-    push(@procs, LaTeXML::Post::SVG->new(%OPTIONS)); }
-  if (@math_formats) {
-    my @mprocs = ();
-###    # If XMath is not first, it must be at END!  Or... ???
-    foreach my $fmt (@math_formats) {
-      if ($fmt eq 'XMath') {
-        require LaTeXML::Post::XMath;
-        push(@mprocs, LaTeXML::Post::XMath->new(%OPTIONS)); }
-      elsif ($fmt eq 'pmml') {
-        require LaTeXML::Post::MathML::Presentation;
-        push(@mprocs, LaTeXML::Post::MathML::Presentation->new(
-            linelength => $linelength,
-            (defined $plane1 ? (plane1     => $plane1) : (plane1 => 1)),
-            ($hackplane1     ? (hackplane1 => 1)       : ()),
-            %OPTIONS)); }
-      elsif ($fmt eq 'cmml') {
-        require LaTeXML::Post::MathML::Content;
-        push(@mprocs, LaTeXML::Post::MathML::Content->new(
-            (defined $plane1 ? (plane1     => $plane1) : (plane1 => 1)),
-            ($hackplane1     ? (hackplane1 => 1)       : ()),
-            %OPTIONS)); }
-      elsif ($fmt eq 'om') {
-        require LaTeXML::Post::OpenMath;
-        push(@mprocs, LaTeXML::Post::OpenMath->new(
-            (defined $plane1 ? (plane1     => $plane1) : (plane1 => 1)),
-            ($hackplane1     ? (hackplane1 => 1)       : ()),
-            %OPTIONS)); }
-      elsif ($fmt eq 'images') {
-        require LaTeXML::Post::MathImages;
-        push(@mprocs, LaTeXML::Post::MathImages->new(magnification => $mathimagemag,
-            %OPTIONS)); }
-      elsif ($fmt eq 'svg') {
-        require LaTeXML::Post::MathImages;
-        push(@mprocs, LaTeXML::Post::MathImages->new(magnification => $mathimagemag, imagetype => 'svg',
-            %OPTIONS)); }
-      elsif ($fmt eq 'mathtex') {
-        require LaTeXML::Post::TeXMath;
-        push(@mprocs, LaTeXML::Post::TeXMath->new(%OPTIONS)); }
-    }
-    my $main = shift(@mprocs);
-    $main->setParallel(@mprocs);
-    push(@procs, $main); }
-
-  if ($stylesheet) {
-    require LaTeXML::Post::XSLT;
-    # Copy various kinds of resources, css, javascript, icon (others?)
-    my $parameters  = { LATEXML_VERSION => "'$LaTeXML::VERSION'" };
-    my @searchpaths = ('.',
-      (grep { -d $_ } reverse(@paths)),
-      $DOCUMENT->getSearchPaths);
-    # store these for the XSLT; XSLT Processor will copy resources where needed.
-    foreach my $css (@css) {
-      push(@{ $$parameters{CSS} }, $css); }
-    foreach my $js (@javascript) {
-      push(@{ $$parameters{JAVASCRIPT} }, $js); }
-    if ($icon) {
-      $$parameters{ICON} = $icon; }
-    if (!defined $timestamp) {
-      $timestamp = localtime(); }
-    if ($timestamp) {
-      $$parameters{TIMESTAMP} = "'" . $timestamp . "'"; }
-    # Now add in the explicitly given XSLT parameters
-    foreach my $parm (@xsltparameters) {
-      if ($parm =~ /^\s*(\w+)\s*:\s*(.*)$/) {
-        $$parameters{$1} = "'" . $2 . "'"; }
-      else {
-        warn "xsltparameter not in recognized format: 'name:value' got: '$parm'\n"; } }
-    push(@procs, LaTeXML::Post::XSLT->new(stylesheet => $stylesheet, parameters => $parameters,
-        resource_directory => $resourcedir,
-        noresources        => (defined $defaultresources) && !$defaultresources,
-        searchpaths        => [@searchpaths],
-        %OPTIONS)); }
-
-  push(@procs, LaTeXML::Post::Writer->new(format => $format, omit_doctype => $omit_doctype, is_html => $is_html, %OPTIONS));
-}
-
-# Figure how to define a Reader processor (?)
-# that initialize the thing by reading several files (the rest of the command line).
-my $latexmlpost = LaTeXML::Post->new(verbosity => $verbosity || 0);
-eval {
-  $latexmlpost->ProcessChain($DOCUMENT, @procs);
-  $DB->finish; };
-Debug($@) if $@;
 my $code    = $latexmlpost->getStatusCode;
 my $status  = $latexmlpost->getStatusMessage;
 my $runtime = RunTime($starttime);
-NoteLog("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . ": " . $status);
-NoteSTDERR("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . " " . $status . " (reqd. $runtime)");
+Note("Postprocessing " . ($code == 3 ? 'failed' : 'complete') . " " . $status . " (reqd. $runtime)");
 UseLog(undef);
 CheckDebuggable();
 UseSTDERR(undef);
+exit($code == 3 ? 1 : 0);
 
 #======================================================================
 # helpers
 #======================================================================
-sub xError {
-  my ($message) = @_;
-  #  pod2usage(-message=>"$LaTeXML::IDENTITY\n$message",-exitval=>1, -verbose=>0,-output=>\*STDERR);
-  die "ERROR: $message\nUse the --help option for complete details\n";
-}
+# This section validates arguments as much as possible BEFORE invoking any LaTeXML components
+# (and WITHOUT invoking any LaTeXML Error handling)
+sub validate_args {
+  my @fails = ();
+  push(@fails, "Unrecognized trailing arguments " . join(',', @ARGV)) if @ARGV;
+
+  # Check search paths
+  @paths = map { pathname_canonical($_) } reverse(@paths);
+  if (my @baddirs = grep { !-d $_ } @paths) {
+    push(@fails, "These search paths do not exist: " . join(', ', @baddirs)); }
+
+  # Find the requested XML file
+  my $pathname;
+  if (!$xmlfile) {
+    push(@fails, "No input file given"); }
+  elsif ($xmlfile eq '-') {    # Any sense in pre-reading it here??
+  }
+  elsif (!($pathname = pathname_find($xmlfile, types => ['xml', ''], paths => ['.', @paths]))
+    || !-r $pathname) {
+    push(@fails, "Input file '$xmlfile' not readable"); }
+  else {
+    $xmlfile = $pathname; }
+  if ($pathname && !$logfile) {
+    my ($dir, $name, $ext) = pathname_split($pathname);
+    if ($name) {
+      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexmlpost.log'); } }
+  $logfile = 'latexmlpost.log' unless $logfile;
+
+  #======================================================================
+  # Sanity check and Completion of options.
+  #======================================================================
+  $sourcedir   = $sourcedir   && pathname_absolute($sourcedir,   pathname_cwd());
+  $destination = $destination && pathname_absolute($destination, pathname_cwd());
+  $sitedir     = $sitedir     && pathname_absolute($sitedir,     pathname_cwd());
+  $dbfile      = $dbfile      && pathname_absolute($dbfile,      pathname_cwd());
+
+  # Check for appropriate combination of split, scan, prescan, dbfile, crossref
+  if ($split && !defined $destination) {
+    push(@fails, "Must supply --destination when using --split"); }
+  if ($split) {
+    $splitnaming = checkOptionValue('--splitnaming', $splitnaming, \@fails,
+      qw(id idrelative label labelrelative));
+    # This needs to match one of list & return it OR push(@fails, some message)
+    $splitat   = checkOptionValue('--splitat', $splitat, \@fails, keys %$splitancestors);
+    $splitpath = make_splitpaths($splitat) unless defined $splitpath;
+  }
+  if ($prescan && !$scan) {
+    push(@fails, "Makes no sense to --prescan with scanning disabled (--noscan)"); }
+  if ($prescan && (!defined $dbfile)) {
+    push(@fails, "Cannot prescan documents (--prescan) without specifying --dbfile"); }
+  if (!$prescan && $crossref && !($scan || (defined $dbfile))) {
+    push(@fails, "Cannot cross-reference (--crossref) without --scan or --dbfile "); }
+  if ($crossref) {
+    $urlstyle = checkOptionValue('--urlstyle', $urlstyle, \@fails, qw(server negotiated file)); }
+  if (($permutedindex || $splitindex) && (!defined $index)) {
+    $index = 1; }
+  if (!$prescan && $index && !($scan || defined $crossref)) {
+    push(@fails, "Cannot generate index (--index) without --scan or --dbfile"); }
+  if (!$prescan && $bibliography && !($scan || defined $crossref)) {
+    push(@fails, "Cannot generate bibliography (--bibliography) without --scan or --dbfile"); }
+
+  $navtoc = lc($navtoc) if defined $navtoc;
+  $navtoc = undef       if $navtoc && $navtoc eq 'none';
+  if ($navtoc) {
+    if (!$navtocstyles{$navtoc}) {
+      push(@fails, "$navtoc is not a recognized style of navigation TOC (--navigationtoc)"); }
+    if (!$crossref) {
+      push(@fails, "Cannot use --navigationtoc=$navtoc without --crossref"); } }
+
+  # Before we start defaulting various kinds of math & graphics options, check the explicit ones
+  if ((!defined $destination)
+    && ($dographics || $picimages || checkMathFormat('images') || checkMathFormat('svg'))) {
+    push(@fails, "must supply --destination to support auxilliary image files (math and graphics)"); }
+
+  # Check format and complete math and image options
+  $format = 'html5' if (defined $format) && ($format eq 'html');
+  if    (!defined $format) { }
+  elsif ($format eq 'html4') {
+    $extension = 'html' unless defined $extension;
+    push(@fails, "Default html4 stylesheet only supports math images, not " . join(', ', @math_formats))
+      if (!defined $stylesheet) && scalar(grep { $_ ne 'images' } @math_formats);
+    push(@fails, "Default html4 stylesheet does not support --svg") if $svg;
+    maybeAddMathFormat('images');
+    $dographics = 1 unless defined $dographics;
+    $picimages  = 1 unless defined $picimages;
+    $is_html    = 1;
+    $stylesheet = "LaTeXML-html4.xsl" if !defined $stylesheet; }
+  elsif ($format eq 'html5') {
+    $extension = 'html' unless defined $extension;
+    # In principle, should only have pMML and possibly MathImages (for altimg);
+    # but I guess we can allow people to try...
+    maybeAddMathFormat('pmml');
+    $svg        = 1 unless defined $svg;
+    $dographics = 1 unless defined $dographics;
+    $is_html    = 1;
+    $stylesheet = "LaTeXML-html5.xsl" if !defined $stylesheet; }
+  elsif ($format eq 'xhtml') {
+    $extension = 'xhtml' unless defined $extension;
+    # Add pMML FIRST, unless already there, or was disabled.
+    # note that MathImages can supply altimg attributes
+    maybeAddMathFormat('pmml');
+    $svg        = 1 unless defined $svg;
+    $dographics = 1 unless defined $dographics;
+    $is_html    = 0;
+    $stylesheet = "LaTeXML-xhtml.xsl" if !defined $stylesheet; }
+  elsif ($format eq 'jats') {
+    $extension = 'xml' unless defined $extension;
+    # Add pMML FIRST, unless already there, or was disabled.
+    # note that MathImages can supply altimg attributes
+    maybeAddMathFormat('pmml');
+    $dographics = 1 unless defined $dographics;
+    $picimages  = 1 unless defined $picimages;
+    $is_html    = 0;
+    $stylesheet = "LaTeXML-jats.xsl" if !defined $stylesheet; }
+  elsif ($format eq 'tei') {
+    $extension = 'xml' unless defined $extension;
+    # Add pMML FIRST, unless already there, or was disabled.
+    # note that MathImages can supply altimg attributes
+    maybeAddMathFormat('pmml');
+    $dographics = 1 unless defined $dographics;
+    $picimages  = 1 unless defined $picimages;
+    $is_html    = 0;
+    $stylesheet = "LaTeXML-tei.xsl" if !defined $stylesheet; }
+  elsif ($format eq 'xml') {
+    $extension = 'xml' unless defined $extension; }
+  else {
+    push(@fails, "Unrecognized target format: $format"); }
+
+  # Check any XSLT parameters
+  foreach my $parm (@xsltparameters) {
+    if ($parm !~ /^\s*(\w+)\s*:\s*(.*)$/) {
+      push(@fails, "xsltparameter not in recognized format: 'name:value' got: '$parm'"); } }
+
+  if ((!defined $destination)    # Silently disable defaults that require a destination
+    && ($dographics || $picimages || checkMathFormat('images') || checkMathFormat('svg'))) {
+    $dographics = $picimages = 0;
+    removeMathFormat('images');
+    removeMathFormat('svg');
+    maybeAddMathFormat('pmml'); }
+  return @fails; }
 
 sub addMathFormat {
   my ($fmt) = @_;
@@ -508,12 +382,147 @@ sub checkMathFormat {
   return grep { $_ eq $fmt } @math_formats; }
 
 sub checkOptionValue {
-  my ($option, $value, @choices) = @_;
+  my ($option, $value, $failsref, @choices) = @_;
   if ($value) {
     foreach my $choice (@choices) {
       return $choice if substr($choice, 0, length($value)) eq $value; } }
-  xError("Value for $option, $value, doesn't match " . join(', ', @choices));
+  push(@$failsref, "Value for $option, $value, doesn't match " . join(', ', @choices));
   return; }
+
+# Contrived xpath, since backmatter can now be at any level!
+sub make_splitpaths {
+  my ($splitat) = @_;
+  my @paths     = ();
+  my $anc       = $$splitancestors{$splitat};
+  foreach my $unit ($splitat, ($anc ? @$anc : ())) {
+    push(@paths, "//ltx:$unit");
+    foreach my $back (@$splitback) {
+      push(@paths, "//ltx:$back\["
+          . join(' or ', "preceding-sibling::ltx:$unit",
+          map { "parent::ltx:$_"; } @{ $$splitancestors{$unit} })
+          . "]"); } }
+  return join(' | ', @paths); }
+
+#======================================================================
+# The rest occurs within a LaTeXML context.
+sub assemble_postprocessors {
+  my ($DB, %OPTIONS) = @_;
+  my @procs = ();
+  if ($split) {
+    require LaTeXML::Post::Split;
+    push(@procs, LaTeXML::Post::Split->new(split_xpath => $splitpath, splitnaming => $splitnaming,
+        db => $DB, %OPTIONS)); }
+
+  our $scanner = ($scan || $DB) && LaTeXML::Post::Scan->new(db => $DB,
+    ($splitnaming && ($splitnaming =~ /^label/) ? (labelids => 1) : ()),
+    %OPTIONS);
+
+  if ($scan) {
+    push(@procs, $scanner); }
+
+  if (!$prescan) {
+    if ($index) {
+      require LaTeXML::Post::MakeIndex;
+      push(@procs, LaTeXML::Post::MakeIndex->new(db => $DB, permuted => $permutedindex,
+          split => $splitindex, scanner => $scanner,
+          %OPTIONS)); }
+    if ($bibliography) {
+      require LaTeXML::Post::MakeBibliography;
+      push(@procs, LaTeXML::Post::MakeBibliography->new(db => $DB, bibliographies => [@bibliographies],
+          split => $splitbibliography, scanner => $scanner,
+          %OPTIONS)); }
+    if ($crossref) {
+      require LaTeXML::Post::CrossRef;
+      push(@procs, LaTeXML::Post::CrossRef->new(
+          db        => $DB,
+          urlstyle  => $urlstyle,
+          extension => $extension,
+          ($numbersections ? (number_sections => 1)       : ()),
+          ($navtoc         ? (navigation_toc  => $navtoc) : ()),
+          %OPTIONS)); }
+
+    if ($picimages) {
+      require LaTeXML::Post::PictureImages;
+      push(@procs, LaTeXML::Post::PictureImages->new(%OPTIONS)); }
+    if ($dographics) {
+      require LaTeXML::Post::Graphics;
+      my @g_options = ();
+      if (@graphicsmaps) {
+        my @maps = map { [split(/\./, $_)] } @graphicsmaps;
+        push(@g_options, (graphics_types => [map { $$_[0] } @maps],
+            type_properties => { map { ($$_[0] => { destination_type => ($$_[1] || $$_[0]) }) } @maps })); }
+      push(@procs, LaTeXML::Post::Graphics->new(@g_options, %OPTIONS)); }
+    if ($svg) {
+      require LaTeXML::Post::SVG;
+      push(@procs, LaTeXML::Post::SVG->new(%OPTIONS)); }
+    if (@math_formats) {
+      my @mprocs = ();
+###    # If XMath is not first, it must be at END!  Or... ???
+      foreach my $fmt (@math_formats) {
+        if ($fmt eq 'XMath') {
+          require LaTeXML::Post::XMath;
+          push(@mprocs, LaTeXML::Post::XMath->new(%OPTIONS)); }
+        elsif ($fmt eq 'pmml') {
+          require LaTeXML::Post::MathML::Presentation;
+          push(@mprocs, LaTeXML::Post::MathML::Presentation->new(
+              linelength => $linelength,
+              (defined $plane1 ? (plane1     => $plane1) : (plane1 => 1)),
+              ($hackplane1     ? (hackplane1 => 1)       : ()),
+              %OPTIONS)); }
+        elsif ($fmt eq 'cmml') {
+          require LaTeXML::Post::MathML::Content;
+          push(@mprocs, LaTeXML::Post::MathML::Content->new(
+              (defined $plane1 ? (plane1     => $plane1) : (plane1 => 1)),
+              ($hackplane1     ? (hackplane1 => 1)       : ()),
+              %OPTIONS)); }
+        elsif ($fmt eq 'om') {
+          require LaTeXML::Post::OpenMath;
+          push(@mprocs, LaTeXML::Post::OpenMath->new(
+              (defined $plane1 ? (plane1     => $plane1) : (plane1 => 1)),
+              ($hackplane1     ? (hackplane1 => 1)       : ()),
+              %OPTIONS)); }
+        elsif ($fmt eq 'images') {
+          require LaTeXML::Post::MathImages;
+          push(@mprocs, LaTeXML::Post::MathImages->new(magnification => $mathimagemag,
+              %OPTIONS)); }
+        elsif ($fmt eq 'svg') {
+          require LaTeXML::Post::MathImages;
+          push(@mprocs, LaTeXML::Post::MathImages->new(magnification => $mathimagemag, imagetype => 'svg',
+              %OPTIONS)); }
+        elsif ($fmt eq 'mathtex') {
+          require LaTeXML::Post::TeXMath;
+          push(@mprocs, LaTeXML::Post::TeXMath->new(%OPTIONS)); }
+      }
+      my $main = shift(@mprocs);
+      $main->setParallel(@mprocs);
+      push(@procs, $main); }
+
+    if ($stylesheet) {
+      require LaTeXML::Post::XSLT;
+      # Copy various kinds of resources, css, javascript, icon (others?)
+      my $parameters = { LATEXML_VERSION => "'$LaTeXML::VERSION'" };
+      # store these for the XSLT; XSLT Processor will copy resources where needed.
+      foreach my $css (@css) {
+        push(@{ $$parameters{CSS} }, $css); }
+      foreach my $js (@javascript) {
+        push(@{ $$parameters{JAVASCRIPT} }, $js); }
+      if ($icon) {
+        $$parameters{ICON} = $icon; }
+      if (!defined $timestamp) {
+        $timestamp = localtime(); }
+      if ($timestamp) {
+        $$parameters{TIMESTAMP} = "'" . $timestamp . "'"; }
+      # Now add in the explicitly given XSLT parameters
+      foreach my $parm (@xsltparameters) {
+        if ($parm =~ /^\s*(\w+)\s*:\s*(.*)$/) {
+          $$parameters{$1} = "'" . $2 . "'"; } }
+      push(@procs, LaTeXML::Post::XSLT->new(stylesheet => $stylesheet, parameters => $parameters,
+          resource_directory => $resourcedir,
+          noresources        => (defined $defaultresources) && !$defaultresources,
+          %OPTIONS)); }
+
+    push(@procs, LaTeXML::Post::Writer->new(format => $format, omit_doctype => $omit_doctype, is_html => $is_html, %OPTIONS)); }
+  return @procs; }
 
 #**********************************************************************
 __END__
@@ -682,7 +691,8 @@ graphics will be converted to web-friendly formats and/or copied to the
 destination directory. If you simply specify C<html>, it will treat that as C<html5>.
 
 For the default, C<xml>, the output is left in LaTeXML's internal xml,
-but the math is parsed and converted to presentation MathML.
+although the math can be converted by enabling one of the math postprocessors,
+such as --pmml to obtain presentation MathML.
 For html, html5 and xhtml, a default stylesheet is provided, but see
 the C<--stylesheet> option.
 
@@ -711,7 +721,7 @@ format (html4, html5 or xhtml) will be used.
 
 Adds I<cssfile> as a css stylesheet to be used in the transformed html/html5/xhtml.
 Multiple stylesheets can be used; they are included in the html in the
-order given, following the default C<ltx-LaTeXML.css> (unless C<--nodefaultcss>).
+order given, following the default C<ltx-LaTeXML.css>.
 The stylesheet is copied to the destination directory, unless it is an absolute url.
 
 Some stylesheets included in the distribution are

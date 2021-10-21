@@ -17,7 +17,7 @@ use LaTeXML::Common::Object;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Core::Token qw(T_CS);
 use Time::HiRes;
-use Term::ANSIColor 2.01 qw(colored colorstrip);
+use Term::ANSIColor qw(colored colorstrip);
 
 use base qw(Exporter);
 our @EXPORT = (
@@ -49,6 +49,7 @@ our $USE_STDERR  = undef;
 sub SetVerbosity {
   return $VERBOSITY = $_[0] || 0; }
 
+our $DIE_MESSAGE = "LaTeXML died!\n";    # with cr
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Terminal setup
 
@@ -143,21 +144,38 @@ sub _printline {
   return if (!$LOG && !($USE_STDERR && ($VERBOSITY >= 0)));
   $message =~ s/^\n+//s;    # Strip newlines off ends.
   $message =~ s/\n+$//s;
-  my $clean_message = ($LOG || !$IS_TERMINAL ? strip_ansi($message) : $message);
-  $message = $clean_message unless $IS_TERMINAL;
-  if ($LOG) {
-    print $LOG _freshline($LOG), $clean_message, "\n"; }
-  # Spinner logic only for terminal-enabled applications
-  if ($USE_STDERR && ($VERBOSITY >= 0)) {
-    _spinnerclear();
-    my $short = $message;
-    if ($short =~ /^([^\n]*)(:?\n\s*(at\s+[^\n]*))?/s) {
-      my ($first, $more, $at) = ($1, $2, $3);
-      $at =~ s/\s+-\s+.*$// if $at;
-      $short = $first;
-      $short .= ' ' . $at if $at; }
-    print STDERR _freshline(\*STDERR), $short, "\n";    ##}
-    _spinnerrestore(); }
+  if (my $clean_message = ($LOG || !$IS_TERMINAL ? strip_ansi($message) : $message)) {
+    $message = $clean_message unless $IS_TERMINAL;
+    if ($LOG) {
+      print $LOG _freshline($LOG), $clean_message, "\n"; }
+    # Spinner logic only for terminal-enabled applications
+    if ($USE_STDERR && ($VERBOSITY >= 0)) {
+      _spinnerclear();
+      my $short = $message;
+      if ($short =~ /^([^\n]*)(:?\n\s*(at\s+[^\n]*))?/s) {
+        my ($first, $more, $at) = ($1, $2, $3);
+        $at =~ s/\s+-\s+.*$// if $at;
+        $short = $first;
+        $short .= ' ' . $at if $at; }
+      print STDERR _freshline(\*STDERR), $short, "\n";    ##}
+      _spinnerrestore(); } }
+  return; }
+
+# Similar, but print ALL lines to STDERR as well.
+sub _printlines {
+  my ($message) = @_;
+  return if (!$LOG && !($USE_STDERR && ($VERBOSITY >= 0)));
+  $message =~ s/^\n+//s;    # Strip newlines off ends.
+  $message =~ s/\n+$//s;
+  if (my $clean_message = ($LOG || !$IS_TERMINAL ? strip_ansi($message) : $message)) {
+    $message = $clean_message unless $IS_TERMINAL;
+    if ($LOG) {
+      print $LOG _freshline($LOG), $clean_message, "\n"; }
+    # Spinner logic only for terminal-enabled applications
+    if ($USE_STDERR && ($VERBOSITY >= 0)) {
+      _spinnerclear();
+      print STDERR _freshline(\*STDERR), $message, "\n";    ##}
+      _spinnerrestore(); } }
   return; }
 
 our %NEEDSFRESHLINE = ();
@@ -218,10 +236,10 @@ sub _spinnerstep {    # Increment stepper
   if ($USE_STDERR && $IS_TERMINAL && ($VERBOSITY >= 0) && @spinnerstack) {
     my ($stage, $short, $start) = @{ $spinnerstack[-1] };
     $spinnerpos = ($spinnerpos + 1) % 4;
-    if ($note) {      # If note, redraw whole line.
+    if ($note) {    # If note, redraw whole line.
       print STDERR join(' ', $spinnerpre, $spinnerchar[$spinnerpos],
         (map { $$_[1]; } @spinnerstack), $note, "\x1b[0K"), $spinnerpost; }
-    else {            # overwrite previous spinner
+    else {          # overwrite previous spinner
       print STDERR $spinnerpre . ' ', $spinnerchar[$spinnerpos], $spinnerpost; } }
   return; }
 
@@ -255,16 +273,11 @@ sub Fatal {
 
   # We'll assume that if the DIE handler is bound (presumably to this function)
   # we're in the outermost call to Fatal; we'll clear the handler so that we don't nest calls.
-  die $message if $LaTeXML::IGNORE_ERRORS        # Short circuit, w/no formatting, if in probing eval
+  die $DIE_MESSAGE if $LaTeXML::IGNORE_ERRORS    # Short circuit, w/no formatting, if in probing eval
     || (($SIG{__DIE__} eq 'DEFAULT') && $^S);    # Also missing class when parsing bindings(?!?!)
 
-  # print STDERR "\nHANDLING FATAL:"
-  #   ." ignore=".($LaTeXML::IGNORE_ERRORS || '<no>')
-  #   ." handler=".($SIG{__DIE__}||'<none>')
-  #   ." parsing=".($^S||'<no>')
-  #   ."\n";
   my $inhandler = !$SIG{__DIE__};
-  my $ineval    = 0;                # whether we're in an eval should no longer matter!
+  my $ineval    = 0;                             # whether we're in an eval should no longer matter!
 
   # This seemingly should be "local", but that doesn't seem to help with timeout/alarm/term?
   # It should be safe so long as the caller has bound it and rebinds it if necessary.
@@ -285,19 +298,18 @@ sub Fatal {
     # This really should be handled by the top-level program,
     # after doing all processing within an eval
     # BIZARRE: Note that die adds the "at <file> <line>" stuff IFF the message doesn't end w/ CR!
-    $message .= $state->getStatusMessage . "\n" if $state && !$ineval;
+####    $message .= $state->getStatusMessage . "\n" if $state && !$ineval;
   }
   else {    # If we ARE in a recursive call, the actual message is $details[0]
     $message = $details[0] if $details[0]; }
   # inhibit message to STDERR, since die will handle that
-  print $LOG _freshline($LOG), strip_ansi($message), "\n" if $LOG;
-
+  _printlines($message);
   hardYankProcessing();
   # Now that we have yanked the processing state, ignore any following errors
   $LaTeXML::IGNORE_ERRORS = 1;
 
   # If inside an eval, this won't actually die, but WILL set $@ for caller's use.
-  die $message; }
+  die $DIE_MESSAGE; }
 
 sub hardYankProcessing {
   my $state = $STATE;
@@ -343,10 +355,10 @@ sub Error {
   my ($category, $object, $where, $message, @details) = @_;
   return if $LaTeXML::IGNORE_ERRORS;
   my $state = $STATE;
+  $state && $state->noteStatus('error');
   if ($state && $state->lookupValue('STRICT')) {
     Fatal($category, $object, $where, $message, @details); }
   else {
-    $state && $state->noteStatus('error');
     my $formatted = generateMessage("Error:" . $category . ":" . ToString($object),
       $where, $message, 1, @details);
     _printline($formatted); }
@@ -454,7 +466,7 @@ sub DebuggableFeature {
 sub Debug {
   my ($message) = @_;
   # Note: Could append source code location of the caller?
-  _printline($message);
+  _printlines($message);
   return; }
 
 # This only makes sense at end of run, after all needed modules have been loaded!
@@ -529,7 +541,7 @@ sub perl_warn_handler {
     my ($warning, $where) = ($1, $2);
     Warn('perl', 'warn', undef, $warning, $where, @line[1 .. $#line]); }
   else {
-    Warn('perl', 'warn', undef, "Perl warning", @line); }
+    Warn('perl', 'warn', undef, @line); }
   return; }
 
 # The following handlers SHOULD report the problem,

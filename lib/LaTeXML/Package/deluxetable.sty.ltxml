@@ -32,11 +32,11 @@ DefMacro('\dummytable', '\refstepcounter{table}');
 
 DefMacroI(T_CS('\begin{deluxetable}'), "{}",
   '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
-DefMacroI(T_CS('\end{deluxetable}'), undef, '\end{table}');
+DefMacroI(T_CS('\end{deluxetable}'), undef, '\spew@tblnotes\end{table}');
 
 DefMacroI(T_CS('\begin{deluxetable*}'), "{}",
   '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
-DefMacroI(T_CS('\end{deluxetable*}'), undef, '\end{table}');
+DefMacroI(T_CS('\end{deluxetable*}'), undef, '\spew@tblnotes\end{table}');
 
 DefMacro('\set@deluxetable@template AlignmentTemplate', sub {
     AssignValue('@deluxetable@template', $_[1]); });
@@ -57,15 +57,23 @@ DefPrimitive('\@end@deluxetabular', sub { $_[0]->egroup; });
 #======================================================================
 # 2.15.2 Preamble to the deluxetable
 
-DefMacro('\tabletypesize{}',       '');                    # Ignorable
-DefMacro('\rotate',                '');                    # Ignorable ?
-DefMacro('\tabletail{}',           '');                    # analog to head? but its ignored!!
-DefMacro('\tablewidth{Dimension}', '');                    # Ignorable?
-DefMacro('\tableheadfrac{}',       '');                    # Ignorable
+# add the internal registers, just in case, ignored for now.
+DefRegisterI(T_CS('\pt@width'),  undef, Dimension(6));
+DefRegisterI(T_CS('\pt@line'),   undef, Dimension(0));
+DefRegisterI(T_CS('\pt@column'), undef, Dimension(0));
+DefRegisterI(T_CS('\pt@nlines'), undef, Dimension(0));
+DefRegisterI(T_CS('\pt@ncol'),   undef, Dimension(0));
+DefRegisterI(T_CS('\pt@page'),   undef, Dimension(0));
+
+DefMacro('\tabletypesize{}',       '');                      # Ignorable
+DefMacro('\rotate',                '');                      # Ignorable ?
+DefMacro('\tabletail{}',           '');                      # analog to head? but its ignored!!
+DefMacro('\tablewidth{Dimension}', '\pt@width=#1\relax');    # Ignorable?
+DefMacro('\tableheadfrac{}',       '');                      # Ignorable
 DefMacro('\tablenum{}',            '\def\thetable{#1}');
 # Note: This needs an UnRefStepCounter('table');
 
-DefMacro('\tablecolumns{Number}', '');                     # Ignorable ???
+DefMacro('\tablecolumns{Number}', '');                       # Ignorable ???
 
 Let('\tablecaption', '\caption');
 
@@ -76,10 +84,10 @@ DefMacro('\twocolhead{}', '\multicolumn{2}{c}{\hss #1 \hss}');
 DefMacro('\nocolhead{}',  '\multicolumn{1}{h}{#1}');
 DefMacro('\dcolhead{}',   '\multicolumn{1}{c}{$\relax#1$}');
 
-DefMacro('\nl',          '\\\\[0pt]');                     # Obsolete form
-DefMacro('\nextline',    '\\\\[0pt]');                     # Obsolete form
-DefMacro('\tablevspace', '\\\\[0pt]');                     # Obsolete form
-DefMacro('\tablebreak',  '\\\\[0pt]');                     # Obsolete form
+DefMacro('\nl',          '\\\\[0pt]');                       # Obsolete form
+DefMacro('\nextline',    '\\\\[0pt]');                       # Obsolete form
+DefMacro('\tablevspace', '\\\\[0pt]');                       # Obsolete form
+DefMacro('\tablebreak',  '\\\\[0pt]');                       # Obsolete form
 
 #======================================================================
 # 2.15.3 Content of deluxetable
@@ -92,6 +100,7 @@ DefMacro('\sidehead{}',  '\hline\multicolumn{\@alignment@ncolumns}{l}{#1}\\\\\hl
 
 DefMacro('\tableline', '\hline');
 
+# A good article to test these macros on is arXiv:astro-ph/0001334
 DefConstructor('\tablenotemark{}',
   "<ltx:note role='footnotemark' mark='#1'></ltx:note>",
   mode => 'text');
@@ -99,8 +108,29 @@ DefConstructor('\tablenotetext{}{}',
   "<ltx:note role='footnotetext' mark='#1'>#2</ltx:note>",
   mode => 'text');
 
-DefMacro('\tablerefs{}',     'References. -- #1');
-DefMacro('\tablecomments{}', 'Note. -- #1');
+# hardcoding \textwidth instead of doing the \pt@width arithmetic, which would need more work.
+# the important bit is timing \spew@tblnotes correctly, so that the notes are
+# flushed at the end of the figure, after the table is closed.
+DefMacro('\tablerefs{}', sub {
+    AddToMacro(T_CS('\tblnote@list'),
+      Invocation(T_CS('\@tableref'), $_[1])->unlist(),
+      TokenizeInternal('\let\email\@@email')->unlist()); });
+DefMacro('\@tableref{}', '\par
+ \vspace*{3ex}%
+ {\parbox{\textwidth}{\hskip1em\rmfamily References. --- #1}\par}}');
+DefMacro('\tablecomments{}', sub {
+    AddToMacro(T_CS('\tblnote@list'),
+      Invocation(T_CS('\@tablecom'), $_[1])->unlist());
+});
+
+DefMacro('\@tablecom{}', '\par 
+ \vspace*{3ex}% 
+ {\parbox{\textwidth}{\hskip1em\rmfamily Note. --- #1}\par}');
+DefMacro('\spew@tblnotes',
+  '\@tablenotes{\tblnote@list}\global\let\tblnote@list\@empty');
+DefMacro('\@tablenotes{}', '\par 
+ \vspace{4.5ex}\footnoterule\vspace{.5ex}%
+ {\footnotesize #1}');
 
 #======================================================================
 # Other esoterica
@@ -111,5 +141,13 @@ DefMacro('\dlap{}', '#1');
 
 # MISSING, but any usage here would fail, anyway...
 # \appdef, \appgdef, \prepdef
+
+AtBeginDocument('\let\tblnote@list\@empty
+\let\pt@caption\@empty 
+\let\pt@head\@empty 
+\let\pt@tail\@empty 
+\pt@width\textwidth 
+\def\pt@headfrac{.1}');
+
 #======================================================================
 1;

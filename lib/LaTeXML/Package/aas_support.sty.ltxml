@@ -123,9 +123,9 @@ DefMacro('\altaffilmark{}', sub {
     my ($gullet, $marks) = @_;
     map { (T_CS('\@altaffilmark'), T_BEGIN, @$_, T_END) } SplitTokens($marks, T_OTHER(',')); });
 DefConstructor('\@altaffilmark{}',
-  "<ltx:note role='affiliationmark' mark='#1'/> ");
+  "?#1(<ltx:note role='affiliationmark' mark='#1'/> )()");
 DefConstructor('\altaffiltext{}{}',
-  "<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>");
+  "?#2(<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>)()");
 
 DefMacro('\software{}',      '\@add@frontmatter{ltx:note}[role=software]{#1}');
 DefMacro('\submitjournal{}', '\@add@frontmatter{ltx:note}[role=journal]{#1}');
@@ -343,7 +343,7 @@ DefMacro('\aas@start@D@column XUntil:\aas@end@D@column', sub {
         T_CS('\@ADDCLASS'), T_BEGIN, T_OTHER('ltx_norightpad'), T_END,
         T_CS('\@alignment@align'),
         T_CS('\@ADDCLASS'), T_BEGIN, T_OTHER('ltx_noleftpad'), T_END,
-        T_OTHER('.'), @$f)
+        T_OTHER('.'),       @$f)
       : ($n,
         T_CS('\@ADDCLASS'), T_BEGIN, T_OTHER('ltx_norightpad'), T_END,
         T_CS('\@alignment@align')));
@@ -474,7 +474,7 @@ DefConstructor('\aas@@fstack Undigested {}',
     . "<ltx:XMWrap>#2</ltx:XMWrap>"
     . "</ltx:XMApp>",
   properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } },
-  mode => 'math', font => { shape => 'upright' }, bounded => 1, reversion => '#1');
+  mode       => 'math', font => { shape => 'upright' }, bounded => 1, reversion => '#1');
 DefMacro('\aas@fstack{}', '\ensuremath{\aas@@fstack{#1}}');
 
 DefMacro('\fd',    '\ensuremath{\@fd}');

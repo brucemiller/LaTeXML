@@ -1,3 +1,30 @@
+0.8.6 2021-09-30
+      - This release addresses a large variety of usability, fidelity, robustness,
+        portability and output-quality issues.
+      - The Error handling system now produces both a log file (with details) and
+        a brief term-styled output on STDERR.
+      - Even when Fatal errors are encountered, the document "so far" is returned.
+      - Many improvesments were made to mimicing more closely TeX's commands
+        and LaTeX internals, along with more testcases to detect regressions.
+      - Major revision of Alignments (\halign, tabular, etc) to be more TeX-like,
+        with respect to the timing of expansion.
+      - Many Errors and Fatals are now fixed or avoided.
+      - The Windows platform is much better supported.
+      - Output to HTML, CSS, JATS, TEI have been updated, modernized and validated.
+      - tikz/pgf and picture environment output is improved.
+      - new bindings: actuarialangle.sty, adjustbox.sty, diagbox.sty, elsart_support_core.sty,
+        espcrc.sty, fancybox.sty, filehook.sty, hepunits.sty, hypcap.sty, ifplatform.sty,
+        mathabx.sty, minimal.cls, pgfplotstable.sty, prettyref.sty, proof.sty, proofwiki.sty,
+        psfrag.sty, SIunits.sty, slashbox.sty, standalone.cls, standalone.sty, xfrac.sty
+
+      Thanks to Deyan Ginev and Tom Wiesing for ongoing development and support;
+      Special thanks to Vincenzo Mantova for improvements to Windows portability and ePub.
+      Patches from: Gabor Szabo, Heinrich Stamerjohanns, Robert Gieseke, W. Michael Petullo;
+      Reports from: ADavidTR, Dennis Mueller, Evgeny Epifanovsky, Henrik Tidefelt, Jack Griffiths,
+      Karen Fort, Kazuhiro Ando, Michael Kohlhase, Norman Gray, Tim Prescott, Tobias Diez, VB24,
+      aivokalu, cyber-g, goska, hpreusse, siegriedzoetzsche, yatescr;
+      And probably some folks accidentally overlooked.
+
 0.8.5 2020-11-17
       - Acknowledging his many contributions to LaTeXML,
         Deyan Ginev is recognized as a co-developer.

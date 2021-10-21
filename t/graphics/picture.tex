@@ -1,5 +1,7 @@
 \documentclass{article}
 %\usepackage{graphpap}
+\usepackage{amsmath}
+\usepackage{multirow}
 \begin{document}
 
 \section{Basic}
@@ -10,7 +12,8 @@ Math: $a=b$
 %\end{document}
 
 \section{Pictures}
-\paragraph{Lines:} using integers, scaling with floats, \LaTeX counters, TeX counters.
+\subsection{Lines:} using integers, scaling with floats, \LaTeX counters, TeX counters.
+
 All should be the same.
 \par
 \begin{picture}(100,100)
@@ -43,38 +46,99 @@ All should be the same.
 \end{picture}
 %\end{document}
 
-\paragraph{Vectors:}
+\subsection{Vectors:}
+
 \begin{picture}(100,100)(-100,-100)
 \put(0,0){\vector(-1, 0){100}}
 \put(0,0){\vector(-1,-1){100}}
 \put(0,0){\vector( 0,-1){100}}
 \end{picture}
 
-\paragraph{Boxes;}
+\subsection{Boxes;}
+
 \begin{picture}(100,100)
 \put(0,0){\bf A}
 \put(15,15){\framebox(15,15){A}}
 \put(30,30){\framebox(15,15){\bf A}}
 \put(45,45){\framebox(15,15){A}}
-\put(60,20){\frame{\shortstack{A\\B\\\bf C\\D}}}
+\put(60,30){\frame{\shortstack{A\\B\\\bf C\\D}}}
 \put(75,20){\framebox(15,80){\shortstack{A\\\bf B\\C\\D}}}
 \end{picture}
 
-\paragraph{Circles:}
+\begin{picture}(100,40)
+  \put(0,0){\makebox(10,10){x}}
+  \put(20,0){\framebox(10,10){x}}
+  \put(40,0){\dashbox{2}(10,10){x}}
+  \put(60,0){\frame{x}}
+\end{picture}
+
+\subsection{Box positioning}
+
+Xg
+vs. $Xg$
+vs. \begin{picture}(12,12)\put(0,0){Xg}\end{picture}
+vs. \begin{picture}(12,12)\put(0,0){$Xg$}\end{picture}
+vs. \begin{picture}(12,12)\put(0,0){\makebox(12,12)[bl]{Xg}}\end{picture}
+vs. \begin{picture}(12,12)\put(0,0){\makebox(12,12)[bl]{$Xg$}}\end{picture}
+
+\begin{picture}(120,120)
+  \put(  0,  0){\line(1,0){120}}
+  \put(  0, 20){\line(1,0){120}}
+  \put(  0, 40){\line(1,0){120}}
+  \put(  0, 60){\line(1,0){120}}
+  \put(  0, 80){\line(1,0){120}}
+  \put(  0,100){\line(1,0){120}}
+  \put(  0,120){\line(1,0){120}}
+  \put(  0,  0){\line(0,1){120}}
+  \put( 20,  0){\line(0,1){120}}
+  \put( 40,  0){\line(0,1){120}}
+  \put( 60,  0){\line(0,1){120}}
+  \put( 80,  0){\line(0,1){120}}
+  \put(100,  0){\line(0,1){120}}
+  \put(120,  0){\line(0,1){120}}
+  \put(  0, 20){Xg}
+  \put( 60, 20){$Xg$}
+  \put( 40, 20){\makebox(0,0){Xg}}
+  \put(100, 20){\makebox(0,0){$Xg$}}
+  \put(  0, 60){\makebox(20,20)[tl]{Xg}}
+  \put( 20, 60){\makebox(20,20)[t]{Xg}}
+  \put( 40, 60){\makebox(20,20)[tr]{Xg}}
+  \put(  0, 80){\makebox(20,20)[l]{Xg}}
+  \put( 20, 80){\makebox(20,20)[]{Xg}}
+  \put( 40, 80){\makebox(20,20)[r]{Xg}}
+  \put(  0,100){\makebox(20,20)[bl]{Xg}}
+  \put( 20,100){\makebox(20,20)[b]{Xg}}
+  \put( 40,100){\makebox(20,20)[br]{Xg}}
+  \put( 60, 60){\makebox(20,20)[tl]{$Xg$}}
+  \put( 80, 60){\makebox(20,20)[t]{$Xg$}}
+  \put(100, 60){\makebox(20,20)[tr]{$Xg$}}
+  \put( 60, 80){\makebox(20,20)[l]{$Xg$}}
+  \put( 80, 80){\makebox(20,20)[]{$Xg$}}
+  \put(100, 80){\makebox(20,20)[r]{$Xg$}}
+  \put( 60,100){\makebox(20,20)[bl]{$Xg$}}
+  \put( 80,100){\makebox(20,20)[b]{$Xg$}}
+  \put(100,100){\makebox(20,20)[br]{$Xg$}}
+\end{picture}
+
+\subsection{Circles:}
+
 \begin{picture}(100,100)
-\put(30,30){\circle{30}\vector(0,1){15}\circle*{5}}
+\put(20,20){\circle{30}\vector(0,1){15}\circle*{5}}
 \put(70,70){\oval(60,30)}
+\put(70,20){\oval(45,30)}
 \end{picture}
 
 \vskip 1em
 
-\paragraph{Curves:}
+\subsection{Curves:}
+
 \begin{picture}(100,100)
 \qbezier(40,80)(80,120)(100,80)
 \qbezier[50](40,89)(80,129)(100,89)
 \end{picture}
 
-\paragraph{Repeats:}
+\subsection{Repeats:}
+
 \begin{picture}(100,100)
 \multiput(0,0)(10,10){11}{a}
 \end{picture}
@@ -87,5 +151,213 @@ All should be the same.
 \put(50,50){\framebox(10,10)[t]{\circle{5}}}
 \put(60,60){\framebox(10,10)[b]{\circle{5}}}
 \end{picture}
+
+\section{User Examples}
+\begin{picture}(100,100)(-30,0)\thicklines
+	\put(11,11){\vector(1,1){33}}
+	\put(44,44){\line(1,1){23.5}}
+	\put(75.5,71){\vector(1,0){24.5}}
+	\put(100,71){\line(1,0){20}}
+	\put(0,0){O}
+	\put(33,43){$\vec{r}$}
+	\put(93,78){$\vec{p}$}
+	\put(71,71){\circle{10}}
+	\put(11,11){\circle*{3}}
+	\put(66.5,68){$\times$}
+	\put(58,75){$\vec{L}$}
+\end{picture}
+
+Impressive, eh?
+
+
+\begin{figure}[!ht] \centering
+\begin{picture}(70,65)
+\put(12,57){\makebox(0,0){$F(x,y)$}}
+
+\put(30,40){\line(1,0){40}}
+\put(30,20){\line(1,0){40}}
+\put(30,0){\line(1,0){40}}
+
+\put(30,0){\line(0,1){40}}
+\put(50,0){\line(0,1){40}}
+\put(70,0){\line(0,1){40}}
+
+\put(50,57){\makebox(0,0){$y$}}
+\put(40,47){\makebox(0,0){\footnotesize $0$}}
+\put(60,47){\makebox(0,0){\footnotesize $1$}}
+
+\put(14,20){\makebox(0,0){$x$}}
+\put(22,30){\makebox(0,0){\footnotesize $0$}}
+\put(22,10){\makebox(0,0){\footnotesize $1$}}
+
+\put(40,30){\makebox(0,0){$m_0$}}
+\put(60,30){\makebox(0,0){$m_1$}}
+\put(40,10){\makebox(0,0){$m_2$}}
+\put(60,10){\makebox(0,0){$m_3$}}
+\end{picture}
+\caption{Mapping of two-variable minterms on a Karnaugh map.}
+\label{fg:kmap2}
+\end{figure}
+
+\section{DLMF Examples}
+\begin{figure}[h]
+  \setlength{\unitlength}{0.035in}
+  \centering
+  \begin{picture}(152,38)(-1,-1)
+    \put(0,31){\makebox(2,6){\small 1}}
+    \put(0,26){\framebox(2,6){$s$}}
+    \put(3,31){\makebox(8,6){\small 8}}
+    \put(3,26){\framebox(8,6){$E$}}
+    \put(12,31){\makebox(23,6){\small 23 bits}}
+    \put(12,26){\framebox(23,6){$f$}}
+    \put(133,31){$N=32$,}
+    \put(135,27){$p=24$}
+%
+    \put(0,18){\makebox(2,6){\small 1}}
+    \put(0,13){\framebox(2,6){$s$}}
+    \put(3,18){\makebox(11,6){\small 11}}
+    \put(3,13){\framebox(11,6){$E$}}
+    \put(15,18){\makebox(52,6){\small 52 bits}}
+    \put(15,13){\framebox(52,6){$f$}}
+    \put(133,17){$N=64$,}
+    \put(135,13){$p=53$}
+%
+    \put(0,5){\makebox(2,6){\small 1}}
+    \put(0,0){\framebox(2,6){$s$}}
+    \put(3,5){\makebox(15,6){\small 15}}
+    \put(3,0){\framebox(15,6){$E$}}
+    \put(19,5){\makebox(112,6){\small 112 bits}}
+    \put(19,0){\framebox(112,6){$f$}}
+    \put(133,4){$N=128$,}
+    \put(135,0){$p=113$}
+  \end{picture}
+\caption[{Representation of data in the binary interchange formats 
+  for binary32, binary64 and binary128.}]
+  {Floating-point arithmetic. Representation of data in the binary 
+  interchange formats for binary32, binary64 and binary128
+  (previously single, double and quad precision).}
+\end{figure}
+
+
+
+\begin{table}[h]
+    \caption{Cubature formulas for disk and
+square.}
+\setlength{\unitlength}{0.35in}%
+\divide\tabcolsep2\relax
+%\renewcommand{\arraystretch}{2}%
+\renewcommand{\arraystretch}{1.2}%
+\makeatletter
+\def\dodots{\@ifnextchar({\dodot}{}}%)
+\def\dodot(#1,#2){\put(#1,#2){\circle*{0.15}}\dodots}
+\def\doaxes{%
+   \multiput(0,0)(0.1,0){10}{\line(1,0){0.05}}
+   \multiput(0,0)(0,0.1){10}{\line(0,1){0.05}}
+   \multiput(0,0)(-0.1,0){10}{\line(-1,0){0.05}}
+   \multiput(0,0)(0,-0.1){10}{\line(0,-1){0.05}}
+}
+\makeatother
+\newcommand{\circleframe}[1]{
+%\raisebox{-0.6in}{
+%\vrule height 1em depth 1in width 0pt\relax
+\begin{picture}(2.4,3.0)(-1.2,-1.55)%
+   \doaxes
+   \put(0,0){\circle{2}}
+   \dodots#1
+\end{picture}}%}
+\newcommand{\squareframe}[1]{
+%\raisebox{-0.6in}{
+%\vbox to 1in {
+%\vrule height 1em depth 1in width 0pt\relax
+\begin{picture}(2.4,3.0)(-1.2,-1.55)%
+   \doaxes
+   \put(-1,1){\line(1,0){2}}
+   \put(-1,1){\line(0,-1){2}}
+   \put(1,-1){\line(-1,0){2}}
+   \put(1,-1){\line(0,1){2}}
+   \dodots#1
+\end{picture}}%}
+\centering\begin{tabular}{@{}c@{}lcc}
+\hline\hline
+Diagram & $(x_j,y_j)$ & $w_j$ & $R$ \\\hline
+%
+\multirow{5}{*}{
+\circleframe{%
+(0,0)%
+(1,0)(0,1)%
+(-1,0)(0,-1)}
+}
+&&&\\
+& $(0,0)$     & $\tfrac{1}{2}$ & $O(h^4)$ \\
+& $(\pm h,0)$ & $\tfrac{1}{8}$ & \\
+& $(0,\pm h)$ & $\tfrac{1}{8}$ & \\
+&&&\\ \hline%
+%
+\multirow{5}{*}{
+\circleframe{%
+(0.5,0.5)(-0.5,0.5)(0.5,-0.5)(-0.5,-0.5)}
+}
+&&&\\
+&&&\\
+& $(\pm \tfrac{1}{2}h,\pm \tfrac{1}{2} h)$  & $\tfrac{1}{4}$ & $O(h^4)$ \\
+&&&\\
+&&&\\\hline%
+%
+\multirow{5}{*}{
+\circleframe{%
+(0,0)%
+(-1,0)(1,0)(0,-1)(0,1)%
+(0.5,0.5)(-0.5,0.5)(0.5,-0.5)(-0.5,-0.5)}
+}
+&&&\\
+& $(0,0)$     & $\tfrac{1}{6}$ & $O(h^8)$\\
+& $(\pm h,0)$, $(0,\pm h)$ & $\tfrac{1}{24}$ & \\
+& $(\pm\tfrac{1}{2}h,\pm\tfrac{1}{2}h)$ & $\tfrac{1}{6}$ & \\
+&&&\\\hline%
+%
+\multirow{5}{*}{
+\circleframe{%
+(0,0)%
+(0.8165,0)(-0.8165,0)%
+(0.408,0.707)(-0.408,0.707)(0.408,-0.707)(-0.408,-0.707)}
+}
+&&&\\
+&  $(0,0)$     & $\tfrac{1}{4}$ & $O(h^6)$\\
+&  $(\pm\tfrac{1}{3}\sqrt{6}h,0)$ & $\tfrac{1}{8}$ &\\
+&  $(\pm\tfrac{1}{6}\sqrt{6}h,\pm\tfrac{1}{2}\sqrt{2}h)$ & $\tfrac{1}{8}$ &\\
+&&&\\\hline%
+\multirow{5}{*}{
+\squareframe{%
+(0,0)%
+(1,0)(-1,0)(0,1)(0,-1)%
+(1,1)(-1,1)(1,-1)(-1,-1)}
+}
+&&&\\
+& $(0,0)$     & $\tfrac{4}{9}$ & $O(h^4)$\\
+& $(\pm h,0)$, $(0,\pm h)$ & $\tfrac{1}{9}$ & \\
+& $(\pm h,\pm h)$ & $\tfrac{1}{36}$ & \\
+&&&\\\hline%
+\multirow{5}{*}{
+\squareframe{%
+(0.577,0.577)(-0.577,0.577)(0.577,-0.577)(-0.577,-0.577)}
+}
+&&&\\
+&&&\\
+& $(\pm\tfrac{1}{3}\sqrt{3}h,\pm\tfrac{1}{3}\sqrt{3}h)$ & $\tfrac{1}{4}$ & $O(h^4)$ \\
+&&&\\
+&&&\\\hline%
+\multirow{5}{*}{
+\squareframe{%
+(0,0)%
+(0.7746,0)(-0.7746,0)(0,0.7746)(0,-0.7746)%
+(0.7746,0.7746)(-0.7746,0.7746)(0.7746,-0.7746)(-0.7746,-0.7746)}
+}
+&&&\\
+& $(0,0)$     & $\tfrac{16}{81}$ & $O(h^6)$\\
+& $(\pm\sqrt{\tfrac{3}{5}}h,0)$, $(0,\pm\sqrt{\tfrac{3}{5}}h)$ & $\tfrac{10}{81}$ & \\
+& $(\pm\sqrt{\tfrac{3}{5}}h, \pm\sqrt{\tfrac{3}{5}}h)$ & $\tfrac{25}{324}$ & \\
+&&&\\\hline
+\end{tabular}
+\end{table}
 
 \end{document}

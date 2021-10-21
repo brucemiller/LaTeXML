@@ -1,0 +1,61 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# | ifclk font encoding                                                 | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+# Note that we're defining encodings for the font families!
+DeclareFontMap('ifclk', [
+    # 12:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f55b}", undef, undef, undef, undef, undef,
+    "\x{1f567}", undef, undef, undef, undef, undef,
+    # 1:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f550}", undef, undef, undef, undef, undef,
+    "\x{1f55c}", undef, undef, undef, undef, undef,
+    # 2:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f551}", undef, undef, undef, undef, undef,
+    "\x{1f55d}", undef, undef, undef, undef, undef,
+    # 3:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f552}", undef, undef, undef, undef, undef,
+    "\x{1f55e}", undef, undef, undef, undef, undef,
+    # 4:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f553}", undef, undef, undef, undef, undef,
+    "\x{1f55f}", undef, undef, undef, undef, undef,
+    # 5:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f554}", undef, undef, undef, undef, undef,
+    "\x{1f560}", undef, undef, undef, undef, undef,
+    # 6:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f555}", undef, undef, undef, undef, undef,
+    "\x{1f561}", undef, undef, undef, undef, undef,
+    # 7:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f556}", undef, undef, undef, undef, undef,
+    "\x{1f562}", undef, undef, undef, undef, undef,
+    # 8:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f557}", undef, undef, undef, undef, undef,
+    "\x{1f563}", undef, undef, undef, undef, undef,
+    # 9:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f558}", undef, undef, undef, undef, undef,
+    "\x{1f564}", undef, undef, undef, undef, undef,
+    # 10:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f559}", undef, undef, undef, undef, undef,
+    "\x{1f565}", undef, undef, undef, undef, undef,
+    # 11:00, 5,10,15,20,25,30, 35,40,45,50,55
+    "\x{1f55A}", undef, undef, undef, undef, undef,
+    "\x{1f566}", undef, undef, undef, undef, undef,
+    # random clocks
+    undef,      undef, undef,      undef,
+    "\x{231A}", undef, "\x{231A}", "\x{23F1}",
+    "\x{23F1}", undef, "\x{23f0}", undef,
+    undef,      undef, undef,      undef,
+]);
+1;

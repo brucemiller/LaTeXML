@@ -13,8 +13,10 @@ package LaTeXML::Post::SVG;
 use strict;
 use warnings;
 use LaTeXML::Common::XML;
+use LaTeXML::Common::Model;
 use LaTeXML::Util::Transform;
 use LaTeXML::Util::Geometry;
+use LaTeXML::Util::Image;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Processor);
 
@@ -35,8 +37,12 @@ sub toProcess {
 sub process {
   my ($self, $doc, @svg) = @_;
   local $::IDCOUNTER = 0;
+  if (!$$self{model}) {
+    $$self{model} = LaTeXML::Common::Model->new();
+    $$self{model}->setRelaxNGSchema("LaTeXML");
+    $$self{model}->loadSchema(); }
   $doc->addNamespace($svgURI, 'svg');
-  map { ProcessSVG($_) } @svg;
+  map { $self->ProcessSVG($_) } @svg;
   $doc->adjust_latexml_doctype('SVG');    # Add SVG if LaTeXML dtd.
   return $doc; }
 
@@ -44,31 +50,34 @@ sub getQName {
   my ($node) = @_;
   return $LaTeXML::Post::DOCUMENT->getQName($node); }
 
-sub copy_some_attributes {
-  my ($to, $from, @attributes) = @_;
-  foreach my $key (@attributes) {
-    my $value = $from->getAttribute($key);
-    if (defined $value) {
-      $from->removeAttribute($key) if $key eq 'xml:id';
-      $to->setAttribute($key, $value); } }
-  return; }
-
-sub copy_attributes_except {
-  my ($to, $from, @attributes) = @_;
-  my %excluded = map { ($_ => 1) } @attributes;
+sub copy_valid_attributes {
+  my ($self, $to, $from) = @_;
+  my $qname = getQName($to);
   foreach my $attr ($from->attributes) {
     my $key = $attr->getName;
-    next                         if $excluded{$key};
-    $from->removeAttribute($key) if $key eq 'xml:id';
-    $to->setAttribute($key, $from->getAttribute($key)); }
+    if ($$self{model}->canHaveAttribute($qname, $key)) {
+      $from->removeAttribute($key) if $key eq 'xml:id';
+      $to->setAttribute($key, $from->getAttribute($key)); } }
   return; }
+
+sub copy_position {
+  my ($self, $to, $from) = @_;
+  my $x = $from->getAttribute('x');
+  my $y = $from->getAttribute('y');
+  $to->setAttribute(cx => $x) if defined $x;
+  $to->setAttribute(cy => $y) if defined $y;
+  return; }
+
+sub to_px {
+  my ($pt) = @_;
+  return ($pt =~ s/pt$// ? $pt * $LaTeXML::Util::Image::DPI / 72.27 : $pt); }
 
 ####################################
 ## fixes an svg node
 ####################################
 
 sub ProcessSVG {
-  my ($node) = @_;
+  my ($self, $node) = @_;
   # holds information about current font
   local @::FONTSTACK = ({ fill => 'black' });
   # if during processing some definitions are required, they are stored here
@@ -76,14 +85,14 @@ sub ProcessSVG {
   local %::DEFS = ();
   my $newSVG = $node->parentNode->addNewChild($svgURI, 'svg');
   $newSVG->setAttribute(version => '1.1');
-  my $newNode = convertNode($newSVG, $node);
+  my $newNode = convertNode($self, $newSVG, $node);
   if (%::DEFS) {
     my $defnode = $newSVG->addNewChild($svgURI, 'defs');
     foreach my $key (sort keys %::DEFS) {
       $defnode->appendChild($::DEFS{$key});
     }
   }
-  copy_attributes_except($newSVG, $node, qw(tex baseline xml:id));
+  $self->copy_valid_attributes($newSVG, $node);
   makeViewBox($newSVG);
   simplifyGroups($newSVG);
   $node->replaceNode($newSVG);
@@ -92,20 +101,10 @@ sub ProcessSVG {
 sub makeViewBox {
   my ($node) = @_;
   my ($w, $h) = get_attr($node, qw(width height));
-  if ($w =~ /^($NR)([a-z]{2})$/) { $w = $1; }
-  if ($h =~ /^($NR)([a-z]{2})$/) { $h = $1; }
-  my ($minx, $maxx, $miny, $maxy) = map { $_ || 0 } @{ getSVGBounds($node) };
-  $minx = $node->getAttribute('origin-x') || 0; $minx =~ s/pt$//;
-  $miny = $node->getAttribute('origin-y') || 0; $miny =~ s/pt$//;
-  my $ww = $maxx - $minx;
-  my $hh = $maxy - $miny;
-  $node->setAttribute(width  => $ww . "pt") if $ww > $w;
-  $node->setAttribute(height => $hh . "pt") if $hh > $h;
-  $maxx = $w if $ww < 1;
-  $maxy = $h if $hh < 1;
-  # use 0,0 for origin, not minx,miny
-  $node->setAttribute(viewBox => "0 0 $maxx $maxy");
-
+####  $node->setAttribute(viewBox => "0 0 $w $h");
+  # Does origin-x,origin-y need to be reflected in the initial transform?
+  $node->setAttribute(width    => to_px($node->getAttribute('width')));
+  $node->setAttribute(height   => to_px($node->getAttribute('height')));
   $node->setAttribute(overflow => 'visible') if (($node->getAttribute('clip') || '') ne 'true');
   $node->removeAttribute('clip');
   return; }
@@ -145,104 +144,88 @@ my %converters = (    # CONSTANT
   'ltx:arc'     => \&convertArc,     'ltx:dots'  => \&convertDots);
 
 sub convertNode {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my $tag = getQName($node);
   if (!$tag) {
     $parent->appendChild($node); }
   elsif (my $converter = $converters{$tag}) {
-    &$converter($parent, $node); }
+    &$converter($self, $parent, $node); }
   else {
     # Node is random LaTeXML element, and so will need an svg:foreignObject wrapper.
     # Moreover, svg will want to know the size of the foreign thing.
     # Hopefully, this will have been recorded on a containing ltx:g, using innerwidth/innerheight.
-    my $g = $parent->addNewChild($svgURI, 'g');
-    $g->setAttribute(transform => "scale(1 -1)");
-    my $new       = $g->addNewChild($svgURI, 'foreignObject');
     my $oldparent = $node->parentNode;
-    my $width     = $node->getAttribute('width')                 # Use node's own width, if any
-      || $node->getAttribute('imagewidth')                       # or if an image
-      || $oldparent->getAttribute('innerwidth')                  # else hopefully from containing ltx:g
+    my $width     = $node->getAttribute('width')    # Use node's own width, if any
+      || $node->getAttribute('imagewidth')          # or if an image
+      || $oldparent->getAttribute('innerwidth')     # else hopefully from containing ltx:g
       || $oldparent->getAttribute('width');
     my $height = $node->getAttribute('height')
       || $node->getAttribute('imageheight')
       || $oldparent->getAttribute('innerheight')
       || $oldparent->getAttribute('height');
-    $width  = "50pt" unless defined $width;
-    $height = "20pt" unless defined $height;
-    $new->setAttribute(width    => $width);
-    $new->setAttribute(height   => $height);
+    my $depth = $node->getAttribute('depth')
+      || $oldparent->getAttribute('innerdepth')
+      || $oldparent->getAttribute('depth');
+    $width  = "1pt" unless defined $width;          # Required but must be non-zero
+    $height = "1pt" unless defined $height;
+    $depth  = "0pt" unless defined $depth;
+    my $g = $parent->addNewChild($svgURI, 'g');
+    #    my $y = to_px($height);
+    my $y = to_px($height) + to_px($depth);
+    $g->setAttribute(transform => "translate(0,$y) scale(1, -1)");
+    my $new = $g->addNewChild($svgURI, 'foreignObject');
+    $new->setAttribute(width    => to_px($width))  if defined $width;
+    $new->setAttribute(height   => to_px($height)) if defined $height;
     $new->setAttribute(overflow => 'visible');
     $new->appendChild($node); }
   return; }
 
 sub convertPath {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my $newNode = $parent->addNewChild($svgURI, 'path');
-  copy_attributes($newNode, $node);
-  map { convertNode($newNode, $_) } element_nodes($node);
-  return $newNode; }
-
-sub XXXconvertPicture {
-  my ($parent, $node) = @_;
-  my $newNode = $parent->addNewChild($svgURI, 'g');
-  $newNode->setAttribute(transform => 'scale(1 -1)');
-  map { convertNode($newNode, $_) } element_nodes($node);
+  $self->copy_valid_attributes($newNode, $node);
+  map { convertNode($self, $newNode, $_) } element_nodes($node);
   return $newNode; }
 
 # I think we need to shift the origin to the bottom before we mirror the y scale!
 sub convertPicture {
-  my ($parent, $node) = @_;
-  # I'm sure I'm not understanding Ioan's computation methods, here, but...
-
-  #  my ($minx, $maxx, $miny, $maxy) = map { $_ || 0 } @{getSVGBounds($node)};
-  #  my $h = $maxy-$miny;
-
-  my $h      = $node->getAttribute('height') || '0'; $h =~ s/pt$//;
-  my $mvNode = $parent->addNewChild($svgURI, 'g');
-  $mvNode->setAttribute(transform => "translate(0,$h)");
-
-  my $scaleNode = $mvNode->addNewChild($svgURI, 'g');
-  $scaleNode->setAttribute(transform => 'scale(1 -1)');
-  map { convertNode($scaleNode, $_) } element_nodes($node);
-  return $mvNode; }
+  my ($self, $parent, $node) = @_;
+  my $h     = to_px($node->getAttribute('height') || '0');
+  my $gNode = $parent->addNewChild($svgURI, 'g');
+  $gNode->setAttribute(transform => "translate(0,$h) scale(1,-1)");
+  map { convertNode($self, $gNode, $_) } element_nodes($node);
+  return $gNode; }
 
 sub convertG {
-  my ($parent, $node) = @_;
-  my ($xoff,   $yoff) = boxContentPos($node);
+  my ($self, $parent, $node) = @_;
+  my ($xoff, $yoff) = boxContentPos($node);
   my $newNode = $parent->addNewChild($svgURI, 'g');
-  mergeTransform($node, "translate($xoff, $yoff)") if ($xoff || $yoff);
   if ((($node->getAttribute('framed') || '') eq 'true')
     && (($node->getAttribute('fillframe') || '') eq 'true')) {
     my $bgName = getFillFrame($node->getAttribute('fill') || 'white');
     $newNode->setAttribute(filter => "url(#$bgName)"); }
-  copy_attributes_except($newNode, $node,
-    qw(width height framed fillframe stroke stroke-width boxsep
-      doubleline shadowbox frametype));
-  map { convertNode($newNode, $_) } element_nodes($node);
+  $self->copy_valid_attributes($newNode, $node);
+  map { convertNode($self, $newNode, $_) } element_nodes($node);
   return $newNode; }
 
 sub convertText {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
 
   my $oldparent = $node->parentNode;
   my $p = ((getQName($oldparent) || '') eq 'ltx:g' ? $oldparent->getAttribute('pos') || '' : 'bl');
   my $newNode = $parent->addNewChild($svgURI, 'text');
-  $newNode->setAttribute('dominant-baseline' => 'middle');
-  $newNode->setAttribute('baseline-shift'    => 'sub')   if $p =~ /t/;
-  $newNode->setAttribute('baseline-shift'    => 'super') if $p =~ /b/;
-  if ($p =~ /l/) {
-    $newNode->setAttribute('text-anchor' => 'start'); }
-  elsif ($p =~ /r/) {
-    $newNode->setAttribute('text-anchor' => 'end'); }
-  else {
-    $newNode->setAttribute('text-anchor' => 'middle'); }
-  $newNode->setAttribute(x => $node->getAttribute('x') || 0);
-  $newNode->setAttribute(y => $node->getAttribute('y') || 0);
+  my $x       = $node->getAttribute('x') || 0;
+  my $y       = $node->getAttribute('y') || 0;
+  $newNode->setAttribute(x => $x);
+  $newNode->setAttribute(y => $y);
+
   ##    if (my $text = text_in_node($node)) { $newNode->appendText($text); }
-  mergeTransform($node, 'scale(1 -1)');
-  copy_some_attributes($newNode, $node, qw(transform));
+  mergeTransform($node, 'scale(1, -1)');
+  $self->copy_valid_attributes($newNode, $node);
   # Translate the font info.
   push(@::FONTSTACK, {});
+  if (my $fontsize = $node->getAttribute('fontsize')) {
+    $::FONTSTACK[0]{'font-size'} = $fontsize; }
   if (my $font = $node->getAttribute('font')) {
     my $type = 'fill';
     if ($font =~ /italic/) {
@@ -273,61 +256,56 @@ sub convertText {
     if (isTextNode($child)) {
       $newNode->appendText($child->data); }
     else {
-      convertNode($newNode, $child); } }
+      convertNode($self, $newNode, $child); } }
   pop(@::FONTSTACK);
   return $newNode; }
 
 sub convertPolygon {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my $newNode = $parent->addNewChild($svgURI, 'path');
   $newNode->setAttribute(d => arcPoints($node) . ' z');
-  copy_some_attributes($newNode, $node,
-    qw(stroke stroke-width stroke-dasharray fill transform));
-  map { convertNode($newNode, $_) } element_nodes($node);
+  $self->copy_valid_attributes($newNode, $node);
+  map { convertNode($self, $newNode, $_) } element_nodes($node);
   return $newNode; }
 
 sub convertLine {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my $newNode = $parent->addNewChild($svgURI, 'path');
   $newNode->setAttribute(d => arcPoints($node));
-  copy_some_attributes($newNode, $node,
-    qw(stroke stroke-width stroke-dasharray fill transform
-      terminators arrowlength));
-  setArrows($newNode, $node->getAttribute('stroke'));
-  map { convertNode($newNode, $_) } element_nodes($node);
+  $self->copy_valid_attributes($newNode, $node);
+  setArrows($newNode, $node, $node->getAttribute('stroke'));
+  map { convertNode($self, $newNode, $_) } element_nodes($node);
   return $newNode; }
 
 sub convertRect {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my $newNode;
   if (my $part = $node->getAttribute('part')) {
     $newNode = $parent->addNewChild($svgURI, 'path');
     $newNode->setAttribute(d => ovalPath($part, get_attr($node, qw(x y width height rx))));
-    copy_some_attributes($newNode, $node,
-      qw(fill stroke stroke-width transform)); }
+    $self->copy_valid_attributes($newNode, $node); }
   else {
     $newNode = $parent->addNewChild($svgURI, 'rect');
-    copy_attributes($newNode, $node); }
-  map { convertNode($newNode, $_) } element_nodes($node);
+    $self->copy_valid_attributes($newNode, $node); }
+  map { convertNode($self, $newNode, $_) } element_nodes($node);
   return $newNode; }
 
 sub convertBezier {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my @p       = explodeCoord($node->getAttribute('points') || '');
   my $n       = ($#p + 1) / 2; my $x0 = shift(@p); my $y0 = shift(@p);
   my %cmd     = (4 => 'C', 3 => 'Q');
   my $newNode = $parent->addNewChild($svgURI, 'path');
   $newNode->setAttribute(d => "M $x0,$y0 " . ($cmd{$n} || 'T') . ' ' . coordList(@p));
-  copy_some_attributes($newNode, $node,
-    qw(stroke stroke-width fill transform terminators arrowlength));
-  setArrows($newNode, $newNode->getAttribute('stroke'));
+  $self->copy_valid_attributes($newNode, $node);
+  setArrows($newNode, $node, $newNode->getAttribute('stroke'));
   $newNode->setAttribute('stroke-dasharray' => '2') if $node->hasAttribute('displayedpoints');
-  map { convertNode($newNode, $_) } element_nodes($node);
+  map { convertNode($self, $newNode, $_) } element_nodes($node);
   return $newNode; }
 
 # NOTE: I messed this one up!
 sub convertVbox {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my $text = '';
   foreach my $child (element_nodes($node)) {
     my $cn = getQName($child);
@@ -335,60 +313,56 @@ sub convertVbox {
   my $dummynode = new_node($NSURI, 'text');
   $dummynode->appendText($text);
   my $newNode = $parent->addNewChild($svgURI, 'text');
-  copy_some_attributes($newNode, $node, qw(x y));
+  $self->copy_valid_attributes($newNode, $node);
   convertText($newNode, $dummynode);
   return $newNode; }
 
 sub convertCircle {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my $newNode = $parent->addNewChild($svgURI, 'circle');
-  copy_attributes($newNode, $node);
-  rename_attribute($newNode, 'x', 'cx');
-  rename_attribute($newNode, 'y', 'cy');
-  map { convertNode($newNode, $_) } element_nodes($node);
+  $self->copy_valid_attributes($newNode, $node);
+  $self->copy_position($newNode, $node);
+  map { convertNode($self, $newNode, $_) } element_nodes($node);
   return $newNode; }
 
 #?
 sub convertDots {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my $newNode = $parent->addNewChild($svgURI, 'g');
   my @p       = explodeCoord($node->getAttribute('points') || '');
   while (@p) {
     my ($x, $y) = (shift(@p), shift(@p));
     my $dot = $newNode->addNewChild($svgURI, 'circle');
     ### copy_attributes($dot, $node);
-    copy_some_attributes($dot, $node, qw(fill r stroke stroke-width transform));    # ???
+    $self->copy_valid_attributes($newNode, $node);
     if (my $size = $node->getAttribute('dotsize')) {
       $dot->setAttribute(r => $size); }
     $dot->setAttribute(cx => $x);
-    $dot->setAttribute(cy => $y);
-    #map { convertNode($dot,$_) } element_nodes($node);
-  }
+    $dot->setAttribute(cy => $y); }
   return $newNode; }
 
 sub convertEllipse {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my $newNode = $parent->addNewChild($svgURI, 'ellipse');
-  copy_attributes($newNode, $node);
-  rename_attribute($newNode, 'x', 'cx');
-  rename_attribute($newNode, 'y', 'cy');
-  map { convertNode($newNode, $_) } element_nodes($node);
+  $self->copy_valid_attributes($newNode, $node);
+  $self->copy_position($newNode, $node);
+  map { convertNode($self, $newNode, $_) } element_nodes($node);
   return $newNode; }
 
 sub convertWedge {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my ($x, $y, $r, $a1, $a2) = get_attr($node, qw(x y r angle1 angle2));
   my $bb = $a2 - $a1; $bb += 360 if $bb < 0;
   $bb = $bb > 180 ? 1 : 0; ($a1, $a2) = radians($a1, $a2);
   my ($x1, $y1, $x2, $y2) = trunc(2, $x + $r * cos($a1), $y + $r * sin($a1), $x + $r * cos($a2), $y + $r * sin($a2));
   my $newNode = $parent->addNewChild($svgURI, 'path');
   $newNode->setAttribute(d => "M $x $y L $x1 $y1 A $r $r 0 $bb 1 $x2 $y2 z");
-  copy_some_attributes($newNode, $node, qw(fill stroke stroke-width transform));
-  map { convertNode($newNode, $_) } element_nodes($node);
+  $self->copy_valid_attributes($newNode, $node);
+  map { convertNode($self, $newNode, $_) } element_nodes($node);
   return $newNode; }
 
 sub convertArc {
-  my ($parent, $node) = @_;
+  my ($self, $parent, $node) = @_;
   my ($x, $y, $r, $a1, $a2, $sp, $stroke, $fill) =
     get_attr($node, qw(x y r angle1 angle2 showpoints stroke fill));
   my $bb = $a2 - $a1;
@@ -405,13 +379,12 @@ sub convertArc {
     $newLine->setAttribute(fill               => 'none');
     $newLine->setAttribute('stroke-dasharray' => '2');
     $newLine->setAttribute(stroke             => $linestroke);
-    copy_some_attributes($newLine, $node, qw(stroke-width)); }
+    $self->copy_valid_attributes($newLine, $node); }
   my $newArc = $newNode->addNewChild($svgURI, 'path');
   $newArc->setAttribute(d => "M $x1 $y1 A $r $r 0 $bb 1 $x2 $y2");
-  copy_some_attributes($newArc, $node,
-    qw(fill stroke stroke-width terminators arrowlength));
-  setArrows($newArc, $linestroke);
-  #  map { $newNode->appendChild(convertNode($_)) } element_nodes($node);
+  $self->copy_valid_attributes($newArc, $node);
+  setArrows($newArc, $node, $linestroke);
+  #  map { $newNode->appendChild(convertNode($self,$_)) } element_nodes($node);
   return $newNode; }
 
 #################################################################
@@ -436,15 +409,15 @@ sub getArrow {
     $ar .= '_L'; }
   $ar .= ($::IDCOUNTER++);
   $::DEFS{$ar} = new_node($svgURI, 'marker', new_node($svgURI, 'path', undef, fill => $fill, stroke => 'none',
-      d => ($type eq '>') ? 'M 0 0 L 10 5 L 0 10 L 4 5 z' : 'M 0 5 L 10 0 L 6 5 L 10 10 z'),
-    id => $ar, viewBox => '0 0 10 10', markerUnits => 'strokeWidth', markerWidth => 10, markerHeight => 6, orient => 'auto', refX => 4, refY => 5)
+      d => ($type eq '>') ? 'M 0 0 L 20 10 L 0 20 L 8 9 z' : 'M 0 10 L 20 0 L 12 10 L 20 20 z'),
+    id => $ar, viewBox => '0 0 20 20', markerUnits => 'strokeWidth', markerWidth => 20, markerHeight => 12, orient => 'auto', refX => 20, refY => 10)
     unless $::DEFS{$ar};
   return $ar; }
 
 sub setArrows {
-  my ($node, $fill) = @_;
-  return unless $node->hasAttribute('terminators');
-  my $t = $node->getAttribute('terminators'); remove_attr($node, qw(terminators arrowlength));
+  my ($node, $from, $fill) = @_;
+  return unless $from->hasAttribute('terminators');
+  my $t = $from->getAttribute('terminators');    ###remove_attr($node, qw(terminators arrowlength));
   return unless $t =~ /([^\-]*)-(.*)/;
   my ($start, $end) = ($1, $2);
   if ($start =~ s/(>|<)//) {
@@ -543,88 +516,5 @@ sub arcPoints {
   }
   $d .= "L $p[2*$n-2] $p[2*$n-1]";
   return $d; }
-
-################# Determine SVG boundary #######################
-
-sub getSVGBounds {
-  my ($node) = @_;
-  my @boundary = ();
-  map { combBoundary(\@boundary, getSVGBounds($_)) } element_nodes($node);
-  return [SVGObjectBoundary($node, @boundary)]; }
-
-sub SVGObjectBoundary {
-  my ($node, @boundary) = @_;
-  my $tag = getQName($node);
-  return unless $tag;
-  my @xs = ($boundary[0], $boundary[1]);
-  my @ys = ($boundary[2], $boundary[3]);
-
-  if ($tag eq 'svg:circle') {
-    my ($cx, $cy, $r) = get_attr($node, qw (cx cy r));
-    $r = $r * sqrt(2); push(@xs, $cx - $r, $cx + $r); push(@ys, $cy - $r, $cy + $r); }
-  elsif (($tag eq 'svg:polygon') || ($tag eq 'ltx:line')) {
-    my $points = $node->getAttribute('points');
-    $points =~ s/,/ /g;
-    while ($points =~ s/^\s*($NR)\s+($NR)//) {
-      push(@xs, $1); push(@ys, $2); } }
-  elsif ($tag eq 'svg:path') {
-    my ($data, $mode) = ($node->getAttribute('d'), '');
-    $data =~ s/,/ /g;
-    while ($data) {
-      if ($data =~ s/^\s*(L|l|M|m|C|c|S|s|Q|q|T|t)\s*//) {
-        $mode = 'xy'; }
-      elsif ($data =~ s/^\s*(Z|z)\s*//) {
-        $mode = ''; }
-      elsif ($data =~ s/^\s*(H|h)\s*//) {
-        $mode = 'x'; }
-      elsif ($data =~ s/^\s*(V|v)\s*//) {
-        $mode = 'y'; }
-      elsif ($data =~ s/^\s*(A|a)\s*//) {
-        $mode = 'i5xy'; }
-      elsif ($mode eq 'x' && $data =~ s/^\s*($NR)\s*//) {
-        push(@xs, $1); push(@ys, $ys[-1] || 0); }
-      elsif ($mode eq 'y' && $data =~ s/^\s*($NR)\s*//) {
-        push(@ys, $1); push(@xs, $xs[-1] || 0); }
-      elsif (($mode eq 'xy' && $data =~ s/^\s*($NR)\s+($NR)\s*//) ||
-        ($mode eq 'i5xy' && $data =~ s/^\s*$NR\s+$NR\s+$NR
-         \s+$NR\s+$NR\s+($NR)\s+($NR)\s*//x)) {
-        push(@xs, $1); push(@ys, $2); }
-      else {
-        Error('unexpected', 'path', undef,
-          "Unrecognized svg path in '" . $node->getAttribute('d') . "' at '$data'");
-        last; } } }
-  elsif ($tag eq 'svg:rect') {
-    my ($x, $y, $w, $h) = get_attr($node, qw(x y width height));
-    if (defined $x && defined $y && defined $w && defined $h) {
-      push(@xs, $x, $x + $w); push(@ys, $y, $y + $h); } }
-  elsif ($tag eq 'svg:ellipse') {
-    my ($ex, $ey, $rx, $ry) = get_attr($node, qw (cx cy rx ry));
-    ($rx, $ry) = map { $_ * sqrt(2) } $rx, $ry;
-    push(@xs, $ex - $rx, $ex + $rx); push(@ys, $ey - $ry, $ey + $ry); }
-  elsif ($tag eq 'svg:foreignObject') {
-    my ($w, $h) = get_attr($node, qw (width height));
-    $w =~ s/pt$//;
-    $h =~ s/pt$//;
-    push(@xs, 0, $w); push(@ys, 0, $h); }
-
-  @xs = grep { defined $_ } @xs;
-  @ys = grep { defined $_ } @ys;
-  if (my $tr = $node->getAttribute('transform')) {
-    $tr = Transform($tr);
-    map { ($xs[$_], $ys[$_]) = $tr->apply($xs[$_], $ys[$_]) } 0 .. $#xs;
-  }
-  @xs = sort { $a <=> $b } @xs; @ys = sort { $a <=> $b } @ys;
-  return ($xs[0], $xs[-1], $ys[0], $ys[-1]); }
-
-# boundary = (minX, maxX, minY, maxY)
-sub combBoundary {
-  my ($aa, $bb) = @_;
-  return unless @$bb;
-  @$aa    = @$bb and return unless @$aa;
-  $$aa[0] = $$bb[0] if (!defined $$aa[0] || (defined $$bb[0] && $$aa[0] > $$bb[0]));
-  $$aa[2] = $$bb[2] if (!defined $$aa[2] || (defined $$bb[2] && $$aa[2] > $$bb[2]));
-  $$aa[1] = $$bb[1] if (!defined $$aa[1] || (defined $$bb[1] && $$aa[1] < $$bb[1]));
-  $$aa[3] = $$bb[3] if (!defined $$aa[3] || (defined $$bb[3] && $$aa[3] < $$bb[3]));
-  return; }
 
 1;

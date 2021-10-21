@@ -59,95 +59,72 @@ GetOptions("destination=s" => \$destination,
 pod2usage(-message => $LaTeXML::IDENTITY, -exitval => 0, -verbose => 2, -output => \*STDOUT)
   if $help;
 if ($showversion) { print STDERR "$LaTeXML::IDENTITY\n"; exit(0); }
-pod2usage(-message => "$LaTeXML::IDENTITY\nMissing input TeX file",
-  -exitval => 1, -verbose => 0, -output => \*STDERR) unless @ARGV;
-my $source = $ARGV[0];
+my $source = shift(@ARGV);
 
-#**********************************************************************
-# Set up the processing.
+#======================================================================
+# Validate command line before any actual processing
 SetVerbosity($verbosity);
 UseSTDERR();
-@paths = map { pathname_canonical($_) } @paths;
-if (my @baddirs = grep { !-d $_ } @paths) {
-  warn "These path directories do not exist: " . join(', ', @baddirs) . "\n"; }
 
-# Always create a .log file for tracking the conversion messages
-# Use $jobname.latexml.log or just latexml.log for logging by default
-if (!$logfile) {
-  if (!pathname_is_literaldata($source)) {
-    my ($dir, $name, $ext) = pathname_split($source);
-    if ($name) {
-      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); }
-    else {
-      $logfile = 'latexml.log';
-  } }
-  else {
-    $logfile = 'latexml.log'; } }
-UseLog($logfile);
+if (my @fails = validate_args()) {
+  print STDERR join("\n", $LaTeXML::IDENTITY, (map { colorizeString($_, 'error'); } @fails),
+    "use option --help for details", "Conversion failed", '');
+  exit(1); }
 
-NoteLog("$LaTeXML::IDENTITY");
+#======================================================================
 my $starttime = StartTime();
-NoteSTDERR("$LaTeXML::IDENTITY processing $source ...");
-
-my $latexml = LaTeXML::Core->new(
-  preload         => [@preload],
-  searchpaths     => [grep { -d $_ } reverse(@paths)],
-  graphicspaths   => ['.'],
-  verbosity       => $verbosity, strict        => $strict,
-  includecomments => $comments,  inputencoding => $inputencoding,
-  includestyles   => $includestyles,
-  documentid      => $documentid,
-  nomathparse     => $noparse);
-# Check that destination is valid before wasting any time...
-if ($destination) {
-  $destination = pathname_canonical($destination);
-  if (my $dir = pathname_directory($destination)) {
-    pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; } }
-
-$mode = 'BibTeX' if !defined $mode && ($source =~ /\.bib$/);
-$mode = 'TeX' unless defined $mode;
-
-# ========================================
-# First read and digest whatever we're given.
+my $latexml;
 my $digested;
 my $serialized;
+eval {    # Catch errors
+  UseLog($logfile);
+  Note("$LaTeXML::IDENTITY processing $source");
 
-eval {
-  if ($source eq '-') {
-    { local $/ = undef;
-      $source = "literal:" . <>; } }
+  $latexml = LaTeXML::Core->new(
+    preload         => [@preload],
+    searchpaths     => [@paths],
+    graphicspaths   => ['.'],
+    verbosity       => $verbosity, strict        => $strict,
+    includecomments => $comments,  inputencoding => $inputencoding,
+    includestyles   => $includestyles,
+    documentid      => $documentid,
+    nomathparse     => $noparse);
+  # Now do all processing relative to that State, to capture all erros
+  $latexml->withState(sub {
+      # ========================================
+      # First read and digest whatever we're given.
+      $digested = $latexml->digestFile($source, mode => $mode,
+        preamble => $preamble, postamble => $postamble);
 
-  $digested = $latexml->digestFile($source, mode => $mode,
-    preamble => $preamble, postamble => $postamble);
-
-  # ========================================
-  # Now, convert to DOM, encode and output, if desired.
-
-  if ($digested) {
-    $latexml->withState(sub {
+      # ========================================
+      # Now, convert to DOM, serialize, encode and output, as appropriate.
+      if ($digested) {
         if ($format eq 'tex') {
           $serialized = LaTeXML::Core::Token::UnTeX($digested); }
         elsif ($format eq 'box') {
           $serialized = ($verbosity > 0 ? $digested->stringify : $digested->toString); }
         else {
           my $dom = $latexml->convertDocument($digested);
-          $serialized = $dom->toString(1);
-        }
+          $serialized = $dom->toString(1); }
         # NOTE that we are serializing via LaTeXML's Document::serialize_aux
         # which has NOT been encoded into bytes, so we need an explicit encode before printing/returning
         $serialized = Encode::encode('UTF-8', $serialized) if $serialized;
-    }); }
-};
-if ($@) {    # Fatal error?
-  Debug($@); }
-$latexml->showProfile();    # Show profile (if any)
+      }
+      $latexml->showProfile();    # Show profile (if any)
+  }); };
+#======================================================================
+my $exit_message = $@;
+Debug($@) if $@ ne $LaTeXML::Common::Error::DIE_MESSAGE;
 
-my $status  = $latexml->getStatusMessage;
+my $code    = $latexml && $latexml->getStatusCode;
+my $status  = $latexml && $latexml->getStatusMessage;
 my $runtime = RunTime($starttime);
-NoteLog("Conversion complete: " . $status);
-NoteSTDERR("Conversion complete: " . $status . " (reqd. $runtime)");
+Note("Conversion " . ($code == 3 ? 'failed' : 'complete') . " " . $status . " (reqd. $runtime)");
 UseLog(undef);
 
+# Should this be within the withState ?
+# Hopefully, no errors by now... but if so...
+# Does having the status line AFTER the result help or hurt????
 if    (!$serialized) { }
 elsif ($destination) {
   my $OUTPUT;
@@ -164,13 +141,61 @@ $digested   = undef;
 $serialized = undef;
 
 CheckDebuggable();
-
 UseSTDERR(undef);
-if ($@) {    # non-zero exit code for fatal conversions
-  exit 1;
+
+if ($exit_message) {    # non-zero exit code for fatal conversions
+  exit(1);
 }
 
+#======================================================================
+# Helper code.
+
+# This validates arguments as much as possible BEFORE invoking any LaTeXML components
+# (and WITHOUT invoking any LaTeXML Error handling)
+sub validate_args {
+  my @fails = ();
+  push(@fails, "Unrecognized trailing arguments " . join(',', @ARGV)) if @ARGV;
+
+  # Check search paths
+  @paths = map { pathname_canonical($_) } reverse(@paths);
+  if (my @baddirs = grep { !-d $_ } @paths) {
+    push(@fails, "These search path do not exist: " . join(', ', @baddirs)); }
+
+  # Find the requested source
+  my $pathname;
+  if (!$source) {
+    push(@fails, "No input file given"); }
+  elsif ($source eq '-') {
+    { local $/ = undef;
+      $source = "literal:" . <>;
+      $mode   = 'TeX' unless defined $mode; } }    # Or sniff for bibtex data?
+  elsif (pathname_is_literaldata($source)) {
+  }
+  elsif (!($pathname = pathname_find($source, types => ['tex', 'bib', ''], paths => ['.', @paths]))
+    || !-r $pathname) {
+    push(@fails, "Input file '$source' not readable"); }
+  else {
+    $mode = 'BibTeX' if !defined $mode && ($pathname =~ /\.bib$/);
+    $mode = 'TeX' unless defined $mode; }
+
+  # Always create a .log file for tracking the conversion messages
+  # Use $jobname.latexml.log or just latexml.log for logging by default
+  if ($pathname && !$logfile) {
+    my ($dir, $name, $ext) = pathname_split($pathname);
+    if ($name) {
+      $logfile = pathname_make(dir => pathname_cwd(), name => $name, type => 'latexml.log'); } }
+  $logfile = 'latexml.log' unless $logfile;
+
+  # Check that destination is valid before wasting any time...
+  if ($destination) {
+    $destination = pathname_canonical($destination);
+    if (my $dir = pathname_directory($destination)) {
+      if (!(pathname_mkdir($dir) && -w $dir)) {
+        push(@fails, "Couldn't create writable destination directory $dir: $!"); } } }
+  return @fails; }
+
 #**********************************************************************
+
 __END__
 
 =head1 NAME
@@ -194,6 +219,7 @@ latexml [options] I<texfile>
                     by default it avoids this.
  --path=dir         adds to the paths searched for files,
                     modules, etc;
+ --log=file         specifies log file (default is file named after job name)
  --documentid=id    assign an id to the document root.
  --quiet            suppress messages (can repeat)
  --verbose          more informative output (can repeat)

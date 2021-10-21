@@ -1,0 +1,129 @@
+name: Windows
+
+# This Workflow implements Windows Tests for LaTeXML with both Strawberry Perl and MiKTeX.
+# It is significantly more complicated than the Linux tests, because a Docker approach is
+# significantly more difficult to implement.
+
+# This workflow caches data for both Perl and MiKTeX installations.
+# However GitHub does not provide a builtin way of evicting that cache. 
+# See https://github.com/actions/cache/issues/2. 
+#
+# Hence we assign the cache a 'hash' which is simply inserted into the internal cache key.
+# To manually evict the cache, simply change the hash to something else. 
+# Something like the output of `date | md5` usually works well.
+env:
+  PERL_CACHE_HASH: 79d1fcba0f256b853d8daa7f3d973852
+  MIKTEX_CACHE_HASH: 618f448423191db4b246ef5de4d5ff88
+
+on: [push, pull_request]
+
+jobs:
+  winci:
+    runs-on: windows-latest
+    continue-on-error: ${{ matrix.allow_failure }}
+
+    name: MiKTeX ${{ matrix.miktex }} / Strawberry Perl ${{ matrix.perl }}
+    strategy:
+      matrix:
+        include:
+          - perl: 5.32.1.1
+            miktex: none
+            allow_failure: false
+          - perl: 5.32.1.1
+            miktex: 21.6.28
+            allow_failure: true
+          - perl: 5.30.3.1
+            miktex: none
+            allow_failure: false
+          - perl: 5.28.2.1
+            miktex: none
+            allow_failure: false
+          - perl: 5.26.3.1
+            miktex: none
+            allow_failure: false
+    
+    steps:
+
+      - uses: actions/checkout@v2
+
+      # ====================
+      # Setup Perl
+      # ====================
+
+      - name: Setup Strawberry Perl Cache
+        uses: actions/cache@v2
+        id: perl-cache
+        with: 
+          path: C:\Strawberry
+          key: perl-${{ env.PERL_CACHE_HASH }}-${{ runner.os }}-${{ matrix.perl }}
+      - name: Install Strawberry Perl (from scratch)
+        if: steps.perl-cache.outputs.cache-hit != 'true'
+        # GitHub's CI environment comes with a preinstalled version of Strawberry Perl.
+        # So first uninstall that one, then pick the version we want.
+        run: |
+          cuninst -y strawberryperl
+          cinst -y strawberryperl --version ${{ matrix.perl }}
+      
+      # ====================
+      # Setup MiKTeX
+      # ====================
+
+      - name: Setup MiKTeX Repository Cache
+        if: matrix.miktex != 'none'
+        uses: actions/cache@v2
+        id: miktex-cache
+        with: 
+          path: 'C:\miktex-repo'
+          key: miktex-${{ env.MIKTEX_CACHE_HASH }}-${{ runner.os }}-${{ matrix.miktex }}
+      # MiKTeX is weird in CI environments (which need to be run as a superuser).
+      #
+      # Installing it is possible without problems, but running any executable produces two "major problems".
+      # One is for running as a superuser and one is for no admin having checked for updates.
+      # We can get rid of either one, but not both.
+      # Instead we use a wraper around kpsewhich that surpresses all error messages to make the tests work.
+      #
+      # We download 'execsilent' for this purpose, and then tell execsilent to wrap the kpsewhich executable.
+      # Finally we inform latexml to use this wrapped kpsewhich instead of a real one.
+      #
+      # Don't ask how we got here, too many hours got wasted. Don't try to fix it, just accept it.
+      - name: Install & Configure MiKTeX
+        if: matrix.miktex != 'none'
+        run: |
+          cinst -y miktex --version ${{ matrix.miktex }} --params '"/Set:complete /RepoPath:""C:\miktex-repo"" /Mirror:https://mirrors.rit.edu/CTAN/systems/win32/miktex/tm/packages/"'
+          echo "C:\Program Files\MiKTeX/miktex/bin/x64/" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+          Invoke-WebRequest -Uri "https://github.com/tkw1536/execsilent/releases/download/v0.0.2/execsilent-windows-amd64.exe" -OutFile C:\execsilent.exe
+          echo "EXECSILENT_EXE=kpsewhich" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "LATEXML_KPSEWHICH=C:\execsilent.exe" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "LATEXML_KPSEWHICH_MIKTEX_ADMIN=1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          echo "LATEXML_TEST_TEXLIVE=2021" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      # ====================
+      # Prepare Dependencies
+      # ====================
+
+      - name: Print Program Versions
+        run: |
+          refreshenv
+          perl --version
+          cpanm --version
+          if (Get-Command "tex" -ErrorAction SilentlyContinue) { 
+            tex --version
+          }
+      - name: Install Dependencies
+        run: |
+          refreshenv
+          cpanm -v --installdeps --notest .
+
+      # ====================
+      # Run the tests!
+      # ====================
+      - name: Run 'make'
+        run: |
+          refreshenv
+          perl Makefile.PL
+          make
+      - name: Run 'make test'
+        run: |
+          refreshenv
+          make test

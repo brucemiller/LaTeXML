@@ -90,9 +90,10 @@
        If ltx:picture/svg:svg had any of those, they got lost! -->
   <xsl:template match="ltx:picture" mode="as-svg">
     <xsl:element name="svg" namespace="{$svg_ns}">
-      <!-- copy id, class, style from parent ltx:picture -->
+      <!-- copy id, class from parent ltx:picture, but do NOT derive css style from size -->
       <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes"/>
+      <xsl:call-template name="add_classes"/>
+      <xsl:apply-templates select="." mode="add_RDFa"/>
       <!-- but copy other svg:svg attributes -->
       <xsl:for-each select="svg:svg/@*">
         <xsl:apply-templates select="." mode="copy-attribute"/>
@@ -105,11 +106,13 @@
     <xsl:element name="{local-name()}" namespace="{$svg_ns}">
       <xsl:for-each select="@*">
         <xsl:choose>
+          <!--  Apparently no "xml:" is OK, and preferred in ePub ?
           <xsl:when test="local-name() = 'id'">
             <xsl:attribute name="{f:if($USE_NAMESPACES,'xml:id','id')}">
               <xsl:value-of select="."/>
             </xsl:attribute>
           </xsl:when>
+          -->
           <!-- are these the attributes to watch for in svg? (urls)-->
           <xsl:when test="name() = 'href' or name() = 'src'">
             <xsl:attribute name="{local-name()}">

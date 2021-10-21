@@ -79,14 +79,14 @@ my @rmletters = ('i', 'v', 'x', 'l', 'c', 'd', 'm');    # [CONSTANT]
 sub radix_roman {
   my ($n) = @_;
   my $div = 1000;
-  my $s = ($n > $div ? ('m' x int($n / $div)) : '');
-  my $p = 4;
+  my $s   = ($n > $div ? ('m' x int($n / $div)) : '');
+  my $p   = 4;
   while ($n %= $div) {
     $div /= 10;
     my $d = int($n / $div);
     if ($d % 5 == 4) { $s .= $rmletters[$p]; $d++; }
-    if ($d > 4) { $s .= $rmletters[$p + int($d / 5)]; $d %= 5; }
-    if ($d) { $s .= $rmletters[$p] x $d; }
+    if ($d > 4)      { $s .= $rmletters[$p + int($d / 5)]; $d %= 5; }
+    if ($d)          { $s .= $rmletters[$p] x $d; }
     $p -= 2; }
   return $s; }
 
@@ -97,3 +97,59 @@ sub radix_Roman {
 
 #======================================================================
 1;
+
+__END__
+
+=pod
+
+=head1 NAME
+
+C<LaTeXML::Util::Radix> - simple radix conversion utilities
+
+=head1 DESCRIPTION
+
+This module provides some simple utilities for radix conversion.
+
+=over 4
+
+=item C<radix_alpha($n)>
+
+Converts the number into one or more lowercase latin letters.
+
+=item C<radix_Alpha($n)>
+
+Converts the number into one or more uppercase latin letters.
+
+=item C<radix_greek($n)>
+
+Converts the number into one or more lowercase greek letters.
+
+=item C<radix_Greek($n)>
+
+Converts the number into one or more uppercase greek letters.
+
+=item C<radix_roman($n)>
+
+Converts the number as a lowercase roman numeral
+
+=item C<radix_Roman($n)>
+
+Converts the number as a uppercase roman numeral
+
+=item C<radix_format($n,@symbols)>
+
+(Internal) Converts the number into one or symbols taken from C<symbols>.
+
+=back
+
+=head1 AUTHOR
+
+Bruce Miller <bruce.miller@nist.gov>,
+Deyan Ginev <deyan.ginev@nist.gov>
+
+=head1 COPYRIGHT
+
+Public domain software, produced as part of work done by the
+United States Government & not subject to copyright in the US.
+
+=cut

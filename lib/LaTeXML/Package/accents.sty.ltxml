@@ -21,7 +21,7 @@ DefMath('\ring{}', "\x{030A}", operator_role => 'OVERACCENT');
 DefMacro('\lx@acc@size', '\scriptstyle');    # should be \scriptscriptstyle??
 
 DefMacro('\accentset{}{}', '\lx@overaccentset{#1}{#2}');
-DefConstructor('\lx@overaccentset ScriptStyle Digested',
+DefConstructor('\lx@overaccentset ScriptStyle {}',
   "<ltx:XMApp><ltx:XMWrap role='OVERACCENT'>#1</ltx:XMWrap><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
   sizer => '#1',                             # Close enough?
   alias => '\accentset');
@@ -38,8 +38,8 @@ DefMath('\ddddot{}', "\x{02D9}\x{02D9}\x{02D9}\x{02D9}",
 # We'll ASS.U.ME that accent commands take a single arg.
 DefMacro('\lx@if@isaccent{}{}{}', sub {
     my ($gullet, $thing, $true, $false) = @_;
-    my ($defn, $params);
-    my ($token, @rest) = $thing->unlist;
+    my ($defn,   $params);
+    my ($token,  @rest) = $thing->unlist;
     return ((!@rest)
         && ($defn   = LookupDefinition($token))
         && ($params = $defn->getParameters)
@@ -48,7 +48,7 @@ DefMacro('\lx@if@isaccent{}{}{}', sub {
 
 DefMacro('\underaccent{}{}',
   '\lx@if@isaccent{#1}{\lx@converttounder{#1}{#2}{#1{#2}}}{\lx@underaccentset{#1}{#2}}');
-DefConstructor('\lx@underaccentset ScriptStyle Digested',
+DefConstructor('\lx@underaccentset ScriptStyle {}',
   "<ltx:XMApp><ltx:XMWrap role='UNDERACCENT'>#1</ltx:XMWrap><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
   sizer => '#1',              # Close enough?
   alias => '\underaccent');
@@ -62,7 +62,7 @@ DefConstructor('\lx@converttounder Undigested Undigested {}', sub {
   reversion => '\underaccent{#1}{#2}');
 
 # \undertilde{base}
-DefMath('\undertilde Digested', UTF(0x7E),
+DefMath('\undertilde {}', UTF(0x7E),
   operator_role => 'UNDERACCENT');    # TILDE [plain? also amsfonts]
 
 #======================================================================

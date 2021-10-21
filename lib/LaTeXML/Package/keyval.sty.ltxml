@@ -16,8 +16,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-InputDefinitions('keyval', type => 'sty', noltxml => 1)
-  || Warn(":missing:keyval.sty Couldn't find keyval.sty");
+InputDefinitions('keyval', type => 'sty', noltxml => 1);
 
 # HOOK into define@key to make the latexml definitions as well
 DefPrimitive('\define@key{}{}[]{}', sub {

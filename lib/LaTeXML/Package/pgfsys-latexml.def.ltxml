@@ -22,6 +22,13 @@ use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Image;
 use List::Util qw(min max);
+
+DebuggableFeature('pgf', "Debug pgf processing");
+
+DefMacroI('\pgfsys@imagesuffixlist', undef,
+  join('', map { '.' . $_ . ':' }
+      qw(svg png gif jpg jpeg eps ps postscript ai pdf)));
+
 #=====================================================================
 # TODO:
 # * ALL \pgfsys@<drivercmd> level commands should be Constructors
@@ -78,33 +85,54 @@ DefConstructor('\lxSVG@insertpicture{}',
   #   . '</ltx:picture>',
   sub {
     my ($document, $content, %props) = @_;
-    $document->openElement('ltx:picture');
-    $document->openElement('svg:svg',
-      version  => "1.1",
-      width    => $props{pxwidth}, height => $props{pxheight},
-      viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
-      overflow => "visible");
-    $document->openElement('svg:g',
-      transform   => "matrix(1 0 0 -1 0 $props{flipnmove})",
-      _scopebegin => 1);
-    $document->absorb($content);
+    my $current = $document->getNode();
+    if ($document->getNodeQName($current) =~ /^svg:/) {    # Already in svg:svg ?
+          # Seemingly this positioning is correct; otherwise inherit from context
+      my ($x, $y) = (-$props{minx}, -$props{miny});
+      my $gnode = $document->openElement('svg:g',
+        transform   => "matrix(1 0 0 1 $x $y)",
+        _scopebegin => 1, class => 'ltx_nestedsvg');
+      $document->absorb($content);
+      $document->closeElement('svg:g'); }
+    else {
+      $document->openElement('ltx:picture');
+      $document->openElement('svg:svg',
+        version => "1.1",
+        width   => $props{pxwidth}, height => $props{pxheight},
+####        viewBox  => "$props{minx} $props{miny} $props{pxwidth} $props{pxheight}",
+        overflow => "visible");
+      my $x0 = -(0 + $props{minx});
+      my $y0 = -(0 + $props{miny});
+      $document->openElement('svg:g',
+        transform   => "translate($x0,$y0) matrix(1 0 0 -1 0 $props{flipnmove})",
+        _scopebegin => 1);
+      $document->insertElement('svg:rect', undef,
+        x     => $props{minx} - 6,            y      => $props{miny} - 6,
+        width => $props{width}->pxValue + 12, height => $props{height}->pxValue + 12,
+        fill  => 'none',                      stroke => '#FF00FF') if $LaTeXML::DEBUG{pgf};
+      $document->absorb($content);
 ### Handled by \lxSVG@closegroups ???
-    while ($document->maybeCloseElement('svg:g')) { }
-    #                 $document->closeElement('svg:g');
-    $document->closeElement('svg:svg');
-    $document->closeElement('ltx:picture');
+      while ($document->maybeCloseElement('svg:g')) { }
+      #                 $document->closeElement('svg:g');
+      $document->closeElement('svg:svg');
+      $document->closeElement('ltx:picture'); }
     return; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $margin  = Dimension('2pt');
     my $margin2 = Dimension('4pt');
     # \pgf@picmaxx,\pgf@pixmaxy are now the SIZE of the picture!!!!!!
-    my $minx   = LookupValue('\pgf@picminx')->subtract($margin);
-    my $miny   = LookupValue('\pgf@picminy')->subtract($margin);
-    my $width  = LookupValue('\pgf@picmaxx')->add($margin2);
-    my $height = LookupValue('\pgf@picmaxy')->add($margin2);
-    my $w      = max($width->pxValue,  1);
-    my $h      = max($height->pxValue, 1);
+    my $minx    = LookupValue('\pgf@picminx');
+    my $miny    = LookupValue('\pgf@picminy');
+    my $width   = LookupValue('\pgf@picmaxx');
+    my $height  = LookupValue('\pgf@picmaxy');
+    my $w       = max($width->pxValue,  1);
+    my $h       = max($height->pxValue, 1);
+    my $content = $whatsit->getArg(1);
+    my ($cwidth, $cheight, $cdepth) = $content->getSize;
+    Debug("TIKZ size: " . ToString($width) . " x " . ToString($height))   if $LaTeXML::DEBUG{pgf};
+    Debug("TIKZ BODY: " . ToString($cwidth) . " x " . ToString($cheight)) if $LaTeXML::DEBUG{pgf};
+    Debug("BODY is " . ToString($content))                                if $LaTeXML::DEBUG{pgf};
     # Note viewbox is minx, miny, width, height (NOT maxx,maxy!)
     $whatsit->setProperty(minx      => $minx->pxValue);
     $whatsit->setProperty(miny      => $miny->pxValue);
@@ -113,7 +141,7 @@ DefConstructor('\lxSVG@insertpicture{}',
     $whatsit->setProperty(depth     => Dimension(0));
     $whatsit->setProperty(pxwidth   => $w);
     $whatsit->setProperty(pxheight  => $h);
-    $whatsit->setProperty(flipnmove => $h + 2 * $miny->pxValue);
+    $whatsit->setProperty(flipnmove => floatformat($h + 2 * $miny->pxValue));
     # or tikz macro (see corescopes)
     return; },
   # \pgfpicture seems to make a 0 sized box, which throws off our postprocessor
@@ -122,9 +150,9 @@ DefConstructor('\lxSVG@insertpicture{}',
     my $w         = $whatsit->getProperty('width')->ptValue;
     my $h         = $whatsit->getProperty('height')->ptValue;
     (T_CS('\hbox'), T_OTHER('to'), T_OTHER($w), T_OTHER('pt'), T_BEGIN,
-      T_CS('\vbox'), T_OTHER('to'), T_OTHER($h), T_OTHER('pt'), T_BEGIN,
+      T_CS('\vbox'),       T_OTHER('to'),         T_OTHER($h), T_OTHER('pt'), T_BEGIN,
       T_CS('\pgfpicture'), T_CS('\makeatletter'), $whatsit->getArg(1)->revert, T_CS('\endpgfpicture'),
-      T_END, T_END) });    # ?
+      T_END,               T_END) });    # ?
 
 DefParameterType('SVGMoveableBox', sub {
     my ($gullet) = @_;
@@ -175,12 +203,23 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
     # Make sure we get a size, in case autoOpen'd
     if ($whatsit) {
       my ($w, $h, $d) = $whatsit->getSize;
-      $node->setAttribute(width  => $w->toAttribute)          unless $node->hasAttribute('width');
-      $node->setAttribute(height => $h->add($d)->toAttribute) unless $node->hasAttribute('height');
+
+      my $font = $whatsit->getFont;
+      my ($fw, $fh, $fd) = $font && $font->getNominalSize;
+      # Fishing for the correct y position (maybe w/o the depth?)
+      my $y = $h->add(($font ? $fd : $d))->pxValue;    # Seemingly should NOT have ->add($d)
+          # But if the box's height has been set to 0, still need adjustment; Use font?
+      $y = $fh->add($fd)->pxValue if !$y && $font;    # Seemingly SHOULD have ->add($fd)
+
+      my $ht = $h->add($d);
+      # For some reason, these want to be in pts, not px ???
+      $node->setAttribute(width  => $w->toAttribute)  unless $node->hasAttribute('width');
+      $node->setAttribute(height => $ht->toAttribute) unless $node->hasAttribute('height');
       # Odd, sometimes needed, sometimes too much (vtop type situations?)
-      if ($d->ptValue < 10) {    # Random heuristic
-        $node->setAttribute(y => $d->negate->toAttribute) unless $node->hasAttribute('y'); }
-      $node->setAttribute(overflow => 'visible'); } });
+      if ($d->ptValue < 10) {                         # Random heuristic
+        $node->setAttribute(y => $d->negate->pxValue) unless $node->hasAttribute('y'); }
+      $node->setAttribute(transform => "matrix(1 0 0 -1 0 $y)");
+      $node->setAttribute(overflow  => 'visible'); } });
 
 # Check whether a svg:foreignObject is open,
 # but don't check beyond an svg:svg node, in case we're nested.
@@ -216,9 +255,10 @@ DefConstructor('\lxSVG@lower Dimension SVGMoveableBox', sub {
 
 DefConstructor('\lxSVG@hskip Glue', sub {
     my ($doc, $skip) = @_;
+    # but ignored outside of foreighObject doesn't seem right
     if (foreignObjectCheck($doc)) {
       $doc->openElement('ltx:text', 'xoffset' => $skip->pxValue . 'px'); } },
-  alias      => '\hskip',
+  alias      => '\hskip', sizer => '#1',
   properties => sub { (width => $_[1], isSpace => 1); });
 
 DefMacroI('\pgf@shift@baseline',         undef, '0pt');
@@ -231,11 +271,15 @@ DefMacro('\pgfsys@typesetpicturebox{}', <<'EoTeX');
 % \pgf@picmaxx,\pgf@pixmaxy are now the SIZE of the picture!!!!!!
 \advance\pgf@picmaxy by-\pgf@picminy\relax%
    \advance\pgf@picmaxx by-\pgf@picminx\relax%
+   \setbox#1=\hbox{\hskip-\pgf@picminx\lower\pgf@picminy\box#1}
    \ht#1=\pgf@picmaxy%
    \wd#1=\pgf@picmaxx%
    \dp#1=0pt%
    \leavevmode%\message{width: \the\pgf@picmaxx, height:\the\pgf@picmaxy}%%
-   \lxSVG@insertpicture{\box#1\lxSVG@closescope}%
+%%%   \lxSVG@insertpicture{\box#1\lxSVG@closescope}%
+  \pgf@ya=\pgf@shift@baseline\relax%
+  \advance\pgf@ya by-\pgf@picminy\relax%
+   \lxSVG@insertpicture{\raise-\pgf@ya\box#1\lxSVG@closescope}%
 EoTeX
 
 DefMacro('\pgfsys@beginpicture', '');
@@ -243,22 +287,7 @@ DefMacro('\pgfsys@endpicture',   '');
 
 DefConstructor('\pgfsys@hbox{Number}', sub {
     my ($doc, $boxnumber, %prop) = @_;
-    my $box = $prop{thebox};
-    return unless $box;
-    my $font = $box->getFont;
-    my ($w,  $h,  $d)  = $box->getSize;
-    my ($fw, $fh, $fd) = $font && $font->getNominalSize;
-    # Fishing for the correct y position (maybe w/o the depth?)
-    #    my $y = $h->pxValue;   # Seemingly should NOT have ->add($d)
-    my $y = $h->add(($font ? $fd : $d))->pxValue;    # Seemingly should NOT have ->add($d)
-        # But if the box's height has been set to 0, still need adjustment; Use font?
-    $y = $fh->add($fd)->pxValue if !$y && $font;    # Seemingly SHOULD have ->add($fd)
-    $doc->openElement('svg:g',
-      transform    => 'matrix(1 0 0 -1 0 ' . $y . ')',
-      _noautoclose => 1,
-      class        => 'ltx_svg_fog');
-    $doc->absorb($box);
-    $doc->maybeCloseElement('ltx:g'); },
+    $doc->absorb($prop{thebox}) if $prop{thebox}; },
   sizer => sub {
     my $box = $_[0]->getProperty('thebox');
     return $box && $box->getSize; },
@@ -326,7 +355,6 @@ DefConstructor('\pgfsys@rect{Dimension}{Dimension}{Dimension}{Dimension}', '',
     addToSVGPath('v', $h);
     addToSVGPath('h', $w->negate);
     addToSVGPath('Z'); },
-  #  sizer => 0);
   sizer => sub {
     my ($x, $y, $w, $h) = $_[0]->getArgs;
     return ($w, $h, Dimension(0)); });
@@ -358,7 +386,7 @@ DefMacro('\lxSVG@@transformcm {Float}{Float}{Float}{Float}{Dimension}{Dimension}
     my ($gullet, @args) = @_;
     my $transform = 'transform=matrix('
       . join(' ',
-      (map { $_->valueOf } @args[0 .. 3]),
+      (map { floatformat($_->valueOf, 5) } @args[0 .. 3]),
       (map { $_->pxValue } @args[4 .. 5])) . ')';
     Invocation('\lxSVG@begingroup', TokenizeInternal($transform)); });
 
@@ -406,7 +434,7 @@ DefConstructor('\lxSVG@drawpath@clipped{}{}',
     . '</svg:clipPath>'
     . '<svg:use xlink:href="##pgfpath#obj" style="#2" />'
     . '<svg:g clip-path="url(##pgfcp#obj)">',
-  reversion => '', sizer => 0,
+  reversion  => '', sizer => 0,
   properties => { obj => sub { SVGNextObject(); } });
 
 # #======================================================================
@@ -429,7 +457,7 @@ DefConstructor('\lxSVG@discardpath@clipped{}',
     . '<svg:path d="#1" />'
     . '</svg:clipPath>'
     . '<svg:g clip-path="url(##pgfcp#obj)">',
-  reversion => '', sizer => 0,
+  reversion  => '', sizer => 0,
   properties => { obj => sub { SVGNextObject(); } });
 
 #=====================================================================#
@@ -532,8 +560,6 @@ sub collapseSVGGroup {
         $node->setAttribute($key => $av{$key}); }
       $nmerged++;
       $document->unwrapNodes($c); } }
-##  Debug("COLLAPSE empty=$nempty, redundant=$nredundant, merged=$nmerged, popped=$npopped, pushed=$npushed")
-##    if ($nempty || $nredundant || $nmerged || $npopped || $npushed);
   return; }
 
 #=====================================================================
@@ -780,7 +806,7 @@ DefMacro('\lxSVG@sh@create', sub {
       T_BEGIN, T_CS('\pgf@sys@shading@end@pos'), T_END,
       T_BEGIN, T_CS('\pgf@sys@shading@end@rgb'), T_END,
       T_BEGIN, T_CS('\pgf@sys@shading@end@rgb'), T_END,
-      T_END,   T_BEGIN, T_END); });
+      T_END,   T_BEGIN,                          T_END); });
 
 DefMacro('\lxSVG@sh@interval@{}{}',
   '\lxSVG@sh@stashstop{\lxSVG@sh@stop{#1}{\pgf@sys@shading@end@pos}#2}');
@@ -793,7 +819,7 @@ DefConstructor('\lxSVG@sh@stop{Dimension}{Dimension}{Float}{Float}{Float}',
   "<svg:stop offset='#offset' stop-color='#stopcolor'/>",
   properties => sub {
     my ($stomach, $start, $end, $r, $g, $b) = @_;
-    (offset => $start->pxValue / $end->pxValue,
+    (offset => floatformat($start->pxValue / $end->pxValue, 5),
       stopcolor => Color('rgb', map { $_->valueOf } $r, $g, $b)); },
   sizer => 0);
 
@@ -814,8 +840,7 @@ DefPrimitive('\lxSVG@sh@defstripes{}{Number}', sub {
     AssignValue(pgf_sh_stops => [], 'global');
     my $x = LookupValue('\pgf@x')->pxValue;
     my $y = LookupValue('\pgf@y')->pxValue;
-
-    DefPrimitiveI('\@pgfshading' . $name->ToString . '!', undef, sub {
+    DefPrimitiveI('\@pgfshading' . ToString($name) . '!', undef, sub {
         my $objcount = SVGNextObject();
         DefConstructor('\lxSVG@sh@defs',
           '<svg:defs><svg:linearGradient id="pgfsh' . $objcount . '" '
@@ -837,22 +862,21 @@ DefPrimitive('\lxSVG@sh@defcircles{}', sub {
     my ($stomach, $name) = @_;
     my $stops = List(@{ LookupValue('pgf_sh_stops') });
     AssignValue(pgf_sh_stops => [], 'global');
-    my $endpos = Dimension(ToString Expand T_CS '\pgf@sys@shading@end@pos')->pxValue;
-    my $x      = LookupValue('\pgf@x')->pxValue * 8 / ($endpos * 16) + 0.5;
-    my $y      = LookupValue('\pgf@y')->pxValue * 8 / ($endpos * 16) + 0.5;
-    DefPrimitiveI('\@pgfshading' . $name->ToString . '!', undef, sub {
+    my $endpos = Dimension(ToString(Expand(T_CS('\pgf@sys@shading@end@pos'))))->pxValue;
+    my $x      = floatformat(LookupValue('\pgf@x')->pxValue * 8 / ($endpos * 16) + 0.5, 5);
+    my $y      = floatformat(LookupValue('\pgf@y')->pxValue * 8 / ($endpos * 16) + 0.5, 5);
+    DefPrimitiveI('\@pgfshading' . ToString($name) . '!', undef, sub {
         my $objcount = SVGNextObject();
         DefConstructor('\lxSVG@sh@defs',
-          '<svg:defs><svg:radialGradient id="pgfsh' . $objcount . '" '
-            . 'fx="' . $x . '" fy="' . $y . '">'
+          "<svg:defs><svg:radialGradient id='pgfsh$objcount' fx='$x' fy='$y'>"
             . '#stops'
             . '</svg:radialGradient></svg:defs>',
           properties => { stops => $stops },
           sizer      => 0
         );
         DefConstructor('\lxSVG@sh',
-          '<svg:circle cx="' . $endpos . '" cy="' . $endpos . '" r="' . $endpos . '" '
-            . 'style="fill:url(##pgfsh' . $objcount . ');stroke:none" />',
+          "<svg:circle cx='$endpos' cy='$endpos' r='$endpos'"
+            . " style='fill:url(##pgfsh$objcount);stroke:none'/>",
           sizer => 0);
         DefMacro('\lxSVG@pos', sub {
             Invocation(T_CS('\pgfpoint'), 2 * $endpos, 2 * $endpos) });
@@ -862,15 +886,15 @@ DefPrimitive('\lxSVG@sh@defcircles{}', sub {
 DefConstructor('\lxSVG@sh@insert{Dimension}{Dimension}{}',
   '<svg:g transform="translate(#x #y)">#3</svg:g>',
   properties => {
-    #    x => sub { $_[1]->pxValue; },
-    #    y => sub { $_[2]->pxValue; } });
-#### What's going on here? Why pt's instead of px ? (what are units?)
-### (with px shading's way off)
+## Something odd with scales here; these SHOULD be pixels!
+##    x => sub { $_[1]->pxValue; },
+##    y => sub { $_[2]->pxValue; } },
     x => sub { $_[1]->ptValue; },
     y => sub { $_[2]->ptValue; } },
   sizer => 0);
 
 # \lxSVG@process{Dimension}{Dimension}
+# NOTE: This just can't be right; see callers!?!?!?
 DefMacro('\lxSVG@process{}{}',
   '\ifdim\pgf@picmaxx<#1\global\pgf@picmaxx=#1\fi'
     . '\ifdim\pgf@picmaxy<#2\global\pgf@picmaxy=#2\fi'
@@ -1029,11 +1053,18 @@ RawTeX('\def\pgfsys@begininvisible#1\pgfsys@endinvisible{}');    # well...
 # tikz makes their width 0; unfortunately this makes them
 # disappear in the svg (overflow=visible doesn't seem to help)
 
+# row sep, column sep are not yet accounted for...
 DefConstructor('\lxSVG@halign BoxSpecification',
   "#alignment",
-  reversion   => '\halign #1{#2\cr#3}',
-  bounded     => 1,
-  sizer       => '#1',
+  reversion => sub {
+    my ($whatsit, $spec) = @_;
+    my $template  = $whatsit->getProperty('template');
+    my $alignment = $whatsit->getProperty('alignment');
+    Tokens(T_CS('\halign'), Revert($spec), T_BEGIN, Revert($template), T_CS('\cr'),
+      Revert($alignment), T_END); },
+  bounded => 1,
+  #  sizer       => '#1',
+  sizer       => sub { $_[0]->getProperty('alignment')->getSize; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     $stomach->bgroup;    # This will be closed by the \halign's closing }  (or will it?)
@@ -1058,11 +1089,11 @@ sub tikzAlignmentBindings {
   my $alignment = LaTeXML::Core::Alignment->new(
     template       => $template,
     openContainer  => sub { openTikzAlignment($container, @_); },
-    closeContainer => sub { $_[0]->closeElement($container); },
+    closeContainer => sub { closeTikzAlignmentElement($container, @_); },
     openRow        => sub { openTikzAlignmentRow($rowtype, @_); },
-    closeRow       => sub { $_[0]->closeElement($rowtype); },
+    closeRow       => sub { closeTikzAlignmentElement($container, @_); },
     openColumn     => sub { openTikzAlignmentCol($coltype, @_); },
-    closeColumn    => sub { $_[0]->closeElement($coltype); },
+    closeColumn    => sub { closeTikzAlignmentElement($container, @_); },
     isMath         => $ismath,
     properties     => {%properties});
   AssignValue(Alignment => $alignment);
@@ -1070,33 +1101,91 @@ sub tikzAlignmentBindings {
   Let(T_MATH,   ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
   return; }
 
+# Note that pgf *seems* to have set the coordinate system to the center(?) (w/ \pgfsys@transformcm)
+# Additionally, there's a svg:g outside the alignment (w/ ltx_svg_fog)
+# The following tweaks (heuristically) the transform to position the alignment object
+#
+# Coordinates are currently pgf: y moves UP
+# Coordinates of alignment are : y moves DOWN
 sub openTikzAlignment {
   my ($tag, $doc, %props) = @_;
-  my $h = ($props{cheight} && -$props{cheight}->pxValue) || 0;
-  return $doc->openElement($tag, class => 'ltx_tikzmatrix',
+  my $w          = ($props{cwidth}  && $props{cwidth}->pxValue)  || 0;
+  my $h          = ($props{cheight} && $props{cheight}->pxValue) || 0;
+  my $d          = ($props{cdepth}  && $props{cdepth}->pxValue)  || 0;
+  my @rowheights = ($props{rowheights}   ? @{ $props{rowheights} }   : (Dimension(0)));
+  my @colwidths  = ($props{columnwidths} ? @{ $props{columnwidths} } : (Dimension(0)));
+  my $x          = $colwidths[0]->pxValue / 2;
+##  my $y          = ($h + $d) - $rowheights[0]->pxValue;
+  my $y = ($h + $d) - $rowheights[-1]->pxValue / 2;    # HEURISTIC adjustment! half of LAST row!?
+  Debug("TIKZ Alignment size $w x $h + $d"
+      . "  rows: " . join(',', map { $_->pxValue; } @rowheights)
+      . "  cols: " . join(',', map { $_->pxValue; } @colwidths)
+      . " => alignment adjustment = $x, $y") if $LaTeXML::DEBUG{pgf};
+  my $array = $doc->openElement($tag, class => 'ltx_tikzmatrix',
     _scopebegin => 1,
-    transform   => "matrix(1 0 0 -1 0 $h)",
-    %props); }
+    transform   => "matrix(1 0 0 -1 $x $y)",
+    %props);
+  $doc->insertElement('svg:rect', undef, class => 'ltx_debug',
+    x => -4, y => -4, width => $w + 8, height => $h + $d + 8, stroke => '#FF0000', fill => 'none')
+    if $LaTeXML::DEBUG{pgf};
+  return $array; }
+
+sub closeTikzAlignmentElement {
+  my ($tag, $document) = @_;
+  my $node = $document->closeElement($tag);
+  if ($LaTeXML::DEBUG{pgf} && $node && (($node->getAttribute('class') || '') eq 'ltx_debug')) {
+    my $rect = $node->firstChild;    # Move the rectangle to the end, so it overlays
+    $node->removeChild($rect);
+    $node->appendChild($rect); }
+  return $node; }
 
 sub openTikzAlignmentRow {
   my ($tag, $doc, %props) = @_;
   my $class = 'ltx_tikzmatrix_row' . ($props{class} ? ' ' . $props{class} : '');
-  my $y     = ($props{y}       && -$props{y}->pxValue)       || 0;
-  my $h     = ($props{cheight} && -$props{cheight}->pxValue) || 0;
+  my $y     = ($props{y}       && $props{y}->pxValue)       || 0;
+  my $w     = ($props{cwidth}  && $props{cwidth}->pxValue)  || 0;
+  my $h     = ($props{cheight} && $props{cheight}->pxValue) || 0;
+  my $d     = ($props{cdepth}  && $props{cdepth}->pxValue)  || 0;
   my $yy    = $y + $h;
-  return $doc->openElement($tag, class => $class,
+  Debug("TIKZ alignment Row ($w x $h + $d); y=$yy; ") if $LaTeXML::DEBUG{pgf};
+  my $row = $doc->openElement($tag, class => $class,
     _scopebegin => 1,
     transform   => "matrix(1 0 0 1 0 $yy)",
-  ); }
+  );
+  $doc->insertElement('svg:rect', undef,
+    x => -2, y => -$h - 2, width => $w + 4, height => $h + $d + 4, stroke => '#00FF00', fill => 'none')
+    if $LaTeXML::DEBUG{pgf};
+  return $row; }
 
 sub openTikzAlignmentCol {
   my ($tag, $doc, %props) = @_;
   my $class = 'ltx_tikzmatrix_col' . ($props{class} ? ' ' . $props{class} : '');
-  my $x     = ($props{x} && $props{x}->pxValue) || 0;
-  return $doc->openElement($tag, class => $class,
+  # MYSTERIOUSLY, $w seems to be HALF the "proper" width...
+  # AND assumes an equivalent \hspace in front !?!?!
+  # HOWEVER, this isn't getting accounted in Alignment.pm, for size/position/whatever
+  # so that anchors (for arrows) still aren't properly positioned!!!
+  # Moreover, the cell's horizontal position should be set according to alignment
+  # which also isn't yet done in Alignment.pm,
+  # and also it is not clear how that gets recognized by TikZ's anchors!
+  my $hw = ($props{cwidth} && $props{cwidth}->pxValue) || 0;
+  my $w  = 2 * $hw;
+  my $h  = ($props{cheight} && $props{cheight}->pxValue) || 0;
+  my $d  = ($props{cdepth}  && $props{cdepth}->pxValue)  || 0;
+  my $x  = ($props{x}       && $props{x}->pxValue)       || 0;
+
+  my $xpos = $x + $hw;
+##  my $xpos  = $x;
+  my $ypos = 0;    #-$h;
+  Debug("TIKZ alignment Cell ($w x $h + $d); x=$x"
+      . join(',', map { $_ . "=" . ToString($props{$_}); } sort keys %props)) if $LaTeXML::DEBUG{pgf};
+  my $col = $doc->openElement($tag, class => $class,
     _scopebegin => 1,
-    transform   => "matrix(1 0 0 1 $x 0)",
-  ); }
+    transform   => "matrix(1 0 0 -1 $xpos $ypos)",    # NOTE: Flip!!!
+  );
+  $doc->insertElement('svg:rect', undef,
+    x => -$hw - 1, y => -$h - 1, width => $w + 2, height => $h + $d + 2, stroke => '#0000FF', fill => 'none')
+    if $LaTeXML::DEBUG{pgf};
+  return $col; }
 
 #=====================================================================
 # Dealing with quick commands

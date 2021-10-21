@@ -213,11 +213,11 @@ sub getSize {
     && (defined $$props{cheight})
     && (defined $$props{cdepth});
   Debug("SIZE of $self"
-      . "\n options   :" . _showsize($options{width}, $options{height}, $options{depth})
-      . "\n assigned : " . _showsize($$props{width},  $$props{height},  $$props{depth})
-      . "\n calculated: " . _showsize($$props{cwidth}, $$props{cheight}, $$props{cdepth})
+      . "\n preassigned: " . _showsize($$props{width},  $$props{height},  $$props{depth})
+      . "\n calculated : " . _showsize($$props{cwidth}, $$props{cheight}, $$props{cdepth})
+      . "\n w/options " . join(',', map { $_ . "=" . ToString($options{$_}); } sort keys %options)
       . "\n =>: " . _showsize($$props{width} || $$props{cwidth}, $$props{height} || $$props{cheight}, $$props{depth} || $$props{cdepth})
-      . "\n   Of " . Stringify($self)) if $LaTeXML::DEBUG{size};
+      . "\n   Of " . ToString($self)) if $LaTeXML::DEBUG{size};
   return ($$props{width} || $$props{cwidth},
     $$props{height}  || $$props{cheight},
     $$props{depth}   || $$props{cdepth},

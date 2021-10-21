@@ -173,7 +173,7 @@
           <xsl:apply-templates select="@name">
             <xsl:with-param name="context" select="$innercontext"/>
           </xsl:apply-templates>
-          <xsl:text>:</xsl:text>
+          <xsl:text>: </xsl:text>
         </xsl:element>
       </xsl:if>
       <xsl:apply-templates>
@@ -390,10 +390,12 @@
       <xsl:call-template name="authors">
         <xsl:with-param name="context" select="$context"/>
       </xsl:call-template>
-      <xsl:call-template name="dates">
-        <xsl:with-param name="context" select="$context"/>
-        <xsl:with-param name="dates" select="../ltx:date"/>
-      </xsl:call-template>
+      <xsl:if test="not(//ltx:navigation/ltx:ref[@rel='up'])">
+        <xsl:call-template name="dates">
+          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="dates" select="../ltx:date"/>
+        </xsl:call-template>
+      </xsl:if>
     </xsl:if>
     <xsl:apply-templates select="." mode="end">
       <xsl:with-param name="context" select="$context"/>
@@ -649,7 +651,7 @@
   <xsl:template name="dates">
     <xsl:param name="context"/>
     <xsl:param name="dates" select="ltx:date"/>
-    <xsl:if test="$dates and string($dates)">
+    <xsl:if test="$dates and normalize-space(string($dates))">
       <xsl:text>&#x0A;</xsl:text>
       <!-- Originally, html5 seemed to suggest we might use h2 here, but that is retracted-->
       <xsl:element name="div" namespace="{$html_ns}">
@@ -671,7 +673,7 @@
 
   <xsl:template match="ltx:date" mode="intitle">
     <xsl:param name="context"/>
-    <xsl:if test="@name"><xsl:value-of select="@name"/><xsl:text>: </xsl:text></xsl:if>
+    <xsl:if test="@name"><xsl:value-of select="@name"/><xsl:text> </xsl:text></xsl:if>
     <xsl:apply-templates select="node()">
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>

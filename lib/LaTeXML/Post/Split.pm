@@ -43,7 +43,7 @@ sub process {
     my @nav = $doc->findnodes("descendant::ltx:navigation");
     $doc->removeNodes(@nav) if @nav;
     my $tree = { node => $root, document => $doc,
-      id => $root->getAttribute('xml:id'), name => $doc->getDestination,
+      id       => $root->getAttribute('xml:id'), name => $doc->getDestination,
       children => [] };
     # Group the pages into a tree, in case they are nested.
     my $haschildren = {};
@@ -97,8 +97,10 @@ sub processPages {
   my ($self, $doc, @entries) = @_;
   my $rootid = $doc->getDocumentElement->getAttribute('xml:id');
   # Before any document surgery, copy inheritable attributes.
+  my $intoc = 0;    # Whether ANY children appear in toc
   foreach my $entry (@entries) {
     my $node = $$entry{node};
+    $intoc ||= ($node->getAttribute('inlist') || '') =~ /\btoc\b/;
     foreach my $attr (qw(xml:lang backgroundcolor)) {
       if (my $anc = $doc->findnode('ancestor-or-self::*[@' . $attr . '][1]', $node)) {
         $node->setAttribute($attr => $anc->getAttribute($attr)); } } }
@@ -117,6 +119,8 @@ sub processPages {
     while (@entries && @removed && $entries[0]->{node}->isSameNode($removed[0])) {
       my $entry = shift(@entries);
       my $page  = $$entry{node};
+      # If any pages go in toc, Assume siblings on their own page should go also
+      $page->setAttribute(inlist => 'toc') if $intoc && !$page->hasAttribute('inlist');
       $doc->removeNodes(shift(@removed));
       my $id       = $page->getAttribute('xml:id');
       my $tocentry = ['ltx:tocentry', {},
@@ -163,12 +167,12 @@ sub getPageName {
   if (!$name) {
     if (($attr eq 'labels') && ($name = $page->getAttribute('xml:id'))) {
       Info('expected', $attr, $doc->getQName($page),
-        "Expected attribute '$attr' to create page pathname", "using id=$name");
+        "Using '$name' to create page pathname, instead of missing '$attr'");
       $attr = 'xml:id'; }
     else {
       $name = $self->generateUnnamedPageName;
       Info('expected', $attr, $doc->getQName($page),
-        "Expected attribute '$attr' to create page pathname", "using id=$name"); } }
+        "Using '$name' to create page pathname, instead of missing '$attr'"); } }
   if ($naming =~ /relative$/) {
     my $pname = $parent->getAttribute($attr);
     $pname =~ s/\s+.*//   if $pname;    # Truncate in case multiple labels.

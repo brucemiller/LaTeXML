@@ -551,6 +551,7 @@ sub cleanTeX {
   $string =~ s/\#/\\#/g;
   $string =~ s/<([^>]*)>/\\texttt{$1}/g;    # An apparent convention <sometext> == ttfont?
   $string =~ s/_/\\_/g;
+  $string =~ s/\*/any/g;                    # ????
   return $string; }
 
 sub cleanTeXName {

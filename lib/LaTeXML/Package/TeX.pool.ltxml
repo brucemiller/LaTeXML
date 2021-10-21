@@ -432,33 +432,28 @@ DefParameterType('BalancedParen', sub {
   reversion => sub {
     (T_OTHER('('), Revert($_[0]), T_OTHER(')')); });
 
-# Read a digested argument.
-# The usual macro parameter (generally written as {}) gets
-# tokenized and digested in separate stages,
-# and so it is tokenized w/o recognizing any special macros within (eg. \url).
-# Rarely, you need a parameter that gets digested as it's read until
-# the (typically required) opening { is balanced.
+# Read a digested argument, digesting as it is being read.
+# The usual macro parameter (generally written as {}) gets tokenized and digested
+# in separate stages, w/o recognizing any special macros or catcode changes within (eg. \url).
+# Rarely, you need a parameter that gets digested AS IT'S READ until ending }.
+# Note that this also recognizes args as \bgroup ... \engroup
 # It is useful when the content would usually need to have been \protect'd
 # in order to correctly deal with catcodes.
-# We also must read some sort of Box content, so we ignore random "empty"
-# things like \relax, \leavevmode...
+# BEWARE: This is NOT a shorthand for a simple digested {}!
 DefParameterType('Digested', sub {
     my ($gullet) = @_;
     $gullet->skipSpaces;
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @list   = ();
     my $token;
-    while (1) {
-      do { $token = $gullet->readXToken(0);
-      } while (defined $token && $token->getCatcode == CC_SPACE);
-      if    (!defined $token) { last; }
-      elsif ($token->equals(T_BEGIN)) {
-        Digest($token);
-        push(@list, $STATE->getStomach->digestNextBody()); pop(@list); }
-      else {
-        push(@list, $STATE->getStomach->invokeToken($token)); }
-      # In most (all?) cases, we're really looking for a single Whatsit here...
-      last if grep { !$_->getProperty('isEmpty'); } @list; }
+    do { $token = $gullet->readXToken(0);
+    } while (defined $token && (($token->getCatcode == CC_SPACE) || $token->equals(T_CS('\relax'))));
+    if    (!defined $token) { }
+    elsif ($token->equals(T_BEGIN)) {
+      Digest($token);
+      push(@list, $STATE->getStomach->digestNextBody()); pop(@list); }    # content w/o the braces
+    else {
+      push(@list, $STATE->getStomach->invokeToken($token)); }
     @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
     List(@list, mode => ($ismath ? 'math' : 'text')); },
   undigested => 1,                                           # since _already_ digested.
@@ -985,7 +980,10 @@ DefMacro('\expandafter Token Token', sub {
       ($tok, $xtok); } });
 
 # Replace the next token with it's not-expanded variant
-DefMacro('\noexpand Token', sub { $_[1]->with_dont_expand; });
+DefMacroI('\noexpand', undef, sub {
+    my $token = $_[0]->readToken;
+    # Missing token likely the result of "{\noexpand}" for which TeX would be unperturbed
+    return ($token ? $token->with_dont_expand : ()); });
 
 DefMacroI('\topmark',        undef, Tokens());
 DefMacroI('\firstmark',      undef, Tokens());
@@ -1089,7 +1087,7 @@ sub today {
 
 # Read-only Integer registers
 {
-  my %ro_iparms = (lastpenalty => 0, inputlineno => 0, badness => 0);
+  my %ro_iparms = (lastpenalty => 0, badness => 0);
   foreach my $p (keys %ro_iparms) {
     DefRegister("\\$p", Number($ro_iparms{$p}), readonly => 1); }
 }
@@ -1154,10 +1152,9 @@ sub today {
 #======================================================================
 # MuGlue registers; TeXBook p.274
 {
-  my %mparms = (
-    thinmuskip => '3mu', medmuskip => '4mu plus 2mu minus 4mu', thickmuskip => '5mu plus 5mu');
-  foreach my $p (keys %mparms) {
-    DefRegister("\\$p", Glue($mparms{$p})); }
+  DefRegister('\thinmuskip'  => MuGlue("3mu"));
+  DefRegister('\medmuskip'   => MuGlue("4mu plus 2mu minus 4mu"));
+  DefRegister('\thickmuskip' => MuGlue("5mu plus 5mu"));
 }
 #======================================================================
 # Token registers; TeXBook p.275
@@ -1424,9 +1421,11 @@ DefPrimitive('\parshape SkipMatch:= Number', sub {
     # we _could_ conceivably store this somewhere for some attempt at stylistic purpose...
     return; });
 
-#DefRegister('\inputlineno',Number(0),
-#            readonly=>1,
-#            getter=>{ Number($stomach->getGullet->????? ->lineno); });
+DefRegister('\inputlineno', Number(0),
+  getter => sub {
+    my $locator = $STATE->getStomach->getGullet->getLocator();
+    Number($locator ? $$locator{fromLine} : 0); },
+  readonly => 1);
 
 DefRegister('\badness', Number(0), readonly => 1);
 
@@ -1596,6 +1595,8 @@ DefPrimitive('\@@@fontencoding{}', sub {
     $encoding = ToString(Expand($encoding));
     if (LoadFontMap($encoding)) {
       MergeFont(encoding => $encoding); }
+    else {
+      MergeFont(encoding => 'OT1'); }    # Default to OT1 encoding if no map found
     return; });
 
 DefMacroI('\f@encoding',  undef, sub { ExplodeText(LookupValue('font')->getEncoding); });
@@ -2162,7 +2163,7 @@ DefConstructor('\hrule RuleSpecification',
     my $depth  = GetKeyVal($dims, 'depth');
     $whatsit->setProperties(width  => $width,  cwidth  => $width)  if $width;
     $whatsit->setProperties(height => $height, cheight => $height) if $height;
-    $whatsit->setProperties(depth  => $depth,  dcepth  => $depth)  if $depth;
+    $whatsit->setProperties(depth  => $depth,  cdepth  => $depth)  if $depth;
     my $w = ($width  ? $width->ptValue  : undef);
     my $h = ($height ? $height->ptValue : undef);
     my $d = ($depth  ? $depth->ptValue  : undef);
@@ -2379,7 +2380,33 @@ DefPrimitive('\immediate', undef);
 #======================================================================
 # Remaining semi- Vertical Mode primitives in Ch.24, pp.280--281
 
-DefPrimitive('\special {}',     undef);
+DefPrimitive('\special {}', sub {
+    my ($stomach, $arg) = @_;
+    my $special_str = ToString($arg);
+    # recognize one special graphics inclusion case
+    if ($special_str =~ /\bpsfile=(.+?)(?:\s|\})/) {
+      my $graphic = $1;
+      RequirePackage('graphicx', searchpaths_only => 1);
+      $stomach->getGullet->unread(
+        Invocation(T_CS('\ltx@special@graphics'), T_OTHER($graphic))->unlist); }
+    return; });
+# adapted from graphicx.sty.ltxml
+DefConstructor('\ltx@special@graphics Semiverbatim',
+  "<ltx:graphics graphic='#path' candidates='#candidates'/>",
+  sizer      => \&image_graphicx_sizer,
+  properties => sub {
+    my ($stomach, $path) = @_;
+    $path = ToString($path); $path =~ s/^\s+//; $path =~ s/\s+$//;
+    my $searchpaths = LookupValue('GRAPHICSPATHS');
+    my @candidates  = pathname_findall($path, types => ['*'], paths => $searchpaths);
+    if (my $base = LookupValue('SOURCEDIRECTORY')) {
+      @candidates = map { pathname_relative($_, $base) } @candidates; }
+    (path => $path,
+      candidates => join(',', @candidates)); },
+  mode => 'text');
+# Since these ultimately generate external resources, it can be useful to have a handle on them.
+Tag('ltx:graphics', afterOpen => sub { GenerateID(@_, 'g'); });
+
 DefPrimitive('\penalty Number', undef);
 DefPrimitive('\kern Dimension', undef);
 DefPrimitiveI('\unpenalty', undef, undef);
@@ -2795,9 +2822,15 @@ sub afterCellUnlist {
 #======================================================================
 DefConstructor('\halign BoxSpecification',
   "#alignment",
-  reversion   => '\halign #1{#2\cr#3}',
-  bounded     => 1,
-  sizer       => '#1',
+  reversion => sub {
+    my ($whatsit, $spec) = @_;
+    my $template  = $whatsit->getProperty('template');
+    my $alignment = $whatsit->getProperty('alignment');
+    Tokens(T_CS('\halign'), Revert($spec), T_BEGIN, Revert($template), T_CS('\cr'),
+      Revert($alignment), T_END); },
+  bounded => 1,
+  #  sizer       => '#1',
+  sizer       => sub { $_[0]->getProperty('alignment')->getSize; },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     $stomach->bgroup;    # This will be closed by the \halign's closing }  (or will it?)
@@ -2821,16 +2854,19 @@ sub parseHAlignTemplate {
   my $repeated = 0;
   my @nonreps  = ();
   my $tabskip;         # Need to use this somehow!
+  my @tokens = ();
   ## Only expand certain things; See TeX book p.238
   local $LaTeXML::ALIGN_STATE = 1000000;
   while ($t = $gullet->readToken) {
     if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
       $gullet->readKeyword('=');
-      $tabskip = $gullet->readGlue; }
+      $tabskip = $gullet->readGlue;
+      push(@tokens, $t, $tabskip); }
     elsif ($t->equals(T_CS('\span'))) {    # ex-span-ded next token.
       $gullet->unread($gullet->readXToken(0)); }
     elsif ($t->equals(T_PARAM)) {          # Found the template's column slot
-      $before = 0; }
+      $before = 0;
+      push(@tokens, $t); }
     elsif ($t->equals(T_ALIGN)
       || $t->equals(T_CS('\cr')) || $t->equals(T_CS('\crcr'))) {    # End the column
       if ($before) {                                                # Leading & ?
@@ -2842,16 +2878,22 @@ sub parseHAlignTemplate {
             before => Tokens(beforeCellUnlist(Tokens(@pre))),
             after  => Tokens(afterCellUnlist(Tokens(@post))) });
         @pre = @post = (); $before = 1; }
-      last unless $t->equals(T_ALIGN); }
+      last unless $t->equals(T_ALIGN);
+      push(@tokens, $t); }
     elsif ($before) {    # Other random tokens go into the column's pre-template
-      push(@pre, $t) if @pre || !$t->equals(T_SPACE); }
+      push(@pre,    $t) if @pre || !$t->equals(T_SPACE);
+      push(@tokens, $t); }
     else {               # Or the post-template
-      push(@post, $t) if @post || !$t->equals(T_SPACE); } }
+      push(@post,   $t) if @post || !$t->equals(T_SPACE);
+      push(@tokens, $t); } }
   # Now create & return the template object
-  return LaTeXML::Core::Alignment::Template->new(
+  my $template = LaTeXML::Core::Alignment::Template->new(
     ($repeated
       ? (columns => [@nonreps], repeated => [@cols])
-      : (columns => [@cols]))); }
+      : (columns => [@cols])),
+    tokens => [@tokens]);
+  $whatsit->setProperty(template => $template);
+  return $template; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # And the general alignment processing.
@@ -3262,7 +3304,8 @@ DefConstructorI('\normal@par', undef, sub {
 Let('\par', '\normal@par');
 # OTOH, sometimes \par is just a minimalistic "start a new line"
 # This should be closer for those cases.
-DefConstructorI('\inner@par', undef, sub {
+# BUT! In the cases where an elaborate \\[0.4cm] or such sneaks in, gracefully ignore its args.
+DefConstructor('\inner@par OptionalMatch:* [Glue]', sub {
     if    ($_[0]->maybeCloseElement('ltx:p')) { }
     elsif ($_[0]->canContain($_[0]->getNode, 'ltx:break')) {
       $_[0]->insertElement('ltx:break'); } },
@@ -3518,7 +3561,7 @@ sub cleanup_Math {
     foreach my $xmnode (map { $_->childNodes } $mathnode->childNodes) {
       if ($document->getNodeQName($xmnode) eq 'ltx:XMHint') {
         if (my $width = $xmnode->getAttribute('width')) {
-          if (my $space = DimensionToSpaces(Dimension($width))) {
+          if (my $space = DimensionToSpaces(Glue($width))) {
             push(@texts, $space); } } }
       else {    # is XMText
         foreach my $child ($xmnode->childNodes) {
@@ -4439,14 +4482,16 @@ DefMathLigature(matcher => sub { my ($document, $node) = @_;
     my $decrole = ($dec eq '.' ? 'PERIOD' : '');
     # my $skip  = Dimension('5mu')->valueOf;
     my @chars = ();
-    my ($n, $string, $number, $w) = (0, '', '', 0);
+    my ($n, $string, $number, $w, $font) = (0, '', '', 0, undef);
     # NOTE: We're scanning chars from END!
     while ($node) {
       my $qn = $document->getModel->getNodeQName($node);
       if ($qn =~ /^(ltx:XMTok|ltx:XMWrap)$/) {
         my $r    = ($node->getAttribute('role') || '');
+        my $f    = $document->getNodeFont($node);
         my $text = $node->textContent;
-        if ($r eq 'NUMBER') {
+        if (($r eq 'NUMBER') && (!$font || ($f->equals($font)))) {    # A number in same font?
+          $font   = $f;
           $string = $text . $string;
           $number = $node->getAttribute('meaning') . $number; }
         elsif (!$n) {    # any following cases are not allowed as LAST char
@@ -4625,9 +4670,9 @@ DefPrimitive('\newif DefToken', sub {
 # See the section Registers & Parameters, above for setting default values.
 
 # These are originally defined with \newskip, etc
-DefRegister('\smallskipamount'          => Glue('3pt plus1pt minus1pt'));
-DefRegister('\medskipamount'            => Glue('6pt plus2pt minus2pt'));
-DefRegister('\bigskipamount'            => Glue('12pt plus4pt minus4pt'));
+DefRegister('\smallskipamount'          => Glue('3pt plus 1pt minus 1pt'));
+DefRegister('\medskipamount'            => Glue('6pt plus 2pt minus 2pt'));
+DefRegister('\bigskipamount'            => Glue('12pt plus 4pt minus 4pt'));
 DefRegister('\normalbaselineskip'       => Glue('12pt'));
 DefRegister('\normallineskip'           => Glue('1pt'));
 DefRegister('\normallineskiplimit'      => Dimension('0pt'));
@@ -4926,7 +4971,11 @@ DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
       $$entry[1] = { $attr->beDigested($stomach)->getHash }; }
     $$entry[2] = Digest(Tokens(T_BEGIN, $tokens, T_END));
     AssignValue(inPreamble => $inpreamble);
-    return; });
+    return; },
+  beforeDigest => sub {
+    $_[0]->bgroup; },
+  afterDigest => sub {
+    $_[0]->egroup; });
 
 # Append a piece of data to an existing frontmatter item that is contained in <$tag>
 # If $label is given, look for an item which has label=>$label,
@@ -4954,7 +5003,11 @@ DefPrimitive('\@add@to@frontmatter {} [] {}', sub {
       push(@{ $$list[-1] }, $datum);
       return; }
     push(@{ $$frontmatter{$tag} }, [$tag, ($label ? { label => $label } : undef), $datum]);
-    return; });
+    return; },
+  beforeDigest => sub {
+    $_[0]->bgroup; },
+  afterDigest => sub {
+    $_[0]->egroup; });
 
 # This is called by afterOpen (by default on <ltx:document>) to
 # output any frontmatter that was accumulated.
@@ -4965,9 +5018,18 @@ my @frontmatter_elements = (qw(ltx:title ltx:toctitle ltx:subtitle
 my %frontmatter_elements = map { ($_ => 1) } @frontmatter_elements;
 
 sub insertFrontMatter {
-  my ($document) = @_;
+  my ($document)  = @_;
   my $frontmatter = LookupValue('frontmatter');
-  foreach my $key (@frontmatter_elements, grep { !$frontmatter_elements{$_} } keys %$frontmatter) {
+  my @set_keys    = $frontmatter ? (keys %$frontmatter) : ();
+  # if doc only has a solo abstract as frontmatter,
+  #    don't deposit here but mark to be placed as-is.
+  if ((scalar(@set_keys) == 1) && ($set_keys[0] eq 'ltx:abstract') &&
+    # Avoid cargo cult: allow this sub to be called twice with solo abstract,
+    #                   where 2nd call is at the right location for insertion.
+    !LookupValue('standalone_abstract_in_frontmatter')) {
+    AssignValue('standalone_abstract_in_frontmatter', 1, 'global');
+    return; }
+  foreach my $key (@frontmatter_elements, grep { !$frontmatter_elements{$_} } @set_keys) {
     if (my $list = $$frontmatter{$key}) {
       # Dubious, but assures that frontmatter appears in text mode...
       local $LaTeXML::BOX = Box('', $STATE->lookupValue('font'), '', T_SPACE);
@@ -5378,11 +5440,6 @@ DefPrimitiveI("\\\t", undef, sub {
 DefPrimitiveI('\/', undef, sub {
     Box("", undef, undef, T_CS('\/'),
       isSpace => 1, name => 'italiccorr', width => Dimension('0em')); });
-
-# What kind of magic might allow \mskip to translate these back into the above?
-DefRegister('\thinmuskip'  => MuGlue("3mu"));
-DefRegister('\medmuskip'   => MuGlue("4mu plus 2mu minus 4mu"));
-DefRegister('\thickmuskip' => MuGlue("5mu plus 5mu"));
 
 #======================================================================
 # TeX Book, Appendix B. p. 358
@@ -5899,12 +5956,13 @@ DefMath('\vec Digested', "\x{2192}",
 DefMath('\dot Digested',      "\x{02D9}", operator_role => 'OVERACCENT');    # DOT ABOVE
 DefMath('\ddot Digested',     UTF(0xA8),  operator_role => 'OVERACCENT');    # DIAERESIS
 DefMath('\overline Digested', UTF(0xAF),  operator_role => 'OVERACCENT');    # MACRON
-DefMath('\overbrace Digested', "\x{23DE}", operator_role => 'OVERACCENT',    # TOP CURLY BRACKET
-  scriptpos => 'mid');
 DefMath('\widehat Digested', UTF(0x5E), operator_role => 'OVERACCENT'); # CIRCUMFLEX ACCENT [plain? also amsfonts]
 DefMath('\widetilde Digested', UTF(0x7E), operator_role => 'OVERACCENT'); # TILDE [plain? also amsfonts]
-DefMath('\underbrace Digested', "\x{23DF}", operator_role => 'UNDERACCENT',   # BOTTOM CURLY BRACKET
-  scriptpos => 'mid');
+# These aren't handled as simple accents by TeX, so no Digested
+DefMath('\overbrace {}', "\x{23DE}", operator_role => 'OVERACCENT',       # TOP CURLY BRACKET
+  scriptpos => 'mid', robust => 1);
+DefMath('\underbrace {}', "\x{23DF}", operator_role => 'UNDERACCENT',     # BOTTOM CURLY BRACKET
+  scriptpos => 'mid', robust => 1);
 
 # NOTE that all the above accents REQUIRE math mode
 # EXCEPT underline, overrightarrow and overleftarrow!
@@ -6691,7 +6749,8 @@ Tag('ltx:document', afterOpen => sub {
 # stuff the token back to be reexecuted.
 foreach my $ltxtrigger (qw(documentclass
   newcommand renewcommand newenvironment renewenvironment
-  NeedsTeXFormat ProvidesPackage RequirePackage ProvidesFile
+  NeedsTeXFormat ProvidesFile
+  ProvidesPackage RequirePackage PassOptionsToPackage
   makeatletter makeatother
   typeout begin listfiles nofiles)) {
   DefAutoload($ltxtrigger, 'LaTeX.pool.ltxml'); }
