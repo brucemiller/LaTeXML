@@ -23,7 +23,6 @@ RequirePackage('hyperref');
 
 RequireResource('ltx-cv.css');
 
-RawTeX('\@add@frontmatter{ltx:creator}[role=cv]{}');
 DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
 DefMacro('\address{}{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#1\newline #2}}');
 
@@ -66,7 +65,7 @@ DefConstructor('\@@cv@section{} Undigested OptionalUndigested Undigested', sub {
   properties => sub {
     my ($stomach, $type, $inlist, $toctitle, $title) = @_;
     my %props = RefStepID(ToString($type));
-    $props{title} = Digest(T_CS('\@hidden@bgroup'), $title, T_CS('\@hidden@egroup'));
+    $props{title}    = Digest(T_CS('\@hidden@bgroup'), $title, T_CS('\@hidden@egroup'));
     $props{toctitle} = $toctitle
       && Digest(T_CS('\@hidden@bgroup'), $toctitle, T_CS('\@hidden@egroup'));
     return %props; },
@@ -76,11 +75,20 @@ Let(T_CS('\\@@unnumbered@section'), T_CS('\\@@cv@section'));
 
 DefMacro('\closesection{}', Tokens(), locked => 1);
 
-DefMacro('\title Semiverbatim',      '\@add@to@frontmatter{ltx:creator}{\@@@position{#1}}');
-DefMacro('\email Semiverbatim',      '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
-DefMacro('\firstname Semiverbatim',  '\@add@to@frontmatter{ltx:creator}{\@@@firstname{#1}}');
-DefMacro('\familyname Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@familyname{#1}}');
-DefMacro('\photo[]{}',               Tokens());                                               # TODO
+# Make the "creator" have role='cv'
+DefConstructor('\@creator@cv', sub {
+    my ($document) = @_;
+    my $creator = $document->findnode('descendant::ltx:creator');
+    $document->setAttribute($creator, role => 'cv') if $creator; });
+
+DefMacro('\title Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@position{#1}\@creator@cv}');
+DefMacro('\email Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}\@creator@cv}');
+# These really should reconstruct a proper ltx:personname (and cleanup the xslt)
+# but I'm keeping the test case unchanged for now...
+DefMacro('\firstname Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@firstname{#1}\@creator@cv}');
+DefMacro('\familyname Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@familyname{#1}\@creator@cv}');
+
+DefMacro('\photo[]{}', Tokens());    # TODO
 
 DefConstructor('\@@@position{}',   "^ <ltx:contact role='position'>#1</ltx:contact>");
 DefConstructor('\@@@email{}',      "^ <ltx:contact role='email'>#1</ltx:contact>");
@@ -98,13 +106,13 @@ DefMacro('\moderncvstyle',     Tokens());
 #
 # TODO: should we use them in the final HTML style? Feedback from professionals welcome.
 #       for now just adding the macro support, but omitting them from the final output
-DefMacro('\marvosymbol {}',    '');
-DefMacro('\addresssymbol',     '');
-DefMacro('\mobilephonesymbol', '📱');
-DefMacro('\fixedphonesymbol',  '☎');
-DefMacro('\faxphonesymbol',    '📠');
-DefMacro('\emailsymbol',       '✉');
-DefMacro('\homepagesymbol',    '🖰');
+DefMacro('\marvosymbol {}',       '');
+DefMacro('\addresssymbol',        '');
+DefMacro('\mobilephonesymbol',    '📱');
+DefMacro('\fixedphonesymbol',     '☎');
+DefMacro('\faxphonesymbol',       '📠');
+DefMacro('\emailsymbol',          '✉');
+DefMacro('\homepagesymbol',       '🖰');
 DefMacro('\linkedinsocialsymbol', '');  # Tikz image, needs a smart workaround (font awesome maybe?)
 DefMacro('\twittersocialsymbol',  '');  # Tikz image, needs a smart workaround (font awesome maybe?)
 DefMacro('\githubsocialsymbol',   '');  # Tikz image, needs a smart workaround (font awesome maybe?)
