@@ -922,6 +922,9 @@ DefEnvironment('{beamer@frame@slide} Number', "<ltx:slide overlay='#overlay'>#bo
     (overlay => ToString($overlayno)); });
 Tag('ltx:slide', afterOpen => sub { GenerateID(@_,'slide'); });
 
+# TODO: Ignore \setbeamersize for now
+DefMacro('\setbeamersize {}', '');
+
 #**********************************************************************
 # Frame Titles
 #**********************************************************************
