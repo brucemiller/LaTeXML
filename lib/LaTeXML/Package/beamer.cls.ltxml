@@ -26,6 +26,10 @@ EoTeX
 
 LoadPool('LaTeX');
 
+# these packages probably aren't needed, but let's load them anyways!
+RequirePackage('ifpdf');
+RequirePackage('keyval');
+
 # for things that aren't implemented
 sub beamerTODO {
   my ($feature) = @_;
@@ -1040,6 +1044,8 @@ RequirePackage('xcolor'); # TODO: actually uses xxcolor, close enough
 # beamerbaselocalstructure.sty
 #**********************************************************************
 
+RequirePackage('enumerate');
+
 #**********************************************************************
 # {actionenv}
 #**********************************************************************
@@ -1155,6 +1161,7 @@ DefEnvironment('{description} [Angled]',
 
 RequirePackage('amsthm');
 RequirePackage('amsmath');
+RequirePackage('amssymb');
 
 DefMacro('\pushQED {}', sub { beamerTODO('pushQED'); });
 DefMacro('\popQED', sub { beamerTODO('popQED'); });
@@ -1271,6 +1278,10 @@ sub readRawUntilMatch {
 #**********************************************************************
 
 RequirePackage('hyperref', options => ['bookmarks=true', 'bookmarksopen=true', 'pdfborder={0 0 0}', 'pdfhighlight={/N}', 'linkbordercolor={.5 .5 .5}']);
+RequirePackage('atbegshi'); # normally loaded by hyperref, but let's be safe
+
+# TODO: Typically loaded by a package option, but not yet supported
+# RequirePackage('sansmathaccent');
 
 
 #**********************************************************************
