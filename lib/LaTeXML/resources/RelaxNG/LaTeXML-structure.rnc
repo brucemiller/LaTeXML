@@ -174,7 +174,7 @@ slide_attributes =
   ## \attr{overlay} is the number of the current overlay.
   ## This must be specified when part of a slidesequence, else it may be omitted.
   ## Should be unique and rising within a slidesequence.
-  attribute overlay { Integer.datatype }?
+  attribute overlay { text }?
 
 ## Content model for \elementref{slide}.
 slide_model = (SectionalFrontMatter.class | subtitle )*, (slide.body.class | BackMatter.class)*
