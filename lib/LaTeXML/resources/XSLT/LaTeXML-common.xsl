@@ -696,16 +696,15 @@
     </xsl:attribute>
   </xsl:template>
   
-  <!-- Add the flex grid attribute, as well as its computed max-width of a flex row -->
-  <xsl:template name="add_flex_grid_attributes">
+  <!-- Add the flex figure attribute, as well as the computed max-width of a flex row -->
+  <xsl:template name="add_flex_attributes">
     <xsl:variable name="max_flex_width">
       <xsl:call-template name="count_cells_at_break">
         <xsl:with-param name="break_iter_index" select="0"/>
         <xsl:with-param name="previous_count" select="0"/>
       </xsl:call-template>
     </xsl:variable>
-    
-    <xsl:attribute name="class">ltx_flex_grid ltx_flex_size_<xsl:value-of select="$max_flex_width"/></xsl:attribute>
+    <xsl:attribute name="class">ltx_flex_figure ltx_flex_size_<xsl:value-of select="$max_flex_width"/></xsl:attribute>
   </xsl:template>
 
   <!-- Very awkward to express in XSLT 1.0 but,

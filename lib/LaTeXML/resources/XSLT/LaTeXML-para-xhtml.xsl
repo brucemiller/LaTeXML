@@ -158,7 +158,7 @@
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
         <xsl:element name="div" namespace="{$html_ns}">
-          <xsl:call-template name="add_flex_grid_attributes"/>
+          <xsl:call-template name="add_flex_attributes"/>
           <xsl:text>&#x0A;</xsl:text>
           <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:graphics | ltx:break">
             <xsl:choose>
