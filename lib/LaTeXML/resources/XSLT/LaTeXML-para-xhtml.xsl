@@ -158,19 +158,27 @@
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
         <xsl:element name="div" namespace="{$html_ns}">
-          <!-- maybe even more, like display:table ? or some class ? -->
-          <xsl:attribute name="class">ltx_multi_grid</xsl:attribute>
+          <xsl:call-template name="add_flex_grid_attributes"/>
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:graphics">
-            <xsl:text>&#x0A;</xsl:text>
-            <xsl:element name="div" namespace="{$html_ns}">
-              <xsl:attribute name="class">
-                <xsl:value-of select="concat('ltx_sub',local-name(.))"/>
-              </xsl:attribute>
-              <xsl:apply-templates select=".">
-                <xsl:with-param name="context" select="$context"/>
-              </xsl:apply-templates>
-            </xsl:element>
+          <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:graphics | ltx:break">
+            <xsl:choose>
+              <xsl:when test="self::ltx:break">
+                <xsl:element name="div" namespace="{$html_ns}">
+                  <xsl:attribute name="class">ltx_flex_break</xsl:attribute>
+                </xsl:element>
+              </xsl:when>
+              <xsl:otherwise>
+                <xsl:text>&#x0A;</xsl:text>
+                <xsl:element name="div" namespace="{$html_ns}">
+                  <xsl:attribute name="class">
+                    <xsl:value-of select="concat('ltx_sub',local-name(.))"/>
+                  </xsl:attribute>
+                  <xsl:apply-templates select=".">
+                    <xsl:with-param name="context" select="$context"/>
+                  </xsl:apply-templates>
+                </xsl:element>
+              </xsl:otherwise>
+            </xsl:choose>
           </xsl:for-each>
           <xsl:text>&#x0A;</xsl:text>
         </xsl:element>

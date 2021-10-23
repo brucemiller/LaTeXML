@@ -2045,10 +2045,12 @@ sub insertBlock {
   # Scan the inserted nodes, wrapping sequences of Inline items with a ltx:p
   my @newnodes = ();
   while (@nodes) {
-    if ($model->getNodeQName($nodes[0]) eq 'ltx:break') {    # ltx:break are superflous, now.
+    # ltx:break are superflous, now, unless we're transporting a figure
+    if ($model->getNodeQName($nodes[0]) eq 'ltx:break' and
+      $model->getNodeQName($nodes[0]->parentNode) ne 'ltx:figure') {
       $document->removeNode(shift(@nodes));
       next; }
-    my @n;                                                   # Collect up sequences of Inline
+    my @n;    # Collect up sequences of Inline
     while (@nodes && ($model->isInSchemaClass('Inline', $nodes[0]))) {
       push(@n, shift(@nodes)); }
     if (@n) {
@@ -3285,10 +3287,14 @@ DefConstructorI('\normal@par', undef, sub {
     if ($props{inPreamble}) { }
     else {
       $document->maybeCloseElement('ltx:p');
-      if (my $c = $props{class}) {
-        my $node = $document->getElement;
-        if ($node && $document->getNodeQName($node) eq 'ltx:para' && !$node->getAttribute("class")) { # Only set on the para about to close, if unknown!
+      my $node  = $document->getElement;
+      my $qname = $node && $document->getNodeQName($node);
+      if ($qname eq 'ltx:para' && !$node->getAttribute("class")) { # Only set on the para about to close, if unknown!
+        if (my $c = $props{class}) {
           $document->setAttribute($node, class => $c); } }
+      elsif ($qname eq 'ltx:figure') {
+        # insert breaks in figures, for vertically separating subfigures
+        $document->insertElement('ltx:break'); }
       $document->maybeCloseElement('ltx:para'); } },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
