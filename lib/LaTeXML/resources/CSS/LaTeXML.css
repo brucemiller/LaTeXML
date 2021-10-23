@@ -89,7 +89,6 @@
   Para level */
 .ltx_float {
     margin: 1ex 3em 1ex 3em; }
-td.ltx_subtable { width:50%; }
 
 /* Multiple subfigures via flexbox */
 .ltx_flex_figure {
@@ -109,38 +108,45 @@ td.ltx_subtable { width:50%; }
 .ltx_flex_size_1 > .ltx_subgraphics,
 .ltx_flex_size_1 > .ltx_subfigure,
 .ltx_flex_size_1 > .ltx_subfloat,
+.ltx_flex_size_1 > .ltx_subtable,
 .ltx_flex_size_1 .ltx_graphics {
-  max-width:var(--main-width);;
+  max-width:var(--main-width);
 }
 .ltx_flex_size_2 > .ltx_subgraphics,
 .ltx_flex_size_2 > .ltx_subfigure,
 .ltx_flex_size_2 > .ltx_subfloat,
+.ltx_flex_size_2 > .ltx_subtable,
 .ltx_flex_size_2 .ltx_graphics {
   max-width: calc(0.45*var(--main-width));
 }
 .ltx_flex_size_3 > .ltx_subgraphics,
 .ltx_flex_size_3 > .ltx_subfigure,
 .ltx_flex_size_3 > .ltx_subfloat,
+.ltx_flex_size_3 > .ltx_subtable,
 .ltx_flex_size_3 .ltx_graphics {
   max-width: calc(0.3*var(--main-width));
 }
 .ltx_flex_size_4 > .ltx_subgraphics,
 .ltx_flex_size_4 > .ltx_subfigure,
 .ltx_flex_size_4 > .ltx_subfloat,
+.ltx_flex_size_4 > .ltx_subtable,
 .ltx_flex_size_4 .ltx_graphics {
   max-width: calc(0.24*var(--main-width));
 }*/
 /*Default: More than 4 items, tricky.
   quite often intended to auto-reflow... */
-/* .ltx_subgraphics,
+/*
+.ltx_subgraphics,
 .ltx_subfigure,
+.ltx_subtable,
 .ltx_subfloat {
   max-width: calc(0.24*var(--main-width));
 } */
 
 .ltx_flex_figure .ltx_subgraphics,
 .ltx_flex_figure .ltx_subfigure,
-.ltx_flex_figure .ltx_subfloat {
+.ltx_flex_figure .ltx_subfloat,
+.ltx_flex_figure .ltx_subtable {
   flex: 1 1 0px;
   margin: 0.1rem;
 }
@@ -149,16 +155,6 @@ td.ltx_subtable { width:50%; }
   height: 0;
 }
 
-.ltx_subfigure, .ltx_subtable, .ltx_subfloat {
-  max-width: 24rem;
-  padding-left: 1rem;
-  padding-right: 1rem;
-}
-.ltx_subfigure > .ltx_figure,
-.ltx_subtable > .ltx_figure,
-.ltx_subfloat > .ltx_figure {
-  margin:0em;
-}
 /* theorems, figure, tables, floats captions.. */
 /*======================================================================
  Blocks, Lists, Floats */
