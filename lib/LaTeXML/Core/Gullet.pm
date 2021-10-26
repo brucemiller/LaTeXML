@@ -246,7 +246,7 @@ sub handleTemplate {
 
 # If it is a column ending token, Returns the token, a keyword and whether it is "hidden"
 our @column_ends = (
-  [T_ALIGN, 'align', 0],
+  [T_ALIGN,               'align',  0],
   [T_CS('\cr'),           'cr',     0],
   [T_CS('\crcr'),         'crcr',   0],
   [T_CS('\hidden@cr'),    'cr',     1],
@@ -331,7 +331,7 @@ sub readXToken {
         push(@{ $$self{pending_comments} }, $token); }
       elsif ($cc == CC_MARKER) {
         $self->handleMarker($token); } }
-    if (!defined $token) {           # Else read from current mouth
+    if (!defined $token) {    # Else read from current mouth
       while (($token = $$self{mouth}->readToken()) && $CATCODE_HOLD[$cc = $$token[1]]) {
         if ($cc == CC_COMMENT) {
           return $token if $commentsok;
@@ -341,7 +341,7 @@ sub readXToken {
     ProgressStep() if ($$self{progress}++ % $TOKEN_PROGRESS_QUANTUM) == 0;
     if (!defined $token) {
       return unless $autoclose && $$self{autoclose} && @{ $$self{mouthstack} };
-      $self->closeMouth; }           # Next input stream.
+      $self->closeMouth; }    # Next input stream.
         # Handle \noexpand and  smuggled tokens; either expand to $$token[2] or defer till later
     elsif (my $unexpanded = $$token[2]) {    # Inline get_dont_expand
       return ($cc != CC_SMUGGLE_THE) || $LaTeXML::SMUGGLE_THE ? $token : $unexpanded; }
@@ -501,19 +501,20 @@ sub ifNext {
 sub readMatch {
   my ($self, @choices) = @_;
   foreach my $choice (@choices) {
-    my @tomatch = $choice->unlist;
-    my @matched = ();
-    my $token;
-    while (@tomatch && defined($token = $self->readToken)
-      && push(@matched, $token) && ($token->equals($tomatch[0]))) {
-      shift(@tomatch);
-      if ($$token[1] == CC_SPACE) {    # If this was space, SKIP any following!!!
-        while (defined($token = $self->readToken) && ($$token[1] == CC_SPACE)) {
-          push(@matched, $token); }
-        unshift(@{ $$self{pushback} }, $token) if $token; }    # Unread
+    if (my @tomatch = $choice->unlist) {     # an empty choice is a skippable artifact
+      my @matched = ();
+      my $token;
+      while (@tomatch && defined($token = $self->readToken)
+        && push(@matched, $token) && ($token->equals($tomatch[0]))) {
+        shift(@tomatch);
+        if ($$token[1] == CC_SPACE) {    # If this was space, SKIP any following!!!
+          while (defined($token = $self->readToken) && ($$token[1] == CC_SPACE)) {
+            push(@matched, $token); }
+          unshift(@{ $$self{pushback} }, $token) if $token; }    # Unread
+      }
+      return $choice unless @tomatch;                            # All matched!!!
+      unshift(@{ $$self{pushback} }, @matched);                  # Put 'em back and try next!
     }
-    return $choice unless @tomatch;                            # All matched!!!
-    unshift(@{ $$self{pushback} }, @matched);                  # Put 'em back and try next!
   }
   return; }
 
@@ -547,10 +548,11 @@ sub readUntil {
   my $nbraces  = 0;
   my @want     = $delim->unlist;
   my $ntomatch = scalar(@want);
+  return unless $ntomatch;
   if ($ntomatch == 1) {    # Common, easy case: read till we match a single token
     my $want = $want[0];
     #    while(($token = $self->readToken) && !$token->equals($want)){
-    while (($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken())
+    while (($token = $self->readToken())
       && (($$token[1] != CC_SMUGGLE_THE) || ($token = $$token[2]))
       && !$token->equals($want)) {
       push(@tokens, $token);
@@ -558,11 +560,10 @@ sub readUntil {
         $nbraces++;
         push(@tokens, $self->readBalanced, T_END); } } }
   else {
-
     my @ring = ();
     while (1) {
       # prefill the required number of tokens
-      while ((scalar(@ring) < $ntomatch) && ($token = $self->readToken)) {
+      while ((scalar(@ring) < $ntomatch) && ($token = $self->readToken())) {
         if ($$token[1] == CC_BEGIN) {    # read balanced, and refill ring.
           $nbraces++;
           push(@tokens, @ring, $token, $self->readBalanced, T_END);    # Copy directly to result
@@ -659,7 +660,7 @@ sub readTokensValue {
   my $token = $self->readNonSpace;
   if (!defined $token) {
     return; }
-  elsif ($$token[1] == CC_BEGIN) {             # Inline ->getCatcode!
+  elsif ($$token[1] == CC_BEGIN) {    # Inline ->getCatcode!
     return $self->readBalanced; }
   elsif (my $defn = $STATE->lookupDefinition($token)) {
     if ($defn->isRegister eq 'Tokens') {
@@ -670,7 +671,7 @@ sub readTokensValue {
         $self->unread(@{$x}); }
       return $self->readTokensValue; }
     else {
-      return $token; } }                       # ?
+      return $token; } }    # ?
   else {
     return $token; } }
 
