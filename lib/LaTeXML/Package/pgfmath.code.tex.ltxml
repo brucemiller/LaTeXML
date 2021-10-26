@@ -360,7 +360,8 @@ DefMacro('\lx@pgfmath@parse{}', sub {
     my ($gullet, $tokens) = @_;
     return pgfmathresult(pgfmathparse($gullet, $tokens)); });
 
-DefPrimitive('\pgfmathsetlength DefToken {}', sub {
+DefMacro('\pgfmathsetlength DefToken {}', '\pgfmathsetlength@primitive{#1}{#2}');
+DefPrimitive('\pgfmathsetlength@primitive DefToken {}', sub {
     my ($stomach, $register, $tokens) = @_;
     my $gullet = $stomach->getGullet;
     my $length;
