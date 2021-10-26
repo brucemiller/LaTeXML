@@ -737,7 +737,7 @@ sub compare {
   # Trying to stay consistent with pdftex's \ifdim, we see
   #  0.00000763pt is greater than 0pt,
   #  0.00000762pt is not greater than 0pt.
-  if (abs($u - $v) <= 0.00000762) {
+  if (abs($u - $v) < 0.5) {
     $u = 0; $v = 0; }
 
   if ($rel->equals(T_OTHER('<')) || $rel->equals(T_CS('\@@<'))) {
