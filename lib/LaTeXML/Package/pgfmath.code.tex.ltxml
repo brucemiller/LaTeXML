@@ -73,7 +73,14 @@ sub pgfmathfactorial {
 # but doesn't directly set it itself.
 sub pgfmathresult {
   my ($value) = @_;
-  $value = sprintf("%06f", $value);
+  Debug("pgfmathresult raw: $value");
+  $value = sprintf("%.5f", $value);
+  Debug("pgfmathresult sprintf: $value");
+  # trim trailing decimal point zeros
+  if ($value =~ s/\.(\d*[^0])?(0*)$//) {
+    $value .= ".$1" if defined($1); }
+  $value=~s/(?<=\d)\.$/.0/; # add a zero to single trailing dot case
+  Debug("pgfmathresult: $value");
   return Tokens(T_CS('\def'), T_CS('\pgfmathresult'), T_BEGIN, ExplodeText($value), T_END); }
 
 DefMacro('\@@@show@mathresult{}', sub {
@@ -346,7 +353,7 @@ sub pgfmathparse {
     $result = "0."; }
   # NOT really correct, but would like to use an internal to distinguish 1.0 from int(1.0)!!!
   elsif ($result == int($result)) {
-    $result = int($result) . '.'; }
+    $result = int($result) . '.0'; }
   else {                       # We don't want scientific notation output!!!
     $result = sprintf("%f", $result); }
   return $result; }
@@ -363,6 +370,7 @@ DefMacro('\lx@pgfmath@parse{}', sub {
 DefMacro('\pgfmathsetlength DefToken {}', '\pgfmathsetlength@primitive{#1}{#2}');
 DefPrimitive('\pgfmathsetlength@primitive DefToken {}', sub {
     my ($stomach, $register, $tokens) = @_;
+    Debug("pgfmathsetlength ".ToString($register)." : ".ToString($tokens));
     my $gullet = $stomach->getGullet;
     my $length;
     my @tokens = $tokens->unlist;
@@ -378,7 +386,8 @@ DefPrimitive('\pgfmathsetlength@primitive DefToken {}', sub {
       if (IfCondition(T_CS('\ifpgfmathmathunitsdeclared'))) {
         $length = MuDimension($length * $STATE->convertUnit('mu')); }
       else {
-        $length = Dimension($length * 65536); } }
+        $length = Dimension($length * $UNITY_PT); } }
+    Debug("internal length: ".ToString($length));
     AssignRegister($register, $length); });
 
 Let('\@orig@pgfmathparse', '\pgfmathparse');
@@ -435,7 +444,7 @@ sub pgfmath_convert {
   my ($number, $unit) = @_;
   SetCondition(T_CS('\ifpgfmathunitsdeclared'),     1, 'global');                    # Saw units!
   SetCondition(T_CS('\ifpgfmathmathunitsdeclared'), 1, 'global') if $unit eq 'mu';
-  return $number * $STATE->convertUnit($unit) / 65536; }    # return value in pts!
+  return $number * $STATE->convertUnit($unit) / $UNITY_PT; }    # return value in pts!
 
 sub pgfmath_register {
   my ($cs) = @_;
@@ -443,7 +452,7 @@ sub pgfmath_register {
   SetCondition(T_CS('\ifpgfmathunitsdeclared'), 1, 'global');
   if (!$reg) {
     return 0.0; }
-  return (ref $reg eq 'LaTeXML::Common::Number' ? $reg->valueOf : $reg->valueOf / 65536); }
+  return (ref $reg eq 'LaTeXML::Common::Number' ? $reg->valueOf : $reg->valueOf / $UNITY_PT); }
 
 sub pgfmath_setunitsdeclared {
   SetCondition(T_CS('\ifpgfmathunitsdeclared'), 1, 'global');
@@ -455,7 +464,7 @@ sub pgfmath_getwidth {
   my $reg   = $cs  && LookupRegister($cs);
   my $box   = $reg && 'box' . $reg->valueOf;
   my $stuff = $box && LookupValue($box);
-  return ($stuff ? $stuff->getWidth->valueOf / 65536 : Dimension(0)); }
+  return ($stuff ? $stuff->getWidth->valueOf / $UNITY_PT : Dimension(0)); }
 
 sub pgfmath_getheight {
   my ($cs) = @_;
@@ -463,7 +472,7 @@ sub pgfmath_getheight {
   my $reg   = $cs  && LookupRegister($cs);
   my $box   = $reg && 'box' . $reg->valueOf;
   my $stuff = $box && LookupValue($box);
-  return ($stuff ? $stuff->getHeight->valueOf / 65536 : Dimension(0)); }
+  return ($stuff ? $stuff->getHeight->valueOf / $UNITY_PT : Dimension(0)); }
 
 sub pgfmath_getdepth {
   my ($cs) = @_;
@@ -471,7 +480,7 @@ sub pgfmath_getdepth {
   my $reg   = $cs  && LookupRegister($cs);
   my $box   = $reg && 'box' . $reg->valueOf;
   my $stuff = $box && LookupValue($box);
-  return ($stuff ? $stuff->getDepth->valueOf / 65536 : Dimension(0)); }
+  return ($stuff ? $stuff->getDepth->valueOf / $UNITY_PT : Dimension(0)); }
 
 # Presumably should hook into \pgfmathnotifynewdeclarefunction
 # as possibility to register a function, instead of checking at parse time?

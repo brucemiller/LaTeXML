@@ -737,9 +737,12 @@ sub compare {
   # Trying to stay consistent with pdftex's \ifdim, we see
   #  0.00000763pt is greater than 0pt,
   #  0.00000762pt is not greater than 0pt.
-  if (abs($u - $v) < 0.5) {
-    $u = 0; $v = 0; }
-
+  #
+  # While we can ensure the Dimensions are integer "sp" quantities,
+  # we can't for the Number.pm class, which is used for a variety of different numbers
+  # including floating point values. So we also need the thresholding here.
+  # if (abs($u - $v) < 0.5) {
+  #   $u = 0; $v = 0; }
   if ($rel->equals(T_OTHER('<')) || $rel->equals(T_CS('\@@<'))) {
     return $u < $v; }
   elsif ($rel->equals(T_OTHER('='))) {
@@ -1342,13 +1345,21 @@ DefPrimitive('\advance Variable SkipKeyword:by', sub {
     my ($defn, @args) = @$var;
     return () if !$defn || $defn eq "missing";
     local $LaTeXML::CURRENT_TOKEN = $defn;
-    $defn->setValue($defn->valueOf(@args)->add($stomach->getGullet->readValue($defn->isRegister)), @args); });
+    my $current = $defn->valueOf(@args);
+    my $incoming = $stomach->getGullet->readValue($defn->isRegister);
+    my $new = $current->add($incoming);
+    Note("\nadvance ".ToString($defn).": ".ToString($current)."; inc: ".ToString($incoming)."; result: ".ToString($new)."\n");
+    $defn->setValue($new, @args); });
 
 DefPrimitive('\multiply Variable SkipKeyword:by Number', sub {
     my ($stomach, $var, $scale) = @_;
     return () unless $var;
     my ($defn, @args) = @$var;
-    $defn->setValue($defn->valueOf(@args)->multiply($scale->valueOf), @args); });
+    my $current = $defn->valueOf(@args);
+    my $incoming = $scale->valueOf;
+    my $new = $current->multiply($incoming);
+    Note("\nmul ".ToString($defn).": ".ToString($current)."; times: ".ToString($incoming)."; result: ".ToString($new)."\n");
+    $defn->setValue($new, @args); });
 
 DefPrimitive('\divide Variable SkipKeyword:by Number', sub {
     my ($stomach, $var, $scale) = @_;
@@ -1358,7 +1369,10 @@ DefPrimitive('\divide Variable SkipKeyword:by Number', sub {
     if ($denom == 0) {
       Error('misdefined', $scale, $stomach, "Illegal \\divide by 0; assuming 1");
       $denom = 1; }
-    $defn->setValue($defn->valueOf(@args)->divide($denom), @args); });
+    my $current = $defn->valueOf(@args);
+    my $new = $current->divide($denom);
+    Note("\ndiv ".ToString($defn).": ".ToString($current)."; by: ".ToString($denom)."; result: ".ToString($new)."\n");
+    $defn->setValue($new, @args); });
 
 # <let assignment> = \futurelet <control sequence><token><token>
 #   | \let<control sequence><equals><one optional space><token>
@@ -4654,10 +4668,10 @@ DefPrimitive('\newinsert Token', sub { DefRegisterI($_[1], undef, Number(0)); })
 
 # TeX plain uses \newdimen, etc. for these.
 # Is there any advantage to that?
-DefRegister('\maxdimen',  Dimension(16383.99999 * 65536));
-DefRegister('\hideskip',  Glue(-1000 * 65536, '1fill'));
+DefRegister('\maxdimen',  Dimension(16383.99999 * $UNITY_PT));
+DefRegister('\hideskip',  Glue(-1000 * $UNITY_PT, '1fill'));
 DefRegister('\centering', Glue('0pt plus 1000pt minus 1000pt'));
-DefRegister('\p@',        Dimension(65536));
+DefRegister('\p@',        Dimension($UNITY_PT));
 DefRegister('\z@',        Dimension(0));
 DefRegister('\z@skip',    Glue(0, 0, 0));
 
@@ -6427,7 +6441,7 @@ DefConstructor('\lx@hack@bordermatrix{}', sub {
     $document->absorb($matrix);
     my $marray = $document->getNode->lastChild;
     my @rows   = $document->findnodes('ltx:XMRow', $marray);
-    my ($h, $d) = (10.0 * 65536, 0);    # 10pts.
+    my ($h, $d) = (10.0 * $UNITY_PT, 0);    # 10pts.
                                         # Contrived, since $matrix may be a List or...
     my ($alignment) = grep { $_ } map { $_->getProperty('alignment') } $matrix->unlist;
     if ($alignment) {

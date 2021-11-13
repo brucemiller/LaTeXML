@@ -14,6 +14,7 @@ use strict;
 use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Error;
+use LaTeXML::Common::Number;
 use LaTeXML::Core::Token;    # To get CatCodes
 
 # Naming scheme for keys (such as it is)
@@ -89,18 +90,14 @@ sub new {
   my ($class, %options) = @_;
   my $self = bless {    # table => {},
     value   => {}, meaning  => {}, stash  => {}, stash_active => {},
-    catcode => {}, mathcode => {}, sfcode => {}, lccode => {}, uccode => {}, delcode => {},
+    catcode => {}, mathcode => {}, sfcode => {}, lccode       => {}, uccode => {}, delcode => {},
     undo    => [{ _FRAME_LOCK_ => 1 }], prefixes => {}, status => {},
-    stomach => $options{stomach}, model => $options{model} }, $class;
+    stomach => $options{stomach},       model    => $options{model} }, $class;
   # Note that "100" is hardwired into TeX, The Program!!!
   $$self{value}{MAX_ERRORS} = [100];
   # Standard TeX units, in scaled points
-  $$self{value}{UNITS} = [{
-      pt => 65536, pc => 12 * 65536, in => 72.27 * 65536, bp => 72.27 * 65536 / 72,
-      cm => 72.27 * 65536 / 2.54, mm => 72.27 * 65536 / 2.54 / 10, dd => 1238 * 65536 / 1157,
-      cc => 12 * 1238 * 65536 / 1157, sp => 1,
-      px => 72.27 * 65536 / 72,    # Assume px=bp ?
-  }];
+  # See, 458. in Part 26, in the B Book.
+  $$self{value}{UNITS} = [$LaTeXML::Common::Number::UNITS];
 
   $options{catcodes} = 'standard' unless defined $options{catcodes};
   if ($options{catcodes} =~ /^(standard|style)/) {
@@ -706,9 +703,13 @@ sub convertUnit {
   $unit = lc($unit);
   # Put here since it could concievably evolve to depend on the current font.
   # Eventually try to track font size?
-  if    ($unit eq 'em') { return 10.0 * 65536; }
-  elsif ($unit eq 'ex') { return 4.3 * 65536; }
-  elsif ($unit eq 'mu') { return 10.0 * 65536 / 18; }
+  if    ($unit eq 'em') { return 655361; }             # derived from: \number\dimexpr 1em
+  elsif ($unit eq 'ex') { return 282168; }             # derived from: \number\dimexpr 1ex
+  elsif ($unit eq 'mu') { return 36408.94444; }    # derived from 655361/18
+                                                       # item 703. , Part 35, B Book:
+                                                       # x_over_n(math_quad(cur_size), 18)
+      #my ($size, $remainder) = x_over_n(10.0 * 65536, 18);
+      #return $size; }
   else {
     my $units = $self->lookupValue('UNITS');
     my $sp    = $$units{$unit};
@@ -745,7 +746,7 @@ sub getStatusMessage {
   my @undef        = ($$status{undefined} ? keys %{ $$status{undefined} } : ());
   my $undef_status = @undef && colorizeString(scalar(@undef) . " undefined macro" . (@undef > 1 ? 's' : '')
       . "[" . join(', ', @undef) . "]", 'details');
-  my @miss = ($$status{missing} ? keys %{ $$status{missing} } : ());
+  my @miss           = ($$status{missing} ? keys %{ $$status{missing} } : ());
   my $missing_status = @miss && colorizeString(scalar(@miss) . " missing file" . (@miss > 1 ? 's' : '')
       . "[" . join(', ', @miss) . "]", 'details');
 

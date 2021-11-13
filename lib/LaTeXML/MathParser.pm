@@ -20,6 +20,7 @@ use Parse::RecDescent;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
+use LaTeXML::Common::Number;
 use LaTeXML::Core::Token;
 use LaTeXML::Common::Font;
 use LaTeXML::Common::XML;
@@ -458,7 +459,7 @@ sub filter_hints {
         $pending_comments = ''; }
       if ($pending_space) {
         $node->setAttribute(lpadding =>
-            LaTeXML::Common::Dimension::attributeformat($pending_space * 65536));
+            LaTeXML::Common::Dimension::attributeformat($pending_space * $UNITY_PT));
         $node->setAttribute(_phantom => $pending_phantom);
         $pending_space   = 0.0;
         $pending_phantom = undef; }
@@ -485,7 +486,7 @@ sub filter_hints {
         push(@filtered, $punct); }
       else {
         $node->setAttribute(rpadding =>
-            LaTeXML::Common::Dimension::attributeformat($s * 65536)); } } }
+            LaTeXML::Common::Dimension::attributeformat($s * $UNITY_PT)); } } }
   return @filtered; }
 
 # Given a width attribute on an XMHint, return the pts, if any

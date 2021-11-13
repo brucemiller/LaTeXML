@@ -16,6 +16,7 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use base qw(LaTeXML::Common::Number);
 use base qw(Exporter);
+use LaTeXML::Common::Number qw(print_scaled $UNITY_PT);
 our @EXPORT = (qw(&Dimension));
 
 #======================================================================
@@ -33,7 +34,7 @@ sub new {
   $sp = ToString($sp) if ref $sp;
   if ($sp =~ /^(-?\d*\.?\d*)([a-zA-Z][a-zA-Z])$/) {    # Dimensions given.
     $sp = $1 * $STATE->convertUnit($2); }
-  return bless [$sp || "0"], $class; }
+  return bless [int(($sp < 0 ? -0.5 : 0.5) + $sp) || "0"], $class; }
 
 sub toString {
   my ($self) = @_;
@@ -55,15 +56,15 @@ sub pointformat {
   # If you use %.5f, tikz (for example) will sometimes hang trying to do arithmetic!
   # But see toAttribute for friendlier forms....
   # [do we need the juggling in attributeFormat to be reproducible?]
-  my $s = sprintf("%.6f", ($sp / 65536));
-  $s =~ s/0+$// if $s =~ /\./;
+  #my $s = sprintf("%.5f", LaTeXML::Common::Number::roundto($sp / 65536, 5));
+  #$s =~ s/0+$// if $s =~ /\./;
   #  $s =~ s/\.$//;
-  $s =~ s/\.$/.0/;    # Seems TeX prints .0 which in odd corner cases, people use?
-  return $s . 'pt'; }
+  #$s =~ s/\.$/.0/;    # Seems TeX prints .0 which in odd corner cases, people use?
+  return print_scaled($sp) . 'pt'; }
 
 sub attributeformat {
   my ($sp) = @_;
-  return sprintf('%.1fpt', LaTeXML::Common::Number::roundto($sp / 65536, 1)); }
+  return sprintf('%.1fpt', LaTeXML::Common::Number::roundto($sp / $UNITY_PT, 1)); }
 
 #======================================================================
 1;
@@ -99,4 +100,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

@@ -14,6 +14,7 @@ use LaTeXML::Global;
 use strict;
 use warnings;
 use LaTeXML::Common::Float;
+use LaTeXML::Common::Number qw(print_scaled);
 use base qw(LaTeXML::Common::Glue);
 use base qw(Exporter);
 our @EXPORT = (qw(&MuGlue));
@@ -31,25 +32,25 @@ sub MuGlue {
 sub toString {
   my ($self) = @_;
   my ($sp, $plus, $pfill, $minus, $mfill) = @$self;
-  my $string = LaTeXML::Common::Float::floatformat($sp / 65536 * 1.8) . 'mu ';
+  my $string = print_scaled($sp * 1.8) . 'mu ';
   $string .= 'plus ' . ($pfill
     ? $plus . $LaTeXML::Common::Glue::FILL[$pfill]
-    : LaTeXML::Common::Float::floatformat($plus / 65536 * 1.8) . 'mu ') if $plus != 0;
+    : print_scaled($plus * 1.8) . 'mu ') if $plus != 0;
   $string .= 'minus ' . ($mfill
     ? $minus . $LaTeXML::Common::Glue::FILL[$mfill]
-    : LaTeXML::Common::Float::floatformat($minus / 65536 * 1.8) . 'mu ') if $minus != 0;
+    : print_scaled($minus * 1.8) . 'mu ') if $minus != 0;
   return $string; }
 
 sub toAttribute {
   my ($self) = @_;
   my ($sp, $plus, $pfill, $minus, $mfill) = @$self;
-  my $string = LaTeXML::Common::Float::floatformat($sp / 65536 * 1.8) . "mu";
+  my $string = print_scaled($sp * 1.8) . "mu";
   $string .= ' plus ' . ($pfill
     ? $plus . $LaTeXML::Common::Glue::FILL[$pfill]
-    : LaTeXML::Common::Float::floatformat($plus / 65536 * 1.8) . 'mu') if $plus != 0;
+    : print_scaled($plus * 1.8) . 'mu') if $plus != 0;
   $string .= ' minus ' . ($mfill
     ? $minus . $LaTeXML::Common::Glue::FILL[$mfill]
-    : LaTeXML::Common::Float::floatformat($minus / 65536 * 1.8) . 'mu') if $minus != 0;
+    : print_scaled($minus * 1.8) . 'mu') if $minus != 0;
   return $string; }
 
 sub stringify {
@@ -90,4 +91,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

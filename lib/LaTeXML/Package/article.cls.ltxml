@@ -98,5 +98,25 @@ DefMacro('\appendix', '\@appendix');
 # Actually we should be using section counter
 DefPrimitive('\@appendix', sub { startAppendices('section'); });
 
+# Should we be activating the article.cls sizes here?
+# what else needs to be supported first?
+#
+# DefRegister('\paperheight'     => Dimension('794.96999pt'));
+# DefRegister('\paperwidth'      => Dimension('614.295pt'));
+# DefRegister('\textheight'      => Dimension('550.0pt'));
+# DefRegister('\textwidth'       => Dimension('345.0pt'));
+# DefRegister('\topmargin'       => Dimension('16.0pt'));
+# DefRegister('\headheight'      => Dimension('12.0pt'));
+# DefRegister('\headsep'         => Dimension('25.0pt'));
+# DefRegister('\footskip'        => Dimension('30.0pt'));
+# DefRegister('\footheight'      => Dimension(0));
+# DefRegister('\evensidemargin'  => Dimension('62.0pt'));
+# DefRegister('\oddsidemargin'   => Dimension('62.0pt'));
+# DefRegister('\marginparwidth'  => Dimension('65.0pt'));
+# DefRegister('\marginparsep'    => Dimension('11.0pt'));
+# DefRegister('\columnwidth'     => Dimension('345.0pt'));
+# DefRegister('\linewidth'       => Dimension('345.0pt'));
+# DefRegister('\baselinestretch' => Dimension(0));
+
 #**********************************************************************
 1;

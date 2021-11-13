@@ -15,6 +15,7 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Core::Token;
 use LaTeXML::Common::Error;
+use LaTeXML::Common::Number;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Dimension;
 use List::Util qw(min max sum);
@@ -451,14 +452,14 @@ sub computeStringSize {
     return (Dimension(0), Dimension(0), Dimension(0)); }
   my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
   my $l    = (defined $string ? length($string) : 0);
-  my $u    = $size * 65535;
+  my $u    = $size * $UNITY_PT;
   return (Dimension(0.75 * $u * $l), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
 # Get nominal width, height base ?
 sub getNominalSize {
   my ($self) = @_;
   my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
-  my $u    = $size * 65535;
+  my $u    = $size * $UNITY_PT;
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
 # Here's where I avoid trying to emulate Knuth's line-breaking...
@@ -554,7 +555,7 @@ sub computeBoxesSize {
 
 sub _showsize {
   my ($wd, $ht, $dp) = @_;
-  return ($wd / 65536) . " x " . ($ht / 65536) . " + " . ($dp / 65336); }
+  return ($wd / $UNITY_PT) . " x " . ($ht / $UNITY_PT) . " + " . ($dp / $UNITY_PT); }
 
 sub isSticky {
   my ($self) = @_;

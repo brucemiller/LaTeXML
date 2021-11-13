@@ -649,7 +649,10 @@ sub readRegisterValue {
   if ((defined $defn) && ($defn->isRegister eq $type)) {
     local $LaTeXML::CURRENT_TOKEN = $token;
     my $parms = $$defn{parameters};
-    return $defn->valueOf(($parms ? $parms->readArguments($self) : ())); }
+    my $val = $defn->valueOf(($parms ? $parms->readArguments($self) : ()));
+    Debug("at ".$self->getLocator->toString());
+    Debug("read-invoke $type: ".ToString($token)." = ".(ref $val ? $val->valueOf() : $val));
+    return $val; }
   else {
     unshift(@{ $$self{pushback} }, $token);    # Unread
     return; } }
@@ -685,7 +688,7 @@ sub readTokensValue {
 # return +1 or -1
 sub readOptionalSigns {
   my ($self) = @_;
-  my ($sign, $t) = ("+1", '');
+  my ($sign, $t) = (1, '');
   while (defined($t = $self->readXToken)
     && (($t->getString eq '+') || ($t->getString eq '-') || Equals($t, T_SPACE))) {
     $sign = -$sign if ($t->getString eq '-'); }
@@ -808,8 +811,10 @@ sub readDimension {
     my $unit = $self->readUnit;
     if (!defined $unit) {
       Warn('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
-      $unit = 65536; }
-    return Dimension($s * $d * $unit); }
+      $unit = $UNITY_PT; }
+    my $newd = Dimension($s * $d * $unit);
+    Debug("\nreadDimension: $s * $d * $unit = ".$newd->toString()."\n");
+    return $newd; }
   else {
     Warn('expected', '<number>', $self, "Missing number (Dimension), treated as zero.",
       "while processing " . ToString($LaTeXML::CURRENT_TOKEN), $self->showUnexpected);
@@ -926,7 +931,7 @@ sub readRubber {
     my $u = $self->readUnit;
     if (!defined $u) {
       Warn('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
-      $u = 65536; }
+      $u = $UNITY_PT; }
     return ($s * $f * $u, 0); } }
 
 # Return a glue value or undef.

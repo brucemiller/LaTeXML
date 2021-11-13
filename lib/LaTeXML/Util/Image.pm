@@ -14,6 +14,7 @@ use strict;
 use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Error;
+use LaTeXML::Common::Number;
 use LaTeXML::Common::Dimension;
 use LaTeXML::Util::Pathname;
 use List::Util qw(min max);
@@ -177,7 +178,7 @@ sub image_graphicx_parse {
 my %BP_conversions = (                                               # CONSTANT
   pt => 72 / 72.27, pc => 12 / 72.27, in => 72, bp => 1,
   cm => 72 / 2.54,  mm => 72 / 25.4,  dd => (72 / 72.27) * (1238 / 1157),
-  cc => 12 * (72 / 72.27) * (1238 / 1157), sp => 72 / 72.27 / 65536);
+  cc => 12 * (72 / 72.27) * (1238 / 1157), sp => 72 / 72.27 / $UNITY_PT);
 
 sub to_bp {
   my ($x) = @_;

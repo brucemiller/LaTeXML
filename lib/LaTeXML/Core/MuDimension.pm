@@ -30,7 +30,8 @@ sub MuDimension {
 # 1 mu = 1em/18 = 10pt/18 = 5/9 pt; 1pt = 9/5mu = 1.8mu
 sub toString {
   my ($self) = @_;
-  return LaTeXML::Common::Float::floatformat($$self[0] / 65536 * 1.8) . 'mu '; }
+  # (655361 / 18) = 36408.944444444
+  return LaTeXML::Common::Float::floatformat($$self[0] / 36408.944444444) . 'mu '; }
 
 sub stringify {
   my ($self) = @_;
@@ -68,4 +69,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

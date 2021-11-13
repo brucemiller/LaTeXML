@@ -17,7 +17,7 @@ use LaTeXML::Common::Object;
 use LaTeXML::Core::Token;
 use base qw(LaTeXML::Common::Object);
 use base qw(Exporter);
-our @EXPORT = (qw(&Number &roundto));
+our @EXPORT = qw(&Number &roundto &x_over_n &print_scaled $UNITY_PT $HALF_PT $TWO_PT);
 
 #======================================================================
 # Exported constructor.
@@ -44,9 +44,26 @@ sub toString {
 my @SCALES = (1, 10, 100, 1000, 10000, 100000);
 
 # smallest number that makes a difference added to 1 in Perl's float format.
-my $EPSILON = 1.0;
+our $EPSILON = 1.0;
 while (1.0 + $EPSILON / 2 != 1) {
   $EPSILON /= 2.0; }
+
+our $UNITY_PT = 65536;            # represents 1.00000pt;
+our $HALF_PT  = $UNITY_PT / 2;    # represents 0.50000pt;
+our $TWO_PT   = 2 * $UNITY_PT;    # represents  2.00000pt;
+our $INCH_SP  = int(72.27 * $UNITY_PT);
+our $UNITS = {
+  pt => $UNITY_PT,
+  pc => 12 * $UNITY_PT,
+  in => $INCH_SP,
+  bp => int($INCH_SP / 72),
+  cm => int($INCH_SP / 2.54),
+  mm => int(int($INCH_SP / 2.54) / 10),
+  dd => int(1238 * $UNITY_PT / 1157),
+  cc => int(12 * 1238 * $UNITY_PT / 1157),
+  sp => 1,
+  px => int($INCH_SP / 72),    # Assume px=bp ?
+};
 
 # Round $number to $prec decimals (0...6)
 # attempting to do so portably.
@@ -62,11 +79,33 @@ sub roundto {
 
 sub ptValue {
   my ($self, $prec) = @_;
-  return roundto($$self[0] / 65536, $prec); }
+  return roundto(print_scaled($$self[0]), $prec); }
+
+# prints scaled real, rounded to five digits
+#  103. in Part 7, in the B Book.
+sub print_scaled {
+  my ($sp) = @_;
+  my $buf = '';
+  if ($sp < 0) {
+    $buf = '-';      # print the sign, if negative
+    $sp  = -$sp; }
+  $buf .= int($sp / $UNITY_PT);    # print the integer part
+  $buf .= '.';
+  my $delta = 10;
+  my $s     = 10 * ($sp % $UNITY_PT) + 5;
+  do {
+    if ($delta > $UNITY_PT) {
+      $s = $s + $HALF_PT - 50000;    # round the last digit
+    }
+    $buf .= int($s / $UNITY_PT);
+    $s = 10 * ($s % $UNITY_PT);
+    $delta *= 10;
+  } while ($s > $delta);
+  return $buf; }
 
 sub pxValue {
   my ($self, $prec) = @_;
-  return roundto($$self[0] / 65536 * ($STATE->lookupValue('DPI') || 100 / 72.27), $prec); }
+  return roundto($$self[0] / $UNITY_PT * ($STATE->lookupValue('DPI') || 100 / 72.27), $prec); }
 
 sub unlist {
   my ($self) = @_;
@@ -118,6 +157,46 @@ sub divide {
 sub divideround {
   my ($self, $other) = @_;
   return (ref $self)->new(int(0.5 + $self->valueOf / (ref $other ? $other->valueOf : $other))); }
+
+# TeX's half convention, entry 100. at Part 7, B book
+sub halve {
+  my ($self) = @_;
+  my $val = $self->valueOf;
+  return (ref $self)->new(
+    ($val % 2) + ($val / 2)); }
+
+sub round_decimals {    #converts a decimal fraction in dig =d0 d1 . . . dk−1
+  my ($dig) = @_;
+  my @dig   = split('', $dig);
+  my $k     = length($dig);
+  my $acc   = 0;                 # the accumulator
+  while ($k > 0) {
+    $k--;
+    $acc = ($acc + int($dig[$k]) * $TWO_PT) / 10; }
+  return ($acc + 1) / 2; }
+
+# item 106., Part 7, B Book
+sub x_over_n {    #(x : scaled ; n : integer ): scaled ;
+  my ($x, $n) = @_;
+  my ($result, $remainder);
+  my $negative = 0;    # : boolean ; { should remainder be negated? }
+  if ($n == 0) {
+    my $arith_error = 1;
+    $remainder = $x;
+    $result    = 0; }
+  else {
+    if ($n < 0) {
+      $x        = -$x;
+      $n        = -$n;
+      $negative = 1; }
+    if ($x >= 0) {
+      $result    = $x / $n;
+      $remainder = $x % $n; }
+    else {
+      $result    = -((-$x) / $n);
+      $remainder = -((-$x) % $n); } }
+  $remainder = -$remainder if $negative;
+  return ($result, $remainder); }
 
 sub stringify {
   my ($self) = @_;
@@ -223,4 +302,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-

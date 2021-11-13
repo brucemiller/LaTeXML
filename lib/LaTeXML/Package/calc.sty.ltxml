@@ -179,13 +179,13 @@ sub readValue {
         $igullet->unread($arg);    # Really so weird?
         return $igullet->readFloat(); }); }
   elsif (Equals($peek, T_CS('\ratio'))) {
-    my $x = readExpression($gullet, 'Glue', $gullet->readArg);
-    my $y = readExpression($gullet, 'Glue', $gullet->readArg);
-    my $y_pt = $y->ptValue;
+    my $x    = readExpression($gullet, 'Glue', $gullet->readArg);
+    my $y    = readExpression($gullet, 'Glue', $gullet->readArg);
+    my $y_pt = $y->ptValue(5);
     if ($y_pt == 0) {
       Warn("unexpected", "<number>", "calc: divisor should never be zero!");
       $y_pt = 1; }
-    return Float($x->ptValue / $y_pt); }
+    return Float($x->ptValue(5) / $y_pt); }
   # Evaluate MinMax values
   elsif (Equals($peek, T_CS('\minof'))) {
     my $x = readExpression($gullet, $type, $gullet->readArg);
@@ -261,13 +261,13 @@ sub readReal {
         $igullet->unread($arg);    # Really so weird?
         return $igullet->readFloat(); }); }
   elsif (Equals($peek, T_CS('\ratio'))) {
-    my $x = readExpression($gullet, 'Glue', $gullet->readArg);
-    my $y = readExpression($gullet, 'Glue', $gullet->readArg);
-    my $y_pt = $y->ptValue;
+    my $x    = readExpression($gullet, 'Glue', $gullet->readArg);
+    my $y    = readExpression($gullet, 'Glue', $gullet->readArg);
+    my $y_pt = $y->ptValue(5);
     if ($y_pt == 0) {
       Warn("unexpected", "<number>", "calc: divisor should never be zero!");
       $y_pt = 1; }
-    return Float($x->ptValue / $y_pt); }
+    return Float($x->ptValue(5) / $y_pt); }
   else {
     $gullet->unread($peek);
     return; } }
