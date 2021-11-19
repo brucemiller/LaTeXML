@@ -1,0 +1,169 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  babel.def.support                                                  | #
+# | Support macros for babel.def and txtbabel.def                       | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# We want to use unicode wherever possible and
+# avoid the contrived positioning of glyphs to synthesize funny chars.
+DefPrimitiveI('\ij', undef, "ij");
+DefPrimitiveI('\IJ', undef, "IJ");
+
+DefPrimitiveI('\flq',  undef, "\x{2039}");
+DefPrimitiveI('\frq',  undef, "\x{203A}");
+DefPrimitiveI('\flqq', undef, UTF(0xAB));
+DefPrimitiveI('\frqq', undef, UTF(0xBB));
+
+DefPrimitiveI('\glq',  undef, "\x{201A}");
+DefPrimitiveI('\grq',  undef, "\x{2019}");
+DefPrimitiveI('\glqq', undef, "\x{201E}");
+DefPrimitiveI('\grqq', undef, "\x{201D}");
+
+DefPrimitiveI('\SS', undef, "SS");
+
+DefPrimitiveI('\guilsinglleft',  undef, "\x{2039}");
+DefPrimitiveI('\guilsinglright', undef, "\x{203A}");
+DefPrimitiveI('\guillemotleft',  undef, UTF(0xAB));
+DefPrimitiveI('\guillemotright', undef, UTF(0xBB));
+
+# And just shutup about hyphenation patterns
+DefMacro('\@nopatterns{}', '');
+
+# This is a guess of the languages (and sometimes dialects)
+# represented in the various *.ldf found on my system at this time.
+our $bbl_language_map = {
+  albanian        => 'sq',       # albanian
+  acadian         => 'fr-CA',    # frenchb; Should this get a more specific region?
+  afrikaans       => 'af',       # dutch
+  american        => 'en-US',    # english
+  australian      => 'en-AU',    # english
+  austrian        => 'de-AT',    # germanb
+  bahasa          => 'in',       # bahasai
+  bahasai         => 'in',       # bahasai
+  bahasam         => 'ms',       # bahasam
+  basque          => 'eu',       # basque
+  breton          => 'br',       # breton
+  bulgarian       => 'bg',       # bulgarian
+  brazil          => 'pt-BR',    # portuges
+  brazilian       => 'pt-BR',    # portuges
+  british         => 'en-GB',    # english',
+  canadian        => 'en-CA',    # english
+  canadien        => 'fr-CA',    # frenchb
+  catalan         => 'ca',       # catalan
+  croatian        => 'hr',       # croatian
+  czech           => 'cs',       # czech
+  danish          => 'da',       # danish
+  dutch           => 'nl',       # dutch
+  english         => 'en',       # english
+  esperanto       => 'eo',       # esperanto
+  estonian        => 'et',       # estonian
+  finnish         => 'fi',       # finnish
+  francais        => 'fr',       # frenchb
+  french          => 'fr',       # frenchb
+  frenchb         => 'fr',       # frenchb
+  friulan         => 'fur',      # friulan
+  galician        => 'gl',       # galician
+  georgian        => 'ka',       # georgian
+  german          => 'de',       # germanb
+  germanb         => 'de',       # germanb
+  greek           => 'el',       # greek
+  hebrew          => 'he',       # hebrew
+  hindi           => 'hi',       # hindi
+  hungarian       => 'hu',       # magyar
+  icelandic       => 'is',       # icelandic
+  indon           => 'in',       # bahasai
+  indonesian      => 'in',       # bahasai
+  interlingua     => 'ia',       # interlingua
+  irish           => 'ga',       # irish
+  italian         => 'it',       # italian
+  kurmanji        => 'kmr',      # kurmanji (Northern Kurdish)
+  latin           => 'la',       # latin
+  lowersorbian    => 'dsb',      # lsorbian
+  malay           => 'ms',       # bahasam
+  meyalu          => 'ms',       # bahasam
+  naustrian       => 'de-AT',    # naustrian
+  newzealand      => 'en-NZ',    # english
+  ngerman         => 'de',       # ngerman
+  ngermanb        => 'de',       # ngermanb
+  norsk           => 'nn',       # norsk
+  nswissgerman    => 'gsw',      # nswissgerman
+  nynorsk         => 'nn',       # norsk
+  piedmontese     => 'pms',      # piedmontese (Piemontese)
+  polish          => 'pl',       # polish
+  polutonikogreek => 'el',       # greek
+  portuges        => 'pt',       # portuges
+  portuguese      => 'pt',       # portuges
+  romanian        => 'ro',       # romanian
+  romansh         => 'rm',       # romansh
+  russian         => 'ru',       # russianb
+  russianb        => 'ru',       # russianb
+  samin           => 'se',       # samin (Northern Sami)
+  scottish        => 'gd',       # scottish
+  serbianc        => 'sr',       # serbianc
+  serbian         => 'sr',       # serbian
+  slovak          => 'sk',       # slovak
+  slovene         => 'sl',       # slovene
+  spanish         => 'es',       # spanish
+  swedish         => 'sv',       # swedish
+  swissgerman     => 'gsw',      # swissgerman
+  thai            => 'th',       # thai
+  turkish         => 'tr',       # turkish
+  UKenglish       => 'en-GB',    # english
+  ukraineb        => 'uk',       # ukraineb
+  ukrainian       => 'uk',       # ukraineb
+  usorbian        => 'hsb',      # usorbian
+  uppersorbian    => 'hsb',      # usorbian
+  USenglish       => 'en-US',    # english
+  vietnamese      => 'vi',       # vietnamese
+  vietnam         => 'vi',       # vietnam
+  welsh           => 'cy',       # welsh
+};
+
+Let('\ltx@save@bbl@switch',       '\bbl@switch');
+Let('\ltx@save@select@language',  '\select@language');
+Let('\ltx@save@foreign@language', '\foreign@language');
+# Overkill; redefine ALL these since we never know which one will
+# be used in various babel versions.
+# \bbl@switch is only used in newer babels(?)
+RawTeX(<<'EoTeX');
+\def\select@language#1{\ltx@save@select@language{#1}\ltx@bbl@select@language{#1}}
+\def\foreign@language#1{\ltx@save@foreign@language{#1}\ltx@bbl@select@language{#1}}
+\def\bbl@switch#1{\ltx@save@bbl@switch{#1}\ltx@bbl@select@language{#1}}
+EoTeX
+
+DefPrimitive('\ltx@bbl@select@language{}', sub {
+    my ($stomach, $language) = @_;
+    $language = ToString(Expand($language));
+    NoteSTDERR("SELECTING LANGUAGE $language !");
+    my $iso = $$bbl_language_map{$language};
+    MergeFont(language => $iso) if $iso;
+    return; });
+
+# pretend we've got hyphenation patterns for ANY language.
+DefMacro('\iflanguage{}', <<'EoTeX');
+\expandafter\ifx\csname l@#1\endcsname\relax
+  \expandafter\newlanguage\csname l@#1\endcsname\fi
+\expandafter\edef\expandafter\@@@@lang\expandafter{\csname l@#1\endcsname}
+\ifnum\csname l@#1\endcsname=\language
+  \expandafter\@firstoftwo
+\else
+  \expandafter\@secondoftwo
+\fi
+EoTeX
+
+1;
