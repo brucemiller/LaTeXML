@@ -129,17 +129,8 @@ sub readExpression {
 sub readTerm {
   my ($gullet, $type) = @_;
   $gullet->skipSpaces;
-  # my $factor = readTextDimenFactor($gullet) # but only if type is dimen!
-  #   || readReal($gullet)                  # ? only sometimes
-  #   || readMinMax($gullet,$type)
-  #     || readParenthesized($gullet,$type)
-  #       || $gullet->readValue($type);
   my $factor = readValue($gullet, $type);
   while (my $op = $gullet->readKeyword('*', '/')) {
-    # my $factor2 = readReal($gullet)
-    #   || readMinMax($gullet,'Number')
-    #   || readParenthesized($gullet,'Number')
-    #   || $gullet->readNumber();
     my $factor2 = readValue($gullet, 'Number');
     $factor = ($op eq '*'
       ? $factor->multiply($factor2)
@@ -177,15 +168,16 @@ sub readValue {
     return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
         my ($igullet) = @_;
         $igullet->unread($arg);    # Really so weird?
-        return $igullet->readFloat(); }); }
+                                   # Make a Float, but round it AS-IF it had been a fixpoint number
+        return Float(kround($igullet->readFloat()->valueOf * $UNITY) / $UNITY); }); }
   elsif (Equals($peek, T_CS('\ratio'))) {
-    my $x = readExpression($gullet, 'Glue', $gullet->readArg);
-    my $y = readExpression($gullet, 'Glue', $gullet->readArg);
-    my $y_pt = $y->ptValue;
+    my $x    = readExpression($gullet, 'Glue', $gullet->readArg);
+    my $y    = readExpression($gullet, 'Glue', $gullet->readArg);
+    my $y_pt = $y->valueOf;
     if ($y_pt == 0) {
       Warn("unexpected", "<number>", "calc: divisor should never be zero!");
       $y_pt = 1; }
-    return Float($x->ptValue / $y_pt); }
+    return Float(1.0 * $x->valueOf / $y_pt); }
   # Evaluate MinMax values
   elsif (Equals($peek, T_CS('\minof'))) {
     my $x = readExpression($gullet, $type, $gullet->readArg);
@@ -205,72 +197,6 @@ sub readValue {
       return $gullet->readNumber(); }
     else {    # Really should read glue, but downgrade to dimension????
       return $gullet->readGlue(); } } }
-
-sub readMinMax {
-  my ($gullet, $type) = @_;
-  $gullet->skipSpaces;
-  my $peek = $gullet->readXToken();
-  if (Equals($peek, T_CS('\minof'))) {
-    my $x = readExpression($gullet, $type, $gullet->readArg);
-    my $y = readExpression($gullet, $type, $gullet->readArg);
-    return $x->smaller($y); }
-  elsif (Equals($peek, T_CS('\maxof'))) {
-    my $x = readExpression($gullet, $type, $gullet->readArg);
-    my $y = readExpression($gullet, $type, $gullet->readArg);
-    return $x->larger($y); }
-  else {
-    $gullet->unread($peek);
-    return; } }
-
-sub readTextDimenFactor {
-  my ($gullet) = @_;
-  $gullet->skipSpaces;
-  my $peek = $gullet->readXToken();
-  if (Equals($peek, T_CS('\widthof'))) {
-    my $box = Digest($gullet->readArg);
-    return Dimension(0); }
-  elsif (Equals($peek, T_CS('\heightof'))) {
-    my $box = Digest($gullet->readArg);
-    return Dimension(0); }
-  elsif (Equals($peek, T_CS('\depthof'))) {
-    my $box = Digest($gullet->readArg);
-    return Dimension(0); }
-  elsif (Equals($peek, T_CS('\totalheightof'))) {
-    my $box = Digest($gullet->readArg);
-    return Dimension(0); }
-  else {
-    $gullet->unread($peek);
-    return; } }
-
-sub readParenthesized {
-  my ($gullet, $type) = @_;
-  $gullet->skipSpaces;
-  if (my $op = $gullet->readKeyword('(')) {
-    return readExpression($gullet, $type, $gullet->readUntil(T_OTHER(')'))); }
-  else {
-    return; } }
-
-sub readReal {
-  my ($gullet) = @_;
-  $gullet->skipSpaces;
-  my $peek = $gullet->readXToken();
-  if (Equals($peek, T_CS('\real'))) {
-    my $arg = $gullet->readArg;
-    return $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
-        my ($igullet) = @_;
-        $igullet->unread($arg);    # Really so weird?
-        return $igullet->readFloat(); }); }
-  elsif (Equals($peek, T_CS('\ratio'))) {
-    my $x = readExpression($gullet, 'Glue', $gullet->readArg);
-    my $y = readExpression($gullet, 'Glue', $gullet->readArg);
-    my $y_pt = $y->ptValue;
-    if ($y_pt == 0) {
-      Warn("unexpected", "<number>", "calc: divisor should never be zero!");
-      $y_pt = 1; }
-    return Float($x->ptValue / $y_pt); }
-  else {
-    $gullet->unread($peek);
-    return; } }
 
 #**********************************************************************
 1;
