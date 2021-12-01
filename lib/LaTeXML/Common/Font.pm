@@ -16,7 +16,10 @@ use LaTeXML::Global;
 use LaTeXML::Core::Token;
 use LaTeXML::Common::Error;
 use LaTeXML::Common::Object;
+use LaTeXML::Common::Number;
 use LaTeXML::Common::Dimension;
+use LaTeXML::Common::Font::Metric;
+use LaTeXML::Common::Font::StandardMetrics;
 use List::Util qw(min max sum);
 use base qw(LaTeXML::Common::Object);
 
@@ -43,6 +46,7 @@ my $FLAG_FORCE_FAMILY = 0x1;
 my $FLAG_FORCE_SERIES = 0x2;
 my $FLAG_FORCE_SHAPE  = 0x4;
 my $FLAG_EMPH         = 0x10;
+
 #======================================================================
 # Mappings from various forms of names or component names in TeX
 # Given a font, we'd like to map it to the "logical" names derived from LaTeX,
@@ -440,9 +444,44 @@ sub font_match_xpaths {
 # # Presumably a text font is "sticky", if used in math?
 # sub isSticky { return 1; }
 
+# Probably needs to account for what unicode char we're looking for;
+# and whether we are in math mode, along with whatever other font properties we want
+my @textfonts = (qw(cmr cmm cmsy cmex amsa amsb));
+my @mathfonts = (qw(cmm cmsy cmex amsa amsb cmr));
+
+sub getMetric {
+  my ($self, $char) = @_;
+  if (defined $char) {
+    foreach my $name (($self->getFamily eq 'math' ? @mathfonts : @textfonts)) {
+      my $m = $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{$name};
+      return $m if $$m{sizes}{$char}; } }
+  return $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{cmr}; }
+
+## get sizes, get kerns....
+
 #======================================================================
 our %mathstylesize = (display => 1, text => 1,
   script => 0.7, scriptscript => 0.5);
+
+sub getEMWidth {
+  my ($self) = @_;
+  my $size = ($self->getSize || DEFSIZE() || 10);
+  # Could (should) look for metric w/appropriate slant, weight, etc
+  my $m = $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{cmr};
+  return int($size * $$m{emwidth}); }
+
+sub getEXHeight {
+  my ($self) = @_;
+  my $size = ($self->getSize || DEFSIZE() || 10);
+  # Could (should) look for metric w/appropriate slant, weight, etc
+  my $m = $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{cmr};
+  return int($size * $$m{exheight}); }
+
+sub getMUWidth {
+  my ($self) = @_;
+  my $size   = ($self->getSize || DEFSIZE() || 10);
+  my $m      = $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{cmm};
+  return int($size * $$m{emwidth} / 18); }
 
 # NOTE: that we assume the size has already been adjusted for mathstyle, if necessary.
 sub computeStringSize {
@@ -450,15 +489,31 @@ sub computeStringSize {
   if ((!defined $string) || ($string eq '') || ($self->getFamily eq 'nullfont')) {
     return (Dimension(0), Dimension(0), Dimension(0)); }
   my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
-  my $l    = (defined $string ? length($string) : 0);
-  my $u    = $size * 65535;
-  return (Dimension(0.75 * $u * $l), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
+  my ($w, $h, $d) = (0, 0, 0);
+  my @chars = split(//, $string);
+  while (@chars) {
+    my $char   = shift(@chars);
+    my $metric = $self->getMetric($char);
+    my $entry  = $$metric{sizes}{$char};
+##    Debug("No size entry for '$char' (" . sprintf("%x", ord($char)) . ")") unless $entry;
+    my ($cw, $ch, $cd, $ci) = ($entry ? @$entry : (0.75 * $UNITY, 0.7 * $UNITY, 0.2 * $UNITY, 0));
+    $w += int($cw * $size);
+    if (my $kern = $chars[0] && $$metric{kerns}{ $char . $chars[0] }) {
+      $w += int($size * $kern); }
+    if ($self->getFamily eq 'math') {
+      $w += int($size * $ci); }
+    $h = max($h, int($ch * $size));
+    $d = max($d, int($cd * $size)); }
+  # The 1 is so that any actual glyph appears to be non-empty.
+  # This is presumably only necessary to deal with the flawed emptiness heiristics in Alignment?
+  return (Dimension(int($w || 1)), Dimension(int($h)), Dimension(int($d))); }
 
 # Get nominal width, height base ?
+# Probably should be using data from FontMetric ???
 sub getNominalSize {
   my ($self) = @_;
   my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
-  my $u    = $size * 65535;
+  my $u    = $size * $UNITY;
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
 # Here's where I avoid trying to emulate Knuth's line-breaking...
@@ -485,41 +540,66 @@ sub computeBoxesSize {
   if ((!defined $fillwidth) && ($fillwidth = $STATE->lookupDefinition(T_CS('\textwidth')))) {
     $fillwidth = $fillwidth->valueOf; }    # get register
   my $maxwidth = $fillwidth && $fillwidth->valueOf;
+  # baselineskip, lineskip ??
+  my $baseline = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->valueOf;
+  my $lineskip = $STATE->lookupDefinition(T_CS('\lineskip'))->valueOf->valueOf;
   my @lines    = ();
   my ($wd, $ht, $dp)          = (0, 0, 0);
   my ($minwd, $minht, $mindp) = (0, 0, 0);
   my $vattach = $options{vattach} || 'baseline';
   no warnings 'recursion';
   # Flatten top-level Lists (orrr pass-thru $fillwidth ???)
-  my @boxes = map { (ref $_ eq 'LaTeXML::Core::List' ? $_->unlist : $_); } @$boxes;
-  foreach my $box (@boxes) {
+  #  my @boxes = map { (ref $_ eq 'LaTeXML::Core::List' ? $_->unlist : $_); } @$boxes;
+  my @boxes = grep { !(ref $_) || !$_->getProperty('isEmpty') }
+    map { (ref $_ eq 'LaTeXML::Core::List' ? $_->unlist : $_); }
+    grep { !(ref $_) || $_->can('getSize'); } @$boxes;
+  my $prevbox;
+  #  foreach my $box (@boxes) {
+  while (@boxes) {
+    my $box = shift(@boxes);
     next unless defined $box;
     next if ref $box && !$box->can('getSize');    # Care!! Since we're asking ALL args/compoments
+                                                  #    next if ref $box && $box->getProperty('isEmpty');
     ## Should any %options be inherited by the contained boxes?
     my ($w, $h, $d) = (ref $box ? $box->getSize() : $font->computeStringSize($box));
     if (ref $w) {
-      $wd += $w->valueOf; }
+      $wd += ($w->_unit eq 'mu' ? $w->spValue : $w->valueOf); }
     else {
       Warn('expected', 'Dimension', undef,
         "Width of " . Stringify($box) . " yielded a non-dimension: " . Stringify($w)); }
     if (ref $h) {
-      $ht = max($ht, $h->valueOf); }
+      $ht = max($ht, ($h->_unit eq 'mu' ? $h->spValue : $h->valueOf)); }
     else {
       Warn('expected', 'Dimension', undef,
         "Height of " . Stringify($box) . " yielded a non-dimension: " . Stringify($h)); }
     if (ref $d) {
-      $dp = max($dp, $d->valueOf); }
+      $dp = max($dp, ($d->_unit eq 'mu' ? $d->spValue : $d->valueOf)); }
     else {
       Warn('expected', 'Dimension', undef,
         "Depth of " . Stringify($box) . " yielded a non-dimension: " . Stringify($d)); }
-    if ((($options{layout} || '') eq 'vertical')    # EVERY box is a row?
-      || ((ref $box) && $box->getProperty('isBreak'))) {    # || $box is a linebreak
+    # Kern HACK for lists of individual Box's
+    if ($prevbox && (ref $prevbox eq 'LaTeXML::Core::Box') && (ref $box eq 'LaTeXML::Core::Box')) {
+      my $prevchar = substr($prevbox->getString || '', -1, 1);
+      my $curchar  = substr($box->getString     || '', 0,  1);
+      my $metric   = $self->getMetric($curchar);
+      if ($prevbox && ($self->getFamily eq 'math')) {
+        $wd += $self->math_bearing($box, $prevbox); }
+      if (my $kern = $$metric{kerns}{ $prevchar . $curchar }) {
+        my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
+        $wd += $size * $kern; } }
+
+    my $newline = (($options{layout} || '') eq 'vertical')        # EVERY box is a row?
+      || ((ref $box) && $box->getProperty('isBreak'))             # || $box is a linebreak
+      || ((defined $maxwidth) && ($wd >= $maxwidth));             # or we've reached the requested width
+    if ($newline) {
+      if (@boxes) {
+        if ($baseline > $ht + $dp) {
+          $dp = $baseline - $ht; }
+        else {
+          $dp += $lineskip; } }
       push(@lines, [$wd, $ht, $dp]); $wd = $ht = $dp = 0; }
-    elsif ((defined $maxwidth) && ($wd >= $maxwidth)) {     # or we've reached the requested width
-          # Instead of a real linebreaking algorithm, just break off if too wide.
-      push(@lines, [$wd, $ht, $dp]); $wd = $ht = $dp = 0; }
-  }
-  if ($wd) {    # be sure to get last line
+    $prevbox = $box; }
+  if ($wd || $ht || $dp) {    # be sure to get last line
     push(@lines, [$wd, $ht, $dp]); }
   # Deal with multiple lines
   my $nlines = scalar(@lines);
@@ -543,18 +623,49 @@ sub computeBoxesSize {
     else {                            # default is baseline (of the 1st line)
       my $h = $lines[0][1];
       $dp = $ht + $dp - $h; $ht = $h; } }
-  $wd = max($minwd, $wd); $ht = max($minht, $ht); $dp = max($mindp, $dp);
-  #print "BOXES SIZE ".($wd/65536)." x ".($ht/65536)." + ".($dp/65336)." for "
-  #  .join(' ',grep {$_} map { Stringify($_) } @$boxes)."\n";
+###  $wd = max($minwd, $wd); $ht = max($minht, $ht); $dp = max($mindp, $dp);
   Debug("Size boxes " . join(',', map { $_ . '=' . ToString($options{$_}); } sort keys %options) . "\n"
       . "  Boxes: " . join(',',  map { '[[' . ToString($_) . ']]'; } @$boxes) . "\n"
       . "  Sizes: " . join("\n", map { _showsize(@$_); } @lines) . "\n"
       . "  => " . _showsize($wd, $ht, $dp)) if $LaTeXML::DEBUG{'size-detailed'};
   return (Dimension($wd), Dimension($ht), Dimension($dp)); }
 
+# Probably a clumsy way of dealing with math spacing...
+# 0=Ord, 1=Op, 2=Bin, 3=Rel, 4=Open, 5=Close, 6=Punct, 7=Inner
+my %mathatomtype = (ID => 0,
+  BIGOP => 1, SUMOP     => 1, INTOP => 1, OPERATOR  => 1, LIMITOP => 1, DIFFOP  => 1,
+  ADDOP => 2, MULOP     => 2, BINOP => 2, COMPOSEOP => 2, MIDDLE  => 2, VERTBAR => 2,
+  RELOP => 3, METARELOP => 3, ARROW => 3,
+  OPEN  => 4, CLOSE     => 5,
+  PUNCT => 6, PERIOD    => 6,
+  ARRAY => 7, MODIFIER  => 7);
+# mysterious: MODIFIEROP, POSTFIX, APPLYOP, SUPOP
+my $mathbearings = [
+  [0,  1,  -2, -3, 0,  0,  0,  -1],
+  [1,  1,  0,  -3, 0,  0,  0,  -1],
+  [-2, -2, 0,  0,  -2, 0,  0,  -2],
+  [-3, -3, 0,  0,  -3, 0,  0,  -3],
+  [0,  0,  0,  0,  0,  0,  0,  0],
+  [0,  1,  -2, -3, 0,  0,  0,  -1],
+  [-1, -1, 0,  -1, -1, -1, -1, -1],
+  [-1, 1,  -2, -3, -1, 0,  -1, -1]];
+my $mathbearingreg = [undef, T_CS('\thinmuskip'), T_CS('\medmuskip'), T_CS('\thickmuskip')];
+
+sub math_bearing {
+  my ($self, $box, $prevbox) = @_;
+  my $r0      = $prevbox->getProperty('role') || 'ID';
+  my $r1      = $box->getProperty('role')     || 'ID';
+  my $t0      = $mathatomtype{$r0}            || 0;
+  my $t1      = $mathatomtype{$r1}            || 0;
+  my $bearing = $$mathbearings[$t0][$t1];
+  my $style   = $self->getMathstyle || 'text';
+  if (!$bearing || (($bearing < 0) && ($style ne 'display') && ($style ne 'text'))) {
+    return 0; }
+  return $STATE->lookupDefinition($$mathbearingreg[abs($bearing)])->valueOf->spValue; }
+
 sub _showsize {
   my ($wd, $ht, $dp) = @_;
-  return ($wd / 65536) . " x " . ($ht / 65536) . " + " . ($dp / 65336); }
+  return ($wd / $UNITY) . " x " . ($ht / $UNITY) . " + " . ($dp / $UNITY); }
 
 sub isSticky {
   my ($self) = @_;

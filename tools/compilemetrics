@@ -1,0 +1,88 @@
+#!/usr/bin/perl -w
+# /=====================================================================\ #
+# |  compilemetrics                                                     | #
+# | Convert Tex Font Metrics to internal format                         | #
+# |=====================================================================| #
+# | support tools for LaTeXML:                                          | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+use strict;
+use warnings;
+use FindBin;
+# Assume we're in the tools directory of a development version of latexml (next to lib, blib..)
+use lib "$FindBin::RealBin/../blib/lib";
+use LaTeXML;
+use LaTeXML::Package;
+use LaTeXML::Common::Error;
+use LaTeXML::Common::Font::Metric;
+use Data::Dumper;
+
+#======================================================================
+# Convert a set of TeX Font Metrics into a prepared module
+#======================================================================
+# A little awkwardness in that we have to run within LaTeXML,
+# since the needed font encodings are embedded within (or only findable within) LaTeXML.
+
+my $MODULEPATH = "$FindBin::RealBin/../lib/LaTeXML/Common/Font/StandardMetrics.pm";
+my $FONTDIR    = '/usr/share/texlive/texmf-dist/fonts/tfm/public';
+# Should be using kpsewhich, but...
+my $SIZE = 10;
+my $HEADER;
+SetVerbosity(1);
+UseSTDERR();
+
+my $latexml = LaTeXML::Core->new();
+$latexml->withState(sub {
+    my ($state) = @_;
+    $latexml->initializeState();
+    LoadPool('LaTeX');
+    my $metrics = {
+      # Core TeX font/encodings
+      cmr  => read_tfm('OT1', "$FONTDIR/cm/cmr$SIZE.tfm"),
+      cmm  => read_tfm('OML', "$FONTDIR/cm/cmmi$SIZE.tfm"),
+      cmsy => read_tfm('OMS', "$FONTDIR/cm/cmsy$SIZE.tfm"),
+      cmex => read_tfm('OMX', "$FONTDIR/cm/cmex$SIZE.tfm"),
+      # AMS fonts
+      amsa => read_tfm('AMSa', "$FONTDIR/amsfonts/symbols/msam$SIZE.tfm"),
+      amsb => read_tfm('AMSb', "$FONTDIR/amsfonts/symbols/msbm$SIZE.tfm"),
+      # Could include others; italic, bold,... How to access them?
+    };
+    my $dumper = Data::Dumper->new([$metrics], [qw(STDMETRICS)]);
+
+    $dumper->Indent(0);
+    my $FH;
+    open($FH, ">", $MODULEPATH);
+    print $FH $HEADER;
+    print $FH $dumper->Dump();
+    print $FH "1;\n";
+    close($FH);
+    print STDERR "Wrote Standard font metrics to $MODULEPATH\n";
+    return; });
+
+sub read_tfm {
+  my ($encoding, $file) = @_;
+  LoadFontMap($encoding);
+  return LaTeXML::Common::Font::Metric->new($encoding, $file); }
+
+#======================================================================
+
+BEGIN {
+  $HEADER = << 'EoHeader';
+#!/usr/bin/perl -w
+# /=====================================================================\ #
+# |  Standard Font Metrics                                              | #
+# | Converted Tex Font Metrics for LaTeXML                              | #
+# |=====================================================================| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+# THIS IS A GENERATED FILE! DO NOT EDIT
+# (see LaTeXML/tools/compilemetrics)
+package LaTeXML::Common::Font::StandardMetrics;
+our $STANDARDMETRICS;
+EoHeader
+}
