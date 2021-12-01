@@ -17,7 +17,13 @@ use LaTeXML::Package;
 
 #**********************************************************************
 
-InputDefinitions('pdftexcmds', type => 'sty', noltxml => 1);
+#InputDefinitions('pdftexcmds', type => 'sty', noltxml => 1);
+
+RequirePackage('iftex');
+
+DefPrimitive('\pdffiledump',             undef);
+DefPrimitive('\pdffilesize',             undef);
+DefPrimitive('\pdfresettimerresettimer', undef);
 
 #**********************************************************************
 
