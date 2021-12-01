@@ -1,0 +1,103 @@
+\documentclass{article}
+
+\newbox\mybox
+\newcount\myctr
+\newdimen\mydim
+\newskip\myskip
+\newmuskip\mymuskip
+
+\newdimen\twopt\twopt=2pt\relax
+\newskip\twoskip\twoskip=2pt plus 2pt minus 2pt\relax
+\newmuskip\twomuskip\twomuskip=2mu plus 2mu minus 2mu\relax
+\def\testbox#1{%
+  \setbox\mybox\hbox{#1}
+  \par\noindent Text: `#1' is \the\wd\mybox\space x \the\ht\mybox\space + \the\dp\mybox.}
+\def\testdimen#1{
+  \mydim=#1\relax
+  \myctr=\mydim\relax
+  \par\noindent Dimen \detokenize{#1} = \the\mydim\space (\the\myctr).}
+
+\def\testskip#1{
+  \myskip=#1\relax
+  \par\noindent Skip \detokenize{#1} = \the\myskip.}
+
+\def\testmuskip#1{
+  \mymuskip=#1\relax
+  \par\noindent MuSkip \detokenize{#1} = \the\mymuskip.}
+
+\begin{document}
+\section{Dimensions}
+\testdimen{0.1pt}
+\testdimen{1sp}
+\testdimen{1pt}
+\testdimen{1pc}
+\testdimen{1in}
+\testdimen{1bp}
+\testdimen{1cm}
+\testdimen{1mm}
+\testdimen{1dd}
+\testdimen{1cc}
+\testdimen{1px}                 % Actually present in latex?!? slightly > 1bp
+\testdimen{1em}
+\testdimen{1ex}
+
+\testdimen{0.0ex}
+\testdimen{0.01ex}
+\testdimen{0.1ex}
+
+\testdimen{\twopt}
+\testdimen{-\twopt}
+\testdimen{-\twoskip}
+\testdimen{-0.5\twopt}
+\testdimen{0.5\twopt}
+
+\testdimen{1.2}
+
+\section{Glue}
+\testskip{1em plus 1fil minus 2fill}
+\testskip{0.1ex plus 0.01ex minus 1ex}
+\testskip{\twopt}
+\testskip{\twoskip}
+\testskip{-\twopt}
+\testskip{-\twoskip}
+\testskip{3\twopt plus 5\twopt minus 5\twopt}
+\testskip{3\twoskip plus 5\twoskip minus 5\twoskip}
+
+\section{Muglue}
+\testmuskip{1mu plus 1fil minus 2fill}
+\testmuskip{0.1mu plus 0.01mu minus 1mu}
+\testmuskip{\twomuskip}
+\testmuskip{-\twomuskip}
+\testmuskip{3\twomuskip plus 5\twomuskip minus 5\twomuskip}
+
+\section{Text}
+\testbox{a}
+\testbox{b}
+\testbox{c}
+\testbox{d}
+\testbox{ab}
+\testbox{abc}
+\testbox{abcd}
+\testbox{efg}
+\testbox{efgij}
+\testbox{Some Text}
+\testbox{\,}
+\section{Vertical}
+\testbox{\vbox{\hbox{abc}}}
+\testbox{\vbox{\hbox{abc}\hbox{abc}\hbox{abc}}}
+\testbox{\vtop{\hbox{abc}\hbox{abc}\hbox{abc}}}
+\testbox{\shortstack{abc\\abc\\abc}}
+\end{document}
+%% NOT TESTED YET!
+\section{Math}
+% Note distinction between roman and math-italic!
+\testbox{$a$}
+\testbox{$\!$}
+\testbox{$\>$}
+\testbox{$\;$}
+\testbox{$\mapstochar$}
+\testbox{$g(x)$}
+\testbox{$\phantom{g(x)}$}
+\end{document}
+
+
