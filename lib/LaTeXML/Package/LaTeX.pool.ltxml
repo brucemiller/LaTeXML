@@ -155,6 +155,7 @@ DefMacro('\@currenvir', '');
 DefPrimitive('\lx@setcurrenvir{}', sub {
     DefMacroI('\@currenvir', undef, $_[1]);
     AssignValue(current_environment => ToString($_[1])); });
+DefMacro('\@checkend{}', '\def\reserved@a{#1}\ifx\reserved@a\@currenvir \else\@badend{#1}\fi}');
 Let('\@currenvline', '\@empty');
 
 DefMacro('\begin{}', sub {
@@ -515,9 +516,9 @@ DefConstructor('\lx@notetext[]{}[]{}',
     (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || Digest(T_CS('\the' . $type)))); },
   reversion => '');
 
-DefMacro('\footnote',     '\lx@note{footnote}');
-DefMacro('\footnotemark', '\lx@notemark{footnote}');
-DefMacro('\footnotetext', '\lx@notetext{footnote}');
+DefMacro('\footnote',      '\lx@note{footnote}');
+DefMacro('\footnotemark',  '\lx@notemark{footnote}');
+DefMacro('\footnotetext',  '\lx@notetext{footnote}');
 DefMacro('\@footnotetext', '\lx@notetext{footnote}');
 
 Tag('ltx:note', afterClose => \&relocateFootnote);
@@ -4030,6 +4031,7 @@ DefPrimitive('\include{}', sub {
     if (!$table || $$table{$path}) {
       Input($path); }
     return; });
+Let('\@include', '\include');
 
 # [note, this will load name.tex, if it exists, else name]
 DefPrimitive('\includeonly{}', sub {
@@ -4375,6 +4377,8 @@ DefPrimitive('\hspace  OptionalMatch:* {Dimension}', sub {
 DefPrimitive('\vspace OptionalMatch:* {}', undef);
 DefPrimitive('\addvspace {}',              undef);
 DefPrimitive('\addpenalty {}',             undef);
+DefPrimitiveI('\@endparenv');
+
 # \hfill, \vfill
 
 #======================================================================

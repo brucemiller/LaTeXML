@@ -16,7 +16,7 @@ use warnings;
 use LaTeXML::Package;
 
 # Some of the requirements not yet applicable/supported in latexml
-#RequirePackage('ltxcmds');
+RequirePackage('ltxcmds');
 #RequirePackage('iftex');
 #RequirePackage('pdftexcmds');
 #RequirePackage('infwarerr');
@@ -28,18 +28,18 @@ use LaTeXML::Package;
 # robust conversions in latexml for all files that succeed in pdflatex
 RequirePackage('keyval');
 
-#RequirePackage('kvsetkeys');
-#RequirePackage('kvdefinekeys');
+RequirePackage('kvsetkeys');
+RequirePackage('kvdefinekeys');
 #RequirePackage('pdfescape');
 #RequirePackage('hycolor');
 #RequirePackage('letltxmacro');
 #RequirePackage('auxhook');
-#RequirePackage('kvoptions');
+RequirePackage('kvoptions');
 #RequirePackage('intcalc');
 #RequirePackage('etexcmds');
 RequirePackage('nameref');
 RequirePackage('url');
-#RequirePackage('bitset');
+RequirePackage('bitset');
 #RequirePackage('atbegshi');
 
 # Can we load hyperref, to get all it's random sundry definitions?
@@ -147,8 +147,6 @@ DefConstructor('\@add@PDF@RDFa@triples', sub {
 DefMacro('\pdfcatalog{}', '');
 DefRegister('\pdfcompresslevel', Number(0));
 
-RawTeX('\newif\ifHy@pdfstring\Hy@pdfstringfalse');
-
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Additional User Macros
 
@@ -189,11 +187,6 @@ DefPrimitive('\hyperbaseurl Semiverbatim', sub { AssignValue(BASE_URL => ToStrin
 # \hyperimage{imageurl}{text}
 DefConstructor('\hyperimage Semiverbatim {}', "<ltx:graphic graphic='#1' description='#2'/>");
 
-# \hyperdef{category}{name}{text}
-DefConstructor('\hyperdef Semiverbatim Semiverbatim Semiverbatim',
-  "<ltx:anchor xml:id='#id'>#3</ltx:anchor>",
-  properties => sub { (id => CleanID(ToString($_[1]) . '.' . ToString($_[2]))); });
-
 DefMacro('\hyperref', '\@ifnextchar[\hyperref@@ii\hyperref@@iv');
 # 2 argument form
 DefConstructor('\hyperref@@ii OptionalSemiverbatim {}',
@@ -211,15 +204,41 @@ DefConstructor('\htmlref Semiverbatim  Semiverbatim',
   properties => sub { (label => CleanLabel($_[2])); });
 
 # \hyperlink{name}{text}
-# \hypertarget{name}{text}
 DefConstructor('\hyperlink Semiverbatim {}',
   "<ltx:ref idref='#1'>#2</ltx:ref>",
   properties => sub { (id => CleanID($_[1])); });
 DefMacro('\hyper@@link{}{}{}', '\hyperlink{#2}{#3}');
 
-DefConstructor('\hypertarget Semiverbatim {}',
-  "<ltx:anchor xml:id='#id'>#2</ltx:anchor>",
-  properties => sub { (id => CleanID(ToString($_[1]))); });
+sub localized_anchor {
+  my ($document, $whatsit) = @_;
+  my $model      = $STATE->getModel;
+  my $node       = $document->getNode;
+  my @candidates = ($node);
+  my $candidate;
+  while ($candidate = pop(@candidates)) {
+    my $type = $candidate->nodeType;
+    if ($type == XML_ELEMENT_NODE) {
+      last if ($model->canContain('ltx:anchor', $model->getNodeQName($candidate)));
+      unshift(@candidates, $candidate->childNodes); }
+    elsif ($type = XML_TEXT_NODE) {
+      last; } }
+  my $id = $whatsit->getProperty('id');
+  if ($candidate) {
+    my $anchor = $document->wrapNodes('ltx:anchor', $candidate);
+    $anchor->setAttribute('xml:id', $id); }
+  else {
+    Error("No available insertion point for ltx:anchor, failing \\hypertarget to $id"); }
+  return; }
+
+# \hyperdef{category}{name}{text}
+DefConstructor('\hyperdef Semiverbatim Semiverbatim Semiverbatim',
+  "#3",
+  afterConstruct => \&localized_anchor,
+  properties     => sub { (id => CleanID(ToString($_[1]) . '.' . ToString($_[2]))); });
+# \hypertarget{name}{text}
+DefConstructor('\hypertarget Semiverbatim {}', '#2',
+  afterConstruct => \&localized_anchor,
+  properties     => sub { (id => CleanID(ToString($_[1]))); });
 
 # Should create an anchor with automatically chosen name;
 # But it's to be used where LaTeXML already would have created an anchor & link...
@@ -228,13 +247,99 @@ DefMacroI('\phantomsection', undef, '');
 
 Let('\footref', '\ref');    # ?
 
+DefConditional('\ifHy@stoppedearly');
+DefConditional('\ifHy@typexml');
+DefConditional('\ifHy@activeanchor');
+DefConditional('\ifHy@backref');
+DefConditional('\ifHy@bookmarks');
+DefConditional('\ifHy@bookmarksnumbered');
+DefConditional('\ifHy@bookmarksopen');
+DefConditional('\ifHy@breaklinks');
+DefConditional('\ifHy@pdfcenterwindow');
+DefConditional('\ifHy@CJKbookmarks');
+DefConditional('\ifHy@colorlinks');
+DefConditional('\ifHy@destlabel');
+DefConditional('\ifHy@draft');
+Let('\Hy@finaltrue',  '\Hy@draftfalse');
+Let('\Hy@finalfalse', '\Hy@drafttrue');
+DefConditional('\ifHy@pdfescapeform');
+DefConditional('\ifHy@hyperfigures');
+DefConditional('\ifHy@pdffitwindow');
+DefConditional('\ifHy@frenchlinks');
+DefConditional('\ifHy@hyperfootnotes');
+DefConditional('\ifHy@hyperindex');
+DefConditional('\ifHy@hypertexnames');
+DefConditional('\ifHy@implicit');
+DefConditional('\ifHy@linktocpage');
+DefConditional('\ifHy@localanchorname');
+DefConditional('\ifHy@pdfmenubar');
+DefConditional('\ifHy@naturalnames');
+DefConditional('\ifHy@nesting');
+DefConditional('\ifHy@pdfnewwindowset');
+DefConditional('\ifHy@pdfnewwindow');
+DefConditional('\ifHy@ocgcolorlinks');
+DefConditional('\ifHy@pageanchor');
+DefConditional('\ifHy@pdfpagelabels');
+DefConditional('\ifHy@pdfstring');
+DefConditional('\ifHy@plainpages');
+DefConditional('\ifHy@psize');
+DefConditional('\ifHy@raiselinks');
+DefConditional('\ifHy@seminarslides');
+DefConditional('\ifHy@setpagesize');
+DefConditional('\ifHy@texht');
+DefConditional('\ifHy@psdextra');
+DefConditional('\ifHy@pdftoolbar');
+DefConditional('\ifHy@unicode');
+DefConditional('\ifHy@pdfusetitle');
+DefConditional('\ifHy@verbose');
+Let('\Hy@debugtrue',  '\Hy@verbosetrue');
+Let('\Hy@debugfalse', '\Hy@verbosefalse');
+DefConditional('\ifHy@pdfwindowui');
+DefConditional('\ifHy@pdfdisplaydoctitle');
+DefConditional('\ifHy@pdfa');
+RawTeX(<<'EOL');
+\Hy@backreffalse
+\Hy@bookmarksnumberedfalse
+\Hy@bookmarksopenfalse
+\Hy@bookmarkstrue
+\Hy@breaklinksfalse
+\Hy@pdfcenterwindowfalse
+\Hy@CJKbookmarksfalse
+\Hy@destlabelfalse
+\Hy@pdfescapeformfalse
+\Hy@hyperfiguresfalse
+\Hy@pdffitwindowfalse
+\Hy@hyperfootnotestrue
+\Hy@hyperindextrue
+\Hy@hypertexnamestrue
+\Hy@implicittrue
+\Hy@linktocpagefalse
+\Hy@localanchornamefalse
+\Hy@pdfmenubartrue
+\Hy@naturalnamesfalse
+\Hy@nestingfalse
+\Hy@pdfnewwindowsetfalse
+\Hy@pdfnewwindowfalse
+\Hy@pageanchortrue
+\Hy@pdfpagelabelstrue
+\Hy@pdfstringfalse
+\Hy@plainpagesfalse
+\Hy@raiselinksfalse
+\Hy@setpagesizetrue
+\Hy@texhtfalse
+\Hy@psdextrafalse
+\Hy@pdftoolbartrue
+\Hy@typexmlfalse
+\Hy@unicodetrue
+EOL
+DefMacro('\@bookmarksopenlevel', '\maxdimen');
 # This only approximates the "contextual label" that should precede the number,
 # and ignores the user-definable macros.
 # But, we normally defer such bookkeeping until postprocessing....sigh
 # TODO: The star forms prevent nested double links.
 DefConstructor('\autoref OptionalMatch:* Semiverbatim',
-  "<ltx:ref ?#1(class='ltx_refmacro_autoref ltx_nolink')(class='ltx_refmacro_autoref')
-    show='autoref' labelref='#label' _force_font='true'/>",
+  "<ltx:ref ?#1(class='ltx_refmacro_autoref ltx_nolink')(class='ltx_refmacro_autoref') " .
+    "show='autoref' labelref='#label' _force_font='true'/>",
   properties => sub { (label => CleanLabel($_[2])); });
 
 DefMacro('\lx@autorefnum@@{}', sub {

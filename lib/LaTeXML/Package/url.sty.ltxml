@@ -96,4 +96,6 @@ DefPrimitive('\urldef{}{}', sub {
     DefPrimitiveI($cmd, undef, sub { @expansion; });
     (); });
 
+DefRegisterI('\Urlmuskip', undef, MuGlue(0));
+
 1;
