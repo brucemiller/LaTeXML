@@ -9,9 +9,12 @@
 \newdimen\twopt\twopt=2pt\relax
 \newskip\twoskip\twoskip=2pt plus 2pt minus 2pt\relax
 \newmuskip\twomuskip\twomuskip=2mu plus 2mu minus 2mu\relax
-\def\testbox#1{%
+\def\testtext#1{%
   \setbox\mybox\hbox{#1}
   \par\noindent Text: `#1' is \the\wd\mybox\space x \the\ht\mybox\space + \the\dp\mybox.}
+\def\testmath#1{%
+  \setbox\mybox\hbox{$#1$}
+  \par\noindent Math: `$#1$' is \the\wd\mybox\space x \the\ht\mybox\space + \the\dp\mybox.}
 \def\testdimen#1{
   \mydim=#1\relax
   \myctr=\mydim\relax
@@ -71,33 +74,49 @@
 \testmuskip{3\twomuskip plus 5\twomuskip minus 5\twomuskip}
 
 \section{Text}
-\testbox{a}
-\testbox{b}
-\testbox{c}
-\testbox{d}
-\testbox{ab}
-\testbox{abc}
-\testbox{abcd}
-\testbox{efg}
-\testbox{efgij}
-\testbox{Some Text}
-\testbox{\,}
+\testtext{a}
+\testtext{b}
+\testtext{c}
+\testtext{d}
+\testtext{ab}
+\testtext{abc}
+\testtext{abcd}
+\testtext{efg}
+\testtext{efgij}
+\testtext{Some Text}
+\testtext{\,}
+
 \section{Vertical}
-\testbox{\vbox{\hbox{abc}}}
-\testbox{\vbox{\hbox{abc}\hbox{abc}\hbox{abc}}}
-\testbox{\vtop{\hbox{abc}\hbox{abc}\hbox{abc}}}
-\testbox{\shortstack{abc\\abc\\abc}}
-\end{document}
+\testtext{\vbox{\hbox{abc}}}
+\testtext{\vbox{\hbox{abc}\hbox{abc}\hbox{abc}}}
+\testtext{\vtop{\hbox{abc}\hbox{abc}\hbox{abc}}}
+\testtext{\shortstack{abc\\abc\\abc}}
+%\end{document}
 %% NOT TESTED YET!
 \section{Math}
 % Note distinction between roman and math-italic!
-\testbox{$a$}
-\testbox{$\!$}
-\testbox{$\>$}
-\testbox{$\;$}
-\testbox{$\mapstochar$}
-\testbox{$g(x)$}
-\testbox{$\phantom{g(x)}$}
+\testmath{\mskip 1mu}
+\testmath{\,}                   % Compare to \testtex above
+\testmath{\!}
+\testmath{\>}
+\testmath{\;}
+\testmath{a}
+\testmath{ab}
+\testmath{\mapstochar}
+\testmath{a=b}
+\testmath{g}
+\testmath{abcde}
+\testmath{fghij}
+\testmath{klmno}
+\testmath{pqrst}
+\testmath{uvwxyz}
+\testtext{g(x)}
+\testmath{g(x)}
+\testmath{\phantom{g(x)}}
+
+%\testmath{\char 103}
+%\testmath{\mathchar 103}
+
 \end{document}
 
 
