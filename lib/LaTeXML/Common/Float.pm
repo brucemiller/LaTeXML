@@ -24,6 +24,11 @@ sub Float {
   my ($number) = @_;
   return LaTeXML::Common::Float->new($number); }
 
+sub new {
+  my ($class, $number) = @_;
+  $number = ToString($number) if ref $number;
+  return bless [$number || "0"], $class; }
+
 #======================================================================
 
 # Strictly speaking, Float isn't part of TeX, but it's handy.
