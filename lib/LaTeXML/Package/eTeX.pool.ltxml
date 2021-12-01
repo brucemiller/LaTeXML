@@ -218,7 +218,8 @@ DefRegister('\glueexpr GlueExpr', Glue(0),      getter => sub { $_[0]; });
 DefRegister('\muexpr MuExpr',     MuGlue(0),    getter => sub { $_[0]; });
 
 DefPrimitive('\pdftexcmds@directlua{}', undef);
-DefPrimitive('\directlua{}',            undef);
+# babel tests would fail if we had this enabled:
+#DefPrimitive('\directlua{}',            undef);
 
 # Not really sure where this comes from; pdftex?
 DefRegister('\synctex', Number(0));
