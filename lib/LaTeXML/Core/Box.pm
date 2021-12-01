@@ -31,6 +31,10 @@ sub Box {
   $font    = $STATE->lookupValue('font')               unless defined $font;
   $locator = $STATE->getStomach->getGullet->getLocator unless defined $locator;
   $tokens  = LaTeXML::Core::Token::T_OTHER($string) if $string && !defined $tokens;
+  if ($properties{isSpace} && ($properties{width} || $properties{height} || $properties{depth})) {
+    $properties{width}  = Dimension(0) unless defined $properties{width};
+    $properties{height} = Dimension(0) unless defined $properties{height};
+    $properties{depth}  = Dimension(0) unless defined $properties{depth}; }
   my $state = $STATE;
   if ($state->lookupValue('IN_MATH')) {
     my $attr      = (defined $string) && $state->lookupValue('math_token_attributes_' . $string);
