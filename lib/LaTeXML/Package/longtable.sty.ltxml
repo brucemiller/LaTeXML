@@ -125,12 +125,22 @@ DefPrimitive('\@longtable@@toccaption{}', sub {
 
 #======================================================================
 # Not used, but must be defined.
-DefRegister('\LTLeft'      => Glue(0));
-DefRegister('\LTRight'     => Glue(0));
-DefRegister('\LTPre'       => Glue(0));
-DefRegister('\LTPost'      => Glue(0));
-DefRegister('\LTcapwidth'  => Glue(0));
-DefRegister('\LTchunksize' => Number(20));
+DefRegister('\LTleft'      => Glue(0, '1fill'));
+DefRegister('\LTright'     => Glue(0, '1fill'));
+DefRegister('\LTpre'       => Glue('12pt plus 4pt minus 4pt'));
+DefRegister('\LTpost'      => Glue('12pt plus 4pt minus 4pt'));
+DefRegister('\LTcapwidth'  => Dimension('4in'));
+DefRegister('\LTchunksize' => Number(200));
+DefRegister('\LT@cols'     => Number(0));
+DefRegister('\LT@rows'     => Number(0));
+Let('\c@LTchunksize', '\LTchunksize');
+RawTeX(<<'EOL');
+\newbox\LT@head
+\newbox\LT@firsthead
+\newbox\LT@foot
+\newbox\LT@lastfoot
+\newbox\LT@gbox
+EOL
 Let('\setlongtables', '\relax');
 #======================================================================
 1;

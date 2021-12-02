@@ -21,12 +21,12 @@ use LaTeXML::Package;
 # | remove this comment, when done.                                      |
 # | Drafted by texscan --stub varioref.sty                               |
 #  \--------------------------------------------------------------------/
-DefMacro('\vref OptionalMatch:* Semiverbatim',                       '\ref{#2}');
-DefMacro('\vpageref OptionalMatch:* Semiverbatim',                   '\ref{#2}');
-DefMacro('\vrefrange OptionalMatch:* Semiverbatim Semiverbatim',     '\vref{#2}--\vref{#3}');
-DefMacro('\vpagerefrange OptionalMatch:* Semiverbatim Semiverbatim', '\vref{#2}--\vref{#3}');
+DefMacro('\vref OptionalMatch:* Semiverbatim',                   '\ref{#2}', locked => 1);
+DefMacro('\vpageref OptionalMatch:* Semiverbatim',               '\ref{#2}', locked => 1);
+DefMacro('\vrefrange OptionalMatch:* Semiverbatim Semiverbatim', '\vref{#2}--\vref{#3}', locked => 1);
+DefMacro('\vpagerefrange OptionalMatch:* Semiverbatim Semiverbatim', '\vref{#2}--\vref{#3}', locked => 1);
 
-DefMacro('\vrefpagenum DefToken Semiverbatim', '\def#1{\ref{#2}}');
+DefMacro('\vrefpagenum DefToken Semiverbatim', '\def#1{\ref{#2}}', locked => 1);
 
 # Should use this, but....
 DefMacro('\labelformat{}{}', '');
