@@ -26,7 +26,7 @@ Let('\bbl@opt@safe', '\@empty');
 # and then proceed with some strategic redefinitions.
 # We should also be able to directly process the
 #  <language>.ldf files.
-InputDefinitions('babel', type => 'def', noltxml => 1);
+InputDefinitions('txtbabel', type => 'def', noltxml => 1);
 
 RequirePackage('babel_support');
 
