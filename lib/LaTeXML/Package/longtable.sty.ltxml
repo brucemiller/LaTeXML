@@ -125,8 +125,8 @@ DefPrimitive('\@longtable@@toccaption{}', sub {
 
 #======================================================================
 # Not used, but must be defined.
-DefRegister('\LTleft'      => Glue(0, '1fill'));
-DefRegister('\LTright'     => Glue(0, '1fill'));
+DefRegister('\LTleft'      => Glue('0pt plus 1fill'));
+DefRegister('\LTright'     => Glue('0pt plus 1fill'));
 DefRegister('\LTpre'       => Glue('12pt plus 4pt minus 4pt'));
 DefRegister('\LTpost'      => Glue('12pt plus 4pt minus 4pt'));
 DefRegister('\LTcapwidth'  => Dimension('4in'));
