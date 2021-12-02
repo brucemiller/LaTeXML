@@ -1,0 +1,60 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  iftex                                                              | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Thanks to the arXMLiv group for initial implementation              | #
+# |    http://arxmliv.kwarc.info/                                       | #
+# | Released to the Public Domain                                       | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Definitely false, unless we can interpret lua.
+DefConditional('\ifetex',   sub { 1; });
+DefConditional('\ifeTeX',   sub { 1; });
+DefConditional('\ifpdftex', sub { 1; });
+DefConditional('\ifPDFTeX', sub { 1; });
+DefConditional('\ifpdf');
+DefConditional('\ifxetex');
+DefConditional('\ifXeTeX');
+DefConditional('\ifluatex');
+DefConditional('\ifLuaTeX');
+DefConditional('\ifluahbtex');
+DefConditional('\ifLuaHBTeX');
+DefConditional('\ifptex');
+DefConditional('\ifpTeX');
+DefConditional('\ifuptex');
+DefConditional('\ifupTeX');
+DefConditional('\ifptexng');
+DefConditional('\ifpTeXng');
+DefConditional('\ifvtex');
+DefConditional('\ifVTeX');
+DefConditional('\ifalephtex');
+DefConditional('\ifAlephTeX');
+DefConditional('\iftutex');
+DefConditional('\ifTUTeX');
+
+DefMacroI('\RequireeTeX',     undef, undef);
+DefMacroI('\RequirePDFTeX',   undef, undef);
+DefMacroI('\RequireXeTeX',    undef, undef);
+DefMacroI('\RequireLuaTeX',   undef, undef);
+DefMacroI('\RequireLuaHBTeX', undef, undef);
+DefMacroI('\RequirepTeX',     undef, undef);
+DefMacroI('\RequireupTeX',    undef, undef);
+DefMacroI('\RequirepTeXng',   undef, undef);
+DefMacroI('\RequireVTeX',     undef, undef);
+DefMacroI('\RequireAlephTeX', undef, undef);
+DefMacroI('\RequireTUTeX',    undef, undef);
+
+#======================================================================
+1;

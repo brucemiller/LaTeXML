@@ -14,6 +14,9 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+RequirePackage('refcount');
+RequirePackage('gettitlestring');
+RequirePackage('ltxcmds');
 
 # We want to display the actual "name" of the labeled structure (e.g. \section),
 #   which is accessible via show="title"

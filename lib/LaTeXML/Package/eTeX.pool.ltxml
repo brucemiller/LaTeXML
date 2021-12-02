@@ -192,7 +192,7 @@ sub etex_readexpr_i {
   # Now check for a following operator(s) & operand(s) (respecting precedence)
   while (my $next = $gullet->readXNonSpace) {
     if ($next->equals(T_CS('\relax'))) {
-      $gullet->unread($next);           # leave the \relax for top-level to strip off.
+      $gullet->unread($next);    # leave the \relax for top-level to strip off.
       last; }
     elsif ($next->equals(T_OTHER('+')) && ($prec < 1)) {
       $value = $value->add(etex_readexpr_i($gullet, $type, 1)); }
@@ -216,6 +216,10 @@ DefRegister('\numexpr NumExpr',   Number(0),    getter => sub { $_[0]; });
 DefRegister('\dimexpr DimExpr',   Dimension(0), getter => sub { $_[0]; });
 DefRegister('\glueexpr GlueExpr', Glue(0),      getter => sub { $_[0]; });
 DefRegister('\muexpr MuExpr',     MuGlue(0),    getter => sub { $_[0]; });
+
+DefPrimitive('\pdftexcmds@directlua{}', undef);
+# babel tests would fail if we had this enabled:
+#DefPrimitive('\directlua{}',            undef);
 
 # Not really sure where this comes from; pdftex?
 DefRegister('\synctex', Number(0));

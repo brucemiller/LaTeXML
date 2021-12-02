@@ -1,15 +1,11 @@
 # -*- mode: Perl -*-
 # /=====================================================================\ #
-# |  ifvtex                                                             | #
+# |  etex                                                               | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
-# |---------------------------------------------------------------------| #
-# | Thanks to the arXMLiv group for initial implementation              | #
-# |    http://arxmliv.kwarc.info/                                       | #
-# | Released to the Public Domain                                       | #
 # |---------------------------------------------------------------------| #
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
@@ -19,9 +15,8 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-# This extended iftex is designed to replace the original iftex and also the packages
-# ifetex, ifluatex, ifvtex, ifxetex, ifpdf
-RequirePackage('iftex');
+DefPrimitive('\AddLineBeginAux{}',     undef);
+DefPrimitive('\AddLineBeginMainAux{}', undef);
+DefPrimitive('\AddLineBeginPartAux{}', undef);
 
-#======================================================================
 1;
