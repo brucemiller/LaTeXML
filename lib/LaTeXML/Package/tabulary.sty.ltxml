@@ -19,9 +19,9 @@ RequirePackage('array');
 
 # \tabularx{Dimension}[]{}
 DefMacro('\tabulary{}[]{}',
-  '\@tabular@bindings{#3}[vattach=#2,width=#1]\@@tabulary{#1}[#2]{#3}\@start@alignment');
+  '\@tabular@bindings{#3}[vattach=#2,width=#1]\@@tabulary{#1}[#2]{#3}\@start@alignment', locked => 1);
 DefMacro('\endtabulary',
-  '\@finish@alignment\@end@tabulary');
+  '\@finish@alignment\@end@tabulary', locked => 1);
 DefPrimitive('\@end@tabulary', sub { $_[0]->egroup; });
 DefConstructor('\@@tabulary{Dimension}[] Undigested DigestedBody',
   '#4',
@@ -46,5 +46,8 @@ DefColumnType('J', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),
       after => Tokens(T_END),
       align => 'justify'); return; });
+
+# stub in for macros that try to redefine it.
+DefMacro('\TY@tabular', '\relax');
 
 1;
