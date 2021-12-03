@@ -5,11 +5,11 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <resource src="ltx-svjour.css" type="text/css"/>
-  <title>The Title Text</title>
-  <creator role="author">
+  <title class="ltx_frontmatter">The Title Text</title>
+  <creator class="ltx_frontmatter" role="author">
     <personname>The Authors Names</personname>
   </creator>
-  <abstract name="Abstract">
+  <abstract class="ltx_frontmatter" name="Abstract">
     <p>The abstract text.</p>
   </abstract>
   <section inlist="toc" xml:id="S1">

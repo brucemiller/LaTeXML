@@ -5035,11 +5035,10 @@ sub insertFrontMatter {
       local $LaTeXML::BOX = Box('', $STATE->lookupValue('font'), '', T_SPACE);
       foreach my $item (@$list) {
         my ($tag, $attr, @stuff) = @$item;
-        # add a dedicated class for frontmatter notes,
+        # add a dedicated class for frontmatter items,
         # in the case we want to style those uniformly.
-        if ($tag eq 'ltx:note') {
-          $attr ||= {};
-          $$attr{class} = ($$attr{class} ? $$attr{class} . ' ' : '') . 'ltx_note_frontmatter'; }
+        $attr ||= {};
+        $$attr{class} = ($$attr{class} ? $$attr{class} . ' ' : '') . 'ltx_frontmatter';
         $document->openElement($tag, ($attr ? %$attr : ()),
           (scalar(@stuff) && $document->canHaveAttribute($tag, 'font')
             ? (font => $stuff[0]->getFont, _force_font => 'true') : ()));
