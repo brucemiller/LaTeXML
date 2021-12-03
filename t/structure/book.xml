@@ -4,14 +4,14 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML" class="ltx_authors_1line">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-book.css" type="text/css"/>
-  <title class="ltx_frontmatter">A Pretend Book</title>
-  <creator class="ltx_frontmatter" role="author">
+  <title>A Pretend Book</title>
+  <creator role="author">
     <personname>John Q. Author</personname>
   </creator>
-  <creator before="  " class="ltx_frontmatter" role="author">
+  <creator before="  " role="author">
     <personname>Someone Else</personname>
   </creator>
-  <date class="ltx_frontmatter" role="creation">December 31, 1999</date>
+  <date role="creation">December 31, 1999</date>
   <TOC lists="toc" select="ltx:part | ltx:chapter | ltx:section | ltx:subsection | ltx:appendix | ltx:index | ltx:bibliography">
     <title>Contents</title>
   </TOC>

@@ -8,11 +8,11 @@
 <document xmlns="http://dlmf.nist.gov/LaTeXML" class="ltx_authors_1line" prefix="cc: http://creativecommons.org/ns# dcterms: http://purl.org/dc/terms/ foaf: http://xmlns.com/foaf/0.1/ schema: http://schema.org/ xsd: http://www.w3.org/2001/XMLSchema#">
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
-  <title class="ltx_frontmatter">Alice’s Blog</title>
-  <creator class="ltx_frontmatter" role="author">
+  <title>Alice’s Blog</title>
+  <creator role="author">
     <personname>Alice</personname>
   </creator>
-  <rdf aboutlabelref="LABEL:blog:photos" class="ltx_frontmatter" property="cc:license" resourcelabelref="LABEL:license"/>
+  <rdf aboutlabelref="LABEL:blog:photos" property="cc:license" resourcelabelref="LABEL:license"/>
   <rdf about="" property="foaf:neighbor" resourceidref="fredblog"/>
   <section inlist="toc" labels="LABEL:sidebar" resourceidref="me" typeof="foaf:Person" xml:id="S1">
     <tags>
