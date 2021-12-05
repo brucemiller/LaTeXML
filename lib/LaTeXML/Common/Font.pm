@@ -452,7 +452,8 @@ my @mathfonts = (qw(cmm cmsy cmex amsa amsb cmr));
 sub getMetric {
   my ($self, $char) = @_;
   if (defined $char) {
-    foreach my $name (($self->getFamily eq 'math' ? @mathfonts : @textfonts)) {
+    my @fonts = ($self->getFamily eq 'math' ? @mathfonts : @textfonts);
+    foreach my $name (@fonts) {
       my $m = $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{$name};
       return $m if $$m{sizes}{$char}; } }
   return $$LaTeXML::Common::Font::StandardMetrics::STDMETRICS{cmr}; }
@@ -489,6 +490,7 @@ sub computeStringSize {
   if ((!defined $string) || ($string eq '') || ($self->getFamily eq 'nullfont')) {
     return (Dimension(0), Dimension(0), Dimension(0)); }
   my $size = ($self->getSize || DEFSIZE() || 10); ## * $mathstylesize{ $self->getMathstyle || 'text' };
+  my $ismath = $self->getFamily eq 'math';
   my ($w, $h, $d) = (0, 0, 0);
   my @chars = split(//, $string);
   while (@chars) {
@@ -500,7 +502,7 @@ sub computeStringSize {
     $w += int($cw * $size);
     if (my $kern = $chars[0] && $$metric{kerns}{ $char . $chars[0] }) {
       $w += int($size * $kern); }
-    if ($self->getFamily eq 'math') {
+    if ($ismath) {
       $w += int($size * $ci); }
     $h = max($h, int($ch * $size));
     $d = max($d, int($cd * $size)); }

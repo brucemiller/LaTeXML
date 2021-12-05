@@ -47,6 +47,7 @@ my @SCALES = (1, 10, 100, 1000, 10000, 100000);
 our $EPSILON = 1.0;
 while (1.0 + $EPSILON / 2 != 1) {
   $EPSILON /= 2.0; }
+our $ROUNDING_HALF = 0.5 * (1 - $EPSILON);
 
 # Round $number to $prec decimals (0...6)
 # attempting to do so portably.
@@ -64,8 +65,7 @@ sub roundto {
 # in a (hopefully) Knuthian manner (like round_decimals \S102 in Tex The Program)
 sub kround {
   my ($number) = @_;
-  my $half = 0.5 * (1 - $EPSILON);
-  return int($number < 0 ? $number - $half : $number + $half); }
+  return int($number < 0 ? $number - $ROUNDING_HALF : $number + $ROUNDING_HALF); }
 
 sub unlist {
   my ($self) = @_;
