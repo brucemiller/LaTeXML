@@ -221,8 +221,9 @@ DefConstructor('\graphicspath DirectoryList', sub {
   properties => sub {
     my ($stomach, $paths) = @_;
     my @paths = ();
+    my $root  = $STATE->lookupValue('SOURCEDIRECTORY') || '';
     foreach my $dir ($paths->getValues) {
-      my $path = pathname_absolute(pathname_canonical(ToString($dir)));
+      my $path = pathname_absolute(pathname_canonical(ToString($dir)), $root);
       push(@paths, $path);
       PushValue(GRAPHICSPATHS => $path); }
     return (paths => [@paths]); });
@@ -281,4 +282,3 @@ DefPrimitive('\Gscale@div DefToken Dimension Dimension', sub {
 
 #======================================================================
 1;
-
