@@ -158,7 +158,7 @@ sub format_tex {
 # This is the default
 sub setTeXImage {
   my ($self, $doc, $node, $path, $width, $height, $depth) = @_;
-  $node->setAttribute('imagesrc',    $path);
+  $node->setAttribute('imagesrc',    pathname_to_url($path));
   $node->setAttribute('imagewidth',  $width);
   $node->setAttribute('imageheight', $height);
   $node->setAttribute('imagedepth',  $depth) if defined $depth;
