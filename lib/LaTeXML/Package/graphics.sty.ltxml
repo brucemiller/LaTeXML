@@ -223,9 +223,7 @@ DefConstructor('\graphicspath DirectoryList', sub {
     my @paths = ();
     my $root  = $STATE->lookupValue('SOURCEDIRECTORY') || '';
     foreach my $dir ($paths->getValues) {
-      $dir = pathname_canonical(ToString($dir));
-      $dir = pathname_concat($root, $dir) if $root && !pathname_is_absolute($dir);
-      my $path = pathname_absolute($dir);
+      my $path = pathname_absolute(pathname_canonical(ToString($dir)), $root);
       push(@paths, $path);
       PushValue(GRAPHICSPATHS => $path); }
     return (paths => [@paths]); });
