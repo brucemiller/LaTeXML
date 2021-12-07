@@ -17,7 +17,7 @@ use LaTeXML::Common::Object;
 use LaTeXML::Core::Token;
 use base qw(LaTeXML::Common::Object);
 use base qw(Exporter);
-our @EXPORT = (qw(&Number &roundto));
+our @EXPORT = (qw(&Number &roundto &kround));
 
 #======================================================================
 # Exported constructor.
@@ -31,7 +31,7 @@ sub Number {
 sub new {
   my ($class, $number) = @_;
   $number = ToString($number) if ref $number;
-  return bless [$number || "0"], $class; }
+  return bless [int($number) || "0"], $class; }    # truncate, not round
 
 sub valueOf {
   my ($self) = @_;
@@ -44,9 +44,10 @@ sub toString {
 my @SCALES = (1, 10, 100, 1000, 10000, 100000);
 
 # smallest number that makes a difference added to 1 in Perl's float format.
-my $EPSILON = 1.0;
+our $EPSILON = 1.0;
 while (1.0 + $EPSILON / 2 != 1) {
   $EPSILON /= 2.0; }
+our $ROUNDING_HALF = 0.5 * (1 - $EPSILON);
 
 # Round $number to $prec decimals (0...6)
 # attempting to do so portably.
@@ -60,13 +61,11 @@ sub roundto {
   my $n = $number * $scale * (1 + 100 * $EPSILON);
   return int($n < -$EPSILON ? $n - 0.5 : ($n > $EPSILON ? $n + 0.5 : 0.0)) / $scale; }
 
-sub ptValue {
-  my ($self, $prec) = @_;
-  return roundto($$self[0] / 65536, $prec); }
-
-sub pxValue {
-  my ($self, $prec) = @_;
-  return roundto($$self[0] / 65536 * ($STATE->lookupValue('DPI') || 100 / 72.27), $prec); }
+# An attempt at rounding floats to integers (like scaled points),
+# in a (hopefully) Knuthian manner (like round_decimals \S102 in Tex The Program)
+sub kround {
+  my ($number) = @_;
+  return int($number < 0 ? $number - $ROUNDING_HALF : $number + $ROUNDING_HALF); }
 
 sub unlist {
   my ($self) = @_;

@@ -1,0 +1,372 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Dimensions</title>
+    <para class="ltx_noindent" xml:id="S1.p1">
+      <p>Dimen 0.1pt = 0.1pt (6554).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p2">
+      <p>Dimen 1sp = 0.00002pt (1).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p3">
+      <p>Dimen 1pt = 1.0pt (65536).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p4">
+      <p>Dimen 1pc = 12.0pt (786432).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p5">
+      <p>Dimen 1in = 72.26999pt (4736286).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p6">
+      <p>Dimen 1bp = 1.00374pt (65781).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p7">
+      <p>Dimen 1cm = 28.45274pt (1864679).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p8">
+      <p>Dimen 1mm = 2.84526pt (186467).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p9">
+      <p>Dimen 1dd = 1.07pt (70124).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p10">
+      <p>Dimen 1cc = 12.8401pt (841489).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p11">
+      <p>Dimen 1px = 1.00374pt (65781).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p12">
+      <p>Dimen 1em = 10.00002pt (655361).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p13">
+      <p>Dimen 1ex = 4.30554pt (282168).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p14">
+      <p>Dimen 0.0ex = 0.0pt (0).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p15">
+      <p>Dimen 0.01ex = 0.04303pt (2820).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p16">
+      <p>Dimen 0.1ex = 0.43057pt (28218).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p17">
+      <p>Dimen “twopt  = 2.0pt (131072).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p18">
+      <p>Dimen -“twopt  = -2.0pt (-131072).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p19">
+      <p>Dimen -“twoskip  = -2.0pt (-131072).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p20">
+      <p>Dimen -0.5“twopt  = -1.0pt (-65536).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p21">
+      <p>Dimen 0.5“twopt  = 1.0pt (65536).</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S1.p22">
+      <p>Dimen 1.2 = 1.2pt (78643).</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Glue</title>
+    <para class="ltx_noindent" xml:id="S2.p1">
+      <p>Skip 1em plus 1fil minus 2fill = 10.00002pt plus 1.0fil minus 2.0fill.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S2.p2">
+      <p>Skip 0.1ex plus 0.01ex minus 1ex = 0.43057pt plus 0.04303pt minus 4.30554pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S2.p3">
+      <p>Skip “twopt  = 2.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S2.p4">
+      <p>Skip “twoskip  = 2.0pt plus 2.0pt minus 2.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S2.p5">
+      <p>Skip -“twopt  = -2.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S2.p6">
+      <p>Skip -“twoskip  = -2.0pt plus -2.0pt minus -2.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S2.p7">
+      <p>Skip 3“twopt plus 5“twopt minus 5“twopt  = 6.0pt plus 10.0pt minus 10.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S2.p8">
+      <p>Skip 3“twoskip plus 5“twoskip minus 5“twoskip  = 6.0pt plus 10.0pt minus 10.0pt.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Muglue</title>
+    <para class="ltx_noindent" xml:id="S3.p1">
+      <p>MuSkip 1mu plus 1fil minus 2fill = 1.0mu plus 1.0fil minus 2.0fill.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p2">
+      <p>MuSkip 0.1mu plus 0.01mu minus 1mu = 0.1mu plus 0.01mu minus 1.0mu.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p3">
+      <p>MuSkip “twomuskip  = 2.0mu plus 2.0mu minus 2.0mu.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p4">
+      <p>MuSkip -“twomuskip  = -2.0mu plus -2.0mu minus -2.0mu.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S3.p5">
+      <p>MuSkip 3“twomuskip plus 5“twomuskip minus 5“twomuskip  = 6.0mu plus 10.0mu minus 10.0mu.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
+    <title><tag close=" ">4</tag>Text</title>
+    <para class="ltx_noindent" xml:id="S4.p1">
+      <p>Text: ‘a’ is 5.00002pt x 4.30554pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S4.p2">
+      <p>Text: ‘b’ is 5.55557pt x 6.94444pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S4.p3">
+      <p>Text: ‘c’ is 4.44444pt x 4.30554pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S4.p4">
+      <p>Text: ‘d’ is 5.55557pt x 6.94444pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S4.p5">
+      <p>Text: ‘ab’ is 10.55559pt x 6.94444pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S4.p6">
+      <p>Text: ‘abc’ is 15.27782pt x 6.94444pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S4.p7">
+      <p>Text: ‘abcd’ is 20.83339pt x 6.94444pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S4.p8">
+      <p>Text: ‘efg’ is 12.50003pt x 6.94444pt + 1.94444pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S4.p9">
+      <p>Text: ‘efgij’ is 18.33339pt x 6.94444pt + 1.94444pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S4.p10">
+      <p>Text: ‘Some Text’ is 46.66675pt x 6.83331pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S4.p11">
+      <p>Text: ‘ ’ is 1.66672pt x 0.0pt + 0.0pt.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
+    <title><tag close=" ">5</tag>Vertical</title>
+    <para class="ltx_noindent" xml:id="S5.p1">
+      <p>Text: ‘<inline-block vattach="bottom">
+          <p>abc</p>
+        </inline-block>’ is 15.27782pt x 6.94444pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S5.p2">
+      <p>Text: ‘<inline-block vattach="bottom">
+          <p>abc</p>
+          <p>abc</p>
+          <p>abc</p>
+        </inline-block>’ is 15.27782pt x 30.94444pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S5.p3">
+      <p>Text: ‘<inline-block vattach="top">
+          <p>abc</p>
+          <p>abc</p>
+          <p>abc</p>
+        </inline-block>’ is 15.27782pt x 6.94444pt + 24.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S5.p4">
+      <p>Text: ‘<inline-block>
+          <p>abc</p>
+          <p>abc</p>
+          <p>abc</p>
+        </inline-block>’ is 15.27782pt x 26.83333pt + 0.0pt.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S6">
+    <tags>
+      <tag>6</tag>
+      <tag role="refnum">6</tag>
+      <tag role="typerefnum">§6</tag>
+    </tags>
+    <title><tag close=" ">6</tag>Math</title>
+    <para class="ltx_noindent" xml:id="S6.p1">
+      <p>Math: ‘ ’ is 0.55554pt x 0.0pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p2">
+      <p>Math: ‘ ’ is 1.66663pt x 0.0pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p3">
+      <p>Math: ‘’ is -1.66663pt x 0.0pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p4">
+      <p>Math: ‘ ’ is 2.22217pt x 0.0pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p5">
+      <p>Math: ‘ ’ is 2.77771pt x 0.0pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p6">
+      <p>Math: ‘<Math mode="inline" tex="a" text="a" xml:id="S6.p6.m1">
+          <XMath>
+            <XMTok font="italic" role="UNKNOWN">a</XMTok>
+          </XMath>
+        </Math>’ is 5.28589pt x 4.30554pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p7">
+      <p>Math: ‘<Math mode="inline" tex="ab" text="a * b" xml:id="S6.p7.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>’ is 9.57755pt x 6.94444pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p8">
+      <p>Math: ‘<Math mode="inline" tex="\mapstochar" text="maps-to" xml:id="S6.p8.m1">
+          <XMath>
+            <XMTok meaning="maps-to" name="mapstochar" role="ARROW">↦</XMTok>
+          </XMath>
+        </Math>’ is 0.00002pt x 3.66875pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p9">
+      <p>Math: ‘<Math mode="inline" tex="a=b" text="a = b" xml:id="S6.p9.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>’ is 22.91077pt x 6.94444pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p10">
+      <p>Math: ‘<Math mode="inline" tex="g" text="g" xml:id="S6.p10.m1">
+          <XMath>
+            <XMTok font="italic" role="UNKNOWN">g</XMTok>
+          </XMath>
+        </Math>’ is 5.12846pt x 4.30554pt + 1.94444pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p11">
+      <p>Math: ‘<Math mode="inline" tex="abcde" text="a * b * c * d * e" xml:id="S6.p11.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">a</XMTok>
+              <XMTok font="italic" role="UNKNOWN">b</XMTok>
+              <XMTok font="italic" role="UNKNOWN">c</XMTok>
+              <XMTok font="italic" role="UNKNOWN">d</XMTok>
+              <XMTok font="italic" role="UNKNOWN">e</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>’ is 23.76624pt x 6.94444pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p12">
+      <p>Math: ‘<Math mode="inline" tex="fghij" text="f * g * h * i * j" xml:id="S6.p12.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">f</XMTok>
+              <XMTok font="italic" role="UNKNOWN">g</XMTok>
+              <XMTok font="italic" role="UNKNOWN">h</XMTok>
+              <XMTok font="italic" role="UNKNOWN">i</XMTok>
+              <XMTok font="italic" role="UNKNOWN">j</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>’ is 24.99792pt x 6.94444pt + 1.94444pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p13">
+      <p>Math: ‘<Math mode="inline" tex="klmno" text="k * l * m * n * o" xml:id="S6.p13.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">k</XMTok>
+              <XMTok font="italic" role="UNKNOWN">l</XMTok>
+              <XMTok font="italic" role="UNKNOWN">m</XMTok>
+              <XMTok font="italic" role="UNKNOWN">n</XMTok>
+              <XMTok font="italic" role="UNKNOWN">o</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>’ is 28.33113pt x 6.94444pt + 0.0pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p14">
+      <p>Math: ‘<Math mode="inline" tex="pqrst" text="p * q * r * s * t" xml:id="S6.p14.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">p</XMTok>
+              <XMTok font="italic" role="UNKNOWN">q</XMTok>
+              <XMTok font="italic" role="UNKNOWN">r</XMTok>
+              <XMTok font="italic" role="UNKNOWN">s</XMTok>
+              <XMTok font="italic" role="UNKNOWN">t</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>’ is 22.94214pt x 6.15079pt + 1.94444pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p15">
+      <p>Math: ‘<Math mode="inline" tex="uvwxyz" text="u * v * w * x * y * z" xml:id="S6.p15.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">u</XMTok>
+              <XMTok font="italic" role="UNKNOWN">v</XMTok>
+              <XMTok font="italic" role="UNKNOWN">w</XMTok>
+              <XMTok font="italic" role="UNKNOWN">x</XMTok>
+              <XMTok font="italic" role="UNKNOWN">y</XMTok>
+              <XMTok font="italic" role="UNKNOWN">z</XMTok>
+            </XMApp>
+          </XMath>
+        </Math>’ is 34.42601pt x 4.30554pt + 1.94444pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p16">
+      <p>Text: ‘g(x)’ is 18.05562pt x 7.5pt + 2.5pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p17">
+      <p>Math: ‘<Math mode="inline" tex="g(x)" text="g * x" xml:id="S6.p17.m1">
+          <XMath>
+            <XMApp>
+              <XMTok meaning="times" role="MULOP">⁢</XMTok>
+              <XMTok font="italic" role="UNKNOWN">g</XMTok>
+              <XMDual>
+                <XMRef idref="S6.p17.m1.1"/>
+                <XMWrap>
+                  <XMTok role="OPEN" stretchy="false">(</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="S6.p17.m1.1">x</XMTok>
+                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                </XMWrap>
+              </XMDual>
+            </XMApp>
+          </XMath>
+        </Math>’ is 18.62154pt x 7.5pt + 2.5pt.</p>
+    </para>
+    <para class="ltx_noindent" xml:id="S6.p18">
+      <p>Math: ‘      ’ is 18.62154pt x 7.5pt + 2.5pt.</p>
+    </para>
+  </section>
+</document>

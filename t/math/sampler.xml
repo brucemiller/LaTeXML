@@ -343,7 +343,7 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
           <tag>(8)</tag>
           <tag role="refnum">8</tag>
         </tags>
-        <Math mode="display" tex="xy,\qquad x\hskip 10.0pty,\qquad x\hskip 20.0pty" text="list@(x * y, x, y, x, y)" xml:id="S1.E8.m1">
+        <Math mode="display" tex="xy,\qquad x\hskip 10.00002pty,\qquad x\hskip 20.00003pty" text="list@(x * y, x, y, x, y)" xml:id="S1.E8.m1">
           <XMath>
             <XMDual>
               <XMApp>
@@ -428,7 +428,7 @@ and <text font="typewriter">m:mstyle</text>:</p>
           <tag>(10)</tag>
           <tag role="refnum">10</tag>
         </tags>
-        <Math mode="display" tex="\binom{a}{b}\genfrac{}{}{0.0pt}{}{a}{b},\qquad\genfrac{}{}{0.043pt}{}{a}{b},%&#10;\qquad\genfrac{}{}{0.43pt}{}{a}{b},\qquad\genfrac{}{}{4.3pt}{}{a}{b}" text="list@(binomial@(a, b) * (a FRACOP b), a / b, a / b, a / b)" xml:id="S2.E10.m1">
+        <Math mode="display" tex="\binom{a}{b}\genfrac{}{}{0.0pt}{}{a}{b},\qquad\genfrac{}{}{0.04303pt}{}{a}{b},%&#10;\qquad\genfrac{}{}{0.43057pt}{}{a}{b},\qquad\genfrac{}{}{4.30554pt}{}{a}{b}" text="list@(binomial@(a, b) * (a FRACOP b), a / b, a / b, a / b)" xml:id="S2.E10.m1">
           <XMath>
             <XMDual>
               <XMApp>
@@ -846,7 +846,7 @@ and <text font="typewriter">m:mstyle</text>:</p>
                   <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m3.1">x</XMTok>
                   <XMTok role="CLOSE" stretchy="false">)</XMTok>
                 </XMWrap>
-                <XMTok meaning="plus" role="ADDOP" rpadding="30.0pt">+</XMTok>
+                <XMTok meaning="plus" role="ADDOP" rpadding="18.6pt">+</XMTok>
                 <XMTok meaning="plus" role="ADDOP">+</XMTok>
                 <XMTok font="italic" role="UNKNOWN">h</XMTok>
                 <XMWrap>
@@ -872,7 +872,7 @@ and <text font="typewriter">m:mstyle</text>:</p>
                         <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m2.1">x</XMTok>
                         <XMTok role="CLOSE" stretchy="false">)</XMTok>
                       </XMWrap>
-                      <XMTok meaning="plus" role="ADDOP" rpadding="30.0pt">+</XMTok>
+                      <XMTok meaning="plus" role="ADDOP" rpadding="18.6pt">+</XMTok>
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
                       <XMTok font="italic" role="UNKNOWN">h</XMTok>
                       <XMWrap>
@@ -1100,7 +1100,7 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                         <XMApp>
                           <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                           <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                          <XMApp width="0pt" xoffset="-18.4pt">
+                          <XMApp width="0pt" xoffset="-14.9pt">
                             <XMTok meaning="multirelation"/>
                             <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
                             <XMTok fontsize="70%" meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
@@ -1134,10 +1134,10 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                           <XMTok meaning="equals" role="RELOP">=</XMTok>
                           <XMTok font="italic" role="UNKNOWN">X</XMTok>
                           <XMApp>
-                            <XMApp lpadding="14.6pt" role="SUMOP" scriptpos="mid">
+                            <XMApp lpadding="9.6pt" role="SUMOP" scriptpos="mid">
                               <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                               <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                              <XMApp width="0.0pt" xoffset="-18.4pt">
+                              <XMApp width="0.0pt" xoffset="-14.9pt">
                                 <XMTok meaning="multirelation"/>
                                 <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
                                 <XMTok fontsize="70%" meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
@@ -1164,10 +1164,10 @@ some as accents, and pre-scripts (<text font="typewriter">m:multiscripts</text>,
                           <XMTok meaning="equals" role="RELOP">=</XMTok>
                           <XMTok font="italic" role="UNKNOWN">X</XMTok>
                           <XMApp>
-                            <XMApp role="SUMOP" rpadding="14.6pt" scriptpos="mid">
+                            <XMApp role="SUMOP" rpadding="9.6pt" scriptpos="mid">
                               <XMTok role="SUBSCRIPTOP" scriptpos="mid1"/>
                               <XMTok mathstyle="display" meaning="sum" role="SUMOP" scriptpos="mid">∑</XMTok>
-                              <XMApp width="0.0pt" xoffset="-18.4pt">
+                              <XMApp width="0.0pt" xoffset="-14.9pt">
                                 <XMTok meaning="multirelation"/>
                                 <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
                                 <XMTok fontsize="70%" meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>

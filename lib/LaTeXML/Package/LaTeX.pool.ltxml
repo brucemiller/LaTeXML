@@ -4362,7 +4362,7 @@ DefPrimitive('\newskip DefToken',   sub { DefRegisterI($_[1], undef, Glue(0)); }
 DefPrimitive('\newmuskip DefToken', sub { DefRegisterI($_[1], undef, MuGlue(0)); });
 DefPrimitive('\newtoks DefToken',   sub { DefRegisterI($_[1], undef, Tokens()); });
 
-DefRegister('\fill', Glue(0, '1fill'));
+DefRegister('\fill', Glue('0pt plus 1fill'));
 
 #======================================================================
 # C.13.2 Space
@@ -4804,10 +4804,10 @@ DefConstructor('\pic@makebox@ Undigested RequiredKeyVals Pair []{}',
       $ww  = picScale($size->getX);
       $hh  = picScale($size->getY);
       $pos = ($pos ? lc(ToString($pos)) : '');
-      if    ($pos =~ /l/) { $x = Number(0); }
+      if    ($pos =~ /l/) { $x = Dimension(0); }
       elsif ($pos =~ /r/) { $x = $ww->subtract($w); }
       else                { $x = $ww->subtract($w)->divide(2); }
-      if ($pos =~ /b/)    { $y = Number(0); }
+      if ($pos =~ /b/)    { $y = Dimension(0); }
       elsif ($pos =~ /t/) { $y = $hh->subtract($ht); }
       else                { $y = $hh->subtract($ht)->divide(2); } }
     my $fw = ($ww && $ww->valueOf ? $ww : $w);
@@ -4852,11 +4852,14 @@ DefConstructor('\shortstack[]{}  OptionalMatch:* [Dimension]',
   beforeDigest => sub { reenterTextMode();
     # then RE-RE-define this one!!!
     Let("\\\\", '\@shortstack@cr');
+    AssignRegister('\baselineskip' => Glue('-1pt'));
+    AssignRegister('\lineskip'     => Glue('3pt'));
     $_[0]->bgroup; },
-  afterDigest => sub { $_[0]->egroup; },
+  afterDigest => sub { $_[1]->getSize;    # precompute while binding in effect
+    $_[0]->egroup; },
   # Note: does not get layout=vertical, since linebreaks are explicit
   properties => { align => sub { ($_[1] ? $alignments{ ToString($_[1]) } : undef); },
-    vattach => 'top' },    # for size computation
+    vattach => 'bottom' },                # for size computation
   mode => 'text');
 
 DefMacro('\multiput Pair Pair {}{}', sub {

@@ -246,7 +246,7 @@ sub handleTemplate {
 
 # If it is a column ending token, Returns the token, a keyword and whether it is "hidden"
 our @column_ends = (
-  [T_ALIGN, 'align', 0],
+  [T_ALIGN,               'align',  0],
   [T_CS('\cr'),           'cr',     0],
   [T_CS('\crcr'),         'crcr',   0],
   [T_CS('\hidden@cr'),    'cr',     1],
@@ -331,7 +331,7 @@ sub readXToken {
         push(@{ $$self{pending_comments} }, $token); }
       elsif ($cc == CC_MARKER) {
         $self->handleMarker($token); } }
-    if (!defined $token) {           # Else read from current mouth
+    if (!defined $token) {    # Else read from current mouth
       while (($token = $$self{mouth}->readToken()) && $CATCODE_HOLD[$cc = $$token[1]]) {
         if ($cc == CC_COMMENT) {
           return $token if $commentsok;
@@ -341,7 +341,7 @@ sub readXToken {
     ProgressStep() if ($$self{progress}++ % $TOKEN_PROGRESS_QUANTUM) == 0;
     if (!defined $token) {
       return unless $autoclose && $$self{autoclose} && @{ $$self{mouthstack} };
-      $self->closeMouth; }           # Next input stream.
+      $self->closeMouth; }    # Next input stream.
         # Handle \noexpand and  smuggled tokens; either expand to $$token[2] or defer till later
     elsif (my $unexpanded = $$token[2]) {    # Inline get_dont_expand
       return ($cc != CC_SMUGGLE_THE) || $LaTeXML::SMUGGLE_THE ? $token : $unexpanded; }
@@ -659,7 +659,7 @@ sub readTokensValue {
   my $token = $self->readNonSpace;
   if (!defined $token) {
     return; }
-  elsif ($$token[1] == CC_BEGIN) {             # Inline ->getCatcode!
+  elsif ($$token[1] == CC_BEGIN) {    # Inline ->getCatcode!
     return $self->readBalanced; }
   elsif (my $defn = $STATE->lookupDefinition($token)) {
     if ($defn->isRegister eq 'Tokens') {
@@ -670,7 +670,7 @@ sub readTokensValue {
         $self->unread(@{$x}); }
       return $self->readTokensValue; }
     else {
-      return $token; } }                       # ?
+      return $token; } }    # ?
   else {
     return $token; } }
 
@@ -805,10 +805,9 @@ sub readDimension {
     return Dimension($s * $d->valueOf); }
   elsif (defined($d = $self->readFactor)) {
     my $unit = $self->readUnit;
-    if (!defined $unit) {
-      Warn('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
-      $unit = 65536; }
-    return Dimension($s * $d * $unit); }
+    if (!defined $unit) {    # but leave undefined (effectively not rescaled)
+      Warn('expected', '<unit>', $self, "Illegal unit of measure (pt inserted)."); }
+    return Dimension(fixpoint($s * $d, $unit)); }
   else {
     Warn('expected', '<number>', $self, "Missing number (Dimension), treated as zero.",
       "while processing " . ToString($LaTeXML::CURRENT_TOKEN), $self->showUnexpected);
@@ -861,9 +860,8 @@ sub readMuDimension {
   if (defined(my $m = $self->readFactor)) {
     my $munit = $self->readMuUnit;
     if (!defined $munit) {
-      Warn('expected', '<unit>', $self, "Illegal unit of measure (mu inserted).");
-      $munit = $STATE->convertUnit('mu'); }
-    return MuDimension($s * $m * $munit); }
+      Warn('expected', '<unit>', $self, "Illegal unit of measure (mu inserted)."); }
+    return MuDimension(fixpoint($s * $m, $munit)); }
   elsif (defined($m = $self->readInternalMuGlue)) {
     return MuDimension($s * $m->valueOf); }
   else {
@@ -874,7 +872,7 @@ sub readMuUnit {
   my ($self) = @_;
   if (my $m = $self->readKeyword('mu')) {
     $self->skip1Space(1);
-    return $STATE->convertUnit($m); }
+    return $UNITY; }    # effectively, scaled mu
   elsif ($m = $self->readInternalMuGlue) {
     return $m->valueOf; }
   else {
@@ -914,19 +912,13 @@ sub readRubber {
     $f = ($mu ? $self->readMuDimension : $self->readDimension);
     return ($f->valueOf * $s, 0); }
   elsif (defined(my $fil = $self->readKeyword('filll', 'fill', 'fil'))) {
-    return ($s * $f, $FILLS{$fil}); }
-  elsif ($mu) {
-    my $u = $self->readMuUnit;
-    if (!defined $u) {
-      Warn('expected', '<unit>', $self, "Illegal unit of measure (mu inserted).");
-      $u = $STATE->convertUnit('mu'); }
-    return ($s * $f * $u, 0); }
+    return (fixpoint($s * $f), $FILLS{$fil}); }
   else {
-    my $u = $self->readUnit;
+    my $u = ($mu ? $self->readMuUnit : $self->readUnit);
     if (!defined $u) {
-      Warn('expected', '<unit>', $self, "Illegal unit of measure (pt inserted).");
-      $u = 65536; }
-    return ($s * $f * $u, 0); } }
+      Warn('expected', '<unit>', $self,
+        "Illegal unit of measure (" . ($mu ? 'mu' : 'pt') . " inserted)."); }
+    return (fixpoint($s * $f, $u), 0); } }
 
 # Return a glue value or undef.
 sub readInternalGlue {

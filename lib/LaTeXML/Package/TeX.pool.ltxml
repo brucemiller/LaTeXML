@@ -1805,7 +1805,7 @@ sub decodeMathChar {
 
 DefConstructor('\mathchar Number',
   "?#glyph(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)",
-  sizer       => '#1',
+  sizer       => '#glyph',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
@@ -2085,6 +2085,7 @@ DefConstructor('\vbox BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
     my @block = insertBlock($document, $contents, vattach => 'bottom'); },
   sizer       => '#2',
+  properties  => { layout => 'vertical', vattach => 'bottom' },
   mode        => 'text',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
@@ -2100,6 +2101,7 @@ DefConstructor('\vtop BoxSpecification VBoxContents', sub {
     my ($document, $spec, $contents, %props) = @_;
     insertBlock($document, $contents, vattach => 'top'); },
   sizer       => '#2',
+  properties  => { layout => 'vertical', vattach => 'baseline' },
   mode        => 'text',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
@@ -2197,12 +2199,15 @@ DefConstructor('\hrule RuleSpecification',
 DefPrimitive('{', sub {
     my ($stomach) = @_;
     $stomach->bgroup;
-    my $open   = Box(undef, undef, undef, T_BEGIN);
+    my $open   = Box(undef, undef, undef, T_BEGIN, isEmpty => 1);
     my $ismath = $STATE->lookupValue('IN_MATH');
     my @body   = $stomach->digestNextBody();
     List($open, @body, mode => ($ismath ? 'math' : 'text')); });
 
-DefPrimitive('}', sub { my $f = LookupValue('font'); $_[0]->egroup; Box(undef, $f, undef, T_END); });
+DefPrimitive('}', sub {
+    my $f = LookupValue('font');
+    $_[0]->egroup;
+    Box(undef, $f, undef, T_END, isEmpty => 1); });
 
 # These are for those screwy cases where you need to create a group like box,
 # more than just bgroup, egroup,
@@ -2496,8 +2501,8 @@ DefColumnType('r', sub {
     $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\hfil'))); return; });
 
 DefColumnType('p{Dimension}', sub {
-    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN),
-      after => Tokens(T_END),
+    $LaTeXML::BUILD_TEMPLATE->addColumn(before => Tokens(T_CS('\vtop'), T_BEGIN, T_CS('\hbox'), T_BEGIN),
+      after => Tokens(T_END, T_END),
       align => 'justify', width => $_[1]); return; });
 
 DefColumnType('*{Number}{}', sub {
@@ -4647,10 +4652,10 @@ DefPrimitive('\newinsert Token', sub { DefRegisterI($_[1], undef, Number(0)); })
 
 # TeX plain uses \newdimen, etc. for these.
 # Is there any advantage to that?
-DefRegister('\maxdimen',  Dimension(16383.99999 * 65536));
-DefRegister('\hideskip',  Glue(-1000 * 65536, '1fill'));
+DefRegister('\maxdimen',  Dimension(16383.99999 * $UNITY));
+DefRegister('\hideskip',  Glue('-1000pt plus 1fill'));
 DefRegister('\centering', Glue('0pt plus 1000pt minus 1000pt'));
-DefRegister('\p@',        Dimension(65536));
+DefRegister('\p@',        Dimension($UNITY));
 DefRegister('\z@',        Dimension(0));
 DefRegister('\z@skip',    Glue(0, 0, 0));
 
@@ -5419,10 +5424,14 @@ Let('\bye', '\end');
 Let('\sp', T_SUPER);
 Let('\sb', T_SUB);
 
-DefPrimitiveI('\,', undef, sub {
+DefPrimitiveI('\lx@thinmuskip', undef, sub {
     Box("\x{2009}", undef, undef, T_CS('\,'),
       name  => 'thinspace', isSpace => 1,
       width => LookupValue('\thinmuskip')); });
+DefPrimitiveI('\lx@thinspace', undef, sub {
+    Box("\x{2009}", undef, undef, T_CS('\,'),
+      name => 'thinspace', width => Dimension('0.16667em'), isSpace => 1); });
+DefMacroI('\,', undef, '\ifmmode\lx@thinmuskip\else\lx@thinspace\fi');
 
 DefPrimitiveI('\!', undef, sub {
     Box("\x{200B}", undef, undef, T_CS('\!'),    # zero width space
@@ -6432,8 +6441,8 @@ DefConstructor('\lx@hack@bordermatrix{}', sub {
     $document->absorb($matrix);
     my $marray = $document->getNode->lastChild;
     my @rows   = $document->findnodes('ltx:XMRow', $marray);
-    my ($h, $d) = (10.0 * 65536, 0);    # 10pts.
-                                        # Contrived, since $matrix may be a List or...
+    my ($h, $d) = (10.0 * $UNITY, 0);    # 10pts.
+                                         # Contrived, since $matrix may be a List or...
     my ($alignment) = grep { $_ } map { $_->getProperty('alignment') } $matrix->unlist;
     if ($alignment) {
       my $arrayh = $alignment->getHeight->ptValue;
