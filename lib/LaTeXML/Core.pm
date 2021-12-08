@@ -208,7 +208,11 @@ sub convertDocument {
       $model->loadSchema();                                  # If needed?
       if (my $paths = $state->lookupValue('SEARCHPATHS')) {
         if ($state->lookupValue('INCLUDE_PATH_PIS')) {
-          $document->insertPI('latexml', searchpaths => join(',', @$paths)); } }
+          my @copy  = @{ $state->lookupValue('SEARCHPATHS') };
+          my @dedup = ();
+          while (my $check = shift(@copy)) {
+            unshift(@dedup, $check) if !(grep { $_ eq $check } @dedup); }
+          $document->insertPI('latexml', searchpaths => join(',', @dedup)); } }
       foreach my $preload_by_reference (@{ $$self{preload} }) {
         my $preload = $preload_by_reference; # copy preload value, as we want to preserve the hash as-is, for (potential) future daemon calls
         next if $preload =~ /\.pool$/;
