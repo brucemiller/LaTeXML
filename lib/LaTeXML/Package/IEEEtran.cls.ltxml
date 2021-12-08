@@ -229,13 +229,15 @@ RawTeX(<<'EoTeX');
 \setlength\belowcaptionskip{0pt}
 EoTeX
 
-DefEnvironment('{IEEEbiography}[]',
+DefEnvironment('{IEEEbiography}[]{}',
   "<ltx:float class='biography'><ltx:tabular>"
-    . "<ltx:tr><ltx:td>#1</ltx:td><ltx:td><ltx:p>#body</ltx:p></ltx:td></ltx:tr>"
+    . "<ltx:tr><ltx:td>#1</ltx:td><ltx:td><ltx:inline-block><ltx:text class='ltx_font_bold'>#2</ltx:text> "
+    . "#body</ltx:inline-block></ltx:td></ltx:tr>"
     . "</ltx:tabular></ltx:float>");
-DefEnvironment('{IEEEbiographynophoto}[]',
+DefEnvironment('{IEEEbiographynophoto}[]{}',
   "<ltx:float class='biography'><ltx:tabular>"
-    . "<ltx:tr><ltx:td><ltx:p>#body</ltx:p></ltx:td></ltx:tr>"
+    . "<ltx:tr><ltx:td><ltx:inline-block><ltx:text class='ltx_font_bold'>#2</ltx:text> "
+    . "#body</ltx:inline-block></ltx:td></ltx:tr>"
     . "</ltx:tabular></ltx:float>");
 
 # IEEEeqnarray is similar to eqnarray, but supports subequation numbering.
