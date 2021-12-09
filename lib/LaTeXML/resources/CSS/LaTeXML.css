@@ -96,53 +96,45 @@
   flex-flow: row wrap;
   /* Tip: change width to "auto" if you redesign
      with a fixed-width document CSS */
-  width: 100%;
+  width: auto;
   max-width: 60rem;
   position: relative;
   justify-content: center;
+  align-items: baseline;
+  object-fit: contain;
   margin-bottom: 1rem;
 }
-/* If one had a fixed-width layout,
-   one could also style based on max row size: */
-/* 
-.ltx_flex_size_1 > .ltx_subgraphics,
-.ltx_flex_size_1 > .ltx_subfigure,
-.ltx_flex_size_1 > .ltx_subfloat,
-.ltx_flex_size_1 > .ltx_subtable,
+
+.ltx_flex_size_1,
 .ltx_flex_size_1 .ltx_graphics {
-  max-width:var(--main-width);
+  max-width:60rem;
 }
-.ltx_flex_size_2 > .ltx_subgraphics,
-.ltx_flex_size_2 > .ltx_subfigure,
-.ltx_flex_size_2 > .ltx_subfloat,
-.ltx_flex_size_2 > .ltx_subtable,
+.ltx_flex_size_2,
 .ltx_flex_size_2 .ltx_graphics {
-  max-width: calc(0.45*var(--main-width));
+  max-width: calc(0.44*60rem);
 }
-.ltx_flex_size_3 > .ltx_subgraphics,
-.ltx_flex_size_3 > .ltx_subfigure,
-.ltx_flex_size_3 > .ltx_subfloat,
-.ltx_flex_size_3 > .ltx_subtable,
+.ltx_flex_size_3,
 .ltx_flex_size_3 .ltx_graphics {
-  max-width: calc(0.3*var(--main-width));
+  max-width: calc(0.30*60rem);
 }
-.ltx_flex_size_4 > .ltx_subgraphics,
-.ltx_flex_size_4 > .ltx_subfigure,
-.ltx_flex_size_4 > .ltx_subfloat,
-.ltx_flex_size_4 > .ltx_subtable,
+.ltx_flex_size_4,
 .ltx_flex_size_4 .ltx_graphics {
-  max-width: calc(0.24*var(--main-width));
-}*/
+  max-width: calc(0.24*60rem);
+}
 /*Default: More than 4 items, tricky.
   quite often intended to auto-reflow... */
-/*
-.ltx_subgraphics,
-.ltx_subfigure,
-.ltx_subtable,
-.ltx_subfloat {
-  max-width: calc(0.24*var(--main-width));
-} */
+.ltx_flex_size_many,
+.ltx_flex_size_many .ltx_graphics {
+  max-width: calc(0.24*60rem);
+}
 
+/* flex row breaks */
+.ltx_flex_figure .ltx_flex_break {
+  flex-basis: 100%;
+  height: 0;
+}
+
+/* layout preference */
 .ltx_flex_figure .ltx_subgraphics,
 .ltx_flex_figure .ltx_subfigure,
 .ltx_flex_figure .ltx_subfloat,
@@ -150,9 +142,15 @@
   flex: 1 1 0px;
   margin: 0.1rem;
 }
-.ltx_flex_figure .ltx_flex_break {
-  flex-basis: 100%;
-  height: 0;
+.ltx_subgraphics, .ltx_subfigure, .ltx_subtable, .ltx_subfloat {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.ltx_subgraphics > .ltx_figure,
+.ltx_subfigure > .ltx_figure,
+.ltx_subtable > .ltx_figure,
+.ltx_subfloat > .ltx_figure {
+  margin:0em;
 }
 
 /* theorems, figure, tables, floats captions.. */

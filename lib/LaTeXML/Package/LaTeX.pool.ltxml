@@ -3204,41 +3204,81 @@ DefConstructor('\@@generic@caption[]{}', "<ltx:text class='ltx_caption'>#2</ltx:
     Error('unexpected', '\caption', $_[0],
       "Use of \\caption outside any known float"); });
 
-# Note that even without \caption, we'd probably like to have xml:id.
-Tag('ltx:figure', afterClose => sub {
-    my ($document, $node, $whatsit) = @_;
-    # Feature 1: Add flex classes to each subfigure cell in a figure.
-    # A little verbose, but much easier to do than XSLT 1.0 would allow.
-    my @maybe_subfigs = grep { $document->getNodeQName($_) =~ /^ltx:(?:graphics|figure|break)$/ } element_nodes($node);
-    if (scalar(@maybe_subfigs) > 1) {
-      my @row = ();
-      for my $child (@maybe_subfigs) {
-        if ($document->getNodeQName($child) eq 'ltx:break' and @row) {
-          my $row_size      = scalar(@row);
-          my $row_size_attr = "ltx_flex_size_$row_size";
-          if ($row_size > 4) {    # add a generic class for larger rows, to style together easily
-            $row_size_attr .= " ltx_flex_size_many"; }
-          for my $cell (@row) {
-            my $class = $cell->getAttribute('class') || '';
-            $class .= ' ' if $class;
-            $cell->setAttribute('class', $class . $row_size_attr); }
-          @row = (); }
-        else {
-          push(@row, $child); } }
-      # Don't forget the last row, if any
-      if (@row) {
-        my $row_size      = scalar(@row);
-        my $row_size_attr = "ltx_flex_size_$row_size";
-        if ($row_size > 4) {    # add a generic class for larger rows, to style together easily
-          $row_size_attr .= " ltx_flex_size_many"; }
-        for my $cell (@row) {
-          my $class = $cell->getAttribute('class') || '';
-          $class .= ' ' if $class;
-          $cell->setAttribute('class', $class . $row_size_attr); } } }
-    # Feature 2: Add identifiers on each figure
-    GenerateID($document, $node, $whatsit, 'fig'); });
-Tag('ltx:table', afterClose => sub { GenerateID(@_, 'tab'); });
-Tag('ltx:float', afterClose => sub { GenerateID(@_, 'tab'); });
+sub add_subfigure_row_breaks {
+  my ($document, $node, $whatsit, @contents) = @_;
+  my $textwidth     = (LookupRegister('\textwidth') || Dimension('345pt'))->valueOf();
+  my $current_width = 0;
+  my @new_contents  = ();
+  for my $block (@contents) {
+    my $block_name = $document->getNodeQName($block);
+    if ($block_name eq 'ltx:break') {
+      # reset bookkeeping on prior breaks, be they author-deposited or computed
+      $current_width = 0; }
+    else {
+      # TODO: A tricky bit to consider here is graphics sized to \columnwidth
+      # which isn't yet accurately emulated in latexml itself.
+      # so where two or more graphics may have been expected in the PDF,
+      # latexml would only allow one as the \columnwidth would be defaulted to \textwidth.
+      my $block_box   = $document->getNodeBox($block);
+      my $block_width = $block_box->getWidth->valueOf();
+      if (@new_contents && ($current_width + $block_width - 1 > $textwidth)) {
+        # break when we exceed the line width, to keep close with the PDF arrangement
+        my $break = $document->insertElementBefore($block, 'break', 'class' => 'ltx_break');
+        push(@new_contents, $break);
+        $current_width = $block_width; }
+      else {
+        $current_width += $block_width; } }
+    push(@new_contents, $block); }
+  return @new_contents; }
+
+sub add_subfigure_row_sizes {
+  my ($document, $node, $whatsit, @contents) = @_;
+  my @row = ();
+  for my $child (@contents) {
+    if ($document->getNodeQName($child) eq 'ltx:break') {
+      next unless @row;
+      my $row_size      = scalar(@row);
+      my $row_size_attr = "ltx_flex_size_$row_size";
+      if ($row_size > 4) {    # add a generic class for larger rows, to style together easily
+        $row_size_attr .= " ltx_flex_size_many"; }
+      for my $cell (@row) {
+        my $class = $cell->getAttribute('class') || '';
+        $class .= ' ' if $class;
+        $cell->setAttribute('class', $class . $row_size_attr); }
+      @row = (); }
+    else {
+      push(@row, $child); } }
+  # Don't forget the last row, if any
+  if (@row) {
+    my $row_size      = scalar(@row);
+    my $row_size_attr = "ltx_flex_size_$row_size";
+    if ($row_size > 4) {    # add a generic class for larger rows, to style together easily
+      $row_size_attr .= " ltx_flex_size_many"; }
+    for my $cell (@row) {
+      my $class = $cell->getAttribute('class') || '';
+      $class .= ' ' if $class;
+      $cell->setAttribute('class', $class . $row_size_attr); } }
+  return; }
+
+# Feature 1: Add flex classes to each subfigure cell in a figure.
+# Feature 2: Add identifiers on each figure
+sub SubfigureAndID {
+  my ($document, $node, $whatsit, $id_kind) = @_;
+  # 1. Flex
+  # A little verbose, but much easier to do than XSLT 1.0 would allow.
+  my @contents = grep { $document->getNodeQName($_) =~ /^ltx:(?:graphics|float|figure|break)$/ } element_nodes($node);
+  if (scalar(@contents) > 1) {
+    @contents = add_subfigure_row_breaks($document, $node, $whatsit, @contents);
+    NoteSTDERR("subfig 2nd contents: " . join(", ", map { $_->nodeName } @contents));
+    add_subfigure_row_sizes($document, $node, $whatsit, @contents); }
+  # 2. IDs
+  # Note that even without \caption, we'd probably like to have xml:id.
+  GenerateID($document, $node, $whatsit, $id_kind);
+  return; }
+
+Tag('ltx:figure', afterClose => sub { SubfigureAndID(@_, 'fig'); });
+Tag('ltx:float',  afterClose => sub { SubfigureAndID(@_, 'tab'); });
+Tag('ltx:table',  afterClose => sub { GenerateID(@_, 'tab'); });
 
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.

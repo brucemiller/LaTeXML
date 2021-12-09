@@ -2043,13 +2043,11 @@ sub insertBlock {
   my @nodes = $document->filterChildren($document->filterDeletions($document->absorb($contents)));
 
   # Scan the inserted nodes, wrapping sequences of Inline items with a ltx:p
-  my @newnodes      = ();
-  my $textwidth     = (LookupRegister('\textwidth') || Dimension('345pt'))->valueOf();
-  my $current_width = 0;
+  my @newnodes = ();
   while (@nodes) {
-    # ltx:break are superflous, now, unless we're transporting a figure
+    # ltx:break are superflous, now, unless we're transporting a figure/float
     if ($model->getNodeQName($nodes[0]) eq 'ltx:break' and
-      $model->getNodeQName($nodes[0]->parentNode) ne 'ltx:figure') {
+      $model->getNodeQName($nodes[0]->parentNode) !~ /^ltx:(?:figure|float)$/) {
       $document->removeNode(shift(@nodes));
       next; }
     my @n;    # Collect up sequences of Inline
@@ -2058,23 +2056,7 @@ sub insertBlock {
     if (@n) {
       push(@newnodes, $document->wrapNodes('ltx:p', @n)); }
     else {
-      my $block      = shift(@nodes);
-      my $block_name = $document->getNodeQName($block);
-      if ($block_name eq 'ltx:break') {
-        # reset bookkeeping on prior breaks, be they author-deposited or computed
-        $current_width = 0; }
-      else {
-        my $block_width = $document->getNodeBox($block)->getWidth->valueOf();
-        if (@newnodes && ($current_width + $block_width >= $textwidth)) {
-          # break when we exceed the line width, to keep close with the PDF arrangement
-          # restriction: for now only do so for figures, maybe extend later?
-          if ($block_name eq 'ltx:graphics') {
-            my $break = $document->insertElementBefore($block, 'break', 'class' => 'ltx_break');
-            push(@newnodes, $break);
-            $current_width = $block_width; } }
-        else {
-          $current_width += $block_width; } }
-      push(@newnodes, $block); } }
+      push(@newnodes, shift(@nodes)); } }
 
   # If we've inserted a wrapper element, close all open elements up to it's parent
   # It may have auto-opened some element to contain it, but leave that open for following material
