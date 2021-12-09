@@ -3269,7 +3269,6 @@ sub SubfigureAndID {
   my @contents = grep { $document->getNodeQName($_) =~ /^ltx:(?:graphics|float|figure|break)$/ } element_nodes($node);
   if (scalar(@contents) > 1) {
     @contents = add_subfigure_row_breaks($document, $node, $whatsit, @contents);
-    NoteSTDERR("subfig 2nd contents: " . join(", ", map { $_->nodeName } @contents));
     add_subfigure_row_sizes($document, $node, $whatsit, @contents); }
   # 2. IDs
   # Note that even without \caption, we'd probably like to have xml:id.
