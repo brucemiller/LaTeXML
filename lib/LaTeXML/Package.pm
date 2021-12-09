@@ -647,7 +647,7 @@ sub NewCounter {
 
 sub CounterValue {
   my ($ctr) = @_;
-  $ctr = ToString($ctr) if ref $ctr;
+  $ctr = ToString(Expand($ctr)) if ref $ctr;
   my $value = LookupValue('\c@' . $ctr);
   if (!$value) {
     Warn('undefined', $ctr, $STATE->getStomach,
@@ -663,7 +663,7 @@ sub AfterAssignment {
 
 sub SetCounter {
   my ($ctr, $value) = @_;
-  $ctr = ToString($ctr) if ref $ctr;
+  $ctr = ToString(Expand($ctr)) if ref $ctr;
   AssignValue('\c@' . $ctr => $value, 'global');
   AfterAssignment();
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(Explode($value->valueOf)), scope => 'global');
@@ -671,7 +671,7 @@ sub SetCounter {
 
 sub AddToCounter {
   my ($ctr, $value) = @_;
-  $ctr = ToString($ctr) if ref $ctr;
+  $ctr = ToString(Expand($ctr)) if ref $ctr;
   my $v = CounterValue($ctr)->add($value);
   AssignValue('\c@' . $ctr => $v, 'global');
   AfterAssignment();
@@ -697,6 +697,7 @@ sub StepCounter {
 sub RefStepCounter {
   my ($type, $noreset) = @_;
   my $ctr = LookupMapping('counter_for_type', $type) || $type;
+  $ctr = ToString(Expand($ctr)) if ref $ctr;
   StepCounter($ctr, $noreset);
   maybePreemptRefnum($ctr);
   my $iddef = $STATE->lookupDefinition(T_CS("\\the$ctr\@ID"));

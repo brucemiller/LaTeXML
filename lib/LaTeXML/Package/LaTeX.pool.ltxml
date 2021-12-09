@@ -924,7 +924,9 @@ DefMacro('\AtEndOfPackage{}', sub {
     AddToMacro(T_CS('\\' . $name . '.' . $type . '-h@@k'), $code); });
 
 DefMacro('\@ifpackageloaded', '\@ifl@aded\@pkgextension');
-DefMacro('\@ifclassloaded',   '\@ifl@aded\@clsextension');
+Let('\ltx@ifpackageloaded', '\@ifpackageloaded');
+DefMacro('\@ifclassloaded', '\@ifl@aded\@clsextension');
+Let('\ltx@ifclassloaded', '\@ifclassloaded');
 DefMacro('\@ifl@aded{}{}', sub {
     my ($gullet, $ext, $name) = @_;
     my $path = ToString(Expand($name)) . '.' . ToString(Expand($ext));
@@ -5387,7 +5389,11 @@ RawTeX(<<'EoTeX');
   \@latex@info{#1\@gobble}}
 EoTeX
 
-DefPrimitive('\@setsize{}{}{}{}', undef);
+DefMacro('\@setsize{}{}{}{}', '');
+DefMacro('\hexnumber@ {}', '\ifcase\number#1
+ 0\or 1\or 2\or 3\or 4\or 5\or 6\or 7\or 8\or
+ 9\or A\or B\or C\or D\or E\or F\fi');
+
 DefMacro('\on@line', ' on input line \the\inputlineno');
 Let('\@warning',  '\@latex@warning');
 Let('\@@warning', '\@latex@warning@no@line');

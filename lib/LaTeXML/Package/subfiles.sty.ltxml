@@ -19,8 +19,9 @@ use LaTeXML::Package;
 # Redefine \documentclass to do nothring
 DefMacro('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []', undef);
 # And {document} environment likewise
-DefEnvironment('{document}', "#body");
-
+DefEnvironment('{document}', "#body", beforeDigest => sub {
+    AssignValue(inPreamble => 0);
+    return; });
 # Define \subfiles to be \input
 Let('\subfile', '\input');
 
