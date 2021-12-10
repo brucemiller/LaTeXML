@@ -57,6 +57,7 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
         . "#tags"
         . "#body"
         . "</ltx:float>",
+      properties     => { layout => 'vertical' },
       beforeDigest   => sub { DefMacroI('\@captype', undef, $type); },
       afterDigest    => sub { RescueCaptionCounters($type, $_[1]); },
       afterConstruct => sub { addFloatFrames($_[0], $style); });
@@ -65,6 +66,7 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
         . "#tags"
         . "#body"
         . "</ltx:float>",
+      properties     => { layout => 'vertical' },
       beforeDigest   => sub { DefMacroI('\@captype', undef, $type); },
       afterDigest    => sub { RescueCaptionCounters($type, $_[1]); },
       afterConstruct => sub { addFloatFrames($_[0], $style); });

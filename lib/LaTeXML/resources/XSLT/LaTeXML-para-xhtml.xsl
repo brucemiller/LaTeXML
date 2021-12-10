@@ -149,18 +149,28 @@
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
     <xsl:choose>
-      <xsl:when test="count(ltx:figure | ltx:table | ltx:float | ltx:graphics) > 1">
+      <xsl:when test="count(ltx:figure | ltx:table | ltx:float | ltx:graphics | ltx:inline-para | ltx:inline-block | ltx:listing) > 1">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:apply-templates select="ltx:caption[following-sibling::ltx:figure
                                      | following-sibling::ltx:table
                                      | following-sibling::ltx:float
-                                     | following-sibling::ltx:graphics]">
+                                     | following-sibling::ltx:graphics
+                                     | following-sibling::ltx:inline-para
+                                     | following-sibling::ltx:inline-block
+                                     | following-sibling::ltx:listing]">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
         <xsl:element name="div" namespace="{$html_ns}">
-          <xsl:attribute name="class">ltx_flex_figure</xsl:attribute>
+          <xsl:choose>
+            <xsl:when test="self::ltx:table">
+              <xsl:attribute name="class">ltx_flex_figure ltx_flex_table</xsl:attribute>
+            </xsl:when>
+            <xsl:otherwise>
+              <xsl:attribute name="class">ltx_flex_figure</xsl:attribute>
+            </xsl:otherwise>
+          </xsl:choose>
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:graphics | ltx:break">
+          <xsl:for-each select="ltx:figure | ltx:table | ltx:float | ltx:graphics | ltx:break | ltx:inline-para | ltx:inline-block | ltx:listing">
             <xsl:choose>
               <xsl:when test="self::ltx:break">
                 <xsl:element name="div" namespace="{$html_ns}">
@@ -169,14 +179,14 @@
               </xsl:when>
               <xsl:otherwise>
                 <xsl:text>&#x0A;</xsl:text>
-                <xsl:element name="div" namespace="{$html_ns}">
+                <!-- <xsl:element name="div" namespace="{$html_ns}">
                   <xsl:attribute name="class">
                     <xsl:value-of select="concat('ltx_sub',local-name(.))"/>
-                  </xsl:attribute>
+                  </xsl:attribute> -->
                   <xsl:apply-templates select=".">
                     <xsl:with-param name="context" select="$context"/>
                   </xsl:apply-templates>
-                </xsl:element>
+                <!-- </xsl:element> -->
               </xsl:otherwise>
             </xsl:choose>
           </xsl:for-each>
@@ -185,7 +195,10 @@
         <xsl:apply-templates select="ltx:caption[preceding-sibling::ltx:figure
                                      | preceding-sibling::ltx:table
                                      | preceding-sibling::ltx:float
-                                     | preceding-sibling::ltx:graphics]">
+                                     | preceding-sibling::ltx:graphics
+                                     | preceding-sibling::ltx:listing
+                                     | preceding-sibling::ltx:inline-para
+                                     | preceding-sibling::ltx:inline-block]">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
       </xsl:when>

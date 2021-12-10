@@ -3136,6 +3136,7 @@ for my $float (qw(@float @dblfloat)) {
     "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
       . "#body"
       . "</ltx:float>",
+    properties       => { layout => 'vertical' },
     afterDigestBegin => sub {
       DefMacroI('\@captype', undef, ToString($_[1]->getArg(2)));
       return; },
@@ -3266,14 +3267,18 @@ sub SubfigureAndID {
   my ($document, $node, $whatsit, $id_kind) = @_;
   # 1. Flex
   # A little verbose, but much easier to do than XSLT 1.0 would allow.
-  my @contents = grep { $document->getNodeQName($_) =~ /^ltx:(?:graphics|float|figure|table|tabular|break)$/ } element_nodes($node);
-  if (scalar(@contents) > 1) {
+  my $contents_count = 0;    # count with author breaks excluded
+  my @contents       = grep { my $name = $document->getNodeQName($_);
+    my $ok = ($name =~ /^ltx:(?:graphics|float|figure|table|tabular|break|inline-para|inline-block|listing)$/);
+    $contents_count += 1 if $ok and $name ne 'ltx:break';
+    $ok; } element_nodes($node);
+  if ($contents_count > 1) {
+    NoteSTDERR("flex contents $contents_count: " . join("; ", map { $_->nodeName } @contents));
     @contents = add_subfigure_row_breaks($document, $node, $whatsit, @contents);
     add_subfigure_row_sizes($document, $node, $whatsit, @contents); }
   # 2. IDs
   # Note that even without \caption, we'd probably like to have xml:id.
-  GenerateID($document, $node, $whatsit, $id_kind);
-  return; }
+  return GenerateID($document, $node, $whatsit, $id_kind); }
 
 Tag('ltx:figure', afterClose => sub { SubfigureAndID(@_, 'fig'); });
 Tag('ltx:float',  afterClose => sub { SubfigureAndID(@_, 'tab'); });
@@ -4616,6 +4621,7 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
   sizer      => '#body',
   mode       => 'text',
   properties => sub { (
+      layout  => 'vertical',
       width   => $_[4],
       vattach => translateAttachment($_[1])); },
   beforeDigest => sub {
