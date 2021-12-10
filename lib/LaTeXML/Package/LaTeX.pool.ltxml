@@ -3266,7 +3266,7 @@ sub SubfigureAndID {
   my ($document, $node, $whatsit, $id_kind) = @_;
   # 1. Flex
   # A little verbose, but much easier to do than XSLT 1.0 would allow.
-  my @contents = grep { $document->getNodeQName($_) =~ /^ltx:(?:graphics|float|figure|break)$/ } element_nodes($node);
+  my @contents = grep { $document->getNodeQName($_) =~ /^ltx:(?:graphics|float|figure|table|tabular|break)$/ } element_nodes($node);
   if (scalar(@contents) > 1) {
     @contents = add_subfigure_row_breaks($document, $node, $whatsit, @contents);
     add_subfigure_row_sizes($document, $node, $whatsit, @contents); }
@@ -3277,13 +3277,13 @@ sub SubfigureAndID {
 
 Tag('ltx:figure', afterClose => sub { SubfigureAndID(@_, 'fig'); });
 Tag('ltx:float',  afterClose => sub { SubfigureAndID(@_, 'tab'); });
-Tag('ltx:table',  afterClose => sub { GenerateID(@_, 'tab'); });
+Tag('ltx:table',  afterClose => sub { SubfigureAndID(@_, 'tab'); });
 
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
-DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>");
+DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>", sizer => 0);
 DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
-  sizer => '0');
+  sizer => 0);
 
 DefEnvironment('{figure}[]',
   "<ltx:figure xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"

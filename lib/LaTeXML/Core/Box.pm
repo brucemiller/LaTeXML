@@ -267,6 +267,8 @@ sub computeSizeStore {
 
 sub computeSize {
   my ($self, %options) = @_;
+  if (my $body = $self->getProperty('body')) {
+    return $body->computeSize(%options); }
   my $font = $self->getProperty('font') || LaTeXML::Common::Font->textDefault;
   return $font->computeStringSize($$self{string}, %options); }
 

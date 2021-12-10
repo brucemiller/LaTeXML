@@ -104,24 +104,29 @@
 }
 
 .ltx_flex_size_1,
+.ltx_flex_size_1 .ltx_tabular,
 .ltx_flex_size_1 .ltx_graphics {
   max-width:60rem;
 }
 .ltx_flex_size_2,
+.ltx_flex_size_2 .ltx_tabular,
 .ltx_flex_size_2 .ltx_graphics {
   max-width: calc(0.44*60rem);
 }
 .ltx_flex_size_3,
+.ltx_flex_size_3 .ltx_tabular,
 .ltx_flex_size_3 .ltx_graphics {
   max-width: calc(0.30*60rem);
 }
 .ltx_flex_size_4,
+.ltx_flex_size_4 .ltx_tabular,
 .ltx_flex_size_4 .ltx_graphics {
   max-width: calc(0.24*60rem);
 }
 /*Default: More than 4 items, tricky.
   quite often intended to auto-reflow... */
 .ltx_flex_size_many,
+.ltx_flex_size_many .ltx_tabular,
 .ltx_flex_size_many .ltx_graphics {
   max-width: calc(0.24*60rem);
 }
