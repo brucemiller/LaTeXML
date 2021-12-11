@@ -185,9 +185,9 @@ sub setGraphicSrc {
   $node->setAttribute('imageheight', $height) if defined $height;
   if ($width and $height) {
     my $aspect_class = "ltx_img_square";
-    if ($width > 1.34 * $height) {
+    if ($width > 1.24 * $height) {
       $aspect_class = "ltx_img_landscape"; }
-    elsif ($height > 1.34 * $width) {
+    elsif ($height > 1.24 * $width) {
       $aspect_class = "ltx_img_portrait" }
     my $class = $node->getAttribute('class');
     $class = ($class ? $class . ' ' : '') . $aspect_class;
