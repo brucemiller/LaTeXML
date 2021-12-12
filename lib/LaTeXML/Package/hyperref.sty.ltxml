@@ -225,7 +225,8 @@ sub localized_anchor {
   my $id = $whatsit->getProperty('id');
   if ($candidate) {
     my $anchor = $document->wrapNodes('ltx:anchor', $candidate);
-    $anchor->setAttribute('xml:id', $id); }
+    $anchor->setAttribute('xml:id', $id);
+    $document->closeNode($anchor) if $document->isOpen($anchor); }
   else {
     Error("No available insertion point for ltx:anchor, failing \\hypertarget to $id"); }
   return; }
