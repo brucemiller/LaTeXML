@@ -286,6 +286,11 @@ sub readToken {
         elsif ($cc == CC_MARKER) {
           $self->handleMarker($token); } } }
     ProgressStep() if ($$self{progress}++ % $TOKEN_PROGRESS_QUANTUM) == 0;
+    # some infinite loops are hard to predict and may be
+    # better guarded against via a global token limit.
+    if ($LaTeXML::TOKEN_LIMIT and $$self{progress} > $LaTeXML::TOKEN_LIMIT) {
+      Fatal('timeout', 'token_limit', $self,
+        "Token limit of $LaTeXML::TOKEN_LIMIT exceeded, infinite loop?"); }
     # Wow!!!!! See TeX the Program \S 309
     if ((defined $token)
       && !$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)

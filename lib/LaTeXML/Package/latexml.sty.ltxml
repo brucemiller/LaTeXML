@@ -74,6 +74,9 @@ DefKeyVal('LTXML', 'upsample', 'Number', '', code => sub {
     AtBeginDocument(Tokens(T_CS('\lx@save@parameter'), T_OTHER('upsample'), T_BEGIN, $_[1], T_END)); });
 DefKeyVal('LTXML', 'zoomout', 'Number', '', code => sub {
     AtBeginDocument(Tokens(T_CS('\lx@save@parameter'), T_OTHER('zoomout'), T_BEGIN, $_[1], T_END)); });
+DefKeyVal('LTXML', 'tokenlimit', 'Number', '', code => sub {
+    $LaTeXML::TOKEN_LIMIT = int(ToString($_[1]));
+    return; });
 
 ProcessOptions(inorder => 1, keysets => ['LTXML']);
 #======================================================================

@@ -35,7 +35,7 @@ sub new {
   $spec = "0" unless $spec;
   $spec = ToString($spec) if ref $spec;
   if ($spec =~ /^(-?\d*\.?\d*)mu$/) {    # mu given, convert to scaled mu
-    return bless [fixedpoint($1, $UNITY)], $class; }    # fake "mu" in sp
+    return bless [fixpoint($1, $UNITY)], $class; }    # fake "mu" in sp
   else {
     # See comment in Dimension for why kround rather than int
     return bless [kround($spec || 0)], $class; } }
@@ -98,4 +98,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-
