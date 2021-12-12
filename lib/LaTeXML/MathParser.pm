@@ -714,7 +714,10 @@ sub node_to_lexeme {
           if (my $value = $$properties_pending{$attr}) {
             push @to_add, $value; } }
         if (@to_add) {
-          my $prefix = join("_", sort(@to_add)) . "_";
+          # avoid e.g. "italic italic" from "\mit \Omega"
+          my %seen          = ();
+          my @unique_to_add = grep { my $new = !$seen{$_}; $seen{$_} = 1; $new; } @to_add;
+          my $prefix        = join("_", sort(@unique_to_add)) . "_";
           $lexeme = join(" ", map { $prefix . $_ } split(' ', $lexeme)); }
     } }
     if ($lexeme =~ /^\p{L}+$/) {
@@ -731,8 +734,11 @@ sub node_to_lexeme_full {
   if ($tag eq 'ltx:XMTok' || ($role && ($tag !~ 'ltx:XM(Dual|App|Arg|Array|Wrap|ath)'))) {
 # Elements that directly represent a lexeme, or intended operation with a syntactic role (such as a postscript),
 # can proceed to building the lexeme from the leaf node.
-    return $self->node_to_lexeme($node);
-  }
+    my $lexeme = $self->node_to_lexeme($node);
+    if ($role =~ /^(UNDER|OVER)ACCENT$/) {
+      # over¯ and under¯ are the lexeme names of choice for \overline and \underline
+      $lexeme = lc($1) . $lexeme; }
+    return $lexeme; }
 # Elements that do not have a role and are intermediate "may" need an argument wrapper, so that arguments
 # remain unambiguous. For instance a `\frac{a}{b}` has clear argument structure to be preserved.
   my ($mark_start, $mark_end) = ('', '');
