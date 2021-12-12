@@ -707,17 +707,14 @@ sub node_to_lexeme {
     if (my $font = $node->getAttribute('_font')) {
       my $font_spec = $document->decodeFont($font);
       if (my %declarations = $font_spec && $font_spec->relativeTo(LaTeXML::Common::Font->textDefault)) {
-        my @to_add             = ();
+        my %to_add             = ();
         my $font_pending       = $declarations{font}        || {};
         my $properties_pending = $$font_pending{properties} || {};
         foreach my $attr (qw(family series shape)) {
           if (my $value = $$properties_pending{$attr}) {
-            push @to_add, $value; } }
-        if (@to_add) {
-          # avoid e.g. "italic italic" from "\mit \Omega"
-          my %seen          = ();
-          my @unique_to_add = grep { my $new = !$seen{$_}; $seen{$_} = 1; $new; } @to_add;
-          my $prefix        = join("_", sort(@unique_to_add)) . "_";
+            $to_add{$value} = 1; } }
+        if (%to_add) {
+          my $prefix = join("_", sort(keys(%to_add))) . "_";
           $lexeme = join(" ", map { $prefix . $_ } split(' ', $lexeme)); }
     } }
     if ($lexeme =~ /^\p{L}+$/) {
