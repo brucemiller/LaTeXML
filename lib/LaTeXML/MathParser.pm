@@ -707,14 +707,14 @@ sub node_to_lexeme {
     if (my $font = $node->getAttribute('_font')) {
       my $font_spec = $document->decodeFont($font);
       if (my %declarations = $font_spec && $font_spec->relativeTo(LaTeXML::Common::Font->textDefault)) {
-        my @to_add             = ();
+        my %to_add             = ();
         my $font_pending       = $declarations{font}        || {};
         my $properties_pending = $$font_pending{properties} || {};
         foreach my $attr (qw(family series shape)) {
           if (my $value = $$properties_pending{$attr}) {
-            push @to_add, $value; } }
-        if (@to_add) {
-          my $prefix = join("_", sort(@to_add)) . "_";
+            $to_add{$value} = 1; } }
+        if (%to_add) {
+          my $prefix = join("_", sort(keys(%to_add))) . "_";
           $lexeme = join(" ", map { $prefix . $_ } split(' ', $lexeme)); }
     } }
     if ($lexeme =~ /^\p{L}+$/) {
@@ -731,8 +731,11 @@ sub node_to_lexeme_full {
   if ($tag eq 'ltx:XMTok' || ($role && ($tag !~ 'ltx:XM(Dual|App|Arg|Array|Wrap|ath)'))) {
 # Elements that directly represent a lexeme, or intended operation with a syntactic role (such as a postscript),
 # can proceed to building the lexeme from the leaf node.
-    return $self->node_to_lexeme($node);
-  }
+    my $lexeme = $self->node_to_lexeme($node);
+    if ($role =~ /^(UNDER|OVER)ACCENT$/) {
+      # over¯ and under¯ are the lexeme names of choice for \overline and \underline
+      $lexeme = lc($1) . $lexeme; }
+    return $lexeme; }
 # Elements that do not have a role and are intermediate "may" need an argument wrapper, so that arguments
 # remain unambiguous. For instance a `\frac{a}{b}` has clear argument structure to be preserved.
   my ($mark_start, $mark_end) = ('', '');
