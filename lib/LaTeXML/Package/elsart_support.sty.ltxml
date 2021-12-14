@@ -24,8 +24,10 @@ if (LookupValue('@amsthm')) {
   RequirePackage('amsthm'); }
 else {
   DefMacro('\theoremstyle{}', '');
-  DefConstructor('\qed',
-    "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})"); }
+  DefMacro('\qed',            '\ltx@qed');
+  DefConstructor('\ltx@qed',
+    "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
+    reversion => '\qed'); }
 
 RequirePackage('elsart_support_core');
 

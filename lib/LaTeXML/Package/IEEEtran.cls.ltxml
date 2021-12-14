@@ -403,8 +403,10 @@ Let('\iedlabeljustifyr', '\IEEEiedlabeljustifyr');
 Let('\QED',       '\IEEEQED');
 Let('\QEDclosed', '\IEEEQEDclosed');
 Let('\QEDopen',   '\IEEEQEDopen');
-DefConstructor('\qed',
-  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+DefMacro('\qed', '\ltx@qed');
+DefConstructor('\ltx@qed',
+  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
+  reversion => '\qed');
 Let('\proof',    '\IEEEproof');
 Let('\endproof', '\endIEEEproof');
 # V1.8 no longer support biography or biographynophoto
