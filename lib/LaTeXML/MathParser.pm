@@ -732,7 +732,7 @@ sub node_to_lexeme_full {
 # Elements that directly represent a lexeme, or intended operation with a syntactic role (such as a postscript),
 # can proceed to building the lexeme from the leaf node.
     my $lexeme = $self->node_to_lexeme($node);
-    if ($role =~ /^(UNDER|OVER)ACCENT$/) {
+    if ($role && $role =~ /^(UNDER|OVER)ACCENT$/) {
       # over¯ and under¯ are the lexeme names of choice for \overline and \underline
       $lexeme = lc($1) . $lexeme; }
     return $lexeme; }
@@ -1368,7 +1368,7 @@ sub NewFormula {
 sub NewList {
   my (@stuff) = @_;
   # drop placeholder token for missing trailing punct, if any
-  if (scalar(@stuff) > 1 && (p_getTokenMeaning($stuff[-1]) eq 'absent')) {
+  if (scalar(@stuff) > 1 && ((p_getTokenMeaning($stuff[-1]) || '') eq 'absent')) {
     pop(@stuff); }
   if (@stuff == 1) {
     return $stuff[0]; }
