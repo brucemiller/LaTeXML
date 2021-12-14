@@ -121,6 +121,15 @@ sub beAbsorbed {
   my ($self, $document) = @_;
   my $string = $$self{string};
   my $mode   = $$self{properties}{mode} || 'text';
+
+  # Guard via the absorb limit to avoid infinite loops
+  if ($LaTeXML::ABSORB_LIMIT) {
+    my $absorb_counter = $STATE->lookupValue('absorb_count') || 0;
+    $STATE->assignValue(absorb_count => ++$absorb_counter, 'global');
+    if ($absorb_counter > $LaTeXML::ABSORB_LIMIT) {
+      Fatal('timeout', 'absorb_limit', $self,
+        "Whatsit absorb limit of $LaTeXML::ABSORB_LIMIT exceeded, infinite loop?"); } }
+
   return (((defined $string) && ($string ne '')) || $$self{properties}{width}    # ?
     ? ($mode eq 'math'
       ? $document->insertMathToken($string, %{ $$self{properties} })

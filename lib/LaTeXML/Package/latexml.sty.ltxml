@@ -77,6 +77,12 @@ DefKeyVal('LTXML', 'zoomout', 'Number', '', code => sub {
 DefKeyVal('LTXML', 'tokenlimit', 'Number', '', code => sub {
     $LaTeXML::TOKEN_LIMIT = int(ToString($_[1]));
     return; });
+DefKeyVal('LTXML', 'iflimit', 'Number', '', code => sub {
+    $LaTeXML::IF_LIMIT = int(ToString($_[1]));
+    return; });
+DefKeyVal('LTXML', 'absorblimit', 'Number', '', code => sub {
+    $LaTeXML::ABSORB_LIMIT = int(ToString($_[1]));
+    return; });
 
 ProcessOptions(inorder => 1, keysets => ['LTXML']);
 #======================================================================

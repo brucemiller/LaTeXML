@@ -296,6 +296,15 @@ sub beAbsorbed {
   $self->normalizeAlignment;
   my @rows = @{ $$self{rows} };
   return unless @rows;
+
+  # Guard via the absorb limit to avoid infinite loops
+  if ($LaTeXML::ABSORB_LIMIT) {
+    my $absorb_counter = $STATE->lookupValue('absorb_count') || 0;
+    $STATE->assignValue(absorb_count => ++$absorb_counter, 'global');
+    if ($absorb_counter > $LaTeXML::ABSORB_LIMIT) {
+      Fatal('timeout', 'absorb_limit', $self,
+        "Whatsit absorb limit of $LaTeXML::ABSORB_LIMIT exceeded, infinite loop?"); } }
+
   # We _should_ attach boxes to the alignment and rows,
   # but (ATM) we've only got sensible boxes for the cells.
   &{ $$self{openContainer} }($document, ($attr ? %$attr : ()),
@@ -1309,6 +1318,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-
-
-
