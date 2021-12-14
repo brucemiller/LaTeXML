@@ -4729,6 +4729,7 @@ DefEnvironment('{picture} Pair OptionalPair',
 
 DefMacroI(T_CS('\Gin@driver'), undef, Tokens());
 
+DefMacro('\@killglue',     '\unskip\@whiledim \lastskip >\z@\do{\unskip}');
 DefMacro('\put Until:){}', '\lx@pic@put#1){#2\relax}');
 DefConstructor('\lx@pic@put Pair{}',
   "<ltx:g transform='#transform'"
