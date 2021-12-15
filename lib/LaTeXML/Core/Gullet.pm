@@ -291,6 +291,9 @@ sub readToken {
     if ($LaTeXML::TOKEN_LIMIT and $$self{progress} > $LaTeXML::TOKEN_LIMIT) {
       Fatal('timeout', 'token_limit', $self,
         "Token limit of $LaTeXML::TOKEN_LIMIT exceeded, infinite loop?"); }
+    if ($LaTeXML::PUSHBACK_LIMIT and scalar(@{ $$self{pushback} }) > $LaTeXML::PUSHBACK_LIMIT) {
+      Fatal('timeout', 'pushback_limit', $self,
+        "Pushback limit of $LaTeXML::PUSHBACK_LIMIT exceeded, infinite loop?"); }
     # Wow!!!!! See TeX the Program \S 309
     if ((defined $token)
       && !$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)
