@@ -3626,7 +3626,8 @@ DefConstructor('\label Semiverbatim', sub {
       my %labels = map { ($_ => 1) } $label, split(/\s+/, $node->getAttribute('labels') || '');
       $document->setAttribute($node, labels => join(' ', sort keys %labels));
       $document->setNode($savenode); } },
-  reversion   => '',
+  reversion => sub {    # disappear from tex/content-tex strings, but NOT in general reversion!
+    (defined $LaTeXML::DUAL_BRANCH ? () : Tokens(T_CS('\label'), T_BEGIN, Revert($_[1]), T_END)); },
   properties  => { alignmentSkippable => 1, alignmentPreserve => 1 },
   afterDigest => sub {
     MaybeNoteLabel($_[1]->getArg(1));
