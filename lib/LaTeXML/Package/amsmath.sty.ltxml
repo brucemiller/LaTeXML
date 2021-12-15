@@ -324,7 +324,7 @@ DefConstructor('\lx@ams@marksplitinalign', sub {
     $capture->setAttribute(align   => 'center'); },
   # Skip a column (for left/right alignment)
   afterDigest => sub { LookupValue('Alignment')->nextColumn; return; },
-  reversion => '', sizer => 0);
+  reversion   => '', sizer => 0);
 
 DefMacro('\split',
   '\if@in@ams@align\lx@ams@marksplitinalign\fi'
@@ -706,8 +706,8 @@ DefConstructor('\eqref Semiverbatim', "(<ltx:ref labelref='#label' _force_font='
 DefMacro('\thetag{}', '{\rm #1}');
 
 # Section 3.11.3 Subordinate numbering sequences.
-DefMacro('\subequations',    '\lx@equationgroup@subnumbering@begin');
-DefMacro('\endsubequations', '\lx@equationgroup@subnumbering@end');
+DefMacro('\subequations',    '\lx@equationgroup@subnumbering@begin', locked => 1);
+DefMacro('\endsubequations', '\lx@equationgroup@subnumbering@end',   locked => 1);
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Section 4: Miscellaneous mathematical features
@@ -893,7 +893,7 @@ DefConstructor('\boxed@text{}',
     . "#1"
     . "</ltx:XMath>"
     . "</ltx:Math>",
-  mode => 'math', bounded => 1,
+  mode         => 'math', bounded => 1,
   beforeDigest => sub {
     Let("\\\\", '\@block@cr'); },
   alias => '\boxed');
@@ -1199,7 +1199,7 @@ DefConstructor('\sideset{}{}{}', sub {
       Warn('expected', '<sub/supserscript>', $document,
         "Expected a sub/superscript in the postscripts of \\sideset",
         "Got " . Stringify($nonscript));
-      $document->insertElement('ltx:XMWrap', $nonscript); }     # Append, afterwards
+      $document->insertElement('ltx:XMWrap', $nonscript); }    # Append, afterwards
 });
 
 sub sidesetWrap {

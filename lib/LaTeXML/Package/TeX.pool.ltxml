@@ -1884,6 +1884,12 @@ DefPrimitive('\copy Number', sub {
     my $stuff = LookupValue($box);
     ($stuff ? $stuff->unlist : ()); });
 
+DefPrimitive('\vsplit Number Match:to Dimension', sub {
+    # analog to \box for now.
+    my $box   = 'box' . $_[1]->valueOf;
+    my $stuff = LookupValue($box);
+    ($stuff ? $stuff->unlist : ()); });
+
 sub revert_spec {
   my ($whatsit, $keyword) = @_;
   my $value = $whatsit->getProperty($keyword);

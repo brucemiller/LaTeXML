@@ -40,6 +40,8 @@ DefEnvironment('{icmlauthorlist}', '#body');
 
 # \icmlauthor{author}{labels}
 DefMacro('\icmlauthor{}{}', '\author{#1}');
+DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
+DefMacro('\icmladdress{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#1}}');
 # \icmlaffiliation{label}{address}
 DefMacro('\icmlaffiliation{}{}', '');
 # \icmlcorrespondingauthor{author}{email}

@@ -200,6 +200,15 @@ sub beAbsorbed {
   # Significant time is consumed here, and associated with a specific CS,
   # so we should be profiling as well!
   # Hopefully the csname is the same that was charged in the digestioned phase!
+
+  # Guard via the absorb limit to avoid infinite loops
+  if ($LaTeXML::ABSORB_LIMIT) {
+    my $absorb_counter = $STATE->lookupValue('absorb_count') || 0;
+    $STATE->assignValue(absorb_count => ++$absorb_counter, 'global');
+    if ($absorb_counter > $LaTeXML::ABSORB_LIMIT) {
+      Fatal('timeout', 'absorb_limit', $self,
+        "Whatsit absorb limit of $LaTeXML::ABSORB_LIMIT exceeded, infinite loop?"); } }
+
   my $defn     = $self->getDefinition;
   my $profiled = $STATE->lookupValue('PROFILING') && $defn->getCS;
   LaTeXML::Core::Definition::startProfiling($profiled, 'absorb') if $profiled;

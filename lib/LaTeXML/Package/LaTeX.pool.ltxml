@@ -2467,21 +2467,21 @@ DefConstructor('\lx@stackrel{}{}',
 # the type of letter, greek, symbol, etc.
 # Apparently, with the normal TeX setup, these fonts don't really merge,
 # rather they override all of family, series and shape.
-DefConstructor('\mathrm{}', '#1', bounded => 1, requireMath => 1,
+DefConstructor('\mathrm{}', '#1', bounded => 1, requireMath => 1, locked => 1,
   font => { family => 'serif', series => 'medium', shape => 'upright' });
-DefConstructor('\mathit{}', '#1', bounded => 1, requireMath => 1,
+DefConstructor('\mathit{}', '#1', bounded => 1, requireMath => 1, locked => 1,
   font => { shape => 'italic', family => 'serif', series => 'medium' });
-DefConstructor('\mathbf{}', '#1', bounded => 1, requireMath => 1,
+DefConstructor('\mathbf{}', '#1', bounded => 1, requireMath => 1, locked => 1,
   font => { series => 'bold', family => 'serif', shape => 'upright' });
-DefConstructor('\mathsf{}', '#1', bounded => 1, requireMath => 1,
+DefConstructor('\mathsf{}', '#1', bounded => 1, requireMath => 1, locked => 1,
   font => { family => 'sansserif', series => 'medium', shape => 'upright' });
-DefConstructor('\mathtt{}', '#1', bounded => 1, requireMath => 1,
+DefConstructor('\mathtt{}', '#1', bounded => 1, requireMath => 1, locked => 1,
   font => { family => 'typewriter', series => 'medium', shape => 'upright' });
-DefConstructor('\mathcal{}', '#1', bounded => 1, requireMath => 1,
+DefConstructor('\mathcal{}', '#1', bounded => 1, requireMath => 1, locked => 1,
   font => { family => 'caligraphic', series => 'medium', shape => 'upright' });
-DefConstructor('\mathscr{}', '#1', bounded => 1, requireMath => 1,
+DefConstructor('\mathscr{}', '#1', bounded => 1, requireMath => 1, locked => 1,
   font => { family => 'script', series => 'medium', shape => 'upright' });
-DefConstructor('\mathnormal{}', '#1', bounded => 1, requireMath => 1,
+DefConstructor('\mathnormal{}', '#1', bounded => 1, requireMath => 1, locked => 1,
   font => { family => 'math', shape => 'italic', series => 'medium' });
 
 DefMacroI('\fontsubfuzz',  undef, '.4pt');
@@ -4729,6 +4729,7 @@ DefEnvironment('{picture} Pair OptionalPair',
 
 DefMacroI(T_CS('\Gin@driver'), undef, Tokens());
 
+DefMacro('\@killglue',     '\unskip\@whiledim \lastskip >\z@\do{\unskip}');
 DefMacro('\put Until:){}', '\lx@pic@put#1){#2\relax}');
 DefConstructor('\lx@pic@put Pair{}',
   "<ltx:g transform='#transform'"
