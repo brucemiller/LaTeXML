@@ -227,8 +227,10 @@ DefEnvironment('{theopargself}',  '#body');    # ?
 DefEnvironment('{translation}{}', "<ltx:quote role='translation' lang='#1'>#body</ltx:quote>");
 
 #======================================================================
-DefConstructor('\qed',
-  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+DefMacro('\qed', '\ltx@qed');
+DefConstructor('\ltx@qed',
+  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
+  reversion => '\qed');
 Let('\smartqed',     '\qed');
 Let('\squareforqed', '\qed');
 

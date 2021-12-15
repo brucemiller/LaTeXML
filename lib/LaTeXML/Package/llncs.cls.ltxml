@@ -213,7 +213,7 @@ DefMath('\grole',  "\x{2277}", role => 'RELOP', meaning => 'greater-than-or-less
 
 DefConstructor('\squareforqed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
-Let('\qed', '\squareforqed');
+DefMacro('\qed', '\squareforqed');
 
 #======================================================================
 DefMacro('\backmatter', Tokens());

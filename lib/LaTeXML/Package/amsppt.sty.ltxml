@@ -311,7 +311,8 @@ DefMacro('\rom{}', '{rm #1}');
 
 DefMacro('\PSAMSFonts', '');
 RawTeX('\newif\ifPSAMSFonts\PSAMSFontstrue');
-DefConstructor('\qed', "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+DefMacro('\qed', '\ltx@qed');
+DefConstructor('\ltx@qed', "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})", reversion => '\qed');
 
 DefPrimitiveI('\tildechar', undef, "~", font => { family => 'typewriter' });
 DefMacro('\breakcheck', '');

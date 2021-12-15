@@ -299,7 +299,7 @@ DefConstructor('\aas@@fstack{}',
     . "<ltx:XMWrap>#1</ltx:XMWrap>"
     . "</ltx:XMApp>",
   properties => { scriptpos => sub { "mid" . $_[0]->getScriptLevel; } },
-  mode => 'math', bounded => 1);
+  mode       => 'math', bounded => 1);
 DefMacro('\aas@fstack{}', '\ensuremath{\aas@@fstack{#1}}');
 DefMacro('\fd',           '\aas@fstack{d}');
 DefMacro('\fh',           '\aas@fstack{h}');
@@ -319,8 +319,8 @@ DefConstructor('\mathsc{}', '#1', bounded => 1, requireMath => 1,
 
 DefConstructor('\squareforqed',
   "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
-Let('\sq',  '\squareforqed');
-Let('\qed', '\squareforqed');
+DefMacro('\sq',  '\squareforqed');
+DefMacro('\qed', '\squareforqed');
 
 DefPrimitiveI('\bbbc',   undef, "\x{2102}");    #not sure if ok for the ones NOT of type I$
 DefPrimitiveI('\bbbf',   undef, "\x{1D53D}");

@@ -112,8 +112,10 @@ DefMacro('\popQED',    sub { (PopValue('QED@stack') || ()); });
 
 # Should mark this as somehow ignorable for math,
 # but we DO want to keep it in the formula...
-DefConstructor('\qed',
-  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})");
+DefMacro('\qed', '\ltx@qed');
+DefConstructor('\ltx@qed',
+  "?#isMath(<ltx:XMTok role='PUNCT'>\x{220E}</ltx:XMTok>)(\x{220E})",
+  reversion => '\qed');
 Let('\mathqed',    '\qed');
 Let('\textsquare', '\qed');
 Let('\qedsymbol',  '\qed');
