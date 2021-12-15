@@ -2392,22 +2392,71 @@ DefPrimitive('\special {}', sub {
     if ($special_str =~ /\bpsfile=(.+?)(?:\s|\})/) {
       my $graphic = $1;
       RequirePackage('graphicx', searchpaths_only => 1);
+      my @kv;
+      for my $prop (qw(voffset hoffset hscale vscale hsize vsize angle)) {
+        if ($special_str =~ /\b$prop=(.+?)(?:\s|\})/) {
+          push(@kv, T_OTHER(',')) if @kv;
+          push(@kv, T_OTHER($prop), T_OTHER("="), T_OTHER($1)); } }
+      @kv = (T_OTHER("["), @kv, T_OTHER("]")) if @kv;
       $stomach->getGullet->unread(
-        Invocation(T_CS('\ltx@special@graphics'), T_OTHER($graphic))->unlist); }
+        T_CS('\ltx@special@graphics'), @kv, T_BEGIN, T_OTHER($graphic), T_END); }
     return; });
 # adapted from graphicx.sty.ltxml
-DefConstructor('\ltx@special@graphics Semiverbatim',
-  "<ltx:graphics graphic='#path' candidates='#candidates'/>",
+DefKeyVal('SpecialPS', 'angle',   '');
+DefKeyVal('SpecialPS', 'voffset', '');
+DefKeyVal('SpecialPS', 'hoffset', '');
+DefKeyVal('SpecialPS', 'hsize',   '');
+DefKeyVal('SpecialPS', 'vsize',   '');
+DefKeyVal('SpecialPS', 'hscale',  '');
+DefKeyVal('SpecialPS', 'vscale',  '');
+DefConstructor('\ltx@special@graphics OptionalKeyVals:SpecialPS Semiverbatim',
+  "<ltx:graphics graphic='#path' candidates='#candidates' options='#options'/>",
   sizer      => \&image_graphicx_sizer,
   properties => sub {
-    my ($stomach, $path) = @_;
+    my ($stomach, $kv, $path) = @_;
     $path = ToString($path); $path =~ s/^\s+//; $path =~ s/\s+$//;
+    $path =~ s/("+)(.+)\g1/$2/;
     my $searchpaths = LookupValue('GRAPHICSPATHS');
     my @candidates  = pathname_findall($path, types => ['*'], paths => $searchpaths);
     if (my $base = LookupValue('SOURCEDIRECTORY')) {
       @candidates = map { pathname_relative($_, $base) } @candidates; }
-    (path => $path,
-      candidates => join(',', @candidates)); },
+    my $options = '';
+    if ($kv) {    # remap psfile options to includegraphics options:
+      if (my $hscale = $kv->getValue('hscale')) {
+        $hscale = $hscale && int(ToString($hscale)) / 100;
+        $options .= ',' if $options;
+        $options .= "xscale=$hscale"; }
+      if (my $vscale = $kv->getValue('vscale')) {
+        $vscale = $vscale && int(ToString($vscale)) / 100;
+        $options .= ',' if $options;
+        $options .= "yscale=$vscale"; }
+      if (my $hsize = $kv->getValue('hsize')) {
+        $hsize = ToString($hsize);
+        $options .= ',' if $options;
+        $options .= "width=$hsize"; }
+      if (my $vsize = $kv->getValue('vsize')) {
+        $vsize = ToString($vsize);
+        $options .= ',' if $options;
+        $options .= "height=$vsize"; }
+      if (my $angle = $kv->getValue('angle')) {
+        $angle = ToString($angle);
+        $options .= ',' if $options;
+        $options .= "angle=$angle"; }
+      my $voffset = $kv->getValue('voffset');
+      $voffset = $voffset && int(ToString($voffset));
+      my $hoffset = $kv->getValue('hoffset');
+      $hoffset = $hoffset && int(ToString($hoffset));
+      if ($voffset || $hoffset) {
+        my ($left, $bottom, $right, $top) = (0, 0, 0, 0);
+        # STRANGE: I get best results by applying the offsets as >0 TRIMs to both axes,
+        #          rather than as single-axis offset (via negative value trim).
+        $voffset = -$voffset if $voffset < 0;
+        $bottom  = $top = $voffset;
+        $hoffset = -$hoffset if $hoffset < 0;
+        $left    = $right = $hoffset;
+        $options .= "," if $options;
+        $options .= "trim=$left $bottom $right $top,clip=true"; } }
+    (options => $options, path => $path, candidates => join(',', @candidates)); },
   mode => 'text');
 # Since these ultimately generate external resources, it can be useful to have a handle on them.
 Tag('ltx:graphics', afterOpen => sub { GenerateID(@_, 'g'); });

@@ -62,7 +62,7 @@ sub new {
     pdf => { destination_type => 'png',
       transparent => 1,
       prescale    => 1, ncolors => '400%', quality => 90, unit => 'point' },
-    ps => { destination_type => 'png', transparent => 1, autocrop => 1,
+    ps => { destination_type => 'png', transparent => 1,
       prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
     eps => { destination_type => 'png', transparent => 1,
       prescale => 1, ncolors => '400%', quality => 90, unit => 'point' },
