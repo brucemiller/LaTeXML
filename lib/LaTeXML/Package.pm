@@ -2071,6 +2071,7 @@ my $input_options = {};    # [CONSTANT]
 sub Input {
   my ($request, %options) = @_;
   $request = ToString($request);
+  $request =~ s/^("+)(.+)\g1$/$2/;    # unwrap if in quotes \input{"file name"}
   CheckOptions("Input ($request)", $input_options, %options);
   # HEURISTIC! First check if equivalent style file, but only under very specific circumstances
   if (pathname_is_literaldata($request)) {
