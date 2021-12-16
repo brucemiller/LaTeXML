@@ -33,7 +33,8 @@ use File::Copy;
 use File::Which;
 use Cwd;
 use base qw(Exporter);
-our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
+our @EXPORT = qw( &pathname_find
+  &pathname_findall &pathname_findall_nocase &pathname_kpsewhich
   &pathname_make &pathname_canonical
   &pathname_split &pathname_directory &pathname_name &pathname_type
   &pathname_timestamp
@@ -318,6 +319,20 @@ sub pathname_findall {
   my @paths = candidate_pathnames($pathname, %options);
   return grep { -f $_ } @paths; }
 
+sub pathname_findall_nocase {
+  my ($pathname, %options) = @_;
+  return unless $pathname;
+  # To allow arbitrarily cased spellings,
+  # lowercase the target path and all candidate paths
+  $pathname = lc($pathname);
+  my %star_candidates = ();
+  # This is a bit of a slow call, but really quite OK to run in rare fallback cases
+  # an average arXiv article may return with ~50-100 pathnames when looking for '*' graphics
+  for my $c (candidate_pathnames('*', %options)) {
+    $star_candidates{$c} = 1; }
+  my @paths = grep { -f $_ } grep { lc($_) =~ /$pathname/ } keys %star_candidates;
+  return @paths; }
+
 # It's presumably cheep to concatinate all the pathnames,
 # relative to the cost of testing for files,
 # and this simplifies overall.
@@ -405,7 +420,7 @@ sub pathname_kpsewhich {
   return; }
 
 sub build_kpse_cache {
-  $kpse_cache = {};            # At least we've tried.
+  $kpse_cache = {};    # At least we've tried.
   return unless $kpsewhich;
   # This finds ALL the directories looked for for any purposes, including docs, fonts, etc
   $kpse_toolchain = "--miktex-admin" if ($ENV{"LATEXML_KPSEWHICH_MIKTEX_ADMIN"});
