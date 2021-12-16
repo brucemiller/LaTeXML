@@ -3220,8 +3220,21 @@ sub add_subfigure_row_breaks {
       # which isn't yet accurately emulated in latexml itself.
       # so where two or more graphics may have been expected in the PDF,
       # latexml would only allow one as the \columnwidth would be defaulted to \textwidth.
-      my $block_box   = $document->getNodeBox($block);
-      my $block_width = $block_box->getWidth->valueOf();
+      my $block_width = $block->getAttribute('width');
+      # If we have an author annotation of the width, it will appear as an XML attribute,
+      # and should take precedence over the underlying asset width of the image blob
+      if (!$block_width) {
+        if (my $options = $block->getAttribute('options')) {
+          if ($options =~ /width=([^ "]+)/) {
+            $block_width = $1; } } }
+      if ($block_width) {
+        # if we found an attribute, deserialize back into an internal sp number
+        $block_width = Dimension($block_width)->valueOf; }
+      else {
+        # if no width directive was provided, infer it from the internal contents
+        my $block_box = $document->getNodeBox($block);
+        $block_width = $block_box->getWidth->valueOf(); }
+
       if (@new_contents && ($current_width + $block_width - 1 > $textwidth)) {
         # break when we exceed the line width, to keep close with the PDF arrangement
         my $break = $document->insertElementBefore($block, 'break', 'class' => 'ltx_break');
@@ -3273,7 +3286,6 @@ sub SubfigureAndID {
     $contents_count += 1 if $ok and $name ne 'ltx:break';
     $ok; } element_nodes($node);
   if ($contents_count > 1) {
-    NoteSTDERR("flex contents $contents_count: " . join("; ", map { $_->nodeName } @contents));
     @contents = add_subfigure_row_breaks($document, $node, $whatsit, @contents);
     add_subfigure_row_sizes($document, $node, $whatsit, @contents); }
   # 2. IDs

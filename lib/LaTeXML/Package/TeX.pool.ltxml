@@ -3288,7 +3288,7 @@ DefConstructorI('\normal@par', undef, sub {
     else {
       $document->maybeCloseElement('ltx:p');
       my $node  = $document->getElement;
-      my $qname = $node && $document->getNodeQName($node);
+      my $qname = ($node && $document->getNodeQName($node)) || '';
       if ($qname eq 'ltx:para' && !$node->getAttribute("class")) { # Only set on the para about to close, if unknown!
         if (my $c = $props{class}) {
           $document->setAttribute($node, class => $c); } }
