@@ -4623,8 +4623,6 @@ DefMacroI('\@parboxrestore', undef, Tokens());
 DefConditional('\if@minipage');
 DefEnvironment('{minipage}[][][]{Dimension}', sub {
     my ($document, $attachment, $b, $c, $width, %props) = @_;
-    my $textwidth = (LookupRegister('\textwidth') || Dimension('345pt'))->valueOf();
-    $width = int(100 * $width->valueOf / $textwidth - 1) . "%";
     my $vattach = translateAttachment($attachment);
     insertBlock($document, $props{body},
       para    => 1,
