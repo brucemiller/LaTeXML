@@ -443,3 +443,11 @@ cite                 { font-style: normal; }
     transform: scaleY(-1); }
 
 /* .ltx_phantom handled in xslt */
+
+.ltx_minipage {
+  align-self: normal;
+  display: inline-block;
+}
+.ltx_minipage > .ltx_graphics {
+  max-width:100%;
+}
