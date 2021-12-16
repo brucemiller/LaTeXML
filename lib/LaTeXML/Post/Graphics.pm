@@ -141,12 +141,6 @@ sub findGraphicFile {
     my @paths = pathname_findall($file, paths => $LaTeXML::Post::Graphics::SEARCHPATHS,
       # accept empty type, incase bad type name, but actual file's content is known type.
       types => ['', $self->getGraphicsSourceTypes]);
-    # Fallback: if we couldn't find a single file, do the search again, assuming
-    # a case-insensitive file system
-    if (!@paths) {
-      @paths = pathname_findall_nocase($file, paths => $LaTeXML::Post::Graphics::SEARCHPATHS,
-        # accept empty type, incase bad type name, but actual file's content is known type.
-        types => ['', $self->getGraphicsSourceTypes]); }
     my ($best, $bestpath) = (-1, undef);
     # Now, find the first image that is either the correct type,
     # or has the most desirable type mapping

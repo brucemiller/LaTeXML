@@ -33,8 +33,7 @@ use File::Copy;
 use File::Which;
 use Cwd;
 use base qw(Exporter);
-our @EXPORT = qw( &pathname_find
-  &pathname_findall &pathname_findall_nocase &pathname_kpsewhich
+our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_make &pathname_canonical
   &pathname_split &pathname_directory &pathname_name &pathname_type
   &pathname_timestamp
@@ -316,21 +315,17 @@ sub pathname_find {
 sub pathname_findall {
   my ($pathname, %options) = @_;
   return unless $pathname;
-  my @paths = candidate_pathnames($pathname, %options);
-  return grep { -f $_ } @paths; }
-
-sub pathname_findall_nocase {
-  my ($pathname, %options) = @_;
-  return unless $pathname;
-  # To allow arbitrarily cased spellings,
-  # lowercase the target path and all candidate paths
-  $pathname = lc($pathname);
-  my %star_candidates = ();
-  # This is a bit of a slow call, but really quite OK to run in rare fallback cases
-  # an average arXiv article may return with ~50-100 pathnames when looking for '*' graphics
-  for my $c (candidate_pathnames('*', %options)) {
-    $star_candidates{$c} = 1; }
-  my @paths = grep { -f $_ } grep { lc($_) =~ /$pathname/ } keys %star_candidates;
+  my @paths = grep { -f $_ } candidate_pathnames($pathname, %options);
+  if (!@paths) {    # Fallback:
+     # To allow arbitrarily cased spellings,
+     # lowercase the target path and all candidate paths
+    $pathname = lc($pathname);
+    my %star_candidates = ();
+    # This is a bit of a slow call, but really quite OK to run in rare fallback cases
+    # an average arXiv article may return with ~50-100 pathnames when looking for '*' graphics
+    for my $c (candidate_pathnames('*', %options)) {
+      $star_candidates{$c} = 1; }
+    @paths = grep { -f $_ } grep { lc($_) =~ /$pathname/ } keys %star_candidates; }
   return @paths; }
 
 # It's presumably cheep to concatinate all the pathnames,
