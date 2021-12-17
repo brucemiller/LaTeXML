@@ -224,7 +224,9 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
     position:absolute; left:0em;
     max-width:0em; text-align:right; }
 */
-.ltx_parbox {text-indent:0em; }
+.ltx_parbox {
+    text-indent:0em;
+    display: inline-block; }
 
 /* NOTE that it is CRITICAL to put position:relative outside & absolute inside!!
    I wish I understood why!
