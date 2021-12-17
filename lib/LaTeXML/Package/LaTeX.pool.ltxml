@@ -2138,7 +2138,7 @@ Tag('ltx:Math', afterOpen => sub { GenerateID(@_, 'm'); });
 # They provide an environment to wrap around equations,
 # which hijack the equation counter to sub-number within the group.
 DefConstructor('\lx@equationgroup@subnumbering@begin',
-  "<ltx:equationgroup xml:id='#id'>#tags",
+  "<ltx:equationgroup xml:id='#id'>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my %eqn   = RefStepCounter('equation');
@@ -2205,9 +2205,10 @@ DefPrimitive('\@equationgroup@numbering RequiredKeyVals', sub {
 # ========================================
 # Some special kinds of rows...
 DefConditionalI('\if@in@firstcolumn', undef, sub {
-    my $x = LookupValue('Alignment');
-    $x = ($x ? $x->currentColumnNumber : 9);
-    $x < 2; });
+    my $alignment = LookupValue('Alignment');
+    my $n         = ($alignment ? $alignment->currentColumnNumber : 9);
+    return ($alignment && (($alignment->currentColumnNumber < 2) || !$$alignment{in_row})); });
+
 # A bit more defensiveness, since people abuse eqnarray so badly.
 # Eg. &&\lefteqn{...}  whatever?!?!
 DefMacro('\lefteqn{}',
@@ -2236,9 +2237,6 @@ DefMacro('\csname endeqnarray*\endcsname',
 
 DefPrimitive('\@eqnarray@bindings', sub {
     eqnarrayBindings(); });
-
-DefPrimitiveI('\eqnarray@row@before', undef, sub { beforeEquation(); });
-DefPrimitiveI('\eqnarray@row@after',  undef, sub { afterEquation(); });
 
 DefPrimitiveI('\eqnarray@row@before@', undef, sub { beforeEquation(); });
 DefPrimitiveI('\eqnarray@row@after@',  undef, sub { afterEquation(); });
@@ -2286,7 +2284,7 @@ sub eqnarrayBindings {
 
 # A \label preceding \lefteqn throws of the implied \omit,e tc; so wrap in \hidden@align
 DefMacro('\lx@eqnarray@label Semiverbatim',
-'\ifnum1>\@alignment@column\hidden@noalign{\lx@eqnarray@save@label{#1}}\else\lx@eqnarray@save@label{#1}\fi');
+  '\hidden@noalign{\lx@eqnarray@save@label{#1}}');
 
 DefConstructor('\@@eqnarray SkipSpaces DigestedBody',
   '#1',
