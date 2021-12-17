@@ -5,7 +5,7 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
-    <tabular>
+    <tabular class="ltx_tabbing">
       <tr>
         <td align="left">one</td>
         <td align="left">two</td>
@@ -31,7 +31,7 @@
     </tabular>
   </para>
   <para xml:id="p2">
-    <tabular>
+    <tabular class="ltx_tabbing">
       <tr>
         <td align="left">pc</td>
         <td align="left">Pica = 12pt</td>
@@ -50,7 +50,7 @@
     </tabular>
   </para>
   <para xml:id="p3">
-    <tabular>
+    <tabular class="ltx_tabbing">
       <tr>
         <td align="left"><text font="bold">program</text> test</td>
         <td/>

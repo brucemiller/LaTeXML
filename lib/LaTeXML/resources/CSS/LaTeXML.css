@@ -125,6 +125,10 @@ td.ltx_subfloat { width:50%; }
 .ltx_tabular .ltx_tabular { width:100%; }
 .ltx_inline-block { display:inline-block; }
 
+/* tabbing is always a standalone paragraph-level construct */
+.ltx_tabular.ltx_tabbing { 
+  display: table; }
+
 /* avoid padding when aligning adjacent columns, e.g. for split decimals */
 .ltx_norightpad { padding-right:0!important; }
 .ltx_noleftpad  { padding-left:0!important; }

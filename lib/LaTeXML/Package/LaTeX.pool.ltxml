@@ -3354,9 +3354,9 @@ DefRegister('\marginparpush', Dimension(0));
 DefRegister('\tabbingsep' => Dimension(0));
 
 DefMacroI('\tabbing', undef,
-  '\@tabbing@bindings\@@tabbing\@start@alignment');
+  '\par\@tabbing@bindings\@@tabbing\@start@alignment');
 DefMacroI('\endtabbing', undef,
-  '\@finish@alignment\@end@tabbing');
+  '\@finish@alignment\@end@tabbing\par');
 DefPrimitiveI('\@end@tabbing', undef, sub { $_[0]->egroup; });
 DefConstructor('\@@tabbing SkipSpaces DigestedBody',
   '#1',
@@ -3409,7 +3409,9 @@ sub tabbingBindings {
       openRow        => sub { $_[0]->openElement('ltx:tr', @_[1 .. $#_]); },
       closeRow       => sub { $_[0]->closeElement('ltx:tr'); },
       openColumn     => sub { $_[0]->openElement('ltx:td', @_[1 .. $#_]); },
-      closeColumn    => sub { $_[0]->closeElement('ltx:td'); }));
+      closeColumn    => sub { $_[0]->closeElement('ltx:td'); },
+      properties     => { attributes => { 'class' => 'ltx_tabbing' } }));
+
   Let("\\=",              '\@tabbing@tabset');
   Let("\\>",              '\@tabbing@nexttab');
   Let("\\\\",             '\@tabbing@newline');
