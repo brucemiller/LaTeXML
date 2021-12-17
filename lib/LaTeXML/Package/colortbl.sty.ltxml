@@ -32,7 +32,9 @@ RequirePackage('array');
 # cell & column seem to work out by themselves, but getting row to override
 # needs a bit of help:
 DefConditional('\if@@rowcolored', sub { LookupValue('tabular_row_color'); });
-DefPrimitive('\@clearrowcolor', sub { AssignValue(tabular_row_color => undef, 'global'); });
+DefPrimitive('\@clearrowcolor', sub {
+    MergeFont(background => undef);
+    AssignValue(tabular_row_color => undef, 'global'); });
 AddToMacro('\@tabular@row@after', '\hidden@noalign{\@clearrowcolor}');
 
 AddToMacro('\@tabular@column@before', '\@userowcolor');
@@ -50,7 +52,8 @@ DefMacro('\columncolor[]{}[][]',
 
 # \rowcolor[<model>]{<color>}
 # Set the background color, and arrange for it to attach to the ltx:td
-DefMacro('\rowcolor[]{}', '\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}\fi\@setrowcolor');
+DefMacro('\rowcolor[]{}',
+  '\hidden@noalign{\ifx.#1.\pagecolor{#2}\else\pagecolor[#1]{#2}\fi\@setrowcolor}');
 
 # \cellcolor[<model>]{<color>}
 # Set the background color (we should already be in a cell),
@@ -62,7 +65,8 @@ DefConstructor('\@setrowcolor', sub {
     my ($document, %props) = @_;
     if (my $bg = $props{background}) {    # only set if explicitly set a color
       if (my $node = $document->findnode('ancestor-or-self::ltx:tr', $document->getNode)) {
-        $document->setAttribute($node, backgroundcolor => $bg); } } },
+        if (!$node->hasAttribute('backgroundcolor')) {
+          $document->setAttribute($node, backgroundcolor => $bg); } } } },
   afterDigest => sub { my $bg = $_[1]->getProperty('font')->getBackground;
     $_[1]->setProperty(background => $bg);
     AssignValue(tabular_row_color => $bg, 'global'); },
