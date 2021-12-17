@@ -317,15 +317,16 @@ sub pathname_findall {
   return unless $pathname;
   my @paths = grep { -f $_ } candidate_pathnames($pathname, %options);
   if (!@paths) {    # Fallback:
-     # To allow arbitrarily cased spellings,
-     # lowercase the target path and all candidate paths
-    $pathname = lc($pathname);
+        # This is a bit of a slow call, but really quite OK to run in rare fallback cases
+        # an average arXiv article may return with ~50-100 pathnames when looking for '*' graphics
+    my ($pathdir, $name, $type) = pathname_split($pathname);
     my %star_candidates = ();
-    # This is a bit of a slow call, but really quite OK to run in rare fallback cases
-    # an average arXiv article may return with ~50-100 pathnames when looking for '*' graphics
-    for my $c (candidate_pathnames('*', %options)) {
+    for my $c (candidate_pathnames($pathdir ? "$pathdir/*" : '*', %options)) {
       $star_candidates{$c} = 1; }
-    @paths = grep { -f $_ } grep { lc($_) =~ /$pathname/ } keys %star_candidates; }
+    # To allow arbitrarily cased spellings,
+    # lowercase the target path and all candidate paths
+    $pathname = lc($pathname);
+    @paths    = grep { -f $_ } grep { lc($_) =~ /$pathname/ } keys %star_candidates; }
   return @paths; }
 
 # It's presumably cheep to concatinate all the pathnames,
