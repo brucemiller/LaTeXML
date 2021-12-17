@@ -2656,7 +2656,9 @@ DefMacroI('\tabularnewline', undef, '\cr');    # ???
 
 # Like \noalign, takes an arg; handled within alignment processing.
 # But doesn't create a pseudo-row (??? Or does it?; is it still needed?)
-DefPrimitiveI('\hidden@noalign', undef);
+DefConstructor('\hidden@noalign{}', '#1',
+  reversion  => '',
+  properties => { alignmentSkippable => 1 });
 
 DefMacro('\@alignment@hline', '\noalign{\@@alignment@hline}');
 DefConstructorI('\@@alignment@hline', undef, '',
@@ -3047,7 +3049,7 @@ sub digestAlignmentColumn {
         return ($r, T_CS('\cr'), 'cr'), undef; }    # Pretend this is a whole row???
       elsif (Equals($token, T_CS('\hidden@noalign'))) {    # \puts something in vertical list
         Debug("Halign $alignment: COLUMN invisible noalign") if $LaTeXML::DEBUG{halign};
-        $stomach->digest($gullet->readArg); }              # Purely for side effect!
+        push(@LaTeXML::LIST, $stomach->invokeToken($token)); }
       else {
         last; } }
     Debug("Halign $alignment: COLUMN end scan at " . Stringify($token)) if $LaTeXML::DEBUG{halign};
@@ -3078,7 +3080,7 @@ sub digestAlignmentColumn {
             $token, $type, $hidden); } }
       elsif (Equals($token, T_CS('\hidden@noalign'))) {    # \puts something in vertical list
         Debug("Halign $alignment: COLUMN invisible noalign") if $LaTeXML::DEBUG{halign};
-        $stomach->digest($gullet->readArg); }
+        push(@LaTeXML::LIST, $stomach->invokeToken($token)); }
       else {    # Else, we're getting some actual content for the column
         Debug("Halign $alignment: COLUMN invoking " . Stringify($token)) if $LaTeXML::DEBUG{halign};
         push(@LaTeXML::LIST, $stomach->invokeToken($token));
@@ -3105,41 +3107,13 @@ sub trimColumnTemplate {
   while (scalar(@pre) && scalar(@tokens)) {
     my $t = shift(@pre);
     if ($t->equals($tokens[0])) {
-      shift(@tokens);
-      if ($t->equals(T_CS('\hidden@noalign'))) {
-        @tokens = shiftArg(@tokens);
-        @pre    = shiftArg(@pre); } } }
+      shift(@tokens); } }
   while (scalar(@post) && scalar(@tokens)) {
     my $t = pop(@post);
     if ($t->equals($tokens[-1])) {
-      pop(@tokens);
-## This would need to detect \hidden@noalign IN FRONT of the balanced {}!!! else put the "arg" back
-##      if ($t->equals(T_CS('\hidden@noalign'))) { # DOH!!! This can't work; trigger on "}" ?????
-##        @tokens = popArg(@tokens);
-##        @post   = popArg(@post); }
-  } }
+      pop(@tokens); } }
   Debug("  Trimmed: " . ToString(Tokens(@tokens))) if $LaTeXML::DEBUG{halign};
   return Tokens(@tokens); }
-
-sub shiftArg {
-  my (@tokens) = @_;
-  my $level = 0;
-  while (my $t = shift(@tokens)) {
-    my $cc = $$t[1];
-    if    ($cc == CC_BEGIN) { $level++; }
-    elsif ($cc == CC_END)   { $level--; }
-    last if $level <= 0; }
-  return @tokens; }
-
-sub popArg {
-  my (@tokens) = @_;
-  my $level = 0;
-  while (my $t = pop(@tokens)) {
-    my $cc = $$t[1];
-    if    ($cc == CC_END)   { $level++; }
-    elsif ($cc == CC_BEGIN) { $level--; }
-    last if $level <= 0; }
-  return @tokens; }
 
 # Given the boxes for an alignment cell,
 # extract & remove the various fills and rules from the ends to annotate the cell structure
@@ -6517,6 +6491,8 @@ DefPrimitive('\lx@gen@cases@bindings RequiredKeyVals:lx@GEN', sub {
               T_CS('\hfil')) }]),
       'math');
     Let("\\\\", '\@alignment@newline');
+    DefMacro('\@row@before', '');    # Don't inherit counter stepping from containing environments
+    DefMacro('\@row@after',  '');
 });
 
 DefMacro('\lx@gen@plain@cases{}{}',
