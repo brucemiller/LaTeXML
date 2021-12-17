@@ -327,7 +327,7 @@ sub pathname_findall {
     # To allow arbitrarily cased spellings,
     # lowercase the target path and all candidate paths
     $pathname = lc($pathname);
-    @paths    = grep { -f $_ } grep { lc($_) =~ /$pathname/ } keys %star_candidates; }
+    @paths    = grep { -f $_ } grep { lc($_) =~ /\Q$pathname\E/ } keys %star_candidates; }
   return @paths; }
 
 # It's presumably cheep to concatinate all the pathnames,
