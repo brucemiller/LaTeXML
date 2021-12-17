@@ -93,6 +93,7 @@ sub beAbsorbed {
   return map { $document->absorb($_) } $self->unlist; }
 
 sub computeSize {
+  no warnings 'recursion';
   my ($self, %options) = @_;
   my $font = $self->getProperty('font') || LaTeXML::Common::Font->textDefault;
   return $font->computeBoxesSize($$self{boxes}, %options); }

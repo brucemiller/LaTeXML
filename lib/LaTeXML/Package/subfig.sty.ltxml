@@ -54,6 +54,7 @@ DefPrimitive('\newsubfloat[]{}', sub {
         . "#tags"
         . "#body"
         . "</$type>",
+      properties   => { layout => 'vertical' },
       beforeDigest => sub { DefMacroI('\@captype', undef, 'sub' . $name); },
       afterDigest  => sub {
         RescueCaptionCounters('sub' . $name, $_[1]);

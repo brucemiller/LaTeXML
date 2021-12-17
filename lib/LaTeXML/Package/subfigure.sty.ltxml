@@ -153,6 +153,7 @@ DefEnvironment('{@subfigure}',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
+  properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'subfigure'); },
   afterDigest  => sub { RescueCaptionCounters('subfigure', $_[1]); });
 DefMacro('\subtable[][]{}',
@@ -172,6 +173,7 @@ DefEnvironment('{@subtable}',
     . "#tags"
     . "#body"
     . "</ltx:table>",
+  properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'subtable'); },
   afterDigest  => sub { RescueCaptionCounters('subtable', $_[1]); });
 

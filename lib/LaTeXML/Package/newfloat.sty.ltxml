@@ -66,6 +66,7 @@ DefPrimitive('\DeclareFloatingEnvironment OptionalKeyVals {}', sub {
         . "#tags"
         . "#body"
         . "</ltx:float>",
+      properties   => { layout => 'vertical' },
       beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
       afterDigest  => sub { RescueCaptionCounters($type, $_[1]); });
     DefEnvironmentI("$type*", "[]",
@@ -73,6 +74,7 @@ DefPrimitive('\DeclareFloatingEnvironment OptionalKeyVals {}', sub {
         . "#tags"
         . "#body"
         . "</ltx:float>",
+      properties   => { layout => 'vertical' },
       beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
       afterDigest  => sub { RescueCaptionCounters($type, $_[1]); });
 });

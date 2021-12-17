@@ -706,6 +706,16 @@ sub insertPI {
     $$self{document}->insertBefore($pi, $$self{document}->documentElement); }
   return $pi; }
 
+# Insert an empty element before a given node
+# Does NOT move the current insertion point
+sub insertElementBefore {
+  my ($self, $point, $name, %attrib) = @_;
+  my $new = $$self{document}->createElement($name);
+  $new->setNamespace($LaTeXML::Common::Model::LTX_NAMESPACE, '', 1);
+  for my $key (keys %attrib) {
+    $new->setAttribute($key, $attrib{$key}); }
+  return $point->parentNode->insertBefore($new, $point); }
+
 #**********************************************************************
 # Middle level, mostly public, API.
 # Handlers for various construction operations.

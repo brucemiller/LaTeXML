@@ -89,9 +89,73 @@
   Para level */
 .ltx_float {
     margin: 1ex 3em 1ex 3em; }
-td.ltx_subfigure,
-td.ltx_subtable,
-td.ltx_subfloat { width:50%; }
+
+/* Multiple subfigures via flexbox */
+.ltx_flex_figure {
+  display: flex;
+  flex-flow: row wrap;
+  width: auto;
+  max-width: 60rem;
+  position: relative;
+  justify-content: center;
+  align-items: baseline;
+  object-fit: contain;
+  margin-bottom: 1rem;
+}
+
+.ltx_flex_size_1,
+.ltx_flex_size_1 .ltx_tabular,
+.ltx_flex_size_1 .ltx_graphics {
+  max-width:60rem;
+}
+.ltx_flex_size_2,
+.ltx_flex_size_2 .ltx_tabular,
+.ltx_flex_size_2 .ltx_graphics {
+  max-width: calc(0.44*60rem);
+}
+.ltx_flex_size_3,
+.ltx_flex_size_3 .ltx_tabular,
+.ltx_flex_size_3 .ltx_graphics {
+  max-width: calc(0.30*60rem);
+}
+.ltx_flex_size_4,
+.ltx_flex_size_4 .ltx_tabular,
+.ltx_flex_size_4 .ltx_graphics {
+  max-width: calc(0.24*60rem);
+}
+/*Default: More than 4 items, tricky.
+  quite often intended to auto-reflow... */
+.ltx_flex_size_many,
+.ltx_flex_size_many .ltx_tabular,
+.ltx_flex_size_many .ltx_graphics {
+  max-width: calc(0.24*60rem);
+}
+
+/* flex row breaks */
+.ltx_flex_figure .ltx_flex_break {
+  flex-basis: 100%;
+  height: 0;
+}
+
+/* layout preference */
+.ltx_flex_figure .ltx_subgraphics,
+.ltx_flex_figure .ltx_subfigure,
+.ltx_flex_figure .ltx_subfloat,
+.ltx_flex_figure .ltx_subtable {
+  flex: 1 1 0px;
+  margin: 0.1rem;
+}
+.ltx_subgraphics, .ltx_subfigure, .ltx_subtable, .ltx_subfloat {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+.ltx_subgraphics > .ltx_figure,
+.ltx_subfigure > .ltx_figure,
+.ltx_subtable > .ltx_figure,
+.ltx_subfloat > .ltx_figure {
+  margin:0em;
+}
+
 /* theorems, figure, tables, floats captions.. */
 /*======================================================================
  Blocks, Lists, Floats */
@@ -385,3 +449,11 @@ cite                 { font-style: normal; }
     transform: scaleY(-1); }
 
 /* .ltx_phantom handled in xslt */
+
+.ltx_minipage {
+  align-self: normal;
+  display: inline-block;
+}
+.ltx_minipage > .ltx_graphics {
+  max-width:100%;
+}

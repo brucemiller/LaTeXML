@@ -3136,6 +3136,7 @@ for my $float (qw(@float @dblfloat)) {
     "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
       . "#body"
       . "</ltx:float>",
+    properties       => { layout => 'vertical' },
     afterDigestBegin => sub {
       DefMacroI('\@captype', undef, ToString($_[1]->getArg(2)));
       return; },
@@ -3204,16 +3205,102 @@ DefConstructor('\@@generic@caption[]{}', "<ltx:text class='ltx_caption'>#2</ltx:
     Error('unexpected', '\caption', $_[0],
       "Use of \\caption outside any known float"); });
 
-# Note that even without \caption, we'd probably like to have xml:id.
-Tag('ltx:figure', afterClose => sub { GenerateID(@_, 'fig'); });
-Tag('ltx:table',  afterClose => sub { GenerateID(@_, 'tab'); });
-Tag('ltx:float',  afterClose => sub { GenerateID(@_, 'tab'); });
+sub add_subfigure_row_breaks {
+  my ($document, $node, $whatsit, @contents) = @_;
+  my $textwidth     = (LookupRegister('\textwidth') || Dimension('345pt'))->valueOf();
+  my $current_width = 0;
+  my @new_contents  = ();
+  for my $block (@contents) {
+    my $block_name = $document->getNodeQName($block);
+    if ($block_name eq 'ltx:break') {
+      # reset bookkeeping on prior breaks, be they author-deposited or computed
+      $current_width = 0; }
+    else {
+      # TODO: A tricky bit to consider here is graphics sized to \columnwidth
+      # which isn't yet accurately emulated in latexml itself.
+      # so where two or more graphics may have been expected in the PDF,
+      # latexml would only allow one as the \columnwidth would be defaulted to \textwidth.
+      my $block_width = $block->getAttribute('width');
+      # If we have an author annotation of the width, it will appear as an XML attribute,
+      # and should take precedence over the underlying asset width of the image blob
+      if (!$block_width) {
+        if (my $options = $block->getAttribute('options')) {
+          if ($options =~ /width=([^ "]+)/) {
+            $block_width = $1; } } }
+      if ($block_width) {
+        # if we found an attribute, deserialize back into an internal sp number
+        $block_width = Dimension($block_width)->valueOf; }
+      else {
+        # if no width directive was provided, infer it from the internal contents
+        my $block_box = $document->getNodeBox($block);
+        $block_width = $block_box->getWidth->valueOf(); }
+
+      if (@new_contents && ($current_width + $block_width > $textwidth)) {
+        # break when we exceed the line width, to keep close with the PDF arrangement
+        my $break = $document->insertElementBefore($block, 'break', 'class' => 'ltx_break');
+        push(@new_contents, $break);
+        $current_width = $block_width; }
+      else {
+        $current_width += $block_width; } }
+    push(@new_contents, $block); }
+  return @new_contents; }
+
+sub add_subfigure_row_sizes {
+  my ($document, $node, $whatsit, @contents) = @_;
+  my @row = ();
+  for my $child (@contents) {
+    if ($document->getNodeQName($child) eq 'ltx:break') {
+      next unless @row;
+      my $row_size      = scalar(@row);
+      my $row_size_attr = "ltx_flex_size_$row_size";
+      if ($row_size > 4) {    # add a generic class for larger rows, to style together easily
+        $row_size_attr .= " ltx_flex_size_many"; }
+      for my $cell (@row) {
+        my $class = $cell->getAttribute('class') || '';
+        $class .= ' ' if $class;
+        $cell->setAttribute('class', $class . $row_size_attr); }
+      @row = (); }
+    else {
+      push(@row, $child); } }
+  # Don't forget the last row, if any
+  if (@row) {
+    my $row_size      = scalar(@row);
+    my $row_size_attr = "ltx_flex_size_$row_size";
+    if ($row_size > 4) {    # add a generic class for larger rows, to style together easily
+      $row_size_attr .= " ltx_flex_size_many"; }
+    for my $cell (@row) {
+      my $class = $cell->getAttribute('class') || '';
+      $class .= ' ' if $class;
+      $cell->setAttribute('class', $class . $row_size_attr); } }
+  return; }
+
+# Feature 1: Add flex classes to each subfigure cell in a figure.
+# Feature 2: Add identifiers on each figure
+sub SubfigureAndID {
+  my ($document, $node, $whatsit, $id_kind) = @_;
+  # 1. Flex
+  # A little verbose, but much easier to do than XSLT 1.0 would allow.
+  my $contents_count = 0;    # count with author breaks excluded
+  my @contents       = grep { my $name = $document->getNodeQName($_);
+    my $ok = ($name =~ /^ltx:(?:graphics|float|figure|table|tabular|break|inline-para|inline-block|listing)$/);
+    $contents_count += 1 if $ok and $name ne 'ltx:break';
+    $ok; } element_nodes($node);
+  if ($contents_count > 1) {
+    @contents = add_subfigure_row_breaks($document, $node, $whatsit, @contents);
+    add_subfigure_row_sizes($document, $node, $whatsit, @contents); }
+  # 2. IDs
+  # Note that even without \caption, we'd probably like to have xml:id.
+  return GenerateID($document, $node, $whatsit, $id_kind); }
+
+Tag('ltx:figure', afterClose => sub { SubfigureAndID(@_, 'fig'); });
+Tag('ltx:float',  afterClose => sub { SubfigureAndID(@_, 'tab'); });
+Tag('ltx:table',  afterClose => sub { SubfigureAndID(@_, 'tab'); });
 
 # These may need to float up to where they're allowed,
 # or they may need to close <p> or similar.
-DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>");
+DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>", sizer => 0);
 DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
-  sizer => '0');
+  sizer => 0);
 
 DefEnvironment('{figure}[]',
   "<ltx:figure xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
@@ -4548,6 +4635,7 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
   sizer      => '#body',
   mode       => 'text',
   properties => sub { (
+      layout  => 'vertical',
       width   => $_[4],
       vattach => translateAttachment($_[1])); },
   beforeDigest => sub {

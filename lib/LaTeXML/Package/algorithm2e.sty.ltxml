@@ -62,6 +62,7 @@ DefEnvironment('{algorithm}[]',
     . "#body"
     . "</ltx:listingline>"
     . "</ltx:listing></ltx:float>",
+  properties   => { layout => 'vertical' },
   beforeDigest => sub {
     Digest(T_CS('\@ResetCounterIfNeeded'));
     Digest(T_CS('\algocf@linesnumbered'));
@@ -215,4 +216,3 @@ DefConstructor('\algocf@printnl{}', sub {
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
-

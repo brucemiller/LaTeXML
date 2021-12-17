@@ -54,7 +54,7 @@ DefEnvironment('{subfigure}[]{Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  properties   => sub { (layout => 'vertical', width => $_[2]); },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'subfigure'); },
   afterDigest  => sub { RescueCaptionCounters('subfigure', $_[1]); });
 DefEnvironment('{subfigure*}[]{Dimension}',
@@ -62,7 +62,7 @@ DefEnvironment('{subfigure*}[]{Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties   => { layout => 'vertical' },
+  properties   => sub { (layout => 'vertical', width => $_[2]); },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'subfigure'); },
   afterDigest  => sub { RescueCaptionCounters('subfigure', $_[1]); });
 DefEnvironment('{subtable}[]{Dimension}',
@@ -70,7 +70,7 @@ DefEnvironment('{subtable}[]{Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
+  properties   => sub { (layout => 'vertical', width => $_[2]); },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'subtable'); },
   afterDigest  => sub { RescueCaptionCounters('subtable', $_[1]); });
 DefEnvironment('{subtable*}[]{Dimension}',
@@ -78,7 +78,7 @@ DefEnvironment('{subtable*}[]{Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties   => { layout => 'vertical' },
+  properties   => sub { (layout => 'vertical', width => $_[2]); },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'subtable'); },
   afterDigest  => sub { RescueCaptionCounters('subtable', $_[1]); });
 

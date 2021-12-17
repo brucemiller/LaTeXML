@@ -183,6 +183,15 @@ sub setGraphicSrc {
   $node->setAttribute('imagesrc',    pathname_to_url($src));
   $node->setAttribute('imagewidth',  $width)  if defined $width;
   $node->setAttribute('imageheight', $height) if defined $height;
+  if ($width and $height) {
+    my $aspect_class = "ltx_img_square";
+    if ($width > 1.24 * $height) {
+      $aspect_class = "ltx_img_landscape"; }
+    elsif ($height > 1.24 * $width) {
+      $aspect_class = "ltx_img_portrait" }
+    my $class = $node->getAttribute('class');
+    $class = ($class ? $class . ' ' : '') . $aspect_class;
+    $node->setAttribute('class', $class); }
   return; }
 
 sub processGraphic {

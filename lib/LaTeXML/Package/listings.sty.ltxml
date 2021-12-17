@@ -227,6 +227,7 @@ DefConstructor('\@listings {}',
     . "#tags"
     . "#1"
     . "</ltx:float>",
+  properties   => { layout => 'vertical' },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
@@ -239,7 +240,10 @@ DefConstructor('\@@listings {}',
     . "#tags"
     . "#1"
     . "</ltx:float>",
-  properties   => sub { RefStepID('lstlisting'); },
+  properties => sub {
+    my %props = RefStepID('lstlisting');
+    $props{layout} = 'vertical';
+    return %props; },
   beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
@@ -256,7 +260,7 @@ DefConstructor('\@@listings@block {} {}',
       $listings_data = encode('UTF-8', $listings_data);
     }
     my $data = encode_base64($listings_data, '');    # NO linebreaking!
-    $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64'); });
+    $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64', layout => 'vertical'); });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Low Level String stuff

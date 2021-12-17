@@ -252,6 +252,7 @@ sub showSize {
 # Eventually, this needs to link into real font data
 sub computeSizeStore {
   my ($self, %options) = @_;
+  no warnings 'recursion';
   my $props = $self->getPropertiesRef;
   $options{width}   = $$props{width}   if $$props{width};
   $options{height}  = $$props{height}  if $$props{height};
@@ -266,6 +267,8 @@ sub computeSizeStore {
 
 sub computeSize {
   my ($self, %options) = @_;
+  if (my $body = $self->getProperty('body')) {
+    return $body->computeSize(%options); }
   my $font = $self->getProperty('font') || LaTeXML::Common::Font->textDefault;
   return $font->computeStringSize($$self{string}, %options); }
 
