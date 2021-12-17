@@ -62,7 +62,6 @@ DefEnvironment('{algorithm}[]',
     . "#body"
     . "</ltx:listingline>"
     . "</ltx:listing></ltx:float>",
-  sizer        => "#body",
   properties   => { layout => 'vertical' },
   beforeDigest => sub {
     Digest(T_CS('\@ResetCounterIfNeeded'));

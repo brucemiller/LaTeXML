@@ -3235,7 +3235,7 @@ sub add_subfigure_row_breaks {
         my $block_box = $document->getNodeBox($block);
         $block_width = $block_box->getWidth->valueOf(); }
 
-      if (@new_contents && ($current_width + $block_width - 1 > $textwidth)) {
+      if (@new_contents && ($current_width + $block_width > $textwidth)) {
         # break when we exceed the line width, to keep close with the PDF arrangement
         my $break = $document->insertElementBefore($block, 'break', 'class' => 'ltx_break');
         push(@new_contents, $break);
