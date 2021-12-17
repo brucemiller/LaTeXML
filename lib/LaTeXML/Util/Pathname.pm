@@ -321,7 +321,8 @@ sub pathname_findall {
         # an average arXiv article may return with ~50-100 pathnames when looking for '*' graphics
     my ($pathdir, $name, $type) = pathname_split($pathname);
     my %star_candidates = ();
-    for my $c (candidate_pathnames($pathdir ? "$pathdir/*" : '*', %options)) {
+    my $star_query      = $pathdir ? pathname_concat($pathdir, "*") : '*';
+    for my $c (candidate_pathnames($star_query, %options)) {
       $star_candidates{$c} = 1; }
     # To allow arbitrarily cased spellings,
     # lowercase the target path and all candidate paths
