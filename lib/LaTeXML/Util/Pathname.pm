@@ -377,18 +377,18 @@ sub candidate_pathnames {
   # Now, combine; precedence to leading directories.
   foreach my $dir (@dirs) {
     opendir(DIR, $dir) or next;
-    for my $local_file (readdir(DIR)) {
+    my @dir_files = readdir(DIR);
+    closedir(DIR);
+    for my $local_file (@dir_files) {
       for my $regex_pair (@regexes) {
         my ($i_regex, $regex) = @$regex_pair;
         if ($local_file =~ m/$i_regex/) {
           my $full_file = pathname_concat($dir, $local_file);
           push(@nocase_paths, $full_file);
-          # Always check if a strict match also exists on disk:
-          if (($local_file =~ m/$regex/) && (-f $full_file)) {
+          if ($local_file =~ m/$regex/) {
             # if we are only interested in the first match, return it:
             return ($full_file) if $options{findfirst};
-            push(@paths, $full_file); } } } }
-    closedir(DIR); }
+            push(@paths, $full_file); } } } } }
   # Fallback: if no strict matches were found, return any existing case-insensitive matches
   # Defer the -f check until we are sure we need it, to keep the usual cases fast.
   return @paths ? @paths : grep { -f $_ } @nocase_paths; }
