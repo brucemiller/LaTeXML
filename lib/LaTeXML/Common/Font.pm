@@ -502,7 +502,7 @@ sub computeStringSize {
     $w += int($cw * $size);
     if (my $kern = $chars[0] && $$metric{kerns}{ $char . $chars[0] }) {
       $w += int($size * $kern); }
-    if ($ismath) {
+    if ($ismath && $ci) {
       $w += int($size * $ci); }
     $h = max($h, int($ch * $size));
     $d = max($d, int($cd * $size)); }
