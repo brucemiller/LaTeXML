@@ -502,7 +502,7 @@ sub computeStringSize {
     $w += int($cw * $size);
     if (my $kern = $chars[0] && $$metric{kerns}{ $char . $chars[0] }) {
       $w += int($size * $kern); }
-    if ($ismath) {
+    if ($ismath && $ci) {
       $w += int($size * $ci); }
     $h = max($h, int($ch * $size));
     $d = max($d, int($cd * $size)); }
@@ -715,7 +715,7 @@ sub merge {
   $shape     = $$self[2] if (!defined $shape)  || ($oflags & $FLAG_FORCE_SHAPE);
   $size      = $$self[3] if (!defined $size);
   $color     = $$self[4] if (!defined $color);
-  $bg        = $$self[5] if (!defined $bg);
+  $bg        = $$self[5] if (!exists $options{background});
   $opacity   = $$self[6] if (!defined $opacity);
   $encoding  = $$self[7] if (!defined $encoding);
   $language  = $$self[8] if (!defined $language);
