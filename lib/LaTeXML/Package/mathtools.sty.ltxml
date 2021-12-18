@@ -639,11 +639,17 @@ DefMacro('\Aboxed{}', '#1');
 # TODO: Make this actually do something
 DefMacro('\ArrowBetweenLines[]',                   '');
 DefMacro('\csname ArrowBetweenLines*\endcsname[]', '');
-DefMacro('\vdotswithin{}',                         '');
-DefMacro('\shortvdotswithin{}',                    '');
-DefMacro('\csname shortvdotswithin*\endcsname{}',  '');
-DefMacro('\MTFlushSpaceAbove',                     '');
-DefMacro('\MTFlushSpaceBelow',                     '');
+DefMacro('\vdotswithin{}', '\mathmakebox[\widthof{\ensuremath{{}#1{}}}][c]{\vdots}');
+DefMacro('\shortvdotswithin{}',
+  '\MTFlushSpaceAbove
+  & \vdotswithin{#1}
+  \MTFlushSpaceBelow');
+DefMacro('\csname shortvdotswithin*\endcsname{}',
+  '\MTFlushSpaceAbove
+  \vdotswithin{#1} &
+  \MTFlushSpaceBelow');
+DefMacro('\MTFlushSpaceAbove', '');
+DefMacro('\MTFlushSpaceBelow', '\\\\');
 
 ## 3.5
 Let('\shortintertext', '\@ams@intertext');
