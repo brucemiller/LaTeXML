@@ -307,30 +307,17 @@ sub pathname_installation {
 sub pathname_find {
   my ($pathname, %options) = @_;
   return unless $pathname;
+  $options{findfirst} = 1;
   my @paths = candidate_pathnames($pathname, %options);
-  foreach my $path (@paths) {
-    return $path if -f $path; }
-  return; }
+  return $paths[0]; }
 
 sub pathname_findall {
   my ($pathname, %options) = @_;
   return unless $pathname;
-  my @paths = grep { -f $_ } candidate_pathnames($pathname, %options);
-  if (!@paths) {    # Fallback:
-        # This is a bit of a slow call, but really quite OK to run in rare fallback cases
-        # an average arXiv article may return with ~50-100 pathnames when looking for '*' graphics
-    my ($pathdir, $name, $type) = pathname_split($pathname);
-    my %star_candidates = ();
-    my $star_query      = $pathdir ? pathname_concat($pathdir, "*") : '*';
-    for my $c (candidate_pathnames($star_query, %options)) {
-      $star_candidates{$c} = 1; }
-    # To allow arbitrarily cased spellings,
-    # lowercase the target path and all candidate paths
-    $pathname = lc($pathname);
-    @paths    = grep { -f $_ } grep { lc($_) =~ /\Q$pathname\E/ } keys %star_candidates; }
-  return @paths; }
+  $options{findfirst} = undef;
+  return candidate_pathnames($pathname, %options); }
 
-# It's presumably cheep to concatinate all the pathnames,
+# It's presumably cheap to concatinate all the pathnames,
 # relative to the cost of testing for files,
 # and this simplifies overall.
 sub candidate_pathnames {
@@ -370,26 +357,41 @@ sub candidate_pathnames {
         push(@exts, '.' . $ext); } } }
   push(@exts, '') unless @exts;
 
-  my @paths = ();
+  my @paths        = ();
+  my @nocase_paths = ();
+  # Precompute the intended regexes to apply
+  my @regexes = ();
+  foreach my $ext (@exts) {
+    if ($name eq '*') {    # Unfortunately, we've got to test the file system NOW...
+      if ($ext eq '.*') {    # everything, except hidden files
+        push(@regexes, [qr/^[^.]/, qr/^[^.]/]); }
+      else {
+        push(@regexes, [qr/\Q$ext\E$/i,
+            qr/\Q$ext\E$/]); } }
+    elsif ($ext eq '.*') {
+      push(@regexes, [qr/^\Q$name\E\.\w+$/i,
+          qr/^\Q$name\E\.\w+$/]); }
+    else {
+      push(@regexes, [qr/^\Q$name\E\Q$ext\E$/i,
+          qr/^\Q$name\E\Q$ext\E$/]); } }
   # Now, combine; precedence to leading directories.
   foreach my $dir (@dirs) {
-    foreach my $ext (@exts) {
-      if ($name eq '*') {    # Unfortunately, we've got to test the file system NOW...
-        if ($ext eq '.*') {    # everything
-          opendir(DIR, $dir) or next;
-          push(@paths, map { pathname_concat($dir, $_) } grep { !/^\./ } readdir(DIR));
-          closedir(DIR); }
-        else {
-          opendir(DIR, $dir) or next;    # ???
-          push(@paths, map { pathname_concat($dir, $_) } grep { /\Q$ext\E$/ } readdir(DIR));
-          closedir(DIR); } }
-      elsif ($ext eq '.*') {             # Unfortunately, we've got to test the file system NOW...
-        opendir(DIR, $dir) or next;      # ???
-        push(@paths, map { pathname_concat($dir, $_) } grep { /^\Q$name\E\.\w+$/ } readdir(DIR));
-        closedir(DIR); }
-      else {
-        push(@paths, pathname_concat($dir, $name . $ext)); } } }
-  return @paths; }
+    opendir(DIR, $dir) or next;
+    for my $local_file (readdir(DIR)) {
+      for my $regex_pair (@regexes) {
+        my ($i_regex, $regex) = @$regex_pair;
+        if ($local_file =~ m/$i_regex/) {
+          my $full_file = pathname_concat($dir, $local_file);
+          push(@nocase_paths, $full_file);
+          # Always check if a strict match also exists on disk:
+          if (($local_file =~ m/$regex/) && (-f $full_file)) {
+            # if we are only interested in the first match, return it:
+            return ($full_file) if $options{findfirst};
+            push(@paths, $full_file); } } } }
+    closedir(DIR); }
+  # Fallback: if no strict matches were found, return any existing case-insensitive matches
+  # Defer the -f check until we are sure we need it, to keep the usual cases fast.
+  return @paths ? @paths : grep { -f $_ } @nocase_paths; }
 
 #======================================================================
 our $kpsewhich      = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');
