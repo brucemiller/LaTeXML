@@ -2658,7 +2658,10 @@ DefMacroI('\tabularnewline', undef, '\cr');    # ???
 # But doesn't create a pseudo-row (??? Or does it?; is it still needed?)
 DefConstructor('\hidden@noalign{}', '#1',
   reversion  => '',
-  properties => { alignmentSkippable => 1 });
+  properties => sub {
+    # Sometimes, we're smuggling stuff that needs to be carried into the XML.
+    my $preserve = grep { $_->getProperty('alignmentPreserve'); } $_[1]->unlist;
+    (alignmentSkippable => 1, alignmentPreserve => $preserve); });
 
 DefMacro('\@alignment@hline', '\noalign{\@@alignment@hline}');
 DefConstructorI('\@@alignment@hline', undef, '',
