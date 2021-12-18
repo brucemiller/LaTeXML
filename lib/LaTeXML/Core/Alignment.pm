@@ -415,10 +415,11 @@ sub normalize_cell_sizes {
             . ") size " . showSize($cw, $ch, $cd)
             . " Boxes=" . ToString($boxes)) if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
         my $empty =
-          ((!$cw) || $cw->valueOf < 1)
-          || (((!$ch) || $ch->valueOf < 1)
-          && ((!$cd) || $cd->valueOf < 1))
-          || !(grep { !$_->getProperty('isSpace'); } $boxes->unlist);
+          (((!$cw) || $cw->valueOf < 1)
+            || (((!$ch) || $ch->valueOf < 1)
+            && ((!$cd) || $cd->valueOf < 1))
+            || !(grep { !$_->getProperty('isSpace'); } $boxes->unlist)
+          ) && !preservedBoxes($boxes);
         $$cell{cwidth}  = $w || Dimension(0);
         $$cell{cheight} = $h || Dimension(0);
         $$cell{cdepth}  = $d || Dimension(0);
