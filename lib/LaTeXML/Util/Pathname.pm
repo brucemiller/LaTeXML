@@ -391,7 +391,7 @@ sub candidate_pathnames {
             push(@paths, $full_file); } } } } }
   # Fallback: if no strict matches were found, return any existing case-insensitive matches
   # Defer the -f check until we are sure we need it, to keep the usual cases fast.
-  return @paths ? @paths : grep { -f $_ } @nocase_paths; }
+  return @paths ? @paths : @nocase_paths; }
 
 #======================================================================
 our $kpsewhich      = which($ENV{LATEXML_KPSEWHICH} || 'kpsewhich');
