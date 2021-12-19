@@ -6042,8 +6042,8 @@ DefMacro('\DebugHooksOff',                '');
 DefMacro('\DeclareHookRule{}{}{}{}',      '');
 DefMacro('\DeclareDefaultHookRule{}{}{}', '');
 DefMacro('\ClearHookRule{}{}{}',          '');
-DefMacro('\IfHookEmptyTF{}{}{}',          '');
-DefMacro('\IfHookExistsTF{}{}{}',         '');
+DefMacro('\IfHookEmptyTF{}{}{}',          '#3');
+DefMacro('\IfHookExistsTF{}{}{}',         '#3');
 
 #**********************************************************************
 1;
