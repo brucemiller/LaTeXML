@@ -110,8 +110,9 @@ DefMacro('\pdfunescapehex {}',        '');
 DefMacro('\pdfuniformdeviate Number Token', '');
 DefMacro('\pdfnormaldeviate Token',         '');
 DefMacro('\pdfmdfivesum Number {}',         '');
+DefMacro('\pdffilesize{}',                  '');
 DefMacro('\pdffilemoddate {}',              '');
-# DefMacro('\pdffiledump {}','');
+DefMacro('\pdffiledump {}',                 '');
 # DefMacro('\pdfcolorstackinit {}','');
 
 # Read-only registers
@@ -189,6 +190,8 @@ DefMacro('\quitvmode', '');
 DefPrimitive('\pdfliteral OptionalMatch:direct OptionalMatch:page GeneralText', undef);
 # \special pdfspecial spec
 # \pdfresettimer
+DefPrimitive('\pdfresettimer',           undef);
+DefPrimitive('\pdfresettimerresettimer', undef);
 # \pdfsetrandomseed number
 # \pdfnoligatures font
 # \pdfprimitive control sequence
