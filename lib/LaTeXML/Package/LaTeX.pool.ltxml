@@ -6020,6 +6020,29 @@ RequirePackage('textcomp');
 #
 # For now, a few macros required by other packages will be included:
 DefMacroI(T_CS('\hook_gput_code:nnn'), '{}{}{}', '');
+DefMacro('\NewHook{}',                    '');
+DefMacro('\NewReversedHook{}',            '');
+DefMacro('\NewMirroredHookPair{}{}',      '');
+DefMacro('\ActivateGenericHook{}',        '');
+DefMacro('\DisableGenericHook{}',         '');
+DefMacro('\AddToHook{}[]{}',              '');
+DefMacro('\AddToHookNext{}{}',            '');
+DefMacro('\ClearHookNext{}',              '');
+DefMacro('\RemoveFromHook{}[]',           '');
+DefMacro('\SetDefaultHookLabel{}',        '');
+DefMacro('\PushDefaultHookLabel{}',       '');
+DefMacro('\PopDefaultHookLabel',          '');
+DefMacro('\UseHook{}',                    '');
+DefMacro('\UseOneTimeHook{}',             '');
+DefMacro('\ShowHook{}',                   '');
+DefMacro('\LogHook{}',                    '');
+DefMacro('\DebugHooksOn',                 '');
+DefMacro('\DebugHooksOff',                '');
+DefMacro('\DeclareHookRule{}{}{}{}',      '');
+DefMacro('\DeclareDefaultHookRule{}{}{}', '');
+DefMacro('\ClearHookRule{}{}{}',          '');
+DefMacro('\IfHookEmptyTF{}{}{}',          '');
+DefMacro('\IfHookExistsTF{}{}{}',         '');
 
 #**********************************************************************
 1;
