@@ -17,13 +17,10 @@ use LaTeXML::Package;
 
 #**********************************************************************
 
-#InputDefinitions('pdftexcmds', type => 'sty', noltxml => 1);
+# Everything is in pdfTeX.pool already, and that is already loaded.
+# LoadPool('pdfTeX');
 
 RequirePackage('iftex');
-
-DefPrimitive('\pdffiledump',             undef);
-DefPrimitive('\pdffilesize',             undef);
-DefPrimitive('\pdfresettimerresettimer', undef);
 
 #**********************************************************************
 
