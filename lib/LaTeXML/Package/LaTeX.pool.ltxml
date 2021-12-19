@@ -6021,12 +6021,6 @@ RequirePackage('textcomp');
 #
 # For now, a few macros required by other packages will be included:
 DefMacroI(T_CS('\hook_gput_code:nnn'), '{}{}{}', '');
-# DefMacroI(T_CS('\sys_if_engine_luatex:T'),'{}','',locked=>1);
-# DefMacroI(T_CS('\sys_if_engine_pdftex:T'),'{}','',locked=>1);
-# DefMacroI(T_CS('\sys_if_engine_xetex:T'),'{}','',locked=>1);
-# DefMacroI(T_CS('\sys_if_engine_luatex:TF'),'{}{}','#2',locked=>1);
-# DefMacroI(T_CS('\sys_if_engine_pdftex:TF'),'{}{}','#2',locked=>1);
-# DefMacroI(T_CS('\sys_if_engine_xetex:TF'),'{}{}','#2',locked=>1);
 DefMacro('\NewHook{}',                    '');
 DefMacro('\NewReversedHook{}',            '');
 DefMacro('\NewMirroredHookPair{}{}',      '');
