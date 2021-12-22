@@ -215,15 +215,12 @@ sub get_archive {
       or (print STDERR "Fatal:I/O:$pathname File $pathname is not readable.");
     my $file_contents = <$FH>;
     close($FH);
-    # Only compress the textual files
-    my $compression_level = ($file =~ /css|js|xml|html$/) ?
-      COMPRESSION_DEFLATED
-      : COMPRESSION_STORED;
-    $archive->addString($file_contents, $file,)->desiredCompressionMethod($compression_level); }
+    # Compress all files
+    $archive->addString($file_contents, $file,)->desiredCompressionMethod(COMPRESSION_DEFLATED); }
 
   foreach my $subdir (sort @subdirs) {
     my $current_dir = File::Spec->catdir($directory, $subdir);
-    $archive->addTree($current_dir, $subdir, sub { !/$archive_file_exclusion_regex/ }, COMPRESSION_STORED); }
+    $archive->addTree($current_dir, $subdir, sub { !/$archive_file_exclusion_regex/ }, COMPRESSION_DEFLATED); }
 
   my $payload;
   if ($whatsout =~ /^archive(::zip)?$/) {
