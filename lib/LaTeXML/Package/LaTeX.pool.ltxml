@@ -3418,6 +3418,7 @@ DefMacro('\@xdblfloat{}[]',     '\@xfloat{#1}[#2]');
 DefMacro('\@floatplacement',    '');
 DefMacro('\@dblfloatplacement', '');
 
+DefAutoload('includegraphics', 'graphicx.sty.ltxml');
 #======================================================================
 # C.9.2 Marginal Notes
 #======================================================================
