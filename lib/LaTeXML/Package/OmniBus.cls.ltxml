@@ -87,6 +87,8 @@ DefMacro('\altaffilmark{}', sub {
     map { (T_CS('\@altaffilmark'), T_BEGIN, @$_, T_END) } SplitTokens($marks, T_OTHER(',')); });
 DefConstructor('\@altaffilmark{}',
   "?#1(<ltx:note role='affiliationmark' mark='#1'/> )()");
+Let('\affilnum', '\@altaffilmark');
+
 DefConstructor('\altaffiltext{}{}',
   "?#2(<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>)()");
 
