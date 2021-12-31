@@ -228,10 +228,8 @@ DefConstructor('\@listings {}',
     . "#1"
     . "</ltx:float>",
   properties   => { layout => 'vertical' },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
-  afterDigest  => sub {
-    my ($stomach, $whatsit) = @_;
-    RescueCaptionCounters('lstlisting', $whatsit); });
+  beforeDigest => sub { beforeFloat('lstlisting'); },
+  afterDigest  => sub { afterFloat($_[1]); });
 
 # Unnumbered form, but with caption
 # \@listings <classes> <formatted>
@@ -244,10 +242,8 @@ DefConstructor('\@@listings {}',
     my %props = RefStepID('lstlisting');
     $props{layout} = 'vertical';
     return %props; },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'lstlisting'); },
-  afterDigest  => sub {
-    my ($stomach, $whatsit) = @_;
-    RescueCaptionCounters('lstlisting', $whatsit); });
+  beforeDigest => sub { beforeFloat('lstlisting'); },
+  afterDigest  => sub { afterFloat($_[1]); });
 
 DefConstructor('\@@listings@block {} {}',
 "<ltx:listing class='ltx_lstlisting' data='#data' datamimetype='#datamimetype' dataencoding='#dataencoding'>#2</ltx:listing>",

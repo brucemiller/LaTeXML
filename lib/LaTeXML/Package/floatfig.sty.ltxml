@@ -32,9 +32,9 @@ DefEnvironment('{floatingfigure}[]{Dimension}',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); },
-  properties => sub {
+  beforeDigest => sub { beforeFloat('figure'); },
+  afterDigest  => sub { afterFloat($_[1]); },
+  properties   => sub {
     (float => (ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left'),
       pctwidth => toPercent($_[2])); });
 
