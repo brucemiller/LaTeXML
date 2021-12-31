@@ -76,12 +76,12 @@ DefEnvironment('{algorithm}[]',
 
     #    Let('\vtop','\relax');      # ?
     DefMacro('\;', '\ifmmode\@mathsemicolon\else\@endalgoln\fi');
-    DefMacroI('\@captype', undef, 'algorithm');
+    beforeFloat('algorithm');
   },
   afterDigest => sub {
     if (ToString(Digest(T_CS('\algocf@style'))) =~ /box/) {
       $_[1]->setProperty(frame => 'boxed'); }
-    RescueCaptionCounters('algorithm', $_[1]); },
+    afterFloat($_[1]); },
   afterConstruct => sub { addFloatFrames($_[0], $_[1]->getProperty('frame')); }
 );
 

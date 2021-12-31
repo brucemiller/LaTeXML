@@ -97,8 +97,8 @@ DefEnvironment('{algorithm}',
     . "#tags"
     . "#body",
   afterConstruct => sub { $_[0]->maybeCloseElement('ltx:theorem'); },
-  beforeDigest   => sub { DefMacroI('\@captype', undef, 'algorithm'); },
-  afterDigest    => sub { RescueCaptionCounters('algorithm', $_[1]); });
+  beforeDigest   => sub { beforeFloat('algorithm'); },
+  afterDigest    => sub { afterFloat($_[1]); });
 
 RawTeX('\newenvironment{pf}{\begin{@proof}[\proofname]}{\end{@proof}}');
 

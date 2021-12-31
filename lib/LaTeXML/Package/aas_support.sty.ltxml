@@ -180,16 +180,16 @@ DefEnvironment('{plate}[]',
     . "#tags"
     . "#body"
     . "</ltx:float>",
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'plate'); },
-  afterDigest  => sub { RescueCaptionCounters('plate', $_[1]); });
+  beforeDigest => sub { beforeFloat('plate'); },
+  afterDigest  => sub { afterFloat($_[1]); });
 
 DefEnvironment('{plate*}[]',
   "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_plate'>"
     . "#tags"
     . "#body"
     . "</ltx:float>",
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'plate'); },
-  afterDigest  => sub { RescueCaptionCounters('plate', $_[1]); });
+  beforeDigest => sub { beforeFloat('plate', double => 1); },
+  afterDigest  => sub { afterFloat($_[1]); });
 
 DefMacro('\platewidth{Dimension}', '');                    # Ignorable?
 DefMacro('\platenum{}',            '\def\theplate{#1}');
