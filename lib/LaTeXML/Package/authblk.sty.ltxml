@@ -37,11 +37,11 @@ DefMacro('\lx@ab@author[]{}',
     . '{\@personname{#2}\lx@authormark{\if.#1.\the@affil\else#1\fi}}');
 
 DefConstructor('\lx@authormark{}',
-  "?#mark(^<ltx:contact role='affiliationmark' _mark='#mark'></ltx:contact>)()",
+  "^?#mark(<ltx:contact role='affiliationmark' _mark='#mark'></ltx:contact>)()",
   properties => sub { (mark => ToString($_[1])); });
 
 DefConstructor('\affil[]{}',
-  "?#2(^ <ltx:note mark='#mark' role='affiliationtext'>#2</ltx:note>)()",
+  "^?#2(<ltx:note mark='#mark' role='affiliationtext'>#2</ltx:note>)()",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $mark = $whatsit->getArg(1);
