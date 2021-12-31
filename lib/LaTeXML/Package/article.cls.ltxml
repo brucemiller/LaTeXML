@@ -24,10 +24,13 @@ foreach my $option (qw(10pt 11pt 12pt
   final draft
   oneside twoside
   openright openany
-  onecolumn twocolumn
   notitlepage titlepage)) {
   DeclareOption($option, undef); }
 
+DeclareOption('onecolumn',
+  '\@twocolumnfalse\columnwidth\textwidth');
+DeclareOption('twocolumn',
+  '\@twocolumntrue\columnwidth\textwidth\advance\columnwidth-\columnsep\divide\columnwidth2\relax');
 DeclareOption('openbib', sub {
     RequireResource(undef, type => 'text/css', content => '.ltx_bibblock{display:block;}'); });
 DeclareOption('leqno', sub { AssignMapping('DOCUMENT_CLASSES', ltx_leqno => 1); });
