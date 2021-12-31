@@ -170,7 +170,7 @@
             </xsl:otherwise>
           </xsl:choose>
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:for-each select="ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:break | ltx:inline-para | ltx:inline-block | ltx:listing | ltx:p">
+          <xsl:for-each select="ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:break | ltx:inline-para | ltx:inline-block | ltx:listing | ltx:p | ltx:rawhtml">
             <xsl:choose>
               <xsl:when test="self::ltx:break">
                 <xsl:element name="div" namespace="{$html_ns}">
