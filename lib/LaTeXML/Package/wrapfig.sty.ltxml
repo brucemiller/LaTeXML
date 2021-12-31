@@ -28,8 +28,8 @@ DefEnvironment('{wrapfigure} [Number] {} [Dimension] {Dimension}',
     $_[1]->setProperty(float => ($dir eq 'r' ? 'right'
         : ($dir eq 'l' ? 'left'
           : undef))); },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
+  beforeDigest => sub { beforeFloat('figure'); },
+  afterDigest  => sub { afterFloat($_[1]); });
 
 DefEnvironment('{wraptable} [Number] {} [Dimension] {Dimension}',
   "<ltx:table xml:id='#id' inlist='#inlist' float='#float'>"
@@ -41,8 +41,8 @@ DefEnvironment('{wraptable} [Number] {} [Dimension] {Dimension}',
     $_[1]->setProperty(float => ($dir eq 'r' ? 'right'
         : ($dir eq 'l' ? 'left'
           : undef))); },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
+  beforeDigest => sub { beforeFloat('table'); },
+  afterDigest  => sub { afterFloat($_[1]); });
 
 DefMacro('\WFclear', '\par');
 DefRegister('\wrapoverhang' => Dimension(0));
