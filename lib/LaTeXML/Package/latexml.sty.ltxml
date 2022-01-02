@@ -145,9 +145,11 @@ DefConstructor('\lxRef Semiverbatim {}',
 
 #======================================================================
 # Resources
-# \lxResource[options]{name}
-#  RequireResource($name,%options);
-
+# \lxRequireResource[options]{name}
+#   options: type (mime-type), media (?), ...
+DefPrimitive('\lxRequireResource OptionalKeyVals {}', sub {
+    my ($stomach, $kv, $path) = @_;
+    RequireResource(ToString($path), ($kv ? $kv->getHash : ())); });
 #======================================================================
 # Page customization
 #  options to create or customize
