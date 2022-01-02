@@ -490,7 +490,7 @@ DefConstructor('\lx@note[]{}[]{}',
     . "#4"
     . "</ltx:note>",
   mode         => 'text', bounded => 1,
-  beforeDigest => sub { reenterTextMode(1); Digest('\normalfont'); },
+  beforeDigest => sub { reenterTextMode(1); neutralizeFont(); },
   properties   => sub {
     my $type = ToString($_[2]);
     (role => $type,
@@ -4233,7 +4233,7 @@ sub process_index_phrases {
     ($style || $inlist ? (T_OTHER('['), ($style ? T_OTHER($style) : ()), T_OTHER(']')) : ()),
     ($inlist ? (T_OTHER('['), T_OTHER($inlist), T_OTHER(']')) : ()),
     T_BEGIN, @expansion, T_END);
-  return (T_BEGIN, T_CS('\normalfont'), @expansion, T_END); }
+  return @expansion; }
 
 DefMacro('\index{}', \&process_index_phrases);
 
@@ -4248,7 +4248,8 @@ sub addIndexPhraseKey {
   return; }
 
 DefConstructor('\@index[][]{}', "^<ltx:indexmark style='#1' inlist='#2'>#3</ltx:indexmark>",
-  mode => 'text', reversion => '', sizer => 0);
+  bounded => 1, beforeDigest => sub { reenterTextMode(); neutralizeFont(); },
+  mode    => 'text', reversion => '', sizer => 0);
 
 DefConstructor('\@indexphrase[]{}',
   "<ltx:indexphrase key='#key' _standalone_font='true'>#2</ltx:indexphrase>",
