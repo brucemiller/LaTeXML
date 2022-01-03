@@ -18,8 +18,16 @@ use LaTeXML::Package;
 # Since this is basically styling, we can ignore the effects.
 
 # Optional arg is sortof a heading, but w/o any particular styling(?)
-DefEnvironment('{multicols}{}[]',  '?#2(<ltx:para><ltx:p>#2</ltx:p><ltx:para>)#body');
-DefEnvironment('{multicols*}{}[]', '?#2(<ltx:para><ltx:p>#2</ltx:p><ltx:para>)#body');
+DefEnvironment('{multicols}{}[]',
+  '?#2(<ltx:para><ltx:p>#2</ltx:p><ltx:para>)'
+    . '<ltx:pagination role="start_#1_columns"/>'
+    . '#body'
+    . '<ltx:pagination role="end_#1_columns"/>');
+DefEnvironment('{multicols*}{}[]',
+  '?#2(<ltx:para><ltx:p>#2</ltx:p><ltx:para>)'
+    . '<ltx:pagination role="start_#1_columns"/>'
+    . '#body'
+    . '<ltx:pagination role="end_#1_columns"/>');
 
 DefMacro('\botmark', Tokens());
 DefMacro('\topmark', Tokens());
