@@ -4636,7 +4636,6 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
   sizer      => '#body',
   mode       => 'text',
   properties => sub { (
-      layout  => 'vertical',
       width   => $_[4],
       vattach => translateAttachment($_[1])); },
   beforeDigest => sub {
