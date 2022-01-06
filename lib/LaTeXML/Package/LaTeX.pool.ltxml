@@ -3209,7 +3209,7 @@ DefConstructor('\@@generic@caption[]{}', "<ltx:text class='ltx_caption'>#2</ltx:
 
 sub add_subfigure_row_breaks {
   my ($document, $node, $whatsit, @contents) = @_;
-  my $textwidth     = $whatsit->getProperty('floatwidth') || Dimension('345pt')->valueOf();
+  my $textwidth     = ($whatsit->getProperty('floatwidth') || Dimension('345pt'))->valueOf();
   my $current_width = 0;
   my @new_contents  = ();
   for my $block (@contents) {
