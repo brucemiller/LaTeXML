@@ -269,7 +269,7 @@ DefConstructor('\footnote[]{}',
     . "#2"
     . "</ltx:note>",
   mode         => 'text', bounded => 1,
-  beforeDigest => sub { reenterTextMode(1); Digest('\normalfont'); },
+  beforeDigest => sub { reenterTextMode(1); neutralizeFont(); },
   properties   => sub {
     ($_[1]
       ? (mark => $_[1])

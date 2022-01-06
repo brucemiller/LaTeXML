@@ -386,12 +386,9 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
         $document->insertElement('ltx:text', $description); }
       $document->closeElement('ltx:declare');
       $document->setNode($save); } },
-  mode => 'text',
-  # Screwy bit to `neutralize' the font in the matches.
-  beforeDigest => sub { AssignValue(font => LaTeXML::Common::Font->textDefault(), 'local');
-    AssignValue(mathfont => LaTeXML::Common::Font->mathDefault(), 'local');
-    return; },
-  afterDigest => sub { my ($stomach, $whatsit) = @_;
+  mode         => 'text',
+  beforeDigest => sub { reenterTextMode(); neutralizeFont(); },
+  afterDigest  => sub { my ($stomach, $whatsit) = @_;
     my ($star, $kv, $pattern) = $whatsit->getArgs;
     return unless $kv;
     CheckOptions("\\lxDeclare keys", $declare_keys, %{ $kv->getKeyVals });
