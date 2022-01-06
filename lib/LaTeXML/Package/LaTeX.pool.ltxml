@@ -3130,18 +3130,21 @@ DefMacro('\format@title@font@figure', '\format@title@font@float');
 DefMacro('\format@title@font@table',  '\format@title@font@float');
 
 # stubs for the latex float internals
-for my $float (qw(@float @dblfloat)) {
-  DefEnvironmentI($float, '[]{}',
-    "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
-      . "#body"
-      . "</ltx:float>",
-    properties       => { layout => 'vertical' },
-    afterDigestBegin => sub {
-      DefMacroI('\@captype', undef, ToString($_[1]->getArg(2)));
-      return; },
-    afterDigest => sub {
-      RescueCaptionCounters(ToString(Expand(T_CS('\@captype'))), $_[1]);
-      return; }); }
+DefEnvironmentI('@float', '[]{}',
+  "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
+    . "#body"
+    . "</ltx:float>",
+  properties        => { layout => 'vertical' },
+  beforeDigestBegin => sub { beforeFloat(ToString($_[1]->getArg(2))); },
+  afterDigest       => sub { afterFloat($_[1]); });
+DefEnvironmentI('@dblfloat', '[]{}',
+  "<ltx:float xml:id='#id' inlist='#inlist' ?#1(placement='#1') class='ltx_float_#2'>"
+    . "#body"
+    . "</ltx:float>",
+  properties        => { layout => 'vertical' },
+  beforeDigestBegin => sub { beforeFloat(ToString($_[1]->getArg(2)), double => 1); },
+  afterDigest       => sub { afterFloat($_[1]); });
+
 # Could perhaps parameterize further with a separator?
 DefMacro('\format@title@figure{}', '\lx@tag[][: ]{\lx@fnum@@{figure}}#1');
 DefMacro('\format@title@table{}',  '\lx@tag[][: ]{\lx@fnum@@{table}}#1');
@@ -3206,7 +3209,7 @@ DefConstructor('\@@generic@caption[]{}', "<ltx:text class='ltx_caption'>#2</ltx:
 
 sub add_subfigure_row_breaks {
   my ($document, $node, $whatsit, @contents) = @_;
-  my $textwidth     = (LookupRegister('\textwidth') || Dimension('345pt'))->valueOf();
+  my $textwidth     = ($whatsit->getProperty('floatwidth') || Dimension('345pt'))->valueOf();
   my $current_width = 0;
   my @new_contents  = ();
   for my $block (@contents) {
@@ -3215,25 +3218,7 @@ sub add_subfigure_row_breaks {
       # reset bookkeeping on prior breaks, be they author-deposited or computed
       $current_width = 0; }
     else {
-      # TODO: A tricky bit to consider here is graphics sized to \columnwidth
-      # which isn't yet accurately emulated in latexml itself.
-      # so where two or more graphics may have been expected in the PDF,
-      # latexml would only allow one as the \columnwidth would be defaulted to \textwidth.
-      my $block_width = $block->getAttribute('width');
-      # If we have an author annotation of the width, it will appear as an XML attribute,
-      # and should take precedence over the underlying asset width of the image blob
-      if (!$block_width) {
-        if (my $options = $block->getAttribute('options')) {
-          if ($options =~ /width=([^ "]+)/) {
-            $block_width = $1; } } }
-      if ($block_width) {
-        # if we found an attribute, deserialize back into an internal sp number
-        $block_width = Dimension($block_width)->valueOf; }
-      else {
-        # if no width directive was provided, infer it from the internal contents
-        my $block_box = $document->getNodeBox($block);
-        $block_width = $block_box->getWidth->valueOf(); }
-
+      my $block_width = $document->getNodeBox($block)->getWidth->valueOf();
       if (@new_contents && ($current_width + $block_width > $textwidth)) {
         # break when we exceed the line width, to keep close with the PDF arrangement
         my $break = $document->insertElementBefore($block, 'break', 'class' => 'ltx_break');
@@ -3301,23 +3286,39 @@ DefConstructor('\@@caption{}', "^^<ltx:caption>#1</ltx:caption>", sizer => 0);
 DefConstructor('\@@toccaption{}', "^^<ltx:toccaption>#1</ltx:toccaption>",
   sizer => 0);
 
+sub beforeFloat {
+  my ($type, %options) = @_;
+  #Debug("FLOAT begin $type". join(',',map { $_."=".ToString($options{$_}); } sort keys %options));
+  DefMacroI('\@captype', undef, $type);
+  AssignRegister('\hsize' => LookupDimension($options{double} ? '\textwidth' : '\columnwidth'));
+  return; }
+
+sub afterFloat {
+  my ($whatsit) = @_;
+  my $type = ToString(Expand(T_CS('\@captype')));
+  #Debug("FLOAT end $type");
+  $whatsit->setProperty(floatwidth => LookupRegister('\hsize'));
+  RescueCaptionCounters($type, $whatsit);
+  return; }
+
 DefEnvironment('{figure}[]',
   "<ltx:figure xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:figure>",
   properties   => { layout => 'vertical' },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest  => sub { RescueCaptionCounters('figure', $_[1]); },
+  beforeDigest => sub { beforeFloat('figure'); },
+  afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
+
 DefEnvironment('{figure*}[]',
   "<ltx:figure xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
     . "#tags"
     . "#body"
     . "</ltx:figure>",
   properties   => { layout => 'vertical' },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest  => sub { RescueCaptionCounters('figure', $_[1]); },
+  beforeDigest => sub { beforeFloat('figure', double => 1); },
+  afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
 DefEnvironment('{table}[]',
   "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
@@ -3325,8 +3326,8 @@ DefEnvironment('{table}[]',
     . "#body"
     . "</ltx:table>",
   properties   => { layout => 'vertical' },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest  => sub { RescueCaptionCounters('table', $_[1]); },
+  beforeDigest => sub { beforeFloat('table'); },
+  afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
 DefEnvironment('{table*}[]',
   "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')>"
@@ -3334,8 +3335,8 @@ DefEnvironment('{table*}[]',
     . "#body"
     . "</ltx:table>",
   properties   => { layout => 'vertical' },
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest  => sub { RescueCaptionCounters('table', $_[1]); },
+  beforeDigest => sub { beforeFloat('table', double => 1); },
+  afterDigest  => sub { afterFloat($_[1]); },
   locked       => 1);
 
 # There are some floating figure/table packages that define environments
@@ -4635,7 +4636,6 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
   sizer      => '#body',
   mode       => 'text',
   properties => sub { (
-      layout  => 'vertical',
       width   => $_[4],
       vattach => translateAttachment($_[1])); },
   beforeDigest => sub {

@@ -55,11 +55,10 @@ DefPrimitive('\newsubfloat[]{}', sub {
         . "#body"
         . "</$type>",
       properties   => { layout => 'vertical' },
-      beforeDigest => sub { DefMacroI('\@captype', undef, 'sub' . $name); },
+      beforeDigest => sub { beforeFloat('sub' . $name); },
       afterDigest  => sub {
-        RescueCaptionCounters('sub' . $name, $_[1]);
-        SetCounter('sub' . $name . '@save', CounterValue('sub' . $name));
-      });
+        afterFloat($_[1]);
+        SetCounter('sub' . $name . '@save', CounterValue('sub' . $name)); });
     return; });
 
 # \DeclareCaptionListOfFormat{kv}{code}

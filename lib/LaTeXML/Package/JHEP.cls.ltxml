@@ -90,8 +90,8 @@ DefMacro('\DOUBLEFIGURE[]{}{}{}{}',
 DefEnvironment('{@half@doublefigure}',
   "<ltx:figure xml:id='#id' inlist='#inlist' width='0.45%'>#body</ltx:figure>"
     . "#tags",
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); });
+  beforeDigest => sub { beforeFloat('figure'); },
+  afterDigest  => sub { afterFloat($_[1]); });
 
 DefMacro('\DOUBLETABLE[]{}{}{}{}',
   '\begin{table}[#1]'
@@ -101,8 +101,8 @@ DefMacro('\DOUBLETABLE[]{}{}{}{}',
 DefEnvironment('{@half@doubletable}',
   "<ltx:table xml:id='#id' inlist='#inlist' width='0.45%'>#body</ltx:table>"
     . "#tags",
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
+  beforeDigest => sub { beforeFloat('table'); },
+  afterDigest  => sub { afterFloat($_[1]); });
 
 # Redefine since JHEP has no width argument
 # (what width should be used?)
@@ -111,9 +111,9 @@ DefEnvironment('{floatingfigure}[]',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'figure'); },
-  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); },
-  properties => sub {
+  beforeDigest => sub { beforeFloat('figure'); },
+  afterDigest  => sub { afterFloat($_[1]); },
+  properties   => sub {
     (float => (ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left')); });
 
 DefEnvironment('{floatingtable}[]',
@@ -121,9 +121,9 @@ DefEnvironment('{floatingtable}[]',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  beforeDigest => sub { DefMacroI('\@captype', undef, 'table'); },
-  afterDigest => sub { RescueCaptionCounters('table', $_[1]); },
-  properties => sub {
+  beforeDigest => sub { beforeFloat('table'); },
+  afterDigest  => sub { afterFloat($_[1]); },
+  properties   => sub {
     (float => (ToString($_[1] || LookupValue('floatfltpos')) =~ /^(v|r)/ ? 'right' : 'left')); });
 
 #======================================================================
@@ -182,9 +182,9 @@ DefMacro('\ijtp{}{}{}', '\@spires{IJTPB\%2CB#1\%2C#3}{{\it Int.\ J.\ Theor.\ Phy
 DefMacro('\invm{}{}{}', '\@spires{INVMB\%2C#1\%2C#3}{{\it Invent.\ Math.\ }{\bf #1} (#2) #3}');
 DefMacro('\jag{}{}{}',  '\@spires{00124\%2C#1\%2C#3}{{\it J.\ Alg.\ Geom.\ }{\bf #1} (#2) #3}');
 DefMacro('\jams{}{}{}', '\@spires{00052\%2C#1\%2C#3}{{\it J.\ Am.\ Math.\ Soc.\ }{\bf #1} (#2) #3}');
-DefMacro('\jap{}{}{}', '\@spires{JAPIA\%2C#1\%2C#3}{{\it J.\ Appl.\ Phys.\ }{\bf #1} (#2) #3}');
-DefMacro('\jdg{}{}{}', '\@spires{JDGEA\%2C#1\%2C#3}{{\it J.\ Diff.\ Geom.\ }{\bf #1} (#2) #3}');
-DefMacro('\jgp{}{}{}', '\@spires{JGPHE\%2C#1\%2C#3}{{\it J.\ Geom.\ Phys.\ }{\bf #1} (#2) #3}');
+DefMacro('\jap{}{}{}',  '\@spires{JAPIA\%2C#1\%2C#3}{{\it J.\ Appl.\ Phys.\ }{\bf #1} (#2) #3}');
+DefMacro('\jdg{}{}{}',  '\@spires{JDGEA\%2C#1\%2C#3}{{\it J.\ Diff.\ Geom.\ }{\bf #1} (#2) #3}');
+DefMacro('\jgp{}{}{}',  '\@spires{JGPHE\%2C#1\%2C#3}{{\it J.\ Geom.\ Phys.\ }{\bf #1} (#2) #3}');
 DefMacro('\jhep{}{}{}', '\href{http://jhep.sissa.it/stdsearch?paper=#1\%28#2\%29#3}{{\it J. High Energy Phys.\ }{\bf #1} (#2) #3}');
 DefMacro('\jmp{}{}{}',  '\@spires{JMAPA\%2C#1\%2C#3}{{\it J.\ Math.\ Phys.\ }{\bf #1} (#2) #3}');
 DefMacro('\joth{}{}{}', '\@spires{JOTHE\%2C#1\%2C#3}{{\it J.\ Operator Theory }{\bf #1} (#2) #3}');

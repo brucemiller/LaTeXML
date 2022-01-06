@@ -67,16 +67,17 @@ DefPrimitive('\DeclareFloatingEnvironment OptionalKeyVals {}', sub {
         . "#body"
         . "</ltx:float>",
       properties   => { layout => 'vertical' },
-      beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
-      afterDigest  => sub { RescueCaptionCounters($type, $_[1]); });
+      beforeDigest => sub { beforeFloat($type); },
+      afterDigest  => sub { afterFloat($_[1]); });
+
     DefEnvironmentI("$type*", "[]",
       "<ltx:float xml:id='#id' ?#1(placement='#1') inlist='#inlist' class='ltx_float_$type'>"
         . "#tags"
         . "#body"
         . "</ltx:float>",
       properties   => { layout => 'vertical' },
-      beforeDigest => sub { DefMacroI('\@captype', undef, $type); },
-      afterDigest  => sub { RescueCaptionCounters($type, $_[1]); });
+      beforeDigest => sub { beforeFloat($type, double => 1); },
+      afterDigest  => sub { afterFloat($_[1]); });
 });
 
 # \ForEachFloatingEnvironment{code{#1}}

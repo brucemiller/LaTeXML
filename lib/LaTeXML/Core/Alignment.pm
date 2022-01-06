@@ -71,10 +71,11 @@ sub new {
   $$self{level}          = $STATE->getFrameDepth;
   $$self{properties}     = {} unless $$self{properties};
   # Copy any attribute width, height, depth to main properties.
+  # BUT remove them from XML attributes!!! (?)
   if (my $attributes = $$self{properties}{attributes}) {
-    $$self{properties}{width}  = $$attributes{width}  if $$attributes{width};
-    $$self{properties}{height} = $$attributes{height} if $$attributes{height};
-    $$self{properties}{depth}  = $$attributes{depth}  if $$attributes{depth}; }
+    foreach my $key (qw(width height depth)) {
+      if (my $val = $$attributes{$key}) {
+        $$self{properties}{$key} = $val; delete $$attributes{$key}; } } }
   return $self; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -58,8 +58,8 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
         . "#body"
         . "</ltx:float>",
       properties     => { layout => 'vertical' },
-      beforeDigest   => sub { DefMacroI('\@captype', undef, $type); },
-      afterDigest    => sub { RescueCaptionCounters($type, $_[1]); },
+      beforeDigest   => sub { beforeFloat($type); },
+      afterDigest    => sub { afterFloat($_[1]); },
       afterConstruct => sub { addFloatFrames($_[0], $style); });
     DefEnvironmentI("$type*", "[]",
       "<ltx:float xml:id='#id' ?#1(placement='#1') inlist='#inlist' class='ltx_float_$type'>"
@@ -67,8 +67,8 @@ DefPrimitive('\newfloat{}{}{}[]', sub {
         . "#body"
         . "</ltx:float>",
       properties     => { layout => 'vertical' },
-      beforeDigest   => sub { DefMacroI('\@captype', undef, $type); },
-      afterDigest    => sub { RescueCaptionCounters($type, $_[1]); },
+      beforeDigest   => sub { beforeFloat($type, double => 1); },
+      afterDigest    => sub { afterFloat($_[1]); },
       afterConstruct => sub { addFloatFrames($_[0], $style); });
 });
 ## ??? DefMacro('\plain','');

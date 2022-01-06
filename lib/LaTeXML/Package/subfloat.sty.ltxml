@@ -39,10 +39,10 @@ DefEnvironment('{subfigures}',
     . "#tags"
     . "#body"
     . "</ltx:figure>",
-  properties => sub { RefStepCounter('figure'); },    # No caption (?)
+  properties   => sub { RefStepCounter('figure'); },    # No caption (?)
   beforeDigest => sub {
     Let('\themainfigure', '\thefigure');
-    DefMacroI('\@captype', undef, 'figure');
+    beforeFigure('figure');
     # redefine figure!
     DefEnvironment('{figure}[]',
       "<ltx:figure xml:id='#id' ?#1(placement='#1')>"    # NO inlist for subfigures!(?)
@@ -50,20 +50,18 @@ DefEnvironment('{subfigures}',
         . "#body"
         . "</ltx:figure>",
       properties   => { layout => 'vertical' },
-      beforeDigest => sub { DefMacroI('\@captype', undef, 'subfloatfigure'); },
-      afterDigest  => sub { RescueCaptionCounters('subfloatfigure', $_[1]); });
+      beforeDigest => sub { beforeFloat('subfloatfigure'); },
+      afterDigest  => sub { afterFloat($_[1]); });
     DefEnvironment('{figure*}[]',
       "<ltx:figure xml:id='#id' ?#1(placement='#1')>"
         . "#tags"
         . "#body"
         . "</ltx:figure>",
       properties   => { layout => 'vertical' },
-      beforeDigest => sub { DefMacroI('\@captype', undef, 'subfloatfigure'); },
-      afterDigest  => sub { RescueCaptionCounters('subfloatfigure', $_[1]); });
-
+      beforeDigest => sub { beforeFloat('subfloatfigure', double => 1); },
+      afterDigest  => sub { afterFloat($_[1]); });
   },
-  afterDigest => sub { RescueCaptionCounters('figure', $_[1]); }
-);
+  afterDigest => sub { afterFloat($_[1]); });
 
 DefMacro('\fnum@subtable', '(\thesubtable)');
 DefEnvironment('{subtables}',
@@ -71,10 +69,10 @@ DefEnvironment('{subtables}',
     . "#tags"
     . "#body"
     . "</ltx:table>",
-  properties => sub { RefStepCounter('table'); },    # No caption (?)
+  properties   => sub { RefStepCounter('table'); },    # No caption (?)
   beforeDigest => sub {
     Let('\themaintable', '\thetable');
-    DefMacroI('\@captype', undef, 'table');
+    beforeFigure('table');
     # redefine table!
     DefEnvironment('{table}[]',
       "<ltx:table xml:id='#id' ?#1(placement='#1')>"    # NO inlist for subtables! (?)
@@ -82,19 +80,18 @@ DefEnvironment('{subtables}',
         . "#body"
         . "</ltx:table>",
       properties   => { layout => 'vertical' },
-      beforeDigest => sub { DefMacroI('\@captype', undef, 'subfloattable'); },
-      afterDigest  => sub { RescueCaptionCounters('subfloattable', $_[1]); });
+      beforeDigest => sub { beforeFloat('subfloattable'); },
+      afterDigest  => sub { afterFloat($_[1]); });
     DefEnvironment('{table*}[]',
       "<ltx:table xml:id='#id' ?#1(placement='#1')>"
         . "#tags"
         . "#body"
         . "</ltx:table>",
       properties   => { layout => 'vertical' },
-      beforeDigest => sub { DefMacroI('\@captype', undef, 'subfloattable'); },
-      afterDigest  => sub { RescueCaptionCounters('subfloattable', $_[1]); });
-
+      beforeDigest => sub { beforeFloat('subfloattable', double => 1); },
+      afterDigest  => sub { afterFloat($_[1]); });
   },
-  afterDigest => sub { RescueCaptionCounters('table', $_[1]); });
+  afterDigest => sub { afterFloat($_[1]); });
 
 #======================================================================
 1;
