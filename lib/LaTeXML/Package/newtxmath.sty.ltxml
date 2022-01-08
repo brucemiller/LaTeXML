@@ -17,6 +17,15 @@ use LaTeXML::Package;
 
 #================================================================================
 # Load these to get the commands
+RequirePackage('amsmath');
+RequirePackage('ifthen');
+RequirePackage('etoolbox');
+RequirePackage('ifxetex');
+RequirePackage('ifluatex');
+RequirePackage('xkeyval');
+# This package is just a minor typesetting adjustment, skipping for now.
+#RequirePackage('centernot');
+#
 RequirePackage('amssymb');
 RequirePackage('txfonts');
 #================================================================================
