@@ -110,7 +110,7 @@ DefConstructor('\@@@curraddr{}', "^ <ltx:contact role='current_address'>#1</ltx:
 DefMacro('\curraddr{}', '\@add@to@frontmatter{ltx:creator}{\@@@curraddr{#1}}');
 
 DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+DefMacro('\email[]{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#2}}');
 
 DefConstructor('\@@@urladdr{}', "^ <ltx:contact role='url'>#1</ltx:contact>");
 DefMacro('\urladdr{}', '\@add@to@frontmatter{ltx:creator}{\@@@urladdr{#1}}');
