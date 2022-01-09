@@ -347,6 +347,9 @@ DefPrimitiveI('\bbbz',   undef, "\x{2124}");
 DefConstructor('\bib@field@default@adsurl Verbatim',
   "<ltx:bib-url href='#1'>ADS entry</ltx:bib-url>");
 
+# We could probably do more with these if they were used consistently...
+# example use is [\eprint[arXiv]{astro-ph/0212111}], in a bibitem
+DefMacro('\eprint[]{}', '{\tt\if!#1!#2\else#1:#2\fi}');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Astronomical objects
 
