@@ -60,6 +60,7 @@ DefEnvironment('{mainmatter}',  '#body');
 DefEnvironment('{backmatter}',  '#body');
 
 DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\subtitle{}',    '\@add@frontmatter{ltx:subtitle}{#1}');
 DefMacro('\shortauthor{}', '');
 DefRegister('\titlerunning',  Tokens());
 DefRegister('\authorrunning', Tokens());
@@ -71,6 +72,7 @@ Let('\runninghead', '\runningtitle');
 DefMacro('\shortauthor{}',  Tokens());
 DefMacro('\authors{}',      Tokens());
 DefMacro('\shortauthors{}', Tokens());
+DefMacro('\alignauthor',    Tokens());
 
 DefConstructor('\@@@email{}{}', "^ <ltx:contact role='#2'>#1</ltx:contact>");
 DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{email}}');
@@ -93,7 +95,8 @@ DefConstructor('\altaffiltext{}{}',
   "?#2(<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>)()");
 
 DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\address[]{}',   '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
+DefMacro('\address[]{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
+Let('\affaddr', '\address');
 DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
 DefRegister('\affilskip' => Dimension(0));
 
@@ -114,8 +117,10 @@ DefMacro('\listofauthors{}',  Tokens());
 DefMacro('\indexauthor{}',    Tokens());
 DefMacro('\preface',          Tokens());
 DefMacro('\thankstext',       Tokens());
-DefMacro('\resumen{}',        '\@add@frontmatter{ltx:abstract}{#1}');
-DefMacro('\ion{}{}',          '{#1 \textsc{#2}}');
+DefMacro('\numberofauthors',  Tokens());
+
+DefMacro('\resumen{}', '\@add@frontmatter{ltx:abstract}{#1}');
+DefMacro('\ion{}{}',   '{#1 \textsc{#2}}');
 Let(T_CS('\fulladdresses'), T_CS('\address'));
 Let(T_CS('\smonth'),        T_CS('\month'));
 Let(T_CS('\syear'),         T_CS('\year'));
@@ -182,6 +187,7 @@ EOL
 DefMacroI(T_CS('\newproclaim'), undef, sub {
     RequirePackage('amsthm');
     return T_CS('\newtheorem'); });
+DefAutoload('theoremstyle', 'amsthm.sty.ltxml');
 
 Let('\abstracts', '\abstract');
 Let('\abst',      '\abstract');
@@ -213,6 +219,8 @@ DefMacro('\issue{}',        '\@add@frontmatter{ltx:note}[role=issue]{#1}');
 DefMacro('\journal{}',      '\@add@frontmatter{ltx:note}[role=journal]{#1}');
 DefMacro('\jname{}',        '\@add@frontmatter{ltx:note}[role=journal]{#1}');
 DefMacro('\volume{}',       '\@add@frontmatter{ltx:note}[role=volume]{#1}');
+DefMacro('\titlenote{}',    '\@add@frontmatter{ltx:note}[role=titlenote]{#1}');
+DefMacro('\terms{}',        '\@add@frontmatter{ltx:note}[role=terms]{#1}');
 
 # work as environment or not...
 DefConstructor('\references',
@@ -232,4 +240,16 @@ Let('\reference', '\bibitem');
 DefMacro('\comment{}',    '');
 DefMacro('\etal',         '\textit{et al.}');
 DefMacro('\firstsection', '');
+
+DefAutoload('align',                       'amsmath.sty.ltxml');
+DefAutoload('subequations',                'amsmath.sty.ltxml');
+DefAutoload('split',                       'amsmath.sty.ltxml');
+DefAutoload('\multline',                   'amsmath.sty.ltxml');
+DefAutoload('\csname multline*\endcsname', 'amsmath.sty.ltxml');
+DefAutoload('numberwithin',                'amsmath.sty.ltxml');
+DefAutoload('deluxetable',                 'deluxetable.sty.ltxml');
+DefAutoload('curraddr',                    'ams_support.sty.ltxml');
+DefAutoload('subjclass',                   'ams_support.sty.ltxml');
+DefAutoload('thechapter',                  'book.cls.ltxml');
+
 1;
