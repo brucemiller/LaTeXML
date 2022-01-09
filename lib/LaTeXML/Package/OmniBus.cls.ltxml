@@ -126,30 +126,34 @@ Let(T_CS('\smonth'),        T_CS('\month'));
 Let(T_CS('\syear'),         T_CS('\year'));
 
 # Comes as both macro with arg, and environment! w/ or w/o "s"!
-DefMacro('\keyword{}',  '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\kword{}',    '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\kwd[]{}',    '\@add@frontmatter{ltx:keywords}{#2, }');
-Let(T_CS('\addto@keywords@list'), T_CS('\keyword'));
 
 # {keyword}, {keywords}
-DefEnvironment('{keywords}', '',
-  afterDigest => sub {
-    my $frontmatter = LookupValue('frontmatter');
-    push(@{ $$frontmatter{'ltx:classification'} },
-      ['ltx:classification', { scheme => 'keywords' }, @LaTeXML::LIST]);
-    return; });
+sub after_digest_keywords {
+  my $frontmatter = LookupValue('frontmatter');
+  push(@{ $$frontmatter{'ltx:classification'} },
+    ['ltx:classification', { scheme => 'keywords' }, @LaTeXML::LIST]);
+  return; }
+DefEnvironment('{keyword}',  '', afterDigest => \&after_digest_keywords);
+DefEnvironment('{keywords}', '', afterDigest => \&after_digest_keywords);
 # Extend to be callable as \keywords{} or \begin{keywords}...
 # Probably want to use this trick more often?
 Let('\lx@begin@keywords', '\keywords');
-DefMacro('\keywords', sub {
-    my ($gullet) = @_;
-    ($gullet->ifNext(T_BEGIN)
-      ? (T_CS('\keywords@onearg'))
-      : (T_CS('\g@addto@macro'), T_CS('\@startsection@hook'), T_CS('\maybe@end@keywords'),
-        T_CS('\lx@begin@keywords'))); });
-DefMacro('\keywords@onearg{}', '\begin{keywords}#1\end{keywords}\let\endkeywords\relax');
+
+sub auto_keywords {
+  my ($gullet) = @_;
+  return ($gullet->ifNext(T_BEGIN)
+    ? (T_CS('\keywords@onearg'))
+    : (T_CS('\g@addto@macro'), T_CS('\@startsection@hook'), T_CS('\maybe@end@keywords'),
+      T_CS('\lx@begin@keywords'))); }
+# see arxiv:math/0601658 for a singular {keyword} example
+DefMacro('\keyword',  \&auto_keywords);
+DefMacro('\keywords', \&auto_keywords);
+DefMacro('\keywords@onearg{}', '\begin{keywords}#1\end{keywords}\let\endkeyword\relax\let\endkeywords\relax');
 DefMacroI('\maybe@end@keywords', undef, '\endkeywords\let\maybe@end@keywords\relax');
+Let(T_CS('\addto@keywords@list'), T_CS('\keyword'));
 
 DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
 DefMacro('\pacs{}',           '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
@@ -162,31 +166,53 @@ DefConstructor('\lx@doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>');
 # from acm_proc_article, is it general enough?
 DefMacro('\category{}{}{}[]', '\@add@frontmatter{ltx:classification}[scheme=category]{#1 #2 #3}\keywords{#4}');
 
+our $omni_theorem_main = <<'EOL';
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{proof}[theorem]{Proof}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{step}[theorem]{Step}
+\newtheorem{note}[theorem]{Note}
+EOL
+# Additional theorem aliases (e.g. autart.cls)
+our $omni_theorem_aux = <<'EOL';
+\newtheorem{thm}{Theorem}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{claim}[thm]{Claim}
+\newtheorem{axiom}[thm]{Axiom}
+\newtheorem{conj}[thm]{Conjecture}
+\newtheorem{fact}[thm]{Fact}
+\newtheorem{hypo}[thm]{Hypothesis}
+\newtheorem{assum}[thm]{Assumption}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{crit}[thm]{Criterion}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{exmp}[thm]{Example}
+\newtheorem{rem}[thm]{Remark}
+\newtheorem{prob}[thm]{Problem}
+\newtheorem{prin}[thm]{Principle}
+\newtheorem{alg}{Algorithm}
+EOL
+
 for my $env (qw(
   conjecture theorem corollary definition example exercise lemma
-  note problem proof proposition question remark solution)) {
+  note problem proof proposition question remark solution
+  thm cor lem claim axiom conj fact hypo assum prop crit defn exmp rem prob prin alg)) {
   my $beginenv = "\\begin{$env}";
   DefMacroI(T_CS($beginenv), undef, sub {
       RequirePackage('amsthm');
-      return Tokenize(<<"EOL"
-\\newtheorem{theorem}{Theorem}[section]
-\\newtheorem{conjecture}[theorem]{Conjecture}
-\\newtheorem{proposition}[theorem]{Proposition}
-\\newtheorem{proof}[theorem]{Proof}
-\\newtheorem{lemma}[theorem]{Lemma}
-\\newtheorem{corollary}[theorem]{Corollary}
-\\newtheorem{example}[theorem]{Example}
-\\newtheorem{exercise}[theorem]{Exercise}
-\\newtheorem{definition}[theorem]{Definition}
-\\newtheorem{problem}[theorem]{Problem}
-\\newtheorem{question}[theorem]{Question}
-\\newtheorem{remark}[theorem]{Remark}
-\\newtheorem{solution}[theorem]{Solution}
-\\newtheorem{step}[theorem]{Step}
-\\newtheorem{note}[theorem]{Note}
-$beginenv
-EOL
-)->unlist; }); }
+      return Tokenize($omni_theorem_main . $omni_theorem_aux . $beginenv)->unlist; }); }
 for my $new_theorem_alias (qw(\newproclaim \newdef)) {
   DefMacroI(T_CS($new_theorem_alias), undef, sub {
       RequirePackage('amsthm');
@@ -195,7 +221,6 @@ DefAutoload('theoremstyle', 'amsthm.sty.ltxml');
 
 Let('\abstracts', '\abstract');
 Let('\abst',      '\abstract');
-# \editors
 
 # Seems to come in different spellings and often misused!
 DefConstructor('\acknowledgments', "<ltx:acknowledgements name='#name'>",
@@ -227,6 +252,9 @@ DefMacro('\volume{}',           '\@add@frontmatter{ltx:note}[role=volume]{#1}');
 DefMacro('\titlenote{}',        '\@add@frontmatter{ltx:note}[role=titlenote]{#1}');
 DefMacro('\terms{}',            '\@add@frontmatter{ltx:note}[role=terms]{#1}');
 DefMacro('\conferenceinfo{}{}', '\@add@frontmatter{ltx:note}[role=conference]{#1 #2}');
+
+# what useful behavior can we add here? e.g. see arxiv:math/0601658
+DefMacro('\thanksref{}', Tokens());
 
 # rarer variants:
 Let('\CopyrightYear', '\copyrightyear');

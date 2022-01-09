@@ -122,8 +122,9 @@ DefMacro('\dedicatory{}', '\@add@to@frontmatter{ltx:creator}{\@@@dedicatory{#1}}
 DefMacro('\dateposted{}', '\@add@frontmatter{ltx:date}[role=posted]{#1}');
 
 # \thanks{} ( == ack, not latex's \thanks, not in author)
-DefMacro('\thanks{}',
-  '\@add@frontmatter{ltx:acknowledgements}[name={\@ifundefined{thanksname}{}{\thanksname}}]{#1}');
+# make a throwaway optional argument available for OmniBus use
+DefMacro('\thanks[]{}',
+  '\@add@frontmatter{ltx:acknowledgements}[name={\@ifundefined{thanksname}{}{\thanksname}}]{#2}');
 
 DefMacro('\translator[]{}',
   '\@add@frontmatter{ltx:creator}[role=translator]{\@personname{#2}}');

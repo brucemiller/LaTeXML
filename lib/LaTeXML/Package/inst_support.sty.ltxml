@@ -39,8 +39,9 @@ use LaTeXML::Package;
 # with the same mark number, and copy the institute information into that creator element
 # as an ltx:contact(with @role='institute').
 
-DefMacro('\author{}', sub {
-    map { (T_CS('\lx@author'), T_BEGIN, @$_, T_END) } SplitTokens($_[1], T_CS('\and'), T_OTHER(',')); });
+# add optinal argument for OmniBus use
+DefMacro('\author[]{}', sub {
+    map { (T_CS('\lx@author'), T_BEGIN, @$_, T_END) } SplitTokens($_[2], T_CS('\and'), T_OTHER(',')); });
 
 DefMacro('\@institutemark{}', '\lx@contact{institutemark}{#1}');
 
@@ -78,7 +79,7 @@ DefConstructor('\@in@inst@email{}',
 # This creates the note for each institute.
 DefConstructor('\@add@institute {}',
   "<ltx:note role='institutetext' mark='#mark'>#1</ltx:note>",
-  bounded => 1, beforeDigest => sub { AssignValue(inPreamble => 0); },
+  bounded    => 1, beforeDigest => sub { AssignValue(inPreamble => 0); },
   properties => sub { (mark => ToString(Expand(T_CS('\theinst')))); });
 
 # Reconnecting the institute to the appropriate author:
