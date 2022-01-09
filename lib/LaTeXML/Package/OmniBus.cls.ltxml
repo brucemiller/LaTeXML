@@ -118,9 +118,8 @@ DefMacro('\indexauthor{}',     Tokens());
 DefMacro('\preface',           Tokens());
 DefMacro('\thankstext',        Tokens());
 DefMacro('\numberofauthors{}', Tokens());
-
-DefMacro('\resumen{}', '\@add@frontmatter{ltx:abstract}{#1}');
-DefMacro('\ion{}{}',   '{#1 \textsc{#2}}');
+DefMacro('\resumen{}',         '\@add@frontmatter{ltx:abstract}{#1}');
+DefMacro('\ion{}{}',           '{#1 \textsc{#2}}');
 Let(T_CS('\fulladdresses'), T_CS('\address'));
 Let(T_CS('\smonth'),        T_CS('\month'));
 Let(T_CS('\syear'),         T_CS('\year'));
