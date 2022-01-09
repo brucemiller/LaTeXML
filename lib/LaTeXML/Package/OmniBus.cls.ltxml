@@ -160,7 +160,7 @@ DefMacro('\doi{}',
 DefConstructor('\lx@doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>');
 
 # from acm_proc_article, is it general enough?
-DefMacro('\category{}{}{}', '\@add@frontmatter{ltx:classification}[scheme=category]{#1 #2 #3}');
+DefMacro('\category{}{}{}[]', '\@add@frontmatter{ltx:classification}[scheme=category]{#1 #2 #3}\keywords{#4}');
 
 for my $env (qw(
   conjecture theorem corollary definition example exercise lemma
@@ -187,9 +187,10 @@ for my $env (qw(
 $beginenv
 EOL
 )->unlist; }); }
-DefMacroI(T_CS('\newproclaim'), undef, sub {
-    RequirePackage('amsthm');
-    return T_CS('\newtheorem'); });
+for my $new_theorem_alias (qw(\newproclaim \newdef)) {
+  DefMacroI(T_CS($new_theorem_alias), undef, sub {
+      RequirePackage('amsthm');
+      return T_CS('\newtheorem'); }); }
 DefAutoload('theoremstyle', 'amsthm.sty.ltxml');
 
 Let('\abstracts', '\abstract');
@@ -213,6 +214,7 @@ DefMacro('\received{}',         '\@add@frontmatter{ltx:date}[role=received]{#1}'
 DefMacro('\revised{}',          '\@add@frontmatter{ltx:date}[role=revised]{#1}');
 DefMacro('\accepted{}',         '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
 DefMacro('\pubyear{}',          '\@add@frontmatter{ltx:date}[role=publication]{#1}');
+DefMacro('\copyrightyear{}',    '\@add@frontmatter{ltx:date}[role=copyright]{#1}');
 DefMacro('\preprint{}',         '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
 DefMacro('\communicated{}',     '\@add@frontmatter{ltx:date}[role=communicated]{#1}');
 DefMacro('\dedicated{}',        '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
@@ -225,6 +227,13 @@ DefMacro('\volume{}',           '\@add@frontmatter{ltx:note}[role=volume]{#1}');
 DefMacro('\titlenote{}',        '\@add@frontmatter{ltx:note}[role=titlenote]{#1}');
 DefMacro('\terms{}',            '\@add@frontmatter{ltx:note}[role=terms]{#1}');
 DefMacro('\conferenceinfo{}{}', '\@add@frontmatter{ltx:note}[role=conference]{#1 #2}');
+
+# rarer variants:
+Let('\CopyrightYear', '\copyrightyear');
+DefRegister('\confinfo',     Tokens());
+DefRegister('\acmcopyr',     Tokens());
+DefRegister('\copyrightetc', Tokens());
+Let('\crdata', '\acmcopyr');
 
 # work as environment or not...
 DefConstructor('\references',
