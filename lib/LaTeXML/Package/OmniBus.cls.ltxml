@@ -101,23 +101,23 @@ DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1
 DefRegister('\affilskip' => Dimension(0));
 
 # some rarer name macros that are functionally no-ops for latexml
-DefMacro('\prefix{}',         '#1');
-DefMacro('\suffix{}',         '#1');
-DefMacro('\fnms{}',           '#1');
-DefMacro('\snm{}',            '#1');
-DefMacro('\inits{}',          '#1');
-DefMacro('\printaddresses{}', '#1');
-DefMacro('\printead{}',       Tokens());
-DefMacro('\firstpage{}',      Tokens());
-DefMacro('\lastpage{}',       Tokens());
-DefMacro('\runauthor{}',      Tokens());
-DefMacro('\runtitle{}',       Tokens());
-DefMacro('\corref{}',         Tokens());
-DefMacro('\listofauthors{}',  Tokens());
-DefMacro('\indexauthor{}',    Tokens());
-DefMacro('\preface',          Tokens());
-DefMacro('\thankstext',       Tokens());
-DefMacro('\numberofauthors',  Tokens());
+DefMacro('\prefix{}',          '#1');
+DefMacro('\suffix{}',          '#1');
+DefMacro('\fnms{}',            '#1');
+DefMacro('\snm{}',             '#1');
+DefMacro('\inits{}',           '#1');
+DefMacro('\printaddresses{}',  '#1');
+DefMacro('\printead{}',        Tokens());
+DefMacro('\firstpage{}',       Tokens());
+DefMacro('\lastpage{}',        Tokens());
+DefMacro('\runauthor{}',       Tokens());
+DefMacro('\runtitle{}',        Tokens());
+DefMacro('\corref{}',          Tokens());
+DefMacro('\listofauthors{}',   Tokens());
+DefMacro('\indexauthor{}',     Tokens());
+DefMacro('\preface',           Tokens());
+DefMacro('\thankstext',        Tokens());
+DefMacro('\numberofauthors{}', Tokens());
 
 DefMacro('\resumen{}', '\@add@frontmatter{ltx:abstract}{#1}');
 DefMacro('\ion{}{}',   '{#1 \textsc{#2}}');
@@ -158,6 +158,9 @@ DefMacro('\doi{}',
   '\if@in@preamble{\@add@frontmatter{ltx:classification}[scheme=doi]{#1}'
     . '\else\lx@doi{#1}\fi');
 DefConstructor('\lx@doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>');
+
+# from acm_proc_article, is it general enough?
+DefMacro('\category{}{}{}', '\@add@frontmatter{ltx:classification}[scheme=category]{#1 #2 #3}');
 
 for my $env (qw(
   conjecture theorem corollary definition example exercise lemma
@@ -205,22 +208,23 @@ Let('\endacknowledgements',   '\endacknowledgments');
 Let('\theacknowledgments',    '\acknowledgments');
 Let('\endtheacknowledgments', '\endacknowledgments');
 
-DefMacro('\editors{}',      '\@add@frontmatter{ltx:note}[role=editors]{#1}');
-DefMacro('\received{}',     '\@add@frontmatter{ltx:date}[role=received]{#1}');
-DefMacro('\revised{}',      '\@add@frontmatter{ltx:date}[role=revised]{#1}');
-DefMacro('\accepted{}',     '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
-DefMacro('\pubyear{}',      '\@add@frontmatter{ltx:date}[role=publication]{#1}');
-DefMacro('\preprint{}',     '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
-DefMacro('\communicated{}', '\@add@frontmatter{ltx:date}[role=communicated]{#1}');
-DefMacro('\dedicated{}',    '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
-DefMacro('\presented{}',    '\@add@frontmatter{ltx:date}[role=presented]{#1}');
-DefMacro('\articletype{}',  '\@add@frontmatter{ltx:note}[role=articletype]{#1}');
-DefMacro('\issue{}',        '\@add@frontmatter{ltx:note}[role=issue]{#1}');
-DefMacro('\journal{}',      '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\jname{}',        '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\volume{}',       '\@add@frontmatter{ltx:note}[role=volume]{#1}');
-DefMacro('\titlenote{}',    '\@add@frontmatter{ltx:note}[role=titlenote]{#1}');
-DefMacro('\terms{}',        '\@add@frontmatter{ltx:note}[role=terms]{#1}');
+DefMacro('\editors{}',          '\@add@frontmatter{ltx:note}[role=editors]{#1}');
+DefMacro('\received{}',         '\@add@frontmatter{ltx:date}[role=received]{#1}');
+DefMacro('\revised{}',          '\@add@frontmatter{ltx:date}[role=revised]{#1}');
+DefMacro('\accepted{}',         '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
+DefMacro('\pubyear{}',          '\@add@frontmatter{ltx:date}[role=publication]{#1}');
+DefMacro('\preprint{}',         '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\communicated{}',     '\@add@frontmatter{ltx:date}[role=communicated]{#1}');
+DefMacro('\dedicated{}',        '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
+DefMacro('\presented{}',        '\@add@frontmatter{ltx:date}[role=presented]{#1}');
+DefMacro('\articletype{}',      '\@add@frontmatter{ltx:note}[role=articletype]{#1}');
+DefMacro('\issue{}',            '\@add@frontmatter{ltx:note}[role=issue]{#1}');
+DefMacro('\journal{}',          '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\jname{}',            '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\volume{}',           '\@add@frontmatter{ltx:note}[role=volume]{#1}');
+DefMacro('\titlenote{}',        '\@add@frontmatter{ltx:note}[role=titlenote]{#1}');
+DefMacro('\terms{}',            '\@add@frontmatter{ltx:note}[role=terms]{#1}');
+DefMacro('\conferenceinfo{}{}', '\@add@frontmatter{ltx:note}[role=conference]{#1 #2}');
 
 # work as environment or not...
 DefConstructor('\references',
