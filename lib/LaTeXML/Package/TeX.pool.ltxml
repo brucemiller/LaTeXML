@@ -3974,7 +3974,13 @@ DefMacroI('\eqno', undef, sub {
       if (Equals($t, T_BEGIN)) {
         push(@stuff, $t, $gullet->readBalanced, T_END); }
       # What do I need to explicitly list here!?!?!? UGGH!
-      elsif (Equals($t, T_MATH) || Equals($t, T_CS('\]')) || Equals($t, T_CS('\@@ENDDISPLAYMATH'))
+      elsif (Equals($t, T_MATH)
+        || Equals($t, T_CS('\]'))
+        # UGH from 2022: also don't jump over rows
+        || Equals($t, T_CS('\cr'))
+        # see arXiv:math/0001062, for one example
+        || Equals($t, T_CS('\hidden@cr'))
+        || Equals($t, T_CS('\@@ENDDISPLAYMATH'))
         || Equals($t, T_CS('\begingroup'))           # Totally wrong, but to catch expanded environments
         || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
                                                      # This seems needed within AmSTeX environs

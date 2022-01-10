@@ -129,6 +129,7 @@ DefConstructor('\subhead Until:\endsubhead',
     . "<ltx:title>#1</ltx:title>",
   bounded    => 1,
   properties => sub { RefStepID('subsection') });
+# TODO: This can be used as a simple macro \subheading{..}, see e.g. arxiv:math/0001062
 DefMacro('\subheading Until:\endsubheading', '\subhead#1\endsubhead');
 DefConstructor('\subsubhead Until:\endsubsubhead',
   "<ltx:subsubsection inlist='toc' xml:id='#id'>"

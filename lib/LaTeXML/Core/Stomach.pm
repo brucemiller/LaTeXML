@@ -97,16 +97,21 @@ sub digestNextBody {
   my @aug       = ();
 
   while (defined($token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
+    if ($alignment && Equals($token, T_ALIGN) && scalar(@LaTeXML::LIST)) {
+      # at least \over calls in here without the intent to passing through the alignment.
+      # So if we already have some digested boxes available, return them here.
+      $$self{gullet}->unread($token);
+      return @LaTeXML::LIST; }
     my @r = $self->invokeToken($token);
     push(@LaTeXML::LIST, @r);
     push(@aug, $token, @r);
     last if $terminal and Equals($token, $terminal);
-    last if $initdepth > scalar(@{ $$self{boxing} }); }           # if we've closed the initial mode.
+    last if $initdepth > scalar(@{ $$self{boxing} }); }    # if we've closed the initial mode.
   Warn('expected', $terminal, $self, "body should have ended with '" . ToString($terminal) . "'",
     "current body started at " . ToString($startloc),
     "Got " . join("\n -- ", map { Stringify($_) } @aug))
     if $terminal && !Equals($token, $terminal);
-  push(@LaTeXML::LIST, Box()) unless $token;                      # Dummy `trailer' if none explicit.
+  push(@LaTeXML::LIST, Box()) unless $token;               # Dummy `trailer' if none explicit.
   return @LaTeXML::LIST; }
 
 # Digest a list of tokens independent from any current Gullet.
