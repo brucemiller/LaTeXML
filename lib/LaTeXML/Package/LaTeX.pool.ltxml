@@ -2740,6 +2740,13 @@ RawTeX(<<'EoTeX');
 \DeclareSymbolFont{largesymbols}{OMX}{cmex}{m}{n}
 EoTeX
 
+# not sure what these should be, related to \nullfont...
+DefPrimitiveI('\OMX',      undef, undef, font => { family => 'cmex10' });
+DefPrimitiveI('\tenln',    undef, undef, font => { family => 'line10' });
+DefPrimitiveI('\tenlnw',   undef, undef, font => { family => 'linew10' });
+DefPrimitiveI('\tencirc',  undef, undef, font => { family => 'lcircle10' });
+DefPrimitiveI('\tencircw', undef, undef, font => { family => 'lcirclew10' });
+
 # At least all things on uclclist need to be macros
 DefPrimitiveI('\lx@utf@OE', undef, "\x{0152}", alias => '\OE');    # LATIN CAPITAL LIGATURE OE
 DefPrimitiveI('\lx@utf@oe', undef, "\x{0153}", alias => '\oe');    # LATIN SMALL LIGATURE OE
@@ -4841,8 +4848,8 @@ DefEnvironment('{picture} Pair OptionalPair',
 
 DefMacroI(T_CS('\Gin@driver'), undef, Tokens());
 
-DefMacro('\@killglue',     '\unskip\@whiledim \lastskip >\z@\do{\unskip}');
-DefMacro('\put Until:){}', '\lx@pic@put#1){#2\relax}');
+DefMacro('\@killglue', '\unskip\@whiledim \lastskip >\z@\do{\unskip}');
+DefMacro('\put SkipSpaces Match:( Until:, Until:){}', '\lx@pic@put(#2,#3){#4\relax}');
 DefConstructor('\lx@pic@put Pair{}',
   "<ltx:g transform='#transform'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'>#2</ltx:g>",
