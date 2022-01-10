@@ -45,5 +45,7 @@ DefRegister('\ex@' => Dimension('1pt'));    # Just fake it...
 # Hmm.... how should we detect whether there's already punctuation?
 DefMacro('\@addpunct{}', '#1');
 
+DefMacro('\mathhexbox{}{}{}', '\text{$\m@th\mathchar"#1#2#3$}');
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

@@ -5319,6 +5319,8 @@ DefPrimitiveI('\raggedright',   undef, undef);
 DefPrimitiveI('\raggedleft',    undef, undef);    # this is actually LaTeX
 DefPrimitiveI('\ttraggedright', undef, undef);
 DefPrimitiveI('\leavevmode',    undef, undef);
+DefMacro('\mathhexbox{}{}{}', '\leavevmode\hbox{$\m@th \mathchar"#1#2#3$}');
+
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.2. Non-English Symbols, p.39
 
@@ -6605,7 +6607,9 @@ DefMacro('\cases{}',
 DefPrimitive('\openup Dimension', undef);
 
 # What should this do? (needs to work with alignments..)
-DefMacro('\displaylines{}', '#1');
+# see https://www.tug.org/TUGboat/tb07-1/tb14beet.pdf
+# use in arXiv:hep-th/0001208
+DefMacro('\displaylines{}', '\halign{\hbox to\displaywidth{$\hfil\displaystyle##\hfil$}\crcr#1\crcr}');
 
 DefMacro('\eqalign{}',
   '\@@eqalign{\@start@alignment#1\@finish@alignment}');
@@ -6659,6 +6663,9 @@ DefConstructor('\footnote{}{}',
         $change = 1; last; } }
     $whatsit->setProperty(($change ? 'prenote' : 'mark') => $mark);
     return; });
+# Until we can do the "v" properly:
+DefMacro('\vfootnote', '\footnote');
+
 DefPrimitiveI('\footstrut', undef, undef);
 DefRegister('\footins' => Number(0));
 
