@@ -2216,7 +2216,8 @@ DefPrimitive('\@equationgroup@numbering RequiredKeyVals', sub {
 DefConditionalI('\if@in@firstcolumn', undef, sub {
     my $alignment = LookupValue('Alignment');
     my $n         = ($alignment ? $alignment->currentColumnNumber : 9);
-    return ($alignment && (($alignment->currentColumnNumber < 2) || !$$alignment{in_row})); });
+    return $alignment && (!$$alignment{in_row} ||
+      (!$$alignment{in_column} && ($alignment->currentColumnNumber < 2))); });
 
 # A bit more defensiveness, since people abuse eqnarray so badly.
 # Eg. &&\lefteqn{...}  whatever?!?!
