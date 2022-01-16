@@ -5,6 +5,7 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-article.css" type="text/css"/>
   <para xml:id="p1">
+    <p>See equations <ref labelref="LABEL:e1"/>,<ref labelref="LABEL:e2"/>,<ref labelref="LABEL:e3"/>,<ref labelref="LABEL:e4"/>,<ref labelref="LABEL:e5"/> and <ref labelref="LABEL:e6"/>.</p>
     <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx1">
       <equation labels="LABEL:e1" xml:id="S0.E1">
         <tags>
@@ -276,9 +277,144 @@
   </para>
   <para xml:id="p3">
     <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx3">
-      <equation xml:id="S0.Ex4">
+      <equation labels="LABEL:e5" xml:id="S0.E6">
+        <tags>
+          <tag>(6)</tag>
+          <tag role="refnum">6</tag>
+        </tags>
         <MathFork>
-          <Math tex="\displaystyle x\ll y+i+\cdots+y_{n}\leq z" text="x &lt;&lt; y + i + cdots + y _ n &lt;= z" xml:id="S0.Ex4.m3">
+          <Math tex="\displaystyle x=17y" text="x = 17 * y" xml:id="S0.E6.m4">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMApp>
+                  <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                  <XMTok meaning="17" role="NUMBER">17</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <tr>
+              <td align="right"><Math mode="inline" tex="\displaystyle x" text="x" xml:id="S0.E6.m1">
+                  <XMath>
+                    <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                  </XMath>
+                </Math></td>
+              <td align="center"><Math mode="inline" tex="\displaystyle=" text="=" xml:id="S0.E6.m2">
+                  <XMath>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  </XMath>
+                </Math></td>
+              <td align="left"><Math mode="inline" tex="\displaystyle 17y" text="17 * y" xml:id="S0.E6.m3">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                      <XMTok meaning="17" role="NUMBER">17</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math></td>
+            </tr>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation labels="LABEL:e6" xml:id="S0.E7">
+        <tags>
+          <tag>(7)</tag>
+          <tag role="refnum">7</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle y&gt;a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p" text="y &gt; a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p" xml:id="S0.E7.m2">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                <XMApp>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">f</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">g</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">h</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">i</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">j</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">k</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">l</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">m</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">o</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <tr>
+              <td align="right"><Math mode="inline" tex="\displaystyle y" text="y" xml:id="S0.Ex3.m1">
+                  <XMath>
+                    <XMTok font="italic" role="UNKNOWN">y</XMTok>
+                  </XMath>
+                </Math></td>
+              <td align="center"><Math mode="inline" tex="\displaystyle&gt;" text="&gt;" xml:id="S0.Ex3.m2">
+                  <XMath>
+                    <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+                  </XMath>
+                </Math></td>
+              <td align="left"><Math mode="inline" tex="\displaystyle a+b+c+d+e+f+g+h+i+j+" text="a + b + c + d + e + f + g + h + i + limit-from@(j, +)" xml:id="S0.Ex3.m3">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">d</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">e</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">f</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">g</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">h</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">i</XMTok>
+                      <XMApp>
+                        <XMTok meaning="limit-from"/>
+                        <XMTok font="italic" role="UNKNOWN">j</XMTok>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                      </XMApp>
+                    </XMApp>
+                  </XMath>
+                </Math></td>
+            </tr>
+            <tr>
+              <td/>
+              <td/>
+              <td align="left"><Math mode="inline" tex="\displaystyle k+l+m+n+o+p" text="k + l + m + n + o + p" xml:id="S0.E7.m1">
+                  <XMath>
+                    <XMApp>
+                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">k</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">l</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">m</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">n</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">o</XMTok>
+                      <XMTok font="italic" role="UNKNOWN">p</XMTok>
+                    </XMApp>
+                  </XMath>
+                </Math></td>
+            </tr>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+  </para>
+  <para xml:id="p4">
+    <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx4">
+      <equation xml:id="S0.Ex5">
+        <MathFork>
+          <Math tex="\displaystyle x\ll y+i+\cdots+y_{n}\leq z" text="x &lt;&lt; y + i + cdots + y _ n &lt;= z" xml:id="S0.Ex5.m3">
             <XMath>
               <XMApp>
                 <XMTok meaning="multirelation"/>
@@ -302,17 +438,17 @@
           </Math>
           <MathBranch>
             <tr>
-              <td align="right"><Math mode="inline" tex="\displaystyle x" text="x" xml:id="S0.Ex3.m1">
+              <td align="right"><Math mode="inline" tex="\displaystyle x" text="x" xml:id="S0.Ex4.m1">
                   <XMath>
                     <XMTok font="italic" role="UNKNOWN">x</XMTok>
                   </XMath>
                 </Math></td>
-              <td align="center"><Math mode="inline" tex="\displaystyle\ll" text="&lt;&lt;" xml:id="S0.Ex3.m2">
+              <td align="center"><Math mode="inline" tex="\displaystyle\ll" text="&lt;&lt;" xml:id="S0.Ex4.m2">
                   <XMath>
                     <XMTok meaning="much-less-than" name="ll" role="RELOP">≪</XMTok>
                   </XMath>
                 </Math></td>
-              <td align="left"><Math mode="inline" tex="\displaystyle y+i+\cdots+y_{n}" text="y + i + cdots + y _ n" xml:id="S0.Ex3.m3">
+              <td align="left"><Math mode="inline" tex="\displaystyle y+i+\cdots+y_{n}" text="y + i + cdots + y _ n" xml:id="S0.Ex4.m3">
                   <XMath>
                     <XMApp>
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -330,12 +466,12 @@
             </tr>
             <tr>
               <td/>
-              <td align="center"><Math mode="inline" tex="\displaystyle\leq" text="&lt;=" xml:id="S0.Ex4.m1">
+              <td align="center"><Math mode="inline" tex="\displaystyle\leq" text="&lt;=" xml:id="S0.Ex5.m1">
                   <XMath>
                     <XMTok meaning="less-than-or-equals" name="leq" role="RELOP">≤</XMTok>
                   </XMath>
                 </Math></td>
-              <td align="left"><Math mode="inline" tex="\displaystyle z" text="z" xml:id="S0.Ex4.m2">
+              <td align="left"><Math mode="inline" tex="\displaystyle z" text="z" xml:id="S0.Ex5.m2">
                   <XMath>
                     <XMTok font="italic" role="UNKNOWN">z</XMTok>
                   </XMath>
@@ -346,11 +482,11 @@
       </equation>
     </equationgroup>
   </para>
-  <para xml:id="p4">
-    <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx4">
-      <equation xml:id="S0.Ex6">
+  <para xml:id="p5">
+    <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx5">
+      <equation xml:id="S0.Ex7">
         <MathFork>
-          <Math tex="\displaystyle y&gt;a+b+c+d+e+f+g+h+i+j\mbox{}+k+l+m+n+o+p" text="y &gt; a + b + c + d + e + f + g + h + i + j * [] + k + l + m + n + o + p" xml:id="S0.Ex6.m2">
+          <Math tex="\displaystyle y&gt;a+b+c+d+e+f+g+h+i+j\mbox{}+k+l+m+n+o+p" text="y &gt; a + b + c + d + e + f + g + h + i + j * [] + k + l + m + n + o + p" xml:id="S0.Ex7.m2">
             <XMath>
               <XMApp>
                 <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
@@ -383,17 +519,17 @@
           </Math>
           <MathBranch>
             <tr>
-              <td align="right"><Math mode="inline" tex="\displaystyle y" text="y" xml:id="S0.Ex5.m1">
+              <td align="right"><Math mode="inline" tex="\displaystyle y" text="y" xml:id="S0.Ex6.m1">
                   <XMath>
                     <XMTok font="italic" role="UNKNOWN">y</XMTok>
                   </XMath>
                 </Math></td>
-              <td align="center"><Math mode="inline" tex="\displaystyle&gt;" text="&gt;" xml:id="S0.Ex5.m2">
+              <td align="center"><Math mode="inline" tex="\displaystyle&gt;" text="&gt;" xml:id="S0.Ex6.m2">
                   <XMath>
                     <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
                   </XMath>
                 </Math></td>
-              <td align="left"><Math mode="inline" tex="\displaystyle a+b+c+d+e+f+g+h+i+j" text="a + b + c + d + e + f + g + h + i + j" xml:id="S0.Ex5.m3">
+              <td align="left"><Math mode="inline" tex="\displaystyle a+b+c+d+e+f+g+h+i+j" text="a + b + c + d + e + f + g + h + i + j" xml:id="S0.Ex6.m3">
                   <XMath>
                     <XMApp>
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -414,7 +550,7 @@
             <tr>
               <td/>
               <td/>
-              <td align="left"><Math mode="inline" tex="\displaystyle\mbox{}+k+l+m+n+o+p" text="[] + k + l + m + n + o + p" xml:id="S0.Ex6.m1">
+              <td align="left"><Math mode="inline" tex="\displaystyle\mbox{}+k+l+m+n+o+p" text="[] + k + l + m + n + o + p" xml:id="S0.Ex7.m1">
                   <XMath>
                     <XMApp>
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -434,11 +570,11 @@
       </equation>
     </equationgroup>
   </para>
-  <para xml:id="p5">
-    <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx5">
-      <equation xml:id="S0.Ex9">
+  <para xml:id="p6">
+    <equationgroup class="ltx_eqn_eqnarray" xml:id="S0.EGx6">
+      <equation xml:id="S0.Ex10">
         <MathFork>
-          <Math tex="\displaystyle w+x+y+z=a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p" text="w + x + y + z = a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p" xml:id="S0.Ex9.m2">
+          <Math tex="\displaystyle w+x+y+z=a+b+c+d+e+f+g+h+i+j+k+l+m+n+o+p" text="w + x + y + z = a + b + c + d + e + f + g + h + i + j + k + l + m + n + o + p" xml:id="S0.Ex10.m2">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -473,7 +609,7 @@
           </Math>
           <MathBranch>
             <tr>
-              <td align="left" colspan="3"><Math mode="inline" tex="\displaystyle w+x+y+z=" text="w + x + y + z = absent" xml:id="S0.Ex7.m1">
+              <td align="left" colspan="3"><Math mode="inline" tex="\displaystyle w+x+y+z=" text="w + x + y + z = absent" xml:id="S0.Ex8.m1">
                   <XMath>
                     <XMApp>
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -492,7 +628,7 @@
             <tr>
               <td/>
               <td/>
-              <td align="left"><Math mode="inline" tex="\displaystyle a+b+c+d+e+f+g+h+i+j+" text="a + b + c + d + e + f + g + h + i + limit-from@(j, +)" xml:id="S0.Ex8.m1">
+              <td align="left"><Math mode="inline" tex="\displaystyle a+b+c+d+e+f+g+h+i+j+" text="a + b + c + d + e + f + g + h + i + limit-from@(j, +)" xml:id="S0.Ex9.m1">
                   <XMath>
                     <XMApp>
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
@@ -517,7 +653,7 @@
             <tr>
               <td/>
               <td/>
-              <td align="left"><Math mode="inline" tex="\displaystyle k+l+m+n+o+p" text="k + l + m + n + o + p" xml:id="S0.Ex9.m1">
+              <td align="left"><Math mode="inline" tex="\displaystyle k+l+m+n+o+p" text="k + l + m + n + o + p" xml:id="S0.Ex10.m1">
                   <XMath>
                     <XMApp>
                       <XMTok meaning="plus" role="ADDOP">+</XMTok>
