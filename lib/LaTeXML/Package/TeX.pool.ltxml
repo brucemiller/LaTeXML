@@ -2458,20 +2458,15 @@ DefConstructor('\ltx@special@graphics OptionalKeyVals:SpecialPS Semiverbatim',
         $angle = ToString($angle);
         $options .= ',' if $options;
         $options .= "angle=$angle"; }
-      my $voffset = $kv->getValue('voffset');
+      my $voffset = $kv->getValue('voffset') || 0;
       $voffset = $voffset && int(ToString($voffset));
-      my $hoffset = $kv->getValue('hoffset');
+      my $hoffset = $kv->getValue('hoffset') || 0;
       $hoffset = $hoffset && int(ToString($hoffset));
       if ($voffset || $hoffset) {
-        my ($left, $bottom, $right, $top) = (0, 0, 0, 0);
-        # STRANGE: I get best results by applying the offsets as >0 TRIMs to both axes,
-        #          rather than as single-axis offset (via negative value trim).
-        $voffset = -$voffset if $voffset < 0;
-        $bottom  = $top = $voffset;
-        $hoffset = -$hoffset if $hoffset < 0;
-        $left    = $right = $hoffset;
+        my $left   = -$hoffset;
+        my $bottom = -$voffset;
         $options .= "," if $options;
-        $options .= "trim=$left $bottom $right $top,clip=true"; } }
+        $options .= "trim=$left $bottom 0 0,clip=true"; } }
     (options => $options, path => $path, candidates => join(',', @candidates)); },
   mode => 'text');
 # Since these ultimately generate external resources, it can be useful to have a handle on them.
