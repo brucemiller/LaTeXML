@@ -3765,9 +3765,6 @@ sub beforeDigestBibliography {
   AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
   DefMacro('\bibliographystyle{}', '');
   DefMacro('\bibliography {}',     '');
-  DefConstructorI('\endthebibliography', undef,
-    "</ltx:biblist></ltx:bibliography>",
-    locked => 1);
   ResetCounter('@bibitem');
   return; }
 
@@ -3936,8 +3933,9 @@ DefConstructorI('\thebibliography', undef,
   locked          => 1);
 
 # Close the bibliography
-DefConstructorI('\endthebibliography', undef,
-  "</ltx:biblist></ltx:bibliography>",
+DefConstructorI('\endthebibliography', undef, sub {
+    $_[0]->maybeCloseElement('ltx:biblist');
+    $_[0]->maybeCloseElement('ltx:bibliography'); },
   locked => 1);
 # auto close the bibliography and contained biblist.
 Tag('ltx:biblist',      autoClose => 1);
@@ -3958,6 +3956,12 @@ sub setupPseudoBibitem {
   Let('\item', '\item@in@bibliography');
   # And protect from redefinitions.
   Let('\newblock', '\lx@bibnewblock');
+  my $gullet = $STATE->getStomach->getGullet;
+  # Risky, but when bibliography immediatesly starts with text (no implied \par)
+  if (my $token = $gullet->readNonSpace) {
+    $gullet->unread($token);
+    if (!$token->isExecutable) {
+      $gullet->unread(T_CS('\par')); } }
   return; }
 
 DefMacroI('\par@in@bibliography', undef, sub {
@@ -4029,7 +4033,8 @@ DefConstructor('\lx@mung@bibliography@pre', sub {
     if ($tag =~ /^ltx:(?:itemize|enumerate|description)$/) {
       $document->maybeCloseElement($tag); }    # Or even remove (if empty)?
     return; });
-DefConstructorI('\lx@bibnewblock', undef, "<ltx:bibblock>");
+DefConstructorI('\lx@bibnewblock', undef, sub {
+    $_[0]->openElement('ltx:bibblock') if $_[0]->isOpenable('ltx:bibblock'); });
 Let('\newblock', '\lx@bibnewblock');
 Tag('ltx:bibitem',  autoClose => 1);
 Tag('ltx:bibblock', autoClose => 1);
