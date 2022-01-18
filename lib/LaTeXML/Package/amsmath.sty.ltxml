@@ -567,10 +567,38 @@ DefPrimitive('\@ams@aligned@bindings', sub {
     DefMacro('\@row@after',  '');
     return; });
 
-DefMacro('\aligned[]',     '\@hidden@bgroup\@ams@aligned@bindings\@@amsaligned\@start@alignment');
-DefMacro('\endaligned',    '\hidden@cr{}\@finish@alignment\@end@amsaligned\@hidden@egroup');
-DefMacro('\alignedat{}[]', '\@hidden@bgroup\@ams@aligned@bindings\@@amsaligned\@start@alignment');
-DefMacro('\endalignedat',  '\hidden@cr{}\@finish@alignment\@end@amsaligned\@hidden@egroup');
+# Perverse, but See amsmath's \alignsafe@tesetopt
+# Optional argument, but check for "[" WITHOUT triggering alignment machinery
+DefParameterType('alignsafeOptional', sub {
+    my ($gullet, $default, $inner) = @_;
+    my ($tok, $value);
+    { local $LaTeXML::ALIGN_STATE = 1000000;
+      $tok = $gullet->readNonSpace; }
+    if    (!defined $tok) { }
+    elsif (($tok->equals(T_OTHER('[')))) {
+      $value = $gullet->readUntil(T_OTHER(']')); }
+    else {
+      $gullet->unread($tok); }
+    if (!$value && $default) {
+      $value = $default; }
+    elsif ($inner) {
+      ($value) = $inner->reparseArgument($gullet, $value); }
+    $value; },
+  optional  => 1,
+  reversion => sub {
+    my ($arg, $default, $inner) = @_;
+    if ($arg) {
+      (T_OTHER('['),
+        ($inner ? $inner->revertArguments($arg) : Revert($arg)),
+        T_OTHER(']')); }
+    else { (); } });
+
+DefMacro('\aligned alignsafeOptional',
+  '\@hidden@bgroup\@ams@aligned@bindings\@@amsaligned\@start@alignment');
+DefMacro('\endaligned', '\hidden@cr{}\@finish@alignment\@end@amsaligned\@hidden@egroup');
+DefMacro('\alignedat{} alignsafeOptional',
+  '\@hidden@bgroup\@ams@aligned@bindings\@@amsaligned\@start@alignment');
+DefMacro('\endalignedat', '\hidden@cr{}\@finish@alignment\@end@amsaligned\@hidden@egroup');
 
 DefPrimitive('\@end@amsaligned', sub { $_[0]->egroup; });
 DefConstructor('\@@amsaligned DigestedBody',

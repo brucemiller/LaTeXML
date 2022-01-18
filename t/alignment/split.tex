@@ -1,12 +1,64 @@
 \documentclass[a4paper]{book}
 \usepackage{amsmath}
 \begin{document}
+Plain aligns
+
+\begin{align}
+A =& B \\
+C =& D \\
+\end{align}
+
+\begin{align}
+A =& B \\
+C =& D \\
+&+E \notag
+\end{align}
+
+Equations \eqref{eq:before} and \eqref{eq:after}:
+\begin{align}
+\label{eq:before}
+&x \quad c_1,
+\end{align}
+and
+\begin{align}
+&y \quad c_2,
+\label{eq:after}
+\end{align}
+
+Aligned within math
+\[\begin{aligned}
+    A =& B
+  \end{aligned}
+\]
+
+Tendency to see the ampersand before aligned has started
+\[
+C =\left\{\begin{aligned}
+& D \end{aligned}\right.
+\]
+
+Align with aligned
 \begin{align*}
 A & B\\
 C &\left\{\begin{aligned}
 & D \end{aligned}\right.
 \end{align*}
 
+\begin{align}
+    A =& \left\{
+\begin{aligned}
+    B & \text{if}\\
+    C & \text{otherwise}
+  \end{aligned}\right.
+ \end{align}
+Or even
+\begin{align}
+\begin{aligned}
+& a\\
+& b
+\end{aligned}
+\end{align}
+ 
 Equation with split; Ampersand before relation
 \begin{equation}
 \begin{split}
@@ -42,6 +94,14 @@ C &= D \\
 \end{split}\\
  F &= G\\
 H &= I
+\end{align}
+\begin{align}
+A =&\ B \\
+B=& - C \\
+\begin{split}
+C =& -D + E + F + G + H\\
+&+I
+\end{split}
 \end{align}
 
 2-Column align, with missing columns
@@ -103,57 +163,10 @@ horizontally aligned as if it were a column pair in the align.
   S &= T
 \end{align}
 
-\end{document}
-
-\begin{align}
-A =& B \\
-C =& D \\
-\end{align}
-
-\begin{equation}
-\begin{split}
-C =& D \\
-&{}+E
-\end{split}
-\end{equation}
-
-
-\begin{align}
-A =& B \\
-C =& D \\
-&+E \notag
-\end{align}
-
+%\end{document}
 %\end{document}
 
 
 
 
-\begin{align}
-A =&\ B \\
-B=& - C \\
-\begin{split}
-C =& -D + E + F + G + H\\
-&+I
-\end{split}
-\end{align}
-
-Aligned within math
-\[\begin{aligned}
-    A =& B
-  \end{aligned}
-\]
-Tendency to see the ampersand before aligned has started
-\[
-C =\left\{\begin{aligned}
-& D \end{aligned}\right.
-\]
-
-\begin{align}
-    A =& \left\{
-\begin{aligned}
-    B & \text{if}\\
-    C & \text{otherwise}
-  \end{aligned}\right.
- \end{align}
 \end{document}

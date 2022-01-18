@@ -324,7 +324,6 @@ sub egroup {
 sub begingroup {
   my ($self) = @_;
   pushStackFrame($self, 1);
-  $LaTeXML::ALIGN_STATE++;                      # Should this ALSO be done for \begingroup????
   return; }
 
 sub endgroup {
@@ -335,7 +334,6 @@ sub endgroup {
       $self->currentFrameMessage); }
   else {                                         # Don't pop if there's an error; maybe we'll recover?
     popStackFrame($self, 1); }
-  $LaTeXML::ALIGN_STATE--;                       # Should this ALSO be done for \endgroup???
   return; }
 
 #======================================================================

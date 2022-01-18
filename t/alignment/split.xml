@@ -6,10 +6,366 @@
   <resource src="LaTeXML.css" type="text/css"/>
   <resource src="ltx-book.css" type="text/css"/>
   <para xml:id="p1">
+    <p>Plain aligns</p>
+  </para>
+  <para xml:id="p2">
     <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx1">
+      <equation xml:id="Ch0.E1">
+        <tags>
+          <tag>(1)</tag>
+          <tag role="refnum">1</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E1.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                <XMTok font="italic" role="UNKNOWN">B</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle A=" text="A = absent" xml:id="Ch0.E1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                    <XMTok meaning="absent"/>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle B" text="B" xml:id="Ch0.E1.m2">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E2">
+        <tags>
+          <tag>(2)</tag>
+          <tag role="refnum">2</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle C=D" text="C = D" xml:id="Ch0.E2.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                <XMTok font="italic" role="UNKNOWN">D</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle C=" text="C = absent" xml:id="Ch0.E2.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                    <XMTok meaning="absent"/>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle D" text="D" xml:id="Ch0.E2.m2">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+  </para>
+  <para xml:id="p3">
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx2">
+      <equation xml:id="Ch0.E4">
+        <tags>
+          <tag>(4)</tag>
+          <tag role="refnum">4</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E4.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                <XMTok font="italic" role="UNKNOWN">B</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle A=" text="A = absent" xml:id="Ch0.E4.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                    <XMTok meaning="absent"/>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle B" text="B" xml:id="Ch0.E4.m2">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E5">
+        <tags>
+          <tag>(5)</tag>
+          <tag role="refnum">5</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle C=D" text="C = D" xml:id="Ch0.E5.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                <XMTok font="italic" role="UNKNOWN">D</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle C=" text="C = absent" xml:id="Ch0.E5.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                    <XMTok meaning="absent"/>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle D" text="D" xml:id="Ch0.E5.m2">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
       <equation xml:id="Ch0.Ex1">
         <MathFork>
-          <Math tex="\displaystyle AB" text="A * B" xml:id="Ch0.Ex1.m3">
+          <Math tex="\displaystyle+E" text="+ E" xml:id="Ch0.Ex1.m2">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                <XMTok font="italic" role="UNKNOWN">E</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td/>
+            <td align="left"><Math mode="inline" tex="\displaystyle+E" text="+ E" xml:id="Ch0.Ex1.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">E</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+  </para>
+  <para xml:id="p4">
+    <p>Equations (<ref labelref="LABEL:eq:before"/>) and (<ref labelref="LABEL:eq:after"/>):</p>
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx3">
+      <equation labels="LABEL:eq:before" xml:id="Ch0.E6">
+        <tags>
+          <tag>(6)</tag>
+          <tag role="refnum">6</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle x\quad c_{1}," text="list@(x, c _ 1)" xml:id="Ch0.E6.m3">
+            <XMath>
+              <XMDual>
+                <XMRef idref="Ch0.E6.m3.2"/>
+                <XMWrap>
+                  <XMDual xml:id="Ch0.E6.m3.2">
+                    <XMApp>
+                      <XMTok meaning="list"/>
+                      <XMRef idref="Ch0.E6.m3.1"/>
+                      <XMRef idref="Ch0.E6.m3.2.1"/>
+                    </XMApp>
+                    <XMWrap>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E6.m3.1">x</XMTok>
+                      <XMTok name="quad" role="PUNCT"> </XMTok>
+                      <XMApp xml:id="Ch0.E6.m3.2.1">
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                        <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                        <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                      </XMApp>
+                    </XMWrap>
+                  </XMDual>
+                  <XMTok role="PUNCT">,</XMTok>
+                </XMWrap>
+              </XMDual>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"/>
+            <td align="left"><Math mode="inline" tex="\displaystyle x\quad c_{1}," text="list@(x, c _ 1)" xml:id="Ch0.E6.m2">
+                <XMath>
+                  <XMDual>
+                    <XMRef idref="Ch0.E6.m2.2"/>
+                    <XMWrap>
+                      <XMDual xml:id="Ch0.E6.m2.2">
+                        <XMApp>
+                          <XMTok meaning="list"/>
+                          <XMRef idref="Ch0.E6.m2.1"/>
+                          <XMRef idref="Ch0.E6.m2.2.1"/>
+                        </XMApp>
+                        <XMWrap>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E6.m2.1">x</XMTok>
+                          <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+                          <XMApp xml:id="Ch0.E6.m2.2.1">
+                            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                            <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                            <XMTok fontsize="70%" meaning="1" role="NUMBER">1</XMTok>
+                          </XMApp>
+                        </XMWrap>
+                      </XMDual>
+                      <XMTok role="PUNCT">,</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+    <p>and</p>
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx4">
+      <equation labels="LABEL:eq:after" xml:id="Ch0.E7">
+        <tags>
+          <tag>(7)</tag>
+          <tag role="refnum">7</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle y\quad c_{2}," text="list@(y, c _ 2)" xml:id="Ch0.E7.m2">
+            <XMath>
+              <XMDual>
+                <XMRef idref="Ch0.E7.m2.2"/>
+                <XMWrap>
+                  <XMDual xml:id="Ch0.E7.m2.2">
+                    <XMApp>
+                      <XMTok meaning="list"/>
+                      <XMRef idref="Ch0.E7.m2.1"/>
+                      <XMRef idref="Ch0.E7.m2.2.1"/>
+                    </XMApp>
+                    <XMWrap>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E7.m2.1">y</XMTok>
+                      <XMTok name="quad" role="PUNCT"> </XMTok>
+                      <XMApp xml:id="Ch0.E7.m2.2.1">
+                        <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                        <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                        <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                      </XMApp>
+                    </XMWrap>
+                  </XMDual>
+                  <XMTok role="PUNCT">,</XMTok>
+                </XMWrap>
+              </XMDual>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="left"><Math mode="inline" tex="\displaystyle y\quad c_{2}," text="list@(y, c _ 2)" xml:id="Ch0.E7.m1">
+                <XMath>
+                  <XMDual>
+                    <XMRef idref="Ch0.E7.m1.2"/>
+                    <XMWrap>
+                      <XMDual xml:id="Ch0.E7.m1.2">
+                        <XMApp>
+                          <XMTok meaning="list"/>
+                          <XMRef idref="Ch0.E7.m1.1"/>
+                          <XMRef idref="Ch0.E7.m1.2.1"/>
+                        </XMApp>
+                        <XMWrap>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E7.m1.1">y</XMTok>
+                          <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+                          <XMApp xml:id="Ch0.E7.m1.2.1">
+                            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                            <XMTok font="italic" role="UNKNOWN">c</XMTok>
+                            <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                          </XMApp>
+                        </XMWrap>
+                      </XMDual>
+                      <XMTok role="PUNCT">,</XMTok>
+                    </XMWrap>
+                  </XMDual>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+  </para>
+  <para xml:id="p5">
+    <p>Aligned within math</p>
+    <equationgroup xml:id="Ch0.Ex2">
+      <equation xml:id="Ch0.Ex2X">
+        <MathFork>
+          <Math tex="\displaystyle A=B" text="A = B" xml:id="Ch0.Ex2X.m1">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                <XMTok font="italic" role="UNKNOWN">B</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math tex="\displaystyle A=" text="A = absent" xml:id="Ch0.Ex2X.m2">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                    <XMTok meaning="absent"/>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math tex="\displaystyle B" text="B" xml:id="Ch0.Ex2X.m3">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+  </para>
+  <para xml:id="p6">
+    <p>Tendency to see the ampersand before aligned has started</p>
+    <equation xml:id="Ch0.Ex3">
+      <Math mode="display" tex="C=\left\{\begin{aligned} &amp;D\end{aligned}\right." xml:id="Ch0.Ex3.m1">
+        <XMath>
+          <XMTok font="italic" role="UNKNOWN">C</XMTok>
+          <XMTok meaning="equals" role="RELOP">=</XMTok>
+          <XMWrap>
+            <XMTok role="OPEN" stretchy="true">{</XMTok>
+            <XMArray colsep="0pt" name="aligned">
+              <XMRow>
+                <XMCell/>
+                <XMCell align="left">
+                  <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                </XMCell>
+              </XMRow>
+            </XMArray>
+          </XMWrap>
+        </XMath>
+      </Math>
+    </equation>
+  </para>
+  <para xml:id="p7">
+    <p>Align with aligned</p>
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx5">
+      <equation xml:id="Ch0.Ex4">
+        <MathFork>
+          <Math tex="\displaystyle AB" text="A * B" xml:id="Ch0.Ex4.m3">
             <XMath>
               <XMApp>
                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
@@ -19,12 +375,12 @@
             </XMath>
           </Math>
           <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.Ex1.m1">
+            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.Ex4.m1">
                 <XMath>
                   <XMTok font="italic" role="UNKNOWN">A</XMTok>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle B" text="B" xml:id="Ch0.Ex1.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle B" text="B" xml:id="Ch0.Ex4.m2">
                 <XMath>
                   <XMTok font="italic" role="UNKNOWN">B</XMTok>
                 </XMath>
@@ -32,9 +388,9 @@
           </MathBranch>
         </MathFork>
       </equation>
-      <equation xml:id="Ch0.Ex2">
+      <equation xml:id="Ch0.Ex5">
         <MathFork>
-          <Math tex="\displaystyle C\left\{\begin{aligned} &amp;D\end{aligned}\right." xml:id="Ch0.Ex2.m3">
+          <Math tex="\displaystyle C\left\{\begin{aligned} &amp;D\end{aligned}\right." xml:id="Ch0.Ex5.m3">
             <XMath>
               <XMTok font="italic" role="UNKNOWN">C</XMTok>
               <XMWrap>
@@ -51,12 +407,12 @@
             </XMath>
           </Math>
           <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="Ch0.Ex2.m1">
+            <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="Ch0.Ex5.m1">
                 <XMath>
                   <XMTok font="italic" role="UNKNOWN">C</XMTok>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle\left\{\begin{aligned} &amp;D\end{aligned}\right." xml:id="Ch0.Ex2.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle\left\{\begin{aligned} &amp;D\end{aligned}\right." xml:id="Ch0.Ex5.m2">
                 <XMath>
                   <XMTok role="OPEN" stretchy="true">{</XMTok>
                   <XMArray colsep="0pt" name="aligned">
@@ -74,35 +430,157 @@
       </equation>
     </equationgroup>
   </para>
-  <para xml:id="p2">
+  <para xml:id="p8">
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx6">
+      <equation xml:id="Ch0.E8">
+        <tags>
+          <tag>(8)</tag>
+          <tag role="refnum">8</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle A=\left\{\begin{aligned} B&amp;\text{if}\\&#10;C&amp;\text{otherwise}\end{aligned}\right." xml:id="Ch0.E8.m3">
+            <XMath>
+              <XMTok font="italic" role="UNKNOWN">A</XMTok>
+              <XMTok meaning="equals" role="RELOP">=</XMTok>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="true">{</XMTok>
+                <XMArray colsep="0pt" name="aligned">
+                  <XMRow>
+                    <XMCell align="right">
+                      <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                    </XMCell>
+                    <XMCell align="left">
+                      <XMText>if</XMText>
+                    </XMCell>
+                  </XMRow>
+                  <XMRow>
+                    <XMCell align="right">
+                      <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                    </XMCell>
+                    <XMCell align="left">
+                      <XMText>otherwise</XMText>
+                    </XMCell>
+                  </XMRow>
+                </XMArray>
+              </XMWrap>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle A=" text="A = absent" xml:id="Ch0.E8.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                    <XMTok meaning="absent"/>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle\left\{\begin{aligned} B&amp;\text{if}\\&#10;C&amp;\text{otherwise}\end{aligned}\right." xml:id="Ch0.E8.m2">
+                <XMath>
+                  <XMTok role="OPEN" stretchy="true">{</XMTok>
+                  <XMArray colsep="0pt" name="aligned">
+                    <XMRow>
+                      <XMCell align="right">
+                        <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                      </XMCell>
+                      <XMCell align="left">
+                        <XMText>if</XMText>
+                      </XMCell>
+                    </XMRow>
+                    <XMRow>
+                      <XMCell align="right">
+                        <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                      </XMCell>
+                      <XMCell align="left">
+                        <XMText>otherwise</XMText>
+                      </XMCell>
+                    </XMRow>
+                  </XMArray>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+    <p>Or even</p>
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx7">
+      <equation xml:id="Ch0.E9">
+        <tags>
+          <tag>(9)</tag>
+          <tag role="refnum">9</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle\begin{aligned} &amp;a\\&#10;&amp;b\end{aligned}" text="aligned" xml:id="Ch0.E9.m2">
+            <XMath>
+              <XMArray colsep="0pt" name="aligned">
+                <XMRow>
+                  <XMCell/>
+                  <XMCell align="left">
+                    <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  </XMCell>
+                </XMRow>
+                <XMRow>
+                  <XMCell/>
+                  <XMCell align="left">
+                    <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                  </XMCell>
+                </XMRow>
+              </XMArray>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle\begin{aligned} &amp;a\\&#10;&amp;b\end{aligned}" text="aligned" xml:id="Ch0.E9.m1">
+                <XMath>
+                  <XMArray colsep="0pt" name="aligned">
+                    <XMRow>
+                      <XMCell/>
+                      <XMCell align="left">
+                        <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                      </XMCell>
+                    </XMRow>
+                    <XMRow>
+                      <XMCell/>
+                      <XMCell align="left">
+                        <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                      </XMCell>
+                    </XMRow>
+                  </XMArray>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+  </para>
+  <para xml:id="p9">
     <p>Equation with split; Ampersand before relation</p>
-    <equation xml:id="Ch0.E1">
+    <equation xml:id="Ch0.E10">
       <tags>
-        <tag>(1)</tag>
-        <tag role="refnum">1</tag>
+        <tag>(10)</tag>
+        <tag role="refnum">10</tag>
       </tags>
-      <Math mode="display" tex="\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E1.m1">
+      <Math mode="display" tex="\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E10.m1">
         <XMath>
           <XMDual>
             <XMApp>
-              <XMRef idref="Ch0.E1.m1.2"/>
-              <XMRef idref="Ch0.E1.m1.1"/>
+              <XMRef idref="Ch0.E10.m1.2"/>
+              <XMRef idref="Ch0.E10.m1.1"/>
               <XMApp>
-                <XMRef idref="Ch0.E1.m1.4"/>
-                <XMRef idref="Ch0.E1.m1.3"/>
-                <XMRef idref="Ch0.E1.m1.5"/>
+                <XMRef idref="Ch0.E10.m1.4"/>
+                <XMRef idref="Ch0.E10.m1.3"/>
+                <XMRef idref="Ch0.E10.m1.5"/>
               </XMApp>
             </XMApp>
             <XMArray colsep="0pt" name="aligned">
               <XMRow>
                 <XMCell align="right">
-                  <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E1.m1.1">C</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E10.m1.1">C</XMTok>
                 </XMCell>
                 <XMCell align="left">
                   <XMApp>
-                    <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E1.m1.2">=</XMTok>
+                    <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E10.m1.2">=</XMTok>
                     <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E1.m1.3">D</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E10.m1.3">D</XMTok>
                   </XMApp>
                 </XMCell>
               </XMRow>
@@ -110,8 +588,8 @@
                 <XMCell/>
                 <XMCell align="left">
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E1.m1.4">+</XMTok>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E1.m1.5">E</XMTok>
+                    <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E10.m1.4">+</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E10.m1.5">E</XMTok>
                   </XMApp>
                 </XMCell>
               </XMRow>
@@ -121,42 +599,42 @@
       </Math>
     </equation>
     <p>or after</p>
-    <equation xml:id="Ch0.E2">
+    <equation xml:id="Ch0.E11">
       <tags>
-        <tag>(2)</tag>
-        <tag role="refnum">2</tag>
+        <tag>(11)</tag>
+        <tag role="refnum">11</tag>
       </tags>
-      <Math mode="display" tex="\begin{split}C=&amp;D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E2.m1">
+      <Math mode="display" tex="\begin{split}C=&amp;D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E11.m1">
         <XMath>
           <XMDual>
             <XMApp>
-              <XMRef idref="Ch0.E2.m1.2"/>
-              <XMRef idref="Ch0.E2.m1.1"/>
+              <XMRef idref="Ch0.E11.m1.2"/>
+              <XMRef idref="Ch0.E11.m1.1"/>
               <XMApp>
-                <XMRef idref="Ch0.E2.m1.4"/>
-                <XMRef idref="Ch0.E2.m1.3"/>
-                <XMRef idref="Ch0.E2.m1.5"/>
+                <XMRef idref="Ch0.E11.m1.4"/>
+                <XMRef idref="Ch0.E11.m1.3"/>
+                <XMRef idref="Ch0.E11.m1.5"/>
               </XMApp>
             </XMApp>
             <XMArray colsep="0pt" name="aligned">
               <XMRow>
                 <XMCell align="right">
                   <XMApp>
-                    <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E2.m1.2">=</XMTok>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E2.m1.1">C</XMTok>
+                    <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E11.m1.2">=</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E11.m1.1">C</XMTok>
                     <XMTok meaning="absent"/>
                   </XMApp>
                 </XMCell>
                 <XMCell align="left">
-                  <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E2.m1.3">D</XMTok>
+                  <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E11.m1.3">D</XMTok>
                 </XMCell>
               </XMRow>
               <XMRow>
                 <XMCell/>
                 <XMCell align="left">
                   <XMApp>
-                    <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E2.m1.4">+</XMTok>
-                    <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E2.m1.5">E</XMTok>
+                    <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E11.m1.4">+</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E11.m1.5">E</XMTok>
                   </XMApp>
                 </XMCell>
               </XMRow>
@@ -166,15 +644,15 @@
       </Math>
     </equation>
   </para>
-  <para xml:id="p3">
+  <para xml:id="p10">
     <p>Gather with split</p>
-    <equationgroup class="ltx_eqn_gather" xml:id="Ch0.S0.EGx2">
-      <equation xml:id="Ch0.E3">
+    <equationgroup class="ltx_eqn_gather" xml:id="Ch0.S0.EGx8">
+      <equation xml:id="Ch0.E12">
         <tags>
-          <tag>(3)</tag>
-          <tag role="refnum">3</tag>
+          <tag>(12)</tag>
+          <tag role="refnum">12</tag>
         </tags>
-        <Math mode="display" tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E3.m1">
+        <Math mode="display" tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E12.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -184,33 +662,33 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ch0.E4">
+      <equation xml:id="Ch0.E13">
         <tags>
-          <tag>(4)</tag>
-          <tag role="refnum">4</tag>
+          <tag>(13)</tag>
+          <tag role="refnum">13</tag>
         </tags>
-        <Math mode="display" tex="\displaystyle\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E4.m1">
+        <Math mode="display" tex="\displaystyle\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E13.m1">
           <XMath>
             <XMDual>
               <XMApp>
-                <XMRef idref="Ch0.E4.m1.2"/>
-                <XMRef idref="Ch0.E4.m1.1"/>
+                <XMRef idref="Ch0.E13.m1.2"/>
+                <XMRef idref="Ch0.E13.m1.1"/>
                 <XMApp>
-                  <XMRef idref="Ch0.E4.m1.4"/>
-                  <XMRef idref="Ch0.E4.m1.3"/>
-                  <XMRef idref="Ch0.E4.m1.5"/>
+                  <XMRef idref="Ch0.E13.m1.4"/>
+                  <XMRef idref="Ch0.E13.m1.3"/>
+                  <XMRef idref="Ch0.E13.m1.5"/>
                 </XMApp>
               </XMApp>
               <XMArray colsep="0pt" name="aligned">
                 <XMRow>
                   <XMCell align="right">
-                    <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E4.m1.1">C</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E13.m1.1">C</XMTok>
                   </XMCell>
                   <XMCell align="left">
                     <XMApp>
-                      <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E4.m1.2">=</XMTok>
+                      <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E13.m1.2">=</XMTok>
                       <XMTok meaning="absent"/>
-                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E4.m1.3">D</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E13.m1.3">D</XMTok>
                     </XMApp>
                   </XMCell>
                 </XMRow>
@@ -218,8 +696,8 @@
                   <XMCell/>
                   <XMCell align="left">
                     <XMApp>
-                      <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E4.m1.4">+</XMTok>
-                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E4.m1.5">E</XMTok>
+                      <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E13.m1.4">+</XMTok>
+                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E13.m1.5">E</XMTok>
                     </XMApp>
                   </XMCell>
                 </XMRow>
@@ -228,12 +706,12 @@
           </XMath>
         </Math>
       </equation>
-      <equation xml:id="Ch0.E5">
+      <equation xml:id="Ch0.E14">
         <tags>
-          <tag>(5)</tag>
-          <tag role="refnum">5</tag>
+          <tag>(14)</tag>
+          <tag role="refnum">14</tag>
         </tags>
-        <Math mode="display" tex="\displaystyle F=G" text="F = G" xml:id="Ch0.E5.m1">
+        <Math mode="display" tex="\displaystyle F=G" text="F = G" xml:id="Ch0.E14.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -245,576 +723,17 @@
       </equation>
     </equationgroup>
   </para>
-  <para xml:id="p4">
+  <para xml:id="p11">
     <p>Align with split.
 Notice that the split acts like a column pair in the align.</p>
-    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx3">
-      <equation xml:id="Ch0.E6">
-        <tags>
-          <tag>(6)</tag>
-          <tag role="refnum">6</tag>
-        </tags>
-        <MathFork>
-          <Math tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E6.m3">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">A</XMTok>
-                <XMTok font="italic" role="UNKNOWN">B</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.E6.m1">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">A</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=B" text="absent = B" xml:id="Ch0.E6.m2">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-      </equation>
-      <equation xml:id="Ch0.E7">
-        <tags>
-          <tag>(7)</tag>
-          <tag role="refnum">7</tag>
-        </tags>
-        <MathFork>
-          <Math tex="\displaystyle\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E7.m2">
-            <XMath>
-              <XMDual>
-                <XMApp>
-                  <XMRef idref="Ch0.E7.m1.2.mf"/>
-                  <XMRef idref="Ch0.E7.m1.1.mf"/>
-                  <XMApp>
-                    <XMRef idref="Ch0.E7.m1.4.mf"/>
-                    <XMRef idref="Ch0.E7.m1.3.mf"/>
-                    <XMRef idref="Ch0.E7.m1.5.mf"/>
-                  </XMApp>
-                </XMApp>
-                <XMArray colsep="0pt" name="aligned">
-                  <XMRow>
-                    <XMCell align="right">
-                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E7.m1.1.mf">C</XMTok>
-                    </XMCell>
-                    <XMCell align="left">
-                      <XMApp>
-                        <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E7.m1.2.mf">=</XMTok>
-                        <XMTok meaning="absent"/>
-                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E7.m1.3.mf">D</XMTok>
-                      </XMApp>
-                    </XMCell>
-                  </XMRow>
-                  <XMRow>
-                    <XMCell/>
-                    <XMCell align="left">
-                      <XMApp>
-                        <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E7.m1.4.mf">+</XMTok>
-                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E7.m1.5.mf">E</XMTok>
-                      </XMApp>
-                    </XMCell>
-                  </XMRow>
-                </XMArray>
-              </XMDual>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E7.m1">
-                <XMath>
-                  <XMDual>
-                    <XMApp>
-                      <XMRef idref="Ch0.E7.m1.2"/>
-                      <XMRef idref="Ch0.E7.m1.1"/>
-                      <XMApp>
-                        <XMRef idref="Ch0.E7.m1.4"/>
-                        <XMRef idref="Ch0.E7.m1.3"/>
-                        <XMRef idref="Ch0.E7.m1.5"/>
-                      </XMApp>
-                    </XMApp>
-                    <XMArray colsep="0pt" name="aligned">
-                      <XMRow>
-                        <XMCell align="right">
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E7.m1.1">C</XMTok>
-                        </XMCell>
-                        <XMCell align="left">
-                          <XMApp>
-                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E7.m1.2">=</XMTok>
-                            <XMTok meaning="absent"/>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E7.m1.3">D</XMTok>
-                          </XMApp>
-                        </XMCell>
-                      </XMRow>
-                      <XMRow>
-                        <XMCell/>
-                        <XMCell align="left">
-                          <XMApp>
-                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E7.m1.4">+</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E7.m1.5">E</XMTok>
-                          </XMApp>
-                        </XMCell>
-                      </XMRow>
-                    </XMArray>
-                  </XMDual>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-      </equation>
-      <equation xml:id="Ch0.E8">
-        <tags>
-          <tag>(8)</tag>
-          <tag role="refnum">8</tag>
-        </tags>
-        <MathFork>
-          <Math tex="\displaystyle F=G" text="F = G" xml:id="Ch0.E8.m3">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">F</XMTok>
-                <XMTok font="italic" role="UNKNOWN">G</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle F" text="F" xml:id="Ch0.E8.m1">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">F</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=G" text="absent = G" xml:id="Ch0.E8.m2">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">G</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-      </equation>
-      <equation xml:id="Ch0.E9">
-        <tags>
-          <tag>(9)</tag>
-          <tag role="refnum">9</tag>
-        </tags>
-        <MathFork>
-          <Math tex="\displaystyle H=I" text="H = I" xml:id="Ch0.E9.m3">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">H</XMTok>
-                <XMTok font="italic" role="UNKNOWN">I</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle H" text="H" xml:id="Ch0.E9.m1">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">H</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=I" text="absent = I" xml:id="Ch0.E9.m2">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">I</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-      </equation>
-    </equationgroup>
-  </para>
-  <para xml:id="p5">
-    <p>2-Column align, with missing columns</p>
-    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx4">
-      <equation xml:id="Ch0.E10">
-        <tags>
-          <tag>(10)</tag>
-          <tag role="refnum">10</tag>
-        </tags>
-        <MathFork>
-          <Math tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E10.m5">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">A</XMTok>
-                <XMTok font="italic" role="UNKNOWN">B</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.E10.m1">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">A</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=B" text="absent = B" xml:id="Ch0.E10.m2">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-        <MathFork>
-          <Math tex="\displaystyle C=D" text="C = D" xml:id="Ch0.E10.m6">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">C</XMTok>
-                <XMTok font="italic" role="UNKNOWN">D</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="Ch0.E10.m3">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">C</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=D" text="absent = D" xml:id="Ch0.E10.m4">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">D</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-      </equation>
-      <equation xml:id="Ch0.E11">
-        <tags>
-          <tag>(11)</tag>
-          <tag role="refnum">11</tag>
-        </tags>
-        <MathFork>
-          <Math tex="\displaystyle E=F" text="E = F" xml:id="Ch0.E11.m3">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">E</XMTok>
-                <XMTok font="italic" role="UNKNOWN">F</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle E" text="E" xml:id="Ch0.E11.m1">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">E</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=F" text="absent = F" xml:id="Ch0.E11.m2">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">F</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-      </equation>
-      <equation xml:id="Ch0.E12">
-        <tags>
-          <tag>(12)</tag>
-          <tag role="refnum">12</tag>
-        </tags>
-        <MathFork>
-          <Math tex="\displaystyle H=I" text="H = I" xml:id="Ch0.E12.m5">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">H</XMTok>
-                <XMTok font="italic" role="UNKNOWN">I</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle H" text="H" xml:id="Ch0.E12.m1">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">H</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=I" text="absent = I" xml:id="Ch0.E12.m2">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">I</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-        <MathFork>
-          <Math tex="\displaystyle J=K" text="J = K" xml:id="Ch0.E12.m6">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">J</XMTok>
-                <XMTok font="italic" role="UNKNOWN">K</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle J" text="J" xml:id="Ch0.E12.m3">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">J</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=K" text="absent = K" xml:id="Ch0.E12.m4">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">K</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-      </equation>
-    </equationgroup>
-  </para>
-  <para xml:id="p6">
-    <p>2-Column align with split;
-Note that you should omit double slash from last line of split!</p>
-    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx5">
-      <equation xml:id="Ch0.E13">
-        <tags>
-          <tag>(13)</tag>
-          <tag role="refnum">13</tag>
-        </tags>
-        <MathFork>
-          <Math tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E13.m5">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">A</XMTok>
-                <XMTok font="italic" role="UNKNOWN">B</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.E13.m1">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">A</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=B" text="absent = B" xml:id="Ch0.E13.m2">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-        <MathFork>
-          <Math tex="\displaystyle C=D" text="C = D" xml:id="Ch0.E13.m6">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">C</XMTok>
-                <XMTok font="italic" role="UNKNOWN">D</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="Ch0.E13.m3">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">C</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=D" text="absent = D" xml:id="Ch0.E13.m4">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">D</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-      </equation>
-      <equation xml:id="Ch0.E14">
-        <tags>
-          <tag>(14)</tag>
-          <tag role="refnum">14</tag>
-        </tags>
-        <MathFork>
-          <Math tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E14.m2">
-            <XMath>
-              <XMDual>
-                <XMApp>
-                  <XMRef idref="Ch0.E14.m1.2.mf"/>
-                  <XMRef idref="Ch0.E14.m1.1.mf"/>
-                  <XMApp>
-                    <XMRef idref="Ch0.E14.m1.4.mf"/>
-                    <XMRef idref="Ch0.E14.m1.3.mf"/>
-                    <XMRef idref="Ch0.E14.m1.5.mf"/>
-                  </XMApp>
-                </XMApp>
-                <XMArray colsep="0pt" name="aligned">
-                  <XMRow>
-                    <XMCell align="right">
-                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E14.m1.1.mf">E</XMTok>
-                    </XMCell>
-                    <XMCell align="left">
-                      <XMApp>
-                        <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E14.m1.2.mf">=</XMTok>
-                        <XMTok meaning="absent"/>
-                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E14.m1.3.mf">F</XMTok>
-                      </XMApp>
-                    </XMCell>
-                  </XMRow>
-                  <XMRow>
-                    <XMCell/>
-                    <XMCell align="left">
-                      <XMApp>
-                        <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E14.m1.4.mf">+</XMTok>
-                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E14.m1.5.mf">G</XMTok>
-                      </XMApp>
-                    </XMCell>
-                  </XMRow>
-                </XMArray>
-              </XMDual>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E14.m1">
-                <XMath>
-                  <XMDual>
-                    <XMApp>
-                      <XMRef idref="Ch0.E14.m1.2"/>
-                      <XMRef idref="Ch0.E14.m1.1"/>
-                      <XMApp>
-                        <XMRef idref="Ch0.E14.m1.4"/>
-                        <XMRef idref="Ch0.E14.m1.3"/>
-                        <XMRef idref="Ch0.E14.m1.5"/>
-                      </XMApp>
-                    </XMApp>
-                    <XMArray colsep="0pt" name="aligned">
-                      <XMRow>
-                        <XMCell align="right">
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E14.m1.1">E</XMTok>
-                        </XMCell>
-                        <XMCell align="left">
-                          <XMApp>
-                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E14.m1.2">=</XMTok>
-                            <XMTok meaning="absent"/>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E14.m1.3">F</XMTok>
-                          </XMApp>
-                        </XMCell>
-                      </XMRow>
-                      <XMRow>
-                        <XMCell/>
-                        <XMCell align="left">
-                          <XMApp>
-                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E14.m1.4">+</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E14.m1.5">G</XMTok>
-                          </XMApp>
-                        </XMCell>
-                      </XMRow>
-                    </XMArray>
-                  </XMDual>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-      </equation>
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx9">
       <equation xml:id="Ch0.E15">
         <tags>
           <tag>(15)</tag>
           <tag role="refnum">15</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle H=I" text="H = I" xml:id="Ch0.E15.m5">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">H</XMTok>
-                <XMTok font="italic" role="UNKNOWN">I</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle H" text="H" xml:id="Ch0.E15.m1">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">H</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=I" text="absent = I" xml:id="Ch0.E15.m2">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">I</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-        <MathFork>
-          <Math tex="\displaystyle J=K" text="J = K" xml:id="Ch0.E15.m6">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">J</XMTok>
-                <XMTok font="italic" role="UNKNOWN">K</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle J" text="J" xml:id="Ch0.E15.m3">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">J</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=K" text="absent = K" xml:id="Ch0.E15.m4">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">K</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-      </equation>
-    </equationgroup>
-  </para>
-  <para xml:id="p7">
-    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx6">
-      <equation xml:id="Ch0.E16">
-        <tags>
-          <tag>(16)</tag>
-          <tag role="refnum">16</tag>
-        </tags>
-        <MathFork>
-          <Math tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E16.m5">
+          <Math tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E15.m3">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -824,12 +743,12 @@ Note that you should omit double slash from last line of split!</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.E16.m1">
+            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.E15.m1">
                 <XMath>
                   <XMTok font="italic" role="UNKNOWN">A</XMTok>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=B" text="absent = B" xml:id="Ch0.E16.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle=B" text="absent = B" xml:id="Ch0.E15.m2">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -840,29 +759,88 @@ Note that you should omit double slash from last line of split!</p>
               </Math></td>
           </MathBranch>
         </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E16">
+        <tags>
+          <tag>(16)</tag>
+          <tag role="refnum">16</tag>
+        </tags>
         <MathFork>
-          <Math tex="\displaystyle C=D" text="C = D" xml:id="Ch0.E16.m6">
+          <Math tex="\displaystyle\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E16.m2">
             <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">C</XMTok>
-                <XMTok font="italic" role="UNKNOWN">D</XMTok>
-              </XMApp>
+              <XMDual>
+                <XMApp>
+                  <XMRef idref="Ch0.E16.m1.2.mf"/>
+                  <XMRef idref="Ch0.E16.m1.1.mf"/>
+                  <XMApp>
+                    <XMRef idref="Ch0.E16.m1.4.mf"/>
+                    <XMRef idref="Ch0.E16.m1.3.mf"/>
+                    <XMRef idref="Ch0.E16.m1.5.mf"/>
+                  </XMApp>
+                </XMApp>
+                <XMArray colsep="0pt" name="aligned">
+                  <XMRow>
+                    <XMCell align="right">
+                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E16.m1.1.mf">C</XMTok>
+                    </XMCell>
+                    <XMCell align="left">
+                      <XMApp>
+                        <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E16.m1.2.mf">=</XMTok>
+                        <XMTok meaning="absent"/>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E16.m1.3.mf">D</XMTok>
+                      </XMApp>
+                    </XMCell>
+                  </XMRow>
+                  <XMRow>
+                    <XMCell/>
+                    <XMCell align="left">
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E16.m1.4.mf">+</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E16.m1.5.mf">E</XMTok>
+                      </XMApp>
+                    </XMCell>
+                  </XMRow>
+                </XMArray>
+              </XMDual>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="Ch0.E16.m3">
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}C&amp;=D\\&#10;&amp;{}+E\end{split}" text="C = D + E" xml:id="Ch0.E16.m1">
                 <XMath>
-                  <XMTok font="italic" role="UNKNOWN">C</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=D" text="absent = D" xml:id="Ch0.E16.m4">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">D</XMTok>
-                  </XMApp>
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="Ch0.E16.m1.2"/>
+                      <XMRef idref="Ch0.E16.m1.1"/>
+                      <XMApp>
+                        <XMRef idref="Ch0.E16.m1.4"/>
+                        <XMRef idref="Ch0.E16.m1.3"/>
+                        <XMRef idref="Ch0.E16.m1.5"/>
+                      </XMApp>
+                    </XMApp>
+                    <XMArray colsep="0pt" name="aligned">
+                      <XMRow>
+                        <XMCell align="right">
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E16.m1.1">C</XMTok>
+                        </XMCell>
+                        <XMCell align="left">
+                          <XMApp>
+                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E16.m1.2">=</XMTok>
+                            <XMTok meaning="absent"/>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E16.m1.3">D</XMTok>
+                          </XMApp>
+                        </XMCell>
+                      </XMRow>
+                      <XMRow>
+                        <XMCell/>
+                        <XMCell align="left">
+                          <XMApp>
+                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E16.m1.4">+</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E16.m1.5">E</XMTok>
+                          </XMApp>
+                        </XMCell>
+                      </XMRow>
+                    </XMArray>
+                  </XMDual>
                 </XMath>
               </Math></td>
           </MathBranch>
@@ -874,108 +852,28 @@ Note that you should omit double slash from last line of split!</p>
           <tag role="refnum">17</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle X=Y" text="X = Y" xml:id="Ch0.E17.m4">
+          <Math tex="\displaystyle F=G" text="F = G" xml:id="Ch0.E17.m3">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">X</XMTok>
-                <XMTok font="italic" role="UNKNOWN">Y</XMTok>
+                <XMTok font="italic" role="UNKNOWN">F</XMTok>
+                <XMTok font="italic" role="UNKNOWN">G</XMTok>
               </XMApp>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle X" text="X" xml:id="Ch0.E17.m1">
+            <td align="right"><Math mode="inline" tex="\displaystyle F" text="F" xml:id="Ch0.E17.m1">
                 <XMath>
-                  <XMTok font="italic" role="UNKNOWN">X</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">F</XMTok>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=Y" text="absent = Y" xml:id="Ch0.E17.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle=G" text="absent = G" xml:id="Ch0.E17.m2">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
                     <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">Y</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">G</XMTok>
                   </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-        <MathFork>
-          <Math tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E17.m5">
-            <XMath>
-              <XMDual>
-                <XMApp>
-                  <XMRef idref="Ch0.E17.m3.2.mf"/>
-                  <XMRef idref="Ch0.E17.m3.1.mf"/>
-                  <XMApp>
-                    <XMRef idref="Ch0.E17.m3.4.mf"/>
-                    <XMRef idref="Ch0.E17.m3.3.mf"/>
-                    <XMRef idref="Ch0.E17.m3.5.mf"/>
-                  </XMApp>
-                </XMApp>
-                <XMArray colsep="0pt" name="aligned">
-                  <XMRow>
-                    <XMCell align="right">
-                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E17.m3.1.mf">E</XMTok>
-                    </XMCell>
-                    <XMCell align="left">
-                      <XMApp>
-                        <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E17.m3.2.mf">=</XMTok>
-                        <XMTok meaning="absent"/>
-                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E17.m3.3.mf">F</XMTok>
-                      </XMApp>
-                    </XMCell>
-                  </XMRow>
-                  <XMRow>
-                    <XMCell/>
-                    <XMCell align="left">
-                      <XMApp>
-                        <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E17.m3.4.mf">+</XMTok>
-                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E17.m3.5.mf">G</XMTok>
-                      </XMApp>
-                    </XMCell>
-                  </XMRow>
-                </XMArray>
-              </XMDual>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E17.m3">
-                <XMath>
-                  <XMDual>
-                    <XMApp>
-                      <XMRef idref="Ch0.E17.m3.2"/>
-                      <XMRef idref="Ch0.E17.m3.1"/>
-                      <XMApp>
-                        <XMRef idref="Ch0.E17.m3.4"/>
-                        <XMRef idref="Ch0.E17.m3.3"/>
-                        <XMRef idref="Ch0.E17.m3.5"/>
-                      </XMApp>
-                    </XMApp>
-                    <XMArray colsep="0pt" name="aligned">
-                      <XMRow>
-                        <XMCell align="right">
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E17.m3.1">E</XMTok>
-                        </XMCell>
-                        <XMCell align="left">
-                          <XMApp>
-                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E17.m3.2">=</XMTok>
-                            <XMTok meaning="absent"/>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E17.m3.3">F</XMTok>
-                          </XMApp>
-                        </XMCell>
-                      </XMRow>
-                      <XMRow>
-                        <XMCell/>
-                        <XMCell align="left">
-                          <XMApp>
-                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E17.m3.4">+</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E17.m3.5">G</XMTok>
-                          </XMApp>
-                        </XMCell>
-                      </XMRow>
-                    </XMArray>
-                  </XMDual>
                 </XMath>
               </Math></td>
           </MathBranch>
@@ -987,7 +885,7 @@ Note that you should omit double slash from last line of split!</p>
           <tag role="refnum">18</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle H=I" text="H = I" xml:id="Ch0.E18.m5">
+          <Math tex="\displaystyle H=I" text="H = I" xml:id="Ch0.E18.m3">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1013,146 +911,37 @@ Note that you should omit double slash from last line of split!</p>
               </Math></td>
           </MathBranch>
         </MathFork>
-        <MathFork>
-          <Math tex="\displaystyle J=K" text="J = K" xml:id="Ch0.E18.m6">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">J</XMTok>
-                <XMTok font="italic" role="UNKNOWN">K</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle J" text="J" xml:id="Ch0.E18.m3">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">J</XMTok>
-                </XMath>
-              </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=K" text="absent = K" xml:id="Ch0.E18.m4">
-                <XMath>
-                  <XMApp>
-                    <XMTok meaning="equals" role="RELOP">=</XMTok>
-                    <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">K</XMTok>
-                  </XMApp>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
       </equation>
+    </equationgroup>
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx10">
       <equation xml:id="Ch0.E19">
         <tags>
           <tag>(19)</tag>
           <tag role="refnum">19</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle\begin{split}L&amp;=M\\&#10;&amp;{}+N\end{split}O" text="(L = M + N) * O" xml:id="Ch0.E19.m4">
+          <Math tex="\displaystyle A=\ B" text="A = B" xml:id="Ch0.E19.m3">
             <XMath>
               <XMApp>
-                <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                <XMDual>
-                  <XMApp>
-                    <XMRef idref="Ch0.E19.m1.2.mf"/>
-                    <XMRef idref="Ch0.E19.m1.1.mf"/>
-                    <XMApp>
-                      <XMRef idref="Ch0.E19.m1.4.mf"/>
-                      <XMRef idref="Ch0.E19.m1.3.mf"/>
-                      <XMRef idref="Ch0.E19.m1.5.mf"/>
-                    </XMApp>
-                  </XMApp>
-                  <XMArray colsep="0pt" name="aligned">
-                    <XMRow>
-                      <XMCell align="right">
-                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E19.m1.1.mf">L</XMTok>
-                      </XMCell>
-                      <XMCell align="left">
-                        <XMApp>
-                          <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E19.m1.2.mf">=</XMTok>
-                          <XMTok meaning="absent"/>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E19.m1.3.mf">M</XMTok>
-                        </XMApp>
-                      </XMCell>
-                    </XMRow>
-                    <XMRow>
-                      <XMCell/>
-                      <XMCell align="left">
-                        <XMApp>
-                          <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E19.m1.4.mf">+</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E19.m1.5.mf">N</XMTok>
-                        </XMApp>
-                      </XMCell>
-                    </XMRow>
-                  </XMArray>
-                </XMDual>
-                <XMTok font="italic" role="UNKNOWN">O</XMTok>
+                <XMTok meaning="equals" role="RELOP" rpadding="5.0pt">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                <XMTok font="italic" role="UNKNOWN">B</XMTok>
               </XMApp>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}L&amp;=M\\&#10;&amp;{}+N\end{split}" text="L = M + N" xml:id="Ch0.E19.m1">
-                <XMath>
-                  <XMDual>
-                    <XMApp>
-                      <XMRef idref="Ch0.E19.m1.2"/>
-                      <XMRef idref="Ch0.E19.m1.1"/>
-                      <XMApp>
-                        <XMRef idref="Ch0.E19.m1.4"/>
-                        <XMRef idref="Ch0.E19.m1.3"/>
-                        <XMRef idref="Ch0.E19.m1.5"/>
-                      </XMApp>
-                    </XMApp>
-                    <XMArray colsep="0pt" name="aligned">
-                      <XMRow>
-                        <XMCell align="right">
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E19.m1.1">L</XMTok>
-                        </XMCell>
-                        <XMCell align="left">
-                          <XMApp>
-                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E19.m1.2">=</XMTok>
-                            <XMTok meaning="absent"/>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E19.m1.3">M</XMTok>
-                          </XMApp>
-                        </XMCell>
-                      </XMRow>
-                      <XMRow>
-                        <XMCell/>
-                        <XMCell align="left">
-                          <XMApp>
-                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E19.m1.4">+</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E19.m1.5">N</XMTok>
-                          </XMApp>
-                        </XMCell>
-                      </XMRow>
-                    </XMArray>
-                  </XMDual>
-                </XMath>
-              </Math></td>
-            <td align="right"><Math mode="inline" tex="\displaystyle O" text="O" xml:id="Ch0.E19.m2">
-                <XMath>
-                  <XMTok font="italic" role="UNKNOWN">O</XMTok>
-                </XMath>
-              </Math></td>
-          </MathBranch>
-        </MathFork>
-        <MathFork>
-          <Math tex="\displaystyle=P" text="absent = P" xml:id="Ch0.E19.m5">
-            <XMath>
-              <XMApp>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok meaning="absent"/>
-                <XMTok font="italic" role="UNKNOWN">P</XMTok>
-              </XMApp>
-            </XMath>
-          </Math>
-          <MathBranch>
-            <td align="left"><Math mode="inline" tex="\displaystyle=P" text="absent = P" xml:id="Ch0.E19.m3">
+            <td align="right"><Math mode="inline" tex="\displaystyle A=" text="A = absent" xml:id="Ch0.E19.m1">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">A</XMTok>
                     <XMTok meaning="absent"/>
-                    <XMTok font="italic" role="UNKNOWN">P</XMTok>
                   </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle\ B" text="B" xml:id="Ch0.E19.m2">
+                <XMath>
+                  <XMTok font="italic" lpadding="5.0pt" role="UNKNOWN">B</XMTok>
                 </XMath>
               </Math></td>
           </MathBranch>
@@ -1164,7 +953,890 @@ Note that you should omit double slash from last line of split!</p>
           <tag role="refnum">20</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle Q=R" text="Q = R" xml:id="Ch0.E20.m5">
+          <Math tex="\displaystyle B=-C" text="B = - C" xml:id="Ch0.E20.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                <XMApp>
+                  <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                </XMApp>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle B=" text="B = absent" xml:id="Ch0.E20.m1">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                    <XMTok meaning="absent"/>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle-C" text="- C" xml:id="Ch0.E20.m2">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="minus" role="ADDOP">-</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E21">
+        <tags>
+          <tag>(21)</tag>
+          <tag role="refnum">21</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle\begin{split}C=&amp;-D+E+F+G+H\\&#10;&amp;+I\end{split}" text="C = (- D) + E + F + G + H + I" xml:id="Ch0.E21.m2">
+            <XMath>
+              <XMDual>
+                <XMApp>
+                  <XMRef idref="Ch0.E21.m1.2.mf"/>
+                  <XMRef idref="Ch0.E21.m1.1.mf"/>
+                  <XMApp>
+                    <XMRef idref="Ch0.E21.m1.5.mf"/>
+                    <XMApp>
+                      <XMRef idref="Ch0.E21.m1.3.mf"/>
+                      <XMRef idref="Ch0.E21.m1.4.mf"/>
+                    </XMApp>
+                    <XMRef idref="Ch0.E21.m1.6.mf"/>
+                    <XMRef idref="Ch0.E21.m1.8.mf"/>
+                    <XMRef idref="Ch0.E21.m1.10.mf"/>
+                    <XMRef idref="Ch0.E21.m1.12.mf"/>
+                    <XMRef idref="Ch0.E21.m1.14.mf"/>
+                  </XMApp>
+                </XMApp>
+                <XMArray colsep="0pt" name="aligned">
+                  <XMRow>
+                    <XMCell align="right">
+                      <XMApp>
+                        <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E21.m1.2.mf">=</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.1.mf">C</XMTok>
+                        <XMTok meaning="absent"/>
+                      </XMApp>
+                    </XMCell>
+                    <XMCell align="left">
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E21.m1.5.mf">+</XMTok>
+                        <XMApp>
+                          <XMTok meaning="minus" role="ADDOP" xml:id="Ch0.E21.m1.3.mf">-</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.4.mf">D</XMTok>
+                        </XMApp>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.6.mf">E</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.8.mf">F</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.10.mf">G</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.12.mf">H</XMTok>
+                      </XMApp>
+                    </XMCell>
+                  </XMRow>
+                  <XMRow>
+                    <XMCell/>
+                    <XMCell align="left">
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E21.m1.13.mf">+</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.14.mf">I</XMTok>
+                      </XMApp>
+                    </XMCell>
+                  </XMRow>
+                </XMArray>
+              </XMDual>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}C=&amp;-D+E+F+G+H\\&#10;&amp;+I\end{split}" text="C = (- D) + E + F + G + H + I" xml:id="Ch0.E21.m1">
+                <XMath>
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="Ch0.E21.m1.2"/>
+                      <XMRef idref="Ch0.E21.m1.1"/>
+                      <XMApp>
+                        <XMRef idref="Ch0.E21.m1.5"/>
+                        <XMApp>
+                          <XMRef idref="Ch0.E21.m1.3"/>
+                          <XMRef idref="Ch0.E21.m1.4"/>
+                        </XMApp>
+                        <XMRef idref="Ch0.E21.m1.6"/>
+                        <XMRef idref="Ch0.E21.m1.8"/>
+                        <XMRef idref="Ch0.E21.m1.10"/>
+                        <XMRef idref="Ch0.E21.m1.12"/>
+                        <XMRef idref="Ch0.E21.m1.14"/>
+                      </XMApp>
+                    </XMApp>
+                    <XMArray colsep="0pt" name="aligned">
+                      <XMRow>
+                        <XMCell align="right">
+                          <XMApp>
+                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E21.m1.2">=</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.1">C</XMTok>
+                            <XMTok meaning="absent"/>
+                          </XMApp>
+                        </XMCell>
+                        <XMCell align="left">
+                          <XMApp>
+                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E21.m1.5">+</XMTok>
+                            <XMApp>
+                              <XMTok meaning="minus" role="ADDOP" xml:id="Ch0.E21.m1.3">-</XMTok>
+                              <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.4">D</XMTok>
+                            </XMApp>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.6">E</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.8">F</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.10">G</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.12">H</XMTok>
+                          </XMApp>
+                        </XMCell>
+                      </XMRow>
+                      <XMRow>
+                        <XMCell/>
+                        <XMCell align="left">
+                          <XMApp>
+                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E21.m1.13">+</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E21.m1.14">I</XMTok>
+                          </XMApp>
+                        </XMCell>
+                      </XMRow>
+                    </XMArray>
+                  </XMDual>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+  </para>
+  <para xml:id="p12">
+    <p>2-Column align, with missing columns</p>
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx11">
+      <equation xml:id="Ch0.E22">
+        <tags>
+          <tag>(22)</tag>
+          <tag role="refnum">22</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E22.m5">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                <XMTok font="italic" role="UNKNOWN">B</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.E22.m1">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=B" text="absent = B" xml:id="Ch0.E22.m2">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+        <MathFork>
+          <Math tex="\displaystyle C=D" text="C = D" xml:id="Ch0.E22.m6">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                <XMTok font="italic" role="UNKNOWN">D</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="Ch0.E22.m3">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=D" text="absent = D" xml:id="Ch0.E22.m4">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E23">
+        <tags>
+          <tag>(23)</tag>
+          <tag role="refnum">23</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle E=F" text="E = F" xml:id="Ch0.E23.m3">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">E</XMTok>
+                <XMTok font="italic" role="UNKNOWN">F</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle E" text="E" xml:id="Ch0.E23.m1">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">E</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=F" text="absent = F" xml:id="Ch0.E23.m2">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">F</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E24">
+        <tags>
+          <tag>(24)</tag>
+          <tag role="refnum">24</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle H=I" text="H = I" xml:id="Ch0.E24.m5">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">H</XMTok>
+                <XMTok font="italic" role="UNKNOWN">I</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle H" text="H" xml:id="Ch0.E24.m1">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">H</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=I" text="absent = I" xml:id="Ch0.E24.m2">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">I</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+        <MathFork>
+          <Math tex="\displaystyle J=K" text="J = K" xml:id="Ch0.E24.m6">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">J</XMTok>
+                <XMTok font="italic" role="UNKNOWN">K</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle J" text="J" xml:id="Ch0.E24.m3">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">J</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=K" text="absent = K" xml:id="Ch0.E24.m4">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">K</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+  </para>
+  <para xml:id="p13">
+    <p>2-Column align with split;
+Note that you should omit double slash from last line of split!</p>
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx12">
+      <equation xml:id="Ch0.E25">
+        <tags>
+          <tag>(25)</tag>
+          <tag role="refnum">25</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E25.m5">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                <XMTok font="italic" role="UNKNOWN">B</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.E25.m1">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=B" text="absent = B" xml:id="Ch0.E25.m2">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+        <MathFork>
+          <Math tex="\displaystyle C=D" text="C = D" xml:id="Ch0.E25.m6">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                <XMTok font="italic" role="UNKNOWN">D</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="Ch0.E25.m3">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=D" text="absent = D" xml:id="Ch0.E25.m4">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E26">
+        <tags>
+          <tag>(26)</tag>
+          <tag role="refnum">26</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E26.m2">
+            <XMath>
+              <XMDual>
+                <XMApp>
+                  <XMRef idref="Ch0.E26.m1.2.mf"/>
+                  <XMRef idref="Ch0.E26.m1.1.mf"/>
+                  <XMApp>
+                    <XMRef idref="Ch0.E26.m1.4.mf"/>
+                    <XMRef idref="Ch0.E26.m1.3.mf"/>
+                    <XMRef idref="Ch0.E26.m1.5.mf"/>
+                  </XMApp>
+                </XMApp>
+                <XMArray colsep="0pt" name="aligned">
+                  <XMRow>
+                    <XMCell align="right">
+                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E26.m1.1.mf">E</XMTok>
+                    </XMCell>
+                    <XMCell align="left">
+                      <XMApp>
+                        <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E26.m1.2.mf">=</XMTok>
+                        <XMTok meaning="absent"/>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E26.m1.3.mf">F</XMTok>
+                      </XMApp>
+                    </XMCell>
+                  </XMRow>
+                  <XMRow>
+                    <XMCell/>
+                    <XMCell align="left">
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E26.m1.4.mf">+</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E26.m1.5.mf">G</XMTok>
+                      </XMApp>
+                    </XMCell>
+                  </XMRow>
+                </XMArray>
+              </XMDual>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E26.m1">
+                <XMath>
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="Ch0.E26.m1.2"/>
+                      <XMRef idref="Ch0.E26.m1.1"/>
+                      <XMApp>
+                        <XMRef idref="Ch0.E26.m1.4"/>
+                        <XMRef idref="Ch0.E26.m1.3"/>
+                        <XMRef idref="Ch0.E26.m1.5"/>
+                      </XMApp>
+                    </XMApp>
+                    <XMArray colsep="0pt" name="aligned">
+                      <XMRow>
+                        <XMCell align="right">
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E26.m1.1">E</XMTok>
+                        </XMCell>
+                        <XMCell align="left">
+                          <XMApp>
+                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E26.m1.2">=</XMTok>
+                            <XMTok meaning="absent"/>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E26.m1.3">F</XMTok>
+                          </XMApp>
+                        </XMCell>
+                      </XMRow>
+                      <XMRow>
+                        <XMCell/>
+                        <XMCell align="left">
+                          <XMApp>
+                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E26.m1.4">+</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E26.m1.5">G</XMTok>
+                          </XMApp>
+                        </XMCell>
+                      </XMRow>
+                    </XMArray>
+                  </XMDual>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E27">
+        <tags>
+          <tag>(27)</tag>
+          <tag role="refnum">27</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle H=I" text="H = I" xml:id="Ch0.E27.m5">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">H</XMTok>
+                <XMTok font="italic" role="UNKNOWN">I</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle H" text="H" xml:id="Ch0.E27.m1">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">H</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=I" text="absent = I" xml:id="Ch0.E27.m2">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">I</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+        <MathFork>
+          <Math tex="\displaystyle J=K" text="J = K" xml:id="Ch0.E27.m6">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">J</XMTok>
+                <XMTok font="italic" role="UNKNOWN">K</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle J" text="J" xml:id="Ch0.E27.m3">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">J</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=K" text="absent = K" xml:id="Ch0.E27.m4">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">K</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+    </equationgroup>
+  </para>
+  <para xml:id="p14">
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx13">
+      <equation xml:id="Ch0.E28">
+        <tags>
+          <tag>(28)</tag>
+          <tag role="refnum">28</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle A=B" text="A = B" xml:id="Ch0.E28.m5">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                <XMTok font="italic" role="UNKNOWN">B</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.E28.m1">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">A</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=B" text="absent = B" xml:id="Ch0.E28.m2">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">B</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+        <MathFork>
+          <Math tex="\displaystyle C=D" text="C = D" xml:id="Ch0.E28.m6">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                <XMTok font="italic" role="UNKNOWN">D</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="Ch0.E28.m3">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">C</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=D" text="absent = D" xml:id="Ch0.E28.m4">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">D</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E29">
+        <tags>
+          <tag>(29)</tag>
+          <tag role="refnum">29</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle X=Y" text="X = Y" xml:id="Ch0.E29.m4">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">X</XMTok>
+                <XMTok font="italic" role="UNKNOWN">Y</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle X" text="X" xml:id="Ch0.E29.m1">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">X</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=Y" text="absent = Y" xml:id="Ch0.E29.m2">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">Y</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+        <MathFork>
+          <Math tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E29.m5">
+            <XMath>
+              <XMDual>
+                <XMApp>
+                  <XMRef idref="Ch0.E29.m3.2.mf"/>
+                  <XMRef idref="Ch0.E29.m3.1.mf"/>
+                  <XMApp>
+                    <XMRef idref="Ch0.E29.m3.4.mf"/>
+                    <XMRef idref="Ch0.E29.m3.3.mf"/>
+                    <XMRef idref="Ch0.E29.m3.5.mf"/>
+                  </XMApp>
+                </XMApp>
+                <XMArray colsep="0pt" name="aligned">
+                  <XMRow>
+                    <XMCell align="right">
+                      <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E29.m3.1.mf">E</XMTok>
+                    </XMCell>
+                    <XMCell align="left">
+                      <XMApp>
+                        <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E29.m3.2.mf">=</XMTok>
+                        <XMTok meaning="absent"/>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E29.m3.3.mf">F</XMTok>
+                      </XMApp>
+                    </XMCell>
+                  </XMRow>
+                  <XMRow>
+                    <XMCell/>
+                    <XMCell align="left">
+                      <XMApp>
+                        <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E29.m3.4.mf">+</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E29.m3.5.mf">G</XMTok>
+                      </XMApp>
+                    </XMCell>
+                  </XMRow>
+                </XMArray>
+              </XMDual>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}E&amp;=F\\&#10;&amp;{}+G\end{split}" text="E = F + G" xml:id="Ch0.E29.m3">
+                <XMath>
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="Ch0.E29.m3.2"/>
+                      <XMRef idref="Ch0.E29.m3.1"/>
+                      <XMApp>
+                        <XMRef idref="Ch0.E29.m3.4"/>
+                        <XMRef idref="Ch0.E29.m3.3"/>
+                        <XMRef idref="Ch0.E29.m3.5"/>
+                      </XMApp>
+                    </XMApp>
+                    <XMArray colsep="0pt" name="aligned">
+                      <XMRow>
+                        <XMCell align="right">
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E29.m3.1">E</XMTok>
+                        </XMCell>
+                        <XMCell align="left">
+                          <XMApp>
+                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E29.m3.2">=</XMTok>
+                            <XMTok meaning="absent"/>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E29.m3.3">F</XMTok>
+                          </XMApp>
+                        </XMCell>
+                      </XMRow>
+                      <XMRow>
+                        <XMCell/>
+                        <XMCell align="left">
+                          <XMApp>
+                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E29.m3.4">+</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E29.m3.5">G</XMTok>
+                          </XMApp>
+                        </XMCell>
+                      </XMRow>
+                    </XMArray>
+                  </XMDual>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E30">
+        <tags>
+          <tag>(30)</tag>
+          <tag role="refnum">30</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle H=I" text="H = I" xml:id="Ch0.E30.m5">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">H</XMTok>
+                <XMTok font="italic" role="UNKNOWN">I</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle H" text="H" xml:id="Ch0.E30.m1">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">H</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=I" text="absent = I" xml:id="Ch0.E30.m2">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">I</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+        <MathFork>
+          <Math tex="\displaystyle J=K" text="J = K" xml:id="Ch0.E30.m6">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok font="italic" role="UNKNOWN">J</XMTok>
+                <XMTok font="italic" role="UNKNOWN">K</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="right"><Math mode="inline" tex="\displaystyle J" text="J" xml:id="Ch0.E30.m3">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">J</XMTok>
+                </XMath>
+              </Math></td>
+            <td align="left"><Math mode="inline" tex="\displaystyle=K" text="absent = K" xml:id="Ch0.E30.m4">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">K</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E31">
+        <tags>
+          <tag>(31)</tag>
+          <tag role="refnum">31</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle\begin{split}L&amp;=M\\&#10;&amp;{}+N\end{split}O" text="(L = M + N) * O" xml:id="Ch0.E31.m4">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="times" role="MULOP">⁢</XMTok>
+                <XMDual>
+                  <XMApp>
+                    <XMRef idref="Ch0.E31.m1.2.mf"/>
+                    <XMRef idref="Ch0.E31.m1.1.mf"/>
+                    <XMApp>
+                      <XMRef idref="Ch0.E31.m1.4.mf"/>
+                      <XMRef idref="Ch0.E31.m1.3.mf"/>
+                      <XMRef idref="Ch0.E31.m1.5.mf"/>
+                    </XMApp>
+                  </XMApp>
+                  <XMArray colsep="0pt" name="aligned">
+                    <XMRow>
+                      <XMCell align="right">
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E31.m1.1.mf">L</XMTok>
+                      </XMCell>
+                      <XMCell align="left">
+                        <XMApp>
+                          <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E31.m1.2.mf">=</XMTok>
+                          <XMTok meaning="absent"/>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E31.m1.3.mf">M</XMTok>
+                        </XMApp>
+                      </XMCell>
+                    </XMRow>
+                    <XMRow>
+                      <XMCell/>
+                      <XMCell align="left">
+                        <XMApp>
+                          <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E31.m1.4.mf">+</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E31.m1.5.mf">N</XMTok>
+                        </XMApp>
+                      </XMCell>
+                    </XMRow>
+                  </XMArray>
+                </XMDual>
+                <XMTok font="italic" role="UNKNOWN">O</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}L&amp;=M\\&#10;&amp;{}+N\end{split}" text="L = M + N" xml:id="Ch0.E31.m1">
+                <XMath>
+                  <XMDual>
+                    <XMApp>
+                      <XMRef idref="Ch0.E31.m1.2"/>
+                      <XMRef idref="Ch0.E31.m1.1"/>
+                      <XMApp>
+                        <XMRef idref="Ch0.E31.m1.4"/>
+                        <XMRef idref="Ch0.E31.m1.3"/>
+                        <XMRef idref="Ch0.E31.m1.5"/>
+                      </XMApp>
+                    </XMApp>
+                    <XMArray colsep="0pt" name="aligned">
+                      <XMRow>
+                        <XMCell align="right">
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E31.m1.1">L</XMTok>
+                        </XMCell>
+                        <XMCell align="left">
+                          <XMApp>
+                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E31.m1.2">=</XMTok>
+                            <XMTok meaning="absent"/>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E31.m1.3">M</XMTok>
+                          </XMApp>
+                        </XMCell>
+                      </XMRow>
+                      <XMRow>
+                        <XMCell/>
+                        <XMCell align="left">
+                          <XMApp>
+                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E31.m1.4">+</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E31.m1.5">N</XMTok>
+                          </XMApp>
+                        </XMCell>
+                      </XMRow>
+                    </XMArray>
+                  </XMDual>
+                </XMath>
+              </Math></td>
+            <td align="right"><Math mode="inline" tex="\displaystyle O" text="O" xml:id="Ch0.E31.m2">
+                <XMath>
+                  <XMTok font="italic" role="UNKNOWN">O</XMTok>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+        <MathFork>
+          <Math tex="\displaystyle=P" text="absent = P" xml:id="Ch0.E31.m5">
+            <XMath>
+              <XMApp>
+                <XMTok meaning="equals" role="RELOP">=</XMTok>
+                <XMTok meaning="absent"/>
+                <XMTok font="italic" role="UNKNOWN">P</XMTok>
+              </XMApp>
+            </XMath>
+          </Math>
+          <MathBranch>
+            <td align="left"><Math mode="inline" tex="\displaystyle=P" text="absent = P" xml:id="Ch0.E31.m3">
+                <XMath>
+                  <XMApp>
+                    <XMTok meaning="equals" role="RELOP">=</XMTok>
+                    <XMTok meaning="absent"/>
+                    <XMTok font="italic" role="UNKNOWN">P</XMTok>
+                  </XMApp>
+                </XMath>
+              </Math></td>
+          </MathBranch>
+        </MathFork>
+      </equation>
+      <equation xml:id="Ch0.E32">
+        <tags>
+          <tag>(32)</tag>
+          <tag role="refnum">32</tag>
+        </tags>
+        <MathFork>
+          <Math tex="\displaystyle Q=R" text="Q = R" xml:id="Ch0.E32.m5">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1174,12 +1846,12 @@ Note that you should omit double slash from last line of split!</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle Q" text="Q" xml:id="Ch0.E20.m1">
+            <td align="right"><Math mode="inline" tex="\displaystyle Q" text="Q" xml:id="Ch0.E32.m1">
                 <XMath>
                   <XMTok font="italic" role="UNKNOWN">Q</XMTok>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=R" text="absent = R" xml:id="Ch0.E20.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle=R" text="absent = R" xml:id="Ch0.E32.m2">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1191,7 +1863,7 @@ Note that you should omit double slash from last line of split!</p>
           </MathBranch>
         </MathFork>
         <MathFork>
-          <Math tex="\displaystyle S=T" text="S = T" xml:id="Ch0.E20.m6">
+          <Math tex="\displaystyle S=T" text="S = T" xml:id="Ch0.E32.m6">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1201,12 +1873,12 @@ Note that you should omit double slash from last line of split!</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle S" text="S" xml:id="Ch0.E20.m3">
+            <td align="right"><Math mode="inline" tex="\displaystyle S" text="S" xml:id="Ch0.E32.m3">
                 <XMath>
                   <XMTok font="italic" role="UNKNOWN">S</XMTok>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=T" text="absent = T" xml:id="Ch0.E20.m4">
+            <td align="left"><Math mode="inline" tex="\displaystyle=T" text="absent = T" xml:id="Ch0.E32.m4">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1220,18 +1892,18 @@ Note that you should omit double slash from last line of split!</p>
       </equation>
     </equationgroup>
   </para>
-  <para xml:id="p8">
+  <para xml:id="p15">
     <p>Multiple splits in multicolumn align.
 Note how each split block contributes to a single row, but it is
 horizontally aligned as if it were a column pair in the align.</p>
-    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx7">
-      <equation xml:id="Ch0.E21">
+    <equationgroup class="ltx_eqn_align" xml:id="Ch0.S0.EGx14">
+      <equation xml:id="Ch0.E33">
         <tags>
-          <tag>(21)</tag>
-          <tag role="refnum">21</tag>
+          <tag>(33)</tag>
+          <tag role="refnum">33</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle A=B+b+c+d" text="A = B + b + c + d" xml:id="Ch0.E21.m5">
+          <Math tex="\displaystyle A=B+b+c+d" text="A = B + b + c + d" xml:id="Ch0.E33.m5">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1247,12 +1919,12 @@ horizontally aligned as if it were a column pair in the align.</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.E21.m1">
+            <td align="right"><Math mode="inline" tex="\displaystyle A" text="A" xml:id="Ch0.E33.m1">
                 <XMath>
                   <XMTok font="italic" role="UNKNOWN">A</XMTok>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=B+b+c+d" text="absent = B + b + c + d" xml:id="Ch0.E21.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle=B+b+c+d" text="absent = B + b + c + d" xml:id="Ch0.E33.m2">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1270,7 +1942,7 @@ horizontally aligned as if it were a column pair in the align.</p>
           </MathBranch>
         </MathFork>
         <MathFork>
-          <Math tex="\displaystyle C=D" text="C = D" xml:id="Ch0.E21.m6">
+          <Math tex="\displaystyle C=D" text="C = D" xml:id="Ch0.E33.m6">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1280,12 +1952,12 @@ horizontally aligned as if it were a column pair in the align.</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="Ch0.E21.m3">
+            <td align="right"><Math mode="inline" tex="\displaystyle C" text="C" xml:id="Ch0.E33.m3">
                 <XMath>
                   <XMTok font="italic" role="UNKNOWN">C</XMTok>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=D" text="absent = D" xml:id="Ch0.E21.m4">
+            <td align="left"><Math mode="inline" tex="\displaystyle=D" text="absent = D" xml:id="Ch0.E33.m4">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1297,48 +1969,48 @@ horizontally aligned as if it were a column pair in the align.</p>
           </MathBranch>
         </MathFork>
       </equation>
-      <equation xml:id="Ch0.E22">
+      <equation xml:id="Ch0.E34">
         <tags>
-          <tag>(22)</tag>
-          <tag role="refnum">22</tag>
+          <tag>(34)</tag>
+          <tag role="refnum">34</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle\begin{split}E+e+f+g&amp;=F\\&#10;&amp;{}+G\end{split}\begin{split}L&amp;=M\\&#10;&amp;{}+N\\&#10;&amp;{}+Z\end{split}" text="(E + e + f + g = F + G) * (L = M + N + Z)" xml:id="Ch0.E22.m3">
+          <Math tex="\displaystyle\begin{split}E+e+f+g&amp;=F\\&#10;&amp;{}+G\end{split}\begin{split}L&amp;=M\\&#10;&amp;{}+N\\&#10;&amp;{}+Z\end{split}" text="(E + e + f + g = F + G) * (L = M + N + Z)" xml:id="Ch0.E34.m3">
             <XMath>
               <XMApp>
                 <XMTok meaning="times" role="MULOP">⁢</XMTok>
                 <XMDual>
                   <XMApp>
-                    <XMRef idref="Ch0.E22.m1.8.mf"/>
+                    <XMRef idref="Ch0.E34.m1.8.mf"/>
                     <XMApp>
-                      <XMRef idref="Ch0.E22.m1.2.mf"/>
-                      <XMRef idref="Ch0.E22.m1.1.mf"/>
-                      <XMRef idref="Ch0.E22.m1.3.mf"/>
-                      <XMRef idref="Ch0.E22.m1.5.mf"/>
-                      <XMRef idref="Ch0.E22.m1.7.mf"/>
+                      <XMRef idref="Ch0.E34.m1.2.mf"/>
+                      <XMRef idref="Ch0.E34.m1.1.mf"/>
+                      <XMRef idref="Ch0.E34.m1.3.mf"/>
+                      <XMRef idref="Ch0.E34.m1.5.mf"/>
+                      <XMRef idref="Ch0.E34.m1.7.mf"/>
                     </XMApp>
                     <XMApp>
-                      <XMRef idref="Ch0.E22.m1.10.mf"/>
-                      <XMRef idref="Ch0.E22.m1.9.mf"/>
-                      <XMRef idref="Ch0.E22.m1.11.mf"/>
+                      <XMRef idref="Ch0.E34.m1.10.mf"/>
+                      <XMRef idref="Ch0.E34.m1.9.mf"/>
+                      <XMRef idref="Ch0.E34.m1.11.mf"/>
                     </XMApp>
                   </XMApp>
                   <XMArray colsep="0pt" name="aligned">
                     <XMRow>
                       <XMCell align="right">
                         <XMApp>
-                          <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E22.m1.2.mf">+</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.1.mf">E</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.3.mf">e</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.5.mf">f</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.7.mf">g</XMTok>
+                          <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E34.m1.2.mf">+</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.1.mf">E</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.3.mf">e</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.5.mf">f</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.7.mf">g</XMTok>
                         </XMApp>
                       </XMCell>
                       <XMCell align="left">
                         <XMApp>
-                          <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E22.m1.8.mf">=</XMTok>
+                          <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E34.m1.8.mf">=</XMTok>
                           <XMTok meaning="absent"/>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.9.mf">F</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.9.mf">F</XMTok>
                         </XMApp>
                       </XMCell>
                     </XMRow>
@@ -1346,8 +2018,8 @@ horizontally aligned as if it were a column pair in the align.</p>
                       <XMCell/>
                       <XMCell align="left">
                         <XMApp>
-                          <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E22.m1.10.mf">+</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.11.mf">G</XMTok>
+                          <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E34.m1.10.mf">+</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.11.mf">G</XMTok>
                         </XMApp>
                       </XMCell>
                     </XMRow>
@@ -1355,25 +2027,25 @@ horizontally aligned as if it were a column pair in the align.</p>
                 </XMDual>
                 <XMDual>
                   <XMApp>
-                    <XMRef idref="Ch0.E22.m2.2.mf"/>
-                    <XMRef idref="Ch0.E22.m2.1.mf"/>
+                    <XMRef idref="Ch0.E34.m2.2.mf"/>
+                    <XMRef idref="Ch0.E34.m2.1.mf"/>
                     <XMApp>
-                      <XMRef idref="Ch0.E22.m2.4.mf"/>
-                      <XMRef idref="Ch0.E22.m2.3.mf"/>
-                      <XMRef idref="Ch0.E22.m2.5.mf"/>
-                      <XMRef idref="Ch0.E22.m2.7.mf"/>
+                      <XMRef idref="Ch0.E34.m2.4.mf"/>
+                      <XMRef idref="Ch0.E34.m2.3.mf"/>
+                      <XMRef idref="Ch0.E34.m2.5.mf"/>
+                      <XMRef idref="Ch0.E34.m2.7.mf"/>
                     </XMApp>
                   </XMApp>
                   <XMArray colsep="0pt" name="aligned">
                     <XMRow>
                       <XMCell align="right">
-                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m2.1.mf">L</XMTok>
+                        <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m2.1.mf">L</XMTok>
                       </XMCell>
                       <XMCell align="left">
                         <XMApp>
-                          <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E22.m2.2.mf">=</XMTok>
+                          <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E34.m2.2.mf">=</XMTok>
                           <XMTok meaning="absent"/>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m2.3.mf">M</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m2.3.mf">M</XMTok>
                         </XMApp>
                       </XMCell>
                     </XMRow>
@@ -1381,8 +2053,8 @@ horizontally aligned as if it were a column pair in the align.</p>
                       <XMCell/>
                       <XMCell align="left">
                         <XMApp>
-                          <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E22.m2.4.mf">+</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m2.5.mf">N</XMTok>
+                          <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E34.m2.4.mf">+</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m2.5.mf">N</XMTok>
                         </XMApp>
                       </XMCell>
                     </XMRow>
@@ -1390,8 +2062,8 @@ horizontally aligned as if it were a column pair in the align.</p>
                       <XMCell/>
                       <XMCell align="left">
                         <XMApp>
-                          <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E22.m2.6.mf">+</XMTok>
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m2.7.mf">Z</XMTok>
+                          <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E34.m2.6.mf">+</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m2.7.mf">Z</XMTok>
                         </XMApp>
                       </XMCell>
                     </XMRow>
@@ -1401,40 +2073,40 @@ horizontally aligned as if it were a column pair in the align.</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}E+e+f+g&amp;=F\\&#10;&amp;{}+G\end{split}" text="E + e + f + g = F + G" xml:id="Ch0.E22.m1">
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}E+e+f+g&amp;=F\\&#10;&amp;{}+G\end{split}" text="E + e + f + g = F + G" xml:id="Ch0.E34.m1">
                 <XMath>
                   <XMDual>
                     <XMApp>
-                      <XMRef idref="Ch0.E22.m1.8"/>
+                      <XMRef idref="Ch0.E34.m1.8"/>
                       <XMApp>
-                        <XMRef idref="Ch0.E22.m1.2"/>
-                        <XMRef idref="Ch0.E22.m1.1"/>
-                        <XMRef idref="Ch0.E22.m1.3"/>
-                        <XMRef idref="Ch0.E22.m1.5"/>
-                        <XMRef idref="Ch0.E22.m1.7"/>
+                        <XMRef idref="Ch0.E34.m1.2"/>
+                        <XMRef idref="Ch0.E34.m1.1"/>
+                        <XMRef idref="Ch0.E34.m1.3"/>
+                        <XMRef idref="Ch0.E34.m1.5"/>
+                        <XMRef idref="Ch0.E34.m1.7"/>
                       </XMApp>
                       <XMApp>
-                        <XMRef idref="Ch0.E22.m1.10"/>
-                        <XMRef idref="Ch0.E22.m1.9"/>
-                        <XMRef idref="Ch0.E22.m1.11"/>
+                        <XMRef idref="Ch0.E34.m1.10"/>
+                        <XMRef idref="Ch0.E34.m1.9"/>
+                        <XMRef idref="Ch0.E34.m1.11"/>
                       </XMApp>
                     </XMApp>
                     <XMArray colsep="0pt" name="aligned">
                       <XMRow>
                         <XMCell align="right">
                           <XMApp>
-                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E22.m1.2">+</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.1">E</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.3">e</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.5">f</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.7">g</XMTok>
+                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E34.m1.2">+</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.1">E</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.3">e</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.5">f</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.7">g</XMTok>
                           </XMApp>
                         </XMCell>
                         <XMCell align="left">
                           <XMApp>
-                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E22.m1.8">=</XMTok>
+                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E34.m1.8">=</XMTok>
                             <XMTok meaning="absent"/>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.9">F</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.9">F</XMTok>
                           </XMApp>
                         </XMCell>
                       </XMRow>
@@ -1442,8 +2114,8 @@ horizontally aligned as if it were a column pair in the align.</p>
                         <XMCell/>
                         <XMCell align="left">
                           <XMApp>
-                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E22.m1.10">+</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m1.11">G</XMTok>
+                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E34.m1.10">+</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m1.11">G</XMTok>
                           </XMApp>
                         </XMCell>
                       </XMRow>
@@ -1451,29 +2123,29 @@ horizontally aligned as if it were a column pair in the align.</p>
                   </XMDual>
                 </XMath>
               </Math></td>
-            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}L&amp;=M\\&#10;&amp;{}+N\\&#10;&amp;{}+Z\end{split}" text="L = M + N + Z" xml:id="Ch0.E22.m2">
+            <td align="center" colspan="2"><Math mode="inline" tex="\displaystyle\begin{split}L&amp;=M\\&#10;&amp;{}+N\\&#10;&amp;{}+Z\end{split}" text="L = M + N + Z" xml:id="Ch0.E34.m2">
                 <XMath>
                   <XMDual>
                     <XMApp>
-                      <XMRef idref="Ch0.E22.m2.2"/>
-                      <XMRef idref="Ch0.E22.m2.1"/>
+                      <XMRef idref="Ch0.E34.m2.2"/>
+                      <XMRef idref="Ch0.E34.m2.1"/>
                       <XMApp>
-                        <XMRef idref="Ch0.E22.m2.4"/>
-                        <XMRef idref="Ch0.E22.m2.3"/>
-                        <XMRef idref="Ch0.E22.m2.5"/>
-                        <XMRef idref="Ch0.E22.m2.7"/>
+                        <XMRef idref="Ch0.E34.m2.4"/>
+                        <XMRef idref="Ch0.E34.m2.3"/>
+                        <XMRef idref="Ch0.E34.m2.5"/>
+                        <XMRef idref="Ch0.E34.m2.7"/>
                       </XMApp>
                     </XMApp>
                     <XMArray colsep="0pt" name="aligned">
                       <XMRow>
                         <XMCell align="right">
-                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m2.1">L</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m2.1">L</XMTok>
                         </XMCell>
                         <XMCell align="left">
                           <XMApp>
-                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E22.m2.2">=</XMTok>
+                            <XMTok meaning="equals" role="RELOP" xml:id="Ch0.E34.m2.2">=</XMTok>
                             <XMTok meaning="absent"/>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m2.3">M</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m2.3">M</XMTok>
                           </XMApp>
                         </XMCell>
                       </XMRow>
@@ -1481,8 +2153,8 @@ horizontally aligned as if it were a column pair in the align.</p>
                         <XMCell/>
                         <XMCell align="left">
                           <XMApp>
-                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E22.m2.4">+</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m2.5">N</XMTok>
+                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E34.m2.4">+</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m2.5">N</XMTok>
                           </XMApp>
                         </XMCell>
                       </XMRow>
@@ -1490,8 +2162,8 @@ horizontally aligned as if it were a column pair in the align.</p>
                         <XMCell/>
                         <XMCell align="left">
                           <XMApp>
-                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E22.m2.6">+</XMTok>
-                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E22.m2.7">Z</XMTok>
+                            <XMTok meaning="plus" role="ADDOP" xml:id="Ch0.E34.m2.6">+</XMTok>
+                            <XMTok font="italic" role="UNKNOWN" xml:id="Ch0.E34.m2.7">Z</XMTok>
                           </XMApp>
                         </XMCell>
                       </XMRow>
@@ -1502,13 +2174,13 @@ horizontally aligned as if it were a column pair in the align.</p>
           </MathBranch>
         </MathFork>
       </equation>
-      <equation xml:id="Ch0.E23">
+      <equation xml:id="Ch0.E35">
         <tags>
-          <tag>(23)</tag>
-          <tag role="refnum">23</tag>
+          <tag>(35)</tag>
+          <tag role="refnum">35</tag>
         </tags>
         <MathFork>
-          <Math tex="\displaystyle Q=R" text="Q = R" xml:id="Ch0.E23.m5">
+          <Math tex="\displaystyle Q=R" text="Q = R" xml:id="Ch0.E35.m5">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1518,12 +2190,12 @@ horizontally aligned as if it were a column pair in the align.</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle Q" text="Q" xml:id="Ch0.E23.m1">
+            <td align="right"><Math mode="inline" tex="\displaystyle Q" text="Q" xml:id="Ch0.E35.m1">
                 <XMath>
                   <XMTok font="italic" role="UNKNOWN">Q</XMTok>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=R" text="absent = R" xml:id="Ch0.E23.m2">
+            <td align="left"><Math mode="inline" tex="\displaystyle=R" text="absent = R" xml:id="Ch0.E35.m2">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1535,7 +2207,7 @@ horizontally aligned as if it were a column pair in the align.</p>
           </MathBranch>
         </MathFork>
         <MathFork>
-          <Math tex="\displaystyle S=T" text="S = T" xml:id="Ch0.E23.m6">
+          <Math tex="\displaystyle S=T" text="S = T" xml:id="Ch0.E35.m6">
             <XMath>
               <XMApp>
                 <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -1545,12 +2217,12 @@ horizontally aligned as if it were a column pair in the align.</p>
             </XMath>
           </Math>
           <MathBranch>
-            <td align="right"><Math mode="inline" tex="\displaystyle S" text="S" xml:id="Ch0.E23.m3">
+            <td align="right"><Math mode="inline" tex="\displaystyle S" text="S" xml:id="Ch0.E35.m3">
                 <XMath>
                   <XMTok font="italic" role="UNKNOWN">S</XMTok>
                 </XMath>
               </Math></td>
-            <td align="left"><Math mode="inline" tex="\displaystyle=T" text="absent = T" xml:id="Ch0.E23.m4">
+            <td align="left"><Math mode="inline" tex="\displaystyle=T" text="absent = T" xml:id="Ch0.E35.m4">
                 <XMath>
                   <XMApp>
                     <XMTok meaning="equals" role="RELOP">=</XMTok>
