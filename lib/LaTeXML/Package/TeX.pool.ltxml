@@ -2717,7 +2717,7 @@ DefConstructor('\hidden@noalign{}', '#1',
     my $preserve = grep { $_->getProperty('alignmentPreserve'); } $_[1]->unlist;
     (alignmentSkippable => 1, alignmentPreserve => $preserve); });
 
-DefMacro('\@alignment@hline', '\noalign{\@@alignment@hline}');
+DefMacro('\hline', '\noalign{\@@alignment@hline}');
 DefConstructorI('\@@alignment@hline', undef, '',
   afterDigest => sub {
     if (my $alignment = LookupValue('Alignment')) {
@@ -2989,8 +2989,7 @@ sub alignmentBindings {
     properties     => {%properties});
   AssignValue(Alignment => $alignment);
   Debug("Halign $alignment: New " . $template->show) if $LaTeXML::DEBUG{halign};
-  Let('\hline', '\@alignment@hline');
-  Let(T_MATH,   ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
+  Let(T_MATH, ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
   return; }
 
 DefMacroI('\@row@before',    undef, undef);

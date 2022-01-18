@@ -3635,7 +3635,6 @@ DefConstructor('\@@tabular@{Dimension}[] Undigested DigestedBody',
 DefPrimitive('\@end@tabular@', sub { $_[0]->egroup; });
 Let('\multicolumn', '\@multicolumn');
 
-DefPrimitiveI('\hline', undef, undef);    # Redefined inside tabular
 # A weird bit that sometimes gets invoked by Cargo Cult programmers...
 # to \noalign in the defn of \hline! Bizarre! (see latex.ltx)
 # However, the really weird thing is the way this provides the } to close the argument

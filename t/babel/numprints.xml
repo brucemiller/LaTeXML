@@ -811,16 +811,16 @@ vs.
       <tabular class="ltx_guessed_headers" vattach="middle">
         <thead>
           <tr>
-            <td align="char:." thead="column row">without braces</td>
-            <td align="char:." thead="column row">with braces</td>
-            <td align="char:." thead="column">with braces and box</td>
-            <td align="char:." thead="column">with braces, exp, and box</td>
+            <td align="char:." border="t" thead="column row">without braces</td>
+            <td align="char:." border="t" thead="column">with braces</td>
+            <td align="char:." border="t" thead="column">with braces and box</td>
+            <td align="char:." border="t" thead="column">with braces, exp, and box</td>
           </tr>
         </thead>
         <tbody>
           <tr>
-            <td align="char:." thead="row">error</td>
-            <td align="char:." thead="row">abc def <Math mode="inline" tex="\numprint{12,3e3}" text="12,3e3" xml:id="S3.p4.m1">
+            <td align="char:." border="t" thead="row">error</td>
+            <td align="char:." border="t">abc def <Math mode="inline" tex="\numprint{12,3e3}" text="12,3e3" xml:id="S3.p4.m1">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="12,3e3" role="NUMBER">12,3e3</XMTok>
@@ -845,7 +845,7 @@ vs.
                   </XMDual>
                 </XMath>
               </Math> rt</td>
-            <td align="char:."><text align="left" width="35.0pt">abc def </text><Math mode="inline" tex="\numprint{12,3e3}" text="12,3e3" xml:id="S3.p4.m2">
+            <td align="char:." border="t"><text align="left" width="35.0pt">abc def </text><Math mode="inline" tex="\numprint{12,3e3}" text="12,3e3" xml:id="S3.p4.m2">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="12,3e3" role="NUMBER">12,3e3</XMTok>
@@ -870,7 +870,7 @@ vs.
                   </XMDual>
                 </XMath>
               </Math> rt</td>
-            <td align="char:."><text align="left" width="35.0pt">abc def </text><Math mode="inline" tex="\numprint{12,3e3}" text="12,3e3" xml:id="S3.p4.m3">
+            <td align="char:." border="t"><text align="left" width="35.0pt">abc def </text><Math mode="inline" tex="\numprint{12,3e3}" text="12,3e3" xml:id="S3.p4.m3">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="12,3e3" role="NUMBER">12,3e3</XMTok>
@@ -913,7 +913,7 @@ vs.
                   </XMDual>
                 </XMath>
               </Math>txt</td>
-            <td align="char:." thead="row">more <Math mode="inline" tex="\numprint{45,1}" text="45,1" xml:id="S3.p4.m5">
+            <td align="char:.">more <Math mode="inline" tex="\numprint{45,1}" text="45,1" xml:id="S3.p4.m5">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="45,1" role="NUMBER">45,1</XMTok>
@@ -963,7 +963,7 @@ vs.
               </Math> txt</td>
           </tr>
           <tr>
-            <td align="char:." thead="row">notblu<Math mode="inline" tex="\numprint{e45,1}" text="e45,1" xml:id="S3.p4.m8">
+            <td align="char:." border="b t" thead="row">notblu<Math mode="inline" tex="\numprint{e45,1}" text="e45,1" xml:id="S3.p4.m8">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="e45,1" role="NUMBER">e45,1</XMTok>
@@ -975,7 +975,7 @@ vs.
                   </XMDual>
                 </XMath>
               </Math>txt</td>
-            <td align="char:." thead="row"><text color="#0000FF">blue <Math mode="inline" tex="\numprint{45,1}" text="45,1" xml:id="S3.p4.m9">
+            <td align="char:." border="b t"><text color="#0000FF">blue <Math mode="inline" tex="\numprint{45,1}" text="45,1" xml:id="S3.p4.m9">
                   <XMath>
                     <XMDual>
                       <XMTok font="italic" meaning="45,1" role="NUMBER">45,1</XMTok>
@@ -991,7 +991,7 @@ vs.
                     </XMDual>
                   </XMath>
                 </Math> txt</text></td>
-            <td align="char:."><text align="left" color="#0000FF" width="35.0pt">blue </text><Math mode="inline" tex="\numprint{45,1}" text="45,1" xml:id="S3.p4.m10">
+            <td align="char:." border="b t"><text align="left" color="#0000FF" width="35.0pt">blue </text><Math mode="inline" tex="\numprint{45,1}" text="45,1" xml:id="S3.p4.m10">
                 <XMath>
                   <XMDual>
                     <XMTok color="#0000FF" font="italic" meaning="45,1" role="NUMBER">45,1</XMTok>
@@ -1007,7 +1007,7 @@ vs.
                   </XMDual>
                 </XMath>
               </Math><text color="#0000FF"> txt</text></td>
-            <td align="char:."><text align="left" color="#0000FF" width="35.0pt">blue </text><Math mode="inline" tex="\numprint{45,1}" text="45,1" xml:id="S3.p4.m11">
+            <td align="char:." border="b t"><text align="left" color="#0000FF" width="35.0pt">blue </text><Math mode="inline" tex="\numprint{45,1}" text="45,1" xml:id="S3.p4.m11">
                 <XMath>
                   <XMDual>
                     <XMTok color="#0000FF" font="italic" meaning="45,1" role="NUMBER">45,1</XMTok>
@@ -1031,9 +1031,9 @@ vs.
       <tabular vattach="middle">
         <tbody>
           <tr>
-            <td align="left">normal:</td>
-            <td align="char:."><text class="ltx_number"><text align="right" width="68.3pt">123,456,123,456</text><text align="left" width="17.8pt">.123</text>×10<sup>12</sup></text></td>
-            <td align="char:."><Math mode="inline" tex="\numprint{123456123456.123e12}" text="123456123456.123e12" xml:id="S3.p5.m1">
+            <td align="left" border="t">normal:</td>
+            <td align="char:." border="t"><text class="ltx_number"><text align="right" width="68.3pt">123,456,123,456</text><text align="left" width="17.8pt">.123</text>×10<sup>12</sup></text></td>
+            <td align="char:." border="t"><Math mode="inline" tex="\numprint{123456123456.123e12}" text="123456123456.123e12" xml:id="S3.p5.m1">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="123456123456.123e12" role="NUMBER">123456123456.123e12</XMTok>
@@ -1082,9 +1082,9 @@ vs.
             <td/>
           </tr>
           <tr>
-            <td align="left">bold extended:</td>
-            <td align="char:."><text class="ltx_number" font="bold"><text align="right" width="68.3pt">123,456,123,456</text><text align="left" width="17.8pt">.123</text>×10<sup>12</sup></text></td>
-            <td align="char:."><Math mode="inline" tex="\numprint{123456123456.123e12}" text="123456123456.123e12" xml:id="S3.p5.m2">
+            <td align="left" border="b">bold extended:</td>
+            <td align="char:." border="b"><text class="ltx_number" font="bold"><text align="right" width="68.3pt">123,456,123,456</text><text align="left" width="17.8pt">.123</text>×10<sup>12</sup></text></td>
+            <td align="char:." border="b"><Math mode="inline" tex="\numprint{123456123456.123e12}" text="123456123456.123e12" xml:id="S3.p5.m2">
                 <XMath>
                   <XMDual>
                     <XMTok font="bold italic" meaning="123456123456.123e12" role="NUMBER">123456123456.123e12</XMTok>
@@ -1134,7 +1134,7 @@ vs.
       <tabular class="ltx_guessed_headers" vattach="middle">
         <tbody>
           <tr>
-            <td align="char:." thead="row">before <Math mode="inline" tex="\numprint{123456123456.123e12}" text="123456123456.123e12" xml:id="S3.p6.m1">
+            <td align="char:." border="t" thead="row">before <Math mode="inline" tex="\numprint{123456123456.123e12}" text="123456123456.123e12" xml:id="S3.p6.m1">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="123456123456.123e12" role="NUMBER">123456123456.123e12</XMTok>
@@ -1180,7 +1180,7 @@ vs.
                   </XMDual>
                 </XMath>
               </Math> after</td>
-            <td align="char:."><Math mode="inline" tex="\numprint{12.12345}" text="12.12345" xml:id="S3.p6.m2">
+            <td align="char:." border="t"><Math mode="inline" tex="\numprint{12.12345}" text="12.12345" xml:id="S3.p6.m2">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="12.12345" role="NUMBER">12.12345</XMTok>
@@ -1207,7 +1207,7 @@ vs.
                   </XMDual>
                 </XMath>
               </Math></td>
-            <td align="char:."><Math mode="inline" tex="\numprint{123456.23e1}" text="123456.23e1" xml:id="S3.p6.m3">
+            <td align="char:." border="t"><Math mode="inline" tex="\numprint{123456.23e1}" text="123456.23e1" xml:id="S3.p6.m3">
                 <XMath>
                   <XMDual>
                     <XMTok color="#0000FF" font="italic" meaning="123456.23e1" role="NUMBER">123456.23e1</XMTok>
@@ -1245,7 +1245,7 @@ vs.
               </Math></td>
           </tr>
           <tr>
-            <td align="char:." thead="row">before <Math mode="inline" tex="\numprint{12345.123e12}" text="12345.123e12" xml:id="S3.p6.m4">
+            <td align="char:." border="b" thead="row">before <Math mode="inline" tex="\numprint{12345.123e12}" text="12345.123e12" xml:id="S3.p6.m4">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="12345.123e12" role="NUMBER">12345.123e12</XMTok>
@@ -1285,7 +1285,7 @@ vs.
                   </XMDual>
                 </XMath>
               </Math> after</td>
-            <td align="char:."><Math mode="inline" tex="\numprint{12.1}" text="12.1" xml:id="S3.p6.m5">
+            <td align="char:." border="b"><Math mode="inline" tex="\numprint{12.1}" text="12.1" xml:id="S3.p6.m5">
                 <XMath>
                   <XMDual>
                     <XMTok font="italic" meaning="12.1" role="NUMBER">12.1</XMTok>
@@ -1312,7 +1312,7 @@ vs.
                   </XMDual>
                 </XMath>
               </Math></td>
-            <td align="char:."><Math mode="inline" tex="\numprint{14561234.562e12}" text="14561234.562e12" xml:id="S3.p6.m6">
+            <td align="char:." border="b"><Math mode="inline" tex="\numprint{14561234.562e12}" text="14561234.562e12" xml:id="S3.p6.m6">
                 <XMath>
                   <XMDual>
                     <XMTok color="#0000FF" font="italic" meaning="14561234.562e12" role="NUMBER">14561234.562e12</XMTok>
@@ -1352,11 +1352,6 @@ vs.
                 </XMath>
               </Math></td>
           </tr>
-          <tr>
-            <td align="char:." thead="row">before  after</td>
-            <td align="char:."/>
-            <td align="char:."/>
-          </tr>
         </tbody>
       </tabular>
     </para>
@@ -1364,7 +1359,7 @@ vs.
       <tabular vattach="middle">
         <tbody>
           <tr>
-            <td align="char:."><Math mode="inline" tex="\numprint[N/mm^{2}]{12345.123}" text="12345.123 * (N / m) * m ^ 2" xml:id="S3.p7.m1">
+            <td align="char:." border="t"><Math mode="inline" tex="\numprint[N/mm^{2}]{12345.123}" text="12345.123 * (N / m) * m ^ 2" xml:id="S3.p7.m1">
                 <XMath>
                   <XMDual>
                     <XMApp>
@@ -1498,7 +1493,7 @@ vs.
               </Math></td>
           </tr>
           <tr>
-            <td align="char:."><Math mode="inline" tex="\numprint[N/mm^{2}]{4.3}" text="4.3 * (N / m) * m ^ 2" xml:id="S3.p7.m4">
+            <td align="char:." border="b"><Math mode="inline" tex="\numprint[N/mm^{2}]{4.3}" text="4.3 * (N / m) * m ^ 2" xml:id="S3.p7.m4">
                 <XMath>
                   <XMDual>
                     <XMApp>
