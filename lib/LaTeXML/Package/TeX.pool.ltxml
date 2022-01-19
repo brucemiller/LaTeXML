@@ -4747,7 +4747,11 @@ DefRegister('\interfootnotelinepenalty' => Number(100));
 
 DefMacroI('\magstephalf', undef, '1095');
 our @mags = (1000, 1200, 1440, 1728, 2074, 2488);
-DefMacro('\magstep{}', sub { Explode($mags[ToString($_[1])]); });
+DefMacro('\magstep{}', sub {
+    my $level = ToString($_[1]);
+    $level = ($level =~ /^\d$/) ? int($level) : 0;
+    $level = 0 unless $level >= 0 and $level < 6;
+    Explode($mags[$level]); });
 
 #======================================================================
 # TeX Book, Appendix B, p. 350
