@@ -644,7 +644,7 @@ sub readValue {
     my $token = $self->readToken;
     if (Equals($token, T_CS('\csname'))) {
       my $cstoken = $STATE->lookupDefinition($token)->invoke($self);
-      $self->unread(@{$cstoken});
+      $self->unread($cstoken->unlist);
       return $self->readToken; }
     else {
       return $token; } }
@@ -682,11 +682,11 @@ sub readTokensValue {
       return $defn->valueOf(($parms ? $parms->readArguments($self) : ())); }
     elsif ($defn->isExpandable) {
       if (my $x = $defn->invoke($self)) {
-        $self->unread(@{$x}); }
+        $self->unread($x->unlist); }
       return $self->readTokensValue; }
     elsif (Equals($token, T_CS('\csname'))) {
       my $cstoken = $defn->invoke($self);
-      $self->unread(@{$cstoken});
+      $self->unread($cstoken->unlist);
       return $self->readToken; }
     else {
       return $token; } }    # ?
