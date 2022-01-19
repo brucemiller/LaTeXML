@@ -483,7 +483,10 @@ DefMacro('\shortcites Semiverbatim', '');
 #   \bibitem[\protect\citename{Jones et al., }1990]{key}...
 #   \harvarditem[Jones et al.]{Jones, Baker, and Williams}{1990}{key}...
 
-DefMacro('\bibitem', '\reset@natbib@cites\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}', locked => 1);
+DefMacro('\bibitem',
+##         '\reset@natbib@cites\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}',
+  '\reset@natbib@cites\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[]}',
+  locked => 1);
 
 RawTeX(<<'EOTeX');
 %%%
@@ -508,7 +511,8 @@ RawTeX(<<'EOTeX');
     \expandafter\NAT@apalk#1, , \@nil{#5}\else
     \NAT@wrout{\the@bibitem}{#2}{#1}{#3}{#5}\fi}
 \def\NAT@apalk#1, #2, #3\@nil#4{%
-  \if\relax#2\relax\NAT@wrout{#1}{}{}{}{#4}\else\NAT@wrout{\the@bibitem}{#2}{#1}{}{#4}\fi}
+%  \if\relax#2\relax\NAT@wrout{#1}{}{}{}{#4}\else\NAT@wrout{\the@bibitem}{#2}{#1}{}{#4}\fi}
+  \NAT@wrout{\the@bibitem}{#2}{#1}{}{#4}}
 %%%%
 EOTeX
 # Sometimes, perversely, redefined, so re-redefine them now...
@@ -516,6 +520,81 @@ DefPrimitiveI('\reset@natbib@cites', undef, sub {
     Let('\citeauthoryear', '\natbib@citeauthoryear');
     Let('\astroncite',     '\natbib@astroncite');
     Let('\citename',       '\natbib@citename'); });
+
+# Kinda rediculous simulating this here (we can almost pull it off in TeX)
+# but the TeX tends to be quite brittle in the wilds of arXiv, so...
+DefMacro('\lx@NAT@parselabel{}{}', sub {
+    my ($gullet, $label, $key) = @_;
+    my ($number, $year, $authors, $fullauthors);
+    my $bare   = 1;
+    my @tokens = $label->unlist;
+    shift(@tokens) if Equals(T_CS('\protect'), $tokens[0]);    # Ignore \protect
+    if ($tokens[0] && ($tokens[0]->getCatcode == CC_CS)) {
+      my $cs = $tokens[0];
+      my ($a1, $a2);
+      if (Equals(T_CS('\citeauthoryear'), $cs)) {
+        # \bibitem[\protect\citeauthoryear{Jones, Baker, and Williams}{Joneset al.}{1990}]{key}
+        # \bibitem[\protect\citeauthoryear{Jones et al.}{1990}]{key}...
+        shift(@tokens);
+        ($a1, @tokens) = NAT_peel_arg(@tokens);
+        ($a2, @tokens) = NAT_peel_arg(@tokens);
+        if (@tokens) {
+          $fullauthors = $a1; $authors = $a2; $year = Tokens(@tokens); $bare = 0; }
+        else {
+          $authors = $a1; $year = $a2; $bare = 0; } }
+      elsif (Equals(T_CS('\astroncite'), $cs)) {
+        # \bibitem[\protect\astroncite{Jones et al.}{1990}]{key}...
+        shift(@tokens);
+        ($a1, @tokens) = NAT_peel_arg(@tokens);
+        ($a2, @tokens) = NAT_peel_arg(@tokens);
+        $authors = $a1; $year = $a2; $bare = 0; }
+      elsif (Equals(T_CS('\citename'), $cs)) {
+        # \bibitem[\protect\citename{Jones et al., }1990]{key}...
+        shift(@tokens);
+        ($a1, @tokens) = NAT_peel_arg(@tokens);
+        $authors = $a1; $year = Tokens(@tokens); $bare = 0; } }
+    if ($bare) {
+      @tokens = Expand($label)->unlist;
+      # \bibitem[Jones et al.(1990)]{key}...
+      # \bibitem[Jones et al.(1990)Jones, Baker, and Williams]{key}...
+      # \bibitem[Jones et al., 1990]{key}...
+      my @arg = ();
+      while (@tokens && !T_OTHER('(')->equals($tokens[0])) {
+        push(@arg, shift(@tokens)); }
+      shift(@tokens);
+      my @year = ();
+      while (@tokens && !T_OTHER(')')->equals($tokens[0])) {
+        push(@year, shift(@tokens)); }
+      shift(@tokens);
+      if (!@year) {
+        while (@arg && ($arg[-1]->getCatcode == CC_OTHER)
+          && ($arg[-1]->getString =~ /\d/)) {    # or even digits only?
+          unshift(@year, pop(@arg)); }
+        #pop(@arg);
+      }
+      $authors = Tokens(@arg); $year = Tokens(@year); $fullauthors = Tokens(@tokens); }
+##    Debug("NATLABEL: ".ToString($label)." #=".ToString($number)." y=".ToString($year)
+##          ." a=".ToString($authors)." f=".ToString($fullauthors)." k=".ToString($key));
+    return Invocation(T_CS('\NAT@wrout'), ($number || T_CS('\the@bibitem')), $year,
+      $authors, $fullauthors, $key) });
+
+sub NAT_peel_arg {
+  my (@tokens) = @_;
+  my @arg = ();
+  if (!@tokens) {
+    return; }
+  elsif (@tokens && ($tokens[0]->getCatcode != CC_BEGIN)) {
+    return (pop(@tokens), @tokens); }
+  else {
+    my $level = 1;
+    shift(@tokens);
+    while (my $t = shift(@tokens)) {
+      my $cc = $t->getCatcode;
+      $level++ if $cc == CC_BEGIN;
+      $level-- if $cc == CC_END;
+      last unless $level > 0;
+      push(@arg, $t); }
+    return (Tokens(@arg), @tokens); } }
 
 # By this time, \NAT@wrout should look like:
 # \NAT@wrout{number}{year}{authors}{fullauthors}{bibkey}
@@ -549,7 +628,9 @@ DefConstructor('\NAT@@wrout{}{}{}{}{} Semiverbatim',
 # see arXiv:cond-mat/0003435 for
 # an infinite loop we run into when this isn't locked
 # \@@lbibitem is a DefConstructor, so the connection should be kept
-DefMacro('\@lbibitem[]{}', '\@@lbibitem{#2}\NAT@ifcmd#1(@)(@)\@nil{#2}\newblock', locked => 1);
+DefMacro('\@lbibitem[]{}',
+  #    '\@@lbibitem{#2}\NAT@ifcmd#1(@)(@)\@nil{#2}\newblock', locked => 1);
+  '\@@lbibitem{#2}\lx@NAT@parselabel{#1}{#2}\newblock', locked => 1);
 
 # Similar to the one defined in LaTeX.pool, but the bibtag's have been setup above.
 DefConstructor('\@@lbibitem Semiverbatim',
