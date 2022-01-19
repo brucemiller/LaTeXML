@@ -130,7 +130,16 @@ DefConstructor('\subhead Until:\endsubhead',
   bounded    => 1,
   properties => sub { RefStepID('subsection') });
 # TODO: This can be used as a simple macro \subheading{..}, see e.g. arxiv:math/0001062
-DefMacro('\subheading Until:\endsubheading', '\subhead#1\endsubhead');
+DefMacro('\subheading', sub {
+    my ($gullet) = @_;
+    return ($gullet->ifNext(T_BEGIN)
+      ? (T_CS('\subheading@onearg'))
+      : (T_CS('\subheading@env'))); },
+  locked => 1);
+
+DefMacro('\subheading@onearg {}',                '\subhead#1\endsubhead');
+DefMacro('\subheading@env Until:\endsubheading', '\subhead#1\endsubhead');
+
 DefConstructor('\subsubhead Until:\endsubsubhead',
   "<ltx:subsubsection inlist='toc' xml:id='#id'>"
     . "#tags"
