@@ -1081,8 +1081,7 @@ sub tikzAlignmentBindings {
     isMath         => $ismath,
     properties     => {%properties});
   AssignValue(Alignment => $alignment);
-  Let('\hline', '\@alignment@hline');
-  Let(T_MATH,   ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
+  Let(T_MATH, ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
   return; }
 
 # Note that pgf *seems* to have set the coordinate system to the center(?) (w/ \pgfsys@transformcm)

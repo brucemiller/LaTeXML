@@ -20,8 +20,11 @@ use LaTeXML::Package;
 # We won't yet support the optional arg to the redefined \label...
 Let(T_CS('\lx@cleverref@save@label'), T_CS('\label'));
 DefMacro('\lx@cleverref@label[]', '\lx@cleverref@save@label');
+my $amswasloaded = LookupValue('amsmath.sty_loaded');
+# Pretend amsmath already loaded (if it will be), to avoid pointless error
+AssignValue('amsmath.sty_loaded' => 1);
 InputDefinitions('cleveref', type => 'sty', noltxml => 1);
-
+AssignValue('amsmath.sty_loaded' => $amswasloaded);
 # Now define it back.
 AtBeginDocument(sub {
     Let(T_CS('\label'), T_CS('\lx@cleverref@label')); });

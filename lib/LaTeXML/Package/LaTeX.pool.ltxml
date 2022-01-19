@@ -1505,10 +1505,18 @@ sub setEnumerationStyle {
     DefMacroI('\labelenum' . $level, undef, Tokens(T_BEGIN, @out, T_END)); }
   return; }
 
+# End paragraphs, like \par, but only if within an item's text
+DefConstructorI('\preitem@par', undef, sub {
+    my ($document, %props) = @_;
+    if (!$props{inPreamble} && !$document->getNodeQName($document->getElement(), 'ltx:itemize')) {
+      $document->maybeCloseElement('ltx:p');
+      $document->maybeCloseElement('ltx:para'); } },
+  alias => '\par');
+
 # id, but NO refnum (et.al) attributes on itemize \item ...
 # unless the optional tag argument was given!
 # We'll make the <ltx:tag> from either the optional arg, or from \labelitemi..
-DefMacro('\itemize@item', '\par\itemize@item@');
+DefMacro('\itemize@item', '\preitem@par\itemize@item@');
 DefConstructor('\itemize@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>#tags",
   properties => sub { RefStepItemCounter($_[1]); });
@@ -1516,7 +1524,7 @@ DefConstructor('\inline@itemize@item OptionalUndigested',
   "<ltx:inline-item xml:id='#id'>#tags",
   properties => sub { RefStepItemCounter($_[1]); });
 
-DefMacro('\enumerate@item', '\par\enumerate@item@');
+DefMacro('\enumerate@item', '\preitem@par\enumerate@item@');
 DefConstructor('\enumerate@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>#tags",
   properties => sub { RefStepItemCounter($_[1]); });
@@ -1524,7 +1532,7 @@ DefConstructor('\inline@enumerate@item OptionalUndigested',
   "<ltx:inline-item xml:id='#id'>#tags",
   properties => sub { RefStepItemCounter($_[1]); });
 
-DefMacro('\description@item', '\par\description@item@');
+DefMacro('\description@item', '\preitem@par\description@item@');
 DefConstructor('\description@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>#tags",
   properties => sub { RefStepItemCounter($_[1]); });
@@ -1692,10 +1700,14 @@ DefMacro('\list{}{}',
 '\let\@listctr\@empty#2\ifx\@listctr\@empty\usecounter{}\fi\expandafter\def\csname fnum@\@listctr\endcsname{#1}\lx@list');
 DefMacro('\endlist', '\endlx@list');
 
-DefConstructor('\lx@list DigestedBody',
-  "<ltx:itemize>#1</ltx:itemize>",
+# Start an anonymous list (often misused)
+DefConstructor('\lx@list',
+  "<ltx:itemize>",
   beforeDigest => sub { $_[0]->bgroup; });
-DefPrimitive('\endlx@list', sub { $_[0]->egroup; });
+# Close the anonymous list if we're still within one.
+DefConstructor('\endlx@list', sub {
+    $_[0]->maybeCloseElement('ltx:itemize'); },
+  beforeDigest => sub { $_[0]->egroup; });
 
 DefConstructor('\list@item OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>#tags",
@@ -1704,17 +1716,13 @@ DefConstructor('\list@item OptionalUndigested',
 # This isn't quite right, although it seems right for deep, internal uses with a single \item.
 # Perhaps we need to check trivlist's afterwards and if they are just a single item,
 # reduce it to an ltx:p ??
-# DefMacro('\trivlist@item[]', '');
-# DefEnvironment('{trivlist}',
-#   '<ltx:p>#body</ltx:p>',
-#   beforeDigest => sub { Let('\item', '\trivlist@item'); });
-
-DefEnvironment('{trivlist}',
-  "<ltx:itemize>#body</ltx:itemize>",
-  properties      => sub { beginItemize('trivlist'); },
-  beforeDigestEnd => sub { Digest('\par'); });
-
-DefMacro('\trivlist@item', '\par\trivlist@item@');
+DefConstructor('\trivlist',
+  "<ltx:itemize _autoclose='1'>",
+  properties => sub { beginItemize('trivlist'); });
+DefConstructor('\endtrivlist', sub {
+    $_[0]->maybeCloseElement('ltx:itemize'); },
+  beforeDigest => sub { Digest('\par'); });
+DefMacro('\trivlist@item', '\preitem@par\trivlist@item@');
 DefConstructor('\trivlist@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>"
     . "<ltx:tags><ltx:tag>#tag</ltx:tag></ltx:tags>",    # At least an empty tag! ?
@@ -3628,7 +3636,6 @@ DefConstructor('\@@tabular@{Dimension}[] Undigested DigestedBody',
 DefPrimitive('\@end@tabular@', sub { $_[0]->egroup; });
 Let('\multicolumn', '\@multicolumn');
 
-DefPrimitiveI('\hline', undef, undef);    # Redefined inside tabular
 # A weird bit that sometimes gets invoked by Cargo Cult programmers...
 # to \noalign in the defn of \hline! Bizarre! (see latex.ltx)
 # However, the really weird thing is the way this provides the } to close the argument
@@ -3759,9 +3766,6 @@ sub beforeDigestBibliography {
   AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
   DefMacro('\bibliographystyle{}', '');
   DefMacro('\bibliography {}',     '');
-  DefConstructorI('\endthebibliography', undef,
-    "</ltx:biblist></ltx:bibliography>",
-    locked => 1);
   ResetCounter('@bibitem');
   return; }
 
@@ -3930,8 +3934,9 @@ DefConstructorI('\thebibliography', undef,
   locked          => 1);
 
 # Close the bibliography
-DefConstructorI('\endthebibliography', undef,
-  "</ltx:biblist></ltx:bibliography>",
+DefConstructorI('\endthebibliography', undef, sub {
+    $_[0]->maybeCloseElement('ltx:biblist');
+    $_[0]->maybeCloseElement('ltx:bibliography'); },
   locked => 1);
 # auto close the bibliography and contained biblist.
 Tag('ltx:biblist',      autoClose => 1);
@@ -3952,6 +3957,12 @@ sub setupPseudoBibitem {
   Let('\item', '\item@in@bibliography');
   # And protect from redefinitions.
   Let('\newblock', '\lx@bibnewblock');
+  my $gullet = $STATE->getStomach->getGullet;
+  # Risky, but when bibliography immediatesly starts with text (no implied \par)
+  if (my $token = $gullet->readNonSpace) {
+    $gullet->unread($token);
+    if (!$token->isExecutable) {
+      $gullet->unread(T_CS('\par')); } }
   return; }
 
 DefMacroI('\par@in@bibliography', undef, sub {
@@ -4014,10 +4025,17 @@ DefMacro('\lx@mung@bibliography{}', sub {
         T_CS('\let'), T_CS('\end{' . $tag . '}'), T_CS('\end{thebibliography}')); }
     # else ? it probably isn't going to work??
     # Now, try to open {thebibliography}
-    push(@tokens, Invocation('\begin', Tokenize('thebibliography'), Tokens()));
+    push(@tokens, T_CS('\lx@mung@bibliography@pre'), Invocation('\thebibliography'), Tokens());
     return Tokens(@tokens); });
-
-DefConstructorI('\lx@bibnewblock', undef, "<ltx:bibblock>");
+DefConstructor('\lx@mung@bibliography@pre', sub {
+    my ($document) = @_;
+    my $parent     = $document->getNode;
+    my $tag        = $document->getNodeQName($parent);
+    if ($tag =~ /^ltx:(?:itemize|enumerate|description)$/) {
+      $document->maybeCloseElement($tag); }    # Or even remove (if empty)?
+    return; });
+DefConstructorI('\lx@bibnewblock', undef, sub {
+    $_[0]->openElement('ltx:bibblock') if $_[0]->isOpenable('ltx:bibblock'); });
 Let('\newblock', '\lx@bibnewblock');
 Tag('ltx:bibitem',  autoClose => 1);
 Tag('ltx:bibblock', autoClose => 1);

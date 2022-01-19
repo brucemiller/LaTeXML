@@ -84,10 +84,10 @@ DefMacro('\twocolhead{}', '\multicolumn{2}{c}{\hss #1 \hss}');
 DefMacro('\nocolhead{}',  '\multicolumn{1}{h}{#1}');
 DefMacro('\dcolhead{}',   '\multicolumn{1}{c}{$\relax#1$}');
 
-DefMacro('\nl',          '\\\\[0pt]');                       # Obsolete form
-DefMacro('\nextline',    '\\\\[0pt]');                       # Obsolete form
-DefMacro('\tablevspace', '\\\\[0pt]');                       # Obsolete form
-DefMacro('\tablebreak',  '\\\\[0pt]');                       # Obsolete form
+DefMacro('\nl',            '\\\\[0pt]');                     # Obsolete form
+DefMacro('\nextline',      '\\\\[0pt]');                     # Obsolete form
+DefMacro('\tablevspace{}', '\noalign{\vskip#1}');            # Obsolete form
+DefMacro('\tablebreak',    '\\\\[0pt]');                     # Obsolete form
 
 #======================================================================
 # 2.15.3 Content of deluxetable

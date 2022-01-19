@@ -272,8 +272,9 @@ DefConstructor('\references',
   afterDigest  => sub { beginBibliography($_[1]); }
 );
 
-DefConstructor('\endreferences',
-  "</ltx:biblist></ltx:bibliography>");
+DefConstructor('\endreferences', sub {
+    $_[0]->maybeCloseElement('ltx:biblist');
+    $_[0]->maybeCloseElement('ltx:bibliography'); });
 
 Let('\reference', '\bibitem');
 
