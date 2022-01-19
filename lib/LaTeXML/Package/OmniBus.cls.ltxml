@@ -60,6 +60,7 @@ DefEnvironment('{mainmatter}',  '#body');
 DefEnvironment('{backmatter}',  '#body');
 
 DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\subtitle{}',    '\@add@frontmatter{ltx:subtitle}{#1}');
 DefMacro('\shortauthor{}', '');
 DefRegister('\titlerunning',  Tokens());
 DefRegister('\authorrunning', Tokens());
@@ -71,6 +72,7 @@ Let('\runninghead', '\runningtitle');
 DefMacro('\shortauthor{}',  Tokens());
 DefMacro('\authors{}',      Tokens());
 DefMacro('\shortauthors{}', Tokens());
+DefMacro('\alignauthor',    Tokens());
 
 DefConstructor('\@@@email{}{}', "^ <ltx:contact role='#2'>#1</ltx:contact>");
 DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}{email}}');
@@ -93,58 +95,64 @@ DefConstructor('\altaffiltext{}{}',
   "?#2(<ltx:note role='affiliationtext' mark='#1'>#2</ltx:note>)()");
 
 DefConstructor('\@@@address{}', "^ <ltx:contact role='address'>#1</ltx:contact>");
-DefMacro('\address[]{}',   '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
+DefMacro('\address[]{}', '\@add@to@frontmatter{ltx:creator}{\@@@address{#2}}');
+Let('\affaddr', '\address');
 DefMacro('\affiliation{}', '\@add@to@frontmatter{ltx:creator}{\@@@affiliation{#1}}');
 DefRegister('\affilskip' => Dimension(0));
 
 # some rarer name macros that are functionally no-ops for latexml
-DefMacro('\prefix{}',         '#1');
-DefMacro('\suffix{}',         '#1');
-DefMacro('\fnms{}',           '#1');
-DefMacro('\snm{}',            '#1');
-DefMacro('\inits{}',          '#1');
-DefMacro('\printaddresses{}', '#1');
-DefMacro('\printead{}',       Tokens());
-DefMacro('\firstpage{}',      Tokens());
-DefMacro('\lastpage{}',       Tokens());
-DefMacro('\runauthor{}',      Tokens());
-DefMacro('\runtitle{}',       Tokens());
-DefMacro('\corref{}',         Tokens());
-DefMacro('\listofauthors{}',  Tokens());
-DefMacro('\indexauthor{}',    Tokens());
-DefMacro('\preface',          Tokens());
-DefMacro('\thankstext',       Tokens());
-DefMacro('\resumen{}',        '\@add@frontmatter{ltx:abstract}{#1}');
-DefMacro('\ion{}{}',          '{#1 \textsc{#2}}');
+DefMacro('\prefix{}',          '#1');
+DefMacro('\suffix{}',          '#1');
+DefMacro('\fnms{}',            '#1');
+DefMacro('\snm{}',             '#1');
+DefMacro('\inits{}',           '#1');
+DefMacro('\printaddresses{}',  '#1');
+DefMacro('\printead{}',        Tokens());
+DefMacro('\firstpage{}',       Tokens());
+DefMacro('\lastpage{}',        Tokens());
+DefMacro('\runauthor{}',       Tokens());
+DefMacro('\runtitle{}',        Tokens());
+DefMacro('\corref{}',          Tokens());
+DefMacro('\listofauthors{}',   Tokens());
+DefMacro('\indexauthor{}',     Tokens());
+DefMacro('\preface',           Tokens());
+DefMacro('\thankstext',        Tokens());
+DefMacro('\numberofauthors{}', Tokens());
+DefMacro('\resumen{}',         '\@add@frontmatter{ltx:abstract}{#1}');
+DefMacro('\ion{}{}',           '{#1 \textsc{#2}}');
 Let(T_CS('\fulladdresses'), T_CS('\address'));
 Let(T_CS('\smonth'),        T_CS('\month'));
 Let(T_CS('\syear'),         T_CS('\year'));
 
 # Comes as both macro with arg, and environment! w/ or w/o "s"!
-DefMacro('\keyword{}',  '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\kword{}',    '\@add@frontmatter{ltx:keywords}{#1}');
 DefMacro('\kwd[]{}',    '\@add@frontmatter{ltx:keywords}{#2, }');
-Let(T_CS('\addto@keywords@list'), T_CS('\keyword'));
 
 # {keyword}, {keywords}
-DefEnvironment('{keywords}', '',
-  afterDigest => sub {
-    my $frontmatter = LookupValue('frontmatter');
-    push(@{ $$frontmatter{'ltx:classification'} },
-      ['ltx:classification', { scheme => 'keywords' }, @LaTeXML::LIST]);
-    return; });
+sub after_digest_keywords {
+  my $frontmatter = LookupValue('frontmatter');
+  push(@{ $$frontmatter{'ltx:classification'} },
+    ['ltx:classification', { scheme => 'keywords' }, @LaTeXML::LIST]);
+  return; }
+DefEnvironment('{keyword}',  '', afterDigest => \&after_digest_keywords);
+DefEnvironment('{keywords}', '', afterDigest => \&after_digest_keywords);
 # Extend to be callable as \keywords{} or \begin{keywords}...
 # Probably want to use this trick more often?
 Let('\lx@begin@keywords', '\keywords');
-DefMacro('\keywords', sub {
-    my ($gullet) = @_;
-    ($gullet->ifNext(T_BEGIN)
-      ? (T_CS('\keywords@onearg'))
-      : (T_CS('\g@addto@macro'), T_CS('\@startsection@hook'), T_CS('\maybe@end@keywords'),
-        T_CS('\lx@begin@keywords'))); });
-DefMacro('\keywords@onearg{}', '\begin{keywords}#1\end{keywords}\let\endkeywords\relax');
+
+sub auto_keywords {
+  my ($gullet) = @_;
+  return ($gullet->ifNext(T_BEGIN)
+    ? (T_CS('\keywords@onearg'))
+    : (T_CS('\g@addto@macro'), T_CS('\@startsection@hook'), T_CS('\maybe@end@keywords'),
+      T_CS('\lx@begin@keywords'))); }
+# see arxiv:math/0601658 for a singular {keyword} example
+DefMacro('\keyword',  \&auto_keywords);
+DefMacro('\keywords', \&auto_keywords);
+DefMacro('\keywords@onearg{}', '\begin{keywords}#1\end{keywords}\let\endkeyword\relax\let\endkeywords\relax');
 DefMacroI('\maybe@end@keywords', undef, '\endkeywords\let\maybe@end@keywords\relax');
+Let(T_CS('\addto@keywords@list'), T_CS('\keyword'));
 
 DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
 DefMacro('\pacs{}',           '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
@@ -154,38 +162,64 @@ DefMacro('\doi{}',
     . '\else\lx@doi{#1}\fi');
 DefConstructor('\lx@doi{}', '<ltx:ref href="https:/doi.org/#1">#1</ltx:ref>');
 
+# from acm_proc_article, is it general enough?
+DefMacro('\category{}{}{}[]', '\@add@frontmatter{ltx:classification}[scheme=category]{#1 #2 #3}\keywords{#4}');
+
+our $omni_theorem_main = <<'EOL';
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{conjecture}[theorem]{Conjecture}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{proof}[theorem]{Proof}
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{exercise}[theorem]{Exercise}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{problem}[theorem]{Problem}
+\newtheorem{question}[theorem]{Question}
+\newtheorem{remark}[theorem]{Remark}
+\newtheorem{solution}[theorem]{Solution}
+\newtheorem{step}[theorem]{Step}
+\newtheorem{note}[theorem]{Note}
+EOL
+# Additional theorem aliases (e.g. autart.cls)
+our $omni_theorem_aux = <<'EOL';
+\newtheorem{thm}{Theorem}
+\newtheorem{cor}[thm]{Corollary}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{claim}[thm]{Claim}
+\newtheorem{axiom}[thm]{Axiom}
+\newtheorem{conj}[thm]{Conjecture}
+\newtheorem{fact}[thm]{Fact}
+\newtheorem{hypo}[thm]{Hypothesis}
+\newtheorem{assum}[thm]{Assumption}
+\newtheorem{prop}[thm]{Proposition}
+\newtheorem{crit}[thm]{Criterion}
+\theoremstyle{definition}
+\newtheorem{defn}[thm]{Definition}
+\newtheorem{exmp}[thm]{Example}
+\newtheorem{rem}[thm]{Remark}
+\newtheorem{prob}[thm]{Problem}
+\newtheorem{prin}[thm]{Principle}
+\newtheorem{alg}{Algorithm}
+EOL
+
 for my $env (qw(
   conjecture theorem corollary definition example exercise lemma
-  note problem proof proposition question remark solution)) {
+  note problem proof proposition question remark solution
+  thm cor lem claim axiom conj fact hypo assum prop crit defn exmp rem prob prin alg)) {
   my $beginenv = "\\begin{$env}";
   DefMacroI(T_CS($beginenv), undef, sub {
       RequirePackage('amsthm');
-      return Tokenize(<<"EOL"
-\\newtheorem{theorem}{Theorem}[section]
-\\newtheorem{conjecture}[theorem]{Conjecture}
-\\newtheorem{proposition}[theorem]{Proposition}
-\\newtheorem{proof}[theorem]{Proof}
-\\newtheorem{lemma}[theorem]{Lemma}
-\\newtheorem{corollary}[theorem]{Corollary}
-\\newtheorem{example}[theorem]{Example}
-\\newtheorem{exercise}[theorem]{Exercise}
-\\newtheorem{definition}[theorem]{Definition}
-\\newtheorem{problem}[theorem]{Problem}
-\\newtheorem{question}[theorem]{Question}
-\\newtheorem{remark}[theorem]{Remark}
-\\newtheorem{solution}[theorem]{Solution}
-\\newtheorem{step}[theorem]{Step}
-\\newtheorem{note}[theorem]{Note}
-$beginenv
-EOL
-)->unlist; }); }
-DefMacroI(T_CS('\newproclaim'), undef, sub {
-    RequirePackage('amsthm');
-    return T_CS('\newtheorem'); });
+      return Tokenize($omni_theorem_main . $omni_theorem_aux . $beginenv)->unlist; }); }
+for my $new_theorem_alias (qw(\newproclaim \newdef)) {
+  DefMacroI(T_CS($new_theorem_alias), undef, sub {
+      RequirePackage('amsthm');
+      return T_CS('\newtheorem'); }); }
+DefAutoload('theoremstyle', 'amsthm.sty.ltxml');
 
 Let('\abstracts', '\abstract');
 Let('\abst',      '\abstract');
-# \editors
 
 # Seems to come in different spellings and often misused!
 DefConstructor('\acknowledgments', "<ltx:acknowledgements name='#name'>",
@@ -199,20 +233,34 @@ Let('\endacknowledgements',   '\endacknowledgments');
 Let('\theacknowledgments',    '\acknowledgments');
 Let('\endtheacknowledgments', '\endacknowledgments');
 
-DefMacro('\editors{}',      '\@add@frontmatter{ltx:note}[role=editors]{#1}');
-DefMacro('\received{}',     '\@add@frontmatter{ltx:date}[role=received]{#1}');
-DefMacro('\revised{}',      '\@add@frontmatter{ltx:date}[role=revised]{#1}');
-DefMacro('\accepted{}',     '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
-DefMacro('\pubyear{}',      '\@add@frontmatter{ltx:date}[role=publication]{#1}');
-DefMacro('\preprint{}',     '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
-DefMacro('\communicated{}', '\@add@frontmatter{ltx:date}[role=communicated]{#1}');
-DefMacro('\dedicated{}',    '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
-DefMacro('\presented{}',    '\@add@frontmatter{ltx:date}[role=presented]{#1}');
-DefMacro('\articletype{}',  '\@add@frontmatter{ltx:note}[role=articletype]{#1}');
-DefMacro('\issue{}',        '\@add@frontmatter{ltx:note}[role=issue]{#1}');
-DefMacro('\journal{}',      '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\jname{}',        '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\volume{}',       '\@add@frontmatter{ltx:note}[role=volume]{#1}');
+DefMacro('\editors{}',          '\@add@frontmatter{ltx:note}[role=editors]{#1}');
+DefMacro('\received{}',         '\@add@frontmatter{ltx:date}[role=received]{#1}');
+DefMacro('\revised{}',          '\@add@frontmatter{ltx:date}[role=revised]{#1}');
+DefMacro('\accepted{}',         '\@add@frontmatter{ltx:date}[role=accepted]{#1}');
+DefMacro('\pubyear{}',          '\@add@frontmatter{ltx:date}[role=publication]{#1}');
+DefMacro('\copyrightyear{}',    '\@add@frontmatter{ltx:date}[role=copyright]{#1}');
+DefMacro('\preprint{}',         '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\communicated{}',     '\@add@frontmatter{ltx:date}[role=communicated]{#1}');
+DefMacro('\dedicated{}',        '\@add@frontmatter{ltx:note}[role=dedicated]{#1}');
+DefMacro('\presented{}',        '\@add@frontmatter{ltx:date}[role=presented]{#1}');
+DefMacro('\articletype{}',      '\@add@frontmatter{ltx:note}[role=articletype]{#1}');
+DefMacro('\issue{}',            '\@add@frontmatter{ltx:note}[role=issue]{#1}');
+DefMacro('\journal{}',          '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\jname{}',            '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\volume{}',           '\@add@frontmatter{ltx:note}[role=volume]{#1}');
+DefMacro('\titlenote{}',        '\@add@frontmatter{ltx:note}[role=titlenote]{#1}');
+DefMacro('\terms{}',            '\@add@frontmatter{ltx:note}[role=terms]{#1}');
+DefMacro('\conferenceinfo{}{}', '\@add@frontmatter{ltx:note}[role=conference]{#1 #2}');
+
+# what useful behavior can we add here? e.g. see arxiv:math/0601658
+DefMacro('\thanksref{}', Tokens());
+
+# rarer variants:
+Let('\CopyrightYear', '\copyrightyear');
+DefRegister('\confinfo',     Tokens());
+DefRegister('\acmcopyr',     Tokens());
+DefRegister('\copyrightetc', Tokens());
+Let('\crdata', '\acmcopyr');
 
 # work as environment or not...
 DefConstructor('\references',
@@ -232,4 +280,16 @@ Let('\reference', '\bibitem');
 DefMacro('\comment{}',    '');
 DefMacro('\etal',         '\textit{et al.}');
 DefMacro('\firstsection', '');
+
+DefAutoload('align',                       'amsmath.sty.ltxml');
+DefAutoload('subequations',                'amsmath.sty.ltxml');
+DefAutoload('split',                       'amsmath.sty.ltxml');
+DefAutoload('\multline',                   'amsmath.sty.ltxml');
+DefAutoload('\csname multline*\endcsname', 'amsmath.sty.ltxml');
+DefAutoload('numberwithin',                'amsmath.sty.ltxml');
+DefAutoload('deluxetable',                 'deluxetable.sty.ltxml');
+DefAutoload('curraddr',                    'ams_support.sty.ltxml');
+DefAutoload('subjclass',                   'ams_support.sty.ltxml');
+DefAutoload('thechapter',                  'book.cls.ltxml');
+
 1;

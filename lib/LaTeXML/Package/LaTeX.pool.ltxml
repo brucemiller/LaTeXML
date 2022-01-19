@@ -1128,8 +1128,9 @@ DefMacroI('\maketitle', undef,
     . '\global\let\date\relax'
     . '\global\let\and\relax', locked => 1);
 
-DefMacro('\@thanks',  '\@empty');
-DefMacro('\thanks{}', '\def\@thanks{#1}\lx@make@thanks{#1}');
+DefMacro('\@thanks', '\@empty');
+# make a throwaway optional argument available for OmniBus use
+DefMacro('\thanks[]{}', '\def\@thanks{#2}\lx@make@thanks{#2}');
 DefConstructor('\lx@make@thanks{}', "<ltx:note role='thanks'>#1</ltx:note>");
 
 # Abstract SHOULD have been so simple, but seems to be a magnet for abuse.

@@ -110,7 +110,7 @@ DefConstructor('\@@@curraddr{}', "^ <ltx:contact role='current_address'>#1</ltx:
 DefMacro('\curraddr{}', '\@add@to@frontmatter{ltx:creator}{\@@@curraddr{#1}}');
 
 DefConstructor('\@@@email{}', "^ <ltx:contact role='email'>#1</ltx:contact>");
-DefMacro('\email{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#1}}');
+DefMacro('\email[]{}', '\@add@to@frontmatter{ltx:creator}{\@@@email{#2}}');
 
 DefConstructor('\@@@urladdr{}', "^ <ltx:contact role='url'>#1</ltx:contact>");
 DefMacro('\urladdr{}', '\@add@to@frontmatter{ltx:creator}{\@@@urladdr{#1}}');
@@ -122,8 +122,9 @@ DefMacro('\dedicatory{}', '\@add@to@frontmatter{ltx:creator}{\@@@dedicatory{#1}}
 DefMacro('\dateposted{}', '\@add@frontmatter{ltx:date}[role=posted]{#1}');
 
 # \thanks{} ( == ack, not latex's \thanks, not in author)
-DefMacro('\thanks{}',
-  '\@add@frontmatter{ltx:acknowledgements}[name={\@ifundefined{thanksname}{}{\thanksname}}]{#1}');
+# make a throwaway optional argument available for OmniBus use
+DefMacro('\thanks[]{}',
+  '\@add@frontmatter{ltx:acknowledgements}[name={\@ifundefined{thanksname}{}{\thanksname}}]{#2}');
 
 DefMacro('\translator[]{}',
   '\@add@frontmatter{ltx:creator}[role=translator]{\@personname{#2}}');
