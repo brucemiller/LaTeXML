@@ -628,7 +628,13 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
     my $id = $props{id};
     if (my $asif = $props{backmatterelement}) {
       $document->setNode($document->find_insertion_point($asif)); }
-    $document->openElement("ltx:" . ToString($type),
+    # sanitize the type, we can't open arbitrary elements that are not in the schema
+    $type = ToString($type);
+    my $tagname = "ltx:" . $type;
+    if (!$document->getModel->isKnownTag($tagname)) {
+      $tagname = "ltx:section";
+      Warn("malformed", "ltx:$type", "Tried to open an unknown tag ltx:$type for numbered section"); }
+    $document->openElement($tagname,
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist));
     if (my $tags = $props{tags}) {
@@ -655,7 +661,13 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
     my $id = $props{id};
     if (my $asif = $props{backmatterelement}) {
       $document->setNode($document->find_insertion_point($asif)); }
-    $document->openElement("ltx:" . ToString($type),
+    # sanitize the type, we can't open arbitrary elements that are not in the schema
+    $type = ToString($type);
+    my $tagname = "ltx:" . $type;
+    if (!$document->getModel->isKnownTag($tagname)) {
+      $tagname = "ltx:section";
+      Warn("malformed", "ltx:$type", "Tried to open an unknown tag ltx:$type for unnumbered section"); }
+    $document->openElement($tagname,
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist));
     $document->insertElement('ltx:title',    $props{title});
