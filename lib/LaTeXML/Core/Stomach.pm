@@ -98,7 +98,8 @@ sub digestNextBody {
 
   while (defined($token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
     if ($alignment && scalar(@LaTeXML::LIST) && (Equals($token, T_ALIGN) ||
-        Equals($token, T_CS('\cr')) || Equals($token, T_CS('\hidden@cr')))) {
+        Equals($token, T_CS('\cr')) || Equals($token, T_CS('\hidden@cr')) ||
+        Equals($token, T_CS('\hidden@crcr')))) {
       # at least \over calls in here without the intent to passing through the alignment.
       # So if we already have some digested boxes available, return them here.
       $$self{gullet}->unread($token);
