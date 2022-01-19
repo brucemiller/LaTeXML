@@ -5751,6 +5751,7 @@ RawTeX(<<'EOTeX');
 
 \def\glb@settings{}%
 EOTeX
+DefMacro('\alloc@{}{}{}{}', '');
 
 DefMacroI('\@height',      undef, 'height');
 DefMacroI('\@width',       undef, 'width');
@@ -5805,7 +5806,6 @@ DefMacroI('\loggingall',    undef, Tokens());
 DefMacroI('\tracingfonts',  undef, Tokens());
 DefMacroI('\showoverfull',  undef, Tokens());
 DefMacroI('\showoutput',    undef, Tokens());
-DefMacro('\wlog{}', Tokens());
 
 #======================================================================
 # Various symbols, accents, etc from Chapter 3 defined in TeX.pool

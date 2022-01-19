@@ -4657,7 +4657,10 @@ EoTeX
 
 #======================================================================
 # TeX Book, Appendix B, p. 347
-# \wlog ??
+DefPrimitive('\wlog{}', sub {
+    NoteLog(ToString(Expand($_[1])));
+    return; },
+  locked => 1);
 # From plain.tex
 DefPrimitive('\newcount  Token', sub { DefRegisterI($_[1], undef, Number(0)); });
 DefPrimitive('\newdimen  Token', sub { DefRegisterI($_[1], undef, Dimension(0)); });
@@ -6681,6 +6684,10 @@ DefConstructor('\footnote{}{}',
     return; });
 # Until we can do the "v" properly:
 DefMacro('\vfootnote', '\footnote');
+DefMacro('\fo@t',      '\ifcat\bgroup\noexpand\next \let\next\f@@t  \else\let\next\f@t\fi \next');
+DefMacro('\f@@t',      '\bgroup\aftergroup\@foot\let\next');
+DefMacro('\f@t{}',     '#1\@foot');
+DefMacro('\@foot',     '\strut\egroup');
 
 DefPrimitiveI('\footstrut', undef, undef);
 DefRegister('\footins' => Number(0));
