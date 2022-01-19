@@ -1,0 +1,26 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  tcolorbox                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Deyan Ginev <deyan.ginev@nist.gov>                          #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# used in tcbbreakable.code.tex assuming it was defined? so:
+DefRegister('\doublecol@number' => Number(0));
+
+RequirePackage('expl3');
+RequirePackage('xparse');
+
+InputDefinitions('tcolorbox', type => 'sty', noltxml => 1);
+
+1;

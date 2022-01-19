@@ -258,6 +258,8 @@ DefConstructor('\@@listings@block {} {}',
     my $data = encode_base64($listings_data, '');    # NO linebreaking!
     $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64', layout => 'vertical'); });
 
+DefMacro('\lst@HRefStepCounter{}', '');
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Low Level String stuff
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

@@ -66,6 +66,7 @@ DefMacroI('\AmS',     undef, "AmS");
 
 DefConditional('\ifmeasuring@');    # but we won't use it?
 DefConditional('\iftagsleft@');     # but we won't use it?
+DefConditional('\if@fleqn');        # but we won't use it?
 Let('\notag', '\nonumber');
 
 DefMacro('\tag OptionalMatch:* {}',
