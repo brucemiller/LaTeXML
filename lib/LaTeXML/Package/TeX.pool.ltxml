@@ -4939,13 +4939,16 @@ DefMacroI('\medbreak',   undef, '\par');
 DefMacroI('\bigbreak',   undef, '\par');
 
 DefMacroI('\line', undef, '\hbox to \hsize');
-DefConstructor('\leftline{}', sub {
+DefMacro('\leftline Undigested',   '\ltx@leftline{\hbox{#1}}');
+DefMacro('\rightline Undigested',  '\ltx@rightline{\hbox{#1}}');
+DefMacro('\centerline Undigested', '\ltx@centerline{\hbox{#1}}');
+DefConstructor('\ltx@leftline{}', sub {
     alignLine($_[0], $_[1], 'left'); },
   bounded => 1);
-DefConstructor('\rightline{}', sub {
+DefConstructor('\ltx@rightline{}', sub {
     alignLine($_[0], $_[1], 'right'); },
   bounded => 1);
-DefConstructor('\centerline{}', sub {
+DefConstructor('\ltx@centerline{}', sub {
     alignLine($_[0], $_[1], 'center'); },
   bounded => 1);
 
