@@ -155,7 +155,7 @@ DefMacroI('\maybe@end@keywords', undef, '\endkeywords\let\maybe@end@keywords\rel
 Let(T_CS('\addto@keywords@list'), T_CS('\keyword'));
 
 DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
-DefMacro('\pacs{}',           '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
+DefMacro('\pacs{}', '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}', locked => 1);
 # \doi{doi} might be frontmatter, or just a \url-like thing.  So, let's guess!
 DefMacro('\doi{}',
   '\if@in@preamble{\@add@frontmatter{ltx:classification}[scheme=doi]{#1}'
