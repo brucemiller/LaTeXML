@@ -4944,12 +4944,15 @@ DefMacro('\rightline Undigested',  '\ltx@rightline{\hbox{#1}}');
 DefMacro('\centerline Undigested', '\ltx@centerline{\hbox{#1}}');
 DefConstructor('\ltx@leftline{}', sub {
     alignLine($_[0], $_[1], 'left'); },
+  alias   => '\leftline',
   bounded => 1);
 DefConstructor('\ltx@rightline{}', sub {
     alignLine($_[0], $_[1], 'right'); },
+  alias   => '\rightline',
   bounded => 1);
 DefConstructor('\ltx@centerline{}', sub {
     alignLine($_[0], $_[1], 'center'); },
+  alias   => '\centerline',
   bounded => 1);
 
 sub alignLine {
