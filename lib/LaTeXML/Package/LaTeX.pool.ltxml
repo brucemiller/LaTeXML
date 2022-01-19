@@ -3641,7 +3641,8 @@ DefConstructor('\@@tabular[] Undigested DigestedBody',
       my $attr = $alignment->getProperty('attributes');
       $$attr{vattach} = translateAttachment($whatsit->getArg(1)); }
     return; },
-  mode => 'text');
+  locked => 1,
+  mode   => 'text');
 
 DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
 ###  '\@tabular@bindings{#3}\@@tabular@{#1}[#2]{#3}\@start@alignment');
