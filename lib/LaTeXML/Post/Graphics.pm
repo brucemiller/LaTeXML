@@ -185,9 +185,15 @@ sub setGraphicSrc {
   my ($self, $node, $src, $width, $height) = @_;
   # If we are on windows, the $src path will be used for a URI context from the 'imagesrc' attribute,
   # so we can already switch it to the canonical slashified form
-  $node->setAttribute('imagesrc',    pathname_to_url($src));
-  $node->setAttribute('imagewidth',  $width)  if defined $width;
-  $node->setAttribute('imageheight', $height) if defined $height;
+  $node->setAttribute('imagesrc', pathname_to_url($src));
+  if (defined $width) {
+    # final formats mostly expect numeric literals to be integers
+    $width = int($width) if ($width =~ /^\d*\.\d*$/);
+    $node->setAttribute('imagewidth', $width); }
+  if (defined $height) {
+    # final formats mostly expect numeric literals to be integers
+    $height = int($height) if ($height =~ /^\d*\.\d*$/);
+    $node->setAttribute('imageheight', $height); }
   if ($width and $height) {
     my $aspect_class = "ltx_img_square";
     if ($width > 1.24 * $height) {
