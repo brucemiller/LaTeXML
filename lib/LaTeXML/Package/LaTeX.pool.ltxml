@@ -4644,6 +4644,7 @@ DefConstructor('\parbox[] OptionalUndigested OptionalUndigested {Dimension} VBox
 DefMacroI('\@parboxrestore', undef, Tokens());
 
 DefConditional('\if@minipage');
+DefMacro('\@setminipage', '');
 DefEnvironment('{minipage}[][][]{Dimension}', sub {
     my ($document, $attachment, $b, $c, $width, %props) = @_;
     my $vattach = translateAttachment($attachment);
