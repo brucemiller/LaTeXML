@@ -105,7 +105,8 @@ DefMacro('\loadeusm',      '');
 DefMacro('\loadmathfont',  '');
 DefMacro('\loadmsam',      '');
 DefMacro('\loadmsbm',      '');
-Let('\font@', '\font');    # Close enough?
+Let('\font@', '\font');                 # Close enough?
+DefMacroI('\normalfont', undef, '');    # Close enough?
 
 DefMacro('\boldnotloaded{}', '');
 
