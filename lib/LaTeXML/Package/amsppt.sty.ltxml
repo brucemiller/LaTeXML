@@ -167,7 +167,7 @@ NewCounter('theorem', 'document', idprefix => "Thm");
 Tag('ltx:theorem', autoClose => 1);
 Tag('ltx:proof',   autoClose => 1);
 
-DefConstructor('\proclaim{} Until:\endproclaim',
+DefConstructor('\proclaim Undigested DigestUntil:\endproclaim',
   "<ltx:theorem class='ltx_theorem_proclaim' xml:id='#id'>"
     . "#tags"
     . "<ltx:title>#1</ltx:title>"

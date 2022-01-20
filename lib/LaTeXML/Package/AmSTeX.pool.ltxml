@@ -194,6 +194,14 @@ Let('\D',           "\\.");
 
 DefMacro('\.', '. ');
 
+# instead of adding taylor's diagram.tex
+# for now warn that we are aware of those diagrams, but they are not supported
+# and avoid the sea of otherwise inevitable errors during drawing
+DefMacro('\diagram Until:\enddiagram', sub {
+    Warn('missing', 'support', 'The \diagram mechanism of diagram.tex is not currently supported, output is degraded.');
+    return Tokenize("missing diagram")->unlist(); },
+  locked => 1);
+
 #======================================================================
 # Math stuff.
 
