@@ -1,0 +1,1034 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# |  wiki.sty                                                           | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Deyan Ginev <deyan.ginev@nist.gov>                          #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# source: http://arxiv.org/macros/phyzzx.plus
+RawTeX(<<'EOL');
+\newfam\ssfam     % Define a San Serif font family
+\font\seventeenss =cmss10 scaled\magstep4
+\font\fourteenss  =cmss10 scaled\magstep2
+\font\twelvess    =cmss10 scaled\magstep1
+\font\tenss       =cmss10
+\font\niness      =cmss9
+\font\eightss     =cmss8
+%
+\font\seventeenssbx =cmssbx10 scaled\magstep4
+\font\fourteenssbx  =cmssbx10 scaled\magstep2
+\font\twelvessbx    =cmssbx10 scaled\magstep1
+\font\tenssbx       =cmssbx10
+%
+\def\seventeenpoint{\relax
+    \textfont0=\seventeenrm          \scriptfont0=\twelverm
+      \scriptscriptfont0=\ninerm
+    \textfont1=\seventeeni           \scriptfont1=\twelvei
+      \scriptscriptfont1=\ninei
+    \textfont2=\seventeensy          \scriptfont2=\twelvesy
+      \scriptscriptfont2=\ninesy
+    \textfont3=\seventeenex          \scriptfont3=\twelveex
+      \scriptscriptfont3=\ninex
+    \textfont\itfam=\seventeenit    %\scriptfont\itfam=\twelveit
+    \textfont\slfam=\seventeensl    %\scriptfont\slfam=\twelvesl
+      \scriptscriptfont\slfam=\ninesl
+    \textfont\bffam=\seventeenbf     \scriptfont\bffam=\twelvebf
+      \scriptscriptfont\bffam=\ninebf
+    \textfont\ttfam=\seventeentt
+    \textfont\cpfam=\seventeencp
+    \textfont\ssfam=\seventeenss     \scriptfont\ssfam=\twelvess
+      \scriptscriptfont\ssfam=\niness
+    \samef@nt
+    \b@gheight=17pt
+    \setbox\strutbox=\hbox{\vrule height 0.85\b@gheight
+                                depth 0.35\b@gheight width\z@ }}
+%
+%
+\def\fourteenf@nts{\relax
+    \textfont0=\fourteenrm          \scriptfont0=\tenrm
+      \scriptscriptfont0=\sevenrm
+    \textfont1=\fourteeni           \scriptfont1=\teni
+      \scriptscriptfont1=\seveni
+    \textfont2=\fourteensy          \scriptfont2=\tensy
+      \scriptscriptfont2=\sevensy
+    \textfont3=\fourteenex          \scriptfont3=\twelveex
+      \scriptscriptfont3=\tenex
+    \textfont\itfam=\fourteenit     \scriptfont\itfam=\tenit
+    \textfont\slfam=\fourteensl     \scriptfont\slfam=\tensl
+    \textfont\bffam=\fourteenbf     \scriptfont\bffam=\tenbf
+      \scriptscriptfont\bffam=\sevenbf
+    \textfont\ttfam=\fourteentt
+    \textfont\cpfam=\fourteencp
+    \textfont\ssfam=\fourteenss     \scriptfont\ssfam=\tenss
+        \scriptscriptfont\ssfam=\sevenrm }
+%
+\def\twelvef@nts{\relax
+    \textfont0=\twelverm          \scriptfont0=\ninerm
+      \scriptscriptfont0=\sixrm
+    \textfont1=\twelvei           \scriptfont1=\ninei
+      \scriptscriptfont1=\sixi
+    \textfont2=\twelvesy           \scriptfont2=\ninesy
+      \scriptscriptfont2=\sixsy
+    \textfont3=\twelveex          \scriptfont3=\tenex
+      \scriptscriptfont3=\tenex
+    \textfont\itfam=\twelveit     \scriptfont\itfam=\nineit
+    \textfont\slfam=\twelvesl     \scriptfont\slfam=\ninesl
+    \textfont\bffam=\twelvebf     \scriptfont\bffam=\ninebf
+      \scriptscriptfont\bffam=\sixbf
+    \textfont\ttfam=\twelvett
+    \textfont\cpfam=\twelvecp    \scriptfont\cpfam=\tencp
+    \textfont\ssfam=\twelvess    \scriptfont\ssfam=\niness
+      \scriptscriptfont\ssfam=\sixrm }
+%
+\def\tenf@nts{\relax
+    \textfont0=\tenrm          \scriptfont0=\sevenrm
+      \scriptscriptfont0=\fiverm
+    \textfont1=\teni           \scriptfont1=\seveni
+      \scriptscriptfont1=\fivei
+    \textfont2=\tensy          \scriptfont2=\sevensy
+      \scriptscriptfont2=\fivesy
+    \textfont3=\tenex          \scriptfont3=\tenex
+      \scriptscriptfont3=\tenex
+    \textfont\itfam=\tenit     \scriptfont\itfam=\seveni  % no \sevenit
+    \textfont\slfam=\tensl     \scriptfont\slfam=\sevenrm % no \sevensl
+    \textfont\bffam=\tenbf     \scriptfont\bffam=\sevenbf
+      \scriptscriptfont\bffam=\fivebf
+    \textfont\ttfam=\tentt
+    \textfont\cpfam=\tencp
+    \textfont\ssfam=\tenss      \scriptfont\ssfam=\eightss
+      \scriptscriptfont\ssfam=\fiverm }
+%
+\def\sans{\n@expand\f@m\ssfam}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Later phyzzx mods from SLAC
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\def\subspaces@t#1:#2;{\rel@x
+      \baselineskip = \normalbaselineskip
+      \multiply\baselineskip by #1 \divide\baselineskip by #2
+      \lineskip = \normallineskip
+      \multiply\lineskip by #1 \divide\lineskip by #2
+      \lineskiplimit = \normallineskiplimit
+      \multiply\lineskiplimit by #1 \divide\lineskiplimit by #2
+      \parskip = \normalparskip
+      \multiply\parskip by #1 \divide\parskip by #2
+      \abovedisplayskip = \normaldisplayskip
+      \multiply\abovedisplayskip by #1 \divide\abovedisplayskip by #2
+      \belowdisplayskip = \abovedisplayskip
+      \abovedisplayshortskip = \normaldispshortskip
+      \multiply\abovedisplayshortskip by #1
+        \divide\abovedisplayshortskip by #2
+      \belowdisplayshortskip = \abovedisplayshortskip
+      \advance\belowdisplayshortskip by \belowdisplayskip
+      \divide\belowdisplayshortskip by 2
+      \smallskipamount = \skipregister
+      \multiply\smallskipamount by #1 \divide\smallskipamount by #2
+      \medskipamount = \smallskipamount \multiply\medskipamount by 2
+      \bigskipamount = \smallskipamount \multiply\bigskipamount by 4 }
+%
+\newif\ifcn@                 \cn@true
+\newif\ifcn@@                \cn@@false
+\def\numberedchapters{\cn@true}
+\def\unnumberedchapters{\cn@false\sequentialequations}
+%
+\def\chapterreset{\gl@bal\advance\chapternumber by 1
+   \ifnum\equanumber<0 \else\gl@bal\equanumber=0\fi
+   \sectionnumber=0 \let\sectionlabel=\rel@x
+   \ifcn@ \gl@bal\cn@@true {\pr@tect
+       \xdef\chapterlabel{\the\chapterstyle{\the\chapternumber}}}%
+    \else \gl@bal\cn@@false \gdef\chapterlabel{\rel@x}\fi }
+%
+\def\@alpha#1{\count255='140 \advance\count255 by #1\char\count255}
+ \def\alphabetic{\n@expand\@alpha}
+\def\@Alpha#1{\count255='100 \advance\count255 by #1\char\count255}
+ \def\Alphabetic{\n@expand\@Alpha}
+\def\@Roman#1{\uppercase\expandafter{\romannumeral #1}}
+ \def\Roman{\n@expand\@Roman}
+\def\@roman#1{\romannumeral #1}    \def\roman{\n@expand\@roman}
+\def\@number#1{\number #1}         \def\Number{\n@expand\@number}
+\def\BLANK#1{\rel@x}               \let\BLANC=\BLANK
+%
+\def\section#1{\par \ifnum\lastpenalty=30000\else
+   \penalty-200\vskip\sectionskip \spacecheck\sectionminspace\fi
+   \gl@bal\advance\sectionnumber by 1
+ {\pr@tect
+   \xdef\sectionlabel{\ifcn@@ \chapterlabel.\fi
+       \the\sectionstyle{\the\sectionnumber}%
+                     }%
+   \wlog{\string\section\space \sectionlabel}
+ }%
+   \noindent {\caps\enspace\sectionlabel.~~#1}\par
+   \nobreak\vskip\headskip \penalty 30000 }
+%
+\def\FRONTPAGE{\ifvoid255\else\vfill\penalty-20000\fi
+   \gl@bal\pagenumber=1     \gl@bal\chapternumber=0
+   \gl@bal\equanumber=0     \gl@bal\sectionnumber=0
+   \gl@bal\referencecount=0 \gl@bal\figurecount=0
+   \gl@bal\tablecount=0     \gl@bal\frontpagetrue
+   \gl@bal\lastf@@t=0       \gl@bal\footsymbolcount=0
+   \gl@bal\cn@@false }
+\let\Frontpage=\FRONTPAGE
+%
+\def\makelabels{\afterassignment\Makelabels \sendername=} % extra s in ias
+%                                                         % version
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%% modify phyzzx for UW label format %%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%  To produce labels, tex LABELFORM.TEX %%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%  included at the end of the file  %%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begingroup
+ \catcode `\{ = 12  % Dirty trick to write out the character {
+ \catcode `\} = 12  % Dirty trick to write out the character }
+ \catcode `\[ = 1
+ \catcode `\] = 2
+ \gdef\labelformlabels[%
+   \gdef\rwl@begin##1\cr[\rw@toks=[##1]\rel@x
+        \immediate\write\labelswrite[\the\rw@toks]\futurelet\n@xt\rwl@next]
+   \gdef\writenextlabel##1[%
+        \immediate\write\labelswrite[  ]%
+        \immediate\write\labelswrite[{]%
+            \rwl@begin ##1%
+            \rwl@end%
+        \immediate\write\labelswrite[}]]%
+   \gdef\writelabel##1[%
+        \immediate\write\labelswrite[{]%
+            \rwl@begin ##1%
+            \rwl@end%
+        \immediate\write\labelswrite[}]%
+        \let\writelabel=\writenextlabel]%
+]
+\endgroup
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% some phyzzx overrides
+%
+%
+%\def\addressee#1{\bigskip\medskip
+% \line{\hskip 0.5\hsize minus 0.5\hsize \the\date\hfil} \bigskip
+% \vskip\lettertopfil
+% \ialign to\hsize{\strut ##\hfil\tabskip 0pt plus \hsize \cr #1\crcr}
+% \medskip\noindent\hskip\spskip}
+%
+\def\figitem#1{\r@fitem{#1.}}
+\def\tabitem#1{\r@fitem{#1.}}
+%
+\def\ack{\ACK}   % make new phyzzx compatible with old phyzzx
+%
+\def\sequentialequations{\rel@x \ifnum\equanumber<0 \else
+  \gl@bal\equanumber=-\equanumber \gl@bal\advance\equanumber by -1 \fi }
+%
+%% a Journal macro that handles NPB and PR format
+%\def\Journal#1&#2&#3(#4){\begingroup \let\Journal=\dummyj@urnal
+%    \unskip,~#1\unskip~%
+%    \ifPhysRev\bf\fi\ignorespaces #2\rm
+%    \ifPhysRev\unskip,~\ignorespaces #3\fi
+%    \unskip~(\afterassignment\j@ur \count255=#4)
+%    \ifPhysRev\else\unskip,~\ignorespaces #3\fi
+%    \endgroup\unskip\ignorespaces }
+%
+\def\boxit#1{\vbox{\hrule\hbox{\vrule\kern3pt
+\vbox{\kern3pt#1\kern3pt}\kern3pt\vrule}\hrule}}
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%            Making double-column  (these are modified from manmac.tex)
+%%            with a full size columns as well.
+%%            (This is still buggy--gives overfull boxes etc.)
+%%            Report bugs to T.J. Allen (tjallen@wishep.physics.wisc.edu
+%%            or  tja@theory3.caltech.edu)
+%%
+%%            This will NOT produce double columns in preprintmode since
+%%            there are conflicting \output commands.  The whole
+%%            macro should be rewritten using a modified \output.
+%%
+%%            Where you want
+%%            the doublecolumn output to start, use \begindoublecolumns.
+%%            Where you want to go back to single columns use
+%%            \enddoublecolumns.  This produces output much like that
+%%            of RevTeX.  If you wish to specify that there be a rule
+%%            between the columns of output, then set \columnrulewidth
+%%            = 0.4pt.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+\newbox\partialpage
+\newdimen\pageheight \pageheight=\vsize
+\newdimen\pagewidth  \pagewidth=6.6truein
+\newdimen\columnwidth  \columnwidth=3.2truein
+\newdimen\columnrulewidth \columnrulewidth=0pt
+\newdimen\ruleht \ruleht=.5pt
+\newinsert\margin
+%
+\def\twocolumn{%
+   \singlespace
+   \vsize=9truein
+   \pagetextwidth=\pagewidth
+   \hsize=\pagewidth
+   \titlepagewidth=\pagewidth
+   \hoffset=0truein
+   \voffset=0truein
+   \dimen\margin=\maxdimen
+   \count\margin=0 \skip\margin=0pt
+%
+ \def\begindoublecolumns{
+     \ifpr@printstyle
+     \message{ I'm unable to print double columns in PREPRINTSTYLE }
+     \end\fi
+     \begingroup
+     \global\vsize=2\pageheight
+     \output={\global\setbox\partialpage=\vbox{\unvbox255\bigskip\bigskip}
+         \global\vsize=2\pageheight\global\advance\vsize by -2\ht\partialpage
+         \global\advance\vsize by 2\bigskipamount
+         \global\advance\vsize by 1 pc}\eject % a little extra room; 1pc
+     \output={\doublecolumnout\global\vsize=2\pageheight}
+         \global\pagetextwidth=\columnwidth \global\hsize=\columnwidth}
+%
+% keeps footnotes on correct page
+%
+  \def\enddoublecolumns{\output={\balancecolumns\global\hsize=\pagewidth
+                       \global\pagetextwidth=\pagewidth
+                       \global\vsize=\pageheight
+                       \unvbox255 }\eject\endgroup}
+%
+  \def\doublecolumnout{\splittopskip=\topskip \splitmaxdepth=\maxdepth
+     \dimen@=\pageheight\advance\dimen@ by -\ht\partialpage
+     \setbox0=\vsplit255 to\dimen@ \setbox2=\vsplit255 to \dimen@
+     \onepageout\pagesofar \unvbox255 \penalty\outputpenalty}
+%
+  \def\pagesofar{\unvbox\partialpage
+     \wd0=\columnwidth \wd2=\columnwidth \hbox to \pagewidth{\box0\hfil
+     \columnrule \hfil \box2}}
+%
+  \def\columnrule{\vrule width \columnrulewidth height \ht2}
+%
+  \def\balancecolumns{\setbox0=\vbox{\unvbox255}\dimen@=\ht0
+     \advance\dimen@ by \topskip \advance\dimen@ by-\baselineskip
+     \advance\dimen@ by -2\ht\partialpage  % what if we begin and end on the
+     \divide\dimen@ by2                    % same page?!?
+     \splittopskip=\topskip
+     {\vbadness=10000 \loop \global\setbox3=\copy0
+        \global\setbox1=\vsplit3 to \dimen@
+        \ifdim\ht3>\dimen@ \global\advance\dimen@ by1pt \repeat}
+     \setbox0=\vbox to \dimen@{\unvbox1} \setbox2=\vbox to \dimen@{\dimen2=\dp3
+     \unvbox3 \kern-\dimen2 \vfil }
+     \pagesofar }
+%
+   \def\onepageout##1{ \setbox0=\vbox{##1} \dimen@=\dp0
+     \shipout\vbox{ % here we define one page of output
+     \makeheadline
+     \vbox to \pageheight{
+       \boxmaxdepth=\maxdepth
+       \ifvoid\margin\else % marginal info is present
+       \rlap{\kern31pc\vbox to 0pt{\kern4pt\box\margin\vss}}\fi
+       \ifvoid\topins\else\unvbox\topins\vskip\skip\topins\fi
+       ##1                                  % now insert the main information
+       \vskip\pagebottomfiller
+       \ifvoid\footins\else\vskip\skip\footins\footrule\unvbox\footins\fi
+       \ifr@ggedbottom\kern-\dimen@ \vfil\fi}  %need a replacement for here
+       \makefootline}
+     \advancepageno\frontpagefalse}
+%
+ \def\makeheadline{\vbox to\z@{\vskip-22.5\p@
+  \hbox to \pagewidth{\vbox to8.5\p@{}\the\headline}\vss}\nointerlineskip}
+%
+ \def\makefootline{\baselineskip = 1.5\normalbaselineskip
+             \hbox to \pagewidth{\the\footline}}
+%\def\makefootline{\baselineskip24\p@\line{\the\footline}}
+
+%
+  \def\footrule{\dimen@=\prevdepth\nointerlineskip
+      \vbox to 0pt{\vskip -0.25\baselineskip \hrule width 0.62\pagewidth \vss}
+      \prevdepth=\dimen@ }
+%
+  \def\Vfootnote##1{\insert\footins\bgroup
+      \interlinepenalty=\interfootnotelinepenalty \floatingpenalty=20000
+      \singl@true\doubl@false\Tenpoint \hsize=\pagewidth
+      \splittopskip=\ht\strutbox \boxmaxdepth=\dp\strutbox
+      \leftskip=\footindent \rightskip=\z@skip
+      \parindent=0.5\footindent \parfillskip=0pt plus 1fil
+      \spaceskip=\z@skip \xspaceskip=\z@skip \footnotespecial
+      \Textindent{##1}\footstrut\futurelet\next\fo@t}
+% make the footnotes all have the correct size and the same footrule!
+%% Make column separators for large one-column equations %%%%%%%%%%%%%%%%%%%
+ \def\sp@cecheck##1{\dimen@=\pagegoal\advance\dimen@ by -\pagetotal
+      \ifdim\dimen@<##1 \ifdim\dimen@>0pt \vfil\break \fi\fi}
+ \def\endleftcolumn{\dimen@=\pagegoal\advance\dimen@ by -\pagetotal
+      \ifdim\dimen@<\chapterminspace \ifdim\dimen@>0pt \vfil\break \fi
+      \hbox{\vbox{\hrule width \columnwidth}\hbox to 0.4pt
+      {\vrule height 10pt depth 0pt}\hfil}\fi}
+ \def\beginrightcolumn{\dimen@=\pagegoal\advance\dimen@ by -\pagetotal
+      \ifdim\dimen@<\chapterminspace \ifdim\dimen@>0pt \vfil\break \fi
+      \hbox to \hsize{\hss\hbox{\vrule height 0pt depth 10pt
+      \vbox{\hrule width \columnwidth}}}\fi}
+}
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%   Now start the draftmode and preprintmode enhancement features
+%%                      (Homage to harvmac.tex)
+%%   Report any bugs to  T.J. Allen
+%%       tja@theory3.caltech.edu or
+%%       tjallen@wishep.physics.wisc.edu
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%       Here is the draftmode feature
+%%
+%%       Use the following on the preliminary draft,
+%%       puts time/date on each page in writes labels in margins
+%%       and puts reference labels on the reference page.
+%%       Putting \draft in the beginning of the paper causes it
+%%       to be printed in draftmode.  use \nodraftlabels to get rid of
+%%       eqn, ref, and fig labels in draft mode
+%%
+%%       Timestamp routine bug fixed October 30, 1991 by T.J.A.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\newif\ifdr@ftmode
+\newtoks\r@flabeltoks
+\def\draftmode{
+   \pagetextwidth=6truein
+   \fullhsize=6truein
+   \titlepagewidth=6truein
+   \vsize=8.3truein
+   \normalspace
+   \hoffset=0.3truein
+   \voffset=0.2truein
+   \advance\hoffset by\HOFFSET
+   \advance\voffset by\VOFFSET
+   \hsize=\pagetextwidth
+   \tenpoint
+   \baselineskip=24pt plus 2pt minus 2pt
+   \dr@ftmodetrue
+   \message{ DRAFTMODE }
+   \writedraftlabels
+   \def\timestring{\begingroup
+     \count0 = \time \divide\count0 by 60
+     \count2 = \count0  % the hour
+     \count4 = \time \multiply\count0 by 60
+     \advance\count4 by -\count0   % the minute
+     \ifnum\count4<10 \toks1={0} % get a leading zero.
+     \else \toks1 = {}
+     \fi
+     \ifnum\count2<12 \toks0={a.m.} %
+          \ifnum\count2<1 \count2=12 \fi% Make midnight `12'
+     \else            \toks0={p.m.} %
+           \ifnum\count2=12 % keep noon `12'
+           \else
+           \advance\count2 by -12 % keep afternoon times < 12
+           \fi
+     \fi
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% \ifnum\count2=0 \count2 = 12\fi % make midnight `12'. %  There seems to
+%%    be a bug in TeX when checking a count which has the value 0.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+     \number\count2:\the\toks1 \number\count4\thinspace \the\toks0
+   \endgroup}%
+%
+   \def\draftdate{{{\tt preliminary version:}\space{\rm
+                                  \timestring\quad\the\date}}}
+%
+\def\R@FWRITE##1{\ifreferenceopen \else \gl@bal\referenceopentrue
+     \immediate\openout\referencewrite=\jobname.refs
+     \toks@={\begingroup \refoutspecials \catcode`\^^M=10 }%
+     \immediate\write\referencewrite{\the\toks@}\fi
+     \immediate\write\referencewrite%
+     {\noexpand\refitem{\the\r@flabeltoks[\the\referencecount]}}%
+     \p@rse@ndwrite \referencewrite ##1}
+%
+\def\refitem##1{\r@fitem{##1}}
+\def\REF##1##2{\reflabel##1 \REFNUM ##1\REFWRITE{\ignorespaces ##2}}
+\def\Ref##1##2{\reflabel##1 \Refnum ##1\REFWRITE{ ##2}}
+\def\REFS##1##2{\reflabel##1 \REFNUM ##1%
+\gl@bal\lastrefsbegincount=\referencecount\REFWRITE{ ##2}}
+\def\refs{\REFS\?}
+\def\refc{\REF\?}
+\let\refscon=\refc       \let\REFSCON=\REF
+%
+}
+\def\nodraftlabels{\def\leqlabel##1{}\def\eqlabel##1{}\def\reflabel##1{}%
+\def\leqlabel##1{}}
+\def\writedraftlabels{
+  \def\eqlabel##1{{\escapechar-1\rlap{\sevenrm\hskip.05in\string##1}}}%
+  \def\leqlabel##1{{\escapechar-1\llap{\sevenrm\string##1\hskip.05in}}}%
+  \def\reflabel##1{\r@flabeltoks={{\escapechar-1\sevenrm\string##1\hskip.06in%
+}}}}
+\def\draft{\draftmode}
+\def\draftstyle{\draftmode}
+\nodraftlabels   % Make the default mode no labels
+\dr@ftmodefalse  % Turn off draftmode
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%   Here come macros for equation numbering.
+%%   (Equation numbers are modified in draft mode)
+%%
+%%   Sections are automatically numbered independently, unless
+%%   one puts the command \sequentialequations
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\def\eqname#1{\rel@x {\pr@tect
+  \ifnum\equanumber<0 \xdef#1{{\rm(\number-\equanumber)}}%
+     \gl@bal\advance\equanumber by -1
+  \else \gl@bal\advance\equanumber by 1
+   \xdef#1{{\rm(\ifcn@@ \chapterlabel.\fi \number\equanumber)}}\fi
+  }#1}
+%
+\def\eq{\eqname\?}
+\def\eqn#1{\eqno\eqname{#1}\eqlabel#1}
+\def\leqn#1{\leqno\leqlabel#1\eqname{#1}} %MODIFICATION
+%
+\def\eqinsert#1{\noalign{\dimen@=\prevdepth \nointerlineskip
+   \setbox0=\hbox to\displaywidth{\hfil #1}
+   \vbox to 0pt{\kern 0.5\baselineskip\hbox{$\!\box0\!$}\vss}
+   \prevdepth=\dimen@}}  %MODIFICATION
+%
+\def\leqinsert#1{\eqinsert{#1\hfill}}
+\def\mideqn#1{\eqinsert{\eqname{#1}}} %MODIFICATION
+\def\midleqn#1{\leqinsert{\eqname{#1}}}
+%
+\def\eqnalign#1{\eqname{#1}} %MODIFICATION
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  Here come modified reference macros
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+\def\refout{\par\penalty-400\vskip\chapterskip
+   \spacecheck\referenceminspace
+   \ifreferenceopen \Closeout\referencewrite \referenceopenfalse \fi
+   \line{\ifpr@printstyle\twelverm\else\fourteenrm\fi
+         \hfil REFERENCES\hfil}\vskip\headskip
+   \input \jobname.refs
+   }
+\def\ACK{\par\penalty-100\medskip \spacecheck\sectionminspace
+   \line{\ifpr@printstyle\twelverm\else\fourteenrm\fi
+      \hfil ACKNOWLEDGEMENTS\hfil}\nobreak\vskip\headskip }
+\def\tabout{\par\penalty-400
+   \vskip\chapterskip\spacecheck\referenceminspace
+   \iftableopen \Closeout\tablewrite \tableopenfalse \fi
+   \line{\ifpr@printstyle\twelverm\else\fourteenrm\fi\hfil TABLE %
+        CAPTIONS\hfil}
+   \vskip\headskip
+   \input \jobname.tabs
+   }
+\def\figout{\par\penalty-400
+   \vskip\chapterskip\spacecheck\referenceminspace
+   \iffigureopen \Closeout\figurewrite \figureopenfalse \fi
+   \line{\ifpr@printstyle\twelverm\else\fourteenrm\fi\hfil FIGURE %
+     CAPTIONS\hfil}
+   \vskip\headskip
+   \input \jobname.figs
+   }
+%
+\def\masterreset{\begingroup\hsize=\pagetextwidth
+   \global\pagenumber=1 \global\chapternumber=0
+   \global\equanumber=0 \global\sectionnumber=0
+   \global\referencecount=0 \global\figurecount=0 \global\tablecount=0
+   \endgroup}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%   Here start the preprintmode enhancements
+%%   To cause the paper to be printed in preprintmode, which
+%%   emulates the l answer in harvmac, insert \preprint at the
+%%   beginning of the file
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%   Next, I define output routines, footnotes & related stuff.
+%%   (The headline has been modified for draftmode and preprints
+%%   may be produced in landscape form, two columns sideways)
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%
+\newif\ifpr@printstyle \pr@printstylefalse
+\newbox\leftpage
+\newdimen\fullhsize
+\newdimen\titlepagewidth
+\newdimen\pagetextwidth
+\def\preprintstyle{%
+       \message{(This will be printed PREPRINTSTYLE)}
+       \let\lr=L
+       \frontpagetrue
+       \pr@printstyletrue
+       \vsize=7truein
+       \pagetextwidth=4.75truein
+       \fullhsize=10truein
+       \titlepagewidth=8truein
+       \normalspace
+       \Tenpoint
+       \voffset=-.31truein
+       \hoffset=-.46truein
+       \iffrontpage\hsize=\titlepagewidth\else\hsize=\pagetextwidth\fi
+       %
+ \output={%
+    \iffrontpage
+      \shipout\vbox{\special{\printertype}\makeheadline
+      \hbox to \fullhsize{\hfill\pagebody\hfill}}
+      \advancepageno
+    \else
+       \almostshipout{\leftline{\vbox{\pagebody\makefootline}}}\advancepageno
+    \fi}
+        \def\almostshipout##1{\if L\lr \count2=1
+             \message{[\the\count0.\the\count1.\the\count2]}
+        \global\setbox\leftpage=##1 \global\let\lr=R
+                             \else \count2=2
+        \shipout\vbox{\special{\printertype}
+        \hbox to\fullhsize{\hfill\box\leftpage\hskip0.5truein##1\hfill}}
+        \global\let\lr=L     \fi}
+   \multiply\chapterminspace by 7 \divide\chapterminspace by 9
+   \multiply\sectionminspace by 7 \divide\sectionminspace by 9
+   \multiply\referenceminspace by 7 \divide\referenceminspace  by 9
+   \multiply\chapterskip by 7 \divide\chapterskip  by 9
+   \multiply\sectionskip  by 7 \divide\sectionskip  by 9
+   \multiply\headskip   by 7 \divide\headskip by 9
+   \multiply\baselineskip   by 7 \divide\baselineskip by 9
+   \multiply\abovedisplayskip by 7 \divide\abovedisplayskip by 9
+   \belowdisplayskip = \abovedisplayskip
+%
+\def\advancepageno{\if L\lr \gl@bal\advance\pagen@ by 1\fi
+   \ifnum\pagenumber<0 \gl@bal\advance\pagenumber by -1
+    \else\gl@bal\advance\pagenumber by 1 \fi
+    \gl@bal\frontpagefalse  \swing@
+    \gl@bal\hsize=\pagetextwidth}
+} % end of preprintstyle specs
+%
+\let\preprint=\preprintstyle
+\let\preprintmode=\preprintstyle
+\tolerance=1000
+%\def\printertype{ps: }
+\def\printertype{}
+%
+% Default values for the fullsize document page
+\def\oldpapersize{\ifpr@printstyle\relax\else
+                  \ifdr@ftmode\relax\else
+                  \pagetextwidth=6truein
+                  \fullhsize=6truein
+                  \titlepagewidth=6truein
+                  \vsize=8.3truein
+                  \hsize=\pagetextwidth
+                  \Twelvepoint
+                  \hoffset=0.3 truein
+                  \voffset=0.2 truein
+                  \advance\hoffset by\HOFFSET
+                  \advance\voffset by\VOFFSET
+                  \pagebottomfiller=0pc
+                  \skip\footins=\bigskipamount
+                  \normalspace\fi\fi}
+%
+\def\bigpapersize{\ifpr@printstyle\relax\else
+                  \ifdr@ftmode\relax\else
+                  \pagetextwidth=6.5truein
+                  \fullhsize=6.5truein
+                  \titlepagewidth=6.5truein
+                  \hsize=\fullhsize
+                  \vsize=9truein
+                  \Twelvepoint
+                  \hoffset=0.05 truein
+                  \voffset=-0.1truein
+                  \advance\hoffset by\HOFFSET
+                  \advance\voffset by\VOFFSET
+                  \pagebottomfiller=0pc
+                  \skip\footins=\bigskipamount
+                  \normalspace\fi\fi }
+%
+\paperheadline={\ifdr@ftmode\hfil\draftdate\else\hfill\fi}
+%
+\def\advancepageno{\gl@bal\advance\pagen@ by 1
+    \ifnum\pagenumber<0 \gl@bal\advance\pagenumber by -1
+    \else\gl@bal\advance\pagenumber by 1 \fi
+    \gl@bal\frontpagefalse  \swing@
+    \gl@bal\hsize=\pagetextwidth} %MODIFICATION
+%
+\let\papersize=\bigpapersize
+%
+\papers
+%
+\def\lettersize{\fullhsize=6.5in
+                \pagetextwidth=6.5in
+                \hsize=\fullhsize
+                \vsize=8.5in
+                \hoffset=0in
+                \voffset=0.5in
+                \advance\hoffset by\HOFFSET
+                \advance\voffset by\VOFFSET
+                \pagebottomfiller=\letterbottomskip
+                \skip\footins=\smallskipamount
+                \multiply\skip\footins by 3
+                \singlespace }
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%   Here come chapter, section, subsection & appendix macros.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  The following allows a shortcut for making titles bold etc.
+%%  Just use \chapterheadstyle={\bf} in the beginning of the
+%%  TeX file.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\newtoks\chapterheadstyle  \chapterheadstyle={\relax}
+%
+\def\chapter#1{{\the\chapterheadstyle\par \penalty-300 \vskip\chapterskip
+  \spacecheck\chapterminspace
+  \chapterreset\titlestyle{\ifcn@@{\ifPhysRev\Roman{\the\chapternumber}.~
+   \else{\the\chapternumber}.~\fi}\fi #1}
+  \nobreak\vskip\headskip \penalty 30000
+  \message{(\the\chapternumber. #1)}
+ {\pr@tect\wlog{\string\chapter\space \chapterlabel}} }}
+\def\chap{\chapter}
+\def\APPENDIX#1#2{{\the\chapterheadstyle\par\penalty-300\vskip\chapterskip
+   \spacecheck\chapterminspace \chapterreset \xdef\chapterlabel{#1}
+   \titlestyle{APPENDIX #2} \nobreak\vskip\headskip \penalty 30000
+   \wlog{\string\Appendix~\chapterlabel} }}
+%
+\def\chapterreset{\gl@bal\advance\chapternumber by 1
+   \ifnum\equanumber<0 \else\gl@bal\equanumber=0\fi
+   \gl@bal\sectionnumber=0 \let\sectionlabel=\rel@x
+   \ifcn@ \gl@bal\cn@@true {\pr@tect
+       \xdef\chapterlabel{{\the\chapterstyle{\the\chapternumber}}}}%
+    \else \gl@bal\cn@@false \gdef\chapterlabel{\rel@x}\fi }%MODIFICATION
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%      Various little user definitions
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\def\half{{\textstyle{1\over2}}}
+\def\third{{\textstyle{1\over3}}}
+\def\fourth{{\textstyle{1\over4}}}
+\def\12{{1\over2}}
+\def\etal{{\it et al.\ }}
+\def\via{{\hbox{\it via}}}
+\def\cf{{\hbox{\it cf.}}}
+\def\sla{\raise.15ex\hbox{$/$}\kern-.57em}
+\def\leaderfill{\leaders\hbox to 1em{\hss.\hss}\hfill}
+\def\dual{{\,^*\kern-.20em}}  %%% produces a raised * in front of a form
+\def\inner{\,{\vcenter{       %%%  symbol _| for vector, form inner product
+      \hbox{ \kern 4pt
+        \vrule width 0.5pt height 7pt}
+      \hrule height 0.5pt}}\,}
+\def\bx{{\vcenter{\hrule height 0.4pt
+      \hbox{\vrule width 0.4pt height 10pt \kern 10pt
+        \vrule width 0.4pt}
+      \hrule height 0.4pt}}}
+\def\sqr#1#2{{\vcenter{\hrule height.#2pt
+      \hbox{\vrule width.#2pt height#1pt \kern#1pt
+        \vrule width.#2pt}
+      \hrule height.#2pt}}}
+\def\rect#1#2#3#4{{\vcenter{\hrule height#3pt
+      \hbox{\vrule width#4pt height#1pt \kern#1pt
+        \vrule width#4pt}
+      \hrule height#3pt}}}
+\def\rec{\rect{15}{15}{.5}{.5}}
+\def\bx{{\vcenter{\hrule height 0.4pt
+      \hbox{\vrule width 0.4pt height 10pt \kern 10pt
+        \vrule width 0.4pt}
+      \hrule height 0.4pt}}}
+\def\ssquare{\mathchoice\sqr34\sqr34\sqr{2.1}3\sqr{1.5}3}
+\def\up#1{\leavevmode \raise.16ex\hbox{#1}}
+\def\twiddle{\lower.9ex\rlap{$\kern-.1em\scriptstyle\sim$}}
+\def\bigtwiddle{\lower1.ex\rlap{$\sim$}}
+\def\gtwid{\mathrel{\raise.3ex\hbox{$>$\kern-.75em\lower1ex\hbox{$\sim$}}}}
+\def\ltwid{\mathrel{\raise.3ex\hbox{$<$\kern-.75em\lower1ex\hbox{$\sim$}}}}
+\def\square{\kern1pt\vbox{\hrule height 1.2pt\hbox{\vrule width 1.2pt\hskip 3pt
+   \vbox{\vskip 6pt}\hskip 3pt\vrule width 0.6pt}\hrule height 0.6pt}\kern1pt}
+\def\tdot#1{\mathord{\mathop{#1}\limits^{\kern2pt\ldots}}}
+\def\super#1{$^{#1}$}
+\def\pmb#1{\setbox0=\hbox{#1}    %  POOR MAN'S BOLD
+  \kern-.025em\copy0\kern-\wd0
+  \kern  .05em\copy0\kern-\wd0
+  \kern-.025em\raise.0433em\box0 }
+\def\qed{\vrule height 1.2ex width 0.5em}
+\def\dalemb{{\cal t}} %%DALEMBERTIAN, USED TO BE \box
+\def\grad{\nabla}
+\def\const{{\rm const}}
+\def\s{{\,\rm s}}
+\def\cm{{\,\rm cm}}
+\def\g{{\,\rm g}}
+\def\coeff#1#2{\textstyle{#1\over #2}}
+\def\partder#1#2{{{\partial #1}\over{\partial #2}}}
+\def\Tr{\mathop{\rm Tr}\nolimits}
+\def\gev{{\,\rm GeV}}
+\def\ev{{\,\rm eV}}
+\def\inv{^{\raise.15ex\hbox{${\scriptscriptstyle -}$}\kern-.05em 1}}
+\def\dup{^{\vphantom{1}}}
+\def\Dsl{\,\raise.15ex\hbox{/}\mkern-13.5mu D} %this one can be subscripted
+\def\dsl{\raise.15ex\hbox{/}\kern-.57em\partial}
+\def\del{\partial}
+\def\Psl{\dsl}
+\def\tr{{\rm tr}}
+\font\bigit=cmti10 scaled \magstep1
+\def\biglie{\hbox{\bigit\$}}       %pound sterling
+\def\boxeqn#1{\vcenter{\vbox{\hrule\hbox{\vrule\kern3pt\vbox{\kern3pt
+        \hbox{${\displaystyle #1}$}\kern3pt}\kern3pt\vrule}\hrule}}}
+\def\mbox#1#2{\vcenter{\hrule \hbox{\vrule height#2in
+                \kern#1in \vrule} \hrule}}  %e.g. \mbox{.1}{.1}
+\hyphenation{anom-aly anom-alies coun-ter-term coun-ter-terms}
+%%
+%%       matters of taste
+%%
+%%
+%%
+%\def\tilde{\widetilde} \def\bar{\overline} \def\hat{\widehat}
+\def\e#1{{\rm e}^{^{\textstyle#1}}}
+\def\grad#1{\,\nabla\!_{{#1}}\,}
+\def\ph{\varphi}
+\def\psibar{\overline\psi}
+\def\om#1#2{\omega^{#1}{}_{#2}}
+\def\darr#1{\raise1.5ex\hbox{$\leftrightarrow$}\mkern-16.5mu #1}
+\def\lie{\hbox{\it\$}} %pound sterling
+\def\roughly#1{\raise.3ex\hbox{$#1$\kern-.75em\lower1ex\hbox{$\sim$}}}
+%
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%   Miscellaneous macros
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%\def\letter{\FRONTPAGE \letterhead \addressee }
+%
+%%% undertildes
+\def\underwig#1{{
+\setbox0=\hbox{$#1$}
+\setbox1=\hbox{}
+\wd1=\wd0
+\ht1=\ht0
+\dp1=\dp0
+\setbox2=\hbox{$\rm\widetilde{\box1}$}
+\dimen@=\ht2 \advance \dimen@ by \dp2 \advance \dimen@ by 1.5pt
+\ht2=0pt \dp2=0pt
+\hbox to 0pt{$#1$\hss} \lower\dimen@\box2
+}}
+%
+\def\bunderwig#1{{
+\setbox0=\hbox{$#1$}
+\setbox1=\hbox{}
+\wd1=\wd0
+\ht1=\ht0
+\dp1=\dp0
+\setbox2=\hbox{$\seventeenrm\widetilde{\box1}$}
+\dimen@=\the\ht2 \advance \dimen@ by \the\dp2 \advance \dimen@ by 1.5pt
+\ht2=0pt \dp2=0pt
+\hbox to 0pt{$#1$\hss} \lower\dimen@\box2
+}}
+%
+\def\journal#1&#2(#3){\unskip, \sl #1~\bf #2 \rm (19#3) }
+                    % Journal reference. Alignment
+                    % tabs & set off name, vol, year, page
+\def\npjournal#1&#2&#3&#4&{\unskip, #1~\rm #2 \rm (#3) #4}
+\gdef\prjournal#1&#2&#3&#4&{\unskip, #1~\bf #2, \rm #4 (#3)}
+\def\JOURNAL{\ifPhysRev\prjournal\else\npjournal\fi}
+%
+\def\coeff#1#2{\textstyle{#1\over #2}}
+\def\partder#1#2{{\partial #1\over\partial #2}}
+\def\bra#1{\left\langle #1\right|}
+\def\ket#1{\left| #1\right\rangle}
+\def\VEV#1{\left\langle #1\right\rangle}
+\let\vev=\VEV
+\def\Tr{\mathop{\rm Tr}\nolimits}
+\let\int=\intop         \let\oint=\ointop
+\def\semi{;\hfil\break}
+\catcode`@=12 % at signs are no longer letters
+%
+\masterreset
+\endinput
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%% This is LABELFORM.TEX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%    Macro to make mailing labels on Avery sheets from an address file.
+%%    Address file should be formatted as:
+%%
+%%       {
+%%       <name>
+%%       <multi(<=5)line address>
+%%       }
+%%
+%%       with a blank line between addresses and NO BLANK LINES at the
+%%       BEGINNING or the END
+%%
+%%       The enhanced phyzzx.plus automatically formats the input file for
+%%       addresses correctly if the command \labelformlabels is inserted
+%%       BEFORE the \multiletter command
+%%
+%%  The present format has ELEVEN labels in each column, THREE columns/page
+%%  and prints in a tenpoint san serif typeface
+%%  (Appended to the end of this file is the format for EIGHT labels/column)
+%%
+%%   No matter what the name of the address file input is, the output will
+%%   be called LABELFORM.DVI
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\font\tenss = cmss10
+\tenss
+\nopagenumbers
+\baselineskip=9truept  % use 10truept here for labels with only four lines
+\parindent 0pt
+\hsize=8.5truein
+\vsize=11 truein
+\hoffset=-0.65 truein
+\voffset=-0.795 truein
+%
+\newread\addrfileno
+\loop\immediate\write16{ }
+  \message{Address file name?  }
+  \read-1 to \addrfile
+  \immediate\write16{ }
+  \openin\addrfileno=\addrfile
+  \ifeof\addrfileno \immediate\write16{File not found.}
+\repeat
+%
+\newbox\onelabel
+\newbox\wall
+\setbox\wall=\hbox to 0pt{\null}
+\newcount\across  \across=0
+\newcount\down    \down=0
+%
+\newif\ifanymore
+\loop
+  \endlinechar=`\^^M               % normal expansion of <cr>
+  \begingroup\obeylines            % to get address read in with \par's
+  \global\read\addrfileno to \addresslines  %
+  \endgroup
+  \setbox\onelabel=\hbox to 2.8truein{\vbox to 0.99truein{\vskip 3truept
+      \hbox{\vbox{\hsize=2.8truein \addresslines}}
+      \vfil}} %
+  \setbox\wall=\hbox{\box\wall\box\onelabel}
+  \advance\across by 1
+  \ifnum\across=3                  % if 3 labels in a row, add row
+      \box\wall
+      \vskip -1.0pt                % correct downward creep
+      \setbox\wall=\hbox to 0pt{\null}
+      \advance\down by 1
+      \across=0
+      \ifnum\down=11               % if 11 rows on page, print page
+          \eject
+          \down=0
+      \fi
+  \fi
+  \read\addrfileno to \emptyline   % 1 blank line divides addresses
+  \ifeof\addrfileno\anymorefalse   % last line in the file
+    \else\anymoretrue\fi           % otherwise repeat the loop
+  \ifanymore
+\repeat
+\closein\addrfileno
+\ifnum\across=0       % if addresses ended with a full row, no need to fill
+  \else               % if addresses didn't end with a full row, fill it out
+  \setbox\wall=\hbox to\hsize{\box\wall\hfill}
+  \box\wall \vfill\eject
+\fi
+\bye
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%% This is LABELFORM.TEX %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%   Macro to make mailing labels on Avery sheets from an address file.
+%%   Address file should be formatted as:
+%%
+%%
+%%       {
+%%       <name>
+%%       <multi(<=6)line address>
+%%       }
+%%
+%%       with a blank line between addresses and NO BLANK LINES at the
+%%       BEGINNING or the END
+%%
+%%   The enhanced phyzzx.plus automatically formats the input file for
+%%   addresses correctly if the command \labelformlabels is inserted BEFORE
+%%   the \multiletter command
+%%
+%%   The present format has EIGHT labels in each column, THREE columns/page
+%%   and prints in a san serif typeface
+%%
+%%   No matter what the name of the address file input is, the output will
+%%   be called LABELFORM.DVI
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+\font\tenss = cmss10
+\tenss
+\nopagenumbers
+\baselineskip=9 truept
+\parindent 0pt
+\hsize=8.5truein
+\vsize=11truein
+\hoffset=-0.65truein
+\voffset=-0.4truein
+%
+\newread\addrfileno
+\loop\immediate\write16{ }
+  \message{Address file name?  }
+  \read-1 to \addrfile
+  \immediate\write16{ }
+  \openin\addrfileno=\addrfile
+  \ifeof\addrfileno \immediate\write16{File not found.}
+\repeat
+%
+\newbox\onelabel
+\newbox\wall
+\setbox\wall=\hbox to 0pt{\null}
+\newcount\across  \across=0
+\newcount\down    \down=0
+%
+\newif\ifanymore
+\loop
+  \endlinechar=`\^^M               % normal expansion of <cr>
+  \begingroup\obeylines            % to get address read in with \par's
+  \global\read\addrfileno to \addresslines  %
+  \endgroup
+  \setbox\onelabel=\hbox to 2.8truein{\vbox to 1.35truein{\vskip 3truept
+      \hbox{\vbox{\hsize=2.8 truein \addresslines}}
+      \vfil}} %
+  \setbox\wall=\hbox{\box\wall\box\onelabel}
+  \advance\across by 1
+  \ifnum\across=3                  % if 3 labels in a row, add row
+      \box\wall
+      \vskip -1.0pt                % correct downward creep
+      \setbox\wall=\hbox to 0pt{\null}
+      \advance\down by 1
+      \across=0
+      \ifnum\down=8               % if 8 rows on page, print page
+          \eject
+          \down=0
+      \fi
+  \fi
+  \read\addrfileno to \emptyline   % 1 blank line divides addresses
+  \ifeof\addrfileno\anymorefalse   % last line in the file
+    \else\anymoretrue\fi           % otherwise repeat the loop
+  \ifanymore
+\repeat
+\closein\addrfileno
+\ifnum\across=0       % if addresses ended with a full row, no need to fill
+  \else               % if addresses didn't end with a full row, fill it out
+  \setbox\wall=\hbox to\hsize{\box\wall\hfill}
+  \box\wall \vfill\eject
+\fi
+
+EOL
+
+1;
