@@ -4697,7 +4697,8 @@ DefMacro('\e@alloc{}{}{}{}{}{}',
   \global#2#6\allocationnumber
 %  \wlog{\string#6=\string#1\the\allocationnumber}
 ');
-DefMacro('\newread', '\e@alloc\read \chardef{\count16}\m@ne\sixt@@n');
+DefMacro('\alloc@{}{}{}{}', '\e@alloc#2#3{\count1#1}#4\float@count');
+DefMacro('\newread',        '\e@alloc\read \chardef{\count16}\m@ne\sixt@@n');
 DefMacro('\newwrite', '\e@alloc\write
                    {\ifnum\allocationnumber=18
                      \advance\count17\@ne
