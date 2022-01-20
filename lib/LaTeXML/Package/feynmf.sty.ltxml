@@ -1,0 +1,30 @@
+# -*- CPERL -*-
+# /=====================================================================\ #
+# | feynmf.sty                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Deyan Ginev <deyan.ginev@nist.gov>                          #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+#**********************************************************************
+
+# see e.g. arXiv:hep-th/0003202 for uses where
+#  reading in the raw package prevents errors.
+
+InputDefinitions('feynmf', type => 'sty', noltxml => 1);
+
+# we can develop this further at a later date,
+#   if we wanted to provide higher-quality output
+
+#**********************************************************************
+
+1;
