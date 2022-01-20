@@ -634,8 +634,12 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
     $type = ToString($type);
     my $tagname = "ltx:" . $type;
     if (!$document->getModel->isKnownTag($tagname)) {
-      $tagname = "ltx:section";
-      Warn("malformed", "ltx:$type", "Tried to open an unknown tag ltx:$type for numbered section"); }
+      # one special case from arXiv: app is short for appendix
+      if ($tagname eq 'ltx:app') {
+        $tagname = "ltx:appendix"; }
+      else {
+        $tagname = "ltx:section";
+        Warn("malformed", "ltx:$type", "Tried to open an unknown tag ltx:$type for numbered section"); } }
     $document->openElement($tagname,
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist));
