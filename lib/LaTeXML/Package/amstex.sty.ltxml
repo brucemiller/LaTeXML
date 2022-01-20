@@ -36,9 +36,13 @@ DefMacro('\qopname{}{}{}', '\mathop{#3}\csname #2limits@\endcsname');
 #Let('\endSb','\relax');
 #Let('\endSp','\relax');
 
-DefMacro('\Sb',    '_\bgroup\substack\bgroup');
-DefMacro('\endSb', '\cr\egroup\egroup');
-DefMacro('\Sp',    '^\bgroup\substack\bgroup');
-DefMacro('\endSp', '\cr\egroup\egroup');
+# DefMacro('\Sb',    '_\bgroup\substack\bgroup');
+# DefMacro('\endSb', '\cr\egroup\egroup');
+# DefMacro('\Sp',    '^\bgroup\substack\bgroup');
+# DefMacro('\endSp', '\cr\egroup\egroup');
+DefMacro('\Sb', '\lx@generalized@over{\Sb}{meaning=substack}');
+DefMacro('\Sp', '\lx@generalized@over{\Sp}{meaning=superstack}');
+Let('\endSb', '\relax');
+Let('\endSp', '\relax');
 
 1;

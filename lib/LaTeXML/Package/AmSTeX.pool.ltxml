@@ -372,9 +372,12 @@ DefMacro('\foldedtext', sub {
 Let('\topfoldedtext', '\foldedtext');
 Let('\botfoldedtext', '\foldedtext');
 
-# Maybe?
-DefMacro('\Sb Until:\endSb', '_{\substack{#1}}');
-DefMacro('\Sp Until:\endSp', '^{\substack{#1}}');
+# Maybe? Nope! Closer to \over
+#DefMacro('\Sb Until:\endSb', '_{\substack{#1}}');
+#DefMacro('\Sp Until:\endSp', '^{\substack{#1}}');
+# see use in arXiv:cond-mat/0003158
+DefMacro('\Sb', '\lx@generalized@over{\Sb}{meaning=substack}');
+DefMacro('\Sp', '\lx@generalized@over{\Sp}{meaning=superstack}');
 Let('\endSb', '\relax');
 Let('\endSp', '\relax');
 
