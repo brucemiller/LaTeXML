@@ -4667,7 +4667,7 @@ DefPrimitive('\newdimen  Token', sub { DefRegisterI($_[1], undef, Dimension(0));
 DefPrimitive('\newskip   Token', sub { DefRegisterI($_[1], undef, Glue(0)); });
 DefPrimitive('\newmuskip Token', sub { DefRegisterI($_[1], undef, MuGlue(0)); });
 AssignValue(allocated_boxes => 0);
-DefPrimitive('\newbox    Token', sub {
+DefPrimitive('\newbox DefToken', sub {
     my $n = LookupValue('allocated_boxes');
     AssignValue(allocated_boxes => $n + 1, 'global');
     AssignValue("box$n", List());
