@@ -871,7 +871,7 @@ DefMathI('\dotso', undef, "\x{2026}", role => 'ID', alias => '\dotso');
 DefMacroI('\DOTSB', undef, Tokens());
 DefMacroI('\DOTSI', undef, Tokens());
 DefMacroI('\DOTSX', undef, Tokens());
-Let('\hdots', '\ldots');
+Let('\hdots', '\lx@ldots');
 
 DefMacro('\hdotsfor Number', sub {
     (map { T_CS('\hdots') } 1 .. $_[1]->valueOf); });
@@ -889,7 +889,7 @@ DefPrimitive('\lx@math@dots Digested', sub {
     return (Box(($role && $binops{$role} ? "\x{22EF}" : "\x{2026}"),
         undef, undef, T_CS('\dots'), mode => 'math', name => 'dots', role => 'ID'),
       $after); });
-DefMacro('\dots', '\ifmmode\lx@math@dots\else\ldots\fi');
+DefMacro('\dots', '\ifmmode\lx@math@dots\else\lx@ldots\fi');
 
 #======================================================================
 # Section 4.4 Nonbreaking dashes
