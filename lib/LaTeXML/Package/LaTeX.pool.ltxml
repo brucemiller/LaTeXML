@@ -935,6 +935,7 @@ DefPrimitive('\ProcessOptions OptionalMatch:*', sub {
     ProcessOptions(($star ? (inorder => 1) : ())); });
 DefMacro('\@options', '\ProcessOptions*');
 
+Let('\@enddocumenthook', '\@empty');
 DefMacro('\AtEndOfPackage{}', sub {
     my ($gullet, $code) = @_;
     my $name = ToString(Expand(T_CS('\@currname')));
@@ -5450,6 +5451,10 @@ sub make_message {
   my $type = $lead_arg || $cmd;
   $stomach->bgroup;
   Let('\protect', '\string');
+  # Trailing gobbles can't work as in latex, as long as we do a sandboxed Expand()
+  # so, disable the common ones that make it all the way here.
+  Let('\@gobble',    '\relax');
+  Let('\@gobbletwo', '\relax');
   # Note that the arg really should be digested to get to the underlying text,
   # but why tempt fate, when we're already making an error message?
   my $message = join(" ", map { ToString(Expand($_)) } @args);
