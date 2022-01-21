@@ -604,9 +604,18 @@ NewCounter('secnumdepth');
 SetCounter('secnumdepth', Number(3));
 DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
     my ($gullet, $type, $level, $ignore3, $ignore4, $ignore5, $ignore6, $flag) = @_;
+    ### Aside: Guard mode
+    # Never start sections in math mode -- this is a good recovery point for broken documents
+    if ($STATE->lookupValue('IN_MATH')) {
+      my $mode = $STATE->lookupValue('MODE');
+      if ($mode =~ /math/) {    # double-check we're really in math
+        $STATE->getStomach->endMode($mode); }
+      else {                    # otherwise, just unset the flag?
+        $STATE->assignValue('IN_MATH' => 0, 'global'); } }
+    ### Main logic
     my $ctr = LookupValue('counter_for_' . ToString($type)) || ToString($type);
     $level = ToString($level);
-    if ($flag) {    # No number, not in TOC
+    if ($flag) {                # No number, not in TOC
       (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
         T_BEGIN, $type->unlist, T_END,
         T_BEGIN, T_END); }
@@ -616,7 +625,7 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
       (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
         T_BEGIN, $type->unlist,  T_END,
         T_BEGIN, T_OTHER('toc'), T_END); }
-    else {          # Number and in TOC
+    else {                      # Number and in TOC
       (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'),
         T_BEGIN, $type->unlist,  T_END,
         T_BEGIN, T_OTHER('toc'), T_END); } },
