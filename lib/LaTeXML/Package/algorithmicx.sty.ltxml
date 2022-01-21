@@ -76,5 +76,9 @@ NewCounter('ALG@line',  'algorithm', idprefix => 'l');     # Assuming we're insi
 DefConstructor('\lx@algorithmicx@hfill',
   "<ltx:text cssstyle='float:right'>");
 
+# Protect against obsolete versions of algorithmicx source
+DefMacro('\ALG@g{}',  '');
+DefMacro('\endALG@g', '');
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
