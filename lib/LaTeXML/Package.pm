@@ -2009,14 +2009,17 @@ our @find_fallback_suffixes = (
   'arx', 'arxiv',     'conference', 'workshop',
   'tmp', 'alternate', 'preprint',   'fixed',
   # arbitrary 1,2-letter trailing markers
-  '\w\w?',
+  # tragically this is too general:
+  # -- tikz-cd.sty is a real package
+  # '\w\w?',
+  #
   # version-oriented suffixes
   '[vV]?[-_.\d]+',
   # mixed
   'old',      'new',    'final', 'clean',
   'mine',     'priv',   'rev',   'mod',
   'modified', 'edited', 'custom',
-  'altered',
+  'altered',  'rtx'
 );
 # suffixes without a separator
 our @find_fallback_glued_suffixes = (

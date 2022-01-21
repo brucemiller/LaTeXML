@@ -24,9 +24,13 @@ my @supported_filename_patterns = qw(
   amsmath_05_2019.sty amsmath052019.sty amsmath_052019.sty amsmath05_2019.sty amsmath05-2019.sty
   amsmath_arxiv.sty amsmath_arXiv.sty amsmath2_arxiv.sty amsmath2019_arxiv.sty 
   amsmath_05-2019_arxiv.sty amsmath_05-2019_arxiv.sty amsmath95.sty amsmath_conference.sty 
-  amsmath2019_conference.sty amsmath_v2-workshop.sty amsmath3-id.sty my-amsmath_ed.sty 
+  amsmath2019_conference.sty amsmath_v2-workshop.sty
   amsmath-arxiv-v2021.sty amsmath62_rev.sty amsmath3248731.sty amsmath.mod.sty
-  amsmath_modified_2016.sty preprint_amsmath.sty amsmath_preprint.sty amsmath3-r.sty
+  amsmath_modified_2016.sty preprint_amsmath.sty amsmath_preprint.sty 
+);
+# we could generalize further...
+my @unsupported_filename_patterns = qw(
+  amsmath3-r.sty amsmath3-id.sty my-amsmath_ed.sty 
 );
 
 # Make sure the main file is available first
@@ -38,5 +42,8 @@ for my $name (@supported_filename_patterns) {
   my $path = LaTeXML::Package::FindFile_fallback($name,[]);
   like($path, qr/amsmath\.sty\.ltxml$/, "$name did not resolve as amsmath.sty.ltxml");
 }
-
+for my $name (@unsupported_filename_patterns) {
+  my $path = LaTeXML::Package::FindFile_fallback($name,[]);
+  is(!$path, 1, "$name should not have resolved as amsmath.sty.ltxml, got $path");
+}
 done_testing();
