@@ -22,9 +22,11 @@ SetVerbosity(-2);
 my @supported_filename_patterns = qw(
   amsmath2.sty amsmath3-1.sty amsmathv2.sty amsmath_v2.sty amsmath2019.sty amsmath_v2019.sty amsmath_2019.sty
   amsmath_05_2019.sty amsmath052019.sty amsmath_052019.sty amsmath05_2019.sty amsmath05-2019.sty
-  amsmath_arxiv.sty amsmath2_arxiv.sty amsmath2019_arxiv.sty amsmath_05-2019_arxiv.sty amsmath_05-2019_arxiv.sty
-  amsmath95.sty amsmath_conference.sty amsmath2019_conference.sty amsmath_v2-workshop.sty
-  amsmath3-id.sty my-amsmath_ed.sty amsmath-arxiv-v2021.sty amsmath62_rev.sty amsmath3248731.sty amsmath.mod.sty
+  amsmath_arxiv.sty amsmath_arXiv.sty amsmath2_arxiv.sty amsmath2019_arxiv.sty 
+  amsmath_05-2019_arxiv.sty amsmath_05-2019_arxiv.sty amsmath95.sty amsmath_conference.sty 
+  amsmath2019_conference.sty amsmath_v2-workshop.sty amsmath3-id.sty my-amsmath_ed.sty 
+  amsmath-arxiv-v2021.sty amsmath62_rev.sty amsmath3248731.sty amsmath.mod.sty
+  amsmath_modified_2016.sty preprint_amsmath.sty amsmath_preprint.sty amsmath3-r.sty
 );
 
 # Make sure the main file is available first

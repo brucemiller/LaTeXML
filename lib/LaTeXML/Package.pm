@@ -2006,8 +2006,8 @@ sub FindFile_aux {
 # suffixes preceded by a separator
 our @find_fallback_suffixes = (
   # arxiv-specific suffixes
-  'arx', 'arxiv', 'conference', 'workshop',
-  'tmp', 'alternate',
+  'arx', 'arxiv',     'conference', 'workshop',
+  'tmp', 'alternate', 'preprint',   'fixed',
   # arbitrary 1,2-letter trailing markers
   '\w\w?',
   # version-oriented suffixes
@@ -2021,10 +2021,15 @@ our @find_fallback_suffixes = (
 # suffixes without a separator
 our @find_fallback_glued_suffixes = (
   # version-oriented suffixes
-  '[vV]?[-_.\d]+');
+  '[vV]?[-_.\d]+',
+  # long domain-specific words
+  # that DO NOT conflict with names of packages
+  # e.g. we have no binding matching '*arxiv*'
+  'arxiv'
+);
 our @find_fallback_prefixes = (
   # see e.g. astro-ph/0002461 for rw_
-  'rw', 'my'
+  'rw', 'my', 'preprint',
 );
 
 sub FindFile_fallback {
