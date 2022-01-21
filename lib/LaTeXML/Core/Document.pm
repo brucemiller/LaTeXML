@@ -884,7 +884,7 @@ sub closeToNode {
 
 # This closes all nodes until $node is closed.
 sub closeNode {
-  my ($self, $node) = @_;
+  my ($self, $node, $ifopen) = @_;
   my $model = $$self{model};
   my ($t, @cant_close) = ();
   my $n = $$self{node};
@@ -895,7 +895,7 @@ sub closeNode {
   if ($t == XML_DOCUMENT_NODE) {    # Didn't find $qname at all!!
     Error('malformed', $model->getNodeQName($node), $self,
       "Attempt to close " . Stringify($node) . ", which isn't open",
-      "Currently in " . $self->getInsertionContext()); }
+      "Currently in " . $self->getInsertionContext()) unless $ifopen; }
   else {                            # Found node.
                                     # Intervening non-auto-closeable nodes!!
     Error('malformed', $model->getNodeQName($node), $self,
