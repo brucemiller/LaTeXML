@@ -2004,7 +2004,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     if ($issvg) {    # ODDLY, svg:g isnt necessarily balanced in tikz?
       $document->maybeCloseElement('svg:g'); }
     else {
-      $document->closeNode($node, 1); }
+      $document->maybeCloseNode($node); }
   },
   mode  => 'text', bounded => 1,
   sizer => '#2',
