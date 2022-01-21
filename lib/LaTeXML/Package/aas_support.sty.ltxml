@@ -195,7 +195,19 @@ DefMacro('\platewidth{Dimension}', '');                    # Ignorable?
 DefMacro('\platenum{}',            '\def\theplate{#1}');
 
 DefMacro('\gridline{}', '');
-DefMacro('\fig Semiverbatim {Dimension}{}',
+
+# Can we try to be smart enough and recover a single argument \fig by checking the second?
+DefMacro('\fig Semiverbatim Token', sub {
+    my ($gullet, $arg, $test) = @_;
+    if (Equals($test, T_BEGIN)) {
+      $gullet->unread(T_BEGIN, $arg, T_END, $test);
+      return T_CS('\aas@fig'); }
+    else {
+      # see arXiv:astro-ph/0003209 for an example use as \ref
+      # while also loading aas_support.sty.ltxml. Tricky!!
+      $gullet->unread(T_BEGIN, $arg, T_END, $test);
+      return T_CS('\ref'); } });
+DefMacro('\aas@fig Semiverbatim {Dimension}{}',
   '\begin{figure}\caption{#3}\includegraphics[width=#2]{#1}\end{figure}');
 Let('\leftfig',  '\fig');
 Let('\rightfig', '\fig');
