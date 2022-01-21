@@ -2003,6 +2003,7 @@ sub FindFile_aux {
   return; }
 
 # A fallback mechanism aiming to load the applicable pieces of arXiv's long-tail
+# suffixes preceded by a separator
 our @find_fallback_suffixes = (
   # arxiv-specific suffixes
   'arx', 'arxiv', 'conference', 'workshop',
@@ -2017,6 +2018,10 @@ our @find_fallback_suffixes = (
   'modified', 'edited', 'custom',
   'altered',
 );
+# suffixes without a separator
+our @find_fallback_glued_suffixes = (
+  # version-oriented suffixes
+  '[vV]?[-_.\d]+');
 our @find_fallback_prefixes = (
   # see e.g. astro-ph/0002461 for rw_
   'rw', 'my'
@@ -2033,11 +2038,17 @@ sub FindFile_fallback {
     my $prefixes_str = '^((?:' . join("|", @find_fallback_prefixes) . ')[-_.])';
     my $prefixes_rx  = qr/$prefixes_str/i;
     # Note that we also remove numbers glued directly onto the name without a separator.
-    my $suffixes_str = '(\d+|[._-](?:' . join("|", @find_fallback_suffixes) . '))$';
-    my $suffixes_rx  = qr/$suffixes_str/i;
+    my $suffixes_str       = '([._-](?:' . join("|", @find_fallback_suffixes) . '))$';
+    my $suffixes_rx        = qr/$suffixes_str/i;
+    my $glued_suffixes_str = '(' . join("|", @find_fallback_glued_suffixes) . ')$';
+    my $glued_suffixes_rx  = qr/$glued_suffixes_str/i;
     my ($discard_pre, $discard_post) = ('', '');
+    # First look at delimited suffixes, then glued ones, and finally prefixes
     while ($fallback_file) {
       if ($fallback_file =~ s/$suffixes_rx//) {
+        $discard_post = "$1$discard_post";
+        next; }
+      if ($fallback_file =~ s/$glued_suffixes_rx//) {
         $discard_post = "$1$discard_post";
         next; }
       if ($fallback_file =~ s/$prefixes_rx//) {

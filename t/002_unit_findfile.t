@@ -24,6 +24,7 @@ my @supported_filename_patterns = qw(
   amsmath_05_2019.sty amsmath052019.sty amsmath_052019.sty amsmath05_2019.sty amsmath05-2019.sty
   amsmath_arxiv.sty amsmath2_arxiv.sty amsmath2019_arxiv.sty amsmath_05-2019_arxiv.sty amsmath_05-2019_arxiv.sty
   amsmath95.sty amsmath_conference.sty amsmath2019_conference.sty amsmath_v2-workshop.sty
+  amsmath3-id.sty my-amsmath_ed.sty amsmath-arxiv-v2021.sty amsmath62_rev.sty amsmath3248731.sty amsmath.mod.sty
 );
 
 # Make sure the main file is available first
