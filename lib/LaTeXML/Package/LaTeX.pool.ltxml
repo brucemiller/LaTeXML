@@ -3589,6 +3589,12 @@ DefPrimitiveI('\@tabbing@bindings', undef, sub {
 
 # NOTE: Do it!!
 
+# Internals of tabbing, as an experiment (e.g. files using program.sty raw as in cs/0003026)
+DefMacro('\@startfield', '\global\setbox\@curfield\hbox\bgroup\color@begingroup');
+DefMacro('\@stopfield',  '\color@endgroup\egroup');
+DefMacro('\@contfield',  '\global\setbox\@curfield\hbox\bgroup\color@begingroup\unhbox\@curfield');
+DefMacro('\@addfield',   '\global\setbox\@curline\hbox{\unhbox\@curline\unhbox\@curfield}');
+
 #======================================================================
 # C.10.2 The array and tabular Environments
 #======================================================================
