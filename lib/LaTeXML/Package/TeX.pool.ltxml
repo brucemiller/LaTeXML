@@ -784,7 +784,7 @@ sub classify_box {
   my ($boxnum) = @_;
   my $box = LookupValue('box' . $boxnum->valueOf);
   if (!$box) {
-    return; }
+    return ''; }
   elsif ($box->isa('LaTeXML::Core::Whatsit') && ($box->getDefinition eq LookupDefinition(T_CS('\vbox')))) {
     return 'vbox'; }
   else {
