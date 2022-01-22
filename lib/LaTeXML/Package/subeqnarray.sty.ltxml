@@ -17,8 +17,9 @@ use LaTeXML::Package;
 
 #**********************************************************************
 
-DefMacro('\subeqnarray',    '\lx@equationgroup@subnumbering@begin', locked => 1);
-DefMacro('\endsubeqnarray', '\lx@equationgroup@subnumbering@end',   locked => 1);
+# see example use at arXiv:hep-th/0002165
+DefMacroI('\subeqnarray', undef, '\lx@equationgroup@subnumbering@begin\bgroup\@@BEGINDISPLAYMATH', locked => 1);
+DefMacroI('\endsubeqnarray', undef, '\@@ENDDISPLAYMATH\egroup\lx@equationgroup@subnumbering@end', locked => 1);
 
 InputDefinitions('subeqnarray', type => 'sty', noltxml => 1);
 
