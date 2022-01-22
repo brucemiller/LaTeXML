@@ -680,8 +680,12 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
     $type = ToString($type);
     my $tagname = "ltx:" . $type;
     if (!$document->getModel->isKnownTag($tagname)) {
-      $tagname = "ltx:section";
-      Warn("malformed", "ltx:$type", "Tried to open an unknown tag ltx:$type for unnumbered section"); }
+      # one special case from arXiv: app is short for appendix
+      if ($tagname eq 'ltx:app') {
+        $tagname = "ltx:appendix"; }
+      else {
+        $tagname = "ltx:section";
+        Warn("malformed", "ltx:$type", "Tried to open an unknown tag ltx:$type for unnumbered section"); } }
     $document->openElement($tagname,
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist));
@@ -4356,7 +4360,6 @@ DefConstructor('\glossary{}', sub {
     if ($current_node_name =~ /^ltx:(?:p|text)/) {
       Warn("unexpected", "glossary", $document, "glossary support is not yet ready for use in the main text flow.");
     } else {
-      NoteSTDERR('--anything else: ' . $current_node_name);
       $document->insertElement('ltx:glossaryphrase', $arg, role => 'glossary', key => $props{'key'}); }
     return; },
   properties => { key => sub { CleanIndexKey($_[1]); } },
