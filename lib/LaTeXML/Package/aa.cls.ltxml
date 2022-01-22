@@ -44,5 +44,15 @@ ProcessOptions();
 LoadClass('article');
 RequirePackage('aa_support');
 
+# except don't use the \pmatrix from amsmath.sty
+# (which gets loaded through aa_support's dependencies)
+# see arXiv:astro-ph/0002145 for an example.
+# just use the one from TeX.pool, copied here:
+DefMacro('\pmatrix{}',
+  '\lx@gen@plain@matrix{name=pmatrix,datameaning=matrix,left=\@left(,right=\@right)}{#1}');
+# also don't use the amsmath cases
+DefMacro('\cases{}',
+  '\lx@gen@plain@cases{meaning=cases,left=\@left\{,conditionmode=text,style=\textstyle}{#1}');
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

@@ -155,7 +155,7 @@ DefMacroI('\maybe@end@keywords', undef, '\endkeywords\let\maybe@end@keywords\rel
 Let(T_CS('\addto@keywords@list'), T_CS('\keyword'));
 
 DefMacro('\classification{}', '\@add@frontmatter{ltx:classification}{#1}');
-DefMacro('\pacs{}',           '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}');
+DefMacro('\pacs{}', '\@add@frontmatter{ltx:classification}[scheme=pacs]{#1}', locked => 1);
 # \doi{doi} might be frontmatter, or just a \url-like thing.  So, let's guess!
 DefMacro('\doi{}',
   '\if@in@preamble{\@add@frontmatter{ltx:classification}[scheme=doi]{#1}'
@@ -288,9 +288,21 @@ DefAutoload('split',                       'amsmath.sty.ltxml');
 DefAutoload('\multline',                   'amsmath.sty.ltxml');
 DefAutoload('\csname multline*\endcsname', 'amsmath.sty.ltxml');
 DefAutoload('numberwithin',                'amsmath.sty.ltxml');
+DefAutoload('mathfrak',                    'amsfonts.sty.ltxml');
+DefAutoload('mathbb',                      'amsfonts.sty.ltxml');
 DefAutoload('deluxetable',                 'deluxetable.sty.ltxml');
 DefAutoload('curraddr',                    'ams_support.sty.ltxml');
 DefAutoload('subjclass',                   'ams_support.sty.ltxml');
 DefAutoload('thechapter',                  'book.cls.ltxml');
+
+# nostalgicly painful from the 1990s arXiv:
+# We lock to the internal definition, since we have
+# \let\section\Section
+# in some documents, and we don't want infinite loops
+DefMacroI('\Section',       undef, '\@startsection{section}{1}{}{}{}{}',       locked => 1);
+DefMacroI('\Subsection',    undef, '\@startsection{subsection}{2}{}{}{}{}',    locked => 1);
+DefMacroI('\Subsubsection', undef, '\@startsection{subsubsection}{3}{}{}{}{}', locked => 1);
+DefMacroI('\Paragraph',     undef, '\@startsection{paragraph}{4}{}{}{}{}',     locked => 1);
+DefMacroI('\Subparagraph',  undef, '\@startsection{subparagraph}{5}{}{}{}{}',  locked => 1);
 
 1;

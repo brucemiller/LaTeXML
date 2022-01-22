@@ -426,6 +426,10 @@ sub isInSchemaClass {
   my $class = $$self{schemaclass}{$classname};
   return $class && $$class{$tag}; }
 
+sub isKnownTag {
+  my ($self, $name) = @_;
+  return exists($$self{tagprop}{$name}); }
+
 #**********************************************************************
 sub describeModel {
   my ($self) = @_;

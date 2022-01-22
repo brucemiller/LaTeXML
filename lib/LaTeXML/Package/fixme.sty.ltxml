@@ -1,13 +1,13 @@
-# -*- mode: Perl -*-
+# -*- CPERL -*-
 # /=====================================================================\ #
-# |  makeidx                                                            | #
+# |  fixme.sty                                                          | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | Deyan Ginev <deyan.ginev@nist.gov>                          #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
@@ -15,11 +15,10 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-DefPrimitive('\makeindex', undef, locked => 1);
-DefMacro('\see{}{}',     '\emph{\seename} #1');
-DefMacro('\seealso{}{}', '\emph{\alsoname} #1');
-DefMacro('\printindex',  '\begin{theindex}\end{theindex}', locked => 1);
-DefMacro('\seename',     'see');
-DefMacro('\alsoname',    'see also');
+#**********************************************************************
+
+InputDefinitions('fixme', type => 'sty', noltxml => 1);
+
+#**********************************************************************
 
 1;

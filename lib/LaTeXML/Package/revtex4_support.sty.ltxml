@@ -195,8 +195,8 @@ DefConstructor('\references',
   afterDigest => sub { beginBibliography($_[1]); }, locked => 1);
 
 DefConstructor('\endreferences', sub {
-    $_[0]->maybeClose('ltx:biblist');
-    $_[0]->maybeClose('ltx:bibliography'); },
+    $_[0]->maybeCloseElement('ltx:biblist');
+    $_[0]->maybeCloseElement('ltx:bibliography'); },
   locked => 1);
 # bibliography and biblist are already set as autoClose.
 

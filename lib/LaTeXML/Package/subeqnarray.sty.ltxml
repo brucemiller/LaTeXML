@@ -1,13 +1,13 @@
-# -*- mode: Perl -*-
+# -*- CPERL -*-
 # /=====================================================================\ #
-# |  makeidx                                                            | #
+# |  subeqnarray.sty                                                    | #
 # | Implementation for LaTeXML                                          | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
 # |  Public domain software, produced as part of work done by the       | #
 # |  United States Government & not subject to copyright in the US.     | #
 # |---------------------------------------------------------------------| #
-# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | Deyan Ginev <deyan.ginev@nist.gov>                          #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 package LaTeXML::Package::Pool;
@@ -15,11 +15,14 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-DefPrimitive('\makeindex', undef, locked => 1);
-DefMacro('\see{}{}',     '\emph{\seename} #1');
-DefMacro('\seealso{}{}', '\emph{\alsoname} #1');
-DefMacro('\printindex',  '\begin{theindex}\end{theindex}', locked => 1);
-DefMacro('\seename',     'see');
-DefMacro('\alsoname',    'see also');
+#**********************************************************************
+
+# see example use at arXiv:hep-th/0002165
+DefMacroI('\subeqnarray', undef, '\lx@equationgroup@subnumbering@begin\bgroup\@@BEGINDISPLAYMATH', locked => 1);
+DefMacroI('\endsubeqnarray', undef, '\@@ENDDISPLAYMATH\egroup\lx@equationgroup@subnumbering@end', locked => 1);
+
+InputDefinitions('subeqnarray', type => 'sty', noltxml => 1);
+
+#**********************************************************************
 
 1;

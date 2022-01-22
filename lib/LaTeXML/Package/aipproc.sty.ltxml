@@ -22,6 +22,10 @@ use warnings;
 use LaTeXML::Package;
 
 RequirePackage('revtex3_support');
+# actually, unlock text when used through here,
+# see arXiv:astro-ph/0003282
+AssignValue("\\text:locked" => undef, 'global');
+
 RequirePackage('longtable');
 RequirePackage('psfig');
 

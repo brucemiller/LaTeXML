@@ -444,6 +444,8 @@ Tag('ltx:emph', autoClose => 1);
 # \noindent, \indent, \par in TeX.pool.ltxml
 
 Let('\@@par', '\par');
+DefMacro('\@par',        '\let\par\@@par\par');
+DefMacro('\@restorepar', '\def\par{\@par}');
 # Style parameters
 # \parindent, \baselineskip, \parskip alreadin in TeX.pool.ltxml
 
@@ -602,9 +604,18 @@ NewCounter('secnumdepth');
 SetCounter('secnumdepth', Number(3));
 DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
     my ($gullet, $type, $level, $ignore3, $ignore4, $ignore5, $ignore6, $flag) = @_;
+    ### Aside: Guard mode
+    # Never start sections in math mode -- this is a good recovery point for broken documents
+    if ($STATE->lookupValue('IN_MATH')) {
+      my $mode = $STATE->lookupValue('MODE');
+      if ($mode =~ /math/) {    # double-check we're really in math
+        $STATE->getStomach->endMode($mode); }
+      else {                    # otherwise, just unset the flag?
+        $STATE->assignValue('IN_MATH' => 0, 'global'); } }
+    ### Main logic
     my $ctr = LookupValue('counter_for_' . ToString($type)) || ToString($type);
     $level = ToString($level);
-    if ($flag) {    # No number, not in TOC
+    if ($flag) {                # No number, not in TOC
       (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
         T_BEGIN, $type->unlist, T_END,
         T_BEGIN, T_END); }
@@ -614,7 +625,7 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
       (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
         T_BEGIN, $type->unlist,  T_END,
         T_BEGIN, T_OTHER('toc'), T_END); }
-    else {          # Number and in TOC
+    else {                      # Number and in TOC
       (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@numbered@section'),
         T_BEGIN, $type->unlist,  T_END,
         T_BEGIN, T_OTHER('toc'), T_END); } },
@@ -628,7 +639,17 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
     my $id = $props{id};
     if (my $asif = $props{backmatterelement}) {
       $document->setNode($document->find_insertion_point($asif)); }
-    $document->openElement("ltx:" . ToString($type),
+    # sanitize the type, we can't open arbitrary elements that are not in the schema
+    $type = ToString($type);
+    my $tagname = "ltx:" . $type;
+    if (!$document->getModel->isKnownTag($tagname)) {
+      # one special case from arXiv: app is short for appendix
+      if ($tagname eq 'ltx:app') {
+        $tagname = "ltx:appendix"; }
+      else {
+        $tagname = "ltx:section";
+        Warn("malformed", "ltx:$type", "Tried to open an unknown tag ltx:$type for numbered section"); } }
+    $document->openElement($tagname,
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist));
     if (my $tags = $props{tags}) {
@@ -655,7 +676,17 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
     my $id = $props{id};
     if (my $asif = $props{backmatterelement}) {
       $document->setNode($document->find_insertion_point($asif)); }
-    $document->openElement("ltx:" . ToString($type),
+    # sanitize the type, we can't open arbitrary elements that are not in the schema
+    $type = ToString($type);
+    my $tagname = "ltx:" . $type;
+    if (!$document->getModel->isKnownTag($tagname)) {
+      # one special case from arXiv: app is short for appendix
+      if ($tagname eq 'ltx:app') {
+        $tagname = "ltx:appendix"; }
+      else {
+        $tagname = "ltx:section";
+        Warn("malformed", "ltx:$type", "Tried to open an unknown tag ltx:$type for unnumbered section"); } }
+    $document->openElement($tagname,
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist));
     $document->insertElement('ltx:title',    $props{title});
@@ -917,6 +948,7 @@ DefPrimitive('\ProcessOptions OptionalMatch:*', sub {
     ProcessOptions(($star ? (inorder => 1) : ())); });
 DefMacro('\@options', '\ProcessOptions*');
 
+Let('\@enddocumenthook', '\@empty');
 DefMacro('\AtEndOfPackage{}', sub {
     my ($gullet, $code) = @_;
     my $name = ToString(Expand(T_CS('\@currname')));
@@ -1013,9 +1045,25 @@ Let(T_CS('\@leftmark'),  T_CS('\@firstoftwo'));
 Let(T_CS('\@rightmark'), T_CS('\@secondoftwo'));
 # In normal latex, these should \clearpage; at least we want new paragraph?
 # Optional arg is sortof a heading, but w/o any particular styling(?)
-DefMacro('\twocolumn[]',   '\ifx.#1.\else\par\noindent#1\fi\par');
-DefMacro('\onecolumn',     '\par');
+DefMacro('\twocolumn[]', '\ifx.#1.\else\par\noindent#1\fi\par');
+DefMacro('\onecolumn',   '\par');
+DefMacro('\@onecolumna', '', locked => 1);    # this is trouble in arXiv:cond-mat/0002147
+DefMacro('\@twocolumna', '', locked => 1);    # this is trouble in arXiv:cond-mat/0002147
+# some bits mentioned as "from ltoutput.dtx" in latex.ltx
 DefMacro('\@topnewpage{}', '#1');
+DefMacro('\@next{}{}{}{}', '\ifx#2\@empty #4\else\expandafter\@xnext #2\@@#1#2#3\fi');
+RawTeX('\def\@xnext \@elt #1#2\@@#3#4{\def#3{#1}\gdef#4{#2}}');
+Let('\@elt', '\relax');                       # ?
+DefMacro('\@freelist',     '');               # ?
+DefMacro('\@currbox',      '');
+DefMacro('\@toplist',      '');
+DefMacro('\@botlist',      '');
+DefMacro('\@midlist',      '');
+DefMacro('\@currlist',     '');
+DefMacro('\@deferlist',    '');
+DefMacro('\@dbltoplist',   '');
+DefMacro('\@dbldeferlist', '');
+DefMacro('\@startcolumn',  '');
 # Style parameters from Fig. C.3, p.182
 DefRegister('\paperheight'     => Dimension(0));
 DefRegister('\paperwidth'      => Dimension(0));
@@ -1558,6 +1606,7 @@ DefEnvironment('{description}',
   locked          => 1, mode => 'text');
 
 DefMacro('\makelabel{}', '#1');
+DefMacro('\@mklab{}',    '\hfil #1');
 
 #----------------------------------------------------------------------
 # Basic itemize bits
@@ -1727,6 +1776,7 @@ DefConstructor('\trivlist@item@ OptionalUndigested',
   "<ltx:item xml:id='#id' itemsep='#itemsep'>"
     . "<ltx:tags><ltx:tag>#tag</ltx:tag></ltx:tags>",    # At least an empty tag! ?
   properties => sub { ($_[1] ? (tag => Digest(Expand($_[1]))) : ()); });
+DefMacro('\@trivlist', '\relax', locked => 1);
 
 DefRegister('\topsep'             => Glue(0));
 DefRegister('\partopsep'          => Glue(0));
@@ -2216,7 +2266,8 @@ DefPrimitive('\@equationgroup@numbering RequiredKeyVals', sub {
 DefConditionalI('\if@in@firstcolumn', undef, sub {
     my $alignment = LookupValue('Alignment');
     my $n         = ($alignment ? $alignment->currentColumnNumber : 9);
-    return ($alignment && (($alignment->currentColumnNumber < 2) || !$$alignment{in_row})); });
+    return $alignment && (!$$alignment{in_row} ||
+      (!$$alignment{in_column} && ($alignment->currentColumnNumber < 2))); });
 
 # A bit more defensiveness, since people abuse eqnarray so badly.
 # Eg. &&\lefteqn{...}  whatever?!?!
@@ -2225,6 +2276,8 @@ DefMacro('\lefteqn{}',
     . '\else\rlap{\@@BEGININLINEMATH\displaystyle #1\@@ENDINLINEMATH}\fi');
 # \intertext (in amsmath)
 
+Let('\displ@y', '\displaystyle');    # good enough?
+DefMacro('\@lign', '');              # good enough?
 # ========================================
 # eqnarray
 DefMacroI('\eqnarray', undef,
@@ -2738,6 +2791,13 @@ RawTeX(<<'EoTeX');
 \DeclareSymbolFont{symbols}     {OMS}{cmsy}{m}{n}
 \DeclareSymbolFont{largesymbols}{OMX}{cmex}{m}{n}
 EoTeX
+
+# not sure what these should be, related to \nullfont...
+DefPrimitiveI('\OMX',      undef, undef, font => { family => 'cmex10' });
+DefPrimitiveI('\tenln',    undef, undef, font => { family => 'line10' });
+DefPrimitiveI('\tenlnw',   undef, undef, font => { family => 'linew10' });
+DefPrimitiveI('\tencirc',  undef, undef, font => { family => 'lcircle10' });
+DefPrimitiveI('\tencircw', undef, undef, font => { family => 'lcirclew10' });
 
 # At least all things on uclclist need to be macros
 DefPrimitiveI('\lx@utf@OE', undef, "\x{0152}", alias => '\OE');    # LATIN CAPITAL LIGATURE OE
@@ -3398,11 +3458,11 @@ DefMacroI('\floatpagefraction', undef, "0.25");
 NewCounter('dbltopnumber');
 DefMacroI('\dbltopfraction',       undef, "0.7");
 DefMacroI('\dblfloatpagefraction', undef, "0.25");
-DefRegister('\floatsep'         => Glue(0));
-DefRegister('\textfloatsep'     => Glue(0));
-DefRegister('\intextsep'        => Glue(0));
-DefRegister('\dblfloatsep'      => Glue(0));
-DefRegister('\dbltextfloatsep'  => Glue(0));
+DefRegister('\floatsep'         => Glue('12.0pt plus 2.0pt minus 2.0pt'));
+DefRegister('\textfloatsep'     => Glue('20.0pt plus 2.0pt minus 4.0pt'));
+DefRegister('\intextsep'        => Glue('12.0pt plus 2.0pt minus 2.0pt'));
+DefRegister('\dblfloatsep'      => Glue('12.0pt plus 2.0pt minus 2.0pt'));
+DefRegister('\dbltextfloatsep'  => Glue('20.0pt plus 2.0pt minus 4.0pt'));
 DefRegister('\@maxsep'          => Dimension(0));
 DefRegister('\@dblmaxsep'       => Dimension(0));
 DefRegister('\@fptop'           => Glue(0));
@@ -3533,6 +3593,12 @@ DefPrimitiveI('\@tabbing@bindings', undef, sub {
 
 # NOTE: Do it!!
 
+# Internals of tabbing, as an experiment (e.g. files using program.sty raw as in cs/0003026)
+DefMacro('\@startfield', '\global\setbox\@curfield\hbox\bgroup\color@begingroup');
+DefMacro('\@stopfield',  '\color@endgroup\egroup');
+DefMacro('\@contfield',  '\global\setbox\@curfield\hbox\bgroup\color@begingroup\unhbox\@curfield');
+DefMacro('\@addfield',   '\global\setbox\@curline\hbox{\unhbox\@curline\unhbox\@curfield}');
+
 #======================================================================
 # C.10.2 The array and tabular Environments
 #======================================================================
@@ -3621,7 +3687,8 @@ DefConstructor('\@@tabular[] Undigested DigestedBody',
       my $attr = $alignment->getProperty('attributes');
       $$attr{vattach} = translateAttachment($whatsit->getArg(1)); }
     return; },
-  mode => 'text');
+  locked => 1,
+  mode   => 'text');
 
 DefMacro('\csname tabular*\endcsname{Dimension}[]{}',
 ###  '\@tabular@bindings{#3}\@@tabular@{#1}[#2]{#3}\@start@alignment');
@@ -3950,9 +4017,12 @@ Tag('ltx:bibliography', autoClose => 1);
 sub setupPseudoBibitem {
   Let('\save@bibitem', '\bibitem');
   Let('\save@par',     '\par');
-  Let('\bibitem',      '\restoring@bibitem');
-  Let('\par',          '\par@in@bibliography');
-  Let('\vskip',        '\vskip@in@bibliography');
+  # see arXiv:hep-th/0002043 for why the backslash itself needs binding.
+  Let('\save@backbackslash', '\\\\');
+  Let('\bibitem',            '\restoring@bibitem');
+  Let('\par',                '\par@in@bibliography');
+  Let('\\\\',                '\par@in@bibliography');
+  Let('\vskip',              '\vskip@in@bibliography');
   # Moreover, some people use \item instead of \bibitem
   Let('\item', '\item@in@bibliography');
   # And protect from redefinitions.
@@ -3983,7 +4053,7 @@ DefMacroI('\item@in@bibliography', undef, '\save@bibitem{}');
 # If we hit a real \bibitem, put \par & \bibitem back to correct defn, and then \bibitem.
 # A bibitem with now key or label...
 DefMacro('\restoring@bibitem',
-  '\let\bibitem\save@bibitem\let\par\save@par\bibitem');
+  '\let\bibitem\save@bibitem\let\par\save@par\let\\\\\save@backbackslash\bibitem');
 
 NewCounter('@bibitem', 'bibliography', idprefix => 'bib');
 DefMacroI('\the@bibitem', undef, '\arabic{@bibitem}');
@@ -4281,8 +4351,17 @@ DefConstructor('\@indexseealso{}',
   "<ltx:indexsee key='#key' name='#name' _standalone_font='true'>#1</ltx:indexsee>",
   properties => { name => sub { DigestIf('\alsoname') } });
 
-DefConstructor('\glossary{}',
-  "<ltx:glossaryphrase role='glossary' key='#key'>#1</ltx:glossaryphrase>",
+DefConstructor('\glossary{}', sub {
+    my ($document, $arg, %props) = @_;
+    my $current_node      = $document->getNode;
+    my $current_node_name = $document->getNodeQName($current_node);
+    if ($current_node_name eq '#PCDATA') {
+      $current_node_name = $document->getNodeQName($current_node->parentNode); }
+    if ($current_node_name =~ /^ltx:(?:p|text)/) {
+      Warn("unexpected", "glossary", $document, "glossary support is not yet ready for use in the main text flow.");
+    } else {
+      $document->insertElement('ltx:glossaryphrase', $arg, role => 'glossary', key => $props{'key'}); }
+    return; },
   properties => { key => sub { CleanIndexKey($_[1]); } },
   sizer      => 0);
 
@@ -4840,8 +4919,8 @@ DefEnvironment('{picture} Pair OptionalPair',
 
 DefMacroI(T_CS('\Gin@driver'), undef, Tokens());
 
-DefMacro('\@killglue',     '\unskip\@whiledim \lastskip >\z@\do{\unskip}');
-DefMacro('\put Until:){}', '\lx@pic@put#1){#2\relax}');
+DefMacro('\@killglue', '\unskip\@whiledim \lastskip >\z@\do{\unskip}');
+DefMacro('\put SkipSpaces Match:( Until:, Until:){}', '\lx@pic@put(#2,#3){#4\relax}');
 DefConstructor('\lx@pic@put Pair{}',
   "<ltx:g transform='#transform'"
     . " innerwidth='#innerwidth' innerheight='#innerheight' innerdepth='#innerdepth'>#2</ltx:g>",
@@ -5407,6 +5486,10 @@ sub make_message {
   my $type = $lead_arg || $cmd;
   $stomach->bgroup;
   Let('\protect', '\string');
+  # Trailing gobbles can't work as in latex, as long as we do a sandboxed Expand()
+  # so, disable the common ones that make it all the way here.
+  Let('\@gobble',    '\relax');
+  Let('\@gobbletwo', '\relax');
   # Note that the arg really should be digested to get to the underlying text,
   # but why tempt fate, when we're already making an error message?
   my $message = join(" ", map { ToString(Expand($_)) } @args);
@@ -5766,7 +5849,6 @@ DefMacroI('\loggingall',    undef, Tokens());
 DefMacroI('\tracingfonts',  undef, Tokens());
 DefMacroI('\showoverfull',  undef, Tokens());
 DefMacroI('\showoutput',    undef, Tokens());
-DefMacro('\wlog{}', Tokens());
 
 #======================================================================
 # Various symbols, accents, etc from Chapter 3 defined in TeX.pool

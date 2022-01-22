@@ -20,6 +20,10 @@ use warnings;
 use LaTeXML::Package;
 
 #**********************************************************************
+
+# Except \fig, that collides in arXiv:astro-ph/0002091
+my $saved_fig = LookupDefinition(T_CS('\fig'));
+
 # Seems to be equivalent.
 RequirePackage('aastex', withoptions => 1);
 # ... Well, almost...
@@ -29,6 +33,11 @@ Let('\end{deluxetable*}',   '\end{deluxetable}');
 
 Let('\BeginEnvironment', '\begin');
 Let('\EndEnvironment',   '\end');
+
+# if we had a \fig, reinstate it
+if ($saved_fig) {
+  $STATE->installDefinition($saved_fig, 'global');
+  AssignValue('\fig:locked' => 1, 'global'); }
 
 # Hopefully, nobody is using these for real...
 DefMacro('\BeforeBegin{}{}', '');

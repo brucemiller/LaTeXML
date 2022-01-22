@@ -784,7 +784,7 @@ sub classify_box {
   my ($boxnum) = @_;
   my $box = LookupValue('box' . $boxnum->valueOf);
   if (!$box) {
-    return; }
+    return ''; }
   elsif ($box->isa('LaTeXML::Core::Whatsit') && ($box->getDefinition eq LookupDefinition(T_CS('\vbox')))) {
     return 'vbox'; }
   else {
@@ -3974,7 +3974,13 @@ DefMacroI('\eqno', undef, sub {
       if (Equals($t, T_BEGIN)) {
         push(@stuff, $t, $gullet->readBalanced, T_END); }
       # What do I need to explicitly list here!?!?!? UGGH!
-      elsif (Equals($t, T_MATH) || Equals($t, T_CS('\]')) || Equals($t, T_CS('\@@ENDDISPLAYMATH'))
+      elsif (Equals($t, T_MATH)
+        || Equals($t, T_CS('\]'))
+        # UGH from 2022: also don't jump over rows
+        || Equals($t, T_CS('\cr'))
+        # see arXiv:math/0001062, for one example
+        || Equals($t, T_CS('\hidden@cr'))
+        || Equals($t, T_CS('\@@ENDDISPLAYMATH'))
         || Equals($t, T_CS('\begingroup'))           # Totally wrong, but to catch expanded environments
         || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
                                                      # This seems needed within AmSTeX environs
@@ -4651,14 +4657,17 @@ EoTeX
 
 #======================================================================
 # TeX Book, Appendix B, p. 347
-# \wlog ??
+DefPrimitive('\wlog{}', sub {
+    NoteLog(ToString(Expand($_[1])));
+    return; },
+  locked => 1);
 # From plain.tex
 DefPrimitive('\newcount  Token', sub { DefRegisterI($_[1], undef, Number(0)); });
 DefPrimitive('\newdimen  Token', sub { DefRegisterI($_[1], undef, Dimension(0)); });
 DefPrimitive('\newskip   Token', sub { DefRegisterI($_[1], undef, Glue(0)); });
 DefPrimitive('\newmuskip Token', sub { DefRegisterI($_[1], undef, MuGlue(0)); });
 AssignValue(allocated_boxes => 0);
-DefPrimitive('\newbox    Token', sub {
+DefPrimitive('\newbox DefToken', sub {
     my $n = LookupValue('allocated_boxes');
     AssignValue(allocated_boxes => $n + 1, 'global');
     AssignValue("box$n", List());
@@ -4688,7 +4697,8 @@ DefMacro('\e@alloc{}{}{}{}{}{}',
   \global#2#6\allocationnumber
 %  \wlog{\string#6=\string#1\the\allocationnumber}
 ');
-DefMacro('\newread', '\e@alloc\read \chardef{\count16}\m@ne\sixt@@n');
+DefMacro('\alloc@{}{}{}{}', '\e@alloc#2#3{\count1#1}#4\float@count');
+DefMacro('\newread',        '\e@alloc\read \chardef{\count16}\m@ne\sixt@@n');
 DefMacro('\newwrite', '\e@alloc\write
                    {\ifnum\allocationnumber=18
                      \advance\count17\@ne
@@ -4741,7 +4751,11 @@ DefRegister('\interfootnotelinepenalty' => Number(100));
 
 DefMacroI('\magstephalf', undef, '1095');
 our @mags = (1000, 1200, 1440, 1728, 2074, 2488);
-DefMacro('\magstep{}', sub { Explode($mags[ToString($_[1])]); });
+DefMacro('\magstep{}', sub {
+    my $level = ToString($_[1]);
+    $level = ($level =~ /^\d$/) ? int($level) : 0;
+    $level = 0 unless $level >= 0 and $level < 6;
+    Explode($mags[$level]); });
 
 #======================================================================
 # TeX Book, Appendix B, p. 350
@@ -4933,14 +4947,20 @@ DefMacroI('\medbreak',   undef, '\par');
 DefMacroI('\bigbreak',   undef, '\par');
 
 DefMacroI('\line', undef, '\hbox to \hsize');
-DefConstructor('\leftline{}', sub {
+DefMacro('\leftline Undigested',   '\ltx@leftline{\hbox{#1}}');
+DefMacro('\rightline Undigested',  '\ltx@rightline{\hbox{#1}}');
+DefMacro('\centerline Undigested', '\ltx@centerline{\hbox{#1}}');
+DefConstructor('\ltx@leftline{}', sub {
     alignLine($_[0], $_[1], 'left'); },
+  alias   => '\leftline',
   bounded => 1);
-DefConstructor('\rightline{}', sub {
+DefConstructor('\ltx@rightline{}', sub {
     alignLine($_[0], $_[1], 'right'); },
+  alias   => '\rightline',
   bounded => 1);
-DefConstructor('\centerline{}', sub {
+DefConstructor('\ltx@centerline{}', sub {
     alignLine($_[0], $_[1], 'center'); },
+  alias   => '\centerline',
   bounded => 1);
 
 sub alignLine {
@@ -5319,6 +5339,8 @@ DefPrimitiveI('\raggedright',   undef, undef);
 DefPrimitiveI('\raggedleft',    undef, undef);    # this is actually LaTeX
 DefPrimitiveI('\ttraggedright', undef, undef);
 DefPrimitiveI('\leavevmode',    undef, undef);
+DefMacro('\mathhexbox{}{}{}', '\leavevmode\hbox{$\m@th \mathchar"#1#2#3$}');
+
 #----------------------------------------------------------------------
 # Actually from LaTeX; Table 3.2. Non-English Symbols, p.39
 
@@ -5964,9 +5986,11 @@ DefMathI('\rhook',      undef, "\x{2E27}");    # TeX 312D
 # TeX Book, Appendix B. p. 359
 
 # Ah, since \ldots can appear in text and math....
-DefConstructorI('\ldots', undef,
+DefMacroI('\ldots', undef, '\lx@ldots');
+DefConstructorI('\lx@ldots', undef,
   "?#isMath(<ltx:XMTok name='ldots' font='#font' role='ID'>\x{2026}</ltx:XMTok>)(\x{2026})",
   sizer      => "\x{2026}",
+  reversion  => '\ldots',
   properties => sub {
     (LookupValue('IN_MATH')
       ? (font => LookupValue('font')->merge(family => 'serif',
@@ -6605,7 +6629,9 @@ DefMacro('\cases{}',
 DefPrimitive('\openup Dimension', undef);
 
 # What should this do? (needs to work with alignments..)
-DefMacro('\displaylines{}', '#1');
+# see https://www.tug.org/TUGboat/tb07-1/tb14beet.pdf
+# use in arXiv:hep-th/0001208
+DefMacro('\displaylines{}', '\halign{\hbox to\displaywidth{$\hfil\displaystyle##\hfil$}\crcr#1\crcr}');
 
 DefMacro('\eqalign{}',
   '\@@eqalign{\@start@alignment#1\@finish@alignment}');
@@ -6659,6 +6685,13 @@ DefConstructor('\footnote{}{}',
         $change = 1; last; } }
     $whatsit->setProperty(($change ? 'prenote' : 'mark') => $mark);
     return; });
+# Until we can do the "v" properly:
+DefMacro('\vfootnote', '\footnote');
+DefMacro('\fo@t',      '\ifcat\bgroup\noexpand\next \let\next\f@@t  \else\let\next\f@t\fi \next');
+DefMacro('\f@@t',      '\bgroup\aftergroup\@foot\let\next');
+DefMacro('\f@t{}',     '#1\@foot');
+DefMacro('\@foot',     '\strut\egroup');
+
 DefPrimitiveI('\footstrut', undef, undef);
 DefRegister('\footins' => Number(0));
 

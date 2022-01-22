@@ -105,7 +105,8 @@ DefMacro('\loadeusm',      '');
 DefMacro('\loadmathfont',  '');
 DefMacro('\loadmsam',      '');
 DefMacro('\loadmsbm',      '');
-Let('\font@', '\font');    # Close enough?
+Let('\font@', '\font');                 # Close enough?
+DefMacroI('\normalfont', undef, '');    # Close enough?
 
 DefMacro('\boldnotloaded{}', '');
 
@@ -192,6 +193,14 @@ Let('\B',           "\\=");
 Let('\D',           "\\.");
 
 DefMacro('\.', '. ');
+
+# instead of adding taylor's diagram.tex
+# for now warn that we are aware of those diagrams, but they are not supported
+# and avoid the sea of otherwise inevitable errors during drawing
+DefMacro('\diagram Until:\enddiagram', sub {
+    Warn('missing', 'support', 'The \diagram mechanism of diagram.tex is not currently supported, output is degraded.');
+    return Tokenize("missing diagram")->unlist(); },
+  locked => 1);
 
 #======================================================================
 # Math stuff.
@@ -363,9 +372,12 @@ DefMacro('\foldedtext', sub {
 Let('\topfoldedtext', '\foldedtext');
 Let('\botfoldedtext', '\foldedtext');
 
-# Maybe?
-DefMacro('\Sb Until:\endSb', '_{\substack{#1}}');
-DefMacro('\Sp Until:\endSp', '^{\substack{#1}}');
+# Maybe? Nope! Closer to \over
+#DefMacro('\Sb Until:\endSb', '_{\substack{#1}}');
+#DefMacro('\Sp Until:\endSp', '^{\substack{#1}}');
+# see use in arXiv:cond-mat/0003158
+DefMacro('\Sb', '\lx@generalized@over{\Sb}{meaning=substack}');
+DefMacro('\Sp', '\lx@generalized@over{\Sp}{meaning=superstack}');
 Let('\endSb', '\relax');
 Let('\endSp', '\relax');
 

@@ -640,8 +640,15 @@ sub readValue {
   elsif ($type eq 'Glue')      { return $self->readGlue; }
   elsif ($type eq 'MuGlue')    { return $self->readMuGlue; }
   elsif ($type eq 'Tokens')    { return $self->readTokensValue; }
-  elsif ($type eq 'Token')     { return $self->readToken; }
-  elsif ($type eq 'any')       { return $self->readArg; }
+  elsif ($type eq 'Token') {
+    my $token = $self->readToken;
+    if (Equals($token, T_CS('\csname'))) {
+      my $cstoken = $STATE->lookupDefinition($token)->invoke($self);
+      $self->unread($cstoken->unlist);
+      return $self->readToken; }
+    else {
+      return $token; } }
+  elsif ($type eq 'any') { return $self->readArg; }
   else {
     Error('unexpected', $type, $self,
       "Gullet->readValue Didn't expect this type: $type");
@@ -675,8 +682,12 @@ sub readTokensValue {
       return $defn->valueOf(($parms ? $parms->readArguments($self) : ())); }
     elsif ($defn->isExpandable) {
       if (my $x = $defn->invoke($self)) {
-        $self->unread(@{$x}); }
+        $self->unread($x->unlist); }
       return $self->readTokensValue; }
+    elsif (Equals($token, T_CS('\csname'))) {
+      my $cstoken = $defn->invoke($self);
+      $self->unread($cstoken->unlist);
+      return $self->readToken; }
     else {
       return $token; } }    # ?
   else {
