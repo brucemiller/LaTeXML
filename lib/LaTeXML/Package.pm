@@ -2002,33 +2002,78 @@ sub FindFile_aux {
     return $path; }
   return; }
 
+# A fallback mechanism aiming to load the applicable pieces of arXiv's long-tail
+# suffixes preceded by a separator
+our @find_fallback_suffixes = (
+  # arxiv-specific suffixes
+  'arx', 'arxiv',     'conference', 'workshop',
+  'tmp', 'alternate', 'preprint',   'fixed',
+  # arbitrary 1,2-letter trailing markers
+  # tragically this is too general:
+  # -- tikz-cd.sty is a real package
+  # '\w\w?',
+  #
+  # version-oriented suffixes
+  '[vV]?[-_.\d]+',
+  # mixed
+  'old',      'new',    'final', 'clean',
+  'mine',     'priv',   'rev',   'mod',
+  'modified', 'edited', 'custom',
+  'altered',  'rtx'
+);
+# suffixes without a separator
+our @find_fallback_glued_suffixes = (
+  # version-oriented suffixes
+  '[vV]?[-_.\d]+',
+  # long domain-specific words
+  # that DO NOT conflict with names of packages
+  # e.g. we have no binding matching '*arxiv*'
+  'arxiv'
+);
+our @find_fallback_prefixes = (
+  # see e.g. astro-ph/0002461 for rw_
+  'rw', 'my', 'preprint',
+);
+
 sub FindFile_fallback {
   my ($file, $ltxml_paths, %options) = @_;
-
-  # Supported:
-  # Numeric suffixes (version nums, dates) with optional separators
   my $fallback_file = $file;
   my $type          = $options{type};
   if ($fallback_file =~ s/\.(sty|cls)$//) {
     # if we provide the type, that remains primary.
     $type = $1 unless $type; }
   if ($type) {    # if we know what we're dealing with...
-    my $discard = "";
-    if ($fallback_file =~ s/([-_](?:arxiv|conference|workshop))$//) {
-      # arxiv-specific suffixes, maybe move those out to an extension package?
-      $discard = $1;
-    }
-    # TODO: If we want a Whitelist hash table -- add it here, before further regexing.
-    if ($fallback_file =~ s/([-_]?v?[-_\d]+)$//) {
-      $discard = "$1$discard";
-    }
+    my $prefixes_str = '^((?:' . join("|", @find_fallback_prefixes) . ')[-_.])';
+    my $prefixes_rx  = qr/$prefixes_str/i;
+    # Note that we also remove numbers glued directly onto the name without a separator.
+    my $suffixes_str       = '([._-](?:' . join("|", @find_fallback_suffixes) . '))$';
+    my $suffixes_rx        = qr/$suffixes_str/i;
+    my $glued_suffixes_str = '(' . join("|", @find_fallback_glued_suffixes) . ')$';
+    my $glued_suffixes_rx  = qr/$glued_suffixes_str/i;
+    my ($discard_pre, $discard_post) = ('', '');
+    # First look at delimited suffixes, then glued ones, and finally prefixes
+    while ($fallback_file) {
+      if ($fallback_file =~ s/$suffixes_rx//) {
+        $discard_post = "$1$discard_post";
+        next; }
+      if ($fallback_file =~ s/$glued_suffixes_rx//) {
+        $discard_post = "$1$discard_post";
+        next; }
+      if ($fallback_file =~ s/$prefixes_rx//) {
+        $discard_pre .= $1;
+        next; }
+      last; }
+    $discard_pre .= '...' if $discard_pre && $discard_post;
+    my $discard = $discard_pre . $discard_post;
     if ($discard) {    # we had something to discard, so a new query is needed
       my $fallback_query = "$fallback_file.$type";
-      if (my $path = pathname_find("$fallback_query.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
+      if (my $path =
+        pathname_find("$fallback_query.ltxml", paths => $ltxml_paths, installation_subdir => 'Package')) {
         Info('fallback', $file, $STATE->getStomach->getGullet,
 "Interpreted $discard as a versioned package/class name, falling back to generic $fallback_query\n");
         return $path; } } }
-  return; }
+  else {
+    return; } }
 
 sub pathname_is_nasty {
   my ($pathname) = @_;
