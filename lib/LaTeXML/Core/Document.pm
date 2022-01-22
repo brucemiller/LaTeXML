@@ -905,6 +905,25 @@ sub closeNode {
     $self->closeNode_internal($node); }
   return; }
 
+sub maybeCloseNode {
+  my ($self, $node) = @_;
+  my $model = $$self{model};
+  my ($t, @cant_close) = ();
+  my $n = $$self{node};
+  Debug("To closeNode " . Stringify($node)) if $LaTeXML::DEBUG{document};
+  while ((($t = $n->getType) != XML_DOCUMENT_NODE) && !$n->isSameNode($node)) {
+    push(@cant_close, $n) unless $self->canAutoClose($n);
+    $n = $n->parentNode; }
+  if ($t == XML_DOCUMENT_NODE) { }    # Didn't find $qname at all!!
+  else {                              # Found node.
+                                      # Intervening non-auto-closeable nodes!!
+    Info('malformed', $model->getNodeQName($node), $self,
+      "Closing " . Stringify($node) . " whose open descendents do not auto-close",
+      "Descendents are " . join(', ', map { Stringify($_) } @cant_close))
+      if @cant_close;
+    $self->closeNode_internal($node); }
+  return; }
+
 # Add the given attribute to the nearest node that is allowed to have it.
 sub addAttribute {
   my ($self, $key, $value) = @_;

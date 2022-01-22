@@ -1804,11 +1804,24 @@ sub decodeMathChar {
     ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : $char)); }
 
 DefConstructor('\mathchar Number',
-  "?#glyph(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)",
+  "?#glyph(?#isMath(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)(#glyph))",
   sizer       => '#glyph',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $n = $whatsit->getArg(1)->valueOf;
+    my ($role, $glyph) = decodeMathChar($n);
+    $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
+    $whatsit->setProperty(role  => $role)                                   if defined $role;
+    $whatsit->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
+    return; });
+
+DefConstructor('\delimiter Number',
+  "?#glyph(?#isMath(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)(#glyph))",
+  sizer       => '#glyph',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $n = $whatsit->getArg(1)->valueOf;
+    $n = $n >> 12;    # Ignore 3 rightmost digits and treat as \mathchar
     my ($role, $glyph) = decodeMathChar($n);
     $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
     $whatsit->setProperty(role  => $role)                                   if defined $role;
@@ -1991,7 +2004,7 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     if ($issvg) {    # ODDLY, svg:g isnt necessarily balanced in tikz?
       $document->maybeCloseElement('svg:g'); }
     else {
-      $document->closeNode($node); }
+      $document->maybeCloseNode($node); }
   },
   mode  => 'text', bounded => 1,
   sizer => '#2',
