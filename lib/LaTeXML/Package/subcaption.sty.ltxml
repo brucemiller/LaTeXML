@@ -86,6 +86,12 @@ DefEnvironment('{subtable*}[]{Dimension}',
   afterDigest  => sub { afterFloat($_[1]); });
 
 #======================================================================
+# Can we get by by saying \subfloat is just an alias for {subfigure} ?
+# see 2111.00007 for example.
+# TODO: \columnwidth is a quick placeholder width, this seems to be intended as automatic
+DefMacro('\subfloat[][]{}', '\begin{subfigure}{\columnwidth}#3\caption{#2}\lx@subcaption@addinlist{#1}\end{subfigure}');
+
+#======================================================================
 # \subcaptionbox[list]{caption}[width][innerpos]{contents}
 DefMacro('\subcaptionbox', '\expandafter\@@subcaptionbox\expandafter{\@captype}');
 DefMacro('\@@subcaptionbox{} []{} Optional:0pt []{}',
