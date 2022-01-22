@@ -4013,9 +4013,12 @@ Tag('ltx:bibliography', autoClose => 1);
 sub setupPseudoBibitem {
   Let('\save@bibitem', '\bibitem');
   Let('\save@par',     '\par');
-  Let('\bibitem',      '\restoring@bibitem');
-  Let('\par',          '\par@in@bibliography');
-  Let('\vskip',        '\vskip@in@bibliography');
+  # see arXiv:hep-th/0002043 for why the backslash itself needs binding.
+  Let('\save@backbackslash', '\\\\');
+  Let('\bibitem',            '\restoring@bibitem');
+  Let('\par',                '\par@in@bibliography');
+  Let('\\\\',                '\par@in@bibliography');
+  Let('\vskip',              '\vskip@in@bibliography');
   # Moreover, some people use \item instead of \bibitem
   Let('\item', '\item@in@bibliography');
   # And protect from redefinitions.
@@ -4046,7 +4049,7 @@ DefMacroI('\item@in@bibliography', undef, '\save@bibitem{}');
 # If we hit a real \bibitem, put \par & \bibitem back to correct defn, and then \bibitem.
 # A bibitem with now key or label...
 DefMacro('\restoring@bibitem',
-  '\let\bibitem\save@bibitem\let\par\save@par\bibitem');
+  '\let\bibitem\save@bibitem\let\par\save@par\let\\\\\save@backbackslash\bibitem');
 
 NewCounter('@bibitem', 'bibliography', idprefix => 'bib');
 DefMacroI('\the@bibitem', undef, '\arabic{@bibitem}');
