@@ -3833,6 +3833,8 @@ sub beforeDigestBibliography {
   AssignValue(inPreamble => 0); Digest('\@lx@inbibliographytrue');
   DefMacro('\bibliographystyle{}', '');
   DefMacro('\bibliography {}',     '');
+  # avoid \let-based redefinitions of the ending.
+  Let('\endthebibliography', '\saved@endthebibliography');
   ResetCounter('@bibitem');
   return; }
 
@@ -4005,6 +4007,7 @@ DefConstructorI('\endthebibliography', undef, sub {
     $_[0]->maybeCloseElement('ltx:biblist');
     $_[0]->maybeCloseElement('ltx:bibliography'); },
   locked => 1);
+Let('\saved@endthebibliography', '\endthebibliography');
 # auto close the bibliography and contained biblist.
 Tag('ltx:biblist',      autoClose => 1);
 Tag('ltx:bibliography', autoClose => 1);
