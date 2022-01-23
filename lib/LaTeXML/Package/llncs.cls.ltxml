@@ -241,6 +241,9 @@ DefMacro('\homedir', "\~{ }");
 DefMacro('\idxquad', '\hskip 10pt\relax');
 #======================================================================
 
+# Newer llncs versions have an ORCID id macro
+DefConstructor('\orcidID{}', '<ltx:sup><ltx:ref href="https://orcid.org/#1">#1</ltx:ref></ltx:sup>');
+
 #  /--------------------------------------------------------------------\
 # | INCOMPLETE IMPLEMENTATION                                            |
 # | remove this comment, when done.                                      |
