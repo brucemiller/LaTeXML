@@ -35,6 +35,20 @@ RequirePackage('setspace');
 RequirePackage('newtxmath');
 #RequirePackage('manyfoot');
 # RequirePackage('libertine');
+###
+### Added based on acmart.cls in texlive 2020
+RequirePackage('xkeyval');
+#RequirePackage('xstring');
+RequirePackage('iftex');
+RequirePackage('etoolbox');
+RequirePackage('booktabs');
+RequirePackage('refcount');
+RequirePackage('textcase');
+RequirePackage('hyperxmp');
+#RequirePackage('draftwatermark');
+#RequirePackage('cmap');
+#RequirePackage('pbalance');
+RequirePackage('balance');
 
 #======================================================================
 # Various bits of frontmatter
@@ -130,8 +144,8 @@ DefMacro('\acknowledgmentsname', 'Acknowledgements');
 DefConstructor('\acks', "<ltx:acknowledgements name='#name'>",
   properties => sub { (name => Digest(T_CS('\acknowledgmentsname'))); });
 DefConstructor('\endacks', "</ltx:acknowledgements>");
-DefMacro('\grantsponsor Semiverbatim {} Semiverbatim',     "Sponsor #2 \url{#3}");
-DefMacro('\grantnum OptionalSemiverbatim Semiverbatim {}', "Grant \##3");
+DefMacro('\grantsponsor Semiverbatim {} Semiverbatim',     'Sponsor #2 \url{#3}');
+DefMacro('\grantnum OptionalSemiverbatim Semiverbatim {}', 'Grant \##3');
 
 DefEnvironment('{teaserfigure}[]',
   "<ltx:figure xml:id='#id' inlist='#inlist' class='ltx_teaserfigure' ?#1(placement='#1')>"
