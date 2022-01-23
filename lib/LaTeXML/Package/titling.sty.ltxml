@@ -32,10 +32,27 @@ DefMacro('\postauthor{}', '\def\@bspostauthor{#1}');
 DefMacro('\predate{}',    '\def\@bspredate{#1}');
 DefMacro('\postdate{}',   '\def\@bspostdate{#1}');
 
-DefMacroI('\maketitlehooka', undef, '');
-DefMacroI('\maketitlehookb', undef, '');
-DefMacroI('\maketitlehookc', undef, '');
-DefMacroI('\maketitlehookd', undef, '');
+DefMacroI('\maketitlehooka',   undef, '');
+DefMacroI('\maketitlehookb',   undef, '');
+DefMacroI('\maketitlehookc',   undef, '');
+DefMacroI('\maketitlehookd',   undef, '');
+DefMacroI('\symbolthanksmark', undef, '\fnsymbol');
+DefMacro('\thanksmarkseries{}',  '');
+DefMacro('\symbolthanksmark',    '');
+DefMacro('\@bscontmark',         '');
+DefMacro('\continuousmarks',     '');
+DefMacro('\thanksheadextra{}{}', '');
+DefMacro('\thanksfootextra{}{}', '');
+DefMacro('\thanksmark{}',        '\footnotemark[#1]');
+DefMacro('\thanksgap{}',         '\hspace{#1}');
+DefMacro('\tamark',              '\footnotemark');
+DefMacro('\thanksscript{}',      '\textsuperscript{#1}');
+DefMacro('\makethanksmarkhook',  '');
+DefMacro('\thanksfootmark',      '\tamark');
+DefMacro('\makethanksmark',      '\thanksfootmark');
+DefMacro('\usethanksrule',       '');
+DefMacro('\cancelthanksrule',    '');
+DefMacro('\calccentering{}{}',   '');
 
 RawTeX(<<'EoTeX');
 \pretitle{\begin{center}\LARGE}
@@ -45,6 +62,10 @@ RawTeX(<<'EoTeX');
 \predate{\begin{center}\large}
 \postdate{\par\end{center}}
 EoTeX
+
+DefRegister('\droptitle'       => Dimension("0pt"));
+DefRegister('\thanksmarkwidth' => Dimension("1.8em"));
+DefRegister('\thanksmargin'    => Dimension("-1.8em"));
 
 # The resulting title ought to look something like:
 # \renewcommand{\maketitle}{%
@@ -66,11 +87,14 @@ DefMacroI('\maketitle', undef,
 
 DefEnvironment('{titlingpage}', '');    # ?
 
-DefMacroI('\killtitle',    undef, '');
-DefMacroI('\keepthetitle', undef, '');
-DefMacroI('\emptythanks',  undef, '');
+DefMacroI('\killtitle',         undef, '');
+DefMacroI('\keepthetitle',      undef, '');
+DefMacroI('\emptythanks',       undef, '');
+DefMacroI('\@bsmtitlempty',     undef, '');
+DefMacroI('\appendiargdef{}{}', undef, '');
 
 # UNFINISHED!!!
 # There's a whole bunch of stuff dealing with \thanks.
+# that we can port with more accuracy
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
