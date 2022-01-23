@@ -25,6 +25,11 @@ DefEnvironment("{singlespace}",  "#body");
 DefEnvironment("{onehalfspace}", "#body");
 DefEnvironment("{doublespace}",  "#body");
 DefEnvironment("{spacing}{}",    "#body");
+
+DefMacroI('\setstretch',            '{}',  '');
+DefMacroI('\SetSinglespace',        '{}',  '');
+DefMacroI('\setdisplayskipstretch', '{}',  '');
+DefMacroI('\restore@spacing',       undef, '');
 #**********************************************************************
 
 1;
