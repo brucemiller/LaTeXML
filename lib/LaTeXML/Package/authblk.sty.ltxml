@@ -25,8 +25,17 @@ DefMacro('\Authsep',   ',');
 DefMacro('\Authand',   ' and ');
 DefMacro('\Authands',  ', and ');
 DefMacro('\authorcr',  '\\\\\Authfont');
+
+# package bookkeeping
 DefConditional('\ifnewaffil');
+DefRegister('\affilsep'  => Dimension('1em'));
+DefRegister('\@affilsep' => Dimension('1em'));
+NewCounter('Maxaffil');
+SetCounter('Maxaffil', Number(2));
+NewCounter('authors');
+NewCounter('affil');
 NewCounter('@affil');
+
 DefMacro('\the@affil', 'affil\arabic{@affil}');
 DefMacro('\author[]{}', sub {
     return map { Invocation(T_CS('\lx@ab@author'), $_[1], Tokens(@$_)) }
@@ -51,19 +60,25 @@ DefConstructor('\affil[]{}',
     $whatsit->setProperty(mark => ToString($mark));
     return; });
 
-Tag('ltx:note',     afterClose => \&authblkRelocateAffil);
-Tag('ltx:document', afterClose => \&pruneEmptyAffil);
+Tag('ltx:document', afterClose => \&authblkRelocateAffil);
 
 sub authblkRelocateAffil {
-  my ($document, $affilnode) = @_;
-  if (($affilnode->getAttribute('role') || '') eq 'affiliationtext') {
-    if (my $mark = $affilnode->getAttribute('mark')) {
+  my ($document)   = @_;
+  my @affil_nodes  = $document->findnodes(".//ltx:note[\@role='affiliationtext']");
+  my @author_nodes = $document->findnodes(".//ltx:contact[\@role='affiliationmark' and \@_mark]");
+  for my $affil_node (@affil_nodes) {
+    # first, unbind all nodes - they get reparented or discarded.
+    $affil_node->parentNode->removeChild($affil_node);
+    # next, see if we can find a new home.
+    if (my $affil_mark = $affil_node->getAttribute('mark')) {
       # Find authors with same mark.
-      my @authors = $document->findnodes(".//ltx:contact[\@role='affiliationmark' and \@_mark='$mark']");
-      foreach my $author (@authors) {
-        $document->appendClone($author, $affilnode->childNodes);
-        $author->setAttribute(role => 'affiliation'); }
-      $affilnode->parentNode->removeChild($affilnode); } }
+      for my $author_node (@author_nodes) {
+        my @author_marks = split(/\s*,\s*/, ($author_node->getAttribute('_mark') || ''));
+        next unless (grep { $_ eq $affil_mark } @author_marks);
+        # An affiliation node may be reused across authors,
+        # but should still get unlinked the first time we reparent it
+        $document->appendClone($author_node, $affil_node);
+        $author_node->setAttribute(role => 'affiliation'); } } }
   return; }
 
 sub pruneEmptyAffil {
@@ -72,6 +87,11 @@ sub pruneEmptyAffil {
   for my $empty_node ($document->findnodes(".//ltx:contact[\@role='affiliationmark' and not(node()) and not(text())]")) {
     $document->removeNode($empty_node); }
   return; }
+
+# we shouldn't need these, but if someone is using them low-level
+# might as well provide them
+DefMacro('\AB@authnote{}',  '\textsuperscript{\normalfont#1}');
+DefMacro('\AB@affilnote{}', '\textsuperscript{\normalfont#1}');
 
 #======================================================================
 1;
