@@ -5489,13 +5489,15 @@ sub make_message {
   my $type = $lead_arg || $cmd;
   $stomach->bgroup;
   Let('\protect', '\string');
-  # Trailing gobbles can't work as in latex, as long as we do a sandboxed Expand()
-  # so, disable the common ones that make it all the way here.
-  Let('\@gobble',    '\relax');
-  Let('\@gobbletwo', '\relax');
   # Note that the arg really should be digested to get to the underlying text,
   # but why tempt fate, when we're already making an error message?
-  my $message = join(" ", map { ToString(Expand($_)) } @args);
+  #
+  # We have to expand padded with two \@spaces, to avoid pointless errors.
+  # e.g. a trailing "\csq@noline" from csquotes.sty, which was previously
+  # \let\csq@noline\@gobble
+  # will produce a "gobble has no argument" error on *every* message.
+  my $message = join(" ",
+    map { ToString(Expand($_, T_CS('\@spaces'), T_CS('\@spaces'))) } @args);
   $type    =~ s/(?:\\\@?spaces?)+/ /g;
   $message =~ s/(?:\\\@?spaces?)+/ /g;
   $stomach->egroup;
