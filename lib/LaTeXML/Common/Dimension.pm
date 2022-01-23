@@ -101,6 +101,10 @@ sub pxValue {
   my ($self, $prec) = @_;
   return roundto($$self[0] / $UNITY * ($STATE->lookupValue('DPI') || 100) / 72.27, $prec); }
 
+sub spValue {
+  my ($self, $prec) = @_;
+  return kround($$self[0]); }
+
 #======================================================================
 1;
 

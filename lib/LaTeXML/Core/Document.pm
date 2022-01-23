@@ -683,7 +683,7 @@ sub insertComment {
   if ($$self{node}->nodeType == XML_DOCUMENT_NODE) {
     push(@{ $$self{pending} }, $comment = $$self{document}->createComment(' ' . $text . ' ')); }
   elsif (($comment = $$self{node}->lastChild) && ($comment->nodeType == XML_COMMENT_NODE)) {
-    $comment->setData($comment->data . "\n     " . $text); }
+    $comment->setData($comment->data . "\n     " . $text . ' '); }
   else {
     $comment = $$self{node}->appendChild($$self{document}->createComment(' ' . $text . ' ')); }
   return $comment; }

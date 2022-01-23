@@ -564,17 +564,17 @@ sub computeBoxesSize {
                                                   #    next if ref $box && $box->getProperty('isEmpty');
     ## Should any %options be inherited by the contained boxes?
     my ($w, $h, $d) = (ref $box ? $box->getSize() : $font->computeStringSize($box));
-    if (ref $w) {
+    if ((ref $w) && $w->can('_unit')) {
       $wd += ($w->_unit eq 'mu' ? $w->spValue : $w->valueOf); }
     else {
       Warn('expected', 'Dimension', undef,
         "Width of " . Stringify($box) . " yielded a non-dimension: " . Stringify($w)); }
-    if (ref $h) {
+    if ((ref $h) && $h->can('_unit')) {
       $ht = max($ht, ($h->_unit eq 'mu' ? $h->spValue : $h->valueOf)); }
     else {
       Warn('expected', 'Dimension', undef,
         "Height of " . Stringify($box) . " yielded a non-dimension: " . Stringify($h)); }
-    if (ref $d) {
+    if ((ref $d) && $d->can('_unit')) {
       $dp = max($dp, ($d->_unit eq 'mu' ? $d->spValue : $d->valueOf)); }
     else {
       Warn('expected', 'Dimension', undef,

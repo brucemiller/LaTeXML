@@ -103,8 +103,8 @@ DefConstructor('\Gscale@@box {} {GraphixDimension}{GraphixDimension} {}', sub {
     my ($xscale, $yscale)                             = (1, 1);
     my ($w, $h, $d)                                   = $box->getSize;
     $h = $h->advance($d) if T_CS('\totalheight')->equals($heighttype);
-    if ($width)             { $xscale = $width->valueOf / $w->valueOf; }
-    if ($height)            { $yscale = $height->valueOf / $h->valueOf; }
+    if ($width)             { $xscale = $width->valueOf / ($w->valueOf || 1); }
+    if ($height)            { $yscale = $height->valueOf / ($h->valueOf || 1); }
     if ($width && !$height) { $yscale = $xscale; }
     if ($height && !$width) { $xscale = $yscale; }
     graphics_scaledbox_props($box, $xscale, $yscale); },

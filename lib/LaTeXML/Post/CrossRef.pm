@@ -398,7 +398,7 @@ sub fill_in_mathlinks {
   my $n  = 0;
   foreach my $sym ($doc->findnodes('descendant::*[@decl_id or @meaning]')) {
     my $tag = $doc->getQName($sym);
-    next if $tag eq 'ltx:XMRef';               # Blech; list those TO fill-in, or list those to exclude?
+    next if $tag eq 'ltx:XMRef';          # Blech; list those TO fill-in, or list those to exclude?
     next if $sym->hasAttribute('href');
     my $decl_id = $sym->getAttribute('decl_id');
     my $meaning = $sym->getAttribute('meaning');
@@ -499,9 +499,9 @@ sub make_bibcite {
       my $titlestring = undef;
       if (defined $title) {
         $titlestring = $title->textContent;
-        $titlestring =~ s/^\s+//;                       # Trim leading whitespace
-        $titlestring =~ s/\s+$//;                       # and trailing
-        $titlestring =~ s/\s+/ /gs; }                   # and normalize all other whitespace.
+        $titlestring =~ s/^\s+//;        # Trim leading whitespace
+        $titlestring =~ s/\s+$//;        # and trailing
+        $titlestring =~ s/\s+/ /gs; }    # and normalize all other whitespace.
       if ($year && ($year->textContent) =~ /^(\d\d\d\d)(\w)$/) {
         ($rawyear, $suffix) = ($1, $2); }
       $show = 'refnum' unless ($show eq 'none') || $authors || $fauthors || $keytag; # Disable author-year format!
@@ -544,6 +544,7 @@ sub make_bibcite {
     # Add delimeters for parsing...
     $show =~ s/(\w)year/$1\{\}year/gi;
     $show =~ s/(\w)phrase/$1\{\}phrase/gi;
+    $show =~ s/phrase(\d)(\w)/phrase$1\{\}$2/gi;
     while ($show) {
       if ($show =~ s/^(\w+)//) {
         my $role = lc($1); $role =~ s/s$//;    # remove trailing plural
@@ -668,7 +669,7 @@ sub generateRef {
     return @stuff; }
   else {
     $self->note_missing('info', 'Usable title for ID', $reqid);
-    return ($reqid); } }               # id is crummy, but better than "?"... or?
+    return ($reqid); } }    # id is crummy, but better than "?"... or?
 
 # Just return the reqshow value for $reqid, or nothing
 sub generateRef_simple {
@@ -802,7 +803,7 @@ sub getTextContent_rec {
     my $tag = $doc->getQName($node);
     if ($tag eq 'ltx:tag') {
       return ($node->getAttribute('open') || '')
-        . $node->textContent         # assuming no nested ltx:tag
+        . $node->textContent    # assuming no nested ltx:tag
         . ($node->getAttribute('close') || ''); }
     else {
       return join('', map { getTextContent_rec($doc, $_); } $node->childNodes); } }
