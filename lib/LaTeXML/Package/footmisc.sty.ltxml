@@ -22,14 +22,19 @@ foreach my $option (qw(perpage para side ragged symbol symbol* bottom
   DeclareOption($option, undef); }
 ProcessOptions();
 
-DefMacro('\footnotelayout', '');
 # could define & use these, but...
 DefMacro('\DefineFNsymbols OptionalMatch:* {}{}', '');
 DefMacro('\setfnsymbol{}',                        '');
 
+DefMacro('\mpfootnotemark',    '\footnotemark');
 DefMacro('\mpfootnoterule',    '\footnoterule');
 DefMacro('\pagefootnoterule',  '\footnoterule');
 DefMacro('\splitfootnoterule', '\footnoterule');
+DefMacro('\footnotelayout',    '\@empty');
+DefMacro('\footnotehint',      '');
+
+DefRegister('\footnotemargin'       => Dimension('1.8em'));
+DefRegister('\footnotebaselineskip' => Glue('12pt'));
 #**********************************************************************
 
 1;
