@@ -498,7 +498,7 @@ DefConstructor('\lx@note[]{}[]{}',
       makeNoteTags($type, $_[1], $_[3])); },
   reversion => '');
 DefConstructor('\lx@notemark[]{}[]',
-  "<ltx:note role='#role' mark='#mark' xml:id='#id' inlist='#list'>"
+  "^<ltx:note role='#role' mark='#mark' xml:id='#id' inlist='#list'>"
     . "#tags"
     . "</ltx:note>",
   mode       => 'text',
@@ -509,7 +509,7 @@ DefConstructor('\lx@notemark[]{}[]',
       makeNoteTags($type, $_[1], $_[3])); },
   reversion => '');
 DefConstructor('\lx@notetext[]{}[]{}',
-  "<ltx:note role='#role' mark='#mark' xml:id='#id'>#4</ltx:note>",
+  "^<ltx:note role='#role' mark='#mark' xml:id='#id'>#4</ltx:note>",
   mode       => 'text',
   properties => sub {
     my $type = ToString($_[2]);

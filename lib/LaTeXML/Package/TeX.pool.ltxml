@@ -6648,7 +6648,7 @@ DefPrimitive('\normalbottom', undef);
 # if the mark is not simple, we add it to the content of the note
 # otherwise, to the attribute.
 DefConstructor('\footnote{}{}',
-  "<ltx:note role='footnote' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
+  "^<ltx:note role='footnote' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $mark   = $whatsit->getArg(1);
