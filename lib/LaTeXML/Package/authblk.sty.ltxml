@@ -43,7 +43,15 @@ DefMacro('\author[]{}', sub {
 
 DefMacro('\lx@ab@author[]{}',
   '\@add@frontmatter{ltx:creator}[role=author]'
-    . '{\@personname{#2}\lx@authormark{\if.#1.\the@affil\else#1\fi}}');
+    . '{\@personname{#2}\lx@split@authormark{#1}}');
+
+# Preserve the order, where we add an "affiliationmark" element
+# for each numeric mark in the \author[] optional argument
+DefMacro('\lx@split@authormark{}', sub {
+    if (my @marks = split(/\s*,\s*/, ToString($_[1]))) {
+      return (map { T_CS('\lx@authormark'), T_OTHER($_) } @marks); }
+    else {
+      return (T_CS('\lx@authormark'), T_CS('\the@affil')); } });
 
 DefConstructor('\lx@authormark{}',
   "^?#mark(<ltx:contact role='affiliationmark' _mark='#mark'></ltx:contact>)()",
@@ -74,21 +82,12 @@ sub authblkRelocateAffil {
     # the last node wins
     if (my $mark = $affil_node->getAttribute('mark')) {
       $mark_to_affil{$mark} = $affil_node; } }
-  # The most accurate approach here is to go author-by-author,
-  # and attach the affiliations in the *exact order* they were requested
-  # \author[1,7]{A} and \author[7,1]{B} are intended to be presented in that order.
+  # Now process all affiliationmarks
   for my $author_node (@author_nodes) {
-    my @author_marks = split(/\s*,\s*/, ($author_node->getAttribute('_mark') || ''));
-    next unless @author_marks;
     $author_node->setAttribute(role => 'affiliation');
-    my $author_parent = $author_node->parentNode;
-    for my $mark (reverse(@author_marks)) {
-      if (my $affil_node = $mark_to_affil{$mark}) {
-        my $new_contact = $author_node->cloneNode(0);
-        $author_parent->insertAfter($new_contact, $author_node);
-        $document->appendClone($new_contact, $affil_node->childNodes); } }
-    # at the end, unbind each author-mark template node
-    $author_parent->removeChild($author_node); }
+    my $mark = $author_node->getAttribute('_mark') || '';
+    if (my $affil_node = $mark_to_affil{$mark}) {
+      $document->appendClone($author_node, $affil_node->childNodes); } }
   return; }
 
 # we shouldn't need these, but if someone is using them low-level
