@@ -440,7 +440,7 @@ contact_attributes =
   ## indicates the type of contact information contained.
   ## Commonly useful values are specified, but is open-ended to support extension.
   attribute role { "affiliation" | "address" | "current_address" | "email" | "url"
-                 | "thanks" | "dedicatory" | text }?
+                 | "thanks" | "dedicatory" | "orcid" | text }?
 
 ## Content model for \elementref{contact}.
 contact_model = Inline.model
