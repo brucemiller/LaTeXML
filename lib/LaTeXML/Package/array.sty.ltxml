@@ -70,5 +70,5 @@ DefPrimitive('\newcolumntype{}[Number][]{}', sub {
     DefMacroI(T_CS('\NC@rewrite@' . ToString($char)), convertLaTeXArgs($nargs, $opt), $replacement);
     return AddToPreamble(T_CS('\newcolumntype'), $char, $nargs, $opt, $replacement); });
 
-Let('\arraybackslash', '\tabularnewline');
+DefMacro('\arraybackslash', '\let\\\\\tabularnewline');
 1;
