@@ -241,6 +241,11 @@ DefMacro('\homedir', "\~{ }");
 DefMacro('\idxquad', '\hskip 10pt\relax');
 #======================================================================
 
+# Newer llncs versions have an ORCID id macro
+DefMacro('\orcidID Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@orcid{\@@orcid{#1}}}');
+DefConstructor('\@@orcid{}', '<ltx:ref title="ORCID identifier" href="https://orcid.org/#1">#1</ltx:ref>');
+DefConstructor('\@@@orcid{}', '^ <ltx:contact role="orcid">#1</ltx:contact>');
+
 #  /--------------------------------------------------------------------\
 # | INCOMPLETE IMPLEMENTATION                                            |
 # | remove this comment, when done.                                      |
