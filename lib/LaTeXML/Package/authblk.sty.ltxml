@@ -91,13 +91,6 @@ sub authblkRelocateAffil {
     $author_parent->removeChild($author_node); }
   return; }
 
-sub pruneEmptyAffil {
-  my ($document) = @_;
-  # Some affiliations never get filled, prune them.
-  for my $empty_node ($document->findnodes(".//ltx:contact[\@role='affiliationmark' and not(node()) and not(text())]")) {
-    $document->removeNode($empty_node); }
-  return; }
-
 # we shouldn't need these, but if someone is using them low-level
 # might as well provide them
 DefMacro('\AB@authnote{}',  '\textsuperscript{\normalfont#1}');
