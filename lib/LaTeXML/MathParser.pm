@@ -560,6 +560,7 @@ sub parse_kludge {
   return; }
 
 sub parse_kludgeScripts_rec {
+  no warnings 'recursion';
   my ($self, $x, $y, @more) = @_;
   my @acc = ();
   while (defined $y) {
