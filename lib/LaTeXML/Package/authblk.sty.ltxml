@@ -64,21 +64,31 @@ Tag('ltx:document', afterClose => \&authblkRelocateAffil);
 
 sub authblkRelocateAffil {
   my ($document)   = @_;
-  my @affil_nodes  = $document->findnodes(".//ltx:note[\@role='affiliationtext']");
   my @author_nodes = $document->findnodes(".//ltx:contact[\@role='affiliationmark' and \@_mark]");
+  my @affil_nodes  = $document->findnodes(".//ltx:note[\@role='affiliationtext']");
+  # first, unbind all affiliation text nodes - they get reparented or discarded.
+  my %mark_to_affil = ();
   for my $affil_node (@affil_nodes) {
-    # first, unbind all nodes - they get reparented or discarded.
     $affil_node->parentNode->removeChild($affil_node);
-    # next, see if we can find a new home.
-    if (my $affil_mark = $affil_node->getAttribute('mark')) {
-      # Find authors with same mark.
-      for my $author_node (@author_nodes) {
-        my @author_marks = split(/\s*,\s*/, ($author_node->getAttribute('_mark') || ''));
-        next unless (grep { $_ eq $affil_mark } @author_marks);
-        # An affiliation node may be reused across authors,
-        # but should still get unlinked the first time we reparent it
-        $document->appendClone($author_node, $affil_node);
-        $author_node->setAttribute(role => 'affiliation'); } } }
+    # if we get conflicting marks -- which we shouldn't
+    # the last node wins
+    if (my $mark = $affil_node->getAttribute('mark')) {
+      $mark_to_affil{$mark} = $affil_node; } }
+  # The most accurate approach here is to go author-by-author,
+  # and attach the affiliations in the *exact order* they were requested
+  # \author[1,7]{A} and \author[7,1]{B} are intended to be presented in that order.
+  for my $author_node (@author_nodes) {
+    my @author_marks = split(/\s*,\s*/, ($author_node->getAttribute('_mark') || ''));
+    next unless @author_marks;
+    $author_node->setAttribute(role => 'affiliation');
+    my $author_parent = $author_node->parentNode;
+    for my $mark (reverse(@author_marks)) {
+      if (my $affil_node = $mark_to_affil{$mark}) {
+        my $new_contact = $author_node->cloneNode(0);
+        $author_parent->insertAfter($new_contact, $author_node);
+        $document->appendClone($new_contact, $affil_node->childNodes); } }
+    # at the end, unbind each author-mark template node
+    $author_parent->removeChild($author_node); }
   return; }
 
 sub pruneEmptyAffil {
