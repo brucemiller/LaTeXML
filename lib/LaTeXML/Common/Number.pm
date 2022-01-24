@@ -111,12 +111,12 @@ sub multiply {
 # Truncating division
 sub divide {
   my ($self, $other) = @_;
-  return (ref $self)->new(int($self->valueOf / (ref $other ? $other->valueOf : $other))); }
+  return (ref $self)->new(int($self->valueOf / ((ref $other ? $other->valueOf : $other) || $EPSILON))); }
 
 # Rounding division
 sub divideround {
   my ($self, $other) = @_;
-  return (ref $self)->new(int(0.5 + $self->valueOf / (ref $other ? $other->valueOf : $other))); }
+  return (ref $self)->new(int(0.5 + $self->valueOf / ((ref $other ? $other->valueOf : $other) || $EPSILON))); }
 
 sub stringify {
   my ($self) = @_;
@@ -222,4 +222,3 @@ Public domain software, produced as part of work done by the
 United States Government & not subject to copyright in the US.
 
 =cut
-
