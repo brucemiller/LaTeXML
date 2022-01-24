@@ -199,6 +199,10 @@
     <email><xsl:apply-templates /></email>
   </xsl:template>
 
+  <xsl:template match="ltx:contact[@role='orcid']">
+    <email><xsl:apply-templates /></email>
+  </xsl:template>
+
   <xsl:template match="ltx:contact[@role='url']">
     <xsl:apply-templates/>
   </xsl:template>

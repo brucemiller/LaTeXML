@@ -191,6 +191,10 @@
     <email><xsl:apply-templates/></email>
   </xsl:template>
 
+  <xsl:template match="ltx:contact[@role='orcid']">
+    <xsl:apply-templates/>
+  </xsl:template>
+
   <xsl:template match="ltx:contact[@role='url']">
     <xsl:apply-templates/>
   </xsl:template>
@@ -782,4 +786,3 @@
   <xsl:template match="ltx:break"/>
 
 </xsl:stylesheet>
-
