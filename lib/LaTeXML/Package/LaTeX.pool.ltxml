@@ -882,6 +882,17 @@ DefMacro('\ProvidesFile{}[]', sub {
     DefMacroI("\\ver@" . ToString($file), undef, $version || Tokens(), scope => 'global');
     return; });
 
+#\DeclareRelease{v4.46}{2020-03-19}{glossaries-2020-03-19.sty}
+DefMacro('\DeclareRelease{}{}{}', sub {
+    my ($stomach, $version, $date, $name) = @_;
+    # anything useful?
+    return (); });
+#\DeclareCurrentRelease{v4.49}{2021-11-01}
+DefMacro('\DeclareCurrentRelease{}{}', sub {
+    my ($stomach, $version, $date) = @_;
+    # anything useful?
+    return (); });
+
 DefPrimitive('\DeclareOption{}{}', sub {
     my ($stomach, $option, $code) = @_;
     ((ToString($option) eq '*') ?
