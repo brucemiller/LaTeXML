@@ -54,5 +54,7 @@ DefPrimitive('\excludecomment{}',     \&defineExcluded);
 DefPrimitive('\specialcomment{}{}{}', \&defineIncluded);
 #DefPrimitive('\processcomment{}{}{}{}',);
 
+DefMacro('\csarg{}{}', '\expandafter#1\csname#2\endcsname');
+
 #**********************************************************************
 1;
