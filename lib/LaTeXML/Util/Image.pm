@@ -288,8 +288,15 @@ sub image_graphicx_complex {
   my $zoomout  = $properties{zoomout}  || 1;
   my ($xprescale, $yprescale) = (1, 1);
 
-  # # Wastefully preread the image to get it's initial size
+  # Wastefully preread the image to get it's initial size
   my ($w0, $h0) = image_size($source);
+  # 16x16 pixels (i.e. icon size) is the minimal viable
+  # size to default to, when ghostscript experiences errors
+  # and returns undefined
+  if (!$w0 || !$h0) {
+    Warn('imageprocessing', "image_size", "ghostscript failed to size $source, returned " . ($w0 || '') . " x " . ($h0 || ''));
+    $w0 = 16 unless $w0;
+    $h0 = 16 unless $h0; }
   Debug("Processing $source initially $w0 x $h0,"
       . "w/ DPI=$dpi, magnify=$magnify, upsample=$upsample, zoomout=$zoomout") if $LaTeXML::DEBUG{images};
   my @transform = @$transform;
