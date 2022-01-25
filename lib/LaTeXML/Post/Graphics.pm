@@ -140,7 +140,7 @@ sub findGraphicFile {
     #
     # If this is *NOT* a known graphics type, it would be best to treat it as
     # a name suffix (e.g. name.1 from name.1.png)
-    if (defined($reqtype) && !(grep { $_ eq lc($reqtype) } $$self{graphics_types})) {
+    if ((length($reqtype) > 0) && !(grep { $_ eq lc($reqtype) } $$self{graphics_types})) {
       $name .= ".$reqtype"; }
     my $file  = pathname_concat($dir, $name);
     my @paths = pathname_findall($file, paths => $LaTeXML::Post::Graphics::SEARCHPATHS,
