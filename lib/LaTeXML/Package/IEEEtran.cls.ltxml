@@ -100,7 +100,7 @@ RawTeX(<<'EoTeX');
 
 \DeclareOption{nofonttune}{\CLASSOPTIONnofonttunetrue}
 \DeclareOption{captionsoff}{\CLASSOPTIONcaptionsofftrue}
-\DeclareOption{comsoc}{\CLASSOPTIONcomsoctrue\CLASSOPTIONcompsocfalse\CLASSOPTIONtransmagfalse}
+\DeclareOption{comsoc}{\CLASSOPTIONcomsoctrue\CLASSOPTIONcompsocfalse\CLASSOPTIONtransmagfalse\RequirePackage{newtxmath}}
 \DeclareOption{compsoc}{\CLASSOPTIONcomsocfalse\CLASSOPTIONcompsoctrue\CLASSOPTIONtransmagfalse}
 \DeclareOption{transmag}{\CLASSOPTIONtransmagtrue\CLASSOPTIONcomsocfalse\CLASSOPTIONcompsocfalse}
 \DeclareOption{romanappendices}{\CLASSOPTIONromanappendicestrue}
