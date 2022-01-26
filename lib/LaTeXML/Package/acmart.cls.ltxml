@@ -56,6 +56,7 @@ DefMacro('\copyrightyear{}',       '\@add@frontmatter{ltx:date}[role=copyright]{
 DefMacro('\setcopyright{}',        '\@add@frontmatter{ltx:note}[role=copyright]{#1}');
 DefMacro('\received[]{}',          '\@add@frontmatter{ltx:date}[role=received]{#2}');
 DefMacro('\acmJournal{}',          '\@add@frontmatter{ltx:note}[role=journal]{#1}');
+DefMacro('\acmSubmissionID{}',     '\@add@frontmatter{ltx:note}[role=submissionid]{#1}');
 DefMacro('\acmConference[]{}{}{}', '\@add@frontmatter{ltx:note}[role=conference]{#2; #3; #4}');
 DefMacro('\acmBooktitle{}',        '\@add@frontmatter{ltx:note}[role=booktitle]{#1}');
 DefMacro('\acmArticle{}',          '\@add@frontmatter{ltx:note}[role=article]{#1}');
