@@ -68,7 +68,7 @@ DefMacro('\infer OptionalMatch:* OptionalMatch:= [] {}{}', sub {
           Invocation(T_CS('\lx@proof@bars'), $double, I_arg(1)),
           I_arg(3))),
       $lower, Invocation(T_CS('\lx@proof@split@and'), $uppers), $label);
-    return (LookupValue('IN_MATH') ? $cmd : Tokens(T_MATH, $cmd, T_MATH)); });
+    return $cmd; });
 
 # Similar, no bars, label (if any) replaces the bars
 DefMacro('\deduce [] {}{}', sub {
@@ -78,5 +78,5 @@ DefMacro('\deduce [] {}{}', sub {
       I_apply({}, I_symbol({ meaning => $meaning }), I_arg(1), I_arg(2)),
       Invocation(T_CS('\lx@proof@stack'), I_arg(2), $label, I_arg(1)),
       $lower, Invocation(T_CS('\lx@proof@split@and'), $uppers));
-    return (LookupValue('IN_MATH') ? $cmd : Tokens(T_MATH, $cmd, T_MATH)); });
+    return $cmd; });
 1;
