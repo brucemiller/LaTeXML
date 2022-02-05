@@ -38,5 +38,11 @@ DefMacro('\todototoc',         '');
 DefMacro('\listoftodos',       '');
 DefMacro('\@todo[]{}',         '');
 
+DeclareOption('disable', sub {
+    DefMacro('\todo{}', '', locked => 1);
+});
+
+ProcessOptions();
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
