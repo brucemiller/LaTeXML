@@ -858,6 +858,18 @@ DefPrimitive('\rrshift Variable', sub {
     my ($defn, @args) = @$var;
     $defn->setValue($defn->valueOf(@args)->multiply(0.01), @args); });
 
+#\fcolorbox{name}{text} or \fcolorbox[model]{spec}{text}
+DefConstructor('\fcolorbox[]{}{} Undigested',
+  "<ltx:text framed='rectangle' framecolor='#framecolor'"
+    . " _noautoclose='1'>#text</ltx:text>",
+  bounded     => 1, mode => 'text',
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($model, $fspec, $bspec, $text) = $whatsit->getArgs;
+    $whatsit->setProperty(framecolor => ParseXColor($model, $fspec));
+    MergeFont(background => ParseXColor($model, $bspec));
+    $whatsit->setProperty(text => Digest($text)); });
+
 #======================================================================
 # General TeX internals
 #======================================================================
