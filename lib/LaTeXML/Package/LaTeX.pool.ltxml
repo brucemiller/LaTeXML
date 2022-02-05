@@ -1120,14 +1120,14 @@ Tag('ltx:personname', afterClose => sub {
       if ($first->nodeType == XML_TEXT_NODE) {
         my $first_text = $first->data;
         my $new_text   = $first_text;
-        $new_text =~ s/^\W+//;
+        $new_text =~ s/^[^\w)(}{\]\[]]+//;
         if ($first_text ne $new_text) {
           $first->setData($new_text); } } }
     if (my $last = $node->lastChild) {
       if ($last->nodeType == XML_TEXT_NODE) {
         my $last_text = $last->data;
         my $new_text  = $last_text;
-        $new_text =~ s/\W+$//;
+        $new_text =~ s/[^\w)(}{\]\[]+$//;
         if ($last_text ne $new_text) {
           $last->setData($new_text); } } }
     return; });
