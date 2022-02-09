@@ -98,9 +98,9 @@ sub normalizeBibKey {
 # In principle, we ought to look for named files also in the file cache (eg. from {filecontents})
 sub getBibliographies {
   my ($self, $doc) = @_;
-  my @bibnames = ();
-  my $fromBibliography = 0; # coming from an 'ltx:bibliography'
-  # use the commandline bibliographies, if explicitly given.
+  my @bibnames         = ();
+  my $fromBibliography = 0;    # coming from an 'ltx:bibliography'
+                               # use the commandline bibliographies, if explicitly given.
   if ($$self{bibliographies} && scalar(@{ $$self{bibliographies} })) {
     @bibnames = @{ $$self{bibliographies} }; }
   else {
@@ -109,7 +109,7 @@ sub getBibliographies {
       || $bibnode->parentNode->getAttribute('files')    # !!!!!
     ) {
       $fromBibliography = 1;
-      @bibnames = split(',', $files); } }
+      @bibnames         = split(',', $files); } }
   my @paths   = $doc->getSearchPaths;
   my @bibs    = ();
   my @rawbibs = ();
@@ -128,7 +128,7 @@ sub getBibliographies {
       push(@rawbibs, $bib);
       next; }
     elsif ($bib =~ /\.xml$/) {
-      $bibdoc = $doc->newFromFile($bib); }                 # doc will do the searching...
+      $bibdoc = $doc->newFromFile($bib); }    # doc will do the searching...
     elsif ($bib =~ /\.bib(?:\.xml)?$/ || $fromBibliography) {
       # NOTE: We should also use kpsewhich to get the effects of $BIBINPUTS?
       # NOTE: When better integrated with Core, should also check for cached bib documents.
@@ -189,8 +189,8 @@ sub convertBibliography {
   require LaTeXML::Common::Config;
   my @preload = ();    # custom macros often used in e.g. howpublished field
                        # need to preload all packages used by the main article
-  my ($classdata, @packages) = $self->find_documentclass_and_packages($doc);
-  my ($class, $classoptions) = @$classdata;
+  my ($classdata, @packages)     = $self->find_documentclass_and_packages($doc);
+  my ($class,     $classoptions) = @$classdata;
   if ($class) {
 
     if ($classoptions) {
@@ -216,6 +216,7 @@ sub convertBibliography {
     whatsout       => 'document',
     includestyles  => 1,
     bibliographies => [],
+    paths          => $$doc{searchpaths},
     (@preload ? (preload => [@preload]) : ()));
   my $bib_converter = LaTeXML->get_converter($bib_config);
   # Tricky and HACKY, we need to release the log to capture the inner workings separately.
@@ -494,7 +495,7 @@ sub formatBibEntry {
         $aa = substr($aa, 0, 3) . "+"; } }
     else {
       $aa = uc(substr($rfnames[0]->textContent, 0, 3)); }
-    my $yrtext = (@year ? join('', map { (ref $_ ? $_->textContent : $_); } @year) : '');
+    my $yrtext = (@year                ? join('', map { (ref $_ ? $_->textContent : $_); } @year) : '');
     my $yy     = (length($yrtext) >= 2 ? substr($yrtext, 2, 2) : $yrtext);
     push(@tags, ['ltx:tag', { role => 'refnum', class => 'ltx_bib_abbrv', open => '[', close => ']' },
         $aa . $yy . ($$entry{suffix} || '')]); }
@@ -638,7 +639,7 @@ sub do_crossref {
   return (['ltx:cite', {},
       ['ltx:bibref', { bibrefs => $node->getAttribute('bibrefs'), show => 'title, author' }]]); }
 
-my $LINKS =                                       # CONSTANT
+my $LINKS =    # CONSTANT
   "ltx:bib-links | ltx:bib-review | ltx:bib-identifier | ltx:bib-url";
 
 sub do_links {
@@ -777,10 +778,10 @@ sub do_links {
     @META_BLOCK],
   website =>
     [[['ltx:bib-name[@role="author"]', '', '', 'author', \&do_authors, ''],
-      ['ltx:bib-name[@role="editor"]',      '', '', 'editor', \&do_editorsA, ''],
-      ['ltx:bib-date[@role="publication"]', '', '', 'year',   \&do_year,     ''],
-      ['ltx:title',                         '', '', 'title',  \&do_any,      ''],
-      ['ltx:bib-type',                      '', '', 'type',   \&do_any,      ''],
+      ['ltx:bib-name[@role="editor"]',      '', '', 'editor', \&do_editorsA,          ''],
+      ['ltx:bib-date[@role="publication"]', '', '', 'year',   \&do_year,              ''],
+      ['ltx:title',                         '', '', 'title',  \&do_any,               ''],
+      ['ltx:bib-type',                      '', '', 'type',   \&do_any,               ''],
       ['! ltx:bib-type',                    '', '', 'type',   sub { ('(Website)'); }, '']],
     [['ltx:bib-organization', ', ', ' ', 'publisher', \&do_any, ''],
       ['ltx:bib-place', ', ', '', 'place', \&do_any, ''],
