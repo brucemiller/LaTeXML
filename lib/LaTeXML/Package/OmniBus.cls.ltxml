@@ -59,8 +59,12 @@ DefEnvironment('{frontmatter}', '#body');
 DefEnvironment('{mainmatter}',  '#body');
 DefEnvironment('{backmatter}',  '#body');
 
-DefMacro('\shorttitle{}',  '\@add@frontmatter{ltx:toctitle}{#1}');
-DefMacro('\subtitle{}',    '\@add@frontmatter{ltx:subtitle}{#1}');
+DefMacro('\shorttitle{}', '\@add@frontmatter{ltx:toctitle}{#1}');
+DefMacro('\subtitle{}',   '\@add@frontmatter{ltx:subtitle}{#1}');
+DefMacro('\title[]{}',
+  '\if.#1.\else\def\shorttitle{#1}\@add@frontmatter{ltx:toctitle}{#1}\fi'
+    . '\@add@frontmatter{ltx:title}{#2}');
+
 DefMacro('\shortauthor{}', '');
 DefRegister('\titlerunning',  Tokens());
 DefRegister('\authorrunning', Tokens());
