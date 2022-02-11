@@ -4197,7 +4197,11 @@ DefMacro('\cite[] Semiverbatim', sub {
         ($post ? ($ns, T_SPACE, $post) : ()), $close)); });
 
 # NOTE: Eventually needs to be recognized by MakeBibliography
-DefConstructor('\nocite Semiverbatim',
+# For now, defer until document end.
+DefMacro('\nocite{}', sub {
+    PushValue('@at@end@document', (T_CS('\lx@mark@nocite'), T_BEGIN, $_[1], T_END));
+    return (); });
+DefConstructor('\lx@mark@nocite Semiverbatim',
   "<ltx:cite><ltx:bibref show='nothing' bibrefs='#bibrefs' inlist='#bibunit'/></ltx:cite>",
   properties => sub {
     (bibrefs => CleanBibKey($_[1]),
