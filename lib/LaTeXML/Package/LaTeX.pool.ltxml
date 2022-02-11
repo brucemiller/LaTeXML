@@ -1099,7 +1099,8 @@ DefRegister('\baselinestretch' => Dimension(0));
 
 # See frontmatter support in TeX.ltxml
 Let('\@title', '\@empty');
-DefMacro('\title{}', '\def\@title{#1}\@add@frontmatter{ltx:title}{#1}', locked => 1);
+DefMacro('\title[]{}', '\if.#1.\else\def\shorttitle{#1}\@add@frontmatter{ltx:toctitle}{#1}\fi'
+    . '\def\@title{#2}\@add@frontmatter{ltx:title}{#2}', locked => 1);
 
 DefMacro('\@date', '\@empty');
 DefMacro('\date{}',
