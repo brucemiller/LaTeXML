@@ -56,7 +56,7 @@ DefEnvironment('{cbunit}', '#body',
     AssignValue(CITE_UNIT       => (LookupValue('CITE_UNIT_GLOBAL') ? 'bibliography ' . $unit : $unit));
     return; });
 
-DefMacro('\bibliography Semiverbatim', '
-\lx@ifusebbl{#1}{\input{\jobname.bbl}}{\lx@bibliography[\lx@cb@unitname]{#1}}');
+DefMacro('\bibliography Semiverbatim',
+  '\lx@ifusebbl{#1}{\input{\jobname.bbl}}{\lx@bibliography[\lx@cb@unitname]{#1}}');
 
 1;
