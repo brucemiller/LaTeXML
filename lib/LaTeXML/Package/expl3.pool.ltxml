@@ -1,0 +1,4358 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  LaTeX 3                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use LaTeXML::Util::Pathname;
+
+# The rest we can define only if expl3.ltx is available on the system
+# we can stop gracefully if it isn't (e.g. no texlive installed)
+
+if (FindFile('expl3.ltx')) {
+  InputDefinitions('expl3', type => 'ltx', noltxml => 1);
+  RawTeX(<<'EoRawTeX');
+\ExplSyntaxOn
+\cs_gset_eq:NN \@expl@cs@to@str@@N \cs_to_str:N
+\cs_gset_eq:NN \@expl@str@if@eq@@nnTF \str_if_eq:nnTF
+\cs_gset_eq:NN \@expl@cs@prefix@spec@@N \cs_prefix_spec:N
+\cs_gset_eq:NN \@expl@cs@argument@spec@@N \cs_argument_spec:N
+\cs_gset_eq:NN \@expl@cs@replacement@spec@@N \cs_replacement_spec:N
+\cs_gset_eq:NN \@expl@str@map@function@@NN \str_map_function:NN
+\cs_gset_eq:NN \@expl@char@generate@@nn \char_generate:nn
+
+\def\NewCommandCopy{%
+  \declare@commandcopy
+    {\@firstofone}%
+    {\@firstoftwo\@notdefinable}}
+\def\RenewCommandCopy{%
+  \declare@commandcopy
+    {\@latex@error{Command \@backslashchar\reserved@a\space undefined}\@ehc
+     \@firstofone}%
+    {\@firstofone}}
+\def\DeclareCommandCopy{%
+  \declare@commandcopy
+    {\@firstofone}%
+    {\@firstofone}}
+\long\def\declare@commandcopy#1#2#3#4{%
+  \edef\reserved@a{\@expl@cs@to@str@@N#3}%
+  \@ifundefined\reserved@a{#1}{#2}%
+    {\robust@command@act
+       \@declarecommandcopylisthook#4%
+       \declare@commandcopy@let{#3#4}}}
+\def\@declarecommandcopylisthook{%
+  {\@if@DeclareRobustCommand \@copy@DeclareRobustCommand}%
+  {\@if@newcommand \@copy@newcommand}}
+\long\def\declare@commandcopy@let#1#2{\let#1=#2\relax}
+\long\def\ShowCommand#1{%
+  \robust@command@act
+    \@showcommandlisthook#1%
+    \show#1}
+\def\@showcommandlisthook{%
+  {\@if@DeclareRobustCommand \@show@DeclareRobustCommand}%
+  {\@if@newcommand \@show@newcommand}}
+%%% From File: ltcmd.dtx
+\def\ltcmdversion{v1.0h}
+\def\ltcmddate{2021-08-30}
+\tl_new:N \l__cmd_arg_spec_tl
+\tl_new:N \l__cmd_args_tl
+\tl_new:N \l__cmd_args_i_tl
+\tl_new:N \l__cmd_args_ii_tl
+\int_new:N \l__cmd_current_arg_int
+\bool_new:N \l__cmd_defaults_bool
+\tl_new:N \l__cmd_defaults_tl
+\bool_new:N \l__cmd_environment_bool
+\str_new:N \l__cmd_environment_str
+\bool_new:N \l__cmd_expandable_bool
+\tl_new:N \l__cmd_expandable_aux_name_tl
+\tl_set:Nn \l__cmd_expandable_aux_name_tl
+  {
+    \l__cmd_function_tl \c_space_tl
+    ( arg~ \int_use:N \l__cmd_current_arg_int )
+  }
+\int_new:N \g__cmd_grabber_int
+\tl_new:N \l__cmd_fn_tl
+\tl_new:N \l__cmd_fn_code_tl
+\tl_new:N \l__cmd_function_tl
+\bool_new:N \l__cmd_grab_expandably_bool
+\bool_new:N \l__cmd_obey_spaces_bool
+\tl_new:N \l__cmd_last_delimiters_tl
+\bool_new:N \l__cmd_long_bool
+\int_new:N \l__cmd_m_args_int
+\bool_new:N \l__cmd_prefixed_bool
+\tl_new:N \l__cmd_process_all_tl
+\tl_new:N \l__cmd_process_one_tl
+\bool_new:N \l__cmd_process_some_bool
+\tl_new:N \l__cmd_saved_args_tl
+\tl_new:N \l__cmd_signature_tl
+\bool_new:N \l__cmd_some_obey_spaces_bool
+\bool_new:N \l__cmd_some_long_bool
+\bool_new:N \l__cmd_some_short_bool
+\prop_new:N \l__cmd_tmp_prop
+\tl_new:N \l__cmd_tmpa_tl
+\tl_new:N \l__cmd_tmpb_tl
+\cs_new_eq:NN \__cmd_tmp:w ?
+\msg_redirect_module:nnn { cmd } { info } { none }
+\prop_gput:Nnn \g_msg_module_type_prop { cmd } { LaTeX }
+\cs_new_protected:Npn \__cmd_declare_cmd:Nnn
+  {
+    \bool_set_false:N \l__cmd_expandable_bool
+    \__cmd_declare_cmd_aux:Nnn
+  }
+\cs_new_protected:Npn \__cmd_declare_expandable_cmd:Nnn
+  {
+    \bool_set_true:N \l__cmd_expandable_bool
+    \__cmd_declare_cmd_aux:Nnn
+  }
+\cs_new_protected:Npn \__cmd_declare_cmd_aux:Nnn #1#2#3
+  {
+    \cs_if_exist:NTF #1
+      {
+        \msg_info:nnxx { cmd } { redefine }
+          { \token_to_str:N #1 } { \tl_to_str:n {#2} }
+      }
+      {
+        \bool_lazy_or:nnT
+          { \cs_if_exist_p:c { \cs_to_str:N #1 ~ code } }
+          { \cs_if_exist_p:c { \cs_to_str:N #1 ~ defaults } }
+          {
+            \msg_warning:nnx { cmd } { unsupported-let }
+              { \token_to_str:N #1 }
+          }
+        \msg_info:nnxx { cmd } { define-command }
+          { \token_to_str:N #1 } { \tl_to_str:n {#2} }
+      }
+    \bool_set_false:N \l__cmd_environment_bool
+    \__cmd_declare_cmd_internal:Nnnn #1 {#2} {#3} { }
+  }
+\cs_new_protected:Npn \__cmd_declare_cmd_internal:Nnnn #1#2#3#4
+  {
+    \tl_set:Nx \l__cmd_function_tl { \cs_to_str:N #1 }
+    \tl_set:Nx \l__cmd_fn_tl
+      { \exp_not:c { \l__cmd_function_tl \c_space_tl } }
+    \__cmd_normalize_arg_spec:n {#2}
+    \exp_args:No \__cmd_prepare_signature:n \l__cmd_arg_spec_tl
+    \__cmd_declare_cmd_code:Nnn #1 {#2} {#3}
+    #4
+    \__cmd_break_point:n {#2}
+  }
+\cs_new_eq:NN \__cmd_break_point:n \use_none:n
+\cs_new_protected:Npn \__cmd_declare_cmd_code:Nnn
+  {
+    \bool_if:NTF \l__cmd_grab_expandably_bool
+      { \__cmd_declare_cmd_code_expandable:Nnn }
+      { \__cmd_declare_cmd_code_aux:Nnn }
+   }
+\cs_new_protected:Npn \__cmd_declare_cmd_code_aux:Nnn #1#2#3
+  {
+    \cs_generate_from_arg_count:cNnn
+      { \l__cmd_function_tl \c_space_tl code }
+      \cs_set_protected:Npn \l__cmd_current_arg_int {#3}
+    \cs_set_protected_nopar:Npx #1
+      {
+        \bool_if:NTF \l__cmd_environment_bool
+          {
+            \__cmd_start_env:nnnnn { \exp_not:n {#2} }
+              { \l__cmd_environment_str }
+          }
+          {
+            \__cmd_start:nNNnnn { \exp_not:n {#2} }
+              \exp_not:c { \l__cmd_function_tl \c_space_tl }
+              \exp_not:c { \l__cmd_function_tl \c_space_tl code }
+          }
+          { \exp_not:o \l__cmd_signature_tl }
+          {
+            \bool_if:NT \l__cmd_defaults_bool
+              { \exp_not:o \l__cmd_defaults_tl }
+          }
+          {
+            \bool_if:NT \l__cmd_process_some_bool
+              { \exp_not:o \l__cmd_process_all_tl }
+          }
+      }
+  }
+\cs_new_protected:Npn \__cmd_declare_cmd_code_expandable:Nnn #1#2#3
+  {
+    \exp_args:Ncc \cs_generate_from_arg_count:NNnn
+      { \l__cmd_function_tl \c_space_tl code }
+      { cs_set \bool_if:NF \l__cmd_expandable_bool { _protected } :Npn }
+      \l__cmd_current_arg_int {#3}
+    \bool_if:NT \l__cmd_defaults_bool
+      {
+        \use:x
+          {
+            \cs_generate_from_arg_count:cNnn
+              { \l__cmd_function_tl \c_space_tl defaults }
+              \cs_set:Npn \l__cmd_current_arg_int
+              { \exp_not:o \l__cmd_defaults_tl }
+          }
+      }
+    \bool_if:NTF \l__cmd_expandable_bool
+      { \cs_set_nopar:Npx } { \cs_set_protected_nopar:Npx } #1
+      {
+        \exp_not:N \__cmd_start_expandable:nNNNNn
+          { \exp_not:n {#2} }
+          \exp_not:c { \l__cmd_function_tl \c_space_tl }
+          \exp_not:c
+            {
+              \l__cmd_function_tl \c_space_tl
+              \bool_if:NT \l__cmd_some_short_bool
+                { \bool_if:NT \l__cmd_some_long_bool { \c_space_tl } }
+            }
+          \exp_not:c { \l__cmd_function_tl \c_space_tl code }
+          \bool_if:NTF \l__cmd_defaults_bool
+            { \exp_not:c { \l__cmd_function_tl \c_space_tl defaults } }
+            { ? }
+          { \exp_not:o \l__cmd_signature_tl }
+      }
+    \bool_if:NTF \l__cmd_some_long_bool
+      {
+        \bool_if:NT \l__cmd_some_short_bool
+          {
+            \cs_set_nopar:cpx { \l__cmd_function_tl \c_space_tl \c_space_tl }
+              ##1##2 { ##1 {##2} }
+          }
+        \cs_set:cpx
+      }
+      { \cs_set_nopar:cpx }
+          { \l__cmd_function_tl \c_space_tl } ##1##2 { ##1 {##2} }
+  }
+\cs_new_protected:Npn \__cmd_declare_env:nnnn #1#2
+  {
+    \str_set:Nx \l__cmd_environment_str {#1}
+    \str_set:Nx \l__cmd_environment_str
+      { \tl_trim_spaces:o { \l__cmd_environment_str } }
+    \cs_if_exist:cTF { \l__cmd_environment_str }
+      {
+        \msg_info:nnxx { cmd } { redefine-env }
+          { \l__cmd_environment_str } { \tl_to_str:n {#2} }
+      }
+      {
+        \msg_info:nnxx { cmd } { define-env }
+          { \l__cmd_environment_str } { \tl_to_str:n {#2} }
+      }
+    \bool_set_false:N \l__cmd_expandable_bool
+    \bool_set_true:N \l__cmd_environment_bool
+    \exp_args:NV \__cmd_declare_env_internal:nnnn
+      \l__cmd_environment_str {#2}
+  }
+\cs_new_protected:Npn \__cmd_declare_env_internal:nnnn #1#2#3#4
+  {
+    \exp_args:Nc \__cmd_declare_cmd_internal:Nnnn { environment~ #1 } {#2}
+      {#3}
+      {
+        \cs_set_nopar:cpx { environment~ #1 ~end }
+          { \exp_not:c { environment~ #1 ~end~aux } }
+        \cs_generate_from_arg_count:cNnn
+          { environment~ #1 ~end~aux~ } \cs_set:Npn
+          \l__cmd_current_arg_int {#4}
+        \cs_set_eq:cc {#1}       { environment~ #1 }
+        \cs_set_eq:cc { end #1 } { environment~ #1 ~end }
+      }
+  }
+\cs_new_protected:Npn \__cmd_set_environment_end:n #1
+  {
+    \cs_set_nopar:cpx { environment~ #1 ~end~aux }
+      {
+        \exp_not:c { environment~ #1 ~end~aux~ }
+        \exp_not:o \l__cmd_args_tl
+      }
+  }
+\cs_new_protected:Npn \__cmd_start_env:nnnnn #1#2
+  {
+    \conditionally@traceoff
+    \group_align_safe_begin:
+    \str_set:Nn \l__cmd_environment_str {#2}
+    \bool_set_true:N \l__cmd_environment_bool
+    \__cmd_start_aux:ccnnnn
+      { environment~ \l__cmd_environment_str \c_space_tl }
+      { environment~ \l__cmd_environment_str \c_space_tl code }
+      {#1}
+  }
+\cs_new_protected:Npx \__cmd_start:nNNnnn #1#2#3
+  {
+    \exp_not:c { xparse~function~is~not~expandable }
+    \exp_not:N \conditionally@traceoff
+    \exp_not:N \group_align_safe_begin:
+    \exp_not:n { \bool_set_false:N \l__cmd_environment_bool }
+    \exp_not:N \__cmd_start_aux:NNnnnn
+    #2 #3 {#1}
+  }
+\cs_new_protected:Npn \__cmd_start_aux:NNnnnn #1#2#3#4#5#6
+  {
+    \tl_clear:N \l__cmd_args_tl
+    \tl_set:Nn \l__cmd_fn_tl {#1}
+    \tl_set:Nn \l__cmd_fn_code_tl {#2}
+    \tl_set:Nn \l__cmd_defaults_tl {#5}
+    \tl_set:Nn \l__cmd_process_all_tl {#6}
+    #4
+    \bool_if:NT \l__cmd_environment_bool
+      { \exp_args:No \__cmd_set_environment_end:n \l__cmd_environment_str }
+    \__cmd_run_code:
+  }
+\cs_generate_variant:Nn \__cmd_start_aux:NNnnnn { cc }
+\cs_new_protected:Npn \__cmd_run_code:
+  {
+    \tl_if_empty:NF \l__cmd_defaults_tl { \__cmd_defaults: }
+    \tl_if_empty:NF \l__cmd_process_all_tl { \__cmd_args_process: }
+    \group_align_safe_end:
+    \conditionally@traceon
+    \exp_after:wN \l__cmd_fn_code_tl \l__cmd_args_tl
+  }
+\cs_new_protected:Npn \__cmd_defaults:
+  {
+    \__cmd_defaults_def:
+    \tl_set_eq:NN \l__cmd_args_i_tl \l__cmd_args_tl
+    \__cmd_defaults_aux: \__cmd_defaults_aux: \__cmd_defaults_aux:
+    \__cmd_defaults_aux: \__cmd_defaults_aux: \__cmd_defaults_aux:
+    \__cmd_defaults_aux: \__cmd_defaults_aux: \__cmd_defaults_aux:
+    \__cmd_defaults_error:w
+    \q_recursion_stop
+    \tl_set_eq:NN \l__cmd_args_tl \l__cmd_args_i_tl
+  }
+\cs_new_protected:Npn \__cmd_defaults_aux:
+  {
+    \tl_set:Nx \l__cmd_args_ii_tl
+      { \exp_after:wN \__cmd_tmp:w \l__cmd_args_i_tl }
+    \tl_if_eq:NNT \l__cmd_args_ii_tl \l__cmd_args_i_tl
+      { \use_none_delimit_by_q_recursion_stop:w }
+    \tl_set_eq:NN \l__cmd_args_i_tl \l__cmd_args_ii_tl
+  }
+\cs_new_protected:Npn \__cmd_defaults_error:w \q_recursion_stop
+  {
+    \msg_error:nnx { cmd } { default-loop }
+      { \__cmd_environment_or_command: }
+  }
+\cs_new_protected:Npn \__cmd_defaults_def:
+  {
+    \tl_clear:N \l__cmd_tmpa_tl
+    \int_zero:N \l__cmd_current_arg_int
+    \__cmd_tl_mapthread_function:NNN \l__cmd_args_tl \l__cmd_defaults_tl
+      \__cmd_defaults_def:nn
+    \cs_generate_from_arg_count:NNVo \__cmd_tmp:w \cs_set:Npn
+      \l__cmd_current_arg_int \l__cmd_tmpa_tl
+  }
+\cs_generate_variant:Nn \cs_generate_from_arg_count:NNnn { NNVo }
+\cs_new_protected:Npn \__cmd_defaults_def:nn
+  {
+    \int_incr:N \l__cmd_current_arg_int
+    \exp_args:NV \__cmd_defaults_def:nnn \l__cmd_current_arg_int
+  }
+\cs_new_protected:Npn \__cmd_defaults_def:nnn #1#2#3
+  {
+    \tl_put_right:Nx \l__cmd_tmpa_tl
+      {
+        {
+          \exp_not:N \exp_not:n
+            {
+              \tl_if_novalue:nTF {#2}
+                { \exp_not:o {#3} }
+                { \exp_not:n { ## #1 } }
+            }
+        }
+      }
+  }
+\cs_new_protected:Npn \__cmd_args_process:
+  {
+    \tl_clear:N \l__cmd_args_ii_tl
+    \__cmd_tl_mapthread_function:NNN
+      \l__cmd_args_tl
+      \l__cmd_process_all_tl
+      \__cmd_args_process_loop:nn
+    \tl_set_eq:NN \l__cmd_args_tl \l__cmd_args_ii_tl
+  }
+\cs_new_protected:Npn \__cmd_args_process_loop:nn #1#2
+  {
+    \tl_set:Nn \ProcessedArgument {#1}
+    \tl_if_novalue:nF {#1}
+      { \tl_map_function:nN {#2} \__cmd_args_process_aux:n }
+    \tl_put_right:No \l__cmd_args_ii_tl
+      { \exp_after:wN { \ProcessedArgument } }
+  }
+\cs_new_protected:Npn \__cmd_args_process_aux:n #1
+  {
+    \cs_generate_from_arg_count:NNnn \__cmd_tmp:w \cs_set:Npn
+      { \tl_count:N \l__cmd_args_tl } {#1}
+    \exp_args:NNNo \exp_after:wN \__cmd_tmp:w \l__cmd_args_tl
+      { \ProcessedArgument }
+  }
+\cs_new:Npn \__cmd_start_expandable:nNNNNn #1#2#3#4#5#6
+  {
+    \group_align_safe_begin:
+    #6 \__cmd_end_expandable:NNw #5 #4 \q__cmd #2#3
+  }
+\cs_new:Npn \__cmd_end_expandable:NNw #1#2
+  { \__cmd_end_expandable_aux:w #1#2 \prg_do_nothing: }
+\cs_new:Npn \__cmd_end_expandable_aux:w #1#2#3 \q__cmd
+  { \exp_args:No \__cmd_end_expandable_aux:nNNNN {#3} #1 #2 }
+\cs_new:Npn \__cmd_end_expandable_aux:nNNNN #1#2#3#4#5
+  {
+    \token_if_eq_charcode:NNT ? #2 { \exp_after:wN \use_iv:nnnn }
+    \__cmd_end_expandable_defaults:nnnNNn {#1} { } {#1} #2#3
+      { } { } { } { } { } { } { } { } { } { }
+      {
+        \msg_expandable_error:nnf { cmd } { default-loop }
+          { \exp_args:Nf \tl_trim_spaces:n { \token_to_str:N #4 } }
+        \use_iv:nnnn
+      }
+    \q_stop
+  }
+\cs_new:Npn \__cmd_end_expandable_defaults:nnnNNn #1#2#3#4#5#6
+  {
+    #6
+    \str_if_eq:nnTF {#1} {#2}
+      { \use_i_delimit_by_q_stop:nw { \group_align_safe_end: #5 #1 } }
+      {
+        \exp_args:No \__cmd_tl_mapthread_function:nnN
+          { #4 #1 } {#3}
+          \__cmd_end_expandable_defaults:nnw
+        \__cmd_end_expandable_defaults:nnnNNn { } {#1} {#3} #4 #5
+      }
+  }
+\cs_new:Npn \__cmd_end_expandable_defaults:nnw #1#2
+  {
+    \tl_if_novalue:nTF {#2}
+      { \exp_args:No \__cmd_end_expandable_defaults:nw {#1} }
+      { \__cmd_end_expandable_defaults:nw {#2} }
+  }
+\cs_new:Npn \__cmd_end_expandable_defaults:nw
+    #1#2 \__cmd_end_expandable_defaults:nnnNNn #3
+  { #2 \__cmd_end_expandable_defaults:nnnNNn { #3 {#1} } }
+\cs_new_protected:Npn \__cmd_normalize_arg_spec:n #1
+  {
+    \int_zero:N \l__cmd_current_arg_int
+    \tl_clear:N \l__cmd_last_delimiters_tl
+    \tl_clear:N \l__cmd_arg_spec_tl
+    \bool_set_true:N \l__cmd_grab_expandably_bool
+    \bool_set_false:N \l__cmd_obey_spaces_bool
+    \bool_set_false:N \l__cmd_long_bool
+    \bool_set_false:N \l__cmd_some_obey_spaces_bool
+    \bool_set_false:N \l__cmd_some_long_bool
+    \bool_set_false:N \l__cmd_some_short_bool
+    \__cmd_normalize_arg_spec_loop:n #1
+      \q_recursion_tail \q_recursion_tail \q_recursion_tail \q_recursion_stop
+    \int_compare:nNnT \l__cmd_current_arg_int > 9
+      {
+        \msg_error:nnxx { cmd } { too-many-args }
+          { \__cmd_environment_or_command: } { \tl_to_str:n {#1} }
+        \__cmd_bad_def:wn
+      }
+    \bool_if:NT \l__cmd_expandable_bool
+      {
+        \tl_if_empty:NF \l__cmd_last_delimiters_tl
+          {
+            \msg_error:nnxx { cmd } { expandable-ending-optional }
+              { \iow_char:N \\ \l__cmd_function_tl } { \tl_to_str:n {#1} }
+            \__cmd_bad_def:wn
+          }
+      }
+    \bool_if:NT \l__cmd_expandable_bool
+      { \bool_set_true:N \l__cmd_grab_expandably_bool }
+    \bool_if:NT \l__cmd_environment_bool
+      { \bool_set_false:N \l__cmd_grab_expandably_bool }
+  }
+\cs_new_protected:Npn \__cmd_normalize_arg_spec_loop:n #1
+  {
+    \quark_if_recursion_tail_stop:n {#1}
+    \int_incr:N \l__cmd_current_arg_int
+    \cs_if_exist_use:cF { __cmd_normalize_type_ \tl_to_str:n {#1} :w }
+      {
+        \bool_lazy_any:nTF
+          {
+            { \str_if_eq_p:nn {#1} { G } }
+            { \str_if_eq_p:nn {#1} { g } }
+            { \str_if_eq_p:nn {#1} { l } }
+            { \str_if_eq_p:nn {#1} { u } }
+          }
+          {
+            \msg_error:nnxx { cmd } { xparse-arg-type }
+              { \__cmd_environment_or_command: } { \tl_to_str:n {#1} }
+          }
+          {
+            \msg_error:nnxx { cmd } { unknown-argument-type }
+              { \__cmd_environment_or_command: } { \tl_to_str:n {#1} }
+          }
+        \__cmd_bad_def:wn
+      }
+  }
+\cs_set_protected:Npn \__cmd_tmp:w #1
+  {
+    \cs_new_protected:Npn \__cmd_normalize_type_d:w ##1##2
+      {
+        \quark_if_recursion_tail_stop_do:nn {##2} { \__cmd_bad_arg_spec:wn }
+        \__cmd_normalize_type_D:w {##1} {##2} {#1}
+      }
+    \cs_new_protected:Npn \__cmd_normalize_type_e:w ##1
+      {
+        \quark_if_recursion_tail_stop_do:nn {##1} { \__cmd_bad_arg_spec:wn }
+        \__cmd_normalize_type_E:w {##1} { }
+      }
+    \cs_new_protected:Npn \__cmd_normalize_type_o:w
+      { \__cmd_normalize_type_D:w [ ] {#1} }
+    \cs_new_protected:Npn \__cmd_normalize_type_O:w
+      { \__cmd_normalize_type_D:w [ ] }
+    \cs_new_protected:Npn \__cmd_normalize_type_r:w ##1##2
+      {
+        \quark_if_recursion_tail_stop_do:nn {##2} { \__cmd_bad_arg_spec:wn }
+        \__cmd_normalize_type_R:w {##1} {##2} {#1}
+      }
+    \cs_new_protected:Npn \__cmd_normalize_type_s:w
+      { \__cmd_normalize_type_t:w * }
+  }
+\exp_args:No \__cmd_tmp:w { \c_novalue_tl }
+\cs_new_protected:cpn { __cmd_normalize_type_>:w } #1#2
+  {
+    \quark_if_recursion_tail_stop_do:nn {#2} { \__cmd_bad_arg_spec:wn }
+    \bool_if:NT \l__cmd_expandable_bool
+      {
+        \msg_error:nnxx { cmd } { processor-in-expandable }
+          { \iow_char:N \\ \l__cmd_function_tl } { \tl_to_str:n {#1} }
+        \__cmd_bad_def:wn
+      }
+    \tl_put_right:Nx \l__cmd_arg_spec_tl { > { \tl_trim_spaces:n {#1} } }
+    \int_decr:N \l__cmd_current_arg_int
+    \bool_set_false:N \l__cmd_grab_expandably_bool
+    \__cmd_normalize_arg_spec_loop:n {#2}
+  }
+\cs_new_protected:cpn { __cmd_normalize_type_+:w } #1
+  {
+    \quark_if_recursion_tail_stop_do:nn {#1} { \__cmd_bad_arg_spec:wn }
+    \bool_if:NT \l__cmd_long_bool
+      {
+        \msg_error:nnxx { cmd } { two-markers }
+          { \__cmd_environment_or_command: } { + }
+        \__cmd_bad_def:wn
+      }
+    \bool_set_true:N \l__cmd_long_bool
+    \int_decr:N \l__cmd_current_arg_int
+    \__cmd_normalize_arg_spec_loop:n {#1}
+  }
+\cs_new_protected:cpn { __cmd_normalize_type_!:w } #1
+  {
+    \quark_if_recursion_tail_stop_do:nn {#1} { \__cmd_bad_arg_spec:wn }
+    \bool_if:NT \l__cmd_obey_spaces_bool
+      {
+        \msg_error:nnxx { cmd } { two-markers }
+          { \__cmd_environment_or_command: } { ! }
+        \__cmd_bad_def:wn
+      }
+    \bool_set_true:N \l__cmd_obey_spaces_bool
+    \bool_set_true:N \l__cmd_some_obey_spaces_bool
+    \int_decr:N \l__cmd_current_arg_int
+    \__cmd_normalize_arg_spec_loop:n {#1}
+  }
+\cs_new_protected:Npn \__cmd_normalize_type_D:w #1#2#3
+  {
+    \quark_if_recursion_tail_stop_do:nn {#3} { \__cmd_bad_arg_spec:wn }
+    \__cmd_single_token_check:n {#1} \__cmd_allowed_token_check:N #1
+    \__cmd_single_token_check:n {#2}
+    \__cmd_add_arg_spec:n { D #1 #2 {#3} }
+    \tl_put_right:Nn \l__cmd_last_delimiters_tl {#1}
+    \bool_set_false:N \l__cmd_grab_expandably_bool
+    \__cmd_normalize_arg_spec_loop:n
+  }
+\cs_new_protected:Npn \__cmd_normalize_type_E:w #1#2
+  {
+    \quark_if_recursion_tail_stop_do:nn {#2} { \__cmd_bad_arg_spec:wn }
+    \tl_if_blank:nT {#1} { \__cmd_bad_arg_spec:wn }
+    \tl_map_function:nN {#1} \__cmd_single_token_check:n
+    \tl_map_function:nN {#1} \__cmd_allowed_token_check:N
+    \__cmd_normalize_E_unique_check:w #1 \q_nil \q_stop
+    \int_compare:nNnT { \tl_count:n {#2} } > { \tl_count:n {#1} }
+      { \__cmd_bad_arg_spec:wn }
+    \__cmd_add_arg_spec:n { E {#1} {#2} }
+    \tl_put_right:Nn \l__cmd_last_delimiters_tl {#1}
+    \bool_set_false:N \l__cmd_grab_expandably_bool
+    \int_add:Nn \l__cmd_current_arg_int { \tl_count:n {#1} - 1 }
+    \__cmd_normalize_arg_spec_loop:n
+  }
+\cs_new_protected:Npn \__cmd_normalize_E_unique_check:w #1#2 \q_stop
+  {
+    \quark_if_nil:NF #1
+      {
+        \tl_if_in:nnT {#2} {#1} { \__cmd_bad_arg_spec:wn }
+        \__cmd_normalize_E_unique_check:w #2 \q_stop
+      }
+  }
+\cs_new_protected:Npn \__cmd_normalize_type_t:w #1
+  {
+    \quark_if_recursion_tail_stop_do:Nn #1 { \__cmd_bad_arg_spec:wn }
+    \__cmd_single_token_check:n {#1} \__cmd_allowed_token_check:N #1
+    \tl_put_right:Nx \l__cmd_arg_spec_tl
+      {
+        \bool_if:NT \l__cmd_obey_spaces_bool { ! }
+        t \exp_not:n {#1}
+      }
+    \tl_put_right:Nn \l__cmd_last_delimiters_tl {#1}
+    \bool_set_false:N \l__cmd_grab_expandably_bool
+    \bool_set_false:N \l__cmd_obey_spaces_bool
+    \bool_set_false:N \l__cmd_long_bool
+    \__cmd_normalize_arg_spec_loop:n
+  }
+\cs_new_protected:Npn \__cmd_normalize_type_m:w
+  {
+    \__cmd_delimiter_check:nnn { } { m } { \iow_char:N \{ }
+    \__cmd_add_arg_spec_mandatory:n { m }
+    \__cmd_normalize_arg_spec_loop:n
+  }
+\cs_new_protected:Npn \__cmd_normalize_type_R:w #1#2#3
+  {
+    \quark_if_recursion_tail_stop_do:nn {#3} { \__cmd_bad_arg_spec:wn }
+    \__cmd_single_token_check:n {#1} \__cmd_allowed_token_check:N #1
+    \__cmd_single_token_check:n {#2}
+    \__cmd_delimiter_check:nnn {#1} { R/r } { \tl_to_str:n {#1} }
+    \bool_set_false:N \l__cmd_grab_expandably_bool
+    \__cmd_add_arg_spec_mandatory:n { R #1 #2 {#3} }
+    \__cmd_normalize_arg_spec_loop:n
+  }
+\cs_new_protected:Npn \__cmd_normalize_type_v:w
+  {
+    \__cmd_normalize_check_gv:N v
+    \__cmd_add_arg_spec_mandatory:n { v }
+    \__cmd_normalize_arg_spec_loop:n
+  }
+\cs_new_protected:Npn \__cmd_normalize_type_b:w #1
+  {
+    \bool_if:NF \l__cmd_environment_bool
+      {
+        \msg_error:nnxx { cmd } { invalid-command-arg }
+          { \__cmd_environment_or_command: } { b }
+        \__cmd_bad_def:wn
+      }
+    \tl_clear:N \l__cmd_last_delimiters_tl
+    \__cmd_add_arg_spec:n { b }
+    \quark_if_recursion_tail_stop:n {#1}
+    \msg_error:nnxx { cmd } { arg-after-body }
+      { \__cmd_environment_or_command: }
+      { \tl_to_str:n {#1} }
+    \__cmd_bad_def:wn
+  }
+\cs_new_protected:Npn \__cmd_single_token_check:n #1
+  {
+    \tl_trim_spaces_apply:nN {#1} \tl_if_single_token:nF
+      {
+        \msg_error:nnxx { cmd } { not-single-token }
+          { \__cmd_environment_or_command: } { \tl_to_str:n {#1} }
+        \__cmd_bad_def:wn
+      }
+  }
+\cs_new_protected:Npn \__cmd_allowed_token_check:N #1
+  {
+    \token_if_eq_meaning:NNTF #1 \c_group_begin_token
+        { \use:n }
+        {
+          \token_if_eq_meaning:NNTF #1 \c_group_end_token
+            { \use:n }
+            { \use_none:n }
+        }
+      {
+        \msg_error:nnxxx { cmd } { forbidden-group-token }
+          { \__cmd_environment_or_command: } { \tl_to_str:n {#1} }
+          {
+            \token_if_eq_meaning:NNTF #1 \c_group_begin_token
+              { begin } { end }
+          }
+        \__cmd_bad_def:wn
+      }
+  }
+\cs_new_protected:Npn \__cmd_normalize_check_gv:N #1
+  {
+    \bool_if:NT \l__cmd_expandable_bool
+      {
+        \msg_error:nnxx { cmd } { invalid-expandable-arg }
+          { \iow_char:N \\ \l__cmd_function_tl } { \tl_to_str:n {#1} }
+        \__cmd_bad_def:wn
+      }
+    \bool_set_false:N \l__cmd_grab_expandably_bool
+  }
+\cs_new_protected:Npn \__cmd_normalize_check_lu:N #1
+  {
+    \bool_if:NT \l__cmd_expandable_bool
+      {
+        \tl_if_empty:NF \l__cmd_last_delimiters_tl
+          {
+            \msg_error:nnxx { cmd } { invalid-after-optional-expandably }
+              { \iow_char:N \\ \l__cmd_function_tl } { \tl_to_str:n {#1} }
+            \__cmd_bad_def:wn
+          }
+      }
+  }
+\cs_new_protected:Npn \__cmd_delimiter_check:nnn #1#2#3
+  {
+    \tl_map_inline:Nn \l__cmd_last_delimiters_tl
+      {
+        \tl_if_eq:nnT {##1} {#1}
+          {
+            \msg_warning:nnxx { cmd } { optional-mandatory }
+              {#2} {#3}
+          }
+      }
+  }
+\cs_new_protected:Npn \__cmd_bad_arg_spec:wn #1 \__cmd_break_point:n #2
+  {
+    \msg_error:nnxx { cmd } { bad-arg-spec }
+      { \__cmd_environment_or_command: } { \tl_to_str:n {#2} }
+  }
+\cs_new_protected:Npn \__cmd_bad_def:wn #1 \__cmd_break_point:n #2 { }
+\cs_new_protected:Npn \__cmd_add_arg_spec:n #1
+  {
+    \bool_lazy_and:nnT
+      { ! \l__cmd_long_bool }
+      { \l__cmd_some_long_bool }
+      {
+        \bool_if:NT \l__cmd_expandable_bool
+          {
+            \msg_error:nnx { cmd } { long-short-mix }
+              { \iow_char:N \\ \l__cmd_function_tl }
+            \__cmd_bad_def:wn
+          }
+        \bool_set_false:N \l__cmd_grab_expandably_bool
+      }
+    \bool_if:NTF \l__cmd_long_bool
+      { \bool_set_true:N \l__cmd_some_long_bool }
+      { \bool_set_true:N \l__cmd_some_short_bool }
+    \tl_put_right:Nx \l__cmd_arg_spec_tl
+      {
+        \bool_if:NT \l__cmd_long_bool { + }
+        \bool_if:NT \l__cmd_obey_spaces_bool { ! }
+        \exp_not:n {#1}
+      }
+    \bool_set_false:N \l__cmd_long_bool
+    \bool_set_false:N \l__cmd_obey_spaces_bool
+  }
+\cs_new_protected:Npn \__cmd_add_arg_spec_mandatory:n #1
+  {
+    \bool_if:NT \l__cmd_some_obey_spaces_bool
+      {
+        \msg_error:nnxx { cmd } { invalid-bang }
+          { \__cmd_environment_or_command: } { \tl_to_str:n {#1} }
+        \__cmd_bad_def:wn
+      }
+    \tl_clear:N \l__cmd_last_delimiters_tl
+    \__cmd_add_arg_spec:n {#1}
+  }
+\cs_new_protected:Npn \__cmd_prepare_signature:n #1
+  {
+    \int_zero:N \l__cmd_current_arg_int
+    \bool_set_false:N \l__cmd_long_bool
+    \bool_set_false:N \l__cmd_obey_spaces_bool
+    \int_zero:N \l__cmd_m_args_int
+    \bool_set_false:N \l__cmd_defaults_bool
+    \tl_clear:N \l__cmd_defaults_tl
+    \tl_clear:N \l__cmd_process_all_tl
+    \tl_clear:N \l__cmd_process_one_tl
+    \bool_set_false:N \l__cmd_process_some_bool
+    \tl_clear:N \l__cmd_signature_tl
+    \__cmd_prepare_signature:N #1 \q_recursion_tail \q_recursion_stop
+    \bool_if:NF \l__cmd_expandable_bool { \__cmd_flush_m_args: }
+  }
+\cs_new_protected:Npn \__cmd_prepare_signature:N
+  {
+    \bool_set_false:N \l__cmd_prefixed_bool
+    \__cmd_prepare_signature_bypass:N
+  }
+\cs_new_protected:Npn \__cmd_prepare_signature_bypass:N #1
+  {
+    \quark_if_recursion_tail_stop:N #1
+    \use:c
+      {
+         __cmd_add
+         \bool_if:NT \l__cmd_grab_expandably_bool { _expandable }
+         _type_  \token_to_str:N #1 :w
+      }
+  }
+\cs_new_protected:cpn { __cmd_add_type_+:w }
+  {
+    \__cmd_flush_m_args:
+    \bool_set_true:N \l__cmd_long_bool
+    \bool_set_true:N \l__cmd_prefixed_bool
+    \__cmd_prepare_signature_bypass:N
+  }
+\cs_new_protected:cpn { __cmd_add_type_!:w }
+  {
+    \__cmd_flush_m_args:
+    \bool_set_true:N \l__cmd_obey_spaces_bool
+    \bool_set_true:N \l__cmd_prefixed_bool
+    \__cmd_prepare_signature_bypass:N
+  }
+\cs_new_protected:cpn { __cmd_add_type_>:w } #1
+  {
+    \__cmd_flush_m_args:
+    \bool_set_true:N \l__cmd_prefixed_bool
+    \bool_set_true:N \l__cmd_process_some_bool
+    \tl_put_left:Nn \l__cmd_process_one_tl { {#1} }
+    \__cmd_prepare_signature_bypass:N
+  }
+\cs_new_protected:Npn \__cmd_add_type_b:w
+  {
+    \__cmd_flush_m_args:
+    \__cmd_add_default:
+    \__cmd_add_grabber:N b
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_add_type_D:w #1#2#3
+  {
+    \__cmd_flush_m_args:
+    \__cmd_add_default:n {#3}
+    \__cmd_add_grabber:N D
+    \tl_put_right:Nn \l__cmd_signature_tl { #1 #2 }
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_add_type_E:w #1#2
+  {
+    \__cmd_flush_m_args:
+    \__cmd_add_default_E:nn {#1} {#2}
+    \use:x
+      {
+        \__cmd_replicate_processor:nn { \tl_count:n {#1} }
+          { \exp_not:o \l__cmd_process_one_tl }
+      }
+    \__cmd_add_grabber:N E
+    \tl_put_right:Nn \l__cmd_signature_tl { {#1} }
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_replicate_processor:nn #1 #2
+  {
+    \int_compare:nNnF {#1} > { 1 } { \use_none:nnn }
+    \tl_set:Nx \l__cmd_process_one_tl
+      {
+        \exp_not:n { \exp_not:n {#2} \if_false: { \fi: } }
+        \prg_replicate:nn { #1 - 2 }
+          { \exp_not:n { \exp_not:n { {#2} } } }
+        \exp_not:n { { \if_false: } \fi: \exp_not:n {#2} }
+      }
+  }
+\cs_new_protected:Npn \__cmd_add_type_m:w
+  {
+    \__cmd_add_default:
+    \bool_if:NTF \l__cmd_prefixed_bool
+      { \__cmd_add_grabber:N m }
+      { \int_incr:N \l__cmd_m_args_int }
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_add_type_R:w #1#2#3
+  {
+    \__cmd_flush_m_args:
+    \__cmd_add_default:n {#3}
+    \__cmd_add_grabber:N R
+    \tl_put_right:Nn \l__cmd_signature_tl { #1 #2 }
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_add_type_t:w #1
+  {
+    \__cmd_flush_m_args:
+    \__cmd_add_default:
+    \__cmd_add_grabber:N t
+    \tl_put_right:Nn \l__cmd_signature_tl {#1}
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_add_type_v:w
+  {
+    \__cmd_flush_m_args:
+    \exp_args:No \__cmd_add_default:n \c_novalue_tl
+    \__cmd_add_grabber:N v
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_flush_m_args:
+  {
+    \int_compare:nNnT \l__cmd_m_args_int > 0
+      {
+        \tl_put_right:Nx \l__cmd_signature_tl
+          { \exp_not:c { __cmd_grab_m_ \int_use:N \l__cmd_m_args_int :w } }
+        \tl_put_right:Nx \l__cmd_process_all_tl
+          { \prg_replicate:nn { \l__cmd_m_args_int } { { } } }
+      }
+    \int_zero:N \l__cmd_m_args_int
+  }
+\cs_new_protected:Npn \__cmd_add_grabber:N #1
+  {
+    \tl_put_right:Nx \l__cmd_signature_tl
+      {
+        \exp_not:c
+          {
+            __cmd_grab_ #1
+            \bool_if:NT \l__cmd_long_bool { _long }
+            \bool_if:NT \l__cmd_obey_spaces_bool { _obey_spaces }
+            :w
+          }
+      }
+    \bool_set_false:N \l__cmd_long_bool
+    \bool_set_false:N \l__cmd_obey_spaces_bool
+    \tl_put_right:Nx \l__cmd_process_all_tl
+      {
+        {
+          \if_charcode:w E #1 \use_i:nn \fi:
+          \exp_not:o \l__cmd_process_one_tl
+        }
+      }
+    \tl_clear:N \l__cmd_process_one_tl
+  }
+\cs_new_protected:Npn \__cmd_add_default:n #1
+  {
+    \tl_if_novalue:nTF {#1}
+      { \__cmd_add_default: }
+      {
+        \int_incr:N \l__cmd_current_arg_int
+        \bool_set_true:N \l__cmd_defaults_bool
+        \tl_put_right:Nn \l__cmd_defaults_tl { { \prg_do_nothing: #1 } }
+      }
+  }
+\cs_new_protected:Npn \__cmd_add_default:
+  {
+    \int_incr:N \l__cmd_current_arg_int
+    \tl_put_right:Nn \l__cmd_defaults_tl { \c_novalue_tl }
+  }
+\cs_new_protected:Npn \__cmd_add_default_E:nn #1#2
+  {
+    \tl_map_function:nN {#2} \__cmd_add_default:n
+    \prg_replicate:nn
+      { \tl_count:n {#1} - \tl_count:n {#2} }
+      { \__cmd_add_default: }
+  }
+\cs_new_protected:cpn { __cmd_add_expandable_type_+:w }
+  {
+    \bool_set_true:N \l__cmd_long_bool
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_add_expandable_type_D:w
+  { \__cmd_add_expandable_type_D_aux:NNNn D }
+\cs_new_protected:Npn \__cmd_add_expandable_type_D_aux:NNNn #1#2#3#4
+  {
+    \__cmd_add_default:n {#4}
+    \tl_if_eq:nnTF {#2} {#3}
+      { \__cmd_add_expandable_type_D_aux:NN #1 #2 }
+      { \__cmd_add_expandable_type_D_aux:NNN #1 #2 #3 }
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_add_expandable_type_D_aux:NNN #1#2#3
+  {
+    \bool_if:NTF \l__cmd_long_bool
+      { \cs_set:cpx }
+      { \cs_set_nopar:cpx }
+      { \l__cmd_expandable_aux_name_tl } ##1 ##2 #2 ##3 \q__cmd ##4 #3
+      { ##1 {##2} {##3} {##4} }
+    \__cmd_add_expandable_grabber:nn {#1}
+      {
+        \exp_not:c  { \l__cmd_expandable_aux_name_tl }
+        \exp_not:n { #2 #3 }
+      }
+  }
+\cs_new_protected:Npn \__cmd_add_expandable_type_D_aux:NN #1#2
+  {
+    \bool_if:NTF \l__cmd_long_bool
+      { \cs_set:cpx }
+      { \cs_set_nopar:cpx }
+      { \l__cmd_expandable_aux_name_tl } ##1 #2 ##2 #2
+      { ##1 {##2} }
+    \__cmd_add_expandable_grabber:nn { #1_alt }
+      {
+        \exp_not:c  { \l__cmd_expandable_aux_name_tl }
+        \exp_not:n {#2}
+      }
+  }
+\cs_new_protected:Npn \__cmd_add_expandable_type_E:w #1#2
+  {
+    \__cmd_add_default_E:nn {#1} {#2}
+    \tl_clear:N \l__cmd_tmpb_tl
+    \tl_map_function:nN {#1} \__cmd_add_expandable_type_E_aux:n
+    \__cmd_add_expandable_grabber:nn
+      { E \bool_if:NT \l__cmd_long_bool { _long } }
+      {
+        { \exp_not:o \l__cmd_tmpb_tl }
+        {
+          \prg_replicate:nn { \tl_count:n {#1} }
+            { { \c_novalue_tl } }
+        }
+      }
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_add_expandable_type_E_aux:n #1
+  {
+    \__cmd_get_grabber:NN #1 \l__cmd_tmpa_tl
+    \tl_put_right:Nx \l__cmd_tmpb_tl
+      { \exp_not:o \l__cmd_tmpa_tl \exp_not:N #1 }
+  }
+\cs_new_protected:Npn \__cmd_add_expandable_type_m:w
+  {
+    \__cmd_add_default:
+    \__cmd_add_expandable_grabber:nn
+      { m \bool_if:NT \l__cmd_long_bool { _long } } { }
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_add_expandable_type_R:w
+  { \__cmd_add_expandable_type_D_aux:NNNn R }
+\cs_new_protected:Npn \__cmd_add_expandable_type_t:w #1
+  {
+    \__cmd_add_default:
+    \__cmd_get_grabber:NN #1 \l__cmd_tmpa_tl
+    \__cmd_add_expandable_grabber:nn { t }
+      {
+        \exp_not:o \l__cmd_tmpa_tl
+        \exp_not:N #1
+      }
+    \__cmd_prepare_signature:N
+  }
+\cs_new_protected:Npn \__cmd_add_expandable_grabber:nn #1#2
+  {
+    \tl_put_right:Nx \l__cmd_signature_tl
+      { \exp_not:c { __cmd_expandable_grab_ #1 :w } #2 }
+  }
+\cs_new_protected:Npn \__cmd_get_grabber:NN #1#2
+  {
+    \cs_set:Npn \__cmd_tmp:w ##1 #1 {##1}
+    \exp_args:Nc \__cmd_get_grabber_auxi:NN
+      { __cmd_grabber_ \token_to_str:N #1 :w } #2
+  }
+\cs_new_protected:Npn \__cmd_get_grabber_auxi:NN #1#2
+  {
+    \cs_if_eq:NNTF \__cmd_tmp:w #1
+      { \tl_set:Nn #2 {#1} }
+      {
+        \cs_if_exist:NTF #1
+          {
+            \int_gincr:N \g__cmd_grabber_int
+            \exp_args:Nc \__cmd_get_grabber_auxi:NN
+              {
+                __cmd_grabber_
+                - \int_use:N \g__cmd_grabber_int :w
+              }
+              #2
+          }
+          { \__cmd_get_grabber_auxii:NN #1 #2 }
+      }
+  }
+\cs_new_protected:Npn \__cmd_get_grabber_auxii:NN #1#2
+  {
+    \cs_set_eq:NN #1 \__cmd_tmp:w
+    \tl_set:Nn #2 {#1}
+  }
+\cs_new_protected:Npn \__cmd_copy:NN #1 #2
+  {
+    \use:x
+      {
+        \int_set:Nn \tex_escapechar:D { 92 }
+        \exp_not:N \__cmd_cmd_type_cases:NnnnnF \exp_not:N #2
+          { \__cmd_copy_command:nnNN }
+          { \__cmd_copy_expandable:nnNN }
+          { \__cmd_copy_environment:nnNN }
+          { \__cmd_copy_environment_end:nnNN }
+          { \__cmd_cant_copy:nwn { non-ltcmd } }
+            { \cs_to_str:N #1 } { \cs_to_str:N #2 }
+            \exp_not:N #1 \exp_not:N #2
+        \exp_not:N \__cmd_break_point:n { \cs_to_str:N #2 }
+        \int_set:Nn \tex_escapechar:D { \int_use:N \tex_escapechar:D }
+      }
+  }
+\cs_new_protected:Npn \__cmd_set_eq_if_exist:NN #1 #2
+  { \cs_if_exist:NTF #2 { \cs_set_eq:NN } { \use_none:nn } #1 #2 }
+\cs_generate_variant:Nn \__cmd_set_eq_if_exist:NN { cc }
+\cs_new_protected:Npn \__cmd_cant_copy:nwn #1 #2 \__cmd_break_point:n #3
+  { \msg_error:nnnn { cmd } { copy-bug } {#1} {#3} }
+\msg_new:nnn { cmd } { copy-bug }
+  {
+    Error~while~copying~command~\iow_char:N\\#2:\\
+    \str_case:nn {#1}
+      {
+        { non-ltcmd } { Command~is~not~a~valid~ltcmd~command. }
+        { unknown-type } { Found~an~unknown~argument~type. }
+        { invalid-end }
+          { Target~command~is~not~named~\iow_char:N \\end<name>. }
+      }
+  }
+\tl_gput_right:Nn \@declarecommandcopylisthook
+  { { \__kernel_cmd_if_xparse:NTF \__cmd_copy:NN } }
+\cs_new_protected:Npn \__cmd_copy_command:nnNN #1 #2 #3 #4
+  {
+    \cs_set_eq:cc { #1 ~ code } { #2 ~ code }
+    \__cmd_set_eq_if_exist:cc { #1 ~ defaults } { #2 ~ defaults }
+    \cs_set_protected_nopar:Npx #3
+      { \exp_after:wN \__cmd_copy_command:NnNNnnnn #4 {#1} }
+  }
+\cs_new:Npn \__cmd_copy_command:NnNNnnnn #1 #2 #3 #4 #5 #6 #7 #8
+  {
+    #1 \exp_not:n { {#2} }
+    \exp_not:c { #8 ~ } \exp_not:c { #8 ~ code }
+    \exp_not:n { {#5} {#6} {#7} }
+  }
+\cs_new_protected:Npn \__cmd_copy_expandable:nnNN #1 #2 #3 #4
+  {
+    \cs_set_eq:cc { #1 ~ code } { #2 ~ code }
+    \__cmd_set_eq_if_exist:cc { #1 ~ } { #2 ~ }
+    \__cmd_set_eq_if_exist:cc { #1 ~ \c_space_tl } { #2 ~ \c_space_tl }
+    \__cmd_set_eq_if_exist:cc { #1 ~ defaults } { #2 ~ defaults }
+    \exp_after:wN \__cmd_copy_expandable_signature:NnNNNNnnn #4 {#1} {#2}
+    \cs_set_nopar:Npx #3
+      { \exp_after:wN \__cmd_copy_expandable:NnNNNNnnn #4 {#1} {#2} }
+  }
+\cs_new:Npn \__cmd_copy_expandable:NnNNNNnnn #1 #2 #3 #4 #5 #6 #7 #8 #9
+  {
+    \exp_not:N #1 \exp_not:n { {#2} }
+    \exp_not:c { #8 ~ }
+    \exp_not:c
+      {
+        #8 ~
+        \str_if_eq:eeT
+            { \exp_not:c { #9 ~ \c_space_tl } } { \exp_not:N #4 }
+          { \c_space_tl }
+      }
+    \exp_not:c { #8 ~ code }
+    \str_if_eq:eeTF { \exp_not:N #6 } { ? }
+      { ? }
+      { \exp_not:c { #8 ~ defaults } }
+    { \exp_not:V \l__cmd_tmpa_tl }
+  }
+\cs_new_protected:Npn \__cmd_copy_expandable_signature:NnNNNNnnn
+    #1 #2 #3 #4 #5 #6 #7 #8 #9
+  {
+    \int_zero:N \l__cmd_current_arg_int
+    \tl_clear:N \l__cmd_tmpa_tl
+    \__cmd_copy_expandable:nnN {#8} {#9} #7
+      \q_recursion_tail \q_recursion_stop
+  }
+\cs_new_protected:Npn \__cmd_copy_expandable:nnN #1 #2 #3
+  {
+    \quark_if_recursion_tail_stop:n {#3}
+    \int_incr:N \l__cmd_current_arg_int
+    \exp_after:wN \__cmd_copy_parse_grabber:w \token_to_str:N #3 {#1} {#2}
+  }
+\use:x
+  {
+    \cs_new_protected:Npn \exp_not:N \__cmd_copy_parse_grabber:w ##1
+        \tl_to_str:n { expandable_grab_ } ##2 \tl_to_str:n { :w }
+      {
+        \tl_put_right:Nx \exp_not:N \l__cmd_tmpa_tl
+          { \exp_not:N \exp_not:c { __cmd_expandable_grab_##2:w } }
+        \exp_not:N \cs_if_exist_use:cF { __cmd_copy_grabber_##2:w }
+          { \__cmd_cant_copy:nwn { unknown-type } }
+      }
+  }
+\cs_new_protected:Npn \__cmd_copy_grabber_D:w #1 #2 #3 #4 #5
+  {
+    \tl_put_right:Nx \l__cmd_tmpa_tl
+      {
+        \exp_not:c { #1 ~ (arg ~ \int_use:N \l__cmd_current_arg_int ) }
+        \exp_not:n { #4 #5 }
+      }
+    \cs_set_eq:cc
+      { #1 ~ (arg ~ \int_use:N \l__cmd_current_arg_int ) }
+      { #2 ~ (arg ~ \int_use:N \l__cmd_current_arg_int ) }
+    \__cmd_copy_expandable:nnN {#1} {#2}
+  }
+\cs_new_protected:Npn \__cmd_copy_grabber_D_alt:w #1 #2 #3 #4
+  { \__cmd_copy_grabber_D:w {#1} {#2} {#3} {#4} { } }
+\cs_new_eq:NN \__cmd_copy_grabber_R:w \__cmd_copy_grabber_D:w
+\cs_new_eq:NN \__cmd_copy_grabber_R_alt:w \__cmd_copy_grabber_D_alt:w
+\cs_new_protected:Npn \__cmd_copy_grabber_E:w #1 #2 #3 #4
+  {
+    \tl_put_right:Nn \l__cmd_tmpa_tl { {#3} {#4} }
+    \int_add:Nn \l__cmd_current_arg_int { \tl_count:n {#4} - 1 }
+    \__cmd_copy_expandable:nnN {#1} {#2}
+  }
+\cs_new_eq:NN \__cmd_copy_grabber_E_long:w \__cmd_copy_grabber_E:w
+\cs_new_protected:Npn \__cmd_copy_grabber_t:w #1 #2 #3 #4
+  {
+    \tl_put_right:Nn \l__cmd_tmpa_tl { #3 #4 }
+    \__cmd_copy_expandable:nnN {#1} {#2}
+  }
+\cs_new_protected:Npn \__cmd_copy_grabber_m:w { \__cmd_copy_expandable:nnN }
+\cs_new_eq:NN \__cmd_copy_grabber_m_long:w \__cmd_copy_grabber_m:w
+\cs_new_protected:Npn \__cmd_copy_environment:nnNN #1 #2 #3 #4
+  {
+    \cs_set_eq:cc { environment~ #1 ~ code } { environment~ #2 ~ code }
+    \__cmd_set_eq_if_exist:cc
+      { environment~ #1 ~ defaults } { environment~ #2 ~ defaults }
+    \cs_set_protected_nopar:cpx { environment~ #1 }
+      { \exp_after:wN \__cmd_copy_environment:Nnnnnnn #4 {#1} }
+    \cs_set_eq:cc {#1} { environment~ #1 }
+  }
+\cs_new:Npn \__cmd_copy_environment:Nnnnnnn #1 #2 #3 #4 #5 #6 #7
+  { #1 \exp_not:n { {#2} } {#7} \exp_not:n { {#4} {#5} {#6} } }
+\cs_new_protected:Npn \__cmd_copy_environment_end:nnNN #1 #2
+  {
+    \__cmd_check_end:Nn \l__cmd_tmpa_tl {#1}
+    \__cmd_check_end:Nn \l__cmd_tmpb_tl {#2}
+    \exp_args:Noo \__cmd_copy_environment_end_aux:nnNN
+      { \l__cmd_tmpa_tl } { \l__cmd_tmpb_tl }
+  }
+\cs_new_protected:Npn \__cmd_copy_environment_end_aux:nnNN #1 #2 #3 #4
+  {
+    \cs_set_nopar:cpx { environment~ #1 ~end }
+      { \exp_not:c { environment~ #1 ~end~aux } }
+    \cs_set_eq:cc
+      { environment~ #1 ~end~aux~ } { environment~ #2 ~end~aux~ }
+    \cs_set_eq:cc { end #1 } { environment~ #1 ~end }
+  }
+\cs_new_protected:Npn \__cmd_check_end:Nn #1 #2
+  {
+    \tl_set:Nx #1 { \__cmd_check_end:n {#2} }
+    \token_if_eq_meaning:NNT #1 \q_nil
+      { \__cmd_cant_copy:nwn { invalid-end } }
+  }
+\cs_set_protected:Npn \__cmd_tmp:w #1
+  {
+    \cs_new:Npn \__cmd_check_end:n ##1
+      {
+        \exp_after:wN \__cmd_check_end:w \tl_to_str:n {##1}
+          #1 \q_mark #1 \q_stop
+      }
+    \cs_new:Npn \__cmd_check_end:w ##1 #1 ##2 #1 ##3 \q_stop
+      { \if_meaning:w ##2 \q_mark \exp_not:N \q_nil \else: ##2 \fi: }
+  }
+\exp_args:No \__cmd_tmp:w { \tl_to_str:n { end } }
+\cs_new_protected:Npn \__cmd_show:N #1
+  {
+    \use:x
+      {
+        \int_set:Nn \tex_escapechar:D { 92 }
+        \exp_not:N \__cmd_cmd_type_cases:NnnnnF \exp_not:N #1
+          { \__cmd_show_command:N }
+          { \__cmd_show_expandable:N }
+          { \__cmd_show_environment:N }
+          { \__cmd_show_environment_end:N }
+          { \__cmd_cant_copy:nwn { non-ltcmd } }
+            \exp_not:N #1
+        \exp_not:N \__cmd_break_point:n { \cs_to_str:N #1 }
+        \int_set:Nn \tex_escapechar:D { \int_use:N \tex_escapechar:D }
+      }
+  }
+\cs_new_protected:Npn \__cmd_show_command:N #1
+  { \exp_after:wN \__cmd_show_command:NnNNwN #1 \q__cmd #1 }
+\cs_new_protected:Npn \__cmd_show_command:NnNNwN #1 #2 #3 #4 #5 \q__cmd #6
+  { \__cmd_show_command_aux:nNNn { document~command } #6 #4 {#2} }
+\cs_new_protected:Npn \__cmd_show_expandable:N #1
+  { \exp_after:wN \__cmd_show_expandable:NnNNNNnN #1 #1 }
+\cs_new_protected:Npn \__cmd_show_expandable:NnNNNNnN #1 #2 #3 #4 #5 #6 #7 #8
+  { \__cmd_show_command_aux:nNNn { expandable~document~command } #8 #5 {#2} }
+\cs_new_protected:Npn \__cmd_show_command_aux:nNNn #1 #2 #3 #4
+  {
+    \__cmd_split_signature:n {#4}
+    \iow_term:x
+      {
+        > ~ \token_to_str:N #2 = #1: \iow_newline:
+        \tl_use:N \l__cmd_tmpa_tl
+        -> \cs_replacement_spec:N #3 .
+      }
+  }
+\cs_new_protected:Npn \__cmd_show_environment:N #1
+  {
+    \exp_after:wN \__cmd_show_environment:Nnnw #1 \q__cmd
+    \iow_term:x
+      {
+        > ~ \token_to_str:N \end { \cs_to_str:N #1 } : \iow_newline:
+        -> \exp_args:Nc \cs_replacement_spec:N
+          { environment~ \cs_to_str:N #1 ~end~aux~ } .
+      }
+  }
+\cs_new_protected:Npn \__cmd_show_environment:Nnnw #1 #2 #3 #4 \q__cmd
+  {
+    \use:x
+      {
+        \__cmd_show_command_aux:nNNn { document~environment }
+          { \exp_not:N \begin {#3} }
+          \exp_not:c { environment~ #3 ~ code }
+          {#2}
+      }
+  }
+\cs_new_protected:Npn \__cmd_show_environment_end:N #1
+  {
+    \exp_args:NNx \__cmd_check_end:Nn \l__cmd_tmpa_tl { \cs_to_str:N #1 }
+    \exp_args:Nc \__cmd_show_environment:N { \l__cmd_tmpa_tl }
+  }
+\tl_gput_right:Nn \@showcommandlisthook
+  { { \__kernel_cmd_if_xparse:NTF \__cmd_show:N } }
+\cs_new_protected:Npn \__cmd_split_signature:n #1
+  {
+    \int_set:Nn \l__cmd_current_arg_int { 1 }
+    \tl_clear:N \l__cmd_tmpa_tl
+    \tl_clear:N \l__cmd_tmpb_tl
+    \__cmd_split_signature_loop:Nw #1 \q_recursion_tail \q_recursion_stop
+  }
+\cs_new_protected:Npn \__cmd_split_signature_loop:Nw #1
+  {
+    \quark_if_recursion_tail_stop:N #1
+    \tl_if_empty:NT \l__cmd_tmpb_tl { \__cmd_split_start_item: }
+    \tl_if_exist:cTF { c__cmd_show_type_#1_tl }
+      {
+        \use:c
+          {
+            __cmd_show_
+            \if_case:w \tl_use:c { c__cmd_show_type_#1_tl } \exp_stop_f:
+            delim \or: delims \or: delims_opt \or: opt \or:
+            e \or: E \or: prefix \or: processor \fi: :Nw
+          } #1
+      }
+      { \__cmd_split_end_item:n {#1} \__cmd_split_signature_loop:Nw }
+  }
+\cs_set_protected:Npn \__cmd_tmp:w #1 #2
+  {
+    \quark_if_nil:nF {#1}
+      { \tl_const:cn { c__cmd_show_type_#1_tl } {#2} \__cmd_tmp:w }
+  }
+\__cmd_tmp:w t0 r1 d1 R2 D2 O3 e4 E5 +6 !6 >7 \q_nil \q_nil
+\cs_new_protected:Npn \__cmd_show_delim:Nw #1 #2
+  { \__cmd_split_end_item:n { #1 #2 } \__cmd_split_signature_loop:Nw }
+\cs_new_protected:Npn \__cmd_show_delims:Nw #1 #2 #3
+  { \__cmd_split_end_item:n { #1 #2 #3 } \__cmd_split_signature_loop:Nw }
+\cs_new_protected:Npn \__cmd_show_delims_opt:Nw #1 #2 #3 #4
+  { \__cmd_split_end_item:n { #1 #2 #3 {#4} } \__cmd_split_signature_loop:Nw }
+\cs_new_protected:Npn \__cmd_show_opt:Nw #1 #2
+  { \__cmd_split_end_item:n { #1 {#2} } \__cmd_split_signature_loop:Nw }
+\cs_new_protected:Npn \__cmd_show_e:Nw #1 #2
+  {
+    \tl_map_inline:nn {#2}
+      {
+        \__cmd_split_start_item:
+        \__cmd_split_end_item:n { #1 ##1 }
+      }
+    \__cmd_split_signature_loop:Nw
+  }
+\cs_set_protected:Npn \__cmd_tmp:w #1
+  {
+    \cs_new_protected:Npn \__cmd_show_E:Nw ##1 ##2 ##3
+      {
+        \cs_set_protected:Npn \__cmd_tmp:w ####1 ####2
+          {
+            \__cmd_split_start_item:
+            \__cmd_split_end_item:n { ##1 ####1 {####2} }
+          }
+        \__cmd_tl_mapthread_function:nnN {##2}
+          { ##3 {#1} {#1} {#1} {#1} {#1} {#1} {#1} {#1} {#1} } \__cmd_tmp:w
+        \__cmd_split_signature_loop:Nw
+      }
+  }
+\exp_args:NV \__cmd_tmp:w \c_novalue_tl
+\cs_new_protected:Npn \__cmd_show_prefix:Nw #1
+  { \__cmd_split_add_item:n {#1} \__cmd_split_signature_loop:Nw }
+\cs_new_protected:Npn \__cmd_show_processor:Nw #1 #2
+  { \__cmd_split_add_item:n { #1 {#2} } \__cmd_split_signature_loop:Nw }
+\cs_new_protected:Npn \__cmd_split_start_item:
+  {
+    \tl_set:Nx \l__cmd_tmpb_tl
+      { ~ \c_space_tl \c_hash_str \int_use:N \l__cmd_current_arg_int : }
+  }
+\cs_new_protected:Npn \__cmd_split_add_item:n #1
+  { \tl_put_right:Nx \l__cmd_tmpb_tl { \tl_to_str:n {#1} } }
+\cs_new_protected:Npn \__cmd_split_end_item:n #1
+  {
+    \tl_put_right:Nx \l__cmd_tmpa_tl
+      { \l__cmd_tmpb_tl \tl_to_str:n {#1} \iow_newline: }
+    \tl_clear:N \l__cmd_tmpb_tl
+    \int_incr:N \l__cmd_current_arg_int
+  }
+\cs_new_protected:Npn \__cmd_grab_b:w
+  { \__cmd_grab_b_aux:NNw \cs_set_protected_nopar:Npn \tl_trim_spaces:n }
+\cs_new_protected:Npn \__cmd_grab_b_long:w
+  { \__cmd_grab_b_aux:NNw \cs_set_protected:Npn \tl_trim_spaces:n }
+\cs_new_protected:Npn \__cmd_grab_b_obey_spaces:w
+  { \__cmd_grab_b_aux:NNw \cs_set_protected_nopar:Npn \exp_not:n }
+\cs_new_protected:Npn \__cmd_grab_b_long_obey_spaces:w
+  { \__cmd_grab_b_aux:NNw \cs_set_protected:Npn \exp_not:n }
+\cs_new_protected:Npn \__cmd_grab_b_aux:NNw #1#2#3 \__cmd_run_code:
+  {
+    \__cmd_grab_D_aux:NNnN \begin \end {#3} #1
+    \tl_put_left:Nn \l__cmd_signature_tl { \__cmd_grab_b_end:Nw #2 }
+    \tl_set_eq:NN \l__cmd_saved_args_tl \l__cmd_args_tl
+    \tl_clear:N \l__cmd_args_tl
+    \exp_args:Nc \l__cmd_fn_tl { begin ~ }
+  }
+\cs_new_protected:Npn \__cmd_grab_b_end:Nw #1#2 \__cmd_run_code:
+  {
+    \tl_set:Nx \l__cmd_args_tl
+      {
+        \exp_not:V \l__cmd_saved_args_tl
+        { \exp_after:wN #1 \l__cmd_args_tl }
+      }
+    #2
+    \__cmd_run_code:
+    \end
+  }
+\cs_new_protected:Npn \__cmd_grab_D:w #1#2#3 \__cmd_run_code:
+  {
+    \__cmd_grab_D_aux:NNnNN #1 #2 {#3} \cs_set_protected_nopar:Npn
+      \__cmd_peek_nonspace_remove:NTF
+  }
+\cs_new_protected:Npn \__cmd_grab_D_long:w #1#2#3 \__cmd_run_code:
+  {
+    \__cmd_grab_D_aux:NNnNN #1 #2 {#3} \cs_set_protected:Npn
+      \__cmd_peek_nonspace_remove:NTF
+  }
+\cs_new_protected:Npn \__cmd_grab_D_obey_spaces:w #1#2#3 \__cmd_run_code:
+  {
+    \__cmd_grab_D_aux:NNnNN #1 #2 {#3} \cs_set_protected_nopar:Npn
+      \__cmd_peek_meaning_remove:NTF
+  }
+\cs_new_protected:Npn \__cmd_grab_D_long_obey_spaces:w #1#2#3 \__cmd_run_code:
+  {
+    \__cmd_grab_D_aux:NNnNN #1 #2 {#3} \cs_set_protected:Npn
+      \__cmd_peek_meaning_remove:NTF
+  }
+\cs_new_protected:Npn \__cmd_grab_D_aux:NNnNN #1#2#3#4#5
+  {
+    \__cmd_grab_D_aux:NNnN #1#2 {#3} #4
+    #5 #1
+      { \__cmd_grab_D_call:Nw #1 }
+      { \__cmd_add_arg:o \c_novalue_tl }
+  }
+\cs_new_protected:Npn \__cmd_grab_D_aux:NNnN #1#2#3#4
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#3}
+    \exp_after:wN #4 \l__cmd_fn_tl ##1 #2
+      {
+        \tl_if_in:nnTF {##1} {#1}
+          { \__cmd_grab_D_nested:NNnN #1 #2 {##1} #4 }
+          {
+            \tl_if_blank:oTF { \use_none:n ##1 }
+              { \__cmd_add_arg:o { \use_none:n ##1 } }
+              {
+                \str_if_eq:eeTF
+                  { \exp_not:o { \use_none:n ##1 } }
+                  { { \exp_not:o { \use_ii:nnn ##1 \q_nil } } }
+                  { \__cmd_add_arg:o { \use_ii:nn ##1 } }
+                  { \__cmd_add_arg:o { \use_none:n ##1 } }
+              }
+          }
+      }
+  }
+\tl_new:N \l__cmd_nesting_a_tl
+\tl_new:N \l__cmd_nesting_b_tl
+\quark_new:N \q__cmd
+\cs_new_protected:Npn \__cmd_grab_D_nested:NNnN #1#2#3#4
+  {
+    \tl_clear:N \l__cmd_nesting_a_tl
+    \tl_clear:N \l__cmd_nesting_b_tl
+    \exp_after:wN #4 \l__cmd_fn_tl ##1 #1 ##2 \q__cmd ##3 #2
+      {
+        \tl_put_right:No \l__cmd_nesting_a_tl { \use_none:n ##1 #1 }
+        \tl_put_right:No \l__cmd_nesting_b_tl { \use_i:nn #2 ##3 }
+        \tl_if_in:nnTF {##2} {#1}
+          {
+            \l__cmd_fn_tl
+              \q_nil ##2 \q__cmd \ERROR
+          }
+          {
+            \tl_put_right:Nx \l__cmd_nesting_a_tl
+              { \__cmd_grab_D_nested:w \q_nil ##2 \q_stop }
+            \tl_if_in:NnTF \l__cmd_nesting_b_tl {#1}
+              {
+                \tl_set_eq:NN \l__cmd_tmpa_tl \l__cmd_nesting_b_tl
+                \tl_clear:N \l__cmd_nesting_b_tl
+                \exp_after:wN \l__cmd_fn_tl \exp_after:wN
+                  \q_nil \l__cmd_tmpa_tl \q_nil \q__cmd \ERROR
+              }
+              {
+                \tl_put_right:No \l__cmd_nesting_a_tl
+                  \l__cmd_nesting_b_tl
+                \__cmd_add_arg:V \l__cmd_nesting_a_tl
+              }
+          }
+      }
+    \l__cmd_fn_tl #3 \q_nil \q__cmd \ERROR
+  }
+\cs_new:Npn \__cmd_grab_D_nested:w #1 \q_nil \q_stop
+  { \exp_not:o { \use_none:n #1 } }
+\cs_new_protected_nopar:Npn \__cmd_grab_D_call:Nw #1
+  {
+    \token_if_eq_catcode:NNTF + #1
+      {
+        \exp_after:wN \exp_after:wN \exp_after:wN
+          \l__cmd_fn_tl \char_generate:nn { `#1 } { 11 }
+      }
+      {
+        \__cmd_token_if_cs:NTF #1
+          {
+            \exp_after:wN \l__cmd_fn_tl
+            \cs:w \cs_to_str:N #1 ~ \cs_end:
+          }
+          {
+            \exp_after:wN \l__cmd_fn_tl
+            \token_to_str:N #1
+          }
+      }
+  }
+\cs_new_protected:Npn \__cmd_grab_E:w #1#2 \__cmd_run_code:
+  {
+    \__cmd_grab_E:nnNN {#1} {#2}
+      \cs_set_protected_nopar:Npn
+      \__cmd_peek_nonspace_remove:NTF
+  }
+\cs_new_protected:Npn \__cmd_grab_E_long:w #1#2 \__cmd_run_code:
+  {
+    \__cmd_grab_E:nnNN {#1} {#2}
+      \cs_set_protected:Npn
+      \__cmd_peek_nonspace_remove:NTF
+  }
+\cs_new_protected:Npn \__cmd_grab_E_obey_spaces:w #1#2 \__cmd_run_code:
+  {
+    \__cmd_grab_E:nnNN {#1} {#2}
+      \cs_set_protected_nopar:Npn
+      \__cmd_peek_meaning_remove:NTF
+  }
+\cs_new_protected:Npn \__cmd_grab_E_long_obey_spaces:w #1#2 \__cmd_run_code:
+  {
+    \__cmd_grab_E:nnNN {#1} {#2}
+      \cs_set_protected:Npn
+      \__cmd_peek_meaning_remove:NTF
+  }
+\cs_new_protected:Npn \__cmd_grab_E:nnNN #1#2#3#4
+  {
+    \exp_after:wN #3 \l__cmd_fn_tl ##1##2##3
+      {
+        \prop_put:Nnn \l__cmd_tmp_prop {##1} {##3}
+        \__cmd_grab_E_loop:NnN #4 { } ##2 \q_recursion_stop
+      }
+    \prop_clear:N \l__cmd_tmp_prop
+    \tl_set:Nn \l__cmd_signature_tl {#2}
+    \cs_set_protected:Npn \__cmd_grab_E_finalise:
+      {
+        \tl_map_inline:nn {#1}
+          {
+            \prop_get:NnNF \l__cmd_tmp_prop {####1} \l__cmd_tmpb_tl
+              { \tl_set_eq:NN \l__cmd_tmpb_tl \c_novalue_tl }
+            \tl_put_right:Nx \l__cmd_args_tl
+              { { \exp_not:V \l__cmd_tmpb_tl } }
+          }
+        \l__cmd_signature_tl \__cmd_run_code:
+      }
+    \__cmd_grab_E_loop:NnN #4 { } #1 \q_recursion_tail \q_recursion_stop
+  }
+\cs_new_protected:Npn \__cmd_grab_E_loop:NnN #1#2#3#4 \q_recursion_stop
+  {
+    \cs_if_eq:NNTF #3 \q_recursion_tail
+      { \__cmd_grab_E_finalise: }
+      {
+        #1 #3
+          { \l__cmd_fn_tl #3 {#2#4} }
+          { \__cmd_grab_E_loop:NnN #1 {#2#3} #4 \q_recursion_stop }
+      }
+  }
+\cs_new_protected:Npn \__cmd_grab_E_finalise: { }
+\cs_new_protected:Npn \__cmd_grab_m:w #1 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#1}
+    \exp_after:wN \cs_set_protected_nopar:Npn \l__cmd_fn_tl ##1
+      { \__cmd_add_arg:n {##1} }
+    \l__cmd_fn_tl
+  }
+\cs_new_protected:Npn \__cmd_grab_m_long:w #1 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#1}
+    \exp_after:wN \cs_set_protected:Npn \l__cmd_fn_tl ##1
+      { \__cmd_add_arg:n {##1} }
+    \l__cmd_fn_tl
+  }
+\cs_new_protected_nopar:Npn \__cmd_grab_m_aux:Nnnnnnnnn #1#2#3#4#5#6#7#8#9
+  {
+    \tl_put_right:No \l__cmd_args_tl
+      { #1 {#2} {#3} {#4} {#5} {#6} {#7} {#8} {#9} }
+    \l__cmd_signature_tl \__cmd_run_code:
+  }
+\cs_new_protected:cpn { __cmd_grab_m_1:w } #1 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#1}
+    \exp_after:wN \cs_set_eq:NN \l__cmd_fn_tl \__cmd_grab_m_aux:Nnnnnnnnn
+    \l__cmd_fn_tl \use_none:nnnnnnn { } { } { } { } { } { } { }
+  }
+\cs_new_protected:cpn { __cmd_grab_m_2:w } #1 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#1}
+    \exp_after:wN \cs_set_eq:NN \l__cmd_fn_tl \__cmd_grab_m_aux:Nnnnnnnnn
+    \l__cmd_fn_tl \use_none:nnnnnn { } { } { } { } { } { }
+  }
+\cs_new_protected:cpn { __cmd_grab_m_3:w } #1 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#1}
+    \exp_after:wN \cs_set_eq:NN \l__cmd_fn_tl \__cmd_grab_m_aux:Nnnnnnnnn
+    \l__cmd_fn_tl \use_none:nnnnn { } { } { } { } { }
+  }
+\cs_new_protected:cpn { __cmd_grab_m_4:w } #1 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#1}
+    \exp_after:wN \cs_set_eq:NN \l__cmd_fn_tl \__cmd_grab_m_aux:Nnnnnnnnn
+    \l__cmd_fn_tl \use_none:nnnn { } { } { } { }
+  }
+\cs_new_protected:cpn { __cmd_grab_m_5:w } #1 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#1}
+    \exp_after:wN \cs_set_eq:NN \l__cmd_fn_tl \__cmd_grab_m_aux:Nnnnnnnnn
+    \l__cmd_fn_tl \use_none:nnn { } { } { }
+  }
+\cs_new_protected:cpn { __cmd_grab_m_6:w } #1 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#1}
+    \exp_after:wN \cs_set_eq:NN \l__cmd_fn_tl \__cmd_grab_m_aux:Nnnnnnnnn
+    \l__cmd_fn_tl \use_none:nn { } { }
+  }
+\cs_new_protected:cpn { __cmd_grab_m_7:w } #1 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#1}
+    \exp_after:wN \cs_set_eq:NN \l__cmd_fn_tl \__cmd_grab_m_aux:Nnnnnnnnn
+    \l__cmd_fn_tl \use_none:n { }
+  }
+\cs_new_protected:cpn { __cmd_grab_m_8:w } #1 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#1}
+    \exp_after:wN \cs_set_eq:NN \l__cmd_fn_tl \__cmd_grab_m_aux:Nnnnnnnnn
+    \l__cmd_fn_tl \prg_do_nothing:
+  }
+\cs_new_protected:cpx { __cmd_grab_m_9:w }
+  {
+    \exp_not:c { __cmd_grab_m_5:w }
+    \exp_not:c { __cmd_grab_m_4:w }
+  }
+\cs_new_protected:Npn \__cmd_grab_R:w #1#2#3 \__cmd_run_code:
+  { \__cmd_grab_R_aux:NNnN #1 #2 {#3} \cs_set_protected_nopar:Npn }
+\cs_new_protected:Npn \__cmd_grab_R_long:w #1#2#3 \__cmd_run_code:
+  { \__cmd_grab_R_aux:NNnN #1 #2 {#3} \cs_set_protected:Npn }
+\cs_new_protected:Npn \__cmd_grab_R_aux:NNnN #1#2#3#4
+  {
+    \__cmd_grab_D_aux:NNnN #1 #2 {#3} #4
+    \__cmd_peek_nonspace_remove:NTF #1
+      { \__cmd_grab_D_call:Nw #1 }
+      {
+        \msg_error:nnxx { cmd } { missing-required }
+          { \__cmd_environment_or_command: }
+          { \token_to_str:N #1 }
+        \__cmd_add_arg:o \c_novalue_tl
+      }
+  }
+\cs_new_protected:Npn \__cmd_grab_t:w
+  { \__cmd_grab_t_aux:NNw \__cmd_peek_nonspace_remove:NTF }
+\cs_new_protected:Npn \__cmd_grab_t_obey_spaces:w
+  { \__cmd_grab_t_aux:NNw \__cmd_peek_meaning_remove:NTF }
+\cs_new_protected:Npn \__cmd_grab_t_aux:NNw #1#2#3 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#3}
+    \exp_after:wN \cs_set_protected:Npn \l__cmd_fn_tl
+      {
+        #1 #2
+          { \__cmd_add_arg:n { \BooleanTrue } }
+          { \__cmd_add_arg:n { \BooleanFalse } }
+      }
+    \l__cmd_fn_tl
+  }
+\tl_new:N \l__cmd_v_arg_tl
+\cs_new_protected:Npn \__cmd_grab_v:w
+  {
+    \bool_set_false:N \l__cmd_long_bool
+    \__cmd_grab_v_aux:w
+  }
+\cs_new_protected:Npn \__cmd_grab_v_long:w
+  {
+    \bool_set_true:N \l__cmd_long_bool
+    \__cmd_grab_v_aux:w
+  }
+\cs_new_protected:Npn \__cmd_grab_v_aux:w #1 \__cmd_run_code:
+  {
+    \tl_set:Nn \l__cmd_signature_tl {#1}
+    \group_begin:
+      \tex_escapechar:D = 92 \scan_stop:
+      \tl_clear:N \l__cmd_v_arg_tl
+      \peek_remove_spaces:n
+        {
+          \peek_meaning_remove:NTF \c_group_begin_token
+            {
+              \group_align_safe_end:
+              \__cmd_grab_v_bgroup:
+            }
+            {
+              \peek_N_type:TF
+                { \__cmd_grab_v_aux_test:N }
+                { \__cmd_grab_v_aux_abort:n { } }
+            }
+        }
+  }
+\cs_new_protected:Npn \__cmd_grab_v_group_end:
+  {
+        \exp_args:NNNo
+      \group_end:
+    \tl_set:Nn \l__cmd_v_arg_tl { \l__cmd_v_arg_tl }
+  }
+\cs_new_protected:Npn \__cmd_grab_v_aux_test:N #1
+  {
+    \__cmd_grab_v_token_if_char:NTF #1
+      {
+        \__cmd_grab_v_aux_put:N #1
+        \__cmd_grab_v_aux_catcodes:
+        \__cmd_grab_v_aux_loop:N #1
+      }
+      { \__cmd_grab_v_aux_abort:n {#1} #1 }
+  }
+\cs_new_protected:Npn \__cmd_grab_v_aux_loop:N #1
+  {
+    \peek_N_type:TF
+      { \__cmd_grab_v_aux_loop:NN #1 }
+      { \__cmd_grab_v_aux_abort:n { } }
+  }
+\cs_new_protected:Npn \__cmd_grab_v_aux_loop:NN #1#2
+  {
+    \__cmd_grab_v_token_if_char:NTF #2
+      {
+        \token_if_eq_charcode:NNTF #1 #2
+          { \__cmd_grab_v_aux_loop_end: }
+          {
+            \__cmd_grab_v_aux_put:N #2
+            \__cmd_grab_v_aux_loop:N #1
+          }
+      }
+      { \__cmd_grab_v_aux_abort:n {#2} #2 }
+  }
+\cs_new_protected:Npn \__cmd_grab_v_aux_loop_end:
+  {
+    \__cmd_grab_v_group_end:
+    \__cmd_add_arg:x { \tl_tail:N \l__cmd_v_arg_tl }
+  }
+\int_new:N \l__cmd_v_nesting_int
+\cs_new_protected:Npx \__cmd_grab_v_bgroup:
+  {
+    \exp_not:N \__cmd_grab_v_aux_catcodes:
+    \exp_not:n { \int_set:Nn \l__cmd_v_nesting_int { 1 } }
+    \exp_not:N \__cmd_grab_v_aux_put:N \iow_char:N \{
+    \exp_not:N \__cmd_grab_v_bgroup_loop:
+  }
+\cs_new_protected:Npn \__cmd_grab_v_bgroup_loop:
+  {
+    \peek_N_type:TF
+      { \__cmd_grab_v_bgroup_loop:N }
+      { \__cmd_grab_v_aux_abort:n { } }
+  }
+\cs_new_protected:Npn \__cmd_grab_v_bgroup_loop:N #1
+  {
+    \__cmd_grab_v_token_if_char:NTF #1
+      {
+        \token_if_eq_charcode:NNTF \c_group_end_token #1
+          {
+            \int_decr:N \l__cmd_v_nesting_int
+            \int_compare:nNnTF \l__cmd_v_nesting_int > 0
+              {
+                \__cmd_grab_v_aux_put:N #1
+                \__cmd_grab_v_bgroup_loop:
+              }
+              { \__cmd_grab_v_aux_loop_end: }
+          }
+          {
+            \token_if_eq_charcode:NNT \c_group_begin_token #1
+              { \int_incr:N \l__cmd_v_nesting_int }
+            \__cmd_grab_v_aux_put:N #1
+            \__cmd_grab_v_bgroup_loop:
+          }
+      }
+      { \__cmd_grab_v_aux_abort:n {#1} #1 }
+  }
+\cs_new_protected:Npn \__cmd_grab_v_aux_catcodes:
+  {
+    \cs_set_eq:NN \do \char_set_catcode_other:N
+    \dospecials
+    \tex_endlinechar:D = `\^^M \scan_stop:
+    \bool_if:NTF \l__cmd_long_bool
+      { \char_set_catcode_other:n { \tex_endlinechar:D } }
+      { \char_set_catcode_parameter:n { \tex_endlinechar:D } }
+  }
+\cs_new_protected:Npn \__cmd_grab_v_aux_abort:n #1
+  {
+    \__cmd_grab_v_group_end:
+    \exp_after:wN \exp_after:wN \exp_after:wN
+      \peek_meaning_remove:NTF \char_generate:nn { \tex_endlinechar:D } { 6 }
+      {
+        \msg_error:nnxxx { cmd } { verbatim-nl }
+          { \__cmd_environment_or_command: }
+          { \tl_to_str:N \l__cmd_v_arg_tl }
+          { \tl_to_str:n {#1} }
+        \__cmd_add_arg:o \c_novalue_tl
+      }
+      {
+        \msg_error:nnxxx { cmd } { verbatim-tokenized }
+          { \__cmd_environment_or_command: }
+          { \tl_to_str:N \l__cmd_v_arg_tl }
+          { \tl_to_str:n {#1} }
+        \__cmd_add_arg:o \c_novalue_tl
+      }
+  }
+\cs_new_protected:Npn \__cmd_grab_v_aux_put:N #1
+  {
+    \tl_put_right:Nx \l__cmd_v_arg_tl
+      {
+        \token_if_active:NTF #1
+          { \exp_not:N #1 } { \token_to_str:N #1 }
+      }
+  }
+\cs_new_protected:Npn \__cmd_grab_v_token_if_char:NTF #1
+  { \str_if_eq:eeTF { } { \str_tail:n {#1} } }
+\cs_new_protected:Npn \__cmd_add_arg:n #1
+  {
+    \tl_put_right:Nn \l__cmd_args_tl { {#1} }
+    \l__cmd_signature_tl \__cmd_run_code:
+  }
+\cs_generate_variant:Nn \__cmd_add_arg:n { V , o , x }
+\cs_new:Npn \__cmd_expandable_grab_D:w #1 \q__cmd #2#3
+  { #2 { \__cmd_expandable_grab_D:NNNwNNn #1 \q__cmd #2 #3 } }
+\cs_set_protected:Npn \__cmd_tmp:w #1
+  {
+    \cs_new:Npn \__cmd_expandable_grab_D:NNNwNNn ##1##2##3##4 \q__cmd ##5##6##7
+      {
+        \str_if_eq:nnTF {##2} {##7}
+          {
+            \str_if_eq:onTF
+              { ##1 { } { } ##7 ##2 \q__cmd ##3 }
+              { { } {##2} { } }
+          }
+          { \use_ii:nn }
+          {
+            ##1
+              { \__cmd_expandable_grab_D:NNNwNNnnn ##1##2##3##4 \q__cmd ##5##6 }
+              \q_nil { } ##2 \ERROR \q__cmd \ERROR
+          }
+          { ##4 {#1} \q__cmd ##5 ##6 {##7} }
+      }
+  }
+\exp_args:No \__cmd_tmp:w { \c_novalue_tl }
+\cs_new:Npn \__cmd_expandable_grab_D:NNNwNNnnn #1#2#3#4 \q__cmd #5#6#7#8#9
+  {
+    \exp_args:Nof \__cmd_expandable_grab_D:nnNNNwNN
+      { \use_ii:nn #7 #2 }
+      { \__cmd_expandable_grab_D:Nw #3 \exp_stop_f: #8 #9 }
+    #1#2#3 #4 \q__cmd #5 #6
+  }
+\cs_new:Npn \__cmd_expandable_grab_D:Nw #1#2 \ERROR \ERROR { #2 #1 }
+\cs_new:Npn \__cmd_expandable_grab_D:nnNNNwNN #1#2#3#4#5#6 \q__cmd #7#8
+  {
+    \exp_args:No \tl_if_empty:oTF
+      { #3 { \use_none:nnn } #2 \q__cmd #5 #4 \q__cmd #5 }
+      {
+        \tl_if_blank:oTF { \use_none:nn #1#2 }
+          { \__cmd_put_arg_expandable:ow { \use_none:nn #1#2 } }
+          {
+            \str_if_eq:eeTF
+              { \exp_not:o { \use_none:nn #1#2 } }
+              { { \exp_not:o { \use_iii:nnnn #1#2 \q_nil } } }
+              { \__cmd_put_arg_expandable:ow { \use_iii:nnn #1#2 } }
+              { \__cmd_put_arg_expandable:ow { \use_none:nn #1#2 } }
+          }
+            #6 \q__cmd #7 #8
+      }
+      {
+        #3
+          { \__cmd_expandable_grab_D:NNNwNNnnn #3#4#5#6 \q__cmd #7 #8 }
+          \q_nil {#1} #2 \ERROR \q__cmd \ERROR
+      }
+  }
+\cs_new:Npn \__cmd_expandable_grab_D_alt:w #1 \q__cmd #2#3
+  { #2 { \__cmd_expandable_grab_D_alt:NNwNNn #1 \q__cmd #2 #3 } }
+\cs_set_protected:Npn \__cmd_tmp:w #1
+  {
+    \cs_new:Npn \__cmd_expandable_grab_D_alt:NNwNNn ##1##2##3 \q__cmd ##4##5##6
+      {
+        \str_if_eq:nnTF {##6} {##2}
+          {
+            \str_if_eq:onTF
+              { ##1 { } ##6 ##2 ##2 }
+              { { } ##2 }
+          }
+          { \use_ii:nn }
+          {
+            ##1
+              { \__cmd_expandable_grab_D_alt:NNwn ##4 ##5 ##3 \q__cmd }
+              ##6 \ERROR
+          }
+          { ##3 {#1} \q__cmd ##4 ##5 {##6} }
+      }
+  }
+\exp_args:No \__cmd_tmp:w { \c_novalue_tl }
+\cs_new:Npn \__cmd_expandable_grab_D_alt:NNwn #1#2#3 \q__cmd #4
+  {
+    \tl_if_blank:oTF { \use_none:n #4 }
+      { \__cmd_put_arg_expandable:ow { \use_none:n #4 } }
+      {
+        \str_if_eq:eeTF
+          { \exp_not:o { \use_none:n #4 } }
+          { { \exp_not:o { \use_ii:nnn #4 \q_nil } } }
+          { \__cmd_put_arg_expandable:ow { \use_ii:nn #4 } }
+          { \__cmd_put_arg_expandable:ow { \use_none:n #4 } }
+      }
+        #3 \q__cmd #1 #2
+  }
+\cs_new:Npn \__cmd_expandable_grab_E:w #1 \q__cmd #2#3
+  { \__cmd_expandable_grab_E_aux:w #1 \q__cmd #2 #3 #3 }
+\cs_new:Npn \__cmd_expandable_grab_E_long:w #1 \q__cmd #2#3
+  { \__cmd_expandable_grab_E_aux:w #1 \q__cmd #2 #3 #2 }
+\cs_new:Npn \__cmd_expandable_grab_E_aux:w #1 \q__cmd #2#3#4
+  { #2 { \__cmd_expandable_grab_E_test:nnw #1 \q__cmd #2 #3 #4 } }
+\cs_new:Npn \__cmd_expandable_grab_E_test:nnw #1#2#3 \q__cmd #4#5#6#7
+  {
+    \__cmd_expandable_grab_E_loop:nnnNNw {#7} { } { }
+      #1 \q_nil \q_nil \q_nil \q_mark #2 \q_nil
+    #3 \q__cmd #4 #5 #6
+  }
+\cs_new:Npn \__cmd_expandable_grab_E_loop:nnnNNw
+    #1#2#3#4#5#6 \q_nil #7 \q_mark #8
+  {
+    \quark_if_nil:NTF #4
+      { \__cmd_expandable_grab_E_end:nnw {#1} {#3} }
+      {
+        \tl_if_novalue:nTF {#8}
+          { \str_if_eq:onTF { #4 { } #1 #5 } {#5} }
+          { \use_ii:nn }
+            { \__cmd_expandable_grab_E_find:w { #2 #4 #5 #6 } {#3} ~ }
+            {
+              \__cmd_expandable_grab_E_loop:nnnNNw
+                {#1} { #2 #4 #5 } { #3 {#8} }
+                #6 \q_nil #7 \q_mark
+            }
+      }
+  }
+\cs_new:Npn \__cmd_expandable_grab_E_find:w #1 \q__cmd #2#3#4
+  { #4 { \__cmd_expandable_grab_E_find:nnw #1 \q__cmd #2 #3 #4 } }
+\cs_new:Npn \__cmd_expandable_grab_E_find:nnw #1#2#3 \q_nil #4 \q__cmd #5#6#7#8
+  { \__cmd_expandable_grab_E_aux:w {#1} { #2 {#8} #3 } #4 \q__cmd #5 #6 #7 }
+\cs_new:Npn \__cmd_expandable_grab_E_end:nnw #1#2#3 \q__cmd #4#5#6
+  { #3 #2 \q__cmd #4 #5 {#1} }
+\cs_new:Npn \__cmd_expandable_grab_m:w #1 \q__cmd #2#3
+  { #3 { \__cmd_expandable_grab_m_aux:wNn #1 \q__cmd #2 #3 } }
+\cs_new:Npn \__cmd_expandable_grab_m_long:w #1 \q__cmd #2#3
+  { #2 { \__cmd_expandable_grab_m_aux:wNn #1 \q__cmd #2 #3 } }
+\cs_new:Npn \__cmd_expandable_grab_m_aux:wNn #1 \q__cmd #2#3#4
+  { #1 {#4} \q__cmd #2 #3 }
+\cs_new:Npn \__cmd_expandable_grab_R:w #1 \q__cmd #2#3
+  { #2 { \__cmd_expandable_grab_R_aux:NNNwNNn #1 \q__cmd #2#3 } }
+\cs_set_protected:Npn \__cmd_tmp:w #1
+  {
+    \cs_new:Npn \__cmd_expandable_grab_R_aux:NNNwNNn ##1##2##3##4 \q__cmd ##5##6##7
+      {
+        \str_if_eq:nnTF {##7} {##2}
+          {
+            \str_if_eq:onTF
+              { ##1 { } { } ##7 ##2 \q__cmd ##3 }
+              { { } {##2} { } }
+          }
+          { \use_ii:nn }
+          {
+            ##1
+              { \__cmd_expandable_grab_D:NNNwNNnnn ##1##2##3##4 \q__cmd ##5##6 }
+              \q_nil { } ##2 \ERROR \q__cmd \ERROR
+          }
+          {
+            \msg_expandable_error:nnff { cmd } { missing-required }
+              { \exp_args:Nf \tl_trim_spaces:n { \token_to_str:N ##5 } }
+              { \tl_to_str:n {##2} }
+            ##4 {#1} \q__cmd ##5 ##6 {##7}
+          }
+      }
+  }
+\exp_args:No \__cmd_tmp:w { \c_novalue_tl }
+\cs_new:Npn \__cmd_expandable_grab_R_alt:w #1 \q__cmd #2#3
+  { #2 { \__cmd_expandable_grab_R_alt_aux:NNwNNn #1 \q__cmd #2#3 } }
+\cs_set_protected:Npn \__cmd_tmp:w #1
+  {
+    \cs_new:Npn \__cmd_expandable_grab_R_alt_aux:NNwNNn ##1##2##3 \q__cmd ##4##5##6
+      {
+        \str_if_eq:nnTF {##6} {##2}
+          {
+            \str_if_eq:onTF
+              { ##1 { } ##6 ##2 ##2 }
+              { { } ##2 }
+          }
+          { \use_ii:nn }
+          {
+            ##1
+              { \__cmd_expandable_grab_D_alt:NNwn ##4 ##5 ##3 \q__cmd }
+              ##6 \ERROR
+          }
+          {
+            \msg_expandable_error:nnff { cmd } { missing-required }
+              { \exp_args:Nf \tl_trim_spaces:n { \token_to_str:N ##4 } }
+              { \tl_to_str:n {##2} }
+            ##3 {#1} \q__cmd ##4 ##5 {##6}
+          }
+      }
+  }
+\exp_args:No \__cmd_tmp:w { \c_novalue_tl }
+\cs_new:Npn \__cmd_expandable_grab_t:w #1 \q__cmd #2#3
+  { #2 { \__cmd_expandable_grab_t_aux:NNwn #1 \q__cmd #2 #3 } }
+\cs_new:Npn \__cmd_expandable_grab_t_aux:NNwn #1#2#3 \q__cmd #4#5#6
+  {
+    \str_if_eq:onTF { #1 { } #6 #2 } {#2}
+      { #3 { \BooleanTrue } \q__cmd #4 #5 }
+      { #3 { \BooleanFalse } \q__cmd #4 #5 {#6} }
+  }
+\cs_new:Npn \__cmd_put_arg_expandable:nw #1#2 \q__cmd { #2 {#1} \q__cmd }
+\cs_generate_variant:Nn \__cmd_put_arg_expandable:nw { o }
+\cs_new_protected:Npn \__cmd_bool_reverse:N #1
+  {
+    \bool_if:NTF #1
+      { \tl_set:Nn \ProcessedArgument { \c_false_bool } }
+      { \tl_set:Nn \ProcessedArgument { \c_true_bool } }
+  }
+\seq_new:N \l__cmd_split_list_seq
+\tl_new:N \l__cmd_split_list_tl
+\cs_new_protected:Npn \__cmd_split_list:nn #1#2
+  {
+    \tl_if_single:nTF {#1}
+      {
+        \token_if_cs:NTF #1
+          { \__cmd_split_list_multi:nn {#1} {#2} }
+          { \__cmd_split_list_single:Nn #1 {#2} }
+      }
+      { \__cmd_split_list_multi:nn {#1} {#2} }
+  }
+\cs_new_protected:Npn \__cmd_split_list_multi:nn #1#2
+  {
+    \seq_set_split:Nnn \l__cmd_split_list_seq {#1} {#2}
+    \tl_clear:N \ProcessedArgument
+    \seq_map_inline:Nn \l__cmd_split_list_seq
+      { \tl_put_right:Nn \ProcessedArgument { {##1} } }
+  }
+\cs_generate_variant:Nn \__cmd_split_list_multi:nn { nV }
+\group_begin:
+\char_set_catcode_active:N \^^@
+\cs_new_protected:Npn \__cmd_split_list_single:Nn #1#2
+  {
+    \tl_set:Nn \l__cmd_split_list_tl {#2}
+    \group_begin:
+    \char_set_lccode:nn { `\^^@ } { `#1 }
+    \tex_lowercase:D
+      {
+        \group_end:
+        \tl_replace_all:Nnn \l__cmd_split_list_tl { ^^@ }
+      }   {#1}
+     \__cmd_split_list_multi:nV {#1} \l__cmd_split_list_tl
+   }
+\group_end:
+\cs_new_protected:Npn \__cmd_split_argument:nnn #1#2#3
+  {
+    \__cmd_split_list:nn {#2} {#3}
+    \exp_args:Nf \__cmd_split_argument_aux:nnnn
+      { \tl_count:N \ProcessedArgument }
+      {#1} {#2} {#3}
+  }
+\cs_new_protected:Npn \__cmd_split_argument_aux:nnnn #1#2#3#4
+  {
+    \int_compare:nNnF {#1} = { #2 + 1 }
+      {
+        \int_compare:nNnTF {#1} > { #2 + 1 }
+          {
+            \tl_set:Nx \ProcessedArgument
+              {
+                \exp_last_unbraced:NnNo
+                  \__cmd_split_argument_aux:n
+                  { #2 + 1 }
+                  \use_none_delimit_by_q_stop:w
+                  \ProcessedArgument
+                  \q_stop
+              }
+            \msg_error:nnxxx { cmd } { arg-split }
+              { \tl_to_str:n {#3} } { \int_eval:n { #2 + 1 } }
+              { \tl_to_str:n {#4} }
+          }
+          {
+            \tl_put_right:Nx \ProcessedArgument
+              {
+                \prg_replicate:nn { #2 + 1 - (#1) }
+                  { { \exp_not:V \c_novalue_tl } }
+              }
+          }
+      }
+  }
+\cs_new:Npn \__cmd_split_argument_aux:n #1
+  { \prg_replicate:nn {#1} { \__cmd_split_argument_aux:wn } }
+\cs_new:Npn \__cmd_split_argument_aux:wn #1 \use_none_delimit_by_q_stop:w #2
+  {
+    \exp_not:n { {#2} }
+    #1
+    \use_none_delimit_by_q_stop:w
+  }
+\cs_new_protected:Npn \__cmd_trim_spaces:n #1
+  { \tl_set:Nx \ProcessedArgument { \tl_trim_spaces:n {#1} } }
+\cs_new_protected:Npn \__cmd_get_arg_spec_error:N #1
+  {
+    \bool_set_false:N \l__cmd_environment_bool
+    \tl_set:Nn \l__cmd_fn_tl {#1}
+    \__cmd_get_arg_spec_error_aux:n { \cs_if_exist:NTF #1 }
+  }
+\cs_new_protected:Npn \__cmd_get_arg_spec_error:n #1
+  {
+    \bool_set_true:N \l__cmd_environment_bool
+    \str_set:Nx \l__cmd_environment_str {#1}
+    \__cmd_get_arg_spec_error_aux:n
+      { \cs_if_exist:cTF { \l__cmd_environment_str } }
+  }
+\cs_new_protected:Npn \__cmd_get_arg_spec_error_aux:n #1
+  {
+    #1
+      {
+        \msg_error:nnx { cmd } { non-xparse }
+          { \__cmd_environment_or_command: }
+      }
+      {
+        \msg_error:nnx { cmd } { unknown }
+          { \__cmd_environment_or_command: }
+      }
+  }
+\cs_new_protected:Npn \__cmd_get_arg_spec:NTF #1#2#3
+  {
+    \__kernel_cmd_if_xparse:NTF #1
+      {
+        \tl_set:Nx \ArgumentSpecification { \tl_item:Nn #1 { 2 } }
+        #2
+      }
+      {#3}
+  }
+\tl_new:N \ArgumentSpecification
+\cs_new_protected:Npn \__cmd_get_arg_spec:N #1
+  {
+    \__cmd_get_arg_spec:NTF #1 { }
+      { \__cmd_get_arg_spec_error:N #1 }
+  }
+\cs_new_protected:Npn \__cmd_get_arg_spec:n #1
+  {
+    \exp_args:Nc \__cmd_get_arg_spec:NTF
+      { environment~ \tl_to_str:n {#1} }
+      { }
+      { \__cmd_get_arg_spec_error:n {#1} }
+  }
+\cs_new_protected:Npn \__cmd_show_arg_spec:N #1
+  {
+    \__cmd_get_arg_spec:NTF #1
+      { \tl_show:N \ArgumentSpecification }
+      { \__cmd_get_arg_spec_error:N #1 }
+  }
+\cs_new_protected:Npn \__cmd_show_arg_spec:n #1
+  {
+    \exp_args:Nc \__cmd_get_arg_spec:NTF
+      { environment~ \tl_to_str:n {#1} }
+      { \tl_show:N \ArgumentSpecification }
+      { \__cmd_get_arg_spec_error:n {#1} }
+  }
+\cs_new_protected:Npn \__cmd_check_definable:nNT #1
+  { \tl_trim_spaces_apply:nN {#1} \__cmd_check_definable_aux:nN }
+\group_begin:
+  \char_set_catcode_active:n { `? }
+  \cs_new_protected:Npn \__cmd_check_definable_aux:nN #1#2
+    {
+      \group_begin:
+      \tl_if_single_token:nTF {#1}
+        {
+          \int_set:Nn \tex_escapechar:D { 92 }
+          \exp_args:Nx \tl_if_empty:nTF
+            { \exp_args:No \str_tail:n { \token_to_str:N #1 } }
+            {
+              \exp_args:Nx \char_set_lccode:nn
+                { ` \str_head:n {#1} } { `? }
+              \tex_lowercase:D { \tl_if_eq:nnTF {#1} } { ? }
+                { \group_end: \use_iii:nnn }
+                { \group_end: \use_i:nnn }
+            }
+            { \group_end: \use_iii:nnn }
+        }
+        { \group_end: \use_ii:nnn }
+      {
+        \msg_error:nnxx { cmd } { not-definable }
+          { \tl_to_str:n {#1} } { \token_to_str:N #2 }
+      }
+      {
+        \msg_error:nnxx { cmd } { not-one-token }
+          { \tl_to_str:n {#1} } { \token_to_str:N #2 }
+      }
+    }
+\group_end:
+\cs_new_protected:Npn \__cmd_token_if_cs:NTF #1
+  {
+    \group_begin:
+      \int_set:Nn \tex_escapechar:D { 92 }
+      \exp_args:Nx \tl_if_empty:nTF
+          { \exp_args:No \str_tail:n { \token_to_str:N #1 } }
+        { \group_end: \use_ii:nn }
+        { \group_end: \use_i:nn }
+  }
+\cs_new:Npn \__cmd_tl_mapthread_function:NNN #1#2#3
+  {
+    \exp_after:wN \exp_after:wN
+    \exp_after:wN \__cmd_tl_mapthread_loop:w
+    \exp_after:wN \exp_after:wN
+    \exp_after:wN #3
+    \exp_after:wN #1
+    \exp_after:wN \q_recursion_tail
+    \exp_after:wN \q_mark
+    #2
+    \q_recursion_tail
+    \q_recursion_stop
+  }
+\cs_new:Npn \__cmd_tl_mapthread_function:nnN #1#2#3
+  {
+    \__cmd_tl_mapthread_loop:w #3
+      #1 \q_recursion_tail \q_mark
+      #2 \q_recursion_tail \q_recursion_stop
+  }
+\cs_new:Npn \__cmd_tl_mapthread_loop:w #1#2#3 \q_mark #4
+  {
+    \quark_if_recursion_tail_stop:n {#2}
+    \quark_if_recursion_tail_stop:n {#4}
+    #1 {#2} {#4}
+    \__cmd_tl_mapthread_loop:w #1#3 \q_mark
+  }
+\cs_new_protected:Npn \__cmd_cmd_type_cases:NnnnnF #1 #2 #3 #4 #5 #6
+  {
+    \exp_args:Ne \str_case_e:nnF
+      {
+        \exp_args:Nf \tl_if_empty:nT { \cs_argument_spec:N #1 }
+          {
+            \token_if_macro:NT #1
+              {
+                \exp_after:wN \exp_after:wN
+                \exp_after:wN \token_to_str:N
+                \exp_after:wN \use_i_delimit_by_q_stop:nw
+                  #1 \scan_stop: \q_stop
+              }
+          }
+      }
+      {
+        { \token_to_str:N \__cmd_start:nNNnnn } {#2}
+        { \token_to_str:N \__cmd_start_expandable:nNNNNn } {#3}
+        { \token_to_str:N \__cmd_start_env:nnnnn } {#4}
+        {
+          \exp_after:wN \token_to_str:N
+            \cs:w environment~
+              \exp_last_unbraced:Ne \use_none:nnn
+                { \cs_to_str:N #1 } ~end~aux \cs_end:
+        } {#5}
+      }
+      {#6}
+  }
+\cs_new_protected:Npn \__kernel_cmd_if_xparse:NTF #1
+  {
+    \__cmd_cmd_type_cases:NnnnnF #1
+      { } { } { } { } { \use_iii:nnn }
+    \use_i:nn
+  }
+\cs_new_protected:Npn \__cmd_peek_nonspace:NTF
+  { \__cmd_peek_nonspace_aux:nNNTF { } \__cmd_peek_meaning:NTF }
+\cs_new_protected:Npn \__cmd_peek_nonspace_remove:NTF
+  { \__cmd_peek_nonspace_aux:nNNTF { } \__cmd_peek_meaning_remove:NTF }
+\cs_new_protected:Npn \__cmd_peek_nonspace_aux:nNNTF #1#2#3#4#5
+  {
+    \peek_meaning_remove:NTF \c_space_token
+      { \__cmd_peek_nonspace_aux:nNNTF { #1 ~ } #2 #3 {#4} {#5} }
+      { #2 #3 { #4 } { #5 #1 } }
+  }
+\cs_new_protected:Npn \__cmd_peek_meaning:NTF
+  { \__cmd_peek_meaning_aux:NNTF \c_false_bool }
+\cs_new_protected:Npn \__cmd_peek_meaning_remove:NTF
+  { \__cmd_peek_meaning_aux:NNTF \c_true_bool }
+\cs_new_protected:Npn \__cmd_peek_meaning_aux:NNTF #1#2#3#4
+  {
+    \tl_set:Nn \l__cmd_tmpa_tl {#3}
+    \tl_set:Nn \l__cmd_tmpb_tl {#4}
+    \peek_meaning:NTF #2
+      {
+        \token_if_eq_meaning:NNTF #2 \c_group_begin_token
+          { \__cmd_peek_true_remove:Nw #1 }
+          {
+            \__cmd_token_if_cs:NTF #2
+              { \__cmd_peek_cs_check_equal:NNN #1 #2 }
+              { \__cmd_peek_true_remove:Nw #1 }
+          }
+      }
+      { \l__cmd_tmpb_tl }
+  }
+\cs_new_protected:Npn \__cmd_peek_cs_check_equal:NNN #1#2#3
+  {
+    \str_if_eq:nnTF {#2} {#3}
+      { \__cmd_peek_true_remove:Nw #1 }
+      { \l__cmd_tmpb_tl }
+    #3
+  }
+\cs_new_protected:Npn \__cmd_peek_true_remove:Nw #1
+  {
+    \bool_if:NTF #1
+      {
+        \tex_afterassignment:D \l__cmd_tmpa_tl
+        \cs_set_eq:NN \__cmd_tmp:w
+      }
+      { \l__cmd_tmpa_tl }
+  }
+\tl_const:Nn \c__cmd_ignore_def_tl
+  { \\ \\ LaTeX~will~ignore~this~entire~definition. }
+\cs_new:Npn \__cmd_environment_or_command:
+  {
+    \bool_if:NTF \l__cmd_environment_bool
+      { environment ~ ' \l__cmd_environment_str ' }
+      {
+        command ~ '
+        \exp_args:Nf \tl_trim_spaces:n
+          { \exp_after:wN \token_to_str:N \l__cmd_fn_tl }
+        '
+      }
+  }
+\msg_new:nnnn { cmd } { arg-after-body }
+  { Argument~type~'b'~must~be~last~in~#1. }
+  {
+    The~'b'~argument~type~must~come~last~but~it~is~followed~
+    by~'#2'~in~the~argument~specification.~This~is~not~allowed.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { bad-arg-spec }
+  { Bad~argument~specification~'#2'~for~#1. }
+  {
+    The~argument~specification~provided~is~not~valid:~
+    one~or~more~mandatory~parts~are~missing.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { already-defined }
+  { Command~'#1'~already~defined. }
+  {
+    You~have~used~#2~
+    with~a~command~that~already~has~a~definition. \\ \\
+    The~existing~definition~of~'#1'~will~not~be~altered.
+  }
+\msg_new:nnnn { cmd } { undefined }
+  { Command ~'#1'~undefined. }
+  {
+    You~have~used~#2~
+    with~a~command~that~was~never~defined.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { env-already-defined }
+  { Environment~'#1'~already~defined. }
+  {
+    You~have~used~\NewDocumentEnvironment
+    with~an~environment~that~already~has~a~definition. \\ \\
+    The~existing~definition~of~'#1'~will~not~be~altered.
+  }
+\msg_new:nnnn { cmd } { env-end-already-defined }
+  { End~of~environment~'#1'~already~defined. }
+  {
+    You~have~used~\NewDocumentEnvironment
+    with~an~environment~that~already~has~a~definition~for~'end#1'. \\ \\
+    The~existing~definition~of~'#1'~will~not~be~altered.
+  }
+\msg_new:nnnn { cmd } { env-undefined }
+  { Environment~'#1'~undefined. }
+  {
+    You~have~used~\RenewDocumentEnvironment
+    with~an~environment~that~was~never~defined.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { expandable-ending-optional }
+  { Bad~argument~specification~'#2'~for~#1. }
+  {
+    Expandable~commands~must~have~a~final~mandatory~argument~
+    (or~no~arguments~at~all).~You~cannot~have~a~terminal~optional~
+    argument~with~expandable~commands.
+  }
+\msg_new:nnnn { cmd } { long-short-mix }
+  { Invalid~argument~prefix~'+'~in~command~'#1'. }
+  {
+    The~arguments~for~an~expandable~command~must~not~involve~short~
+    arguments~after~long~arguments.~You~have~tried~to~mix~the~two~types~
+    when~defining~'#1'.
+  }
+\msg_new:nnnn { cmd } { invalid-command-arg }
+  { Invalid~argument~type~'#2'~in~#1. }
+  {
+    The~letter~'#2'~can~only~be~used~in~environment~argument~
+    specifications,~but~not~for~commands.
+    \\ \\
+    LaTeX~will~ignore~the~entire~definition.
+  }
+\msg_new:nnnn { cmd } { invalid-expandable-arg }
+  { Invalid~argument~type~'#2'~in~#1. }
+  {
+    The~letter~'#2'~specifies~an~argument~type~which~cannot~be~used~
+    in~an~expandable~command.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { invalid-after-optional-expandably }
+  { Argument~'#2'~invalid~after~optional~arg~in~#1. }
+  {
+    The~letter~'#2'~specifies~an~argument~type~which~cannot~be~used~
+    in~an~expandable~command~after~an~optional~argument.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { invalid-bang }
+  { Invalid~argument~prefix~'!'~in~#1. }
+  {
+    The~prefix~'!'~is~only~allowed~for~trailing~optional~arguments.~
+    You~tried~to~apply~it~to~'#2'.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { not-definable }
+  { First~argument~of~'#2'~must~be~a~command. }
+  {
+    The~first~argument~of~'#2'~should~be~the~document~command~that~will~
+    be~defined.~The~provided~argument~'#1'~is~a~character.~Perhaps~a~
+    backslash~is~missing?
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { not-one-token }
+  { First~argument~of~'#2'~must~be~a~command. }
+  {
+    The~first~argument~of~'#2'~should~be~the~document~command~that~will~
+    be~defined.~The~provided~argument~'#1'~contains~more~than~one~
+    token.~Perhaps~a~backslash~is~missing?
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { not-single-token }
+  { Argument~delimiter~'#2'~invalid~in~#1. }
+  {
+    The~argument~specification~contains~
+    \tl_if_empty:nTF{#2}{nothing}{'#2'}~
+    in~a~place~
+    where~a~single~token~is~required.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { forbidden-group-token }
+  { Argument~delimiter~'#2'~invalid~in~#1. }
+  {
+    The~argument~specification~contains~the~implicit~
+    #3-group~token~'#2'~which~is~not~allowed~as~an~argument~delimiter.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { processor-in-expandable }
+  { Invalid~argument~prefix~'>'~in~command~'#1'. }
+  {
+    The~argument~specification~for~'#1'~contains~the~processor~function~'>{#2}'.~
+    This~is~only~supported~for~robust~commands,~but~not~for~expandable~ones.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { too-many-args }
+  { Too~many~arguments~for~#1. }
+  {
+    The~argument~specification~'#2'~asks~for~more~than~9~arguments.~
+    This~cannot~be~implemented.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { two-markers }
+  { Invalid~argument~prefix~'#2'~in~#1. }
+  {
+    The~argument~specification~provided~for~#1~has~two~'#2'~markers~applied~
+    to~the~same~argument;~one~is~redundant.
+  }
+\msg_new:nnnn { cmd } { unknown-argument-type } % should be unkown-arg-type but dep in xparse
+  { Invalid~argument~type~'#2'~in~#1. }
+  {
+    The~letter~'#2'~does~not~specify~a~known~argument~type.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnnn { cmd } { xparse-arg-type }
+  { Invalid~argument~type~'#2'~in~#1~(requires~xparse). }
+  {
+    The~letter~'#2'~specifies~a~known~but~deprecated~argument~type.~
+    If~you~really~need~it~you~have~to~load~the~xparse~package.
+    \c__cmd_ignore_def_tl
+  }
+\msg_new:nnn { cmd } { if-boolean }
+  { Invalid~argument~{#1}~to~\iow_char:N\\IfBoolean... }
+\msg_new:nnnn { cmd } { default-loop }
+  { Circular~dependency~in~defaults~of~#1. }
+  {
+    The~default~values~of~two~or~more~arguments~of~the~#1~
+    depend~on~each~other~in~a~way~that~cannot~be~resolved.
+  }
+\msg_new:nnnn { cmd } { missing-required }
+  { Required~argument~missing~for~#1. }
+  {
+    The~#1~expects~one~of~its~arguments~to~start~with~'#2'.~
+    LaTeX~did~not~find~this~argument~and~will~insert~a~default~value~
+    for~further~processing.
+  }
+\msg_new:nnnn { cmd } { non-xparse }
+  { \str_uppercase:n #1~not~defined~using~xparse. }
+  {
+    You~have~asked~for~the~argument~specification~for~the~#1,~
+    but~this~was~not~defined~using~xparse.
+  }
+\msg_new:nnnn { cmd } { arg-split }
+  { Too~many~'#1'~separators~in~argument. }
+  {
+    LaTeX~was~asked~to~split~the~input~'#3'~
+    at~each~occurrence~of~the~separator~'#1'~into~#2~parts.~
+    Too~many~separators~were~found.
+  }
+\msg_new:nnnn { cmd } { unknown }
+  { Unknown~document~#1. }
+  {
+    You~have~asked~for~the~argument~specification~for~the~#1,~
+    but~it~is~not~defined.
+  }
+\msg_new:nnnn { cmd } { verbatim-nl }
+  { Verbatim-like~#1~ended~by~end~of~line. }
+  {
+    The~verbatim~argument~of~the~#1~cannot~contain~more~than~one~line,~
+    but~the~end~
+    of~the~current~line~has~been~reached.~You~may~have~forgotten~the~
+    closing~delimiter.
+    \\ \\
+    LaTeX~will~ignore~'#2'~and~you~may~get~some~additional~
+    (low-level)~errors.
+  }
+\msg_new:nnnn { cmd } { verbatim-tokenized }
+  { Verbatim-like~#1~illegal~in~argument. }
+  {
+    The~#1~takes~a~verbatim~argument~and~should~therefore~normally~
+    not~be~used~in~arguments~of~other~commands~or~environments.~
+    LaTeX~found~an~illegal~token~ \tl_if_empty:nF {#3} { (#3)~ }
+    after~'#2'~and~will~drop~everything~up~to~this~point.
+    \\ \\
+    Expect~further~(low-level)~errors.
+  }
+\msg_new:nnn { cmd } { define-command }    % should be just ``define'' but dep in xparse
+  {
+    Defining~command~#1~
+    with~sig.~'#2'~\msg_line_context:.
+  }
+\msg_new:nnn { cmd } { define-env }
+  {
+    Defining~environment~'#1'~
+    with~sig.~'#2'~\msg_line_context:.
+  }
+\msg_new:nnn { cmd } { redefine }
+  {
+    Redefining~command~#1~
+    with~sig.~'#2'~\msg_line_context:.
+  }
+\msg_new:nnn { cmd } { redefine-env }
+  {
+    Redefining~environment~'#1'~
+    with~sig.~'#2'~\msg_line_context:.
+  }
+\msg_new:nnn { cmd } { optional-mandatory }
+  {
+    Optional~and~mandatory~argument~with~same~delimiter~'#2'.
+    \\ \\
+    The~mandatory~argument~specified~with~
+    '\str_case:nnF{#1}{ {R/r}{r'~or~'R} }{#1}'~has~the~
+    same~delimiter~'#2'~as~an~earlier~optional~argument.~
+    It~will~therefore~not~be~possible~to~omit~all~the~earlier~
+    optional~arguments~when~calling~this~command.
+    \\ \\
+    This~may~be~intentional,~but~then~it~might~be~a~mistake.
+  }
+\msg_new:nnn { cmd } { unsupported-let }
+  {
+    The~command~'#1'~was~undefined~but~not~the~associated~commands~
+    '#1~code'~and/or~'#1~defaults'.~Maybe~you~tried~using~
+    \iow_char:N\\let.~This~may~lead~to~an~infinite~loop.
+  }
+\cs_new_eq:NN \BooleanFalse \c_false_bool
+\cs_new_eq:NN \BooleanTrue  \c_true_bool
+\cs_new_protected:Npn \NewDocumentCommand #1#2#3
+  {
+    \__cmd_check_definable:nNT {#1} \NewDocumentCommand
+      {
+        \cs_if_exist:NTF #1
+          {
+            \msg_error:nnxx { cmd } { already-defined }
+              { \use:nnn \token_to_str:N #1 { } }
+              { \token_to_str:N \NewDocumentCommand }
+          }
+          { \__cmd_declare_cmd:Nnn #1 {#2} {#3} }
+      }
+  }
+\cs_new_protected:Npn \RenewDocumentCommand #1#2#3
+  {
+    \__cmd_check_definable:nNT {#1} \RenewDocumentCommand
+      {
+        \cs_if_exist:NTF #1
+          { \__cmd_declare_cmd:Nnn #1 {#2} {#3} }
+          {
+            \msg_error:nnxx { cmd } { undefined }
+              { \use:nnn \token_to_str:N #1 { } }
+              { \token_to_str:N \RenewDocumentCommand }
+          }
+      }
+  }
+\cs_new_protected:Npn \ProvideDocumentCommand #1#2#3
+  {
+    \__cmd_check_definable:nNT {#1} \ProvideDocumentCommand
+      { \cs_if_exist:NF #1 { \__cmd_declare_cmd:Nnn #1 {#2} {#3} } }
+ }
+\cs_new_protected:Npn \DeclareDocumentCommand #1#2#3
+  {
+    \__cmd_check_definable:nNT {#1} \DeclareDocumentCommand
+      { \__cmd_declare_cmd:Nnn #1 {#2} {#3} }
+  }
+\cs_new_protected:Npn \NewDocumentEnvironment #1#2#3#4
+  {
+    \cs_if_exist:cTF {#1}
+      { \msg_error:nnx { cmd } { env-already-defined } {#1} }
+      {
+        \cs_if_exist:cTF { end #1 }
+          { \msg_error:nnx { cmd } { env-end-already-defined } {#1} }
+          { \__cmd_declare_env:nnnn {#1} {#2} {#3} {#4} }
+      }
+  }
+\cs_new_protected:Npn \RenewDocumentEnvironment #1#2#3#4
+  {
+    \cs_if_exist:cTF {#1}
+      { \__cmd_declare_env:nnnn {#1} {#2} {#3} {#4} }
+      { \msg_error:nnx { cmd } { env-undefined } {#1} }
+  }
+\cs_new_protected:Npn \ProvideDocumentEnvironment #1#2#3#4
+  { \cs_if_exist:cF {#1} { \__cmd_declare_env:nnnn {#1} {#2} {#3} {#4} } }
+\cs_new_protected:Npn \DeclareDocumentEnvironment #1#2#3#4
+  { \__cmd_declare_env:nnnn {#1} {#2} {#3} {#4} }
+\cs_new_protected:Npn \NewExpandableDocumentCommand #1#2#3
+  {
+    \__cmd_check_definable:nNT {#1} \NewExpandableDocumentCommand
+      {
+        \cs_if_exist:NTF #1
+          {
+            \msg_error:nnxx { cmd } { already-defined }
+              { \use:nnn \token_to_str:N #1 { } }
+              { \token_to_str:N \NewExpandableDocumentCommand }
+          }
+          { \__cmd_declare_expandable_cmd:Nnn #1 {#2} {#3} }
+      }
+  }
+\cs_new_protected:Npn \RenewExpandableDocumentCommand #1#2#3
+  {
+    \__cmd_check_definable:nNT {#1} \RenewExpandableDocumentCommand
+      {
+        \cs_if_exist:NTF #1
+          { \__cmd_declare_expandable_cmd:Nnn #1 {#2} {#3} }
+          {
+            \msg_error:nnxx { cmd } { undefined }
+              { \use:nnn \token_to_str:N #1 { } }
+              { \token_to_str:N \RenewExpandableDocumentCommand }
+          }
+      }
+  }
+\cs_new_protected:Npn \ProvideExpandableDocumentCommand #1#2#3
+  {
+    \__cmd_check_definable:nNT {#1} \ProvideExpandableDocumentCommand
+      {
+        \cs_if_exist:NF #1
+          { \__cmd_declare_expandable_cmd:Nnn #1 {#2} {#3} }
+      }
+ }
+\cs_new_protected:Npn \DeclareExpandableDocumentCommand #1#2#3
+  {
+    \__cmd_check_definable:nNT {#1} \DeclareExpandableDocumentCommand
+      { \__cmd_declare_expandable_cmd:Nnn #1 {#2} {#3} }
+  }
+\cs_new:Npn \IfBooleanTF #1
+  {
+    \tl_if_single:nF {#1}
+      { \prg_break:n { \use:n } }
+    \tl_if_single_token:nF #1
+      { \prg_break:n { \use:n } }
+    \token_if_eq_meaning:NNT #1 \c_true_bool
+      { \prg_break:n { \use_ii:nnn } }
+    \token_if_eq_meaning:NNT #1 \c_false_bool
+      { \prg_break:n { \use_iii:nnn } }
+    \prg_break:n { \use:n }
+    \prg_break_point:
+    {
+      \msg_expandable_error:nnn { cmd } { if-boolean } {#1}
+      \use_ii:nn
+    }
+  }
+\cs_new:Npn \IfBooleanT #1#2 { \IfBooleanTF {#1} {#2} { } }
+\cs_new:Npn \IfBooleanF #1 { \IfBooleanTF {#1} { } }
+\cs_new_eq:NN \IfNoValueF  \tl_if_novalue:nF
+\cs_new_eq:NN \IfNoValueT  \tl_if_novalue:nT
+\cs_new_eq:NN \IfNoValueTF \tl_if_novalue:nTF
+\cs_new:Npn \IfValueF { \tl_if_novalue:nT }
+\cs_new:Npn \IfValueT { \tl_if_novalue:nF }
+\cs_new:Npn \IfValueTF #1#2#3 { \tl_if_novalue:nTF {#1} {#3} {#2} }
+\tl_new:N \ProcessedArgument
+\cs_new_eq:NN \ReverseBoolean \__cmd_bool_reverse:N
+\cs_new_eq:NN \SplitArgument  \__cmd_split_argument:nnn
+\cs_new_eq:NN \SplitList      \__cmd_split_list:nn
+\cs_new_eq:NN \TrimSpaces     \__cmd_trim_spaces:n
+\cs_new_eq:NN \ProcessList \tl_map_function:nN
+\cs_new_protected:Npn \GetDocumentCommandArgSpec #1
+  {
+    \__cmd_check_definable:nNT {#1} \GetDocumentCommandArgSpec
+      { \__cmd_get_arg_spec:N #1 }
+  }
+\cs_new_eq:NN \GetDocumentEnvironmentArgSpec \__cmd_get_arg_spec:n
+\cs_new_protected:Npn \ShowDocumentCommandArgSpec #1
+  {
+    \__cmd_check_definable:nNT {#1} \ShowDocumentCommandArgSpec
+      { \__cmd_show_arg_spec:N #1 }
+  }
+\cs_new_eq:NN \ShowDocumentEnvironmentArgSpec \__cmd_show_arg_spec:n
+%%% From File: lthooks.dtx
+\def\lthooksversion{v1.0s}
+\def\lthooksdate{2021/09/28}
+\bool_new:N \g__hook_debug_bool
+\cs_new_eq:NN \__hook_debug:n \use_none:n
+\cs_new_protected:Npn \hook_debug_on:
+  {
+    \bool_gset_true:N \g__hook_debug_bool
+    \__hook_debug_gset:
+  }
+\cs_new_protected:Npn \hook_debug_off:
+  {
+    \bool_gset_false:N \g__hook_debug_bool
+    \__hook_debug_gset:
+  }
+\cs_new_protected:Npn \__hook_debug_gset:
+  {
+    \cs_gset_protected:Npx \__hook_debug:n ##1
+      { \bool_if:NT \g__hook_debug_bool {##1} }
+  }
+\cs_new_eq:NN \__hook_str_compare:nn \__str_if_eq:nn
+\bool_new:N \l__hook_tmpa_bool
+\tl_new:N \l__hook_return_tl
+\tl_new:N \l__hook_tmpa_tl
+\tl_new:N \l__hook_tmpb_tl
+\seq_new:N \g__hook_all_seq
+\tl_new:N \l__hook_cur_hook_tl
+\prop_new:N \l__hook_work_prop
+\prop_new:N \g__hook_used_prop
+\tl_new:N \g__hook_hook_curr_name_tl
+\seq_new:N \g__hook_name_stack_seq
+\cs_new_eq:NN \__hook_tmp:w ?
+\cs_generate_variant:Nn \tl_gremove_once:Nn { Nx }
+\cs_generate_variant:Nn \tl_show:n { x }
+\cs_generate_variant:Nn \tl_log:n { x }
+\scan_new:N \s__hook_mark
+\cs_new:Npn \__hook_clean_to_scan:w #1 \s__hook_mark { }
+\cs_new_protected:Npn \__hook_tl_set:Nn #1#2
+  { \cs_set_nopar:Npx #1 { \__kernel_exp_not:w {#2} } }
+\cs_new_protected:Npn \__hook_tl_set:Nx #1#2
+  { \cs_set_nopar:Npx #1 {#2} }
+\cs_generate_variant:Nn \__hook_tl_set:Nn { c }
+\cs_generate_variant:Nn \__hook_tl_set:Nx { c }
+\cs_new_protected:Npn \__hook_tl_gset:Nn #1#2
+  { \cs_gset_nopar:Npx #1 { \__kernel_exp_not:w {#2} } }
+\cs_new_protected:Npn \__hook_tl_gset:No #1#2
+  { \cs_gset_nopar:Npx #1 { \__kernel_exp_not:w \exp_after:wN {#2} } }
+\cs_new_protected:Npn \__hook_tl_gset:Nx #1#2
+  { \cs_gset_nopar:Npx #1 {#2} }
+\cs_generate_variant:Nn \__hook_tl_gset:Nn { c }
+\cs_generate_variant:Nn \__hook_tl_gset:No { c }
+\cs_generate_variant:Nn \__hook_tl_gset:Nx { c }
+\cs_new_protected:Npn \__hook_tl_gput_right:Nn #1#2
+  { \__hook_tl_gset:Nx #1 { \__kernel_exp_not:w \exp_after:wN { #1 #2 } } }
+\cs_generate_variant:Nn \__hook_tl_gput_right:Nn { No, cn }
+\cs_new_protected:Npn \__hook_tl_gput_left:Nn #1#2
+  {
+    \__hook_tl_gset:Nx #1
+      { \__kernel_exp_not:w {#2} \__kernel_exp_not:w \exp_after:wN {#1} }
+  }
+\cs_generate_variant:Nn \__hook_tl_gput_left:Nn { No }
+\cs_new_eq:NN \__hook_tl_gset_eq:NN \tl_gset_eq:NN
+\cs_new_protected:Npn \__hook_tl_gclear:N #1
+  { \__hook_tl_gset_eq:NN #1 \c_empty_tl }
+\cs_generate_variant:Nn \__hook_tl_gclear:N { c }
+
+
+\cs_new_protected:Npn \hook_new:n #1
+  { \__hook_normalize_hook_args:Nn \__hook_new:n {#1} }
+\cs_new_protected:Npn \__hook_new:n #1
+  {
+    \__hook_if_declared:nTF {#1}
+      { \msg_error:nnn { hooks } { exists } {#1} }
+      {
+        \tl_new:c { g__hook_#1_declared_tl }
+        \__hook_make_usable:n {#1}
+      }
+  }
+\cs_new_protected:Npn \__hook_make_usable:n #1
+  {
+    \tl_if_exist:cF { __hook~#1 }
+      {
+        \seq_gput_right:Nn \g__hook_all_seq {#1}
+        \tl_new:c { __hook~#1 }
+        \__hook_init_structure:n {#1}
+        \clist_new:c { g__hook_#1_labels_clist }
+        \tl_new:c { g__hook_#1_reversed_tl }
+        \__hook_include_legacy_code_chunk:n {#1}
+      }
+  }
+\cs_new_protected:Npn \__hook_init_structure:n #1
+  {
+    \__hook_if_structure_exist:nF {#1}
+      {
+        \prop_new:c { g__hook_#1_code_prop }
+        \tl_new:c { __hook_toplevel~#1 }
+        \tl_new:c { __hook_next~#1 }
+      }
+  }
+\cs_new_protected:Npn \hook_new_reversed:n #1
+  { \__hook_normalize_hook_args:Nn \__hook_new_reversed:n {#1} }
+\cs_new_protected:Npn \__hook_new_reversed:n #1
+  {
+    \__hook_new:n {#1}
+    \tl_gset:cn { g__hook_#1_reversed_tl } { - }
+  }
+\cs_new_protected:Npn \hook_new_pair:nn #1#2
+  { \hook_new:n {#1} \hook_new_reversed:n {#2} }
+\cs_new_protected:Npn \__hook_include_legacy_code_chunk:n #1
+  {
+    \tl_if_exist:cT { @#1hook }
+      {
+        \tl_if_empty:cF { @#1hook }
+          {
+            \exp_args:Nnnv \__hook_hook_gput_code_do:nnn {#1}
+                                  { legacy } { @#1hook }
+            \__hook_tl_gclear:c { @#1hook }
+          }
+      }
+  }
+\cs_new_protected:Npn \hook_disable_generic:n #1
+  { \__hook_normalize_hook_args:Nn \__hook_disable:n {#1} }
+\cs_new_protected:Npn \__hook_disable:n #1
+  {
+    \tl_gclear_new:c { g__hook_#1_declared_tl }
+    \cs_undefine:c { __hook~#1 }
+  }
+\prg_new_conditional:Npnn \__hook_if_disabled:n #1 { p, T, F, TF }
+  {
+    \bool_lazy_and:nnTF
+        { \tl_if_exist_p:c { g__hook_#1_declared_tl } }
+        { ! \tl_if_exist_p:c { __hook~#1 } }
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+\cs_new_protected:Npn \hook_activate_generic:n #1
+  { \__hook_normalize_hook_args:Nn \__hook_activate_generic:nn {#1} {   } }
+\cs_new_protected:Npn \__hook_activate_generic:nn #1 #2
+  {
+    \__hook_if_disabled:nTF {#1}
+      { \msg_warning:nnn { hooks } { activate-disabled } {#1} }
+      {
+        \__hook_if_declared:nF {#1}
+          {
+            \tl_new:c { g__hook_#1_declared_tl }
+            \__hook_make_usable:n {#1}
+            \tl_gset:cx { g__hook_#1_reversed_tl }
+              { \__hook_if_generic_reversed:nT {#1} { - } }
+          }
+      }
+  }
+\cs_new:Npn \__hook_parse_label_default:n #1
+  {
+    \tl_if_novalue:nTF {#1}
+      { \__hook_currname_or_default: }
+      { \tl_trim_spaces_apply:nN {#1} \__hook_parse_dot_label:n }
+  }
+\cs_new:Npn \__hook_parse_dot_label:n #1
+  {
+    \tl_if_empty:nTF {#1}
+      {
+        \msg_expandable_error:nn { hooks } { empty-label }
+        \__hook_currname_or_default:
+      }
+      {
+        \str_if_eq:nnTF {#1} { . }
+          { \__hook_currname_or_default: }
+          { \__hook_parse_dot_label:w #1 ./ \s__hook_mark }
+      }
+  }
+\cs_new:Npn \__hook_parse_dot_label:w #1 ./ #2 \s__hook_mark
+  {
+    \tl_if_empty:nTF {#1}
+      { \__hook_parse_dot_label_aux:w #2 \s__hook_mark }
+      {
+        \tl_if_empty:nTF {#2}
+          { \__hook_make_name:n {#1} }
+          { \__hook_parse_dot_label_cleanup:w #1 ./ #2 \s__hook_mark }
+      }
+  }
+\cs_new:Npn \__hook_parse_dot_label_cleanup:w #1 ./ \s__hook_mark {#1}
+\cs_new:Npn \__hook_parse_dot_label_aux:w #1 ./ \s__hook_mark
+  { \__hook_currname_or_default: / \__hook_make_name:n {#1} }
+\cs_new:Npn \__hook_currname_or_default:
+  {
+    \tl_if_empty:NTF \g__hook_hook_curr_name_tl
+      {
+        \tl_if_empty:NTF \@currname
+          {
+            \msg_expandable_error:nnn { latex2e } { should-not-happen }
+              { Empty~default~label. }
+            \__hook_make_name:n { label-missing }
+          }
+          { \@currname }
+      }
+      { \g__hook_hook_curr_name_tl }
+  }
+\cs_new:Npn \__hook_make_name:n #1
+  {
+    \exp_after:wN \exp_after:wN \exp_after:wN \__hook_make_name:w
+    \exp_after:wN \token_to_str:N \cs:w __hook~ #1 \cs_end:
+  }
+\exp_last_unbraced:NNNNo
+\cs_new:Npn \__hook_make_name:w #1 \tl_to_str:n { __hook~ } { }
+\cs_new_protected:Npn \__hook_normalize_hook_args_aux:Nn #1 #2
+  {
+    \group_begin:
+    \use:e
+      {
+        \group_end:
+        \exp_not:N #1 #2
+      }
+  }
+\cs_new_protected:Npn \__hook_normalize_hook_args:Nn #1 #2
+  {
+    \__hook_normalize_hook_args_aux:Nn #1
+      { { \__hook_parse_label_default:n {#2} } }
+  }
+\cs_new_protected:Npn \__hook_normalize_hook_args:Nnn #1 #2 #3
+  {
+    \__hook_normalize_hook_args_aux:Nn #1
+      {
+        { \__hook_parse_label_default:n {#2} }
+        { \__hook_parse_label_default:n {#3} }
+      }
+  }
+\cs_new_protected:Npn \__hook_normalize_hook_rule_args:Nnnnn #1 #2 #3 #4 #5
+  {
+    \__hook_normalize_hook_args_aux:Nn #1
+      {
+        { \__hook_parse_label_default:n {#2} }
+        { \__hook_parse_label_default:n {#3} }
+        { \tl_trim_spaces:n {#4} }
+        { \__hook_parse_label_default:n {#5} }
+      }
+  }
+\tl_gset:Nn \g__hook_hook_curr_name_tl { top-level }
+\cs_new_protected:Npn \__hook_curr_name_push:n #1
+  { \exp_args:Nx \__hook_curr_name_push_aux:n { \__hook_make_name:n {#1} } }
+\cs_new_protected:Npn \__hook_curr_name_push_aux:n #1
+  {
+    \tl_if_blank:nTF {#1}
+      { \msg_error:nn { hooks } { no-default-label } }
+      {
+        \str_if_eq:nnTF {#1} { top-level }
+          {
+            \msg_error:nnnnn { hooks } { set-top-level }
+              { to } { PushDefaultHookLabel } {#1}
+          }
+          {
+            \seq_gpush:NV \g__hook_name_stack_seq \g__hook_hook_curr_name_tl
+            \tl_gset:Nn \g__hook_hook_curr_name_tl {#1}
+          }
+      }
+  }
+\cs_new_protected:Npn \__hook_curr_name_pop:
+  {
+    \seq_gpop:NNTF \g__hook_name_stack_seq \l__hook_return_tl
+      { \tl_gset_eq:NN \g__hook_hook_curr_name_tl \l__hook_return_tl }
+      { \msg_error:nn { hooks } { extra-pop-label } }
+  }
+\tl_gput_right:Nn \@kernel@after@enddocument@afterlastpage
+  { \__hook_end_document_label_check: }
+\cs_new_protected:Npn \__hook_end_document_label_check:
+  {
+    \seq_gpop:NNT \g__hook_name_stack_seq \l__hook_return_tl
+      {
+        \msg_error:nnx { hooks } { missing-pop-label }
+          { \g__hook_hook_curr_name_tl }
+        \tl_gset_eq:NN \g__hook_hook_curr_name_tl \l__hook_return_tl
+        \__hook_end_document_label_check:
+      }
+  }
+\cs_new_protected:Npn \__hook_set_default_hook_label:n #1
+  {
+    \seq_if_empty:NTF \g__hook_name_stack_seq
+      {
+        \msg_error:nnnnn { hooks } { set-top-level }
+          { for } { SetDefaultHookLabel } {#1}
+      }
+      { \exp_args:Nx \__hook_set_default_label:n { \__hook_make_name:n {#1} } }
+  }
+\cs_new_protected:Npn \__hook_set_default_label:n #1
+  {
+    \str_if_eq:nnTF {#1} { top-level }
+      {
+        \msg_error:nnnnn { hooks } { set-top-level }
+          { to } { SetDefaultHookLabel } {#1}
+      }
+      { \tl_gset:Nn \g__hook_hook_curr_name_tl {#1} }
+  }
+\cs_new_protected:Npn \hook_gput_code:nnn #1 #2
+  { \__hook_normalize_hook_args:Nnn \__hook_gput_code:nnn {#1} {#2} }
+\cs_new_protected:Npn \__hook_gput_code:nnn #1 #2 #3
+  {
+    \__hook_if_execute_immediately:nTF {#1}
+      {#3}
+      {
+        \__hook_if_usable:nTF {#1}
+          {
+            \__hook_hook_gput_code_do:nnn {#1} {#2} {#3}
+            \__hook_update_hook_code:n {#1}
+          }
+          {
+            \__hook_if_disabled:nTF {#1}
+              { \msg_error:nnn { hooks } { hook-disabled } {#1} }
+              { \__hook_try_declaring_generic_hook:nnn {#1} {#2} {#3} }
+          }
+      }
+  }
+\cs_new_protected:Npn \__hook_hook_gput_code_do:nnn #1 #2 #3
+  {
+    \__hook_debug:n{\iow_term:x{****~ Add~ to~
+                      \__hook_if_usable:nF {#1} { undeclared~ }
+                      hook~ #1~ (#2)
+                      \on@line\space <-~ \tl_to_str:n{#3}} }
+    \str_if_eq:nnTF {#2} { top-level }
+      {
+        \str_if_eq:eeTF { top-level } { \__hook_currname_or_default: }
+          {
+            \__hook_init_structure:n {#1}
+            \__hook_tl_gput_right:cn { __hook_toplevel~#1 } {#3}
+          }
+          { \msg_error:nnn { hooks } { misused-top-level } {#1} }
+      }
+      {
+        \prop_get:cnNTF { g__hook_#1_code_prop } {#2} \l__hook_return_tl
+          {
+            \prop_gput:cno { g__hook_#1_code_prop } {#2}
+              { \l__hook_return_tl #3 }
+          }
+          { \prop_gput:cnn { g__hook_#1_code_prop } {#2} {#3} }
+      }
+  }
+\cs_new_protected:Npn \__hook_gput_undeclared_hook:nnn #1 #2 #3
+  {
+    \__hook_init_structure:n {#1}
+    \__hook_hook_gput_code_do:nnn {#1} {#2} {#3}
+  }
+\cs_new_protected:Npn \__hook_try_declaring_generic_hook:nnn #1
+  {
+    \__hook_try_declaring_generic_hook:wnTF #1 / / / \scan_stop: {#1}
+      \hook_gput_code:nnn
+      \__hook_gput_undeclared_hook:nnn
+        {#1}
+  }
+\cs_new_protected:Npn \__hook_try_declaring_generic_next_hook:nn #1
+  {
+    \__hook_try_declaring_generic_hook:wnTF #1 / / / \scan_stop: {#1}
+      \hook_gput_next_code:nn
+      \__hook_gput_next_do:nn
+        {#1}
+  }
+\prg_new_protected_conditional:Npnn \__hook_try_declaring_generic_hook:wn
+    #1 / #2 / #3 / #4 \scan_stop: #5 { TF }
+  {
+    \__hook_if_generic:nTF {#5}
+      {
+        \__hook_if_usable:nF {#5}
+          {
+            \str_if_eq:nnT {#1} { cmd }
+              { \__hook_try_put_cmd_hook:n {#5} }
+            \__hook_make_usable:n {#5}
+          }
+        \__hook_if_generic_reversed:nT {#5}
+          { \tl_gset:cn { g__hook_#5_reversed_tl } { - } }
+        \prg_return_true:
+      }
+      {
+        \__hook_if_deprecated_generic:nTF {#5}
+          {
+            \__hook_deprecated_generic_warn:n {#5}
+            \exp_after:wN \__hook_declare_deprecated_generic:NNn
+            \exp:w % \exp_end:
+          }
+          { \prg_return_false: }
+      }
+  }
+\cs_new_protected:Npn \__hook_deprecated_generic_warn:n #1
+  { \__hook_deprecated_generic_warn:w #1 \s__hook_mark }
+\cs_new_protected:Npn \__hook_deprecated_generic_warn:w
+    #1 / #2 / #3 \s__hook_mark
+  {
+    \if_cs_exist:w __hook~#1/#2/#3 \cs_end: \else:
+      \msg_warning:nnnnn { hooks } { generic-deprecated } {#1} {#2} {#3}
+    \fi:
+    \cs_gset_eq:cN { __hook~#1/#2/#3 } \scan_stop:
+  }
+\cs_new_protected:Npn \__hook_do_deprecated_generic:Nn #1 #2
+  { \__hook_do_deprecated_generic:Nw #1 #2 \s__hook_mark }
+\cs_new_protected:Npn \__hook_do_deprecated_generic:Nw #1
+         #2 / #3 / #4 \s__hook_mark
+  { #1 { #2 / #4 / #3 } }
+\cs_new_protected:Npn \__hook_declare_deprecated_generic:NNn #1 #2 #3
+  { \__hook_declare_deprecated_generic:NNw #1 #2 #3 \s__hook_mark }
+\cs_new_protected:Npn \__hook_declare_deprecated_generic:NNw #1 #2
+    #3 / #4 / #5 \s__hook_mark
+  {
+    \__hook_try_declaring_generic_hook:wnTF #3 / #5 / #4 / \scan_stop:
+        { #3 / #5 / #4 }
+      #1 #2 { #3 / #5 / #4 }
+  }
+\prg_new_conditional:Npnn \__hook_if_file_hook:w
+    #1 / #2 \s__hook_mark #3 { TF }
+  {
+    \__hook_if_generic:nTF {#3}
+      {
+        \str_if_eq:nnTF {#1} { file }
+          { \prg_return_true: }
+          { \prg_return_false: }
+      }
+      { \prg_return_false: }
+  }
+\clist_map_inline:nn { cmd , env , file , package , class , include }
+  {
+    \tl_const:cn { c__hook_generic_#1/./before_tl } { + }
+    \tl_const:cn { c__hook_generic_#1/./after_tl  } { - }
+  }
+\tl_const:cn { c__hook_generic_env/./begin_tl } { + }
+\tl_const:cn { c__hook_generic_env/./end_tl   } { + }
+\tl_const:cn { c__hook_generic_include/./end_tl } { - }
+\clist_map_inline:nn { file , package , class , include }
+  {
+    \tl_const:cn { c__hook_deprecated_#1/./before_tl } { }
+    \tl_const:cn { c__hook_deprecated_#1/./after_tl  } { }
+  }
+\tl_const:cn { c__hook_deprecated_include/./end_tl } { }
+\cs_new_protected:Npn \hook_gremove_code:nn #1 #2
+  { \__hook_normalize_hook_args:Nnn \__hook_gremove_code:nn {#1} {#2} }
+\cs_new_protected:Npn \__hook_gremove_code:nn #1 #2
+  {
+    \__hook_if_structure_exist:nTF {#1}
+      {
+        \str_if_eq:nnTF {#2} {*}
+          {
+            \prop_gclear:c { g__hook_#1_code_prop }
+            \__hook_tl_gclear:c { __hook_toplevel~#1 }
+            \__hook_tl_gclear:c { __hook_next~#1 }
+          }
+          {
+            \str_if_eq:nnTF {#2} { top-level }
+              { \__hook_tl_gclear:c { __hook_toplevel~#1 } }
+              {
+                \prop_gpop:cnNF { g__hook_#1_code_prop } {#2} \l__hook_return_tl
+                  { \msg_warning:nnnn { hooks } { cannot-remove } {#1} {#2} }
+              }
+          }
+        \__hook_if_usable:nT {#1}
+          { \__hook_update_hook_code:n {#1} }
+      }
+      {
+        \__hook_if_deprecated_generic:nTF {#1}
+          {
+            \__hook_deprecated_generic_warn:n {#1}
+            \__hook_do_deprecated_generic:Nn \__hook_gremove_code:nn {#1} {#2}
+          }
+          { \msg_warning:nnnn { hooks } { cannot-remove } {#1} {#2} }
+      }
+  }
+\prop_new:c {g__hook_??_code_prop}
+\prop_new:c {__hook~??}
+\tl_new:c {g__hook_??_reversed_tl}
+\cs_new_protected:Npn \hook_gset_rule:nnnn #1#2#3#4
+  {
+    \__hook_normalize_hook_rule_args:Nnnnn \__hook_gset_rule:nnnn
+      {#1} {#2} {#3} {#4}
+  }
+\cs_new_protected:Npn \__hook_gset_rule:nnnn #1#2#3#4
+  {
+    \__hook_if_deprecated_generic:nT {#1}
+      {
+        \__hook_deprecated_generic_warn:n {#1}
+        \__hook_do_deprecated_generic:Nn \__hook_gset_rule:nnnn {#1}
+          {#2} {#3} {#4}
+        \exp_after:wN \use_none:nnnnnnnnn \use_none:n
+      }
+    \__hook_init_structure:n {#1}
+    \__hook_rule_gclear:nnn {#1} {#2} {#4}
+    \cs_if_exist_use:cTF { __hook_rule_#3_gset:nnn }
+      {
+          {#1} {#2} {#4}
+        \__hook_update_hook_code:n {#1}
+      }
+      { \msg_error:nnnnnn { hooks } { unknown-rule }
+                          {#1} {#2} {#3} {#4}        }
+  }
+\cs_new_protected:Npn \__hook_rule_before_gset:nnn #1#2#3
+  {
+    \__hook_tl_gset:cx { g__hook_#1_rule_ \__hook_label_pair:nn {#2} {#3} _tl }
+      { \__hook_label_ordered:nnTF {#2} {#3} { < } { > } }
+  }
+\cs_new_eq:cN { __hook_rule_<_gset:nnn } \__hook_rule_before_gset:nnn
+\cs_new_protected:Npn \__hook_rule_after_gset:nnn #1#2#3
+  {
+    \__hook_tl_gset:cx { g__hook_#1_rule_ \__hook_label_pair:nn {#3} {#2} _tl }
+      { \__hook_label_ordered:nnTF {#3} {#2} { < } { > } }
+  }
+\cs_new_eq:cN { __hook_rule_>_gset:nnn } \__hook_rule_after_gset:nnn
+\cs_new_protected:Npn \__hook_rule_voids_gset:nnn #1#2#3
+  {
+    \__hook_tl_gset:cx { g__hook_#1_rule_ \__hook_label_pair:nn {#2} {#3} _tl }
+      { \__hook_label_ordered:nnTF {#2} {#3} { -> } { <- } }
+  }
+\cs_new_protected:cpn { __hook_rule_incompatible-error_gset:nnn } #1#2#3
+  { \__hook_tl_gset:cn { g__hook_#1_rule_ \__hook_label_pair:nn {#2} {#3} _tl }
+                   { xE } }
+\cs_new_protected:cpn { __hook_rule_incompatible-warning_gset:nnn } #1#2#3
+  { \__hook_tl_gset:cn { g__hook_#1_rule_ \__hook_label_pair:nn {#2} {#3} _tl }
+                   { xW } }
+\cs_new_protected:Npn \__hook_rule_unrelated_gset:nnn #1#2#3 { }
+\cs_new_protected:Npn \__hook_rule_gclear:nnn #1#2#3
+  { \cs_undefine:c { g__hook_#1_rule_ \__hook_label_pair:nn {#2} {#3} _tl } }
+\cs_new:Npn \__hook_label_pair:nn #1#2
+  {
+    \if_case:w \__hook_str_compare:nn {#1} {#2} \exp_stop_f:
+           #1 | #1 %  0
+    \or:   #1 | #2 % +1
+    \else: #2 | #1 % -1
+    \fi:
+  }
+\prg_new_conditional:Npnn \__hook_label_ordered:nn #1#2 { TF }
+  {
+    \if_int_compare:w \__hook_str_compare:nn {#1} {#2} > 0 \exp_stop_f:
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\cs_new:Npn \__hook_if_label_case:nnnnn #1#2
+  {
+    \cs:w use_
+      \if_case:w \__hook_str_compare:nn {#1} {#2}
+         i \or: ii \else: iii \fi: :nnn
+    \cs_end:
+  }
+\cs_new_eq:NN \__hook_update_hook_code:n \use_none:n
+\cs_new_protected:Npn \__hook_initialize_all: {
+  \cs_gset_eq:NN \__hook_update_hook_code:n \__hook_initialize_hook_code:n
+  \__hook_debug:n { \prop_gclear:N \g__hook_used_prop }
+  \seq_map_inline:Nn \g__hook_all_seq
+      {
+        \__hook_update_hook_code:n {##1}
+      }
+  \__hook_debug:n
+     { \iow_term:x{^^JAll~ initialized~ (non-empty)~ hooks:}
+       \prop_map_inline:Nn \g__hook_used_prop
+           { \iow_term:x{^^J~ ##1~ ->~
+               \exp_not:v {__hook~##1}~ }
+           }
+     }
+  \cs_gset_eq:NN \hook_use:n \__hook_use_initialized:n
+  \cs_gset_eq:NN \__hook_preamble_hook:n \use_none:n
+}
+\cs_new_protected:Npn \__hook_initialize_hook_code:n #1
+  {
+    \__hook_debug:n{ \iow_term:x{^^JUpdate~ code~ for~ hook~
+                                    '#1' \on@line :^^J} }
+    \__hook_include_legacy_code_chunk:n {#1}
+    \__hook_if_usable:nT {#1}
+      {
+        \prop_if_empty:cTF { g__hook_#1_code_prop }
+          {
+            \__hook_tl_gset:co { __hook~#1 }
+              {
+                \cs:w __hook_toplevel~#1 \exp_after:wN \cs_end:
+                \cs:w __hook_next~#1 \cs_end:
+              }
+          }
+          {
+            \__hook_if_reversed:nTF {#1}
+              { \cs_set_eq:NN \__hook_tl_gput:Nn    \__hook_tl_gput_left:Nn
+                \cs_set_eq:NN \__hook_clist_gput:NV \clist_gput_left:NV  }
+              { \cs_set_eq:NN \__hook_tl_gput:Nn    \__hook_tl_gput_right:Nn
+                \cs_set_eq:NN \__hook_clist_gput:NV \clist_gput_right:NV }
+            \prop_set_eq:Nc \l__hook_work_prop { g__hook_#1_code_prop }
+            \__hook_initialize_single:ccn
+              { __hook~#1 } { g__hook_#1_labels_clist } {#1}
+            \__hook_debug:n{ \exp_args:NNx \prop_gput:Nnn
+                                       \g__hook_used_prop {#1}{} }
+          }
+      }
+  }
+\cs_new:Npn \__hook_tl_csname:n #1 { l__hook_label_#1_tl }
+\cs_new:Npn \__hook_seq_csname:n #1 { l__hook_label_#1_seq }
+\seq_new:N \l__hook_labels_seq
+\int_new:N \l__hook_labels_int
+\tl_new:N \l__hook_front_tl
+\tl_new:N \l__hook_rear_tl
+\tl_new:c { \__hook_tl_csname:n { 0 } }
+\cs_new_protected:Npn \__hook_initialize_single:NNn #1#2#3
+  {
+    \seq_clear:N \l__hook_labels_seq
+    \int_zero:N  \l__hook_labels_int
+    \tl_set:Nn \l__hook_cur_hook_tl {#3}
+    \prop_map_inline:Nn \l__hook_work_prop
+       {
+         \int_incr:N \l__hook_labels_int
+         \seq_put_right:Nn \l__hook_labels_seq {##1}
+         \__hook_tl_set:cn { \__hook_tl_csname:n {##1} } { 0 }
+         \seq_clear_new:c { \__hook_seq_csname:n {##1} }
+       }
+    \prop_map_inline:Nn \l__hook_work_prop
+      {
+        \prop_map_inline:Nn \l__hook_work_prop
+          {
+            \__hook_if_label_case:nnnnn {##1} {####1}
+              { \prop_map_break: }
+              { \__hook_apply_label_pair:nnn {##1} {####1} }
+              { \__hook_apply_label_pair:nnn {####1} {##1} }
+                  {#3}
+          }
+      }
+    \__hook_debug:n { \__hook_debug_label_data:N \l__hook_work_prop }
+    \tl_set:Nn \l__hook_rear_tl { 0 }
+    \tl_set:cn { \__hook_tl_csname:n { 0 } } { 0 }
+    \seq_map_inline:Nn \l__hook_labels_seq
+      {
+        \int_compare:nNnT { \cs:w \__hook_tl_csname:n {##1} \cs_end: } = 0
+            {
+              \tl_set:cn { \__hook_tl_csname:n { \l__hook_rear_tl } }{##1}
+              \tl_set:Nn \l__hook_rear_tl {##1}
+            }
+      }
+    \tl_set_eq:Nc \l__hook_front_tl { \__hook_tl_csname:n { 0 } }
+    \__hook_tl_gclear:N #1
+    \clist_gclear:N #2
+    \bool_while_do:nn { ! \str_if_eq_p:Vn \l__hook_front_tl { 0 } }
+      {
+        \int_decr:N \l__hook_labels_int
+        \prop_get:NVN \l__hook_work_prop \l__hook_front_tl \l__hook_return_tl
+        \exp_args:NNV \__hook_tl_gput:Nn #1 \l__hook_return_tl
+        \__hook_clist_gput:NV #2 \l__hook_front_tl
+        \__hook_debug:n{ \iow_term:x{Handled~ code~ for~ \l__hook_front_tl} }
+        \seq_map_inline:cn { \__hook_seq_csname:n { \l__hook_front_tl } }
+          {
+            \tl_set:cx { \__hook_tl_csname:n {##1} }
+                       { \int_eval:n
+                           { \cs:w \__hook_tl_csname:n {##1} \cs_end: - 1 }
+                       }
+            \int_compare:nNnT
+                { \cs:w \__hook_tl_csname:n {##1} \cs_end: } = 0
+                {
+                  \tl_set:cn { \__hook_tl_csname:n { \l__hook_rear_tl } } {##1}
+                  \tl_set:Nn \l__hook_rear_tl            {##1}
+                }
+          }
+        \tl_set_eq:Nc \l__hook_front_tl
+                      { \__hook_tl_csname:n { \l__hook_front_tl } }
+      }
+    \int_compare:nNnF \l__hook_labels_int = 0
+      {
+        \iow_term:x{====================}
+        \iow_term:x{Error:~ label~ rules~ are~ incompatible:}
+        \__hook_debug_label_data:N \l__hook_work_prop
+        \iow_term:x{====================}
+      }
+    \exp_args:NNo \__hook_tl_gput:Nn #1 { \cs:w __hook_toplevel~#3 \cs_end: }
+    \__hook_tl_gput_right:No #1 { \cs:w __hook_next~#3 \cs_end: }
+  }
+\cs_generate_variant:Nn \__hook_initialize_single:NNn { cc }
+\cs_new:Npn \__hook_tl_gput:Nn    { \ERROR }
+\cs_new:Npn \__hook_clist_gput:NV { \ERROR }
+\cs_new_protected:Npn \__hook_apply_label_pair:nnn #1#2#3
+  {
+    \__hook_label_if_exist_apply:nnnF {#1} {#2} {#3}
+      {
+        \__hook_label_if_exist_apply:nnnF {#1} {#2} { ?? } { }
+      }
+  }
+\cs_new_protected:Npn \__hook_label_if_exist_apply:nnnF #1#2#3
+  {
+    \if_cs_exist:w g__hook_ #3 _rule_ #1 | #2 _tl \cs_end:
+      \__hook_apply_rule:nnn {#1} {#2} {#3}
+      \exp_after:wN \use_none:n
+    \else:
+      \use:nn
+    \fi:
+  }
+\cs_new_protected:Npn \__hook_apply_rule:nnn #1#2#3
+  {
+    \cs:w __hook_apply_
+      \cs:w g__hook_#3_reversed_tl \cs_end: rule_
+        \cs:w g__hook_ #3 _rule_ #1 | #2 _tl \cs_end: :nnn \cs_end:
+      {#1} {#2} {#3}
+  }
+\cs_new_protected:cpn { __hook_apply_rule_<:nnn } #1#2#3
+  {
+    \__hook_debug:n { \__hook_msg_pair_found:nnn {#1} {#2} {#3} }
+    \tl_set:cx { \__hook_tl_csname:n {#2} }
+       { \int_eval:n{ \cs:w \__hook_tl_csname:n {#2} \cs_end: + 1 } }
+    \seq_put_right:cn{ \__hook_seq_csname:n {#1} }{#2}
+  }
+\cs_new_protected:cpn { __hook_apply_rule_>:nnn } #1#2#3
+  {
+    \__hook_debug:n { \__hook_msg_pair_found:nnn {#1} {#2} {#3} }
+    \tl_set:cx { \__hook_tl_csname:n {#1} }
+       { \int_eval:n{ \cs:w \__hook_tl_csname:n {#1} \cs_end: + 1 } }
+    \seq_put_right:cn{ \__hook_seq_csname:n {#2} }{#1}
+  }
+\cs_new_protected:cpn { __hook_apply_rule_xE:nnn } #1#2#3
+  {
+    \__hook_debug:n { \__hook_msg_pair_found:nnn {#1} {#2} {#3} }
+    \msg_error:nnnnnn { hooks } { labels-incompatible }
+      {#1} {#2} {#3} { 1 }
+    \use:c { __hook_apply_rule_->:nnn } {#1} {#2} {#3}
+    \use:c { __hook_apply_rule_<-:nnn } {#1} {#2} {#3}
+  }
+\cs_new_protected:cpn { __hook_apply_rule_xW:nnn } #1#2#3
+  {
+    \__hook_debug:n { \__hook_msg_pair_found:nnn {#1} {#2} {#3} }
+    \msg_warning:nnnnnn { hooks } { labels-incompatible }
+      {#1} {#2} {#3} { 0 }
+  }
+\cs_new_protected:cpn { __hook_apply_rule_->:nnn } #1#2#3
+  {
+    \__hook_debug:n
+       {
+         \__hook_msg_pair_found:nnn {#1} {#2} {#3}
+         \iow_term:x{--->~ Drop~ '#2'~ code~ from~
+           \iow_char:N \\ g__hook_ \l__hook_cur_hook_tl _code_prop ~
+           because~ of~ '#1' }
+       }
+    \prop_put:Nnn \l__hook_work_prop {#2} { }
+  }
+\cs_new_protected:cpn { __hook_apply_rule_<-:nnn } #1#2#3
+  {
+    \__hook_debug:n
+       {
+         \__hook_msg_pair_found:nnn {#1} {#2} {#3}
+         \iow_term:x{--->~ Drop~ '#1'~ code~ from~
+           \iow_char:N \\ g__hook_ \l__hook_cur_hook_tl _code_prop ~
+           because~ of~ '#2' }
+       }
+    \prop_put:Nnn \l__hook_work_prop {#1} { }
+  }
+\cs_new_eq:cc { __hook_apply_-rule_<:nnn  } { __hook_apply_rule_>:nnn }
+\cs_new_eq:cc { __hook_apply_-rule_>:nnn  } { __hook_apply_rule_<:nnn }
+\cs_new_eq:cc { __hook_apply_-rule_<-:nnn } { __hook_apply_rule_<-:nnn }
+\cs_new_eq:cc { __hook_apply_-rule_->:nnn } { __hook_apply_rule_->:nnn }
+\cs_new_eq:cc { __hook_apply_-rule_xE:nnn  } { __hook_apply_rule_xE:nnn }
+\cs_new_eq:cc { __hook_apply_-rule_xW:nnn  } { __hook_apply_rule_xW:nnn }
+\cs_new_protected:Npn \__hook_msg_pair_found:nnn #1#2#3
+  {
+    \iow_term:x{~ \str_if_eq:nnTF {#3} {??} {default} {~normal} ~
+        rule~ \__hook_label_pair:nn {#1} {#2}:~
+        \use:c { g__hook_#3_rule_ \__hook_label_pair:nn {#1} {#2} _tl } ~
+        found}
+  }
+\cs_new_protected:Npn \__hook_debug_label_data:N #1 {
+  \iow_term:x{Code~ labels~ for~ sorting:}
+  \iow_term:x{~ \seq_use:Nnnn\l__hook_labels_seq {~and~}{,~}{~and~} }
+  \iow_term:x{^^J Data~ structure~ for~ label~ rules:}
+  \prop_map_inline:Nn #1
+       {
+         \iow_term:x{~ ##1~ =~ \tl_use:c{ \__hook_tl_csname:n {##1} }~ ->~
+           \seq_use:cnnn{ \__hook_seq_csname:n {##1} }{~->~}{~->~}{~->~}
+         }
+       }
+  \iow_term:x{}
+}
+\cs_new_protected:Npn \hook_log:n #1
+  {
+    \cs_set_eq:NN \__hook_log_cmd:x \iow_log:x
+    \__hook_normalize_hook_args:Nn \__hook_log:nN {#1} \tl_log:x
+  }
+\cs_new_protected:Npn \hook_show:n #1
+  {
+    \cs_set_eq:NN \__hook_log_cmd:x \iow_term:x
+    \__hook_normalize_hook_args:Nn \__hook_log:nN {#1} \tl_show:x
+  }
+\cs_new_protected:Npn \__hook_log_line:x #1
+  { \__hook_log_cmd:x { >~#1 } }
+\cs_new_protected:Npn \__hook_log_line_indent:x #1
+  { \__hook_log_cmd:x { >~\@spaces #1 } }
+\cs_new_protected:Npn \__hook_log:nN #1 #2
+  {
+    \__hook_if_deprecated_generic:nT {#1}
+      {
+        \__hook_deprecated_generic_warn:n {#1}
+        \__hook_do_deprecated_generic:Nn \__hook_log:nN {#1} #2
+        \exp_after:wN \use_none:nnnnnnnnn \use_none:nnnnn
+      }
+    \__hook_preamble_hook:n {#1}
+    \__hook_log_cmd:x
+      { ^^J ->~The~ \__hook_if_generic:nT {#1} { generic~ } hook~'#1': }
+    \__hook_if_usable:nF {#1}
+      { \__hook_log_line:x { The~hook~is~not~declared. } }
+    \__hook_if_disabled:nT {#1}
+      { \__hook_log_line:x { The~hook~is~disabled. } }
+    \hook_if_empty:nTF {#1}
+      { #2 { The~hook~is~empty } }
+      {
+        \__hook_log_line:x { Code~chunks: }
+        \prop_if_empty:cTF { g__hook_#1_code_prop }
+          { \__hook_log_line_indent:x { --- } }
+          {
+            \prop_map_inline:cn { g__hook_#1_code_prop }
+              { \__hook_log_line_indent:x { ##1~->~\tl_to_str:n {##2} } }
+          }
+        \__hook_log_line:x
+          {
+            Document-level~(top-level)~code
+            \__hook_if_usable:nT {#1}
+              { ~(executed~\__hook_if_reversed:nTF {#1} {first} {last} ) } :
+          }
+        \__hook_log_line_indent:x
+          {
+            \tl_if_empty:cTF { __hook_toplevel~#1 }
+              { --- }
+              { -> ~ \exp_args:Nv \tl_to_str:n { __hook_toplevel~#1 } }
+          }
+        \__hook_log_line:x { Extra~code~for~next~invocation: }
+        \__hook_log_line_indent:x
+          {
+            \tl_if_empty:cTF { __hook_next~#1 }
+              { --- }
+              { ->~ \exp_args:Nv \__hook_log_next_code:n { __hook_next~#1 } }
+          }
+        \__hook_log_line:x { Rules: }
+        \bool_set_true:N \l__hook_tmpa_bool
+        \__hook_list_rules:nn {#1}
+          {
+            \bool_set_false:N \l__hook_tmpa_bool
+            \__hook_log_line_indent:x
+              {
+                ##2~ with~
+                \str_if_eq:nnT {##3} {??} { default~ }
+                relation~ ##1
+              }
+          }
+        \bool_if:NT \l__hook_tmpa_bool
+          { \__hook_log_line_indent:x { --- } }
+        \bool_lazy_and:nnTF
+            { \__hook_if_usable_p:n {#1} }
+            { ! \hook_if_empty_p:n {#1} }
+          {
+            \__hook_log_line:x
+              {
+                Execution~order
+                \bool_if:NTF \l__hook_tmpa_bool
+                  { \__hook_if_reversed:nT {#1} { ~(after~reversal) } }
+                  { ~(after~
+                    \__hook_if_reversed:nT {#1} { reversal~and~ }
+                    applying~rules)
+                  } :
+              }
+            #2 % \tl_show:n
+              {
+                \@spaces
+                \clist_if_empty:cTF { g__hook_#1_labels_clist }
+                  { --- }
+                  { \clist_use:cn {g__hook_#1_labels_clist} { ,~ } }
+              }
+          }
+          {
+            \__hook_log_line:x { Execution~order: }
+            #2
+              {
+                \@spaces Not~set~because~the~hook~ \__hook_if_usable:nTF {#1}
+                  { code~pool~is~empty }
+                  { is~\__hook_if_disabled:nTF {#1} {disabled} {undeclared} }
+              }
+          }
+      }
+  }
+\cs_new:Npn \__hook_log_next_code:n #1
+  { \exp_args:No \tl_to_str:n { \use_none:nn #1 } }
+\cs_new_protected:Npn \__hook_list_rules:nn #1 #2
+  {
+    \cs_set_protected:Npn \__hook_tmp:w ##1 ##2 ##3 {#2}
+    \prop_map_inline:cn { g__hook_#1_code_prop }
+      {
+        \prop_map_inline:cn { g__hook_#1_code_prop }
+          {
+            \__hook_if_label_case:nnnnn {##1} {####1}
+              { \prop_map_break: }
+              { \__hook_list_one_rule:nnn {##1} {####1} }
+              { \__hook_list_one_rule:nnn {####1} {##1} }
+                  {#1}
+          }
+      }
+  }
+\cs_new_protected:Npn \__hook_list_one_rule:nnn #1#2#3
+  {
+    \__hook_list_if_rule_exists:nnnF {#1} {#2} {#3}
+      { \__hook_list_if_rule_exists:nnnF {#1} {#2} { ?? } { } }
+  }
+\cs_new_protected:Npn \__hook_list_if_rule_exists:nnnF #1#2#3
+  {
+    \if_cs_exist:w g__hook_ #3 _rule_ #1 | #2 _tl \cs_end:
+      \exp_args:Nv \__hook_tmp:w
+        { g__hook_ #3 _rule_ #1 | #2 _tl } { #1 | #2 } {#3}
+      \exp_after:wN \use_none:nn
+    \fi:
+    \use:n
+  }
+\cs_new_protected:Npn \__hook_debug_print_rules:n #1
+  {
+    \iow_term:n { The~hook~#1~contains~the~rules: }
+    \cs_set_protected:Npn \__hook_tmp:w ##1
+      {
+        \__hook_list_rules:nn {#1}
+          {
+            \iow_term:x
+              {
+                > ##1 {####2} ##1 => ##1 {####1}
+                \str_if_eq:nnT {####3} {??} { ~(default) }
+              }
+          }
+      }
+    \exp_args:No \__hook_tmp:w { \use:nn { ~ } { ~ } }
+  }
+\cs_new_protected:Npn \hook_gput_next_code:nn #1
+  { \__hook_normalize_hook_args:Nn \__hook_gput_next_code:nn {#1} }
+\cs_new_protected:Npn \__hook_gput_next_code:nn #1 #2
+  {
+    \__hook_if_disabled:nTF {#1}
+      { \msg_error:nnn { hooks } { hook-disabled } {#1} }
+      {
+        \__hook_if_structure_exist:nTF {#1}
+          { \__hook_gput_next_do:nn {#1} {#2} }
+          { \__hook_try_declaring_generic_next_hook:nn {#1} {#2} }
+      }
+  }
+\cs_new_protected:Npn \__hook_gput_next_do:nn #1
+  {
+    \exp_args:Nc \__hook_gput_next_do:Nnn
+      { __hook_next~#1 } {#1}
+  }
+\cs_new_protected:Npn \__hook_gput_next_do:Nnn #1 #2
+  {
+    \tl_if_empty:cT { __hook~#2 }
+      { \__hook_update_hook_code:n {#2} }
+    \tl_if_empty:NT #1
+      { \__hook_tl_gset:Nn #1 { \__hook_clear_next:n {#2} } }
+    \__hook_tl_gput_right:Nn #1
+  }
+\cs_new_protected:Npn \hook_gclear_next_code:n #1
+  { \__hook_normalize_hook_args:Nn \__hook_clear_next:n {#1} }
+\cs_new_protected:Npn \__hook_clear_next:n #1
+  { \cs_gset_eq:cN { __hook_next~#1 } \c_empty_tl }
+\cs_new_protected:Npn \hook_use:n #1
+  {
+    \tl_if_exist:cT { __hook~#1 }
+      {
+        \__hook_preamble_hook:n {#1}
+        \cs:w __hook~#1 \cs_end:
+      }
+  }
+\cs_new:Npn \__hook_use_initialized:n #1
+  {
+    \if_cs_exist:w __hook~#1 \cs_end:
+      \cs:w __hook~#1 \exp_after:wN \cs_end:
+    \fi:
+  }
+\cs_new_protected:Npn \__hook_preamble_hook:n #1
+  { \__hook_initialize_hook_code:n {#1} }
+\cs_new_protected:Npn \hook_use_once:n #1
+  {
+    \__hook_if_execute_immediately:nF {#1}
+      { \__hook_normalize_hook_args:Nn \__hook_use_once:n { \use:n {#1} } }
+  }
+\cs_new_protected:Npn \__hook_use_once:n #1
+  {
+    \__hook_preamble_hook:n {#1}
+    \__hook_use_once_set:n {#1}
+    \__hook_use_initialized:n {#1}
+    \__hook_use_once_clear:n {#1}
+  }
+\cs_new_protected:Npn \__hook_use_once_set:n #1
+  { \__hook_tl_gset:cn { g__hook_#1_reversed_tl } { I } }
+\cs_new_protected:Npn \__hook_use_once_clear:n #1
+  {
+    \__hook_tl_gclear:c { __hook~#1 }
+    \__hook_tl_gclear:c { __hook_next~#1 }
+    \__hook_tl_gclear:c { __hook_toplevel~#1 }
+    \prop_gclear:c { g__hook_#1_code_prop }
+  }
+\prg_new_conditional:Npnn \__hook_if_execute_immediately:n #1 { F, TF }
+  {
+    \__hook_if_usable:nTF {#1}
+      {
+        \exp_after:wN \__hook_clean_to_scan:w
+        \if:w I \cs:w g__hook_#1_reversed_tl \cs_end:
+          \s__hook_mark \prg_return_true:
+        \else:
+          \s__hook_mark \prg_return_false:
+        \fi:
+      }
+      { \prg_return_false: }
+  }
+
+\prg_new_conditional:Npnn \hook_if_empty:n #1 { p , T , F , TF }
+  {
+    \__hook_if_structure_exist:nTF {#1}
+      {
+        \bool_lazy_and:nnTF
+            { \prop_if_empty_p:c { g__hook_#1_code_prop } }
+            {
+              \bool_lazy_and_p:nn
+                { \tl_if_empty_p:c { __hook_toplevel~#1 } }
+                { \tl_if_empty_p:c { __hook_next~#1 } }
+            }
+          { \prg_return_true: }
+          { \prg_return_false: }
+      }
+      { \prg_return_true: }
+  }
+\prg_new_conditional:Npnn \__hook_if_usable:n #1 { p , T , F , TF }
+  {
+    \tl_if_exist:cTF { __hook~#1 }
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+\prg_new_conditional:Npnn \__hook_if_structure_exist:n #1 { p , T , F , TF }
+  {
+    \prop_if_exist:cTF { g__hook_#1_code_prop }
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+\prg_new_conditional:Npnn \__hook_if_declared:n #1 { p, T, F, TF }
+  {
+    \tl_if_exist:cTF { g__hook_#1_declared_tl }
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+\prg_new_conditional:Npnn \__hook_if_reversed:n #1 { p , T , F , TF }
+  {
+    \exp_after:wN \__hook_clean_to_scan:w
+    \if:w - \cs:w g__hook_#1_reversed_tl \cs_end:
+      \s__hook_mark \prg_return_true:
+    \else:
+      \s__hook_mark \prg_return_false:
+    \fi:
+  }
+\prg_new_conditional:Npnn \__hook_if_generic:n #1 { T, TF }
+  { \__hook_if_generic:w #1 / / / \s__hook_mark }
+\cs_new:Npn \__hook_if_generic:w #1 / #2 / #3 / #4 \s__hook_mark
+  {
+    \cs_if_exist:cTF { c__hook_generic_#1/./#3_tl }
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+\prg_new_conditional:Npnn \__hook_if_deprecated_generic:n #1 { T, TF }
+  { \__hook_if_deprecated_generic:w #1 / / / \s__hook_mark }
+\cs_new:Npn \__hook_if_deprecated_generic:w #1 / #2 / #3 / #4 \s__hook_mark
+  {
+    \cs_if_exist:cTF { c__hook_deprecated_#1/./#2_tl }
+      {
+        \tl_if_empty:nTF {#3}
+          { \prg_return_false: }
+          { \prg_return_true: }
+      }
+      { \prg_return_false: }
+  }
+\prg_new_conditional:Npnn \__hook_if_generic_reversed:n #1 { T }
+  { \__hook_if_generic_reversed:w #1 / / / \scan_stop: }
+\cs_new:Npn \__hook_if_generic_reversed:w #1 / #2 / #3 / #4 \scan_stop:
+  {
+    \if_charcode:w - \cs:w c__hook_generic_#1/./#3_tl \cs_end:
+      \prg_return_true:
+    \else:
+      \prg_return_false:
+    \fi:
+  }
+\prop_gput:Nnn \g_msg_module_type_prop { hooks } { LaTeX }
+\prop_gput:Nnn \g_msg_module_type_prop { latex2e } { LaTeX }
+\prop_gput:Nnn \g_msg_module_name_prop { latex2e } { kernel }
+\msg_new:nnnn { hooks } { labels-incompatible }
+  {
+    Labels~'#1'~and~'#2'~are~incompatible
+    \str_if_eq:nnF {#3} {??} { ~in~hook~'#3' } .~
+    \int_compare:nNnTF {#4} = { 1 }
+      { The~ code~ for~ both~ labels~ will~ be~ dropped. }
+      { You~ may~ see~ errors~ later. }
+  }
+  { LaTeX~found~two~incompatible~labels~in~the~same~hook.~
+    This~indicates~an~incompatibility~between~packages.  }
+\msg_new:nnnn { hooks } { exists }
+    { Hook~'#1'~ has~ already~ been~ declared. }
+    { There~ already~ exists~ a~ hook~ declaration~ with~ this~
+      name.\\
+      Please~ use~ a~ different~ name~ for~ your~ hook.}
+\msg_new:nnnn { hooks } { hook-disabled }
+  { Cannot~add~code~to~disabled~hook~'#1'. }
+  {
+    The~hook~'#1'~you~tried~to~add~code~to~was~previously~disabled~
+    with~\iow_char:N\\hook_disable_generic:n~or~\iow_char:N\\DisableGenericHook,~so~
+    it~cannot~have~code~added~to~it.
+  }
+\msg_new:nnn { hooks } { empty-label }
+  {
+    Empty~code~label~\msg_line_context:.~
+    Using~'\__hook_currname_or_default:'~instead.
+  }
+\msg_new:nnn { hooks } { no-default-label }
+  {
+    Missing~(empty)~default~label~\msg_line_context:. \\
+    This~command~was~ignored.
+  }
+\msg_new:nnnn { hooks } { unknown-rule }
+  { Unknown~ relationship~ '#3'~
+    between~ labels~ '#2'~ and~ '#4'~
+    \str_if_eq:nnF {#1} {??} { ~in~hook~'#1' }. ~
+    Perhaps~ a~ misspelling?
+  }
+  {
+    The~ relation~ used~ not~ known~ to~ the~ system.~ Allowed~ values~ are~
+    'before'~ or~ '<',~
+    'after'~ or~ '>',~
+    'incompatible-warning',~
+    'incompatible-error',~
+    'voids'~ or~
+    'unrelated'.
+  }
+\msg_new:nnnn { hooks } { misused-top-level }
+  {
+    Illegal~use~of~\iow_char:N \\AddToHook{#1}[top-level]{...}.\\
+    'top-level'~is~reserved~for~the~user's~document.
+  }
+  {
+    The~'top-level'~label~is~meant~for~user~code~only,~and~should~only~
+    be~used~(sparingly)~in~the~main~document.~Use~the~default~label~
+    '\__hook_currname_or_default:'~for~this~\@cls@pkg,~or~another~
+    suitable~label.
+  }
+\msg_new:nnn { hooks } { set-top-level }
+  {
+    You~cannot~change~the~default~label~#1~'top-level'.~Illegal \\
+    \use:nn { ~ } { ~ } \iow_char:N \\#2{#3} \\
+    \msg_line_context:.
+  }
+\msg_new:nnn { hooks } { extra-pop-label }
+  {
+    Extra~\iow_char:N \\PopDefaultHookLabel. \\
+    This~command~will~be~ignored.
+  }
+\msg_new:nnn { hooks } { missing-pop-label }
+  {
+    Missing~\iow_char:N \\PopDefaultHookLabel. \\
+    The~label~'#1'~was~pushed~but~never~popped.~Something~is~wrong.
+  }
+\msg_new:nnn { latex2e } { should-not-happen }
+  {
+    This~should~not~happen.~#1 \\
+    Please~report~at~https://github.com/latex3/latex2e.
+  }
+\msg_new:nnn { hooks } { activate-disabled }
+  {
+    Cannot~ activate~ hook~ '#1'~ because~ it~ is~ disabled!
+  }
+\msg_new:nnn { hooks } { cannot-remove }
+  {
+    Cannot~remove~chunk~'#2'~from~hook~'#1'~because~
+    \__hook_if_structure_exist:nTF {#1}
+      { it~does~not~exist~in~that~hook. }
+      { the~hook~does~not~exist. }
+  }
+\msg_new:nnn { hooks } { generic-deprecated }
+  {
+    Generic~hook~'#1/#2/#3'~is~deprecated. \\
+    Use~hook~'#1/#3/#2'~instead.
+  }
+\NewDocumentCommand \NewHook             { m }{ \hook_new:n {#1} }
+\NewDocumentCommand \NewReversedHook     { m }{ \hook_new_reversed:n {#1} }
+\NewDocumentCommand \NewMirroredHookPair { mm }{ \hook_new_pair:nn {#1}{#2} }
+\NewDocumentCommand \ActivateGenericHook { m }{ \hook_activate_generic:n {#1} }
+\NewDocumentCommand \DisableGenericHook { m }{ \hook_disable_generic:n {#1} }
+\NewDocumentCommand \AddToHook { m o +m }
+  { \hook_gput_code:nnn {#1} {#2} {#3} }
+\NewDocumentCommand \AddToHookNext { m +m }
+  { \hook_gput_next_code:nn {#1} {#2} }
+\NewDocumentCommand \ClearHookNext { m }
+  { \hook_gclear_next_code:n {#1} }
+\NewDocumentCommand \RemoveFromHook { m o }
+  { \hook_gremove_code:nn {#1} {#2} }
+\NewDocumentCommand \SetDefaultHookLabel { m }
+  { \__hook_set_default_hook_label:n {#1} }
+\NewDocumentCommand \PushDefaultHookLabel { m }
+  { \__hook_curr_name_push:n {#1} }
+\NewDocumentCommand \PopDefaultHookLabel { }
+  { \__hook_curr_name_pop: }
+\cs_gset_protected:Npn \@expl@push@filename@aux@@ #1#2#3
+  {
+    \__hook_curr_name_push:n {#3}
+    \str_gset:Nx \g_file_curr_name_str {#3}
+    #1 #2 {#3}
+  }
+\cs_new:Npn \UseHook        { \hook_use:n }
+\cs_new:Npn \UseOneTimeHook { \hook_use_once:n }
+\cs_new_protected:Npn \ShowHook { \hook_show:n }
+\cs_new_protected:Npn \LogHook { \hook_log:n }
+\cs_new_protected:Npn \DebugHooksOn  { \hook_debug_on:  }
+\cs_new_protected:Npn \DebugHooksOff { \hook_debug_off: }
+\NewDocumentCommand \DeclareHookRule { m m m m }
+                    { \hook_gset_rule:nnnn {#1}{#2}{#3}{#4} }
+\NewDocumentCommand \DeclareDefaultHookRule { m m m }
+                    { \hook_gset_rule:nnnn {??}{#1}{#2}{#3} }
+\@onlypreamble\DeclareDefaultHookRule
+\NewDocumentCommand \ClearHookRule { m m m }
+{ \hook_gset_rule:nnnn {#1}{#2}{unrelated}{#3} }
+\cs_new_eq:NN \IfHookEmptyTF \hook_if_empty:nTF
+\cs_new_eq:NN \IfHookExistsTF \__hook_if_usable:nTF
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cs_new_protected:Npn \hook_disable:n
+  {
+    \__hook_deprecated_warn:nn
+      { hook_disable:n }
+      { hook_disable_generic:n }
+    \hook_disable_generic:n
+  }
+\cs_new_protected:Npn \hook_provide:n
+  {
+    \__hook_deprecated_warn:nn
+      { hook_provide:n }
+      { hook_activate_generic:n }
+    \hook_activate_generic:n
+  }
+\cs_new_protected:Npn \hook_provide_reversed:n
+  {
+    \__hook_deprecated_warn:nn
+      { hook_provide_reversed:n }
+      { hook_activate_generic:n }
+    \__hook_activate_generic_reversed:n
+  }
+\cs_new_protected:Npn \hook_provide_pair:nn
+  {
+    \__hook_deprecated_warn:nn
+      { hook_provide_pair:nn }
+      { hook_activate_generic:n }
+    \__hook_activate_generic_pair:nn
+  }
+\cs_new_protected:Npn \__hook_activate_generic_reversed:n #1
+  { \__hook_normalize_hook_args:Nn \__hook_activate_generic:nn {#1} { - } }
+\cs_new_protected:Npn \__hook_activate_generic_pair:nn #1#2
+  { \hook_activate_generic:n {#1} \__hook_activate_generic_reversed:n {#2} }
+\cs_new_protected:Npn \DisableHook
+  {
+    \__hook_deprecated_warn:nn
+      { DisableHook }
+      { DisableGenericHook }
+    \hook_disable_generic:n
+  }
+\cs_new_protected:Npn \ProvideHook
+  {
+    \__hook_deprecated_warn:nn
+      { ProvideHook }
+      { ActivateGenericHook }
+    \hook_activate_generic:n
+  }
+\cs_new_protected:Npn \ProvideReversedHook
+  {
+    \__hook_deprecated_warn:nn
+      { ProvideReversedHook }
+      { ActivateGenericHook }
+    \__hook_activate_generic_reversed:n
+  }
+\cs_new_protected:Npn \ProvideMirroredHookPair
+  {
+    \__hook_deprecated_warn:nn
+      { ProvideMirroredHookPair }
+      { ActivateGenericHook }
+    \__hook_activate_generic_pair:nn
+  }
+\cs_new_protected:Npn \__hook_deprecated_warn:nn #1 #2
+  { \msg_warning:nnnn { hooks } { deprecated } {#1} {#2} }
+\msg_new:nnn { hooks } { deprecated }
+  {
+    Command~\iow_char:N\\#1~is~deprecated~and~will~be~removed~in~a~
+    future~release. \\ \\
+    Use~\iow_char:N\\#2~instead.
+  }
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\cs_new_eq:NN \@expl@@@initialize@all@@
+              \__hook_initialize_all:
+\cs_new_eq:NN \@expl@@@hook@curr@name@pop@@
+              \__hook_curr_name_pop:
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% File: ltcmdhooks.dtx (C) Copyright 2020-2021
+%%       Frank Mittelbach, Phelype Oleinik, LaTeX Team
+%%% From File: ltcmdhooks.dtx
+\def\ltcmdhooksversion{v1.0f}
+\def\ltcmdhooksdate{2021/10/20}
+\tl_new:N \g_hook_patch_action_list_tl
+\int_new:N \l__hook_patch_num_args_int
+\tl_new:N \l__hook_patch_prefixes_tl
+\tl_new:N \l__hook_param_text_tl
+\tl_new:N \l__hook_replace_text_tl
+\tl_const:Nn \c__hook_hash_tl { # # }
+\cs_new_eq:NN \__hook_exp_not:NN ?
+\cs_new_eq:NN \__hook_def_cmd:w ?
+\quark_new:N \q__hook_recursion_tail
+\quark_new:N \q__hook_recursion_stop
+\prop_new:N \g__hook_delayed_patches_prop
+\cs_new_protected:Npn \__hook_patch_debug:x #1
+  { \__hook_debug:n { \iow_term:x { [lthooks]~#1 } } }
+\cs_generate_variant:Nn \tl_rescan:nn { nV }
+\cs_new_protected:Npn \__hook_try_put_cmd_hook:n #1
+  { \__hook_try_put_cmd_hook:w #1 / / / \s__hook_mark {#1} }
+\cs_new_protected:Npn \__hook_try_put_cmd_hook:w
+    #1 / #2 / #3 / #4 \s__hook_mark #5
+  {
+    \__hook_debug:n { \iow_term:n { ->~Adding~cmd~hook~to~'#2'~(#3): } }
+    \exp_args:Nc \__hook_patch_cmd_or_delay:Nnn {#2} {#2} {#3}
+  }
+\cs_new_protected:Npn \__hook_patch_cmd_or_delay:Nnn #1 #2 #3
+  {
+    \__hook_debug:n { \iow_term:n { ->~Add~generic~cmd~hook~for~#2~(#3). } }
+    \__hook_debug:n
+      { \iow_term:n { !~In~the~preamble:~delaying. } }
+    \prop_gput:Nnn \g__hook_delayed_patches_prop { #2 / #3 }
+      { \__hook_cmd_try_patch:nn {#2} {#3} }
+  }
+\cs_new_protected:Npn \__hook_cmd_begindocument_code:
+  {
+    \cs_gset_eq:NN \__hook_patch_cmd_or_delay:Nnn \__hook_patch_command:Nnn
+    \prop_map_function:NN \g__hook_delayed_patches_prop { \use_ii:nn }
+    \prop_gclear:N \g__hook_delayed_patches_prop
+    \cs_undefine:N \__hook_cmd_begindocument_code:
+  }
+\g@addto@macro \@kernel@after@begindocument
+  { \__hook_cmd_begindocument_code: }
+\cs_new_protected:Npn \__hook_cmd_try_patch:nn #1 #2
+  {
+    \__hook_debug:n
+      { \iow_term:x { ->~\string\begin{document}~try~cmd / #1 / #2. } }
+    \__hook_if_declared:nTF { cmd / #1 / #2 }
+      {
+        \__hook_debug:n
+          { \iow_term:n { .->~Giving~up:~hook~already~created. } }
+      }
+      {
+        \cs_if_exist:cT {#1}
+          { \exp_args:Nc \__hook_patch_command:Nnn {#1} {#1} {#2} }
+      }
+  }
+\cs_new_protected:Npn \__hook_patch_command:Nnn #1 #2 #3
+  {
+    \__hook_patch_debug:x { analyzing~'\token_to_str:N #1' }
+    \__hook_patch_debug:x { \token_to_str:N #1 = \token_to_meaning:N #1 }
+    \__hook_patch_check:NNnn \cs_if_exist:NTF #1 { undef }
+      {
+        \__hook_patch_debug:x { ++~control~sequence~is~defined }
+        \__hook_patch_check:NNnn \token_if_macro:NTF #1 { macro }
+          {
+            \__hook_patch_debug:x { ++~control~sequence~is~a~macro }
+            \__hook_patch_check:NNnn \__hook_if_public_command:NTF #1 { expl3 }
+              {
+                \__hook_patch_debug:x { ++~macro~is~not~private }
+                \robust@command@act
+                  \g_hook_patch_action_list_tl #1
+                  \__hook_retokenize_patch:Nnn { #1 {#2} {#3} }
+              }
+          }
+      }
+  }
+\cs_new_protected:Npn \__hook_patch_check:NNnn #1 #2 #3 #4
+  {
+    #1 #2 {#4}
+      {
+        \msg_error:nnxx { hooks } { cant-patch }
+          { \token_to_str:N #2 } {#3}
+      }
+  }
+\use:x
+  {
+    \prg_new_protected_conditional:Npnn
+        \exp_not:N \__hook_if_public_command:N ##1 { TF }
+      {
+        \exp_not:N \exp_last_unbraced:Nf
+          \exp_not:N \__hook_if_public_command:w
+            { \exp_not:N \cs_to_str:N ##1 }
+          \tl_to_str:n { _ _ } \s__hook_mark
+      }
+  }
+\exp_last_unbraced:NNNNo
+\cs_new_protected:Npn \__hook_if_public_command:w
+    #1 \tl_to_str:n { _ _ } #2 \s__hook_mark
+  {
+    \tl_if_empty:nTF {#2}
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+\tl_gset:Nn \g_hook_patch_action_list_tl
+  {
+    { \@if@DeclareRobustCommand \__hook_patch_DeclareRobustCommand:Nnn }
+    { \@if@newcommand \__hook_patch_newcommand:Nnn }
+    { \__kernel_cmd_if_xparse:NTF \__hook_cmd_patch_xparse:Nnn }
+  }
+\cs_new_protected:Npn \__hook_patch_DeclareRobustCommand:Nnn #1
+  {
+    \exp_args:Nc \__hook_patch_DeclareRobustCommand_aux:Nnn
+      { \cs_to_str:N #1 ~ }
+  }
+\cs_new_protected:Npn \__hook_patch_DeclareRobustCommand_aux:Nnn #1
+  {
+    \robust@command@chk@safe #1
+      { \@if@newcommand #1 }
+      { \use_ii:nn }
+        { \__hook_patch_newcommand:Nnn }
+        { \__hook_patch_expand_redefine:NNnn \c_false_bool }
+          #1
+  }
+\cs_new_protected:Npn \__hook_patch_newcommand:Nnn #1
+  {
+    \exp_args:NNc \__hook_patch_expand_redefine:NNnn \c_true_bool
+      { \c_backslash_str \cs_to_str:N #1 }
+  }
+\cs_new_protected:Npn \__hook_cmd_patch_xparse:Nnn #1
+  {
+    \exp_args:NNc \__hook_patch_expand_redefine:NNnn \c_false_bool
+      { \cs_to_str:N #1 ~ code }
+  }
+\cs_new_protected:Npn \__hook_patch_expand_redefine:NNnn #1 #2 #3 #4
+  {
+    \__hook_patch_debug:x { ++~command~can~be~patched~without~rescanning }
+    \int_set:Nn \l__hook_patch_num_args_int
+      {
+        \exp_args:Nf \str_count:n { \cs_argument_spec:N #2 } / 2
+        \bool_if:NT #1 { -1 }
+      }
+    \int_compare:nNnTF { \l__hook_patch_num_args_int } > { \c_zero_int }
+      {
+        \tl_set:Nx \l__hook_tmpa_tl { \bool_if:NTF #1 { [ ] } { { } } }
+        \int_step_inline:nnn { 2 } { \l__hook_patch_num_args_int }
+          { \tl_put_right:Nn \l__hook_tmpa_tl { { } } }
+        \exp_args:NNo \exp_args:No \__hook_if_has_hash:nTF
+            { \exp_after:wN #2 \l__hook_tmpa_tl }
+          { \cs_set_eq:NN \__hook_exp_not:n \exp_not:n }
+          { \cs_set_eq:NN \__hook_exp_not:n \use:n }
+        \cs_set_protected:Npn \__hook_tmp:w ##1 ##2
+          {
+            ##1 \l__hook_param_text_tl   { \use:n ##2 }
+            ##1 \l__hook_replace_text_tl { \__hook_exp_not:n {##2} }
+          }
+        \bool_if:NTF #1
+          { \__hook_tmp:w \tl_set:Nx { [ \c__hook_hash_tl 1 ] } }
+          { \__hook_tmp:w \tl_set:Nx { { \c__hook_hash_tl 1 } } }
+        \int_step_inline:nnn { 2 } { \l__hook_patch_num_args_int }
+          { \__hook_tmp:w \tl_put_right:Nx { { \c__hook_hash_tl ##1 } } }
+        \tl_set:Nx \l__hook_replace_text_tl
+          { \exp_not:N #2 \exp_not:V \l__hook_replace_text_tl }
+        \tl_set:Nx \l__hook_replace_text_tl
+          {
+            \token_if_eq_meaning:NNTF \__hook_exp_not:n \exp_not:n
+              { \exp_args:NNV \exp_args:No \__hook_double_hashes:n }
+              { \exp_args:NV \exp_not:o }
+                  \l__hook_replace_text_tl
+          }
+        \cs_set_eq:NN \__hook_def_cmd:w \tex_gdef:D
+        \cs_set_eq:NN \__hook_exp_not:NN \prg_do_nothing:
+      }
+      {
+        \tl_clear:N \l__hook_param_text_tl
+        \tl_set_eq:NN \l__hook_replace_text_tl #2
+        \cs_set_eq:NN \__hook_def_cmd:w \tex_xdef:D
+        \cs_set:Npn \__hook_exp_not:NN ##1 { \exp_not:N ##1 \exp_not:N }
+      }
+    \group_begin:
+      \int_set:Nn \tex_escapechar:D { `\/ }
+      \use:x
+        {
+    \group_end:
+    \tl_set:Nx \exp_not:N \l__hook_patch_prefixes_tl
+      { \exp_not:N \__hook_make_prefixes:w \cs_prefix_spec:N #2 / / }
+        }
+    \use:x
+      {
+        \__hook_redefine_with_hooks:Nnnn \exp_not:N #2
+        \str_if_eq:nnTF {#4} { after }
+          { \use_ii_i:nn }
+          { \use:nn }
+            { { \__hook_exp_not:NN \exp_not:N \UseHook { cmd / #3 / #4 } } }
+            { { } }
+            { \__hook_exp_not:NN \exp_not:V \l__hook_replace_text_tl }
+      }
+  }
+\cs_new_protected:Npn \__hook_redefine_with_hooks:Nnnn #1 #2 #3 #4
+  {
+    \l__hook_patch_prefixes_tl
+      \exp_after:wN \__hook_def_cmd:w
+        \exp_after:wN #1 \l__hook_param_text_tl
+      { #2  #4  #3 }
+  }
+\cs_new:Npn \__hook_make_prefixes:w / #1 /
+  {
+    \tl_if_empty:nF {#1}
+      {
+        \exp_not:c { tex_ \tl_trim_spaces:n {#1} :D }
+        \__hook_make_prefixes:w /
+      }
+  }
+\prg_new_conditional:Npnn \__hook_if_has_hash:n #1 { TF }
+  { \__hook_if_has_hash:w #1 ## \s__hook_mark }
+\cs_new:Npn \__hook_if_has_hash:w #1
+  {
+    \tl_if_single_token:nTF {#1}
+      {
+        \token_if_eq_catcode:NNTF ## #1
+          { \__hook_if_has_hash_check:w }
+          { \__hook_if_has_hash:w }
+      }
+      { \__hook_if_has_hash:w #1 }
+  }
+\cs_new:Npn \__hook_if_has_hash_check:w #1 \s__hook_mark
+  { \tl_if_empty:nTF {#1} { \prg_return_false: } { \prg_return_true: } }
+\cs_new:Npn \__hook_double_hashes:n #1
+  { \__hook_double_hashes:w #1 \q__hook_recursion_tail \q__hook_recursion_stop }
+\cs_new:Npn \__hook_double_hashes:w #1 \q__hook_recursion_stop
+  {
+    \tl_if_head_is_N_type:nTF {#1}
+      { \__hook_double_hashes_output:N }
+      {
+        \tl_if_head_is_group:nTF {#1}
+          { \__hook_double_hashes_group:n }
+          { \__hook_double_hashes_space:w }
+      }
+    #1 \q__hook_recursion_stop
+  }
+\cs_new:Npn \__hook_double_hashes_output:N #1
+  {
+    \if_meaning:w \q__hook_recursion_tail #1
+      \__hook_double_hashes_stop:w
+    \fi:
+    \if_meaning:w \c__hook_hash_tl #1
+      \use_i:nnnn
+    \fi:
+    \use:n
+      {
+        \if_catcode:w ## \exp_not:N #1
+          \exp_after:wN \use_ii:nnnn
+        \fi:
+        \use_none:n
+          { \exp_not:n { #1 #1 } }
+      }
+    \exp_not:N #1
+    \__hook_double_hashes:w
+  }
+\cs_new:Npn \__hook_double_hashes_stop:w #1 \q__hook_recursion_stop { \fi: }
+\cs_new:Npn \__hook_double_hashes_group:n #1
+  { { \__hook_double_hashes:n {#1} } \__hook_double_hashes:w }
+\exp_last_unbraced:NNo
+\cs_new:Npn \__hook_double_hashes_space:w \c_space_tl
+  { ~ \__hook_double_hashes:w }
+\cs_new_protected:Npn \__hook_retokenize_patch:Nnn #1 #2 #3
+  {
+    \__hook_patch_debug:x { ..~command~can~only~be~patched~by~rescanning }
+    \str_if_eq:eeTF { \cs_argument_spec:N #1 } { }
+      { \__hook_patch_expand_redefine:NNnn \c_false_bool #1 {#2} {#3} }
+      {
+        \tl_set:Nx \l__hook_tmpa_tl
+          {
+            \int_compare:nNnTF { \char_value_catcode:n {`\@ } } = { 12 }
+              { \exp_not:N \makeatletter } { \exp_not:N \makeatother }
+          }
+        \tl_set:Nx \l__hook_tmpb_tl
+          {
+            \bool_if:NTF \l__kernel_expl_bool
+              { \ExplSyntaxOff } { \ExplSyntaxOn }
+          }
+        \use:x
+          {
+            \exp_not:N \__hook_try_patch_with_catcodes:Nnnnw
+                \exp_not:n { #1 {#2} {#3} }
+              { \prg_do_nothing: }
+              { \exp_not:V \l__hook_tmpa_tl } % @
+              { \exp_not:V \l__hook_tmpb_tl } % _:
+              {
+                \exp_not:V \l__hook_tmpa_tl   % @
+                \exp_not:V \l__hook_tmpb_tl   % _:
+              }
+          }
+              \q_recursion_tail \q_recursion_stop
+          {
+            \msg_error:nnxx { hooks } { cant-patch }
+              { \c_backslash_str #2 } { retok }
+          }
+      }
+  }
+\cs_new_protected:Npn \__hook_try_patch_with_catcodes:Nnnnw #1 #2 #3 #4
+  {
+    \quark_if_recursion_tail_stop_do:nn {#4} { \use:n }
+    \__hook_patch_debug:x { ++~trying~to~patch~by~retokenization }
+    \__hook_cmd_if_scanable:NnTF {#1} {#4}
+      {
+        \__hook_patch_debug:x { ++~macro~can~be~retokenized~cleanly }
+        \__hook_patch_debug:x { ==~retokenizing~macro~now }
+        \__hook_patch_retokenize:Nnnn #1 {#2} {#3} {#4}
+        \use_i_delimit_by_q_recursion_stop:nw \use_none:n
+      }
+      {
+        \__hook_patch_debug:x { --~macro~cannot~be~retokenized~cleanly }
+        \__hook_try_patch_with_catcodes:Nnnnw #1 {#2} {#3}
+      }
+  }
+\cs_new_eq:NN \kerneltmpDoNotUse !
+\cs_new_protected:Npn \__hook_patch_required_catcodes:
+  {
+    \char_set_catcode_escape:N \\
+    \char_set_catcode_group_begin:N \{
+    \char_set_catcode_group_end:N \}
+    \char_set_catcode_parameter:N \#
+    % \int_set:Nn \tex_endlinechar:D { -1 }
+    % \int_set:Nn \tex_newlinechar:D { -1 }
+  }
+\prg_new_protected_conditional:Npnn \__hook_cmd_if_scanable:Nn #1 #2 { TF }
+  {
+    \cs_set_eq:NN \kerneltmpDoNotUse \scan_stop:
+    \cs_set_eq:NN \__hook_tmp:w \scan_stop:
+    \use:x
+      {
+        \cs_set:Npn \__hook_tmp:w
+            ####1 \tl_to_str:n { macro: } ####2 -> ####3 \s__hook_mark
+          { ####1 \def \kerneltmpDoNotUse ####2   {####3} }
+        \tl_set:Nx \exp_not:N \l__hook_tmpa_tl
+          { \exp_not:N \__hook_tmp:w \token_to_meaning:N #1 \s__hook_mark }
+      }
+    \tl_rescan:nV { #2 \__hook_patch_required_catcodes: } \l__hook_tmpa_tl
+    \token_if_eq_meaning:NNTF #1 \kerneltmpDoNotUse
+      { \prg_return_true: }
+      { \prg_return_false: }
+  }
+\cs_new_protected:Npn \__hook_patch_retokenize:Nnnn #1 #2 #3 #4
+  {
+    \cs_set_eq:NN \kerneltmpDoNotUse \scan_stop:
+    \cs_set_eq:NN \__hook_tmp:w \scan_stop:
+    \use:x
+      {
+        \cs_set:Npn \__hook_tmp:w
+            ####1 \tl_to_str:n { macro: } ####2 -> ####3 \s__hook_mark
+          {
+            ####1 \def \kerneltmpDoNotUse ####2
+              {
+                \str_if_eq:nnT {#3} { before }
+                  { \token_to_str:N \UseHook { cmd / #2 / #3 } }
+                ####3
+                \str_if_eq:nnT {#3} { after }
+                  { \token_to_str:N \UseHook { cmd / #2 / #3 } }
+              }
+          }
+        \tl_set:Nx \exp_not:N \l__hook_tmpa_tl
+          { \exp_not:N \__hook_tmp:w \token_to_meaning:N #1 \s__hook_mark }
+      }
+    \tl_rescan:nV { #4 \__hook_patch_required_catcodes: } \l__hook_tmpa_tl
+    \cs_gset_eq:NN #1 \kerneltmpDoNotUse
+  }
+\msg_new:nnnn { hooks } { cant-patch }
+  {
+    Generic~hooks~cannot~be~added~to~'#1'.
+  }
+  {
+    You~tried~to~add~a~hook~to~'#1',~but~LaTeX~was~unable~to~
+    patch~the~command~because~it~\__hook_unpatchable_cases:n {#2}.
+  }
+\cs_new:Npn \__hook_unpatchable_cases:n #1
+  {
+    \str_case:nn {#1}
+      {
+        { undef } { doesn't~exist }
+        { macro } { is~not~a~macro }
+        { expl3 } { is~a~private~expl3~macro }
+        { retok } { can't~be~retokenized~cleanly }
+      }
+  }
+\ExplSyntaxOff
+EoRawTeX
+}
+else {
+  Info('missing_file', 'expl3.ltx', 'Recent versions of LaTeX expect expl3.ltx to be available, consider installing texlive.'); }
+
+# Are these still needed?
+DefMacroI('\@pushfilenameaux',          undef, Tokens(), locked => 1);
+DefMacroI('\@expl@push@filename@aux@@', undef, Tokens(), locked => 1);
+
+1;

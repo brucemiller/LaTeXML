@@ -24,9 +24,10 @@ use LaTeXML::Package;
 #  * table alignments!
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 #======================================================================
+# recent siunitx have an expectation for latex3 capability.
+RequirePackage('expl3');
 # Would be nice if we could load the package (without errors!),
 # in order to pick up all the unit definitions!
-
 RequirePackage('xcolor');
 RequirePackage('amstext');
 RequirePackage('array');
@@ -338,14 +339,14 @@ sub six_compute_separate_uncertainty {
     for (my $i = $n ; $i < $ndigits ; $i++) {
       unshift(@dig, T_OTHER('0')); }
     return { sign => T_CS('\pm'),
-      integer => T_OTHER('0'), decimal => six_get('output-decimal-marker'),
+      integer  => T_OTHER('0'), decimal => six_get('output-decimal-marker'),
       fraction => Tokens(@dig) }; }
   else {
     my @man = ();
     for (my $i = $n ; $i > $ndigits ; $i--) {
       push(@man, shift(@dig)); }
     return { sign => T_CS('\pm'),
-      integer => Tokens(@man), decimal => six_get('output-decimal-marker'),
+      integer  => Tokens(@man), decimal => six_get('output-decimal-marker'),
       fraction => Tokens(@dig) }; } }
 
 sub six_compute_relative_uncertainty {
@@ -993,7 +994,7 @@ sub six_format_1unit {
     T_CS('\lx@unit'),
     T_OTHER(($pre ? $$unit{prefix}{name} : '') . ($u ? $$unit{unit}{name} : '')
         . ($q ? '-' . $$unit{qualifier}{name} : '')),
-    T_BEGIN, Invocation(T_CS('\mathrm'), Tokens(($pre ? $pre : ()), ($u ? $u : ()))),
+    T_BEGIN,        Invocation(T_CS('\mathrm'), Tokens(($pre ? $pre : ()), ($u ? $u : ()))),
     ($q ? $q : ()), T_END);
   if ($p) {
     $result = Tokens(T_CS('\lx@power'), T_BEGIN, $result, T_END, T_BEGIN, $p, T_END); }
@@ -1056,7 +1057,7 @@ sub six_format_units {
           $p10 -= 3 * $p; } } } }
   # per-mode = reciprocal, fraction, reciprocal-positive-first, symbol, symbol-or-fraction
   my $permode = six_getChoice('per-mode');
-  if ($permode eq 'symbol-or-fraction') {              # in display use fraction, otherwise symbol
+  if ($permode eq 'symbol-or-fraction') {    # in display use fraction, otherwise symbol
     $permode = ((LookupValue('font')->getMathstyle || 'text') eq 'display' ? 'fraction' : 'symbol'); }
   my $result = Tokens();
   if ($permode eq 'reciprocal') {    # Each unit processed, in order, with its own per (if any)
@@ -1078,7 +1079,7 @@ sub six_format_units {
       elsif ($permode eq 'repeated-symbol') {
         my $per = six_get_op({ role => 'MULOP', meaning => 'divide' }, 'per-symbol');
         $result = six_format_unitproduct(0, @numer);
-        foreach my $denom (@denom) {                  # special symbol prefixes each denom unit
+        foreach my $denom (@denom) {    # special symbol prefixes each denom unit
           $result = six_format_infix($per, undef, undef, $result, six_format_1unit($denom)); } }
       elsif ($permode eq 'symbol') {
         my $bracket = (scalar(@denom) > 1) && six_getBool('bracket-unit-denominator');
@@ -1282,7 +1283,7 @@ DefPrimitive('\DeclareSIPrePower OptionalKeyVals:SIX SkipSpaces DefToken {}', su
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
-        keyvals => $kv, type => 'prepower', power => $power,
+        keyvals      => $kv, type => 'prepower', power => $power,
         presentation => Tokens(T_SUPER, T_BEGIN, $power, T_END) });
     DefMacroI($newcs, undef, '\lx@six@unitobject{' . $name . '}');
     return; });
@@ -1296,7 +1297,7 @@ DefPrimitive('\DeclareSIPostPower OptionalKeyVals:SIX SkipSpaces DefToken {}', s
     my $newcs = T_CS('\lx@six@' . $name);
     AssignMapping('siunitx_macros',
       $name => { name => $name, cs => $cs, implementation => $newcs,
-        keyvals => $kv, type => 'postpower', power => $power,
+        keyvals      => $kv, type => 'postpower', power => $power,
         presentation => Tokens(T_SUPER, T_BEGIN, $power, T_END) });
     DefMacroI($newcs, undef, '\lx@six@unitobject{' . $name . '}');
     return; });

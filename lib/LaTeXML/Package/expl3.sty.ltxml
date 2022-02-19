@@ -15,7 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-# Should just work?
+LoadPool('expl3');
 InputDefinitions('expl3', type => 'sty', noltxml => 1);
 
 # Redefine aux macro to avoid reliance on argument ordering artefacts in latex.ltx
