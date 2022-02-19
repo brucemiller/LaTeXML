@@ -178,6 +178,6 @@ DefEnvironment('{@subtable}',
   beforeDigest => sub { beforeFloat('subtable'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
-DefMacro('\subref OptionalMatch:* Semiverbatim', '\ref{#1}');
+DefMacro('\subref OptionalMatch:* Semiverbatim', '\ref{#2}');
 
 1;

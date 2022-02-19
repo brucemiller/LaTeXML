@@ -103,6 +103,9 @@ DefMacro('\@@subcaptionbox{} []{} Optional:0pt []{}',
 
 DefConstructor('\lx@subcaption@addinlist{}',
   "^ inlist='#1'");
+
+DefMacro('\subref OptionalMatch:* Semiverbatim', '\ref{#2}');
+
 #======================================================================
 # should be in caption? or caption3 ?
 DefMacro('\DeclareCaptionSubType OptionalMatch:* [] {}', '');
