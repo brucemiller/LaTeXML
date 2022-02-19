@@ -112,9 +112,16 @@ DefMacro('\pdfnormaldeviate Token',         '');
 DefMacro('\pdfmdfivesum Number {}',         '');
 DefMacro('\pdf@mdfivesum Number {}',        '');
 DefMacro('\pdf@filemdfivesum Number {}',    '');
-DefMacro('\pdffilesize{}',                  '');
-DefMacro('\pdffilemoddate {}',              '');
-DefMacro('\pdffiledump {}',                 '');
+DefMacro('\pdffilesize{}', sub {
+    # used in expl3's \__file_full_name:n , among others
+    my ($gullet, $file) = @_;
+    if (my $path = FindFile(ToString(Expand($file)))) {
+      my @stat = stat $path;
+      return (defined $stat[7]) ? Explode($stat[7]) : (); }
+    else {
+      return (); } });
+DefMacro('\pdffilemoddate {}', '');
+DefMacro('\pdffiledump {}',    '');
 # DefMacro('\pdfcolorstackinit {}','');
 
 # Read-only registers
