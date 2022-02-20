@@ -3862,12 +3862,6 @@ if (FindFile('expl3', type => 'ltx', noltxml => 1)) {
   { \__hook_curr_name_push:n {#1} }
 \NewDocumentCommand \PopDefaultHookLabel { }
   { \__hook_curr_name_pop: }
-\cs_gset_protected:Npn \@expl@push@filename@aux@@ #1#2#3
-  {
-    \__hook_curr_name_push:n {#3}
-    \str_gset:Nx \g_file_curr_name_str {#3}
-    #1 #2 {#3}
-  }
 \cs_new:Npn \UseHook        { \hook_use:n }
 \cs_new:Npn \UseOneTimeHook { \hook_use_once:n }
 \cs_new_protected:Npn \ShowHook { \hook_show:n }
@@ -4350,7 +4344,7 @@ EoRawTeX
 else {
   Info('missing_file', 'expl3.ltx', undef, 'Recent versions of LaTeX expect expl3.ltx to be available, consider installing texlive.'); }
 
-# Are these still needed?
+# Can we do these better? xparse tests fail without them.
 DefMacroI('\@pushfilenameaux',          undef, Tokens(), locked => 1);
 DefMacroI('\@expl@push@filename@aux@@', undef, Tokens(), locked => 1);
 
