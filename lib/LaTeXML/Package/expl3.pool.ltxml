@@ -18,7 +18,7 @@ use LaTeXML::Package;
 # The rest we can define only if expl3.ltx is available on the system
 # we can stop gracefully if it isn't (e.g. no texlive installed)
 
-if (FindFile('expl3.ltx')) {
+if (FindFile('expl3', type => 'ltx', noltxml => 1)) {
   InputDefinitions('expl3', type => 'ltx', noltxml => 1);
   RawTeX(<<'EoRawTeX');
 \ExplSyntaxOn
