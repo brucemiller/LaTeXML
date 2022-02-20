@@ -14,7 +14,6 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
-use LaTeXML::Util::Pathname;
 
 # The rest we can define only if expl3.ltx is available on the system
 # we can stop gracefully if it isn't (e.g. no texlive installed)
@@ -4349,7 +4348,7 @@ if (FindFile('expl3.ltx')) {
 EoRawTeX
 }
 else {
-  Info('missing_file', 'expl3.ltx', 'Recent versions of LaTeX expect expl3.ltx to be available, consider installing texlive.'); }
+  Info('missing_file', 'expl3.ltx', undef, 'Recent versions of LaTeX expect expl3.ltx to be available, consider installing texlive.'); }
 
 # Are these still needed?
 DefMacroI('\@pushfilenameaux',          undef, Tokens(), locked => 1);
