@@ -423,7 +423,7 @@ Let(T_CS('\enddocument'), T_CS('\end{document}'), 'global');
 DefMacroI('\LaTeX',      undef, 'LaTeX');
 DefMacroI('\LaTeXe',     undef, 'LaTeX2e');
 DefMacroI('\fmtname',    undef, 'LaTeX2e');
-DefMacroI('\fmtversion', undef, '2021-11-15');
+DefMacroI('\fmtversion', undef, '2018/12/01');
 
 DefMacroI('\today', undef, sub { ExplodeText(today()); });
 
