@@ -723,7 +723,7 @@ sub merge {
   $flags     = ($$self[10] || 0) | $flags;
 
   if (my $scale = $options{scale}) {
-    $size = $scale * $size; }
+    $size = $scale * $size if $size; }
   # Set the mathstyle, and also the size from the mathstyle
   # But we may need to scale that size against the existing or requested size.
   my $stylescale = ($$self[3] ? $$self[3] / $stylesize{ $$self[9] || 'display' } : 1);

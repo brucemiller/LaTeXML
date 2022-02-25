@@ -227,14 +227,24 @@ sub convertDocument {
         $document->absorb($digested); }
       ProgressSpindown("Building");
 
-      if (my $rules = $state->lookupValue('DOCUMENT_REWRITE_RULES')) {
+      my $rules = $state->lookupValue('DOCUMENT_REWRITE_RULES');
+      if ($rules) {
         ProgressSpinup("Rewriting");
         $document->markXMNodeVisibility;
         foreach my $rule (@$rules) {
+          next if $$rule{after_parse};
           $rule->rewrite($document, $document->getDocument->documentElement); }
         ProgressSpindown("Rewriting"); }
 
       LaTeXML::MathParser->new(lexematize => $state->lookupValue('LEXEMATIZE_MATH'))->parseMath($document) unless $$self{nomathparse};
+
+      if ($rules) {
+        ProgressSpinup("Post-parse Rewriting");
+        foreach my $rule (@$rules) {
+          next unless $$rule{after_parse};
+          $rule->rewrite($document, $document->getDocument->documentElement); }
+        ProgressSpindown("Post-parse Rewriting"); }
+
       ProgressSpinup("Finalizing");
       my $xmldoc = $document->finalize();
       ProgressSpindown("Finalizing");

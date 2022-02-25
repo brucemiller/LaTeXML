@@ -19,12 +19,16 @@ use LaTeXML::Common::XML;
 
 sub new {
   my ($class, $mode, @specs) = @_;
-  my @clauses = ();
+  my @clauses     = ();
+  my $after_parse = 0;
   while (@specs) {
     my ($op, $pattern) = (shift(@specs), shift(@specs));
-    push(@clauses, ['uncompiled', $op, $pattern]); }
+    if ($op eq 'after_parse') {
+      $after_parse = $pattern; }
+    else {
+      push(@clauses, ['uncompiled', $op, $pattern]); } }
   return bless {
-    mode => $mode, math => ($mode eq 'math'), clauses => [@clauses], labels => {}
+    mode => $mode, math => ($mode eq 'math'), clauses => [@clauses], labels => {}, after_parse => $after_parse
   }, $class; }
 
 sub clauses {
@@ -501,7 +505,7 @@ sub domToXPath_rec {
 # Return quoted string, but note: XPath doesn't provide sensible way to slashify ' or "
 sub quoteXPathLiteral {
   my ($string) = @_;
-  if    ($string !~ /'/) { return "'" . $string . "'"; }
+  if ($string !~ /'/)    { return "'" . $string . "'"; }
   elsif ($string !~ /"/) { return '"' . $string . '"'; }
   else { return 'concat(' . join(',"\'",', map { "'" . $_ . "'"; } split(/'/, $string)) . ')'; } }
 

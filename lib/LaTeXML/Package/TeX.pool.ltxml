@@ -6804,6 +6804,27 @@ DefMathRewrite(xpath => 'descendant-or-self::ltx:XMWrap['
     $document->getNode->appendChild($replacement);
   });
 
+# If we have a 'norm', use \x{2016} for the fences
+DefMathRewrite(xpath => 'descendant-or-self::ltx:XMDual['
+    . './ltx:XMApp[1]/ltx:XMTok[1][@meaning="norm"] and ./ltx:XMWrap]',
+  replace => sub {
+    my ($document, $node) = @_;
+    my ($content, $pres) = element_nodes($node);
+    my @pres_nodes = element_nodes($pres);
+    my ($left_fence, $right_fence) = ($pres_nodes[0], $pres_nodes[-1]);
+    if (($left_fence->getAttribute('role') || '') eq 'VERTBAR') {
+      $left_fence->removeAttribute('meaning');
+      $left_fence->removeAttribute('name');
+      $left_fence->removeChildNodes();
+      $left_fence->appendText("\x{2016}");
+      $right_fence->removeAttribute('meaning');
+      $right_fence->removeAttribute('name');
+      $right_fence->removeChildNodes();
+      $right_fence->appendText("\x{2016}"); }
+    $document->getNode->appendChild($node);
+    return; },
+  after_parse => 1);
+
 DefMacro('\hiderel{}', "#1");    # Just ignore, for now...
 
 DefMathI('\to', undef, "\x{2192}", role => 'ARROW'); # RIGHTWARDS ARROW??? a bit more explicitly relation-like?

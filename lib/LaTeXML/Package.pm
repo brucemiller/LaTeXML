@@ -2750,8 +2750,9 @@ sub DefColorModel {
 # Defining Rewrite rules that act on the DOM
 # These are applied after the document is completely constructed
 my $rewrite_options = {    # [CONSTANT]
-  label      => 1, scope   => 1, xpath  => 1, match  => 1,
-  attributes => 1, replace => 1, regexp => 1, select => 1 };
+  label       => 1, scope   => 1, xpath  => 1, match  => 1,
+  attributes  => 1, replace => 1, regexp => 1, select => 1,
+  after_parse => 1 };
 
 sub DefRewrite {
   my (@specs) = @_;
