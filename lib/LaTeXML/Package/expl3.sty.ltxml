@@ -15,7 +15,7 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-# Should just work?
+LoadPool('expl3');
 InputDefinitions('expl3', type => 'sty', noltxml => 1);
 
 # Redefine aux macro to avoid reliance on argument ordering artefacts in latex.ltx
@@ -23,5 +23,33 @@ InputDefinitions('expl3', type => 'sty', noltxml => 1);
 #  but I am unsure if it is used anywhere currently?
 DefMacroI('\@pushfilenameaux',          undef, Tokens(), locked => 1);
 DefMacroI('\@expl@push@filename@aux@@', undef, Tokens(), locked => 1);
+
+DefMacroI(T_CS('\__expl_status_pop:w'), '{}', sub {
+    my ($gullet, $arg1) = @_;
+    my @arg_until;
+    # Custom readUntil that can match either \q_stop or \s__expl_stop
+    my $want1 = T_CS('\q_stop');
+    my $want2 = T_CS('\s__expl_stop');
+    my $token;
+    my $nbraces = 0;
+    while (($token = shift(@{ $$gullet{pushback} }) || $$gullet{mouth}->readToken())
+      && (($$token[1] != CC_SMUGGLE_THE) || ($token = $$token[2]))
+      && !$token->equals($want1) && !$token->equals($want2)) {
+      push(@arg_until, $token);
+      if ($$token[1] == CC_BEGIN) {    # And if it's a BEGIN, copy till balanced END
+        $nbraces++;
+        push(@arg_until, $gullet->readBalanced, T_END); } }
+    # Notice that IFF the arg looks like {balanced}, the outer braces are stripped
+    # so that delimited arguments behave more similarly to simple, undelimited arguments.
+    if (($nbraces == 1) && ($arg_until[0][1] == CC_BEGIN) && ($arg_until[-1][1] == CC_END)) {
+      shift(@arg_until); pop(@arg_until); }
+
+    return (
+      T_CS('\tl_set:Nn'),
+      T_CS('\l__expl_status_stack_tl'), T_BEGIN,                @arg_until, T_END,
+      T_CS('\int_if_odd:nTF'),          T_BEGIN,                $arg1,      T_END,
+      T_BEGIN,                          T_CS('\ExplSyntaxOn'),  T_END,
+      T_BEGIN,                          T_CS('\ExplSyntaxOff'), T_END); },
+  protected => 1, locked => 1);
 
 1;

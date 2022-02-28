@@ -1,0 +1,110 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  LaTeX 3                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# The rest we can define only if expl3.ltx is available on the system
+# we can stop gracefully if it isn't (e.g. no texlive installed)
+
+if (FindFile('expl3', type => 'ltx', noltxml => 1)) {
+  InputDefinitions('expl3', type => 'ltx', noltxml => 1);
+  RawTeX(<<'EoRawTeX');
+\ExplSyntaxOn
+\cs_gset_eq:NN \@expl@cs@to@str@@N \cs_to_str:N
+\cs_gset_eq:NN \@expl@str@if@eq@@nnTF \str_if_eq:nnTF
+\cs_gset_eq:NN \@expl@cs@prefix@spec@@N \cs_prefix_spec:N
+\cs_gset_eq:NN \@expl@cs@argument@spec@@N \cs_argument_spec:N
+\cs_gset_eq:NN \@expl@cs@replacement@spec@@N \cs_replacement_spec:N
+\cs_gset_eq:NN \@expl@str@map@function@@NN \str_map_function:NN
+\cs_gset_eq:NN \@expl@char@generate@@nn \char_generate:nn
+\def\NewCommandCopy{%
+  \declare@commandcopy
+    {\@firstofone}%
+    {\@firstoftwo\@notdefinable}}
+\def\RenewCommandCopy{%
+  \declare@commandcopy
+    {\@latex@error{Command \@backslashchar\reserved@a\space undefined}\@ehc
+     \@firstofone}%
+    {\@firstofone}}
+\def\DeclareCommandCopy{%
+  \declare@commandcopy
+    {\@firstofone}%
+    {\@firstofone}}
+\long\def\declare@commandcopy#1#2#3#4{%
+  \edef\reserved@a{\@expl@cs@to@str@@N#3}%
+  \@ifundefined\reserved@a{#1}{#2}%
+    {\robust@command@act
+       \@declarecommandcopylisthook#4%
+       \declare@commandcopy@let{#3#4}}}
+\def\@declarecommandcopylisthook{%
+  {\@if@DeclareRobustCommand \@copy@DeclareRobustCommand}%
+  {\@if@newcommand \@copy@newcommand}}
+\long\def\declare@commandcopy@let#1#2{\let#1=#2\relax}
+\long\def\ShowCommand#1{%
+  \robust@command@act
+    \@showcommandlisthook#1%
+    \show#1}
+\def\@showcommandlisthook{%
+  {\@if@DeclareRobustCommand \@show@DeclareRobustCommand}%
+  {\@if@newcommand \@show@newcommand}}
+%%% From File: ltcmd.dtx
+\def\ltcmdversion{v1.0h}
+\def\ltcmddate{2021-08-30}
+\tl_new:N \l__cmd_arg_spec_tl
+\tl_new:N \l__cmd_args_tl
+\tl_new:N \l__cmd_args_i_tl
+\tl_new:N \l__cmd_args_ii_tl
+\int_new:N \l__cmd_current_arg_int
+\bool_new:N \l__cmd_defaults_bool
+\tl_new:N \l__cmd_defaults_tl
+\bool_new:N \l__cmd_environment_bool
+\str_new:N \l__cmd_environment_str
+\bool_new:N \l__cmd_expandable_bool
+\tl_new:N \l__cmd_expandable_aux_name_tl
+\int_new:N \g__cmd_grabber_int
+\tl_new:N \l__cmd_fn_tl
+\tl_new:N \l__cmd_fn_code_tl
+\tl_new:N \l__cmd_function_tl
+\bool_new:N \l__cmd_grab_expandably_bool
+\bool_new:N \l__cmd_obey_spaces_bool
+\tl_new:N \l__cmd_last_delimiters_tl
+\bool_new:N \l__cmd_long_bool
+\int_new:N \l__cmd_m_args_int
+\bool_new:N \l__cmd_prefixed_bool
+\tl_new:N \l__cmd_process_all_tl
+\tl_new:N \l__cmd_process_one_tl
+\bool_new:N \l__cmd_process_some_bool
+\tl_new:N \l__cmd_saved_args_tl
+\tl_new:N \l__cmd_signature_tl
+\bool_new:N \l__cmd_some_obey_spaces_bool
+\bool_new:N \l__cmd_some_long_bool
+\bool_new:N \l__cmd_some_short_bool
+\prop_new:N \l__cmd_tmp_prop
+\tl_new:N \l__cmd_tmpa_tl
+\tl_new:N \l__cmd_tmpb_tl
+\cs_new_eq:NN \__cmd_tmp:w ?
+\msg_redirect_module:nnn { cmd } { info } { none }
+\prop_gput:Nnn \g_msg_module_type_prop { cmd } { LaTeX }
+\ExplSyntaxOff
+EoRawTeX
+}
+else {
+  Info('missing_file', 'expl3.ltx', undef, 'Recent versions of LaTeX expect expl3.ltx to be available, consider installing texlive.'); }
+
+# Can we do these better? xparse tests fail without them.
+DefMacroI('\@pushfilenameaux',          undef, Tokens(), locked => 1);
+DefMacroI('\@expl@push@filename@aux@@', undef, Tokens(), locked => 1);
+
+1;

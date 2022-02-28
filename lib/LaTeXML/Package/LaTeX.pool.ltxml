@@ -892,6 +892,12 @@ DefMacro('\DeclareCurrentRelease{}{}', sub {
     my ($stomach, $version, $date) = @_;
     # anything useful?
     return (); });
+DefMacro('\IncludeInRelease{}{}{} Until:\EndIncludeInRelease', sub {
+    # anything useful?
+    return (); });
+DefMacro('\NewModuleRelease{}{}{} Until:\EndModuleRelease', sub {
+    # anything useful?
+    return (); });
 
 DefPrimitive('\DeclareOption{}{}', sub {
     my ($stomach, $option, $code) = @_;
@@ -5514,6 +5520,14 @@ sub make_message {
   $stomach->egroup;
   return ('latex', $type, $stomach, $message); }
 
+# LaTeX 3 is loaded roughly here in the latex.ltx flow,
+# early and always.
+# ---
+# Postponed until we can address the *performance penalty*
+# instead, add these LoadPool calls to packages that expect them.
+# ---
+# LoadPool('expl3');
+
 DefPrimitive('\@onlypreamble{}', sub { onlyPreamble('\@onlypreamble'); }); # Don't bother enforcing this.
 DefPrimitive('\GenericError{}{}{}{}', sub { Error(make_message('\GenericError', $_[1], $_[2], $_[3], $_[4])); });
 DefPrimitive('\GenericWarning{}{}', sub { Warn(make_message('\GenericWarning', $_[1], $_[2])); });
@@ -6163,6 +6177,14 @@ DefMacro('\DeclareDefaultHookRule{}{}{}', '');
 DefMacro('\ClearHookRule{}{}{}',          '');
 DefMacro('\IfHookEmptyTF{}{}{}',          '#3');
 DefMacro('\IfHookExistsTF{}{}{}',         '#3');
+
+DefConditional('\if@includeinrelease');
+Let('\@kernel@after@enddocument',               '\@empty');
+Let('\@kernel@after@enddocument@afterlastpage', '\@empty');
+Let('\@kernel@before@begindocument',            '\@empty');
+Let('\@kernel@after@begindocument',             '\@empty');
+Let('\conditionally@traceon',                   '\@empty');
+Let('\conditionally@traceoff',                  '\@empty');
 
 #**********************************************************************
 1;

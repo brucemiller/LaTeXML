@@ -1068,7 +1068,8 @@ DefMacro('\tracingall',
     . ' \tracingpages=1 \tracingoutput=1 \tracinglostchars=1'
     . ' \tracingmacros=2 \tracingparagraphs=1 \tracingrestores=1'
     . ' \showboxbreadth=\maxdimen \showboxdepth=\maxdimen \errorstopmode');
-
+DefMacroI('\tracingnone', undef, Tokens());
+DefMacroI('\hideoutput',  undef, Tokens());
 # This may mess up Daemon state?
 { my ($sec, $min, $hour, $mday, $mon, $year) = localtime();
   AssignValue('\day'   => Number($mday),             'global');
