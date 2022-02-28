@@ -48,7 +48,11 @@ RequireResource('ltx-article.css');
 
 AddToMacro(T_CS('\maketitle'), T_CS('\ltx@authors@oneline'));
 
-DefMacro('\@ptsize', '0');    # should depend on options...
+DefMacro('\@ptsize',    '0');        # should depend on options...
+DefMacro('\@pnumwidth', '1.55em');
+DefMacro('\@tocrmarg',  '2.55em');
+DefMacro('\@dotsep',    '4.5');
+
 RawTeX(<<'EOTeX');
 \newif\if@restonecol
 \newif\if@titlepage

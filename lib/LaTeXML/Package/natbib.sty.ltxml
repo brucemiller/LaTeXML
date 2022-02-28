@@ -447,6 +447,8 @@ Let('\bibstyle@unsrtnat', '\bibstyle@plainnat');
 #======================================================================
 # 2.12 Other Formatting Options
 # mostly ignored...
+DefMacro('\bibname',     'Bibliography');
+DefMacro('\refname',     'References');
 DefMacro('\bibsection',  '');
 DefMacro('\bibpreamble', '');
 DefMacro('\bibfont',     '');
