@@ -2037,10 +2037,8 @@ sub beforeEquation {
         ($numbered ? RefStepCounter($ctr) : RefStepID($ctr)) }, 'global'); }
   else {
     AssignValue(EQUATIONROW_TAGS => {}, 'global'); }
-  Let('\lx@saved@BEGINDISPLAYMATH', '\@@BEGINDISPLAYMATH');
-  Let('\lx@saved@ENDDISPLAYMATH',   '\@@ENDDISPLAYMATH');
-  Let('\@@ENDDISPLAYMATH',          '\lx@eDM@in@equation');
-  Let('\@@BEGINDISPLAYMATH',        '\lx@bDM@in@equation');
+  Let('\@@ENDDISPLAYMATH',   '\lx@eDM@in@equation');
+  Let('\@@BEGINDISPLAYMATH', '\lx@bDM@in@equation');
   return; }
 
 # Note peculiar usages of \[,\],$$ WITHIN displayed math, like {equation}.
@@ -2050,6 +2048,9 @@ sub beforeEquation {
 # sort of text insertion (eg \footnote)!
 # So, we've got to dance around with redefinitions!!
 # SIDE NOTE: \[,\] are really just $$ w/ appropriate error checking!
+Let('\lx@saved@BEGINDISPLAYMATH', '\@@BEGINDISPLAYMATH');
+Let('\lx@saved@ENDDISPLAYMATH',   '\@@ENDDISPLAYMATH');
+
 DefMacro('\lx@bDM@in@equation', '\lx@saved@BEGINDISPLAYMATH\let\@@ENDDISPLAYMATH\lx@saved@ENDDISPLAYMATH');
 DefMacro('\lx@eDM@in@equation',
   '\lx@retract@eqnno\lx@begin@fake@intertext'
