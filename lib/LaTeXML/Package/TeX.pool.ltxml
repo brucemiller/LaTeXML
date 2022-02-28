@@ -1117,12 +1117,7 @@ sub today {
   foreach my $p (keys %dparms) {
     DefRegister("\\$p", Dimension($dparms{$p})); }
 }
-# Read-only dimension registers.
-{
-  my %ro_dparms = (lastkern => 0);
-  foreach my $p (keys %ro_dparms) {
-    DefRegister("\\$p", Dimension($ro_dparms{$p}), readonly => 1); }
-}
+
 # Special dimension registers (?)
 # <special dimen> = \prevdepth | \pagegoal | \pagetotal | \pagestretch | \pagefilstretch
 #    | \pagefillstretch | \pagefilllstretch | pageshrink | \pagedepth
@@ -1506,7 +1501,6 @@ DefRegister('\scriptscriptfont Number' => T_CS('\fiverm'),
 
 # <internal dimen> = <dimen parameter> | <special dimen> | \lastkern
 #    | <dimendef token> | \dimen<8bit> | <box dimension><8bit> | \fontdimen<number><font>
-
 DefRegister('\lastkern' => Dimension(0), readonly => 1);
 
 # <box dimension> = \ht | \wd | \dp
