@@ -1,0 +1,41 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  overpic                                                            | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use LaTeXML::Util::Image;
+
+# Create an EMPTY picture environment, but with the tex attribute containing the
+# necessary code for LaTeX to generate an image.
+DefEnvironment('{overpic} OptionalKeyVals:Gin Semiverbatim',
+  "<ltx:picture width='#width' height='#height' origin-x='#origin-x' origin-y='#origin-y'"
+    . " fill='none' stroke='none' unitlength='#unitlength'"
+    . " tex='#tex'>"
+    . "</ltx:picture>",
+  afterDigestBody => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($kv, $graphic)      = $whatsit->getArgs();
+    my $gwhatsit = Digest(Invocation(T_CS('\@includegraphicx'), undef, $kv, $graphic));
+    my ($w, $h, $d, $cw, $ch, $cd) = $gwhatsit->getSize;
+    $whatsit->setProperties(
+      tex    => UnTeX(Tokens($whatsit->revert)),
+      width  => $w, height  => $h, depth  => $d,
+      cwidth => $w, cheight => $h, cdepth => $d);
+    return; });
+
+# Need {Overpic}, too, but it doesn't take an image, but random TeX
+# I suspect that will need an entirely different strategy!
+# And since it's used in only 3 papers on arXiv, it hardly seems worth it...
+
+1;
