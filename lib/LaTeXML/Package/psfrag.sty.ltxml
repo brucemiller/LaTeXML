@@ -16,35 +16,143 @@ use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Image;
 
-#**********************************************************************
-# STUB BINDING!
-#   Basically a NO-OP binding to avoid errors in olrder arXiv docs.
-# psfrag is a cool hack that allows the author to enhance thier graphics
-# by REPLACING bits of postscript figures with TeX formatted stuff.
-# The big question for LaTeXML is:
-#   What is the Web or XML analog or simulation of that?
-# There are several, unappealing options to simulate:
-#  * Contrive an svg overlay of the graphic
-#    IFF we knew the desired positions of the fragments
-#  * Do surgery on the postscript (embedding what?) and
-#    then rasterizing the image to png, losing all XML/MathML/semantics...
-#  other?
-# Or, we could simply fudge them:
-#  * Ignore the fragments (with warning).
-#  * Add a footnote, or better, add to a figure caption, or ...
+#======================================================================
+# Would be lovely to overlay SVG, MathML, Images etc
+# but kinda impractical to hope to align things the same way as LaTeX would.
+# So, we just punt all of it to LaTeX to create a composite image
 
-#
-# For now, just warn and go.
-DefMacro('\psfrag@warning', sub {
-    my ($gullet) = @_;
-    Warn('psfrag', 'psfrag', $gullet, "PSFrag fragments are being converted to footnotes.");
+# Store fragments for later use
+AssignValue(saved_psfragments => Tokens());
+AssignValue(psfrag_scan_all   => LookupValue('2.09_COMPATIBILITY'));
+AssignValue(psfrag_scan       => 0);
+DeclareOption('209mode', sub { AssignValue(psfrag_scan_all => 1); });
+DeclareOption('2emode',  sub { AssignValue(psfrag_scan_all => 0); });
+DeclareOption('scanall', sub { AssignValue(psfrag_scan_all => 1); });
+
+ProcessOptions();
+
+sub save_psfrag {
+  my (@stuff) = @_;
+  # NOT global!!!  And defer expansion of the leading CS
+  AssignValue(saved_psfragments =>
+      Tokens(LookupValue('saved_psfragments')->unlist, T_CS('\noexpand'), @stuff));
+  return; }
+
+sub unsave_psfrag {
+  return Tokens(Digest(LookupValue('saved_psfragments'))->revert); }
+
+# NOT a constructor since probably args should not be digested yet(?)
+DefPrimitive('\psfrag OptionalMatch:* Semiverbatim [][][][]{}', sub {
+    my ($stomach, $star, $a, $b, $c, $d, $e, $f) = @_;
+    save_psfrag(Invocation(T_CS('\lx@delayed@psfrag'), $star, $a, $b, $c, $d, $e, $f));
     return; });
+DefConstructor('\lx@delayed@psfrag OptionalMatch:* Semiverbatim [][][][]{}', '',
+  alias => '\psfrag');
 
-# This would be much nicer if we could at least tell which figures were affected
-# and add the notes to the captions!
-DefMacro('\psfrag OptionalMatch:* {}[][][][]{}',
-  '\psfrag@warning\global\let\psfrag@warning\relax'
-    . '\footnote{A PSFrag replacing \texttt{#2} by #7 was dropped.}');
+DefConstructor('\psfragscanon', '',
+  afterDigest => sub {
+    save_psfrag(T_CS('\psfragscanon'));
+    AssignValue(psfrag_scan => 1); });
+DefConstructor('\psfragscanoff', '',
+  afterDigest => sub {
+    save_psfrag(T_CS('\psfragscanoff'));
+    AssignValue(psfrag_scan => 0); });
+
+# AVOID using ltx:picture instead of ltx:graphic
+# unless there actually are some psfrags defined, OR embedded fragments was explicitly enabled.
+# (faster, probably more reliable image conversion)
+sub psfrag_requirepicture {
+  my (@candidates) = @_;
+  my $have_ps = 0;
+  if (scalar(@candidates) == 1) {
+    my $type = image_type(pathname_absolute($candidates[0], LookupValue('SOURCEDIRECTORY')));
+    $have_ps = ($type eq 'ps') || ($type eq 'eps'); }
+  my $have_frags = scalar(LookupValue('saved_psfragments')->unlist);
+  my $scan_on    = LookupValue('psfrag_scan') || LookupValue('psfrag_scan_all');
+  return $have_ps && ($have_frags || $scan_on); }
+
+# For graphics version of \includegraphics
+DefConstructor('\lx@psfrag@includegraphics OptionalMatch:* [][] Semiverbatim',
+  "?#pic(<ltx:picture width='#width' height='#height' unitlength='#unitlength' tex='#tex'/>)"
+    . "(<ltx:graphics graphic='#path' candidates='#candidates' options='#options'/>)",
+  alias      => '\includegraphics',
+  sizer      => \&image_graphicx_sizer,
+  properties => sub {
+    my ($stomach, $starred, $op1, $op2, $graphic) = @_;
+    my $options = graphicS_options($starred, $op1, $op2);
+    my ($path, @candidates) = graphics_get_candidates($graphic);
+    my $ifpicture = psfrag_requirepicture(@candidates);
+    (graphic => $path,
+      candidates => join(',', @candidates),
+      options    => $options,
+      pic        => $ifpicture); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($w, $h, $d) = $whatsit->getSize;
+    AssignValue(psfrag_scan => 0, 'global');
+    $whatsit->setProperties(tex => UnTeX(Tokens(unsave_psfrag(), $whatsit->revert)),
+      width => $w, height => $h, depth => $d); });
+
+# For graphicx version of \includegraphics
+DefConstructor('\lx@psfrag@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbatim',
+  "?#pic(<ltx:picture width='#width' height='#height' unitlength='#unitlength' tex='#tex'/>)"
+    . "(<ltx:graphics graphic='#path' candidates='#candidates' options='#options'/>)",
+  alias      => '\includegraphics',
+  sizer      => \&image_graphicx_sizer,
+  properties => sub {
+    my ($stomach, $starred, $kv, $graphic) = @_;
+    my $options = graphicX_options($starred, $kv);
+    my ($path, @candidates) = graphics_get_candidates($graphic);
+    my $ifpicture = psfrag_requirepicture(@candidates);
+    (path => $path,
+      candidates => join(',', @candidates),
+      options    => $options,
+      pic        => $ifpicture); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($w, $h, $d) = $whatsit->getSize;
+    AssignValue(psfrag_scan => 0, 'global');
+    $whatsit->setProperties(tex => UnTeX(Tokens(unsave_psfrag(), $whatsit->revert)),
+      width => $w, height => $h, depth => $d); });
+
+DefConstructor('\lx@psfrag@epsfbox[] Semiverbatim',
+  "?#pic(<ltx:picture width='#width' height='#height' unitlength='#unitlength' tex='#tex'/>)"
+    . "(<ltx:graphics graphic='#path' candidates='#candidates' options='#options'/>)",
+  alias      => '\epsfbox',
+  sizer      => \&image_graphicx_sizer,
+  properties => sub {
+    my ($stomach, $bb, $graphic) = @_;
+    my $clip    = LookupValue('epsf_clip');
+    my $options = ($clip ? ($bb ? "viewport=$bb, clip" : "clip") : '');
+    my ($path, @candidates) = graphics_get_candidates($graphic);
+    my $ifpicture = psfrag_requirepicture(@candidates);
+    (graphic => $path,
+      candidates => join(',', @candidates),
+      options    => $options,
+      pic        => $ifpicture); },
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my ($w, $h, $d) = $whatsit->getSize;
+    AssignValue(psfrag_scan => 0, 'global');
+    $whatsit->setProperties(tex => UnTeX(Tokens(unsave_psfrag(), $whatsit->revert)),
+      width => $w, height => $h, depth => $d); });
+
+# Just for grouping
+DefEnvironment('{psfrags}', '#body');
+
+# Note that if psfrag is loaded, ANY eps figure may have embedded TeX
+# that needs to be processed by LaTeX, so really needs to end up as ltx:picture
+AtBeginDocument(<<'EoTeX');
+\@ifundefined{@includegraphics}{}{
+\global\let\lx@orig@includegraphics\@includegraphics
+\global\let\@includegraphics\lx@psfrag@includegraphics}
+\@ifundefined{@includegraphicx}{}{
+\global\let\lx@orig@includegraphicx\@includegraphicx
+\global\let\@includegraphicx\lx@psfrag@includegraphicx}
+\@ifundefined{epsfbox}{}{
+\global\let\lx@orig@epsfbox\epsfbox
+\global\let\epsfbox\lx@psfrag@epsfbox}
+EoTeX
 
 #**********************************************************************
 1;

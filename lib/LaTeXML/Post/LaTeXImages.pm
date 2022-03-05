@@ -391,7 +391,9 @@ $packages
 \\makeatletter
 \\setlength{\\hoffset}{0pt}\\setlength{\\voffset}{0pt}
 \\setlength{\\textwidth}{${w}pt}
-\\thispagestyle{empty}\\pagestyle{empty}\\title{}\\author{}\\date{}
+\\thispagestyle{empty}\\pagestyle{empty}\\title{}\\date{}
+% Careful with revtex4
+\\\@ifundefined{\@author\@def}{\\author{}}{}
 \\newcount\\lxImageNumber\\lxImageNumber=0\\relax
 \\newbox\\lxImageBox
 \\newdimen\\lxImageBoxSep

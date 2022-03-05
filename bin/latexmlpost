@@ -444,6 +444,10 @@ sub assemble_postprocessors {
     if ($picimages) {
       require LaTeXML::Post::PictureImages;
       push(@procs, LaTeXML::Post::PictureImages->new(%OPTIONS)); }
+    else {
+      require LaTeXML::Post::PictureImages;
+      push(@procs, LaTeXML::Post::PictureImages->new(empty_only => 1, %OPTIONS)); }
+
     if ($dographics) {
       require LaTeXML::Post::Graphics;
       my @g_options = ();

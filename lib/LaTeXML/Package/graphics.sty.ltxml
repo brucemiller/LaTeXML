@@ -71,6 +71,7 @@ sub graphics_scaledbox_insert {
 DefConstructor('\Gscale@box {Float} [Float] {}', sub {
     my ($document, $scale, $yscale, $box, %props) = @_;
     graphics_scaledbox_insert($document, %props); },
+  alias      => '\scalebox',
   properties => sub {
     my ($stomach, $xscale, $yscale, $box) = @_;
     graphics_scaledbox_props($box, $xscale, $yscale || $xscale); },
@@ -98,6 +99,7 @@ DefConstructor('\Gscale@box@dddd {Dimension}{Dimension}{Dimension}{Dimension} {}
 DefConstructor('\Gscale@@box {} {GraphixDimension}{GraphixDimension} {}', sub {
     my ($document, $heighttype, $width, $height, $box, %props) = @_;
     graphics_scaledbox_insert($document, %props); },
+  reversion  => '\resizebox{#2}{#3}{#4}',
   properties => sub {
     my ($stomach, $heighttype, $width, $height, $box) = @_;
     my ($xscale, $yscale)                             = (1, 1);
@@ -232,19 +234,47 @@ DefConstructor('\graphicspath DirectoryList', sub {
 DefMacro('\includegraphics OptionalMatch:* [][] Semiverbatim',
   '\@includegraphics#1[#2][#3]{#4}');
 
+sub graphics_get_candidates {
+  my ($path, $kv) = @_;
+  $path = ToString($path); $path =~ s/^\s+//; $path =~ s/\s+$//;
+  $path =~ s/^("+)(.+)\g1$/$2/;                           # unwrap if in quotes
+  my $searchpaths = LookupValue('GRAPHICSPATHS');
+  if (my $svgpath = $kv && $kv->getValue('svgpath')) {    # Doesn't belong here!!!
+    push(@$searchpaths, ToString($svgpath)); }
+  my @candidates = pathname_findall($path, types => ['*'], paths => $searchpaths);
+  if (my $base = LookupValue('SOURCEDIRECTORY')) {
+    @candidates = map { pathname_relative($_, $base) } @candidates; }
+  return ($path, @candidates); }
+
+sub graphicS_options {
+  my ($starred, $option1, $option2) = @_;
+  my $bb = ($option2
+    ? ToString($option1) . " " . ToString($option2)
+    : ($option1 ? "0 0 " . ToString($option1) : ''));
+  $bb =~ s/,/ /g;
+  my $options = ($starred ? ($bb ? "viewport=$bb, clip" : "clip") : '');
+  return $options; }
+
+sub graphicX_options {
+  my ($starred, $kv) = @_;
+  my $options = ToString($kv);
+  $options .= ',clip=true' if $starred;
+  my $keepaspect;
+  $options .= ',';
+  $keepaspect = 1 if $options =~ s/width=,//;
+  $keepaspect = 1 if $options =~ s/height=,//;
+  if ($keepaspect) { $options .= 'keepaspectratio=true'; }
+  else             { $options =~ s/,$//; }
+  return $options; }
+
 DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim',
   "<ltx:graphics graphic='#graphic' candidates='#candidates' options='#options'/>",
   sizer      => \&image_graphicx_sizer,
   properties => sub {
     my ($stomach, $starred, $op1, $op2, $graphic) = @_;
-    my $bb = ($op2 ? ToString($op1) . " " . ToString($op2) : ($op1 ? "0 0 " . ToString($op1) : ''));
-    $bb =~ s/,/ /g;
-    my $options = ($starred ? ($bb ? "viewport=$bb, clip" : "clip") : '');
-    $graphic = ToString($graphic); $graphic =~ s/^\s+//; $graphic =~ s/\s+$//;
-    my @candidates = pathname_findall($graphic, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
-    if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map { pathname_relative($_, $base) } @candidates; }
-    (graphic => $graphic,
+    my $options = graphicS_options($starred, $op1, $op2);
+    my ($path, @candidates) = graphics_get_candidates($graphic);
+    (graphic => $path,
       candidates => join(',', @candidates),
       options    => $options); },
   alias => '\includegraphics');

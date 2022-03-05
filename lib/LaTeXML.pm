@@ -482,6 +482,10 @@ sub convert_post {
       require LaTeXML::Post::PictureImages;
       push(@procs, LaTeXML::Post::PictureImages->new(%PostOPS));
     }
+    else {
+      require LaTeXML::Post::PictureImages;
+      push(@procs, LaTeXML::Post::PictureImages->new(empty_only => 1, %PostOPS)); }
+
     if ($$opts{dographics}) {
       # TODO: Rethink full-fledged graphics support
       require LaTeXML::Post::Graphics;

@@ -16,6 +16,11 @@ use warnings;
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::LaTeXImages);
 
+# Options:
+#  resource_directory
+#  resource_prefix
+#  use_dvipng
+#  empty_only : process only ltx:picture w/o children (but with tex attribute)
 sub new {
   my ($class, %options) = @_;
   $options{resource_directory} = 'pic' unless defined $options{resource_directory};
@@ -39,7 +44,10 @@ sub find_documentclass_and_packages {
 # Return the list of Picture nodes.
 sub toProcess {
   my ($self, $doc) = @_;
-  return $doc->findnodes('//ltx:picture'); }
+  my @nodes = $doc->findnodes('//ltx:picture');
+  if ($$self{empty_only}) {
+    @nodes = grep { !$_->hasChildNodes; } @nodes; }
+  return @nodes; }
 
 # Return the TeX string to format the image for this node.
 sub extractTeX {
@@ -66,8 +74,8 @@ sub setTeXImage {
   #  $node->setAttribute(height => $height . "pt");
   # But, since the inner image (of whatever format) will already get a size,
   # it's probably safer to just remove those attributes?
-  $node->removeAttribute('width');
-  $node->removeAttribute('height');
+  #  $node->removeAttribute('width');
+  #  $node->removeAttribute('height');
   return; }
 
 # Definitions needed for processing inline & display picture images
