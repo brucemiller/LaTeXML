@@ -4970,8 +4970,9 @@ sub alignLine {
   return; }
 
 # These should be 0 width, but perhaps also shifted?
-DefMacro('\llap{}', '\hbox to 0pt{#1}');
-DefMacro('\rlap{}', '\hbox to 0pt{#1}');
+DefMacro('\llap{}', '\hbox to 0pt{\hss#1}');
+DefMacro('\rlap{}', '\hbox to 0pt{#1\hss}');
+
 DefMacroI('\m@th', undef, '\mathsurround=0pt ');
 
 # \strutbox
@@ -4989,19 +4990,15 @@ DefMacroI('\settabs', undef, undef);
 #======================================================================
 # TeX Book, Appendix B. p. 355
 
-DefPrimitive('\hang', undef);
-
 # TODO: \item, \itemitem not done!
 # This could probably be adopted from LaTeX, if the <itemize> could auto-open
 # and close!
-DefConstructor('\item{}',     '#1');
-DefConstructor('\itemitem{}', '#1');
-
-DefMacro('\textindent{}', '#1');
-
-# Conceivably this should enclose the next para in a block?
-# Or add attribute to it? Or...
-DefPrimitiveI('\narrower', undef, undef);
+DefMacro('\hang',         '\hangindent\parindent');
+DefMacro('\item',         '\par\hang\textindent');
+DefMacro('\itemitem',     '\par\indent \hangindent2\parindent \textindent');
+DefMacro('\textindent{}', '\indent\llap{#1\enspace}\ignorespaces');
+DefMacro('\narrower', '\advance\leftskip by\parindent'
+    . '\advance\rightskip by\parindent');
 
 #----------------------------------------------------------------------
 # General support for Front Matter.
