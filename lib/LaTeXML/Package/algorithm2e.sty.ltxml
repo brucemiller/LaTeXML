@@ -64,8 +64,8 @@ DefEnvironment('{algorithm}[]',
     . "</ltx:listing></ltx:float>",
   properties   => { layout => 'vertical' },
   beforeDigest => sub {
-    Digest(T_CS('\@ResetCounterIfNeeded'));
-    Digest(T_CS('\algocf@linesnumbered'));
+    DigestIf(T_CS('\@ResetCounterIfNeeded'));
+    DigestIf(T_CS('\algocf@linesnumbered'));
     Let('\par',    '\lx@algo@par');
     Let('\parbox', '\lx@algo@parbox');
     Let("\\\\",    '\lx@algo@par');
@@ -79,7 +79,7 @@ DefEnvironment('{algorithm}[]',
     beforeFloat('algorithm');
   },
   afterDigest => sub {
-    if (ToString(Digest(T_CS('\algocf@style'))) =~ /box/) {
+    if (ToString(DigestIf(T_CS('\algocf@style'))) =~ /box/) {
       $_[1]->setProperty(frame => 'boxed'); }
     afterFloat($_[1]); },
   afterConstruct => sub { addFloatFrames($_[0], $_[1]->getProperty('frame')); }
