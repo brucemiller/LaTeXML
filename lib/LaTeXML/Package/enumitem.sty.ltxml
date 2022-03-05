@@ -65,7 +65,8 @@ DefKeyVal('enumitem', 'widest',       'UndigestedKey');
 DefKeyVal('enumitem', 'beginpenalty', 'Number');
 DefKeyVal('enumitem', 'midpenalty',   'Number');
 DefKeyVal('enumitem', 'endpenalty',   'Number');
-DefKeyVal('enumitem', 'noitemsep',    'UndigestedKey');
+DefKeyVal('enumitem', 'noitemsep',    '', 'true');
+DefKeyVal('enumitem', 'nolistsep',    '', 'true');
 
 # Code
 #   before=code, after=code
