@@ -65,8 +65,8 @@ DefKeyVal('enumitem', 'widest',       'UndigestedKey');
 DefKeyVal('enumitem', 'beginpenalty', 'Number');
 DefKeyVal('enumitem', 'midpenalty',   'Number');
 DefKeyVal('enumitem', 'endpenalty',   'Number');
-DefKeyVal('enumitem', 'noitemsep',    'UndigestedKey');
-DefKeyVal('enumitem', 'nolistsep',    'UndigestedKey');
+DefKeyVal('enumitem', 'noitemsep',    '', 'true');
+DefKeyVal('enumitem', 'nolistsep',    '', 'true');
 
 DefMacroI('\KV@enumitem@nolistsep@default', undef, Tokens());
 DefMacroI('\KV@enumitem@noitemsep@default', undef, Tokens());
