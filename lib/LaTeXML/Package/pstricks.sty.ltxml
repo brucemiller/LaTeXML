@@ -537,7 +537,8 @@ sub DefSimplePSConstructor {
 ####################################################################################
 
 DefEnvironment('{pspicture} [Float] PSCoord OptionalPSCoord',
-  "<ltx:picture baseline='#1' width='#pxwidth' height='#pxheight'>"
+  "<ltx:picture baseline='#1' width='#pxwidth' height='#pxheight'"
+    . " fill='none' stroke='none'>"
     . "?#need(<ltx:g transform='#transform'>)"
     . "#body"
     . "?#need(</ltx:g>)"
@@ -741,10 +742,8 @@ DefPSConstructor('\psellipse', 'PSCoord PSCoord',
   "<ltx:ellipse $PSLineAttr x='#x' y='#y' rx='#rx' ry='#ry' fill='#fill' />",
   attributes => [qw(fill linecolor linewidth dash)],
   properties => sub {
-    my $c = $_[1]->getArg(2) || ZeroPair;
-    my $r = $_[1]->getArg(3);
-##    $c  ? $_[1]->setProperties(center => $c, radii => $r)
-##      :   $_[1]->setProperties(center => ZeroPair, radii => $r); },
+    my $c = $_[2] || ZeroPair;
+    my $r = $_[3];
     (x => $c->getX->pxValue, y => $c->getY->pxValue,
       rx => $r->getX->pxValue, ry => $r->getY->pxValue); });
 
@@ -783,8 +782,21 @@ DefPSConstructor('\parabola', 'PSCoord PSCoord',
   "<ltx:parabola $PSLineAttr x0='#x0' y0='#y0' x1='#x1' y1='#y1'/>",
   attributes => [qw(linecolor linewidth dash)],
   properties => sub {
-    (x0 => $_[3]->getX->pxValue, y0 => $_[3]->getX->pxValue,
-      x1 => $_[4]->getX->pxValue, y1 => $_[4]->getY->pxValue); });
+    (x0 => $_[2]->getX->pxValue, y0 => $_[2]->getY->pxValue,
+      x1 => $_[3]->getX->pxValue, y1 => $_[3]->getY->pxValue); });
+
+DefPSConstructor('\parabola', 'PSCoord PSCoord',
+  "<ltx:bezier $PSLineAttr #!ARROWS showpoints='#showpoints' points='#path' fill='#fill'/>",
+  attributes  => [qw(linecolor linewidth dash showpoints)],
+  afterDigest => sub {
+    my ($stomach, $whatsit) = @_;
+    my $p0 = $whatsit->getArg(3);
+    my $p1 = $whatsit->getArg(4);
+    my ($x0, $y0, $x1, $y1) = ($p0->getX->pxValue, $p0->getY->pxValue,
+      $p1->getX->pxValue, $p1->getY->pxValue);
+    my ($xc, $yc) = (2 * $x1 - $x0, 2 * $y1 - $y0);
+    # want in svg d => "M$x0,$y0 Q$x0,$yc $xc,$y0"
+    $whatsit->setProperty(path => "$x0,$y0 $x1,$yc $xc,$y0"); });
 
 DefPSConstructor('\pscurve', 'PSCoordList',
   "<ltx:curve $PSLineAttr #!ARROWS points='&ptValue(#3)'"
@@ -831,7 +843,7 @@ DefPSConstructor('\psdots', 'PSCoordList',
 
 # NOTE: ignores gridwidth, gridcolor, griddots, gridlabels, gridlabelcolor, subgriddiv,
 #       subgridwidth, subgridcolor, subgriddots
-DefSimplePSConstructor('\psgrid', 'PSCoord PSCoord PSCoord',
+DefSimplePSConstructor('\psgrid', 'OptionalPSCoord OptionalPSCoord OptionalPSCoord',
   "<ltx:grid x0='#x0' y0='#y0' x1='#x1' y1='#y1' x2='#x2' y2='#y2'"
     . " xunit='&ptValue(#xunit)' yunit='&ptValue(#yunit)' />",
   attributes => [qw(xunit yunit
