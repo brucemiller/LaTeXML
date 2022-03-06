@@ -45,7 +45,7 @@ sub new {
   $stylesheet = $stylesheet && LaTeXML::Common::XML::XSLT->new($stylesheet);
   if ((!ref $stylesheet) || !($stylesheet->can('transform'))) {
     Error('expected', 'stylesheet', undef, "Stylesheet '$stylesheet' is not a usable stylesheet!"); }
-  XML::LibXSLT->max_depth(500);
+  XML::LibXSLT->max_depth(1000);
   $$self{stylesheet} = $stylesheet;
   my %params = ();
   %params                    = %{ $options{parameters} } if $options{parameters};
