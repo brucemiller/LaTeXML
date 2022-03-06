@@ -53,7 +53,7 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
   properties => sub {
     my ($stomach, $starred, $kv, $graphic) = @_;
     my $options = graphicX_options($starred, $kv);
-    my ($path, @candidates) = graphics_get_candidates($graphic);
+    my ($path, @candidates) = image_candidates(ToString($graphic));
     (path => $path,
       candidates => join(',', @candidates),
       options    => $options); },
