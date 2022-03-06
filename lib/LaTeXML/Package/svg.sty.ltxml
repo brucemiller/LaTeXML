@@ -38,8 +38,11 @@ DefKeyVal('Gin', 'pdflatex', '', '');
 DefKeyVal('Gin', 'pdftops',  '', '');
 DefKeyVal('Gin', 'convert',  '', '');
 
-# This should set graphicspath...
-DefKeyVal('Gin', 'svgpath', '', '');
+DefKeyVal('Gin', 'svgpath', '', '', code => sub {
+    my $root = $STATE->lookupValue('SOURCEDIRECTORY') || '';
+    my $path = pathname_absolute(pathname_canonical(ToString($_[1])), $root);
+    PushValue(GRAPHICSPATHS => $path); });
+
 # DefConstructor('\graphicspath DirectoryList', sub {
 #     my ($document, $paths) = @_;
 #     foreach my $dir ($paths->getValues) {
