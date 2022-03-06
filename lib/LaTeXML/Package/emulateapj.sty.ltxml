@@ -26,6 +26,7 @@ my $saved_fig = LookupDefinition(T_CS('\fig'));
 
 # Seems to be equivalent.
 RequirePackage('aastex', withoptions => 1);
+RequirePackage('epsf');
 # ... Well, almost...
 DefMacroI('\LongTables', undef, '');
 Let('\begin{deluxetable*}', '\begin{deluxetable}');
