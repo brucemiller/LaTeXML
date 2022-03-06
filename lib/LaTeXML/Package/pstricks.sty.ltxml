@@ -106,15 +106,14 @@ sub ReadPSRegisterDimension {
 sub ReadPSOrigin {
   my ($gullet) = @_;
   $gullet->skipSpaces;
-  if ($gullet->ifNext(T_BEGIN)) {
-    $gullet->readToken; $gullet->skipSpaces;
-    my $x = ReadPSDimension($gullet, LookupValue('\psxunit'));
-    $gullet->skipSpaces; $gullet->readUntil(T_OTHER(',')); $gullet->skipSpaces;
-    my $y = ReadPSDimension($gullet, LookupValue('\psyunit'));
-    $gullet->skipSpaces; $gullet->readUntil(T_END);
-    return ($x && $y) ? Pair($x->negate, $y->negate) : undef; }
-  else {
-    return; } }
+  my $gotbrace = $gullet->ifNext(T_BEGIN);    # Braces MAY have been stripped!
+  $gullet->readToken; $gullet->skipSpaces;
+  my $x = ReadPSDimension($gullet, LookupValue('\psxunit'));
+  $gullet->skipSpaces; $gullet->readUntil(T_OTHER(',')); $gullet->skipSpaces;
+  my $y = ReadPSDimension($gullet, LookupValue('\psyunit'));
+  $gullet->skipSpaces;
+  $gullet->readUntil(T_END) if $gotbrace;
+  return ($x && $y) ? Pair($x->negate, $y->negate) : undef; }
 
 DefParameterType('PSOrigin', \&ReadPSOrigin,
   reversion => sub { ($_[0] ? (T_BEGIN, Revert($_[0]->getX->negate), T_OTHER(','),
@@ -738,12 +737,12 @@ DefPSConstructor('\pswedge', 'ZeroPSCoord {PSDimension} {PSAngle} {PSAngle}',
     (x => $_[2]->getX->pxValue,
       y => $_[2]->getY->pxValue); });
 
-DefPSConstructor('\psellipse', 'PSCoord PSCoord',
+DefPSConstructor('\psellipse', 'PSCoord OptionalPSCoord',
   "<ltx:ellipse $PSLineAttr x='#x' y='#y' rx='#rx' ry='#ry' fill='#fill' />",
   attributes => [qw(fill linecolor linewidth dash)],
   properties => sub {
-    my $c = $_[2] || ZeroPair;
-    my $r = $_[3];
+    my ($c, $r) = ($_[2], $_[3]);
+    if (!$r) { $r = $c; $c = ZeroPair; }
     (x => $c->getX->pxValue, y => $c->getY->pxValue,
       rx => $r->getX->pxValue, ry => $r->getY->pxValue); });
 
