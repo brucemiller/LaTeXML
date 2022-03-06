@@ -150,6 +150,9 @@
             <xsl:value-of select="concat('vertical-align:-',@imagedepth,'px')"/>
           </xsl:if>
         </xsl:with-param>
+        <xsl:with-param name="extra_classes">
+          <xsl:if test="not(@imagesrc)">ltx_missing ltx_missing_image</xsl:if>
+        </xsl:with-param>
       </xsl:call-template>
       <xsl:if test="@imagewidth">
         <xsl:attribute name='width'>
