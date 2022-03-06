@@ -40,16 +40,24 @@ EOTeX
 
 DefPrimitive('\epsfclipon',  sub { AssignValue(epsf_clip => 1); return; });
 DefPrimitive('\epsfclipoff', sub { AssignValue(epsf_clip => 0); return; });
-DefConstructor('\epsfbox[] Semiverbatim', sub {
+
+DefConstructor('\epsfbox[] Semiverbatim',
+  "<ltx:graphics graphic='#graphic' candidates='#candidates' options='#options'/>",
+  sizer      => \&image_graphicx_sizer,
+  properties => sub {
     my ($document, $bb, $graphic) = @_;
-    my $clip = LookupValue('epsf_clip');
+    my $clip    = LookupValue('epsf_clip');
     my $options = ($clip ? ($bb ? "viewport=$bb, clip" : "clip") : '');
-    $graphic = ToString($graphic); $graphic =~ s/^\s+//; $graphic =~ s/\s+$//;
-    my @candidates = pathname_findall($graphic, types => ['*'], paths => LookupValue('GRAPHICSPATHS'));
-    if (my $base = LookupValue('SOURCEDIRECTORY')) {
-      @candidates = map { pathname_relative($_, $base) } @candidates; }
-    $document->insertElement('ltx:graphics', undef, graphic => $graphic,
-      candidates => join(',', @candidates), options => $options); });
+    my ($file, @candidates) = image_candidates(ToString($graphic));
+    my $w = LookupRegister('\epsfxsize');
+    my $h = LookupRegister('\epsfysize');
+    if ($w->valueOf > 0) {
+      $options .= ($options ? ',' : '') . 'width=' . ToString($w); }
+    if ($h->valueOf > 0) {
+      $options .= ($options ? ',' : '') . 'height=' . ToString($h); }
+    (graphic => $file,
+      candidates => join(',', @candidates),
+      options    => $options); });
 
 Let('\epsfgetlitbb', '\epsfbox');
 Let('\epsfnormal',   '\epsfbox');
