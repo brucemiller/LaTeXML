@@ -1962,7 +1962,7 @@ DefMacroI('\normalsfcodes', undef, Tokens());
 #======================================================================
 # C.7.1 Math Mode Environments
 #======================================================================
-DefMacroI('\@eqnnum', undef, '(\theequation)');
+DefMacroI('\@eqnnum', undef, '(\theequation)', locked => 1);
 DefMacro('\fnum@equation', '\@eqnnum');
 
 # Redefined from TeX.pool, since with LaTeX we presumably have a more complete numbering system
