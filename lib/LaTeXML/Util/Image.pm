@@ -21,7 +21,7 @@ use Image::Size;
 use POSIX;
 use base qw(Exporter);
 our @EXPORT = (
-  qw( &image_type &image_size ),
+  qw( &image_candidates &image_type &image_size ),
   qw( &image_classes &image_can_image &image_object ),
   qw( &image_write ),
   qw( &image_graphicx_parse &image_graphicx_is_trivial &image_graphicx_trivialize
@@ -36,6 +36,19 @@ our @EXPORT = (
 
 our $DPI        = 100;          # [CONSTANT]
 our $BACKGROUND = "#FFFFFF";    # [CONSTANT]
+
+# Return cleaned-up path and list of candidate image files
+# {We could, but dont, filter out non-image types, since extensions are so inconsistent.
+# although we could query image_type which is more thorough)
+sub image_candidates {
+  my ($path) = @_;
+  $path =~ s/^\s+//; $path =~ s/\s+$//;
+  $path =~ s/^("+)(.+)\g1$/$2/;    # unwrap if in quotes
+  my $searchpaths = $STATE->lookupValue('GRAPHICSPATHS');
+  my @candidates  = pathname_findall($path, types => ['*'], paths => $searchpaths);
+  if (my $base = $STATE->lookupValue('SOURCEDIRECTORY')) {
+    @candidates = map { pathname_relative($_, $base) } @candidates; }
+  return ($path, @candidates); }
 
 # These environment variables can be used to limit the amount
 # of time & space used by ImageMagick.  They are particularly useful
@@ -290,6 +303,7 @@ sub image_graphicx_complex {
 
   # # Wastefully preread the image to get it's initial size
   my ($w0, $h0) = image_size($source);
+  return unless $w0 && $h0;
   Debug("Processing $source initially $w0 x $h0,"
       . "w/ DPI=$dpi, magnify=$magnify, upsample=$upsample, zoomout=$zoomout") if $LaTeXML::DEBUG{images};
   my @transform = @$transform;
