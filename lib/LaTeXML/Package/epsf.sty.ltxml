@@ -14,6 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+use LaTeXML::Util::Image;
 
 #**********************************************************************
 # (See  LaTeXML::Post::Graphics for suggested postprocessing)
@@ -68,4 +69,3 @@ DefPrimitive('\epsfframe',              undef);    # Ignore (?), and process the
 
 #**********************************************************************
 1;
-
