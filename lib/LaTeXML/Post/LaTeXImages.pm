@@ -383,13 +383,15 @@ sub pre_preamble {
   my $dest            = $doc->getDestination;
   my $description     = ($dest ? "% Destination $dest" : "");
   my $pts_per_pixel   = 72.27 / $$self{DPI} / $$self{magnification};
+  my %loaded_check    = ();
 
   foreach my $pkgdata (@classdata) {
     my ($package, $package_options) = @$pkgdata;
+    next if $loaded_check{$package};
+    $loaded_check{$package} = 1;
     if ($oldstyle) {
       next if $package =~ /latexml/;    # some packages are incompatible.
-      $package .= ".sty" unless $package =~ /\.sty$/;
-      $packages .= "\\input{$package}\n"; }
+      $packages .= "\\RequirePackage{$package}\n"; }
     else {
       if ($package eq 'english') {
         $packages .= "\\usepackage[english]{babel}\n"; }
@@ -409,7 +411,7 @@ sub pre_preamble {
   $result_add_to_body .= "\\let\\\@\@toccaption\\\@gobble\n\\let\\\@\@caption\\\@gobble\n"
     . "\\renewcommand{\\cite}[2][]{}\n\\newcommand{\\\@\@bibref}[4]{}\n";
   # class-specific conditions:
-  if ($class eq 'JHEP') {
+  if ($class =~ /^JHEP$/i) {
     $class = 'article'; }
   elsif ($class =~ /revtex/) {
     # Careful with revtex4

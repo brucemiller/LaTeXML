@@ -621,14 +621,17 @@ sub OptionalKeyVals {
     return (KeyVals_aux($gullet, T_OTHER(']'), [$star, $plus, @keyspec])); }
   else { return (undef); } }
 
+sub revert_optional_keyvals {
+  my @r = $_[0] && Revert($_[0]);
+  @r ? (T_OTHER('['), @r, T_OTHER(']')) : (); }
 DefParameterType('OptionalKeyVals', sub { OptionalKeyVals(0, 0, @_); },
-  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  optional => 1, reversion => \&revert_optional_keyvals);
 DefParameterType('OptionalKeyVals*', sub { OptionalKeyVals(1, 0, @_); },
-  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  optional => 1, reversion => \&revert_optional_keyvals);
 DefParameterType('OptionalKeyVals+', sub { OptionalKeyVals(0, 1, @_); },
-  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  optional => 1, reversion => \&revert_optional_keyvals);
 DefParameterType('OptionalKeyVals*+', sub { OptionalKeyVals(1, 1, @_); },
-  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  optional => 1, reversion => \&revert_optional_keyvals);
 
 # Not sure that this is the most elegant solution, but...
 # What I'd really like are some sort of parameter modifiers, mathstyle, font... until...?
