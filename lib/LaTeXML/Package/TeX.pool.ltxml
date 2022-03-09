@@ -133,11 +133,12 @@ DefParameterType('Optional', sub {
   optional  => 1,
   reversion => sub {
     my ($arg, $default, $inner) = @_;
-    if ($arg) {
-      (T_OTHER('['),
-        ($inner ? $inner->revertArguments($arg) : Revert($arg)),
-        T_OTHER(']')); }
-    else { (); } });
+    my @rev_arg = $arg ? (
+      $inner ? $inner->revertArguments($arg) : Revert($arg))
+      : ();
+    if (@rev_arg) {
+      return (T_OTHER('['), @rev_arg, T_OTHER(']')); }
+    else { return (); } });
 
 # This is a peculiar type of argument of the form
 #   <general text> = <filler>{<balanced text><right brace>
