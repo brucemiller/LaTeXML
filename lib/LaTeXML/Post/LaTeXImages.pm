@@ -258,12 +258,15 @@ sub generateImages {
     if (!open($TEX, '>', $texfile)) {
       Error('I/O', $texfile, undef, "Cant write to '$texfile'", "Response was: $!");
       return $doc; }
+    my ($pre_preamble, $add_to_body) = $self->pre_preamble($doc);
     binmode $TEX, ':encoding(UTF-8)';
-    print $TEX $self->pre_preamble($doc);
+    print $TEX $pre_preamble if $pre_preamble;
     print $TEX "\\makeatletter\n";
     print $TEX $self->preamble($doc) . "\n";
     print $TEX "\\makeatother\n";
     print $TEX "\\begin{document}\n";
+    print $TEX $add_to_body if $add_to_body;
+
     foreach my $entry (@pending) {
 ##      print TEX "\\fbox{$$entry{tex}}\\clearpage\n"; }
       print $TEX "$$entry{tex}\\clearpage\n"; }
@@ -386,10 +389,13 @@ sub pre_preamble {
     if ($oldstyle) {
       next if $package =~ /latexml/;    # some packages are incompatible.
       $package .= ".sty" unless $package =~ /\.sty$/;
-      $packages .= "\\input\{$package\}\n"; }
+      $packages .= "\\input{$package}\n"; }
     else {
-      $package_options = "[$package_options]" if $package_options && ($package_options !~ /^\[.*\]$/);
-      $packages .= "\\usepackage$package_options\{$package\}\n"; } }
+      if ($package eq 'english') {
+        $packages .= "\\usepackage[english]{babel}\n"; }
+      else {
+        $package_options = "[$package_options]" if $package_options && ($package_options !~ /^\[.*\]$/);
+        $packages .= "\\usepackage$package_options\{$package}\n"; } } }
 
   my $w   = ceil($$self{maxwidth} * $pts_per_pixel);                      # Page Width in points.
   my $gap = ($$self{padding} + $$self{clippingfudge}) * $pts_per_pixel;
@@ -398,20 +404,29 @@ sub pre_preamble {
     : 0);                                      # NO clipping box!
   my $preambles = $self->find_preambles($doc);
   # Some classes are too picky: thanks but no thanks
+  my $result_add_to_body = "\\makeatletter\\thispagestyle{empty}\\pagestyle{empty}\n";
+  # neutralize caption macros
+  $result_add_to_body .= "\\let\\\@\@toccaption\\\@gobble\n\\let\\\@\@caption\\\@gobble\n";
+  # class-specific conditions:
   if ($class eq 'JHEP') {
     $class = 'article'; }
-  return <<"EOPreamble";
+  elsif ($class =~ /revtex/) {
+    # Careful with revtex4
+    $result_add_to_body .= "\\\@ifundefined{\@author\@def}{\\author{}}{}\n"; }
+  # when are the empty defaults needed?
+  if ($class ne 'article') {
+    $result_add_to_body .= "\\title{}\\date{}\n"; }
+  $result_add_to_body .= "\\makeatother\n";
+
+  my $result_preamble = <<"EOPreamble";
 \\batchmode
 \\def\\inlatexml{true}
-$documentcommand$class_options\{$class\}
+$documentcommand$class_options\{$class}
 $description
 $packages
 \\makeatletter
 \\setlength{\\hoffset}{0pt}\\setlength{\\voffset}{0pt}
 \\setlength{\\textwidth}{${w}pt}
-\\thispagestyle{empty}\\pagestyle{empty}\\title{}\\date{}
-% Careful with revtex4
-\\\@ifundefined{\@author\@def}{\\author{}}{}
 \\newcount\\lxImageNumber\\lxImageNumber=0\\relax
 \\newbox\\lxImageBox
 \\newdimen\\lxImageBoxSep
@@ -450,7 +465,8 @@ $packages
 $preambles
 \\makeatother
 EOPreamble
-}
+
+  return ($result_preamble, $result_add_to_body); }
 
 #======================================================================
 # Converting the postscript images to gif/png/whatever
