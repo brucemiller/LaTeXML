@@ -46,12 +46,10 @@ sub unsave_psfrag {
 # NOT a constructor since probably args should not be digested yet(?)
 DefPrimitive('\psfrag OptionalMatch:* Semiverbatim [][][][]{}', sub {
     my ($stomach, $star, $a, $b, $c, $d, $e, $f) = @_;
-
     # Guard against empty $$ argument.
     my @argt = $f->unlist;
-    if (scalar(@argt) == 2 && $argt[0][1] == CC_MATH && $argt[1][1]) {
+    if ((scalar(@argt) == 2) && ($argt[0][1] == CC_MATH) && ($argt[1][1] == CC_MATH)) {
       $f = Tokens(); }
-
     save_psfrag(Invocation(T_CS('\lx@delayed@psfrag'), $star, $a, $b, $c, $d, $e, $f));
     return; });
 DefConstructor('\lx@delayed@psfrag OptionalMatch:* Semiverbatim [][][][]{}', '',
