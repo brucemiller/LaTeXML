@@ -204,11 +204,7 @@ sub generateImages {
   my $jobname  = "ltxmlimg";
   my $orig_cwd = pathname_cwd();
   my $sep      = $Config::Config{path_sep};
-  local $ENV{TEXINPUTS} = join($sep, '.', $doc->getSearchPaths,
-    pathname_concat(pathname_installation(), 'texmf'),
-    ($ENV{TEXINPUTS} || $sep));
-
-  my %table = ();
+  my %table    = ();
 
   # === Get the desired nodes, extract the set of unique tex strings,
   #     noting which need processing.
@@ -253,6 +249,9 @@ sub generateImages {
         # Create working directory; note TMPDIR attempts to put it in standard place (like /tmp/)
     File::Temp->safe_level(File::Temp::MEDIUM);
     my $workdir = File::Temp->newdir("LaTeXMLXXXXXX", TMPDIR => 1);
+    # Obtain the search paths
+    my @searchpaths       = $doc->getSearchPaths;
+    my $installation_path = pathname_installation();
     # === Generate the LaTeX file.
     my $texfile = pathname_make(dir => $workdir, name => $jobname, type => 'tex');
     my $TEX;
@@ -275,7 +274,13 @@ sub generateImages {
     # (keep the command simple so it works in Windows)
     pathname_chdir($workdir);
     my $ltxcommand = "$LATEXCMD $jobname > $jobname.ltxoutput";
-    my $ltxerr     = system($ltxcommand);
+    my $ltxerr;
+    {
+      local $ENV{TEXINPUTS} = join($sep, '.', @searchpaths,
+        pathname_concat($installation_path, 'texmf'),
+        ($ENV{TEXINPUTS} || $sep));
+      $ltxerr = system($ltxcommand);
+    }
     pathname_chdir($orig_cwd);
 
     # Sometimes latex returns non-zero code, even though it apparently succeeded.
@@ -307,7 +312,13 @@ sub generateImages {
     # === Run dvicmd to extract individual png|postscript files.
     pathname_chdir($workdir);
     my $dvicommand = "$$self{dvicmd} $jobname.dvi > $jobname.dvioutput";
-    my $dvierr     = system($dvicommand);
+    my $dvierr;
+    {
+      local $ENV{TEXINPUTS} = join($sep, '.', @searchpaths,
+        pathname_concat($installation_path, 'texmf'),
+        ($ENV{TEXINPUTS} || $sep));
+      $dvierr = system($dvicommand);
+    }
     pathname_chdir($orig_cwd);
 
     if ($dvierr != 0) {
@@ -386,7 +397,9 @@ sub pre_preamble {
     ? $$self{clippingrule} * $pts_per_pixel    # clipping box thickness in points.
     : 0);                                      # NO clipping box!
   my $preambles = $self->find_preambles($doc);
-
+  # Some classes are too picky: thanks but no thanks
+  if ($class eq 'JHEP') {
+    $class = 'article'; }
   return <<"EOPreamble";
 \\batchmode
 \\def\\inlatexml{true}
