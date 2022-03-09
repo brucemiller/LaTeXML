@@ -372,8 +372,13 @@ sub pre_preamble {
 
   foreach my $pkgdata (@classdata) {
     my ($package, $package_options) = @$pkgdata;
-    $package_options = "[$package_options]" if $package_options && ($package_options !~ /^\[.*\]$/);
-    $packages .= "\\usepackage$package_options\{$package\}\n"; }
+    if ($oldstyle) {
+      next if $package =~ /latexml/;    # some packages are incompatible.
+      $package .= ".sty" unless $package =~ /\.sty$/;
+      $packages .= "\\input\{$package\}\n"; }
+    else {
+      $package_options = "[$package_options]" if $package_options && ($package_options !~ /^\[.*\]$/);
+      $packages .= "\\usepackage$package_options\{$package\}\n"; } }
 
   my $w   = ceil($$self{maxwidth} * $pts_per_pixel);                      # Page Width in points.
   my $gap = ($$self{padding} + $$self{clippingfudge}) * $pts_per_pixel;
