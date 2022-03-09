@@ -33,6 +33,8 @@ ProcessOptions();
 
 sub save_psfrag {
   my (@stuff) = @_;
+  # avoid saving if nothing given.
+  return unless @stuff;
   # NOT global!!!  And defer expansion of the leading CS
   AssignValue(saved_psfragments =>
       Tokens(LookupValue('saved_psfragments')->unlist, T_CS('\noexpand'), @stuff));
@@ -44,6 +46,12 @@ sub unsave_psfrag {
 # NOT a constructor since probably args should not be digested yet(?)
 DefPrimitive('\psfrag OptionalMatch:* Semiverbatim [][][][]{}', sub {
     my ($stomach, $star, $a, $b, $c, $d, $e, $f) = @_;
+
+    # Guard against empty $$ argument.
+    my @argt = $f->unlist;
+    if (scalar(@argt) == 2 && $argt[0][1] == CC_MATH && $argt[1][1]) {
+      $f = Tokens(); }
+
     save_psfrag(Invocation(T_CS('\lx@delayed@psfrag'), $star, $a, $b, $c, $d, $e, $f));
     return; });
 DefConstructor('\lx@delayed@psfrag OptionalMatch:* Semiverbatim [][][][]{}', '',
@@ -156,4 +164,3 @@ EoTeX
 
 #**********************************************************************
 1;
-

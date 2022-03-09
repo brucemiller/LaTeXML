@@ -406,7 +406,8 @@ sub pre_preamble {
   # Some classes are too picky: thanks but no thanks
   my $result_add_to_body = "\\makeatletter\\thispagestyle{empty}\\pagestyle{empty}\n";
   # neutralize caption macros
-  $result_add_to_body .= "\\let\\\@\@toccaption\\\@gobble\n\\let\\\@\@caption\\\@gobble\n";
+  $result_add_to_body .= "\\let\\\@\@toccaption\\\@gobble\n\\let\\\@\@caption\\\@gobble\n"
+    . "\\renewcommand{\\cite}[2][]{}\n\\newcommand{\\\@\@bibref}[4]{}\n";
   # class-specific conditions:
   if ($class eq 'JHEP') {
     $class = 'article'; }
