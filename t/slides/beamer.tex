@@ -1,0 +1,250 @@
+\documentclass{beamer}
+
+% This test case tests all the features currently supported by the beamer binding.
+% It consists of mostly independent unit tests.
+
+\usepackage{listings}
+
+\def\spoof{\insertslidenumber,\insertpagenumber,\insertoverlaynumber,\insertframenumber}
+
+\def\faketwoslides{\only<1>{Slide 1}\only<2>{Slide 2}\\}
+\def\fakefourslides{\only<1>{Slide 1}\only<2>{Slide 2}\only<3>{Slide 3}\only<4>{Slide 4}\\}
+
+\begin{document}
+
+\section{Frames}
+
+\begin{frame}
+    This frame has exactly one slide.
+\end{frame}
+
+\begin{frame}[fragile]
+    \begin{lstlisting}
+        I changed some catcodes around and still work!
+    \end{lstlisting}
+\end{frame}
+
+\begin{frame}
+    \only{This is on every slide. }
+    \only<2>{This is on the second slide. }
+\end{frame}
+
+\begin{frame}
+    \temporal<2>{Before second slide}{on second slide}{after second slide}
+    
+    \only<1,3>{On slides 1 and 3}
+    
+    \only<2->{On slide 2 onwards}
+\end{frame}
+
+
+\section{Counting of Frames}
+
+\begin{frame}
+    \fakefourslides
+    \spoof
+ \end{frame}
+
+\begin{frame}<1>
+    \fakefourslides
+    \spoof
+\end{frame}
+
+\begin{frame}<2>
+    \fakefourslides
+    \spoof
+\end{frame}
+
+\begin{frame}<3>
+    \fakefourslides
+    \spoof
+\end{frame}
+
+\begin{frame}<4>
+    \fakefourslides
+    \spoof
+\end{frame}
+
+\begin{frame}<2->
+    \fakefourslides
+    \spoof
+\end{frame}
+
+\begin{frame}<-2>
+    \fakefourslides
+    \spoof
+\end{frame}
+
+\section{Overlays}
+
+\begin{frame}
+    Always
+    \onslide<2->
+    Onslide 2
+    \onslide
+    Always
+\end{frame}
+
+\begin{frame}
+    Hello \pause
+    I am uncovered \pause
+    One-by-one.
+\end{frame}
+
+\begin{frame}
+    \visible<2->{ Visible on Slide 2 onwards}
+    \invisible<2->{ Invisible on Slide 2 onwards }
+    \uncover<2->{Uncovered on Slide 2}
+\end{frame}
+
+\section{Overlay Environments}
+
+
+\begin{frame}
+    This
+    \begin{altenv}<2>{(}{)}{[}{]}
+        word
+    \end{altenv}
+    is in round brackets on slide 2 and in square brackets on slide 1.
+\end{frame}
+
+\begin{frame}
+    We are on slide 1 or 2. 
+    \begin{onlyenv}<2>
+        We are on slide 2.
+    \end{onlyenv}
+\end{frame}
+
+\begin{frame}
+    \begin{uncoverenv}<2>
+        I'm uncovered on slide 2
+    \end{uncoverenv}
+\end{frame}
+
+\begin{frame}
+    \begin{alertenv}<2>
+        I'm alerted on slide 2
+    \end{alertenv}
+\end{frame}
+
+\begin{frame}
+    \begin{uncoverenv}<2->
+        \begin{alertenv}<3-4,6>
+            This text is shown the same way as the text above.
+        \end{alertenv}
+    \end{uncoverenv}
+\end{frame}
+
+\begin{frame}
+    \begin{actionenv}<3-|alert@3-4,6>
+        This text is shown the same way as the text below.
+    \end{actionenv}
+\end{frame}
+
+\begin{frame}
+    \begin{itemize}
+        \item First
+        \item<2-|alert@3>Second
+        \item Third
+    \end{itemize}
+\end{frame}
+
+\section{Titles}
+
+\begin{frame}
+    \frametitle{Title}
+    \framesubtitle{Subtitle}
+
+    \faketwoslides
+\end{frame}
+
+\begin{frame}
+    \frametitle[Short Title]{Title}
+    \faketwoslides
+\end{frame}
+
+\begin{frame}{Title}
+    \framesubtitle{Subtitle}
+
+    \faketwoslides
+\end{frame}
+
+\begin{frame}{Title}{Subtitle}
+    \faketwoslides
+\end{frame}
+
+\begin{frame}
+    \frametitle<2>{Title}
+    \faketwoslides
+\end{frame}
+
+\begin{frame}{Title Default}
+    \frametitle<2>{Second Title}
+    \faketwoslides
+\end{frame}
+
+\begin{frame}
+    \frametitle{Title Default}
+    \frametitle<2>{Second Title}
+    \faketwoslides
+\end{frame}
+
+
+\begin{frame}{Title}
+    \framesubtitle<2>{Subtitle}
+    \faketwoslides
+\end{frame}
+
+\begin{frame}{Title}{Subtitle}
+    \framesubtitle<2>{Second Subtitle}
+    \faketwoslides
+\end{frame}
+
+\begin{frame}{Title}
+    \framesubtitle{Subtitle Default}
+    \framesubtitle<2>{Second Subtitle}
+    \faketwoslides
+\end{frame}
+
+\section{Enumerate}
+
+\begin{frame}
+    \begin{enumerate}
+        \item First
+        \item First also
+        \item And another first
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}
+    \begin{enumerate}[<+->]
+        \item First
+        \item Second
+        \item Third
+    \end{enumerate}
+\end{frame}
+
+
+\begin{frame}
+    \begin{enumerate}
+        \item First
+        \item First also
+        \item<2> Second
+    \end{enumerate}
+\end{frame}
+
+\begin{frame}[<.->]
+    \begin{enumerate}[<+->]
+        \item First
+        \item Second
+        \item<4-> Fourth
+    \end{enumerate}
+
+    \begin{enumerate}
+        \item Third
+        \item Also Third
+        \item<4-> Also Fouth
+    \end{enumerate}
+\end{frame}
+
+\end{document}

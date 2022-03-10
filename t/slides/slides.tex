@@ -1,0 +1,47 @@
+\documentclass[landscape]{slides}
+
+\def\content{
+    \invisible{Invisible}
+    \visible{Visible}
+    \begin{itemize}
+        \item first
+        \item second
+        \item third
+    \end{itemize}
+}
+
+\begin{document}
+
+\begin{slide}
+    This is the first slide.
+    \content
+\end{slide}
+
+\begin{slide}
+    This is the second slide.
+    \content
+\end{slide}
+
+
+\begin{overlay}
+    This is the first overlay.
+    \content
+\end{overlay}
+
+\begin{overlay}
+    This is the second overlay.
+    \content
+\end{overlay}
+
+
+\begin{note}
+    This is the first note.
+    \content
+\end{note}
+
+\begin{note}
+    This is the second note.
+    \content
+\end{note}
+
+\end{document}

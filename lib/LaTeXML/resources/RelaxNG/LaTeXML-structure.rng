@@ -32,6 +32,7 @@
       <ref name="chapter"/>
       <ref name="part"/>
       <ref name="slide"/>
+      <ref name="slidesequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -75,6 +76,7 @@
       <ref name="section"/>
       <ref name="chapter"/>
       <ref name="slide"/>
+      <ref name="slidesequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -112,6 +114,7 @@
       <ref name="subsection"/>
       <ref name="section"/>
       <ref name="slide"/>
+      <ref name="slidesequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -148,6 +151,7 @@
       <ref name="subsubsection"/>
       <ref name="subsection"/>
       <ref name="slide"/>
+      <ref name="slidesequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -183,6 +187,7 @@
       <ref name="paragraph"/>
       <ref name="subsubsection"/>
       <ref name="slide"/>
+      <ref name="slidesequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -217,6 +222,7 @@
       <ref name="subparagraph"/>
       <ref name="paragraph"/>
       <ref name="slide"/>
+      <ref name="slidesequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -251,6 +257,7 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
       <ref name="Para.model"/>
       <ref name="subparagraph"/>
       <ref name="slide"/>
+      <ref name="slidesequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -283,6 +290,7 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
     <choice>
       <ref name="Para.model"/>
       <ref name="slide"/>
+      <ref name="slidesequence"/>
       <ref name="sidebar"/>
     </choice>
   </define>
@@ -303,12 +311,28 @@ LaTeX Paragraph,  in distinction from an unlabelled logical paragraph.</a:docume
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
+  <define name="slidesequence">
+    <element name="slidesequence">
+      <a:documentation>A slidesequence within a slideshow.
+Each slide contains a set slides, typically those that are revealed constructively. </a:documentation>
+      <ref name="slidesequence_attributes"/>
+      <ref name="slidesequence_model"/>
+    </element>
+  </define>
+  <define name="slidesequence_attributes">
+    <a:documentation>Attributes for \elementref{slidesequence}.</a:documentation>
+    <ref name="Sectional.attributes"/>
+  </define>
+  <!-- A slidesequence *must* contain a group of slides. -->
+  <define name="slidesequence_model">
+    <zeroOrMore>
+      <ref name="slide"/>
+    </zeroOrMore>
+  </define>
+  <!-- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -->
   <define name="slide">
     <element name="slide">
-      <a:documentation>A Slide within a slideshow.
-The model currently doesn't enforce this, but the idea is that
-a slideshow document can contain section headings, but all
-real content should be confined to slides.</a:documentation>
+      <a:documentation>A Slide within a slideshow, that may or may not be contained within a slidesequence.</a:documentation>
       <ref name="slide_attributes"/>
       <ref name="slide_model"/>
     </element>
@@ -320,11 +344,21 @@ real content should be confined to slides.</a:documentation>
   <define name="slide_attributes">
     <a:documentation>Attributes for \elementref{slide}.</a:documentation>
     <ref name="Sectional.attributes"/>
+    <optional>
+      <attribute name="overlay">
+        <a:documentation>\attr{overlay} is the number of the current overlay.
+This must be specified when part of a slidesequence, else it may be omitted.
+Should be unique and rising within a slidesequence.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="slide_model">
     <a:documentation>Content model for \elementref{slide}.</a:documentation>
     <zeroOrMore>
-      <ref name="SectionalFrontMatter.class"/>
+      <choice>
+        <ref name="SectionalFrontMatter.class"/>
+        <ref name="subtitle"/>
+      </choice>
     </zeroOrMore>
     <zeroOrMore>
       <choice>
