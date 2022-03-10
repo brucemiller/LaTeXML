@@ -33,8 +33,6 @@ ProcessOptions();
 
 sub save_psfrag {
   my (@stuff) = @_;
-  # avoid saving if nothing given.
-  @stuff = @stuff && Expand(@stuff);
   return unless @stuff;
   # NOT global!!!  And defer expansion of the leading CS
   AssignValue(saved_psfragments =>
@@ -97,9 +95,7 @@ DefConstructor('\lx@psfrag@includegraphics OptionalMatch:* [][] Semiverbatim',
     my ($stomach, $whatsit) = @_;
     my ($w, $h, $d) = $whatsit->getSize;
     AssignValue(psfrag_scan => 0, 'global');
-    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert));
-    $untex =~ s/%\n//g;
-    $untex =~ s/\n/ /g;
+    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert), 1);
     $whatsit->setProperties(tex => $untex,
       width => $w, height => $h, depth => $d); });
 
@@ -122,9 +118,7 @@ DefConstructor('\lx@psfrag@includegraphicx OptionalMatch:* OptionalKeyVals:Gin S
     my ($stomach, $whatsit) = @_;
     my ($w, $h, $d) = $whatsit->getSize;
     AssignValue(psfrag_scan => 0, 'global');
-    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert));
-    $untex =~ s/%\n//g;
-    $untex =~ s/\n/ /g;
+    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert), 1);
     $whatsit->setProperties(tex => $untex,
       width => $w, height => $h, depth => $d); });
 
@@ -147,9 +141,7 @@ DefConstructor('\lx@psfrag@epsfbox[] Semiverbatim',
     my ($stomach, $whatsit) = @_;
     my ($w, $h, $d) = $whatsit->getSize;
     AssignValue(psfrag_scan => 0, 'global');
-    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert));
-    $untex =~ s/%\n//g;
-    $untex =~ s/\n/ /g;
+    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert), 1);
     $whatsit->setProperties(tex => $untex,
       width => $w, height => $h, depth => $d); });
 

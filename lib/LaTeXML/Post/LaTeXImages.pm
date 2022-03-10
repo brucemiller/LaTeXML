@@ -409,7 +409,8 @@ sub pre_preamble {
   my $result_add_to_body = "\\makeatletter\\thispagestyle{empty}\\pagestyle{empty}\n";
   # neutralize caption macros
   $result_add_to_body .= "\\let\\\@\@toccaption\\\@gobble\n\\let\\\@\@caption\\\@gobble\n"
-    . "\\renewcommand{\\cite}[2][]{}\n\\newcommand{\\\@\@bibref}[4]{}\n";
+    . "\\let\\cite\\\@gobble\n\\def\\\@\@bibref#1#2#3#4{}\n";
+  $result_add_to_body .= "\\renewcommand{\\cite}[2][]{}\n" unless $oldstyle;
   # class-specific conditions:
   if ($class =~ /^JHEP$/i) {
     $class = 'article'; }
@@ -419,7 +420,8 @@ sub pre_preamble {
   # when are the empty defaults needed?
   if ($class ne 'article') {
     $result_add_to_body .= "\\title{}\\date{}\n"; }
-  $result_add_to_body .= "\\makeatother\n";
+  # Keep @ as a letter in the body, as internal bits such as \@@toccaption can sneak through.
+  #$result_add_to_body .= "\\makeatother\n";
 
   my $result_preamble = <<"EOPreamble";
 \\batchmode

@@ -4178,8 +4178,8 @@ AssignValue(CITE_UNIT           => undef);
 
 DefMacro('\@cite{}{}', '[{#1\if@tempswa , #2\fi}]');
 DefConstructor('\@@cite []{}', "<ltx:cite ?#1(class='ltx_citemacro_#1')>#2</ltx:cite>",
-  reversion => '\cite[#1]{#2}',
-  mode      => 'text');
+  alias => '\cite',
+  mode  => 'text');
 
 # \@@bibref{what to show}{bibkeys}{phrase1}{phrase2}
 DefConstructor('\@@bibref Semiverbatim Semiverbatim {}{}',
