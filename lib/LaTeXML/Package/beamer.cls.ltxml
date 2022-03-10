@@ -54,6 +54,36 @@ sub readBeamerAngled {
     $gullet->unread($tok) if ref $tok;
     undef; } }
 
+# 'BeamerSquared' is roughly equivalent to .
+# However it ignores square bracketed arguments that do not start with a literal '<'.
+# This is needed because [BeamerAngled] arguments cannot be followed by other square bracketed arguments.
+DefParameterType('BeamerSquared', \&readBeamerSquared, reversion => \&revertBeamerSquared, optional => 1);
+
+sub readBeamerSquared {
+  my ($gullet) = @_;
+  # read the '[' token
+  my $tok1 = $gullet->readXToken;
+  unless (ref $tok1 && ToString($tok1) eq '[') {
+    $gullet->unread($tok1);
+    return; }
+  # read the '<' token
+  my $tok2 = $gullet->readXToken;
+  unless (ref $tok2 && ToString($tok2) eq '<') {
+    $gullet->unread($tok2);
+    $gullet->unread($tok1); 
+    return; }
+  # read the content
+  my $value = $gullet->readUntil(T_OTHER('>'));
+  # read the '['
+  my $tok3 = $gullet->readXToken;
+  unless (ref $tok3 && ToString($tok3) eq ']') {
+    Error('unexpected', "$tok3", "Expected a ']', but got '$tok3'"); }
+  return $value; }
+
+sub revertBeamerSquared {
+  return () unless defined($_[0]);
+  (T_OTHER('['), T_OTHER('<'), $_[0]->revert, T_OTHER('>'), T_OTHER(']')); }
+
 sub revertBeamerAngled {
   return () unless defined($_[0]);
   (T_OTHER('<'), $_[0]->revert, T_OTHER('>')); }
@@ -824,7 +854,7 @@ DefKeyVal('beamerframe', 'fragile', '', '');
 # To render a frame, we need to render all the overlay(s) contained in it.
 # To achieve this, we first record the content of the frame environment into a macro - so we can replace it multiple times.
 DefMacro(T_CS('\begin{frame}'), '\frame@');
-DefMacro('\frame@ OptionalBeamerAngled [BeamerAngled] OptionalKeyVals:beamerframe LiteralBalanced LiteralBalanced', sub {
+DefMacro('\frame@ OptionalBeamerAngled BeamerSquared OptionalKeyVals:beamerframe LiteralBalanced LiteralBalanced', sub {
     my ($gullet, $overlay, $defaultOverlay, $opts, $title, $subtitle) = @_;
     # store the default overlay (which may be undef)
     AssignValue('beamer@action@default@local' => $defaultOverlay);
