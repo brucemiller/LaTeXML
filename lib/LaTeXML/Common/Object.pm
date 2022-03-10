@@ -108,7 +108,7 @@ sub Revert {
   my ($thing) = @_;
   no warnings 'recursion';
   return (defined $thing
-    ? (ref $thing ? map { $_->unlist } $thing->revert
+    ? (ref $thing ? map { $_ ? $_->unlist : () } $thing->revert
       : LaTeXML::Core::Token::Explode($thing))    # Ugh!!
     : ()); }
 

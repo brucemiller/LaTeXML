@@ -133,11 +133,12 @@ DefParameterType('Optional', sub {
   optional  => 1,
   reversion => sub {
     my ($arg, $default, $inner) = @_;
-    if ($arg) {
-      (T_OTHER('['),
-        ($inner ? $inner->revertArguments($arg) : Revert($arg)),
-        T_OTHER(']')); }
-    else { (); } });
+    my @rev_arg = $arg ? (
+      $inner ? $inner->revertArguments($arg) : Revert($arg))
+      : ();
+    if (@rev_arg) {
+      return (T_OTHER('['), @rev_arg, T_OTHER(']')); }
+    else { return (); } });
 
 # This is a peculiar type of argument of the form
 #   <general text> = <filler>{<balanced text><right brace>
@@ -620,14 +621,18 @@ sub OptionalKeyVals {
     return (KeyVals_aux($gullet, T_OTHER(']'), [$star, $plus, @keyspec])); }
   else { return (undef); } }
 
+sub revert_optional_keyvals {
+  my @r = grep { defined $_ } ($_[0] && Revert($_[0]));
+  return @r ? (T_OTHER('['), @r, T_OTHER(']')) : (); }
+
 DefParameterType('OptionalKeyVals', sub { OptionalKeyVals(0, 0, @_); },
-  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  optional => 1, reversion => \&revert_optional_keyvals);
 DefParameterType('OptionalKeyVals*', sub { OptionalKeyVals(1, 0, @_); },
-  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  optional => 1, reversion => \&revert_optional_keyvals);
 DefParameterType('OptionalKeyVals+', sub { OptionalKeyVals(0, 1, @_); },
-  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  optional => 1, reversion => \&revert_optional_keyvals);
 DefParameterType('OptionalKeyVals*+', sub { OptionalKeyVals(1, 1, @_); },
-  optional => 1, reversion => sub { ($_[0] ? (T_OTHER('['), Revert($_[0]), T_OTHER(']')) : ()); });
+  optional => 1, reversion => \&revert_optional_keyvals);
 
 # Not sure that this is the most elegant solution, but...
 # What I'd really like are some sort of parameter modifiers, mathstyle, font... until...?

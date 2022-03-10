@@ -33,6 +33,7 @@ ProcessOptions();
 
 sub save_psfrag {
   my (@stuff) = @_;
+  return unless @stuff;
   # NOT global!!!  And defer expansion of the leading CS
   AssignValue(saved_psfragments =>
       Tokens(LookupValue('saved_psfragments')->unlist, T_CS('\noexpand'), @stuff));
@@ -44,6 +45,10 @@ sub unsave_psfrag {
 # NOT a constructor since probably args should not be digested yet(?)
 DefPrimitive('\psfrag OptionalMatch:* Semiverbatim [][][][]{}', sub {
     my ($stomach, $star, $a, $b, $c, $d, $e, $f) = @_;
+    # Guard against empty $$ argument.
+    my @argt = $f->unlist;
+    if ((scalar(@argt) == 2) && ($argt[0][1] == CC_MATH) && ($argt[1][1] == CC_MATH)) {
+      $f = Tokens(); }
     save_psfrag(Invocation(T_CS('\lx@delayed@psfrag'), $star, $a, $b, $c, $d, $e, $f));
     return; });
 DefConstructor('\lx@delayed@psfrag OptionalMatch:* Semiverbatim [][][][]{}', '',
@@ -90,7 +95,8 @@ DefConstructor('\lx@psfrag@includegraphics OptionalMatch:* [][] Semiverbatim',
     my ($stomach, $whatsit) = @_;
     my ($w, $h, $d) = $whatsit->getSize;
     AssignValue(psfrag_scan => 0, 'global');
-    $whatsit->setProperties(tex => UnTeX(Tokens(unsave_psfrag(), $whatsit->revert)),
+    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert), 1);
+    $whatsit->setProperties(tex => $untex,
       width => $w, height => $h, depth => $d); });
 
 # For graphicx version of \includegraphics
@@ -112,7 +118,8 @@ DefConstructor('\lx@psfrag@includegraphicx OptionalMatch:* OptionalKeyVals:Gin S
     my ($stomach, $whatsit) = @_;
     my ($w, $h, $d) = $whatsit->getSize;
     AssignValue(psfrag_scan => 0, 'global');
-    $whatsit->setProperties(tex => UnTeX(Tokens(unsave_psfrag(), $whatsit->revert)),
+    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert), 1);
+    $whatsit->setProperties(tex => $untex,
       width => $w, height => $h, depth => $d); });
 
 DefConstructor('\lx@psfrag@epsfbox[] Semiverbatim',
@@ -134,7 +141,8 @@ DefConstructor('\lx@psfrag@epsfbox[] Semiverbatim',
     my ($stomach, $whatsit) = @_;
     my ($w, $h, $d) = $whatsit->getSize;
     AssignValue(psfrag_scan => 0, 'global');
-    $whatsit->setProperties(tex => UnTeX(Tokens(unsave_psfrag(), $whatsit->revert)),
+    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert), 1);
+    $whatsit->setProperties(tex => $untex,
       width => $w, height => $h, depth => $d); });
 
 # Just for grouping
@@ -156,4 +164,3 @@ EoTeX
 
 #**********************************************************************
 1;
-
