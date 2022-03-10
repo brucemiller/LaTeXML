@@ -556,6 +556,8 @@ sub parse_kludge {
     my $kludge = $$pair[0];
     push(@replacements, (ref $kludge eq 'ARRAY') && ($$kludge[0] eq 'ltx:XMWrap')
       ? @$kludge[2 .. $#$kludge] : ($kludge)); }
+  if ($mathnode->nodeName eq 'XMath') {
+    $mathnode->parentNode->setAttribute('class', 'kludge_parse'); }
   $document->appendTree($mathnode, @replacements);
   return; }
 

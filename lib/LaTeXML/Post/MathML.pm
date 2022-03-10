@@ -127,7 +127,7 @@ sub combineParallel {
     # anything else ignore?
   }
   return { processor => $self, mimetype => $$primary{mimetype},
-    xml => ['m:semantics', {}, $$primary{xml}, @alt] }; }
+    xml => (@alt ? ['m:semantics', {}, $$primary{xml}, @alt] : $$primary{xml}) }; }
 
 # $self->convertNode($doc,$node);
 # will be handled by specific Presentation or Content MathML converters; See at END.

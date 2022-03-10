@@ -348,10 +348,13 @@ sub processNode {
   my $conversion;
   # XMath will be removed (LATER!), but mark its ids as reusable.
   $doc->preremoveNodes($xmath);
+  my $is_kludge = ($math->getAttribute('class') || '') eq 'kludge_parse';
   if ($$self{parallel}) {
     my $primary     = $self->convertNode($doc, $xmath);
     my @secondaries = ();
     foreach my $proc (@{ $$self{secondary_processors} }) {
+      # Exception: Do not generate Content MathML for kludge parses
+      next if $is_kludge && (ref $proc eq 'LaTeXML::Post::MathML::Content');
       local $LaTeXML::Post::MATHPROCESSOR = $proc;
       my $secondary = $proc->convertNode($doc, $xmath);
       # IF it is (first) image, copy image attributes to ltx:Math ???
