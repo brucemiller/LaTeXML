@@ -554,7 +554,8 @@ DefEnvironment('{pspicture} [Float] PSCoord OptionalPSCoord',
     $whatsit->setProperties(need => 1, transform => $org->ptValue,
       pxwidth  => $c1->getX->subtract($c0->getX)->pxValue,
       pxheight => $c1->getY->subtract($c0->getY)->pxValue);
-    Let('\par', '\relax');
+    Let('\par',        '\relax');
+    Let('\@@scalebox', '\@@@scalebox');
     return; });
 
 DefEnvironment('{pspicture*} [Float] PSCoord PSCoord',
@@ -1025,7 +1026,8 @@ DefConstructor('\rotatedown {}', "<ltx:g transform='rotate(180)'> #1 </ltx:g>",
 
 DefPrimitive('\@@@ackscale{}', sub { ackTransform('scale(' . ToString($_[1]) . ')'); });
 DefMacro('\scalebox{}{}', '{\@@@ackscale{#1}\@@scalebox{#1}{#2}}');
-DefConstructor('\@@scalebox {} {}', "<ltx:g transform='scale(#1)'> #2 </ltx:g>");
+Let('\@@scalebox', '\@secondoftwo');
+DefConstructor('\@@@scalebox {} {}', "<ltx:g transform='scale(#1)'> #2 </ltx:g>");
 
 DefConstructor('\scaleboxto PSCoord {}', "<ltx:g scaleto='&ptValue(#1)'>#2</ltx:g>");
 
