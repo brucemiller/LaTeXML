@@ -39,13 +39,13 @@ sub beamerTODO {
 # Custom Beamer Arguments
 #**********************************************************************
 
-# The 'Angled' (and corresponding 'OptionalAngled') parameter types are arguments in angle brackets.
-# The 'Angled' argument type is a literal argument type, meaning is not digested by default.
+# The 'BeamerAngled' (and corresponding 'OptionalBeamerAngled') parameter types are arguments in angle brackets.
+# The 'BeamerAngled' argument type is a literal argument type, meaning is not digested by default.
 # Example: <value>
-DefParameterType('Angled', \&readAngled, reversion => \&revertAngled);
-DefParameterType('OptionalAngled', \&readAngled, reversion => \&revertAngled, optional => 1);
+DefParameterType('BeamerAngled', \&readBeamerAngled, reversion => \&revertBeamerAngled);
+DefParameterType('OptionalBeamerAngled', \&readBeamerAngled, reversion => \&revertBeamerAngled, optional => 1);
 
-sub readAngled {
+sub readBeamerAngled {
   my ($gullet) = @_;
   my $tok = $gullet->readXToken;
   if (ref $tok && ToString($tok) eq '<') {
@@ -54,7 +54,7 @@ sub readAngled {
     $gullet->unread($tok) if ref $tok;
     undef; } }
 
-sub revertAngled {
+sub revertBeamerAngled {
   return () unless defined($_[0]);
   (T_OTHER('<'), $_[0]->revert, T_OTHER('>')); }
 
@@ -415,7 +415,7 @@ sub matchesCurrentMode {
 # \mode<modespec>{stuff}   => \beamer@modeinline<modespec>{stuff}
 # \mode<modespec>          => \beamer@switchmode<modespec>
 DefMacro('\mode',                '\@ifstar{\beamer@modeoutsideframe}{\beamer@mode@}');
-DefMacro('\beamer@mode@ Angled', '\@ifnextchar\{{\beamer@modeinline}{\beamer@switchmode}<#1>');
+DefMacro('\beamer@mode@ BeamerAngled', '\@ifnextchar\{{\beamer@modeinline}{\beamer@switchmode}<#1>');
 
 # \mode*
 # ignores all text outside of frames
@@ -424,7 +424,7 @@ DefMacro('\beamer@modeoutsideframe', '');
 
 # \mode<modespec>{stuff}
 # only do stuff if we are in the provided mode.
-DefMacro('\beamer@modeinline Angled {}', sub {
+DefMacro('\beamer@modeinline BeamerAngled {}', sub {
     my ($gullet, $spec, $body) = @_;
     if (matchesCurrentMode(ToString($spec))) {
       $body->revert; }
@@ -434,7 +434,7 @@ DefMacro('\beamer@modeinline Angled {}', sub {
 # \mode<modespec>
 # if modespec matches, do nothing.
 # else gobble everything until the next \mode (or related command).
-DefMacro('\beamer@switchmode Angled', sub {
+DefMacro('\beamer@switchmode BeamerAngled', sub {
     my ($gullet, $spec) = @_;
     if (matchesCurrentMode(ToString($spec))) {
       (); }
@@ -713,8 +713,8 @@ DefConstructor('\beamer@alerted@end',   "</ltx:inline-block>");
 # only shows text only on specified slides - but only one specficiation may be present
 DefMacro('\only',           '\beamer@ifnextcharospec{\beamer@only@before}{\beamer@only}');
 DefMacro('\beamer@only {}', '\beamer@ifnextcharospec{\beamer@only@after{#1}}{\beamer@only@plain{#1}}');
-DefMacro('\beamer@only@after {} Angled', '\beamer@only@before<#2>{#1}');
-DefMacro('\beamer@only@before Angled {}', sub {
+DefMacro('\beamer@only@after {} BeamerAngled', '\beamer@only@before<#2>{#1}');
+DefMacro('\beamer@only@before BeamerAngled {}', sub {
     my ($gullet, $overlay, $argument) = @_;
     if (digestOverlaySpec($overlay) == 0) {
       $argument; }
@@ -728,8 +728,8 @@ EoTeX
 
 DefMacro('\alt',             '\beamer@ifnextcharospec{\beamer@alt@before}{\beamer@alt}');
 DefMacro('\beamer@alt {}{}', '\beamer@ifnextcharospec{\beamer@alt@after{#1}{#2}}{\beamer@alt@plain{#1}{#2}}');
-DefMacro('\beamer@alt@after {}{} Angled', '\beamer@alt@before<#3>{#1}{#2}');
-DefMacro('\beamer@alt@before Angled {}{}', sub {
+DefMacro('\beamer@alt@after {}{} BeamerAngled', '\beamer@alt@before<#3>{#1}{#2}');
+DefMacro('\beamer@alt@before BeamerAngled {}{}', sub {
     my ($gullet, $overlay, $text, $altText) = @_;
     if (digestOverlaySpec($overlay) == 0) {
       $text; }
@@ -738,11 +738,11 @@ DefMacro('\beamer@alt@before Angled {}{}', sub {
 DefMacro('\beamer@alt@plain {}{}', '#1');    # the empty spec always matches
 
 DefMacro('\altenv', '\beamer@ifnextcharospec{\beamer@altenv@}{\beamer@altenv}');
-DefMacro('\beamer@altenv@ Angled {}{}{}{}', '\beamer@altenv{#2}{#3}{#4}{#5}<#1>'); # put the <> at the end!
+DefMacro('\beamer@altenv@ BeamerAngled {}{}{}{}', '\beamer@altenv{#2}{#3}{#4}{#5}<#1>'); # put the <> at the end!
 DefMacro('\beamer@altenv {}{}{}{}', '\alt{#1\def\beamer@eoenv{#2}}{#3\def\beamer@eoenv{#4}}');
 DefMacro('\endaltenv',              '\beamer@eoenv');
 
-DefMacro('\temporal Angled {}{}{}', sub {
+DefMacro('\temporal BeamerAngled {}{}{}', sub {
     my ($gullet, $overlay, $beforeText, $text, $afterText) = @_;
     my $temporal = digestOverlaySpec($overlay);
     if ($temporal == 0) {
@@ -788,7 +788,7 @@ EoTeX
 # Magic \onslide command that does everything!
 DefMacro('\onslide', '\@ifstar{\beamer@onslide@star}{\@ifnextchar+{\beamer@onslide@plus\@gobble}{\beamer@onslide}}');
 DefMacro('\beamer@onslide', '\beamer@ifnextcharospec{\beamer@onslide@}{\beamer@onslide@@}');
-DefMacro('\beamer@onslide@ Angled', '\@ifnextchar\{{\beamer@onslide@plain<#1>}{\beamer@onslide@noargs<#1>}');
+DefMacro('\beamer@onslide@ BeamerAngled', '\@ifnextchar\{{\beamer@onslide@plain<#1>}{\beamer@onslide@noargs<#1>}');
 DefMacro('\beamer@onslide@@', '\@ifnextchar\{{\beamer@onslide@plain}{\beamer@onslide@noargs}');
 DefMacro('\beamer@onslide@noargs', '\beamer@ifnextcharospec{\beamer@onslide@spec}{\beamer@onslide@empty}');
 
@@ -824,7 +824,7 @@ DefKeyVal('beamerframe', 'fragile', '', '');
 # To render a frame, we need to render all the overlay(s) contained in it.
 # To achieve this, we first record the content of the frame environment into a macro - so we can replace it multiple times.
 DefMacro(T_CS('\begin{frame}'), '\frame@');
-DefMacro('\frame@ OptionalAngled [Angled] OptionalKeyVals:beamerframe LiteralBalanced LiteralBalanced', sub {
+DefMacro('\frame@ OptionalBeamerAngled [BeamerAngled] OptionalKeyVals:beamerframe LiteralBalanced LiteralBalanced', sub {
     my ($gullet, $overlay, $defaultOverlay, $opts, $title, $subtitle) = @_;
     # store the default overlay (which may be undef)
     AssignValue('beamer@action@default@local' => $defaultOverlay);
@@ -1051,7 +1051,7 @@ RequirePackage('enumerate');
 # {actionenv}
 #**********************************************************************
 
-DefMacro('\actionenv OptionalAngled', sub {
+DefMacro('\actionenv OptionalBeamerAngled', sub {
     my ($stomach, $actions) = @_;
     # process $actions into a concrete list of actions
     $actions = LookupValue('beamer@action@default@local') unless defined($actions);
@@ -1089,7 +1089,7 @@ sub beginBeamerItemize {
   @result; }
 
 # invoked to begin an actionitem!
-DefMacro('\beamer@item@action Angled', '\beamer@item@action@{#1}\beamer@item@action@open{#1}');
+DefMacro('\beamer@item@action BeamerAngled', '\beamer@item@action@{#1}\beamer@item@action@open{#1}');
 DefMacro('\beamer@item@action@ {}', sub {
     my ($stomach, $action) = @_;
     (
@@ -1108,39 +1108,39 @@ DefMacro('\beamer@item@action@close {}', '\end{actionenv}');
 DefMacro('\beamer@item',      '\@ifnextchar<{\beamer@item@before}{\beamer@item@}');
 DefMacro('\beamer@item@',     '\@ifnextchar[{\beamer@item@@}{\beamer@item@none}');
 DefMacro('\beamer@item@@ []', '\@ifnextchar<{\beamer@item@after[#1]}{\beamer@item@none[#1]}');
-DefMacro('\beamer@item@after [] Angled', '\beamer@item@before<#2>[#1]');
+DefMacro('\beamer@item@after [] BeamerAngled', '\beamer@item@before<#2>[#1]');
 DefMacro('\beamer@item@none', sub {
     my $defaultOverlay = LookupValue('beamer@action@default@local');
     if (defined($defaultOverlay)) {
       (T_CS('\beamer@item@before'), Tokenize('<' . ToString($defaultOverlay) . '>')); }
     else {
       (T_CS('\beamer@closeitem'), T_CS('\beamer@item@org')); } });
-DefMacro('\beamer@item@before Angled []', sub {
+DefMacro('\beamer@item@before BeamerAngled []', sub {
     my ($stomach, $overlay, $key) = @_;
     my @return = ();
     push(@return, T_CS('\beamer@closeitem'), T_CS('\beamer@item@org'));
     push(@return, T_OTHER('['), Revert($key), T_OTHER(']')) if defined($key);
-    push(@return, T_CS('\beamer@item@action'), revertAngled($overlay));
+    push(@return, T_CS('\beamer@item@action'), revertBeamerAngled($overlay));
     @return; });
 
 # Hook into all the {enumerate} {itemize} {description}
 
 # from LaTeX.Pool
-DefEnvironment('{itemize} [Angled]',
+DefEnvironment('{itemize} [BeamerAngled]',
   "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",
   properties      => sub { beginBeamerItemize($_[1], 'itemize', '@item'); },
   beforeDigestEnd => sub { Digest('\par'); Digest('\beamer@closeitem'); },
   locked          => 1, mode => 'text');
 
 # from enumitem package, because of the second arg!
-DefEnvironment('{enumerate} [Angled] OptionalUndigested',
+DefEnvironment('{enumerate} [BeamerAngled] OptionalUndigested',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
   properties       => sub { beginBeamerItemize($_[1], 'enumerate', 'enum'); },
   beforeDigestEnd  => sub { Digest('\par'); Digest('\beamer@closeitem'); },
   afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(2)); });
 
 # from LaTeX.Pool
-DefEnvironment('{description} [Angled]',
+DefEnvironment('{description} [BeamerAngled]',
   "<ltx:description  xml:id='#id'>#body</ltx:description>",
   beforeDigest    => sub { Let('\makelabel', '\descriptionlabel'); },
   properties      => sub { beginBeamerItemize($_[1], 'description', '@desc'); },
