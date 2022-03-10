@@ -4,4 +4,4 @@
 #**********************************************************************
 use LaTeXML::Util::Test;
 
-latexml_tests("t/beamer");
+latexml_tests("t/slides");
