@@ -455,7 +455,8 @@ DefConstructorI(T_CS('\beamer@processline'), undef, '', reversion => '',
       $gullet->readRawLine;
       my ($unused, $line) = readRawUntilMatch($gullet, @BEAMER_PROCESSLINE_MARKS);
       # put the stop token back (if we saw it!)
-      $gullet->unread(T_CS($line)) if defined($line); }]);
+      $gullet->unread(T_CS($line)) if defined($line); 
+      return; }]);
 
 # ways of setting the current mode!
 DefMacro('\presentation', '\mode<presentation>');
