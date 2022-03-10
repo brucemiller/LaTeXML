@@ -1,0 +1,1329 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="beamer"?>
+<?latexml package="listings"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <resource src="ltx-listings.css" type="text/css"/>
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="autoref">section 1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Frames</title>
+    <slidesequence xml:id="S1.frame1">
+      <slide overlay="1" xml:id="S1.frame1.slide1">
+        <para xml:id="S1.frame1.slide1.p1">
+          <p>This frame has exactly one slide.</p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S1.frame2">
+      <slide overlay="1" xml:id="S1.frame2.slide1">
+        <para xml:id="S1.frame2.slide1.p1">
+          <listing class="ltx_lstlisting" data="ICAgICAgICBJIGNoYW5nZWQgc29tZSBjYXRjb2RlcyBhcm91bmQgYW5kIHN0aWxsIHdvcmsh" dataencoding="base64" datamimetype="text/plain">
+            <listingline xml:id="lstnumberx1"><text class="ltx_lst_space">        </text><text class="ltx_lst_identifier">I</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">changed</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">some</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">catcodes</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">around</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">and</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">still</text><text class="ltx_lst_space"> </text><text class="ltx_lst_identifier">work</text>!</listingline>
+          </listing>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S1.frame3">
+      <slide overlay="1" xml:id="S1.frame3.slide1">
+        <para xml:id="S1.frame3.slide1.p1">
+          <p>This is on every slide.</p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S1.frame3.slide2">
+        <para xml:id="S1.frame3.slide2.p1">
+          <p>This is on every slide. 
+This is on the second slide.</p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S1.frame4">
+      <slide overlay="1" xml:id="S1.frame4.slide1">
+        <para xml:id="S1.frame4.slide1.p1">
+          <p>Before second slide</p>
+        </para>
+        <para xml:id="S1.frame4.slide1.p2">
+          <p>On slides 1 and 3</p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S1.frame4.slide2">
+        <para xml:id="S1.frame4.slide2.p1">
+          <p>on second slide</p>
+        </para>
+        <para xml:id="S1.frame4.slide2.p2">
+          <p>On slide 2 onwards</p>
+        </para>
+      </slide>
+      <slide overlay="3" xml:id="S1.frame4.slide3">
+        <para xml:id="S1.frame4.slide3.p1">
+          <p>after second slide</p>
+        </para>
+        <para xml:id="S1.frame4.slide3.p2">
+          <p>On slides 1 and 3</p>
+        </para>
+        <para xml:id="S1.frame4.slide3.p3">
+          <p>On slide 2 onwards</p>
+        </para>
+      </slide>
+    </slidesequence>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="autoref">section 2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Counting of Frames</title>
+    <slidesequence xml:id="S2.frame1">
+      <slide overlay="1" xml:id="S2.frame1.slide1">
+        <para xml:id="S2.frame1.slide1.p1">
+          <p>Slide 1<break/>1,8,1,5</p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S2.frame1.slide2">
+        <para xml:id="S2.frame1.slide2.p1">
+          <p>Slide 2<break/>2,9,2,5</p>
+        </para>
+      </slide>
+      <slide overlay="3" xml:id="S2.frame1.slide3">
+        <para xml:id="S2.frame1.slide3.p1">
+          <p>Slide 3<break/>3,10,3,5</p>
+        </para>
+      </slide>
+      <slide overlay="4" xml:id="S2.frame1.slide4">
+        <para xml:id="S2.frame1.slide4.p1">
+          <p>Slide 4<break/>4,11,4,5</p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S2.frame2">
+      <slide overlay="1" xml:id="S2.frame2.slide1">
+        <para xml:id="S2.frame2.slide1.p1">
+          <p>Slide 1<break/>1,12,1,6</p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S2.frame3">
+      <slide overlay="2" xml:id="S2.frame3.slide1">
+        <para xml:id="S2.frame3.slide1.p1">
+          <p>Slide 2<break/>1,13,2,7</p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S2.frame4">
+      <slide overlay="3" xml:id="S2.frame4.slide1">
+        <para xml:id="S2.frame4.slide1.p1">
+          <p>Slide 3<break/>1,14,3,8</p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S2.frame5">
+      <slide overlay="4" xml:id="S2.frame5.slide1">
+        <para xml:id="S2.frame5.slide1.p1">
+          <p>Slide 4<break/>1,15,4,9</p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S2.frame6">
+      <slide overlay="2" xml:id="S2.frame6.slide1">
+        <para xml:id="S2.frame6.slide1.p1">
+          <p>Slide 2<break/>1,16,2,10</p>
+        </para>
+      </slide>
+      <slide overlay="3" xml:id="S2.frame6.slide2">
+        <para xml:id="S2.frame6.slide2.p1">
+          <p>Slide 3<break/>2,17,3,10</p>
+        </para>
+      </slide>
+      <slide overlay="4" xml:id="S2.frame6.slide3">
+        <para xml:id="S2.frame6.slide3.p1">
+          <p>Slide 4<break/>3,18,4,10</p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S2.frame7">
+      <slide overlay="1" xml:id="S2.frame7.slide1">
+        <para xml:id="S2.frame7.slide1.p1">
+          <p>Slide 1<break/>1,19,1,11</p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S2.frame7.slide2">
+        <para xml:id="S2.frame7.slide2.p1">
+          <p>Slide 2<break/>2,20,2,11</p>
+        </para>
+      </slide>
+    </slidesequence>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="autoref">section 3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Overlays</title>
+    <slidesequence xml:id="S3.frame1">
+      <slide overlay="1" xml:id="S3.frame1.slide1">
+        <para xml:id="S3.frame1.slide1.p1">
+          <p>Always
+<inline-block class="ltx_covered">
+              <p>Onslide 2</p>
+            </inline-block><inline-block class="ltx_uncovered">
+              <p>Always</p>
+            </inline-block></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S3.frame1.slide2">
+        <para xml:id="S3.frame1.slide2.p1">
+          <p>Always
+<inline-block class="ltx_uncovered">
+              <p>Onslide 2</p>
+            </inline-block><inline-block class="ltx_uncovered">
+              <p>Always</p>
+            </inline-block></p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S3.frame2">
+      <slide overlay="1" xml:id="S3.frame2.slide1">
+        <para xml:id="S3.frame2.slide1.p1">
+          <p>Hello <inline-block class="ltx_covered">
+              <p>I am uncovered</p>
+            </inline-block><inline-block class="ltx_covered">
+              <p>One-by-one.</p>
+            </inline-block></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S3.frame2.slide2">
+        <para xml:id="S3.frame2.slide2.p1">
+          <p>Hello <inline-block class="ltx_uncovered">
+              <p>I am uncovered</p>
+            </inline-block><inline-block class="ltx_covered">
+              <p>One-by-one.</p>
+            </inline-block></p>
+        </para>
+      </slide>
+      <slide overlay="3" xml:id="S3.frame2.slide3">
+        <para xml:id="S3.frame2.slide3.p1">
+          <p>Hello <inline-block class="ltx_uncovered">
+              <p>I am uncovered</p>
+            </inline-block><inline-block class="ltx_uncovered">
+              <p>One-by-one.</p>
+            </inline-block></p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S3.frame3">
+      <slide overlay="1" xml:id="S3.frame3.slide1">
+        <para xml:id="S3.frame3.slide1.p1">
+          <inline-block class="ltx_invisible">
+            <p>Visible on Slide 2 onwards</p>
+          </inline-block>
+          <inline-block class="ltx_visible">
+            <p>Invisible on Slide 2 onwards</p>
+          </inline-block>
+          <inline-block class="ltx_covered">
+            <p>Uncovered on Slide 2</p>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S3.frame3.slide2">
+        <para xml:id="S3.frame3.slide2.p1">
+          <inline-block class="ltx_visible">
+            <p>Visible on Slide 2 onwards</p>
+          </inline-block>
+          <inline-block class="ltx_invisible">
+            <p>Invisible on Slide 2 onwards</p>
+          </inline-block>
+          <inline-block class="ltx_uncovered">
+            <p>Uncovered on Slide 2</p>
+          </inline-block>
+        </para>
+      </slide>
+    </slidesequence>
+  </section>
+  <section inlist="toc" xml:id="S4">
+    <tags>
+      <tag>4</tag>
+      <tag role="autoref">section 4</tag>
+      <tag role="refnum">4</tag>
+      <tag role="typerefnum">§4</tag>
+    </tags>
+    <title><tag close=" ">4</tag>Overlay Environments</title>
+    <slidesequence xml:id="S4.frame1">
+      <slide overlay="1" xml:id="S4.frame1.slide1">
+        <para xml:id="S4.frame1.slide1.p1">
+          <p>This
+[
+word
+]
+is in round brackets on slide 2 and in square brackets on slide 1.</p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S4.frame1.slide2">
+        <para xml:id="S4.frame1.slide2.p1">
+          <p>This
+(
+word
+)
+is in round brackets on slide 2 and in square brackets on slide 1.</p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S4.frame2">
+      <slide overlay="1" xml:id="S4.frame2.slide1">
+        <para xml:id="S4.frame2.slide1.p1">
+          <p>We are on slide 1 or 2.</p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S4.frame2.slide2">
+        <para xml:id="S4.frame2.slide2.p1">
+          <p>We are on slide 1 or 2.
+
+We are on slide 2.</p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S4.frame3">
+      <slide overlay="1" xml:id="S4.frame3.slide1">
+        <para xml:id="S4.frame3.slide1.p1">
+          <inline-block class="ltx_covered">
+            <p>I’m uncovered on slide 2</p>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S4.frame3.slide2">
+        <para xml:id="S4.frame3.slide2.p1">
+          <inline-block class="ltx_uncovered">
+            <p>I’m uncovered on slide 2</p>
+          </inline-block>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S4.frame4">
+      <slide overlay="1" xml:id="S4.frame4.slide1">
+        <para xml:id="S4.frame4.slide1.p1">
+          <p>I’m alerted on slide 2</p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S4.frame4.slide2">
+        <para xml:id="S4.frame4.slide2.p1">
+          <inline-block class="ltx_alert">
+            <p>I’m alerted on slide 2</p>
+          </inline-block>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S4.frame5">
+      <slide overlay="1" xml:id="S4.frame5.slide1">
+        <para xml:id="S4.frame5.slide1.p1">
+          <inline-block class="ltx_covered">
+            <p>This text is shown the same way as the text above.</p>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S4.frame5.slide2">
+        <para xml:id="S4.frame5.slide2.p1">
+          <inline-block class="ltx_uncovered">
+            <p>This text is shown the same way as the text above.</p>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="3" xml:id="S4.frame5.slide3">
+        <para xml:id="S4.frame5.slide3.p1">
+          <inline-block class="ltx_uncovered">
+            <inline-block class="ltx_alert">
+              <p>This text is shown the same way as the text above.</p>
+            </inline-block>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="4" xml:id="S4.frame5.slide4">
+        <para xml:id="S4.frame5.slide4.p1">
+          <inline-block class="ltx_uncovered">
+            <inline-block class="ltx_alert">
+              <p>This text is shown the same way as the text above.</p>
+            </inline-block>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="5" xml:id="S4.frame5.slide5">
+        <para xml:id="S4.frame5.slide5.p1">
+          <inline-block class="ltx_uncovered">
+            <p>This text is shown the same way as the text above.</p>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="6" xml:id="S4.frame5.slide6">
+        <para xml:id="S4.frame5.slide6.p1">
+          <inline-block class="ltx_uncovered">
+            <inline-block class="ltx_alert">
+              <p>This text is shown the same way as the text above.</p>
+            </inline-block>
+          </inline-block>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S4.frame6">
+      <slide overlay="1" xml:id="S4.frame6.slide1">
+        <para xml:id="S4.frame6.slide1.p1">
+          <inline-block class="ltx_covered">
+            <p>This text is shown the same way as the text below.</p>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S4.frame6.slide2">
+        <para xml:id="S4.frame6.slide2.p1">
+          <inline-block class="ltx_covered">
+            <p>This text is shown the same way as the text below.</p>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="3" xml:id="S4.frame6.slide3">
+        <para xml:id="S4.frame6.slide3.p1">
+          <inline-block class="ltx_uncovered">
+            <inline-block class="ltx_alert">
+              <p>This text is shown the same way as the text below.</p>
+            </inline-block>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="4" xml:id="S4.frame6.slide4">
+        <para xml:id="S4.frame6.slide4.p1">
+          <inline-block class="ltx_uncovered">
+            <inline-block class="ltx_alert">
+              <p>This text is shown the same way as the text below.</p>
+            </inline-block>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="5" xml:id="S4.frame6.slide5">
+        <para xml:id="S4.frame6.slide5.p1">
+          <inline-block class="ltx_uncovered">
+            <p>This text is shown the same way as the text below.</p>
+          </inline-block>
+        </para>
+      </slide>
+      <slide overlay="6" xml:id="S4.frame6.slide6">
+        <para xml:id="S4.frame6.slide6.p1">
+          <inline-block class="ltx_uncovered">
+            <inline-block class="ltx_alert">
+              <p>This text is shown the same way as the text below.</p>
+            </inline-block>
+          </inline-block>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S4.frame7">
+      <slide overlay="1" xml:id="S4.frame7.slide1">
+        <para xml:id="S4.frame7.slide1.p1">
+          <itemize xml:id="S4.I1">
+            <item xml:id="S4.I1.i1">
+              <tags>
+                <tag>•</tag>
+                <tag role="autoref">item </tag>
+                <tag role="typerefnum">1st item</tag>
+              </tags>
+              <para xml:id="S4.I1.i1.p1">
+                <p>First</p>
+              </para>
+            </item>
+            <item xml:id="S4.I1.i2">
+              <tags>
+                <tag>•</tag>
+                <tag role="autoref">item </tag>
+                <tag role="typerefnum">2nd item</tag>
+              </tags>
+              <para xml:id="S4.I1.i2.p1">
+                <inline-block class="ltx_covered">
+                  <p>Second</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S4.I1.i3">
+              <tags>
+                <tag>•</tag>
+                <tag role="autoref">item </tag>
+                <tag role="typerefnum">3rd item</tag>
+              </tags>
+              <para xml:id="S4.I1.i3.p1">
+                <p>Third</p>
+              </para>
+            </item>
+          </itemize>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S4.frame7.slide2">
+        <para xml:id="S4.frame7.slide2.p1">
+          <itemize xml:id="S4.I2">
+            <item xml:id="S4.I2.i1">
+              <tags>
+                <tag>•</tag>
+                <tag role="autoref">item </tag>
+                <tag role="typerefnum">1st item</tag>
+              </tags>
+              <para xml:id="S4.I2.i1.p1">
+                <p>First</p>
+              </para>
+            </item>
+            <item xml:id="S4.I2.i2">
+              <tags>
+                <tag>•</tag>
+                <tag role="autoref">item </tag>
+                <tag role="typerefnum">2nd item</tag>
+              </tags>
+              <para xml:id="S4.I2.i2.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Second</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S4.I2.i3">
+              <tags>
+                <tag>•</tag>
+                <tag role="autoref">item </tag>
+                <tag role="typerefnum">3rd item</tag>
+              </tags>
+              <para xml:id="S4.I2.i3.p1">
+                <p>Third</p>
+              </para>
+            </item>
+          </itemize>
+        </para>
+      </slide>
+      <slide overlay="3" xml:id="S4.frame7.slide3">
+        <para xml:id="S4.frame7.slide3.p1">
+          <itemize xml:id="S4.I3">
+            <item xml:id="S4.I3.i1">
+              <tags>
+                <tag>•</tag>
+                <tag role="autoref">item </tag>
+                <tag role="typerefnum">1st item</tag>
+              </tags>
+              <para xml:id="S4.I3.i1.p1">
+                <p>First</p>
+              </para>
+            </item>
+            <item xml:id="S4.I3.i2">
+              <tags>
+                <tag>•</tag>
+                <tag role="autoref">item </tag>
+                <tag role="typerefnum">2nd item</tag>
+              </tags>
+              <para xml:id="S4.I3.i2.p1">
+                <inline-block class="ltx_uncovered">
+                  <inline-block class="ltx_alert">
+                    <p>Second</p>
+                  </inline-block>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S4.I3.i3">
+              <tags>
+                <tag>•</tag>
+                <tag role="autoref">item </tag>
+                <tag role="typerefnum">3rd item</tag>
+              </tags>
+              <para xml:id="S4.I3.i3.p1">
+                <p>Third</p>
+              </para>
+            </item>
+          </itemize>
+        </para>
+      </slide>
+    </slidesequence>
+  </section>
+  <section inlist="toc" xml:id="S5">
+    <tags>
+      <tag>5</tag>
+      <tag role="autoref">section 5</tag>
+      <tag role="refnum">5</tag>
+      <tag role="typerefnum">§5</tag>
+    </tags>
+    <title><tag close=" ">5</tag>Titles</title>
+    <slidesequence xml:id="S5.frame1">
+      <slide overlay="1" xml:id="S5.frame1.slide1">
+        <title class="ltx_frame_title">Title</title>
+        <subtitle class="ltx_frame_subtitle">Subtitle</subtitle>
+        <para xml:id="S5.frame1.slide1.p1">
+          <p>Slide 1<break/></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S5.frame1.slide2">
+        <title class="ltx_frame_title">Title</title>
+        <subtitle class="ltx_frame_subtitle">Subtitle</subtitle>
+        <para xml:id="S5.frame1.slide2.p1">
+          <p>Slide 2<break/></p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S5.frame2">
+      <slide overlay="1" xml:id="S5.frame2.slide1">
+        <title class="ltx_frame_title">Title</title>
+        <title class="ltx_frame_shorttitle">Short Title</title>
+        <para xml:id="S5.frame2.slide1.p1">
+          <p>Slide 1<break/></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S5.frame2.slide2">
+        <title class="ltx_frame_title">Title</title>
+        <title class="ltx_frame_shorttitle">Short Title</title>
+        <para xml:id="S5.frame2.slide2.p1">
+          <p>Slide 2<break/></p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S5.frame3">
+      <slide overlay="1" xml:id="S5.frame3.slide1">
+        <title class="ltx_frame_title">Title</title>
+        <subtitle class="ltx_frame_subtitle">Subtitle</subtitle>
+        <para xml:id="S5.frame3.slide1.p1">
+          <p>Slide 1<break/></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S5.frame3.slide2">
+        <title class="ltx_frame_title">Title</title>
+        <subtitle class="ltx_frame_subtitle">Subtitle</subtitle>
+        <para xml:id="S5.frame3.slide2.p1">
+          <p>Slide 2<break/></p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S5.frame4">
+      <slide overlay="1" xml:id="S5.frame4.slide1">
+        <title class="ltx_frame_title">Title</title>
+        <subtitle class="ltx_frame_subtitle">Subtitle</subtitle>
+        <para xml:id="S5.frame4.slide1.p1">
+          <p>Slide 1<break/></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S5.frame4.slide2">
+        <title class="ltx_frame_title">Title</title>
+        <subtitle class="ltx_frame_subtitle">Subtitle</subtitle>
+        <para xml:id="S5.frame4.slide2.p1">
+          <p>Slide 2<break/></p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S5.frame5">
+      <slide overlay="1" xml:id="S5.frame5.slide1">
+        <para xml:id="S5.frame5.slide1.p1">
+          <p>Slide 1<break/></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S5.frame5.slide2">
+        <title class="ltx_frame_title">Title</title>
+        <para xml:id="S5.frame5.slide2.p1">
+          <p>Slide 2<break/></p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S5.frame6">
+      <slide overlay="1" xml:id="S5.frame6.slide1">
+        <title class="ltx_frame_title">Title Default</title>
+        <para xml:id="S5.frame6.slide1.p1">
+          <p>Slide 1<break/></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S5.frame6.slide2">
+        <title class="ltx_frame_title">Second Title</title>
+        <para xml:id="S5.frame6.slide2.p1">
+          <p>Slide 2<break/></p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S5.frame7">
+      <slide overlay="1" xml:id="S5.frame7.slide1">
+        <title class="ltx_frame_title">Title Default</title>
+        <para xml:id="S5.frame7.slide1.p1">
+          <p>Slide 1<break/></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S5.frame7.slide2">
+        <title class="ltx_frame_title">Second Title</title>
+        <para xml:id="S5.frame7.slide2.p1">
+          <p>Slide 2<break/></p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S5.frame8">
+      <slide overlay="1" xml:id="S5.frame8.slide1">
+        <title class="ltx_frame_title">Title</title>
+        <para xml:id="S5.frame8.slide1.p1">
+          <p>Slide 1<break/></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S5.frame8.slide2">
+        <title class="ltx_frame_title">Title</title>
+        <subtitle class="ltx_frame_subtitle">Subtitle</subtitle>
+        <para xml:id="S5.frame8.slide2.p1">
+          <p>Slide 2<break/></p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S5.frame9">
+      <slide overlay="1" xml:id="S5.frame9.slide1">
+        <title class="ltx_frame_title">Title</title>
+        <subtitle class="ltx_frame_subtitle">Subtitle</subtitle>
+        <para xml:id="S5.frame9.slide1.p1">
+          <p>Slide 1<break/></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S5.frame9.slide2">
+        <title class="ltx_frame_title">Title</title>
+        <subtitle class="ltx_frame_subtitle">Second Subtitle</subtitle>
+        <para xml:id="S5.frame9.slide2.p1">
+          <p>Slide 2<break/></p>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S5.frame10">
+      <slide overlay="1" xml:id="S5.frame10.slide1">
+        <title class="ltx_frame_title">Title</title>
+        <subtitle class="ltx_frame_subtitle">Subtitle Default</subtitle>
+        <para xml:id="S5.frame10.slide1.p1">
+          <p>Slide 1<break/></p>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S5.frame10.slide2">
+        <title class="ltx_frame_title">Title</title>
+        <subtitle class="ltx_frame_subtitle">Second Subtitle</subtitle>
+        <para xml:id="S5.frame10.slide2.p1">
+          <p>Slide 2<break/></p>
+        </para>
+      </slide>
+    </slidesequence>
+  </section>
+  <section inlist="toc" xml:id="S6">
+    <tags>
+      <tag>6</tag>
+      <tag role="autoref">section 6</tag>
+      <tag role="refnum">6</tag>
+      <tag role="typerefnum">§6</tag>
+    </tags>
+    <title><tag close=" ">6</tag>Enumerate</title>
+    <slidesequence xml:id="S6.frame1">
+      <slide overlay="1" xml:id="S6.frame1.slide1">
+        <para xml:id="S6.frame1.slide1.p1">
+          <enumerate xml:id="S6.I1">
+            <item xml:id="S6.I1.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I1.i1.p1">
+                <p>First</p>
+              </para>
+            </item>
+            <item xml:id="S6.I1.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I1.i2.p1">
+                <p>First also</p>
+              </para>
+            </item>
+            <item xml:id="S6.I1.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I1.i3.p1">
+                <p>And another first</p>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S6.frame2">
+      <slide overlay="1" xml:id="S6.frame2.slide1">
+        <para xml:id="S6.frame2.slide1.p1">
+          <enumerate xml:id="S6.I2">
+            <item xml:id="S6.I2.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I2.i1.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>First</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I2.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I2.i2.p1">
+                <inline-block class="ltx_covered">
+                  <p>Second</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I2.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I2.i3.p1">
+                <inline-block class="ltx_covered">
+                  <p>Third</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S6.frame2.slide2">
+        <para xml:id="S6.frame2.slide2.p1">
+          <enumerate xml:id="S6.I3">
+            <item xml:id="S6.I3.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I3.i1.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>First</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I3.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I3.i2.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Second</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I3.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I3.i3.p1">
+                <inline-block class="ltx_covered">
+                  <p>Third</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+      </slide>
+      <slide overlay="3" xml:id="S6.frame2.slide3">
+        <para xml:id="S6.frame2.slide3.p1">
+          <enumerate xml:id="S6.I4">
+            <item xml:id="S6.I4.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I4.i1.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>First</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I4.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I4.i2.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Second</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I4.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I4.i3.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Third</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S6.frame3">
+      <slide overlay="1" xml:id="S6.frame3.slide1">
+        <para xml:id="S6.frame3.slide1.p1">
+          <enumerate xml:id="S6.I5">
+            <item xml:id="S6.I5.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I5.i1.p1">
+                <p>First</p>
+              </para>
+            </item>
+            <item xml:id="S6.I5.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I5.i2.p1">
+                <p>First also</p>
+              </para>
+            </item>
+            <item xml:id="S6.I5.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I5.i3.p1">
+                <inline-block class="ltx_covered">
+                  <p>Second</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S6.frame3.slide2">
+        <para xml:id="S6.frame3.slide2.p1">
+          <enumerate xml:id="S6.I6">
+            <item xml:id="S6.I6.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I6.i1.p1">
+                <p>First</p>
+              </para>
+            </item>
+            <item xml:id="S6.I6.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I6.i2.p1">
+                <p>First also</p>
+              </para>
+            </item>
+            <item xml:id="S6.I6.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I6.i3.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Second</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+      </slide>
+    </slidesequence>
+    <slidesequence xml:id="S6.frame4">
+      <slide overlay="1" xml:id="S6.frame4.slide1">
+        <para xml:id="S6.frame4.slide1.p1">
+          <enumerate xml:id="S6.I7">
+            <item xml:id="S6.I7.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I7.i1.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>First</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I7.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I7.i2.p1">
+                <inline-block class="ltx_covered">
+                  <p>Second</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I7.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I7.i3.p1">
+                <inline-block class="ltx_covered">
+                  <p>Fourth</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+        <para xml:id="S6.frame4.slide1.p2">
+          <enumerate xml:id="S6.I8">
+            <item xml:id="S6.I8.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I8.i1.p1">
+                <inline-block class="ltx_covered">
+                  <p>Third</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I8.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I8.i2.p1">
+                <inline-block class="ltx_covered">
+                  <p>Also Third</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I8.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I8.i3.p1">
+                <inline-block class="ltx_covered">
+                  <p>Also Fouth</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+      </slide>
+      <slide overlay="2" xml:id="S6.frame4.slide2">
+        <para xml:id="S6.frame4.slide2.p1">
+          <enumerate xml:id="S6.I9">
+            <item xml:id="S6.I9.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I9.i1.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>First</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I9.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I9.i2.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Second</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I9.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I9.i3.p1">
+                <inline-block class="ltx_covered">
+                  <p>Fourth</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+        <para xml:id="S6.frame4.slide2.p2">
+          <enumerate xml:id="S6.I10">
+            <item xml:id="S6.I10.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I10.i1.p1">
+                <inline-block class="ltx_covered">
+                  <p>Third</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I10.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I10.i2.p1">
+                <inline-block class="ltx_covered">
+                  <p>Also Third</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I10.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I10.i3.p1">
+                <inline-block class="ltx_covered">
+                  <p>Also Fouth</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+      </slide>
+      <slide overlay="3" xml:id="S6.frame4.slide3">
+        <para xml:id="S6.frame4.slide3.p1">
+          <enumerate xml:id="S6.I11">
+            <item xml:id="S6.I11.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I11.i1.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>First</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I11.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I11.i2.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Second</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I11.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I11.i3.p1">
+                <inline-block class="ltx_covered">
+                  <p>Fourth</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+        <para xml:id="S6.frame4.slide3.p2">
+          <enumerate xml:id="S6.I12">
+            <item xml:id="S6.I12.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I12.i1.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Third</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I12.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I12.i2.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Also Third</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I12.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I12.i3.p1">
+                <inline-block class="ltx_covered">
+                  <p>Also Fouth</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+      </slide>
+      <slide overlay="4" xml:id="S6.frame4.slide4">
+        <para xml:id="S6.frame4.slide4.p1">
+          <enumerate xml:id="S6.I13">
+            <item xml:id="S6.I13.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I13.i1.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>First</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I13.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I13.i2.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Second</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I13.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I13.i3.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Fourth</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+        <para xml:id="S6.frame4.slide4.p2">
+          <enumerate xml:id="S6.I14">
+            <item xml:id="S6.I14.i1">
+              <tags>
+                <tag>1.</tag>
+                <tag role="autoref">item 1</tag>
+                <tag role="refnum">1</tag>
+                <tag role="typerefnum">item 1</tag>
+              </tags>
+              <para xml:id="S6.I14.i1.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Third</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I14.i2">
+              <tags>
+                <tag>2.</tag>
+                <tag role="autoref">item 2</tag>
+                <tag role="refnum">2</tag>
+                <tag role="typerefnum">item 2</tag>
+              </tags>
+              <para xml:id="S6.I14.i2.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Also Third</p>
+                </inline-block>
+              </para>
+            </item>
+            <item xml:id="S6.I14.i3">
+              <tags>
+                <tag>3.</tag>
+                <tag role="autoref">item 3</tag>
+                <tag role="refnum">3</tag>
+                <tag role="typerefnum">item 3</tag>
+              </tags>
+              <para xml:id="S6.I14.i3.p1">
+                <inline-block class="ltx_uncovered">
+                  <p>Also Fouth</p>
+                </inline-block>
+              </para>
+            </item>
+          </enumerate>
+        </para>
+      </slide>
+    </slidesequence>
+  </section>
+</document>
