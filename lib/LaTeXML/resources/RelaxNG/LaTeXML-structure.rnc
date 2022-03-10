@@ -149,9 +149,6 @@ slidesequence =
 ## Each slide contains a set slides, typically those that are revealed constructively. 
 element slidesequence { slidesequence_attributes, slidesequence_model }
 
-## The content allowable as the main body of a \elementref{slidesequence}.
-slidesequence.body.class = slide
-
 ## Attributes for \elementref{slidesequence}.
 slidesequence_attributes = Sectional.attributes
 
