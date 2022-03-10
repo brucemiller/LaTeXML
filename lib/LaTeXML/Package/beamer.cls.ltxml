@@ -42,14 +42,14 @@ sub beamerTODO {
 # The 'Angled' (and corresponding 'OptionalAngled') parameter types are arguments in angle brackets.
 # The 'Angled' argument type is a literal argument type, meaning is not digested by default.
 # Example: <value>
-DefParameterType('Angled',         \&readAngled, reversion => \&revertAngled);
+DefParameterType('Angled', \&readAngled, reversion => \&revertAngled);
 DefParameterType('OptionalAngled', \&readAngled, reversion => \&revertAngled, optional => 1);
 
 sub readAngled {
-   my ($gullet) = @_;
-   my $tok = $gullet->readXToken;
+  my ($gullet) = @_;
+  my $tok = $gullet->readXToken;
   if (ref $tok && ToString($tok) eq '<') {
-    $gullet->readUntil(T_OTHER('>')); } 
+    $gullet->readUntil(T_OTHER('>')); }
   else {
     $gullet->unread($tok) if ref $tok;
     undef; } }
@@ -62,6 +62,7 @@ sub revertAngled {
 # It is optional by default.
 # Example: {value}
 DefParameterType('LiteralBalanced', \&readLiteralBalanced, optional => 1);
+
 sub readLiteralBalanced {
   my ($gullet) = @_;
   my $tok = $gullet->readXToken;
@@ -175,53 +176,53 @@ sub processBeamerSpec {
   my (@frames, %actionspec, %framespec);
   foreach my $data (@$ast) {
     %actionspec = @{$data};
-    next if defined($actionspec{'mode'}) && !matchesMode($actionspec{'mode'}, $mode); # wrong mode!
-    %actionspec = @{$actionspec{'spec'}};
-    $action = $actionspec{'action'} if $allowActions;
+    next if defined($actionspec{'mode'}) && !matchesMode($actionspec{'mode'}, $mode);    # wrong mode!
+    %actionspec = @{ $actionspec{'spec'} };
+    $action     = $actionspec{'action'} if $allowActions;
     # no set of frames defined
-    unless(defined($actionspec{'frames'})){
-      push(@actions, [ action => $action, frames => [()] ]);
+    unless (defined($actionspec{'frames'})) {
+      push(@actions, [action => $action, frames => [()]]);
       next; }
     # iterate over each of the frames defined
     (@frames) = ();
-    foreach my $framedata (@{$actionspec{'frames'}}) {
+    foreach my $framedata (@{ $actionspec{'frames'} }) {
       %framespec = @{$framedata};
       if ($framespec{'kind'} eq 'point') {
-          ($start, $beamerPauses) = processFrameNo($framespec{'value'}, $beamerPauses);
-          $end = $start; }
+        ($start, $beamerPauses) = processFrameNo($framespec{'value'}, $beamerPauses);
+        $end = $start; }
       else {
-          ($start, $beamerPauses) = processFrameNo($framespec{'from'}, $beamerPauses);
-          ($end, $beamerPauses) = processFrameNo($framespec{'to'}, $beamerPauses); }
-      push(@frames, [ from => $start, to => $end ]); }
-    push(@actions, [ action => $action, frames => [@frames] ]); }
+        ($start, $beamerPauses) = processFrameNo($framespec{'from'}, $beamerPauses);
+        ($end,   $beamerPauses) = processFrameNo($framespec{'to'},   $beamerPauses); }
+      push(@frames, [from => $start, to => $end]); }
+    push(@actions, [action => $action, frames => [@frames]]); }
   # return the accumulated actions and the new beamer pauses!
-  ([ @actions ], $beamerPauses); }
+  ([@actions], $beamerPauses); }
 
 # matchesModeSpec checks if $spec matches the current mode $mode and returns 1 or 0.
 # When $mode fails to parse, returns undef.
 sub matchesModeSpec {
-    my ($spec, $mode) = @_;
-    # process the specification into a list of modes!
-    $spec =~ s/\s//g;
-    my $haystacks = $BEAMER_SPECIFICATION->mode_spec($spec);
-    return undef unless defined($haystacks);
-    # iterate over the list of modes, and check if at least one of them matches
-    foreach my $haystack (@{$haystacks}) {
-        return 1 if matchesMode($haystack, $mode); }
-    return 0; }
+  my ($spec, $mode) = @_;
+  # process the specification into a list of modes!
+  $spec =~ s/\s//g;
+  my $haystacks = $BEAMER_SPECIFICATION->mode_spec($spec);
+  return undef unless defined($haystacks);
+  # iterate over the list of modes, and check if at least one of them matches
+  foreach my $haystack (@{$haystacks}) {
+    return 1 if matchesMode($haystack, $mode); }
+  return 0; }
 
 # process a single frame number, which might be undef, relative, or absolute.
 sub processFrameNo {
   my ($frameNo, $beamerPauses) = @_;
-  return undef, $beamerPauses unless defined($frameNo); # no point defined
+  return undef, $beamerPauses unless defined($frameNo);    # no point defined
   my %data = @$frameNo;
   return $data{'value'}, $beamerPauses if $data{'kind'} eq 'absolute';
-  my %values = @{$data{'value'}};
+  my %values = @{ $data{'value'} };
   my ($modifier, $offset) = ($values{'modifier'}, $values{'offset'});
-  if ($modifier eq '.') { # use, but don't increment
+  if ($modifier eq '.') {                                  # use, but don't increment
     $offset = 0 unless defined($offset);
-    return $beamerPauses + $offset, $beamerPauses; } 
-  else { # use and increment
+    return $beamerPauses + $offset, $beamerPauses; }
+  else {                                                   # use and increment
     $offset = 1 unless defined($offset);
     my $oldBeamerPauses = $beamerPauses;
     $beamerPauses = $beamerPauses + $offset;
@@ -233,35 +234,35 @@ sub processFrameNo {
 sub getSlideActions {
   my ($actions) = @_;
   my (@actions, @spec) = ();
-  my (%action, %frame);
-  my ($from, $to);
+  my (%action,  %frame);
+  my ($from,    $to);
   foreach my $data (@{$actions}) {
     %action = @{$data};
-    @spec = ();
-    foreach my $framedata (@{$action{'frames'}}) {
+    @spec   = ();
+    foreach my $framedata (@{ $action{'frames'} }) {
       %frame = @{$framedata};
-      $from = $frame{'from'};
-      $from = '' unless defined($from);
-      $to = $frame{'to'};
-      $to = '' unless defined($to);
+      $from  = $frame{'from'};
+      $from  = '' unless defined($from);
+      $to    = $frame{'to'};
+      $to    = '' unless defined($to);
       if ($from eq $to) {
         push(@spec, "$from"); }
       else {
         push(@spec, "$from-$to"); } }
     push(@actions, [(
-      'action' => $action{'action'},
-      'spec' => join(',', @spec), )]); }
+          'action' => $action{'action'},
+          'spec'   => join(',', @spec),)]); }
   [@actions]; }
 
 # getTemporalSlide checks where a slide number temporally occurs.
 # Returns 0 if it is any of the actions, -1 if it occurs before, and 1 if it occurs afterwards.
 sub getTemporalSlide {
-  my ($actions, $no) = @_;
+  my ($actions,   $no)    = @_;
   my ($all_after, $where) = (1, 0);
   my (%action) = ();
   foreach my $data (@{$actions}) {
     %action = @{$data};
-    foreach my $framedata (@{$action{'frames'}}) {
+    foreach my $framedata (@{ $action{'frames'} }) {
       $where = getTemporalSlide_helper($no, @{$framedata});
       return 0 if ($where == 0);
       $all_after = 0 if ($where == -1); } }
@@ -286,13 +287,13 @@ sub getMaxSlideNumber {
   my ($from, $to);
   foreach my $data (@{$actions}) {
     %action = @{$data};
-    foreach my $framedata (@{$action{'frames'}}) {
+    foreach my $framedata (@{ $action{'frames'} }) {
       %frame = @{$framedata};
       # check if the from value is bigger
       $from = $frame{'from'};
-      $max = $from if (defined($from) && $from > $max);
+      $max  = $from if (defined($from) && $from > $max);
       # check if the to value is bigger
-      $to = $frame{'to'};
+      $to  = $frame{'to'};
       $max = $to if (defined($to) && $to > $max); } }
   return $max; }
 
@@ -301,29 +302,29 @@ sub getMaxSlideNumber {
 # When we don't have another slide in $actions, returns undef
 sub getNextSlide {
   my ($actions, $no) = @_;
-  $no = 0 unless defined($no); # if undef, $no++ should return the first number.
+  $no = 0 unless defined($no);    # if undef, $no++ should return the first number.
   my $temporal = -1;
-  while($temporal == -1) {
+  while ($temporal == -1) {
     $no++;
     $temporal = getTemporalSlide($actions, $no); }
-  return undef if ($temporal == 1); # we don't have another slide!
+  return undef if ($temporal == 1);    # we don't have another slide!
   $no; }
 
 #**********************************************************************
 # Digesting Beamer Specifications
 #**********************************************************************
 
-NewCounter('beamer@slideinframe');  # the current slide number in the frame
-NewCounter('beamerpauses'); # overlay we are on, i.e. the last '+' value encounted.
-NewCounter('beamer@lastslideinframe'); # the last known slide in a frame
+NewCounter('beamer@slideinframe');        # the current slide number in the frame
+NewCounter('beamerpauses');               # overlay we are on, i.e. the last '+' value encounted.
+NewCounter('beamer@lastslideinframe');    # the last known slide in a frame
 
 # digestBeamerSpec digests an alert or overlay specification.
-# It returns the actions contained in it. 
+# It returns the actions contained in it.
 sub digestBeamerSpec {
   my ($spec, $allowActions) = @_;
   my ($actions);
   # get current state
-  my $theMode = getCurrentMode();
+  my $theMode   = getCurrentMode();
   my $thePauses = CounterValue('beamerpauses')->valueOf;
   # process it, and write back the state!
   ($actions, $thePauses) = processBeamerSpec($spec, $allowActions, $theMode, $thePauses);
@@ -344,17 +345,17 @@ sub digestBeamerSpec {
 sub digestOverlaySpec {
   my ($spec) = @_;
   return undef unless defined($spec);
-  $spec = ToString(Expand($spec)); # TODO: Should this be done ealier? Perhaps in the argument type?
-  # get the action
+  $spec = ToString(Expand($spec));   # TODO: Should this be done ealier? Perhaps in the argument type?
+                                     # get the action
   my $action = digestBeamerSpec($spec, 0);
-  unless(defined($action)) {
+  unless (defined($action)) {
     Warn('unexpected', '<overlay>', $spec, 'Missing overlay specification, treated as matching');
     return 0; }
   return undef unless defined($action);
   # check if we need to do anything
   my $theSlide = CounterValue('beamer@slideinframe')->valueOf;
-  # for debugging!
-  # Info('expected', 'overlay', $spec, "spec = <$spec> slide = $theSlide value = " . getTemporalSlide($action, $theSlide));
+# for debugging!
+# Info('expected', 'overlay', $spec, "spec = <$spec> slide = $theSlide value = " . getTemporalSlide($action, $theSlide));
   getTemporalSlide($action, $theSlide); }
 
 # digestActionSpec digests an overlay specification.
@@ -363,10 +364,10 @@ sub digestOverlaySpec {
 sub digestActionSpec {
   my ($spec) = @_;
   return undef unless defined($spec);
-  $spec = ToString(Expand($spec)); # TODO: Should this be done ealier? Perhaps in the argument type?
-  # get the action
+  $spec = ToString(Expand($spec));   # TODO: Should this be done ealier? Perhaps in the argument type?
+                                     # get the action
   my $action = digestBeamerSpec($spec, 1);
-  unless(defined($action)) {
+  unless (defined($action)) {
     Warn('unexpected', '<overlay>', $spec, 'Missing overlay specification, treated as matching');
     return 0; }
   return undef unless defined($action);
@@ -379,10 +380,9 @@ sub digestActionSpec {
 
 RequirePackage('etoolbox');
 
-DefMacro('\jobnamebeamerversion{}', sub { beamerTODO('jobnamebeamerversion') });
-DefMacro('\includeslide{}', sub { beamerTODO('includeslide') });
-DefMacro('\setjobnamebeamerversion', sub { beamerTODO('setjobnamebeamerversion')});
-
+DefMacro('\jobnamebeamerversion{}',  sub { beamerTODO('jobnamebeamerversion') });
+DefMacro('\includeslide{}',          sub { beamerTODO('includeslide') });
+DefMacro('\setjobnamebeamerversion', sub { beamerTODO('setjobnamebeamerversion') });
 
 # Beamer has five modes: beamer, second, handout, trans, article.
 # The beamer@mode macro stores the current mode.
@@ -399,11 +399,11 @@ sub getCurrentMode {
 # matchesMode checks if the mode $needle is contained in $haystack.
 # $needle must be one of the five existing modes.
 sub matchesMode {
-    my ($haystack, $needle) = @_;
-    return 1 if $needle eq $haystack;
-    return 1 if $haystack eq 'all';
-    return 1 if $haystack eq 'handout' && !($needle eq 'article');
-    return 0; }
+  my ($haystack, $needle) = @_;
+  return 1 if $needle eq $haystack;
+  return 1 if $haystack eq 'all';
+  return 1 if $haystack eq 'handout' && !($needle eq 'article');
+  return 0; }
 
 # like matchesMode, but uses the currentMode as $needle.
 sub matchesCurrentMode {
@@ -414,7 +414,7 @@ sub matchesCurrentMode {
 # \mode*                   => \beamer@modeoutsideframe
 # \mode<modespec>{stuff}   => \beamer@modeinline<modespec>{stuff}
 # \mode<modespec>          => \beamer@switchmode<modespec>
-DefMacro('\mode', '\@ifstar{\beamer@modeoutsideframe}{\beamer@mode@}');
+DefMacro('\mode',                '\@ifstar{\beamer@modeoutsideframe}{\beamer@mode@}');
 DefMacro('\beamer@mode@ Angled', '\@ifnextchar\{{\beamer@modeinline}{\beamer@switchmode}<#1>');
 
 # \mode*
@@ -425,26 +425,26 @@ DefMacro('\beamer@modeoutsideframe', '');
 # \mode<modespec>{stuff}
 # only do stuff if we are in the provided mode.
 DefMacro('\beamer@modeinline Angled {}', sub {
-  my ($gullet, $spec, $body) = @_;
-  if(matchesCurrentMode(ToString($spec))) {
-    $body->revert; }
-  else {
-    (); } });
+    my ($gullet, $spec, $body) = @_;
+    if (matchesCurrentMode(ToString($spec))) {
+      $body->revert; }
+    else {
+      (); } });
 
 # \mode<modespec>
 # if modespec matches, do nothing.
 # else gobble everything until the next \mode (or related command).
 DefMacro('\beamer@switchmode Angled', sub {
-  my ($gullet, $spec) = @_;
-  if(matchesCurrentMode(ToString($spec))) {
-    (); }
-  else {
-    (T_CS('\beamer@processline')); } });
+    my ($gullet, $spec) = @_;
+    if (matchesCurrentMode(ToString($spec))) {
+      (); }
+    else {
+      (T_CS('\beamer@processline')); } });
 
 # stop tokens adapted from beamerbasemodes.sty
 my @BEAMER_PROCESSLINE_MARKS = (
-  '\mode', '\mode*',
-  '\article', '\presentation', '\common',
+  '\mode',          '\mode*',
+  '\article',       '\presentation', '\common',
   '\end{document}', '\begin{document}',
 );
 # skip everything until that token
@@ -455,13 +455,13 @@ DefConstructorI(T_CS('\beamer@processline'), undef, '', reversion => '',
       $gullet->readRawLine;
       my ($unused, $line) = readRawUntilMatch($gullet, @BEAMER_PROCESSLINE_MARKS);
       # put the stop token back (if we saw it!)
-      $gullet->unread(T_CS($line)) if defined($line); 
+      $gullet->unread(T_CS($line)) if defined($line);
       return; }]);
 
 # ways of setting the current mode!
 DefMacro('\presentation', '\mode<presentation>');
-DefMacro('\article', '\mode<article>');
-DefMacro('\common', '\mode<all>');
+DefMacro('\article',      '\mode<article>');
+DefMacro('\common',       '\mode<all>');
 
 #**********************************************************************
 # Process Package Options
@@ -472,7 +472,6 @@ DefMacro('\common', '\mode<all>');
 #**********************************************************************
 # Postamble: Load beamer{article,}.cls shared postamble
 #**********************************************************************
-
 
 #**********************************************************************
 # beamerbasetranslator.sty
@@ -516,7 +515,6 @@ EoTeX
 #**********************************************************************
 # beamerbaseoverlay.sty
 #**********************************************************************
-
 
 RawTeX(<<'EoTeX');
 % This variant based on \@ifnextchar does not skip spaces
@@ -678,35 +676,34 @@ RawTeX(<<'EoTeX');
   \expandafter\beamer@todo\expandafter{\beamer@ospec}}
 EoTeX
 
-
 #**********************************************************************
 # Beamer covers
 #**********************************************************************
 
 # These are various behaviors for beamer covers.
 # These names are used by the binding all over the place.
-# TODO: These currently produce some classes, but those aren't actually used anywhere.  
+# TODO: These currently produce some classes, but those aren't actually used anywhere.
 
 DefMacro('\beamer@visible {}', '\beamer@visible@begin{#1}\beamer@visible@end');
 DefConstructor('\beamer@visible@begin', "<ltx:inline-block class='ltx_visible'>");
-DefConstructor('\beamer@visible@end', "</ltx:inline-block>");
+DefConstructor('\beamer@visible@end',   "</ltx:inline-block>");
 
 DefMacro('\beamer@invisible {}', '\beamer@invisible@begin{#1}\beamer@invisible@end');
 DefConstructor('\beamer@invisible@begin', "<ltx:inline-block class='ltx_invisible'>");
-DefConstructor('\beamer@invisible@end', "</ltx:inline-block>");
+DefConstructor('\beamer@invisible@end',   "</ltx:inline-block>");
 
 DefMacro('\beamer@uncovered {}', '\beamer@uncovered@begin{#1}\beamer@uncovered@end');
 DefConstructor('\beamer@uncovered@begin', "<ltx:inline-block class='ltx_uncovered'>");
-DefConstructor('\beamer@uncovered@end', "</ltx:inline-block>");
+DefConstructor('\beamer@uncovered@end',   "</ltx:inline-block>");
 
 DefMacro('\beamer@covered {}', '\beamer@covered@begin{#1}\beamer@covered@end');
 DefConstructor('\beamer@covered@begin', "<ltx:inline-block class='ltx_covered'>");
-DefConstructor('\beamer@covered@end', "</ltx:inline-block>");
+DefConstructor('\beamer@covered@end',   "</ltx:inline-block>");
 
 # TODO: Maybe make this a <text>?
 DefMacro('\beamer@alerted {}', '\beamer@alerted@begin{#1}\beamer@alerted@end');
 DefConstructor('\beamer@alerted@begin', "<ltx:inline-block class='ltx_alert'>");
-DefConstructor('\beamer@alerted@end', "</ltx:inline-block>");
+DefConstructor('\beamer@alerted@end',   "</ltx:inline-block>");
 
 #**********************************************************************
 # \only, {onlyenv}, \alt, {altenv}, \temporal
@@ -714,46 +711,46 @@ DefConstructor('\beamer@alerted@end', "</ltx:inline-block>");
 
 # \only<spec>{stuff}<spec>
 # only shows text only on specified slides - but only one specficiation may be present
-DefMacro('\only', '\beamer@ifnextcharospec{\beamer@only@before}{\beamer@only}');
+DefMacro('\only',           '\beamer@ifnextcharospec{\beamer@only@before}{\beamer@only}');
 DefMacro('\beamer@only {}', '\beamer@ifnextcharospec{\beamer@only@after{#1}}{\beamer@only@plain{#1}}');
 DefMacro('\beamer@only@after {} Angled', '\beamer@only@before<#2>{#1}');
 DefMacro('\beamer@only@before Angled {}', sub {
-  my ($gullet, $overlay, $argument) = @_;
-  if (digestOverlaySpec($overlay) == 0) {
-    $argument; }
-  else {
-    (); }});
-DefMacro('\beamer@only@plain {}', '#1'); # the empty only always matches
+    my ($gullet, $overlay, $argument) = @_;
+    if (digestOverlaySpec($overlay) == 0) {
+      $argument; }
+    else {
+      (); } });
+DefMacro('\beamer@only@plain {}', '#1');    # the empty only always matches
 
 RawTeX(<<'EoTeX');
 \newenvironment{onlyenv}{\begin{altenv}{}{}{\begingroup\setbox0=\vbox\bgroup}{\egroup\endgroup}}{\end{altenv}}
 EoTeX
 
-DefMacro('\alt', '\beamer@ifnextcharospec{\beamer@alt@before}{\beamer@alt}');
+DefMacro('\alt',             '\beamer@ifnextcharospec{\beamer@alt@before}{\beamer@alt}');
 DefMacro('\beamer@alt {}{}', '\beamer@ifnextcharospec{\beamer@alt@after{#1}{#2}}{\beamer@alt@plain{#1}{#2}}');
 DefMacro('\beamer@alt@after {}{} Angled', '\beamer@alt@before<#3>{#1}{#2}');
 DefMacro('\beamer@alt@before Angled {}{}', sub {
-  my ($gullet, $overlay, $text, $altText) = @_;
-  if (digestOverlaySpec($overlay) == 0) {
-    $text; }
-  else {
-    $altText; } });
-DefMacro('\beamer@alt@plain {}{}', '#1'); # the empty spec always matches
+    my ($gullet, $overlay, $text, $altText) = @_;
+    if (digestOverlaySpec($overlay) == 0) {
+      $text; }
+    else {
+      $altText; } });
+DefMacro('\beamer@alt@plain {}{}', '#1');    # the empty spec always matches
 
 DefMacro('\altenv', '\beamer@ifnextcharospec{\beamer@altenv@}{\beamer@altenv}');
 DefMacro('\beamer@altenv@ Angled {}{}{}{}', '\beamer@altenv{#2}{#3}{#4}{#5}<#1>'); # put the <> at the end!
 DefMacro('\beamer@altenv {}{}{}{}', '\alt{#1\def\beamer@eoenv{#2}}{#3\def\beamer@eoenv{#4}}');
-DefMacro('\endaltenv', '\beamer@eoenv');
+DefMacro('\endaltenv',              '\beamer@eoenv');
 
 DefMacro('\temporal Angled {}{}{}', sub {
-  my ($gullet, $overlay, $beforeText, $text, $afterText) = @_;
-  my $temporal = digestOverlaySpec($overlay);
-  if ($temporal == 0) {
-    $text; }
-  elsif ($temporal == -1) {
-    $beforeText; }
-  else {
-    $afterText; } });
+    my ($gullet, $overlay, $beforeText, $text, $afterText) = @_;
+    my $temporal = digestOverlaySpec($overlay);
+    if ($temporal == 0) {
+      $text; }
+    elsif ($temporal == -1) {
+      $beforeText; }
+    else {
+      $afterText; } });
 
 #**********************************************************************
 # \pause
@@ -765,8 +762,8 @@ DefMacro('\pause', '\stepcounter{beamerpauses}\onslide<\thebeamerpauses->');
 # \uncover, {uncoverenv}, \visible, {visibleenv}, \invisible, {invisibleenv}
 #**********************************************************************
 
-DefMacro('\uncover', '\alt{\beamer@uncovered}{\beamer@covered}');
-DefMacro('\visible', '\alt{\beamer@visible}{\beamer@invisible}');
+DefMacro('\uncover',   '\alt{\beamer@uncovered}{\beamer@covered}');
+DefMacro('\visible',   '\alt{\beamer@visible}{\beamer@invisible}');
 DefMacro('\invisible', '\alt{\beamer@invisible}{\beamer@visible}');
 
 RawTeX(<<'EoTeX');
@@ -796,15 +793,15 @@ DefMacro('\beamer@onslide@@', '\@ifnextchar\{{\beamer@onslide@plain}{\beamer@ons
 DefMacro('\beamer@onslide@noargs', '\beamer@ifnextcharospec{\beamer@onslide@spec}{\beamer@onslide@empty}');
 
 # onslide variants, with provided text
-DefMacro('\beamer@onslide@star', '\only');
-DefMacro('\beamer@onslide@plus', '\visible');
+DefMacro('\beamer@onslide@star',  '\only');
+DefMacro('\beamer@onslide@plus',  '\visible');
 DefMacro('\beamer@onslide@plain', '\uncover');
 
 # onslide variants, without provided texts
 DefMacro('\beamer@onslide@empty', '\beamer@endpause\beamer@uncovered@begin\gdef\beamer@endpause{\beamer@uncovered@end}');
 DefMacro('\beamer@onslide@spec', '\beamer@endpause\alt' .
-  '{\beamer@uncovered@begin\gdef\beamer@endpause{\beamer@uncovered@end}}' .
-  '{\beamer@covered@begin\gdef\beamer@endpause{\beamer@covered@end}}' );
+    '{\beamer@uncovered@begin\gdef\beamer@endpause{\beamer@uncovered@end}}' .
+    '{\beamer@covered@begin\gdef\beamer@endpause{\beamer@covered@end}}');
 
 #**********************************************************************
 # beamerbasetitle.sty
@@ -828,65 +825,65 @@ DefKeyVal('beamerframe', 'fragile', '', '');
 # To achieve this, we first record the content of the frame environment into a macro - so we can replace it multiple times.
 DefMacro(T_CS('\begin{frame}'), '\frame@');
 DefMacro('\frame@ OptionalAngled [Angled] OptionalKeyVals:beamerframe LiteralBalanced LiteralBalanced', sub {
-  my ($gullet, $overlay, $defaultOverlay, $opts, $title, $subtitle) = @_;
-  # store the default overlay (which may be undef)
-  AssignValue('beamer@action@default@local' => $defaultOverlay);
-  # store title and subtitle
-  prepareFrameTitles($title, $subtitle);
-  # ensure we have an overlay
-  $overlay = '*' unless defined($overlay);
-  $overlay = ToString($overlay);
-  # execute overlay with a blank context, discarding any changed state.
-  ($overlay) = digestBeamerSpec($overlay, 0);
-  Error('unexpected', '<overlay>', $overlay, 'Unable to parse slide overlay') unless defined($overlay);
-  AssignValue('beamer@frame@overlay' => $overlay);
-  # figure out the first slide to render
-  my $first = getNextSlide($overlay, undef);
-  # read the body of the frame!
-  my $fragile = defined($opts) && defined(GetKeyVal($opts, 'fragile'));
-  unless (readFrameBody($gullet, $fragile, 'frame')) {
-    Fatal('unexpected', '<eof>', $gullet, 'Unexpected end of input while looking for \end{frame}'); }
-  # and do the frame now!
-  ( T_CS('\beamer@slides'), T_BEGIN, ExplodeText(ToString($first)), T_END ); });
+    my ($gullet, $overlay, $defaultOverlay, $opts, $title, $subtitle) = @_;
+    # store the default overlay (which may be undef)
+    AssignValue('beamer@action@default@local' => $defaultOverlay);
+    # store title and subtitle
+    prepareFrameTitles($title, $subtitle);
+    # ensure we have an overlay
+    $overlay = '*' unless defined($overlay);
+    $overlay = ToString($overlay);
+    # execute overlay with a blank context, discarding any changed state.
+    ($overlay) = digestBeamerSpec($overlay, 0);
+    Error('unexpected', '<overlay>', $overlay, 'Unable to parse slide overlay') unless defined($overlay);
+    AssignValue('beamer@frame@overlay' => $overlay);
+    # figure out the first slide to render
+    my $first = getNextSlide($overlay, undef);
+    # read the body of the frame!
+    my $fragile = defined($opts) && defined(GetKeyVal($opts, 'fragile'));
+    unless (readFrameBody($gullet, $fragile, 'frame')) {
+      Fatal('unexpected', '<eof>', $gullet, 'Unexpected end of input while looking for \end{frame}'); }
+    # and do the frame now!
+    (T_CS('\beamer@slides'), T_BEGIN, ExplodeText(ToString($first)), T_END); });
 
 # readFrameBody is responsible for reading the body of a frame.
 sub readFrameBody {
   my ($gullet, $fragile, $env) = @_;
   my ($body, $unused);
-  unless($fragile) {
-    ($body) = readUntilMatch($gullet, T_END_ENV($env)); 
+  unless ($fragile) {
+    ($body) = readUntilMatch($gullet, T_END_ENV($env));
     return 0 unless defined($body); }
   else {
     ($body, $unused) = readRawUntilMatch($gullet, "\\end{$env}");
     return 0 unless defined($unused); }
   AssignValue('beamer@frame@body@fragile' => $fragile);
-  AssignValue('beamer@frame@body' => $body); 
+  AssignValue('beamer@frame@body'         => $body);
   1; }
 
 # responsible for replaying a frame to the user.
 DefMacro('\beamer@frame@replay', sub {
-  my ($gullet) = @_;
-  my $fragile = LookupValue('beamer@frame@body@fragile');
-  my $body = LookupValue('beamer@frame@body');
-  unless ($fragile) {
-    LookupValue('beamer@frame@body')->clone->unlist; }
-  else {
-    # TODO: This should be \jobname.vrb or \jobname.\insertslidenumber.vrb
-    $gullet->openMouth(
-      LaTeXML::Core::Mouth->new($body, source => 'slide.vrb', shortsource => 'slide.vrb'), 0);
-    # The new mouth supplies the tokens!
-    (); } });
+    my ($gullet) = @_;
+    my $fragile  = LookupValue('beamer@frame@body@fragile');
+    my $body     = LookupValue('beamer@frame@body');
+    unless ($fragile) {
+      LookupValue('beamer@frame@body')->clone->unlist; }
+    else {
+      # TODO: This should be \jobname.vrb or \jobname.\insertslidenumber.vrb
+      $gullet->openMouth(
+        LaTeXML::Core::Mouth->new($body, source => 'slide.vrb', shortsource => 'slide.vrb'), 0);
+      # The new mouth supplies the tokens!
+      (); } });
 
 # Setup a macro to render the body of a slide
 DefMacro('\beamer@slide', '\beamer@slide@reset\beamer@frame@replay\beamer@slide@finalize');
 DefMacro('\beamer@slide@reset',
   '\beamer@slide@titles@reset' .
-  '\gdef\beamer@endpause{}' .
-  '\setcounter{beamer@lastslideinframe}{1}' .
-  '\setcounter{beamerpauses}{1}');
-DefMacro('\beamer@slide@finalize', 
-  '\beamer@endpause' . # built-in name
-  '\beamer@slide@titles@finalize');
+    '\gdef\beamer@endpause{}' .
+    '\setcounter{beamer@lastslideinframe}{1}' .
+    '\setcounter{beamerpauses}{1}');
+DefMacro('\beamer@slide@finalize',
+  '\beamer@endpause' .    # built-in name
+    '\beamer@slide@titles@finalize');
 
 # To render all the slides in the current frame, we use the loop
 DefMacro('\beamer@slides {}', '\begin{beamer@frame}\beamer@slides@do{#1}\end{beamer@frame}');
@@ -895,33 +892,33 @@ DefMacro('\beamer@slides {}', '\begin{beamer@frame}\beamer@slides@do{#1}\end{bea
 DefMacro('\beamer@slides@do {}', '\beamer@slides@iter{#1}\beamer@slides@while{#1}');
 DefMacro('\beamer@slides@iter {}', '\begin{beamer@frame@slide}#1\beamer@slide\end{beamer@frame@slide}');
 DefMacro('\beamer@slides@while {}', sub {
-  my ($gullet, $current) = @_;
-  return () unless LookupValue('beamer@anotherslide');
-  my $overlay = LookupValue('beamer@frame@overlay');
-  my $next = getNextSlide($overlay, ToString($current) + 0);
-  return () unless defined($next); # overlay spec for the slide
-  (T_CS('\beamer@slides@do'), T_BEGIN, ExplodeText(ToString($next)), T_END); });
+    my ($gullet, $current) = @_;
+    return () unless LookupValue('beamer@anotherslide');
+    my $overlay = LookupValue('beamer@frame@overlay');
+    my $next    = getNextSlide($overlay, ToString($current) + 0);
+    return () unless defined($next);    # overlay spec for the slide
+    (T_CS('\beamer@slides@do'), T_BEGIN, ExplodeText(ToString($next)), T_END); });
 
-NewCounter('framenumber'); # public counter for the current frame.
-NewCounter('beamer@pagenumber'); # fake page number counter, in real tex this uses pdf pages
-NewCounter('beamer@slidenumber'); # fake slide number counter, in real tex this uses math
+NewCounter('framenumber');           # public counter for the current frame.
+NewCounter('beamer@pagenumber');     # fake page number counter, in real tex this uses pdf pages
+NewCounter('beamer@slidenumber');    # fake slide number counter, in real tex this uses math
 
 # Environments that create the real xml for frames and slides!
-DefEnvironment('{beamer@frame}', "<ltx:slidesequence>#body</ltx:slidesequence>", 
-  beforeDigest => sub { 
+DefEnvironment('{beamer@frame}', "<ltx:slidesequence>#body</ltx:slidesequence>",
+  beforeDigest => sub {
     StepCounter('framenumber');
     ResetCounter('beamer@slidenumber'); });
-Tag('ltx:slidesequence', afterOpen => sub { GenerateID(@_,'frame'); });
+Tag('ltx:slidesequence', afterOpen => sub { GenerateID(@_, 'frame'); });
 
-DefEnvironment('{beamer@frame@slide} Number', "<ltx:slide overlay='#overlay'>#body</ltx:slide>", 
+DefEnvironment('{beamer@frame@slide} Number', "<ltx:slide overlay='#overlay'>#body</ltx:slide>",
   # HACK: we use properties to be able to access $overlayno.
-  properties => sub { 
+  properties => sub {
     my ($gullet, $overlayno) = @_;
-    SetCounter('beamer@slideinframe' => $overlayno); 
+    SetCounter('beamer@slideinframe' => $overlayno);
     StepCounter('beamer@pagenumber');
-    StepCounter('beamer@slidenumber'); 
+    StepCounter('beamer@slidenumber');
     (overlay => ToString($overlayno)); });
-Tag('ltx:slide', afterOpen => sub { GenerateID(@_,'slide'); });
+Tag('ltx:slide', afterOpen => sub { GenerateID(@_, 'slide'); });
 
 # TODO: Ignore \setbeamersize for now
 DefMacro('\setbeamersize {}', '');
@@ -930,51 +927,51 @@ DefMacro('\setbeamersize {}', '');
 # Frame Titles
 #**********************************************************************
 
-DefConstructor('\beamer@frametitle {}', '^<ltx:title class="ltx_frame_title">#1</ltx:title>');
+DefConstructor('\beamer@frametitle {}',      '^<ltx:title class="ltx_frame_title">#1</ltx:title>');
 DefConstructor('\beamer@frameshorttitle {}', '^<ltx:title class="ltx_frame_shorttitle">#1</ltx:title>');
 DefConstructor('\beamer@framesubtitle {}', '^<ltx:subtitle class="ltx_frame_subtitle">#1</ltx:subtitle>');
 
 Tag('ltx:slide', afterClose => sub {
-  my ($document, $slide) = @_;
-  promoteChildren($document, $slide, 'ltx:subtitle[@class="ltx_frame_subtitle"]');
-  promoteChildren($document, $slide, 'ltx:title[@class="ltx_frame_shorttitle"]');
-  promoteChildren($document, $slide, 'ltx:title[@class="ltx_frame_title"]'); });
+    my ($document, $slide) = @_;
+    promoteChildren($document, $slide, 'ltx:subtitle[@class="ltx_frame_subtitle"]');
+    promoteChildren($document, $slide, 'ltx:title[@class="ltx_frame_shorttitle"]');
+    promoteChildren($document, $slide, 'ltx:title[@class="ltx_frame_title"]'); });
 
 sub prepareFrameTitles {
   my ($title, $subtitle) = @_;
-  AssignValue('beamer@frame@title@global' => $title);
+  AssignValue('beamer@frame@title@global'    => $title);
   AssignValue('beamer@frame@subtitle@global' => $subtitle); }
 
 DefMacro('\beamer@slide@titles@reset', sub {
-  AssignValue('beamer@frame@title@local' => LookupValue('beamer@frame@title@global'));
-  AssignValue('beamer@frame@shorttitle@local' => undef);
-  AssignValue('beamer@frame@subtitle@local' => LookupValue('beamer@frame@subtitle@global')); });
+    AssignValue('beamer@frame@title@local'      => LookupValue('beamer@frame@title@global'));
+    AssignValue('beamer@frame@shorttitle@local' => undef);
+    AssignValue('beamer@frame@subtitle@local'   => LookupValue('beamer@frame@subtitle@global')); });
 
 DefMacro('\beamer@slide@titles@finalize', sub {
-  my (@return) = ();
-  # setup the title
-  my $title = LookupValue('beamer@frame@title@local');
-  push(@return, T_CS('\beamer@frametitle'), T_BEGIN, $title, T_END) if defined($title);
-  # setup the shorttitle
-  my $shorttitle = LookupValue('beamer@frame@shorttitle@local');
-  push(@return, T_CS('\beamer@frameshorttitle'), T_BEGIN, $shorttitle, T_END) if defined($shorttitle);
-  # setup the subtitle
-  my $subtitle = LookupValue('beamer@frame@subtitle@local');
-  push(@return, T_CS('\beamer@framesubtitle'), T_BEGIN, $subtitle, T_END) if defined($subtitle);
-  @return; });
+    my (@return) = ();
+    # setup the title
+    my $title = LookupValue('beamer@frame@title@local');
+    push(@return, T_CS('\beamer@frametitle'), T_BEGIN, $title, T_END) if defined($title);
+    # setup the shorttitle
+    my $shorttitle = LookupValue('beamer@frame@shorttitle@local');
+    push(@return, T_CS('\beamer@frameshorttitle'), T_BEGIN, $shorttitle, T_END) if defined($shorttitle);
+    # setup the subtitle
+    my $subtitle = LookupValue('beamer@frame@subtitle@local');
+    push(@return, T_CS('\beamer@framesubtitle'), T_BEGIN, $subtitle, T_END) if defined($subtitle);
+    @return; });
 
 DefMacro('\frametitle', '\alt{\beamer@frametitle@real}{\beamer@frametitle@fake}');
 DefMacro('\beamer@frametitle@real[]{}', sub {
-  my ($gullet, $short, $long) = @_;
-  AssignValue('beamer@frame@shorttitle@local' => $short, 'global') if defined($short);
-  AssignValue('beamer@frame@title@local' => $long, 'global'); });
-DefMacro('\beamer@frametitle@fake[]{}', ''); # just gobble the arguments and do nothing!
+    my ($gullet, $short, $long) = @_;
+    AssignValue('beamer@frame@shorttitle@local' => $short, 'global') if defined($short);
+    AssignValue('beamer@frame@title@local'      => $long,  'global'); });
+DefMacro('\beamer@frametitle@fake[]{}', '');    # just gobble the arguments and do nothing!
 
 DefMacro('\framesubtitle', '\alt{\beamer@framesubtitle@real}{\beamer@framesubtitle@fake}');
 DefMacro('\beamer@framesubtitle@real{}', sub {
-  my ($gullet, $long) = @_;
-  AssignValue('beamer@frame@subtitle@local' => $long, 'global'); });
-DefMacro('\beamer@framesubtitle@fake{}', ''); # just gobble the arguments and do nothing!
+    my ($gullet, $long) = @_;
+    AssignValue('beamer@frame@subtitle@local' => $long, 'global'); });
+DefMacro('\beamer@framesubtitle@fake{}', '');    # just gobble the arguments and do nothing!
 
 #**********************************************************************
 # Template \insert commands
@@ -982,48 +979,48 @@ DefMacro('\beamer@framesubtitle@fake{}', ''); # just gobble the arguments and do
 
 # TODO: Most of these aren't implemented
 
-DefMacro('\insertnavigation {}', sub { beamerTODO('insertnavigation'); });
+DefMacro('\insertnavigation {}',        sub { beamerTODO('insertnavigation'); });
 DefMacro('\insertsectionnavigation {}', sub { beamerTODO('insertsectionnavigation'); });
 DefMacro('\insertsectionnavigationhorizontal {}{}{}', sub { beamerTODO('insertsectionnavigationhorizontal'); });
-DefMacro('\insertshortauthor []', sub { beamerTODO('insertshortauthor'); });
-DefMacro('\insertshortdate []', sub { beamerTODO('insertshortdate'); });
-DefMacro('\insertshortinstitute []', sub { beamerTODO('insertshortinstitute'); });
-DefMacro('\insertshortpart []', sub { beamerTODO('insertshortpart'); });
-DefMacro('\insertshorttitle []', sub { beamerTODO('insertshorttitle'); });
-DefMacro('\insertshortsubtitle []', sub { beamerTODO('insertshortsubtitle'); });
-DefMacro('\insertsubsection', sub { beamerTODO('insertsubsection'); });
-DefMacro('\insertsubsubsection', sub { beamerTODO('insertsubsubsection'); });
+DefMacro('\insertshortauthor []',          sub { beamerTODO('insertshortauthor'); });
+DefMacro('\insertshortdate []',            sub { beamerTODO('insertshortdate'); });
+DefMacro('\insertshortinstitute []',       sub { beamerTODO('insertshortinstitute'); });
+DefMacro('\insertshortpart []',            sub { beamerTODO('insertshortpart'); });
+DefMacro('\insertshorttitle []',           sub { beamerTODO('insertshorttitle'); });
+DefMacro('\insertshortsubtitle []',        sub { beamerTODO('insertshortsubtitle'); });
+DefMacro('\insertsubsection',              sub { beamerTODO('insertsubsection'); });
+DefMacro('\insertsubsubsection',           sub { beamerTODO('insertsubsubsection'); });
 DefMacro('\insertsubsectionnavigation {}', sub { beamerTODO('insertsubsectionnavigation'); });
 DefMacro('\insertsubsectionnavigationhorizontal {}{}{}', sub { beamerTODO('insertsubsectionnavigationhorizontal'); });
 DefMacro('\insertverticalnavigation {}', sub { beamerTODO('insertverticalnavigation'); });
-DefMacro('\inserttotalframenumber', sub { beamerTODO('inserttotalframenumber'); });
-DefMacro('\insertmainframenumber', sub { beamerTODO('insertmainframenumber'); });
-DefMacro('\insertappendixframenumber', sub { beamerTODO('insertappendixframenumber'); });
-DefMacro('\insertframestartpage', sub { beamerTODO('insertframestartpage'); });
-DefMacro('\insertframeendpage', sub { beamerTODO('insertframeendpage'); });
-DefMacro('\insertsubsectionstartpage', sub { beamerTODO('insertsubsectionstartpage'); });
-DefMacro('\insertsubsectionendpage', sub { beamerTODO('insertsubsectionendpage'); });
-DefMacro('\insertsectionstartpage', sub { beamerTODO('insertsectionstartpage'); });
-DefMacro('\insertsectionendpage', sub { beamerTODO('insertsectionendpage'); });
-DefMacro('\insertpartstartpage', sub { beamerTODO('insertpartstartpage'); });
-DefMacro('\insertpartendpage', sub { beamerTODO('insertpartendpage'); });
+DefMacro('\inserttotalframenumber',      sub { beamerTODO('inserttotalframenumber'); });
+DefMacro('\insertmainframenumber',       sub { beamerTODO('insertmainframenumber'); });
+DefMacro('\insertappendixframenumber',   sub { beamerTODO('insertappendixframenumber'); });
+DefMacro('\insertframestartpage',        sub { beamerTODO('insertframestartpage'); });
+DefMacro('\insertframeendpage',          sub { beamerTODO('insertframeendpage'); });
+DefMacro('\insertsubsectionstartpage',   sub { beamerTODO('insertsubsectionstartpage'); });
+DefMacro('\insertsubsectionendpage',     sub { beamerTODO('insertsubsectionendpage'); });
+DefMacro('\insertsectionstartpage',      sub { beamerTODO('insertsectionstartpage'); });
+DefMacro('\insertsectionendpage',        sub { beamerTODO('insertsectionendpage'); });
+DefMacro('\insertpartstartpage',         sub { beamerTODO('insertpartstartpage'); });
+DefMacro('\insertpartendpage',           sub { beamerTODO('insertpartendpage'); });
 DefMacro('\insertpresentationstartpage', sub { beamerTODO('insertpresentationstartpage'); });
-DefMacro('\insertpresentationendpage', sub { beamerTODO('insertpresentationendpage'); });
-DefMacro('\insertappendixstartpage', sub { beamerTODO('insertappendixstartpage'); });
-DefMacro('\insertappendixendpage', sub { beamerTODO('insertappendixendpage'); });
-DefMacro('\insertdocumentstartpage', sub { beamerTODO('insertdocumentstartpage'); });
-DefMacro('\insertdocumentendpage', sub { beamerTODO('insertdocumentendpage'); });
+DefMacro('\insertpresentationendpage',   sub { beamerTODO('insertpresentationendpage'); });
+DefMacro('\insertappendixstartpage',     sub { beamerTODO('insertappendixstartpage'); });
+DefMacro('\insertappendixendpage',       sub { beamerTODO('insertappendixendpage'); });
+DefMacro('\insertdocumentstartpage',     sub { beamerTODO('insertdocumentstartpage'); });
+DefMacro('\insertdocumentendpage',       sub { beamerTODO('insertdocumentendpage'); });
 
-DefMacro('\insertpagenumber', '\@arabic\c@beamer@pagenumber');
-DefMacro('\insertframenumber', '\@arabic\c@framenumber');
-DefMacro('\insertslidenumber', '\@arabic\c@beamer@slidenumber');
+DefMacro('\insertpagenumber',    '\@arabic\c@beamer@pagenumber');
+DefMacro('\insertframenumber',   '\@arabic\c@framenumber');
+DefMacro('\insertslidenumber',   '\@arabic\c@beamer@slidenumber');
 DefMacro('\insertoverlaynumber', '\@arabic\c@beamer@slideinframe');
 
 #**********************************************************************
 # beamerbasecolor.sty
 #**********************************************************************
 
-RequirePackage('xcolor'); # TODO: actually uses xxcolor, close enough
+RequirePackage('xcolor');    # TODO: actually uses xxcolor, close enough
 # TODO: implement the rest
 
 #**********************************************************************
@@ -1055,32 +1052,31 @@ RequirePackage('enumerate');
 #**********************************************************************
 
 DefMacro('\actionenv OptionalAngled', sub {
-  my ($stomach, $actions) = @_;
-  # process $actions into a concrete list of actions
-  $actions = LookupValue('beamer@action@default@local') unless defined($actions);
-  $actions = digestActionSpec($actions);
-  $actions = [()] unless defined($actions);
-  # iterate overthem
-  our (%action);
-  my ($env, $spec);
-  my (@begins) = ();
-  my (@ends) = ();
-  foreach my $act (@{$actions}) {
-    %action = @{$act};
-    $env = $action{'action'};
-    $env = 'uncover' unless defined($env);
-    $env = $env . 'env';
-    $spec = '<' . $action{'spec'} . '>';
-    # add to the beginning and the end
-    push(@begins, T_CS('\begin'), T_BEGIN, Tokenize($env), T_END, Tokenize($spec));
-    push(@ends, T_CS('\end'), T_BEGIN, Tokenize($env), T_END); }
-  # store the stuff for the end, and return the beginning
-  AssignValue('beamer@todoend' => Tokens(@ends));
-  Tokens(@begins); });
+    my ($stomach, $actions) = @_;
+    # process $actions into a concrete list of actions
+    $actions = LookupValue('beamer@action@default@local') unless defined($actions);
+    $actions = digestActionSpec($actions);
+    $actions = [()] unless defined($actions);
+    # iterate overthem
+    our (%action);
+    my ($env, $spec);
+    my (@begins) = ();
+    my (@ends)   = ();
+    foreach my $act (@{$actions}) {
+      %action = @{$act};
+      $env    = $action{'action'};
+      $env    = 'uncover' unless defined($env);
+      $env    = $env . 'env';
+      $spec   = '<' . $action{'spec'} . '>';
+      # add to the beginning and the end
+      push(@begins, T_CS('\begin'), T_BEGIN, Tokenize($env), T_END, Tokenize($spec));
+      push(@ends, T_CS('\end'), T_BEGIN, Tokenize($env), T_END); }
+    # store the stuff for the end, and return the beginning
+    AssignValue('beamer@todoend' => Tokens(@ends));
+    Tokens(@begins); });
 DefMacro('\endactionenv', sub { LookupValue('beamer@todoend'); });
 
-
-# a beamer variant of beginItemize, that additionally takes a default overlay. 
+# a beamer variant of beginItemize, that additionally takes a default overlay.
 sub beginBeamerItemize {
   my ($defaultOverlay, @rest) = @_;
   AssignValue('beamer@action@default@local' => $defaultOverlay) if defined($defaultOverlay);
@@ -1089,43 +1085,43 @@ sub beginBeamerItemize {
   Digest('\gdef\beamer@closeitem{}');
   # replace \item with \beamer@item
   Let('\beamer@item@org', '\item');
-  Let('\item', '\beamer@item');
+  Let('\item',            '\beamer@item');
   @result; }
 
 # invoked to begin an actionitem!
 DefMacro('\beamer@item@action Angled', '\beamer@item@action@{#1}\beamer@item@action@open{#1}');
 DefMacro('\beamer@item@action@ {}', sub {
-  my ($stomach, $action) = @_;
-  (
-    T_CS('\gdef'), T_CS('\beamer@closeitem'), T_BEGIN,
-      T_CS('\beamer@item@action@close'), T_BEGIN, Revert($action), T_END,
-      T_CS('\gdef'), T_CS('\beamer@closeitem'), T_BEGIN, T_END,
-    T_END
+    my ($stomach, $action) = @_;
+    (
+      T_CS('\gdef'),                     T_CS('\beamer@closeitem'), T_BEGIN,
+      T_CS('\beamer@item@action@close'), T_BEGIN,                   Revert($action), T_END,
+      T_CS('\gdef'),                     T_CS('\beamer@closeitem'), T_BEGIN,         T_END,
+      T_END
     ); });
 
 # TODO: These should use the cover logic from above!
-DefMacro('\beamer@item@action@open {}', '\begin{actionenv}<#1>');
+DefMacro('\beamer@item@action@open {}',  '\begin{actionenv}<#1>');
 DefMacro('\beamer@item@action@close {}', '\end{actionenv}');
 
 # define a hook to overwrite the existing \item with the beamer version.
 # for now we don't do anything, but we might do that later.
-DefMacro('\beamer@item', '\@ifnextchar<{\beamer@item@before}{\beamer@item@}');
-DefMacro('\beamer@item@', '\@ifnextchar[{\beamer@item@@}{\beamer@item@none}');
+DefMacro('\beamer@item',      '\@ifnextchar<{\beamer@item@before}{\beamer@item@}');
+DefMacro('\beamer@item@',     '\@ifnextchar[{\beamer@item@@}{\beamer@item@none}');
 DefMacro('\beamer@item@@ []', '\@ifnextchar<{\beamer@item@after[#1]}{\beamer@item@none[#1]}');
 DefMacro('\beamer@item@after [] Angled', '\beamer@item@before<#2>[#1]');
 DefMacro('\beamer@item@none', sub {
-  my $defaultOverlay = LookupValue('beamer@action@default@local');
-  if (defined($defaultOverlay)) {
-    (T_CS('\beamer@item@before'), Tokenize('<' . ToString($defaultOverlay) . '>')); }
-  else {
-    (T_CS('\beamer@closeitem'), T_CS('\beamer@item@org')); } });
+    my $defaultOverlay = LookupValue('beamer@action@default@local');
+    if (defined($defaultOverlay)) {
+      (T_CS('\beamer@item@before'), Tokenize('<' . ToString($defaultOverlay) . '>')); }
+    else {
+      (T_CS('\beamer@closeitem'), T_CS('\beamer@item@org')); } });
 DefMacro('\beamer@item@before Angled []', sub {
-  my ($stomach, $overlay, $key) = @_;
-  my @return = ();
-  push(@return, T_CS('\beamer@closeitem'), T_CS('\beamer@item@org'));
-  push(@return, T_OTHER('['), Revert($key), T_OTHER(']')) if defined($key);
-  push(@return, T_CS('\beamer@item@action'), revertAngled($overlay));
-  @return; });
+    my ($stomach, $overlay, $key) = @_;
+    my @return = ();
+    push(@return, T_CS('\beamer@closeitem'), T_CS('\beamer@item@org'));
+    push(@return, T_OTHER('['), Revert($key), T_OTHER(']')) if defined($key);
+    push(@return, T_CS('\beamer@item@action'), revertAngled($overlay));
+    @return; });
 
 # Hook into all the {enumerate} {itemize} {description}
 
@@ -1140,7 +1136,7 @@ DefEnvironment('{itemize} [Angled]',
 DefEnvironment('{enumerate} [Angled] OptionalUndigested',
   "<ltx:enumerate xml:id='#id'>#body</ltx:enumerate>",
   properties       => sub { beginBeamerItemize($_[1], 'enumerate', 'enum'); },
-  beforeDigestEnd => sub { Digest('\par'); Digest('\beamer@closeitem'); },
+  beforeDigestEnd  => sub { Digest('\par'); Digest('\beamer@closeitem'); },
   afterDigestBegin => sub { setEnumerationStyle($_[1]->getArg(2)); });
 
 # from LaTeX.Pool
@@ -1168,8 +1164,8 @@ RequirePackage('amsmath');
 RequirePackage('amssymb');
 
 DefMacro('\pushQED {}', sub { beamerTODO('pushQED'); });
-DefMacro('\popQED', sub { beamerTODO('popQED'); });
-DefMacro('\qedhere', sub { beamerTODO('qedhere'); });
+DefMacro('\popQED',     sub { beamerTODO('popQED'); });
+DefMacro('\qedhere',    sub { beamerTODO('qedhere'); });
 
 RawTeX(<<'EoTeX');
 % compatibility
@@ -1216,9 +1212,9 @@ EoTeX
 #**********************************************************************
 
 # TODO: Implement me!
-DefMacro('\usetheme[]{}', sub { beamerTODO('themes'); });
+DefMacro('\usetheme[]{}',      sub { beamerTODO('themes'); });
 DefMacro('\usecolortheme[]{}', sub { beamerTODO('themes'); });
-DefMacro('\usefonttheme[]{}', sub { beamerTODO('themes'); });
+DefMacro('\usefonttheme[]{}',  sub { beamerTODO('themes'); });
 DefMacro('\useinnertheme[]{}', sub { beamerTODO('themes'); });
 DefMacro('\useoutertheme[]{}', sub { beamerTODO('themes'); });
 
@@ -1252,7 +1248,7 @@ sub readUntilMatch {
   my $tail = Tokens(@tail);
   # main loop to collect tokens
   my (@read, $token) = ();
-  while(1) {
+  while (1) {
     # skip ahead until the first token; then
     $token = $gullet->readUntil($head);
     return unless defined($token);
@@ -1282,11 +1278,10 @@ sub readRawUntilMatch {
 #**********************************************************************
 
 RequirePackage('hyperref', options => ['bookmarks=true', 'bookmarksopen=true', 'pdfborder={0 0 0}', 'pdfhighlight={/N}', 'linkbordercolor={.5 .5 .5}']);
-RequirePackage('atbegshi'); # normally loaded by hyperref, but let's be safe
+RequirePackage('atbegshi');    # normally loaded by hyperref, but let's be safe
 
 # TODO: Typically loaded by a package option, but not yet supported
 # RequirePackage('sansmathaccent');
-
 
 #**********************************************************************
 # All the extra commands with <> arguments
@@ -1298,7 +1293,7 @@ sub AddBeamerWrapper {
   $wrapper = '\only' unless defined($wrapper);
   # build tex code to pass the arguments!
   my ($count) = 0;
-  my ($tex) = '';
+  my ($tex)   = '';
   while ($count < $args) {
     $count++;
     $tex .= '{#' . $count . '}'; }
@@ -1308,19 +1303,19 @@ sub AddBeamerWrapper {
     $args = '[' . $args . ']'; }
   $count++;
   # build and run the tex code!
-  $tex = '\renewcommand<>{' . $command . '}' . $args. '{' .
-      $wrapper . '#' . $count . '{' . 
-      '\beameroriginal{' .  $command . '}' . $tex . 
+  $tex = '\renewcommand<>{' . $command . '}' . $args . '{' .
+    $wrapper . '#' . $count . '{' .
+    '\beameroriginal{' . $command . '}' . $tex .
     '}' .
-  '}';
+    '}';
   RawTeX($tex); }
 
 # Add wrappers to all these commands
 our %BEAMER_WRAPPED = (
-  '\textbf' => 0, '\textit' => 0, '\textmd' => 0, 
-  '\textnormal' => 0, '\textrm' => 0, '\textsc' => 0, 
-  '\textsf' => 0, '\textsl' => 0, '\texttt' => 0, 
-  '\textup' => 0,
+  '\textbf'     => 0, '\textit' => 0, '\textmd' => 0,
+  '\textnormal' => 0, '\textrm' => 0, '\textsc' => 0,
+  '\textsf'     => 0, '\textsl' => 0, '\texttt' => 0,
+  '\textup'     => 0,
 
   '\hypertarget' => 2, '\hyperlink' => 2,
 
