@@ -5167,6 +5167,7 @@ DefMacroI('\verbatim@font', undef,
   '\fontfamily{\ttdefault}\fontseries{\mddefault}\fontshape{\updefault}\selectfont');
 
 Let('\reset@font', '\normalfont');
+DefMacro('\@fontswitch{}{}', '\ifmmode #2\relax\else #1 \fi');
 
 DefPrimitive('\selectfont', sub {
     my $family = ToString(Expand(T_CS('\f@family')));

@@ -53,6 +53,7 @@ DefMacro('\pmatrix{}',
 # also don't use the amsmath cases
 DefMacro('\cases{}',
   '\lx@gen@plain@cases{meaning=cases,left=\@left\{,conditionmode=text,style=\textstyle}{#1}');
-
+# but allow reloading amsmath.sty if {cases} was really needed (arXiv:astro-ph/0203101)
+AssignValue('amsmath.sty.ltxml_loaded', undef, 'global');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
