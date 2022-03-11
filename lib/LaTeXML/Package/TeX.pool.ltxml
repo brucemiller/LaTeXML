@@ -6683,11 +6683,16 @@ DefConstructor('\footnote{}{}',
     $whatsit->setProperty(($change ? 'prenote' : 'mark') => $mark);
     return; });
 # Until we can do the "v" properly:
-DefMacro('\vfootnote', '\footnote');
-DefMacro('\fo@t',      '\ifcat\bgroup\noexpand\next \let\next\f@@t  \else\let\next\f@t\fi \next');
-DefMacro('\f@@t',      '\bgroup\aftergroup\@foot\let\next');
-DefMacro('\f@t{}',     '#1\@foot');
-DefMacro('\@foot',     '\strut\egroup');
+DefMacro('\vfootnote{}', '\insert\footins\bgroup'
+    . '\interlinepenalty=\interfootnotelinepenalty'
+    . '\splittopskip=\ht\strutbox'
+    . '\splitmaxdepth=\dp\strutbox \floatingpenalty=20000'
+    . '\leftskip=0pt \rightskip=0pt \spaceskip=0pt \xspaceskip=0pt'
+    . '\textindent{#1}\footstrut\futurelet\next\fo@t');
+DefMacro('\fo@t',  '\ifcat\bgroup\noexpand\next \let\next\f@@t  \else\let\next\f@t\fi \next');
+DefMacro('\f@@t',  '\bgroup\aftergroup\@foot\let\next');
+DefMacro('\f@t{}', '#1\@foot');
+DefMacro('\@foot', '\strut\egroup');
 
 DefPrimitiveI('\footstrut', undef, undef);
 DefRegister('\footins' => Number(0));
