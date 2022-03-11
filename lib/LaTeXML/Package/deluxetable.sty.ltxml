@@ -34,9 +34,15 @@ DefMacroI(T_CS('\begin{deluxetable}'), "{}",
   '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
 DefMacroI(T_CS('\end{deluxetable}'), undef, '\spew@tblnotes\end{table}');
 
+DefMacroI(T_CS('\deluxetable'),    undef, T_CS('\begin{deluxetable}'));
+DefMacroI(T_CS('\enddeluxetable'), undef, T_CS('\end{deluxetable}'));
+
 DefMacroI(T_CS('\begin{deluxetable*}'), "{}",
   '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
 DefMacroI(T_CS('\end{deluxetable*}'), undef, '\spew@tblnotes\end{table}');
+
+DefMacroI(T_CS('\deluxetable*'),    undef, T_CS('\begin{deluxetable*}'));
+DefMacroI(T_CS('\enddeluxetable*'), undef, T_CS('\end{deluxetable*}'));
 
 DefMacro('\set@deluxetable@template AlignmentTemplate', sub {
     AssignValue('@deluxetable@template', $_[1]); });
