@@ -57,4 +57,9 @@ LoadClass('article');
 RequirePackage('revtex4_support');
 map { RequirePackage($_) } @revtex_toload;
 
+# check for \jobname.rty
+my $jobname = ToString(Expand(T_CS('\jobname')));
+if (my $rty_file = FindFile($jobname, type => 'rty', noltxml => 1)) {
+  InputDefinitions($jobname, type => 'rty', noltxml => 1); }
+
 1;
