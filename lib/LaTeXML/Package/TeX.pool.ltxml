@@ -6672,7 +6672,9 @@ DefPrimitive('\normalbottom', undef);
 # otherwise, to the attribute.
 DefConstructor('\footnote{}{}',
   "^<ltx:note role='footnote' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
-  afterDigest => sub {
+  mode         => 'text', bounded => 1,
+  beforeDigest => sub { reenterTextMode(1); neutralizeFont(); },
+  afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
     my $mark   = $whatsit->getArg(1);
     my $change = 0;
