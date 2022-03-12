@@ -1898,6 +1898,7 @@ DefPrimitiveI('\@vobeyspaces', undef, sub {
     AssignCatcode(" " => 13);
     Let(T_ACTIVE(" "), '\nobreakspace');
     return });
+DefMacro('\@xobeysp', '\nobreakspace');
 
 # WARNING: Need to be careful about what catcodes are active here
 # And clearly separate expansion from digestion
