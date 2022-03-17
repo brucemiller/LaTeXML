@@ -151,7 +151,7 @@ DefRegister('\pdfcompresslevel', Number(0));
 # Additional User Macros
 
 # \href{url}{text}
-DefMacro('\href Verbatim {}', '\@@Url\href{}{}{#1}{#2}');
+DefMacro('\href {} {}', '\@@Url\href{}{}{#1}{#2}');
 
 # \url{url} from url.sty... well sorta
 # It's slightly different in that it expands the argument
