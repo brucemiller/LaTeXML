@@ -50,9 +50,9 @@ DefConstructor('\documentclass OptionalSemiverbatim SkipSpaces Semiverbatim []',
   "<?latexml class='#2' ?#1(options='#1')?>",
   beforeDigest => sub { onlyPreamble('\documentclass'); },
   afterDigest  => sub {
-    my ($stomach, $whatsit) = @_;
-    my $options = $whatsit->getArg(1);
-    my $class   = ToString($whatsit->getArg(2));
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $options = $WhatchamaCallIt->getArg(1);
+    my $class   = ToString($WhatchamaCallIt->getArg(2));
     $class =~ s/\s+//g;
     LoadClass($class,
       options => [($options ? split(/\s*,\s*/, ToString($options)) : ())],
@@ -73,10 +73,10 @@ DefConstructor('\documentstyle OptionalSemiverbatim SkipSpaces Semiverbatim []',
     AssignValue('2.09_COMPATIBILITY' => 1, 'global');
     onlyPreamble('\documentstyle'); },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $class = ToString($whatsit->getArg(2));
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $class = ToString($WhatchamaCallIt->getArg(2));
     $class =~ s/\s+//g;
-    my $options = $whatsit->getArg(1);
+    my $options = $WhatchamaCallIt->getArg(1);
     $options = [($options ? split(/\s*,\s*/, ToString($options)) : ())];
 # Watch out; In principle, compatibility mode wants a .sty, not a .cls!!!
 # But, we'd prefer .cls, since we'll have better bindings.
@@ -328,7 +328,7 @@ DefConstructorI(T_CS('\begin{document}'), undef, sub {
     else {
       $document->openElement('ltx:document', 'xml:id' => $id); } },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     $stomach->beginMode('text');
     DefMacroI('\@currenvir', undef, 'document');
     AssignValue(current_environment => 'document');
@@ -828,9 +828,9 @@ DefMacroI('\@curroptions',     undef, undef);
 DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
   "<?latexml package='#2' ?#1(options='#1')?>",
   beforeDigest => sub { onlyPreamble('\usepackage'); },
-  afterDigest  => sub { my ($stomach, $whatsit) = @_;
-    my $options  = $whatsit->getArg(1);
-    my $packages = $whatsit->getArg(2);
+  afterDigest  => sub { my ($stomach, $WhatchamaCallIt) = @_;
+    my $options  = $WhatchamaCallIt->getArg(1);
+    my $packages = $WhatchamaCallIt->getArg(2);
     $options = [($options ? split(/\s*,\s*/, (ToString($options))) : ())];
     for my $pkg (split(',', ToString($packages))) {
       $pkg =~ s/\s+//g;
@@ -841,9 +841,9 @@ DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
 DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
   "<?latexml package='#2' ?#1(options='#1')?>",
   beforeDigest => sub { onlyPreamble('\RequirePackage'); },
-  afterDigest  => sub { my ($stomach, $whatsit) = @_;
-    my $options  = $whatsit->getArg(1);
-    my $packages = $whatsit->getArg(2);
+  afterDigest  => sub { my ($stomach, $WhatchamaCallIt) = @_;
+    my $options  = $WhatchamaCallIt->getArg(1);
+    my $packages = $WhatchamaCallIt->getArg(2);
     $options = [($options ? split(/\s*,\s*/, (ToString($options))) : ())];
     for my $pkg (split(',', ToString($packages))) {
       $pkg =~ s/\s+//g;
@@ -854,9 +854,9 @@ DefConstructor('\RequirePackage OptionalSemiverbatim Semiverbatim []',
 DefConstructor('\LoadClass OptionalSemiverbatim Semiverbatim []',
   "<?latexml class='#2' ?#1(options='#1')?>",
   beforeDigest => sub { onlyPreamble('\LoadClass'); },
-  afterDigest  => sub { my ($stomach, $whatsit) = @_;
-    my $options = $whatsit->getArg(1);
-    my $class   = ToString($whatsit->getArg(2));
+  afterDigest  => sub { my ($stomach, $WhatchamaCallIt) = @_;
+    my $options = $WhatchamaCallIt->getArg(1);
+    my $class   = ToString($WhatchamaCallIt->getArg(2));
     $class =~ s/\s+//g;
     $options = [($options ? split(/\s*,\s*/, (ToString($options))) : ())];
     LoadClass($class, options => $options);
@@ -920,8 +920,8 @@ DefPrimitive('\PassOptionsToClass{}{}', sub {
 DefConstructor('\RequirePackageWithOptions Semiverbatim []',
   "<?latexml package='#1'?>",
   beforeDigest => sub { onlyPreamble('\RequirePackage'); },
-  afterDigest  => sub { my ($stomach, $whatsit) = @_;
-    my $package = ToString($whatsit->getArg(1));
+  afterDigest  => sub { my ($stomach, $WhatchamaCallIt) = @_;
+    my $package = ToString($WhatchamaCallIt->getArg(1));
     $package =~ s/\s+//g;
     RequirePackage($package, withoptions => 1);
     return; });
@@ -929,8 +929,8 @@ DefConstructor('\RequirePackageWithOptions Semiverbatim []',
 DefConstructor('\LoadClassWithOptions Semiverbatim []',
   "<?latexml class='#1'?>",
   beforeDigest => sub { onlyPreamble('\LoadClassWithOptions'); },
-  afterDigest  => sub { my ($stomach, $whatsit) = @_;
-    my $class = ToString($whatsit->getArg(1));
+  afterDigest  => sub { my ($stomach, $WhatchamaCallIt) = @_;
+    my $class = ToString($WhatchamaCallIt->getArg(1));
     $class =~ s/\s+//g;
     LoadClass($class, withoptions => 1);
     return; });
@@ -1340,7 +1340,7 @@ DefEnvironment('{flushright}', sub {
 #DefPrimitiveI('\centering',   undef, sub { UnshiftValue(beforeAfterGroup=>T_CS('\@add@centering')); });
 # NOTE: THere's a problem here.  The current method seems to work right for these operators
 # appearing within the typical environments.  HOWEVER, it doesn't work for a simple \bgroup or \begingroup!!!
-# (they don't create a node! or even a whatsit!)
+# (they don't create a node! or even a WhatchamaCallIt!)
 DefConstructorI('\centering', undef,
   sub { AssignValue(ALIGNING_NODE => $_[0]->getElement); return; },
   beforeDigest => sub { UnshiftValue(beforeAfterGroup => T_CS('\@add@centering')); });
@@ -1870,10 +1870,10 @@ DefConstructorI(T_CS('\begin{verbatim}'), undef,
       # Digest(T_CS('\par')); # NO! See beforeConstruct!
       @stuff; }],
   afterDigest => [sub {
-      my ($stomach, $whatsit) = @_;
+      my ($stomach, $WhatchamaCallIt) = @_;
       #      $stomach->egroup;
-      my $font   = $whatsit->getFont;
-      my $loc    = $whatsit->getLocator;
+      my $font   = $WhatchamaCallIt->getFont;
+      my $loc    = $WhatchamaCallIt->getLocator;
       my $end    = "\\end{verbatim}";
       my @lines  = ();
       my $gullet = $stomach->getGullet;
@@ -1886,11 +1886,11 @@ DefConstructorI(T_CS('\begin{verbatim}'), undef,
           last; }
         push(@lines, $line . "\n"); }
       pop(@lines) if $lines[-1] eq "\n";
-      # Note last line ends up as Whatsit's "trailer"
+      # Note last line ends up as WhatchamaCallIt's "trailer"
       if (my $b = LookupValue('@environment@verbatim@atend')) {
         push(@lines, ToString(Digest(@$b))); }
       $stomach->egroup;
-      $whatsit->setBody(map { Box($_, $font, $loc, T_OTHER($_)) } @lines, $end);
+      $WhatchamaCallIt->setBody(map { Box($_, $font, $loc, T_OTHER($_)) } @lines, $end);
       return; }],
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:p'); });
 
@@ -1941,8 +1941,8 @@ DefConstructor('\@internal@verb{} Undigested {}',
   font       => { family => 'typewriter', series => 'medium', shape => 'upright' },
   #  bounded         => 1,
   beforeConstruct => sub {
-    my ($doc, $whatsit) = @_;
-    if (!$whatsit->isMath) {
+    my ($doc, $WhatchamaCallIt) = @_;
+    if (!$WhatchamaCallIt->isMath) {
       $doc->canContain($doc->getElement, '#PCDATA') || $doc->openElement('ltx:p'); } },
   reversion => '\verb#1#2#3#2');
 
@@ -2100,7 +2100,7 @@ DefPrimitive('\lx@equation@settag@ Digested', sub {
   mode => 'text');
 
 sub afterEquation {
-  my ($whatsit) = @_;
+  my ($WhatchamaCallIt) = @_;
   my $numbering = LookupValue('EQUATION_NUMBERING');
   my $tags      = LookupValue('EQUATIONROW_TAGS');
   my $ctr       = $$tags{counter} || $$numbering{counter} || 'equation';
@@ -2119,15 +2119,15 @@ sub afterEquation {
   elsif (!$$tags{reset} && $$numbering{numbered}) {
     $$tags{tags} = Digest(Invocation(T_CS('\lx@make@tags'), $ctr)); }
 
-  # Now install the tags in $whatsit or current Row, as appropriate.
+  # Now install the tags in $WhatchamaCallIt or current Row, as appropriate.
   my $props = LookupValue('EQUATIONROW_TAGS');
   if ($$numbering{aligned}) {
     if (my $alignment = LookupValue('Alignment')) {
       my $row = $alignment->currentRow;
       $$row{id}   = $$props{id};
       $$row{tags} = $$props{tags}; } }
-  elsif ($whatsit) {
-    $whatsit->setProperties(%{ LookupValue('EQUATIONROW_TAGS') }); }
+  elsif ($WhatchamaCallIt) {
+    $WhatchamaCallIt->setProperties(%{ LookupValue('EQUATIONROW_TAGS') }); }
   $$numbering{in_equation} = 0;
   return; }
 
@@ -2218,11 +2218,11 @@ Tag('ltx:Math', afterOpen => sub { GenerateID(@_, 'm'); });
 DefConstructor('\lx@equationgroup@subnumbering@begin',
   "<ltx:equationgroup xml:id='#id'>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     my %eqn   = RefStepCounter('equation');
     my $eqnum = Expand(T_CS('\theequation'));
     AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
-    $whatsit->setProperties(%eqn);
+    $WhatchamaCallIt->setProperties(%eqn);
     ResetCounter('equation');
     DefMacroI('\theequation',    undef, UnTeX($eqnum) . '\alph{equation}');
     DefMacroI('\theequation@ID', undef, UnTeX($eqn{id}) . '.\@equation@ID'); });
@@ -2542,7 +2542,7 @@ DefConstructor('\lx@stackrel{}{}',
 # C.7.8 Changing Style
 #======================================================================
 # For Math style changes, we record the current font, which is then merged
-# into the Whatsit's created for letters, etc.  The merging depends on
+# into the WhatchamaCallIt's created for letters, etc.  The merging depends on
 # the type of letter, greek, symbol, etc.
 # Apparently, with the normal TeX setup, these fonts don't really merge,
 # rather they override all of family, series and shape.
@@ -3069,7 +3069,7 @@ sub defineNewTheorem {
 #======================================================================
 # For LaTeX documents, We want id's on para, as well as sectional units.
 # However, para get created implicitly on Document construction, rather than
-# explicitly during digestion (via a whatsit), we can't use the usual LaTeX counter mechanism.
+# explicitly during digestion (via a WhatchamaCallIt), we can't use the usual LaTeX counter mechanism.
 Tag('ltx:para', afterOpen => sub { GenerateID(@_, 'p'); });
 
 DefPrimitive('\newcounter{}[]', sub {
@@ -3278,16 +3278,16 @@ DefPrimitive('\@@add@caption@counters', sub {
     AssignValue($captype . "_inlist" => $inlist,      'global'); });
 
 sub RescueCaptionCounters {
-  my ($captype, $whatsit) = @_;
+  my ($captype, $WhatchamaCallIt) = @_;
   if (my $tags = LookupValue($captype . "_tags")) {
     AssignValue($captype . "_tags" => undef, 'global');
-    $whatsit->setProperty(tags => $tags); }
+    $WhatchamaCallIt->setProperty(tags => $tags); }
   if (my $id = LookupValue($captype . "_id")) {
     AssignValue($captype . "_id" => undef, 'global');
-    $whatsit->setProperty(id => $id); }
+    $WhatchamaCallIt->setProperty(id => $id); }
   if (my $inlist = LookupValue($captype . "_inlist")) {
     AssignValue($captype . "_inlist" => undef, 'global');
-    $whatsit->setProperty(inlist => $inlist); }
+    $WhatchamaCallIt->setProperty(inlist => $inlist); }
   return; }
 
 DefConstructor('\@@generic@caption[]{}', "<ltx:text class='ltx_caption'>#2</ltx:text>",
@@ -3296,8 +3296,8 @@ DefConstructor('\@@generic@caption[]{}', "<ltx:text class='ltx_caption'>#2</ltx:
       "Use of \\caption outside any known float"); });
 
 sub add_subfigure_row_breaks {
-  my ($document, $node, $whatsit, @contents) = @_;
-  my $textwidth     = ($whatsit->getProperty('floatwidth') || Dimension('345pt'))->valueOf();
+  my ($document, $node, $WhatchamaCallIt, @contents) = @_;
+  my $textwidth     = ($WhatchamaCallIt->getProperty('floatwidth') || Dimension('345pt'))->valueOf();
   my $current_width = 0;
   my @new_contents  = ();
   for my $block (@contents) {
@@ -3318,7 +3318,7 @@ sub add_subfigure_row_breaks {
   return @new_contents; }
 
 sub add_subfigure_row_sizes {
-  my ($document, $node, $whatsit, @contents) = @_;
+  my ($document, $node, $WhatchamaCallIt, @contents) = @_;
   my @row = ();
   for my $child (@contents) {
     if ($document->getNodeQName($child) eq 'ltx:break') {
@@ -3349,7 +3349,7 @@ sub add_subfigure_row_sizes {
 # Feature 1: Add flex classes to each subfigure cell in a figure.
 # Feature 2: Add identifiers on each figure
 sub SubfigureAndID {
-  my ($document, $node, $whatsit, $id_kind) = @_;
+  my ($document, $node, $WhatchamaCallIt, $id_kind) = @_;
   # 1. Flex
   # A little verbose, but much easier to do than XSLT 1.0 would allow.
   my $contents_count = 0;    # count with author breaks excluded
@@ -3358,11 +3358,11 @@ sub SubfigureAndID {
     $contents_count += 1 if $ok and $name ne 'ltx:break';
     $ok; } element_nodes($node);
   if ($contents_count > 1) {
-    @contents = add_subfigure_row_breaks($document, $node, $whatsit, @contents);
-    add_subfigure_row_sizes($document, $node, $whatsit, @contents); }
+    @contents = add_subfigure_row_breaks($document, $node, $WhatchamaCallIt, @contents);
+    add_subfigure_row_sizes($document, $node, $WhatchamaCallIt, @contents); }
   # 2. IDs
   # Note that even without \caption, we'd probably like to have xml:id.
-  return GenerateID($document, $node, $whatsit, $id_kind); }
+  return GenerateID($document, $node, $WhatchamaCallIt, $id_kind); }
 
 Tag('ltx:figure', afterClose => sub { SubfigureAndID(@_, 'fig'); });
 Tag('ltx:float',  afterClose => sub { SubfigureAndID(@_, 'tab'); });
@@ -3382,11 +3382,11 @@ sub beforeFloat {
   return; }
 
 sub afterFloat {
-  my ($whatsit) = @_;
+  my ($WhatchamaCallIt) = @_;
   my $type = ToString(Expand(T_CS('\@captype')));
   #Debug("FLOAT end $type");
-  $whatsit->setProperty(floatwidth => LookupRegister('\hsize'));
-  RescueCaptionCounters($type, $whatsit);
+  $WhatchamaCallIt->setProperty(floatwidth => LookupRegister('\hsize'));
+  RescueCaptionCounters($type, $WhatchamaCallIt);
   return; }
 
 DefEnvironment('{figure}[]',
@@ -3701,10 +3701,10 @@ DefConstructor('\@@tabular[] Undigested DigestedBody',
   beforeDigest => sub { $_[0]->bgroup; },
   sizer        => '#3',
   afterDigest  => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     if (my $alignment = LookupValue('Alignment')) {
       my $attr = $alignment->getProperty('attributes');
-      $$attr{vattach} = translateAttachment($whatsit->getArg(1)); }
+      $$attr{vattach} = translateAttachment($WhatchamaCallIt->getArg(1)); }
     return; },
   locked => 1,
   mode   => 'text');
@@ -3731,8 +3731,8 @@ DefMacroI('\@xhline', undef, '\ifnum0=`{\fi}');
 DefMacro('\cline{}', '\noalign{\@cline{#1}}');
 DefConstructor('\@cline{}', '',
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $cols = ToString($whatsit->getArg(1));
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $cols = ToString($WhatchamaCallIt->getArg(1));
     my @cols = ();
     while ($cols =~ s/^,?(\d+)//) {
       my $n = $1;
@@ -3860,14 +3860,14 @@ sub beforeDigestBibliography {
 # This sub does things that would commonly be needed when starting a bibliography
 # setting the ID, etc...
 sub beginBibliography {
-  my ($whatsit) = @_;
-  beginBibliography_clean($whatsit);
+  my ($WhatchamaCallIt) = @_;
+  beginBibliography_clean($WhatchamaCallIt);
   # Fix for missing \bibitems!
   setupPseudoBibitem();
   return; }
 
 sub beginBibliography_clean {
-  my ($whatsit) = @_;
+  my ($WhatchamaCallIt) = @_;
   # Check if \bibsection is defined and try to decipher it.
   # Expecting something like \section*{sometext}
   my $bibtitle = undef;
@@ -3885,7 +3885,7 @@ sub beginBibliography_clean {
       if (ToString($t[0]) eq '*') { shift(@t); }
       # Check for balanced? or just take balanced begining?
       $bibtitle = Tokens(@t); } }
-  noteBackmatterElement($whatsit, 'ltx:bibliography');
+  noteBackmatterElement($WhatchamaCallIt, 'ltx:bibliography');
   # Try to compute a reasonable, but unique ID;
   # relative to the document's ID, if any.
   # But also, if there are multiple bibliographies,
@@ -3894,15 +3894,15 @@ sub beginBibliography_clean {
   my $docid = ToString(Expand(T_CS('\thedocument@ID')));
   my $bibid = ($docid ? $docid . '.' : '') . 'bib' . radix_alpha($bibnumber - 1);
   DefMacroI(T_CS('\thebibliography@ID'), undef, T_OTHER($bibid), scope => 'global');
-  #  $whatsit->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
-  $whatsit->setProperty(id => $bibid);
+  #  $WhatchamaCallIt->setProperty(id=>ToString(Expand(T_CS('\thebibliography@ID'))));
+  $WhatchamaCallIt->setProperty(id => $bibid);
   my $title = ($bibtitle ? Digest($bibtitle)
     : DigestIf('\refname') || DigestIf('\bibname'));
-  $whatsit->setProperty(title     => $title)          if $title;
-  $whatsit->setProperty(titlefont => $title->getFont) if $title;
-  $whatsit->setProperty(bibstyle  => LookupValue('BIBSTYLE'));
-  $whatsit->setProperty(citestyle => LookupValue('CITE_STYLE'));
-  #  $whatsit->setProperty(sort=> ???
+  $WhatchamaCallIt->setProperty(title     => $title)          if $title;
+  $WhatchamaCallIt->setProperty(titlefont => $title->getFont) if $title;
+  $WhatchamaCallIt->setProperty(bibstyle  => LookupValue('BIBSTYLE'));
+  $WhatchamaCallIt->setProperty(citestyle => LookupValue('CITE_STYLE'));
+  #  $WhatchamaCallIt->setProperty(sort=> ???
   # And prepare for the likely nonsense that appears within bibliographies
   ResetCounter('enumiv');
   return; }
@@ -3940,13 +3940,13 @@ AssignMapping('BACKMATTER_ELEMENT', 'ltx:bibliography' => 'ltx:section');
 AssignMapping('BACKMATTER_ELEMENT', 'ltx:index'        => 'ltx:section');
 
 sub noteBackmatterElement {
-  my ($whatsit, $backelement) = @_;
-  $whatsit->setProperties(backmatterelement => LookupMapping('BACKMATTER_ELEMENT', $backelement));
+  my ($WhatchamaCallIt, $backelement) = @_;
+  $WhatchamaCallIt->setProperties(backmatterelement => LookupMapping('BACKMATTER_ELEMENT', $backelement));
   return; }
 
 sub adjustBackmatterElement {
-  my ($document, $whatsit) = @_;
-  if (my $asif = $whatsit->getProperty('backmatterelement')) {
+  my ($document, $WhatchamaCallIt) = @_;
+  if (my $asif = $WhatchamaCallIt->getProperty('backmatterelement')) {
     $document->setNode($document->find_insertion_point($asif)); }
   return; }
 
@@ -4009,7 +4009,7 @@ DefConstructorI('\thebibliography', undef,
   beforeDigest => sub {
     beforeDigestBibliography(); },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     # NOTE that in some perverse situations (revtex?)
     # it seems to be allowable to omit the argument
     # It's ignorable for latexml anyway, so we'll just read it if its there .
@@ -4256,8 +4256,8 @@ DefConstructorI(T_CS("\\begin{filecontents}"), "Semiverbatim",
   '',
   reversion   => '',
   afterDigest => [sub {
-      my ($stomach, $whatsit) = @_;
-      my $filename = ToString($whatsit->getArg(1));
+      my ($stomach, $WhatchamaCallIt) = @_;
+      my $filename = ToString($WhatchamaCallIt->getArg(1));
       my @lines    = ();
       my $gullet   = $stomach->getGullet;
       my $line;
@@ -4269,8 +4269,8 @@ DefConstructorI(T_CS("\\begin{filecontents*}"), "Semiverbatim",
   '',
   reversion   => '',
   afterDigest => [sub {
-      my ($stomach, $whatsit) = @_;
-      my $filename = ToString($whatsit->getArg(1));
+      my ($stomach, $WhatchamaCallIt) = @_;
+      my $filename = ToString($WhatchamaCallIt->getArg(1));
       my @lines    = ();
       my $gullet   = $stomach->getGullet;
       my $line;
@@ -4660,15 +4660,15 @@ DefConstructor('\@framebox[Dimension][]{}',
       framecolor => LookupValue('font')->getColor,
       ($_[1] ? (width => $_[1]) : ())); },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     my $wasmath = LookupValue('FRAME_IN_MATH');
-    my $arg     = $whatsit->getArg(3);
+    my $arg     = $WhatchamaCallIt->getArg(3);
     $stomach->endMode('text');
     if ($wasmath && $arg->isMath) {
-      $whatsit->setProperties(mathframe => 1, inner => $arg->getBody); }
+      $WhatchamaCallIt->setProperties(mathframe => 1, inner => $arg->getBody); }
     return; },
   afterConstruct => sub {
-    my ($document, $whatsit) = @_;
+    my ($document, $WhatchamaCallIt) = @_;
     my $node = $document->getNode->lastChild;
     # If the generated node, has only a single (non space) child
     my @c = grep { ($_->nodeType != XML_TEXT_NODE) || ($_->textContent =~ /[^\s\n]/) }
@@ -4914,10 +4914,10 @@ sub after_picture {
 Tag('ltx:picture', autoOpen => 0.5, autoClose => 1,
   afterOpen  => sub { GenerateID(@_, 'pic'); },
   afterClose => sub {
-    my ($document, $node, $whatsit) = @_;
+    my ($document, $node, $WhatchamaCallIt) = @_;
     # Make sure we get a size, in case autoOpen'd
-    if ($whatsit) {
-      my ($w, $h, $d) = $whatsit->getSize;
+    if ($WhatchamaCallIt) {
+      my ($w, $h, $d) = $WhatchamaCallIt->getSize;
       $node->setAttribute(width  => $w->pxValue)          unless $node->hasAttribute('width');
       $node->setAttribute(height => $h->add($d)->pxValue) unless $node->hasAttribute('height'); } });
 

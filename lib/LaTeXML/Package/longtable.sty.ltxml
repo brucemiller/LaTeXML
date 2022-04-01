@@ -39,15 +39,15 @@ DefConstructor('\@@longtable [] Undigested DigestedBody',
   reversion    => '\begin{longtable}[#1]{#2}#3\end{longtable}',
   beforeDigest => sub { $_[0]->bgroup; },
   afterDigest  => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(%{ LookupValue('LONGTABLE_PROPERTIES') || {} });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setProperties(%{ LookupValue('LONGTABLE_PROPERTIES') || {} });
     # Insert caption and toccaption, if any were encountered.
     if (my $caption = LookupValue('LONGTABLE_CAPTION')) {
-      $whatsit->setProperty(caption => $caption); }
+      $WhatchamaCallIt->setProperty(caption => $caption); }
     if (my $label = LookupValue('LONGTABLE_LABEL')) {
-      $whatsit->setProperty(label => $label); }
+      $WhatchamaCallIt->setProperty(label => $label); }
     if (my $toccaption = LookupValue('LONGTABLE_TOCCAPTION')) {
-      $whatsit->setProperty(toccaption => $toccaption); }
+      $WhatchamaCallIt->setProperty(toccaption => $toccaption); }
     my $alignment = LookupValue('Alignment');
     # Reinsert the head and foot into the alignment.
     if (my $head = LookupValue('LONGTABLE_HEAD')) {

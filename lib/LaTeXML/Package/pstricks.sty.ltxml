@@ -360,7 +360,7 @@ sub setGraphParams {
   return; }
 
 sub psGetDash {
-  my ($whatsit, $used) = @_; my $d;
+  my ($WhatchamaCallIt, $used) = @_; my $d;
   if (my $dash = LookupValue('\psdash')) {
     $d = $dash; }
   elsif (my $linestyle = LookupValue('\pslinestyle')) {
@@ -368,31 +368,31 @@ sub psGetDash {
       $d = Pair(Dimension('5pt'), Dimension('3pt')); }
     elsif ($linestyle eq 'dotted') {
       $d = Pair(Dimension('1pt'), (LookupValue('\psdotsep') || Dimension('3pt'))); } }
-  $whatsit->setProperty(dash => $d) if $d;
+  $WhatchamaCallIt->setProperty(dash => $d) if $d;
   $$used{dash} = 1;
   return; }
 
 sub psGetLinecolor {
-  my ($whatsit, $used) = @_;
-  $whatsit->setProperty(linecolor => (LookupValue('\pslinestyle') || '') eq 'none' ? 'none' : LookupValue('\pslinecolor'));
+  my ($WhatchamaCallIt, $used) = @_;
+  $WhatchamaCallIt->setProperty(linecolor => (LookupValue('\pslinestyle') || '') eq 'none' ? 'none' : LookupValue('\pslinecolor'));
   $$used{linecolor} = 1;
   return; }
 
 sub psGetFill {
-  my ($whatsit, $used) = @_;
-  my $star = $whatsit->getArg(1) ? (ToString($whatsit->getArg(1)) eq '*' ? 1 : 0) : 0;
+  my ($WhatchamaCallIt, $used) = @_;
+  my $star = $WhatchamaCallIt->getArg(1) ? (ToString($WhatchamaCallIt->getArg(1)) eq '*' ? 1 : 0) : 0;
   if ($star) {
-    $whatsit->setProperties(fill => LookupValue('\pslinecolor'), linecolor => 'none', linewidth => undef); }
+    $WhatchamaCallIt->setProperties(fill => LookupValue('\pslinecolor'), linecolor => 'none', linewidth => undef); }
   else {
-    $whatsit->setProperties(fill => ((LookupValue('\psfillstyle') || '') eq 'none') ? 'none' :
+    $WhatchamaCallIt->setProperties(fill => ((LookupValue('\psfillstyle') || '') eq 'none') ? 'none' :
         LookupValue('\psfillcolor'), linewidth => LookupValue('\pslinewidth'));
-    psGetLinecolor($whatsit, $used); }
+    psGetLinecolor($WhatchamaCallIt, $used); }
   map { $$used{$_} = 1 } qw(fill linecolor linewidth fillstyle fillcolor);
   return; }
 
 sub psDefaultParameters {
-  my ($whatsit) = @_;
-  my $cmd = $whatsit->getDefinition->getCS->getCSName(); chop($cmd);
+  my ($WhatchamaCallIt) = @_;
+  my $cmd = $WhatchamaCallIt->getDefinition->getCS->getCSName(); chop($cmd);
   AssignValue('_ps@LastPSCmd', $cmd, 'global');
   my @params = @{ $PSobjAttributes{$cmd} || [] };
   my %used   = ();
@@ -401,9 +401,9 @@ sub psDefaultParameters {
     my $getter = 'psGet' . (ucfirst($param));
     if (defined &$getter) {
       local *call = $getter;
-      call($whatsit, \%used); }
+      call($WhatchamaCallIt, \%used); }
     elsif (my $value = LookupValue('\ps' . $param)) {
-      $whatsit->setProperty($param, $value); } }
+      $WhatchamaCallIt->setProperty($param, $value); } }
   return; }
 
 ##############################################################################
@@ -477,11 +477,11 @@ sub reverseArrow {
   return join('', map { $arrow_reverse{$_} || $_ } split(//, $ar)); }
 
 sub psTerminators {
-  my ($whatsit, $term) = @_;
+  my ($WhatchamaCallIt, $term) = @_;
   if (ref $term) { $term = ToString($term); }
   if ($term) {
     $term =~ s/\s//g; $term = '' if $term eq '-';
-    $whatsit->setProperties(terminators => $term, arrowlength => arrowLength()) if $term; }
+    $WhatchamaCallIt->setProperties(terminators => $term, arrowlength => arrowLength()) if $term; }
   return; }
 
 ####################################################################################
@@ -492,8 +492,8 @@ sub psTerminators {
 # Note: this odd thing MUST digest the "}" and return the box,
 # so that it appears in the UnTeX, so that image generation works!
 sub afterPSObject {
-  my ($stomach, $whatsit) = @_;
-  psDefaultParameters($whatsit);
+  my ($stomach, $WhatchamaCallIt) = @_;
+  psDefaultParameters($WhatchamaCallIt);
   return Digest(T_END); }
 
 # NOTE: This defines a macro with 2 additional leading args: OptionalMatch:* []
@@ -543,15 +543,15 @@ DefEnvironment('{pspicture} [Float] PSCoord OptionalPSCoord',
     . "?#need(</ltx:g>)"
     . "</ltx:picture>",
   afterDigestBegin => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($c0,      $c1)      = ($whatsit->getArg(2), $whatsit->getArg(3));
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($c0,      $c1)      = ($WhatchamaCallIt->getArg(2), $WhatchamaCallIt->getArg(3));
     if (!$c1) {    # Note: the FIRST coord is optional! so if 2nd missing, swap.
       $c1 = $c0; $c0 = ZeroPair(); }
     AssignValue('\psorigin', Pair($c0->getX->negate, $c0->getY->negate));
     my $org = getNecessaryTransform();
     AssignValue('_psActiveCCTransform', $org);
     ackTransform($org);
-    $whatsit->setProperties(need => 1, transform => $org->ptValue,
+    $WhatchamaCallIt->setProperties(need => 1, transform => $org->ptValue,
       pxwidth  => $c1->getX->subtract($c0->getX)->pxValue,
       pxheight => $c1->getY->subtract($c0->getY)->pxValue);
     Let('\par', '\relax');
@@ -562,10 +562,10 @@ DefEnvironment('{pspicture*} [Float] PSCoord PSCoord',
     . "#body"
     . "</ltx:picture>",
   afterDigestBegin => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($c0,      $c1)      = ($whatsit->getArg(2), $whatsit->getArg(3));
-    # $whatsit->setProperty(c0 => $c0);
-    # $whatsit->setProperty(c1 => $c1 ? Pair($c1->getX->subtract($c0->getX),
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($c0,      $c1)      = ($WhatchamaCallIt->getArg(2), $WhatchamaCallIt->getArg(3));
+    # $WhatchamaCallIt->setProperty(c0 => $c0);
+    # $WhatchamaCallIt->setProperty(c1 => $c1 ? Pair($c1->getX->subtract($c0->getX),
     #     $c1->getY->subtract($c0->getY)) : $c0);
 
     # Seems we need to account for the origin here.
@@ -573,7 +573,7 @@ DefEnvironment('{pspicture*} [Float] PSCoord PSCoord',
     my $org = getNecessaryTransform();
     AssignValue('_psActiveCCTransform', $org);
     ackTransform($org);
-    $whatsit->setProperties(need => 1, transform => $org->ptValue,
+    $WhatchamaCallIt->setProperties(need => 1, transform => $org->ptValue,
       pxwidth  => $c1->getX->subtract($c0->getX)->pxValue,
       pxheight => $c1->getY->subtract($c0->getY)->pxValue);
 
@@ -639,13 +639,13 @@ sub getNecessaryTransform {
 DefConstructor('\psset RequiredKeyVals:pstricks',
   "?#need(<ltx:g transform='#transform'>)",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    setGraphParams(%{ GetKeyVals($whatsit->getArg(1)) });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    setGraphParams(%{ GetKeyVals($WhatchamaCallIt->getArg(1)) });
     my ($need, $have) = (getNecessaryTransform(), LookupValue('_psActiveCCTransform'));
     if (!$need->equals($have)) {
       AssignValue('_psActiveCCTransform', $need);
       my $diff = $have->differenceTo($need); ackTransform($diff);
-      $whatsit->setProperties(need => 1, transform => $diff->ptValue);
+      $WhatchamaCallIt->setProperties(need => 1, transform => $diff->ptValue);
       UnshiftValue(beforeAfterGroup => T_CS('\@end@transform@g')); }
     return; });
 
@@ -788,14 +788,14 @@ DefPSConstructor('\parabola', 'PSCoord PSCoord',
   "<ltx:bezier $PSLineAttr #!ARROWS showpoints='#showpoints' points='#path' fill='#fill'/>",
   attributes  => [qw(linecolor linewidth dash showpoints)],
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $p0 = $whatsit->getArg(3);
-    my $p1 = $whatsit->getArg(4);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $p0 = $WhatchamaCallIt->getArg(3);
+    my $p1 = $WhatchamaCallIt->getArg(4);
     my ($x0, $y0, $x1, $y1) = ($p0->getX->pxValue, $p0->getY->pxValue,
       $p1->getX->pxValue, $p1->getY->pxValue);
     my ($xc, $yc) = (2 * $x1 - $x0, 2 * $y1 - $y0);
     # want in svg d => "M$x0,$y0 Q$x0,$yc $xc,$y0"
-    $whatsit->setProperty(path => "$x0,$y0 $x1,$yc $xc,$y0"); });
+    $WhatchamaCallIt->setProperty(path => "$x0,$y0 $x1,$yc $xc,$y0"); });
 
 DefPSConstructor('\pscurve', 'PSCoordList',
   "<ltx:curve $PSLineAttr #!ARROWS points='&ptValue(#3)'"
@@ -886,9 +886,9 @@ DefMacro('\newpsstyle {} RequiredKeyVals:pstricks', sub {
 ##########################################################################################
 
 sub finishLabelPut {
-  my ($whatsit, $angle, $p) = @_;
+  my ($WhatchamaCallIt, $angle, $p) = @_;
   my $t = Transform('translate(' . ($p->getX->valueOf) . ' ' . ($p->getY->valueOf) . ')' . ($angle ? ' rotate(' . $angle->valueOf . ')' : ''));
-  $whatsit->setProperties(transform => $t, fillcolor => LookupValue('\psfillcolor'));
+  $WhatchamaCallIt->setProperties(transform => $t, fillcolor => LookupValue('\psfillcolor'));
   t_Translation($p);
   t_Rotation($angle, 1);
   return; }

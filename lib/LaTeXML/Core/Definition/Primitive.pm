@@ -91,7 +91,7 @@ Boxes or Lists containing basic Unicode content, rather than structured XML,
 or those executed for side effect during digestion in the L<LaTeXML::Core::Stomach>,
 changing the L<LaTeXML::Core::State>.  The results of invoking a C<LaTeXML::Core::Definition::Primitive>,
 if any, should be a list of digested items (C<LaTeXML::Core::Box>, C<LaTeXML::Core::List>
-or C<LaTeXML::Core::Whatsit>).
+or C<LaTeXML::Core::WhatchamaCallIt>).
 
 It extends L<LaTeXML::Core::Definition>.
 

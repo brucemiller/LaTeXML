@@ -8,13 +8,13 @@
   \def\SaveBox#1{\def\mysavedbox{#1}#1}
   \def\UseBox{\mysavedbox}
 \fi
-\title{Verify Reuse of Digested Boxes/Whatsits}
+\title{Verify Reuse of Digested Boxes/WhatchamaCallIts}
 \begin{document}
 % Duplicated nexted XMDuals
 \[ \brackets{\parens{x}} \]
 \[ \BoxDup{\brackets{\parens{x}}} \]
 
-% Check reversion of math whatsits
+% Check reversion of math WhatchamaCallIts
 \SaveBox{$\brackets{\parens{x}}$}
 \UseBox
 \end{document}

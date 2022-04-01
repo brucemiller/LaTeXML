@@ -21,7 +21,7 @@ use LaTeXML::Common::XML;
 use LaTeXML::Common::Dimension;
 use LaTeXML::Core::Alignment::Template;
 use List::Util qw(max sum);
-use base qw(LaTeXML::Core::Whatsit);
+use base qw(LaTeXML::Core::WhatchamaCallIt);
 use base qw(Exporter);
 our @EXPORT = (qw(
     &ReadAlignmentTemplate &MatrixTemplate));
@@ -34,14 +34,14 @@ our @EXPORT = (qw(
 # (where initially, each XMCell will contain an XMArg to indicate
 # individual parsing of each cell's content is desired)
 #
-# An Alignment object is a sort of fake Whatsit;
+# An Alignment object is a sort of fake WhatchamaCallIt;
 # It takes some magic to sneak it into the Digestion stream
 # (see TeX.pool \@start@alignment), but it needs to be created
 # BEFORE the contents of the alignment are digested,
 # since we stuff a lot of information into it
 # (row, column boxes, borders, spacing, etc...)
 # But once it has been captured, it should otherwise act
-# like a Whatsit and be responsible for construction (beAbsorbed),
+# like a WhatchamaCallIt and be responsible for construction (beAbsorbed),
 # and sizing estimation (computeSize)
 #
 # Ultimately, this should be better tied into DefConstructor
@@ -255,7 +255,7 @@ sub endColumn {
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Making the Alignment act like a Whatsit
+# Making the Alignment act like a WhatchamaCallIt
 sub toString {
   my ($self) = @_;
   return "Alignment[]"; }
@@ -304,7 +304,7 @@ sub beAbsorbed {
     $STATE->assignValue(absorb_count => ++$absorb_counter, 'global');
     if ($absorb_counter > $LaTeXML::ABSORB_LIMIT) {
       Fatal('timeout', 'absorb_limit', $self,
-        "Whatsit absorb limit of $LaTeXML::ABSORB_LIMIT exceeded, infinite loop?"); } }
+        "WhatchamaCallIt absorb limit of $LaTeXML::ABSORB_LIMIT exceeded, infinite loop?"); } }
 
   # We _should_ attach boxes to the alignment and rows,
   # but (ATM) we've only got sensible boxes for the cells.

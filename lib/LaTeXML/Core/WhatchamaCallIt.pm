@@ -1,5 +1,5 @@
 # /=====================================================================\ #
-# |  LaTeXML::Core::Whatsit                                             | #
+# |  LaTeXML::Core::WhatchamaCallIt                                             | #
 # | Digested objects produced in the Stomach                            | #
 # |=====================================================================| #
 # | Part of LaTeXML:                                                    | #
@@ -10,7 +10,7 @@
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
 #**********************************************************************
-# LaTeXML Whatsit.
+# LaTeXML WhatchamaCallIt.
 #  Some arbitrary object, possibly with arguments.
 # Particularly as an intermediate representation for invocations of control
 # sequences that do NOT get expanded or processed, but are taken to represent
@@ -18,7 +18,7 @@
 # These get preserved in the expanded/processed token stream to be
 # converted into XML objects in the document.
 #**********************************************************************
-package LaTeXML::Core::Whatsit;
+package LaTeXML::Core::WhatchamaCallIt;
 use strict;
 use warnings;
 use LaTeXML::Global;
@@ -35,7 +35,7 @@ use base qw(LaTeXML::Core::Box);
 
 # Specially recognized (some required?) properties:
 #  font    : The font object
-#  locator : a locator object, where in the source this whatsit was created
+#  locator : a locator object, where in the source this WhatchamaCallIt was created
 #  isMath  : whether this is a math object
 #  id
 #  body
@@ -91,7 +91,7 @@ sub getTrailer {
   my ($self) = @_;
   return $$self{properties}{trailer}; }
 
-# So a Whatsit can stand in for a List
+# So a WhatchamaCallIt can stand in for a List
 sub unlist {
   my ($self) = @_;
   return ($self); }
@@ -143,12 +143,12 @@ sub revert {
       $$self{reversion} = Tokens(@tokens); }
     return @tokens; } }
 
-# Like Tokens-substituteParameters, but substitutes in the Whatsit's arguments OR properties!
+# Like Tokens-substituteParameters, but substitutes in the WhatchamaCallIt's arguments OR properties!
 # #<digit> is the standard TeX positional argument
 # # followed by a T_OTHER(propname) specifies the property propname!!
 sub substituteParameters {
   my ($self, $spec) = @_;
-# TODO: This is kind of unfortunate -- I am not sure what are the reasonable "entryways" into the Whatsit substituteParameters. For Expandable we now have guarantees that "#,i" has been mapped into a single T_ARG(#i), but not here.
+# TODO: This is kind of unfortunate -- I am not sure what are the reasonable "entryways" into the WhatchamaCallIt substituteParameters. For Expandable we now have guarantees that "#,i" has been mapped into a single T_ARG(#i), but not here.
 # so for now run on each call?
   my @in     = $spec->unlist;
   my @args   = $self->getArgs;
@@ -177,7 +177,7 @@ sub getString {
 sub stringify {
   my ($self) = @_;
   my $hasbody = defined $$self{properties}{body};
-  return "Whatsit[" . join(',', $self->getDefinition->getCS->getCSName,
+  return "WhatchamaCallIt[" . join(',', $self->getDefinition->getCS->getCSName,
     map { Stringify($_) }
       $self->getArgs,
     (defined $$self{properties}{body}
@@ -207,7 +207,7 @@ sub beAbsorbed {
     $STATE->assignValue(absorb_count => ++$absorb_counter, 'global');
     if ($absorb_counter > $LaTeXML::ABSORB_LIMIT) {
       Fatal('timeout', 'absorb_limit', $self,
-        "Whatsit absorb limit of $LaTeXML::ABSORB_LIMIT exceeded, infinite loop?"); } }
+        "WhatchamaCallIt absorb limit of $LaTeXML::ABSORB_LIMIT exceeded, infinite loop?"); } }
 
   my $defn     = $self->getDefinition;
   my $profiled = $STATE->lookupValue('PROFILING') && $defn->getCS;
@@ -237,7 +237,7 @@ sub computeSize {
         my $arg = $1;
         push(@boxes, ($arg =~ /^\d+$/ ? $self->getArg($arg) : $$props{$arg})); }
       # Special case: If only a single object to be sized and it is a List, unlist it.
-      # This is so that whatsit's layout properties will be applied to the sequence
+      # This is so that WhatchamaCallIt's layout properties will be applied to the sequence
       if ((scalar(@boxes) == 1) && ((ref $boxes[0]) eq 'LaTeXML::Core::List')) {
         @boxes = $boxes[0]->unlist; } }
     else {
@@ -253,7 +253,7 @@ __END__
 
 =head1 NAME
 
-C<LaTeXML::Core::Whatsit> - Representations of digested objects.
+C<LaTeXML::Core::WhatchamaCallIt> - Representations of digested objects.
 
 =head1 DESCRIPTION
 
@@ -266,55 +266,55 @@ Note that the font is stored in the data properties under 'font'.
 
 =over 4
 
-=item C<< $defn = $whatsit->getDefinition; >>
+=item C<< $defn = $WhatchamaCallIt->getDefinition; >>
 
-Returns the L<LaTeXML::Core::Definition> responsible for creating C<$whatsit>.
+Returns the L<LaTeXML::Core::Definition> responsible for creating C<$WhatchamaCallIt>.
 
-=item C<< $value = $whatsit->getProperty($key); >>
+=item C<< $value = $WhatchamaCallIt->getProperty($key); >>
 
-Returns the value associated with C<$key> in the C<$whatsit>'s property list.
+Returns the value associated with C<$key> in the C<$WhatchamaCallIt>'s property list.
 
-=item C<< $whatsit->setProperty($key,$value); >>
+=item C<< $WhatchamaCallIt->setProperty($key,$value); >>
 
-Sets the C<$value> associated with the C<$key> in the C<$whatsit>'s property list.
+Sets the C<$value> associated with the C<$key> in the C<$WhatchamaCallIt>'s property list.
 
-=item C<< $props = $whatsit->getProperties(); >>
+=item C<< $props = $WhatchamaCallIt->getProperties(); >>
 
-Returns the hash of properties stored on this Whatsit.
+Returns the hash of properties stored on this WhatchamaCallIt.
 (Note that this hash is modifiable).
 
-=item C<< $props = $whatsit->setProperties(%keysvalues); >>
+=item C<< $props = $WhatchamaCallIt->setProperties(%keysvalues); >>
 
 Sets several properties, like setProperty.
 
-=item C<< $list = $whatsit->getArg($n); >>
+=item C<< $list = $WhatchamaCallIt->getArg($n); >>
 
-Returns the C<$n>-th argument (starting from 1) for this C<$whatsit>.
+Returns the C<$n>-th argument (starting from 1) for this C<$WhatchamaCallIt>.
 
-=item C<< @args = $whatsit->getArgs; >>
+=item C<< @args = $WhatchamaCallIt->getArgs; >>
 
-Returns the list of arguments for this C<$whatsit>.
+Returns the list of arguments for this C<$WhatchamaCallIt>.
 
-=item C<< $whatsit->setArgs(@args); >>
+=item C<< $WhatchamaCallIt->setArgs(@args); >>
 
-Sets the list of arguments for this C<$whatsit> to C<@args> (each arg should be
+Sets the list of arguments for this C<$WhatchamaCallIt> to C<@args> (each arg should be
 a C<LaTeXML::Core::List>).
 
-=item C<< $list = $whatsit->getBody; >>
+=item C<< $list = $WhatchamaCallIt->getBody; >>
 
-Return the body for this C<$whatsit>. This is only defined for environments or
+Return the body for this C<$WhatchamaCallIt>. This is only defined for environments or
 top-level math formula.  The body is stored in the properties under 'body'.
 
-=item C<< $whatsit->setBody(@body); >>
+=item C<< $WhatchamaCallIt->setBody(@body); >>
 
-Sets the body of the C<$whatsit> to the boxes in C<@body>.  The last C<$box> in C<@body>
+Sets the body of the C<$WhatchamaCallIt> to the boxes in C<@body>.  The last C<$box> in C<@body>
 is assumed to represent the `trailer', that is the result of the invocation
 that closed the environment or math.  It is stored separately in the properties
 under 'trailer'.
 
-=item C<< $list = $whatsit->getTrailer; >>
+=item C<< $list = $WhatchamaCallIt->getTrailer; >>
 
-Return the trailer for this C<$whatsit>. See C<setBody>.
+Return the trailer for this C<$WhatchamaCallIt>. See C<setBody>.
 
 =back
 

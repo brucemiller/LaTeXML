@@ -278,9 +278,9 @@ equivalent).
 Invoke the action of the C<$defn>.  For expandable definitions, this is done in
 the Gullet, and returns a list of L<LaTeXML::Core::Token>s.  For primitives, it
 is carried out in the Stomach, and returns a list of L<LaTeXML::Core::Box>es.
-For a constructor, it is also carried out by the Stomach, and returns a L<LaTeXML::Core::Whatsit>.
-That whatsit will be responsible for constructing the XML document fragment, when the
-L<LaTeXML::Core::Document> invokes C<$whatsit->beAbsorbed($document);>.
+For a constructor, it is also carried out by the Stomach, and returns a L<LaTeXML::Core::WhatchamaCallIt>.
+That WhatchamaCallIt will be responsible for constructing the XML document fragment, when the
+L<LaTeXML::Core::Document> invokes C<$WhatchamaCallIt->beAbsorbed($document);>.
 
 Primitives and Constructors also support before and after daemons, lists of subroutines
 that are executed before and after digestion.  These can be useful for changing modes, etc.

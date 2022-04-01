@@ -42,8 +42,8 @@ DefConstructor('\lx@proof@stack{}{}{}{}',
     . "</ltx:XMRow>"
     . "</ltx:XMArray>",
   afterDigest => sub {
-    my ($doc, $whatsit) = @_;
-    my ($top, $op, $bot) = $whatsit->getArgs;
+    my ($doc, $WhatchamaCallIt) = @_;
+    my ($top, $op, $bot) = $WhatchamaCallIt->getArgs;
     if ($top->getWidth->valueOf > $bot->getWidth->valueOf) {
       $bot->setProperty(stretchto => $top->getWidth); }
     return; });

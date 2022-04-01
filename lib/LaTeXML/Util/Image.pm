@@ -242,15 +242,15 @@ sub image_graphicx_size {
 
 # Totally doesn't belong here, but want to share...
 sub image_graphicx_sizer {
-  my ($whatsit) = @_;
-  if (my $candidates = $whatsit->getProperty('candidates')) {
+  my ($WhatchamaCallIt) = @_;
+  if (my $candidates = $WhatchamaCallIt->getProperty('candidates')) {
     my $dpi = ($STATE && $STATE->lookupValue('DPI')) || $DPI;
     foreach my $source (split(/,/, $candidates)) {
       if (!pathname_is_absolute($source)) {
         if (my $base = $STATE->lookupValue('SOURCEDIRECTORY')) {
           $source = pathname_concat($base, $source); } }
       # Skip anything that a lower level imgsize can't understand
-      my $options = $whatsit->getProperty('options');
+      my $options = $WhatchamaCallIt->getProperty('options');
       local $LaTeXML::IGNORE_ERRORS = 1;
       my ($w, $h) = image_graphicx_size($source, image_graphicx_parse($options), DPI => $dpi);
       return (Dimension($w * 72.27 / $dpi . 'pt'), Dimension($h * 72.27 / $dpi . 'pt'), Dimension(0)) if $w; } }

@@ -210,7 +210,7 @@ DefConstructor('\hyperlink Semiverbatim {}',
 DefMacro('\hyper@@link{}{}{}', '\hyperlink{#2}{#3}');
 
 sub localized_anchor {
-  my ($document, $whatsit) = @_;
+  my ($document, $WhatchamaCallIt) = @_;
   my $model      = $STATE->getModel;
   my $node       = $document->getNode;
   my @candidates = ($node);
@@ -222,7 +222,7 @@ sub localized_anchor {
       unshift(@candidates, $candidate->childNodes); }
     elsif ($type = XML_TEXT_NODE) {
       last; } }
-  my $id = $whatsit->getProperty('id');
+  my $id = $WhatchamaCallIt->getProperty('id');
   if ($candidate) {
     my $anchor = $document->wrapNodes('ltx:anchor', $candidate);
     $anchor->setAttribute('xml:id', $id);

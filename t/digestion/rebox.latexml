@@ -1,15 +1,15 @@
 use LaTeXML::Package;
 
-# Simple reuse of Whatsit
+# Simple reuse of WhatchamaCallIt
 DefConstructor('\BoxDup{}',
   "<ltx:XMWrap><ltx:XMWrap>#1</ltx:XMWrap><ltx:XMWrap>#1</ltx:XMWrap></ltx:XMWrap>");
 
-# Deferred reuse of Whatsit
+# Deferred reuse of WhatchamaCallIt
 DefConstructor('\SaveBox{}', "#1",
   afterDigest => sub {
-    AssignValue(SAVED_WHATSIT => $_[1]->getArg(1), 'global'); });
+    AssignValue(SAVED_WhatchamaCallIt => $_[1]->getArg(1), 'global'); });
 DefConstructor('\UseBox', "#savedbox",
-  properties => sub { (savedbox => LookupValue('SAVED_WHATSIT')); });
+  properties => sub { (savedbox => LookupValue('SAVED_WhatchamaCallIt')); });
 
 # Some math macros that create ltx:XMDual's for testing
 DefMath('\parens{}',   '(#1)', meaning => parentheses);

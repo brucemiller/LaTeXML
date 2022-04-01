@@ -43,13 +43,13 @@ DefConstructor('\epigraph{}{}',
   bounded      => 1,
   beforeDigest => sub { Digest(T_CS('\epigraphsize')); },
   afterDigest  => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     my $rule  = LookupValue('\epigraphrule')->ptValue . 'pt';
     my $width = LookupValue('\epigraphwidth')->ptValue . 'pt';
     my $qa    = ToString(Digest(T_CS('\epigraphflush')));
     my $ta    = ToString(Digest(T_CS('\textflush')));
     my $sa    = ToString(Digest(T_CS('\sourceflush')));
-    $whatsit->setProperties(srule => "border-top:solid $rule;",
+    $WhatchamaCallIt->setProperties(srule => "border-top:solid $rule;",
       qwidth => "width:$width;",
       qalign => ($qa eq 'center'
         ? "margin-right:auto; margin-left:auto;"

@@ -269,10 +269,10 @@ DefKeyVal('multirow', 'width',  'Dimension');
 DefKeyVal('multirow', 'rowsep', 'Dimension');
 
 sub rearrangeAMSMultirow {
-  my ($document, $whatsit, $array) = @_;
+  my ($document, $WhatchamaCallIt, $array) = @_;
   my @rows = element_nodes($array);
   # Adjust alignment of rows
-  if (defined(my $rowalignment = $whatsit->getProperty('MULTIROW_ALIGNMENT_RULE'))) {
+  if (defined(my $rowalignment = $WhatchamaCallIt->getProperty('MULTIROW_ALIGNMENT_RULE'))) {
     my %align_spec = %{$rowalignment};
     if (defined $align_spec{'default'}) {
       for my $i (0 .. $#rows) {
@@ -640,7 +640,7 @@ sub rearrangeLoneAMSAligned {
             if (my $stuff = $cell->firstChild) {
               push(@cells, $stuff);
               my $imath = $document->openElementAt($td, 'ltx:Math',
-                _box => MathWhatsit(Digest(T_CS('\displaystyle')),
+                _box => MathWhatchamaCallIt(Digest(T_CS('\displaystyle')),
                   $document->getNodeBox($stuff)));
               my $xmath = $document->openElementAt($imath, 'ltx:XMath');
               # Clone the math nodes from the original equation but morphing the ID's
@@ -653,7 +653,7 @@ sub rearrangeLoneAMSAligned {
           # keeping the original ID's [This should be OK, due to moving the nodes, not recreating]
           map { $main->firstChild->appendChild($_) } map { $_->childNodes } @cells;
           # and synthesize a box from the lhs & rhs.
-          $document->setNodeBox($main, MathWhatsit(map { $document->getNodeBox($_) } @cells));
+          $document->setNodeBox($main, MathWhatchamaCallIt(map { $document->getNodeBox($_) } @cells));
           closeMathFork($document, $eqn, $main, $branch);
   } } } }
   return; }
@@ -691,7 +691,7 @@ DefConstructor('\lx@ams@cases@ RequiredKeyVals:lx@GEN DigestedBody',
       $point);
   },
   reversion => sub {
-    my ($whatsit, $kv, $body) = @_;
+    my ($WhatchamaCallIt, $kv, $body) = @_;
     my $name = $kv->getValue('name');
     (T_CS('\begin'), T_BEGIN, Revert($name), T_END,
       Revert($body),
@@ -782,15 +782,15 @@ DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
     . ")",
   properties  => sub { %{ $_[1]->getKeyVals }; },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $kv = $whatsit->getArg(1);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $kv = $WhatchamaCallIt->getArg(1);
     if ($kv->getValue('datameaning') || $kv->getValue('delimitermeaning')) {
-      $whatsit->setProperties(
+      $WhatchamaCallIt->setProperties(
         needXMDual => 1,
         xmkey      => LaTeXML::Package::getXMArgID()); }
     return; },
   reversion => sub {
-    my ($whatsit, $kv, $body) = @_;
+    my ($WhatchamaCallIt, $kv, $body) = @_;
     my $name  = $kv->getValue('name');
     my $align = $kv->getValue('alignment');
     (($name ? (T_CS('\begin'), T_BEGIN, Revert($name), T_END) : ()),
@@ -964,7 +964,7 @@ DefConstructor('\lx@long@arrow DefToken {}[]{}',
     . "</ltx:XMApp>"
     . ")",
   reversion => sub {
-    my ($whatsit, $cs, $arrow, $under, $over) = @_;
+    my ($WhatchamaCallIt, $cs, $arrow, $under, $over) = @_;
     ($cs, ($under ? (T_OTHER('['), Revert($under), T_OTHER(']')) : ()), T_BEGIN, Revert($over), T_END); },
   # specialize to ldots ???
   properties => { font => sub { LookupValue('font')->specialize("\x{2026}"); } });
@@ -1052,21 +1052,21 @@ DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
     . "</ltx:XMWrap>"
     . "</ltx:XMDual>)()",
   reversion => sub {
-    my ($whatsit) = @_;
-    my ($open, $thickness, $close, $stylecode) = $whatsit->getArgs;
-    $open  = $open->getArg(1)  if ref $open eq 'LaTeXML::Core::Whatsit';
-    $close = $close->getArg(1) if ref $close eq 'LaTeXML::Core::Whatsit';
+    my ($WhatchamaCallIt) = @_;
+    my ($open, $thickness, $close, $stylecode) = $WhatchamaCallIt->getArgs;
+    $open  = $open->getArg(1)  if ref $open eq 'LaTeXML::Core::WhatchamaCallIt';
+    $close = $close->getArg(1) if ref $close eq 'LaTeXML::Core::WhatchamaCallIt';
     (T_CS('\genfrac'),
       T_BEGIN, Revert($open),  T_END,    # Assumes wrapped in \@left/\@right!
       T_BEGIN, Revert($close), T_END,
       T_BEGIN, ($thickness ? Revert($thickness) : ()), T_END,
       T_BEGIN, ($stylecode ? Revert($stylecode) : ()), T_END,
-      T_BEGIN, Revert($whatsit->getProperty('top')),    T_END,
-      T_BEGIN, Revert($whatsit->getProperty('bottom')), T_END); },
+      T_BEGIN, Revert($WhatchamaCallIt->getProperty('top')),    T_END,
+      T_BEGIN, Revert($WhatchamaCallIt->getProperty('bottom')), T_END); },
   sizer       => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($open, $thickness, $close, $stylecode) = $whatsit->getArgs;
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($open, $thickness, $close, $stylecode) = $WhatchamaCallIt->getArgs;
     $stylecode = $stylecode->valueOf if defined $stylecode;
     my $mathstyle = (!defined $stylecode
       ? LookupValue('font')->getMathstyle
@@ -1082,7 +1082,7 @@ DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
     $stomach->egroup;
     my $meaning = ($thickness && ($thickness->valueOf == 0) ? undef : 'divide');
     my $role    = 'FRACOP';
-    $whatsit->setProperties(
+    $WhatchamaCallIt->setProperties(
       open      => $open,
       close     => $close,
       role      => $role,
@@ -1093,7 +1093,7 @@ DefConstructor('\lx@@genfrac{}[Dimension]{}[Number]',
       bottom    => $denom);
 
     if ($open || $close) {
-      $whatsit->setProperties(needXMDual => 1,
+      $WhatchamaCallIt->setProperties(needXMDual => 1,
         xmkey0 => LaTeXML::Package::getXMArgID(),
         xmkey1 => LaTeXML::Package::getXMArgID(),
         xmkey2 => LaTeXML::Package::getXMArgID()); }

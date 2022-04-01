@@ -109,11 +109,11 @@ DefConstructor('\fcolorbox[]{}{} Undigested',
     . " _noautoclose='1'>#text</ltx:text>",
   bounded => 1, mode => 'text',
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($model, $fspec, $bspec, $text) = $whatsit->getArgs;
-    $whatsit->setProperty(framecolor => ParseColor($model, $fspec));
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($model, $fspec, $bspec, $text) = $WhatchamaCallIt->getArgs;
+    $WhatchamaCallIt->setProperty(framecolor => ParseColor($model, $fspec));
     MergeFont(background => ParseColor($model, $bspec));
-    $whatsit->setProperty(text => Digest($text)); });
+    $WhatchamaCallIt->setProperty(text => Digest($text)); });
 
 #********************************************************************************
 # Low-level stuff; redefined from LaTeX stubs

@@ -37,8 +37,8 @@ DefConstructor('\Ovalbox MoveableBox',
 
 DefEnvironment('{Sbox}', '',
   afterDigestBody => sub {
-    my ($stomach, $whatsit) = @_;
-    AssignValue('Sbox' => $whatsit->getBody, 'global'); });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    AssignValue('Sbox' => $WhatchamaCallIt->getBody, 'global'); });
 
 DefPrimitive('\TheSbox', sub {
     my $stuff = LookupValue('Sbox');

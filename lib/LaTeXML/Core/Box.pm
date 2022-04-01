@@ -128,7 +128,7 @@ sub beAbsorbed {
     $STATE->assignValue(absorb_count => ++$absorb_counter, 'global');
     if ($absorb_counter > $LaTeXML::ABSORB_LIMIT) {
       Fatal('timeout', 'absorb_limit', $self,
-        "Whatsit absorb limit of $LaTeXML::ABSORB_LIMIT exceeded, infinite loop?"); } }
+        "WhatchamaCallIt absorb limit of $LaTeXML::ABSORB_LIMIT exceeded, infinite loop?"); } }
 
   return (((defined $string) && ($string ne '')) || $$self{properties}{width}    # ?
     ? ($mode eq 'math'
@@ -316,7 +316,7 @@ Returns whether C<$digested> was created in math mode.
 =item C<< @boxes = $digested->unlist; >>
 
 Returns a list of the boxes contained in C<$digested>.
-It is also defined for the Boxes and Whatsit (which just
+It is also defined for the Boxes and WhatchamaCallIt (which just
 return themselves) so they can stand-in for a List.
 
 =item C<< $string = $digested->toString; >>

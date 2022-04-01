@@ -192,9 +192,9 @@ DefConstructor('\rotatebox OptionalKeyVals:Grot {Float} {}',
     . "#3"
     . "</ltx:inline-block>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($kv, $angle, $box) = $whatsit->getArgs();
-    $whatsit->setProperties(rotatedProperties($box, $angle, ($kv ? $kv->getHash : ()))); });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($kv, $angle, $box) = $WhatchamaCallIt->getArgs();
+    $WhatchamaCallIt->setProperties(rotatedProperties($box, $angle, ($kv ? $kv->getHash : ()))); });
 # Backwards!
 DefMacro('\Grot@erotate', '\rotatebox[]');
 

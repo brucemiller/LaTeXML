@@ -39,8 +39,8 @@ DefEnvironment('{sideways}',
     . "#body"
     . "</ltx:inline-block>",
   afterDigestBody => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setProperties(rotatedProperties($WhatchamaCallIt->getBody, 90)); });
 
 DefEnvironment('{turn}{Float}',
   "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
@@ -50,8 +50,8 @@ DefEnvironment('{turn}{Float}',
     . "#body"
     . "</ltx:inline-block>",
   afterDigestBody => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties($whatsit->getBody, $whatsit->getArg(1))); });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setProperties(rotatedProperties($WhatchamaCallIt->getBody, $WhatchamaCallIt->getArg(1))); });
 
 DefEnvironment('{rotate}{Float}',
   "<ltx:inline-block angle='#angle' width='#width' height='#height' depth='#depth'"
@@ -61,8 +61,8 @@ DefEnvironment('{rotate}{Float}',
     . "#body"
     . "</ltx:inline-block>",
   afterDigestBody => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties($whatsit->getBody, $whatsit->getArg(1), smash => 1)); });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setProperties(rotatedProperties($WhatchamaCallIt->getBody, $WhatchamaCallIt->getArg(1), smash => 1)); });
 
 # \turnbox{angle}{stuff}
 # Same as graphics' \rotatebox ?
@@ -102,8 +102,8 @@ DefEnvironment('{sidewaysfigure}[]',
   beforeDigest    => sub { beforeFloat('figure'); },
   afterDigest     => sub { afterFloat($_[1]); },
   afterDigestBody => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setProperties(rotatedProperties($WhatchamaCallIt->getBody, 90)); });
 
 DefEnvironment('{sidewaysfigure*}[]',
   "<ltx:figure xml:id='#id' ?#1(placement='#1')"
@@ -118,8 +118,8 @@ DefEnvironment('{sidewaysfigure*}[]',
   beforeDigest    => sub { beforeFloat('figure', double => 1); },
   afterDigest     => sub { afterFloat($_[1]); },
   afterDigestBody => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setProperties(rotatedProperties($WhatchamaCallIt->getBody, 90)); });
 
 DefEnvironment('{sidewaystable}[]',
   "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')"
@@ -135,8 +135,8 @@ DefEnvironment('{sidewaystable}[]',
   afterDigest  => sub { afterFloat($_[1]); },
 
   afterDigestBody => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setProperties(rotatedProperties($WhatchamaCallIt->getBody, 90)); });
 
 DefEnvironment('{sidewaystable*}[]',
   "<ltx:table xml:id='#id' inlist='#inlist' ?#1(placement='#1')"
@@ -152,8 +152,8 @@ DefEnvironment('{sidewaystable*}[]',
   afterDigest  => sub { afterFloat($_[1]); },
 
   afterDigestBody => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setProperties(rotatedProperties($whatsit->getBody, 90)); });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setProperties(rotatedProperties($WhatchamaCallIt->getBody, 90)); });
 
 # This is likely to be totally wrong.
 # This way puts the caption where it can't be!

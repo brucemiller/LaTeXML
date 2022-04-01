@@ -24,12 +24,12 @@ DefEnvironment('{overpic} OptionalKeyVals:Gin Semiverbatim',
     . " tex='#tex'>"
     . "</ltx:picture>",
   afterDigestBody => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($kv, $graphic)      = $whatsit->getArgs();
-    my $gwhatsit = Digest(Invocation(T_CS('\@includegraphicx'), undef, $kv, $graphic));
-    my ($w, $h, $d, $cw, $ch, $cd) = $gwhatsit->getSize;
-    $whatsit->setProperties(
-      tex    => UnTeX(Tokens($whatsit->revert)),
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($kv, $graphic)      = $WhatchamaCallIt->getArgs();
+    my $gWhatchamaCallIt = Digest(Invocation(T_CS('\@includegraphicx'), undef, $kv, $graphic));
+    my ($w, $h, $d, $cw, $ch, $cd) = $gWhatchamaCallIt->getSize;
+    $WhatchamaCallIt->setProperties(
+      tex    => UnTeX(Tokens($WhatchamaCallIt->revert)),
       width  => $w, height  => $h, depth  => $d,
       cwidth => $w, cheight => $h, cdepth => $d);
     return; });

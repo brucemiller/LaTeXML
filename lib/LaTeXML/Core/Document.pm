@@ -555,7 +555,7 @@ sub serialize_attr {
 # [Note that recording the nodes being constructed isn't all that costly,
 # but filtering them for parent/child relations IS, particularly since it usually isn't needed]
 #
-# A $box that is a Box, or List, or Whatsit, is responsible for carrying out
+# A $box that is a Box, or List, or WhatchamaCallIt, is responsible for carrying out
 # its own insertion, but it should ultimately call methods of Document
 # that will record the nodes that were created.
 # $box can also be a plain string which will be inserted according to whatever
@@ -573,7 +573,7 @@ sub absorb {
     if (((ref $box) || 'nothing') eq 'LaTeXML::Core::List') {
       unshift(@boxes, $box->unlist);
       next; }
-    # A Proper Box or Whatsit? It will handle it.
+    # A Proper Box or WhatchamaCallIt? It will handle it.
     if (ref $box) {
       local $LaTeXML::BOX = $box;
       # [ATTEMPT to] only record if we're running in NON-VOID context.
@@ -2054,10 +2054,10 @@ and also provides the methods for constructing it.
 It extends L<LaTeXML::Common::Object>.
 
 LaTeXML will have digested the source material resulting in a L<LaTeXML::Core::List> (from a L<LaTeXML::Core::Stomach>)
-of  L<LaTeXML::Core::Box>s, L<LaTeXML::Core::Whatsit>s and sublists.  At this stage, a document is created
+of  L<LaTeXML::Core::Box>s, L<LaTeXML::Core::WhatchamaCallIt>s and sublists.  At this stage, a document is created
 and it is responsible for `absorbing' the digested material.
 Generally, the L<LaTeXML::Core::Box>s and L<LaTeXML::Core::List>s create text nodes,
-whereas the L<LaTeXML::Core::Whatsit>s create C<XML> document fragments, elements
+whereas the L<LaTeXML::Core::WhatchamaCallIt>s create C<XML> document fragments, elements
 and attributes according to the defining L<LaTeXML::Core::Definition::Constructor>.
 
 Most document construction occurs at a I<current insertion point> where material will
@@ -2400,7 +2400,7 @@ Returns the node, if any, that is associated with the given C<$id>.
 
 =item C<< $document->setNodeBox($node,$box); >>
 
-Records the C<$box> (being a Box, Whatsit or List), that
+Records the C<$box> (being a Box, WhatchamaCallIt or List), that
 was (presumably) responsible for the creation of the element C<$node>.
 This information is useful for determining source locations,
 original TeX strings, and so forth.

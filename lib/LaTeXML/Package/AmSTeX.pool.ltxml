@@ -65,8 +65,8 @@ DefPrimitive('\undefine Token', sub {
 DefConstructor('\documentstyle  Semiverbatim',
   "<?latexml class='#1' amstex='true'?>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $style = ToString($whatsit->getArg(1));
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $style = ToString($WhatchamaCallIt->getArg(1));
     # Load the package, but note that we're pretending it's a class (to some extent!)
     RequirePackage($style, type => 'sty', notex => 1, as_class => 1)
       || RequirePackage('amsppt');

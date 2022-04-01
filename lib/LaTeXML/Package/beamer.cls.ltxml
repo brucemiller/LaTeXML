@@ -480,7 +480,7 @@ my @BEAMER_PROCESSLINE_MARKS = (
 # skip everything until that token
 DefConstructorI(T_CS('\beamer@processline'), undef, '', reversion => '',
   afterDigest => [sub {
-      my ($stomach, $whatsit) = @_;
+      my ($stomach, $WhatchamaCallIt) = @_;
       my $gullet = $stomach->getGullet;
       $gullet->readRawLine;
       my ($unused, $line) = readRawUntilMatch($gullet, @BEAMER_PROCESSLINE_MARKS);

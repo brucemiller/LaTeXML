@@ -248,15 +248,15 @@ DefConstructor('\@@listings {}',
 DefConstructor('\@@listings@block {} {}',
 "<ltx:listing class='ltx_lstlisting' data='#data' datamimetype='#datamimetype' dataencoding='#dataencoding'>#2</ltx:listing>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     # Could have some options about encoding?
-    my $data_key      = 'LISTINGS_DATA_' . ToString($whatsit->getArg(1));
+    my $data_key      = 'LISTINGS_DATA_' . ToString($WhatchamaCallIt->getArg(1));
     my $listings_data = LookupValue($data_key);
     if (is_utf8($listings_data)) {
       $listings_data = encode('UTF-8', $listings_data);
     }
     my $data = encode_base64($listings_data, '');    # NO linebreaking!
-    $whatsit->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64', layout => 'vertical'); });
+    $WhatchamaCallIt->setProperties(data => $data, datamimetype => 'text/plain', dataencoding => 'base64', layout => 'vertical'); });
 
 DefMacro('\lst@HRefStepCounter{}', '');
 

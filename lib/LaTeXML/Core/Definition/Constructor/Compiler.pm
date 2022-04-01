@@ -19,7 +19,7 @@ use LaTeXML::Common::XML;
 use Scalar::Util qw(refaddr);
 
 # We recognize several special operators:
-#  #      #number|name      accesses an argument to or property of the whatsit
+#  #      #number|name      accesses an argument to or property of the WhatchamaCallIt
 #  ? ( )  ?test(if)(else)   a conditional, test
 #  & ,    &func(arg,...)    replaces by result of function call
 #  < >    <qname attr...>   generates xml tag
@@ -188,13 +188,13 @@ sub translate_value {
       last unless s/^\s*\,\s*//; }
     die "Missing ')' in &$fcn(...) at '$_'\n" unless s/\)//;
     $value = "$fcn(" . join(',', @args) . ")"; }
-  elsif (s/^\#(\d+)//) {       # Recognize an explicit #1 for whatsit args
+  elsif (s/^\#(\d+)//) {       # Recognize an explicit #1 for WhatchamaCallIt args
     my $n = $1;
     if (($n < 1) || ($n > $LaTeXML::Core::Definition::Constructor::NARGS)) {
       die "Illegal argument number $n at '$_'\n"; }
     else {
       $value = "\$arg$n" } }
-  elsif (s/^\#([\w\-_]+)//) { $value = "\$prop{'$1'}"; }    # Recognize #prop for whatsit properties
+  elsif (s/^\#([\w\-_]+)//) { $value = "\$prop{'$1'}"; }    # Recognize #prop for WhatchamaCallIt properties
   elsif (s/^((?:$QUOTED_SPECIALS|[^\Q$SPECIALS$exclude\E])+)//s) {
     $value = "'" . slashify(unquote($1)) . "'"; }
   else { die "Missing value at '$_'\n"; }
@@ -232,7 +232,7 @@ sub translate_string {
   else { return join('.', (map { (/^\'/ ? $_ : " ToString($_)") } @values)); } }
 
 # Parse a set of attribute value pairs from a constructor pattern,
-# substituting argument and property values from the whatsit.
+# substituting argument and property values from the WhatchamaCallIt.
 # Special cases:
 #  hashes  %[value] the value is expected to return a hash!
 #  Conditions are allowed; the branches should also be pairs or hashes

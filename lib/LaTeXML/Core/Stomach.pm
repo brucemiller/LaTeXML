@@ -141,7 +141,7 @@ sub digest {
 # If it is a primitive or constructor, the definition will be invoked,
 # possibly arguments will be parsed from the Gullet.
 # Otherwise, the token is simply digested: turned into an appropriate box.
-# Returns a list of boxes/whatsits.
+# Returns a list of boxes/WhatchamaCallIts.
 my $MAXSTACK = 200;    # [CONSTANT]
 
 # Overly complex, but want to avoid recursion/stack
@@ -212,7 +212,7 @@ INVOKE:
 
 sub makeMisdefinedError {
   my (@objects) = @_;
-  return LaTeXML::Core::Whatsit->new($STATE->lookupDefinition(T_CS('\@ERROR')),
+  return LaTeXML::Core::WhatchamaCallIt->new($STATE->lookupDefinition(T_CS('\@ERROR')),
     ['misdefined', join('', map { ToString($_); } @objects)],
     font => $STATE->lookupValue('font'),
   ); }
@@ -277,7 +277,7 @@ sub popStackFrame {
     if (@$beforeafter) {
       my @result = map { $_->beDigested($self) } @$beforeafter;
       if (my ($x) = grep { !$_->isaBox } @result) {
-        Error('misdefined', $x, $self, "Expected a Box|List|Whatsit, but got '" . Stringify($x) . "'");
+        Error('misdefined', $x, $self, "Expected a Box|List|WhatchamaCallIt, but got '" . Stringify($x) . "'");
         @result = (makeMisdefinedError(@result)); }
       push(@LaTeXML::LIST, @result); } }
   my $after = $STATE->lookupValue('afterGroup');
@@ -432,7 +432,7 @@ are collected into a L<LaTeXML::Core::List>.
 =item Constructors
 
 A special class of control sequence, called a L<LaTeXML::Core::Definition::Constructor> produces a
-L<LaTeXML::Core::Whatsit> which remembers the control sequence and arguments that
+L<LaTeXML::Core::WhatchamaCallIt> which remembers the control sequence and arguments that
 created it, and defines its own translation into C<XML> elements, attributes and data.
 Arguments to a constructor are read from the gullet and also digested.
 
@@ -460,7 +460,7 @@ Invoke the given (expanded) token.  If it corresponds to a
 Primitive or Constructor, the definition will be invoked,
 reading any needed arguments fromt he current input source.
 Otherwise, the token will be digested.
-A List of Box's, Lists, Whatsit's is returned.
+A List of Box's, Lists, WhatchamaCallIt's is returned.
 
 =item C<< @boxes = $stomach->regurgitate; >>
 

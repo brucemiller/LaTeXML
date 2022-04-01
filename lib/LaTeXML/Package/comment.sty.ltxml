@@ -24,7 +24,7 @@ sub defineExcluded {
   my $endmark = '\end{' . $name . '}';
   DefConstructorI(T_CS("\\begin{$name}"), undef, '', reversion => '',
     afterDigest => [sub {
-        my ($istomach, $whatsit) = @_;
+        my ($istomach, $WhatchamaCallIt) = @_;
         my $nlines = 0;
         my ($line);
         my $gullet = $istomach->getGullet;

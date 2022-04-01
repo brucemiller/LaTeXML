@@ -109,7 +109,7 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
       $document->closeElement('ltx:picture'); }
     return; },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     my $margin  = Dimension('2pt');
     my $margin2 = Dimension('4pt');
     # \pgf@picmaxx,\pgf@pixmaxy are now the SIZE of the picture!!!!!!
@@ -119,7 +119,7 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     my $height  = LookupValue('\pgf@picmaxy');
     my $w       = max($width->pxValue,  1);
     my $h       = max($height->pxValue, 1);
-    my $content = $whatsit->getArg(1);
+    my $content = $WhatchamaCallIt->getArg(1);
     my ($cwidth, $cheight, $cdepth) = $content->getSize;
     Debug("TIKZ size: " . ToString($width) . " x " . ToString($height)) if $LaTeXML::DEBUG{pgf};
     Debug("TIKZ pos: " . ToString($minx) . " x " . ToString($miny))     if $LaTeXML::DEBUG{pgf};
@@ -127,23 +127,23 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
         . " + " . ToString($cdepth)) if $LaTeXML::DEBUG{pgf};
     Debug("BODY is " . ToString($content)) if $LaTeXML::DEBUG{pgf};
     # Note viewbox is minx, miny, width, height (NOT maxx,maxy!)
-    $whatsit->setProperty(minx     => $minx->pxValue);
-    $whatsit->setProperty(miny     => $miny->pxValue);
-    $whatsit->setProperty(width    => $width);
-    $whatsit->setProperty(height   => $height);
-    $whatsit->setProperty(depth    => Dimension(0));
-    $whatsit->setProperty(pxwidth  => $w);
-    $whatsit->setProperty(pxheight => $h);
+    $WhatchamaCallIt->setProperty(minx     => $minx->pxValue);
+    $WhatchamaCallIt->setProperty(miny     => $miny->pxValue);
+    $WhatchamaCallIt->setProperty(width    => $width);
+    $WhatchamaCallIt->setProperty(height   => $height);
+    $WhatchamaCallIt->setProperty(depth    => Dimension(0));
+    $WhatchamaCallIt->setProperty(pxwidth  => $w);
+    $WhatchamaCallIt->setProperty(pxheight => $h);
     # or tikz macro (see corescopes)
     return; },
   # \pgfpicture seems to make a 0 sized box, which throws off our postprocessor
   reversion => sub {
-    my ($whatsit) = @_;
-    my $w         = $whatsit->getProperty('width')->ptValue;
-    my $h         = $whatsit->getProperty('height')->ptValue;
+    my ($WhatchamaCallIt) = @_;
+    my $w         = $WhatchamaCallIt->getProperty('width')->ptValue;
+    my $h         = $WhatchamaCallIt->getProperty('height')->ptValue;
     (T_CS('\hbox'), T_OTHER('to'), T_OTHER($w), T_OTHER('pt'), T_BEGIN,
       T_CS('\vbox'),       T_OTHER('to'),         T_OTHER($h), T_OTHER('pt'), T_BEGIN,
-      T_CS('\pgfpicture'), T_CS('\makeatletter'), $whatsit->getArg(1)->revert, T_CS('\endpgfpicture'),
+      T_CS('\pgfpicture'), T_CS('\makeatletter'), $WhatchamaCallIt->getArg(1)->revert, T_CS('\endpgfpicture'),
       T_END,               T_END) });    # ?
 
 DefParameterType('SVGMoveableBox', sub {
@@ -152,7 +152,7 @@ DefParameterType('SVGMoveableBox', sub {
     my ($box, @stuff) = $STATE->getStomach->invokeToken($gullet->readXToken(1));
     Error(":expected:<box>  A <svghbox> was supposed to be here, got "
         . Stringify($box))
-      unless $box && $box->isa('LaTeXML::Core::Whatsit')
+      unless $box && $box->isa('LaTeXML::Core::WhatchamaCallIt')
       && ($box->getDefinition->getCSName =~ /^(\\hbox||)$/);
     $box; });
 
@@ -191,11 +191,11 @@ sub collapseSVGSwitch {
 
 Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
   afterClose => sub {
-    my ($document, $node, $whatsit) = @_;
+    my ($document, $node, $WhatchamaCallIt) = @_;
     # Make sure we get a size, in case autoOpen'd
-    if ($whatsit) {
-      my ($w, $h, $d) = $whatsit->getSize;
-      my $font = $whatsit->getFont;
+    if ($WhatchamaCallIt) {
+      my ($w, $h, $d) = $WhatchamaCallIt->getSize;
+      my $font = $WhatchamaCallIt->getFont;
       my ($fw, $fh, $fd) = $font && $font->getNominalSize;
       # Fishing for the correct y position (maybe w/o the depth?)
       my $y  = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->pxValue;
@@ -279,8 +279,8 @@ DefConstructor('\pgfsys@hbox{Number}', sub {
     my $box = $_[0]->getProperty('thebox');
     return ($box ? $box->revert : ()); },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(thebox => LookupValue('box' . $whatsit->getArg(1)->valueOf)); }
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setProperty(thebox => LookupValue('box' . $WhatchamaCallIt->getArg(1)->valueOf)); }
 );
 
 #====================================================================#
@@ -751,14 +751,14 @@ DefMacro('\pgfsys@defineimage',
 DefConstructor('\lxSVG@includegraphics{}{} Semiverbatim',
   "<ltx:graphics graphic='#graphic' candidates='#candidates' options='#options'/>",
   beforeConstruct => sub {
-    my ($document, $whatsit) = @_;
+    my ($document, $WhatchamaCallIt) = @_;
     if (!foreignObjectCheck($document)) {
       $document->openElement('svg:foreignObject',
-        width => $whatsit->getWidth, height => $whatsit->getHeight);
-      $whatsit->setProperty(OpenedForeignObject => 1); } },
+        width => $WhatchamaCallIt->getWidth, height => $WhatchamaCallIt->getHeight);
+      $WhatchamaCallIt->setProperty(OpenedForeignObject => 1); } },
   afterConstruct => sub {
-    my ($document, $whatsit) = @_;
-    if ($whatsit->getProperty('OpenedForeignObject')) {
+    my ($document, $WhatchamaCallIt) = @_;
+    if ($WhatchamaCallIt->getProperty('OpenedForeignObject')) {
       $document->closeElement('svg:foreignObject'); } },
   sizer      => \&image_graphicx_sizer,
   properties => sub {
@@ -1041,25 +1041,25 @@ RawTeX('\def\pgfsys@begininvisible#1\pgfsys@endinvisible{}');    # well...
 DefConstructor('\lxSVG@halign BoxSpecification',
   "#alignment",
   reversion => sub {
-    my ($whatsit, $spec) = @_;
-    my $template  = $whatsit->getProperty('template');
-    my $alignment = $whatsit->getProperty('alignment');
+    my ($WhatchamaCallIt, $spec) = @_;
+    my $template  = $WhatchamaCallIt->getProperty('template');
+    my $alignment = $WhatchamaCallIt->getProperty('alignment');
     Tokens(T_CS('\halign'), Revert($spec), T_BEGIN, Revert($template), T_CS('\cr'),
       Revert($alignment), T_END); },
   bounded => 1,
   #  sizer       => '#1',
   sizer       => sub { $_[0]->getProperty('alignment')->getSize; },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     $stomach->bgroup;    # This will be closed by the \halign's closing }  (or will it?)
-    my $template = parseHAlignTemplate($stomach->getGullet, $whatsit);
-    my $spec     = $whatsit->getArg(1);
+    my $template = parseHAlignTemplate($stomach->getGullet, $WhatchamaCallIt);
+    my $spec     = $WhatchamaCallIt->getArg(1);
     # Parse the template and initialize the Alignment object.
     tikzAlignmentBindings($template, undef,
       #    alignmentBindings($template, undef,
       attributes => {
         width => orNull(GetKeyVal($spec, 'to')) });
-    digestAlignmentBody($stomach, $whatsit);
+    digestAlignmentBody($stomach, $WhatchamaCallIt);
     $stomach->egroup;
     return; });
 

@@ -109,16 +109,16 @@ DefMacro('\nextstep', '
 
 DefConstructor('\spec {}', "<ltx:text framed='underline'>#1</ltx:text>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $arg = $whatsit->getArg(1);
-    $whatsit->setArgs(Digest('\hbox{ }')) unless (length(ToString($arg)) > 0);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $arg = $WhatchamaCallIt->getArg(1);
+    $WhatchamaCallIt->setArgs(Digest('\hbox{ }')) unless (length(ToString($arg)) > 0);
     return;
   });
 DefConstructor('\speca {}', "<ltx:text framed='rectangle'>#1 </ltx:text>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $arg = $whatsit->getArg(1);
-    $whatsit->setArgs(Digest('\hbox{ }')) unless (length(ToString($arg)) > 0);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $arg = $WhatchamaCallIt->getArg(1);
+    $WhatchamaCallIt->setArgs(Digest('\hbox{ }')) unless (length(ToString($arg)) > 0);
     return;
   });
 

@@ -519,14 +519,14 @@ sub getNominalSize {
   return (Dimension(0.75 * $u), Dimension(0.7 * $u), Dimension(0.2 * $u)); }
 
 # Here's where I avoid trying to emulate Knuth's line-breaking...
-# Mostly for List & Whatsit: compute the size of a list of boxes.
+# Mostly for List & WhatchamaCallIt: compute the size of a list of boxes.
 # Options _SHOULD_ include:
 #   width:  if given, pretend to simulate line breaking to that width
 #   height,depth : ?
 #   vattach : top, bottom, center, baseline (...?) affects how the height & depth are
 #      allocated when there are multiple lines.
 #   layout : horizontal or vertical !!!
-# Boxes that arent a Core Box, List, Whatsit or a string are IGNORED
+# Boxes that arent a Core Box, List, WhatchamaCallIt or a string are IGNORED
 #
 # The big problem with width is to have it propogate down from where
 # it may have been specified to the actual nested box that will get wrapped!

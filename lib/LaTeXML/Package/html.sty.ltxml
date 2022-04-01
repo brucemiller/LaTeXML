@@ -64,7 +64,7 @@ DefMacro('\htmladdtonavigation{}', '');
 #DefEnvironment('{htmlonly}','');
 DefConstructorI(T_CS("\\begin{rawhtml}"), undef, '', reversion => '',
   afterDigest => [sub {
-      my ($stomach, $whatsit) = @_;
+      my ($stomach, $WhatchamaCallIt) = @_;
       my $endmark = "\\end{rawhtml}";
       my $nlines  = 0;
       my ($line);
@@ -76,7 +76,7 @@ DefConstructorI(T_CS("\\begin{rawhtml}"), undef, '', reversion => '',
 
 DefConstructorI(T_CS("\\begin{htmlonly}"), undef, '', reversion => '',
   afterDigest => [sub {
-      my ($stomach, $whatsit) = @_;
+      my ($stomach, $WhatchamaCallIt) = @_;
       my $endmark = "\\end{htmlonly}";
       my $nlines  = 0;
       my ($line);

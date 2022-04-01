@@ -7,15 +7,15 @@ use LaTeXML::Package;
 my $mathcounter = 0;
 # Hackery to force shorter (more readable & checkable) ID's
 Tag('ltx:XMath', afterOpen => sub {
-    my ($doc, $node, $whatsit) = @_;
+    my ($doc, $node, $WhatchamaCallIt) = @_;
     $doc->setAttribute($node, 'xml:id' => 'm' . (++$mathcounter));
 });
 
 sub XGenerateID {
-  my ($document, $node, $whatsit, $prefix) = @_;
+  my ($document, $node, $WhatchamaCallIt, $prefix) = @_;
   #  if($document->getNodeQName($node) =~ /^ltx:XM(?!Dual|Ref)/){
   if ($document->getNodeQName($node) =~ /^ltx:XM(?!Ref)/) {
-    #    GenerateID($document,$node,$whatsit,$prefix); }
+    #    GenerateID($document,$node,$WhatchamaCallIt,$prefix); }
     if (!$node->hasAttribute('xml:id') && $document->canHaveAttribute($node, 'xml:id')) {
       my $ancestor = $document->findnode('ancestor-or-self::ltx:XMath[@xml:id]', $node);
       my $ancestor_id = $ancestor && $ancestor->getAttribute('xml:id');

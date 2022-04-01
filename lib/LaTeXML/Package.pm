@@ -829,7 +829,7 @@ sub ResetCounter {
 # stored in an attribute _ID_counter_<prefix> recording the last used
 # <number> for <prefix> amongst its descendents.
 sub GenerateID {
-  my ($document, $node, $whatsit, $prefix) = @_;
+  my ($document, $node, $WhatchamaCallIt, $prefix) = @_;
   # If node doesn't already have an id, and can have one
   # make a "sensible" id for it. Avoid adding unneeded/unwanted ids until as late as possible,
   # since it causes lots of book-keeping when rearranging XML (you have to monitor id references!)
@@ -1150,7 +1150,7 @@ sub SetCondition {
 # Define a primitive control sequence.
 #======================================================================
 # Primitives are executed in the Stomach.
-# The $replacement should be a sub which returns nothing, or a list of Box's or Whatsit's.
+# The $replacement should be a sub which returns nothing, or a list of Box's or WhatchamaCallIt's.
 # The options are:
 #    isPrefix  : 1 for things like \global, \long, etc.
 #    registerType : for parameters (but needs to be worked into DefParameter, below).
@@ -1289,21 +1289,21 @@ sub flatten {
 # Define a constructor control sequence.
 #======================================================================
 # The arguments, if any, will be collected and processed in the Stomach, and
-# a Whatsit will be constructed.
-# It is the Whatsit that will be processed in the Document: It is responsible
+# a WhatchamaCallIt will be constructed.
+# It is the WhatchamaCallIt that will be processed in the Document: It is responsible
 # for constructing XML Nodes.  The $replacement should be a sub which inserts nodes,
 # or a string specifying a constructor pattern (See somewhere).
 #
 # Options are:
 #   bounded         : any side effects of before/after daemans are bounded; they are
 #                     automatically enclosed by bgroup/egroup pair.
-#   mode            : causes a switch into the given mode during the Whatsit building in the stomach.
+#   mode            : causes a switch into the given mode during the WhatchamaCallIt building in the stomach.
 #   reversion       : a string representing the preferred TeX form of the invocation.
-#   beforeDigest    : code to be executed (in the stomach) before parsing & constructing the Whatsit.
+#   beforeDigest    : code to be executed (in the stomach) before parsing & constructing the WhatchamaCallIt.
 #                     Can be used for changing modes, beginning groups, etc.
-#   afterDigest     : code to be executed (in the stomach) after parsing & constructing the Whatsit.
-#                     useful for setting Whatsit properties,
-#   properties      : a hashref listing default values of properties to assign to the Whatsit.
+#   afterDigest     : code to be executed (in the stomach) after parsing & constructing the WhatchamaCallIt.
+#                     useful for setting WhatchamaCallIt properties,
+#   properties      : a hashref listing default values of properties to assign to the WhatchamaCallIt.
 #                     These properties can be used in the constructor.
 my $constructor_options = {    # [CONSTANT]
   mode         => 1, requireMath => 1, forbidMath => 1, font       => 1,
@@ -2974,7 +2974,7 @@ L</Macros>, which are expanded within the L<LaTeXML::Core::Gullet>;
 and L</Primitives>, which are digested within the L<LaTeXML::Core::Stomach>
 to produce L<LaTeXML::Core::Box>, L<LaTeXML::Core::List>.
 A key additional feature is the L</Constructors>:
-when digested they generate a L<LaTeXML::Core::Whatsit> which, upon absorption by
+when digested they generate a L<LaTeXML::Core::WhatchamaCallIt> which, upon absorption by
 L<LaTeXML::Core::Document>, inserts text or XML fragments in the final document tree.
 
 
@@ -3337,7 +3337,7 @@ supplies a hook to execute during digestion
 just before the main part of the primitive is executed
 (and before any arguments have been read).
 The I<code> should either return nothing (return;)
-or a list of digested items (Box's,List,Whatsit).
+or a list of digested items (Box's,List,WhatchamaCallIt).
 It can thus change the State and/or add to the digested output.
 
 =item C<afterDigest=E<gt>I<code>($stomach)>
@@ -3419,8 +3419,8 @@ X<DefConstructor>
 The Constructor is where LaTeXML really starts getting interesting;
 invoking the control sequence will generate an arbitrary XML
 fragment in the document tree.  More specifically: during digestion, the arguments
-will be read and digested, creating a L<LaTeXML::Core::Whatsit> to represent the object. During
-absorption by the L<LaTeXML::Core::Document>, the C<Whatsit> will generate the XML fragment according
+will be read and digested, creating a L<LaTeXML::Core::WhatchamaCallIt> to represent the object. During
+absorption by the L<LaTeXML::Core::Document>, the C<WhatchamaCallIt> will generate the XML fragment according
 to I<replacement>. The I<replacement> can be C<I<code>($document,@args,%properties)>
 which is called during document absorption to create the appropriate XML
 (See the methods of L<LaTeXML::Core::Document>).
@@ -3433,7 +3433,7 @@ with certain substitutions to be made. The substitutions are of the following fo
 =item C<#1, #2 ... #name>
 
 These are replaced by the corresponding argument (for #1) or property (for #name)
-stored with the Whatsit. Each are turned into a string when it appears as
+stored with the WhatchamaCallIt. Each are turned into a string when it appears as
 in an attribute position, or recursively processed when it appears as content.
 
 =item C<&I<function>(@args)>
@@ -3456,9 +3456,9 @@ to a parent node that is allowed to contain it, according to the Document Type.
 
 =back
 
-The Whatsit property C<font> is defined by default.  Additional properties
+The WhatchamaCallIt property C<font> is defined by default.  Additional properties
 C<body> and C<trailer> are defined when C<captureBody> is true, or for environments.
-By using C<< $whatsit->setProperty(key=>$value); >> within C<afterDigest>,
+By using C<< $WhatchamaCallIt->setProperty(key=>$value); >> within C<afterDigest>,
 or by using the C<properties> option, other properties can be added.
 
 DefConstructor options are
@@ -3483,12 +3483,12 @@ See L</"Common Options">.
 
 These options are the same as for L</Primitives>
 
-=item C<reversion=E<gt>I<texstring> | I<code>($whatsit,#1,#2,...)>
+=item C<reversion=E<gt>I<texstring> | I<code>($WhatchamaCallIt,#1,#2,...)>
 
 specifies the reversion of the invocation back into TeX tokens
 (if the default reversion is not appropriate).
 The I<textstring> string can include C<#1>, C<#2>...
-The I<code> is called with the C<$whatsit> and digested arguments
+The I<code> is called with the C<$WhatchamaCallIt> and digested arguments
 and must return a list of Token's.
 
 =item C<alias=E<gt>I<control_sequence>>
@@ -3498,12 +3498,12 @@ the one defined in the C<prototype>.  This is a convenient alternative for
 reversion when a 'public' command conditionally expands into
 an internal one, but the reversion should be for the public command.
 
-=item C<sizer=E<gt>I<string> | I<code>($whatsit)>
+=item C<sizer=E<gt>I<string> | I<code>($WhatchamaCallIt)>
 
 specifies how to compute (approximate) the displayed size of the object,
 if that size is ever needed (typically needed for graphics generation).
 If a string is given, it should contain only a sequence of C<#1> or C<#name> to
-access arguments and properties of the Whatsit: the size is computed from these
+access arguments and properties of the WhatchamaCallIt: the size is computed from these
 items layed out side-by-side.  If I<code> is given, it should return
 the three Dimensions (width, height and depth).  If neither is given,
 and the C<reversion> specification is of suitible format, it will be used for the sizer.
@@ -3511,33 +3511,33 @@ and the C<reversion> specification is of suitible format, it will be used for th
 =item C<properties=E<gt>{I<%properties>} | I<code>($stomach,#1,#2...)>
 
 supplies additional properties to be set on the
-generated Whatsit.  In the first form, the values can
+generated WhatchamaCallIt.  In the first form, the values can
 be of any type, but if a value is a code references, it takes
 the same args ($stomach,#1,#2,...) and should return the value;
-it is executed before creating the Whatsit.
+it is executed before creating the WhatchamaCallIt.
 In the second form, the code should return a hash of properties.
 
 =item C<beforeDigest=E<gt>I<code>($stomach)>
 
 supplies a hook to execute during digestion
-just before the Whatsit is created.  The I<code> should either
-return nothing (return;) or a list of digested items (Box's,List,Whatsit).
+just before the WhatchamaCallIt is created.  The I<code> should either
+return nothing (return;) or a list of digested items (Box's,List,WhatchamaCallIt).
 It can thus change the State and/or add to the digested output.
 
-=item C<afterDigest=E<gt>I<code>($stomach,$whatsit)>
+=item C<afterDigest=E<gt>I<code>($stomach,$WhatchamaCallIt)>
 
 supplies a hook to execute during digestion
-just after the Whatsit is created (and so the Whatsit already
+just after the WhatchamaCallIt is created (and so the WhatchamaCallIt already
 has its arguments and properties). It should either return
 nothing (return;) or digested items.  It can thus change the State,
-modify the Whatsit, and/or add to the digested output.
+modify the WhatchamaCallIt, and/or add to the digested output.
 
-=item C<beforeConstruct=E<gt>I<code>($document,$whatsit)>
+=item C<beforeConstruct=E<gt>I<code>($document,$WhatchamaCallIt)>
 
 supplies a hook to execute before constructing the XML
 (generated by I<replacement>).
 
-=item C<afterConstruct=E<gt>I<code>($document,$whatsit)>
+=item C<afterConstruct=E<gt>I<code>($document,$WhatchamaCallIt)>
 
 Supplies I<code> to execute after constructing the XML.
 
@@ -3546,7 +3546,7 @@ Supplies I<code> to execute after constructing the XML.
 if true, arbitrary following material will be accumulated into
 a `body' until the current grouping level is reverted,
 or till the C<Token> is encountered if the option is a C<Token>.
-This body is available as the C<body> property of the Whatsit.
+This body is available as the C<body> property of the WhatchamaCallIt.
 This is used by environments and math.
 
 =item C<nargs=E<gt>I<nargs>>
@@ -3594,7 +3594,7 @@ See L</"Common Options">.
 
 =item C<beforeDigest=E<gt>I<code>($stomach)>,
 
-=item C<afterDigest=E<gt>I<code>($stomach,$whatsit)>,
+=item C<afterDigest=E<gt>I<code>($stomach,$WhatchamaCallIt)>,
 
 These options are the same as for L</Constructors>
 
@@ -3669,11 +3669,11 @@ Defines an Environment that generates a specific XML fragment.  C<replacement> i
 of the same form as for DefConstructor, but will generally include reference to
 the C<#body> property. Upon encountering a C<\begin{env}>:  the mode is switched, if needed,
 else a new group is opened; then the environment name is noted; the beforeDigest hook is run.
-Then the Whatsit representing the begin command (but ultimately the whole environment) is created
+Then the WhatchamaCallIt representing the begin command (but ultimately the whole environment) is created
 and the afterDigestBegin hook is run.
 Next, the body will be digested and collected until the balancing C<\end{env}>.   Then,
 any afterDigest hook is run, the environment is ended, finally the mode is ended or
-the group is closed.  The body and C<\end{env}> whatsit are added to the C<\begin{env}>'s whatsit
+the group is closed.  The body and C<\end{env}> WhatchamaCallIt are added to the C<\begin{env}>'s WhatchamaCallIt
 as body and trailer, respectively.
 
 C<DefEnvironment> takes the following options:
@@ -3713,34 +3713,34 @@ These options are the same as for L</Constructors>
 This hook is similar to that for C<DefConstructor>,
 but it applies to the C<\begin{environment}> control sequence.
 
-=item C<afterDigestBegin=E<gt>I<code>($stomach,$whatsit)>
+=item C<afterDigestBegin=E<gt>I<code>($stomach,$WhatchamaCallIt)>
 
 This hook is similar to C<DefConstructor>'s C<afterDigest>
 but it applies to the C<\begin{environment}> control sequence.
-The Whatsit is the one for the beginning control sequence,
+The WhatchamaCallIt is the one for the beginning control sequence,
 but represents the environment as a whole.
 Note that although the arguments and properties are present in
-the Whatsit, the body of the environment is I<not> yet available!
+the WhatchamaCallIt, the body of the environment is I<not> yet available!
 
 =item C<beforeDigestEnd=E<gt>I<code>($stomach)>
 
 This hook is similar to C<DefConstructor>'s C<beforeDigest>
 but it applies to the C<\end{environment}> control sequence.
 
-=item C<afterDigest=E<gt>I<code>($stomach,$whatsit)>
+=item C<afterDigest=E<gt>I<code>($stomach,$WhatchamaCallIt)>
 
 This hook is similar to C<DefConstructor>'s C<afterDigest>
 but it applies to the C<\end{environment}> control sequence.
-Note, however that the Whatsit is only for the ending control sequence,
-I<not> the Whatsit for the environment as a whole.
+Note, however that the WhatchamaCallIt is only for the ending control sequence,
+I<not> the WhatchamaCallIt for the environment as a whole.
 
-=item C<afterDigestBody=E<gt>I<code>($stomach,$whatsit)>
+=item C<afterDigestBody=E<gt>I<code>($stomach,$WhatchamaCallIt)>
 
 This option supplies a hook to be executed during digestion
 after the ending control sequence has been digested (and all the 4
 other digestion hook have executed) and after
 the body of the environment has been obtained.
-The Whatsit is the (useful) one representing the whole
+The WhatchamaCallIt is the (useful) one representing the whole
 environment, and it now does have the body and trailer available,
 stored as a properties.
 
@@ -4081,7 +4081,7 @@ of objects that normally get both a refnum and id.
 X<ResetCounter>
 Resets the counter C<$ctr> to zero.
 
-=item C<< GenerateID($document,$node,$whatsit,$prefix); >>
+=item C<< GenerateID($document,$node,$WhatchamaCallIt,$prefix); >>
 
 X<GenerateID>
 Generates an ID for nodes during the construction phase, useful

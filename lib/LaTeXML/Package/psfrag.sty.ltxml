@@ -92,11 +92,11 @@ DefConstructor('\lx@psfrag@includegraphics OptionalMatch:* [][] Semiverbatim',
       options    => $options,
       pic        => $ifpicture); },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($w, $h, $d) = $whatsit->getSize;
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($w, $h, $d) = $WhatchamaCallIt->getSize;
     AssignValue(psfrag_scan => 0, 'global');
-    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert), 1);
-    $whatsit->setProperties(tex => $untex,
+    my $untex = UnTeX(Tokens(unsave_psfrag(), $WhatchamaCallIt->revert), 1);
+    $WhatchamaCallIt->setProperties(tex => $untex,
       width => $w, height => $h, depth => $d); });
 
 # For graphicx version of \includegraphics
@@ -115,11 +115,11 @@ DefConstructor('\lx@psfrag@includegraphicx OptionalMatch:* OptionalKeyVals:Gin S
       options    => $options,
       pic        => $ifpicture); },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($w, $h, $d) = $whatsit->getSize;
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($w, $h, $d) = $WhatchamaCallIt->getSize;
     AssignValue(psfrag_scan => 0, 'global');
-    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert), 1);
-    $whatsit->setProperties(tex => $untex,
+    my $untex = UnTeX(Tokens(unsave_psfrag(), $WhatchamaCallIt->revert), 1);
+    $WhatchamaCallIt->setProperties(tex => $untex,
       width => $w, height => $h, depth => $d); });
 
 DefConstructor('\lx@psfrag@epsfbox[] Semiverbatim',
@@ -138,11 +138,11 @@ DefConstructor('\lx@psfrag@epsfbox[] Semiverbatim',
       options    => $options,
       pic        => $ifpicture); },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($w, $h, $d) = $whatsit->getSize;
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($w, $h, $d) = $WhatchamaCallIt->getSize;
     AssignValue(psfrag_scan => 0, 'global');
-    my $untex = UnTeX(Tokens(unsave_psfrag(), $whatsit->revert), 1);
-    $whatsit->setProperties(tex => $untex,
+    my $untex = UnTeX(Tokens(unsave_psfrag(), $WhatchamaCallIt->revert), 1);
+    $WhatchamaCallIt->setProperties(tex => $untex,
       width => $w, height => $h, depth => $d); });
 
 # Just for grouping

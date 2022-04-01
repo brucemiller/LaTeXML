@@ -140,7 +140,7 @@ DefConstructor('\@proof OptionalUndigested',
   beforeDigest => sub {
     Digest(T_CS('\th@proof')); },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     PushValue('QED@stack', T_CS('\qed'));
     Digest(Tokens(T_CS('\the'), T_CS('\thm@bodyfont'))); },
   properties => sub {

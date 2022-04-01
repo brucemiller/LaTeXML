@@ -265,7 +265,7 @@ DefConstructor('\bib@addto@related {}{} Digested', sub {
 # author : The name(s) of the author(s); this gets NameList treatment
 DefConstructor('\bib@@@name{}{}',
   "<ltx:bib-name role='#1'>#2</ltx:bib-name>");
-# This contructor merely serves to collect a set of names into one Whatsit
+# This contructor merely serves to collect a set of names into one WhatchamaCallIt
 # so that \bib@addto@related can capture it.
 DefConstructor('\bib@@@names{}', "#1");
 DefMacro('\bib@@names{}{}', sub {

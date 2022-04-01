@@ -67,8 +67,8 @@ DefConstructor('\lx@diagheads {}{} {}{}{}',
   reversion      => '\diaghead(#1,#2){#3}{#4}{#5}',
   afterConstruct => sub { $_[0]->addClass($_[0]->getNode, 'ltx_nopad'); },
   afterDigest    => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($diagH, $diagV, $space, $A, $B) = $whatsit->getArgs;
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($diagH, $diagV, $space, $A, $B) = $WhatchamaCallIt->getArgs;
     $diagH = ToString($diagH) || 1;
     $diagV = ToString($diagV) || 1;
     my $flip = ($diagH < 0) ^ ($diagV < 0);
@@ -82,7 +82,7 @@ DefConstructor('\lx@diagheads {}{} {}{}{}',
     my $Bx    = ($flip ? $w - $Bw : 0);
     my $By    = $h - $Bh;
     my $pxppt = Dimension('1pt')->pxValue(10);
-    $whatsit->setProperties(
+    $WhatchamaCallIt->setProperties(
       width => Dimension($w / $pxppt . 'pt'), height => Dimension($h / $pxppt . 'pt'),
       A     => $A, Ax => $Ax, Ay => $Ay, Aw => $Aw, Ah => $Ah,
       B     => $B, Bx => $Bx, By => $By, Bw => $Bw, Bh => $Bh,

@@ -586,9 +586,9 @@ DefConstructor('\boxframe{Dimension}{Dimension}{Dimension}',
   "<ltx:rule width='#1'  height='#2' depth='#3'"
     . " color='#color' framed='rectangle' framecolor='#framecolor'/>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     my $font = LookupValue('font');
-    $whatsit->setProperties(color => $font->getBackground || White,
+    $WhatchamaCallIt->setProperties(color => $font->getBackground || White,
       framecolor => $font->getColor || Black);
     return; });
 
@@ -746,7 +746,7 @@ DefConstructor('\@tabular@row@before@xcolor', sub {
           $document->setAttribute($node, backgroundcolor => $bg); } } }
     return; },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     if (IfCondition(T_CS('\if@rowcolors'))) {
       my $n     = LookupValue('Alignment')->currentRowNumber;
       my $first = LookupValue('tabular_row_color_first');
@@ -756,8 +756,8 @@ DefConstructor('\@tabular@row@before@xcolor', sub {
         if ($n >= $first) {
           my $bg = ($n % 2 ? $odd : $even);
           MergeFont(background => $bg);
-          $whatsit->setFont(LookupValue('font'));
-          $whatsit->setProperty(background => $bg); } } }
+          $WhatchamaCallIt->setFont(LookupValue('font'));
+          $WhatchamaCallIt->setProperty(background => $bg); } } }
     return; },
   reversion  => '',
   properties => { alignmentSkippable => 1 }
@@ -864,11 +864,11 @@ DefConstructor('\fcolorbox[]{}{} Undigested',
     . " _noautoclose='1'>#text</ltx:text>",
   bounded     => 1, mode => 'text',
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($model, $fspec, $bspec, $text) = $whatsit->getArgs;
-    $whatsit->setProperty(framecolor => ParseXColor($model, $fspec));
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($model, $fspec, $bspec, $text) = $WhatchamaCallIt->getArgs;
+    $WhatchamaCallIt->setProperty(framecolor => ParseXColor($model, $fspec));
     MergeFont(background => ParseXColor($model, $bspec));
-    $whatsit->setProperty(text => Digest($text)); });
+    $WhatchamaCallIt->setProperty(text => Digest($text)); });
 
 #======================================================================
 # General TeX internals

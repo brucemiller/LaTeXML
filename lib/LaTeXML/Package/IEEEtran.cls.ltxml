@@ -205,7 +205,7 @@ DefEnvironment('{IEEEproof} OptionalUndigested',
   #    Digest(T_CS('\th@proof')); },
   afterConstruct   => sub { $_[0]->maybeCloseElement('ltx:proof'); },
   afterDigestBegin => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     PushValue('QED@stack', T_CS('\qed'));
     #    Digest(Tokens(T_CS('\the'), T_CS('\thm@bodyfont')));
   },

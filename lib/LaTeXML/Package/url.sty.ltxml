@@ -43,7 +43,7 @@ DefMacro('\DeclareUrlCommand{}{}', '\def#1{\begingroup #2\@Url#1}');
 # This is an extended version of \Url that takes an extra token as 1st arg.
 # That token is the cs that invoked it, so that it can be reflected in the generated XML,
 # as well as used to generate the reversion.
-# In any case, we read the verbatim arg, and build a Whatsit for @@Url
+# In any case, we read the verbatim arg, and build a WhatchamaCallIt for @@Url
 DefMacro('\@Url Token', sub {
     my ($gullet, $cmd) = @_;
     my ($open, $close, $url);

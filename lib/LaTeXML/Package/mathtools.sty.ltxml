@@ -75,23 +75,23 @@ DefConstructor('\mathmbox {}', "#1");
 DefConstructor('\mathllap [] {}',
   "<ltx:XMArg width='0pt' xoffset='#xoffset'>#2</ltx:XMArg>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(xoffset => $whatsit->getWidth->negate);
-    $whatsit->setWidth(Dimension(0));
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setProperty(xoffset => $WhatchamaCallIt->getWidth->negate);
+    $WhatchamaCallIt->setWidth(Dimension(0));
     return; });
 DefConstructor('\mathrlap [] {}',
   "<ltx:XMArg width='0pt' xoffset='#xoffset'>#2</ltx:XMArg>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setWidth(Dimension(0));
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setWidth(Dimension(0));
     return; });
 
 DefConstructor('\mathclap [] {}',
   "<ltx:XMArg width='0pt' xoffset='#xoffset'>#2</ltx:XMArg>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    $whatsit->setProperty(xoffset => $whatsit->getWidth->multiply(-0.5));
-    $whatsit->setWidth(Dimension(0));
+    my ($stomach, $WhatchamaCallIt) = @_;
+    $WhatchamaCallIt->setProperty(xoffset => $WhatchamaCallIt->getWidth->multiply(-0.5));
+    $WhatchamaCallIt->setWidth(Dimension(0));
     return; });
 # ? related ?
 DefConstructor('\clap {}',              "#1");
@@ -142,21 +142,21 @@ DefConstructor('\lx@@smashoperator{}{} InScriptStyle InScriptStyle',
     . "?#sub(<ltx:XMArg rule='Subscript' width='#subwidth' xoffset='#suboffset'>#sub</ltx:XMArg>)()"
     . "</ltx:XMApp>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($align, $op, $sub, $sup) = $whatsit->getArgs;
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($align, $op, $sub, $sup) = $WhatchamaCallIt->getArgs;
     my $opw   = $op->getWidth;
     my $width = $opw;
     $align = ToString($align) || 'lr';
     if ($sub->unlist) {
       my $w = $sub->getWidth;
-      $whatsit->setProperties(sub => $sub,
+      $WhatchamaCallIt->setProperties(sub => $sub,
         suboffset => $w->multiply(-0.5),
         subwidth  => Dimension(0));
       $sub->setWidth(Dimension(0));
       $width = $width->larger($w); }
     if ($sup->unlist) {
       my $w = $sup->getWidth;
-      $whatsit->setProperties(sup => $sup,
+      $WhatchamaCallIt->setProperties(sup => $sup,
         supoffset => $w->multiply(-0.5),
         supwidth  => Dimension(0));
       $sup->setWidth(Dimension(0));
@@ -164,10 +164,10 @@ DefConstructor('\lx@@smashoperator{}{} InScriptStyle InScriptStyle',
     my $pad = $width->subtract($opw)->multiply(0.5);
     if ($pad->valueOf > 0) {
       if ($align eq 'l') {
-        $whatsit->setProperties(rpadding => $pad); }
+        $WhatchamaCallIt->setProperties(rpadding => $pad); }
       elsif ($align eq 'r') {
-        $whatsit->setProperties(lpadding => $pad); } }
-    $whatsit->setProperties(both => (scalar($sub->unlist) && scalar($sup->unlist)),
+        $WhatchamaCallIt->setProperties(lpadding => $pad); } }
+    $WhatchamaCallIt->setProperties(both => (scalar($sub->unlist) && scalar($sup->unlist)),
       scriptpos => "mid" . $stomach->getScriptLevel);
     return; },
   reversion => '\smashoperator[#1]{#2_{#3}^{#4}}');    # not exactly, but...

@@ -211,13 +211,13 @@ DefPSConstructor('\fnode', 'ZeroPSCoord {}',
     . " rx='#arcval' fill='#fill' />",
   attributes  => [qw(fill linecolor linewidth dash framesize)],
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     my $fs = LookupValue('\psframesize');
     my $dt = $fs->multiply(-0.5);
-    my $pz = Pair($whatsit->getArg(2)->getX->add($dt->getX),
-      $whatsit->getArg(2)->getY->add($dt->getY));
-    storeNode($whatsit->getArg(3), $whatsit->getArg(2));
-    $whatsit->setProperties(pz => $pz, arcval => arcValue($fs),
+    my $pz = Pair($WhatchamaCallIt->getArg(2)->getX->add($dt->getX),
+      $WhatchamaCallIt->getArg(2)->getY->add($dt->getY));
+    storeNode($WhatchamaCallIt->getArg(3), $WhatchamaCallIt->getArg(2));
+    $WhatchamaCallIt->setProperties(pz => $pz, arcval => arcValue($fs),
       x          => $pz->getX->pxValue, y           => $pz->getY->pxValue,
       framewidth => $fs->getX->pxValue, frameheight => $fs->getY->pxValue); });
 
@@ -461,11 +461,11 @@ DefConstructor('\aput@start OptionalMatch:* [PSDimension] BracketedPSAngle Round
   "<ltx:g transform='#transform'"
     . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
   afterDigest => sub {
-    my ($whatsit, $labelsep, $angle, $pos) = ($_[1], map { $_[1]->getArg($_) } 2, 3, 4);
+    my ($WhatchamaCallIt, $labelsep, $angle, $pos) = ($_[1], map { $_[1]->getArg($_) } 2, 3, 4);
     my $p = computeLabelPos($pos);
     $labelsep = $labelsep || LookupValue('\pslabelsep');
     $p        = Pair($p->getX->add($labelsep), $p->getY->add($labelsep));
-    finishLabelPut($whatsit, $angle, $p); },
+    finishLabelPut($WhatchamaCallIt, $angle, $p); },
   alias => '\aput');
 
 DefMacro('\bput OptionalMatch:* [] OptionalBracketed RoundParenFloat', sub {
@@ -481,11 +481,11 @@ DefConstructor('\bput@start OptionalMatch:* [PSDimension] BracketedPSAngle Round
   "<ltx:g transform='#transform'"
     . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
   afterDigest => sub {
-    my ($whatsit, $labelsep, $angle, $pos) = ($_[1], map { $_[1]->getArg($_) } 2, 3, 4);
+    my ($WhatchamaCallIt, $labelsep, $angle, $pos) = ($_[1], map { $_[1]->getArg($_) } 2, 3, 4);
     my $p = computeLabelPos($pos);
     $labelsep = $labelsep || LookupValue('\pslabelsep');
     $p        = Pair($p->getX->subtract($labelsep), $p->getY->subtract($labelsep));
-    finishLabelPut($whatsit, $angle, $p); },
+    finishLabelPut($WhatchamaCallIt, $angle, $p); },
   alias => '\bput');
 
 DefMacro('\mput OptionalMatch:* []', sub {
@@ -512,11 +512,11 @@ DefConstructor('\Aput@start OptionalMatch:* [PSDimension]',
   "<ltx:g transform='#transform'"
     . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
   afterDigest => sub {
-    my ($stomach, $whatsit, $labelsep) = @_;
+    my ($stomach, $WhatchamaCallIt, $labelsep) = @_;
     my $p = computeLabelPos();
     $labelsep = $labelsep || LookupValue('\pslabelsep');
     $p        = Pair($p->getX->add($labelsep), $p->getY->add($labelsep));
-    finishLabelPut($whatsit, undef, $p); },
+    finishLabelPut($WhatchamaCallIt, undef, $p); },
   alias => '\Aput');
 
 DefMacro('\Bput OptionalMatch:* []', sub {
@@ -530,11 +530,11 @@ DefConstructor('\Bput@start OptionalMatch:* [PSDimension]',
   "<ltx:g transform='#transform'"
     . " ?#1(framed='true' fillframe='true' boxsep='no' fill='#fillcolor')>",
   afterDigest => sub {
-    my ($stomach, $whatsit, $labelsep) = @_;
+    my ($stomach, $WhatchamaCallIt, $labelsep) = @_;
     my $p = computeLabelPos();
     $labelsep = $labelsep || LookupValue('\pslabelsep');
     $p        = Pair($p->getX->subtract($labelsep), $p->getY->subtract($labelsep));
-    finishLabelPut($whatsit, undef, $p); },
+    finishLabelPut($WhatchamaCallIt, undef, $p); },
   alias => '\Bput');
 
 # some obsolete macros:

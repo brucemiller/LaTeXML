@@ -69,9 +69,9 @@ DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
   afterConstruct => sub { $_[0]->addClass($_[0]->getNode, 'ltx_nopad'); },
   reversion      => '\diagbox[#1]{#2}{#4}{#3}',                              # Wrong!
   afterDigest    => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     # Annoying: All svg units, and computations, are in pixels!
-    my ($kv, $A, $M, $B) = $whatsit->getArgs;
+    my ($kv, $A, $M, $B) = $WhatchamaCallIt->getArgs;
     my $dir = $kv && ToString($kv->getValue('dir')) || 'NW';
     my ($Aw, $Ah, $Ad) = map       { roundto($_->pxValue) } $A->getSize; $Ah += $Ad;
     my ($Bw, $Bh, $Bd) = map       { roundto($_->pxValue) } $B->getSize; $Bh += $Bd;
@@ -138,7 +138,7 @@ DefConstructor('\lx@diagbox RequiredKeyVals:diagbox {}[]{}',
         $Ay    = $h - $Ah;
         $line1 = "0,0, $w,$h"; } }
     my $pxppt = Dimension('1pt')->pxValue(10);
-    $whatsit->setProperties(
+    $WhatchamaCallIt->setProperties(
       width     => Dimension($w / $pxppt . 'pt'), height => Dimension($h / $pxppt . 'pt'),
       A         => $A,     Ax    => $Ax, Ay => $Ay, Aw => $Aw, Ah => $Ah,
       B         => $B,     Bx    => $Bx, By => $By, Bw => $Bw, Bh => $Bh,

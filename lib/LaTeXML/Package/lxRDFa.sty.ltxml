@@ -110,7 +110,7 @@ sub RDFAttributes {
   my $x;
   foreach my $key (qw(about resource)) {
     if (my $value = $$hash{$key}) {
-      if ((ref $value eq 'LaTeXML::Core::Whatsit')
+      if ((ref $value eq 'LaTeXML::Core::WhatchamaCallIt')
         && ($value->getDefinition->getCSName eq '\ref')) {
         $$hash{ $key . 'labelref' } = CleanLabel($value->getArg(2));
         delete $$hash{$key}; }

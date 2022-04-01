@@ -176,9 +176,9 @@ Tag('ltx:document', 'afterClose' => \&insertNavigation);
 DefEnvironment('{lxNavbar}', sub { },
   beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
-    my ($document, $whatsit) = @_;
+    my ($document, $WhatchamaCallIt) = @_;
     PushValue('navigation',
-      ['ltx:inline-para', { class => 'ltx_page_navbar' }, $whatsit->getBody]);
+      ['ltx:inline-para', { class => 'ltx_page_navbar' }, $WhatchamaCallIt->getBody]);
     return; });
 
 # Of course, it would be more interesting to supply a "template"
@@ -189,16 +189,16 @@ DefEnvironment('{lxNavbar}', sub { },
 DefEnvironment('{lxHeader}', sub { },
   beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
-    my ($document, $whatsit) = @_;
+    my ($document, $WhatchamaCallIt) = @_;
     PushValue('navigation',
-      ['ltx:inline-para', { class => 'ltx_page_header' }, $whatsit->getBody]);
+      ['ltx:inline-para', { class => 'ltx_page_header' }, $WhatchamaCallIt->getBody]);
     return; });
 DefEnvironment('{lxFooter}', sub { },
   beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
-    my ($document, $whatsit) = @_;
+    my ($document, $WhatchamaCallIt) = @_;
     PushValue('navigation',
-      ['ltx:inline-para', { class => 'ltx_page_footer' }, $whatsit->getBody]);
+      ['ltx:inline-para', { class => 'ltx_page_footer' }, $WhatchamaCallIt->getBody]);
     return; });
 
 #======================================================================
@@ -255,10 +255,10 @@ DefConstructor('\lxPunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>",
 DefConstructor('\lxMathTweak RequiredKeyVals {}',
   "<ltx:XMWrap %&GetKeyVals(#1)>#2</ltx:XMWrap>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($kv,      $body)    = $whatsit->getArgs;
-    $whatsit->setProperties($kv->getPairs);
-    $whatsit->setFont($body->getFont);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($kv,      $body)    = $WhatchamaCallIt->getArgs;
+    $WhatchamaCallIt->setProperties($kv->getPairs);
+    $WhatchamaCallIt->setFont($body->getFont);
     return; },
   reversion => '#2');
 
@@ -299,9 +299,9 @@ DefConstructor('\@lxDefMathDeclare{} RequiredKeyVals:XMath', sub {
     $document->closeElement('ltx:declare');
     $document->setNode($save); },
   mode        => 'text',
-  afterDigest => sub { my ($stomach, $whatsit) = @_;
-    my ($id, $kv) = $whatsit->getArgs;
-    normalizeDeclareKeys($kv, $whatsit);
+  afterDigest => sub { my ($stomach, $WhatchamaCallIt) = @_;
+    my ($id, $kv) = $WhatchamaCallIt->getArgs;
+    normalizeDeclareKeys($kv, $WhatchamaCallIt);
     return; },
   properties => { alignmentSkippable => 1 },
   reversion  => '');
@@ -315,7 +315,7 @@ DefConstructor('\@lxDefMathDeclare{} RequiredKeyVals:XMath', sub {
 # If only 1 given, and matches the math term: record it, and use remainder for name & description
 # Else use the given for name, description, with no term
 sub normalizeDeclareKeys {
-  my ($kv, $whatsit) = @_;
+  my ($kv, $WhatchamaCallIt) = @_;
   my $tag         = $kv->getValue('tag');
   my $description = $kv->getValue('description');
   my ($term, $short, $desc);
@@ -323,7 +323,7 @@ sub normalizeDeclareKeys {
     ($term, $desc) = splitDeclareTag($stuff); }
   $short = ($description ? $tag || $desc : undef);
   $desc  = $desc || $description || $tag;
-  $whatsit->setProperties(term => $term, short => $short, description => $desc);
+  $WhatchamaCallIt->setProperties(term => $term, short => $short, description => $desc);
   return; }
 
 # Temporary(?) Hack for DLMF: Split an \lxDeclare tag of the form tag={math: description}
@@ -388,8 +388,8 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
       $document->setNode($save); } },
   mode         => 'text',
   beforeDigest => sub { reenterTextMode(); neutralizeFont(); },
-  afterDigest  => sub { my ($stomach, $whatsit) = @_;
-    my ($star, $kv, $pattern) = $whatsit->getArgs;
+  afterDigest  => sub { my ($stomach, $WhatchamaCallIt) = @_;
+    my ($star, $kv, $pattern) = $WhatchamaCallIt->getArgs;
     return unless $kv;
     CheckOptions("\\lxDeclare keys", $declare_keys, %{ $kv->getKeyVals });
     foreach my $key (qw(role tag name meaning replace)) {
@@ -401,10 +401,10 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
     if ($id && LookupValue('InPreamble')) {
       Warn('unexpected', 'tag', $stomach,
         "Declaration with tag cannot appear in preamble"
-          . Stringify($whatsit)); }
+          . Stringify($WhatchamaCallIt)); }
     # Temporary(?) Hack: If no description, bui tag is of form <math>: text
     # make description = tag, and tag be only the shorter text part
-    $whatsit->setProperties(scope => getDeclarationScope($kv),
+    $WhatchamaCallIt->setProperties(scope => getDeclarationScope($kv),
       role    => ToString($kv->getValue('role')),
       name    => ToString($kv->getValue('name')),
       meaning => ToString($kv->getValue('meaning')),
@@ -413,25 +413,25 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
       id      => $id,
       match   => $pattern,
       replace => $kv->getValue('replace'));
-    normalizeDeclareKeys($kv, $whatsit);
+    normalizeDeclareKeys($kv, $WhatchamaCallIt);
 
     if (my $label = ToString($kv->getValue('label'))) {
-      PushValue("Declaration_$label", $whatsit); }
+      PushValue("Declaration_$label", $WhatchamaCallIt); }
     return; },
-  afterConstruct => sub { my ($document, $whatsit) = @_;
-    my $scope = $whatsit->getProperty('scope');
-    createDeclarationRewrite($document, $scope, $whatsit); },
+  afterConstruct => sub { my ($document, $WhatchamaCallIt) = @_;
+    my $scope = $WhatchamaCallIt->getProperty('scope');
+    createDeclarationRewrite($document, $scope, $WhatchamaCallIt); },
   properties => { alignmentSkippable => 1 },
   reversion  => '');
 
 DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
-  afterDigest => sub { my ($stomach, $whatsit) = @_;
-    my ($keys, $labels) = $whatsit->getArgs;
-    $whatsit->setProperties(scope => getDeclarationScope($keys),
+  afterDigest => sub { my ($stomach, $WhatchamaCallIt) = @_;
+    my ($keys, $labels) = $WhatchamaCallIt->getArgs;
+    $WhatchamaCallIt->setProperties(scope => getDeclarationScope($keys),
       labels => [split(',', ToString($labels))]); },
-  afterConstruct => sub { my ($document, $whatsit) = @_;
-    my $scope = $whatsit->getProperty('scope');
-    foreach my $label (@{ $whatsit->getProperty('labels') }) {
+  afterConstruct => sub { my ($document, $WhatchamaCallIt) = @_;
+    my $scope = $WhatchamaCallIt->getProperty('scope');
+    foreach my $label (@{ $WhatchamaCallIt->getProperty('labels') }) {
       if (my $declaration = LookupValue("Declaration_$label")) {
         map { createDeclarationRewrite($document, $scope, $_) } @$declaration; }
       else {
@@ -459,8 +459,8 @@ sub getDeclarationScope {
   return $scope; }
 
 sub createDeclarationRewrite {
-  my ($document, $scope, $whatsit) = @_;
-  my %props = $whatsit->getProperties;
+  my ($document, $scope, $WhatchamaCallIt) = @_;
+  my %props = $WhatchamaCallIt->getProperties;
   my ($id, $match, $nowrap, $role, $name, $meaning, $ref, $trace, $replace)
     = map { $props{$_} } qw(id match nowrap role name meaning ref trace replace);
   # Put this rule IN FRONT of other rules!

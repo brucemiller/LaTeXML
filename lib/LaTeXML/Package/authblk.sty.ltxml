@@ -60,12 +60,12 @@ DefConstructor('\lx@authormark{}',
 DefConstructor('\affil[]{}',
   "^?#2(<ltx:note mark='#mark' role='affiliationtext'>#2</ltx:note>)()",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $mark = $whatsit->getArg(1);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $mark = $WhatchamaCallIt->getArg(1);
     if (!defined $mark) {
       $mark = Digest(T_CS('\the@affil'));    # get mark
       StepCounter('@affil'); }               # and THEN step counter!
-    $whatsit->setProperty(mark => ToString($mark));
+    $WhatchamaCallIt->setProperty(mark => ToString($mark));
     return; });
 
 Tag('ltx:document', afterClose => \&authblkRelocateAffil);

@@ -116,9 +116,9 @@ sub replace_star {
   return Tokens(@t); }
 
 sub endEnumItemize {
-  my ($whatsit) = @_;
-  if (my $series = $whatsit->getProperty('series')) {
-    if (my $ctr = $whatsit->getProperty('counter')) {
+  my ($WhatchamaCallIt) = @_;
+  if (my $series = $WhatchamaCallIt->getProperty('series')) {
+    if (my $ctr = $WhatchamaCallIt->getProperty('counter')) {
       AssignValue('enumitem_series_' . $series . '_last' => CounterValue($ctr), 'global'); } }
   return; }
 

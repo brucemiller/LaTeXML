@@ -416,7 +416,7 @@ DefParameterType('MoveableBox', sub {
     Error('expected', '<box>', $gullet,
       "A <box> was supposed to be here", "Got " . Stringify($box))
       unless $box;
-####      && $box->isa('LaTeXML::Core::Whatsit')
+####      && $box->isa('LaTeXML::Core::WhatchamaCallIt')
 ####      && ($box->getDefinition->getCSName =~ /^(\\hbox|\\vbox||\\vtop)$/);
     $box; });
 
@@ -481,7 +481,7 @@ DefParameterType('DigestedBody', sub {
     my ($gullet) = @_;
     my $ismath   = $STATE->lookupValue('IN_MATH');
     my @list     = $STATE->getStomach->digestNextBody();
-    # In most (all?) cases, we're really looking for a single Whatsit here...
+    # In most (all?) cases, we're really looking for a single WhatchamaCallIt here...
     @list = grep { ref $_ ne 'LaTeXML::Core::Comment' } @list;
     List(@list, mode => ($ismath ? 'math' : 'text')); },
   undigested => 1);
@@ -790,7 +790,7 @@ sub classify_box {
   my $box = LookupValue('box' . $boxnum->valueOf);
   if (!$box) {
     return ''; }
-  elsif ($box->isa('LaTeXML::Core::Whatsit') && ($box->getDefinition eq LookupDefinition(T_CS('\vbox')))) {
+  elsif ($box->isa('LaTeXML::Core::WhatchamaCallIt') && ($box->getDefinition eq LookupDefinition(T_CS('\vbox')))) {
     return 'vbox'; }
   else {
     return 'hbox'; } }
@@ -1807,25 +1807,25 @@ DefConstructor('\mathchar Number',
   "?#glyph(?#isMath(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)(#glyph))",
   sizer       => '#glyph',
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $n = $whatsit->getArg(1)->valueOf;
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $n = $WhatchamaCallIt->getArg(1)->valueOf;
     my ($role, $glyph) = decodeMathChar($n);
-    $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
-    $whatsit->setProperty(role  => $role)                                   if defined $role;
-    $whatsit->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
+    $WhatchamaCallIt->setProperty(glyph => $glyph)                                  if $glyph;
+    $WhatchamaCallIt->setProperty(role  => $role)                                   if defined $role;
+    $WhatchamaCallIt->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
     return; });
 
 DefConstructor('\delimiter Number',
   "?#glyph(?#isMath(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)(#glyph))",
   sizer       => '#glyph',
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $n = $whatsit->getArg(1)->valueOf;
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $n = $WhatchamaCallIt->getArg(1)->valueOf;
     $n = $n >> 12;    # Ignore 3 rightmost digits and treat as \mathchar
     my ($role, $glyph) = decodeMathChar($n);
-    $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
-    $whatsit->setProperty(role  => $role)                                   if defined $role;
-    $whatsit->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
+    $WhatchamaCallIt->setProperty(glyph => $glyph)                                  if $glyph;
+    $WhatchamaCallIt->setProperty(role  => $role)                                   if defined $role;
+    $WhatchamaCallIt->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
     return; });
 
 # Almost like a register, but different...
@@ -1852,11 +1852,11 @@ DefConstructor('\mathaccent Number Digested',
   "<ltx:XMApp><ltx:XMTok role='OVERACCENT'>#glyph</ltx:XMTok><ltx:XMArg>#2</ltx:XMArg></ltx:XMApp>",
   sizer       => '#2',    # Close enough?
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $n = $whatsit->getArg(1)->valueOf;
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $n = $WhatchamaCallIt->getArg(1)->valueOf;
     my ($role, $glyph) = decodeMathChar($n);
-    $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
-    $whatsit->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
+    $WhatchamaCallIt->setProperty(glyph => $glyph)                                  if $glyph;
+    $WhatchamaCallIt->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
     return; });
 
 # <box> = \box <8bit> | \copy <8bit> | \lastbox | \vsplit <8bit> to <dimen>
@@ -1904,8 +1904,8 @@ DefPrimitive('\vsplit Number Match:to Dimension', sub {
     ($stuff ? $stuff->unlist : ()); });
 
 sub revert_spec {
-  my ($whatsit, $keyword) = @_;
-  my $value = $whatsit->getProperty($keyword);
+  my ($WhatchamaCallIt, $keyword) = @_;
+  my $value = $WhatchamaCallIt->getProperty($keyword);
   return ($value ? (Explode($keyword), Revert($value)) : ()); }
 
 DefParameterType('BoxSpecification', sub {
@@ -2013,13 +2013,13 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
   beforeDigest => sub { reenterTextMode(); },
 
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $spec = $whatsit->getArg(1);
-    my $box  = $whatsit->getArg(2);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $spec = $WhatchamaCallIt->getArg(1);
+    my $box  = $WhatchamaCallIt->getArg(2);
     if (my $w = GetKeyVal($spec, 'to')) {
-      $whatsit->setWidth($w); }
+      $WhatchamaCallIt->setWidth($w); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
-      $whatsit->setWidth($box->getWidth->add($s)); }
+      $WhatchamaCallIt->setWidth($box->getWidth->add($s)); }
     return; });
 
 # This attempts to be a generalize vbox construction;
@@ -2117,13 +2117,13 @@ DefConstructor('\vbox BoxSpecification VBoxContents', sub {
   properties  => { layout => 'vertical', vattach => 'bottom' },
   mode        => 'text',
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $spec = $whatsit->getArg(1);
-    my $box  = $whatsit->getArg(2);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $spec = $WhatchamaCallIt->getArg(1);
+    my $box  = $WhatchamaCallIt->getArg(2);
     if (my $h = GetKeyVal($spec, 'to')) {
-      $whatsit->setHeight($h); }
+      $WhatchamaCallIt->setHeight($h); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
-      $whatsit->setHeight($box->getHeight->add($s)); }
+      $WhatchamaCallIt->setHeight($box->getHeight->add($s)); }
     return; });
 
 DefConstructor('\vtop BoxSpecification VBoxContents', sub {
@@ -2133,13 +2133,13 @@ DefConstructor('\vtop BoxSpecification VBoxContents', sub {
   properties  => { layout => 'vertical', vattach => 'baseline' },
   mode        => 'text',
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $spec = $whatsit->getArg(1);
-    my $box  = $whatsit->getArg(2);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $spec = $WhatchamaCallIt->getArg(1);
+    my $box  = $WhatchamaCallIt->getArg(2);
     if (my $h = GetKeyVal($spec, 'to')) {
-      $whatsit->setHeight($h); }
+      $WhatchamaCallIt->setHeight($h); }
     elsif (my $s = GetKeyVal($spec, 'spread')) {
-      $whatsit->setHeight($box->getHeight->add($s)); }
+      $WhatchamaCallIt->setHeight($box->getHeight->add($s)); }
     return; });
 
 DefParameterType('RuleSpecification', sub {
@@ -2155,14 +2155,14 @@ DefConstructor('\vrule RuleSpecification',
     . "(<ltx:rule height='&GetKeyVal(#1,height)' depth='&GetKeyVal(#1,depth)'"
     . " width='&GetKeyVal(#1,width)' color='#color'/>))",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $dims   = $whatsit->getArg(1);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $dims   = $WhatchamaCallIt->getArg(1);
     my $width  = GetKeyVal($dims, 'width');
     my $height = GetKeyVal($dims, 'height');
     my $depth  = GetKeyVal($dims, 'depth');
-    $whatsit->setProperties(width  => $width,  cwidth  => $width)  if $width;
-    $whatsit->setProperties(height => $height, cheight => $height) if $height;
-    $whatsit->setProperties(depth  => $depth,  cdepth  => $depth)  if $depth;
+    $WhatchamaCallIt->setProperties(width  => $width,  cwidth  => $width)  if $width;
+    $WhatchamaCallIt->setProperties(height => $height, cheight => $height) if $height;
+    $WhatchamaCallIt->setProperties(depth  => $depth,  cdepth  => $depth)  if $depth;
     my $w = ($width  ? $width->ptValue  : undef);
     my $h = ($height ? $height->ptValue : undef);
     my $d = ($depth  ? $depth->ptValue  : undef);
@@ -2172,13 +2172,13 @@ DefConstructor('\vrule RuleSpecification',
       if (((!defined $h) && (!defined $w)) || ((defined $h) && ($h > 20))
         || ((defined $h) && (defined $w) && ($h > 3 * $w))) {
         # This isXxxxRule property is to determine if it is used for separating rules within alignments
-        $whatsit->setProperty(isVerticalRule => 1) } }
+        $WhatchamaCallIt->setProperty(isVerticalRule => 1) } }
     elsif ((defined $w) && ($w == 0)) {
-      $whatsit->setProperty(invisible => 1); }
+      $WhatchamaCallIt->setProperty(invisible => 1); }
 #####    $dims->setValue(width => '1px') unless defined $w;
     if (my $color = LookupValue('font')->getColor) {
       if ($color ne 'black') {
-        $whatsit->setProperty(color => $color); } }
+        $WhatchamaCallIt->setProperty(color => $color); } }
     return; });
 
 DefConstructor('\hrule RuleSpecification',
@@ -2187,14 +2187,14 @@ DefConstructor('\hrule RuleSpecification',
     . " width='&GetKeyVal(#1,width)' color='#color'/>)",
   #     properties=>{isHorizontalRule=>1});
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $dims   = $whatsit->getArg(1);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $dims   = $WhatchamaCallIt->getArg(1);
     my $width  = GetKeyVal($dims, 'width');
     my $height = GetKeyVal($dims, 'height');
     my $depth  = GetKeyVal($dims, 'depth');
-    $whatsit->setProperties(width  => $width,  cwidth  => $width)  if $width;
-    $whatsit->setProperties(height => $height, cheight => $height) if $height;
-    $whatsit->setProperties(depth  => $depth,  cdepth  => $depth)  if $depth;
+    $WhatchamaCallIt->setProperties(width  => $width,  cwidth  => $width)  if $width;
+    $WhatchamaCallIt->setProperties(height => $height, cheight => $height) if $height;
+    $WhatchamaCallIt->setProperties(depth  => $depth,  cdepth  => $depth)  if $depth;
     my $w = ($width  ? $width->ptValue  : undef);
     my $h = ($height ? $height->ptValue : undef);
     my $d = ($depth  ? $depth->ptValue  : undef);
@@ -2206,12 +2206,12 @@ DefConstructor('\hrule RuleSpecification',
         || ((defined $h) && (defined $w) && ($w > 3 * $h))) {
         # This isXxxxRule property is to determine if it is used for separating rules within alignments
         $alignment->addLine('t');
-        $whatsit->setProperty(isHorizontalRule => 1) } }
+        $WhatchamaCallIt->setProperty(isHorizontalRule => 1) } }
     $dims->setValue(width  => '100%') unless defined $w;
     $dims->setValue(height => '1px')  unless defined $h;
     if (my $color = LookupValue('font')->getColor) {
       if ($color ne 'black') {
-        $whatsit->setProperty(color => $color); } }
+        $WhatchamaCallIt->setProperty(color => $color); } }
     return; });
 
 #======================================================================
@@ -2222,7 +2222,7 @@ DefConstructor('\hrule RuleSpecification',
 
 # These define the handler for { } (or anything of catcode BEGIN, END)
 
-# These are actually TeX primitives, but we treat them as a Whatsit so they
+# These are actually TeX primitives, but we treat them as a WhatchamaCallIt so they
 # remain in the constructed tree.
 #DefConstructor('{','#body', beforeDigest=>sub{$_[0]->bgroup;}, captureBody=>1);
 DefPrimitive('{', sub {
@@ -2598,12 +2598,12 @@ DefConstructor('\@start@alignment SkipSpaces',
   sizer     => '#alignment',
   #  beforeDigest => sub { $_[0]->bgroup; },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     $stomach->bgroup;
     if (my $alignment = LookupValue('Alignment')) {
-      $whatsit->setProperty(alignment => $alignment);
-      $alignment->setBody($whatsit);
-      digestAlignmentBody($stomach, $whatsit); }
+      $WhatchamaCallIt->setProperty(alignment => $alignment);
+      $alignment->setBody($WhatchamaCallIt);
+      digestAlignmentBody($stomach, $WhatchamaCallIt); }
     $stomach->egroup;
     return; });
 
@@ -2906,28 +2906,28 @@ sub afterCellUnlist {
 DefConstructor('\halign BoxSpecification',
   "#alignment",
   reversion => sub {
-    my ($whatsit, $spec) = @_;
-    my $template  = $whatsit->getProperty('template');
-    my $alignment = $whatsit->getProperty('alignment');
+    my ($WhatchamaCallIt, $spec) = @_;
+    my $template  = $WhatchamaCallIt->getProperty('template');
+    my $alignment = $WhatchamaCallIt->getProperty('alignment');
     Tokens(T_CS('\halign'), Revert($spec), T_BEGIN, Revert($template), T_CS('\cr'),
       Revert($alignment), T_END); },
   bounded => 1,
   #  sizer       => '#1',
   sizer       => sub { $_[0]->getProperty('alignment')->getSize; },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     $stomach->bgroup;    # This will be closed by the \halign's closing }  (or will it?)
-    my $template = parseHAlignTemplate($stomach->getGullet, $whatsit);
-    my $spec     = $whatsit->getArg(1);
+    my $template = parseHAlignTemplate($stomach->getGullet, $WhatchamaCallIt);
+    my $spec     = $WhatchamaCallIt->getArg(1);
     alignmentBindings($template, undef,
       attributes => { width => orNull(GetKeyVal($spec, 'to')) });
-    digestAlignmentBody($stomach, $whatsit);
+    digestAlignmentBody($stomach, $WhatchamaCallIt);
     $stomach->egroup;
     return; });
 
 # Parse an \halign style alignment template from Gullet
 sub parseHAlignTemplate {
-  my ($gullet, $whatsit) = @_;
+  my ($gullet, $WhatchamaCallIt) = @_;
   my $t = $gullet->readNonSpace;
   Error('expected', '\bgroup', $gullet, "Missing \\halign box") unless Equals($t, T_BEGIN);
   my $before   = 1;    # true if we're before a # in current column
@@ -2975,7 +2975,7 @@ sub parseHAlignTemplate {
       ? (columns => [@nonreps], repeated => [@cols])
       : (columns => [@cols])),
     tokens => [@tokens]);
-  $whatsit->setProperty(template => $template);
+  $WhatchamaCallIt->setProperty(template => $template);
   return $template; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -3021,7 +3021,7 @@ sub cRevert {
   return Revert($arg); }
 
 sub digestAlignmentBody {
-  my ($stomach, $whatsit) = @_;
+  my ($stomach, $WhatchamaCallIt) = @_;
   my $gullet = $stomach->getGullet;
   local $LaTeXML::ALIGN_STATE = 0;
   # Now read & digest the body.
@@ -3032,8 +3032,8 @@ sub digestAlignmentBody {
   if (!$alignment) {
     Error('missing', 'alignment', $stomach, "There is no open alignment structure here");
     return; }
-  $whatsit->setProperty(alignment => $alignment);
-  $alignment->setBody($whatsit);
+  $WhatchamaCallIt->setProperty(alignment => $alignment);
+  $alignment->setBody($WhatchamaCallIt);
   Debug("Halign $alignment: BODY Processing...") if $LaTeXML::DEBUG{halign};
   my $lastwascr  = undef;
   my @reversion  = ();
@@ -3338,13 +3338,13 @@ DefConstructorI('\normal@par', undef, sub {
         $document->insertElement('ltx:break'); }
       $document->maybeCloseElement('ltx:para'); } },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
+    my ($stomach, $WhatchamaCallIt) = @_;
     if (LookupValue('inPreamble')) {
-      $whatsit->setProperty(inPreamble => 1); }
+      $WhatchamaCallIt->setProperty(inPreamble => 1); }
     else {
       # Check if flags were set by prior \par:
       if (my $c = LookupValue("next_para_class")) {
-        $whatsit->setProperty(class => $c);
+        $WhatchamaCallIt->setProperty(class => $c);
         AssignValue(next_para_class => undef); }
       # Fish out flags for next ltx:para, to be used when the next \par closes:
       if (!LookupRegister('\parindent')->valueOf) {
@@ -3759,7 +3759,7 @@ sub cleanup_XMText {
 sub openMathFork {
   my ($document, $equation) = @_;
   my $fork   = $document->openElementAt($equation, 'ltx:MathFork');
-  my $main   = $document->openElementAt($fork, 'ltx:Math', _box => MathWhatsit());    # Start EMPTY!
+  my $main   = $document->openElementAt($fork, 'ltx:Math', _box => MathWhatchamaCallIt());    # Start EMPTY!
   my $xmath  = $document->openElementAt($main, 'ltx:XMath');
   my $branch = $document->openElementAt($fork, 'ltx:MathBranch');
   return ($main, $branch); }
@@ -3781,14 +3781,14 @@ sub closeMathFork {
     $fork->unbindNode; }
   return; }
 
-# Create an inline math Whatsit from a list of math Boxes, Lists or Whatsits.
+# Create an inline math WhatchamaCallIt from a list of math Boxes, Lists or WhatchamaCallIts.
 # Note that we unwrap @hidden@bgroup's (!) and normalize \displaystyle (!)
 # This is primarily useful for synthesizing the Box for a newly created ltx:Math
 # that is synthesized from other math content within a ltx:MathFork.
-sub MathWhatsit {
+sub MathWhatchamaCallIt {
   my (@items) = @_;
   my $hbgd = LookupDefinition(T_CS('\@hidden@bgroup'));
-  @items = map { ((ref $_ eq 'LaTeXML::Core::Whatsit') && ($_->getDefinition eq $hbgd)
+  @items = map { ((ref $_ eq 'LaTeXML::Core::WhatchamaCallIt') && ($_->getDefinition eq $hbgd)
       ? $_->getBody->unlist : ($_)) }
     map { $_->unlist } grep { $_ } @items;
   my $locator = undef;
@@ -3798,7 +3798,7 @@ sub MathWhatsit {
   my @styles = grep { UnTeX($_) eq '\displaystyle' } @items;
   if (@styles) {
     @items = ($styles[0], grep { UnTeX($_) ne '\displaystyle' } @items); }
-  return LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@BEGININLINEMATH')), [],
+  return LaTeXML::Core::WhatchamaCallIt->new(LookupDefinition(T_CS('\@@BEGININLINEMATH')), [],
     body    => List(@items, mode => 'math'),
     trailer => T_CS('\@@ENDINLINEMATH'),
     locator => $locator, isMath => 1); }
@@ -3811,7 +3811,7 @@ sub MathWhatsit {
 # (but occasionally mixed math & ltx:text; some cases may need more semantic analysis?)
 # The content of $cell will be MOVED into the new column (ltx:td), (w/ ID's intact)
 # and CLONED (w/modified ID's) onto the end of the first child of the main branch, $main,
-# of the ltx:MathFork [A Math Whatsit is also synthesized for the main branch, for TeX, etc!).
+# of the ltx:MathFork [A Math WhatchamaCallIt is also synthesized for the main branch, for TeX, etc!).
 # Thus, the collection of rows/columns fragments represents  the alignment,
 # while the main branch synthesizes the (presumed) semantic whole.
 # The now-empty $cell is then removed from its parent & the document.
@@ -3862,7 +3862,7 @@ sub addColumnToMathFork {
         "Don't know how to synthesize equation with $type in column"); }
     # Add the boxes from this cell to the previously collected ones in the main branch.
     if ($box) {
-      my $composed = MathWhatsit($document->getNodeBox($main)->getBody, $box);
+      my $composed = MathWhatchamaCallIt($document->getNodeBox($main)->getBody, $box);
       $document->setNodeBox($main,             $composed);
       $document->setNodeBox($main->firstChild, $composed); }    # And also to the XMath element!
         # Finally MOVE (really copy) the node from the _Capture_ ($cell) to the td (in the fork)
@@ -4036,19 +4036,19 @@ sub IsEmpty {
     return (!defined $s) || ($s =~ /^\s*$/); }
   elsif ($ref eq 'LaTeXML::Core::List') {
     return !grep { !IsEmpty($_) } $box->unlist; }
-  elsif ($ref eq 'LaTeXML::Core::Whatsit') {
+  elsif ($ref eq 'LaTeXML::Core::WhatchamaCallIt') {
     if (($box->getDefinition eq $STATE->lookupDefinition(T_BEGIN))
       && !grep { !IsEmpty($_) } $box->getBody->unlist) {
       return 1; } }
   return 0; }
 
-# Remember a "safe" way to test a script Whatsit.
+# Remember a "safe" way to test a script WhatchamaCallIt.
 # Returns [ (FLOATING|POST) , (SUBSCRIPT|SUPERSCRIPT) ] or nothing
 sub IsScript {
   my ($object) = @_;
   if (ref $object eq 'LaTeXML::Core::List') {
     $object = [$object->unlist]->[-1]; }
-  if ((ref $object eq 'LaTeXML::Core::Whatsit')    # careful w/alias in getCSName!
+  if ((ref $object eq 'LaTeXML::Core::WhatchamaCallIt')    # careful w/alias in getCSName!
     && ($object->getDefinition->getCS->getCSName =~ /^\\@@(FLOATING|POST)(SUBSCRIPT|SUPERSCRIPT)$/)) {
     return [$1, $2]; }
   return; }
@@ -4107,7 +4107,7 @@ sub scriptHandler {
       push(@stuff, Box()); }
     my $script = shift(@stuff);    # ONLY the first box is the script!
     unshift(@stuff,
-      LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS($cs)), [$script],
+      LaTeXML::Core::WhatchamaCallIt->new(LookupDefinition(T_CS($cs)), [$script],
         locator     => $gullet->getLocator,
         font        => $script->getFont, isMath => 1,
         level       => $stomach->getBoxingLevel,
@@ -4230,9 +4230,9 @@ DefMacroI('\'', undef, sub {
 # \choose & friends, also need VERY special argument handling
 
 # After digesting the \choose (or whatever), grab the previous and following material
-# and store as args in the whatsit.
+# and store as args in the WhatchamaCallIt.
 
-# Increment the mathstyle stored in any boxes & whatsits.
+# Increment the mathstyle stored in any boxes & WhatchamaCallIts.
 # The tricky part is to know when NOT to increment!
 # \displaystyle, constructors that set their own specific style,...
 # And, any collateral adjustments that had been done in digestion depending on mathstyle
@@ -4256,7 +4256,7 @@ sub adjustMathstyle {
       adjustMathStyle_internal($outerstyle, $box); }
     elsif ($r eq 'LaTeXML::Core::List') {
       adjustMathstyle($outerstyle, $adjusted, $box->unlist); }
-    elsif ($r eq 'LaTeXML::Core::Whatsit') {
+    elsif ($r eq 'LaTeXML::Core::WhatchamaCallIt') {
       my $style = adjustMathStyle_internal($outerstyle, $box) || $outerstyle;
       # now recurse on contained boxes (args AND properties!)
       adjustMathstyle($style, $adjusted, $box->getArgs);
@@ -4313,8 +4313,8 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
     . "</ltx:XMWrap>"
     . "</ltx:XMDual>)()",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $kv = $whatsit->getArg(2);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $kv = $WhatchamaCallIt->getArg(2);
     # Really, we want the mathstyle that was in effect BEFORE the group starting the numerator!
     # (there could be a \displaystyle INSIDE the numerator, but that's not the one we want)
     # Of course the group that started the numerator may be the start of the Math, itself!
@@ -4338,7 +4338,7 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
     MergeFont(fraction => 1);
     my @bot     = $stomach->digestNextBody();
     my $closing = pop(@bot);    # We'll leave whatever closed the list (endmath, endgroup...)
-    $whatsit->setProperties(
+    $WhatchamaCallIt->setProperties(
       top       => List(@top, mode => 'math'),
       bottom    => List(@bot, mode => 'math'),
       role      => $role,
@@ -4346,7 +4346,7 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
       thickness => $thickness,
       mathstyle => $style);
     if ($kv->getValue('left') || $kv->getValue('right')) {
-      $whatsit->setProperties(needXMDual => 1,
+      $WhatchamaCallIt->setProperties(needXMDual => 1,
         xmkey0 => LaTeXML::Package::getXMArgID(),
         xmkey1 => LaTeXML::Package::getXMArgID(),
         xmkey2 => LaTeXML::Package::getXMArgID()); }
@@ -4354,10 +4354,10 @@ DefConstructor('\lx@generalized@over Undigested RequiredKeyVals',
   properties => sub { %{ $_[2]->getKeyVals }; },
   sizer      => sub { fracSizer($_[0]->getProperty('top'), $_[0]->getProperty('bottom')); },
   reversion  => sub {
-    my ($whatsit) = @_;
-    (Revert($whatsit->getProperty('top')),
-      $whatsit->getArg(1)->unlist,
-      Revert($whatsit->getProperty('bottom'))); });
+    my ($WhatchamaCallIt) = @_;
+    (Revert($WhatchamaCallIt->getProperty('top')),
+      $WhatchamaCallIt->getArg(1)->unlist,
+      Revert($WhatchamaCallIt->getProperty('bottom'))); });
 
 DefMacro('\choose',
   '\lx@generalized@over{\choose}{meaning=binomial,thickness=0pt,left=\@left(,right=\@right)}');
@@ -4434,9 +4434,9 @@ DefMacro('\dospecials', '\do\ \do\\\do\{\do\}\do\$\do\&\do\#\do\^\do\^^K\do\_\do
 DefConstructor('\@ASSERT@MEANING{}{}', '#2',
   reversion      => '#2',
   afterConstruct => sub {
-    my ($document, $whatsit) = @_;
+    my ($document, $WhatchamaCallIt) = @_;
     my $node    = $document->getNode;              # This should be the wrapper just added.
-    my $meaning = ToString($whatsit->getArg(1));
+    my $meaning = ToString($WhatchamaCallIt->getArg(1));
     addMeaningRec($document, $node, $meaning);
     $node; });
 
@@ -4793,7 +4793,7 @@ EoTeX
 # TeX Book, Appendix B, p. 351
 
 # Old style font styles.
-# The trick is to create an empty Whatsit preserved till assimilation (for reversion'ing)
+# The trick is to create an empty WhatchamaCallIt preserved till assimilation (for reversion'ing)
 # but to change the current font used in boxes.
 # (some of these were defined on different pages? or even latex...)
 Tag('ltx:text', autoOpen => 1, autoClose => 1);
@@ -5191,7 +5191,7 @@ DefMacro('\lx@make@tags {}', sub {
 
 # Remove the last closed node, if it's empty.
 sub removeEmptyElement {
-  my ($document, $whatsit) = @_;
+  my ($document, $WhatchamaCallIt) = @_;
   my $node = $document->getNode->lastChild;    # This should be the wrapper just added.
   if (!$node->childNodes) {
     $document->removeNode($node); }
@@ -5463,12 +5463,12 @@ DefConstructor('\@math@daccent {}',
     . "</ltx:XMApp>",
   mode        => 'text', alias => '\d',
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $arg = $whatsit->getArg(1);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $arg = $WhatchamaCallIt->getArg(1);
     if ($arg->isMath) {
-      $whatsit->setProperty(matharg => $arg->getBody); }
+      $WhatchamaCallIt->setProperty(matharg => $arg->getBody); }
     else {
-      $whatsit->setProperty(textarg => $arg); }
+      $WhatchamaCallIt->setProperty(textarg => $arg); }
     return; });
 
 DefConstructor('\@math@baccent {}',
@@ -5477,12 +5477,12 @@ DefConstructor('\@math@baccent {}',
     . "</ltx:XMApp>",
   mode        => 'text', alias => '\b',
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $arg = $whatsit->getArg(1);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $arg = $WhatchamaCallIt->getArg(1);
     if ($arg->isMath) {
-      $whatsit->setProperty(matharg => $arg->getBody); }
+      $WhatchamaCallIt->setProperty(matharg => $arg->getBody); }
     else {
-      $whatsit->setProperty(textarg => $arg); }
+      $WhatchamaCallIt->setProperty(textarg => $arg); }
     return; });
 
 #======================================================================
@@ -5909,7 +5909,7 @@ DefPrimitiveI('\joinrel', undef, sub {
       return () unless @stuff;    # no-op ????
       my $right = shift(@stuff);
       (@stuff,
-        LaTeXML::Core::Whatsit->new(LookupDefinition(T_CS('\@@joinrel')), [$left, $right],
+        LaTeXML::Core::WhatchamaCallIt->new(LookupDefinition(T_CS('\@@joinrel')), [$left, $right],
           locator => $gullet->getLocator,
           font    => $right->getFont, isMath => 1)); } });
 
@@ -6150,7 +6150,7 @@ our %DELIMITER_MAP =
   );
 
 # With new treatment of Simple Symbols as just Box's with assigned attributes,
-# we're not getting whatsits, and so we're not looking them up the same way!!!
+# we're not getting WhatchamaCallIts, and so we're not looking them up the same way!!!
 # TEMPORARILY (?) hack the Delimiter map
 foreach my $entry (values %DELIMITER_MAP) {
   $DELIMITER_MAP{ $$entry{char} } = $entry; }
@@ -6184,17 +6184,17 @@ DefMacro('\right XToken', '\right@hidden@egroup\@right #1');
 DefConstructor('\@left Token',
   "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
     . "(?#hint(<ltx:XMHint/>)(#1))",
-  afterDigest => sub { my ($stomach, $whatsit) = @_;
-    my $arg   = $whatsit->getArg(1);
+  afterDigest => sub { my ($stomach, $WhatchamaCallIt) = @_;
+    my $arg   = $WhatchamaCallIt->getArg(1);
     my $delim = ToString($arg);
     if ($delim eq '.') {
-      $whatsit->setProperty(hint => 1); }
+      $WhatchamaCallIt->setProperty(hint => 1); }
     elsif (my $entry = $DELIMITER_MAP{$delim}) {
-      $whatsit->setProperties(role => $$entry{lrole},
+      $WhatchamaCallIt->setProperties(role => $$entry{lrole},
         char     => $$entry{char},
         name     => $$entry{name},
         stretchy => 'true');
-      $whatsit->setFont($arg->getFont()); }
+      $WhatchamaCallIt->setFont($arg->getFont()); }
     elsif (($arg->getProperty('role') || '') eq 'OPEN') {
       $arg->setProperty(stretchy => 'true'); }
     else {
@@ -6205,17 +6205,17 @@ DefConstructor('\@left Token',
 DefConstructor('\@right Token',
   "?#char(<ltx:XMTok role='#role' name='#name' stretchy='#stretchy'>#char</ltx:XMTok>)"
     . "(?#hint(<ltx:XMHint/>)(#1))",
-  afterDigest => sub { my ($stomach, $whatsit) = @_;
-    my $arg   = $whatsit->getArg(1);
+  afterDigest => sub { my ($stomach, $WhatchamaCallIt) = @_;
+    my $arg   = $WhatchamaCallIt->getArg(1);
     my $delim = ToString($arg);
     if ($delim eq '.') {
-      $whatsit->setProperty(hint => 1); }
+      $WhatchamaCallIt->setProperty(hint => 1); }
     elsif (my $entry = $DELIMITER_MAP{$delim}) {
-      $whatsit->setProperties(role => $$entry{rrole},
+      $WhatchamaCallIt->setProperties(role => $$entry{rrole},
         char     => $$entry{char},
         name     => $$entry{name},
         stretchy => 'true');
-      $whatsit->setFont($arg->getFont()); }
+      $WhatchamaCallIt->setFont($arg->getFont()); }
     elsif (($arg->getProperty('role') || '') eq 'CLOSE') {
       $arg->setProperty(stretchy => 'true'); }
     else {
@@ -6301,9 +6301,9 @@ DefConstructor('\phantom{}',
     . "(<ltx:text class='ltx_phantom'>#1</ltx:text>)",    # !?!?!?!
   properties  => { isSpace => 1 },
   afterDigest => sub {
-    my $whatsit = $_[1];
-    my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
-    $whatsit->setProperties(width => $w, height => $h, depth => $d);
+    my $WhatchamaCallIt = $_[1];
+    my ($w, $h, $d) = $WhatchamaCallIt->getArg(1)->getSize;
+    $WhatchamaCallIt->setProperties(width => $w, height => $h, depth => $d);
     return; });
 
 DefConstructor('\hphantom{}',
@@ -6311,9 +6311,9 @@ DefConstructor('\hphantom{}',
     . "(<ltx:text class='ltx_phantom'>#1</ltx:text>)",    # !?!?!?!
   properties  => { isSpace => 1 },
   afterDigest => sub {
-    my $whatsit = $_[1];
-    my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
-    $whatsit->setProperties(width => $w, height => $h, depth => $d);
+    my $WhatchamaCallIt = $_[1];
+    my ($w, $h, $d) = $WhatchamaCallIt->getArg(1)->getSize;
+    $WhatchamaCallIt->setProperties(width => $w, height => $h, depth => $d);
     return; });
 
 DefConstructor('\vphantom{}',
@@ -6321,9 +6321,9 @@ DefConstructor('\vphantom{}',
     . "(<ltx:text class='ltx_phantom'>#1</ltx:text>)",    # !?!?!?!
   properties  => { isSpace => 1 },
   afterDigest => sub {
-    my $whatsit = $_[1];
-    my ($w, $h, $d) = $whatsit->getArg(1)->getSize;
-    $whatsit->setProperties(width => $w, height => $h, depth => $d);
+    my $WhatchamaCallIt = $_[1];
+    my ($w, $h, $d) = $WhatchamaCallIt->getArg(1)->getSize;
+    $WhatchamaCallIt->setProperties(width => $w, height => $h, depth => $d);
     return; });
 
 DefConstructor('\mathstrut', "?#isMath(<ltx:XMHint name='mathstrut'/>)()",
@@ -6486,21 +6486,21 @@ DefConstructor('\lx@gen@plain@matrix@ RequiredKeyVals:lx@GEN {}',
     . ")",
   properties => sub { %{ $_[1]->getKeyVals }; },
   reversion  => sub {
-    my ($whatsit, $kv, $body) = @_;
+    my ($WhatchamaCallIt, $kv, $body) = @_;
     my $name      = ToString($kv->getValue('name'));
-    my $alignment = $whatsit->getProperty('alignment');
+    my $alignment = $WhatchamaCallIt->getProperty('alignment');
 ##    (T_CS('\\' . $name), T_BEGIN, Revert($body), T_END); },
 ##    (T_CS('\\' . $name), T_BEGIN, Revert($alignment), T_END); },
     (T_CS('\\' . $name), T_BEGIN, $alignment->revert, T_END); },
 
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $kv = $whatsit->getArg(1);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $kv = $WhatchamaCallIt->getArg(1);
     if ($kv->getValue('datameaning') || $kv->getValue('delimitermeaning')) {
-      $whatsit->setProperties(
+      $WhatchamaCallIt->setProperties(
         needXMDual => 1,
         xmkey      => LaTeXML::Package::getXMArgID()); }
-    $whatsit->setProperties(alignment => LookupValue('Alignment'));
+    $WhatchamaCallIt->setProperties(alignment => LookupValue('Alignment'));
     return; });
 
 DefMacro('\matrix{}',
@@ -6614,7 +6614,7 @@ DefConstructor('\lx@gen@plain@cases@ RequiredKeyVals:lx@GEN {}',
         $point],
       $point); },
   reversion => sub {
-    my ($whatsit, $kv, $body) = @_;
+    my ($WhatchamaCallIt, $kv, $body) = @_;
     my $name = $kv->getValue('name');
     (T_CS('\cases'), T_BEGIN, Revert($body), T_END); });
 
@@ -6673,14 +6673,14 @@ DefPrimitive('\normalbottom', undef);
 DefConstructor('\footnote{}{}',
   "^<ltx:note role='footnote' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $mark   = $whatsit->getArg(1);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $mark   = $WhatchamaCallIt->getArg(1);
     my $change = 0;
     foreach my $token (Revert($mark)) {
       unless ($token->getCatcode == CC_LETTER || $token->getCatcode == CC_SPACE ||
         $token->getCatcode == CC_OTHER) {
         $change = 1; last; } }
-    $whatsit->setProperty(($change ? 'prenote' : 'mark') => $mark);
+    $WhatchamaCallIt->setProperty(($change ? 'prenote' : 'mark') => $mark);
     return; });
 # Until we can do the "v" properly:
 DefMacro('\vfootnote', '\footnote');
@@ -6913,16 +6913,16 @@ DefConstructor('\lx@add@Preamble@PI Undigested',
 #======================================================================
 # Support for constructing mathematical expressions
 
-# Common XMath pattern for assigning attributes from Whatsit properties.
+# Common XMath pattern for assigning attributes from WhatchamaCallIt properties.
 our $XMath_attributes =
   " role='#role' name='#name' meaning='#meaning' omcd='#omcd'"
   . " width='#width' height='#height' xoffset='#xoffset' yoffset='#yoffset'"
   . " lpadding='#lpadding' rpadding='#rpadding'";
 
 sub XMath_copy_keyvals {
-  my ($stomach, $whatsit) = @_;
-  my $kv = $whatsit->getArg(1);
-  $whatsit->setProperties($kv->getPairs) if $kv;
+  my ($stomach, $WhatchamaCallIt) = @_;
+  my $kv = $WhatchamaCallIt->getArg(1);
+  $WhatchamaCallIt->setProperties($kv->getPairs) if $kv;
   return; }
 
 # Build an ltx:XMApp, application of function/operator to arguments
@@ -6976,7 +6976,7 @@ sub I_wrap {
 # These two accept key operator_meaning, operator_omcd to give a meaning to the sub/superscript
 # NOTE (BUG): We SHOULD nest paired sub/superscripts, but avoid conflicting double scripts
 # To do that we need to sniff at the base, whether it already contains scripts.
-# However, IsScript isn't quite sufficient if the scripts are hidden within Whatsits, duals, etc.
+# However, IsScript isn't quite sufficient if the scripts are hidden within WhatchamaCallIts, duals, etc.
 # Currently, LaTeXML manages to deal with the double scripts anyway;
 # The reversion ALWAYS wraps the base (which will render non-optimally in images but avoid Errors)
 DefConstructor('\lx@superscript OptionalKeyVals:XMath {} InScriptStyle',
@@ -6987,8 +6987,8 @@ DefConstructor('\lx@superscript OptionalKeyVals:XMath {} InScriptStyle',
     . "</ltx:XMApp>",
   afterDigest => sub { XMath_copy_keyvals(@_); },
   reversion   => sub {
-    my ($whatsit, $kv, $base, $sup) = @_;
-    my $bump = $whatsit->getProperty('bump');
+    my ($WhatchamaCallIt, $kv, $base, $sup) = @_;
+    my $bump = $WhatchamaCallIt->getProperty('bump');
     $bump = 1;    # For now: ALWAYS {} wrap base in the reversion!
     ($sup && $sup->unlist
       ? (($bump ? (T_BEGIN, Revert($base), T_END) : Revert($base)), T_SUPER, revertScript($sup))
@@ -7009,8 +7009,8 @@ DefConstructor('\lx@subscript OptionalKeyVals:XMath {} InScriptStyle',
     . "</ltx:XMApp>",
   afterDigest => sub { XMath_copy_keyvals(@_); },
   reversion   => sub {
-    my ($whatsit, $kv, $base, $sub) = @_;
-    my $bump = $whatsit->getProperty('bump');
+    my ($WhatchamaCallIt, $kv, $base, $sub) = @_;
+    my $bump = $WhatchamaCallIt->getProperty('bump');
     $bump = 1;    # For now: ALWAYS {} wrap base in the reversion!
     ($sub && $sub->unlist
 ###      ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
@@ -7050,14 +7050,14 @@ DefConstructor('\lx@kludged{}',
 DefConstructor('\lx@padded[MuDimension]{MuDimension}{}',
   '#3',
   afterConstruct => sub {
-    my ($document, $whatsit) = @_;
+    my ($document, $WhatchamaCallIt) = @_;
     my $node = $document->getLastChildElement($document->getNode);
     if ($document->getNodeQName($node) eq 'ltx:XMDual') {
       my (@ch) = $node->childNodes;
       $node = $ch[1]; }
-    if (my $lpadding = $whatsit->getArg(1)) {
+    if (my $lpadding = $WhatchamaCallIt->getArg(1)) {
       $document->setAttribute($node, lpadding => $lpadding); }
-    if (my $rpadding = $whatsit->getArg(2)) {
+    if (my $rpadding = $WhatchamaCallIt->getArg(2)) {
       $document->setAttribute($node, rpadding => $rpadding); } },
   reversion => '#3');
 
@@ -7074,18 +7074,18 @@ DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
     PushValue(PENDING_DUAL_XMARGS => {});
     return; },
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $kv     = $whatsit->getArg(1);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my $kv     = $WhatchamaCallIt->getArg(1);
     my $xmargs = PopValue('PENDING_DUAL_XMARGS');            # Really SHOULD be a hash
-    $whatsit->setProperties(%$xmargs)      if $xmargs;       # Hopefully no name class with XM<digits>
-    $whatsit->setProperties($kv->getPairs) if $kv;
-    my %props = $whatsit->getProperties;
+    $WhatchamaCallIt->setProperties(%$xmargs)      if $xmargs;       # Hopefully no name class with XM<digits>
+    $WhatchamaCallIt->setProperties($kv->getPairs) if $kv;
+    my %props = $WhatchamaCallIt->getProperties;
     my $cr    = $props{content_reversion};
     my $pr    = $props{presentation_reversion};
     my $r     = ToString($props{revert_as}) || 'content';    # ?????
 
     if (!defined $props{reversion}) {
-      $whatsit->setProperty(reversion => sub {
+      $WhatchamaCallIt->setProperty(reversion => sub {
           my ($self, $kvs, $c, $p) = @_;
           ($r eq 'content' ? $cr || Revert($c)
             : ($r eq 'presentation' ? $pr || Revert($p)
@@ -7116,8 +7116,8 @@ DefConstructor('\lx@dual OptionalKeyVals:XMath {}{}',
 DefConstructor('\lx@xmarg{}{}', "<ltx:XMArg _xmkey='#1'>#2</ltx:XMArg>",
   reversion   => '#2',
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($xmid,    $arg)     = $whatsit->getArgs();
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($xmid,    $arg)     = $WhatchamaCallIt->getArgs();
     $xmid = ToString($xmid);
     if (my $pending = LookupValue('PENDING_DUAL_XMARGS')) {
       if (my $xmargs = $$pending[-1]) {
@@ -7241,19 +7241,19 @@ DefMacro('\lx@tweaked{}{}', '\ifmmode\lx@math@tweaked{#1}{#2}\else\lx@text@tweak
 DefConstructor('\lx@math@tweaked RequiredKeyVals {}',
   "<ltx:XMWrap $XMath_attributes>#2</ltx:XMWrap>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($kv,      $body)    = $whatsit->getArgs;
-    XMath_copy_keyvals($stomach, $whatsit);
-    $whatsit->setFont($body->getFont);
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($kv,      $body)    = $WhatchamaCallIt->getArgs;
+    XMath_copy_keyvals($stomach, $WhatchamaCallIt);
+    $WhatchamaCallIt->setFont($body->getFont);
     return; },
   reversion => '#2');
 
 DefConstructor('\lx@text@tweaked RequiredKeyVals {}',
   "<ltx:text _noautoclose='1' %&GetKeyVals(#1)>#2</ltx:text>",
   afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my ($kv,      $body)    = $whatsit->getArgs;
-    $whatsit->setProperties($kv->getPairs); });
+    my ($stomach, $WhatchamaCallIt) = @_;
+    my ($kv,      $body)    = $WhatchamaCallIt->getArgs;
+    $WhatchamaCallIt->setProperties($kv->getPairs); });
 
 DefMacro('\lx@nounicode {}', '\ifmmode\lx@math@nounicode#1\else\lx@text@nounicode#1\fi');
 

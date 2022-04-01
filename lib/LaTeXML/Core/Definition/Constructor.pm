@@ -15,13 +15,13 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
-use LaTeXML::Core::Whatsit;
+use LaTeXML::Core::WhatchamaCallIt;
 use base qw(LaTeXML::Core::Definition::Primitive);
 use LaTeXML::Core::Definition::Constructor::Compiler;
 
 #**********************************************************************
 # Constructor control sequences.
-# They are first converted to a Whatsit in the Stomach, and that Whatsit's
+# They are first converted to a WhatchamaCallIt in the Stomach, and that WhatchamaCallIt's
 # contruction is carried out to form parts of the document.
 # In particular, beforeDigest, reading args and afterDigest are executed
 # in the Stomach.
@@ -34,7 +34,7 @@ use LaTeXML::Core::Definition::Constructor::Compiler;
 #    captureBody : whether to capture the following List as a `body`
 #        (for environments, math modes)
 #        If this is a token, it is the token that will be matched to end the body.
-#    properties : a hash of default values for properties to store in the Whatsit.
+#    properties : a hash of default values for properties to store in the WhatchamaCallIt.
 sub new {
   my ($class, $cs, $parameters, $replacement, %traits) = @_;
   my $source = $STATE->getStomach->getGullet->getMouth;
@@ -71,8 +71,8 @@ sub getNumArgs {
   $$self{nargs} = ($params ? $params->getNumArgs : 0);
   return $$self{nargs}; }
 
-# Digest the constructor; This should occur in the Stomach to create a Whatsit.
-# The whatsit which will be further processed to create the document.
+# Digest the constructor; This should occur in the Stomach to create a WhatchamaCallIt.
+# The WhatchamaCallIt which will be further processed to create the document.
 sub invoke {
   my ($self, $stomach) = @_;
   # Call any `Before' code.
@@ -93,7 +93,7 @@ sub invoke {
   my $nargs = $self->getNumArgs;
   @args = @args[0 .. $nargs - 1];
 
-  # Compute any extra Whatsit properties (many end up as element attributes)
+  # Compute any extra WhatchamaCallIt properties (many end up as element attributes)
   my $properties = $$self{properties};
   my %props      = (!defined $properties ? ()
     : (ref $properties eq 'CODE' ? &$properties($stomach, @args)
@@ -107,16 +107,16 @@ sub invoke {
   $props{isMath}      = $ismath                         unless defined $props{isMath};
   $props{level}       = $stomach->getBoxingLevel;
   $props{scriptlevel} = $stomach->getScriptLevel if $ismath;
-  # Now create the Whatsit, itself.
-  my $whatsit = LaTeXML::Core::Whatsit->new($self, [@args], %props);
+  # Now create the WhatchamaCallIt, itself.
+  my $WhatchamaCallIt = LaTeXML::Core::WhatchamaCallIt->new($self, [@args], %props);
   # Call any 'After' code.
-  my @post = $self->executeAfterDigest($stomach, $whatsit);
+  my @post = $self->executeAfterDigest($stomach, $WhatchamaCallIt);
   if (my $cap = $$self{captureBody}) {
-    $whatsit->setBody(@post, $stomach->digestNextBody((ref $cap ? $cap : undef))); @post = (); }
+    $WhatchamaCallIt->setBody(@post, $stomach->digestNextBody((ref $cap ? $cap : undef))); @post = (); }
 
-  my @postpost = $self->executeAfterDigestBody($stomach, $whatsit);
+  my @postpost = $self->executeAfterDigestBody($stomach, $WhatchamaCallIt);
   LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;
-  return (@pre, $whatsit, @post, @postpost); }
+  return (@pre, $WhatchamaCallIt, @post, @postpost); }
 
 # Similar to executeAfterDigest
 sub executeAfterDigestBody {
@@ -126,17 +126,17 @@ sub executeAfterDigestBody {
   return (map { &$_($stomach, @whatever) } @post); }
 
 sub doAbsorbtion {
-  my ($self, $document, $whatsit) = @_;
+  my ($self, $document, $WhatchamaCallIt) = @_;
   # First, compile the constructor pattern, if needed.
   my $replacement = $$self{replacement};
   if (!ref $replacement) {
     $$self{replacement} = $replacement = LaTeXML::Core::Definition::Constructor::Compiler::compileConstructor($self); }
   # Now do the absorbtion.
   if (my $pre = $$self{beforeConstruct}) {
-    map { &$_($document, $whatsit) } @$pre; }
-  &{$replacement}($document, $whatsit->getArgs, $whatsit->getProperties);
+    map { &$_($document, $WhatchamaCallIt) } @$pre; }
+  &{$replacement}($document, $WhatchamaCallIt->getArgs, $WhatchamaCallIt->getProperties);
   if (my $post = $$self{afterConstruct}) {
-    map { &$_($document, $whatsit) } @$post; }
+    map { &$_($document, $WhatchamaCallIt) } @$post; }
   return; }
 
 #===============================================================================
@@ -155,7 +155,7 @@ C<LaTeXML::Core::Definition::Constructor>  - Control sequence definitions.
 
 This class represents control sequences that contribute arbitrary XML fragments
 to the document tree.  During digestion, a C<LaTeXML::Core::Definition::Constuctor> records the arguments
-used in the invocation to produce a L<LaTeXML::Core::Whatsit>.  The resulting L<LaTeXML::Core::Whatsit>
+used in the invocation to produce a L<LaTeXML::Core::WhatchamaCallIt>.  The resulting L<LaTeXML::Core::WhatchamaCallIt>
 (usually) generates an XML document fragment when absorbed by an instance of L<LaTeXML::Core::Document>.
 Additionally, a C<LaTeXML::Core::Definition::Constructor> may have beforeDigest and afterDigest daemons
 defined which are executed for side effect, or for adding additional boxes to the output.

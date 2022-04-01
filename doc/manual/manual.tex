@@ -705,7 +705,7 @@ See Figure \ref{architecture.dataflow} for illustration.
 The casual user needs only a superficial understanding of the architecture.
 The programmer who wants to extend or customize \LaTeXML\ will, however,
 need a fairly good understanding of the process and the distinctions between
-text, Tokens, Boxes, Whatsits and \XML, on the one hand,
+text, Tokens, Boxes, WhatchamaCallIts and \XML, on the one hand,
 and Macros, Primitives and Constructors, on the other.
 In a way, the implementer of a \LaTeXML\ binding for a \LaTeX\ package may
 need a \emph{better} understanding than when implementing for \LaTeX\
@@ -765,7 +765,7 @@ The processing is broken into the following stages
 \index{Primitive(LaTeXML::)@{\ttfamily  Primitive(LaTeXML::)}!architecture}%
 \index{Box(LaTeXML::)@{\ttfamily  Box(LaTeXML::)}!architecture}%
 \index{List(LaTeXML::)@{\ttfamily  List(LaTeXML::)}!architecture}%
-\index{Whatsit(LaTeXML::)@{\ttfamily  Whatsit(LaTeXML::)}!architecture}%
+\index{WhatchamaCallIt(LaTeXML::)@{\ttfamily  WhatchamaCallIt(LaTeXML::)}!architecture}%
 
 Digestion is carried out primarily in a \emph{pull} mode: The \ltxpod{Core::Stomach}
 pulls expanded \ltxpod{Core::Token}s from the \ltxpod{Core::Gullet}, which itself pulls \ltxpod{Core::Token}s from 
@@ -781,18 +781,18 @@ and affect expansion.
 
 The \ltxpod{Core::Stomach} then digests these tokens by executing \ltxpod{Core::Definition::Primitive} control 
 sequences, usually for side effect, but often for converting material
-into \ltxpod{Core::List}s of \ltxpod{Core::Box}es and \ltxpod{Core::Whatsit}s
+into \ltxpod{Core::List}s of \ltxpod{Core::Box}es and \ltxpod{Core::WhatchamaCallIt}s
 (A Macro should never digest).
 Normally, textual tokens are converted to \ltxpod{Core::Box}es in the current font.
 The main (intentional) deviation of \LaTeXML's digestion from that of \TeX\ is
 the introduction of a new type of definition, a \ltxpod{Core::Definition::Constructor},
 responsible for constructing \XML\ fragments.
 A control sequence bound to \ltxpod{Core::Definition::Constructor} is digested by
-reading and processing its arguments and wrapping these up in a \ltxpod{Core::Whatsit}.
+reading and processing its arguments and wrapping these up in a \ltxpod{Core::WhatchamaCallIt}.
 Before- and after-daemons, essentially anonymous primitives, associated with
 the \ltxpod{Core::Definition::Constructor} are executed before and after digesting the \ltxpod{Core::Definition::Constructor}
 arguments' markup, which can affect the context of that digestion, as well
-as augmenting the \ltxpod{Core::Whatsit} with additional properties.
+as augmenting the \ltxpod{Core::WhatchamaCallIt} with additional properties.
 See \ref{customization.latexml.digestion} for how to define primitives
 and affect digestion.
 
@@ -802,13 +802,13 @@ and affect digestion.
 \index{Constructor (LaTeXML::)!architecture}%
 \index{Document (LaTeXML::)!architecture}%
 \index{Model (LaTeXML::)!architecture}%
-Given the \ltxpod{Core::List} of \ltxpod{Core::Box}es and \ltxpod{Core::Whatsit}s,
+Given the \ltxpod{Core::List} of \ltxpod{Core::Box}es and \ltxpod{Core::WhatchamaCallIt}s,
 we proceed to constructing an \XML\ document.
 This consists of creating an \ltxpod{Core::Document} object, containing
 a libxml2 document, \pod{XML::LibXML::Document}, and having it absorb the digested
 material. Absorbing a \ltxpod{Core::Box} converts it to text content, with provision
 made to track and set the current font.
-A \ltxpod{Core::Whatsit} is absorbed by invoking the associated \ltxpod{Core::Definition::Constructor}
+A \ltxpod{Core::WhatchamaCallIt} is absorbed by invoking the associated \ltxpod{Core::Definition::Constructor}
 to insert an appropriate \XML\ fragment, including elements and attributes,
 and recursively processing their arguments as necessary
 See \ref{customization.latexml.construction} for how to define
@@ -905,8 +905,8 @@ Likewise, you extend \ltxcmd{latexml} by creating bindings for
 Or by defining your own \TeX\ style file along with it's \LaTeXML\ binding.
 
 In all these cases, you'll need the same skills: understanding and using
-text, tokens, boxes and whatsits, as well as macros and macro expansion,
-primitives and digestion, and finally whatsits and constructors.
+text, tokens, boxes and WhatchamaCallIts, as well as macros and macro expansion,
+primitives and digestion, and finally WhatchamaCallIts and constructors.
 Understanding \TeX\ helps; reading the \LaTeXML\ bindings in the distribution
 will give an idea of how we use it.
 %%%
@@ -1094,7 +1094,7 @@ and the control sequence arguments as argument; like macros, these arguments
 are not expanded or digested by default, they must be explicitly digested if necessary.
 The replacement code must either return nothing (eg. ending with \ltxcode|return;|) or
 should return a list (ie. a Perl list \ltxcode|(...)|)
-of digested \ltxpod{Core::Box}es or \ltxpod{Core::Whatsit}s.
+of digested \ltxpod{Core::Box}es or \ltxpod{Core::WhatchamaCallIt}s.
 
 Options to DefPrimitive are:
 \begin{itemize}
@@ -1129,7 +1129,7 @@ writing before \& after daemons in constructors, as well as in Primitives;
 we give an overview here:
 \begin{itemize}
 \item \ltxcode|Digest($tokens)|
-digests \ltxcode|$tokens| (a \ltxpod{Core::Tokens}), returning a list of \ltxpod{Core::Box}es and \ltxpod{Core::Whatsit}s.
+digests \ltxcode|$tokens| (a \ltxpod{Core::Tokens}), returning a list of \ltxpod{Core::Box}es and \ltxpod{Core::WhatchamaCallIt}s.
 \item \ltxcode|Let($token1,$token2)| gives \ltxcode|$token1| the same meaning as \ltxcode|$token2|,
  like \verb|\let|.
 \end{itemize}
@@ -1224,7 +1224,7 @@ The \ltxcode|$replacement| for a constructor describes the \XML\ to %$
 be generated during the construction phase. It can either be a string
 representing the \emph{XML pattern} (described below), or a
 subroutine \ltxcode|CODE($document,$arg1,...%props)|
-receiving the arguments and properties from the \ltxpod{Core::Whatsit};
+receiving the arguments and properties from the \ltxpod{Core::WhatchamaCallIt};
 it would invoke the methods of \ltxpod{Core::Document} to construct the desired \XML.
 
 At its simplest, the XML pattern is a just serialization of the desired \XML.
@@ -1233,7 +1233,7 @@ be effectively `interpolated' into the \XML\ being constructed by use of the fol
 \begin{itemize}
 \item \ltxcode|#1|,\ltxcode|#2|,\ldots \ltxcode|#%name%|
    returns the construction of the numbered argument
-   or named property of the Whatsit;
+   or named property of the WhatchamaCallIt;
 \item \ltxcode|&%function%(%arg1%,%arg2%,...)|
    invokes the Perl \codevar{function} on the given arguments,
    \codevar{arg1},\ldots, returning the result.
@@ -1278,16 +1278,16 @@ Options:
   recognized font keys are \texttt{family}, \texttt{series}, \texttt{shape}, \texttt{size},
   \texttt{color};
 \item \ltxcode.properties=> {%hash} | CODE($stomach,$arg1,...).
-  provides a set of properties to store in the \ltxpod{Core::Whatsit} for eventual use
+  provides a set of properties to store in the \ltxpod{Core::WhatchamaCallIt} for eventual use
   in the constructor \ltxcode|$replacement|.  If a subroutine is used,
   it also should return a hash of properties;
 \item \ltxcode|beforeDigest=>CODE($stomach)|,\\
-      \ltxcode|afterDigest=>CODE($stomach,$whatsit)|
+      \ltxcode|afterDigest=>CODE($stomach,$WhatchamaCallIt)|
   provides code to be digested before and after digesting the arguments of
   the constructor, typically to alter the context of the digestion (before),
-  or to augment the properties of the \ltxpod{Core::Whatsit} (after);
-\item  \ltxcode|beforeConstruct=>CODE($document,$whatsit)|,\\
-      \ltxcode|afterConstruct=>CODE($document,$whatsit)|
+  or to augment the properties of the \ltxpod{Core::WhatchamaCallIt} (after);
+\item  \ltxcode|beforeConstruct=>CODE($document,$WhatchamaCallIt)|,\\
+      \ltxcode|afterConstruct=>CODE($document,$WhatchamaCallIt)|
   provides code to be run before and after the main \ltxcode|$replacement|
   is effected; occassionaly it is convenient to use the pattern
   form for the main \ltxcode|$replacement|, but one still wants to execute
@@ -1302,7 +1302,7 @@ Options:
   (or in a named scope);
 \item \ltxcode&reversion=>$string|CODE(...)&,
    \ltxcode|alias=>$cs|
-  can be used when the \ltxpod{Core::Whatsit} needs to be reverted into \TeX\ code,
+  can be used when the \ltxpod{Core::WhatchamaCallIt} needs to be reverted into \TeX\ code,
   and the default of simply reassembling based on the prototype is not desired.
   See the code for examples.
 \end{itemize}
@@ -1311,7 +1311,7 @@ Some additional functions useful when writing constructors:
 \begin{itemize}
 \item \ltxcode|ToString($stuff)| converts \ltxcode|$stuff| to a string,
   hopefully without \TeX\ markup, suitable for use as document content
-  and attribute values.  Note that if \ltxcode|$stuff| contains Whatsits
+  and attribute values.  Note that if \ltxcode|$stuff| contains WhatchamaCallIts
   generated by Constructors, it may not be possible to avoid \TeX\ code.
   Constrast \ltxcode|ToString| to the following two functions.
 \item \ltxcode|UnTeX($stuff)| returns a string containing the \TeX\ code
@@ -1342,7 +1342,7 @@ the contents of the environment.
 \texttt{DefEnvironment} takes the same options as  \texttt{DefConstructor},
 with the addition of
 \begin{itemize}
-\item \ltxcode|afterDigestBegin=>CODE($stomach,$whatsit)|
+\item \ltxcode|afterDigestBegin=>CODE($stomach,$WhatchamaCallIt)|
 provides code to digest after the \verb|\begin{env}| is digested;
 \item \ltxcode|beforeDigestEnd=>CODE($stomach)|
 provides code to digest before the \verb|\end{env}| is digested.
@@ -1372,7 +1372,7 @@ can automatically be opened if needed to create a valid document;
 a valid document;
 \ltxcode|afterOpen=>$code| specifies code to be executed before opening the tag;
 the code is passed the \ltxpod{Core::Document} being constructed as well as the
-\ltxpod{Core::Box} (or \ltxpod{Core::Whatsit}) responsible for its creation;
+\ltxpod{Core::Box} (or \ltxpod{Core::WhatchamaCallIt}) responsible for its creation;
 \ltxcode|afterClose=>code| similar to \texttt{afterOpen}, but executed after closing
 the element.
 % DocType
@@ -2228,7 +2228,7 @@ Bindings for the following classes and packages are supplied with the distributi
 \input{pods/LaTeXML_Core_Box}
 \input{pods/LaTeXML_Core_List}
 \input{pods/LaTeXML_Core_Comment}
-\input{pods/LaTeXML_Core_Whatsit}
+\input{pods/LaTeXML_Core_WhatchamaCallIt}
 % Various objects
 \input{pods/LaTeXML_Core_Alignment}
 \input{pods/LaTeXML_Core_KeyVals}
