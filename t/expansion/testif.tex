@@ -111,4 +111,7 @@ Expecting (True True False):
 \if\a\b True \else False \fi
 \if\a\c True \else False \fi
 
+However, ifx doesn't expand, and if's can be tested!
+True: \ifx\iftrue\iftrue True\else False\fi;
+False: \ifx\iftrue\iffalse True\else False\fi.
 \end{document}
