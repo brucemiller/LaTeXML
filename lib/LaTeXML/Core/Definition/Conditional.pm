@@ -190,6 +190,12 @@ sub invoke_fi {
       if $STATE->lookupValue('TRACINGCOMMANDS') || $LaTeXML::DEBUG{tracing};
     return; } }
 
+sub equals {
+  my ($self, $other) = @_;
+  return (defined $other && (ref $self) eq (ref $other))
+    && Equals($self->getParameters, $other->getParameters)
+    && Equals($self->getTest,       $other->getTest); }
+
 #===============================================================================
 1;
 
