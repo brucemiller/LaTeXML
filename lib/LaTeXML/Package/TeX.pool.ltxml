@@ -1886,22 +1886,58 @@ DefPrimitive('\setbox Number SkipMatch:=', sub {
     AssignValue('box' . $_[1]->valueOf => $stuff, $scope);
     @rest; });
 
+sub adjustBoxColor {
+  my ($box) = @_;
+  my $font = LookupValue('font');
+  if (my $color = $font && $font->getColor) {
+    if ($color ne 'black') {
+      adjustBoxColor_rec($color, {}, $box); } }
+  return; }
+
+sub adjustBoxColor_rec {
+  my ($color, $adjusted, @boxes) = @_;
+  foreach my $box (@boxes) {
+    next unless defined $box;
+    next if $$adjusted{$box};    # since we do args AND props, be careful not to adjust twice!
+    $$adjusted{$box} = 1;
+    my $r = ref $box;
+    next unless $r && ($r !~ /(?:SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE)/) && $r->isaBox;
+    if ($r eq 'LaTeXML::Core::Box') {
+      adjustBoxColor_internal($color, $box); }
+    elsif ($r eq 'LaTeXML::Core::List') {
+      adjustBoxColor_rec($color, $adjusted, $box->unlist); }
+    elsif ($r eq 'LaTeXML::Core::Whatsit') {
+      adjustBoxColor_internal($color, $box);
+      # now recurse on contained boxes (args AND properties!)
+      adjustBoxColor_rec($color, $adjusted, $box->getArgs);
+      adjustBoxColor_rec($color, $adjusted, values %{ $box->getPropertiesRef }); } }
+  return; }
+
+sub adjustBoxColor_internal {
+  my ($color, $box) = @_;
+  if (my $font = $box->getFont) {
+    $box->setFont($font->merge(color => $color)); }
+  return; }
+
 DefPrimitive('\box Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
     AssignValue($box, undef);
-    ($stuff ? $stuff->unlist : ()); });
+    ($stuff ? $stuff : List()); });
 
 DefPrimitive('\copy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
-    ($stuff ? $stuff->unlist : ()); });
+    adjustBoxColor($stuff);
+    ($stuff ? $stuff : List()); });
 
 DefPrimitive('\vsplit Number Match:to Dimension', sub {
     # analog to \box for now.
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
-    ($stuff ? $stuff->unlist : ()); });
+    adjustBoxColor($stuff);
+    ($stuff ? $stuff : List()); });
 
 sub revert_spec {
   my ($whatsit, $keyword) = @_;
@@ -2533,12 +2569,15 @@ DefConstructor('\moveright Dimension MoveableBox',
 DefPrimitive('\unvbox Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
     AssignValue($box, undef);
-    (defined $stuff ? $stuff->unlist : ()); });
+    (defined $stuff ? $stuff->unlist : List()); });
+
 DefPrimitive('\unvcopy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
-    (defined $stuff ? $stuff->unlist : ()); });
+    adjustBoxColor($stuff);
+    (defined $stuff ? $stuff->unlist : List()); });
 
 #======================================================================
 # If this is the right solution...
@@ -3488,12 +3527,15 @@ DefConstructor('\raise Dimension MoveableBox',
 DefPrimitive('\unhbox Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
     AssignValue($box, undef);
-    (defined $stuff ? $stuff->unlist : ()); });
+    (defined $stuff ? $stuff->unlist : List()); });
+
 DefPrimitive('\unhcopy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
-    (defined $stuff ? $stuff->unlist : ()); });
+    adjustBoxColor($stuff);
+    (defined $stuff ? $stuff->unlist : List()); });
 
 # Implement ???
 # DefMacro('\vrule','\relax');
@@ -6672,6 +6714,7 @@ DefPrimitive('\normalbottom', undef);
 # otherwise, to the attribute.
 DefConstructor('\footnote{}{}',
   "^<ltx:note role='footnote' ?#mark(mark='#mark')()>?#prenote(#prenote )()#2</ltx:note>",
+  mode        => 'text',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $mark   = $whatsit->getArg(1);

@@ -470,6 +470,8 @@ sub lookupDigestableDefinition {
       && ($entry      = $$self{meaning}{$lookupname})) {
       $defn = $$entry[0]; }
     return $defn; }
+  elsif ($CATCODE_ACTIVE_OR_CS[$cc]) {
+    return; }
   return $token; }
 
 # And a shorthand for installing definitions
