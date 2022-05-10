@@ -57,6 +57,7 @@ sub new {
   my $self = bless { source => $options{source},
     shortsource    => $options{shortsource},
     fordefinitions => ($options{fordefinitions} ? 1 : 0),
+    at_letter      => ($options{at_letter}      ? 1 : 0),
     notes          => ($options{notes}          ? 1 : 0),
   }, $class;
   $self->openString($string);
@@ -88,12 +89,14 @@ sub initialize {
   if ($$self{notes}) {
     my $source = defined($$self{source}) ? ($$self{source} || 'Literal String') : 'Anonymous String';
     $$self{note_message} = "Processing " . ($$self{fordefinitions} ? "definitions" : "content")
+      . ($$self{fordefinitions} && !$$self{at_letter} ? " w/@ other" : '')
       . " " . $source;
     ProgressSpinup($$self{note_message}); }
+  if ($$self{at_letter}) {
+    $$self{saved_at_cc} = $STATE->lookupCatcode('@');
+    $STATE->assignCatcode('@' => CC_LETTER); }
   if ($$self{fordefinitions}) {
-    $$self{saved_at_cc}            = $STATE->lookupCatcode('@');
     $$self{SAVED_INCLUDE_COMMENTS} = $STATE->lookupValue('INCLUDE_COMMENTS');
-    $STATE->assignCatcode('@' => CC_LETTER);
     $STATE->assignValue(INCLUDE_COMMENTS => 0); }
   return; }
 
@@ -107,8 +110,9 @@ sub finish {
   $$self{chars}    = [];
   $$self{nchars}   = 0;
 
-  if ($$self{fordefinitions}) {
-    $STATE->assignCatcode('@' => $$self{saved_at_cc});
+  if (exists $$self{saved_at_cc}) {
+    $STATE->assignCatcode('@' => $$self{saved_at_cc}); }
+  if (exists $$self{SAVED_INCLUDE_COMMENTS}) {
     $STATE->assignValue(INCLUDE_COMMENTS => $$self{SAVED_INCLUDE_COMMENTS}); }
   if ($$self{notes}) {
     ProgressSpindown($$self{note_message}); }
@@ -241,7 +245,7 @@ sub handle_comment {
   if ($comment && $STATE->lookupValue('INCLUDE_COMMENTS')) {
     return T_COMMENT($comment); }
   elsif (($STATE->lookupValue('PRESERVE_NEWLINES') || 0) > 1) {
-    return T_MARKER('EOL'); }                                               # Required EOL during \read
+    return T_MARKER('EOL'); }    # Required EOL during \read
   else {
     return; } }
 
@@ -337,7 +341,7 @@ sub readToken {
     my ($ch, $cc) = getNextChar($self);
     my $token = (defined $cc ? $DISPATCH[$cc] : undef);
     $token = &$token($self, $ch) if ref $token eq 'CODE';
-    return $token if defined $token;             # Else, repeat till we get something or run out.
+    return $token if defined $token;    # Else, repeat till we get something or run out.
 
   }
   return; }

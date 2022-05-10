@@ -382,20 +382,11 @@ DefParameterType('Register', sub {
 DefParameterType('TeXFileName', sub {
     my ($gullet) = @_;
     my ($token, $cc, @tokens) = ();
+    $gullet->skipSpaces;
     while (($token = $gullet->readXToken(0))
       && (($cc = $token->getCatcode) != CC_SPACE) && ($cc != CC_EOL) && ($cc != CC_COMMENT) && ($cc != CC_CS)) {
       push(@tokens, $token); }
     $gullet->unread($token) unless ($cc == CC_SPACE) || ($cc == CC_EOL) || ($cc == CC_COMMENT);
-    my $lead_cc = @tokens && $tokens[0]->getCatcode();
-    if ($lead_cc == CC_BEGIN) {
-      my $trail_cc = @tokens && $tokens[-1]->getCatcode();
-      if ($trail_cc == CC_END) {
-        # A begin-end wrapper indicates latex style {filename} use,
-        # so first unwrap,
-        @tokens = @tokens[1 .. $#tokens - 1];
-        # then load latex, and proceed
-        if (!LookupValue('LaTeX.pool_loaded')) {    # if already loaded, DONT redefine!
-          LoadPool("LaTeX"); } } }
     Tokens(@tokens); });
 
 # A LaTeX style directory List
@@ -996,7 +987,16 @@ DefMacroI('\botmark',        undef, Tokens());
 DefMacroI('\splitfirstmark', undef, Tokens());
 DefMacroI('\splitbotmark',   undef, Tokens());
 
-DefMacro('\input TeXFileName', sub { Input($_[1]); });
+DefMacro('\input TeXFileName', sub {
+    my $filename = $_[1];
+    my @t        = $filename->unlist;
+    # If given a LaTeX-style argument, strip braces
+    if (@t && $t[0] && $t[0]->getCatcode == CC_BEGIN && $t[-1]->getCatcode == CC_END) {
+      $filename = Tokens(@t[1 .. $#t - 1]);
+      # and load LaTeX.pool if not already
+      if (!LookupValue('LaTeX.pool_loaded')) {
+        LoadPool("LaTeX"); } }
+    Input($filename); });
 
 # Note that TeX doesn't actually close the mouth;
 # it just flushes it so that it will close the next time it's read!
