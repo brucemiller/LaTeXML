@@ -34,16 +34,16 @@ sub clauses {
 DebuggableFeature('rewrite', 'Debug rewritting operations (LaTeXML::Core::Rewrite)');
 
 sub rewrite {
-  my ($self, $document, $node) = @_;
-  foreach my $node ($document->findnodes('//*[@labels]')) {
-    my $labels = $node->getAttribute('labels');
-    if (my $id = $node->getAttribute('xml:id')) {
+  my ($self, $document, $at_node) = @_;
+  foreach my $node_with_label ($document->findnodes('//*[@labels]')) {
+    my $labels = $node_with_label->getAttribute('labels');
+    if (my $id = $node_with_label->getAttribute('xml:id')) {
       foreach my $label (split(/ /, $labels)) {
         $$self{labels}{$label} = $id; } }
     else {
-      Error('malformed', 'label', $node, "Node has labels but no xml:id"); } }
+      Error('malformed', 'label', $node_with_label, "Node has labels but no xml:id"); } }
   Debug(('=' x 40)) if $LaTeXML::DEBUG{rewrite};
-  $self->applyClause($document, $node, 0, $self->clauses);
+  $self->applyClause($document, $at_node, 0, $self->clauses);
   return; }
 
 sub getLabelID {
@@ -501,7 +501,7 @@ sub domToXPath_rec {
 # Return quoted string, but note: XPath doesn't provide sensible way to slashify ' or "
 sub quoteXPathLiteral {
   my ($string) = @_;
-  if    ($string !~ /'/) { return "'" . $string . "'"; }
+  if ($string !~ /'/)    { return "'" . $string . "'"; }
   elsif ($string !~ /"/) { return '"' . $string . '"'; }
   else { return 'concat(' . join(',"\'",', map { "'" . $_ . "'"; } split(/'/, $string)) . ')'; } }
 
