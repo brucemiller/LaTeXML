@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="">
   <a:documentation>
     SVG 1.1 Filter Module
     file: svg-filter.rng
@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-filter.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Filter
@@ -32,6 +34,7 @@
       <ref name="feMorphology"/>
       <ref name="feSpecularLighting"/>
       <ref name="feTurbulence"/>
+      <ref name="feDropShadow"/>
     </choice>
   </define>
   <a:documentation>
@@ -82,9 +85,9 @@
     <optional>
       <attribute name="edgeMode" a:defaultValue="duplicate">
         <choice>
-          <value>duplicate</value>
-          <value>wrap</value>
-          <value>none</value>
+          <value type="string">duplicate</value>
+          <value type="string">wrap</value>
+          <value type="string">none</value>
         </choice>
       </attribute>
     </optional>
@@ -179,20 +182,20 @@
     <optional>
       <attribute name="xChannelSelector" a:defaultValue="A">
         <choice>
-          <value>R</value>
-          <value>G</value>
-          <value>B</value>
-          <value>A</value>
+          <value type="string">R</value>
+          <value type="string">G</value>
+          <value type="string">B</value>
+          <value type="string">A</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="yChannelSelector" a:defaultValue="A">
         <choice>
-          <value>R</value>
-          <value>G</value>
-          <value>B</value>
-          <value>A</value>
+          <value type="string">R</value>
+          <value type="string">G</value>
+          <value type="string">B</value>
+          <value type="string">A</value>
         </choice>
       </attribute>
     </optional>
@@ -221,8 +224,8 @@
     <optional>
       <attribute name="operator" a:defaultValue="erode">
         <choice>
-          <value>erode</value>
-          <value>dilate</value>
+          <value type="string">erode</value>
+          <value type="string">dilate</value>
         </choice>
       </attribute>
     </optional>
@@ -326,16 +329,16 @@
     <optional>
       <attribute name="stitchTiles" a:defaultValue="noStitch">
         <choice>
-          <value>stitch</value>
-          <value>noStitch</value>
+          <value type="string">stitch</value>
+          <value type="string">noStitch</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="type" a:defaultValue="turbulence">
         <choice>
-          <value>fractalNoise</value>
-          <value>turbulence</value>
+          <value type="string">fractalNoise</value>
+          <value type="string">turbulence</value>
         </choice>
       </attribute>
     </optional>
@@ -461,6 +464,54 @@
     </optional>
     <optional>
       <attribute name="limitingConeAngle">
+        <ref name="Number.datatype"/>
+      </attribute>
+    </optional>
+  </define>
+  <a:documentation>
+    feDropShadow: Filter Effects Drop Shadow
+  </a:documentation>
+  <define name="SVG.feDropShadow.content">
+    <zeroOrMore>
+      <choice>
+        <ref name="animate"/>
+        <ref name="set"/>
+      </choice>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.feDropShadow.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Description.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.feDropShadow.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Script.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="feDropShadow">
+    <element name="feDropShadow">
+      <ref name="attlist.feDropShadow"/>
+      <ref name="SVG.feDropShadow.content"/>
+    </element>
+  </define>
+  <define name="attlist.feDropShadow" combine="interleave">
+    <ref name="SVG.Core.attrib"/>
+    <ref name="SVG.Presentation.attrib"/>
+    <ref name="SVG.Style.attrib"/>
+    <ref name="SVG.FilterPrimitiveWithIn.attrib"/>
+    <optional>
+      <attribute name="stdDeviation">
+        <ref name="NumberOptionalNumber.datatype"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="dx">
+        <ref name="Number.datatype"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="dy">
         <ref name="Number.datatype"/>
       </attribute>
     </optional>

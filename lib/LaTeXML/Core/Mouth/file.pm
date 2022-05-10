@@ -23,6 +23,7 @@ sub new {
   my ($dir,   $name,     $ext)     = pathname_split($pathname);
   my $self = bless { source => $pathname, shortsource => "$name.$ext" }, $class;
   $$self{fordefinitions} = 1 if $options{fordefinitions};
+  $$self{at_letter}      = 1 if $options{at_letter};
   $$self{notes}          = 1 if $options{notes};
   $self->openFile($pathname);
   $self->initialize;

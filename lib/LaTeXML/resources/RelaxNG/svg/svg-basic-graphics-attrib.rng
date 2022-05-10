@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar xml:lang="en" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xml:lang="en" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="">
   <a:documentation>
     SVG 1.1 Basic Graphics Attribute Module
     file: svg-basic-graphics-attrib.rng
@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-basic-graphics-attrib.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Basic Graphics Attribute
@@ -20,24 +22,24 @@
     <optional>
       <attribute name="display">
         <choice>
-          <value>inline</value>
-          <value>block</value>
-          <value>list-item</value>
-          <value>run-in</value>
-          <value>compact</value>
-          <value>marker</value>
-          <value>table</value>
-          <value>inline-table</value>
-          <value>table-row-group</value>
-          <value>table-header-group</value>
-          <value>table-footer-group</value>
-          <value>table-row</value>
-          <value>table-column-group</value>
-          <value>table-column</value>
-          <value>table-cell</value>
-          <value>table-caption</value>
-          <value>none</value>
-          <value>inherit</value>
+          <value type="string">inline</value>
+          <value type="string">block</value>
+          <value type="string">list-item</value>
+          <value type="string">run-in</value>
+          <value type="string">compact</value>
+          <value type="string">marker</value>
+          <value type="string">table</value>
+          <value type="string">inline-table</value>
+          <value type="string">table-row-group</value>
+          <value type="string">table-header-group</value>
+          <value type="string">table-footer-group</value>
+          <value type="string">table-row</value>
+          <value type="string">table-column-group</value>
+          <value type="string">table-column</value>
+          <value type="string">table-cell</value>
+          <value type="string">table-caption</value>
+          <value type="string">none</value>
+          <value type="string">inherit</value>
         </choice>
       </attribute>
     </optional>
@@ -46,9 +48,10 @@
     <optional>
       <attribute name="visibility">
         <choice>
-          <value>visible</value>
-          <value>hidden</value>
-          <value>inherit</value>
+          <value type="string">visible</value>
+          <value type="string">hidden</value>
+          <value type="string">collapse</value>
+          <value type="string">inherit</value>
         </choice>
       </attribute>
     </optional>

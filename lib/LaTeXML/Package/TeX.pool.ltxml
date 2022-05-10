@@ -382,20 +382,11 @@ DefParameterType('Register', sub {
 DefParameterType('TeXFileName', sub {
     my ($gullet) = @_;
     my ($token, $cc, @tokens) = ();
+    $gullet->skipSpaces;
     while (($token = $gullet->readXToken(0))
       && (($cc = $token->getCatcode) != CC_SPACE) && ($cc != CC_EOL) && ($cc != CC_COMMENT) && ($cc != CC_CS)) {
       push(@tokens, $token); }
     $gullet->unread($token) unless ($cc == CC_SPACE) || ($cc == CC_EOL) || ($cc == CC_COMMENT);
-    my $lead_cc = @tokens && $tokens[0]->getCatcode();
-    if ($lead_cc == CC_BEGIN) {
-      my $trail_cc = @tokens && $tokens[-1]->getCatcode();
-      if ($trail_cc == CC_END) {
-        # A begin-end wrapper indicates latex style {filename} use,
-        # so first unwrap,
-        @tokens = @tokens[1 .. $#tokens - 1];
-        # then load latex, and proceed
-        if (!LookupValue('LaTeX.pool_loaded')) {    # if already loaded, DONT redefine!
-          LoadPool("LaTeX"); } } }
     Tokens(@tokens); });
 
 # A LaTeX style directory List
@@ -996,7 +987,16 @@ DefMacroI('\botmark',        undef, Tokens());
 DefMacroI('\splitfirstmark', undef, Tokens());
 DefMacroI('\splitbotmark',   undef, Tokens());
 
-DefMacro('\input TeXFileName', sub { Input($_[1]); });
+DefMacro('\input TeXFileName', sub {
+    my $filename = $_[1];
+    my @t        = $filename->unlist;
+    # If given a LaTeX-style argument, strip braces
+    if (@t && $t[0] && $t[0]->getCatcode == CC_BEGIN && $t[-1]->getCatcode == CC_END) {
+      $filename = Tokens(@t[1 .. $#t - 1]);
+      # and load LaTeX.pool if not already
+      if (!LookupValue('LaTeX.pool_loaded')) {
+        LoadPool("LaTeX"); } }
+    Input($filename); });
 
 # Note that TeX doesn't actually close the mouth;
 # it just flushes it so that it will close the next time it's read!
@@ -1886,22 +1886,58 @@ DefPrimitive('\setbox Number SkipMatch:=', sub {
     AssignValue('box' . $_[1]->valueOf => $stuff, $scope);
     @rest; });
 
+sub adjustBoxColor {
+  my ($box) = @_;
+  my $font = LookupValue('font');
+  if (my $color = $font && $font->getColor) {
+    if ($color ne 'black') {
+      adjustBoxColor_rec($color, {}, $box); } }
+  return; }
+
+sub adjustBoxColor_rec {
+  my ($color, $adjusted, @boxes) = @_;
+  foreach my $box (@boxes) {
+    next unless defined $box;
+    next if $$adjusted{$box};    # since we do args AND props, be careful not to adjust twice!
+    $$adjusted{$box} = 1;
+    my $r = ref $box;
+    next unless $r && ($r !~ /(?:SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE)/) && $r->isaBox;
+    if ($r eq 'LaTeXML::Core::Box') {
+      adjustBoxColor_internal($color, $box); }
+    elsif ($r eq 'LaTeXML::Core::List') {
+      adjustBoxColor_rec($color, $adjusted, $box->unlist); }
+    elsif ($r eq 'LaTeXML::Core::Whatsit') {
+      adjustBoxColor_internal($color, $box);
+      # now recurse on contained boxes (args AND properties!)
+      adjustBoxColor_rec($color, $adjusted, $box->getArgs);
+      adjustBoxColor_rec($color, $adjusted, values %{ $box->getPropertiesRef }); } }
+  return; }
+
+sub adjustBoxColor_internal {
+  my ($color, $box) = @_;
+  if (my $font = $box->getFont) {
+    $box->setFont($font->merge(color => $color)); }
+  return; }
+
 DefPrimitive('\box Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
     AssignValue($box, undef);
-    ($stuff ? $stuff->unlist : ()); });
+    ($stuff ? $stuff : List()); });
 
 DefPrimitive('\copy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
-    ($stuff ? $stuff->unlist : ()); });
+    adjustBoxColor($stuff);
+    ($stuff ? $stuff : List()); });
 
 DefPrimitive('\vsplit Number Match:to Dimension', sub {
     # analog to \box for now.
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
-    ($stuff ? $stuff->unlist : ()); });
+    adjustBoxColor($stuff);
+    ($stuff ? $stuff : List()); });
 
 sub revert_spec {
   my ($whatsit, $keyword) = @_;
@@ -2533,12 +2569,15 @@ DefConstructor('\moveright Dimension MoveableBox',
 DefPrimitive('\unvbox Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
     AssignValue($box, undef);
-    (defined $stuff ? $stuff->unlist : ()); });
+    (defined $stuff ? $stuff->unlist : List()); });
+
 DefPrimitive('\unvcopy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
-    (defined $stuff ? $stuff->unlist : ()); });
+    adjustBoxColor($stuff);
+    (defined $stuff ? $stuff->unlist : List()); });
 
 #======================================================================
 # If this is the right solution...
@@ -3488,12 +3527,15 @@ DefConstructor('\raise Dimension MoveableBox',
 DefPrimitive('\unhbox Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
+    adjustBoxColor($stuff);
     AssignValue($box, undef);
-    (defined $stuff ? $stuff->unlist : ()); });
+    (defined $stuff ? $stuff->unlist : List()); });
+
 DefPrimitive('\unhcopy Number', sub {
     my $box   = 'box' . $_[1]->valueOf;
     my $stuff = LookupValue($box);
-    (defined $stuff ? $stuff->unlist : ()); });
+    adjustBoxColor($stuff);
+    (defined $stuff ? $stuff->unlist : List()); });
 
 # Implement ???
 # DefMacro('\vrule','\relax');

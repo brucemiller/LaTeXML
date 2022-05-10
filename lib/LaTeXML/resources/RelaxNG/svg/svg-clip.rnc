@@ -1,5 +1,5 @@
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
-namespace ns1 = "http://www.w3.org/2000/svg"
+namespace svg = "http://www.w3.org/2000/svg"
 
 
 ## 
@@ -8,8 +8,10 @@ namespace ns1 = "http://www.w3.org/2000/svg"
 ## 
 ##     This is SVG, a language for describing two-dimensional graphics in XML.
 ##     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
+##
+##     Modifications Copyright 2007 Mozilla Foundation
 ## 
-##     $Id: svg-clip.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+##     $Id$
 ##   
 
 ## 
@@ -21,10 +23,10 @@ namespace ns1 = "http://www.w3.org/2000/svg"
 ##   
 [ xml:lang = "en" ]
 grammar {
-  include "svg-basic-clip.rnc" inherit = ns1
-  
-  ## 
-  ##       extend content model of clipPath
-  ##     
-  SVG.clipPath.class |= SVG.Shape.class | SVG.Text.class
+    include "svg-basic-clip.rnc" inherit = svg
+    
+    ## 
+    ##       extend content model of clipPath
+    ##     
+    SVG.clipPath.class |= SVG.Shape.class | SVG.Text.class
 }

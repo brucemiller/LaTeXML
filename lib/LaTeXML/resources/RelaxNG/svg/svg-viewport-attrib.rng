@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-viewport-attrib.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Viewport Attribute
@@ -33,11 +35,11 @@
     <optional>
       <attribute name="overflow">
         <choice>
-          <value>visible</value>
-          <value>hidden</value>
-          <value>scroll</value>
-          <value>auto</value>
-          <value>inherit</value>
+          <value type="string" datatypeLibrary="">visible</value>
+          <value type="string" datatypeLibrary="">hidden</value>
+          <value type="string" datatypeLibrary="">scroll</value>
+          <value type="string" datatypeLibrary="">auto</value>
+          <value type="string" datatypeLibrary="">inherit</value>
         </choice>
       </attribute>
     </optional>

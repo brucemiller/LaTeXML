@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="">
   <a:documentation>
     SVG 1.1 Pattern Module
     file: svg-pattern.rng
@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-pattern.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
    Pattern
@@ -93,16 +95,16 @@
     <optional>
       <attribute name="patternUnits">
         <choice>
-          <value>userSpaceOnUse</value>
-          <value>objectBoundingBox</value>
+          <value type="string">userSpaceOnUse</value>
+          <value type="string">objectBoundingBox</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="patternContentUnits">
         <choice>
-          <value>userSpaceOnUse</value>
-          <value>objectBoundingBox</value>
+          <value type="string">userSpaceOnUse</value>
+          <value type="string">objectBoundingBox</value>
         </choice>
       </attribute>
     </optional>

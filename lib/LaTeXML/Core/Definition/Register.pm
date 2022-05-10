@@ -49,9 +49,9 @@ sub setValue {
   if ($tracing || $LaTeXML::DEBUG{tracing}) {
     my $scope  = $STATE->getPrefix('global') ? 'globally ' : '';
     my $csname = $$self{cs}->toString;
-    Debug("{$scope" . "changing " . $csname . "=" . $self->valueOf()->toString() . "}");
+    Debug("{$scope" . "changing " . $csname . "=" . $self->valueOf(@args)->toString() . "}");
     &{ $$self{setter} }($value, @args);
-    Debug("{into " . $csname . "=" . $self->valueOf()->toString() . "}"); }
+    Debug("{into " . $csname . "=" . $self->valueOf(@args)->toString() . "}"); }
   else {
     &{ $$self{setter} }($value, @args); }
   return; }

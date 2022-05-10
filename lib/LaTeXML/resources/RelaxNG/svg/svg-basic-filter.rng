@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-basic-filter.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Basic Filter
@@ -51,10 +53,10 @@
     <optional>
       <attribute name="color-interpolation-filters">
         <choice>
-          <value>auto</value>
-          <value>sRGB</value>
-          <value>linearRGB</value>
-          <value>inherit</value>
+          <value type="string" datatypeLibrary="">auto</value>
+          <value type="string" datatypeLibrary="">sRGB</value>
+          <value type="string" datatypeLibrary="">linearRGB</value>
+          <value type="string" datatypeLibrary="">inherit</value>
         </choice>
       </attribute>
     </optional>
@@ -193,16 +195,16 @@
     <optional>
       <attribute name="filterUnits">
         <choice>
-          <value>userSpaceOnUse</value>
-          <value>objectBoundingBox</value>
+          <value type="string" datatypeLibrary="">userSpaceOnUse</value>
+          <value type="string" datatypeLibrary="">objectBoundingBox</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="primitiveUnits">
         <choice>
-          <value>userSpaceOnUse</value>
-          <value>objectBoundingBox</value>
+          <value type="string" datatypeLibrary="">userSpaceOnUse</value>
+          <value type="string" datatypeLibrary="">objectBoundingBox</value>
         </choice>
       </attribute>
     </optional>
@@ -232,11 +234,22 @@
     <optional>
       <attribute name="mode" a:defaultValue="normal">
         <choice>
-          <value>normal</value>
-          <value>multiply</value>
-          <value>screen</value>
-          <value>darken</value>
-          <value>lighten</value>
+          <value type="string" datatypeLibrary="">normal</value>
+          <value type="string" datatypeLibrary="">multiply</value>
+          <value type="string" datatypeLibrary="">screen</value>
+          <value type="string" datatypeLibrary="">overlay</value>
+          <value type="string" datatypeLibrary="">darken</value>
+          <value type="string" datatypeLibrary="">lighten</value>
+          <value type="string" datatypeLibrary="">color-dodge</value>
+          <value type="string" datatypeLibrary="">color-burn</value>
+          <value type="string" datatypeLibrary="">hard-light</value>
+          <value type="string" datatypeLibrary="">soft-light</value>
+          <value type="string" datatypeLibrary="">difference</value>
+          <value type="string" datatypeLibrary="">exclusion</value>
+          <value type="string" datatypeLibrary="">hue</value>
+          <value type="string" datatypeLibrary="">saturation</value>
+          <value type="string" datatypeLibrary="">color</value>
+          <value type="string" datatypeLibrary="">luminosity</value>
         </choice>
       </attribute>
     </optional>
@@ -265,10 +278,10 @@
     <optional>
       <attribute name="type" a:defaultValue="matrix">
         <choice>
-          <value>matrix</value>
-          <value>saturate</value>
-          <value>hueRotate</value>
-          <value>luminanceToAlpha</value>
+          <value type="string" datatypeLibrary="">matrix</value>
+          <value type="string" datatypeLibrary="">saturate</value>
+          <value type="string" datatypeLibrary="">hueRotate</value>
+          <value type="string" datatypeLibrary="">luminanceToAlpha</value>
         </choice>
       </attribute>
     </optional>
@@ -329,12 +342,13 @@
     <optional>
       <attribute name="operator" a:defaultValue="over">
         <choice>
-          <value>over</value>
-          <value>in</value>
-          <value>out</value>
-          <value>atop</value>
-          <value>xor</value>
-          <value>arithmetic</value>
+          <value type="string" datatypeLibrary="">over</value>
+          <value type="string" datatypeLibrary="">in</value>
+          <value type="string" datatypeLibrary="">out</value>
+          <value type="string" datatypeLibrary="">atop</value>
+          <value type="string" datatypeLibrary="">xor</value>
+          <value type="string" datatypeLibrary="">lighter</value>
+          <value type="string" datatypeLibrary="">arithmetic</value>
         </choice>
       </attribute>
     </optional>
@@ -569,11 +583,11 @@
     <ref name="SVG.Core.attrib"/>
     <attribute name="type">
       <choice>
-        <value>identity</value>
-        <value>table</value>
-        <value>discrete</value>
-        <value>linear</value>
-        <value>gamma</value>
+        <value type="string" datatypeLibrary="">identity</value>
+        <value type="string" datatypeLibrary="">table</value>
+        <value type="string" datatypeLibrary="">discrete</value>
+        <value type="string" datatypeLibrary="">linear</value>
+        <value type="string" datatypeLibrary="">gamma</value>
       </choice>
     </attribute>
     <optional>
@@ -626,11 +640,11 @@
     <ref name="SVG.Core.attrib"/>
     <attribute name="type">
       <choice>
-        <value>identity</value>
-        <value>table</value>
-        <value>discrete</value>
-        <value>linear</value>
-        <value>gamma</value>
+        <value type="string" datatypeLibrary="">identity</value>
+        <value type="string" datatypeLibrary="">table</value>
+        <value type="string" datatypeLibrary="">discrete</value>
+        <value type="string" datatypeLibrary="">linear</value>
+        <value type="string" datatypeLibrary="">gamma</value>
       </choice>
     </attribute>
     <optional>
@@ -683,11 +697,11 @@
     <ref name="SVG.Core.attrib"/>
     <attribute name="type">
       <choice>
-        <value>identity</value>
-        <value>table</value>
-        <value>discrete</value>
-        <value>linear</value>
-        <value>gamma</value>
+        <value type="string" datatypeLibrary="">identity</value>
+        <value type="string" datatypeLibrary="">table</value>
+        <value type="string" datatypeLibrary="">discrete</value>
+        <value type="string" datatypeLibrary="">linear</value>
+        <value type="string" datatypeLibrary="">gamma</value>
       </choice>
     </attribute>
     <optional>
@@ -740,11 +754,11 @@
     <ref name="SVG.Core.attrib"/>
     <attribute name="type">
       <choice>
-        <value>identity</value>
-        <value>table</value>
-        <value>discrete</value>
-        <value>linear</value>
-        <value>gamma</value>
+        <value type="string" datatypeLibrary="">identity</value>
+        <value type="string" datatypeLibrary="">table</value>
+        <value type="string" datatypeLibrary="">discrete</value>
+        <value type="string" datatypeLibrary="">linear</value>
+        <value type="string" datatypeLibrary="">gamma</value>
       </choice>
     </attribute>
     <optional>

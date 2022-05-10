@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-script.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Scripting
@@ -44,8 +46,10 @@
     <ref name="SVG.Core.attrib"/>
     <ref name="SVG.XLink.attrib"/>
     <ref name="SVG.External.attrib"/>
-    <attribute name="type">
-      <ref name="ContentType.datatype"/>
-    </attribute>
+    <optional>
+      <attribute name="type">
+        <ref name="ContentType.datatype"/>
+      </attribute>
+    </optional>
   </define>
 </grammar>

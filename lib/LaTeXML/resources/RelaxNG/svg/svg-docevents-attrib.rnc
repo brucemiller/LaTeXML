@@ -7,8 +7,10 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ## 
 ##     This is SVG, a language for describing two-dimensional graphics in XML.
 ##     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
+##
+##     Modifications Copyright 2007 Mozilla Foundation
 ## 
-##     $Id: svg-docevents-attrib.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+##     $Id$
 ##   
 
 ## 
@@ -20,19 +22,19 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ##   
 [ xml:lang = "en" ]
 grammar {
-  SVG.onunload.attrib = attribute onunload { Script.datatype }?
-  SVG.onabort.attrib = attribute onabort { Script.datatype }?
-  SVG.onerror.attrib = attribute onerror { Script.datatype }?
-  SVG.onresize.attrib = attribute onresize { Script.datatype }?
-  SVG.onscroll.attrib = attribute onscroll { Script.datatype }?
-  SVG.onzoom.attrib = attribute onzoom { Script.datatype }?
-  SVG.DocumentEvents.extra.attrib = empty
-  SVG.DocumentEvents.attrib &=
-    SVG.onunload.attrib,
-    SVG.onabort.attrib,
-    SVG.onerror.attrib,
-    SVG.onresize.attrib,
-    SVG.onscroll.attrib,
-    SVG.onzoom.attrib,
-    SVG.DocumentEvents.extra.attrib
+    SVG.onunload.attrib = attribute onunload { Script.datatype }?
+    SVG.onabort.attrib = attribute onabort { Script.datatype }?
+    SVG.onerror.attrib = attribute onerror { Script.datatype }?
+    SVG.onresize.attrib = attribute onresize { Script.datatype }?
+    SVG.onscroll.attrib = attribute onscroll { Script.datatype }?
+    SVG.onzoom.attrib = attribute onzoom { Script.datatype }?
+    SVG.DocumentEvents.extra.attrib = empty
+    SVG.DocumentEvents.attrib &=
+        SVG.onunload.attrib,
+        SVG.onabort.attrib,
+        SVG.onerror.attrib,
+        SVG.onresize.attrib,
+        SVG.onscroll.attrib,
+        SVG.onzoom.attrib,
+        SVG.DocumentEvents.extra.attrib
 }
