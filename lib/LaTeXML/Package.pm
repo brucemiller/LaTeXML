@@ -905,7 +905,8 @@ sub RawTeX {
   my $savedcc = $STATE->lookupCatcode('@');
   $STATE->assignCatcode('@' => CC_LETTER);
 
-  $stomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new($text, fordefinitions => 1), sub {
+  $stomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth->new($text,
+      fordefinitions => 1, at_letter => 1), sub {
       my ($gullet) = @_;
       my $token;
       while ($token = $gullet->readXToken(0)) {
@@ -2145,7 +2146,7 @@ sub Input {
       loadLTXML($request, $path); }
     # Else some sort of "known" definitions type file, but not simply 'tex'
     elsif (($type ne 'tex') && (pathname_is_raw($path))) {
-      loadTeXDefinitions($request, $path); }
+      loadTeXDefinitions($request, $path, fordefinitions => 1, notes => 1); }
     else {
       loadTeXContent($path); } }
   else {    # Couldn't find anything?
@@ -2186,8 +2187,13 @@ sub loadLTXML {
   Let(T_CS('\ver@' . $trequest), T_CS('\fmtversion'), 'global');
   return; }
 
+my $loadtexdefinitions_options = { fordefinitions => 1, at_letter => 1, notes => 1 };   # [CONSTANT]
+
 sub loadTeXDefinitions {
-  my ($request, $pathname) = @_;
+  my ($request, $pathname, %options) = @_;
+  # FILTER, not check options!
+  my %mouth_options = map { ($_ => (exists $options{$_} ? $options{$_} : 1)) }
+    keys %$loadtexdefinitions_options;
   # We can't analyze literal data's pathnames!
   if (!pathname_is_literaldata($pathname)) {
     # Don't load if we've already loaded it before.
@@ -2215,9 +2221,8 @@ sub loadTeXDefinitions {
   # This re-locks defns during reading of TeX packages.
   local $LaTeXML::Core::State::UNLOCKED = 0;
   $stomach->getGullet->readingFromMouth(
-    LaTeXML::Core::Mouth->create($pathname,
-      fordefinitions => 1, notes => 1,
-      content        => LookupValue($pathname . '_contents')),
+    LaTeXML::Core::Mouth->create($pathname, %mouth_options,
+      content => LookupValue($pathname . '_contents')),
     sub {
       my ($gullet) = @_;
       my $token;
@@ -2384,9 +2389,9 @@ sub AddToMacro {
 
 #======================================================================
 my $inputdefinitions_options = {    # [CONSTANT]
-  options          => 1, withoptions => 1, handleoptions => 1,
-  type             => 1, as_class    => 1, noltxml       => 1, notex => 1, noerror => 1, after => 1,
-  searchpaths_only => 1 };
+  options   => 1, withoptions      => 1, handleoptions => 1,
+  type      => 1, as_class         => 1, noltxml       => 1, notex => 1, noerror => 1, after => 1,
+  at_letter => 1, searchpaths_only => 1 };
 #   options=>[options...]
 #   withoptions=>boolean : pass options from calling class/package
 #   after=>code or tokens or string as $name.$type-h@@k macro. (executed after the package is loaded)
@@ -2467,7 +2472,7 @@ sub InputDefinitions {
       if (!$options{noltxml} && ($file =~ /\.cls$/)) {
         RelaxNGSchema("LaTeXML");
         RequireResource('ltx-article.css'); }
-      loadTeXDefinitions($filename, $file); }
+      loadTeXDefinitions($filename, $file, %options); }
     if ($options{handleoptions}) {
       Digest(T_CS('\\' . $name . '.' . $astype . '-h@@k'));
       DefMacroI('\@currname', undef, Tokens(Explode($prevname))) if $prevname;
