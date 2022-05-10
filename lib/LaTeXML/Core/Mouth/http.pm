@@ -22,6 +22,7 @@ sub new {
   $STATE->assignValue(URLBASE => $urlbase) if defined $urlbase;
   my $self = bless { source => $url, shortsource => $name }, $class;
   $$self{fordefinitions} = 1 if $options{fordefinitions};
+  $$self{at_letter}      = 1 if $options{at_letter};
   $$self{notes}          = 1 if $options{notes};
   my $content = auth_get($url);
   $self->openString($content);
