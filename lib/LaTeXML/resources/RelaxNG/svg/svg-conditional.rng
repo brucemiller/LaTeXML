@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-conditional.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Conditional Processing
@@ -79,7 +81,6 @@
         <ref name="SVG.Image.class"/>
         <ref name="SVG.Shape.class"/>
         <ref name="SVG.Hyperlink.class"/>
-        <ref name="SVG.Extensibility.class"/>
       </choice>
     </zeroOrMore>
   </define>

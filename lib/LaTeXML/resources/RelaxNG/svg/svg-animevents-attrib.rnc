@@ -7,8 +7,10 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ## 
 ##     This is SVG, a language for describing two-dimensional graphics in XML.
 ##     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
+##
+##     Modifications Copyright 2007 Mozilla Foundation
 ## 
-##     $Id: svg-animevents-attrib.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+##     $Id$
 ##   
 
 ## 
@@ -20,14 +22,14 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ##   
 [ xml:lang = "en" ]
 grammar {
-  SVG.onbegin.attrib = attribute onbegin { Script.datatype }?
-  SVG.onend.attrib = attribute onend { Script.datatype }?
-  SVG.onrepeat.attrib = attribute onrepeat { Script.datatype }?
-  SVG.AnimationEvents.extra.attrib = empty
-  SVG.AnimationEvents.attrib &=
-    SVG.onbegin.attrib,
-    SVG.onend.attrib,
-    SVG.onrepeat.attrib,
-    SVG.onload.attrib,
-    SVG.AnimationEvents.extra.attrib
+    SVG.onbegin.attrib = attribute onbegin { Script.datatype }?
+    SVG.onend.attrib = attribute onend { Script.datatype }?
+    SVG.onrepeat.attrib = attribute onrepeat { Script.datatype }?
+    SVG.AnimationEvents.extra.attrib = empty
+    SVG.AnimationEvents.attrib &=
+        SVG.onbegin.attrib,
+        SVG.onend.attrib,
+        SVG.onrepeat.attrib,
+        SVG.onload.attrib,
+        SVG.AnimationEvents.extra.attrib
 }

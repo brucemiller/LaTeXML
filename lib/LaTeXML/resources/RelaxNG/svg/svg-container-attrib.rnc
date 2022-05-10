@@ -7,8 +7,10 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ## 
 ##     This is SVG, a language for describing two-dimensional graphics in XML.
 ##     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
+##
+##     Modifications Copyright 2007 Mozilla Foundation
 ## 
-##     $Id: svg-container-attrib.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+##     $Id$
 ##   
 
 ## 
@@ -20,14 +22,14 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ##   
 [ xml:lang = "en" ]
 grammar {
-  
-  ## 
-  ##       'enable-background' property/attribute value (e.g., 'new', 'accumulate')
-  ##     
-  EnableBackgroundValue.datatype = xsd:string
-  SVG.enable-background.attrib =
-    attribute enable-background { EnableBackgroundValue.datatype }?
-  SVG.Container.extra.attrib = empty
-  SVG.Container.attrib &=
-    SVG.enable-background.attrib, SVG.Container.extra.attrib
+    
+    ## 
+    ##       'enable-background' property/attribute value (e.g., 'new', 'accumulate')
+    ##     
+    EnableBackgroundValue.datatype = xsd:string
+    SVG.enable-background.attrib =
+        attribute enable-background { EnableBackgroundValue.datatype }?
+    SVG.Container.extra.attrib = empty
+    SVG.Container.attrib &=
+        SVG.enable-background.attrib, SVG.Container.extra.attrib
 }

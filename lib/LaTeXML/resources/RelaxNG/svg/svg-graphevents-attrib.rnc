@@ -7,8 +7,10 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ## 
 ##     This is SVG, a language for describing two-dimensional graphics in XML.
 ##     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
+##
+##     Modifications Copyright 2007 Mozilla Foundation
 ## 
-##     $Id: svg-graphevents-attrib.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+##     $Id$
 ##   
 
 ## 
@@ -21,27 +23,27 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ##   
 [ xml:lang = "en" ]
 grammar {
-  SVG.onfocusin.attrib = attribute onfocusin { Script.datatype }?
-  SVG.onfocusout.attrib = attribute onfocusout { Script.datatype }?
-  SVG.onactivate.attrib = attribute onactivate { Script.datatype }?
-  SVG.onclick.attrib = attribute onclick { Script.datatype }?
-  SVG.onmousedown.attrib = attribute onmousedown { Script.datatype }?
-  SVG.onmouseup.attrib = attribute onmouseup { Script.datatype }?
-  SVG.onmouseover.attrib = attribute onmouseover { Script.datatype }?
-  SVG.onmousemove.attrib = attribute onmousemove { Script.datatype }?
-  SVG.onmouseout.attrib = attribute onmouseout { Script.datatype }?
-  SVG.onload.attrib &= attribute onload { Script.datatype }?
-  SVG.GraphicalEvents.extra.attrib = empty
-  SVG.GraphicalEvents.attrib &=
-    SVG.onfocusin.attrib,
-    SVG.onfocusout.attrib,
-    SVG.onactivate.attrib,
-    SVG.onclick.attrib,
-    SVG.onmousedown.attrib,
-    SVG.onmouseup.attrib,
-    SVG.onmouseover.attrib,
-    SVG.onmousemove.attrib,
-    SVG.onmouseout.attrib,
-    SVG.onload.attrib,
-    SVG.GraphicalEvents.extra.attrib
+    SVG.onfocusin.attrib = attribute onfocusin { Script.datatype }?
+    SVG.onfocusout.attrib = attribute onfocusout { Script.datatype }?
+    SVG.onactivate.attrib = attribute onactivate { Script.datatype }?
+    SVG.onclick.attrib = attribute onclick { Script.datatype }?
+    SVG.onmousedown.attrib = attribute onmousedown { Script.datatype }?
+    SVG.onmouseup.attrib = attribute onmouseup { Script.datatype }?
+    SVG.onmouseover.attrib = attribute onmouseover { Script.datatype }?
+    SVG.onmousemove.attrib = attribute onmousemove { Script.datatype }?
+    SVG.onmouseout.attrib = attribute onmouseout { Script.datatype }?
+    SVG.onload.attrib &= attribute onload { Script.datatype }?
+    SVG.GraphicalEvents.extra.attrib = empty
+    SVG.GraphicalEvents.attrib &=
+        SVG.onfocusin.attrib,
+        SVG.onfocusout.attrib,
+        SVG.onactivate.attrib,
+        SVG.onclick.attrib,
+        SVG.onmousedown.attrib,
+        SVG.onmouseup.attrib,
+        SVG.onmouseover.attrib,
+        SVG.onmousemove.attrib,
+        SVG.onmouseout.attrib,
+        SVG.onload.attrib,
+        SVG.GraphicalEvents.extra.attrib
 }

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar xml:lang="en" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xml:lang="en" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="">
   <a:documentation>
     SVG 1.1 XLink Attribute Module
     file: svg-xlink-attrib.rng
@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-xlink-attrib.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     XLink Attribute
@@ -23,14 +25,21 @@
   <define name="SVG.XLink.attrib" combine="interleave">
     <optional>
       <attribute name="xlink:type" a:defaultValue="simple">
-        <value>simple</value>
+        <value type="string">simple</value>
       </attribute>
     </optional>
-    <optional>
-      <attribute name="xlink:href">
-        <ref name="URI.datatype"/>
-      </attribute>
-    </optional>
+    <interleave>
+      <optional>
+        <attribute name="xlink:href">
+          <ref name="URI.datatype"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="href">
+          <ref name="URI.datatype"/>
+        </attribute>
+      </optional>
+    </interleave>
     <optional>
       <attribute name="xlink:role">
         <ref name="URI.datatype"/>
@@ -46,12 +55,12 @@
     </optional>
     <optional>
       <attribute name="xlink:show" a:defaultValue="other">
-        <value>other</value>
+        <value type="string">other</value>
       </attribute>
     </optional>
     <optional>
       <attribute name="xlink:actuate" a:defaultValue="onLoad">
-        <value>onLoad</value>
+        <value type="string">onLoad</value>
       </attribute>
     </optional>
     <ref name="SVG.XLink.extra.attrib"/>
@@ -62,12 +71,21 @@
   <define name="SVG.XLinkRequired.attrib" combine="interleave">
     <optional>
       <attribute name="xlink:type" a:defaultValue="simple">
-        <value>simple</value>
+        <value type="string">simple</value>
       </attribute>
     </optional>
-    <attribute name="xlink:href">
-      <ref name="URI.datatype"/>
-    </attribute>
+    <interleave>
+      <optional>
+        <attribute name="xlink:href">
+          <ref name="URI.datatype"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="href">
+          <ref name="URI.datatype"/>
+        </attribute>
+      </optional>
+    </interleave>
     <optional>
       <attribute name="xlink:role">
         <ref name="URI.datatype"/>
@@ -83,12 +101,12 @@
     </optional>
     <optional>
       <attribute name="xlink:show" a:defaultValue="other">
-        <value>other</value>
+        <value type="string">other</value>
       </attribute>
     </optional>
     <optional>
       <attribute name="xlink:actuate" a:defaultValue="onLoad">
-        <value>onLoad</value>
+        <value type="string">onLoad</value>
       </attribute>
     </optional>
     <ref name="SVG.XLinkRequired.extra.attrib"/>
@@ -99,12 +117,21 @@
   <define name="SVG.XLinkEmbed.attrib" combine="interleave">
     <optional>
       <attribute name="xlink:type" a:defaultValue="simple">
-        <value>simple</value>
+        <value type="string">simple</value>
       </attribute>
     </optional>
-    <attribute name="xlink:href">
-      <ref name="URI.datatype"/>
-    </attribute>
+    <interleave>
+      <optional>
+        <attribute name="xlink:href">
+          <ref name="URI.datatype"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="href">
+          <ref name="URI.datatype"/>
+        </attribute>
+      </optional>
+    </interleave>
     <optional>
       <attribute name="xlink:role">
         <ref name="URI.datatype"/>
@@ -120,12 +147,12 @@
     </optional>
     <optional>
       <attribute name="xlink:show" a:defaultValue="embed">
-        <value>embed</value>
+        <value type="string">embed</value>
       </attribute>
     </optional>
     <optional>
       <attribute name="xlink:actuate" a:defaultValue="onLoad">
-        <value>onLoad</value>
+        <value type="string">onLoad</value>
       </attribute>
     </optional>
     <ref name="SVG.XLinkEmbed.extra.attrib"/>
@@ -136,12 +163,21 @@
   <define name="SVG.XLinkReplace.attrib" combine="interleave">
     <optional>
       <attribute name="xlink:type" a:defaultValue="simple">
-        <value>simple</value>
+        <value type="string">simple</value>
       </attribute>
     </optional>
-    <attribute name="xlink:href">
-      <ref name="URI.datatype"/>
-    </attribute>
+    <interleave>
+      <optional>
+        <attribute name="xlink:href">
+          <ref name="URI.datatype"/>
+        </attribute>
+      </optional>
+      <optional>
+        <attribute name="href">
+          <ref name="URI.datatype"/>
+        </attribute>
+      </optional>
+    </interleave>
     <optional>
       <attribute name="xlink:role">
         <ref name="URI.datatype"/>
@@ -158,14 +194,14 @@
     <optional>
       <attribute name="xlink:show" a:defaultValue="replace">
         <choice>
-          <value>new</value>
-          <value>replace</value>
+          <value type="string">new</value>
+          <value type="string">replace</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="xlink:actuate" a:defaultValue="onRequest">
-        <value>onRequest</value>
+        <value type="string">onRequest</value>
       </attribute>
     </optional>
     <ref name="SVG.XLinkReplace.extra.attrib"/>

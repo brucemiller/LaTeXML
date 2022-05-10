@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-basic-font.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Basic Font
@@ -263,12 +265,14 @@
     <notAllowed/>
   </define>
   <define name="SVG.glyph.content">
-    <zeroOrMore>
-      <ref name="SVG.Description.class"/>
-    </zeroOrMore>
-    <zeroOrMore>
-      <ref name="SVG.glyph.class"/>
-    </zeroOrMore>
+    <choice>
+      <zeroOrMore>
+        <ref name="SVG.Description.class"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="SVG.glyph.class"/>
+      </zeroOrMore>
+    </choice>
   </define>
   <define name="glyph">
     <element name="glyph">
@@ -280,6 +284,12 @@
     <ref name="SVG.Core.attrib"/>
     <ref name="SVG.Style.attrib"/>
     <ref name="SVG.Presentation.attrib"/>
+    <optional>
+      <choice>
+        <ref name="common.attrs.aria.implicit.group"/>
+        <ref name="common.attrs.aria"/>
+      </choice>
+    </optional>
     <optional>
       <attribute name="unicode"/>
     </optional>
@@ -296,11 +306,6 @@
     </optional>
     <optional>
       <attribute name="arabic-form"/>
-    </optional>
-    <optional>
-      <attribute name="lang">
-        <ref name="LanguageCodes.datatype"/>
-      </attribute>
     </optional>
     <optional>
       <attribute name="horiz-adv-x">
@@ -330,12 +335,14 @@
     <notAllowed/>
   </define>
   <define name="SVG.missing-glyph.content">
-    <zeroOrMore>
-      <ref name="SVG.Description.class"/>
-    </zeroOrMore>
-    <zeroOrMore>
-      <ref name="SVG.missing-glyph.class"/>
-    </zeroOrMore>
+    <choice>
+      <zeroOrMore>
+        <ref name="SVG.Description.class"/>
+      </zeroOrMore>
+      <zeroOrMore>
+        <ref name="SVG.missing-glyph.class"/>
+      </zeroOrMore>
+    </choice>
   </define>
   <define name="missing-glyph">
     <element name="missing-glyph">

@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-shape.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Shape
@@ -72,6 +74,9 @@
     <ref name="SVG.GraphicalEvents.attrib"/>
     <ref name="SVG.Cursor.attrib"/>
     <ref name="SVG.External.attrib"/>
+    <optional>
+      <ref name="common.attrs.aria"/>
+    </optional>
     <attribute name="d">
       <ref name="PathData.datatype"/>
     </attribute>
@@ -117,6 +122,9 @@
     <ref name="SVG.GraphicalEvents.attrib"/>
     <ref name="SVG.Cursor.attrib"/>
     <ref name="SVG.External.attrib"/>
+    <optional>
+      <ref name="common.attrs.aria"/>
+    </optional>
     <optional>
       <attribute name="x">
         <ref name="Coordinate.datatype"/>
@@ -181,6 +189,9 @@
     <ref name="SVG.Cursor.attrib"/>
     <ref name="SVG.External.attrib"/>
     <optional>
+      <ref name="common.attrs.aria"/>
+    </optional>
+    <optional>
       <attribute name="cx">
         <ref name="Coordinate.datatype"/>
       </attribute>
@@ -231,6 +242,9 @@
     <ref name="SVG.GraphicalEvents.attrib"/>
     <ref name="SVG.Cursor.attrib"/>
     <ref name="SVG.External.attrib"/>
+    <optional>
+      <ref name="common.attrs.aria"/>
+    </optional>
     <optional>
       <attribute name="x1">
         <ref name="Coordinate.datatype"/>
@@ -289,6 +303,9 @@
     <ref name="SVG.Cursor.attrib"/>
     <ref name="SVG.External.attrib"/>
     <optional>
+      <ref name="common.attrs.aria"/>
+    </optional>
+    <optional>
       <attribute name="cx">
         <ref name="Coordinate.datatype"/>
       </attribute>
@@ -342,6 +359,12 @@
     <ref name="SVG.GraphicalEvents.attrib"/>
     <ref name="SVG.Cursor.attrib"/>
     <ref name="SVG.External.attrib"/>
+    <optional>
+      <choice>
+        <ref name="common.attrs.aria.implicit.group"/>
+        <ref name="common.attrs.aria"/>
+      </choice>
+    </optional>
     <attribute name="points">
       <ref name="Points.datatype"/>
     </attribute>
@@ -383,6 +406,9 @@
     <ref name="SVG.GraphicalEvents.attrib"/>
     <ref name="SVG.Cursor.attrib"/>
     <ref name="SVG.External.attrib"/>
+    <optional>
+      <ref name="common.attrs.aria"/>
+    </optional>
     <attribute name="points">
       <ref name="Points.datatype"/>
     </attribute>

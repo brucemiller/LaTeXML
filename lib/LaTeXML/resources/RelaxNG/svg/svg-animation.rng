@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="">
   <a:documentation>
     SVG 1.1 Animation Module
     file: svg-animation.rng
@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-animation.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Animation
@@ -80,9 +82,9 @@
     <optional>
       <attribute name="restart" a:defaultValue="always">
         <choice>
-          <value>always</value>
-          <value>never</value>
-          <value>whenNotActive</value>
+          <value type="string">always</value>
+          <value type="string">never</value>
+          <value type="string">whenNotActive</value>
         </choice>
       </attribute>
     </optional>
@@ -95,8 +97,8 @@
     <optional>
       <attribute name="fill" a:defaultValue="remove">
         <choice>
-          <value>remove</value>
-          <value>freeze</value>
+          <value type="string">remove</value>
+          <value type="string">freeze</value>
         </choice>
       </attribute>
     </optional>
@@ -112,10 +114,10 @@
     <optional>
       <attribute name="calcMode" a:defaultValue="linear">
         <choice>
-          <value>discrete</value>
-          <value>linear</value>
-          <value>paced</value>
-          <value>spline</value>
+          <value type="string">discrete</value>
+          <value type="string">linear</value>
+          <value type="string">paced</value>
+          <value type="string">spline</value>
         </choice>
       </attribute>
     </optional>
@@ -149,16 +151,16 @@
     <optional>
       <attribute name="additive" a:defaultValue="replace">
         <choice>
-          <value>replace</value>
-          <value>sum</value>
+          <value type="string">replace</value>
+          <value type="string">sum</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="accumulate" a:defaultValue="none">
         <choice>
-          <value>none</value>
-          <value>sum</value>
+          <value type="string">none</value>
+          <value type="string">sum</value>
         </choice>
       </attribute>
     </optional>
@@ -243,10 +245,10 @@
     <optional>
       <attribute name="calcMode" a:defaultValue="paced">
         <choice>
-          <value>discrete</value>
-          <value>linear</value>
-          <value>paced</value>
-          <value>spline</value>
+          <value type="string">discrete</value>
+          <value type="string">linear</value>
+          <value type="string">paced</value>
+          <value type="string">spline</value>
         </choice>
       </attribute>
     </optional>
@@ -333,11 +335,11 @@
     <optional>
       <attribute name="type" a:defaultValue="translate">
         <choice>
-          <value>translate</value>
-          <value>scale</value>
-          <value>rotate</value>
-          <value>skewX</value>
-          <value>skewY</value>
+          <value type="string">translate</value>
+          <value type="string">scale</value>
+          <value type="string">rotate</value>
+          <value type="string">skewX</value>
+          <value type="string">skewY</value>
         </choice>
       </attribute>
     </optional>

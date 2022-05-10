@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="">
   <a:documentation>
     SVG 1.1 Basic Structure Module
     file: svg-basic-structure.rng
@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-basic-structure.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Basic Structure
@@ -16,12 +18,7 @@
 
     This module declares the major structural elements and their attributes.
   </a:documentation>
-  <start>
-    <a:documentation>
-      The root element is "svg".
-    </a:documentation>
-    <ref name="svg"/>
-  </start>
+  <!-- removed start = - - hsivonen -->
   <div>
     <a:documentation>
       Include core set of modules
@@ -310,6 +307,9 @@
     <ref name="SVG.GraphicalEvents.attrib"/>
     <ref name="SVG.External.attrib"/>
     <optional>
+      <ref name="common.attrs.aria"/>
+    </optional>
+    <optional>
       <attribute name="x">
         <ref name="Coordinate.datatype"/>
       </attribute>
@@ -342,17 +342,22 @@
     <optional>
       <attribute name="zoomAndPan" a:defaultValue="magnify">
         <choice>
-          <value>disable</value>
-          <value>magnify</value>
+          <value type="string">disable</value>
+          <value type="string">magnify</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="version" a:defaultValue="1.1">
-        <value type="string">1.1</value>
+        <choice>
+          <value type="string">1.0</value>
+          <value type="string">1.1</value>
+          <value type="string">1.2</value>
+        </choice>
       </attribute>
     </optional>
     <optional>
+      <!-- Allow 1.0 and 1.2 - - hsivonen -->
       <attribute name="baseProfile">
         <ref name="Text.datatype"/>
       </attribute>
@@ -411,6 +416,12 @@
     <ref name="SVG.GraphicalEvents.attrib"/>
     <ref name="SVG.External.attrib"/>
     <optional>
+      <choice>
+        <ref name="common.attrs.aria.implicit.group"/>
+        <ref name="common.attrs.aria"/>
+      </choice>
+    </optional>
+    <optional>
       <attribute name="transform">
         <ref name="TransformList.datatype"/>
       </attribute>
@@ -467,8 +478,29 @@
   <a:documentation>
     desc: Description Element
   </a:documentation>
+  <define name="any_element">
+    <element>
+      <anyName/>
+      <zeroOrMore>
+        <choice>
+          <attribute>
+            <anyName/>
+          </attribute>
+          <zeroOrMore>
+            <ref name="any_element"/>
+          </zeroOrMore>
+          <text/>
+        </choice>
+      </zeroOrMore>
+    </element>
+  </define>
   <define name="SVG.desc.content">
-    <text/>
+    <interleave>
+      <zeroOrMore>
+        <ref name="any_element"/>
+      </zeroOrMore>
+      <text/>
+    </interleave>
   </define>
   <define name="desc">
     <element name="desc">
@@ -536,6 +568,9 @@
     <ref name="SVG.GraphicalEvents.attrib"/>
     <ref name="SVG.XLinkEmbed.attrib"/>
     <ref name="SVG.External.attrib"/>
+    <optional>
+      <ref name="common.attrs.aria"/>
+    </optional>
     <optional>
       <attribute name="x">
         <ref name="Coordinate.datatype"/>

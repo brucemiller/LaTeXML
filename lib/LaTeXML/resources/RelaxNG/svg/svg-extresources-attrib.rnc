@@ -7,8 +7,10 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ## 
 ##     This is SVG, a language for describing two-dimensional graphics in XML.
 ##     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
+##
+##     Modifications Copyright 2007 Mozilla Foundation
 ## 
-##     $Id: svg-extresources-attrib.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+##     $Id$
 ##   
 
 ## 
@@ -20,9 +22,9 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ##   
 [ xml:lang = "en" ]
 grammar {
-  SVG.externalResourcesRequired.attrib =
-    attribute externalResourcesRequired { Boolean.datatype }?
-  SVG.External.extra.attrib = empty
-  SVG.External.attrib &=
-    SVG.externalResourcesRequired.attrib, SVG.External.extra.attrib
+    SVG.externalResourcesRequired.attrib =
+        attribute externalResourcesRequired { Boolean.datatype }?
+    SVG.External.extra.attrib = empty
+    SVG.External.attrib &=
+        SVG.externalResourcesRequired.attrib, SVG.External.extra.attrib
 }

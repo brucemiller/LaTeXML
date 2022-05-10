@@ -127,8 +127,23 @@ to be used in processing the graphic.</a:documentation>
     <grammar>
       <a:documentation>An SVG (Scalable Vector Graphics) object
 [eventually must adapt to put LaTeXML objects in foreignObject]</a:documentation>
+      <define name="common.attrs.aria">
+        <empty/>
+      </define>
+      <define name="common.attrs.aria.implicit.group">
+        <empty/>
+      </define>
+      <define name="common.attrs.aria.implicit.img">
+        <empty/>
+      </define>
+      <define name="common.attrs.aria.implicit.link">
+        <empty/>
+      </define>
       <include href="urn:x-LaTeXML:RelaxNG:svg:svg11.rng">
         <define name="SVG.foreignObject.content">
+          <parentRef name="Flow.model"/>
+        </define>
+        <define name="SVG.desc.content">
           <parentRef name="Flow.model"/>
         </define>
       </include>

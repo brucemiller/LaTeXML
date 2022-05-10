@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:ns1="http://www.w3.org/2000/svg" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="">
   <a:documentation>
     SVG 1.1 Graphics Attribute Module
     file: svg-graphics-attrib.rng
@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-graphics-attrib.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Graphics Attribute
@@ -22,10 +24,10 @@
     <optional>
       <attribute name="image-rendering">
         <choice>
-          <value>auto</value>
-          <value>optimizeSpeed</value>
-          <value>optimizeQuality</value>
-          <value>inherit</value>
+          <value type="string">auto</value>
+          <value type="string">optimizeSpeed</value>
+          <value type="string">optimizeQuality</value>
+          <value type="string">inherit</value>
         </choice>
       </attribute>
     </optional>
@@ -34,16 +36,16 @@
     <optional>
       <attribute name="pointer-events">
         <choice>
-          <value>visiblePainted</value>
-          <value>visibleFill</value>
-          <value>visibleStroke</value>
-          <value>visible</value>
-          <value>painted</value>
-          <value>fill</value>
-          <value>stroke</value>
-          <value>all</value>
-          <value>none</value>
-          <value>inherit</value>
+          <value type="string">visiblePainted</value>
+          <value type="string">visibleFill</value>
+          <value type="string">visibleStroke</value>
+          <value type="string">visible</value>
+          <value type="string">painted</value>
+          <value type="string">fill</value>
+          <value type="string">stroke</value>
+          <value type="string">all</value>
+          <value type="string">none</value>
+          <value type="string">inherit</value>
         </choice>
       </attribute>
     </optional>
@@ -52,11 +54,11 @@
     <optional>
       <attribute name="shape-rendering">
         <choice>
-          <value>auto</value>
-          <value>optimizeSpeed</value>
-          <value>crispEdges</value>
-          <value>geometricPrecision</value>
-          <value>inherit</value>
+          <value type="string">auto</value>
+          <value type="string">optimizeSpeed</value>
+          <value type="string">crispEdges</value>
+          <value type="string">geometricPrecision</value>
+          <value type="string">inherit</value>
         </choice>
       </attribute>
     </optional>
@@ -65,11 +67,11 @@
     <optional>
       <attribute name="text-rendering">
         <choice>
-          <value>auto</value>
-          <value>optimizeSpeed</value>
-          <value>optimizeLegibility</value>
-          <value>geometricPrecision</value>
-          <value>inherit</value>
+          <value type="string">auto</value>
+          <value type="string">optimizeSpeed</value>
+          <value type="string">optimizeLegibility</value>
+          <value type="string">geometricPrecision</value>
+          <value type="string">inherit</value>
         </choice>
       </attribute>
     </optional>
