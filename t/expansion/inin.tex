@@ -1,0 +1,22 @@
+\input{ininBefore}
+\documentclass{article}
+\usepackage[localrawstyles]{latexml}
+\usepackage{ininStyle}
+\input ininTeX
+\input{ininLaTeX}
+\def\testcat#1{%
+ (@ \ifcat A#1 Letter\else\ifcat 1#1 Other\else Unnown\fi\fi)}
+\begin{document}
+Testing:
+\par\noindent
+Before Document LaTeX input: \csname ininBefore\endcsname.
+\par\noindent
+TeXInput: \csname ininTeX\endcsname.
+\par\noindent
+LaTeXInput: \csname ininLaTeX\endcsname.
+\par\noindent
+LaTeXStyle: \csname ininStyle\endcsname.
+\par\noindent
+
+Done
+\end{document}
