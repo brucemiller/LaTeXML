@@ -1,4 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!-- datatypes w = "http://whattf.org/datatype-draft" -->
 <grammar xml:lang="en" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <a:documentation>
     SVG 1.1 Datatypes Module
@@ -7,7 +8,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-datatypes.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007-2012 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Datatypes
@@ -67,7 +70,10 @@
     <a:documentation>
       a language code, as per [RFC3066]
     </a:documentation>
-    <data type="language"/>
+    <choice>
+      <data type="language"/>
+      <value type="string" datatypeLibrary=""/>
+    </choice>
   </define>
   <define name="LanguageCodes.datatype">
     <a:documentation>
@@ -105,6 +111,7 @@
     </a:documentation>
     <data type="string"/>
   </define>
+  <!--    PathData.datatype = w:svg-pathdata -->
   <define name="PathData.datatype">
     <a:documentation>
       a path data specification
@@ -116,7 +123,7 @@
       'preserveAspectRatio' attribute specification
     </a:documentation>
     <data type="string">
-      <param name="pattern">\s*(none|xMinYMin|xMidYMin|xMaxYMin|xMinYMid|xMidYMid|xMaxYMid|xMinYMax|xMidYMax|xMaxYMax)\s+(meet|slice)?\s*</param>
+      <param name="pattern">([ \t\r\n])*(defer([ \t\r\n])+)?(none|xMinYMin|xMidYMin|xMaxYMin|xMinYMid|xMidYMid|xMaxYMid|xMinYMax|xMidYMax|xMaxYMax)(([ \t\r\n])+(meet|slice))?([ \t\r\n])*</param>
     </data>
   </define>
   <define name="Script.datatype">

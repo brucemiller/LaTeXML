@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-font.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Font
@@ -17,15 +19,16 @@
 
     This module declares markup to provide support for template.
   </a:documentation>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-basic-font.rng"/>
+  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-basic-font.rng">
+    <define name="SVG.font-face.extra.class" combine="interleave">
+      <optional>
+        <ref name="definition-src"/>
+      </optional>
+    </define>
+  </include>
   <a:documentation>
     font-face: Font Face Element
   </a:documentation>
-  <define name="SVG.font-face.extra.class" combine="interleave">
-    <optional>
-      <ref name="definition-src"/>
-    </optional>
-  </define>
   <a:documentation>
     glyph: Glyph Element
   </a:documentation>

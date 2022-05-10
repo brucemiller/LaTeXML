@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-style.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007-2014 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Style
@@ -20,7 +22,7 @@
     Datatypes
   </a:documentation>
   <define name="ClassList.datatype">
-    <data type="NMTOKENS"/>
+    <data type="string"/>
   </define>
   <define name="StyleSheet.datatype">
     <data type="string"/>
@@ -77,16 +79,18 @@
   <define name="attlist.style" combine="interleave">
     <optional>
       <attribute name="xml:space" a:defaultValue="preserve">
-        <value>preserve</value>
+        <value type="string" datatypeLibrary="">preserve</value>
       </attribute>
     </optional>
     <ref name="SVG.id.attrib"/>
     <ref name="SVG.base.attrib"/>
     <ref name="SVG.lang.attrib"/>
     <ref name="SVG.Core.extra.attrib"/>
-    <attribute name="type">
-      <ref name="ContentType.datatype"/>
-    </attribute>
+    <optional>
+      <attribute name="type">
+        <ref name="ContentType.datatype"/>
+      </attribute>
+    </optional>
     <optional>
       <attribute name="media">
         <ref name="MediaDesc.datatype"/>

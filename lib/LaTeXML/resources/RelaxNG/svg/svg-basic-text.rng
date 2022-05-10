@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-basic-text.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Basic Text
@@ -45,30 +47,30 @@
     <optional>
       <attribute name="font-style">
         <choice>
-          <value>normal</value>
-          <value>italic</value>
-          <value>oblique</value>
-          <value>inherit</value>
+          <value type="string" datatypeLibrary="">normal</value>
+          <value type="string" datatypeLibrary="">italic</value>
+          <value type="string" datatypeLibrary="">oblique</value>
+          <value type="string" datatypeLibrary="">inherit</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="font-weight">
         <choice>
-          <value>normal</value>
-          <value>bold</value>
-          <value>bolder</value>
-          <value>lighter</value>
-          <value>100</value>
-          <value>200</value>
-          <value>300</value>
-          <value>400</value>
-          <value>500</value>
-          <value>600</value>
-          <value>700</value>
-          <value>800</value>
-          <value>900</value>
-          <value>inherit</value>
+          <value type="string" datatypeLibrary="">normal</value>
+          <value type="string" datatypeLibrary="">bold</value>
+          <value type="string" datatypeLibrary="">bolder</value>
+          <value type="string" datatypeLibrary="">lighter</value>
+          <value type="string" datatypeLibrary="">100</value>
+          <value type="string" datatypeLibrary="">200</value>
+          <value type="string" datatypeLibrary="">300</value>
+          <value type="string" datatypeLibrary="">400</value>
+          <value type="string" datatypeLibrary="">500</value>
+          <value type="string" datatypeLibrary="">600</value>
+          <value type="string" datatypeLibrary="">700</value>
+          <value type="string" datatypeLibrary="">800</value>
+          <value type="string" datatypeLibrary="">900</value>
+          <value type="string" datatypeLibrary="">inherit</value>
         </choice>
       </attribute>
     </optional>
@@ -137,6 +139,12 @@
     <ref name="SVG.Cursor.attrib"/>
     <ref name="SVG.External.attrib"/>
     <optional>
+      <choice>
+        <ref name="common.attrs.aria.implicit.group"/>
+        <ref name="common.attrs.aria"/>
+      </choice>
+    </optional>
+    <optional>
       <attribute name="x">
         <ref name="Coordinates.datatype"/>
       </attribute>
@@ -186,6 +194,12 @@
     <ref name="SVG.XLink.attrib"/>
     <ref name="SVG.External.attrib"/>
     <optional>
+      <choice>
+        <ref name="common.attrs.aria.implicit.group"/>
+        <ref name="common.attrs.aria"/>
+      </choice>
+    </optional>
+    <optional>
       <attribute name="glyphRef"/>
     </optional>
     <optional>
@@ -226,6 +240,12 @@
     <ref name="SVG.Style.attrib"/>
     <ref name="SVG.Font.attrib"/>
     <ref name="SVG.XLink.attrib"/>
+    <optional>
+      <choice>
+        <ref name="common.attrs.aria.implicit.group"/>
+        <ref name="common.attrs.aria"/>
+      </choice>
+    </optional>
     <optional>
       <attribute name="glyphRef"/>
     </optional>

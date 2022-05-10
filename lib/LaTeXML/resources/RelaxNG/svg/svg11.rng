@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:ns1="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar xml:lang="en" ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:svg="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://relaxng.org/ns/structure/1.0">
   <a:documentation>
     RELAX NG schema for SVG 1.1
     file: svg11.rng
@@ -12,6 +12,8 @@
         Recherche en Informatique et en Automatique, Keio University).
         All Rights Reserved.
 
+    Modifications Copyright 2007 Mozilla Foundation
+
     Permission to use, copy, modify and distribute this RELAX NG schema
     for SVG and its accompanying documentation for any purpose and without
     fee is hereby granted in perpetuity, provided that the above copyright
@@ -22,7 +24,8 @@
     It is provided "as is" without expressed or implied warranty.
 
         Author: Masayasu Ishikawa (mimasa@w3.org)
-        $Id: svg11.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+        Modified by: Henri Sivonen (hsivonen@iki.fi)
+        $Id$
 
     This is the driver file for version 1.1 of the SVG RELAX NG schema.
 
@@ -35,154 +38,16 @@
 
         "http://www.w3.org/2000/svg"
   </a:documentation>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-container-attrib.rng">
+  <include href="urn:x-LaTeXML:RelaxNG:svg:svg11-inc.rng">
     <a:documentation>
-      Container Attribute Module
+      Includes
     </a:documentation>
   </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-viewport-attrib.rng">
+  <!-- Moved start = here - - hsivonen -->
+  <start>
     <a:documentation>
-      Viewport Attribute Module
+      The root element is "svg".
     </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-paint-attrib.rng">
-    <a:documentation>
-      Paint Attribute Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-opacity-attrib.rng">
-    <a:documentation>
-      Paint Opacity Attribute Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-graphics-attrib.rng">
-    <a:documentation>
-      Graphics Attribute Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-docevents-attrib.rng">
-    <a:documentation>
-      Document Events Attribute Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-graphevents-attrib.rng">
-    <a:documentation>
-      Graphical Element Events Attribute Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-animevents-attrib.rng">
-    <a:documentation>
-      Animation Events Attribute Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-xlink-attrib.rng">
-    <a:documentation>
-      XLink Attribute Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-extresources-attrib.rng">
-    <a:documentation>
-      External Resources Attribute Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-structure.rng">
-    <a:documentation>
-      Structure Module (required)
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-conditional.rng">
-    <a:documentation>
-      Conditional Processing Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-image.rng">
-    <a:documentation>
-      Image Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-style.rng">
-    <a:documentation>
-      Style Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-shape.rng">
-    <a:documentation>
-      Shape Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-text.rng">
-    <a:documentation>
-      Text Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-marker.rng">
-    <a:documentation>
-      Marker Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-profile.rng">
-    <a:documentation>
-      Color Profile Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-gradient.rng">
-    <a:documentation>
-      Gradient Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-pattern.rng">
-    <a:documentation>
-      Pattern Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-clip.rng">
-    <a:documentation>
-      Clip Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-mask.rng">
-    <a:documentation>
-      Mask Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-filter.rng">
-    <a:documentation>
-      Filter Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-cursor.rng">
-    <a:documentation>
-      Cursor Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-hyperlink.rng">
-    <a:documentation>
-      Hyperlinking Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-view.rng">
-    <a:documentation>
-      View Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-script.rng">
-    <a:documentation>
-      Scripting Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-animation.rng">
-    <a:documentation>
-      Animation Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-font.rng">
-    <a:documentation>
-      Font Module
-    </a:documentation>
-  </include>
-  <include href="urn:x-LaTeXML:RelaxNG:svg:svg-extensibility.rng">
-    <a:documentation>
-      Extensibility Module
-    </a:documentation>
-  </include>
+    <ref name="svg"/>
+  </start>
 </grammar>

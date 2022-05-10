@@ -1,5 +1,5 @@
 namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
-namespace ns1 = "http://www.w3.org/2000/svg"
+namespace svg = "http://www.w3.org/2000/svg"
 
 
 ## 
@@ -8,8 +8,10 @@ namespace ns1 = "http://www.w3.org/2000/svg"
 ## 
 ##     This is SVG, a language for describing two-dimensional graphics in XML.
 ##     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
+##
+##     Modifications Copyright 2007 Mozilla Foundation
 ## 
-##     $Id: svg-graphics-attrib.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+##     $Id$
 ##   
 
 ## 
@@ -22,43 +24,43 @@ namespace ns1 = "http://www.w3.org/2000/svg"
 ##   
 [ xml:lang = "en" ]
 grammar {
-  include "svg-basic-graphics-attrib.rnc" inherit = ns1
-  SVG.image-rendering.attrib =
-    attribute image-rendering {
-      "auto" | "optimizeSpeed" | "optimizeQuality" | "inherit"
-    }?
-  SVG.pointer-events.attrib =
-    attribute pointer-events {
-      "visiblePainted"
-      | "visibleFill"
-      | "visibleStroke"
-      | "visible"
-      | "painted"
-      | "fill"
-      | "stroke"
-      | "all"
-      | "none"
-      | "inherit"
-    }?
-  SVG.shape-rendering.attrib =
-    attribute shape-rendering {
-      "auto"
-      | "optimizeSpeed"
-      | "crispEdges"
-      | "geometricPrecision"
-      | "inherit"
-    }?
-  SVG.text-rendering.attrib =
-    attribute text-rendering {
-      "auto"
-      | "optimizeSpeed"
-      | "optimizeLegibility"
-      | "geometricPrecision"
-      | "inherit"
-    }?
-  SVG.Graphics.attrib &=
-    SVG.image-rendering.attrib,
-    SVG.pointer-events.attrib,
-    SVG.shape-rendering.attrib,
-    SVG.text-rendering.attrib
+    include "svg-basic-graphics-attrib.rnc" inherit = svg
+    SVG.image-rendering.attrib =
+        attribute image-rendering {
+            string "auto" | string "optimizeSpeed" | string "optimizeQuality" | string "inherit"
+        }?
+    SVG.pointer-events.attrib =
+        attribute pointer-events {
+            string "visiblePainted"
+            | string "visibleFill"
+            | string "visibleStroke"
+            | string "visible"
+            | string "painted"
+            | string "fill"
+            | string "stroke"
+            | string "all"
+            | string "none"
+            | string "inherit"
+        }?
+    SVG.shape-rendering.attrib =
+        attribute shape-rendering {
+            string "auto"
+            | string "optimizeSpeed"
+            | string "crispEdges"
+            | string "geometricPrecision"
+            | string "inherit"
+        }?
+    SVG.text-rendering.attrib =
+        attribute text-rendering {
+            string "auto"
+            | string "optimizeSpeed"
+            | string "optimizeLegibility"
+            | string "geometricPrecision"
+            | string "inherit"
+        }?
+    SVG.Graphics.attrib &=
+        SVG.image-rendering.attrib,
+        SVG.pointer-events.attrib,
+        SVG.shape-rendering.attrib,
+        SVG.text-rendering.attrib
 }

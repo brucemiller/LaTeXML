@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-text.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Text
@@ -52,12 +54,12 @@
     <optional>
       <attribute name="writing-mode">
         <choice>
-          <value>lr-tb</value>
-          <value>rl-tb</value>
-          <value>tb-rl</value>
-          <value>lr</value>
-          <value>rl</value>
-          <value>tb</value>
+          <value type="string" datatypeLibrary="">lr-tb</value>
+          <value type="string" datatypeLibrary="">rl-tb</value>
+          <value type="string" datatypeLibrary="">tb-rl</value>
+          <value type="string" datatypeLibrary="">lr</value>
+          <value type="string" datatypeLibrary="">rl</value>
+          <value type="string" datatypeLibrary="">tb</value>
           <value>inherit</value>
         </choice>
       </attribute>
@@ -74,19 +76,19 @@
     <optional>
       <attribute name="alignment-baseline">
         <choice>
-          <value>auto</value>
-          <value>baseline</value>
-          <value>before-edge</value>
-          <value>text-before-edge</value>
-          <value>middle</value>
-          <value>central</value>
-          <value>after-edge</value>
-          <value>text-after-edge</value>
-          <value>ideographic</value>
-          <value>alphabetic</value>
-          <value>hanging</value>
-          <value>mathematical</value>
-          <value>inherit</value>
+          <value type="string" datatypeLibrary="">auto</value>
+          <value type="string" datatypeLibrary="">baseline</value>
+          <value type="string" datatypeLibrary="">before-edge</value>
+          <value type="string" datatypeLibrary="">text-before-edge</value>
+          <value type="string" datatypeLibrary="">middle</value>
+          <value type="string" datatypeLibrary="">central</value>
+          <value type="string" datatypeLibrary="">after-edge</value>
+          <value type="string" datatypeLibrary="">text-after-edge</value>
+          <value type="string" datatypeLibrary="">ideographic</value>
+          <value type="string" datatypeLibrary="">alphabetic</value>
+          <value type="string" datatypeLibrary="">hanging</value>
+          <value type="string" datatypeLibrary="">mathematical</value>
+          <value type="string" datatypeLibrary="">inherit</value>
         </choice>
       </attribute>
     </optional>
@@ -98,28 +100,28 @@
     <optional>
       <attribute name="direction">
         <choice>
-          <value>ltr</value>
-          <value>rtl</value>
-          <value>inherit</value>
+          <value type="string" datatypeLibrary="">ltr</value>
+          <value type="string" datatypeLibrary="">rtl</value>
+          <value type="string" datatypeLibrary="">inherit</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="dominant-baseline">
         <choice>
-          <value>auto</value>
-          <value>use-script</value>
-          <value>no-change</value>
-          <value>reset-size</value>
-          <value>ideographic</value>
-          <value>alphabetic</value>
-          <value>hanging</value>
-          <value>mathematical</value>
-          <value>central</value>
-          <value>middle</value>
-          <value>text-after-edge</value>
-          <value>text-before-edge</value>
-          <value>inherit</value>
+          <value type="string" datatypeLibrary="">auto</value>
+          <value type="string" datatypeLibrary="">use-script</value>
+          <value type="string" datatypeLibrary="">no-change</value>
+          <value type="string" datatypeLibrary="">reset-size</value>
+          <value type="string" datatypeLibrary="">ideographic</value>
+          <value type="string" datatypeLibrary="">alphabetic</value>
+          <value type="string" datatypeLibrary="">hanging</value>
+          <value type="string" datatypeLibrary="">mathematical</value>
+          <value type="string" datatypeLibrary="">central</value>
+          <value type="string" datatypeLibrary="">middle</value>
+          <value type="string" datatypeLibrary="">text-after-edge</value>
+          <value type="string" datatypeLibrary="">text-before-edge</value>
+          <value type="string" datatypeLibrary="">inherit</value>
         </choice>
       </attribute>
     </optional>
@@ -146,10 +148,10 @@
     <optional>
       <attribute name="text-anchor">
         <choice>
-          <value>start</value>
-          <value>middle</value>
-          <value>end</value>
-          <value>inherit</value>
+          <value type="string" datatypeLibrary="">start</value>
+          <value type="string" datatypeLibrary="">middle</value>
+          <value type="string" datatypeLibrary="">end</value>
+          <value type="string" datatypeLibrary="">inherit</value>
         </choice>
       </attribute>
     </optional>
@@ -161,10 +163,10 @@
     <optional>
       <attribute name="unicode-bidi">
         <choice>
-          <value>normal</value>
-          <value>embed</value>
-          <value>bidi-override</value>
-          <value>inherit</value>
+          <value type="string" datatypeLibrary="">normal</value>
+          <value type="string" datatypeLibrary="">embed</value>
+          <value type="string" datatypeLibrary="">bidi-override</value>
+          <value type="string" datatypeLibrary="">inherit</value>
         </choice>
       </attribute>
     </optional>
@@ -184,27 +186,27 @@
     <optional>
       <attribute name="font-stretch">
         <choice>
-          <value>normal</value>
-          <value>wider</value>
-          <value>narrower</value>
-          <value>ultra-condensed</value>
-          <value>extra-condensed</value>
-          <value>condensed</value>
-          <value>semi-condensed</value>
-          <value>semi-expanded</value>
-          <value>expanded</value>
-          <value>extra-expanded</value>
-          <value>ultra-expanded</value>
-          <value>inherit</value>
+          <value type="string" datatypeLibrary="">normal</value>
+          <value type="string" datatypeLibrary="">wider</value>
+          <value type="string" datatypeLibrary="">narrower</value>
+          <value type="string" datatypeLibrary="">ultra-condensed</value>
+          <value type="string" datatypeLibrary="">extra-condensed</value>
+          <value type="string" datatypeLibrary="">condensed</value>
+          <value type="string" datatypeLibrary="">semi-condensed</value>
+          <value type="string" datatypeLibrary="">semi-expanded</value>
+          <value type="string" datatypeLibrary="">expanded</value>
+          <value type="string" datatypeLibrary="">extra-expanded</value>
+          <value type="string" datatypeLibrary="">ultra-expanded</value>
+          <value type="string" datatypeLibrary="">inherit</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="font-variant">
         <choice>
-          <value>normal</value>
-          <value>small-caps</value>
-          <value>inherit</value>
+          <value type="string" datatypeLibrary="">normal</value>
+          <value type="string" datatypeLibrary="">small-caps</value>
+          <value type="string" datatypeLibrary="">inherit</value>
         </choice>
       </attribute>
     </optional>
@@ -252,8 +254,8 @@
     <optional>
       <attribute name="lengthAdjust">
         <choice>
-          <value>spacing</value>
-          <value>spacingAndGlyphs</value>
+          <value type="string" datatypeLibrary="">spacing</value>
+          <value type="string" datatypeLibrary="">spacingAndGlyphs</value>
         </choice>
       </attribute>
     </optional>
@@ -299,6 +301,12 @@
     <ref name="SVG.Cursor.attrib"/>
     <ref name="SVG.External.attrib"/>
     <optional>
+      <choice>
+        <ref name="common.attrs.aria.implicit.group"/>
+        <ref name="common.attrs.aria"/>
+      </choice>
+    </optional>
+    <optional>
       <attribute name="x">
         <ref name="Coordinates.datatype"/>
       </attribute>
@@ -331,8 +339,8 @@
     <optional>
       <attribute name="lengthAdjust">
         <choice>
-          <value>spacing</value>
-          <value>spacingAndGlyphs</value>
+          <value type="string" datatypeLibrary="">spacing</value>
+          <value type="string" datatypeLibrary="">spacingAndGlyphs</value>
         </choice>
       </attribute>
     </optional>
@@ -406,8 +414,8 @@
     <optional>
       <attribute name="lengthAdjust">
         <choice>
-          <value>spacing</value>
-          <value>spacingAndGlyphs</value>
+          <value type="string" datatypeLibrary="">spacing</value>
+          <value type="string" datatypeLibrary="">spacingAndGlyphs</value>
         </choice>
       </attribute>
     </optional>
@@ -466,24 +474,24 @@
     <optional>
       <attribute name="lengthAdjust">
         <choice>
-          <value>spacing</value>
-          <value>spacingAndGlyphs</value>
+          <value type="string" datatypeLibrary="">spacing</value>
+          <value type="string" datatypeLibrary="">spacingAndGlyphs</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="method">
         <choice>
-          <value>align</value>
-          <value>stretch</value>
+          <value type="string" datatypeLibrary="">align</value>
+          <value type="string" datatypeLibrary="">stretch</value>
         </choice>
       </attribute>
     </optional>
     <optional>
       <attribute name="spacing">
         <choice>
-          <value>auto</value>
-          <value>exact</value>
+          <value type="string" datatypeLibrary="">auto</value>
+          <value type="string" datatypeLibrary="">exact</value>
         </choice>
       </attribute>
     </optional>

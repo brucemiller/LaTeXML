@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<grammar ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:ns1="http://www.w3.org/2000/svg" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar ns="http://www.w3.org/2000/svg" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:svg="http://www.w3.org/2000/svg" xmlns="http://relaxng.org/ns/structure/1.0">
   <a:documentation>
     SVG 1.1 Extensibility Module
     file: svg-extensibility.rng
@@ -7,7 +7,7 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-extensibility.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    $Id$
 
 </a:documentation>
   <a:documentation>
@@ -33,14 +33,9 @@
     foreignObject: Foreign Object Element
   </a:documentation>
   <define name="SVG.foreignObject.content">
-    <zeroOrMore>
-      <choice>
-        <text/>
-        <ref name="svg"/>
-      </choice>
-      <!-- ref name="foreignElement"/ -->
-    </zeroOrMore>
+    <notAllowed/>
   </define>
+  <!-- bugfix - - hsivonen -->
   <define name="foreignObject">
     <element name="foreignObject">
       <ref name="attlist.foreignObject"/>
@@ -54,6 +49,12 @@
     <ref name="SVG.Presentation.attrib"/>
     <ref name="SVG.GraphicalEvents.attrib"/>
     <ref name="SVG.External.attrib"/>
+    <optional>
+      <choice>
+        <ref name="common.attrs.aria.implicit.group"/>
+        <ref name="common.attrs.aria"/>
+      </choice>
+    </optional>
     <optional>
       <attribute name="x">
         <ref name="Coordinate.datatype"/>
@@ -100,5 +101,60 @@
         </choice>
       </zeroOrMore>
     </element>
+  </define>
+  <define name="SVG.a.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Extensibility.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.defs.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Extensibility.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.glyph.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Extensibility.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.g.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Extensibility.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.marker.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Extensibility.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.mask.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Extensibility.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.missing-glyph.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Extensibility.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.pattern.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Extensibility.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.svg.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Extensibility.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.switch.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Extensibility.class"/>
+    </zeroOrMore>
+  </define>
+  <define name="SVG.symbol.content" combine="interleave">
+    <zeroOrMore>
+      <ref name="SVG.Extensibility.class"/>
+    </zeroOrMore>
   </define>
 </grammar>

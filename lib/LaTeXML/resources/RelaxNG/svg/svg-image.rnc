@@ -8,8 +8,10 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ## 
 ##     This is SVG, a language for describing two-dimensional graphics in XML.
 ##     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
+##
+##     Modifications Copyright 2007 Mozilla Foundation
 ## 
-##     $Id: svg-image.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+##     $Id$
 ##   
 
 ## 
@@ -25,32 +27,35 @@ namespace a = "http://relaxng.org/ns/compatibility/annotations/1.0"
 ##   
 [ xml:lang = "en" ]
 grammar {
-  SVG.Image.extra.class = notAllowed
-  SVG.Image.class |= image | SVG.Image.extra.class
-  a:documentation [ "\x{a}" ~ "    image: Image Element\x{a}" ~ "  " ]
-  SVG.image.content = SVG.Description.class*, SVG.Animation.class*
-  image = element image { attlist.image, SVG.image.content }
-  attlist.image &=
-    SVG.Core.attrib,
-    SVG.Conditional.attrib,
-    SVG.Style.attrib,
-    SVG.Viewport.attrib,
-    SVG.Color.attrib,
-    SVG.Opacity.attrib,
-    SVG.Graphics.attrib,
-    SVG.Profile.attrib,
-    SVG.Clip.attrib,
-    SVG.Mask.attrib,
-    SVG.Filter.attrib,
-    SVG.GraphicalEvents.attrib,
-    SVG.Cursor.attrib,
-    SVG.XLinkEmbed.attrib,
-    SVG.External.attrib,
-    attribute x { Coordinate.datatype }?,
-    attribute y { Coordinate.datatype }?,
-    attribute width { Length.datatype },
-    attribute height { Length.datatype },
-    [ a:defaultValue = "xMidYMid meet" ]
-    attribute preserveAspectRatio { PreserveAspectRatioSpec.datatype }?,
-    attribute transform { TransformList.datatype }?
+    SVG.Image.extra.class = notAllowed
+    SVG.Image.class |= image | SVG.Image.extra.class
+    a:documentation [ "\x{a}" ~ "    image: Image Element\x{a}" ~ "  " ]
+    SVG.image.content = SVG.Description.class*, SVG.Animation.class*
+    image = element image { attlist.image, SVG.image.content }
+    attlist.image &=
+        SVG.Core.attrib,
+        SVG.Conditional.attrib,
+        SVG.Style.attrib,
+        SVG.Viewport.attrib,
+        SVG.Color.attrib,
+        SVG.Opacity.attrib,
+        SVG.Graphics.attrib,
+        SVG.Profile.attrib,
+        SVG.Clip.attrib,
+        SVG.Mask.attrib,
+        SVG.Filter.attrib,
+        SVG.GraphicalEvents.attrib,
+        SVG.Cursor.attrib,
+        SVG.XLinkEmbed.attrib,
+        SVG.External.attrib,
+        (common.attrs.aria.implicit.img | common.attrs.aria)?,
+        attribute x { Coordinate.datatype }?,
+        attribute y { Coordinate.datatype }?,
+        attribute width { Length.datatype },
+        attribute height { Length.datatype },
+        [ a:defaultValue = "xMidYMid meet" ]
+        attribute preserveAspectRatio {
+            PreserveAspectRatioSpec.datatype
+        }?,
+        attribute transform { TransformList.datatype }?
 }

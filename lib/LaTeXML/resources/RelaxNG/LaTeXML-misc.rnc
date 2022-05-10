@@ -101,8 +101,14 @@ svg =
 ## An SVG (Scalable Vector Graphics) object
 ## [eventually must adapt to put LaTeXML objects in foreignObject]
 grammar {
+   common.attrs.aria = empty
+   common.attrs.aria.implicit.group = empty
+   common.attrs.aria.implicit.img = empty
+   common.attrs.aria.implicit.link = empty
   include "svg11.rnc"
-  { SVG.foreignObject.content = parent Flow.model }
+  { SVG.foreignObject.content = parent Flow.model
+    SVG.desc.content = parent Flow.model
+ }
 }
 #======================================================================
 

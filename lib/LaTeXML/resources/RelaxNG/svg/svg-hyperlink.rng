@@ -7,7 +7,9 @@
     This is SVG, a language for describing two-dimensional graphics in XML.
     Copyright 2001, 2002 W3C (MIT, INRIA, Keio), All Rights Reserved.
 
-    $Id: svg-hyperlink.rng,v 1.1 2003/07/15 07:11:10 dean Exp $
+    Modifications Copyright 2007 Mozilla Foundation
+
+    $Id$
   </a:documentation>
   <a:documentation>
     Hyperlinking
@@ -79,6 +81,12 @@
     <ref name="SVG.XLinkReplace.attrib"/>
     <ref name="SVG.External.attrib"/>
     <optional>
+      <choice>
+        <ref name="common.attrs.aria.implicit.link"/>
+        <ref name="common.attrs.aria"/>
+      </choice>
+    </optional>
+    <optional>
       <attribute name="transform">
         <ref name="TransformList.datatype"/>
       </attribute>
@@ -86,6 +94,11 @@
     <optional>
       <attribute name="target">
         <ref name="LinkTarget.datatype"/>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="rel">
+        <data type="string" datatypeLibrary=""/>
       </attribute>
     </optional>
   </define>
