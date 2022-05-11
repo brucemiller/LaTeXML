@@ -4781,14 +4781,6 @@ DefConstructor('\raisebox{Dimension}[Dimension][Dimension]{}',
   beforeDigest => sub { reenterTextMode(); },
   sizer        => sub { raisedSizer($_[0]->getArg(4), $_[0]->getArg(1)); });
 
-sub raisedSizer {
-  my ($box, $y) = @_;
-  my ($w, $h, $d) = $box->getSize;
-  my $z = Dimension(0);
-  $h = $h->add($y)->larger($z);
-  $d = $d->subtract($y)->larger($z);
-  return ($w, $h, $d); }
-
 #**********************************************************************
 # C.14 Pictures and Color
 #**********************************************************************

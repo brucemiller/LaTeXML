@@ -50,9 +50,6 @@ sub SVGNextObject {
 
 sub installPGFCommands {
   # Local definitions.
-  Let(T_CS('\lower'),  T_CS('\lxSVG@lower'));
-  Let(T_CS('\raise'),  T_CS('\lxSVG@raise'));
-  Let(T_CS('\hskip'),  T_CS('\lxSVG@hskip'));
   Let(T_CS('\halign'), T_CS('\lxSVG@halign'));
   Let('\ignorespaces', '\lx@inpgf@ignorespaces');    # Use local defn
   AssignValue(TEXT_MODE_BINDINGS => []);
@@ -127,8 +124,10 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
         . " + " . ToString($cdepth)) if $LaTeXML::DEBUG{pgf};
     Debug("BODY is " . ToString($content)) if $LaTeXML::DEBUG{pgf};
     # Note viewbox is minx, miny, width, height (NOT maxx,maxy!)
-    $whatsit->setProperty(minx     => $minx->pxValue);
-    $whatsit->setProperty(miny     => $miny->pxValue);
+##    $whatsit->setProperty(minx     => $minx->pxValue);
+##    $whatsit->setProperty(miny     => $miny->pxValue);
+    $whatsit->setProperty(minx     => 0);
+    $whatsit->setProperty(miny     => 0);
     $whatsit->setProperty(width    => $width);
     $whatsit->setProperty(height   => $height);
     $whatsit->setProperty(depth    => Dimension(0));
@@ -156,55 +155,6 @@ DefParameterType('SVGMoveableBox', sub {
       && ($box->getDefinition->getCSName =~ /^(\\hbox||)$/);
     $box; });
 
-# Try to avoid errors inserting random boxes (esp. ltx:text)(Is this safe?)
-Tag('svg:switch', autoOpen => 1, autoClose => 1,
-  afterClose => \&collapseSVGSwitch);    # ?
-
-# Remove empty <svg:switch><svg:foreignObject> or those that contain only <p/>
-# Possibly could incorporate the collapse when it contains only svg elements?
-sub collapseSVGSwitch {
-  my ($doc, $node) = @_;
-  my ($fo,  @rest) = element_nodes($node);
-  return if !$fo || ($doc->getNodeQName($fo) ne 'svg:foreignObject')
-    ;    ####    || scalar(@rest);    # Expect single svg:foreignObject
-  my @fo_c = element_nodes($fo);
-  if (scalar(@fo_c) == 0) {    # Empty?
-    if (scalar(@rest)) {       # Extra stuff after empty foreignObject?
-      $doc->replaceNode($node, @rest); }
-    else {
-      $doc->removeNode($node); } }    # Else just remove whole thing
-                                      # Else, single <p> element ?
-  elsif ((scalar(@fo_c) == 1) && ($doc->getNodeQName($fo_c[0]) eq 'ltx:p')) {
-    my @p_c = element_nodes($fo_c[0]);
-    if (scalar(@p_c) == 0) {          # or Empty <p/>?
-      $doc->removeNode($node); }
-    # Else, single ltx:picture or ltx:text ?
-    elsif (scalar(@p_c) == 1) {
-      my $tag = $doc->getNodeQName($p_c[0]);
-      if (($tag eq 'ltx:picture') || ($tag eq 'ltx:text')) {
-        my @pic_c = element_nodes($p_c[0]);
-        # With single svg:svg ?
-        if ((scalar(@pic_c) == 1) && ($doc->getNodeQName($pic_c[0]) eq 'svg:svg')) {
-          $doc->replaceNode($node, element_nodes($pic_c[0])); } }
-  } }
-  return; }
-
-Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
-  afterClose => sub {
-    my ($document, $node, $whatsit) = @_;
-    # Make sure we get a size, in case autoOpen'd
-    if ($whatsit) {
-      my ($w, $h, $d) = $whatsit->getSize;
-      my $font = $whatsit->getFont;
-      my ($fw, $fh, $fd) = $font && $font->getNominalSize;
-      # Fishing for the correct y position (maybe w/o the depth?)
-      my $y  = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->pxValue;
-      my $ht = $h->add($d);
-      $node->setAttribute(width     => $w->pxValue)  unless $node->hasAttribute('width');
-      $node->setAttribute(height    => $ht->pxValue) unless $node->hasAttribute('height');
-      $node->setAttribute(transform => "matrix(1 0 0 -1 0 $y)");
-      $node->setAttribute(overflow  => 'visible'); } });
-
 # Check whether a svg:foreignObject is open,
 # but don't check beyond an svg:svg node, in case we're nested.
 sub foreignObjectCheck {
@@ -216,34 +166,6 @@ sub foreignObjectCheck {
     return $node if $n eq 'svg:foreignObject';
     $node = $node->parentNode; }
   return; }
-
-DefConstructor('\lxSVG@raise Dimension SVGMoveableBox', sub {
-    my ($doc, $dim, $box) = @_;
-    if (foreignObjectCheck($doc)) {
-      $doc->openElement('ltx:text', yoffset => $dim->negate->pxValue . 'px');
-      $doc->absorb($box);
-      $doc->closeElement('ltx:text'); }
-    else { $doc->absorb($box); } },
-  alias => '\raise',
-  sizer => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)); });
-
-DefConstructor('\lxSVG@lower Dimension SVGMoveableBox', sub {
-    my ($doc, $dim, $box) = @_;
-    if (foreignObjectCheck($doc)) {
-      $doc->openElement('ltx:text', yoffset => $dim->pxValue . 'px');
-      $doc->absorb($box);
-      $doc->closeElement('ltx:text'); }
-    else { $doc->absorb($box); } },
-  alias => '\lower',
-  sizer => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)->negate); });
-
-DefConstructor('\lxSVG@hskip Glue', sub {
-    my ($doc, $skip) = @_;
-    # but ignored outside of foreighObject doesn't seem right
-    if (foreignObjectCheck($doc)) {
-      $doc->openElement('ltx:text', 'xoffset' => $skip->pxValue . 'px'); } },
-  alias      => '\hskip', sizer => '#1',
-  properties => sub { (width => $_[1], isSpace => 1); });
 
 DefMacroI('\pgf@shift@baseline',         undef, '0pt');
 DefMacroI('\pgf@shift@baseline@smuggle', undef, '0pt');
@@ -1097,8 +1019,9 @@ sub openTikzAlignment {
   my $d          = ($props{cdepth}  && $props{cdepth}->pxValue)  || 0;
   my @rowheights = ($props{rowheights}   ? @{ $props{rowheights} }   : (Dimension(0)));
   my @colwidths  = ($props{columnwidths} ? @{ $props{columnwidths} } : (Dimension(0)));
-  my $x          = $colwidths[0]->pxValue / 2;
-##  my $y          = ($h + $d) - $rowheights[0]->pxValue;
+  my $x          = 0;
+  # This SHOULD be just $h+$d, but the shift is necessary to align
+  # w/additional material outside the \halign ( arrows & such)
   my $y = ($h + $d) - $rowheights[-1]->pxValue / 2;    # HEURISTIC adjustment! half of LAST row!?
   Debug("TIKZ Alignment size $w x $h + $d"
       . "  rows: " . join(',', map { $_->pxValue; } @rowheights)
@@ -1143,30 +1066,22 @@ sub openTikzAlignmentRow {
 sub openTikzAlignmentCol {
   my ($tag, $doc, %props) = @_;
   my $class = 'ltx_tikzmatrix_col' . ($props{class} ? ' ' . $props{class} : '');
-  # MYSTERIOUSLY, $w seems to be HALF the "proper" width...
-  # AND assumes an equivalent \hspace in front !?!?!
-  # HOWEVER, this isn't getting accounted in Alignment.pm, for size/position/whatever
-  # so that anchors (for arrows) still aren't properly positioned!!!
-  # Moreover, the cell's horizontal position should be set according to alignment
-  # which also isn't yet done in Alignment.pm,
-  # and also it is not clear how that gets recognized by TikZ's anchors!
-  my $hw = ($props{cwidth} && $props{cwidth}->pxValue) || 0;
-  my $w  = 2 * $hw;
-  my $h  = ($props{cheight} && $props{cheight}->pxValue) || 0;
-  my $d  = ($props{cdepth}  && $props{cdepth}->pxValue)  || 0;
-  my $x  = ($props{x}       && $props{x}->pxValue)       || 0;
-
-  my $xpos = $x + $hw;
-##  my $xpos  = $x;
-  my $ypos = 0;    #-$h;
-  Debug("TIKZ alignment Cell ($w x $h + $d); x=$x"
+  # BEWARE: pgf places each column at 0 width, preceded by an \hskip width/2
+  # and followed by an extra column of width/2.
+  # Be careful accounting for rowwidths, etc while pruning & positioning in Alignment.pm
+  my $w = ($props{cwidth}  && $props{cwidth}->pxValue)  || 0;
+  my $h = ($props{cheight} && $props{cheight}->pxValue) || 0;
+  my $d = ($props{cdepth}  && $props{cdepth}->pxValue)  || 0;
+  my $x = ($props{x}       && $props{x}->pxValue)       || 0;
+  my $y = 0;
+  Debug("TIKZ alignment Cell ($w x $h + $d); x=$x; "
       . join(',', map { $_ . "=" . ToString($props{$_}); } sort keys %props)) if $LaTeXML::DEBUG{pgf};
   my $col = $doc->openElement($tag, class => $class,
     _scopebegin => 1,
-    transform   => "matrix(1 0 0 -1 $xpos $ypos)",    # NOTE: Flip!!!
+    transform   => "matrix(1 0 0 -1 $x $y)",    # NOTE: Flip!!!
   );
   $doc->insertElement('svg:rect', undef,
-    x => -$hw - 1, y => -$h - 1, width => $w + 2, height => $h + $d + 2, stroke => '#0000FF', fill => 'none')
+    x => -1, y => -$h - 1, width => $w + 2, height => $h + $d + 2, stroke => '#0000FF', fill => 'none')
     if $LaTeXML::DEBUG{pgf};
   return $col; }
 

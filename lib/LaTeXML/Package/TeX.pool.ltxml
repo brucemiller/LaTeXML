@@ -2019,6 +2019,11 @@ sub REF {
   my ($thing, $key) = @_;
   return $thing && $$thing{$key}; }
 
+sub inSVG {
+  my $document = $LaTeXML::DOCUMENT;
+  my $context  = $document->getElement;
+  return $context && $document->getNodeQName($context) =~ /^svg:/; }
+
 DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     # "<ltx:text width='#width' _noautoclose='1'>#2</ltx:text>",
     my ($document, $spec, $contents, %props) = @_;
@@ -2057,6 +2062,39 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     elsif (my $s = GetKeyVal($spec, 'spread')) {
       $whatsit->setWidth($box->getWidth->add($s)); }
     return; });
+
+# Cleanup foreignObjects: remove empty (or only <p/>); and determine size
+Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
+  afterClose => sub {
+    my ($document, $node, $whatsit) = @_;
+    my @fo = element_nodes($node);    # What's in the foreignObject?
+    if (scalar(@fo) == 0) {           # Empty?
+      $document->removeNode($node);    #  just remove whole thing
+      return; }
+    elsif ((scalar(@fo) == 1) && ($document->getNodeQName($fo[0]) eq 'ltx:p')) {    # Single <p/>?
+      my @p_c = element_nodes($fo[0]);
+      if (scalar(@p_c) == 0) {                                                      # or Empty <p/>?
+        $document->removeNode($node);
+        return; }
+      # Else, single ltx:picture or ltx:text ?
+      elsif (scalar(@p_c) == 1) {
+        my $tag = $document->getNodeQName($p_c[0]);
+        if (($tag eq 'ltx:picture') || ($tag eq 'ltx:text')) {
+          my @pic_c = element_nodes($p_c[0]);
+          # With single svg:svg ?
+          if ((scalar(@pic_c) == 1) && ($document->getNodeQName($pic_c[0]) eq 'svg:svg')) {
+            $document->replaceNode($node, element_nodes($pic_c[0]));
+            return; } } } }
+    # Otherwise, we've still got an svg:foreignObject;
+    # Make sure we get a size, in case autoOpen'd
+    if ($whatsit) {
+      my ($w, $h, $d) = $whatsit->getSize;
+      my $y  = $STATE->lookupDefinition(T_CS('\baselineskip'))->valueOf->pxValue;
+      my $ht = $h->add($d);
+      $node->setAttribute(width     => $w->pxValue)  unless $node->hasAttribute('width');
+      $node->setAttribute(height    => $ht->pxValue) unless $node->hasAttribute('height');
+      $node->setAttribute(transform => "matrix(1 0 0 -1 0 $y)");
+      $node->setAttribute(overflow  => 'visible'); } });
 
 # This attempts to be a generalize vbox construction;
 # It tries to figure out whether an ltx:inline-block or ltx:para is needed,
@@ -2186,32 +2224,36 @@ DefParameterType('RuleSpecification', sub {
     $keyvals; },
   optional => 1, undigested => 1);
 
+# \hrule, \vrule are awkward in trying to deal with 3 cases
+#  * as rules within an alignment/table
+#  * as separating lines within text
+#  * as graphical lines within svg
+# and each has different requirements for size
 DefConstructor('\vrule RuleSpecification',
   "?#invisible()(?#isVerticalRule()"
-    . "(<ltx:rule height='&GetKeyVal(#1,height)' depth='&GetKeyVal(#1,depth)'"
-    . " width='&GetKeyVal(#1,width)' color='#color'/>))",
+    . "(?&inSVG()(<svg:path d='M 0 0 L 0 #sheight'/>)"
+    . "(<ltx:rule height='#rheight' depth='#rdepth' width='#rwidth' color='#color'/>)))",
+  afterConstruct => sub {    # NOTE: Only For xy development!
+    Warn('unexpected', 'vrule', $_[0], "Encountered \\vrule in SVG") if inSVG(); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $dims   = $whatsit->getArg(1);
-    my $width  = GetKeyVal($dims, 'width');
+    my $width  = GetKeyVal($dims, 'width');    # || Dimension('0.4pt');
     my $height = GetKeyVal($dims, 'height');
     my $depth  = GetKeyVal($dims, 'depth');
-    $whatsit->setProperties(width  => $width,  cwidth  => $width)  if $width;
-    $whatsit->setProperties(height => $height, cheight => $height) if $height;
-    $whatsit->setProperties(depth  => $depth,  cdepth  => $depth)  if $depth;
+    $whatsit->setProperties(
+      rwidth  => $width,  cwidth  => $width || Dimension('0.4pt'),
+      rheight => $height, cheight => ($height), sheight => ($height ? $height->pxValue : 0),
+      rdepth  => $depth,  cdepth  => ($depth || Dimension(0)));
     my $w = ($width  ? $width->ptValue  : undef);
     my $h = ($height ? $height->ptValue : undef);
     my $d = ($depth  ? $depth->ptValue  : undef);
-    $h -= $d if $h && $d;    # - ??
-
     if (my $alignment = LookupValue('Alignment')) {
       if (((!defined $h) && (!defined $w)) || ((defined $h) && ($h > 20))
         || ((defined $h) && (defined $w) && ($h > 3 * $w))) {
-        # This isXxxxRule property is to determine if it is used for separating rules within alignments
-        $whatsit->setProperty(isVerticalRule => 1) } }
+        $whatsit->setProperty(isVerticalRule => 1) } }    # Marked as rule within alignment
     elsif ((defined $w) && ($w == 0)) {
-      $whatsit->setProperty(invisible => 1); }
-#####    $dims->setValue(width => '1px') unless defined $w;
+      $whatsit->setProperty(invishible => 1); }
     if (my $color = LookupValue('font')->getColor) {
       if ($color ne 'black') {
         $whatsit->setProperty(color => $color); } }
@@ -2219,32 +2261,29 @@ DefConstructor('\vrule RuleSpecification',
 
 DefConstructor('\hrule RuleSpecification',
   "?#isHorizontalRule()"
-    . "(<ltx:rule height='&GetKeyVal(#1,height)' depth='&GetKeyVal(#1,depth)'"
-    . " width='&GetKeyVal(#1,width)' color='#color'/>)",
-  #     properties=>{isHorizontalRule=>1});
+    . "(?&inSVG()(<svg:path d='M 0 0 L #swidth 0'/>)"
+    . "(<ltx:rule height='#rheight' depth='#rdepth' width='#rwidth' color='#color'/>))",
+  afterConstruct => sub {    # NOTE: Only For xy development!
+    Warn('unexpected', 'hrule', $_[0], "Encountered \\hrule in SVG") if inSVG(); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $dims   = $whatsit->getArg(1);
     my $width  = GetKeyVal($dims, 'width');
     my $height = GetKeyVal($dims, 'height');
     my $depth  = GetKeyVal($dims, 'depth');
-    $whatsit->setProperties(width  => $width,  cwidth  => $width)  if $width;
-    $whatsit->setProperties(height => $height, cheight => $height) if $height;
-    $whatsit->setProperties(depth  => $depth,  cdepth  => $depth)  if $depth;
+    $whatsit->setProperties(
+      rwidth  => $width  || '100%', cwidth  => $width, swidth => ($width ? $width->pxValue : 0),
+      rheight => $height || '1px',  cheight => ($height || Dimension('0.4pt')),
+      rdepth  => $depth, cdepth => ($depth || Dimension(0)));
     my $w = ($width  ? $width->ptValue  : undef);
     my $h = ($height ? $height->ptValue : undef);
     my $d = ($depth  ? $depth->ptValue  : undef);
-    $h -= $d if $h && $d;    # - ??
-
     if (my $alignment = LookupValue('Alignment')) {
       # What is the intended logic here?
       if (((!defined $h) && (!defined $w)) || ((defined $w) && ($w > 20))
         || ((defined $h) && (defined $w) && ($w > 3 * $h))) {
-        # This isXxxxRule property is to determine if it is used for separating rules within alignments
         $alignment->addLine('t');
-        $whatsit->setProperty(isHorizontalRule => 1) } }
-    $dims->setValue(width  => '100%') unless defined $w;
-    $dims->setValue(height => '1px')  unless defined $h;
+        $whatsit->setProperty(isHorizontalRule => 1) } }    # Marked as rule within alignment
     if (my $color = LookupValue('font')->getColor) {
       if ($color ne 'black') {
         $whatsit->setProperty(color => $color); } }
@@ -2291,9 +2330,13 @@ DefPrimitive('\show Token', sub {
     Note("> " . ($_[1][1] == CC_CS ? ToString($_[1]) . '=' : '') . writableTokens(Expand($stuff)));
     Note($_[0]->getLocator->toString());
     return; });
-DefPrimitive('\showbox Number', undef);
-DefPrimitive('\showlists',      undef);
-DefPrimitive('\showthe Token',  undef);
+DefPrimitive('\showbox Number', sub {
+    my $n     = $_[1]->valueOf;
+    my $stuff = LookupValue('box' . $n);
+    Debug("Box $n = " . ToString($stuff));
+    undef; });
+DefPrimitive('\showlists',     undef);
+DefPrimitive('\showthe Token', undef);
 
 # DefPrimitive('\shipout ??
 DefPrimitive('\ignorespaces SkipSpaces', undef);
@@ -2358,7 +2401,7 @@ sub writableTokens {
 
 DefPrimitive('\message{}', sub {
     my ($stomach, $stuff) = @_;
-    Note(writableTokens(Expand($stuff)));
+    NoteLog(writableTokens(Expand($stuff)));
     return; });
 
 DefRegister('\errhelp' => Tokens());
@@ -2522,7 +2565,23 @@ DefConstructor('\ltx@special@graphics OptionalKeyVals:SpecialPS Semiverbatim',
 Tag('ltx:graphics', afterOpen => sub { GenerateID(@_, 'g'); });
 
 DefPrimitive('\penalty Number', undef);
-DefPrimitive('\kern Dimension', undef);
+
+# \kern is heavily used by xy.
+# Completely HACK version for the moment
+# Note that \kern should add vertical spacing in vertical modes!
+DefConstructor('\kern Dimension', sub {
+    my ($document, $length) = @_;
+    my $parent = $document->getNode;
+    if ($document->getNodeQName($parent) eq 'svg:g') {
+      my $x = $length->pxValue;
+      # HACK HACK HACK
+      my $transform = $parent->getAttribute('transform');
+      $parent->setAttribute(transform => ($transform ? $transform . ' ' : '') . "translate($x,0)");
+    }
+    elsif (inSVG()) {
+      Warn('unexpected', 'kern', $_[0], "Lost kern in SVG " . ToString($length)); }
+});
+
 DefPrimitiveI('\unpenalty', undef, undef);
 DefPrimitiveI('\unkern',    undef, undef);
 ## Worrisome, but...
@@ -3484,11 +3543,27 @@ sub DimensionToSpaces {
 
 DefPrimitiveI('\noboundary', undef, undef);
 
-DefPrimitive('\hskip Glue', sub {
+# \hskip handled similarly to \kern
+# \hskip can be ignored in certain situations...
+DefConstructor('\hskip Glue', sub {
+    my ($document, $length, %props) = @_;
+    my $parent = $document->getNode;
+    #    Debug("HSKIP ".ToString($length)." at ".$document->getNodeQName($parent));
+    if ($document->getNodeQName($parent) eq 'svg:g') {
+      my $x = $length->pxValue;
+      # HACK HACK HACK
+      my $transform = $parent->getAttribute('transform');
+      $parent->setAttribute(transform => ($transform ? $transform . ' ' : '') . "translate($x,0)");
+    }
+    elsif (inSVG()) {
+      Warn('unexpected', 'kern', $_[0], "Lost hskip in SVG " . ToString($length)); }
+
+    else {
+      #      $document->openText(DimensionToSpaces($length), $props{font}); } },
+      $document->absorb(DimensionToSpaces($length)); } },
+  properties => sub {
     my ($stomach, $length) = @_;
-    my $s = DimensionToSpaces($length);
-    Box($s, undef, undef, Invocation(T_CS('\hskip'), $length),
-      width => $length, isSpace => 1); });
+    (width => $length, isSpace => 1); });
 
 DefPrimitive('\mskip MuGlue', sub {
     my ($stomach, $length) = @_;
@@ -3513,15 +3588,28 @@ DefPrimitiveI('\hfill', undef, sub {
 # \raise <dimen> <box>
 # But <box> apparently must really explicitly be an \hbox, \vbox or \vtop (?)
 # OR something that expands into one!!
+sub raisedSizer {
+  my ($box, $y) = @_;
+  my ($w, $h, $d) = $box->getSize;
+  my $z = Dimension(0);
+  $h = $h->add($y)->larger($z);
+  $d = $d->subtract($y)->larger($z);
+  return ($w, $h, $d); }
 
 DefConstructor('\lower Dimension MoveableBox',
-  "<ltx:text yoffset='#y'  _noautoclose='1'>#2</ltx:text>",
+  "?&inSVG()(<svg:g transform='translate(0,#ypx)' _noautoclose='1'>#2</svg:g>)"
+    . "(<ltx:text yoffset='#y'  _noautoclose='1'>#2</ltx:text>)",
+  sizer       => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)->negate); },
   afterDigest => sub {
-    $_[1]->setProperty(y => $_[1]->getArg(1)->multiply(-1)); });
+    my $y = $_[1]->getArg(1)->multiply(-1);
+    $_[1]->setProperties(y => $y, ypx => $y->pxValue); });
 DefConstructor('\raise Dimension MoveableBox',
-  "<ltx:text yoffset='#y' _noautoclose='1'>#2</ltx:text>",
+  "?&inSVG()(<svg:g transform='translate(0,#ypx)' _noautoclose='1'>#2</svg:g>)"
+    . "(<ltx:text yoffset='#y'  _noautoclose='1'>#2</ltx:text>)",
+  sizer       => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)); },
   afterDigest => sub {
-    $_[1]->setProperty(y => $_[1]->getArg(1)); });
+    my $y = $_[1]->getArg(1);
+    $_[1]->setProperties(y => $y, ypx => $y->pxValue); });
 
 # \unhbox<8bit>, \unhcopy<8bit>
 DefPrimitive('\unhbox Number', sub {
