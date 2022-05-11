@@ -413,7 +413,8 @@ sub normalize_cell_sizes {
           = $boxes->getSize(align => $$cell{align}, width => $$cell{width},
           vattach => $$cell{vattach});
         Debug("CELL (" . join(',', map { $_ . "=" . ToString($$cell{$_}); } qw(align width vattach))
-            . ") size " . showSize($cw, $ch, $cd)
+            . ") size " . showSize($w,  $h,  $d)
+            . " csize " . showSize($cw, $ch, $cd)
             . " Boxes=" . ToString($boxes)) if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
         my $empty =
           (((!$cw) || $cw->valueOf < 1)
@@ -508,9 +509,14 @@ sub normalize_sum_sizes {
     $colpos[$j] = Dimension($x);
     $x += $colwidths[$j];
     $x += $colrights[$j]; }
-  $$self{cwidth}  = Dimension($x);
-  $$self{cheight} = Dimension($y);    # or account for vertical position of array as a whole?
-  $$self{cdepth}  = Dimension(0);
+  $$self{cwidth}       = Dimension($x);
+  $$self{cheight}      = Dimension($y);    # or account for vertical position of array as a whole?
+  $$self{cdepth}       = Dimension(0);
+  @colwidths           = map { Dimension($_); } @colwidths;
+  @rowheights          = map { Dimension($_); } @rowheights;
+  $$self{columnwidths} = [@colwidths];
+  $$self{rowheights}   = [@rowheights];
+
   for (my $i = 0 ; $i < scalar(@rowheights) ; $i++) {
     my $row   = $rows[$i];
     my @cols  = @{ $$row{columns} };
@@ -519,17 +525,21 @@ sub normalize_sum_sizes {
     $$row{cwidth} = Dimension($x);
     for (my $j = 0 ; $j < $ncols ; $j++) {
       my $cell = $cols[$j];
-      ## NOTE Should do some further positioning (depending on align!!)
-      ## my $dx = Dimension($colwidths[$j])->subtract($$cell{cwidth})->divide(2);
-      $$cell{x} = $colpos[$j]; $$cell{y} = $rowpos[$i];
+      my $colx = $colpos[$j];
+      my $a    = $$cell{align} || 'left';
+      # Adjust position according to alignment
+      if ($colwidths[$j] && $$cell{cwidth} && ($a ne 'left')) {    # If these are defined
+        my $dx = $colwidths[$j]->subtract($$cell{cwidth});
+        if    ($a eq 'center') { $colx = $colx->add($dx->multiply(0.5)); }
+        elsif ($a eq 'right')  { $colx = $colx->add($dx); } }
+      $$cell{x} = $colx;
+      $$cell{y} = $rowpos[$i];
       Debug("CELL[$j,$i] " . showSize($$cell{cwidth}, $$cell{cheight}, $$cell{cdepth})
           . " @ " . ToString($$cell{x}) . "," . ToString($$cell{y})
           . " w/ " . join(',', map { $_ . '=' . ToString($$cell{$_}); }
             (qw(align vattach skipped colspan rowspan))))
         if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
   } }
-  $$self{columnwidths} = [map { Dimension($_); } @colwidths];
-  $$self{rowheights}   = [map { Dimension($_); } @rowheights];
   Debug("ALIGNMENT " . showSize($$self{cwidth}, $$self{cheight}, $$self{cdepth}))
     if $LaTeXML::DEBUG{halign} && $LaTeXML::DEBUG{size};
   return; }
