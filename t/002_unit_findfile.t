@@ -44,6 +44,6 @@ for my $name (@supported_filename_patterns) {
 }
 for my $name (@unsupported_filename_patterns) {
   my $path = LaTeXML::Package::FindFile_fallback($name,[]);
-  is(!$path, 1, "$name should not have resolved as amsmath.sty.ltxml, got $path");
+  is(!$path, 1, "$name should not have resolved as amsmath.sty.ltxml, got ".($path || 'undef'));
 }
 done_testing();
