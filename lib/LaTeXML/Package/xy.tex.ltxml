@@ -1,0 +1,114 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  xy                                                                 | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Load the raw TeX implementation
+# But IMPORTANTLY: do NOT reassign the catcode of @,
+# as it fouls up all xy's catcode management!
+InputDefinitions('xy', type => 'tex', noltxml => 1, at_letter => 0);
+
+# Redefine \xyoption to avoid other drivers
+Let('\lx@xy@xyoption@orig', '\xyoption');
+# Prevent loading of incompatible drivers
+our %xy_other_drivers = map { ($_ => 1); }
+  qw(16textures 17oztex dvidrv dvips dvitops oztex pdf textures dvi);
+our %xy_unsupported = map { ($_ => 1); } qw(barr movie necula smart);
+DefMacro('\xyoption{}', sub {
+    my ($gullet, $option) = @_;
+    $option = Tokens(Expand($option));
+    my $option_s = ToString($option);
+    if ($xy_other_drivers{$option_s}) {
+      Info('ignored', $option_s, $gullet, "Ignoring xy driver $option_s (using latexml)");
+      return; }
+    elsif ($xy_unsupported{$option}) {
+      Warn('unsupported', $option_s, $gullet,
+        "The xy extension/feature $option_s may not be supported"); }
+    return Tokens(T_CS('\lx@xy@xyoption@orig'), T_BEGIN, $option, T_END); });
+
+# Is this safe for non-LaTeX ??
+# We need to defer till AFTER extensions/features are loaded!
+# ORR we need to implement the activate machinery!
+RawTeX('\AtBeginDocument{\xyoption{latexml}}');
+
+# ORRRRR is \activatedriver (or related) the right place to load/turn on????
+######################################################################
+# Cribbed from Deyan's version
+# TODO: Reconsider if this is the best we can do about the XY fonts?
+# At least, avoid the warning...
+foreach ('dash', 'atip', 'btip', 'bsql', 'circ') {
+  DefPrimitiveI(
+    "\\xy$_" . "font", undef, undef,
+    font   => { family => 'nullfont' },
+    locked => 1
+  );
+}
+
+# Copy out the XY's size before \endxy consumes it.
+DefPrimitive('\lx@xy@before@end', sub {
+    my ($L, $D, $R, $U) = map { LookupRegister($_); } '\X@min', '\Y@min', '\X@max', '\Y@max';
+    AssignValue('\X@@min' => $L, 'global');
+    AssignValue('\Y@@min' => $D, 'global');
+    AssignValue('\X@@max' => $R, 'global');
+    AssignValue('\Y@@max' => $U, 'global');
+    return; });
+
+DefConstructor('\lx@xy@svg {} DigestedBody', sub {
+    my ($document, $inxy, $body, %props) = @_;
+    if (inSVG()) {
+      $document->absorb($body); }
+    else {
+      $document->openElement('svg:svg',
+        overflow => 'visible',       version => '1.1',
+        width    => $props{pxwidth}, height  => $props{pxheight});
+      $document->openElement('svg:g', transform => "matrix($props{origin})");
+      $document->absorb($body);
+      $document->closeElement('svg:g');
+      $document->closeElement('svg:svg'); } },
+  beforeDigest => sub {
+    AssignValue('\X@@min' => 9999,  'global');
+    AssignValue('\Y@@min' => 9999,  'global');
+    AssignValue('\X@@max' => -9999, 'global');
+    AssignValue('\Y@@max' => -9999, 'global');
+    $_[0]->bgroup;
+    return; },
+  properties => sub {
+    my ($whatsit, $inxy, $body) = @_;
+    my $am_in_xy = ToString($inxy) eq 'TT';
+    my ($xmin, $ymin, $xmax, $ymax) = map { LookupValue($_); } '\X@@min', '\Y@@min', '\X@@max', '\Y@@max';
+    Debug("XY(c): " . ToString($xmin) . ' ' . ToString($ymin) . ' ' . ToString($xmax) . ' ' . ToString($ymax))
+      if $LaTeXML::DEBUG{xy};
+    my $w      = $xmax->subtract($xmin);
+    my $h      = $ymax->subtract($ymin);
+    my $d      = Dimension(0);
+    my $th     = $h->add($d);
+    my $x      = $xmin->negate;                                   # ???
+    my $y      = $ymax;
+    my $origin = "1 0 0 -1 " . $x->pxValue . ' ' . $y->pxValue;
+    Debug("XY size: " . ToString($w) . ' x ' . ToString($h) . ' + ' . ToString($d) . ' @ ' . ToString($x) . ' x ' . ToString($y))
+
+      if $LaTeXML::DEBUG{xy};
+    return (width => $w, height => $th, pxwidth => $w->pxValue, pxheight => $th->pxValue,
+      origin => $origin, x => $x->pxValue, h => $y->pxValue,
+    ); });
+DefPrimitiveI('\end@lx@xy@svg', undef, sub { $_[0]->egroup; });
+
+Let(T_CS('\lx@xy@original'),     T_CS('\xy'));
+Let(T_CS('\end@lx@xy@original'), T_CS('\endxy'));
+DefMacro('\xy',    '\lx@xy@svg{\inxy@}\lx@xy@original');
+DefMacro('\endxy', '\lx@xy@before@end\end@lx@xy@original\end@lx@xy@svg');
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

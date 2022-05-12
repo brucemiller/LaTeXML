@@ -1,0 +1,994 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  xylatexml.tex LaTeXML driver for xy                                | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use POSIX;
+use Math::Trig;
+
+DebuggableFeature('xy', 'xy processing');
+RequirePackage('color');
+# Short of setting up font metrics for the special xy fonts
+RawTeX(<<'EoTeX');
+\xyprovide{latexml}{LaTeXML Driver}{0.8.6}{Bruce Miller}{\url{https://dlmf.nist.gov/LaTeXML/}}{}%
+\newdriver{%
+\xyaddsupport{latexml}\lx@xy@latexmlon
+\xyaddsupport{curve}\lx@xy@curveon
+\xyaddsupport{frame}\lx@xy@frameon
+\xyaddsupport{tips}\lx@xy@tipson
+\xyaddsupport{line}\lx@xy@lineon
+\xyaddsupport{rotate}\lx@xy@rotateon
+\xyaddsupport{color}\lx@xy@coloron
+\xyaddsupport{crayon}\lx@xy@crayonon
+\xyaddsupport{matrix}\lx@xy@matrixon
+\xyaddsupport{arrow}\lx@xy@arrowon
+\xyaddsupport{graph}\lx@xy@graphon
+\xyaddsupport{arc}\lx@xy@arcon
+\xyaddsupport{knot}\lx@xy@polyon
+\xyaddsupport{poly}\lx@xy@knoton
+\xyaddsupport{tile}\lx@xy@tileon
+\xyaddsupport{web}\lx@xy@webon
+}%
+\newdimen\xydashl@\xydashl@=5pt\relax%
+\newdimen\xydashh@\xydashh@=2.0pt\relax%
+\newdimen\xydashw@\xydashw@=0.4pt\relax%
+\newdimen\xybsqll@\xybsqll@=3.53554pt\relax%
+\newdimen\xybsqlh@\xybsqlh@=1.46448pt\relax%
+\newdimen\xybsqlw@\xybsqlw@=0.4pt\relax%
+EoTeX
+
+# No need for most of these (Remove them!)
+# Hopefully I don't need to do all the enable/disabling our \lx@xy@... macros!
+DefMacro('\lx@xy@latexmlon', '\message{LaTeXML enabling LaTeXML xy driver}');
+DefMacro('\lx@xy@curveon',   '\message{LaTeXML enabling curve}');
+DefMacro('\lx@xy@frameon',   '\message{LaTeXML enabling frame}');
+DefMacro('\lx@xy@tipson',    '\message{LaTeXML enabling tips}');
+DefMacro('\lx@xy@lineon',    '\message{LaTeXML enabling line}');
+DefMacro('\lx@xy@rotateon',  '\message{LaTeXML enabling rotate}');
+DefMacro('\lx@xy@coloron',   '\xystandardcolors@\message{LaTeXML enabling color}');
+DefMacro('\lx@xy@crayonon',  '\installCrayolaColors@\message{LaTeXML enabling crayon}');
+DefMacro('\lx@xy@matrixon',  '\message{LaTeXML enabling matrix}');
+DefMacro('\lx@xy@arrowon',   '\message{LaTeXML enabling arrow}');
+DefMacro('\lx@xy@graphon',   '\message{LaTeXML enabling graph}');
+DefMacro('\lx@xy@arcon',     '\message{LaTeXML enabling arc}');
+DefMacro('\lx@xy@polyon',    '\message{LaTeXML enabling knot}');
+DefMacro('\lx@xy@knoton',    '\message{LaTeXML enabling poly}');
+DefMacro('\lx@xy@tileon',    '\message{LaTeXML enabling tile}');
+DefMacro('\lx@xy@webon',     '\message{LaTeXML enabling web}');
+
+sub xy_pt2px {
+  return Dimension($_[0] . 'pt')->pxValue; }
+
+# Helper for building SVG paths
+sub xy_packpath {
+  return join(' ', map { (ref $_ ? $_->pxValue : $_); } @_); }
+
+#======================================================================
+# Low-level patches
+
+# This intercepts & reports calls to \special used by various drivers
+DefPrimitive('\special{}', sub {
+    Warn('unexpected', 'SPECIAL', $_[0], "SPECIAL: " . ToString($_[1]));
+    return; },
+  locked => 1);
+
+#======================================================================
+# line patterns for dashes
+# These *should* be adjusting the pattern according to the length of the line
+# and whether the line continues a previous line. See xypdf.pdf
+# Q: Will we ever need more complex patterns, like dot-dash, etc?
+DefMacro('\lx@xy@pattern',  '');
+DefMacro('\lx@xy@solidpat', '\def\lx@xy@pattern{}');
+DefMacro('\lx@xy@dashpat',  '\def\lx@xy@pattern{5}');
+DefMacro('\lx@xy@dotpat',   '\def\lx@xy@pattern{1}');
+# These versions should make an adjustmeht for CLOSED lines (but don't yet)
+DefMacro('\lx@xy@cldashpat', '\def\lx@xy@pattern{5}');
+DefMacro('\lx@xy@cldotpat',  '\def\lx@xy@pattern{1}');
+
+AssignValue(xy_fill   => 0);
+AssignValue(xy_stroke => 1);
+DefPrimitive('\lx@xy@stroke@on',  sub { AssignValue(xy_stroke => 1); });
+DefPrimitive('\lx@xy@stroke@off', sub { AssignValue(xy_stroke => 0); });
+DefPrimitive('\lx@xy@fill@on',    sub { AssignValue(xy_fill   => 1); });
+DefPrimitive('\lx@xy@fill@off',   sub { AssignValue(xy_fill   => 0); });
+
+# \xylocalColor@{#2}{#3}
+# \xycolor@{#2 #3}
+DefMacro('\xycolor@{}', undef);    # Which of these is for what?
+
+DefMacro('\xylocalColor@{}{}',
+  '\def\preStyle@@{\addtostyletoks@{\bgroup\lx@xy@usecolor{#1}{#2}}}'
+    . '\def\postStyle@@{\addtostyletoks@{\egroup}}'
+    . '\modXYstyle@');
+DefPrimitive('\lx@xy@usecolor{}{}', sub {
+    my ($stomach, $spec, $model) = @_;
+    MergeFont(color => ParseColor($model, $spec)); });
+
+# Use for beforeConstruct
+sub xy_FillStroke {
+  my ($document, $whatsit) = @_;
+  my $font  = $whatsit->getProperty('font');
+  my $color = $font && $font->getColor || Black;
+  $whatsit->setProperty(stroke => ($whatsit->getProperty('do_stroke') ? $color : 'none'));
+  $whatsit->setProperty(fill   => ($whatsit->getProperty('do_fill')   ? $color : 'none'));
+  # for line extension Read \xylinethick@ ? => stroke-width ???
+  return; }
+
+sub xy_getOrientation {
+  my $c = ToString(Expand(T_CS('\cosDirection')));
+  my $s = ToString(Expand(T_CS('\sinDirection')));
+  $c =~ s/^\-\+/-/; $c =~ s/^\-\-/+/;
+  $s =~ s/^\-\+/-/; $s =~ s/^\-\-/+/;
+  return ($c + 0.0, $s + 0.0); }
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# XY Kernel
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Directionals
+
+# Redefinitions:
+
+# Can't compute proper direction w/o font metrics of the goofy fonts.
+# But why not fake it, since we're NEVER (!?!?!) going to use those glyphs
+# Redefine \imposeDirection@i, the lowest layer
+# where sin, cos are calculated from the dimensions of chars in the dashfont.
+RawTeX(<<'EoTeX');
+\def\imposeDirection@i{%
+ \count@@=\K@ \multiply\count@@ by8 \advance\count@@\Direction
+ \count@=\count@@ \advance\count@\KK@ \divide\count@64 \advance\count@\m@ne
+ \loop@\ifnum127<\count@ \advance\count@-128 \repeat@
+ \chardef\DirectionChar\count@
+ \advance\count@@16 \divide\count@@\KK@ \advance\count@@\m@ne
+ \loop@\ifnum127<\count@@ \advance\count@@-128 \repeat@
+ \chardef\SemiDirectionChar\count@@
+% \setbox8=\hbox{\xydashfont\SemiDirectionChar\/}%
+% \quotient@@\cosDirection{\sd@X\wd8}\xydashl@
+% \setbox8=\hbox{\xydashfont\count@=\SemiDirectionChar\advance\count@-64
+% \ifnum\count@<\z@ \advance\count@128 \fi \char\count@\/}%
+% \quotient@@\sinDirection{\sd@Y\wd8}\xydashl@
+ \lx@xy@calculate@direction
+}
+
+EoTeX
+DefPrimitive('\lx@xy@calculate@direction', sub {
+    my ($dx, $dy) = map { LookupRegister($_)->valueOf; } '\d@X', '\d@Y';
+    my $angle = atan2($dy, $dx);
+    DefMacroI('\cosDirection', undef, Tokens(Explode(sprintf('%.6f', cos($angle)))));
+    DefMacroI('\sinDirection', undef, Tokens(Explode(sprintf('%.6f', sin($angle)))));
+    return; });
+
+# Since SO much xy code works through \straight@,
+# it may make the best sense to work from there,
+# rather than redefining so many callers.
+# However, \straight@ works primarily by taking an object (eg "line segment")
+# ALREADY digested in a box, which it then copies (\copy) it, repeatedly/strategically,
+# accumuilating into an \hbox or \vbox.
+RawTeX(<<'EoTeX');
+\def\straight@typeset{%
+%\message{START STRAIGHT}%
+ \ifInvisible@ \let\next@=\relax
+%\message{Invisible}%
+% \else \ifdim 1\Direction<-2\K@ \DN@{\straightv@}%
+% \else\ifdim 1\Direction<\z@ \DN@{\straighth@}%
+% \else\ifdim 1\Direction<2\K@ \DN@{\straightv@}%
+% \else \DN@{\straighth@}%
+% \fi\fi\fi\fi \checkoverlap@@ \next@}
+ \else \DN@{\lx@xy@straight@typeset}%
+ \fi \checkoverlap@@ \next@}
+% NOTE: Adapt this from \straighth@, \straightv@ to do both directions!!!
+\def\lx@xy@straight@typeset{\setbox\z@=\hbox{%
+ \setbox8=\copy\lastobjectbox@
+ \A@=\wd8\relax \B@=\dp8\relax \advance\B@\ht8\relax
+ \ifdim \A@=\z@ \count@@=\m@ne
+ \else \dimen@=\sd@X\d@X \divide\dimen@\A@ \count@@=\dimen@ \fi
+ \Spread@@
+ \ifdim\d@X>\z@ \advance\X@c-\wd8\relax\fi
+ \dimen@=-\sd@X\wd8\relax
+ \multiply\dimen@\K@dYdX \divide\dimen@\K@
+ \ifdim\d@X>\z@ \advance\Y@c\dimen@ \advance\Y@c-\Leftness@\dimen@
+ \else \advance\Y@c\Leftness@\dimen@ \fi
+ \dimen@=\wd8\relax \A@=\sd@X\d@X \advance\A@-\dimen@
+ \B@=\sd@X\dimen@ \multiply\B@\K@dYdX \divide\B@\K@
+ \advance\B@-\d@Y \B@=\sd@Y\B@
+ \count@=\count@@ \advance\count@\m@ne
+ \ifnum\z@<\count@ \divide\A@\count@ \divide\B@\count@ \fi
+ \A@=-\sd@X\A@ \B@=\sd@Y\B@ \wd8=\A@
+% \message{Box 8 (\the\wd8 x \the\ht8 + \the\dp8)}%
+% \showbox8\relax
+% \message{PRESUMED stepping \the\A@,\the\B@: \the\count@@ steps}%
+% \kern\X@c \count@=\z@
+  \count@=\z@
+ \loop@\ifnum\count@<\count@@ \advance\count@\@ne
+%   \message{SEGMENT}%
+%   \raise\Y@c\copy8\relax
+% Clobbering \X@c !!?!
+   \lx@xy@move@to{\X@c}{\Y@c}{\copy8}\advance\X@c\A@\relax
+   \advance\Y@c\B@ \repeat@}%
+% \message{END STRAIGHT}%
+ \ht\z@=\z@ \wd\z@=\z@ \dp\z@=\z@ {\Drop@@}}
+EoTeX
+
+# SVG Constructors:
+
+# This postions #3 at #1,#2 in svg;
+# it is useful when we can't rely ohn \kern,\hskip,\raise,\lower to position correctly
+DefConstructor('\lx@xy@move@to{Dimension}{Dimension}{}',
+  "^<svg:g transform='translate(#x,#y)'>#3</svg:g>",
+  properties => sub {
+    my ($stomach, $x, $y) = @_;
+    Debug("MOVE " . ToString($x) . ',' . ToString($y)) if $LaTeXML::DEBUG{xy};
+    (x => $x->pxValue, y => $y->pxValue);
+  });
+
+#======================================================================
+# lines
+
+# Reminder: SVG path lower-case commands are relative to previous position;
+# upper-case are absolute (but in user coordinates, of course)
+
+# SVG Constructors:
+# Note that (most of) these constructors are equivalents
+# to glyphs in the special XY fonts, and thus have
+# peculiar sizes & positioning.
+# They are often preceded by \kern,\raise,\lower within the xy code.
+
+# Using these results in slower execution and MANY small svg:path elements,
+# usually wrapped in a few svg:g's for positioning.
+# We need to find a way to either combing these during digestion,
+# or after construction.
+
+# Draw a dot for a dotted line.
+DefConstructor('\zerodot',
+  "^<svg:path d='M -2 -1 l 1 1' stroke='#stroke' fill='#fill'/>",    # left half a \jot (??)
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    Debug("DOT") if $LaTeXML::DEBUG{xy};
+    (do_stroke => LookupValue('xy_stroke'), do_fill => 0,
+      width => Dimension(0), height => Dimension(0), depth => Dimension(0),
+    ); });
+
+# RawTeX(<<'EoTeX');
+# \def\Droprule@{\advance\X@p-\X@c
+# \message{DROPRULE!!!!}%
+#  \setboxz@h{\kern\X@c \vrule width\X@p depth-\Y@c height\Y@p}%
+#  \ht\z@=\z@ \wd\z@=\z@ \dp\z@=\z@ \Drop@@}
+# EoTeX
+DefMacro('\Droprule@',
+  '\setboxz@h{\lx@xy@droprule}\advance\X@p-\X@c\Drop@@');
+
+DefConstructor('\lx@xy@droprule',
+  "^<svg:path d='#path' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes' class='droprule'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($Xp, $Yp, $Xc, $Yc) = map { LookupRegister($_); } '\X@p', '\Y@p', '\X@c', '\Y@c';
+    #    my $y = $Yp->subtract($Yc);
+    my $y = $Yp;
+    #    $Yp = $Yc = Dimension(0);
+    # Y position is off here???
+    Debug("DROPRULE FRAGMENT") if $LaTeXML::DEBUG{xy};
+    #    (path => xy_packpath('M', $Xc, $y, 'L', $Xp, $y),
+    (path => xy_packpath('M', $Xc, $Yc, 'L', $Xp, $Yp),
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
+
+# Draw a line segment, \xydashl@ long
+DefConstructor('\line@@',
+  "^<svg:path d='#path' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($c, $s) = xy_getOrientation();
+    my $l = LookupRegister('\xydashl@');
+    my $x = $l->multiply($c);
+    my $y = $l->multiply($s);
+    Debug("LINE FRAGMENT") if $LaTeXML::DEBUG{xy};
+    (path => xy_packpath('M', 0, 0, 'L', $x, $y),
+      width => $x, height => $y, depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
+
+DefConstructor('\squiggle@@',
+  "^<svg:path d='#path' stroke='#stroke' fill='#fill'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($c, $s) = xy_getOrientation();
+    my $l = LookupRegister('\xybsqll@');
+    my $r = $l->multiply(0.66);
+    my $w = $l->multiply($c);
+    my $h = $l->multiply($s);
+    Debug("SQUIGGLE FRAGMENT") if $LaTeXML::DEBUG{xy};
+    (path => xy_packpath('M', $w->negate, $h->negate,    # Yes, cancel the \kern!
+        'a', $r, $r, 60, 0, 0, $w, $h,
+        'a', $r, $r, 60, 0, 1, $w, $h),
+      width     => $w->multiply(2),          height  => $h->multiply(2), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
+
+#======================================================================
+# Combining straignt line fragments into a single svg:path
+
+DefMacro('\solidSpread@',         '\lx@xy@solidpat\lx@xy@drawline');
+DefMacro('\dottedSpread@{}',      '\lx@xy@dotpat\lx@xy@drawline');
+DefMacro('\dashedSpread@',        '\lx@xy@dashpat\lx@xy@drawline');
+DefMacro('\squiggledSpread@',     '\lx@xy@solidpat\lx@xy@drawsquiggles');
+DefMacro('\dashsquiggledSpread@', '\lx@xy@dashpat\lx@xy@drawsquiggles');
+
+# The Until:\repeat@ discards the whole iteration construct within \straight@
+DefMacro('\lx@xy@drawline Until:\repeat@', '\lx@xy@drawline@');
+DefConstructor('\lx@xy@drawline@',
+  "^<svg:path d='#path' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($x0, $y0, $x1, $y1) = map { LookupRegister($_); } '\X@p', '\Y@p', '\X@c', '\Y@c';
+    my $dashes = ToString(Digest(T_CS('\lx@xy@pattern')));
+    Debug("LINE " . ToString($x0) . ',' . ToString($y0) . ' to ' . ToString($x1) . ',' . ToString($y1)) if $LaTeXML::DEBUG{xy};
+    (path => xy_packpath('M', $x0, $y0, 'L', $x1, $y1),
+      width     => $x1->subtract($x0),       height  => $y1->subtract($y0), depth  => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0,                  dashes => $dashes); });
+
+# # Maybe a zigzag is close enough to a smooth squiggle?
+# # At least for development/debugging.
+DefMacro('\lx@xy@drawsquiggles Until:\repeat@', '\lx@xy@drawsquiggles@');
+DefConstructor('\lx@xy@drawsquiggles@',
+  "^?#path(<svg:path d='#path' stroke='#stroke' fill='#fill'/>)()",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($x0, $y0, $x1, $y1) = map { LookupRegister($_); } '\X@p', '\Y@p', '\X@c', '\Y@c';
+    my $l = LookupRegister('\xybsqll@');
+    # Note: We perversely use the pattern to control dashes
+    my $dashed = ToString(Digest(T_CS('\lx@xy@pattern')));
+    my $w      = $x1->subtract($x0);
+    my $h      = $y1->subtract($y0);
+    my $r      = $l->multiply(0.66);
+    my $n      = int((0.5 + sqrt($w->valueOf * $w->valueOf + $h->valueOf * $h->valueOf)) / $l->valueOf);
+    $n++    if ($n % 1);
+    $n += 2 if $dashed && !($n % 4);    # make odd
+    my $dx   = $w->divide($n);
+    my $dy   = $h->divide($n);
+    my @path = ();
+    my ($x, $y) = ($x0, $y0);
+    # NOTE: Work out how to use 'A' path steps to make it smooth
+    my $step  = ($dashed ? 4 : 2);
+    my $xstep = $dx->multiply($step);
+    my $ystep = $dy->multiply($step);
+    for (my $i = 0 ; $i < $n ; $i += $step) {
+      push(@path, 'M', $x, $y) if $dashed || ($i == 0);
+      push(@path, 'a', $r, $r, 60, 0, 0, $dx, $dy);
+      push(@path, 'a', $r, $r, 60, 0, 1, $dx, $dy);
+      $x = $x->add($xstep); $y = $y->add($ystep); }
+    #    Debug("SQUIGGLE $x0, $y0 to $x1, $y1 in $n parts: " . join(' ', @path)) if $LaTeXML::DEBUG{xy};
+    (path => xy_packpath(@path),
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
+
+#======================================================================
+# Tips
+
+# Redefinitions:
+
+# These badsically ammount to replacements for the glyphs in xyatipfont, xybtipfont
+DefMacro('\atip@@',       '\lx@xy@tip{1}');                                # upper part of ">" tip
+DefMacro('\btip@@',       '\lx@xy@tip{-1}');                               # lower part of ">" tip
+DefMacro('\Tip@@',        '\lx@xy@tip{1.5}\lx@xy@tip{-1.5}');              # large tip
+DefMacro('\Ttip@@',       '\lx@xy@tip{2}\lx@xy@tip{-2}');                  # extra large tip
+DefMacro('\stopper@@',    '\lx@xy@stopper');                               # "|" tip
+DefMacro('\hook@@',       '\lx@xy@hook{0}');                               # "(" tip
+DefMacro('\ahook@@',      '\lx@xy@hook{1}');                               # "(" tip shifed up
+DefMacro('\bhook@@',      '\lx@xy@hook{-1}');                              # "(" tip shifted down
+DefMacro('\aturn@@',      '\lx@xy@turn{1}');                               # quarter circle tip  up
+DefMacro('\bturn@@',      '\lx@xy@turn{-1}');                              # quarter circle tip down
+DefMacro('\solidpoint@',  '\pointlike@{\lx@xy@fill@on\lx@xy@point}\jot');  # filled circle
+DefMacro('\hollowpoint@', '\pointlike@{\lx@xy@fill@off\lx@xy@point}\jot'); # empty circle
+
+# Redefined to position w/o kerns.
+RawTeX(<<'EoTeX');
+%\xydef@\Tip@{\kern2.5pt \vrule height2.5pt depth2.5pt width\z@
+% \Tip@@ \kern2.5pt \egroup
+\def\Tip@{%
+ \Tip@@ \egroup
+ \U@c=2.5pt \D@c=2.5pt \L@c=2.5pt \R@c=2.5pt \Edge@c={\circleEdge}%
+ \def\Leftness@{.5}\def\Upness@{.5}%
+ \def\Drop@@{\styledboxz@}\def\Connect@@{\straight@{\dottedSpread@\jot}}}
+%\xydef@\Ttip@{\kern3.2pt \vrule height3.2pt depth3.2pt width\z@
+% \Ttip@@ \kern3.2pt \egroup
+\def\Ttip@{%
+ \Ttip@@ \egroup
+ \U@c=3.2pt \D@c=3.2pt \L@c=3.2pt \R@c=3.2pt \Edge@c={\circleEdge}%
+ \def\Leftness@{.5}\def\Upness@{.5}%
+ \def\Drop@@{\styledboxz@}\def\Connect@@{\straight@{\dottedSpread@\jot}}}
+EoTeX
+
+# SVG Constructors:
+# The styles for the tips extension (from extra sets of tip fonts)
+#  * cm are same? shorter, wider than xy
+#  * eu are same? shorter, wider than xy (maybe thinner?)
+#  * lu are same? shorter, narrower than xy.
+# The styles seem only to affect the basic >,< tips
+our %xy_tips_factors = (
+  xy => [1, 1], cm => [0.5, 1.7], eu => [0.5, 1.5], lu => [0.5, 0.5]);
+AssignValue(xy_tips_style => 'xy');
+# Draw HALF an arrow tip, stretched according to #1; upper/lower depending on sign
+DefConstructor('\lx@xy@tip{}',
+  "^<svg:path d='#path' stroke='#stroke' fill='#fill'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($stomach, $stretch) = @_;
+    $stretch = ToString($stretch);
+    my $style   = LookupValue('xy_tips_style') || 'xy';
+    my $factors = $xy_tips_factors{$style}     || $xy_tips_factors{xy};
+    my ($lf, $wf) = @$factors;
+    my ($c, $s)   = xy_getOrientation();
+    my $l  = LookupRegister('\xydashl@')->multiply($lf);
+    my $w  = LookupRegister('\xydashh@')->multiply($wf * ($stretch || 1));
+    my $r  = $l->multiply(2);
+    my $dx = $l->negate->multiply($c)->subtract($w->multiply($s));
+    my $dy = $l->negate->multiply($s)->add($w->multiply($c));
+    Debug("TIP") if $LaTeXML::DEBUG{xy};
+    (path => xy_packpath('M', 0, 0, 'A', $r, $r, 45, 0, ($stretch < 0 ? 1 : 0), $dx, $dy),
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
+
+DefConstructor('\lx@xy@stopper',
+  "^<svg:path d='#path' stroke='#stroke' fill='#fill'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($stomach, $w) = @_;
+    my ($c, $s)       = xy_getOrientation();
+    my $l  = LookupRegister('\xydashl@');
+    my $dx = $l->multiply($s)->negate;
+    my $dy = $l->multiply($c);
+    Debug("STOPPER") if $LaTeXML::DEBUG{xy};
+    (path => xy_packpath('M', $dx, $dy, 'L', $dx->negate, $dy->negate),
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
+
+DefConstructor('\lx@xy@hook{Number}',
+  "^<svg:path d='#path' stroke='#stroke' fill='#fill'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($stomach, $offset) = @_;
+    my ($c,       $s)      = xy_getOrientation();
+    my $l = LookupRegister('\xybsqll@');
+    $offset = $offset->valueOf;
+    my $x0 = ($offset ? Dimension(0) : $l);
+    my $y0 = $l->multiply($offset + 1);
+    my $y1 = $y0->subtract($l->multiply(2));
+    Debug("HOOK") if $LaTeXML::DEBUG{xy};
+    (path => xy_packpath('M', $x0->multiply($c)->subtract($y0->multiply($s)),
+        $x0->multiply($s)->add($y0->multiply($c)),
+        'A', $l, $l, 180, 0, 1,
+        $x0->multiply($c)->subtract($y1->multiply($s)),
+        $x0->multiply($s)->add($y1->multiply($c))),
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
+DefConstructor('\lx@xy@turn{Number}',
+  "^<svg:path d='#path' stroke='#stroke' fill='#fill'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($stomach, $offset) = @_;
+    my ($c,       $s)      = xy_getOrientation();
+    my $l = LookupRegister('\xybsqll@');
+    $offset = $offset->valueOf;
+    Debug("TURN") if $LaTeXML::DEBUG{xy};
+    (path => xy_packpath('M', 0, 0,
+        'A', $l, $l, 90, 0, ($offset > 0 ? 0 : 1),
+        $l->multiply(-($c + $offset * $s)),
+        $l->multiply($offset * $c - $s)),
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
+
+DefConstructor('\lx@xy@point',
+"^<svg:circle cx='#x' cy='#y' r='#radius' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my $l = LookupRegister('\xybsqll@');
+    Debug("POINT") if $LaTeXML::DEBUG{xy};
+    (radius => $l->pxValue,
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill')); });
+
+#======================================================================
+# circles
+
+# So, what exactly do we need to redefine?
+# the pdf driver does things like:
+#   \line@, \circ@ ???
+
+#DefMacro('\cir@i', '\lx@cir@i\OBJECT@x');
+#DefConstructor('\lx@cir@i',
+# Note the peculiar assumed position of the circle!
+DefConstructor('\cirbuild@',
+  "^<svg:circle cx='#x' cy='#y' r='#r' stroke='#stroke' fill='#fill'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my $r = LookupRegister('\R@');
+    my ($a0, $a1) = map { LookupRegister($_)->valueOf; } '\count@@', '\count@';
+    my $d  = $r->multiply(2);
+    my $x0 = $r;
+    my $y0 = $r->negate;
+    Debug("CIRCLE radius " . ToString($r) . " from $a0 to $a1") if $LaTeXML::DEBUG{xy};
+    # Already positioned ?
+    (    #x => LookupRegister('\X@c')->pxValue,
+         # y     => LookupRegister('\Y@c')->pxValue,
+      x => $x0->pxValue, y => $y0->pxValue,
+      r => $r->pxValue,
+      # There's something very fishy: w.r.t how lines connect to this thing!?!?!
+      # if I set a size
+      # if I set to 0
+      # Both come out wrong, but differently!?!?!?!
+      #      width     => $d, height => $r, depth => $r,
+      #      width     => $d, height => $r->multiply(2), depth => Dimension(0),
+      #      width => $d, depth => $r->multiply(2), height => Dimension(0),
+      width     => Dimension(0),             depth   => Dimension(0), height => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
+
+Let('\lx@xy@CIRfull@orig', '\CIRfull@');
+Let('\lx@xy@CIRcw@orig',   '\CIRcw@');
+Let('\lx@xy@CIRacw@orig',  '\CIRacw@');
+DefMacro('\CIRfull@', '\lx@xy@circdir{}\lx@xy@CIRfull@orig');
+DefMacro('\CIRcw@',   '\lx@xy@circdir{-1}\lx@xy@CIRcw@orig');
+DefMacro('\CIRacw@',  '\lx@xy@circdir{+1}\lx@xy@CIRacw@orig');
+DefPrimitive('\lx@xy@circdir{}', sub { AssignValue(xy_circle_dir => ToString($_[1])); });
+
+# \count@@,\count@
+# \CIRin@@,\CIRout@@
+# \CIRorient@@ one of \CIRfull@, \empty, \CIRacw@, \CIRcw@
+#   (which set \CIRtest@@ to test inclusion of arc fragments)
+DefConstructor('\cirbuild@',
+  "^ ?#full(<svg:circle cx='#x' cy='#y' r='#r' stroke='#stroke' fill='#fill'/>)"
+    . "(<svg:path d='#path' stroke='#stroke' fill='#fill'/>)",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my $r  = LookupRegister('\R@');
+    my $d  = $r->multiply(2);
+    my $xc = $r;
+    #    my $yc = $r->negate;
+    #    my $yc = $d->negate;
+    my $yc = Dimension(0);
+    #    my ($c0,$c1)=map { ToString(Digest($_)); } '\CIRin@@','\CIRout@@','\CIRorient@@';
+    my $cd = LookupValue('xy_circle_dir');    # 0 full; +1 ccw; -1 cw;
+    my $path;
+    if (!$cd) {                               # Full circle
+      Debug("CIRCLE full") if $LaTeXML::DEBUG{xy};
+    }
+    else {
+      my ($d1, $d2) = map { LookupRegister($_)->valueOf; } '\count@@', '\count@';
+      my ($a1, $a2);
+      if ($cd > 0) {                          # ccw, angles go positive
+        if ($d1 < $d2) { $a1 = ($d1 - 4) * 45; $a2 = ($d2 - 4) * 45; }
+        else           { $a1 = ($d1 - 4) * 45; $a2 = ($d2 - 4 + 8) * 45; } }
+      else {                                  # cw, angles go negative
+        if ($d1 < $d2) { $a1 = ($d2 - 4) * 45; $a2 = ($d1 - 4 + 8) * 45 }
+        else           { $a1 = ($d2 - 4) * 45; $a2 = ($d1 - 4) * 45; } }
+      my $theta1 = $a1 * pi / 180;
+      my $theta2 = $a2 * pi / 180;
+      $xc = $yc = Dimension(0);
+      my $x0 = $xc->subtract($r->multiply(cos($theta1)));
+      my $y0 = $yc->subtract($r->multiply(sin($theta1)));
+      my $x1 = $xc->subtract($r->multiply(cos($theta2)));
+      my $y1 = $yc->subtract($r->multiply(sin($theta2)));
+      Debug("CIRCLE " . ($cd > 0 ? 'ccw' : 'cw') . ", d1=$d1,d2=$d2 =>  $a1 to $a2") if $LaTeXML::DEBUG{xy};
+      my $a = $a2 - $a1;
+      $path = xy_packpath('M', $x0, $y0, 'A', $r, $r, $a, ($a > 180 ? 1 : 0), 0, $x1, $y1); }
+    (full => !$cd, path => $path,
+      x         => $xc->pxValue,             y       => $yc->pxValue, r      => $r->pxValue,
+      width     => $d,                       depth   => $r,           height => $r,
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Extensions
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+#======================================================================
+# curve: Curve and Spline extension
+# pdf driver redefines
+#  \splinesolid@, \splinedashed@, \splinedotted@
+#     in terms of \xP@spline (followed by line pattern cmd)
+#  \@crv@, \xysplinespecialcases@
+#  \splinedoubled@, \splinetrebled@, \splinedbldotted@
+
+# See \crvconnect@ ????
+
+DefMacro('\splinesolid@',  '\lx@xy@spline\lx@xy@solidpat');
+DefMacro('\splinedashed@', '\lx@xy@spline\lx@xy@dashpat');
+DefMacro('\splinedotted@', '\lx@xy@spline\lx@xy@dotpat');
+#DefMacro('\splinesolid@',<<'EoTeX');
+DefMacro('\lx@xy@spline{}', <<'EoTeX');
+\message{********************************^^J}%
+\readsplineparams@
+%\message{What are \the\dimen5, \the\dimen7?}%
+\ifdim\dimen5<\dimen7
+%%%%\lx@xy@swapspline
+%\message{N Control points \the\crv@cnt@^^J}%
+%\message{Curves: \the\crvpts@^^J}%
+%\message{PRE Spline from \the\X@p,\the\Y@p^^J}%
+%\message{PRE Spline to \the\X@c,\the\Y@c^^J}%
+%\message{PRE Spline C1 \the\L@c,\the\U@c^^J}%
+%\message{PRE Spline C2 \the\R@c,\the\D@c^^J}%
+\ifx\splineinfo@\squineinfo@
+\message{Do quadratic}%
+\L@c\dimexpr(\X@p+2\A@)/3\relax
+\U@c\dimexpr(\Y@p+2\A@)/3\relax
+\R@c\dimexpr(\X@c+2\A@)/3\relax
+\D@c\dimexpr(\Y@c+2\A@)/3\relax
+%\message{ADJ Spline C1 \the\L@c,\the\U@c^^J}%
+%\message{ADJ Spline C2 \the\R@c,\the\D@c^^J}%
+\fi
+%\message{Point from \the\X@p,\the\Y@p to \the\X@c,\the\Y@c via \the\L@c,\the\U@c;\the\R@c,\the\D@c}%
+\lx@xy@shavespline
+%\message{Shaved Spline from \the\X@p,\the\Y@p^^J}%
+%\message{Shaved Spline to \the\X@c,\the\Y@c^^J}%
+%\message{Shaved Spline C1 \the\L@c,\the\U@c^^J}%
+%\message{Shaved Spline C2 \the\R@c,\the\D@c^^J}%
+\ifdim\X@p=\X@c\else
+\ifdim\Y@p=\Y@c\else
+#1\lx@xy@spline@
+\fi\fi
+\fi
+EoTeX
+
+# The X@c and control points seem swapped compared to pdf!?!?!?!
+DefPrimitive('\lx@xy@swapspline', sub {
+    my ($Xc, $Yc, $Lc, $Uc) = map { LookupRegister($_); } '\X@c', '\Y@c', '\L@c';
+    AssignRegister('\X@c' => $Lc);
+    AssignRegister('\Y@c' => $Uc);
+    AssignRegister('\L@c' => $Xc);
+    AssignRegister('\U@c' => $Yc);
+});
+
+DefConstructor('\lx@xy@spline@',
+  "^<svg:path d='#path' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($x0, $y0, $x1, $y1, $L, $U, $R, $D, $A, $B) = map { LookupRegister($_); }
+      '\X@p', '\Y@p', '\X@c', '\Y@c', '\L@c', '\U@c', '\R@c', '\D@c', '\A@', '\B@';
+    # Convert quadratic Bezier to cubic
+    #    $L = $x0->add($A->multiply(2))->divide(3);
+    #    $U = $x0->add($B->multiply(2))->divide(3);
+    #    $R = $x1->add($A->multiply(2))->divide(3);
+    #    $D = $x1->add($B->multiply(2))->divide(3);
+    Debug("SPLINE") if $LaTeXML::DEBUG{xy};
+    (path => xy_packpath('M', $x0, $y0,
+        'C', $L, $U, $R, $D, $x1, $y1),
+      #      width => $x, height => $y, depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
+
+DefPrimitive('\lx@xy@shavespline', sub {
+    my $pt = Dimension('1pt')->valueOf;
+    my $a  = LookupRegister('\dimen', 5)->valueOf / $pt;
+    my $b  = LookupRegister('\dimen', 7)->valueOf / $pt;
+    if (($a != 0) || ($b != 0)) {
+      my ($Xp, $Yp, $Lp, $Up, $Rp, $Dp) = map { LookupRegister($_)->valueOf; }
+        '\X@p', '\Y@p', '\L@p', '\U@p', '\R@p', '\D@p';
+      my ($Xc, $Yc, $Lc, $Uc, $Rc, $Dc) = map { LookupRegister($_)->valueOf; }
+        '\X@c', '\Y@c', '\L@c', '\U@c', '\R@c', '\D@c';
+      my $xu  = $Lc - $Xp;
+      my $xv  = $Rc - $xu - $Lc;
+      my $xw  = $Xc - 3 * $Rc + 3 * $Lc - $Xp;
+      my $yu  = $Uc - $Yp;
+      my $yv  = $Dc - $yu - $Uc;
+      my $yw  = $Yc - 3 * $Dc + 3 * $Uc - $Yp;
+      my $aab = (2 * $a + $b);
+      my $abb = ($a + 2 * $b);
+      AssignRegister('\X@p' => Dimension($Xp + $a * (3 * $xu + (3 * $xv + $xw * $a) * $a)));
+      AssignRegister('\Y@p' => Dimension($Yp + $a * (3 * $yu + (3 * $yv + $yw * $a) * $a)));
+      AssignRegister('\L@c' => Dimension($Xp + $aab * $xu + $a * ($abb * $xv + $xw * $a * $b)));
+      AssignRegister('\U@c' => Dimension($Yp + $aab * $yu + $a * ($abb * $yv + $yw * $a * $b)));
+      AssignRegister('\R@c' => Dimension($Xp + $abb * $xu + $b * ($aab * $xv + $xw * $b * $a)));
+      AssignRegister('\D@c' => Dimension($Yp + $abb * $yu + $b * ($aab * $yv + $yw * $b * $a)));
+      AssignRegister('\X@c' => Dimension($Xp + $b * (3 * $xu + (3 * $xv + $xw * $b) * $b)));
+      AssignRegister('\Y@c' => Dimension($Yp + $b * (3 * $yu + (3 * $yv + $yw * $b) * $b)));
+} });
+
+#======================================================================
+# frame: Frame and Bracket extension
+
+# ToDo:
+#  frames as object modifiers
+
+# Curiously, the normal \frmDrop@ doesn't involve \styledboxz@, so we don't get colors?
+RawTeX(<<'EoTeX');
+\def\frmDrop@#1{%
+ \ifx\frmradius@@\z@ \addtoDrop@@{\let\frmradius@@=\z@}%
+ \else \expandafter\addtoDrop@@\expandafter{%
+ \expandafter\def\expandafter\frmradius@@\expandafter{\frmradius@@}}\fi
+ \addtoDrop@@{\setboxz@h{#1}\styledboxz@}}
+EoTeX
+
+# Shadowed & filled in terms of \framed@@
+DefMacro('\frame@fill@@{}', '\lx@xy@fill@on\lx@xy@stroke@off\framed@@{#1}');
+DefMacro('\frame@emph@@{}', '\lx@xy@fill@on\lx@xy@stroke@on\lx@xy@solidpat\framed@@{#1}');
+
+# Rewrapped to use dots or dashes
+# (the way xy implements dots/dashes is quite opaque)
+DefMacro('\csname frm{.}\endcsname',  '\addtoDrop@@{\lx@xy@dotpat}\csname frm{-}\endcsname');
+DefMacro('\csname frm{o-}\endcsname', '\addtoDrop@@{\lx@xy@dashpat}\csname frm{-}\endcsname');
+DefMacro('\csname frm{--}\endcsname', '\addtoDrop@@{\lx@xy@dashpat}\csname frm{-}\endcsname');
+DefMacro('\csname frm{.o}\endcsname', '\addtoDrop@@{\lx@xy@dotpat}\csname frm{o}\endcsname');
+DefMacro('\csname frm{-o}\endcsname', '\addtoDrop@@{\lx@xy@dashpat}\csname frm{o}\endcsname');
+DefMacro('\csname frm{.e}\endcsname', '\addtoDrop@@{\lx@xy@dotpat}\csname frm{e}\endcsname');
+DefMacro('\csname frm{-e}\endcsname', '\addtoDrop@@{\lx@xy@dashpat}\csname frm{e}\endcsname');
+
+# Rectangular frame (including rounded corners)
+DefConstructor('\framed@@{Dimension}',
+  "^<svg:path d='#path' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($stomach, $r) = @_;
+    my ($X, $Y, $L, $U, $R, $D) = map { LookupRegister($_); }
+      '\X@c', '\Y@c', '\L@c', '\U@c', '\R@c', '\D@c';
+    my $w  = $L->add($R);
+    my $h  = $U->add($D);
+    my $x0 = $X->subtract($L);
+    my $y0 = $Y->subtract($D);
+    my $x1 = $x0->add($w);
+    my $y1 = $y0->add($h);
+    $r = $r->smaller($w->multiply(0.5))->smaller($h->multiply(0.5));
+    my $path;
+
+    if ($r->valueOf <= 0) {
+      $path = xy_packpath('M', $x0, $y0, 'L', $x1, $y0, 'L', $x1, $y1, 'L', $x0, $y1, 'Z'); }
+    else {
+      my $wm = $w->subtract($r)->valueOf;
+      my $hm = $h->subtract($r)->valueOf;
+      $path = xy_packpath(
+        'M', $x0->add($r), $y0,
+        'A', $r, $r, 90, 0, 0, $x0, $y0->add($r),
+        ($hm > 0 ? ('L', $x0, $y1->subtract($r)) : ()),
+        'A', $r, $r, 90, 0, 0, $x0->add($r), $y1,
+        ($wm > 0 ? ('L', $x1->subtract($r), $y1) : ()),
+        'A', $r, $r, 90, 0, 0, $x1, $y1->subtract($r),
+        ($hm > 0 ? ('L', $x1, $y0->add($r)) : ()),
+        'A', $r, $r, 90, 0, 0, $x1->subtract($r), $y0,
+        'Z'); }
+    Debug("FRAMED") if $LaTeXML::DEBUG{xy};
+    (path => $path,
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
+      dashes    => ToString(Digest('\lx@xy@pattern')),
+    ); });
+
+DefConstructor('\circled@ {Dimension}',
+"^<svg:circle cx='#x' cy='#y' r='#radius' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($stomach, $r) = @_;
+    my ($X, $Y, $L, $U, $R, $D) = map { LookupRegister($_); }
+      '\X@c', '\Y@c', '\L@c', '\U@c', '\R@c', '\D@c';
+    my $w = $L->add($R);
+    my $h = $U->add($D);
+    if (!$r->valueOf) {
+      $r = $w->larger($h)->multiply(0.5); }
+    my $x0 = $X;
+    my $y0 = $Y;
+    Debug("CIRCLED " . ToString($r) . ' at ' . ToString($x0) . ',' . ToString($y0)) if $LaTeXML::DEBUG{xy};
+    (x => $x0->pxValue, y => $y0->pxValue, radius => $r->pxValue,
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
+      dashes    => ToString(Digest('\lx@xy@pattern')),
+    ); });
+
+DefConstructor('\ellipsed@ {Dimension}{Dimension}',
+"^<svg:ellipse cx='#x' cy='#y' rx='#rx' ry='#ry' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($stomach, $rx, $ry) = @_;
+    my ($X, $Y, $L, $U, $R, $D) = map { LookupRegister($_); }
+      '\X@c', '\Y@c', '\L@c', '\U@c', '\R@c', '\D@c';
+    my $w  = $L->add($R);
+    my $h  = $U->add($D);
+    my $x0 = $X;
+    my $y0 = $Y;
+    Debug("ELLIPSED " . ToString($rx) . ' x ' . ToString($ry)) if $LaTeXML::DEBUG{xy};
+    (x => $x0->pxValue, y => $y0->pxValue,
+      rx        => $rx->pxValue,             ry      => $ry->pxValue,
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
+      dashes    => ToString(Digest('\lx@xy@pattern')),
+    ); });
+
+DefConstructor('\shaded@@{Dimension}',
+  "^<svg:path d='#path' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($stomach, $r) = @_;
+    my ($X, $Y, $L, $U, $R, $D) = map { LookupRegister($_); }
+      '\X@c', '\Y@c', '\L@c', '\U@c', '\R@c', '\D@c';
+    my $w  = $L->add($R);
+    my $h  = $U->add($D);
+    my $x0 = $X->subtract($L)->add($r);
+    my $y0 = $Y->subtract($D);
+    my $x1 = $x0->add($w);
+    my $y1 = $y0->add($h);
+    $r = $r->smaller($w->multiply(0.5))->smaller($h->multiply(0.5));
+    my $path = xy_packpath('M', $x0, $y0, 'L', $x1, $y0, 'L', $x1, $y1);
+    Debug("SHADED") if $LaTeXML::DEBUG{xy};
+    (path => $path,
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
+    ); });
+
+DefMacro('\lbraced',        '\lx@xy@bracketed{\{}{L}');
+DefMacro('\rbraced',        '\lx@xy@bracketed{\}}{R}');
+DefMacro('\ubraced',        '\lx@xy@bracketed{\{}{U}');
+DefMacro('\dbraced',        '\lx@xy@bracketed{\{}{D}');
+DefMacro('\lparenthesized', '\lx@xy@bracketed{(}{L}');
+DefMacro('\rparenthesized', '\lx@xy@bracketed{)}{R}');
+DefMacro('\uparenthesized', '\lx@xy@bracketed{(}{U}');
+DefMacro('\dparenthesized', '\lx@xy@bracketed{(}{D}');
+
+DefConstructor('\lx@xy@bracketed{}{}',
+"^<svg:text transform='translate(#x,#y) rotate(#angle) scale(#xscale,#yscale)' stroke='#stroke'>#1</svg:text>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($stomach, $char, $orientation) = @_;
+    my ($X, $Y, $L, $U, $R, $D) = map { LookupRegister($_); }
+      '\X@c', '\Y@c', '\L@c', '\U@c', '\R@c', '\D@c';
+    $orientation = uc(ToString($orientation));
+    my ($w0, $h0, $d0) = $char->getSize;
+    my $ht0    = $h0->add($d0);
+    my $w      = $L->add($R);
+    my $h      = $U->add($D);
+    my $x      = 0;
+    my $y      = 0;
+    my $xscale = 1;
+    my $yscale = 1;
+    my $angle  = 0;
+
+    if ($orientation eq 'L') {
+      $x      = $w0->negate->pxValue;
+      $yscale = $h->valueOf / $ht0->valueOf; }
+    elsif ($orientation eq 'R') {
+      $x      = $w->pxValue;
+      $yscale = $h->valueOf / $ht0->valueOf; }
+    elsif ($orientation eq 'U') {
+      $x     = $w->add($ht0)->multiply(0.5)->pxValue;
+      $y     = $h->add($w0)->pxValue;
+      $angle = -90; $yscale = $w->valueOf / $ht0->valueOf; }
+    elsif ($orientation eq 'D') {
+      $x     = $w->subtract($ht0)->multiply(0.5)->pxValue;
+      $y     = $h->negate->subtract($w0)->pxValue;
+      $angle = 90; $yscale = $w->valueOf / $ht0->valueOf; }
+    Debug("BRACKETED " . ToString($char)) if $LaTeXML::DEBUG{xy};
+    (x => $x, y => $y, angle => $angle, xscale => $xscale, yscale => $yscale,
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
+    ); });
+
+#======================================================================
+# cmtip, tips extensions
+# The size seems to be ignored (in dvips driver)
+AssignValue(xy_tips_pending_style => 'xy');
+DefPrimitive('\SelectTips{}{}', sub {
+    my $style = ToString($_[1]);
+    if ($style && $xy_tips_factors{$style}) {    # Known style?
+      AssignValue(xy_tips_pending_style => $style);
+      AssignValue(xy_tips_style         => $style); } });
+DefPrimitive('\UseTips', sub {
+    AssignValue(xy_tips_style => LookupValue('xy_tips_pending_style') || 'xy'); });
+DefPrimitive('\NoTips', sub {
+    AssignValue(xy_tips_style => 'xy'); });
+
+#======================================================================
+# line: Line styles extension
+
+# Question: Should line thickness only apply to poly lines?
+
+# Use our defn, NOT the stub one.
+Let('\xy@polystyle@@', '\xy@polystyle@');
+
+DefMacro('\xypolyline@Special',   '\lx@xy@stroke@on\lx@xy@fill@off\lx@xy@poly');
+DefMacro('\xypolyfill@Special',   '\lx@xy@stroke@off\lx@xy@fill@on\lx@xy@poly');
+DefMacro('\xypolyeofill@Special', '\lx@xy@stroke@off\lx@xy@fill@on\lx@xy@poly');
+DefMacro('\xypolydot@Special',    '\lx@xy@stroke@on\lx@xy@dotpat\lx@xy@fill@off\lx@xy@poly');
+DefMacro('\xypolydash@Special',   '\lx@xy@stroke@on\lx@xy@dashpat\lx@xy@fill@off\lx@xy@poly');
+
+our @xy_cap_codes  = (qw(butt round square));
+our @xy_join_codes = (qw(miter round bevel));
+
+DefConstructor('\lx@xy@poly{}',
+  "^?#path(<svg:path d='#path' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'"
+    . " stroke-width='#thickness' stroke-linecap='#cap' stroke-linejoin='#join' stroke-miterlimit='#miter'/>)()",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($stomach, $points) = @_;
+    # $style ???
+    # NOTE: these are in pts, we want pixels
+    my $pt     = Dimension('1pt')->pxValue;
+    my @points = map { roundto($_ * $pt); } split(/\s+/, ToString($points));
+    my @path   = ('M', shift(@points), shift(@points));
+    while (@points) {
+      push(@path, 'L', shift(@points), shift(@points)); }
+    my $th = LookupRegister('\xylinethick@');
+    my ($cap, $join, $miter) = map { ToString(Digest($_)); } '\xylinecap@', '\xylinejoin@', '\xylinemiter@';
+    Debug("POLYLINE; Thickness " . ToString($th)) if $LaTeXML::DEBUG{xy};
+    (path => xy_packpath(@path),
+      width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
+      dashes    => ToString(Digest('\lx@xy@pattern')),
+      thickness => $th->pxValue, cap => $xy_cap_codes[$cap], join => $xy_join_codes[$join], miter => $miter,
+    ); });
+
+#======================================================================
+# rotate: Rotate and Scale extension
+#  Edges don't seem to have been adjusted (tho' xy should have?)
+DefConstructor('\xyscale@@{}{}',
+  "^<svg:g transform='#transform'>    #box</svg:g>",
+  properties => sub {
+    my ($stomach, $xscale, $yscale) = @_;
+    my ($Xp, $Yp, $Xc, $Yc, $Lc, $Up, $Rp) = map { LookupRegister($_); }
+      '\X@p', '\Y@p', '\X@c', '\Y@c', '\L@c', '\U@p', '\R@p';
+    my $box = LookupValue('box0');
+    AssignValue(box0 => undef);
+    my $transform =
+      'translate(' . $Lc->subtract($Rp)->pxValue . ',' . $Up->negate->pxValue . ')'
+      . ' scale(' . ToString($xscale) . ',' . ToString($yscale) . ')'
+      . ' translate(' . $Rp->subtract($Lc)->pxValue . ',' . $Up->pxValue . ')';
+    Debug("SCALE by $transform") if $LaTeXML::DEBUG{xy};
+    return (transform => $transform, box => $box); });
+
+DefConstructor('\xyRotate@@{}',
+  "^<svg:g transform='rotate(#angle)'>#box</svg:g>",
+  properties => sub {
+    my ($stomach, $kangle) = @_;
+    my $box = LookupValue('box0');
+    AssignValue(box0 => undef);
+    # BAD approximation!
+    my $angle = ToString($kangle) * 45 / 1024 - 135;
+    Debug("ROTATE by $angle") if $LaTeXML::DEBUG{xy};
+    return (angle => $angle, box => $box); });
+
+sub xy_direction_angle {
+  my ($dir) = @_;
+  my $K     = 1024;
+  my $case  = int((4 * $K - $dir) / 2 / $K);
+  my ($dx, $dy);
+  if    ($case == 0) { $dx = $K;             $dy = $dir - 3 * $K; }
+  elsif ($case == 1) { $dx = $dir - $K;      $dy = -$K; }
+  elsif ($case == 1) { $dx = -$K;            $dy = -$dir - $K; }
+  else               { $dx = -$dir - 3 * $K; $dy = $K; }
+  return atan2($dy, $dx) * 180 / pi; }
+
+DefConstructor('\xyRotate@@{}',
+  "^<svg:g transform='#transform'>#box</svg:g>",
+  properties => sub {
+    my ($stomach, $kangle) = @_;
+    my ($Xp, $Yp, $Xc, $Yc, $Lc, $Up, $Rp) = map { LookupRegister($_); }
+      '\X@p', '\Y@p', '\X@c', '\Y@c', '\L@c', '\U@p', '\R@p';
+    my $box = LookupValue('box0');
+    AssignValue(box0 => undef);
+    my $angle = xy_direction_angle(ToString($kangle));
+    my $transform =
+      'translate(' . $Lc->subtract($Rp)->pxValue . ',' . $Up->negate->pxValue . ')'
+      . ' rotate(' . $angle . ')'
+      . ' translate(' . $Rp->subtract($Lc)->pxValue . ',' . $Up->pxValue . ')';
+    Debug("ROTATE by $transform") if $LaTeXML::DEBUG{xy};
+    return (transform => $transform, box => $box); });
+
+# Align with current direction? But what is the argument?
+DefConstructor('\doSpecialRotate@@ Until:@@',
+  "^<svg:g transform='rotate(#angle)'>#2</svg:g>",
+  properties => sub {
+    my ($stomach, $arg) = @_;
+    my ($Xp, $Yp, $Xc, $Yc, $Lc, $Up, $Rp) = map { LookupRegister($_); }
+      '\X@p', '\Y@p', '\X@c', '\Y@c', '\L@c', '\U@p', '\R@p';
+    my $box = LookupValue('box0');
+    AssignValue(box0 => undef);
+    my ($c, $s) = xy_getOrientation();
+    my $angle = atan2($s, $c) * 180 / pi;
+    my $transform =
+      'translate(' . $Lc->subtract($Rp)->pxValue . ',' . $Up->negate->pxValue . ')'
+      . ' rotate(' . $angle . ')'
+      . ' translate(' . $Rp->subtract($Lc)->pxValue . ',' . $Up->pxValue . ')';
+    Debug("ROTATE by $transform SPECIAL for " . ToString($arg)) if $LaTeXML::DEBUG{xy};
+    return (transform => $transform, box => $box); });
+
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;
