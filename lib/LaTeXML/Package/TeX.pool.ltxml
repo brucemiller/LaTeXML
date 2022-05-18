@@ -1902,6 +1902,7 @@ sub adjustBoxColor_rec {
     $$adjusted{$box} = 1;
     my $r = ref $box;
     next unless $r && ($r !~ /(?:SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE)/) && $r->isaBox;
+    # NASTY access to internal structure; but worth a whole API for this one hack???
     if ($r eq 'LaTeXML::Core::Box') {
       adjustBoxColor_internal($color, $box); }
     elsif ($r eq 'LaTeXML::Core::List') {
@@ -1910,7 +1911,12 @@ sub adjustBoxColor_rec {
       adjustBoxColor_internal($color, $box);
       # now recurse on contained boxes (args AND properties!)
       adjustBoxColor_rec($color, $adjusted, $box->getArgs);
-      adjustBoxColor_rec($color, $adjusted, values %{ $box->getPropertiesRef }); } }
+      adjustBoxColor_rec($color, $adjusted, values %{ $box->getPropertiesRef }); }
+    elsif ($r eq 'LaTeXML::Core::Alignment') {
+      foreach my $row (@{ $$box{rows} }) {
+        foreach my $col (@{ $$row{columns} }) {
+          adjustBoxColor_rec($color, $adjusted, $$col{boxes}->unlist); } } }
+  }
   return; }
 
 sub adjustBoxColor_internal {
@@ -2067,10 +2073,13 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
 Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
   afterClose => sub {
     my ($document, $node, $whatsit) = @_;
-    my @fo = element_nodes($node);    # What's in the foreignObject?
-    if (scalar(@fo) == 0) {           # Empty?
+    ## NOTE: The revised schema now allows plain text within foreignObject; watch out for mixed
+    my @fo = $node->childNodes;    # What's in the foreignObject?
+    if (scalar(@fo) == 0) {        # Empty?
       $document->removeNode($node);    #  just remove whole thing
       return; }
+    elsif (!grep { $_->nodeType != XML_TEXT_NODE } @fo) {    # All text nodes?
+      $document->renameNode($node, 'svg:text'); }
     elsif ((scalar(@fo) == 1) && ($document->getNodeQName($fo[0]) eq 'ltx:p')) {    # Single <p/>?
       my @p_c = element_nodes($fo[0]);
       if (scalar(@p_c) == 0) {                                                      # or Empty <p/>?
