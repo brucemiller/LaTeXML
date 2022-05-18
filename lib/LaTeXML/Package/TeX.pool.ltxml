@@ -2079,7 +2079,9 @@ Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
       $document->removeNode($node);    #  just remove whole thing
       return; }
     elsif (!grep { $_->nodeType != XML_TEXT_NODE } @fo) {    # All text nodes?
-      $document->renameNode($node, 'svg:text'); }
+      $node = $document->renameNode($node, 'svg:text');
+      $node->setAttribute(transform => "matrix(1 0 0 -1 0 0)");
+      return; }
     elsif ((scalar(@fo) == 1) && ($document->getNodeQName($fo[0]) eq 'ltx:p')) {    # Single <p/>?
       my @p_c = element_nodes($fo[0]);
       if (scalar(@p_c) == 0) {                                                      # or Empty <p/>?
