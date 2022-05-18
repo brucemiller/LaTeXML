@@ -70,13 +70,15 @@ DefConstructor('\lx@xy@svg {} DigestedBody', sub {
     if (inSVG()) {
       $document->absorb($body); }
     else {
+      $document->openElement('ltx:picture');
       $document->openElement('svg:svg',
         overflow => 'visible',       version => '1.1',
         width    => $props{pxwidth}, height  => $props{pxheight});
       $document->openElement('svg:g', transform => "matrix($props{origin})");
       $document->absorb($body);
       $document->closeElement('svg:g');
-      $document->closeElement('svg:svg'); } },
+      $document->closeElement('svg:svg');
+      $document->closeElement('ltx:picture'); } },
   beforeDigest => sub {
     AssignValue('\X@@min' => 9999,  'global');
     AssignValue('\Y@@min' => 9999,  'global');
@@ -85,17 +87,20 @@ DefConstructor('\lx@xy@svg {} DigestedBody', sub {
     $_[0]->bgroup;
     return; },
   properties => sub {
-    my ($whatsit, $inxy, $body) = @_;
+    my ($stomach, $whatsit, $inxy, $body) = @_;
     my $am_in_xy = ToString($inxy) eq 'TT';
     my ($xmin, $ymin, $xmax, $ymax) = map { LookupValue($_); } '\X@@min', '\Y@@min', '\X@@max', '\Y@@max';
     Debug("XY(c): " . ToString($xmin) . ' ' . ToString($ymin) . ' ' . ToString($xmax) . ' ' . ToString($ymax))
       if $LaTeXML::DEBUG{xy};
-    my $w      = $xmax->subtract($xmin);
-    my $h      = $ymax->subtract($ymin);
-    my $d      = Dimension(0);
-    my $th     = $h->add($d);
-    my $x      = $xmin->negate;                                   # ???
-    my $y      = $ymax;
+    my $w  = $xmax->subtract($xmin);
+    my $h  = $ymax->subtract($ymin);
+    my $d  = Dimension(0);
+    my $th = $h->add($d);
+    my $x  = $xmin->negate->larger(Dimension(0));
+    my $y  = $ymax;
+
+    if ($whatsit->isMath) {    # Vertically center, when in math
+      $y = $y->add($th->multiply(0.5)); }
     my $origin = "1 0 0 -1 " . $x->pxValue . ' ' . $y->pxValue;
     Debug("XY size: " . ToString($w) . ' x ' . ToString($h) . ' + ' . ToString($d) . ' @ ' . ToString($x) . ' x ' . ToString($y))
 
