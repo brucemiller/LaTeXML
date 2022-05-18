@@ -91,7 +91,7 @@ DefPrimitive('\special{}', sub {
 DefMacro('\lx@xy@pattern',  '');
 DefMacro('\lx@xy@solidpat', '\def\lx@xy@pattern{}');
 DefMacro('\lx@xy@dashpat',  '\def\lx@xy@pattern{5}');
-DefMacro('\lx@xy@dotpat',   '\def\lx@xy@pattern{1}');
+DefMacro('\lx@xy@dotpat',   '\def\lx@xy@pattern{1 2}');
 # These versions should make an adjustmeht for CLOSED lines (but don't yet)
 DefMacro('\lx@xy@cldashpat', '\def\lx@xy@pattern{5}');
 DefMacro('\lx@xy@cldotpat',  '\def\lx@xy@pattern{1}');
@@ -549,10 +549,7 @@ DefConstructor('\cirbuild@',
     my $r  = LookupRegister('\R@');
     my $d  = $r->multiply(2);
     my $xc = $r;
-    #    my $yc = $r->negate;
-    #    my $yc = $d->negate;
     my $yc = Dimension(0);
-    #    my ($c0,$c1)=map { ToString(Digest($_)); } '\CIRin@@','\CIRout@@','\CIRorient@@';
     my $cd = LookupValue('xy_circle_dir');    # 0 full; +1 ccw; -1 cw;
     my $path;
     if (!$cd) {                               # Full circle
@@ -569,14 +566,13 @@ DefConstructor('\cirbuild@',
         else           { $a1 = ($d2 - 4) * 45; $a2 = ($d1 - 4) * 45; } }
       my $theta1 = $a1 * pi / 180;
       my $theta2 = $a2 * pi / 180;
-      $xc = $yc = Dimension(0);
-      my $x0 = $xc->subtract($r->multiply(cos($theta1)));
-      my $y0 = $yc->subtract($r->multiply(sin($theta1)));
-      my $x1 = $xc->subtract($r->multiply(cos($theta2)));
-      my $y1 = $yc->subtract($r->multiply(sin($theta2)));
+      my $x0     = $xc->add($r->multiply(cos($theta1)));
+      my $y0     = $yc->add($r->multiply(sin($theta1)));
+      my $x1     = $xc->add($r->multiply(cos($theta2)));
+      my $y1     = $yc->add($r->multiply(sin($theta2)));
       Debug("CIRCLE " . ($cd > 0 ? 'ccw' : 'cw') . ", d1=$d1,d2=$d2 =>  $a1 to $a2") if $LaTeXML::DEBUG{xy};
       my $a = $a2 - $a1;
-      $path = xy_packpath('M', $x0, $y0, 'A', $r, $r, $a, ($a > 180 ? 1 : 0), 0, $x1, $y1); }
+      $path = xy_packpath('M', $x1, $y1, 'A', $r, $r, $a, ($a > 180 ? 1 : 0), 0, $x0, $y0); }
     (full => !$cd, path => $path,
       x         => $xc->pxValue,             y       => $yc->pxValue, r      => $r->pxValue,
       width     => $d,                       depth   => $r,           height => $r,
@@ -596,54 +592,67 @@ DefConstructor('\cirbuild@',
 
 # See \crvconnect@ ????
 
-DefMacro('\splinesolid@',  '\lx@xy@spline\lx@xy@solidpat');
-DefMacro('\splinedashed@', '\lx@xy@spline\lx@xy@dashpat');
-DefMacro('\splinedotted@', '\lx@xy@spline\lx@xy@dotpat');
-#DefMacro('\splinesolid@',<<'EoTeX');
-DefMacro('\lx@xy@spline{}', <<'EoTeX');
+# There are a bunch of \spline(solid|doubled|trebled|ribboned|dashed|dotted)@
+# along with a generic(?) \splineset@@ which seems to expect to work with
+# \splinebox@,\splinetol@,\xycrvdrop,\xycrvconn@ ?
+# (will be eg. the expansion of \dir{--})
+# This code is a hybrid of stock xy & pdf driver
+DefMacro('\splineset@@', <<'EoTeX');
 \message{********************************^^J}%
 \readsplineparams@
 %\message{What are \the\dimen5, \the\dimen7?}%
 \ifdim\dimen5<\dimen7
-%%%%\lx@xy@swapspline
-%\message{N Control points \the\crv@cnt@^^J}%
-%\message{Curves: \the\crvpts@^^J}%
-%\message{PRE Spline from \the\X@p,\the\Y@p^^J}%
-%\message{PRE Spline to \the\X@c,\the\Y@c^^J}%
-%\message{PRE Spline C1 \the\L@c,\the\U@c^^J}%
-%\message{PRE Spline C2 \the\R@c,\the\D@c^^J}%
 \ifx\splineinfo@\squineinfo@
-\message{Do quadratic}%
+% Turn the quadratic into cubic
 \L@c\dimexpr(\X@p+2\A@)/3\relax
-\U@c\dimexpr(\Y@p+2\A@)/3\relax
+\U@c\dimexpr(\Y@p+2\B@)/3\relax
 \R@c\dimexpr(\X@c+2\A@)/3\relax
-\D@c\dimexpr(\Y@c+2\A@)/3\relax
-%\message{ADJ Spline C1 \the\L@c,\the\U@c^^J}%
-%\message{ADJ Spline C2 \the\R@c,\the\D@c^^J}%
+\D@c\dimexpr(\Y@c+2\B@)/3\relax
 \fi
-%\message{Point from \the\X@p,\the\Y@p to \the\X@c,\the\Y@c via \the\L@c,\the\U@c;\the\R@c,\the\D@c}%
 \lx@xy@shavespline
-%\message{Shaved Spline from \the\X@p,\the\Y@p^^J}%
-%\message{Shaved Spline to \the\X@c,\the\Y@c^^J}%
-%\message{Shaved Spline C1 \the\L@c,\the\U@c^^J}%
-%\message{Shaved Spline C2 \the\R@c,\the\D@c^^J}%
-\ifdim\X@p=\X@c\else
-\ifdim\Y@p=\Y@c\else
-#1\lx@xy@spline@
-\fi\fi
+%%% Wrong test for no curve!
+%%\ifdim\X@p=\X@c\else
+%%\ifdim\Y@p=\Y@c\else
+%%#1\lx@xy@spline@
+\lx@xy@interp@spline
+\lx@xy@spline@
+%\fi\fi
 \fi
 EoTeX
 
-# The X@c and control points seem swapped compared to pdf!?!?!?!
-DefPrimitive('\lx@xy@swapspline', sub {
-    my ($Xc, $Yc, $Lc, $Uc) = map { LookupRegister($_); } '\X@c', '\Y@c', '\L@c';
-    AssignRegister('\X@c' => $Lc);
-    AssignRegister('\Y@c' => $Uc);
-    AssignRegister('\L@c' => $Xc);
-    AssignRegister('\U@c' => $Yc);
-});
+DefMacro('\lx@xy@interp@spline', <<'EoTeX');
+ \expandafter\lx@xy@interp@drop@\expandafter{\xycrvdrop@}
+ \expandafter\lx@xy@interp@conn@\expandafter{\xycrvconn@}
+EoTeX
+# Apparently \xycrvdrop@ can be empty (for lines)  else something to drop at each point
+#  like maybe: =<8pt>{.} for spaced points?
+# Apparently \xycrvconn@ can be empty (solid line) else indicates doubled,trebled, dotted,dashed
+#   like maybe: !/-5pt/\dir{>} or !C\dir{:}
+# I'd wish we could leverage xy's parser to interpret the specs, but it is unclear how!
+#  gets used like: \expandafter\object\xycrvdrop@
+#  or \expandafter\connect\xycrvconn@{}
+#  Is that a clue?
+# For now, just try to re-interpret these after the fact.
+# But we need to recognize more patterns!
+DefMacro('\lx@xy@interp@drop@{}', sub {
+    my $drop = ToString($_[1]);
+    $drop =~ s/^\s+//; $drop =~ s/\s+$//;
+    if ($drop) {
+      if ($drop =~ /^\s*=\<([^\>]*)\>\{\.\}/) {    # Dotted, with given spacing (ignore spacing for now)
+        return T_CS('\lx@xy@dotpat'); }
+      Debug("LaTeXML ignoring curve drop: '$drop'"); }
+    return; });
+DefMacro('\lx@xy@interp@conn@{}', sub {
+    my $conn = ToString($_[1]);
+    $conn =~ s/^\s+//; $conn =~ s/\s+$//;
+    if ($conn) {
+      Debug("LaTeXML ignoring curve connection: $conn"); }
+    #  my $sp;
+    #  if($conn =~ /^!/dim/
+    return; });
 
 DefConstructor('\lx@xy@spline@',
+##DefConstructor('\splineset@@',
   "^<svg:path d='#path' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
   beforeConstruct => \&xy_FillStroke,
   properties      => sub {
@@ -658,6 +667,8 @@ DefConstructor('\lx@xy@spline@',
     (path => xy_packpath('M', $x0, $y0,
         'C', $L, $U, $R, $D, $x1, $y1),
       #      width => $x, height => $y, depth => Dimension(0),
+      width     => Dimension(0), height => Dimension(0), depth => Dimension(0),
+      dashes    => ToString(Digest('\lx@xy@pattern')),
       do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
 
 DefPrimitive('\lx@xy@shavespline', sub {
@@ -686,6 +697,28 @@ DefPrimitive('\lx@xy@shavespline', sub {
       AssignRegister('\X@c' => Dimension($Xp + $b * (3 * $xu + (3 * $xv + $xw * $b) * $b)));
       AssignRegister('\Y@c' => Dimension($Yp + $b * (3 * $yu + (3 * $yv + $yw * $b) * $b)));
 } });
+
+# Ignoring for the moment all the dots, dashes, drops, etc
+DefConstructor('\buildcircle@',
+"^<svg:ellipse cx='#x' cy='#y' rx='#rx' ry='#ry' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my $rx = LookupRegister('\R@');
+    my $ry = LookupRegister('\L@');
+    my $w  = $rx->multiply(2);
+    my $h  = $ry;
+    my $d  = $ry;
+    my $xc = $rx;
+    #    my $yc = Dimension(0);
+    my $yc = $ry->multiply(2);
+    Debug("ELLIPSE " . ToString($rx) . ' x ' . ToString($ry) . ' @ ' . ToString($xc) . ',' . ToString($yc))
+      if $LaTeXML::DEBUG{xy};
+    (x => $xc->pxValue, y => $yc->pxValue,
+      rx => $rx->pxValue, ry => $ry->pxValue,
+      #      width     => $w,                       depth   => $d, height => $h,
+      width     => $w, depth => Dimension(0), height => $ry->multiply(2),
+      dashes    => ToString(Digest('\lx@xy@pattern')),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
 
 #======================================================================
 # frame: Frame and Bracket extension
@@ -861,6 +894,19 @@ DefConstructor('\lx@xy@bracketed{}{}',
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
     ); });
+
+DefConstructor('\blacked@@',
+  "^<svg:rect x='#x' y='#y' width='#w' height='#h' stroke='#stroke' fill='#fill'/>",
+  beforeConstruct => \&xy_FillStroke,
+  properties      => sub {
+    my ($w, $h, $b) = map { LookupRegister($_); } '\dimen@', '\dimen@ii', '\B@';
+    my $d  = $b->negate;
+    my $y  = $b;
+    my $ht = $h->add($d);
+    Debug("BLACKED") if $LaTeXML::DEBUG{xy};
+    (x => 0, y => $y->pxValue, w => $w->pxValue, h => $ht->pxValue,
+      width => $w, height => $h, depth => $d,
+      do_stroke => LookupValue('xy_stroke'), do_fill => 1); });
 
 #======================================================================
 # cmtip, tips extensions
