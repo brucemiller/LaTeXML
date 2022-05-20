@@ -836,7 +836,7 @@ latexmlc [options]
  --css=cssfile           adds a css stylesheet to html/xhtml
                          (can be repeated)
  --nodefaultresources    disables processing built-in resources
- --javscript=jsfile      adds a link to a javascript file into
+ --javascript=jsfile     adds a link to a javascript file into
                          html/html5/xhtml (can be repeated)
  --icon=iconfile         specify a file to use as a "favicon"
  --xsltparameter=name:value passes parameters to the XSLT.
