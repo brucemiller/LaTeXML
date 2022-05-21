@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  Common utility functions for stylesheet; for inclusion             |
@@ -12,17 +12,17 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     = "1.0"
-    xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:exsl  = "http://exslt.org/common"
-    xmlns:string= "http://exslt.org/strings"
-    xmlns:date  = "http://exslt.org/dates-and-times"
-    xmlns:func  = "http://exslt.org/functions"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
-    xmlns:xhtml = "http://www.w3.org/1999/xhtml"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    xmlns:exsl="http://exslt.org/common"
+    xmlns:string="http://exslt.org/strings"
+    xmlns:date="http://exslt.org/dates-and-times"
+    xmlns:func="http://exslt.org/functions"
+    xmlns:f="http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:xhtml="http://www.w3.org/1999/xhtml"
+    version="1.0"
     extension-element-prefixes="func f exsl string date"
-    exclude-result-prefixes = "ltx f func string">
+    exclude-result-prefixes="ltx f func string">
 
   <!-- ALL CAPS parameters are intended to be passed in;
        lower case ones are (mostly) intended for internal use-->
@@ -30,26 +30,26 @@
   <!-- ======================================================================
        Parameters -->
   <!-- The version of LaTeXML being used; for generator messages. -->
-  <xsl:param name="LATEXML_VERSION"></xsl:param>
+  <xsl:param name="LATEXML_VERSION"/>
 
   <!-- A string indicating the date and time of document generation or processing. -->
-  <xsl:param name="TIMESTAMP"></xsl:param>
+  <xsl:param name="TIMESTAMP"/>
 
   <!-- What version of RDFa to generate. [Set to "1.0" for broken behaviour] -->
-  <xsl:param name="RDFA_VERSION"></xsl:param>
+  <xsl:param name="RDFA_VERSION"/>
 
   <!-- Whether to use Namespaces in the generated xml/xhtml/...-->
   <xsl:param name="USE_NAMESPACES">true</xsl:param>
 
   <!-- Whether to use HTML5 constructs in the generated html. -->
-  <xsl:param name="USE_HTML5"></xsl:param>
+  <xsl:param name="USE_HTML5"/>
 
   <!-- The XHTML namespace -->
   <xsl:param name="XHTML_NAMESPACE">http://www.w3.org/1999/xhtml</xsl:param>
 
   <!-- Whether to use xml:id instead of plain ole id;
        Not sure if we ever should; probably depends on embedded schema, as well? -->
-  <xsl:param name="USE_XMLID"></xsl:param>
+  <xsl:param name="USE_XMLID"/>
 
   <!-- The namespace to use on html elements (typically XHTML_NAMESPACE or none) -->
   <xsl:param name="html_ns">
@@ -81,7 +81,7 @@
     <xsl:if test="//ltx:date[@role='creation' or @role='conversion'][1]">
       <xsl:comment>
         <xsl:text>Document created on </xsl:text>
-        <xsl:value-of select="translate(//ltx:date/node(),'-','‐')"/>
+        <xsl:value-of select="translate(//ltx:date/node(),'-','&#x2010;')"/>
         <xsl:text>.</xsl:text>
       </xsl:comment>
       <xsl:text>&#x0A;</xsl:text>
@@ -162,7 +162,7 @@
     <xsl:param name="string"/>
     <func:result>
       <xsl:choose>
-        <xsl:when test="$string = ''"></xsl:when>
+        <xsl:when test="$string = ''"/>
         <xsl:when test="contains($string,' ')">
           <xsl:value-of select="concat($prefix,substring-before($string,' '),
                                 ' ',f:class-pref-aux($prefix,substring-after($string,' ')))"/>
@@ -180,8 +180,7 @@
     <xsl:param name="replacement"/>
     <xsl:choose>
       <xsl:when test="contains($string,$pattern)">
-        <func:result><xsl:value-of
-        select="concat(substring-before($string,$pattern),
+        <func:result><xsl:value-of select="concat(substring-before($string,$pattern),
                        $replacement,
                        f:subst(substring-after($string,$pattern),$pattern,$replacement))"/>
         </func:result>
@@ -234,7 +233,7 @@
       <xsl:choose>
         <xsl:when test="contains($value,'px')">px</xsl:when>
         <xsl:when test="contains($value,'pt')">pt</xsl:when>
-        <xsl:otherwise></xsl:otherwise>
+        <xsl:otherwise/>
       </xsl:choose>
     </func:result>
   </func:function>
@@ -327,13 +326,13 @@
        If copy-foreign templates hit latexml, svg or mathml,
        they'll resume with the normal templates.
   -->
-  <xsl:template match="*" mode='copy-foreign'>
+  <xsl:template match="*" mode="copy-foreign">
     <xsl:param name="context"/>
     <xsl:element name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:for-each select="@*">
         <xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
-      <xsl:apply-templates mode='copy-foreign'>
+      <xsl:apply-templates mode="copy-foreign">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
     </xsl:element>
@@ -345,19 +344,19 @@
   </xsl:template>
 
   <!-- Assume that xhtml will be copied using same scheme as the generated html -->
-  <xsl:template match="xhtml:*" mode='copy-foreign'>
+  <xsl:template match="xhtml:*" mode="copy-foreign">
     <xsl:element name="{local-name()}" namespace="{$html_ns}">
       <xsl:for-each select="@*">
         <xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
-      <xsl:apply-templates mode='copy-foreign'/>
+      <xsl:apply-templates mode="copy-foreign"/>
     </xsl:element>
   </xsl:template>
 
   <!-- Embedded latexml, however, gets treated with the usual templates! -->
-  <xsl:template match="ltx:*" mode='copy-foreign'>
+  <xsl:template match="ltx:*" mode="copy-foreign">
     <xsl:param name="context"/>
-    <xsl:apply-templates select="." >
+    <xsl:apply-templates select=".">
       <xsl:with-param name="context"/>
     </xsl:apply-templates>
   </xsl:template>
@@ -365,35 +364,35 @@
   <!-- However, XMath elements appearing in an annotation (eg) should also be copied literally-->
   <xsl:template match="ltx:XMath | ltx:XMApp | ltx:XMTok | ltx:XMRef | ltx:XMHint
                        | ltx:XMArg | ltx:XMWrap | ltx:XMDual | ltx:XMText
-                       | ltx:XMArray | ltx:XMRow | ltx:XMCell" mode='copy-foreign'>
+                       | ltx:XMArray | ltx:XMRow | ltx:XMCell" mode="copy-foreign">
     <xsl:element name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:for-each select="@*">
         <xsl:apply-templates select="." mode="copy-attribute"/>
       </xsl:for-each>
-      <xsl:apply-templates mode='copy-foreign'/>
+      <xsl:apply-templates mode="copy-foreign"/>
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="@*" mode='copy-attribute'>
+  <xsl:template match="@*" mode="copy-attribute">
     <xsl:attribute name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:value-of select="."/>
     </xsl:attribute>
   </xsl:template>
 
-  <xsl:template match="@xml:id" mode='copy-attribute'>
+  <xsl:template match="@xml:id" mode="copy-attribute">
     <xsl:attribute name="{f:if($USE_XMLID,'xml:id','id')}">
       <xsl:value-of select="."/>
     </xsl:attribute>
   </xsl:template>
 
-  <xsl:template match="@xml:lang" mode='copy-attribute'>
+  <xsl:template match="@xml:lang" mode="copy-attribute">
     <xsl:attribute name="{f:if($USE_XMLID,'xml:lang','lang')}">
       <xsl:value-of select="."/>
     </xsl:attribute>
   </xsl:template>
 
   <!-- this is risky, assuming we know which are urls...-->
-  <xsl:template match="@href | @src | @action" mode='copy-attribute'>
+  <xsl:template match="@href | @src | @action" mode="copy-attribute">
     <xsl:attribute name="{local-name()}">
       <xsl:value-of select="f:url(.)"/>
     </xsl:attribute>
@@ -530,8 +529,8 @@
     <xsl:if test="@fontsize">
       <xsl:value-of select="concat('font-size:',@fontsize,';')"/>
     </xsl:if>
-    <xsl:if test="@width"  ><xsl:value-of select="concat('width:',@width,';')"/></xsl:if>
-    <xsl:if test="@height" >
+    <xsl:if test="@width"><xsl:value-of select="concat('width:',@width,';')"/></xsl:if>
+    <xsl:if test="@height">
       <xsl:choose>
         <xsl:when test="@depth">
           <xsl:value-of select="concat('height:',f:adddim(@height,@depth),';')"/>
@@ -541,7 +540,7 @@
         </xsl:otherwise>
       </xsl:choose>
     </xsl:if>
-    <xsl:if test="@depth"  >
+    <xsl:if test="@depth">
       <xsl:value-of select="concat('vertical-align:',f:negate(@depth),';')"/>
     </xsl:if>
     <xsl:if test="@xoffset">
@@ -567,13 +566,13 @@
     <xsl:call-template name="add_attribute">
       <xsl:with-param name="name" select="'style'"/>
       <xsl:with-param name="value">
-        <xsl:if test="@innerwidth"  >
+        <xsl:if test="@innerwidth">
           <xsl:value-of select="concat('width:',@innerwidth,';')"/>
         </xsl:if>
         <!-- apparently we shouldn't put the innerheigth & innerdepth into the style;
          seems to mess up the positioning? -->
         <xsl:text>transform:</xsl:text>
-        <xsl:apply-templates select='.' mode="transformable-transform"/>
+        <xsl:apply-templates select="." mode="transformable-transform"/>
         <xsl:text>;</xsl:text>
       </xsl:with-param>
     </xsl:call-template>
@@ -636,8 +635,8 @@
   </xsl:template>
 
   <xsl:template name="add_RDFa_prefix">
-    <xsl:if test='/*/@prefix'>
-      <xsl:attribute name='prefix'><xsl:value-of select='/*/@prefix'/></xsl:attribute>
+    <xsl:if test="/*/@prefix">
+      <xsl:attribute name="prefix"><xsl:value-of select="/*/@prefix"/></xsl:attribute>
       <xsl:if test="$RDFA_VERSION = '1.0'">
         <xsl:attribute name="version">XHTML+RDFa 1.0</xsl:attribute>
         <xsl:call-template name="add_RDFa1.0_namespaces">

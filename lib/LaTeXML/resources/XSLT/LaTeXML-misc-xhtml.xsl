@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-misc-xhtml.xsl                                             |
@@ -13,13 +13,13 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     = "1.0"
-    xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:func  = "http://exslt.org/functions"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    xmlns:func="http://exslt.org/functions"
+    xmlns:f="http://dlmf.nist.gov/LaTeXML/functions"
+    version="1.0"
     extension-element-prefixes="func f"
-    exclude-result-prefixes = "ltx func f">
+    exclude-result-prefixes="ltx func f">
 
   <!-- ======================================================================
        Various things that aren't clearly inline or blocks, or can be both:
@@ -88,7 +88,7 @@
   <xsl:template match="ltx:verbatim">
     <xsl:param name="context"/>
     <xsl:choose>
-      <xsl:when test="contains(text(),'&#xA;')">
+      <xsl:when test="contains(text(),'&#x0A;')">
         <xsl:element name="pre" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes"/>
@@ -155,28 +155,28 @@
         </xsl:with-param>
       </xsl:call-template>
       <xsl:if test="@imagewidth">
-        <xsl:attribute name='width'>
+        <xsl:attribute name="width">
           <xsl:value-of select="@imagewidth"/>
         </xsl:attribute>
       </xsl:if>
       <xsl:if test="@imageheight">
-        <xsl:attribute name='height'>
+        <xsl:attribute name="height">
           <xsl:value-of select="@imageheight"/>
         </xsl:attribute>
       </xsl:if>
       <xsl:choose>
         <xsl:when test="@description">
-          <xsl:attribute name='alt'>
+          <xsl:attribute name="alt">
             <xsl:value-of select="@description"/>
           </xsl:attribute>
         </xsl:when>
         <xsl:when test="ancestor::ltx:figure/ltx:caption">
-          <xsl:attribute name='alt'>
+          <xsl:attribute name="alt">
             <xsl:value-of select="ancestor::ltx:figure/ltx:caption/text()"/>
           </xsl:attribute>
         </xsl:when>
         <xsl:otherwise>
-          <xsl:attribute name='alt'></xsl:attribute> <!--required; what else? -->
+          <xsl:attribute name="alt"/> <!--required; what else? -->
         </xsl:otherwise>
       </xsl:choose>
       <xsl:apply-templates select="." mode="begin">
@@ -215,19 +215,19 @@
         </xsl:with-param>
       </xsl:call-template>
       <xsl:if test="@imagewidth">
-        <xsl:attribute name='width'>
+        <xsl:attribute name="width">
           <xsl:value-of select="@imagewidth"/>
         </xsl:attribute>
       </xsl:if>
       <xsl:if test="@imageheight">
-        <xsl:attribute name='height'>
+        <xsl:attribute name="height">
           <xsl:value-of select="@imageheight"/>
         </xsl:attribute>
       </xsl:if>
       <!-- the object tag does not support alt, so use
            aria-label instead -->
       <xsl:if test="$description!=''">
-        <xsl:attribute name='aria-label'>
+        <xsl:attribute name="aria-label">
           <xsl:value-of select="$description"/>
         </xsl:attribute>
       </xsl:if>
@@ -262,7 +262,7 @@
     <xsl:value-of select="text()"/>
     <xsl:text> </xsl:text>
     <xsl:value-of select="@close"/>
-    <xsl:text disable-output-escaping="yes">&gt;</xsl:text>
+    <xsl:text disable-output-escaping="yes">></xsl:text>
   </xsl:template>
 
   <!-- ======================================================================

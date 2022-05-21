@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-para-xhtml.xsl                                             |
@@ -13,12 +13,12 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     = "1.0"
-    xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    xmlns:f="http://dlmf.nist.gov/LaTeXML/functions"
+    version="1.0"
     extension-element-prefixes="f"
-    exclude-result-prefixes = "ltx f">
+    exclude-result-prefixes="ltx f">
 
   <!-- ======================================================================
        Logical paragraphs
@@ -123,7 +123,8 @@
             <xsl:apply-templates select="." mode="begin">
               <xsl:with-param name="context" select="$context"/>
             </xsl:apply-templates>
-            <xsl:element name="{f:if($USE_HTML5,f:blockelement($context,'figure'),'div')}" namespace="{$html_ns}">
+            <xsl:element name="{f:if($USE_HTML5,f:blockelement($context,'figure'),'div')}"
+                         namespace="{$html_ns}">
               <xsl:apply-templates select="." mode="inner">
                 <xsl:with-param name="context" select="$context"/>
               </xsl:apply-templates>
@@ -132,7 +133,8 @@
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
-        <xsl:element name="{f:if($USE_HTML5,f:blockelement($context,'figure'),'div')}" namespace="{$html_ns}">
+        <xsl:element name="{f:if($USE_HTML5,f:blockelement($context,'figure'),'div')}"
+                     namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes"/>
           <xsl:apply-templates select="." mode="inner">
@@ -149,7 +151,8 @@
       <xsl:with-param name="context" select="$context"/>
     </xsl:apply-templates>
     <xsl:choose>
-      <xsl:when test="count(ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:inline-para | ltx:inline-block | ltx:listing | ltx:p) > 1">
+      <xsl:when
+          test="count(ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:inline-para | ltx:inline-block | ltx:listing | ltx:p) > 1">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:apply-templates select="ltx:caption[following-sibling::ltx:figure
                                      | following-sibling::ltx:table
@@ -170,7 +173,8 @@
             </xsl:otherwise>
           </xsl:choose>
           <xsl:text>&#x0A;</xsl:text>
-          <xsl:for-each select="ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:break | ltx:inline-para | ltx:inline-block | ltx:listing | ltx:p | ltx:rawhtml">
+          <xsl:for-each
+              select="ltx:figure | ltx:table | ltx:tabular | ltx:float | ltx:graphics | ltx:break | ltx:inline-para | ltx:inline-block | ltx:listing | ltx:p | ltx:rawhtml">
             <xsl:choose>
               <xsl:when test="self::ltx:break">
                 <xsl:element name="div" namespace="{$html_ns}">
@@ -180,7 +184,7 @@
               <xsl:otherwise>
                 <xsl:text>&#x0A;</xsl:text>
                 <xsl:element name="div" namespace="{$html_ns}">
-                  <xsl:attribute name="class">ltx_flex_cell 
+                  <xsl:attribute name="class">ltx_flex_cell
                   <xsl:if test="contains(@class,'ltx_flex_size_1')">ltx_flex_size_1</xsl:if>
                   <xsl:if test="contains(@class,'ltx_flex_size_2')">ltx_flex_size_2</xsl:if>
                   <xsl:if test="contains(@class,'ltx_flex_size_3')">ltx_flex_size_3</xsl:if>

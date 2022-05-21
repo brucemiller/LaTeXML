@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-picture-svg.xsl                                            |
@@ -13,14 +13,14 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     = "1.0"
-    xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:svg   = "http://www.w3.org/2000/svg"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
-    xmlns:xlink = "http://www.w3.org/1999/xlink"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    xmlns:svg="http://www.w3.org/2000/svg"
+    xmlns:f="http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    version="1.0"
     extension-element-prefixes="f"
-    exclude-result-prefixes = "ltx f svg">
+    exclude-result-prefixes="ltx f svg">
 
   <xsl:param name="SVG_NAMESPACE">http://www.w3.org/2000/svg</xsl:param>
   <xsl:param name="USE_SVG">true</xsl:param>
@@ -128,7 +128,8 @@
           </xsl:when>
           -->
           <xsl:when test="namespace-uri() = $SVG_NAMESPACE">
-            <xsl:attribute name="{local-name()}" namespace="{f:if($USE_NAMESPACES,namespace-uri(),'')}">
+            <xsl:attribute name="{local-name()}"
+                           namespace="{f:if($USE_NAMESPACES,namespace-uri(),'')}">
               <xsl:value-of select="."/>
             </xsl:attribute>
           </xsl:when>
@@ -141,7 +142,7 @@
         <!-- If foreignObject in a DIFFERENT namespace, copy as foreign markup -->
         <xsl:when test="local-name()='foreignObject'
                         and not(namespace-uri(child::*) = $SVG_NAMESPACE)">
-          <xsl:apply-templates mode='copy-foreign'/>
+          <xsl:apply-templates mode="copy-foreign"/>
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates/>
@@ -158,13 +159,13 @@
   <!-- Several xlink attributes refer to urls, so take care of url ajustment
        and also (presumably) the namespace prefix should be dropped when not using namespaces?
        Not even sure if these should just be ignored (except within svg, as above)-->
-  <xsl:template match="@xlink:*" mode='copy-attribute'>
+  <xsl:template match="@xlink:*" mode="copy-attribute">
     <xsl:attribute name="{local-name()}" namespace="{f:if($USE_NAMESPACES,namespace-uri(),'')}">
       <xsl:value-of select="."/>
     </xsl:attribute>
   </xsl:template>
 
-  <xsl:template match="@xlink:href | @xlink:role | @xlink:arcrole" mode='copy-attribute'>
+  <xsl:template match="@xlink:href | @xlink:role | @xlink:arcrole" mode="copy-attribute">
     <xsl:attribute name="{local-name()}" namespace="{f:if($USE_NAMESPACES,namespace-uri(),'')}">
       <xsl:value-of select="f:url(.)"/>
     </xsl:attribute>

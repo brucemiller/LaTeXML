@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-jats.xsl                                                   |
@@ -17,13 +17,13 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     ="1.0"
-    xmlns:xsl   ="http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   ="http://dlmf.nist.gov/LaTeXML"
-    xmlns:str   ="http://exslt.org/strings"
-    xmlns:m     ="http://www.w3.org/1998/Math/MathML"
-    xmlns:svg   ="http://www.w3.org/2000/svg"
-    xmlns:xlink ="http://www.w3.org/1999/xlink"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    xmlns:str="http://exslt.org/strings"
+    xmlns:m="http://www.w3.org/1998/Math/MathML"
+    xmlns:svg="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    version="1.0"
     extension-element-prefixes="str"
     exclude-result-prefixes="ltx str m svg xlink">
 
@@ -59,9 +59,8 @@
   <xsl:output
       method="xml"
       indent="yes"
-      doctype-public = "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
-      doctype-system = "JATS-journalpublishing1-2.dtd"
-      />
+      doctype-public="-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.2 20190208//EN"
+      doctype-system="JATS-journalpublishing1-2.dtd"/>
   <!--
       doctype-public = "-//NLM//DTD JATS (Z39.96) Journal Publishing DTD v1.3 20210610//EN"
       doctype-system = "JATS-journalpublishing1-3.dtd"
@@ -69,8 +68,8 @@
 
   <xsl:variable name="footnotes" select="//ltx:note[@role='footnote']"/>
   <xsl:template name="add_classes"/>
-  <xsl:param name="html_ns"></xsl:param>
-  <xsl:param name="USE_XMLID"></xsl:param>
+  <xsl:param name="html_ns"/>
+  <xsl:param name="USE_XMLID"/>
 
   <!-- ======================================================================
        Basic Document structure -->
@@ -173,7 +172,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:date[@role='creation']">
-    <pub-date><year><xsl:apply-templates /></year></pub-date>
+    <pub-date><year><xsl:apply-templates/></year></pub-date>
   </xsl:template>
 
   <xsl:template match="ltx:creator">

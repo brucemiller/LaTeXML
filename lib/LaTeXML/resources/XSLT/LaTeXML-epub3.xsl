@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-epub3.xsl                                                  |
@@ -13,9 +13,9 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version   = "1.0"
-    xmlns:xsl = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx = "http://dlmf.nist.gov/LaTeXML"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    version="1.0"
     exclude-result-prefixes="ltx">
 
   <!-- Include all LaTeXML to xhtml modules -->
@@ -23,13 +23,13 @@
 
   <!-- Override the output method & parameters -->
   <xsl:output
-      method = "xml"
-      encoding       = 'utf-8'
-      media-type     = 'application/xhtml+xml'/>
+      method="xml"
+      encoding="utf-8"
+      media-type="application/xhtml+xml"/>
 
   <!-- No namespaces; DO use HTML5 elements (include MathML & SVG) -->
-  <xsl:param name="USE_NAMESPACES"  >true</xsl:param>
-  <xsl:param name="USE_HTML5"       >true</xsl:param>
+  <xsl:param name="USE_NAMESPACES">true</xsl:param>
+  <xsl:param name="USE_HTML5">true</xsl:param>
 
   <!-- Do not copy the RDFa prefix, but proceed as usual -->
   <xsl:template match="/">

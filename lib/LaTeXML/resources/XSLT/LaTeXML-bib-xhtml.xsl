@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-bib-xhtml.xsl                                              |
@@ -13,15 +13,15 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     = "1.0"
-    xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    xmlns:f="http://dlmf.nist.gov/LaTeXML/functions"
+    version="1.0"
     extension-element-prefixes="f"
-    exclude-result-prefixes = "ltx f">
+    exclude-result-prefixes="ltx f">
 
   <!-- whether to split bibliography lists into two columns -->
-  <xsl:param name="USE_TWOCOLUMN_BIB"></xsl:param>
+  <xsl:param name="USE_TWOCOLUMN_BIB"/>
 
   <!-- ======================================================================
        Bibliography
@@ -70,14 +70,14 @@
 
   <xsl:template match="ltx:biblist" mode="twocolumns">
     <xsl:param name="context"/>
-    <xsl:param name="items"    select="ltx:bibitem"/>
-    <xsl:param name="lines"    select="ltx:bibitem/ltx:bibblock | ltx:bibitem"/>
+    <xsl:param name="items" select="ltx:bibitem"/>
+    <xsl:param name="lines" select="ltx:bibitem/ltx:bibblock | ltx:bibitem"/>
     <xsl:param name="halflines" select="ceiling(count($lines) div 2)"/>
     <xsl:param name="miditem" select="count($lines[position() &lt; $halflines]/parent::*) + 1"/>
     <xsl:call-template name="split-columns">
       <xsl:with-param name="context" select="$context"/>
       <xsl:with-param name="wrapper" select="'ul'"/>
-      <xsl:with-param name="items"   select="$items"/>
+      <xsl:with-param name="items" select="$items"/>
       <xsl:with-param name="miditem" select="$miditem"/>
     </xsl:call-template>
   </xsl:template>
@@ -93,8 +93,8 @@
       </xsl:apply-templates>
 
       <xsl:choose>
-        <xsl:when test='ltx:tags/ltx:tag[not(@role)]'>
-          <xsl:apply-templates select='ltx:tags/ltx:tag[not(@role)]'>
+        <xsl:when test="ltx:tags/ltx:tag[not(@role)]">
+          <xsl:apply-templates select="ltx:tags/ltx:tag[not(@role)]">
             <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
         </xsl:when>
@@ -104,7 +104,7 @@
           </xsl:apply-templates>
         </xsl:when>
       </xsl:choose>
-      <xsl:apply-templates select='ltx:bibblock'>
+      <xsl:apply-templates select="ltx:bibblock">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">

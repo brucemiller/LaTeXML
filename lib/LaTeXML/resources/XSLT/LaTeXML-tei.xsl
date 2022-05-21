@@ -1,13 +1,13 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <xsl:stylesheet
-    version     ="1.0"
-    xmlns:xsl   ="http://www.w3.org/1999/XSL/Transform"
-    xmlns       ="http://www.tei-c.org/ns/1.0"
-    xmlns:ltx   ="http://dlmf.nist.gov/LaTeXML"
-    xmlns:str   ="http://exslt.org/strings"
-    xmlns:m     ="http://www.w3.org/1998/Math/MathML"
-    xmlns:svg   ="http://www.w3.org/2000/svg"
-    xmlns:xlink ="http://www.w3.org/1999/xlink"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns="http://www.tei-c.org/ns/1.0"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    xmlns:str="http://exslt.org/strings"
+    xmlns:m="http://www.w3.org/1998/Math/MathML"
+    xmlns:svg="http://www.w3.org/2000/svg"
+    xmlns:xlink="http://www.w3.org/1999/xlink"
+    version="1.0"
     extension-element-prefixes="str"
     exclude-result-prefixes="ltx str m svg xlink">
 
@@ -41,20 +41,20 @@
   <xsl:strip-space elements="ltx:Math"/>
 
   <xsl:output
-      method = "xml"
-      indent = "yes"
-      encoding = 'utf-8'/>
+      method="xml"
+      indent="yes"
+      encoding="utf-8"/>
 
   <xsl:variable name="footnotes" select="//ltx:note[@role='footnote']"/>
   <xsl:template name="add_classes"/>
-  <xsl:param name="html_ns"></xsl:param>
+  <xsl:param name="html_ns"/>
   <xsl:param name="USE_XMLID">true</xsl:param>
 
   <!-- ======================================================================
        Basic Document structure -->
 
   <xsl:template match="ltx:document">
-    <TEI xmlns="http://www.tei-c.org/ns/1.0">
+    <TEI>
       <xsl:call-template name="header"/>
       <text>
         <body>
@@ -104,7 +104,7 @@
           <xsl:apply-templates select="ltx:creator[@role='edtior']"/>
         </titleStmt>
         <publicationStmt>
-          <publisher></publisher>
+          <publisher/>
         </publicationStmt>
         <sourceDesc>
           <biblStruct>
@@ -196,11 +196,11 @@
   </xsl:template>
 
   <xsl:template match="ltx:contact[@role='email']">
-    <email><xsl:apply-templates /></email>
+    <email><xsl:apply-templates/></email>
   </xsl:template>
 
   <xsl:template match="ltx:contact[@role='orcid']">
-    <email><xsl:apply-templates /></email>
+    <email><xsl:apply-templates/></email>
   </xsl:template>
 
   <xsl:template match="ltx:contact[@role='url']">
@@ -599,7 +599,7 @@
   </xsl:template>
 
   <xsl:template match="ltx:equationgroup/ltx:equation">
-    <formula notation="mathml" >
+    <formula notation="mathml">
       <xsl:apply-templates select="@xml:id" mode="copy-attribute"/>
       <xsl:apply-templates/>
     </formula>
@@ -607,7 +607,7 @@
 
   <xsl:template match="ltx:equation">
     <p>
-      <formula notation="mathml" >
+      <formula notation="mathml">
         <xsl:apply-templates select="@xml:id" mode="copy-attribute"/>
         <xsl:apply-templates/>
       </formula>

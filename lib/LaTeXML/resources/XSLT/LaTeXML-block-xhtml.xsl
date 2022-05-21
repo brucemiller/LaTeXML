@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-block-xhtml.xsl                                            |
@@ -13,15 +13,15 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     = "1.0"
-    xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:func  = "http://exslt.org/functions"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    xmlns:func="http://exslt.org/functions"
+    xmlns:f="http://dlmf.nist.gov/LaTeXML/functions"
+    version="1.0"
     extension-element-prefixes="func f"
-    exclude-result-prefixes = "ltx func f">
+    exclude-result-prefixes="ltx func f">
 
-  <xsl:param name="SIMPLIFY_HTML"></xsl:param>
+  <xsl:param name="SIMPLIFY_HTML"/>
 
   <!-- ======================================================================
        Various Block-level elements:
@@ -328,7 +328,7 @@
         <xsl:apply-templates select="ltx:Math | ltx:MathFork | ltx:text
                                      | ltx:inline-block | ltx:verbatim | ltx:break
                                      | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-para
-                                     | ltx:tabular | ltx:picture" >
+                                     | ltx:tabular | ltx:picture">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
       </xsl:element>
@@ -541,15 +541,15 @@
       <!-- Wrong side: Nothing -->
       <xsl:when test="$eqnopos != $side"/>
       <!-- equationgroup is numbered, but NOT equations! -->
-      <xsl:when test="ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags][not(descendant::ltx:equation[ltx:tags])]">
+      <xsl:when
+          test="ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags][not(descendant::ltx:equation[ltx:tags])]">
         <!-- place number only for 1st row -->
         <xsl:if test="(ancestor-or-self::ltx:tr and not(preceding-sibling::ltx:tr))
                       or (not(ancestor-or-self::ltx:tr) and not(preceding-sibling::ltx:equation))">
           <!-- for the containing equationgroup, count the rows in MathFork'd equations,
                the MathFork'd equations w/ only implicit row, the equations that aren't MathFork'd,
                and any constraints within equations -->
-          <xsl:variable name="nrows"
-                        select="count(
+          <xsl:variable name="nrows" select="count(
                                 ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation/ltx:MathFork/ltx:MathBranch[1]/ltx:tr
                                 | ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation[ltx:MathFork/ltx:MathBranch[1]/ltx:td]
                                 | ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags]/descendant::ltx:equation[ltx:Math or ltx:MathFork/ltx:MathBranch[not(ltx:tr or ltx:td)]]
@@ -559,7 +559,8 @@
           <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
             <xsl:attribute name="rowspan"><xsl:value-of select="$nrows"/></xsl:attribute>
             <xsl:attribute name="class">
-              <xsl:value-of select="concat('ltx_eqn_cell ltx_eqn_eqno ltx_align_middle ltx_align_',$side)"/>
+              <xsl:value-of
+                  select="concat('ltx_eqn_cell ltx_eqn_eqno ltx_align_middle ltx_align_',$side)"/>
             </xsl:attribute>
             <xsl:apply-templates
                 select="ancestor-or-self::ltx:equationgroup[position()=1]/ltx:tags/ltx:tag[not(@role)]">
@@ -575,8 +576,7 @@
                       or not(ancestor-or-self::ltx:tr)">
           <!-- Count the MathFork rows, the MathForks w/only implicit row,
                or if not MathFork'd at all; but NOT any constraints.-->
-          <xsl:variable name="nrows"
-                        select="count(
+          <xsl:variable name="nrows" select="count(
                                 ancestor-or-self::ltx:equation[position()=1][ltx:tags]
                                 /ltx:MathFork/ltx:MathBranch[1]/ltx:tr
                                 | ancestor-or-self::ltx:equation[position()=1][ltx:tags]
@@ -588,9 +588,11 @@
           <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
             <xsl:attribute name="rowspan"><xsl:value-of select="$nrows"/></xsl:attribute>
             <xsl:attribute name="class">
-              <xsl:value-of select="concat('ltx_eqn_cell ltx_eqn_eqno ltx_align_middle ltx_align_',$side)"/>
+              <xsl:value-of
+                  select="concat('ltx_eqn_cell ltx_eqn_eqno ltx_align_middle ltx_align_',$side)"/>
             </xsl:attribute>
-            <xsl:apply-templates select="ancestor-or-self::ltx:equation[position()=1]/ltx:tags/ltx:tag[not(@role)]">
+            <xsl:apply-templates
+                select="ancestor-or-self::ltx:equation[position()=1]/ltx:tags/ltx:tag[not(@role)]">
               <xsl:with-param name="context" select="$context"/>
             </xsl:apply-templates>
           </xsl:element>
@@ -606,7 +608,7 @@
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:call-template name="eqnumtd">                         <!--Place left number, if any -->
       <xsl:with-param name="context" select="$context"/>
-      <xsl:with-param name='side' select="'left'"/>
+      <xsl:with-param name="side" select="'left'"/>
     </xsl:call-template>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
@@ -634,7 +636,7 @@
     </xsl:element>
     <xsl:call-template name="eqnumtd">
       <xsl:with-param name="context" select="$context"/>
-      <xsl:with-param name='side' select="'right'"/>
+      <xsl:with-param name="side" select="'right'"/>
     </xsl:call-template>
   </xsl:template>
 
@@ -823,10 +825,11 @@
           </xsl:apply-templates>
           <xsl:call-template name="eq-right">
             <xsl:with-param name="context" select="$context"/>
-            <xsl:with-param name="extrapad" select="$ncolumns - f:countcolumns(ltx:MathFork/ltx:MathBranch[1]/tr[1])"/>
+            <xsl:with-param name="extrapad"
+                            select="$ncolumns - f:countcolumns(ltx:MathFork/ltx:MathBranch[1]/tr[1])"/>
           </xsl:call-template>
         </xsl:element>
-        <xsl:for-each select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[position() &gt; 1]">
+        <xsl:for-each select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[position() > 1]">
           <xsl:text>&#x0A;</xsl:text>
           <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
             <xsl:attribute name="class">ltx_eqn_row ltx_align_baseline</xsl:attribute>
@@ -839,7 +842,8 @@
             <xsl:call-template name="eq-right">
               <xsl:with-param name="context" select="$context"/>
               <!-- count carefully, here -->
-              <xsl:with-param name="extrapad" select="$ncolumns - sum(ltx:td/@colspan) - count(ltx:td[not(@colspan)])"/>
+              <xsl:with-param name="extrapad"
+                              select="$ncolumns - sum(ltx:td/@colspan) - count(ltx:td[not(@colspan)])"/>
             </xsl:call-template>
           </xsl:element>
         </xsl:for-each>
@@ -860,13 +864,13 @@
           <xsl:call-template name="eq-left">
             <xsl:with-param name="context" select="$context"/>
           </xsl:call-template>
-          <xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/*"
-                               mode="inalignment">
+          <xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/*" mode="inalignment">
             <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
           <xsl:call-template name="eq-right">
             <xsl:with-param name="context" select="$context"/>
-            <xsl:with-param name="extrapad" select="$ncolumns - f:countcolumns(ltx:MathFork/ltx:MathBranch[1])"/>
+            <xsl:with-param name="extrapad"
+                            select="$ncolumns - f:countcolumns(ltx:MathFork/ltx:MathBranch[1])"/>
           </xsl:call-template>
         </xsl:element>
       </xsl:when>
@@ -900,7 +904,7 @@
             <xsl:apply-templates select="ltx:Math | ltx:text
                                          | ltx:inline-block | ltx:verbatim | ltx:break
                                          | ltx:graphics | ltx:svg | ltx:rawhtml | ltx:inline-para
-                                         | ltx:tabular | ltx:picture" >
+                                         | ltx:tabular | ltx:picture">
               <xsl:with-param name="context" select="$context"/>
             </xsl:apply-templates>
           </xsl:element>
@@ -934,7 +938,8 @@
           <xsl:attribute name="class">ltx_eqn_cell ltx_align_right</xsl:attribute>
           <!-- the $ncolumns of math, plus whatever endpadding, but NOT the number-->
           <xsl:attribute name="colspan">
-            <xsl:value-of select="$ncolumns+2 + f:if(ancestor-or-self::ltx:equation[ltx:tags/ltx:tag[not(@role)]],1,0)"/>
+            <xsl:value-of
+                select="$ncolumns+2 + f:if(ancestor-or-self::ltx:equation[ltx:tags/ltx:tag[not(@role)]],1,0)"/>
           <!--<xsl:value-of select="$ncolumns+2"/>-->
           </xsl:attribute>
           <xsl:apply-templates select="." mode="constraints">
@@ -969,8 +974,10 @@
         <xsl:with-param name="extra_classes" select="'ltx_eqn_cell'"/>
         <xsl:with-param name="extra_style">
           <xsl:if test="ancestor::ltx:equationgroup/@rowsep">
-              <xsl:value-of select="concat('padding-top:',f:half(ancestor::ltx:equationgroup/@rowsep),';')"/>
-              <xsl:value-of select="concat('padding-bottom:',f:half(ancestor::ltx:equationgroup/@rowsep),';')"/>
+              <xsl:value-of
+                  select="concat('padding-top:',f:half(ancestor::ltx:equationgroup/@rowsep),';')"/>
+              <xsl:value-of
+                  select="concat('padding-bottom:',f:half(ancestor::ltx:equationgroup/@rowsep),';')"/>
             </xsl:if>
           </xsl:with-param>
       </xsl:call-template>
@@ -1063,7 +1070,7 @@
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
-      <xsl:apply-templates mode='description'>
+      <xsl:apply-templates mode="description">
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
@@ -1267,10 +1274,10 @@
       <xsl:when test="($miditem &lt; count($items)) or not(parent::ltx:chapter)">
         <xsl:element name="div" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
-          <xsl:attribute name='class'>ltx_page_columns</xsl:attribute>
+          <xsl:attribute name="class">ltx_page_columns</xsl:attribute>
           <xsl:text>&#x0A;</xsl:text>
           <xsl:element name="div" namespace="{$html_ns}">
-            <xsl:attribute name='class'>ltx_page_column1</xsl:attribute>
+            <xsl:attribute name="class">ltx_page_column1</xsl:attribute>
             <xsl:text>&#x0A;</xsl:text>
             <xsl:element name="{$wrapper}" namespace="{$html_ns}">
               <xsl:call-template name="add_attributes"/>
@@ -1289,7 +1296,7 @@
           </xsl:element>
           <xsl:text>&#x0A;</xsl:text>
           <xsl:element name="div" namespace="{$html_ns}">
-            <xsl:attribute name='class'>ltx_page_column2</xsl:attribute>
+            <xsl:attribute name="class">ltx_page_column2</xsl:attribute>
             <xsl:text>&#x0A;</xsl:text>
             <xsl:element name="{$wrapper}" namespace="{$html_ns}">
               <xsl:call-template name="add_attributes"/>

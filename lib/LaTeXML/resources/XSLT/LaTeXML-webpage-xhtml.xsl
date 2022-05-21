@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-webpage-xhtml.xsl                                          |
@@ -13,32 +13,32 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     = "1.0"
-    xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:string= "http://exslt.org/strings"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
-    xmlns:m     = "http://www.w3.org/1998/Math/MathML"
-    exclude-result-prefixes = "ltx f"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    xmlns:string="http://exslt.org/strings"
+    xmlns:f="http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:m="http://www.w3.org/1998/Math/MathML"
+    version="1.0"
+    exclude-result-prefixes="ltx f"
     extension-element-prefixes="string f">
 
   <!-- Include these "|" separated CSS files -->
-  <xsl:param name="CSS"></xsl:param>
+  <xsl:param name="CSS"/>
   <!-- Include these "|" separated Javascript files -->
-  <xsl:param name="JAVASCRIPT"></xsl:param>
+  <xsl:param name="JAVASCRIPT"/>
   <!-- Include javascript at the end of body, instead of head -->
-  <xsl:param name="LATEJS"></xsl:param>
+  <xsl:param name="LATEJS"/>
   <!-- Use this image file as icon -->
-  <xsl:param name="ICON"></xsl:param>
+  <xsl:param name="ICON"/>
   <!-- Use this string as the created date/time timestamp -->
-  <xsl:param name="TIMESTAMP"></xsl:param>
+  <xsl:param name="TIMESTAMP"/>
 
-  <xsl:param name="HEAD_TITLE_PREFIX"></xsl:param>
+  <xsl:param name="HEAD_TITLE_PREFIX"/>
   <xsl:param name="HEAD_TITLE_SHOW_CONTEXT">true</xsl:param>
 
   <!-- Use this string as meta viewport tag.
        The tag is omitted if the string is empty. -->
-  <xsl:param name="META_VIEWPORT"></xsl:param>
+  <xsl:param name="META_VIEWPORT"/>
 
   <!-- We don't really anticipate page structure appearing in inline contexts,
        so we pretty much ignore the $context switches.
@@ -172,8 +172,7 @@
         <xsl:apply-templates select="following-sibling::ltx:toctitle
                                      | following-sibling::ltx:toccaption
                                      | preceding-sibling::ltx:toctitle
-                                     | preceding-sibling::ltx:toccaption"
-                             mode="visible-text"/>
+                                     | preceding-sibling::ltx:toccaption" mode="visible-text"/>
       </xsl:when>
       <xsl:otherwise>
         <xsl:apply-templates select="." mode="visible-text"/>
@@ -183,9 +182,9 @@
 
   <xsl:template match="text()" mode="visible-text">
     <!-- normalize space, but preserve leading & trailing -->
-    <xsl:if test="starts-with(translate(.,'&#x0a;',' '),' ')"><xsl:text> </xsl:text></xsl:if>
+    <xsl:if test="starts-with(translate(.,'&#x0A;',' '),' ')"><xsl:text> </xsl:text></xsl:if>
     <xsl:value-of select="normalize-space(.)"/>
-    <xsl:if test="substring(translate(.,'&#x0a;',' '),string-length(.)) = ' '"><xsl:text> </xsl:text></xsl:if>
+    <xsl:if test="substring(translate(.,'&#x0A;',' '),string-length(.)) = ' '"><xsl:text> </xsl:text></xsl:if>
   </xsl:template>
 
   <xsl:template match="*" mode="visible-text">
@@ -239,13 +238,13 @@
   </xsl:template>
 
   <!-- Combining accents -->
-  <xsl:template match="m:mo[text()='&#x60;']" mode="visible-script">
+  <xsl:template match="m:mo[text()='`']" mode="visible-script">
     <xsl:text>&#x0300;</xsl:text>
   </xsl:template>
   <xsl:template match="m:mo[text()='&#xB4;']" mode="visible-script">
     <xsl:text>&#x0301;</xsl:text>
   </xsl:template>
-  <xsl:template match="m:mo[text()='&#x5E;']" mode="visible-script">
+  <xsl:template match="m:mo[text()='^']" mode="visible-script">
     <xsl:text>&#x0302;</xsl:text>
   </xsl:template>
   <xsl:template match="m:mo[text()='~']" mode="visible-script">
@@ -362,40 +361,40 @@
     <xsl:text> </xsl:text>
   </xsl:template>
 
-  <xsl:template match="m:mfenced"  mode="visible-text">
+  <xsl:template match="m:mfenced" mode="visible-text">
     <xsl:value-of select="@open | '('"/>
     <xsl:apply-templates mode="visible-text-punctuated"/>
     <xsl:value-of select="@close | ')'"/>
   </xsl:template>
 
   <!-- NO, I'm not going to try to decipher @separators -->
-  <xsl:template match="*"  mode="visible-text-punctuated">
+  <xsl:template match="*" mode="visible-text-punctuated">
     <xsl:apply-templates mode="visible-text"/>
     <xsl:if test="./following-sibling::*">
       <xsl:text>,</xsl:text>
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="m:mtable"  mode="visible-text">
+  <xsl:template match="m:mtable" mode="visible-text">
     <xsl:text>[</xsl:text>
     <xsl:apply-templates mode="visible-text"/>
     <xsl:text>]</xsl:text>
   </xsl:template>
 
-  <xsl:template match="m:mtr"  mode="visible-text">
+  <xsl:template match="m:mtr" mode="visible-text">
     <xsl:text>[</xsl:text>
     <xsl:apply-templates mode="visible-text"/>
     <xsl:text>]</xsl:text>
   </xsl:template>
 
-  <xsl:template match="m:mtd"  mode="visible-text">
+  <xsl:template match="m:mtd" mode="visible-text">
     <xsl:apply-templates mode="visible-text"/>
     <xsl:if test="./following-sibling::m:mtd">
       <xsl:text>,</xsl:text>
     </xsl:if>
   </xsl:template>
 
-  <xsl:template match="m:menclose"  mode="visible-text">
+  <xsl:template match="m:menclose" mode="visible-text">
     <xsl:value-of select="@notation"/>
     <xsl:text>(</xsl:text>
     <xsl:apply-templates mode="visible-text"/>
@@ -435,7 +434,7 @@
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
       <!-- HTML5 in XML syntax: content-type and charset not allowed -->
-      <xsl:when test="$USE_NAMESPACES='true' and $USE_HTML5='true'" />
+      <xsl:when test="$USE_NAMESPACES='true' and $USE_HTML5='true'"/>
       <xsl:otherwise>
         <xsl:element name="meta" namespace="{$html_ns}">
           <!-- HTML(4|5) or XHTML1.1: content-type and charset -->
@@ -451,7 +450,7 @@
 
   <!-- Generate an "icon" link for the head -->
   <xsl:template match="/" mode="head-icon">
-    <xsl:if test='$ICON'>
+    <xsl:if test="$ICON">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="link" namespace="{$html_ns}">
         <xsl:attribute name="rel">shortcut icon</xsl:attribute>
@@ -531,7 +530,7 @@
   <!-- Generate CSS line & style entries for the head.
        NOTE: Make allowance for media=print (or other media!)-->
   <xsl:template match="/" mode="head-css">
-    <xsl:if test='$CSS'>
+    <xsl:if test="$CSS">
       <xsl:for-each select="string:split($CSS,'|')">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="link" namespace="{$html_ns}">
@@ -545,7 +544,7 @@
 
   <!-- Generate javascript script entries for the head -->
   <xsl:template match="/" mode="head-javascript">
-    <xsl:if test='$JAVASCRIPT and not($LATEJS)'>
+    <xsl:if test="$JAVASCRIPT and not($LATEJS)">
       <xsl:for-each select="string:split($JAVASCRIPT,'|')">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="script" namespace="{$html_ns}">
@@ -559,7 +558,8 @@
   <!-- Generate a set of links to other related documents -->
   <xsl:template match="/" mode="head-links">
     <xsl:apply-templates select="/*/ltx:navigation/ltx:ref[@href]" mode="inhead"/>
-    <xsl:apply-templates select="/*/ltx:creator[ltx:personname/@href or ltx:contact/@href]" mode="inhead"/>
+    <xsl:apply-templates select="/*/ltx:creator[ltx:personname/@href or ltx:contact/@href]"
+                         mode="inhead"/>
   </xsl:template>
 
   <xsl:template match="ltx:navigation/ltx:ref[@rel]" mode="inhead">
@@ -580,10 +580,11 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="ltx:creator[@role='author'][ltx:personname[@href] or ltx:contact[@href]]" mode="inhead">
+  <xsl:template match="ltx:creator[@role='author'][ltx:personname[@href] or ltx:contact[@href]]"
+                mode="inhead">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="link" namespace="{$html_ns}">
-      <xsl:attribute name="rel"><xsl:value-of select='@role'/></xsl:attribute>
+      <xsl:attribute name="rel"><xsl:value-of select="@role"/></xsl:attribute>
       <xsl:attribute name="href">
         <xsl:choose>
           <xsl:when test="ltx:personname/@href">
@@ -616,7 +617,7 @@
           </xsl:if>
           <xsl:for-each select="//ltx:indexphrase[not(.=preceding::ltx:indexphrase)]">
             <xsl:sort select="text()"/>
-            <xsl:if test="position() &gt; 1">, </xsl:if>
+            <xsl:if test="position() > 1">, </xsl:if>
             <xsl:value-of select="text()"/>
           </xsl:for-each>
         </xsl:attribute>
@@ -643,7 +644,7 @@
   <xsl:template match="/" mode="body-begin"/>
   <!-- Generate javascript script entries for the end of body -->
   <xsl:template match="/" mode="body-end">
-      <xsl:if test='$JAVASCRIPT and $LATEJS'>
+      <xsl:if test="$JAVASCRIPT and $LATEJS">
         <xsl:for-each select="string:split($JAVASCRIPT,'|')">
           <xsl:text>&#x0A;</xsl:text>
           <xsl:element name="script" namespace="{$html_ns}">
@@ -696,7 +697,8 @@
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_page_navbar</xsl:attribute>
-          <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_navbar']/*"/>
+          <xsl:apply-templates
+              select="//ltx:navigation/ltx:inline-para[@class='ltx_page_navbar']/*"/>
         </xsl:element>
       </xsl:when>
       <xsl:when test="//ltx:navigation/ltx:TOC">
@@ -722,7 +724,8 @@
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="{f:if($USE_HTML5,'header','div')}" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_page_header</xsl:attribute>
-          <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_header']/*"/>
+          <xsl:apply-templates
+              select="//ltx:navigation/ltx:inline-para[@class='ltx_page_header']/*"/>
         </xsl:element>
       </xsl:when>
       <xsl:when test="//ltx:navigation/ltx:ref">
@@ -741,7 +744,8 @@
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="{f:if($USE_HTML5,'footer','div')}" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_page_footer</xsl:attribute>
-          <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_footer']/*"/>
+          <xsl:apply-templates
+              select="//ltx:navigation/ltx:inline-para[@class='ltx_page_footer']/*"/>
         </xsl:element>
       </xsl:when>
       <xsl:otherwise>
@@ -818,7 +822,7 @@
   <xsl:template match="ltx:TOC[@format='short']">
     <xsl:param name="context"/>
     <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name='add_attributes'>
+      <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
       </xsl:call-template>
       <xsl:apply-templates mode="short">
@@ -830,7 +834,7 @@
   <xsl:template match="ltx:TOC[@format='veryshort']">
     <xsl:param name="context"/>
     <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name='add_attributes'>
+      <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
       </xsl:call-template>
       <xsl:apply-templates mode="veryshort">
@@ -842,7 +846,7 @@
   <xsl:template match="ltx:TOC[@format='normal2']">
     <xsl:param name="context"/>
     <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name='add_attributes'>
+      <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
       </xsl:call-template>
       <xsl:apply-templates mode="normal2">
@@ -856,7 +860,7 @@
     <xsl:if test="ltx:toclist/descendant::ltx:tocentry">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="div" namespace="{$html_ns}">
-        <xsl:call-template name='add_attributes'>
+        <xsl:call-template name="add_attributes">
           <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
         </xsl:call-template>
         <xsl:if test="ltx:title">
@@ -878,7 +882,7 @@
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name='add_attributes'>
+      <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="'ltx_toc_compact'"/>
       </xsl:call-template>
       <xsl:text>&#x0A;&#x2666; </xsl:text>
@@ -892,7 +896,7 @@
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:call-template name='add_attributes'>
+      <xsl:call-template name="add_attributes">
         <xsl:with-param name="extra_classes" select="'ltx_toc_verycompact'"/>
       </xsl:call-template>
       <xsl:text>&#x2666;</xsl:text>
@@ -906,8 +910,8 @@
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="ul" namespace="{$html_ns}">
-      <xsl:call-template name='add_id'/>
-      <xsl:call-template name='add_attributes'/>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates>
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
@@ -924,15 +928,15 @@
   </xsl:template>
   <xsl:template match="ltx:toclist" mode="twocolumn">
     <xsl:param name="context"/>
-    <xsl:param name="items"    select="ltx:tocentry"/>
-    <xsl:param name="lines"    select="descendant::ltx:tocentry"/>
+    <xsl:param name="items" select="ltx:tocentry"/>
+    <xsl:param name="lines" select="descendant::ltx:tocentry"/>
     <xsl:param name="halflines" select="ceiling(count($lines) div 2)"/>
     <xsl:param name="miditem"
                select="count($lines[position() &lt; $halflines]/ancestor::ltx:tocentry[parent::ltx:toclist[parent::ltx:TOC]]) + 1"/>
     <xsl:call-template name="split-columns">
       <xsl:with-param name="context" select="$context"/>
       <xsl:with-param name="wrapper" select="'ul'"/>
-      <xsl:with-param name="items"   select="$items"/>
+      <xsl:with-param name="items" select="$items"/>
       <xsl:with-param name="miditem" select="$miditem"/>
     </xsl:call-template>
   </xsl:template>
@@ -941,8 +945,8 @@
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="li" namespace="{$html_ns}">
-      <xsl:call-template name='add_id'/>
-      <xsl:call-template name='add_attributes'/>
+      <xsl:call-template name="add_id"/>
+      <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates>
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
