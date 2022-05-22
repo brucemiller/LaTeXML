@@ -1036,5 +1036,39 @@ DefConstructor('\doSpecialRotate@@ Until:@@',
     Debug("ROTATE by $transform SPECIAL for " . ToString($arg)) if $LaTeXML::DEBUG{xy};
     return (transform => $transform, box => $box); });
 
+#======================================================================
+# Matrix extension
+# Note that xy is rather (too) clever :>
+# It typesets a matrix using \halign (obviously)
+# then takes it apart using low level \unskip,\lastbox, magic
+# in order to measure the rows & columns.
+# We haven't emulated \lastbox so well
+# Extract the needed column widths & row heights from our own Alignment calculations
+Let('\lx@xy@prentry@@norm@save', '\prentry@@norm');
+DefMacro('\prentry@@norm', '\lx@xy@prentry@@norm@save\lx@xy@notealignment');
+# Record the Alignment object being built by an \xymatrix
+# (since it will havev become unbound by the time we need it)
+# [Global is OK(?) since nested xymatrix supposedly doesn't work?]
+DefPrimitive('\lx@xy@notealignment', sub {
+    AssignValue('xymatrix_alignment' => LookupValue('Alignment'), 'global'); });
+
+DefPrimitive('\xymatrix@measureit', sub {
+    if (my $alignment = LookupValue('xymatrix_alignment')) {
+      $alignment->normalizeAlignment;
+      my $i   = 1;
+      my $rmx = Dimension(0);
+      foreach my $r (@{ $$alignment{rowheights} }) {
+        $rmx = $rmx->larger($r);
+        DefMacroI(T_CS('\Hrow@' . $i++), undef, Tokens($r->revert)); }
+      DefMacroI(T_CS('\H@max'), undef, Tokens($rmx->revert));
+      my $j   = 1;
+      my $cmx = Dimension(0);
+      foreach my $c (@{ $$alignment{columnwidths} }) {
+        $cmx = $cmx->larger($c);
+        DefMacroI(T_CS('\Wcol@' . $j++), undef, Tokens($c->revert)); }
+      DefMacroI(T_CS('\W@max'),  undef, Tokens($cmx->revert));
+      DefMacroI(T_CS('\HW@max'), undef, Tokens($rmx->larger($cmx)->revert)); }
+    return; });
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
