@@ -56,64 +56,57 @@ foreach ('dash', 'atip', 'btip', 'bsql', 'circ') {
   );
 }
 
-# Copy out the XY's size before \endxy consumes it.
-DefPrimitive('\lx@xy@before@end', sub {
-    my ($L, $D, $R, $U) = map { LookupRegister($_); } '\X@min', '\Y@min', '\X@max', '\Y@max';
-    AssignValue('\X@@min' => $L, 'global');
-    AssignValue('\Y@@min' => $D, 'global');
-    AssignValue('\X@@max' => $R, 'global');
-    AssignValue('\Y@@max' => $U, 'global');
-    return; });
-
-DefConstructor('\lx@xy@svg {} DigestedBody', sub {
-    my ($document, $inxy, $body, %props) = @_;
-    if (inSVG()) {
-      $document->absorb($body); }
-    else {
-      $document->openElement('ltx:picture');
-      $document->openElement('svg:svg',
-        overflow => 'visible',       version => '1.1',
-        width    => $props{pxwidth}, height  => $props{pxheight});
-      $document->openElement('svg:g', transform => "matrix($props{origin})");
-      $document->absorb($body);
-      $document->closeElement('svg:g');
-      $document->closeElement('svg:svg');
-      $document->closeElement('ltx:picture'); } },
-  beforeDigest => sub {
-    AssignValue('\X@@min' => 9999,  'global');
-    AssignValue('\Y@@min' => 9999,  'global');
-    AssignValue('\X@@max' => -9999, 'global');
-    AssignValue('\Y@@max' => -9999, 'global');
-    $_[0]->bgroup;
-    return; },
+# Note that xy heavily uses grouping to limit scope of image data
+# and \edef to smuggle recorded data out of the groups.
+# We can use the Digested parameter type here to capture a Box,
+# since \xy starts with an \hbox \bgroup, and \endxy contains a matching \egroup.
+# However, we have to take steps to capture the size before that group ends!
+DefConstructor('\lx@xy@svgnested Digested',
+  "<svg:g transform='#transform'>#1</svg:g>",
   properties => sub {
-    my ($stomach, $whatsit, $inxy, $body) = @_;
-    my $am_in_xy = ToString($inxy) eq 'TT';
-    my ($xmin, $ymin, $xmax, $ymax) = map { LookupValue($_); } '\X@@min', '\Y@@min', '\X@@max', '\Y@@max';
-    Debug("XY(c): " . ToString($xmin) . ' ' . ToString($ymin) . ' ' . ToString($xmax) . ' ' . ToString($ymax))
+    my ($x0, $y0, $x1, $y1) = @{ LookupValue('saved_xy_range')
+        || [Dimension(0), Dimension(0), Dimension(0), Dimension(0)] };
+    Debug("Nested XY: " . ToString($x0) . ' ' . ToString($y0) . ' ' . ToString($x1) . ' ' . ToString($y1))
       if $LaTeXML::DEBUG{xy};
-    my $w  = $xmax->subtract($xmin);
-    my $h  = $ymax->subtract($ymin);
-    my $d  = Dimension(0);
-    my $th = $h->add($d);
-    my $x  = $xmin->negate->larger(Dimension(0));
-    my $y  = $ymax;
+    my $w = $x1->subtract($x0);
+    my $h = $y1->subtract($y0);
+    my $x = $x0->larger(Dimension(0));    # negate here, not below!
+    my $y = Dimension(0);
+    if (LookupValue('IN_MATH')) {         # Vertically center, when in math
+      $y = $y->subtract($h->multiply(0.5)); }
+    my $transform = "matrix(1 0 0 1 " . $x->pxValue . ' ' . $y->pxValue . ')';
+    return (width => $w, height => $y1, depth => $y0->negate, transform => $transform); });
 
-    if ($whatsit->isMath) {    # Vertically center, when in math
-      $y = $y->add($th->multiply(0.5)); }
-    my $origin = "1 0 0 -1 " . $x->pxValue . ' ' . $y->pxValue;
-    Debug("XY size: " . ToString($w) . ' x ' . ToString($h) . ' + ' . ToString($d) . ' @ ' . ToString($x) . ' x ' . ToString($y))
+DefConstructor('\lx@xy@svg Digested',
+  "<ltx:picture><svg:svg overflow='visible' version='1.1' width='#pxwidth' height='#pxheight'>"
+    . "<svg:g transform='#transform'>#1</svg:g>"
+    . "</svg:svg></ltx:picture>",
+  properties => sub {
+    my ($x0, $y0, $x1, $y1) = @{ LookupValue('saved_xy_range')
+        || [Dimension(0), Dimension(0), Dimension(0), Dimension(0)] };
 
+    Debug("XY: " . ToString($x0) . ' ' . ToString($y0) . ' ' . ToString($x1) . ' ' . ToString($y1))
       if $LaTeXML::DEBUG{xy};
-    return (width => $w, height => $th, pxwidth => $w->pxValue, pxheight => $th->pxValue,
-      origin => $origin, x => $x->pxValue, h => $y->pxValue,
-    ); });
-DefPrimitiveI('\end@lx@xy@svg', undef, sub { $_[0]->egroup; });
+    my $w = $x1->subtract($x0);
+    my $h = $y1->subtract($y0);
+    my $x = $x0->negate->larger(Dimension(0));
+    my $y = $y1;
+    if (LookupValue('IN_MATH')) {    # Vertically center, when in math
+      $y = $y->add($h->multiply(0.5)); }
+    my $transform = "matrix(1 0 0 -1 " . $x->pxValue . ' ' . $y->pxValue . ')';
+    Debug("XY size: " . ToString($w) . ' x ' . ToString($h) . ' + ' . 0 . ' @ ' . ToString($x) . ' x ' . ToString($y))
+      if $LaTeXML::DEBUG{xy};
+    return (width => $w, height => $h, pxwidth => $w->pxValue, pxheight => $h->pxValue,
+      transform => $transform); });
+
+DefPrimitive('\lx@xy@capturerange', sub {
+    my ($stomach) = @_;
+    AssignValue('saved_xy_range'
+        => [map { LookupRegister($_); } '\X@min', '\Y@min', '\X@max', '\Y@max'], 'global'); });
 
 Let(T_CS('\lx@xy@original'),     T_CS('\xy'));
 Let(T_CS('\end@lx@xy@original'), T_CS('\endxy'));
-DefMacro('\xy',    '\lx@xy@svg{\inxy@}\lx@xy@original');
-DefMacro('\endxy', '\lx@xy@before@end\end@lx@xy@original\end@lx@xy@svg');
-
+DefMacro('\xy',    '\if\inxy@\lx@xy@svgnested\else\lx@xy@svg\fi\lx@xy@original');
+DefMacro('\endxy', '\lx@xy@capturerange\end@lx@xy@original');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;
