@@ -136,12 +136,31 @@ sub xy_getOrientation {
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Directionals
 
-# Redefinitions:
+# xy's K-angle measures the angular position along a square centered at the origin.
+# 0 is at the lower-left corner (-270deg), while 4K being upper-right.
+# The units are equally spaced along the perimeter
+# Given the K-angle, compute cos,sin
+sub xy_direction {
+  my ($kangle) = @_;
+  my $K = 1024;
+  $kangle = (ToString($kangle) + 8 * $K) % (8 * $K);
+  my $q     = $kangle / 2 / $K;
+  my $quad  = int($q);
+  my $delta = 2 * ($q - $quad) - 1;
+  my $norm  = 1 / sqrt(1 + $delta * $delta);
+  my ($dx, $dy);
+  if    ($quad == 0) { $dx = $delta;  $dy = -1; }         # right, along bottom of square
+  elsif ($quad == 1) { $dx = 1;       $dy = $delta; }     # up, along right side
+  elsif ($quad == 2) { $dx = -$delta; $dy = 1; }          # left, along top
+  else               { $dx = -1;      $dy = -$delta; }    # down, along left side
+  return ($dx * $norm, $dy * $norm); }
 
-# Can't compute proper direction w/o font metrics of the goofy fonts.
-# But why not fake it, since we're NEVER (!?!?!) going to use those glyphs
-# Redefine \imposeDirection@i, the lowest layer
-# where sin, cos are calculated from the dimensions of chars in the dashfont.
+# Given a \Direction (K-angle),
+# xy computes the char in xy font whose line fragment is at that angle.
+# It then computes the cos & sin from that char's size.
+# We can't compute proper direction w/o font metrics of these goofy fonts,
+# but we'll fake it from \Direction.
+# We still compute the char codes, in case they're ever used somewhere.
 RawTeX(<<'EoTeX');
 \def\imposeDirection@i{%
  \count@@=\K@ \multiply\count@@ by8 \advance\count@@\Direction
@@ -158,13 +177,12 @@ RawTeX(<<'EoTeX');
 % \quotient@@\sinDirection{\sd@Y\wd8}\xydashl@
  \lx@xy@calculate@direction
 }
-
 EoTeX
+
 DefPrimitive('\lx@xy@calculate@direction', sub {
-    my ($dx, $dy) = map { LookupRegister($_)->valueOf; } '\d@X', '\d@Y';
-    my $angle = atan2($dy, $dx);
-    DefMacroI('\cosDirection', undef, Tokens(Explode(sprintf('%.6f', cos($angle)))));
-    DefMacroI('\sinDirection', undef, Tokens(Explode(sprintf('%.6f', sin($angle)))));
+    my ($c, $s) = xy_direction(LookupRegister('\Direction')->valueOf);
+    DefMacroI('\cosDirection', undef, Tokens(Explode(sprintf('%.6f', $c))));
+    DefMacroI('\sinDirection', undef, Tokens(Explode(sprintf('%.6f', $s))));
     return; });
 
 # Since SO much xy code works through \straight@,
@@ -991,17 +1009,6 @@ DefConstructor('\xyRotate@@{}',
     Debug("ROTATE by $angle") if $LaTeXML::DEBUG{xy};
     return (angle => $angle, box => $box); });
 
-sub xy_direction_angle {
-  my ($dir) = @_;
-  my $K     = 1024;
-  my $case  = int((4 * $K - $dir) / 2 / $K);
-  my ($dx, $dy);
-  if    ($case == 0) { $dx = $K;             $dy = $dir - 3 * $K; }
-  elsif ($case == 1) { $dx = $dir - $K;      $dy = -$K; }
-  elsif ($case == 1) { $dx = -$K;            $dy = -$dir - $K; }
-  else               { $dx = -$dir - 3 * $K; $dy = $K; }
-  return atan2($dy, $dx) * 180 / pi; }
-
 DefConstructor('\xyRotate@@{}',
   "^<svg:g transform='#transform'>#box</svg:g>",
   properties => sub {
@@ -1010,7 +1017,8 @@ DefConstructor('\xyRotate@@{}',
       '\X@p', '\Y@p', '\X@c', '\Y@c', '\L@c', '\U@p', '\R@p';
     my $box = LookupValue('box0');
     AssignValue(box0 => undef);
-    my $angle = xy_direction_angle(ToString($kangle));
+    my ($c, $s) = xy_direction($kangle);
+    my $angle = int(atan2($s, $c) * 180 / pi);
     my $transform =
       'translate(' . $Lc->subtract($Rp)->pxValue . ',' . $Up->negate->pxValue . ')'
       . ' rotate(' . $angle . ')'
