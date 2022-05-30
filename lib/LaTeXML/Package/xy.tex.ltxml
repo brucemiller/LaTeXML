@@ -31,12 +31,16 @@ DefMacro('\xyoption{}', sub {
     $option = Tokens(Expand($option));
     my $option_s = ToString($option);
     if ($xy_other_drivers{$option_s}) {
-      Info('ignored', $option_s, $gullet, "Ignoring xy driver $option_s (using latexml)");
+      Info('xy', 'ignored', $gullet, "Ignoring xy driver $option_s (using latexml)");
       return; }
     elsif ($xy_unsupported{$option}) {
-      Warn('unsupported', $option_s, $gullet,
+      Warn('xy', 'unsupported', $gullet,
         "The xy extension/feature $option_s may not be supported"); }
     return Tokens(T_CS('\lx@xy@xyoption@orig'), T_BEGIN, $option, T_END); });
+
+# Redefine so we get more tracable/debugable info
+DefPrimitive('\xywarning@{}', sub { Info('xy', 'warning', $_[0], ToString($_[1])); });
+DefPrimitive('\xyerror@{}{}', sub { Info('xy', 'error', $_[0], ToString($_[1]), ToString($_[2])); });
 
 # Is this safe for non-LaTeX ??
 # We need to defer till AFTER extensions/features are loaded!
