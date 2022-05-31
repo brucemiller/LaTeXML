@@ -94,7 +94,7 @@ DefConstructor('\lx@xy@svg Digested',
     my $w = $x1->subtract($x0);
     my $h = $y1->subtract($y0);
     my $x = $x0->negate->larger(Dimension(0));
-    my $y = $y1;
+    my $y = $y1->subtract($y0->larger(Dimension(0)));
     if (LookupValue('IN_MATH')) {    # Vertically center, when in math
       $y = $y->add($h->multiply(0.5)); }
     my $transform = "matrix(1 0 0 -1 " . $x->pxValue . ' ' . $y->pxValue . ')';
@@ -111,6 +111,6 @@ DefPrimitive('\lx@xy@capturerange', sub {
 Let(T_CS('\lx@xy@original'),     T_CS('\xy'));
 Let(T_CS('\end@lx@xy@original'), T_CS('\endxy'));
 DefMacro('\xy',    '\if\inxy@\lx@xy@svgnested\else\lx@xy@svg\fi\lx@xy@original');
-DefMacro('\endxy', '\lx@xy@capturerange\end@lx@xy@original');
+DefMacro('\endxy', '\relax\lx@xy@capturerange\end@lx@xy@original');
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 1;

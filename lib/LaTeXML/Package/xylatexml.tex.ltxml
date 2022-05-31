@@ -727,14 +727,14 @@ DefConstructor('\lx@xy@buildcircle@',
     my $h  = $ry;
     my $d  = $ry;
     my $xc = $rx;
-    #    my $yc = Dimension(0);
-    my $yc = $ry->multiply(2);
+##    my $yc = $ry;
+    my $yc = $ry->add(LookupRegister('\xydashl@'));    # Apparent Weird offset???
     Debug("ELLIPSE " . ToString($rx) . ' x ' . ToString($ry) . ' @ ' . ToString($xc) . ',' . ToString($yc))
+
       if $LaTeXML::DEBUG{xy};
     (x => $xc->pxValue, y => $yc->pxValue,
-      rx => $rx->pxValue, ry => $ry->pxValue,
-      #      width     => $w,                       depth   => $d, height => $h,
-      width     => $w, depth => Dimension(0), height => $ry->multiply(2),
+      rx        => $rx->pxValue, ry     => $ry->pxValue,
+      width     => Dimension(0), height => Dimension(0), depth => Dimension(0),
       dashes    => LookupValue('xy_linepattern'),
       do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
 
