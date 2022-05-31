@@ -67,34 +67,25 @@ DefMacro('\lx@xy@knoton',    '\message{LaTeXML enabling poly}');
 DefMacro('\lx@xy@tileon',    '\message{LaTeXML enabling tile}');
 DefMacro('\lx@xy@webon',     '\message{LaTeXML enabling web}');
 
-sub xy_pt2px {
-  return Dimension($_[0] . 'pt')->pxValue; }
-
 # Helper for building SVG paths
 sub xy_packpath {
   return join(' ', map { (ref $_ ? $_->pxValue : $_); } @_); }
-
-#======================================================================
-# Low-level patches
-
-# This intercepts & reports calls to \special used by various drivers
-DefPrimitive('\special{}', sub {
-    Warn('unexpected', 'SPECIAL', $_[0], "SPECIAL: " . ToString($_[1]));
-    return; },
-  locked => 1);
 
 #======================================================================
 # line patterns for dashes
 # These *should* be adjusting the pattern according to the length of the line
 # and whether the line continues a previous line. See xypdf.pdf
 # Q: Will we ever need more complex patterns, like dot-dash, etc?
-DefMacro('\lx@xy@pattern',  '');
-DefMacro('\lx@xy@solidpat', '\def\lx@xy@pattern{}');
-DefMacro('\lx@xy@dashpat',  '\def\lx@xy@pattern{5}');
-DefMacro('\lx@xy@dotpat',   '\def\lx@xy@pattern{1 2}');
+
+our $xy_linepattern_dashes = '5';
+our $xy_linepattern_dots   = '1 2';
+AssignValue(xy_linepattern => undef);
+DefPrimitive('\lx@xy@solidpat', sub { AssignValue(xy_linepattern => undef); });
+DefPrimitive('\lx@xy@dashpat',  sub { AssignValue(xy_linepattern => $xy_linepattern_dashes); });
+DefPrimitive('\lx@xy@dotpat',   sub { AssignValue(xy_linepattern => $xy_linepattern_dots); });
 # These versions should make an adjustmeht for CLOSED lines (but don't yet)
-DefMacro('\lx@xy@cldashpat', '\def\lx@xy@pattern{5}');
-DefMacro('\lx@xy@cldotpat',  '\def\lx@xy@pattern{1}');
+DefPrimitive('\lx@xy@cldashpat', sub { AssignValue(xy_linepattern => $xy_linepattern_dashes); });
+DefPrimitive('\lx@xy@cldotpat',  sub { AssignValue(xy_linepattern => $xy_linepattern_dots); });
 
 AssignValue(xy_fill   => 0);
 AssignValue(xy_stroke => 1);
@@ -345,11 +336,10 @@ DefConstructor('\lx@xy@drawline@',
   beforeConstruct => \&xy_FillStroke,
   properties      => sub {
     my ($x0, $y0, $x1, $y1) = map { LookupRegister($_); } '\X@p', '\Y@p', '\X@c', '\Y@c';
-    my $dashes = ToString(Digest(T_CS('\lx@xy@pattern')));
     Debug("LINE " . ToString($x0) . ',' . ToString($y0) . ' to ' . ToString($x1) . ',' . ToString($y1)) if $LaTeXML::DEBUG{xy};
     (path => xy_packpath('M', $x0, $y0, 'L', $x1, $y1),
-      width     => $x1->subtract($x0),       height  => $y1->subtract($y0), depth  => Dimension(0),
-      do_stroke => LookupValue('xy_stroke'), do_fill => 0,                  dashes => $dashes); });
+      width     => $x1->subtract($x0),       height  => $y1->subtract($y0), depth => Dimension(0),
+      do_stroke => LookupValue('xy_stroke'), do_fill => 0, dashes => LookupValue('xy_linepattern')); });
 
 # # Maybe a zigzag is close enough to a smooth squiggle?
 # # At least for development/debugging.
@@ -361,7 +351,7 @@ DefConstructor('\lx@xy@drawsquiggles@',
     my ($x0, $y0, $x1, $y1) = map { LookupRegister($_); } '\X@p', '\Y@p', '\X@c', '\Y@c';
     my $l = LookupRegister('\xybsqll@');
     # Note: We perversely use the pattern to control dashes
-    my $dashed = ToString(Digest(T_CS('\lx@xy@pattern')));
+    my $dashed = LookupValue('xy_linepattern');
     my $w      = $x1->subtract($x0);
     my $h      = $y1->subtract($y0);
     my $r      = $l->multiply(0.66);
@@ -508,44 +498,12 @@ DefConstructor('\lx@xy@point',
   properties      => sub {
     my $l = LookupRegister('\xybsqll@');
     Debug("POINT") if $LaTeXML::DEBUG{xy};
-    (radius => $l->pxValue,
+    (radius => $l->multiply(0.5)->pxValue,
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill')); });
 
 #======================================================================
 # circles
-
-# So, what exactly do we need to redefine?
-# the pdf driver does things like:
-#   \line@, \circ@ ???
-
-#DefMacro('\cir@i', '\lx@cir@i\OBJECT@x');
-#DefConstructor('\lx@cir@i',
-# Note the peculiar assumed position of the circle!
-DefConstructor('\cirbuild@',
-  "^<svg:circle cx='#x' cy='#y' r='#r' stroke='#stroke' fill='#fill'/>",
-  beforeConstruct => \&xy_FillStroke,
-  properties      => sub {
-    my $r = LookupRegister('\R@');
-    my ($a0, $a1) = map { LookupRegister($_)->valueOf; } '\count@@', '\count@';
-    my $d  = $r->multiply(2);
-    my $x0 = $r;
-    my $y0 = $r->negate;
-    Debug("CIRCLE radius " . ToString($r) . " from $a0 to $a1") if $LaTeXML::DEBUG{xy};
-    # Already positioned ?
-    (    #x => LookupRegister('\X@c')->pxValue,
-         # y     => LookupRegister('\Y@c')->pxValue,
-      x => $x0->pxValue, y => $y0->pxValue,
-      r => $r->pxValue,
-      # There's something very fishy: w.r.t how lines connect to this thing!?!?!
-      # if I set a size
-      # if I set to 0
-      # Both come out wrong, but differently!?!?!?!
-      #      width     => $d, height => $r, depth => $r,
-      #      width     => $d, height => $r->multiply(2), depth => Dimension(0),
-      #      width => $d, depth => $r->multiply(2), height => Dimension(0),
-      width     => Dimension(0),             depth   => Dimension(0), height => Dimension(0),
-      do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
 
 Let('\lx@xy@CIRfull@orig', '\CIRfull@');
 Let('\lx@xy@CIRcw@orig',   '\CIRcw@');
@@ -615,7 +573,9 @@ DefConstructor('\cirbuild@',
 # \splinebox@,\splinetol@,\xycrvdrop,\xycrvconn@ ?
 # (will be eg. the expansion of \dir{--})
 # This code is a hybrid of stock xy & pdf driver
-DefMacro('\splineset@@', <<'EoTeX');
+# (1) Avoid the special case treatment, we'll attenpt to parse the crop/connection
+DefMacro('\xysplinespecialcases@', '\splineset@@');
+DefMacro('\splineset@@',           <<'EoTeX');
 \message{********************************^^J}%
 \readsplineparams@
 %\message{What are \the\dimen5, \the\dimen7?}%
@@ -631,62 +591,102 @@ DefMacro('\splineset@@', <<'EoTeX');
 %%% Wrong test for no curve!
 %%\ifdim\X@p=\X@c\else
 %%\ifdim\Y@p=\Y@c\else
-%%#1\lx@xy@spline@
-\lx@xy@interp@spline
+\lx@xy@crv@decipher
 \lx@xy@spline@
 %\fi\fi
 \fi
 EoTeX
 
-DefMacro('\lx@xy@interp@spline', <<'EoTeX');
- \expandafter\lx@xy@interp@drop@\expandafter{\xycrvdrop@}
- \expandafter\lx@xy@interp@conn@\expandafter{\xycrvconn@}
-EoTeX
 # Apparently \xycrvdrop@ can be empty (for lines)  else something to drop at each point
 #  like maybe: =<8pt>{.} for spaced points?
 # Apparently \xycrvconn@ can be empty (solid line) else indicates doubled,trebled, dotted,dashed
 #   like maybe: !/-5pt/\dir{>} or !C\dir{:}
-# I'd wish we could leverage xy's parser to interpret the specs, but it is unclear how!
-#  gets used like: \expandafter\object\xycrvdrop@
-#  or \expandafter\connect\xycrvconn@{}
-#  Is that a clue?
-# For now, just try to re-interpret these after the fact.
+# This seems wrong to try to match & reinterpret match the drop/connection commands,
+# but xy itself does it from time to time!
 # But we need to recognize more patterns!
-DefMacro('\lx@xy@interp@drop@{}', sub {
-    my $drop = ToString($_[1]);
+DefPrimitive('\lx@xy@crv@decipher', sub {
+    my ($stomach) = @_;
+    my $drop      = ToString(LookupDefinition(T_CS('\xycrvdrop@'))->getExpansion);
+    my $conn      = ToString(LookupDefinition(T_CS('\xycrvconn@'))->getExpansion);
     $drop =~ s/^\s+//; $drop =~ s/\s+$//;
-    if ($drop) {
-      if ($drop =~ /^\s*=\<([^\>]*)\>\{\.\}/) {    # Dotted, with given spacing (ignore spacing for now)
-        return T_CS('\lx@xy@dotpat'); }
-      Debug("LaTeXML ignoring curve drop: '$drop'"); }
-    return; });
-DefMacro('\lx@xy@interp@conn@{}', sub {
-    my $conn = ToString($_[1]);
     $conn =~ s/^\s+//; $conn =~ s/\s+$//;
+    if ($drop) {
+      if ($drop =~ /^\s*=\<([^\>]*)\>\{([^\}]*)\}/) { # Dotted, with given spacing (ignore spacing for now)
+        my ($s, $d) = ($1, $2);
+        if ($s =~ /^[\+\-\d\.]*\w+$/) {
+          my $pattern = '1 ' . int(Dimension($s)->pxValue);
+          AssignValue(xy_linepattern => $pattern); } }
+      elsif ($drop eq '{\zerodot}') {
+        AssignValue(xy_linepattern => $xy_linepattern_dots); }
+      else {
+        Info('xy', 'ignored', $stomach, "LaTeXML ignoring curve drop: '$drop'"); } }
     if ($conn) {
-      Debug("LaTeXML ignoring curve connection: $conn"); }
-    #  my $sp;
-    #  if($conn =~ /^!/dim/
+      $conn =~ s/^!\w//;
+      if ($conn =~ s/^\\dir(\d?)\{([^\}]*)\}//) {
+        my ($n, $t) = ($1, $2);
+        if ($t eq ':') { $n = 2; $t = '.'; }
+        if ($t eq '=') { $n = 2; $t = '-'; }
+        if ($n) {
+          AssignValue(xy_multiplicity => $n); }
+        if    ($t eq '-') { }
+        elsif ($t eq '--') {
+          AssignValue(xy_linepattern => $xy_linepattern_dashes); }
+        elsif ($t eq '.') {
+          AssignValue(xy_linepattern => $xy_linepattern_dots); } }
+      else {
+        Info('xy', 'ignored', $stomach, "LaTeXML ignoring curve connection: $conn") if $conn; } }
     return; });
 
+sub xy_linediff {
+  my ($sep, $x0, $y0, $x1, $y1) = @_;
+  my $diffx  = $x1->valueOf - $x0->valueOf;
+  my $diffy  = $y1->valueOf - $y0->valueOf;
+  my $length = sqrt($diffx * $diffx + $diffy * $diffy);
+  my $dx     = $sep->multiply($diffy / $length);
+  my $dy     = $sep->multiply($diffx / $length);
+  return ($dx, $dy); }
+
+# For doubled/trebled curves (whether solid, dotted or dashed)
+# we should be able to draw 2 or 3 offset curves,
+# but we need to adjust the end and control points.
+# Hmmm.....
+# Currently just a simplistic guess.
 DefConstructor('\lx@xy@spline@',
-##DefConstructor('\splineset@@',
   "^<svg:path d='#path' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
   beforeConstruct => \&xy_FillStroke,
   properties      => sub {
     my ($x0, $y0, $x1, $y1, $L, $U, $R, $D, $A, $B) = map { LookupRegister($_); }
       '\X@p', '\Y@p', '\X@c', '\Y@c', '\L@c', '\U@c', '\R@c', '\D@c', '\A@', '\B@';
-    # Convert quadratic Bezier to cubic
-    #    $L = $x0->add($A->multiply(2))->divide(3);
-    #    $U = $x0->add($B->multiply(2))->divide(3);
-    #    $R = $x1->add($A->multiply(2))->divide(3);
-    #    $D = $x1->add($B->multiply(2))->divide(3);
     Debug("SPLINE") if $LaTeXML::DEBUG{xy};
-    (path => xy_packpath('M', $x0, $y0,
-        'C', $L, $U, $R, $D, $x1, $y1),
+    my $mult = LookupValue('xy_multiplicity') || 1;
+    my @path = ();
+    if ($mult % 2 == 1) {
+      push(@path, 'M', $x0, $y0, 'C', $L, $U, $R, $D, $x1, $y1); }
+    if ($mult > 1) {
+      my $sep = LookupRegister('\xydashh@');
+      $sep = $sep->multiply(0.5) if $mult == 2;
+      my ($dx0, $dy0) = xy_linediff($sep, $x0, $y0, $L, $U);
+      my ($dx1, $dy1) = xy_linediff($sep, $L, $U, $R, $D);
+      my ($dx2, $dy2) = xy_linediff($sep, $R, $D, $x1, $y1);
+      my $dx1a = $dx0->add($dx1)->multiply(0.5);
+      my $dy1a = $dy0->add($dy1)->multiply(0.5);
+      my $dx1b = $dx1->add($dx2)->multiply(0.5);
+      my $dy1b = $dy1->add($dy2)->multiply(0.5);
+      push(@path, 'M', $x0->subtract($dy0), $y0->add($dx0),
+        #           'C', $L, $U, $R, $D,
+        'C', $L->subtract($dx1a), $U->subtract($dy1a), $R->subtract($dx1b), $D->subtract($dy1b),
+        #        'C', $L->subtract($dy1a), $U->subtract($dx1a), $R->subtract($dy1b), $D->subtract($dx1b),
+        $x1->add($dy2), $y1->subtract($dx2));
+      push(@path, 'M', $x0->add($dy0), $y0->subtract($dx0),
+        #           'C', $L, $U, $R, $D,
+        'C', $L->add($dx1a), $U->add($dy1a), $R->add($dx1b), $D->add($dy1b),
+
+        #        'C', $L->add($dy1a), $U->add($dx1a), $R->add($dy1b), $D->add($dx1b),
+        $x1->subtract($dy2), $y1->add($dx2)); }
+    (path => xy_packpath(@path),
       #      width => $x, height => $y, depth => Dimension(0),
       width     => Dimension(0), height => Dimension(0), depth => Dimension(0),
-      dashes    => ToString(Digest('\lx@xy@pattern')),
+      dashes    => LookupValue('xy_linepattern'),
       do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
 
 DefPrimitive('\lx@xy@shavespline', sub {
@@ -716,8 +716,8 @@ DefPrimitive('\lx@xy@shavespline', sub {
       AssignRegister('\Y@c' => Dimension($Yp + $b * (3 * $yu + (3 * $yv + $yw * $b) * $b)));
 } });
 
-# Ignoring for the moment all the dots, dashes, drops, etc
-DefConstructor('\buildcircle@',
+DefMacro('\buildcircle@', '\lx@xy@crv@decipher\lx@xy@buildcircle@');
+DefConstructor('\lx@xy@buildcircle@',
 "^<svg:ellipse cx='#x' cy='#y' rx='#rx' ry='#ry' stroke='#stroke' fill='#fill' stroke-dasharray='#dashes'/>",
   beforeConstruct => \&xy_FillStroke,
   properties      => sub {
@@ -735,7 +735,7 @@ DefConstructor('\buildcircle@',
       rx => $rx->pxValue, ry => $ry->pxValue,
       #      width     => $w,                       depth   => $d, height => $h,
       width     => $w, depth => Dimension(0), height => $ry->multiply(2),
-      dashes    => ToString(Digest('\lx@xy@pattern')),
+      dashes    => LookupValue('xy_linepattern'),
       do_stroke => LookupValue('xy_stroke'), do_fill => 0); });
 
 #======================================================================
@@ -803,7 +803,7 @@ DefConstructor('\framed@@{Dimension}',
     (path => $path,
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
-      dashes    => ToString(Digest('\lx@xy@pattern')),
+      dashes    => LookupValue('xy_linepattern'),
     ); });
 
 DefConstructor('\circled@ {Dimension}',
@@ -823,7 +823,7 @@ DefConstructor('\circled@ {Dimension}',
     (x => $x0->pxValue, y => $y0->pxValue, radius => $r->pxValue,
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
-      dashes    => ToString(Digest('\lx@xy@pattern')),
+      dashes    => LookupValue('xy_linepattern'),
     ); });
 
 DefConstructor('\ellipsed@ {Dimension}{Dimension}',
@@ -842,7 +842,7 @@ DefConstructor('\ellipsed@ {Dimension}{Dimension}',
       rx        => $rx->pxValue,             ry      => $ry->pxValue,
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
-      dashes    => ToString(Digest('\lx@xy@pattern')),
+      dashes    => LookupValue('xy_linepattern'),
     ); });
 
 DefConstructor('\shaded@@{Dimension}',
@@ -947,7 +947,7 @@ DefPrimitive('\NoTips', sub {
 
 # Use our defn, NOT the stub one.
 Let('\xy@polystyle@@', '\xy@polystyle@');
-
+Let('\xylinewidth@@',  '\xylinewidth@');
 DefMacro('\xypolyline@Special',   '\lx@xy@stroke@on\lx@xy@fill@off\lx@xy@poly');
 DefMacro('\xypolyfill@Special',   '\lx@xy@stroke@off\lx@xy@fill@on\lx@xy@poly');
 DefMacro('\xypolyeofill@Special', '\lx@xy@stroke@off\lx@xy@fill@on\lx@xy@poly');
@@ -976,7 +976,7 @@ DefConstructor('\lx@xy@poly{}',
     (path => xy_packpath(@path),
       width     => Dimension(0),             height  => Dimension(0), depth => Dimension(0),
       do_stroke => LookupValue('xy_stroke'), do_fill => LookupValue('xy_fill'),
-      dashes    => ToString(Digest('\lx@xy@pattern')),
+      dashes    => LookupValue('xy_linepattern'),
       thickness => $th->pxValue, cap => $xy_cap_codes[$cap], join => $xy_join_codes[$join], miter => $miter,
     ); });
 
