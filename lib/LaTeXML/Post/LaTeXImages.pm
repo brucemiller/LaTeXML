@@ -420,8 +420,7 @@ sub pre_preamble {
   # when are the empty defaults needed?
   if ($class ne 'article') {
     $result_add_to_body .= "\\title{}\\date{}\n"; }
-  # Keep @ as a letter in the body, as internal bits such as \@@toccaption can sneak through.
-  #$result_add_to_body .= "\\makeatother\n";
+  $result_add_to_body .= "\\makeatother\n";
 
   my $result_preamble = <<"EOPreamble";
 \\batchmode
