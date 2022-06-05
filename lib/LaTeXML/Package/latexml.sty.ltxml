@@ -118,6 +118,11 @@ DefConstructor('\lx@LaTeXML@{}',
 DefConstructor('\lx@LaTeXML@XML', "xml",    # "<ltx:text xoffset='-0.15em'>xml</ltx:text>",
   bounded => 1, font => { shape => 'smallcaps' });
 
+DefMacro('\LaTeXMLversion',  sub { ExplodeText($LaTeXML::VERSION); });
+DefMacro('\LaTeXMLrevision', sub { ExplodeText($LaTeXML::Version::REVISION); });
+DefMacro('\LaTeXMLfullversion',
+'\LaTeXML (\LaTeXMLversion\expandafter\ifx\expandafter.\LaTeXMLrevision.\else; rev.~\LaTeXMLrevision\fi)');
+
 #======================================================================
 # id related features
 
