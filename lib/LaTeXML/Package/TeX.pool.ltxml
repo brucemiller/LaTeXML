@@ -6956,9 +6956,12 @@ DefLigature(qr{\x{2018}\x{2018}}, "\x{201C}",
 DefLigature(qr{\x{2019}\x{2019}}, "\x{201D}",
   fontTest => sub { ($_[0]->getFamily ne 'typewriter')
       && (($_[0]->getEncoding || 'OT1') =~ /^(OT1|T1)$/); });
-DefPrimitiveI('\TeX', undef, 'TeX');
-DefPrimitiveI('\i',   undef, "\x{0131}");    # LATIN SMALL LETTER DOTLESS I
-DefPrimitiveI('\j',   undef, "\x{0237}");
+DefConstructor('\TeX',
+  "<ltx:text class='ltx_TeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.2em'>"
+    . "T<ltx:text yoffset='-0.4ex'>E</ltx:text>X</ltx:text>",
+  sizer => sub { (Dimension('1.9em'), Dimension('1.6ex'), Dimension('0.5ex')); });
+DefPrimitiveI('\i', undef, "\x{0131}");    # LATIN SMALL LETTER DOTLESS I
+DefPrimitiveI('\j', undef, "\x{0237}");
 
 DefConstructor('\buildrel Until:\over {}',
   "<ltx:XMApp role='RELOP'>"

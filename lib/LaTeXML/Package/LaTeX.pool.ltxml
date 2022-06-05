@@ -420,8 +420,20 @@ Let(T_CS('\enddocument'), T_CS('\end{document}'), 'global');
 # \TeX is in TeX.pool.ltxml
 ##DefConstructorI('\LaTeX',  undef, 'LaTeX');
 ##DefConstructorI('\LaTeXe', undef, 'LaTeX2e');
-DefMacroI('\LaTeX',      undef, 'LaTeX');
-DefMacroI('\LaTeXe',     undef, 'LaTeX2e');
+DefMacroI('\LaTeX',  undef, 'LaTeX');
+DefMacroI('\LaTeXe', undef, 'LaTeX2e');
+DefConstructor('\LaTeX',
+  "<ltx:text class='ltx_LaTeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.2em'>"
+    . "L<ltx:text fontsize='80%' yoffset='0.4ex'>A</ltx:text>"
+    . "T<ltx:text yoffset='-0.4ex'>E</ltx:text>X</ltx:text>",
+  sizer => sub { (Dimension('2.6em'), Dimension('1.6ex'), Dimension('0.5ex')); });
+DefConstructor('\LaTeXe',
+  "<ltx:text class='ltx_LaTeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.2em'>"
+    . "L<ltx:text fontsize='80%' yoffset='0.4ex'>A</ltx:text>"
+    . "T<ltx:text yoffset='-0.4ex'>E</ltx:text>X"
+    . "\x{2002}2<ltx:text yoffset='-0.4em'>\x{03B5}</ltx:text></ltx:text>",
+  sizer => sub { (Dimension('3.7em'), Dimension('1.6ex'), Dimension('0.5ex')); });
+
 DefMacroI('\fmtname',    undef, 'LaTeX2e');
 DefMacroI('\fmtversion', undef, '2018/12/01');
 
