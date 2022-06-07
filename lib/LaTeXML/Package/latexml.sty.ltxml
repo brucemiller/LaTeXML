@@ -101,8 +101,27 @@ DefMacro('\XSLT',     '\URL[\texttt{XSLT}]{http://www.w3.org/Style/XSL/}');
 DefMacro('\CSS',      '\URL[\texttt{CSS}]{http://www.w3.org/Style/CSS/}');
 DefMacro('\MathML',   '\URL[\texttt{MathML}]{http://www.w3.org/Math/}');
 DefMacro('\OpenMath', '\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
-DefMacro('\LaTeXML',  '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
+##DefMacro('\LaTeXML',  '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 #DefMacro('\BibTeX','BibTeX');
+
+DefMacro('\LaTeXML',      '\URL[\LaTeXML@logo]{http://dlmf.nist.gov/LaTeXML/}');
+DefMacro('\LaTeXML@logo', '\lx@LaTeXML@{\lx@LaTeXML@XML}');
+DefConstructor('\lx@LaTeXML@{}',
+  "<ltx:text class='ltx_LaTeXML_logo'>"
+    . "<ltx:text cssstyle='letter-spacing:-0.2em; margin-right:0.1em'>"
+    . "L"
+    . "<ltx:text fontsize='70%' yoffset='2.2pt'>A</ltx:text>"
+    . "T"
+    . "<ltx:text yoffset='-0.4ex'>E</ltx:text></ltx:text>"
+    . "#1</ltx:text>",
+  sizer => sub { (Dimension('3.8em'), Dimension('1.6ex'), Dimension('0.4ex')); });
+DefConstructor('\lx@LaTeXML@XML', "xml",    # "<ltx:text xoffset='-0.15em'>xml</ltx:text>",
+  bounded => 1, font => { shape => 'smallcaps' });
+
+DefMacro('\LaTeXMLversion',  sub { ExplodeText($LaTeXML::VERSION); });
+DefMacro('\LaTeXMLrevision', sub { ExplodeText($LaTeXML::Version::REVISION); });
+DefMacro('\LaTeXMLfullversion',
+'\LaTeXML (\LaTeXMLversion\expandafter\ifx\expandafter.\LaTeXMLrevision.\else; rev.~\LaTeXMLrevision\fi)');
 
 #======================================================================
 # id related features

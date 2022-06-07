@@ -798,7 +798,24 @@
       <xsl:text> by </xsl:text>
       <xsl:element name="a" namespace="{$html_ns}">
         <xsl:attribute name="href">http://dlmf.nist.gov/LaTeXML/</xsl:attribute>
-        <xsl:text>LaTeXML </xsl:text>
+        <xsl:attribute name="class">ltx_LaTeXML_logo</xsl:attribute>
+        <xsl:element name="span" namespace="{$html_ns}">
+          <xsl:attribute name="style">letter-spacing:-0.2em; margin-right:0.1em;</xsl:attribute>
+          <xsl:text>L</xsl:text>
+          <xsl:element name="span" namespace="{$html_ns}">
+            <xsl:attribute name="style">font-size:70%;position:relative; bottom:2.2pt;</xsl:attribute>
+            <xsl:text>A</xsl:text>
+          </xsl:element>
+          <xsl:text>T</xsl:text>
+          <xsl:element name="span" namespace="{$html_ns}">
+            <xsl:attribute name="style">position:relative; bottom:-0.4ex;</xsl:attribute>
+            <xsl:text>E</xsl:text>
+          </xsl:element>
+        </xsl:element>
+        <xsl:element name="span" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_font_smallcaps</xsl:attribute>
+          <xsl:text>xml</xsl:text>
+        </xsl:element>
         <xsl:element name="img" namespace="{$html_ns}">
           <xsl:attribute name="src">data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAOCAYAAAD5YeaVAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9wKExQZLWTEaOUAAAAddEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAdpJREFUKM9tkL+L2nAARz9fPZNCKFapUn8kyI0e4iRHSR1Kb8ng0lJw6FYHFwv2LwhOpcWxTjeUunYqOmqd6hEoRDhtDWdA8ApRYsSUCDHNt5ul13vz4w0vWCgUnnEc975arX6ORqN3VqtVZbfbTQC4uEHANM3jSqXymFI6yWazP2KxWAXAL9zCUa1Wy2tXVxheKA9YNoR8Pt+aTqe4FVVVvz05O6MBhqUIBGk8Hn8HAOVy+T+XLJfLS4ZhTiRJgqIoVBRFIoric47jPnmeB1mW/9rr9ZpSSn3Lsmir1fJZlqWlUonKsvwWwD8ymc/nXwVBeLjf7xEKhdBut9Hr9WgmkyGEkJwsy5eHG5vN5g0AKIoCAEgkEkin0wQAfN9/cXPdheu6P33fBwB4ngcAcByHJpPJl+fn54mD3Gg0NrquXxeLRQAAwzAYj8cwTZPwPH9/sVg8PXweDAauqqr2cDjEer1GJBLBZDJBs9mE4zjwfZ85lAGg2+06hmGgXq+j3+/DsixYlgVN03a9Xu8jgCNCyIegIAgx13Vfd7vdu+FweG8YRkjXdWy329+dTgeSJD3ieZ7RNO0VAXAPwDEAO5VKndi2fWrb9jWl9Esul6PZbDY9Go1OZ7PZ9z/lyuD3OozU2wAAAABJRU5ErkJggg==</xsl:attribute>
           <xsl:attribute name="alt">[LOGO]</xsl:attribute>
