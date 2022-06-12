@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-xhtml.xsl                                                  |
@@ -13,19 +13,20 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     = "1.0"
-    xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    exclude-result-prefixes = "ltx">
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    version="1.0"
+    exclude-result-prefixes="ltx">
 
   <!-- Include all LaTeXML to xhtml modules -->
   <xsl:import href="LaTeXML-all-xhtml.xsl"/>
 
-  <xsl:output method="xml"
-              doctype-public = "-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN"
-              doctype-system = "http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd"
-              media-type     = 'application/xhtml+xml'
-              encoding       = 'utf-8'/>
+  <xsl:output
+      method="xml"
+      doctype-public="-//W3C//DTD XHTML 1.1 plus MathML 2.0//EN"
+      doctype-system="http://www.w3.org/Math/DTD/mathml2/xhtml-math11-f.dtd"
+      media-type="application/xhtml+xml"
+      encoding="utf-8"/>
 
   <!-- Note: If you want namespace prefixes (eg. for MathML & SVG),
        Redefine the root template ("/") and add prefixed namespace declarations

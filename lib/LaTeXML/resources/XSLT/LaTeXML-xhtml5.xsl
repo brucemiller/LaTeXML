@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-xhtml5.xsl                                                 |
@@ -13,20 +13,21 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version   = "1.0"
-    xmlns:xsl = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx = "http://dlmf.nist.gov/LaTeXML"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    version="1.0"
     exclude-result-prefixes="ltx">
 
   <!-- Include all LaTeXML to xhtml modules -->
   <xsl:import href="LaTeXML-all-xhtml.xsl"/>
 
-  <xsl:output method     = "xml"
-              encoding   = "utf-8"
-              media-type = "application/xhtml+xml"/>
+  <xsl:output
+      method="xml"
+      encoding="utf-8"
+      media-type="application/xhtml+xml"/>
 
-  <xsl:param name="USE_NAMESPACES"  >true</xsl:param>
-  <xsl:param name="USE_HTML5"       >true</xsl:param>
+  <xsl:param name="USE_NAMESPACES">true</xsl:param>
+  <xsl:param name="USE_HTML5">true</xsl:param>
 
   <!-- Note: If you want namespace prefixes (eg. for MathML & SVG),
        Redefine the root template ("/") and add prefixed namespace declarations
@@ -34,7 +35,7 @@
 
   <!-- The doctype is optional and is supposed to be ignored by parsers -->
   <xsl:template match="/" mode="doctype">
-    <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html></xsl:text>
+    <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html></xsl:text>
   </xsl:template>
 
 </xsl:stylesheet>

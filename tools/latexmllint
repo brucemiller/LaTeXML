@@ -20,11 +20,13 @@ use File::Spec::Functions;
 use Term::ANSIColor;
 use Pod::Checker;
 use Carp;
+use XML::LibXML;
+use XML::LibXSLT;
 #======================================================================
 my $identity  = 'latexmllint';
 my ($help)    = (0);
 my $VERBOSITY = 0;
-my ($DOPRECOMMIT, $DOTIDY, $DOCRITIC, $DOSYNTAX, $DOPOD) = (0, 1, 1, 1, 1);
+my ($DOPRECOMMIT, $DOTIDY, $DOCRITIC, $DOSYNTAX, $DOPOD, $DOXSLTLINT, $DOXSLTCRITIC) = (0, 1, 1, 1, 1, 1, 1);
 my %exclude = ();    # excluded features
 my %include = ();
 my ($DOMODIFY, $SEVERITY);
@@ -35,10 +37,13 @@ GetOptions(
   "tidy!"      => \$DOTIDY,
   "critic!"    => \$DOCRITIC,
   "pod!"       => \$DOPOD,
+  "xsltlint!"  => \$DOXSLTLINT,
+  "xsltcritic!"=> \$DOXSLTCRITIC,
   "severity=s" => \$SEVERITY,
   "programs!"  => sub { if ($_[1]) { $include{program} = 1; } else { $exclude{program} = 1; } },
   "modules!"   => sub { if ($_[1]) { $include{module} = 1; } else { $exclude{module} = 1; } },
   "bindings!"  => sub { if ($_[1]) { $include{binding} = 1; } else { $exclude{binding} = 1; } },
+  "stylesheets!"  => sub { if ($_[1]) { $include{stylesheet} = 1; } else { $exclude{stylesheet} = 1; } },
   "verbose"    => sub { $VERBOSITY++; },
   "quiet"      => sub { $VERBOSITY--; },
 ) or pod2usage(-message => $identity, -exitval => 1, -verbose => 0, -output => \*STDERR);
@@ -65,11 +70,25 @@ if (!defined $DOMODIFY) {
   $DOMODIFY = ($DOPRECOMMIT ? 0 : 1); }
 $VERBOSITY-- if $DOPRECOMMIT;
 
+#======================================================================
+my $xml_parser;  # XML parser used by doXSLTLint
+my $xslt_linter; # XSLT transform used by doXSLTLint
+if ($DOXSLTLINT) {
+  $xml_parser = XML::LibXML->new(load_ext_dtd => 0,
+                                 validation => 0,
+                                 keep_blanks => 1);
+  XML::LibXSLT->max_depth(3000);
+  my $xslt_parser = XML::LibXSLT->new();
+  $xslt_linter = $xslt_parser->parse_stylesheet(
+    $xml_parser->load_xml(location => catfile($TOOLDIR, 'latexml.xsltlint.xsl')));
+}
+
+#======================================================================
 my $PERL = 'perl';
 my $PERLTIDY;
 my $PERLCRITIC;
 my $EXITSTATUS = 0;
-my ($NTOTAL, $NTIDY, $NCRITIC, $NFAIL) = (0, 0, 0, 0);
+my ($NTOTAL, $NTIDY, $NXSLTLINT, $NXSLTCRITIC, $NCRITIC, $NFAIL) = (0, 0, 0, 0, 0, 0);
 my @fails = ();
 foreach my $file (@FILES) {
   my $classification = classify($file);
@@ -94,6 +113,10 @@ foreach my $file (@FILES) {
       print STDERR "No perlcritic was found; skipping critic phase.\n"; }
     else {
       $failed = 1 if doPerlcritic($file, $classification); } }
+  if ($$classification{xslt} && $DOXSLTLINT) {
+    $failed = 1 if doXSLTLint($file, $classification); }
+  if ($$classification{xslt} && $DOXSLTCRITIC) {
+    $failed = 1 if doXSLTCritic($file, $classification); }
   if ($failed) {
     $NFAIL++; push(@fails, $file);
     print color('bold') . "$file fails" . color('reset') . " commit criterion\n" if $VERBOSITY >= 0;
@@ -103,12 +126,17 @@ foreach my $file (@FILES) {
 print "\nExamined $NTOTAL file(s): "
   . ($DOMODIFY ? plural($NTIDY, 'was', 'were') . ' reformatted'
   : plural($NTIDY, 'needs', 'need') . ' reformatting') . '; '
+  . ($DOMODIFY ? plural($NXSLTLINT, 'stylesheet was', 'stylesheets were') . ' reformatted'
+  : plural($NXSLTLINT, 'stylesheet needs', 'stylesheets need') . ' reformatting') . '; '
+  . plural($NXSLTCRITIC, 'needs', 'need') . ' XSLT code revision; '
   . plural($NCRITIC, 'needs', 'need') . ' code revision; '
   . plural($NFAIL,   'fails', 'fail') . " requirements for commit.\n"
   if ($VERBOSITY > -1);
 print "\nExamined $NTOTAL file(s): "
-  . ($NTIDY   ? plural($NTIDY,   'needs', 'need') . ' reformatting '  : ' ')
-  . ($NCRITIC ? plural($NCRITIC, 'needs', 'need') . ' code revision ' : ' ')
+  . ($NTIDY ? plural($NTIDY, 'needs', 'need') . ' reformatting ' : ' ')
+  . ($NXSLTLINT ? plural($NXSLTLINT, 'stylesheet needs', 'stylesheets need') . ' reformatting '  : ' ')
+  . ($NXSLTCRITIC  ? plural($NXSLTCRITIC, 'needs', 'need') . ' XSLT code revision ' : ' ')
+  . ($NCRITIC  ? plural($NCRITIC, 'needs', 'need') . ' code revision ' : ' ')
   . plural($NFAIL, 'fails', 'fail') . " requirements for commit"
   . ($NFAIL ? ': ' . join(', ', @fails) : '')
   . ".\n"
@@ -138,7 +166,7 @@ sub classify {
   elsif ($file =~ /\.(?:js)$/i) {
     return { javascript => 1 }; }
   elsif ($file =~ /\.(?:xsl)$/i) {
-    return { xslt => 1 }; }
+    return { xslt => 1, stylesheet => 1 }; }
   elsif (my $type = `file -b $file`) {
     if ($type =~ /^Perl script/) {
       return { perl => 1, program => 1 }; }
@@ -271,6 +299,125 @@ sub doPerlcritic {
     croak "Couldn't run $PERLCRITIC on '$file': $!"; }
   return $failed; }
 
+# postprocessor for xslt linter
+sub xslt_lint_post {
+  my ($magic, $cref, $indent, $tag, $attrs) = @_;
+  if ($magic eq '&amp;#xNL;') { # reintroduce newline in attributes
+    return "\n "; }
+  elsif ($magic eq '&gt;') { # convert &gt; to literal >
+    return ">"; }
+  elsif ($cref) { # rewrite character references to hexadecimal
+    my $digits = $cref > 255 ? "4" : "2";
+    return sprintf("&#x%0${digits}X;",$cref); }
+  elsif ($tag) { # move attributes to separate lines
+    return "\n$indent$tag" .
+           $attrs =~ s/(?:^| )(?<attr>[a-z-:]+="[^"]*")/\n$indent    $+{attr}/gr
+           . ">"; } }
+
+sub doXSLTLint {
+  my ($file, $classes) = @_;
+  print "Checking '$file' formatting..." if $VERBOSITY > 0;
+  my $failed = 0;
+  my $input_doc = $xml_parser->load_xml(location => $file) or
+    croak "Couldn't parse '$file'.";
+  my $input_serialized = $input_doc->toStringC14N_v1_1(1);
+  my $results = $xslt_linter->transform($input_doc) or
+    croak "Couldn't run XSLT transform on '$file'.";
+  my $output = $xslt_linter->output_as_bytes($results);
+
+  # postprocess output
+  $output =~ s/(?<magic>
+    \&amp;\#xNL;             # in-attribute newline
+    | (?<!]])&gt;            # &gt;, unless part of ]]&gt;
+    | &\#(?<cref>[0-9]*);    # decimal character reference
+    | \n(?<indent>\ *)       # one of <xsl:stylesheet> or <xsl:output>...
+        (?<tag><xsl:stylesheet|<xsl:output)
+        (?<attrs>[^>]*)>     # ...and its attributes
+    )/xslt_lint_post($+{magic},$+{cref},$+{indent},$+{tag},$+{attrs})/xge;
+
+  my @lines = split(/\n/, $output);
+  foreach (@lines) {
+    # split multiple attributes spilling over 100 columns
+    s@^(?<start>.*<[^\ <]+)
+      (?<attrs>(?:\ [^=>\ ]+="[^"]*"){2,})
+      (?<end>/?>)$@
+      if (length($&) > 100) {
+        my ($start,$attrs,$end) = ($+{start},$+{attrs},$+{end});
+        my $indent = " " x (length($start) + 1);
+        $start . ($attrs =~ s/(?<a>="[^"]*") /$+{a}\n$indent/gr) . $end; }
+      else { $&; }@xgme;
+
+    # split single attribute spilling over 100 columns
+    s@^(?<indent>.*)
+      (?<start><[^\ <]+)
+      \ (?<attr>[^=>\ ]+="[^"]*")
+      (?<end>/?>)$@
+      if (length($&) > 100) {
+        my $indent = " " x (length($+{indent}) + 4);
+        $+{indent} . $+{start} . "\n" . $indent . $+{attr} . $+{end}; }
+      else { $&; }@xgme;
+  }
+
+  my $processed = join("\n", @lines) . "\n";
+
+  my $output_doc = $xml_parser->load_xml(string => $processed) or
+    croak "XSLT linter produced an invalid transform of '$file'.";
+  my $output_serialized = $output_doc->toStringC14N_v1_1(1);
+
+  if ($input_serialized ne $output_serialized) {
+    croak "XSLT linter produced a non-equivalent form of '$file':\n$processed"; }
+
+  open my $outfh, '>', "$file.xsltlint";
+  print $outfh $processed;
+  close $outfh;
+
+  my $diffs = length(`diff $file $file.xsltlint`);
+  if (!$diffs) {    # No diffs after formatting? No formatting needed.
+    print " formatting is OK.\n" if $VERBOSITY > 0;
+    unlink "$file.xsltlint"; }
+  elsif (!$DOMODIFY) {    # Else have differences; Are we just reporting it?
+    $EXITSTATUS = 1;
+    $NXSLTLINT++;         # the XSLT linter wasn't happy
+    $failed = 1;          # and it fails
+    print "\n" . $file . ' ' if $VERBOSITY == 0;
+    print " needs reformatting.\n" if $VERBOSITY > -1;
+    unlink "$file.xsltlint"; }
+  else {                  # Or are we going to apply the reformatting?
+    $NXSLTLINT++;         # the XSLT linter wasn't happy
+    rename $file, $file . ".bak";
+    rename $file . ".xsltlint", $file;
+    print "Reformatted $file.\n" if $VERBOSITY > -1; }
+  return $failed; }
+
+sub doXSLTCritic {
+  my ($file, $classes) = @_;
+  my $failed = 0;
+  my @critique = ();
+  print "Checking '$file' policy..." if $VERBOSITY > 0;
+  open my $fh, '<', $file or croak "Couldn't open '$file'.";
+
+  while (<$fh>) {
+    push(@critique, "Tab instead of spaces at line $..  (Severity: 1)") if m/\t/m;
+    push(@critique, "Trailing spaces at line $..  (Severity: 1)") if m/ $/m; }
+
+  close $fh;
+
+  if (!@critique) {    # No errors and no policy violations
+    print " conformance is OK.\n" if $VERBOSITY > 0; }
+  else {       # Policy violations
+    $NXSLTCRITIC++;         # xslcritic wasn't happy.
+    print color('bold');
+    print "\n" . $file . ' ' if $VERBOSITY == 0;
+    print " has policy issues\n" if $VERBOSITY > -1;
+    print color('reset');
+    foreach my $line (@critique) {
+      my ($s) = ($line =~ /\(Severity:\s+(\d+)\)$/);
+      $failed = 1 if $s >= $REQ_SEVERITY;
+      print '  ' . ($s && $SCOLORS[$s] ? colored($line, $SCOLORS[$s]) : $line) . "\n"
+        if $VERBOSITY > -1; }
+    $EXITSTATUS = 1 if $failed; }
+  return $failed; }
+
 #======================================================================
 # Low-level utilities
 sub expand_files {
@@ -311,6 +458,7 @@ A tool for establish consistent coding standards for LaTeXML.
 Code formatting is implemented by C<perltidy>,  using a preferred set of formatting rules.
 Coding standards is checked by C<perlcritic>, again, using
 a prefered set of Policies.
+XSLT formatting is implemented using an identity transform via C<libxslt> and some custom code.
 
 The files processed are given on the command line; directories given
 there are processed recursively.  If no files are specified, then
@@ -336,7 +484,11 @@ Options:
   --notidy     Do not run perltidy
   --critic     Do run perlcritic (default for perl files)
   --nocritic   Do not run perlcritic
-  --severity   The severity level for perlcritic
+  --xsltlint   Do run the XSLT linter (default for stylesheets)
+  --noxsltlint Do not run the XSLT linter
+  --xsltcritic Do run the XSLT critic (default for stylesheets)
+  --noxsltcritic Do not run the XSLT critic
+  --severity   The severity level for perlcritic and xsltcritic
                (default 3; or 4 when --precommit)
   --programs   Process programs only
   --noprograms Exclude programs
@@ -344,6 +496,8 @@ Options:
   --nomodules  Exclude perl modules
   --bindings   Include LaTeXML bindings only (.ltxml, .latexml)
   --nobindings Exclude LaTeXML bindings
+  --stylesheets   Include XSLT stylesheets (.xsl)
+  --nostylesheets Exclude XSLT stylesheets
   --verbose    Show more output
   --quiet      Show less output
   --help       Show this help message

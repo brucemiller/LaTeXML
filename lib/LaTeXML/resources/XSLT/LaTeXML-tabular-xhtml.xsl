@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-tabular-xhtml.xsl                                          |
@@ -13,12 +13,12 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     = "1.0"
-    xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    xmlns:f="http://dlmf.nist.gov/LaTeXML/functions"
+    version="1.0"
     extension-element-prefixes="f"
-    exclude-result-prefixes = "ltx f">
+    exclude-result-prefixes="ltx f">
 
   <!-- ======================================================================
        Tabulars
@@ -163,8 +163,10 @@
                                     ancestor::ltx:tabular/@colsep,';')"/>
             </xsl:when>
             <xsl:when test="ancestor::ltx:tabular/@rowsep">
-              <xsl:value-of select="concat('padding-top:',f:half(ancestor::ltx:tabular/@rowsep),';')"/>
-              <xsl:value-of select="concat('padding-bottom:',f:half(ancestor::ltx:tabular/@rowsep),';')"/>
+              <xsl:value-of
+                  select="concat('padding-top:',f:half(ancestor::ltx:tabular/@rowsep),';')"/>
+              <xsl:value-of
+                  select="concat('padding-bottom:',f:half(ancestor::ltx:tabular/@rowsep),';')"/>
             </xsl:when>
             <xsl:when test="ancestor::ltx:tabular/@colsep">
               <xsl:value-of select="concat('padding-left:',ancestor::ltx:tabular/@colsep,';')"/>
@@ -174,10 +176,10 @@
         </xsl:with-param>
       </xsl:call-template>
       <xsl:if test="@colspan">
-        <xsl:attribute name='colspan'><xsl:value-of select='@colspan'/></xsl:attribute>
+        <xsl:attribute name="colspan"><xsl:value-of select="@colspan"/></xsl:attribute>
       </xsl:if>
       <xsl:if test="@rowspan">
-        <xsl:attribute name='rowspan'><xsl:value-of select='@rowspan'/></xsl:attribute>
+        <xsl:attribute name="rowspan"><xsl:value-of select="@rowspan"/></xsl:attribute>
       </xsl:if>
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$context"/>

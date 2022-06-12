@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-html5.xsl                                                  |
@@ -13,9 +13,9 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version   = "1.0"
-    xmlns:xsl = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx = "http://dlmf.nist.gov/LaTeXML"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    version="1.0"
     exclude-result-prefixes="ltx">
 
   <!-- Include all LaTeXML to xhtml modules -->
@@ -23,20 +23,20 @@
 
   <!-- Override the output method & parameters -->
   <xsl:output
-      method = "html"
+      method="html"
       omit-xml-declaration="yes"
-      encoding       = 'utf-8'
-      media-type     = 'text/html'/>
+      encoding="utf-8"
+      media-type="text/html"/>
 
   <!-- No namespaces; DO use HTML5 elements (include MathML & SVG) -->
-  <xsl:param name="USE_NAMESPACES"  ></xsl:param>
-  <xsl:param name="USE_HTML5"       >true</xsl:param>
+  <xsl:param name="USE_NAMESPACES"/>
+  <xsl:param name="USE_HTML5">true</xsl:param>
 
   <!-- Mobile-friendly default viewport setting. -->
   <xsl:param name="META_VIEWPORT">width=device-width, initial-scale=1, shrink-to-fit=no</xsl:param>
 
   <xsl:template match="/" mode="doctype">
-    <xsl:text disable-output-escaping='yes'>&lt;!DOCTYPE html></xsl:text>
+    <xsl:text disable-output-escaping="yes">&lt;!DOCTYPE html></xsl:text>
   </xsl:template>
 
 </xsl:stylesheet>

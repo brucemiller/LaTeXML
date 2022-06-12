@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-all-xhtml.xsl                                              |
@@ -13,10 +13,10 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     = "1.0"
-    xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    exclude-result-prefixes = "ltx">
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    version="1.0"
+    exclude-result-prefixes="ltx">
 
   <!-- Include all LaTeXML to xhtml modules -->
   <!-- Note that you can include these in your own stylesheet using urns like:

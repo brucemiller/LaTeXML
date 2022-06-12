@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="US-ASCII"?>
 <!--
 /=====================================================================\
 |  LaTeXML-structure-xhtml.xsl                                        |
@@ -13,19 +13,19 @@
 \=========================================================ooo==U==ooo=/
 -->
 <xsl:stylesheet
-    version     = "1.0"
-    xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
-    xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
-    xmlns:f     = "http://dlmf.nist.gov/LaTeXML/functions"
-    xmlns:func  = "http://exslt.org/functions"
-    xmlns:exsl  = "http://exslt.org/common"
+    xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    xmlns:ltx="http://dlmf.nist.gov/LaTeXML"
+    xmlns:f="http://dlmf.nist.gov/LaTeXML/functions"
+    xmlns:func="http://exslt.org/functions"
+    xmlns:exsl="http://exslt.org/common"
+    version="1.0"
     extension-element-prefixes="f func exsl"
-    exclude-result-prefixes = "ltx f func exsl">
+    exclude-result-prefixes="ltx f func exsl">
 
   <!-- whether to split index lists into two columns -->
-  <xsl:param name="USE_TWOCOLUMN_INDEX"></xsl:param>
+  <xsl:param name="USE_TWOCOLUMN_INDEX"/>
   <!-- whether to split glossary lists into two columns -->
-  <xsl:param name="USE_TWOCOLUMN_GLOSSARY"></xsl:param>
+  <xsl:param name="USE_TWOCOLUMN_GLOSSARY"/>
 
   <!-- ======================================================================
        Document Structure
@@ -78,8 +78,7 @@
   <xsl:template match="ltx:sidebar">
     <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:if($USE_HTML5,'article','div')}"
-                 namespace="{$html_ns}">
+    <xsl:element name="{f:if($USE_HTML5,'article','div')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
@@ -200,8 +199,8 @@
         <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
         <xsl:attribute name="class">ltx_title ltx_title_classification</xsl:attribute>
         <xsl:choose>
-          <xsl:when test='@scheme'><xsl:value-of select='@scheme'/></xsl:when>
-          <xsl:when test='@name'><xsl:value-of select='@name'/></xsl:when>
+          <xsl:when test="@scheme"><xsl:value-of select="@scheme"/></xsl:when>
+          <xsl:when test="@name"><xsl:value-of select="@name"/></xsl:when>
         </xsl:choose>
         <xsl:text>: </xsl:text>
       </xsl:element>
@@ -446,27 +445,27 @@
       <div class="flex-grid">
       <div class="col-25">
         <h1 class="author-name">
-          <xsl:value-of select="ltx:contact[@role='firstname']" />
+          <xsl:value-of select="ltx:contact[@role='firstname']"/>
           <xsl:text> </xsl:text>
-          <xsl:value-of select="ltx:contact[@role='familyname']" />
+          <xsl:value-of select="ltx:contact[@role='familyname']"/>
         </h1>
         <h3 class="author-title">
-          <xsl:apply-templates select="ltx:contact[@role='position']/ltx:inline-block" />
+          <xsl:apply-templates select="ltx:contact[@role='position']/ltx:inline-block"/>
         </h3>
       </div>
       <div class="col-25">
       </div>
       <div class="col-50">
         <h4 class="author-contact">
-          <xsl:apply-templates select="ltx:contact[@role='address']" />
+          <xsl:apply-templates select="ltx:contact[@role='address']"/>
           <br class="ltx_break"/>
-          <xsl:apply-templates select="ltx:contact[@role='mobile']" />
+          <xsl:apply-templates select="ltx:contact[@role='mobile']"/>
           <br class="ltx_break"/>
-          <xsl:apply-templates select="ltx:contact[@role='email']" />
+          <xsl:apply-templates select="ltx:contact[@role='email']"/>
           <br class="ltx_break"/>
-          <xsl:apply-templates select="ltx:contact[@role='orcid']" />
+          <xsl:apply-templates select="ltx:contact[@role='orcid']"/>
           <br class="ltx_break"/>
-          <xsl:apply-templates select="ltx:contact[@role='homepage']" />
+          <xsl:apply-templates select="ltx:contact[@role='homepage']"/>
        </h4>
       </div>
     </div>
@@ -763,15 +762,15 @@
 
   <xsl:template match="ltx:indexlist" mode="twocolumn">
     <xsl:param name="context"/>
-    <xsl:param name="items"    select="ltx:indexentry"/>
-    <xsl:param name="lines"    select="descendant::ltx:indexphrase"/>
+    <xsl:param name="items" select="ltx:indexentry"/>
+    <xsl:param name="lines" select="descendant::ltx:indexphrase"/>
     <xsl:param name="halflines" select="ceiling(count($lines) div 2)"/>
     <xsl:param name="miditem"
                select="count($lines[position() &lt; $halflines]/ancestor::ltx:indexentry[parent::ltx:indexlist[parent::ltx:index]]) + 1"/>
     <xsl:call-template name="split-columns">
       <xsl:with-param name="context" select="$context"/>
       <xsl:with-param name="wrapper" select="'ul'"/>
-      <xsl:with-param name="items"   select="$items"/>
+      <xsl:with-param name="items" select="$items"/>
       <xsl:with-param name="miditem" select="$miditem"/>
     </xsl:call-template>
   </xsl:template>
@@ -854,13 +853,12 @@
 
   <xsl:template match="ltx:glossarylist" mode="twocolumn">
     <xsl:param name="context"/>
-    <xsl:param name="items"    select="ltx:glossaryentry"/>
-    <xsl:param name="miditem"
-               select="ceiling(count($items) div 2)+1"/>
+    <xsl:param name="items" select="ltx:glossaryentry"/>
+    <xsl:param name="miditem" select="ceiling(count($items) div 2)+1"/>
     <xsl:call-template name="split-columns">
       <xsl:with-param name="context" select="$context"/>
       <xsl:with-param name="wrapper" select="'dl'"/>
-      <xsl:with-param name="items"   select="$items"/>
+      <xsl:with-param name="items" select="$items"/>
       <xsl:with-param name="miditem" select="$miditem"/>
     </xsl:call-template>
   </xsl:template>
