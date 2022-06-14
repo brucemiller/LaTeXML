@@ -292,12 +292,12 @@ Factor  :
         | preScripted['bigop'] addOpArgs[$item[1]]
         | { ($forbidVertBar ? undef : 1); }
           SINGLEVERTBAR SINGLEVERTBAR absExpression SINGLEVERTBAR SINGLEVERTBAR # || exp || ==> norm
-              addScripts[Fence(CatSymbols($item[2],$item[3],undef,'||',role=>'OPEN'),
+              addScripts[Fence(CatSymbols($item[2],$item[3],undef,"\x{2016}",role=>'OPEN'),
                 $item[4],
-                CatSymbols($item[5],$item[6],undef,'||',role=>'CLOSE'))]
+                CatSymbols($item[5],$item[6],undef,"\x{2016}",role=>'CLOSE'))]
         | { ($forbidVertBar ? undef : 1); }
           VERTBAR absExpression VERTBAR                     # | exp | => absolute-value
-              addScripts[Fence($item[2],$item[3],$item[4])]
+              addScripts[Fence(MorphVertbar($item[2],'OPEN'),$item[3],MorphVertbar($item[4],'CLOSE'))]
         | { ($forbidVertBar ? undef : IsNotationAllowed('QM')); }
           MIDBAR ketExpression RANGLE { SawNotation('QM'); } # | exp > ==> ket
               addScripts[InterpretDelimited(New('ket'),
@@ -326,7 +326,8 @@ aBarearg :
         | preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
         | preScripted['UNKNOWN'] doubtArgs[$item[1]]
         | NUMBER   addScripts[$item[1]]
-        | VERTBAR absExpression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
+        | VERTBAR absExpression VERTBAR
+            addScripts[Fence(MorphVertbar($item[1],'OPEN'),$item[2],MorphVertbar($item[3],'CLOSE'))]
 
 # moreBareargs[$argpart]
 moreBareargs :
@@ -343,7 +344,8 @@ aTrigBarearg :
         | preScripted['ATOM_OR_ID'] maybeArgs[$item[1]]
         | preScripted['UNKNOWN'] doubtArgs[$item[1]]
         | NUMBER   addScripts[$item[1]]
-        | VERTBAR absExpression VERTBAR addScripts[Fence($item[1],$item[2],$item[3])]
+        | VERTBAR absExpression VERTBAR
+          addScripts[Fence(MorphVertbar($item[1],'OPEN'),$item[2],MorphVertbar($item[3],'CLOSE'))]
 
 # moreTrigBareargs[$argpart]
 moreTrigBareargs :
@@ -494,7 +496,8 @@ FormulaNOBar : Formula
 
 # The "such that" that can appear in a sets like {a "such that" predicate(a)}
 # accept vertical bars, and colon
-suchThatOp : MIDDLE | VERTBAR
+suchThatOp : MIDDLE
+         | VERTBAR  { MorphVertbar($item[1],'MIDDLE'); }
          | /METARELOP:colon:\d+/        { Lookup($item[1]); }
 # ================================================================================
 # Function args, etc.
@@ -649,8 +652,9 @@ diffd :
 
 # Punctuation separating function arguments; things marked MIDDLE could
 # also separate arguments
-# With great trepidation, I'm adding VERBAR here
-argPunct : PUNCT | MIDDLE | VERTBAR
+# With great trepidation, I'm adding VERTBAR here
+argPunct : PUNCT | MIDDLE
+         | VERTBAR { MorphVertbar($item[1],'PUNCT'); }
 
 # ================================================================================
 # Operator args, etc.
