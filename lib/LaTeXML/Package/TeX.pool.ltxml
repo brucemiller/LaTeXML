@@ -5732,8 +5732,9 @@ DefMathI('\nabla',    undef, "\x{2207}", role => 'OPERATOR');
 DefMathI('\surd',     undef, "\x{221A}", role => 'OPERATOR', meaning => 'square-root');
 DefMathI('\top',      undef, "\x{22A4}", role => 'ADDOP',    meaning => 'top');
 DefMathI('\bot',      undef, "\x{22A5}", role => 'ADDOP',    meaning => 'bottom');
-DefMathI('\|',        undef, "\x{2225}", role => 'VERTBAR', name => '||', meaning => 'parallel-to');
-DefMathI('\angle',    undef, "\x{2220}");
+DefMathI('\|',        undef, "\x{2225}", role => 'VERTBAR',  name    => '||');
+# should get meaning => 'parallel-to' when used as infix, but NOT when for OPEN|CLOSE
+DefMathI('\angle', undef, "\x{2220}");
 
 # NOTE: This is probably the wrong role.
 # Also, should probably carry info about Binding for OpenMath
