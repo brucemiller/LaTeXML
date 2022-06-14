@@ -16,6 +16,7 @@ use warnings;
 use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use LaTeXML::Common::Error;
+use LaTeXML::Post::UnicodeMath;
 use charnames qw(:full);
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Processor);
@@ -805,6 +806,8 @@ sub getTextContent_rec {
       return ($node->getAttribute('open') || '')
         . $node->textContent    # assuming no nested ltx:tag
         . ($node->getAttribute('close') || ''); }
+    elsif ($tag eq 'ltx:Math') {
+      return LaTeXML::Post::UnicodeMath::unimath($node); }
     else {
       return join('', map { getTextContent_rec($doc, $_); } $node->childNodes); } }
   elsif ($type == XML_DOCUMENT_FRAG_NODE) {
