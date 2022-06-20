@@ -1,0 +1,21 @@
+\documentclass{article}
+\setcounter{secnumdepth}{0}
+
+\immediate\write18{makeindex \jobname.idx}
+
+\usepackage{imakeidx}
+% they're too wide for 2 columns
+\makeindex[columns=1]
+
+\usepackage{latexml}
+\let\pod=\URL
+
+\usepackage{hyperref}
+
+\begin{document}
+
+\input{package-\jobname}
+
+\printindex
+
+\end{document}
