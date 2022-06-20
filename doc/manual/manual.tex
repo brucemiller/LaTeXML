@@ -890,6 +890,7 @@ than others: Recall Larry Wall's adage ``There's more than one way to do it.''
 By far, the easiest way to customize the style of the output is by modifying the CSS,
 see \ref{customization.latexmlpost.css}, so that is the recommended way
 when it applies.
+The next easiest is to \verb|\usepackage{latexml}| and then use one of the provided commands.  The package documentation is in \ref{package_latexml}.
 
 The basic conversion from \TeX\ markup to \XML\ is done by
 \ltxcmd{latexml}, and is obviously affected by the mapping between the \TeX\ markup
@@ -2130,6 +2131,7 @@ take advantage of the arbitrary shorthands, chaining and partial triples
 that RDFa allows.  Correspondingly, you are must beware of
 clashes or unintended changes to the set of triples generated
 by explicit and hidden RDFa data.
+The package documentation is in \ref{package_lxRDFa}.
 
 %%%======================================================================
 \chapter{ToDo}\label{todo}
@@ -2177,6 +2179,12 @@ developer.
 \input{pods/latexmlpost_exe}
 \input{pods/latexmlc_exe}
 \input{pods/latexmlmath_exe}
+
+\chapter[Packages]{Documentation for LaTeXML Specific Packages}\label{packages}
+{\let\pod=\URL
+\input{texdoc/package-latexml}
+\input{texdoc/package-lxRDFa}
+}
 
 %%%======================================================================
 \chapter[Bindings]{Implemented Bindings}\label{included.bindings}

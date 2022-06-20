@@ -558,7 +558,6 @@ lib/LaTeXML/Package/kvoptions.sty.ltxml
 lib/LaTeXML/Package/kvsetkeys.sty.ltxml
 lib/LaTeXML/Package/l3keys2e.sty.ltxml
 lib/LaTeXML/Package/lastpage.sty.ltxml
-lib/LaTeXML/Package/latexml.sty.ltxml
 lib/LaTeXML/Package/latexsym.sty.ltxml
 lib/LaTeXML/Package/latin10.def.ltxml
 lib/LaTeXML/Package/lgr.fontmap.ltxml
@@ -572,7 +571,6 @@ lib/LaTeXML/Package/longtable.sty.ltxml
 lib/LaTeXML/Package/lscape.sty.ltxml
 lib/LaTeXML/Package/ltxcmds.sty.ltxml
 lib/LaTeXML/Package/luximono.sty.ltxml
-lib/LaTeXML/Package/lxRDFa.sty.ltxml
 lib/LaTeXML/Package/ly1.fontmap.ltxml
 lib/LaTeXML/Package/makecell.sty.ltxml
 lib/LaTeXML/Package/makeidx.sty.ltxml
@@ -766,8 +764,9 @@ lib/LaTeXML/Package/yfonts.sty.ltxml
 #==================================================
 # TeX packages
 #==================================================
-lib/LaTeXML/texmf/latexml.sty
-lib/LaTeXML/texmf/lxRDFa.sty
+lib/LaTeXML/texmf/latexml.pm
+lib/LaTeXML/texmf/lxRDFa.pm
+lib/LaTeXML/texmf/sty_ltxml.PL
 
 #==================================================
 # Test Suite.

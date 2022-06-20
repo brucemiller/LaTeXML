@@ -47,6 +47,9 @@ doc/site/examples/tabular/tabular.log
 doc/site/examples/tabular/tabular.pdf
 doc/site/examples/tabular/tabular.xml
 doc/site/index.xml
+# These are generated for creating the package documentation
+doc/manual/texdoc/*
+!doc/manual/texdoc/l*.tex
 auto
 # Travis built things
 tools/travis/dist
