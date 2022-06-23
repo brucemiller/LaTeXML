@@ -4233,8 +4233,10 @@ DefConstructor('\lx@mark@nocite Semiverbatim',
 #======================================================================
 Let('\@@input', '\input');    # Save TeX's version.
                               # LaTeX's \input is a bit different...
+# Input, now
+DefPrimitive('\ltx@input {}', sub { Input(Expand($_[1])); });
 DefMacroI('\input', undef, '\@ifnextchar\bgroup\@iinput\@@input');
-DefPrimitive('\@iinput {}', sub { Input(Expand($_[1])); });
+Let('\@iinput', '\ltx@input');
 DefMacro('\@input{}',  '\IfFileExists{#1}{\@@input\@filef@und}{\typeout{No file #1.}}');
 DefMacro('\@input@{}', '\InputIfFileExists{#1}{}{\typeout{No file #1.}}');
 
@@ -5967,11 +5969,12 @@ DefMacro('\IfFileExists{}{}{}', sub {
 
 DefMacro('\InputIfFileExists{}{}{}', sub {
     my ($gullet, $file, $if, $else) = @_;
-    my $file_string = ToString(Expand($file));
+    $file = Expand($file);
+    my $file_string = ToString($file);
     if (FindFile($file_string)) {
       DefMacro('\@filef@und', '"' . $file_string . '" ');
-      Input($file_string);
-      return ($if->unlist); }
+      return Tokens($if, T_CS('\@addtofilelist'), T_BEGIN, $file, T_END,
+        T_CS('\ltx@input'), T_BEGIN, $file, T_END); }
     else { return ($else->unlist); } });
 
 #======================================================================
