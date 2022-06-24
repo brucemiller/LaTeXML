@@ -3846,11 +3846,13 @@ Tag('ltx:*', 'afterClose:late' => sub {
       GenerateID($document, $node); } });
 
 # These will get filled in during postprocessing.
-# * is added to accommodate hyperref
-DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label' _force_font='true'/>",
+# * comes from hyperref
+DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref ?#1(class='ltx_nolink')() labelref='#label' _force_font='true'/>",
   properties => sub { (label => CleanLabel($_[2])); });
-DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label' _force_font='true'/>", # Same??
-  properties => sub { (label => CleanLabel($_[2])); });
+# "page" does not make sense in xml.  If the user really wants, they will need:
+# \usepackage{latexml} ... \iflatexml alternate\else page \pageref{label}\fi
+Let('\pageref', '\ref');
+
 #======================================================================
 # C.11.3 Bibliography and Citation
 #======================================================================
