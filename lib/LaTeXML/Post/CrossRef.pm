@@ -42,12 +42,16 @@ sub new {
 sub process {
   my ($self, $doc, $root) = @_;
   local %LaTeXML::Post::CrossRef::MISSING = ();
-  if (my $navtoc = $$self{navigation_toc}) { # If a navigation toc requested, put a toc in nav; will get filled in
-    my $toc = ['ltx:TOC', { format => $navtoc }];
-    if (my $nav = $doc->findnode('//ltx:navigation')) {
-      $doc->addNodes($nav, $toc); }
-    else {
-      $doc->addNodes($doc->getDocumentElement, ['ltx:navigation', {}, $toc]); } }
+
+  my $navtoc   = $$self{navigation_toc};  # If a navigation toc requested, put a toc in nav to fill in
+  my $doctitle = $self->generateDocumentTile($doc);
+  my $nav      = $doc->findnode('//ltx:navigation');
+  if (!$nav && ($navtoc || (defined $doctitle))) {    # Need navigation block
+    $doc->addNodes($doc->getDocumentElement, ['ltx:navigation', {}]);
+    $nav = $doc->findnode('//ltx:navigation'); }
+  $doc->addNodes($nav, ['ltx:TOC', { format => $navtoc }]) if $navtoc;
+  $doc->addNodes($nav, ['ltx:title', {}, $doctitle]) if defined $doctitle;
+
   $self->fillInGlossaryRef($doc);
   $self->fill_in_relations($doc);
   $self->fill_in_tocs($doc);
@@ -767,6 +771,18 @@ sub prepRawRefText {
     if ($first && ($doc->getQName($first) eq 'ltx:tag')) {
       $node->removeChild($first); } }
   return $node; }
+
+# Generate a title for this document.
+sub generateDocumentTile {
+  my ($self, $doc) = @_;
+  my $title;
+  if (my $docid = $doc->getDocumentElement->getAttribute('xml:id')) {    # If has a id?
+    $title = $self->generateTitle($doc, $docid); }
+  return $title if (defined $title) && ($title ne '');
+  if (my $node = $doc->findnode('//ltx:title | //ltx:toctitle | //ltx:caption | //ltx:toccaption')) {
+    $title = getTextContent($doc, $node); }
+  return $title if (defined $title) && ($title ne '');
+  return; }
 
 # Generate a title string for ltx:ref
 sub generateTitle {
