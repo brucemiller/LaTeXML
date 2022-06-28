@@ -2176,7 +2176,8 @@ sub loadLTXML {
   # We want to check against the original request, but WITH the type
   $request .= '.' . $type unless $request =~ /\Q.$type\E$/;    # make sure the .ltxml is added here
   my $trequest = $request; $trequest =~ s/\.ltxml$//;          # and NOT added here!
-  return if LookupValue($request . '_loaded') || LookupValue($trequest . '_loaded');
+  return if LookupValue($request . '_loaded') || LookupValue($trequest . '_loaded')
+    || LookupValue($name . '_loaded');
   # Note (only!) that the ltxml version of this was loaded; still could load raw tex!
   AssignValue($request . '_loaded' => 1, 'global');
   $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth::Binding->new($pathname), sub {
