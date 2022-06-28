@@ -2139,10 +2139,13 @@ sub Input {
   if (LookupValue('INTERPRETING_DEFINITIONS')) {
     InputDefinitions($request); }
   elsif (my $path = FindFile($request)) {    # Found something plausible..
-    my $type = (pathname_is_literaldata($path) ? 'tex' : pathname_type($path));
-
+    my ($ignoredir, $type);
+    if (pathname_is_literaldata($path)) {
+      $type = 'tex'; }
+    else {
+      ($ignoredir, $request, $type) = pathname_split($path); }
     # Should we be doing anything about options in the next 2 cases?..... I kinda think not, but?
-    if ($type eq 'ltxml') {                  # it's a LaTeXML binding.
+    if ($type eq 'ltxml') {    # it's a LaTeXML binding.
       loadLTXML($request, $path); }
     # Else some sort of "known" definitions type file, but not simply 'tex'
     elsif (($type ne 'tex') && (pathname_is_raw($path))) {
@@ -2176,7 +2179,6 @@ sub loadLTXML {
   return if LookupValue($request . '_loaded') || LookupValue($trequest . '_loaded');
   # Note (only!) that the ltxml version of this was loaded; still could load raw tex!
   AssignValue($request . '_loaded' => 1, 'global');
-
   $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth::Binding->new($pathname), sub {
       do $pathname;
       Fatal('die', $pathname, $STATE->getStomach->getGullet,
