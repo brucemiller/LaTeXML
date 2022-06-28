@@ -823,7 +823,7 @@ sub getTextContent_rec {
         . $node->textContent    # assuming no nested ltx:tag
         . ($node->getAttribute('close') || ''); }
     elsif ($tag eq 'ltx:Math') {
-      return LaTeXML::Post::UnicodeMath::unimath($node); }
+      return unicodemath($doc, $node); }
     else {
       return join('', map { getTextContent_rec($doc, $_); } $node->childNodes); } }
   elsif ($type == XML_DOCUMENT_FRAG_NODE) {
