@@ -1915,7 +1915,7 @@ sub adjustBoxColor_rec {
     elsif ($r eq 'LaTeXML::Core::Alignment') {
       foreach my $row (@{ $$box{rows} }) {
         foreach my $col (@{ $$row{columns} }) {
-          adjustBoxColor_rec($color, $adjusted, $$col{boxes}->unlist); } } }
+          adjustBoxColor_rec($color, $adjusted, $$col{boxes}->unlist) if $$col{boxes}; } } }
   }
   return; }
 
