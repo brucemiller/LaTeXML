@@ -338,6 +338,7 @@ latexmlmath [options] I<texmath>
  --cmml=file                alias for --contentmathml
  --openmath=file            convert to OpenMath
  --om=file                  alias for --openmath
+ --unicodemath=file         convert to UnicodeMath
  --XMath=file               output LaTeXML's internal format
  --noparse                  disables parsing of math
                             (not useful for cMML or openmath)
@@ -438,6 +439,10 @@ B<Note> that this conversion is only partially implemented.
 
 Requests conversion to OpenMath.
 B<Note> that this conversion is only partially implemented.
+
+=item C<--unicodemath>=I<file>
+
+Requests conversion to UnicodeMath (an unstructured Unicode string).
 
 =item C<--XMath>=I<file>
 
