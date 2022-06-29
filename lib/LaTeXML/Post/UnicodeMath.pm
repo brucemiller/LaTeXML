@@ -35,7 +35,7 @@ our @EXPORT = qw( &unicodemath);
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Top level
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-our $lxMimeType = 'application/x-UnicodeMath';    # !?!?!?!?
+our $lxMimeType = 'application/x-unicodemath';    # !?!?!?!?
 
 sub convertNode {
   my ($self, $doc, $xmath, $style) = @_;
