@@ -537,6 +537,9 @@ sub convert_post {
         elsif ($fmt eq 'mathtex') {
           require LaTeXML::Post::TeXMath;
           push(@mprocs, LaTeXML::Post::TeXMath->new(%PostOPS)); }
+        elsif ($fmt eq 'unicodemath') {
+          require LaTeXML::Post::UnicodeMath;
+          push(@mprocs, LaTeXML::Post::UnicodeMath->new(%PostOPS)); }
         elsif ($fmt eq 'lexemes') {
           require LaTeXML::Post::LexMath;
           push(@mprocs, LaTeXML::Post::LexMath->new(%PostOPS)); }

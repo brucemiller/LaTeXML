@@ -35,10 +35,11 @@ my ($destination, $help, $showversion) = ('', '');
 my ($documentid);
 my ($mathimage, $mathsvg, $mag) = (undef, undef, 1.75);
 my ($pmml, $linelength, $plane1, $hackplane1) = (undef, undef, undef, undef);
-my $xmath = undef;
-my $cmml  = undef;
-my $om    = undef;
-my @paths = ('.');
+my $xmath   = undef;
+my $cmml    = undef;
+my $om      = undef;
+my $unimath = undef;
+my @paths   = ('.');
 my @preload;
 my $inputencoding;
 GetOptions(
@@ -53,6 +54,7 @@ GetOptions(
   "contentmathml|cmml=s"      => \$cmml,
   "openmath|om=s"             => \$om,
   "XMath=s"                   => \$xmath,
+  "unicodemath=s"             => \$unimath,
   "noparse"                   => \$noparse,
   "preload=s"                 => \@preload,
   "includestyles"             => \$includestyles,
@@ -165,7 +167,7 @@ our $omURI  = "http://www.openmath.org/OpenMath";
 
 # Default to pmml to stdout, if nothing else specified.
 $pmml = '-' unless (defined $mathimage || defined $mathsvg
-  || defined $pmml || defined $cmml || defined $om || defined $xmath);
+  || defined $pmml || defined $cmml || defined $om || defined $xmath || defined $unimath);
 
 our %OPTIONS = ();
 
@@ -239,6 +241,12 @@ if ($xmath) {
   my ($result) = $post->ProcessChain(cloneDoc($document));
   outputXML($result->findnode('//ltx:XMath'), $xmath); }
 
+if ($unimath) {
+  require LaTeXML::Post::UnicodeMath;
+  my ($result) = $post->ProcessChain(cloneDoc($document),
+    LaTeXML::Post::UnicodeMath->new(%OPTIONS));
+  outputText($result->findnode('//ltx:Math/ltx:text/text()'), $unimath); }
+
 my $status = $latexml->getStatusMessage;
 my $code   = $latexml->getStatusCode;
 # Should be combined with $post's status!
@@ -267,17 +275,26 @@ sub outputXML {
   $newdoc->setDocumentElement($xml);
   if (my $oldprefix = $defaulturi && $xml->lookupNamespacePrefix($defaulturi)) {
     $xml->setNamespaceDeclPrefix($oldprefix, undef); }
-  my $serialized = $newdoc->toString(1);
   # NOTE that we are serializing the XML::LibXML::Document whose toString
   # has ALREADY encoded (in this case to utf8), so NO encode is needed!
-  if ($xmldestination eq '-') {
-    print $serialized; }
+  outputText($xml, $xmldestination);
+  return; }
+
+sub outputText {
+  my ($string, $destination) = @_;
+  my $serialized = (ref $string ? $string->toString(1) : $string);
+  # NOTE that we are serializing the XML::LibXML::Document whose toString
+  # has ALREADY encoded (in this case to utf8), so NO encode is needed!
+  if ($destination eq '-') {
+    binmode(STDOUT, ":encoding(UTF-8)");
+    print $serialized. "\n"; }
   else {
-    $xmldestination = pathname_canonical($xmldestination);
-    if (my $dir = pathname_directory($xmldestination)) {
+    $destination = pathname_canonical($destination);
+    if (my $dir = pathname_directory($destination)) {
       pathname_mkdir($dir) or die "Couldn't create destination directory $dir: $!"; }
     my $OUT;
-    open($OUT, '>', $xmldestination) or die "Couldn't open output file $xmldestination: $!";
+    open($OUT, '>', $destination) or die "Couldn't open output file $destination: $!";
+    binmode($OUT, ":encoding(UTF-8)");
     print $OUT $serialized;
     close($OUT); }
   return; }
@@ -321,6 +338,7 @@ latexmlmath [options] I<texmath>
  --cmml=file                alias for --contentmathml
  --openmath=file            convert to OpenMath
  --om=file                  alias for --openmath
+ --unicodemath=file         convert to UnicodeMath
  --XMath=file               output LaTeXML's internal format
  --noparse                  disables parsing of math
                             (not useful for cMML or openmath)
@@ -421,6 +439,10 @@ B<Note> that this conversion is only partially implemented.
 
 Requests conversion to OpenMath.
 B<Note> that this conversion is only partially implemented.
+
+=item C<--unicodemath>=I<file>
+
+Requests conversion to UnicodeMath (an unstructured Unicode string).
 
 =item C<--XMath>=I<file>
 
