@@ -6318,8 +6318,8 @@ DefMacro('\skew{}{}{}', '{#2{#3\mkern#1mu}\mkern-#1mu}{}');    # ignore the subt
     # rather than the individual tokens.
     # This meaning is handled in MathParser (for now)
 
-DefMacroI('\{', undef, '\ifmmode\lx@math@lbrace\else\lx@text@lbrace\fi', robust => 1);
-DefMacroI('\}', undef, '\ifmmode\lx@math@rbrace\else\lx@text@rbrace\fi', robust => 1);
+DefMacroI('\{', undef, '\ifmmode\lx@math@lbrace\else\lx@text@lbrace\fi', protected => 1);
+DefMacroI('\}', undef, '\ifmmode\lx@math@rbrace\else\lx@text@rbrace\fi', protected => 1);
 DefMathI('\lx@math@lbrace', undef, '{', role => 'OPEN',  stretchy => 'false', alias => '\{');
 DefMathI('\lx@math@rbrace', undef, '}', role => 'CLOSE', stretchy => 'false', alias => '\}');
 DefPrimitiveI('\lx@text@lbrace', undef, '{', alias => '\{',
