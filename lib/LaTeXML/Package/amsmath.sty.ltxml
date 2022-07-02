@@ -889,7 +889,7 @@ DefPrimitive('\lx@math@dots Digested', sub {
     return (Box(($role && $binops{$role} ? "\x{22EF}" : "\x{2026}"),
         undef, undef, T_CS('\dots'), mode => 'math', name => 'dots', role => 'ID'),
       $after); });
-DefMacro('\dots', '\ifmmode\lx@math@dots\else\lx@ldots\fi');
+DefMacro('\dots', '\ifmmode\lx@math@dots\else\lx@ldots\fi', robust => 1);
 
 #======================================================================
 # Section 4.4 Nonbreaking dashes
@@ -911,7 +911,7 @@ DefMacro('\uproot{}',   '');
 
 #======================================================================
 # Section 4.7 Boxed formulas
-DefMacro('\boxed{}', '\ifmmode\boxed@math{#1}\else\boxed@text{#1}\fi');
+DefMacro('\boxed{}', '\ifmmode\boxed@math{#1}\else\boxed@text{#1}\fi', robust => 1);
 DefConstructor('\boxed@math{}',
   "<ltx:XMArg enclose='box'>#1</ltx:XMArg>",
   alias => '\boxed');
