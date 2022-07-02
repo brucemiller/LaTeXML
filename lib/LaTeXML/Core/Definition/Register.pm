@@ -13,6 +13,7 @@ package LaTeXML::Core::Definition::Register;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use base qw(LaTeXML::Core::Definition::Primitive);
 
@@ -48,10 +49,10 @@ sub setValue {
   my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
   if ($tracing || $LaTeXML::DEBUG{tracing}) {
     my $scope  = $STATE->getPrefix('global') ? 'globally ' : '';
-    my $csname = $$self{cs}->toString;
-    Debug("{$scope" . "changing " . $csname . "=" . $self->valueOf(@args)->toString() . "}");
+    my $csname = ToString($$self{cs});
+    Debug("{$scope" . "changing " . $csname . "=" . ToString($self->valueOf(@args)) . "}");
     &{ $$self{setter} }($value, @args);
-    Debug("{into " . $csname . "=" . $self->valueOf(@args)->toString() . "}"); }
+    Debug("{into " . $csname . "=" . ToString($self->valueOf(@args)) . "}"); }
   else {
     &{ $$self{setter} }($value, @args); }
   return; }
