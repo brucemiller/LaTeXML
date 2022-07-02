@@ -18,6 +18,7 @@ use LaTeXML::Package;
 # Note the tricky management of the catcode of @!
 DefMacro('\xystycatcode', sub { Explode(LookupCatcode('@')); });
 # Load the xy binding; along with its raw TeX implementation
+AssignCatcode('@' => CC_OTHER);
 InputDefinitions('xy', type => 'tex');
 RequirePackage('ifpdf');
 
