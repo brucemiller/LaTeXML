@@ -91,14 +91,14 @@ DefConstructor('\lx@xy@svg Digested',
 
     Debug("XY: " . ToString($x0) . ' ' . ToString($y0) . ' ' . ToString($x1) . ' ' . ToString($y1))
       if $LaTeXML::DEBUG{xy};
-    my $w = $x1->subtract($x0);
-    my $h = $y1->subtract($y0);
-    my $x = $x0->negate->larger(Dimension(0));
-    my $y = $y1->subtract($y0->larger(Dimension(0)));
-    if (LookupValue('IN_MATH')) {    # Vertically center, when in math
-      $y = $y->add($h->multiply(0.5)); }
+    my $w         = $x1->subtract($x0);
+    my $h         = $y1->subtract($y0);
+    my $x         = $x0->negate->larger(Dimension(0));
+    my $yma       = Dimension(LookupValue('IN_MATH') ? '2.5pt' : 0);           # math-axis; fontdimen 22
+    my $y         = $y1->add($yma->subtract($y0->larger(Dimension(0))));
     my $transform = "matrix(1 0 0 -1 " . $x->pxValue . ' ' . $y->pxValue . ')';
     Debug("XY size: " . ToString($w) . ' x ' . ToString($h) . ' + ' . 0 . ' @ ' . ToString($x) . ' x ' . ToString($y))
+
       if $LaTeXML::DEBUG{xy};
     return (width => $w, height => $h, pxwidth => $w->pxValue, pxheight => $h->pxValue,
       transform => $transform); });
