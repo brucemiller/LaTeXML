@@ -2979,7 +2979,7 @@ sub defineNewTheorem {
   my ($stomach, $flag, $thmset, $otherthmset, $type, $within) = @_;
   $thmset = ToString($thmset);
   my $classname = CleanClassName($thmset);
-  my $listname  = "theorem:$thmset"; $listname =~ s/\s//g;
+  my $listname  = "theorem:$thmset"; $listname =~ s/\s//g; $listname =~ s/'/prime/g;
   $otherthmset = $otherthmset       && ToString($otherthmset);
   $type        = undef unless $type && $type->unlist;
   $within      = $within ? ToString($within) : undef;
