@@ -607,6 +607,8 @@ sub DefColumnType {
 sub NewCounter {
   my ($ctr, $within, %options) = @_;
   my $unctr = "UN$ctr";    # UNctr is counter for generating ID's for UN-numbered items.
+  if ($within && ($within ne 'document') && !LookupValue("\\c\@$within")) {
+    NewCounter($within); }
   DefRegisterI(T_CS("\\c\@$ctr"), undef, Number(0));
   AssignValue("\\c\@$ctr" => Number(0), 'global');
   AfterAssignment();
