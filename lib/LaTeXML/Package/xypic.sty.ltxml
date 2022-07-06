@@ -15,6 +15,10 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+# Pass all options on to xy
+DeclareOption(undef, sub {
+    PassOptions('xy', 'sty', ToString(Expand(T_CS('\CurrentOption')))); });
+ProcessOptions();
 RequirePackage('xy', options => ['v2']);
 
 1;
