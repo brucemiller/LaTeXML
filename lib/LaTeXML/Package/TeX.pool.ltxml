@@ -2928,7 +2928,8 @@ DefMacro('\hline', '\noalign{\@@alignment@hline}');
 DefConstructorI('\@@alignment@hline', undef, '',
   afterDigest => sub {
     if (my $alignment = LookupValue('Alignment')) {
-      $alignment->addLine('t'); } },
+      $alignment->addLine('t'); }
+    return; },
   properties => { isHorizontalRule => 1 },
   alias      => '\hline');
 
