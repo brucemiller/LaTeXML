@@ -1057,7 +1057,10 @@ DefMacro('\prentry@@norm', '\lx@xy@prentry@@norm@save\lx@xy@notealignment');
 # (since it will havev become unbound by the time we need it)
 # [Global is OK(?) since nested xymatrix supposedly doesn't work?]
 DefPrimitive('\lx@xy@notealignment', sub {
-    AssignValue('xymatrix_alignment' => LookupValue('Alignment'), 'global'); });
+    my $alignment = LookupValue('Alignment');
+    # do NOT prune, else rows & column sizes are off.
+    $alignment->setProperty(preserve_structure => 1) if $alignment;
+    AssignValue('xymatrix_alignment' => $alignment, 'global'); });
 
 DefPrimitive('\xymatrix@measureit', sub {
     if (my $alignment = LookupValue('xymatrix_alignment')) {
@@ -1068,13 +1071,19 @@ DefPrimitive('\xymatrix@measureit', sub {
         $rmx = $rmx->larger($r);
         DefMacroI(T_CS('\Hrow@' . $i++), undef, Tokens($r->revert)); }
       DefMacroI(T_CS('\H@max'), undef, Tokens($rmx->revert));
+      # Add fake last row, since even preserve_structure may remove empty last row!
+      DefMacroI(T_CS('\Hrow@' . $i), undef, Tokens(Dimension(0)->revert));
       my $j   = 1;
       my $cmx = Dimension(0);
       foreach my $c (@{ $$alignment{columnwidths} }) {
         $cmx = $cmx->larger($c);
         DefMacroI(T_CS('\Wcol@' . $j++), undef, Tokens($c->revert)); }
       DefMacroI(T_CS('\W@max'),  undef, Tokens($cmx->revert));
-      DefMacroI(T_CS('\HW@max'), undef, Tokens($rmx->larger($cmx)->revert)); }
+      DefMacroI(T_CS('\HW@max'), undef, Tokens($rmx->larger($cmx)->revert));
+      AssignRegister('\Col'     => Number(0), 'global');
+      AssignRegister('\Row'     => Number(0), 'global');
+      AssignRegister('\count@@' => Number(0), 'global');
+    }
     return; });
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
