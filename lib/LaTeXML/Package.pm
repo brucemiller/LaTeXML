@@ -897,7 +897,7 @@ sub Invocation {
     return Tokens($token, ($params ? $params->revertArguments(@args) : ())); }
   else {
     $STATE->generateErrorStub(undef, $token, convertLaTeXArgs(scalar(@args), 0));
-    return Tokens($token, map { (T_BEGIN, $_->unlist, T_END) } @args); } }
+    return Tokens($token, map { ($_ ? (T_BEGIN, $_->unlist, T_END) : ()) } @args); } }
 
 sub RawTeX {
   my ($text) = @_;
