@@ -1,0 +1,57 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  xy                                                                 | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Note the tricky management of the catcode of @!
+DefMacro('\xystycatcode', sub { Explode(LookupCatcode('@')); });
+# Load the xy binding; along with its raw TeX implementation
+AssignCatcode('@' => CC_OTHER);
+InputDefinitions('xy', type => 'tex');
+RequirePackage('ifpdf');
+
+# Rely on \xyoption having been safely redefined.
+# Recognise some standard LaTeX2e class options (cf. old `LaTeX Companion' p.317):
+DeclareOption('cmactex',  '\xyoption{dvips}');      # Thomas Kiffe's CMacTeX uses dvips
+DeclareOption('dvips',    '\xyoption{dvips}');      # & \xyoption{ps}
+DeclareOption('dvitops',  '\xyoption{dvitops}');    # &\xyoption{ps}
+DeclareOption('emtex',    '\xyoption{emtex}');
+DeclareOption('ln',       '\xyoption{ln}');         # this driver not even implemented!
+DeclareOption('oztex',    '\xyoption{oztex}');
+DeclareOption('textures', '\xyoption{textures}');
+DeclareOption('xdvi',     '\xyoption{xdvi}');
+
+# Recognise standard aliases for the pdf option.
+DeclareOption('pdftex',   '\xyoption{pdf}');
+DeclareOption('dvipdfm',  '\xyoption{pdf}');
+DeclareOption('dvipdfmx', '\xyoption{pdf}');
+
+# This is special.
+DeclareOption('colour', '\xyoption{color}');        # :-)
+
+# This (obsolete) cmtip style option should be activated after loading:
+DeclareOption('cmtip', '\xyoption{cmtip}\UseComputerModernTips');
+
+# Pass the desired tip size if defined
+DeclareOption('10pt', '\xywithoption{tips}{\def\tipsize@@{10}}');
+DeclareOption('11pt', '\xywithoption{tips}{\def\tipsize@@{11}}');
+DeclareOption('12pt', '\xywithoption{tips}{\def\tipsize@@{12}}');
+
+# Other options are just loaded.
+DeclareOption(undef, '\edef\next{\noexpand\xyoption{\CurrentOption}}\next');
+
+ProcessOptions();
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

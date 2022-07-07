@@ -105,6 +105,16 @@ my %font_family = (
   # Are these really the same?
   msx => { family => 'symbol', encoding => 'AMSa' },
   msy => { family => 'symbol', encoding => 'AMSb' },
+  # Pretend to recognize xy's fonts
+  xydash => { family => 'graphic' },
+  xyatip => { family => 'graphic' },
+  xybtip => { family => 'graphic' },
+  xybsql => { family => 'graphic' },
+  xycirc => { family => 'graphic' },
+  xycmat => { family => 'graphic' },
+  xycmbt => { family => 'graphic' },
+  xyluat => { family => 'graphic' },
+  xylubt => { family => 'graphic' },
 );
 
 # Maps the "series code" to an abstract font series name
