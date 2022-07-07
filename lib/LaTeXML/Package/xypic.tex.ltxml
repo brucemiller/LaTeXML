@@ -18,7 +18,7 @@ use LaTeXML::Package;
 # Load the raw TeX implementation
 # But IMPORTANTLY: do NOT reassign the catcode of @,
 # as it fouls up all xy's catcode management!
-InputDefinitions('xy', type => 'ltxml');
+InputDefinitions('xy', type => 'tex');
 RawTeX('\xyoption{v2}');
 
 1;
