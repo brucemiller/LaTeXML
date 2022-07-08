@@ -389,7 +389,7 @@ DefUnicodeMath('Apply:?:square-root', sub {
     return ("\x{221A}" . unimath_nested($_[1], $PREC_MULOP), $PREC_MULOP); });
 DefUnicodeMath('Apply:?:nth-root', sub {
     # Could convert to \x{221B} for cube, \x{221C} for quartic
-    my ($n) = unimath_innternal($_[2]);
+    my ($n) = unimath_internal($_[2]);
     my $op = ($n eq '2' ? "\x{221A}"
       : ($n eq '3' ? "\x{221B}"
         : ($n eq '4' ? "\x{221C}"
