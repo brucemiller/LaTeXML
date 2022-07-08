@@ -19,11 +19,17 @@ use LaTeXML::Package;
 
 DefPrimitive('\relsize{}', sub {
     my ($stomach, $size) = @_;
-    MergeFont(scale => 1.2**ToString(Digest($size))); });
+    my $s = ToString(Digest($size));
+    $s =~ s/^\+\+//;  $s =~ s/^\-\-//;
+    $s =~ s/^\+\-/-/; $s =~ s/^\-\+/-/;
+    MergeFont(scale => 1.2**$s); });
 
 DefPrimitive('\relscale{}', sub {
     my ($stomach, $size) = @_;
-    MergeFont(scale => ToString(Digest($size))); });
+    my $s = ToString(Digest($size));
+    $s =~ s/^\+\+//;  $s =~ s/^\-\-//;
+    $s =~ s/^\+\-/-/; $s =~ s/^\-\+/-/;
+    MergeFont(scale => ToString(Digest($s))); });
 
 DefMacro('\textscale{}{}', '\begingroup\relscale{#1}#2\endgroup');
 

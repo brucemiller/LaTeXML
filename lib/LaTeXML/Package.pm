@@ -897,7 +897,7 @@ sub Invocation {
     return Tokens($token, ($params ? $params->revertArguments(@args) : ())); }
   else {
     $STATE->generateErrorStub(undef, $token, convertLaTeXArgs(scalar(@args), 0));
-    return Tokens($token, map { (T_BEGIN, $_->unlist, T_END) } @args); } }
+    return Tokens($token, map { ($_ ? (T_BEGIN, $_->unlist, T_END) : ()) } @args); } }
 
 sub RawTeX {
   my ($text) = @_;
@@ -2174,14 +2174,16 @@ sub loadLTXML {
     return; }
   $pathname = pathname_absolute($pathname);
   my ($dir, $name, $type) = pathname_split($pathname);
+  my $ltxname = $name . '.ltxml';
   # Don't load if the requested path was loaded (with or without the .ltxml)
   # We want to check against the original request, but WITH the type
   $request .= '.' . $type unless $request =~ /\Q.$type\E$/;    # make sure the .ltxml is added here
   my $trequest = $request; $trequest =~ s/\.ltxml$//;          # and NOT added here!
   return if LookupValue($request . '_loaded') || LookupValue($trequest . '_loaded')
-    || LookupValue($name . '_loaded');
+    || LookupValue($name . '_loaded') || LookupValue($ltxname . '_loaded');
   # Note (only!) that the ltxml version of this was loaded; still could load raw tex!
   AssignValue($request . '_loaded' => 1, 'global');
+  AssignValue($ltxname . '_loaded' => 1, 'global') if $ltxname ne $request;
   $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth::Binding->new($pathname), sub {
       do $pathname;
       Fatal('die', $pathname, $STATE->getStomach->getGullet,

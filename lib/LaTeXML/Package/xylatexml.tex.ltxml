@@ -1027,7 +1027,7 @@ DefConstructor('\xyRotate@@{}',
 
 # Align with current direction? But what is the argument?
 DefConstructor('\doSpecialRotate@@ Until:@@',
-  "^<svg:g transform='rotate(#angle)'>#2</svg:g>",
+  "^<svg:g transform='#transform'>#box</svg:g>",
   properties => sub {
     my ($stomach, $arg) = @_;
     my ($Xp, $Yp, $Xc, $Yc, $Lc, $Up, $Rp) = map { LookupRegister($_); }

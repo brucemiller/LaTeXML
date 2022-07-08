@@ -5736,7 +5736,7 @@ DefPrimitiveI('\lx@thinmuskip', undef, sub {
 DefPrimitiveI('\lx@thinspace', undef, sub {
     Box("\x{2009}", undef, undef, T_CS('\,'),
       name => 'thinspace', width => Dimension('0.16667em'), isSpace => 1); });
-DefMacroI('\,', undef, '\ifmmode\lx@thinmuskip\else\lx@thinspace\fi');
+DefMacroI('\,', undef, '\ifmmode\lx@thinmuskip\else\lx@thinspace\fi', protected => 1);
 
 DefPrimitiveI('\!', undef, sub {
     Box("\x{200B}", undef, undef, T_CS('\!'),    # zero width space
@@ -6836,16 +6836,16 @@ DefConstructor('\lx@gen@plain@cases@ RequiredKeyVals:lx@GEN {}',
   properties     => sub { %{ $_[1]->getKeyVals }; },
   afterConstruct => sub {
     my ($document) = @_;
-    my $point = $document->getElement->lastChild;
-    # Get the sequence of alternating (case, condition).
-    # Expecting ltx:XMArray/ltx:XMRow/ltx:XMCell [should have /ltx:XMArg, but could be empty!!!]
-    my @cells = $document->findnodes('ltx:XMArray/ltx:XMRow/ltx:XMCell', $point);
-    my @stuff = map { ($_->hasChildNodes ? createXMRefs($document, element_nodes($_))
-        : ['ltx:XMText', {}, 'otherwise']) } @cells;
-    $document->replaceTree(['ltx:XMDual', {},
-        ['ltx:XMApp', {}, ['ltx:XMTok', { meaning => 'cases' }], @stuff],
-        $point],
-      $point); },
+    if (my $point = $document->getElement->lastChild) {
+      # Get the sequence of alternating (case, condition).
+      # Expecting ltx:XMArray/ltx:XMRow/ltx:XMCell [should have /ltx:XMArg, but could be empty!!!]
+      my @cells = $document->findnodes('ltx:XMArray/ltx:XMRow/ltx:XMCell', $point);
+      my @stuff = map { ($_->hasChildNodes ? createXMRefs($document, element_nodes($_))
+          : ['ltx:XMText', {}, 'otherwise']) } @cells;
+      $document->replaceTree(['ltx:XMDual', {},
+          ['ltx:XMApp', {}, ['ltx:XMTok', { meaning => 'cases' }], @stuff],
+          $point],
+        $point); } },
   reversion => sub {
     my ($whatsit, $kv, $body) = @_;
     my $name = $kv->getValue('name');
@@ -6973,11 +6973,11 @@ DefPrimitiveI('\scriptscriptstyle', undef, sub {
 
 # Special Characters.
 # Try to give them some sense in math...
-DefMacroI('\#',   undef, '\ifmmode\lx@math@hash\else\lx@text@hash\fi');
-DefMacroI('\&',   undef, '\ifmmode\lx@math@amp\else\lx@text@amp\fi');
-DefMacroI('\%',   undef, '\ifmmode\lx@math@percent\else\lx@text@percent\fi');
-DefMacroI("\\\$", undef, '\ifmmode\lx@math@dollar\else\lx@text@dollar\fi');
-DefMacroI('\_',   undef, '\ifmmode\lx@math@underscore\else\lx@text@underscore\fi');
+DefMacroI('\#',   undef, '\ifmmode\lx@math@hash\else\lx@text@hash\fi',             protected => 1);
+DefMacroI('\&',   undef, '\ifmmode\lx@math@amp\else\lx@text@amp\fi',               protected => 1);
+DefMacroI('\%',   undef, '\ifmmode\lx@math@percent\else\lx@text@percent\fi',       protected => 1);
+DefMacroI("\\\$", undef, '\ifmmode\lx@math@dollar\else\lx@text@dollar\fi',         protected => 1);
+DefMacroI('\_',   undef, '\ifmmode\lx@math@underscore\else\lx@text@underscore\fi', protected => 1);
 DefPrimitiveI('\lx@text@hash',       undef, '#',  alias => '\#');
 DefPrimitiveI('\lx@text@amp',        undef, '&',  alias => '\&');
 DefPrimitiveI('\lx@text@percent',    undef, '%',  alias => '\%');

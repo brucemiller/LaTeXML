@@ -16,6 +16,9 @@ use warnings;
 use LaTeXML::Package;
 use LaTeXML::Util::Image;
 
+RequirePackage('graphicx');
+RequirePackage('epic');    # we don't have binding yet.
+
 # Create an EMPTY picture environment, but with the tex attribute containing the
 # necessary code for LaTeX to generate an image.
 DefEnvironment('{overpic} OptionalKeyVals:Gin Semiverbatim',
