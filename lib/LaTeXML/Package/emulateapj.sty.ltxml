@@ -29,8 +29,6 @@ RequirePackage('aastex', withoptions => 1);
 RequirePackage('epsf');
 # ... Well, almost...
 DefMacroI('\LongTables', undef, '');
-Let('\begin{deluxetable*}', '\begin{deluxetable}');
-Let('\end{deluxetable*}',   '\end{deluxetable}');
 
 Let('\BeginEnvironment', '\begin');
 Let('\EndEnvironment',   '\end');

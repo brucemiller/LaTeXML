@@ -159,8 +159,13 @@ sub UTF {
 
 sub coerceCS {
   my ($cs) = @_;
-  $cs = T_CS($cs)           unless ref $cs;
-  $cs = T_CS(ToString($cs)) unless ref $cs eq 'LaTeXML::Core::Token';
+  if ((ref $cs) && (ref $cs ne 'LaTeXML::Core::Token')) {
+    $cs = ToString($cs); }
+  if    (ref $cs) { }
+  elsif ($cs =~ s/^\\csname\s+(.*)\\endcsname//) {
+    $cs = T_CS('\\' . $1); }
+  else {
+    $cs = T_CS($cs); }
   return $cs; }
 
 sub parsePrototype {
