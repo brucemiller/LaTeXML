@@ -112,7 +112,7 @@ if (!-d $GENDIR) {
 
 foreach my $name (@exes) {
   my $src  = "$SRCDIR/bin/$name";
-  my $dest = "$GENDIR/$name.tex";
+  my $dest = "$GENDIR/${name}_exe.tex";
   if ($force || (!-f $dest) || (-M $src < -M $dest)) {
     print "Converting POD for $name to LaTeX\n";
     local $::PODDOC = $name;    # $::PODDOC =~ s/::/_/g;
