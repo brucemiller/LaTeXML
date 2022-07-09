@@ -611,6 +611,7 @@
         <xsl:if test="ltx:title">
           <xsl:element name="h6" namespace="{$html_ns}">
             <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+            <xsl:attribute name="class">ltx_title ltx_title_contents</xsl:attribute>
             <xsl:apply-templates select="ltx:title/node()">
               <xsl:with-param name="context" select="$innercontext"/>
             </xsl:apply-templates>
