@@ -2046,7 +2046,7 @@ sub FindFile_fallback {
     # if we provide the type, that remains primary.
     $type = $1 unless $type; }
   if ($type) {    # if we know what we're dealing with...
-    my $prefixes_str = '^((?:' . join("|", @find_fallback_prefixes) . ')[-_.])';
+    my $prefixes_str = '^((?:' . join("|", @find_fallback_prefixes) . ')[-_.]?)';
     my $prefixes_rx  = qr/$prefixes_str/i;
     # Note that we also remove numbers glued directly onto the name without a separator.
     my $suffixes_str       = '([._-](?:' . join("|", @find_fallback_suffixes) . '))$';
