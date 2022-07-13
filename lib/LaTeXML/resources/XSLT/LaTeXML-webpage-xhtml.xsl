@@ -171,7 +171,7 @@
       <xsl:otherwise>
         <xsl:element name="meta" namespace="{$html_ns}">
           <!-- HTML(4|5) or XHTML1.1: content-type and charset -->
-          <xsl:attribute name="http-equiv">Content-Type</xsl:attribute>
+          <xsl:attribute name="http-equiv">content-type</xsl:attribute>
           <xsl:attribute name="content">
             <xsl:value-of select="f:if($USE_NAMESPACES,'application/xhtml+xml','text/html')"/>
             <xsl:text>; charset=UTF-8</xsl:text>
@@ -236,14 +236,18 @@
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="script" namespace="{$html_ns}">
       <xsl:attribute name="src"><xsl:value-of select="f:url(@src)"/></xsl:attribute>
-      <xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
+      <xsl:if test="not($USE_HTML5)"> <!--Unneeded in html5 -->
+        <xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
+      </xsl:if>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:resource[@type='text/javascript' and text()]" mode="inhead">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="script" namespace="{$html_ns}">
-      <xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
+      <xsl:if test="not($USE_HTML5)"> <!--Unneeded in html5 -->
+        <xsl:attribute name="type"><xsl:value-of select="@type"/></xsl:attribute>
+      </xsl:if>
       <xsl:apply-templates select="text()"/>
     </xsl:element>
   </xsl:template>
@@ -282,7 +286,9 @@
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="script" namespace="{$html_ns}">
           <xsl:attribute name="src"><xsl:value-of select="f:url(text())"/></xsl:attribute>
-          <xsl:attribute name="type">text/javascript</xsl:attribute>
+          <xsl:if test="not($USE_HTML5)"> <!--Unneeded in html5 -->
+            <xsl:attribute name="type">text/javascript</xsl:attribute>
+          </xsl:if>
         </xsl:element>
       </xsl:for-each>
     </xsl:if>
@@ -380,7 +386,9 @@
           <xsl:text>&#x0A;</xsl:text>
           <xsl:element name="script" namespace="{$html_ns}">
             <xsl:attribute name="src"><xsl:value-of select="f:url(text())"/></xsl:attribute>
-            <xsl:attribute name="type">text/javascript</xsl:attribute>
+            <xsl:if test="not($USE_HTML5)"> <!--Unneeded in html5 -->
+              <xsl:attribute name="type">text/javascript</xsl:attribute>
+            </xsl:if>
           </xsl:element>
         </xsl:for-each>
       </xsl:if>
