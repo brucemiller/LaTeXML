@@ -163,6 +163,11 @@ sub unpack_source {
     # if we still have multiples, check if some have a .bbl file
     if (my @with_bbl = grep { my $base = $_; $base =~ s/\.tex$//; -e "$base.bbl"; } @files_by_likelihood) {
       @files_by_likelihood = @with_bbl; }
+# Sometimes in arXiv the decision is made in an unclear manner
+# (example: see 2112.08935 v1, which has equally good main.tex and bare_adv.tex)
+# so, for now, err on the side of preferring one of the extremely common names, when they are available at highest score.
+    if (my @common_name = grep { /(^|\W)(?:main|ms|paper)\.tex$/ } @files_by_likelihood) {
+      @files_by_likelihood = @common_name; }
     # last tie-breaker is lexicographical order
     @files_by_likelihood = sort { $a cmp $b } @files_by_likelihood;
     # set the main source
