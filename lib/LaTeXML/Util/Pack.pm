@@ -39,8 +39,8 @@ sub unpack_source {
   # Extract the Perl zip datastructure to the temporary directory
   foreach my $member ($zip_handle->memberNames()) {
     $zip_handle->extractMember($member, catfile($sandbox_directory, $member)); }
-  # Set $source to point to the main TeX file in that directory
-  my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.[tT][eE][xX]$');
+  # Set $source to point to the main TeX file in that directory (or .txt, for old arXiv bundles)
+  my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.[tT](:?[eE][xX]|[xX][tT])$');
   if (!@TeX_file_members) {    # No .tex file? Try files with no, or unusually long, extensions
     @TeX_file_members = grep { !/\./ || /\.[^.]{4,}$/ } map { $_->fileName() } $zip_handle->members();
   }
