@@ -39,13 +39,34 @@ sub unpack_source {
   # Extract the Perl zip datastructure to the temporary directory
   foreach my $member ($zip_handle->memberNames()) {
     $zip_handle->extractMember($member, catfile($sandbox_directory, $member)); }
-  # Set $source to point to the main TeX file in that directory (or .txt, for old arXiv bundles)
+
+  # I. Detect and return the main TeX file in that directory (or .txt, for old arXiv bundles)
+
+  # I.1. arXiv has a special metadata file identifying the primary source, and ignoring assets
+  if (my $readme_member = $zip_handle->memberNamed('00README.XXX')) {
+    my $readme_file = catfile($sandbox_directory, $readme_member->fileName());
+    open(my $README_FH, '<', $readme_file) ||
+      (print STDERR "failed to open '$readme_file' for use as ZIP readme: $!. Continuing.\n");
+    local $/ = "\n";
+    my $toplevelfile;
+    while (<$README_FH>) {
+      chomp($_);
+      my ($name, $directive) = split(/\s+/, $_);
+      if ($directive eq 'toplevelfile') {
+        # shortcut guessing the top file, the user has provided it explicitly.
+        $toplevelfile = catfile($sandbox_directory, $name);
+      } elsif ($directive eq 'ignore') {
+        my $ignored_filepath = catfile($sandbox_directory, $name);
+        unlink($ignored_filepath) if -e $ignored_filepath; } }
+    return $toplevelfile if $toplevelfile; }
+
+  # I.2. Without an explicit directive,
+  #      heuristically determine the input (borrowed from arXiv::FileGuess)
   my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.[tT](:?[eE][xX]|[xX][tT])$');
   if (!@TeX_file_members) {    # No .tex file? Try files with no, or unusually long, extensions
     @TeX_file_members = grep { !/\./ || /\.[^.]{4,}$/ } map { $_->fileName() } $zip_handle->members();
   }
 
-  # Heuristically determine the input (borrowed from arXiv::FileGuess)
   my (%Main_TeX_likelihood, %Main_TeX_level);
   my @vetoed = ();
   foreach my $tex_file (@TeX_file_members) {
@@ -53,6 +74,7 @@ sub unpack_source {
     $tex_file = catfile($sandbox_directory, $tex_file);
     # Open file and read first few bytes to do magic sequence identification
     # note that file will be auto-closed when $FILE_TO_GUESS goes out of scope
+    next unless -e $tex_file;    # skip deleted "ignored" files.
     open(my $FILE_TO_GUESS, '<', $tex_file) ||
       (print STDERR "failed to open '$tex_file' to guess its format: $!. Continuing.\n");
     local $/ = "\n";
