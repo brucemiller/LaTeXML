@@ -37,6 +37,8 @@ sub convertNode {
 sub rawIDSuffix {
   return '.tm'; }
 
+sub canConvert { return 1; }
+
 #================================================================================
 
 1;

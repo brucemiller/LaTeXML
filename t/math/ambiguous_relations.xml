@@ -60,15 +60,17 @@
   </para>
   <para xml:id="p4">
     <equation xml:id="S0.Ex4">
-      <Math class="kludge_parse" mode="display" tex="0=&lt;x,y&gt;" xml:id="S0.Ex4.m1">
+      <Math mode="display" tex="0=&lt;x,y&gt;" xml:id="S0.Ex4.m1">
         <XMath>
-          <XMTok meaning="0" role="NUMBER">0</XMTok>
-          <XMTok meaning="equals" role="RELOP">=</XMTok>
-          <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
-          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex4.m1.1">x</XMTok>
-          <XMTok role="PUNCT">,</XMTok>
-          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex4.m1.2">y</XMTok>
-          <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+          <XMWrap class="unparsed">
+            <XMTok meaning="0" role="NUMBER">0</XMTok>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
+            <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+            <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex4.m1.1">x</XMTok>
+            <XMTok role="PUNCT">,</XMTok>
+            <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex4.m1.2">y</XMTok>
+            <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+          </XMWrap>
         </XMath>
       </Math>
     </equation>
@@ -103,16 +105,18 @@
   </para>
   <para xml:id="p6">
     <equation xml:id="S0.Ex6">
-      <Math class="kludge_parse" mode="display" tex="0=&lt;x,y&gt;A" xml:id="S0.Ex6.m1">
+      <Math mode="display" tex="0=&lt;x,y&gt;A" xml:id="S0.Ex6.m1">
         <XMath>
-          <XMTok meaning="0" role="NUMBER">0</XMTok>
-          <XMTok meaning="equals" role="RELOP">=</XMTok>
-          <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
-          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex6.m1.1">x</XMTok>
-          <XMTok role="PUNCT">,</XMTok>
-          <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex6.m1.2">y</XMTok>
-          <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
-          <XMTok font="italic" role="UNKNOWN">A</XMTok>
+          <XMWrap class="unparsed">
+            <XMTok meaning="0" role="NUMBER">0</XMTok>
+            <XMTok meaning="equals" role="RELOP">=</XMTok>
+            <XMTok meaning="less-than" role="RELOP">&lt;</XMTok>
+            <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex6.m1.1">x</XMTok>
+            <XMTok role="PUNCT">,</XMTok>
+            <XMTok font="italic" role="UNKNOWN" xml:id="S0.Ex6.m1.2">y</XMTok>
+            <XMTok meaning="greater-than" role="RELOP">&gt;</XMTok>
+            <XMTok font="italic" role="UNKNOWN">A</XMTok>
+          </XMWrap>
         </XMath>
       </Math>
     </equation>

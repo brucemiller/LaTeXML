@@ -47,6 +47,8 @@ sub convertNode {
 sub rawIDSuffix {
   return '.muni'; }
 
+sub canConvert { return 1; }
+
 sub getQName {
   my ($node) = @_;
   return $LaTeXML::Post::DOCUMENT->getQName($node); }

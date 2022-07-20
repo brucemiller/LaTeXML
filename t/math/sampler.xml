@@ -213,46 +213,48 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
           <tag>(5)</tag>
           <tag role="refnum">5</tag>
         </tags>
-        <Math class="kludge_parse" mode="display" tex="(a|b),\qquad\bigl{(}a\bigm{|}b\bigr{)},\qquad\Bigl{(}a\Bigm{|}b\Bigr{)},\qquad%&#10;\biggl{(}a\biggm{|}b\biggr{)},\qquad\Biggl{(}a\Biggm{|}b\Biggr{)}" xml:id="S1.E5.m1">
+        <Math mode="display" tex="(a|b),\qquad\bigl{(}a\bigm{|}b\bigr{)},\qquad\Bigl{(}a\Bigm{|}b\Bigr{)},\qquad%&#10;\biggl{(}a\biggm{|}b\biggr{)},\qquad\Biggl{(}a\Biggm{|}b\Biggr{)}" xml:id="S1.E5.m1">
           <XMath>
-            <XMWrap>
-              <XMTok role="OPEN" stretchy="false">(</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok role="VERTBAR" stretchy="false">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-              <XMTok role="CLOSE" stretchy="false">)</XMTok>
-            </XMWrap>
-            <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-            <XMWrap>
-              <XMTok fontsize="120%" role="OPEN" stretchy="false">(</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok fontsize="120%" role="MIDDLE" stretchy="false">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-              <XMTok fontsize="120%" role="CLOSE" stretchy="false">)</XMTok>
-            </XMWrap>
-            <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-            <XMWrap>
-              <XMTok fontsize="160%" role="OPEN" stretchy="false">(</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok fontsize="160%" role="MIDDLE" stretchy="false">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-              <XMTok fontsize="160%" role="CLOSE" stretchy="false">)</XMTok>
-            </XMWrap>
-            <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-            <XMWrap>
-              <XMTok fontsize="210%" role="OPEN" stretchy="false">(</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok fontsize="210%" role="MIDDLE" stretchy="false">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-              <XMTok fontsize="210%" role="CLOSE" stretchy="false">)</XMTok>
-            </XMWrap>
-            <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-            <XMWrap>
-              <XMTok fontsize="260%" role="OPEN" stretchy="false">(</XMTok>
-              <XMTok font="italic" role="UNKNOWN">a</XMTok>
-              <XMTok fontsize="260%" role="MIDDLE" stretchy="false">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">b</XMTok>
-              <XMTok fontsize="260%" role="CLOSE" stretchy="false">)</XMTok>
+            <XMWrap class="unparsed">
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="false">(</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok role="VERTBAR" stretchy="false">|</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMTok role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMWrap>
+                <XMTok fontsize="120%" role="OPEN" stretchy="false">(</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok fontsize="120%" role="MIDDLE" stretchy="false">|</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMTok fontsize="120%" role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMWrap>
+                <XMTok fontsize="160%" role="OPEN" stretchy="false">(</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok fontsize="160%" role="MIDDLE" stretchy="false">|</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMTok fontsize="160%" role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMWrap>
+                <XMTok fontsize="210%" role="OPEN" stretchy="false">(</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok fontsize="210%" role="MIDDLE" stretchy="false">|</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMTok fontsize="210%" role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMWrap>
+                <XMTok fontsize="260%" role="OPEN" stretchy="false">(</XMTok>
+                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok fontsize="260%" role="MIDDLE" stretchy="false">|</XMTok>
+                <XMTok font="italic" role="UNKNOWN">b</XMTok>
+                <XMTok fontsize="260%" role="CLOSE" stretchy="false">)</XMTok>
+              </XMWrap>
             </XMWrap>
           </XMath>
         </Math>
@@ -264,54 +266,56 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
           <tag>(6)</tag>
           <tag role="refnum">6</tag>
         </tags>
-        <Math class="kludge_parse" mode="display" tex="\left(a^{b}\middle|x\right),\qquad\left(a^{b^{c}}\middle|x\right),\qquad\left(%&#10;a^{b^{c^{d}}}\middle|x\right)" xml:id="S1.E6.m1">
+        <Math mode="display" tex="\left(a^{b}\middle|x\right),\qquad\left(a^{b^{c}}\middle|x\right),\qquad\left(%&#10;a^{b^{c^{d}}}\middle|x\right)" xml:id="S1.E6.m1">
           <XMath>
-            <XMWrap>
-              <XMTok role="OPEN" stretchy="true">(</XMTok>
-              <XMApp>
-                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-                <XMTok font="italic" role="UNKNOWN">a</XMTok>
-                <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
-              </XMApp>
-              <XMTok role="MIDDLE" stretchy="true">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">x</XMTok>
-              <XMTok role="CLOSE" stretchy="true">)</XMTok>
-            </XMWrap>
-            <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-            <XMWrap>
-              <XMTok role="OPEN" stretchy="true">(</XMTok>
-              <XMApp>
-                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+            <XMWrap class="unparsed">
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="true">(</XMTok>
                 <XMApp>
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
-                  <XMTok font="italic" fontsize="50%" role="UNKNOWN">c</XMTok>
                 </XMApp>
-              </XMApp>
-              <XMTok role="MIDDLE" stretchy="true">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">x</XMTok>
-              <XMTok role="CLOSE" stretchy="true">)</XMTok>
-            </XMWrap>
-            <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
-            <XMWrap>
-              <XMTok role="OPEN" stretchy="true">(</XMTok>
-              <XMApp>
-                <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
-                <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                <XMTok role="MIDDLE" stretchy="true">|</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMTok role="CLOSE" stretchy="true">)</XMTok>
+              </XMWrap>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="true">(</XMTok>
                 <XMApp>
-                  <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
-                  <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
                   <XMApp>
-                    <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
                     <XMTok font="italic" fontsize="50%" role="UNKNOWN">c</XMTok>
-                    <XMTok font="italic" fontsize="50%" role="UNKNOWN">d</XMTok>
                   </XMApp>
                 </XMApp>
-              </XMApp>
-              <XMTok role="MIDDLE" stretchy="true">|</XMTok>
-              <XMTok font="italic" role="UNKNOWN">x</XMTok>
-              <XMTok role="CLOSE" stretchy="true">)</XMTok>
+                <XMTok role="MIDDLE" stretchy="true">|</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMTok role="CLOSE" stretchy="true">)</XMTok>
+              </XMWrap>
+              <XMTok role="PUNCT" rpadding="20.0pt">,</XMTok>
+              <XMWrap>
+                <XMTok role="OPEN" stretchy="true">(</XMTok>
+                <XMApp>
+                  <XMTok role="SUPERSCRIPTOP" scriptpos="post2"/>
+                  <XMTok font="italic" role="UNKNOWN">a</XMTok>
+                  <XMApp>
+                    <XMTok role="SUPERSCRIPTOP" scriptpos="post3"/>
+                    <XMTok font="italic" fontsize="70%" role="UNKNOWN">b</XMTok>
+                    <XMApp>
+                      <XMTok role="SUPERSCRIPTOP" scriptpos="post4"/>
+                      <XMTok font="italic" fontsize="50%" role="UNKNOWN">c</XMTok>
+                      <XMTok font="italic" fontsize="50%" role="UNKNOWN">d</XMTok>
+                    </XMApp>
+                  </XMApp>
+                </XMApp>
+                <XMTok role="MIDDLE" stretchy="true">|</XMTok>
+                <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                <XMTok role="CLOSE" stretchy="true">)</XMTok>
+              </XMWrap>
             </XMWrap>
           </XMath>
         </Math>
@@ -837,22 +841,24 @@ and <text font="typewriter">m:mstyle</text>:</p>
             <tag role="refnum">15</tag>
           </tags>
           <MathFork>
-            <Math class="kludge_parse" tex="\displaystyle=f(x)+\phantom{g(x)}+h(x)" xml:id="S2.E15.m3">
+            <Math tex="\displaystyle=f(x)+\phantom{g(x)}+h(x)" xml:id="S2.E15.m3">
               <XMath>
-                <XMTok meaning="equals" role="RELOP">=</XMTok>
-                <XMTok font="italic" role="UNKNOWN">f</XMTok>
-                <XMWrap>
-                  <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m3.1">x</XMTok>
-                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                </XMWrap>
-                <XMTok meaning="plus" role="ADDOP" rpadding="18.6pt">+</XMTok>
-                <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                <XMTok font="italic" role="UNKNOWN">h</XMTok>
-                <XMWrap>
-                  <XMTok role="OPEN" stretchy="false">(</XMTok>
-                  <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                  <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                <XMWrap class="unparsed">
+                  <XMTok meaning="equals" role="RELOP">=</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">f</XMTok>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m3.1">x</XMTok>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
+                  <XMTok meaning="plus" role="ADDOP" rpadding="18.6pt">+</XMTok>
+                  <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                  <XMTok font="italic" role="UNKNOWN">h</XMTok>
+                  <XMWrap>
+                    <XMTok role="OPEN" stretchy="false">(</XMTok>
+                    <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                    <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                  </XMWrap>
                 </XMWrap>
               </XMath>
             </Math>
@@ -864,21 +870,23 @@ and <text font="typewriter">m:mstyle</text>:</p>
                       <XMTok meaning="equals" role="RELOP">=</XMTok>
                     </XMath>
                   </Math></td>
-                <td align="left"><Math class="kludge_parse" mode="inline" tex="\displaystyle f(x)+\phantom{g(x)}+h(x)" xml:id="S2.E15.m2">
+                <td align="left"><Math mode="inline" tex="\displaystyle f(x)+\phantom{g(x)}+h(x)" xml:id="S2.E15.m2">
                     <XMath>
-                      <XMTok font="italic" role="UNKNOWN">f</XMTok>
-                      <XMWrap>
-                        <XMTok role="OPEN" stretchy="false">(</XMTok>
-                        <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m2.1">x</XMTok>
-                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
-                      </XMWrap>
-                      <XMTok meaning="plus" role="ADDOP" rpadding="18.6pt">+</XMTok>
-                      <XMTok meaning="plus" role="ADDOP">+</XMTok>
-                      <XMTok font="italic" role="UNKNOWN">h</XMTok>
-                      <XMWrap>
-                        <XMTok role="OPEN" stretchy="false">(</XMTok>
-                        <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                        <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                      <XMWrap class="unparsed">
+                        <XMTok font="italic" role="UNKNOWN">f</XMTok>
+                        <XMWrap>
+                          <XMTok role="OPEN" stretchy="false">(</XMTok>
+                          <XMTok font="italic" role="UNKNOWN" xml:id="S2.E15.m2.1">x</XMTok>
+                          <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                        </XMWrap>
+                        <XMTok meaning="plus" role="ADDOP" rpadding="18.6pt">+</XMTok>
+                        <XMTok meaning="plus" role="ADDOP">+</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">h</XMTok>
+                        <XMWrap>
+                          <XMTok role="OPEN" stretchy="false">(</XMTok>
+                          <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                          <XMTok role="CLOSE" stretchy="false">)</XMTok>
+                        </XMWrap>
                       </XMWrap>
                     </XMath>
                   </Math></td>

@@ -556,9 +556,13 @@ sub parse_kludge {
     my $kludge = $$pair[0];
     push(@replacements, (ref $kludge eq 'ARRAY') && ($$kludge[0] eq 'ltx:XMWrap')
       ? @$kludge[2 .. $#$kludge] : ($kludge)); }
-  if ($mathnode->nodeName eq 'XMath') {
-    $mathnode->parentNode->setAttribute('class', 'kludge_parse'); }
-  $document->appendTree($mathnode, @replacements);
+  my $wrapped_replacements;
+  if (scalar(@replacements) == 1 and p_getQName($replacements[0]) eq 'ltx:XMWrap') {
+    $wrapped_replacements = $replacements[0];
+    p_setAttribute($wrapped_replacements, 'class', 'unparsed'); }
+  else {
+    $wrapped_replacements = ['ltx:XMWrap', { 'class' => 'unparsed' }, @replacements]; }
+  $document->appendTree($mathnode, $wrapped_replacements);
   return; }
 
 sub parse_kludgeScripts_rec {
@@ -1066,6 +1070,15 @@ sub p_getAttribute {
     return $$item[1]{$key}; }
   elsif (ref $item eq 'XML::LibXML::Element') {
     return $item->getAttribute($key); } }
+
+sub p_setAttribute {
+  my ($item, $key, $value) = @_;
+  if (!defined $item) {
+    return; }
+  elsif (ref $item eq 'ARRAY') {
+    return $$item[1]{$key} = $value; }
+  elsif (ref $item eq 'XML::LibXML::Element') {
+    return $item->setAttribute($key, $value); } }
 
 sub p_element_nodes {
   my ($item) = @_;

@@ -57,7 +57,7 @@ sub convertNode {
   # NEXT better strategy will be to scan columns of MathBranches to establish desired line length?
   elsif ($$self{linelength}    # If line breaking
     && ($doc->findnodes('ancestor::ltx:MathBranch', $xmath))    # In formatted side of MathFork?
-          # But ONLY if last column!! (until we can adapt LineBreaker!)
+        # But ONLY if last column!! (until we can adapt LineBreaker!)
     && !$doc->findnodes('parent::ltx:Math/parent::ltx:td/following-sibling::ltx:td', $xmath)) {
     my ($pmmlb, $broke) = $self->convertNode_linebreak($doc, $xmath, $style);
     $pmml = $pmmlb; }
@@ -85,6 +85,8 @@ sub associateNodeHook {
       else {
         $node->setAttribute('title', $title); } } }
   return; }
+
+sub canConvert { return 1; }
 
 #================================================================================
 # Presentation MathML with Line breaking
@@ -116,8 +118,8 @@ sub preprocess_linebreaking {
     my $style = ($mode eq 'display' ? 'display' : 'text');
     # If already has in a MathBranch, we can't really know if, or how wide, to line break!?!?!
     next if $doc->findnodes('ancestor::ltx:MathFork', $math);    # SKIP if already in a branch?
-          # Now let's do the layout & see if it actually needs line breaks!
-          # next if $math isn't really so wide ..
+        # Now let's do the layout & see if it actually needs line breaks!
+        # next if $math isn't really so wide ..
     my $id    = $math->getAttribute('xml:id');
     my $xmath = $doc->findnode('ltx:XMath', $math);
     my ($pmml, $broke) = $self->convertNode_linebreak($doc, $xmath, $style);
