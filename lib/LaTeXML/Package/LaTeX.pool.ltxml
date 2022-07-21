@@ -3853,6 +3853,7 @@ Tag('ltx:*', 'afterClose:late' => sub {
 # These will get filled in during postprocessing.
 # * comes from hyperref
 DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref ?#1(class='ltx_nolink')() labelref='#label' _force_font='true'/>",
+  sizer      => '()',                                     # Don't actually know how big this will be!
   properties => sub { (label => CleanLabel($_[2])); });
 # "page" does not make sense in xml.  If the user really wants, they will need:
 # \usepackage{latexml} ... \iflatexml alternate\else page \pageref{label}\fi
