@@ -79,8 +79,6 @@ sub combineParallel {
 sub rawIDSuffix {
   return '.xm'; }
 
-sub canConvert { return 1; }
-
 #================================================================================
 
 1;

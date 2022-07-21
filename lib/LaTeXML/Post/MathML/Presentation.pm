@@ -86,8 +86,6 @@ sub associateNodeHook {
         $node->setAttribute('title', $title); } } }
   return; }
 
-sub canConvert { return 1; }
-
 #================================================================================
 # Presentation MathML with Line breaking
 # Not at all sure how this will integrate with Parallel markup...

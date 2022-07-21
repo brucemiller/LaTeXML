@@ -97,8 +97,6 @@ sub new {
   my $self    = bless {}, $class;
   return $self; }
 
-sub canConvert { return 1; }
-
 sub fitToWidth {
   my ($self, $math, $mml, $width, $displaystyle) = @_;
   # Check for end punctuation; Remove it, if found.

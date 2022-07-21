@@ -33,8 +33,6 @@ sub toProcess {
   my ($self, $doc) = @_;
   return $doc->findnodes('//ltx:Math'); }
 
-sub canConvert { return 1; }
-
 # Return the TeX string to format the image for this node.
 sub extractTeX {
   my ($self, $doc, $node) = @_;

@@ -319,6 +319,8 @@ sub process {
   NoteLog("converted $n Maths");
   return $doc; }
 
+sub canConvert { return 1; }
+
 # Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),
 # and make all of the @moreprocessors be secondary ones.
 sub setParallel {
