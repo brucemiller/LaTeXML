@@ -16,11 +16,11 @@ use warnings;
 use LaTeXML::Package;
 
 #================================================================================
-DefMacroI('\degree',      undef, '\ifmmode\lx@math@degree\else\lx@text@degree\fi');
-DefMacroI('\celcius',     undef, '\ifmmode\lx@math@celcius\else\lx@text@celcius\fi');
-DefMacroI('\perthousand', undef, '\ifmmode\lx@math@perthou\else\lx@text@perthou\fi');
-DefMacroI('\ohm',         undef, '\ifmmode\lx@math@ohm\else\lx@text@ohm\fi');
-DefMacroI('\micro',       undef, '\ifmmode\lx@math@micro\else\lx@text@micro\fi');
+DefMacroI('\degree',  undef, '\ifmmode\lx@math@degree\else\lx@text@degree\fi',   protected => 1);
+DefMacroI('\celcius', undef, '\ifmmode\lx@math@celcius\else\lx@text@celcius\fi', protected => 1);
+DefMacroI('\perthousand', undef, '\ifmmode\lx@math@perthou\else\lx@text@perthou\fi', protected => 1);
+DefMacroI('\ohm',         undef, '\ifmmode\lx@math@ohm\else\lx@text@ohm\fi',     protected => 1);
+DefMacroI('\micro',       undef, '\ifmmode\lx@math@micro\else\lx@text@micro\fi', protected => 1);
 
 DefPrimitiveI('\lx@text@degree',  undef, UTF(0xB0),  bounded => 1, font => { encoding => 'TS1' });
 DefPrimitiveI('\lx@text@celcius', undef, "\x{2103}", bounded => 1, font => { encoding => 'TS1' });
@@ -28,11 +28,16 @@ DefPrimitiveI('\lx@text@perthou', undef, "\x{2030}", bounded => 1, font => { enc
 DefPrimitiveI('\lx@text@ohm',     undef, "\x{2126}", bounded => 1, font => { encoding => 'TS1' });
 DefPrimitiveI('\lx@text@micro',   undef, UTF(0xB5),  bounded => 1, font => { encoding => 'TS1' });
 
-DefMathI('\lx@math@degree',  undef, UTF(0xB0),  bounded => 1, font => { encoding => 'TS1' });
-DefMathI('\lx@math@celcius', undef, "\x{2103}", bounded => 1, font => { encoding => 'TS1' });
-DefMathI('\lx@math@perthou', undef, "\x{2030}", bounded => 1, font => { encoding => 'TS1' });
-DefMathI('\lx@math@ohm',     undef, "\x{2126}", bounded => 1, font => { encoding => 'TS1' });
-DefMathI('\lx@math@micro',   undef, UTF(0xB5),  bounded => 1, font => { encoding => 'TS1' });
+DefMathI('\lx@math@degree', undef, UTF(0xB0),
+  bounded => 1, font => { encoding => 'TS1' }, alias => '\degree');
+DefMathI('\lx@math@celcius', undef, "\x{2103}",
+  bounded => 1, font => { encoding => 'TS1' }, alias => '\celcius');
+DefMathI('\lx@math@perthou', undef, "\x{2030}",
+  bounded => 1, font => { encoding => 'TS1' }, alias => '\perthousand');
+DefMathI('\lx@math@ohm', undef, "\x{2126}",
+  bounded => 1, font => { encoding => 'TS1' }, alias => '\ohm');
+DefMathI('\lx@math@micro', undef, UTF(0xB5),
+  bounded => 1, font => { encoding => 'TS1' }, alias => '\micro');
 
 #================================================================================
 
