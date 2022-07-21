@@ -50,7 +50,9 @@ sub lstPushValueLocally {
 
 our $EMPTY_CATTABLE = LaTeXML::Core::State->new(catcodes => 'none');
 
-DefMacro('\lstinline OptionalKeyVals:LST', sub {
+# \leavevmode (or any primitive, really) to stop \halign from expanding too far.
+DefMacro('\lstinline', '\leavevmode\lx@lstinline');
+DefMacro('\lx@lstinline OptionalKeyVals:LST', sub {
     my ($gullet, $keyvals) = @_;
     $STATE->getStomach->bgroup;    # To localize activation
     lstActivate($keyvals);         # But do BEFORE reading arg, since some options screw things up.
