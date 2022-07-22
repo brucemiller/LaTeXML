@@ -746,6 +746,8 @@ DefMacro('\endsubequations', '\lx@equationgroup@subnumbering@end',   locked => 1
 #======================================================================
 # Section 4.1 Matrices
 
+NewCounter('MaxMatrixCols');
+SetCounter('MaxMatrixCols' => Number(10));
 # set up a general macro to support variations on matrix environments (see mathtools)
 # \lx@ams@matrix{keyvals} body
 # keys are
@@ -795,7 +797,12 @@ DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
     my ($whatsit, $kv, $body) = @_;
     my $name  = $kv->getValue('name');
     my $align = $kv->getValue('alignment');
-    (($name ? (T_CS('\begin'), T_BEGIN, Revert($name), T_END) : ()),
+    # Yuck!
+    my $alignment = $body->getProperty('alignment');
+    $alignment->normalizeAlignment if $alignment;
+    my $nc = ($alignment ? scalar(@{ $$alignment{columnwidths} }) : 0);
+    (($nc > 10 ? Invocation(T_CS('\setcounter'), T_OTHER('MaxMatrixCols'), T_OTHER($nc)) : ()),
+      ($name ? (T_CS('\begin'), T_BEGIN, Revert($name), T_END) : ()),
       ($align && $align->unlist ?
           ($kv->getValue('alignment-required')
           ? (T_BEGIN, Revert($align), T_END) : (T_OTHER('['), Revert($align), T_OTHER(']')))
