@@ -159,8 +159,13 @@ sub UTF {
 
 sub coerceCS {
   my ($cs) = @_;
-  $cs = T_CS($cs)           unless ref $cs;
-  $cs = T_CS(ToString($cs)) unless ref $cs eq 'LaTeXML::Core::Token';
+  if ((ref $cs) && (ref $cs ne 'LaTeXML::Core::Token')) {
+    $cs = ToString($cs); }
+  if    (ref $cs) { }
+  elsif ($cs =~ s/^\\csname\s+(.*)\\endcsname//) {
+    $cs = T_CS('\\' . $1); }
+  else {
+    $cs = T_CS($cs); }
   return $cs; }
 
 sub parsePrototype {
@@ -607,6 +612,8 @@ sub DefColumnType {
 sub NewCounter {
   my ($ctr, $within, %options) = @_;
   my $unctr = "UN$ctr";    # UNctr is counter for generating ID's for UN-numbered items.
+  if ($within && ($within ne 'document') && !LookupValue("\\c\@$within")) {
+    NewCounter($within); }
   DefRegisterI(T_CS("\\c\@$ctr"), undef, Number(0));
   AssignValue("\\c\@$ctr" => Number(0), 'global');
   AfterAssignment();
@@ -895,7 +902,7 @@ sub Invocation {
     return Tokens($token, ($params ? $params->revertArguments(@args) : ())); }
   else {
     $STATE->generateErrorStub(undef, $token, convertLaTeXArgs(scalar(@args), 0));
-    return Tokens($token, map { (T_BEGIN, $_->unlist, T_END) } @args); } }
+    return Tokens($token, map { ($_ ? (T_BEGIN, $_->unlist, T_END) : ()) } @args); } }
 
 sub RawTeX {
   my ($text) = @_;
@@ -2044,7 +2051,7 @@ sub FindFile_fallback {
     # if we provide the type, that remains primary.
     $type = $1 unless $type; }
   if ($type) {    # if we know what we're dealing with...
-    my $prefixes_str = '^((?:' . join("|", @find_fallback_prefixes) . ')[-_.])';
+    my $prefixes_str = '^((?:' . join("|", @find_fallback_prefixes) . ')[-_.]?)';
     my $prefixes_rx  = qr/$prefixes_str/i;
     # Note that we also remove numbers glued directly onto the name without a separator.
     my $suffixes_str       = '([._-](?:' . join("|", @find_fallback_suffixes) . '))$';
@@ -2139,10 +2146,13 @@ sub Input {
   if (LookupValue('INTERPRETING_DEFINITIONS')) {
     InputDefinitions($request); }
   elsif (my $path = FindFile($request)) {    # Found something plausible..
-    my $type = (pathname_is_literaldata($path) ? 'tex' : pathname_type($path));
-
+    my ($ignoredir, $type);
+    if (pathname_is_literaldata($path)) {
+      $type = 'tex'; }
+    else {
+      ($ignoredir, $request, $type) = pathname_split($path); }
     # Should we be doing anything about options in the next 2 cases?..... I kinda think not, but?
-    if ($type eq 'ltxml') {                  # it's a LaTeXML binding.
+    if ($type eq 'ltxml') {    # it's a LaTeXML binding.
       loadLTXML($request, $path); }
     # Else some sort of "known" definitions type file, but not simply 'tex'
     elsif (($type ne 'tex') && (pathname_is_raw($path))) {
@@ -2169,14 +2179,16 @@ sub loadLTXML {
     return; }
   $pathname = pathname_absolute($pathname);
   my ($dir, $name, $type) = pathname_split($pathname);
+  my $ltxname = $name . '.ltxml';
   # Don't load if the requested path was loaded (with or without the .ltxml)
   # We want to check against the original request, but WITH the type
   $request .= '.' . $type unless $request =~ /\Q.$type\E$/;    # make sure the .ltxml is added here
   my $trequest = $request; $trequest =~ s/\.ltxml$//;          # and NOT added here!
-  return if LookupValue($request . '_loaded') || LookupValue($trequest . '_loaded');
+  return if LookupValue($request . '_loaded') || LookupValue($trequest . '_loaded')
+    || LookupValue($name . '_loaded') || LookupValue($ltxname . '_loaded');
   # Note (only!) that the ltxml version of this was loaded; still could load raw tex!
   AssignValue($request . '_loaded' => 1, 'global');
-
+  AssignValue($ltxname . '_loaded' => 1, 'global') if $ltxname ne $request;
   $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth::Binding->new($pathname), sub {
       do $pathname;
       Fatal('die', $pathname, $STATE->getStomach->getGullet,

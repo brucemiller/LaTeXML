@@ -14,6 +14,7 @@ package LaTeXML::Post::MathML;
 use strict;
 use warnings;
 use LaTeXML::Common::XML;
+use LaTeXML::Util::Unicode;
 use LaTeXML::Post;
 use List::Util qw(max);
 use base qw(LaTeXML::Post::MathProcessor);
@@ -164,7 +165,7 @@ sub realize {
 # find the underlying role.
 my %EMBELLISHING_ROLE = (    # CONSTANT
   SUPERSCRIPTOP => 1, SUBSCRIPTOP => 1,
-  OVERACCENT => 1, UNDERACCENT => 1, MODIFIER => 1, MODIFIEROP => 1);
+  OVERACCENT    => 1, UNDERACCENT => 1, MODIFIER => 1, MODIFIEROP => 1);
 
 sub getOperatorRole {
   my ($node) = @_;
@@ -262,63 +263,6 @@ my %stylemap2 = (    # CONSTANT
     text   => { scriptlevel => '-2' },
     script => { scriptlevel => '-1' } });
 
-# Mappings between (normalized) internal fonts & sizes.
-# Default math font is roman|medium|upright.
-my %mathvariants = (    # CONSTANT
-  'upright'                 => 'normal',
-  'serif'                   => 'normal',
-  'medium'                  => 'normal',
-  'bold'                    => 'bold',
-  'italic'                  => 'italic',
-  'medium italic'           => 'italic',
-  'bold italic'             => 'bold-italic',
-  'doublestruck'            => 'double-struck',
-  'blackboard'              => 'double-struck',
-  'blackboard bold'         => 'double-struck',    # all collapse
-  'blackboard upright'      => 'double-struck',    # all collapse
-  'blackboard bold upright' => 'double-struck',    # all collapse
-  'fraktur'                 => 'fraktur',
-  'fraktur italic'          => 'fraktur',          # all collapse
-  'fraktur bold'            => 'bold-fraktur',
-  'script'                  => 'script',
-  'script italic'           => 'script',           # all collapse
-  'script bold'             => 'bold-script',
-  'caligraphic'      => 'script',              # all collapse; NOTE: In TeX caligraphic is NOT script!
-  'caligraphic bold' => 'bold-script',
-  'sansserif'        => 'sans-serif',
-  'sansserif bold'   => 'bold-sans-serif',
-  'sansserif italic' => 'sans-serif-italic',
-  'sansserif bold italic'  => 'sans-serif-bold-italic',
-  'typewriter'             => 'monospace',
-  'typewriter bold'        => 'monospace',
-  'typewriter italic'      => 'monospace',
-  'typewriter bold italic' => 'monospace',
-);
-
-# The font differences (from the containing context) have been deciphered
-# into font, size and color attributes.  The font should match
-# one of the above... (?)
-
-# Given a font string (joining the components)
-# reduce it to a "sane" font.  Note that MathML uses a single mathvariant
-# to name the font, and doesn't inherit font components like italic or bold.
-# Thus the font should be "complete", but also we can ignore components with
-#  default values like medium or upright (unless that is the only component).
-sub mathvariantForFont {
-  my ($font) = @_;
-  $font =~ s/slanted/italic/;                           # equivalent in math
-  $font =~ s/(?<!\w)serif// unless $font eq 'serif';    # Not needed (unless alone)
-  $font =~ s/(?<!^)upright//;                           # Not needed (unless 1st element)
-  $font =~ s/(?<!^)medium//;                            # Not needed (unless 1st element)
-  $font =~ s/^\s+//; $font =~ s/\s+$//;
-  my $variant;
-  return $variant if $variant = $mathvariants{$font};
-  #  $font =~ s/\sitalic//;          # try w/o italic ?
-  #  return $variant if $variant = $mathvariants{$font};
-  #  $font =~ s/\sbold//;          # try w/o bold ?
-  #  return $variant if $variant = $mathvariants{$font};
-  return 'normal'; }
-
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Support functions for Presentation MathML
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -400,14 +344,14 @@ sub pmml {
     while (($$inner[0] eq 'm:mrow') && $$inner[2] && ref $$inner[2]) {
       $inner = $$inner[2]; }
     if (!$r && $inner && ($$inner[0] eq 'm:mo')) {
-      my $ls = $l && max(0, 1.6 + $l);                          # must be \ge 0
-      $$inner[1]{lspace} = $ls . 'pt'; }                        # Found inner op: use simple lspace
-    else {                                                      # Else fall back to wrap with m:mpadded
+      my $ls = $l && max(0, 1.6 + $l);      # must be \ge 0
+      $$inner[1]{lspace} = $ls . 'pt'; }    # Found inner op: use simple lspace
+    else {                                  # Else fall back to wrap with m:mpadded
       my $w = ($l && $r ? $l + $r : ($l ? $l : $r));
       $result = ['m:mpadded', { ($l ? (lspace => $l . "pt") : ()),
           ($w ? (width => ($w =~ /^-/ ? $w : '+' . $w) . "pt") : ()) }, $result]; } }
 
-  if ($cl && ((ref $result) eq 'ARRAY')) {                      # Add classs, if any and different
+  if ($cl && ((ref $result) eq 'ARRAY')) {    # Add classs, if any and different
     my $ocl = $$result[1]{class};
     $$result[1]{class} = (!$ocl || ($ocl eq $cl) ? $cl : "$ocl $cl"); }
   # Associate the generated node with the source XMath node.
@@ -510,7 +454,7 @@ sub pmml_internal {
       foreach my $col (element_nodes($row)) {
         $nc++;
         $spanned[$nc - 1]-- if $spanned[$nc - 1];
-        next                if $spanned[$nc - 1];                   # Omit this mtd, if spanned by another!
+        next                if $spanned[$nc - 1];    # Omit this mtd, if spanned by another!
         my $a    = $col->getAttribute('align');
         my $b    = $col->getAttribute('border');
         my $bc   = ($b ? join(' ', map { 'ltx_border_' . $_ } split(/\s/, $b)) : $b);
@@ -522,7 +466,7 @@ sub pmml_internal {
         my $rs   = $col->getAttribute('rowspan');
         my @cell = map { pmml($_) } element_nodes($col);
 
-        if ($rs || $cs) {    # Note following cells to be omitted from MathML
+        if ($rs || $cs) {                            # Note following cells to be omitted from MathML
           for (my $i = 0 ; $i < ($cs || 1) ; $i++) {
             $spanned[$nc - 1 + $i] = ($rs || 1); } }
         push(@cols, ['m:mtd', { ($a ? (columnalign => $a) : ()),
@@ -690,47 +634,6 @@ sub pmml_infix {
       push(@items, pmml(shift(@args))); } }
   return pmml_row(@items); }
 
-sub UTF {
-  my ($code) = @_;
-  return pack('U', $code); }
-
-sub makePlane1Map {
-  my ($latin, $GREEK, $greek, $digits) = @_;
-  return (
-    (map { (UTF(ord('A') + $_) => UTF($latin + $_)) } 0 .. 25),
-    (map { (UTF(ord('a') + $_) => UTF($latin + 26 + $_)) } 0 .. 25),
-    ($GREEK  ? (map { (UTF(0x0391 + $_)   => UTF($GREEK + $_)) } 0 .. 24) : ()),
-    ($greek  ? (map { (UTF(0x03B1 + $_)   => UTF($greek + $_)) } 0 .. 24) : ()),
-    ($digits ? (map { (UTF(ord('0') + $_) => UTF($digits + $_)) } 0 .. 9) : ())); }
-
-my %plane1map = (    # CONSTANT
-  'bold'   => { makePlane1Map(0x1D400, 0x1D6A8, 0x1D6C2, 0x1D7CE) },
-  'italic' => { makePlane1Map(0x1D434, 0x1D6E2, 0x1D6FC, undef),
-    h => "\x{210E}" },
-  'bold-italic'            => { makePlane1Map(0x1D468, 0x1D71C, 0x1D736, undef) },
-  'sans-serif'             => { makePlane1Map(0x1D5A0, undef,   undef,   0x1D7E2) },
-  'bold-sans-serif'        => { makePlane1Map(0x1D5D4, 0x1D756, 0x1D770, 0x1D7EC) },
-  'sans-serif-italic'      => { makePlane1Map(0x1D608, undef,   undef,   undef) },
-  'sans-serif-bold-italic' => { makePlane1Map(0x1D63C, 0x1D790, 0x1D7AA, undef) },
-  'monospace'              => { makePlane1Map(0x1D670, undef,   undef,   0x1D7F6) },
-  'script'                 => { makePlane1Map(0x1D49C, undef,   undef,   undef),
-    B => "\x{212C}", E => "\x{2130}", F => "\x{2131}", H => "\x{210B}", I => "\x{2110}",
-    L => "\x{2112}", M => "\x{2133}", R => "\x{211B}",
-    e => "\x{212F}", g => "\x{210A}", o => "\x{2134}" },
-  'bold-script' => { makePlane1Map(0x1D4D0, undef, undef, undef) },
-  'fraktur'     => { makePlane1Map(0x1D504, undef, undef, undef),
-    C => "\x{212D}", H => "\x{210C}", I => "\x{2111}", R => "\x{211C}", Z => "\x{2128}" },
-  'bold-fraktur'  => { makePlane1Map(0x1D56C, undef, undef, undef) },
-  'double-struck' => { makePlane1Map(0x1D538, undef, undef, 0x1D7D8),
-    C => "\x{2102}", H => "\x{210D}", N => "\x{2115}", P => "\x{2119}", Q => "\x{211A}",
-    R => "\x{211D}", Z => "\x{2124}" }
-);
-
-my %plane1hack = (    # CONSTANT
-  script          => $plane1map{script},  'bold-script'  => $plane1map{script},
-  fraktur         => $plane1map{fraktur}, 'bold-fraktur' => $plane1map{fraktur},
-  'double-struck' => $plane1map{'double-struck'});
-
 my %symmetric_roles = (OPEN => 1, CLOSE => 1, MIDDLE => 1, VERTBAR => 1);
 # operator content that's stretchy by default [fill-in from operator dictionary!]
 # [ grep stretchy ~/src/firefox/res/fonts/mathfont.properties | cut -d . -f 2 ]
@@ -756,6 +659,15 @@ my %normally_stretchy = map { $_ => 1 }
   "\x{23B1}");
 my %default_token_content = (
   MULOP => "\x{2062}", ADDOP => "\x{2064}", PUNCT => "\x{2063}");
+
+# Remaps some mathvariants to a simpler subset of Unicode
+my %plane1hackable = (    # CONSTANT
+  script          => 'script',
+  'bold-script'   => 'script',
+  fraktur         => 'fraktur',
+  'bold-fraktur'  => 'fraktur',
+  'double-struck' => 'double-struck');
+
 # Given an item (string or token element w/attributes) and latexml attributes,
 # convert the string to the appropriate unicode (possibly plane1)
 # & MathML presentation attributes (mathvariant, mathsize, mathcolor, stretchy)
@@ -777,7 +689,7 @@ sub stylizeContent {
   my $class    = ($iselement ? $item->getAttribute('class')    : $attr{class});
   my $cssstyle = ($iselement ? $item->getAttribute('cssstyle') : $attr{ccsstyle});
   my $text     = (ref $item  ? $item->textContent              : $item);
-  my $variant  = ($font      ? mathvariantForFont($font)       : '');
+  my $variant  = ($font      ? unicode_mathvariant($font)      : '');
   my $stretchy = ($iselement ? $item->getAttribute('stretchy') : $attr{stretchy});
   $stretchy = undef if ($tag ne 'm:mo');                    # Only allowed on m:mo!
   $size     = undef if ($stretchy || 'false') eq 'true';    # Ignore size, if we're stretching.
@@ -843,19 +755,19 @@ sub stylizeContent {
   # Only upper & lower case latin & greek, and also numerals can be mapped.
   # For each mathvariant, and for each of those 5 groups, there is a linear mapping,
   # EXCEPT for chars defined before Plain 1, which already exist in lower blocks.
-  my $mapping;
   # Get desired mapping strategy
   my $plane1     = $$LaTeXML::Post::MATHPROCESSOR{plane1};
   my $plane1hack = $$LaTeXML::Post::MATHPROCESSOR{hackplane1};
-  if ($variant
-    && ($plane1 || $plane1hack)
-    && ($mapping = ($plane1hack ? $plane1hack{$variant} : $plane1map{$variant}))) {
-    my @c = map { $$mapping{$_} } split(//, (defined $text ? $text : ''));
-    if (!grep { !defined $_ } @c) {    # Only if ALL chars in the token could be mapped... ?????
-      $text    = join('', @c);
-      $variant = ($plane1hack && ($variant =~ /^bold/) ? 'bold' : undef); } }
-  # Other attributes that should be copied?
-  my $istoken = $tag =~ /^m:(?:mi|mo|mn)$/;    # mrow?
+  my $u_variant  = $variant
+    && ($plane1hack ? $plane1hackable{$variant}
+    : ($plane1 ? $variant : undef));
+  my $u_text = $u_variant && unicode_convert($text, $u_variant);
+  if ((defined $u_text) && ($u_text ne '')) {    # didn't remap the text ? Keep text & variant
+    $text    = $u_text;
+    $variant = ($plane1hack && ($variant ne $u_variant) && ($variant =~ /^bold/)
+      ? 'bold' : undef); }                       # Possibly keep variant bold
+                                                 # Other attributes that should be copied?
+  my $istoken = $tag =~ /^m:(?:mi|mo|mn)$/;      # mrow?
   my $href    = $istoken && ($iselement ? $item->getAttribute('href')  : $attr{href});
   my $title   = $istoken && ($iselement ? $item->getAttribute('title') : $attr{title});
   return ($text,

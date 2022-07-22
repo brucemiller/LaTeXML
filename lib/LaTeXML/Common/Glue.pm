@@ -69,12 +69,12 @@ sub new {
       elsif ($mu)    { $f = fixpoint($f);    # in mu
         Warn('unexpected', $unit, undef, "Assumed mu") unless $unit eq 'mu'; }
       else                      { $f    = fixpoint($f, $STATE->convertUnit($unit)); }
-      if (!$punit)              { $plus = $punit = 0; }
+      if (!$punit)              { $plus = $punit = $pfill = 0; }
       elsif ($fillcode{$punit}) { $plus = fixpoint($p); $pfill = $punit; }
       elsif ($mu)               { $plus = fixpoint($p); $pfill = 0;
         Warn('unexpected', $punit, undef, "Assumed mu") unless $punit eq 'mu'; }
       else                      { $plus  = fixpoint($p, $STATE->convertUnit($punit)); $pfill = 0; }
-      if (!$munit)              { $minus = $munit               = 0; }
+      if (!$munit)              { $minus = $munit               = $mfill = 0; }
       elsif ($fillcode{$munit}) { $minus = fixpoint($m); $mfill = $munit; }
       elsif ($mu)               { $minus = fixpoint($m); $mfill = 0;
         Warn('unexpected', $munit, undef, "Assumed mu") unless $munit eq 'mu'; }

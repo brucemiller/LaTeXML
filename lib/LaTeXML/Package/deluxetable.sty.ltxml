@@ -30,13 +30,12 @@ use LaTeXML::Package;
 
 DefMacro('\dummytable', '\refstepcounter{table}');
 
-DefMacroI(T_CS('\begin{deluxetable}'), "{}",
+DefMacroI('\deluxetable', '{}',
   '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
-DefMacroI(T_CS('\end{deluxetable}'), undef, '\spew@tblnotes\end{table}');
-
-DefMacroI(T_CS('\begin{deluxetable*}'), "{}",
+DefMacro('\enddeluxetable', '\spew@tblnotes\end{table}');
+DefMacroI('\csname deluxetable*\endcsname', '{}',
   '\set@deluxetable@template{#1}\def\@deluxetable@header{}\begin{table}');
-DefMacroI(T_CS('\end{deluxetable*}'), undef, '\spew@tblnotes\end{table}');
+DefMacro('\csname enddeluxetable*\endcsname', '\spew@tblnotes\end{table}');
 
 DefMacro('\set@deluxetable@template AlignmentTemplate', sub {
     AssignValue('@deluxetable@template', $_[1]); });
@@ -142,12 +141,13 @@ DefMacro('\dlap{}', '#1');
 # MISSING, but any usage here would fail, anyway...
 # \appdef, \appgdef, \prepdef
 
-AtBeginDocument('\let\tblnote@list\@empty
+AtBeginDocument(<<'EoTeX');
+\let\tblnote@list\@empty
 \let\pt@caption\@empty 
 \let\pt@head\@empty 
 \let\pt@tail\@empty 
 \pt@width\textwidth 
-\def\pt@headfrac{.1}');
-
+\def\pt@headfrac{.1}
+EoTeX
 #======================================================================
 1;

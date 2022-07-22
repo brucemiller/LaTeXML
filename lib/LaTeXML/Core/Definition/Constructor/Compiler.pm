@@ -87,7 +87,7 @@ sub compileConstructor {
     # We can use die in the following code, which will get caught & wrapped "informatively"
     my $msg = $@;
     Error('misdefined', $cs, $LaTeXML::Core::Definition::Constructor::CONSTRUCTOR,
-      "Complilation of constructor '" . ToString($cs) . "' failed     ",
+      "Compilation of constructor '" . ToString($cs) . "' failed     ",
       $replacement, $msg);
     my $stuff = slashify($replacement);
     $result = sub { $_[0]->makeError('constructor_fail', $stuff); };
@@ -120,7 +120,7 @@ sub translate_constructor {
           $code .= "\$savenode=\$document->floatToElement('$tag',1);\n"; }
         $float = undef; }
       $code .= "\$document->openElement('$tag'" . ($av ? ", $av" : '') . ");\n";
-      $code .= "\$document->closeElement('$tag');\n" if s|^/||;    # Empty element.
+      $code .= "\$document->closeElement('$tag');\n" if s|^/||;                    # Empty element.
       die "Missing '>' at '$_'\n" unless s|^>||; }
     # Close tag: </name>
     elsif (s|^</$QNAME_RE\s*>||so) {
@@ -227,9 +227,9 @@ sub translate_string {
         push(@values, "'" . slashify(unquote($1)) . "'"); }
       else {
         die "Unrecognized at '$_'\n"; } } }
-  if    (!@values)     { return; }
+  if (!@values)        { return; }
   elsif (@values == 1) { return $values[0]; }
-  else { return join('.', (map { (/^\'/ ? $_ : " ToString($_)") } @values)); } }
+  else                 { return join('.', (map { (/^\'/ ? $_ : " ToString($_)") } @values)); } }
 
 # Parse a set of attribute value pairs from a constructor pattern,
 # substituting argument and property values from the whatsit.

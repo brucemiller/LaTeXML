@@ -153,11 +153,13 @@
         <xsl:text>&#x0A;</xsl:text>
         <xsl:apply-templates select="ltx:caption[following-sibling::ltx:figure
                                      | following-sibling::ltx:table
+                                     | following-sibling::ltx:tabular
                                      | following-sibling::ltx:float
                                      | following-sibling::ltx:graphics
+                                     | following-sibling::ltx:listing
                                      | following-sibling::ltx:inline-para
                                      | following-sibling::ltx:inline-block
-                                     | following-sibling::ltx:listing]">
+                                     | following-sibling::ltx:p]">
           <xsl:with-param name="context" select="$context"/>
         </xsl:apply-templates>
         <xsl:element name="div" namespace="{$html_ns}">

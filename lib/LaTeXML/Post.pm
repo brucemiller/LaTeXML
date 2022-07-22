@@ -365,6 +365,9 @@ sub processNode {
   # (if there's an XMath PostProcessing module, it will add it back, with appropriate id's)
   if (my $xml = $$conversion{xml}) {
     $$conversion{xml} = $self->outerWrapper($doc, $xmath, $xml); }
+  elsif (my $string = $$conversion{string}) {
+    my $mimetype = $$conversion{mimetype} || 'unknown';
+    $$conversion{xml} = ['ltx:text', { class => 'ltx_math_' . $mimetype }, $string]; }
   $doc->removeNodes($xmath);
   # NOTE: Unless XMath is the primary, (preserving the XMath, w/no IDSuffix)
   # we've got to remove the id's from the XMath, since the primary will get same id's
@@ -547,9 +550,9 @@ sub associateNode {
         $node->setAttribute('xml:id' => $id); }
       push(@{ $$self{convertedIDs}{$sourceid} }, $id) unless $noxref; } }
   $self->associateNodeHook($node, $sourcenode, $noxref);
-  if ($isarray) {                                                # Array represented
+  if ($isarray) {    # Array represented
     map { $self->associateNode($_, $currentnode, $noxref) } @$node[2 .. $#$node]; }
-  else {                                                         # LibXML node
+  else {             # LibXML node
     map { $self->associateNode($_, $currentnode, $noxref) } element_nodes($node); }
   return; }
 
@@ -607,7 +610,7 @@ sub addCrossrefs {
                 || !$$others_map{$xpid})) { }
             if ($xpid) {
               $other_ids = $$others_map{$xpid}; } } } } }
-    if ($other_ids) {                                         # Hopefully, we've got the targets, now
+    if ($other_ids) {    # Hopefully, we've got the targets, now
       my $xref_id = $$other_ids[0];
       if (scalar(@$other_ids) > 1) {    # Find 1st in document order! (order is cached)
         ($xref_id) = sort { $$xrefids{$a} <=> $$xrefids{$b} } @$other_ids; }

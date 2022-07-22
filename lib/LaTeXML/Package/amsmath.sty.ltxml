@@ -270,24 +270,25 @@ DefKeyVal('multirow', 'rowsep', 'Dimension');
 
 sub rearrangeAMSMultirow {
   my ($document, $whatsit, $array) = @_;
-  my @rows = element_nodes($array);
-  # Adjust alignment of rows
-  if (defined(my $rowalignment = $whatsit->getProperty('MULTIROW_ALIGNMENT_RULE'))) {
-    my %align_spec = %{$rowalignment};
-    if (defined $align_spec{'default'}) {
-      for my $i (0 .. $#rows) {
-        map { $_->setAttribute(align => $align_spec{'default'}); } element_nodes($rows[$i]); }
-      delete $align_spec{'default'}; }
+  if ($array) {
+    my @rows = element_nodes($array);
+    # Adjust alignment of rows
+    if (defined(my $rowalignment = $whatsit->getProperty('MULTIROW_ALIGNMENT_RULE'))) {
+      my %align_spec = %{$rowalignment};
+      if (defined $align_spec{'default'}) {
+        for my $i (0 .. $#rows) {
+          map { $_->setAttribute(align => $align_spec{'default'}); } element_nodes($rows[$i]); }
+        delete $align_spec{'default'}; }
 
-    for my $i (sort (keys %align_spec)) {
-      map { $_->setAttribute(align => $align_spec{$i}); } element_nodes($rows[$i]); } }
+      for my $i (sort (keys %align_spec)) {
+        map { $_->setAttribute(align => $align_spec{$i}); } element_nodes($rows[$i]); } }
 
-  my @stuff = extractXMArrayCells($document, $array);
-  $document->replaceTree(['ltx:XMDual', {},
-      ['ltx:XMWrap', { rule => 'Anything,' },
-        createXMRefs($document, @stuff)],
-      $array],
-    $array);
+    my @stuff = extractXMArrayCells($document, $array);
+    $document->replaceTree(['ltx:XMDual', {},
+        ['ltx:XMWrap', { rule => 'Anything,' },
+          createXMRefs($document, @stuff)],
+        $array],
+      $array); }
   return; }
 
 #======================================================================
@@ -347,12 +348,13 @@ DefConstructor('\@@@split DigestedBody',
 
 sub rearrangeAMSSplit {
   my ($document, $array) = @_;
-  my @stuff = extractXMArrayCells($document, $array);
-  $document->replaceTree(['ltx:XMDual', {},
-      ['ltx:XMWrap', { rule => 'Anything,' },
-        createXMRefs($document, @stuff)],
-      $array],
-    $array);
+  if ($array) {
+    my @stuff = extractXMArrayCells($document, $array);
+    $document->replaceTree(['ltx:XMDual', {},
+        ['ltx:XMWrap', { rule => 'Anything,' },
+          createXMRefs($document, @stuff)],
+        $array],
+      $array); }
   return; }
 
 #======================================================================
@@ -679,16 +681,16 @@ DefConstructor('\lx@ams@cases@ RequiredKeyVals:lx@GEN DigestedBody',
   properties     => sub { %{ $_[1]->getKeyVals }; },
   afterConstruct => sub {
     my ($document) = @_;
-    my $point = $document->getElement->lastChild;
-    # Get the sequence of alternating (case, condition).
-    # Expecting ltx:XMArray/ltx:XMRow/ltx:XMCell [should have /ltx:XMArg, but could be empty!!!]
-    my @cells = $document->findnodes('ltx:XMArray/ltx:XMRow/ltx:XMCell', $point);
-    my @stuff = map { ($_->hasChildNodes ? createXMRefs($document, element_nodes($_))
-        : ['ltx:XMText', {}, 'otherwise']) } @cells;
-    $document->replaceTree(['ltx:XMDual', {},
-        ['ltx:XMApp', {}, ['ltx:XMTok', { meaning => 'cases' }], @stuff],
-        $point],
-      $point);
+    if (my $point = $document->getElement->lastChild) {
+      # Get the sequence of alternating (case, condition).
+      # Expecting ltx:XMArray/ltx:XMRow/ltx:XMCell [should have /ltx:XMArg, but could be empty!!!]
+      my @cells = $document->findnodes('ltx:XMArray/ltx:XMRow/ltx:XMCell', $point);
+      my @stuff = map { ($_->hasChildNodes ? createXMRefs($document, element_nodes($_))
+          : ['ltx:XMText', {}, 'otherwise']) } @cells;
+      $document->replaceTree(['ltx:XMDual', {},
+          ['ltx:XMApp', {}, ['ltx:XMTok', { meaning => 'cases' }], @stuff],
+          $point],
+        $point); }
   },
   reversion => sub {
     my ($whatsit, $kv, $body) = @_;
@@ -889,7 +891,7 @@ DefPrimitive('\lx@math@dots Digested', sub {
     return (Box(($role && $binops{$role} ? "\x{22EF}" : "\x{2026}"),
         undef, undef, T_CS('\dots'), mode => 'math', name => 'dots', role => 'ID'),
       $after); });
-DefMacro('\dots', '\ifmmode\lx@math@dots\else\lx@ldots\fi');
+DefMacro('\dots', '\ifmmode\lx@math@dots\else\lx@ldots\fi', robust => 1);
 
 #======================================================================
 # Section 4.4 Nonbreaking dashes
@@ -911,7 +913,7 @@ DefMacro('\uproot{}',   '');
 
 #======================================================================
 # Section 4.7 Boxed formulas
-DefMacro('\boxed{}', '\ifmmode\boxed@math{#1}\else\boxed@text{#1}\fi');
+DefMacro('\boxed{}', '\ifmmode\boxed@math{#1}\else\boxed@text{#1}\fi', robust => 1);
 DefConstructor('\boxed@math{}',
   "<ltx:XMArg enclose='box'>#1</ltx:XMArg>",
   alias => '\boxed');

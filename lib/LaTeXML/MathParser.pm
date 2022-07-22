@@ -27,7 +27,7 @@ use List::Util qw(min max);
 use base (qw(Exporter));
 
 our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbols
-    &Annotate &InvisibleTimes &InvisibleComma
+    &Annotate &InvisibleTimes &InvisibleComma &MorphVertbar
     &TwoPartRelop &NewFormulae &NewFormula &NewList
     &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited &NewEvalAt
     &LeftRec
@@ -36,7 +36,7 @@ our @EXPORT_OK = (qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbol
     &isMatchingClose &Fence));
 our %EXPORT_TAGS = (constructors
     => [qw(&Lookup &New &Absent &Apply &ApplyNary &recApply &CatSymbols
-      &Annotate &InvisibleTimes &InvisibleComma
+      &Annotate &InvisibleTimes &InvisibleComma &MorphVertbar
       &TwoPartRelop &NewFormulae &NewFormula &NewList
       &ApplyDelimited &NewScript &DecorateOperator &InterpretDelimited &NewEvalAt
       &LeftRec
@@ -1184,6 +1184,44 @@ sub Annotate {
     map { $$node[1]{$_} = $attrib{$_} } keys %attrib; }    # Now add them.
   return $node; }
 
+sub UTF {
+  my ($code) = @_;
+  return pack('U', $code); }
+
+# Convert a token with role=VERTBAR to a different role,
+# possibly changing the content to the appropriate Unicode.
+my %vertbar_category = (
+  OPEN  => 'delimiter', CLOSE => 'delimiter', MIDDLE => 'delimiter',
+  PUNCT => 'operator');
+my %vertbar_glyph = (
+  delimiter => { '|' => UTF(0x7C), '||' => "\x{2016}", '|||' => "\x{2980}",
+    "\x{2225}" => "\x{2016}" },
+  operator => { '|' => "\x{2223}", '||' => "\x{2225}", '|||' => "\x{2AF4}",
+    "\x{2016}" => "\x{2225}" },
+);
+
+sub MorphVertbar {
+  my ($node, $role) = @_;
+  #return $node;
+  my $rnode    = realizeXMNode($node);
+  my $oldrole  = p_getAttribute($rnode, 'role');
+  my $oldchar  = $rnode->textContent;
+  my $category = $vertbar_category{$role};
+  my $char     = ($oldchar && $category && $vertbar_glyph{$category}{$oldchar}) || $oldchar;
+  my $newnode  = $node;
+  # Need to modify the token.
+  if ($category && (($char ne $oldchar) || ($role ne $oldrole))) {
+    # Collect up the attributes
+    my %attrib = ();
+    if (ref $node eq 'ARRAY') {
+      %attrib = %{ $$node[2] }; }
+    else {
+      %attrib = map { (getQName($_) => $_->getValue) }
+        grep { $_->nodeType == XML_ATTRIBUTE_NODE } $node->attributes; }
+    $attrib{role} = $role;
+    $newnode = [getQName($node), {%attrib}, $char]; }
+  return $newnode; }
+
 # ================================================================================
 # Mid-level constructors
 
@@ -1255,8 +1293,8 @@ sub extract_separators {
 # For example, whether (a,b) is an interval or list?
 #  (both could reasonably be preceded by \in )
 my %balanced = (    # [CONSTANT]
-  '('        => ')', '['  => ']', '{' => '}',
-  '|'        => '|', '||' => '||',
+  '('        => ')', '['  => ']',  '{'        => '}',
+  '|'        => '|', '||' => '||', "\x{2016}" => "\x{2016}", "\x{2980}" => "\x{2980}",
   "\x{230A}" => "\x{230B}",    # lfloor, rfloor
   "\x{2308}" => "\x{2309}",    # lceil, rceil
   "\x{2329}" => "\x{232A}",    # angle brackets; NOT mathematical, but balance in case they show up.
@@ -1268,7 +1306,7 @@ my %balanced = (    # [CONSTANT]
 my %enclose1 = (    # [CONSTANT]
   '{@}'               => 'set',              # alternatively, just variant parentheses
   '|@|'               => 'absolute-value',
-  '||@||'             => 'norm', "\x{2225}@\x{2225}" => 'norm',
+  '||@||'             => 'norm', "\x{2016}@\x{2016}" => 'norm',
   "\x{230A}@\x{230B}" => 'floor',
   "\x{2308}@\x{2309}" => 'ceiling',
   '<@>'               => 'expectation',      # or just average?

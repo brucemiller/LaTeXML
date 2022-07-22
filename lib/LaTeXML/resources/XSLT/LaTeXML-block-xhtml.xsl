@@ -421,6 +421,14 @@
    Moreover, there can be columns missing, esp. with AMS align.
    So, the right padding column may use colspan to fill in the missing columns,
    so that any rightmost columns (eg the equation number) are still correctly positioned.
+
+   In general, we will try to wrap each equation & equationgroup in a tbody.
+   However, when an equationgroup is numbered, the column for the equation number
+   spans several rows ($spanned) which cannot cros tbody boundaries. Thus we must
+   omit the tbody wrapper in those cases.
+   We will also try to put the ID for an equation or equationgroup on the outer table
+   or the tightest tbody container within it. When the tbody is omitted, the ID will go on
+   the first row for an equation or an empty row for an equationgroup.
   -->
 
   <func:function name="f:countcolumns">
@@ -445,13 +453,10 @@
     </xsl:for-each>
   </func:function>
 
-  <!-- These are the top-level templates for handling aligned equationgroups
-       (possibly with nested equationgroups, but most likely with equations) and equations.
-       These create the outer table; work out the # columns being the max of the children.
-       We might as well put id's on the outer table for outer-most equationgroups
-       (but where for nested ones?).
-       For equations, we'll create a tbody, which will get the id!  -->
-
+  <!-- These are the top-level templates for handling aligned equationgroups,
+       with nested equations or possibly equationgroups.
+       It establishes an outer table into which the contained equationgroups
+       and equations are set. -->
   <xsl:template match="ltx:equationgroup" mode="aligned">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"
@@ -471,6 +476,7 @@
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="inalignment">
         <xsl:with-param name="ncolumns" select="$ncolumns"/>
+        <xsl:with-param name="spanned" select="false()"/>
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="aligned-end">
@@ -483,12 +489,8 @@
     </xsl:element>
   </xsl:template>
 
-  <!-- Can an equation NOT inside equationgroup meaningfully have embedded  MathForks with tr/td ??
-       Having only td's wouldn't actually do anything useful, if a single row is implied.
-       Having several tr's is possible, though nothing currently constructs such a thing.
-       Can we divide up contained Math's, etc, into something useful?...
-
-       Currently we assume the content will be placed in a single tr/td. -->
+  <!-- Top-level aligned single equation establishes a table into which the equations
+       rows are set. -->
   <xsl:template match="ltx:equation" mode="aligned">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns" select="f:countcolumns(.)"/>
@@ -507,6 +509,7 @@
       <xsl:text>&#x0A;</xsl:text>
       <xsl:apply-templates select="." mode="inalignment">
         <xsl:with-param name="ncolumns" select="$ncolumns"/>
+        <xsl:with-param name="spanned" select="false()"/>
         <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="aligned-end">
@@ -540,8 +543,8 @@
     <xsl:choose>
       <!-- Wrong side: Nothing -->
       <xsl:when test="$eqnopos != $side"/>
-      <!-- equationgroup is numbered, but NOT equations! -->
-      <xsl:when test="ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags][not(descendant::ltx:equation[ltx:tags])]">
+      <!-- equationgroup is numbered, but no numbered contained equations or equationgroups! -->
+      <xsl:when test="ancestor-or-self::ltx:equationgroup[position()=1][ltx:tags][not(descendant::ltx:equationgroup/ltx:tags | descendant::ltx:equation/ltx:tags)]">
         <!-- place number only for 1st row -->
         <xsl:if test="(ancestor-or-self::ltx:tr and not(preceding-sibling::ltx:tr))
                       or (not(ancestor-or-self::ltx:tr) and not(preceding-sibling::ltx:equation))">
@@ -644,102 +647,135 @@
   <xsl:template match="*" mode="inalignment-begin">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"/>
+    <xsl:param name="spanned"/>
   </xsl:template>
   <xsl:template match="*" mode="inalignment-end">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"/>
+    <xsl:param name="spanned"/>
   </xsl:template>
 
-  <!-- for intertext type entries -->
+  <!-- for intertext type entries; these just span he content columns. -->
   <xsl:template match="ltx:p" mode="inalignment">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"/>
+    <xsl:param name="spanned"/>
     <xsl:param name="eqpos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
-      <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
-        <xsl:attribute name="class">ltx_eqn_row ltx_align_baseline</xsl:attribute>
-        <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
-          <xsl:attribute name="class">ltx_eqn_cell ltx_align_left</xsl:attribute>
-          <xsl:attribute name="style">white-space:normal;</xsl:attribute>
-          <xsl:attribute name="colspan">
-            <xsl:value-of select="3+$ncolumns"/>
-          </xsl:attribute>
-          <xsl:apply-templates select="." mode="begin">
+    <xsl:choose>
+      <xsl:when test="$spanned">
+        <xsl:apply-templates select="." mode="ininalignment">
+          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="ncolumns" select="$ncolumns"/>
+          <xsl:with-param name="spanned" select="$spanned"/>
+        </xsl:apply-templates>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+          <xsl:apply-templates select="." mode="ininalignment">
             <xsl:with-param name="context" select="$context"/>
-          </xsl:apply-templates>
-          <xsl:apply-templates select="." mode="inalignment-begin">
             <xsl:with-param name="ncolumns" select="$ncolumns"/>
-            <xsl:with-param name="context" select="$context"/>
-          </xsl:apply-templates>
-          <xsl:apply-templates>
-            <xsl:with-param name="context" select="$context"/>
-          </xsl:apply-templates>
-          <xsl:apply-templates select="." mode="inalignment-end">
-            <xsl:with-param name="ncolumns" select="$ncolumns"/>
-            <xsl:with-param name="context" select="$context"/>
-          </xsl:apply-templates>
-          <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
         </xsl:element>
+      </xsl:otherwise>
+    </xsl:choose>
+  </xsl:template>
+
+  <xsl:template match="ltx:p" mode="ininalignment">
+    <xsl:param name="context"/>
+    <xsl:param name="ncolumns"/>
+    <xsl:param name="spanned"/>
+    <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+      <xsl:attribute name="class">ltx_eqn_row ltx_align_baseline</xsl:attribute>
+      <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_eqn_cell ltx_align_left</xsl:attribute>
+        <xsl:attribute name="style">white-space:normal;</xsl:attribute>
+        <xsl:attribute name="colspan">
+          <xsl:value-of select="3+$ncolumns"/>
+        </xsl:attribute>
+        <xsl:apply-templates select="." mode="begin">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="." mode="inalignment-begin">
+          <xsl:with-param name="ncolumns" select="$ncolumns"/>
+          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spanned" select="$spanned"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates>
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="." mode="inalignment-end">
+          <xsl:with-param name="ncolumns" select="$ncolumns"/>
+          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spanned" select="$spanned"/>
+        </xsl:apply-templates>
+        <xsl:apply-templates select="." mode="end">
+          <xsl:with-param name="context" select="$context"/>
+        </xsl:apply-templates>
       </xsl:element>
     </xsl:element>
   </xsl:template>
 
-  <!-- Hopefully we can deal with nested equationgroups, but we've got to attach the id somewhere!
-       We can put it on outer table, insert a tbody (but not nested!);
-       That handles the most common mangled cases (w/equationgroup for labelling AND aligning).
-       For fallback nested too deep, we'll just insert an empty tr -->
+  <!-- equationgroups, possibly nested, already within a table context.
+       We'll wrap in a tbody (with ID), unless we're already spanned by an equation number. -->
   <xsl:template match="ltx:equationgroup" mode="inalignment">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"/>
-    <!-- This is pretty lame, but if there's an id, we better put it SOMEPLACE! -->
+    <xsl:param name="spanned"/> <!--If this group is (row)spanned by an equation number column. -->
     <xsl:choose>
-      <!-- easy case: no id, or already on table (since this is outer equationgroup)-->
-      <xsl:when test="not(@fragid) or not(parent::ltx:equationgroup)">
-        <xsl:apply-templates select="." mode="ininalignment">
-          <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
-        </xsl:apply-templates>
-      </xsl:when>
-      <!-- Nested equationgroup, with id.  The alignment will be handled by the table
-           for the outer equationgroup (hopefully consistently).
-           But we need a place to part the id!  Unfortunately nested tbody  are not allowed,
-           so we add an empty tbody/tr to hold the id.
-           At least, it'll validate. -->
-      <xsl:otherwise>
-        <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+      <!-- IF we can't wrap with tbody, or don't need to (have no id & all children will wrap)-->
+      <xsl:when test="$spanned or (not(child::ltx:tags) and not(parent::ltx:equationgroup and @fragid))">
+        <!-- but without tbody, if id hasn't been handled (by html:table), add dummy row -->
+        <xsl:if test="@fragid and parent::ltx:equationgroup">
+          <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
           <xsl:attribute name="class">ltx_eqn_row</xsl:attribute>
-
-          <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
             <xsl:element name="{f:blockelement($context,'td')}" namespace="{$html_ns}"> <!--Empty, too
 -->
               <xsl:attribute name="class">ltx_eqn_cell</xsl:attribute>
               <xsl:attribute name="colspan"><xsl:value-of select="$ncolumns+3"/></xsl:attribute>
             </xsl:element>
           </xsl:element>
-        </xsl:element>
+        </xsl:if>
         <xsl:apply-templates select="." mode="ininalignment">
           <xsl:with-param name="ncolumns" select="$ncolumns"/>
           <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spanned" select="$spanned"/>
         </xsl:apply-templates>
+      </xsl:when>
+      <!-- otherwise, wrap equationgroup in a tbody -->
+      <xsl:otherwise>
+        <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+          <!-- If id hasn't been handled (by html:table), put it on tbody -->
+          <xsl:if test="@fragid and parent::ltx:equationgroup">
+            <xsl:call-template name="add_id"/>
+          </xsl:if>
+          <xsl:apply-templates select="." mode="ininalignment">
+            <xsl:with-param name="ncolumns" select="$ncolumns"/>
+            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spanned" select="child::ltx:tags"/>
+          </xsl:apply-templates>
+        </xsl:element>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
+  <!-- innermost equationgroup; simply handle the content equations/equationgroups -->
   <xsl:template match="ltx:equationgroup" mode="ininalignment">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"/>
+    <xsl:param name="spanned"/>
     <xsl:apply-templates select="." mode="inalignment-begin">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
       <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spanned" select="$spanned"/>
     </xsl:apply-templates>
     <xsl:apply-templates select="ltx:equationgroup | ltx:equation | ltx:p" mode="inalignment">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
       <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spanned" select="$spanned"/>
     </xsl:apply-templates>
     <xsl:apply-templates select="." mode="aligned-constraints">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
@@ -748,55 +784,55 @@
     <xsl:apply-templates select="." mode="inalignment-end">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
       <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spanned" select="$spanned"/>
     </xsl:apply-templates>
   </xsl:template>
 
+  <!-- equation already within a table context.
+       We'll wrap in a tbody (with ID), unless we're already spanned by an equation number. -->
   <xsl:template match="ltx:equation" mode="inalignment">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"/>
+    <xsl:param name="spanned"/> <!--If this equation is (row)spanned by an equation number column. -->
     <!-- The main issue here is whether to wrap with a tbody (putting any id there),
          and whether the id has already been placed on an outer table
          else just transforming the content, leaving any id to the 1st row -->
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
-      <!-- no outer equationgroup, so id has already been handled and there are no other equations.
-           So no tbody necessary. -->
-      <xsl:when test="not(parent::ltx:equationgroup)">
-        <xsl:apply-templates select="." mode="ininalignment">
-          <xsl:with-param name="ncolumns" select="$ncolumns"/>
-          <xsl:with-param name="context" select="$context"/>
-          <xsl:with-param name="need_id" select="false()"/>
-        </xsl:apply-templates>
-      </xsl:when>
-      <!-- This equation has no tags, but outer equationgroup does.
-           No tbody, else it will interfere with the group's rowspanned equation number -->
-      <xsl:when test="not(ltx:tags) and parent::ltx:equationgroup/ltx:tags">
+      <!-- Equation contained within a (spanning) numbered eqngroup, so can't wrap w/tbody -->
+      <xsl:when test="$spanned">
         <xsl:apply-templates select="." mode="ininalignment">
           <xsl:with-param name="ncolumns" select="$ncolumns"/>
           <xsl:with-param name="context" select="$context"/>
           <xsl:with-param name="need_id" select="true()"/>
+          <xsl:with-param name="spanned" select="$spanned"/>
         </xsl:apply-templates>
       </xsl:when>
-      <!-- Otherwise, ALWAYS wrap equation in a tbody (w/id, if any), in case
-           there's a number, id, or OTHER equations in group have tbodys (for validation). -->
+      <!-- Otherwise, ALWAYS wrap equation in a tbody -->
       <xsl:otherwise>
         <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
-          <xsl:call-template name="add_id"/>
+          <!-- If id hasn't been handled (by outer html:table) put it on the tbody -->
+          <xsl:if test="@fragid and parent::ltx:equationgroup">
+            <xsl:call-template name="add_id"/>
+          </xsl:if>
           <xsl:apply-templates select="." mode="ininalignment">
             <xsl:with-param name="ncolumns" select="$ncolumns"/>
             <xsl:with-param name="context" select="$context"/>
             <xsl:with-param name="need_id" select="false()"/>
+            <xsl:with-param name="spanned" select="child::ltx:tags"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:otherwise>
     </xsl:choose>
   </xsl:template>
 
-  <!-- inside table, and id (if any) already handled -->
+  <!-- innermost equation, already within a table and tbody.
+       This is template must sort through all the MathFork's and recover the rows & columns -->
   <xsl:template match="ltx:equation" mode="ininalignment">
     <xsl:param name="context"/>
     <xsl:param name="ncolumns"/>
-    <xsl:param name="need_id"/>
+    <xsl:param name="need_id"/> <!--Need to put id in best, first row. -->
+    <xsl:param name="spanned"/>
     <xsl:param name="eqpos"
                select="f:if(ancestor-or-self::*[contains(@class,'ltx_fleqn')],'left','center')"/>
     <xsl:choose>
@@ -813,6 +849,7 @@
           <xsl:apply-templates select="." mode="inalignment-begin">
             <xsl:with-param name="ncolumns" select="$ncolumns"/>
             <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
           <xsl:call-template name="eq-left">
             <xsl:with-param name="context" select="$context"/>
@@ -820,6 +857,7 @@
           <xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/ltx:tr[1]/ltx:td"
                                mode="inalignment">
             <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
           <xsl:call-template name="eq-right">
             <xsl:with-param name="context" select="$context"/>
@@ -835,6 +873,7 @@
             </xsl:call-template>
             <xsl:apply-templates select="ltx:td" mode="inalignment">
               <xsl:with-param name="context" select="$context"/>
+              <xsl:with-param name="spanned" select="$spanned"/>
             </xsl:apply-templates>
             <xsl:call-template name="eq-right">
               <xsl:with-param name="context" select="$context"/>
@@ -856,6 +895,7 @@
           <xsl:apply-templates select="." mode="inalignment-begin">
             <xsl:with-param name="ncolumns" select="$ncolumns"/>
             <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
           <xsl:call-template name="eq-left">
             <xsl:with-param name="context" select="$context"/>
@@ -863,6 +903,7 @@
           <xsl:apply-templates select="ltx:MathFork/ltx:MathBranch[1]/*"
                                mode="inalignment">
             <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
           <xsl:call-template name="eq-right">
             <xsl:with-param name="context" select="$context"/>
@@ -882,6 +923,7 @@
           <xsl:apply-templates select="." mode="inalignment-begin">
             <xsl:with-param name="ncolumns" select="$ncolumns"/>
             <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spanned" select="$spanned"/>
           </xsl:apply-templates>
           <xsl:call-template name="eq-left">
             <xsl:with-param name="context" select="$context"/>
@@ -918,6 +960,7 @@
     <xsl:apply-templates select="." mode="inalignment-end">
       <xsl:with-param name="ncolumns" select="$ncolumns"/>
       <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spanned" select="$spanned"/>
     </xsl:apply-templates>
   </xsl:template>
 

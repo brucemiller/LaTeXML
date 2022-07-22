@@ -1902,6 +1902,7 @@ sub adjustBoxColor_rec {
     $$adjusted{$box} = 1;
     my $r = ref $box;
     next unless $r && ($r !~ /(?:SCALAR|HASH|ARRAY|CODE|REF|GLOB|LVALUE)/) && $r->isaBox;
+    # NASTY access to internal structure; but worth a whole API for this one hack???
     if ($r eq 'LaTeXML::Core::Box') {
       adjustBoxColor_internal($color, $box); }
     elsif ($r eq 'LaTeXML::Core::List') {
@@ -1910,7 +1911,12 @@ sub adjustBoxColor_rec {
       adjustBoxColor_internal($color, $box);
       # now recurse on contained boxes (args AND properties!)
       adjustBoxColor_rec($color, $adjusted, $box->getArgs);
-      adjustBoxColor_rec($color, $adjusted, values %{ $box->getPropertiesRef }); } }
+      adjustBoxColor_rec($color, $adjusted, values %{ $box->getPropertiesRef }); }
+    elsif ($r eq 'LaTeXML::Core::Alignment') {
+      foreach my $row (@{ $$box{rows} }) {
+        foreach my $col (@{ $$row{columns} }) {
+          adjustBoxColor_rec($color, $adjusted, $$col{boxes}->unlist) if $$col{boxes}; } } }
+  }
   return; }
 
 sub adjustBoxColor_internal {
@@ -2024,6 +2030,89 @@ sub inSVG {
   my $context  = $document->getElement;
   return $context && $document->getNodeQName($context) =~ /^svg:/; }
 
+# Collapse redundant svg:g nodes that have only certain
+# non-cummulative attributes
+Tag('svg:g', afterClose => \&collapseSVGGroup);
+my %collapsible_group_attributes = map { ($_ => 1); }
+  qw(fill fill-rule fill-opacity
+  stroke stroke-width stroke-linecap stroke-linejoin stroke-miterlimit
+  stroke-dasharray stroke-dashoffset stroke-opacity
+  color);
+
+# Collapse/remove/unwrap unneeded svg:g's to reduce depth of tree
+sub collapseSVGGroup {
+  my ($document, $node) = @_;
+  my ($nempty, $nredundant, $nmerged, $npopped, $npushed) = (0, 0, 0, 0, 0);
+  # Record the attributes on $node, for later use.
+  my %nodeattr = ();
+  foreach my $attr ($node->attributes) {
+    my $key = $attr->getName;
+    $nodeattr{$key} = $attr->getValue if ($key !~ /^_/); }
+  return if defined $nodeattr{'clip-path'};    # Needs separate svg:g node (?)
+  my @children = element_nodes($node);
+  # Remove empty svg:g children
+  foreach my $c (@children) {
+    if (($document->getNodeQName($c) eq 'svg:g') && !scalar(element_nodes($c))) {
+      $nempty++;
+      $document->removeNode($c); } }
+  @children = element_nodes($node) if $nempty;
+  # Move ahead, all leading children whose svg:g attributes completely mask $node's attributes.
+  # Could do same moving trailing children to back
+  my $c;
+  while (scalar(@children) && ($document->getNodeQName($c = $children[0]) eq 'svg:g')) {
+    my $nmasked = 0;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key !~ /^_/) && $collapsible_group_attributes{$key} && defined $nodeattr{$key}) {
+        $nmasked++; } }
+    last unless $nmasked == scalar(keys %nodeattr);              # child completely masks attr of node
+    $node->parentNode->insertBefore(shift(@children), $node);    # move it outside!
+    $npopped++; }
+  # Same story for trailing children, but move behind
+  while (scalar(@children) && ($document->getNodeQName($c = $children[-1]) eq 'svg:g')) {
+    my $nmasked = 0;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key !~ /^_/) && $collapsible_group_attributes{$key} && defined $nodeattr{$key}) {
+        $nmasked++; } }
+    last unless $nmasked == scalar(keys %nodeattr);              # child completely masks attr of node
+    $node->parentNode->insertAfter(pop(@children), $node);
+    $npushed++; }
+  # Now remove any redundant svg:g's (same attributes & values) [some left after above]
+  foreach my $c (@children) {
+    if ($c && ($document->getNodeQName($c) eq 'svg:g')) {        # for every nested svg:g
+      my $issame = 1;
+      foreach my $attr ($c->attributes) {
+        my $key = $attr->getName;
+###        if (($key !~ /^_/) && ($attr->getValue ne ($nodeattr{$key} || ''))) {
+        if (($key !~ /^_/)
+          && (($attr->getValue ne ($nodeattr{$key} || '')) || ($key eq 'transform'))) {
+          $issame = 0; } }
+      if ($issame) {    # child is completely redundant.
+        $document->unwrapNodes($c);
+        $nredundant++; } } }
+  @children = element_nodes($node) if $nredundant;
+  # Could check if $node is empty now?
+  # Then if only one left, and it's attributes can be migrated to $node, unwrap it
+  if ((scalar(@children) == 1) && ($document->getNodeQName($c = $children[0]) eq 'svg:g')) {
+    my %av        = ();
+    my $mergeable = 1;
+    foreach my $attr ($c->attributes) {
+      my $key = $attr->getName;
+      if (($key =~ /^_/) || $collapsible_group_attributes{$key}) {
+        $av{$key} = $attr->getValue; }
+      elsif ($key eq 'transform') {
+        $av{$key} = ($nodeattr{$key} ? $nodeattr{$key} . ' ' : '') . $attr->getValue; }
+      else {
+        $mergeable = 0; } }
+    if ($mergeable) {
+      foreach my $key (sort keys %av) {
+        $nodeattr{$key} = $av{$key};
+        $node->setAttribute($key => $av{$key}); }
+      $nmerged++;
+      $document->unwrapNodes($c); } }
+  return; }
+
 DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     # "<ltx:text width='#width' _noautoclose='1'>#2</ltx:text>",
     my ($document, $spec, $contents, %props) = @_;
@@ -2067,9 +2156,14 @@ DefConstructor('\hbox BoxSpecification HBoxContents', sub {
 Tag('svg:foreignObject', autoOpen => 1, autoClose => 1,
   afterClose => sub {
     my ($document, $node, $whatsit) = @_;
-    my @fo = element_nodes($node);    # What's in the foreignObject?
-    if (scalar(@fo) == 0) {           # Empty?
+    ## NOTE: The revised schema now allows plain text within foreignObject; watch out for mixed
+    my @fo = $node->childNodes;    # What's in the foreignObject?
+    if (scalar(@fo) == 0) {        # Empty?
       $document->removeNode($node);    #  just remove whole thing
+      return; }
+    elsif (!grep { $_->nodeType != XML_TEXT_NODE } @fo) {    # All text nodes?
+      $node = $document->renameNode($node, 'svg:text');
+      $node->setAttribute(transform => "matrix(1 0 0 -1 0 0)");
       return; }
     elsif ((scalar(@fo) == 1) && ($document->getNodeQName($fo[0]) eq 'ltx:p')) {    # Single <p/>?
       my @p_c = element_nodes($fo[0]);
@@ -2481,7 +2575,7 @@ DefPrimitive('\write Number {}', sub {
     if (my $filename = LookupValue('output_file:' . $port)) {
       my $handle   = $filename . '_contents';
       my $contents = LookupValue($handle);
-      AssignValue($handle => $contents . UnTeX(Expand($tokens)) . "\n", 'global'); }
+      AssignValue($handle => $contents . UnTeX(Expand($tokens), 1) . "\n", 'global'); }
     else {
       Note(UnTeX(Expand($tokens))); }
     return; });
@@ -2508,6 +2602,8 @@ DefPrimitive('\special {}', sub {
       @kv = (T_OTHER("["), @kv, T_OTHER("]")) if @kv;
       $stomach->getGullet->unread(
         T_CS('\ltx@special@graphics'), @kv, T_BEGIN, T_OTHER($graphic), T_END); }
+    else {
+      Info('ignored', 'special', $stomach, 'Unrecognized TeX Special', $arg); }
     return; });
 # adapted from graphicx.sty.ltxml
 DefKeyVal('SpecialPS', 'angle',   '');
@@ -2573,11 +2669,11 @@ DefConstructor('\kern Dimension', sub {
     my ($document, $length) = @_;
     my $parent = $document->getNode;
     if ($document->getNodeQName($parent) eq 'svg:g') {
-      my $x = $length->pxValue;
-      # HACK HACK HACK
-      my $transform = $parent->getAttribute('transform');
-      $parent->setAttribute(transform => ($transform ? $transform . ' ' : '') . "translate($x,0)");
-    }
+      if (my $x = $length->pxValue) {
+        # HACK HACK HACK
+        my $transform = $parent->getAttribute('transform');
+        $parent->setAttribute(transform => ($transform ? $transform . ' ' : '') . "translate($x,0)");
+    } }
     elsif (inSVG()) {
       Warn('unexpected', 'kern', $_[0], "Lost kern in SVG " . ToString($length)); }
 });
@@ -2832,7 +2928,8 @@ DefMacro('\hline', '\noalign{\@@alignment@hline}');
 DefConstructorI('\@@alignment@hline', undef, '',
   afterDigest => sub {
     if (my $alignment = LookupValue('Alignment')) {
-      $alignment->addLine('t'); } },
+      $alignment->addLine('t'); }
+    return; },
   properties => { isHorizontalRule => 1 },
   alias      => '\hline');
 
@@ -3550,11 +3647,11 @@ DefConstructor('\hskip Glue', sub {
     my $parent = $document->getNode;
     #    Debug("HSKIP ".ToString($length)." at ".$document->getNodeQName($parent));
     if ($document->getNodeQName($parent) eq 'svg:g') {
-      my $x = $length->pxValue;
-      # HACK HACK HACK
-      my $transform = $parent->getAttribute('transform');
-      $parent->setAttribute(transform => ($transform ? $transform . ' ' : '') . "translate($x,0)");
-    }
+      if (my $x = $length->pxValue) {
+        # HACK HACK HACK
+        my $transform = $parent->getAttribute('transform');
+        $parent->setAttribute(transform => ($transform ? $transform . ' ' : '') . "translate($x,0)");
+    } }
     elsif (inSVG()) {
       Warn('unexpected', 'kern', $_[0], "Lost hskip in SVG " . ToString($length)); }
 
@@ -3597,19 +3694,24 @@ sub raisedSizer {
   return ($w, $h, $d); }
 
 DefConstructor('\lower Dimension MoveableBox',
-  "?&inSVG()(<svg:g transform='translate(0,#ypx)' _noautoclose='1'>#2</svg:g>)"
+  "?&inSVG()(<svg:g transform='#transform' _noautoclose='1'>#2</svg:g>)"
     . "(<ltx:text yoffset='#y'  _noautoclose='1'>#2</ltx:text>)",
   sizer       => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)->negate); },
   afterDigest => sub {
-    my $y = $_[1]->getArg(1)->multiply(-1);
-    $_[1]->setProperties(y => $y, ypx => $y->pxValue); });
+    my $y         = $_[1]->getArg(1)->multiply(-1);
+    my $ypx       = $y->pxValue;
+    my $transform = ($ypx ? "translate(0,$ypx)" : undef);
+    $_[1]->setProperties(y => $y, transform => $transform); });
+
 DefConstructor('\raise Dimension MoveableBox',
-  "?&inSVG()(<svg:g transform='translate(0,#ypx)' _noautoclose='1'>#2</svg:g>)"
+  "?&inSVG()(<svg:g transform='#transform' _noautoclose='1'>#2</svg:g>)"
     . "(<ltx:text yoffset='#y'  _noautoclose='1'>#2</ltx:text>)",
   sizer       => sub { raisedSizer($_[0]->getArg(2), $_[0]->getArg(1)); },
   afterDigest => sub {
-    my $y = $_[1]->getArg(1);
-    $_[1]->setProperties(y => $y, ypx => $y->pxValue); });
+    my $y         = $_[1]->getArg(1);
+    my $ypx       = $y->pxValue;
+    my $transform = ($ypx ? "translate(0,$ypx)" : undef);
+    $_[1]->setProperties(y => $y, transform => $transform); });
 
 # \unhbox<8bit>, \unhcopy<8bit>
 DefPrimitive('\unhbox Number', sub {
@@ -5634,7 +5736,7 @@ DefPrimitiveI('\lx@thinmuskip', undef, sub {
 DefPrimitiveI('\lx@thinspace', undef, sub {
     Box("\x{2009}", undef, undef, T_CS('\,'),
       name => 'thinspace', width => Dimension('0.16667em'), isSpace => 1); });
-DefMacroI('\,', undef, '\ifmmode\lx@thinmuskip\else\lx@thinspace\fi');
+DefMacroI('\,', undef, '\ifmmode\lx@thinmuskip\else\lx@thinspace\fi', protected => 1);
 
 DefPrimitiveI('\!', undef, sub {
     Box("\x{200B}", undef, undef, T_CS('\!'),    # zero width space
@@ -5732,8 +5834,9 @@ DefMathI('\nabla',    undef, "\x{2207}", role => 'OPERATOR');
 DefMathI('\surd',     undef, "\x{221A}", role => 'OPERATOR', meaning => 'square-root');
 DefMathI('\top',      undef, "\x{22A4}", role => 'ADDOP',    meaning => 'top');
 DefMathI('\bot',      undef, "\x{22A5}", role => 'ADDOP',    meaning => 'bottom');
-DefMathI('\|',        undef, "\x{2225}", role => 'VERTBAR', name => '||', meaning => 'parallel-to');
-DefMathI('\angle',    undef, "\x{2220}");
+DefMathI('\|',        undef, "\x{2225}", role => 'VERTBAR',  name    => '||');
+# should get meaning => 'parallel-to' when used as infix, but NOT when for OPEN|CLOSE
+DefMathI('\angle', undef, "\x{2220}");
 
 # NOTE: This is probably the wrong role.
 # Also, should probably carry info about Binding for OpenMath
@@ -6216,8 +6319,8 @@ DefMacro('\skew{}{}{}', '{#2{#3\mkern#1mu}\mkern-#1mu}{}');    # ignore the subt
     # rather than the individual tokens.
     # This meaning is handled in MathParser (for now)
 
-DefMacroI('\{', undef, '\ifmmode\lx@math@lbrace\else\lx@text@lbrace\fi');
-DefMacroI('\}', undef, '\ifmmode\lx@math@rbrace\else\lx@text@rbrace\fi');
+DefMacroI('\{', undef, '\ifmmode\lx@math@lbrace\else\lx@text@lbrace\fi', protected => 1);
+DefMacroI('\}', undef, '\ifmmode\lx@math@rbrace\else\lx@text@rbrace\fi', protected => 1);
 DefMathI('\lx@math@lbrace', undef, '{', role => 'OPEN',  stretchy => 'false', alias => '\{');
 DefMathI('\lx@math@rbrace', undef, '}', role => 'CLOSE', stretchy => 'false', alias => '\}');
 DefPrimitiveI('\lx@text@lbrace', undef, '{', alias => '\{',
@@ -6733,16 +6836,16 @@ DefConstructor('\lx@gen@plain@cases@ RequiredKeyVals:lx@GEN {}',
   properties     => sub { %{ $_[1]->getKeyVals }; },
   afterConstruct => sub {
     my ($document) = @_;
-    my $point = $document->getElement->lastChild;
-    # Get the sequence of alternating (case, condition).
-    # Expecting ltx:XMArray/ltx:XMRow/ltx:XMCell [should have /ltx:XMArg, but could be empty!!!]
-    my @cells = $document->findnodes('ltx:XMArray/ltx:XMRow/ltx:XMCell', $point);
-    my @stuff = map { ($_->hasChildNodes ? createXMRefs($document, element_nodes($_))
-        : ['ltx:XMText', {}, 'otherwise']) } @cells;
-    $document->replaceTree(['ltx:XMDual', {},
-        ['ltx:XMApp', {}, ['ltx:XMTok', { meaning => 'cases' }], @stuff],
-        $point],
-      $point); },
+    if (my $point = $document->getElement->lastChild) {
+      # Get the sequence of alternating (case, condition).
+      # Expecting ltx:XMArray/ltx:XMRow/ltx:XMCell [should have /ltx:XMArg, but could be empty!!!]
+      my @cells = $document->findnodes('ltx:XMArray/ltx:XMRow/ltx:XMCell', $point);
+      my @stuff = map { ($_->hasChildNodes ? createXMRefs($document, element_nodes($_))
+          : ['ltx:XMText', {}, 'otherwise']) } @cells;
+      $document->replaceTree(['ltx:XMDual', {},
+          ['ltx:XMApp', {}, ['ltx:XMTok', { meaning => 'cases' }], @stuff],
+          $point],
+        $point); } },
   reversion => sub {
     my ($whatsit, $kv, $body) = @_;
     my $name = $kv->getValue('name');
@@ -6870,11 +6973,11 @@ DefPrimitiveI('\scriptscriptstyle', undef, sub {
 
 # Special Characters.
 # Try to give them some sense in math...
-DefMacroI('\#',   undef, '\ifmmode\lx@math@hash\else\lx@text@hash\fi');
-DefMacroI('\&',   undef, '\ifmmode\lx@math@amp\else\lx@text@amp\fi');
-DefMacroI('\%',   undef, '\ifmmode\lx@math@percent\else\lx@text@percent\fi');
-DefMacroI("\\\$", undef, '\ifmmode\lx@math@dollar\else\lx@text@dollar\fi');
-DefMacroI('\_',   undef, '\ifmmode\lx@math@underscore\else\lx@text@underscore\fi');
+DefMacroI('\#',   undef, '\ifmmode\lx@math@hash\else\lx@text@hash\fi',             protected => 1);
+DefMacroI('\&',   undef, '\ifmmode\lx@math@amp\else\lx@text@amp\fi',               protected => 1);
+DefMacroI('\%',   undef, '\ifmmode\lx@math@percent\else\lx@text@percent\fi',       protected => 1);
+DefMacroI("\\\$", undef, '\ifmmode\lx@math@dollar\else\lx@text@dollar\fi',         protected => 1);
+DefMacroI('\_',   undef, '\ifmmode\lx@math@underscore\else\lx@text@underscore\fi', protected => 1);
 DefPrimitiveI('\lx@text@hash',       undef, '#',  alias => '\#');
 DefPrimitiveI('\lx@text@amp',        undef, '&',  alias => '\&');
 DefPrimitiveI('\lx@text@percent',    undef, '%',  alias => '\%');

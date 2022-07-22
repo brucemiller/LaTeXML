@@ -2979,7 +2979,12 @@ sub defineNewTheorem {
   my ($stomach, $flag, $thmset, $otherthmset, $type, $within) = @_;
   $thmset = ToString($thmset);
   my $classname = CleanClassName($thmset);
-  my $listname  = "theorem:$thmset"; $listname =~ s/\s//g;
+  my $listname  = "theorem:$thmset";
+  # Do we need a Cleaner for constructor bits?
+  $listname =~ s/\s+//g;
+  $listname =~ s/'/prime/g;
+  $listname =~ s/\?/question/g;
+  $listname =~ s/\#/hash/g;
   $otherthmset = $otherthmset       && ToString($otherthmset);
   $type        = undef unless $type && $type->unlist;
   $within      = $within ? ToString($within) : undef;
@@ -3846,11 +3851,14 @@ Tag('ltx:*', 'afterClose:late' => sub {
       GenerateID($document, $node); } });
 
 # These will get filled in during postprocessing.
-# * is added to accommodate hyperref
-DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label' _force_font='true'/>",
+# * comes from hyperref
+DefConstructor('\ref OptionalMatch:* Semiverbatim', "<ltx:ref ?#1(class='ltx_nolink')() labelref='#label' _force_font='true'/>",
+  sizer      => '()',                                     # Don't actually know how big this will be!
   properties => sub { (label => CleanLabel($_[2])); });
-DefConstructor('\pageref OptionalMatch:* Semiverbatim', "<ltx:ref labelref='#label' _force_font='true'/>", # Same??
-  properties => sub { (label => CleanLabel($_[2])); });
+# "page" does not make sense in xml.  If the user really wants, they will need:
+# \usepackage{latexml} ... \iflatexml alternate\else page \pageref{label}\fi
+Let('\pageref', '\ref');
+
 #======================================================================
 # C.11.3 Bibliography and Citation
 #======================================================================
@@ -4233,8 +4241,10 @@ DefConstructor('\lx@mark@nocite Semiverbatim',
 #======================================================================
 Let('\@@input', '\input');    # Save TeX's version.
                               # LaTeX's \input is a bit different...
+# Input, now
+DefPrimitive('\ltx@input {}', sub { Input(Expand($_[1])); });
 DefMacroI('\input', undef, '\@ifnextchar\bgroup\@iinput\@@input');
-DefPrimitive('\@iinput {}', sub { Input(Expand($_[1])); });
+Let('\@iinput', '\ltx@input');
 DefMacro('\@input{}',  '\IfFileExists{#1}{\@@input\@filef@und}{\typeout{No file #1.}}');
 DefMacro('\@input@{}', '\InputIfFileExists{#1}{}{\typeout{No file #1.}}');
 
@@ -5967,11 +5977,12 @@ DefMacro('\IfFileExists{}{}{}', sub {
 
 DefMacro('\InputIfFileExists{}{}{}', sub {
     my ($gullet, $file, $if, $else) = @_;
-    my $file_string = ToString(Expand($file));
+    $file = Expand($file);
+    my $file_string = ToString($file);
     if (FindFile($file_string)) {
       DefMacro('\@filef@und', '"' . $file_string . '" ');
-      Input($file_string);
-      return ($if->unlist); }
+      return Tokens($if, T_CS('\@addtofilelist'), T_BEGIN, $file, T_END,
+        T_CS('\ltx@input'), T_BEGIN, $file, T_END); }
     else { return ($else->unlist); } });
 
 #======================================================================

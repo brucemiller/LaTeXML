@@ -1,0 +1,116 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  xy                                                                 | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+# Load the raw TeX implementation
+# But IMPORTANTLY: do NOT reassign the catcode of @,
+# as it fouls up all xy's catcode management!
+InputDefinitions('xy', type => 'tex', noltxml => 1, at_letter => 0);
+
+# Redefine \xyoption to avoid other drivers
+Let('\lx@xy@xyoption@orig', '\xyoption');
+# Prevent loading of incompatible drivers
+our %xy_other_drivers = map { ($_ => 1); }
+  qw(16textures 17oztex dvidrv dvips dvitops oztex pdf textures dvi);
+our %xy_unsupported = map { ($_ => 1); } qw(barr movie necula smart);
+DefMacro('\xyoption{}', sub {
+    my ($gullet, $option) = @_;
+    $option = Tokens(Expand($option));
+    my $option_s = ToString($option);
+    if ($xy_other_drivers{$option_s}) {
+      Info('xy', 'ignored', $gullet, "Ignoring xy driver $option_s (using latexml)");
+      return; }
+    elsif ($xy_unsupported{$option}) {
+      Warn('xy', 'unsupported', $gullet,
+        "The xy extension/feature $option_s may not be supported"); }
+    return Tokens(T_CS('\lx@xy@xyoption@orig'), T_BEGIN, $option, T_END); });
+
+# Redefine so we get more tracable/debugable info
+DefPrimitive('\xywarning@{}', sub { Info('xy', 'warning', $_[0], ToString($_[1])); });
+DefPrimitive('\xyerror@{}{}', sub { Info('xy', 'error', $_[0], ToString($_[1]), ToString($_[2])); });
+
+# Is this safe for non-LaTeX ??
+# We need to defer till AFTER extensions/features are loaded!
+# ORR we need to implement the activate machinery!
+RawTeX('\AtBeginDocument{\xyoption{latexml}}');
+
+# ORRRRR is \activatedriver (or related) the right place to load/turn on????
+######################################################################
+# Cribbed from Deyan's version
+# TODO: Reconsider if this is the best we can do about the XY fonts?
+# At least, avoid the warning...
+foreach ('dash', 'atip', 'btip', 'bsql', 'circ') {
+  DefPrimitiveI(
+    "\\xy$_" . "font", undef, undef,
+    font   => { family => 'nullfont' },
+    locked => 1
+  );
+}
+
+# Note that xy heavily uses grouping to limit scope of image data
+# and \edef to smuggle recorded data out of the groups.
+# We can use the Digested parameter type here to capture a Box,
+# since \xy starts with an \hbox \bgroup, and \endxy contains a matching \egroup.
+# However, we have to take steps to capture the size before that group ends!
+DefConstructor('\lx@xy@svgnested Digested',
+  "<svg:g transform='#transform'>#1</svg:g>",
+  properties => sub {
+    my ($x0, $y0, $x1, $y1) = @{ LookupValue('saved_xy_range')
+        || [Dimension(0), Dimension(0), Dimension(0), Dimension(0)] };
+    Debug("Nested XY: " . ToString($x0) . ' ' . ToString($y0) . ' ' . ToString($x1) . ' ' . ToString($y1))
+      if $LaTeXML::DEBUG{xy};
+    my $w = $x1->subtract($x0);
+    my $h = $y1->subtract($y0);
+    my $x = $x0->larger(Dimension(0));    # negate here, not below!
+    my $y = Dimension(0);
+    if (LookupValue('IN_MATH')) {         # Vertically center, when in math
+      $y = $y->subtract($h->multiply(0.5)); }
+    my $transform = "matrix(1 0 0 1 " . $x->pxValue . ' ' . $y->pxValue . ')';
+    return (width => $w, height => $y1, depth => $y0->negate, transform => $transform); });
+
+DefConstructor('\lx@xy@svg Digested',
+  "<ltx:picture><svg:svg overflow='visible' version='1.1' width='#pxwidth' height='#pxheight'>"
+    . "<svg:g transform='#transform'>#1</svg:g>"
+    . "</svg:svg></ltx:picture>",
+  properties => sub {
+    my ($x0, $y0, $x1, $y1) = @{ LookupValue('saved_xy_range')
+        || [Dimension(0), Dimension(0), Dimension(0), Dimension(0)] };
+
+    Debug("XY: " . ToString($x0) . ' ' . ToString($y0) . ' ' . ToString($x1) . ' ' . ToString($y1))
+      if $LaTeXML::DEBUG{xy};
+    my $w         = $x1->subtract($x0);
+    my $h         = $y1->subtract($y0);
+    my $x         = $x0->negate->larger(Dimension(0));
+    my $yma       = Dimension(LookupValue('IN_MATH') ? '2.5pt' : 0);           # math-axis; fontdimen 22
+    my $y         = $y1->add($yma->subtract($y0->larger(Dimension(0))));
+    my $transform = "matrix(1 0 0 -1 " . $x->pxValue . ' ' . $y->pxValue . ')';
+    Debug("XY size: " . ToString($w) . ' x ' . ToString($h) . ' + ' . 0 . ' @ ' . ToString($x) . ' x ' . ToString($y))
+
+      if $LaTeXML::DEBUG{xy};
+    return (width => $w, height => $h, pxwidth => $w->pxValue, pxheight => $h->pxValue,
+      transform => $transform); });
+
+DefPrimitive('\lx@xy@capturerange', sub {
+    my ($stomach) = @_;
+    AssignValue('saved_xy_range'
+        => [map { LookupRegister($_); } '\X@min', '\Y@min', '\X@max', '\Y@max'], 'global'); });
+
+Let(T_CS('\lx@xy@original'),     T_CS('\xy'));
+Let(T_CS('\end@lx@xy@original'), T_CS('\endxy'));
+DefMacro('\xy',    '\if\inxy@\lx@xy@svgnested\else\lx@xy@svg\fi\lx@xy@original');
+DefMacro('\endxy', '\relax\lx@xy@capturerange\end@lx@xy@original');
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+1;

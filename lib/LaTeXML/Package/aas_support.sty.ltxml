@@ -326,8 +326,8 @@ DefMacro('\figcaption OptionalSemiverbatim', sub {
 #======================================================================
 # 2.15 Tables
 RequirePackage('deluxetable');
-Let(T_CS('\begin{planotable}'), T_CS('\begin{deluxetable}'));
-Let(T_CS('\end{planotable}'),   T_CS('\end{deluxetable}'));
+Let(T_CS('\planotable'),    T_CS('\deluxetable'));
+Let(T_CS('\endplanotable'), T_CS('\enddeluxetable'));
 
 DefConditional('\ifcolnumberson');
 DefConditional('\ifdeluxedecimals');
@@ -371,10 +371,10 @@ DefColumnType('h', sub {
       before => Tokens(T_BEGIN,            T_CS('\eatone')),
       after  => Tokens(T_CS('\endeatone'), T_END));
     return; });
-Let(T_CS('\begin{splitdeluxetable}'),  T_CS('\begin{deluxetable}'));
-Let(T_CS('\end{splitdeluxetable}'),    T_CS('\end{deluxetable}'));
-Let(T_CS('\begin{splitdeluxetable*}'), T_CS('\begin{deluxetable*}'));
-Let(T_CS('\end{splitdeluxetable*}'),   T_CS('\end{deluxetable*}'));
+Let(T_CS('\splitdeluxetable'),     T_CS('\deluxetable'));
+Let(T_CS('\endsplitdeluxetable'),  T_CS('\enddeluxetable'));
+Let(T_CS('\splitdeluxetable*'),    T_CS('\deluxetable*'));
+Let(T_CS('\endsplitdeluxetable*'), T_CS('\enddeluxetable*'));
 
 DefColumnType('B', sub {    # TODO: fake for now, should break table eventually
     $LaTeXML::BUILD_TEMPLATE->addColumn(

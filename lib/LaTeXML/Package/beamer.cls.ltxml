@@ -29,6 +29,7 @@ LoadPool('LaTeX');
 # these packages probably aren't needed, but let's load them anyways!
 RequirePackage('ifpdf');
 RequirePackage('keyval');
+RequirePackage('graphicx');
 
 # for things that aren't implemented
 sub beamerTODO {
@@ -70,7 +71,7 @@ sub readBeamerSquared {
   my $tok2 = $gullet->readXToken;
   unless (ref $tok2 && ToString($tok2) eq '<') {
     $gullet->unread($tok2);
-    $gullet->unread($tok1); 
+    $gullet->unread($tok1);
     return; }
   # read the content
   my $value = $gullet->readUntil(T_OTHER('>'));
@@ -444,7 +445,7 @@ sub matchesCurrentMode {
 # \mode*                   => \beamer@modeoutsideframe
 # \mode<modespec>{stuff}   => \beamer@modeinline<modespec>{stuff}
 # \mode<modespec>          => \beamer@switchmode<modespec>
-DefMacro('\mode',                '\@ifstar{\beamer@modeoutsideframe}{\beamer@mode@}');
+DefMacro('\mode',                      '\@ifstar{\beamer@modeoutsideframe}{\beamer@mode@}');
 DefMacro('\beamer@mode@ BeamerAngled', '\@ifnextchar\{{\beamer@modeinline}{\beamer@switchmode}<#1>');
 
 # \mode*

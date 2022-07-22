@@ -110,6 +110,8 @@ sub getopt_specification {
     "nokeepXMath|noxmath"         => sub { removeMathFormat($opts, 'xmath'); },
     "mathtex"                     => sub { addMathFormat($opts, 'mathtex'); },
     "nomathtex"                   => sub { removeMathFormat($opts, 'mathtex'); },
+    "unicodemath"                 => sub { addMathFormat($opts, 'unicodemath'); },
+    "nounicodemath"               => sub { removeMathFormat($opts, 'unicodemath'); },
     "parallelmath!"               => \$$opts{parallelmath},
     # Some general XSLT/CSS/JavaScript options.
     "stylesheet=s"      => \$$opts{stylesheet},
@@ -836,7 +838,7 @@ latexmlc [options]
  --css=cssfile           adds a css stylesheet to html/xhtml
                          (can be repeated)
  --nodefaultresources    disables processing built-in resources
- --javscript=jsfile      adds a link to a javascript file into
+ --javascript=jsfile     adds a link to a javascript file into
                          html/html5/xhtml (can be repeated)
  --icon=iconfile         specify a file to use as a "favicon"
  --xsltparameter=name:value passes parameters to the XSLT.
@@ -900,6 +902,8 @@ latexmlc [options]
                          representation (default is to remove)
  --mathtex               adds TeX annotation to parallel markup
  --nomathtex             disables the above (default)
+ --unicodemath           adds UnicodeMath annotation to parallel markup
+ --nounicodemath         disables the above (default)
  --parallelmath          use parallel math annotations (default)
  --noparallelmath        disable parallel math annotations
  --plane1                use plane-1 unicode for symbols
