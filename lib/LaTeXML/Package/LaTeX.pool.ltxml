@@ -3745,7 +3745,6 @@ Let('\multicolumn', '\@multicolumn');
 # However, the really weird thing is the way this provides the } to close the argument
 DefMacroI('\@xhline', undef, '\ifnum0=`{\fi}');
 
-#DefConstructor('\cline{}', '',
 DefMacro('\cline{}', '\noalign{\@cline{#1}}');
 DefConstructor('\@cline{}', '',
   afterDigest => sub {
@@ -3758,7 +3757,7 @@ DefConstructor('\@cline{}', '',
     my $alignment = LookupValue('Alignment');
     $alignment->addLine('t', @cols) if $alignment;
     return; },
-  sizer      => 0,
+  sizer      => 0, alias => '\cline',
   properties => { isHorizontalRule => 1 });
 
 DefConstructorI('\vline', undef, "",    # ???

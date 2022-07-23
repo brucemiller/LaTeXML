@@ -2931,7 +2931,7 @@ DefConstructorI('\@@alignment@hline', undef, '',
       $alignment->addLine('t'); }
     return; },
   properties => { isHorizontalRule => 1 },
-  alias      => '\hline');
+  sizer      => 0, alias => '\hline');
 
 DefMacroI('\@tabular@begin@heading', undef, sub {
     my $alignment = LookupValue('Alignment');
