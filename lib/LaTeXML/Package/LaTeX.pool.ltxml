@@ -1094,9 +1094,9 @@ DefMacro('\@dbltoplist',   '');
 DefMacro('\@dbldeferlist', '');
 DefMacro('\@startcolumn',  '');
 # Style parameters from Fig. C.3, p.182
-DefRegister('\paperheight'     => Dimension('8.5in'));
-DefRegister('\paperwidth'      => Dimension('11in'));
-DefRegister('\textheight'      => Dimension(0));
+DefRegister('\paperheight'     => Dimension('11in'));
+DefRegister('\paperwidth'      => Dimension('8.5in'));
+DefRegister('\textheight'      => Dimension('7in'));
 DefRegister('\textwidth'       => Dimension('6in'));
 DefRegister('\topmargin'       => Dimension(0));
 DefRegister('\headheight'      => Dimension(0));
