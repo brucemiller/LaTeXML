@@ -123,6 +123,7 @@ sub rows {
 sub addLine {
   my ($self, $border, @cols) = @_;
   if (my $row = $$self{current_row}) {
+    $$self{current_column} = 1;    # Pretend doesn't occupy any columns
     if (@cols) {
       foreach my $c (@cols) {
         my $colspec = $row->column($c);
