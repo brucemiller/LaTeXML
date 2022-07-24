@@ -4540,11 +4540,16 @@ DefMacro('\sloppypar',    '\par\sloppy');
 DefMacro('\endsloppypar', '\par');
 DefMacroI('\nobreakdashes', undef, T_OTHER('-'));
 
-DefMacro('\showhyphens{}', '#1');     # ?
+DefMacro('\showhyphens{}', '#1');    # ?
     #======================================================================
     # C.12.2 Page Breaking
     #======================================================================
-DefMacro('\pagebreak[]', '\vadjust{\clearpage}');
+DefMacro('\pagebreak[Default:4]', sub {
+    my ($gullet, $arg) = @_;
+    $arg = $arg->toString;
+    if ($arg <= 2) {
+      return; }
+    return Invocation(T_CS('\vadjust'), T_CS('\clearpage')); });
 DefPrimitive('\nopagebreak[]', undef);
 DefPrimitiveI('\columnbreak', undef, undef);    # latex? or multicol?
 DefPrimitive('\enlargethispage OptionalMatch:* {}', undef);
