@@ -355,7 +355,7 @@ sub processNode {
     my @secondaries = ();
     foreach my $proc (@{ $$self{secondary_processors} }) {
       # Exception: Do not generate Content MathML for kludge parses
-      next unless $proc->canConvert($doc, $math);
+      next unless $proc->canConvert($doc, $xmath);
       local $LaTeXML::Post::MATHPROCESSOR = $proc;
       my $secondary = $proc->convertNode($doc, $xmath);
       # IF it is (first) image, copy image attributes to ltx:Math ???
@@ -627,25 +627,7 @@ sub addCrossrefs {
 
 sub mathIsParsed {
   my ($doc, $math) = @_;
-  # when MathParser fails, it marks the failed fragment with class="unparsed"
-  my $unparsed = $math && $doc->findnode('descendant::*[@class="unparsed"]', $math);
-  my @unparsed_in_duals = $unparsed ? $doc->findnodes('descendant::*[self::ltx:XMDual]/descendant::*[@class="unparsed"]', $math) : ();
-  # simple case - a regular expression failed to parse,
-  return 0 if $unparsed && !@unparsed_in_duals;
-# complex case - an XMDual failed to parse
-# We need to be careful about allowed parse failures, namely:
-# The presentation branch of an XMDual (second child) are not used in Content post-processors, even if ungrammatical.
-# However, if an "unparsed" class is inside the content child, or inside an XMRef branch, it is indeed a failure to parse.
-  for my $node (@unparsed_in_duals) {
-    my $content_branch = $doc->findnode('ancestor::ltx:XMDual/*[1]');
-    return 0 unless mathIsParsed($doc, $content_branch);
-    my @ref_nodes = $doc->findnodes('descendant::*[self::ltx:XMRef]', $content_branch);
-    for my $ref_node (@ref_nodes) {
-      my $rnode = $doc->realizeXMNode($ref_node);
-      # recursively check if the ref node is parsed, using the same rules, and fail if not
-      return 0 unless mathIsParsed($doc, $rnode); } }
-  # all looks nominal
-  return 1; }
+  return $math && (($math->getAttribute('class') || '') !~ 'unparsed'); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

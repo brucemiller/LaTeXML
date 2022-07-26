@@ -84,8 +84,11 @@ sub outerWrapper {
       'altimg-valign' => ($depth ? -$depth . 'px' : undef)); }        # Note the sign!
   my @rdfa = map { my $val = ($math->getAttribute($_) || $xmath->getAttribute($_)); $val ? ($_ => $val) : () }
     qw(about resource property rel rev typeof datatype content);
+  my $class = $math->getAttribute('class');
+  if (($xmath->getAttribute('class') || '') =~ 'unparsed') {
+    $class = $class ? "$class unparsed" : "ltx_Math unparsed"; }
   my $wrapped = ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
-      class   => $math->getAttribute('class'),
+      class   => $class,
       alttext => $math->getAttribute('tex'),
 #### Handy for debugging math
 ###      title => $math->getAttribute('text'),
@@ -699,10 +702,10 @@ sub stylizeContent {
   if ($text =~ /^[\x{2061}\x{2062}\x{2063}]*$/) {           # invisible get no size or stretchiness
     $stretchy = $size = undef; }
   if ($size) {
-    if ($size eq $LaTeXML::MathML::SIZE) {                  # If default size, no need to mention.
+    if ($size eq ($LaTeXML::MathML::SIZE || 'text')) {      # If default size, no need to mention.
       $size = undef; }
     # If requested relative size, and in script or scriptscript, we'll need to adjust the size
-    elsif (($size =~ /%$/) && ($LaTeXML::MathML::STYLE =~ /script/)) {
+    elsif (($size =~ /%$/) && ($LaTeXML::MathML::STYLE and $LaTeXML::MathML::STYLE =~ /script/)) {
       my $req = $size;                               $req =~ s/%$//;
       my $ex  = $stylesize{$LaTeXML::MathML::STYLE}; $ex  =~ s/%$//;
       $size = int(100 * $req / $ex) . '%'; }

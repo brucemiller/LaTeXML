@@ -251,6 +251,7 @@ sub parse {
   my ($self, $xnode, $document) = @_;
   local $LaTeXML::MathParser::STRICT      = 1;
   local $LaTeXML::MathParser::WARNED      = 0;
+  local $LaTeXML::MathParser::UNPARSED    = 0;
   local $LaTeXML::MathParser::XNODE       = $xnode;
   local $LaTeXML::MathParser::PUNCTUATION = {};
   local $LaTeXML::MathParser::LOSTNODES   = {};
@@ -295,8 +296,9 @@ sub parse {
       else {
         foreach my $n ($document->findnodes("descendant-or-self::ltx:XMRef[\@idref='$id']", $p)) {
           $document->setAttribute($n, idref => $repid); } } }
-    $p->setAttribute('text', text_form($result));
-  }
+    $p->setAttribute('text', text_form($result)); }
+  if ($LaTeXML::MathParser::UNPARSED && is_genuinely_unparsed($xnode, $document)) {
+    $xnode->setAttribute('class', 'unparsed'); }
   return; }
 
 my %TAG_FEEDBACK = ('ltx:XMArg' => 'a', 'ltx:XMWrap' => 'w');    # [CONSTANT]
@@ -688,6 +690,7 @@ sub parse_single {
   # Failure? No result or uparsed lexemes remain.
   # NOTE: Should do script hack??
   if ((!defined $result) || $unparsed) {
+    $LaTeXML::MathParser::UNPARSED = 1;
     $self->failureReport($document, $mathnode, $rule, $unparsed, @nodes);
     return; }
   # Success!
@@ -990,6 +993,30 @@ sub textrec_array {
   foreach my $row (element_nodes($node)) {
     push(@rows, '[' . join(', ', map { ($_->firstChild ? textrec($_->firstChild) : '') } element_nodes($row)) . ']'); }
   return $name . '[' . join(', ', @rows) . ']'; }
+
+sub is_genuinely_unparsed {
+  my ($node, $document) = @_;
+  # any unparsed fragment should be considered legitimate with one exception
+  # author-provided ungrammatical snippets in the presentation branches of XMDual
+  # are allowed to fail the parse process.
+  #
+  # For now a reliable way of if we are in that case is to descend the formula through
+  # the content branch of XMDual and check if any node has an "unparsed" mark.
+  # Then only genuine parse failures will be detected.
+  my $tag = $document->getNodeQName($node);
+  if (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {
+    return 1; }
+  elsif (($tag eq 'ltx:XMTok') || ($tag eq 'ltx:XMText') || ($tag eq 'ltx:XMHint')) {
+    return 0; }
+  elsif ($tag eq 'ltx:XMRef') {
+    return is_genuinely_unparsed(realizeXMNode($node), $document); }
+  elsif ($tag eq 'ltx:XMDual') {
+    my ($content, $presentation) = element_nodes($node);
+    return is_genuinely_unparsed($content, $document); }
+  else {
+    foreach my $child (element_nodes($node)) {
+      return 1 if is_genuinely_unparsed($child, $document); }
+    return 0; } }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Cute! Were it NOT for Sub/Superscripts, the whole parsing process only
