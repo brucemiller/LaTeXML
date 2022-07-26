@@ -16,12 +16,19 @@ use warnings;
 use LaTeXML::Package;
 
 #======================================================================
-RequirePackage('natbib');
 RequirePackage('geometry');
 RequirePackage('lineno');
-#  /--------------------------------------------------------------------\
-# | Drafted by texscan --stub neurips_2019.sty                           |
-#  \--------------------------------------------------------------------/
+# certain package options may induce \linenumbers as active, ignored for now.
+
+DeclareOption('final',    sub { AssignValue('neurips_final'    => 1, 'global'); });
+DeclareOption('preprint', sub { AssignValue('neurips_preprint' => 1, 'global'); });
+DeclareOption('nonatbib', sub { AssignValue('neurips_nonatbib' => 1, 'global'); });
+
+ProcessOptions();
+
+if (!LookupValue('neurips_nonatbib')) {
+  RequirePackage('natbib'); }
+
 DefMacro('\AND',                                   Tokens());
 DefMacro('\And',                                   Tokens());
 DefMacro('\bottomfraction',                        Tokens());
@@ -31,4 +38,24 @@ DefMacroI('\subsubsubsection', undef, '\@startsection{subsubsubsection}{4}{}{}{}
 DefMacro('\textfraction', Tokens());
 DefMacro('\topfraction',  Tokens());
 #======================================================================
+
+## Additions for neurips 2022:
+# These intenrals need to be changed every year, which we can't emulate unless we create all versioned
+# neurips_2019.sty, ... neurips_2022.sty files
+# since we currently aren't stamping them (i.e. they won't get used), just leaving them here
+DefMacro('\@neuripsordinal',  '36th');
+DefMacro('\@neuripsyear',     '2022');
+DefMacro('\@neuripslocation', 'New Orleans');
+
+DefMacro('\acksection', '\section*{Acknowledgments and Disclosure of Funding}');
+DefEnvironment('{ack}', '#body',
+  beforeDigest => sub { $_[0]->getGullet->unread(T_CS('\acksection')); return; });
+
+DefMacro('\answerYes[]',  '\textcolor{blue}{[Yes] #1}}');
+DefMacro('\answerNo[]',   '\textcolor{orange}{[No] #1}');
+DefMacro('\answerNA[]',   '\textcolor{gray}{[N/A] #1}');
+DefMacro('\answerTODO[]', '\textcolor{red}{\bf [TODO]}');
+
+DefEnvironment('{hide}', '');
+
 1;
