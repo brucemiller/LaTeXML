@@ -560,13 +560,11 @@ sub parse_kludge {
     my $kludge = $$pair[0];
     push(@replacements, (ref $kludge eq 'ARRAY') && ($$kludge[0] eq 'ltx:XMWrap')
       ? @$kludge[2 .. $#$kludge] : ($kludge)); }
-  my $wrapped_replacements;
-  if (scalar(@replacements) == 1 and p_getQName($replacements[0]) eq 'ltx:XMWrap') {
-    $wrapped_replacements = $replacements[0];
-    p_setAttribute($wrapped_replacements, '_unparsed', '1'); }
-  else {
-    $wrapped_replacements = ['ltx:XMWrap', { '_unparsed' => '1' }, @replacements]; }
-  $document->appendTree($mathnode, $wrapped_replacements);
+  # mark as unparsed
+  foreach my $replacement (@replacements) {
+    p_setAttribute($replacement, '_unparsed', '1'); }
+
+  $document->appendTree($mathnode, @replacements);
   return; }
 
 sub parse_kludgeScripts_rec {
