@@ -1371,7 +1371,7 @@ Then a switch of tag forms.</p>
       </equation>
       <equation xml:id="S3.Ex20">
         <Math mode="display" tex="k\xleftharpoonup[.]{}l\xleftharpoondown{..}m\xrightharpoondown[...]{}n%&#10;\xrightharpoonup{....}o" text="k .@(absent@(xleftharpoonup)) l .@.@(xlefttharpoondown) m ldots@(absent@(xrightharpoondown)) n ldots@.@(xrightharpoonup) o" xml:id="S3.Ex20.m1">
-          <XMath>
+          <XMath class="unparsed">
             <XMApp>
               <XMTok meaning="multirelation"/>
               <XMTok font="italic" role="UNKNOWN">k</XMTok>
@@ -5300,7 +5300,7 @@ Then a switch of tag forms.</p>
           <tag role="refnum">14</tag>
         </tags>
         <Math mode="display" tex="foo\Coloneqq\begin{lgathered}x=1,\quad x+1=2\\&#10;y=2\end{lgathered}x=1,\quad x+1=2\\&#10;y=2" text="f * o * o Coloneqq x@=@1@,@quad@x@+@1@=@2@y@=@2" xml:id="S9.E14.m1">
-          <XMath>
+          <XMath class="unparsed">
             <XMApp>
               <XMTok name="Coloneqq" role="RELOP">⩴</XMTok>
               <XMApp>
@@ -5372,7 +5372,7 @@ Then a switch of tag forms.</p>
           <tag role="refnum">15</tag>
         </tags>
         <Math mode="display" tex="bar\Coloneqq\begin{rgathered}x=1,\quad x+1=2\\&#10;y=2\end{rgathered}x=1,\quad x+1=2\\&#10;y=2" text="b * a * r Coloneqq x@=@1@,@quad@x@+@1@=@2@y@=@2" xml:id="S9.E15.m1">
-          <XMath>
+          <XMath class="unparsed">
             <XMApp>
               <XMTok name="Coloneqq" role="RELOP">⩴</XMTok>
               <XMApp>
@@ -6611,7 +6611,7 @@ Then a switch of tag forms.</p>
     <para xml:id="S10.p11">
       <equation xml:id="S10.Ex76">
         <Math mode="display" tex="\left.\begin{aligned} B^{\prime}&amp;=-\partial\times E,\\&#10;E^{\prime}&amp;=\partial\times B-4\pi j,\end{aligned}\right\}\qquad\text{Maxwell's%&#10; equations}" xml:id="S10.Ex76.m1">
-          <XMath>
+          <XMath class="unparsed">
             <XMWrap class="unparsed">
               <XMArray colsep="0pt" name="aligned" rowsep="30.0pt">
                 <XMRow>
@@ -7158,7 +7158,7 @@ Then a switch of tag forms.</p>
     <para xml:id="S11.p1">
       <equation xml:id="S11.Ex81">
         <Math mode="display" tex="\begin{gathered}x=1,\quad x+1=2\\&#10;y=2\end{gathered}" text="[1*  ]@x@=@1@,@quad@x@+@1@=@2@[ over]@[2*  ]@y@=@2@[ over]" xml:id="S11.Ex81.m1">
-          <XMath>
+          <XMath class="unparsed">
             <XMDual>
               <XMWrap rule="Anything,">
                 <XMWrap class="unparsed">
@@ -7246,7 +7246,7 @@ Then a switch of tag forms.</p>
     <para xml:id="S11.p2">
       <equation xml:id="S11.Ex82">
         <Math mode="display" tex="\begin{gathered}s=2.8,\quad s+0.2=3\\&#10;t=4.5\end{gathered}" text="[See:]@s@=@2.8@,@quad@s@+@0.2@=@3@[the end]@[See:]@t@=@4.5@[the end]" xml:id="S11.Ex82.m1">
-          <XMath>
+          <XMath class="unparsed">
             <XMDual>
               <XMWrap rule="Anything,">
                 <XMWrap class="unparsed">

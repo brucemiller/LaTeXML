@@ -214,7 +214,7 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
           <tag role="refnum">5</tag>
         </tags>
         <Math mode="display" tex="(a|b),\qquad\bigl{(}a\bigm{|}b\bigr{)},\qquad\Bigl{(}a\Bigm{|}b\Bigr{)},\qquad%&#10;\biggl{(}a\biggm{|}b\biggr{)},\qquad\Biggl{(}a\Biggm{|}b\Biggr{)}" xml:id="S1.E5.m1">
-          <XMath>
+          <XMath class="unparsed">
             <XMWrap class="unparsed">
               <XMWrap>
                 <XMTok role="OPEN" stretchy="false">(</XMTok>
@@ -267,7 +267,7 @@ attributes <text font="typewriter">@mathvariant</text>, <text font="typewriter">
           <tag role="refnum">6</tag>
         </tags>
         <Math mode="display" tex="\left(a^{b}\middle|x\right),\qquad\left(a^{b^{c}}\middle|x\right),\qquad\left(%&#10;a^{b^{c^{d}}}\middle|x\right)" xml:id="S1.E6.m1">
-          <XMath>
+          <XMath class="unparsed">
             <XMWrap class="unparsed">
               <XMWrap>
                 <XMTok role="OPEN" stretchy="true">(</XMTok>
@@ -842,7 +842,7 @@ and <text font="typewriter">m:mstyle</text>:</p>
           </tags>
           <MathFork>
             <Math tex="\displaystyle=f(x)+\phantom{g(x)}+h(x)" xml:id="S2.E15.m3">
-              <XMath>
+              <XMath class="unparsed">
                 <XMWrap class="unparsed">
                   <XMTok meaning="equals" role="RELOP">=</XMTok>
                   <XMTok font="italic" role="UNKNOWN">f</XMTok>
@@ -871,7 +871,7 @@ and <text font="typewriter">m:mstyle</text>:</p>
                     </XMath>
                   </Math></td>
                 <td align="left"><Math mode="inline" tex="\displaystyle f(x)+\phantom{g(x)}+h(x)" xml:id="S2.E15.m2">
-                    <XMath>
+                    <XMath class="unparsed">
                       <XMWrap class="unparsed">
                         <XMTok font="italic" role="UNKNOWN">f</XMTok>
                         <XMWrap>
