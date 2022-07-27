@@ -367,7 +367,7 @@
                           <XMDual role="ADDOP">
                             <XMTok meaning="intersection-plus" name="nplus" role="ADDOP"/>
                             <XMWrap rule="kludge">
-                              <XMWrap class="unparsed">
+                              <XMWrap>
                                 <XMTok meaning="intersection" name="cap" role="ADDOP">∩</XMTok>
                                 <XMTok fontsize="50%" meaning="plus" role="ADDOP" width="0pt" xoffset="-0.75em" yoffset="0.2ex">+</XMTok>
                               </XMWrap>
@@ -763,7 +763,7 @@
               <XMDual role="ADDOP" xml:id="S0.Ex11.m1.5">
                 <XMTok mathstyle="display" meaning="intersection-plus" name="bignplus" role="ADDOP"/>
                 <XMWrap rule="kludge">
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok mathstyle="display" meaning="intersection" name="bigcap" role="SUMOP" scriptpos="mid">⋂</XMTok>
                     <XMTok meaning="plus" role="ADDOP" width="0pt" xoffset="-1.6em" yoffset="0.2ex">+</XMTok>
                   </XMWrap>
@@ -812,7 +812,7 @@
               <XMDual role="ADDOP" xml:id="S0.Ex12.m1.5">
                 <XMTok mathstyle="text" meaning="intersection-plus" name="bignplus" role="ADDOP"/>
                 <XMWrap rule="kludge">
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok mathstyle="text" meaning="intersection" name="bigcap" role="SUMOP" scriptpos="post">⋂</XMTok>
                     <XMTok meaning="plus" role="ADDOP" width="0pt" xoffset="-1.3em" yoffset="0.2ex">+</XMTok>
                   </XMWrap>
@@ -848,7 +848,7 @@
               <XMDual role="ADDOP" xml:id="S0.Ex13.m1.1">
                 <XMTok mathstyle="display" meaning="intersection-plus" name="bignplus" role="ADDOP"/>
                 <XMWrap rule="kludge">
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok mathstyle="display" meaning="intersection" name="bigcap" role="SUMOP" scriptpos="mid">⋂</XMTok>
                     <XMTok meaning="plus" role="ADDOP" width="0pt" xoffset="-1.6em" yoffset="0.2ex">+</XMTok>
                   </XMWrap>
@@ -858,7 +858,7 @@
               <XMDual role="ADDOP" xml:id="S0.Ex13.m1.2">
                 <XMTok mathstyle="text" meaning="intersection-plus" name="bignplus" role="ADDOP"/>
                 <XMWrap rule="kludge">
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok mathstyle="text" meaning="intersection" name="bigcap" role="SUMOP" scriptpos="post">⋂</XMTok>
                     <XMTok meaning="plus" role="ADDOP" width="0pt" xoffset="-1.3em" yoffset="0.2ex">+</XMTok>
                   </XMWrap>
@@ -868,7 +868,7 @@
               <XMDual role="ADDOP" xml:id="S0.Ex13.m1.3">
                 <XMTok mathstyle="text" meaning="intersection-plus" name="bignplus" role="ADDOP"/>
                 <XMWrap rule="kludge">
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok fontsize="70%" mathstyle="text" meaning="intersection" name="bigcap" role="SUMOP" scriptpos="post">⋂</XMTok>
                     <XMTok fontsize="70%" meaning="plus" role="ADDOP" width="0pt" xoffset="-1.3em" yoffset="0.2ex">+</XMTok>
                   </XMWrap>
@@ -878,7 +878,7 @@
               <XMDual role="ADDOP" xml:id="S0.Ex13.m1.4">
                 <XMTok mathstyle="text" meaning="intersection-plus" name="bignplus" role="ADDOP"/>
                 <XMWrap rule="kludge">
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok fontsize="50%" mathstyle="text" meaning="intersection" name="bigcap" role="SUMOP" scriptpos="post">⋂</XMTok>
                     <XMTok fontsize="50%" meaning="plus" role="ADDOP" width="0pt" xoffset="-1.3em" yoffset="0.2ex">+</XMTok>
                   </XMWrap>
@@ -935,7 +935,7 @@
                 <XMDual role="RELOP">
                   <XMTok meaning="subset-plus" name="subsetplus" role="RELOP"/>
                   <XMWrap rule="kludge">
-                    <XMWrap class="unparsed">
+                    <XMWrap>
                       <XMTok meaning="subset-of" name="subset" role="RELOP">⊂</XMTok>
                       <XMTok fontsize="50%" meaning="plus" role="ADDOP" width="0pt" xoffset="-0.8em" yoffset="0.3ex">+</XMTok>
                     </XMWrap>
@@ -956,7 +956,7 @@
                     <XMDual role="RELOP">
                       <XMTok meaning="subset-equals-plus" name="subsetpluseq" role="RELOP"/>
                       <XMWrap rule="kludge">
-                        <XMWrap class="unparsed">
+                        <XMWrap>
                           <XMTok meaning="subset-of-or-equals" name="subseteq" role="RELOP">⊆</XMTok>
                           <XMTok fontsize="50%" meaning="plus" role="ADDOP" width="0pt" xoffset="-0.8em" yoffset="0.5ex">+</XMTok>
                         </XMWrap>
@@ -977,7 +977,7 @@
                         <XMDual role="RELOP">
                           <XMTok meaning="superset-plus" name="supsetplus" role="RELOP"/>
                           <XMWrap rule="kludge">
-                            <XMWrap class="unparsed">
+                            <XMWrap>
                               <XMTok meaning="superset-of" name="supset" role="RELOP">⊃</XMTok>
                               <XMTok fontsize="50%" meaning="plus" role="ADDOP" width="0pt" xoffset="-1em" yoffset="0.3ex">+</XMTok>
                             </XMWrap>
@@ -991,7 +991,7 @@
                         <XMDual role="RELOP">
                           <XMTok meaning="superset-equals-plus" name="supsetpluseq" role="RELOP"/>
                           <XMWrap rule="kludge">
-                            <XMWrap class="unparsed">
+                            <XMWrap>
                               <XMTok meaning="superset-of-or-equals" name="supseteq" role="RELOP">⊇</XMTok>
                               <XMTok fontsize="50%" meaning="plus" role="ADDOP" width="0pt" xoffset="-1em" yoffset="0.5ex">+</XMTok>
                             </XMWrap>
@@ -1403,9 +1403,9 @@
   </para>
   <para xml:id="p8">
     <equation xml:id="S0.Ex22">
-      <Math mode="display" tex="\Lbag 42\Rbag\quad\lbag 42\rbag\quad" xml:id="S0.Ex22.m1">
-        <XMath class="unparsed">
-          <XMWrap class="unparsed">
+      <Math class="ltx_math_unparsed" mode="display" tex="\Lbag 42\Rbag\quad\lbag 42\rbag\quad" xml:id="S0.Ex22.m1">
+        <XMath>
+          <XMWrap>
             <XMWrap>
               <XMTok name="Lbag" role="OPEN">⟅</XMTok>
               <XMTok meaning="42" role="NUMBER" xml:id="S0.Ex22.m1.1">42</XMTok>
@@ -1423,9 +1423,9 @@
       </Math>
     </equation>
     <equation xml:id="S0.Ex23">
-      <Math mode="display" tex="\llbracket 42\rrbracket\quad\llfloor 42\rrfloor\quad\llceil 42\rrceil\quad%&#10;\llparenthesis 42\rrparenthesis" xml:id="S0.Ex23.m1">
-        <XMath class="unparsed">
-          <XMWrap class="unparsed">
+      <Math class="ltx_math_unparsed" mode="display" tex="\llbracket 42\rrbracket\quad\llfloor 42\rrfloor\quad\llceil 42\rrceil\quad%&#10;\llparenthesis 42\rrparenthesis" xml:id="S0.Ex23.m1">
+        <XMath>
+          <XMWrap>
             <XMWrap>
               <XMTok name="llbracket" role="OPEN">⟦</XMTok>
               <XMTok meaning="42" role="NUMBER" xml:id="S0.Ex23.m1.1">42</XMTok>
@@ -1436,7 +1436,7 @@
               <XMDual role="OPEN">
                 <XMTok name="llfloor" role="OPEN"/>
                 <XMWrap rule="kludge">
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok name="lfloor" role="OPEN" stretchy="false" width="0pt" xoffset="0.3em">⌊</XMTok>
                     <XMTok name="lfloor" role="OPEN" stretchy="false">⌊</XMTok>
                   </XMWrap>
@@ -1446,7 +1446,7 @@
               <XMDual role="CLOSE">
                 <XMTok name="rrfloor" role="CLOSE"/>
                 <XMWrap rule="kludge">
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok name="rfloor" role="CLOSE" stretchy="false">⌋</XMTok>
                     <XMTok name="rfloor" role="CLOSE" stretchy="false" width="0pt" xoffset="-0.31em">⌋</XMTok>
                   </XMWrap>
@@ -1458,7 +1458,7 @@
               <XMDual role="OPEN">
                 <XMTok name="llceil" role="OPEN"/>
                 <XMWrap rule="kludge">
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok name="lceil" role="OPEN" stretchy="false" width="0pt" xoffset="0.3em">⌈</XMTok>
                     <XMTok name="lceil" role="OPEN" stretchy="false">⌈</XMTok>
                   </XMWrap>
@@ -1468,7 +1468,7 @@
               <XMDual role="CLOSE">
                 <XMTok name="rrceil" role="CLOSE"/>
                 <XMWrap rule="kludge">
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok name="rceil" role="CLOSE" stretchy="false">⌉</XMTok>
                     <XMTok name="rceil" role="CLOSE" stretchy="false" width="0pt" xoffset="-0.3em">⌉</XMTok>
                   </XMWrap>

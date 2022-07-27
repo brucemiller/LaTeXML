@@ -84,11 +84,8 @@ sub outerWrapper {
       'altimg-valign' => ($depth ? -$depth . 'px' : undef)); }        # Note the sign!
   my @rdfa = map { my $val = ($math->getAttribute($_) || $xmath->getAttribute($_)); $val ? ($_ => $val) : () }
     qw(about resource property rel rev typeof datatype content);
-  my $class = $math->getAttribute('class');
-  if (($xmath->getAttribute('class') || '') =~ 'unparsed') {
-    $class = $class ? "$class unparsed" : "ltx_Math unparsed"; }
   my $wrapped = ['m:math', { display => ($mode eq 'display' ? 'block' : 'inline'),
-      class   => $class,
+      class   => $math->getAttribute('class'),
       alttext => $math->getAttribute('tex'),
 #### Handy for debugging math
 ###      title => $math->getAttribute('text'),

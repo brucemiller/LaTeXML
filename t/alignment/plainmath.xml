@@ -34,8 +34,8 @@
       </Math>
     </equation>
     <equation>
-      <Math mode="display" tex="\bordermatrix{&amp;A&amp;B\cr C&amp;0&amp;1\cr D&amp;2&amp;3}" text="Array[[, , A, B, ], [C, (@ , 0, 1, )@ ], [D, , 2, 3, ]]">
-        <XMath class="unparsed">
+      <Math class="ltx_math_unparsed" mode="display" tex="\bordermatrix{&amp;A&amp;B\cr C&amp;0&amp;1\cr D&amp;2&amp;3}" text="Array[[, , A, B, ], [C, (@ , 0, 1, )@ ], [D, , 2, 3, ]]">
+        <XMath>
           <XMArray>
             <XMRow>
               <XMCell/>
@@ -54,7 +54,7 @@
               </XMCell>
               <XMCell rowspan="2">
                 <XMWrap depth="6.8pt">
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok depth="6.8pt" font="italic" height="0" role="OPEN" yoffset="-6.8pt">(</XMTok>
                     <XMTok font="italic" height="6.8pt" yoffset="-6.8pt"> </XMTok>
                   </XMWrap>
@@ -68,7 +68,7 @@
               </XMCell>
               <XMCell rowspan="2">
                 <XMWrap>
-                  <XMWrap class="unparsed">
+                  <XMWrap>
                     <XMTok depth="6.8pt" font="italic" height="0" role="CLOSE" yoffset="-6.8pt">)</XMTok>
                     <XMTok font="italic" height="6.8pt" yoffset="-6.8pt"> </XMTok>
                   </XMWrap>
@@ -156,7 +156,7 @@
                 <XMText><text font="italic">otherwise</text></XMText>
               </XMApp>
               <XMWrap>
-                <XMWrap class="unparsed">
+                <XMWrap>
                   <XMTok role="OPEN" stretchy="true">{</XMTok>
                   <XMArray>
                     <XMRow>

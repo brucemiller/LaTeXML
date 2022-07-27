@@ -298,7 +298,9 @@ sub parse {
           $document->setAttribute($n, idref => $repid); } } }
     $p->setAttribute('text', text_form($result)); }
   if ($LaTeXML::MathParser::UNPARSED && is_genuinely_unparsed($xnode, $document)) {
-    $xnode->setAttribute('class', 'unparsed'); }
+    my $maybe_math = $xnode->parentNode;
+    if ($document->getNodeQName($maybe_math) eq 'ltx:Math') {
+      $maybe_math->setAttribute('class', 'ltx_math_unparsed'); } }
   return; }
 
 my %TAG_FEEDBACK = ('ltx:XMArg' => 'a', 'ltx:XMWrap' => 'w');    # [CONSTANT]
@@ -561,9 +563,9 @@ sub parse_kludge {
   my $wrapped_replacements;
   if (scalar(@replacements) == 1 and p_getQName($replacements[0]) eq 'ltx:XMWrap') {
     $wrapped_replacements = $replacements[0];
-    p_setAttribute($wrapped_replacements, 'class', 'unparsed'); }
+    p_setAttribute($wrapped_replacements, '_unparsed', '1'); }
   else {
-    $wrapped_replacements = ['ltx:XMWrap', { 'class' => 'unparsed' }, @replacements]; }
+    $wrapped_replacements = ['ltx:XMWrap', { '_unparsed' => '1' }, @replacements]; }
   $document->appendTree($mathnode, $wrapped_replacements);
   return; }
 
@@ -1004,7 +1006,7 @@ sub is_genuinely_unparsed {
   # the content branch of XMDual and check if any node has an "unparsed" mark.
   # Then only genuine parse failures will be detected.
   my $tag = $document->getNodeQName($node);
-  if (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {
+  if (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg') || $node->hasAttribute('_unparsed')) {
     return 1; }
   elsif (($tag eq 'ltx:XMTok') || ($tag eq 'ltx:XMText') || ($tag eq 'ltx:XMHint')) {
     return 0; }

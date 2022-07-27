@@ -355,7 +355,7 @@ sub processNode {
     my @secondaries = ();
     foreach my $proc (@{ $$self{secondary_processors} }) {
       # Exception: Do not generate Content MathML for kludge parses
-      next unless $proc->canConvert($doc, $xmath);
+      next unless $proc->canConvert($doc, $math);
       local $LaTeXML::Post::MATHPROCESSOR = $proc;
       my $secondary = $proc->convertNode($doc, $xmath);
       # IF it is (first) image, copy image attributes to ltx:Math ???
@@ -627,7 +627,7 @@ sub addCrossrefs {
 
 sub mathIsParsed {
   my ($doc, $math) = @_;
-  return $math && (($math->getAttribute('class') || '') !~ 'unparsed'); }
+  return $math && (($math->getAttribute('class') || '') !~ 'ltx_math_unparsed'); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
