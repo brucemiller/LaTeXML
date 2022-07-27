@@ -73,7 +73,7 @@ sub combineParallel {
     elsif (my $xml = $$secondary{xml}) {    # Or some other XML object?
                                             # ORRRR should this be in other order?
       push(@attr,
-        ['om:OMS',       { cd => "Alternate", name => $mimetype }],
+        ['om:OMS', { cd => "Alternate", name => $mimetype }],
         ['om:OMFOREIGN', {}, $$secondary{processor}->outerWrapper($doc, $xmath, $xml)]); }
     # What do do with src?
 ##    elsif (my $src = $$secondary{src}) {         # something referred to by a file? Image, maybe?
@@ -94,6 +94,10 @@ sub getQName {
 
 sub rawIDSuffix {
   return '.om'; }
+
+sub canConvert {
+  my ($sefl, $doc, $math) = @_;
+  return LaTeXML::Post::MathProcessor::mathIsParsed($doc, $math); }
 
 # ================================================================================
 
@@ -145,7 +149,7 @@ sub om_expr_aux {
     if (scalar(element_nodes($node))) {    # If it has markup?
       return ['om:OMATTR', {},
         ['om:OMATP', {},
-          ['om:OMS',       { cd       => 'OMDoc', name => 'verbalizes' }],
+          ['om:OMS', { cd => 'OMDoc', name => 'verbalizes' }],
           ['om:OMFOREIGN', { encoding => 'mtext' },
             $LaTeXML::Post::MATHPROCESSOR->convertXMTextContent($LaTeXML::Post::DOCUMENT, 0,
               $node->childNodes)]],
@@ -166,7 +170,7 @@ sub om_unparsed {
     foreach my $node (@nodes) {
       $node = $LaTeXML::Post::DOCUMENT->realizeXMNode($node);
       my $tag = getQName($node);
-      if ($tag eq 'ltx:XMHint') { }
+      if    ($tag eq 'ltx:XMHint') { }
       elsif (($tag eq 'ltx:XMTok') && (($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')) {
         push(@om, ['om:OMS', { cd => 'unknown', name => $node->textContent }]); }
       else {
@@ -209,7 +213,7 @@ DefOpenMath('Token:?:?', sub {
 # NOTE: Presence of '.' distinguishes float from int !?!?
 DefOpenMath('Token:NUMBER:?', sub {
     my ($node) = @_;
-    my $value = $node->getAttribute('meaning');    # name attribute (may) holds actual value.
+    my $value = $node->getAttribute('meaning');     # name attribute (may) holds actual value.
     $value = $node->textContent unless defined $value;
     if ($value =~ /\./) {
       return ['om:OMF', { dec => $value }]; }

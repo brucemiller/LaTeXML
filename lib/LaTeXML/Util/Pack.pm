@@ -264,7 +264,7 @@ sub get_math {
   my @mnodes     = $doc->findnodes($math_xpath);
   my $math_count = scalar(@mnodes);
   if (!$math_count) {    # If no real math nodes, look for math image nodes
-    my $math_img_xpath = '//*[local-name()="img" and @class="ltx_Math"]';
+    my $math_img_xpath = '//*[local-name()="img" and contains(@class,"ltx_Math")]';
     @mnodes     = $doc->findnodes($math_img_xpath);
     $math_count = scalar(@mnodes);
   }

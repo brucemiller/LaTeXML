@@ -319,6 +319,8 @@ sub process {
   NoteLog("converted $n Maths");
   return $doc; }
 
+sub canConvert { return 1; }
+
 # Make THIS MathProcessor the primary branch (of whatever parallel markup it supports),
 # and make all of the @moreprocessors be secondary ones.
 sub setParallel {
@@ -352,6 +354,8 @@ sub processNode {
     my $primary     = $self->convertNode($doc, $xmath);
     my @secondaries = ();
     foreach my $proc (@{ $$self{secondary_processors} }) {
+      # Exception: Do not generate Content MathML for kludge parses
+      next unless $proc->canConvert($doc, $math);
       local $LaTeXML::Post::MATHPROCESSOR = $proc;
       my $secondary = $proc->convertNode($doc, $xmath);
       # IF it is (first) image, copy image attributes to ltx:Math ???
@@ -620,6 +624,10 @@ sub addCrossrefs {
     else {
   } }
   return; }
+
+sub mathIsParsed {
+  my ($doc, $math) = @_;
+  return $math && (($math->getAttribute('class') || '') !~ 'ltx_math_unparsed'); }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

@@ -23,5 +23,9 @@ sub convertNode {
 sub rawIDSuffix {
   return '.cmml'; }
 
+sub canConvert {
+  my ($self, $doc, $math) = @_;
+  return LaTeXML::Post::MathProcessor::mathIsParsed($doc, $math); }
+
 #================================================================================
 1;

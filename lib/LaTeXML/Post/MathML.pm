@@ -127,7 +127,7 @@ sub combineParallel {
     # anything else ignore?
   }
   return { processor => $self, mimetype => $$primary{mimetype},
-    xml => ['m:semantics', {}, $$primary{xml}, @alt] }; }
+    xml => (@alt ? ['m:semantics', {}, $$primary{xml}, @alt] : $$primary{xml}) }; }
 
 # $self->convertNode($doc,$node);
 # will be handled by specific Presentation or Content MathML converters; See at END.
@@ -699,10 +699,10 @@ sub stylizeContent {
   if ($text =~ /^[\x{2061}\x{2062}\x{2063}]*$/) {           # invisible get no size or stretchiness
     $stretchy = $size = undef; }
   if ($size) {
-    if ($size eq $LaTeXML::MathML::SIZE) {                  # If default size, no need to mention.
+    if ($size eq ($LaTeXML::MathML::SIZE || 'text')) {      # If default size, no need to mention.
       $size = undef; }
     # If requested relative size, and in script or scriptscript, we'll need to adjust the size
-    elsif (($size =~ /%$/) && ($LaTeXML::MathML::STYLE =~ /script/)) {
+    elsif (($size =~ /%$/) && ($LaTeXML::MathML::STYLE and $LaTeXML::MathML::STYLE =~ /script/)) {
       my $req = $size;                               $req =~ s/%$//;
       my $ex  = $stylesize{$LaTeXML::MathML::STYLE}; $ex  =~ s/%$//;
       $size = int(100 * $req / $ex) . '%'; }
