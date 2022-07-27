@@ -3862,6 +3862,17 @@ sub cleanup_Math {
             push(@texts, $child); } } } }
     # and replace the whole Math with the pieces
     $document->replaceTree([undef, undef, @texts], $mathnode); }
+  # Single token PUNCTs can be taken out of math.
+  elsif (my $xmtok = $document->findnode('ltx:XMath[count(./*) = 1]/ltx:XMTok[@role="PUNCT" or @role="PERIOD"]', $mathnode)) {
+    my @texts = ();
+    for my $child ($xmtok->childNodes) {
+      if ($child->nodeType != XML_ELEMENT_NODE) {    # Make sure we've got an element
+        push(@texts, ['ltx:text', { class => 'ltx_markedasmath' }, $child]); }
+      else {
+        $document->addClass($child, 'ltx_markedasmath');
+        push(@texts, $child); } }
+    # and replace the whole Math with the pieces
+    $document->replaceTree([undef, undef, @texts], $mathnode); }
   else {    # Cleanup any remaining XMTexts
     cleanup_XMText_outer($document, $mathnode); }
   return; }
