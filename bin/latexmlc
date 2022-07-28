@@ -87,7 +87,7 @@ my $deststat;
 $deststat = (stat($opts->get('destination')))[9] if $opts->get('destination');
 $deststat = 0 unless defined $deststat;
 
-push @$keyvals, ['path', $cdir];    #add current path, to ensure never empty
+push @$keyvals,                ['path', $cdir];    #add current path, to ensure never empty
 push @{ $opts->get('paths') }, $cdir;
 
 if (!$source) { die "Input was empty.\n"; }
@@ -192,8 +192,7 @@ if ($result) {
     print $output_handle $result;
     close $output_handle;
   } else {
-    binmode(STDOUT, ":encoding(UTF-8)");
-    print STDOUT "\n", $result, "\n"; } }
+    print "\n", $result, "\n"; } }
 
 # == End of Program ==
 # cleanup STDERR e.g. in case of fatals

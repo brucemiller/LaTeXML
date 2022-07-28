@@ -22,14 +22,14 @@ use Encode;
 sub new {
   my ($class, %options) = @_;
   my $self = $class->SUPER::new(%options);
-  $$self{format} = ($options{format} || 'xml');
+  $$self{format}       = ($options{format} || 'xml');
   $$self{omit_doctype} = 1 if $options{omit_doctype};
   $$self{is_html}      = 1 if $options{is_html};
   return $self; }
 
 sub toProcess {
   my ($self, $doc) = @_;
-  return $$doc{document}; }			# Presumably can print anything?
+  return $$doc{document}; }    # Presumably can print anything?
 
 sub process {
   my ($self, $doc, $root) = @_;
@@ -43,9 +43,9 @@ sub process {
   # Note that this will NOT RE-format a document read in from xml,
   # (providing no_blanks is false; which it should be, since it is dangerous.
   #  it can also remove significant spaces between elements!)
-  my $serialized = ($xmldoc->documentElement  # Is some sort of DOM?
-		    ? ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1))
-		    : $xmldoc->textContent);
+  my $serialized = ($xmldoc->documentElement    # Is some sort of DOM?
+    ? ($$self{is_html} ? $xmldoc->toStringHTML : $xmldoc->toString(1))
+    : $xmldoc->textContent);
   # NOTE that we are serializing the XML::LibXML::Document whose toString
   # has ALREADY encoded (in this case to utf8), so NO encode is needed!
   if (my $destination = $doc->getDestination) {
@@ -64,4 +64,3 @@ sub process {
 
 # ================================================================================
 1;
-
