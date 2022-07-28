@@ -3843,9 +3843,12 @@ Tag('ltx:Math', afterClose => \&cleanup_Math);
 sub cleanup_Math {
   my ($document, $mathnode) = @_;
   # If the Math ONLY contains XMath/XMText, it apparently isn't math at all!?!
+  # Single token PUNCTs can also be taken out of math.
   if (!$document->findnodes('ltx:XMath/ltx:*'
-        . '[local-name() != "XMText"'
-        . ' and local-name() != "XMHint"]', $mathnode)) {
+        . '[local-name() != "XMText" and local-name() != "XMHint" '
+        . 'and not('
+        . 'local-name() = "XMTok" and (@role="PUNCT" or @role="PERIOD") '
+        . 'and not(preceding-sibling::*) and not(following-sibling::*) )]', $mathnode)) {
     # So unwrap down to the contents of the XMText's.
     my @texts = ();
     foreach my $xmnode (map { $_->childNodes } $mathnode->childNodes) {
