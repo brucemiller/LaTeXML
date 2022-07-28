@@ -3843,9 +3843,12 @@ Tag('ltx:Math', afterClose => \&cleanup_Math);
 sub cleanup_Math {
   my ($document, $mathnode) = @_;
   # If the Math ONLY contains XMath/XMText, it apparently isn't math at all!?!
+  # Single token PUNCTs can also be taken out of math.
   if (!$document->findnodes('ltx:XMath/ltx:*'
-        . '[local-name() != "XMText"'
-        . ' and local-name() != "XMHint"]', $mathnode)) {
+        . '[local-name() != "XMText" and local-name() != "XMHint" '
+        . 'and not('
+        . 'local-name() = "XMTok" and (@role="PUNCT" or @role="PERIOD") '
+        . 'and not(preceding-sibling::*) and not(following-sibling::*) )]', $mathnode)) {
     # So unwrap down to the contents of the XMText's.
     my @texts = ();
     foreach my $xmnode (map { $_->childNodes } $mathnode->childNodes) {
@@ -3860,17 +3863,6 @@ sub cleanup_Math {
           else {
             $document->addClass($child, 'ltx_markedasmath');
             push(@texts, $child); } } } }
-    # and replace the whole Math with the pieces
-    $document->replaceTree([undef, undef, @texts], $mathnode); }
-  # Single token PUNCTs can be taken out of math.
-  elsif (my $xmtok = $document->findnode('ltx:XMath[count(./*) = 1]/ltx:XMTok[@role="PUNCT" or @role="PERIOD"]', $mathnode)) {
-    my @texts = ();
-    for my $child ($xmtok->childNodes) {
-      if ($child->nodeType != XML_ELEMENT_NODE) {    # Make sure we've got an element
-        push(@texts, ['ltx:text', { class => 'ltx_markedasmath' }, $child]); }
-      else {
-        $document->addClass($child, 'ltx_markedasmath');
-        push(@texts, $child); } }
     # and replace the whole Math with the pieces
     $document->replaceTree([undef, undef, @texts], $mathnode); }
   else {    # Cleanup any remaining XMTexts
