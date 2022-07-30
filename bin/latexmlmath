@@ -148,10 +148,10 @@ my $digested = $latexml->digestFile($texdoc);
 # that gets marked up within $..$ (a common TeX idiom).
 # However, that simplification isn't appropriate for isolated "math" expressions
 # especially within automation, where latexmlmath might be used.
-my $model = $$latexml{state}->getModel;
-$$model{tagprop}{'ltx:Math'}{afterClose}
+my $mathtagprops = $$latexml{state}->lookupMapping('TAG_PROPERTIES', 'ltx:Math');
+$$mathtagprops{afterClose}
   = [grep { $_ ne \&LaTeXML::Package::Pool::cleanup_Math }
-    @{ $$model{tagprop}{'ltx:Math'}{afterClose} }];
+    @{ $$mathtagprops{afterClose} }];
 
 my $converted = $digested && $latexml->convertDocument($digested);
 my $document  = $digested && LaTeXML::Post::Document->new($converted, nocache => 1);
