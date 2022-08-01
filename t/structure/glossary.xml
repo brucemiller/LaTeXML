@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <?latexml class="article"?>
-<?latexml package="glossaries"?>
+<?latexml package="glossaries" options="acronyms"?>
 <?latexml RelaxNGSchema="LaTeXML"?>
 <document xmlns="http://dlmf.nist.gov/LaTeXML">
   <resource src="LaTeXML.css" type="text/css"/>
@@ -9,17 +9,22 @@
     <glossaryphrase key="potato" role="description">starchy tuber</glossaryphrase>
     <glossaryphrase key="potato" role="name">potato</glossaryphrase>
     <glossaryphrase key="potato" role="plural">potatoes</glossaryphrase>
-    <glossaryphrase key="potato" role="soft">potato</glossaryphrase>
+    <glossaryphrase key="potato" role="sort">potato</glossaryphrase>
   </glossarydefinition>
   <glossarydefinition inlist="main" key="cabbage">
     <glossaryphrase key="cabbage" role="description">vegetable with thick green or purple leaves</glossaryphrase>
     <glossaryphrase key="cabbage" role="name">cabbage</glossaryphrase>
-    <glossaryphrase key="cabbage" role="soft">cabbage</glossaryphrase>
+    <glossaryphrase key="cabbage" role="sort">cabbage</glossaryphrase>
   </glossarydefinition>
   <glossarydefinition inlist="main" key="carrot">
     <glossaryphrase key="carrot" role="description">orange root</glossaryphrase>
     <glossaryphrase key="carrot" role="name">carrot</glossaryphrase>
-    <glossaryphrase key="carrot" role="soft">carrot</glossaryphrase>
+    <glossaryphrase key="carrot" role="sort">carrot</glossaryphrase>
+  </glossarydefinition>
+  <glossarydefinition inlist="main" key="nothing">
+    <glossaryphrase key="nothing" role="description">this entry is never used</glossaryphrase>
+    <glossaryphrase key="nothing" role="name">nothing</glossaryphrase>
+    <glossaryphrase key="nothing" role="sort">nothing</glossaryphrase>
   </glossarydefinition>
   <glossarydefinition inlist="main" key="fishage">
     <glossaryphrase key="fishage" role="description">A common name for the Devonian geologic period
@@ -28,36 +33,88 @@ the beginning of the Carboniferous Period.
 This age was known for its remarkable variety of
 fish species.</glossaryphrase>
     <glossaryphrase key="fishage" role="name">Fish Age</glossaryphrase>
-    <glossaryphrase key="fishage" role="soft">Fish Age</glossaryphrase>
+    <glossaryphrase key="fishage" role="sort">Fish Age</glossaryphrase>
   </glossarydefinition>
-  <glossarydefinition inlist="main" key="svm">
+  <glossarydefinition inlist="acronym" key="svm">
     <glossaryphrase key="svm" role="description">support vector machine</glossaryphrase>
     <glossaryphrase key="svm" role="long">support vector machine</glossaryphrase>
     <glossaryphrase key="svm" role="longplural">support vector machines</glossaryphrase>
     <glossaryphrase key="svm" role="name">SVM</glossaryphrase>
     <glossaryphrase key="svm" role="short">SVM</glossaryphrase>
     <glossaryphrase key="svm" role="shortplural">SVMs</glossaryphrase>
-    <glossaryphrase key="svm" role="soft">SVM</glossaryphrase>
+    <glossaryphrase key="svm" role="sort">SVM</glossaryphrase>
     <glossaryphrase key="svm" role="text">SVM</glossaryphrase>
   </glossarydefinition>
-  <para xml:id="p1">
-    <p>First use: <glossaryref key="svm">support vector machine (SVM)</glossaryref>. Second use: <glossaryref key="svm">SVM</glossaryref>. A use <glossaryref key="svm">SVM</glossaryref> within a sentence.</p>
-  </para>
-  <para xml:id="p2">
-    <p>Chop the <glossaryref key="cabbage">cabbage</glossaryref>, <glossaryref key="potato">potatoes</glossaryref> and <glossaryref key="carrot">carrots</glossaryref>.</p>
-  </para>
-  <para xml:id="p3">
-    <p>Or, more loudly: Chop the <glossaryref key="cabbage">Cabbage</glossaryref>, <glossaryref key="potato">Potatoes</glossaryref> and <glossaryref key="carrot">Carrots</glossaryref>.</p>
-  </para>
-  <para xml:id="p4">
-    <p>Or, more loudly: Chop the <glossaryref key="cabbage">CABBAGE</glossaryref>, <glossaryref key="potato">POTATOES</glossaryref> and <glossaryref key="carrot">CARROTS</glossaryref>.</p>
-  </para>
-  <para xml:id="p5">
-    <p>But do not use the <glossaryref key="fishage">Fish Age</glossaryref>; however, how about <glossaryref key="fishage"/>?</p>
-  </para>
-  <para xml:id="p6">
-    <p>Word: foo; Foo; FOO.
+  <section inlist="toc" xml:id="S1">
+    <tags>
+      <tag>1</tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">§1</tag>
+    </tags>
+    <title><tag close=" ">1</tag>Using Acronyms</title>
+    <para xml:id="S1.p1">
+      <p>Acronym first use: <glossaryref inlist="acronym" key="svm">support vector machine (SVM)</glossaryref>. Second use: <glossaryref inlist="acronym" key="svm">SVM</glossaryref>. A use <glossaryref inlist="acronym" key="svm">SVM</glossaryref> within a sentence.</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S2">
+    <tags>
+      <tag>2</tag>
+      <tag role="refnum">2</tag>
+      <tag role="typerefnum">§2</tag>
+    </tags>
+    <title><tag close=" ">2</tag>Using Glossaries</title>
+    <para xml:id="S2.p1">
+      <p>Glossary use, various cases:</p>
+      <itemize xml:id="S2.I1">
+        <item xml:id="S2.I1.i1">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">1st item</tag>
+          </tags>
+          <para xml:id="S2.I1.i1.p1">
+            <p>Chop the <glossaryref inlist="main" key="cabbage">cabbage</glossaryref>, <glossaryref inlist="main" key="potato">potatoes</glossaryref> and <glossaryref inlist="main" key="carrot">carrots</glossaryref>.</p>
+          </para>
+        </item>
+        <item xml:id="S2.I1.i2">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">2nd item</tag>
+          </tags>
+          <para xml:id="S2.I1.i2.p1">
+            <p>Or, more loudly: Chop the <glossaryref inlist="main" key="cabbage">Cabbage</glossaryref>, <glossaryref inlist="main" key="potato">Potatoes</glossaryref> and <glossaryref inlist="main" key="carrot">Carrots</glossaryref>.</p>
+          </para>
+        </item>
+        <item xml:id="S2.I1.i3">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">3rd item</tag>
+          </tags>
+          <para xml:id="S2.I1.i3.p1">
+            <p>Or, more loudly: Chop the <glossaryref inlist="main" key="cabbage">CABBAGE</glossaryref>, <glossaryref inlist="main" key="potato">POTATOES</glossaryref> and <glossaryref inlist="main" key="carrot">CARROTS</glossaryref>.</p>
+          </para>
+        </item>
+        <item xml:id="S2.I1.i4">
+          <tags>
+            <tag>•</tag>
+            <tag role="typerefnum">4th item</tag>
+          </tags>
+          <para xml:id="S2.I1.i4.p1">
+            <p>For a small appetite, use only one, <glossaryref inlist="main" key="potato">potato</glossaryref> and <glossaryref inlist="main" key="carrot">carrot</glossaryref>.</p>
+          </para>
+        </item>
+      </itemize>
+      <p>But do not use the <glossaryref inlist="main" key="fishage">Fish Age</glossaryref>; that’s someething entirely different.
+However, how about <glossaryref inlist="main" key="fishage"/>?</p>
+    </para>
+    <para xml:id="S2.p2">
+      <p>Word: foo; Foo; FOO.
 Word: albatross; Albatross; ALBATROSS.</p>
-  </para>
-  <glossary lists="main"/>
+    </para>
+    <glossary lists="main" xml:id="glo.main">
+      <title>Glossary</title>
+    </glossary>
+    <glossary lists="acronym" xml:id="glo.acronym">
+      <title>Acronyms</title>
+    </glossary>
+  </section>
 </document>

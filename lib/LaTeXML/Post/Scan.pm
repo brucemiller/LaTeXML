@@ -56,6 +56,7 @@ sub new {
   $self->registerHandler('ltx:glossarydefinition' => \&glossaryentry_handler);
   $self->registerHandler('ltx:ref'                => \&ref_handler);
   $self->registerHandler('ltx:bibref'             => \&bibref_handler);
+  $self->registerHandler('ltx:glossaryref'        => \&glossaryref_handler);
 
   $self->registerHandler('ltx:navigation' => \&navigation_handler);
   $self->registerHandler('ltx:rdf'        => \&rdf_handler);
@@ -387,6 +388,16 @@ sub bibref_handler {
   $self->default_handler($doc, $node, $tag, $parent_id);
   return; }
 
+sub glossaryref_handler {
+  my ($self, $doc, $node, $tag, $parent_id) = @_;
+  my $list = $node->getAttribute('inlist');
+  my $key  = $node->getAttribute('key');
+  if ($key && $list) {
+    my $entry = $$self{db}->register(join(':', 'GLOSSARY', $list, $key));
+    $entry->noteAssociation(referrers => $parent_id); }
+  $self->default_handler($doc, $node, $tag, $parent_id);
+  return; }
+
 # Note that index entries get stored in simple form; just the terms & location.
 # They will be turned into a tree, sorted, possibly permuted, whatever, by MakeIndex.
 # [the only content of indexmark should be un-marked up(?) don't recurse]
@@ -409,33 +420,32 @@ sub indexmark_handler {
   return; }
 
 # This handles glossaryentry or glossarydefinition
+#  * glossarydefinition is the original description of the item,
+#     randomly (perhaps) located in the document
+#  * glossaryentry is the duplicate(?) of the above
+#     located within a glossarylist.
+# Probably, the latter is what should be referenced
 sub glossaryentry_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
-  my $id = $node->getAttribute('xml:id');
+  # Only register the id for the glossaryentry (in the glossarylist) as desired target
+  my $id = ($tag eq 'ltx:glossaryentry' ? $node->getAttribute('xml:id') : undef);
   my $p;
   my $lists = $node->getAttribute('inlist') ||
     (($p = $doc->findnode('ancestor::ltx:glossarylist[@lists] | ancestor::ltx:glossary[@lists]', $node))
     && $p->getAttribute('lists'))
     || 'glossary';
-  my $key = $node->getAttribute('key');
-  # Get the actual phrases, and any see_also phrases (if any)
-  # Do these need ->cleanNode ???
+  my $key     = $node->getAttribute('key');
   my @phrases = $doc->findnodes('ltx:glossaryphrase', $node);
   # Create an entry for EACH list (they could be distinct definitions)
   foreach my $list (split(/\s+/, $lists)) {
     my $gkey  = join(':', 'GLOSSARY', $list, $key);
     my $entry = $$self{db}->lookup($gkey) || $$self{db}->register($gkey);
     $entry->setValues(map { ('phrase:' . ($_->getAttribute('role') || 'label') => $_) } @phrases);
-    $entry->noteAssociation(referrers => $parent_id => ($node->getAttribute('style') || 'normal'));
     $entry->setValues(id => $id) if $id; }
 
   if ($id) {
-    $$self{db}->register("ID:$id", id => orNull($id), type => orNull($tag), parent => orNull($parent_id),
-      labels   => orNull($self->noteLabels($node)),
-      location => orNull($doc->siteRelativeDestination),
-      pageid   => orNull($self->pageID($doc)),
-      fragid   => orNull($self->inPageID($doc, $node))); }
-  # Scan content, since could contain other interesting stuff...
+    $$self{db}->register("ID:$id",
+      $self->addCommon($doc, $node, $tag, $parent_id)); }
   $self->scanChildren($doc, $node, $id || $parent_id);
   return; }
 

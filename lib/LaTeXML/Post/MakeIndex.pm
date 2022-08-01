@@ -34,25 +34,39 @@ sub new {
 
 sub toProcess {
   my ($self, $doc) = @_;
-  return $doc->findnode('//ltx:index'); }
+  return $doc->findnodes('//ltx:index[not(ltx:indexlist)] | //ltx:glossary[not(ltx:glossarylist)]'); }
 
 sub process {
-  my ($self, $doc, $index) = @_;
-  my @indices = ($doc);
+  my ($self, $doc, @lists) = @_;
+  my @newdocs = ();
   $doc->addDate();
-  my ($tree, $allphrases) = $self->build_tree($doc, $index);
-  if ($tree) {
-    if ($$self{split}) {
-      @indices = map { $self->rescan($_) }
-        $self->makeSubCollectionDocuments($doc, $index,
-        map { ($_ => $self->makeIndexList($doc, $allphrases, $$tree{subtrees}{$_})) }
-          keys %{ $$tree{subtrees} }); }
-    else {
-      $doc->addNodes($index, $self->makeIndexList($doc, $allphrases, $tree));
-      @indices = ($self->rescan($doc)); } }
-  return @indices; }
+  foreach my $list (@lists) {
+    my $tag = $doc->getQName($list);
+    if ($tag eq 'ltx:index') {
+      my ($tree, $allphrases) = $self->build_tree($doc, $list);
+      if ($tree) {
+        if ($$self{split}) {
+          push(@newdocs, $self->makeSubCollectionDocuments($doc, $list,
+              map { ($_ => $self->makeIndexList($doc, $allphrases, $$tree{subtrees}{$_})) }
+                keys %{ $$tree{subtrees} })); }
+        else {
+          $doc->addNodes($list, $self->makeIndexList($doc, $allphrases, $tree)); } } }
+    elsif ($tag eq 'ltx:glossary') {
+      if (my @entries = $self->getGlossaryEntries($doc, $list)) {
+        if ($$self{split}) {    # Separate by initial.
+          my $split = {};
+          foreach my $entry (@entries) {
+            push(@{ $$split{ $$entry{initial} } }, $entry); }
+          push(@newdocs, $self->makeSubCollectionDocuments($doc, $list,
+              map { ($_ => $self->makeGlossaryList($doc, @{ $$split{$_} })) }
+                sort keys %$split)); }
+        else {
+          $doc->addNodes($list, $self->makeGlossaryList($doc, @entries)); } } } }
+  my @docs = map { $self->rescan($_); } (@newdocs ? @newdocs : ($doc));
+  return @docs; }
 
 # ================================================================================
+# Index
 # Data generated:
 #  $tree : tree representation of the index.
 #  $allphrases : used for inferring the connection from see-also phrases to normal index entries.
@@ -73,7 +87,7 @@ sub build_tree {
       my $phrases = $entry->getValue('phrases');
       my @phrases = @$phrases;
       if (($entry->getValue('inlist') || $defaultlistname) ne $listname) {
-        next; }                   # Skip any not in this list
+        next; }    # Skip any not in this list
       if (!scalar(@phrases)) {
         Warn('expected', $key, undef, "Missing phrases in indexmark: '$key'");
         next; }
@@ -434,6 +448,46 @@ sub seealsoPartition_aux {
         push(@result, [getIndexContentKey($ch), $ch]); }
   } }
   return @result; }
+
+# ================================================================================
+# Glosssary
+# ================================================================================
+
+sub getGlossaryEntries {
+  my ($self, $doc, $glossary) = @_;
+  my $lists = $glossary->getAttribute('lists') || '';
+  return () unless $lists;
+  my $glossary_id = $glossary->getAttribute('xml:id') || '';
+  my %lists       = map { $_ => 1; } split(',', $lists);
+  my @entries     = ();
+  foreach my $gkey (grep { /^GLOSSARY:/ } $$self{db}->getKeys) {
+    my ($ignore, $list, $key) = split(':', $gkey);
+    next unless $lists{$list};
+    my $gitem = $$self{db}->lookup($gkey);
+    my $refs  = $gitem->getValue('referrers');
+    next unless $refs && %{$refs};
+    my $term    = $gitem->getValue('phrase:name');
+    my $desc    = $gitem->getValue('phrase:description');
+    my $sortkey = $gitem->getValue('phrase:sort') || $key;
+    my $initial = ($sortkey =~ /^([a-zA-Z])/ ? uc($1) : '*');
+    my $id      = $glossary_id . '.' . $key;
+    push(@entries,
+      { initial => $initial, sortkey => $sortkey,
+        formatted => ['ltx:glossaryentry', { lists => $lists, 'xml:id' => $id, key => $key },
+          ['ltx:glossaryphrase', { role => 'label', key => $key },    # what key??
+            (map { $doc->cloneNode($_, 'glo') } $doc->trimChildNodes($term))],
+          ['ltx:glossaryphrase', { role => 'definition' },
+            (map { $doc->cloneNode($_, 'glo') } $doc->trimChildNodes($desc))
+          ]] });
+  }
+  return @entries; }
+
+sub makeGlossaryList {
+  my ($self, $doc, @entries) = @_;
+  my %hash = map { ($$_{sortkey} => $_) } @entries;
+  my @keys = $doc->unisort(keys %hash);
+  return ['ltx:glossarylist', {},
+    map { $hash{$_}{formatted} } @keys]; }
 
 # ================================================================================
 sub conjoin {
