@@ -923,7 +923,7 @@ sub tikzAlignmentBindings {
     openColumn     => sub { openTikzAlignmentCol($coltype, @_); },
     closeColumn    => sub { closeTikzAlignmentElement($container, @_); },
     isMath         => $ismath,
-    properties     => {%properties});
+    properties     => { preserve_structure => 1, %properties });
   AssignValue(Alignment => $alignment);
   Let(T_MATH, ($ismath ? '\@dollar@in@mathmode' : '\@dollar@in@textmode'));
   return; }
