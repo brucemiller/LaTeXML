@@ -52,10 +52,10 @@ sub process {
   $doc->addNodes($nav, ['ltx:TOC', { format => $navtoc }]) if $navtoc;
   $doc->addNodes($nav, ['ltx:title', {}, $doctitle]) if defined $doctitle;
 
-  $self->fillInGlossaryRef($doc);
   $self->fill_in_relations($doc);
   $self->fill_in_tocs($doc);
   $self->fill_in_frags($doc);
+  $self->fill_in_glossaryrefs($doc);
   $self->fill_in_refs($doc);
   $self->fill_in_RDFa_refs($doc);
   $self->fill_in_bibrefs($doc);
@@ -449,6 +449,36 @@ sub getIDForDeclaration {
               return $gpid; } } } }
     }
     return $pid; } }
+
+sub fill_in_glossaryrefs {
+  my ($self, $doc) = @_;
+  my $n = 0;
+  foreach my $ref ($doc->findnodes('descendant::ltx:glossaryref')) {
+    $n++;
+    my $key   = $ref->getAttribute('key');
+    my $list  = $ref->getAttribute('inlist');
+    my $show  = $ref->getAttribute('show') || 'name';
+    my $entry = $$self{db}->lookup(join(':', 'GLOSSARY', $list, $key));
+    if ($entry) {
+      my $title = $entry->getValue('phrase:definition');
+      if (!$ref->getAttribute('title') && $title) {
+        $ref->setAttribute(title => $title->textContent); }
+      if (my $id = $entry->getValue('id')) {
+        $ref->setAttribute(idref => $id); }
+      if (!$ref->textContent && !element_nodes($ref)) {
+        my @stuff = $self->generateGlossaryRefTitle($doc, $entry, $show);
+        if (@stuff) {
+          $doc->addNodes($ref, @stuff); }
+        else {
+          $self->note_missing('warn', "Glossary contents ($show) for key", $key);
+          $doc->addNodes($ref, $key);
+          $doc->addClass($ref, 'ltx_missing'); } } }
+    else {
+      $self->note_missing('warn', "Glossary Entry for key", $key); }
+    if (!$ref->textContent && !element_nodes($ref)) {
+      $doc->addNodes($ref, $key);
+      $doc->addClass($ref, 'ltx_missing'); } }
+  return; }
 
 # Needs to evolve into the combined stuff that we had in DLMF.
 # (eg. concise author/year combinations for multiple bibrefs)
@@ -855,40 +885,6 @@ sub fillInTitle {
   foreach my $break ($doc->findnodes('descendant::ltx:break', $title)) {
     $doc->replaceNode($break, ['ltx:text', {}, " "]); }
   return $title; }
-
-sub fillInGlossaryRef {
-  my ($self, $doc) = @_;
-  my $n = 0;
-  foreach my $ref ($doc->findnodes('descendant::ltx:glossaryref')) {
-    $n++;
-    my $key   = $ref->getAttribute('key');
-    my @lists = split(/\s+/, $ref->getAttribute('inlist') || 'glossary');
-    my $show  = $ref->getAttribute('show');
-    my ($list, $entry) = ('', undef);
-    foreach my $alist (@lists) {    # Find list with this key
-      if ($entry = $$self{db}->lookup(join(':', 'GLOSSARY', $alist, $key))) {
-        $list = $alist; last; } }
-    if ($entry) {
-      my $title = $entry->getValue('phrase:definition');
-      if (!$ref->getAttribute('title') && $title) {
-        $ref->setAttribute(title => $title->textContent); }
-      if (my $id = $entry->getValue('id')) {
-        $ref->setAttribute(idref => $id); }
-      if (!$ref->textContent && !element_nodes($ref)) {
-        my @stuff = $self->generateGlossaryRefTitle($doc, $entry, $show);
-        if (@stuff) {
-          $doc->addNodes($ref, @stuff); }
-        else {
-          $self->note_missing('warn', "Glossary ($list) contents ($show) for key", $key);
-          $doc->addNodes($ref, $key);
-          $doc->addClass($ref, 'ltx_missing'); } } }
-    else {
-      $self->note_missing('warn', "Glossary ($list) Entry for key", $key); }
-    if (!$ref->textContent && !element_nodes($ref)) {
-      $doc->addNodes($ref, $key);
-      $doc->addClass($ref, 'ltx_missing'); } }
-  Debug("Filled in $n glossaryrefs") if $LaTeXML::DEBUG{crossref};
-  return; }
 
 sub generateGlossaryRefTitle {
   my ($self, $doc, $entry, $show) = @_;
