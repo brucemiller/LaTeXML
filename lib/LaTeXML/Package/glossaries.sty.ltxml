@@ -28,7 +28,16 @@ DefMacro('\@gls@link[]{}{}',
   '\lx@glossaries@gls@link{\csname glo@#2@type\endcsname}{#2}{'
     . '\lx@orig@glossaries@gls@link[#1]{#2}{#3}}');
 DefConstructor('\lx@glossaries@gls@link{}{}{}',
-  "<ltx:glossaryref inlist='#1' key='#2'>#3</ltx:glossaryref>");
+  "<ltx:glossaryref inlist='#list' key='#2'>#3</ltx:glossaryref>",
+  properties => sub {
+    my $list = ToString($_[1]);
+    $list = 'main' unless $_[1];
+    (list => $list); });
+
+# Skip over hyperref links, since we'll be handling it.
+DefMacro('\glsdohyperlink{}{}',   '#2');
+DefMacro('\glsdonohyperlink{}{}', '#2');
+RawTeX('\glsdisablehyper');
 
 # This seems necessary, although it ought to be built in???
 DefMacro('\glspostlinkhook', '\xspace');
