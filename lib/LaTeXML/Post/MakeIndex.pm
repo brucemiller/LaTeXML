@@ -34,7 +34,7 @@ sub new {
 
 sub toProcess {
   my ($self, $doc) = @_;
-  return $doc->findnodes('//ltx:index[not(ltx:indexist)] | //ltx:glossary[not(ltx:glossarylist)]'); }
+  return $doc->findnodes('//ltx:index[not(ltx:indexlist)] | //ltx:glossary[not(ltx:glossarylist)]'); }
 
 sub process {
   my ($self, $doc, @lists) = @_;
