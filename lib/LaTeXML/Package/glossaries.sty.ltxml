@@ -25,9 +25,10 @@ DefMacro('\glsnoidxstripaccents', '');    # Silence pointless warnings
 # We'll override it to wrap the results in ltx:glossaryref
 Let('\lx@orig@glossaries@gls@link', '\@gls@link');
 DefMacro('\@gls@link[]{}{}',
-  '\lx@glossaries@gls@link{#2}{\lx@orig@glossaries@gls@link[#1]{#2}{#3}}');
-DefConstructor('\lx@glossaries@gls@link{}{}',
-  "<ltx:glossaryref key='#1'>#2</ltx:glossaryref>");
+  '\lx@glossaries@gls@link{\csname glo@#2@type\endcsname}{#2}{'
+    . '\lx@orig@glossaries@gls@link[#1]{#2}{#3}}');
+DefConstructor('\lx@glossaries@gls@link{}{}{}',
+  "<ltx:glossaryref inlist='#1' key='#2'>#3</ltx:glossaryref>");
 
 # This seems necessary, although it ought to be built in???
 DefMacro('\glspostlinkhook', '\xspace');
@@ -56,7 +57,7 @@ text=\@glo@text,
 plural=\@glo@plural,
 first=\@glo@first,
 firstplural=\@glo@firstplural,
-soft=\@glo@sort,
+sort=\@glo@sort,
 counter=\@glo@counter,
 see=\@glo@see,
 parent=\@glo@parent,
@@ -91,18 +92,25 @@ DefConstructor('\lx@glossaries@newentry{}{} RequiredKeyVals', sub {
 
 #======================================================================
 # Redefine \printglossary and friends to produce ltx:glossary
-DefMacro('\printglossary', '\global\let\warn@noprintglossary\relax\lx@printglossary{main}');
-DefMacro('\printglossaries', '\global\let\warn@noprintglossary\relax\lx@printglossary{\@glo@types}');
-DefMacro('\printnoidxglossary', '\global\let\warn@noprintglossary\relax\lx@printglossary{main}');
-DefMacro('\printnoidxglossaries', '\global\let\warn@noprintglossary\relax\lx@printglossary{\@glo@types}');
+# (\printglossaries creates one of each declared glossary)
+DefMacro('\printglossary',
+  '\global\let\warn@noprintglossary\relax'
+    . '\@ifnextchar[{\lx@printglossary}{\lx@printglossary[type=main]}');
+Let('\printnoidxglossary', '\printglossary');
 
-DefConstructor('\lx@printglossary{}',
-  "<ltx:glossary lists='#lists'/>",
-  properties => sub {
-    my $lists = ToString($_[1]);
-    $lists =~ s/^\s*,?//;
-    $lists =~ s/,?\s*$//;
-    (lists => $lists); });
+DefConstructor('\lx@printglossary OptionalKeyVals',
+  "<ltx:glossary xml:id='#id' lists='#list'>"
+    . "<ltx:title font='#titlefont' _force_font='true'>#title</ltx:title>"
+    . "</ltx:glossary>",
+  afterDigest => sub { noteBackmatterElement($_[1], 'ltx:glossary'); },
+  properties  => sub {
+    my ($stomach, $kv) = @_;
+    my $type  = ToString($kv && $kv->getValue('type')) || 'main';
+    my $title = Digest(T_CS('\@glotype@' . $type . '@title'));
+    my $docid = ToString(Expand(T_CS('\thedocument@ID')));
+    my $id    = ($docid ? "$docid.glo" : 'glo') . '.' . CleanID($type);
+    (list => $type, id => $id, title => $title); },
+  beforeConstruct => sub { adjustBackmatterElement($_[0], $_[1]); });
 
 #======================================================================
 1;
