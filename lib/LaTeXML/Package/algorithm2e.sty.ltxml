@@ -49,7 +49,12 @@ InputDefinitions('algorithm2e', type => 'sty', noltxml => 1);
 AssignValue(PERL_INPUT_ENCODING => $saved_encoding);
 
 Let('\@mathsemicolon', '\;');
-NewCounter('algorithm');
+#NewCounter('algorithm');
+NewCounter('algorithm', ToString(Digest(T_CS('\algocf@within'))));
+RawTeX(<<'EoTeX');
+\expandafter\ifx\csname algocf@within\endcsname\relax
+\else\def\thealgorithm{\csname the\algocf@within\endcsname.\@arabic\c@algorithm}\fi
+EoTeX
 DefMacro('\fnum@algorithm',      '\algorithmcfname\nobreakspace\thealgorithm');
 DefMacro('\fnum@font@algorithm', '\bf');
 DefMacro('\ext@algorithm',       'loa');
