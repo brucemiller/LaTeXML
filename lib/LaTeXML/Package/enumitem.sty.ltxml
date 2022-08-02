@@ -88,9 +88,9 @@ sub beginEnumItemize {
   # Deal with label formatting [Seems this could be cleaned up & standardized a bit more]
   my ($firstkey, $firstvalue) = $keys && $keys->getPairs;
   if ($firstkey && !$firstvalue    # 1st key has no value
-    && LookupValue('enumitem@shortlabels')                        # and shortlabels enabled
-    && !LookupDefinition(T_CS('\KV@enumitem@' . $firstkey))) {    # AND unknown!!!
-    setEnumerationStyle(TokenizeInternal($firstkey)); }           # alas already turned to string
+    && LookupValue('enumitem@shortlabels')                         # and shortlabels enabled
+    && !LookupDefinition(T_CS('\KV@enumitem@' . $firstkey))) {     # AND unknown!!!
+    setEnumerationStyle(TokenizeInternal($firstkey), $level); }    # alas already turned to string
   if (my $label = $$hash{label} || $$hash{'label*'}) {
     my $llabel = replace_star($label, T_OTHER($usecounter));
     if ($$hash{'label*'} && ($level > 1)) {
