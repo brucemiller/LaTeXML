@@ -106,6 +106,7 @@ sub unpack_source {
         if ($vetoed_file eq 'amstex') {    # TeX Priority
           $Main_TeX_likelihood{$tex_file} = 2; last TEX_FILE_TRAVERSAL; }
         if ($vetoed_file !~ /\./) {
+          $vetoed_file =~ s/\s+$//;        # drop trailing spaces if any;
           $vetoed_file .= '.tex';
         }
         my $base = $tex_file;
@@ -145,8 +146,7 @@ sub unpack_source {
   }
   # Veto files that were e.g. arguments of \input macros
   for my $filename (@vetoed) {
-    delete $Main_TeX_likelihood{$filename};
-  }
+    delete $Main_TeX_likelihood{$filename}; }
   # The highest likelihood (>0) file gets to be the main source.
   my @files_by_likelihood = sort { $Main_TeX_likelihood{$b} <=> $Main_TeX_likelihood{$a} } grep { $Main_TeX_likelihood{$_} > 0 } keys %Main_TeX_likelihood;
   if (@files_by_likelihood) {
