@@ -303,7 +303,9 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
     display:block;
     position:absolute;bottom:0pt;left:0pt; }
 .ltx_transformed_inner > .ltx_p {text-indent:0em; margin:0; padding:0; }
+
 /* If simulating a table (html5), try to get rowspan to work...sorta? */
+span.ltx_tabular { position:relative; }
 span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 
 /* by default, p doesn't indent */
