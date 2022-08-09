@@ -39,12 +39,12 @@ foreach my $option (qw(leqno fleqn
   amsmath amsthm hyperref)) {
   DeclareOption($option, undef); }
 
-DeclareOption('standard', sub { });    # ?
-DeclareOption('noconfig', sub { });    # ?
+DeclareOption('standard', sub { AssignValue('thm@usestd' => 1); });    # ?
+DeclareOption('noconfig', sub { });                                    # ?
 
-DeclareOption('framed', sub { });      # ?  [and needs framed.sty to be loaded]
+DeclareOption('framed', sub { });    # ?  [and needs framed.sty to be loaded]
 
-DeclareOption('thmmarks', sub { });    # ?
+DeclareOption('thmmarks', sub { });  # ?
 
 DeclareOption('thref', sub {
     # Redefine \label to take 2nd optional argument, being the type of thing.
@@ -171,7 +171,17 @@ Let('\renewtheorem', '\newtheorem');
 # This needs to tie into framed.sty!!!!
 # Really should execute \theoremframecommand in isolation,
 # then copy the relevant attributes (framing, spacing, color, ...) to the theorem!
-DefMacroI('\lx@addframing', undef, '\@ADDCLASS{ltx_framed}');
+### NEEDS TO integrate with framed.sty better
+### AND in the meantime, this needs a better API
+DefConstructorI('\lx@addframing', undef, sub {
+    my ($doc, %props) = @_;
+    my $node = $doc->getElement;
+    $doc->addClass($node, 'ltx_framed');
+    my $css = $node->getAttribute('cssstyle');
+    my $pad = 'padding:' . $props{margin} . 'pt;';
+    $doc->setAttribute($node, cssstyle => ($css ? $css . ';' . $pad : $pad)); },
+  properties => sub { (framecolor => Black,
+      margin => LookupValue('\FrameSep')->ptValue); });
 
 # Since \theoremframecommand can be defined to be pretty much anything,
 # we don't have a good handle on what colors, etc, it may use.
@@ -202,8 +212,6 @@ DefConstructor('\lx@@snapshot@framing{}', sub {
 
 DefMacro('\newframedtheorem{}[]{}[]',
   '\begingroup'
-    . '\ifx\theoremframecommand\relax'
-    . '\def\theoremframecommand{\fbox}\fi'
     . '\thm@styling{\lx@addframing}'
     . '\newtheorem{#1}[#2]{#3}[#4]'
     . '\endgroup');
@@ -226,6 +234,7 @@ DefPrimitive('\lx@ntheorem@newtheoremstyle{}{}{}{}{}{}', sub {
       '\thm@headstyling' => $headstyle,
       'thm@swap'         => ToString($swap) eq 'S',
       '\thm@numbering'   => $numbering,
+      '\thm@symbol'      => LookupValue('\thm@symbol'),
     );
     DefMacroI(T_CS('\th@' . $name), undef, sub { useTheoremStyle($name); });
     return; });
@@ -243,7 +252,11 @@ RawTeX(<<'EoTeX');
 \lx@ntheorem@newtheoremstyle{emptybreak}{}{}{}{N}{}
 EoTeX
 # Load the other styles from the ntheorem's standard defintions
-InputDefinitions('ntheorem.std');
+
+InputDefinitions('ntheorem.std') if LookupValue('thm@usestd');
+
+# Start off as plain style.
+useTheoremStyle('plain');
 #======================================================================
 # Lists of Theorems.
 
