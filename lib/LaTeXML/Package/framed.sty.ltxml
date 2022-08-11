@@ -24,7 +24,7 @@ DefEnvironment('{framed}', sub {
     insertBlock($document, $props{body},
       framed     => 'rectangle',
       framecolor => $props{framecolor},
-      cssstyle   => 'padding-top:' . $props{margin} . 'pt;padding-bottom:' . $props{margin} . 'pt'); },
+      cssstyle   => 'padding:' . $props{margin} . 'pt'); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); },
@@ -39,7 +39,7 @@ DefEnvironment('{oframed}', sub {
     insertBlock($document, $props{body},
       framed     => 'rectangle',
       framecolor => $props{framecolor},
-      cssstyle   => 'padding-top:' . $props{margin} . 'pt;padding-bottom:' . $props{margin} . 'pt'); },
+      cssstyle   => 'padding:' . $props{margin} . 'pt'); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); },
@@ -56,7 +56,7 @@ DefEnvironment('{shaded}', sub {
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
     insertBlock($document, $props{body},
       backgroundcolor => $props{backgroundcolor},
-      cssstyle => 'padding-top:' . $props{margin} . 'pt;padding-bottom:' . $props{margin} . 'pt'); },
+      cssstyle        => 'padding:' . $props{margin} . 'pt'); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par');
@@ -70,7 +70,8 @@ DefEnvironment('{shaded*}', sub {
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
     insertBlock($document, $props{body},
       backgroundcolor => $props{backgroundcolor},
-      cssstyle => 'padding-top:' . $props{margin} . 'pt;padding-bottom:' . $props{margin} . 'pt'); },
+      cssstyle        => 'padding:' . $props{margin} . 'pt'); },
+
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par');
@@ -84,7 +85,7 @@ DefEnvironment('{snugshade}', sub {
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
     insertBlock($document, $props{body},
       backgroundcolor => $props{backgroundcolor},
-      cssstyle => 'padding-top:' . $props{margin} . 'pt;padding-bottom:' . $props{margin} . 'pt'); },
+      cssstyle        => 'padding:' . $props{margin} . 'pt'); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par');
@@ -93,10 +94,10 @@ DefEnvironment('{snugshade}', sub {
       margin => LookupValue('\fboxsep')->ptValue); });    # Not \FrameSep
 DefEnvironment('{snugshade*}', sub {
     my ($document, %props) = @_;
-    $_[0]->maybeCloseElement('ltx:p');                    # this starts a new vertical block
+    $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
     insertBlock($document, $props{body},
       backgroundcolor => $props{backgroundcolor},
-      cssstyle => 'padding-top:' . $props{margin} . 'pt;padding-bottom:' . $props{margin} . 'pt'); },
+      cssstyle        => 'padding:' . $props{margin} . 'pt'); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par');
@@ -105,7 +106,7 @@ DefEnvironment('{snugshade*}', sub {
       margin => LookupValue('\fboxsep')->ptValue); });
 DefEnvironment('{leftbar}', sub {
     my ($document, %props) = @_;
-    $_[0]->maybeCloseElement('ltx:p');                    # this starts a new vertical block
+    $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
     insertBlock($document, $props{body}, framed => 'left', framecolor => $props{framecolor}); },
   beforeDigest => sub {
     Let('\par', '\inner@par');
@@ -119,7 +120,7 @@ DefEnvironment('{titled-frame} Undigested', sub {
     my ($document, $title, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
     insertBlock($document, $props{body},
-      framed => 'rectangle', framecolor => $props{framecolor},
+      framed          => 'rectangle', framecolor => $props{framecolor},
       backgroundcolor => $props{backgroundcolor}); },
   beforeDigest => sub {
     Let('\par', '\inner@par');

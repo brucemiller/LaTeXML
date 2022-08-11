@@ -2200,8 +2200,8 @@ sub insertBlock {
   my ($document, $contents, %blockattr) = @_;
   # Create something like:
   # "<ltx:inline-block vattach='$vattach' height='#height'>#2</ltx:inline-block>"
-  my $model   = $document->getModel;
-  my $context = $document->getElement;    # Where we originally start inserting.
+  my $model    = $document->getModel;
+  my $ocontext = $document->getElement;    # Where we originally start inserting.
 
   my $blocktag  = 'ltx:block';
   my $iblocktag = 'ltx:inline-block';
@@ -2215,14 +2215,15 @@ sub insertBlock {
   # If we're in an inline context, we'll need a ltx:inline-block,  otherwise ltx:block.
   # [Or maybe an ltx:para... when does that happen?]
   my $newblock = undef;
-  my $unwrap   = 0;
   map { ($blockattr{$_} || delete $blockattr{$_}) } keys %blockattr;
   my $hasattr = scalar(keys %blockattr);
-  if ($hasattr || !$document->canContainSomehow($context, 'ltx:p') || $document->canContain($context, '#PCDATA')) {
-    my $tag = ($document->canContain($context, $blocktag)
+  if ($hasattr || !$document->canContainSomehow($ocontext, 'ltx:p') || $document->canContain($ocontext, '#PCDATA')) {
+    my $tag = ($document->canContain($ocontext, $blocktag)
       ? $blocktag
       : $iblocktag);
     $newblock = $document->openElement($tag, '_autoclose' => 1, %blockattr); }
+  my $context = ($newblock ? $newblock->parentNode : $ocontext);
+
   ## I think this option isn't really needed.... try to simplify
   ## elsif ($document->canContainSomehow($context, 'ltx:para')) {
   ## $newblock = $document->openElement('ltx:para', '_autoclose' => 1, %blockattr); }
@@ -2246,32 +2247,32 @@ sub insertBlock {
       push(@newnodes, $document->wrapNodes('ltx:p', @n)); }
     else {
       push(@newnodes, shift(@nodes)); } }
-
   # If we've inserted a wrapper element, close all open elements up to it's parent
   # It may have auto-opened some element to contain it, but leave that open for following material
   # Otherwise, close everything back up to the originally open element (but only if still open!)
   if ($newblock) {
-    $document->closeToNode($newblock->parentNode, 1); }
-  else {
     $document->closeToNode($context, 1); }
-  # Check if the ltx:inline-block container is really needed.
+  else {
+    $document->closeToNode($ocontext, 1); }
+  # Check if the container is really needed.
   if ($newblock) {
-    my @rows  = $newblock->childNodes;
-    my @crows = $rows[0] && $rows[0]->childNodes;
+    my @rows  = element_nodes($newblock);
+    my @crows = $rows[0]  && $rows[0]->childNodes;
+    my $row0  = $rows[0]  && $model->getNodeQName($rows[0]);
+    my $crow0 = $crows[0] && $model->getNodeQName($crows[0]);
     if (scalar(@rows) < 1) {    # Insertion came up empty?
       $document->removeNode($newblock); }    # then remove the new block entirely
-    elsif ((scalar(@rows) == 1)              # Else only 1 item inside...
-      && ($model->getNodeQName($rows[0]) eq 'ltx:p')                # Which is an ltx:p with 1 item
-      && (scalar(@crows) == 1)
-      && $document->canContain($newblock->parentNode, $crows[0])    # if allowed.
+    elsif (scalar(@rows) > 1) {              # Multiple children, probably stock with container
+    }
+    elsif (($row0 =~ /^(?:ltx:p|ltx:para)/)    # Single child is ltx:p or ltx:para?
+      && (scalar(@crows) == 1)                         # with 1 child
+      && $document->canContain($context, $crows[0])    # if allowed.
       && (!$hasattr || !grep { !$document->canHaveAttribute($crows[0], $_) } keys %blockattr)) {
       map { $document->setAttribute($crows[0], $_ => $blockattr{$_}) } keys %blockattr;
       $document->unwrapNodes($rows[0]);
       $document->unwrapNodes($newblock); }
-    elsif ($unwrap ||
-      ((scalar(@rows) == 1)    # Else only 1 item inside, then flatten
-        && $document->canContain($newblock->parentNode, $rows[0])    # if allowed.
-        && (!$hasattr || !grep { !$document->canHaveAttribute($rows[0], $_) } keys %blockattr))) {
+    elsif ($document->canContain($context, $rows[0])    # row[0] allowed.
+      && (!$hasattr || !grep { !$document->canHaveAttribute($rows[0], $_) } keys %blockattr)) {
       map { $document->setAttribute($rows[0], $_ => $blockattr{$_}) } keys %blockattr;
       $document->unwrapNodes($newblock); } }
 

@@ -3054,8 +3054,7 @@ sub defineNewTheorem {
       my $name = $_[1]->getArg(1);
       Digest('\the\thm@bodyfont\the\thm@styling'
           . '\def\lx@thistheorem{' . ($name ? UnTeX($name) : '') . '}'); },
-    beforeDigestEnd => sub { Digest('\thm@doendmark'); },
-    afterDigest     => sub { Digest('\the\thm@postwork'); },
+    beforeDigestEnd => sub { Digest('\thm@doendmark\the\thm@postwork'); },
     properties      => sub {
       my %ctr = ();
       if ($counter) {
