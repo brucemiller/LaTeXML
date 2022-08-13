@@ -138,33 +138,12 @@ sub initialize {
   $identifier->appendText($$self{'unique-identifier'});
   # Manifest
   my $manifest = $package->addNewChild(undef, 'manifest');
-  my $nav_item = $manifest->addNewChild(undef, 'item');
-  $nav_item->setAttribute('id',         'nav');
-  $nav_item->setAttribute('href',       'nav.xhtml');
-  $nav_item->setAttribute('properties', 'nav');
-  $nav_item->setAttribute('media-type', 'application/xhtml+xml');
-  # Spine
-  my $spine = $package->addNewChild(undef, 'spine');
-  # 3.2 OPS/nav.xhtml
-  my $nav      = XML::LibXML::Document->new('1.0', 'UTF-8');
-  my $nav_html = $opf->createElementNS("http://www.w3.org/1999/xhtml", 'html');
-  $nav->setDocumentElement($nav_html);
-  $nav_html->setNamespace("http://www.idpf.org/2007/ops", "epub", 0);
-  my $nav_head  = $nav_html->addNewChild(undef, 'head');
-  my $nav_title = $nav_head->addNewChild(undef, 'title');
-  $nav_title->appendText($document_title);
-  my $nav_body = $nav_html->addNewChild(undef, 'body');
-  my $nav_nav  = $nav_body->addNewChild(undef, 'nav');
-  $nav_nav->setAttribute('epub:type', 'toc');
-  $nav_nav->setAttribute('id',        'toc');
-  my $nav_map = $nav_nav->addNewChild(undef, 'ol');
+  my $spine    = $package->addNewChild(undef, 'spine');
 
   $$self{OPS_directory} = $OPS_directory;
   $$self{opf}           = $opf;
   $$self{opf_spine}     = $spine;
   $$self{opf_manifest}  = $manifest;
-  $$self{nav}           = $nav;
-  $$self{nav_map}       = $nav_map;
   return; }
 
 sub url_id {
@@ -200,6 +179,7 @@ sub process {
       my @properties;
       push @properties, 'mathml' if $doc->findnode('//*[local-name() = "math"]');
       push @properties, 'svg'    if $doc->findnode('//*[local-name() = "svg"]');
+      push(@properties, 'nav') if $doc->findnode('//*[@class="ltx_toclist"]');    # Should be only 1
       my $properties = join(" ", @properties);
       $item->setAttribute('properties', $properties) if $properties;
 
@@ -207,13 +187,7 @@ sub process {
       my $spine   = $$self{opf_spine};
       my $itemref = $spine->addNewChild(undef, 'itemref');
       $itemref->setAttribute('idref', $item_id);
-
-      # Add to navigation
-      my $nav_map = $$self{nav_map};
-      my $nav_li  = $nav_map->addNewChild(undef, 'li');
-      my $nav_a   = $nav_li->addNewChild(undef, 'a');
-      $nav_a->setAttribute('href', URI::file->new($relative_destination));
-      $nav_a->appendText($file); } }
+  } }
   $self->finalize;
   return; }
 
@@ -257,17 +231,6 @@ sub finalize {
       or Fatal('I/O', 'content.opf', undef, "Couldn't open '$content_path' for writing: $_");
     print $OPF_FH $$self{opf}->toString(1);
     close $OPF_FH; }
-
-  # Write toc.ncx file to disk
-  my $nav_path = pathname_concat($OPS_directory, 'nav.xhtml');
-  if (-f $nav_path) {
-    Info('note', 'nav.xhtml', undef, 'using the navigation document supplied by the user'); }
-  else {
-    my $NAV_FH;
-    open($NAV_FH, ">", $nav_path)
-      or Fatal('I/O', 'nav.xhtml', undef, "Couldn't open '$nav_path' for writing: $!");
-    print $NAV_FH $$self{nav}->toString(1);
-    close $NAV_FH; }
 
   return (); }
 
