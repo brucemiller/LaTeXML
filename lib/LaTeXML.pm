@@ -448,7 +448,7 @@ sub convert_post {
         db => $DB, %PostOPS)); }
   my $scanner = ($$opts{scan} || $DB) && (LaTeXML::Post::Scan->new(
       db       => $DB,
-      labelids => $$opts{splitnaming} && ($$opts{splitnaming} =~ /^label/),
+      labelids => ($$opts{splitnaming} && ($$opts{splitnaming} =~ /^label/) ? 1 : 0),
       %PostOPS));
   push(@procs, $scanner) if $$opts{scan};
   if (!($$opts{prescan})) {
