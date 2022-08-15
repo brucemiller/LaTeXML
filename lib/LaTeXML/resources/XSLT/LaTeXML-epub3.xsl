@@ -78,4 +78,8 @@
     </xsl:if>
   </xsl:template>
 
+  <!-- And, probably ePub pages do not need headers or footers -->
+  <xsl:template match="/" mode="header"/>
+  <xsl:template match="/" mode="footer"/>
+
 </xsl:stylesheet>
