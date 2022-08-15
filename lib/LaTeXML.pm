@@ -441,6 +441,8 @@ sub convert_post {
     if (my $dbdir = pathname_directory($dbfile)) {
       pathname_mkdir($dbdir); } }
   my $DB = LaTeXML::Util::ObjectDB->new(dbfile => $dbfile, %PostOPS);
+  if ($format eq 'epub') {    # epub requires a TOC
+    $self->check_TOC($DOCUMENT); }
   ### Advanced Processors:
   if ($$opts{split}) {
     require LaTeXML::Post::Split;
@@ -448,7 +450,7 @@ sub convert_post {
         db => $DB, %PostOPS)); }
   my $scanner = ($$opts{scan} || $DB) && (LaTeXML::Post::Scan->new(
       db       => $DB,
-      labelids => $$opts{splitnaming} && ($$opts{splitnaming} =~ /^label/),
+      labelids => ($$opts{splitnaming} && ($$opts{splitnaming} =~ /^label/) ? 1 : 0),
       %PostOPS));
   push(@procs, $scanner) if $$opts{scan};
   if (!($$opts{prescan})) {
@@ -646,6 +648,19 @@ sub convert_post {
   if ($$opts{destination} && $$opts{local} && ($$opts{whatsout} eq 'document')) {
     undef $postdoc; }
   return $postdoc; }
+
+# This is *very* unmodular, but introducing a pre-Epub postprocessor
+# seems rather heavy at this stage?
+# Add a full TOC, to be used for navigation, but *not* displayed.
+sub check_TOC {
+  my ($self, $document) = @_;
+  if (!$document->findnode('//ltx:TOC[@lists="toc"]')) {
+    my @s = (qw(ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
+        ltx:paragraph ltx:subparagraph ltx:appendix ltx:index ltx:bibliography));
+    $document->prependNodes($document->getDocumentElement,
+      ['ltx:TOC', { lists => 'toc', select => join(' | ', @s),
+          class => 'ltx_nodisplay' }]); }
+  return; }
 
 sub new_latexml {
   my ($opts) = @_;

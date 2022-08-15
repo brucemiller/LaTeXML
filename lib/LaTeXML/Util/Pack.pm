@@ -242,8 +242,9 @@ sub get_archive {
       or (print STDERR "Fatal:I/O:$pathname File $pathname is not readable.");
     my $file_contents = <$FH>;
     close($FH);
-    # Compress all files
-    $archive->addString($file_contents, $file,)->desiredCompressionMethod(COMPRESSION_DEFLATED); }
+    # Compress all files except mimetype
+    my $compression = ($file eq 'mimetype' ? COMPRESSION_STORED : COMPRESSION_DEFLATED);
+    $archive->addString($file_contents, $file,)->desiredCompressionMethod($compression); }
 
   foreach my $subdir (sort @subdirs) {
     my $current_dir = File::Spec->catdir($directory, $subdir);
