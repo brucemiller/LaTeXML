@@ -574,7 +574,7 @@
   <!-- explicitly requested TOC -->
   <xsl:template match="ltx:TOC[@format='short']">
     <xsl:param name="context"/>
-    <xsl:element name="nav" namespace="{$html_ns}">
+    <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
       <xsl:call-template name='add_attributes'>
         <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
       </xsl:call-template>
@@ -586,7 +586,7 @@
 
   <xsl:template match="ltx:TOC[@format='veryshort']">
     <xsl:param name="context"/>
-    <xsl:element name="nav" namespace="{$html_ns}">
+    <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
       <xsl:call-template name='add_attributes'>
         <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
       </xsl:call-template>
@@ -598,7 +598,7 @@
 
   <xsl:template match="ltx:TOC[@format='normal2']">
     <xsl:param name="context"/>
-    <xsl:element name="nav" namespace="{$html_ns}">
+    <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
       <xsl:call-template name='add_attributes'>
         <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
       </xsl:call-template>
@@ -612,7 +612,7 @@
     <xsl:param name="context"/>
     <xsl:if test="ltx:toclist/descendant::ltx:tocentry">
       <xsl:text>&#x0A;</xsl:text>
-      <xsl:element name="nav" namespace="{$html_ns}">
+      <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
         <xsl:call-template name='add_attributes'>
           <xsl:with-param name="extra_classes" select="f:class-pref('ltx_toc_',@lists)"/>
         </xsl:call-template>
