@@ -658,8 +658,8 @@ sub check_TOC {
     my @s = (qw(ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
         ltx:paragraph ltx:subparagraph ltx:appendix ltx:index ltx:bibliography));
     $document->prependNodes($document->getDocumentElement,
-      ['ltx:TOC', { lists => 'toc', select => join(' | ', @s),
-          class => 'ltx_nodisplay' }]); }
+      ['ltx:TOC', { lists => 'toc', scope => 'global',
+          select => join(' | ', @s), class => 'ltx_nodisplay' }]); }
   return; }
 
 sub new_latexml {

@@ -765,7 +765,7 @@ DefMacroI('\\@@appendix', undef, '\@startsection{appendix}{0}{}{}{}{}');
 # Insert stubs that will be filled in during post processing.
 DefMacroI('\contentsname', undef, 'Contents');
 DefConstructorI('\tableofcontents', undef,
-  "<ltx:TOC lists='toc' select='#select'><ltx:title>#name</ltx:title></ltx:TOC>",
+  "<ltx:TOC lists='toc' scope='global' select='#select'><ltx:title>#name</ltx:title></ltx:TOC>",
   properties => sub {
     my $td = CounterValue('tocdepth')->valueOf + 1;
     my @s  = (qw(ltx:part ltx:chapter ltx:section ltx:subsection ltx:subsubsection
