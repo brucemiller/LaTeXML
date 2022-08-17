@@ -745,7 +745,6 @@ sub text_content_aux {
 
 my %ref_fallbacks = (    # Alternative fields, when not found
   typerefnum  => [qw(refnum)],
-  rrefnum     => [qw(typerefnum frefnum refnum)],    # obsolete?
   toctitle    => [qw(title toccaption)],
   title       => [qw(toccaption)],
   rawtoctitle => [qw(toctitle title toccaption)],
@@ -822,10 +821,7 @@ sub generateTitle {
   my $altstring = "";
   while (my $entry = $id && $$self{db}->lookup("ID:$id")) {
     my $title = $self->fillInTitle($doc,
-###      $entry->getValue('title') || $entry->getValue('rrefnum')
-      $entry->getValue('title') || $entry->getValue('typerefnum')
-        || $entry->getValue('frefnum') || $entry->getValue('refnum'));
-    #    $title = $title->textContent if $title && ref $title;
+      $entry->getValue('title') || $entry->getValue('typerefnum') || $entry->getValue('refnum'));
     $title = getTextContent($doc, $title) if $title && ref $title;
     if ($title) {
       $string .= $$self{ref_join} if $string;
