@@ -37,6 +37,7 @@ DefMacro('\missingfigure[]{}', '[Missing Figure: #2]');
 DefMacro('\todototoc',         '');
 DefMacro('\listoftodos',       '');
 DefMacro('\@todo[]{}',         '');
+DefMacro('\setuptodonotes{}',  '');
 
 DeclareOption('disable', sub {
     DefMacro('\todo{}', '', locked => 1);
