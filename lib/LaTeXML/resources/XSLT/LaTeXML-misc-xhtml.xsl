@@ -171,12 +171,11 @@
           </xsl:attribute>
         </xsl:when>
         <xsl:when test="ancestor::ltx:figure/ltx:caption">
-          <xsl:attribute name='alt'>
-            <xsl:value-of select="ancestor::ltx:figure/ltx:caption/text()"/>
-          </xsl:attribute>
+          <xsl:attribute name='alt'><xsl:text>Refer to caption</xsl:text></xsl:attribute>
+          <!-- Possibly aria-describedby, providing the caption has an id ??? -->
         </xsl:when>
         <xsl:otherwise>
-          <xsl:attribute name='alt'></xsl:attribute> <!--required; what else? -->
+          <xsl:attribute name='alt'><xsl:text>[Uncaptioned image]</xsl:text></xsl:attribute>
         </xsl:otherwise>
       </xsl:choose>
       <xsl:apply-templates select="." mode="begin">
@@ -198,7 +197,7 @@
           <xsl:value-of select="@description"/>
         </xsl:when>
         <xsl:when test="ancestor::ltx:figure/ltx:caption">
-            <xsl:value-of select="ancestor::ltx:figure/ltx:caption/text()"/>
+          <xsl:attribute name='alt'><xsl:text>Refer to caption</xsl:text></xsl:attribute>
         </xsl:when>
         <xsl:otherwise/>
       </xsl:choose>
