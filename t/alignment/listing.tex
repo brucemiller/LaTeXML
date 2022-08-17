@@ -18,11 +18,6 @@ Various delimiters: \lstinline{a_word},
 Indirectly: \justcopy{\lstinline|a_word|};
 and with messed up braces \lstinline{foo { bar }.% }
 
-And also as an environment:
-\begin{lstinline}
-a_word
-\end{lstinline}; done.
-
 {
 \lstset{
   mathescape=true,
@@ -214,6 +209,11 @@ foo="a $x^2$ math";
 \section{A Recursive \TeX\ listing}
 \lstinputlisting[language={[LaTeX]TeX}]{listing.tex}
 
+A shorter listing, with colored cs that include the slash
+\begin{lstlisting}[language={[LaTeX]TeX},texcsstyle=*{\color{blue}\bfseries}]
+  \iftrue something \fi
+\end{lstlisting}
+
 \section{Testing Tag}
 % AHA, tagstyle only is in effect with XML (?)
 \begin{lstlisting}[language=XML,tagstyle=\bf]
@@ -225,6 +225,16 @@ foo="a $x^2$ math";
 \begin{lstlisting}[language=XML,tagstyle=\bf,markfirstintag]
 <element attr='value'>content</element>
 \end{lstlisting}
+
+\section{Literate Programming}
+\begin{lstlisting}[language=C,escapechar=@,literate=*{:=}{{$\gets$}}1 {<=}{{$\leq$}}1 {>=}{{$\geq$}}1 {<>}{{$\neq$}}1]
+  var i:integer;
+  if (i<=0) i := 1;@\label{lit:a}@
+  if (i>=0) i := 0;
+  if (i<>0) i := 0;@\label{lit:b}@
+ /* However not := here */
+\end{lstlisting}
+where we draw your attention to lines \ref{lit:a} and \ref{lit:b}.
 
 \section{Screwiness}
 \lstdefinelanguage{bingo}{morekeywords={foo,bar},morekeywords=[2]{bing,bar}}

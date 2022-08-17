@@ -356,9 +356,10 @@ sub lstRescan {
 #    and some extra: index=>indexclassname, escape=>0|1, eval=>0|1, ...
 # LST_WORDS hash word => hash : class=>classname, index=>indexclassname
 # LST_DELIMTERS hash open => hash: regexp=>re, close => re, classname?
-
+# LST_LITERAL list of [star, matchstring, replacement, length]
 foreach my $table (qw(LST_CHARACTERS LST_CLASSES LST_WORDS LST_DELIMITERS)) {
   AssignValue($table => {}); }
+AssignValue(LST_LITERAL => []);
 
 sub lstActivate {
   my ($kv) = @_;
@@ -372,6 +373,8 @@ sub lstActivate {
       if (my $prev = LookupValue($table)) {
         map { $data{$_} = { %{ $$prev{$_} } } } keys %$prev; }
       AssignValue($table => {%data}); }
+    AssignValue(LST_LITERAL => [@{ LookupValue('LST_LITERAL') }]);
+
     # Now start scanning the keywords, in order, and activate their effects.
     my @pairs = $kv->getPairs();
     while (@pairs) {
@@ -515,8 +518,8 @@ sub lstDeleteClass {
   my ($class) = @_;
   my $wordslist = LookupValue('LST_WORDS');
   foreach my $word (keys %$wordslist) {
-    delete $$wordslist{$word}{class}
-      if $$wordslist{$word}{class} && ($$wordslist{$word}{class} eq $class); }
+    delete $$wordslist{$word}{class}    # Delete from class & class\digit
+      if $$wordslist{$word}{class} && ($$wordslist{$word}{class} =~ /^\Q$class\E\d?$/); }
   return; }
 
 # This probably needs a different way of decoding $type.
@@ -779,7 +782,7 @@ DefKeyVal('LST', 'classoffset', 'Number');
 
 DefKeyVal('LST', 'texcsstyle', '');
 DefMacro('\lst@@texcsstyle  OptionalMatch:* [Number] Until:\end', sub {
-    lstSetClassStyle(lstClassName('texcss', $_[2]), $_[3], slash => $_[1]); });
+    lstSetClassStyle(lstClassName('texcss', $_[2]), $_[3], excludeslash => !$_[1]); });
 DefKeyVal('LST', 'directivestyle', '');
 DefMacro('\lst@@directivestyle Until:\end', sub {
     lstSetClassStyle('directives', $_[1]); });
@@ -1082,6 +1085,19 @@ DefKeyVal('LST', 'fancyvrb',        '', 'true');
 DefKeyVal('LST', 'fvcmdparams',     '');
 DefKeyVal('LST', 'morefvcmdparams', '');
 
+DefMacro('\lst@@literate OptionalMatch:* Until:\end', sub {
+    my ($gullet, $star, $patterns) = @_;
+    # * means do not replace within strings, comments,...
+    $gullet->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
+        my ($igullet) = @_;
+        $igullet->unread($patterns);
+        while (1) {    # $patterns is repeated triples:
+          my ($pattern, $replacement, $length)
+            = ($igullet->readArg, $igullet->readArg, $igullet->readArg);
+          last unless defined $pattern;
+          UnshiftValue(LST_LITERATE
+              => [ToString($pattern), $replacement, ($star ? 1 : 0), $length]); } });
+    return; });
 #======================================================================
 # 4.17 Language definitions
 #======================================================================
@@ -1248,6 +1264,7 @@ sub lstProcess {
   my $delimiters = LookupValue('LST_DELIMITERS');
   my $classes    = LookupValue('LST_CLASSES');
   my $characters = LookupValue('LST_CHARACTERS');
+  my $literate   = LookupValue('LST_LITERATE');
   # === Extract some regexps to match various important things
   my $letter_re = join('', sort keys %{ $$characters{letter} });
   my $digit_re  = join('', sort keys %{ $$characters{digit} });
@@ -1258,8 +1275,12 @@ sub lstProcess {
   local $LaTeXML::QUOTED_RE = "\\\\\\\\";    # start w/ backslashed backslash?
   local $LaTeXML::SPACE     = (lstGetBoolean('showspaces') ? T_CS('\@lst@visible@space') : T_CS("~"));
   local $LaTeXML::CASE_SENSITIVE = lstGetBoolean('sensitive');
-  if (!$LaTeXML::CASE_SENSITIVE) {           # Clunky, but until know, we don't know
-    foreach my $word (keys %$words) {
+  # Don't these need \Q,\E?
+  #  local $LaTeXML::LITERATE_RE    = join('|', map { "\\Q" . $$_[0] . "\\E"; } @$literate);
+  local $LaTeXML::LITERATE_RE       = join('|', map { $$_[0]; } @$literate);
+  local $LaTeXML::LITERATE_INNER_RE = join('|', map { $$_[0]; } grep { !$$_[2]; } @$literate);
+  if (!$LaTeXML::CASE_SENSITIVE) {    # Clunky, inefficient, but until we know, we don't know
+    foreach my $word (keys %$words) {    # Modify in place (they'll get rebuilt if/when needed)
       $$words{ uc($word) } = $$words{$word}; } }
 
 # === Start processing
@@ -1322,11 +1343,18 @@ sub lstProcess_internal {
   my $words      = LookupValue('LST_WORDS');
   my $delimiters = LookupValue('LST_DELIMITERS');
   my $classes    = LookupValue('LST_CLASSES');
+  my $literate   = LookupValue('LST_LITERATE');
+  my $lit_re     = ($end_re ? $LaTeXML::LITERATE_INNER_RE : $LaTeXML::LITERATE_RE);
   while ($LaTeXML::listing ne '') {
     # Matched the ending regular expression? (typically a close delimiter)
     if ($end_re && $LaTeXML::listing =~ s/^($end_re)//s) {
       $LaTeXML::colnum += length($1);
       last; }
+    # Literate expressions
+    elsif ($lit_re && $LaTeXML::listing =~ s/^($lit_re)//s) {
+      my $match = $1;
+      my ($replacement) = map { ($$_[0] eq $match ? ($$_[1]) : ()); } @$literate;
+      lstProcessPush(T_CS('\@listingLiterate'), T_BEGIN, $replacement, T_END); }
     # Various kinds of delimited expressions: escapes, strings, comments, general delimiters.
     elsif ($LaTeXML::DELIM_RE && $LaTeXML::listing =~ s/^($LaTeXML::DELIM_RE)//s) {
       my $open = $1;
@@ -1367,7 +1395,12 @@ sub lstProcess_internal {
       if (my $indexname = $$words{$lookup}{index} || lstClassProperty($classname, 'index')) { # Should be indexed?
         if (my $index = $indexname && $$classes{$indexname}) {
           lstProcessPush(lstRescan($$index{begin})->unlist, T_BEGIN, @tokens, T_END); } }
-      lstProcessPush(($classname ? (lstClassBegin($classname), @tokens, lstClassEnd($classname))
+      my @pre = ();
+      # Special hackery for tex cs to take the "\" outside of the styling
+      if ($classname && $$classes{$classname} && $$classes{$classname}{excludeslash}) {
+        push(@pre, shift(@tokens)); }    # Move the "\" outside the styling (so silly)
+      lstProcessPush(@pre,
+        ($classname ? (lstClassBegin($classname), @tokens, lstClassEnd($classname))
           : @tokens)); }
 
     # NOTE: keywordprefix & otherkeywords probably need a specific regexp
@@ -1430,6 +1463,9 @@ sub TokenizeBalanced {
     while ($level < 0) { unshift(@toks, T_BEGIN); $level--; }
     $tokens = Tokens(@toks); }
   return $tokens; }
+
+DefConstructor('\@listingLiterate {}',
+  "<ltx:text class='ltx_lst_literate' _noautoclose='1'>#1</ltx:text>");
 
 DefConstructor('\@listingKeyword Semiverbatim {}',
   "?#class(<ltx:text class='ltx_lst_#class' _noautoclose='1'>#2</ltx:text>)(#2)",
