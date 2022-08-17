@@ -337,6 +337,7 @@ sub pmml {
   # Wrap in an enclose, if there's an enclose attribute (Ugh!)
   $result = ['m:menclose', { notation => $e }, $result] if $e;
   # Add spacing last; outside parens & enclosing (?)
+  my $spacer;    # explicit m:space spacer may be implied.
   if (!(((ref $result) eq 'ARRAY') && ($$result[0] eq 'm:mo'))  # mo will already have gotten spacing!
     && ($r || $l)) {
     # If only lpadding given, we'll try to find an inner m:mo to accept it (so it will take effect)
@@ -346,17 +347,16 @@ sub pmml {
     if (!$r && $inner && ($$inner[0] eq 'm:mo')) {
       my $ls = $l && max(0, 1.6 + $l);      # must be \ge 0
       $$inner[1]{lspace} = $ls . 'pt'; }    # Found inner op: use simple lspace
-    else {                                  # Else fall back to wrap with m:mpadded
-      my $w = ($l && $r ? $l + $r : ($l ? $l : $r));
-      $result = ['m:mpadded', { ($l ? (lspace => $l . "pt") : ()),
-          ($w ? (width => ($w =~ /^-/ ? $w : '+' . $w) . "pt") : ()) }, $result]; } }
+                                            # otherwise fall back to an explicit m:space
+    elsif (my $w = ($l && $r ? $l + $r : ($l ? $l : $r))) {
+      $spacer = ['m:mspace', { width => $w . "pt" }]; } }
 
   if ($cl && ((ref $result) eq 'ARRAY')) {    # Add classs, if any and different
     my $ocl = $$result[1]{class};
     $$result[1]{class} = (!$ocl || ($ocl eq $cl) ? $cl : "$ocl $cl"); }
   # Associate the generated node with the source XMath node.
   $LaTeXML::Post::MATHPROCESSOR->associateNode($result, $node);
-  return $result; }
+  return $spacer ? ($result, $spacer) : $result; }
 
 sub first_element {
   my ($node) = @_;
