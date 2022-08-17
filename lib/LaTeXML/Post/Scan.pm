@@ -46,6 +46,7 @@ sub new {
   $self->registerHandler('ltx:equation'      => \&labelled_handler);
   $self->registerHandler('ltx:equationgroup' => \&labelled_handler);
   $self->registerHandler('ltx:item'          => \&labelled_handler);
+  $self->registerHandler('ltx:listingline'   => \&labelled_handler);
   $self->registerHandler('ltx:anchor'        => \&anchor_handler);
   $self->registerHandler('ltx:note'          => \&note_handler);
 
@@ -264,8 +265,7 @@ sub addCommon {
       else {
         $key = 'tag:' . $role; } }
     else {
-      $key = 'frefnum'; }
-    ###      $key = 'refnum'; }        # ???
+      $key = 'refnum'; }
     $props{$key} = $self->cleanNode($doc, $tagnode); }
   return %props; }
 
