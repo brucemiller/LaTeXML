@@ -32,6 +32,7 @@ DefKeyVal('Gin', 'keepaspectratio', '', 'true');
 DefKeyVal('Gin', 'clip',            '', 'true');
 DefKeyVal('Gin', 'scale',           '');
 DefKeyVal('Gin', 'angle',           '');
+DefKeyVal('Gin', 'alt',             '');
 # NOTE: graphicx defines @angle to actually carry out the rotation (on \box\z@) w/\Gin@erotate
 # rather than to simply record the angle for later use. (also origin redefines)
 # This is used by adjustbox.
@@ -47,16 +48,24 @@ DefMacro('\includegraphics OptionalMatch:* []',
 
 DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbatim',
   "<ltx:graphics graphic='#path' candidates='#candidates' options='#options'/>",
-  alias      => '\includegraphics',
-  sizer      => \&image_graphicx_sizer,
-  scope      => 'global',
+  alias          => '\includegraphics',
+  sizer          => \&image_graphicx_sizer,
+  scope          => 'global',
+  afterConstruct => sub {
+    my ($document, $whatsit) = @_;
+    my $alt = $whatsit->getProperty('alt');
+    # Trickery to set @description EVEN IF empty string (constructor shorthand omits it)
+    if (defined $alt) {
+      $document->getNode->lastChild->setAttribute(description => ToString($alt)); } },
   properties => sub {
     my ($stomach, $starred, $kv, $graphic) = @_;
     my $options = graphicX_options($starred, $kv);
     my ($path, @candidates) = image_candidates(ToString($graphic));
+    my $alt = $kv && $kv->getValue('alt');
     (path => $path,
       candidates => join(',', @candidates),
-      options    => $options); },
+      (defined $alt ? (alt => $alt) : ()),
+      options => $options); },
   mode => 'text');    # Hopefully only to affect reading of arguments
 
 #**********************************************************************
