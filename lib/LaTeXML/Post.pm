@@ -842,12 +842,7 @@ sub addDate {
     my @dates;
     #  $fromdoc's document has some, so copy them.
     if ($fromdoc && (@dates = $fromdoc->findnodes('ltx:date', $fromdoc->getDocumentElement))) {
-      $self->addNodes($self->getDocumentElement, @dates); }
-    else {
-      my ($sec, $min, $hour, $mday, $mon, $year) = localtime(time());
-      $self->addNodes($self->getDocumentElement,
-        ['ltx:date', { role => 'creation' },
-          $MonthNames[$mon] . " " . $mday . ", " . (1900 + $year)]); } }
+      $self->addNodes($self->getDocumentElement, @dates); } }
   return; }
 
 #======================================================================
