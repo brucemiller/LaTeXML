@@ -58,7 +58,7 @@ DefConstructor('\@includegraphicx OptionalMatch:* OptionalKeyVals:Gin Semiverbat
     my $alt = $kv && $kv->getValue('alt');
     (path => $path,
       candidates => join(',', @candidates),
-      ($alt ? (alt => $alt) : ()),
+      (defined $alt ? (alt => $alt) : ()),
       options => $options); },
   mode => 'text');    # Hopefully only to affect reading of arguments
 
