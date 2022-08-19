@@ -222,7 +222,7 @@ our @CATCODE_SHORT_NAME =          #[CONSTANT]
   T_SUB T_IGNORE T_SPACE T_LETTER
   T_OTHER T_ACTIVE T_COMMENT T_INVALID
   T_CS T_MARKER T_ARG T_SMUGGLE_THE
-);
+  );
 
 our $SMUGGLE_THE_COMMANDS = {
   '\the'        => 1,
@@ -362,11 +362,11 @@ sub equals {
     (defined $b
       && (ref $a) eq (ref $b))
     && ($$a[1] == $$b[1])
-    && (($$a[1] == CC_SPACE) || ($$a[0] eq $$b[0]))
-    && ((!$$a[2]) == (!$$b[2]))                       # must have same dont-expand-edness
+    && (($$a[1] == CC_SPACE || $$a[1] == CC_ALIGN) || ($$a[0] eq $$b[0]))
+    && ((!$$a[2]) == (!$$b[2]))    # must have same dont-expand-edness
     ; }
 
-my @CONTROLNAME = (                                   #[CONSTANT]
+my @CONTROLNAME = (                #[CONSTANT]
   qw( NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI
     DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US));
 # Primarily for error reporting.
