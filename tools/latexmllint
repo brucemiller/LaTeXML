@@ -324,6 +324,28 @@ in the file list will be processed.  If you include certain classes
 (eg. C<--binding>) explicitly, then only the explicitly named classes will
 be processed.
 
+To fully utilize this program, several additional perl modules need to be installed.
+These can all be found on cpan and installed as follows:
+
+=begin text
+
+cpanm Perl::Tidy \
+    Perl::Critic \
+    Perl::Critic::Policy::CodeLayout::ProhibitHashBarewords \
+    Perl::Critic::Policy::CodeLayout::RequireUseUTF8 \
+    Perl::Critic::Policy::Compatibility::ProhibitThreeArgumentOpen \
+    Perl::Critic::Policy::Documentation::RequirePODUseEncodingUTF8 \
+    Perl::Critic::Policy::ErrorHandling::RequireUseOfExceptions \
+    Perl::Critic::Policy::Modules::RequireExplicitInclusion \
+    Perl::Critic::Policy::Subroutines::ProhibitCallsToUndeclaredSubs \
+    Perl::Critic::Policy::Subroutines::ProhibitCallsToUnexportedSubs \
+    Perl::Critic::Policy::Subroutines::ProhibitExportingUndeclaredSubs \
+    Perl::Critic::Policy::Subroutines::ProhibitQualifiedSubDeclarations \
+    Perl::Critic::Policy::ValuesAndExpressions::ProhibitAccessOfPrivateData \
+    Perl::Critic::Policy::ValuesAndExpressions::ProhibitFiletest_f
+
+=end text
+
 Options:
 
   --precommit  Checks for minimal conformance required for committing,
