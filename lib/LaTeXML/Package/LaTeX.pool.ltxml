@@ -1192,19 +1192,15 @@ DefMacro('\@add@conversion@date', '\@add@frontmatter{ltx:date}[role=creation]{\t
 
 # Doesn't produce anything (we're already inserting frontmatter),
 # But, it does make the various frontmatter macros into no-ops.
+# For nested support (e.g. t/structure/authors) the actual macros for frontmatter
+# remain untouched.
 DefMacroI('\maketitle', undef,
   '\@startsection@hook'
-    . '\global\let\thanks\relax'
-    . '\global\let\maketitle\relax'
     . '\global\let\@maketitle\relax'
     . '\global\let\@thanks\@empty'
     . '\global\let\@author\@empty'
     . '\global\let\@date\@empty'
-    . '\global\let\@title\@empty'
-    . '\global\let\title\relax'
-    . '\global\let\author\relax'
-    . '\global\let\date\relax'
-    . '\global\let\and\relax', locked => 1);
+    . '\global\let\@title\@empty', locked => 1);
 
 DefMacro('\@thanks', '\@empty');
 # make a throwaway optional argument available for OmniBus use

@@ -5261,6 +5261,9 @@ AssignValue(frontmatter => {}, 'global');
 
 DefConditionalI('\if@in@preamble', undef, sub { LookupValue('inPreamble'); });
 
+my @frontmatter_latedigest = (qw(ltx:title));
+my %frontmatter_latedigest = map { ($_ => 1) } @frontmatter_latedigest;
+
 # Frontmatter elements for which the 'replace' option is set automatically
 my @frontmatter_autoreplace = (qw(ltx:title ltx:toctitle ltx:subtitle ltx:date));
 my %frontmatter_autoreplace = map { ($_ => 1) } @frontmatter_autoreplace;
@@ -5293,7 +5296,8 @@ DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
     push(@{ $$frontmatter{$tag} }, $entry);
     if ($attr) {
       $$entry[1] = { $attr->beDigested($stomach)->getHash }; }
-    $$entry[2] = Digest(Tokens(T_BEGIN, $tokens, T_END));
+    $$entry[2] = Tokens(T_BEGIN, $tokens, T_END);
+    $$entry[2] = Digest($$entry[2]) unless exists($frontmatter_latedigest{$tag});
     AssignValue(inPreamble => $inpreamble);
     return; },
   beforeDigest => sub {
@@ -5359,6 +5363,7 @@ sub insertFrontMatter {
       local $LaTeXML::BOX = Box('', $STATE->lookupValue('font'), '', T_SPACE);
       foreach my $item (@$list) {
         my ($tag, $attr, @stuff) = @$item;
+        @stuff = Digest(@stuff) if exists($frontmatter_latedigest{$tag}); 
         # add a dedicated class for frontmatter notes,
         # in the case we want to style those uniformly.
         if ($tag eq 'ltx:note') {
