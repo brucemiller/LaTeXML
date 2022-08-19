@@ -5261,11 +5261,16 @@ AssignValue(frontmatter => {}, 'global');
 
 DefConditionalI('\if@in@preamble', undef, sub { LookupValue('inPreamble'); });
 
+# Frontmatter elements for which the 'replace' option is set automatically
+my @frontmatter_autoreplace = (qw(ltx:title ltx:toctitle ltx:subtitle ltx:date));
+my %frontmatter_autoreplace = map { ($_ => 1) } @frontmatter_autoreplace;
+
 # Add a new frontmatter item that will be enclosed in <$tag %attr>...</$tag>
 # The content is the result of digesting $tokens.
 # \@add@frontmatter[keys]{tag}[attributes]{content}
 # keys can have
 #   replace (to replace the current entry, if any)
+#   noreplace (to explicitly not replace, see %frontmatter_autoreplace)
 #   ifnew   (only add if no previous entry)
 DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
     my ($stomach, $keys, $tag, $attr, $tokens) = @_;
@@ -5277,10 +5282,13 @@ DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
     # (which should be inside or after this one!)
     # So, we append this entry before digesting
     $tag = ToString($tag);
-    if ($keys && $keys->hasKey('replace') && $$frontmatter{$tag}) {    # if replace and previous entries
-      $$frontmatter{$tag} = []; }                                      # Remove previous entries
-    if ($keys && $keys->hasKey('ifnew') && $$frontmatter{$tag}) {      # if ifnew and previous entries
-      return; }                                                        # Skip this one.
+    # replace the existing frontmatter entry (if we have any)
+    # this is enabled by default for elements in %frontmatter_autoreplace
+    # otherwise an explicit 'replace' $key has to be set
+    if ($$frontmatter{$tag} && (exists($frontmatter_autoreplace{$tag}) ? (!($keys && $keys->hasKey('noreplace'))) : ($keys && $keys->hasKey('replace')))) {
+      $$frontmatter{$tag} = []; }    # Remove previous entries
+    if ($keys && $keys->hasKey('ifnew') && $$frontmatter{$tag}) {    # if ifnew and previous entries
+      return; }                                                      # Skip this one.
     my $entry = [$tag, undef, 'to-be-filled-in'];
     push(@{ $$frontmatter{$tag} }, $entry);
     if ($attr) {
