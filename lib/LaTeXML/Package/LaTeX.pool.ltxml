@@ -663,7 +663,8 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
         Warn("malformed", "ltx:$type", "Tried to open an unknown tag ltx:$type for numbered section"); } }
     $document->openElement($tagname,
       'xml:id' => CleanID($id),
-      inlist   => ToString($inlist));
+      inlist   => ToString($inlist),
+      (LookupValue('INDENT_FIRST') ? (class => 'ltx_nofirstchild') : ()));
     if (my $tags = $props{tags}) {
       $document->absorb($tags); }
     $document->insertElement('ltx:title',    $props{title});
@@ -700,7 +701,8 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
         Warn("malformed", "ltx:$type", "Tried to open an unknown tag ltx:$type for unnumbered section"); } }
     $document->openElement($tagname,
       'xml:id' => CleanID($id),
-      inlist   => ToString($inlist));
+      inlist   => ToString($inlist),
+      (LookupValue('INDENT_FIRST') ? (class => 'ltx_nofirstchild') : ()));
     $document->insertElement('ltx:title',    $props{title});
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
   properties => sub {
