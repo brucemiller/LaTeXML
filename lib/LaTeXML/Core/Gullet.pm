@@ -245,8 +245,7 @@ sub handleTemplate {
   return; }
 
 # If it is a column ending token, Returns the token, a keyword and whether it is "hidden"
-our @column_ends = (
-  [T_ALIGN,               'align',  0],
+our @column_ends = (    # besides T_ALIGN
   [T_CS('\cr'),           'cr',     0],
   [T_CS('\crcr'),         'crcr',   0],
   [T_CS('\hidden@cr'),    'cr',     1],
@@ -257,7 +256,8 @@ our @column_ends = (
 sub isColumnEnd {
   my ($self, $token) = @_;
   my $cc = $$token[1];
-  return unless ($cc == CC_ALIGN) || ($cc == CC_CS);
+  return ($token, 'align', 0) if $cc == CC_ALIGN;
+  return unless $cc == CC_CS;
   # Embedded version of Equals, knowing both are tokens
   my $defn = $STATE->lookupMeaning($token) || $token;
   foreach my $end (@column_ends) {
