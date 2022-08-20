@@ -664,7 +664,7 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
     $document->openElement($tagname,
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist),
-      (LookupValue('INDENT_FIRST') ? (class => 'ltx_nofirstchild') : ()));
+      (LookupValue('INDENT_FIRST') ? (class => 'ltx_indentfirst') : ()));
     if (my $tags = $props{tags}) {
       $document->absorb($tags); }
     $document->insertElement('ltx:title',    $props{title});
@@ -702,7 +702,7 @@ DefConstructor('\@@unnumbered@section{} Undigested OptionalUndigested Undigested
     $document->openElement($tagname,
       'xml:id' => CleanID($id),
       inlist   => ToString($inlist),
-      (LookupValue('INDENT_FIRST') ? (class => 'ltx_nofirstchild') : ()));
+      (LookupValue('INDENT_FIRST') ? (class => 'ltx_indentfirst') : ()));
     $document->insertElement('ltx:title',    $props{title});
     $document->insertElement('ltx:toctitle', $props{toctitle}) if $props{toctitle}; },
   properties => sub {
