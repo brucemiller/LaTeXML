@@ -89,16 +89,18 @@
 \def\lxRef#1#2{#2}
 %======================================================================
 % Resources
+\providecommand{\lxRequireResource}[2][]{}
 
 %======================================================================
 % Page customization
+\def\lxKeywords#1{}
+
 \RequirePackage{comment}
 \def\lxContextTOC{}%
 \excludecomment{lxNavbar}
 \excludecomment{lxHeader}
 \excludecomment{lxFooter}
 
-\def\lxKeywords#1{}
 %======================================================================
 % Table beautification.
 % Low-level support to mark column and row headers.
