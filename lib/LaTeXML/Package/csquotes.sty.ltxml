@@ -129,10 +129,10 @@ RawTeX(<<'EoTeX');
   \fi}
 EoTeX
 
-DefConstructor('\ltxml@oqmark@open', '<ltx:text class="ltx_quote ltx_outerquote" _noautoclose="1">');
+DefConstructor('\ltxml@oqmark@open', '<ltx:text class="ltx_inline-quote ltx_outerquote" _noautoclose="1">');
 DefConstructor('\ltxml@oqmark@close', '</ltx:text>');
 
-DefConstructor('\ltxml@iqmark@open', '<ltx:text class="ltx_quote ltx_innerquote" _noautoclose="1">');
+DefConstructor('\ltxml@iqmark@open', '<ltx:text class="ltx_inline-quote ltx_innerquote" _noautoclose="1">');
 DefConstructor('\ltxml@iqmark@close', '</ltx:text>');
 
 ###########################################################################
@@ -236,10 +236,10 @@ DefMacro('\ltxml@mkblockquote@open', '\begingroup\ltxml@mkblockquote@open@i');
 DefPrimitive('\ltxml@mkblockquote@open@i', sub {
     DefEnvironment('{quote}', '<ltx:quote class="ltx_blockquote">#body</ltx:quote>',
       beforeDigest => sub { Let('\\\\', '\@block@cr'); Let('\par', '\@block@cr') },
-      mode => 'text'); });
+      mode         => 'text'); });
 DefMacro('\ltxml@mkblockquote@close', '\endgroup');
 
-DefConstructor('\ltxml@mkblockquote@aopen',  '<ltx:text class="ltx_quote" _noautoclose="1">');
+DefConstructor('\ltxml@mkblockquote@aopen', '<ltx:text class="ltx_inline-quote" _noautoclose="1">');
 DefConstructor('\ltxml@mkblockquote@aclose', '</ltx:text>');
 
 ###########################################################################
@@ -267,11 +267,11 @@ DefMacro('\ltxml@blockenvironment@open', '\begingroup\ltxml@blockenvironment@ope
 DefPrimitive('\ltxml@blockenvironment@open@i', sub {
     DefEnvironment('{quote}', '<ltx:quote class="ltx_displayquote">#body</ltx:quote>',
       beforeDigest => sub { Let('\\\\', '\@block@cr'); Let('\par', '\@block@cr') },
-      mode => 'text'); });
+      mode         => 'text'); });
 DefMacro('\ltxml@blockenvironment@close', '\endgroup');
 
 DefMacro('\ltxml@mkbegdispquote{}{}', '\ltxml@mkbegdispquote@aopen\mkbegdispquote{#1}{#2}');
-DefConstructor('\ltxml@mkbegdispquote@aopen', '<ltx:text class="ltx_quote" _noautoclose="1">');
+DefConstructor('\ltxml@mkbegdispquote@aopen', '<ltx:text class="ltx_inline-quote" _noautoclose="1">');
 
 DefMacro('\ltxml@mkenddispquote{}{}', '\mkenddispquote{#1}{#2}\ltxml@mkenddispquote@aclose');
 DefConstructor('\ltxml@mkenddispquote@aclose', '</ltx:text>');
