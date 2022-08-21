@@ -5274,6 +5274,22 @@ DefPrimitive('\mathversion{}', sub {
       AssignValue(mathfont => LookupValue('mathfont')->merge(forcebold => 0), 'local'); }
     else { Error('unexpected', $version, $stomach, "Unknown math verison '$version'"); } });
 
+DefMacro('\not@math@alphabet{}{}', '\relax
+  \ifmmode
+    \@latex@error{Command \noexpand#1 invalid in math mode}%
+    {%
+    Please
+    \ifx#2\relax
+      define a new math alphabet
+      if you want to use a special font in math mode%
+    \else
+      use the math alphabet \noexpand#2 instead of
+      the #1 command%
+    \fi.
+    }%
+  \fi');
+DefMacro('\math@version', 'normal');
+
 DefPrimitive('\DeclareOldFontCommand{}{}{}', sub {
     my ($stomach, $cmd, $font, $mathcmd) = @_;
     DefMacroI($cmd, undef, sub {
