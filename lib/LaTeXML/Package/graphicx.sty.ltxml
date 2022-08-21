@@ -21,9 +21,10 @@ use LaTeXML::Util::Image;
 # Provides alternative argument syntax.
 RequirePackage('graphics');
 
-DefMacro('\Gin@ewidth',  '');
-DefMacro('\Gin@eheight', '');
-DefMacro('\Gin@eresize', '');
+DefMacro('\Gin@ewidth',   '');
+DefMacro('\Gin@eheight',  '');
+DefMacro('\Gin@eresize',  '');
+DefMacro('\Gin@esetsize', '');
 #DefKeyVal('Gin', 'width',           'Dimension', '', code=>sub { DefMacro('\Gin@ewidth',$_[1]); });
 DefKeyVal('Gin', 'width',           'GraphixDimension');
 DefKeyVal('Gin', 'height',          'GraphixDimension');
