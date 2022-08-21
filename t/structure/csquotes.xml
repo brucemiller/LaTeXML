@@ -14,15 +14,15 @@
     </tags>
     <title><tag close=" ">1</tag>Active Quotes</title>
     <para xml:id="S1.p1">
-      <p><text class="ltx_quote ltx_outerquote">“Outer quote”</text></p>
+      <p><text class="ltx_inline-quote ltx_outerquote">“Outer quote”</text></p>
     </para>
     <para xml:id="S1.p2">
-      <p><text class="ltx_quote ltx_outerquote">“Outer <text class="ltx_quote ltx_innerquote">‘Inner’</text> Outer”</text></p>
+      <p><text class="ltx_inline-quote ltx_outerquote">“Outer <text class="ltx_inline-quote ltx_innerquote">‘Inner’</text> Outer”</text></p>
     </para>
     <para xml:id="S1.p3">
       <p>Some text before the quotation.</p>
       <quote class="ltx_blockquote">
-        <p><text class="ltx_quote">A long quotation latex would show indented.
+        <p><text class="ltx_inline-quote">A long quotation latex would show indented.
 A long quotation latex would show indented.
 A long quotation latex would show indented.
 A long quotation latex would show indented.
@@ -50,13 +50,13 @@ A long quotation latex would show indented.
     </tags>
     <title><tag close=" ">2</tag>enquote macro</title>
     <para xml:id="S2.p1">
-      <p><text class="ltx_quote ltx_outerquote">“Outer Quote”</text></p>
+      <p><text class="ltx_inline-quote ltx_outerquote">“Outer Quote”</text></p>
     </para>
     <para xml:id="S2.p2">
-      <p><text class="ltx_quote ltx_outerquote">“Outer <text class="ltx_quote ltx_innerquote">‘Inner’</text> Outer”</text></p>
+      <p><text class="ltx_inline-quote ltx_outerquote">“Outer <text class="ltx_inline-quote ltx_innerquote">‘Inner’</text> Outer”</text></p>
     </para>
     <para xml:id="S2.p3">
-      <p><text class="ltx_quote ltx_outerquote">“Outer <text class="ltx_quote ltx_innerquote">‘Inner’</text> Outer”</text></p>
+      <p><text class="ltx_inline-quote ltx_outerquote">“Outer <text class="ltx_inline-quote ltx_innerquote">‘Inner’</text> Outer”</text></p>
     </para>
   </section>
   <section inlist="toc" xml:id="S3">
@@ -67,7 +67,7 @@ A long quotation latex would show indented.
     </tags>
     <title><tag close=" ">3</tag>Textquote</title>
     <para xml:id="S3.p1">
-      <p><text class="ltx_textquote"><text class="ltx_quote ltx_outerquote">“This is a short quotation typeset with a text quotation
+      <p><text class="ltx_textquote"><text class="ltx_inline-quote ltx_outerquote">“This is a short quotation typeset with a text quotation
 command. It would be presented in inline style even if it were longer than
 three lines.”</text><text class="ltx_citation"> (Citation)</text></text></p>
     </para>
@@ -82,7 +82,7 @@ three lines.”</text><text class="ltx_citation"> (Citation)</text></text></p>
     <para xml:id="S4.p1">
       <p>Some text before the quotation.</p>
       <quote class="ltx_displayquote">
-        <p><text class="ltx_quote">A short quotation shown intended.
+        <p><text class="ltx_inline-quote">A short quotation shown intended.
 <text class="ltx_citation"> (Citation)</text></text></p>
       </quote>
       <p>Some text after the quotation.</p>
@@ -90,7 +90,7 @@ three lines.”</text><text class="ltx_citation"> (Citation)</text></text></p>
     <para xml:id="S4.p2">
       <p>Some text before the quotation.</p>
       <quote class="ltx_displayquote">
-        <p><text class="ltx_quote">A long quotation latex would show indented.
+        <p><text class="ltx_inline-quote">A long quotation latex would show indented.
 A long quotation latex would show indented.
 A long quotation latex would show indented.
 A long quotation latex would show indented.
@@ -115,14 +115,14 @@ A long quotation latex would show indented.
     <para xml:id="S5.p1">
       <p>Some text before the quotation.</p>
       <quote class="ltx_blockquote">
-        <p><text class="ltx_quote">A short quotation latex would embed. </text><text class="ltx_citation"> (Citation)</text></p>
+        <p><text class="ltx_inline-quote">A short quotation latex would embed. </text><text class="ltx_citation"> (Citation)</text></p>
       </quote>
       <p>Some text after the quotation.</p>
     </para>
     <para xml:id="S5.p2">
       <p>Some text before the quotation.</p>
       <quote class="ltx_blockquote">
-        <p><text class="ltx_quote">A long quotation latex would show indented.
+        <p><text class="ltx_inline-quote">A long quotation latex would show indented.
 A long quotation latex would show indented.
 A long quotation latex would show indented.
 A long quotation latex would show indented.
