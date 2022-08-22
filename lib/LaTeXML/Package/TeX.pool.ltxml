@@ -3583,7 +3583,7 @@ sub pruneEmpty {
   if (!scalar($node->childNodes)) {
     my $prev = $node->previousSibling;
     if (!$prev || ($document->getNodeQName($prev) ne 'ltx:para')) {    # If $node WAS the 1st child
-      $document->addClass($node->parentNode, 'ltx_nofirstchild'); }
+      $document->addClass($node->parentNode, 'ltx_pruned_first'); }
     $node->unlinkNode; }
   return; }
 

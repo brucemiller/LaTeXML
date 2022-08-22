@@ -55,8 +55,8 @@
 
 /* first p in para gets indented; , even 1st in section if marked "no" first child */
 .ltx_para > .ltx_p:first-child,
-section.ltx_nofirstchild > .ltx_title + .ltx_para > .ltx_p,
-section.ltx_indentfirst > .ltx_title + .ltx_para > .ltx_p { text-indent:2em; }
+section.ltx_pruned_first > .ltx_title + .ltx_para > .ltx_p,
+section.ltx_indent_first > .ltx_title + .ltx_para > .ltx_p { text-indent:2em; }
 69/* except the initial in a section */
 section > .ltx_title +.ltx_para > .ltx_p,
 section > .ltx_title +.ltx_date +.ltx_para > .ltx_p {text-indent:0em; }
