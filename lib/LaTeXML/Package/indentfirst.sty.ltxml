@@ -15,9 +15,5 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-#**********************************************************************
-# Is mostly a no-op, since we aren't (correctly) dealing with
-# modifiable indentation (but should)
-#**********************************************************************
-
+AssignValue('INDENT_FIRST' => 1);
 1;

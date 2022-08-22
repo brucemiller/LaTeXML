@@ -53,9 +53,11 @@
 .ltx_table .ltx_caption,
 .ltx_figure .ltx_caption { text-align:justify; }
 
-/* first p in para gets indented */
-.ltx_para > .ltx_p:first-child { text-indent:2em; }
-/* except the initial in a section */
+/* first p in para gets indented; , even 1st in section if marked "no" first child */
+.ltx_para > .ltx_p:first-child,
+section.ltx_pruned_first > .ltx_title + .ltx_para > .ltx_p,
+section.ltx_indent_first > .ltx_title + .ltx_para > .ltx_p { text-indent:2em; }
+69/* except the initial in a section */
 section > .ltx_title +.ltx_para > .ltx_p,
 section > .ltx_title +.ltx_date +.ltx_para > .ltx_p {text-indent:0em; }
 
