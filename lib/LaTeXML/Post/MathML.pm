@@ -730,6 +730,8 @@ sub stylizeContent {
     else {
       $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $role : '?');
       $color = 'red'; } }
+  elsif ($role eq 'ADDOP' and $text eq '-') {    # MathML Core prefers unicode minus
+    $text = "\x{2212}"; }
   if ($opacity) {
     $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "opacity:$opacity"; }
   if ($font && !$variant) {
