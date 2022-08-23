@@ -85,6 +85,11 @@
 \providecommand{\lxWithClass}[2]{#2}%
 
 %======================================================================
+% custom data related features
+% Add a data-* attribute to a final (X)HTML document (ignored in latex)
+\providecommand{\lxCustomData}[2]{}%
+
+%======================================================================
 % links
 \def\lxRef#1#2{#2}
 %======================================================================
@@ -168,9 +173,7 @@
 % that `use' it.
 
 % In document scoping, the definition would only be available within
-% the current sectional unit.  I'm not sure the best way to achieve this 
+% the current sectional unit.  I'm not sure the best way to achieve this
 % within latex, itself, but have ideas about latexml...
 % But, perhaps it is only the declarative aspects that are important to
 % latexml...
-
-

@@ -15,6 +15,7 @@
     version     = "1.0"
     xmlns:xsl   = "http://www.w3.org/1999/XSL/Transform"
     xmlns:ltx   = "http://dlmf.nist.gov/LaTeXML"
+    xmlns:data   = "http://dlmf.nist.gov/LaTeXML/custom-data"
     xmlns:exsl  = "http://exslt.org/common"
     xmlns:string= "http://exslt.org/strings"
     xmlns:date  = "http://exslt.org/dates-and-times"
@@ -432,6 +433,21 @@
     <xsl:if test="@xml:lang">
       <xsl:apply-templates select="@xml:lang" mode="copy-attribute"/>
     </xsl:if>
+    <xsl:if test="@data:*">
+      <xsl:call-template name="add_custom_data_attributes" />
+    </xsl:if>
+  </xsl:template>
+
+  <!--- Transform custom data attributes from latexml's
+        "data" namespace into HTML's data-* flat scheme
+  -->
+  <xsl:template name="add_custom_data_attributes">
+    <xsl:for-each select="@data:*">
+      <xsl:variable name="data-name">data-<xsl:value-of select="local-name(.)"/></xsl:variable>
+      <xsl:attribute name="{$data-name}">
+        <xsl:value-of select="."/>
+      </xsl:attribute>
+    </xsl:for-each>
   </xsl:template>
 
   <!-- Add a class attribute value to the current html element

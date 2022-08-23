@@ -21,7 +21,8 @@ use LaTeXML::Util::Pathname;
 use base qw(LaTeXML::Common::Object);
 
 #**********************************************************************
-our $LTX_NAMESPACE = "http://dlmf.nist.gov/LaTeXML";    # [CONSTANT]
+our $LTX_NAMESPACE  = "http://dlmf.nist.gov/LaTeXML";                # [CONSTANT]
+our $DATA_NAMESPACE = "http://dlmf.nist.gov/LaTeXML/custom-data";    # [CONSTANT]
 
 sub new {
   my ($class, %options) = @_;

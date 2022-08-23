@@ -500,4 +500,30 @@ sub createDeclarationRewrite {
   return; }
 
 #======================================================================
+
+# simple data-* annotations for a current node.
+DefConstructor('\lxCustomData{}{}', sub {
+    my ($doc, $key, $value) = @_;
+    my $node = $doc->getNode;
+    $node = $node->parentNode if isTextNode($node);
+
+    # if the data namespace isn't registered as global yet - do so.
+    # this is a bit wasteful, but data-* attributes are too rare to assume it declared by default.
+    if (!$$doc{model}->getDocumentNamespacePrefix($LaTeXML::Common::Model::DATA_NAMESPACE, 1, 1)) {
+      $$doc{model}->registerNamespace('data', $LaTeXML::Common::Model::DATA_NAMESPACE);
+      $$doc{model}->registerDocumentNamespace('data', $LaTeXML::Common::Model::DATA_NAMESPACE); }
+    # allow the explicit prefixing in the attribute, as a matter of style. These are identical:
+    #   \lxCustomData{key}{val}
+    #   \lxCustomData{data-key}{val}
+    #   \lxCustomData{data:key}{val}
+    #
+    $key = ToString($key);
+    $key =~ s/^data[:-]//;
+    $key   = "data:$key";
+    $value = ToString($value);
+    $node->setAttributeNS($LaTeXML::Common::Model::DATA_NAMESPACE, $key, $value);
+
+    return; });
+
+#======================================================================
 1;
