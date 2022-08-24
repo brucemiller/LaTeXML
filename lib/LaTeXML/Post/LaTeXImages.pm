@@ -85,6 +85,11 @@ sub new {
     # firefox, chromium use this codepoint instead of the glyph "drawing"
     # a later version of dvisvgm should do better at synthesizing the unicode?
     # but for now, we'll use --no-fonts, which creates glyph drawings rather than "glyphs"
+    # DVISVGM options:
+    # --bbox=preview : use bounding box data computed by the preview package
+    # --scale        : scale the page content (equivalent to -TS)
+    # --exact-bbox   : compute the precise bounding box of each character
+    # --no-fonts     : do not create SVG font elements but use paths instead
     $$self{dvicmd} = "dvisvgm --page=1- --bbox=preview --scale=$$self{magnification} --exact-bbox --no-fonts -o imgx-${fmt}3p";
     $$self{dvicmd_output_name} = 'imgx-%03d.svg';
     $$self{dvicmd_output_type} = 'svg';
