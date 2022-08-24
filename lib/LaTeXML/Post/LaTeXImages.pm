@@ -51,12 +51,9 @@ sub new {
   $$self{background}    = $options{background}    || "#FFFFFF";
   $$self{imagetype}     = $options{imagetype}     || 'png';
 
-  # Parameters for separating the clipping box from the
   # desired padding between image edge and "ink"
   $$self{padding} = $options{padding} || 2;    # pixels
-      # amount of extra space (+padding) to put between object & rules for clipping
-  $$self{clippingfudge} = 3;       # px
-  $$self{clippingrule}  = 0.90;    # pixels (< 1 to avoid antialiasing..?)
+      # amount of extra space (+padding) to put between object & bounding box
 
   # Sanity check of dvi processing...
   # If trying to create svg...
@@ -72,7 +69,6 @@ sub new {
     $$self{use_dvipng} = 0; }    # but disable if inappropriate or unavailable.
 
   # Parameterize according to the selected dvi-to-whatever processor.
-  my $mag = int($$self{magnification} * 1000);
   my $dpi = int($$self{DPI} * $$self{magnification});
   # Unfortunately, each command has incompatible -o option to name the output file.
   # Note that the formatting char used, '%', has to be doubled on Windows!!
@@ -92,10 +88,7 @@ sub new {
     # --no-fonts     : do not create SVG font elements but use paths instead
     $$self{dvicmd} = "dvisvgm --page=1- --bbox=preview --scale=$$self{magnification} --exact-bbox --no-fonts -o imgx-${fmt}3p";
     $$self{dvicmd_output_name} = 'imgx-%03d.svg';
-    $$self{dvicmd_output_type} = 'svg';
-    $$self{clippingfudge}      = 0;
-    $$self{padding}            = $options{padding} || 0;
-    $$self{frame_output}       = 0; }
+    $$self{dvicmd_output_type} = 'svg'; }
   elsif ($$self{use_dvipng}) {
     # DVIPNG options:
     # -bg      : Background color
@@ -106,22 +99,21 @@ sub new {
     # --depth  : Output the image depth on stdout (in pixels)
     $$self{dvicmd} = "dvipng -bg Transparent -D$dpi -q --width --height --depth -o imgx-${fmt}03d.png";
     $$self{dvicmd_output_name} = 'imgx-%03d.png';
-    $$self{dvicmd_output_type} = 'png32';
-    $$self{clippingfudge}      = 0;
-    $$self{padding}            = $options{padding} || 0;
-    $$self{frame_output}       = 0; }
+    $$self{dvicmd_output_type} = 'png32'; }
   else {
-    # Useful DVIPS options:
-    #  -q  : run quietly
-    #  -x#  : magnification * 1000
-    #  -S1 -i  : make a separate file for each `section' consisting of a single page.
-    #       QUESTION: dvips' naming scheme allows for 999 pages... what happens at 1000?
-    #  -E   :  crop each page close to the `ink'.
-    #  -j0  : don't subset fonts; silly really, but some font tests are making problems!
-    $$self{dvicmd}             = "dvips -q -S1 -i -E -j0 -x$mag -o imgx";
-    $$self{dvicmd_output_name} = 'imgx%03d';
-    $$self{dvicmd_output_type} = 'eps';
-    $$self{frame_output}       = 1; }
+    $$self{use_dvips} = 1;
+    # GS options:
+    #  -q                   : quiet
+    #  -sDEVICE=png16malpha : set output to 32-bit RGBA PNG
+    #  -r                   : resolution
+    #  -dGraphicAlphaBits=4 : subsample antialiasing
+    #  -dTextAlphaBits=4    : subsample antialiasing
+    #  -dSAFER -dBATCH ...  : suppress interactivity and enable security checks
+    $$self{dvicmd} = "gs -q -sDEVICE=pngalpha -r$$self{DPI}" .
+      " -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -dSAFER -dBATCH -dNOPAUSE" .
+      " -sOutputFile=imgx-%03d.png";
+    $$self{dvicmd_output_name} = 'imgx-%03d.png';
+    $$self{dvicmd_output_type} = 'png32'; }
   return $self; }
 
 #**********************************************************************
@@ -313,6 +305,35 @@ sub generateImages {
       return $doc; }
     ### $workdir->unlink_on_destroy(0) if $LaTeXML::DEBUG{images}; # preserve ALL junk!?!?!
 
+    if ($$self{use_dvips}) {
+      # Useful DVIPS options:
+      #  -q  : run quietly
+      #  -x#  : magnification * 1000
+      #  -j0  : don't subset fonts; silly really, but some font tests are making problems!
+      my $mag          = int($$self{magnification} * 1000);
+      my $dvipscommand = "dvips -q -j0 -x$mag -o $jobname.ps $jobname.dvi > $jobname.dvipsoutput";
+      my $dvipserr     = 0;
+
+      pathname_chdir($workdir);
+      {
+        local $ENV{TEXINPUTS} = join($sep, '.', @searchpaths,
+          pathname_concat($installation_path, 'texmf'),
+          ($ENV{TEXINPUTS} || $sep));
+        $dvipserr = system($dvipscommand);
+      }
+      pathname_chdir($orig_cwd);
+
+      if (($dvipserr != 0) || (!-f "$workdir/$jobname.ps")) {
+        $workdir->unlink_on_destroy(0) if $LaTeXML::DEBUG{images};    # Preserve junk
+        Error('shell', $dvipscommand, undef,
+          "dvips command '$dvipscommand' failed",
+          ($dvipserr == 0 ? "No ps file generated" : "returned code $dvipserr (!= 0): $@"),
+          ($LaTeXML::DEBUG{images}
+            ? "See $workdir/$jobname.log"
+            : "Re-run with --debug=images to see TeX log"));
+        return $doc; }
+    }
+
     # Extract dimensions (width x height+depth) from each image from log file.
     my @dimensions = ();
     # Extract tightpage adjustments from preview.sty (left bottom right top)
@@ -335,9 +356,9 @@ sub generateImages {
         "Couldn't read log file $workdir/$jobname.log to extract image dimensions",
         "Response was: $!"); }
 
-    # === Run dvicmd to extract individual png|postscript files.
+    # === Run dvicmd to extract individual png|svg files.
     pathname_chdir($workdir);
-    my $dvicommand = "$$self{dvicmd} $jobname.dvi > $jobname.dvioutput 2>&1";
+    my $dvicommand = "$$self{dvicmd} $jobname." . ($$self{use_dvips} ? "ps" : "dvi") . " > $jobname.dvioutput 2>&1";
     my $dvierr;
     {
       local $ENV{TEXINPUTS} = join($sep, '.', @searchpaths,
@@ -349,7 +370,7 @@ sub generateImages {
 
     if ($dvierr != 0) {
       Error('shell', $$self{dvicmd}, undef,
-        "Shell command '$dvicommand' (for dvi conversion) failed (see $workdir for clues)",
+"Shell command '$dvicommand' (for " . ($$self{use_dvips} ? "ps" : "dvi") . " conversion) failed (see $workdir for clues)",
         "Response was: $!");
       return $doc; }
 
@@ -418,7 +439,7 @@ sub generateImages {
             ($ww, $hh, $dd) = map { $_ * $pixels_per_pt } ($ww, $hh, $dd);
             ($w,  $h,  $d)  = (int($ww + 0.5), int($hh + $dd + 0.5), int(0.5 + ($dd || 0))); }
 
-          if ($$self{frame_output}) {    # If framed, trim the frame
+          if ($$self{use_dvips}) {    # If using dvips, convert (if necessary) and recover final image size
             ($w, $h) = $self->convert_image($doc, $src, $absdest);
             next unless defined $w && defined $h; }
           else {
@@ -483,14 +504,10 @@ sub pre_preamble {
   # active    : output only content of preview environments in separate pages
   # tightpage : restrict each page to a tight box around the content
   # lyx       : output page dimensions in sp
-  # psfixbb   : include /dev/null in corners to ensure dvips generates an appropriate bounding box
   $packages .= ($oldstyle ? "\\RequirePackage" : "\\usepackage") . "[active,tightpage,lyx]{preview}\n";
 
-  my $w   = ceil($$self{maxwidth} * $pts_per_pixel);                      # Page Width in points.
-  my $gap = ($$self{padding} + $$self{clippingfudge}) * $pts_per_pixel;
-  my $th  = ($$self{frame_output}
-    ? $$self{clippingrule} * $pts_per_pixel    # clipping box thickness in points.
-    : 0);                                      # NO clipping box!
+  my $w         = ceil($$self{maxwidth} * $pts_per_pixel);    # Page Width in points.
+  my $gap       = $$self{padding} * $pts_per_pixel;
   my $preambles = $self->find_preambles($doc);
   # Some classes are too picky: thanks but no thanks
   my $result_add_to_body = "\\makeatletter\\thispagestyle{empty}\\pagestyle{empty}\n";
@@ -527,13 +544,10 @@ EOPreamble
   return ($result_preamble, $result_add_to_body); }
 
 #======================================================================
-# Converting the postscript images to gif/png/whatever
-# Note that properly trimming the clipping box (and keeping the right
-# padding and dimensions) is harder than it seems!
-#
+# Converting the png images to gif/png/whatever and return the size
+
 # Note that this conversion is, indeed, quite slow.
 # Profiling indicates that virtually ALL the time is taken in ->Read !!
-# (not the various trimming/shaving).
 #======================================================================
 
 sub convert_image {
@@ -541,25 +555,17 @@ sub convert_image {
   my ($bg, $fg) = ($$self{background}, 'black');
 
   my $image = image_object(antialias => 'True', background => $bg, density => $$self{DPI});
-  my $err   = $image->Read($$self{dvicmd_output_type} . ':' . $src);
+
+  if ($$self{imagetype} eq 'png' && $$self{dvicmd_output_type} =~ /^png/) {
+    my ($w, $h, $s, $f) = $image->Ping($$self{dvicmd_output_type} . ':' . $src);
+    pathname_copy($src, $dest);
+    return ($w, $h); }
+
+  my $err = $image->Read($$self{dvicmd_output_type} . ':' . $src);
   if ($err) {
     Warn('imageprocessing', 'read', undef,
       "Image conversion failed to read '$src'",
       "Response was: $err"); return; }
-
-  my ($ww, $hh) = $image->Get('width', 'height');    # Get final image size
-
-  # We can't quite rely on the -E option to dvips; there may or may not be white outside the clipbox;
-  # Moreover, rounding can leave (possibly gray) 'tabs' on the clipbox corners.
-  # To be sure, add known white border, and trim away all white AND gray
-  $image->Border(width => 1, height => 1, fill => $bg);
-  $image->Trim(fuzz => '75%');    # Fuzzy, to trim the gray tabs, as well!!
-  $image->Set(fuzz => '0%');      # But, be SURE to RESET fuzz!! (It is NOT an "argument"!!!)
-      # [Also, be CAREFULL of ImageMagick's Floodfill variants, they sometimes go wild]
-
-  # Finally, shave off the rule & fudge padding.
-  my $fudge = int(0.5 + $$self{clippingfudge} + $$self{clippingrule});
-  $image->Shave(width => $fudge, height => $fudge);
 
   my ($w, $h) = $image->Get('width', 'height');    # Get final image size
       # ImageMagick tries to manage a "virtual" image within the image data,
