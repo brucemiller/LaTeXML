@@ -518,8 +518,8 @@ sub pre_preamble {
     my ($package, $package_options) = @$pkgdata;
     next if $loaded_check{$package};
     $loaded_check{$package} = 1;
+    next if $package =~ /^(?:latexml|preview|hyperref)$/;    # some packages are incompatible.
     if ($oldstyle) {
-      next if $package =~ /latexml|preview/;    # some packages are incompatible.
       $packages .= "\\RequirePackage{$package}\n"; }
     else {
       if ($package eq 'english') {
