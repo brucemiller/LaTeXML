@@ -39,7 +39,7 @@ our $LATEXCMD = 'latex';    #(or elatex) [ CONFIGURABLE? Encoded in PI?]
 #   source         : (dir)
 #   magnification  : typically something like 1.33333, but you may want bigger
 #   maxwidth       : maximum page width, in pixels (whenever line breaking is possible)
-#   DPI            : assumed DPI for the target medium (default 100)
+#   DPI            : assumed DPI for the target medium (default 96)
 #   background     : color of background (for anti-aliasing, since it is made transparent)
 #   imagetype      : typically 'png' or 'gif'.
 sub new {
@@ -47,7 +47,7 @@ sub new {
   my $self = $class->SUPER::new(%options);
   $$self{magnification} = $options{magnification} || 1.33333;
   $$self{maxwidth}      = $options{maxwidth}      || 800;
-  $$self{DPI}           = $options{DPI}           || 100;
+  $$self{DPI}           = $options{DPI}           || 96;
   $$self{background}    = $options{background}    || "#FFFFFF";
   $$self{imagetype}     = $options{imagetype}     || 'png';
 
