@@ -81,15 +81,15 @@ sub new {
   #  my $fmt = ($^O eq 'MSWin32' ? '%%' : '%');
   my $fmt = '%';
   if ($$self{use_dvisvgm}) {
-    ##    $$self{dvicmd}             = "dvisvgm --page=1- --bbox=min --mag=$mag -o imgx-${fmt}p";
     # dvisvgm currently creates glyph descriptions w/ unicode attribute having the wrong codepoint
     # firefox, chromium use this codepoint instead of the glyph "drawing"
     # a later version of dvisvgm should do better at synthesizing the unicode?
     # but for now, we'll use --no-fonts, which creates glyph drawings rather than "glyphs"
-    # Also, increase the bounding box from min by 1pt
     $$self{dvicmd} = "dvisvgm --page=1- --bbox=preview --scale=$$self{magnification} --exact-bbox --no-fonts -o imgx-${fmt}3p";
     $$self{dvicmd_output_name} = 'imgx-%03d.svg';
     $$self{dvicmd_output_type} = 'svg';
+    $$self{clippingfudge}      = 0;
+    $$self{padding}            = $options{padding} || 0;
     $$self{frame_output}       = 0; }
   elsif ($$self{use_dvipng}) {
     $$self{dvicmd} = "dvipng -bg Transparent -D$dpi -q --width --height --depth -o imgx-${fmt}03d.png";
@@ -325,7 +325,7 @@ sub generateImages {
 
     # === Run dvicmd to extract individual png|postscript files.
     pathname_chdir($workdir);
-    my $dvicommand = "$$self{dvicmd} $jobname.dvi > $jobname.dvioutput";
+    my $dvicommand = "$$self{dvicmd} $jobname.dvi > $jobname.dvioutput 2>&1";
     my $dvierr;
     {
       local $ENV{TEXINPUTS} = join($sep, '.', @searchpaths,
@@ -358,6 +358,22 @@ sub generateImages {
                 $dimensions[$i] = [$3, $2, $1]; }
               else {
                 Warn('unexpected', 'dvipng', undef, "Unrecognised entry in log file $workdir/$jobname.dvioutput while extracting image dimensions", $_) unless m/^\s*$/; } } } }
+        else {
+          while (<$LOG>) {
+            # DVISVGM output:
+            #  pre-processing DVI [...]
+            #  processing page N
+            #    applying bounding box set by preview package [...]
+            #    width=W.WWpt, height=H.HHpt, depth=D.DDpt
+            #    output written to [...]
+            #  N of N page converted [...]
+            next if $. == 1;
+            if (m/^processing page (\d+)$/) {
+              $i = $1; }
+            elsif (m/^\s+width=(\d*(?:\.\d*)?)pt,\s+height=(\d*(?:\.\d*)?)pt,\s+depth=(\d*(?:\.\d*)?)pt$/) {
+              $dimensions[$i] = [$1, $2, $3]; }
+            elsif (!m/^\s+(?:applying bounding box|graphic size:|output written to)/) {
+              Warn('unexpected', 'dvisvgm', undef, "Unrecognised entry in log file $workdir/$jobname.dvioutput while extracting image dimensions", $_) unless eof; } } }
         close($LOG); }
       else {
         Warn('expected', 'dimensions', undef,
@@ -381,6 +397,10 @@ sub generateImages {
           if ($$self{use_dvipng}) {
             # dimensions are in (integer) pixel, already magnified
             ($w, $h, $d) = ($ww, $hh + $dd, $dd); }
+          elsif ($$self{use_dvisvgm}) {
+            # dimensions are in (TeX) points, already magnified
+            ($ww, $hh, $dd) = map { $_ * 96 / 72.27 } ($ww, $hh, $dd);
+            ($w,  $h,  $d)  = (int($ww + 0.5), int($hh + $dd + 0.5), int($dd + 0.5)); }
           else {
             # dimensions are in (TeX) points, not magnified yet
             ($ww, $hh, $dd) = map { $_ * $pixels_per_pt } ($ww, $hh, $dd);
