@@ -35,7 +35,7 @@ my @paths = ();
 my ($format, $extension, $is_html, $urlstyle) = (undef, undef, undef, 'server');
 my ($numbersections) = (1);
 my ($stylesheet, $defaultresources, $icon, @css, @javascript, @xsltparameters);
-my ($mathimagemag) = (1.75);
+my ($mathimagemag) = (1.33333);
 my ($linelength, $plane1, $hackplane1) = (undef, undef, undef);
 my ($dographics, $svg, $picimages)     = (undef, undef, undef);
 my @graphicsmaps = ();
@@ -921,7 +921,7 @@ Requests or disables the conversion of math to svg images.
 =item C<--mathimagemagnification=>I<factor>
 
 Specifies the magnification used for math images (both png and svg),
-if they are made. Default is 1.75.
+if they are made. Default is 1.33333.
 
 =item C<--presentationmathml>, C<--nopresentationmathml>
 
