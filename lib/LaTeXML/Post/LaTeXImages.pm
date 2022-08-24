@@ -385,8 +385,14 @@ sub pre_preamble {
   my ($self, $doc) = @_;
   my @classdata = $self->find_documentclass_and_packages($doc);
   my ($class, $class_options, $oldstyle) = @{ shift(@classdata) };
-  $class_options = "[$class_options]" if $class_options && ($class_options !~ /^\[.*\]$/);
   $class_options = '' unless defined $class_options;
+  $class_options = "[$class_options]" if $class_options && ($class_options !~ /^\[.*\]$/);
+
+  if ($$self{use_dvisvgm}) {
+    # activate dvisvgm driver (e.g. for TikZ)
+    $class_options =~ s/\]$/,dvisvgm]/;
+    $class_options =~ s/^$/[dvisvgm]/; }
+
   my $documentcommand = ($oldstyle ? "\\documentstyle" : "\\documentclass");
   my $packages        = '';
   my $dest            = $doc->getDestination;
