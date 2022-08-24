@@ -240,6 +240,8 @@ sub generateImages {
   my $sep      = $Config::Config{path_sep};
   my %table    = ();
 
+  my $warnings = 0;
+
   # === Get the desired nodes, extract the set of unique tex strings,
   #     noting which need processing.
   # Note that if desiredResourcePathname is implemented, we might get
@@ -339,7 +341,7 @@ sub generateImages {
       #  -x# : magnification * 1000
       #  -j0 : don't subset fonts; silly really, but some font tests are making problems!
       my $mag          = int($$self{magnification} * 1000);
-      my $dvipscommand = "dvips -q -j0 -x$mag -o $jobname.ps $jobname.dvi > $jobname.dvipsoutput";
+      my $dvipscommand = "dvips -q -j0 -x$mag -o $jobname.ps $jobname.dvi > $jobname.dvipsoutput 2>&1";
       my $dvipserr     = 0;
 
       pathname_chdir($workdir);
@@ -357,8 +359,8 @@ sub generateImages {
           "dvips command '$dvipscommand' failed",
           ($dvipserr == 0 ? "No ps file generated" : "returned code $dvipserr (!= 0): $@"),
           ($LaTeXML::DEBUG{images}
-            ? "See $workdir/$jobname.log"
-            : "Re-run with --debug=images to see TeX log"));
+            ? "See $workdir/$jobname.dvipsoutput"
+            : "Re-run with --debug=images to see log"));
         return $doc; }
     }
 
@@ -382,9 +384,13 @@ sub generateImages {
             ($3 - $adjustments[1]) / 65536 * $pixels_per_pt]; } }
       close($LOG); }
     else {
+      $warnings++;
       Warn('expected', 'dimensions', undef,
         "Couldn't read log file $workdir/$jobname.log to extract image dimensions",
-        "Response was: $!"); }
+        "Response was: $!",
+        $LaTeXML::DEBUG{images}
+        ? "See $workdir/$jobname.log"
+        : "Re-run with --debug=images to see TeX log"); }
 
     # === Run dvicmd to extract individual png|svg files.
     pathname_chdir($workdir);
@@ -399,9 +405,13 @@ sub generateImages {
     pathname_chdir($orig_cwd);
 
     if ($dvierr != 0) {
+      $workdir->unlink_on_destroy(0) if $LaTeXML::DEBUG{images};    # Preserve junk
       Error('shell', $$self{dvicmd}, undef,
-"Shell command '$dvicommand' (for " . ($$self{use_dvips} ? "ps" : "dvi") . " conversion) failed (see $workdir for clues)",
-        "Response was: $!");
+        "Shell command '$dvicommand' (for " . ($$self{use_dvips} ? "ps" : "dvi") . " conversion) failed",
+        "Response was: $!",
+        $LaTeXML::DEBUG{images}
+        ? "See $workdir/$jobname.dvioutput"
+        : "Re-run with --debug=images to see log");
       return $doc; }
 
     # extract dimensions from command output
@@ -421,8 +431,15 @@ sub generateImages {
                 $i++;
                 $dimensions[$i] = [$3, $2, $1]; }
               else {
-                Warn('unexpected', 'dvipng', undef, "Unrecognised entry in log file $workdir/$jobname.dvioutput while extracting image dimensions", $_) unless m/^\s*$/; } } } }
+                $warnings++;
+                Warn('unexpected', 'dvipng', undef,
+                  "Unrecognised entry in log file $workdir/$jobname.dvioutput while extracting image dimensions", $_,
+                  $LaTeXML::DEBUG{images}
+                  ? "See $workdir/$jobname.dvioutput"
+                  : "Re-run with --debug=images to see log")
+                  unless m/^\s*$/; } } } }
         else {
+          my $found = 1;    # check that dimensions are found for all images
           while (<$LOG>) {
             # DVISVGM output:
             #  pre-processing DVI [...]
@@ -434,17 +451,42 @@ sub generateImages {
             # dimensions in TeX points, already magnified
             next if $. == 1;
             if (m/^processing page (\d+)$/) {
-              $i = $1; }
+              if (!$found) {
+                $warnings++;
+                Warn('expected', 'dvisvgm', undef,
+                  "dvisvgm did not return dimensions for image $i",
+                  $LaTeXML::DEBUG{images}
+                  ? "See $workdir/$jobname.dvioutput"
+                  : "Re-run with --debug=images to see log"); }
+              $i     = $1;
+              $found = 0; }
             elsif (m/^\s+width=(\d*(?:\.\d*)?)pt,\s+height=(\d*(?:\.\d*)?)pt,\s+depth=(\d*(?:\.\d*)?)pt$/) {
               # convert TeX points to CSS pixels
+              $found = 1;
               $dimensions[$i] = [$1 * 96 / 72.27, $2 * 96 / 72.27, $3 * 96 / 72.27]; }
             elsif (!m/^\s+(?:applying bounding box|graphic size:|output written to)/) {
-              Warn('unexpected', 'dvisvgm', undef, "Unrecognised entry in log file $workdir/$jobname.dvioutput while extracting image dimensions", $_) unless eof; } } }
+              Warn('unexpected', 'dvisvgm', undef,
+                "Unrecognised entry in log file $workdir/$jobname.dvioutput while extracting image dimensions", $_,
+                $LaTeXML::DEBUG{images}
+                ? "See $workdir/$jobname.dvioutput"
+                : "Re-run with --debug=images to see log")
+                unless eof; } }
+          if (!$found) {
+            $warnings++;
+            Warn('expected', 'dvisvgm', undef,
+              "dvisvgm did not return dimensions for image $i",
+              $LaTeXML::DEBUG{images}
+              ? "See $workdir/$jobname.dvioutput"
+              : "Re-run with --debug=images to see log"); } }
         close($LOG); }
       else {
+        $warnings++;
         Warn('expected', 'dimensions', undef,
           "Couldn't read log file $workdir/$jobname.dvioutput to extract image dimensions",
-          "Response was: $!"); } }
+          "Response was: $!",
+          $LaTeXML::DEBUG{images}
+          ? "See $workdir for clues"
+          : "Re-run with --debug=images to see logs"); } }
 
     # === Convert each image to appropriate type and put in place.
     my ($index, $ndigits) = (0, 1 + int(log($doc->cacheLookup((ref $self) . ':_max_image_') || 1) / log(10)));
@@ -465,11 +507,21 @@ sub generateImages {
           else {
             pathname_copy($src, $absdest); }
           if ((($w == 1) && ($ww > 1)) || (($h == 1) && ($hh > 1))) {
-            Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!"); }
+            $warnings++;
+            Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!",
+              $LaTeXML::DEBUG{images}
+              ? "See $workdir/$jobname for clues"
+              : "Re-run with --debug=images to see log"); }
           $doc->cacheStore($$entry{key}, "$dest;$w;$h;$d"); }
       }
       else {
-        Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log"); } } }
+        $warnings++;
+        Warn('expected', 'image', undef, "Missing image '$src'; See $workdir/$jobname.log",
+          $LaTeXML::DEBUG{images}
+          ? "See $workdir/$jobname for clues"
+          : "Re-run with --debug=images to see log"); } }
+
+    $workdir->unlink_on_destroy(0) if $warnings && $LaTeXML::DEBUG{images}; }    # Preserve junk
 
   # Finally, modify the original document to record the associated images.
   foreach my $entry (values %table) {
