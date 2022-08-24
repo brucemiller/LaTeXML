@@ -95,6 +95,8 @@ sub new {
     $$self{dvicmd} = "dvipng -bg Transparent -D$dpi -q --width --height --depth -o imgx-${fmt}03d.png";
     $$self{dvicmd_output_name} = 'imgx-%03d.png';
     $$self{dvicmd_output_type} = 'png32';
+    $$self{clippingfudge}      = 0;
+    $$self{padding}            = $options{padding} || 0;
     $$self{frame_output}       = 0; }
   else {
     # Useful DVIPS options:
@@ -338,6 +340,30 @@ sub generateImages {
         "Shell command '$dvicommand' (for dvi conversion) failed (see $workdir for clues)",
         "Response was: $!");
       return $doc; }
+
+    # extract dimensions from command output
+    if ($$self{use_dvipng} || $$self{use_dvisvgm}) {
+      my $LOG;
+      if (open($LOG, '<', "$workdir/$jobname.dvioutput")) {
+        my $i = 0;    # image counter
+        if ($$self{use_dvipng}) {
+          # DVIPNG output:
+          # This is /path/to/dvipng [...]
+          #  depth=DD height=HH width=WW depth=DD height=HH width=WW [...]
+          while (<$LOG>) {
+            next if $. == 1;    # skip first line
+            foreach (split(/depth=/)) {
+              if (m/^(\d+) height=(\d+) width=(\d+)\s*$/) {
+                $i++;
+                $dimensions[$i] = [$3, $2, $1]; }
+              else {
+                Warn('unexpected', 'dvipng', undef, "Unrecognised entry in log file $workdir/$jobname.dvioutput while extracting image dimensions", $_) unless m/^\s*$/; } } } }
+        close($LOG); }
+      else {
+        Warn('expected', 'dimensions', undef,
+          "Couldn't read log file $workdir/$jobname.dvioutput to extract image dimensions",
+          "Response was: $!"); } }
+
     # === Convert each image to appropriate type and put in place.
     my $pixels_per_pt = $$self{magnification} * $$self{DPI} / 72.27;
     my ($index, $ndigits) = (0, 1 + int(log($doc->cacheLookup((ref $self) . ':_max_image_') || 1) / log(10)));
@@ -349,15 +375,22 @@ sub generateImages {
           unless @dests;
         foreach my $dest (@dests) {
           my $absdest = $doc->checkDestination($dest);
-          my ($ww, $hh, $dd) = map { $_ * $pixels_per_pt } @{ $dimensions[$index] };
-          my ($w, $h);
+          my ($ww, $hh, $dd, $w, $h, $d);
+
+          ($ww, $hh, $dd) = @{ $dimensions[$index] };
+          if ($$self{use_dvipng}) {
+            # dimensions are in (integer) pixel, already magnified
+            ($w, $h, $d) = ($ww, $hh + $dd, $dd); }
+          else {
+            # dimensions are in (TeX) points, not magnified yet
+            ($ww, $hh, $dd) = map { $_ * $pixels_per_pt } ($ww, $hh, $dd);
+            ($w,  $h,  $d)  = (int($ww + 0.5), int($hh + $dd + 0.5), int(0.5 + ($dd || 0))); }
+
           if ($$self{frame_output}) {    # If framed, trim the frame
             ($w, $h) = $self->convert_image($doc, $src, $absdest);
             next unless defined $w && defined $h; }
           else {
-            pathname_copy($src, $absdest);
-            $w = int($ww + 0.5); $h = int($hh + $dd + 0.5); }
-          my $d = int(0.5 + ($dd || 0) + $$self{padding});
+            pathname_copy($src, $absdest); }
           if ((($w == 1) && ($ww > 1)) || (($h == 1) && ($hh > 1))) {
             Warn('expected', 'image', undef, "Image for '$$entry{tex}' was cropped to nothing!"); }
           $doc->cacheStore($$entry{key}, "$dest;$w;$h;$d"); }
