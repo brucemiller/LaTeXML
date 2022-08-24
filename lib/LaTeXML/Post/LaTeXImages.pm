@@ -87,15 +87,15 @@ sub new {
     # a later version of dvisvgm should do better at synthesizing the unicode?
     # but for now, we'll use --no-fonts, which creates glyph drawings rather than "glyphs"
     # Also, increase the bounding box from min by 1pt
-    $$self{dvicmd} = "dvisvgm --page=1- --bbox=1pt --scale=$$self{magnification} --no-fonts -o imgx-${fmt}3p";
+    $$self{dvicmd} = "dvisvgm --page=1- --bbox=preview --scale=$$self{magnification} --exact-bbox --no-fonts -o imgx-${fmt}3p";
     $$self{dvicmd_output_name} = 'imgx-%03d.svg';
     $$self{dvicmd_output_type} = 'svg';
     $$self{frame_output}       = 0; }
   elsif ($$self{use_dvipng}) {
-    $$self{dvicmd}             = "dvipng -bg Transparent -T tight -q -D$dpi -o imgx-${fmt}03d.png";
+    $$self{dvicmd} = "dvipng -bg Transparent -D$dpi -q --width --height --depth -o imgx-${fmt}03d.png";
     $$self{dvicmd_output_name} = 'imgx-%03d.png';
     $$self{dvicmd_output_type} = 'png32';
-    $$self{frame_output}       = 1; }
+    $$self{frame_output}       = 0; }
   else {
     # Useful DVIPS options:
     #  -q  : run quietly
