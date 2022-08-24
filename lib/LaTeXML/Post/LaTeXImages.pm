@@ -301,11 +301,20 @@ sub generateImages {
 
     # Extract dimensions (width x height+depth) from each image from log file.
     my @dimensions = ();
+    # Extract tightpage adjustments from preview.sty (left bottom right top)
+    my @adjustments = (0, 0, 0, 0);
     my $LOG;
     if (open($LOG, '<', "$workdir/$jobname.log")) {
       while (<$LOG>) {
-        if (/^\s*LXIMAGE\s*(\d+)\s*=\s*([\+\-\d\.]+)pt\s*x\s*([\+\-\d\.]+)pt\s*\+\s*([\+\-\d\.]+)pt\s*$/) {
-          $dimensions[$1] = [$2, $3, $4]; } }
+        # "Preview: Tightpage left bottom right top" (dimensions in sp)
+        if (/^Preview: Tightpage (-?\d+) (-?\d+) (-?\d+) (-?\d+)$/) {
+          @adjustments = ($1, $2, $3, $4); }
+        # "Preview: Snippet count height depth width" (dimensions in sp)
+        if (/^Preview: Snippet (\d+) (\d+) (\d+) (\d+)/) {
+          # dimensions = bounding box + adjustments
+          $dimensions[$1] = [($4 - $adjustments[0] + $adjustments[2]) / 65536,
+            ($2 + $adjustments[3]) / 65536,
+            ($3 - $adjustments[1]) / 65536]; } }
       close($LOG); }
     else {
       Warn('expected', 'dimensions', undef,
@@ -390,7 +399,7 @@ sub pre_preamble {
     next if $loaded_check{$package};
     $loaded_check{$package} = 1;
     if ($oldstyle) {
-      next if $package =~ /latexml/;    # some packages are incompatible.
+      next if $package =~ /latexml|preview/;    # some packages are incompatible.
       $packages .= "\\RequirePackage{$package}\n"; }
     else {
       if ($package eq 'english') {
@@ -398,6 +407,13 @@ sub pre_preamble {
       else {
         $package_options = "[$package_options]" if $package_options && ($package_options !~ /^\[.*\]$/);
         $packages .= "\\usepackage$package_options\{$package}\n"; } } }
+
+  # PREVIEW.STY options
+  # active    : output only content of preview environments in separate pages
+  # tightpage : restrict each page to a tight box around the content
+  # lyx       : output page dimensions in sp
+  # psfixbb   : include /dev/null in corners to ensure dvips generates an appropriate bounding box
+  $packages .= ($oldstyle ? "\\RequirePackage" : "\\usepackage") . "[active,tightpage,lyx]{preview}\n";
 
   my $w   = ceil($$self{maxwidth} * $pts_per_pixel);                      # Page Width in points.
   my $gap = ($$self{padding} + $$self{clippingfudge}) * $pts_per_pixel;
@@ -429,43 +445,10 @@ $documentcommand$class_options\{$class}
 $description
 $packages
 \\makeatletter
-\\setlength{\\hoffset}{0pt}\\setlength{\\voffset}{0pt}
 \\setlength{\\textwidth}{${w}pt}
-\\newcount\\lxImageNumber\\lxImageNumber=0\\relax
-\\newbox\\lxImageBox
-\\newdimen\\lxImageBoxSep
-\\setlength\\lxImageBoxSep{${gap}\\p\@}
-\\newdimen\\lxImageBoxRule
-\\setlength\\lxImageBoxRule{${th}\\p\@}
-\\def\\lxShowImage{%
-  \\global\\advance\\lxImageNumber1\\relax
-  \\\@tempdima\\wd\\lxImageBox
-  \\advance\\\@tempdima-\\lxImageBoxSep
-  \\advance\\\@tempdima-\\lxImageBoxSep
-  \\typeout{LXIMAGE \\the\\lxImageNumber\\space= \\the\\\@tempdima\\space x \\the\\ht\\lxImageBox\\space + \\the\\dp\\lxImageBox}%
-  \\\@tempdima\\lxImageBoxRule
-  \\advance\\\@tempdima\\lxImageBoxSep
-  \\advance\\\@tempdima\\dp\\lxImageBox
-  \\hbox{%
-    \\lower\\\@tempdima\\hbox{%
-      \\vbox{%
-        \\hrule\\\@height\\lxImageBoxRule%
-        \\hbox{%
-          \\vrule\\\@width\\lxImageBoxRule%
-          \\vbox{%
-           \\vskip\\lxImageBoxSep
-          \\box\\lxImageBox
-           \\vskip\\lxImageBoxSep
-           }%
-          \\vrule\\\@width\\lxImageBoxRule%
-          }%
-        \\hrule\\\@height\\lxImageBoxRule%
-         }%
-         }%
-        }%
-}%
-\\def\\lxBeginImage{\\setbox\\lxImageBox\\hbox\\bgroup\\color\@begingroup\\kern\\lxImageBoxSep}
-\\def\\lxEndImage{\\kern\\lxImageBoxSep\\color\@endgroup\\egroup}
+\\setlength\\PreviewBorder{${gap}\\p\@}
+\\def\\lxBeginImage{\\begin{preview}}
+\\def\\lxEndImage{\\end{preview}}
 $preambles
 \\makeatother
 EOPreamble
