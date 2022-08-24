@@ -32,8 +32,13 @@ our $LATEXCMD = 'latex';    #(or elatex) [ CONFIGURABLE? Encoded in PI?]
 # The purpose of this module is to convert TeX fragments into png (or similar),
 # typically via dvi and other intermediate formats.
 # LaTeX converts the TeX stuff to dvi;
-# dvips converts the dvi to eps, and ImageMagick can convert the eps to png;
+# dvips converts the dvi to ps, and ghostscript converts to png
+# then ImageMagick extracts the dimensions and converts from png if necessary
 # OR dvipng can convert the dvi to png MUCH quicker... if it's available.
+# OR dvisvgm for high quality SVG output, if available
+
+# preview.sty is used to inform gs/dvipng/dvisvgm how to clip the image
+# and recover the depth for vertical alignment
 
 # Options:
 #   source         : (dir)
