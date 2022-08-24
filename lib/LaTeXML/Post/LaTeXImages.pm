@@ -101,15 +101,17 @@ sub new {
     $$self{dvicmd_output_name} = 'imgx-%03d.png';
     $$self{dvicmd_output_type} = 'png32'; }
   else {
+    # will run dvips before $$self{dvicmd}
     $$self{use_dvips} = 1;
     # GS options:
     #  -q                   : quiet
-    #  -sDEVICE=png16malpha : set output to 32-bit RGBA PNG
+    #  -sDEVICE=pngalpha    : set output to 32-bit RGBA PNG
     #  -r                   : resolution
     #  -dGraphicAlphaBits=4 : subsample antialiasing
     #  -dTextAlphaBits=4    : subsample antialiasing
     #  -dSAFER -dBATCH ...  : suppress interactivity and enable security checks
-    $$self{dvicmd} = "gs -q -sDEVICE=pngalpha -r$$self{DPI}" .
+    # dvicmd will be filled by canProcess with the available ghostscript executable
+    $$self{dvicmd_opts} = "-q -sDEVICE=pngalpha -r$$self{DPI}" .
       " -dGraphicsAlphaBits=4 -dTextAlphaBits=4 -dSAFER -dBATCH -dNOPAUSE" .
       " -sOutputFile=imgx-%03d.png";
     $$self{dvicmd_output_name} = 'imgx-%03d.png';
@@ -124,9 +126,13 @@ sub new {
 # is even needed.
 # This test is called once we know that, from within
 #
+# NOTE: the test MUST be called if using ghostscript in order to find the
+# correct executable on Windows.
+#
 # At any rate: To process LaTeX snippets into images, we will need
 #  * latex (or related) from a TeX installation
 #  * Image::Magick (or similar) [see LaTeXML::Util::Image]
+#  * dvips and ghostscript if not using dvipng, dvisvgm
 sub canProcess {
   my ($self) = @_;
   # Check if we have Image::Magick (or similar)
@@ -141,6 +147,23 @@ sub canProcess {
       "No latex command ($LATEXCMD) found; Skipping.",
       "Please install TeX to generate images from LaTeX");
     return; }
+  # likewise for dvips and gs, if necessary
+  if ($$self{use_dvips}) {
+    if (!which('dvips')) {
+      Error('expected', 'dvips', undef,
+        "No dvips command found; Skipping.",
+        "Please install dvisvgm, dvipng, or dvips and ghostscript to generate images from LaTeX");
+      return; }
+    else {
+      # find ghostscript executable
+      my @gscmd = grep { which $_ } ($^O eq 'MSWin32' ? ('gswin64c', 'gswin64', 'gswin32c', 'gswin32', 'mgs') : ('gs'));
+      if (@gscmd) {
+        $$self{dvicmd} = $gscmd[0] . ' ' . $$self{dvicmd_opts}; }
+      else {
+        Error('expected', 'gs', undef, "No ghostscript executable ("
+            . ($^O eq 'MSWin32' ? 'gswin64c, gswin64, gswin32c, gswin32, mgs' : 'gs')
+            . ") found; Skipping.", "Please install ghostscript to generate images from LaTeX");
+        return; } } }
   return 1; }
 
 #**********************************************************************
