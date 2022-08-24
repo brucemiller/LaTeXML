@@ -336,8 +336,8 @@ sub generateImages {
     if ($$self{use_dvips}) {
       # Useful DVIPS options:
       #  -q  : run quietly
-      #  -x#  : magnification * 1000
-      #  -j0  : don't subset fonts; silly really, but some font tests are making problems!
+      #  -x# : magnification * 1000
+      #  -j0 : don't subset fonts; silly really, but some font tests are making problems!
       my $mag          = int($$self{magnification} * 1000);
       my $dvipscommand = "dvips -q -j0 -x$mag -o $jobname.ps $jobname.dvi > $jobname.dvipsoutput";
       my $dvipserr     = 0;
@@ -363,7 +363,8 @@ sub generateImages {
     }
 
     # Extract dimensions (width x height+depth) from each image from log file.
-    my @dimensions = ();
+    my $pixels_per_pt = $$self{magnification} * $$self{DPI} / 72.27;
+    my @dimensions    = ();
     # Extract tightpage adjustments from preview.sty (left bottom right top)
     my @adjustments = (0, 0, 0, 0);
     my $LOG;
@@ -375,9 +376,10 @@ sub generateImages {
         # "Preview: Snippet count height depth width" (dimensions in sp)
         if (/^Preview: Snippet (\d+) (\d+) (\d+) (\d+)/) {
           # dimensions = bounding box + adjustments
-          $dimensions[$1] = [($4 - $adjustments[0] + $adjustments[2]) / 65536,
-            ($2 + $adjustments[3]) / 65536,
-            ($3 - $adjustments[1]) / 65536]; } }
+          $dimensions[$1] =
+            [($4 - $adjustments[0] + $adjustments[2]) / 65536 * $pixels_per_pt,
+            ($2 + $adjustments[3]) / 65536 * $pixels_per_pt,
+            ($3 - $adjustments[1]) / 65536 * $pixels_per_pt]; } }
       close($LOG); }
     else {
       Warn('expected', 'dimensions', undef,
@@ -411,6 +413,7 @@ sub generateImages {
           # DVIPNG output:
           # This is /path/to/dvipng [...]
           #  depth=DD height=HH width=WW depth=DD height=HH width=WW [...]
+          # dimensions in pixels, already magnified
           while (<$LOG>) {
             next if $. == 1;    # skip first line
             foreach (split(/depth=/)) {
@@ -428,11 +431,13 @@ sub generateImages {
             #    width=W.WWpt, height=H.HHpt, depth=D.DDpt
             #    output written to [...]
             #  N of N page converted [...]
+            # dimensions in TeX points, already magnified
             next if $. == 1;
             if (m/^processing page (\d+)$/) {
               $i = $1; }
             elsif (m/^\s+width=(\d*(?:\.\d*)?)pt,\s+height=(\d*(?:\.\d*)?)pt,\s+depth=(\d*(?:\.\d*)?)pt$/) {
-              $dimensions[$i] = [$1, $2, $3]; }
+              # convert TeX points to CSS pixels
+              $dimensions[$i] = [$1 * 96 / 72.27, $2 * 96 / 72.27, $3 * 96 / 72.27]; }
             elsif (!m/^\s+(?:applying bounding box|graphic size:|output written to)/) {
               Warn('unexpected', 'dvisvgm', undef, "Unrecognised entry in log file $workdir/$jobname.dvioutput while extracting image dimensions", $_) unless eof; } } }
         close($LOG); }
@@ -442,7 +447,6 @@ sub generateImages {
           "Response was: $!"); } }
 
     # === Convert each image to appropriate type and put in place.
-    my $pixels_per_pt = $$self{magnification} * $$self{DPI} / 72.27;
     my ($index, $ndigits) = (0, 1 + int(log($doc->cacheLookup((ref $self) . ':_max_image_') || 1) / log(10)));
     foreach my $entry (@pending) {
       my $src = "$workdir/" . sprintf($$self{dvicmd_output_name}, ++$index);
@@ -452,20 +456,8 @@ sub generateImages {
           unless @dests;
         foreach my $dest (@dests) {
           my $absdest = $doc->checkDestination($dest);
-          my ($ww, $hh, $dd, $w, $h, $d);
-
-          ($ww, $hh, $dd) = @{ $dimensions[$index] };
-          if ($$self{use_dvipng}) {
-            # dimensions are in (integer) pixel, already magnified
-            ($w, $h, $d) = ($ww, $hh + $dd, $dd); }
-          elsif ($$self{use_dvisvgm}) {
-            # dimensions are in (TeX) points, already magnified
-            ($ww, $hh, $dd) = map { $_ * 96 / 72.27 } ($ww, $hh, $dd);
-            ($w,  $h,  $d)  = (int($ww + 0.5), int($hh + $dd + 0.5), int($dd + 0.5)); }
-          else {
-            # dimensions are in (TeX) points, not magnified yet
-            ($ww, $hh, $dd) = map { $_ * $pixels_per_pt } ($ww, $hh, $dd);
-            ($w,  $h,  $d)  = (int($ww + 0.5), int($hh + $dd + 0.5), int(0.5 + ($dd || 0))); }
+          my ($ww, $hh, $dd) = @{ $dimensions[$index] };
+          my ($w,  $h,  $d)  = (int($ww + 0.5), int($hh + $dd + 0.5), int(0.5 + $dd));
 
           if ($$self{use_dvips}) {    # If using dvips, convert (if necessary) and recover final image size
             ($w, $h) = $self->convert_image($doc, $src, $absdest);
