@@ -92,6 +92,13 @@ sub new {
     $$self{padding}            = $options{padding} || 0;
     $$self{frame_output}       = 0; }
   elsif ($$self{use_dvipng}) {
+    # DVIPNG options:
+    # -bg      : Background color
+    # -D       : Output resolution
+    # -q       : Quiet operation
+    # --width  : Output the image width on stdout (in pixels)
+    # --height : Output the image height on stdout (in pixels)
+    # --depth  : Output the image depth on stdout (in pixels)
     $$self{dvicmd} = "dvipng -bg Transparent -D$dpi -q --width --height --depth -o imgx-${fmt}03d.png";
     $$self{dvicmd_output_name} = 'imgx-%03d.png';
     $$self{dvicmd_output_type} = 'png32';
