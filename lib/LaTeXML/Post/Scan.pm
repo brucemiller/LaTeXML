@@ -286,9 +286,12 @@ sub section_handler {
   if ($id) {
     $$self{db}->register("ID:$id",
       $self->addCommon($doc, $node, $tag, $parent_id),
-      primary  => 1,
-      title    => orNull($self->cleanNode($doc, $doc->findnode('ltx:title',    $node))),
-      toctitle => orNull($self->cleanNode($doc, $doc->findnode('ltx:toctitle', $node))),
+      primary     => 1,
+      title       => orNull($self->cleanNode($doc, $doc->findnode('ltx:title',    $node))),
+      toctitle    => orNull($self->cleanNode($doc, $doc->findnode('ltx:toctitle', $node))),
+      language    => orNull($node->getAttribute('xml:lang')),
+      frontmatter => [map { $self->cleanNode($doc, $_) }
+          $doc->findnodes('ltx:creator | ltx:subtitle | ltx:date | ltx:abstract | ltx:acknowledgements | ltx:keywords | ltx:classification', $node)],
       children => [],
       stub     => orNull($node->getAttribute('stub')));
     $self->addAsChild($id, $parent_id); }
