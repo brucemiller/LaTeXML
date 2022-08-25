@@ -557,8 +557,8 @@ sub convert_post {
         push(@{ $$parameters{JAVASCRIPT} }, $js); }
       if ($$opts{icon}) {
         $$parameters{ICON} = $$opts{icon}; }
-      if (!defined $$opts{timestamp}) { $$opts{timestamp}       = localtime(); }
-      if ($$opts{timestamp})          { $$parameters{TIMESTAMP} = "'" . $$opts{timestamp} . "'"; }
+      if (!defined $$opts{timestamp}) { $$opts{timestamp} = defined $ENV{SOURCE_DATE_EPOCH} ? gmtime($ENV{SOURCE_DATE_EPOCH}) : localtime(); }
+      if ($$opts{timestamp}) { $$parameters{TIMESTAMP} = "'" . $$opts{timestamp} . "'"; }
       # Now add in the explicitly given XSLT parameters
       foreach my $parm (@{ $$opts{xsltparameters} }) {
         if ($parm =~ /^\s*(\w+)\s*:\s*(.*)$/) {

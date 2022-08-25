@@ -250,6 +250,10 @@ sub get_archive {
     my $current_dir = File::Spec->catdir($directory, $subdir);
     $archive->addTree($current_dir, $subdir, sub { !/$archive_file_exclusion_regex/ }, COMPRESSION_DEFLATED); }
 
+  if (defined $ENV{SOURCE_DATE_EPOCH}) {
+    for my $member ($archive->members()) {
+      $member->setLastModFileDateTimeFromUnix($ENV{SOURCE_DATE_EPOCH}); } }
+
   my $payload;
   if ($whatsout =~ /^archive(::zip)?$/) {
     my $content_handle = IO::String->new($payload);

@@ -1081,7 +1081,7 @@ DefMacro('\tracingall',
 DefMacroI('\tracingnone', undef, Tokens());
 DefMacroI('\hideoutput',  undef, Tokens());
 # This may mess up Daemon state?
-{ my ($sec, $min, $hour, $mday, $mon, $year) = localtime();
+{ my ($sec, $min, $hour, $mday, $mon, $year) = defined $ENV{SOURCE_DATE_EPOCH} ? gmtime($ENV{SOURCE_DATE_EPOCH}) : localtime();
   AssignValue('\day'   => Number($mday),             'global');
   AssignValue('\month' => Number($mon + 1),          'global');
   AssignValue('\year'  => Number(1900 + $year),      'global');
