@@ -13,6 +13,7 @@ package LaTeXML::Post::Manifest::Epub;
 use strict;
 use warnings;
 use File::Find qw(find);
+use LaTeXML::Post::CrossRef;
 use URI::file;
 
 our $uuid_tiny_installed;
@@ -93,49 +94,137 @@ sub initialize {
   my $opf     = XML::LibXML::Document->new('1.0', 'UTF-8');
   my $package = $opf->createElementNS("http://www.idpf.org/2007/opf", 'package');
   $opf->setDocumentElement($package);
-  $package->setAttribute('unique-identifier', 'pub-id');
-  $package->setAttribute('version',           '3.0');
+  $package->setAttribute('version', '3.0');
 
   # Metadata
   my $rootentry         = $$self{db}->lookup('SITE_ROOT');
   my $document_metadata = $$self{db}->lookup("ID:" . $rootentry->getValue('id'));
+  # Required elements
   my $document_title    = $document_metadata->getValue('title');
-  $document_title = $document_title ? $document_title->textContent : 'No Title';
-  my $document_authors = $document_metadata->getValue('authors') || [];
-  $document_authors = [map { $_->textContent } @$document_authors];
   my $document_language = $document_metadata->getValue('language') || 'en';
+  $document_title = $document_title ? $document_title->textContent : 'No Title';
 
-  # Fish out any existing unique identifier for the book
-  #       the UUID is the fallback default
-  my $uid = $document_metadata->getValue('dc:identifier') ||
-    "urn:uuid:" . _uuid();
-  unless (($uid =~ /^urn:/) || pathname_is_url($uid)) {    # Already qualified
-    my $type = 'uuid';
-    if ($uid =~ /^[\d\- ]+$/) {                            # ISBN
-      $type = 'isbn'; }
-    elsif ($uid =~ /^[\d\-._\/ ]+$/) {
-      $type = 'doi'; }
-    $uid = "urn:$type:$uid"; }                             # Set the guessed qualified name
-                                                           # Save the identifier
-  $$self{'unique-identifier'} = $uid;
+  # Optional elements
+  my $document_shorttitle  = $document_metadata->getValue('toctitle');
+  my $document_frontmatter = $document_metadata->getValue('frontmatter');
 
   my $metadata = $package->addNewChild(undef, 'metadata');
-  $metadata->setNamespace("http://purl.org/dc/elements/1.1/", "dc",  0);
-  $metadata->setNamespace("http://www.idpf.org/2007/opf",     'opf', 0);
-  my $title = $metadata->addNewChild("http://purl.org/dc/elements/1.1/", "title");
-  $title->appendText($document_title);
-  foreach my $document_author (@$document_authors) {
-    my $author = $metadata->addNewChild("http://purl.org/dc/elements/1.1/", "creator");
-    $author->appendText($document_author); }
-  my $language = $metadata->addNewChild("http://purl.org/dc/elements/1.1/", "language");
-  $language->appendText($document_language);
+  $metadata->setNamespace('http://purl.org/dc/elements/1.1/', 'dc',  0);
+  $metadata->setNamespace('http://www.idpf.org/2007/opf',     'opf', 0);
+  $metadata->appendTextChild('dc:title',    $document_title);
+  $metadata->appendTextChild('dc:language', $document_language);
   my $modified = $metadata->addNewChild(undef, "meta");
-  $modified->setAttribute('property', 'dcterms:modified');
+  $modified->{property} = 'dcterms:modified';
   my $now_string = strftime "%Y-%m-%dT%H:%M:%SZ", gmtime;    # CCYY-MM-DDThh:mm:ssZ
   $modified->appendText($now_string);
-  my $identifier = $metadata->addNewChild("http://purl.org/dc/elements/1.1/", "identifier");
-  $identifier->setAttribute('id', 'pub-id');
-  $identifier->appendText($$self{'unique-identifier'});
+
+  my %creator_roles = (
+    'author'      => ['creator',     'aut'],
+    'editor'      => ['creator',     'edc'],
+    'translator'  => ['contributor', 'trl'],
+    'contributor' => ['contributor', 'ctb']);
+  my %creators;
+
+  my %date_terms = (
+    'creation'  => 'created',
+    'accepted'  => 'dateAccepted',
+    'copyright' => 'dateCopyrighted',
+    'submitted' => 'dateSubmitted');
+
+  my %counters;
+
+  my $uid;
+
+  foreach my $node ($document_shorttitle, @$document_frontmatter) {
+    next if !defined $node;
+    my $name = $node->nodeName;
+    my $text = &LaTeXML::Post::CrossRef::getTextContent($doc, $node);
+
+    # $dcname => <dc:$dcname id="$dcnameN">text content</dc:$dcname>
+    # @props  => <meta refines="#$dcnameN" property="$props[0]" %$props[2]>$props[1]</meta>
+    my ($dcname, @props) = (undef, ());
+
+    if ($name eq 'toctitle') {
+      $dcname = 'title';
+      @props  = (['title-type', 'short', {}]); }
+    elsif ($name eq 'subtitle') {
+      $dcname = 'title';
+      @props  = (['title-type', 'subtitle', {}]); }
+    elsif ($name eq 'abstract') {
+      $dcname = 'description'; }
+    elsif ($name eq 'keywords') {
+      $dcname = 'subject';
+      my $desc = $node->{name};
+      if ($desc) {
+        $text = "$desc $text"; } }
+    elsif ($name eq 'classification') {
+      my $scheme = $node->{scheme};
+      if ($scheme =~ m/^(?:doi|pii)$/i) {
+        $dcname = 'identifier';
+        $scheme = lc($scheme);
+        $text   = "urn:$scheme:$text"; }
+      elsif ($scheme eq 'keywords') {
+        $dcname = 'subject'; }
+      elsif ($scheme =~ m/^issn$/i) {
+        # use <meta> instead of <dc:...>
+        my $series = $metadata->addNewChild(undef, 'meta');
+        $series->{property} = 'dcterms:isPartOf';
+        $series->appendText("urn:issn:$text");
+        next; }
+      else {
+        $dcname = 'subject';
+        my $desc = $node->{name};
+        if ($desc || $scheme) {
+          $text = ($desc // $scheme) . ' ' . $text; } } }
+    elsif ($name eq 'creator') {
+      my $role = $node->{role};
+      ($dcname, my $marcrole) = @{ $creator_roles{$role} };
+      if (defined $creators{$marcrole}) {
+        $creators{$marcrole}->appendText($node->{before} . "$text");
+        next; }
+      @props = (['role', $marcrole, { 'scheme' => 'marc:relators' }]); }
+    elsif ($name eq 'date') {
+      my $role = $node->{role} // '';
+      if ($role eq 'publication' || $role eq 'published') {
+        $dcname = 'date'; }
+      elsif (my $term = $date_terms{$role}) {
+        # use <meta> instead of <dc:...>
+        my $date = $metadata->addNewChild(undef, 'meta');
+        $date->{property} = 'dcterms:' . $term;
+        $date->appendText($text);
+        next; }
+      else {
+        # date term not recognised, omit
+        next; } }
+
+    if (defined $dcname) {
+      my $id = $dcname . ++$counters{$dcname};
+      my $dc = $metadata->addNewChild(undef, 'dc:' . $dcname);
+      if ($name eq 'creator') {
+        $creators{ $props[0][1] } = $dc; }
+      elsif ($dcname eq 'identifier' && !defined $uid) {
+        $uid = $id; }
+      $dc->{id} = $id;
+      $dc->appendText($text);
+      for my $prop (@props) {
+        my $refine = $metadata->addNewChild(undef, 'meta');
+        $refine->{refines}  = '#' . $id;
+        $refine->{property} = $$prop[0];
+        $refine->appendText($$prop[1]);
+        for my $aname (keys %{ $$prop[2] }) {
+          $refine->{$aname} = $$prop[2]{$aname}; } } }
+  }
+
+  if (!defined $uid) {
+    # no unique identifier found, fallback to random uuid
+    my $uuid       = 'urn:uuid:' . _uuid();
+    my $identifier = $metadata->addNewChild(undef, 'dc:identifier');
+    $identifier->{id} = 'pub-id';
+    $identifier->appendText($uuid);
+    $package->{'unique-identifier'} = 'pub-id';
+  } else {
+    $package->{'unique-identifier'} = $uid; }
+
   # Manifest
   my $manifest = $package->addNewChild(undef, 'manifest');
   my $spine    = $package->addNewChild(undef, 'spine');
