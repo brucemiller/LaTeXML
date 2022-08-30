@@ -66,7 +66,7 @@ sub UTF {
 
 my %BREAKBEFOREOPS = map { ($_ => 1) }    # [CONSTANT]
                                           # Various addops
-  "+", "-", UTF(0xB1), "\x{2213}";
+  "+", "-", UTF(0xB1), "\x{2212}", "\x{2213}";
 my %BREAKAFTEROPS = map { ($_ => 1) }     # [CONSTANT]
   ",";
 my %RELATIONOPS = map { ($_ => 1) }       # [CONSTANT]
