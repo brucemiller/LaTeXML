@@ -5251,20 +5251,21 @@ DefMacro('\narrower', '\advance\leftskip by\parindent'
 # Not (yet) used by TeX (finish plain?)
 # But provides support for LaTeX (and other formats?) for handling frontmatter.
 #
-# The idea is to accumulate any frontmatter material (title, author,...)
-# rather than directly drop it into the digested stream.
-# When we begin constructing the document, all accumulated material is output.
+# The idea is to split frontmatter processing into three phases:
+# 1. Accumulate any (undigested) tokens belonging to the frontmatter
+# 2. Digest the tokens at an appropriate time (during \maketitle)
+# 3. Drop the frontmatter into the document
 # See LaTeX.ltxml for usage.
+#
 # Note: could be circumstances where you'd want modular frontmatter?
 # (ie. frontmatter for each sectional unit)
 AssignValue(frontmatter => {}, 'global');
 
 DefConditionalI('\if@in@preamble', undef, sub { LookupValue('inPreamble'); });
 
-my @frontmatter_latedigest = (qw(ltx:title));
-my %frontmatter_latedigest = map { ($_ => 1) } @frontmatter_latedigest;
-
-# Frontmatter elements for which the 'replace' option is set automatically
+# Typically frontmatter can be repeated.
+# However for some elements, only a single value is allowed.
+# This is enabled automatically for some elements.
 my @frontmatter_autoreplace = (qw(ltx:title ltx:toctitle ltx:subtitle ltx:date));
 my %frontmatter_autoreplace = map { ($_ => 1) } @frontmatter_autoreplace;
 
@@ -5292,12 +5293,11 @@ DefPrimitive('\@add@frontmatter OptionalKeyVals {} OptionalKeyVals {}', sub {
       $$frontmatter{$tag} = []; }    # Remove previous entries
     if ($keys && $keys->hasKey('ifnew') && $$frontmatter{$tag}) {    # if ifnew and previous entries
       return; }                                                      # Skip this one.
-    my $entry = [$tag, undef, 'to-be-filled-in'];
+    my $entry = [$tag, 0, undef, 'to-be-filled-in'];
     push(@{ $$frontmatter{$tag} }, $entry);
     if ($attr) {
-      $$entry[1] = { $attr->beDigested($stomach)->getHash }; }
-    $$entry[2] = Tokens(T_BEGIN, $tokens, T_END);
-    $$entry[2] = Digest($$entry[2]) unless exists($frontmatter_latedigest{$tag});
+      $$entry[2] = { $attr->beDigested($stomach)->getHash }; }
+    $$entry[3] = Tokens(T_BEGIN, $tokens, T_END);
     AssignValue(inPreamble => $inpreamble);
     return; },
   beforeDigest => sub {
@@ -5318,24 +5318,49 @@ DefPrimitive('\@add@to@frontmatter {} [] {}', sub {
 
     my $inpreamble = LookupValue('inPreamble');
     AssignValue(inPreamble => 0);
-    my $datum = Digest(Tokens(T_BEGIN, $tokens, T_END));
+    my $datum = Tokens(T_BEGIN, $tokens, T_END);
     AssignValue(inPreamble => $inpreamble);
     if ($label) {
       my $entry;
       foreach my $item (@{ $$frontmatter{$tag} || [] }) {
-        my ($itag, $iattr, @stuff) = @$item;
+        my ($itag, $idigested, $iattr, @stuff) = @$item;
         if ($label eq ($$iattr{label} || '')) {
+          # make sure that all items are either digested or undigested!
+          if ($idigested) {
+            Warn('unexpected', "$tag", $stomach, "appending to already digested frontmatter"); }
+          $datum = Digest($datum);
           push(@$item, $datum);
           return; } } }
     elsif (my $list = $$frontmatter{$tag}) {
       push(@{ $$list[-1] }, $datum);
       return; }
-    push(@{ $$frontmatter{$tag} }, [$tag, ($label ? { label => $label } : undef), $datum]);
+    push(@{ $$frontmatter{$tag} }, [$tag, 0, ($label ? { label => $label } : undef), $datum]);
     return; },
   beforeDigest => sub {
     $_[0]->bgroup; },
   afterDigest => sub {
     $_[0]->egroup; });
+
+# This is called to digest any frontmatter that has not yet been digested.
+# It can safely be called multiple times.
+sub digestFrontMatter {
+  my $frontmatter = LookupValue('frontmatter');
+  foreach my $tag (keys %$frontmatter) {
+    # iterate over all the values
+    if (my $list = $$frontmatter{$tag}) {
+      @$list =
+        map {
+        my $item = $_;
+        my ($itag, $idigested, $iattr, @istuff) = @$item;
+        unless ($idigested) {
+          $idigested = 1;
+          @istuff    = Digest(@istuff); }
+        [($itag, $idigested, $iattr, @istuff)];
+        } @$list; } }
+  return; }
+
+# have a primitive, so we can trigger this during \maketitle!
+DefPrimitive('\@digest@frontmatter', \&digestFrontMatter);
 
 # This is called by afterOpen (by default on <ltx:document>) to
 # output any frontmatter that was accumulated.
@@ -5346,7 +5371,8 @@ my @frontmatter_elements = (qw(ltx:title ltx:toctitle ltx:subtitle
 my %frontmatter_elements = map { ($_ => 1) } @frontmatter_elements;
 
 sub insertFrontMatter {
-  my ($document)  = @_;
+  my ($document) = @_;
+  digestFrontMatter();    # digest any frontmatter that has not yet been digested!
   my $frontmatter = LookupValue('frontmatter');
   my @set_keys    = $frontmatter ? (keys %$frontmatter) : ();
   # if doc only has a solo abstract as frontmatter,
@@ -5362,8 +5388,10 @@ sub insertFrontMatter {
       # Dubious, but assures that frontmatter appears in text mode...
       local $LaTeXML::BOX = Box('', $STATE->lookupValue('font'), '', T_SPACE);
       foreach my $item (@$list) {
-        my ($tag, $attr, @stuff) = @$item;
-        @stuff = Digest(@stuff) if exists($frontmatter_latedigest{$tag}); 
+        my ($tag, $digested, $attr, @stuff) = @$item;
+        unless ($digested) {    # this warning should never occur, because we call digestFrontMatter above!
+          @stuff = Digest(@stuff);
+          Warn('unexpected', "$tag", $document, "undigested frontmatter item found"); }
         # add a dedicated class for frontmatter notes,
         # in the case we want to style those uniformly.
         if ($tag eq 'ltx:note') {
