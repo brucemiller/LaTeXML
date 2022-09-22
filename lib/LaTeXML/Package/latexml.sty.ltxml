@@ -25,10 +25,6 @@ no warnings 'redefine';    # ????
 #======================================================================
 
 DefConditional('\iflatexml', sub { 1; });
-DefPrimitive('\latexmltrue', sub {
-    Warning('unexpected', '\\latexmltrue', $_[0], "Cannot change \\iflatexml!"); });
-DefPrimitive('\latexmlfalse', sub {
-    Warning('unexpected', '\\latexmlfalse', $_[0], "Cannot change \\iflatexml!"); });
 
 #======================================================================
 # Package Options
