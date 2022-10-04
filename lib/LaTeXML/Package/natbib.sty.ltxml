@@ -87,10 +87,10 @@ setCitationStyle(round => 1, semicolon => 1);
 # [FUTURE: Maybe this can be encoded as attributes on ltx:bibliography ???
 #  But then we need to put in stub elements to be filled in by CrossRef! Ugh]
 # In any case, \bibstyle may get redefined by options, so define it now!
+Let('\lx@orig@bibstyle','\bibstyle');
 DefMacro('\bibstyle{}', sub {
     my $style = T_CS('\bibstyle@' . ToString($_[1]));
-    (LookupDefinition($style) ? ($style) : (T_CS('\relax'))); });
-#AtBeginDocument{\global\let\bibstyle=\@gobble}
+    (LookupDefinition($style) ? ($style) : Invocation(T_CS('\lx@orig@bibstyle'),$_[1])); });
 Let('\@citestyle', '\bibstyle');
 
 # # They _say_ round & semicolon but ...
@@ -485,14 +485,15 @@ DefMacro('\shortcites Semiverbatim', '');
 #   \bibitem[\protect\citename{Jones et al., }1990]{key}...
 #   \harvarditem[Jones et al.]{Jones, Baker, and Williams}{1990}{key}...
 
-DefMacro('\bibitem',
-##         '\reset@natbib@cites\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[\the@bibitem]}',
+DefMacro('\lx@bibitem',
   '\reset@natbib@cites\refstepcounter{@bibitem}\@ifnextchar[{\@lbibitem}{\@lbibitem[]}',
   locked => 1);
 
 RawTeX(<<'EOTeX');
 %%%
+%%%\let\natbib@citeauthoryear\citeauthoryear
 \def\citeauthoryear#1#2#3(@)(@)\@nil#4{%
+%%%\def\ltx@citeauthoryear#1#2#3(@)(@)\@nil#4{%
   \if\relax#3\relax
     \NAT@wrout{\the@bibitem}{#2}{#1}{}{#4}\else
     \NAT@wrout{\the@bibitem}{#3}{#2}{#1}{#4}\fi}

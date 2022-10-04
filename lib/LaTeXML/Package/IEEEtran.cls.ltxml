@@ -329,7 +329,7 @@ DefMacro('\IEEEeqnarraynumspace', '');
 
 Let(T_CS('\appendices'), T_CS('\appendix'));
 
-$$LaTeXML::Package::Pool::BIBSTYLES{IEEEtran} = { citestyle => 'numbers', sort => 'true' };
+$$LaTeXML::Package::Pool::BIBSTYLES{IEEEtran} = { citestyle => 'numbers'};
 
 DefMacro('\IEEEsetlabelwidth{}',  '\settowidth{\labelwidth}{#1}');
 DefMacro('\IEEEusemathlabelsep',  '');
