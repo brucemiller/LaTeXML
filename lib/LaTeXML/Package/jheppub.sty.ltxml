@@ -46,9 +46,12 @@ DefMacro('\emailAdd Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{
 DefMacro('\keywordname', '\textbf{Keywords}');
 DefMacro('\keywords{}',  '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
 
-DefMacro('\arxivnumber{}', '\@add@frontmatter{ltx:note}[role=arxiv]{#1}');
-
-DefMacro('\toccontinuoustrue', '');
+DefMacro('\arxivnumber{}',        '\@add@frontmatter{ltx:note}[role=arxiv]{#1}');
+DefMacro('\preprint{}',           '\@add@frontmatter{ltx:note}[role=preprint]{#1}');
+DefMacro('\proceeding{}',         '\@add@frontmatter{ltx:note}[role=proceeding]{#1}');
+DefMacro('\dedicated{}',          '\@add@frontmatter{ltx:note}[role=dedication]{#1}');
+DefMacro('\collaboration{}{}',    '\@add@to@frontmatter{ltx:creator}{\@@@collaborator{#2}}');
+DefMacro('\collaborationImg[]{}', '');                                                          # ?
 
 DefMacro('\acknowledgmentsname', 'Acknowledgements');
 DefConstructor('\acknowledgments', "<ltx:acknowledgements name='#name'>",
@@ -56,5 +59,54 @@ DefConstructor('\acknowledgments', "<ltx:acknowledgements name='#name'>",
 DefConstructor('\endacknowledgments', "</ltx:acknowledgements>");
 Tag("ltx:acknowledgements", autoClose => 1);
 
-# #======================================================================
+DefConditional('\ifaffil',         undef);
+DefConditional('\ifnotoc',         undef);
+DefConditional('\ifemailadd',      undef);
+DefConditional('\iftoccontinuous', undef);
+
+# explicitly empty
+DefMacro('\@subheader',        '\@empty');
+DefMacro('\@keywords',         '\@empty');
+DefMacro('\@abstract',         '\@empty');
+DefMacro('\@xtum',             '\@empty');
+DefMacro('\@dedicated',        '\@empty');
+DefMacro('\@arxivnumber',      '\@empty');
+DefMacro('\@collaboration',    '\@empty');
+DefMacro('\@collaborationImg', '\@empty');
+DefMacro('\@proceeding',       '\@empty');
+DefMacro('\@preprint',         '\@empty');
+
+# spacing macros
+DefMacro('\afterLogoSpace',             '\smallskip');
+DefMacro('\afterSubheaderSpace',        '\vskip3pt plus 2pt minus 1pt');
+DefMacro('\afterProceedingsSpace',      '\vskip21pt plus0.4fil minus15pt');
+DefMacro('\afterTitleSpace',            '\vskip23pt plus0.06fil minus13pt');
+DefMacro('\afterRuleSpace',             '\vskip23pt plus0.06fil minus13pt');
+DefMacro('\afterCollaborationSpace',    '\vskip3pt plus 2pt minus 1pt');
+DefMacro('\afterCollaborationImgSpace', '\vskip3pt plus 2pt minus 1pt');
+DefMacro('\afterAuthorSpace',           '\vskip5pt plus4pt minus4pt');
+DefMacro('\afterAffiliationSpace',      '\vskip3pt plus3pt');
+DefMacro('\afterEmailSpace',            '\vskip16pt plus9pt minus10pt\filbreak');
+DefMacro('\afterXtumSpace',             '\par\bigskip');
+DefMacro('\afterAbstractSpace',         '\vskip16pt plus9pt minus13pt');
+DefMacro('\afterKeywordsSpace',         '\vskip16pt plus9pt minus13pt');
+DefMacro('\afterArxivSpace',            '\vskip3pt plus0.01fil minus10pt');
+DefMacro('\afterDedicatedSpace',        '\vskip0pt plus0.01fil');
+DefMacro('\afterTocSpace',              '\bigskip\medskip');
+DefMacro('\afterTocRuleSpace',          '\bigskip\bigskip');
+
+# no effect in latexml
+DefMacro('\beforetochook', '');
+DefMacro('\notoc',         '');
+DefMacro('\compress',      '');
+
+# misc
+DefMacro('\correctionref{}{}{}', '\gdef\@xtum{\xtumfont{#1} \href{#2}{#3}}}');
+DefMacro('\jname',               'JHEP');
+DefMacro('\subheader{}',         '');
+DefMacro('\xtumfont{}',          '\textsc{#1}');
+Let('\oldthebibliography',    '\thebibliography');
+Let('\endoldthebibliography', '\endthebibliography');
+
+#======================================================================
 1;
