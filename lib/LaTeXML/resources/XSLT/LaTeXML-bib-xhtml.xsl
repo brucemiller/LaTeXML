@@ -98,11 +98,13 @@
             <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
         </xsl:when>
+        <!--
         <xsl:when test="ltx:tags/ltx:tag[@role = 'refnum']">
           <xsl:apply-templates select="ltx:tags/ltx:tag[@role = 'refnum']">
             <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
         </xsl:when>
+        -->
       </xsl:choose>
       <xsl:apply-templates select='ltx:bibblock'>
         <xsl:with-param name="context" select="$context"/>
