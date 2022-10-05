@@ -157,6 +157,28 @@ lib/LaTeXML/Util/Unicode.pm
 lib/LaTeXML/Util/WWW.pm
 
 #==================================================
+# BibTeX Module
+#==================================================
+lib/LaTeXML/BibTeX.pm
+lib/LaTeXML/BibTeX/BibStyle.pm
+lib/LaTeXML/BibTeX/BibStyle/Precompiled.pm
+lib/LaTeXML/BibTeX/BibStyle/StyCommand.pm
+lib/LaTeXML/BibTeX/BibStyle/StyString.pm
+lib/LaTeXML/BibTeX/Bibliography.pm
+lib/LaTeXML/BibTeX/Bibliography/BibEntry.pm
+lib/LaTeXML/BibTeX/Bibliography/BibField.pm
+lib/LaTeXML/BibTeX/Bibliography/BibString.pm
+lib/LaTeXML/BibTeX/Common/Object.pm
+lib/LaTeXML/BibTeX/Common/StreamReader.pm
+lib/LaTeXML/BibTeX/Runtime.pm
+lib/LaTeXML/BibTeX/Runtime/Buffer.pm
+lib/LaTeXML/BibTeX/Runtime/Builtins.pm
+lib/LaTeXML/BibTeX/Runtime/Entry.pm
+lib/LaTeXML/BibTeX/Runtime/Names.pm
+lib/LaTeXML/BibTeX/Runtime/Strings.pm
+lib/LaTeXML/BibTeX/Runtime/Utils.pm
+
+#==================================================
 # Document Model
 #==================================================
 lib/LaTeXML/resources/RelaxNG/LaTeXML-bib.rnc
