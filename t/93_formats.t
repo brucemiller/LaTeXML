@@ -11,8 +11,10 @@ use LaTeXML::Util::Test;
 
 latexml_tests('t/daemon/formats',
   requires => {
-    tei  => 'amsart.cls',
-    jats => 'amsart.cls',
+    citation    => 'alpha.bst',
+    citationraw => 'alpha.bst',
+    tei         => ['amsart.cls', 'alpha.bst'],
+    jats        => ['amsart.cls', 'alpha.bst'],
   });
 
 #**********************************************************************
