@@ -2786,8 +2786,8 @@ DefPrimitive('\DeclareMathSymbol DefToken SkipSpaces DefToken {}{Number}', sub {
     DefMathI($cs, undef, $glyph, role => $role);
     return; });
 
-DefPrimitive('\DeclareFixedFont{}{}{}{}{}{}', undef);
-DefPrimitive('\DeclareErrorFont{}{}{}{}{}',   undef);
+DefPrimitive('\DeclareFixedFont{}{}{}{}{}{}', sub { DefMacroI($_[1], undef, T_CS('\relax')); return; });
+DefPrimitive('\DeclareErrorFont{}{}{}{}{}', sub { DefMacroI($_[1], undef, T_CS('\relax')); return; });
 
 DefMacroI('\cdp@list', undef, '\@empty');
 Let('\cdp@elt', '\relax');
