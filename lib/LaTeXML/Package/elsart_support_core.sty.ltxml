@@ -51,8 +51,8 @@ DefMacro('\tnotetext[]{}', '\lx@notetext[#1]{footnote}{#2}');
 DefMacro('\fntext[]{}',    '\lx@notetext[#1]{footnote}{#2}');
 DefMacro('\lx@elsart@noteref{}', sub {
     return map { (T_CS('\lx@notemark'),
-        T_OTHER('['), T_OTHER($_), T_OTHER(']'),
-        T_BEGIN, T_OTHER('footnote'), T_END); } split(/,/, ToString($_[1])); });
+        T_OTHER('['), T_OTHER($_),         T_OTHER(']'),
+        T_BEGIN,      T_OTHER('footnote'), T_END); } split(/,/, ToString($_[1])); });
 
 DefMacro('\tnoteref{}', '\lx@elsart@noteref{#1}');
 DefMacro('\fnref{}',    '\lx@elsart@noteref{#1}');
@@ -76,8 +76,8 @@ DefMacro('\presented{}',    '\@add@frontmatter{ltx:date}[role=presented]{#1}');
 DefMacro('\articletype{}',  '\@add@frontmatter{ltx:note}[role=articletype]{#1}');
 DefMacro('\issue{}',        '\@add@frontmatter{ltx:note}[role=issue]{#1}');
 DefMacro('\journal{}',      '\@add@frontmatter{ltx:note}[role=journal]{#1}');
-DefMacro('\volume',         '\@add@frontmatter{ltx:note}[role=volume]{#1}');
-DefMacro('\pubyear',        '\@add@frontmatter{ltx:date}[role=publication]{#1}');
+DefMacro('\volume{}',       '\@add@frontmatter{ltx:note}[role=volume]{#1}');
+DefMacro('\pubyear{}',      '\@add@frontmatter{ltx:date}[role=publication]{#1}');
 
 DefMacro('\FullCopyrightText', Tokens());
 DefMacro('\copyear{}',         '\@add@frontmatter{ltx:date}[role=copyright]{#1}');
