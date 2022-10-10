@@ -133,7 +133,7 @@
             </xsl:attribute>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
+            <xsl:apply-templates select="." mode="copy-attribute"/>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>
