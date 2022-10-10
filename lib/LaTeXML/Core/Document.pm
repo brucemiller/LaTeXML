@@ -444,11 +444,11 @@ sub finalize_rec {
       }
   } }
 
-  # Attributes that begin with (the semi-legal) "_" are for Bookkeeping.
+  # Attributes (non-namespaced) that begin with "_" are for internal, temporary, Bookkeeping.
   # Remove them now.
   foreach my $attr ($node->attributes) {
     my $n = $attr->nodeName;
-    $node->removeAttribute($n) if $n =~ /^_/; }
+    $node->removeAttribute($n) if $n && $n =~ /^_/; }
   return; }
 
 #======================================================================
@@ -2008,8 +2008,8 @@ sub appendTree {
     elsif ((ref $child) =~ /^XML::LibXML::/) {
       my $type = $child->nodeType;
       if ($type == XML_ELEMENT_NODE) {
-        my $tag        = $self->getNodeQName($child);
-        my %attributes = map { $_->nodeType == XML_ATTRIBUTE_NODE ? ($_->nodeName => $_->getValue) : () }
+        my $tag = $self->getNodeQName($child);
+        my %attributes = map { $_->nodeType == XML_ATTRIBUTE_NODE ? ($self->getNodeQName($_) => $_->getValue) : () }
           $child->attributes;
         # DANGER: REMOVE the xml:id attribute from $child!!!!
         # This protects against some versions of XML::LibXML that warn against duplicate id's

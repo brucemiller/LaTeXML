@@ -18,6 +18,10 @@ use Unicode::Normalize;
 use LaTeXML::Util::Pathname;
 use List::Util qw(min max);
 
+# NOTE that these define the namespaces we'll (probably) use
+# along with the prefixes to be used in "code"
+# The generated XML will use the prefixes defined by RegisterDocumentNamespace(...) (if ever)
+# or those prefixes defined by the Schema (typically RelaxNGSchema(..)
 RegisterNamespace(ltx   => "http://dlmf.nist.gov/LaTeXML");
 RegisterNamespace(svg   => "http://www.w3.org/2000/svg");
 RegisterNamespace(xlink => "http://www.w3.org/1999/xlink");    # Needed for SVG
@@ -7550,11 +7554,10 @@ DefRewrite(xpath => 'descendant-or-self::ltx:XMWrap[count(child::*)=1]',
   replace => sub { my ($document, $wrap) = @_;
     if (my $node = $document->getFirstChildElement($wrap)) {
       # Copy attributes but NOT internal ones,
-
       # NOR xml:id, else we get clashes
       foreach my $attribute ($wrap->attributes) {
         if ($attribute->nodeType == XML_ATTRIBUTE_NODE) {
-          my $attr = $attribute->nodeName;
+          my $attr = $document->getNodeQName($attribute);
           $document->setAttribute($node, $attr => $attribute->getValue)
             unless ($attr eq 'xml:id') || $attr =~ /^_/;
           if    ($attr =~ /^_/) { }

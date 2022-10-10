@@ -1427,7 +1427,8 @@ sub createXMRefs {
     my $box     = ($isarray ? $$arg[1]{_box} : $document->getNodeBox($arg));
     # XMHint's are ephemeral, they may disappear; so just clone it w/o id
     if ($qname eq 'ltx:XMHint') {
-      my %attr = ($isarray ? %{ $$arg[1] } : (map { $_->nodeName => $_->getValue } $arg->attributes));
+      my %attr = ($isarray ? %{ $$arg[1] }
+        : (map { $document->getNodeQName($_) => $_->getValue } $arg->attributes));
       delete $attr{'xml:id'};
       push(@refs, [$qname, {%attr}]); }
     # Likewise, clone an XMRef (w/o any attributes or id ?) rather than create an XMRef to an XMRef.
