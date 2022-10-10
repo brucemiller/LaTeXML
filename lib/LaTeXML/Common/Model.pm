@@ -59,6 +59,7 @@ sub loadSchema {
     $self->registerNamespace(xlink => "http://www.w3.org/1999/xlink");         # Needed for SVG
     $self->registerNamespace(m     => "http://www.w3.org/1998/Math/MathML");
     $self->registerNamespace(xhtml => "http://www.w3.org/1999/xhtml");
+
     $$self{permissive} = 1; }    # Actually, they could have declared all sorts of Tags....
 
   my ($type, @data) = @{ $$self{schemadata} };
@@ -210,7 +211,8 @@ sub getDocumentNamespacePrefix {
    # Get the prefix associated with the namespace url, noting that for elements, it might by "#default",
    # but for attributes would never be.
     my $docprefix = (!$forattribute && $$self{document_namespace_prefixes}{ "DEFAULT#" . $namespace })
-      || $$self{document_namespace_prefixes}{$namespace};
+      || $$self{document_namespace_prefixes}{$namespace}
+      || (($namespace ne $LTX_NAMESPACE) && $$self{code_namespace_prefixes}{$namespace});
     if ((!defined $docprefix) && !$probe) {
       $self->registerDocumentNamespace($docprefix = "namespace" . (++$$self{namespace_errors}), $namespace);
       Warn('malformed', $namespace, undef,
@@ -388,17 +390,18 @@ sub canContain {
     my $xtag = $1 . ':*';
     $model = $$self{tagprop}{$xtag}{model}; }
   my ($chns, $chname) = ($childtag =~ /^([^:]*):(.*)$/ ? ($1, $2) : (undef, $childtag));
+  # NOTE: Maybe recode this to (carefully) use 0 & 1, and defined, //
   if ($chns) {
     return ($$model{$childtag} ? 1
       : ($$model{"!$childtag"} ? 0
         : ($$model{"$chns:*"} ? 1
           : ($$model{"!$chns:*"} ? 0
-            : ($$model{ANY} ? 1
+            : ($$model{'*:*'} ? 1
               : 0))))); }
   else {
     return ($$model{$childtag} ? 1
       : ($$model{"!$childtag"} ? 0
-        : ($$model{ANY} ? 1
+        : ($$model{'*:*'} ? 1
           : 0))); } }
 
 # NOTE: Currently the Document class already allows ANY namespaced attributes!
@@ -413,12 +416,29 @@ sub canHaveAttribute {
   return 0 if $tag eq '#DTD';
   return 1 if $tag =~ /(.*?:)?_Capture_$/;
   return 1 if $$self{permissive};
+  my ($tagns,  $tagname)  = ($tag    =~ /^(\w+):(\w*)$/ ? ($1, $2) : ('', $tag));
+  my ($attrns, $attrname) = ($attrib =~ /^(\w+):(\w*)$/ ? ($1, $2) : ('', $attrib));
   my $attr = $$self{tagprop}{$tag}{attributes};
-
+  # Check:
+  #    data for tag:  tagns:tagname, tagns:* (or even *:tagname ???)
   if (!$attr && ($tag =~ /^(\w*):/)) {
     my $xtag = $1 . ':*';
     $attr = $$self{tagprop}{$xtag}{attributes}; }
-  return $$attr{ANY} || $$attr{$attrib}; }
+  # Test for allowance OR exclusion of an attribute, possibly w/namespace
+  # testing the most specific form first
+  # NOTE: We could be turning !ns:name into 0 and be checking for defined ???
+  if ($attrns) {
+    return ($$attr{$attrib} ? 1
+      : ($$attr{"!$attrib"} ? 0
+        : ($$attr{"$attrns:*"} ? 1
+          : ($$attr{"!$attrns:*"} ? 0
+            : ($$attr{'*:*'} ? 1
+              : ($$attr{'!*:*'} ? 0
+                : 0)))))); }
+  else {
+    return ($$attr{$attrib} ? 1
+      : ($$attr{"!$attrib"} ? 0
+        : 0)); } }
 
 sub isInSchemaClass {
   my ($self, $classname, $tag) = @_;
