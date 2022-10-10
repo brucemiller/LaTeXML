@@ -12,7 +12,7 @@
   | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
   \=========================================================ooo==U==ooo=/
 -->
-<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns="http://relaxng.org/ns/structure/1.0">
+<grammar ns="http://dlmf.nist.gov/LaTeXML" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns:xhtml="http://www.w3.org/1999/xhtml" xmlns:xlink="http://www.w3.org/1999/xlink" xmlns="http://relaxng.org/ns/structure/1.0">
   <define name="Misc.class" combine="choice">
     <a:documentation> Miscellaneous (Misc) elements are (typically) visible
 elements which don't have clear inline or block character;
@@ -123,6 +123,19 @@ to be used in processing the graphic.</a:documentation>
     <empty/>
   </define>
   <!-- ====================================================================== -->
+  <define name="svgForeign.attributes">
+    <zeroOrMore>
+      <attribute>
+        <anyName>
+          <except>
+            <nsName ns=""/>
+            <nsName ns="http://www.w3.org/XML/1998/namespace"/>
+            <nsName ns="http://www.w3.org/1999/xlink"/>
+          </except>
+        </anyName>
+      </attribute>
+    </zeroOrMore>
+  </define>
   <define name="svg">
     <grammar>
       <a:documentation>An SVG (Scalable Vector Graphics) object
@@ -138,6 +151,9 @@ to be used in processing the graphic.</a:documentation>
       </define>
       <define name="common.attrs.aria.implicit.link">
         <empty/>
+      </define>
+      <define name="SVG.Core.extra.attrib" combine="interleave">
+        <parentRef name="svgForeign.attributes"/>
       </define>
       <include href="urn:x-LaTeXML:RelaxNG:svg:svg11.rng">
         <define name="SVG.foreignObject.content">
