@@ -997,7 +997,11 @@ sub DefAutoload {
           $STATE->assign_internal('meaning', $csname => undef, 'global');    # UNDEFINE (no recurse)
           if    ($type eq 'pool') { LoadPool($name); }                       # Load appropriate definitions
           elsif ($type eq 'cls')  { LoadClass($name); }
-          else                    { RequirePackage($name); }
+          else {
+            Info("autoload", $cs, $_[0], "Triggered package auto-load for $name.$type");
+            DefRegister('\globaldefs' => Number(1));
+            RequirePackage($name);
+            AssignRegister('\globaldefs' => Number(0)); }
           ($cs); }); } }    # Then return the original cs, so that it's be re-tried.
   else {
     Warning('unexpected', $defnfile, undef, "Don't know how to autoload $csname from $defnfile"); }
