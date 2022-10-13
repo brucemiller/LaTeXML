@@ -56,6 +56,11 @@
     <xsl:value-of select="f:if($USE_NAMESPACES,$XHTML_NAMESPACE,'')"/>
   </xsl:param>
 
+  <!-- Whether to convert foreign-namespaced attributes into html-style data-* attributes -->
+  <xsl:param name="USE_DATA_ATTRIBUTES">
+    <xsl:value-of select="$USE_HTML5"/>
+  </xsl:param>
+
   <!-- ======================================================================
        LaTeXML Identification
        (Maybe bring the Logo back?)
@@ -317,6 +322,10 @@
     </xsl:if>
   </xsl:template>
 
+  <xsl:template name="copy_foreign_attributes">
+    <xsl:apply-templates select="@*[(namespace-uri() != '') and (namespace-uri() != 'http://www.w3.org/XML/1998/namespace')]" mode='copy-attribute'/>
+  </xsl:template>
+
   <!-- This copies WHATEVER, in WHATEVER namespace.
        It's useful for MathML's annotation-xml, or SVG's foreignObject or similar.
        We use local-name() & namespace to try avoid namespace prefixes.
@@ -374,18 +383,24 @@
     </xsl:element>
   </xsl:template>
 
-  <xsl:template match="@*" mode='copy-attribute'>
+  <!-- copy attribute? In general don't -->
+  <xsl:template match="@*" mode='copy-attribute'/>
+
+  <!-- but copy non-namespaced attributes -->
+  <xsl:template match="@*[namespace-uri() = '']" mode='copy-attribute'>
     <xsl:attribute name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:value-of select="."/>
     </xsl:attribute>
   </xsl:template>
 
+  <!-- and xml:id, but maybe without the xml: -->
   <xsl:template match="@xml:id" mode='copy-attribute'>
     <xsl:attribute name="{f:if($USE_XMLID,'xml:id','id')}">
       <xsl:value-of select="."/>
     </xsl:attribute>
   </xsl:template>
 
+  <!-- and xml:lang, similarly -->
   <xsl:template match="@xml:lang" mode='copy-attribute'>
     <xsl:attribute name="{f:if($USE_XMLID,'xml:lang','lang')}">
       <xsl:value-of select="."/>
@@ -397,6 +412,33 @@
     <xsl:attribute name="{local-name()}">
       <xsl:value-of select="f:url(.)"/>
     </xsl:attribute>
+  </xsl:template>
+
+  <!-- and attributes in foreign namespaces are preserved or copied into data-XXX style attributes -->
+  <xsl:template match="@*[(namespace-uri() != '') and (namespace-uri() != 'http://www.w3.org/XML/1998/namespace')]" mode='copy-attribute'>
+    <xsl:variable name="prefix"><xsl:value-of select="substring-before(name(),':')"/></xsl:variable>
+    <xsl:choose>
+      <xsl:when test="$USE_DATA_ATTRIBUTES != 'true'">
+        <!-- TRY to use the same namespace prefix -->
+        <xsl:call-template name="add_namespace">
+          <xsl:with-param name="prefix" select="$prefix"/>
+          <xsl:with-param name="url" select="namespace-uri()"/>
+        </xsl:call-template>
+        <xsl:attribute name="{name()}" namespace="{namespace-uri()}">
+          <xsl:value-of select="."/>
+        </xsl:attribute>
+      </xsl:when>
+      <xsl:when test="$prefix = 'data'">
+        <xsl:attribute name="{concat('data-',local-name())}">
+          <xsl:value-of select="."/>
+        </xsl:attribute>
+      </xsl:when>
+      <xsl:otherwise>
+        <xsl:attribute name="{concat('data-',$prefix,'-',local-name())}">
+          <xsl:value-of select="."/>
+        </xsl:attribute>
+      </xsl:otherwise>
+    </xsl:choose>
   </xsl:template>
 
   <!-- ======================================================================
@@ -432,6 +474,7 @@
     <xsl:if test="@xml:lang">
       <xsl:apply-templates select="@xml:lang" mode="copy-attribute"/>
     </xsl:if>
+    <xsl:call-template name="copy_foreign_attributes"/>
   </xsl:template>
 
   <!-- Add a class attribute value to the current html element
