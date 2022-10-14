@@ -28,6 +28,8 @@ RegisterNamespace(xlink => "http://www.w3.org/1999/xlink");    # Needed for SVG
 # Not directly used, but let's stake out the ground
 RegisterNamespace(m     => "http://www.w3.org/1998/Math/MathML");
 RegisterNamespace(xhtml => "http://www.w3.org/1999/xhtml");
+# Namespace for arbitrary data attributes (mapped to data-xxx in html5)
+RegisterNamespace(data => "http://dlmf.nist.gov/LaTeXML/data");
 
 DefMacroI("\\\@empty", undef, Tokens());
 
