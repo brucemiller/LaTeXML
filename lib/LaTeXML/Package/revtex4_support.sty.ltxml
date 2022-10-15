@@ -419,6 +419,12 @@ DefMacroI('\ds@tighten',   undef, '\@tightenlinestrue');
 DefMacroI('\ds@floats',    undef, '\@floatstrue');
 DefMacroI('\ds@eqsecnum',  undef, '\global\secnumberstrue');
 
+DefMacro('\replace@command{}{}',     '\global\let#1#2 #1');
+DefMacro('\replace@environment{}{}', '\glet@environment{#1}{#2}\@nameuse{#1}');
+DefMacro('\glet@environment{}{}', '\global\expandafter\let'
+    . '\csname#1\expandafter\endcsname\csname#2\endcsname'
+    . '\global\expandafter\let'
+    . '\csname end#1\expandafter\endcsname\csname end#2\endcsname');
 #======================================================================
 
 1;
