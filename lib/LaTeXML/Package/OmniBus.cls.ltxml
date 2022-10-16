@@ -213,7 +213,7 @@ for my $env (qw(
   DefMacroI(T_CS($beginenv), undef, sub {
       RequirePackage('amsthm');
       return Tokenize($omni_theorem_main . $omni_theorem_aux . $beginenv)->unlist; }); }
-for my $new_theorem_alias (qw(\newproclaim \newdef)) {
+for my $new_theorem_alias (qw(\newproclaim \newdef \newremark)) {
   DefMacroI(T_CS($new_theorem_alias), undef, sub {
       RequirePackage('amsthm');
       return T_CS('\newtheorem'); }); }
@@ -305,5 +305,8 @@ DefMacroI('\Subsection',    undef, '\@startsection{subsection}{2}{}{}{}{}',    l
 DefMacroI('\Subsubsection', undef, '\@startsection{subsubsection}{3}{}{}{}{}', locked => 1);
 DefMacroI('\Paragraph',     undef, '\@startsection{paragraph}{4}{}{}{}{}',     locked => 1);
 DefMacroI('\Subparagraph',  undef, '\@startsection{subparagraph}{5}{}{}{}{}',  locked => 1);
+
+# author block, see e.g. arxbj.cls from arXiv:math0603447
+DefEnvironment('{aug}', '#body');
 
 1;
