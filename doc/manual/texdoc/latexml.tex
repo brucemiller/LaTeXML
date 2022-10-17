@@ -3,18 +3,24 @@
 
 \immediate\write18{makeindex \jobname.idx}
 
-\usepackage{imakeidx}
-% they're too wide for 2 columns
-\makeindex[columns=1]
-
 \usepackage{latexml}
 \let\pod=\URL
+\lxDocumentID{\jobname}
+
+\iflatexml
+ \usepackage{makeidx}
+ \makeindex
+\else
+ \usepackage{imakeidx}
+ % they're too wide for 2 columns
+ \makeindex[columns=1]
+\fi
 
 \usepackage{hyperref}
 
 \begin{document}
 
-\input{package-\jobname}
+\input{\jobname_package}
 
 \printindex
 

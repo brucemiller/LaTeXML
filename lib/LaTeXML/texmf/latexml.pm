@@ -70,8 +70,6 @@ in XML.  There are four broad categories of functions:
 % | Bruce Miller <bruce.miller@nist.gov>                        %_%     | %
 % | http://dlmf.nist.gov/LaTeXML/                              (o o)    | %
 % \=========================================================ooo==U==ooo=/ %
-\NeedsTeXFormat{LaTeX2e}[1999/12/01]
-\ProvidesPackage{latexml}[2022/06/13 v0.8.6]
 
 =end sty
 
@@ -84,18 +82,9 @@ or use the related commands with packages designed to interact with TeX booleans
 At the moment, this construction also allows you to bypass any commands that may
 give LaTeXML problems.  It is the eventual goal to mostly remove this necessity.
 
-LaTeXML will issue an error if you try to change the truth value of the boolean;
-TeX doesn't give us that option.
-
-=for comment perhaps \let\latexmltrue\@undefined ?
-
 =cut
 
 DefConditional('\iflatexml', sub { 1; });
-DefPrimitive('\latexmltrue', sub {
-    Warning('unexpected', '\\latexmltrue', $_[0], "Cannot change \\iflatexml!"); });
-DefPrimitive('\latexmlfalse', sub {
-    Warning('unexpected', '\\latexmlfalse', $_[0], "Cannot change \\iflatexml!"); });
 
 =for sty
 \newif\iflatexml\latexmlfalse

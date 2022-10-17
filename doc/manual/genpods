@@ -140,10 +140,10 @@ $convertingPackages = 1;
 
 foreach my $package (@packages) {
   my $src  = "$SRCDIR/lib/LaTeXML/texmf/$package.pm";
-  my $dest = "$GENDIR/../texdoc/package-$package.tex";
+  my $dest = "$GENDIR/../texdoc/${package}_package.tex";
   if ($force || (!-f $dest) || (-M $src < -M $dest)) {
     print "Converting POD for package $package to LaTeX\n";
-    local $::PODDOC = "package-$package";    # $::PODDOC =~ s/::/_/g;
+    local $::PODDOC = $package;    # $::PODDOC =~ s/::/_/g;
     my $podconverter = MyPodConverter->new();
     $podconverter->Label('package');
     $podconverter->parse_from_file($src, $dest); } }

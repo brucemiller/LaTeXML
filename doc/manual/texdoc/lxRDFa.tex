@@ -3,17 +3,18 @@
 
 \immediate\write18{makeindex \jobname.idx}
 
-\usepackage{makeidx}
-\makeindex
-
 \usepackage{latexml}
 \let\pod=\URL
+\lxDocumentID{\jobname}
+
+\usepackage{makeidx}
+\makeindex
 
 \usepackage{hyperref}
 
 \begin{document}
 
-\input{package-\jobname}
+\input{\jobname_package}
 
 \printindex
 

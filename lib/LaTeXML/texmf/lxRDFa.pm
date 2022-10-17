@@ -44,8 +44,6 @@ This provides Resource Description Framework (RDF) markup for LaTeXML documents.
 % | Bruce Miller <bruce.miller@nist.gov>                        %_%     | %
 % | http://dlmf.nist.gov/LaTeXML/                              (o o)    | %
 % \=========================================================ooo==U==ooo=/ %
-\NeedsTeXFormat{LaTeX2e}[1999/12/01]
-\ProvidesPackage{latexml}[2022/06/13 v0.8.6]
 
 =end sty
 
