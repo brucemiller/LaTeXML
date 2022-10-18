@@ -16,12 +16,11 @@ use LaTeXML::Util::Pathname;
 use LaTeXML::Common::XML;
 use LaTeXML::Common::Error;
 use Encode;
+use LaTeXML::BibTeX::BibStyle;
 use LaTeXML::BibTeX::Bibliography;
 use LaTeXML::BibTeX::Runtime;
 use LaTeXML::BibTeX::Runtime::Buffer;
 use LaTeXML::BibTeX::Runtime::Utils;
-
-use Time::HiRes qw(time);
 
 use Module::Load;
 
@@ -30,18 +29,20 @@ sub new {
   my ($class, %options) = @_;
   return bless {%options}, $class; }
 
-#======================================================================
-# given an appropriate context, emulate what BibTeX does and produce a bbl string
-# returns a pair ($buffer, $runtime)
-sub emulateBibTeX {
-  my ($self, $doc, $style, $files, $cites) = @_;
-  my $program = $style->getProgram;
-##  my ($reader, $bibpath, @bibreaders);
-  my @bibs;
-  # create a reader for each bib file
-  # NOTE: Don't really need new bibliography objects each time, do we????
-  # (even separate from question of "evaluating" them?)
-  foreach my $bibfile (@$files) {
+sub loadStyle {
+  my ($self, $stylename) = @_;
+  my $stage = "Reading bst file";
+  ProgressSpinup($stage);
+  $$self{style} = LaTeXML::BibTeX::BibStyle->new($stylename, $$self{searchpaths});
+  ProgressSpindown($stage);
+  return $$self{style}; }
+
+sub loadBibliographies {
+  my ($self, @bibfiles) = @_;
+  my @bibs = ();
+  foreach my $bibfile (@bibfiles) {
+    my $stage = "Parsing $bibfile";
+    ProgressSpinup($stage);
     # find the bibfile, or error out and try the next one
     my $bibpath = pathname_find($bibfile, paths => $$self{searchpaths}, types => ['bib'])
       || pathname_kpsewhich("$bibfile.bib");
@@ -50,10 +51,17 @@ sub emulateBibTeX {
       next; }
     # open the bibfile, or cause a fatal error
     my $bib = LaTeXML::BibTeX::Bibliography->new($bibfile, $bibpath);
-    if (!defined($bib)) {
-      Fatal('missing_file', $bibfile, undef, "Unable to open Bibliography file $bibpath");
-      return; }
-    push(@bibs, $bib); }
+    return unless $bib;
+    push(@bibs, $bib);
+    ProgressSpindown($stage); }
+  $$self{bibliographies} = [@bibs];
+  return $$self{bibliographies}; }
+
+#======================================================================
+# given an appropriate context, emulate what BibTeX does and produce a bbl string
+# returns a pair ($buffer, $runtime)
+sub run {
+  my ($self, $cites) = @_;
   # create a string to write things into
   my $bblbuffer = "";
   open(my $ofh, '>', \$bblbuffer);
@@ -63,7 +71,7 @@ sub emulateBibTeX {
   my $macro    = 'lxBibitemFrom';                                          # huh?
   my $btbuffer = LaTeXML::BibTeX::Runtime::Buffer->new($ofh, 0, $macro);
   # Create a configuration that optionally wraps things inside a macro
-  my $runtime = LaTeXML::BibTeX::Runtime->new(undef, $btbuffer, [@bibs], [@$cites]);
+  my $runtime = LaTeXML::BibTeX::Runtime->new(undef, $btbuffer, $$self{bibliographies}, [@$cites]);
   #======================================================================
   # and run the code
   my $stage = "Running BibTeX";
@@ -71,7 +79,7 @@ sub emulateBibTeX {
   my $ok = 0;
   eval {
     $runtime->initContext;
-    $runtime->run($program);
+    $runtime->run($$self{style}->getProgram);
     $ok = 1; };
   Error('bibtex', 'runtime', undef, $@) unless $ok;
   $btbuffer->finalize;

@@ -17,8 +17,7 @@ use LaTeXML::Common::XML;
 use LaTeXML::Common::Error;
 use LaTeXML::Common::Locator;
 use LaTeXML::BibTeX;
-use LaTeXML::BibTeX::BibStyle;
-use charnames qw(:full);
+#use charnames qw(:full);
 use LaTeXML::Post;
 use base qw(LaTeXML::Post::Collector);
 
@@ -134,45 +133,31 @@ sub getSortKeyImpl {
   return $simple; }
 
 # given a document and a bibliography, create an appropriate <ltx:biblist> element (and also return the run config)
-# This function works roughly as follows:
-# - gather context (bibstyle, bibliographies, citations)
-# - find the matching bst and compile it
-# - generate bbl output, and run it through ltxml
-# - re-generate the bbl while there are additional citations in ltxml
+# Regenerate the bbl while there are additional citations in ltxml
 sub getBibliographyList {
   my ($self, $doc, $bib) = @_;
+  my @cites  = $self->findCites($doc);
   my $bibtex = LaTeXML::BibTeX->new(searchpaths => [$doc->getSearchPaths]);
-##  my $style = $bibtex->compileBst($doc, $bib->getAttribute('bibstyle'));
-  my $style = LaTeXML::BibTeX::BibStyle->new($bib->getAttribute('bibstyle'), [$doc->getSearchPaths]);
-  return unless defined($style);
-  my @files = split(',', $bib->getAttribute('files')); # the files that were used in this bibliography
-                                                       # find all the referenced citations and flatten
-  my @cites = $self->findCites($doc);
-  # produce a bbl by emulating bibtex
-  my ($bbl, $config) = $bibtex->emulateBibTeX($doc, $style, [@files], [@cites]);
-  return unless defined($bbl);                         # Something went wrong => we can't insert it!
-###Debug("BBL: ".$bbl);
+  return unless $bibtex->loadStyle($bib->getAttribute('bibstyle'));
+  my @files = split(',', $bib->getAttribute('files'));
+  return unless $bibtex->loadBibliographies(@files);
   # iterate to check for cross-refs
   my $runsLeft = $$self{reruns} == -1 ? -1 : $$self{reruns} + 1;
-  my ($lst, $lstdoc, @newCites, $newBBL, $newConfig);
+  my ($lst, $lstdoc);
+  my ($bbl, $config);
   while (1) {
     $runsLeft--;
+    ($bbl, $config) = $bibtex->run([@cites]);
+    return unless defined $bbl;
     # convert the bbl to an acutal biblist
     ($lstdoc, $lst) = $self->convertBBL($doc, $bib, $bbl);
-    return unless defined($lst);    # Something went wrong => we can't insert it!
-    last if $runsLeft == 0;         # no runs left => that's it
-                                    # check if we had any new cites
-    @newCites = $self->findCites($lstdoc, $lst);
-    last unless $self->hasNewCites([@cites], [@newCites]);
-    Info('bibtex', $self, undef, "Found new citations in BibTeX output, re-running BibTeX ($runsLeft re-runs left)");
-    # create the new bbl, and bail out if there is no difference
-    ($newBBL, $newConfig) = $bibtex->emulateBibTeX($doc, $style, [@files], [(@cites, @newCites)]);
-    if ($newBBL eq $bbl) {
-      Info('bibtex', $self, undef, "BibTeX output did not change, will not re-run BibTeX");
-      last; }
-    # prepare the next iteration for a re-run
-    $bbl    = $newBBL;
-    $config = $newConfig; }
+    return unless defined $lst;    # Something went wrong => we can't insert it!
+    last if $runsLeft == 0;        # no runs left => that's it
+    my @newcites = $self->findCites($lstdoc, $lst);
+    last unless $self->hasNewCites([@cites], [@newcites]);
+    push(@cites, @newcites);       # Likely has duplicates!
+    Info('bibtex', $self, undef,
+      "Found " . scalar(@newcites) . " new citations, re-running BibTeX ($runsLeft runs left)"); }
   # return the last output we got
   return $lstdoc, $lst, $config; }
 
@@ -209,8 +194,11 @@ sub convertBBL {
     my ($pkg, $options) = @$po;
     push(@preload, ($options ? "[$options]$pkg.sty" : "$pkg.sty")); }
   # convert the bibliography
-  my $stage = "Recursive MakeBibliography";
+  my $stage = "Recursive LaTeXML on bbl";
   ProgressSpinup($stage);
+  # NOTE: Using a specific cache_key will reload all styles into a new LaTeXML config
+  # But if we're in latexmlc, can we reuse the same config as the main document?
+  # [using NO cache_key will reload on *each* bbl loop!]
   my $config = LaTeXML::Common::Config->new(
     recursive => 1,
     cache_key => 'BibTeX',
@@ -238,7 +226,6 @@ sub convertBBL {
   ProgressSpindown($stage);
   if (my $xml = $$response{result}) {
     # Do we really need a new Document?
-###Debug("CONVERT yeilded doc:".$xml->toString);
     my $bibdoc = $doc->new($xml, sourceDirectory => '.');
     # find the biblist
     my $biblist = $bibdoc->findnode('//ltx:biblist');
