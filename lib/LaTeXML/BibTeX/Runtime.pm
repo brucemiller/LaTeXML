@@ -176,7 +176,7 @@ sub do_MACRO {
   return unless $name  = $self->check_one($name,  'macro name');
   return unless $value = $self->check_one($value, 'macro value');
   RTDebug($self, $command, "Define Macro " . $name) if $LaTeXML::DEBUG{bibtex_runtime};
-  $self->setMacro($name, $value);
+  $self->setMacro($name->getValue, $value);
   return; }
 
 sub do_FUNCTION {
@@ -590,7 +590,6 @@ sub getEntries {
   return $$self{entries}; }
 
 # 'readEntries' reads in all entries and builds an entry list.
-# Always closes all bibliographies, if status != 1.
 sub readEntries {
   my ($self, $bibliographies, $citations) = @_;
   my @bibliographies = @{$bibliographies};
@@ -599,23 +598,12 @@ sub readEntries {
     return; }
   my @entries = ();
   foreach my $bibliography (@bibliographies) {
-    my $path  = $bibliography->getPathname;
-    my $parse = $bibliography->readFile(1, %{ $$self{macros} });
+    my $path = $bibliography->getPathname;
+    push(@{ $$self{preambleString} }, map { $self->expandValue($_); } $bibliography->getPreamble);
+    push(@{ $$self{preambleSource} }, [($path, '', 'preamble')]);
     # iterate over all the entries
-    foreach my $entry (@{$parse}) {
-      my $type = lc $entry->getType->getValue;
-      if ($type eq 'string' or $type eq 'comment') { }    # Ignore strings & comments
-          # if we have a preamble, return the conent of the preamble
-      elsif ($type eq 'preamble') {    # do something with preamble commands?
-        my @fields = @{ $entry->getFields };
-        Warn('bibtex', 'runtime', undef, 'Missing content for preamble', locationOf($path, $entry))
-          unless scalar(@fields) == 1;
-        my $preamble = shift(@fields);
-        push(@{ $$self{preambleString} }, $preamble->getContent->getValue =~ s/\s+/ /gr);
-        push(@{ $$self{preambleSource} }, [($path, '', 'preamble')]); }
-      elsif ($entry = LaTeXML::BibTeX::Runtime::Entry->new($path, $self, $entry)) {
-        push(@entries, $entry); }
-  } }
+    foreach my $entry ($bibliography->getEntries) {
+      push(@entries, LaTeXML::BibTeX::Runtime::Entry->new($path, $self, $entry)); } }
   # build a map of entries
   my (%entryHash) = ();
   my ($key);
@@ -630,6 +618,19 @@ sub readEntries {
   # TODO: Allow numcrossref customization
   $$self{entries} = $self->buildEntryList([@entries], $citations, 2);
   return; }
+
+# Expand a Bibliography value (field, preamble, ...) substituting macros and returning a string
+sub expandValue {
+  my ($self, $value) = @_;
+  my @pieces = ($value ? (ref $value eq 'ARRAY' ? @$value : $value) : ());    # !!!!!
+  my @result = ();
+  foreach my $piece (@pieces) {
+    my $string = $piece->getValue;
+    if ($piece->getKind eq 'LITERAL') {
+      if (my $expansion = $self->getMacro($string)) {
+        $string = $expansion->getValue; } }
+    push(@result, $string); }
+  return join('', @result); }
 
 # build a list of entries that should be cited.
 sub buildEntryList {

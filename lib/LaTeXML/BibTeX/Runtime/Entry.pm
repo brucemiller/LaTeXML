@@ -23,35 +23,25 @@ use Scalar::Util qw(blessed);
 sub new {
   my ($class, $name, $runtime, $entry) = @_;
   # read our type, skip 'string's and 'comment's
-  my $type = lc $entry->getType->getValue;
-  # read the fields
-  my @fields = @{ $entry->getFields };
-  # Make sure that we have something
-  return Warn('bibtex', 'runtime', $entry->getLocator, 'Missing key for entry')
-    if scalar(@fields) <= 0;
+  my $type   = $entry->getType;
+  my $key    = $entry->getKey;
+  my @fields = $entry->getFields;
   # make sure that we have a key
-  my $key = shift(@fields)->getContent->getValue;
   return Warn('bibtex', 'runtime', $entry->getLocator, 'Expected non-empty key')
     unless $key;
-  my ($value, $valueKey);
   my %values = ();
   foreach my $field (@fields) {
-    $valueKey = $field->getName;
-    $value    = $field->getContent->getValue;
-    # we need a key=value in this field
-    unless (defined($valueKey)) {
-      Warn('bibtex', 'runtime', $field->getLocator, 'Missing key for value');
-      next; }
-    $valueKey = lc $valueKey->getValue;
+    my $name  = $field->getName;
+    my $value = $runtime->expandValue($field->getContent);
     # if we have a duplicate valye
-    if (defined($values{$valueKey})) {
+    if (defined($values{$name})) {
       Warn('bibtex', 'runtime', $field->getLocator,
-        'Duplicate value in entry ' . $key . ': Field ' . $valueKey . ' already defined. ');
+        'Duplicate value in entry ' . $key . ': Field ' . $name . ' already defined. ');
       next; }
     # BibTeX normalizes values specifically
     $value =~ s/^\s+|\s+$//g;    # remove space on both sides
     $value =~ s/\s+/ /g;         # concat multiple whitespace into one
-    $values{$valueKey} = $value; }
+    $values{$name} = $value; }
   my $self = bless {
     name      => $name,
     runtime   => $runtime,       # the runtime corresponding to this entry
