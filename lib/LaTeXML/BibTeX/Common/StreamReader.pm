@@ -147,12 +147,12 @@ sub readChar {
     $$self{lineno}   = $lineno;
     $$self{colno}    = $colno;
     $$self{eof}      = $eofp;
-    return $char, $lineNo, $colNo, $eofp; }
+    return (wantarray ? ($char, $lineNo, $colNo, $eofp) : $char); }
   # if we reached the end of the file in a previous run
   # don't bother trying
-  return undef, $lineNo, $colNo, $eof if $$self{eof};
+  return (wantarray ? (undef, $lineNo, $colNo, $eof) : undef) if $$self{eof};
   # if we still have characters left in the line, return those.
-  return substr($$self{line}, $$self{colno}++, 1), $lineNo, $colNo, $eof
+  return (wantarray ? (substr($$self{line}, $$self{colno}++, 1), $lineNo, $colNo, $eof) : substr($$self{line}, $$self{colno}++, 1))
     if $colNo < $$self{nchars};
   my $line = $self->readNextLine;
   # no more lines ...
@@ -160,46 +160,12 @@ sub readChar {
     $$self{eof}   = 1;
     $$self{colno} = 0;
     $$self{lineno}++;
-    return undef, $lineNo, $colNo, $eof; }
+    return (wantarray ? (undef, $lineNo, $colNo, $eof) : undef); }
   $$self{line}   = $line;
   $$self{nchars} = length $line;
   $$self{lineno}++;
   $$self{colno} = 1;
-  return substr($line, 0, 1), $lineNo, $colNo, $eof; }
-
-# 'eatChar' eats the next character from this reader.
-# It does the exact same thing as 'readChar', except that it does not return anything.
-sub eatChar {
-  my ($self) = @_;
-  # if we had some pushback
-  # we just need to clear it.
-  my $pushback = $$self{pushback};
-  if (defined($pushback)) {
-    my ($char, $lineno, $colno, $eof) = @$pushback;
-    $$self{pushback} = undef;
-
-    $$self{lineno} = $lineno;
-    $$self{colno}  = $colno;
-    $$self{eof}    = $eof;
-    return; }
-  # if we are at the end of the file, return
-  return if $$self{eof};
-  # if we have characters, increase and return.
-  if ($$self{colno} < $$self{nchars}) {
-    $$self{colno}++;
-    return; }
-  my $line = $self->readNextLine;
-  # no more lines ...
-  unless (defined($line)) {
-    $$self{eof}   = 1;
-    $$self{colno} = 0;
-    $$self{lineno}++;
-    return; }
-  $$self{line}   = $line;
-  $$self{nchars} = length $line;
-  $$self{lineno}++;
-  $$self{colno} = 1;
-  return; }
+  return (wantarray ? (substr($line, 0, 1), $lineNo, $colNo, $eof) : substr($line, 0, 1)); }
 
 # 'unreadChar' unreads a single read character from this reader so that the next call to readChar (and friends) returns it.
 # At most a single unread character at the same time is supported.
@@ -227,22 +193,22 @@ sub peekChar {
   my ($self) = @_;
   # if we have some pushback, return that immediatly
   # and do not call anything else
-  return @{ $$self{pushback} } if defined($$self{pushback});
+  return (wantarray ? @{ $$self{pushback} } : $$self{pushback}[0]) if defined($$self{pushback});
   # read our current state
   my $lineNo = $$self{lineno};
   my $colNo  = $$self{colno};
   my $eof    = $$self{eof};
   # if we have reached the end of the line, we can return now
   # and don't even bother trying anything else
-  return undef, $lineNo, $colNo, 1 if $eof;
+  return (wantarray ? (undef, $lineNo, $colNo, 1) : undef) if $eof;
   # if we still have enough characters on the current line
   # then we can just return the current character
-  return substr($$self{line}, $colNo, 1), $lineNo, $colNo, $eof
+  return (wantarray ? (substr($$self{line}, $colNo, 1), $lineNo, $colNo, $eof) : substr($$self{line}, $colNo, 1))
     if $colNo < $$self{nchars};
   # in all the other cases, we need to do a real readChar, unreadChar
   my @read = $self->readChar;
   $self->unreadChar(@read);
-  return @read; }
+  return (wantarray ? @read : $read[0]); }
 
 # 'readCharWhile' reads characters from the input as long as they match a given function and returns a 4-tuple ($chars, $lineNo, $colNo, $eof).
 # - $chars contains the read characters
@@ -261,42 +227,11 @@ sub readCharWhile {
   # unread whatever is next and put it back on the stack
   $self->unreadChar($char, $colno, $lineno, $eof);
   # and return how many characters we skipped.
-  return ($chars, $colno, $lineno, $eof); }
+  #  return ($chars, $colno, $lineno, $eof); }
+  return $chars; }
 
-# 'eatCharWhile' eats characters from the input as long as they match a given function.
-# It behaves exactly like 'readCharWhile', but does not return anything
-sub eatCharWhile {
-  my ($self, $pred) = @_;
-  # read the first character
-  my ($char, $colno, $lineno, $eof) = $self->readChar;
-  # keep reading while the filter matches
-  ($char, $colno, $lineno, $eof) = $self->readChar
-    while (defined($char) && &{$pred}($char));
-  # unread whatever is next and put it back on the stack
-  $self->unreadChar($char, $colno, $lineno, $eof);
-  return; }
-
-# 'readSpaces' reads all spaces from the input.
-# It is the same as readCharWhile( sub { $_[0] =~ /\s/; } );
-sub readSpaces {
-  my ($self) = @_;
-  # this code is an inline version of:
-  # return $self->readCharWhile( sub { $_[0] =~ /\s/; } );
-  my ($char, $colno, $lineno, $eof) = $self->readChar;
-  my $chars = '';
-  # read while we are not at the end of the input
-  # and are stil ok w.r.t the filter
-  while (defined($char) && $char =~ /\s/) {
-    $chars .= $char;
-    ($char, $colno, $lineno, $eof) = $self->readChar; }
-  # unread whatever is next and put it back on the stack
-  $self->unreadChar($char, $colno, $lineno, $eof);
-  # and return how many characters we skipped.
-  return ($chars, $colno, $lineno, $eof); }
-
-# 'eatSpaces' discards all spaces from the input.
-# It is the same as eatCharWhile( sub { $_[0] =~ /\s/; } );
-sub eatSpaces {
+# 'skipSpaces' discards all spaces from the input.
+sub skipSpaces {
   my ($self) = @_;
   # this code is an inline version of:
   # $self->eatCharWhile( sub { $_[0] =~ /\s/; } );

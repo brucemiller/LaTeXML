@@ -44,6 +44,10 @@ sub copy {
 ##  return new($$self{kind}, $$self{value}, [($fn, $sr, $sc, $er, $ec)]); }
   return new($$self{kind}, $$self{value}, $$self{locator}); }
 
+sub getKind {
+  my ($self) = @_;
+  return $$self{kind}; }
+
 # 'getValue' gets the value of this BiBString, a normal string
 sub getValue {
   my ($self) = @_;
@@ -54,21 +58,6 @@ sub normalizeValue {
   my ($self) = @_;
   $$self{value} = lc($$self{value});
   return; }
-
-# 'evaluate' evaluates this BibString in a given context and returns a boolean indicating if evaluation was succesfull.
-# Context means BibTeX macros defined either inside a .bst file or inside a @string{} entries.
-# A context is represented as a simple hash from strings to strings or BibStrings.
-sub evaluate {
-  my ($self, %context) = @_;
-  # only literals are evaluated
-  return 1 unless $$self{kind} eq 'LITERAL';
-  # if lookup fails, we can't evaluate
-  my $value = $context{ lc($$self{value}) };
-  return 0 unless defined($value);
-  # update with the actual value and set the new type
-  $$self{kind}  = 'ALTERED';
-  $$self{value} = ref $value ? $value->getValue : $value;
-  return 1; }
 
 # 'append' appends the value of another BiBString to this one and updates locator references accordingly.
 # Does not perform any type or adjacency checking.

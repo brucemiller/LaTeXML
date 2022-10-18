@@ -25,28 +25,24 @@ sub new {
   # try to find the bst file, if not fallback to a precompiled one
   my $bstfile = pathname_find($style, paths => $searchpaths, types => ['bst'])
     || pathname_kpsewhich("$style.bst");
-  Debug("BEAST $style => " . ($bstfile || '<notfound>'));
-  my $bibstyle;
+  my $program;
   if (defined($bstfile)) {
     # we found the file => open it
     eval {
       my $reader = LaTeXML::BibTeX::Common::StreamReader->newFromLTXML($style, $bstfile);
       Fatal('missing_file', $style, undef, "Unable to open Bibliography Style File $bstfile")
         unless (defined($reader));
-      my $stage = "Reading bst file";
-      ProgressSpinup($stage);
-      $bibstyle = readFile($reader);
-      $reader->finalize;
-      ProgressSpindown($stage); }; }
-  if (!defined $bibstyle) {
+      $program = readFile($reader);
+      $reader->finalize; }; }
+  if (!defined $program) {
     # we did not find it => fallback to the default
     Warn('missing_file', $style, undef,
       "Can't find Bibliography Style '$style'; Using builtin default");
     require LaTeXML::BibTeX::BibStyle::Precompiled;
-    $bibstyle = $LaTeXML::BibTeX::BibStyle::Precompiled::DEFAULT; }
+    $program = $LaTeXML::BibTeX::BibStyle::Precompiled::DEFAULT; }
   return bless {
     name    => $style, pathname => $bstfile,
-    program => $bibstyle }, $class; }
+    program => $program }, $class; }
 
 sub getStyle {
   my ($self) = @_;
@@ -71,18 +67,18 @@ sub readFile {
   return [@commands]; }
 
 # eats all spaces or comments
-sub eatSpacesOrComments {
+sub skipSpacesOrComments {
   my ($reader) = @_;
   my ($char);
   while (1) {
     # eat spaces and check if there is a % comment char
-    $reader->eatSpaces;
-    ($char) = $reader->peekChar;
+    $reader->skipSpaces;
+    $char = $reader->peekChar;
     # return if we are not '%'
     last unless defined($char);
     last unless $char eq '%';
     # skip until a new line happens
-    $reader->eatCharWhile(sub { $_[0] ne "\n" }); }
+    $reader->readCharWhile(sub { $_[0] ne "\n" }); }
   return; }
 
 # commands and how many arguments
@@ -103,8 +99,8 @@ our %COMMAND_ARGS = (
 sub readCommand {
   my ($reader) = @_;
   # skip spaces, and check that we have something left to read
-  eatSpacesOrComments($reader);
-  my ($char) = $reader->peekChar;
+  skipSpacesOrComments($reader);
+  my $char = $reader->peekChar;
   return unless defined($char);
   # read the command name
   my $name = readLiteral($reader);
@@ -119,7 +115,7 @@ sub readCommand {
   my $argument;
   if ($nargs > 0) {
     foreach my $i (1 .. $nargs) {
-      eatSpacesOrComments($reader);
+      skipSpacesOrComments($reader);
       $argument = readBlock($reader);
       return unless $argument;
       push(@arguments, $argument); } }
@@ -135,51 +131,44 @@ sub readCommand {
 sub readAny {
   my ($reader) = @_;
   # peek at the next char
-  my ($char, $sr, $sc) = $reader->peekChar;
+  my $char = $reader->peekChar;
   return Error('bibtex', 'bstparse', $reader->getLocator, 'unexpected end of input while reading')
     unless defined($char);
   # check what it is
-  if ($char eq '#') {
-    return readNumber($reader); }
-  elsif ($char eq "'") {
-    return readReference($reader); }
-  elsif ($char eq '"') {
-    return readQuote($reader); }
-  elsif ($char eq '{') {
-    return readBlock($reader); }
-  else {
-    return readLiteral($reader); } }
+  if ($char eq '#')    { return readNumber($reader); }
+  elsif ($char eq "'") { return readReference($reader); }
+  elsif ($char eq '"') { return readQuote($reader); }
+  elsif ($char eq '{') { return readBlock($reader); }
+  else                 { return readLiteral($reader); } }
 
 sub readBlock {
   my ($reader) = @_;
   # read the opening brace
-  my ($char, $sr, $sc) = $reader->readChar;
+  my $char = $reader->readChar;
   return Error('bibtex', 'bstparse', $reader->getLocator, 'expected "{" while reading block')
     unless defined($char) && $char eq '{';
   my $locator = $reader->getLocator;
   my @values  = ();
-  my $value;
-  eatSpacesOrComments($reader);
+  skipSpacesOrComments($reader);
   # if the next char is '}', finish
-  ($char) = $reader->peekChar;
+  $char = $reader->peekChar;
   return Error('bibtex', 'bstparse', $reader->getLocator,
     'unexpected end of input while reading block')
     unless defined($char);
   # read until we find a closing brace
   while ($char ne '}') {
-    $value = readAny($reader);
+    my $value = readAny($reader);
     return unless $value;
     push(@values, $value);
 
     # skip all the spaces and read the next character
-    eatSpacesOrComments($reader);
-    ($char) = $reader->peekChar;
+    skipSpacesOrComments($reader);
+    $char = $reader->peekChar;
     return Error('bibtex', 'bstparse', $reader->getLocator,
       'unexpected end of input while reading block')
       unless defined($char); }
-  $reader->eatChar;
+  $reader->readChar;
   # we can add +1, because we did not read a \n
-  my $fn = $reader->getFilename;
   return LaTeXML::BibTeX::BibStyle::StyString->new('BLOCK', [@values],
     $locator->merge($reader->getLocator)); }
 
@@ -187,42 +176,38 @@ sub readBlock {
 sub readNumber {
   my ($reader) = @_;
   # read anything that's not a space
-  my ($char) = $reader->readChar;
+  my $char = $reader->readChar;
   return Error('bibtex', 'bstparse', $reader->getLocator,
     'expected "#" while reading number ')
     unless defined($char) && $char eq '#';
   my $locator = $reader->getLocator;
-  my ($sign) = $reader->peekChar;
+  my $sign    = $reader->peekChar;
   return Error('bibtex', 'bstparse', $reader->getLocator,
     'unexpected end of input while reading number')
     unless defined($sign);
 
   if ($sign eq '-' or $sign eq '+') {
-    $reader->eatChar; }
+    $reader->readChar; }
   else {
     $sign = ''; }
-  my ($literal, $er, $ec) =
-    $reader->readCharWhile(sub { $_[0] =~ /\d/; });
+  my $literal = $reader->readCharWhile(sub { $_[0] =~ /\d/; });
   return Error('bibtex', 'bstparse', $reader->getLocator, 'expected a non-empty number')
     if $literal eq "";
-  my $fn = $reader->getFilename;
   return LaTeXML::BibTeX::BibStyle::StyString->new('NUMBER', ($sign . $literal) + 0,
     $locator->merge($reader->getLocator)); }
 
 # Reads a reference, delimited by spaces, from the input
 sub readReference {
   my ($reader) = @_;
-  my ($char)   = $reader->readChar;
+  my $char = $reader->readChar;
   return Error('bibtex', 'bstparse', $reader->getLocator,
     'expected "\'" while reading reference')
     unless defined($char) && $char eq "'";
   my $locator = $reader->getLocator;
   # read anything that's not a space and not the end of a block
-  my ($reference, $er, $ec) =
-    $reader->readCharWhile(sub { $_[0] =~ /[^%\s\}]/; });
+  my $reference = $reader->readCharWhile(sub { $_[0] =~ /[^%\s\}]/; });
   return Error('bibtex', 'bstparse', $reader->getLocator, 'expected a non-empty argument')
     if $reference eq "";
-  my $fn = $reader->getFilename;
   return LaTeXML::BibTeX::BibStyle::StyString->new('REFERENCE', $reference,
     $locator->merge($reader->getLocator)); }
 
@@ -231,11 +216,9 @@ sub readLiteral {
   my ($reader) = @_;
   # read anything that's not a space or the boundary of a block
   my $locator = $reader->getLocator;
-  my ($literal, $er, $ec) =
-    $reader->readCharWhile(sub { $_[0] =~ /[^%\s\{\}]/; });
+  my $literal = $reader->readCharWhile(sub { $_[0] =~ /[^%\s\{\}]/; });
   return Error('bibtex', 'bstparse', $reader->getLocator, 'expected a non-empty literal')
     unless $literal;
-  my $fn = $reader->getFilename;
   return LaTeXML::BibTeX::BibStyle::StyString->new('LITERAL', $literal,
     $locator->merge($reader->getLocator)); }
 
@@ -244,20 +227,19 @@ sub readLiteral {
 sub readQuote {
   my ($reader) = @_;
   # read the first quote, or die if we are at the end
-  my ($char, $line, $col, $eof) = $reader->readChar;
+  my $char = $reader->readChar;
   return Error('bibtex', 'bstparse', $reader->getLocator, 'expected to find an \'"\'')
     unless defined($char) && $char eq '"';
   my $locator = $reader->getLocator;
   # record the starting position and read until the next quote
-  my ($result) = $reader->readCharWhile(sub { $_[0] =~ /[^"]/ });
+  my $result = $reader->readCharWhile(sub { $_[0] =~ /[^"]/ });
   return Error('bibtex', 'bstparse', $reader->getLocator, 'unexpected end of input in quote')
-    if $eof;
+    if !defined $char;
   # read the end quote, or die if we are at the end
-  ($char, $line, $col, $eof) = $reader->readChar;
+  $char = $reader->readChar;
   return Error('bibtex', 'bstparse', $reader->getLocator, 'expected to find an \'"\'')
     unless defined($char) && $char eq '"';
   # we can add a +1 here, because we did not read a \n
-  my $fn = $reader->getFilename;
   return LaTeXML::BibTeX::BibStyle::StyString->new('QUOTE', $result,
     $locator->merge($reader->getLocator)); }
 
