@@ -530,10 +530,12 @@ DefConstructor('\lx@notetext[]{}[]{}',
     (role => $type . 'text', makeNoteTags($type, $_[1], $_[3] || Digest(T_CS('\the' . $type)))); },
   reversion => '');
 
-DefMacro('\footnote',      '\lx@note{footnote}');
-DefMacro('\footnotemark',  '\lx@notemark{footnote}');
-DefMacro('\footnotetext',  '\lx@notetext{footnote}');
-DefMacro('\@footnotetext', '\lx@notetext{footnote}');
+DefMacro('\footnote',      '\lx@note{footnote}',     locked => 1);
+DefMacro('\footnotemark',  '\lx@notemark{footnote}', locked => 1);
+DefMacro('\footnotetext',  '\lx@notetext{footnote}', locked => 1);
+DefMacro('\@footnotetext', '\lx@notetext{footnote}', locked => 1);
+# we don't implement the internals directly, so lock them to the latexml variant
+Let('\@thefnmark', '\lx@notemark{footnote}', locked => 1);
 
 Tag('ltx:note', afterClose => \&relocateFootnote);
 
@@ -831,13 +833,16 @@ DefRegister('\mathindent'    => Dimension(0));
 
 DefMacroI('\@clsextension', undef, 'cls');
 DefMacroI('\@pkgextension', undef, 'sty');
-Let('\@currext',          '\@empty');
-Let('\@currname',         '\@empty');
-Let('\@classoptionslist', '\relax');
-# Note that there are variables used in Package.pmfor these,
+Let('\@currext',              '\@empty');
+Let('\@currname',             '\@empty');
+Let('\@classoptionslist',     '\relax');
+Let('\@raw@classoptionslist', '\relax');
+
+# Note that there are variables used in Package.pm for these,
 # but they are NOT tied to these macros. Do they need to be?
-DefMacroI('\@declaredoptions', undef, undef);
-DefMacroI('\@curroptions',     undef, undef);
+DefMacroI('\@declaredoptions',  undef, Tokens());
+DefMacroI('\@curroptions',      undef, undef);
+DefMacroI('\@unusedoptionlist', undef, Tokens());
 
 DefConstructor('\usepackage OptionalSemiverbatim Semiverbatim []',
   "<?latexml package='#2' ?#1(options='#1')?>",
@@ -5561,6 +5566,7 @@ sub make_message {
     map { ToString(Expand($_, T_CS('\@spaces'), T_CS('\@spaces'))) } @args);
   $type    =~ s/(?:\\\@?spaces?)+/ /g;
   $message =~ s/(?:\\\@?spaces?)+/ /g;
+  $message =~ s/\\MessageBreak/\n/g;
   $stomach->egroup;
   return ('latex', $type, $stomach, $message); }
 
@@ -5853,6 +5859,12 @@ RawTeX(<<'EOTeX');
        \expandafter\@fornoop \else
       #4\relax\expandafter\@tforloop\fi#2\@@#3{#4}}
 \long\def\@break@tfor#1\@@#2#3{\fi\fi}
+\def\@removeelement#1#2#3{%
+  \def\reserved@a##1,#1,##2\reserved@a{##1,##2\reserved@b}%
+  \def\reserved@b##1,\reserved@b##2\reserved@b{%
+    \ifx,##1\@empty\else##1\fi}%
+  \edef#3{%
+    \expandafter\reserved@b\reserved@a,#2,\reserved@b,#1,\reserved@a}}
 \def\remove@to@nnil#1\@nnil{}
 \def\remove@angles#1>{\set@simple@size@args}
 \def\remove@star#1*{#1}

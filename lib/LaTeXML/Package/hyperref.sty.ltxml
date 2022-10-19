@@ -371,14 +371,24 @@ map { DefMacroI(T_CS('\\' . $_ . 'autorefname'), undef, '\itemautorefname'); }
 
 # I wonder if this is good enough for our context?
 # \pdfstringdef{macroname}{texstring}
-DefMacro('\pdfstring{Token}{}', '\def#1{#2}');
+DefMacro('\pdfstringdef{Token}{}', '\def#1{#2}');
+# Hopefully noop is sufficient for PDF-specific uses?
+DefMacro('\pdfstringdefDisableCommands', '');
+DefMacro('\pdfbookmark[]{}{}',      '');
+DefMacro('\currentpdfbookmark{}{}', '');
+DefMacro('\subpdfbookmark{}{}',     '');
+DefMacro('\belowpdfbookmark{}{}',   '');
 
-DefMacro('\pdfstringdefDisableCommands', '');    # Hopefully noop is sufficient?
 #======================================================================
 # 4.1 Replacement macros
 
 # \texorpdfstring{TeXString}{PDFstring}
 DefMacro('\texorpdfstring{}{}', '#1');
+
+if (!IsDefined(T_CS("\\pdfstringdefPreHook"))) {
+  Let('\pdfstringdefPreHook', '\@empty'); }
+if (!IsDefined(T_CS("\\pdfstringdefPostHook"))) {
+  Let('\pdfstringdefPostHook', '\@gobble'); }
 
 #======================================================================
 # 4.2 Utility macros
