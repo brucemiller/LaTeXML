@@ -821,10 +821,10 @@ sub pmml_mo {
   my $islargeop = $role && ($role =~ /^(SUMOP|INTOP)$/);
   my $lpad      = $attr{lpadding}
     || ((ref $item) && $item->getAttribute('lpadding'))
-    || ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
+    || ($role && ($role eq 'MODIFIEROP') && '0.2222222222222222em');
   my $rpad = $attr{rpadding}
     || ((ref $item) && $item->getAttribute('rpadding'))
-    || ($role && ($role eq 'MODIFIEROP') && 'mediummathspace');
+    || ($role && ($role eq 'MODIFIEROP') && '0.2222222222222222em');
   my $pos = (ref $item && $item->getAttribute('scriptpos')) || 'post';
   return
     pmml_mayberesize($item,
@@ -1595,7 +1595,7 @@ DefMathML('Apply:?:limit-from', sub {
 DefMathML('Apply:?:annotated', sub {
     my ($op, $var, $annotation) = @_;
     return ['m:mrow', {}, pmml($var),
-      ['m:mspace', { width => 'veryverythickmathspace' }],
+      ['m:mspace', { width => '0.3888888888888889em' }],
       pmml($annotation)]; });
 
 DefMathML("Token:?:sum",      undef, sub { return ['m:sum']; });
