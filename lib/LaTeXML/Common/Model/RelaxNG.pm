@@ -79,9 +79,9 @@ sub loadSchema {
 
   # Distill the info into allowed children & attributes for each element.
   foreach my $tag (sort keys %{ $$self{elements} }) {
-    if ($tag eq 'ANY') {
+    if ($tag eq '*:*') {
       # Ignore any internal structure (side effect of restricted names)
-      $$self{model}->addTagContent($tag, 'ANY');
+      $$self{model}->addTagContent($tag, '*:*');
       next; }
     my @body = @{ $$self{elements}{$tag} };
     my ($content, $attributes) = $self->extractContent($tag, @body);
@@ -343,7 +343,7 @@ sub scanNameClass {
     my @exceptions = ();    # Check for exceptions!
     if (my @children = getElements($node)) {
       @exceptions = map { $self->scanNameClass($_, $forattr, $ns) } @children; }
-    return ('ANY', @exceptions); }
+    return ('*:*', @exceptions); }
   elsif ($relaxop eq 'rng:nsName') {
     my @exceptions = ();    # Check for exceptions!
     if (my @children = getElements($node)) {
@@ -353,12 +353,12 @@ sub scanNameClass {
     my %names = ();
     foreach my $choice ($node->childNodes) {
       map { $names{$_} = 1 } $self->scanNameClass($choice, $forattr, $ns); }
-    return ($names{ANY} ? ('ANY') : sort keys %names); }
+    return (sort keys %names); }
   elsif ($relaxop eq 'rng:except') {
     my %names = ();
     foreach my $choice (getElements($node)) {
       map { $names{$_} = 1 } $self->scanNameClass($choice, $forattr, $ns); }
-    return map { "!$_" } ($names{ANY} ? ('ANY') : sort keys %names); }
+    return map { "!$_" } (sort keys %names); }
   else {
     my $op = $node->nodeName;
     Fatal('misdefined', $op, undef,
@@ -589,7 +589,6 @@ sub toTeX {
       my $content = join(' ', map { $self->toTeX($_) } @spec);
       return "\\item[\\textit{Start}]\\textbf{==}\\ $content" . ($docs ? " \\par$docs" : ''); }
     elsif ($op eq 'grammar') {    # Don't otherwise mention it?
-##      join("\n",'\item[\textit{Grammar}:] '.$name,
       return join("\n", map { $self->toTeX($_) } @data); }
     elsif ($op eq 'module') {
       $name =~ s/^urn:x-LaTeXML:RelaxNG://;    # Remove the urn part.

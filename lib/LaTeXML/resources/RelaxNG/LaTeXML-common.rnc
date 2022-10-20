@@ -12,6 +12,8 @@
 
 default namespace = "http://dlmf.nist.gov/LaTeXML"
 
+namespace nonamespace = ""
+
 # Basic element classes:
 
 ## All strictly inline elements.
@@ -48,11 +50,21 @@ Length.type = text
 Color.type = text
 
 # ======================================================================
+
+## Attributes in foreign namespaces
+Foreign.attributes =
+  attribute * - (nonamespace:* | xml:*) { text } *
+# Oddly, we have to exclude xml, else we allow xml:id everywhere!
+# Alternatively, we have to exclude every specific xml attribute!!!
+
 ## Attributes shared by ALL elements.
 Common.attributes =
 
 #  ## provides for namespace declaration.
 #  attribute xmlns { text }?,
+
+  ## Allow foreign namespaced attributes
+  Foreign.attributes,
 
   ## a space separated list of tokens, as in CSS.
   ## The \attr{class} can be used to add differentiate different instances of elements

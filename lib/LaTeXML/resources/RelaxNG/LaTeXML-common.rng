@@ -12,7 +12,7 @@
   | http://dlmf.nist.gov/LaTeXML/                              (o o)    |
   \=========================================================ooo==U==ooo=/
 -->
-<grammar xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+<grammar ns="http://www.w3.org/XML/1998/namespace" xmlns:a="http://relaxng.org/ns/compatibility/annotations/1.0" xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
   <!-- Basic element classes: -->
   <define name="Inline.class">
     <a:documentation>All strictly inline elements.</a:documentation>
@@ -56,13 +56,33 @@ NOTE: To be narrowed later.</a:documentation>
     <text/>
   </define>
   <!-- ====================================================================== -->
+  <define name="Foreign.attributes">
+    <a:documentation>Attributes in foreign namespaces</a:documentation>
+    <zeroOrMore>
+      <attribute>
+        <anyName>
+          <except>
+            <nsName ns=""/>
+            <nsName/>
+          </except>
+        </anyName>
+      </attribute>
+    </zeroOrMore>
+  </define>
+  <!--
+    Oddly, we have to exclude xml, else we allow xml:id everywhere!
+    Alternatively, we have to exclude every specific xml attribute!!!
+  -->
   <define name="Common.attributes">
     <a:documentation>Attributes shared by ALL elements.</a:documentation>
+    <!--
+       ## provides for namespace declaration.
+       attribute xmlns { text }?,
+    -->
+    <ref name="Foreign.attributes">
+      <a:documentation>Allow foreign namespaced attributes</a:documentation>
+    </ref>
     <optional>
-      <!--
-         ## provides for namespace declaration.
-         attribute xmlns { text }?,
-      -->
       <attribute name="class">
         <a:documentation>a space separated list of tokens, as in CSS.
 The \attr{class} can be used to add differentiate different instances of elements

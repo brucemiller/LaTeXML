@@ -93,6 +93,7 @@
       <!-- copy id, class from parent ltx:picture, but do NOT derive css style from size -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_classes"/>
+      <xsl:call-template name="copy_foreign_attributes"/>
       <xsl:apply-templates select="." mode="add_RDFa"/>
       <!-- but copy other svg:svg attributes -->
       <xsl:for-each select="svg:svg/@*">
@@ -133,7 +134,7 @@
             </xsl:attribute>
           </xsl:when>
           <xsl:otherwise>
-            <xsl:attribute name="{name()}"><xsl:value-of select="."/></xsl:attribute>
+            <xsl:apply-templates select="." mode="copy-attribute"/>
           </xsl:otherwise>
         </xsl:choose>
       </xsl:for-each>

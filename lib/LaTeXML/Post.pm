@@ -237,6 +237,27 @@ sub find_preambles {
         push(@preambles, $3); } } }
   return join("\n", @preambles); }
 
+# Utility to Copy any foreign attributes from $node onto the $newnode
+# Allow both $node & $newnode to be XML Elements ore array representation
+sub copy_foreign_attributes {
+  my ($self, $newnode, $node) = @_;
+  my %attr = ();
+  if (ref $node eq 'ARRAY') {
+    %attr = %{ $$node[1] }; }
+  else {
+    foreach my $attr ($node->attributes()) {
+      if ($attr->nodeType == XML_ATTRIBUTE_NODE) {
+        $attr{ $attr->nodeName } = $attr->getValue; } } }
+  foreach my $key (keys %attr) {
+    next if $key     =~ /^xml:/;
+    next unless $key =~ /:/;
+    my $value = $attr{$key};
+    if (ref $newnode eq 'ARRAY') {
+      $$newnode[1]{$key} = $value unless defined $$newnode[1]{$key}; }
+    else {
+      $newnode->setAttribute($key => $value) unless $newnode->hasAttribute($key); } }
+  return; }
+
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 package LaTeXML::Post::MathProcessor;
 use strict;
@@ -485,10 +506,13 @@ sub rawIDSuffix {
 # * the containing XMDual (which makes more sense when we've generated a "container")
 # * the containing XMDual's semantic operator (makes more sense when we're generating
 #   tokens that are only visible from the presentation branch)
+#
+# Additionally: piggy-back here copying any foreign-namespaced attributes from source to target
 sub associateNode {
   my ($self, $node, $currentnode, $noxref) = @_;
   my $r = ref $node;
   return unless $currentnode && $r && ($r eq 'ARRAY' || $r eq 'XML::LibXML::Element');
+  $self->copy_foreign_attributes($node, $currentnode);
   my $document = $LaTeXML::Post::DOCUMENT;
   # Check if already associated with a source node
   my $isarray = ref $node eq 'ARRAY';

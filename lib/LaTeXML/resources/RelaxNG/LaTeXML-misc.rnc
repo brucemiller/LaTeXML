@@ -12,6 +12,8 @@
 
 default namespace = "http://dlmf.nist.gov/LaTeXML"
 namespace xhtml = "http://www.w3.org/1999/xhtml"
+namespace nonamespace = ""
+namespace xlink = "http://www.w3.org/1999/xlink"
 
 ##  Miscellaneous (Misc) elements are (typically) visible
 ## elements which don't have clear inline or block character;
@@ -96,6 +98,8 @@ graphics_attributes =
 graphics_model = empty
 
 #======================================================================
+svgForeign.attributes =
+  attribute * - (nonamespace:* | xml:* | xlink:*) { text } *
 
 svg =
 ## An SVG (Scalable Vector Graphics) object
@@ -105,11 +109,13 @@ grammar {
    common.attrs.aria.implicit.group = empty
    common.attrs.aria.implicit.img = empty
    common.attrs.aria.implicit.link = empty
+   SVG.Core.extra.attrib &= parent svgForeign.attributes
   include "svg11.rnc"
   { SVG.foreignObject.content = parent Flow.model
     SVG.desc.content = parent Flow.model
  }
 }
+
 #======================================================================
 
 htmlElement = element xhtml:* { (attribute * { text } | text | htmlElement) * }

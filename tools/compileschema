@@ -67,17 +67,19 @@ done
 # Compiling schema to quick loading form.
 #======================================================================
 echo "Precompiling $SCHEMA.rng schema to $SCHEMA.model"
- perl -I $LATEXMLDIR/blib/lib -MLaTeXML \
-       -e "LaTeXML::Core->new(searchpaths=>['$RELAXNGDIR'])       \
-              ->withState( sub{                             \
-              my \$latexml = \$_[0];                        \
-              my \$model = \$latexml->getModel;             \
+ perl -I $LATEXMLDIR/blib/lib -MLaTeXML -MLaTeXML::Common::Error \
+       -e "UseSTDERR(); my \$latexml = LaTeXML::Core->new(searchpaths=>['$RELAXNGDIR'], verbosity=>2);
+              \$latexml->withState( sub{                             \
+              \$latexml->initializeState(); \
+              my \$state = \$_[0];                        \
+              my \$model = \$state->getModel;             \
               \$model->registerNamespace(ltx=>'http://dlmf.nist.gov/LaTeXML');\
               \$model->registerNamespace(svg=>'http://www.w3.org/2000/svg');  \
               \$model->registerNamespace(xhtml => 'http://www.w3.org/1999/xhtml'); \
+              \$model->registerNamespace(xlink => 'http://www.w3.org/1999/xlink'); \
               \$model->setRelaxNGSchema('$SCHEMA');         \
               \$model->compileSchema;                       \
-              print STDERR \$latexml->getStatusMessage.\"\n\";});" \
+              print STDERR \$state->getStatusMessage.\"\n\";});" \
        > $RELAXNGDIR/$SCHEMA.model
 
 #======================================================================

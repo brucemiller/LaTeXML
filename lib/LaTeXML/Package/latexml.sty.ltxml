@@ -134,22 +134,73 @@ DefMacro('\LXMID{}{}', '\lx@xmarg{#1}{#2}');
 DefMacro('\LXMRef{}', '\lx@xmref{#1}');
 
 #======================================================================
-# class related features
-Let('\lxAddClass', '\@ADDCLASS');
+# Augmenting & Annotating features
 
+# \lxRegisterNamespace{prefix}{namespace-uri}
+#    Registers an XML namespace that can be used for foreign attributes in the document.
+DefPrimitive('\lxRegisterNamespace {} Semiverbatim', sub {
+    my ($stomach, $prefix, $namespaceuri) = @_;
+    RegisterNamespace(ToString($prefix) => ToString($namespaceuri));
+    return; });
+
+# class related features
 DefConstructor('\lxAddClass Semiverbatim', sub {
     $_[0]->addClass($_[0]->getElement, ToString($_[1])); });
 
+# Add $box to the document, returning a node that can be annotated (attributes)
+# This may wrap the $box in an ltx:text if necessary.
+sub getAnnotatableNode {
+  my ($document, $box) = @_;
+  my $context = $document->getElement;    # Where we originally start inserting.
+  my @nodes   = ();
+  if (isTextNode($document->getNode)) {
+    push(@nodes, $document->openElement('ltx:text')); }
+  push(@nodes, $document->absorb($box));
+  @nodes = $document->filterChildren($document->filterDeletions(@nodes));
+  $document->closeToNode($context);
+  return $nodes[0]; }
+
 DefConstructor('\lxWithClass Semiverbatim {}', sub {
     my ($document, $class, $box) = @_;
-    my $context = $document->getElement;    # Where we originally start inserting.
-    my @nodes   = ();
-    if (isTextNode($document->getNode)) {
-      push(@nodes, $document->openElement('ltx:text')); }
-    push(@nodes, $document->absorb($box));
-    @nodes = $document->filterChildren($document->filterDeletions(@nodes));
-    $document->closeToNode($context);
-    $document->addClass($nodes[0], ToString($class)) if @nodes; });
+    if (my $node = getAnnotatableNode($document, $box)) {
+      $document->addClass($node, ToString($class)); } });
+
+# Data extensions
+# Add attributes (from keyvals) to a $node, or float to appropriate node if undef
+# If a key does not have a namespace prefix, assume data: ???????
+# If it starts with ":" it has no namespace; be careful of conflicst with LaTeXML's attributes!
+sub addAnnotations {
+  my ($document, $node, %keyvals) = @_;
+  my $floating = !defined $node;
+  foreach my $key (keys %keyvals) {
+    my $value = $keyvals{$key};
+    $key = ToString($key);
+    if    ($key =~ s/^://) { }                           # leading : means NO namespace
+    elsif ($key =~ /:/)    { }                           # embedded : means user namespace
+    else                   { $key = 'data:' . $key; }    # otherwise, assume data:
+    $node = $document->floatToAttribute($key) if $floating;
+    $document->setAttribute($node, $key => $value); }
+  return; }
+
+# The following add annotation data attributes to a node.
+# The annnotations are given by the key=value pairs in kv,
+# with the key being in the "data" namespace, unless it has a namespace prefix
+# which was presumably registered using \lxRegisterNamespace
+
+# \lxAddAnnotation{kv}  Add annotation to the current containing node that can accept them
+DefConstructor('\lxAddAnnotation RequiredKeyVals', sub {
+    my ($document, $kv, $thing) = @_;
+    my $savenode = $document->getNode;
+    addAnnotations($document, undef, $kv->getHash);
+    $document->setNode($savenode);
+    return; });
+
+# \lxWithAnnotation{kv}{box}  Add box, with annottions.
+DefConstructor('\lxWithAnnotation RequiredKeyVals {}', sub {
+    my ($document, $kv, $box) = @_;
+    if (my $node = getAnnotatableNode($document, $box)) {
+      addAnnotations($document, $node, $kv->getHash); }
+    return; });
 
 #======================================================================
 # links
@@ -165,6 +216,7 @@ DefConstructor('\lxRef Semiverbatim {}',
 DefPrimitive('\lxRequireResource OptionalKeyVals {}', sub {
     my ($stomach, $kv, $path) = @_;
     RequireResource(ToString($path), ($kv ? $kv->getHash : ())); });
+
 #======================================================================
 # Page customization
 #  options to create or customize
