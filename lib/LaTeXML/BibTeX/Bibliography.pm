@@ -13,7 +13,6 @@ use strict;
 use warnings;
 use LaTeXML::Common::Error;
 use LaTeXML::BibTeX::Common::StreamReader;
-use LaTeXML::BibTeX::Bibliography::BibString;
 use LaTeXML::BibTeX::Bibliography::BibField;
 use LaTeXML::BibTeX::Bibliography::BibEntry;
 
@@ -28,7 +27,6 @@ sub new {
     name     => $name, pathname => $pathname,
     reader   => $reader,
     preamble => [], strings => {} }, $class;
-  $bibliography->readFile;
   return $bibliography; }
 
 sub getName {
@@ -43,8 +41,14 @@ sub getPreamble {
   my ($self) = @_;
   return @{ $$self{preamble} }; }
 
+# Defer reading the bibliography until requested by the BST.
+# Thus we can make all macro substitutions (from bib's @STRING and bst's MACRO) ONCE!
+# @STRINGs can change during reading, but should use the last/current value
+# whereas bst's MACRO's can't change.  So, we should be accurate.
 sub getEntries {
-  my ($self) = @_;
+  my ($self, $macros) = @_;
+  if (!$$self{entries}) {
+    $self->readFile($macros); }
   return @{ $$self{entries} }; }
 
 # ======================================================================= #
@@ -53,7 +57,7 @@ sub getEntries {
 # Read the bib file
 # makes substitutions of @STRING's within the bib file, but defers .bst macros
 sub readFile {
-  my ($self) = @_;
+  my ($self, $macros) = @_;
   my $reader = $$self{reader};
   # values to be returned
   my @entries = ();
@@ -61,14 +65,14 @@ sub readFile {
     my $locator = $reader->getLocator;              # WRONG! should be before type!
     my $begin   = $self->readDelimiter('{', '(');
     if ($type eq 'comment') {
-      my $ignore = $self->readValue; }
+      my $ignore = $self->readValue($macros); }
     elsif ($type eq 'preamble') {                   # just a string (possibly interpolated)
-      my $pre = $self->readValue;
-      push(@{ $$self{preamble} }, (ref $pre eq 'ARRAY' ? @$pre : $pre)); }
+      my $pre = $self->readValue($macros);
+      push(@{ $$self{preamble} }, $pre); }
     elsif ($type eq 'string') {
       my $name = $self->readKeyword;
       $self->readDelimiter('=');
-      my $value = $self->readValue;
+      my $value = $self->readValue($macros);
       $$self{strings}{ lc $name } = $value; }
     else {                                          # Random bibliographic entry
       my $key    = $self->readKeyword;
@@ -77,12 +81,13 @@ sub readFile {
         last if ($char ne ',');
         $reader->readChar;
         $reader->skipSpaces;
-        my $name = $self->readKeyword;
+        my $flocator = $reader->getLocator;
+        my $name     = $self->readKeyword;
         next unless $name;
         last unless $self->readDelimiter('=');
-        my $value = $self->readValue();
+        my $value = $self->readValue($macros);
         push(@fields, LaTeXML::BibTeX::Bibliography::BibField->new(lc($name), $value,
-            $locator->merge($reader->getLocator))); }
+            $flocator->merge($reader->getLocator))); }
       push(@entries, LaTeXML::BibTeX::Bibliography::BibEntry->new(lc($type), $key, [@fields],
           $locator->merge($reader->getLocator))); }
     $self->readDelimiter(($begin eq '{' ? '}' : ')')); }    # closing } or ) of entry
@@ -124,11 +129,9 @@ sub readEntryType {
 # Parsing a Value
 # ======================================================================= #
 
-# reads a string-like value, possibly concatenated and with literals for @strings or macros
-# returns an ARRAY !!!
-# Needs a lot of cleanup, & folding...
+# reads a string value, incorporating substitutions from bib @STRINGS and bst MACROS
 sub readValue {
-  my ($self) = @_;
+  my ($self, $macros) = @_;
   my $reader = $$self{reader};
   # skip spaces and start reading a field
   $reader->skipSpaces;
@@ -145,7 +148,7 @@ sub readValue {
   my @content = ();
   # read until we encounter a , or a closing brace
   while ($char ne ',' && $char ne '}') {
-    # Read some kind of value (quoted, braced, literal)
+    # Read some kind of value (quoted, braced, keyword)
     if ($char eq '"') {
       my $value = $self->readQuoted();
       return unless defined $value;
@@ -156,11 +159,12 @@ sub readValue {
       return unless defined $value;
       push(@content, $value); }
     else {
-      my $value = $self->readLiteral();
+      my $value = $self->readKeyword();
       return unless defined $value;
-      if (my $s = $value && $$self{strings}{ lc $value->getValue }) {    # Maybe substitute @STRING
-        $value = $s; }
-      push(@content, (ref $value eq 'ARRAY' ? @$value : $value)); }
+      if (my $name = lc($value)) {
+        if (my $repl = $$self{strings}{$name} // $$macros{$name}) {
+          $value = $repl; } }
+      push(@content, $value); }
     # Now look next for possible concatenation
     $reader->skipSpaces;
     $char = $reader->peekChar;
@@ -168,12 +172,12 @@ sub readValue {
     $reader->readChar;
     $reader->skipSpaces;
     $char = $reader->peekChar; }
-  return [@content]; }
+  return join('', @content); }
 
 # ======================================================================= #
-# Parsing Literals, Quotes & Braces
+# Parsing Keywords, Quotes & Braces
 # ======================================================================= #
-our %literal_specials = ('{' => 1, '}' => 1, '=' => 1, '#' => 1, ',' => 1);
+our %keyword_specials = ('{' => 1, '}' => 1, '=' => 1, '#' => 1, ',' => 1);
 
 sub readKeyword {
   my ($self) = @_;
@@ -181,7 +185,7 @@ sub readKeyword {
   # get the starting position
   my @chars = ();
   while (defined(my $char = $reader->peekChar)) {
-    last if $literal_specials{$char};
+    last if $keyword_specials{$char};
     push(@chars, $char);
     $reader->readChar; }
   return unless @chars;
@@ -189,15 +193,6 @@ sub readKeyword {
   $keyword =~ s/^\s+//;    # Trim
   $keyword =~ s/\s+$//;
   return $keyword; }
-
-sub readLiteral {
-  my ($self) = @_;
-  my $reader = $$self{reader};
-  # get the starting position
-  my $locator = $reader->getLocator;
-  my $keyword = $self->readKeyword;
-  return LaTeXML::BibTeX::Bibliography::BibString->new('LITERAL', $keyword,
-    $locator->merge($reader->getLocator)); }
 
 # read a string of balanced braces from the input
 # does not skip any spaces before or after
@@ -225,8 +220,7 @@ sub readBraced {
       $level++; }
     elsif ($char eq '}') {
       $level--; } }
-  return LaTeXML::BibTeX::Bibliography::BibString->new('BRACKET', $result,
-    $locator->merge($reader->getLocator)); }
+  return $result; }
 
 # read a quoted quote from reader
 # does not skip any spaces
@@ -252,7 +246,6 @@ sub readQuoted {
     elsif ($char eq '}') {
       $level--; }
     $result .= $char; }
-  return LaTeXML::BibTeX::Bibliography::BibString->new('QUOTE', $result,
-    $locator->merge($reader->getLocator)); }
+  return $result; }
 
 1;

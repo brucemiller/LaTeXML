@@ -176,7 +176,7 @@ sub do_MACRO {
   return unless $name  = $self->check_one($name,  'macro name');
   return unless $value = $self->check_one($value, 'macro value');
   RTDebug($self, $command, "Define Macro " . $name) if $LaTeXML::DEBUG{bibtex_runtime};
-  $self->setMacro($name->getValue, $value);
+  $$self{macros}{ lc $name->getValue } = $value->getValue;
   return; }
 
 sub do_FUNCTION {
@@ -482,25 +482,6 @@ sub swapStack {
   return 1; }
 
 #======================================================================
-# MACROS
-
-# 'setMarco' sets a macro of the provided name to the provided value.
-sub setMacro {
-  my ($self, $name, $value) = @_;
-  $$self{macros}{ lc $name } = $value;
-  return; }
-
-# 'getMacro' gets a macro of the provided name
-sub getMacro {
-  my ($self, $name) = @_;
-  return $$self{macros}{ lc $name }; }
-
-# 'hasMacro' returns a boolean indicating if the given macro exists
-sub hasMacro {
-  my ($self, $name) = @_;
-  return defined($$self{macros}{ lc $name }); }
-
-#======================================================================
 # VARIABLES
 
 # 'hasVariable' checks if a variable of the given name and type exists.
@@ -599,11 +580,12 @@ sub readEntries {
   my @entries = ();
   foreach my $bibliography (@bibliographies) {
     my $path = $bibliography->getPathname;
-    push(@{ $$self{preambleString} }, map { $self->expandValue($_); } $bibliography->getPreamble);
-    push(@{ $$self{preambleSource} }, [($path, '', 'preamble')]);
     # iterate over all the entries
-    foreach my $entry ($bibliography->getEntries) {
-      push(@entries, LaTeXML::BibTeX::Runtime::Entry->new($path, $self, $entry)); } }
+    foreach my $entry ($bibliography->getEntries($$self{macros})) {
+      push(@entries, LaTeXML::BibTeX::Runtime::Entry->new($path, $self, $entry)); }
+    push(@{ $$self{preambleString} }, $bibliography->getPreamble);
+    push(@{ $$self{preambleSource} }, [($path, '', 'preamble')]);
+  }
   # build a map of entries
   my (%entryHash) = ();
   my ($key);
@@ -618,19 +600,6 @@ sub readEntries {
   # TODO: Allow numcrossref customization
   $$self{entries} = $self->buildEntryList([@entries], $citations, 2);
   return; }
-
-# Expand a Bibliography value (field, preamble, ...) substituting macros and returning a string
-sub expandValue {
-  my ($self, $value) = @_;
-  my @pieces = ($value ? (ref $value eq 'ARRAY' ? @$value : $value) : ());    # !!!!!
-  my @result = ();
-  foreach my $piece (@pieces) {
-    my $string = $piece->getValue;
-    if ($piece->getKind eq 'LITERAL') {
-      if (my $expansion = $self->getMacro($string)) {
-        $string = $expansion->getValue; } }
-    push(@result, $string); }
-  return join('', @result); }
 
 # build a list of entries that should be cited.
 sub buildEntryList {
@@ -718,7 +687,7 @@ sub findEntry {
     $theEntry = $hash{$key}; }
   # if we weren't initalized, we need to iterate
   else {
-    foreach my $entry (@{ $self->getEntries }) {
+    foreach my $entry (@{ $self->getEntries() }) {
       if ($entry->getKey eq $key) {
         $theEntry = $entry;
         last; } } }

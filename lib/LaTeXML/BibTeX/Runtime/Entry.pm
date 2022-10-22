@@ -32,7 +32,7 @@ sub new {
   my %values = ();
   foreach my $field (@fields) {
     my $name  = $field->getName;
-    my $value = $runtime->expandValue($field->getContent);
+    my $value = $field->getContent;
     # if we have a duplicate valye
     if (defined($values{$name})) {
       Warn('bibtex', 'runtime', $field->getLocator,

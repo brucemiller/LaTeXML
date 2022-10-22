@@ -28,22 +28,13 @@ sub getName {
   my ($self) = @_;
   return $$self{name}; }
 
-# gets the content of this BibField,
-# NOTE: this is either an ARRAY of values or a single value!!!
+# gets the content of this BibField, a string
 sub getContent {
   my ($self) = @_;
   return $$self{content}; }
 
 sub stringify {
   my ($self) = @_;
-  # get the content of this field
-  my $content = $self->getContent;
-  if (ref $content eq 'ARRAY') {
-    my @scontent = map { $_->stringify; } @{ $self->getContent };
-    $content = '[' . join(', ', @scontent) . ']'; }
-  else {
-    $content = $content->stringify; }
-  return 'BibField(' . $$self{name} . ', ' . $content . ")";
-}
+  return 'BibField(' . $$self{name} . ', ' . $$self{content} . ")"; }
 
 1;
