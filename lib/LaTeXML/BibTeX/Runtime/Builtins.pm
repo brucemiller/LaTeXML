@@ -63,14 +63,11 @@ sub install {
 # If either stack entry is not an integer literal, loudly pushes 0 on the stack.
 sub builtinZg {
   my ($runtime, $instruction) = @_;
-  my ($i1tp,    $i1)          = $runtime->popType('INTEGER', $instruction);
-  unless (defined($i1tp)) {
-    $runtime->pushInteger(0);
-    return; }
-  my ($i2tp, $i2) = $runtime->popType('INTEGER', $instruction);
-  unless (defined($i2tp)) {
-    $runtime->pushInteger(0);
-    return 0; }
+  my $i1 = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushInteger(0) unless defined $i1;
+  my $i2 = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushInteger(0) unless defined $i2;
+
   $runtime->pushInteger($i2 > $i1 ? 1 : 0);
   return; }
 
@@ -80,14 +77,11 @@ sub builtinZg {
 # If either stack entry is not an integer literal, loudly pushes 0 on the stack.
 sub builtinZl {
   my ($runtime, $instruction) = @_;
-  my ($i1tp,    $i1)          = $runtime->popType('INTEGER', $instruction);
-  unless (defined($i1tp)) {
-    $runtime->pushInteger(0);
-    return; }
-  my ($i2tp, $i2) = $runtime->popType('INTEGER', $instruction);
-  unless (defined($i2tp)) {
-    $runtime->pushInteger(0);
-    return 0; }
+  my $i1 = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushInteger(0) unless defined $i1;
+  my $i2 = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushInteger(0) unless defined $i2;
+
   $runtime->pushInteger($i2 < $i1 ? 1 : 0);
   return; }
 
@@ -102,17 +96,13 @@ sub builtinZe {
     $runtime->pushInteger(0); }
   if ($tp eq 'INTEGER') {
     my $i1 = $value;
-    my ($i2tp, $i2) = $runtime->popType('INTEGER', $instruction);
-    unless (defined($i2tp)) {
-      $runtime->pushInteger(0);
-      return; }
+    my $i2 = $runtime->popType('INTEGER', $instruction);
+    return $runtime->pushInteger(0) unless defined $i2;
     $runtime->pushInteger($i1 == $i2 ? 1 : 0); }
   elsif ($tp eq 'STRING') {
     my ($s1) = simplifyString($value);
-    my ($s2tp, $s2) = $runtime->popType('STRING', $instruction);
-    unless (defined($s2tp)) {
-      $runtime->pushInteger(0);
-      return; }
+    my $s2 = $runtime->popType('STRING', $instruction);
+    return $runtime->pushInteger(0) unless defined $s2;
     ($s2) = simplifyString($s2);
     $runtime->pushInteger($s1 eq $s2 ? 1 : 0); }
   else {
@@ -126,14 +116,11 @@ sub builtinZe {
 # If either isn't an integer, loudly pushes a 0.
 sub builtinZp {
   my ($runtime, $instruction) = @_;
-  my ($i1tp,    $i1)          = $runtime->popType('INTEGER', $instruction);
-  unless (defined($i1tp)) {
-    $runtime->pushInteger(0);
-    return; }
-  my ($i2tp, $i2) = $runtime->popType('INTEGER', $instruction);
-  unless (defined($i2tp)) {
-    $runtime->pushInteger(0);
-    return; }
+  my $i1 = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushInteger(0) unless defined $i1;
+  my $i2 = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushInteger(0) unless defined $i2;
+
   $runtime->pushInteger($i2 + $i1);
   return; }
 
@@ -142,14 +129,11 @@ sub builtinZp {
 # If either isn't an integer, loudly pushes a 0.
 sub builtinZm {
   my ($runtime, $instruction) = @_;
-  my ($i1tp,    $i1)          = $runtime->popType('INTEGER', $instruction);
-  unless (defined($i1tp)) {
-    $runtime->pushInteger(0);
-    return; }
-  my ($i2tp, $i2) = $runtime->popType('INTEGER', $instruction);
-  unless (defined($i2tp)) {
-    $runtime->pushInteger(0);
-    return; }
+  my $i1 = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushInteger(0) unless defined $i1;
+  my $i2 = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushInteger(0) unless defined $i2;
+
   $runtime->pushInteger($i2 - $i1);
   return; }
 
@@ -158,16 +142,12 @@ sub builtinZm {
 # If either isn't an string, loudly pushes the empty string.
 sub builtinZa {
   my ($runtime, $instruction) = @_;
-  my ($s1tp, $s1, $ss1) = $runtime->popType('STRING', $instruction);
-  unless (defined($s1tp)) {
-    $runtime->pushString("");
-    return; }
-  my ($s2tp, $s2, $ss2) = $runtime->popType('STRING', $instruction);
-  unless (defined($s2tp)) {
-    $runtime->pushString("");
-    return; }
-##  my ($ns, $nss) = concatString($s2, $ss2, $s1, $ss1);
-  my ($ns, $nss) = concatString($s2, $ss2 || [''], $s1, $ss1 || ['']);
+  my ($s1,      $ss1)         = $runtime->popType('STRING', $instruction);
+  return $runtime->pushString("") unless defined $s1;
+  my ($s2, $ss2) = $runtime->popType('STRING', $instruction);
+  return $runtime->pushString("") unless defined $s2;
+
+  my ($ns, $nss) = concatString($s2, $ss2, $s1, $ss1);
   $runtime->pushStack('STRING', $ns, $nss);
   return; }
 
@@ -179,8 +159,8 @@ sub builtinZa {
 sub builtinZcZe {
   my ($runtime, $instruction) = @_;
   # pop the variable type and name to be assigned
-  my ($rtp, $rv) = $runtime->popType('REFERENCE', $instruction);
-  return unless defined($rtp);
+  my $rv = $runtime->popType('REFERENCE', $instruction);
+  return unless defined($rv);
   my ($rvt, $name) = @$rv;
   # pop the value to assign
   my ($t, $v, $s) = $runtime->popStack;
@@ -208,12 +188,14 @@ sub builtinZcZe {
 # when there isn't a string literal, it loudly pushes the empty string
 sub builtinAddPeriod {
   my ($runtime, $instruction) = @_;
-  my ($type, $strings, $sources) = $runtime->popType('STRING', $instruction);
-  unless (defined($type)) {
-    $runtime->pushString("");
-    return; }
-  my ($newStrings, $newSources) = applyPatch($strings, $sources, \&addPeriod, 'inplace');
-  $runtime->pushStack('STRING', $newStrings, $newSources);
+  my ($strings, $sources)     = $runtime->popType('STRING', $instruction);
+  return $runtime->pushString("") unless defined $strings;
+
+  # NOTE: Hopefully, we don't run afoul of any peculiar accent at end of the string?
+  my $last = $$strings[-1];    # or maybe last non-empty ??? or what?
+  if ($last !~ /\.\}*$/) {     # If doesn't end in "."
+    ($strings, $sources) = concatString($strings, $sources, ['.'], [undef]); }
+  $runtime->pushStack('STRING', $strings, $sources);
   return; }
 
 # builtin function call.type$
@@ -240,19 +222,18 @@ sub builtinCallType {
 # builtin function change.case$
 # pops two string literals from the stack and formats the first according to the second.
 # when either is not a string literal, loudly pushes the empty string.
+# NOTE: This LOSES sources!
 sub builtinChangeCase {
   my ($runtime, $instruction) = @_;
   # get the case string and simplify it to be a single character
-  my ($ctp, $cstrings, $csources) = $runtime->popType('STRING', $instruction);
-  unless (defined($ctp)) {
-    $runtime->pushString("");
-    return; }
+  my ($cstrings, $csources) = $runtime->popType('STRING', $instruction);
+  return $runtime->pushString("") unless defined $cstrings;
   my ($spec) = simplifyString($cstrings, $csources);
+
   # pop the final string
-  my ($stype, $strings, $sources) = $runtime->popType('STRING', $instruction);
-  unless (defined($stype)) {
-    $runtime->pushString("");
-    return; }
+  my ($strings, $sources) = $runtime->popType('STRING', $instruction);
+  return $runtime->pushString("") unless defined $strings;
+
   # add the text prefix and push it to the stack
   my ($newStrings, $newSources) = applyPatch(
     $strings, $sources,
@@ -273,9 +254,9 @@ sub builtinChangeCase {
 # if the top literal is not a string, or the string is not of length 1, loudly pushes a 0 on the stack.
 sub builtinChrToInt {
   my ($runtime, $instruction) = @_;
-  my ($type, $strings, $sources) = $runtime->popType('STRING', $instruction);
+  my ($strings, $sources)     = $runtime->popType('STRING', $instruction);
   # if we have a string, that's ok.
-  if (defined($type)) {
+  if (defined($strings)) {
     my ($str, $src) = simplifyString($strings, $sources);
     if (length($str) == 1) {
       $runtime->pushStack('INTEGER', ord($str), $src); }
@@ -341,21 +322,17 @@ sub builtinEmpty {
 sub builtinFormatName {
   my ($runtime, $instruction) = @_;
   # get the format string
-  my ($ftp, $fstrings) = $runtime->popType('STRING', $instruction);
-  unless ($ftp) {
-    $runtime->pushString("");
-    return; }
+  my $fstrings = $runtime->popType('STRING', $instruction);
+  return $runtime->pushString("") unless $fstrings;
   ($fstrings) = simplifyString($fstrings);
+
   # get the length
-  my ($itp, $integer, $isource) = $runtime->popType('INTEGER', $instruction);
-  unless ($itp) {
-    $runtime->pushString("");
-    return; }
+  my $integer = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushString("") unless defined $integer;
+
   # pop the final name string
-  my ($stype, $strings, $sources) = $runtime->popType('STRING', $instruction);
-  unless (defined($stype)) {
-    $runtime->pushString("");
-    return; }
+  my ($strings, $sources) = $runtime->popType('STRING', $instruction);
+  return $runtime->pushString("") unless defined $strings;
 
   # add the text prefix and push it to the stack
   my ($newStrings, $newSources) = applyPatch(
@@ -383,8 +360,8 @@ sub builtinIf {
   return unless defined($f1type);
   my ($f2type, $f2, $f2src) = $runtime->popStack;
   return unless defined($f2type);
-  my ($itype, $integer) = $runtime->popType('INTEGER', $instruction);
-  return unless defined($itype);
+  my $integer = $runtime->popType('INTEGER', $instruction);
+  return unless defined $integer;
 
   if ($integer > 0) {
     $runtime->executeStacked($instruction, $f2type, $f2, $f2src); }
@@ -397,10 +374,9 @@ sub builtinIf {
 # when the stack does not contain an integer, complains and pushes the null string.
 sub builtinIntToChr {
   my ($runtime, $instruction) = @_;
-  my ($type, $integer, $isource) = $runtime->popType('INTEGER', $instruction);
-  unless (defined($type)) {
-    $runtime->pushString("");
-    return; }
+  my ($integer, $isource)     = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushString("") unless defined $integer;
+
   $runtime->pushStack('STRING', [chr($integer)], [$isource]);
   return; }
 
@@ -409,10 +385,9 @@ sub builtinIntToChr {
 # when the stack does not contain an integer, complains and pushes the null string.
 sub builtinIntToStr {
   my ($runtime, $instruction) = @_;
-  my ($type, $integer, $isource) = $runtime->popType('INTEGER', $instruction);
-  unless (defined($type)) {
-    $runtime->pushString("");
-    return; }
+  my ($integer, $isource)     = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushString("") unless defined $integer;
+
   $runtime->pushStack('STRING', ["$integer"], [$isource]);
   return; }
 
@@ -421,9 +396,8 @@ sub builtinIntToStr {
 sub builtinMissing {
   my ($runtime, $instruction) = @_;
   my ($tp) = $runtime->popStack;
-  unless (defined($tp)) {
-    Warn('bibtex', 'runtime', $instruction->getLocator, "Unable to pop empty stack");
-    return; }
+  return Warn('bibtex', 'runtime', $instruction->getLocator, "Unable to pop empty stack")
+    unless defined $tp;
   $runtime->pushInteger(($tp eq 'MISSING') ? 1 : 0);
   return; }
 
@@ -439,15 +413,12 @@ sub builtinNewline {
 # when the top literal is not a string, loudly pushes the number 0.
 sub builtinNumNames {
   my ($runtime, $instruction) = @_;
-  my ($type, $strings, $sources) = $runtime->popType('STRING', $instruction);
-  unless (defined($type)) {
-    $runtime->pushInteger(0);
-    return; }
+  my ($strings, $sources)     = $runtime->popType('STRING', $instruction);
+  return $runtime->pushInteger(0) unless defined $strings;
 
   # if we have a string, that's ok.
-  if (defined($type)) {
-    my ($str, $src) = simplifyString($strings, $sources);
-    $runtime->pushStack('INTEGER', numNames($str), [$src]); }
+  my ($str, $src) = simplifyString($strings, $sources);
+  $runtime->pushStack('INTEGER', numNames($str), [$src]);
   return; }
 
 # builtin function pop$
@@ -472,10 +443,9 @@ sub builtinPreamble {
 # when the top literal is not a string, loudly pushes the empty string.
 sub builtinPurify {
   my ($runtime, $instruction) = @_;
-  my ($type, $strings, $sources) = $runtime->popType('STRING', $instruction);
-  unless (defined($type)) {
-    $runtime->pushString("");
-    return; }
+  my ($strings, $sources)     = $runtime->popType('STRING', $instruction);
+  return $runtime->pushString("") unless defined $strings;
+
   my ($newStrings, $newSources) = applyPatch($strings, $sources, \&textPurify, 'inplace');
   $runtime->pushStack('STRING', $newStrings, $newSources);
   return; }
@@ -503,32 +473,39 @@ sub builtinStack {
 
 # builtin function substring$
 # pops two integers and a string, then pushes the substring consisting of the appropriate position and length.
-# When any of the types are incorrect, loudly pushes the empty string
+# Positions are 1-based, negative starts from end.
+# This does NOT make any corrections based on braces, accents, etc!
 sub builtinSubstring {
   my ($runtime, $instruction) = @_;
-  # pop the first integer
-  my ($i1t, $i1, $i1source) = $runtime->popType('INTEGER', $instruction);
-  unless (defined($i1t)) {
-    $runtime->pushString("");
-    return; }
-  # pop the second integer
-  my ($i2t, $i2, $i2source) = $runtime->popType('INTEGER', $instruction);
-  unless (defined($i2t)) {
-    $runtime->pushString("");
-    return; }
-  # pop the string
-  my ($stype, $strings, $sources) = $runtime->popType('STRING', $instruction);
-  unless (defined($stype)) {
-    $runtime->pushString("");
-    return; }
-
-  # add the text prefix and push it to the stack
-  my ($newStrings, $newSources) = applyPatch(
-    $strings, $sources,
-    sub { return textSubstring($_[0] . '', $i2, $i1); },
-    'inplace'
-  );
-  $runtime->pushStack('STRING', $newStrings, $newSources);
+  my $length = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushString("") unless defined $length;
+  my $pos = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushString("") unless defined $pos;
+  my ($strings, $sources) = $runtime->popType('STRING', $instruction);
+  return $runtime->pushString("") unless defined $strings;
+  my @strings = @$strings;
+  my @sources = @$sources;
+  # To keep things simple, if $pos < 0 (starting from end), adjust it to start from begining!
+  if ($pos < 0) {
+    $pos -= $length - 1; map { $pos += length($_); } @strings; }
+  else {
+    $pos--; }
+  my (@newstrings, @newsources);
+  if ($pos >= 0) {
+    while (($length > 0) && @strings) {
+      my $str = shift(@strings);
+      my $src = shift(@sources);
+      my $len = length($str);
+      if ($pos > $len) {
+        $pos -= $len; }
+      else {
+        push(@newstrings, substr($str, $pos, $length));
+        push(@newsources, $src);
+        $pos = 0; $length -= length($newstrings[-1]); } } }
+  else {
+    push(@newstrings, "");
+    push(@newsources, undef); }
+  $runtime->pushStack('STRING', [@newstrings], [@newsources]);
   return; }
 
 # builtin function swap$
@@ -545,11 +522,9 @@ sub builtinSwap {
 # When the top literal is not a string, loudly pushes the empty string.
 sub builtinTextLength {
   my ($runtime, $instruction) = @_;
-  my ($type, $strings, $sources) = $runtime->popType('STRING', $instruction);
-  unless (defined($type)) {
-    $runtime->pushString("");
-    return;
-  }
+  my ($strings, $sources)     = $runtime->popType('STRING', $instruction);
+  return $runtime->pushString("") unless defined $strings;
+
   my ($str, $src) = simplifyString($strings, $sources);
   $runtime->pushStack('INTEGER', textLength($str), $src);
   return; }
@@ -560,15 +535,12 @@ sub builtinTextLength {
 sub builtinTextPrefix {
   my ($runtime, $instruction) = @_;
   # pop the integer
-  my ($itype, $integer, $isource) = $runtime->popType('INTEGER', $instruction);
-  unless (defined($itype)) {
-    $runtime->pushString("");
-    return; }
+  my $integer = $runtime->popType('INTEGER', $instruction);
+  return $runtime->pushString("") unless defined $integer;
   # pop and simplify the string
-  my ($stype, $strings, $sources) = $runtime->popType('STRING', $instruction);
-  unless (defined($stype)) {
-    $runtime->pushString("");
-    return; }
+  my ($strings, $sources) = $runtime->popType('STRING', $instruction);
+  return $runtime->pushString("") unless defined $strings;
+
   # add the text prefix and push it to the stack
   my ($newStrings, $newSources) = applyPatch(
     $strings, $sources,
@@ -608,8 +580,8 @@ sub builtinType {
 # pops the top-most string from the stack and send a warning to the user
 sub builtinWarning {
   my ($runtime, $instruction) = @_;
-  my ($type, $strings, $sources) = $runtime->popType('STRING', $instruction);
-  return unless defined($type);
+  my ($strings, $sources)     = $runtime->popType('STRING', $instruction);
+  return unless defined $strings;
 
   my ($str, $src) = simplifyString($strings, $sources);
   Warn('bibtex', 'runtime', $instruction->getLocator, $str);
@@ -622,13 +594,14 @@ sub builtinWarning {
 sub builtinWhile {
   my ($runtime, $instruction) = @_;
   my ($f1type, $f1, $f1src) = $runtime->popStack;
-  return unless defined($f1type);
+  return unless defined $f1type;
   my ($f2type, $f2, $f2src) = $runtime->popStack;
-  return unless defined($f2type);
+  return unless defined $f2type;
+
   while (1) {
     $runtime->executeStacked($instruction, $f2type, $f2, $f2src);
-    my ($itype, $integer) = $runtime->popType('INTEGER', $instruction);
-    return unless defined($itype);
+    my $integer = $runtime->popType('INTEGER', $instruction);
+    return unless defined($integer);
     return if $integer <= 0;
     $runtime->executeStacked($instruction, $f1type, $f1, $f1src); }
   return; }
@@ -638,10 +611,9 @@ sub builtinWhile {
 # when the stack does not contain a string, loudly pushes 0.
 sub builtinWidth {
   my ($runtime, $instruction) = @_;
-  my ($type, $strings, $sources) = $runtime->popType('STRING', $instruction);
-  unless (defined($type)) {
-    $runtime->pushInteger(0);
-    return; }
+  my ($strings, $sources)     = $runtime->popType('STRING', $instruction);
+  return $runtime->pushInteger(0) unless defined $strings;
+
   my ($str, $src) = simplifyString($strings, $sources);
   $runtime->pushStack('INTEGER', textWidth($str), $src);
   return; }
@@ -651,13 +623,14 @@ sub builtinWidth {
 # to the output iff it is long enugh)
 sub builtinWrite {
   my ($runtime, $instruction) = @_;
-  my ($type, $strings, $sources) = $runtime->popType('STRING', $instruction);
-  return unless defined($type);
+  my ($strings, $sources)     = $runtime->popType('STRING', $instruction);
+  return unless defined $strings;
   # get the ouput buffer and array references to sources and strings
   my $buffer     = $runtime->getBuffer;
   my @theStrings = @{$strings};
 ##  my @theSources = @{$sources};
   my @theSources = (defined $sources ? @{$sources} : ());
+  #  Debug("OUTPUT: " . showStrings($strings,$sources));
   # we iterate by index to not mutate strings and sources
   foreach my $i (0 .. $#theStrings) {
     $buffer->write($theStrings[$i], $theSources[$i]); }

@@ -434,7 +434,8 @@ sub pushStack {
   push(@{ $$self{stack} }, [$type, $value, $source]);
   return; }
 
-# pops a string of a particular type, or throws an error
+# pops a string of a particular type, or throws an error;
+# returns object & source if in array context, else just the object
 sub popType {
   my ($self, $type,  $instruction) = @_;
   my ($tp,   $value, $src)         = $self->popStack;
@@ -446,7 +447,7 @@ sub popType {
     Warn('bibtex', 'runtime', $instruction->getLocator,
       $instruction->getKind . " expected to pop type $type from stack, but got type $tp: " . $value);
     return; }
-  return $tp, $value, $src; }
+  return (wantarray ? ($value, $src) : $value); }
 
 # 'pushString' pushes an string without a source refence onto the stack.
 sub pushString {
