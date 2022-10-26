@@ -149,7 +149,6 @@ EoTeX
 DefPrimitive('\ltx@bbl@select@language{}', sub {
     my ($stomach, $language) = @_;
     $language = ToString(Expand($language));
-    NoteSTDERR("SELECTING LANGUAGE $language !");
     my $iso = $$bbl_language_map{$language};
     MergeFont(language => $iso) if $iso;
     return; });

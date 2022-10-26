@@ -363,6 +363,9 @@ DefParameterType('Register', sub {
       [$defn, ($$defn{parameters} ? $$defn{parameters}->readArguments($gullet) : ())]; }
     else {
       if ($token && ($token->getCatcode == CC_CS)) {
+        if ($token->getString eq '\font') {
+          # \font is a bit of a register-like exception
+          return [$defn]; }
         Error('expected', '<register>', $gullet,
           "A <register> was supposed to be here", "Got " . Stringify($token),
           "Defining it now.");
@@ -1017,6 +1020,8 @@ DefMacro('\the Register', sub {
     my $type = $defn->isRegister;
     if (!$type) {
       my $cs = ToString($defn->getCS);
+      if ($cs eq '\font') {    # what to do here?
+        return T_CS('\tenrm'); }
       Error('unexpected', "\\the$cs", $gullet, "You can't use $cs after \\the"); return (); }
     my $value = $defn->valueOf(@args);
     ## In all cases, these should be OTHER, except for space. (!?)

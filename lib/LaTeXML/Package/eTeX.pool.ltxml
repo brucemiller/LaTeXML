@@ -44,7 +44,17 @@ DefMacro('\readline Number SkipKeyword:to SkipSpaces Token', sub {
     my ($gullet, $port, $token) = @_;
     $port = ToString($port);
     if (my $mouth = LookupValue('input_file:' . $port)) {
-      DefMacroI($token, undef, Tokens(Explode(($mouth->readRawLine || '') . "\r"))); }
+      my $line_string = ($mouth->readRawLine || '');
+      # DG: Can't we do this \endlinechar check in readRawLine ?!
+      # DG:  and can't we make it *faster* ?
+      if (my $eol = $STATE->lookupDefinition(T_CS('\endlinechar'))) {
+        my $eol   = $eol->valueOf()->valueOf;
+        my $eolch = (($eol > 0) && ($eol <= 255) ? chr($eol) : undef);
+        if ($eolch) {
+          $line_string .= $eolch; } }
+      else {
+        $line_string .= "\r"; }
+      DefMacroI($token, undef, Tokens(Explode($line_string))); }
     return; });
 
 DefMacro('\scantokens GeneralText', sub {
