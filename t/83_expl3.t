@@ -4,6 +4,12 @@
 #**********************************************************************
 use LaTeXML::Util::Test;
 
+if (!$ENV{"CI"}) {
+  plan skip_all => "Only checked in continuous integration.";
+  done_testing();
+  exit;
+}
+
 latexml_tests("t/expl3",
   requires => {
     tilde_tricks => {
