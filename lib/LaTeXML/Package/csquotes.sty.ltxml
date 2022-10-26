@@ -27,11 +27,11 @@ InputDefinitions('csquotes', type => 'sty', noltxml => 1);
 ###########################################################################
 # Compatibility fixes
 
+# the unicode check does not work properly in LaTeXML
+# furthermore, package version <= 2018/04/06 v1.3b contain
+# a known bug, but might still be around.
+# therfore we skip the check here.
 RawTeX(<<'EoTeX');
-% the unicode check does not work properly in LaTeXML
-% furthermore, package version <= 2018/04/06 v1.3b contain
-% a known bug, but might still be around. 
-% therfore we skip the check here. 
 \def\csq@ifutfchar#1{%
   \ifundef\@inpenc@undefined
     {\@secondoftwo}
@@ -225,11 +225,11 @@ RawTeX(<<'EoTeX');
        {\unexpanded{\csq@switchlang{#3{#4}}}}}}%
   #1\csq@tempa#8#2%
   \end{\csq@blockenvironment}\ltxml@mkblockquote@close}
-
-% Because detection of word length does not work properly in LaTeXML
-% always use a proper block-quote environment
-\let\csq@bquote@ii\csq@bquote@iii
 EoTeX
+
+# Because detection of word length does not work properly in LaTeXML
+# always use a proper block-quote environment
+Let('\csq@bquote@ii', '\csq@bquote@iii');
 
 # update the 'quote' environment to be <ltx:quote class="ltx_blockquote">
 DefMacro('\ltxml@mkblockquote@open', '\begingroup\ltxml@mkblockquote@open@i');
