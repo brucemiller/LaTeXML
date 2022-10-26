@@ -87,9 +87,14 @@
     <xsl:element name="html" namespace="{$html_ns}">
       <xsl:apply-templates select="." mode="begin"/>
       <xsl:call-template name="add_RDFa_prefix"/>
-      <xsl:if test="*/@xml:lang">
-        <xsl:apply-templates select="*/@xml:lang" mode="copy-attribute"/>
-      </xsl:if>
+      <xsl:choose>
+        <xsl:when test="*/@xml:lang">
+          <xsl:apply-templates select="*/@xml:lang" mode="copy-attribute"/>
+        </xsl:when>
+        <xsl:otherwise><!-- the default language is English -->
+          <xsl:attribute name="lang">en</xsl:attribute>
+        </xsl:otherwise>
+      </xsl:choose>
       <xsl:apply-templates select="." mode="head"/>
       <xsl:apply-templates select="." mode="body"/>
       <xsl:apply-templates select="." mode="end"/>
