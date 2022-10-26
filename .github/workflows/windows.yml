@@ -5,15 +5,15 @@ name: Windows
 # significantly more difficult to implement.
 
 # This workflow caches data for both Perl and MiKTeX installations.
-# However GitHub does not provide a builtin way of evicting that cache. 
-# See https://github.com/actions/cache/issues/2. 
+# However GitHub does not provide a builtin way of evicting that cache.
+# See https://github.com/actions/cache/issues/2.
 #
 # Hence we assign the cache a 'hash' which is simply inserted into the internal cache key.
-# To manually evict the cache, simply change the hash to something else. 
+# To manually evict the cache, simply change the hash to something else.
 # Something like the output of `date | md5` usually works well.
 env:
   PERL_CACHE_HASH: 79d1fcba0f256b853d8daa7f3d973852
-  MIKTEX_CACHE_HASH: 618f448423191db4b246ef5de4d5ff88
+  MIKTEX_CACHE_HASH: ab2a722b80995cb0b6bccc74e3c8faff
 
 on: [push, pull_request]
 
@@ -30,7 +30,7 @@ jobs:
             miktex: none
             allow_failure: false
           - perl: 5.32.1.1
-            miktex: 21.6.28
+            miktex: 22.8.28
             allow_failure: true
           - perl: 5.30.3.1
             miktex: none
@@ -41,7 +41,7 @@ jobs:
           - perl: 5.26.3.1
             miktex: none
             allow_failure: false
-    
+
     steps:
 
       - uses: actions/checkout@v2
@@ -53,7 +53,7 @@ jobs:
       - name: Setup Strawberry Perl Cache
         uses: actions/cache@v2
         id: perl-cache
-        with: 
+        with:
           path: C:\Strawberry
           key: perl-${{ env.PERL_CACHE_HASH }}-${{ runner.os }}-${{ matrix.perl }}
       - name: Install Strawberry Perl (from scratch)
@@ -63,7 +63,7 @@ jobs:
         run: |
           cuninst -y strawberryperl
           cinst -y strawberryperl --version ${{ matrix.perl }}
-      
+
       # ====================
       # Setup MiKTeX
       # ====================
@@ -72,7 +72,7 @@ jobs:
         if: matrix.miktex != 'none'
         uses: actions/cache@v2
         id: miktex-cache
-        with: 
+        with:
           path: 'C:\miktex-repo'
           key: miktex-${{ env.MIKTEX_CACHE_HASH }}-${{ runner.os }}-${{ matrix.miktex }}
       # MiKTeX is weird in CI environments (which need to be run as a superuser).
@@ -107,7 +107,7 @@ jobs:
           refreshenv
           perl --version
           cpanm --version
-          if (Get-Command "tex" -ErrorAction SilentlyContinue) { 
+          if (Get-Command "tex" -ErrorAction SilentlyContinue) {
             tex --version
           }
       - name: Install Dependencies
