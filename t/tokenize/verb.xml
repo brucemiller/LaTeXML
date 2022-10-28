@@ -75,20 +75,25 @@ More Normal <text font="bold">Bold</text> stuff.</p>
       <p><verbatim font="typewriter">Nested | is allowed .</verbatim></p>
     </para>
     <para xml:id="S2.p8">
-      <p>Some use <verbatim font="typewriter">\verb</verbatim> like <verbatim font="typewriter">\rm</verbatim>,
-bit it’s actually using space as delimiter.
-Note that spaces after cs are skipped on the <emph font="italic">next</emph> read!</p>
+      <p>Note that spaces after a control-sequence are skipped on the <emph font="italic">next</emph> read,
+by which time catcodes may have been changed.
+Prior to April, 2020, a space following <verbatim font="typewriter">\verb</verbatim> would – surprisingly – have been treated as
+the delimiter! Since then, spaces are skipped and the following char is used as delimiter.
+We’ll adopt the newer approach.</p>
     </para>
     <para xml:id="S2.p9">
-      <p><verbatim font="typewriter">|a}b#c^d_e$f|</verbatim>stuff</p>
+      <p><verbatim font="typewriter">a}b#c^d_e$f</verbatim> stuff</p>
     </para>
     <para xml:id="S2.p10">
-      <p><verbatim font="typewriter">tricky}</verbatim></p>
+      <p><verbatim font="typewriter">rick-roll} </verbatim></p>
     </para>
     <para xml:id="S2.p11">
-      <p>Input snippet</p>
+      <p><verbatim font="typewriter">rick-roll}␣</verbatim></p>
     </para>
     <para xml:id="S2.p12">
+      <p>Input snippet</p>
+    </para>
+    <para xml:id="S2.p13">
       <verbatim font="typewriter">|a}b#c^d_e$f|
 </verbatim>
       <p>after.</p>

@@ -44,13 +44,17 @@ x\hbox to 2in  {\bf x\verb|\verb|y.}y
 \def\nested{Nested | is allowed}
 \expandafter\verb\expandafter|\nested .|
 
-Some use \verb|\verb| like \verb|\rm|,
-bit it's actually using space as delimiter.
-Note that spaces after cs are skipped on the \emph{next} read!
+Note that spaces after a control-sequence are skipped on the \emph{next} read,
+by which time catcodes may have been changed.
+Prior to April, 2020, a space following \verb|\verb| would -- surprisingly -- have been treated as
+the delimiter! Since then, spaces are skipped and the following char is used as delimiter.
+We'll adopt the newer approach.
 
 \verb |a}b#c^d_e$f| stuff
 
-{\verb tricky} }
+{\verb Trick-roll} T }
+
+{\verb* Trick-roll} T }
 
 % Another tricky case
 \makeatletter
