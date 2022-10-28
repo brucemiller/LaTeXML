@@ -1924,12 +1924,16 @@ DefMacro('\@xobeysp', '\nobreakspace');
 DefMacroI('\verb', undef, sub {
     my ($gullet) = @_;
     StartSemiverbatim('%', '\\', '{', '}');
-    $STATE->assignCatcode(' ', CC_ACTIVE);    # Do NOT (necessarily) skip spaces after \verb!!!
-    my $init    = $gullet->readToken;
+    $STATE->assignCatcode(' ', CC_ACTIVE);
+    my $init;
+    # As of texlive 2021, DO skip spaces before delimiter (even tho we've changed catcodes)
+    do { $init = $gullet->readToken();
+    } while (defined $init && $init->getString eq ' ');
     my $starred = 0;
     if (T_OTHER('*')->equals($init)) {
       $starred = 1;
-      $init    = $gullet->readToken; }
+      do { $init = $gullet->readToken();
+      } while (defined $init && $init->getString eq ' '); }
     if (!$init) {    # typically something read too far got \verb and the content is somewhere else..?
       Error('expected', 'delimiter', $gullet,
         "Verbatim argument lost", "Bindings for preceding code is probably broken");

@@ -15,7 +15,13 @@ Steps for making a new release
 #======================================================================
 Get Happy
 #======================================================================
-obviously make, make test, re-run dlmf, check, etc.
+* Resolve as many issues as is feasible on
+  - https://github.com/brucemiller/LaTeXML/issues/
+  - https://trac.macports.org/search?q=latexml
+* Check for upcoming changes to LaTeX
+  - https://github.com/latex3/latex2e/issues/
+* obviously make test should run w/o errors
+* re-run dlmf and check it, etc.
 
 #======================================================================
 Choose new version
