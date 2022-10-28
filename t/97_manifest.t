@@ -8,7 +8,7 @@ if ($ENV{"CI"}) {
   ok(!@$missing, "MANIFEST contains outdated files: \n\t".join("\n\t", @$missing));
   ok(!@$extra, "Files missing from MANIFEST: \n\t".join("\n\t", @$extra));
 } else {
-  plan skip_all => "Only checked in continuous integration.";
+  plan skip_all => "Only checked in continuous integration. (enable via: CI=true make test)";
 }
 
 done_testing();

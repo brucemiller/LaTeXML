@@ -2,10 +2,12 @@
 #**********************************************************************
 # Test cases for LaTeXML
 #**********************************************************************
+use strict;
+use warnings;
 use LaTeXML::Util::Test;
 
 if (!$ENV{"CI"}) {
-  plan skip_all => "Only checked in continuous integration.";
+  plan skip_all => "Only checked in continuous integration. (enable via: CI=true make test)";
   done_testing();
   exit;
 }
