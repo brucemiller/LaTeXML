@@ -13,7 +13,7 @@ use Data::Dumper;
 local $Data::Dumper::Sortkeys = 1;
 
 if (!$ENV{"CI"}) {
-  plan skip_all => "Only checked in continuous integration. (set environment var CI=true and rerun tests)";
+  plan skip_all => "Only checked in continuous integration. (use make test CI=true)";
   done_testing();
   exit;
 }
