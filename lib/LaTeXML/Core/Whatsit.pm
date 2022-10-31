@@ -81,7 +81,8 @@ sub setBody {
   $$self{properties}{trailer} = $trailer;
   # And copy any otherwise undefined properties from the trailer
   if ($trailer) {
-    $$self{properties}{locator} = LaTeXML::Common::Locator->newRange($self->getLocator, $trailer->getLocator);
+###    $$self{properties}{locator} = LaTeXML::Common::Locator->newRange($self->getLocator, $trailer->getLocator);
+    $$self{properties}{locator} = ($self->getLocator ? $self->getLocator->merge($trailer->getLocator) : $trailer->getLocator);
     my %trailerhash = $trailer->getProperties;
     foreach my $prop (keys %trailerhash) {
       $$self{properties}{$prop} = $trailer->getProperty($prop) unless defined $$self{properties}{$prop}; } }

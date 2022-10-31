@@ -3992,22 +3992,21 @@ DefConstructor('\lx@bibliography [] Semiverbatim',
 
 # NOTE: This totally needs to be made extensible (parsing *.bst!?!? OMG!)
 our $BIBSTYLES = {
-  plain    => { citestyle => 'numbers', sort => 'true' },
-  unsrt    => { citestyle => 'numbers', sort => 'false' },
-  alpha    => { citestyle => 'AY',      sort => 'true' },
-  abbrv    => { citestyle => 'numbers', sort => 'true' },
-  plainnat => { citestyle => 'numbers', sort => 'true' },
-  unsrtnat => { citestyle => 'numbers', sort => 'false' },
-  alphanat => { citestyle => 'AY',      sort => 'true' },
-  abbrvnat => { citestyle => 'numbers', sort => 'true' } };
+  plain    => { citestyle => 'numbers'},
+  unsrt    => { citestyle => 'numbers' },
+  alpha    => { citestyle => 'AY' },
+  abbrv    => { citestyle => 'numbers' },
+  plainnat => { citestyle => 'numbers' },
+  unsrtnat => { citestyle => 'numbers' },
+  alphanat => { citestyle => 'AY' },
+  abbrvnat => { citestyle => 'numbers' } };
 
 sub setBibstyle {
   my ($style) = @_;
   $style = ToString($style);
   AssignValue(BIBSTYLE => $style);
   if (my $parms = $$BIBSTYLES{$style}) {
-    AssignValue(CITE_STYLE => $$parms{citestyle});
-    AssignValue(CITE_SORT  => $$parms{sort}); }
+    AssignValue(CITE_STYLE => $$parms{citestyle}); }
   return; }
 
 DefConstructor('\bibstyle{}', sub {
@@ -4016,16 +4015,13 @@ DefConstructor('\bibstyle{}', sub {
     # Really ?
     if (my $bib = $document->findnode('//ltx:bibliography')) {
       $document->setAttribute($bib, bibstyle  => LookupValue('BIBSTYLE'));
-      $document->setAttribute($bib, citestyle => LookupValue('CITE_STYLE'));
-      $document->setAttribute($bib, sort      => LookupValue('CITE_SORT')); }
+      $document->setAttribute($bib, citestyle => LookupValue('CITE_STYLE')); }
   },
   afterDigest => sub {
     my $style = ToString($_[1]->getArg(1));
     AssignValue(BIBSTYLE => $style, 'global');
     if (my $parms = $$BIBSTYLES{$style}) {
       AssignValue(CITE_STYLE => $$parms{citestyle}); }
-    else {
-      Info('unexpected', $style, $_[0], "Unknown bibstyle '$style', it will be ignored"); }
     return; });
 
 DefMacro('\bibliographystyle Semiverbatim', '\bibstyle{#1}');
@@ -4114,7 +4110,21 @@ DefMacroI('\fnum@@bibitem', undef, '{\@biblabel{\the@bibitem}}');
 # Hack for abused bibliographies; see below
 DefMacro('\bibitem',
   '\if@lx@inbibliography\else\expandafter\lx@mung@bibliography\expandafter{\@currenvir}\fi'
-    . '\lx@bibitem', locked => 1);
+####    . '\lx@bibitem', locked => 1);
+    . '\lx@bibitem@withhook', locked => 1);
+
+DefMacro('\lx@bibitem@taghook Semiverbatim', '\expandafter\ifdefined\csname lx@bibentry@taghook@#1\endcsname\csname lx@bibentry@taghook@#1\endcsname\else\fi');
+# add the hooked tag content into the lx@tags
+# NOTE: This needs a complete rethink.
+DefMacro('\lx@bibitem@withhook[] Semiverbatim',
+  '\let\save@lx@tags\lx@tags' .
+    '\def\lx@tags ##1{\save@lx@tags{##1\lx@bibitem@taghook{#2}}}' .
+    '\ifx.#1.\lx@bibitem{#2}\else\lx@bibitem[#1]{#2}\fi' .
+    '\let\lx@tags\save@lx@tags' .
+    '\let\save@lx@tags\relax');
+DefConstructor('\lxBibitemFrom Semiverbatim Semiverbatim Semiverbatim {}',
+  "<ltx:text class='ltx_bib_#3' locator='#1:#2:#3'>#4</ltx:text>");
+
 DefConstructor('\lx@bibitem[] Semiverbatim',
   "<ltx:bibitem key='#key' xml:id='#id'>"
     . "#tags"
@@ -4123,8 +4133,10 @@ DefConstructor('\lx@bibitem[] Semiverbatim',
     my $tag = $_[1]->getArg(1);
     my $key = CleanBibKey($_[1]->getArg(2));
     if ($tag) {
+      Debug("BIBITEM Tags: " . ToString($tag));
       $_[1]->setProperties(key => $key,
-        RefStepID('@bibitem'),
+        #RefStepID('@bibitem'),
+        RefStepCounter('@bibitem'),    # but replace tags!
         tags => Digest(T_BEGIN,
           T_CS('\def'), T_CS('\the@bibitem'), T_BEGIN, Revert($tag), T_END,
           Invocation(T_CS('\lx@make@tags'), T_OTHER('@bibitem')),

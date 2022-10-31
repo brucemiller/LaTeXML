@@ -22,18 +22,18 @@ sub new {
   my ($class, $source, $fromLine, $fromCol, $toLine, $toCol) = @_;
   my $locator = bless { source => $source,
     fromLine => $fromLine, fromCol => $fromCol,
-    toLine   => $toLine,   toCol   => $toCol
+    toLine => (defined $toLine ? $toLine : $fromLine),
+    toCol  => (defined $toCol  ? $toCol  : $fromCol)
   }, $class;
   return $locator; }
 
-# creates a new locator range from a given start and end
-sub newRange {
-  my ($class, $from, $to) = @_;
+# creates a new locator covering $self (from) to $to
+sub merge {
+  my ($self, $to) = @_;
   # make sure that either parameters are defined
-  return $to   unless defined($from);
-  return $from unless defined($to);
+  return $self unless defined($to);
   # bail if we have differnt sources
-  return unless ($$from{source} || '') eq ($$to{source} || '');
+  return unless ($$self{source} || '') eq ($$to{source} || '');
   # the end coordinates depend on
   my ($toLine, $toCol);
   if ($to->isRange) {
@@ -42,7 +42,7 @@ sub newRange {
   else {
     $toLine = $$to{fromLine};
     $toCol  = $$to{fromCol}; }
-  return new($class, $$from{source}, $$from{fromLine}, $$from{fromCol}, $toLine, $toCol); }
+  return (ref $self)->new($$self{source}, $$self{fromLine}, $$self{fromCol}, $toLine, $toCol); }
 
 sub isRange {
   my ($self) = @_;

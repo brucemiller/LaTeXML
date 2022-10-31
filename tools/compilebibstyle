@@ -1,0 +1,86 @@
+#!/usr/bin/perl -w
+# /=====================================================================\ #
+# |  compilebibstyle                                                    | #
+# | Convert BibTex style file to internal format                        | #
+# |=====================================================================| #
+# | support tools for LaTeXML:                                          | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+
+use strict;
+use warnings;
+use FindBin;
+use lib "$FindBin::RealBin/../blib/lib";
+use LaTeXML;
+use LaTeXML::BibTeX::BibStyle;
+#======================================================================
+our $HEADER;
+our $DEST     = "$FindBin::RealBin/../lib/LaTeXML/BibTeX/BibStyle/Precompiled.pm";
+our $style    = 'plain';
+our $bibstyle = LaTeXML::BibTeX::BibStyle->new($style, []);
+writeParsed($style, $bibstyle->getProgram);
+print STDERR "Wrote $style to $DEST\n";
+
+# NOTE: This program should be condensed.
+# too-long class names, unnecessary source pointers, ....
+sub writeParsed {
+  my ($style, $program) = @_;
+  use Data::Dumper;
+  my $OUT;
+  open($OUT, '>', $DEST) or die "Couldn't open $DEST for writing: $!";
+  print $OUT $HEADER;
+  print $OUT '$DEFAULT = ' . Dump($program) . ";\n";
+  print $OUT "1;\n";
+  close($OUT);
+  return; }
+
+sub Dump {
+  my ($object) = @_;
+  my $r = ref $object;
+  if (!$r) {
+    $object =~ s/'/\\'/g;
+    return "'" . $object . "'"; }
+  elsif ($r eq 'ARRAY') {
+    return '[' . join(',', map { Dump($_); } @$object) . ']'; }
+  elsif ($r eq 'LaTeXML::BibTeX::BibStyle::StyCommand') {
+    return 'Cmd(' . Dump($object->getName)
+      . ', [' . join(',', map { Dump($_); } $object->getArguments) . '])'; }
+  elsif ($r eq 'LaTeXML::BibTeX::BibStyle::StyString') {
+    my $kind  = $object->getKind;
+    my $value = $object->getValue;
+    if    ($kind eq 'NUMBER')    { return 'Nmb(' . Dump($value) . ')'; }
+    elsif ($kind eq 'QUOTE')     { return 'Quo(' . Dump($value) . ')'; }
+    elsif ($kind eq 'LITERAL')   { return 'Lit(' . Dump($value) . ')'; }
+    elsif ($kind eq 'REFERENCE') { return 'Ref(' . Dump($value) . ')'; }
+    elsif ($kind eq 'BLOCK')     { return 'Blk(' . Dump($value) . ')'; } }
+###    return 'Str('.join(',',map { Dump($_); } $object->getKind, $object->getValue).')'; }
+  die "Con't know how to dump $object"; }
+
+BEGIN {
+  $HEADER = << 'EoHeader';
+# /=====================================================================\ #
+# |  Precompiled $style.bst                                             | #
+# |  for LaTeXML                                                        | #
+# |=====================================================================| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+# THIS IS A GENERATED FILE! DO NOT EDIT
+package LaTeXML::BibTeX::BibStyle::Precompiled;
+use strict;
+use warnings;
+use LaTeXML::BibTeX::BibStyle::StyCommand;
+use LaTeXML::BibTeX::BibStyle::StyString;
+sub Cmd { return LaTeXML::BibTeX::BibStyle::StyCommand->new( @_ ); } 
+sub Nmb { return LaTeXML::BibTeX::BibStyle::StyString->new('NUMBER',@_ ); }
+sub Quo { return LaTeXML::BibTeX::BibStyle::StyString->new('QUOTE',@_ ); }
+sub Lit { return LaTeXML::BibTeX::BibStyle::StyString->new('LITERAL',@_ ); }
+sub Ref { return LaTeXML::BibTeX::BibStyle::StyString->new('REFERENCE',@_ ); }
+sub Blk { return LaTeXML::BibTeX::BibStyle::StyString->new('BLOCK', @_ ); }
+our $DEFAULT;
+EoHeader
+}
