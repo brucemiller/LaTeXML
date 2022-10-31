@@ -46,7 +46,9 @@ DefMacro('\emailAdd Semiverbatim', '\@add@to@frontmatter{ltx:creator}{\@@@email{
 DefMacro('\keywordname', '\textbf{Keywords}');
 DefMacro('\keywords{}',  '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
 
-DefMacro('\artxivnumber{}', '\@add@frontmatter{ltx:note}[role=arxiv]{#1}');
+DefMacro('\arxivnumber{}', '\@add@frontmatter{ltx:note}[role=arxiv]{#1}');
+
+DefMacro('\notoc', '');
 
 DefMacro('\toccontinuoustrue', '');
 
