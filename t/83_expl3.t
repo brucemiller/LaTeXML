@@ -2,7 +2,15 @@
 #**********************************************************************
 # Test cases for LaTeXML
 #**********************************************************************
+use strict;
+use warnings;
 use LaTeXML::Util::Test;
+
+if (!$ENV{"CI"}) {
+  plan skip_all => "Only checked in continuous integration. (use make test CI=true)";
+  done_testing();
+  exit;
+}
 
 latexml_tests("t/expl3",
   requires => {
