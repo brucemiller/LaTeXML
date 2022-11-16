@@ -59,36 +59,39 @@ DefMacro('\fnum@algorithm',      '\algorithmcfname\nobreakspace\thealgorithm');
 DefMacro('\fnum@font@algorithm', '\bf');
 DefMacro('\ext@algorithm',       'loa');
 
-DefEnvironment('{algorithm}[]',
-  "<ltx:float xml:id='#id'>"
-    . "#tags"
-    . "<ltx:listing class='ltx_lst_numbers_left'>"
-    . "<ltx:listingline>"
-    . "#body"
-    . "</ltx:listingline>"
-    . "</ltx:listing></ltx:float>",
-  properties   => { layout => 'vertical' },
-  beforeDigest => sub {
-    DigestIf(T_CS('\@ResetCounterIfNeeded'));
-    DigestIf(T_CS('\algocf@linesnumbered'));
-    Let('\par',    '\lx@algo@par');
-    Let('\parbox', '\lx@algo@parbox');
-    Let("\\\\",    '\lx@algo@par');
-    Let('\strut',  '\lx@algo@strut');
-    AssignCatcode("\r" => CC_SPACE);    # NOT CC_EOL, so newlines don't turn to \par!
-                                        #    AssignCatcode("\r" => 13);
-        #    Let(T_ACTIVE("\r"), '\relax');    # More appropriate than \par, I think?
+# {algorithm*}: same as {algorithm}, but used in a two columns text, so just map to original
+for my $env (qw(algorithm algorithm*)) {
+  DefEnvironment("{$env}[]",
+    "<ltx:float xml:id='#id'>"
+      . "#tags"
+      . "<ltx:listing class='ltx_lst_numbers_left'>"
+      . "<ltx:listingline>"
+      . "#body"
+      . "</ltx:listingline>"
+      . "</ltx:listing></ltx:float>",
+    properties   => { layout => 'vertical' },
+    beforeDigest => sub {
+      DigestIf(T_CS('\@ResetCounterIfNeeded'));
+      DigestIf(T_CS('\algocf@linesnumbered'));
+      Let('\par',    '\lx@algo@par');
+      Let('\parbox', '\lx@algo@parbox');
+      Let("\\\\",    '\lx@algo@par');
+      Let('\strut',  '\lx@algo@strut');
+      AssignCatcode("\r" => CC_SPACE);    # NOT CC_EOL, so newlines don't turn to \par!
+                                          #    AssignCatcode("\r" => 13);
+          #    Let(T_ACTIVE("\r"), '\relax');    # More appropriate than \par, I think?
 
-    #    Let('\vtop','\relax');      # ?
-    DefMacro('\;', '\ifmmode\@mathsemicolon\else\@endalgoln\fi');
-    beforeFloat('algorithm');
-  },
-  afterDigest => sub {
-    if (ToString(DigestIf(T_CS('\algocf@style'))) =~ /box/) {
-      $_[1]->setProperty(frame => 'boxed'); }
-    afterFloat($_[1]); },
-  afterConstruct => sub { addFloatFrames($_[0], $_[1]->getProperty('frame')); }
-);
+      #    Let('\vtop','\relax');      # ?
+      DefMacro('\;', '\ifmmode\@mathsemicolon\else\@endalgoln\fi');
+      beforeFloat('algorithm');
+    },
+    afterDigest => sub {
+      if (ToString(DigestIf(T_CS('\algocf@style'))) =~ /box/) {
+        $_[1]->setProperty(frame => 'boxed'); }
+      afterFloat($_[1]); },
+    afterConstruct => sub { addFloatFrames($_[0], $_[1]->getProperty('frame')); }
+  );
+}
 
 DefMacro('\lx@algo@parbox[]{}{}', '#3');
 # NEUTRALIZE most \par's that are built into agorythmic2e
