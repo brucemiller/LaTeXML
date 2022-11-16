@@ -7126,6 +7126,14 @@ foreach my $ltxtrigger (qw(documentclass
   typeout begin listfiles nofiles)) {
   DefAutoload($ltxtrigger, 'LaTeX.pool.ltxml'); }
 
+foreach my $ltx3trigger (qw(ExplSyntaxOn
+  ProvidesExplClass ProvidesExplPackage)) {
+  # DG: note that these auto-loads are not perfect --
+  #     if they are triggered with a raw .sty file for example,
+  #     the expl3 support will "expire" at the end of the current scope,
+  #     and e.g. \ExplSyntaxOn will once again be undefined.
+  DefAutoload($ltx3trigger, 'expl3.pool.ltxml'); }
+
 # Seemingly good candidates to trigger AmSTeX ??
 foreach my $amstrigger (qw(BlackBoxes NoBlackBoxes
   TagsAsMath TagsAsText TagsOnLeft TagsOnRight CenteredTagsOnSplits TopOrBottomTagsOnSplits

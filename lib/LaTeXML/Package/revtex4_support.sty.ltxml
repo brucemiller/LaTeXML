@@ -269,9 +269,9 @@ DefEnvironment('{turnpage}', '#body');
 # XX.  Extra stuff
 #======================================================================
 
-Let('\MakeTextLowercase', '\lowercase');
-Let('\MakeTextUppercase', '\uppercase');
-DefMacro('\NoCaseChange', '');
+DefMacro('\MakeTextLowercase', '\lowercase');
+DefMacro('\MakeTextUppercase', '\uppercase');
+DefMacro('\NoCaseChange',      '');
 
 # Macro & Control stuff.
 #  Are these really intended for authors to use?
