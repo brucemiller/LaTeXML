@@ -415,6 +415,12 @@ Let('\biographynophoto',    '\IEEEbiographynophoto');
 Let('\endbiography',        '\endIEEEbiography');
 Let('\endbiographynophoto', '\endIEEEbiographynophoto');
 
+# The \bstctlcite command
+#    which is used to invoke a BibTeX style control bibliography entry that can alter the formatting of .bst files that support it (such as IEEEtran.bst).
+# see docs at http://www.michaelshell.org/tex/ieeetran/tools/
+# TODO: Maybe once we can emulate ".bst" files natively this comes into play?
+DefMacro('\bstctlcite[]{}', Tokens());
+
 #======================================================================
 
 1;
