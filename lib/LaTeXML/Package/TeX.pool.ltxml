@@ -307,6 +307,21 @@ DefParameterType('Verbatim', sub {
     $_[0]->egroup; },
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
+# Read Verbatim, but allows expanding command sequences
+DefParameterType('EscapableVerbatim', sub {
+    my ($gullet) = @_;
+    $gullet->readUntil(T_BEGIN);
+    StartSemiverbatim('%');
+    my $arg = $gullet->readBalanced();
+    EndSemiverbatim();
+    return $arg; },
+  beforeDigest => sub {
+    $_[0]->bgroup;
+    MergeFont(family => 'typewriter'); },
+  afterDigest => sub {
+    $_[0]->egroup; },
+  reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
+
 # Read an argument that will not be digested.
 DefParameterType('Undigested', sub { $_[0]->readArg; }, undigested => 1,
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });

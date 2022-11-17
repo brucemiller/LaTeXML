@@ -151,7 +151,7 @@ DefRegister('\pdfcompresslevel', Number(0));
 # Additional User Macros
 
 # \href{url}{text}
-DefMacro('\href Semiverbatim {}', '\@@Url\href{}{}{#1}{#2}');
+DefMacro('\href EscapableVerbatim {}', '\@@Url\href{}{}{#1}{#2}');
 
 # \url{url} from url.sty... well sorta
 # It's slightly different in that it expands the argument
@@ -374,10 +374,10 @@ map { DefMacroI(T_CS('\\' . $_ . 'autorefname'), undef, '\itemautorefname'); }
 DefMacro('\pdfstringdef{Token}{}', '\def#1{#2}');
 # Hopefully noop is sufficient for PDF-specific uses?
 DefMacro('\pdfstringdefDisableCommands', '');
-DefMacro('\pdfbookmark[]{}{}',      '');
-DefMacro('\currentpdfbookmark{}{}', '');
-DefMacro('\subpdfbookmark{}{}',     '');
-DefMacro('\belowpdfbookmark{}{}',   '');
+DefMacro('\pdfbookmark[]{}{}',           '');
+DefMacro('\currentpdfbookmark{}{}',      '');
+DefMacro('\subpdfbookmark{}{}',          '');
+DefMacro('\belowpdfbookmark{}{}',        '');
 
 #======================================================================
 # 4.1 Replacement macros
