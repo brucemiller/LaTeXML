@@ -60,9 +60,9 @@ DefMacro('\fnum@font@algorithm', '\bf');
 DefMacro('\ext@algorithm',       'loa');
 
 # {algorithm*}: same as {algorithm}, but used in a two columns text, so just map to original
-for my $env (qw(algorithm algorithm*)) {
+for my $env (qw(algorithm2e algorithm algorithm*)) {
   DefEnvironment("{$env}[]",
-    "<ltx:float xml:id='#id'>"
+    "<ltx:float xml:id='#id' class='ltx_algorithm'>"
       . "#tags"
       . "<ltx:listing class='ltx_lst_numbers_left'>"
       . "<ltx:listingline>"
