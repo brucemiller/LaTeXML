@@ -308,11 +308,20 @@ DefParameterType('Verbatim', sub {
   reversion => sub { (T_BEGIN, Revert($_[0]), T_END); });
 
 # Read Verbatim, but allows expanding command sequences
-DefParameterType('EscapableVerbatim', sub {
+DefParameterType('HyperVerbatim', sub {
     my ($gullet) = @_;
     $gullet->readUntil(T_BEGIN);
     StartSemiverbatim('%');
-    my $arg = $gullet->readBalanced();
+    DefMacroI('\%',              undef, T_OTHER('%'), scope => 'local');
+    DefMacroI('\#',              undef, T_OTHER('#'), scope => 'local');
+    DefMacroI('\&',              undef, T_OTHER('&'), scope => 'local');
+    DefMacroI('\textunderscore', undef, T_OTHER('_'), scope => 'local');
+    Let('\_', '\textunderscore');
+    DefMacroI('\hyper@tilde', undef, T_OTHER('~'), scope => 'local');
+    Let('\~',              '\hyper@tilde');
+    Let('\textasciitilde', '\hyper@tilde');
+    Let('\\\\',            '\@backslashchar');
+    my $arg = $gullet->readBalanced(1);
     EndSemiverbatim();
     return $arg; },
   beforeDigest => sub {
