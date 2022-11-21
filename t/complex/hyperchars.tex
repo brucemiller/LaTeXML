@@ -1,0 +1,21 @@
+\documentclass{article}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+  colorlinks=true,
+  linkcolor=blue,
+  urlcolor=blue,
+}
+\def\Dzero{D0}
+
+\begin{document}
+
+Here is a \href{https://bg.wikipedia.org/wiki/%\Dzero%A1%\Dzero%B8%\Dzero%BD%D1%82%\Dzero%B0%\Dzero%BA%D1%81%\Dzero%B8%D1%81}{cyrillic url}
+  which tests neutralized percent chars and argument expansion.
+
+% locally redefined command sequences
+\href{https://example.com/~\~test\\\%\#foo&a=1\&b=$$}{example URL with special chars}.
+
+%comments should be back to normal here.
+
+\end{document}
