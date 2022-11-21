@@ -151,7 +151,7 @@
   -->
   <func:function name="f:url">
     <xsl:param name="url"/>
-    <func:result><xsl:value-of select="$url"/></func:result>
+    <func:result><xsl:value-of select="f:subst($url,'&amp;','%26')"/></func:result>
   </func:function>
 
   <func:function name="f:class-pref">
