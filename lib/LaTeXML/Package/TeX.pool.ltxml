@@ -5898,7 +5898,7 @@ DefMathI('\flat',      undef, "\x{266D}");
 DefMathI('\natural',   undef, "\x{266E}");
 DefMathI('\sharp',     undef, "\x{266F}");
 DefMathI('\backslash', undef, UTF(0x5C),  role => 'MULOP');
-DefMathI('\partial',   undef, "\x{2202}", role => 'OPERATOR', meaning => 'partial-differential');
+DefMathI('\partial',   undef, "\x{2202}", role => 'DIFFOP', meaning => 'partial-differential');
 
 DefMathI('\infty',       undef, "\x{221E}", role => 'ID', meaning => 'infinity');
 DefMathI('\Box',         undef, "\x{25A1}");
