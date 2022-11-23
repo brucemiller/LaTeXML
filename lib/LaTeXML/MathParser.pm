@@ -478,13 +478,11 @@ sub filter_hints {
       $node->removeAttribute('_space');
       if ((!$node->getAttribute('_phantom'))
         && ($s >= $HINT_PUNCT_THRESHOLD) && (($node->getAttribute('role') || '') ne 'PUNCT')) {
-        # Create a new Punctuation node (XMTok) from the wide space
+        # Treat the XMHint as Punctuation (role=PUNCT)
         # I'm leary that this is a safe way to create an XML node that's NOT in the tree, but...
-        my $p = $node->parentNode;
-        #        my $punct = $document->openElementAt($p,'ltx:XMTok',role=>'PUNCT',rpadding=>$s.'pt');
-        my $punct = $document->openElementAt($p, 'ltx:XMTok', role => 'PUNCT',
+        my $p     = $node->parentNode;
+        my $punct = $document->openElementAt($p, 'ltx:XMHint', role => 'PUNCT', width => $s . 'pt',
           name => ('q' x int($s / 10)) . 'uad');
-        $punct->appendText(spacingToString($s));
         $p->removeChild($punct);    # But don't actually leave it in the tree!!!!
         push(@filtered, $punct); }
       else {
@@ -657,7 +655,7 @@ sub parse_single {
   if ($rule =~ s/,$//) {
     # Collect ALL trailing PUNCT|PERIOD's...
     my ($x, $r);
-    while (($x = $nodes[-1]) && ($x = realizeXMNode($x)) && (getQName($x) eq 'ltx:XMTok')
+    while (($x = $nodes[-1]) && ($x = realizeXMNode($x))
       && ($r = $x->getAttribute('role')) && (($r eq 'PUNCT') || ($r eq 'PERIOD'))) {
       my $p = pop(@nodes);
       # Special case hackery, in case this thing is XMRef'd!!!
@@ -1308,6 +1306,7 @@ sub recApply {
 # Given  alternating expressions & separators (punctuation,...)
 # extract the separators as a concatenated string,
 # returning (separators, args...)
+# But note that the separators are never used for anything!?
 sub extract_separators {
   my (@stuff) = @_;
   my ($punct, @args);
@@ -1318,7 +1317,7 @@ sub extract_separators {
       $punct .=
         ($punct ? ' ' : '')        # Delimited by SINGLE SPACE!
         . spacingToString(getXMHintSpacing(p_getAttribute($p, 'lpadding')))
-        . p_getValue($p)
+        . (p_getValue($p) // ' ')
         . spacingToString(getXMHintSpacing(p_getAttribute($p, 'rpadding')));
       push(@args, shift(@stuff)); } }    # Collect the next expression.
   @args = grep { $_ } @args;    # drop all undef args, trailing punct could have added an undef
