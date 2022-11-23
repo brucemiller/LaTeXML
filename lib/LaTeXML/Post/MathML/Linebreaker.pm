@@ -318,16 +318,16 @@ sub applyLayout_break {
       ? ["m:mtable", { align => 'baseline 1', columnalign => 'left', columnspacing => '0.1em',
           ($$layout{displaystyle} ? (displaystyle => 'true') : ()) },
         ["m:mtr", {},
-          ["m:mtd", {}, @firstrow[0 .. $$layout{lhs_pos} - 1]],
-          ["m:mtd", {}, @firstrow[$$layout{lhs_pos} .. $#firstrow]]],
+          ["m:mtd", { class => 'ltx_align_left' }, @firstrow[0 .. $$layout{lhs_pos} - 1]],
+          ["m:mtd", { class => 'ltx_align_left' }, @firstrow[$$layout{lhs_pos} .. $#firstrow]]],
         map { ["m:mtr", {},
-            ["m:mtd", {}],
-            ["m:mtd", {}, @$_]] } @rows]
+            ["m:mtd", { class => 'ltx_align_left' }],
+            ["m:mtd", { class => 'ltx_align_left' }, @$_]] } @rows]
       : ["m:mtable", { align => 'baseline 1', columnalign => 'left',
           ($$layout{displaystyle} ? (displaystyle => 'true') : ()) },
-        ["m:mtr", {}, ["m:mtd", {}, @firstrow]],
+        ["m:mtr", {}, ["m:mtd", { class => 'ltx_align_left' }, @firstrow]],
         map { ["m:mtr", {},
-            ["m:mtd", {}, ["m:mspace", { width => $$layout{indentation} . "em" }], @$_]] }
+            ["m:mtd", { class => 'ltx_align_left' }, ["m:mspace", { width => $$layout{indentation} . "em" }], @$_]] }
           @rows]));
   return; }
 
