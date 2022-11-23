@@ -320,25 +320,25 @@
             <tag role="typerefnum">item 14</tag>
           </tags>
           <para xml:id="S1.I1.i14.p1">
-            <p><Math mode="inline" tex="\partial\sin x\times_{i}^{2}y" text="(partial-differential@(sine))@(x (* _ i) ^ 2 y)" xml:id="S1.I1.i14.p1.m1">
+            <p><Math mode="inline" tex="\partial\sin x\times_{i}^{2}y" text="partial-differential@(sine@(x (* _ i) ^ 2 y))" xml:id="S1.I1.i14.p1.m1">
                 <XMath>
                   <XMApp>
+                    <XMTok meaning="partial-differential" name="partial" role="DIFFOP">∂</XMTok>
                     <XMApp>
-                      <XMTok meaning="partial-differential" name="partial" role="OPERATOR">∂</XMTok>
                       <XMTok meaning="sine" role="TRIGFUNCTION">sin</XMTok>
-                    </XMApp>
-                    <XMApp>
-                      <XMApp role="MULOP">
-                        <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                      <XMApp>
                         <XMApp role="MULOP">
-                          <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
-                          <XMTok meaning="times" role="MULOP">×</XMTok>
-                          <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                          <XMTok role="SUPERSCRIPTOP" scriptpos="post1"/>
+                          <XMApp role="MULOP">
+                            <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
+                            <XMTok meaning="times" role="MULOP">×</XMTok>
+                            <XMTok font="italic" fontsize="70%" role="UNKNOWN">i</XMTok>
+                          </XMApp>
+                          <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
                         </XMApp>
-                        <XMTok fontsize="70%" meaning="2" role="NUMBER">2</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">x</XMTok>
+                        <XMTok font="italic" role="UNKNOWN">y</XMTok>
                       </XMApp>
-                      <XMTok font="italic" role="UNKNOWN">x</XMTok>
-                      <XMTok font="italic" role="UNKNOWN">y</XMTok>
                     </XMApp>
                   </XMApp>
                 </XMath>

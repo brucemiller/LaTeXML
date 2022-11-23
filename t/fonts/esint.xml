@@ -17,7 +17,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP" xml:id="S0.Ex1.m1.1">∫</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="integral" name="int" role="INTOP" xml:id="S0.Ex1.m1.2">∫</XMTok>
             </XMWrap>
           </XMDual>
@@ -37,7 +37,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="double-integral" name="iint" role="INTOP" xml:id="S0.Ex2.m1.1">∬</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="double-integral" name="iint" role="INTOP" xml:id="S0.Ex2.m1.2">∬</XMTok>
             </XMWrap>
           </XMDual>
@@ -57,7 +57,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="triple-integral" name="iiint" role="INTOP" xml:id="S0.Ex3.m1.1">∭</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="triple-integral" name="iiint" role="INTOP" xml:id="S0.Ex3.m1.2">∭</XMTok>
             </XMWrap>
           </XMDual>
@@ -77,7 +77,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="quadruple-integral" name="iiiint" role="INTOP" xml:id="S0.Ex4.m1.1">⨌</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="quadruple-integral" name="iiiint" role="INTOP" xml:id="S0.Ex4.m1.2">⨌</XMTok>
             </XMWrap>
           </XMDual>
@@ -104,7 +104,7 @@
                   <XMTok mathstyle="text" meaning="integral" name="int" role="INTOP">∫</XMTok>
                 </XMWrap>
               </XMDual>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMDual role="INTOP" xml:id="S0.Ex5.m1.2">
                 <XMTok mathstyle="display" meaning="multiple-integral" name="dotsint" role="INTOP"/>
                 <XMWrap rule="kludge">
@@ -131,7 +131,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="contour-integral" name="oint" role="INTOP" xml:id="S0.Ex6.m1.1">∮</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="contour-integral" name="oint" role="INTOP" xml:id="S0.Ex6.m1.2">∮</XMTok>
             </XMWrap>
           </XMDual>
@@ -151,7 +151,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="surface-integral" name="oiint" role="INTOP" xml:id="S0.Ex7.m1.1">∯</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="surface-integral" name="oiint" role="INTOP" xml:id="S0.Ex7.m1.2">∯</XMTok>
             </XMWrap>
           </XMDual>
@@ -171,7 +171,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="surface-integral" name="varoiint" role="INTOP" xml:id="S0.Ex8.m1.1">∯</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="surface-integral" name="oiint" role="INTOP" xml:id="S0.Ex8.m1.2">∯</XMTok>
             </XMWrap>
           </XMDual>
@@ -191,7 +191,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="quaternion-integral" name="sqint" role="INTOP" xml:id="S0.Ex9.m1.1">⨖</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="quaternion-integral" name="sqint" role="INTOP" xml:id="S0.Ex9.m1.2">⨖</XMTok>
             </XMWrap>
           </XMDual>
@@ -217,7 +217,7 @@
                   <XMTok role="UNKNOWN" width="0pt" xoffset="-1.0em">▭</XMTok>
                 </XMWrap>
               </XMDual>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMDual role="INTOP" xml:id="S0.Ex10.m1.2">
                 <XMTok mathstyle="display" meaning="quaternion-double-integral" name="sqiint" role="INTOP"/>
                 <XMWrap rule="kludge">
@@ -243,7 +243,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="counterclockwise-contour-integral" name="ointctrclockwise" role="INTOP" xml:id="S0.Ex11.m1.1">∳</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="counterclockwise-contour-integral" name="ointctrclockwise" role="INTOP" xml:id="S0.Ex11.m1.2">∳</XMTok>
             </XMWrap>
           </XMDual>
@@ -263,7 +263,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="clockwise-contour-integral" name="ointclockwise" role="INTOP" xml:id="S0.Ex12.m1.1">∲</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="clockwise-contour-integral" name="ointclockwise" role="INTOP" xml:id="S0.Ex12.m1.2">∲</XMTok>
             </XMWrap>
           </XMDual>
@@ -283,7 +283,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="clockwise-contour-integral" name="varointclockwise" role="INTOP" xml:id="S0.Ex13.m1.1">∲</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="clockwise-contour-integral" name="varointclockwise" role="INTOP" xml:id="S0.Ex13.m1.2">∲</XMTok>
             </XMWrap>
           </XMDual>
@@ -303,7 +303,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="counterclockwise-contour-integral" name="varointctrclockwise" role="INTOP" xml:id="S0.Ex14.m1.1">∳</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="counterclockwise-contour-integral" name="varointctrclockwise" role="INTOP" xml:id="S0.Ex14.m1.2">∳</XMTok>
             </XMWrap>
           </XMDual>
@@ -323,7 +323,7 @@
             </XMApp>
             <XMWrap>
               <XMTok mathstyle="text" meaning="average-integral" name="fint" role="INTOP" xml:id="S0.Ex15.m1.1">⨏</XMTok>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMTok mathstyle="display" meaning="average-integral" name="fint" role="INTOP" xml:id="S0.Ex15.m1.2">⨏</XMTok>
             </XMWrap>
           </XMDual>
@@ -349,7 +349,7 @@
                   <XMTok fontsize="50%" role="UNKNOWN" width="0pt" xoffset="-0.9em" yoffset="0.2ex">-◠-</XMTok>
                 </XMWrap>
               </XMDual>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMDual role="INTOP" xml:id="S0.Ex16.m1.2">
                 <XMTok mathstyle="display" meaning="contour-integral-around-above" name="landupint" role="INTOP"/>
                 <XMWrap rule="kludge">
@@ -381,7 +381,7 @@
                   <XMTok fontsize="50%" role="UNKNOWN" width="0pt" xoffset="-0.9em" yoffset="0.2ex">-◡-</XMTok>
                 </XMWrap>
               </XMDual>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMDual role="INTOP" xml:id="S0.Ex17.m1.2">
                 <XMTok mathstyle="display" meaning="contour-integral-around-below" name="landdownint" role="INTOP"/>
                 <XMWrap rule="kludge">
@@ -429,7 +429,7 @@
                   </XMApp>
                 </XMApp>
               </XMApp>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMApp xml:id="S0.Ex18.m1.4">
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
@@ -500,7 +500,7 @@
                   </XMApp>
                 </XMApp>
               </XMApp>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMApp xml:id="S0.Ex19.m1.4">
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
@@ -575,7 +575,7 @@
                   </XMApp>
                 </XMApp>
               </XMApp>
-              <XMTok font="italic" name="quad" role="PUNCT"> </XMTok>
+              <XMHint name="quad" role="PUNCT" width="10pt"/>
               <XMApp xml:id="S0.Ex20.m1.4">
                 <XMApp>
                   <XMTok role="SUBSCRIPTOP" scriptpos="post1"/>
