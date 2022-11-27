@@ -307,7 +307,7 @@ sub pmml_scriptsize {
   my ($script) = @_;
   local $LaTeXML::MathML::STYLE = $style_script_step{$LaTeXML::MathML::STYLE};
   local $LaTeXML::MathML::SIZE  = $stylesize{$LaTeXML::MathML::STYLE};
-  return ($script ? pmml($script) : ['m:none']); }
+  return ($script ? pmml($script) : ['m:mrow']); }
 
 sub pmml {
   my ($node) = @_;
@@ -1256,10 +1256,12 @@ DefMathML("Token:UNDERACCENT:?", \&pmml_mo, undef);
 DefMathML("Token:NUMBER:?", \&pmml_mn, sub {
     my $n = $_[0]->textContent;
     return ['m:cn', { type => ($n =~ /^[+-]?\d+$/ ? 'integer' : 'float') }, $n]; });
-DefMathML("Token:?:absent", sub { return ['m:mi', {}] });    # Not m:none!
-    # Hints normally would have disappeared during parsing
-    # (turned into punctuation or padding?)
-    # but if they survive (unparsed?) turn them into space
+
+DefMathML("Token:?:absent", sub { return ['m:mi', {}] });
+
+# Hints normally would have disappeared during parsing
+# (turned into punctuation or padding?)
+# but if they survive (unparsed?) turn them into space
 DefMathML('Hint:?:?', sub {
     my ($node) = @_;
     if (my $w = $node->getAttribute('width')) {
