@@ -383,38 +383,23 @@
     </xsl:element>
   </xsl:template>
 
-  <!-- copy attribute? In general don't -->
-  <xsl:template match="@*" mode='copy-attribute'/>
+  <!-- Tricky to set up templates for attributes with & without namespaces that override correctly -->
 
-  <!-- but copy non-namespaced attributes -->
+  <!-- Copy NON-namespaced attributes -->
   <xsl:template match="@*[namespace-uri() = '']" mode='copy-attribute'>
     <xsl:attribute name="{local-name()}" namespace="{namespace-uri()}">
       <xsl:value-of select="."/>
     </xsl:attribute>
   </xsl:template>
 
-  <!-- and xml:id, but maybe without the xml: -->
-  <xsl:template match="@xml:id" mode='copy-attribute'>
-    <xsl:attribute name="{f:if($USE_XMLID,'xml:id','id')}">
-      <xsl:value-of select="."/>
-    </xsl:attribute>
-  </xsl:template>
-
-  <!-- and xml:lang, similarly -->
-  <xsl:template match="@xml:lang" mode='copy-attribute'>
-    <xsl:attribute name="{f:if($USE_XMLID,'xml:lang','lang')}">
-      <xsl:value-of select="."/>
-    </xsl:attribute>
-  </xsl:template>
-
-  <!-- this is risky, assuming we know which are urls...-->
-  <xsl:template match="@href | @src | @action" mode='copy-attribute'>
+  <!-- Except those known to contain urls which may need relativizing...-->
+  <xsl:template match="@href | @src | @action" mode='copy-attribute' priority='1'>
     <xsl:attribute name="{local-name()}">
       <xsl:value-of select="f:url(.)"/>
     </xsl:attribute>
   </xsl:template>
 
-  <!-- and attributes in foreign namespaces are preserved or copied into data-XXX style attributes -->
+  <!-- Attributes in foreign namespaces are preserved or copied into data-XXX style attributes -->
   <xsl:template match="@*[(namespace-uri() != '') and (namespace-uri() != 'http://www.w3.org/XML/1998/namespace')]" mode='copy-attribute'>
     <xsl:variable name="prefix"><xsl:value-of select="substring-before(name(),':')"/></xsl:variable>
     <xsl:choose>
@@ -439,6 +424,22 @@
         </xsl:attribute>
       </xsl:otherwise>
     </xsl:choose>
+  </xsl:template>
+
+  <!-- With the exception of xml:* attributes, which are generally dropped -->
+  <xsl:template match="@xml:*" mode='copy-attribute'/>
+  <!-- Except for xml:id and xml:lang; For some formats, the xml: prefix is omitted -->
+  <xsl:template match="@xml:id" mode='copy-attribute'>
+    <xsl:attribute name="{f:if($USE_XMLID,'xml:id','id')}">
+      <xsl:value-of select="."/>
+    </xsl:attribute>
+  </xsl:template>
+
+  <!-- and xml:lang, similarly -->
+  <xsl:template match="@xml:lang" mode='copy-attribute'>
+    <xsl:attribute name="{f:if($USE_XMLID,'xml:lang','lang')}">
+      <xsl:value-of select="."/>
+    </xsl:attribute>
   </xsl:template>
 
   <!-- ======================================================================
