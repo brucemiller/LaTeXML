@@ -45,7 +45,7 @@ sub unpack_source {
   # I.1. arXiv has a special metadata file identifying the primary source, and ignoring assets
   if (my $readme_member = $zip_handle->memberNamed('00README.XXX')) {
     my $readme_file = catfile($sandbox_directory, $readme_member->fileName());
-    open(my $README_FH, '<', $readme_file) ||
+    open(my $README_FH, '<', $readme_file) or
       (print STDERR "failed to open '$readme_file' for use as ZIP readme: $!. Continuing.\n");
     local $/ = "\n";
     my $toplevelfile;
@@ -75,7 +75,7 @@ sub unpack_source {
     # Open file and read first few bytes to do magic sequence identification
     # note that file will be auto-closed when $FILE_TO_GUESS goes out of scope
     next unless -e $tex_file;    # skip deleted "ignored" files.
-    open(my $FILE_TO_GUESS, '<', $tex_file) ||
+    open(my $FILE_TO_GUESS, '<', $tex_file) or
       (print STDERR "failed to open '$tex_file' to guess its format: $!. Continuing.\n");
     local $/ = "\n";
     my ($maybe_tex, $maybe_tex_priority, $maybe_tex_priority2);
@@ -132,7 +132,7 @@ sub unpack_source {
       if (m/paper deliberately replaced by what little/) {
         $Main_TeX_likelihood{$tex_file} = 0; last TEX_FILE_TRAVERSAL; }
     }
-    close $FILE_TO_GUESS || warn "couldn't close file: $!";
+    close $FILE_TO_GUESS or (print STDERR "couldn't close file: $!");
     if (!defined $Main_TeX_likelihood{$tex_file}) {
       if ($maybe_tex_priority) {
         $Main_TeX_likelihood{$tex_file} = 2; }
@@ -147,37 +147,65 @@ sub unpack_source {
   # Veto files that were e.g. arguments of \input macros
   for my $filename (@vetoed) {
     delete $Main_TeX_likelihood{$filename}; }
-  # The highest likelihood (>0) file gets to be the main source.
-  my @files_by_likelihood = sort { $Main_TeX_likelihood{$b} <=> $Main_TeX_likelihood{$a} } grep { $Main_TeX_likelihood{$_} > 0 } keys %Main_TeX_likelihood;
+  # Examine only the max-scoring candidates (if any)
+  my @files_by_likelihood = sort { $Main_TeX_likelihood{$b} <=> $Main_TeX_likelihood{$a} }
+    grep { $Main_TeX_likelihood{$_} > 0 } keys %Main_TeX_likelihood;
   if (@files_by_likelihood) {
-   # If we have a tie for max score, grab the alphanumerically first file (to ensure deterministic runs)
     my $max_likelihood = $Main_TeX_likelihood{ $files_by_likelihood[0] };
     @files_by_likelihood = grep { $Main_TeX_likelihood{$_} == $max_likelihood } @files_by_likelihood;
-    # only keep the high scorers closest to the root of the archive
-    my $min_count = 100;
-    foreach my $file (@files_by_likelihood) {
-      my $count = $file =~ tr/\///;
-      $Main_TeX_level{$file} = $count;
-      $min_count = $count if $min_count > $count; }
-    @files_by_likelihood = grep { $Main_TeX_level{$_} == $min_count } @files_by_likelihood;
-    # if we still have multiples, check if some have a .bbl file
-    if (my @with_bbl = grep { my $base = $_; $base =~ s/\.tex$//; -e "$base.bbl"; } @files_by_likelihood) {
-      @files_by_likelihood = @with_bbl; }
-# Sometimes in arXiv the decision is made in an unclear manner
+# Special heuristic 1: If we have multiple "best" candidates, prefer those closer to the archive root '/'
+    if (scalar(@files_by_likelihood) > 1) {
+      my $min_count = 100;
+      foreach my $file (@files_by_likelihood) {
+        my $count = $file =~ tr/\///;
+        $Main_TeX_level{$file} = $count;
+        $min_count = $count if $min_count > $count; }
+      @files_by_likelihood = grep { $Main_TeX_level{$_} == $min_count } @files_by_likelihood; }
+    # Special heuristic 2: prefer candidates with PDF-like \includegraphics
+    if (scalar(@files_by_likelihood) > 1) {
+      my @pdf_includes = heuristic_check_for_pdftex(@files_by_likelihood);
+      @files_by_likelihood = @pdf_includes if @pdf_includes; }
+    # Special heuristic 3: prefer "best" candidates with a .bbl file
+    if (scalar(@files_by_likelihood) > 1) {
+      my @with_bbl = grep { my $base = $_; $base =~ s/\.tex$//; -e "$base.bbl"; } @files_by_likelihood;
+      @files_by_likelihood = @with_bbl if @with_bbl; }
+# Special heuristic 4 ?!: Sometimes in arXiv the decision is made in an unclear manner
 # (example: see 2112.08935 v1, which has equally good main.tex and bare_adv.tex)
 # so, for now, err on the side of preferring one of the extremely common names, when they are available at highest score.
-    if (my @common_name = grep { /(^|\W)(?:main|ms|paper)\.tex$/ } @files_by_likelihood) {
-      @files_by_likelihood = @common_name; }
-    # last tie-breaker is lexicographical order
-    @files_by_likelihood = sort { $a cmp $b } @files_by_likelihood;
-    # set the main source
+    if (scalar(@files_by_likelihood) > 1) {
+      my @common_name = grep { /(^|\W)(?:main|ms|paper)\.tex$/ } @files_by_likelihood;
+      @files_by_likelihood = @common_name if @common_name; }
+    # Final heuristic: tie-breaker is lexicographical order
+    if (scalar(@files_by_likelihood) > 1) {
+      @files_by_likelihood = sort { $a cmp $b } @files_by_likelihood; }
+    # set the winner for main source
     $main_source = shift @files_by_likelihood; }
 
   # If failed, clean up sandbox directory.
   rmtree($sandbox_directory) unless $main_source;
   # Return the main source from the unpacked files in the sandbox directory (or undef if failed)
-  return $main_source;
-}
+  return $main_source; }
+
+sub heuristic_check_for_pdftex {
+  my @filenames    = @_;
+  my @pdf_includes = ();
+  for my $tex_file (@filenames) {
+    my $is_open = open(my $TEX_FH, '<', $tex_file);
+    if (!$is_open) {
+      print STDERR "failed to open '$tex_file' to guess its format: $!. Continuing.\n";
+      next; }
+    local $/ = "\n";
+    my $pdfoutput_checks = 5;
+    while (<$TEX_FH>) {
+      # Check from arXiv::FileGuess, line 317
+      # https://metacpan.org/release/SIMEON/arXiv-1.01/source/lib/arXiv/FileGuess.pm#L317
+      if (/^[^%]*\\includegraphics[^%]*\.(?:pdf|png|gif|jpg)\s?\}/i ||
+        ($pdfoutput_checks >= 0 && /^[^%]*\\pdfoutput(?:\s+)?=(?:\s+)?1/)) {
+        push(@pdf_includes, $tex_file);
+        last; }
+      $pdfoutput_checks-- if $pdfoutput_checks; }
+    close $TEX_FH or (print STDERR "couldn't close file: $!"); }
+  return @pdf_includes; }
 
 # Options:
 #   whatsout: determine what shape and size we want to pack into
