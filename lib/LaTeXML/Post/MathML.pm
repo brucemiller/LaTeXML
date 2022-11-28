@@ -396,7 +396,7 @@ sub pmml_internal {
     my ($content, $presentation) = element_nodes($node);
     return pmml($presentation); }
   elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {      # Only present if parsing failed!
-    return pmml_mayberesize($node, pmml_row(map { pmml($_) } element_nodes($node))); }
+    return pmml_maybe_resize($node, pmml_row(map { pmml($_) } element_nodes($node))); }
   elsif ($tag eq 'ltx:XMApp') {
     my ($op, @args) = element_nodes($node);
     if (!$op) {
@@ -416,7 +416,7 @@ sub pmml_internal {
         = ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
       my $result = &{ lookupPresenter('Apply', getOperatorRole($rop), $rop->getAttribute('meaning'))
       }($op, @args);
-      $result = pmml_mayberesize($node, $result);
+      $result = pmml_maybe_resize($node, $result);
       my $needsmathstyle = needsMathstyle($result);
       my %styleattr      = %{ ($style && ($needsmathstyle
             ? $stylemap{$ostyle}{$style}
@@ -486,7 +486,7 @@ sub pmml_internal {
           ? $stylemap{$ostyle}{$style}
           : $stylemap2{$ostyle}{$style})) || {} };
     $result = ['m:mstyle', {%styleattr}, $result] if keys %styleattr;
-    $result = pmml_mayberesize($node, $result);
+    $result = pmml_maybe_resize($node, $result);
     return $result; }
   elsif ($tag eq 'ltx:XMText') {
     my @c = $node->childNodes;
@@ -495,7 +495,7 @@ sub pmml_internal {
       $result = pmml_row(map { pmml_text_aux($_) } @c); }
     else {
       $result = ['m:mtext', {}, $self->convertXMTextContent($doc, 1, @c)]; }
-    return pmml_mayberesize($node, $result); }
+    return pmml_maybe_resize($node, $result); }
   elsif ($tag eq 'ltx:ERROR') {
     my $cl = $node->getAttribute('class');
     return ['m:merror', { class => join(' ', grep { $_ } 'ltx_ERROR', $cl) },
@@ -518,7 +518,7 @@ sub needsMathstyle {
 
 # Use mpadded instead of mrow if size has been given
 # And maybe this is a convenient place to deal with frames?
-sub pmml_mayberesize {
+sub pmml_maybe_resize {
   my ($node, $result) = @_;
   return $result unless ref $node;
   my $parent;
@@ -675,13 +675,14 @@ sub stylizeContent {
   my $stretchy = ((defined $attr{stretchy} ? $attr{stretchy} : ($iselement && $item->getAttribute('stretchy')))
       || 'false') eq 'true';
   my $isfence   = $role && ($role =~ /^(OPEN|CLOSE|MIDDLE)$/);
-  my $ispunct   = $role && ($role eq 'PUNCT');
+  my $issep     = $role && ($role eq 'PUNCT');
   my $islargeop = $role && ($role =~ /^(SUMOP|INTOP)$/);
+  my $ismoveop  = $role && ($role =~ /^(SUMOP|INTOP|BIGOP|LIMITOP)$/);    # Not DIFFOP
   my $pos       = ($iselement && $item->getAttribute('scriptpos')) || 'post';
 
   # First figure out the actual text content to use; Adjust font, variant, class for styling
   my $text = (ref $item ? $item->textContent : $item);
-  if ((!defined $text) || ($text eq '')) {    # Failsafe for empty tokens?
+  if ((!defined $text) || ($text eq '')) {                                # Failsafe for empty tokens?
     if (my $default = $role && $default_token_content{$role}) {
       $text = $default; }
     else {
@@ -740,7 +741,7 @@ sub stylizeContent {
     elsif (($size =~ /%$/) && ($LaTeXML::MathML::STYLE and $LaTeXML::MathML::STYLE =~ /script/)) {
       my $req = $size;                               $req =~ s/%$//;
       my $ex  = $stylesize{$LaTeXML::MathML::STYLE}; $ex  =~ s/%$//;
-      $size = int(100 * $req / $ex) . '%'; }
+      $size = int(100 * $req / $ex) . '%' if $ex; }
     # Note that symmetric is only allowed when stretchy, which looks crappy for specific sizes
     # so we'll pretend that delimiters are still stretchy, but restrict size by minsize & maxsize
     # (Thanks Peter Krautzberger)
@@ -765,16 +766,15 @@ sub stylizeContent {
     ($href     ? (href           => $href)     : ()),
     ($title    ? (title          => $title)    : ()),
     # mo specific additions
-    (($stretchy xor $props{stretchy}) ? (stretchy  => ($stretchy  ? 'true' : 'false')) : ()),
-    (($isfence xor $props{fence})     ? (fence     => ($isfence   ? 'true' : 'false')) : ()),
-    (($ispunct xor $props{separator}) ? (separator => ($ispunct   ? 'true' : 'false')) : ()),
+    (($stretchy xor $props{stretchy}) ? (stretchy  => ($stretchy ? 'true' : 'false'))  : ()),
+    (($isfence xor $props{fence})     ? (fence     => ($isfence ? 'true' : 'false'))   : ()),
+    (($issep xor $props{separator})   ? (separator => ($issep ? 'true' : 'false'))     : ()),
     (($islargeop xor $props{largeop}) ? (largeop   => ($islargeop ? 'true' : 'false')) : ()),
-    ($islargeop                       ? (_largeop  => 1) : ()),      # For needsMathStyle
+    ($islargeop                       ? (_largeop  => 1)      : ()),    # For needsMathStyle
     ($islargeop && !$props{symmetric} ? (symmetric => 'true') : ()), # Not sure this is strictly correct...
-        # If an operator has specifically located it's scripts,
-        # don't let mathml move them.
-    ($props{movablelimits} && (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS)
-      ? (movablelimits => 'false') : ()),
+        # If an operator has specifically located it's scripts, don't let mathml move them.
+        # A bit non-optimal, as Firefox is rather more generous than OpDict with movablelimits
+    ($ismoveop && (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS) ? (movablelimits => 'false') : ()),
     # Store spacing for later spacing resolution
     (defined $props{lspace} ? (_lspace => $props{lspace}) : ()),
     (defined $props{rspace} ? (_rspace => $props{rspace}) : ()),
@@ -784,19 +784,19 @@ sub stylizeContent {
 sub pmml_mi {
   my ($item, %attr)    = @_;
   my ($text, %mmlattr) = stylizeContent($item, 'm:mi', %attr);
-  return pmml_mayberesize($item, ['m:mi', {%mmlattr}, $text]); }
+  return pmml_maybe_resize($item, ['m:mi', {%mmlattr}, $text]); }
 
 # Really, the same issues as with mi.
 sub pmml_mn {
   my ($item, %attr)    = @_;
   my ($text, %mmlattr) = stylizeContent($item, 'm:mn', %attr);
-  return pmml_mayberesize($item, ['m:mn', {%mmlattr}, $text]); }
+  return pmml_maybe_resize($item, ['m:mn', {%mmlattr}, $text]); }
 
 # Note that $item should be either a string, or at most, an XMTok
 sub pmml_mo {
   my ($item, %attr)    = @_;
   my ($text, %mmlattr) = stylizeContent($item, 'm:mo', %attr);
-  return pmml_mayberesize($item, ['m:mo', { %mmlattr, }, $text]); }
+  return pmml_maybe_resize($item, ['m:mo', { %mmlattr, }, $text]); }
 
 sub pmml_bigop {
   my ($op)      = @_;
@@ -1009,7 +1009,7 @@ sub pmml_text_aux {
         return (); } }
     elsif (($tag eq 'ltx:text')    # ltx:text element is fine, if we can manage the attributes!
       && (!grep { $node->hasAttribute($_) } qw(framed framecolor))) {
-      return pmml_mayberesize($node, pmml_row(map { pmml_text_aux($_, %attr) } $node->childNodes)); }
+      return pmml_maybe_resize($node, pmml_row(map { pmml_text_aux($_, %attr) } $node->childNodes)); }
     else {
       # We could just recurse on raw content like this, but it loses a lot...
       ###      map(pmml_text_aux($_,%attr), $node->childNodes); }}
@@ -1055,6 +1055,7 @@ sub space_walk {
     while ($prev && ($$prev[0] eq 'm:mrow')) {    # Unwrap mrows
       unshift(@nodes, @$prev[2 .. $#$prev]);
       $prev = shift(@nodes); }
+    space_walk($self, $prev);
     while (my $next = shift(@nodes)) {
       my $invisop;    # Save Invisible operators as potential target for (l|r)space
       if (($$next[0] eq 'm:mo') && $$next[2] && ($$next[2] =~ /^[\x{2061}\x{2062}\x{2063}]*$/)) {
@@ -1194,7 +1195,7 @@ sub adjust_pair {
     $LaTeXML::DEBUG{mathspacing};
   return unless $needs_adjustment;
   # Note that in MML Core, neither mspace nor mpadded can have negative width!
-  # It also does not support relative width using +/- previx!
+  # It also does not support relative width using +/- prefix!
   # So, the only alternative is to create an mpadded with an ADJUSTED width.
   # NOTE: spacing in ems seems to be more portable.
   if ($target < 0) {    # Ugh. "rewrap" $prev in m:mpadded, IN PLACE!
