@@ -56,6 +56,11 @@ WriteMakefile(NAME => 'LaTeXML',
   CONFIGURE_REQUIRES => {
     'version' => 0.77,
   },
+  PL_FILES => {
+    'blib/lib/LaTeXML/texmf/make_package.PL' => [
+      qw( blib/lib/LaTeXML/texmf/lxRDFa.sty blib/lib/LaTeXML/texmf/lxRDFa.html
+        blib/lib/LaTeXML/texmf/latexml.sty blib/lib/LaTeXML/texmf/latexml.html )]
+  },
   PREREQ_PM => {
     'Archive::Zip'      => 0,
     'DB_File'           => 0,
@@ -68,7 +73,9 @@ WriteMakefile(NAME => 'LaTeXML',
     'LWP'               => 0,
     'MIME::Base64'      => 0,      # Core
     'Parse::RecDescent' => 0,
+    'Pod::Html'         => 0,      # for make_package.PL => html
     'Pod::Parser'       => 0,      # for Pod::Find
+    'Pod::Text'         => 0,      # for make_package.PL => sty
     'Text::Unidecode'   => 0,
     'Test::More'        => 0,      # part of Test::Simple
     'Time::HiRes'       => 0,

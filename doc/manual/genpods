@@ -23,7 +23,8 @@ GetOptions("force!" => \$force,
 pod2usage(-message => $identity, -exitval => 1, -verbose => 2, -output => \*STDOUT) if $help;
 
 #======================================================================
-my @exes = (qw(latexml latexmlpost latexmlc latexmlmath));
+my @packages = (qw(latexml lxRDFa));
+my @exes     = (qw(latexml latexmlpost latexmlc latexmlmath));
 # would be nice to automatically discover documentable modules
 # Actually, we Can, by looking in ../blib/man1 and ../blib/man3
 # However, we'd still need to manually add them (in desired order) to the appropriate Appendx!
@@ -110,6 +111,9 @@ my @modules = (
 if (!-d $GENDIR) {
   mkdir($GENDIR) or die "Couldn't create directory for pods: $!"; }
 
+# this appears to be needed in sub _create_index {}
+my $convertingPackages = 0;
+
 foreach my $name (@exes) {
   my $src  = "$SRCDIR/bin/$name";
   my $dest = "$GENDIR/${name}_exe.tex";
@@ -130,6 +134,18 @@ foreach my $name (@modules) {
     print "Converting POD for $name to LaTeX\n";
     local $::PODDOC = $name;    # $::PODDOC =~ s/::/_/g;
     my $podconverter = MyPodConverter->new();
+    $podconverter->parse_from_file($src, $dest); } }
+
+$convertingPackages = 1;
+
+foreach my $package (@packages) {
+  my $src  = "$SRCDIR/lib/LaTeXML/Package/$package.sty.ltxml";
+  my $dest = "$GENDIR/${package}_sty.tex";
+  if ($force || (!-f $dest) || (-M $src < -M $dest)) {
+    print "Converting POD for package $package to LaTeX\n";
+    local $::PODDOC = $package;    # $::PODDOC =~ s/::/_/g;
+    my $podconverter = MyPodConverter->new();
+    $podconverter->Label('package');
     $podconverter->parse_from_file($src, $dest); } }
 
 #======================================================================
@@ -182,12 +198,18 @@ sub interior_sequence {
       $label = $::PODDOC . $label; }
     return ($text ? "\\pod[$text]{$label}" : "\\pod{$label}"); }
   elsif ($seq_command eq 'X') {
-    return "\\index{$seq_argument\@{\\ttfamily $seq_argument}}"; }
+    my $locator = $seq_argument;
+    $locator =~ s/^\$\\backslash\$//;                    # remove a leading backslash for alphabetizing
+    return "\\index{$locator\@{\\ttfamily $seq_argument}}"; }
   else {
     return $self->SUPER::interior_sequence($seq_command, $seq_argument, $pod_seq); } }
 
 # Redefine to better sort indices.
 # ALL packages start with LaTeXML:: !!!
+# Entries from the commands latexml... have $string eq "$command!$entry"
+# Entries from the packages have $string eq "package!$package" or "$package!$entry"
+# These overlap for the command & package latexml
+# The only way I can see to distinguish them is through a global variable
 sub _create_index {
   my $string  = $_[0]->SUPER::_create_index($_[1]);
   my $reftype = "command";
@@ -197,6 +219,10 @@ sub _create_index {
     my @comp = split('::', $name);
     $name = $comp[-1]
       . (@comp > 1 ? '(' . join('::', @comp[0 .. $#comp - 1]) . '::)' : ''); }
+  elsif ($name =~ /^package/) {
+    return $string; }
+  elsif ($convertingPackages) {
+    $reftype = "package"; }
   return join('!', "$name\@{\\ttfamily $name}", $reftype, @rest); }
 
 # Redefined to avoid unnecessary math.
