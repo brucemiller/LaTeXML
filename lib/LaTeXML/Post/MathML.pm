@@ -465,7 +465,8 @@ sub pmml_internal {
         if ($rs || $cs) {                            # Note following cells to be omitted from MathML
           for (my $i = 0 ; $i < ($cs || 1) ; $i++) {
             $spanned[$nc - 1 + $i] = ($rs || 1); } }
-        push(@cols, ['m:mtd', { ($a ? (columnalign => $a) : ()),
+        push(@cols, ['m:mtd', { ($a && ($a ne 'center')
+                ? (columnalign => $a, class => 'ltx_align_' . $a) : ()),
               ($c || $cl ? (class      => ($c && $cl ? "$c $cl" : $c || $cl)) : ()),
               ($cs       ? (columnspan => $cs)                                : ()),
               ($rs       ? (rowspan    => $rs)                                : ()) },
