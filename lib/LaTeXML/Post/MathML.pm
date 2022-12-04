@@ -672,6 +672,8 @@ sub stylizeContent {
   my $href    = $istoken && ($attr{href}  || ($iselement && $item->getAttribute('href')));
   my $title   = $istoken && ($attr{title} || ($iselement && $item->getAttribute('title')));
 
+  my $text = (ref $item ? $item->textContent : $item);
+
   # Implied attributes, relevant for mo operators
   my $stretchy = ((defined $attr{stretchy} ? $attr{stretchy} : ($iselement && $item->getAttribute('stretchy')))
       || 'false') eq 'true';
@@ -679,10 +681,10 @@ sub stylizeContent {
   my $issep     = $role && ($role eq 'PUNCT');
   my $islargeop = $role && ($role =~ /^(SUMOP|INTOP)$/);
   my $ismoveop  = $role && ($role =~ /^(SUMOP|INTOP|BIGOP|LIMITOP)$/);    # Not DIFFOP
+  my $issymm    = $islargeop || (($text eq '/') && $stretchy);
   my $pos       = ($iselement && $item->getAttribute('scriptpos')) || 'post';
 
   # First figure out the actual text content to use; Adjust font, variant, class for styling
-  my $text = (ref $item ? $item->textContent : $item);
   if ((!defined $text) || ($text eq '')) {                                # Failsafe for empty tokens?
     if (my $default = $role && $default_token_content{$role}) {
       $text = $default; }
@@ -771,8 +773,8 @@ sub stylizeContent {
     (($isfence xor $props{fence})     ? (fence     => ($isfence ? 'true' : 'false'))   : ()),
     (($issep xor $props{separator})   ? (separator => ($issep ? 'true' : 'false'))     : ()),
     (($islargeop xor $props{largeop}) ? (largeop   => ($islargeop ? 'true' : 'false')) : ()),
-    ($islargeop                       ? (_largeop  => 1)      : ()),    # For needsMathStyle
-    ($islargeop && !$props{symmetric} ? (symmetric => 'true') : ()), # Not sure this is strictly correct...
+    ($islargeop                    ? (_largeop  => 1)      : ()), # For needsMathStyle
+    ($issymm && !$props{symmetric} ? (symmetric => 'true') : ()), # Not sure this is strictly correct...
         # If an operator has specifically located it's scripts, don't let mathml move them.
         # A bit non-optimal, as Firefox is rather more generous than OpDict with movablelimits
     ($ismoveop && (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS) ? (movablelimits => 'false') : ()),
