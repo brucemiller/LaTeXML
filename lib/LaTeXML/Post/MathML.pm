@@ -681,7 +681,7 @@ sub stylizeContent {
   my $issep     = $role && ($role eq 'PUNCT');
   my $islargeop = $role && ($role =~ /^(SUMOP|INTOP)$/);
   my $ismoveop  = $role && ($role =~ /^(SUMOP|INTOP|BIGOP|LIMITOP)$/);    # Not DIFFOP
-  my $issymm    = $islargeop || (($text eq '/') && $stretchy);
+  my $issymm    = $islargeop || ($text eq '/');                           # WANTS to be symmetric
   my $pos       = ($iselement && $item->getAttribute('scriptpos')) || 'post';
 
   # First figure out the actual text content to use; Adjust font, variant, class for styling
@@ -749,12 +749,12 @@ sub stylizeContent {
     # so we'll pretend that delimiters are still stretchy, but restrict size by minsize & maxsize
     # (Thanks Peter Krautzberger)
     # Really we should check the Operator Dictionary to see if it's expected to be symmetric
-    if ($size) {
-      if ($props{symmetric}) {    # and presumably also stretchy
+    if ($size) {    # if non-default size
+      if ($issymm || $props{symmetric}) {    # but should be symmetric?
         $stretchyhack = 1;
-        $stretchy     = 1; }      # so, pretend we asked for stretchy
+        $stretchy     = 1; }                 # so, pretend we asked for stretchy
       elsif ($tag eq 'm:mo') {
-        $stretchy = undef; } } }    # Conversely, if size specifically set, don't stretch it!
+        $stretchy = undef; } } }             # Conversely, if size specifically set, don't stretch it!
 
   return ($text,
     ($variant ? (mathvariant => $variant) : ()),
@@ -769,14 +769,15 @@ sub stylizeContent {
     ($href     ? (href           => $href)     : ()),
     ($title    ? (title          => $title)    : ()),
     # mo specific additions
-    (($stretchy xor $props{stretchy}) ? (stretchy  => ($stretchy ? 'true' : 'false'))  : ()),
-    (($isfence xor $props{fence})     ? (fence     => ($isfence ? 'true' : 'false'))   : ()),
-    (($issep xor $props{separator})   ? (separator => ($issep ? 'true' : 'false'))     : ()),
+    (($stretchy xor $props{stretchy}) ? (stretchy  => ($stretchy  ? 'true' : 'false')) : ()),
+    (($isfence xor $props{fence})     ? (fence     => ($isfence   ? 'true' : 'false')) : ()),
+    (($issep xor $props{separator})   ? (separator => ($issep     ? 'true' : 'false')) : ()),
     (($islargeop xor $props{largeop}) ? (largeop   => ($islargeop ? 'true' : 'false')) : ()),
-    ($islargeop                    ? (_largeop  => 1)      : ()), # For needsMathStyle
-    ($issymm && !$props{symmetric} ? (symmetric => 'true') : ()), # Not sure this is strictly correct...
-        # If an operator has specifically located it's scripts, don't let mathml move them.
-        # A bit non-optimal, as Firefox is rather more generous than OpDict with movablelimits
+    ($islargeop                       ? (_largeop  => 1) : ()),    # For needsMathStyle
+    ($issymm && !$props{symmetric} && ($stretchy || $props{stretchy})
+      ? (symmetric => 'true') : ()),
+    # If an operator has specifically located it's scripts, don't let mathml move them.
+    # A bit non-optimal, as Firefox is rather more generous than OpDict with movablelimits
     ($ismoveop && (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS) ? (movablelimits => 'false') : ()),
     # Store spacing for later spacing resolution
     (defined $props{lspace} ? (_lspace => $props{lspace}) : ()),
