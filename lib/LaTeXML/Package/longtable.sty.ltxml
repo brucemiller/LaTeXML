@@ -24,10 +24,15 @@ DefMacro('\longtable[]{}',
   '\@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
 DefMacro('\endlongtable',
   '\@finish@alignment\@end@tabular');
-DefMacro('\csname longtable*\endcsname []{}',
-  '\@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
-DefMacro('\csname endlongtable*\endcsname',
-  '\@finish@alignment\@end@tabular');
+# {longtable*} is not defined in longtable.sty
+# and if we're trying to mimic {tabular*},
+# then this needs \endcsname{Dimension}[]{}
+#DefMacro('\csname longtable*\endcsname []{}',
+#  '\@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
+#DefMacro('\csname endlongtable*\endcsname',
+#  '\@finish@alignment\@end@tabular');
+
+DefMacro('\@gobble@optional[]', Tokens());
 
 DefConstructor('\@@longtable [] Undigested DigestedBody',
   "<ltx:table xml:id='#id' inlist='lot' labels='#label'>"
@@ -37,7 +42,7 @@ DefConstructor('\@@longtable [] Undigested DigestedBody',
     . "#3"
     . "</ltx:table>",
   reversion    => '\begin{longtable}[#1]{#2}#3\end{longtable}',
-  beforeDigest => sub { $_[0]->bgroup; },
+  beforeDigest => sub { $_[0]->bgroup; Let('\pagebreak', '\@gobble@optional'); },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
     $whatsit->setProperties(%{ LookupValue('LONGTABLE_PROPERTIES') || {} });
