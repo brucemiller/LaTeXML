@@ -24,13 +24,11 @@ DefMacro('\longtable[]{}',
   '\@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
 DefMacro('\endlongtable',
   '\@finish@alignment\@end@tabular');
-# {longtable*} is not defined in longtable.sty
-# and if we're trying to mimic {tabular*},
-# then this needs \endcsname{Dimension}[]{}
-#DefMacro('\csname longtable*\endcsname []{}',
-#  '\@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
-#DefMacro('\csname endlongtable*\endcsname',
-#  '\@finish@alignment\@end@tabular');
+# {longtable*} is defined in revtex4-1 to be able to span a two column document
+DefMacro('\csname longtable*\endcsname []{}',
+  '\@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
+DefMacro('\csname endlongtable*\endcsname',
+  '\@finish@alignment\@end@tabular');
 
 DefMacro('\@gobble@optional[]', Tokens());
 
