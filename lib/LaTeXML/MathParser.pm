@@ -1006,7 +1006,11 @@ sub is_genuinely_unparsed {
   elsif (($tag eq 'ltx:XMTok') || ($tag eq 'ltx:XMText') || ($tag eq 'ltx:XMHint')) {
     return 0; }
   elsif ($tag eq 'ltx:XMRef') {
-    return is_genuinely_unparsed(realizeXMNode($node), $document); }
+    # avoid infinite loops on malformed XMRefs that don't point anywhere
+    if (!$node->getAttribute('idref')) {
+      return 1; }
+    else {
+      return is_genuinely_unparsed(realizeXMNode($node), $document); } }
   elsif ($tag eq 'ltx:XMDual') {
     my ($content, $presentation) = element_nodes($node);
     return is_genuinely_unparsed($content, $document); }
