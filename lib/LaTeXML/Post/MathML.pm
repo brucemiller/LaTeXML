@@ -730,14 +730,14 @@ sub stylizeContent {
     else {
       $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $role : '?');
       $color = 'red'; } }
-  elsif ($role eq 'ADDOP' and $text eq '-') {    # MathML Core prefers unicode minus
+  elsif ($role and ($role eq 'ADDOP') and $text eq '-') {    # MathML Core prefers unicode minus
     $text = "\x{2212}"; }
   if ($opacity) {
     $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "opacity:$opacity"; }
   if ($font && !$variant) {
     Warn('unexpected', $font, undef, "Unrecognized font variant '$font'"); $variant = ''; }
   # Special case for single char identifiers?
-  if (($tag eq 'm:mi') && ($text =~ /^.$/)) {    # Single char in mi? (what about m:ci?)
+  if (($tag eq 'm:mi') && ($text =~ /^.$/)) {                # Single char in mi? (what about m:ci?)
     if    ($variant eq 'italic') { $variant = undef; }         # Defaults to italic
     elsif (!$variant)            { $variant = 'normal'; } }    # must say so explicitly.
 
