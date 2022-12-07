@@ -19,6 +19,13 @@ use LaTeXML::Core::Token qw(T_CS);
 use Time::HiRes;
 use Term::ANSIColor qw(colored colorstrip);
 
+my $IS_WINDOWS;
+
+BEGIN {
+  $IS_WINDOWS = $^O eq 'MSWin32';
+  require Win32::Console if $IS_WINDOWS;
+}
+
 use base qw(Exporter);
 our @EXPORT = (
   qw(&SetVerbosity),
@@ -71,7 +78,7 @@ sub UseSTDERR {
     *STDERR->autoflush();
 
     # Win32 console handling
-    if ($IS_TERMINAL && eval { require Win32::Console; }) {
+    if ($IS_WINDOWS && $IS_TERMINAL) {
       # set utf-8 codepage
       # CP_UTF8 = 65001
       Win32::Console::OutputCP(65001);

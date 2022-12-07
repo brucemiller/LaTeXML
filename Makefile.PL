@@ -74,6 +74,11 @@ WriteMakefile(NAME => 'LaTeXML',
     'Time::HiRes'       => 0,
     'URI'               => 0,
     'version'           => 0,
+    # Windows terminal handling (see Common::Error)
+    ($^O eq 'MSWin32'
+      ? ('Win32::Console' => 0,
+        'Win32::Console::ANSI' => 0)
+      : ()),
     # If we have an "old" version of XML::LibXML,
     # we also need XPathContext.
     # But we can't determine that additional dependence
