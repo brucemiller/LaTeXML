@@ -188,7 +188,9 @@ DefMacro('\evaluated', sub {
           phys_revArg(I_arg(1), $open, $close),
           ($lower ? (T_SUB,   phys_revArg(I_arg(2))) : ()),
           ($upper ? (T_SUPER, phys_revArg(I_arg(3))) : ())) },
-      I_apply({}, I_symbol({ meaning => 'evaluated-at' }), I_arg(1), I_arg(2), I_arg(3)),
+      I_apply({}, I_symbol({ meaning => 'evaluated-at' }), I_arg(1),
+        ($lower ? (I_arg(2)) : ()),
+        ($upper ? (I_arg(3)) : ())),
       Tokens(I_wrap({}, phys_open($size, $open || T_OTHER('.')),
           I_arg(1), phys_close($size, $close || $c)),
         ($lower ? (T_SUB,   I_arg(2)) : ()),
@@ -424,8 +426,8 @@ DefMacro('\lx@physics@deriv{}{}{}', sub {
     $expr = undef if $expr && !scalar($expr->unlist);
     my $cfunc = I_symbol({ meaning => $semantic });
     my $pfunc = I_wrap({ role => 'DIFFOP' }, $diff);
-    if ($tmp3) {                                                  # double derivative!
-                                                                  # power is IGNORED!
+    if ($tmp3) {    # double derivative!
+                    # power is IGNORED!
 ##      my $op = I_apply({}, I_apply({}, $cfunc, I_arg(2)), I_apply({}, $cfunc, I_arg(3)));
       my $op = I_apply({}, $cfunc, I_arg(2), T_OTHER('1'), I_arg(3), T_OTHER('1'));
       return I_dual(
