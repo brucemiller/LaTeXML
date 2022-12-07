@@ -6238,6 +6238,8 @@ DefMacro('\DeclareDefaultHookRule{}{}{}', '');
 DefMacro('\ClearHookRule{}{}{}',          '');
 DefMacro('\IfHookEmptyTF{}{}{}',          '#3');
 DefMacro('\IfHookExistsTF{}{}{}',         '#3');
+DefMacro('\MakeTextLowercase',            '\lowercase');
+DefMacro('\MakeTextUppercase',            '\uppercase');
 
 DefConditional('\if@includeinrelease');
 Let('\@kernel@after@enddocument',               '\@empty');
