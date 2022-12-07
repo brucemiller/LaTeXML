@@ -102,6 +102,11 @@ sub beginEnumItemize {
   }
   if (my $label = $$hash{ref}) {
     my $llabel = replace_star($label, T_OTHER($usecounter));
+    # This is a Hotfix.
+    # DG: what is the correct general implementation here?
+    # if $llabel contains "\the$usecounter", expand it, to avoid the inf. loop.
+    if (ToString($llabel) =~ "\Q\\the$usecounter\E") {
+      $llabel = Expand($llabel); }
     DefMacroI('\the' . $usecounter, undef, $llabel); }
   if (my $font = $$hash{font} || $$hash{format}) {
     DefMacroI('\fnum@font@' . $usecounter, undef, $font); }
