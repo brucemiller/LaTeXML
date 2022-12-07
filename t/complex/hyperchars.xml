@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="xcolor"?>
+<?latexml package="hyperref"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>Here is a <ref class="ltx_href" href="https://bg.wikipedia.org/wiki/%D0%A1%D0%B8%D0%BD%D1%82%D0%B0%D0%BA%D1%81%D0%B8%D1%81">cyrillic url</ref>
+which tests neutralized percent chars and argument expansion.</p>
+  </para>
+  <para xml:id="p2">
+    <p><ref class="ltx_href" href="https://example.com/~~test\%#foo&amp;a=1&amp;b=$$">example URL with special chars</ref>.</p>
+  </para>
+</document>
