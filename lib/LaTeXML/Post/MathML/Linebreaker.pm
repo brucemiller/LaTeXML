@@ -1016,12 +1016,12 @@ sub asScripts {
 sub layout_msub {
   my ($node, $target, $level, $demerits) = @_;
   my ($base, $sub) = nodeChildren($node);
-  return asScripts($node, $target, $level, $demerits, 0, $base, $sub, ['m:none']); }
+  return asScripts($node, $target, $level, $demerits, 0, $base, $sub, ['m:mrow']); }
 
 sub layout_msup {
   my ($node, $target, $level, $demerits) = @_;
   my ($base, $sup) = nodeChildren($node);
-  return asScripts($node, $target, $level, $demerits, 0, $base, ['m:none'], $sup); }
+  return asScripts($node, $target, $level, $demerits, 0, $base, ['m:mrow'], $sup); }
 
 sub layout_msubsup {
   my ($node, $target, $level, $demerits) = @_;
@@ -1031,12 +1031,12 @@ sub layout_msubsup {
 sub layout_munder {
   my ($node, $target, $level, $demerits) = @_;
   my ($base, $sub) = nodeChildren($node);
-  return asScripts($node, $target, $level, $demerits, 1, $base, $sub, ['m:none']); }
+  return asScripts($node, $target, $level, $demerits, 1, $base, $sub, ['m:mrow']); }
 
 sub layout_mover {
   my ($node, $target, $level, $demerits) = @_;
   my ($base, $sup) = nodeChildren($node);
-  return asScripts($node, $target, $level, $demerits, 1, $base, ['m:none'], $sup); }
+  return asScripts($node, $target, $level, $demerits, 1, $base, ['m:mrow'], $sup); }
 
 sub layout_munderover {
   my ($node, $target, $level, $demerits) = @_;
