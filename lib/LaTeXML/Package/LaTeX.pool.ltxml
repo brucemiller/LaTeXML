@@ -5142,15 +5142,15 @@ Tag('ltx:g', afterClose => sub {
 #======================================================================
 # Text styles.
 
-DefMacroI('\rmdefault',       undef, 'cmr');
-DefMacroI('\sfdefault',       undef, 'cmss');
-DefMacroI('\ttdefault',       undef, 'cmtt');
-DefMacroI('\bfdefault',       undef, 'bx');
-DefMacroI('\mddefault',       undef, 'm');
-DefMacroI('\itdefault',       undef, 'it');
-DefMacroI('\sldefault',       undef, 'sl');
-DefMacroI('\scdefault',       undef, 'sc');
-DefMacroI('\updefault',       undef, 'n');
+DefMacroI('\rmdefault',       undef, 'cmr',  locked => 1);
+DefMacroI('\sfdefault',       undef, 'cmss', locked => 1);
+DefMacroI('\ttdefault',       undef, 'cmtt', locked => 1);
+DefMacroI('\bfdefault',       undef, 'bx',   locked => 1);
+DefMacroI('\mddefault',       undef, 'm',    locked => 1);
+DefMacroI('\itdefault',       undef, 'it',   locked => 1);
+DefMacroI('\sldefault',       undef, 'sl',   locked => 1);
+DefMacroI('\scdefault',       undef, 'sc',   locked => 1);
+DefMacroI('\updefault',       undef, 'n',    locked => 1);
 DefMacroI('\encodingdefault', undef, 'OT1');
 DefMacroI('\familydefault',   undef, '\rmdefault');
 DefMacroI('\seriesdefault',   undef, '\mddefault');
