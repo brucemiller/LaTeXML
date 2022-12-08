@@ -49,7 +49,7 @@ DefEnvironment('{keywords}', '',
   afterDigest => sub {
     my $frontmatter = LookupValue('frontmatter');
     push(@{ $$frontmatter{'ltx:classification'} },
-      ['ltx:classification', { scheme => 'keywords' }, @LaTeXML::LIST]);
+      ['ltx:classification', 1, { scheme => 'keywords' }, @LaTeXML::LIST]);
     return; });
 DefMacro('\nokeywords', Tokens());
 

@@ -1199,8 +1199,11 @@ DefMacro('\@add@conversion@date', '\@add@frontmatter{ltx:date}[role=creation]{\t
 
 # Doesn't produce anything (we're already inserting frontmatter),
 # But, it does make the various frontmatter macros into no-ops.
+# For nested support (e.g. t/structure/authors) the actual macros for frontmatter
+# remain untouched.
 DefMacroI('\maketitle', undef,
   '\@startsection@hook'
+    . '\@digest@frontmatter'
     . '\global\let\thanks\relax'
     . '\global\let\maketitle\relax'
     . '\global\let\@maketitle\relax'
@@ -1247,7 +1250,7 @@ DefEnvironment('{abstract}', '',
   afterDigest => sub {
     my $frontmatter = LookupValue('frontmatter');
     push(@{ $$frontmatter{'ltx:abstract'} },
-      ['ltx:abstract',
+      ['ltx:abstract', 1, 
         { name => Digest(Tokens(T_CS('\format@title@abstract'),
               T_BEGIN, T_CS('\abstractname'), T_END)) },
         @LaTeXML::LIST]);

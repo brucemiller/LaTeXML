@@ -134,7 +134,7 @@ DefMacro('\kwd[]{}',    '\@add@frontmatter{ltx:keywords}{#2, }');
 sub after_digest_keywords {
   my $frontmatter = LookupValue('frontmatter');
   push(@{ $$frontmatter{'ltx:classification'} },
-    ['ltx:classification', { scheme => 'keywords' }, @LaTeXML::LIST]);
+    ['ltx:classification', 1, { scheme => 'keywords' }, @LaTeXML::LIST]);
   return; }
 DefEnvironment('{keyword}',  '', afterDigest => \&after_digest_keywords);
 DefEnvironment('{keywords}', '', afterDigest => \&after_digest_keywords);

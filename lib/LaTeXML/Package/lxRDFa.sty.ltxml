@@ -188,7 +188,7 @@ DefPrimitive('\lxRDF@preamble[]RequiredKeyVals:RDFa', sub {
     AssignValue(inPreamble => 0);
     my $attr = RDFTriple($kv);    # require complete triple, here.
     push(@{ LookupValue('frontmatter')->{'ltx:rdf'} },
-      ['ltx:rdf', { map { ($_ => ToString($$attr{$_})) } keys %$attr },
+      ['ltx:rdf', 1, { map { ($_ => ToString($$attr{$_})) } keys %$attr },
         ($content ? (Digest(Tokens(T_BEGIN, $content, T_END))) : ())]);
     AssignValue(inPreamble => $inpreamble);
     return; });
