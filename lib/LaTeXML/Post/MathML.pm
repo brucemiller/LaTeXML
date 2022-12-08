@@ -16,6 +16,7 @@ use warnings;
 use LaTeXML::Common::XML;
 use LaTeXML::Util::Unicode;
 use LaTeXML::Post;
+use LaTeXML::Common::Font;
 use List::Util qw(max);
 use base qw(LaTeXML::Post::MathProcessor);
 use base qw(Exporter);
@@ -28,6 +29,7 @@ our @EXPORT = (
   qw( &cmml &cmml_share &cmml_shared &cmml_leaf
     &cmml_or_compose &cmml_synth_not &cmml_synth_complement),
 );
+use LaTeXML::Post::MathML::OperatorDictionary;
 require LaTeXML::Post::MathML::Presentation;
 require LaTeXML::Post::MathML::Content;
 
@@ -281,7 +283,9 @@ sub pmml_top {
   local $LaTeXML::MathML::OPACITY      = find_inherited_attribute($node, 'opacity');
   local $LaTeXML::MathML::DESIRED_SIZE = $LaTeXML::MathML::SIZE;
   my @result = map { pmml($_) } element_nodes($node);
-  return (scalar(@result) > 1 ? ['m:mrow', {}, @result] : $result[0]); }
+  my $result = scalar(@result) > 1 ? ['m:mrow', {}, @result] : $result[0];
+  $self->adjust_spacing($result);    # Resolve spacing TeX vs MathML
+  return $result; }
 
 sub find_inherited_attribute {
   my ($node, $attribute) = @_;
@@ -329,32 +333,23 @@ sub pmml {
   my $result = pmml_internal($node);
   # Let customization annotate the result.
   # Now possibly wrap the result in a row, enclose, etc, if needed
-  my $e = _getattr($refr, $node, 'enclose');
-  # these should COMBINE!
-  my $l  = _getspace($refr, $node, 'lpadding');
-  my $r  = _getspace($refr, $node, 'rpadding');
+  my $e  = _getattr($refr, $node, 'enclose');
   my $cl = join(' ', grep { $_ } $refr && $refr->getAttribute('class'), $node->getAttribute('class'));
   # Wrap in an enclose, if there's an enclose attribute (Ugh!)
   $result = ['m:menclose', { notation => $e }, $result] if $e;
-  # Add spacing last; outside parens & enclosing (?)
-  if (!(((ref $result) eq 'ARRAY') && ($$result[0] eq 'm:mo'))  # mo will already have gotten spacing!
-    && ($r || $l)) {
-    # If only lpadding given, we'll try to find an inner m:mo to accept it (so it will take effect)
-    my $inner = $result;
-    while (($$inner[0] eq 'm:mrow') && $$inner[2] && ref $$inner[2]) {
-      $inner = $$inner[2]; }
-    if (!$r && $inner && ($$inner[0] eq 'm:mo')) {
-      my $ls = $l && max(0, 1.6 + $l);      # must be \ge 0
-      $$inner[1]{lspace} = $ls . 'pt'; }    # Found inner op: use simple lspace
-    else {                                  # Else fall back to wrap with m:mpadded
-      my $w = ($l && $r ? $l + $r : ($l ? $l : $r));
-      $result = ['m:mpadded', { ($l ? (lspace => $l . "pt") : ()),
-          ($w ? (width => ($w =~ /^-/ ? $w : '+' . $w) . "pt") : ()) }, $result]; } }
+  # Add spacing last; outside parens & enclosing (?) But defer until spacing resolution
+  if (ref $result eq 'ARRAY') {
+    my $l = _getspace($refr, $node, 'lpadding');
+    my $r = _getspace($refr, $node, 'rpadding');
+    $$result[1]{_lpadding} = $l if $l;
+    $$result[1]{_rpadding} = $r if $r; }
 
   if ($cl && ((ref $result) eq 'ARRAY')) {    # Add classs, if any and different
     my $ocl = $$result[1]{class};
     $$result[1]{class} = (!$ocl || ($ocl eq $cl) ? $cl : "$ocl $cl"); }
   # Associate the generated node with the source XMath node.
+  if (my $role = _getattr($refr, $node, 'role')) {
+    $$result[1]{_role} = $role; }
   $LaTeXML::Post::MATHPROCESSOR->associateNode($result, $node);
   return $result; }
 
@@ -378,14 +373,15 @@ sub _getspace {
     + ($nodespace ? getXMHintSpacing($nodespace) : 0); }
 
 # Needs to be a utility somewhere...
+# Return in em !!
 sub getXMHintSpacing {
   my ($width) = @_;
-  if ($width && ($width =~ /^([\d\.\+\-]+)(pt|mu)(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/)) {
-    return ($2 eq 'mu' ? $1 / 1.8 : $1); }
+  if ($width && ($width =~ /^([\d\.\+\-]+)(pt|mu|em)(\s+plus\s+[\d\.]+pt)?(\s+minus\s+[\d\.]+pt)?$/)) {
+    return ($2 eq 'em' ? $1 : ($2 eq 'mu' ? $1 / 18.0 : $1 / 10.0)); }    # Assuming 10pt font!!!!
   else {
     return 0; } }
 
-my $NBSP = pack('U', 0xA0);    # CONSTANT
+my $NBSP = pack('U', 0xA0);                                               # CONSTANT
 
 sub pmml_internal {
   my ($node) = @_;
@@ -400,7 +396,7 @@ sub pmml_internal {
     my ($content, $presentation) = element_nodes($node);
     return pmml($presentation); }
   elsif (($tag eq 'ltx:XMWrap') || ($tag eq 'ltx:XMArg')) {      # Only present if parsing failed!
-    return pmml_mayberesize($node, pmml_row(map { pmml($_) } element_nodes($node))); }
+    return pmml_maybe_resize($node, pmml_row(map { pmml($_) } element_nodes($node))); }
   elsif ($tag eq 'ltx:XMApp') {
     my ($op, @args) = element_nodes($node);
     if (!$op) {
@@ -420,7 +416,7 @@ sub pmml_internal {
         = ($style && $stylestep{$style} ? $style : $LaTeXML::MathML::STYLE);
       my $result = &{ lookupPresenter('Apply', getOperatorRole($rop), $rop->getAttribute('meaning'))
       }($op, @args);
-      $result = pmml_mayberesize($node, $result);
+      $result = pmml_maybe_resize($node, $result);
       my $needsmathstyle = needsMathstyle($result);
       my %styleattr      = %{ ($style && ($needsmathstyle
             ? $stylemap{$ostyle}{$style}
@@ -469,7 +465,8 @@ sub pmml_internal {
         if ($rs || $cs) {                            # Note following cells to be omitted from MathML
           for (my $i = 0 ; $i < ($cs || 1) ; $i++) {
             $spanned[$nc - 1 + $i] = ($rs || 1); } }
-        push(@cols, ['m:mtd', { ($a ? (columnalign => $a) : ()),
+        push(@cols, ['m:mtd', { ($a && ($a ne 'center')
+                ? (columnalign => $a, class => 'ltx_align_' . $a) : ()),
               ($c || $cl ? (class      => ($c && $cl ? "$c $cl" : $c || $cl)) : ()),
               ($cs       ? (columnspan => $cs)                                : ()),
               ($rs       ? (rowspan    => $rs)                                : ()) },
@@ -490,7 +487,7 @@ sub pmml_internal {
           ? $stylemap{$ostyle}{$style}
           : $stylemap2{$ostyle}{$style})) || {} };
     $result = ['m:mstyle', {%styleattr}, $result] if keys %styleattr;
-    $result = pmml_mayberesize($node, $result);
+    $result = pmml_maybe_resize($node, $result);
     return $result; }
   elsif ($tag eq 'ltx:XMText') {
     my @c = $node->childNodes;
@@ -499,7 +496,7 @@ sub pmml_internal {
       $result = pmml_row(map { pmml_text_aux($_) } @c); }
     else {
       $result = ['m:mtext', {}, $self->convertXMTextContent($doc, 1, @c)]; }
-    return pmml_mayberesize($node, $result); }
+    return pmml_maybe_resize($node, $result); }
   elsif ($tag eq 'ltx:ERROR') {
     my $cl = $node->getAttribute('class');
     return ['m:merror', { class => join(' ', grep { $_ } 'ltx_ERROR', $cl) },
@@ -515,14 +512,14 @@ sub needsMathstyle {
   if (ref $node eq 'ARRAY') {
     my ($tag, $attr, @children) = @$node;
     return 1 if $tag eq 'm:mfrac';
-    return 1 if $$attr{largeop};
+    return 1 if $$attr{_largeop};
     return 0 if ($tag eq 'm:mstyle') && defined $$attr{displaystyle};
     return 1 if grep { needsMathstyle($_) } @children; }
   return; }
 
 # Use mpadded instead of mrow if size has been given
 # And maybe this is a convenient place to deal with frames?
-sub pmml_mayberesize {
+sub pmml_maybe_resize {
   my ($node, $result) = @_;
   return $result unless ref $node;
   my $parent;
@@ -616,8 +613,10 @@ sub pmml_infix {
   $op = realize($op) if ref $op;
   return ['m:mrow', {}] unless $op && @args;    # ??
   my @items = ();
-  if (scalar(@args) == 1) {                     # Infix with 1 arg is presumably Prefix!
-    push(@items, (ref $op ? pmml($op) : pmml_mo($op)), pmml($args[0])); }
+  if (scalar(@args) == 1) {    # Infix with 1 arg is presumably Prefix! (aka Operator)
+    push(@items,
+      (ref $op && (getQName($op) ne 'ltx:XMTok') ? pmml($op) : pmml_mo($op, role => 'OPERATOR')),
+      pmml($args[0])); }
   else {
     ## push(@items, pmml(shift(@args)));
     # Experiment at flattening?
@@ -634,29 +633,6 @@ sub pmml_infix {
       push(@items, pmml(shift(@args))); } }
   return pmml_row(@items); }
 
-my %symmetric_roles = (OPEN => 1, CLOSE => 1, MIDDLE => 1, VERTBAR => 1);
-# operator content that's stretchy by default [fill-in from operator dictionary!]
-# [ grep stretchy ~/src/firefox/res/fonts/mathfont.properties | cut -d . -f 2 ]
-my %normally_stretchy = map { $_ => 1 }
-  ("(", ")", "[", "]", "{", "}",
-  "\x{27E8}", "\x{2308}", "\x{27E6}", "\x{230A}", "\x{27E9}", "\x{2309}", "\x{27E7}", "\x{230B}",
-  "\x{2500}", "\x{007C}", "\x{2758}", "\x{21D2}", "\x{2A54}", "\x{2A53}", "\x{21D0}", "\x{21D4}",
-  "\x{2950}", "\x{295E}", "\x{21BD}", "\x{2956}", "\x{295F}", "\x{21C1}", "\x{2957}", "\x{2190}",
-  "\x{21E4}", "\x{21C6}", "\x{2194}", "\x{294E}", "\x{21A4}", "\x{295A}", "\x{21BC}", "\x{2952}",
-  "\x{2199}", "\x{2198}", "\x{2192}", "\x{21E5}", "\x{21C4}", "\x{21A6}", "\x{295B}", "\x{21C0}",
-  "\x{2953}", "\x{2196}", "\x{2197}", "\x{2225}", "\x{2016}", "\x{21CC}", "\x{21CB}", "\x{2223}",
-  "\x{2294}", "\x{22C3}", "\x{228E}", "\x{22C2}", "\x{2293}", "\x{22C1}", "\x{2211}", "\x{22C3}",
-  "\x{228E}", "\x{2A04}", "\x{2A06}", "\x{2232}", "\x{222E}", "\x{2233}", "\x{222F}", "\x{222B}",
-  "\x{22C0}", "\x{2210}", "\x{220F}", "\x{22C2}", "\x{2216}", "\x{221A}", "\x{21D3}",
-  "\x{27F8}", "\x{27FA}", "\x{27F9}", "\x{21D1}", "\x{21D5}", "\x{2193}", "\x{2913}", "\x{21F5}",
-  "\x{21A7}", "\x{2961}", "\x{21C3}", "\x{2959}", "\x{2951}", "\x{2960}", "\x{21BF}", "\x{2958}",
-  "\x{27F5}", "\x{27F7}", "\x{27F6}", "\x{296F}", "\x{295D}", "\x{21C2}", "\x{2955}", "\x{294F}",
-  "\x{295C}", "\x{21BE}", "\x{2954}", "\x{2191}", "\x{2912}", "\x{21C5}", "\x{2195}", "\x{296E}",
-  "\x{21A5}", "\x{02DC}", "\x{02C7}", "\x{005E}", "\x{00AF}", "\x{23DE}", "\x{FE37}", "\x{23B4}",
-  "\x{23DC}", "\x{FE35}", "\x{0332}", "\x{23DF}", "\x{FE38}", "\x{23B5}", "\x{23DD}", "\x{FE36}",
-  "\x{2225}", "\x{2225}", "\x{2016}", "\x{2016}", "\x{2223}", "\x{2223}", "\x{007C}", "\x{007C}",
-  "\x{20D7}", "\x{20D6}", "\x{20E1}", "\x{20D1}", "\x{20D0}", "\x{21A9}", "\x{21AA}", "\x{23B0}",
-  "\x{23B1}");
 my %default_token_content = (
   MULOP => "\x{2062}", ADDOP => "\x{2064}", PUNCT => "\x{2063}");
 
@@ -670,89 +646,59 @@ my %plane1hackable = (    # CONSTANT
 
 # Given an item (string or token element w/attributes) and latexml attributes,
 # convert the string to the appropriate unicode (possibly plane1)
-# & MathML presentation attributes (mathvariant, mathsize, mathcolor, stretchy)
+# & MathML presentation attributes (mathvariant, mathsize, mathcolor, stretchy, ....).
+# Attempt to only add MathML attributes that are different from the defaults (eg. OperatorDictionary for m:mo)
 # $tag specifies the element that these attributes will apply to (some attributes disallowed)
+# The argument %attr overrides the corresponding attributes on $item (if it's an element)
 sub stylizeContent {
   my ($item, $tag, %attr) = @_;
-  my $iselement = (ref $item) eq 'XML::LibXML::Element';
-  my $role      = ($iselement ? $item->getAttribute('role') : 'ID');
-  my $font      = ($iselement ? $item->getAttribute('font') : $attr{font})
+  # Get the basic attributes
+  my $iselement = (ref $item) eq 'XML::LibXML::Element';    # Item can be string or even Text node.
+  my $role      = $attr{role} || ($iselement && $item->getAttribute('role'));
+  my $font      = $attr{font} || ($iselement && $item->getAttribute('font'))
     || $LaTeXML::MathML::FONT;
-  my $size = ($iselement ? $item->getAttribute('fontsize') : $attr{fontsize})
+  my $size = $attr{fontsize} || ($iselement && $item->getAttribute('fontsize'))
     || $LaTeXML::MathML::DESIRED_SIZE;
-  my $color = ($iselement ? $item->getAttribute('color') : $attr{color})
+  my $color = $attr{color} || ($iselement && $item->getAttribute('color'))
     || $LaTeXML::MathML::COLOR;
-  my $bgcolor = ($iselement ? $item->getAttribute('backgroundcolor') : $attr{backgroundcolor})
+  my $bgcolor = $attr{backgroundcolor} && ($iselement && $item->getAttribute('backgroundcolor'))
     || $LaTeXML::MathML::BGCOLOR;
-  my $opacity = ($iselement ? $item->getAttribute('opacity') : $attr{opacity})
+  my $opacity = $attr{opacity} || ($iselement && $item->getAttribute('opacity'))
     || $LaTeXML::MathML::OPACITY;
-  my $class    = ($iselement ? $item->getAttribute('class')    : $attr{class});
-  my $cssstyle = ($iselement ? $item->getAttribute('cssstyle') : $attr{ccsstyle});
-  my $text     = (ref $item  ? $item->textContent              : $item);
-  my $variant  = ($font      ? unicode_mathvariant($font)      : '');
-  my $stretchy = ($iselement ? $item->getAttribute('stretchy') : $attr{stretchy});
-  $stretchy = undef if ($tag ne 'm:mo');                    # Only allowed on m:mo!
-  $size     = undef if ($stretchy || 'false') eq 'true';    # Ignore size, if we're stretching.
+  my $class = join(' ', grep { $_; } $attr{class}, ($iselement && $item->getAttribute('class')));
+  my $cssstyle = join('; ', grep { $_; } $attr{ccsstyle}, ($iselement && $item->getAttribute('cssstyle')));
+  my $variant = ($font ? unicode_mathvariant($font) : '');
+  my $istoken = $tag =~ /^m:(?:mi|mo|mn)$/;                  # mrow? well, no....
+  my $href    = $istoken && ($attr{href}  || ($iselement && $item->getAttribute('href')));
+  my $title   = $istoken && ($attr{title} || ($iselement && $item->getAttribute('title')));
 
-  my $stretchyhack = undef;
+  my $text = (ref $item ? $item->textContent : $item);
 
-  if ($text =~ /^[\x{2061}\x{2062}\x{2063}]*$/) {           # invisible get no size or stretchiness
-    $stretchy = $size = undef; }
-  if ($size) {
-    if ($size eq ($LaTeXML::MathML::SIZE || 'text')) {      # If default size, no need to mention.
-      $size = undef; }
-    # If requested relative size, and in script or scriptscript, we'll need to adjust the size
-    elsif (($size =~ /%$/) && ($LaTeXML::MathML::STYLE and $LaTeXML::MathML::STYLE =~ /script/)) {
-      my $req = $size;                               $req =~ s/%$//;
-      my $ex  = $stylesize{$LaTeXML::MathML::STYLE}; $ex  =~ s/%$//;
-      $size = int(100 * $req / $ex) . '%'; }
-    # Note that symmetric is only allowed when stretchy, which looks crappy for specific sizes
-    # so we'll pretend that delimiters are still stretchy, but restrict size by minsize & maxsize
-    # (Thanks Peter Krautzberger)
-    # Really we should check the Operator Dictionary to see if it's expected to be symmetric
-    if ($size) {
-      if ($role && $symmetric_roles{$role}) {
-        $stretchyhack = 1;
-        $stretchy     = undef; }
-      elsif ($tag eq 'm:mo') {
-        $stretchy = 'false'; } } }    # Conversely, if size specifically set, don't stretch it!
-  elsif ($normally_stretchy{$text}) {    # Else, if this would normally be stretchy
-    if ($stretchy && ($stretchy eq 'true')) {
-      $stretchy = undef; }               # Don't need to say this explicitly
-    else {
-      $stretchy = 'false'; } }           # or need to explicitly disable it.
-  elsif ($stretchy && ($stretchy eq 'false')) {
-    $stretchy = undef; }                 # Otherwise, doesn't need to be said at all.
+  # Implied attributes, relevant for mo operators
+  my $stretchy = ((defined $attr{stretchy} ? $attr{stretchy} : ($iselement && $item->getAttribute('stretchy')))
+      || 'false') eq 'true';
+  my $isfence   = $role && ($role =~ /^(OPEN|CLOSE|MIDDLE)$/);
+  my $issep     = $role && ($role eq 'PUNCT');
+  my $islargeop = $role && ($role =~ /^(SUMOP|INTOP)$/);
+  my $ismoveop  = $role && ($role =~ /^(SUMOP|INTOP|BIGOP|LIMITOP)$/);    # Not DIFFOP
+  my $issymm    = $islargeop || ($text eq '/');                           # WANTS to be symmetric
+  my $pos       = ($iselement && $item->getAttribute('scriptpos')) || 'post';
 
-  if ((!defined $text) || ($text eq '')) {    # Failsafe for empty tokens?
+  # First figure out the actual text content to use; Adjust font, variant, class for styling
+  if ((!defined $text) || ($text eq '')) {                                # Failsafe for empty tokens?
     if (my $default = $role && $default_token_content{$role}) {
       $text = $default; }
     else {
       $text = ($iselement ? $item->getAttribute('name') || $item->getAttribute('meaning') || $role : '?');
       $color = 'red'; } }
-  elsif ($role and ($role eq 'ADDOP') and $text eq '-') {    # MathML Core prefers unicode minus
+  elsif (($text eq '-') && $role && (($role eq 'ADDOP') || ($role eq 'OPERATOR'))) { # MathML Core prefers unicode minus
     $text = "\x{2212}"; }
-  if ($opacity) {
-    $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "opacity:$opacity"; }
-  if ($font && !$variant) {
-    Warn('unexpected', $font, undef, "Unrecognized font variant '$font'"); $variant = ''; }
   # Special case for single char identifiers?
-  if (($tag eq 'm:mi') && ($text =~ /^.$/)) {                # Single char in mi? (what about m:ci?)
+  if (($tag eq 'm:mi') && ($text =~ /^.$/)) {    # Single char in mi? (what about m:ci?)
     if    ($variant eq 'italic') { $variant = undef; }         # Defaults to italic
     elsif (!$variant)            { $variant = 'normal'; } }    # must say so explicitly.
-
-  # Use class (css) to patchup some weak translations
-  if    (!$font) { }
-  elsif ($font =~ /caligraphic/) {
-    # Note that this is unlikely to have effect when plane1 chars are used!
-    $class = ($class ? $class . ' ' : '') . 'ltx_font_mathcaligraphic'; }
-  elsif ($font =~ /script/) {
-    $class = ($class ? $class . ' ' : '') . 'ltx_font_mathscript'; }
-  elsif (($font =~ /fraktur/) && ($text =~ /^[\+\-\d\.]*$/)) {    # fraktur number?
-    $class = ($class ? $class . ' ' : '') . 'ltx_font_oldstyle'; }
-  elsif ($font =~ /smallcaps/) {
-    $class = ($class ? $class . ' ' : '') . 'ltx_font_smallcaps'; }
-
+  elsif ($font && !$variant) {
+    Warn('unexpected', $font, undef, "Unrecognized font variant '$font'"); $variant = ''; }
   # Should we map to Unicode's Plane 1 blocks for Mathematical Alphanumeric Symbols?
   # Only upper & lower case latin & greek, and also numerals can be mapped.
   # For each mathvariant, and for each of those 5 groups, there is a linear mapping,
@@ -768,10 +714,48 @@ sub stylizeContent {
     $text    = $u_text;
     $variant = ($plane1hack && ($variant ne $u_variant) && ($variant =~ /^bold/)
       ? 'bold' : undef); }                       # Possibly keep variant bold
-                                                 # Other attributes that should be copied?
-  my $istoken = $tag =~ /^m:(?:mi|mo|mn)$/;      # mrow?
-  my $href    = $istoken && ($iselement ? $item->getAttribute('href')  : $attr{href});
-  my $title   = $istoken && ($iselement ? $item->getAttribute('title') : $attr{title});
+                                                 # Use class (css) to patchup some weak translations
+  if    (!$font) { }
+  elsif ($font =~ /caligraphic/) {
+    # Note that this is unlikely to have effect when plane1 chars are used!
+    $class = ($class ? $class . ' ' : '') . 'ltx_font_mathcaligraphic'; }
+  elsif ($font =~ /script/) {
+    $class = ($class ? $class . ' ' : '') . 'ltx_font_mathscript'; }
+  elsif (($font =~ /fraktur/) && ($text =~ /^[\+\-\d\.]*$/)) {    # fraktur number?
+    $class = ($class ? $class . ' ' : '') . 'ltx_font_oldstyle'; }
+  elsif ($font =~ /smallcaps/) {
+    $class = ($class ? $class . ' ' : '') . 'ltx_font_smallcaps'; }
+  if ($opacity) {
+    $cssstyle = ($cssstyle ? $cssstyle . ';' : '') . "opacity:$opacity"; }
+
+  # Now, look up any OperatorDictionary properties
+  my %props = ($tag eq 'm:mo' ? opdict_lookup($text, $role) : ());
+
+  # Resolve stretch & size
+  $stretchy = undef if ($tag ne 'm:mo');                          # Only allowed on m:mo!
+  $size     = undef if $stretchy;                                 # Ignore size, if we're stretching.
+  my $stretchyhack = undef;
+  if ($text =~ /^[\x{2061}\x{2062}\x{2063}]*$/) {    # invisible get no size or stretchiness
+    $stretchy = $size = undef; }
+  if ($size) {
+    if ($size eq ($LaTeXML::MathML::SIZE || 'text')) {    # If default size, no need to mention.
+      $size = undef; }
+    # If requested relative size, and in script or scriptscript, we'll need to adjust the size
+    elsif (($size =~ /%$/) && ($LaTeXML::MathML::STYLE and $LaTeXML::MathML::STYLE =~ /script/)) {
+      my $req = $size;                               $req =~ s/%$//;
+      my $ex  = $stylesize{$LaTeXML::MathML::STYLE}; $ex  =~ s/%$//;
+      $size = int(100 * $req / $ex) . '%' if $ex; }
+    # Note that symmetric is only allowed when stretchy, which looks crappy for specific sizes
+    # so we'll pretend that delimiters are still stretchy, but restrict size by minsize & maxsize
+    # (Thanks Peter Krautzberger)
+    # Really we should check the Operator Dictionary to see if it's expected to be symmetric
+    if ($size) {    # if non-default size
+      if ($issymm || $props{symmetric}) {    # but should be symmetric?
+        $stretchyhack = 1;
+        $stretchy     = 1; }                 # so, pretend we asked for stretchy
+      elsif ($tag eq 'm:mo') {
+        $stretchy = undef; } } }             # Conversely, if size specifically set, don't stretch it!
+
   return ($text,
     ($variant ? (mathvariant => $variant) : ()),
     ($size    ? ($stretchyhack
@@ -781,69 +765,42 @@ sub stylizeContent {
     ($color    ? (mathcolor      => $color)    : ()),
     ($bgcolor  ? (mathbackground => $bgcolor)  : ()),
     ($cssstyle ? (style          => $cssstyle) : ()),
-    ($stretchy ? (stretchy       => $stretchy) : ()),
     ($class    ? (class          => $class)    : ()),
     ($href     ? (href           => $href)     : ()),
     ($title    ? (title          => $title)    : ()),
+    # mo specific additions
+    (($stretchy xor $props{stretchy}) ? (stretchy  => ($stretchy  ? 'true' : 'false')) : ()),
+    (($isfence xor $props{fence})     ? (fence     => ($isfence   ? 'true' : 'false')) : ()),
+    (($issep xor $props{separator})   ? (separator => ($issep     ? 'true' : 'false')) : ()),
+    (($islargeop xor $props{largeop}) ? (largeop   => ($islargeop ? 'true' : 'false')) : ()),
+    ($islargeop                       ? (_largeop  => 1) : ()),    # For needsMathStyle
+    ($issymm && !$props{symmetric} && ($stretchy || $props{stretchy})
+      ? (symmetric => 'true') : ()),
+    # If an operator has specifically located it's scripts, don't let mathml move them.
+    # A bit non-optimal, as Firefox is rather more generous than OpDict with movablelimits
+    ($ismoveop && (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS) ? (movablelimits => 'false') : ()),
+    # Store spacing for later spacing resolution
+    (defined $props{lspace} ? (_lspace => $props{lspace}) : ()),
+    (defined $props{rspace} ? (_rspace => $props{rspace}) : ()),
   ); }
-
-# These are the strings that should be known as fences in a normal operator dictionary.
-my %fences = (    # CONSTANT
-  '('        => 1, ')' => 1, '[' => 1, ']' => 1, '{' => 1, '}' => 1, "\x{201C}" => 1, "\x{201D}" => 1,
-  '`'        => 1, "'" => 1, "<" => 1, ">" => 1,
-  "\x{2329}" => 1, "\x{232A}" => 1, # angle brackets; NOT mathematical, but balance in case they show up.
-  "\x{27E8}" => 1, "\x{27E9}" => 1,    # angle brackets (preferred)
-  "\x{230A}" => 1, "\x{230B}" => 1, "\x{2308}" => 1, "\x{2309}" => 1);
-
-my %punctuation = (',' => 1, ';' => 1, "\x{2063}" => 1);    # CONSTANT
 
 # Generally, $item in the following ought to be a string.
 sub pmml_mi {
   my ($item, %attr)    = @_;
   my ($text, %mmlattr) = stylizeContent($item, 'm:mi', %attr);
-  #  return ['m:mi', {%mmlattr}, $text]; }
-  return pmml_mayberesize($item, ['m:mi', {%mmlattr}, $text]); }
+  return pmml_maybe_resize($item, ['m:mi', {%mmlattr}, $text]); }
 
 # Really, the same issues as with mi.
 sub pmml_mn {
   my ($item, %attr)    = @_;
   my ($text, %mmlattr) = stylizeContent($item, 'm:mn', %attr);
-  #  return ['m:mn', {%mmlattr}, $text]; }
-  return pmml_mayberesize($item, ['m:mn', {%mmlattr}, $text]); }
+  return pmml_maybe_resize($item, ['m:mn', {%mmlattr}, $text]); }
 
 # Note that $item should be either a string, or at most, an XMTok
 sub pmml_mo {
   my ($item, %attr)    = @_;
   my ($text, %mmlattr) = stylizeContent($item, 'm:mo', %attr);
-  my $role      = (ref $item ? $item->getAttribute('role') : $attr{role});
-  my $isfence   = $role && ($role =~ /^(OPEN|CLOSE)$/);
-  my $ispunct   = $role && ($role eq 'PUNCT');
-  my $islargeop = $role && ($role =~ /^(SUMOP|INTOP)$/);
-  my $lpad      = $attr{lpadding}
-    || ((ref $item) && $item->getAttribute('lpadding'))
-    || ($role && ($role eq 'MODIFIEROP') && '0.2222222222222222em');
-  my $rpad = $attr{rpadding}
-    || ((ref $item) && $item->getAttribute('rpadding'))
-    || ($role && ($role eq 'MODIFIEROP') && '0.2222222222222222em');
-  my $pos = (ref $item && $item->getAttribute('scriptpos')) || 'post';
-  return
-    pmml_mayberesize($item,
-    ['m:mo', { %mmlattr,
-        ($isfence && !$fences{$text}      ? (fence     => 'true') : ()),
-        ($ispunct && !$punctuation{$text} ? (separator => 'true') : ()),
-        ($islargeop                       ? (largeop   => 'true') : ()),
-        ($islargeop ? (symmetric => 'true') : ()),    # Not sure this is strictly correct...
-            # Note that lspace,rspace is the left & right space that replaces Op.Dictionary
-            # what we've recorded is _padding_, so we have to adjust the unknown OpDict entry!
-            # Just assume something between mediummathspace = 4/18em = 2.222pt
-            # and thickmathspace = 5/18em = 2.7777pt, so 2.5pt.
-        ($lpad ? (lspace => max(0, (2.5 + getXMHintSpacing($lpad))) . 'pt') : ()),
-        ($rpad ? (rspace => max(0, (2.5 + getXMHintSpacing($rpad))) . 'pt') : ()),
-        # If an operator has specifically located it's scripts,
-        # don't let mathml move them.
-        (($pos =~ /mid/) || $LaTeXML::MathML::NOMOVABLELIMITS
-          ? (movablelimits => 'false') : ()) },
-      $text]); }
+  return pmml_maybe_resize($item, ['m:mo', { %mmlattr, }, $text]); }
 
 sub pmml_bigop {
   my ($op)      = @_;
@@ -1056,7 +1013,7 @@ sub pmml_text_aux {
         return (); } }
     elsif (($tag eq 'ltx:text')    # ltx:text element is fine, if we can manage the attributes!
       && (!grep { $node->hasAttribute($_) } qw(framed framecolor))) {
-      return pmml_mayberesize($node, pmml_row(map { pmml_text_aux($_, %attr) } $node->childNodes)); }
+      return pmml_maybe_resize($node, pmml_row(map { pmml_text_aux($_, %attr) } $node->childNodes)); }
     else {
       # We could just recurse on raw content like this, but it loses a lot...
       ###      map(pmml_text_aux($_,%attr), $node->childNodes); }}
@@ -1071,6 +1028,215 @@ sub pmml_text_aux {
   else {
     return (); } }
 
+#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# Adjust the spacing by comparing TeX & author specified spacing to MathML's defaults
+sub adjust_spacing {
+  my ($self, $mml) = @_;
+  space_walk($self, $mml);
+  return; }
+
+our %tag_arg_pattern = (
+  (map { $_ => 'atom'; } qw(m:mi m:mo m:mn m:ms m:mtext)),
+  (map { $_ => 'mrow'; } qw(m:mrow m:mpadded m:msqrt m:mstyle m:merror m:mphantom m:mtd)),
+##  (map { $_=>'col'; } qw(m:mfrac m:mroot m:mtable m:mtr
+## m:msub m:msup m:msubsup m:munder m:mover m:munderover m:mmultiscripts))
+);
+
+# Walk through the MathML tree (ASSUMED represented in ARRAY form)
+# to determine spacing between visually adjacent items according to TeX rules
+# and adjust if these do not correspond to MathML's rule.
+# Since we're unwinding mrows with wild abandon, it is now difficult to insert a new item (eg. m:mspace),
+# since we've lost the potitions of the items within the actual tree!
+sub space_walk {
+  my ($self, $node) = @_;
+  return unless $node;
+  my ($tag, $attr, @children) = @$node;
+  my $type = $tag_arg_pattern{$tag} || 'other';
+  if    ($type eq 'atom') { }    # Atomic things don't need any adjustments
+  elsif ($type eq 'mrow') {      # look at adjacent pairs in mrow-like things
+    my @nodes = @children;
+    my $prev  = shift(@nodes);
+    while ($prev && ($$prev[0] eq 'm:mrow')) {    # Unwrap mrows
+      unshift(@nodes, @$prev[2 .. $#$prev]);
+      $prev = shift(@nodes); }
+    space_walk($self, $prev);
+    while (my $next = shift(@nodes)) {
+      my $invisop;    # Save Invisible operators as potential target for (l|r)space
+      if (($$next[0] eq 'm:mo') && $$next[2] && ($$next[2] =~ /^[\x{2061}\x{2062}\x{2063}]*$/)) {
+        $invisop = $next;
+        $next    = shift(@nodes);
+        last unless $next; }
+      if ($$next[0] eq 'm:mrow') {    # Unwrap mrows
+        unshift(@nodes, @$next[2 .. $#$next]);
+        unshift(@nodes, $invisop) if $invisop;
+        next; }
+      # Unwrap scripts, too; Note that TeX doesn't group according to scripts.
+      # In fact, the scripts attach even to ")" and don't affect the spacing between atoms
+      if ($$next[0] =~ /^m:(msup|msub|munder|mover|mmultiscripts)/) {
+        unshift(@nodes, $$next[2]);                    # Unwrap the base
+        foreach my $script (@$next[3 .. $#$next]) {    # but recurse on the scripts
+          space_walk($self, $script); }
+        unshift(@nodes, $invisop) if $invisop;
+        next; }
+      space_walk($self, $next);                        # Recurse, if necessary into any non-atomic atoms.
+      adjust_pair($self, $prev, $next, $invisop);      # Finally, Adjust the spacing between this pair.
+      $prev = $next; } }
+  else {    # Anything else, just process children individually
+    map { space_walk($self, $_); } @children; }
+  return; }
+
+# A minimal size computation; Currently only for tokens.
+sub compute_size {
+  my ($node) = @_;
+  my ($tag, $attr, @children) = @$node;
+  my $type = $tag_arg_pattern{$tag} || 'other';
+  if ($type eq 'atom') {
+    my $font = LaTeXML::Common::Font->mathDefault();
+    my ($w, $h, $d) = $font->computeStringSize($children[0]);
+    # Heuristic (ridiculous) hack to accommodate MathJax fonts
+    if ($w && $$attr{class} && ($$attr{class} =~ /mathscript/)) {
+      $w = $w->larger(LaTeXML::Common::Dimension->new(10 * 65535)); }    # Minimum of 10pt
+    return ($w, $h, $d); }
+  else {
+    return; } }
+
+# This maps LaTeXML's role values to the smaller set of TeX's math atom types
+our $role_atomtype = {
+  ATOM             => 'Ord',
+  UNKNOWN          => 'Ord',
+  ID               => 'Ord',
+  NUMBER           => 'Ord',
+  ARRAY            => 'Inner',
+  RELOP            => 'Rel',
+  OPEN             => 'Open',
+  CLOSE            => 'Close',
+  MIDDLE           => 'Ord',
+  PUNCT            => 'Punct',
+  VERTBAR          => 'Punct',
+  PERIOD           => 'Punct',
+  METARELOP        => 'Rel',
+  MODIFIEROP       => 'Rel',
+  MODIFIER         => 'Rel',
+  ARROW            => 'Rel',
+  ADDOP            => 'Bin',
+  MULOP            => 'Bin',
+  BINOP            => 'Bin',
+  POSTFIX          => 'Ord',        #?
+  FUNCTION         => 'Ord',
+  OPFUNCTION       => 'Op',
+  TRIGFUNCTION     => 'Op',
+  APPLYOP          => 'Bin',
+  COMPOSEOP        => 'Bin',
+  SUPOP            => 'Ord',        #?
+  BIGOP            => 'Op',
+  SUMOP            => 'Op',
+  INTOP            => 'Op',
+  LIMITOP          => 'Op',
+  DIFFOP           => 'Ord',        #? Wants to be close to arg, but preferably has \, before
+  OPERATOR         => 'Op',
+  POSTSUBSCRIPT    => 'Inner',
+  POSTSUPERSCRIPT  => 'Inner',
+  FLOATSUPERSCRIPT => 'Inner',
+  FLOATSUBSCRIPT   => 'Inner', };
+
+# very rough approximation...
+our $atomtype_form = {
+  Op => 'prefix', Bin => 'infix', Rel => 'infix', Open => 'prefix', Close => 'postfix', Punct => 'postfix' };
+# Need array of left & right atom types to TeX's intended spacing
+# 0 : no space; 1 : thin space; 2 : medium space; 3 thick space.
+# 0, 3, 4, 5 muskip, respectively
+# (use negative for spacing only in display & text style;  use 0 for * which means "shouldn't happen")
+# THUS, we'll need to know which style!!!
+our $atompair_spacing = {
+  Ord => { Ord => 0,  Op => 1, Bin => -2, Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
+  Op  => { Ord => 1,  Op => 1, Bin => 0,  Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
+  Bin => { Ord => -2, Op => -2, Bin => 0, Rel => 0, Open => -2, Close => 0, Punct => 0, Inner => -2 },
+  Rel => { Ord => -3, Op => -3, Bin => 0, Rel => 0, Open => -3, Close => 0, Punct => 0, Inner => -3 },
+  Open  => { Ord => 0, Op => 0, Bin => 0,  Rel => 0,  Open => 0, Close => 0, Punct => 0, Inner => 0 },
+  Close => { Ord => 0, Op => 1, Bin => -2, Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
+  Punct => { Ord => -1, Op => -1, Bin => 0, Rel => -1, Open => -1, Close => -1, Punct => -1, Inner => -1 },
+  Inner => { Ord => -1, Op => 1, Bin => -2, Rel => -3, Open => -1, Close => 0, Punct => -1, Inner => -1 },
+##  Inner => { Ord => 0, Op => 1, Bin => -2, Rel => -3, Open => 0, Close => 0, Punct => 0, Inner => -1 },
+};
+# Maybe I'm confused about Inner (\frac??), but the TeX book values seem to give larger spacing than I see in pdf
+# It really seems to behave more like an Ord
+# The above is NOT quite Knuth's table; but pdf looks to me like \frac[Inner]  ( has NO space between!
+
+our @tex_spacing = (0, 0.167, 0.222, 0.2778);    # 0,3mu=3/18em, 4mu, 5mu
+our %embellisher = map { $_ => 1; } qw(m:msub m:msup m:msubsup m:munder m:mover m:munderover);
+##our %m_atomtype = ('m:mfrac'=>'Inner','m:marray'=>'Inner','m:mspace'=>'Ord');
+# NOTE: I'm treating mfrac as an Ord, NOT an Inner (which seems to get too much spacing, more than even pdf!?)
+our %m_atomtype = ('m:mfrac' => 'Ord', 'm:marray' => 'Inner', 'm:mspace' => 'Ord');
+
+our $epsilon = 0.01;    # ems; Ignore any differences below this
+our $fudge   = 0.3;     # ems; don't complain if we can't adjust less than this
+
+sub adjust_pair {
+  my ($self, $prev, $next, $invisop) = @_;
+  # Determine the spacing TeX wants between $prev & $next
+  # Consider the spacing on the right of $prev and left of $next.
+  # Combine any explict padding with TeX spacing based on math atom categories
+  my ($iprev, $inext) = ($prev, $next); # Inner (possibly embellished, possibly operator) for OperatorDictionary
+  while ($iprev && $embellisher{ $$iprev[0] }) { $iprev = $$iprev[2]; }
+  while ($inext && $embellisher{ $$inext[0] }) { $inext = $$inext[2]; }
+  my $prev_req_right = $$prev[1]{_rpadding} // 0;        # Author spacing, in em
+  my $next_req_left  = $$next[1]{_lpadding} // 0;
+  my $prev_role      = $$iprev[1]{_role}    // 'ATOM';
+  my $next_role      = $$inext[1]{_role}    // 'ATOM';
+  my $prev_type      = $m_atomtype{ $$iprev[0] } || $$role_atomtype{$prev_role} || 'Ord';
+  my $next_type      = $m_atomtype{ $$inext[0] } || $$role_atomtype{$next_role} || 'Ord';
+  my $tex_code       = $$atompair_spacing{$prev_type}{$next_type} // 0;
+  my $tex_space      = $tex_spacing[abs($tex_code)];
+  my $req_space      = $prev_req_right + $next_req_left;
+  my $target         = $req_space + $tex_space;
+  # Now find the default spacing from MathML's operator dictionary (stored by stylizeContent)
+  my $prev_dict_right  = $$iprev[1]{_rspace} // 0;
+  my $next_dict_left   = $$inext[1]{_lspace} // 0;
+  my $default          = ($prev_dict_right + $next_dict_left);
+  my $needs_adjustment = abs($target - $default) > $epsilon;     # not ignorably small?
+  Debug("SPACEWALK: TeX $tex_space + $req_space vs OpDict $default : "
+      . ($needs_adjustment ? colorizeString("ADJUSTMENT $target", 'warning') : "  NO adjustment")
+      #        . ($invisop ? " [with invisible op]" : '')
+      . LaTeXML::Post::MathProcessor::shownode($prev) . " $prev_type "
+      . LaTeXML::Post::MathProcessor::shownode($next) . " $next_type "
+    ) if                                                         # $needs_adjustment &&
+    $LaTeXML::DEBUG{mathspacing};
+  return unless $needs_adjustment;
+  # Note that in MML Core, neither mspace nor mpadded can have negative width!
+  # It also does not support relative width using +/- prefix!
+  # So, the only alternative is to create an mpadded with an ADJUSTED width.
+  # NOTE: spacing in ems seems to be more portable.
+  if ($target < 0) {    # Ugh. "rewrap" $prev in m:mpadded, IN PLACE!
+    my ($w, $h, $d) = compute_size($prev);    # BAD & Wrong!
+    if ($w) {
+      my $reqw = $w->ptValue / 10.0 + $target;
+      $reqw = 0 if $reqw < 0;
+      splice(@$prev, 0, $#$prev + 1, 'm:mpadded', { width => fmt_em($reqw) }, [@$prev]); } }
+  elsif ($$prev[0] eq 'm:mspace') { $$prev[1]{width} = fmt_em($target + getXMHintSpacing($$prev[1]{width})); }
+  elsif ($$next[0] eq 'm:mspace') { $$next[1]{width} = fmt_em($target + getXMHintSpacing($$next[1]{width})); }
+  elsif ($invisop)                { $$invisop[1]{lspace} = fmt_em($target); }
+  elsif (($$prev[0] eq 'm:mo') && ($$next[0] eq 'm:mo')) { # BOTH are mo, so account for each's spacing
+    my $p = $$prev[1]{_rspace} // 0;
+    my $n = $$next[1]{_lspace} // 0;
+    my $rem;
+    if (($rem = $target - $n) >= 0) {
+      $$prev[1]{rspace} = fmt_em($rem > $epsilon ? $rem : 0); }
+    elsif (($rem = $target - $p) >= 0) {
+      $$next[1]{lspace} = fmt_em($rem > $epsilon ? $rem : 0); }
+    else {
+      $rem              = $target / 2;
+      $$prev[1]{rspace} = $rem . 'em' if $rem != $p;
+      $$next[1]{lspace} = $rem . 'em' if $rem != $n; } }
+  elsif ($$prev[0] eq 'm:mo') { $$prev[1]{rspace} = fmt_em($target); }
+  elsif ($$next[0] eq 'm:mo') { $$next[1]{lspace} = fmt_em($target); }
+  elsif (abs($target - $default) > $fudge) {
+    Info('ignored', 'spacing', undef,
+      "No place to set spacing to $target (default $default) between"
+        . LaTeXML::Post::MathProcessor::shownode($prev)
+        . " and " . LaTeXML::Post::MathProcessor::shownode($next)); }
+  return; }
+
+sub fmt_em { return ($_[0] ? sprintf("%.3fem", $_[0]) : '0em'); }
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # Support functions for Content MathML
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1262,9 +1428,9 @@ DefMathML("Token:?:absent", sub { return ['m:mi', {}] });    # Not m:none!
     # but if they survive (unparsed?) turn them into space
 DefMathML('Hint:?:?', sub {
     my ($node) = @_;
-    if (my $w = $node->getAttribute('width')) {
-      $w = getXMHintSpacing($w) . "pt";
-      ['m:mspace', { width => $w }]; }
+    my $w = getXMHintSpacing($node->getAttribute('width'));
+    if ($w) {
+      ['m:mspace', { width => $w . 'em' }]; }
     else {
       undef } },
   sub { undef; });    # Should Disappear from cmml!
@@ -1308,23 +1474,22 @@ DefMathML("Token:OPERATOR:?", \&pmml_mo, undef);
 
 DefMathML('Apply:?:?', sub {
     my ($op, @args) = @_;
+    my $pop   = pmml($op);
+    my $inner = $pop;
+    while ($inner && ($$inner[0] ne 'm:mo')) {
+      last unless $$inner[0] =~ /^m:(?:msub|msup|munder|mover|mprescripts)/;
+      $inner = $$inner[2]; }
+    my $is_mo = $inner && ($$inner[0] eq 'm:mo');
     return ['m:mrow', {},
-      pmml($op), pmml_mo("\x{2061}"),    # FUNCTION APPLICATION
+      $pop, ($is_mo ? () : pmml_mo("\x{2061}")),    # FUNCTION APPLICATION only if not an m:mo
       map { pmml($_) } @args]; },
   sub {
     my ($op, @args) = @_;
     return ['m:apply', {}, cmml($op), map { cmml($_) } @args]; });
-DefMathML('Apply:COMPOSEOP:?', \&pmml_infix,                                  undef);
-DefMathML("Token:DIFFOP:?",    sub { pmml_mo($_[0], rpadding => '-2.5pt'); }, undef);
-DefMathML("Apply:DIFFOP:?", sub {
-    my ($op, @args) = @_;
-###    return ['m:mrow', {}, map { pmml($_) } $op, @args]; },
-    my $pop = pmml($op);
-    return ['m:mrow', {}, $pop,
-      # Unless op (or embellished op), put in a FunctionApplication
-      ($$pop[0] =~ /^m:(mo|msub|msup|mover|munder)/ ? () : pmml_mo("\x{2061}")),
-      map { pmml($_) } @args]; },
-  undef);
+
+DefMathML('Apply:COMPOSEOP:?', \&pmml_infix, undef);
+DefMathML("Token:COMPOSEOP:?", \&pmml_mo,    undef);
+DefMathML("Token:DIFFOP:?",    \&pmml_mo,    undef);
 
 # In pragmatic CMML, these are containers
 DefMathML("Apply:?:open-interval", undef, sub {
@@ -1416,8 +1581,6 @@ DefMathML('Token:SUBSCRIPTOP:?', undef, sub {
 
 DefMathML('Apply:POSTFIX:?', sub {    # Reverse presentation, no @apply
     return ['m:mrow', {}, pmml($_[1]), pmml($_[0])]; });
-# Apparently ends up too much spacing shift
-#DefMathML("Token:POSTFIX:?", sub { pmml_mo($_[0], lpadding => '-4pt', rpadding => '1pt'); }, undef)
 DefMathML("Token:POSTFIX:?", \&pmml_mo, undef);
 
 DefMathML('Apply:?:square-root',

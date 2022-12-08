@@ -1013,13 +1013,22 @@ DefConstructor('\dfrac TextStyle TextStyle',
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
   sizer => sub { fracSizer($_[0]->getArg(1), $_[0]->getArg(2)); });
+# NOTE: This isn't actually in amsmath; where does it come from?
 # NOTE: this should be simpler (maybe macro)... it should NOT use the regular sizer!!!
+# This is messier to avoid MathML issues with the stretchability/symmetry/left|right spacing
 DefConstructor('\ifrac{}{}',
   "<ltx:XMApp>"
-    . "<ltx:XMTok stretchy='true' meaning='divide' role='MULOP' _font='#slashfont'>/</ltx:XMTok>"
+    . "<ltx:XMTok stretchy='#stretchy' meaning='divide' role='MULOP' _font='#slashfont'"
+    . " lpadding='-0.222em' rpadding='-0.222em'>\x{2215}</ltx:XMTok>"
     . "<ltx:XMArg>#1</ltx:XMArg><ltx:XMArg>#2</ltx:XMArg>"
     . "</ltx:XMApp>",
-  properties => { slashfont => sub { LookupValue('font')->specialize('/'); } });
+  properties => sub {
+    my ($stomach, $num, $den) = @_;
+    my $font = LookupValue('font')->specialize('/');
+    my ($nw, $nh, $nd) = $num->getSize;
+    my ($dw, $dh, $dd) = $den->getSize;
+    my $stretchy = $nh->add($nd)->larger($dh->add($dd))->ptValue > 9;
+    return (stretchy => $stretchy && 'true', slashfont => $font); });
 
 # Section 4.11.2 The \binom, \dbinom, and \tbinom commands
 DefMath('\binom{}{}', '{\left({{#1}\atop{#2}}\right)}',
