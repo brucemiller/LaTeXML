@@ -104,9 +104,21 @@ DefPrimitive('\declaretheoremstyle OptionalKeyVals {}', sub {
 
 #DefMacro('\enc@theorem
 DefMacroI('\listtheoremname', undef, 'List of Theorems');
+# Note that the LaTeX version uses the list "loe", rather than "thm"
+# Also note (unimplemented) options: onlynamed; we don't track names?
 DefConstructor('\listoftheorems OptionalKeyVals',
-  "<ltx:TOC lists='lot' scope='global'><ltx:title>#name</ltx:title></ltx:TOC>",
-  properties => sub { (name => Digest(T_CS('\listtheoremname'))); });
+  "<ltx:TOC lists='#lists' scope='global'><ltx:title>#name</ltx:title></ltx:TOC>",
+  properties => sub {
+    my ($stomach, $kv) = @_;
+    my $title = ($kv && $kv->getValue('title')) || Digest(T_CS('\listtheoremname'));
+    my $lists = 'thm';
+    if ($kv && $kv->hasKey('ignoreall')) {    # Means we're only including a subset
+      $lists = '';
+      if (my $names = $kv->getValue('show')) {
+        my @names = split(/,\s*/, ToString($names));
+        $lists = join(' ', map { 'theorem:' . $_; } @names); } }
+    (name => $title,
+      lists => $lists); });
 
 #======================================================================
 1;
