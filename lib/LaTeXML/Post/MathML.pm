@@ -694,7 +694,7 @@ sub stylizeContent {
   elsif (($text eq '-') && $role && (($role eq 'ADDOP') || ($role eq 'OPERATOR'))) { # MathML Core prefers unicode minus
     $text = "\x{2212}"; }
   # Special case for single char identifiers?
-  if (($tag eq 'm:mi') && ($text =~ /^.$/)) {                # Single char in mi? (what about m:ci?)
+  if (($tag eq 'm:mi') && ($text =~ /^.$/)) {    # Single char in mi? (what about m:ci?)
     if    ($variant eq 'italic') { $variant = undef; }         # Defaults to italic
     elsif (!$variant)            { $variant = 'normal'; } }    # must say so explicitly.
   elsif ($font && !$variant) {
@@ -1092,7 +1092,11 @@ sub compute_size {
   my $type = $tag_arg_pattern{$tag} || 'other';
   if ($type eq 'atom') {
     my $font = LaTeXML::Common::Font->mathDefault();
-    return $font->computeStringSize($children[0]); }
+    my ($w, $h, $d) = $font->computeStringSize($children[0]);
+    # Heuristic (ridiculous) hack to accommodate MathJax fonts
+    if ($w && $$attr{class} && ($$attr{class} =~ /mathscript/)) {
+      $w = $w->larger(LaTeXML::Common::Dimension->new(10 * 65535)); }    # Minimum of 10pt
+    return ($w, $h, $d); }
   else {
     return; } }
 
