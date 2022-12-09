@@ -8,7 +8,7 @@
 .ltx_subtitle    { text-align:center; font-size: 120%; padding-left:0.2em; margin-left:-0.5em; }
 
 .ltx_title_abstract      { text-align:center; font-size: 100%; font-weight:bold; }
-.ltx_abstract { margin-left:4em; margin-right:4em; }
+.ltx_abstract { margin-left: clamp(1em, 6%, 4em); margin-right: clamp(1em, 6%, 4em); }
 
 .ltx_appendix,
 .ltx_part,   
