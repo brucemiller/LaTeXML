@@ -73,7 +73,7 @@ DefMacro('\tag OptionalMatch:* {}',
   # expand \theequation, but in text mode! undo formatting if *
   '\lx@equation@settag{\ifx#1*\let\fnum@equation\relax\fi'
     . '\expandafter\def\expandafter\theequation\expandafter{#2}'
-    . '\lx@make@tags{equation}}');
+    . '\lx@make@tags{equation}}', locked => 1);
 
 # Note that \intertext may or may not be preceded by an explicit \\, with no apparent difference in TeX.
 # latexml, however, can end up with 2, which end up incrementing coutners twice!
@@ -465,17 +465,17 @@ DefMacro('\align',
   '\ifmmode\let\endalign\endaligned\aligned\else'
     . '\@hidden@bgroup\@ams@align@bindings\@@amsalign'
     . '\@equationgroup@numbering{numbered=1,postset=1,grouped=1,aligned=1}'
-    . '\@start@alignment\fi');
+    . '\@start@alignment\fi', locked => 1);
 # Note the included \hidden@cr
 DefMacro('\endalign',
-  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup', locked => 1);
 DefMacro('\csname align*\endcsname',
   '\ifmmode\expandafter\let\csname endalign*\endcsname\endaligned\aligned\else'
     . '\@hidden@bgroup\@ams@align@bindings\@@amsalign'
     . '\@equationgroup@numbering{numbered=0,postset=1,grouped=1,aligned=1}'
-    . '\@start@alignment\fi');
+    . '\@start@alignment\fi', locked => 1);
 DefMacro('\csname endalign*\endcsname',
-  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup');
+  '\hidden@cr{}\@finish@alignment\end@amsalign\@hidden@egroup', locked => 1);
 
 # flalign typesets in the full column width (seems perverse to me).
 # So, for the time being, it's treated exactly like align.
@@ -597,11 +597,11 @@ DefParameterType('alignsafeOptional', sub {
     else { (); } });
 
 DefMacro('\aligned alignsafeOptional',
-  '\@hidden@bgroup\@ams@aligned@bindings\@@amsaligned\@start@alignment');
-DefMacro('\endaligned', '\hidden@cr{}\@finish@alignment\@end@amsaligned\@hidden@egroup');
+  '\@hidden@bgroup\@ams@aligned@bindings\@@amsaligned\@start@alignment', locked => 1);
+DefMacro('\endaligned', '\hidden@cr{}\@finish@alignment\@end@amsaligned\@hidden@egroup', locked => 1);
 DefMacro('\alignedat{} alignsafeOptional',
-  '\@hidden@bgroup\@ams@aligned@bindings\@@amsaligned\@start@alignment');
-DefMacro('\endalignedat', '\hidden@cr{}\@finish@alignment\@end@amsaligned\@hidden@egroup');
+  '\@hidden@bgroup\@ams@aligned@bindings\@@amsaligned\@start@alignment', locked => 1);
+DefMacro('\endalignedat', '\hidden@cr{}\@finish@alignment\@end@amsaligned\@hidden@egroup', locked => 1);
 
 DefPrimitive('\@end@amsaligned', sub { $_[0]->egroup; });
 DefConstructor('\@@amsaligned DigestedBody',
