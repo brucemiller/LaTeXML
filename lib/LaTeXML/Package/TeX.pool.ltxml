@@ -1935,6 +1935,7 @@ sub adjustBoxColor {
   return; }
 
 sub adjustBoxColor_rec {
+  no warnings 'recursion';
   my ($color, $adjusted, @boxes) = @_;
   foreach my $box (@boxes) {
     next unless defined $box;
