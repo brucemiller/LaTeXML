@@ -251,7 +251,7 @@ dl.ltx_description dl.ltx_description dd { margin-left:3em; }
 
 /* Bibliographies */
 .ltx_bibliography dt { margin-right:0.5em; float:left; }
-.ltx_bibliography dd { margin-left:3em; }
+.ltx_bibliography dd { margin-left: clamp(1em, 4.5%, 3em); }
 /*.ltx_biblist { list-style-type:none; }*/
 .ltx_bibitem { list-style-type:none; }
 .ltx_bibitem .ltx_tag { font-weight:bold; margin-left:-2em; width:3em; }
