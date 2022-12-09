@@ -5,12 +5,16 @@
     text-align:center; }
 .ltx_role_author .ltx_personname {
     font-family:serif; font-weight:normal; font-variant:small-caps; font-size: 100%; }
-.ltx_abstract { margin-left:4em; margin-right:4em; }
+.ltx_abstract {
+    margin-left: clamp(1em, 6%, 4em);
+    margin-right: clamp(1em, 6%, 4em); }
 .ltx_abstract h6 {
     text-transform:uppercase; font-family:serif; font-weight:normal; font-size: 100%; 
     display:block; text-align:center; margin-bottom:0.1ex; }
 .ltx_keywords    {
-    margin-top:0.5em; margin-left:4em; margin-right:4em; }
+    margin-top:0.5em;
+    margin-left: clamp(1em, 6%, 4em);
+    margin-right: clamp(1em, 6%, 4em); }
 .ltx_keywords h6 {
     font-weight:normal; font-style:italic; }
 
