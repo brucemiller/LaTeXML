@@ -88,7 +88,7 @@ a.ltx_LaTeXML_logo { text-decoration: none; }
 /*======================================================================
   Para level */
 .ltx_float {
-    margin: 1ex 3em 1ex 3em; }
+    margin: 1ex clamp(1em, 4.5%, 3em) 1ex clamp(1em, 4.5%, 3em); }
 
 /* Multiple subfigures via flexbox */
 .ltx_flex_figure {
