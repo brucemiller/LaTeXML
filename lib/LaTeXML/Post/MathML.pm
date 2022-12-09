@@ -492,7 +492,7 @@ sub pmml_internal {
   elsif ($tag eq 'ltx:XMText') {
     my @c = $node->childNodes;
     my $result;
-    if (!$$self{nestmath} && $doc->findnodes('descendant::ltx:Math', $node)) {
+    if (!$$self{nestmath}) {
       $result = pmml_row(map { pmml_text_aux($_) } @c); }
     else {
       $result = ['m:mtext', {}, $self->convertXMTextContent($doc, 1, @c)]; }

@@ -441,11 +441,16 @@ DefMacroI('\today', undef, sub { ExplodeText(today()); });
 
 # Use fonts (w/ special flag) to propogate emphasis as a font change,
 # but preserve it's "emph"-ness.
-DefConstructor('\emph{}',
-  "<ltx:emph _force_font='1'>#1",
-  mode           => 'text', bounded => 1, font => { emph => 1 }, alias => '\emph',
-  afterConstruct => sub { $_[0]->maybeCloseElement('ltx:emph'); },
-  beforeDigest   => sub {
+# Use ltx:emph in text, but use ltx:text within math, since it may collapse within XMText
+# (and minimize html within math, which causes MathJax problems)
+DefConstructor('\emph{}', sub {
+    my ($document, $body, %props) = @_;
+    my $tag = ($document->findnodes('ancestor::ltx:Math', $document->getNode) ? 'ltx:text' : 'ltx:emph');
+    $document->openElement($tag, _force_font => 1, %props);
+    $document->absorb($body);
+    $document->maybeCloseElement($tag); },
+  mode         => 'text', bounded => 1, font => { emph => 1 }, alias => '\emph',
+  beforeDigest => sub {
     DefMacroI('\f@shape', undef,
       (ToString(Tokens(Expand(T_CS('\f@shape')))) eq 'it' ? 'n' : 'it')); });
 Tag('ltx:emph', autoClose => 1);
@@ -5244,7 +5249,7 @@ DefConstructor('\textup@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mod
   beforeDigest => sub { DefMacro('\f@shape', ''); });
 DefConstructor('\textit@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
   bounded      => 1, font => { shape => 'italic' }, alias => '\textit',
-  beforeDigest => sub { DefMacro('\f@shape', 'i'); });
+  beforeDigest => sub { DefMacro('\f@shape', 'it'); });
 DefConstructor('\textsl@math{}', "<ltx:text _noautoclose='1'>#1</ltx:text>", mode => 'text',
   bounded      => 1, font => { shape => 'slanted' }, alias => '\textsl',
   beforeDigest => sub { DefMacro('\f@shape', 'sl'); });
