@@ -5374,8 +5374,11 @@ my @frontmatter_elements = (qw(ltx:title ltx:toctitle ltx:subtitle
     ltx:abstract ltx:keywords ltx:classification ltx:acknowledgements));
 my %frontmatter_elements = map { ($_ => 1) } @frontmatter_elements;
 
+# Insert FrontMatter into document, if not already added
 sub insertFrontMatter {
-  my ($document)  = @_;
+  my ($document) = @_;
+  return if LookupValue('frontmatter_done');
+  AssignValue(frontmatter_done => 1, 'global');
   my $frontmatter = LookupValue('frontmatter');
   my @set_keys    = $frontmatter ? (keys %$frontmatter) : ();
   # if doc only has a solo abstract as frontmatter,
@@ -5411,7 +5414,13 @@ sub insertFrontMatter {
           $document->removeNode($completed_node); } } } }
   return; }
 
-Tag('ltx:document', 'afterOpen:late' => \&insertFrontMatter);
+# Add FrontMatter, unless deferred
+Tag('ltx:document', 'afterOpen:late' => sub {
+    insertFrontMatter($_[0]) unless LookupValue('frontmatter_deferred'); }); # frontmatter may be deferred.
+# Request deferal of FrontMatter
+DefPrimitive('\lx@deferfrontmatter', sub { AssignValue(frontmatter_deferred => 1, 'global'); });
+# Add FrontMatter to document here, unless already done.
+DefConstructor('\lx@dofrontmatter', sub { insertFrontMatter($_[0]); });
 
 # Maintain a list of classes that apply to the document root.
 # This might involve global style options, like leqno.
