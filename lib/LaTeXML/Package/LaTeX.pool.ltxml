@@ -1260,11 +1260,8 @@ DefEnvironment('{abstract}', '',
         @LaTeXML::LIST]);
     DefMacroI('\maybe@end@abstract', undef, Tokens(), scope => 'global');
     return; },
-  afterConstruct => sub {
-    if (LookupValue('standalone_abstract_in_frontmatter')) {
-      insertFrontMatter(@_); }
-    return; },
-  locked => 1, mode => 'text');
+  afterConstruct => sub { insertFrontMatter(@_); },    # HERE if not already done.
+  locked         => 1, mode => 'text');
 # If we get a plain \abstract, instead of an environment, look for \abstract{the abstract}
 AssignValue('\abstract:locked' => 0);    # REDEFINE the above locked definition!
 DefMacro('\abstract', sub {

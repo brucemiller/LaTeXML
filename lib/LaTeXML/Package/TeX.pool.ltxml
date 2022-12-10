@@ -5378,17 +5378,14 @@ my %frontmatter_elements = map { ($_ => 1) } @frontmatter_elements;
 sub insertFrontMatter {
   my ($document) = @_;
   return if LookupValue('frontmatter_done');
-  AssignValue(frontmatter_done => 1, 'global');
   my $frontmatter = LookupValue('frontmatter');
   my @set_keys    = $frontmatter ? (keys %$frontmatter) : ();
-  # if doc only has a solo abstract as frontmatter,
-  #    don't deposit here but mark to be placed as-is.
+  # if doc ONLY has abstract as frontmatter, defer until abstract's document location
   if ((scalar(@set_keys) == 1) && ($set_keys[0] eq 'ltx:abstract') &&
-    # Avoid cargo cult: allow this sub to be called twice with solo abstract,
-    #                   where 2nd call is at the right location for insertion.
-    !LookupValue('standalone_abstract_in_frontmatter')) {
-    AssignValue('standalone_abstract_in_frontmatter', 1, 'global');
+    !LookupValue('frontmatter_deferred')) {
+    AssignValue(frontmatter_deferred => 1, 'global');
     return; }
+  AssignValue(frontmatter_done => 1, 'global');    # OK, we're placing FrontMatter here, now.
   foreach my $key (@frontmatter_elements, grep { !$frontmatter_elements{$_} } @set_keys) {
     if (my $list = $$frontmatter{$key}) {
       # Dubious, but assures that frontmatter appears in text mode...
@@ -5414,10 +5411,11 @@ sub insertFrontMatter {
           $document->removeNode($completed_node); } } } }
   return; }
 
-# Add FrontMatter, unless deferred
+# Add FrontMatter at document begin, unless deferred to a better position.
 Tag('ltx:document', 'afterOpen:late' => sub {
-    insertFrontMatter($_[0]) unless LookupValue('frontmatter_deferred'); }); # frontmatter may be deferred.
-# Request deferal of FrontMatter
+    insertFrontMatter($_[0]) unless LookupValue('frontmatter_deferred'); });
+# Request deferal of FrontMatter (from document begin); Used during digestion.
+# Use \lx@dofrontmatter to place the frontmatter in a specific location.
 DefPrimitive('\lx@deferfrontmatter', sub { AssignValue(frontmatter_deferred => 1, 'global'); });
 # Add FrontMatter to document here, unless already done.
 DefConstructor('\lx@dofrontmatter', sub { insertFrontMatter($_[0]); });
