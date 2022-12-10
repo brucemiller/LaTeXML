@@ -47,4 +47,6 @@ DefPrimitive('\use@@tikzlibrary{}', sub {
     } }
     return; });
 
+Let('\tikz@align@temp', '\relax');
+
 1;
