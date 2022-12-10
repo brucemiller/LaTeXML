@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="report"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-report.css" type="text/css"/>
+  <para align="center" xml:id="p1">
+    <p><text fontsize="207%">This is an <emph font="italic">fake</emph> titlepage.</text></p>
+  </para>
+  <abstract name="Abstract">
+    <p>Orphan abstract should follow even a fake titlepage.</p>
+  </abstract>
+  <para xml:id="p2">
+    <p>This follows the abstract.</p>
+  </para>
+</document>
