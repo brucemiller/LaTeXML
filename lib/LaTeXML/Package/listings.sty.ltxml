@@ -284,6 +284,10 @@ sub listingsReadRawString {
         else         { $inmath = 1; $STATE = $SAVESTATE; } }
       if ($inmath && $token->equals(T_BEGIN)) {
         push(@tokens, T_BEGIN, $gullet->readBalanced->unlist, T_END); }
+      elsif (!$inmath && ($token->getCatcode == CC_CS)) {    # Dumb down CS if already seen by Gullet
+        my $name = $token->getString;
+        $name =~ s/^\\//;
+        push(@tokens, T_OTHER($name)); }
       else {
         push(@tokens, $token); } }
     while (@tokens && $tokens[-1]->getCatcode == CC_SPACE) {    # Remove trailing space
