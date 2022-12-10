@@ -5414,11 +5414,10 @@ sub insertFrontMatter {
 # Add FrontMatter at document begin, unless deferred to a better position.
 Tag('ltx:document', 'afterOpen:late' => sub {
     insertFrontMatter($_[0]) unless LookupValue('frontmatter_deferred'); });
-# Request deferal of FrontMatter (from document begin); Used during digestion.
-# Use \lx@dofrontmatter to place the frontmatter in a specific location.
-DefPrimitive('\lx@deferfrontmatter', sub { AssignValue(frontmatter_deferred => 1, 'global'); });
-# Add FrontMatter to document here, unless already done.
-DefConstructor('\lx@dofrontmatter', sub { insertFrontMatter($_[0]); });
+# Request Frontmatter to appear HERE (if not already done),
+# deferring it from document begin.
+DefConstructor('\lx@frontmatterhere', sub { insertFrontMatter($_[0]); },
+  afterDigest => sub { AssignValue(frontmatter_deferred => 1, 'global'); });
 
 # Maintain a list of classes that apply to the document root.
 # This might involve global style options, like leqno.
