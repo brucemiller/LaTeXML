@@ -1205,7 +1205,8 @@ DefMacro('\@add@conversion@date', '\@add@frontmatter{ltx:date}[role=creation]{\t
 # Doesn't produce anything (we're already inserting frontmatter),
 # But, it does make the various frontmatter macros into no-ops.
 DefMacroI('\maketitle', undef,
-  '\@startsection@hook'
+  '\lx@frontmatterhere'
+    . '\@startsection@hook'
     . '\global\let\thanks\relax'
     . '\global\let\maketitle\relax'
     . '\global\let\@maketitle\relax'
@@ -1258,11 +1259,8 @@ DefEnvironment('{abstract}', '',
         @LaTeXML::LIST]);
     DefMacroI('\maybe@end@abstract', undef, Tokens(), scope => 'global');
     return; },
-  afterConstruct => sub {
-    if (LookupValue('standalone_abstract_in_frontmatter')) {
-      insertFrontMatter(@_); }
-    return; },
-  locked => 1, mode => 'text');
+  afterConstruct => sub { insertFrontMatter(@_); },    # HERE if not already done.
+  locked         => 1, mode => 'text');
 # If we get a plain \abstract, instead of an environment, look for \abstract{the abstract}
 AssignValue('\abstract:locked' => 0);    # REDEFINE the above locked definition!
 DefMacro('\abstract', sub {
@@ -1303,6 +1301,7 @@ DefMacro('\format@title@abstract{}', '#1');
 # For now, we just give an info message
 DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
   beforeDigest => sub { Let('\centering', '\relax');
+    AssignValue(frontmatter_deferred => 1, 'global');
     AddToMacro(T_CS('\maketitle'), T_CS('\unwind@titlepage'));
     DefEnvironmentI('abstract', undef,
       '<ltx:abstract>#body</ltx:abstract>');
@@ -1310,6 +1309,7 @@ DefEnvironment('{titlepage}', '<ltx:titlepage>#body',
       "When using titlepage, Frontmatter will not be well-structured");
     return; },
   beforeDigestEnd => sub { Digest(T_CS('\maybe@end@titlepage')); },
+  afterConstruct  => sub { insertFrontMatter($_[0]); },
   locked          => 1, mode => 'text');
 
 Tag('ltx:titlepage', autoClose => 1);
