@@ -380,7 +380,6 @@ sub bibref_handler {
       my @lists = (($l ? split(/\s+/, $l) : ()), 'bibliography');
       foreach my $bibkey (split(',', $keys)) {
         if ($bibkey) {
-          $bibkey = lc($bibkey);         # NOW we downcase!
           foreach my $list (@lists) {    # Records a *reference* to a bibkey! (for each list)
             my $entry = $$self{db}->register("BIBLABEL:$list:$bibkey");
             $entry->noteAssociation(referrers => $parent_id); } } } } }
@@ -460,10 +459,7 @@ sub bibitem_handler {
   my ($self, $doc, $node, $tag, $parent_id) = @_;
   my $id = $node->getAttribute('xml:id');
   if ($id) {
-    # NOTE: We didn't downcase the key when we created the bib file
-    # BUT, we're going to index it in the ObjectDB by the downcased name!!!
     my $key = $node->getAttribute('key');
-    $key = lc($key) if $key;
     my $bib = $doc->findnode('ancestor-or-self::ltx:bibliography', $node);
     # Probably should only be one list, but just in case?
     my @lists = split(/\s+/, ($bib && $bib->getAttribute('lists')) || 'bibliography');

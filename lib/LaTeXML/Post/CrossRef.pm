@@ -514,9 +514,8 @@ sub make_bibcite {
   my @lists   = split(/\s+/, $bibref->getAttribute('inlist') || 'bibliography');
   foreach my $key (@keys) {
     my ($bentry, $id, $entry);
-    # NOTE: bibkeys are downcased when we look them up!
     foreach my $list (@lists) {            # Find the first of the lists that contains this bibkey
-      $bentry = $$self{db}->lookup("BIBLABEL:" . $list . ':' . lc($key));
+      $bentry = $$self{db}->lookup("BIBLABEL:" . $list . ':' . $key);
       last if $bentry; }
     if ($bentry
       && ($id    = $bentry->getValue('id'))
