@@ -537,6 +537,7 @@ DefMacro('\lx@NAT@parselabel{}{}', sub {
       if (Equals(T_CS('\citeauthoryear'), $cs)) {
         # \bibitem[\protect\citeauthoryear{Jones, Baker, and Williams}{Joneset al.}{1990}]{key}
         # \bibitem[\protect\citeauthoryear{Jones et al.}{1990}]{key}...
+        # \bibitem[\protect\citeauthoryear{Jones} {1990}]{key}...
         shift(@tokens);
         ($a1, @tokens) = NAT_peel_arg(@tokens);
         ($a2, @tokens) = NAT_peel_arg(@tokens);
@@ -586,7 +587,7 @@ sub NAT_peel_arg {
   if (!@tokens) {
     return; }
   elsif (@tokens && ($tokens[0]->getCatcode != CC_BEGIN)) {
-    return (pop(@tokens), @tokens); }
+    return (shift(@tokens), @tokens); }
   else {
     my $level = 1;
     shift(@tokens);
