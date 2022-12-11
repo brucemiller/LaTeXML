@@ -995,6 +995,7 @@ DefPrimitive('\endcsname', sub {
     return; });
 
 DefMacro('\expandafter Token Token', sub {
+    no warnings 'recursion';
     my ($gullet, $tok, $xtok) = @_;
     my $defn;
     if (defined($defn = $STATE->lookupExpandable($xtok))) {
