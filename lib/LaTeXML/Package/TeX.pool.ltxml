@@ -2010,6 +2010,7 @@ DefParameterType('BoxSpecification', sub {
 # Risky: I think this needs to be digested as a body to work like TeX (?)
 # but parameter think's it's just parsing from gullet...
 sub readBoxContents {
+  no warnings 'recursion';
   my ($gullet, $everybox) = @_;
   my $t;
   while (($t = $gullet->readToken) && !Equals($t, T_BEGIN)) { }    # Skip till { or \bgroup
@@ -2993,6 +2994,7 @@ DefMacroI('\@tabular@end@heading', undef, sub {
 # This is the "normal" case: $ appearing with an alignment that is in text mode.
 # It's just like regular $, except it doesn't look for $$ (no display math).
 DefPrimitiveI('\@dollar@in@textmode', undef, sub {
+    no warnings 'recursion';
     $_[0]->invokeToken(T_CS((LookupValue('IN_MATH') ? '\@@ENDINLINEMATH' : '\@@BEGININLINEMATH'))); });
 
 # This one is for $ appearing within an alignment that's already math.
@@ -4337,6 +4339,7 @@ sub IsScript {
   return; }
 
 sub scriptHandler {
+  no warnings 'recursion';
   my ($stomach, $op) = @_;
   my $gullet = $stomach->getGullet;
   $gullet->skipSpaces;
@@ -4344,6 +4347,7 @@ sub scriptHandler {
   my $style    = $font->getMathstyle;
   my @putback  = ();
   my $nscripts = 0;
+
   if (defined $style) {
     my $cs = '\@@FLOATING' . $op;
     my ($prevscript, $prevspace, $base);
