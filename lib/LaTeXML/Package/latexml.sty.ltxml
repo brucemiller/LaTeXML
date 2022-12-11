@@ -10,54 +10,163 @@
 # | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
 # | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
 # \=========================================================ooo==U==ooo=/ #
+
 package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
 no warnings 'redefine';    # ????
 
-#======================================================================
-# LaTeXML Implementation of latexml customization bindings
-#  * controlling various conversion options
-#  * presentation customization
-#  * semantic enhancement macros
-#  * exposing internal functionality
-#======================================================================
+=pod
+
+=head1 NAME
+
+latexml - package commands for TeX to HTML conversion
+
+=head1 SYNOPSIS
+
+This package is designed for L<LaTeXML|http://dlmf.nist.gov/LaTeXML/>,
+outside of which, this package doesn't do much.
+
+At the highest level, package developers should create a binding file
+<I<packagename>>.sty.ltxml that implements the commands to turn TeX into the
+appropriate XML.  If you aren't writing your own package but need a few
+definitions, you can create <I<basefile>>.latexml (which will be
+automatically loaded) or <I<preloadfile>>.ltxml
+(which will be loaded when you use pass LaTeXML the option
+C<< --preload=<preloadfile>.ltxml >>.
+See
+L<http://dlmf.nist.gov/LaTeXML/manual/usage/usage.conversion.html#SS0.SSS0.Px3>
+for more information, and
+L<http://dlmf.nist.gov/LaTeXML/manual/customization/> for what goes into these
+files.
+
+The LaTeXML package aims to avoid the previous paragraph by providing common
+commands that arise when aiming for XML output.  Consequently,
+most package options and commands have no actual effect in TeX, and only
+in XML.  There are four broad categories of functions:
+
+=over 4
+
+=item * controlling various conversion options
+
+=item * presentation customization
+
+=item * semantic enhancement macros
+
+=item * exposing internal functionality
+
+=back
+
+=begin sty
+
+% /=====================================================================\ %
+% |  latexml.sty                                                        | %
+% | Style file for latexml documents                                    | %
+% |=====================================================================| %
+% | Part of LaTeXML:                                                    | %
+% |  Public domain software, produced as part of work done by the       | %
+% |  United States Government & not subject to copyright in the US.     | %
+% |---------------------------------------------------------------------| %
+% | Bruce Miller <bruce.miller@nist.gov>                        %_%     | %
+% | http://dlmf.nist.gov/LaTeXML/                              (o o)    | %
+% \=========================================================ooo==U==ooo=/ %
+
+=end sty
+
+=head2 Usage
+
+LaTeXML defines the boolean C<latexml>X<latexml (package boolean)>.
+This allows one to type
+C<\iflatexml XML output \else PDF output\fi>X<\iflatexml (package command)>
+or use the related commands with packages designed to interact with TeX booleans.
+
+At the moment, this construction also allows one to bypass any commands that may
+give LaTeXML problems.  It is the eventual goal to mostly remove this necessity.
+
+=cut
 
 DefConditional('\iflatexml', sub { 1; });
 
-#======================================================================
-# Package Options
-DeclareOption('ids',   sub { AssignValue('GENERATE_IDS' => 1, 'global'); });
-DeclareOption('noids', sub { AssignValue('GENERATE_IDS' => 0, 'global'); });
+=for sty \newif\iflatexml\latexmlfalse
 
-DeclareOption('comments',   sub { AssignValue('INCLUDE_COMMENTS' => 1, 'global'); });
-DeclareOption('nocomments', sub { AssignValue('INCLUDE_COMMENTS' => 0, 'global'); });
+=head3 Package Options
 
-DeclareOption('profiling',   sub { AssignValue('PROFILING' => 1, 'global'); });
-DeclareOption('noprofiling', sub { AssignValue('PROFILING' => 0, 'global'); });
+There are several package options:
 
+=for comment Some PODs bold the item headers by default, some don't.
+We'll explicitly bold them
+
+=over 4
+
+=item B<noids(default), ids> X<noids (package option)>X<ids (package option)>
+
+assign XML ids to every element
+
+=item B<noprofiling(default), profiling> X<noprofiling (package option)>X<profiling (package option)>
+
+collect some primitive profiling info
+
+=item B<nomathparserspeculate(default), mathparserspeculate> X<nomathparserspeculate (package opoption)> X<mathparserspeculate (package option)>
+
+math parser speculates on possible notations
+
+=item B<nocomments, comments(default)> X<nocomments (package option)>X<comments (package option)>
+
+convert TeX comments to XML comments, comments every 25th source line
+
+=item B<noguesstabularheaders(default), guesstabularheaders> X<noguesstabularheaders (package option)>X<guesstabularheaders (package option)>
+
+attempt to determine the headers of a tabular environment
+
+=item B<nobibtex, bibtex(default)> X<nobibtex (package option)>X<bibtex (package option)>
+
+'nobibtex' is intended to be used for arXiv-like build harnesses, where there
+are explicit instructions to only use ".bbl" and that bibtex will not be run.
+
+=item B<mathlexemes>X<mathlexemes (package option)>
+
+Lexeme serialization for math formulas
+
+=for comment "If the string is longer than 40 characters",
+then Pod::LaTeX splits the item and bolds the second half
+The first set of items are already bold, this just provides some consistency in the source
+
+=item B<rawstyles, localrawstyles, norawstyles(default),>
+
+B<rawclasses, localrawclasses, norawclasses(default)>X<rawstyles (package option)>X<localrawstyles (package option)>X<norawstyles (package option)>X<rawclasses (package option)>X<localrawclasses (package option)>X<norawclasses (package option)>
+
+Finer control over which (if any) raw .sty/.cls files to include
+
+=back
+
+In Perl, the options are passed up the chain.  In TeX, the options do nothing.
+
+=cut
+
+DeclareOption('ids',                   sub { AssignValue('GENERATE_IDS'         => 1, 'global'); });
+DeclareOption('noids',                 sub { AssignValue('GENERATE_IDS'         => 0, 'global'); });
+DeclareOption('comments',              sub { AssignValue('INCLUDE_COMMENTS'     => 1, 'global'); });
+DeclareOption('nocomments',            sub { AssignValue('INCLUDE_COMMENTS'     => 0, 'global'); });
+DeclareOption('profiling',             sub { AssignValue('PROFILING'            => 1, 'global'); });
+DeclareOption('noprofiling',           sub { AssignValue('PROFILING'            => 0, 'global'); });
 DeclareOption('mathparserspeculate',   sub { AssignValue('MATHPARSER_SPECULATE' => 1, 'global'); });
 DeclareOption('nomathparserspeculate', sub { AssignValue('MATHPARSER_SPECULATE' => 0, 'global'); });
-
-DeclareOption('guesstabularheaders',   sub { AssignValue(GUESS_TABULAR_HEADERS => 1, 'global'); });
-DeclareOption('noguesstabularheaders', sub { AssignValue(GUESS_TABULAR_HEADERS => 0, 'global'); });
-
-# 'nobibtex' intended to be used for arXiv-like build harnesses, where there
-# is explicit instruction to only use ".bbl" and that bibtex will not be ran.
-DeclareOption('bibtex',   sub { AssignValue('NO_BIBTEX' => 0, 'global'); });
-DeclareOption('nobibtex', sub { AssignValue('NO_BIBTEX' => 1, 'global'); });
-
-# Lexeme serialization for math formulas
-DeclareOption('mathlexemes', sub { AssignValue('LEXEMATIZE_MATH' => 1, 'global'); });
-
-# Finer control over which (if any) raw .sty/.cls files to include
-DeclareOption('rawstyles',      sub { AssignValue('INCLUDE_STYLES'  => 1,             'global'); });
+DeclareOption('guesstabularheaders',   sub { AssignValue(GUESS_TABULAR_HEADERS  => 1, 'global'); });
+DeclareOption('noguesstabularheaders', sub { AssignValue(GUESS_TABULAR_HEADERS  => 0, 'global'); });
+DeclareOption('bibtex',                sub { AssignValue('NO_BIBTEX'            => 0, 'global'); });
+DeclareOption('nobibtex',              sub { AssignValue('NO_BIBTEX'            => 1, 'global'); });
+DeclareOption('mathlexemes',           sub { AssignValue('LEXEMATIZE_MATH'      => 1, 'global'); });
+DeclareOption('rawstyles',             sub { AssignValue('INCLUDE_STYLES'       => 1, 'global'); });
 DeclareOption('localrawstyles', sub { AssignValue('INCLUDE_STYLES'  => 'searchpaths', 'global'); });
 DeclareOption('norawstyles',    sub { AssignValue('INCLUDE_STYLES'  => 0,             'global'); });
 DeclareOption('rawclasses',     sub { AssignValue('INCLUDE_CLASSES' => 1,             'global'); });
 DeclareOption('localrawclasses', sub { AssignValue('INCLUDE_CLASSES' => 'searchpaths', 'global'); });
 DeclareOption('norawclasses',    sub { AssignValue('INCLUDE_CLASSES' => 0, 'global'); });
+
+=for comment The following should be better documented
+
+=cut
 
 DefConstructor('\lx@save@parameter{}{}', sub {
     $_[0]->insertPI('latexml', ToString($_[1]) => $_[2]); });
@@ -84,11 +193,82 @@ DefKeyVal('LTXML', 'pushbacklimit', 'Number', '', code => sub {
     return; });
 
 ProcessOptions(inorder => 1, keysets => ['LTXML']);
-#======================================================================
-# From latexml.sty
-# [does this really belong here? or should this be disableable?]
+
+=for comment TeX will ignore unknown options, so that binding can evolve more easily.
+
+=begin sty
+
+\DeclareOption{ids}{}
+\DeclareOption{noids}{}
+\DeclareOption{comments}{}
+\DeclareOption{nocomments}{}
+\DeclareOption{profiling}{}
+\DeclareOption{noprofiling}{}
+\DeclareOption{mathparserspeculate}{}
+\DeclareOption{nomathparserspeculate}{}
+\DeclareOption{guesstabularheaders}{}
+\DeclareOption{noguesstabularheaders}{}
+\DeclareOption*{\PackageWarning{latexml}{option  \CurrentOption\space ignored}}
+\ProcessOptions
+
+=end sty
+
+=head3 URL
+
+LaTeXML provides a shorthand to present a URL with text.
+The format is:
+C<<< \URL[<I<alternative text>>]{<I<url>>} >>>X<\URL (package command)>.
+In XML, this will become a traditional hyperlink.
+In TeX, the url is made into a footnote if the alternative text is supplied.
+Note that the order of the arguments is reversed from hyperref's
+C<<< \href{<I<url>>}{<I<alternative text>>} >>>.
+
+=for comment Does this really belong here? Or should this be disableable?
+
+=cut
+
 DefConstructor('\URL[] Verbatim', "<ltx:ref href='#href'>?#1(#1)(#href)</ltx:ref>",
   properties => sub { (href => CleanURL($_[2])); });
+
+=begin sty
+
+\RequirePackage{url}
+\def\URL{\@ifnextchar[{\@URL}{\@@URL}}%]
+\def\@@URL{\begingroup\Url}
+\def\@URL[#1]{#1\begingroup\def\UrlLeft##1\UrlRight{\footnote{\texttt{##1}}}\Url}
+
+=end sty
+
+=head3 Semantic Enhancment macros
+
+LaTeXML has several web related macros:
+C<\XML>, C<\SGML>, C<\HTML>, C<\XHTML>, C<\XSLT>, C<\CSS>, C<\MathML>,
+C<\OpenMath>, and C<\LaTeXML>.
+X<\XML (package command)>X<\SGML (package command)>X<\HTML (package command)>
+X<\XHTML (package command)>X<\XSLT (package command)>X<\CSS (package command)>
+X<\MathML (package command)>X<\OpenMath (package command)>X<\LaTeXML (package command)>
+
+In TeX, these only have a font transformation (and not even that for OpenMath).
+In XML, these are given links to the authoritative resources.
+
+LaTeXML implements its logo similar to the other web standard links.
+In TeX, the logo is more complicated in order to mirror C<\LaTeX>.
+
+=begin comment
+
+Otherwise, \LaTeXML could be \LaTeX{\scshape ml}
+
+NOTE: Figure out where this should go.
+At least should define various `semantic enhancement' macros that
+authors using latexml might want.
+We need to be careful not to step on the toes of other packages (naming scheme),
+nor assume too much about what semantics that authors might want.
+NOTE: Are we stepping on toes by including these here?
+
+=end comment
+
+=cut
+
 DefMacro('\XML',      '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
 DefMacro('\SGML',     '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
 DefMacro('\HTML',     '\URL[\texttt{HTML}]{http://www.w3.org/html/}');
@@ -97,7 +277,6 @@ DefMacro('\XSLT',     '\URL[\texttt{XSLT}]{http://www.w3.org/Style/XSL/}');
 DefMacro('\CSS',      '\URL[\texttt{CSS}]{http://www.w3.org/Style/CSS/}');
 DefMacro('\MathML',   '\URL[\texttt{MathML}]{http://www.w3.org/Math/}');
 DefMacro('\OpenMath', '\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
-##DefMacro('\LaTeXML',  '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 #DefMacro('\BibTeX','BibTeX');
 
 DefMacro('\LaTeXML',      '\URL[\LaTeXML@logo]{http://dlmf.nist.gov/LaTeXML/}');
@@ -114,120 +293,191 @@ DefConstructor('\lx@LaTeXML@{}',
 DefConstructor('\lx@LaTeXML@XML', "xml",    # "<ltx:text xoffset='-0.15em'>xml</ltx:text>",
   bounded => 1, font => { shape => 'smallcaps' });
 
+=begin sty
+
+\providecommand{\XML}{\textsc{xml}}%
+\providecommand{\SGML}{\textsc{sgml}}%
+\providecommand{\HTML}{\textsc{html}}%
+\providecommand{\XHTML}{\textsc{xhtml}}%
+\providecommand{\XSLT}{\textsc{xslt}}%
+\providecommand{\CSS}{\textsc{css}}%
+\providecommand{\MathML}{\textsc{MathML}}%
+\providecommand{\OpenMath}{OpenMath}%
+
+\DeclareRobustCommand{\LaTeXML}{L\kern-.36em%
+        {\sbox\z@ T%
+         \vbox to\ht\z@{\hbox{\check@mathfonts
+                              \fontsize\sf@size\z@
+                              \math@fontsfalse\selectfont
+                              A}%
+                        \vss}%
+        }%
+        \kern-.15em%
+%        T\kern-.1667em\lower.5ex\hbox{E}\kern-.125em\relax
+%        {\tt XML}}
+        T\kern-.1667em\lower.4ex\hbox{E}\kern-0.05em\relax
+        {\scshape xml}}%
+
+=end sty
+
+LaTeXML defines C<\LaTeXMLversion>X<\LaTeXMLversion (package command)>,
+C<\LaTeXMLrevision>X<\LaTeXMLrevision (package command)>, and
+C<\LaTeXMLfullversion>X<\LaTeXMLfullversion (package command)> to combine those two.
+This doesn't happen in TeX.
+
+=for comment Maybe we could do this in TeX if we get into the weeds of Pod::Simple
+
+=cut
+
 DefMacro('\LaTeXMLversion',  sub { ExplodeText($LaTeXML::VERSION); });
 DefMacro('\LaTeXMLrevision', sub { ExplodeText($LaTeXML::Version::REVISION); });
 DefMacro('\LaTeXMLfullversion',
 '\LaTeXML (\LaTeXMLversion\expandafter\ifx\expandafter.\LaTeXMLrevision.\else; rev.~\LaTeXMLrevision\fi)');
 
-#======================================================================
-# id related features
+=begin sty
 
-# Set the id to used for the top-level document
+\providecommand{\LaTeXMLversion}{}
+\providecommand{\LaTeXMLrevision}{}
+\providecommand{\LaTeXMLfullversion}{\LaTeXML}
+
+=end sty
+
+=head3 Id Related Commands
+
+LaTeXML defines several ID related commands.
+C<<< \lxDocumentID{<I<id>>} >>>X<\lxDocumentID (package command)> sets the
+document ID in XML (and does nothing in TeX).
+C<<< \LXMID{<I<label>>}{<I<expression>>} >>>X<\LXMID (package command)> typesets
+the expression, and creates a command referring to it, so that
+C<<< \LXMRef{<I<label>>} >>>X<\LXMRef (package command)> will typeset it again.
+
+=cut
+
 DefMacro('\lxDocumentID{}', '\def\thedocument@ID{#1}');
+DefMacro('\LXMID{}{}',      '\lx@xmarg{#1}{#2}');
+DefMacro('\LXMRef{}',       '\lx@xmref{#1}');
 
-# \LXMID{id}{math}  Associate the identifier id with the given math expression.
-DefMacro('\LXMID{}{}', '\lx@xmarg{#1}{#2}');
+=begin sty
 
-# \LXRef{id} Refer to the math expression associated with id.
-# In presentation, this is similar to using a shorthand macro.
-# In content situations, an XMRef is generated.
-DefMacro('\LXMRef{}', '\lx@xmref{#1}');
+\providecommand{\lxDocumentID}[1]{}%
+\def\LXMID#1#2{\expandafter\gdef\csname xmarg#1\endcsname{#2}\csname xmarg#1\endcsname}
+\def\LXMRef#1{\csname xmarg#1\endcsname}
 
-#======================================================================
-# Augmenting & Annotating features
+=end sty
 
-# \lxRegisterNamespace{prefix}{namespace-uri}
-#    Registers an XML namespace that can be used for foreign attributes in the document.
-DefPrimitive('\lxRegisterNamespace {} Semiverbatim', sub {
-    my ($stomach, $prefix, $namespaceuri) = @_;
-    RegisterNamespace(ToString($prefix) => ToString($namespaceuri));
-    return; });
+=head3 Class Related Features
 
-# class related features
+Next come two related class commands.E<10>
+C<<< \lxAddClass{<I<classname>>} >>>X<\lxAddClass (package command)> will add
+the given class to the current XML structure it's inside;
+nothing happens in TeX.
+C<<< \lxWithClass{<I<classname>>}{<I<code>>} >>>X<\lxWithClass (package command)>
+will put the result of the code into a div with the given class;
+TeX will just return the second argument.
+
+=cut
+
+Let('\lxAddClass', '\@ADDCLASS');
 DefConstructor('\lxAddClass Semiverbatim', sub {
     $_[0]->addClass($_[0]->getElement, ToString($_[1])); });
-
-# Add $box to the document, returning a node that can be annotated (attributes)
-# This may wrap the $box in an ltx:text if necessary.
-sub getAnnotatableNode {
-  my ($document, $box) = @_;
-  my $context = $document->getElement;    # Where we originally start inserting.
-  my @nodes   = ();
-  if (isTextNode($document->getNode)) {
-    push(@nodes, $document->openElement('ltx:text')); }
-  push(@nodes, $document->absorb($box));
-  @nodes = $document->filterChildren($document->filterDeletions(@nodes));
-  $document->closeToNode($context);
-  return $nodes[0]; }
-
 DefConstructor('\lxWithClass Semiverbatim {}', sub {
     my ($document, $class, $box) = @_;
-    if (my $node = getAnnotatableNode($document, $box)) {
-      $document->addClass($node, ToString($class)); } });
+    my $context = $document->getElement;    # Where we originally start inserting.
+    my @nodes   = ();
+    if (isTextNode($document->getNode)) {
+      push(@nodes, $document->openElement('ltx:text')); }
+    push(@nodes, $document->absorb($box));
+    @nodes = $document->filterChildren($document->filterDeletions(@nodes));
+    $document->closeToNode($context);
+    $document->addClass($nodes[0], ToString($class)) if @nodes; });
 
-# Data extensions
-# Add attributes (from keyvals) to a $node, or float to appropriate node if undef
-# If a key does not have a namespace prefix, assume data: ???????
-# If it starts with ":" it has no namespace; be careful of conflicst with LaTeXML's attributes!
-sub addAnnotations {
-  my ($document, $node, %keyvals) = @_;
-  my $floating = !defined $node;
-  foreach my $key (keys %keyvals) {
-    my $value = $keyvals{$key};
-    $key = ToString($key);
-    if    ($key =~ s/^://) { }                           # leading : means NO namespace
-    elsif ($key =~ /:/)    { }                           # embedded : means user namespace
-    else                   { $key = 'data:' . $key; }    # otherwise, assume data:
-    $node = $document->floatToAttribute($key) if $floating;
-    $document->setAttribute($node, $key => $value); }
-  return; }
+=begin sty
 
-# The following add annotation data attributes to a node.
-# The annnotations are given by the key=value pairs in kv,
-# with the key being in the "data" namespace, unless it has a namespace prefix
-# which was presumably registered using \lxRegisterNamespace
+\providecommand{\lxAddClass}[1]{}%
+\providecommand{\lxWithClass}[2]{#2}%
 
-# \lxAddAnnotation{kv}  Add annotation to the current containing node that can accept them
-DefConstructor('\lxAddAnnotation RequiredKeyVals', sub {
-    my ($document, $kv, $thing) = @_;
-    my $savenode = $document->getNode;
-    addAnnotations($document, undef, $kv->getHash);
-    $document->setNode($savenode);
-    return; });
+=end sty
 
-# \lxWithAnnotation{kv}{box}  Add box, with annottions.
-DefConstructor('\lxWithAnnotation RequiredKeyVals {}', sub {
-    my ($document, $kv, $box) = @_;
-    if (my $node = getAnnotatableNode($document, $box)) {
-      addAnnotations($document, $node, $kv->getHash); }
-    return; });
+LaTeXML defines a simplified hyperlink.
+C<<< \lxRef{<I<label>>}{<I<text>>} >>>X<\lxRef (package command)> will, in
+XML, make a link pointing to that label.  In TeX, this is ignored and simply
+prints the text.
 
-#======================================================================
-# links
-# Similar to stuff from hyperref, but more straightforward
+=cut
+
 DefConstructor('\lxRef Semiverbatim {}',
   "<ltx:ref labelref='#label'>#2</ltx:ref>",
   properties => sub { (label => CleanLabel($_[1])); });
 
-#======================================================================
-# Resources
-# \lxRequireResource[options]{name}
-#   options: type (mime-type), media (?), ...
+=for sty \def\lxRef#1#2{#2}
+
+=head3 CSS and Javascript
+
+If one wants to add a script or style file, one way is to pass the appropriate option
+to C<latexmlpost> using C<<< latexmlpost --javascript=<I<file>> >>> or
+C<<< latexmlpost --css=<I<file>> >>>, respectively.  But if this will happen
+every time, then it is easier to add
+C<<< \lxRequireResource[options]{<I<file>>} >>>X<\lxRequireResource (package command)>.
+C<options> can include the type or mime-type (if LaTeXML is misidentifying it based on the suffix),
+or something like C<media=(max-width:1000pt)> for a css file.
+
+=cut
+
 DefPrimitive('\lxRequireResource OptionalKeyVals {}', sub {
     my ($stomach, $kv, $path) = @_;
     RequireResource(ToString($path), ($kv ? $kv->getHash : ())); });
 
-#======================================================================
-# Page customization
-#  options to create or customize
-#    navbar: full content, context TOC, ...
-#    headers, footers
+=for sty \providecommand{\lxRequireResource}[2][]{}
+
+=head3 lxKeywords
+
+C<<< \lxKeywords{<I<keywords>>} >>>X<\lxKeywords (package command)>
+will add the keywords to the meta information of the document.
+
+=cut
 
 DefMacro('\lxKeywords{}',
   '\@add@frontmatter{ltx:keywords}[name={keywords}]{#1}');
 
+=for sty \def\lxKeywords#1{}
+
+=head3 Page Customization
+
+LaTeXML defines several ways to customize the output XML, none of which have an
+effect in TeX.  C<\lxContextTOC>X<\lxContextTOC (package command)> creates a
+contextual table of contents, focusing on the current part/chapter/section.
+
+=cut
+
 DefConstructor('\lxContextTOC',
   "<ltx:TOC format='context'/>");
+
+=for sty \def\lxContextTOC{}%
+
+The environments C<lxNavbar>X<lxNavbar (package environment)>,
+C<lxHeader>X<lxHeader (package environment)>, and
+C<lxFooter>X<lxFooter (package environment)> should
+be placed in the preamble, and typeset their contents in the corresponding part of
+every page.  For example, the LaTeXML manual has
+
+ \begin{lxNavbar}
+ \lxRef{top}{\includegraphics{../graphics/latexml}}\\
+ \includegraphics{../graphics/mascot}\\
+ \lxContextTOC
+ \end{lxNavbar}
+
+just before C<\begin{document}> in order to create the navigation panel on the
+left hand side of every page. In TeX, the entire environment is ignored using
+the C<comment> package.
+
+=for comment
+Of course, it would be more interesting to supply a "template"
+for header and footer that would show where the next link goes,
+rather than predict what the next link will be! (after splitting!)
+Repeated header/footers should give multiple header/footer lines ?
+or do they just arrange the lines within it?
+
+=cut
 
 AssignValue('navigation' => [], 'global');
 
@@ -237,9 +487,7 @@ sub insertNavigation {
     $document->appendTree($document->getDocument->documentElement,
       ['ltx:navigation', {}, @items]); }
   return; }
-
 Tag('ltx:document', 'afterClose' => \&insertNavigation);
-
 DefEnvironment('{lxNavbar}', sub { },
   beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
@@ -247,12 +495,6 @@ DefEnvironment('{lxNavbar}', sub { },
     PushValue('navigation',
       ['ltx:inline-para', { class => 'ltx_page_navbar' }, $whatsit->getBody]);
     return; });
-
-# Of course, it would be more interesting to supply a "template"
-# for header & footer that would show where the next link goes,
-# rather than predict what the next link will be! (after splitting!)
-# Repeated header/footers should give multiple header/footer lines ?
-# or do they just arrange the lines within it?
 DefEnvironment('{lxHeader}', sub { },
   beforeDigest    => sub { AssignValue(inPreamble => 0); },
   beforeConstruct => sub {
@@ -268,57 +510,103 @@ DefEnvironment('{lxFooter}', sub { },
       ['ltx:inline-para', { class => 'ltx_page_footer' }, $whatsit->getBody]);
     return; });
 
-#======================================================================
+=begin sty
 
-# Table beautification.
-# Low-level support to mark column and row headers.
-# This really calls for styling, but why should we get into that game?
-# There are many other packages for that.
+\RequirePackage{comment}
+\excludecomment{lxNavbar}
+\excludecomment{lxHeader}
+\excludecomment{lxFooter}
 
-# To mark the table head/foot (table column headers)
-# Put this before first table heading row
+=end sty
+
+=head3 Table Beautification
+
+When it comes to tables, XML (especially HTML) provides more
+semantics than TeX: the tags C<< <thead> >>, C<< <tfoot> >>, and C<< <th> >>
+don't have corresponding counterparts in general TeX.
+To remedy that, preface the rows of the head with
+C<\lxBeginTableHead>X<\lxBeginTableHead (package command)> and place
+C<\lxEndTableHead>X<\lxEndTableHead (package command)> after
+the C<\\> at the end of the header row.
+Similarly, the foot rows are surrounded with
+C<\lxBeginTableFoot>X<\lxBeginTableFoot (package command)> and
+C<\lxEndTableFoot>X<\lxEndTableFoot (package command)>.
+
+Mimicking C<< <th> >> depends on whether one is looking at a column header or a row
+header. To mark an individual cell as a column header, add
+C<\lxTableColumnHead>X<\lxTableColumnHead (package command)> to the entry.
+To mark an individual cell as a row header, add
+C<\lxTableRowHead>X<\lxTableRowHead (package command)>.
+
+To mark an entire column as row headers,
+C<\usepackage{array}>
+and then put in the column specification:
+C<< >{\lxTableRowHead} >>.
+
+Obviously, these six commands can do nothing in TeX.
+
+=begin comment
+
+To mark an individual cell as both a column and row header, use both, although it
+could be argued that that entry should be in the title or caption of the table,
+and not in the table itself.
+
+To mark an entire row as column headers, use the
+C<< <thead> >> of two paragraphs ago.
+
+This really calls for styling, but why should we get into that game?
+There are many other packages for that.
+
+=end comment
+
+=cut
+
 DefMacroI('\lxBeginTableHead', undef, '\@tabular@begin@heading');
-# put this after the \\ ending the table heading.
-DefMacroI('\lxEndTableHead', undef, '\@tabular@end@heading');
-
-# Ditto for table foot (last rows in table)
+DefMacroI('\lxEndTableHead',   undef, '\@tabular@end@heading');
 DefMacroI('\lxBeginTableFoot', undef, '\@tabular@begin@heading');
-# put this after the \\ ending the table heading.
-DefMacroI('\lxEndTableFoot', undef, '\@tabular@end@heading');
-
-# To mark an individual cell as a column header
+DefMacroI('\lxEndTableFoot',   undef, '\@tabular@end@heading');
 DefMacroI('\lxTableColumnHead', undef, sub {
     if (my $alignment = LookupValue('Alignment')) {
       $alignment->currentColumn->{thead}{column} = 1; }
     return; });
-# To mark an individual cell as a row header
 DefMacroI('\lxTableRowHead', undef, sub {
     if (my $alignment = LookupValue('Alignment')) {
       $alignment->currentColumn->{thead}{row} = 1; }
     return; });
-# Easy way to mark a whole column as row headers:
-#  \usepackage{array}
-# then put this in the column spec
-#  >{\lxTableRowHead}
 
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-# Declarative information for Mathematics
-# particularly those that assist parsing.
-#%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+=begin sty
 
-#======================================================================
-# Marking the type of particular instances of a symbol.
+\def\lxBeginTableHead{}
+\def\lxEndTableHead{}
+\def\lxBeginTableFoot{}
+\def\lxEndTableFoot{}
+\def\lxTableColumnHead{}
+\def\lxTableRowHead{}
 
-# \LxFcn{f} treat f as a function here (only).
+=end sty
+
+=head3 Declarative information for Mathematics
+
+LaTeXML can't always determine the type of math that a symbol should be.
+Therefore, one can use
+C<<< \lxFcn{<I<funcname>>} >>>X<\lxFcn (package command)>,
+C<<< \lxID{<I<identifier>>} >>>X<\lxID (package command)>, and
+C<<< \lxPunct{<I<punctuation mark>>} >>>X<\lxPunct (package command)>
+to denote a symbol as a function, identifier, or punctuation, respectively.
+These commands aren't needed by TeX, so they just echo back their contents.
+
+LaTeXML also provides a more general form: eg
+C<\lxTweakMath{role=POSTFIX}{@}>X<\lxTweakMath (package command)> is the
+same as C<\lx@math@tweak>.
+
+=cut
+
 DefConstructor('\lxFcn{}', "<ltx:XMWrap role='FUNCTION'>#1</ltx:XMWrap>",
   requireMath => 1, reversion => '#1', alias => '');
 DefConstructor('\lxID{}', "<ltx:XMWrap role='ID'>#1</ltx:XMWrap>",
   requireMath => 1, reversion => '#1', alias => '');
 DefConstructor('\lxPunct{}', "<ltx:XMWrap role='PUNCT'>#1</ltx:XMWrap>",
   requireMath => 1, reversion => '#1', alias => '');
-
-# More general form: eg. \lxTweakMath{role=POSTFIX}{@}
-# [same as \lx@math@tweak]
 DefConstructor('\lxMathTweak RequiredKeyVals {}',
   "<ltx:XMWrap %&GetKeyVals(#1)>#2</ltx:XMWrap>",
   afterDigest => sub {
@@ -329,13 +617,35 @@ DefConstructor('\lxMathTweak RequiredKeyVals {}',
     return; },
   reversion => '#2');
 
-#======================================================================
-# Define a mathematical object with both presentation & content information
-#   \lxDefMath{\name}[nargs][optional]{presentation body}[content keywords]
-#  The first part is essentially equivalent to \newcommand, it defines
-# an expansion for \name used for the presentation.
-# The content keywords are used to define the semantics of the object.
-# See DefMath in LaTeXML::Package for more information.
+=begin sty
+
+\providecommand{\lxFcn}[1]{#1}
+\providecommand{\lxID}[1]{#1}
+\providecommand{\lxPunct}[1]{#1}
+\providecommand{\lxMathTweak}[2]{#2}
+
+=end sty
+
+=head3 lxDefMath
+
+LaTeXML defines a math function such that the TeX output is what one might
+expect, while providing the semantic hooks for generating useful XML.E<10>
+C<<< \lxDefMath{<I<\cs>>}[<I<nargs>>][<I<optargs>>]{<I<presentation>>}[<I<declarations>>] >>>X<\lxDefMath (package command)>.E<10>
+In TeX, this is equivalent to:E<10>
+C<<< \providecommand{<I<\cs>>}[<I<nargs>>][<I<optargs>>]{<I<presentation>>} >>>,E<10>
+throwing away the final optional arguments.  In LaTeXML, [<I<declarations>>]
+is assumed to have the formE<10>
+C<<< [name=<I<name>>,meaning=<I<meaning>>,role=<I<role>>,cd=<I<cd>>] >>>.E<10>
+Any that are found help define the semantics of the object.
+
+Eventually, C<\lxDefMath> becomes a C<\providecommand>.
+
+=for comment we should explain what "cd" is in the above
+This is a prime example of where LaTeXML's syntax makes things much easier than
+in TeX.
+
+=cut
+
 DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
     my ($stomach, $cs, $nargs, $opt, $presentation, $params) = @_;
     my ($name, $meaning, $cd, $role, $alias, $scope) =
@@ -351,7 +661,6 @@ DefPrimitive('\lxDefMath{}[Number][]{} OptionalKeyVals:XMath', sub {
     else {
       return; }
 });
-
 DefConstructor('\@lxDefMathDeclare{} RequiredKeyVals:XMath', sub {
     my ($document, $id, $kv, %props) = @_;
     my $save = $document->floatToElement('ltx:declare');
@@ -373,14 +682,21 @@ DefConstructor('\@lxDefMathDeclare{} RequiredKeyVals:XMath', sub {
   properties => { alignmentSkippable => 1 },
   reversion  => '');
 
-# We're interested in getting some useful phrases for several contexts:
-#   Notations lists:  $term$ : description
-#   [where layout may require substituting some markup for the :, so we'll want to split them]
-#   tooltips: short (name), probably text preferred.
-# And we want to synthesize these out of two keyvals: tag,description.
-# If both are given tag is shortname, description is long form, possibly separating out the term
-# If only 1 given, and matches the math term: record it, and use remainder for name & description
-# Else use the given for name, description, with no term
+=begin comment
+
+We're interested in getting some useful phrases for several contexts:
+  Notations lists:  $term$ : description
+  [where layout may require substituting some markup for the :, so we'll want to split them]
+  tooltips: short (name), probably text preferred.
+And we want to synthesize these out of two keyvals: tag,description.
+If both are given tag is shortname, description is long form, possibly separating out the term
+If only 1 given, and matches the math term: record it, and use remainder for name & description
+Else use the given for name, description, with no term
+
+=end comment
+
+=cut
+
 sub normalizeDeclareKeys {
   my ($kv, $whatsit) = @_;
   my $tag         = $kv->getValue('tag');
@@ -407,35 +723,118 @@ sub splitDeclareTag {
   else {
     return; } }
 
-#======================================================================
-# NOTE: I'm concerned about the order of applying these filters.
-# even though it seems right so far.
+=begin sty
 
-# Keyword options:
-#    scope=<scope> : Specifies the scope of the declaration, ie. to what portion of
-#            the document the declarations apply
-#            You can specify one of the counters associated with sections,
-#            equations, etc.
-#            If unspecified, the declaration is scoped to the current unit.
-#            Note that this applies to equations, as well.
-#    label=<label> : assigns a label to the declaration so that it can be reused
-#            at another point in the document (with \lxRefDeclaration), particularly when
-#            that point is not otherwise within the scope of the original declaration.
-# To effect the declaration:
-#    role=<role>  : Assigns a grammatical role to the matched item for parsing.
-#    name=<name>  : Assigns a name to the matched item.
-#    meaning=<meaning>  : Assigns a semantic name to the matched item.
-#  Alternatively, use
-#     replace : provides a replacement for the matched expression, rather than adding attributes.
+\providecommand{\lxDefMath}{\lx@defmath}%
+\def\lx@defmath#1{%
+  \@ifnextchar[{\lx@defmath@a{#1}}{\lx@defmath@a{#1}[0]}}%
+\def\lx@defmath@a#1[#2]{%
+  \@ifnextchar[{\lx@defmath@opt{#1}[#2]}{\lx@defmath@noopt{#1}[#2]}}%
+\def\lx@defmath@opt#1[#2][#3]#4{%
+  \providecommand{#1}[#2][#3]{#4}%
+  \@ifnextchar[{\lx@@skipopt}{}}%
+\def\lx@defmath@noopt#1[#2]#3{%
+  \providecommand{#1}[#2]{#3}%
+  \@ifnextchar[{\lx@@skipopt}{}}%
+\def\lx@@skipopt[#1]{}%
 
-# Potential keywords/operations needed(?)
-#   nodef : inhibits the marking of the current point as the `definition' of the expression.
-#          (a ref declaration would normally not be a def anyway)
+=end sty
+
+=head3 lxDeclare, lxRefDeclaration
+
+C<<< \lxDeclare[<I<declarations>>]{<I<match>>} >>>X<\lxDeclare (package command)>
+and C<<< \lxRefDeclaration{<I<label>>} >>>X<\lxRefDeclaration (package command)>
+allow the following keyword options:
+
+=over 4
+
+=item B<scope=<I<scope>>>
+
+Specifies the scope of the declaration,
+i.e., to what portion of the document the declarations apply.
+You can specify one of the counters associated with sections, equations, et.c.
+If unspecified, the declaration is scoped to the current unit.
+Note that this applies to equations, as well.
+
+=item B<label=<I<label>>>
+
+Assigns a label to the declaration so that it can be
+reused at another point in the document (with C<\lxRefDeclaration>), particularly
+when that point is not otherwise within the scope of the original declaration.
+
+=back
+
+To effect the declaration:
+
+=over 4
+
+=item B<role=<I<role>>>
+
+Assigns a grammatical role to the matched item for parsing.
+
+=item B<name=<I<name>>>
+
+Assigns a name to the matched item.
+
+=item B<meaning=<I<meaning>>>
+
+Assigns a semantic name to the matched item.
+
+=back
+
+Alternatively, use
+
+=over 4
+
+=item B<replace>
+
+Provides a replacement for the matched expression, rather than adding attributes.
+
+=back
+
+In TeX, C<<< \lxDeclare[<I<declarations>>]{<I<match>>} >>> and
+C<<< \lxRefDeclaration{<I<label>>} >>> do nothing, throwing away their arguments.
+
+=for comment Should we provide some examples?
+I'm concerned about the order of applying these filters.
+even though it seems right so far.
+Potential keywords/operations needed(?)
+
+=over 4
+
+=item B<nodef>
+
+Inhibits the marking of the current point as the `definition'
+of the expression. (a ref declaration would normally not be a def anyway)
+
+=back
+
+=begin comment
+
+Could the following be better documented?  What does it actually do?
+
+It would be good to incorporate Scoping into this macro.
+As defined, it obeys TeX's usual grouping scope.
+However, scoping by 'module' (M.Kohlhase's approach) and/or
+'document' scoping could be useful.
+
+In module scoping, the definition is only available within a
+module environment that defines it, AND in other module envs
+that 'use' it.
+
+In document scoping, the definition would only be available within
+the current sectional unit.  I'm not sure the best way to achieve this 
+within latex, itself, but have ideas about LaTeXML...
+But, perhaps it is only the declarative aspects that are important to
+LaTeXML....
+
+=end comment
+
+=cut
 
 DefKeyVal('Declare', 'nowrap',  '{}', 1);
 DefKeyVal('Declare', 'trace',   '{}', 1);
 DefKeyVal('Declare', 'replace', 'UndigestedKey');
-
 our $declare_keys = { scope => 1, role => 1, tag => 1, description => 1, name => 1, meaning => 1,
   trace => 1, nowrap => 1, replace => 1, label => 1 };
 # Most is same as above; merge into one!!!!!
@@ -481,7 +880,6 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
       match   => $pattern,
       replace => $kv->getValue('replace'));
     normalizeDeclareKeys($kv, $whatsit);
-
     if (my $label = ToString($kv->getValue('label'))) {
       PushValue("Declaration_$label", $whatsit); }
     return; },
@@ -490,7 +888,6 @@ DefConstructor('\lxDeclare OptionalMatch:* OptionalKeyVals:Declare {}', sub {
     createDeclarationRewrite($document, $scope, $whatsit); },
   properties => { alignmentSkippable => 1 },
   reversion  => '');
-
 DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
   afterDigest => sub { my ($stomach, $whatsit) = @_;
     my ($keys, $labels) = $whatsit->getArgs;
@@ -506,7 +903,6 @@ DefConstructor('\lxRefDeclaration OptionalKeyVals:Declare {}', '',
           "No Declaration with label=$label was found"); } } },
   properties => { alignmentSkippable => 1 },
   reversion  => '');
-
 NewCounter('@XMDECL', 'section', idprefix => 'XMD');
 
 sub next_declaration_id {
@@ -547,5 +943,13 @@ sub createDeclarationRewrite {
     ));
   return; }
 
-#======================================================================
+=begin sty
+
+\newcommand{\lxDeclare}[2][]{\@bsphack\@esphack}%
+\newcommand{\lxRefDeclaration}[2][]{\@bsphack\@esphack}%
+
+=end sty
+
+=cut
+
 1;
