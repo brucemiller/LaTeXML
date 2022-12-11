@@ -518,7 +518,7 @@ sub assemble_postprocessors {
       if ($icon) {
         $$parameters{ICON} = $icon; }
       if (!defined $timestamp) {
-        $timestamp = localtime(); }
+        $timestamp = defined $ENV{SOURCE_DATE_EPOCH} ? gmtime($ENV{SOURCE_DATE_EPOCH}) : localtime(); }
       if ($timestamp) {
         $$parameters{TIMESTAMP} = "'" . $timestamp . "'"; }
       # Now add in the explicitly given XSLT parameters
