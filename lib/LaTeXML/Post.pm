@@ -947,7 +947,7 @@ sub checkDestination {
 
 sub stringify {
   my ($self) = @_;
-  return 'Post::Document[' . $self->siteRelativeDestination . ']'; }
+  return 'Post::Document[' . ($self->siteRelativeDestination || '') . ']'; }
 
 sub getLocator {
   my ($self) = @_;
@@ -1084,7 +1084,10 @@ sub addNodes {
   foreach my $child (@data) {
     if (ref $child eq 'ARRAY') {
       my ($tag, $attributes, @children) = @$child;
-      if ($tag eq '_Fragment_') {
+      if (!$tag) {
+        # don't add anonymous nodes? or?
+        next; }
+      elsif ($tag eq '_Fragment_') {
         my $indent;    # Derive indentation from indentation of $node
         if (my $pre = $node->previousSibling) {
           if (($pre->nodeType == XML_TEXT_NODE) && (($pre = $pre->textContent) =~ /^\s*$/)) {

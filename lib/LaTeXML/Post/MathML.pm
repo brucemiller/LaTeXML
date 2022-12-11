@@ -511,6 +511,7 @@ sub needsMathstyle {
   my ($node) = @_;
   if (ref $node eq 'ARRAY') {
     my ($tag, $attr, @children) = @$node;
+    return 0 unless $tag;
     return 1 if $tag eq 'm:mfrac';
     return 1 if $$attr{_largeop};
     return 0 if ($tag eq 'm:mstyle') && defined $$attr{displaystyle};
@@ -1051,12 +1052,12 @@ sub space_walk {
   my ($self, $node) = @_;
   return unless $node;
   my ($tag, $attr, @children) = @$node;
-  my $type = $tag_arg_pattern{$tag} || 'other';
+  my $type = ($tag && $tag_arg_pattern{$tag}) || 'other';
   if    ($type eq 'atom') { }    # Atomic things don't need any adjustments
   elsif ($type eq 'mrow') {      # look at adjacent pairs in mrow-like things
     my @nodes = @children;
     my $prev  = shift(@nodes);
-    while ($prev && ($$prev[0] eq 'm:mrow')) {    # Unwrap mrows
+    while ($prev && $$prev[0] && ($$prev[0] eq 'm:mrow')) {    # Unwrap mrows
       unshift(@nodes, @$prev[2 .. $#$prev]);
       $prev = shift(@nodes); }
     space_walk($self, $prev);
@@ -1177,18 +1178,18 @@ sub adjust_pair {
   # Consider the spacing on the right of $prev and left of $next.
   # Combine any explict padding with TeX spacing based on math atom categories
   my ($iprev, $inext) = ($prev, $next); # Inner (possibly embellished, possibly operator) for OperatorDictionary
-  while ($iprev && $embellisher{ $$iprev[0] }) { $iprev = $$iprev[2]; }
-  while ($inext && $embellisher{ $$inext[0] }) { $inext = $$inext[2]; }
+  while ($iprev && $$iprev[0] && $embellisher{ $$iprev[0] }) { $iprev = $$iprev[2]; }
+  while ($inext && $$inext[0] && $embellisher{ $$inext[0] }) { $inext = $$inext[2]; }
   my $prev_req_right = $$prev[1]{_rpadding} // 0;        # Author spacing, in em
   my $next_req_left  = $$next[1]{_lpadding} // 0;
   my $prev_role      = $$iprev[1]{_role}    // 'ATOM';
   my $next_role      = $$inext[1]{_role}    // 'ATOM';
-  my $prev_type      = $m_atomtype{ $$iprev[0] } || $$role_atomtype{$prev_role} || 'Ord';
-  my $next_type      = $m_atomtype{ $$inext[0] } || $$role_atomtype{$next_role} || 'Ord';
-  my $tex_code       = $$atompair_spacing{$prev_type}{$next_type} // 0;
-  my $tex_space      = $tex_spacing[abs($tex_code)];
-  my $req_space      = $prev_req_right + $next_req_left;
-  my $target         = $req_space + $tex_space;
+  my $prev_type = ($$iprev[0] && $m_atomtype{ $$iprev[0] }) || $$role_atomtype{$prev_role} || 'Ord';
+  my $next_type = ($$inext[0] && $m_atomtype{ $$inext[0] }) || $$role_atomtype{$next_role} || 'Ord';
+  my $tex_code  = $$atompair_spacing{$prev_type}{$next_type} // 0;
+  my $tex_space = $tex_spacing[abs($tex_code)];
+  my $req_space = $prev_req_right + $next_req_left;
+  my $target    = $req_space + $tex_space;
   # Now find the default spacing from MathML's operator dictionary (stored by stylizeContent)
   my $prev_dict_right  = $$iprev[1]{_rspace} // 0;
   my $next_dict_left   = $$inext[1]{_lspace} // 0;
@@ -1382,7 +1383,7 @@ sub cmml_share {
     return ['m:share', { href => '#' . $fragid . $LaTeXML::Post::MATHPROCESSOR->IDSuffix }]; }
   else {    # No fragid should be error/warning or something???
     Warn('expected', 'fragid', $node,
-      "Shared node is missing fragid");
+      "Shared node is missing fragid", $node->toString(1));
     return ['m:share']; } }
 
 sub cmml_or_compose {
