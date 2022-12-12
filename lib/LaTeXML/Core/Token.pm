@@ -131,11 +131,20 @@ sub ExplodeText {
       split('', $string)
     : ()); }
 
-my $UNTEX_LINELENGTH = 78;    # [CONSTANT]
+our $UNTEX_LINELENGTH = 78;    # [CONSTANT]
 
 sub UnTeX {
   my ($thing, $suppress_linebreak) = @_;
   return unless defined $thing;
+  # Linebreak suppression could be a bit misleading for third-party users:
+  # even if the $suppress_linebreak argument flag is passed in,
+  # we still want to allow a global override (e.g. as a latexml.sty option)
+  # that would change the behavior of every UnTeX call in the codebase.
+  #
+  # Also, note that this suppresses the additional '%\n' breaks of latexml,
+  # but will still preserve \n characters from the original TeX (e.g. in matrixes)
+  $suppress_linebreak //= $STATE->lookupValue('SUPPRESS_UNTEX_LINEBREAKS');
+
   my @tokens = ref $thing ?
     map { ref $_ eq 'LaTeXML::Core::Tokens' ? $_->unlist : $_ } $thing->revert :
     Explode($thing);
@@ -222,7 +231,7 @@ our @CATCODE_SHORT_NAME =          #[CONSTANT]
   T_SUB T_IGNORE T_SPACE T_LETTER
   T_OTHER T_ACTIVE T_COMMENT T_INVALID
   T_CS T_MARKER T_ARG T_SMUGGLE_THE
-);
+  );
 
 our $SMUGGLE_THE_COMMANDS = {
   '\the'        => 1,
@@ -433,11 +442,16 @@ Returns a list of the tokens corresponding to the characters in C<$string>.
 All (roman) letters have catcode CC_LETTER, all others have catcode CC_OTHER,
 except for spaces which have catcode CC_SPACE.
 
-=item C<< UnTeX($object); >>
+=item C<< UnTeX($object, $suppress_linebreaks); >>
 
 Converts C<$object> to a string containing TeX that created it (or could have).
 Note that this is not necessarily the original TeX code; expansions
 or other substitutions may have taken place.
+
+Line-breaking of the generated TeX can be explicitly requested or disabled
+by passing 0 or 1 as the second C<$suppress_linebreaks> argument.
+The default behavior of line-breaking is controlled by
+the global State value C<SUPPRESS_UNTEX_LINEBREAKS>.
 
 =back
 
