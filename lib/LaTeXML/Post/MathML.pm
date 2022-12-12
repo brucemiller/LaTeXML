@@ -546,11 +546,12 @@ sub pmml_maybe_resize {
       if (!$depth) {
         if ($yoff =~ /^-/) { $depth = $yoff; $depth =~ s/^-/+/; }
         else               { $depth = "-" . $yoff; } } }
-    $$attr{width}   = $width  if $width;
-    $$attr{height}  = $height if $height;
-    $$attr{depth}   = $depth  if $depth;
-    $$attr{lspace}  = $xoff   if $xoff;
-    $$attr{voffset} = $yoff   if $yoff; }
+    $$attr{width}   = $width        if $width;
+    $$attr{height}  = $height       if $height;
+    $$attr{depth}   = $depth        if $depth;
+    $$attr{class}   = "mathml-full" if ($width || $height || $depth);
+    $$attr{lspace}  = $xoff         if $xoff;
+    $$attr{voffset} = $yoff         if $yoff; }
 
   if (my $frame = $node->getAttribute('framed')) {
     my $attr  = $$result[1];
