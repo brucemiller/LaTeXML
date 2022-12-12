@@ -55,6 +55,7 @@ sub getExpansion {
 
 # Expand the expandable control sequence. This should be carried out by the Gullet.
 sub invoke {
+  no warnings 'recursion';
   my ($self, $gullet, $onceonly) = @_;
   # shortcut for "trivial" macros; but only if not tracing & profiling!!!!
   my $tracing   = $STATE->lookupValue('TRACINGMACROS');

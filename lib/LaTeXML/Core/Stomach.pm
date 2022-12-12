@@ -153,8 +153,8 @@ our @CATCODE_ABSORBABLE = (    # [CONSTANT]
   0, 0, 0, 0);
 
 sub invokeToken {
-  my ($self, $token) = @_;
   no warnings 'recursion';
+  my ($self, $token) = @_;
 INVOKE:
   ProgressStep() if ($$self{progress}++ % $DIGESTION_PROGRESS_QUANTUM) == 0;
   push(@{ $$self{token_stack} }, $token);

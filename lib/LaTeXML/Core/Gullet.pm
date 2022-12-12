@@ -366,6 +366,7 @@ sub readXToken {
       && ($for_evaluation || !$$defn{isProtected})) { # is this the right logic here? don't expand unless di
       local $LaTeXML::CURRENT_TOKEN = $token;
       my $r;
+      no warnings 'recursion';
       my @expansion = map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
           : ($r eq 'LaTeXML::Core::Tokens' ? @$_
             : Error('misdefined', $r, undef, "Expected a Token, got " . Stringify($_),
