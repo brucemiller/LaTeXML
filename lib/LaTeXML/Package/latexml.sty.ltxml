@@ -59,6 +59,10 @@ DeclareOption('rawclasses',     sub { AssignValue('INCLUDE_CLASSES' => 1,       
 DeclareOption('localrawclasses', sub { AssignValue('INCLUDE_CLASSES' => 'searchpaths', 'global'); });
 DeclareOption('norawclasses',    sub { AssignValue('INCLUDE_CLASSES' => 0, 'global'); });
 
+# Avoid extra line-breaks in UnTeX
+DeclareOption('breakuntex',   sub { AssignValue('SUPPRESS_UNTEX_LINEBREAKS' => 0, 'global'); });
+DeclareOption('nobreakuntex', sub { AssignValue('SUPPRESS_UNTEX_LINEBREAKS' => 1, 'global'); });
+
 DefConstructor('\lx@save@parameter{}{}', sub {
     $_[0]->insertPI('latexml', ToString($_[1]) => $_[2]); });
 DefKeyVal('LTXML', 'dpi', 'Number', '', code => sub {
