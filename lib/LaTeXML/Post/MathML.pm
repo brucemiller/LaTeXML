@@ -460,7 +460,7 @@ sub pmml_internal {
         my $c    = ($bc ? ($hc ? "$bc $hc" : $bc) : $hc);
         my $cs   = $col->getAttribute('colspan');
         my $rs   = $col->getAttribute('rowspan');
-        my @cell = map { pmml($_) } element_nodes($col);
+        my @cell = filter_row(map { pmml($_) } element_nodes($col));
 
         if ($rs || $cs) {                            # Note following cells to be omitted from MathML
           for (my $i = 0 ; $i < ($cs || 1) ; $i++) {
@@ -563,9 +563,13 @@ sub pmml_maybe_resize {
       $$attr{style} = ($s ? $s . '; ' . $style : $style); } }
   return $result; }
 
+sub filter_row {
+  my (@items) = @_;
+  return grep { !$$_[1]{_ignorable}; } grep { $_ } @items; }
+
 sub pmml_row {
   my (@items) = @_;
-  @items = grep { $_ } @items;
+  @items = filter_row(@items);
   return (scalar(@items) == 1 ? $items[0] : ['m:mrow', {}, @items]); }
 
 sub pmml_unrow {
@@ -1431,10 +1435,8 @@ DefMathML("Token:?:absent", sub { return ['m:mi', {}] });
 DefMathML('Hint:?:?', sub {
     my ($node) = @_;
     my $w = getXMHintSpacing($node->getAttribute('width'));
-    if ($w) {
-      ['m:mspace', { width => $w . 'em' }]; }
-    else {
-      undef } },
+    # note that we MUST return some node (not undef)
+    ['m:mspace', { ($w ? (width => $w . 'em') : (_ignorable => 1)) }]; },
   sub { undef; });    # Should Disappear from cmml!
 
 # At presentation level, these are essentially adorned tokens.
