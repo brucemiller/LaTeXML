@@ -539,13 +539,13 @@ sub pmml_maybe_resize {
     else {
       $result = ['m:mpadded', {}, $result]; }
     my $attr = $$result[1];
-    if ($yoff) {    # assume this means to move the BOX? (not just the contents?)
-      if (!$height) {
-        if ($yoff =~ /^-/) { $height = $yoff; }
-        else               { $height = "+" . $yoff; } }
-      if (!$depth) {
-        if ($yoff =~ /^-/) { $depth = $yoff; $depth =~ s/^-/+/; }
-        else               { $depth = "-" . $yoff; } } }
+    # if ($yoff) {    # assume this means to move the BOX? (not just the contents?)
+    #   if (!$height) {
+    #     if ($yoff =~ /^-/) { $height = $yoff; }
+    #     else               { $height = "+" . $yoff; } }
+    #   if (!$depth) {
+    #     if ($yoff =~ /^-/) { $depth = $yoff; $depth =~ s/^-/+/; }
+    #     else               { $depth = "-" . $yoff; } } }
     $$attr{width}   = $width  if $width;
     $$attr{height}  = $height if $height;
     $$attr{depth}   = $depth  if $depth;
