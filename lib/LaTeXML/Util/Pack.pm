@@ -52,12 +52,13 @@ sub unpack_source {
     while (<$README_FH>) {
       chomp($_);
       my ($name, $directive) = split(/\s+/, $_);
-      if ($directive eq 'toplevelfile') {
-        # shortcut guessing the top file, the user has provided it explicitly.
-        $toplevelfile = catfile($sandbox_directory, $name);
-      } elsif ($directive eq 'ignore') {
-        my $ignored_filepath = catfile($sandbox_directory, $name);
-        unlink($ignored_filepath) if -e $ignored_filepath; } }
+      if ($directive) {
+        if ($directive eq 'toplevelfile') {
+          # shortcut guessing the top file, the user has provided it explicitly.
+          $toplevelfile = catfile($sandbox_directory, $name);
+        } elsif ($directive eq 'ignore') {
+          my $ignored_filepath = catfile($sandbox_directory, $name);
+          unlink($ignored_filepath) if -e $ignored_filepath; } } }
     return $toplevelfile if $toplevelfile; }
 
   # I.2. Without an explicit directive,
