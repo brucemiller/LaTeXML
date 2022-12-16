@@ -12,6 +12,7 @@
 \usepackage{wrapfig}
 % Should the additional keywords be indexed?
 \lstdefinestyle{shell}{language=bash,escapechar=@,basicstyle=\ttfamily\iflatexml\else\small\fi,%
+   commentstyle={\normalfont},
    morekeywords={latexml,latexmlpost,latexmlc,latexmlmath},
    moredelim=[is][\itshape]{\%}{\%}}
 \lstdefinestyle{latexml}{basicstyle=\ttfamily\iflatexml\else\small\fi,language=Perl,%
@@ -69,11 +70,7 @@
 \makeatletter
 \null\vfil
 \hbox to \textwidth{%
-  \hfill
-  \hbox to 0.5in {
-  \includegraphics{../graphics/mascot.png} }
-%  \kern -2in
-%  \hskip -1.5in
+ \makebox[0in]{\hskip0.5in\includegraphics{../graphics/mascot.png}}%
  \vbox{
    \null
     \centering
@@ -81,14 +78,13 @@
     \vskip 1.0em%
     {\large \@subtitle \par}%
     \vskip 3em%
-    {\large \@author \par}
+    {\large \@author \par}%
     \vskip 1.5em%
     {\large \@date \par}%       % Set date in \large size.
     \vskip 3em%
    \null
-   }
-  \hfill
-}
+   }%
+}%
 \par\vfil\null
 \makeatother
 \end{titlepage}
@@ -176,7 +172,7 @@ we will put `programming' oriented material (Perl, \TeX) in a typewriter font,
 \textsf{like this}.
 
 \vskip 1cm\relax
-If you encounter difficulties, there is a support mailing list at
+If you encounter difficulties, join the mailing list at
 \URL[\texttt{latexml-project}]{https://lists.informatik.uni-erlangen.de/mailman/listinfo/latexml}.
 Bugs and enhancement requests can be reported at
 \URL[Github]{https://github.com/brucemiller/LaTeXML}.
@@ -393,8 +389,8 @@ which overrides the extension used in the destination. The recognized formats ar
      some `vector' style graphics are converted to SVG,
      other graphics are converted to images;
      \code{LaTeXML-html5.xslt} is used.
-     The file extension html is generates html5
- \item[html4] both math and graphics are converted to png images;
+     The file extension html generates html5
+ \item[html4] both math and graphics are converted to images;
     \code{LaTeXML-html4.xslt} is used.
  \item[xhtml] math is converted to Presentation \MathML, other graphics are converted to images;
      \code{LaTeXML-xhtml.xslt}  is used.
@@ -516,11 +512,11 @@ the \XSLT, change its functionality by adding javascript,
 or even generate an alternative output format with \XSLT,
 some combination of the following options will be useful.
 \begin{lstlisting}[style=shell]
---nodefaultresources          # Omits the default resources (css..)
+--nodefaultresources        # Omits the default resources (css..)
 --css=%stylesheet%.css        # Adds a new CSS stylesheet
 --javascript=%program%.js     # Adds a Javascript
 --stylesheet=%stylesheet%.xsl # Uses an alternative XSLT stylesheet
---xsltparameter=%name%:%value% # Sets an XSLT parameter
+--xsltparameter=%name%:%value%  # Sets an XSLT parameter
 \end{lstlisting}
 All but \shellcode{--stylesheet} can be repeated to include multiple files
 or set multiple parameters.  When a local \CSS\ or javascript file is included,
@@ -1220,7 +1216,7 @@ Here are a couple of trivial examples of constructors:
 
 \paragraph[DefConstructor]{%
    \texttt{DefConstructor(\textit{\$prototype},\textit{\$replacement},\textit{\%options})}}
-The \ltxcode|$replacement| for a constructor describes the \XML\ to %$
+Creates a constructor control sequence, where \ltxcode|$replacement| describes the \XML\ to %$
 be generated during the construction phase. It can either be a string
 representing the \emph{XML pattern} (described below), or a
 subroutine \ltxcode|CODE($document,$arg1,...%props)|
@@ -2487,8 +2483,8 @@ The basic strategy is the following:
   \texttt{intertext} arises from text injected between aligned equations.
 \end{description}
 
-Any other explicit use of the \verb|addClass(class)| function or
-of the \verb|\lxAddClass{class}| macro from the \texttt{latexml} package
+Explicit use of the \verb|addClass(class)| function or
+the \verb|\lxAddClass{class}| macro from the \texttt{latexml} package
 will add the given class as is, without any additional \texttt{ltx\_} prefix.
 
 Two oddball items that may get refactored away are:
