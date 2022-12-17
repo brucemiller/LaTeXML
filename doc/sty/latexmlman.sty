@@ -67,12 +67,18 @@
 % Containers for advanced material, examples, ...
 
 % Sort of a "double bend" thing?
-%\newenvironment{advanced}{\vskip 2ex\textcolor{red}{\LARGE !!}}{\vskip 1ex}
+\newbox\@advancedbox
+\setbox\@advancedbox\vbox{\hbox{\includegraphics{../graphics/scratch.png}}}%
+\dp\@advancedbox=0pt\relax
+\ht\@advancedbox=12pt\relax
+\setbox\@advancedbox\hbox{\hskip-1.1cm\copy\@advancedbox}
+\wd\@advancedbox=0pt\relax
 \newenvironment{advanced}{%
 %\vskip 2ex
 \medbreak
-\noindent\hangindent=1cm\hangafter=-3\relax
-\hbox to 0pt{\hskip-1.1cm\vbox to 12pt{\noindent\includegraphics{../graphics/scratch.png}}\hfill}%
+\noindent\copy\@advancedbox
+\hangindent=1cm\hangafter=-3\relax
+\ignorespaces
 }{\medbreak}
 
 %======================================================================
@@ -90,25 +96,26 @@
 \def\@@latexmlpostcmd{latexmlpost}
 \def\@@latexmlccmd{latexmlc}
 \def\@@latexmlmathcmd{latexmlmath}
-\newcommand{\pod}[1]{%
-  {\edef\@prefix{\@@pkgprefix#1::\end}
-   \edef\@podcmd{#1}
+\newcommand{\pod}[2][]{\ifx.#1.\@pod{#2}{#2}\else\@pod{#1}{#2}\fi}
+\newcommand{\@pod}[2]{%
+  {\edef\@prefix{\@@pkgprefix#2::\end}
+   \edef\@podcmd{#2}
   \ifx\@@ltxprefix\@prefix
-     \htmlref{{\perlfont #1}}{#1}%
-  \else\ifx\@podcmd\@@latexmlcmd
-     \htmlref{{\perlfont #1}}{#1}%
+     \hyperref[#2]{{\perlfont #1}}%
   \else\ifx\@podcmd\@@latexmlpostcmd
-     \htmlref{{\perlfont #1}}{#1}%
+     \hyperref[#2]{{\perlfont #1}}%
+  \else\ifx\@podcmd\@@latexmlcmd
+     \hyperref[#2]{{\perlfont #1}}%
   \else\ifx\@podcmd\@@latexmlccmd
-     \htmlref{{\perlfont #1}}{#1}%
+     \hyperref[#2]{{\perlfont #1}}%
   \else\ifx\@podcmd\@@latexmlmathcmd
-     \htmlref{{\perlfont #1}}{#1}%
+     \hyperref[#2]{{\perlfont #1}}%
   \else
-     \href{https://search.cpan.org/search?query=#1&mode=module}{{\perlfont #1}}%
+     \href{https://search.cpan.org/search?query=#2&mode=module}{{\perlfont #1}}%
   \fi\fi\fi\fi\fi}}
 
 
-\newcommand{\ltxcmd}[1]{\htmlref{{\latexfont #1}}{#1}}
+\newcommand{\ltxcmd}[1]{\hyperref[#1]{{\latexfont #1}}}
 % The idea here is that since the class names are so long, LaTeXML::Core::Definition::Expandable;
 % Show the long form first, but then abbreviate to just the last name.
 % Of course, there are eventually, potential ambiguities;  We COULD adapt to that,
@@ -127,7 +134,7 @@
    \ltxpod@ref{\ltxpod@@short#1::\end}{#1}}
 \def\ltxpod@@short#1::#2\end{\ifx.#2.#1\else\ltxpod@@short#2\end\fi}
 \def\ltxpod@@pre#1::#2\end{\ifx.#2.\else#1::\allowbreak\ltxpod@@pre#2\end\fi}
-\def\ltxpod@ref#1#2{\htmlref{\perlfont #1}{LaTeXML::#2}}
+\def\ltxpod@ref#1#2{\hyperref[LaTeXML::#2]{\perlfont #1}}
 
 \newcommand{\cmd}[1]{{\shellfont #1}}
 \newcommand{\code}[1]{{\perlfont #1}}
@@ -222,7 +229,7 @@
      \ifx.#3.\else\begin{patterndescription}#3\end{patterndescription}\fi
 }
 
-\newcommand{\moduleref}[1]{\htmlref{{\perlfont #1}}{\cleanhypername{schema.#1}}}
+\newcommand{\moduleref}[1]{\hyperref[\cleanhypername{schema.#1}]{{\perlfont #1}}}
 \newcommand{\patternref}[1]{\hyperlink{\cleanhypername{schema.#1}}{{\patternfont #1}}}
 \newcommand{\elementref}[1]{\hyperlink{\cleanhypername{schema.#1}}{{\schemafont #1}}}
 

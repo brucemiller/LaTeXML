@@ -178,8 +178,12 @@ sub interior_sequence {
     my $label = $seq_argument;
     if ($seq_argument =~ /^(.*)\|(.*)$/) {               # Separate the text to use, if given
       $text = $1; $label = $2; }
-    if ($label =~ /^\//) {                               # reference to section within THIS pod?
-      $label = $::PODDOC . $label; }
+    if ($label =~ /^\/(.*)$/) {                          # reference to section within THIS pod?
+      my $link = $1;
+      $link = $1 if ($link =~ /^"(.*)"$/);               # Strip quotes
+      $text = $link unless defined $text;
+      $link =~ s/\s+/_/g;
+      $label = $::PODDOC . '_' . $link; }
     return ($text ? "\\pod[$text]{$label}" : "\\pod{$label}"); }
   elsif ($seq_command eq 'X') {
     return "\\index{$seq_argument\@{\\ttfamily $seq_argument}}"; }
@@ -196,7 +200,7 @@ sub _create_index {
     $reftype = "module";
     my @comp = split('::', $name);
     $name = $comp[-1]
-      . (@comp > 1 ? '(' . join('::', @comp[0 .. $#comp - 1]) . '::)' : ''); }
+      . (@comp > 1 ? '({\footnotesize ' . join('::', @comp[0 .. $#comp - 1]) . '::})' : ''); }
   return join('!', "$name\@{\\ttfamily $name}", $reftype, @rest); }
 
 # Redefined to avoid unnecessary math.
