@@ -133,7 +133,7 @@ sub packParameters {
       else {    # any other case, preserve as-is, let the higher level call resolve any errors
                 # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
         Error('misdefined', 'expansion', undef, "Parameter has a malformed arg, should be #1-#9 or ##. ",
-          "In expansion " . ToString(Tokens(@toks))); } }
+          "In expansion " . ToString($self)); } }
     elsif (my $inner = $$t[2]) {    # Open-coded $t->without_dont_expand
       $repacked = 1;
       push(@rescanned, ($$inner[2] || $inner)); }
