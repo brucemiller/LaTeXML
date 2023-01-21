@@ -4036,29 +4036,29 @@ sub cleanup_XMText {
 
 #======================================================================
 # openMathFork($document,$equation) will add a MathFork structure
-# to the given $equation, and return ($main, $branch)
-# where $main is the initial <ltx:Math> and $branch is the <ltx:MathBranch>.
-# You'll probably want to be adding Stuff to one or both of $main & $branch.
+# to the given $equation, and return ($mainfork, $branch)
+# where $mainfork is the initial <ltx:Math> and $branch is the <ltx:MathBranch>.
+# You'll probably want to be adding Stuff to one or both of $mainfork & $branch.
 # Most typically, you'll be finding math fragments that you've found in the
-# current content of $equation and adding them into both $main & $branch
+# current content of $equation and adding them into both $mainfork & $branch
 # using addColumnToMathFork.
 sub openMathFork {
   my ($document, $equation) = @_;
-  my $fork   = $document->openElementAt($equation, 'ltx:MathFork');
-  my $main   = $document->openElementAt($fork, 'ltx:Math', _box => MathWhatsit());    # Start EMPTY!
-  my $xmath  = $document->openElementAt($main, 'ltx:XMath');
-  my $branch = $document->openElementAt($fork, 'ltx:MathBranch');
-  return ($main, $branch); }
+  my $fork     = $document->openElementAt($equation, 'ltx:MathFork');
+  my $mainfork = $document->openElementAt($fork, 'ltx:Math', _box => MathWhatsit());    # Start EMPTY!
+  my $xmath    = $document->openElementAt($mainfork, 'ltx:XMath');
+  my $branch   = $document->openElementAt($fork,     'ltx:MathBranch');
+  return ($mainfork, $branch); }
 
 # Close the appropriate elements of an ltx:MathFork created with openMathFork.
 sub closeMathFork {
-  my ($document, $equation, $main, $branch) = @_;
+  my ($document, $equation, $mainfork, $branch) = @_;
   # Now, close them all.
   $document->closeElementAt($branch);
-  $document->closeElementAt($document->getFirstChildElement($main));
-  $document->closeElementAt($main);
-  #  $document->closeElementAt($main->parentNode); }
-  # More defensive? Sometimes we end up with a DocumentFragment as parent of $main????!?!?!?!
+  $document->closeElementAt($document->getFirstChildElement($mainfork));
+  $document->closeElementAt($mainfork);
+  #  $document->closeElementAt($mainfork->parentNode); }
+  # More defensive? Sometimes we end up with a DocumentFragment as parent of $mainfork????!?!?!?!
   my @mfs = $document->findnodes('ltx:MathFork', $equation);
   $document->closeElementAt($mfs[-1]);
   my $fork     = $branch->parentNode;
@@ -4096,13 +4096,13 @@ sub MathWhatsit {
 # The content of $cell (an ltx:_Capture_) is typically a single ltx:Math.
 # (but occasionally mixed math & ltx:text; some cases may need more semantic analysis?)
 # The content of $cell will be MOVED into the new column (ltx:td), (w/ ID's intact)
-# and CLONED (w/modified ID's) onto the end of the first child of the main branch, $main,
+# and CLONED (w/modified ID's) onto the end of the first child of the main branch, $mainfork,
 # of the ltx:MathFork [A Math Whatsit is also synthesized for the main branch, for TeX, etc!).
 # Thus, the collection of rows/columns fragments represents  the alignment,
 # while the main branch synthesizes the (presumed) semantic whole.
 # The now-empty $cell is then removed from its parent & the document.
 sub addColumnToMathFork {
-  my ($document, $main, $inbranch, $cell) = @_;
+  my ($document, $mainfork, $inbranch, $cell) = @_;
   my $td = $document->openElementAt($inbranch, 'ltx:td');
   if (my $align = $cell->getAttribute('align')) {
     $document->setAttribute($td, align => $align); }
@@ -4121,8 +4121,8 @@ sub addColumnToMathFork {
     if ($type eq 'ltx:Math') {
       if (my $xmath = $document->getFirstChildElement($node)) {
         # But we CLONE the contents of it's ltx:XMath onto the end of
-        # the main ltx:Math/ltx:XMath (under $main), modifying id's along the way.
-        $document->appendClone($document->getFirstChildElement($main),
+        # the mainfork ltx:Math/ltx:XMath (under $mainfork), modifying id's along the way.
+        $document->appendClone($document->getFirstChildElement($mainfork),
           $document->getChildElements($xmath));
         # Add the boxes from this cell to the previously collected ones in the main branch.
         $box = $document->getNodeBox($node)->getBody; } }
@@ -4130,7 +4130,7 @@ sub addColumnToMathFork {
     # typically coming from abused eqnarrays?  May need more analysis preceding the MathFork'ing!
     elsif (($type eq 'ltx:text') || ($type eq 'ltx:p')) {
       next if $node->textContent eq '';
-      my $txt = $document->openElementAt($document->getFirstChildElement($main), 'ltx:XMText');
+      my $txt = $document->openElementAt($document->getFirstChildElement($mainfork), 'ltx:XMText');
       $document->appendClone($txt, $node);
       $document->closeElementAt($txt);
       $box = $document->getNodeBox($node); }
@@ -4138,7 +4138,7 @@ sub addColumnToMathFork {
       my $string = $node->textContent;
       #      next if $string eq '';
       next if $string =~ /^\s*$/;
-      my $txt = $document->openElementAt($document->getFirstChildElement($main), 'ltx:XMText');
+      my $txt = $document->openElementAt($document->getFirstChildElement($mainfork), 'ltx:XMText');
       $txt->appendText($string);
       $document->closeElementAt($txt);
       $box = Box($string); }
@@ -4148,9 +4148,9 @@ sub addColumnToMathFork {
         "Don't know how to synthesize equation with $type in column"); }
     # Add the boxes from this cell to the previously collected ones in the main branch.
     if ($box) {
-      my $composed = MathWhatsit($document->getNodeBox($main)->getBody, $box);
-      $document->setNodeBox($main,             $composed);
-      $document->setNodeBox($main->firstChild, $composed); }    # And also to the XMath element!
+      my $composed = MathWhatsit($document->getNodeBox($mainfork)->getBody, $box);
+      $document->setNodeBox($mainfork,             $composed);
+      $document->setNodeBox($mainfork->firstChild, $composed); }    # And also to the XMath element!
         # Finally MOVE (really copy) the node from the _Capture_ ($cell) to the td (in the fork)
         # this keeps the same IDs as original; (& appendTree may remove id's from $node!)
     $document->unRecordNodeIDs($node);
@@ -4209,7 +4209,7 @@ sub equationgroupJoinRows {
   $equation->appendChild($tags)                                   if $tags;
 
   # Scan equations to see which ones likely are continuations of previous
-  my ($main, $branch) = openMathFork($document, $equation);
+  my ($mainfork, $branch) = openMathFork($document, $equation);
   foreach my $eq (@equations) {
     # remove equation; parts will be added in by adding to mathfork (hopefully taking care of ids)
     $eq->unbindNode;
@@ -4218,9 +4218,9 @@ sub equationgroupJoinRows {
     $document->setAttribute($tr, class => 'ltx_eqn_lefteqn')
       if ($cells[0]->getAttribute('class') || '') =~ /\blefteqn\b/;
     foreach my $cell (@cells) {
-      addColumnToMathFork($document, $main, $tr, $cell); }
+      addColumnToMathFork($document, $mainfork, $tr, $cell); }
     $document->closeElementAt($tr); }
-  closeMathFork($document, $equation, $main, $branch);
+  closeMathFork($document, $equation, $mainfork, $branch);
   $document->closeElementAt($equation);
   return; }
 
@@ -4230,15 +4230,15 @@ sub equationgroupJoinRows {
 # This is typically useful for AMS's align structures,
 # which contain several columns, each pair of which represent a semantic equation.
 sub equationgroupJoinCols {
-  my ($document, $ncols, $equation) = @_;
-  my ($col,      $main,  $branch)   = (0, undef, undef);
+  my ($document, $ncols,    $equation) = @_;
+  my ($col,      $mainfork, $branch)   = (0, undef, undef);
   foreach my $cell ($document->findnodes('ltx:_Capture_', $equation)) {
     next unless $document->getNodeQName($cell) =~ /(.*?:)?_Capture_$/;
     if (($col++ % $ncols) == 0) {    # Create new MathFork every $ncols cells.
-      closeMathFork($document, $equation, $main, $branch) if $main;
-      ($main, $branch) = openMathFork($document, $equation); }
-    addColumnToMathFork($document, $main, $branch, $cell); }
-  closeMathFork($document, $equation, $main, $branch) if $main;
+      closeMathFork($document, $equation, $mainfork, $branch) if $mainfork;
+      ($mainfork, $branch) = openMathFork($document, $equation); }
+    addColumnToMathFork($document, $mainfork, $branch, $cell); }
+  closeMathFork($document, $equation, $mainfork, $branch) if $mainfork;
   return; }
 
 #**********************************************************************
