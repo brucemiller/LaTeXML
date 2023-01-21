@@ -153,7 +153,7 @@ DefParameterType('Optional', sub {
 DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
     my $open = $gullet->readXToken;
-    if ($open && $open->equals(T_BEGIN)) {
+    if ($open && ($open->getCatcode == CC_BEGIN)) {
       return $gullet->readBalanced; }
     else {
       Error('expected', '{', $gullet,
@@ -210,9 +210,11 @@ DefParameterType('UntilBrace', sub {
 # Yet another special case: Require a { but do not read it!!!
 DefParameterType('RequireBrace', sub {
     my ($gullet) = @_;
-    if (!$gullet->ifNext(T_BEGIN)) {
-      Error('expected', '{', $gullet, "Expected a { here"); }
-    T_BEGIN; },
+    if (my $tok = $gullet->readToken) {
+      $gullet->unread($tok);
+      if ($tok->getCatcode != CC_BEGIN) {
+        Error('expected', '{', $gullet, "Expected a { here; Got " . Stringify($tok)); }
+      $tok; } },
   novalue => 1);
 
 DefParameterType('XUntil', sub {
@@ -348,7 +350,7 @@ DefParameterType('UndigestedDefKey', sub { $_[0]->readArg; }, undigested => 1, p
 DefParameterType('DefToken', sub {
     my ($gullet) = @_;
     my $token = $gullet->readToken;
-    while ($token && $token->equals(T_BEGIN)) {
+    while ($token && ($token->getCatcode == CC_BEGIN)) {
       my @toks = grep { !$_->equals(T_SPACE) } $gullet->readBalanced->unlist;
       $token = shift(@toks);
       $gullet->unread(@toks); }
@@ -482,7 +484,7 @@ DefParameterType('Digested', sub {
     do { $token = $gullet->readXToken(0);
     } while (defined $token && (($token->getCatcode == CC_SPACE) || $token->equals(T_CS('\relax'))));
     if    (!defined $token) { }
-    elsif ($token->equals(T_BEGIN)) {
+    elsif ($token->getCatcode == CC_BEGIN) {
       Digest($token);
       push(@list, $STATE->getStomach->digestNextBody()); pop(@list); }    # content w/o the braces
     else {
@@ -542,12 +544,13 @@ DefParameterType('CommaList', sub {
       my @tokens = ();
       my $comma  = T_OTHER(',');
       while (my $token = $gullet->readToken) {
-        if ($token->equals(T_END)) {
+        my $cc = $token->getCatcode;
+        if ($cc == CC_END) {
           push(@items, Tokens(@tokens));
           last; }
         elsif ($token->equals($comma)) {
           push(@items, Tokens(@tokens)); @tokens = (); }
-        elsif ($token->equals(T_BEGIN)) {
+        elsif ($cc == CC_BEGIN) {
           push(@tokens, $token, $gullet->readBalanced, T_END); }
         else {
           push(@tokens, $token); } }
@@ -3184,16 +3187,17 @@ sub parseHAlignTemplate {
   ## Only expand certain things; See TeX book p.238
   local $LaTeXML::ALIGN_STATE = 1000000;
   while ($t = $gullet->readToken) {
+    my $cc = $t->getCatcode;
     if ($t->equals(T_CS('\tabskip'))) {    # Read the tabskip assignment
       $gullet->readKeyword('=');
       $tabskip = $gullet->readGlue;
       push(@tokens, $t, $tabskip); }
     elsif ($t->equals(T_CS('\span'))) {    # ex-span-ded next token.
       $gullet->unread($gullet->readXToken(0)); }
-    elsif ($t->equals(T_PARAM)) {          # Found the template's column slot
+    elsif ($cc == CC_PARAM) {              # Found the template's column slot
       $before = 0;
       push(@tokens, $t); }
-    elsif ($t->equals(T_ALIGN)
+    elsif (($cc == CC_ALIGN)
       || $t->equals(T_CS('\cr')) || $t->equals(T_CS('\crcr'))) {    # End the column
       if ($before) {                                                # Leading & ?
         $repeated = 1;
@@ -3204,13 +3208,13 @@ sub parseHAlignTemplate {
             before => Tokens(beforeCellUnlist(Tokens(@pre))),
             after  => Tokens(afterCellUnlist(Tokens(@post))) });
         @pre = @post = (); $before = 1; }
-      last unless $t->equals(T_ALIGN);
+      last unless $cc == CC_ALIGN;
       push(@tokens, $t); }
     elsif ($before) {    # Other random tokens go into the column's pre-template
-      push(@pre,    $t) if @pre || !$t->equals(T_SPACE);
+      push(@pre,    $t) if @pre || ($cc != CC_SPACE);
       push(@tokens, $t); }
     else {               # Or the post-template
-      push(@post,   $t) if @post || !$t->equals(T_SPACE);
+      push(@post,   $t) if @post || ($cc != CC_SPACE);
       push(@tokens, $t); } }
   # Now create & return the template object
   my $template = LaTeXML::Core::Alignment::Template->new(

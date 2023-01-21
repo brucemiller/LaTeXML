@@ -49,7 +49,7 @@ DefMacro('\@Url Token', sub {
     my ($open, $close, $url);
     StartSemiverbatim('%');
     $open = $gullet->readToken;
-    if ($open->equals(T_BEGIN)) {
+    if ($open->getCatcode == CC_BEGIN) {
       $open = T_OTHER('{'); $close = T_OTHER('}');
       $url  = $gullet->readBalanced; }
     else {

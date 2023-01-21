@@ -21,8 +21,8 @@ use LaTeXML::Common::XML;
 use LaTeXML::Common::Dimension;
 use LaTeXML::Core::Alignment::Template;
 use List::Util qw(max sum);
-use base qw(LaTeXML::Core::Whatsit);
-use base qw(Exporter);
+use base       qw(LaTeXML::Core::Whatsit);
+use base       qw(Exporter);
 our @EXPORT = (qw(
     &ReadAlignmentTemplate &MatrixTemplate));
 
@@ -749,19 +749,20 @@ sub ReadAlignmentTemplate {
   my @tokens = (T_BEGIN);
   my $nopens = 0;
   while (my $open = $gullet->readToken) {
-    if ($open->equals(T_BEGIN)) { $nopens++; }
-    else                        { $gullet->unread($open); last; } }
+    if ($open->getCatcode == CC_BEGIN) { $nopens++; }
+    else                               { $gullet->unread($open); last; } }
   my $defn;
   while (my $op = $gullet->readToken) {
-    if    ($op->equals(T_SPACE)) { }
-    elsif ($op->equals(T_END)) {
-      while (--$nopens && ($op = $gullet->readToken)->equals(T_END)) { }
+    my $cc = $op->getCatcode;
+    if    ($cc == CC_SPACE) { }
+    elsif ($cc == CC_END) {
+      while (--$nopens && (($op = $gullet->readToken)->getCatcode == CC_END)) { }
       last unless $nopens;
       $gullet->unread($op); }
     elsif (defined($defn = $STATE->lookupDefinition(T_CS('\NC@rewrite@' . ToString($op))))
       && $defn->isExpandable) {
       $gullet->unread($defn->invoke($gullet, 1)); }
-    elsif ($op->equals(T_BEGIN)) {    # Wrong, but a safety valve
+    elsif ($cc == CC_BEGIN) {    # Wrong, but a safety valve
       $gullet->unread($gullet->readBalanced); }
     else {
       Warn('unexpected', $op, $gullet, "Unrecognized tabular template '" . Stringify($op) . "'"); }

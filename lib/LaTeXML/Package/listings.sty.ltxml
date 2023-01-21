@@ -282,7 +282,7 @@ sub listingsReadRawString {
       if ($mathescape && ($token->getString eq '$')) {
         if ($inmath) { $inmath = 0; $STATE = $EMPTY_CATTABLE; }
         else         { $inmath = 1; $STATE = $SAVESTATE; } }
-      if ($inmath && $token->equals(T_BEGIN)) {
+      if ($inmath && ($token->getCatcode == CC_BEGIN)) {
         push(@tokens, T_BEGIN, $gullet->readBalanced->unlist, T_END); }
       elsif (!$inmath && ($token->getCatcode == CC_CS)) {    # Dumb down CS if already seen by Gullet
         my $name = $token->getString;
@@ -1459,8 +1459,9 @@ sub TokenizeBalanced {
   my @toks =
     my $level = 0;
   foreach my $t ($tokens->unlist) {
-    if    (T_BEGIN->equals($t)) { $level++; }
-    elsif (T_END->equals($t))   { $level--; } }
+    my $cc = $t->getCatcode;
+    if    ($cc == CC_BEGIN) { $level++; }
+    elsif ($cc == CC_END)   { $level--; } }
   if ($level != 0) {    # Probably doesn't work all the time, but let's try
     my @toks = $tokens->unlist;
     while ($level > 0) { push(@toks, T_END);      $level--; }
