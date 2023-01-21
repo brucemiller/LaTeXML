@@ -1521,6 +1521,7 @@ DefRegister('\hyphenchar{}', Number(ord('-')));
 DefRegister('\skewchar{}',   Number(0));          # no idea what the default is here
 
 DefMacro('\hyphenation GeneralText', Tokens());
+DefMacro('\patterns{}',              Tokens());
 
 # <font> = <fontdef token> | \font | <family member>
 # <family member> = <font range><4bit>
@@ -2561,7 +2562,7 @@ DefPrimitive('\openin Number SkipMatch:= SkipSpaces TeXFileName', sub {
     $port     = ToString($port);
     $filename = ToString($filename);
     # Rely on FindFile to enforce any access restrictions
-    if (my $path = FindFile($filename)) {
+    if (my $path = FindFile($filename, noltxml => 1)) {
       my $mouth = LaTeXML::Core::Mouth->create($path,
         content => LookupValue($path . '_contents'));
       AssignValue('input_file:' . $port => $mouth, 'global'); }
@@ -7721,8 +7722,12 @@ sub JoinTokens {
     push(@result, $conjunction, $thing); }
   return Tokens(@result); }
 
+DefMacro('\dump', sub {
+    Warn('unexpected', 'dump', $_[0], "Do not know how to \\dump yet, sorry"); });
+
 #**********************************************************************
 LoadPool('eTeX');      # unless.... ?
 LoadPool('pdfTeX');    # unless.... ?
 #**********************************************************************
+
 1;
