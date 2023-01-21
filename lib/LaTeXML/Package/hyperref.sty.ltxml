@@ -162,7 +162,7 @@ DefMacro('\@Url Token', sub {
     $open = $gullet->readToken;
     StartSemiverbatim('%');
     Let('~', T_OTHER('~'));    # Needs special protection?
-    if ($open->equals(T_BEGIN)) {
+    if ($open->getCatcode == CC_BEGIN) {
       $open = T_OTHER('{'); $close = T_OTHER('}');
       $url  = $gullet->readBalanced(1); }            # Expand as we go!
     else {

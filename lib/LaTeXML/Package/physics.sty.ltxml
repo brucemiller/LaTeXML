@@ -88,8 +88,8 @@ sub phys_close {
 sub phys_readArg {
   my ($gullet, $required, %delimiters) = @_;
   my ($arg, $open, $close);
-  my $next = $gullet->readToken();          # or XToken ?
-  if ($next && $next->equals(T_BEGIN)) {    # Read regular arg, use default delimiters
+  my $next = $gullet->readToken();                   # or XToken ?
+  if ($next && ($next->getCatcode == CC_BEGIN)) {    # Read regular arg, use default delimiters
     $gullet->unread($next);
     $arg = $gullet->readArg(); }
   elsif (my $c = $next && $delimiters{ ToString($next) }) {
