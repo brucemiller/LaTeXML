@@ -420,6 +420,9 @@ DefParameterType('TeXFileName', sub {
       && (($cc = $token->getCatcode) != CC_SPACE) && ($cc != CC_EOL) && ($cc != CC_COMMENT) && ($cc != CC_CS)) {
       push(@tokens, $token); }
     $gullet->unread($token) unless ($cc == CC_SPACE) || ($cc == CC_EOL) || ($cc == CC_COMMENT);
+    # Strip outer "" ???
+    if ((scalar(@tokens) > 1) && ($tokens[0]->equals(T_OTHER('"'))) && ($tokens[-1]->equals(T_OTHER('"')))) {
+      shift(@tokens); pop(@tokens); }
     Tokens(@tokens); });
 
 # A LaTeX style directory List
