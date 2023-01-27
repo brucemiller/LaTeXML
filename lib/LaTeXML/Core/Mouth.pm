@@ -20,7 +20,7 @@ use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use LaTeXML::Util::Pathname;
 use Encode qw(decode);
-use base qw(LaTeXML::Common::Object);
+use base   qw(LaTeXML::Common::Object);
 
 our $READLINE_PROGRESS_QUANTUM = 25;
 
@@ -396,9 +396,8 @@ sub isEOL {
     my ($ch, $cc);
     while ((($ch, $cc) = getNextChar($self)) && (defined $ch) && ($cc == CC_SPACE)) { }
     $$self{colno}-- if ($$self{colno} <= $$self{nchars}) && (defined $cc) && ($cc != CC_SPACE);
-    if ((defined $cc) && ($cc == CC_EOL)) {    # If we've got an EOL
-      getNextChar($self);
-      $$self{colno}-- if ($$self{colno} < $$self{nchars}); } }
+    if ((defined $cc) && (($cc == CC_EOL) || ($cc == CC_COMMENT))) {    # If we've got EOL|Comment
+      $$self{colno} = $$self{nchars}; } }
   my $eol = $$self{colno} >= $$self{nchars};
   $$self{colno} = $savecolno;
   return $eol; }
