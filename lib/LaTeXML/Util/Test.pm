@@ -86,13 +86,15 @@ sub check_requirements {
     next unless $reqmts;
     my @required_packages = ();
     my $texlive_min       = 0;
+    my $CI_only           = 0;
     if (!(ref $reqmts)) {
       @required_packages = ($reqmts); }
     elsif (ref $reqmts eq 'ARRAY') {
       @required_packages = @$reqmts; }
     elsif (ref $reqmts eq 'HASH') {
       @required_packages = (ref $$reqmts{packages} eq 'ARRAY' ? @{ $$reqmts{packages} } : $$reqmts{packages});
-      $texlive_min       = $$reqmts{texlive_min} || 0; }
+      $texlive_min       = $$reqmts{texlive_min} || 0;
+      $CI_only           = $$reqmts{CI_only}     || 0; }
     foreach my $reqmt (@required_packages) {
       if (pathname_kpsewhich($reqmt) || pathname_find($reqmt)) { }
       else {
@@ -103,6 +105,11 @@ sub check_requirements {
     # Check if specific texlive versions are required for this test
     if ($texlive_min && (texlive_version() < $texlive_min)) {
       my $message = "Minimal texlive $texlive_min requirement not met for $test";
+      diag("Skip: $message");
+      skip($message, $ntests);
+      return 0; }
+    if ($CI_only && !$ENV{"CI"}) {
+      my $message = "Test $test only runs in continuous integration";
       diag("Skip: $message");
       skip($message, $ntests);
       return 0; } }

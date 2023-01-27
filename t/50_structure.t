@@ -10,4 +10,5 @@ latexml_tests("t/structure",
     csquotes   => 'csquotes.sty',
     glossary   => {
       texlive_min => 2016,
+      CI_only => 1,
       packages    => 'glossaries.sty' } });
