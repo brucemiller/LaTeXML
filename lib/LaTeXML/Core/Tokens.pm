@@ -19,7 +19,7 @@ use LaTeXML::Core::Token;
 use base qw(LaTeXML::Common::Object);
 use base qw(Exporter);
 our @EXPORT = (    # Global STATE; This gets bound by LaTeXML.pm
-  qw(&Tokens)
+  qw(&Tokens &TokensI),
 );
 
 #======================================================================
@@ -34,6 +34,10 @@ sub Tokens {
       : ($r eq 'LaTeXML::Core::Tokens' ? @$_
         : Error('misdefined', $r, undef, "Expected a Token, got " . Stringify($_)) || T_OTHER(Stringify($_)))) }
     @tokens;
+  return bless [@tokens], 'LaTeXML::Core::Tokens'; }
+
+sub TokensI {
+  my (@tokens) = @_;
   return bless [@tokens], 'LaTeXML::Core::Tokens'; }
 
 #======================================================================
