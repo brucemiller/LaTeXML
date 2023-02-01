@@ -468,7 +468,7 @@ sub pmml_internal {
         push(@cols, ['m:mtd', { ($a && ($a ne 'center')
                 ? (columnalign => $a, class => 'ltx_align_' . $a) : ()),
               ($c || $cl ? (class      => ($c && $cl ? "$c $cl" : $c || $cl)) : ()),
-              ($cs       ? (columnspan => $cs)                                : ()),
+              ($cs       ? (columnspan => $cs, colspan => $cs)                : ()),
               ($rs       ? (rowspan    => $rs)                                : ()) },
             @cell]); }
       $ncols = $nc if $nc > $ncols;
