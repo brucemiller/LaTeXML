@@ -41,7 +41,7 @@ our @EXPORT = qw( &pathname_find &pathname_findall &pathname_kpsewhich
   &pathname_relative &pathname_absolute &pathname_to_url
   &pathname_is_absolute &pathname_is_contained
   &pathname_is_url &pathname_is_literaldata
-  &pathname_is_raw &pathname_is_reloadable
+  &pathname_is_raw
   &pathname_protocol
   &pathname_cwd &pathname_chdir &pathname_mkdir &pathname_copy
   &pathname_installation);
@@ -182,15 +182,6 @@ sub pathname_is_contained {
 sub pathname_is_raw {
   my ($pathname) = @_;
   return ($pathname =~ /\.(tex|pool|sty|cls|clo|cnf|cfg|ldf|def|dfu)$/); }
-
-# Check whether a pathname is reloadable as a TeX definition
-sub pathname_is_reloadable {
-  my ($pathname) = @_;
-  my ($dir, $name, $type) = pathname_split($pathname);
-  # babel.sty exception:
-  # we know the same .ldf file may be reloaded with a different option,
-  # to load an adjacently defined language, so allow that.
-  return $type eq 'ldf'; }
 
 # pathname_relative($pathname,$base) => $relativepathname
 # If $pathname is an absolute, non-URL pathname,
@@ -531,11 +522,6 @@ with a leading "literal:" protocol.
 =item C<< $boole = pathname_is_raw($path); >>
 
 Check if pathname indicates a raw TeX source or definition file.
-
-=item C<< $boole = pathname_is_reloadable($path); >>
-
-Check for pathname exceptions where the same TeX definition file
-can be meaningfully reloaded. For example, babel.sty ".ldf" files
 
 =item C<< $rel = pathname_is_contained($path,$base); >>
 

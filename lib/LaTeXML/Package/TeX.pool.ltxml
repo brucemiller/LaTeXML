@@ -1041,7 +1041,7 @@ DefMacro('\input TeXFileName', sub {
       # and load LaTeX.pool if not already
       if (!LookupValue('LaTeX.pool_loaded')) {
         LoadPool("LaTeX"); } }
-    Input($filename); });
+    Input($filename, reloadable => 1); });
 
 # Note that TeX doesn't actually close the mouth;
 # it just flushes it so that it will close the next time it's read!

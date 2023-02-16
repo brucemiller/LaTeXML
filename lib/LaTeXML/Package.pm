@@ -2120,12 +2120,12 @@ sub InputContent {
 # But we may have implemented a .sty.ltxml, so we override the .tex.
 # Is this actually safe, or should we be explicilty providing .tex.ltxml ?
 
-my $input_options = {};    # [CONSTANT]
+my $input_options = { reloadable => 1 };    # [CONSTANT]
 
 sub Input {
   my ($request, %options) = @_;
   $request = ToString($request);
-  $request =~ s/^("+)(.+)\g1$/$2/;    # unwrap if in quotes \input{"file name"}
+  $request =~ s/^("+)(.+)\g1$/$2/;          # unwrap if in quotes \input{"file name"}
   CheckOptions("Input ($request)", $input_options, %options);
   # HEURISTIC! First check if equivalent style file, but only under very specific circumstances
   if (pathname_is_literaldata($request)) {
@@ -2145,7 +2145,7 @@ sub Input {
   # Next special case: If we were currently reading a "known" style or binding file,
   # then this file, even if .tex, must also be definitions rather than content.!!(?)
   if (LookupValue('INTERPRETING_DEFINITIONS')) {
-    InputDefinitions($request); }
+    InputDefinitions($request, %options); }
   elsif (my $path = FindFile($request)) {    # Found something plausible..
     my ($ignoredir, $type);
     if (pathname_is_literaldata($path)) {
@@ -2154,10 +2154,10 @@ sub Input {
       ($ignoredir, $request, $type) = pathname_split($path); }
     # Should we be doing anything about options in the next 2 cases?..... I kinda think not, but?
     if ($type eq 'ltxml') {    # it's a LaTeXML binding.
-      loadLTXML($request, $path); }
+      loadLTXML($request, $path, reloadable => $options{reloadable}); }
     # Else some sort of "known" definitions type file, but not simply 'tex'
     elsif (($type ne 'tex') && (pathname_is_raw($path))) {
-      loadTeXDefinitions($request, $path, fordefinitions => 1, notes => 1); }
+      loadTeXDefinitions($request, $path, fordefinitions => 1, notes => 1, reloadable => $options{reloadable}); }
     else {
       loadTeXContent($path); } }
   else {    # Couldn't find anything?
@@ -2171,7 +2171,7 @@ sub Input {
 # Pass in the "requested path" to the next two, since that's what gets
 # recorded as having been loaded (by \@ifpackageloade, eg).
 sub loadLTXML {
-  my ($request, $pathname) = @_;
+  my ($request, $pathname, %options) = @_;
   # Note: $type will typically be ltxml and $name will include the .sty, .cls or whatever.
   # Note: we're NOT expecting (allowing?) either literal nor remote data objects here.
   if (my $p = pathname_is_literaldata($pathname) || pathname_is_url($pathname)) {
@@ -2185,8 +2185,9 @@ sub loadLTXML {
   # We want to check against the original request, but WITH the type
   $request .= '.' . $type unless $request =~ /\Q.$type\E$/;    # make sure the .ltxml is added here
   my $trequest = $request; $trequest =~ s/\.ltxml$//;          # and NOT added here!
-  return if LookupValue($request . '_loaded') || LookupValue($trequest . '_loaded')
-    || LookupValue($name . '_loaded') || LookupValue($ltxname . '_loaded');
+  return if !$options{reloadable}
+    && (LookupValue($request . '_loaded') || LookupValue($trequest . '_loaded')
+    || LookupValue($name . '_loaded') || LookupValue($ltxname . '_loaded'));
   # Note (only!) that the ltxml version of this was loaded; still could load raw tex!
   AssignValue($request . '_loaded' => 1, 'global');
   AssignValue($ltxname . '_loaded' => 1, 'global') if $ltxname ne $request;
@@ -2200,7 +2201,8 @@ sub loadLTXML {
   Let(T_CS('\ver@' . $trequest), T_CS('\fmtversion'), 'global');
   return; }
 
-my $loadtexdefinitions_options = { fordefinitions => 1, at_letter => 1, notes => 1 };   # [CONSTANT]
+my $loadtexdefinitions_options = { fordefinitions => 1, at_letter => 1, notes => 1,
+  reloadable => 1 };    # [CONSTANT]
 
 sub loadTeXDefinitions {
   my ($request, $pathname, %options) = @_;
@@ -2215,7 +2217,7 @@ sub loadTeXDefinitions {
     # It's probably even the ltxml version is asking for it!!
     # Of course, now it will be marked and wont get reloaded!
     #
-    return if LookupValue($request . '_loaded') && !pathname_is_reloadable($pathname);
+    return if LookupValue($request . '_loaded') && !$options{reloadable};
     AssignValue($request . '_loaded' => 1, 'global'); }
 
   my $stomach = $STATE->getStomach;
@@ -2404,7 +2406,7 @@ sub AddToMacro {
 my $inputdefinitions_options = {    # [CONSTANT]
   options   => 1, withoptions      => 1, handleoptions => 1,
   type      => 1, as_class         => 1, noltxml       => 1, notex => 1, noerror => 1, after => 1,
-  at_letter => 1, searchpaths_only => 1 };
+  at_letter => 1, searchpaths_only => 1, reloadable    => 1 };
 #   options=>[options...]
 #   withoptions=>boolean : pass options from calling class/package
 #   after=>code or tokens or string as $name.$type-h@@k macro. (executed after the package is loaded)
@@ -2478,7 +2480,7 @@ sub InputDefinitions {
       my @n = Explode($e ? $n . '.' . $e : $n);
       DefMacroI('\@filelist', undef, (@p ? Tokens(@p, T_OTHER(','), @n) : Tokens(@n))); }
     if ($ftype eq 'ltxml') {
-      loadLTXML($filename, $file); }                                              # Perl module.
+      loadLTXML($filename, $file, reloadable => $options{reloadable}); }          # Perl module.
     else {
       # Special case -- add a default resource if we're loading a raw .cls file as a first choice.
       # Raw class interpretations needs _some_ styling as baseline.
