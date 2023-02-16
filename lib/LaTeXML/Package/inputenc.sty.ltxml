@@ -52,7 +52,7 @@ sub SetInputEncoding {
   AssignValue(PERL_INPUT_ENCODING => undef);    # Disable the perl-level decoding, if any.
 
   # Then load TeX's input encoding definitions.
-  InputDefinitions($encoding, type => 'def');
+  InputDefinitions($encoding, type => 'def', reloadable => 1);
   # NOTE: INPUT_ENCODING is never actually used anywhere!
   # So, presumably either Perl is magically converting to utf8
   # or more likely, treating the bytes as (misinterpreted?) utf8?
