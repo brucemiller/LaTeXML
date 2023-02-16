@@ -449,9 +449,11 @@ sub build_kpse_cache {
         if    (/^%/) { }
         elsif (/^(.*?):$/) {    # Move to a new subdirectory
           $subdir = $1;
-          $subdir =~ s|^\./||;                             # remove prefix
-          my $d = $dir . '/' . $subdir;                    # Hopefully OS safe, for comparison?
-          $skip = !grep { $d =~ /^\Q$_\E/ } @filters; }    # check if one of the TeX paths
+          $subdir =~ s|^\./||;                           # remove prefix
+          my $d = $dir . '/' . $subdir;                  # Hopefully OS safe, for comparison?
+          $skip = !grep { $d =~ /^\Q$_\E/ } @filters;    # check if one of the TeX paths
+          $skip |= ($d =~ m|-dev[$//]|) unless $LaTeXML::DEBUG{'latex-dev'};
+        }
         elsif (!$skip) {
           # Is it safe to use '/' here?
           my $sep = '/';
