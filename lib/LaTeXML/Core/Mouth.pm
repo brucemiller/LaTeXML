@@ -388,19 +388,25 @@ sub readRawLine {
       $$self{colno}  = $$self{nchars}; } }
   return $line; }
 
+# Be Careful! This is used BOTH for flushing input for \endinput
+# and for detecting line end for \read
 sub isEOL {
   my ($self) = @_;
   my $savecolno = $$self{colno};
-  # We have to peek past any to-be-skipped spaces!!!!
-  if ($$self{skipping_spaces}) {
-    my ($ch, $cc);
-    while ((($ch, $cc) = getNextChar($self)) && (defined $ch) && ($cc == CC_SPACE)) { }
-    $$self{colno}-- if ($$self{colno} <= $$self{nchars}) && (defined $cc) && ($cc != CC_SPACE);
-    if ((defined $cc) && (($cc == CC_EOL) || ($cc == CC_COMMENT))) {    # If we've got EOL|Comment
-      $$self{colno} = $$self{nchars}; } }
+  # We have to peek past any ignored tokens & also spaces, if skipping
+  my $skipcc = ($$self{skipping_spaces} ? CC_SPACE : -1);
+  my ($ch, $cc);
+  while ((($ch, $cc) = getNextChar($self)) && (defined $ch)
+    && (($cc == $skipcc) || ($cc == CC_IGNORE))) { }
+  $$self{colno}-- if ($$self{colno} <= $$self{nchars}) && (defined $cc);    # Back-up if too far.
+      # If skipping spaces (really, reading for input (\endinput) ?), jump to end of EOL or comments
+  if ($$self{skipping_spaces} &&
+    (defined $cc) && (($cc == CC_EOL) || ($cc == CC_COMMENT))) {    # If we've got EOL|Comment
+    $$self{colno} = $$self{nchars}; }
   my $eol = $$self{colno} >= $$self{nchars};
   $$self{colno} = $savecolno;
   return $eol; }
+
 #======================================================================
 1;
 

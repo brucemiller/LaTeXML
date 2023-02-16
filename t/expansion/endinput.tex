@@ -13,4 +13,24 @@ main after 2
 \input{endinputinner3.tex}
 
 main after 3
+
+\par CHANGE ENDCHAR AND CATCODES
+\endlinechar=32
+\catcode 9  = 9\relax
+\catcode 32  = 9\relax
+
+main before
+
+\input{endinputinner.tex}
+
+main after
+
+\input{endinputinner2.tex}
+
+main after 2
+
+\input{endinputinner3.tex}
+
+main after 3
+
 \end{document}
