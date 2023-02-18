@@ -1963,16 +1963,19 @@ DefPrimitive('\lx@use@visiblespace', sub {
     Let(T_ACTIVE(' '), T_OTHER("\x{2423}"));    # Visible space
 });
 
-DefConstructor('\@internal@verb{} Undigested {}',
-  "?#isMath(<ltx:XMTok font='#font'>#text</ltx:XMTok>)"
-    . "(<ltx:verbatim font='#font'>#text</ltx:verbatim>)",
-  properties => sub { (text => ToString($_[3])); },
-  font       => { family => 'typewriter', series => 'medium', shape => 'upright' },
-  #  bounded         => 1,
+# Arrange to digest the body in text mode, to keep (eg) "_" from turning to "\_"
+DefMacro('\@internal@verb{}{}{}', '\ifmmode\@internal@math@verb{#1}{#2}{#3}\else\@internal@text@verb{#1}{#2}{#3}\fi');
+DefConstructor('\@internal@math@verb{} Undigested {}',
+  "<ltx:XMTok font='#font'>#3</ltx:XMTok>",
+  mode      => 'text',
+  font      => { family => 'typewriter', series => 'medium', shape => 'upright' },
+  reversion => '\verb#1#2#3#2');
+DefConstructor('\@internal@text@verb{} Undigested {}',
+  "<ltx:verbatim font='#font'>#3</ltx:verbatim>",
+  font            => { family => 'typewriter', series => 'medium', shape => 'upright' },
   beforeConstruct => sub {
     my ($doc, $whatsit) = @_;
-    if (!$whatsit->isMath) {
-      $doc->canContain($doc->getElement, '#PCDATA') || $doc->openElement('ltx:p'); } },
+    $doc->canContain($doc->getElement, '#PCDATA') || $doc->openElement('ltx:p'); },
   reversion => '\verb#1#2#3#2');
 
 # This is defined by the alltt package.
@@ -6253,6 +6256,5 @@ Let('\@kernel@before@begindocument',            '\@empty');
 Let('\@kernel@after@begindocument',             '\@empty');
 Let('\conditionally@traceon',                   '\@empty');
 Let('\conditionally@traceoff',                  '\@empty');
-
 #**********************************************************************
 1;
