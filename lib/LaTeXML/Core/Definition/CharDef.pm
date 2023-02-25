@@ -15,18 +15,21 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
+use LaTeXML::Core::Token;
+use LaTeXML::Core::Tokens;
+use LaTeXML::Core::Box;
 use base qw(LaTeXML::Core::Definition::Register);
 
 # A CharDef is a specialized register;
 # You can't assign it; when you invoke the control sequence, it returns
 # the result of evaluating the character (more like a regular primitive).
-
+# When $mathglyph is provided, it is the unicode corresponding to the \mathchar of $value
 sub new {
-  my ($class, $cs, $value, $internalcs, %traits) = @_;
+  my ($class, $cs, $value, $mathglyph, %traits) = @_;
   return bless { cs => $cs, parameters => undef,
-    value => $value, internalcs => $internalcs,
-    registerType => 'Number', readonly => 1,
-    locator      => $STATE->getStomach->getGullet->getLocator,
+    value        => $value,   mathglyph => $mathglyph,
+    registerType => 'Number', readonly  => 1,
+    locator      => $STATE->getStomach->getGullet->getMouth->getLocator,
     %traits }, $class; }
 
 sub valueOf {
@@ -40,9 +43,17 @@ sub setValue {
 
 sub invoke {
   my ($self, $stomach) = @_;
-  my $cs = $$self{internalcs};
-  # Tracing ?
-  return (defined $cs ? $stomach->invokeToken($cs) : undef); }
+  my $value     = $$self{value};
+  my $mathglyph = $$self{mathglyph};
+  # A dilemna: If the \chardef were in a style file, you're prefer to revert to the $cs
+  # but if defined in the document source, better to use \char ###\relax, so it still "works"
+  if (defined $mathglyph) {    # Must be a math char
+    return Box($mathglyph, undef, undef,
+      Tokens(T_CS('\mathchar'), $value->revert, T_CS('\relax')),
+      role => $$self{role}); }
+  else {                       # else text; but note defered font/encoding till digestion!
+    return Box(LaTeXML::Package::FontDecode($value->valueOf), undef, undef,
+      Tokens(T_CS('\char'), $value->revert, T_CS('\relax'))); } }
 
 sub equals {
   my ($self, $other) = @_;
