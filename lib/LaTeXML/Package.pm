@@ -1178,13 +1178,6 @@ sub DefPrimitive {
 
 sub DefPrimitiveI {
   my ($cs, $paramlist, $replacement, %options) = @_;
-  my $string = $replacement;
-  Warn('misdefined', $cs, undef, "Option alias ignored if replacement is not string")
-    if ref $replacement && defined $options{alias};
-  $replacement = sub { Box($string, undef, undef,
-      Invocation($options{alias} || $cs, @_[1 .. $#_]),
-      (defined $string ? () : (isEmpty => 1))); }    # Just marker for reversion?
-    unless ref $replacement;
   $cs        = coerceCS($cs);
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
   my $mode    = $options{mode};
@@ -1204,7 +1197,9 @@ sub DefPrimitiveI {
           : ($bounded ? (sub { $_[0]->egroup; }) : ()))),
       outer    => $options{outer},
       long     => $options{long},
-      isPrefix => $options{isPrefix}),
+      isPrefix => $options{isPrefix},
+      alias    => $options{alias},
+      ),
     $options{scope});
   AssignValue(ToString($cs) . ":locked" => 1) if $options{locked};
   return; }
