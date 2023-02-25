@@ -4484,7 +4484,7 @@ DefConstructor('\@@FLOATINGSUBSCRIPT InScriptStyle',
   reversion => sub { (T_BEGIN, T_END, T_SUB, revertScript($_[1])); },
   sizer     => sub { scriptSizer($_[0]->getArg(1), undef, undef, 'SUBSCRIPT', 'post'); });
 
-DefMacroI('\'', undef, sub {
+DefMacroI('\active@math@prime', undef, sub {
     my ($gullet) = @_;
     my @sup = (T_CS('\prime'));
     # Collect up all ', convering to \prime
@@ -4498,7 +4498,9 @@ DefMacroI('\'', undef, sub {
       $gullet->readToken;
       push(@sup, $gullet->readArg->unlist); }
     (T_SUPER, T_BEGIN, @sup, T_END); },
-  mathactive => 1);    # Only in math!
+  locked => 1);    # Only in math!
+AssignMathcode("'" => 0x8000);
+Let("'", '\active@math@prime');
 
 #======================================================================
 # \choose & friends, also need VERY special argument handling
