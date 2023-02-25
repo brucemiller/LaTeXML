@@ -963,14 +963,13 @@ DefMacro('\meaning Token', sub {
           $expansion_str = ToString($expansion); }
         $meaning = ($prefixes ? $prefixes . ' ' : '') .
           "macro:$spec->$expansion_str$p_trailer"; }
-      elsif ($type =~ /chardef$/i) {    # from \mathchardef and the like.
-        my $prefix = '\char';
-        if ($$definition{internalcs} && $$definition{internalcs}->getCSName =~ /^\\\@mathchardef/) {
-          $prefix = '\mathchar'; }
+      elsif ($type =~ /chardef$/i) {    # from \chardef or \mathchardef
+        my $prefix = ($$definition{mathglyph} ? '\mathchar' : '\char');
         $meaning = $prefix . '"' . $definition->valueOf->valueOf; } }
     # One catch: make sure all \s in the meaning string are normalized to a simple space ' '
     $meaning =~ s/\s/ /g;
     return Explode($meaning); });
+
 DefParameterType('CSName', sub {
     my ($gullet) = @_;
     my $token;
@@ -1811,21 +1810,17 @@ DeclareFontMap('OMX',
     #                        [missing tips for horizontal curly braces]
     "\x{2191}", "\x{2193}", undef, undef, undef, undef, "\x{21D1}", "\x{21D3}"]);
 
-#DefPrimitive('\char Number', sub { $_[0]->invokeToken(T_OTHER(chr($_[1]->valueOf))); });
 DefPrimitive('\char Number', sub {
-    Box(FontDecode($_[1]->valueOf), undef, undef, Invocation(T_CS('\char'), $_[1])); });
+    Box(FontDecode($_[1]->valueOf), undef, undef,
+      Tokens(T_CS('\char'), $_[1]->revert, T_CS('\relax'))); });
 
 # Almost like a register (and \countdef), but different...
 # (including the preassignment to \relax!)
 DefPrimitive('\chardef Token SkipMatch:=', sub {
     my ($stomach, $newcs) = @_;
     $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
-    my $value      = $stomach->getGullet->readNumber();
-    my $csname     = $newcs->getCSName;
-    my $internalcs = T_CS('\@chardef@' . $csname);
-    DefPrimitiveI($internalcs, undef, sub {
-        Box(FontDecode($value->valueOf), undef, undef, Invocation(T_CS('\char'), $value)); });
-    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value, $internalcs));
+    my $value = $stomach->getGullet->readNumber();
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value));
     AfterAssignment();
     return; });
 
@@ -1848,17 +1843,12 @@ sub decodeMathChar {
   return ($role,
     ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : $char)); }
 
-DefConstructor('\mathchar Number',
-  "?#glyph(?#isMath(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)(#glyph))",
-  sizer       => '#glyph',
-  afterDigest => sub {
-    my ($stomach, $whatsit) = @_;
-    my $n = $whatsit->getArg(1)->valueOf;
-    my ($role, $glyph) = decodeMathChar($n);
-    $whatsit->setProperty(glyph => $glyph)                                  if $glyph;
-    $whatsit->setProperty(role  => $role)                                   if defined $role;
-    $whatsit->setProperty(font  => LookupValue('font')->specialize($glyph)) if $glyph;
-    return; });
+DefPrimitive('\mathchar Number', sub {
+    my ($stomach, $code)  = @_;
+    my ($role,    $glyph) = decodeMathChar($code->valueOf);
+    Box($glyph, undef, undef,
+      Tokens(T_CS('\mathchar'), $_[1]->revert, T_CS('\relax')),
+      role => $role); });
 
 DefConstructor('\delimiter Number',
   "?#glyph(?#isMath(<ltx:XMTok role='#role'>#glyph</ltx:XMTok>)(#glyph))",
@@ -1877,19 +1867,10 @@ DefConstructor('\delimiter Number',
 DefPrimitive('\mathchardef Token SkipMatch:=', sub {
     my ($stomach, $newcs) = @_;
     $STATE->assignMeaning($newcs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssignment
-    my $value  = $stomach->getGullet->readNumber();
-    my $csname = $newcs->getCSName;
+    my $value = $stomach->getGullet->readNumber();
     my ($role, $glyph) = decodeMathChar($value->valueOf);
-    my $internalcs = (defined $glyph) && T_CS('\@mathchardef@' . $csname);
-    DefConstructorI($internalcs, undef, "<ltx:XMTok role='#role'>#glyph</ltx:XMTok>",
-      sizer      => '#1',
-      properties => { role => $role, glyph => $glyph,
-        font => sub { LookupValue('font')->specialize($glyph); } },
-      #       reversion => '\mathchar' . $value->valueOf . '\relax',
-      # revert to the plain glyph if it seems plausible? (this helps \left,\right, eg)
-      reversion => (ord($glyph) < 128 ? $glyph : '\mathchar' . $value->valueOf . '\relax'),
-    ) if $glyph;
-    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value, $internalcs));
+    $STATE->installDefinition(LaTeXML::Core::Definition::CharDef->new($newcs, $value,
+        $glyph, role => $role));
     AfterAssignment();
     return; });
 
