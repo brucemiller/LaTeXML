@@ -5686,11 +5686,18 @@ sub DefAccent {
   # Used for converting a char used as an above-accent to a combining char (See \accent)
   AssignMapping('accent_combiner_above', $standalonechar => $combiningchar) if $options{above};
   AssignMapping('accent_combiner_below', $standalonechar => $combiningchar) unless $options{above};
-  DefPrimitiveI($accent, "{}", sub {
-      my ($stomach, $letter) = @_;
-      applyAccent($stomach, $letter, $combiningchar, $standalonechar, Invocation($accent, $letter)); },
-    mode => 'text');
+  DefMacroI($accent, "{}",
+    Tokens(T_CS('\lx@applyaccent'), T_OTHER($accent),
+      T_OTHER($combiningchar), T_OTHER($standalonechar),
+      T_BEGIN, T_ARG(1), T_END),
+    protected => 1);
   return; }
+
+DefPrimitiveI('\lx@applyaccent', "DefToken Token Token {}", sub {
+    my ($stomach, $accent, $combiningchar, $standalonechar, $letter) = @_;
+    applyAccent($stomach, $letter, $combiningchar->getString, $standalonechar->getString,
+      Tokens(T_CS($accent->getString), T_BEGIN, $letter, T_END)); },
+  mode => 'text');
 
 DefAccent('\`',           "\x{0300}", UTF(0x60));  # COMBINING GRAVE ACCENT & GRAVE ACCENT
 DefAccent("\\'",          "\x{0301}", UTF(0xB4));  # COMBINING ACUTE ACCENT & ACUTE ACCENT
