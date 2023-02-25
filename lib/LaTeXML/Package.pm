@@ -1225,23 +1225,15 @@ sub DefRegisterI {
   my ($cs, $paramlist, $value, %options) = @_;
   $cs        = coerceCS($cs);
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
-  my $type   = $register_types{ ref $value };
-  my $name   = ToString($options{name} || $cs);
-  my $getter = $options{getter}
-    || sub { LookupValue(join('', $name, map { ToString($_) } @_)) || $value; };
-  my $setter = $options{setter}
-    || ($options{readonly}
-    ? sub { my ($v, @args) = @_;
-      Warn('unexpected', $name, $STATE->getStomach,
-        "Can't assign readonly register $name to " . ToString($v)); return; }
-    : sub { my ($v, @args) = @_;
-      AssignValue(join('', $name, map { ToString($_) } @args) => $v); });
-  # Not really right to set the value!
-  AssignValue(ToString($cs) => $value) if defined $value;
+  my $type = $register_types{ ref $value };
+  my $name = ToString($options{name} || $cs);
+  if ((defined $value) && ((!defined $options{name}) || !defined LookupValue($name))) {
+    AssignValue($name => $value); }    # Assign, but do not RE-assign
   $STATE->installDefinition(LaTeXML::Core::Definition::Register->new($cs, $paramlist,
-      replacement  => $name,
+      name         => $name,
       registerType => $type,
-      getter       => $getter, setter => $setter,
+      getter       => $options{getter}, setter => $options{setter},
+      default      => $value,
       readonly     => $options{readonly}),
     'global');
   return; }

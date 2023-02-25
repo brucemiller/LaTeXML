@@ -18,15 +18,18 @@ use LaTeXML::Common::Error;
 use base qw(LaTeXML::Core::Definition::Primitive);
 
 # Known Traits:
-#    registerType : the type of register (a LaTeXML class)
-#    getter : a sub to get the value (essentially required)
-#    setter : a sub to set the value (estentially required)
+#    name : name to store in State's value table; defaults to the cs
+#    getter : a sub to get the value; otherwise stores in State value table under name
+#    setter : a sub to set the value; ditto
+#    registerType : the type of register value (a LaTeXML class)
 #    beforeDigest, afterDigest : code for before/after digestion daemons
 #    readonly : whether this register can only be read
+#    default  : default value; safety for when no value assigned
 sub new {
   my ($class, $cs, $parameters, %traits) = @_;
+  $traits{name} = ToString($cs) unless defined $traits{name};
   return bless { cs => $cs, parameters => $parameters,
-    locator => $STATE->getStomach->getGullet->getLocator,
+    locator => $STATE->getStomach->getGullet->getMouth->getLocator,
     %traits }, $class; }
 
 sub isPrefix {
@@ -42,25 +45,47 @@ sub isReadonly {
 
 sub valueOf {
   my ($self, @args) = @_;
-  return &{ $$self{getter} }(@args); }
+  if (my $getter = $$self{getter}) {
+    return &{ $$self{getter} }(@args); }
+  else {
+    my $loc = (@args ? join('', $$self{name}, map { ToString($_) } @args) : $$self{name});
+    return $STATE->lookupValue($loc) || $$self{default}; } }
 
 sub setValue {
   my ($self, $value, @args) = @_;
-  my $tracing = $STATE->lookupValue('TRACINGCOMMANDS');
-  if ($tracing || $LaTeXML::DEBUG{tracing}) {
+  my $tracing = $STATE->lookupValue('TRACINGCOMMANDS') || $LaTeXML::DEBUG{tracing};
+  if ($tracing) {
     my $scope  = $STATE->getPrefix('global') ? 'globally ' : '';
     my $csname = ToString($$self{cs});
-    Debug("{$scope" . "changing " . $csname . "=" . ToString($self->valueOf(@args)) . "}");
-    &{ $$self{setter} }($value, @args);
-    Debug("{into " . $csname . "=" . ToString($self->valueOf(@args)) . "}"); }
-  else {
+    Debug("{$scope" . "changing " . $csname . "=" . ToString($self->valueOf(@args)) . "}"); }
+  if (my $setter = $$self{setter}) {
     &{ $$self{setter} }($value, @args); }
+  elsif ($$self{readonly}) {
+    Warn('unexpected', $$self{cs}, $STATE->getStomach,
+      "Can't assign readonly register " . ToString($$self{cs}) . " to " . ToString($value)); }
+  else {
+    my $loc = (@args ? join('', $$self{name}, map { ToString($_) } @args) : $$self{name});
+    $STATE->assignValue($loc => $value); }
+  Debug("{into " . ToString($$self{cs}) . "=" . ToString($self->valueOf(@args)) . "}") if $tracing;
   return; }
 
 sub addValue {
   my ($self, $value, @args) = @_;
-  my $oldvalue = &{ $$self{getter} }(@args);
-  &{ $$self{setter} }($oldvalue->add($value), @args);
+  my $oldvalue;
+  if (my $getter = $$self{getter}) {
+    $oldvalue = &{ $$self{getter} }(@args); }
+  else {
+    my $loc = (@args ? join('', $$self{name}, map { ToString($_) } @args) : $$self{name});
+    $oldvalue = $STATE->lookupValue($loc) || $$self{default}; }
+  my $newvalue = $oldvalue->add($value);
+  if (my $setter = $$self{setter}) {
+    &{ $$self{setter} }($newvalue, @args); }
+  elsif ($$self{readonly}) {
+    Warn('unexpected', $$self{cs}, $STATE->getStomach,
+      "Can't assign readonly register $$self{name} to " . ToString($value)); }
+  else {
+    my $loc = (@args ? join('', $$self{name}, map { ToString($_) } @args) : $$self{name});
+    $STATE->assignValue($loc => $newvalue); }
   return; }
 
 # No before/after daemons ???
@@ -83,6 +108,12 @@ sub invoke {
     $gullet->unread($after); }    # primitive returns boxes, so these need to be digested!
   LaTeXML::Core::Definition::stopProfiling($profiled, 'digest') if $profiled;
   return; }
+
+sub equals {
+  my ($self, $other) = @_;
+  return (defined $other
+      && (ref $self) eq (ref $other)) && Equals($self->getParameters, $other->getParameters)
+    && Equals($$self{name}, $$other{name}); }
 
 #===============================================================================
 1;

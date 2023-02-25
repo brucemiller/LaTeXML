@@ -1427,12 +1427,9 @@ DefPrimitive('\futurelet Token Token Token', sub {
 sub shorthandDef {
   my ($stomach, $cs, $type, $init) = @_;
   $STATE->assignMeaning($cs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssign
-  my $num = $stomach->getGullet->readNumber();
-  my $reg = $type . $num->valueOf;
-  DefRegisterI($cs, undef, $init,
-    name   => $reg,
-    getter => sub { LookupValue($reg) || $init; },
-    setter => sub { AssignValue($reg => $_[0]); });
+  my $num  = $stomach->getGullet->readNumber();
+  my $name = $type . $num->valueOf;
+  DefRegisterI($cs, undef, $init, name => $name);
   AfterAssignment();
   return; }
 
