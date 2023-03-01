@@ -45,7 +45,7 @@ sub invoke {
   my ($self, $stomach) = @_;
   my $value     = $$self{value};
   my $mathglyph = $$self{mathglyph};
-  # A dilemna: If the \chardef were in a style file, you're prefer to revert to the $cs
+  # A dilemma: If the \chardef were in a style file, you're prefer to revert to the $cs
   # but if defined in the document source, better to use \char ###\relax, so it still "works"
   if (defined $mathglyph) {    # Must be a math char
     return Box($mathglyph, undef, undef,
