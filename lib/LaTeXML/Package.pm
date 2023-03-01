@@ -2431,9 +2431,11 @@ sub InputDefinitions {
         "previously loaded with '$prevoptions'") unless $curroptions eq $prevoptions; } }
   if (my $file = FindFile($filename, type => $options{type},
       notex => $options{notex}, noltxml => $options{noltxml}, searchpaths_only => $options{searchpaths_only})) {
+    my $pushpop = LookupDefinition(T_CS('\@pushfilename'))
+      && LookupDefinition(T_CS('\@popfilename'));
     if ($options{handleoptions}) {
 # Note: this is trying to emulate the LaTeX 2 (latex.ltx) use of \@pushfilename. For expl3, see expl3.sty.ltxml
-      Digest(T_CS('\@pushfilename'));
+      Digest(T_CS('\@pushfilename')) if $pushpop;
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
       if (my $passoptions = $options{withoptions} && $prevname
         && LookupValue('opt@' . $prevname . "." . $prevext)) {
@@ -2479,7 +2481,7 @@ sub InputDefinitions {
       Digest(T_CS('\\' . $name . '.' . $astype . '-h@@k'));
       DefMacroI('\@currname', undef, Tokens(Explode($prevname))) if $prevname;
       DefMacroI('\@currext',  undef, Tokens(Explode($prevext)))  if $prevext;
-      Digest(T_CS('\@popfilename'));
+      Digest(T_CS('\@popfilename')) if $pushpop;
       resetOptions(); }    # And reset options afterwards, too.
     return $file; }
   elsif (!$options{noerror}) {
