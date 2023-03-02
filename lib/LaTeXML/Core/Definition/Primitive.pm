@@ -16,6 +16,7 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Common::Error;
 use LaTeXML::Core::Box;
+use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use base qw(LaTeXML::Core::Definition);
 
@@ -61,8 +62,10 @@ sub invoke {
   my $replacement = $$self{replacement};
 
   if (!ref $replacement) {
+    my $alias = $$self{alias};
+    $alias = T_CS($alias) if $alias && !ref $alias;
     push(@result, Box($replacement, undef, undef,
-        Tokens($$self{alias} || $$self{cs}, ($parms ? $parms->revertArguments(@args) : ())),
+        Tokens($alias || $$self{cs}, ($parms ? $parms->revertArguments(@args) : ())),
         (defined $replacement ? () : (isEmpty => 1)))); }
   else {
     push(@result, &{ $$self{replacement} }($stomach, @args)); }
