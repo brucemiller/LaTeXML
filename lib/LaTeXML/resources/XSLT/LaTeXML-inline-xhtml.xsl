@@ -36,7 +36,9 @@
     <xsl:element name="span" namespace="{$html_ns}">
       <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
-      <xsl:call-template name="add_attributes"/>
+      <xsl:call-template name="add_attributes">
+        <xsl:with-param name="extra_classes" select="f:if(@width,'ltx_inline-block','')"/>
+      </xsl:call-template>
       <xsl:apply-templates select="." mode="begin">
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
