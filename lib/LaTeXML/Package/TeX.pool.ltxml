@@ -2540,7 +2540,11 @@ DefPrimitive('\openin Number SkipMatch:= SkipSpaces TeXFileName', sub {
     $port     = ToString($port);
     $filename = ToString($filename);
     # Rely on FindFile to enforce any access restrictions
-    if (my $path = FindFile($filename, noltxml => 1)) {
+    # It's tempting to pout noltxml=>1 here, since who would want to read in an .ltxml file's perl?
+    # However, \openin is often used by low-level code to check for existence of a file
+    # when we SHOULD find an .ltxml version!
+    # Hopefully, if they get one, they won't actually try to read its content...
+    if (my $path = FindFile($filename)) {
       my $mouth = LaTeXML::Core::Mouth->create($path,
         content => LookupValue($path . '_contents'));
       AssignValue('input_file:' . $port => $mouth, 'global'); }
