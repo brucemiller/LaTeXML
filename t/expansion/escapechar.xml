@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>In <text class="ltx_TeX_logo" cssstyle="letter-spacing:-0.2em; margin-right:0.2em">T<text yoffset="-0.4ex">E</text>X</text>, control sequences are stored <emph font="italic">without</emph> the slash,
+but active characters have a bit set to make them distinct.</p>
+  </para>
+  <para xml:id="p2">
+    <p>Macro: Snore, as a macro.</p>
+  </para>
+  <para xml:id="p3">
+    <p>Char: Snore as an active character.</p>
+  </para>
+  <para xml:id="p4">
+    <p>The backslash is actually the character <verbatim font="typewriter">\escapechar</verbatim>, usually <verbatim font="typewriter">\</verbatim> or none if negative.
+That backslash is recognized in the Mouth when reading Tokens but removed from
+the internal form of control sequence. It is added back by <verbatim font="typewriter">\string</verbatim>.</p>
+  </para>
+  <para xml:id="p5">
+    <p>If LaTeXML wants to keep the backslash internally, at least it has to make these work:</p>
+  </para>
+  <para xml:id="p6">
+    <p>Disabled backslash gives Foo/Bar : Foo/Bar.</p>
+  </para>
+  <para xml:id="p7">
+    <p>Normal backslash gives A Foo/A Bar: A Foo/A Bar.</p>
+  </para>
+</document>

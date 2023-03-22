@@ -1,0 +1,36 @@
+\documentclass{article}
+\begin{document}
+\def\Z{Snore, as a macro}
+\catcode`\Z=13\relax
+\def Z{Snore as an active character}
+
+% Do something like LaTeX's \@if
+\makeatletter
+\def\chomper#1#2#3{%
+  \count@\escapechar \escapechar#1\relax
+  \csname\expandafter\@gobbletwo\string#2%
+    \expandafter\@gobbletwo\string#3\endcsname%}
+  \escapechar\count@}
+\makeatother
+
+In \TeX, control sequences are stored \emph{without} the slash,
+but  active characters have a bit set to make them distinct.
+
+Macro: \Z.
+
+Char: Z.
+
+The backslash is actually the character \verb|\escapechar|, usually \verb|\| or none if negative.
+That backslash is recognized in the Mouth when reading Tokens but removed from
+the internal form of control sequence. It is added back by \verb|\string|. 
+
+
+If LaTeXML wants to keep the backslash internally, at least it has to make these work:
+
+\def\foobar{Foo/Bar}
+\def\AfooAbar{A Foo/A Bar}
+Disabled backslash gives Foo/Bar : \chomper{-1}\AAfoo\AAbar.
+
+Normal backslash gives A Foo/A Bar: \chomper{`\\}\AAfoo\AAbar.
+
+\end{document}

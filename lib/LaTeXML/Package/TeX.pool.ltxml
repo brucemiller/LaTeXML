@@ -973,8 +973,10 @@ DefMacro('\meaning Token', sub {
 DefParameterType('CSName', sub {
     my ($gullet) = @_;
     my $token;
-    my $cs = escapechar();
-    my $s;
+    # Deyan Ginev & Dennis Mueller were right! Or partly so.
+    # TeX does NOT store the csname with the leading `\`, BUT stores active chars with a flag
+    # However, so long as the Mouth's CS and \string properly respect \escapechar, all's well!
+    my $cs = '\\';
     # keep newlines from having \n inside!
     while (($token = $gullet->readXToken(1)) && (!Equals($token, T_CS('\endcsname')))) {
       my $cc = $token->getCatcode;
