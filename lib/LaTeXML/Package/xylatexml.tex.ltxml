@@ -16,6 +16,9 @@ use warnings;
 use LaTeXML::Package;
 use Math::Trig;
 
+# NOTE: since *.tex is read with \input, the .ltxml may be loaded more than once.
+no warnings 'redefine';
+
 DebuggableFeature('xy', 'xy processing');
 RequirePackage('color');
 # Short of setting up font metrics for the special xy fonts

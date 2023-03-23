@@ -15,6 +15,9 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
+# NOTE: since *.code.tex is read with \input, the .ltxml may be loaded more than once.
+no warnings 'redefine';
+
 #======================================================================
 # Profiling suggests pgfkeys is major costly component running tikz
 # under LaTeXML (but not necessarily LaTeX!).  The strategy here is to

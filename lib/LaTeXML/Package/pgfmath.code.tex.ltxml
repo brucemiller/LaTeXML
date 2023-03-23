@@ -17,6 +17,9 @@ use LaTeXML::Package;
 use LaTeXML::Util::Geometry;
 use List::Util qw(min max);
 
+# NOTE: since *.code.tex is read with \input, the .ltxml may be loaded more than once.
+no warnings 'redefine';
+
 # Math functions needed here
 # Native: sin cos atan2 log exp sqrt rand abs
 use Math::Trig qw(
