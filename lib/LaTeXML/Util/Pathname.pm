@@ -406,6 +406,8 @@ sub pathname_kpsewhich {
     close($resfh);             # ignore exit status (only one of @candidates exists, usually)
     if ($result) {
       chomp $result;
+      my ($vol, $dir, $name) = File::Spec->splitpath($result);
+      LaTeXML::Common::Error::Warn('unexpected', "$name", 'pathname_kpsewhich', "not among the requested files (@candidates)") if !grep { $_ eq $name } @candidates;
       return $result; } }
   return; }
 
