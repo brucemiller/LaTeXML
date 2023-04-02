@@ -154,6 +154,28 @@
     <func:result><xsl:value-of select="$url"/></func:result>
   </func:function>
 
+  <!-- Return the destination url of a resource: f:resource(src, mimetype?)
+       When using latexmlpost, f:resource() is translated to a call to
+       LaTeXML::Post::XSLT::copyResource, which (if $src is not a URL) copies
+       $src to the destination directory and returns the location of the copy
+       relative to the destination directory. $mimetype, if present, is used to
+       search for $src in the LaTeXML distribution as well.
+       With other XSLT processors, f:resource returns $src unchanged.
+  -->
+  <func:function name="f:resource">
+    <xsl:param name="src"/>
+    <xsl:param name="mimetype"/>
+    <xsl:choose>
+      <!-- latexmlpost exports copyResource as 'f:_copy-resource' -->
+      <xsl:when test="function-available('f:_copy-resource')">
+        <func:result select="f:_copy-resource($src,$mimetype)"/>
+      </xsl:when>
+      <xsl:otherwise>
+        <func:result select="$src"/>
+      </xsl:otherwise>
+    </xsl:choose>
+  </func:function>
+
   <func:function name="f:class-pref">
     <xsl:param name="prefix"/>
     <xsl:param name="string"/>
