@@ -2,10 +2,13 @@
   (more sophisticated layout probably requires xslt) */
 .ltx_note.ltx_role_margin .ltx_note_mark { display:none; }
 .ltx_note.ltx_role_margin .ltx_note_type { display:none; }
+.ltx_note.ltx_role_margin {
+    margin-right: -15%; width:15%;
+    float: right; clear: right; }
 .ltx_note.ltx_role_margin .ltx_note_content {
     display:block;
-    position:absolute; left:83%; width:15%;
+    position:relative; right:-15%;
     background-color: transparent; border:0pt; }
 
 /* Narrower, to make room for marginpar */
-.ltx_page_main { width:80%; }
+.ltx_page_main { width:75%; }
