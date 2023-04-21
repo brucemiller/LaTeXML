@@ -1337,27 +1337,18 @@ DefMacroI('\@evenfoot', undef, Tokens());
 #**********************************************************************
 
 DefEnvironment('{center}', sub {
-    $_[0]->maybeCloseElement('ltx:p');                        # this starts a new vertical block
-    aligningEnvironment('center', 'ltx_centering', @_); },    # aligning will take care of \\\\ "rows"
-  beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par'); });
+    $_[0]->maybeCloseElement('ltx:p');                         # this starts a new vertical block
+    aligningEnvironment('center', 'ltx_centering', @_); });    # aligning will take care of \\\\ "rows"
 # HOWEVER, define a plain \center to act like \centering (?)
 DefMacroI('\center',    undef, '\centering');
 DefMacroI('\endcenter', undef, '');
 
 DefEnvironment('{flushleft}', sub {
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    aligningEnvironment('left', 'ltx_align_left', @_); },
-  beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par'); });
+    aligningEnvironment('left', 'ltx_align_left', @_); });
 DefEnvironment('{flushright}', sub {
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
-    aligningEnvironment('right', 'ltx_align_right', @_); },
-  beforeDigest => sub {
-    Let('\par', '\inner@par');
-    Let('\\\\', '\inner@par'); });
+    aligningEnvironment('right', 'ltx_align_right', @_); });
 
 # These add an operation to be carried out on the current node & following siblings, when the current group ends.
 # These operators will add alignment (class) attributes to each "line" in the current block.

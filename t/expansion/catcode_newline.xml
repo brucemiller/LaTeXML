@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>first line</p>
+  </para>
+  <para xml:id="p2">
+    <p>line after ignore catcoded character</p>
+  </para>
+  <para xml:id="p3">
+    <p>line after space catcoded character</p>
+  </para>
+  <para xml:id="p4">
+    <p>line after line with space characters</p>
+  </para>
+  <para xml:id="p5">
+    <p>line after line with tab characters</p>
+  </para>
+  <para xml:id="p6">
+    <p>a line with vadjust</p>
+  </para>
+  <para xml:id="p7">
+    <p>X</p>
+  </para>
+  <para xml:id="p8">
+    <p>another line</p>
+  </para>
+  <para xml:id="p9">
+    <p>last line with enough text to cause a line break to see any indentation. just need a bit more. that should be enough.</p>
+  </para>
+</document>

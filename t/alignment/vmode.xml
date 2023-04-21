@@ -124,14 +124,18 @@ This is random text. This is random text. This is random text.</p>
     </para>
     <para align="center" xml:id="S3.p2">
       <p>This is random text. This is random text. This is random text.</p>
-      <p>This is random text. This is random text. This is random text.</p>
-      <p>This is random text. This is random text. This is random text.</p>
     </para>
     <para align="center" xml:id="S3.p3">
-      <graphics candidates="foo.png" graphic="foo.png" xml:id="S3.p3.g1"/>
+      <p>This is random text. This is random text. This is random text.</p>
     </para>
     <para align="center" xml:id="S3.p4">
-      <p>c) Parabolic cylinder,  <Math mode="inline" tex="x^{2}=2pz" text="x ^ 2 = 2 * p * z" xml:id="S3.p4.m1">
+      <p>This is random text. This is random text. This is random text.</p>
+    </para>
+    <para align="center" xml:id="S3.p5">
+      <graphics candidates="foo.png" graphic="foo.png" xml:id="S3.p5.g1"/>
+    </para>
+    <para align="center" xml:id="S3.p6">
+      <p>c) Parabolic cylinder,  <Math mode="inline" tex="x^{2}=2pz" text="x ^ 2 = 2 * p * z" xml:id="S3.p6.m1">
           <XMath>
             <XMApp>
               <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -148,12 +152,11 @@ This is random text. This is random text. This is random text.</p>
               </XMApp>
             </XMApp>
           </XMath>
-        </Math>;  it is a developable surface.</p>
-      <p>Signatures: blah <Math mode="inline" tex="x" text="x" xml:id="S3.p4.m2">
+        </Math>;  it is a developable surface. <break/>Signatures: blah <Math mode="inline" tex="x" text="x" xml:id="S3.p6.m2">
           <XMath>
             <XMTok font="italic" role="UNKNOWN">x</XMTok>
           </XMath>
-        </Math>, <Math mode="inline" tex="y" text="y" xml:id="S3.p4.m3">
+        </Math>, <Math mode="inline" tex="y" text="y" xml:id="S3.p6.m3">
           <XMath>
             <XMTok font="italic" role="UNKNOWN">y</XMTok>
           </XMath>
@@ -175,9 +178,7 @@ This is random text. This is random text. This is random text.</p>
         <tag role="refnum">2</tag>
         <tag role="typerefnum">Figure 2</tag>
       </tags>
-      <p align="center">A Figure line</p>
-      <p align="center">Another Figure line</p>
-      <p align="center">Yet another Figure line</p>
+      <p align="center">A Figure line<break/>Another Figure line<break/>Yet another Figure line<break/></p>
       <toccaption class="ltx_centering"><tag close=" ">2</tag>Figure: This is a figure.</toccaption>
       <caption class="ltx_centering"><tag close=": ">Figure 2</tag>Figure: This is a figure.</caption>
     </figure>

@@ -319,11 +319,14 @@ sub readToken {
       # In state N, skip spaces
       while (($$self{colno} < $$self{nchars})
         # DIRECT ACCESS to $STATE's catcode table!!!
-        && (($$STATE{catcode}{ $$self{chars}[$$self{colno}] }[0] || CC_OTHER) == CC_SPACE)) {
+        && ((($$STATE{catcode}{ $$self{chars}[$$self{colno}] }[0] || CC_OTHER) == CC_SPACE)
+          || (($$STATE{catcode}{ $$self{chars}[$$self{colno}] }[0] || CC_OTHER) == CC_IGNORE))) {
         $$self{colno}++; }
       # If upcoming line is empty, and there is no recognizable EOL, fake one
       return T_MARKER('EOL') if $read_mode
         && ($$self{colno} >= $$self{nchars}) && ((!defined $eolch) || ($eolch ne "\r"));
+      # If TeX sees EOL while in state N, then it becomes \par
+      return T_CS('\par') if ($$STATE{catcode}{ $$self{chars}[$$self{colno}] }[0] || CC_OTHER) == CC_EOL;
       # Sneak a comment out, every so often.
       if ((($$self{lineno} % $READLINE_PROGRESS_QUANTUM) == 0) && $STATE->lookupValue('INCLUDE_COMMENTS')) {
         return T_COMMENT("**** " . ($$self{shortsource} || 'String') . " Line $$self{lineno} ****"); }

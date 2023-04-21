@@ -1,0 +1,20 @@
+\documentclass{article}
+\begin{document}
+\catcode`\I=9
+\catcode`\S=10
+first line^^M nothing past the end
+I
+line after ignore catcoded character
+S
+line after space catcoded character
+  
+line after line with space characters
+		
+line after line with tab characters
+
+a\vadjust{X} line with vadjust
+
+another line
+
+last line with enough text to cause a line break to see any indentation. just need a bit more. that should be enough.
+\end{document}
