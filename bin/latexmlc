@@ -117,7 +117,7 @@ if (!$logfile) {
   $opts->set('log', $logfile); }
 # A bit special: Since LaTeXML.pm will always try to append to the log file
 # make sure the file is new before we start.
-unlink($logfile) if (-e $logfile);
+unlink($logfile) if (-f $logfile);
 
 #***************************************************************************
 # Prepare output variables:
