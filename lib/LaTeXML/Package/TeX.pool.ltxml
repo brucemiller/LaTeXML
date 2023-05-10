@@ -2378,7 +2378,7 @@ DefConstructor('\vrule RuleSpecification',
         || ((defined $h) && (defined $w) && ($h > 3 * $w))) {
         $whatsit->setProperty(isVerticalRule => 1) } }    # Marked as rule within alignment
     elsif ((defined $w) && ($w == 0)) {
-      $whatsit->setProperty(invishible => 1); }
+      $whatsit->setProperty(invisible => 1); }
     if (my $color = LookupValue('font')->getColor) {
       if ($color ne 'black') {
         $whatsit->setProperty(color => $color); } }
