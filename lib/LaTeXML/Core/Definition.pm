@@ -16,6 +16,7 @@ use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Core::Token;
 use LaTeXML::Core::Parameters;
+use LaTeXML::Common::Error;
 use Time::HiRes;
 use base qw(LaTeXML::Common::Object);
 # Make these present, but do not import.
@@ -172,7 +173,7 @@ sub stopProfiling {
   while (@{$stack}) {
     my ($top, $topmode, $t0, $entry) = @{ $$stack[-1] };
     if ((($top ne $name) || ($topmode ne $mode)) && ($topmode ne 'expand')) {
-      return if $mode eq 'expand';                         # No error (yet) if this is a macro end marker.
+      return if $mode eq 'expand';    # No error (yet) if this is a macro end marker.
       Debug("PROFILE Error: ending $mode of $name but stack holds "
           . join(',', map { $$_[0] . '(' . $$_[1] . ')' } @$stack) . ", $top ($topmode)");
       return; }
@@ -192,7 +193,7 @@ sub stopProfiling {
     unless $mode eq 'expand';
   return; }
 
-our $MAX_PROFILE_ENTRIES = 30;                 # [CONSTANT]
+our $MAX_PROFILE_ENTRIES = 30;    # [CONSTANT]
 
 # Print out profiling information, if any was collected
 sub showProfile {
@@ -216,10 +217,9 @@ sub showProfile {
     Debug("Deepest :\n   "
         . join(', ', map { $_ . ':' . $$profile{$_}[1] } @deepest));
     Debug("Most expensive inclusive:\n   "
-        . join(', ', map { $_ . ':' . sprintf("%.2fs", $$profile{$_}[2]) } @inclusive));
+        . join(', ', map { $_ . ':' . sprintf("%.2fs/%d", $$profile{$_}[2], $$profile{$_}[0]) } @inclusive));
     Debug("Most expensive exclusive:\n   "
-        . join(', ', map { $_ . ':' . sprintf("%.2fs", $$profile{$_}[3]) } @exclusive));
-
+        . join(', ', map { $_ . ':' . sprintf("%.2fs/%d", $$profile{$_}[3], $$profile{$_}[0]) } @exclusive));
     my $stack = $STATE->lookupValue('runtime_stack');
     if (@$stack) {
       Debug("The following were never marked as done:\n  "
