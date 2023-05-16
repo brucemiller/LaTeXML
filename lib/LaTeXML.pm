@@ -278,6 +278,9 @@ sub convert {
           return $rescued; }); } }
   $$runtime{status}      = $latexml->getStatusMessage;
   $$runtime{status_code} = $latexml->getStatusCode;
+
+  $latexml->showProfile();    # Show profile (if any)
+
   # 2.2 Bookkeeping in case in-eval perl die() deaths occurred
   if ($eval_report) {
     $$runtime{status} .= "\n" . $eval_report . "\n";
@@ -701,6 +704,7 @@ sub new_latexml {
 
   # TODO: Do again, need to do this in a GOOD way as well:
   $latexml->digestFile($_, noinitialize => 1) foreach (@str_pre);
+
   return $latexml;
 }
 
