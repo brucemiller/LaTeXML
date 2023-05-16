@@ -20,7 +20,7 @@ use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use LaTeXML::Core::Parameters;
 use LaTeXML::Package qw(TokenizeInternal);
-use base qw(LaTeXML::Core::Definition);
+use base             qw(LaTeXML::Core::Definition);
 
 sub new {
   my ($class, $cs, $parameters, $expansion, %traits) = @_;
@@ -66,16 +66,15 @@ sub invoke {
   my $result;
   my $parms = $$self{parameters};
 
+  LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
   if ($iscode) {
     # Harder to emulate \tracingmacros here.
     my @args = ($parms ? $parms->readArguments($gullet, $self) : ());
-    LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
     $result = Tokens(&$expansion($gullet, @args));
     if ($tracing || $LaTeXML::DEBUG{tracing}) {    # More involved...
       Debug($self->tracingCSName . ' ==> ' . tracetoString($result));
       Debug($self->tracingArgs(@args)) if @args; } }
   elsif (!$$self{parameters}) {                    # Trivial macro
-    LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
     Debug($self->tracingCSName . ' ->' . tracetoString($expansion))
       if $tracing || $LaTeXML::DEBUG{tracing};
     # For trivial expansion, make sure we don't get \cs or \relax\cs direct recursion!
@@ -99,7 +98,6 @@ sub invoke {
     if ($tracing || $LaTeXML::DEBUG{tracing}) {    # More involved...
       Debug($self->tracingCSName . ' ->' . tracetoString($expansion));
       Debug($self->tracingArgs(@targs)) if @args; }
-    LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
     $result = $expansion->substituteParameters(@targs); }
   # Getting exclusive requires dubious Gullet support!
   $result = Tokens($result, T_MARKER($profiled)) if $profiled;
