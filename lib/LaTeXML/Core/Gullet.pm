@@ -489,7 +489,7 @@ sub readBalanced {
     elsif ($cc == CC_BEGIN) {
       $level++;
       push(@tokens, $token); }
-    elsif ($cc == CC_MARKER) {
+    elsif ($cc == CC_MARKER) {    # Really should already have been handled by read(X)Token
       LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
   if ($level > 0) {
  # TODO: The current implementation has a limitation where if the balancing end is in a different mouth,
@@ -562,10 +562,15 @@ sub readUntil {
     while (($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken())
       && (($$token[1] != CC_SMUGGLE_THE) || ($token = $$token[2]))
       && !$token->equals($want)) {
-      push(@tokens, $token);
-      if ($$token[1] == CC_BEGIN) {    # And if it's a BEGIN, copy till balanced END
+      my $cc = $$token[1];
+      if ($cc == CC_MARKER) {    # would have been handled by readToken, but we're bypassing
+        $self->handleMarker($token); }
+      elsif ($$token[1] == CC_BEGIN) {    # And if it's a BEGIN, copy till balanced END
+        push(@tokens, $token);
         $nbraces++;
-        push(@tokens, $self->readBalanced, T_END); } } }
+        push(@tokens, $self->readBalanced, T_END); }
+      else {
+        push(@tokens, $token); } } }
   else {
 
     my @ring = ();
