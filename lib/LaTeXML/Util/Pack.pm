@@ -63,7 +63,7 @@ sub unpack_source {
 
   # I.2. Without an explicit directive,
   #      heuristically determine the input (borrowed from arXiv::FileGuess)
-  my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.[tT](:?[eE][xX]|[xX][tT])$');
+  my @TeX_file_members = map { $_->fileName() } $zip_handle->membersMatching('\.(?:[tT](:?[eE][xX]|[xX][tT])|ltx|LTX)$');
   if (!@TeX_file_members) {    # No .tex file? Try files with no, or unusually long, extensions
     @TeX_file_members = grep { !/\./ || /\.[^.]{4,}$/ } map { $_->fileName() } $zip_handle->members();
   }
