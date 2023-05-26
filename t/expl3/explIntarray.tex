@@ -1,0 +1,56 @@
+% !TEX TS-program = xelatex
+\documentclass{article}
+\usepackage{expl3}
+\usepackage{booktabs}
+\usepackage{latexml}
+\ExplSyntaxOn
+\cs_new:Npn \__check_tl:nn #1#2#3
+ {
+  #1 & #2 &
+  \exp_args:Nx \tl_to_str:n { \tl_use:c { c__codepoint_#1_ \codepoint_str_generate:n{"#2} _tl } }
+  &
+  \clist_set:Nn\l_tmpa_clist{#3}
+  \clist_map_inline:Nn\l_tmpa_clist{\{\tl_if_blank:nF{##1}{\textquotedbl}##1\}}
+%   #3
+  \\
+ }
+\cs_new:Nn \__check_tl:
+ {
+  {\ttfamily
+  \textbackslash c\textunderscore\textunderscore codepoint\textunderscore\#1\textunderscore\textbackslash codepoint_str_generate:n\{\textquotedbl\#2\}\textunderscore tl:\\
+  \begin{tabular}{llll}\toprule\lxBeginTableHead
+  \#1 & \#2 & \rmfamily actual & \rmfamily expected \\\lxEndTableHead
+  \__check_tl:nn {nfd} {C0} {0041,{0300~}} % À
+  \__check_tl:nn {nfd} {0340} {0300,{}}
+  \__check_tl:nn {nfd} {1D1C0} {1D1BC,{1D16F~}}
+  \__check_tl:nn {nfd} {2FA1D} {2A600,{}}
+  \__check_tl:nn {titlecase} {01C4} {01C5,{},{}}
+  \__check_tl:nn {titlecase} {10FF} {10FF,{},{}}
+  \end{tabular}
+  }
+  \newpage
+ }
+\tex_let:D \checkCharacters \__check_tl:
+\cs_new:Npn \__describe_intarray:nn #1#2
+ {
+  \noindent
+  \mbox{The~integer~array~
+   \texttt{\textbackslash c\textunderscore\textunderscore codepoint\textunderscore#1\textunderscore#2\textunderscore intarray}
+   \c_space_tl contains~\intarray_count:c { c__codepoint_#1_#2_intarray }~items:}
+  \par
+  \int_step_inline:nn { \intarray_count:c { c__codepoint_#1_#2_intarray } }
+   {
+    \intarray_item:cn { c__codepoint_#1_#2_intarray } {##1} ,~
+   }
+  \newpage
+ }
+\tex_let:D \describeIntArray \__describe_intarray:nn
+\ExplSyntaxOff
+\pagestyle{empty}
+\begin{document}
+\checkCharacters
+\describeIntArray{uppercase}{blocks}
+\describeIntArray{lowercase}{blocks}
+\describeIntArray{uppercase}{index}
+\describeIntArray{lowercase}{index}
+\end{document}

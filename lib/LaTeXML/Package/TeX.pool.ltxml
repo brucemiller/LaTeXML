@@ -1353,9 +1353,7 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
       $props{fontname} = $name; }
     $gullet->skipSpaces;
     AssignValue('fontinfo_' . ToString($cs) => {%props});
-    DefPrimitiveI($cs, undef, undef, font => {%props});
-
-});
+    DefPrimitiveI($cs, undef, undef, font => {%props}); });
 
 # Not sure what this should be...
 DefPrimitiveI('\nullfont', undef, undef, font => { family => 'nullfont' });
@@ -1514,9 +1512,8 @@ foreach my $letter (ord('A') .. ord('Z')) {
   $STATE->assignLCcode(chr($letter + 0x20), $letter + 0x20, 'global');
   $STATE->assignUCcode(chr($letter + 0x20), $letter, 'global'); }
 
-# Stub definitions ???
-DefRegister('\hyphenchar{}', Number(ord('-')));
-DefRegister('\skewchar{}',   Number(0));          # no idea what the default is here
+# Stub definition ???
+DefRegister('\skewchar{}', Number(0));    # no idea what the default is here
 
 DefMacro('\hyphenation GeneralText', Tokens());
 DefMacro('\patterns{}',              Tokens());
@@ -1597,12 +1594,29 @@ DefParameterType('FontToken', sub {
     if ($token->toString =~ /^\\(?:text|script|scriptscript)font$/) {
       $gullet->readNumber; }
     $token; });    #?
+
+my %fontdimen;
 DefRegister('\fontdimen Number FontToken' => Dimension(0),
-  getter => sub { my $p = ToString($_[0]);
-    if ($p == 2)    { Dimension('0.5em'); }    # interword space
-    elsif ($p == 5) { Dimension('1ex'); }      # x-height
-    elsif ($p == 6) { Dimension('1em'); }      # quad width
-    else            { Dimension(0); } });
+  getter => sub { my ($p, $f) = (ToString($_[0]), ToString($_[1]));
+    if (exists $fontdimen{$f}) { $fontdimen{$f}->[$p]; }
+    else {
+      if ($p == 2)    { Dimension('0.5em'); }    # interword space
+      elsif ($p == 5) { Dimension('1ex'); }      # x-height
+      elsif ($p == 6) { Dimension('1em'); }      # quad width
+      else            { Dimension(0); } } },
+  setter => sub { my ($v, $p, $f) = ($_[0], ToString($_[1]), ToString($_[2]));
+    $fontdimen{$f} = () unless exists $fontdimen{$f};
+    $fontdimen{$f}->[$p] = $v;
+    return; });
+
+my %hyphenchar;
+DefRegister('\hyphenchar FontToken', Number(ord('-')),
+  getter => sub { $hyphenchar{ ToString($_[0]) } // Number(ord('-')); },
+  setter => sub {
+    $hyphenchar{ ToString($_[1]) } = Number(ToString($_[0]));
+    return; });
+
+LaTeXML::Package::setFontHashRefs(\%fontdimen, \%hyphenchar);
 
 #   Could be handled by setting dimensions whenever the box itself is set?
 

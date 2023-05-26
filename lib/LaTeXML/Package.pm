@@ -378,6 +378,13 @@ sub AssignDelcode {
   $STATE->assignDelcode($char, $delcode, $scope);
   return; }
 
+# these are really defined in TeX.pool, but Let and AdjustExplThree also need them
+my ($fontdimenref, $hyphencharref);
+
+sub setFontHashRefs {
+  ($fontdimenref, $hyphencharref) = @_;
+  return; }
+
 sub Let {
   my ($token1, $token2, $scope) = @_;
   # If strings are given, assume CS tokens (most common case)
@@ -385,6 +392,13 @@ sub Let {
   $token2 = T_CS($token2) unless ref $token2;
   $STATE->assignMeaning($token1,
     ($token2->get_dont_expand ? $token2 : $STATE->lookupMeaning($token2)), $scope);
+  # if a font is being \let, we also need to manage the font parameters
+  if (exists $hyphencharref->{ ToString($token2) }) {
+    $hyphencharref->{ ToString($token1) } = $hyphencharref->{ ToString($token2) };
+    $fontdimenref->{ ToString($token1) }  = $fontdimenref->{ ToString($token2) }; }
+  elsif (exists $hyphencharref->{ ToString($token1) }) {
+    delete($hyphencharref->{ ToString($token1) });
+    delete($fontdimenref->{ ToString($token1) }); }
   AfterAssignment();
   return; }
 
@@ -2898,6 +2912,134 @@ sub ProcessPendingResources {
     AssignValue(PENDING_RESOURCES => [], 'global'); }
   return; }
 
+# >95% of the time loading expl3 is spent in UnicodeData.txt
+# we rewrite this entirely in Perl to speed things up
+# See LaTeXML::Core::Mouth::file for making sure AdjustExplThree happens at just the right time.
+# beware that intarrays are 1 indexed, not 0
+
+my $c__codepoint_block_size_int         = 64;
+my @cases                               = qw/ uppercase lowercase /;
+my %l__codepoint_block_clist            = map { $_ => [] } @cases;
+my %l__codepoint_block_tl               = map { $_ => 1 } @cases;
+my %l__codepoint_pos_tl                 = map { $_ => 0 } @cases;
+my $l__codepoint_next_codepoint_fint_tl = 0;
+my $l__codepoint_matched_block_tl       = 0;
+my %l__codepoint_block_num_clist        = map { $_ => [] } @cases;
+
+sub __codepoint_data_auxi_w {
+  if ($_[6] =~ /^[^<]/) {
+    __codepoint_data_auxii_w(undef, $_[1], $_[6]); }
+  __codepoint_data_auxiii_w(undef, $_[1], $_[2], @_[10 .. $#_]); }
+
+sub __codepoint_data_auxii_w {
+  if ($_[2] =~ /^(\S+) (.*)$/) {
+    DefMacro(T_CS('\c__codepoint_nfd_' . chr(hex($_[1])) . '_tl'),
+      sub { Explode("{\"$1}{\"$2 }") }, scope => 'global'); }
+  else {
+    DefMacro(T_CS('\c__codepoint_nfd_' . chr(hex($_[1])) . '_tl'),
+      sub { Explode("{\"$_[2]}{}"); }, scope => 'global'); } }
+
+sub __codepoint_data_auxiii_w {
+  __codepoint_data_auxiv_w(undef, $_[1], $_[2],
+    __codepoint_data_offset_nn(undef, $_[1], $_[6]),
+    __codepoint_data_offset_nn(undef, $_[1], $_[7]),
+    $_[8]); }
+
+sub __codepoint_data_offset_nn {
+  $_[2] ? hex($_[2]) - hex($_[1]) : 0; }
+
+sub __codepoint_data_auxiv_w {
+  $_[5] =~ s/ $//;
+  if (hex($_[1]) > $l__codepoint_next_codepoint_fint_tl) {
+    __codepoint_data_auxvi_nnnw(undef, $_[1], $_[3], $_[4], $_[2]); }
+  __codepoint_add_nn(undef, 'uppercase', $_[3]);
+  __codepoint_add_nn(undef, 'lowercase', $_[4]);
+  if ($_[3] != __codepoint_data_offset_nn(undef, $_[1], $_[5])) {
+    DefMacro(T_CS('\c__codepoint_titlecase_' . chr(hex($_[1])) . '_tl'),
+      sub { Explode("{\"$_[5]}{}{}") }, scope => 'global'); }
+  $l__codepoint_next_codepoint_fint_tl = hex($_[1]) + 1; }
+
+sub __codepoint_add_nn {
+  if (push(@{ $l__codepoint_block_clist{ $_[1] } }, $_[2]) == $c__codepoint_block_size_int) {
+    __codepoint_save_blocks_nn(undef, $_[1], 1); } }
+
+sub __codepoint_data_auxvi_nnnw {
+  if ($_[4] =~ /Last>/) {
+    __codepoint_range_nnn(undef, $_[1], 'uppercase', $_[2]);
+    __codepoint_range_nnn(undef, $_[1], 'lowercase', $_[3]); }
+  else {
+    __codepoint_range_nnn(undef, $_[1], 'uppercase', 0);
+    __codepoint_range_nnn(undef, $_[1], 'lowercase', 0); } }
+
+sub __codepoint_range_nnn {
+  __codepoint_range_aux_nnn(undef, hex($_[1]) - $l__codepoint_next_codepoint_fint_tl, $_[2], $_[3]); }
+
+sub __codepoint_range_aux_nnn {
+  my $other = $c__codepoint_block_size_int - scalar @{ $l__codepoint_block_clist{ $_[2] } };
+  if ($_[1] < $other) {
+    __codepoint_range_nnnn(undef, $_[1], $_[1], $_[2], $_[3]); }
+  else {
+    __codepoint_range_nnnn(undef, $other, $_[1], $_[2], $_[3]); } }
+
+sub __codepoint_range_nnnn {
+  if (push(@{ $l__codepoint_block_clist{ $_[3] } }, ($_[4]) x $_[1]) == $c__codepoint_block_size_int) {
+    __codepoint_save_blocks_nn(undef, $_[3], 1); }
+  if ($_[2] - $_[1] >= $c__codepoint_block_size_int) {
+    $l__codepoint_block_clist{ $_[3] } = [($_[4]) x $c__codepoint_block_size_int];
+    __codepoint_save_blocks_nn(undef, $_[3], int(($_[2] - $_[1]) / $c__codepoint_block_size_int)); }
+  push(@{ $l__codepoint_block_clist{ $_[3] } }, ($_[4]) x (($_[2] - $_[1]) % $c__codepoint_block_size_int)); }
+
+sub __codepoint_save_blocks_nn {
+  $l__codepoint_matched_block_tl = $l__codepoint_block_tl{ $_[1] };
+  foreach (1 .. ($l__codepoint_block_tl{ $_[1] } - 1)) {
+    if ($l__codepoint_block_num_clist{ $_[1] } and $l__codepoint_block_num_clist{ $_[1] }[$_] and
+      join(',', @{ $l__codepoint_block_clist{ $_[1] } }) eq join(',', @{ $l__codepoint_block_num_clist{ $_[1] }[$_] })) {
+      $l__codepoint_matched_block_tl = $_; } }
+  if ($l__codepoint_block_tl{ $_[1] } == $l__codepoint_matched_block_tl) {
+    $l__codepoint_block_num_clist{ $_[1] }[$l__codepoint_block_tl{ $_[1] }] = $l__codepoint_block_clist{ $_[1] };
+    $l__codepoint_block_tl{ $_[1] }++; }
+  # this is the line that was taking forever in the original TeX
+  splice(@{ $fontdimenref->{"\\g__codepoint_$_[1]_index_intarray"} },
+    $l__codepoint_pos_tl{ $_[1] } + 1,
+    $_[2],
+    (Dimension($l__codepoint_matched_block_tl . 'sp')) x $_[2]);
+  $l__codepoint_pos_tl{ $_[1] } += $_[2];
+  $l__codepoint_block_clist{ $_[1] } = []; }
+
+sub __codepoint_finalise_blocks_ {
+  foreach (@cases) {
+    __codepoint_range_nnn(undef, 110000, $_, 0);
+    __codepoint_finalise_blocks_n(undef, $_); } }
+
+sub __codepoint_finalise_blocks_n {
+  Let("\\c__codepoint_$_[1]_index_intarray", "\\g__codepoint_$_[1]_index_intarray");
+  Let("\\g__codepoint_$_[1]_index_intarray", '\tex_undefined:D');
+  $hyphencharref->{"\\g__codepoint_$_[1]_blocks_intarray"} = Number(($l__codepoint_block_tl{ $_[1] } - 1) * $c__codepoint_block_size_int);
+  shift @{ $l__codepoint_block_num_clist{ $_[1] } };
+  my @concated = map { @$_ } @{ $l__codepoint_block_num_clist{ $_[1] } };
+  my @dimens   = map { Dimension($_ . 'sp') } @concated;
+  unshift(@dimens, undef);
+  $fontdimenref->{"\\g__codepoint_$_[1]_blocks_intarray"} = \@dimens;
+  Let("\\c__codepoint_$_[1]_blocks_intarray", "\\g__codepoint_$_[1]_blocks_intarray");
+  Let("\\g__codepoint_$_[1]_blocks_intarray", '\tex_undefined:D'); }
+
+sub AdjustExplThree {
+  #return; # dump out without doing anything
+  Debug('Overwriting expl3 UnicodeData codepoint functions');
+  # This is DefMacro('\csname __codepoint_data_auxi:w\endcsname Until:\q_stop',sub {}),
+  # but that would treat q_stop using TokenizeI catcodes, making '_' => CC_OTHER.
+  # Beware that there are three different \__codepoint_data_auxi:w functions
+  # this is overwriting the one for UnicodeData.txt, not CaseFolding.txt nor SpecialCasing.txt.
+  DefMacroI(T_CS('\__codepoint_data_auxi:w'),
+    LaTeXML::Core::Parameters->new(
+      LaTeXML::Core::Parameter->new('Until', 'Until:\q_stop', extra => [T_CS('\q_stop')])),
+    sub {
+      __codepoint_data_auxi_w(undef, split(/;/, ToString($_[1])));
+      return; });
+  DefMacro('\csname __codepoint_finalise_blocks:\endcsname', sub {
+      __codepoint_finalise_blocks_();
+      return; }); }
+
 #**********************************************************************
 1;
 
@@ -4270,7 +4412,7 @@ is applied only when C<fontTest> returns true.
 Predefined Ligatures combine sequences of "." or single-quotes into appropriate
 Unicode characters.
 
-=item C<DefMathLigature(I<$string>C<=>>I<$replacment>,I<%options>);>
+=item C<<< DefMathLigature(I<$string> => I<$replacment>,I<%options>); >>>
 
 X<DefMathLigature>
 A Math Ligature typically combines a sequence of math tokens (XMTok) into a single one.
@@ -4282,7 +4424,7 @@ replaces the two tokens for colon and equals by a token representing assignment.
 The options are those characterising an XMTok, namely: C<role>, C<meaning> and C<name>.
 
 For more complex cases (recognizing numbers, for example), you may supply a
-function C<matcher=>CODE($document,$node)>, which is passed the current document
+function C<<< matcher=>CODE($document,$node) >>>, which is passed the current document
 and the last math node in the sequence.  It should examine C<$node> and any preceding
 nodes (using C<previousSibling>) and return a list of C<($n,$string,%attributes)> to replace
 the C<$n> nodes by a new one with text content being C<$string> content and the given attributes.
