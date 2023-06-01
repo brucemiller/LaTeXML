@@ -1,0 +1,31 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  marginnote                                                         | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Tim Prescott <teepeemm@gmail.com>                           #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+
+DefRegister('\marginnotevadjust'   => Dimension(0));
+DefRegister('\marginnotetextwidth' => LookupRegister('\textwidth'));
+
+DefMacro('\marginfont',            '\normalcolor');
+DefMacro('\raggedleftmarginnote',  '\raggedleft');
+DefMacro('\raggedrightmarginnote', '\raggedright');
+
+# marginnote is marginpar shifted vertically by #3 (which we ignore)
+DefMacro('\marginnote[]{}[]', sub {
+    Tokenize('\marginpar'
+        . ($_[1] ? '[\marginfont\raggedleftmarginnote ' . $_[1]->toString . ']' : '')
+        . '{\marginfont\raggedrightmarginnote ' . $_[2]->toString . '}'); });
+
+1;
