@@ -15,8 +15,19 @@ use strict;
 use warnings;
 use LaTeXML::Package;
 
-DefRegister('\marginnotevadjust'   => Dimension(0));
-DefRegister('\marginnotetextwidth' => LookupRegister('\textwidth'));
+DefConditional('\if@mn@verbose');
+
+# not documented, but in the implementation
+DeclareOption('quiet',   sub { Let('\if@mn@verbose', '\iffalse'); });
+DeclareOption('verbose', sub { Let('\if@mn@verbose', '\iftrue'); });
+
+DeclareOption('parboxrestore',   sub { DefMacro('\mn@parboxrestore', '\@parboxrestore'); });
+DeclareOption('noparboxrestore', sub { DefMacro('\mn@parboxrestore', Tokens()); });
+
+foreach my $ignoredOption (qw(fulladjust heightadjust depthadjust noadjust)) {
+  DeclareOption($ignoredOption, undef); }
+ExecuteOptions('verbose', 'fulladjust', 'parboxrestore');
+ProcessOptions();
 
 DefMacro('\marginfont',            '\normalcolor');
 DefMacro('\raggedleftmarginnote',  '\raggedleft');
@@ -24,8 +35,38 @@ DefMacro('\raggedrightmarginnote', '\raggedright');
 
 # marginnote is marginpar shifted vertically by #3 (which we ignore)
 DefMacro('\marginnote[]{}[]', sub {
-    Tokenize('\marginpar'
-        . ($_[1] ? '[\marginfont\raggedleftmarginnote ' . $_[1]->toString . ']' : '')
-        . '{\marginfont\raggedrightmarginnote ' . $_[2]->toString . '}'); });
+    TokenizeInternal('\marginpar'
+        . ($_[1] ? '[\mn@parboxrestore\marginfont\raggedleftmarginnote ' . $_[1]->toString . ']' : '')
+        . '{\mn@parboxrestore\marginfont\raggedrightmarginnote ' . $_[2]->toString . '}'); });
+
+DefMacro('\@mn@if@RTL', sub {
+    if (LookupValue('\if@RTL') and IfCondition('\if@RTL')) {
+      return T_CS('\@firstoftwo'); }
+    else {
+      return T_CS('\@secondoftwo'); } });
+
+# stubs that could do something but do not
+DefRegister('\marginnotevadjust'   => Dimension(0));
+DefRegister('\marginnotetextwidth' => LookupRegister('\textwidth'));
+Let('\newmarginnote', '\newlabel');
+Let('\mn@lastxpos',   '\lastxpos');
+Let('\mn@savepos',    '\savepos');
+Let('\mn@pagewidth',  '\pagewidth');
+Let('\mn@strut',      '\strut');
+Let('\mn@vadjust',    '\vadjust');
+
+# stubs that do nothing
+DefMacro('\@mn@marginnote []{}',     Tokens());
+DefMacro('\@mn@@marginnote []{}[]',  Tokens());
+DefMacro('\@mn@@@marginnote []{}[]', Tokens());
+DefMacro('\@mn@margintest',          Tokens());
+DefMacro('\@mn@thispage',            Tokens());
+DefMacro('\@mn@atthispage',          Tokens());
+DefMacro('\@mn@currpage',            Tokens());
+DefMacro('\@mn@currxpos',            Tokens());
+DefMacro('\mn@vlap {}',              Tokens());
+DefMacro('\mn@zbox {}',              Tokens());
+
+NewCounter('mn@abspage');
 
 1;
