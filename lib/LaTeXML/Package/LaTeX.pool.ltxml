@@ -3558,12 +3558,16 @@ DefMacro('\@dblfloatplacement', '');
 # C.9.2 Marginal Notes
 #======================================================================
 
-AssignValue(marginparclass => undef);
+DefConditional('\if@reversemargin');
+Let('\reversemarginpar', '\@reversemargintrue');
+Let('\normalmarginpar',  '\@reversemarginfalse');
 DefConstructor('\marginpar[]{}',
-  "<ltx:note role='margin' class='#class'><ltx:inline-para>#2</ltx:inline-para></ltx:note>",
-  properties => sub { (class => LookupValue('marginparclass')); });
-DefPrimitiveI('\reversemarginpar', undef, sub { AssignValue(marginparclass => 'ltx_marginpar_reverse'); });
-DefPrimitiveI('\normalmarginpar', undef, sub { AssignValue(marginparclass => undef); });
+  "<ltx:note role='margin' class='#class'><ltx:inline-para>#content</ltx:inline-para></ltx:note>",
+  properties => sub {
+    my $isReversed = IfCondition('\if@reversemargin');
+    my $class      = $isReversed             ? 'ltx_marginpar_reverse' : 'ltx_marginpar_normal';
+    my $content    = ($isReversed and $_[1]) ? $_[1]->toString         : $_[2]->toString;
+    return (class => $class, content => $content); });
 DefRegister('\marginparpush', Dimension(0));
 
 #**********************************************************************

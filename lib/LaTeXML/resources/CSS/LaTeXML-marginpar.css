@@ -2,13 +2,23 @@
   (more sophisticated layout probably requires xslt) */
 .ltx_note.ltx_role_margin .ltx_note_mark { display:none; }
 .ltx_note.ltx_role_margin .ltx_note_type { display:none; }
-.ltx_note.ltx_role_margin {
-    margin-right: -15%; width:15%;
-    float: right; clear: right; }
+.ltx_note.ltx_role_margin { width:15%; }
 .ltx_note.ltx_role_margin .ltx_note_content {
-    display:block;
-    position:relative; right:-15%;
-    background-color: transparent; border:0pt; }
+    display:block; position:relative;
+    background-color:transparent; border:0pt; }
+.ltx_note.ltx_role_margin.ltx_marginpar_reverse {
+    margin-left:-15%; float:left; clear:left; }
+.ltx_note.ltx_role_margin.ltx_marginpar_normal {
+    margin-right:-15%; float:right; clear:right; }
+.ltx_note.ltx_role_margin.ltx_marginpar_reverse .ltx_note_content { left:-15%; }
+.ltx_note.ltx_role_margin.ltx_marginpar_normal .ltx_note_content { right:-15%; }
 
-/* Narrower, to make room for marginpar */
-.ltx_page_main { width:75%; }
+/* Narrower, to make room for marginpar.
+ * We don't want to change .ltx_page_main, because navbar chnages that and
+ * these would interfere. */
+.ltx_page_main.ltx_has_marginpar_reverse .ltx_page_content {
+    left:15%; position:relative; }
+.ltx_page_main.ltx_has_marginpar_normal .ltx_page_content,
+.ltx_page_main.ltx_has_marginpar_reverse .ltx_page_content { width:85%; }
+.ltx_page_main.ltx_has_marginpar_normal.ltx_has_marginpar_reverse .ltx_page_content {
+    width:70%; }
