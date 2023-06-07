@@ -1472,9 +1472,9 @@ sub beginItemize {
 ##    Let(T_CS('\@listcontext'), T_CS('\@currentlabel')); }
   AssignValue(itemcounter => $usecounter);
   my $listcounter = '@itemize' . $listpostfix;
-  if (!LookupValue('\c@' . $listcounter)) {    # Create new list counters as needed
-    NewCounter($listcounter); }                #,  $outercounter.ToString(Tokens(roman($outerlevel))),
-  if ($outercounter) {                         # Make this list's ID relative to outer list's ID
+  if (!LookupDefinition(T_CS('\c@' . $listcounter))) {    # Create new list counters as needed
+    NewCounter($listcounter); }    #,  $outercounter.ToString(Tokens(roman($outerlevel))),
+  if ($outercounter) {             # Make this list's ID relative to outer list's ID
     my $outerusecounter = $outercounter . ToString(Tokens(roman($outerlevel)));
     DefMacroI('\the' . $listcounter . '@ID', undef,
       '\the' . $outerusecounter . '@ID.I' . '\arabic{' . $listcounter . '}');
@@ -1500,7 +1500,6 @@ sub beginItemize {
         LookupValue('enumitem_series_' . $series . '_last') || Number(0)); } }
   else {
     ResetCounter($usecounter); }
-
 ##  return RefStepCounter('@itemize' . $listpostfix); }
   return (RefStepCounter('@itemize' . $listpostfix),
     counter => $usecounter, series => $series); }    # So end can save counter value
@@ -2253,7 +2252,7 @@ DefConstructor('\lx@equationgroup@subnumbering@begin',
     my ($stomach, $whatsit) = @_;
     my %eqn   = RefStepCounter('equation');
     my $eqnum = Expand(T_CS('\theequation'));
-    AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
+    AssignValue(SAVED_EQUATION_NUMBER => LookupRegister('\c@equation'));
     $whatsit->setProperties(%eqn);
     ResetCounter('equation');
     DefMacroI('\theequation',    undef, UnTeX($eqnum) . '\alph{equation}');
@@ -2262,7 +2261,8 @@ Tag('ltx:equationgroup', autoClose => 1);
 DefConstructor('\lx@equationgroup@subnumbering@end', sub {
     $_[0]->maybeCloseElement('ltx:equationgroup'); },
   afterDigest => sub {
-    AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
+    AssignRegister('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global');
+  });
 
 #======================================================================
 # ========================================
@@ -2926,21 +2926,22 @@ DefPrimitive('\renewenvironment OptionalMatch:* {}[Number][]{}{}', sub {
 # The core non-customizable part is defined here.
 # For customizable theorems, see amsthm.
 AssignValue('thm@swap' => 0);
-DefRegister('\thm@style'       => Tokenize('plain'));
-DefRegister('\thm@headfont'    => Tokens(T_CS('\bfseries')));
-DefRegister('\thm@notefont'    => Tokens(T_CS('\the'), T_CS('\thm@headfont')));
-DefRegister('\thm@bodyfont'    => Tokens(T_CS('\itshape')));
-DefRegister('\thm@headpunct'   => Tokens());
-DefRegister('\thm@styling'     => Tokens());
-DefRegister('\thm@headstyling' => Tokens());
-DefRegister('\thm@prework'     => Tokens());
-DefRegister('\thm@postwork'    => Tokens());
-DefRegister('\thm@symbol'      => Tokens());
-DefRegister('\thm@numbering'   => Tokens(T_CS('\arabic')));
+DefRegister('\thm@style'         => Tokenize('plain'));
+DefRegister('\thm@headfont'      => Tokens(T_CS('\bfseries')));
+DefRegister('\thm@notefont'      => Tokens(T_CS('\the'), T_CS('\thm@headfont')));
+DefRegister('\thm@bodyfont'      => Tokens(T_CS('\itshape')));
+DefRegister('\thm@headformatter' => Tokens());
+DefRegister('\thm@headpunct'     => Tokens());
+DefRegister('\thm@styling'       => Tokens());
+DefRegister('\thm@headstyling'   => Tokens());
+DefRegister('\thm@prework'       => Tokens());
+DefRegister('\thm@postwork'      => Tokens());
+DefRegister('\thm@symbol'        => Tokens());
+DefRegister('\thm@numbering'     => Tokens(T_CS('\arabic')));
 
 DefPrimitive('\th@plain', sub {
-    AssignValue('\thm@bodyfont'    => T_CS('\itshape'));
-    AssignValue('\thm@headstyling' => T_CS('\lx@makerunin'));
+    AssignRegister('\thm@bodyfont'    => T_CS('\itshape'));
+    AssignRegister('\thm@headstyling' => T_CS('\lx@makerunin'));
     return; });
 
 DefMacroI('\lx@makerunin',   undef, '\@ADDCLASS{ltx_runin}');
@@ -2978,8 +2979,10 @@ sub useTheoremStyle {
   if (my $params = LookupValue('THEOREM_' . ToString($name) . '_PARAMETERS')) {
     for my $param_key (keys %$savable) {
       if (exists $$params{$param_key}) {
-        AssignValue($param_key => $$params{$param_key}); }
-  } }
+        if ($param_key =~ /^\\/) {
+          AssignRegister($param_key => $$params{$param_key}); }
+        else {
+          AssignValue($param_key => $$params{$param_key}); } } } }
   return; }
 
 sub saveTheoremStyle {
@@ -3014,14 +3017,14 @@ sub defineNewTheorem {
     AssignMapping('counter_for_type', $thmset => $counter);
     DefMacroI(T_CS('\the' . $thmset), undef, T_CS('\the' . $counter), scope => 'global');
   }
-  my $style     = ToString(LookupValue('\thm@style'));        # The name of the style
-  my $numbering = ToString(LookupValue('\thm@numbering'));    # The number style macro
+  my $style     = ToString(LookupRegister('\thm@style'));        # The name of the style
+  my $numbering = ToString(LookupRegister('\thm@numbering'));    # The number style macro
   $flag = 1 unless $numbering;
   if (!$otherthmset) {
     my $idprefix = "Thm$classname";
     $idprefix =~ s/\*/./g;
 
-    if (!LookupValue('\c@' . $counter)) {                     # if isn't already defined...
+    if (!LookupDefinition(T_CS('\c@' . $counter))) {             # if isn't already defined...
       NewCounter($counter, $within, idprefix => $idprefix); }
     DefMacroI(T_CS("\\the$counter"), undef,
       ($within
@@ -3030,7 +3033,10 @@ sub defineNewTheorem {
       scope => 'global') if $numbering; }
 
   my %parameters = %{ LookupValue('SAVABLE_THEOREM_PARAMETERS') };
-  saveTheoremStyle($thmset, map { ($_ => LookupValue($_)) } keys %parameters);
+  my %saved      = ();
+  foreach my $key (keys %parameters) {
+    $saved{$key} = ($key =~ /^\\/ ? LookupRegister($key) : LookupValue($key)); }
+  saveTheoremStyle($thmset, %saved);
 
   my $thmname = '\\lx@name@' . $thmset;
   DefMacroI($thmname, undef, $type, scope => 'global');
@@ -3045,9 +3051,9 @@ sub defineNewTheorem {
     scope => 'global');
   # amsthm allows you to define your own title formatter
   # if there was one defined, use it, else define a new one.
-  my $headformatter = LookupValue('\thm@headformatter');
+  my $headformatter = LookupRegister('\thm@headformatter');
   DefMacroI('\format@title@' . $thmset, convertLaTeXArgs(1, 0),
-    ($headformatter
+    ($headformatter->unlist
       ? Tokens(
         T_CS('\the'), T_CS('\thm@headfont'),
         $headformatter->unlist,
@@ -4595,19 +4601,19 @@ DefMacro('\stretch{}', '0pt plus #1fill\relax');
 
 DefPrimitive('\newlength DefToken', sub {
     my ($stomach, $cs) = @_;
-    DefRegisterI($cs, undef, Glue(0)); });
+    DefRegisterI($cs, undef, Glue(0), allocate => '\skip'); });
 DefPrimitive('\setlength {Variable}{Dimension}', sub {
     my ($stomach, $variable, $length) = @_;
     my ($defn, @params) = @$variable;
     if (ref $defn) {
-      $defn->setValue($length, @params); }
+      $defn->setValue($length, undef, @params); }
     return; });
 DefPrimitive('\addtolength {Variable}{Dimension}', sub {
     my ($stomach, $variable, $length) = @_;
     my ($defn, @params) = @$variable;
     if (ref $defn) {
       my $oldlength = $defn->valueOf(@params);
-      $defn->setValue($defn->valueOf(@params)->add($length), @params); }
+      $defn->setValue($defn->valueOf(@params)->add($length), undef, @params); }
     return; });
 
 DefMacro('\@settodim{}{}{}',
@@ -4616,14 +4622,6 @@ DefMacroI('\settoheight', undef, '\@settodim\ht');
 DefMacroI('\settodepth',  undef, '\@settodim\dp');
 DefMacroI('\settowidth',  undef, '\@settodim\wd');
 DefMacro('\@settopoint{}', '\divide#1\p@\multiply#1\p@');
-
-# Assuming noone tries to get clever with figuring out the allocation of
-# numbers, these become simple DefRegister's
-DefPrimitive('\newcount DefToken',  sub { DefRegisterI($_[1], undef, Number(0)); });
-DefPrimitive('\newdimen DefToken',  sub { DefRegisterI($_[1], undef, Dimension(0)); });
-DefPrimitive('\newskip DefToken',   sub { DefRegisterI($_[1], undef, Glue(0)); });
-DefPrimitive('\newmuskip DefToken', sub { DefRegisterI($_[1], undef, MuGlue(0)); });
-DefPrimitive('\newtoks DefToken',   sub { DefRegisterI($_[1], undef, Tokens()); });
 
 DefRegister('\fill', Glue('0pt plus 1fill'));
 
@@ -4790,7 +4788,7 @@ DefConstructor('\parbox[] OptionalUndigested OptionalUndigested {Dimension} VBox
   mode         => 'text', bounded => 1,
   robust       => 1,
   beforeDigest => sub {
-    AssignValue('\hsize' => $_[4]);
+    AssignRegister('\hsize' => $_[4]);
     Let('\\\\', '\lx@parboxnewline'); });
 DefMacroI('\@parboxrestore', undef, Tokens());
 
@@ -4812,7 +4810,7 @@ DefEnvironment('{minipage}[][][]{Dimension}', sub {
       vattach => translateAttachment($_[1])); },
   beforeDigest => sub {
     Digest(T_CS('\@minipagetrue'));
-    AssignValue('\hsize' => $_[4]);
+    AssignRegister('\hsize' => $_[4]);
     # this conflicts (& not needed?) with insertBlock
     Let('\\\\', '\lx@parboxnewline'); });
 
@@ -4894,13 +4892,13 @@ sub pxValue {
 #----------------------------------------------------------------------
 # Picture parameters.
 DefRegister('\unitlength', Dimension('1pt'));
-DefPrimitiveI('\thinlines',  undef, sub { AssignValue('\@wholewidth', Dimension('0.4pt')); });
-DefPrimitiveI('\thicklines', undef, sub { AssignValue('\@wholewidth', Dimension('0.8pt')); });
+DefPrimitiveI('\thinlines',  undef, sub { AssignRegister('\@wholewidth', Dimension('0.4pt')); });
+DefPrimitiveI('\thicklines', undef, sub { AssignRegister('\@wholewidth', Dimension('0.8pt')); });
 DefRegister('\@wholewidth' => Dimension('0.4pt'));
 DefRegister('\@halfwidth'  => Dimension('0.2pt'));
 DefMacro('\linethickness{}', '\@wholewidth #1\relax');
 
-DefPrimitive('\arrowlength{Dimension}', sub { AssignValue('\arrowlength', $_[1]); });
+DefPrimitive('\arrowlength{Dimension}', sub { AssignValue('arrowlength', $_[1]); });
 
 #----------------------------------------------------------------------
 # Picture transformation support
@@ -4918,7 +4916,7 @@ sub picScale {
   my ($value) = @_;
   # Vain attempt at proper type coercion
   my $type = ref $value;
-  my $unit = LookupValue('\unitlength');
+  my $unit = LookupRegister('\unitlength');
   if    (!$value) { }
   elsif ($type eq 'LaTeXML::Common::Number') {
     return $unit->multiply($value); }
@@ -4931,8 +4929,8 @@ sub picScale {
 sub picProperties {
   my (%props) = @_;
   if (($props{stroke} || 'black') ne 'none') {
-    $props{thick} = ptValue(LookupValue('\@wholewidth')); }
-  if (my $arrowlength = LookupValue('\arrowlength')) {
+    $props{thick} = ptValue(LookupRegister('\@wholewidth')); }
+  if (my $arrowlength = LookupValue('arrowlength')) {
     $props{arrowlength} = ptValue($arrowlength); }
   return %props; }
 
@@ -4972,7 +4970,7 @@ DefEnvironment('{picture} Pair OptionalPair',
   beforeDigest => \&before_picture,
   properties   => sub {
     my ($stomach, $size, $pos) = @_;
-    picProperties(unitlength => LookupValue('\unitlength'),
+    picProperties(unitlength => LookupRegister('\unitlength'),
       width      => $size && picScale($size->getX),
       height     => $size && picScale($size->getY),
       depth      => Dimension(0),
