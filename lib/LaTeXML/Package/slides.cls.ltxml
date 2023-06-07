@@ -115,14 +115,6 @@ DefMacro('\theequation', '\arabic{equation}');
 
 NewCounter('@itemizei', 'document', idprefix => 'I');
 
-NewCounter('enumi',   '@itemizei',   idprefix => 'i');
-NewCounter('enumii',  '@itemizeii',  idprefix => 'i');
-NewCounter('enumiii', '@itemizeiii', idprefix => 'i');
-NewCounter('enumiv',  '@itemizeiv',  idprefix => 'i');
-# A couple of more levels, since we use these for ID's!
-NewCounter('enumv',  '@itemizev',  idprefix => 'i');
-NewCounter('enumvi', '@itemizevi', idprefix => 'i');
-
 DefMacro('\theenumi',   '\arabic{enumi}');
 DefMacro('\theenumii',  '\alph{enumii}');
 DefMacro('\theenumiii', '\roman{enumiii}');

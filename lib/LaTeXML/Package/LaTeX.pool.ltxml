@@ -1706,9 +1706,15 @@ DefMacroI('\typerefnum@@itemiv', undef, '\lx@poormans@ordinal{@itemiv} \itemtype
 #----------------------------------------------------------------------
 # Basic enumeration bits
 
-# Class file should have
+# Class file normally would have
 #  NewCounter for enumi,...,
 #  define \labelenumi,... and probably \p@enumii...
+NewCounter('enumi',   undef, idwithin => '@itemizei', idprefix => 'i');
+NewCounter('enumii',  undef, idwithin => 'enumi',     idprefix => 'i');
+NewCounter('enumiii', undef, idwithin => 'enumii',    idprefix => 'i');
+NewCounter('enumiv',  undef, idwithin => 'enumiii',   idprefix => 'i');
+NewCounter('enumv',   undef, idwithin => 'enumiv',    idprefix => 'i');    # A couple of extra
+NewCounter('enumvi',  undef, idwithin => 'enumv',     idprefix => 'i');
 
 # How the refnums look... (probably should be in class file, but already here)
 DefMacroI('\p@enumii',  undef, '\theenumi');
