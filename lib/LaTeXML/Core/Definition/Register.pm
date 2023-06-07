@@ -39,6 +39,10 @@ sub isRegister {
   my ($self) = @_;
   return $$self{registerType}; }
 
+sub getAddress {
+  my ($self) = @_;
+  return $$self{address} || $self->getCSName; }
+
 sub isReadonly {
   my ($self) = @_;
   return $$self{readonly}; }
