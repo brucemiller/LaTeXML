@@ -586,6 +586,27 @@ sub DefColumnType {
   return; }
 
 #======================================================================
+# Allocated registers.
+# We ASSUME the same set of \count positions used by TeX & LaTeX
+# for recording the next available position in \count,\dimen,\skip,\muskip.
+our %allocations = (
+  '\count' => '\count10', '\dimen' => '\count11', '\skip' => '\count12', '\muskip' => '\count13',
+  '\box'   => '\count14', '\toks'  => '\count15');
+
+sub allocateRegister {
+  my ($type) = @_;
+  if (my $addr = $allocations{$type}) {    # $addr is a Register but MUST be stored as \count<#>
+    if (my $n = $STATE->lookupValue($addr)) {
+      my $next = $n->valueOf + 1;
+      $STATE->assignValue($addr => Number($next), 'global');
+      return $type . $next; }
+    else {                                 # If allocations not set up, punt to unallocated register
+      return; } }
+  else {
+    Error('misdefined', $type, undef, "Type $type is not an allocated register type");
+    return; } }
+
+#======================================================================
 # Counters
 #======================================================================
 # This is modelled on LaTeX's counter mechanisms, but since it also
@@ -612,15 +633,14 @@ sub DefColumnType {
 sub NewCounter {
   my ($ctr, $within, %options) = @_;
   my $unctr = "UN$ctr";    # UNctr is counter for generating ID's for UN-numbered items.
-  if ($within && ($within ne 'document') && !LookupValue("\\c\@$within")) {
+  if ($within && ($within ne 'document') && !LookupDefinition(T_CS("\\c\@$within"))) {
     NewCounter($within); }
-  DefRegisterI(T_CS("\\c\@$ctr"), undef, Number(0));
-  AssignValue("\\c\@$ctr" => Number(0), 'global');
+  my $cs = T_CS("\\c\@$ctr");
+  DefRegisterI($cs, undef, Number(0), allocate => '\count');
   AfterAssignment();
   AssignValue("\\cl\@$ctr" => Tokens(), 'global') unless LookupValue("\\cl\@$ctr");
   DefRegisterI(T_CS("\\c\@$unctr"), undef, Number(0));
-  AssignValue("\\c\@$unctr"  => Number(0), 'global');
-  AssignValue("\\cl\@$unctr" => Tokens(),  'global') unless LookupValue("\\cl\@$unctr");
+  AssignValue("\\cl\@$unctr" => Tokens(), 'global') unless LookupValue("\\cl\@$unctr");
   my $x;
   AssignValue("\\cl\@$within" =>
       Tokens(T_CS($ctr), T_CS($unctr), (($x = LookupValue("\\cl\@$within")) ? $x->unlist : ())),
@@ -655,7 +675,7 @@ sub NewCounter {
 sub CounterValue {
   my ($ctr) = @_;
   $ctr = ToString(Expand($ctr)) if ref $ctr;
-  my $value = LookupValue('\c@' . $ctr);
+  my $value = LookupRegister('\c@' . $ctr);
   if (!$value) {
     Warn('undefined', $ctr, $STATE->getStomach,
       "Counter '$ctr' was not defined; assuming 0");
@@ -671,7 +691,7 @@ sub AfterAssignment {
 sub SetCounter {
   my ($ctr, $value) = @_;
   $ctr = ToString(Expand($ctr)) if ref $ctr;
-  AssignValue('\c@' . $ctr => $value, 'global');
+  AssignRegister('\c@' . $ctr => $value, 'global');
   AfterAssignment();
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(Explode($value->valueOf)), scope => 'global');
   return; }
@@ -680,17 +700,18 @@ sub AddToCounter {
   my ($ctr, $value) = @_;
   $ctr = ToString(Expand($ctr)) if ref $ctr;
   my $v = CounterValue($ctr)->add($value);
-  AssignValue('\c@' . $ctr => $v, 'global');
+  AssignRegister('\c@' . $ctr => $v, 'global');
   AfterAssignment();
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(Explode($v->valueOf)), scope => 'global');
   return; }
 
 sub StepCounter {
   my ($ctr, $noreset) = @_;
-  my $value = CounterValue($ctr);
-  AssignValue("\\c\@$ctr" => $value->add(Number(1)), 'global');
+  my $value    = CounterValue($ctr);
+  my $newvalue = $value->add(Number(1));
+  AssignRegister("\\c\@$ctr" => $newvalue, 'global');
   AfterAssignment();
-  DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(Explode(LookupValue('\c@' . $ctr)->valueOf)),
+  DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(Explode($newvalue->valueOf)),
     scope => 'global');
   # and reset any within counters!
   if (!$noreset) {
@@ -817,9 +838,9 @@ sub RefStepID {
 
 sub ResetCounter {
   my ($ctr) = @_;
-  AssignValue('\c@' . $ctr   => Number(0), 'global');
-  AssignValue('\c@UN' . $ctr => Number(0), 'global');    # ?????
-  DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(Explode(LookupValue('\c@' . $ctr)->valueOf)),
+  AssignRegister('\c@' . $ctr   => Number(0), 'global');
+  AssignRegister('\c@UN' . $ctr => Number(0), 'global') unless $ctr =~ /^UN/;    # ?????
+  DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(T_OTHER('0')),
     scope => 'global');
   # and reset any within counters!
   if (my $nested = LookupValue("\\cl\@$ctr")) {
@@ -1205,7 +1226,7 @@ sub DefPrimitiveI {
   return; }
 
 my $register_options = {    # [CONSTANT]
-  readonly => 1, getter => 1, setter => 1, name => 1 };
+  readonly => 1, getter => 1, setter => 1, address => 1, allocate => 1 };
 my %register_types = (      # [CONSTANT]
   'LaTeXML::Common::Number'    => 'Number',
   'LaTeXML::Common::Dimension' => 'Dimension',
@@ -1225,12 +1246,14 @@ sub DefRegisterI {
   my ($cs, $paramlist, $value, %options) = @_;
   $cs        = coerceCS($cs);
   $paramlist = parseParameters($paramlist, $cs) if defined $paramlist && !ref $paramlist;
-  my $type = $register_types{ ref $value };
-  my $name = ToString($options{name} || $cs);
-  if ((defined $value) && ((!defined $options{name}) || !defined LookupValue($name))) {
-    AssignValue($name => $value); }    # Assign, but do not RE-assign
+  my $type    = $register_types{ ref $value };
+  my $address = ($options{address} ? ToString($options{address})
+    : ($options{allocate} ? allocateRegister($options{allocate}) : undef));
+  $address = ToString($cs) unless $address;
+  if ((defined $value) && ((!defined $options{address}) || !defined LookupValue($address))) {
+    AssignValue($address => $value, 'global'); }    # Assign, but do not RE-assign
   $STATE->installDefinition(LaTeXML::Core::Definition::Register->new($cs, $paramlist,
-      name         => $name,
+      address      => $address,
       registerType => $type,
       getter       => $options{getter}, setter => $options{setter},
       default      => $value,
@@ -1266,11 +1289,11 @@ sub LookupDimension {
   return Dimension(0); }
 
 sub AssignRegister {
-  my ($cs, $value, @parameters) = @_;
+  my ($cs, $value, $scope, @parameters) = @_;
   my $defn;
   $cs = T_CS($cs) unless ref $cs;
   if (($defn = $STATE->lookupDefinition($cs)) && $defn->isRegister) {
-    return $defn->setValue($value, @parameters); }
+    return $defn->setValue($value, $scope, @parameters); }
   else {
     Warn('expected', 'register', $STATE->getStomach,
       "The control sequence " . ToString($cs) . " is not a register");
@@ -1361,7 +1384,7 @@ sub DefConstructorI {
 # so all ID's can stay in the desired format?
 sub getXMArgID {
   StepCounter('@XMARG');
-  DefMacroI(T_CS('\@@XMARG@ID'), undef, Tokens(Explode(LookupValue('\c@@XMARG')->valueOf)),
+  DefMacroI(T_CS('\@@XMARG@ID'), undef, Tokens(Explode(LookupRegister('\c@@XMARG')->valueOf)),
     scope => 'global');
   return Expand(T_CS('\the@XMARG@ID')); }
 
@@ -3398,7 +3421,7 @@ specifies if it is not allowed to change this value.
 
 =item C<getter=E<gt>I<code>(@args)>,
 
-=item C<setter=E<gt>I<code>($value,@args)>
+=item C<setter=E<gt>I<code>($value,$scope,@args)>
 
 By default I<value> is stored in the State's Value table under a name concatenating the
 control sequence and argument values.  These options allow other means of fetching and
