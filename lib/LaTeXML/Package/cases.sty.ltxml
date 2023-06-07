@@ -57,12 +57,12 @@ DefMacroI('\endsubnumcases', undef,
 DefPrimitive('\lx@numcases@subnumbering@begin', sub {
     my %eqn   = RefStepCounter('equation');
     my $eqnum = Expand(T_CS('\theequation'));
-    AssignValue(SAVED_EQUATION_NUMBER => LookupValue('\c@equation'));
+    AssignValue(SAVED_EQUATION_NUMBER => LookupRegister('\c@equation'));
     ResetCounter('equation');
     DefMacro('\theequation',    UnTeX($eqnum) . '\alph{equation}');
     DefMacro('\theequation@ID', UnTeX($eqn{id}) . '.\@equation@ID'); });
 DefPrimitive('\lx@numcases@subnumbering@end', sub {
-    AssignValue('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
+    AssignRegister('\c@equation', LookupValue('SAVED_EQUATION_NUMBER'), 'global'); });
 
 DefPrimitive('\@numcases@bindings{}', sub {
     numcasesBindings($_[1]); });
@@ -99,7 +99,7 @@ sub numcasesBindings {
       closeRow    => sub { $_[0]->closeElement('ltx:equation'); },
       openColumn  => sub { $_[0]->openElement('ltx:_Capture_', @_[1 .. $#_]); },
       closeColumn => sub { $_[0]->closeElement('ltx:_Capture_'); },
-      properties => { preserve_structure => 1, attributes => {%attributes} }));
+      properties  => { preserve_structure => 1, attributes => {%attributes} }));
 
   DefMacroI('\@numcases@LHS', undef, Tokens($lhs, T_ALIGN));
   #  Let(T_ALIGN,        '\@alignment@align');

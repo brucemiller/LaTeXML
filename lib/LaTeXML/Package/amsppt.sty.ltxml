@@ -270,7 +270,7 @@ DefMacro('\linespacing Number', '');
 DefMacro('\endquotes', '');    # ?
 
 NewCounter('footnote');
-DefMacro('\thefootnote', sub { ExplodeText(ToString(LookupValue('\c@footnote')->valueOf)); });
+DefMacro('\thefootnote', sub { ExplodeText(ToString(LookupRegister('\c@footnote')->valueOf)); });
 
 # same as LaTeX (but LaTeX.pool NOT included for amsppt!!!)
 DefConstructor('\footnote[]{}',

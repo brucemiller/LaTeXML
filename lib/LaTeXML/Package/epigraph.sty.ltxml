@@ -44,8 +44,8 @@ DefConstructor('\epigraph{}{}',
   beforeDigest => sub { Digest(T_CS('\epigraphsize')); },
   afterDigest  => sub {
     my ($stomach, $whatsit) = @_;
-    my $rule  = LookupValue('\epigraphrule')->ptValue . 'pt';
-    my $width = LookupValue('\epigraphwidth')->ptValue . 'pt';
+    my $rule  = LookupRegister('\epigraphrule')->ptValue . 'pt';
+    my $width = LookupRegister('\epigraphwidth')->ptValue . 'pt';
     my $qa    = ToString(Digest(T_CS('\epigraphflush')));
     my $ta    = ToString(Digest(T_CS('\textflush')));
     my $sa    = ToString(Digest(T_CS('\sourceflush')));

@@ -41,7 +41,7 @@ DefParameterType('Float', sub { $_[0]->readFloat; });
 
 sub ReadPSDimension {
   my ($gullet, $scale) = @_;
-  $scale = LookupValue('\psunit') unless $scale;
+  $scale = LookupRegister('\psunit') unless $scale;
   my $s = $gullet->readOptionalSigns;
   if (defined(my $d = $gullet->readInternalDimension)) {
     return ($s < 0 ? $d->negate : $d); }
@@ -108,9 +108,9 @@ sub ReadPSOrigin {
   $gullet->skipSpaces;
   my $gotbrace = $gullet->ifNext(T_BEGIN);    # Braces MAY have been stripped!
   $gullet->readToken; $gullet->skipSpaces;
-  my $x = ReadPSDimension($gullet, LookupValue('\psxunit'));
+  my $x = ReadPSDimension($gullet, LookupRegister('\psxunit'));
   $gullet->skipSpaces; $gullet->readUntil(T_OTHER(',')); $gullet->skipSpaces;
-  my $y = ReadPSDimension($gullet, LookupValue('\psyunit'));
+  my $y = ReadPSDimension($gullet, LookupRegister('\psyunit'));
   $gullet->skipSpaces;
   $gullet->readUntil(T_END) if $gotbrace;
   return ($x && $y) ? Pair($x->negate, $y->negate) : undef; }
@@ -121,7 +121,7 @@ DefParameterType('PSOrigin', \&ReadPSOrigin,
 
 sub ReadPSCoord {
   my ($gullet) = @_;
-  return ReadPair($gullet, 'PSDimension', LookupValue('\psxunit'), LookupValue('\psyunit')); }
+  return ReadPair($gullet, 'PSDimension', LookupRegister('\psxunit'), LookupRegister('\psyunit')); }
 
 DefParameterType('PSCoord', \&ReadPSCoord);
 DefParameterType('OptionalPSCoord', \&ReadPSCoord,
@@ -348,10 +348,10 @@ sub setGraphParams {
     my @keys   = $KeyHasABVariants{$_key} ? ($_key, $_key . 'A', $_key . 'B') : ($_key);
     foreach my $key (@keys) {
       if ($key eq 'unit') {
-        AssignValue('\psunit',  $value);
-        AssignValue('\psxunit', $value);
-        AssignValue('\psyunit', $value);
-        AssignValue('\psrunit', $value); }
+        AssignRegister('\psunit',  $value);
+        AssignRegister('\psxunit', $value);
+        AssignRegister('\psyunit', $value);
+        AssignRegister('\psrunit', $value); }
       elsif ($key =~ /color/) {
         AssignValue('\ps' . $key, LookupColor($strval)->toHex); }
       else {
@@ -367,7 +367,7 @@ sub psGetDash {
     if ($linestyle eq 'dashed') {
       $d = Pair(Dimension('5pt'), Dimension('3pt')); }
     elsif ($linestyle eq 'dotted') {
-      $d = Pair(Dimension('1pt'), (LookupValue('\psdotsep') || Dimension('3pt'))); } }
+      $d = Pair(Dimension('1pt'), (LookupRegister('\psdotsep') || Dimension('3pt'))); } }
   $whatsit->setProperty(dash => $d) if $d;
   $$used{dash} = 1;
   return; }
@@ -385,7 +385,7 @@ sub psGetFill {
     $whatsit->setProperties(fill => LookupValue('\pslinecolor'), linecolor => 'none', linewidth => undef); }
   else {
     $whatsit->setProperties(fill => ((LookupValue('\psfillstyle') || '') eq 'none') ? 'none' :
-        LookupValue('\psfillcolor'), linewidth => LookupValue('\pslinewidth'));
+        LookupValue('\psfillcolor'), linewidth => LookupRegister('\pslinewidth'));
     psGetLinecolor($whatsit, $used); }
   map { $$used{$_} = 1 } qw(fill linecolor linewidth fillstyle fillcolor);
   return; }

@@ -516,7 +516,7 @@ NewCounter('@XMDECL', 'section', idprefix => 'XMD');
 sub next_declaration_id {
   StepCounter('@XMDECL');
   DefMacroI(T_CS('\@@XMDECL@ID'), undef,
-    Tokens(Explode(LookupValue('\c@@XMDECL')->valueOf)),
+    Tokens(Explode(LookupRegister('\c@@XMDECL')->valueOf)),
     scope => 'global');
   return ToString(Expand(T_CS('\the@XMDECL@ID'))); }
 
@@ -525,7 +525,7 @@ sub getDeclarationScope {
   # Sort out the scope.
   my $scope = $keys && $keys->getValue('scope');
   $scope = ($scope ? ToString($scope) : LookupValue('current_counter'));
-  if ($scope && LookupValue("\\c\@$scope")) {    # Scope is some counter.
+  if ($scope && LookupRegister("\\c\@$scope")) {    # Scope is some counter.
     $scope = "id:" . ToString(Digest(Expand(T_CS("\\the$scope\@ID")))); }
   return $scope; }
 

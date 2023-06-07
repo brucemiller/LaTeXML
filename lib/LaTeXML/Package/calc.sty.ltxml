@@ -43,42 +43,42 @@ DefPrimitive('\setlength{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
     return unless $defn && ($defn ne 'missing');
-    $defn->setValue(readExpression($stomach->getGullet, 'Glue', $arg), @args); });
+    $defn->setValue(readExpression($stomach->getGullet, 'Glue', $arg), undef, @args); });
 
 DefPrimitive('\addtolength{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
     return unless $defn && ($defn ne 'missing');
     $defn->setValue($defn->valueOf(@args)->add(readExpression($stomach->getGullet, 'Glue', $arg)),
-      @args); });
+      undef, @args); });
 
 DefPrimitive('\settowidth{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
     my $box = Digest($arg);
     return unless $defn && ($defn ne 'missing');
-    $defn->setValue($box->getWidth, @args); });
+    $defn->setValue($box->getWidth, undef, @args); });
 
 DefPrimitive('\settoheight{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
     return unless $defn && ($defn ne 'missing');
     my $box = Digest($arg);
-    $defn->setValue($box->getHeight, @args); });
+    $defn->setValue($box->getHeight, undef, @args); });
 
 DefPrimitive('\settodepth{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
     return unless $defn && ($defn ne 'missing');
     my $box = Digest($arg);
-    $defn->setValue($box->getDepth, @args); });
+    $defn->setValue($box->getDepth, undef, @args); });
 
 DefPrimitive('\settototalheight{Variable}{}', sub {
     my ($stomach, $var, $arg) = @_;
     my ($defn, @args) = @$var;
     return unless $defn && ($defn ne 'missing');
     my $box = Digest($arg);
-    $defn->setValue($box->getHeight + $box->getDepth, @args); });
+    $defn->setValue($box->getHeight + $box->getDepth, undef, @args); });
 
 #======================================================================
 # Grammar as specified in calc.sty
