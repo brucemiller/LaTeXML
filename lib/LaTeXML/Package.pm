@@ -853,7 +853,7 @@ sub RefStepID {
 sub ResetCounter {
   my ($ctr) = @_;
   AssignRegister('\c@' . $ctr   => Number(0), 'global');
-  AssignRegister('\c@UN' . $ctr => Number(0), 'global') unless $ctr =~ /^UN/;    # ?????
+  AssignRegister('\c@UN' . $ctr => Number(0), 'global') unless $ctr =~ /^UN/;    # but not UNUN
   DefMacroI(T_CS("\\\@$ctr\@ID"), undef, Tokens(T_OTHER('0')),
     scope => 'global');
   # and reset any within counters!
