@@ -1325,6 +1325,12 @@ DefPrimitiveI('\outer',  undef, sub { $STATE->setPrefix('outer');  return; }, is
 # <at clause> = at <dimen> | scaled <number> | <optional spaces>
 # <code assignment> = <codename><8bit><equals><number>
 
+sub lookupFontinfo {
+  my ($token) = @_;
+  my $defn = LookupDefinition($token);
+  #  return LookupValue(($defn ? ToString($defn) : ToString($token)) . '_fontinfo'); }
+  return LookupValue('fontinfo_' . ($defn ? $defn->getCSName : ToString($token))); }
+
 # Need to handle "at" too!!!
 DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
     my ($stomach, $cs, $name) = @_;
@@ -1517,29 +1523,30 @@ DefMacro('\patterns{}',              Tokens());
 
 # Doubtful that we can do anything useful with these.
 # These look essentially like Registers, although Knuth doesn't call them that.
+# NOTE: These should just point to a CS token, right????
+# (although it SHOULD be one defined to be a font switch??)
+# NOTE: These should NOT be global(?)
 DefRegister('\textfont Number' => T_CS('\tenrm'),
   getter => sub {
     my ($fam) = @_;
-    LookupValue('fontinfo_' . $fam->valueOf . '_text'); },
+    LookupValue('textfont_' . $fam->valueOf); },
   setter => sub {
-    my ($font, $fam) = @_;
-    AssignValue('fontinfo_' . $fam->valueOf . '_text' => $font, 'global'); });
-
+    my ($font, $scope, $fam) = @_;
+    AssignValue('textfont_' . $fam->valueOf => $font, $scope); });
 DefRegister('\scriptfont Number' => T_CS('\sevenrm'),
   getter => sub {
     my ($fam) = @_;
-    LookupValue('fontinfo_' . $fam->valueOf . '_script'); },
+    LookupValue('scriptfont_' . $fam->valueOf); },
   setter => sub {
-    my ($font, $fam) = @_;
-    AssignValue('fontinfo_' . $fam->valueOf . '_script' => $font, 'global'); });
-
+    my ($font, $scope, $fam) = @_;
+    AssignValue('scriptfont_' . $fam->valueOf => $font, $scope); });
 DefRegister('\scriptscriptfont Number' => T_CS('\fiverm'),
   getter => sub {
     my ($fam) = @_;
-    LookupValue('fontinfo_' . $fam->valueOf . '_scriptscript'); },
+    LookupValue('scriptscriptfont_' . $fam->valueOf); },
   setter => sub {
-    my ($font, $fam) = @_;
-    AssignValue('fontinfo_' . $fam->valueOf . '_scriptscript' => $font, 'global'); });
+    my ($font, $scope, $fam) = @_;
+    AssignValue('scriptscriptfont_' . $fam->valueOf => $font, $scope); });
 
 # <internal dimen> = <dimen parameter> | <special dimen> | \lastkern
 #    | <dimendef token> | \dimen<8bit> | <box dimension><8bit> | \fontdimen<number><font>
@@ -1823,13 +1830,13 @@ sub decodeMathChar {
   my ($n)   = @_;
   my $class = int($n / (16 * 256)); $n = $n % (16 * 256);
   my $fam   = int($n / 256);        $n = $n % 256;
-  my $font  = LookupValue('fontinfo_' . $fam . '_text')
-    || LookupValue('fontinfo_' . $fam . '_script')
-    || LookupValue('fontinfo_' . $fam . '_scriptscript');
+  my $font  = LookupValue('textfont_' . $fam)
+    || LookupValue('scriptfont_' . $fam)
+    || LookupValue('scriptscriptfont_' . $fam);
   my $char = chr($n);
   # If no specific class, Lookup properties from a DefMath?
   my $charinfo = LookupValue('math_token_attributes_' . $char);
-  my $fontinfo = LookupValue('fontinfo_' . ToString($font));
+  my $fontinfo = lookupFontinfo($font);
   my $role     = $mathclassrole[$class];
   $role = $$charinfo{role} if (!defined $role) && $charinfo;
   return ($role,
@@ -5726,9 +5733,7 @@ DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
 DefPrimitive('\accent Number Expanded', sub {
     my ($stomach, $num, $letter) = @_;
     my $n        = $num->valueOf;
-    my $fam      = 0;                                            # ?
-    my $font     = LookupValue('fontinfo_' . $fam . '_text');
-    my $fontinfo = LookupValue('fontinfo_' . ToString($font));
+    my $fontinfo = lookupFontinfo(LookupValue('textfont_0'));
     my $acc      = ($fontinfo && $$fontinfo{encoding} ? FontDecode($n, $$fontinfo{encoding}) : chr($n));
     my $reversion = Invocation(T_CS('\accent'), $num, $letter);
     # NOTE: REVERSE LOOKUP in above accent list for the non-spacing accent char
