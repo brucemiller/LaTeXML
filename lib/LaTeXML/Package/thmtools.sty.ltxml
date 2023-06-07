@@ -62,7 +62,7 @@ sub thmtools_style {
   if (my $bodyfont = $kv && $kv->getValue('bodyfont')) {
     $parameters{'\thm@bodyfont'} = $bodyfont; }
   if (my $headformat = ToString(($kv && $kv->getValue('headformat')) || '')) {
-    $parameters{'\thm@swap'} = $headformat eq 'swapnumber'; }
+    $parameters{'thm@swap'} = $headformat eq 'swapnumber'; }
 
   saveTheoremStyle($name, %parameters);
   return; }

@@ -53,7 +53,7 @@ DefPrimitive('\theoremstyle{}', sub {
       Warn("undefined", "theoremstyle", $_[0], "Unknown theorem style '$style', reverting to 'plain'.");
       $style    = 'plain';
       $style_cs = T_CS('\th@plain'); }
-    AssignValue('\thm@style' => $style);
+    AssignRegister('\thm@style' => $style);
     Digest($style_cs);
     return; });
 
@@ -133,8 +133,8 @@ DefMacro('\qedhere', sub {
 
 DefMacro('\proofname', 'Proof');
 DefPrimitive('\th@proof', sub {
-    AssignValue('\thm@headfont' => T_CS('\itshape'));
-    AssignValue('\thm@bodyfont' => T_CS('\normalfont'));
+    AssignRegister('\thm@headfont' => T_CS('\itshape'));
+    AssignRegister('\thm@bodyfont' => T_CS('\normalfont'));
     return; });
 
 # Note that you get EITHER \proofname OR [#1] but NOT both!!!
@@ -183,8 +183,8 @@ else {
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 # from older versions of amsthm.sty
-DefPrimitive('\theorembodyfont{}',   sub { AssignValue('\thm@bodyfont' => $_[1]); });
-DefPrimitive('\theoremheaderfont{}', sub { AssignValue('\thm@headfont' => $_[1]); });
+DefPrimitive('\theorembodyfont{}',   sub { AssignRegister('\thm@bodyfont' => $_[1]); });
+DefPrimitive('\theoremheaderfont{}', sub { AssignRegister('\thm@headfont' => $_[1]); });
 DefRegister('\theorempreskipamount'  => Glue(0));
 DefRegister('\theorempostskipamount' => Glue(0));
 

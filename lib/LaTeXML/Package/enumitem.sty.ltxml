@@ -110,14 +110,13 @@ sub beginEnumItemize {
     DefMacroI('\the' . $usecounter, undef, $llabel); }
   if (my $font = $$hash{font} || $$hash{format}) {
     DefMacroI('\fnum@font@' . $usecounter, undef, $font); }
-
   return beginItemize($type, $counter, %$hash); }
 
 sub replace_star {
   my ($tokens, $replacement) = @_;
   my @t = ();
   foreach my $t ($tokens->unlist) {
-    push(@t, ($t->equals(T_OTHER('*')) ? $replacement : $t)); }
+    push(@t, ($t->equals(T_OTHER('*')) ? (T_BEGIN, $replacement, T_END) : $t)); }
   return Tokens(@t); }
 
 sub endEnumItemize {
@@ -137,7 +136,7 @@ DefMacro('\restartlist{}', sub {
     # Assme we reset all levels? Assume no more than 6 levels?
     for (my $i = 0 ; $i < 6 ; $i++) {
       my $r = ToString(Tokens(roman($i)));
-      if (LookupValue('\c@' . $counter . $r)) {
+      if (LookupDefinition('\c@' . $counter . $r)) {
         SetCounter($counter . $r, Number(0)); } }
     return; });
 

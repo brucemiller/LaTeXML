@@ -110,10 +110,10 @@ DefConstructor('\lxSVG@insertpicture{}', sub {
     my $margin  = Dimension('2pt');
     my $margin2 = Dimension('4pt');
     # \pgf@picmaxx,\pgf@pixmaxy are now the SIZE of the picture!!!!!!
-    my $minx    = LookupValue('\pgf@picminx');
-    my $miny    = LookupValue('\pgf@picminy');
-    my $width   = LookupValue('\pgf@picmaxx');
-    my $height  = LookupValue('\pgf@picmaxy');
+    my $minx    = LookupRegister('\pgf@picminx');
+    my $miny    = LookupRegister('\pgf@picminy');
+    my $width   = LookupRegister('\pgf@picmaxx');
+    my $height  = LookupRegister('\pgf@picmaxy');
     my $w       = max($width->pxValue,  1);
     my $h       = max($height->pxValue, 1);
     my $content = $whatsit->getArg(1);
@@ -493,9 +493,9 @@ DefMacro('\pgfsys@declarepattern{} {}{}{}{}{}{} {}{Number}', sub {
 DefPrimitive('\lxSVG@setpattern {Dimension}{Dimension}{Dimension}{Dimension}{Dimension}{Dimension}', sub {
     #    my ($gullet, $x1, $y1, $x2, $y2, $x_step, $y_step) = @_;
     my ($stomach, $x1, $y1, $x2, $y2, $x_step, $y_step) = @_;
-    AssignValue('\pgf@xa' => $x1);     AssignValue('\pgf@ya' => $y1);
-    AssignValue('\pgf@xb' => $x2);     AssignValue('\pgf@yb' => $y2);
-    AssignValue('\pgf@xc' => $x_step); AssignValue('\pgf@yc' => $y_step);
+    AssignRegister('\pgf@xa' => $x1);     AssignRegister('\pgf@ya' => $y1);
+    AssignRegister('\pgf@xb' => $x2);     AssignRegister('\pgf@yb' => $y2);
+    AssignRegister('\pgf@xc' => $x_step); AssignRegister('\pgf@yc' => $y_step);
     return; });
 
 DefMacro('\pgfsys@setpatternuncolored{}{}{}{}', sub {
@@ -666,8 +666,8 @@ DefPrimitive('\lxSVG@sh@defstripes{}{Number}', sub {
     my ($stomach, $name, $flag) = @_;
     my $stops = List(@{ LookupValue('pgf_sh_stops') });
     AssignValue(pgf_sh_stops => [], 'global');
-    my $x = LookupValue('\pgf@x')->pxValue;
-    my $y = LookupValue('\pgf@y')->pxValue;
+    my $x = LookupRegister('\pgf@x')->pxValue;
+    my $y = LookupRegister('\pgf@y')->pxValue;
     DefPrimitiveI('\@pgfshading' . ToString($name) . '!', undef, sub {
         my $objcount = SVGNextObject();
         DefConstructor('\lxSVG@sh@defs',
@@ -691,8 +691,8 @@ DefPrimitive('\lxSVG@sh@defcircles{}', sub {
     my $stops = List(@{ LookupValue('pgf_sh_stops') });
     AssignValue(pgf_sh_stops => [], 'global');
     my $endpos = Dimension(ToString(Expand(T_CS('\pgf@sys@shading@end@pos'))))->pxValue;
-    my $x      = floatformat(LookupValue('\pgf@x')->pxValue * 8 / ($endpos * 16) + 0.5, 5);
-    my $y      = floatformat(LookupValue('\pgf@y')->pxValue * 8 / ($endpos * 16) + 0.5, 5);
+    my $x      = floatformat(LookupRegister('\pgf@x')->pxValue * 8 / ($endpos * 16) + 0.5, 5);
+    my $y      = floatformat(LookupRegister('\pgf@y')->pxValue * 8 / ($endpos * 16) + 0.5, 5);
     DefPrimitiveI('\@pgfshading' . ToString($name) . '!', undef, sub {
         my $objcount = SVGNextObject();
         DefConstructor('\lxSVG@sh@defs',

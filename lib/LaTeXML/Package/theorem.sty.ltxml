@@ -30,8 +30,8 @@ DefRegister('\thm@headpunct' => Tokens());
 DefMacro('\FMithmInfo', '');
 
 DefMacro('\theoremheaderfont{}', sub {
-    AssignValue('\thm@headfont' => $_[1]);
-    AssignValue('\thm@notefont' => $_[1]); });
+    AssignRegister('\thm@headfont' => $_[1]);
+    AssignRegister('\thm@notefont' => $_[1]); });
 
 # \th@plain defined in LaTeX.pool, but amsthm redefines to add .
 DefPrimitive('\lx@theorem@newtheoremstyle{}{}{}{}', sub {

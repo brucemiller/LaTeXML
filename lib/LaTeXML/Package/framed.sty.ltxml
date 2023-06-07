@@ -29,7 +29,7 @@ DefEnvironment('{framed}', sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); },
   properties => sub { (framecolor => Black,
-      margin => LookupValue('\FrameSep')->ptValue); });
+      margin => LookupRegister('\FrameSep')->ptValue); });
 
 # {oframed} "open" framed box, the top/bottom is open when it splits across pages.
 # That shouldn't matter for us (?)
@@ -44,7 +44,7 @@ DefEnvironment('{oframed}', sub {
     Let('\par', '\inner@par');
     Let('\\\\', '\inner@par'); },
   properties => sub { (framecolor => Black,
-      margin => LookupValue('\FrameSep')->ptValue); });
+      margin => LookupRegister('\FrameSep')->ptValue); });
 
 # {shaded} a shaded box; uses "shadecolor" for background color; otherwise, no frame.
 # Note that the shading "bleeds" into the margin (whatever that means)
@@ -62,7 +62,7 @@ DefEnvironment('{shaded}', sub {
     Let('\\\\', '\inner@par');
     MergeFont(background => LookupValue('color_shadecolor')); },
   properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
-      margin => LookupValue('\FrameSep')->ptValue); });
+      margin => LookupRegister('\FrameSep')->ptValue); });
 # {shaded*} Same as {shaded}, but the shading ends at the margin.
 # For us, that's pretty much identical.
 DefEnvironment('{shaded*}', sub {
@@ -77,7 +77,7 @@ DefEnvironment('{shaded*}', sub {
     Let('\\\\', '\inner@par');
     MergeFont(background => LookupValue('color_shadecolor')); },
   properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
-      margin => LookupValue('\FrameSep')->ptValue); });
+      margin => LookupRegister('\FrameSep')->ptValue); });
 # {snugshade} Same as {shaded}, but with a tight fit around the contents.
 # doesn't use \FrameSep?
 DefEnvironment('{snugshade}', sub {
@@ -91,7 +91,7 @@ DefEnvironment('{snugshade}', sub {
     Let('\\\\', '\inner@par');
     MergeFont(background => LookupValue('color_shadecolor')); },
   properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
-      margin => LookupValue('\fboxsep')->ptValue); });    # Not \FrameSep
+      margin => LookupRegister('\fboxsep')->ptValue); });    # Not \FrameSep
 DefEnvironment('{snugshade*}', sub {
     my ($document, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
@@ -103,7 +103,7 @@ DefEnvironment('{snugshade*}', sub {
     Let('\\\\', '\inner@par');
     MergeFont(background => LookupValue('color_shadecolor')); },
   properties => sub { (backgroundcolor => LookupValue('font')->getBackground,
-      margin => LookupValue('\fboxsep')->ptValue); });
+      margin => LookupRegister('\fboxsep')->ptValue); });
 DefEnvironment('{leftbar}', sub {
     my ($document, %props) = @_;
     $_[0]->maybeCloseElement('ltx:p');    # this starts a new vertical block
