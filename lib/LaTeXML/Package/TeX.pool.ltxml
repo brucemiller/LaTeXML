@@ -883,6 +883,7 @@ our @CATCODE_MEANING = (
   "macro parameter character");
 
 # Not sure about this yet...
+# NOTE: Lots of back-and-forth mangle with definition vs cs; don't do that!
 DefMacro('\meaning Token', sub {
     my ($gullet, $tok) = @_;
     my $meaning = 'undefined';
@@ -907,19 +908,7 @@ DefMacro('\meaning Token', sub {
         $meaning_cc .= ' ' if $meaning_cc;    # append space separator if defined
         $meaning = $meaning_cc . $char; }
       elsif ($type =~ /register$/i) {
-        my $value         = $definition->valueOf;
-        my $register_type = lc(ref $value);
-        my $prefix        = '\count';
-        if ($register_type) {
-          if ($register_type =~ /glue/) {
-            $prefix = '\skip'; }
-          elsif ($register_type =~ /dimension/) {
-            $prefix = '\dimen'; }
-          elsif ($register_type =~ /tokens/) {
-            $prefix = '\toks'; } }
-        my $literal_value = $register_type && $value->valueOf;
-        # Should we be more careful to distinguish between latex and tex counters?
-        $meaning = $prefix . $literal_value; }
+        $meaning = $$definition{address} || $definition->getCSName; }
       elsif ($type =~ /expandable$/i) {
 # short-circuit some troublesome discrepancies with TeX, which end up macros on LaTeXML's end, but \meaning expects as primitives in the CTAN ecosystem.
         my $cs = ToString($definition->getCSorAlias);
@@ -1085,10 +1074,10 @@ DefMacro('\the Register', sub {
 
 DefRegister('\tracingmacros', Number(0),
   getter => sub { Number(LookupValue('TRACINGMACROS') || 0); },
-  setter => sub { AssignValue(TRACINGMACROS => $_[0]->valueOf); });
+  setter => sub { AssignValue(TRACINGMACROS => $_[0]->valueOf, $_[1]); });
 DefRegister('\tracingcommands', Number(0),
   getter => sub { Number(LookupValue('TRACINGCOMMANDS')); },
-  setter => sub { AssignValue(TRACINGCOMMANDS => $_[0]->valueOf); });
+  setter => sub { AssignValue(TRACINGCOMMANDS => $_[0]->valueOf, $_[1]); });
 
 {
   my %iparms = (
@@ -1382,13 +1371,14 @@ DefPrimitive('\advance Variable SkipKeyword:by', sub {
     my ($defn, @args) = @$var;
     return () if !$defn || $defn eq "missing";
     local $LaTeXML::CURRENT_TOKEN = $defn;
-    $defn->setValue($defn->valueOf(@args)->add($stomach->getGullet->readValue($defn->isRegister)), @args); });
+    $defn->setValue($defn->valueOf(@args)->add($stomach->getGullet->readValue($defn->isRegister)),
+      undef, @args); });
 
 DefPrimitive('\multiply Variable SkipKeyword:by Number', sub {
     my ($stomach, $var, $scale) = @_;
     return () unless $var;
     my ($defn, @args) = @$var;
-    $defn->setValue($defn->valueOf(@args)->multiply($scale->valueOf), @args); });
+    $defn->setValue($defn->valueOf(@args)->multiply($scale->valueOf), undef, @args); });
 
 DefPrimitive('\divide Variable SkipKeyword:by Number', sub {
     my ($stomach, $var, $scale) = @_;
@@ -1398,7 +1388,7 @@ DefPrimitive('\divide Variable SkipKeyword:by Number', sub {
     if ($denom == 0) {
       Error('misdefined', $scale, $stomach, "Illegal \\divide by 0; assuming 1");
       $denom = 1; }
-    $defn->setValue($defn->valueOf(@args)->divide($denom), @args); });
+    $defn->setValue($defn->valueOf(@args)->divide($denom), undef, @args); });
 
 # <let assignment> = \futurelet <control sequence><token><token>
 #   | \let<control sequence><equals><one optional space><token>
@@ -1422,13 +1412,13 @@ DefPrimitive('\futurelet Token Token Token', sub {
 # read the <number>, they let the token to \relax in case the def is immediately followed
 # by a use or assignment;  See TeX Program \s 1224
 # See below for \chardef & \mathchardef
-
+# Note that these define a "shorthand" for eg. \count123, but are NOT macros!
 sub shorthandDef {
   my ($stomach, $cs, $type, $init) = @_;
   $STATE->assignMeaning($cs, $STATE->lookupMeaning(T_CS('\relax')));    # Let w/o AfterAssign
-  my $num  = $stomach->getGullet->readNumber();
-  my $name = $type . $num->valueOf;
-  DefRegisterI($cs, undef, $init, name => $name);
+  my $num     = $stomach->getGullet->readNumber();
+  my $address = $type . $num->valueOf;
+  DefRegisterI($cs, undef, $init, address => $address);
   AfterAssignment();
   return; }
 
@@ -1478,32 +1468,32 @@ DefRegister('\badness', Number(0), readonly => 1);
 DefRegister('\catcode Number', Number(0),
   getter => sub { my $code = LookupCatcode(chr($_[0]->valueOf));
     Number(defined $code ? $code : CC_OTHER); },
-  setter => sub { AssignCatcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+  setter => sub { AssignCatcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
 # # Only used for active math characters, so far
 DefRegister('\mathcode Number', Number(0),
   getter => sub {
     my $ch   = $_[0]->valueOf;
     my $code = $STATE->lookupMathcode(chr($ch));
     Number(defined $code ? $code : $ch); },    # defaults to the char's code itself(?)
-  setter => sub { $STATE->assignMathcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+  setter => sub { $STATE->assignMathcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
 # Not used anywhere (yet)
 DefRegister('\sfcode Number', Number(0),
   getter => sub { my $code = $STATE->lookupSFcode(chr($_[0]->valueOf));
     Number(defined $code ? $code : 0); },
-  setter => sub { $STATE->assignSFcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+  setter => sub { $STATE->assignSFcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
 DefRegister('\lccode Number', Number(0),
   getter => sub { my $code = $STATE->lookupLCcode(chr($_[0]->valueOf));
     Number(defined $code ? $code : 0); },
-  setter => sub { $STATE->assignLCcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+  setter => sub { $STATE->assignLCcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
 DefRegister('\uccode Number', Number(0),
   getter => sub { my $code = $STATE->lookupUCcode(chr($_[0]->valueOf));
     Number(defined $code ? $code : 0); },
-  setter => sub { $STATE->assignUCcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+  setter => sub { $STATE->assignUCcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
 # Not used anywhere (yet)
 DefRegister('\delcode Number', Number(0),
   getter => sub { my $code = $STATE->lookupDelcode(chr($_[0]->valueOf));
     Number(defined $code ? $code : 0); },
-  setter => sub { $STATE->assignDelcode(chr($_[1]->valueOf) => $_[0]->valueOf); });
+  setter => sub { $STATE->assignDelcode(chr($_[2]->valueOf) => $_[0]->valueOf, $_[1]); });
 
 # Remember, we're assigning a NUMBER (codepoint) to a CHARACTER!
 foreach my $letter (ord('A') .. ord('Z')) {
@@ -1559,7 +1549,7 @@ DefRegister('\ht Number', Dimension(0),
     my $stuff = $n && LookupValue('box' . $n->valueOf);
     return ($stuff ? $stuff->getHeight : Dimension(0)); },
   setter => sub {
-    my ($value, $n) = @_;
+    my ($value, $scope, $n) = @_;
     my $stuff = $n && LookupValue('box' . $n->valueOf);
     $stuff->setHeight($value) if $stuff;
     return; });
@@ -1569,7 +1559,7 @@ DefRegister('\wd Number', Dimension(0),
     my $stuff = $n && LookupValue('box' . $n->valueOf);
     return ($stuff ? $stuff->getWidth : Dimension(0)); },
   setter => sub {
-    my ($value, $n) = @_;
+    my ($value, $scope, $n) = @_;
     my $stuff = $n && LookupValue('box' . $n->valueOf);
     $stuff->setWidth($value) if $stuff;
     return; });
@@ -1580,7 +1570,7 @@ DefRegister('\dp Number', Dimension(0),
     my $stuff = $n && LookupValue('box' . $n->valueOf);
     return ($stuff ? $stuff->getDepth : Dimension(0)); },
   setter => sub {
-    my ($value, $n) = @_;
+    my ($value, $scope, $n) = @_;
     my $stuff = $n && LookupValue('box' . $n->valueOf);
     $stuff->setDepth($value) if $stuff;
     return; });
@@ -4958,10 +4948,14 @@ DefPrimitive('\wlog{}', sub {
     return; },
   locked => 1);
 # From plain.tex
-DefPrimitive('\newcount  Token', sub { DefRegisterI($_[1], undef, Number(0)); });
-DefPrimitive('\newdimen  Token', sub { DefRegisterI($_[1], undef, Dimension(0)); });
-DefPrimitive('\newskip   Token', sub { DefRegisterI($_[1], undef, Glue(0)); });
-DefPrimitive('\newmuskip Token', sub { DefRegisterI($_[1], undef, MuGlue(0)); });
+DefPrimitive('\newcount  Token', sub {
+    DefRegisterI($_[1], undef, Number(0), allocate => '\count'); });
+DefPrimitive('\newdimen  Token', sub {
+    DefRegisterI($_[1], undef, Dimension(0), allocate => '\dimen'); });
+DefPrimitive('\newskip   Token', sub {
+    DefRegisterI($_[1], undef, Glue(0), allocate => '\skip'); });
+DefPrimitive('\newmuskip Token', sub {
+    DefRegisterI($_[1], undef, MuGlue(0), allocate => '\muskip'); });
 AssignValue(allocated_boxes => 0);
 DefPrimitive('\newbox DefToken', sub {
     my $n = LookupValue('allocated_boxes');
@@ -4972,15 +4966,13 @@ DefPrimitive('\newhelp Token {}', sub { AssignValue(ToString($_[1]) => $_[2]); }
 DefPrimitive('\newtoks Token',    sub { DefRegisterI($_[1], undef, Tokens()); });
 # the next 4 actually work by doing a \chardef instead of \countdef, etc.
 # which means they actually work quite differently
-DefRegister('\allocationnumber' => Number(0));
-
 DefPrimitive('\alloc@@ {}', sub {
     my ($stomach, $type) = @_;
     my $c = 'allocation @' . ToString($type);
     my $n = LookupValue($c) || '0';
     $n = $n->valueOf if ref $n;
-    AssignValue($c                  => $n + 1,     'global');
-    AssignValue('\allocationnumber' => Number($n), 'global'); });
+    AssignValue($c => $n + 1, 'global');
+    AssignRegister('\allocationnumber' => Number($n), 'global'); });
 DefMacro('\newread Token',     '\alloc@@{read}\global\chardef#1=\allocationnumber');
 DefMacro('\newwrite Token',    '\alloc@@{write}\global\chardef#1=\allocationnumber');
 DefMacro('\newfam Token',      '\alloc@@{fam}\global\chardef#1=\allocationnumber');
@@ -5657,14 +5649,14 @@ DefPrimitiveI('\l',  undef, "\x{0142}");    # LATIN SMALL LETTER L WITH STROKE
 DefPrimitiveI('\ss', undef, UTF(0xDF));     # LATIN SMALL LETTER SHARP S
 
 # apparently the rest can appear in math.
-DefPrimitiveI('\lx@sectionsign',   undef, UTF(0xa7));    # SECTION SIGN
-DefPrimitiveI('\lx@paragraphsign', undef, UTF(0xB6));    # PILCROW SIGN
+DefPrimitiveI('\lx@sectionsign',   undef, UTF(0xa7), alias => '\S');    # SECTION SIGN
+DefPrimitiveI('\lx@paragraphsign', undef, UTF(0xB6), alias => '\P');    # PILCROW SIGN
 DefMacroI('\S', undef, '\lx@sectionsign');
 DefMacroI('\P', undef, '\lx@paragraphsign');
-DefPrimitiveI('\dag',       undef, "\x{2020}");          # DAGGER
-DefPrimitiveI('\ddag',      undef, "\x{2021}");          # DOUBLE DAGGER
-DefPrimitiveI('\copyright', undef, UTF(0xA9));           # COPYRIGHT SIGN
-DefPrimitiveI('\pounds',    undef, UTF(0xA3));           # POUND SIGN
+DefPrimitiveI('\dag',       undef, "\x{2020}");                         # DAGGER
+DefPrimitiveI('\ddag',      undef, "\x{2021}");                         # DOUBLE DAGGER
+DefPrimitiveI('\copyright', undef, UTF(0xA9));                          # COPYRIGHT SIGN
+DefPrimitiveI('\pounds',    undef, UTF(0xA3));                          # POUND SIGN
 
 #----------------------------------------------------------------------
 # Accents.  LaTeX Table 3.1, p.38
@@ -5809,7 +5801,7 @@ Let('\sb', T_SUB);
 DefPrimitiveI('\lx@thinmuskip', undef, sub {
     Box("\x{2009}", undef, undef, T_CS('\,'),
       name  => 'thinspace', isSpace => 1,
-      width => LookupValue('\thinmuskip')); });
+      width => LookupRegister('\thinmuskip')); });
 DefPrimitiveI('\lx@thinspace', undef, sub {
     Box("\x{2009}", undef, undef, T_CS('\,'),
       name => 'thinspace', width => Dimension('0.16667em'), isSpace => 1); });
@@ -5818,17 +5810,16 @@ DefMacroI('\,', undef, '\ifmmode\lx@thinmuskip\else\lx@thinspace\fi', protected 
 DefPrimitiveI('\!', undef, sub {
     Box("\x{200B}", undef, undef, T_CS('\!'),    # zero width space
       name  => 'negthinspace', isSpace => 1,
-      width => LookupValue('\thinmuskip')->negate); });
-
+      width => LookupRegister('\thinmuskip')->negate); });
 DefPrimitiveI('\>', undef, sub {
     Box("\x{2005}", undef, undef, T_CS('\>'),
       name  => 'medspace', isSpace => 1,
-      width => LookupValue('\medmuskip')); });
+      width => LookupRegister('\medmuskip')); });
 
 DefPrimitiveI('\;', undef, sub {
     Box("\x{2004}", undef, undef, T_CS('\;'),
       name  => 'thickspace', isSpace => 1,
-      width => LookupValue('\thickmuskip')); });
+      width => LookupRegister('\thickmuskip')); });
 
 Let('\:', '\>');
 
