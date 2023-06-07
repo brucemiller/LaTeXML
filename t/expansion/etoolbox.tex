@@ -335,6 +335,12 @@ ifcsstrequal myempty-anotherempty \ifcsstrequal{myempty}{anotherempty}{true}{fal
 
 ifdefcounter relax: \ifdefcounter{\relax}{true}{false}
 
+ifdefcounter mymacro: \ifdefcounter{\mymacro}{true}{false}
+
+ifdefcounter tracingmacros: \ifdefcounter{\tracingmacros}{true}{false}
+
+ifdefcounter hfuzz: \ifdefcounter{\hfuzz}{true}{false}
+
 \newcount\mycount
 ifdefcounter mycount: \ifdefcounter{\mycount}{true}{false}
 
@@ -358,11 +364,23 @@ ifdefcounter mydimen: \ifdefcounter{\mydimen}{true}{false}
 
 ifltxcounter relax: \ifltxcounter{relax}{true}{false}
 
+ifltxcounter mymacro: \ifltxcounter{mymacro}{true}{false}
+
+ifltxcounter tracingmacros: \ifltxcounter{tracingmacros}{true}{false}
+
+ifltxcounter hfuzz: \ifltxcounter{hfuzz}{true}{false}
+
 ifltxcounter mycount: \ifltxcounter{mycount}{true}{false}
 
 ifltxcounter latexcounter: \ifltxcounter{latexcounter}{true}{false}
 
 ifdeflength relax: \ifdeflength{\relax}{true}{false}
+
+ifdeflength mymacro: \ifdeflength{\mymacro}{true}{false}
+
+ifdeflength tracingmacros: \ifdeflength{\tracingmacros}{true}{false}
+
+ifdeflength hfuzz: \ifdeflength{\hfuzz}{true}{false}
 
 ifdeflength mycount: \ifdeflength{\mycount}{true}{false}
 
@@ -373,6 +391,12 @@ ifdeflength mylen: \ifdeflength{\mylen}{true}{false}
 ifdeflength mydimen: \ifdeflength{\mydimen}{true}{false}
 
 ifdefdimen relax: \ifdefdimen{\relax}{true}{false}
+
+ifdefdimen mymacro: \ifdefdimen{\mymacro}{true}{false}
+
+ifdefdimen tracingmacros: \ifdefdimen{\tracingmacros}{true}{false}
+
+ifdefdimen hfuzz: \ifdefdimen{\hfuzz}{true}{false}
 
 ifdefdimen mycount: \ifdefdimen{\mycount}{true}{false}
 
