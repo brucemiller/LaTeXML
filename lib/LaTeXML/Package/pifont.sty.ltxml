@@ -24,7 +24,7 @@ DefPrimitive('\Pisymbol{}{Number}', sub {
 
 DefPrimitive('\lx@Picountersymbol{}{}{Number}', sub {
     my ($document, $pifont, $counter, $codebase) = @_;
-    my $code = $codebase->valueOf + LookupValue('\c@' . ToString($counter))->valueOf - 1;
+    my $code = $codebase->valueOf + LookupRegister('\c@' . ToString($counter))->valueOf - 1;
     return Box(FontDecode($code, ToString($pifont))); });
 
 DefMacro('\Pilist{}{}', '\list{\Pisymbol{#1}{#2}}{}');

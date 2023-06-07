@@ -847,22 +847,22 @@ DefMacro('\matrix@check{}', Tokens());
 
 DefConstructorI('\thinspace', undef,
   "?#isMath(<ltx:XMHint name='thinspace' width='#width'/>)(\x{2009})",
-  properties => { isSpace => 1, width => sub { LookupValue('\thinmuskip'); } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thinmuskip'); } });
 DefConstructorI('\negthinspace', undef,
   "?#isMath(<ltx:XMHint name='negthinspace' width='#width'/>)()",
-  properties => { isSpace => 1, width => sub { LookupValue('\thinmuskip')->negate; } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thinmuskip')->negate; } });
 DefConstructorI('\medspace', undef,
   "?#isMath(<ltx:XMHint name='medspace' width='#width'/>)()",
-  properties => { isSpace => 1, width => sub { LookupValue('\medmuskip'); } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\medmuskip'); } });
 DefConstructorI('\negmedspace', undef,
   "?#isMath(<ltx:XMHint name='negmedspace' width='#width'/>)()",
-  properties => { isSpace => 1, width => sub { LookupValue('\medmuskip')->negate; } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\medmuskip')->negate; } });
 DefConstructorI('\thickspace', undef,
   "?#isMath(<ltx:XMHint name='thickspace' width='#width'/>)(\x{2004})",
-  properties => { isSpace => 1, width => sub { LookupValue('\thickmuskip'); } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thickmuskip'); } });
 DefConstructorI('\negthickspace', undef,
   "?#isMath(<ltx:XMHint name='negthickspace' width='#width'/>)(\x{2004})",
-  properties => { isSpace => 1, width => sub { LookupValue('\thickmuskip')->negate; } });
+  properties => { isSpace => 1, width => sub { LookupRegister('\thickmuskip')->negate; } });
 
 DefConstructor('\mspace{MuDimension}', "<ltx:XMHint name='mspace' width='#1'/>");
 

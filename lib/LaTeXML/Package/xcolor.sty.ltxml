@@ -818,13 +818,13 @@ DefPrimitive('\lshift Variable', sub {
     my ($stomach, $var) = @_;
     return () unless $var;
     my ($defn, @args) = @$var;
-    $defn->setValue($defn->valueOf(@args)->multiply(10), @args); });
+    $defn->setValue($defn->valueOf(@args)->multiply(10), undef, @args); });
 
 DefPrimitive('\llshift Variable', sub {
     my ($stomach, $var) = @_;
     return () unless $var;
     my ($defn, @args) = @$var;
-    $defn->setValue($defn->valueOf(@args)->multiply(100), @args); });
+    $defn->setValue($defn->valueOf(@args)->multiply(100), undef, @args); });
 
 DefMacro('\lshiftnum {}', sub {
     my ($gullet, $num) = @_;
@@ -838,25 +838,25 @@ DefPrimitive('\lshiftset Variable {}', sub {
     my ($stomach, $var, $num) = @_;
     return () unless $var;
     my ($defn, @args) = @$var;
-    $defn->setValue((10 * ToString(Expand($num)) . 'pt'), @args); });
+    $defn->setValue((10 * ToString(Expand($num)) . 'pt'), undef, @args); });
 
 DefPrimitive('\llshiftset Variable {}', sub {
     my ($stomach, $var, $num) = @_;
     return () unless $var;
     my ($defn, @args) = @$var;
-    $defn->setValue((100 * ToString(Expand($num)) . 'pt'), @args); });
+    $defn->setValue((100 * ToString(Expand($num)) . 'pt'), undef, @args); });
 
 DefPrimitive('\rshift Variable', sub {
     my ($stomach, $var) = @_;
     return () unless $var;
     my ($defn, @args) = @$var;
-    $defn->setValue($defn->valueOf(@args)->multiply(0.1), @args); });
+    $defn->setValue($defn->valueOf(@args)->multiply(0.1), undef, @args); });
 
 DefPrimitive('\rrshift Variable', sub {
     my ($stomach, $var) = @_;
     return () unless $var;
     my ($defn, @args) = @$var;
-    $defn->setValue($defn->valueOf(@args)->multiply(0.01), @args); });
+    $defn->setValue($defn->valueOf(@args)->multiply(0.01), undef, @args); });
 
 #\fcolorbox{name}{text} or \fcolorbox[model]{spec}{text}
 DefConstructor('\fcolorbox[]{}{} Undigested',
