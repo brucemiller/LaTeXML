@@ -37,7 +37,7 @@ sub valueOf {
   return $$self{value}; }
 
 sub setValue {
-  my ($self, $value) = @_;
+  my ($self, $value, $scope) = @_;
   Error('unexpected', $self, undef, "Can't assign to chardef " . $self->getCSName);
   return; }
 

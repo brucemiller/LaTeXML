@@ -18,8 +18,8 @@ use LaTeXML::Common::Error;
 use base qw(LaTeXML::Core::Definition::Primitive);
 
 # Known Traits:
-#    name : name to store in State's value table; defaults to the cs
-#    getter : a sub to get the value; otherwise stores in State value table under name
+#    address : address to store in State's value table; defaults to the cs
+#    getter : a sub to get the value; otherwise stores in State value table under address
 #    setter : a sub to set the value; ditto
 #    registerType : the type of register value (a LaTeXML class)
 #    beforeDigest, afterDigest : code for before/after digestion daemons
@@ -27,7 +27,7 @@ use base qw(LaTeXML::Core::Definition::Primitive);
 #    default  : default value; safety for when no value assigned
 sub new {
   my ($class, $cs, $parameters, %traits) = @_;
-  $traits{name} = ToString($cs) unless defined $traits{name};
+  $traits{address} = ToString($cs) unless defined $traits{address};
   return bless { cs => $cs, parameters => $parameters,
     locator => $STATE->getStomach->getGullet->getMouth->getLocator,
     %traits }, $class; }
@@ -48,44 +48,44 @@ sub valueOf {
   if (my $getter = $$self{getter}) {
     return &{ $$self{getter} }(@args); }
   else {
-    my $loc = (@args ? join('', $$self{name}, map { ToString($_) } @args) : $$self{name});
+    my $loc = (@args ? join('', $$self{address}, map { ToString($_) } @args) : $$self{address});
     return $STATE->lookupValue($loc) || $$self{default}; } }
 
 sub setValue {
-  my ($self, $value, @args) = @_;
+  my ($self, $value, $scope, @args) = @_;
   my $tracing = $STATE->lookupValue('TRACINGCOMMANDS') || $LaTeXML::DEBUG{tracing};
   if ($tracing) {
     my $scope  = $STATE->getPrefix('global') ? 'globally ' : '';
     my $csname = ToString($$self{cs});
     Debug("{$scope" . "changing " . $csname . "=" . ToString($self->valueOf(@args)) . "}"); }
   if (my $setter = $$self{setter}) {
-    &{ $$self{setter} }($value, @args); }
+    &{ $$self{setter} }($value, $scope, @args); }
   elsif ($$self{readonly}) {
     Warn('unexpected', $$self{cs}, $STATE->getStomach,
       "Can't assign readonly register " . ToString($$self{cs}) . " to " . ToString($value)); }
   else {
-    my $loc = (@args ? join('', $$self{name}, map { ToString($_) } @args) : $$self{name});
-    $STATE->assignValue($loc => $value); }
+    my $loc = (@args ? join('', $$self{address}, map { ToString($_) } @args) : $$self{address});
+    $STATE->assignValue($loc => $value, $scope); }
   Debug("{into " . ToString($$self{cs}) . "=" . ToString($self->valueOf(@args)) . "}") if $tracing;
   return; }
 
 sub addValue {
-  my ($self, $value, @args) = @_;
+  my ($self, $value, $scope, @args) = @_;
   my $oldvalue;
   if (my $getter = $$self{getter}) {
     $oldvalue = &{ $$self{getter} }(@args); }
   else {
-    my $loc = (@args ? join('', $$self{name}, map { ToString($_) } @args) : $$self{name});
+    my $loc = (@args ? join('', $$self{address}, map { ToString($_) } @args) : $$self{address});
     $oldvalue = $STATE->lookupValue($loc) || $$self{default}; }
   my $newvalue = $oldvalue->add($value);
   if (my $setter = $$self{setter}) {
-    &{ $$self{setter} }($newvalue, @args); }
+    &{ $$self{setter} }($newvalue, $scope, @args); }
   elsif ($$self{readonly}) {
     Warn('unexpected', $$self{cs}, $STATE->getStomach,
-      "Can't assign readonly register $$self{name} to " . ToString($value)); }
+      "Can't assign readonly register $$self{address} to " . ToString($value)); }
   else {
-    my $loc = (@args ? join('', $$self{name}, map { ToString($_) } @args) : $$self{name});
-    $STATE->assignValue($loc => $newvalue); }
+    my $loc = (@args ? join('', $$self{address}, map { ToString($_) } @args) : $$self{address});
+    $STATE->assignValue($loc => $newvalue, $scope); }
   return; }
 
 # No before/after daemons ???
@@ -100,7 +100,7 @@ sub invoke {
   my @args   = ($parms ? $parms->readArguments($gullet) : ());
   $gullet->readKeyword('=');    # Ignore
   my $value = $gullet->readValue($self->isRegister);
-  $self->setValue($value, @args);
+  $self->setValue($value, undef, @args);
 
   # Tracing ?
   if (my $after = $STATE->lookupValue('afterAssignment')) {
@@ -113,7 +113,7 @@ sub equals {
   my ($self, $other) = @_;
   return (defined $other
       && (ref $self) eq (ref $other)) && Equals($self->getParameters, $other->getParameters)
-    && Equals($$self{name}, $$other{name}); }
+    && Equals($$self{address}, $$other{address}); }
 
 #===============================================================================
 1;
@@ -149,7 +149,7 @@ Return the value associated with the register, by invoking it's C<getter> functi
 The additional args are used by some registers
 to index into a set, such as the index to C<\count>.
 
-=item C<< $register->setValue($value,@args); >>
+=item C<< $register->setValue($value,$scope,@args); >>
 
 Assign a value to the register, by invoking it's C<setter> function.
 
