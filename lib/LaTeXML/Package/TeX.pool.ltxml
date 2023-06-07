@@ -908,7 +908,7 @@ DefMacro('\meaning Token', sub {
         $meaning_cc .= ' ' if $meaning_cc;    # append space separator if defined
         $meaning = $meaning_cc . $char; }
       elsif ($type =~ /register$/i) {
-        $meaning = $$definition{address} || $definition->getCSName; }
+        $meaning = $definition->getAddress; }
       elsif ($type =~ /expandable$/i) {
 # short-circuit some troublesome discrepancies with TeX, which end up macros on LaTeXML's end, but \meaning expects as primitives in the CTAN ecosystem.
         my $cs = ToString($definition->getCSorAlias);
