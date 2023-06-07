@@ -85,10 +85,6 @@ DefMacro('\thefigure',   '\ifnum\c@chapter>\z@\thechapter.\fi \arabic{figure}');
 DefMacro('\thetable',    '\ifnum\c@chapter>\z@\thechapter.\fi \arabic{table}');
 SetCounter(tocdepth => Number(2));
 
-NewCounter('enumi',   undef, idwithin => '@itemizei', idprefix => 'i');
-NewCounter('enumii',  undef, idwithin => 'enumi',     idprefix => 'i');
-NewCounter('enumiii', undef, idwithin => 'enumii',    idprefix => 'i');
-NewCounter('enumiv',  undef, idwithin => 'enumiii',   idprefix => 'i');
 DefMacro('\theenumi',   '\arabic{enumi}');
 DefMacro('\theenumii',  '\alph{enumii}');
 DefMacro('\theenumiii', '\roman{enumiii}');
