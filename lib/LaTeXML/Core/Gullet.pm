@@ -329,6 +329,8 @@ sub unread {
 # $toplevel is doing TWO distinct things. When true:
 #  * If a mouth is exhausted, move on to the containing mouth to continue reading
 #  * expand even protected defns, essentially this means expand "for execution"
+# Note that, unlike readTokens, this does NOT defer expansion of \the & friends.
+# Also, \noexpand'd tokens effectively act ilke \relax
 sub readXToken {
   my ($self, $toplevel, $commentsok) = @_;
   $toplevel = 1 unless defined $toplevel;
@@ -337,7 +339,6 @@ sub readXToken {
   return shift(@{ $$self{pending_comments} }) if $commentsok && @{ $$self{pending_comments} };
   my ($token, $cc, $defn, $atoken, $atype, $ahidden);
   while (1) {
-    # NOTE: CC_SMUGGLE_THE should ONLY appear in pushback!
     while (($token = shift(@{ $$self{pushback} })) && $CATCODE_HOLD[$cc = $$token[1]]) {
       if ($cc == CC_COMMENT) {
         return $token if $commentsok;
@@ -355,9 +356,8 @@ sub readXToken {
     if (!defined $token) {
       return unless $autoclose && $$self{autoclose} && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
-        # Handle \noexpand and  smuggled tokens; either expand to $$token[2] or defer till later
-    elsif (my $unexpanded = $$token[2]) {    # Inline get_dont_expand
-      return ($cc != CC_SMUGGLE_THE) || $LaTeXML::SMUGGLE_THE ? $token : $unexpanded; }
+    elsif (my $unexpanded = $$token[2]) {    # Handle \noexpand; Inline get_dont_expand
+      return $token; }                       # returns something that acts like \relax
     ## Wow!!!!! See TeX the Program \S 309
     elsif (!$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)
       && $LaTeXML::READING_ALIGNMENT
@@ -378,15 +378,6 @@ sub readXToken {
               "in " . ToString($defn)) || T_OTHER(Stringify($_)))) }
         $defn->invoke($self);
       next unless @expansion;
-      if ($$LaTeXML::Core::Token::SMUGGLE_THE_COMMANDS{ $$defn{cs}[0] }) {
-        # magic THE_TOKS handling, add to pushback with a single-use noexpand flag only valid
-        # at the exact time the token leaves the pushback.
-        # This is *required to be different* from the noexpand flag, as per the B Book
-        @expansion = map { ($LaTeXML::Core::Token::CATCODE_CAN_SMUGGLE_THE[$$_[1]] ? bless ["SMUGGLE_THE", CC_SMUGGLE_THE, $_], 'LaTeXML::Core::Token' : $_) } @expansion;
-        # PERFORMANCE:
-        #   explicitly flag that we've seen this case, so that higher levels know to
-        #   unset the flag from the entire {pushback}
-        $$self{pushback_has_smuggled_the} = 1; }
       # add the newly expanded tokens back into the gullet stream, in the ordinary case.
       unshift(@{ $$self{pushback} }, @expansion); }
     elsif ($$token[1] == CC_CS && !(defined $defn)) {
@@ -396,6 +387,98 @@ sub readXToken {
       return $token; }                             # just return it
   }
   return; }                                        # never get here.
+
+# readTokens approximates TeX's scan_toks (but doesn't parse \def parameter lists)
+# It expects to read a balanced {...} (requiring the opening {
+# and optionally ($expand) expands while reading, but deferring \the and related.
+# The $macrodef flag affects whether # parameters are "packed" for macro bodies.
+our $DEFERRED_COMMANDS = {
+  '\the'        => 1,
+  '\showthe'    => 1,
+  '\unexpanded' => 1,
+  '\detokenize' => 1
+};
+
+sub readTokens {
+  my ($self, $macrodef, $expand) = @_;
+  local $LaTeXML::ALIGN_STATE = 1000000;
+  my $startloc = ($$self{verbosity} > 0) && $self->getLocator;
+  # Does we need to expand to get the { ???
+  my $token = ($expand ? $self->readXToken(0, 1) : $self->readToken());
+  if ((!$token) || ($$token[1] != CC_BEGIN)) {
+    Error('expected', '{', $self, "Expected opening '{'");
+    return Tokens(); }
+  my @tokens = ();
+  my $level  = 1;
+  my ($cc, $defn, $atoken, $atype, $ahidden);
+  # Inlined readToken (we'll keep comments in the result)
+  while (1) {
+    push(@tokens, shift(@{ $$self{pending_comments} })) if @{ $$self{pending_comments} };
+    # Examine pushback first
+    while (($token = shift(@{ $$self{pushback} })) && $CATCODE_HOLD[$cc = $$token[1]]) {
+      if    ($cc == CC_COMMENT) { push(@tokens, $token); }
+      elsif ($cc == CC_MARKER)  { $self->handleMarker($token); } }
+    if (!defined $token) {    # Else read from current mouth
+      while (($token = $$self{mouth}->readToken()) && $CATCODE_HOLD[$cc = $$token[1]]) {
+        if    ($cc == CC_COMMENT) { push(@tokens, $token); }
+        elsif ($cc == CC_MARKER)  { $self->handleMarker($token); } } }
+    ProgressStep() if ($$self{progress}++ % $TOKEN_PROGRESS_QUANTUM) == 0;
+    if (!defined $token) {
+      # What's the right error handling now?
+      last; }
+    elsif (my $unexpanded = $$token[2]) {    # Inline get_dont_expand
+      push(@tokens, $unexpanded); }
+    elsif ($cc == CC_END) {
+      $level--;
+      if (!$level) {
+        last; }
+      push(@tokens, $token); }
+    elsif ($cc == CC_BEGIN) {
+      $level++;
+      push(@tokens, $token); }
+    ## Wow!!!!! See TeX the Program \S 309
+    # Not sure if this code still applies within scan_toks???
+    elsif (!$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)
+      && $LaTeXML::READING_ALIGNMENT
+      && (($atoken, $atype, $ahidden) = $self->isColumnEnd($token))) {
+      $self->handleTemplate($LaTeXML::READING_ALIGNMENT, $token, $atype, $ahidden); }
+    ## Note: use general-purpose lookup, since we may reexamine $defn below
+    elsif ($expand &&
+      $LaTeXML::Core::State::CATCODE_ACTIVE_OR_CS[$cc]
+      && defined($defn = $STATE->lookupMeaning($token))
+      && ((ref $defn) ne 'LaTeXML::Core::Token')    # an actual definition
+      && $$defn{isExpandable}
+      && (!$$defn{isProtected})) {                  # is this the right logic here? don't expand unless di
+      local $LaTeXML::CURRENT_TOKEN = $token;
+      my $r;
+      no warnings 'recursion';
+      my @expansion = map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
+          : ($r eq 'LaTeXML::Core::Tokens' ? @$_
+            : Error('misdefined', $r, undef, "Expected a Token, got " . Stringify($_),
+              "in " . ToString($defn)) || T_OTHER(Stringify($_)))) }
+        $defn->invoke($self);
+      next unless @expansion;
+      # If a special \the type command, push the expansion directly into the result
+      if ($$DEFERRED_COMMANDS{ $$defn{cs}[0] }) {
+        if ($macrodef) {    # "unpack" # to cover the packParameters at end!
+          @expansion = map { ($$_[1] == CC_PARAM ? ($_, $_) : $_); } @expansion }
+        push(@tokens, @expansion); }
+      else {                # otherwise, prepend to pushback to be expanded further.
+        unshift(@{ $$self{pushback} }, @expansion); } }
+    else {
+      if ($expand && ($$token[1] == CC_CS) && !(defined $defn)) {
+        $STATE->generateErrorStub($self, $token); }    # cs SHOULD have defn by now; report early!
+      push(@tokens, $token); }                         # just return it
+  }
+  if ($level > 0) {
+ # TODO: The current implementation has a limitation where if the balancing end is in a different mouth,
+ #       it will not be recognized.
+    my $loc_message = $startloc ? ("Started at " . ToString($startloc)) : ("Ended at " . ToString($self->getLocator));
+    Error('expected', "}", $self, "Gullet->readTokens ran out of input in an unbalanced state.",
+      $loc_message); }
+  return ($macrodef ? Tokens(@tokens)->packParameters : Tokens(@tokens)); }
+
+#======================================================================
 
 # Read the next raw line (string);
 # primarily to read from the Mouth, but keep any unread input!
@@ -477,32 +560,8 @@ our @CATCODE_BALANCED_INTERESTING = (
 
 sub readBalanced {
   my ($self, $expanded) = @_;
-  local $LaTeXML::ALIGN_STATE = 1000000;
-  my @tokens = ();
-  my ($token, $level) = (undef, 1);
-  my $startloc = ($$self{verbosity} > 0) && $self->getLocator;
-  # Inlined readToken (we'll keep comments in the result)
-  while ($token = ($expanded ? $self->readXToken(0, 1) : $self->readToken())) {
-    my $cc = $$token[1];
-    if (!$CATCODE_BALANCED_INTERESTING[$cc]) {
-      push(@tokens, $token); }
-    elsif ($cc == CC_END) {
-      $level--;
-      if (!$level) {
-        last; }
-      push(@tokens, $token); }
-    elsif ($cc == CC_BEGIN) {
-      $level++;
-      push(@tokens, $token); }
-    elsif ($cc == CC_MARKER) {    # Really should already have been handled by read(X)Token
-      LaTeXML::Core::Definition::stopProfiling($token, 'expand'); } }
-  if ($level > 0) {
- # TODO: The current implementation has a limitation where if the balancing end is in a different mouth,
- #       it will not be recognized.
-    my $loc_message = $startloc ? ("Started at " . ToString($startloc)) : ("Ended at " . ToString($self->getLocator));
-    Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.",
-      $loc_message); }
-  return Tokens(@tokens); }
+  $self->unread(T_BEGIN);    # Since we've already read the {, but readTokens requires it.
+  return $self->readTokens(undef, $expanded); }
 
 sub ifNext {
   my ($self, $token) = @_;
