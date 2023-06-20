@@ -117,12 +117,11 @@ DefParameterType('Plain', sub {
 
 DefParameterType('DefPlain', sub {
     my ($gullet, $inner) = @_;
-    my $value = $gullet->readArg;
+    my $value = $gullet->readTokens(1, 0);
     if ($inner) {
       ($value) = $inner->reparseArgument($gullet, $value); }
     return $value; },
-  packParameters => 1,
-  reversion      => sub {
+  reversion => sub {
     my ($arg, $inner) = @_;
     (T_BEGIN,
       ($inner ? $inner->revertArguments($arg) : Revert($arg)),
@@ -152,13 +151,8 @@ DefParameterType('Optional', sub {
 # which IS required in contrast to a general argument; ie a single token is not correct.
 DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
-    my $open = $gullet->readXToken;
-    if ($open && ($open->getCatcode == CC_BEGIN)) {
-      return $gullet->readBalanced; }
-    else {
-      Error('expected', '{', $gullet,
-        "Expected <general text> here");
-      return $open; } });
+    $gullet->unread($gullet->readXToken);    # Force expansion to skip <filler> before required {
+    return $gullet->readTokens(0, 0); });
 
 DefParameterType('Until', sub {
     my ($gullet, $until) = @_;
@@ -233,44 +227,23 @@ DefParameterType('XUntil', sub {
         push(@tokens, $token); } }
     Tokens(@tokens); });
 
-# This is sorta like readbalanced, but expands as it goes.
-# This appears to be needed by certain primitives (eg. \noalign ?)
-# and maybe what we should be using for some Digested ??
+# This reads a braced tokens list, expanding as it goes,
+# but expanding \the-like commands only once.
 DefParameterType('Expanded', sub {
     my ($gullet) = @_;
-    my $token = $gullet->readXToken(0);
-    if (!$token) {
-      Error('expected', 'expanded', $gullet,
-        "Expected <Expanded> here");
-      return $token; }
-    my @tokens = ();
-    if ($token->getCatcode == CC_BEGIN) {
-      return scalar($gullet->readBalanced(1))->without_dont_expand; }
-    else {
-      return $token->without_dont_expand; } },
+    $gullet->readTokens(0, 1); },
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
 
-# Set SMUGGLE_THE=1 whenever you want to handle special TeX neutralization of
-# tokens created by \the-like primitives.
-#
-# IMPORTANTLY, call packParameters early on the tokens read from the Gullet
-# to enact the neutralization and discard the temporary smuggle flag that is required
-#
-# Whenever possible, use this `DefExpanded` parameter type directly, rather than hand-crafting a new one.
+# This reads an expanded definition body,
+# a braced tokens list, expanding as it goes,
+# but expanding \the-like commands only once,
+# and also packing # parameters
 DefParameterType('DefExpanded', sub {
     my ($gullet) = @_;
-    local $LaTeXML::SMUGGLE_THE = 1;
-    my $token = $gullet->readXToken;
-    if (!$token) {
-      Error('expected', 'defexpanded', $gullet,
-        "Expected <DefExpanded> here");
-      return $token; }
-    my $expanded = ($token->getCatcode == CC_BEGIN ? $gullet->readBalanced(1) : $token);
-    return $expanded; },
-  packParameters => 1,
-  reversion      => sub {
+    return $gullet->readTokens(1, 1); },
+  reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
 
@@ -344,7 +317,8 @@ DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
-DefParameterType('UndigestedDefKey', sub { $_[0]->readArg; }, undigested => 1, packParameters => 1);
+DefParameterType('UndigestedDefKey', sub {
+    $_[0]->readArg->packParameters; }, undigested => 1);
 
 # Read a token as used when defining it, ie. it may be enclosed in braces.
 DefParameterType('DefToken', sub {
@@ -5716,7 +5690,7 @@ DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
 # We're given a number pointing into the font, from which we can derive the standalone char.
 # From that, we want to figure out the combining character, but there could be one for
 # both the above & below cases!  We'll prefer the above case.
-DefPrimitive('\accent Number Expanded', sub {
+DefPrimitive('\accent Number {}', sub {
     my ($stomach, $num, $letter) = @_;
     my $n        = $num->valueOf;
     my $fontinfo = lookupFontinfo(LookupValue('textfont_0'));
