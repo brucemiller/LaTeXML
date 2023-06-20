@@ -101,16 +101,6 @@ sub flush {
   $$self{mouthstack} = [];
   return; }
 
-sub setup_scan {
-  my ($self) = @_;
-  if ($$self{pushback_has_smuggled_the}) {
-    $$self{pushback_has_smuggled_the} = 0;
-    # setup new scan by removing any smuggle CCs
-    for my $token (@{ $$self{pushback} }) {
-      if ($$token[1] == CC_SMUGGLE_THE) {
-        $token = $$token[2]; } } }
-  return; }
-
 # Do something, while reading stuff from a specific Mouth.
 # This reads ONLY from that mouth (or any mouth openned by code in that source),
 # and the mouth should end up empty afterwards, and only be closed here.
