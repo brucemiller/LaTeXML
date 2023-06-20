@@ -319,9 +319,6 @@ sub packParameters { return $_[0]; }
 sub with_dont_expand {
   my ($self) = @_;
   my $cc = $$self[1];
-  if ($cc == CC_SMUGGLE_THE) {
-    # LaTeXML Bug, we haven't correctly emulated scan_toks! Offending token was:
-    Fatal('unexpected', 'CC_SMUGGLE_THE', 'We are marking as \noexpand a masked \the-produced token, this must Never happen.', "Illegal: " . $self->stringify); }
   return ((($cc == CC_CS) || ($cc == CC_ACTIVE)) && $STATE->isDontExpandable($self))
     ? bless ['\relax', CC_CS, $self], 'LaTeXML::Core::Token'
     : $self; }
@@ -376,7 +373,7 @@ my @CONTROLNAME = (                                   #[CONSTANT]
 sub stringify {
   my ($self) = @_;
   if ($$self[2]) {
-    return $$self[2]->stringify() . ($$self[1] == CC_SMUGGLE_THE ? " (defer expand once)" : " (dont expand)"); }
+    return $$self[2]->stringify() . " (dont expand)"; }
   my $string = $self->toString;
   # Make the token's char content more printable, since this is for error messages.
   if (length($string) == 1) {

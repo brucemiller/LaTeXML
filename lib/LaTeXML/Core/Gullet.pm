@@ -267,7 +267,6 @@ sub readToken {
   my ($token, $cc, $atoken, $atype, $ahidden);
   while (1) {
     while (($token = shift(@{ $$self{pushback} }))
-      && (($$token[1] != CC_SMUGGLE_THE) || ($token = $$token[2]))
       && $CATCODE_HOLD[$cc = $$token[1]]) {
       if ($cc == CC_COMMENT) {
         push(@{ $$self{pending_comments} }, $token); }
@@ -476,7 +475,7 @@ sub readRawLine {
   my ($self) = @_;
   # If we've got unread tokens, they presumably should come before the Mouth's raw data
   # but we'll convert them back to string.
-  my @tokens  = map  { ($$_[1] == CC_SMUGGLE_THE ? $$_[2] : $_) } @{ $$self{pushback} };
+  my @tokens  = @{ $$self{pushback} };
   my @markers = grep { $_->getCatcode == CC_MARKER } @tokens;
   if (@markers) {    # Whoops, profiling markers!
     @tokens = grep { $_->getCatcode != CC_MARKER } @tokens;    # Remove
@@ -614,7 +613,6 @@ sub readUntil {
     my $want = $want[0];
     #    while(($token = $self->readToken) && !$token->equals($want)){
     while (($token = shift(@{ $$self{pushback} }) || $$self{mouth}->readToken())
-      && (($$token[1] != CC_SMUGGLE_THE) || ($token = $$token[2]))
       && !$token->equals($want)) {
       my $cc = $$token[1];
       if ($cc == CC_MARKER) {    # would have been handled by readToken, but we're bypassing
