@@ -332,12 +332,6 @@ sub get_dont_expand {
   my ($self) = @_;
   return $$self[2]; }
 
-sub without_dont_expand {
-  my ($self) = @_;
-  # Remove dont_expand flag, remove SMUGGLE_THE wrapper
-  my $inner = $$self[2];
-  return $inner ? ($$inner[2] || $inner) : $self; }
-
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
 # We'll need to be careful about using string instead of reverting for internal purposes where the
