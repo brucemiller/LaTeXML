@@ -1863,8 +1863,8 @@ DefRegister('\@itemdepth' => Number(0));
 #======================================================================
 
 # NOTE: how's the best way to get verbatim material through?
-DefEnvironment('{verbatim}',  '<ltx:verbatim>#body</ltx:verbatim>');
-DefEnvironment('{verbatim*}', '<ltx:verbatim>#body</ltx:verbatim>');
+#DefEnvironment('{verbatim}',  '<ltx:verbatim>#body</ltx:verbatim>');
+#DefEnvironment('{verbatim*}', '<ltx:verbatim>#body</ltx:verbatim>');
 
 DefMacroI('\@verbatim', undef,
   '\par\aftergroup\lx@end@verbatim\lx@@verbatim');    # Close enough?
@@ -1888,39 +1888,52 @@ DefConstructorI('\lx@end@verbatim', undef,
 # and also the usual environment capture.
 DefConstructorI(T_CS('\begin{verbatim}'), undef,
   "<ltx:verbatim font='#font'>#body</ltx:verbatim>",
-  beforeDigest => [sub { $_[0]->bgroup;
-      my @stuff = ();
-      if (my $b = LookupValue('@environment@verbatim@atbegin')) {
-        push(@stuff, Digest(@$b)); }
-      AssignValue(current_environment => 'verbatim');
-      DefMacroI('\@currenvir', undef, 'verbatim');
-      MergeFont(family => 'typewriter');
-      # Digest(T_CS('\par')); # NO! See beforeConstruct!
-      @stuff; }],
-  afterDigest => [sub {
-      my ($stomach, $whatsit) = @_;
-      #      $stomach->egroup;
-      my $font   = $whatsit->getFont;
-      my $loc    = $whatsit->getLocator;
-      my $end    = "\\end{verbatim}";
-      my @lines  = ();
-      my $gullet = $stomach->getGullet;
-      while (defined(my $line = $gullet->readRawLine)) {
-        # The raw chars will still have to be decoded (but not space!!)
-        $line = join('', map { ($_ eq ' ' ? ' ' : FontDecodeString($_, 'OT1_typewriter')) }
-            split(//, $line));
-        if ($line =~ /^(.*?)\\end\{verbatim\}(.*?)$/) {
-          push(@lines, $1 . "\n"); $gullet->unread(Tokenize($2), T_CR);
-          last; }
-        push(@lines, $line . "\n"); }
-      pop(@lines) if $lines[-1] eq "\n";
-      # Note last line ends up as Whatsit's "trailer"
-      if (my $b = LookupValue('@environment@verbatim@atend')) {
-        push(@lines, ToString(Digest(@$b))); }
-      $stomach->egroup;
-      $whatsit->setBody(map { Box($_, $font, $loc, T_OTHER($_)) } @lines, $end);
-      return; }],
+  beforeDigest    => [sub { beforeDigestVerbatim(0, @_); }],
+  afterDigest     => [sub { afterDigestVerbatim(0, @_); }],
   beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:p'); });
+
+DefConstructorI(T_CS('\begin{verbatim*}'), undef,
+  "<ltx:verbatim font='#font'>#body</ltx:verbatim>",
+  beforeDigest    => [sub { beforeDigestVerbatim(1, @_); }],
+  afterDigest     => [sub { afterDigestVerbatim(1, @_); }],
+  beforeConstruct => sub { $_[0]->maybeCloseElement('ltx:p'); });
+
+sub beforeDigestVerbatim {
+  my ($starred, $stomach) = @_;
+  $stomach->bgroup;
+  my @stuff = ();
+  if (my $b = LookupValue('@environment@verbatim@atbegin')) {
+    push(@stuff, Digest(@$b)); }
+  AssignValue(current_environment => 'verbatim');
+  DefMacroI('\@currenvir', undef, 'verbatim');
+  MergeFont(family => 'typewriter');
+  # Digest(T_CS('\par')); # NO! See beforeConstruct!
+  @stuff; }
+
+sub afterDigestVerbatim {
+  my ($starred, $stomach, $whatsit) = @_;
+  #      $stomach->egroup;
+  my $font   = $whatsit->getFont;
+  my $loc    = $whatsit->getLocator;
+  my $end    = $starred ? '\end{verbatim*}' : '\end{verbatim}';
+  my $space  = $starred ? "\x{2423}"        : ' ';
+  my @lines  = ();
+  my $gullet = $stomach->getGullet;
+  while (defined(my $line = $gullet->readRawLine)) {
+    # The raw chars will still have to be decoded (but not space!!)
+    $line = join('', map { ($_ eq ' ' ? $space : FontDecodeString($_, 'OT1_typewriter')) }
+        split(//, $line));
+    if ($line =~ /^(.*?)\Q$end\E(.*?)$/) {
+      push(@lines, $1 . "\n"); $gullet->unread(Tokenize($2), T_CR);
+      last; }
+    push(@lines, $line . "\n"); }
+  pop(@lines) if $lines[-1] eq "\n";
+  # Note last line ends up as Whatsit's "trailer"
+  if (my $b = LookupValue('@environment@verbatim@atend')) {
+    push(@lines, ToString(Digest(@$b))); }
+  $stomach->egroup;
+  $whatsit->setBody(map { Box($_, $font, $loc, T_OTHER($_)) } @lines, $end);
+  return; }
 
 DefPrimitiveI('\@vobeyspaces', undef, sub {
     AssignCatcode(" " => 13);
@@ -1935,11 +1948,14 @@ DefMacroI('\verb', undef, sub {
     StartSemiverbatim('%', '\\', '{', '}');
     $STATE->assignCatcode(' ', CC_ACTIVE);
     my $init;
+    my $skippedSpace = 0;
     # As of texlive 2021, DO skip spaces before delimiter (even tho we've changed catcodes)
+    # but if we do skip spaces, * can be the delimiter
     do { $init = $gullet->readToken();
+      $skippedSpace = 1 if (defined $init && $init->getString eq ' ');
     } while (defined $init && $init->getString eq ' ');
     my $starred = 0;
-    if (T_OTHER('*')->equals($init)) {
+    if (T_OTHER('*')->equals($init) && !$skippedSpace) {
       $starred = 1;
       do { $init = $gullet->readToken();
       } while (defined $init && $init->getString eq ' '); }

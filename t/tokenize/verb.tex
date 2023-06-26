@@ -21,6 +21,12 @@ AbNormal {\bf NonBold} stuff.
 keep this too    \end{verbatim} outside verbatim
 More Normal {\bf Bold} stuff.
 
+Verbatim 4:
+\begin{verbatim*} keep this
+AbNormal {\bf NonBold} stuff.
+keep this too    \end{verbatim*} outside verbatim
+More Normal {\bf Bold} stuff.
+
 % NOT allowed
 %\section{Inline \verb|\verb| verbatim.}
 \section{Inline verb command}
@@ -47,7 +53,7 @@ x\hbox to 2in  {\bf x\verb|\verb|y.}y
 Note that spaces after a control-sequence are skipped on the \emph{next} read,
 by which time catcodes may have been changed.
 Prior to April, 2020, a space following \verb|\verb| would -- surprisingly -- have been treated as
-the delimiter! Since then, spaces are skipped and the following char is used as delimiter.
+the delimiter! Since then, spaces are skipped and the following char (even *) is used as delimiter.
 We'll adopt the newer approach.
 
 \verb |a}b#c^d_e$f| stuff
@@ -55,6 +61,8 @@ We'll adopt the newer approach.
 {\verb Trick-roll} T }
 
 {\verb* Trick-roll} T }
+
+\verb * + i n * o u t +
 
 % Another tricky case
 \makeatletter
