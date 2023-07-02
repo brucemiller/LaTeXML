@@ -632,7 +632,6 @@ DefMacro('\@startsection{}{}{}{}{}{} OptionalMatch:*', sub {
       else {                    # otherwise, just unset the flag?
         $STATE->assignValue('IN_MATH' => 0, 'global'); } }
     ### Main logic
-    my $ctr = LookupValue('counter_for_' . ToString($type)) || ToString($type);
     $level = ToString($level);
     if ($flag) {                # No number, not in TOC
       (T_CS('\par'), T_CS('\@startsection@hook'), T_CS('\\@@unnumbered@section'),
