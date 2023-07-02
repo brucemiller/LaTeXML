@@ -61,8 +61,8 @@ jobs:
         # GitHub's CI environment comes with a preinstalled version of Strawberry Perl.
         # So first uninstall that one, then pick the version we want.
         run: |
-          cuninst -y strawberryperl
-          cinst -y strawberryperl --version ${{ matrix.perl }}
+          choco uninstall -y strawberryperl
+          choco install -y strawberryperl --version ${{ matrix.perl }}
 
       # ====================
       # Setup MiKTeX
@@ -89,7 +89,7 @@ jobs:
       - name: Install & Configure MiKTeX
         if: matrix.miktex != 'none'
         run: |
-          cinst -y miktex --version ${{ matrix.miktex }} --params '"/Set:complete /RepoPath:""C:\miktex-repo"" /Mirror:https://mirrors.rit.edu/CTAN/systems/win32/miktex/tm/packages/"'
+          choco install -y miktex --version ${{ matrix.miktex }} --params '"/Set:complete /RepoPath:""C:\miktex-repo"" /Mirror:https://mirrors.rit.edu/CTAN/systems/win32/miktex/tm/packages/"'
           echo "C:\Program Files\MiKTeX/miktex/bin/x64/" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
 
           Invoke-WebRequest -Uri "https://github.com/tkw1536/execsilent/releases/download/v0.0.2/execsilent-windows-amd64.exe" -OutFile C:\execsilent.exe
