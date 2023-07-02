@@ -32,6 +32,9 @@ sub new {
     # rescan for match tokens and unwrap dont_expand...
     $expansion = $expansion->packParameters unless $traits{nopackParameters};
   }
+  elsif (!ref $expansion) {
+    $expansion = TokenizeInternal($expansion)->packParameters; }
+
   return bless { cs => $cs, parameters => $parameters, expansion => $expansion,
     locator      => $source->getLocator,
     isProtected  => $traits{protected} || $STATE->getPrefix('protected'),
@@ -45,13 +48,7 @@ sub isExpandable {
 
 sub getExpansion {
   my ($self) = @_;
-  my $expansion = $$self{expansion};
-  if (!ref $expansion) {    # Tokenization DEFERRED till actually used (shaves > 5%)
-    $expansion = TokenizeInternal($expansion);
-    # rescan for match tokens and unwrap dont_expand...
-    $expansion = $expansion->packParameters;
-    $$self{expansion} = $expansion; }
-  return $expansion; }
+  return $$self{expansion}; }
 
 # Expand the expandable control sequence. This should be carried out by the Gullet.
 sub invoke {
@@ -60,14 +57,13 @@ sub invoke {
   # shortcut for "trivial" macros; but only if not tracing & profiling!!!!
   my $tracing   = $STATE->lookupValue('TRACINGMACROS');
   my $profiled  = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
-  my $expansion = $self->getExpansion;
+  my $expansion = $$self{expansion};
   my $etype     = ref $expansion;
-  my $iscode    = $etype eq 'CODE';
   my $result;
   my $parms = $$self{parameters};
 
   LaTeXML::Core::Definition::startProfiling($profiled, 'expand') if $profiled;
-  if ($iscode) {
+  if ($etype eq 'CODE') {
     # Harder to emulate \tracingmacros here.
     my @args = ($parms ? $parms->readArguments($gullet, $self) : ());
     $result = Tokens(&$expansion($gullet, @args));
@@ -113,7 +109,7 @@ sub equals {
   my ($self, $other) = @_;
   return (defined $other && (ref $self) eq (ref $other))
     && Equals($self->getParameters, $other->getParameters)
-    && Equals($self->getExpansion,  $other->getExpansion); }
+    && Equals($$self{expansion},    $$other{expansion}); }
 
 #======================================================================
 1;
