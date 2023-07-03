@@ -34,10 +34,14 @@ DeclareOption('noids', sub { AssignValue('GENERATE_IDS' => 0, 'global'); });
 DeclareOption('comments',   sub { AssignValue('INCLUDE_COMMENTS' => 1, 'global'); });
 DeclareOption('nocomments', sub { AssignValue('INCLUDE_COMMENTS' => 0, 'global'); });
 
-DeclareOption('tracing',     sub { AssignValue(TRACING => (LookupValue('TRACING') || 0) | 3); });
-DeclareOption('notracing',   sub { AssignValue(TRACING => (LookupValue('TRACING') || 0) & ~3); });
-DeclareOption('profiling',   sub { AssignValue(TRACING => (LookupValue('TRACING') || 0) | 4); });
-DeclareOption('noprofiling', sub { AssignValue(TRACING => (LookupValue('TRACING') || 0) & ~4); });
+DeclareOption('tracing', sub {
+    AssignValue(TRACING => (LookupValue('TRACING') || 0) | TRACE_ALL); });
+DeclareOption('notracing', sub {
+    AssignValue(TRACING => (LookupValue('TRACING') || 0) & ~TRACE_ALL); });
+DeclareOption('profiling', sub {
+    AssignValue(TRACING => (LookupValue('TRACING') || 0) | TRACE_PROFILE); });
+DeclareOption('noprofiling', sub {
+    AssignValue(TRACING => (LookupValue('TRACING') || 0) & ~TRACE_PROFILE); });
 
 DeclareOption('mathparserspeculate',   sub { AssignValue('MATHPARSER_SPECULATE' => 1, 'global'); });
 DeclareOption('nomathparserspeculate', sub { AssignValue('MATHPARSER_SPECULATE' => 0, 'global'); });

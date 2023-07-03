@@ -169,7 +169,7 @@ sub invoke_else {
     Debug('{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
         . " [for " . ToString($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid}
         . " skipping to " . ToString($t) . "]")
-      if ($STATE->lookupValue('TRACING') || 0) & 2;
+      if ($STATE->lookupValue('TRACING') || 0) & TRACE_COMMANDS;
     return; } }
 
 sub invoke_fi {
@@ -187,7 +187,7 @@ sub invoke_fi {
     $STATE->shiftValue('if_stack');    # Done with this frame
     Debug('{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
         . " [for " . Stringify($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid} . "]")
-      if ($STATE->lookupValue('TRACING') || 0) & 2;
+      if ($STATE->lookupValue('TRACING') || 0) & TRACE_COMMANDS;
     return; } }
 
 sub equals {

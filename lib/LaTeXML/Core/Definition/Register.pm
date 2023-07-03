@@ -57,7 +57,7 @@ sub valueOf {
 
 sub setValue {
   my ($self, $value, $scope, @args) = @_;
-  my $tracing = (($STATE->lookupValue('TRACING') || 0) & 2);    # tracing commands
+  my $tracing = (($STATE->lookupValue('TRACING') || 0) & TRACE_COMMANDS);
   if ($tracing) {
     my $scope  = $STATE->getPrefix('global') ? 'globally ' : '';
     my $csname = ToString($$self{cs});
@@ -97,7 +97,7 @@ sub addValue {
 sub invoke {
   my ($self, $stomach) = @_;
   my $_tracing = $STATE->lookupValue('TRACING') || 0;
-  my $profiled = ($_tracing & 4) && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+  my $profiled = ($_tracing & TRACE_PROFILE) && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
   my $gullet = $stomach->getGullet;
