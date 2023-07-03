@@ -2859,45 +2859,38 @@ sub DefLigature {
       %options });
   return; }
 
-my $old_math_ligature_options = {};                                                     # [CONSTANT]
-my $math_ligature_options     = { matcher => 1, role => 1, name => 1, meaning => 1 };   # [CONSTANT]
+my $math_ligature_options = { matcher => 1, role => 1, name => 1, meaning => 1 };    # [CONSTANT]
 
 sub DefMathLigature {
-  if ((scalar(@_) % 2) == 1) {                                                          # Old style!
-    my ($matcher, %options) = @_;
-    Info('deprecated', 'ligature', undef, "Old style arguments to DefMathLigature; please update");
-    CheckOptions("DefMathLigature", $old_math_ligature_options, %options);
-    UnshiftValue('MATH_LIGATURES', { old_style => 1, matcher => $matcher }); }          # Install it...
-  else {                                                                                # new style!
-    my (%options) = @_;
-    my $matcher = $options{matcher};
-    delete $options{matcher};
-    my ($pattern) = grep { !$$math_ligature_options{$_} } keys %options;
-    my $replacement = $pattern && $options{$pattern};
-    delete $options{$pattern} if $replacement;
-    CheckOptions("DefMathLigature", $math_ligature_options, %options);    # Check remaining options
-    if ($matcher && $pattern) {
-      Error('misdefined', 'MathLigature', undef,
-        "DefMathLigature only gets one of matcher or pattern=>replacement keywords");
-      return; }
-    elsif ($pattern) {
-      my @chars    = reverse(split(//, $pattern));
-      my $ntomatch = scalar(@chars);
-      my %attr     = %options;
-      $matcher = sub {
-        my ($document, $node) = @_;
-        foreach my $char (@chars) {
-          return unless
-            ($node
-            && ($document->getModel->getNodeQName($node) eq 'ltx:XMTok')
-            && (($node->textContent || '') eq $char));
-          $node = $node->previousSibling; }
-        return ($ntomatch, $replacement, %attr); }; }
-    elsif (!$matcher) {
-      Error('misdefined', 'MathLigature', undef,
-        "DefMathLigature missing matcher or pattern=>replacement keywords");
-      return; }
-    UnshiftValue('MATH_LIGATURES', { matcher => $matcher }); }    # Install it...
+  my (%options) = @_;
+  my $matcher = $options{matcher};
+  delete $options{matcher};
+  my ($pattern) = grep { !$$math_ligature_options{$_} } keys %options;
+  my $replacement = $pattern && $options{$pattern};
+  delete $options{$pattern} if $replacement;
+  CheckOptions("DefMathLigature", $math_ligature_options, %options);    # Check remaining options
+  if ($matcher && $pattern) {
+    Error('misdefined', 'MathLigature', undef,
+      "DefMathLigature only gets one of matcher or pattern=>replacement keywords");
+    return; }
+  elsif ($pattern) {
+    my @chars    = reverse(split(//, $pattern));
+    my $ntomatch = scalar(@chars);
+    my %attr     = %options;
+    $matcher = sub {
+      my ($document, $node) = @_;
+      foreach my $char (@chars) {
+        return unless
+          ($node
+          && ($document->getModel->getNodeQName($node) eq 'ltx:XMTok')
+          && (($node->textContent || '') eq $char));
+        $node = $node->previousSibling; }
+      return ($ntomatch, $replacement, %attr); }; }
+  elsif (!$matcher) {
+    Error('misdefined', 'MathLigature', undef,
+      "DefMathLigature missing matcher or pattern=>replacement keywords");
+    return; }
+  UnshiftValue('MATH_LIGATURES', { matcher => $matcher });    # Install it...
   return; }
 
 #======================================================================
