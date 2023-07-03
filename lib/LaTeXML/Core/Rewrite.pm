@@ -159,7 +159,7 @@ sub applyClause {
     my $n     = $tree;
     for (my $i = 0 ; $n && ($i < $nmatched) ; $i++) {
       push(@nodes, $n);
-      $n = $n->nextSibling; }
+      $n = element_next($n); }
     if ($tree->hasAttribute('_has_wildcards')) {
       setAttributes_wild($document, $pattern, @nodes); }
     else {
@@ -234,7 +234,7 @@ sub markSeen {
   my ($node, $nsibs) = @_;
   for (my $i = 0 ; $node && ($i < $nsibs) ; $i++) {
     markSeen_rec($node);
-    $node = $node->nextSibling; }
+    $node = element_next($node); }
   return; }
 
 sub markSeen_rec {
@@ -273,7 +273,7 @@ sub unmarkWildcards {
 sub nth_sibling {
   my ($node, $n) = @_;
   my $nn = $node;
-  while ($nn && ($n > 1)) { $nn = $nn->nextSibling; $n--; }
+  while ($nn && ($n > 1)) { $nn = element_next($nn); $n--; }
   return $nn; }
 
 sub nth_child {

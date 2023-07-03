@@ -75,7 +75,7 @@ our @EXPORT = (
     decodeFromUTF8  ),
   @XML::LibXML::EXPORT,
   # Possibly (later) export these utility functions
-  qw(&element_nodes &text_in_node &new_node
+  qw(&element_nodes &text_in_node &new_node &element_next &element_prev
     &append_nodes &clear_node &maybe_clone
     &valid_attributes &copy_attributes &rename_attribute &remove_attr
     &get_attr &isTextNode &isElementNode &isChild &isDescendant &isDescendantOrSelf
@@ -96,6 +96,20 @@ sub element_nodes {
 sub text_in_node {
   my ($node) = @_;
   return ($node ? join("\n", map { $_->data } grep { $_->nodeType == XML_TEXT_NODE } $node->childNodes) : ''); }
+
+sub element_next {
+  my ($node) = @_;
+  my $next;
+  while (($next = $node->nextSibling) && ($next->nodeType != XML_ELEMENT_NODE)) {
+    $node = $next; }
+  return $next; }
+
+sub element_prev {
+  my ($node) = @_;
+  my $prev;
+  while (($prev = $node->previousSibling) && ($prev->nodeType != XML_ELEMENT_NODE)) {
+    $node = $prev; }
+  return $prev; }
 
 sub isTextNode {
   my ($node) = @_;

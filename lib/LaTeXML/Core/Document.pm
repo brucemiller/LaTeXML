@@ -21,7 +21,7 @@ use LaTeXML::Common::XML;
 use LaTeXML::Util::Radix;
 use Unicode::Normalize;
 use Scalar::Util qw(blessed);
-use base qw(LaTeXML::Common::Object);
+use base         qw(LaTeXML::Common::Object);
 
 #**********************************************************************
 # These two element names are `leaks' of the document structure into
@@ -1121,13 +1121,19 @@ sub floatToLabel {
 sub openText_internal {
   my ($self, $text) = @_;
   return $$self{node} unless defined $text;
-  my $qname;
+  my ($qname, $p, $pp);
   if ($$self{node}->nodeType == XML_TEXT_NODE) {    # current node already is a text node.
     Debug("Appending text \"$text\" to " . Stringify($$self{node})) if $LaTeXML::DEBUG{document};
     my $parent = $$self{node}->parentNode;
     if ($LaTeXML::BOX && $parent->getAttribute('_autoopened')) {
       $self->appendTextBox($parent, $LaTeXML::BOX); }
     $$self{node}->appendData($text); }
+  elsif (($p = $$self{node}->lastChild) && ($p->nodeType == XML_COMMENT_NODE)
+    && ($pp = $p->previousSibling) && ($pp->nodeType == XML_TEXT_NODE)) {
+    # Avoid spliting text runs: Swap <text><comment> to <comment><text> and THEN append $text
+    $$self{node}->insertAfter($pp, $p);
+    $$self{node} = $pp;
+    $self->openText_internal($text); }
   elsif (($text =~ /\S/)                            # If non space
     || $self->canContain($$self{node}, '#PCDATA')) {    # or text allowed here
     my $point = $self->find_insertion_point('#PCDATA');
@@ -1187,20 +1193,19 @@ sub applyMathLigatures {
   return; }
 
 # Apply ligature operation to $node, presumed the last insertion into it's parent(?)
+# and presumably an ltx:XMTok
 sub applyMathLigature {
-  my ($self, $node, $ligature) = @_;
-  my ($nmatched, $newstring, %attr);
-  if ($$ligature{old_style}) {    # Obsolete style (expensively) passes in ALL sibling nodes
-    ($nmatched, $newstring, %attr) = &{ $$ligature{matcher} }($self, $node->parentNode->childNodes); }
-  else {                          # New style gets node and should ask for $node->previousSibling
-    ($nmatched, $newstring, %attr) = &{ $$ligature{matcher} }($self, $node); }
+  my ($self,     $node,      $ligature) = @_;
+  my ($nmatched, $newstring, %attr)     = &{ $$ligature{matcher} }($self, $node);
   if ($nmatched) {
     my @boxes = ($self->getNodeBox($node));
     $node->firstChild->setData($newstring);
+    my $prev = $node;
     for (my $i = 0 ; $i < $nmatched - 1 ; $i++) {
-      my $remove = $node->previousSibling;
+      my $remove = $prev->previousSibling;
       unshift(@boxes, $self->getNodeBox($remove));
-      $self->removeNode($remove); }
+      if ($remove->nodeType == XML_COMMENT_NODE) { $prev = $remove; }                # keep comments
+      else                                       { $self->removeNode($remove); } }
 ## This fragment replaces the node's box by the composite boxes it replaces
 ## HOWEVER, this gets things out of sync because parent lists of boxes still
 ## have the old ones.  Unless we could recursively replace all of them, we'd better skip it(??)
