@@ -80,11 +80,11 @@ DefMacro('\DeclareCaptionPackage{}',         Tokens());
 
 DefMacro('\bothIfFirst{}{}', sub {
     my ($gullet, $first, $second) = @_;
-    ($first->unlist ? ($first->unlist, $second->unlist) : ()); });
+    (IsEmpty($first) ? () : ($first->unlist, $second->unlist)); });
 
 DefMacro('\bothIfSecond{}{}', sub {
     my ($gullet, $first, $second) = @_;
-    ($second->unlist ? ($first->unlist, $second->unlist) : ()); });
+    (IsEmpty($second) ? () : ($first->unlist, $second->unlist)); });
 
 DefMacro('\AtBeginCaption{}',       Tokens());
 DefMacro('\AtEndCaption{}',         Tokens());

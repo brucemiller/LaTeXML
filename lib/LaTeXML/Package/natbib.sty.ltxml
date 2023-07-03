@@ -111,8 +111,8 @@ DefMacro('\cite OptionalMatch:* [][] Semiverbatim', sub {
     my ($style, $open, $close, $ns, $ay)
       = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR CITE_AY_SEPARATOR);
     if (!$post) { ($pre, $post) = (undef, $pre); }
-    $pre  = undef unless $pre  && $pre->unlist;
-    $post = undef unless $post && $post->unlist;
+    $pre  = undef if IsEmpty($pre);
+    $post = undef if IsEmpty($post);
     my $author = ($star ? "FullAuthors" : "Authors");
     if ($style eq 'numbers') {
       Invocation(T_CS('\@@cite'),
@@ -155,8 +155,8 @@ DefMacro('\citet OptionalMatch:* [][] Semiverbatim', sub {
     my ($style, $open, $close, $ns)
       = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR);
     if (!$post) { ($pre, $post) = (undef, $pre); }
-    $pre  = undef unless $pre  && $pre->unlist;
-    $post = undef unless $post && $post->unlist;
+    $pre  = undef if IsEmpty($pre);
+    $post = undef if IsEmpty($post);
     my $author = ($star ? "FullAuthors" : "Authors");
     if ($style eq 'numbers') {
       Invocation(T_CS('\@@cite'),
@@ -196,8 +196,8 @@ DefMacro('\citep OptionalMatch:* [][] Semiverbatim', sub {
       = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE
       CITE_NOTE_SEPARATOR CITE_AY_SEPARATOR);
     if (!$post) { ($pre, $post) = (undef, $pre); }
-    $pre  = undef unless $pre  && $pre->unlist;
-    $post = undef unless $post && $post->unlist;
+    $pre  = undef if IsEmpty($pre);
+    $post = undef if IsEmpty($post);
     my $author = ($star ? "FullAuthors" : "Authors");
 
     if ($style eq 'numbers') {
@@ -257,8 +257,8 @@ DefMacro('\citeauthor OptionalMatch:* [][] Semiverbatim', sub {
     my ($gullet, $star, $pre, $post, $keys) = @_;
     my $author = ($star ? "FullAuthors" : "Authors");
     if (!$post) { ($pre, $post) = (undef, $pre); }
-    $pre  = undef unless $pre  && $pre->unlist;
-    $post = undef unless $post && $post->unlist;
+    $pre  = undef if IsEmpty($pre);
+    $post = undef if IsEmpty($post);
     my $ns = LookupValue('CITE_NOTE_SEPARATOR');
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citeauthor')),
@@ -269,8 +269,8 @@ DefMacro('\citeauthor OptionalMatch:* [][] Semiverbatim', sub {
 DefMacro('\citefullauthor [][] Semiverbatim', sub {
     my ($gullet, $pre, $post, $keys) = @_;
     if (!$post) { ($pre, $post) = (undef, $pre); }
-    $pre  = undef unless $pre  && $pre->unlist;
-    $post = undef unless $post && $post->unlist;
+    $pre  = undef if IsEmpty($pre);
+    $post = undef if IsEmpty($post);
     my $ns = LookupValue('CITE_NOTE_SEPARATOR');
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citefullauthor')),
@@ -281,8 +281,8 @@ DefMacro('\citefullauthor [][] Semiverbatim', sub {
 DefMacro('\citeyear [][] Semiverbatim', sub {
     my ($gullet, $pre, $post, $keys) = @_;
     if (!$post) { ($pre, $post) = (undef, $pre); }
-    $pre  = undef unless $pre  && $pre->unlist;
-    $post = undef unless $post && $post->unlist;
+    $pre  = undef if IsEmpty($pre);
+    $post = undef if IsEmpty($post);
     my $ns = LookupValue('CITE_NOTE_SEPARATOR');
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citeyear')),
@@ -294,8 +294,8 @@ DefMacro('\citeyearpar [][] Semiverbatim', sub {
     my ($gullet, $pre, $post, $keys) = @_;
     my ($open, $close) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE);
     if (!$post) { ($pre, $post) = (undef, $pre); }
-    $pre  = undef unless $pre  && $pre->unlist;
-    $post = undef unless $post && $post->unlist;
+    $pre  = undef if IsEmpty($pre);
+    $post = undef if IsEmpty($post);
     my $ns = LookupValue('CITE_NOTE_SEPARATOR');
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citeyearpar')),
@@ -333,8 +333,8 @@ DefMacro('\citetalias [][] Semiverbatim', sub {
     my ($gullet, $pre, $post, $key) = @_;
     my ($open, $close) = map { LookupValue($_) } qw(CITE_OPEN CITE_CLOSE);
     if (!$post) { ($pre, $post) = (undef, $pre); }
-    $pre  = undef unless $pre  && $pre->unlist;
-    $post = undef unless $post && $post->unlist;
+    $pre  = undef if IsEmpty($pre);
+    $post = undef if IsEmpty($post);
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('citealias')),
       Tokens(($pre ? ($pre, T_SPACE) : ()),
@@ -605,7 +605,7 @@ sub NAT_peel_arg {
 DefMacro('\NAT@wrout{}{}{}{} Semiverbatim', sub {
     my ($gullet, $number, $year, $authors, $fullauthors, $key) = @_;
     my ($style, $open, $close) = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE);
-    $style = 'number' unless $authors->unlist && $year->unlist;
+    $style = 'number' if IsEmpty($authors) || IsEmpty($year);
     if ($style eq 'number') {
       Invocation(T_CS('\NAT@@wrout'), $number, $year, $authors, $fullauthors,
         Tokens($open, $number, $close),

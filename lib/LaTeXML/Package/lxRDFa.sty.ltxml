@@ -134,7 +134,7 @@ sub RDFTriple {
     Warn('expected', 'property', $keyvals,
       "Expected 'property' or 'rel' or 'rev' in RDF attributes"); }
   if (!($$attr{content} || $$attr{resource} || $$attr{resourcelabelref} || $$attr{resourceidref}
-      || ($content && scalar($content->unlist)))) {
+      || !IsEmpty(($content)))) {
     Warn('expected', 'resource', $keyvals,
       "Expected 'resource' or 'content' in RDF attributes"); }
   return $attr; }

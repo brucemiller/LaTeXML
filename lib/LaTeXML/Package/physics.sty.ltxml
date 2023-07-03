@@ -66,21 +66,18 @@ sub phys_revSize {
 
 sub phys_open {
   my ($size, $delim) = @_;
-  return ($delim && $delim->unlist
-    ? (ref $size ? Tokens($size, $delim) : ($size ? Tokens(T_CS('\left'), $delim) : $delim))
-    : ()); }
+  return (IsEmpty($delim) ? ()
+    : (ref $size ? Tokens($size, $delim) : ($size ? Tokens(T_CS('\left'), $delim) : $delim))); }
 
 sub phys_mid {
   my ($size, $delim) = @_;
-  return ($delim && $delim->unlist
-    ? (ref $size ? Tokens($size, $delim) : ($size ? Tokens(T_CS('\middle'), $delim) : $delim))
-    : ()); }
+  return (IsEmpty($delim) ? ()
+    : (ref $size ? Tokens($size, $delim) : ($size ? Tokens(T_CS('\middle'), $delim) : $delim))); }
 
 sub phys_close {
   my ($size, $delim) = @_;
-  return ($delim && $delim->unlist
-    ? (ref $size ? Tokens($size, $delim) : ($size ? Tokens(T_CS('\right'), $delim) : $delim))
-    : ()); }
+  return (IsEmpty($delim) ? ()
+    : (ref $size ? Tokens($size, $delim) : ($size ? Tokens(T_CS('\right'), $delim) : $delim))); }
 
 # Read a single arg, either TeX delimited {}, or delmited according to hash
 # Error is signaled if $required and no arg found
@@ -148,7 +145,7 @@ DefMacro('\quantity', sub {
 # 1 Required TeX-style arg; Possibly meaning, function and fences provided
 DefMacro('\lx@physics@fenced{}{}{}{}{}', sub {
     my ($gullet, $cs, $semantic, $function, $open, $close) = @_;
-    $semantic = undef unless $semantic->unlist;
+    $semantic = undef if IsEmpty($semantic);
     my $size = phys_readSize($gullet);
     my $arg  = $gullet->readArg();
     return I_dual(
@@ -423,7 +420,7 @@ DefMacro('\lx@physics@deriv{}{}{}', sub {
     else {
       $var = $tmp1; }
     # Check if $expr is EMPTY ??? still an operator!
-    $expr = undef if $expr && !scalar($expr->unlist);
+    $expr = undef if IsEmpty($expr);
     my $cfunc = I_symbol({ meaning => $semantic });
     my $pfunc = I_wrap({ role => 'DIFFOP' }, $diff);
     if ($tmp3) {    # double derivative!
@@ -680,7 +677,7 @@ DefMacro('\antidiagonalmatrix[]{}', sub {
 DefMacro('\lx@physics@mat{}{}{}{}{}', sub {
     my ($gullet, $cs, $semantic, $env, $defopen, $defclose) = @_;
     my $alt = $gullet->readMatch(T_OTHER('*'));
-    $semantic = undef unless $semantic->unlist;
+    $semantic = undef if IsEmpty($semantic);
     my $cfunc = $semantic && I_symbol({ meaning => $semantic });
     $env = ToString($env);
     my ($body, $open, $close) = phys_readArg($gullet, 1, %physics_delimiters);

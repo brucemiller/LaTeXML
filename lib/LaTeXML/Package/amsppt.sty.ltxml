@@ -426,7 +426,7 @@ DefMacro('\@fill@bibitem', sub {
 sub ppunbox {
   my ($punct, $pre, $field, $post) = @_;
   my $value = LookupValue('amsbibitem@' . $field);
-  if ($value && $value->unlist) {
+  if (!IsEmpty($value)) {
     return ((defined $punct ? Tokenize($punct)->unlist : ()),
       (defined $pre ? Tokenize($pre)->unlist : (T_SPACE)),
       # Wrap this in text with field as a class or something?

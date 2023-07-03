@@ -171,18 +171,18 @@ sub lstProcessDisplay {
   # Figure out whether the display is numbered, or has a caption or titles.
   my @caption = ();
   my ($numbered, $labelled, $caption, $x);
-  if (($x = lstGetTokens('caption')) && scalar($x->unlist)) {
+  if (($x = lstGetTokens('caption')) && !IsEmpty($x)) {
     my @t  = $x->unlist;
     my @tc = ();
     if (Equals($t[0], T_OTHER('['))) {
       while (!Equals($t[0], T_OTHER(']'))) { push(@tc, shift(@t)); } }
     $numbered = 1;
     $caption  = Invocation(T_CS('\lstlisting@makecaption'), (@tc ? Tokens(@tc) : undef), Tokens(@t)); }
-  elsif (($x = lstGetTokens('title')) && scalar($x->unlist)) {
+  elsif (($x = lstGetTokens('title')) && !IsEmpty($x)) {
     $caption = Invocation(T_CS('\lstlisting@maketitle'), $x); }
-  elsif (($x = lstGetTokens('toctitle')) && scalar($x->unlist)) {
+  elsif (($x = lstGetTokens('toctitle')) && !IsEmpty($x)) {
     $caption = Invocation(T_CS('\lstlisting@maketoctitle'), $x); }
-  if (($x = lstGetTokens('label')) && scalar($x->unlist)) {
+  if (($x = lstGetTokens('label')) && !IsEmpty($x)) {
     $labelled = 1;
     unshift(@body, Invocation(T_CS('\label'), $x)); }
   if ($caption) {
@@ -694,9 +694,9 @@ sub lstActivateLanguage {
   if ($language) {
     while (1) {
       # Construct the language$dialect that we're trying to find.
-      my $d = ($dialect && $dialect->unlist ? $dialect : LookupValue('LSTDD@' . $language));
+      my $d = (IsEmpty($dialect) ? LookupValue('LSTDD@' . $language) : $dialect);
       $name = 'LST@LANGUAGE@' . $language;
-      if ($d && $d->unlist) {
+      if (!IsEmpty($d)) {
         $d = uc(ToString($d)); $d =~ s/\s+//g;
         $name .= '$' . $d; }
       # language definition is loaded!
@@ -932,7 +932,7 @@ sub lstExtractColor {
   my ($stomach, $cmd) = @_;
   my $color;
   $stomach->bgroup;
-  if ($cmd->unlist) {
+  if (!IsEmpty($cmd)) {
     Digest($cmd);
     $color = LookupValue('font')->getColor; }
   $stomach->egroup;
@@ -1116,12 +1116,12 @@ use Data::Dumper;
 DefPrimitive('\@lstdefinelanguage []{}[]{} SkipSpaces RequiredKeyVals:LST []', sub {
     my ($stomach, $dialect, $language, $base_dialect, $base_language, $keyvals, $aspects) = @_;
     my @base = ();
-    if ($base_language->unlist) {
+    if (!IsEmpty($base_language)) {
       push(@base, T_OTHER('['), $base_dialect->unlist, T_OTHER(']')) if $base_dialect;
       push(@base, $base_language->unlist); }
     $language = uc(ToString($language)); $language =~ s/\s+//g;
     my $name = 'LST@LANGUAGE@' . $language;
-    if ($dialect && $dialect->unlist) {
+    if (!IsEmpty($dialect)) {
       $dialect = uc(ToString($dialect)); $dialect =~ s/\s+//g;
       $name .= '$' . $dialect; }
     $keyvals->setValue('language', Tokens(@base)) if @base;    # Probably don't need to clone, first?

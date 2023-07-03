@@ -81,7 +81,8 @@ our @EXPORT = (qw(&DefAutoload &DefExpandable
   # Mid-level support for writing definitions.
   qw(&Expand &Invocation &Digest &DigestText &DigestIf &DigestLiteral
     &RawTeX &Let &StartSemiverbatim &EndSemiverbatim
-    &Tokenize &TokenizeInternal),
+    &Tokenize &TokenizeInternal
+    &IsEmpty),
 
   # Font encoding
   qw(&DeclareFontMap &FontDecode &FontDecodeString &LoadFontMap),
@@ -974,6 +975,32 @@ sub TokenizeInternal {
   local $STATE = $STY_CATTABLE;
   return LaTeXML::Core::Mouth->new($string)->readTokens; }
 
+# Check whether all these things are "empty" (spaces are empty!!)
+# short-circuit: return 0 quickly if anything is NOT empty.
+# Will we need to distinguish between "empty" and "not visible"??
+sub IsEmpty {
+  my (@things) = @_;
+  foreach my $thing (@things) {
+    my $ref = ref $thing;
+    if    (!$thing)                          { }
+    elsif ($ref eq 'LaTeXML::Core::Comment') { }
+    elsif ($ref eq 'LaTeXML::Core::Tokens') {
+      return 0 unless IsEmpty($thing->unlist); }
+    elsif ($ref eq 'LaTeXML::Core::Token') {
+      my $cc = $$thing[1];
+      return 0 if ($cc == CC_LETTER) || ($cc == CC_OTHER) || ($cc == CC_ACTIVE) || ($cc == CC_CS); }
+    elsif ((!$thing->getProperty('isEmpty'))
+      && (!$thing->getProperty('isSpace'))) {    # A space-like thing
+      if ($ref eq 'LaTeXML::Core::Box') {
+        my $s = $thing->getString;
+        return 0 if (defined $s) && ($s !~ /^\s*$/); }
+      elsif ($ref eq 'LaTeXML::Core::List') {
+        return 0 unless IsEmpty($thing->unlist); }
+      elsif ($ref eq 'LaTeXML::Core::Whatsit') {
+        return 0 unless ($thing->getDefinition eq $STATE->lookupDefinition(T_BEGIN))
+          && IsEmpty($thing->getBody->unlist); } } }
+  return 1; }
+
 #======================================================================
 # Non-exported support for defining forms.
 #======================================================================
@@ -1409,7 +1436,7 @@ sub dualize_arglist {
   my $i = 0;
   foreach my $arg (@args) {
     $i++;
-    if (!(defined $arg) || !$arg->unlist) {        # undefined or empty args, just pass through
+    if (!(defined $arg) || IsEmpty($arg)) {        # undefined or empty args, just pass through
       push(@pargs, $arg);
       push(@cargs, $arg); }
     elsif ($used{$i}) {                            # used in presentation?

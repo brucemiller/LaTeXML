@@ -418,7 +418,7 @@ DefPrimitive('\XC@definecolor[]{}[]{}{}', sub {
     # and return a box, so it can be recorded?
     # but we don't want the \XC@ version, and we're not handling the prefix anyway...
     Box(undef, undef, undef,
-      Invocation(T_CS('\definecolor'), ($type && $type->unlist ? $type : undef),
+      Invocation(T_CS('\definecolor'), (IsEmpty($type) ? undef : $type),
         $name, $models, $specs)); });
 
 DefPrimitive('\XC@providecolor[]{}[]{}{}', sub {
@@ -433,7 +433,7 @@ DefPrimitive('\XC@providecolor[]{}[]{}{}', sub {
     AssignValue('xglobal@' => 0);
     Box(undef, undef, undef,
       #      Invocation(T_CS('\XC@providecolor'),$type,$name,$prefix,$models,$specs)); });
-      Invocation(T_CS('\providecolor'), ($type && $type->unlist ? $type : undef),
+      Invocation(T_CS('\providecolor'), (IsEmpty($type) ? undef : $type),
         $name, $models, $specs)); });
 
 # \colorlet[<type>]{<name>}[<num_model>]{<color>}
@@ -715,8 +715,8 @@ DefPrimitive('\rowcolors OptionalMatch:* []{Number}{}{}', sub {
     DefMacroI('\@xcolor@row@after',      undef, $commands);
     DefMacroI('\@xcolor@tabular@before', undef, $commands);
     AssignValue(tabular_row_color_first => $first->valueOf);
-    AssignValue(tabular_row_color_odd   => ($oddcolor->unlist ? ParseXColor(undef, $oddcolor) : undef));
-    AssignValue(tabular_row_color_even => ($evencolor->unlist ? ParseXColor(undef, $evencolor) : undef)); });
+    AssignValue(tabular_row_color_odd => (IsEmpty($oddcolor) ? undef : ParseXColor(undef, $oddcolor)));
+    AssignValue(tabular_row_color_even => (IsEmpty($evencolor) ? undef : ParseXColor(undef, $evencolor))); });
 
 DefConditional('\if@rowcolors', undef);
 RawTeX('\@rowcolorstrue');

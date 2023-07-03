@@ -803,10 +803,10 @@ DefConstructor('\lx@ams@matrix@ RequiredKeyVals:lx@GEN DigestedBody',
     my $nc = ($alignment ? scalar(@{ $$alignment{columnwidths} }) : 0);
     (($nc > 10 ? Invocation(T_CS('\setcounter'), T_OTHER('MaxMatrixCols'), T_OTHER($nc)) : ()),
       ($name ? (T_CS('\begin'), T_BEGIN, Revert($name), T_END) : ()),
-      ($align && $align->unlist ?
-          ($kv->getValue('alignment-required')
-          ? (T_BEGIN, Revert($align), T_END) : (T_OTHER('['), Revert($align), T_OTHER(']')))
-        : ()),
+      (IsEmpty($align)
+        ? ()
+        : ($kv->getValue('alignment-required')
+          ? (T_BEGIN, Revert($align), T_END) : (T_OTHER('['), Revert($align), T_OTHER(']')))),
       Revert($body),
       ($name ? (T_CS('\end'), T_BEGIN, Revert($name), T_END) : ())); }
 );
