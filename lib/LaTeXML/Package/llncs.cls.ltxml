@@ -102,7 +102,7 @@ DefMacro('\spnewtheorem OptionalMatch:* {}[]{}[] {}{}', sub {
     my ($stomach, $flag, $thmset, $otherthmset, $type, $reset, $capfont, $bodyfont) = @_;
     $thmset      = ToString($thmset);
     $otherthmset = $otherthmset && ToString($otherthmset);
-    $type        = undef unless $type->unlist;
+    $type        = undef if IsEmpty($type);
     $reset       = $reset ? ToString($reset) : undef;
 
     my $counter = $otherthmset || $thmset;

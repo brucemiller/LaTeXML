@@ -4297,26 +4297,6 @@ DefConstructor('\@@eqno{}',
 # This may combine, in the parser, with the following object to generate
 # a prescript.
 
-# Note that this is also being used by alignment.
-sub IsEmpty {
-  my ($box) = @_;
-  my $ref = ref $box;
-  if    (!$box)                            { return 1; }
-  elsif ($ref eq 'LaTeXML::Core::Comment') { return 1; }
-  elsif ($box->getProperty('isEmpty')
-    || $box->getProperty('isSpace')) {    # A space-like thing
-    return 1; }
-  elsif ($ref eq 'LaTeXML::Core::Box') {
-    my $s = $box->getString;
-    return (!defined $s) || ($s =~ /^\s*$/); }
-  elsif ($ref eq 'LaTeXML::Core::List') {
-    return !grep { !IsEmpty($_) } $box->unlist; }
-  elsif ($ref eq 'LaTeXML::Core::Whatsit') {
-    if (($box->getDefinition eq $STATE->lookupDefinition(T_BEGIN))
-      && !grep { !IsEmpty($_) } $box->getBody->unlist) {
-      return 1; } }
-  return 0; }
-
 # Remember a "safe" way to test a script Whatsit.
 # Returns [ (FLOATING|POST) , (SUBSCRIPT|SUPERSCRIPT) ] or nothing
 sub IsScript {
@@ -7295,9 +7275,9 @@ DefConstructor('\lx@superscript OptionalKeyVals:XMath {} InScriptStyle',
     my ($whatsit, $kv, $base, $sup) = @_;
     my $bump = $whatsit->getProperty('bump');
     $bump = 1;    # For now: ALWAYS {} wrap base in the reversion!
-    ($sup && $sup->unlist
-      ? (($bump ? (T_BEGIN, Revert($base), T_END) : Revert($base)), T_SUPER, revertScript($sup))
-      : Revert($base)); },
+    (IsEmpty($sup)
+      ? Revert($base)
+      : (($bump ? (T_BEGIN, Revert($base), T_END) : Revert($base)), T_SUPER, revertScript($sup))); },
   properties => sub {
     my ($stomach, $kv, $base, $script) = @_;
     my $basetype = IsScript($base);
@@ -7317,10 +7297,9 @@ DefConstructor('\lx@subscript OptionalKeyVals:XMath {} InScriptStyle',
     my ($whatsit, $kv, $base, $sub) = @_;
     my $bump = $whatsit->getProperty('bump');
     $bump = 1;    # For now: ALWAYS {} wrap base in the reversion!
-    ($sub && $sub->unlist
-###      ? (T_BEGIN, Revert($base), T_END, T_SUB, revertScript($sub))
-      ? (($bump ? (T_BEGIN, Revert($base), T_END) : Revert($base)), T_SUB, revertScript($sub))
-      : Revert($base)); },
+    (IsEmpty($sub)
+      ? Revert($base)
+      : (($bump ? (T_BEGIN, Revert($base), T_END) : Revert($base)), T_SUB, revertScript($sub))); },
   properties => sub {
     my ($stomach, $kv, $base, $script) = @_;
     my $basetype = IsScript($base);

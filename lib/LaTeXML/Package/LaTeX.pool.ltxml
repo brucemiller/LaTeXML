@@ -686,7 +686,7 @@ DefConstructor('\@@numbered@section{} Undigested OptionalUndigested Undigested',
       $props{backmatterelement} = LookupMapping('BACKMATTER_ELEMENT', 'ltx:' . $type); }
     $props{title}    = $xtitle;
     $props{toctitle} = $xtoctitle
-      if $xtoctitle && $xtoctitle->unlist && (ToString($xtoctitle) ne ToString($xtitle));
+      if !IsEmpty($xtoctitle) && (ToString($xtoctitle) ne ToString($xtitle));
     return %props; });
 
 # No tags, at all? Consider...
@@ -1520,7 +1520,7 @@ sub RefStepItemCounter {
     $attr{itemsep} = $sep; }
   if (defined $tag) {
     my @props = RefStepID($counter);
-    if ((ref $tag) && !scalar($tag->unlist)) {    # empty tag?
+    if (IsEmpty($tag)) {    # empty tag?
       return (@props); }
     else {
       my $ttag      = (ref $tag              ? $tag                      : T_OTHER($tag));
@@ -3012,8 +3012,8 @@ sub defineNewTheorem {
   $listname =~ s/'/prime/g;
   $listname =~ s/\?/question/g;
   $listname =~ s/\#/hash/g;
-  $otherthmset = $otherthmset       && ToString($otherthmset);
-  $type        = undef unless $type && $type->unlist;
+  $otherthmset = $otherthmset && ToString($otherthmset);
+  $type        = undef if IsEmpty($type);
   $within      = $within ? ToString($within) : undef;
 
   my $counter = $otherthmset || $thmset;
@@ -3058,7 +3058,7 @@ sub defineNewTheorem {
   # if there was one defined, use it, else define a new one.
   my $headformatter = LookupRegister('\thm@headformatter');
   DefMacroI('\format@title@' . $thmset, convertLaTeXArgs(1, 0),
-    ($headformatter->unlist
+    (!IsEmpty($headformatter)
       ? Tokens(
         T_CS('\the'), T_CS('\thm@headfont'),
         $headformatter->unlist,
@@ -4247,7 +4247,7 @@ DefMacro('\cite[] Semiverbatim', sub {
     my ($gullet, $post, $keys) = @_;
     my ($style, $open, $close, $ns)
       = map { LookupValue($_) } qw(CITE_STYLE CITE_OPEN CITE_CLOSE CITE_NOTE_SEPARATOR);
-    $post = undef unless $post && $post->unlist;
+    $post = undef if IsEmpty($post);
     Invocation(T_CS('\@@cite'),
       Tokens(Explode('cite')),
       Tokens($open,

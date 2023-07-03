@@ -75,7 +75,7 @@ DefPrimitive('\newtheoremstyle{}{}{}{}{}{}{}{}{}', sub {
     my ($stomach, $name, $spaceabove, $spacebelow, $bodyfont,
       $indent, $headfont, $headpunct, $spaceafter, $headspec) = @_;
     my $headformatter;
-    if ($headspec->unlist) {    # If spec given, create formatter macro
+    if (!IsEmpty($headspec)) {    # If spec given, create formatter macro
       $headformatter = T_CS('\format@title@theoremstyle@' . ToString($name));
       DefMacroI($headformatter, convertLaTeXArgs(3, 0), $headspec); }
 

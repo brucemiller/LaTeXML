@@ -69,7 +69,7 @@ DefMacroI(T_CS('@.'), undef,
 # Horizontal
 DefMath('\@cd@equals@', "=", role => 'ARROW', stretchy => 'true', reversion => '@=');
 # Vertical
-DefMath('\@cd@bar@', "|", role => 'ARROW', font => { size => 'Big' }, reversion => '@|');
+DefMath('\@cd@bar@',  "|",        role => 'ARROW', font => { size => 'Big' }, reversion => '@|');
 DefMath('\@cd@vert@', "\x{2225}", role => 'ARROW', font => { size => 'Big' }, reversion => '@\vert');
 
 DefRegister('\minaw@' => Dimension('11.111pt'));
@@ -77,10 +77,10 @@ DefRegister('\minaw@' => Dimension('11.111pt'));
 DefConstructor('\cd@stack Undigested {} ScriptStyle ScriptStyle', sub {
     my ($document, $reversion, $op, $over, $under, %props) = @_;
     my $scriptpos = $props{scriptpos};
-    if ($under->unlist) {
+    if (!IsEmpty($under)) {
       $document->openElement('ltx:XMApp', role => 'ARROW');    # Role?
       $document->insertElement('ltx:XMTok', undef, role => 'SUBSCRIPTOP', scriptpos => $scriptpos);
-      if ($over->unlist) {
+      if (!IsEmpty($over)) {
         $document->openElement('ltx:XMApp');                   # Role?
         $document->insertElement('ltx:XMTok', undef, role => 'SUPERSCRIPTOP', scriptpos => $scriptpos);
         $document->insertElement('ltx:XMArg', $op);
@@ -90,8 +90,8 @@ DefConstructor('\cd@stack Undigested {} ScriptStyle ScriptStyle', sub {
         $document->insertElement('ltx:XMArg', $op); }
       $document->insertElement('ltx:XMArg', $under);
       $document->closeElement('ltx:XMApp'); }
-    elsif ($over->unlist) {
-      $document->openElement('ltx:XMApp');                     # Role?
+    elsif (!IsEmpty($over)) {
+      $document->openElement('ltx:XMApp');    # Role?
       $document->insertElement('ltx:XMTok', undef, role => 'SUPERSCRIPTOP', scriptpos => $scriptpos);
       $document->insertElement('ltx:XMArg', $op);
       $document->insertElement('ltx:XMArg', $over);
@@ -107,9 +107,9 @@ DefConstructor('\cd@stack Undigested {} ScriptStyle ScriptStyle', sub {
 DefConstructor('\cd@adjacent Undigested {} ScriptStyle ScriptStyle', sub {
     my ($document, $reversion, $op, $left, $right, %props) = @_;
     $document->openElement('ltx:XMWrap', role => 'ARROW');    # Role?
-    $document->insertElement('ltx:XMArg', $left) if $left->unlist;
+    $document->insertElement('ltx:XMArg', $left) unless IsEmpty($left);
     $document->insertElement('ltx:XMArg', $op);
-    $document->insertElement('ltx:XMArg', $right) if $right->unlist;
+    $document->insertElement('ltx:XMArg', $right) unless IsEmpty($right);
     $document->closeElement('ltx:XMWrap'); },
   reversion => '@#1{#3}#1{#4}#1');
 

@@ -1274,7 +1274,7 @@ sub T_END_ENV { Tokens(T_CS('\end'), T_BEGIN, ExplodeText(@_), T_END); }
 # TODO: Might want to move this into $gullet?
 sub readUntilMatch {
   my ($gullet, $match) = @_;
-  return Tokens() if scalar $match->unlist == 0;
+  return Tokens() if IsEmpty($match);
   my ($head, @tail) = $match->unlist;
   my $tail = Tokens(@tail);
   # main loop to collect tokens

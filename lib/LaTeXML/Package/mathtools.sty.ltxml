@@ -147,27 +147,30 @@ DefConstructor('\lx@@smashoperator{}{} InScriptStyle InScriptStyle',
     my $opw   = $op->getWidth;
     my $width = $opw;
     $align = ToString($align) || 'lr';
-    if ($sub->unlist) {
+    my ($hadsub, $hadsup);
+    if (!IsEmpty($sub)) {
       my $w = $sub->getWidth;
       $whatsit->setProperties(sub => $sub,
         suboffset => $w->multiply(-0.5),
         subwidth  => Dimension(0));
       $sub->setWidth(Dimension(0));
-      $width = $width->larger($w); }
-    if ($sup->unlist) {
+      $width  = $width->larger($w);
+      $hadsub = 1; }
+    if (!IsEmpty($sup)) {
       my $w = $sup->getWidth;
       $whatsit->setProperties(sup => $sup,
         supoffset => $w->multiply(-0.5),
         supwidth  => Dimension(0));
       $sup->setWidth(Dimension(0));
-      $width = $width->larger($w); }
+      $width  = $width->larger($w);
+      $hadsup = 1 }
     my $pad = $width->subtract($opw)->multiply(0.5);
     if ($pad->valueOf > 0) {
       if ($align eq 'l') {
         $whatsit->setProperties(rpadding => $pad); }
       elsif ($align eq 'r') {
         $whatsit->setProperties(lpadding => $pad); } }
-    $whatsit->setProperties(both => (scalar($sub->unlist) && scalar($sup->unlist)),
+    $whatsit->setProperties(both => ($hadsub && $hadsup),
       scriptpos => "mid" . $stomach->getScriptLevel);
     return; },
   reversion => '\smashoperator[#1]{#2_{#3}^{#4}}');    # not exactly, but...
