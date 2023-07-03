@@ -196,6 +196,11 @@ sub show_pushback {
 #**********************************************************************
 # Low-level readers: read token, read expanded token
 #**********************************************************************
+# Get the next pending comment token (if any)
+sub getPendingComment {
+  my ($self) = @_;
+  return shift @{ $$self{pending_comments} } }
+
 # Note that every char (token) comes through here (maybe even twice, through args parsing),
 # So, be Fast & Clean!  This method only reads from the current input stream (Mouth).
 our @CATCODE_HOLD = (

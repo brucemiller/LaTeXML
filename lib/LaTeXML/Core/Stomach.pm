@@ -28,7 +28,7 @@ use LaTeXML::Common::Font;
 use LaTeXML::Common::Color;
 use LaTeXML::Core::Definition;
 use Scalar::Util qw(blessed);
-use base qw(LaTeXML::Common::Object);
+use base         qw(LaTeXML::Common::Object);
 
 #**********************************************************************
 sub new {
@@ -96,7 +96,7 @@ sub digestNextBody {
   my $alignment = $STATE->lookupValue('Alignment');
   my @aug       = ();
 
-  while (defined($token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
+  while (defined($token = $$self{gullet}->getPendingComment || $$self{gullet}->readXToken(1, 1))) {
     if ($alignment && scalar(@LaTeXML::LIST) && (Equals($token, T_ALIGN) ||
         Equals($token, T_CS('\cr')) || Equals($token, T_CS('\hidden@cr')) ||
         Equals($token, T_CS('\hidden@crcr')))) {
@@ -127,13 +127,14 @@ sub digest {
     $$self{gullet}->readingFromMouth(LaTeXML::Core::Mouth->new(), sub {
       my ($gullet) = @_;
       $gullet->unread($tokens);
-      $STATE->clearPrefixes;                                             # prefixes shouldn't apply here.
+      $STATE->clearPrefixes;    # prefixes shouldn't apply here.
       my $ismath    = $STATE->lookupValue('IN_MATH');
       my $initdepth = scalar(@{ $$self{boxing} });
       local @LaTeXML::LIST = ();
-      while (defined(my $token = $$self{gullet}->readXToken(1, 1))) {    # Done if we run out of tokens
+      while (defined(my $token =
+            $$self{gullet}->getPendingComment || $$self{gullet}->readXToken(1, 1))) {
         push(@LaTeXML::LIST, $self->invokeToken($token));
-        last if $initdepth > scalar(@{ $$self{boxing} }); }              # if we've closed the initial mode.
+        last if $initdepth > scalar(@{ $$self{boxing} }); }    # if we've closed the initial mode.
       List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text'));
     }); }
 
@@ -227,8 +228,8 @@ sub invokeToken_simple {
   my ($self, $token, $meaning) = @_;
   my $cc   = $meaning->getCatcode;
   my $font = $STATE->lookupValue('font');
-  $STATE->clearPrefixes;               # prefixes shouldn't apply here.
   if ($cc == CC_SPACE) {
+    $STATE->clearPrefixes;                   # prefixes shouldn't apply here.
     if ($STATE->lookupValue('IN_MATH')) {    # (but in Preamble, OK ?)
       return (); }
     else {
@@ -240,6 +241,7 @@ sub invokeToken_simple {
     $comment =~ s/\Q$badspace\E/ /g;
     return LaTeXML::Core::Comment->new($comment); }
   else {
+    $STATE->clearPrefixes;                          # prefixes shouldn't apply here.
     return Box(LaTeXML::Package::FontDecodeString($meaning->toString, undef, 1),
       undef, undef, $meaning); } }
 
