@@ -117,7 +117,7 @@ DefParameterType('Plain', sub {
 
 DefParameterType('DefPlain', sub {
     my ($gullet, $inner) = @_;
-    my $value = $gullet->readTokens(1, 0);
+    my $value = $gullet->readBalanced(0, 1, 1);
     if ($inner) {
       ($value) = $inner->reparseArgument($gullet, $value); }
     return $value; },
@@ -152,7 +152,8 @@ DefParameterType('Optional', sub {
 DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
     $gullet->unread($gullet->readXToken);    # Force expansion to skip <filler> before required {
-    return $gullet->readTokens(0, 0); });
+
+    return $gullet->readBalanced(0, 0, 1); });
 
 DefParameterType('Until', sub {
     my ($gullet, $until) = @_;
@@ -231,7 +232,7 @@ DefParameterType('XUntil', sub {
 # but expanding \the-like commands only once.
 DefParameterType('Expanded', sub {
     my ($gullet) = @_;
-    $gullet->readTokens(0, 1); },
+    $gullet->readBalanced(1, 0, 1); },
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
@@ -242,7 +243,7 @@ DefParameterType('Expanded', sub {
 # and also packing # parameters
 DefParameterType('DefExpanded', sub {
     my ($gullet) = @_;
-    return $gullet->readTokens(1, 1); },
+    return $gullet->readBalanced(1, 1, 1); },
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
@@ -773,21 +774,12 @@ DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
 
 DefParameterType('ExpandedIfToken', sub {
     my ($gullet) = @_;
-    my $token = $gullet->readXToken(0);
-    # Also resolve \let variants:
-    my $meaning = $STATE->lookupMeaning($token);
-    if ($meaning && ref $meaning eq 'LaTeXML::Core::Token') {
-      $token = $meaning; }
+    my $token = $gullet->readXToken(0, 1);
     if (!$token) {
-      Error('expected', 'ExpandedIfToken', $gullet, "conditional expected a token argument, readXToken came back empty. Falling back to \\\@empty");
+      Error('expected', 'ExpandedIfToken', $gullet,
+        "conditional expected a token argument, readXToken came back empty. Falling back to \\\@empty");
       $token = T_CS('\@empty'); }
-    if ($$token[2]) {    # marked dont_expand
-      if ($$token[2][1] == CC_ACTIVE) {    # treat as active character, if originally such
-        return $$token[2]; }
-      else {                               # otherwise, treat as relax for comparisons
-        return T_CS('\relax'); } }
-    else {                                 # normal case, treat token as-is
-      return $token; } });
+    return $token; });
 
 DefConditional('\if ExpandedIfToken ExpandedIfToken', sub { $_[1]->getCharcode == $_[2]->getCharcode; });
 DefConditional('\ifcat ExpandedIfToken ExpandedIfToken', sub { $_[1]->getCatcode == $_[2]->getCatcode; });

@@ -134,9 +134,6 @@ sub packParameters {
                 # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
         Error('misdefined', 'expansion', undef, "Parameter has a malformed arg, should be #1-#9 or ##. ",
           "In expansion " . ToString($self)); } }
-    elsif (my $inner = $$t[2]) {    # unwrap \noexpand tokens
-      $repacked = 1;
-      push(@rescanned, ($$inner[2] || $inner)); }
     else {
       push(@rescanned, $t); } }
   return ($repacked ? bless [@rescanned], 'LaTeXML::Core::Tokens' : $self); }
