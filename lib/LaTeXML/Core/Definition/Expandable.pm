@@ -55,8 +55,9 @@ sub invoke {
   no warnings 'recursion';
   my ($self, $gullet, $onceonly) = @_;
   # shortcut for "trivial" macros; but only if not tracing & profiling!!!!
-  my $tracing   = $STATE->lookupValue('TRACINGMACROS');
-  my $profiled  = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+  my $_tracing = $STATE->lookupValue('TRACING') || 0;
+  my $tracing  = ($_tracing & TRACE_MACROS);
+  my $profiled = ($_tracing & TRACE_PROFILE) && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
   my $expansion = $$self{expansion};
   my $etype     = ref $expansion;
   my $result;
@@ -67,12 +68,11 @@ sub invoke {
     # Harder to emulate \tracingmacros here.
     my @args = ($parms ? $parms->readArguments($gullet, $self) : ());
     $result = Tokens(&$expansion($gullet, @args));
-    if ($tracing || $LaTeXML::DEBUG{tracing}) {    # More involved...
+    if ($tracing) {
       Debug($self->tracingCSName . ' ==> ' . tracetoString($result));
       Debug($self->tracingArgs(@args)) if @args; } }
-  elsif (!$$self{parameters}) {                    # Trivial macro
-    Debug($self->tracingCSName . ' ->' . tracetoString($expansion))
-      if $tracing || $LaTeXML::DEBUG{tracing};
+  elsif (!$parms) {    # Trivial macro
+    Debug($self->tracingCSName . ' ->' . tracetoString($expansion)) if $tracing;
     # For trivial expansion, make sure we don't get \cs or \relax\cs direct recursion!
     if (!$onceonly && $$self{cs}) {
       my ($t0, $t1) = ($etype eq 'LaTeXML::Core::Tokens'
@@ -85,13 +85,13 @@ sub invoke {
         $expansion = Tokens(); } }
     $result = $expansion; }
   else {
-    my @args = ($parms ? $parms->readArguments($gullet, $self) : ());
+    my @args = $parms->readArguments($gullet, $self);
     # for "real" macros, make sure all args are Tokens
     my $r;
     my @targs = map { ($_ && ($r = ref $_)
           && (($r eq 'LaTeXML::Core::Token') || ($r eq 'LaTeXML::Core::Tokens'))
         ? $_ : Tokens(Revert($_))); } @args;
-    if ($tracing || $LaTeXML::DEBUG{tracing}) {    # More involved...
+    if ($tracing) {    # More involved...
       Debug($self->tracingCSName . ' ->' . tracetoString($expansion));
       Debug($self->tracingArgs(@targs)) if @args; }
     $result = $expansion->substituteParameters(@targs); }

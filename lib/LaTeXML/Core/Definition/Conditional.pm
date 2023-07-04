@@ -66,7 +66,7 @@ sub invoke_conditional {
   my $parms = $$self{parameters};
   my @args  = ($parms ? $parms->readArguments($gullet) : ());
   $$LaTeXML::IFFRAME{parsing} = 0;    # Now, we're done parsing the Test clause.
-  my $tracing = $STATE->lookupValue('TRACINGCOMMANDS') || $LaTeXML::DEBUG{tracing};
+  my $tracing = ($STATE->lookupValue('TRACING') || 0) & TRACE_COMMANDS;
   if ($tracing) {
     Debug('{' . $self->tracingCSName . "} [#$ifid]");
     Debug($self->tracingArgs(@args)) if @args; }
@@ -169,7 +169,7 @@ sub invoke_else {
     Debug('{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
         . " [for " . ToString($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid}
         . " skipping to " . ToString($t) . "]")
-      if $STATE->lookupValue('TRACINGCOMMANDS') || $LaTeXML::DEBUG{tracing};
+      if ($STATE->lookupValue('TRACING') || 0) & TRACE_COMMANDS;
     return; } }
 
 sub invoke_fi {
@@ -187,7 +187,7 @@ sub invoke_fi {
     $STATE->shiftValue('if_stack');    # Done with this frame
     Debug('{' . ToString($LaTeXML::CURRENT_TOKEN) . '}'
         . " [for " . Stringify($$LaTeXML::IFFRAME{token}) . " #" . $$LaTeXML::IFFRAME{ifid} . "]")
-      if $STATE->lookupValue('TRACINGCOMMANDS') || $LaTeXML::DEBUG{tracing};
+      if ($STATE->lookupValue('TRACING') || 0) & TRACE_COMMANDS;
     return; } }
 
 sub equals {

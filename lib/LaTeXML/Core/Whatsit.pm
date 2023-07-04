@@ -210,7 +210,7 @@ sub beAbsorbed {
         "Whatsit absorb limit of $LaTeXML::ABSORB_LIMIT exceeded, infinite loop?"); } }
 
   my $defn     = $self->getDefinition;
-  my $profiled = $STATE->lookupValue('PROFILING') && $defn->getCS;
+  my $profiled = (($STATE->lookupValue('TRACING') || 0) & TRACE_PROFILE) && $defn->getCS;
   LaTeXML::Core::Definition::startProfiling($profiled, 'absorb') if $profiled;
   my @result = $defn->doAbsorbtion($document, $self);
   LaTeXML::Core::Definition::stopProfiling($profiled, 'absorb') if $profiled;

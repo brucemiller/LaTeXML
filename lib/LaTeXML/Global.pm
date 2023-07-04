@@ -24,11 +24,17 @@ use strict;
 use warnings;
 use base qw(Exporter);
 our @EXPORT = (    # Global STATE; This gets bound by LaTeXML.pm
-  qw( *STATE),
+  qw( *STATE
+    TRACE_MACROS TRACE_COMMANDS TRACE_ALL TRACE_PROFILE
+  ),
 );
 
 #local $LaTeXML::STATE;
 
+use constant TRACE_MACROS   => 0x1;
+use constant TRACE_COMMANDS => 0x2;
+use constant TRACE_ALL      => 0x3;    # MACROS | COMMANDS
+use constant TRACE_PROFILE  => 0x4;
 #**********************************************************************
 1;
 

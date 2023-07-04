@@ -76,8 +76,10 @@ sub getNumArgs {
 sub invoke {
   my ($self, $stomach) = @_;
   # Call any `Before' code.
-  my $profiled = $STATE->lookupValue('PROFILING') && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
-  my $tracing  = $STATE->lookupValue('TRACINGCOMMANDS') || $LaTeXML::DEBUG{tracing};
+  my $_tracing = $STATE->lookupValue('TRACING') || 0;
+  my $tracing  = ($_tracing & TRACE_COMMANDS);
+  my $profiled = ($_tracing & TRACE_PROFILE) && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+
   LaTeXML::Core::Definition::startProfiling($profiled, 'digest') if $profiled;
 
   my @pre = $self->executeBeforeDigest($stomach);

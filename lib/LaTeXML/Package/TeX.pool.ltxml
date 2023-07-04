@@ -1073,12 +1073,13 @@ DefMacro('\the Register', sub {
 # Integer registers; TeXBook p. 272-273
 
 DefRegister('\tracingmacros', Number(0),
-  getter => sub { Number(LookupValue('TRACINGMACROS') || 0); },
-  setter => sub { AssignValue(TRACINGMACROS => $_[0]->valueOf, $_[1]); });
+  getter => sub { Number((LookupValue('TRACING') || 0) & TRACE_MACROS); },
+  setter => sub { my $p = (LookupValue('TRACING') || 0);
+    AssignValue(TRACING => ($_[0]->valueOf ? $p | TRACE_MACROS : $p & ~TRACE_MACROS)); });
 DefRegister('\tracingcommands', Number(0),
-  getter => sub { Number(LookupValue('TRACINGCOMMANDS')); },
-  setter => sub { AssignValue(TRACINGCOMMANDS => $_[0]->valueOf, $_[1]); });
-
+  getter => sub { Number((LookupValue('TRACING') || 0) & TRACE_COMMANDS); },
+  setter => sub { my $p = (LookupValue('TRACING') || 0);
+    AssignValue(TRACING => ($_[0]->valueOf ? $p | TRACE_COMMANDS : $p & ~TRACE_COMMANDS)); });
 {
   my %iparms = (
     pretolerance         => 100,   tolerance           => 200, hbadness => 1000, vbadness => 1000,
