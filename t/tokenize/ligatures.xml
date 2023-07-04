@@ -28,15 +28,39 @@ In interjection — like this — gets em-dash.</p>
       <tag role="refnum">2</tag>
       <tag role="typerefnum">§2</tag>
     </tags>
-    <title><tag close=" ">2</tag>Typewriter non-Ligatures</title>
+    <title><tag close=" ">2</tag>Ignore comments</title>
     <para xml:id="S2.p1">
-      <p><text font="typewriter">LDots…, versus dots ...</text></p>
+      <p>“Hopefully Quoted”</p>
     </para>
     <para xml:id="S2.p2">
+      <p>A number
+<Math mode="inline" tex="12345.67890" text="12345.67890" xml:id="S2.p2.m1">
+          <XMath>
+            <XMTok meaning="12345.67890" role="NUMBER">12345.67890</XMTok>
+          </XMath>
+        </Math>
+?</p>
+    </para>
+    <para xml:id="S2.p3">
+      <p>An — emdash,
+—perhaps?</p>
+    </para>
+  </section>
+  <section inlist="toc" xml:id="S3">
+    <tags>
+      <tag>3</tag>
+      <tag role="refnum">3</tag>
+      <tag role="typerefnum">§3</tag>
+    </tags>
+    <title><tag close=" ">3</tag>Typewriter non-Ligatures</title>
+    <para xml:id="S3.p1">
+      <p><text font="typewriter">LDots…, versus dots ...</text></p>
+    </para>
+    <para xml:id="S3.p2">
       <p><text font="typewriter">A range: 1--10 gets en-dash.</text>
 <text font="typewriter">In interjection --- like this --- gets em-dash.</text></p>
     </para>
-    <para xml:id="S2.p3">
+    <para xml:id="S3.p3">
       <p><text font="typewriter">A ‘‘quote’’ like this.</text></p>
     </para>
   </section>

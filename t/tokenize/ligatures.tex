@@ -7,6 +7,29 @@ A range: 1--10 gets en-dash.
 In interjection --- like this --- gets em-dash.
 
 A ``quote'' like this.
+
+\section{Ignore comments}
+%foo
+`%bar
+`Hopefully Quoted%baz
+'%qux
+'
+
+A number
+\ensuremath{%foo
+  12345.%bar
+%baz
+  67890%qux
+}
+?
+
+An --- emdash, 
+%foo
+-%bar
+-%baz
+-%qux
+perhaps?
+
 \section{Typewriter non-Ligatures}
 \texttt{LDots\ldots, versus dots ...}
 
