@@ -96,7 +96,7 @@ sub digestNextBody {
   my $alignment = $STATE->lookupValue('Alignment');
   my @aug       = ();
 
-  while (defined($token = $$self{gullet}->getPendingComment || $$self{gullet}->readXToken(1, 1))) {
+  while (defined($token = $$self{gullet}->getPendingComment || $$self{gullet}->readXToken(1))) {
     if ($alignment && scalar(@LaTeXML::LIST) && (Equals($token, T_ALIGN) ||
         Equals($token, T_CS('\cr')) || Equals($token, T_CS('\hidden@cr')) ||
         Equals($token, T_CS('\hidden@crcr')))) {
@@ -132,7 +132,7 @@ sub digest {
       my $initdepth = scalar(@{ $$self{boxing} });
       local @LaTeXML::LIST = ();
       while (defined(my $token =
-            $$self{gullet}->getPendingComment || $$self{gullet}->readXToken(1, 1))) {
+            $$self{gullet}->getPendingComment || $$self{gullet}->readXToken(1))) {
         push(@LaTeXML::LIST, $self->invokeToken($token));
         last if $initdepth > scalar(@{ $$self{boxing} }); }    # if we've closed the initial mode.
       List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text'));
