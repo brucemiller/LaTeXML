@@ -678,12 +678,19 @@ sub insertComment {
   my ($self, $text) = @_;
   chomp($text);
   $text =~ s/\-\-+/__/g;
-  $self->closeText_internal;    # Close any open text node.
   my $comment;
+  my $prev     = $$self{node}->lastChild;
+  my $prevtype = $prev && $prev->nodeType;
   if ($$self{node}->nodeType == XML_DOCUMENT_NODE) {
     push(@{ $$self{pending} }, $comment = $$self{document}->createComment(' ' . $text . ' ')); }
-  elsif (($comment = $$self{node}->lastChild) && ($comment->nodeType == XML_COMMENT_NODE)) {
+  elsif ($prevtype && ($prevtype == XML_COMMENT_NODE)) {
+    $comment = $prev;
     $comment->setData($comment->data . "\n     " . $text . ' '); }
+  elsif ($prevtype && ($prevtype == XML_TEXT_NODE)) {    # Put comment BEFORE text node
+    if (($comment = $prev->previousSibling) && ($comment->nodeType == XML_COMMENT_NODE)) {
+      $comment = $$self{node}->appendChild($$self{document}->createComment(' ' . $text . ' ')); }
+    else {
+      $comment = $$self{node}->insertBefore($$self{document}->createComment(' ' . $text . ' '), $prev); } }
   else {
     $comment = $$self{node}->appendChild($$self{document}->createComment(' ' . $text . ' ')); }
   return $comment; }
