@@ -351,7 +351,9 @@ DefParameterType('DefToken', sub {
     my ($gullet) = @_;
     my $token = $gullet->readToken;
     while ($token && ($token->getCatcode == CC_BEGIN)) {
-      my @toks = grep { !$_->equals(T_SPACE) } $gullet->readBalanced->unlist;
+      my $cc;
+      my @toks = grep { ($cc = $$_[1]) && ($cc != CC_SPACE) && ($cc != CC_COMMENT); }
+        $gullet->readBalanced->unlist;
       $token = shift(@toks);
       $gullet->unread(@toks); }
     $token; },
@@ -3609,8 +3611,8 @@ sub pruneEmpty {
   my ($document, $node) = @_;
   # In some cases we could have e.g. a \noindent followed by a {table},
   # in which case we end up with an empty ltx:para which we can prune.
-  if (!scalar($node->childNodes)) {
-    my $prev = $node->previousSibling;
+  if (!scalar(element_nodes($node))) {
+    my $prev = element_prev($node);
     if (!$prev || ($document->getNodeQName($prev) ne 'ltx:para')) {    # If $node WAS the 1st child
       $document->addClass($node->parentNode, 'ltx_pruned_first'); }
     $node->unlinkNode; }
@@ -3899,7 +3901,9 @@ sub cleanup_Math {
             push(@texts, $space); } } }
       else {    # is XMText
         foreach my $child ($xmnode->childNodes) {
-          if ($child->nodeType != XML_ELEMENT_NODE) {    # Make sure we've got an element
+          my $t = $child->nodeType;
+          if    ($t == XML_COMMENT_NODE) { }
+          elsif ($t != XML_ELEMENT_NODE) {     # Make sure we've got an element
             push(@texts, ['ltx:text', { class => 'ltx_markedasmath' }, $child]); }
           else {
             $document->addClass($child, 'ltx_markedasmath');
@@ -4327,7 +4331,8 @@ sub scriptHandler {
     # and whether there are conflicting preceding scripts, which is an error
     # Parsing is too late!
     while (my $prev = pop(@LaTeXML::LIST)) {
-      if ($prev->getProperty('isSpace')) {
+      if (($prev->getProperty('isSpace'))
+        || (ref $prev eq 'LaTeXML::Core::Comment')) {
         $prevspace = 1;              # a space avoids double-scripts
         unshift(@putback, $prev);    # put back? assuming it will add rpadding to previous???
         next; }
@@ -4772,8 +4777,9 @@ DefMathLigature(matcher => sub { my ($document, $node) = @_;
         && ((($node->getAttribute('role') || 'UNKNOWN') eq 'UNKNOWN')
           || (($node->getAttribute('role') || 'UNKNOWN') eq 'NUMBER'))
         && (($s = $node->textContent . $s) =~ /^[0-9a-zA-Z]+$/)) {
-        $n++; $string = $s;
-        $node = $node->previousSibling; }
+        $string = $s;
+        do { $node = $node->previousSibling; $n++;
+        } while $node && ($node->nodeType == XML_COMMENT_NODE); }
       (($string =~ /^[a-zA-Z]/) && ($n > 1) ? ($n, $string, role => 'UNKNOWN', meaning => undef) : undef);
 } });
 
@@ -4831,8 +4837,6 @@ DefMathLigature(matcher => sub { my ($document, $node) = @_;
           last; } }
       # OR if XMHint with 0 <= width <= thickmuskip (5mu == ?)
       elsif ($qn eq 'ltx:XMHint') {
-##        if (($w = $node->getAttribute('width')) && ($w=Dimension($w)->valueOf) && ($w >= 0) && ($w <= $skip)) {
-##          $string = $text . $string; } # Add to string, but omit from number
         my $s;
         if (($s = $node->getAttribute('name')) && ($s = $space_chars{$s})) {
           $string = $s . $string; }
@@ -4840,7 +4844,8 @@ DefMathLigature(matcher => sub { my ($document, $node) = @_;
           last; } }
       else {
         last; }
-      $n++; $node = $node->previousSibling; }
+      do { $node = $node->previousSibling; $n++;
+      } while $node && ($node->nodeType == XML_COMMENT_NODE); }
     if (($n > 1) && ($number =~ /\d/)) {
       ($n, $string, meaning => $number, role => 'NUMBER'); } });
 
@@ -4922,13 +4927,13 @@ DefPrimitive('\wlog{}', sub {
     return; },
   locked => 1);
 # From plain.tex
-DefPrimitive('\newcount  Token', sub {
+DefPrimitive('\newcount  DefToken', sub {
     DefRegisterI($_[1], undef, Number(0), allocate => '\count'); });
-DefPrimitive('\newdimen  Token', sub {
+DefPrimitive('\newdimen  DefToken', sub {
     DefRegisterI($_[1], undef, Dimension(0), allocate => '\dimen'); });
-DefPrimitive('\newskip   Token', sub {
+DefPrimitive('\newskip   DefToken', sub {
     DefRegisterI($_[1], undef, Glue(0), allocate => '\skip'); });
-DefPrimitive('\newmuskip Token', sub {
+DefPrimitive('\newmuskip DefToken', sub {
     DefRegisterI($_[1], undef, MuGlue(0), allocate => '\muskip'); });
 AssignValue(allocated_boxes => 0);
 DefPrimitive('\newbox DefToken', sub {
@@ -4936,8 +4941,8 @@ DefPrimitive('\newbox DefToken', sub {
     AssignValue(allocated_boxes => $n + 1, 'global');
     AssignValue("box$n", List());
     DefRegisterI($_[1], undef, Number($n), readonly => 1); });
-DefPrimitive('\newhelp Token {}', sub { AssignValue(ToString($_[1]) => $_[2]); });
-DefPrimitive('\newtoks Token',    sub { DefRegisterI($_[1], undef, Tokens()); });
+DefPrimitive('\newhelp DefToken {}', sub { AssignValue(ToString($_[1]) => $_[2]); });
+DefPrimitive('\newtoks DefToken',    sub { DefRegisterI($_[1], undef, Tokens()); });
 # the next 4 actually work by doing a \chardef instead of \countdef, etc.
 # which means they actually work quite differently
 DefPrimitive('\alloc@@ {}', sub {
@@ -4947,10 +4952,10 @@ DefPrimitive('\alloc@@ {}', sub {
     $n = $n->valueOf if ref $n;
     AssignValue($c => $n + 1, 'global');
     AssignRegister('\allocationnumber' => Number($n), 'global'); });
-DefMacro('\newread Token',     '\alloc@@{read}\global\chardef#1=\allocationnumber');
-DefMacro('\newwrite Token',    '\alloc@@{write}\global\chardef#1=\allocationnumber');
-DefMacro('\newfam Token',      '\alloc@@{fam}\global\chardef#1=\allocationnumber');
-DefMacro('\newlanguage Token', '\alloc@@{language}\global\chardef#1=\allocationnumber');
+DefMacro('\newread DefToken',     '\alloc@@{read}\global\chardef#1=\allocationnumber');
+DefMacro('\newwrite DefToken',    '\alloc@@{write}\global\chardef#1=\allocationnumber');
+DefMacro('\newfam DefToken',      '\alloc@@{fam}\global\chardef#1=\allocationnumber');
+DefMacro('\newlanguage DefToken', '\alloc@@{language}\global\chardef#1=\allocationnumber');
 
 DefMacro('\e@alloc{}{}{}{}{}{}',
   '\global\advance#3\@ne

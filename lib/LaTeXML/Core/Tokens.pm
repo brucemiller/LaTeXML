@@ -60,17 +60,21 @@ sub revert {
 # NOT for creating valid TeX (use revert or UnTeX for that!)
 sub toString {
   my ($self) = @_;
-  return join('', map { $_->toString } @$self); }
+  return join('', map { ($$_[1] == CC_COMMENT ? '' : $_->toString) } @$self); }
 
 # Methods for overloaded ops.
+
+# Compare two Tokens lists, ignoring comments & markers
 sub equals {
   my ($a, $b) = @_;
   return 0 unless defined $b && (ref $a) eq (ref $b);
   my @a = @$a;
   my @b = @$b;
-  while (@a && @b && ($a[0]->equals($b[0]))) {
-    shift(@a); shift(@b); }
-  return !(@a || @b); }
+  while (@a || @b) {
+    if (@a && (($a[0]->[1] == CC_COMMENT) || ($a[0]->[1] == CC_MARKER))) { shift(@a); next; }
+    if (@b && (($b[0]->[1] == CC_COMMENT) || ($b[0]->[1] == CC_MARKER))) { shift(@b); next; }
+    return unless @a && @b && shift(@a)->equals(shift(@b)); }
+  return 1; }
 
 sub stringify {
   my ($self) = @_;

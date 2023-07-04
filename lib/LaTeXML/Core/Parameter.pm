@@ -134,7 +134,7 @@ sub digest {
           my ($igullet) = @_;
           $igullet->unread($value);
           my @tokens = ();
-          while (defined(my $token = $igullet->getPendingComment || $igullet->readXToken(1, 1))) {
+          while (defined(my $token = $igullet->getPendingComment || $igullet->readXToken(1))) {
             push(@tokens, $token); }
           $value = Tokens(@tokens);
           $value = $value->neutralize; }); } }
