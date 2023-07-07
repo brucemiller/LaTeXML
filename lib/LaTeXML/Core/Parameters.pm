@@ -59,7 +59,6 @@ sub revertArguments {
 sub readArguments {
   my ($self, $gullet, $fordefn) = @_;
   my @args = ();
-  $gullet->setup_scan();
   my ($p, $v);
   return map { $p = $_; $v = $p && $p->read($gullet, $fordefn); ($$p{novalue} ? () : $v); } @$self; }
 
@@ -67,7 +66,6 @@ sub readArgumentsAndDigest {
   my ($self, $stomach, $fordefn) = @_;
   my @args   = ();
   my $gullet = $stomach->getGullet;
-  $gullet->setup_scan();
   foreach my $parameter (@$self) {
     my $value = $parameter->read($gullet, $fordefn);
     if (!$$parameter{novalue}) {

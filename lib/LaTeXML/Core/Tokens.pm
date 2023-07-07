@@ -54,7 +54,7 @@ sub clone {
 # Return a string containing the TeX form of the Tokens
 sub revert {
   my ($self) = @_;
-  return map { ($$_[1] == CC_SMUGGLE_THE ? $$_[2] : $_); } @$self; }
+  return @$self; }
 
 # toString is used often, and for more keyword-like reasons,
 # NOT for creating valid TeX (use revert or UnTeX for that!)
@@ -86,12 +86,7 @@ sub beDigested {
 
 sub neutralize {
   my ($self, @extraspecials) = @_;
-  # Remove dont_expand, but preserve SMUGGLE_THE
   return Tokens(map { $_->neutralize(@extraspecials) } @$self); }
-
-sub without_dont_expand {
-  my ($self) = @_;
-  return Tokens(map { $_->without_dont_expand } @$self); }
 
 sub isBalanced {
   my ($self) = @_;
@@ -117,11 +112,9 @@ sub substituteParameters {
         push(@result, (ref $arg eq 'LaTeXML::Core::Token' ? $arg : @$arg)); } } }    # ->unlist
   return bless [@result], 'LaTeXML::Core::Tokens'; }
 
-# Process the CC_PARAM tokens for use as a macro body (and other token lists)
-# Groups PARAM+OTHER token pair into match tokens.
-# Collapses PARAM+PARAM token pair into a single PARAM
-# B book suggests running this
-# and remove dont_expand markers.
+# Packs repeated CC_PARAM tokens into CC_ARG tokens for use as a macro body (and other token lists)
+# Also unwraps \noexpand tokens, since that is also needed for macro bodies
+# (but not strictly part of packing parameters)
 sub packParameters {
   my ($self)    = @_;
   my @rescanned = ();
@@ -130,7 +123,6 @@ sub packParameters {
   while (my $t = shift @toks) {
     if ($$t[1] == CC_PARAM && @toks) {
       $repacked = 1;
-      # NOTE for future cleanup: Only CC_CS & CC_ACTIVE should ever get with_dont_expand!
       my $next_t  = shift @toks;
       my $next_cc = $next_t && $$next_t[1];
       if ($next_cc == CC_OTHER) {
@@ -142,9 +134,6 @@ sub packParameters {
                 # e.g. \detokenize{#,} is legal, while \textbf{#,} is not
         Error('misdefined', 'expansion', undef, "Parameter has a malformed arg, should be #1-#9 or ##. ",
           "In expansion " . ToString($self)); } }
-    elsif (my $inner = $$t[2]) {    # Open-coded $t->without_dont_expand
-      $repacked = 1;
-      push(@rescanned, ($$inner[2] || $inner)); }
     else {
       push(@rescanned, $t); } }
   return ($repacked ? bless [@rescanned], 'LaTeXML::Core::Tokens' : $self); }

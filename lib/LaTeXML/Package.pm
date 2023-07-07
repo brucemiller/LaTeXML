@@ -384,8 +384,7 @@ sub Let {
   # If strings are given, assume CS tokens (most common case)
   $token1 = T_CS($token1) unless ref $token1;
   $token2 = T_CS($token2) unless ref $token2;
-  $STATE->assignMeaning($token1,
-    ($token2->get_dont_expand ? $token2 : $STATE->lookupMeaning($token2)), $scope);
+  $STATE->assignMeaning($token1, $STATE->lookupMeaning($token2), $scope);
   AfterAssignment();
   return; }
 
@@ -565,7 +564,7 @@ sub ComposeURL {
 my $parameter_options = {    # [CONSTANT]
   nargs        => 1, reversion   => 1, optional => 1, novalue => 1,
   beforeDigest => 1, afterDigest => 1,
-  semiverbatim => 1, undigested  => 1, packParameters => 1 };
+  semiverbatim => 1, undigested  => 1 };
 
 sub DefParameterType {
   my ($type, $reader, %options) = @_;

@@ -29,11 +29,11 @@ our @EXPORT = (
     CC_ALIGN   CC_EOL    CC_PARAM   CC_SUPER
     CC_SUB     CC_IGNORE CC_SPACE   CC_LETTER
     CC_OTHER   CC_ACTIVE CC_COMMENT CC_INVALID
-    CC_CS      CC_MARKER CC_ARG     CC_SMUGGLE_THE),
+    CC_CS      CC_MARKER CC_ARG),
   # Token constructors
   qw( T_BEGIN T_END T_MATH T_ALIGN T_PARAM T_SUB T_SUPER T_SPACE
     &T_LETTER &T_OTHER &T_ACTIVE &T_COMMENT &T_CS
-    T_CR &T_MARKER T_ARG T_SMUGGLE_THE
+    T_CR &T_MARKER T_ARG
     &Token),
   # String exploders
   qw(&Explode &ExplodeText &UnTeX)
@@ -59,10 +59,9 @@ use constant CC_ACTIVE  => 13;
 use constant CC_COMMENT => 14;
 use constant CC_INVALID => 15;
 # Extended Catcodes for expanded output.
-use constant CC_CS          => 16;
-use constant CC_MARKER      => 17;    # non TeX extension!
-use constant CC_ARG         => 18;    # "out_param" in B Book
-use constant CC_SMUGGLE_THE => 19;    # defered expansion once
+use constant CC_CS     => 16;
+use constant CC_MARKER => 17;    # non TeX extension!
+use constant CC_ARG    => 18;    # "out_param" in B Book
 
 # [The documentation for constant is a bit confusing about subs,
 # but these apparently DO generate constants; you always get the same one]
@@ -94,22 +93,6 @@ sub T_ARG {
     if ($int < 1 || $int > 9) {
       Fatal('malformed', 'T_ARG', 'value should be #1-#9', "Illegal: " . $v->stringify); } }
   return bless ["$int", CC_ARG], 'LaTeXML::Core::Token'; }
-
-# This hides tokens coming from \the (-like) primitives from expansion; CC_CS,CC_ACTIVE, but also CC_PARAM and CC_ARG
-our @CATCODE_CAN_SMUGGLE_THE = (
-  0, 0, 0, 0,
-  0, 0, 1, 0,
-  0, 0, 0, 0,
-  0, 1, 0, 0,
-  1, 0, 1, 0);
-
-sub T_SMUGGLE_THE {
-  my ($t) = @_;
-  my $cc = $$t[1];
-  if ($cc == CC_SMUGGLE_THE) {
-    # LaTeXML Bug, we haven't correctly emulated scan_toks! Offending token was:
-    Fatal('unexpected', 'CC_SMUGGLE_THE', 'We are masking a \the-produced token twice, this must Never happen.', "Illegal: " . $t->stringify); }
-  return ($CATCODE_CAN_SMUGGLE_THE[$cc] ? bless ["SMUGGLE_THE", CC_SMUGGLE_THE, $t], 'LaTeXML::Core::Token' : $t); }
 
 sub Token {
   my ($string, $cc) = @_;
@@ -230,15 +213,8 @@ our @CATCODE_SHORT_NAME =          #[CONSTANT]
   T_ALIGN T_EOL T_PARAM T_SUPER
   T_SUB T_IGNORE T_SPACE T_LETTER
   T_OTHER T_ACTIVE T_COMMENT T_INVALID
-  T_CS T_MARKER T_ARG T_SMUGGLE_THE
+  T_CS T_MARKER T_ARG
   );
-
-our $SMUGGLE_THE_COMMANDS = {
-  '\the'        => 1,
-  '\showthe'    => 1,
-  '\unexpanded' => 1,
-  '\detokenize' => 1
-};
 
 #======================================================================
 # Accessors.
@@ -314,30 +290,6 @@ sub substituteParameters {
 
 sub packParameters { return $_[0]; }
 
-# Mark a token as not to be expanded (\noexpand) by hiding itself as the 3rd element of a new token.
-# Wonder if this should only have effect on expandable tokens?
-sub with_dont_expand {
-  my ($self) = @_;
-  my $cc = $$self[1];
-  if ($cc == CC_SMUGGLE_THE) {
-    # LaTeXML Bug, we haven't correctly emulated scan_toks! Offending token was:
-    Fatal('unexpected', 'CC_SMUGGLE_THE', 'We are marking as \noexpand a masked \the-produced token, this must Never happen.', "Illegal: " . $self->stringify); }
-  return ((($cc == CC_CS) || ($cc == CC_ACTIVE)) && $STATE->isDontExpandable($self))
-    ? bless ['\relax', CC_CS, $self], 'LaTeXML::Core::Token'
-    : $self; }
-
-# Return the original token of a not-expanded token,
-# or undef if it isn't marked as such.
-sub get_dont_expand {
-  my ($self) = @_;
-  return $$self[2]; }
-
-sub without_dont_expand {
-  my ($self) = @_;
-  # Remove dont_expand flag, remove SMUGGLE_THE wrapper
-  my $inner = $$self[2];
-  return $inner ? ($$inner[2] || $inner) : $self; }
-
 #======================================================================
 # Note that this converts the string to a more `user readable' form using `standard' chars for catcodes.
 # We'll need to be careful about using string instead of reverting for internal purposes where the
@@ -371,18 +323,14 @@ sub equals {
     (defined $b
       && (ref $a) eq (ref $b))
     && ($$a[1] == $$b[1])
-    && (($$a[1] == CC_SPACE) || ($$a[0] eq $$b[0]))
-    && ((!$$a[2]) == (!$$b[2]))                       # must have same dont-expand-edness
-    ; }
+    && (($$a[1] == CC_SPACE) || ($$a[0] eq $$b[0])); }
 
-my @CONTROLNAME = (                                   #[CONSTANT]
+my @CONTROLNAME = (    #[CONSTANT]
   qw( NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI
     DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US));
 # Primarily for error reporting.
 sub stringify {
   my ($self) = @_;
-  if ($$self[2]) {
-    return $$self[2]->stringify() . ($$self[1] == CC_SMUGGLE_THE ? " (defer expand once)" : " (dont expand)"); }
   my $string = $self->toString;
   # Make the token's char content more printable, since this is for error messages.
   if (length($string) == 1) {

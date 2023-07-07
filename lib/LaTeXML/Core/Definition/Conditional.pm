@@ -120,7 +120,6 @@ sub skipConditionalBody {
   while (1) {
     my ($t, $cond_type);
     while ($t = shift(@{ $$gullet{pushback} }) || $$gullet{mouth}->readToken()) {
-      $t = $$t[2] if $$t[1] == CC_SMUGGLE_THE;
       if ($LaTeXML::Core::State::CATCODE_ACTIVE_OR_CS[$$t[1]]
         && ($cond_type = $STATE->lookupConditional($t))) {
         last; } }

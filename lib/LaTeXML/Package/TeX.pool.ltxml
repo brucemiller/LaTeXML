@@ -117,12 +117,11 @@ DefParameterType('Plain', sub {
 
 DefParameterType('DefPlain', sub {
     my ($gullet, $inner) = @_;
-    my $value = $gullet->readArg;
+    my $value = $gullet->readBalanced(0, 1, 1);
     if ($inner) {
       ($value) = $inner->reparseArgument($gullet, $value); }
     return $value; },
-  packParameters => 1,
-  reversion      => sub {
+  reversion => sub {
     my ($arg, $inner) = @_;
     (T_BEGIN,
       ($inner ? $inner->revertArguments($arg) : Revert($arg)),
@@ -152,13 +151,9 @@ DefParameterType('Optional', sub {
 # which IS required in contrast to a general argument; ie a single token is not correct.
 DefParameterType('GeneralText', sub {
     my ($gullet) = @_;
-    my $open = $gullet->readXToken;
-    if ($open && ($open->getCatcode == CC_BEGIN)) {
-      return $gullet->readBalanced; }
-    else {
-      Error('expected', '{', $gullet,
-        "Expected <general text> here");
-      return $open; } });
+    $gullet->unread($gullet->readXToken);    # Force expansion to skip <filler> before required {
+
+    return $gullet->readBalanced(0, 0, 1); });
 
 DefParameterType('Until', sub {
     my ($gullet, $until) = @_;
@@ -233,44 +228,23 @@ DefParameterType('XUntil', sub {
         push(@tokens, $token); } }
     Tokens(@tokens); });
 
-# This is sorta like readbalanced, but expands as it goes.
-# This appears to be needed by certain primitives (eg. \noalign ?)
-# and maybe what we should be using for some Digested ??
+# This reads a braced tokens list, expanding as it goes,
+# but expanding \the-like commands only once.
 DefParameterType('Expanded', sub {
     my ($gullet) = @_;
-    my $token = $gullet->readXToken(0);
-    if (!$token) {
-      Error('expected', 'expanded', $gullet,
-        "Expected <Expanded> here");
-      return $token; }
-    my @tokens = ();
-    if ($token->getCatcode == CC_BEGIN) {
-      return scalar($gullet->readBalanced(1))->without_dont_expand; }
-    else {
-      return $token->without_dont_expand; } },
+    $gullet->readBalanced(1, 0, 1); },
   reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
 
-# Set SMUGGLE_THE=1 whenever you want to handle special TeX neutralization of
-# tokens created by \the-like primitives.
-#
-# IMPORTANTLY, call packParameters early on the tokens read from the Gullet
-# to enact the neutralization and discard the temporary smuggle flag that is required
-#
-# Whenever possible, use this `DefExpanded` parameter type directly, rather than hand-crafting a new one.
+# This reads an expanded definition body,
+# a braced tokens list, expanding as it goes,
+# but expanding \the-like commands only once,
+# and also packing # parameters
 DefParameterType('DefExpanded', sub {
     my ($gullet) = @_;
-    local $LaTeXML::SMUGGLE_THE = 1;
-    my $token = $gullet->readXToken;
-    if (!$token) {
-      Error('expected', 'defexpanded', $gullet,
-        "Expected <DefExpanded> here");
-      return $token; }
-    my $expanded = ($token->getCatcode == CC_BEGIN ? $gullet->readBalanced(1) : $token);
-    return $expanded; },
-  packParameters => 1,
-  reversion      => sub {
+    return $gullet->readBalanced(1, 1, 1); },
+  reversion => sub {
     my ($arg) = @_;
     (T_BEGIN, Revert($arg), T_END); });
 
@@ -344,7 +318,8 @@ DefParameterType('OptionalUndigested', sub { $_[0]->readOptional; },
 
 # Read a keyword value (KeyVals), that will not be digested.
 DefParameterType('UndigestedKey', sub { $_[0]->readArg; }, undigested => 1);
-DefParameterType('UndigestedDefKey', sub { $_[0]->readArg; }, undigested => 1, packParameters => 1);
+DefParameterType('UndigestedDefKey', sub {
+    $_[0]->readArg->packParameters; }, undigested => 1);
 
 # Read a token as used when defining it, ie. it may be enclosed in braces.
 DefParameterType('DefToken', sub {
@@ -799,21 +774,12 @@ DefConditionalI('\ifmmode', undef, sub { LookupValue('IN_MATH'); });
 
 DefParameterType('ExpandedIfToken', sub {
     my ($gullet) = @_;
-    my $token = $gullet->readXToken(0);
-    # Also resolve \let variants:
-    my $meaning = $STATE->lookupMeaning($token);
-    if ($meaning && ref $meaning eq 'LaTeXML::Core::Token') {
-      $token = $meaning; }
+    my $token = $gullet->readXToken(0, 1);
     if (!$token) {
-      Error('expected', 'ExpandedIfToken', $gullet, "conditional expected a token argument, readXToken came back empty. Falling back to \\\@empty");
+      Error('expected', 'ExpandedIfToken', $gullet,
+        "conditional expected a token argument, readXToken came back empty. Falling back to \\\@empty");
       $token = T_CS('\@empty'); }
-    if ($$token[2]) {    # marked dont_expand
-      if ($$token[2][1] == CC_ACTIVE) {    # treat as active character, if originally such
-        return $$token[2]; }
-      else {                               # otherwise, treat as relax for comparisons
-        return T_CS('\relax'); } }
-    else {                                 # normal case, treat token as-is
-      return $token; } });
+    return $token; });
 
 DefConditional('\if ExpandedIfToken ExpandedIfToken', sub { $_[1]->getCharcode == $_[2]->getCharcode; });
 DefConditional('\ifcat ExpandedIfToken ExpandedIfToken', sub { $_[1]->getCatcode == $_[2]->getCatcode; });
@@ -843,10 +809,13 @@ DefConditionalI('\iffalse', undef, sub { 0; });
 # This makes \relax disappear completely after digestion
 # (which seems most TeX like).
 DefPrimitive('\relax', sub { (); });
-## However, this keeps a box, so it can appear in UnTeX
+### However, this keeps a box, so it can appear in UnTeX
 ### DefPrimitive('\relax',undef);
 ## But if you do that, you've got to watch out since it usually
-## shouldn't be a box; See the isRelax code in handleScripts, below
+### shouldn't be a box; See the isRelax code in handleScripts, below
+# Internal token produced by Gullet in response to \dont_expand;
+# Acts like \relax, but isn't equal to it.
+DefPrimitiveI('\special_relax', undef, sub { (); });
 
 DefMacro('\number Number', sub { Explode($_[1]->valueOf); });
 # define it here (only approxmiately), since it's already useful.
@@ -1012,11 +981,20 @@ DefMacro('\expandafter Token Token', sub {
     else {
       ($tok, $xtok); } });
 
-# Replace the next token with it's not-expanded variant
+# If next token is expandable, prefix it with the internal marker \dont_expand
+# That token is never defined, explicitly handled in Gullet & should never escape the Gullet
 DefMacroI('\noexpand', undef, sub {
     my $token = $_[0]->readToken;
     # Missing token likely the result of "{\noexpand}" for which TeX would be unperturbed
-    return ($token ? $token->with_dont_expand : ()); });
+    return ($token
+      ? ((($$token[1] == CC_CS) || ($$token[1] == CC_ACTIVE)) && $STATE->isDontExpandable($token)
+        ? (T_CS('\dont_expand'), $token)
+        : $token)
+      : ()); });
+
+DefPrimitiveI('\dont_expand', undef, sub {
+    Error('misdefined', '\dont_expand', $_[0],
+      "The token \\dont_expand should never reach Stomach!"); });
 
 DefMacroI('\topmark',        undef, Tokens());
 DefMacroI('\firstmark',      undef, Tokens());
@@ -2506,21 +2484,17 @@ DefPrimitive('\lowercase GeneralText', sub {
 # Converts $tokens to a string in the fashion of \message and others:
 # doubles #, converts to string; optionally adds spaces after control sequences
 # in the spirit of the B Book, "show_token_list" routine, in 292.
+# [This could be a $tokens->unpackParameters, but for the curious space treatment]
 sub writableTokens {
   my ($tokens) = @_;
   my @tokens = $tokens->unlist;
-  # unwrap a \noexpand-created \relax to its actual content,
-  # to avoid confusing users with a \relax dontexpand
   @tokens = map {
-    my $t  = ($$_[2] || $_);
-    my $cc = $$t[1];
-    if    ($cc == CC_CS)    { ($t, T_SPACE); }
+    my $cc = $$_[1];
+    if    ($cc == CC_CS)    { ($_, T_SPACE); }
     elsif ($cc == CC_SPACE) { (T_SPACE); }
-    elsif ($cc == CC_PARAM) { ($t, $t); }
-    elsif ($cc == CC_ARG) {
-      # B Book, 294. Reduce to param+integer
-      (T_PARAM, T_OTHER($$t[0])); }
-    else { $t; }
+    elsif ($cc == CC_PARAM) { ($_, $_); }
+    elsif ($cc == CC_ARG)   { (T_PARAM, T_OTHER($$_[0])); }
+    else                  { $_; }
   } @tokens;
   return UnTeX(Tokens(@tokens), 1); }
 
@@ -5716,7 +5690,7 @@ DefAccent('\lfhook', "\x{0326}", ",", below => 1);   # COMBINING COMMA BELOW
 # We're given a number pointing into the font, from which we can derive the standalone char.
 # From that, we want to figure out the combining character, but there could be one for
 # both the above & below cases!  We'll prefer the above case.
-DefPrimitive('\accent Number Expanded', sub {
+DefPrimitive('\accent Number {}', sub {
     my ($stomach, $num, $letter) = @_;
     my $n        = $num->valueOf;
     my $fontinfo = lookupFontinfo(LookupValue('textfont_0'));

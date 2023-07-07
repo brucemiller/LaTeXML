@@ -15,7 +15,6 @@ use warnings;
 use LaTeXML::Global;
 use LaTeXML::Common::Object;
 use LaTeXML::Util::Pathname;
-use LaTeXML::Core::Token qw(T_CS);
 use Time::HiRes;
 use Term::ANSIColor qw(colored colorstrip);
 

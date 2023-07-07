@@ -33,7 +33,6 @@ DefMacroI(T_CS('\__expl_status_pop:w'), '{}', sub {
     my $token;
     my $nbraces = 0;
     while (($token = shift(@{ $$gullet{pushback} }) || $$gullet{mouth}->readToken())
-      && (($$token[1] != CC_SMUGGLE_THE) || ($token = $$token[2]))
       && !$token->equals($want1) && !$token->equals($want2)) {
       push(@arg_until, $token);
       if ($$token[1] == CC_BEGIN) {    # And if it's a BEGIN, copy till balanced END
