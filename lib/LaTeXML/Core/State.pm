@@ -347,7 +347,6 @@ sub lookupMeaning {
   my ($self, $token) = @_;
   if (my $cs = $token
     && $CATCODE_ACTIVE_OR_CS[$$token[1]]
-    && !$$token[2]    # return token itself, if \noexpand
     && $$token[0]) {
     my $e = $$self{meaning}{$cs}; return $e && $$e[0]; }
   else { return $token; } }
@@ -422,7 +421,7 @@ sub lookupExpandable {
     return $defn; }
   return; }
 
-# Whether token must be wrapped as dont_expand
+# Whether token is affected by \noexpand
 sub isDontExpandable {
   my ($self, $token) = @_;
   # Basically: a CS or Active token that is either not defined, or is expandable
@@ -466,7 +465,7 @@ sub lookupDigestableDefinition {
     # If a cs has been let to an executable token, lookup ITS defn.
     if (((ref $defn) eq 'LaTeXML::Core::Token')
       # If we're digesting an unexpanded, act like \relax
-      && ($lookupname = ($$defn[2] ? '\relax' : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$$defn[1]]))
+      && ($lookupname = $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$$defn[1]])
       && ($entry      = $$self{meaning}{$lookupname})) {
       $defn = $$entry[0]; }
     return $defn; }

@@ -294,6 +294,9 @@ sub readToken {
       && $LaTeXML::READING_ALIGNMENT
       && (($atoken, $atype, $ahidden) = $self->isColumnEnd($token))) {
       $self->handleTemplate($LaTeXML::READING_ALIGNMENT, $token, $atype, $ahidden); }
+    elsif ((defined $token) && ($$token[1] == CC_CS) && ($$token[0] eq '\dont_expand')) {
+      my $unexpanded = $self->readToken;    # Replace next token with a special \relax
+      return T_CS('\special_relax'); }
     else {
       last; } }
   return $token; }
@@ -343,9 +346,9 @@ sub readXToken {
     if (!defined $token) {
       return unless $autoclose && $$self{autoclose} && @{ $$self{mouthstack} };
       $self->closeMouth; }    # Next input stream.
-    elsif (my $unexpanded = $$token[2]) {    # Handle \noexpand; Inline get_dont_expand
-      return ($for_conditional && ($$unexpanded[1] == CC_ACTIVE) ? $unexpanded : T_CS('\relax'));
-    }
+    elsif (($cc == CC_CS) && ($$token[0] eq '\dont_expand')) {
+      my $unexpanded = $self->readToken;
+      return ($for_conditional && ($$unexpanded[1] == CC_ACTIVE) ? $unexpanded : T_CS('\special_relax')); }
     ## Wow!!!!! See TeX the Program \S 309
     elsif (!$LaTeXML::ALIGN_STATE    # SHOULD count nesting of { }!!! when SCANNED (not digested)
       && $LaTeXML::READING_ALIGNMENT
@@ -421,8 +424,8 @@ sub readBalanced {
     if (!defined $token) {
       # What's the right error handling now?
       last; }
-    elsif (my $unexpanded = $$token[2]) {    # Inline get_dont_expand
-      push(@tokens, $unexpanded); }
+    elsif (($cc == CC_CS) && ($$token[0] eq '\dont_expand')) {
+      push(@tokens, readToken($self)); }    # Pass on NEXT token, unchanged.
     elsif ($cc == CC_END) {
       $level--;
       if (!$level) {

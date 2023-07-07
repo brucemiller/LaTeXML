@@ -29,9 +29,7 @@ sub new {
   if (ref $expansion eq 'LaTeXML::Core::Tokens') {
     Fatal('misdefined', $cs, $source, "Expansion of '" . ToString($cs) . "' has unbalanced {}",
       "Expansion is " . ToString($expansion)) unless $expansion->isBalanced;
-    # rescan for match tokens and unwrap dont_expand...
-    $expansion = $expansion->packParameters unless $traits{nopackParameters};
-  }
+    $expansion = $expansion->packParameters unless $traits{nopackParameters}; }
   elsif (!ref $expansion) {
     $expansion = TokenizeInternal($expansion)->packParameters; }
 
@@ -55,9 +53,9 @@ sub invoke {
   no warnings 'recursion';
   my ($self, $gullet, $onceonly) = @_;
   # shortcut for "trivial" macros; but only if not tracing & profiling!!!!
-  my $_tracing = $STATE->lookupValue('TRACING') || 0;
-  my $tracing  = ($_tracing & TRACE_MACROS);
-  my $profiled = ($_tracing & TRACE_PROFILE) && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
+  my $_tracing  = $STATE->lookupValue('TRACING') || 0;
+  my $tracing   = ($_tracing & TRACE_MACROS);
+  my $profiled  = ($_tracing & TRACE_PROFILE) && ($LaTeXML::CURRENT_TOKEN || $$self{cs});
   my $expansion = $$self{expansion};
   my $etype     = ref $expansion;
   my $result;

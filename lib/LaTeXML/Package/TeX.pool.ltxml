@@ -809,10 +809,13 @@ DefConditionalI('\iffalse', undef, sub { 0; });
 # This makes \relax disappear completely after digestion
 # (which seems most TeX like).
 DefPrimitive('\relax', sub { (); });
-## However, this keeps a box, so it can appear in UnTeX
+### However, this keeps a box, so it can appear in UnTeX
 ### DefPrimitive('\relax',undef);
 ## But if you do that, you've got to watch out since it usually
-## shouldn't be a box; See the isRelax code in handleScripts, below
+### shouldn't be a box; See the isRelax code in handleScripts, below
+# Internal token produced by Gullet in response to \dont_expand;
+# Acts like \relax, but isn't equal to it.
+DefPrimitiveI('\special_relax', undef, sub { (); });
 
 DefMacro('\number Number', sub { Explode($_[1]->valueOf); });
 # define it here (only approxmiately), since it's already useful.
@@ -978,11 +981,20 @@ DefMacro('\expandafter Token Token', sub {
     else {
       ($tok, $xtok); } });
 
-# Replace the next token with it's not-expanded variant
+# If next token is expandable, prefix it with the internal marker \dont_expand
+# That token is never defined, explicitly handled in Gullet & should never escape the Gullet
 DefMacroI('\noexpand', undef, sub {
     my $token = $_[0]->readToken;
     # Missing token likely the result of "{\noexpand}" for which TeX would be unperturbed
-    return ($token ? $token->with_dont_expand : ()); });
+    return ($token
+      ? ((($$token[1] == CC_CS) || ($$token[1] == CC_ACTIVE)) && $STATE->isDontExpandable($token)
+        ? (T_CS('\dont_expand'), $token)
+        : $token)
+      : ()); });
+
+DefPrimitiveI('\dont_expand', undef, sub {
+    Error('misdefined', '\dont_expand', $_[0],
+      "The token \\dont_expand should never reach Stomach!"); });
 
 DefMacroI('\topmark',        undef, Tokens());
 DefMacroI('\firstmark',      undef, Tokens());
@@ -2472,21 +2484,17 @@ DefPrimitive('\lowercase GeneralText', sub {
 # Converts $tokens to a string in the fashion of \message and others:
 # doubles #, converts to string; optionally adds spaces after control sequences
 # in the spirit of the B Book, "show_token_list" routine, in 292.
+# [This could be a $tokens->unpackParameters, but for the curious space treatment]
 sub writableTokens {
   my ($tokens) = @_;
   my @tokens = $tokens->unlist;
-  # unwrap a \noexpand-created \relax to its actual content,
-  # to avoid confusing users with a \relax dontexpand
   @tokens = map {
-    my $t  = ($$_[2] || $_);
-    my $cc = $$t[1];
-    if    ($cc == CC_CS)    { ($t, T_SPACE); }
+    my $cc = $$_[1];
+    if    ($cc == CC_CS)    { ($_, T_SPACE); }
     elsif ($cc == CC_SPACE) { (T_SPACE); }
-    elsif ($cc == CC_PARAM) { ($t, $t); }
-    elsif ($cc == CC_ARG) {
-      # B Book, 294. Reduce to param+integer
-      (T_PARAM, T_OTHER($$t[0])); }
-    else { $t; }
+    elsif ($cc == CC_PARAM) { ($_, $_); }
+    elsif ($cc == CC_ARG)   { (T_PARAM, T_OTHER($$_[0])); }
+    else                  { $_; }
   } @tokens;
   return UnTeX(Tokens(@tokens), 1); }
 
