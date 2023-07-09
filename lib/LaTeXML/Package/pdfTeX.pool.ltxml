@@ -187,8 +187,8 @@ DefPrimitive('\pdfendlink', undef);
 DefMacro('\pdfinfo{}', '');
 
 DefMacro('\pdfcatalog{} OpenActionSpecification', '');
-DefMacro('\pdfnames{}',                           {});
-DefMacro('\pdftrailer{}',                         {});
+DefMacro('\pdfnames{}',                           '');
+DefMacro('\pdftrailer{}',                         '');
 DefMacro('\pdfmapfile{}',                         '');
 DefMacro('\pdfmapline{}',                         '');
 # \pdffontattr font general text
