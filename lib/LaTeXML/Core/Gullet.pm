@@ -172,7 +172,7 @@ sub showUnexpected {
     my @pb = @{ $$self{pushback} };
     $message = "Next token is " . Stringify($token)
       . " ( == " . Stringify($STATE->lookupMeaning($token)) . ")"
-      . (@pb ? " more: " . ToString(Tokens(@pb)) : '');
+      . (@pb ? " more: " . ToString(TokensI(@pb)) : '');
     unshift(@{ $$self{pushback} }, $token);
   }
   return $message; }
@@ -359,27 +359,22 @@ sub readXToken {
       && defined($defn = $STATE->lookupMeaning($token))) {
       if ((ref $defn) eq 'LaTeXML::Core::Token') {    # \let to a token? Return it!
         return ($for_conditional ? $defn : $token); }
-      elsif (!$$defn{isExpandable}                    # Not expandable or is protected
+      elsif (!$defn->isExpandable                     # Not expandable or is protected
         || ($$defn{isProtected} && !$for_evaluation)) {
         return $token; }
       else {
         local $LaTeXML::CURRENT_TOKEN = $token;
-        my $r;
         no warnings 'recursion';
-        my @expansion = map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
-            : ($r eq 'LaTeXML::Core::Tokens' ? @$_
-              : Error('misdefined', $r, undef, "Expected a Token, got " . Stringify($_),
-                "in " . ToString($defn)) || T_OTHER(Stringify($_)))) }
-          $defn->invoke($self);
+        my $expansion = $defn->invoke($self);
         # add the newly expanded tokens back into the gullet stream, in the ordinary case.
-        unshift(@{ $$self{pushback} }, @expansion); } }
+        unshift(@{ $$self{pushback} }, @$expansion) if $expansion; } }
     elsif ($$token[1] == CC_CS && !(defined $defn)) {
-      $STATE->generateErrorStub($self, $token);    # cs SHOULD have defn by now; report early!
+      $STATE->generateErrorStub($self, $token);       # cs SHOULD have defn by now; report early!
       return $token; }
     else {
-      return $token; }                             # just return it
+      return $token; }                                # just return it
   }
-  return; }                                        # never get here.
+  return; }                                           # never get here.
 
 # readBalanced approximates TeX's scan_toks (but doesn't parse \def parameter lists)
 # and only optionally requires the openning "{".
@@ -403,7 +398,7 @@ sub readBalanced {
     my $token = ($expanded ? readXToken($self, 0) : readToken($self));
     if ((!$token) || ($$token[1] != CC_BEGIN)) {
       Error('expected', '{', $self, "Expected opening '{'");
-      return Tokens(); } }
+      return TokensI(); } }
   my @tokens = ();
   my $level  = 1;
   my ($token, $cc, $defn, $atoken, $atype, $ahidden);
@@ -445,21 +440,17 @@ sub readBalanced {
       $LaTeXML::Core::State::CATCODE_ACTIVE_OR_CS[$cc]
       && defined($defn = $STATE->lookupMeaning($token))
       && ((ref $defn) ne 'LaTeXML::Core::Token')    # an actual definition
-      && $$defn{isExpandable}
+      && $defn->isExpandable
       && (!$$defn{isProtected})) {                  # is this the right logic here? don't expand unless di
       local $LaTeXML::CURRENT_TOKEN = $token;
       my $r;
       no warnings 'recursion';
-      my @expansion = map { (($r = ref $_) eq 'LaTeXML::Core::Token' ? $_
-          : ($r eq 'LaTeXML::Core::Tokens' ? @$_
-            : Error('misdefined', $r, undef, "Expected a Token, got " . Stringify($_),
-              "in " . ToString($defn)) || T_OTHER(Stringify($_)))) }
-        $defn->invoke($self);
-      next unless @expansion;
+      my $expansion = $defn->invoke($self);
+      next unless $expansion;
       # If a special \the type command, push the expansion directly into the result
       # Well, almost directly: handle any MARKER tokens now, and possibly un-pack T_PARAM
       if ($$DEFERRED_COMMANDS{ $$defn{cs}[0] }) {
-        foreach my $t (@expansion) {
+        foreach my $t (@$expansion) {
           my $cc = $$t[1];
           if    ($cc == CC_MARKER) { handleMarker($self, $t); }
           elsif (($cc == CC_PARAM) && $macrodef) {
@@ -468,7 +459,7 @@ sub readBalanced {
             push(@tokens, $t); } }
       }
       else {    # otherwise, prepend to pushback to be expanded further.
-        unshift(@{ $$self{pushback} }, @expansion); } }
+        unshift(@{ $$self{pushback} }, @$expansion); } }
     else {
       if ($expanded && ($$token[1] == CC_CS) && !(defined $defn)) {
         $STATE->generateErrorStub($self, $token); }    # cs SHOULD have defn by now; report early!
@@ -480,7 +471,7 @@ sub readBalanced {
     my $loc_message = $startloc ? ("Started at " . ToString($startloc)) : ("Ended at " . ToString(getLocator($self)));
     Error('expected', "}", $self, "Gullet->readBalanced ran out of input in an unbalanced state.",
       $loc_message); }
-  return ($macrodef ? Tokens(@tokens)->packParameters : Tokens(@tokens)); }
+  return ($macrodef ? TokensI(@tokens)->packParameters : TokensI(@tokens)); }
 
 #======================================================================
 
@@ -499,7 +490,7 @@ sub readRawLine {
   # If we still have peeked tokens, we ONLY want to combine it with the remainder
   # of the current line from the Mouth (NOT reading a new line)
   if (@tokens) {
-    return ToString(Tokens(@tokens)) . $$self{mouth}->readRawLine(1); }
+    return ToString(TokensI(@tokens)) . $$self{mouth}->readRawLine(1); }
   # Otherwise, read the next line from the Mouth.
   else {
     return $$self{mouth}->readRawLine; } }
@@ -620,7 +611,7 @@ sub readUntil {
       elsif ($$token[1] == CC_BEGIN) {    # And if it's a BEGIN, copy till balanced END
         push(@tokens, $token);
         $nbraces++;
-        push(@tokens, readBalanced($self), T_END); }
+        push(@tokens, readBalanced($self)->unlist, T_END); }
       else {
         push(@tokens, $token); } } }
   else {
@@ -631,8 +622,8 @@ sub readUntil {
       while ((scalar(@ring) < $ntomatch) && ($token = readToken($self))) {
         if ($$token[1] == CC_BEGIN) {    # read balanced, and refill ring.
           $nbraces++;
-          push(@tokens, @ring, $token, readBalanced($self), T_END);    # Copy directly to result
-          @ring = (); }                                                # and retry
+          push(@tokens, @ring, $token, readBalanced($self)->unlist, T_END);    # Copy directly to result
+          @ring = (); }                                                        # and retry
         else {
           push(@ring, $token); } }
       my $i;
@@ -647,7 +638,7 @@ sub readUntil {
   # so that delimited arguments behave more similarly to simple, undelimited arguments.
   if (($nbraces == 1) && ($tokens[0][1] == CC_BEGIN) && ($tokens[-1][1] == CC_END)) {
     shift(@tokens); pop(@tokens); }
-  return Tokens(@tokens); }
+  return TokensI(@tokens); }
 
 sub readUntilBrace {
   my ($self) = @_;
@@ -658,7 +649,7 @@ sub readUntilBrace {
       unshift(@{ $$self{pushback} }, $token);    # Unread
       last; }
     push(@tokens, $token); }
-  return Tokens(@tokens); }
+  return TokensI(@tokens); }
 
 #**********************************************************************
 # Higher-level readers: Read various types of things from the input:

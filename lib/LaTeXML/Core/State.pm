@@ -416,7 +416,7 @@ sub lookupExpandable {
     && ($defn  = $$entry[0])
     # Can only be a token or definition; we want defns!
     && ((ref $defn) ne 'LaTeXML::Core::Token')
-    && $$defn{isExpandable}
+    && $defn->isExpandable
     && ($toplevel || !$$defn{isProtected})) { # is this the right logic here? don't expand unless digesting?
     return $defn; }
   return; }
@@ -436,7 +436,7 @@ sub isDontExpandable {
     if ($lookupname
       && ($entry = $$self{meaning}{$lookupname})
       && ($defn  = $$entry[0])) {
-      return ((ref $defn) ne 'LaTeXML::Core::Token') && $$defn{isExpandable}; }
+      return ((ref $defn) ne 'LaTeXML::Core::Token') && $defn->isExpandable; }
     else {
       return 1; } }
   return; }
