@@ -43,10 +43,8 @@ sub ReadPSDimension {
   my ($gullet, $scale) = @_;
   $scale = LookupRegister('\psunit') unless $scale;
   my $s = $gullet->readOptionalSigns;
-  if (defined(my $d = $gullet->readInternalDimension)) {
-    return ($s < 0 ? $d->negate : $d); }
-  elsif (defined($d = $gullet->readInternalGlue)) {
-    return Dimension($s * $d->valueOf); }
+  if (defined(my $d = $gullet->readRegisterValue('Dimension', $s, 1))) {
+    return $d; }
   elsif (defined($d = $gullet->readFloat)) {
     if (my $unit = $gullet->readUnit) {
       return Dimension($s * $d->valueOf * $unit); }

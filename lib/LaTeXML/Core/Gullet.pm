@@ -704,15 +704,30 @@ sub readValue {
     return; }
 }
 
+# Read a value from a numeric register, possibly changing sign,
+# possibly coercing from a bigger type (eg. a Number from a Dimension)
+our %RegisterCoercionTypes = (
+  Number      => { Dimension => \&Number, Glue => \&Number },
+  Dimension   => { Glue      => \&Dimension },
+  MuDimension => { MuGlue    => \&MuDimension },
+);
+
 sub readRegisterValue {
-  my ($self, $type) = @_;
+  my ($self, $type, $sign, $coerce) = @_;
   my $token = readXToken($self);
   return unless defined $token;
-  my $defn = $STATE->lookupDefinition($token);
-  if ((defined $defn) && ($defn->isRegister eq $type)) {
+  my ($defn, $rtype, $coercer);
+  if (($defn = $STATE->lookupDefinition($token))
+    && ($rtype = $defn->isRegister)    # Got a register?
+    && (($rtype eq $type) || ($coerce && ($coercer = $RegisterCoercionTypes{$type}{$rtype})))) {
+    $sign = +1 unless defined $sign;
     local $LaTeXML::CURRENT_TOKEN = $token;
     my $parms = $$defn{parameters};
-    return $defn->valueOf(($parms ? $parms->readArguments($self) : ())); }
+    my $value = $defn->valueOf(($parms ? $parms->readArguments($self) : ()));
+    if ($type eq $rtype) {
+      return ($sign < 0 ? $value->negate : $value); }
+    else {
+      return &$coercer($sign * $value->valueOf); } }
   else {
     unshift(@{ $$self{pushback} }, $token);    # Unread
     return; } }
@@ -797,9 +812,8 @@ sub readFactor {
 sub readNumber {
   my ($self) = @_;
   my $s = readOptionalSigns($self);
-  if    (defined(my $n = readNormalInteger($self)))  { return ($s < 0 ? $n->negate : $n); }
-  elsif (defined($n = readInternalDimension($self))) { return Number($s * $n->valueOf); }
-  elsif (defined($n = readInternalGlue($self)))      { return Number($s * $n->valueOf); }
+  if    (defined(my $n = readNormalInteger($self))) { return ($s < 0 ? $n->negate : $n); }
+  elsif (defined($n = readRegisterValue($self, 'Number', $s, 1))) { return $n; }
   else {
     my $next = readToken($self);
     unshift(@{ $$self{pushback} }, $next);    # Unread
@@ -816,25 +830,21 @@ sub readNormalInteger {
   my $token = readXToken($self);     # expand more
   if (!defined $token) {
     return; }
-  elsif (($$token[1] == CC_OTHER) && ($token->toString =~ /^[0-9]$/)) {    # Read decimal literal
+  elsif (($$token[1] == CC_OTHER) && ($$token[0] =~ /^[0-9]$/)) {    # Read decimal literal
     return Number(int($token->getString . readDigits($self, '0-9', 1))); }
-  elsif ($token->equals(T_OTHER("'"))) {                                   # Read Octal literal
+  elsif ($token->equals(T_OTHER("'"))) {                             # Read Octal literal
     return Number(oct(readDigits($self, '0-7', 1))); }
-  elsif ($token->equals(T_OTHER("\""))) {                                  # Read Hex literal
+  elsif ($token->equals(T_OTHER("\""))) {                            # Read Hex literal
     return Number(hex(readDigits($self, '0-9A-F', 1))); }
-  elsif ($token->equals(T_OTHER("`"))) {                                   # Read Charcode
+  elsif ($token->equals(T_OTHER("`"))) {                             # Read Charcode
     my $next = readToken($self);
-    my $s    = ($next && $next->toString) || '';
+    my $s    = ($next && $$next[0]) || '';
     $s =~ s/^\\//;
     skip1Space($self, 1);
     return Number(ord($s)); }    # Only a character token!!! NOT expanded!!!!
   else {
     unshift(@{ $$self{pushback} }, $token);    # Unread
-    return readInternalInteger($self); } }
-
-sub readInternalInteger {
-  my ($self) = @_;
-  return readRegisterValue($self, 'Number'); }
+    return readRegisterValue($self, 'Number'); } }
 
 #======================================================================
 # Float, a floating point number.
@@ -867,10 +877,8 @@ sub readFloat {
 sub readDimension {
   my ($self) = @_;
   my $s = readOptionalSigns($self);
-  if (defined(my $d = readInternalDimension($self))) {
-    return ($s < 0 ? $d->negate : $d); }
-  elsif (defined($d = readInternalGlue($self))) {
-    return Dimension($s * $d->valueOf); }
+  if (defined(my $d = readRegisterValue($self, 'Dimension', $s, 1))) {
+    return $d; }
   elsif (defined($d = readFactor($self))) {
     my $unit = readUnit($self);
     if (!defined $unit) {    # but leave undefined (effectively not rescaled)
@@ -893,12 +901,8 @@ sub readUnit {
   if (defined(my $u = readKeyword($self, 'ex', 'em'))) {
     skip1Space($self, 1);
     return $STATE->convertUnit($u); }
-  elsif (defined($u = readInternalInteger($self))) {
+  elsif (defined($u = readRegisterValue($self, 'Number', +1, 1))) {
     return $u->valueOf; }    # These are coerced to number=>sp
-  elsif (defined($u = readInternalDimension($self))) {
-    return $u->valueOf; }
-  elsif (defined($u = readInternalGlue($self))) {
-    return $u->valueOf; }
   else {
     readKeyword($self, 'true');    # But ignore, we're not bothering with mag...
     my $units = $STATE->lookupValue('UNITS');
@@ -908,11 +912,6 @@ sub readUnit {
       return $STATE->convertUnit($u); }
     else {
       return; } } }
-
-# Return a dimension value or undef
-sub readInternalDimension {
-  my ($self) = @_;
-  return readRegisterValue($self, 'Dimension'); }
 
 #======================================================================
 # Mu Dimensions
@@ -930,8 +929,8 @@ sub readMuDimension {
     if (!defined $munit) {
       Warn('expected', '<unit>', $self, "Illegal unit of measure (mu inserted)."); }
     return MuDimension(fixpoint($s * $m, $munit)); }
-  elsif (defined($m = readInternalMuGlue($self))) {
-    return MuDimension($s * $m->valueOf); }
+  elsif (defined($m = readRegisterValue($self, 'MuDimension', $s, 1))) {
+    return $m; }
   else {
     Warn('expected', '<mudimen>', $self, "Expecting mudimen; assuming 0");
     return MuDimension(0); } }
@@ -941,7 +940,7 @@ sub readMuUnit {
   if (my $m = readKeyword($self, 'mu')) {
     skip1Space($self, 1);
     return $UNITY; }    # effectively, scaled mu
-  elsif ($m = readInternalMuGlue($self)) {
+  elsif ($m = readRegisterValue($self, 'MuGlue')) {
     return $m->valueOf; }
   else {
     return; } }
@@ -956,8 +955,8 @@ sub readGlue {
   my ($self) = @_;
   my $s = readOptionalSigns($self);
   my $n;
-  if (defined($n = readInternalGlue($self))) {
-    return ($s < 0 ? $n->negate : $n); }
+  if (defined($n = readRegisterValue($self, 'Glue', $s))) {
+    return $n; }
   else {
     my $d = readDimension($self);
     if (!$d) {
@@ -988,11 +987,6 @@ sub readRubber {
         "Illegal unit of measure (" . ($mu ? 'mu' : 'pt') . " inserted)."); }
     return (fixpoint($s * $f, $u), 0); } }
 
-# Return a glue value or undef.
-sub readInternalGlue {
-  my ($self) = @_;
-  return readRegisterValue($self, 'Glue'); }
-
 #======================================================================
 # Mu Glue
 #======================================================================
@@ -1003,7 +997,7 @@ sub readMuGlue {
   my ($self) = @_;
   my $s = readOptionalSigns($self);
   my $n;
-  if (defined($n = readInternalMuGlue($self))) {
+  if (defined($n = readRegisterValue($self, 'MuGlue'))) {
     return ($s < 0 ? $n->negate : $n); }
   else {
     my $d = readMuDimension($self);
@@ -1016,11 +1010,6 @@ sub readMuGlue {
     ($r1, $f1) = readRubber($self, 1) if readKeyword($self, 'plus');
     ($r2, $f2) = readRubber($self, 1) if readKeyword($self, 'minus');
     return MuGlue($d->valueOf, $r1, $f1, $r2, $f2); } }
-
-# Return a muglue value or undef.
-sub readInternalMuGlue {
-  my ($self) = @_;
-  return readRegisterValue($self, 'MuGlue'); }
 
 #======================================================================
 # See pp 272-275 for lists of the various registers.
