@@ -1035,6 +1035,31 @@ sub readMuGlue {
 # These are implemented in Primitive.pm
 
 #**********************************************************************
+# Deprecated
+sub readInternalInteger {
+  my ($self) = @_;
+  Deprecated('readInternalInteger', '0.8.8',
+    "Please use \$gullet->readRegisterValue('Number')");
+  return readRegisterValue($self, 'Number'); }
+
+sub readInternalDimension {
+  my ($self) = @_;
+  Deprecated('readInternalDimension', '0.8.8',
+    "Please use \$gullet->readRegisterValue('Dimension')");
+  return readRegisterValue($self, 'Dimension'); }
+
+sub readInternalGlue {
+  my ($self) = @_;
+  Deprecated('readInternalGlue', '0.8.8',
+    "Please use \$gullet->readRegisterValue('Glue')");
+  return readRegisterValue($self, 'Glue'); }
+
+sub readInternalMuGlue {
+  my ($self) = @_;
+  Deprecated('readInternalMuGlue', '0.8.8',
+    "Please use \$gullet->readRegisterValue('MuGlue')");
+  return readRegisterValue($self, 'MuGlue'); }
+
 1;
 
 __END__

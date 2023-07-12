@@ -37,7 +37,7 @@ our @EXPORT = (
   # Progress Spinner
   qw(&ProgressSpinup &ProgressSpindown &ProgressStep),
   # Debugging messages
-  qw(&DebuggableFeature &Debug &CheckDebuggable),
+  qw(&DebuggableFeature &Debug &CheckDebuggable &Deprecated),
   # Colored-logging related functions
   qw(&colorizeString),
   # stateless message generation
@@ -484,6 +484,13 @@ sub CheckDebuggable {
   if (keys %unknown) {
     print STDERR _freshline(\*STDERR), "The debugging feature(s) " . join(', ', sort keys %unknown) . " were never declared\n";
     print STDERR _freshline(\*STDERR), "Known debugging features: " . join(', ', sort keys %LaTeXML::Debuggable) . "\n"; }
+  return; }
+
+sub Deprecated {
+  my ($key, $version, $message) = @_;
+  return if $STATE && $STATE->lookupMapping('DEPRECATIONS_WARNED', $key);
+  Warn('deprecated', $key, undef, "$key is deprecated (as of $version)", $message);
+  $STATE->assignMapping('DEPRECATIONS_WARNED', $key => 1) if $STATE;
   return; }
 
 #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
