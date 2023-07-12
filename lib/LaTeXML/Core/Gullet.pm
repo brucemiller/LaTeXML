@@ -527,7 +527,7 @@ sub skipSpaces {
 sub skip1Space {
   my ($self, $expanded) = @_;
   my $token = ($expanded ? readXToken($self) : readToken($self));
-  unshift(@{ $$self{pushback} }, $token) if $token && !Equals($token, T_SPACE);
+  unshift(@{ $$self{pushback} }, $token) if $token && !T_SPACE->equivalent($token);
   return; }
 
 # <filler> = <optional spaces> | <filler>\relax<optional spaces>
@@ -582,7 +582,7 @@ sub readKeyword {
     my @matched = ();
     my $tok;
     while (@tomatch && defined($tok = readXToken($self, 0)) && push(@matched, $tok)
-      && (uc($tok->toString) eq $tomatch[0])) {
+      && (uc($$tok[0]) eq $tomatch[0])) {
       shift(@tomatch); }
     return $keyword unless @tomatch;             # All matched!!!
     unshift(@{ $$self{pushback} }, @matched);    # Put 'em back and try next!
@@ -651,6 +651,30 @@ sub readUntilBrace {
     push(@tokens, $token); }
   return TokensI(@tokens); }
 
+use constant T_csname    => T_CS('\csname');
+use constant T_endcsname => T_CS('\endcsname');
+
+sub readCSName {
+  my ($self) = @_;
+  my $token;
+  # Deyan Ginev & Dennis Mueller were right! Or partly so.
+  # TeX does NOT store the csname with the leading `\`, BUT stores active chars with a flag
+  # However, so long as the Mouth's CS and \string properly respect \escapechar, all's well!
+  my $cs = '\\';
+  while (($token = readXToken($self, 1)) && (!T_endcsname->equivalent($token))) {
+    my $cc = $$token[1];
+    if ($cc == CC_CS) {
+      if (defined $STATE->lookupDefinition($token)) {
+        Error('unexpected', $token, $self,
+          "The control sequence " . ToString($token)
+            . " should not appear between \\csname and \\endcsname"); }
+      else {
+        Error('undefined', $token, $self,
+          "The token " . Stringify($token) . " is not defined"); } }
+    elsif ($cc == CC_SPACE) { $cs .= ' '; }            # Keep newlines from having \n!
+    else                    { $cs .= $$token[0]; } }
+  return T_CS($cs); }
+
 #**********************************************************************
 # Higher-level readers: Read various types of things from the input:
 #  tokens, non-expandable tokens, args, Numbers, ...
@@ -691,10 +715,8 @@ sub readValue {
   elsif ($type eq 'Tokens')    { return readTokensValue($self); }
   elsif ($type eq 'Token') {
     my $token = readToken($self);
-    if (Equals($token, T_CS('\csname'))) {
-      my $cstoken = $STATE->lookupDefinition($token)->invoke($self);
-      unread($self, $cstoken->unlist);
-      return readToken($self); }
+    if (T_csname->equivalent($token)) {
+      return readCSName($self); }
     else {
       return $token; } }
   elsif ($type eq 'any') { return readArg($self); }
@@ -733,6 +755,7 @@ sub readRegisterValue {
     return; } }
 
 # Apparent behaviour of a token value (ie \toks#=<arg>)
+# Expand except within braces?
 sub readTokensValue {
   my ($self) = @_;
   my $token = readNonSpace($self);
@@ -748,10 +771,6 @@ sub readTokensValue {
       if (my $x = $defn->invoke($self)) {
         unread($self, $x->unlist); }
       return readTokensValue($self); }
-    elsif (Equals($token, T_CS('\csname'))) {
-      my $cstoken = $defn->invoke($self);
-      unread($self, $cstoken->unlist);
-      return readToken($self); }
     else {
       return $token; } }    # ?
   else {
@@ -769,8 +788,8 @@ sub readOptionalSigns {
   my ($self) = @_;
   my ($sign, $t) = ("+1", '');
   while (defined($t = readXToken($self))
-    && (($t->getString eq '+') || ($t->getString eq '-') || Equals($t, T_SPACE))) {
-    $sign = -$sign if ($t->getString eq '-'); }
+    && (($$t[0] eq '+') || ($$t[0] eq '-') || T_SPACE->equivalent($t))) {
+    $sign = -$sign if ($$t[0] eq '-'); }
   unshift(@{ $$self{pushback} }, $t) if $t;    # Unread
   return $sign; }
 
@@ -779,9 +798,9 @@ sub readDigits {
   my ($self, $range, $skip) = @_;
   my $string = '';
   my ($token, $digit);
-  while (($token = readXToken($self)) && (($digit = $token->toString) =~ /^[$range]$/)) {
+  while (($token = readXToken($self)) && (($digit = $$token[0]) =~ /^[$range]$/)) {
     $string .= $digit; }
-  unshift(@{ $$self{pushback} }, $token) if $token && !($skip && Equals($token, T_SPACE));    #Inline
+  unshift(@{ $$self{pushback} }, $token) if $token && !($skip && T_SPACE->equivalent($token)); #Inline
   return $string; }
 
 # <factor> = <normal integer> | <decimal constant>
@@ -791,7 +810,7 @@ sub readFactor {
   my ($self) = @_;
   my $string = readDigits($self, '0-9');
   my $token  = readXToken($self);
-  if ($token && $token->getString =~ /^[\.\,]$/) {
+  if ($token && $$token[0] =~ /^[\.\,]$/) {
     $string .= '.' . readDigits($self, '0-9');
     $token = readXToken($self); }
   if (length($string) > 0) {
@@ -831,7 +850,7 @@ sub readNormalInteger {
   if (!defined $token) {
     return; }
   elsif (($$token[1] == CC_OTHER) && ($$token[0] =~ /^[0-9]$/)) {    # Read decimal literal
-    return Number(int($token->getString . readDigits($self, '0-9', 1))); }
+    return Number(int($$token[0] . readDigits($self, '0-9', 1))); }
   elsif ($token->equals(T_OTHER("'"))) {                             # Read Octal literal
     return Number(oct(readDigits($self, '0-7', 1))); }
   elsif ($token->equals(T_OTHER("\""))) {                            # Read Hex literal
@@ -855,7 +874,7 @@ sub readFloat {
   my $s      = readOptionalSigns($self);
   my $string = readDigits($self, '0-9');
   my $token  = readXToken($self);
-  if ($token && $token->getString =~ /^[\.]$/) {
+  if ($token && $$token[0] =~ /^[\.]$/) {
     $string .= '.' . readDigits($self, '0-9');
     $token = readXToken($self); }
   my $n;

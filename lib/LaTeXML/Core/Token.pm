@@ -325,6 +325,21 @@ sub equals {
     && ($$a[1] == $$b[1])
     && (($$a[1] == CC_SPACE) || ($$a[0] eq $$b[0])); }
 
+# Check whether $token is "equivalent" to $self,
+# that is, equal to $self, or \let to $self.
+# $self is is presumed to be some "constant", explicit token,
+# such as  T_SPACE, T_CS('\endcsname').
+sub equivalent {
+  my ($self, $token) = @_;
+  return unless $token;
+  my $cc  = $$self[1];
+  my $occ = $$token[1];
+  return 1 if ($cc == $occ) && (($cc == CC_SPACE) || ($$self[0] eq $$token[0]));
+  if (my $defn = (($occ == CC_CS) || ($occ == CC_ACTIVE)) && $STATE->lookupMeaning($token)) {
+    my $ltoken = ((ref $defn eq 'LaTeXML::Core::Token') ? $defn : $defn->getCS);
+    return 1 if ($cc == $$ltoken[1]) && (($cc == CC_SPACE) || ($$self[0] eq $$ltoken[0])); }
+  return; }
+
 my @CONTROLNAME = (    #[CONSTANT]
   qw( NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI
     DLE DC1 DC2 DC3 DC4 NAK SYN ETB CAN EM SUB ESC FS GS RS US));
