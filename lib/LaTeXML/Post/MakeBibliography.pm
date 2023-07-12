@@ -782,7 +782,7 @@ sub do_links {
     [[['ltx:bib-name[@role="author"]', '', '', 'author', \&do_authors, ''],
       ['ltx:bib-name[@role="editor"]',      '', '', 'editor', \&do_editorsA,          ''],
       ['ltx:bib-date[@role="publication"]', '', '', 'year',   \&do_year,              ''],
-      ['ltx:title',                         '', '', 'title',  \&do_any,               ''],
+      ['ltx:bib-title',                         '', '', 'title',  \&do_any,               ''],
       ['ltx:bib-type',                      '', '', 'type',   \&do_any,               ''],
       ['! ltx:bib-type',                    '', '', 'type',   sub { ('(Website)'); }, '']],
     [['ltx:bib-organization', ', ', ' ', 'publisher', \&do_any, ''],
