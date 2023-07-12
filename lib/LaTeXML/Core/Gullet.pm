@@ -527,7 +527,7 @@ sub skipSpaces {
 sub skip1Space {
   my ($self, $expanded) = @_;
   my $token = ($expanded ? readXToken($self) : readToken($self));
-  unshift(@{ $$self{pushback} }, $token) if $token && !T_SPACE->equivalent($token);
+  unshift(@{ $$self{pushback} }, $token) if $token && !$token->defined_as(T_SPACE);
   return; }
 
 # <filler> = <optional spaces> | <filler>\relax<optional spaces>
@@ -661,7 +661,7 @@ sub readCSName {
   # TeX does NOT store the csname with the leading `\`, BUT stores active chars with a flag
   # However, so long as the Mouth's CS and \string properly respect \escapechar, all's well!
   my $cs = '\\';
-  while (($token = readXToken($self, 1)) && (!T_endcsname->equivalent($token))) {
+  while (($token = readXToken($self, 1)) && (!$token->defined_as(T_endcsname))) {
     my $cc = $$token[1];
     if ($cc == CC_CS) {
       if (defined $STATE->lookupDefinition($token)) {
@@ -715,7 +715,7 @@ sub readValue {
   elsif ($type eq 'Tokens')    { return readTokensValue($self); }
   elsif ($type eq 'Token') {
     my $token = readToken($self);
-    if (T_csname->equivalent($token)) {
+    if ($token->defined_as(T_csname)) {
       return readCSName($self); }
     else {
       return $token; } }
@@ -788,7 +788,7 @@ sub readOptionalSigns {
   my ($self) = @_;
   my ($sign, $t) = ("+1", '');
   while (defined($t = readXToken($self))
-    && (($$t[0] eq '+') || ($$t[0] eq '-') || T_SPACE->equivalent($t))) {
+    && (($$t[0] eq '+') || ($$t[0] eq '-') || $t->defined_as(T_SPACE))) {
     $sign = -$sign if ($$t[0] eq '-'); }
   unshift(@{ $$self{pushback} }, $t) if $t;    # Unread
   return $sign; }
@@ -800,7 +800,7 @@ sub readDigits {
   my ($token, $digit);
   while (($token = readXToken($self)) && (($digit = $$token[0]) =~ /^[$range]$/)) {
     $string .= $digit; }
-  unshift(@{ $$self{pushback} }, $token) if $token && !($skip && T_SPACE->equivalent($token)); #Inline
+  unshift(@{ $$self{pushback} }, $token) if $token && !($skip && $token->defined_as(T_SPACE)); #Inline
   return $string; }
 
 # <factor> = <normal integer> | <decimal constant>

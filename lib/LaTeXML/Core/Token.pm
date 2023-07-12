@@ -19,6 +19,7 @@ package LaTeXML::Core::Token;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Core::State;
 use LaTeXML::Common::Error;
 use LaTeXML::Common::Object;
 use base qw(LaTeXML::Common::Object);
@@ -325,19 +326,19 @@ sub equals {
     && ($$a[1] == $$b[1])
     && (($$a[1] == CC_SPACE) || ($$a[0] eq $$b[0])); }
 
-# Check whether $token is "equivalent" to $self,
-# that is, equal to $self, or \let to $self.
-# $self is is presumed to be some "constant", explicit token,
+# Check whether $self is defined_as $token,
+# that is, equal to $token, or \let to $token.
+# $token is is presumed to be some "constant", explicit token,
 # such as  T_SPACE, T_CS('\endcsname').
-sub equivalent {
+sub defined_as {
   my ($self, $token) = @_;
   return unless $token;
   my $cc  = $$self[1];
   my $occ = $$token[1];
-  return 1 if ($cc == $occ) && (($cc == CC_SPACE) || ($$self[0] eq $$token[0]));
-  if (my $defn = (($occ == CC_CS) || ($occ == CC_ACTIVE)) && $STATE->lookupMeaning($token)) {
-    my $ltoken = ((ref $defn eq 'LaTeXML::Core::Token') ? $defn : $defn->getCS);
-    return 1 if ($cc == $$ltoken[1]) && (($cc == CC_SPACE) || ($$self[0] eq $$ltoken[0])); }
+  return 1 if ($cc == $occ) && (($occ == CC_SPACE) || ($$self[0] eq $$token[0]));
+  if (my $defn = (($cc == CC_CS) || ($cc == CC_ACTIVE)) && LookupMeaning($self)) {
+    my $letto = ((ref $defn eq 'LaTeXML::Core::Token') ? $defn : $defn->getCS);
+    return 1 if ($$letto[1] == $occ) && (($occ == CC_SPACE) || ($$letto[0] eq $$token[0])); }
   return; }
 
 my @CONTROLNAME = (    #[CONSTANT]

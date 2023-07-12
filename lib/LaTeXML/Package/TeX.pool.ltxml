@@ -858,7 +858,7 @@ our @CATCODE_MEANING = (
 DefMacro('\meaning Token', sub {
     my ($gullet, $tok) = @_;
     my $meaning = 'undefined';
-    if (my $definition = (T_ALIGN->equivalent($tok) ? $tok : LookupMeaning($tok))) {
+    if (my $definition = ($tok->defined_as(T_ALIGN) ? $tok : LookupMeaning($tok))) {
       my $type = ref $definition;
       $type =~ s/^LaTeXML:://;
       # Pre-step: We can't extract the bodies of definitions which are defined via Perl subroutines.
@@ -969,7 +969,7 @@ DefMacro('\expandafter Token Token', sub {
     my ($gullet, $tok, $xtok) = @_;
     my $defn;
     my @skipped = ($tok);
-    while (T_expandafter->equivalent($xtok)) {
+    while ($xtok->defined_as(T_expandafter)) {
       push(@skipped, $gullet->readToken);
       $xtok = $gullet->readToken; }
     if (defined($defn = $STATE->lookupExpandable($xtok))) {
@@ -1986,7 +1986,7 @@ sub readBoxContents {
   no warnings 'recursion';
   my ($gullet, $everybox) = @_;
   my $t;
-  while (($t = $gullet->readToken) && !T_BEGIN->equivalent($t)) { }    # Skip till { or \bgroup
+  while (($t = $gullet->readToken) && !$t->defined_as(T_BEGIN)) { }    # Skip till { or \bgroup
       # Now, insert some extra tokens, if any, possibly from \afterassignment
   if (my $token = LookupValue('BeforeNextBox')) {
     AssignValue(BeforeNextBox => undef, 'global');
@@ -3076,7 +3076,7 @@ sub beforeCellUnlist {
   my @toks = $tokens->unlist;
   my @new  = ();
   while (my $t = shift(@toks)) {
-    if (T_MATH->equivalent($t) && @toks && T_hfil->equivalent($toks[0])) {
+    if ($t->defined_as(T_MATH) && @toks && $toks[0]->defined_as(T_hfil)) {
       push(@new, shift(@toks)); unshift(@toks, $t); }
     else {
       push(@new, $t); } }
@@ -3088,7 +3088,7 @@ sub afterCellUnlist {
   my @toks = $tokens->unlist;
   my @new  = ();
   while (my $t = pop(@toks)) {
-    if (T_MATH->equivalent($t) && @toks && T_hfil->equivalent($toks[-1])) {
+    if ($t->defined_as(T_MATH) && @toks && $toks[-1]->defined_as(T_hfil)) {
       unshift(@new, pop(@toks)); push(@toks, $t); }
     else {
       unshift(@new, $t); } }
@@ -3134,7 +3134,7 @@ DefConstructor('\halign BoxSpecification',
 sub parseHAlignTemplate {
   my ($gullet, $whatsit) = @_;
   my $t = $gullet->readNonSpace;
-  Error('expected', '\bgroup', $gullet, "Missing \\halign box") unless T_BEGIN->equivalent($t);
+  Error('expected', '\bgroup', $gullet, "Missing \\halign box") unless $t->defined_as(T_BEGIN);
   my $before   = 1;    # true if we're before a # in current column
   my @pre      = ();
   my @post     = ();
@@ -3260,8 +3260,8 @@ sub digestAlignmentBody {
     extractAlignmentColumn($alignment, $cell);
     $lastwascr = undef;
     if (!$type && (!$next
-        || T_END->equivalent($next)                    # End of alignment
-        || T_close_alignment->equivalent($next))) {    # End of alignment
+        || $next->defined_as(T_END)                    # End of alignment
+        || $next->defined_as(T_close_alignment))) {    # End of alignment
       $alignment->endRow();
       last; }
     elsif ($type eq 'align') {
@@ -3316,13 +3316,13 @@ sub digestAlignmentColumn {
       if ($token->equals(T_SPACE)    # Skip leading space.
         || $token->equals(T_CS('\par'))    # Skip or blank line(?)
         || ($lastwascr &&                  # Or \crcr following a \cr
-          (T_crcr->equivalent($token) || T_hidden_crcr->equivalent($token)))) {
+          ($token->defined_as(T_crcr) || $token->defined_as(T_hidden_crcr)))) {
       }
-      elsif (T_omit->equivalent($token)) {    # \omit removes template for this column.
+      elsif ($token->defined_as(T_omit)) {    # \omit removes template for this column.
         Debug("Halign $alignment: OMIT at " . Stringify($token)) if $LaTeXML::DEBUG{halign};
         $alignment->startRow() unless $$alignment{in_row};
         $alignment->omitNextColumn; }
-      elsif (T_noalign->equivalent($token)) {    # \puts something in vertical list
+      elsif ($token->defined_as(T_noalign)) {    # \puts something in vertical list
         Debug("Halign $alignment: noalign at " . Stringify($token)) if $LaTeXML::DEBUG{halign};
         $alignment->endRow()                                        if $$alignment{in_row};
         $alignment->startColumn(1);
@@ -3330,13 +3330,13 @@ sub digestAlignmentColumn {
         my $r = $stomach->digest($gullet->readArg);
         $alignment->endRow();
         return ($r, T_CS('\cr'), 'cr'), undef; }    # Pretend this is a whole row???
-      elsif (T_hidden_noalign->equivalent($token)) {    # \puts something in vertical list
+      elsif ($token->defined_as(T_hidden_noalign)) {    # \puts something in vertical list
         Debug("Halign $alignment: COLUMN invisible noalign") if $LaTeXML::DEBUG{halign};
         push(@LaTeXML::LIST, $stomach->invokeToken($token)); }
       else {
         last; } }
     Debug("Halign $alignment: COLUMN end scan at " . Stringify($token)) if $LaTeXML::DEBUG{halign};
-    if (!$token || T_END->equivalent($token) || T_close_alignment->equivalent($token)) {
+    if (!$token || $token->defined_as(T_END) || $token->defined_as(T_close_alignment)) {
       return (undef, $token, undef, undef); }
     # Next column, unless spanning (then combine columns)
     if ($spanning) {
@@ -3361,7 +3361,7 @@ sub digestAlignmentColumn {
               . "  => " . ToString(List(@LaTeXML::LIST))) if $LaTeXML::DEBUG{halign};
           return (List(@LaTeXML::LIST, mode => ($ismath ? 'math' : 'text')),
             $token, $type, $hidden); } }
-      elsif (T_hidden_noalign->equivalent($token)) {    # \puts something in vertical list
+      elsif ($token->defined_as(T_hidden_noalign)) {    # \puts something in vertical list
         Debug("Halign $alignment: COLUMN invisible noalign") if $LaTeXML::DEBUG{halign};
         push(@LaTeXML::LIST, $stomach->invokeToken($token)); }
       else {    # Else, we're getting some actual content for the column
@@ -3475,7 +3475,7 @@ sub extractAlignmentColumn {
 # Note that the 1st $ is switching OUT of math mode!
 sub stripDupMath {
   my (@tokens) = @_;
-  my @poss = grep { T_MATH->equivalent($tokens[$_]) } 0 .. $#tokens;
+  my @poss = grep { $tokens[$_]->defined_as(T_MATH) } 0 .. $#tokens;
   shift(@poss) if scalar(@poss) % 2;    # Get pairs!
   while (@poss) {
     my ($p2, $p1) = (pop(@poss), pop(@poss));
@@ -4232,17 +4232,17 @@ DefMacroI('\eqno', undef, sub {
     my @stuff    = ();
     # This is risky!!!
     while (my $t = $gullet->readXToken(0)) {
-      if (T_BEGIN->equivalent($t)) {
+      if ($t->defined_as(T_BEGIN)) {
         push(@stuff, $t, $gullet->readBalanced, T_END); }
       # What do I need to explicitly list here!?!?!? UGGH!
-      elsif (T_MATH->equivalent($t)
-        || T_CS('\]')->equivalent($t)
+      elsif ($t->defined_as(T_MATH)
+        || $t->defined_as(T_CS('\]'))
         # UGH from 2022: also don't jump over rows
-        || T_CS('\cr')->equivalent($t)
+        || $t->defined_as(T_CS('\cr'))
         # see arXiv:math/0001062, for one example
-        || T_CS('\hidden@cr')->equivalent($t)
-        || T_CS('\@@ENDDISPLAYMATH')->equivalent($t)
-        || T_CS('\begingroup')->equivalent($t)       # Totally wrong, but to catch expanded environments
+        || $t->defined_as(T_CS('\hidden@cr'))
+        || $t->defined_as(T_CS('\@@ENDDISPLAYMATH'))
+        || $t->defined_as(T_CS('\begingroup'))       # Totally wrong, but to catch expanded environments
         || (ToString($t) =~ /^\\(?:begin|end)\{/)    # any sort of environ begin or end???
                                                      # This seems needed within AmSTeX environs
       ) {
@@ -4381,12 +4381,12 @@ sub revertScript {
   my @tokens   = $script->revert;
   my @t        = @tokens;
   my $l;
-  if (T_BEGIN->equivalent($t[0])) {
+  if ($t[0]->defined_as(T_BEGIN)) {
     $l++; shift(@t); }
   while (@t && $l) {
     my $t = shift(@t);
-    if    (T_BEGIN->equivalent($t)) { $l++; }
-    elsif (T_END->equivalent($t))   { $l--; } }
+    if    ($t->defined_as(T_BEGIN)) { $l++; }
+    elsif ($t->defined_as(T_END))   { $l--; } }
   return (@tokens && !@t ? @tokens : (T_BEGIN, @tokens, T_END)); }
 
 # Compute the 'advance' of this script.
@@ -7642,7 +7642,7 @@ sub SplitTokens {
     while ($t = shift(@tokens)) {
       if (grep { Equals($t, $_) } @delims) {
         push(@items, [@toks]); @toks = (); }
-      elsif (T_BEGIN->equivalent($t)) {
+      elsif ($t->defined_as(T_BEGIN)) {
         push(@toks, $t);
         my $level = 1;
         while ($level && defined($t = shift(@tokens))) {
@@ -7650,7 +7650,7 @@ sub SplitTokens {
           $level++ if $cc == CC_BEGIN;
           $level-- if $cc == CC_END;
           push(@toks, $t); } }
-      elsif (T_MATH->equivalent($t)) {
+      elsif ($t->defined_as(T_MATH)) {
         push(@toks, $t);
         while (defined($t = shift(@tokens))) {
           my $cc = $t->getCatcode;
