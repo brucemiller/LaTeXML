@@ -101,8 +101,7 @@ sub isBalanced {
 # Using inline accessors on those assumptions
 sub substituteParameters {
   my ($self, @args) = @_;
-  my @in = @{$self};    # ->unlist
-  return $self unless grep { $$_[1] == CC_ARG; } @in;
+  my @in     = @{$self};    # ->unlist
   my @result = ();
   while (my $token = shift(@in)) {
     if ($$token[1] != CC_ARG) {    # Non-match; copy it

@@ -377,7 +377,7 @@ sub lookupDefinition {
   return unless $token;
   my $defn;
   my $entry;
-  #  my $inmath = $self->lookupValue('IN_MATH');
+  #  my $inmath = lookupValue($self, 'IN_MATH');
   my $cc = $$token[1];
   my $lookupname =
     ($CATCODE_ACTIVE_OR_CS[$cc]
@@ -416,7 +416,7 @@ sub lookupExpandable {
     && ($defn  = $$entry[0])
     # Can only be a token or definition; we want defns!
     && ((ref $defn) ne 'LaTeXML::Core::Token')
-    && $$defn{isExpandable}
+    && $defn->isExpandable
     && ($toplevel || !$$defn{isProtected})) { # is this the right logic here? don't expand unless digesting?
     return $defn; }
   return; }
@@ -429,14 +429,14 @@ sub isDontExpandable {
   return unless $token;
   my $defn;
   my $entry;
-  #  my $inmath = $self->lookupValue('IN_MATH');
+  #  my $inmath = lookupValue($self, 'IN_MATH');
   my $cc = $$token[1];
   if ($CATCODE_ACTIVE_OR_CS[$cc]) {
     my $lookupname = $$token[0];
     if ($lookupname
       && ($entry = $$self{meaning}{$lookupname})
       && ($defn  = $$entry[0])) {
-      return ((ref $defn) ne 'LaTeXML::Core::Token') && $$defn{isExpandable}; }
+      return ((ref $defn) ne 'LaTeXML::Core::Token') && $defn->isExpandable; }
     else {
       return 1; } }
   return; }
@@ -451,13 +451,13 @@ sub lookupDigestableDefinition {
   return unless $token;
   my $defn;
   my $entry;
-  #  my $inmath = $self->lookupValue('IN_MATH');
+  #  my $inmath = lookupValue($self, 'IN_MATH');
   my $cc   = $$token[1];
   my $name = $$token[0];
   my $lookupname =
     (($CATCODE_ACTIVE_OR_CS[$cc]
-        || ($CATCODE_LETTER_OR_OTHER[$cc] && $self->lookupValue('IN_MATH')
-        && (($self->lookupMathcode($name) || 0) == 0x8000)))
+        || ($CATCODE_LETTER_OR_OTHER[$cc] && lookupValue($self, 'IN_MATH')
+        && ((lookupMathcode($self, $name) || 0) == 0x8000)))
     ? $name
     : $CATCODE_EXECUTABLE_PRIMITIVE_NAME[$cc]);
   if ($lookupname && ($entry = $$self{meaning}{$lookupname})
@@ -481,12 +481,12 @@ sub installDefinition {
   #  my $cs = $definition->getCS->getCSName;
   my $token = $definition->getCS;
   my $cs    = ($LaTeXML::Core::Token::CATCODE_PRIMITIVE_NAME[$$token[1]] || $$token[0]);
-  if ($self->lookupValue("$cs:locked") && !$LaTeXML::Core::State::UNLOCKED) {
-    my $s = $self->getStomach->getGullet->getSource;
+  if (lookupValue($self, "$cs:locked") && !$LaTeXML::Core::State::UNLOCKED) {
+    my $s = $$self{stomach}->getGullet->getSource;
     # report if the redefinition seems to come from document source
     if (((!defined($s)) || ($s =~ /\.(tex|bib)$/))
       && ($s !~ /\.code\.tex$/)) {
-      Info('ignore', $cs, $self->getStomach, "Ignoring redefinition of $cs"); }
+      Info('ignore', $cs, $$self{stomach}, "Ignoring redefinition of $cs"); }
     return; }
   assign_internal($self, 'meaning', $cs => $definition, $scope);
   return; }
@@ -507,21 +507,21 @@ sub installDefinition {
 sub generateErrorStub {
   my ($self, $caller, $token, $params) = @_;
   my $cs = $token->getCSName;
-  $self->noteStatus(undefined => $cs);
+  noteStatus($self, undefined => $cs);
   # To minimize chatter, go ahead and define it...
   if ($cs =~ /^\\if(.*)$/) {    # Apparently an \ifsomething ???
     my $name = $1;
     Error('undefined', $token, $caller, "The token " . $token->stringify . " is not defined.",
       "Defining it now as with \\newif");
-    $self->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+    installDefinition($self, LaTeXML::Core::Definition::Expandable->new(
         T_CS('\\' . $name . 'true'), undef, '\let' . $cs . '\iftrue'));
-    $self->installDefinition(LaTeXML::Core::Definition::Expandable->new(
+    installDefinition($self, LaTeXML::Core::Definition::Expandable->new(
         T_CS('\\' . $name . 'false'), undef, '\let' . $cs . '\iffalse'));
     LaTeXML::Package::Let($token, T_CS('\iffalse')); }
   else {
     Error('undefined', $token, $caller, "The token " . $token->stringify . " is not defined.",
       "Defining it now as <ltx:ERROR/>");
-    $self->installDefinition(LaTeXML::Core::Definition::Constructor->new($token, $params,
+    installDefinition($self, LaTeXML::Core::Definition::Constructor->new($token, $params,
         sub { $_[0]->makeError('undefined', $cs); },
         sizer => 'X'),
       'global'); }
@@ -538,7 +538,7 @@ sub pushFrame {
 sub popFrame {
   my ($self) = @_;
   if ($$self{undo}[0]{_FRAME_LOCK_}) {
-    Error('unexpected', '<endgroup>', $self->getStomach,
+    Error('unexpected', '<endgroup>', $$self{stomach},
       "Attempt to pop last locked stack frame"); }
   else {
     my $undo = shift(@{ $$self{undo} });
@@ -562,19 +562,19 @@ sub getFrameDepth {
 sub beginSemiverbatim {
   my ($self, @extraspecials) = @_;
   # Is this a good/safe enough shorthand, or should we really be doing beginMode?
-  $self->pushFrame;
-  $self->assignValue(MODE    => 'text');
-  $self->assignValue(IN_MATH => 0);
-  map { $self->assignCatcode($_ => CC_OTHER, 'local') }
-    @{ $self->lookupValue('SPECIALS') }, @extraspecials;
-  $self->assignMathcode('\'' => 0x8000, 'local');
+  pushFrame($self);
+  assignValue($self, MODE    => 'text');
+  assignValue($self, IN_MATH => 0);
+  map { assignCatcode($self, $_ => CC_OTHER, 'local') }
+    @{ lookupValue($self, 'SPECIALS') }, @extraspecials;
+  assignMathcode($self, '\'' => 0x8000, 'local');
   # try to stay as ASCII as possible
-  $self->assignValue(font => $self->lookupValue('font')->merge(encoding => 'ASCII'), 'local');
+  assignValue($self, font => lookupValue($self, 'font')->merge(encoding => 'ASCII'), 'local');
   return; }
 
 sub endSemiverbatim {
   my ($self) = @_;
-  $self->popFrame;
+  popFrame($self);
   return; }
 
 #======================================================================
@@ -597,7 +597,7 @@ sub pushDaemonFrame {
           unshift(@{ $$hash{$key} }, daemon_copy($value)); } } } }    # And push new binding.
       # Record the contents of LaTeXML::Package::Pool as preloaded
   my $pool_preloaded_hash = { map { $_ => 1 } keys %LaTeXML::Package::Pool:: };
-  $self->assignValue('_PRELOADED_POOL_', $pool_preloaded_hash, 'global');
+  assignValue($self, '_PRELOADED_POOL_', $pool_preloaded_hash, 'global');
   # Now mark the top frame as LOCKED!!!
   $$frame{_FRAME_LOCK_} = 1;
   return; }
@@ -615,22 +615,22 @@ sub daemon_copy {
 sub popDaemonFrame {
   my ($self) = @_;
   while (!$$self{undo}[0]{_FRAME_LOCK_}) {
-    $self->popFrame; }
+    popFrame($self); }
   if (scalar(@{ $$self{undo} } > 1)) {
     delete $$self{undo}[0]{_FRAME_LOCK_};
     # Any non-preloaded Pool routines should be wiped away, as we
     # might want to reuse the Pool namespaces for the next run.
-    my $pool_preloaded_hash = $self->lookupValue('_PRELOADED_POOL_');
-    $self->assignValue('_PRELOADED_POOL_', undef, 'global');
+    my $pool_preloaded_hash = lookupValue($self, '_PRELOADED_POOL_');
+    assignValue($self, '_PRELOADED_POOL_', undef, 'global');
     foreach my $subname (keys %LaTeXML::Package::Pool::) {
       unless (exists $$pool_preloaded_hash{$subname}) {
         undef $LaTeXML::Package::Pool::{$subname};
         delete $LaTeXML::Package::Pool::{$subname};
     } }
     # Finally, pop the frame
-    $self->popFrame; }
+    popFrame($self); }
   else {
-    Fatal('unexpected', '<endgroup>', $self->getStomach,
+    Fatal('unexpected', '<endgroup>', $$self{stomach},
       "Daemon Attempt to pop last stack frame"); }
   return; }
 
@@ -684,7 +684,7 @@ sub deactivateScope {
           shift(@{ $$self{$table}{$key} });
           $$frame{$table}{$key}--; }
         else {
-          Warn('internal', $key, $self->getStomach,
+          Warn('internal', $key, $$self{stomach},
             "Unassigning wrong value for $key from table $table in deactivateScope",
             "value is $value but stack is " . join(', ', @{ $$self{$table}{$key} })); } } } }
   return; }
@@ -707,11 +707,11 @@ sub convertUnit {
   $unit = lc($unit);
   # Put here since it could concievably evolve to depend on the current font.
   # Eventually try to track font size?
-  if    ($unit eq 'em') { return $self->lookupValue('font')->getEMWidth; }
-  elsif ($unit eq 'ex') { return $self->lookupValue('font')->getEXHeight; }
-  elsif ($unit eq 'mu') { return $self->lookupValue('font')->getMUWidth; }
+  if    ($unit eq 'em') { return lookupValue($self, 'font')->getEMWidth; }
+  elsif ($unit eq 'ex') { return lookupValue($self, 'font')->getEXHeight; }
+  elsif ($unit eq 'mu') { return lookupValue($self, 'font')->getMUWidth; }
   else {
-    my $units = $self->lookupValue('UNITS');
+    my $units = lookupValue($self, 'UNITS');
     my $sp    = $$units{$unit};
     if (!$sp) {
       Warn('expected', '<unit>', undef, "Illegal unit of measure '$unit', assuming pt.");

@@ -24,6 +24,9 @@ use base   qw(LaTeXML::Common::Object);
 
 our $READLINE_PROGRESS_QUANTUM = 25;
 
+# NOTE: that the following methods are (potentially) polymorphic w/Mouty types; Use $self->method
+#  new, initialize, finish, hasMoreInput, getNextLine, getLocator, getSource, stringify
+
 # Factory method;
 # Create an appropriate Mouth
 # options are
@@ -60,7 +63,7 @@ sub new {
     at_letter      => ($options{at_letter}      ? 1 : 0),
     notes          => ($options{notes}          ? 1 : 0),
   }, $class;
-  $self->openString($string);
+  openString($self, $string);
   $self->initialize;
   return $self; }
 
@@ -147,7 +150,7 @@ sub getNextLine {
 
 sub hasMoreInput {
   my ($self) = @_;
-  return !$self->isEOL || scalar(@{ $$self{buffer} }); }
+  return !isEOL($self) || scalar(@{ $$self{buffer} }); }
 
 # Get the next character & it's catcode from the input,
 # handling TeX's "^^" encoding.
@@ -353,7 +356,7 @@ sub readToken {
 sub readTokens {
   my ($self) = @_;
   my @tokens = ();
-  while (defined(my $token = $self->readToken())) {
+  while (defined(my $token = readToken($self))) {
     push(@tokens, $token); }
   while (@tokens && $tokens[-1]->getCatcode == CC_SPACE) {    # Remove trailing space
     pop(@tokens); }

@@ -19,6 +19,7 @@ package LaTeXML::Core::Token;
 use strict;
 use warnings;
 use LaTeXML::Global;
+use LaTeXML::Core::State;
 use LaTeXML::Common::Error;
 use LaTeXML::Common::Object;
 use base qw(LaTeXML::Common::Object);
@@ -324,6 +325,21 @@ sub equals {
       && (ref $a) eq (ref $b))
     && ($$a[1] == $$b[1])
     && (($$a[1] == CC_SPACE) || ($$a[0] eq $$b[0])); }
+
+# Check whether $self is defined_as $token,
+# that is, equal to $token, or \let to $token.
+# $token is is presumed to be some "constant", explicit token,
+# such as  T_SPACE, T_CS('\endcsname').
+sub defined_as {
+  my ($self, $token) = @_;
+  return unless $token;
+  my $cc  = $$self[1];
+  my $occ = $$token[1];
+  return 1 if ($cc == $occ) && (($occ == CC_SPACE) || ($$self[0] eq $$token[0]));
+  if (my $defn = (($cc == CC_CS) || ($cc == CC_ACTIVE)) && $STATE->lookupMeaning($self)) {
+    my $letto = ((ref $defn eq 'LaTeXML::Core::Token') ? $defn : $defn->getCS);
+    return 1 if ($$letto[1] == $occ) && (($occ == CC_SPACE) || ($$letto[0] eq $$token[0])); }
+  return; }
 
 my @CONTROLNAME = (    #[CONSTANT]
   qw( NUL SOH STX ETX EOT ENQ ACK BEL BS HT LF VT FF CR SO SI
