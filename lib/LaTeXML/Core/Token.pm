@@ -336,7 +336,7 @@ sub defined_as {
   my $cc  = $$self[1];
   my $occ = $$token[1];
   return 1 if ($cc == $occ) && (($occ == CC_SPACE) || ($$self[0] eq $$token[0]));
-  if (my $defn = (($cc == CC_CS) || ($cc == CC_ACTIVE)) && LookupMeaning($self)) {
+  if (my $defn = (($cc == CC_CS) || ($cc == CC_ACTIVE)) && $STATE->ookupMeaning($self)) {
     my $letto = ((ref $defn eq 'LaTeXML::Core::Token') ? $defn : $defn->getCS);
     return 1 if ($$letto[1] == $occ) && (($occ == CC_SPACE) || ($$letto[0] eq $$token[0])); }
   return; }
