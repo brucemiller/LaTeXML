@@ -1319,26 +1319,35 @@ sub lookupFontinfo {
   #  return LookupValue(($defn ? ToString($defn) : ToString($token)) . '_fontinfo'); }
   return LookupValue('fontinfo_' . ($defn ? $defn->getCSName : ToString($token))); }
 
-# Need to handle "at" too!!!
+# This should eventually actually load the font metrics,
+# and tie-in to the FontMetrics data used by Font.
 DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
     my ($stomach, $cs, $name) = @_;
     my $gullet = $stomach->getGullet;
     $name = ToString($name);
+    my ($at, $scaled);
+    if ($gullet->readKeyword('at'))     { $at     = $gullet->readDimension; }
+    if ($gullet->readKeyword('scaled')) { $scaled = $gullet->readNumber; }
     my %props = LaTeXML::Common::Font::decodeFontname($name,
-      ($gullet->readKeyword('at')
-        ? $gullet->readDimension->ptValue : undef),
-      ($gullet->readKeyword('scaled')
-        ? $gullet->readNumber->valueOf / 1000 : undef));
+      $at && $at->ptValue, $scaled && $scaled->valueOf / 1000);
     if (!keys %props) {    # Failed?
       Info('unexpected', $name, $stomach, "Unrecognized font name '$name'",
         "Font switch macro " . ToString($cs) . " will have no effect"); }
     else {
       $props{fontname} = $name; }
+    my $f = ($at ? $at->divide(Dimension('1em'))->valueOf
+      : ($scaled ? $scaled->valueOf / 1000
+        : 1));
+    my $fontinfo = {%props};
+    $$fontinfo{data} = [map { $_->multiply($f); }
+        Dimension(0), Dimension('0.5em'), Dimension(0),
+      Dimension(0), Dimension('1ex'), Dimension('1em')];
     $gullet->skipSpaces;
-    AssignValue('fontinfo_' . ToString($cs) => {%props});
+    # Store the font info & metrics
+    AssignValue('fontinfo_' . ToString($cs) => $fontinfo);
+    # The font $cs should select the font
     DefPrimitiveI($cs, undef, undef, font => {%props});
-
-});
+    return; });
 
 # Not sure what this should be...
 DefPrimitiveI('\nullfont', undef, undef, font => { family => 'nullfont' });
@@ -1499,9 +1508,6 @@ foreach my $letter (ord('A') .. ord('Z')) {
   $STATE->assignUCcode(chr($letter + 0x20), $letter, 'global'); }
 
 # Stub definitions ???
-DefRegister('\hyphenchar{}', Number(ord('-')));
-DefRegister('\skewchar{}',   Number(0));          # no idea what the default is here
-
 DefMacro('\hyphenation GeneralText', Tokens());
 DefMacro('\patterns{}',              Tokens());
 
@@ -1579,15 +1585,50 @@ DefRegister('\dp Number', Dimension(0),
 DefParameterType('FontToken', sub {
     my ($gullet) = @_;
     my $token = $gullet->readToken;
-    if ($token->toString =~ /^\\(?:text|script|scriptscript)font$/) {
-      $gullet->readNumber; }
-    $token; });    #?
+    if ($token->toString =~ /^\\(text|script|scriptscript)font$/) {
+      my $type = $1;
+      if (my $fam = $gullet->readNumber) {
+        $token = LookupValue($type . 'font_' . $fam->valueOf); } }
+    elsif ($token->toString eq '\\font') {
+      $token = LookupValue('textfont_0'); }    # ??? I assume shuld get current font?
+    $token; });                                #?
+
+# Access to the font parameters; Curiously, can be used as scratch arrays (eg LaTeX3)
 DefRegister('\fontdimen Number FontToken' => Dimension(0),
-  getter => sub { my $p = ToString($_[0]);
-    if ($p == 2)    { Dimension('0.5em'); }    # interword space
-    elsif ($p == 5) { Dimension('1ex'); }      # x-height
-    elsif ($p == 6) { Dimension('1em'); }      # quad width
-    else            { Dimension(0); } });
+  getter => sub {
+    my ($p, $font) = @_;
+    my $info = lookupFontinfo($font);
+    $p = ToString($p);
+    my $data = $info && $$info{data};
+    return ($data && $$data[$p - 1]) || Dimension(0); },
+  setter => sub {
+    my ($value, $scope, $p, $font) = @_;
+    my $info = lookupFontinfo($font);
+    $p = ToString($p);
+    if (my $data = $info && $$info{data}) {
+      $$data[$p - 1] = $value; } }
+);
+
+DefRegister('\hyphenchar FontToken' => Number(ord('-')),
+  getter => sub {
+    my ($font) = @_;
+    my $info = lookupFontinfo($font);
+    return ($info && $$info{hyphenchar}) || Number(ord('-')); },
+  setter => sub {
+    my ($value, $scope, $font) = @_;
+    if (my $info = lookupFontinfo($font)) {
+      $$info{hyphenchar} = $value; } }
+);
+DefRegister('\skewchar FontToken' => Number(0),
+  getter => sub {
+    my ($font) = @_;
+    my $info = lookupFontinfo($font);
+    return ($info && $$info{skewchar}) || Number(0); },
+  setter => sub {
+    my ($value, $scope, $font) = @_;
+    if (my $info = lookupFontinfo($font)) {
+      $$info{skewchar} = $value; } }
+);
 
 #   Could be handled by setting dimensions whenever the box itself is set?
 
