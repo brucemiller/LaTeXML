@@ -14,6 +14,7 @@ package LaTeXML::Package::Pool;
 use strict;
 use warnings;
 use LaTeXML::Package;
+use List::Util qw(min max);
 
 # Translation of the intarray portion of expl3.lua
 # lua arrays are typically 1-based
@@ -22,13 +23,11 @@ use LaTeXML::Package;
 DefParameterType('Intarray', sub {
     my ($gullet) = @_;
     my $tok = $gullet->readXToken;
-    if (my $defn = LookupDefinition($tok)) {    # token may be \let to the identifier!!!
-      $tok = $defn->getCS; }
-    if ($tok && $tok->equals(T_CS('\__intarray:w'))) {
+    if ($tok && $tok->defined_as(T_CS('\__intarray:w'))) {
       my $n       = $gullet->readNumber;
       my $address = '__intarray' . '_' . ToString($tok) . '_' . $n->valueOf;
       my $table   = LookupValue($address);
-      if (!$table) {                            # Create new table, if none
+      if (!$table) {    # Create new table, if none
         $table = [];
         AssignValue($address => $table, 'global'); }
       return $table; }
@@ -61,7 +60,7 @@ DefMacroI('\__intarray_gset:wF', 'Number Intarray Number {}', sub {
     my ($stomach, $pos, $table, $value, $ifmissing) = @_;
     my $length = scalar(@$table);
     $pos = $pos->valueOf;
-    if (($pos > 0) && ($pos < $length)) {
+    if (($pos > 0) && ($pos <= $length)) {
       $$table[$pos - 1] = $value->valueOf; }
     else {
       return $ifmissing; }
@@ -89,7 +88,7 @@ DefMacroI('\__intarray_item:wF', 'Number Intarray {}', sub {
     my ($stomach, $pos, $table, $ifmissing) = @_;
     my $length = scalar(@$table);
     $pos = $pos->valueOf;
-    if (($pos > 0) && ($pos < $length)) {
+    if (($pos > 0) && ($pos <= $length)) {
       return Explode($$table[$pos - 1]); }
     else {
       return $ifmissing; } });
@@ -98,7 +97,7 @@ DefMacroI('\__intarray_item:w', 'Number Intarray', sub {
     my ($stomach, $pos, $table) = @_;
     my $length = scalar(@$table);
     $pos = $pos->valueOf;
-    if (($pos > 0) && ($pos < $length)) {
+    if (($pos > 0) && ($pos <= $length)) {
       return Explode($$table[$pos - 1]); }
     return; });
 
@@ -108,8 +107,9 @@ DefMacroI('\__intarray_to_clist:Nn', 'Intarray', sub {
 
 DefMacroI('\__intarray_range_to_clist:w', 'Intarray Number Number', sub {
     my ($stomach, $table, $from, $to) = @_;
-    $from = $from->valueOf - 1;
-    $to   = $to->valueOf - 1;
+    my $length = scalar(@$table);
+    $from = min(max($from->valueOf - 1, 0),     $length - 1);
+    $to   = min(max($to->valueOf - 1,   $from), $length - 1);
     return Tokenize(join(', ', @$table[$from .. $to])); });
 
 DefPrimitiveI('\__intarray_gset_range:w', 'Number Intarray', sub {
