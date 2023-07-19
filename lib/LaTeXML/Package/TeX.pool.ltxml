@@ -1338,7 +1338,7 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
     my $f = ($at ? $at->divide(Dimension('1em'))->valueOf
       : ($scaled ? $scaled->valueOf / 1000
         : 1));
-    my $fontinfo = {%props};
+    my $fontinfo = \%props;
     $$fontinfo{data} = [map { $_->multiply($f); }
         Dimension(0), Dimension('0.5em'), Dimension(0),
       Dimension(0), Dimension('1ex'), Dimension('1em')];
@@ -1346,7 +1346,7 @@ DefPrimitive('\font Token SkipMatch:= SkipSpaces TeXFileName', sub {
     # Store the font info & metrics
     AssignValue('fontinfo_' . ToString($cs) => $fontinfo);
     # The font $cs should select the font
-    DefPrimitiveI($cs, undef, undef, font => {%props});
+    DefPrimitiveI($cs, undef, undef, font => $fontinfo);
     return; });
 
 # Not sure what this should be...
