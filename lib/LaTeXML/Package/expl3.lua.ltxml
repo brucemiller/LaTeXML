@@ -76,7 +76,7 @@ DefMacroI('\__intarray_gset:w', 'Number Intarray Number', sub {
     return; },
   protected => 1);
 
-DefPrimitiveI('\intarray_gzero:w', 'Intarray', sub {
+DefPrimitiveI('\intarray_gzero:N', 'Intarray', sub {
     my ($stomach, $table) = @_;
     my $length = scalar(@$table);
     for (my $i = 1 ; $i <= $length ; $i++) {
