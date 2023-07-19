@@ -20,7 +20,8 @@ use LaTeXML::Package;
 
 if (FindFile('expl3', type => 'ltx', noltxml => 1)) {
   InputDefinitions('expl3', type => 'ltx', noltxml => 1);
-  RawTeX(<<'EoRawTeX');
+  if (!($LaTeXML::DEBUG{compiling} || $LaTeXML::DEBUG{compiled})) {
+    RawTeX(<<'EoRawTeX');
 \ExplSyntaxOn
 \cs_gset_eq:NN \@expl@cs@to@str@@N \cs_to_str:N
 \cs_gset_eq:NN \@expl@str@if@eq@@nnTF \str_if_eq:nnTF
@@ -99,12 +100,9 @@ if (FindFile('expl3', type => 'ltx', noltxml => 1)) {
 \prop_gput:Nnn \g_msg_module_type_prop { cmd } { LaTeX }
 \ExplSyntaxOff
 EoRawTeX
+  }
 }
 else {
   Info('missing_file', 'expl3.ltx', undef, 'Recent versions of LaTeX expect expl3.ltx to be available, consider installing texlive.'); }
-
-# Can we do these better? xparse tests fail without them.
-DefMacroI('\@pushfilenameaux',          undef, Tokens(), locked => 1);
-DefMacroI('\@expl@push@filename@aux@@', undef, Tokens(), locked => 1);
 
 1;

@@ -2493,8 +2493,15 @@ sub InputDefinitions {
     my $pushpop = LookupDefinition(T_CS('\@pushfilename'))
       && LookupDefinition(T_CS('\@popfilename'));
     if ($options{handleoptions}) {
-# Note: this is trying to emulate the LaTeX 2 (latex.ltx) use of \@pushfilename. For expl3, see expl3.sty.ltxml
-      Digest(T_CS('\@pushfilename')) if $pushpop;
+      # Bookkeeping of what is being loaded so that LaTeX can run hooks.
+      # Tricky: expl3 wants to know the fill CURRENTLY being read; \@currname,\@currext set LATER.
+      # Recent expl3 appends \@expl@push@filename@aux@@ which takes THREE arguments!!!
+      # These arguments mysteriously appear in \@onefilewith@ptions, MUCH later than \@pushfilename
+      # We place the neaded data after \@pushfilename, but since we're Digesting in isolation,
+      # they'll disappear if they aren't consumed by expl3.  Whew!
+      Digest(Tokens(T_CS('\@pushfilename'),
+          T_BEGIN, T_END, T_BEGIN, T_END, T_BEGIN, Explode($name), T_END))
+        if $pushpop;
       # For \RequirePackageWithOptions, pass the options from the outer class/style to the inner one.
       if (my $passoptions = $options{withoptions} && $prevname
         && LookupValue('opt@' . $prevname . "." . $prevext)) {
