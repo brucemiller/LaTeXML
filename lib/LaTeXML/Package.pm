@@ -1032,17 +1032,18 @@ sub DefAutoload {
   my $csname = (ref $cs ? ToString($cs) : $cs);
   $csname = '\\' . $csname unless $cs =~ /^\\/;
   $cs     = T_CS($csname)  unless ref $cs;
-  if ($defnfile =~ /^(.*?)\.(pool|sty|cls)\.ltxml$/) {
+  $defnfile =~ s/\.ltxml$//;
+  if ($defnfile =~ /^(.*?)\.(pool|sty|cls)$/) {
     my ($name, $type) = ($1, $2);
     # if already loaded, or set, DONT redefine!
     if (!(
         LookupValue($name . '.' . $type . '_loaded')       ||
         LookupValue($name . '.' . $type . '.ltxml_loaded') ||
         LookupMeaning($cs))) {
-
+      AssignMapping('autoload_' . $defnfile, $csname => 1);
       DefMacroI($cs, undef, sub {
-          $STATE->assign_internal('meaning', $csname => undef, 'global');    # UNDEFINE (no recurse)
-          if    ($type eq 'pool') { LoadPool($name); }                       # Load appropriate definitions
+          ClearAutoLoad($defnfile);
+          if    ($type eq 'pool') { LoadPool($name); }         # Load appropriate definitions
           elsif ($type eq 'cls')  { LoadClass($name); }
           else                    { RequirePackage($name); }
           ($cs); }); } }    # Then return the original cs, so that it's be re-tried.
@@ -1050,6 +1051,13 @@ sub DefAutoload {
     Warning('unexpected', $defnfile, undef, "Don't know how to autoload $csname from $defnfile"); }
   return; }
 
+# Undefine ALL autoload triggers for this definition file.
+sub ClearAutoLoad {
+  my ($defnfile) = @_;
+  $defnfile =~ s/\.ltxml$//;
+  foreach my $trigger (LookupMappingKeys('autoload_' . $defnfile)) {
+    $STATE->assign_internal('meaning', $trigger => undef, 'global'); }
+  return; }
 #======================================================================
 # Defining Expandable Control Sequences.
 #======================================================================
@@ -2227,6 +2235,7 @@ sub loadLTXML {
   # Note (only!) that the ltxml version of this was loaded; still could load raw tex!
   AssignValue($request . '_loaded' => 1, 'global');
   AssignValue($ltxname . '_loaded' => 1, 'global') if $ltxname ne $request;
+  ClearAutoLoad($request);
   $STATE->getStomach->getGullet->readingFromMouth(LaTeXML::Core::Mouth::Binding->new($pathname), sub {
       do $pathname;
       Fatal('die', $pathname, $STATE->getStomach->getGullet,
@@ -2254,7 +2263,8 @@ sub loadTeXDefinitions {
     # Of course, now it will be marked and wont get reloaded!
     #
     return if LookupValue($request . '_loaded') && !$options{reloadable};
-    AssignValue($request . '_loaded' => 1, 'global'); }
+    AssignValue($request . '_loaded' => 1, 'global');
+    ClearAutoLoad($request); }
 
   my $stomach = $STATE->getStomach;
   # Note that we are reading definitions (and recursive input is assumed also definitions)
