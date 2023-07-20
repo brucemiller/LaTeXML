@@ -1,0 +1,124 @@
+# -*- mode: Perl -*-
+# /=====================================================================\ #
+# |  expl3.lua                                                          | #
+# | Implementation for LaTeXML                                          | #
+# |=====================================================================| #
+# | Part of LaTeXML:                                                    | #
+# |  Public domain software, produced as part of work done by the       | #
+# |  United States Government & not subject to copyright in the US.     | #
+# |---------------------------------------------------------------------| #
+# | Bruce Miller <bruce.miller@nist.gov>                        #_#     | #
+# | http://dlmf.nist.gov/LaTeXML/                              (o o)    | #
+# \=========================================================ooo==U==ooo=/ #
+package LaTeXML::Package::Pool;
+use strict;
+use warnings;
+use LaTeXML::Package;
+use List::Util qw(min max);
+
+# Translation of the intarray portion of expl3.lua
+# lua arrays are typically 1-based
+# Apparently an expl3 intarray is encoded at the TeX level by \__intarray:w <Number>
+# We store actual ints in the array, seems more efficient (could be Number or Tokens)
+DefParameterType('Intarray', sub {
+    my ($gullet) = @_;
+    my $tok = $gullet->readXToken;
+    if ($tok && $tok->defined_as(T_CS('\__intarray:w'))) {
+      my $n       = $gullet->readNumber;
+      my $address = '__intarray' . '_' . ToString($tok) . '_' . $n->valueOf;
+      my $table   = LookupValue($address);
+      if (!$table) {    # Create new table, if none
+        $table = [];
+        AssignValue($address => $table, 'global'); }
+      return $table; }
+    else {
+      $gullet->unread($tok);
+      Error('expected', '__intarray:w', $gullet,
+        "Expected an intarray identifier, got " . ToString($tok));
+      return []; } });
+
+DefPrimitiveI('\__intarray:w', 'Number', sub {
+    Error('unexpected', '\__intarray:w', $_[0], "Unexpected isolated \\__intarray:w?");
+    return; },
+  protected => 1);
+
+DefPrimitiveI('\__intarray_gset_count:Nw', 'Intarray Number', sub {
+    my ($stomach, $table, $newlength) = @_;
+    my $length = scalar(@$table);
+    $newlength = $newlength->valueOf;
+    $$table[$newlength - 1] = 0;                     # Grow in one step for efficiency
+    for (my $i = $length + 1 ; $i <= $newlength ; $i++) {
+      $$table[$i - 1] = 0; }
+    return; },
+  protected => 1);
+
+DefMacroI('\intarray_count:N', 'Intarray', sub {
+    my ($gullet, $table) = @_;
+    return Explode(scalar(@$table)); });
+
+DefMacroI('\__intarray_gset:wF', 'Number Intarray Number {}', sub {
+    my ($stomach, $pos, $table, $value, $ifmissing) = @_;
+    my $length = scalar(@$table);
+    $pos = $pos->valueOf;
+    if (($pos > 0) && ($pos <= $length)) {
+      $$table[$pos - 1] = $value->valueOf; }
+    else {
+      return $ifmissing; }
+    return; },
+  protected => 1);
+
+DefMacroI('\__intarray_gset:w', 'Number Intarray Number', sub {
+    my ($stomach, $pos, $table, $value) = @_;
+    my $length = scalar(@$table);
+    $pos = $pos->valueOf;
+    if ($pos > 0) {
+      $$table[$pos - 1] = $value->valueOf; }
+    return; },
+  protected => 1);
+
+DefPrimitiveI('\intarray_gzero:N', 'Intarray', sub {
+    my ($stomach, $table) = @_;
+    my $length = scalar(@$table);
+    for (my $i = 1 ; $i <= $length ; $i++) {
+      $$table[$i - 1] = 0; }
+    return; },
+  protected => 1);
+
+DefMacroI('\__intarray_item:wF', 'Number Intarray {}', sub {
+    my ($stomach, $pos, $table, $ifmissing) = @_;
+    my $length = scalar(@$table);
+    $pos = $pos->valueOf;
+    if (($pos > 0) && ($pos <= $length)) {
+      return Explode($$table[$pos - 1]); }
+    else {
+      return $ifmissing; } });
+
+DefMacroI('\__intarray_item:w', 'Number Intarray', sub {
+    my ($stomach, $pos, $table) = @_;
+    my $length = scalar(@$table);
+    $pos = $pos->valueOf;
+    if (($pos > 0) && ($pos <= $length)) {
+      return Explode($$table[$pos - 1]); }
+    return; });
+
+DefMacroI('\__intarray_to_clist:Nn', 'Intarray', sub {
+    my ($stomach, $table) = @_;
+    return Tokenize(join(', ', @$table)); });
+
+DefMacroI('\__intarray_range_to_clist:w', 'Intarray Number Number', sub {
+    my ($stomach, $table, $from, $to) = @_;
+    my $length = scalar(@$table);
+    $from = min(max($from->valueOf - 1, 0),     $length - 1);
+    $to   = min(max($to->valueOf - 1,   $from), $length - 1);
+    return Tokenize(join(', ', @$table[$from .. $to])); });
+
+DefPrimitiveI('\__intarray_gset_range:w', 'Number Intarray', sub {
+    my ($stomach, $from, $table) = @_;
+    my $length = scalar(@$table);
+    Error('unimplemented', '\__intarray_gset_range:w', $stomach,
+      "This command is not yet implemented");
+    # read commas, Numbers, store in successive positions starting at $from
+    return; },
+  protected => 1);
+
+1;
