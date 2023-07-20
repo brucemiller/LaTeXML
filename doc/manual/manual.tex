@@ -580,7 +580,7 @@ where \textit{level} is one of \texttt{chapter},
 For example, \texttt{section} would split the document into
 chapters (if any) and sections, along with separate
 bibliography, index and any appendices.
-(See also \shellcode{--splitxpath} in \ltxcmd{latexml}.)
+(See also \shellcode{--splitpath} in \ltxcmd{latexml}.)
 The removed document nodes are replaced by a Table of Contents.
 
 The extra files are named using either the id or label
@@ -855,7 +855,7 @@ on the commandline options to \ltxcmd{latexmlpost}.
 Postprocessing filter modules are generally applied in the following order:
 \begin{description}
   \item[Split] splits the document into several `page' documents,
-   according to \cmd{--split} or \cmd{--splitxpath} options.
+   according to \cmd{--split} or \cmd{--splitpath} options.
   \item[Scan] scans the document for all ID's, labels and cross-references.
     This data may be stored in an external database,  depending on the \cmd{--db} option.
   \item[MakeIndex] fills in the \elementref{index} element (due to a \verb|\printindex|)
