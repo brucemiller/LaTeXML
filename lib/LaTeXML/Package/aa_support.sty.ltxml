@@ -72,16 +72,18 @@ DefMacro('\subtitle{}', '\@add@frontmatter{ltx:subtitle}{#1}');
 # "Structured" abstract
 # Note that they suggest either a 5 or 1 argument version!
 # NOT an environment!!!
-DefConstructor('\abstract@old{}', '<ltx:abstract>#1</ltx:abstract>');
-DefConstructor('\abstract@new{}{}{}{}{}',
-  "<ltx:abstract name='#name'>"
-    . "  <ltx:p><ltx:text>Context:</ltx:text>#1</ltx:p>"
-    . "  <ltx:p><ltx:text>Aims:</ltx:text>#2</ltx:p>"
-    . "  <ltx:p><ltx:text>Methods:</ltx:text>#3</ltx:p>"
-    . "  <ltx:p><ltx:text>Results:</ltx:text>#4</ltx:p>"
-    . "  <ltx:p><ltx:text>Conclusions:</ltx:text>#5</ltx:p>"
-    . "</ltx:abstract>",
-  properties => sub { (name => DigestIf('\abstractname')); });
+DefMacro('\abstract@old{}',
+  '\@add@frontmatter{ltx:abstract}{#1}');
+
+# Apparently args #2--#4 are required non-empty.
+DefMacro('\abstract@new{}{}{}{}{}',
+         '\@add@frontmatter{ltx:abstract}[name={\abstractname}]{'
+         .'\ifx.#1.\else\textit{Context. }#1\par\fi'
+         .'\textit{Aims. }#2\par'
+         .'\textit{Methods. }#3\par'
+         .'\textit{Results. }#4\par'
+         .'\ifx.#5.\else\textit{Conclusions. }#5\fi'
+         .'}');
 
 DefMacro('\abstract{}', sub {
     my ($gullet, $arg1) = @_;
@@ -89,7 +91,6 @@ DefMacro('\abstract{}', sub {
     ((T_CS($gullet->ifNext(T_BEGIN)
           ? '\abstract@new' : '\abstract@old')),
       T_BEGIN, $arg1->unlist, T_END); });
-
 # Keywords
 DefMacroI('\keywordname', undef, '\sffamily\bfseries Key Words.');
 DefMacro('\keywords{}', '\@add@frontmatter{ltx:keywords}[name={\keywordname}]{#1}');
