@@ -7112,19 +7112,33 @@ DefMathI('\to', undef, "\x{2192}", role => 'ARROW'); # RIGHTWARDS ARROW??? a bit
 DefPrimitive('\@@endash', sub { Box("\x{2013}", undef, undef, T_CS('\@@endash')); });
 DefPrimitive('\@@emdash', sub { Box("\x{2014}", undef, undef, T_CS('\@@emdash')); });
 
-DefLigature(qr{--}, "\x{2013}",
-  fontTest => sub { $_[0]->getFamily ne 'typewriter'; }); # EN DASH (NOTE: With digits before & aft => \N{FIGURE DASH})
-DefLigature(qr{---}, "\x{2014}",
-  fontTest => sub { $_[0]->getFamily ne 'typewriter'; });    # EM DASH
+sub nonTypewriter {
+  my ($font) = @_;
+  return ($font->getFamily ne 'typewriter'); }
+
+sub nonTypewriterT1 {
+  my ($font) = @_;
+  return ($font->getFamily ne 'typewriter') && (($font->getEncoding || 'OT1') =~ /^(OT1|T1)$/); }
+
+# EN DASH (NOTE: With digits before & aft => \N{FIGURE DASH})
+DefLigature(qr{--},  "\x{2013}", fontTest => \&nonTypewriter);    # EN dash
+DefLigature(qr{---}, "\x{2014}", fontTest => \&nonTypewriter);    # EM dash
 
 # Ligatures for doubled single left & right quotes to convert to double quotes
 # [should ligatures be part of a font, in the first place? (it is in TeX!)
-DefLigature(qr{\x{2018}\x{2018}}, "\x{201C}",
-  fontTest => sub { ($_[0]->getFamily ne 'typewriter')
-      && (($_[0]->getEncoding || 'OT1') =~ /^(OT1|T1)$/); });    # is this needed?
-DefLigature(qr{\x{2019}\x{2019}}, "\x{201D}",
-  fontTest => sub { ($_[0]->getFamily ne 'typewriter')
-      && (($_[0]->getEncoding || 'OT1') =~ /^(OT1|T1)$/); });
+DefLigature(qr{\x{2018}\x{2018}}, "\x{201C}", fontTest => \&nonTypewriterT1);   # double left quote
+DefLigature(qr{\x{2019}\x{2019}}, "\x{201D}", fontTest => \&nonTypewriterT1);   # double right quote
+DefLigature(qr{\?\x{2018}},       UTF(0xBF),  fontTest => \&nonTypewriterT1);   # ? backquote
+DefLigature(qr{!\x{2018}},        UTF(0xA1),  fontTest => \&nonTypewriterT1);   # ! backquote
+# These ligatures are also handled by TeX.
+# However, it appears that decent modern fonts in modern browsers handle these at that level.
+# So it's likely not worth doing it at the conversion level, possibly adversely affecting search.
+# DefLigature(qr{ff},               "\x{FB00}", fontTest => \&nonTypewriterT1);
+# DefLigature(qr{fi},               "\x{FB01}", fontTest => \&nonTypewriterT1);
+# DefLigature(qr{fl},               "\x{FB02}", fontTest => \&nonTypewriterT1);
+# DefLigature(qr{ffi},              "\x{FB03}", fontTest => \&nonTypewriterT1);
+# DefLigature(qr{ffl},              "\x{FB04}", fontTest => \&nonTypewriterT1);
+
 DefConstructor('\TeX',
   "<ltx:text class='ltx_TeX_logo' cssstyle='letter-spacing:-0.2em; margin-right:0.2em'>"
     . "T<ltx:text yoffset='-0.4ex'>E</ltx:text>X</ltx:text>",
