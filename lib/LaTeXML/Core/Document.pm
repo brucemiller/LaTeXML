@@ -1243,6 +1243,7 @@ sub closeText_internal {
         next if ($fonttest = $$ligature{fontTest}) && !&$fonttest($font);
         $string = &{ $$ligature{code} }($string); } }
     $node->setData($string) unless $string eq $ostring;
+    Debug("LIGATURE $ostring => $string") if $LaTeXML::DEBUG{document} && ($string ne $ostring);
     $$self{node} = $parent;    # Effectively closed (->setNode, but don't recurse)
     return $parent; }
   else {
