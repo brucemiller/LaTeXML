@@ -368,6 +368,7 @@ sub setSchemaClass {
 # NOTE: These are public, but perhaps should be passed
 # to submodel, in case it can evolve to more precision?
 # However, it would need more context to do that.
+# NOTE: That * matches any NON-namespaced name; *:* matches any namespaced name
 
 # Can an element with (qualified name) $tag contain a $childtag element?
 sub canContain {
@@ -396,13 +397,15 @@ sub canContain {
       : ($$model{"!$childtag"} ? 0
         : ($$model{"$chns:*"} ? 1
           : ($$model{"!$chns:*"} ? 0
-            : ($$model{'*:*'} ? 1
-              : 0))))); }
+            : ($$model{'!*:*'} ? 0
+              : ($$model{'*:*'} ? 1
+                : 0)))))); }
   else {
     return ($$model{$childtag} ? 1
       : ($$model{"!$childtag"} ? 0
-        : ($$model{'*:*'} ? 1
-          : 0))); } }
+        : ($$model{'!*'} ? 0
+          : ($$model{'*'} ? 1
+            : 0)))); } }
 
 # NOTE: Currently the Document class already allows ANY namespaced attributes!
 # (which is very unmodular, although it does have to arrange for namespace declarations)
@@ -432,13 +435,15 @@ sub canHaveAttribute {
       : ($$attr{"!$attrib"} ? 0
         : ($$attr{"$attrns:*"} ? 1
           : ($$attr{"!$attrns:*"} ? 0
-            : ($$attr{'*:*'} ? 1
-              : ($$attr{'!*:*'} ? 0
+            : ($$attr{'!*:*'} ? 0
+              : ($$attr{'*:*'} ? 1
                 : 0)))))); }
   else {
     return ($$attr{$attrib} ? 1
       : ($$attr{"!$attrib"} ? 0
-        : 0)); } }
+        : ($$attr{'!*'} ? 0
+          : ($$attr{'*'} ? 1
+            : 0)))); } }
 
 sub isInSchemaClass {
   my ($self, $classname, $tag) = @_;

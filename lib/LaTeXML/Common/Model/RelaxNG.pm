@@ -85,8 +85,8 @@ sub loadSchema {
       next; }
     my @body = @{ $$self{elements}{$tag} };
     my ($content, $attributes) = $self->extractContent($tag, @body);
-    $$self{model}->addTagContent($tag, sort keys %$content);
-    $$self{model}->addTagAttribute($tag, sort keys %$attributes); }
+    $$self{model}->addTagContent($tag, filterNames($content));
+    $$self{model}->addTagAttribute($tag, filterNames($attributes)); }
   # Extract definitions of symbols that define Schema Classes, too
   foreach my $symbol (sort keys %{ $$self{defs} }) {
     if ($symbol =~ /^grammar\d+:(.+?)\.class$/) {
@@ -95,6 +95,17 @@ sub loadSchema {
       $$self{model}->setSchemaClass($name, $content); } }
   ProgressSpindown("Loading RelaxNG $$self{name}");
   return; }
+
+# collapse redundancies like having both *:* and !*:*
+sub filterNames {
+  my ($hash) = @_;
+  my %filtered = ();
+  foreach my $name (keys %$hash) {
+    if (($name ne '!*')    # !* can be omitted; only cancels *
+      && ((($name =~ /^!(.*)$/) && !(defined $$hash{$1}))    # Negated name, but name not present?
+        || (!defined $$hash{ '!' . $name }))) {              # Or negation of name not present
+      $filtered{$name} = 1; } }
+  return sort keys %filtered; }
 
 # Return two hashrefs for content & attributes
 sub extractContent {
@@ -343,12 +354,12 @@ sub scanNameClass {
     my @exceptions = ();    # Check for exceptions!
     if (my @children = getElements($node)) {
       @exceptions = map { $self->scanNameClass($_, $forattr, $ns) } @children; }
-    return ('*:*', @exceptions); }
+    return ('*', '*:*', @exceptions); }    # anyName can be namespaced or not
   elsif ($relaxop eq 'rng:nsName') {
-    my @exceptions = ();    # Check for exceptions!
+    my @exceptions = ();                   # Check for exceptions!
     if (my @children = getElements($node)) {
       @exceptions = map { $self->scanNameClass($_, $forattr, $ns) } @children; }
-    return ($$self{model}->encodeQName($node->getAttribute('ns') || $ns, '*'), @exceptions); }
+    return ($$self{model}->encodeQName($node->getAttribute('ns') // $ns, '*'), @exceptions); }
   elsif ($relaxop eq 'rng:choice') {
     my %names = ();
     foreach my $choice ($node->childNodes) {
