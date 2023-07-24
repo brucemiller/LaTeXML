@@ -403,13 +403,7 @@
   <xsl:template match="/" mode="body-main">
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
-      <xsl:attribute name="class">
-          <xsl:text>ltx_page_main</xsl:text>
-          <xsl:if test="//ltx:note[@role='margin'][@class='ltx_marginpar_reverse']"
-              > ltx_has_marginpar_reverse</xsl:if>
-          <xsl:if test="//ltx:note[@role='margin'][@class='ltx_marginpar_normal']"
-              > ltx_has_marginpar_normal</xsl:if>
-      </xsl:attribute>
+      <xsl:attribute name="class">ltx_page_main</xsl:attribute>
       <xsl:apply-templates select="." mode="body-main-begin"/>
       <xsl:apply-templates select="." mode="header"/>
       <xsl:apply-templates select="." mode="body-content"/>

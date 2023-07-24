@@ -3565,8 +3565,8 @@ DefConstructor('\marginpar[]{}',
   "<ltx:note role='margin' class='#class'><ltx:inline-para>#content</ltx:inline-para></ltx:note>",
   properties => sub {
     my $isReversed = IfCondition('\if@reversemargin');
-    my $class      = $isReversed             ? 'ltx_marginpar_reverse' : 'ltx_marginpar_normal';
-    my $content    = ($isReversed and $_[1]) ? $_[1]->toString         : $_[2]->toString;
+    my $class      = 'ltx_marginpar_' . ($isReversed ? 'reverse' : 'normal');
+    my $content    = ($isReversed and $_[1]) ? $_[1] : $_[2];
     return (class => $class, content => $content); });
 DefRegister('\marginparpush', Dimension(0));
 
