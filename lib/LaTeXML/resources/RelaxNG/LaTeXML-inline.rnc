@@ -141,7 +141,8 @@ element rule { rule_attributes, rule_model }
 rule_attributes =
   Common.attributes,
   Positionable.attributes,
-  Colorable.attributes
+  Colorable.attributes,
+  Backgroundable.attributes
 
 ## Content model for \elementref{rule}.
 rule_model = empty

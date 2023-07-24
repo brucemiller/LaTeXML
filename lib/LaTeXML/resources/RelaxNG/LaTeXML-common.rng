@@ -241,6 +241,21 @@ and can thus be effected by CSS; the background will presumably
 correspond to a bounding rectangle, but is determined by the CSS rendering engine.</a:documentation>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="framed">
+        <a:documentation>the kind of frame or outline for the box.</a:documentation>
+        <choice>
+          <value>rectangle</value>
+          <value>underline</value>
+          <text/>
+        </choice>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="framecolor">
+        <a:documentation>the color of the frame or outlie for the box.</a:documentation>
+      </attribute>
+    </optional>
   </define>
   <define name="Positionable.attributes">
     <a:documentation>Attributes shared by low-level, generic inline and block elements
@@ -306,21 +321,6 @@ The default is baseline. </a:documentation>
           <value>left</value>
           <text/>
         </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="framed">
-        <a:documentation>the kind of frame or outline for the box.</a:documentation>
-        <choice>
-          <value>rectangle</value>
-          <value>underline</value>
-          <text/>
-        </choice>
-      </attribute>
-    </optional>
-    <optional>
-      <attribute name="framecolor">
-        <a:documentation>the color of the frame or outlie for the box.</a:documentation>
       </attribute>
     </optional>
   </define>
