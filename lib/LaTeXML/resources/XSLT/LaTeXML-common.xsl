@@ -534,7 +534,7 @@
       <xsl:value-of select="concat(' ',f:class-pref('ltx_align_float',@float))"/>
     </xsl:if>
     <xsl:if test="@framed">
-      <xsl:value-of select="concat(' ',f:class-pref('ltx_framed_',@framed))"/>
+      <xsl:value-of select="concat(' ','ltx_framed ',f:class-pref('ltx_framed_',@framed))"/>
     </xsl:if>
   </xsl:template>
 

@@ -347,7 +347,6 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 .ltx_td,
 .ltx_th      { display:table-cell; }
 
-.ltx_framed  { border:1px solid black;}
 .ltx_tabular .ltx_td,
 .ltx_tabular .ltx_th { padding:0.1em 0.5em; }
 /* regular lines */
@@ -366,6 +365,8 @@ span.ltx_rowspan { position:absolute; top:0; bottom:0; }
 .ltx_border_B  { border-bottom:1px solid gray; }
 .ltx_border_L  { border-left:1px solid gray; }
 /* Framing */
+.ltx_framed    { padding:3pt; }
+span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/margin collapse */
 .ltx_framed_rectangle { border-style:solid; border-width:1px; }
 .ltx_framed_top       { border-top-style:solid; border-top-width:1px; }
 .ltx_framed_left      { border-left-style:solid; border-left-width:1px; }
