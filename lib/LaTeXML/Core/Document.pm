@@ -748,7 +748,6 @@ sub openText {
   return if $font->getFamily eq 'nullfont';
   Debug("openText \"$text\" /" . Stringify($font) . " at " . Stringify($node))
     if $LaTeXML::DEBUG{document};
-
   # Get the desired font attributes, particularly the desired element
   # (usually ltx:text, but let Font override, eg for \emph)
   my $declared_font       = getNodeFont($self, $node);
@@ -1272,7 +1271,8 @@ our %non_mergeable_attributes = map { $_ => 1; }
   qw(about aboutlabelref aboutidref
   resource resourcelabelref resourceidref
   property rel rev tyupeof datatype content
-  data datamimetype dataencoding);
+  data datamimetype dataencoding
+  framed);
 
 # Avoid redundant nesting of font switching elements:
 # If we're closing a node that can take font switches and it contains

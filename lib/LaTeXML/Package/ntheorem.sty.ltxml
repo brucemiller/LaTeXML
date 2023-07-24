@@ -176,7 +176,7 @@ Let('\renewtheorem', '\newtheorem');
 DefConstructorI('\lx@addframing', undef, sub {
     my ($doc, %props) = @_;
     my $node = $doc->getElement;
-    $doc->addClass($node, 'ltx_framed');
+    $doc->setAttribute($node, framed => 'rectangle');
     my $css = $node->getAttribute('cssstyle');
     my $pad = 'padding:' . $props{margin} . 'pt;';
     $doc->setAttribute($node, cssstyle => ($css ? $css . ';' . $pad : $pad)); },

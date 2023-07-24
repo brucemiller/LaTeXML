@@ -34,7 +34,7 @@ DefMacro('\lx@titleformat@star {}{}', sub {
       Tokens($format, T_SPACE, T_PARAM, T_OTHER('1'))); });
 our %titlesec_shape_class_map = (
   runin       => 'ltx_runin',
-  frame       => 'ltx_framed',
+  frame       => 'ltx_framed ltx_framed_rectangle',
   rightmargin => 'ltx_align_right',
   leftmargin  => 'ltx_align_left'
 );
