@@ -413,6 +413,11 @@
           <xsl:value-of select="."/>
         </xsl:attribute>
       </xsl:when>
+      <xsl:when test="namespace-uri() = 'http://www.w3.org/1999/xhtml'">
+        <xsl:attribute name="{local-name()}">
+          <xsl:value-of select="."/>
+        </xsl:attribute>
+      </xsl:when>
       <xsl:when test="$prefix = 'data'">
         <xsl:attribute name="{concat('data-',local-name())}">
           <xsl:value-of select="."/>
