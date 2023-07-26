@@ -1135,36 +1135,9 @@
           </xsl:apply-templates>
         </xsl:element>
       </xsl:when>
-      <xsl:when test="child::ltx:tags">
-        <xsl:element name="{f:blockelement($context,'li')}" namespace="{$html_ns}">
-          <xsl:call-template name="add_id"/>
-          <xsl:call-template name="add_attributes">
-            <xsl:with-param name="extra_style">
-              <xsl:value-of select="'list-style-type:none;'"/>
-              <xsl:if test="@itemsep">
-                <xsl:value-of select="concat('padding-top:',@itemsep,';')"/>
-              </xsl:if>
-            </xsl:with-param>
-          </xsl:call-template>
-          <xsl:apply-templates select="." mode="begin">
-            <xsl:with-param name="context" select="$context"/>
-          </xsl:apply-templates>
-          <xsl:apply-templates select="ltx:tags/ltx:tag[not(@role)]">
-            <xsl:with-param name="context" select="$context"/>
-          </xsl:apply-templates>
-          <xsl:text> </xsl:text>
-          <xsl:apply-templates select="*[local-name() != 'tags']">
-            <xsl:with-param name="context" select="$context"/>
-          </xsl:apply-templates>
-          <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="context" select="$context"/>
-          </xsl:apply-templates>
-        </xsl:element>
-      </xsl:when>
       <xsl:otherwise>
         <xsl:element name="{f:blockelement($context,'li')}" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
-          <!-- if there's no ltx:tags, it's presumably intentional -->
           <xsl:call-template name="add_attributes">
             <xsl:with-param name="extra_style">
               <xsl:value-of select="'list-style-type:none;'"/>
@@ -1176,7 +1149,22 @@
           <xsl:apply-templates select="." mode="begin">
             <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
-          <xsl:apply-templates>
+          <xsl:choose>
+            <xsl:when test="child::ltx:tags">
+              <xsl:apply-templates select="ltx:tags/ltx:tag[not(@role)]">
+                <xsl:with-param name="context" select="$context"/>
+              </xsl:apply-templates>
+              <xsl:text> </xsl:text>
+            </xsl:when>
+            <!-- if there's no ltx:tags, it's presumably intentional
+                 but we need an empty span for consistent spacing -->
+            <xsl:otherwise>
+              <xsl:element name="span" namespace="{$html_ns}">
+                <xsl:attribute name="class">ltx_tag ltx_tag_item</xsl:attribute>
+              </xsl:element>
+            </xsl:otherwise>
+          </xsl:choose>
+          <xsl:apply-templates select="*[local-name() != 'tags']">
             <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
