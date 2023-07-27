@@ -5906,10 +5906,10 @@ DefMathI('\angle', undef, "\x{2220}");
 
 # NOTE: This is probably the wrong role.
 # Also, should probably carry info about Binding for OpenMath
-DefMathI('\forall',    undef, "\x{2200}", role => 'BIGOP',    meaning => 'for-all');
-DefMathI('\exists',    undef, "\x{2203}", role => 'BIGOP',    meaning => 'exists');
-DefMathI('\neg',       undef, UTF(0xAC),  role => 'OPERATOR', meaning => 'not');
-DefMathI('\lnot',      undef, UTF(0xAC),  role => 'OPERATOR', meaning => 'not');
+DefMathI('\forall',    undef, "\x{2200}", role => 'BIGOP', meaning => 'for-all');
+DefMathI('\exists',    undef, "\x{2203}", role => 'BIGOP', meaning => 'exists');
+DefMathI('\neg',       undef, UTF(0xAC),  role => 'BIGOP', meaning => 'not');
+DefMathI('\lnot',      undef, UTF(0xAC),  role => 'BIGOP', meaning => 'not');
 DefMathI('\flat',      undef, "\x{266D}");
 DefMathI('\natural',   undef, "\x{266E}");
 DefMathI('\sharp',     undef, "\x{266F}");
