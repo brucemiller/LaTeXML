@@ -237,7 +237,7 @@
   </para>
   <para xml:id="p7">
     <equation xml:id="S0.Ex7">
-      <Math mode="display" tex="\arcsin\pi+\neg a=\{\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}" text="inverse-sine@(pi) + not * a = cases@(Array[[a, b], [c, d]])" xml:id="S0.Ex7.m1">
+      <Math mode="display" tex="\arcsin\pi+\neg a=\{\begin{array}[]{cc}a&amp;b\\&#10;c&amp;d\end{array}" text="inverse-sine@(pi) + not@(a) = cases@(Array[[a, b], [c, d]])" xml:id="S0.Ex7.m1">
         <XMath>
           <XMApp>
             <XMTok meaning="equals" role="RELOP">=</XMTok>
@@ -248,8 +248,7 @@
                 <XMTok font="italic" name="pi" role="UNKNOWN">π</XMTok>
               </XMApp>
               <XMApp>
-                <XMTok meaning="times" role="MULOP">⁢</XMTok>
-                <XMTok meaning="not" name="neg" role="FUNCTION">¬</XMTok>
+                <XMTok meaning="not" name="neg" role="OPERATOR">¬</XMTok>
                 <XMTok font="italic" role="UNKNOWN">a</XMTok>
               </XMApp>
             </XMApp>
