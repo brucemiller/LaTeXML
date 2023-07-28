@@ -412,7 +412,7 @@ DefConstructor('\dataset OptionalSemiverbatim {}  ',
 
 # Note that semantics could be useful!
 #  \ion{element}{level}
-DefMacro('\ion{}{}', '{#1 \uppercase{\romannumeral #2}}');
+DefMacro('\ion{}{}', '{#1~\expandafter\uppercase\expandafter{\romannumeral #2}}');
 
 # NOTE: These are almost totally wrong...
 DefPrimitiveI('\sbond', undef, "\x{2212}");
