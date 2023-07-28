@@ -679,7 +679,8 @@ sub insertComment {
   chomp($text);
   $text =~ s/\-\-+/__/g;
   my $comment;
-  my $prev     = $$self{node}->lastChild;
+  my $node     = getElement($self);
+  my $prev     = $node && $node->lastChild;
   my $prevtype = $prev && $prev->nodeType;
   if ($$self{node}->nodeType == XML_DOCUMENT_NODE) {
     push(@{ $$self{pending} }, $comment = $$self{document}->createComment(' ' . $text . ' ')); }
@@ -688,11 +689,11 @@ sub insertComment {
     $comment->setData($comment->data . "\n     " . $text . ' '); }
   elsif ($prevtype && ($prevtype == XML_TEXT_NODE)) {    # Put comment BEFORE text node
     if (($comment = $prev->previousSibling) && ($comment->nodeType == XML_COMMENT_NODE)) {
-      $comment = $$self{node}->appendChild($$self{document}->createComment(' ' . $text . ' ')); }
+      $comment = $node->appendChild($$self{document}->createComment(' ' . $text . ' ')); }
     else {
-      $comment = $$self{node}->insertBefore($$self{document}->createComment(' ' . $text . ' '), $prev); } }
+      $comment = $node->insertBefore($$self{document}->createComment(' ' . $text . ' '), $prev); } }
   else {
-    $comment = $$self{node}->appendChild($$self{document}->createComment(' ' . $text . ' ')); }
+    $comment = $node->appendChild($$self{document}->createComment(' ' . $text . ' ')); }
   return $comment; }
 
 # Insert a ProcessingInstruction of the form <?op attr=value ...?>
