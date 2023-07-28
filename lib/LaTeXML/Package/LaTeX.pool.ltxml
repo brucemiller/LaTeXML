@@ -3562,12 +3562,9 @@ DefConditional('\if@reversemargin');
 Let('\reversemarginpar', '\@reversemargintrue');
 Let('\normalmarginpar',  '\@reversemarginfalse');
 DefConstructor('\marginpar[]{}',
-  "<ltx:note role='margin' class='#class'><ltx:inline-para>#content</ltx:inline-para></ltx:note>",
-  properties => sub {
-    my $isReversed = IfCondition('\if@reversemargin');
-    my $class      = 'ltx_marginpar_' . ($isReversed ? 'reverse' : 'normal');
-    my $content    = ($isReversed and $_[1]) ? $_[1] : $_[2];
-    return (class => $class, content => $content); });
+"?#1(<ltx:note role='margin' class='ltx_marginpar_left'><ltx:inline-para>#1</ltx:inline-para></ltx:note>"
+    . "?#2(<ltx:note role='margin' class='ltx_marginpar_right'><ltx:inline-para>#2</ltx:inline-para></ltx:note>))"
+    . "(<ltx:note role='margin' class='ltx_marginpar'><ltx:inline-para>#2</ltx:inline-para></ltx:note>)");
 DefRegister('\marginparpush', Dimension(0));
 
 #**********************************************************************
@@ -4708,11 +4705,11 @@ DefConstructor('\@framebox[Dimension][]{}',
     $stomach->beginMode('text');
     AssignValue(FRAME_IN_MATH => $wasmath); },
   properties => sub {
-    my $sep= LookupRegister('\fboxsep')->toAttribute;
+    my $sep = LookupRegister('\fboxsep')->toAttribute;
     (($_[2] ? (align => $makebox_alignment{ ToString($_[2]) }) : ()),
       framecolor => LookupValue('font')->getColor,
-     ($sep ne '3.0pt' ? (cssstyle   => 'padding:' . $sep):()),
-      ($_[1] ? (width => $_[1]) : ())); },
+      ($sep ne '3.0pt' ? (cssstyle => 'padding:' . $sep) : ()),
+      ($_[1]           ? (width    => $_[1])             : ())); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $wasmath = LookupValue('FRAME_IN_MATH');

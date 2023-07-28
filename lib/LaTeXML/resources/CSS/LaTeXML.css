@@ -401,6 +401,7 @@ span.ltx_framed       { display:inline-block; text-indent:0; } /* avoid padding/
 .ltx_note:hover .ltx_note_content,
 .ltx_note .ltx_note_content:hover {
    display:block; position:absolute; z-index:10; }
+.ltx_note.ltx_marginpar_left { display:none; }
 
 .ltx_ERROR        { color:red; }
 .ltx_rdf          { display:none; }
