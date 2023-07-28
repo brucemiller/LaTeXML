@@ -22,16 +22,14 @@ sub defineExcluded {
   my ($stomach, $name) = @_;
   $name = ToString($name);
   my $endmark = '\end{' . $name . '}';
-  DefConstructorI(T_CS("\\begin{$name}"), undef, '', reversion => '',
-    afterDigest => [sub {
-        my ($istomach, $whatsit) = @_;
-        my $nlines = 0;
-        my ($line);
-        my $gullet = $istomach->getGullet;
-        $gullet->readRawLine;    # IGNORE 1st line (after the \begin{$name} !!!
-        while (defined($line = $gullet->readRawLine) && ($line !~ /^\s*\Q$endmark\E\s*$/)) {
-          $nlines++; }
-        NoteLog("[Skipped $name ($nlines lines)]"); }]);
+  DefMacroI(T_CS("\\begin{$name}"), undef, sub {
+      my ($gullet) = @_;
+      my $line     = $gullet->readRawLine;    # skip rest of 1st line (after the \begin{$name} !!!
+      my @stuff    = ();
+      push(@stuff, $line) if $line;
+      while (defined($line = $gullet->readRawLine) && ($line !~ /^\s*\Q$endmark\E\s*$/)) {
+        push(@stuff, $line); }
+      return Tokens(T_COMMENT(join("\n", @stuff))); });
   return; }
 
 sub defineIncluded {
