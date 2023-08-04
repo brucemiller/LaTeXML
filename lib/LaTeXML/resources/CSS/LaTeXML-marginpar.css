@@ -2,10 +2,23 @@
   (more sophisticated layout probably requires xslt) */
 .ltx_note.ltx_role_margin .ltx_note_mark { display:none; }
 .ltx_note.ltx_role_margin .ltx_note_type { display:none; }
+.ltx_note.ltx_role_margin { width:15%; }
 .ltx_note.ltx_role_margin .ltx_note_content {
-    display:block;
-    position:absolute; left:83%; width:15%;
-    background-color: transparent; border:0pt; }
+    display:block; position:relative;
+    background-color:transparent; border:0pt; }
 
-/* Narrower, to make room for marginpar */
-.ltx_page_main { width:80%; }
+/* Narrower, to make room for marginpar.
+ * We don't want to change .ltx_page_main, because navbar changes that and
+ * this would interfere. */
+.ltx_page_main .ltx_page_content { width:85%; }
+
+.ltx_note.ltx_role_margin.ltx_marginpar,
+.ltx_note.ltx_role_margin.ltx_marginpar_right {
+    margin-right:-15%; float:right; clear:right; }
+.ltx_note.ltx_role_margin.ltx_marginpar .ltx_note_content,
+.ltx_note.ltx_role_margin.ltx_marginpar_right .ltx_note_content { right:-15%; }
+.ltx_note.ltx_role_margin.ltx_marginpar_left { display:none; }
+
+/* For left marginpar:
+ * swap all occurences of 'left' and 'right' and add
+ * .ltx_page_main .ltx_page_content { left:15%; position:relative; } */

@@ -3558,12 +3558,13 @@ DefMacro('\@dblfloatplacement', '');
 # C.9.2 Marginal Notes
 #======================================================================
 
-AssignValue(marginparclass => undef);
+DefConditional('\if@reversemargin');
+Let('\reversemarginpar', '\@reversemargintrue');
+Let('\normalmarginpar',  '\@reversemarginfalse');
 DefConstructor('\marginpar[]{}',
-  "<ltx:note role='margin' class='#class'><ltx:inline-para>#2</ltx:inline-para></ltx:note>",
-  properties => sub { (class => LookupValue('marginparclass')); });
-DefPrimitiveI('\reversemarginpar', undef, sub { AssignValue(marginparclass => 'ltx_marginpar_reverse'); });
-DefPrimitiveI('\normalmarginpar', undef, sub { AssignValue(marginparclass => undef); });
+"?#1(<ltx:note role='margin' class='ltx_marginpar_left'><ltx:inline-para>#1</ltx:inline-para></ltx:note>"
+    . "?#2(<ltx:note role='margin' class='ltx_marginpar_right'><ltx:inline-para>#2</ltx:inline-para></ltx:note>))"
+    . "(<ltx:note role='margin' class='ltx_marginpar'><ltx:inline-para>#2</ltx:inline-para></ltx:note>)");
 DefRegister('\marginparpush', Dimension(0));
 
 #**********************************************************************
@@ -4704,11 +4705,11 @@ DefConstructor('\@framebox[Dimension][]{}',
     $stomach->beginMode('text');
     AssignValue(FRAME_IN_MATH => $wasmath); },
   properties => sub {
-    my $sep= LookupRegister('\fboxsep')->toAttribute;
+    my $sep = LookupRegister('\fboxsep')->toAttribute;
     (($_[2] ? (align => $makebox_alignment{ ToString($_[2]) }) : ()),
       framecolor => LookupValue('font')->getColor,
-     ($sep ne '3.0pt' ? (cssstyle   => 'padding:' . $sep):()),
-      ($_[1] ? (width => $_[1]) : ())); },
+      ($sep ne '3.0pt' ? (cssstyle => 'padding:' . $sep) : ()),
+      ($_[1]           ? (width    => $_[1])             : ())); },
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my $wasmath = LookupValue('FRAME_IN_MATH');
