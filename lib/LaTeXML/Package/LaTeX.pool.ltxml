@@ -1920,13 +1920,18 @@ sub afterDigestVerbatim {
   my @lines  = ();
   my $gullet = $stomach->getGullet;
   while (defined(my $line = $gullet->readRawLine)) {
+    my ($exiting, $remaining) = (0, undef);
+    if ($line =~ /^(.*?)\Q$end\E(.*?)$/) {
+      $exiting   = 1;
+      $line      = $1;
+      $remaining = $2; }
     # The raw chars will still have to be decoded (but not space!!)
     $line = join('', map { ($_ eq ' ' ? $space : FontDecodeString($_, 'OT1_typewriter')) }
         split(//, $line));
-    if ($line =~ /^(.*?)\Q$end\E(.*?)$/) {
-      push(@lines, $1 . "\n"); $gullet->unread(Tokenize($2), T_CR);
-      last; }
-    push(@lines, $line . "\n"); }
+    push(@lines, $line . "\n");
+    if ($exiting) {
+      $gullet->unread(Tokenize($remaining), T_CR);
+      last; } }
   pop(@lines) if $lines[-1] eq "\n";
   # Note last line ends up as Whatsit's "trailer"
   if (my $b = LookupValue('@environment@verbatim@atend')) {
