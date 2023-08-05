@@ -155,7 +155,9 @@
           <xsl:with-param name="name" select="'href'"/>
         </xsl:call-template>
         <xsl:if test="$USE_HTML5='true'">
-          <xsl:attribute name="download"/>
+          <xsl:attribute name="download">
+            <xsl:value-of select="@dataname"/>
+          </xsl:attribute>
         </xsl:if>
         <xsl:text>&#x2B07;</xsl:text>
       </xsl:element>
