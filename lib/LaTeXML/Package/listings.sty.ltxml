@@ -1277,7 +1277,7 @@ sub lstProcess {
   local $LaTeXML::ESCAPE_RE = join('|', map { $$delimiters{$_}{open} }
       grep { $$delimiters{$_}{escape} } sort keys %$delimiters);
   local $LaTeXML::QUOTED_RE = "\\\\\\\\";    # start w/ backslashed backslash?
-  local $LaTeXML::SPACE     = (lstGetBoolean('showspaces') ? T_CS('\@lst@visible@space') : T_CS("~"));
+  local $LaTeXML::SPACE     = (lstGetBoolean('showspaces') ? T_CS('\@lst@visible@space') : T_CS(" "));
   local $LaTeXML::CASE_SENSITIVE = lstGetBoolean('sensitive');
   # Don't these need \Q,\E?
   #  local $LaTeXML::LITERATE_RE    = join('|', map { "\\Q" . $$_[0] . "\\E"; } @$literate);
