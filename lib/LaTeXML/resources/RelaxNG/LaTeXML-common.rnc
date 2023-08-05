@@ -356,11 +356,7 @@ Data.attributes =
   attribute datamimetype { text }?,
 
   ## the encoding of the data (either empty, base64, or )
-  attribute dataencoding { text }?
+  attribute dataencoding { text }?,
 
-
-
-
-
-
-
+  ## the suggested file name of the data
+  attribute dataname { text }?

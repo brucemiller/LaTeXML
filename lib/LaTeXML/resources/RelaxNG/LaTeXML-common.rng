@@ -530,5 +530,10 @@ to be used instead of the content of the element itself;</a:documentation>
         <a:documentation>the encoding of the data (either empty, base64, or )</a:documentation>
       </attribute>
     </optional>
+    <optional>
+      <attribute name="dataname">
+        <a:documentation>the suggested file name of the data</a:documentation>
+      </attribute>
+    </optional>
   </define>
 </grammar>
