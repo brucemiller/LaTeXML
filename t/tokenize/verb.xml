@@ -37,6 +37,15 @@ keep this too
       <p>outside verbatim
 More Normal <text font="bold">Bold</text> stuff.</p>
     </para>
+    <para xml:id="S1.p5">
+      <p>Verbatim 4:</p>
+      <verbatim font="typewriter">␣keep␣this
+AbNormal␣{\bf␣NonBold}␣stuff.
+keep␣this␣too␣␣␣␣
+</verbatim>
+      <p>outside verbatim
+More Normal <text font="bold">Bold</text> stuff.</p>
+    </para>
   </section>
   <section inlist="toc" xml:id="S2">
     <tags>
@@ -78,7 +87,7 @@ More Normal <text font="bold">Bold</text> stuff.</p>
       <p>Note that spaces after a control-sequence are skipped on the <emph font="italic">next</emph> read,
 by which time catcodes may have been changed.
 Prior to April, 2020, a space following <verbatim font="typewriter">\verb</verbatim> would – surprisingly – have been treated as
-the delimiter! Since then, spaces are skipped and the following char is used as delimiter.
+the delimiter! Since then, spaces are skipped and the following char (even *) is used as delimiter.
 We’ll adopt the newer approach.</p>
     </para>
     <para xml:id="S2.p9">
@@ -91,9 +100,12 @@ We’ll adopt the newer approach.</p>
       <p><verbatim font="typewriter">rick-roll}␣</verbatim></p>
     </para>
     <para xml:id="S2.p12">
-      <p>Input snippet</p>
+      <p><verbatim font="typewriter">+ i n </verbatim> o u t +</p>
     </para>
     <para xml:id="S2.p13">
+      <p>Input snippet</p>
+    </para>
+    <para xml:id="S2.p14">
       <verbatim font="typewriter">|a}b#c^d_e$f|
 </verbatim>
       <p>after.</p>
