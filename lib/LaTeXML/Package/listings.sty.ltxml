@@ -159,7 +159,7 @@ sub lstProcessBlock {
   AssignValue('LISTINGS_DATA_' . $c   => $text, 'global');
   return (
     [@{ LookupValue('LISTINGS_PREAMBLE_BEFORE') },
-      Invocation(T_CS('\@@listings@block'), $c, lstProcess('block', $text))],
+      Invocation(T_CS('\@@listings@block'), $c, lstProcess('block', $text), $name)],
     [@{ LookupValue('LISTINGS_POSTAMBLE') },
       T_END]); }
 
@@ -247,8 +247,8 @@ DefConstructor('\@@listings {}',
   beforeDigest => sub { beforeFloat('lstlisting'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
-DefConstructor('\@@listings@block {} {}',
-"<ltx:listing class='ltx_lstlisting' data='#data' datamimetype='#datamimetype' dataencoding='#dataencoding'>#2</ltx:listing>",
+DefConstructor('\@@listings@block {} {} {}',
+"<ltx:listing class='ltx_lstlisting' data='#data' datamimetype='#datamimetype' dataencoding='#dataencoding' dataname='#3'>#2</ltx:listing>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     # Could have some options about encoding?
