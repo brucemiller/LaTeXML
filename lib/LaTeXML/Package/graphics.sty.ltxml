@@ -194,7 +194,8 @@ DefConstructor('\rotatebox OptionalKeyVals:Grot {Float} {}',
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my ($kv, $angle, $box) = $whatsit->getArgs();
-    $whatsit->setProperties(rotatedProperties($box, $angle, ($kv ? $kv->getHash : ()))); });
+    $whatsit->setProperties(rotatedProperties($box, $angle, ($kv ? $kv->getHash : ()))); },
+  mode => 'text');
 # Backwards!
 DefMacro('\Grot@erotate', '\rotatebox[]');
 
