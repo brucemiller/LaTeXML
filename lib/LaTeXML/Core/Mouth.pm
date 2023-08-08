@@ -152,9 +152,9 @@ sub hasMoreInput {
   my ($self) = @_;
   return !isEOL($self) || scalar(@{ $$self{buffer} }); }
 
-# Get the next character & it's catcode from the input,
+# Get the next character & it's catcode from the current line of input, even ignored chars
 # handling TeX's "^^" encoding.
-# Note that this is the only place where catcode lookup is done,
+# Note that this is the only place where catcode lookup is done (well almost),
 # and that it is somewhat `inlined'.
 sub getNextChar {
   my ($self) = @_;
@@ -225,11 +225,9 @@ sub handle_EOL {
   my ($self) = @_;
   # Note that newines should be converted to space (with " " for content)
   # but it makes nicer XML with occasional \n. Hopefully, this is harmless?
-  my $token = ($$self{colno} == 1
-    ? T_CS('\par')
-    : ($STATE->lookupValue('PRESERVE_NEWLINES') ? Token("\n", CC_SPACE) : T_SPACE));
+  # Note also that \par special handling is done in readToken
   $$self{colno} = $$self{nchars};    # Ignore any remaining characters after EOL
-  return $token; }
+  return ($STATE->lookupValue('PRESERVE_NEWLINES') ? Token("\n", CC_SPACE) : T_SPACE); }
 
 sub handle_space {
   my ($self) = @_;
@@ -319,14 +317,18 @@ sub readToken {
 
       $$self{chars}  = splitChars($line);
       $$self{nchars} = scalar(@{ $$self{chars} });
-      # In state N, skip spaces
-      while (($$self{colno} < $$self{nchars})
-        # DIRECT ACCESS to $STATE's catcode table!!!
-        && (($$STATE{catcode}{ $$self{chars}[$$self{colno}] }[0] || CC_OTHER) == CC_SPACE)) {
-        $$self{colno}++; }
-      # If upcoming line is empty, and there is no recognizable EOL, fake one
-      return T_MARKER('EOL') if $read_mode
-        && ($$self{colno} >= $$self{nchars}) && ((!defined $eolch) || ($eolch ne "\r"));
+      # In state N, skip leading spaces & ignored, possibly decoding (trailing space removed above)
+      my ($ch, $cc);
+      while ((($ch, $cc) = getNextChar($self)) && (defined $ch)
+        && (($cc == CC_SPACE) || ($cc == CC_IGNORE))) { }
+      if ($ch && ($cc == CC_EOL)) {    # Eolch already? empty line!
+        $$self{colno} = $$self{nchars};    # ignore rest of line.
+        return T_CS('\par'); }
+      elsif ($$self{colno} > $$self{nchars}) {    # Past end of line?
+            # If upcoming line is empty, and there is no recognizable EOL, fake one
+        return T_MARKER('EOL') if $read_mode && ((!defined $eolch) || ($eolch ne "\r")); }
+      else {    # Back up over peeked char
+        $$self{colno}--; }
       # Sneak a comment out, every so often.
       if ((($$self{lineno} % $READLINE_PROGRESS_QUANTUM) == 0) && $STATE->lookupValue('INCLUDE_COMMENTS')) {
         return T_COMMENT("**** " . ($$self{shortsource} || 'String') . " Line $$self{lineno} ****"); }
