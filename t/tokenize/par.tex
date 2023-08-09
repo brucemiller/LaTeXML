@@ -1,0 +1,39 @@
+\documentclass{article}
+\begin{document}
+0 A long, wrapped paragraph with Lots of text
+and lots more text  and lots more text  and lots more text  and lots more text
+and lots more text  and lots more text  and lots more text  and lots more text
+and lots more text  and lots more text  and lots more text  and lots more text.
+
+1 initial par
+
+3 par after empty line.
+        
+5 par after line with spaces.
+	
+7 par after line with tab.
+	
+
+{
+  \catcode`\M=5\relax % EOL
+  \catcode`\I=9\relax % Ignore
+  \catcode`\S=10\relax % Space
+
+1 initial parM nothing past the end
+IIIII
+3 par after ignore catcoded characters
+SSSSSS
+5 par after space catcoded characters
+}
+
+{
+  \catcode`^^Q=9\relax % control char treatdd as Ignore
+\catcode`^^R=10\relax % control char treated as space
+1 initial par^^M nothing past the end
+^^Q^^Q
+3 par after fake ignore catcoded character
+^^R^^R
+5 par after fake space catcoded characters
+}
+
+\end{document}

@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>0 A long, wrapped paragraph with Lots of text
+and lots more text and lots more text and lots more text and lots more text
+and lots more text and lots more text and lots more text and lots more text
+and lots more text and lots more text and lots more text and lots more text.</p>
+  </para>
+  <para xml:id="p2">
+    <p>1 initial par</p>
+  </para>
+  <para xml:id="p3">
+    <p>3 par after empty line.</p>
+  </para>
+  <para xml:id="p4">
+    <p>5 par after line with spaces.</p>
+  </para>
+  <para xml:id="p5">
+    <p>7 par after line with tab.</p>
+  </para>
+  <para xml:id="p6">
+    <p>1 initial par</p>
+  </para>
+  <para xml:id="p7">
+    <p>3 par after ignore catcoded characters</p>
+  </para>
+  <para xml:id="p8">
+    <p>5 par after space catcoded characters</p>
+  </para>
+  <para xml:id="p9">
+    <p>1 initial par</p>
+  </para>
+  <para xml:id="p10">
+    <p>3 par after fake ignore catcoded character</p>
+  </para>
+  <para xml:id="p11">
+    <p>5 par after fake space catcoded characters</p>
+  </para>
+</document>
