@@ -2163,6 +2163,7 @@ sub collapseSVGGroup {
 
 DefConstructor('\hbox BoxSpecification HBoxContents', sub {
     # "<ltx:text width='#width' _noautoclose='1'>#2</ltx:text>",
+    no warnings 'recursion';
     my ($document, $spec, $contents, %props) = @_;
     my $model   = $document->getModel;
     my $context = $document->getElement;

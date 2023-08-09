@@ -196,6 +196,7 @@ sub equals {
   return !(@a || @b); }
 
 sub beAbsorbed {
+  no warnings 'recursion';
   my ($self, $document) = @_;
   # Significant time is consumed here, and associated with a specific CS,
   # so we should be profiling as well!
