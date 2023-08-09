@@ -252,9 +252,10 @@ sub isColumnEnd {
   my ($self, $token) = @_;
   my $cc = $$token[1];
   return ($token, 'align', 0) if $cc == CC_ALIGN;
-  return unless $cc == CC_CS;
+  return unless ($cc == CC_CS) || ($cc == CC_ACTIVE);
   # Embedded version of Equals, knowing both are tokens
   my $defn = $STATE->lookupMeaning($token) || $token;
+  return ($token, 'align', 0) if (ref $defn eq 'LaTeXML::Core::Token') && ($$defn[1] == CC_ALIGN);
   foreach my $end (@column_ends) {
     my $e = $$end[0];
     # Would be nice to cache the defns, but don't know when they're present & constant!

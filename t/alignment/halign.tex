@@ -146,6 +146,13 @@ a&b&c\cr
 d&e&f\cr
 }
 
+{\let\amp&
+\catcode`\@=4\relax
+\halign{[#]&\foo{#}&[#]\cr
+a\amp b\amp c\cr
+d@e@f\cr
+}
+}
 \end{document}
 
 \halign{[#]&\hbox to 1in {#}&[#]\cr
