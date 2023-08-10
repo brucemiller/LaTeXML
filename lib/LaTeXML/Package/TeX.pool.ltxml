@@ -409,8 +409,11 @@ DefParameterType('DirectoryList', sub {
     my ($gullet)   = @_;
     my $arg_string = ToString($gullet->readArg);
     my @dirs       = ();
-    for my $dir (split(/\s*(?:,|\n+)\s*/, $arg_string)) {
-      while ($dir =~ s/^\{([^\}]*)\}//) {
+    for my $dir (split(/,|\\par|\n+/, $arg_string)) {
+      $dir =~ s/^\s+//;
+      $dir =~ s/\s+$//;
+      next unless $dir;
+      while ($dir =~ s/^\s*\{([^\}]*)\}//) {
         push @dirs, $1 if $1; }
       push @dirs, $dir if $dir; }
     LaTeXML::Core::Array->new(open => T_BEGIN, close => T_END, itemopen => T_BEGIN, itemclose => T_END,
