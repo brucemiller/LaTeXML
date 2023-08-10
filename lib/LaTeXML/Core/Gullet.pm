@@ -715,7 +715,7 @@ sub readValue {
   elsif ($type eq 'MuGlue')    { return readMuGlue($self); }
   elsif ($type eq 'Tokens')    { return readTokensValue($self); }
   elsif ($type eq 'Token') {
-    my $token = readToken($self);
+    my $token = readNonSpace($self);
     if ($token->defined_as(T_csname)) {
       return readCSName($self); }
     else {
