@@ -212,17 +212,19 @@ sub lstProcessDisplay {
 DefMacro('\lstlisting@makecaption[]{}',
   '\def\@captype{lstlisting}'
     . '\@@add@caption@counters'
-    . '\@@toccaption{\lx@format@toctitle@@{lstlisting}{\ifx.#1.#2\else#1\fi}}'
+    . '\lstlisting@toccaption{\lx@format@toctitle@@{lstlisting}{\ifx.#1.#2\else#1\fi}}'
     . '\@@caption{\lx@format@title@@{lstlisting}{#2}}');
 DefMacroI('\fnum@lstlisting', undef, '\lstlistingname\nobreakspace\thelstlisting');
 DefMacro('\format@title@lstlisting{}', '\lx@tag[][: ]{\fnum@lstlisting}#1');
 
 DefMacro('\lstlisting@maketitle{}',
-  '\@@toccaption{#1}'
+  '\lstlisting@toccaption{#1}'
     . '\@@caption{#1}');
 
 DefMacro('\lstlisting@maketoctitle{}',
-  '\@@toccaption{#1}');
+  '\lstlisting@toccaption{#1}');
+
+DefConstructor('\lstlisting@toccaption Semiverbatim', "^^<ltx:toccaption>#1</ltx:toccaption>", sizer => 0);
 
 # Numbered form,  with caption
 # \@listings <classes> <formatted>
@@ -249,7 +251,7 @@ DefConstructor('\@@listings {}',
   beforeDigest => sub { beforeFloat('lstlisting'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
-DefConstructor('\@@listings@block {} {} {}',
+DefConstructor('\@@listings@block {} {} Semiverbatim',
 "<ltx:listing class='ltx_lstlisting' data='#data' datamimetype='#datamimetype' dataencoding='#dataencoding' dataname='#3'>#2</ltx:listing>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
