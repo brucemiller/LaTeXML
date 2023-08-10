@@ -19,7 +19,6 @@ package LaTeXML::Core::Token;
 use strict;
 use warnings;
 use LaTeXML::Global;
-use LaTeXML::Core::State;
 use LaTeXML::Common::Error;
 use LaTeXML::Common::Object;
 use base qw(LaTeXML::Common::Object);
