@@ -63,6 +63,7 @@ sub unlist {
   return @{ $$self{boxes} }; }
 
 sub revert {
+  no warnings 'recursion';
   my ($self) = @_;
   return map { $_->revert } $self->unlist; }
 
