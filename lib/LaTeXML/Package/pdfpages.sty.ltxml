@@ -25,11 +25,24 @@ use LaTeXML::Package;
 DefConstructor('\includepdf OptionalKeyVals{}',
   "<ltx:resource src='#src' type='application/pdf'/>"
     . "See #pages<ltx:ref href='#src'>#src</ltx:ref>",
+  beforeDigest => sub {
+    # arXiv care: if a document consists of only a single \includepdf inclusion
+    # detect that, and flag it as *invalid*, as we never had the original TeX source.
+    AtEndDocument('\ltx@detect@raw@pdf'); },
   properties => sub {
     my $pages = GetKeyVal($_[1], 'pages');
     (src => $_[2],
       pages => ($pages ? "pages " . ToString($pages) . " of " : undef)); });
 
 #================================================================================
+
+DefConstructor('\ltx@detect@raw@pdf', sub {
+    my ($document)  = @_;
+    my $docroot     = $document->findnode('ltx:document');
+    my @doc_content = grep { $document->getNodeQName($_) ne 'ltx:resource' } element_nodes($docroot);
+    if (scalar(@doc_content) <= 1) {
+      Fatal("invalid", "PDF", $_[0], "Only a raw PDF inclusion was detected, this is not a latexml-compatible source."); }
+    return;
+});
 
 1;
