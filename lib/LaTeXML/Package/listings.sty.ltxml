@@ -126,6 +126,7 @@ DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
     my $name = lstGetTokens('name');
     if (IsEmpty($name)) {
       $name = $file; }
+    $name = Invocation(T_CS('\texttt'), $name);
     AssignValue('LST@toctitle', $name);    # so it shows up in list of..
     return lstProcessDisplay($name, $text); });
 
@@ -183,7 +184,7 @@ sub lstProcessDisplay {
   elsif (($x = lstGetTokens('title')) && !IsEmpty($x)) {
     $caption = Invocation(T_CS('\lstlisting@maketitle'), $x); }
   elsif (($x = lstGetTokens('toctitle')) && !IsEmpty($x)) {
-    $caption = Invocation(T_CS('\lstlisting@toccaption'), $x); }
+    $caption = Invocation(T_CS('\@@toccaption'), $x); }
   if (($x = lstGetTokens('label')) && !IsEmpty($x)) {
     $labelled = 1;
     unshift(@body, Invocation(T_CS('\label'), $x)); }
@@ -212,14 +213,12 @@ sub lstProcessDisplay {
 DefMacro('\lstlisting@makecaption[]{}',
   '\def\@captype{lstlisting}'
     . '\@@add@caption@counters'
-    . '\lstlisting@toccaption{\lx@format@toctitle@@{lstlisting}{\ifx.#1.#2\else#1\fi}}'
+    . '\@@toccaption{\lx@format@toctitle@@{lstlisting}{\ifx.#1.#2\else#1\fi}}'
     . '\@@caption{\lx@format@title@@{lstlisting}{#2}}');
 DefMacroI('\fnum@lstlisting', undef, '\lstlistingname\nobreakspace\thelstlisting');
 DefMacro('\format@title@lstlisting{}', '\lx@tag[][: ]{\fnum@lstlisting}#1');
 
-DefMacro('\lstlisting@maketitle{}', '\lstlisting@toccaption{#1}\@@caption{#1}');
-
-DefConstructor('\lstlisting@toccaption Semiverbatim', "^^<ltx:toccaption>#1</ltx:toccaption>", sizer => 0);
+DefMacro('\lstlisting@maketitle{}', '\@@toccaption{#1}\@@caption{#1}');
 
 # Numbered form,  with caption
 # \@listings <classes> <formatted>
@@ -246,7 +245,7 @@ DefConstructor('\@@listings {}',
   beforeDigest => sub { beforeFloat('lstlisting'); },
   afterDigest  => sub { afterFloat($_[1]); });
 
-DefConstructor('\@@listings@block {} {} Semiverbatim',
+DefConstructor('\@@listings@block {} {} {}',
 "<ltx:listing class='ltx_lstlisting' data='#data' datamimetype='#datamimetype' dataencoding='#dataencoding' dataname='#3'>#2</ltx:listing>",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
