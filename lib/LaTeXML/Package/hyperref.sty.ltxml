@@ -110,6 +110,8 @@ DefKeyVal('Hyp', 'baseurl', 'Semiverbatim');
 
 sub hyperref_setoption {
   my ($key, $value) = @_;
+  if ($key eq 'colorlinks' and ToString($value) eq 'true') {
+    RequirePackage('color'); }
   AssignMapping('Hyperref_options', $key, $value);
   if ($key eq 'baseurl') {
     AssignValue(BASE_URL => ToString($value)); }
