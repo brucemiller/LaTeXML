@@ -271,13 +271,14 @@
           <xsl:value-of select="f:seclev-aux('part')+number(boolean(//ltx:part/ltx:title))"/>
         </xsl:when>
         <xsl:when test="$name = 'section'">
-          <xsl:value-of select="f:seclev-aux('chapter')+number(boolean(//ltx:chapter/ltx:title))"/>
+          <xsl:value-of select="f:seclev-aux('chapter')
+                                +number(boolean(//ltx:chapter/ltx:title | //ltx:appendix/ltx:title))"/>
         </xsl:when>
         <!-- These are same level as chapter, if there IS a chapter, otherwise same as section-->
         <xsl:when test="$name = 'appendix' or $name = 'index'
                         or $name = 'glossary' or $name = 'bibliography'">
           <xsl:value-of
-              select="f:if(//ltx:chapter,f:seclev-aux('chapter'),f:seclev-aux('section'))"/>
+              select="f:if(//ltx:chapter | //ltx:document/ltx:appendix,f:seclev-aux('chapter'),f:seclev-aux('section'))"/>
         </xsl:when>
         <xsl:when test="$name = 'subsection'"> <!--Weird? (could be in appendix!)-->
           <xsl:value-of select="f:seclev-aux('section')
