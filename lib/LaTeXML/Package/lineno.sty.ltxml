@@ -22,6 +22,8 @@ use LaTeXML::Package;
 DefEnvironment('{linenumbers*}[Number]',         '#body');
 DefEnvironment('{runninglinenumbers*}[Number]',  '#body');
 DefEnvironment('{pagewiselinenumbers*}[Number]', '#body');
+DefEnvironment('{linenomath}',                   '#body');
+DefEnvironment('{linenomath*}',                  '#body');
 
 DefMacro('\linenumbers OptionalMatch:* [Number]',        '');
 DefMacro('\nolinenumbers',                               '');
