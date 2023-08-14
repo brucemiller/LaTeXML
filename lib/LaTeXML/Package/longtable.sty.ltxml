@@ -21,12 +21,12 @@ use LaTeXML::Package;
 #======================================================================
 # Environment \begin{longtable}[align]{pattern} ... \end{longtable}
 DefMacro('\longtable[]{}',
-  '\@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
+  '\lx@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
 DefMacro('\endlongtable',
   '\@finish@alignment\@end@tabular');
 # {longtable*} is defined in revtex4-1 to be able to span a two column document
 DefMacro('\csname longtable*\endcsname []{}',
-  '\@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
+  '\lx@longtable@bindings{#2}\@@longtable[#1]{#2}\@start@alignment');
 DefMacro('\csname endlongtable*\endcsname',
   '\@finish@alignment\@end@tabular');
 
@@ -35,9 +35,11 @@ DefMacro('\@gobble@optional[]', Tokens());
 DefConstructor('\@@longtable [] Undigested DigestedBody',
   "<ltx:table xml:id='#id' inlist='lot' labels='#label'>"
     . "#tags"
-    . "?#caption(<ltx:caption>#caption</ltx:caption>)"
-    . "?#toccaption(<ltx:toccaption>#toccaption</ltx:toccaption>)"
+    . "?#headcaption(<ltx:caption>#headcaption</ltx:caption>)"
+    . "?#headtoccaption(<ltx:toccaption>#headtoccaption</ltx:toccaption>)"
     . "#3"
+    . "?#footcaption(<ltx:caption>#footcaption</ltx:caption>)"
+    . "?#foottoccaption(<ltx:toccaption>#foottoccaption</ltx:toccaption>)"
     . "</ltx:table>",
   reversion    => '\begin{longtable}[#1]{#2}#3\end{longtable}',
   beforeDigest => sub { $_[0]->bgroup; Let('\pagebreak', '\@gobble@optional'); },
@@ -45,12 +47,14 @@ DefConstructor('\@@longtable [] Undigested DigestedBody',
     my ($stomach, $whatsit) = @_;
     $whatsit->setProperties(%{ LookupValue('LONGTABLE_PROPERTIES') || {} });
     # Insert caption and toccaption, if any were encountered.
-    if (my $caption = LookupValue('LONGTABLE_CAPTION')) {
-      $whatsit->setProperty(caption => $caption); }
-    if (my $label = LookupValue('LONGTABLE_LABEL')) {
-      $whatsit->setProperty(label => $label); }
-    if (my $toccaption = LookupValue('LONGTABLE_TOCCAPTION')) {
-      $whatsit->setProperty(toccaption => $toccaption); }
+    if (my $captions = LookupValue('LONGTABLE_HEAD_CAPTIONS') || LookupValue('LONGTABLE_CAPTIONS')) {
+      my ($toccaption, $caption) = @$captions;
+      $whatsit->setProperty(headcaption    => $caption)    if $caption;
+      $whatsit->setProperty(headtoccaption => $toccaption) if $toccaption; }
+    if (my $captions = LookupValue('LONGTABLE_FOOT_CAPTIONS')) {
+      my ($toccaption, $caption) = @$captions;
+      $whatsit->setProperty(footcaption    => $caption)    if $caption;
+      $whatsit->setProperty(foottoccaption => $toccaption) if $toccaption; }
     my $alignment = LookupValue('Alignment');
     # Reinsert the head and foot into the alignment.
     if (my $head = LookupValue('LONGTABLE_HEAD')) {
@@ -60,22 +64,24 @@ DefConstructor('\@@longtable [] Undigested DigestedBody',
     return; },
   mode => 'text');
 
-DefPrimitive('\@longtable@bindings AlignmentTemplate', sub { longtableBindings($_[1]); });
+DefPrimitive('\lx@longtable@bindings AlignmentTemplate', sub { longtableBindings($_[1]); });
 
 sub longtableBindings {
   my ($template) = @_;
   tabularBindings($template, guess_headers => 0);
-  Let('\endfirsthead', '\@longtable@endfirsthead');
-  Let('\endhead',      '\@longtable@endhead');
-  Let('\endfoot',      '\@longtable@endfoot');
-  Let('\endlastfoot',  '\@longtable@endlastfoot');
-  Let('\caption',      '\@longtable@caption');
-  Let('\label',        '\@longtable@label');
-  AssignValue(LONGTABLE_LABEL      => undef, 'global');    # Clear these vars.
-  AssignValue(LONGTABLE_CAPTION    => undef, 'global');
-  AssignValue(LONGTABLE_TOCCAPTION => undef, 'global');
-  AssignValue(LONGTABLE_HEAD       => undef, 'global');
-  AssignValue(LONGTABLE_FOOT       => undef, 'global');
+  Let('\endfirsthead', '\lx@longtable@endfirsthead');
+  Let('\endhead',      '\lx@longtable@endhead');
+  Let('\endfoot',      '\lx@longtable@endfoot');
+  Let('\endlastfoot',  '\lx@longtable@endlastfoot');
+  Let('\caption',      '\lx@longtable@caption');
+  Let('\label',        '\lx@longtable@label');
+  Let('\kill',         '\lx@longtable@kill@marker');
+  AssignValue(LONGTABLE_LABEL         => undef, 'global');    # Clear these vars.
+  AssignValue(LONGTABLE_CAPTIONS      => undef, 'global');
+  AssignValue(LONGTABLE_HEAD_CAPTIONS => undef, 'global');
+  AssignValue(LONGTABLE_FOOT_CAPTIONS => undef, 'global');
+  AssignValue(LONGTABLE_HEAD          => undef, 'global');
+  AssignValue(LONGTABLE_FOOT          => undef, 'global');
   ## properties happen too late!!!
   AssignValue(LONGTABLE_PROPERTIES => { RefStepCounter('table') }, 'global');
 
@@ -85,13 +91,13 @@ sub longtableBindings {
 # These macros appear within the longtable, at the beginning.
 # They cut of the previous lines to be used as headers or footers.
 
-DefMacro('\@longtable@endfirsthead', '\crcr\noalign{\@longtable@grab{FIRSTHEAD}}');
-DefMacro('\@longtable@endhead',      '\crcr\noalign{\@longtable@grab{HEAD}}');
-DefMacro('\@longtable@endfoot',      '\crcr\noalign{\@longtable@grab{FOOT}}');
-DefMacro('\@longtable@endlastfoot',  '\crcr\noalign{\@longtable@grab{LASTFOOT}}');
-DefMacro('\@longtable@kill',         '\crcr\noalign{\@longtable@kill@marker}');
+DefMacro('\lx@longtable@endfirsthead', '\crcr\noalign{\lx@longtable@grab{FIRSTHEAD}}');
+DefMacro('\lx@longtable@endhead',      '\crcr\noalign{\lx@longtable@grab{HEAD}}');
+DefMacro('\lx@longtable@endfoot',      '\crcr\noalign{\lx@longtable@grab{FOOT}}');
+DefMacro('\lx@longtable@endlastfoot',  '\crcr\noalign{\lx@longtable@grab{LASTFOOT}}');
+DefMacro('\lx@longtable@kill',         '\crcr\noalign{\lx@longtable@kill@marker}');
 
-DefPrimitive('\@longtable@grab{}', sub {
+DefPrimitive('\lx@longtable@grab{}', sub {
     my ($stomach, $name) = @_;
     $name = ToString($name);
     my $alignment = LookupValue('Alignment');
@@ -101,29 +107,31 @@ DefPrimitive('\@longtable@grab{}', sub {
       map { $$_{thead}{column} = 1; } $row->columns;
       unshift(@rows, $row); }
     if (($name eq 'FIRSTHEAD') || (($name eq 'HEAD') && !LookupValue('LONGTABLE_HEAD'))) {
-      AssignValue(LONGTABLE_HEAD => [@rows], 'global'); }
+      AssignValue(LONGTABLE_HEAD => [@rows], 'global');
+      if (my $caption = LookupValue('LONGTABLE_CAPTIONS')) {
+        AssignValue(LONGTABLE_CAPTIONS      => undef,    'global');
+        AssignValue(LONGTABLE_HEAD_CAPTIONS => $caption, 'global'); } }
     elsif (($name eq 'LASTFOOT') || (($name eq 'FOOT') && !LookupValue('LONGTABLE_FOOT'))) {
-      AssignValue(LONGTABLE_FOOT => [@rows], 'global'); }
+      AssignValue(LONGTABLE_FOOT => [@rows], 'global');
+      if (my $caption = LookupValue('LONGTABLE_CAPTIONS')) {
+        AssignValue(LONGTABLE_CAPTIONS      => undef,    'global');
+        AssignValue(LONGTABLE_FOOT_CAPTIONS => $caption, 'global'); } }
     return; });
 
-DefConstructor('\@longtable@kill@marker', '', reversion => '\kill',
+DefConstructor('\lx@longtable@kill@marker', '', reversion => '\kill',
   afterDigest => sub { LookupValue('Alignment')->removeRow; return; });
 
 #======================================================================
 # Caption gets redefined.  We'll need to grab it and make it part
 # of the table, rather than the tabular.
-DefMacro('\@longtable@caption[]{}',
-  '\@longtable@@toccaption{\lx@format@toctitle@@{table}{\ifx.#1.#2\else#1\fi}}'
-    . '\@longtable@@caption{\lx@format@title@@{table}{#2}}');
-
-DefPrimitive('\@longtable@label Semiverbatim', sub {
+DefMacro('\lx@longtable@caption[]{}',
+  '\lx@longtable@caption@{\lx@format@toctitle@@{table}{\ifx.#1.#2\else#1\fi}}'
+    . '{\lx@format@title@@{table}{#2}}');
+DefPrimitive('\lx@longtable@caption@{}{}', sub {
+    AssignValue(LONGTABLE_CAPTIONS => [DigestText($_[1]), DigestText($_[2])], 'global');
+    return; });
+DefPrimitive('\lx@longtable@label Semiverbatim', sub {
     AssignValue(LONGTABLE_LABEL => CleanLabel(ToString($_[1])), 'global');
-    return; });
-DefPrimitive('\@longtable@@caption{}', sub {
-    AssignValue(LONGTABLE_CAPTION => DigestText($_[1]), 'global');
-    return; });
-DefPrimitive('\@longtable@@toccaption{}', sub {
-    AssignValue(LONGTABLE_TOCCAPTION => DigestText($_[1]), 'global');
     return; });
 
 #======================================================================
