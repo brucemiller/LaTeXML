@@ -18,11 +18,11 @@ use LaTeXML::Package;
 #======================================================================
 # Package Options
 DeclareOption('labels', sub {
-    Let(T_CS('\lxRDF@original@label'),           T_CS('\label'));
-    Let(T_CS('\lxRDF@original@longtable@label'), T_CS('\@longtable@label'));
+    Let(T_CS('\lxRDF@original@label'),             T_CS('\label'));
+    Let(T_CS('\lxRDF@originallx@longtable@label'), T_CS('\lx@longtable@label'));
     DefMacro('\label Semiverbatim', '\lxRDF@original@label{#1}\lxRDFa{property=dcterms:alternative,content=#1}');
-    DefMacro('\@longtable@label Semiverbatim',
-      '\lxRDF@original@longtable@label{#1}\lxRDFa{property=dcterms:alternative,content=#1}');
+    DefMacro('\lx@longtable@label Semiverbatim',
+      '\lxRDF@originallx@longtable@label{#1}\lxRDFa{property=dcterms:alternative,content=#1}');
 });
 
 ProcessOptions();
