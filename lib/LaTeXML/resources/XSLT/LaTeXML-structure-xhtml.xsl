@@ -257,32 +257,36 @@
     </func:result>
   </func:function>
 
-  <!-- Attempt computing level based on "known" structural elements -->
+  <!-- Attempt computing level based on "known" structural elements.
+  Given the normal heirarchy: document > part > chapter > (sub) section > (sub) paragraph,
+  the level of an element type is generally the level of it's parent-type
+  plus 1 if the parent-type is actually present, with a title.
+  Special considerations are needed to detect whether backmatter elements
+  (appendix | index | glossary | bibliography) are appearing at the level of chapters or sections.
+-->
   <func:function name="f:seclev-aux">
     <xsl:param name="name"/>
     <func:result>
       <xsl:choose>
         <xsl:when test="$name = 'document'">1</xsl:when>
-        <xsl:when test="$name = 'part'"><!-- The logic: 1+doc level, if there IS a ltx:document-->
-<!--          <xsl:value-of select="f:seclev-aux('document')+number(boolean(//ltx:document/ltx:title))"/>-->
+        <xsl:when test="$name = 'part'">
+          <!-- reserve level 1 for document if present, EVEN IF it has no title -->
           <xsl:value-of select="f:seclev-aux('document')+number(boolean(//ltx:document))"/>
         </xsl:when>
         <xsl:when test="$name = 'chapter'">
           <xsl:value-of select="f:seclev-aux('part')+number(boolean(//ltx:part/ltx:title))"/>
         </xsl:when>
         <xsl:when test="$name = 'section'">
+          <!-- detect presence of chapter OR apparently chapter-level appendices -->
           <xsl:value-of select="f:seclev-aux('chapter')
-                                +number(boolean(//ltx:chapter/ltx:title | //ltx:appendix/ltx:title))"/>
-        </xsl:when>
-        <!-- These are same level as chapter, if there IS a chapter, otherwise same as section-->
-        <xsl:when test="$name = 'appendix' or $name = 'index'
-                        or $name = 'glossary' or $name = 'bibliography'">
-          <xsl:value-of
-              select="f:if(//ltx:chapter | //ltx:document/ltx:appendix,f:seclev-aux('chapter'),f:seclev-aux('section'))"/>
+                                +number(boolean(//ltx:chapter/ltx:title
+                                    | //ltx:appendix/ltx:section/ltx:title))"/>
         </xsl:when>
         <xsl:when test="$name = 'subsection'"> <!--Weird? (could be in appendix!)-->
+          <!-- detect presence of section OR apparently section-level appendices -->
           <xsl:value-of select="f:seclev-aux('section')
-                                +number(boolean(//ltx:section/ltx:title | //ltx:appendix/ltx:title))"/>
+                                +number(boolean(//ltx:section/ltx:title
+                                    | //ltx:appendix/ltx:subsection/ltx:title))"/>
         </xsl:when>
         <xsl:when test="$name = 'subsubsection'">
           <xsl:value-of select="f:seclev-aux('subsection')
@@ -296,7 +300,19 @@
           <xsl:value-of select="f:seclev-aux('paragraph')
                                 +number(boolean(//ltx:paragraph/ltx:title))"/>
         </xsl:when>
+        <!-- just put low-level structures, like proofs or theorems, at h6 -->
         <xsl:when test="$name = 'theorem' or $name = 'proof'">6</xsl:when> <!--what else?-->
+
+        <!-- Backmatter elements are at the same level as either chapter (eg.book) or section.
+             But it's tricky to detect that here -->
+        <xsl:when test="$name = 'appendix' or $name = 'index'
+                        or $name = 'glossary' or $name = 'bibliography'">
+          <!-- if there are chapters, or sections within appendices,
+               assume chapter-level backmatter -->
+          <xsl:value-of
+              select="f:if(//ltx:chapter | //ltx:appendix/ltx:section,
+                           f:seclev-aux('chapter'),f:seclev-aux('section'))"/>
+        </xsl:when>
       </xsl:choose>
     </func:result>
   </func:function>
