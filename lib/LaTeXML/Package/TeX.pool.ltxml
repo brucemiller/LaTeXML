@@ -6761,7 +6761,9 @@ DefPrimitive('\lx@gen@matrix@bindings RequiredKeyVals:lx@GEN', sub {
           : (repeated => [{@colspec}]))),
       'math',
       (keys %attributes ? (attributes => {%attributes}) : ()));    # });
-    Let("\\\\", '\@alignment@newline');
+    Let("\\\\",         '\@alignment@newline');
+    Let('\@row@before', '\@empty');    # Disable special row treatment (eg. numbering) unless requested
+    Let('\@row@after',  '\@empty');
 });
 
 DefPrimitive('\lx@end@gen@matrix', sub { $_[0]->egroup; });
