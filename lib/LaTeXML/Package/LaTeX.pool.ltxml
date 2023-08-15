@@ -1908,7 +1908,7 @@ sub beforeDigestVerbatim {
   DefMacroI('\@currenvir', undef, 'verbatim');
   MergeFont(family => 'typewriter');
   # Digest(T_CS('\par')); # NO! See beforeConstruct!
-  @stuff; }
+  return @stuff; }
 
 sub afterDigestVerbatim {
   my ($starred, $stomach, $whatsit) = @_;
@@ -5359,36 +5359,35 @@ Let('\normalcolor', '\relax');
 DefMacro('\symbol{}', '\char#1\relax');
 
 # These in LaTeX, but not in the book...
-DefPrimitiveI('\textdollar',           undef, "\$");
-DefPrimitiveI('\textemdash',           undef, "\x{2014}");       # EM DASH
-DefPrimitiveI('\textendash',           undef, "\x{2013}");       # EN DASH
-DefPrimitiveI('\textexclamdown',       undef, UTF(0xA1));        # INVERTED EXCLAMATION MARK
-DefPrimitiveI('\textquestiondown',     undef, UTF(0xBF));        # INVERTED QUESTION MARK
-DefPrimitiveI('\textquotedblleft',     undef, "\x{201C}");       # LEFT DOUBLE QUOTATION MARK
-DefPrimitiveI('\textquotedblright',    undef, "\x{201D}");       # RIGHT DOUBLE QUOTATION MARK
-DefPrimitiveI('\textquotedbl',         undef, "\"");             # plain ascii DOUBLE QUOTATION
-DefPrimitiveI('\textquoteleft',        undef, "\x{2018}");       # LEFT SINGLE QUOTATION MARK
-DefPrimitiveI('\textquoteright',       undef, "\x{2019}");       # RIGHT SINGLE QUOTATION MARK
-DefPrimitiveI('\textsterling',         undef, UTF(0xA3));        # POUND SIGN
-DefPrimitiveI('\textasteriskcentered', undef, "*");
-DefPrimitiveI('\textbackslash',        undef, UTF(0x5C));        # REVERSE SOLIDUS
-DefPrimitiveI('\textbar',              undef, "|");
-DefPrimitiveI('\textbraceleft',        undef, "{");
-DefPrimitiveI('\textbraceright',       undef, "}");
-DefPrimitiveI('\textbullet',           undef, "\x{2022}");       # BULLET
-DefPrimitiveI('\textdaggerdbl',        undef, "\x{2021}");       # DOUBLE DAGGER
-DefPrimitiveI('\textdagger',           undef, "\x{2020}");       # DAGGER
-DefPrimitiveI('\textparagraph',        undef, UTF(0xB6));        # PILCROW SIGN
-DefPrimitiveI('\textsection',          undef, UTF(0xA7));        # SECTION SIGN
-DefAccent('\textcircled', UTF(0x20DD), UTF(0x25EF));             # Defined in TeX.pool
+DefPrimitiveI('\textdollar',               undef, "\$");
+DefPrimitiveI('\textemdash',               undef, "\x{2014}");    # EM DASH
+DefPrimitiveI('\textendash',               undef, "\x{2013}");    # EN DASH
+DefPrimitiveI('\textexclamdown',           undef, UTF(0xA1));     # INVERTED EXCLAMATION MARK
+DefPrimitiveI('\textquestiondown',         undef, UTF(0xBF));     # INVERTED QUESTION MARK
+DefPrimitiveI('\textquotedblleft',         undef, "\x{201C}");    # LEFT DOUBLE QUOTATION MARK
+DefPrimitiveI('\textquotedblright',        undef, "\x{201D}");    # RIGHT DOUBLE QUOTATION MARK
+DefPrimitiveI('\textquotedbl',             undef, "\"");          # plain ascii DOUBLE QUOTATION
+DefPrimitiveI('\textquoteleft',            undef, "\x{2018}");    # LEFT SINGLE QUOTATION MARK
+DefPrimitiveI('\textquoteright',           undef, "\x{2019}");    # RIGHT SINGLE QUOTATION MARK
+DefPrimitiveI('\textsterling',             undef, UTF(0xA3));     # POUND SIGN
+DefPrimitiveI('\textasteriskcentered',     undef, "*");
+DefPrimitiveI('\textbackslash',            undef, UTF(0x5C));     # REVERSE SOLIDUS
+DefPrimitiveI('\textbar',                  undef, "|");
+DefPrimitiveI('\textbraceleft',            undef, "{");
+DefPrimitiveI('\textbraceright',           undef, "}");
+DefPrimitiveI('\textbullet',               undef, "\x{2022}");    # BULLET
+DefPrimitiveI('\textdaggerdbl',            undef, "\x{2021}");    # DOUBLE DAGGER
+DefPrimitiveI('\textdagger',               undef, "\x{2020}");    # DAGGER
+DefPrimitiveI('\textparagraph',            undef, UTF(0xB6));     # PILCROW SIGN
+DefPrimitiveI('\textsection',              undef, UTF(0xA7));     # SECTION SIGN
 DefPrimitiveI('\textless',                 undef, "<");
 DefPrimitiveI('\textgreater',              undef, ">");
-DefPrimitiveI('\textcopyright',            undef, UTF(0xA9));    # COPYRIGHT SIGN
+DefPrimitiveI('\textcopyright',            undef, UTF(0xA9));     # COPYRIGHT SIGN
 DefPrimitiveI('\textasciicircum',          undef, "^");
 DefPrimitiveI('\textasciitilde',           undef, "~");
-DefPrimitiveI('\textcompwordmark',         undef, "");           # ???
-DefPrimitiveI('\textcapitalcompwordmark',  undef, "");           # ???
-DefPrimitiveI('\textascendercompwordmark', undef, "");           # ???
+DefPrimitiveI('\textcompwordmark',         undef, "");            # ???
+DefPrimitiveI('\textcapitalcompwordmark',  undef, "");            # ???
+DefPrimitiveI('\textascendercompwordmark', undef, "");            # ???
 DefPrimitiveI('\textunderscore',           undef, "_");
 DefPrimitiveI('\textvisiblespace', undef, "\x{2423}"); # SYMBOL FOR SPACE;  Not really the right symbol!
 DefPrimitiveI('\textellipsis',   undef, "\x{2026}");    # HORIZONTAL ELLIPSIS
@@ -5402,8 +5401,37 @@ DefConstructor('\realsuperscript{}', "<ltx:sup>#1</ltx:sup>",
   mode => 'text');
 DefPrimitiveI('\textordfeminine',  undef, UTF(0xAA));    # FEMININE ORDINAL INDICATOR
 DefPrimitiveI('\textordmasculine', undef, UTF(0xBA));    # MASCULINE ORDINAL INDICATOR
-DefPrimitiveI('\SS', undef, 'SS',                        # ?
-  locked => 1);                                          # cause it shows up in uclist!
+
+our %unicode_enclosed_alphanumerics = (
+  0  => "\x{24EA}", 1  => "\x{2460}", 2  => "\x{2461}", 3  => "\x{2462}", 4  => "\x{2463}",
+  5  => "\x{2464}", 6  => "\x{2465}", 7  => "\x{2466}", 8  => "\x{2467}", 9  => "\x{2468}",
+  10 => "\x{2469}", 11 => "\x{246A}", 12 => "\x{246B}", 13 => "\x{246C}", 14 => "\x{246D}",
+  15 => "\x{246E}", 16 => "\x{246F}", 17 => "\x{2470}", 18 => "\x{2471}", 19 => "\x{2472}",
+  20 => "\x{2473}",
+  a  => "\x{24D0}", b => "\x{24D1}", c   => "\x{24D2}", d   => "\x{24D3}", e   => "\x{24D4}",
+  f  => "\x{24D5}", g => "\x{24D6}", h   => "\x{24D7}", i   => "\x{24D8}", j   => "\x{24D9}",
+  k  => "\x{24DA}", l => "\x{24DB}", 'm' => "\x{24DC}", n   => "\x{24DD}", o   => "\x{24DE}",
+  p  => "\x{24DF}", q => "\x{24E0}", r   => "\x{24E1}", 's' => "\x{24E2}", t   => "\x{24E3}",
+  u  => "\x{24E4}", v => "\x{24E5}", w   => "\x{24E6}", x   => "\x{24E7}", y   => "\x{24E8}",
+  z  => "\x{24E9}", A => "\x{24B6}", B   => "\x{24B7}", C   => "\x{24B8}", D   => "\x{24B9}",
+  E  => "\x{24BA}", F => "\x{24BB}", G   => "\x{24BC}", H   => "\x{24BD}", I   => "\x{24BE}",
+  J  => "\x{24BF}", K => "\x{24C0}", L   => "\x{24C1}", 'M' => "\x{24C2}", N   => "\x{24C3}",
+  O  => "\x{24C4}", P => "\x{24C5}", Q   => "\x{24C6}", R   => "\x{24C7}", 'S' => "\x{24C8}",
+  T  => "\x{24C9}", U => "\x{24CA}", V   => "\x{24CB}", W   => "\x{24CC}", X   => "\x{24CD}",
+  Y  => "\x{24CE}", Z => "\x{24CF}");
+DefPrimitive('\textcircled {}', sub {
+    my ($stomach, $arg) = @_;
+    my $text = ToString($arg);
+    # if we know of a circled unicode character - use it,
+    # if not - use the combining accent.
+    # For now supports the range 0 to 20 as well as the latin alphabet.
+    if (($text =~ /^\d+$/ and int($text) <= 20) or ($text =~ /^[a-zA-Z]$/)) {
+      return Box($unicode_enclosed_alphanumerics{$text}); }
+    else {
+      return Box("$text\x{20DD}"); } });
+
+DefPrimitiveI('\SS', undef, 'SS',    # ?
+  locked => 1);                      # cause it shows up in uclist!
 DefMacroI('\dag',  undef, '\ifmmode{\dagger}\else\textdagger\fi');
 DefMacroI('\ddag', undef, '\ifmmode{\ddagger}\else\textdaggerdbl\fi');
 
