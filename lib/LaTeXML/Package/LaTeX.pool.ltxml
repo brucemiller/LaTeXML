@@ -5425,10 +5425,11 @@ DefPrimitive('\textcircled {}', sub {
     # if we know of a circled unicode character - use it,
     # if not - use the combining accent.
     # For now supports the range 0 to 20 as well as the latin alphabet.
-    if (($text =~ /^\d+$/ and int($text) <= 20) or ($text =~ /^[a-zA-Z]$/)) {
-      return Box($unicode_enclosed_alphanumerics{$text}); }
-    else {
-      return Box("$text\x{20DD}"); } });
+    my $is_number = $text =~ /^\d+$/;
+    my $content   = $unicode_enclosed_alphanumerics{$text} || "$text\x{20DD}";
+    my %props     = $STATE->lookupValue('IN_MATH') ?
+      (role => ($is_number ? 'NUMBER' : 'UNKNOWN'), meaning => "circled-$text") : ();
+    return Box($content, undef, undef, undef, %props); });
 
 DefPrimitiveI('\SS', undef, 'SS',    # ?
   locked => 1);                      # cause it shows up in uclist!
