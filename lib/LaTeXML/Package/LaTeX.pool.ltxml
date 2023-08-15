@@ -2273,7 +2273,8 @@ Tag('ltx:Math', afterOpen => sub { GenerateID(@_, 'm'); });
 # They provide an environment to wrap around equations,
 # which hijack the equation counter to sub-number within the group.
 DefConstructor('\lx@equationgroup@subnumbering@begin',
-  "<ltx:equationgroup xml:id='#id'>",
+  "<ltx:equationgroup xml:id='#id'>"
+    . "#tags",
   afterDigest => sub {
     my ($stomach, $whatsit) = @_;
     my %eqn   = RefStepCounter('equation');
