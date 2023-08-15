@@ -2130,7 +2130,7 @@ sub FindFile_fallback {
 
 sub pathname_is_nasty {
   my ($pathname) = @_;
-  return $pathname =~ /[^\w\-_\+\=\/\\\.~\:\s]/; }
+  return $pathname =~ /[^\w\-_\+\=\/\\\.~\:\s\x{2013}]/; }
 
 sub maybeReportSearchPaths {
   if (LookupValue('SEARCHPATHS_REPORTED')) {
