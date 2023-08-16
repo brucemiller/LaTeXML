@@ -118,16 +118,21 @@ DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST', sub {
     lstActivate($keyvals);
     return lstProcessDisplay(lstGetTokens('name'), $text); });
 
-DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
+# reproduce listings.sty's catcode handling
+DefMacro('\lstinputlisting', '\begingroup\lst@setcatcodes\lst@inputlisting');
+DefMacro('\lst@setcatcodes', '\makeatletter \catcode`\==12\relax');
+DefMacro('\lst@inputlisting OptionalKeyVals:LST {}', sub {
     my ($gullet, $keyvals, $file) = @_;
     my $text = listingsReadRawFile($gullet, $file);
     $STATE->getStomach->bgroup;
+    # if no name was specified, use the file name
+    $keyvals = LaTeXML::Core::KeyVals->new(undef, 'LST') if !defined $keyvals;
+    if (!$keyvals->hasKey('name')) {
+      $keyvals->setValue('name', $file); }
     lstActivate($keyvals);
-    my $name;
-    if (($name = lstGetTokens('name')) && !IsEmpty($name)) {
-      $file = $name; }
-    AssignValue('LST@toctitle', $file);    # so it shows up in list of..
-    return lstProcessDisplay($file, $text); });
+    my $name = lstGetTokens('name');
+    AssignValue('LST@toctitle', $name);    # so it shows up in list of..
+    return (lstProcessDisplay($name, $text), T_CS('\endgroup')); });
 
 NewCounter('lstlisting', 'document', idprefix => 'LST');
 DefMacro('\ext@lstlisting', 'lol');
@@ -385,6 +390,16 @@ sub lstActivate {
     my @pairs = $kv->getPairs();
     while (@pairs) {
       my ($key, $val) = (shift(@pairs), shift(@pairs));
+      # listings specific token replacement
+      if ($key eq 'name') {
+        my @toks = ();
+        for my $tok ($val->unlist) {
+          if    (Equals($tok, T_SUB))  { push(@toks, T_CS('\textunderscore')); }
+          elsif (Equals($tok, T_MATH)) { push(@toks, T_CS('\textdollar')); }
+          # for simplicity, we do NOT replace - with en dash, to have the correct @dataname
+          # elsif (Equals($tok, T_OTHER('-'))) { push(@toks, T_CS('\textendash')); }
+          else { push(@toks, $tok); } }
+        $val = Tokens(@toks); }
       $val = lstUnGroup($val);
       my $cs = T_CS('\lst@@' . $key);
       if (IsDefined($cs)) {
