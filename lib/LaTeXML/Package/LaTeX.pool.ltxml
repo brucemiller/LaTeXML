@@ -3359,11 +3359,13 @@ DefMacro('\@caption@@@{}{}{}',
 # Note that the counters only get incremented by \caption, NOT by \table, \figure, etc.
 DefPrimitive('\@@add@caption@counters', sub {
     my $captype = ToString(Digest(T_CS('\@captype')));
-    my %props   = RefStepCounter($captype);
+    my $pre     = LookupValue('PREINCREMENTED_' . $captype);    # If pre-incremented by beforeFloat
+    my %props   = ($pre ? %$pre : RefStepCounter($captype));
     my $inlist  = ToString(Digest(T_CS('\ext@' . $captype)));
-    AssignValue($captype . "_tags"   => $props{tags}, 'global');
-    AssignValue($captype . "_id"     => $props{id},   'global');
-    AssignValue($captype . "_inlist" => $inlist,      'global'); });
+    AssignValue('PREINCREMENTED_' . $captype => undef,        'global');
+    AssignValue($captype . "_tags"           => $props{tags}, 'global');
+    AssignValue($captype . "_id"             => $props{id},   'global');
+    AssignValue($captype . "_inlist"         => $inlist,      'global'); });
 
 sub RescueCaptionCounters {
   my ($captype, $whatsit) = @_;
@@ -3467,14 +3469,20 @@ sub beforeFloat {
   #Debug("FLOAT begin $type". join(',',map { $_."=".ToString($options{$_}); } sort keys %options));
   DefMacroI('\@captype', undef, $type);
   AssignRegister('\hsize' => LookupDimension($options{double} ? '\textwidth' : '\columnwidth'));
+  if (my $main = $options{preincrement}) {
+    if (($type ne (LookupValue('LAST_FLOATTYPE') || ''))    # first of subtype?
+      && !IfCondition('\iflx@donecaption')) {               # If main caption NOT already appeared?
+      AssignValue('PREINCREMENTED_' . $main => { RefStepCounter($main) }, 'global'); } }
   return; }
 
 sub afterFloat {
   my ($whatsit) = @_;
   my $type = ToString(Expand(T_CS('\@captype')));
+  AssignValue('PREINCREMENTED_' . $type => undef, 'global');
   #Debug("FLOAT end $type");
   $whatsit->setProperty(floatwidth => LookupRegister('\hsize'));
   RescueCaptionCounters($type, $whatsit);
+  AssignValue(LAST_FLOATTYPE => $type, 'global');
   return; }
 
 DefEnvironment('{figure}[]',

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?latexml class="article"?>
+<?latexml package="caption"?>
+<?latexml package="subcaption"?>
+<?latexml RelaxNGSchema="LaTeXML"?>
+<document xmlns="http://dlmf.nist.gov/LaTeXML">
+  <resource src="LaTeXML.css" type="text/css"/>
+  <resource src="ltx-article.css" type="text/css"/>
+  <para xml:id="p1">
+    <p>Total figure <ref labelref="LABEL:fig:1"/> with parts <ref labelref="LABEL:fig:1_a"/> and <ref labelref="LABEL:fig:1_b"/>.</p>
+  </para>
+  <para xml:id="p2">
+    <p>Also figure <ref labelref="LABEL:fig:2"/>.</p>
+  </para>
+  <figure inlist="lof" labels="LABEL:fig:1" placement="t!" xml:id="S0.F1">
+    <tags>
+      <tag><text fontsize="90%">Figure 1</text></tag>
+      <tag role="refnum">1</tag>
+      <tag role="typerefnum">Figure 1</tag>
+    </tags>
+    <figure class="ltx_flex_size_2" inlist="lof" labels="LABEL:fig:1_a" placement="t" xml:id="S0.F1.sf1">
+      <tags>
+        <tag><text fontsize="90%">(a)</text></tag>
+        <tag role="refnum">1(a)</tag>
+      </tags>
+      <p>[Subfigure A]</p>
+      <toccaption><tag close=" ">(a)</tag>Caption A</toccaption>
+      <caption><tag close=" "><text fontsize="90%">(a)</text></tag><text fontsize="90%">Caption A</text></caption>
+    </figure>
+    <figure class="ltx_flex_size_2" inlist="lof" labels="LABEL:fig:1_b" placement="t" xml:id="S0.F1.sf2">
+      <tags>
+        <tag><text fontsize="90%">(b)</text></tag>
+        <tag role="refnum">1(b)</tag>
+      </tags>
+      <p>[Subfigure B]</p>
+      <toccaption><tag close=" ">(b)</tag>Caption B</toccaption>
+      <caption><tag close=" "><text fontsize="90%">(b)</text></tag><text fontsize="90%">Caption B</text></caption>
+    </figure>
+    <toccaption><tag close=" ">1</tag>Figure Caption</toccaption>
+    <caption><tag close=": "><text fontsize="90%">Figure 1</text></tag><text fontsize="90%">Figure Caption</text></caption>
+  </figure>
+  <figure xml:id="fig2">
+    <p>[Captionless subfigure]</p>
+  </figure>
+  <figure inlist="lof" labels="LABEL:fig:2" xml:id="S0.F3.sf1">
+    <tags>
+      <tag><text fontsize="90%">(a)</text></tag>
+      <tag role="refnum">3(a)</tag>
+    </tags>
+    <p>[Captioned subfigure]</p>
+    <toccaption><tag close=" ">(a)</tag>Subfig caption for subfig</toccaption>
+    <caption><tag close=" "><text fontsize="90%">(a)</text></tag><text fontsize="90%">Subfig caption for subfig</text></caption>
+  </figure>
+</document>

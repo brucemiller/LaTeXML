@@ -1,0 +1,35 @@
+% #2095 subfigures get wrong reference
+% #2118 captionless figures
+\documentclass{article}
+\usepackage{caption}
+\usepackage{subcaption}
+\begin{document}
+Total figure~\ref{fig:1} with parts \ref{fig:1_a} and \ref{fig:1_b}.
+
+Also figure~\ref{fig:2}.
+
+\begin{figure}[t!]%
+  \begin{subfigure}[t]{0.5\linewidth}%
+    [Subfigure A]
+    \caption{{Caption A}}\label{fig:1_a}%
+  \end{subfigure}%
+  \begin{subfigure}[t]{0.5\linewidth}%
+    [Subfigure B]
+    \caption{{Caption B}}\label{fig:1_b}%
+  \end{subfigure}%
+  \caption{Figure Caption}\label{fig:1}%
+\end{figure}
+
+\begin{figure}
+  \begin{subfigure}{0.5\textwidth}
+    [Captionless subfigure]
+  \end{subfigure}
+\end{figure}
+\begin{figure}
+  \begin{subfigure}{0.5\textwidth}
+    [Captioned subfigure]
+    \caption{Subfig caption for subfig}\label{fig:2}
+  \end{subfigure}
+\end{figure}
+\end{document}
+  
