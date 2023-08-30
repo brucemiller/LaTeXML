@@ -34,7 +34,7 @@
   <xsl:param name="TIMESTAMP"></xsl:param>
 
   <xsl:param name="HEAD_TITLE_PREFIX"></xsl:param>
-  <xsl:param name="HEAD_TITLE_SHOW_CONTEXT">true</xsl:param>
+  <xsl:param name="HEAD_TITLE_SHOW_CONTEXT"></xsl:param>
 
   <!-- Use this string as meta viewport tag.
        The tag is omitted if the string is empty. -->
@@ -310,7 +310,7 @@
     <xsl:element name="link" namespace="{$html_ns}">
       <xsl:attribute name="rel"><xsl:value-of select="@rel"/></xsl:attribute>
       <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
-      <xsl:attribute name="title"><xsl:value-of select="normalize-space(@title)"/></xsl:attribute>
+      <xsl:attribute name="title"><xsl:value-of select="normalize-space(f:if(@fulltitle,@fulltitle, @title))"/></xsl:attribute>
     </xsl:element>
   </xsl:template>
 
