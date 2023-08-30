@@ -219,8 +219,15 @@ mixed with arbitrary characters.</a:documentation>
     </optional>
     <optional>
       <attribute name="title">
+        <a:documentation>gives a description of the target, not repeating the content,
+used for accessibility or a tooltip in HTML.
+Typically filled in by postprocessor.</a:documentation>
+      </attribute>
+    </optional>
+    <optional>
+      <attribute name="fulltitle">
         <a:documentation>gives a longer form description of the target,
-this would typically appear as a tooltip in HTML.
+usedful when the link appears outside its original context, eg in navigation.
 Typically filled in by postprocessor.</a:documentation>
       </attribute>
     </optional>

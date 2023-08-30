@@ -175,10 +175,15 @@ ref_attributes =
   ## mixed with arbitrary characters.
   attribute show { text }?,
 
-  ## gives a longer form description of the target,
-  ## this would typically appear as a tooltip in HTML.
+  ## gives a description of the target, not repeating the content,
+  ## used for accessibility or a tooltip in HTML.
   ## Typically filled in by postprocessor.
-  attribute title { text }?
+  attribute title { text }?,
+
+  ## gives a longer form description of the target,
+  ## usedful when the link appears outside its original context, eg in navigation.
+  ## Typically filled in by postprocessor.
+  attribute fulltitle { text }?
 
 ## Content model for \elementref{ref}.
 ref_model = Inline.model
