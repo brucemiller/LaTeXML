@@ -96,33 +96,36 @@ DefKeyVal('LTXML', 'pushbacklimit', 'Number', '', code => sub {
 ProcessOptions(inorder => 1, keysets => ['LTXML']);
 #======================================================================
 # From latexml.sty
+# Making these all be links, every time, seems in hindsight rather obnoxious.
+# OTOH, would be nice to have an idiom to make (some of) them be links; or only the first one?
 # [does this really belong here? or should this be disableable?]
 DefConstructor('\URL[] Verbatim', "<ltx:ref href='#href'>?#1(#1)(#href)</ltx:ref>",
   properties => sub { (href => CleanURL($_[2])); });
-DefMacro('\XML',      '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
-DefMacro('\SGML',     '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
-DefMacro('\HTML',     '\URL[\texttt{HTML}]{http://www.w3.org/html/}');
-DefMacro('\XHTML',    '\URL[\texttt{XHTML}]{http://www.w3.org/TR/xhtml11/}');
-DefMacro('\XSLT',     '\URL[\texttt{XSLT}]{http://www.w3.org/Style/XSL/}');
-DefMacro('\CSS',      '\URL[\texttt{CSS}]{http://www.w3.org/Style/CSS/}');
-DefMacro('\MathML',   '\URL[\texttt{MathML}]{http://www.w3.org/Math/}');
-DefMacro('\OpenMath', '\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
+DefMacro('\XML',      '\textsc{xml}');     # '\URL[\texttt{XML}]{http://www.w3.org/XML/}');
+DefMacro('\SGML',     '\textsc{sgml}');    # '\URL[\texttt{HTML}]{http://www.w3.org/MarkUp/SGML/}');
+DefMacro('\HTML',     '\textsc{html}');    #'\URL[\texttt{HTML}]{http://www.w3.org/html/}');
+DefMacro('\XHTML',    '\textsc{xhtml}');   #'\URL[\texttt{XHTML}]{http://www.w3.org/TR/xhtml11/}');
+DefMacro('\XSLT',     '\textsc{xslt}');    # '\URL[\texttt{XSLT}]{http://www.w3.org/Style/XSL/}');
+DefMacro('\CSS',      '\textsc{css}');     #'\URL[\texttt{CSS}]{http://www.w3.org/Style/CSS/}');
+DefMacro('\MathML',   '\texttt{MathML}');  # '\URL[\texttt{MathML}]{http://www.w3.org/Math/}');
+DefMacro('\OpenMath', '\texttt{OpenMath}');  # '\URL[\texttt{OpenMath}]{http://www.openmath.org/}');
 ##DefMacro('\LaTeXML',  '\URL[\texttt{LaTeXML}]{http://dlmf.nist.gov/LaTeXML/}');
 #DefMacro('\BibTeX','BibTeX');
 
-DefMacro('\LaTeXML',      '\URL[\LaTeXML@logo]{http://dlmf.nist.gov/LaTeXML/}');
-DefMacro('\LaTeXML@logo', '\lx@LaTeXML@{\lx@LaTeXML@XML}');
-DefConstructor('\lx@LaTeXML@{}',
+# Link is maybe a bit pushy? (by default)
+#DefMacro('\LaTeXML', '\URL[\LaTeXML@logo]{http://dlmf.nist.gov/LaTeXML/}');
+DefMacro('\LaTeXML', '\LaTeXML@logo');
+DefConstructor('\LaTeXML@logo',
   "<ltx:text class='ltx_LaTeXML_logo'>"
     . "<ltx:text cssstyle='letter-spacing:-0.2em; margin-right:0.1em'>"
     . "L"
-    . "<ltx:text fontsize='70%' yoffset='2.2pt'>A</ltx:text>"
+    . "<ltx:text cssstyle='font-variant:small-caps;' yoffset='0.4ex'>a</ltx:text>"
     . "T"
-    . "<ltx:text yoffset='-0.4ex'>E</ltx:text></ltx:text>"
-    . "#1</ltx:text>",
+    . "<ltx:text cssstyle='font-variant:small-caps;font-size:120%' yoffset='-0.2ex'>e</ltx:text>"
+    . "</ltx:text>"
+    . "<ltx:text cssstyle='font-size:90%' yoffset='-0.2ex'>XML</ltx:text>"
+    . "</ltx:text>",
   sizer => sub { (Dimension('3.8em'), Dimension('1.6ex'), Dimension('0.4ex')); });
-DefConstructor('\lx@LaTeXML@XML', "xml",    # "<ltx:text xoffset='-0.15em'>xml</ltx:text>",
-  bounded => 1, font => { shape => 'smallcaps' });
 
 DefMacro('\LaTeXMLversion',  sub { ExplodeText($LaTeXML::VERSION); });
 DefMacro('\LaTeXMLrevision', sub { ExplodeText($LaTeXML::Version::REVISION); });

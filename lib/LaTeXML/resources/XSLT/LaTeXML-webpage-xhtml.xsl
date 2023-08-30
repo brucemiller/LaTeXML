@@ -437,11 +437,11 @@
 
   <xsl:template match="/" mode="navbar">
     <xsl:choose>
-      <xsl:when test="//ltx:navigation/ltx:inline-para[@class='ltx_page_navbar']">
+      <xsl:when test="//ltx:navigation/ltx:inline-para[contains(@class,'ltx_page_navbar')]">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="{f:if($USE_HTML5,'nav','div')}" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_page_navbar</xsl:attribute>
-          <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[@class='ltx_page_navbar']/*"/>
+          <xsl:apply-templates select="//ltx:navigation/ltx:inline-para[contains(@class,'ltx_page_navbar')]/*"/>
         </xsl:element>
       </xsl:when>
       <xsl:when test="//ltx:navigation/ltx:TOC">
@@ -510,6 +510,7 @@
     <xsl:if test="//ltx:navigation/ltx:ref">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="div" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_align_center</xsl:attribute>
         <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='up']"/>
         <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='prev']"/>
         <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='next']"/>
@@ -522,6 +523,7 @@
     <xsl:if test="//ltx:navigation/ltx:ref">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="div" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_align_center</xsl:attribute>
         <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='prev']"/>
         <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='bibliography']"/>
         <xsl:apply-templates select="//ltx:navigation/ltx:ref[@rel='index']"/>
@@ -548,22 +550,24 @@
           <xsl:attribute name="style">letter-spacing:-0.2em; margin-right:0.1em;</xsl:attribute>
           <xsl:text>L</xsl:text>
           <xsl:element name="span" namespace="{$html_ns}">
-            <xsl:attribute name="style">font-size:70%;position:relative; bottom:2.2pt;</xsl:attribute>
-            <xsl:text>A</xsl:text>
+            <xsl:attribute name="class">ltx_font_smallcaps</xsl:attribute>
+            <xsl:attribute name="style">position:relative; bottom:2.2pt;</xsl:attribute>
+            <xsl:text>a</xsl:text>
           </xsl:element>
           <xsl:text>T</xsl:text>
           <xsl:element name="span" namespace="{$html_ns}">
-            <xsl:attribute name="style">position:relative; bottom:-0.4ex;</xsl:attribute>
-            <xsl:text>E</xsl:text>
+            <xsl:attribute name="class">ltx_font_smallcaps</xsl:attribute>
+            <xsl:attribute name="style">font-size:120%;position:relative; bottom:-0.2ex;</xsl:attribute>
+            <xsl:text>e</xsl:text>
           </xsl:element>
         </xsl:element>
         <xsl:element name="span" namespace="{$html_ns}">
-          <xsl:attribute name="class">ltx_font_smallcaps</xsl:attribute>
-          <xsl:text>xml</xsl:text>
+          <xsl:attribute name="style">font-size:90%; position:relative; bottom:-0.2ex;</xsl:attribute>
+          <xsl:text>XML</xsl:text>
         </xsl:element>
         <xsl:element name="img" namespace="{$html_ns}">
           <xsl:attribute name="src">data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAsAAAAOCAYAAAD5YeaVAAAAAXNSR0IArs4c6QAAAAZiS0dEAP8A/wD/oL2nkwAAAAlwSFlzAAALEwAACxMBAJqcGAAAAAd0SU1FB9wKExQZLWTEaOUAAAAddEVYdENvbW1lbnQAQ3JlYXRlZCB3aXRoIFRoZSBHSU1Q72QlbgAAAdpJREFUKM9tkL+L2nAARz9fPZNCKFapUn8kyI0e4iRHSR1Kb8ng0lJw6FYHFwv2LwhOpcWxTjeUunYqOmqd6hEoRDhtDWdA8ApRYsSUCDHNt5ul13vz4w0vWCgUnnEc975arX6ORqN3VqtVZbfbTQC4uEHANM3jSqXymFI6yWazP2KxWAXAL9zCUa1Wy2tXVxheKA9YNoR8Pt+aTqe4FVVVvz05O6MBhqUIBGk8Hn8HAOVy+T+XLJfLS4ZhTiRJgqIoVBRFIoric47jPnmeB1mW/9rr9ZpSSn3Lsmir1fJZlqWlUonKsvwWwD8ymc/nXwVBeLjf7xEKhdBut9Hr9WgmkyGEkJwsy5eHG5vN5g0AKIoCAEgkEkin0wQAfN9/cXPdheu6P33fBwB4ngcAcByHJpPJl+fn54mD3Gg0NrquXxeLRQAAwzAYj8cwTZPwPH9/sVg8PXweDAauqqr2cDjEer1GJBLBZDJBs9mE4zjwfZ85lAGg2+06hmGgXq+j3+/DsixYlgVN03a9Xu8jgCNCyIegIAgx13Vfd7vdu+FweG8YRkjXdWy329+dTgeSJD3ieZ7RNO0VAXAPwDEAO5VKndi2fWrb9jWl9Esul6PZbDY9Go1OZ7PZ9z/lyuD3OozU2wAAAABJRU5ErkJggg==</xsl:attribute>
-          <xsl:attribute name="alt">[LOGO]</xsl:attribute>
+          <xsl:attribute name="alt">Mascot Sammy</xsl:attribute>
         </xsl:element>
       </xsl:element>
     </xsl:element>
