@@ -356,8 +356,11 @@ sub fill_in_refs {
         if (my $url = $self->generateURL($doc, $id)) {
           $ref->setAttribute(href => $url); } }
       if (!$ref->getAttribute('title')) {
-        if (my $titlestring = $self->generateTitle($doc, $id)) {
-          $ref->setAttribute(title => $titlestring); } }
+        if (my $titlestring = $self->generateTitle($doc, $id, $show || 'toctitle')) {
+          $ref->setAttribute(title => $titlestring); }
+        if (my $rel = $ref->getAttribute('rel')) {
+          if (my $titlestring = $self->generateTitle($doc, $id)) {
+            $ref->setAttribute(fulltitle => $titlestring); } } }
       if (!$ref->textContent && !element_nodes($ref)
         && !(($tag eq 'ltx:graphics') || ($tag eq 'ltx:picture'))) {
         my $is_nameref = ($ref->getAttribute('class') || '') =~ 'ltx_refmacro_nameref';
@@ -814,19 +817,23 @@ sub generateDocumentTile {
 
 # Generate a title string for ltx:ref
 sub generateTitle {
-  my ($self, $doc, $id) = @_;
-  # Add author, if any ???
-  my $string    = "";
-  my $altstring = "";
+  my ($self, $doc, $id, $shown) = @_;
+  my @ids    = ();
+  my $string = "";
+  my $prefix;
   while (my $entry = $id && $$self{db}->lookup("ID:$id")) {
+    push(@ids, $id);
     my $title = $self->fillInTitle($doc,
       $entry->getValue('title') || $entry->getValue('typerefnum') || $entry->getValue('refnum'));
     $title = getTextContent($doc, $title) if $title && ref $title;
-    if ($title) {
-      $string .= $$self{ref_join} if $string;
+    if ($shown && ($shown =~ /title/)) {    # Skip 1st node's title, if already in content
+      $prefix = "In "; $shown = ""; }
+    elsif ($title) {
+      $string .= $prefix if $prefix;
+      $prefix = $$self{ref_join};
       $string .= $title; }
     $id = $entry->getValue('parent'); }
-  return $string || $altstring; }
+  return $string; }
 
 sub getTextContent {
   my ($doc, $title) = @_;
