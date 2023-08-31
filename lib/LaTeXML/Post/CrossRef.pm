@@ -821,18 +821,35 @@ sub generateTitle {
   my @ids    = ();
   my $string = "";
   my $prefix;
+  $shown = '' unless $shown;
   while (my $entry = $id && $$self{db}->lookup("ID:$id")) {
     push(@ids, $id);
-    my $title = $self->fillInTitle($doc,
-      $entry->getValue('title') || $entry->getValue('typerefnum') || $entry->getValue('refnum'));
-    $title = getTextContent($doc, $title) if $title && ref $title;
-    if ($shown && ($shown =~ /title/)) {    # Skip 1st node's title, if already in content
+    my ($type, $x, $t);
+    my $dup;
+    my @pieces = ();
+    # Attempt to construct a meaningful title (or type-refnum or refnum) for this level
+    # noting whether it apparently duplicates the ref's content.
+    if ($x = $entry->getValue('title')) {
+      $dup = $shown =~ /title/;
+      push(@pieces, $x); }
+    elsif (($t = $entry->getValue('tag:creftypecap') || $entry->getValue('tag:creftype'))
+      && ($x = $entry->getValue('refnum'))) {
+      $dup = ($shown =~ /type/) && ($shown =~ /refnum/);
+      push(@pieces, $t, $x); }
+    elsif ($x = $entry->getValue('typerefnum')) {
+      $dup = ($shown =~ /type/) && ($shown =~ /refnum/);
+      push(@pieces, $x); }
+    elsif ($x = $entry->getValue('refnum')) {
+      $dup = ($shown =~ /refnum/);
+      push(@pieces, $x); }
+
+    if ($dup) {    # Omit if the title from the 1st node duplicates the content
       $prefix = "In "; $shown = ""; }
-    elsif ($title) {
+    elsif (my $title = join(' ', map { getTextContent($doc, $self->fillInTitle($doc, $_)); } @pieces)) {
       $string .= $prefix if $prefix;
       $prefix = $$self{ref_join};
       $string .= $title; }
-    $id = $entry->getValue('parent'); }
+    $id = $entry->getValue('parent'); }    # Loop to add context to title
   return $string; }
 
 sub getTextContent {
