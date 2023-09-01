@@ -356,8 +356,11 @@ sub fill_in_refs {
         if (my $url = $self->generateURL($doc, $id)) {
           $ref->setAttribute(href => $url); } }
       if (!$ref->getAttribute('title')) {
-        if (my $titlestring = $self->generateTitle($doc, $id)) {
-          $ref->setAttribute(title => $titlestring); } }
+        if (my $titlestring = $self->generateTitle($doc, $id, $show || 'toctitle')) {
+          $ref->setAttribute(title => $titlestring); }
+        if (my $rel = $ref->getAttribute('rel')) {
+          if (my $titlestring = $self->generateTitle($doc, $id)) {
+            $ref->setAttribute(fulltitle => $titlestring); } } }
       if (!$ref->textContent && !element_nodes($ref)
         && !(($tag eq 'ltx:graphics') || ($tag eq 'ltx:picture'))) {
         my $is_nameref = ($ref->getAttribute('class') || '') =~ 'ltx_refmacro_nameref';
@@ -814,19 +817,40 @@ sub generateDocumentTile {
 
 # Generate a title string for ltx:ref
 sub generateTitle {
-  my ($self, $doc, $id) = @_;
-  # Add author, if any ???
-  my $string    = "";
-  my $altstring = "";
+  my ($self, $doc, $id, $shown) = @_;
+  my @ids    = ();
+  my $string = "";
+  my $prefix;
+  $shown = '' unless $shown;
   while (my $entry = $id && $$self{db}->lookup("ID:$id")) {
-    my $title = $self->fillInTitle($doc,
-      $entry->getValue('title') || $entry->getValue('typerefnum') || $entry->getValue('refnum'));
-    $title = getTextContent($doc, $title) if $title && ref $title;
-    if ($title) {
-      $string .= $$self{ref_join} if $string;
+    push(@ids, $id);
+    my ($type, $x, $t);
+    my $dup;
+    my @pieces = ();
+    # Attempt to construct a meaningful title (or type-refnum or refnum) for this level
+    # noting whether it apparently duplicates the ref's content.
+    if ($x = $entry->getValue('title')) {
+      $dup = $shown =~ /title/;
+      push(@pieces, $x); }
+    elsif (($t = $entry->getValue('tag:creftypecap') || $entry->getValue('tag:creftype'))
+      && ($x = $entry->getValue('refnum'))) {
+      $dup = ($shown =~ /type/) && ($shown =~ /refnum/);
+      push(@pieces, $t, $x); }
+    elsif ($x = $entry->getValue('typerefnum')) {
+      $dup = ($shown =~ /type/) && ($shown =~ /refnum/);
+      push(@pieces, $x); }
+    elsif ($x = $entry->getValue('refnum')) {
+      $dup = ($shown =~ /refnum/);
+      push(@pieces, $x); }
+
+    if ($dup) {    # Omit if the title from the 1st node duplicates the content
+      $prefix = "In "; $shown = ""; }
+    elsif (my $title = join(' ', map { getTextContent($doc, $self->fillInTitle($doc, $_)); } @pieces)) {
+      $string .= $prefix if $prefix;
+      $prefix = $$self{ref_join};
       $string .= $title; }
-    $id = $entry->getValue('parent'); }
-  return $string || $altstring; }
+    $id = $entry->getValue('parent'); }    # Loop to add context to title
+  return $string; }
 
 sub getTextContent {
   my ($doc, $title) = @_;
