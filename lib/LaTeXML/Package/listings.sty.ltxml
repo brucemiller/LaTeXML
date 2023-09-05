@@ -165,13 +165,15 @@ sub lstProcessBlock {
       T_END]); }
 
 our %lstFilenameRPL = (
-  '_' => T_CS('\textunderscore'), '$' => T_CS('\textdollar'), '-' => T_CS('\textendash'));
+  '_' => T_CS('\textunderscore'), '$' => T_CS('\textdollar'),
+  ## '-' => T_CS('\textendash')  # Probably unwise, since it ends up in dataname
+);
 
 sub lstProcessDisplay {
-  my ($name, $text)    = @_;
-  my ($body, $trailer) = lstProcessBlock($name, $text);
+  my ($name, $text) = @_;
   # reencode certain chars, so typewriter-like, but not typewriter font.
   $name = Tokens(map { $lstFilenameRPL{ ToString($_) } || $_; } $name->unlist) if $name;
+  my ($body, $trailer) = lstProcessBlock($name, $text);
   AssignValue('LST@toctitle', $name);    # so it shows up in list of..
   my @body = @$body;
   # Figure out whether the display is numbered, or has a caption or titles.
