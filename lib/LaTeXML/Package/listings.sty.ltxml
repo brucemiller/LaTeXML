@@ -118,25 +118,13 @@ DefMacroI(T_CS('\begin{lstlisting}'), 'OptionalKeyVals:LST', sub {
     lstActivate($keyvals);
     return lstProcessDisplay(lstGetTokens('name'), $text); });
 
-DefParameterType('LstNameVerbatim', sub {
-    my ($gullet) = @_;
-    # Closer to listings approch, but do NOT make - => \textendash! (ends up in file name)
-    AssignCatcode('$', CC_ACTIVE);
-    AssignCatcode('_', CC_ACTIVE);
-    DefMacroI(T_ACTIVE('$'), undef, T_CS('\textdollar'),     scope => 'local');
-    DefMacroI(T_ACTIVE('_'), undef, T_CS('\textunderscore'), scope => 'local');
-    return Tokens(Expand($gullet->readArg)); },
-  semiverbatim => 1,
-  reversion    => sub { (T_BEGIN, Revert($_[0]), T_END); });
-
-DefMacro('\lstinputlisting OptionalKeyVals:LST LstNameVerbatim', sub {
+DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
     my ($gullet, $keyvals, $file) = @_;
     my $text = listingsReadRawFile($gullet, $file);
     $STATE->getStomach->bgroup;
     lstActivate($keyvals);
     my $name = lstGetTokens('name');
     $name = $file if IsEmpty($name);
-    AssignValue('LST@toctitle', $name);    # so it shows up in list of..
     return lstProcessDisplay($name, $text); });
 
 NewCounter('lstlisting', 'document', idprefix => 'LST');
@@ -176,9 +164,15 @@ sub lstProcessBlock {
     [@{ LookupValue('LISTINGS_POSTAMBLE') },
       T_END]); }
 
+our %lstFilenameRPL = (
+  '_' => T_CS('\textunderscore'), '$' => T_CS('\textdollar'), '-' => T_CS('\textendash'));
+
 sub lstProcessDisplay {
   my ($name, $text)    = @_;
   my ($body, $trailer) = lstProcessBlock($name, $text);
+  # reencode certain chars, so typewriter-like, but not typewriter font.
+  $name = Tokens(map { $lstFilenameRPL{ ToString($_) } || $_; } $name->unlist) if $name;
+  AssignValue('LST@toctitle', $name);    # so it shows up in list of..
   my @body = @$body;
   # Figure out whether the display is numbered, or has a caption or titles.
   my @caption = ();
@@ -321,7 +315,7 @@ sub listingsReadRawLines {
 
 sub listingsReadRawFile {
   my ($gullet, $file) = @_;
-  my $filename = ToString(Digest($file));
+  my $filename = ToString(Expand($file));
   my $path     = FindFile($filename);
   my $text;
   my $LST_FH;
@@ -874,7 +868,7 @@ DefKeyVal('LST', 'numberstyle',      '');
 DefKeyVal('LST', 'numbersep',        'Dimension');
 DefKeyVal('LST', 'numberblanklines', '', 'true');
 DefKeyVal('LST', 'firstnumber',      '');
-DefKeyVal('LST', 'name',             'LstNameVerbatim');
+DefKeyVal('LST', 'name',             'Semiverbatim');
 NewCounter('lstnumber');
 DefMacro('\thelstnumber', '\arabic{lstnumber}');
 
