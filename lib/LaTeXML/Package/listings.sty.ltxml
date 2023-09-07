@@ -123,11 +123,9 @@ DefMacro('\lstinputlisting OptionalKeyVals:LST Semiverbatim', sub {
     my $text = listingsReadRawFile($gullet, $file);
     $STATE->getStomach->bgroup;
     lstActivate($keyvals);
-    my $name;
-    if (($name = lstGetTokens('name')) && !IsEmpty($name)) {
-      $file = $name; }
-    AssignValue('LST@toctitle', $file);    # so it shows up in list of..
-    return lstProcessDisplay($file, $text); });
+    my $name = lstGetTokens('name');
+    $name = $file if IsEmpty($name);
+    return lstProcessDisplay($name, $text); });
 
 NewCounter('lstlisting', 'document', idprefix => 'LST');
 DefMacro('\ext@lstlisting', 'lol');
@@ -166,9 +164,17 @@ sub lstProcessBlock {
     [@{ LookupValue('LISTINGS_POSTAMBLE') },
       T_END]); }
 
+our %lstFilenameRPL = (
+  '_' => T_CS('\textunderscore'), '$' => T_CS('\textdollar'),
+  ## '-' => T_CS('\textendash')  # Probably unwise, since it ends up in dataname
+);
+
 sub lstProcessDisplay {
   my ($name, $text) = @_;
+  # reencode certain chars, so typewriter-like, but not typewriter font.
+  $name = Tokens(map { $lstFilenameRPL{ ToString($_) } || $_; } $name->unlist) if $name;
   my ($body, $trailer) = lstProcessBlock($name, $text);
+  AssignValue('LST@toctitle', $name);    # so it shows up in list of..
   my @body = @$body;
   # Figure out whether the display is numbered, or has a caption or titles.
   my @caption = ();
@@ -202,7 +208,7 @@ sub lstProcessDisplay {
     ($numbered || $caption ? (T_CS('\par')) : ()),
     T_BEGIN,
     ($name ? (T_CS('\def'), T_CS('\lstname'), T_BEGIN, $name->unlist, T_END) : ()),
-    ($numbered
+    ($numbered || !IsEmpty($name)
       ? Invocation(T_CS('\@listings'), Tokens(@body))
       : ($caption
         ? Invocation(T_CS('\@@listings'), Tokens(@body))
@@ -864,7 +870,7 @@ DefKeyVal('LST', 'numberstyle',      '');
 DefKeyVal('LST', 'numbersep',        'Dimension');
 DefKeyVal('LST', 'numberblanklines', '', 'true');
 DefKeyVal('LST', 'firstnumber',      '');
-DefKeyVal('LST', 'name',             '');
+DefKeyVal('LST', 'name',             'Semiverbatim');
 NewCounter('lstnumber');
 DefMacro('\thelstnumber', '\arabic{lstnumber}');
 
@@ -1529,6 +1535,8 @@ DefConstructor('\@lst@startline{}', "<ltx:listingline xml:id='#id'>#1",
 DefConstructor('\@lst@endline',      "</ltx:listingline>");
 DefConstructor('\@lst@linenumber{}', "<ltx:tags><ltx:tag>#1</ltx:tag></ltx:tags>");
 
+DefMacro('\lstnumbertyperefname', 'line');
+
 DefConstructor('\@lst@visible@space', "\x{2423}");
 
 sub lstDoNumber {
@@ -1537,8 +1545,7 @@ sub lstDoNumber {
       || ((($LaTeXML::linenum - 1) % lstGetNumber('stepnumber')) == 0))
     && (lstGetBoolean('numberblanklines') || !$isempty)) {
     AssignValue('LISTINGS_NEEDS_NUMBER' => 0);
-    return Invocation(T_CS('\@lst@linenumber'),
-      Tokens(T_BEGIN, lstGetTokens('numberstyle')->unlist, T_CS('\thelstnumber'), T_END)); }
+    return Invocation(T_CS('\lx@make@tags'), T_OTHER('lstnumber')); }
   else {
     return Invocation(T_CS('\@lst@linenumber'), Tokens()); } }
 
