@@ -22,6 +22,7 @@ use LaTeXML::Util::Image;
 # (See  LaTeXML::Post::Graphics for suggested postprocessing)
 # Package options: draft, final, hiderotate, hidescale, hiresbb
 
+# Dimensions, but \calc syntax SHOULD be allowed (if calc loaded)
 DefParameterType('GraphixDimension', sub {
     my ($gullet) = @_;
     $gullet->skipSpaces;
@@ -32,6 +33,27 @@ DefParameterType('GraphixDimension', sub {
     else {
       $gullet->unread($next);
       $gullet->readDimension; } },
+  optional => 1);
+
+# For trim, viewport: a sequence of 4 dimensions
+# These must be space separated, but apparently trailing commas are ignored.
+DefParameterType('GraphixDimensions', sub {
+    my ($gullet) = @_;
+    $gullet->skipSpaces;
+    my @dims = ();
+    while (scalar(@dims) < 4) {
+      if (scalar(@dims)) {
+        my $t = $gullet->readToken;
+        if ($t && !$t->equals(T_OTHER(','))) {
+          $gullet->unread($t); } }
+      my $s = $gullet->readOptionalSigns();
+      if (defined(my $d = $gullet->readRegisterValue('Dimension', $s, 1))) {
+        push(@dims, $d); }
+      elsif (defined($d = $gullet->readFactor())) {
+        my $unit = $gullet->readUnit() || $STATE->convertUnit('bp');
+        push(@dims, Dimension(fixpoint($s * $d, $unit))); }
+      else { last; } }
+    return LaTeXML::Core::Array->new(values => \@dims, separator => T_SPACE); },
   optional => 1);
 
 # Should probably be more clever about whether to create an ltx:inline-block vs just ltx:text
@@ -178,6 +200,10 @@ sub rotatedProperties {
     ytranslate  => $ysh,
   ); }
 
+#======================================================================
+# See here and graphicx.sty.ltxml for recognized graphicx options
+# See LaTeXML::Util::Image for internal implementation
+
 # NOTE: Need to implement the origin of rotation!
 # [code so far only reads them]
 DefKeyVal('Grot', 'origin', '');            # c,l,r,t,b,B
@@ -229,7 +255,7 @@ DefConstructor('\graphicspath DirectoryList', sub {
       my $path = pathname_absolute(pathname_canonical(ToString($dir)), $root);
       push(@paths, $path);
       PushValue(GRAPHICSPATHS => $path); }
-    return (paths => [@paths]); });
+    return (paths => \@paths); });
 
 # Basically, we're transforming the graphics options into graphicx format.
 DefMacro('\includegraphics OptionalMatch:* [][] Semiverbatim',
@@ -244,17 +270,23 @@ sub graphicS_options {
   my $options = ($starred ? ($bb ? "viewport=$bb, clip" : "clip") : '');
   return $options; }
 
+# Combine keyval options into a single options attribute.
 sub graphicX_options {
   my ($starred, $kv) = @_;
-  my $options = ToString($kv);
-  $options .= ',clip=true' if $starred;
-  my $keepaspect;
-  $options .= ',';
-  $keepaspect = 1 if $options =~ s/width=,//;
-  $keepaspect = 1 if $options =~ s/height=,//;
-  if ($keepaspect) { $options .= 'keepaspectratio=true'; }
-  else             { $options =~ s/,$//; }
-  return $options; }
+  my @options = ();
+  my @kv      = $kv->getPairs;
+  push(@options, 'clip=true') if $starred;
+  #  my $keepaspect;
+  my ($saw_w, $saw_h);
+  while (@kv) {
+    my ($key, $value) = (shift(@kv), shift(@kv));
+    $saw_w = 1 if $key =~ /width$/;
+    $saw_h = 1 if $key =~ /height$/;
+    $value = ToString($value);
+    $value =~ s/,/\\,/g;    # Slashify any "," within the value
+    push(@options, $key . '=' . $value); }
+  push(@options, 'keepaspectratio=true') if ($saw_w xor $saw_h) && !$kv->hasKey('keepaspectratio');
+  return join(',', @options); }
 
 DefConstructor('\@includegraphics OptionalMatch:* [][] Semiverbatim',
   "<ltx:graphics graphic='#graphic' candidates='#candidates' options='#options'/>",

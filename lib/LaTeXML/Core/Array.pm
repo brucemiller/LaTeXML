@@ -72,10 +72,12 @@ sub unlist {
 sub toString {
   my ($self) = @_;
   my $string = '';
+  $string = ToString($$self{open}) if $$self{open};
   foreach my $item (@{ $$self{values} }) {
-    $string .= ', ' if $string;
+    $string .= ToString($$self{separator}) if $string && $$self{separator};
     $string .= ToString($item); }
-  return '[[' . $string . ']]'; }
+  $string .= ToString($$self{close}) if $$self{close};
+  return $string; }
 
 #======================================================================
 1;

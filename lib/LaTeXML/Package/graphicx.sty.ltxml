@@ -34,6 +34,8 @@ DefKeyVal('Gin', 'clip',            '', 'true');
 DefKeyVal('Gin', 'scale',           '');
 DefKeyVal('Gin', 'angle',           '');
 DefKeyVal('Gin', 'alt',             '');
+DefKeyVal('Gin', 'trim',            'GraphixDimensions');
+DefKeyVal('Gin', 'viewport',        'GraphixDimensions');
 # NOTE: graphicx defines @angle to actually carry out the rotation (on \box\z@) w/\Gin@erotate
 # rather than to simply record the angle for later use. (also origin redefines)
 # This is used by adjustbox.
