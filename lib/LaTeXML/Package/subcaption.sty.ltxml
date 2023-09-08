@@ -44,8 +44,16 @@ DefMacro('\format@title@font@subtable',  '\format@title@font@table');
 # So it should become a sub<float>, inheriting whatever style from outer float;
 # But, ltx:caption will float up outside the minipage (not allowed there)!
 # Probably should convert the minipage to a float, or wrap it, if we could?
-DefMacro('\subcaption OptionalMatch:* []{}',
-  '{\edef\@captype{sub\@captype}\caption[#2]{#3}}');
+DefMacro('\subcaption OptionalMatch:* []{}', sub {
+    my ($gullet, $star, $opt, $caption) = @_;
+    # TODO: this is a temporary kludge to avoid sub-sub mistakes.
+    if (IsDefined('\@captype')) {
+      my $ctype = ToString(Expand(T_CS('\@captype')));
+      if ($ctype && $ctype !~ /^sub/) {    # avoid subsubfigure, etc.
+        DefMacro('\@captype', "sub$ctype", scope => 'local'); } }
+    return (T_CS('\caption'),
+      $opt ? (T_OTHER('['), $opt, T_OTHER(']')) : (), T_BEGIN, $caption, T_END);
+});
 
 #======================================================================
 # Let these float, since subfigures tend to get wrapped with weird positioning.
