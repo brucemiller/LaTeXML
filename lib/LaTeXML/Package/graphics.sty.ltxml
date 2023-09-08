@@ -53,7 +53,7 @@ DefParameterType('GraphixDimensions', sub {
         my $unit = $gullet->readUnit() || $STATE->convertUnit('bp');
         push(@dims, Dimension(fixpoint($s * $d, $unit))); }
       else { last; } }
-    return LaTeXML::Core::Array->new(values => [@dims], separator => T_SPACE); },
+    return LaTeXML::Core::Array->new(values => \@dims, separator => T_SPACE); },
   optional => 1);
 
 # Should probably be more clever about whether to create an ltx:inline-block vs just ltx:text
@@ -255,7 +255,7 @@ DefConstructor('\graphicspath DirectoryList', sub {
       my $path = pathname_absolute(pathname_canonical(ToString($dir)), $root);
       push(@paths, $path);
       PushValue(GRAPHICSPATHS => $path); }
-    return (paths => [@paths]); });
+    return (paths => \@paths); });
 
 # Basically, we're transforming the graphics options into graphicx format.
 DefMacro('\includegraphics OptionalMatch:* [][] Semiverbatim',
