@@ -640,34 +640,35 @@ And more.</p>
     </para>
     <para xml:id="S7.p2">
       <enumerate xml:id="S7.I2">
-        <item xml:id="S7.I2.i1">
+        <item labels="LABEL:first" xml:id="S7.I2.i1">
           <tags>
             <tag>(1)</tag>
-            <tag role="refnum">(1)</tag>
+            <tag role="refnum">[1]</tag>
           </tags>
           <para xml:id="S7.I2.i1.p1">
             <p>first</p>
           </para>
         </item>
-        <item xml:id="S7.I2.i2">
+        <item labels="LABEL:second" xml:id="S7.I2.i2">
           <tags>
             <tag>(2)</tag>
-            <tag role="refnum">(2)</tag>
+            <tag role="refnum">[2]</tag>
           </tags>
           <para xml:id="S7.I2.i2.p1">
             <p>second</p>
           </para>
         </item>
-        <item xml:id="S7.I2.i3">
+        <item labels="LABEL:third" xml:id="S7.I2.i3">
           <tags>
             <tag>(3)</tag>
-            <tag role="refnum">(3)</tag>
+            <tag role="refnum">[3]</tag>
           </tags>
           <para xml:id="S7.I2.i3.p1">
             <p>third</p>
           </para>
         </item>
       </enumerate>
+      <p>with steps <ref labelref="LABEL:first"/>,<ref labelref="LABEL:second"/> and <ref labelref="LABEL:third"/>.</p>
     </para>
     <para xml:id="S7.p3">
       <p>Inline:
