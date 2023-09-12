@@ -34,7 +34,7 @@
 \item Line two
 \end{enumerate}
 
-\begin{enumerate}[label=\fbox{\arabic*}]
+\begin{enumerate}                                                     [label=\fbox{\arabic*}]
 \item Line one
 \item Line two
 \end{enumerate}
@@ -138,7 +138,7 @@ And so on.
 \newlist{ingredients}{itemize}{1}
 \setlist[ingredients]{label=\textbullet}
 \newlist{steps}{enumerate}{2}
-\setlist[steps,1,2]{label=(\arabic*)}
+\setlist[steps,1,2]{label=(\arabic*), ref=[\arabic*]}
 
 \newlist{isteps}{enumerate*}{2}
 \setlist[isteps,1,2]{label=(\arabic*)}
@@ -151,10 +151,11 @@ And so on.
 \end{ingredients}
 
 \begin{steps}
-\item first
-\item second
-\item third
+\item first\label{first}
+\item second\label{second}
+\item third\label{third}
 \end{steps}
+with steps \ref{first},\ref{second} and \ref{third}.
 
 Inline:
 \begin{isteps}

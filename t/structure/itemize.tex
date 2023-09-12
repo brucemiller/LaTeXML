@@ -101,4 +101,29 @@ Itemsep outside has no effect:
    \item And the third.
 \end{list}
 
+\newcounter{question}
+\newcounter{subquestion}
+\begin{list}{\textbf{\thequestion.}}{\usecounter{question}}
+  \item One.
+  \item Two.
+\end{list}
+  
+\begin{list}{\textbf{\thequestion.}}{\usecounter{question}}
+  \item One.
+  \item Two.
+  \begin{enumerate}
+    \item a.
+    \item b.
+  \end{enumerate}
+\end{list}
+
+\begin{list}{\textbf{\thequestion.}}{\usecounter{question}}
+  \item One.
+  \item Two.
+  \begin{list}{\emph{\thesubquestion.}}{\usecounter{subquestion}}
+    \item a.
+    \item b.
+  \end{list}
+\end{list}
+
 \end{document}
