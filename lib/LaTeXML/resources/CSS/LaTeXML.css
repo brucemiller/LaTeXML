@@ -231,14 +231,16 @@ table.ltx_eqn_eqnarray tr.ltx_eqn_lefteqn + tr td.ltx_align_right { min-width:2e
     display:block; }
 .ltx_itemize .ltx_item,
 .ltx_enumerate .ltx_item {
-    display: list-item; }
+    display: list-item; white-space:nowrap; }
 
 /* Position the tag to look like a normal item bullet. */
 li.ltx_item > .ltx_tag {
     display:inline-block; margin-left:-1.5em; min-width:1.5em;
     text-align:right; }
-.ltx_item .ltx_tag + .ltx_para,
-.ltx_item .ltx_tag + .ltx_para .ltx_p  { display:inline; }
+.ltx_item .ltx_tag + .ltx_para {
+    display:inline-block; vertical-align:top;}
+.ltx_item .ltx_tag + .ltx_para .ltx_p  {
+    display:inline; }
 
 /* NOTE: Need to try harder to get runin appearance? */
 dl.ltx_description dt { margin-right:0.5em; float:left;

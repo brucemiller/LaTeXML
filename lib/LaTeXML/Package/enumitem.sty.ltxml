@@ -97,9 +97,8 @@ sub beginEnumItemize {
       $llabel = Tokens(T_CS('\label' . $counter . ToString(Tokens(roman($level - 1)))), $llabel); }
     DefMacroI('\the' . $usecounter,   undef, $llabel);
     DefMacroI('\label' . $usecounter, undef, $llabel);
-###    DefMacroI('\fnum@' . $usecounter, undef,
-###      '{\makelabel{\fnum@font@' . $usecounter . '\label' . $usecounter . '}}');
-  }
+    DefMacroI('\fnum@' . $usecounter, undef,
+      Tokens(T_BEGIN, T_CS('\makelabel'), T_BEGIN, T_CS('\label' . $usecounter), T_END, T_END)); }
   if (my $label = $$hash{ref}) {
     my $llabel = replace_star($label, T_OTHER($usecounter));
     # This is a Hotfix.
@@ -141,10 +140,6 @@ DefMacro('\restartlist{}', sub {
     return; });
 
 #======================================================================
-
-# But first, a stub that ignores the new optional arg to itemize, etal.
-# Since the keyvals contain Registers, Dimensions, macros, etc,
-# we'll use OptionalUndigested for what will eventually be OptionalKeywords
 if (!LookupValue('enumitem@loadonly')) {
   DefEnvironment('{itemize} OptionalKeyVals:enumitem',
     "<ltx:itemize xml:id='#id'>#body</ltx:itemize>",

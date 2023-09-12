@@ -1816,10 +1816,18 @@ sub DefEnvironmentI {
   my $mode = $options{mode};
   $name      = ToString($name)                    if ref $name;
   $paramlist = parseParameters($paramlist, $name) if defined $paramlist && !ref $paramlist;
+  # Magic form: CS with name \begin{env} bypasses some LaTeX
+  # However, in pure LaTeX would usually have expanded to \env
+  # and would have skipped spaces before parsing args, if any.
+  my $paramlist_skips;
+  if ($paramlist && $paramlist->getNumArgs) {
+    $paramlist_skips = LaTeXML::Core::Parameters->new(
+      LaTeXML::Core::Parameter->new('SkipSpaces', 'SkipSpaces'),
+      $paramlist->getParameters); }
   # This is for the common case where the environment is opened by \begin{env}
   my $sizer = inferSizer($options{sizer}, $options{reversion});
   $STATE->installDefinition(LaTeXML::Core::Definition::Constructor
-      ->new(T_CS("\\begin{$name}"), $paramlist, $replacement,
+      ->new(T_CS("\\begin{$name}"), $paramlist_skips, $replacement,
       beforeDigest => flatten(($options{requireMath} ? (sub { requireMath($name); }) : ()),
         ($options{forbidMath} ? (sub { forbidMath($name); }) : ()),
         sub { $_[0]->bgroup; },

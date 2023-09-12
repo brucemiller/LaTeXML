@@ -1458,7 +1458,8 @@ sub beginItemize {
   my $outerlevel   = $outercounter && (LookupValue($outercounter . 'level') || 0);
   $counter = '@item' unless $counter;
   my $listlevel = (LookupValue('itemization_level') || 0) + 1;    # level for this list overall
-  my $level     = (LookupValue($counter . 'level')  || 0) + 1;    # level for lists of specific type
+  my $level     = LookupValue($counter . 'level') || 0;           # level for lists of specific type
+  $level++ unless $options{nolevel};
   AssignRegister('\itemsep' => LookupDimension('\lx@default@itemsep'));
   AssignValue('itemization_level' => $listlevel);
   AssignValue($counter . 'level'  => $level);
@@ -1488,7 +1489,8 @@ sub beginItemize {
       'global');
   }
   # format the id of \item's relative to the id of this list
-  DefMacroI('\the' . $usecounter . '@ID', undef, '\the' . $listcounter . '@ID.i' . '\@' . $usecounter . '@ID');
+  DefMacroI(T_CS('\the' . $usecounter . '@ID'), undef,
+    Tokens(T_CS('\the' . $listcounter . '@ID'), T_OTHER('.i'), T_CS('\@' . $usecounter . '@ID')));
 
   my $series;
   if ($series = $options{series}) {
