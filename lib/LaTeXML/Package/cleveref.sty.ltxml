@@ -45,10 +45,11 @@ sub splitLabels {
   return split(/\s*,\s*/, ToString($labels)); }
 
 sub crefMulti {
-  my ($labels, $showtype, $capitalized) = @_;
+  my ($starred, $labels, $showtype, $capitalized) = @_;
   my @labels = splitLabels($labels);
   if (scalar(@labels) < 2) {
     return Invocation(T_CS('\lx@cref'),
+      $starred,
       T_OTHER($showtype
         ? ($capitalized
           ? "creftypecap~refnum"
@@ -57,6 +58,7 @@ sub crefMulti {
       $labels[0]); }
   else {
     my @tokens = (Invocation(T_CS('\lx@cref'),
+        $starred,
         T_OTHER($showtype
           ? ($capitalized
             ? "creftypepluralcap~refnum"
@@ -65,37 +67,37 @@ sub crefMulti {
         shift(@labels)));
     if (scalar(@labels == 1)) {
       push(@tokens, T_CS('\crefpairconjunction'),
-        Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), $labels[0])); }
+        Invocation(T_CS('\lx@cref'), $starred, T_OTHER('refnum'), $labels[0])); }
     else {
       while (scalar(@labels) > 1) {
         push(@tokens, T_CS('\crefmiddleconjunction'),
-          Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), shift(@labels))); }
+          Invocation(T_CS('\lx@cref'), $starred, T_OTHER('refnum'), shift(@labels))); }
       push(@tokens, T_CS('\creflastconjunction'),
-        Invocation(T_CS('\lx@cref'), T_OTHER('refnum'), shift(@labels))); }
+        Invocation(T_CS('\lx@cref'), $starred, T_OTHER('refnum'), shift(@labels))); }
     return @tokens; } }
 # Since we're not grouping by type, we're ignoring \crefpairgroupconjunction, etc
 
-DefConstructor('\lx@cref {} Semiverbatim',
-  "<ltx:ref labelref='#label' show='#1' _force_font='true'/>",
-  properties => sub { (label => CleanLabel($_[2])); });
+DefConstructor('\lx@cref OptionalMatch:* {} Semiverbatim',
+  "<ltx:ref labelref='#label' show='#2' ?#1(class='ltx_nolink')() _force_font='true'/>",
+  properties => sub { (label => CleanLabel($_[3])); });
 
-DefMacro('\cref OptionalMatch:* Semiverbatim', sub { crefMulti($_[2], 1, 0); });
-DefMacro('\Cref OptionalMatch:* Semiverbatim', sub { crefMulti($_[2], 1, 1); });
+DefMacro('\cref OptionalMatch:* Semiverbatim', sub { crefMulti($_[1], $_[2], 1, 0); });
+DefMacro('\Cref OptionalMatch:* Semiverbatim', sub { crefMulti($_[1], $_[2], 1, 1); });
 
 DefMacro('\crefrange OptionalMatch:* Semiverbatim Semiverbatim',
-  '\lx@cref{creftypeplural~refnum}{#2}\crefrangeconjunction\ref{#3}');
+  '\lx@cref#1{creftypeplural~refnum}{#2}\crefrangeconjunction\ref{#3}');
 DefMacro('\Crefrange OptionalMatch:* Semiverbatim Semiverbatim',
-  '\lx@cref{creftypepluralcap~refnum}{#2}\crefrangeconjunction\ref{#3}');
+  '\lx@cref#1{creftypepluralcap~refnum}{#2}\crefrangeconjunction\ref{#3}');
 
 # Make page refs same as regular?
-DefMacro('\cpageref OptionalMatch:* Semiverbatim', sub { crefMulti($_[2], 1, 0); });
-DefMacro('\Cpageref OptionalMatch:* Semiverbatim', sub { crefMulti($_[2], 1, 1); });
+DefMacro('\cpageref OptionalMatch:* Semiverbatim', sub { crefMulti($_[1], $_[2], 1, 0); });
+DefMacro('\Cpageref OptionalMatch:* Semiverbatim', sub { crefMulti($_[1], $_[2], 1, 1); });
 
 # More likely with page ranges that the types are different?
 DefMacro('\cpagerefrange OptionalMatch:* Semiverbatim Semiverbatim',
-  '\lx@cref{creftype~refnum}{#2}\crefrangeconjunction\lx@cref{creftype~refnum}{#3}');
+  '\lx@cref#1{creftype~refnum}{#2}\crefrangeconjunction\lx@cref#1{creftype~refnum}{#3}');
 DefMacro('\Cpagerefrange OptionalMatch:* Semiverbatim Semiverbatim',
-  '\lx@cref{creftypecap~refnum}{#2}\crefrangeconjunction\lx@ref{creftype~refnum{#3}');
+  '\lx@cref#1{creftypecap~refnum}{#2}\crefrangeconjunction\lx@cref#1{creftype~refnum{#3}');
 
 DefMacro('\namecref Semiverbatim',    '\lx@cref{creftype}{#1}');
 DefMacro('\nameCref Semiverbatim',    '\lx@cref{creftypecap}{#1}');
@@ -104,8 +106,8 @@ DefMacro('\nameCrefs Semiverbatim',   '\lx@cref{creftypepluralcap}{#1}');
 DefMacro('\lcnamecref Semiverbatim',  '\lx@cref{creftype}{#1}');
 DefMacro('\lcnamecrefs Semiverbatim', '\lx@cref{creftypeplural}{#1}');
 
-DefMacro('\labelcref Semiverbatim',     sub { crefMulti($_[1], 0, 0); });
-DefMacro('\labelcpageref Semiverbatim', sub { crefMulti($_[1], 0, 0); });
+DefMacro('\labelcref Semiverbatim',     sub { crefMulti(undef, $_[1], 0, 0); });
+DefMacro('\labelcpageref Semiverbatim', sub { crefMulti(undef, $_[1], 0, 0); });
 
 # No, this isn't quite the same thing...
 DefPrimitive('\crefalias {}{}', sub {
