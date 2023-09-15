@@ -13,10 +13,10 @@
     </tags>
     <title><tag close=" ">1</tag>Basic URLS</title>
     <para xml:id="S1.p1">
-      <p>Basic url: <ref class="ltx_url" font="typewriter" href="http://example.com/~user">http://example.com/~user</ref> or <ref class="ltx_url" font="typewriter" href="http://example.com/~user">http://example.com/~user</ref>.</p>
+      <p>Basic url: <ref class="ltx_nolink ltx_url" font="typewriter" href="http://example.com/~user">http://example.com/~user</ref> or <ref class="ltx_nolink ltx_url" font="typewriter" href="http://example.com/~user">http://example.com/~user</ref>.</p>
     </para>
     <para xml:id="S1.p2">
-      <p>Path url: <ref class="ltx_path" font="typewriter" href="/foo/bar/baz">/foo/bar/baz</ref> or <ref class="ltx_path" font="typewriter" href="/foo/bar/baz">/foo/bar/baz</ref></p>
+      <p>Path url: <ref class="ltx_nolink ltx_path" font="typewriter" href="/foo/bar/baz">/foo/bar/baz</ref> or <ref class="ltx_nolink ltx_path" font="typewriter" href="/foo/bar/baz">/foo/bar/baz</ref></p>
     </para>
   </section>
   <section inlist="toc" xml:id="S2">
@@ -28,16 +28,16 @@
     <title><tag close=" ">2</tag>Verbatimness</title>
     <para xml:id="S2.p1">
       <p>Special characters neutralized:
-<ref class="ltx_url" font="typewriter" href="http://example.com/foo_bar">http://example.com/foo_bar</ref>,
-<ref class="ltx_url" font="typewriter" href="http://example.com/foo#bar">http://example.com/foo#bar</ref>,
-<ref class="ltx_url" font="typewriter" href="http://example.com/foo&amp;bar">http://example.com/foo&amp;bar</ref>.</p>
+<ref class="ltx_nolink ltx_url" font="typewriter" href="http://example.com/foo_bar">http://example.com/foo_bar</ref>,
+<ref class="ltx_nolink ltx_url" font="typewriter" href="http://example.com/foo#bar">http://example.com/foo#bar</ref>,
+<ref class="ltx_nolink ltx_url" font="typewriter" href="http://example.com/foo&amp;bar">http://example.com/foo&amp;bar</ref>.</p>
     </para>
     <para xml:id="S2.p2">
       <p>And even though <verbatim font="typewriter">\baz</verbatim> gives index.html;
-<ref class="ltx_path" font="typewriter" href="C:\foo\bar\baz">C:\foo\bar\baz</ref></p>
+<ref class="ltx_nolink ltx_path" font="typewriter" href="C:\foo\bar\baz">C:\foo\bar\baz</ref></p>
     </para>
     <para xml:id="S2.p3">
-      <p>OTOH, you get this: <ref class="ltx_url" font="typewriter" href="http://example.com/~user">http://example.com/\~{}user</ref></p>
+      <p>OTOH, you get this: <ref class="ltx_nolink ltx_url" font="typewriter" href="http://example.com/~user">http://example.com/\~{}user</ref></p>
     </para>
   </section>
   <section inlist="toc" xml:id="S3">
@@ -48,7 +48,7 @@
     </tags>
     <title><tag close=" ">3</tag>Styles</title>
     <para xml:id="S3.p1">
-      <p>Email: <ref class="ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref> or <ref class="ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref>.</p>
+      <p>Email: <ref class="ltx_nolink ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref> or <ref class="ltx_nolink ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref>.</p>
     </para>
   </section>
   <section inlist="toc" xml:id="S4">
@@ -59,7 +59,7 @@
     </tags>
     <title><tag close=" ">4</tag>Defined urls</title>
     <para xml:id="S4.p1">
-      <p>Myself: <ref class="ltx_url" font="typewriter" href="myself%node@gateway.net">myself%node@gateway.net</ref> or <ref class="ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref>.</p>
+      <p>Myself: <ref class="ltx_nolink ltx_url" font="typewriter" href="myself%node@gateway.net">myself%node@gateway.net</ref> or <ref class="ltx_nolink ltx_email" font="sansserif" href="myself%node@gateway.net">myself%node@gateway.net</ref>.</p>
     </para>
   </section>
   <section inlist="toc" xml:id="S5">
@@ -70,7 +70,7 @@
     </tags>
     <title><tag close=" ">5</tag>Bracketting</title>
     <para xml:id="S5.p1">
-      <p>Fancy url: <ref class="ltx_fancyurl" font="typewriter" href="http://example.com/~user">&lt;url: http://example.com/~user&gt;</ref> or <ref class="ltx_fancyurl" font="typewriter" href="http://example.com/~user">&lt;url: http://example.com/~user&gt;</ref>.</p>
+      <p>Fancy url: <ref class="ltx_nolink ltx_fancyurl" font="typewriter" href="http://example.com/~user">&lt;url: http://example.com/~user&gt;</ref> or <ref class="ltx_nolink ltx_fancyurl" font="typewriter" href="http://example.com/~user">&lt;url: http://example.com/~user&gt;</ref>.</p>
     </para>
   </section>
 </document>
