@@ -153,12 +153,12 @@ DefRegister('\pdfcompresslevel', Number(0));
 # Additional User Macros
 
 # \href{url}{text}
-DefMacro('\href HyperVerbatim {}', '\@@Url\href{}{}{#1}{#2}');
+DefMacro('\href HyperVerbatim {}', '\lx@hyper@url@\href{}{}{#1}{#2}');
 
-# \url{url} from url.sty... well sorta
+# Redefine \url{url} from url.sty...
 # It's slightly different in that it expands the argument
 # Redefine \@url to sanitize the argument less
-DefMacro('\@Url Token', sub {
+DefMacro('\lx@hyper@url Token', sub {
     my ($gullet, $cmd) = @_;
     my ($open, $close, $url);
     $open = $gullet->readToken;
@@ -174,14 +174,26 @@ DefMacro('\@Url Token', sub {
     my @toks = grep { $_->getCatcode != CC_SPACE; } $url->unlist;
     # Identical with url's \@Url except, let CS's through!
     @toks = map { (($_->getCatcode == CC_CS) ? $_ : T_OTHER(ToString($_))) } @toks;
-    (Invocation(T_CS('\@@Url'),
+    (Invocation(T_CS('\lx@hyper@url@'),
         T_OTHER(ToString($cmd)), Tokens($open), Tokens($close),
         Tokens(@toks),
         Tokens(T_CS('\UrlFont'), T_CS('\UrlLeft'), @toks, T_CS('\UrlRight')))->unlist,
       T_CS('\endgroup')); });
 
+# RE-define from url w
+DefMacro('\url', '\begingroup\lx@hyper@url\url', locked => 1);
+
+DefConstructor('\lx@hyper@url@ Undigested {}{} Semiverbatim {}',
+  "?#isMath(<ltx:XMWrap class='#class' href='#href'>#5</ltx:XMWrap>)"    # Allow this to work in Math!
+    . " (<ltx:ref href='#href' class='#class'>#5</ltx:ref>)",
+  properties => sub { (href => ComposeURL(LookupValue('BASE_URL'), $_[4]),
+      class => sub { my $c = ToString($_[1]); $c =~ s/^\\//; 'ltx_' . $c; }); },
+  sizer     => '#5',
+  reversion => '#1#2#4#3');
+
 # \nolinkurl{url}
-DefConstructor('\nolinkurl Semiverbatim', '#1');
+DefConstructor('\nolinkurl Semiverbatim',
+  "<ltx:ref href='#1' class='ltx_nolink' >#1</ltx:ref>");
 
 # \hyperbaseurl{url}
 DefPrimitive('\hyperbaseurl Semiverbatim', sub { AssignValue(BASE_URL => ToString($_[1])); });
