@@ -38,13 +38,13 @@ Let('\UrlRight', '\@empty');
 
 # \DeclareUrlCommand\cmd{settings}
 # Have this expand into \@Url w/ the declared cmd as arg, so it gets reflected in XML.
-DefMacro('\DeclareUrlCommand{}{}', '\def#1{\begingroup #2\@Url#1}');
+DefMacro('\DeclareUrlCommand{}{}', '\def#1{\begingroup #2\lx@url@url#1}');
 
 # This is an extended version of \Url that takes an extra token as 1st arg.
 # That token is the cs that invoked it, so that it can be reflected in the generated XML,
 # as well as used to generate the reversion.
 # In any case, we read the verbatim arg, and build a Whatsit for @@Url
-DefMacro('\@Url Token', sub {
+DefMacro('\lx@url@url Token', sub {
     my ($gullet, $cmd) = @_;
     my ($open, $close, $url);
     StartSemiverbatim('%');
@@ -58,7 +58,7 @@ DefMacro('\@Url Token', sub {
     EndSemiverbatim();
     my @toks = grep { $_->getCatcode != CC_SPACE; } (ref $url ? $url->unlist : ());
     @toks = map { T_OTHER(ToString($_)) } @toks;
-    (Invocation(T_CS('\@@Url'),
+    (Invocation(T_CS('\lx@url@url@nolink'),
         T_OTHER(ToString($cmd)), Tokens($open), Tokens($close),
         Tokens(@toks),
         Tokens(T_CS('\UrlFont'), T_CS('\UrlLeft'), @toks, T_CS('\UrlRight')))->unlist,
@@ -68,20 +68,21 @@ DefMacro('\@Url Token', sub {
 DefMacro('\Url', sub {
     my ($gullet) = @_;
     $gullet->unread(T_OTHER('\Url'));
-    (T_CS('\@Url')); });
+    (T_CS('\lx@url@url')); });
 
 # \@@Url cmd {open}{close}{url}{formattedurl}
-DefConstructor('\@@Url Undigested {}{} Semiverbatim {}',
-  "?#isMath(<ltx:XMWrap href='#href'>#5</ltx:XMWrap>)"    # Allow this to work in Math!
-    . " (<ltx:ref href='#href' class='#class'>#5</ltx:ref>)",
+#DefConstructor('\@@Url Undigested {}{} Semiverbatim {}',
+DefConstructor('\lx@url@url@nolink Undigested {}{} Semiverbatim {}',
+  "?#isMath(<ltx:XMWrap class='ltx_nolink #class' href='#href'>#5</ltx:XMWrap>)" # Allow this to work in Math!
+    . " (<ltx:ref href='#href' class='ltx_nolink #class'>#5</ltx:ref>)",
   properties => sub { (href => ComposeURL(LookupValue('BASE_URL'), $_[4]),
       class => sub { my $c = ToString($_[1]); $c =~ s/^\\//; 'ltx_' . $c; }); },
   sizer     => '#5',
   reversion => '#1#2#4#3');
 
 # These are the expansions of \DeclareUrlCommand
-DefMacro('\path', '\begingroup\urlstyle{tt}\@Url\path');
-DefMacro('\url', '\begingroup\@Url\url', locked => 1);
+DefMacro('\path', '\begingroup\urlstyle{tt}\lx@url@url\path');
+DefMacro('\url', '\begingroup\lx@url@url\url', locked => 1);
 
 # \urldef{newcmd}\cmd{arg}
 # Kinda tricky, since we need to get the expansion of \cmd as the value of \newcmd
