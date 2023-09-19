@@ -20,7 +20,7 @@ use LaTeXML::Core::Token;
 use LaTeXML::Core::Tokens;
 use LaTeXML::Util::Pathname;
 use Encode qw(decode);
-use base   qw(LaTeXML::Common::Object);
+use base qw(LaTeXML::Common::Object);
 
 our $READLINE_PROGRESS_QUANTUM = 25;
 
@@ -214,7 +214,7 @@ sub handle_escape {    # Read control sequence
   # Bit I believe that he does NOT mean within control sequences
   my $cs = "\\" . $ch;    # I need this standardized to be able to lookup tokens (A better way???)
   if ((defined $cc) && ($cc == CC_LETTER)) {    # For letter, read more letters for csname.
-    while ((($ch, $cc) = getNextChar($self)) && $ch && ($cc == CC_LETTER)) {
+    while ((($ch, $cc) = getNextChar($self)) && (length($ch) > 0) && ($cc == CC_LETTER)) {
       $cs .= $ch; }
     # We WILL skip spaces, but not till next token is read (in case catcode changes!!!!)
     $$self{skipping_spaces} = 1;
@@ -321,10 +321,10 @@ sub readToken {
       my ($ch, $cc);
       while ((($ch, $cc) = getNextChar($self)) && (defined $ch)
         && (($cc == CC_SPACE) || ($cc == CC_IGNORE))) { }
-      if ($ch && ($cc == CC_EOL)) {    # Eolch already? empty line!
-        $$self{colno} = $$self{nchars};    # ignore rest of line.
+      if ((defined $ch) && ($cc == CC_EOL)) {    # Eolch already? empty line!
+        $$self{colno} = $$self{nchars};          # ignore rest of line.
         return T_CS('\par'); }
-      elsif ($$self{colno} > $$self{nchars}) {    # Past end of line?
+      elsif (($$self{nchars} == 0) || ($$self{colno} > $$self{nchars})) {    # Past end of line?
             # If upcoming line is empty, and there is no recognizable EOL, fake one
         return T_MARKER('EOL') if $read_mode && ((!defined $eolch) || ($eolch ne "\r")); }
       else {    # Back up over peeked char
@@ -347,7 +347,6 @@ sub readToken {
     my $token = (defined $cc ? $DISPATCH[$cc] : undef);
     $token = &$token($self, $ch) if ref $token eq 'CODE';
     return $token if defined $token;    # Else, repeat till we get something or run out.
-
   }
   return; }
 
