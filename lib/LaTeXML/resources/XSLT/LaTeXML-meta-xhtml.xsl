@@ -86,9 +86,22 @@
 
   <!-- Actually, this ought to be annoyingly visible -->
   <xsl:preserve-space elements="ltx:ERROR"/>
+
   <xsl:template match="ltx:ERROR">
     <xsl:param name="context"/>
-    <xsl:element name="span" namespace="{$html_ns}">
+    <xsl:param name="wrapper_arg"/>
+    <xsl:variable name="wrapper">
+      <xsl:choose>
+        <xsl:when test="$wrapper_arg"><xsl:value-of select="$wrapper_arg"/></xsl:when>
+        <xsl:when test="parent::ltx:biblist">li</xsl:when>
+        <xsl:when test="parent::ltx:itemize">li</xsl:when>
+        <xsl:when test="parent::ltx:enumerate">li</xsl:when>
+        <xsl:when test="parent::ltx:description">dt</xsl:when>
+        <xsl:otherwise>span</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
+
+    <xsl:element name="{$wrapper}" namespace="{$html_ns}">
       <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
@@ -101,6 +114,32 @@
       <xsl:apply-templates select="." mode="end">
         <xsl:with-param name="context" select="$innercontext"/>
       </xsl:apply-templates>
+    </xsl:element>
+  </xsl:template>
+
+  <!-- This is an ERROR that the schema expected to be a description list item.
+    Thus, we create an empty item scaffold, to optimize legibility.
+  -->
+  <xsl:template match="ltx:ERROR" mode="description">
+    <xsl:param name="context"/>
+    <xsl:element name="dt" namespace="{$html_ns}">
+      <xsl:attribute name="class">ltx_item</xsl:attribute>
+      <xsl:element name="span">
+        <xsl:attribute name="class">ltx_ERROR</xsl:attribute>
+        Error
+      </xsl:element>
+    </xsl:element>
+    <xsl:element name="dd" namespace="{$html_ns}">
+      <xsl:attribute name="class">ltx_item</xsl:attribute>
+      <xsl:element name="div" namespace="{$html_ns}">
+        <xsl:attribute name="class">ltx_para</xsl:attribute>
+        <xsl:element name="p" namespace="{$html_ns}">
+          <xsl:attribute name="class">ltx_p</xsl:attribute>
+          <xsl:apply-templates select=".">
+            <xsl:with-param name="wrapper_arg" select="'span'"/>
+          </xsl:apply-templates>
+        </xsl:element>
+      </xsl:element>
     </xsl:element>
   </xsl:template>
 

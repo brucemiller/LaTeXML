@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  /=====================================================================\ 
+  /=====================================================================\
   |  LaTeXML-block.rnc                                                  |
   | RelaxNG model for LaTeXML generated documents                       |
   |=====================================================================|
@@ -312,7 +312,10 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
   <define name="itemize_model">
     <a:documentation>Content model for \elementref{itemize}.</a:documentation>
     <zeroOrMore>
-      <ref name="item"/>
+      <choice>
+        <ref name="item"/>
+        <ref name="ERROR"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
@@ -332,7 +335,10 @@ for example being table rows or cells arising from an eqnarray.</a:documentation
   <define name="enumerate_model">
     <a:documentation>Content model for \elementref{enumerate}.</a:documentation>
     <zeroOrMore>
-      <ref name="item"/>
+      <choice>
+        <ref name="item"/>
+        <ref name="ERROR"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->
@@ -353,7 +359,10 @@ which represents the term being described in each \elementref{item}.</a:document
   <define name="description_model">
     <a:documentation>Content model for \elementref{description}.</a:documentation>
     <zeroOrMore>
-      <ref name="item"/>
+      <choice>
+        <ref name="item"/>
+        <ref name="ERROR"/>
+      </choice>
     </zeroOrMore>
   </define>
   <!-- ====================================================================== -->

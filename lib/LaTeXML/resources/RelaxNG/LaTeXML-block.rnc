@@ -1,4 +1,4 @@
-# /=====================================================================\ 
+# /=====================================================================\
 # |  LaTeXML-block.rnc                                                  |
 # | RelaxNG model for LaTeXML generated documents                       |
 # |=====================================================================|
@@ -13,7 +13,7 @@
 default namespace = "http://dlmf.nist.gov/LaTeXML"
 
 ## The block module defines the following `physical' block elements.
-Block.class |= 
+Block.class |=
    p | equation | equationgroup | quote | block | listing
  | itemize | enumerate | description | pagination
 
@@ -42,7 +42,7 @@ p_model = Inline.model
 
 #======================================================================
 
-constraint = 
+constraint =
 ## A constraint upon an equation.
 element constraint { constraint_attributes, constraint_model }
 
@@ -72,7 +72,7 @@ equation_attributes =
 
 ## Content model for \elementref{equation}.
 equation_model =
-  (tags | Math | MathFork  | \text | Misc.class | Meta.class | EquationMeta.class)* 
+  (tags | Math | MathFork  | \text | Misc.class | Meta.class | EquationMeta.class)*
 
 #======================================================================
 
@@ -201,7 +201,7 @@ itemize_attributes =
   Backgroundable.attributes
 
 ## Content model for \elementref{itemize}.
-itemize_model = item*
+itemize_model = (item | ERROR)*
 
 #======================================================================
 
@@ -216,7 +216,7 @@ enumerate_attributes =
   Backgroundable.attributes
 
 ## Content model for \elementref{enumerate}.
-enumerate_model = item*
+enumerate_model = (item | ERROR)*
 
 #======================================================================
 
@@ -232,7 +232,7 @@ description_attributes =
   Backgroundable.attributes
 
 ## Content model for \elementref{description}.
-description_model = item*
+description_model = (item | ERROR)*
 
 #======================================================================
 
@@ -337,7 +337,7 @@ tag_attributes =
 
   ## specifies the purpose this tag is used for: no value is default display
   attribute role { text}?,
-  
+
   ## specifies an open delimiters used to display the tag.
   attribute open { text }?,
 
