@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  /=====================================================================\ 
+  /=====================================================================\
   |  LaTeXML-bib.rnc                                                    |
   | RelaxNG model for LaTeXML generated documents                       |
   |=====================================================================|
@@ -38,6 +38,7 @@
       <choice>
         <ref name="bibentry"/>
         <ref name="bibitem"/>
+        <ref name="ERROR"/>
       </choice>
     </zeroOrMore>
   </define>
@@ -103,7 +104,7 @@ present in the BibTeX data.</a:documentation>
   -->
   <define name="bibentry">
     <element name="bibentry">
-      <a:documentation>Semantic representation of a bibliography entry, 
+      <a:documentation>Semantic representation of a bibliography entry,
 typically resulting from parsing BibTeX</a:documentation>
       <ref name="bibentry_attributes"/>
       <ref name="bibentry_model"/>

@@ -1,4 +1,4 @@
-# /=====================================================================\ 
+# /=====================================================================\
 # |  LaTeXML-bib.rnc                                                    |
 # | RelaxNG model for LaTeXML generated documents                       |
 # |=====================================================================|
@@ -28,7 +28,7 @@ element biblist { biblist_attributes, biblist_model }
 biblist_attributes = Common.attributes
 
 ## Content model for \elementref{biblist}.
-biblist_model = (bibentry | bibitem)*
+biblist_model = (bibentry | bibitem | ERROR)*
 
 # ======================================================================
 # bibitem is the formatted, presentation, form, typically information has been lost;
@@ -42,7 +42,7 @@ bibitem =
 element bibitem { bibitem_attributes, bibitem_model }
 
 ## Attributes for \elementref{bibitem}.
-bibitem_attributes = 
+bibitem_attributes =
   Common.attributes,
   ID.attributes,
   ## The unique key for this object; this key is referenced by the
@@ -72,7 +72,7 @@ bibblock_model = Flow.model
 # ======================================================================
 
 bibentry =
-## Semantic representation of a bibliography entry, 
+## Semantic representation of a bibliography entry,
 ## typically resulting from parsing BibTeX
 element bibentry { bibentry_attributes, bibentry_model }
 
@@ -84,7 +84,7 @@ bibentry.type =  "article" | "book" | "booklet" | "conference" | "inbook"
                  | text
 
 ## Attributes for \elementref{bibentry}.
-bibentry_attributes = 
+bibentry_attributes =
   Common.attributes,
   ID.attributes,
 
@@ -107,7 +107,7 @@ bib-name =
 element bib-name { bib-name_attributes, bib-name_model }
 
 ## Attributes for \elementref{bib-name}.
-bib-name_attributes = 
+bib-name_attributes =
   Common.attributes,
   ## The role that this participant played in creating the entry.
   attribute role { ("author" | "editor" | "translator" | text) }?
@@ -210,7 +210,7 @@ bib-date =
 element bib-date { bib-date_attributes, bib-date_model }
 
 ## Attributes for \elementref{bib-date}.
-bib-date_attributes = 
+bib-date_attributes =
   Common.attributes,
   ## characterizes what happened on the given date
   attribute role { ("publication" | "copyright" | text) }?
@@ -261,7 +261,7 @@ bib-related =
 element bib-related { bib-related_attributes, bib-related_model }
 
 ## Attributes for \elementref{bib-related}.
-bib-related_attributes = 
+bib-related_attributes =
   Common.attributes,
   ## The type of this related entry.
   attribute type { bibentry.type }?,
@@ -283,9 +283,9 @@ bib-part =
 ## Describes how the current object is related to a related (\elementref{bib-related})
 ## object, in particular page, part, volume numbers and similar.
 element bib-part { bib-part_attributes, bib-part_model }
- 
+
 ## Attributes for \elementref{bib-part}.
-bib-part_attributes = 
+bib-part_attributes =
   Common.attributes,
   ## indicates how the value partitions the containing object.
   attribute role { ("pages" | "part" | "volume" | "issue" | "number"
@@ -295,7 +295,7 @@ bib-part_attributes =
 bib-part_model = Inline.model
 
 # ---------------------------------------------------------------------
-# 
+#
 
 bib-edition =
 ## Edition of a bibliographic entry.
@@ -326,7 +326,7 @@ bib-identifier =
 element bib-identifier { bib-identifier_attributes, bib-identifier_model }
 
 ## Attributes for \elementref{bib-identifier}.
-bib-identifier_attributes = 
+bib-identifier_attributes =
   Common.attributes,
   Refable.attributes,
   ## indicates what sort of identifier it is; it is open-ended for extensibility.
@@ -344,7 +344,7 @@ bib-review =
 element bib-review { bib-review_attributes, bib-review_model }
 
 ## Attributes for \elementref{bib-review}.
-bib-review_attributes = 
+bib-review_attributes =
   Common.attributes,
   Refable.attributes,
   ## indicates what sort of identifier it is; it is open-ended for extensibility.
@@ -386,7 +386,7 @@ bib-url =
 element bib-url { bib-url_attributes, bib-url_model }
 
 ## Attributes for \elementref{bib-url}.
-bib-url_attributes = 
+bib-url_attributes =
   Common.attributes,
   Refable.attributes
 
@@ -400,7 +400,7 @@ bib-extract =
 element bib-extract { bib-extract_attributes, bib-extract_model }
 
 ## Attributes for \elementref{bib-extract}.
-bib-extract_attributes = 
+bib-extract_attributes =
   Common.attributes,
   ## Classify what kind of extract
   attribute role { ("keywords" | "abstract" | "contents" | text) }?
@@ -415,7 +415,7 @@ bib-note =
 element bib-note { bib-note_attributes, bib-note_model }
 
 ## Attributes for \elementref{bib-note}.
-bib-note_attributes = 
+bib-note_attributes =
   Common.attributes,
   ## Classify the kind of note
   attribute role { ("annotation" | "publication" | text) }?
@@ -431,7 +431,7 @@ bib-data =
 element bib-data { bib-data_attributes, bib-data_model }
 
 ## Attributes for \elementref{bib-data}.
-bib-data_attributes = 
+bib-data_attributes =
   Common.attributes,
   ## Classify the relationship of the data to the entry.
   attribute role { text }?,
