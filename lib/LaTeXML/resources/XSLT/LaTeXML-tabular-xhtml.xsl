@@ -26,109 +26,109 @@
 
   <!-- LaTeXML allows tabular in both block & inline contexts, but HTML does not;
        In inline contexts, we just generate span (but with appropriate CSS).
-       See the CONTEXT discussion in LaTeXML-common -->
+       See the SPANSOUP discussion in LaTeXML-common -->
 
   <xsl:strip-space elements="ltx:tabular ltx:thead ltx:tbody ltx:tfoot ltx:tr"/>
   <xsl:preserve-space elements="ltx:td"/>
 
   <xsl:template match="ltx:tabular">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'table')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'table')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:thead">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'thead')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'thead')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:tbody">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'tbody')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'tbody')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:tfoot">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'tfoot')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'tfoot')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:tr">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,'tr')}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,'tr')}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:td">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
-    <xsl:element name="{f:blockelement($context,f:if(@thead,'th','td'))}" namespace="{$html_ns}">
+    <xsl:element name="{f:blockelement($spansoup,f:if(@thead,'th','td'))}" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <!-- generally, align & width should be covered by CSS -->
       <xsl:call-template name="add_attributes">
@@ -144,7 +144,7 @@
           </xsl:if>
           <!-- attempt to simulate rowspan when simulating table.
                Actually, I think we need empty <td> for the spanned cells! -->
-          <xsl:if test="@rowspan and $context = 'inline'">
+          <xsl:if test="@rowspan and $spansoup = 'inline'">
             <xsl:if test="@thead or @border">
               <xsl:text> </xsl:text>
             </xsl:if>
@@ -152,7 +152,7 @@
             <xsl:text> </xsl:text>
             <xsl:value-of select="f:class-pref('ltx_rowspan_',@rowspan)"/>
           </xsl:if>
-          <xsl:if test="@colspan and $context = 'inline'">
+          <xsl:if test="@colspan and $spansoup = 'inline'">
             <xsl:if test="@thead or @border or @rowspan">
               <xsl:text> </xsl:text>
             </xsl:if>
@@ -184,7 +184,7 @@
         </xsl:with-param>
       </xsl:call-template>
       <!-- add colspan, rowspan but NOT on fake td elements -->
-      <xsl:if test="$context != 'inline'">
+      <xsl:if test="$spansoup != 'inline'">
         <xsl:if test="@colspan">
           <xsl:attribute name='colspan'><xsl:value-of select='@colspan'/></xsl:attribute>
         </xsl:if>
@@ -193,13 +193,13 @@
         </xsl:if>
       </xsl:if>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>

@@ -32,9 +32,9 @@
        ====================================================================== -->
 
   <!-- We don't really anticipate document structure appearing in inline contexts,
-       so we pretty much ignore the $context switches.
+       so we pretty much ignore the $spansoup switches.
        However, a few elements like title do switch to inline.
-       See the CONTEXT discussion in LaTeXML-common -->
+       See the SPANSOUP discussion in LaTeXML-common -->
 
   <xsl:strip-space elements="ltx:document ltx:part ltx:chapter ltx:section ltx:subsection
                              ltx:subsubsection ltx:paragraph ltx:subparagraph
@@ -55,20 +55,20 @@
                        | ltx:paragraph | ltx:subparagraph
                        | ltx:bibliography | ltx:appendix | ltx:index | ltx:glossary
                        | ltx:slide">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="{f:if($USE_HTML5,f:if(local-name(.) = 'document','article','section'),'div')}"
                  namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -76,21 +76,21 @@
 
   <!-- same, but move author to end -->
   <xsl:template match="ltx:sidebar">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="{f:if($USE_HTML5,'article','div')}"
                  namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="*[not(./ltx:creator)]">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:call-template name="sidebarauthordate"/>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -98,58 +98,58 @@
 
 
   <xsl:template match="ltx:abstract">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:if test="@name">
         <xsl:element name="h6" namespace="{$html_ns}">
-          <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+          <xsl:variable name="inline" select="'inline'"/><!-- override -->
           <xsl:attribute name="class">ltx_title ltx_title_abstract</xsl:attribute>
           <xsl:apply-templates select="@name">
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:if>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:acknowledgements">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:if test="@name">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="h6" namespace="{$html_ns}">
-          <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+          <xsl:variable name="inline" select="'inline'"/><!-- override -->
           <xsl:attribute name="class">ltx_title ltx_title_acknowledgements</xsl:attribute>
           <xsl:apply-templates select="@name">
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
           <xsl:text>.</xsl:text>
         </xsl:element>
       </xsl:if>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -157,30 +157,30 @@
 
   <xsl:preserve-space elements="ltx:keywords"/>
   <xsl:template match="ltx:keywords">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:if test="@name">
         <xsl:text>&#x0A;</xsl:text>
         <xsl:element name="h6" namespace="{$html_ns}">
-          <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+          <xsl:variable name="inline" select="'inline'"/><!-- override -->
           <xsl:attribute name="class">ltx_title ltx_title_keywords</xsl:attribute>
           <xsl:apply-templates select="@name">
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
           <xsl:text>: </xsl:text>
         </xsl:element>
       </xsl:if>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -188,16 +188,16 @@
 
   <xsl:preserve-space elements="ltx:classification"/>
   <xsl:template match="ltx:classification">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:element name="h6" namespace="{$html_ns}"> <!--should be italic ? -->
-        <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+        <xsl:variable name="inline" select="'inline'"/><!-- override -->
         <xsl:attribute name="class">ltx_title ltx_title_classification</xsl:attribute>
         <xsl:choose>
           <xsl:when test='@scheme'><xsl:value-of select='@scheme'/></xsl:when>
@@ -206,10 +206,10 @@
         <xsl:text>: </xsl:text>
       </xsl:element>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -319,13 +319,13 @@
 
   <xsl:preserve-space elements="ltx:title"/>
   <xsl:template match="ltx:title">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <!-- Skip title, if the parent has a titlepage, or if writing a cv! -->
     <xsl:if test="not(parent::*/child::ltx:titlepage)">
       <xsl:text>&#x0A;</xsl:text>
       <!-- In html5, could have wrapped in hgroup, but that was deprecated -->
       <xsl:call-template name="maketitle">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:call-template>
     </xsl:if>
   </xsl:template>
@@ -333,20 +333,20 @@
   <xsl:strip-space elements="ltx:titlepage"/>
 
   <xsl:template match="ltx:titlepage">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
       </xsl:call-template>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -362,20 +362,20 @@
        However, need to define it here, so it's precedence against
        plain ole ltx:title can be better controlled-->
   <xsl:template match="ltx:theorem/ltx:title | ltx:proof/ltx:title">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="h6" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
@@ -387,44 +387,44 @@
      name="{concat('h',f:section-head-level(parent::*))}"
      name="{f:if($USE_HTML5,'h1',concat('h',f:section-head-level(parent::*)))}" -->
   <xsl:template name="maketitle">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:element name="{concat('h',f:section-head-level(parent::*))}" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
     </xsl:element>
     <!-- include parent's subtitle, author & date (if any)-->
     <xsl:apply-templates select="../ltx:subtitle" mode="intitle">
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
     </xsl:apply-templates>
     <xsl:if test="not(parent::ltx:sidebar)">
       <xsl:call-template name="authors">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:call-template>
       <xsl:if test="not(//ltx:navigation/ltx:ref[@rel='up'])">
         <xsl:call-template name="dates">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
           <xsl:with-param name="dates" select="../ltx:date"/>
         </xsl:call-template>
       </xsl:if>
     </xsl:if>
     <xsl:apply-templates select="." mode="end">
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
     </xsl:apply-templates>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:apply-templates select="parent::*" mode="auto-toc">
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
     </xsl:apply-templates>
   </xsl:template>
 
   <xsl:template name="sidebarauthordate">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:element name="div" namespace="{$html_ns}">
         <xsl:attribute name="class">ltx_sidebar_authors</xsl:attribute>
         <xsl:if test="ltx:creator[@role='author']">
@@ -432,12 +432,12 @@
           <xsl:element name="div" namespace="{$html_ns}">
             <xsl:attribute name="class">ltx_authors</xsl:attribute>
             <xsl:apply-templates select="ltx:creator[@role='author']" mode="intitle">
-              <xsl:with-param name="context" select="$context"/>
+              <xsl:with-param name="spansoup" select="$spansoup"/>
             </xsl:apply-templates>
           </xsl:element>
         </xsl:if>
       <xsl:call-template name="dates">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
         <xsl:with-param name="dates" select="ltx:date"/>
       </xsl:call-template>
     </xsl:element>
@@ -445,13 +445,13 @@
 
   <!-- try to accomodate multiple authors in single block, vs each one as a block -->
   <xsl:template name="authors">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:if test="../ltx:creator[@role='author']">
       <xsl:text>&#x0A;</xsl:text>
       <xsl:element name="div" namespace="{$html_ns}">
         <xsl:attribute name="class">ltx_authors</xsl:attribute>
         <xsl:apply-templates select="../ltx:creator[@role='author']" mode="intitle">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:element>
     </xsl:if>
@@ -493,40 +493,40 @@
 
   <!-- Format an author 'inline' as part of an author block -->
   <xsl:template match="ltx:creator[@role='author']" mode="intitle">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:if test="@before">
       <xsl:element name="span" namespace="{$html_ns}">
-        <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+        <xsl:variable name="inline" select="'inline'"/><!-- override -->
         <xsl:attribute name="class">ltx_author_before</xsl:attribute>
         <xsl:value-of select="@before"/>
       </xsl:element>
     </xsl:if>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="ltx:personname">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:if test="ltx:contact">
         <xsl:element name="span" namespace="{$html_ns}">
           <xsl:attribute name="class">ltx_author_notes</xsl:attribute>
           <xsl:apply-templates select="ltx:contact">
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:if>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
     </xsl:element>
     <xsl:if test="@after">
       <xsl:element name="span" namespace="{$html_ns}">
-        <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+        <xsl:variable name="inline" select="'inline'"/><!-- override -->
         <xsl:attribute name="class">ltx_author_after</xsl:attribute>
         <xsl:value-of select="@after"/>
       </xsl:element>
@@ -535,144 +535,144 @@
 
   <xsl:preserve-space elements="ltx:personname"/>
   <xsl:template match="ltx:personname">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:choose>
         <xsl:when test="@href">
           <xsl:element name="a" namespace="{$html_ns}">
             <xsl:attribute name="href"><xsl:value-of select="f:url(@href)"/></xsl:attribute>
             <xsl:apply-templates>
-              <xsl:with-param name="context" select="$innercontext"/>
+              <xsl:with-param name="spansoup" select="$inline"/>
             </xsl:apply-templates>
           </xsl:element>
         </xsl:when>
         <xsl:otherwise>
           <xsl:apply-templates>
-            <xsl:with-param name="context" select="$innercontext"/>
+            <xsl:with-param name="spansoup" select="$inline"/>
           </xsl:apply-templates>
         </xsl:otherwise>
       </xsl:choose>
       <xsl:text>&#x0A;</xsl:text>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:preserve-space elements="ltx:contact"/>
   <xsl:template match="ltx:contact[@role='address' or @role='affiliation']">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
       </xsl:call-template>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:contact[@role='email']">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
       </xsl:call-template>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:element name="a" namespace="{$html_ns}">
         <xsl:attribute name="href"><xsl:value-of select="concat('mailto:',text())"/></xsl:attribute>
         <xsl:apply-templates>
-          <xsl:with-param name="context" select="$innercontext"/>
+          <xsl:with-param name="spansoup" select="$inline"/>
         </xsl:apply-templates>
       </xsl:element>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:contact[@role='orcid']">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
       </xsl:call-template>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
     </xsl:element>
     <xsl:text>&#x0A;</xsl:text>
   </xsl:template>
 
   <xsl:template match="ltx:contact[@role='homepage']">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
       </xsl:call-template>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:element name="a" namespace="{$html_ns}">
         <xsl:attribute name="href"><xsl:value-of select="text()"/></xsl:attribute>
         <xsl:apply-templates>
-          <xsl:with-param name="context" select="$innercontext"/>
+          <xsl:with-param name="spansoup" select="$inline"/>
         </xsl:apply-templates>
       </xsl:element>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
   </xsl:template>
 
   <xsl:template match="ltx:contact[@role='dedicatory' or @role='mobile']">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes">
       </xsl:call-template>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -687,7 +687,7 @@
   <xsl:template match="ltx:date"/>
 
   <xsl:template name="dates">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="dates" select="ltx:date"/>
     <xsl:if test="$dates and normalize-space(string($dates))">
       <xsl:text>&#x0A;</xsl:text>
@@ -695,25 +695,25 @@
       <xsl:element name="div" namespace="{$html_ns}">
         <xsl:attribute name="class">ltx_dates</xsl:attribute>
         <xsl:apply-templates select="." mode="begin">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
         <xsl:text>(</xsl:text>
         <xsl:apply-templates select="$dates" mode="intitle">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
         <xsl:text>)</xsl:text>
         <xsl:apply-templates select="." mode="end">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:element>
     </xsl:if>
   </xsl:template>
 
   <xsl:template match="ltx:date" mode="intitle">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:if test="@name"><xsl:value-of select="@name"/><xsl:text> </xsl:text></xsl:if>
     <xsl:apply-templates select="node()">
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
     </xsl:apply-templates>
     <xsl:if test="following-sibling::ltx:date"><xsl:text>; </xsl:text></xsl:if>
   </xsl:template>
@@ -723,20 +723,20 @@
 
   <!-- NOTE: Probably should support font, punct, etc, right? -->
   <xsl:template match="ltx:subtitle" mode="intitle">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <!-- Originally, html5 seemed to suggest using h2 here, but that is retracted-->
     <xsl:element name="div" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:text>&#x0A;</xsl:text>
     </xsl:element>
@@ -752,11 +752,11 @@
   <xsl:strip-space elements="ltx:indexlist ltx:indexentry"/>
 
   <xsl:template match="ltx:indexlist">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:choose>
       <xsl:when test="$USE_TWOCOLUMN_INDEX and not(ancestor::ltx:indexlist)">
         <xsl:apply-templates select="." mode="twocolumn">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:when>
       <xsl:otherwise>
@@ -765,13 +765,13 @@
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes"/>
           <xsl:apply-templates select="." mode="begin">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
           <xsl:apply-templates>
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:otherwise>
@@ -779,14 +779,14 @@
   </xsl:template>
 
   <xsl:template match="ltx:indexlist" mode="twocolumn">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="items"    select="ltx:indexentry"/>
     <xsl:param name="lines"    select="descendant::ltx:indexphrase"/>
     <xsl:param name="halflines" select="ceiling(count($lines) div 2)"/>
     <xsl:param name="miditem"
                select="count($lines[position() &lt; $halflines]/ancestor::ltx:indexentry[parent::ltx:indexlist[parent::ltx:index]]) + 1"/>
     <xsl:call-template name="split-columns">
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
       <xsl:with-param name="wrapper" select="'ul'"/>
       <xsl:with-param name="items"   select="$items"/>
       <xsl:with-param name="miditem" select="$miditem"/>
@@ -794,44 +794,44 @@
   </xsl:template>
 
   <xsl:template match="ltx:indexentry">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="li" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="ltx:indexphrase">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="ltx:indexrefs">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="ltx:indexlist">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
 
   <xsl:preserve-space elements="ltx:indexrefs"/>
   <xsl:template match="ltx:indexrefs">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:element name="span" namespace="{$html_ns}">
-      <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
+      <xsl:variable name="inline" select="'inline'"/><!-- override -->
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates>
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$innercontext"/>
+        <xsl:with-param name="spansoup" select="$inline"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
@@ -843,11 +843,11 @@
   <xsl:strip-space elements="ltx:glossarlist ltx:glossaryentry"/>
 
   <xsl:template match="ltx:glossarylist">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:choose>
       <xsl:when test="$USE_TWOCOLUMN_GLOSSARY">
         <xsl:apply-templates select="." mode="twocolumn">
-          <xsl:with-param name="context" select="$context"/>
+          <xsl:with-param name="spansoup" select="$spansoup"/>
         </xsl:apply-templates>
       </xsl:when>
       <xsl:otherwise>
@@ -856,13 +856,13 @@
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes"/>
           <xsl:apply-templates select="." mode="begin">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="ltx:glossaryentry">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="context" select="$context"/>
+            <xsl:with-param name="spansoup" select="$spansoup"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:otherwise>
@@ -870,12 +870,12 @@
   </xsl:template>
 
   <xsl:template match="ltx:glossarylist" mode="twocolumn">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:param name="items"    select="ltx:glossaryentry"/>
     <xsl:param name="miditem"
                select="ceiling(count($items) div 2)+1"/>
     <xsl:call-template name="split-columns">
-      <xsl:with-param name="context" select="$context"/>
+      <xsl:with-param name="spansoup" select="$spansoup"/>
       <xsl:with-param name="wrapper" select="'dl'"/>
       <xsl:with-param name="items"   select="$items"/>
       <xsl:with-param name="miditem" select="$miditem"/>
@@ -883,28 +883,28 @@
   </xsl:template>
 
   <xsl:template match="ltx:glossaryentry">
-    <xsl:param name="context"/>
+    <xsl:param name="spansoup"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="dt" namespace="{$html_ns}">
       <xsl:call-template name="add_id"/>
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="ltx:glossaryphrase[@role='label']">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="dd" namespace="{$html_ns}">
       <xsl:apply-templates select="ltx:glossaryphrase[@role='definition']">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="ltx:indexrefs">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="context" select="$context"/>
+        <xsl:with-param name="spansoup" select="$spansoup"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
