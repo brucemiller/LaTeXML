@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-  /=====================================================================\ 
+  /=====================================================================\
   |  LaTeXML-misc.rnc                                                   |
   | RelaxNG model for LaTeXML generated documents                       |
   |=====================================================================|
@@ -25,6 +25,7 @@ they can appear in both inline and block contexts.</a:documentation>
       <ref name="svg"/>
       <ref name="rawhtml"/>
       <ref name="rawliteral"/>
+      <ref name="ERROR"/>
     </choice>
   </define>
   <!-- ====================================================================== -->
@@ -87,7 +88,7 @@ typesets its contents as a block.</a:documentation>
   <!-- ====================================================================== -->
   <define name="graphics">
     <element name="graphics">
-      <a:documentation>A graphical insertion of an external file. </a:documentation>
+      <a:documentation>A graphical insertion of an external file.</a:documentation>
       <ref name="graphics_attributes"/>
       <ref name="graphics_model"/>
     </element>
@@ -203,6 +204,25 @@ then the text content, followed by a close angle bracket followed by \attr{close
       </optional>
       <text/>
     </element>
+  </define>
+  <!-- ====================================================================== -->
+  <define name="ERROR">
+    <element name="ERROR">
+      <a:documentation>error object for undefined control sequences, or whatever</a:documentation>
+      <ref name="ERROR_attributes"/>
+      <ref name="ERROR_model"/>
+    </element>
+  </define>
+  <define name="ERROR_attributes">
+    <a:documentation>Attributes for \elementref{ERROR}.</a:documentation>
+    <ref name="Common.attributes"/>
+    <ref name="ID.attributes"/>
+  </define>
+  <define name="ERROR_model">
+    <a:documentation>Content model for \elementref{ERROR}.</a:documentation>
+    <zeroOrMore>
+      <text/>
+    </zeroOrMore>
   </define>
 </grammar>
 <!-- ====================================================================== -->
