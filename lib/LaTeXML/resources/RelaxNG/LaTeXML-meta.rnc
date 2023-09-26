@@ -218,13 +218,7 @@ resource_model = text*
 navigation =
 ## Records navigation cross-referencing information,
 ## or serves as a container for page navigational blocks.
-element navigation { navigation_attributes, navigation_model }
-
-## Attributes for \elementref{navigation}.
-navigation_attributes = Common.attributes
-
-## Content model for \elementref{navigation}.
-## A \elementref{inline-para} child should have attribute \attr{class}
+## An \elementref{inline-para} child should have attribute \attr{class}
 ## being one of \texttt{ltx_page_navbar}, \texttt{ltx_page_header}
 ## or \texttt{ltx_page_footer} and its contents will be used to create those components of webpages.
 ## Lacking those, a \elementref{TOC} requests a table of contents
@@ -232,7 +226,13 @@ navigation_attributes = Common.attributes
 ## Links from the current page or document to related ones;
 ## these are represented by \elementref{ref} elements with \attr{rel}
 ## being up, down, previous, next, and so forth.
-##  top-level elements, presumably block-level,
+
+element navigation { navigation_attributes, navigation_model }
+
+## Attributes for \elementref{navigation}.
+navigation_attributes = Common.attributes
+
+## Content model for \elementref{navigation}.
 navigation_model = ( ref | TOC | inline-para )*
 
 #======================================================================
