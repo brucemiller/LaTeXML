@@ -26,25 +26,25 @@
        ltx:inline-block, ltx:verbatim, ltx:break, ltx:graphics, ltx:svg, ltx:rawhtml
        ====================================================================== -->
 
-  <!-- Only a few generated elements need $spansoup switches.
-       See the SPANSOUP discussion in LaTeXML-common -->
+  <!-- Only a few generated elements need $context switches.
+       See the CONTEXT discussion in LaTeXML-common -->
 
   <xsl:strip-space elements="ltx:inline-block"/>
 
   <!-- Note that html does NOT have an inline-block element; so we must
-       continue in an inline context (generating spans inside),
+       continue in an inline context (probably generating span's inside),
        but CSS will hopefully set appropriate display properties.
        BUT, let's only do that if we're actually in an inline context!
        In block context, just make a div-->
   <xsl:template match="ltx:inline-block">
-    <xsl:param name="spansoup"/>
+    <xsl:param name="context"/>
     <!-- bug in libxslt!?!?!? putting these in the 'correct' place gives redefinition error! -->
     <xsl:text>&#x0A;</xsl:text>
     <xsl:choose>
       <xsl:when test="@angle | @xtranslate | @ytranslate | @xscale | @yscale ">
-        <xsl:element name="{f:blockelement($spansoup,'div')}" namespace="{$html_ns}">
-          <!--<xsl:variable name="inline" select="'inline'"/>--><!-- override -->
-          <xsl:variable name="inline" select="$spansoup"/><!-- override -->
+        <xsl:element name="{f:blockelement($context,'div')}" namespace="{$html_ns}">
+          <!--<xsl:variable name="innercontext" select="'inline'"/>--><!-- override -->
+          <xsl:variable name="innercontext" select="$context"/><!-- override -->
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes">
             <xsl:with-param name="extra_classes" select="'ltx_transformed_outer'"/>
@@ -53,13 +53,13 @@
             <xsl:attribute name="class">ltx_transformed_inner</xsl:attribute>
             <xsl:call-template name="add_transformable_attributes"/>
             <xsl:apply-templates select="." mode="begin">
-              <xsl:with-param name="spansoup" select="$inline"/>
+              <xsl:with-param name="context" select="$innercontext"/>
             </xsl:apply-templates>
             <xsl:apply-templates>
-              <xsl:with-param name="spansoup" select="$inline"/>
+              <xsl:with-param name="context" select="$innercontext"/>
             </xsl:apply-templates>
             <xsl:apply-templates select="." mode="end">
-              <xsl:with-param name="spansoup" select="$inline"/>
+              <xsl:with-param name="context" select="$innercontext"/>
             </xsl:apply-templates>
             <xsl:text>&#x0A;</xsl:text>
           </xsl:element>
@@ -67,17 +67,17 @@
       </xsl:when>
       <xsl:otherwise>
         <xsl:element name="span" namespace="{$html_ns}">
-          <xsl:variable name="inline" select="'inline'"/><!-- override -->
+          <xsl:variable name="innercontext" select="'inline'"/><!-- override -->
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes"/>
           <xsl:apply-templates select="." mode="begin">
-            <xsl:with-param name="spansoup" select="$inline"/>
+            <xsl:with-param name="context" select="$innercontext"/>
           </xsl:apply-templates>
           <xsl:apply-templates>
-            <xsl:with-param name="spansoup" select="$inline"/>
+            <xsl:with-param name="context" select="$innercontext"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="spansoup" select="$inline"/>
+            <xsl:with-param name="context" select="$innercontext"/>
           </xsl:apply-templates>
           <xsl:text>&#x0A;</xsl:text>
         </xsl:element>
@@ -86,20 +86,20 @@
   </xsl:template>
 
   <xsl:template match="ltx:verbatim">
-    <xsl:param name="spansoup"/>
+    <xsl:param name="context"/>
     <xsl:choose>
       <xsl:when test="contains(text(),'&#xA;')">
         <xsl:element name="pre" namespace="{$html_ns}">
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes"/>
           <xsl:apply-templates select="." mode="begin">
-            <xsl:with-param name="spansoup" select="$spansoup"/>
+            <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
           <xsl:apply-templates>
-            <xsl:with-param name="spansoup" select="$spansoup"/>
+            <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="spansoup" select="$spansoup"/>
+            <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:when>
@@ -108,13 +108,13 @@
           <xsl:call-template name="add_id"/>
           <xsl:call-template name="add_attributes"/>
           <xsl:apply-templates select="." mode="begin">
-            <xsl:with-param name="spansoup" select="$spansoup"/>
+            <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
           <xsl:apply-templates>
-            <xsl:with-param name="spansoup" select="$spansoup"/>
+            <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
           <xsl:apply-templates select="." mode="end">
-            <xsl:with-param name="spansoup" select="$spansoup"/>
+            <xsl:with-param name="context" select="$context"/>
           </xsl:apply-templates>
         </xsl:element>
       </xsl:otherwise>
@@ -122,15 +122,15 @@
   </xsl:template>
 
   <xsl:template match="ltx:break">
-    <xsl:param name="spansoup"/>
+    <xsl:param name="context"/>
     <xsl:text>&#x0A;</xsl:text>
     <xsl:element name="br" namespace="{$html_ns}">
       <xsl:call-template name="add_attributes"/>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="spansoup" select="$spansoup"/>
+        <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="spansoup" select="$spansoup"/>
+        <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
@@ -140,7 +140,7 @@
        ====================================================================== -->
 
   <xsl:template match="ltx:graphics">
-    <xsl:param name="spansoup"/>
+    <xsl:param name="context"/>
     <xsl:element name="img" namespace="{$html_ns}">
       <xsl:attribute name="src"><xsl:value-of select="f:url(@imagesrc)"/></xsl:attribute>
       <xsl:call-template name="add_id"/>
@@ -179,10 +179,10 @@
         </xsl:otherwise>
       </xsl:choose>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="spansoup" select="$spansoup"/>
+        <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="spansoup" select="$spansoup"/>
+        <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
@@ -190,7 +190,7 @@
   <!-- svg graphics should use the object tag, rather than img,
        to preserve any interactivity. -->
   <xsl:template match="ltx:graphics[f:ends-with(@imagesrc,'.svg')='true']">
-    <xsl:param name="spansoup"/>
+    <xsl:param name="context"/>
     <xsl:variable name="description">
       <xsl:choose>
         <xsl:when test="@description">
@@ -231,17 +231,17 @@
         </xsl:attribute>
       </xsl:if>
       <xsl:apply-templates select="." mode="begin">
-        <xsl:with-param name="spansoup" select="$spansoup"/>
+        <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
       <!-- fallback text for screen reader/browser combinations
            which do not accept the aria-label -->
       <xsl:if test="$description!=''">
-        <xsl:element name="{f:blockelement($spansoup,'p')}" namespace="{$html_ns}">
+        <xsl:element name="{f:blockelement($context,'p')}" namespace="{$html_ns}">
           <xsl:value-of select="$description"/>
         </xsl:element>
       </xsl:if>
       <xsl:apply-templates select="." mode="end">
-        <xsl:with-param name="spansoup" select="$spansoup"/>
+        <xsl:with-param name="context" select="$context"/>
       </xsl:apply-templates>
     </xsl:element>
   </xsl:template>
