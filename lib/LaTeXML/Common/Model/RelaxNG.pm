@@ -105,7 +105,7 @@ sub filterNames {
       && ((($name =~ /^!(.*)$/) && !(defined $$hash{$1}))    # Negated name, but name not present?
         || (!defined $$hash{ '!' . $name }))) {              # Or negation of name not present
       $filtered{$name} = 1; } }
-  return sort keys %filtered; }
+  return (sort keys %filtered); }
 
 # Return two hashrefs for content & attributes
 sub extractContent {
@@ -476,7 +476,10 @@ sub simplify {
           elsif (($combination eq 'group') && ($prevc ne 'group')) {    # Use old combination!?!?!?!?
             $combination = $prevc; } }
         $$self{defs}{$qname} = simplifyCombination(['combination', $combination,
-            ($prev ? @$prev : ()), @xargs]);
+            # careful, if $prev is a triple [$op,$name,@stuff] and we flatten it,
+            # we should not treat $op and $name as @stuff.
+            # We should either drop them, or not flatten at all. Drop for now.
+            ($prev ? @$prev[2 .. $#{$prev}] : ()), @xargs]);
         $$self{def_combiner}{$qname} = $combination;
         return ([$op, $qname, @args]); } }
     else {
@@ -708,7 +711,6 @@ sub getSymbolUses {
     my @uses = sort keys %$uses;
     @uses = grep { !/\bSVG./ } @uses if $SKIP_SVG;                      # !!!
     return join(', ',
-      (map { /^pattern:[^:]*:(.*)$/ ? ('\patternref{' . cleanTeX($1) . '}')     : () } @uses),
       (map { /^pattern:[^:]*:(.*)$/ ? ('\patternref{' . cleanTeX($1) . '}')     : () } @uses),
       (map { /^element:(.*)$/       ? ('\elementref{' . cleanTeXName($1) . '}') : () } @uses)); }
   else {
