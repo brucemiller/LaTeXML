@@ -6,15 +6,19 @@ body { margin:0; background:#cfd2e6; color:#000000; }
    position:fixed; left:10px; top:10px; width:232px;
    margin:0; padding:0; 
    font-weight: bold; font-size: 75%;
-   color:#a82ee6;
+   color:#7113a0;
    overflow-x: hidden;
    overflow-y: auto; max-height: 95vh;
    z-index:10;
+ }
+.ltx_page_navbar .ltx_para .ltx_p {
+    text-indent:0em;
 }
+
 /*   overflow:hidden; z-index:10;*/
 
 .ltx_page_navbar a {
-   color:#a82ee6;
+   color:#7113a0;
 }
 .ltx_page_main {
    position:absolute; left:240px;
@@ -44,7 +48,8 @@ body { margin:0; background:#cfd2e6; color:#000000; }
    border-bottom: 1px solid #701f99;
 }
 .ltx_page_header {
-    height: 30px; }
+    border:none;
+ }
 .ltx_page_content {
    margin:30px 0px 0 0; padding:10px;
    background:#e6eaff;
@@ -58,7 +63,7 @@ body { margin:0; background:#cfd2e6; color:#000000; }
 .ltx_title {
    text-align:left;
    margin:0;
-   color:#a82ee6;
+   color:#7113a0;
 }
 .ltx_subsection,
 .ltx_paragraph {
