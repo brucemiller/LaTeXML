@@ -17,17 +17,17 @@
 In section <ref labelref="LABEL:foobar"/></p>
     </para>
     <para xml:id="S1.p2">
-      <p><ref class="ltx_url" font="typewriter" href="http://foo.com/dont%00ignorethis">http://foo.com/dont%00ignorethis</ref>
+      <p><ref class="ltx_nolink ltx_url" font="typewriter" href="http://foo.com/dont%00ignorethis">http://foo.com/dont%00ignorethis</ref>
 and
-<ref class="ltx_url" font="typewriter" href="http://foo.com/dont%00ignorethis">http://foo.com/dont%00ignorethis</ref>
+<ref class="ltx_nolink ltx_url" font="typewriter" href="http://foo.com/dont%00ignorethis">http://foo.com/dont%00ignorethis</ref>
 However
-<ref class="ltx_url" font="typewriter" href="http://foo.com/dont">http://foo.com/dont</ref> ignore this either</p>
+<ref class="ltx_nolink ltx_url" font="typewriter" href="http://foo.com/dont">http://foo.com/dont</ref> ignore this either</p>
     </para>
     <para xml:id="S1.p3">
-      <p>Consider <verbatim font="typewriter">http://\host/page</verbatim> versus <ref class="ltx_url" font="typewriter" href="http://\host/page">http://\host/page</ref>.</p>
+      <p>Consider <verbatim font="typewriter">http://\host/page</verbatim> versus <ref class="ltx_nolink ltx_url" font="typewriter" href="http://\host/page">http://\host/page</ref>.</p>
     </para>
     <para xml:id="S1.p4">
-      <p>Consider <verbatim font="typewriter">a_b</verbatim> versus <ref class="ltx_url" font="typewriter" href="a_b">a_b</ref>.</p>
+      <p>Consider <verbatim font="typewriter">a_b</verbatim> versus <ref class="ltx_nolink ltx_url" font="typewriter" href="a_b">a_b</ref>.</p>
     </para>
     <para xml:id="S1.p5">
       <p>When delimited, extra braces are allowed by verb, but not url.
